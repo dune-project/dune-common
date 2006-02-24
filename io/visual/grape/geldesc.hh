@@ -255,35 +255,18 @@ static int t_v2_e[3] = {0,3,1},   t_v3_e[3] = {0,1,2};
 static int t_p0_e[3] = {2,1,3},   t_p1_e[3] = {3,0,2};
 static int t_p2_e[3] = {1,0,3},   t_p3_e[3] = {2,0,1};
 
+/* local coordinates of the vertices for a tetrahedron  in barycentric
+ * coords */
+//static double t_c0[4] = {1.,0.,0.,0.}, t_c1[4] = {0.,1.,0.,0.};
+//static double t_c2[4] = {0.,0.,1.,0.}, t_c3[4] = {0.,0.,0.,1.};
 /* local coordinates of the vertices for a tetrahedron        */
-static double t_c0[4] = {1.,0.,0.,0.}, t_c1[4] = {0.,1.,0.,0.};
-static double t_c2[4] = {0.,0.,1.,0.}, t_c3[4] = {0.,0.,0.,1.};
+static double t_c0[3] = {0.,0.,0.}, t_c1[3] = {1.,0.,0.};
+static double t_c2[3] = {0.,1.,0.}, t_c3[3] = {0.,0.,1.};
 
 static int tetra_polygon_length[4]          = {3, 3, 3, 3};
 static G_CONST int    *tetra_vertex_e[4]       = {t_v0_e,t_v1_e,t_v2_e,t_v3_e};
 static G_CONST int    *tetra_next_polygon_e[4] = {t_p0_e,t_p1_e,t_p2_e,t_p3_e};
 static G_CONST double *tetra_local_coordinate_system[4] =  {t_c0,t_c1,t_c2,t_c3};
-
-#if 0
-/* vertex indices of the polygons for a tetrahedron           */
-static int t_v0_o[3] = {1,2,3},   t_v1_o[3] = {0,3,2};
-static int t_v2_o[3] = {0,1,3},   t_v3_o[3] = {0,2,1};
-/* polygon adjacencies  for a tetrahedron                     */
-static int t_p0_o[3] = {3,1,2},   t_p1_o[3] = {2,0,3};
-static int t_p2_o[3] = {3,0,1},   t_p3_o[3] = {1,0,2};
-
-static int    *tetra_vertex_o[4] =       {t_v0_o,t_v1_o,t_v2_o,t_v3_o};
-static int    *tetra_next_polygon_o[4] = {t_p0_o,t_p1_o,t_p2_o,t_p3_o};
-
-#endif
-/*static ELEMENT3D_DESCRIPTION tetra_description_odd =
-   {
-   5, 4 , 4 , tetra_polygon_length, tetra_vertex_o, tetra_next_polygon_o,
-   4, tetra_local_coordinate_system, 1,
-   tetra_world2coord, tetra_coord2world, tetra_check_inside,
-   dummy_neighbour,  wrap_boundary
-   };
- */
 
 /*****************************************************************************
 ******************************************************************************
@@ -376,15 +359,6 @@ static VEC3 pyc1={0.,0.,0.},pyc2={1.,0.,0.},pyc3={1.,1.,0.},
             pyc4={0.,1.,0.},pyc5={0.,0.,1.};
 static G_CONST double *pyra_local_coordinate_system[5] = {pyc1,pyc2,pyc3,pyc4,pyc5};
 
-#if 0
-static int pyra_polygon_length[5] = {3,3,3,3,4};
-static int pyv5[4]={0,1,2,3},pyv2[3]={0,4,1},pyv3[3]={1,4,2},
-           pyv4[3]={2,4,3}  ,pyv1[3]={0,3,4};
-static G_CONST int *pyra_polygon_vertex[5] = {pyv1,pyv2,pyv3,pyv4,pyv5};
-static int pyn1[4]={-1,-1,-1,-1},pyn2[3]={-1,-1,-1},pyn3[3]={-1,-1,-1},
-           pyn4[3]={-1,-1,-1}  ,pyn5[3]={-1,-1,-1};
-#endif
-#if 1
 static int pyra_polygon_length[5] = {4,3,3,3,3};
 static int pyv1[4]={0,1,2,3},pyv2[3]={0,4,1},pyv3[3]={1,4,2},
            pyv4[3]={2,4,3}  ,pyv5[3]={0,3,4};
@@ -392,7 +366,6 @@ static G_CONST int *pyra_polygon_vertex[5] = {pyv1,pyv2,pyv3,pyv4,pyv5};
 
 static int pyn1[4]={5,4,3,2},pyn2[3]={0,2,4},pyn3[3]={0,3,1},
            pyn4[3]={0,4,2}  ,pyn5[3]={0,1,3};
-#endif
 static G_CONST int *pyra_polygon_neighbour[5] = {pyn1,pyn2,pyn3,pyn4,pyn5};
 
 /*****************************************************************************/
