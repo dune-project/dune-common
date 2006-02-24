@@ -53,22 +53,8 @@ namespace Dune
    *
    */
 
-  struct P1OperatorLink
-  {
-    int first,second;
-    P1OperatorLink (int a, int b) : first(a),second(b) {}
-    bool operator< (const P1OperatorLink& x) const
-    {
-      if (first<x.first) return true;
-      if (first==x.first && second<x.second) return true;
-      return false;
-    }
-    bool operator== (const P1OperatorLink& x) const
-    {
-      if (first==x.first && second==x.second) return true;
-      return false;
-    }
-  };
+  // make a type to sort matrix entries
+  typedef std::pair<int,int> P1OperatorLink;
 
   // template meta program for inserting indices
   template<int n, int c>
