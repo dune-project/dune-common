@@ -65,7 +65,7 @@ void makeHalfCircleQuad(Dune::UGGrid<2,2>& grid, bool parametrization)
     FieldVector<double,2> center(0);
     center[1] = 15;
 
-    std::vector<int> vertices(2);
+    std::vector<unsigned int> vertices(2);
 
     vertices[0] = 1;  vertices[1] = 2;
     grid.insertBoundarySegment(vertices, new ArcOfCircle(center, 15, M_PI, M_PI*4/3));
