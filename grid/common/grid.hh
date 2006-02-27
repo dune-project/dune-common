@@ -172,7 +172,7 @@ namespace Dune {
 
      template parameters:
    * <tt>dim</tt> precifies the dimesion of the grid.
-   * <tt>dimworld</tt> precifies the dimesion of the world, this can be
+   * <tt>dimworld</tt> precifies the dimension of the surrounding space, this can be
        different from dim, if the grid is defined on a manifold .
    * <tt>ct</tt> field type of the world vector space.
    * <tt>GridFamily</tt> trait class providing all information
@@ -187,7 +187,7 @@ namespace Dune {
     template <int cd>
     struct Codim
     {
-      // IMPORTANT: codim<codim>::Geometry == Geometry<dim-codim,dimworld>
+      // IMPORTANT: Codim<codim>::Geometry == Geometry<dim-codim,dimworld>
       typedef typename GridFamily::Traits::template Codim<cd>::Geometry Geometry;
       typedef typename GridFamily::Traits::template Codim<cd>::LocalGeometry LocalGeometry;
 
@@ -663,7 +663,7 @@ namespace Dune {
       // IMPORTANT: Codim<codim>::Geometry == Geometry<dim-codim,dimw>
       typedef Dune::Geometry<dim-cd, dimw, const GridImp, GeometryImp> Geometry;
       typedef Dune::Geometry<dim-cd, dim, const GridImp, GeometryImp> LocalGeometry;
-      // we could - if needed - introduce an other struct for dimglobal of Geometry
+      // we could - if needed - introduce another struct for dimglobal of Geometry
       typedef Dune::Entity<cd, dim, const GridImp, EntityImp> Entity;
 
       typedef Dune::LevelIterator<cd,All_Partition,const GridImp,LevelIteratorImp> LevelIterator;
