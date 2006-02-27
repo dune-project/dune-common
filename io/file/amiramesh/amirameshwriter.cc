@@ -478,15 +478,33 @@ void Dune::AmiraMeshWriter<GridType>::writeBlockVector(const GridType& grid,
 
   }
 
-  AmiraMesh::Location* sol_nodes = new AmiraMesh::Location("Nodes", f.size());
-  am.insert(sol_nodes);
+  AmiraMesh::Location* amLocation;
+  if (f.size()==grid.size(level,dim)) {
 
-  AmiraMesh::Data* nodeData = new AmiraMesh::Data("Data", sol_nodes, McPrimType::mc_double, ncomp);
+    // P1 data
+    amLocation = new AmiraMesh::Location("Nodes", f.size());
+
+  } else {
+
+    // P0 data
+    amLocation = new AmiraMesh::Location((containsOnlyTetrahedra) ? "Tetrahedra" : "Hexahedra", f.size());
+
+  }
+
+  am.insert(amLocation);
+
+  AmiraMesh::Data* nodeData = new AmiraMesh::Data("Data", amLocation, McPrimType::mc_double, ncomp);
   am.insert(nodeData);
+
 
   AmiraMesh::Field* nodeField;
 
-  if (containsOnlyTetrahedra || GridType::dimension==2) {
+  if (f.size()==grid.size(level,0)) {
+    // P0 data
+    nodeField = new AmiraMesh::Field("sol", ncomp, McPrimType::mc_double,
+                                     AmiraMesh::t_constant, nodeData);
+
+  } else if (containsOnlyTetrahedra || GridType::dimension==2) {
     nodeField = new AmiraMesh::Field("sol", ncomp, McPrimType::mc_double,
                                      AmiraMesh::t_linear, nodeData);
   } else {
