@@ -12,7 +12,7 @@
 template<class G,int ordr>
 void DGStokes<G,ordr>::assembleVolumeTerm(Entity& epointer, LocalMatrixBlock& Aee,LocalVectorBlock& Be) const
 {
-  Gradient grad_phi_ei[2],grad_phi_ej[2],temp;
+  Gradient grad_phi_ei[dim],grad_phi_ej[dim],temp;
   ctype phi_ei, phi_ej,psi_ei,psi_ej;
   ctype entry;
 
@@ -135,10 +135,323 @@ void DGStokes<G,ordr>::assembleVolumeTerm(Entity& epointer, LocalMatrixBlock& Ae
 
 
 
+template<class G,int ordr>
+void DGStokes<G,ordr>::assembleFaceTerm(Entity& epointer, IntersectionIterator& ispointer, LocalMatrixBlock& Aee, LocalMatrixBlock& Aef,LocalMatrixBlock& Afe, LocalVectorBlock& Be) const
+{
+  Gradient grad_phi_ei[dim],grad_phi_ej[dim],grad_phi_fi[dim],grad_phi_fj[dim],temp;
+  ctype phi_ei[dim],phi_ej[dim],phi_fi[dim],phi_fj[dim],psi_ei,psi_ej,psi_fi,psi_fj;
+  ctype entry;
+  //get the shape function set
+  //self shape functions
+  ShapeFunctionSet vsfs(ordr);; //for  velocity
+  ShapeFunctionSet psfs(ordr-1); // for pressure
+  //neighbor shape functions
+  ShapeFunctionSet nbvsfs(ordr);; //for  velocity
+
+  //shape function size and total dof
+  int vdof=vsfs.size()*2; // two velocity components and total velocity sfs size
+  int pdof=psfs.size();
+  //get parameter
+  DGStokesParameters parameter;
+  //get the geometry type of the face
+  Dune::GeometryType gtface = *ispointer.intersectionSelfLocal().type();
+  //specify the quadrature order ?
+  int qord=18;
+
+  for (int qedg=0; qedg<Dune::QuadratureRules<ctype,dim-1>::rule(gtface,qord).size(); ++qedg)
+  {
+    //quadrature position on the edge/face in local=facelocal
+    const Dune::FieldVector<ctype,dim-1>& local = Dune::QuadratureRules<ctype,dim-1>::rule(gtface,qord)[qedg].position();
+    Dune:: FieldVector<ctype,dim> face_self_local = *ispointer.intersectionSelfLocal().global(local);
+    Dune:: FieldVector<ctype,dim> face_neighbor_local = *ispointer.intersectionNeighborLocal().global(local);
+    Dune::FieldVector<ctype,2> global = *ispointer.intersectionGlobal().global(local);
+    // calculating the inverse jacobian check if it is correct
+    InverseJacobianMatrix inv_jac= *epointer.geometry().jacobianInverseTransposed(face_self_local);
+    // get quadrature weight
+    double quad_wt_face = Dune::QuadratureRules<ctype,dim-1>::rule(gtface,qord)[qedg].weight();
+    ctype detjacface = *ispointer.intersectionGlobal().integrationElement(local);
+    // get the face normal-- unit normal.
+    Dune::FieldVector<ctype,dim> normal = *ispointer.unitOuterNormal(local);
+    double norm_e= *ispointer.intersectionGlobal().integrationElement(local);
+    // matrix contributions from the edege evaluation
+
+
+    //================================================//
+    //--------------------------------------------------------------
+    // term to be evaluated : TERM:2
+    //- \mu \int average(\nabla u). normal . jump(v)
+    //--------------------------------------------------------------
+    //================================================//
+
+    // //++++++++++++++++++++++
+    //   // diagonal block
+    //   // -mu* 0.5 * grad_phi_ei * normal* phi_ej
+
+
+    for(int dm=1; dm<=2; ++dm)
+    {
+      for (int i=0; i<vsfs.size(); ++i)
+      {
+        int ii=(dm-1)*vsfs.size()+i;
+        phi_ei[dm-1] = vsfs[i].evaluateFunction(0,face_self_local);
+        for (int j=0; j<vsfs.size(); ++j)
+        {
+          int jj=(dm-1)*vsfs.size()+j;
+          for (int sd=0; sd<2; sd++)
+            temp[sd] = vsfs[j].evaluateDerivative(0,sd,face_self_local);
+          grad_phi_ej[dm-1] = 0;
+          // transform gradient to global ooordinates by multiplying with inverse jacobian
+          inv_jac.umv(temp,grad_phi_ej[dm-1]);
+          entry =-0.5 * parameter.mu * ((grad_phi_ej[dm-1]*normal)*phi_ei[dm-1])*detjacface*quad_wt_face;
+          Aee.add(ii,jj,entry);
+        }
+      }
+    }
+    //================================================//
+
+
+    // //++++++++++++++++++++++
+    //   // offdiagonal entry
+    //   // mu* 0.5 * grad_phi_ei * normal* phi_fj
+
+
+
+    // offdiagonal entry
+    // mu* 0.5 * grad_phi_ei * normal* phi_fj
+
+    for(int dm=1; dm<=2; ++dm)
+    {
+      for (int i=0; i<nbvsfs.size(); ++i)
+      {
+        int ii=(dm-1)*nbvsfs.size()+i;
+        phi_fi[dm-1] = nbvsfs[i].evaluateFunction(0,face_neighbor_local);
+        for (int j=0; j<vsfs.size(); ++j)
+        {
+          int jj=(dm-1)*vsfs.size()+j;
+          for (int sd=0; sd<2; sd++)
+            temp[sd] = vsfs[j].evaluateDerivative(0,sd,face_self_local);
+          grad_phi_ej[dm-1] = 0;
+          inv_jac.umv(temp,grad_phi_ej[dm-1]);
+          entry =  0.5*parameter.mu*((grad_phi_ej[dm-1]*normal)*phi_fi[dm-1])*detjacface*quad_wt_face;
+          Afe.add(ii,jj,entry);
+        }
+      }
+    }
+    //================================================//
+
+
+    //---------------------------------------------------------------------
+    // term to be evaluated TERM:4
+    // \mu \parameter.epsilon .\int average(\nabla v). normal . jump(u)
+    //---------------------------------------------------------------------
+    //================================================//
+    // diagonal term
+    // mu* 0.5 * parameter.epsilon* phi_ei * grad_phi_ej* normal
+    //loop over trial and test fn
+    for(int dm=1; dm<=2; ++dm)
+    {
+      for (int i=0; i<vsfs.size(); ++i)
+      {
+        int ii=(dm-1)*vsfs.size()+i;
+        for (int sd=0; sd<2; sd++)
+          temp[sd] = vsfs[i].evaluateDerivative(0,sd,face_self_local);
+        grad_phi_ei[dm-1] = 0;
+        inv_jac.umv(temp,grad_phi_ei[dm-1]);
+        for (int j=0; j<vsfs.size(); ++j)
+        {
+          int jj=(dm-1)*vsfs.size()+j;
+          phi_ej[dm-1] = vsfs[j].evaluateFunction(0,face_self_local);
+          entry=  0.5*parameter.mu*parameter.epsilon*(phi_ej[dm-1]*(grad_phi_ei[dm-1]*normal))*detjacface*quad_wt_face;
+          Aee.add(ii,jj,entry);
+        }
+      }
+    }
+    //================================================//
+
+
+    // offdiagonal block
+    // -mu* 0.5 * parameter.epsilon * grad_phi_ej * normal* phi_fi
+    //loop over trial and test fn in neighbor
+
+    for(int dm=1; dm<=2; ++dm)
+    {
+      for (int i=0; i<vsfs.size(); ++i)
+      {
+        int ii=(dm-1)*vsfs.size()+i;
+        for (int sd=0; sd<2; sd++)
+          temp[sd] = vsfs[i].evaluateDerivative(0,sd,face_self_local);
+        grad_phi_ei[dm-1] = 0;
+        inv_jac.umv(temp,grad_phi_ei[dm-1]);
+        // note test fns are now from neighbor element
+        for (int j=0; j<nbvsfs.size(); ++j)
+        {
+          int jj=(dm-1)*nbvsfs.size()+j;
+          phi_fj[dm-1] = nbvsfs[j].evaluateFunction(0,face_neighbor_local);
+          entry =-0.5*parameter.mu*parameter.epsilon*( phi_fj[dm-1]*(grad_phi_ei[dm-1]*normal))*detjacface*quad_wt_face;
+          Aef.add(ii,jj,entry);
+        }
+      }
+    }
+
+    //================================================//
+
+
+
+    //-----------------------------------------------------------
+    // term to be evaluated TERM:6
+    //  term J0 =  \mu. (\parameter.sigma/norm(e)). jump(u). jump (v)
+    //------------------------------------------------------------
+
+
+
+    // Diagonalblock :
+    // \mu. (\parameter.sigma/abs(e)).\int phi_ie. phi_je  where abs(e) =  norm (e) ???
+    for(int dm=1; dm<=2; ++dm)
+    {
+      for (int i=0; i<vsfs.size(); ++i)
+      {
+        int ii=(dm-1)*vsfs.size()+i;
+        phi_ei[dm-1] = vsfs[i].evaluateFunction(0,face_self_local);
+        for (int j=0; j<vsfs.size(); ++j)
+        {
+          int jj=(dm-1)*vsfs.size()+j;
+          phi_ej[dm-1] = vsfs[j].evaluateFunction(0,face_self_local);
+          entry=parameter.mu*(parameter.sigma/norm_e)*phi_ei[dm-1]*phi_ej[dm-1]*detjacface*quad_wt_face;
+          Aee.add(ii,jj,entry);
+        }
+      }
+    }
+
+    //================================================//
 
 
 
 
+
+    // offdiagonal block
+    //- mu*(parameter.sigma/norm_e)*phi_ei*phi_fj*detjacface*quad_wt_face;
+    for(int dm=1; dm<=2; ++dm)
+    {
+      for (int i=0; i<vsfs.size(); ++i)
+      {
+        phi_ei[dm-1] = vsfs[i].evaluateFunction(0,face_self_local);
+        int ii=(dm-1)*vsfs.size()+i;
+        for (int j=0; j<nbvsfs.size(); ++j)                                               // neighbor basis
+        {
+          int jj=(dm-1)*nbvsfs.size()+j;
+          phi_fj[dm-1] = nbvsfs[j].evaluateFunction(0,face_neighbor_local);
+          entry=-parameter.mu*(parameter.sigma/norm_e)*phi_ei[dm-1]*phi_fj[dm-1]*detjacface*quad_wt_face;
+          Aef.add(ii,jj,entry);
+        }
+      }
+    }
+    //================================================//
+
+    //------------------------------------------------------------
+    // term to be evaluated TERM:9
+    //edge  term from B(v,p)
+    // term \int average(p). jump(v).normal
+    //--------------------------------------------------------------
+
+    //================================================//
+
+    //diagonal block
+    // term==  0.5 * psi_ei. phi_ej* normal
+    for(int dm=1; dm<=2; ++dm)
+    {
+      for (int i=0; i<vsfs.size(); ++i)
+      {
+        int ii=(dm-1)*vsfs.size()+i;
+        phi_ei[dm-1] = vsfs[i].evaluateFunction(0,face_self_local);
+        for (int j=0; j<psfs.size(); ++j)
+        {
+          int jj=vdof+j;
+          psi_ej = psfs[j].evaluateFunction(0,face_self_local);
+          entry =0.5*(phi_ei[dm-1]*psi_ej*normal[dm-1])*detjacface*quad_wt_face;
+          Aee.add(ii,jj,entry);
+        }
+      }
+    }
+
+    //================================================//
+
+
+
+    //offdiagonal block
+    // term==  -0.5 * psi_ei. phi_fj* normal
+
+    for(int dm=1; dm<=2; ++dm)
+    {
+      for (int i=0; i<nbvsfs.size(); ++i)
+      {
+        int ii=(dm-1)*nbvsfs.size()+i;
+        phi_fi[dm-1] = nbvsfs[i].evaluateFunction(0,face_neighbor_local);
+        for (int j=0; j<psfs.size(); ++j)                                               // neighbor
+        {
+          int jj=vdof+j;
+          psi_ej = psfs[j].evaluateFunction(0,face_self_local);
+          entry = -0.5*(phi_fi[dm-1]*psi_ej*normal[dm-1])*detjacface*quad_wt_face;
+          Afe.add(ii,jj,entry);
+        }
+      }
+    }
+
+
+    //================================================//
+
+
+    //------------------------------------------------------------
+    // term to be evaluated TERM:12
+    //edge  term from B(q,u)
+    // term \int average(q). jump(u).normal
+    // TERM:12
+    //--------------------------------------------------------------
+    //================================================//
+    //diagonal block
+    // term==  0.5 * psi_ej. phi_ei* normal
+    for(int dm=1; dm<=2; ++dm)
+    {
+      for (int i=0; i<psfs.size(); ++i)
+      {
+        int ii=vdof+i;
+        psi_ei = psfs[i].evaluateFunction(0,face_self_local);
+        for (int j=0; j<vsfs.size(); ++j)
+        {
+          int jj=(dm-1)*vsfs.size()+j;
+          phi_ej[dm-1] = vsfs[j].evaluateFunction(0,face_self_local);
+          entry =0.5*(phi_ej[dm-1]*psi_ei*normal[dm-1])*detjacface*quad_wt_face;
+          Aee.add(ii,jj,entry);
+        }
+      }
+    }
+
+    //================================================//
+
+
+    //offdiagonal block
+    // term==  -0.5 * psi_ej. phi_fi* normal
+
+    for(int dm=1; dm<=2; ++dm)
+    {
+      for (int i=0; i<psfs.size(); ++i)
+      {
+        int ii=vdof+i;
+        psi_ei = psfs[i].evaluateFunction(0,face_self_local);
+        for (int j=0; j<nbvsfs.size(); ++j)                                               // neighbor
+        {
+          phi_fj[dm-1] = nbvsfs[j].evaluateFunction(0,face_neighbor_local);
+          int jj=(dm-1)*nbvsfs.size()+j;
+          entry = -0.5*(phi_fj[dm-1]*psi_ei*normal[dm-1])*detjacface*quad_wt_face;
+          Aef.add(ii,jj,entry);
+        }
+      }
+    }
+
+    //================================================//
+
+  }                                // end of assemble face quadrature loop
+
+} // end of assemble face term
 
 
 template<class G,int ordr>
