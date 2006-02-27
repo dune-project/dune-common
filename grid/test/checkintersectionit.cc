@@ -120,10 +120,8 @@ void checkIntersectionIterator(const GridType& grid) {
         if (intElement <=0)
           DUNE_THROW(GridError, "nonpositive integration element found!");
 
-#if 0
         const FieldMatrix<ctype, Geometry::mydimension, Geometry::mydimension> jacobi
           = intersectionGlobal.jacobianInverseTransposed(localCenter);
-#endif
 
         // //////////////////////////////////////////////////////////
         //   Check the geometry returned by intersectionSelfLocal()
