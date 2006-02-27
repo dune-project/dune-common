@@ -45,25 +45,62 @@ UGGridIntersectionIterator <GridImp>::outerNormal (const FieldVector<UGCtype, Gr
 
   if (dim == 3) {
 
-    // Get the first three vertices of this side.  Since quadrilateral faces
-    // are plane in UG, the normal doesn't depend on the fourth vertex
-    // \todo PB: There is nothing that prevents us to use non-planar quad faces ...
-    const UGCtype* aPos = UG_NS<dim>::Corner(center_,UG_NS<dim>::Corner_Of_Side(center_, neighborCount_, 0))->myvertex->iv.x;
-    const UGCtype* bPos = UG_NS<dim>::Corner(center_,UG_NS<dim>::Corner_Of_Side(center_, neighborCount_, 1))->myvertex->iv.x;
-    const UGCtype* cPos = UG_NS<dim>::Corner(center_,UG_NS<dim>::Corner_Of_Side(center_, neighborCount_, 2))->myvertex->iv.x;
+    if (UG_NS<dim>::Corners_Of_Side(center_, neighborCount_) == 3) {
 
-    FieldVector<UGCtype, 3> ba, ca;
+      // A triangular intersection.  The normals are constant
+      const UGCtype* aPos = UG_NS<dim>::Corner(center_,UG_NS<dim>::Corner_Of_Side(center_, neighborCount_, 0))->myvertex->iv.x;
+      const UGCtype* bPos = UG_NS<dim>::Corner(center_,UG_NS<dim>::Corner_Of_Side(center_, neighborCount_, 1))->myvertex->iv.x;
+      const UGCtype* cPos = UG_NS<dim>::Corner(center_,UG_NS<dim>::Corner_Of_Side(center_, neighborCount_, 2))->myvertex->iv.x;
 
-    for (int i=0; i<3; i++) {
-      ba[i] = bPos[i] - aPos[i];
-      ca[i] = cPos[i] - aPos[i];
+      FieldVector<UGCtype, 3> ba, ca;
+
+      for (int i=0; i<3; i++) {
+        ba[i] = bPos[i] - aPos[i];
+        ca[i] = cPos[i] - aPos[i];
+      }
+
+      outerNormal_[0] = ba[1]*ca[2] - ba[2]*ca[1];
+      outerNormal_[1] = ba[2]*ca[0] - ba[0]*ca[2];
+      outerNormal_[2] = ba[0]*ca[1] - ba[1]*ca[0];
+
+    } else {
+
+      // A quadrilateral: compute the normal in each corner and do bilinear interpolation
+      FieldVector<UGCtype,3> cornerNormals[4];
+      for (int i=0; i<4; i++) {
+
+        // Compute the normal on the i-th corner
+        const UGCtype* aPos = UG_NS<dim>::Corner(center_,UG_NS<dim>::Corner_Of_Side(center_,neighborCount_,i))->myvertex->iv.x;
+        const UGCtype* bPos = UG_NS<dim>::Corner(center_,UG_NS<dim>::Corner_Of_Side(center_,neighborCount_,(i+1)%4))->myvertex->iv.x;
+        const UGCtype* cPos = UG_NS<dim>::Corner(center_,UG_NS<dim>::Corner_Of_Side(center_,neighborCount_,(i+3)%4))->myvertex->iv.x;
+
+        FieldVector<UGCtype, 3> ba, ca;
+
+        for (int j=0; j<3; j++) {
+          ba[j] = bPos[j] - aPos[j];
+          ca[j] = cPos[j] - aPos[j];
+        }
+
+        cornerNormals[i][0] = ba[1]*ca[2] - ba[2]*ca[1];
+        cornerNormals[i][1] = ba[2]*ca[0] - ba[0]*ca[2];
+        cornerNormals[i][2] = ba[0]*ca[1] - ba[1]*ca[0];
+      }
+
+      //std::cout << "CornerNormal 0:  " << cornerNormals[0] << std::endl;
+      //std::cout << "CornerNormal 1:  " << cornerNormals[1] << std::endl;
+      //std::cout << "CornerNormal 2:  " << cornerNormals[2] << std::endl;
+      //std::cout << "CornerNormal 3:  " << cornerNormals[3] << std::endl;
+
+      // Bilinear interpolation
+      for (int i=0; i<3; i++)
+        outerNormal_[i] = (1-local[0])*(1-local[1])*cornerNormals[0][i]
+                          + (1-local[0])*local[1]*cornerNormals[1][i]
+                          + local[0]*local[1]*cornerNormals[2][i]
+                          + local[0]*(1-local[1])*cornerNormals[3][i];
+
     }
 
-    outerNormal_[0] = ba[1]*ca[2] - ba[2]*ca[1];
-    outerNormal_[1] = ba[2]*ca[0] - ba[0]*ca[2];
-    outerNormal_[2] = ba[0]*ca[1] - ba[1]*ca[0];
-
-  } else {
+  } else {     // if (dim==3) ... else
 
     // //////////////////////////////////////////////////////
     //   Implementation for 2D
@@ -123,15 +160,7 @@ intersectionGlobal() const
     int cornerIdx = UG_NS<dim>::Corner_Of_Side(center_, neighborCount_, i);
     typename UGTypes<dim>::Node* node = UG_NS<dim>::Corner(center_, cornerIdx);
 
-#if 0
-    /** \todo Avoid the temporary */
-    FieldVector<UGCtype, dimworld> tmp;
-    for (int j=0; j<GridImp::dimensionworld; j++)
-      tmp[j] = node->myvertex->iv.x[j];
-    neighGlob_.setCoords(i, tmp);
-#else
     neighGlob_.setCoords(i, node->myvertex->iv.x);
-#endif
 
   }
 
