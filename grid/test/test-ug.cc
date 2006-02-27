@@ -55,7 +55,7 @@ void makeHalfCircleQuad(Dune::UGGrid<2,2>& grid, bool parametrization)
 {
   using namespace Dune;
 
-  grid.createbegin();
+  grid.createBegin();
 
   // /////////////////////////////
   //   Create boundary segments
@@ -109,7 +109,7 @@ void makeHalfCircleQuad(Dune::UGGrid<2,2>& grid, bool parametrization)
   // //////////////////////////////////////
   //   Finish initialization
   // //////////////////////////////////////
-  grid.createend();
+  grid.createEnd();
 
 }
 
