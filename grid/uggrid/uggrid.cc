@@ -780,7 +780,7 @@ void Dune::UGGrid < dim, dimworld >::communicate (T& t, InterfaceType iftype, Co
 
 
 template < int dim, int dimworld >
-void Dune::UGGrid < dim, dimworld >::createbegin()
+void Dune::UGGrid < dim, dimworld >::createBegin()
 {
   // //////////////////////////////////////////////////////////
   //   Clear all buffers used during coarse grid creation
@@ -794,7 +794,7 @@ void Dune::UGGrid < dim, dimworld >::createbegin()
 
 
 template < int dim, int dimworld >
-void Dune::UGGrid < dim, dimworld >::createend()
+void Dune::UGGrid < dim, dimworld >::createEnd()
 {
 
   // ///////////////////////////////////////////
@@ -1103,7 +1103,7 @@ insertLinearSegment(const std::vector<int>& vertices,
 }
 
 template <int dim, int dimworld>
-void Dune::UGGrid<dim, dimworld>::insertBoundarySegment(const std::vector<int> vertices,
+void Dune::UGGrid<dim, dimworld>::insertBoundarySegment(const std::vector<unsigned int> vertices,
                                                         const BoundarySegment<dimworld>* boundarySegment)
 {
   FixedArray<unsigned int, dim*2-2> segmentVertices = -1;

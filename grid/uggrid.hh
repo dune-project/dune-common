@@ -428,17 +428,17 @@ namespace Dune {
     /** \brief Start the coarse grid creation process
         \todo This method should delete the grid!
      */
-    void createbegin();
+    void createBegin();
 
     /** \brief End the coarse grid creation process */
-    void createend();
+    void createEnd();
 
     /** \brief Method to insert an arbitrarily shaped boundary segment into a coarse grid
         \param vertices The indices of the vertices of the segment
         \param boundarySegment Class implementing the geometry of the boundary segment.
         The grid object takes control of this object and deallocates it when destructing itself.
      */
-    void insertBoundarySegment(const std::vector<int> vertices,
+    void insertBoundarySegment(const std::vector<unsigned int> vertices,
                                const BoundarySegment<dimworld>* boundarySegment);
 
     /** \brief Insert a vertex into the coarse grid */
