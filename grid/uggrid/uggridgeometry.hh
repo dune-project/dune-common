@@ -334,7 +334,7 @@ namespace Dune {
     mutable FixedArray<FieldVector<UGCtype, 3>, 4> coord_;
 
     //! The jacobian inverse
-    mutable FieldMatrix<UGCtype,3,3> jac_inverse_;
+    mutable FieldMatrix<UGCtype,2,2> jacobianInverseTransposed_;
 
   };
 
@@ -415,6 +415,9 @@ namespace Dune {
 
     //! the vertex coordinates
     FixedArray<FieldVector<UGCtype, 2>, 2> coord_;
+
+    //! The jacobian inverse
+    mutable FieldMatrix<UGCtype,1,1> jacobianInverseTransposed_;
 
   };
 
