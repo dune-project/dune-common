@@ -2339,120 +2339,120 @@ namespace Dune {
        the protocol. Therefore P is called the "protocol class".
      */
 #if HAVE_MPI
-    template<class T, template<class> class P, int codim>
-    void communicate (T& t, InterfaceType iftype, CommunicationDirection dir, int level) const
-    {
-      IsTrue< ( codim == dim || codim == 0 ) >::yes();
-      // access to grid level
-      YGLI g = MultiYGrid<dim,ctype>::begin(level);
+    //   template<class T, template<class> class P, int codim>
+    //   void communicate (T& t, InterfaceType iftype, CommunicationDirection dir, int level) const
+    //   {
+    //         IsTrue< ( codim == dim || codim == 0 ) >::yes();
+    //         // access to grid level
+    //         YGLI g = MultiYGrid<dim,ctype>::begin(level);
 
-      // find send/recv lists or throw error
-      const std::deque<IS>* sendlist;
-      const std::deque<IS>* recvlist;
-      if (codim==0)   // the elements
-      {
-        if (iftype==InteriorBorder_InteriorBorder_Interface)
-          return;         // there is nothing to do in this case
-        if (iftype==InteriorBorder_All_Interface)
-        {
-          sendlist = &g.send_cell_interior_overlap();
-          recvlist = &g.recv_cell_overlap_interior();
-        }
-        if (iftype==Overlap_OverlapFront_Interface || iftype==Overlap_All_Interface || iftype==All_All_Interface)
-        {
-          sendlist = &g.send_cell_overlap_overlap();
-          recvlist = &g.recv_cell_overlap_overlap();
-        }
-      }
-      if (codim==dim)   // the vertices
-      {
-        if (iftype==InteriorBorder_InteriorBorder_Interface)
-        {
-          sendlist = &g.send_vertex_interiorborder_interiorborder();
-          recvlist = &g.recv_vertex_interiorborder_interiorborder();
-        }
+    //         // find send/recv lists or throw error
+    //         const std::deque<IS>* sendlist;
+    //         const std::deque<IS>* recvlist;
+    //         if (codim==0) // the elements
+    //           {
+    //                 if (iftype==InteriorBorder_InteriorBorder_Interface)
+    //                   return; // there is nothing to do in this case
+    //                 if (iftype==InteriorBorder_All_Interface)
+    //                   {
+    //                         sendlist = &g.send_cell_interior_overlap();
+    //                         recvlist = &g.recv_cell_overlap_interior();
+    //                   }
+    //                 if (iftype==Overlap_OverlapFront_Interface || iftype==Overlap_All_Interface || iftype==All_All_Interface)
+    //                   {
+    //                         sendlist = &g.send_cell_overlap_overlap();
+    //                         recvlist = &g.recv_cell_overlap_overlap();
+    //                   }
+    //           }
+    //         if (codim==dim) // the vertices
+    //           {
+    //                 if (iftype==InteriorBorder_InteriorBorder_Interface)
+    //                   {
+    //                         sendlist = &g.send_vertex_interiorborder_interiorborder();
+    //                         recvlist = &g.recv_vertex_interiorborder_interiorborder();
+    //                   }
 
-        if (iftype==InteriorBorder_All_Interface)
-        {
-          sendlist = &g.send_vertex_interiorborder_overlapfront();
-          recvlist = &g.recv_vertex_overlapfront_interiorborder();
-        }
-        if (iftype==Overlap_OverlapFront_Interface || iftype==Overlap_All_Interface)
-        {
-          sendlist = &g.send_vertex_overlap_overlapfront();
-          recvlist = &g.recv_vertex_overlapfront_overlap();
-        }
-        if (iftype==All_All_Interface)
-        {
-          sendlist = &g.send_vertex_overlapfront_overlapfront();
-          recvlist = &g.recv_vertex_overlapfront_overlapfront();
-        }
-      }
-      if (codim>0 && codim<dim)
-      {
-        DUNE_THROW(GridError, "interface communication not implemented");
-      }
+    //                 if (iftype==InteriorBorder_All_Interface)
+    //                   {
+    //                         sendlist = &g.send_vertex_interiorborder_overlapfront();
+    //                         recvlist = &g.recv_vertex_overlapfront_interiorborder();
+    //                   }
+    //                 if (iftype==Overlap_OverlapFront_Interface || iftype==Overlap_All_Interface)
+    //                   {
+    //                         sendlist = &g.send_vertex_overlap_overlapfront();
+    //                         recvlist = &g.recv_vertex_overlapfront_overlap();
+    //                   }
+    //                 if (iftype==All_All_Interface)
+    //                   {
+    //                         sendlist = &g.send_vertex_overlapfront_overlapfront();
+    //                         recvlist = &g.recv_vertex_overlapfront_overlapfront();
+    //                   }
+    //           }
+    //         if (codim>0 && codim<dim)
+    //           {
+    //                 DUNE_THROW(GridError, "interface communication not implemented");
+    //           }
 
-      // change communication direction?
-      if (dir==BackwardCommunication)
-        std::swap(sendlist,recvlist);
+    //         // change communication direction?
+    //         if (dir==BackwardCommunication)
+    //           std::swap(sendlist,recvlist);
 
-      // allocate & fill the send buffers & store send request
-      std::vector<P<T>*> sends;   // store pointers to send buffers
-      for (ISIT is=sendlist->begin(); is!=sendlist->end(); ++is)
-      {
-        // allocate send buffer
-        P<T> *buf = new P<T>[is->grid.totalsize()];
+    //         // allocate & fill the send buffers & store send request
+    //         std::vector<P<T>*> sends; // store pointers to send buffers
+    //         for (ISIT is=sendlist->begin(); is!=sendlist->end(); ++is)
+    //           {
+    //                 // allocate send buffer
+    //                 P<T> *buf = new P<T>[is->grid.totalsize()];
 
-        // remember send buffer
-        sends.push_back(buf);
+    //                 // remember send buffer
+    //                 sends.push_back(buf);
 
-        // fill send buffer; iterate over cells in intersection
-        typename SubYGrid<dim,ctype>::SubIterator subend = is->grid.subend();
-        for (typename SubYGrid<dim,ctype>::SubIterator i=is->grid.subbegin(); i!=subend; ++i)
-          buf[i.index()].gather(t,i.superindex());
+    //                 // fill send buffer; iterate over cells in intersection
+    //                 typename SubYGrid<dim,ctype>::SubIterator subend = is->grid.subend();
+    //                 for (typename SubYGrid<dim,ctype>::SubIterator i=is->grid.subbegin(); i!=subend; ++i)
+    //                   buf[i.index()].gather(t,i.superindex());
 
-        // hand over send request to torus class
-        MultiYGrid<dim,ctype>::torus().send(is->rank,buf,is->grid.totalsize()*sizeof(P<T>));
-      }
+    //                 // hand over send request to torus class
+    //                 MultiYGrid<dim,ctype>::torus().send(is->rank,buf,is->grid.totalsize()*sizeof(P<T>));
+    //           }
 
-      // allocate recv buffers and store receive request
-      std::vector<P<T>*> recvs;   // pointers to receive buffers
-      for (ISIT is=recvlist->begin(); is!=recvlist->end(); ++is)
-      {
-        // allocate recv buffer
-        P<T> *buf = new P<T>[is->grid.totalsize()];
+    //         // allocate recv buffers and store receive request
+    //         std::vector<P<T>*> recvs; // pointers to receive buffers
+    //         for (ISIT is=recvlist->begin(); is!=recvlist->end(); ++is)
+    //           {
+    //                 // allocate recv buffer
+    //                 P<T> *buf = new P<T>[is->grid.totalsize()];
 
-        // remember recv buffer
-        recvs.push_back(buf);
+    //                 // remember recv buffer
+    //                 recvs.push_back(buf);
 
-        // hand over recv request to torus class
-        MultiYGrid<dim,ctype>::torus().recv(is->rank,buf,is->grid.totalsize()*sizeof(P<T>));
-      }
+    //                 // hand over recv request to torus class
+    //                 MultiYGrid<dim,ctype>::torus().recv(is->rank,buf,is->grid.totalsize()*sizeof(P<T>));
+    //           }
 
-      // exchange all buffers now
-      MultiYGrid<dim,ctype>::torus().exchange();
+    //         // exchange all buffers now
+    //         MultiYGrid<dim,ctype>::torus().exchange();
 
-      // release send buffers
-      for (int i=0; i<sends.size(); i++)
-        delete[] sends[i];
+    //         // release send buffers
+    //         for (int i=0; i<sends.size(); i++)
+    //           delete[] sends[i];
 
-      // process receive buffers and delete them
-      int i=0;
-      for (ISIT is=recvlist->begin(); is!=recvlist->end(); ++is)
-      {
-        // get recv buffer
-        P<T> *buf = recvs[i++];
+    //         // process receive buffers and delete them
+    //         int i=0;
+    //         for (ISIT is=recvlist->begin(); is!=recvlist->end(); ++is)
+    //           {
+    //                 // get recv buffer
+    //                 P<T> *buf = recvs[i++];
 
-        // copy data from receive buffer; iterate over cells in intersection
-        typename SubYGrid<dim,ctype>::SubIterator subend = is->grid.subend();
-        for (typename SubYGrid<dim,ctype>::SubIterator i=is->grid.subbegin(); i!=subend; ++i)
-          buf[i.index()].scatter(t,i.superindex());
+    //                 // copy data from receive buffer; iterate over cells in intersection
+    //                 typename SubYGrid<dim,ctype>::SubIterator subend = is->grid.subend();
+    //                 for (typename SubYGrid<dim,ctype>::SubIterator i=is->grid.subbegin(); i!=subend; ++i)
+    //                   buf[i.index()].scatter(t,i.superindex());
 
-        // delete buffer
-        delete[] buf;
-      }
-    }
+    //                 // delete buffer
+    //                 delete[] buf;
+    //           }
+    //   }
 #endif
 
     /*! The new communication interface
@@ -2631,6 +2631,11 @@ namespace Dune {
       std::map<int,DataType*> sends;   // store pointers to send buffers
       for (ISIT is=sendlist->begin(); is!=sendlist->end(); ++is)
       {
+        //              std::cout << "[" << this->comm().rank() << "] "
+        //                                << " send " << " dest=" << is->rank
+        //                                << " size=" << send_size[is->rank]
+        //                                << std::endl;
+
         // allocate send buffer
         DataType *buf = new DataType[send_size[is->rank]];
 
@@ -2656,6 +2661,11 @@ namespace Dune {
       std::map<int,DataType*> recvs;   // store pointers to send buffers
       for (ISIT is=recvlist->begin(); is!=recvlist->end(); ++is)
       {
+        //              std::cout << "[" << this->comm().rank() << "] "
+        //                                << " recv " << "  src=" << is->rank
+        //                                << " size=" << recv_size[is->rank]
+        //                                << std::endl;
+
         // allocate recv buffer
         DataType *buf = new DataType[recv_size[is->rank]];
 
