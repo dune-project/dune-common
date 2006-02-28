@@ -372,6 +372,8 @@ namespace Dune {
     virtual void resize () = 0;
     // compress of index set
     virtual bool compress () = 0;
+    // returns true if set generally needs a compress
+    virtual bool needsCompress () const = 0;
     // return address of index set
     virtual void * address () const = 0;
 
@@ -410,6 +412,12 @@ namespace Dune {
     bool compress ()
     {
       return indexSet_.compress();
+    }
+
+    //! returns whether the set needs a compress after adaptation
+    bool needsCompress () const
+    {
+      return indexSet_.needsCompress ();
     }
 
     //! return address of index set
@@ -454,6 +462,8 @@ namespace Dune {
   public:
     virtual ~MemObjectInterface() {};
 
+    //! reallocate memory
+    virtual void realloc () = 0;
     //! reallocate memory
     virtual void realloc (int newSize) = 0;
     //! size of space, i.e. mapper.size()
@@ -539,6 +549,12 @@ namespace Dune {
     }
 
     //! reallocate the memory with the new size
+    void realloc ()
+    {
+      array_.realloc( newSize() );
+    }
+
+    //! reallocate the memory with the new size
     void realloc ( int nSize )
     {
       array_.realloc( nSize );
@@ -547,14 +563,18 @@ namespace Dune {
     //! copy the dof from the rear section of the vector to the holes
     void dofCompress ()
     {
-      // run over all indices of array and copy values
-      for(int i=0; i<mapper_.oldSize(); i++)
+      if( mapper_.needsCompress() )
       {
-        // this can be made more cache efficient
-        if(mapper_.indexNew(i))
+        //std::cout << "Called compress of memObj " << name () << "\n";
+        // run over all indices of array and copy values
+        for(int i=0; i<mapper_.oldSize(); i++)
         {
-          // copy value
-          array_[ mapper_.newIndex(i) ] = array_[ mapper_.oldIndex(i) ];
+          // this can be made more cache efficient
+          if(mapper_.indexIsNew(i))
+          {
+            // copy value
+            array_[ mapper_.newIndex(i) ] = array_[ mapper_.oldIndex(i) ];
+          }
         }
       }
 
@@ -627,9 +647,10 @@ namespace Dune {
     //! return true if array needs resize
     bool resizeNeeded () const
     {
-      assert( (size() != newSize()) ?
-              (std::cerr << "WARNING: DummyMemObject's vector is not up to date! \n" , 0) : 1);
-      return false;
+      //assert( (size() != newSize()) ?
+      //    (std::cerr << "WARNING: DummyMemObject's vector is not up to date! \n" , 0) : 1);
+      //return false;
+      return true;
     }
 
     //! return number of dofs on one element
@@ -642,6 +663,13 @@ namespace Dune {
     int additionalSizeEstimate () const
     {
       return mapper_.additionalSizeEstimate();
+    }
+
+    //! reallocate the memory with the new size
+    void realloc ()
+    {
+      assert( (size() != newSize()) ?
+              (std::cerr << "WARNING: DummyMemObject's may not resize vectors! \n" , 1) : 1);
     }
 
     //! reallocate the memory with the new size
@@ -862,7 +890,11 @@ namespace Dune {
     mutable MemObjectCheckType checkResize_;
     mutable MemObjectCheckType resizeMemObjs_;
 
+    // variable which stores chunk size for actual problem
     int chunkSize_;
+
+    //! if chunk size if small then defaultChunkSize is used
+    const int defaultChunkSize_;
 
   public:
     typedef IndexSetRestrictProlong< MyType , LocalIndexSetObjectsType > IndexSetRestrictProlongType;
@@ -871,8 +903,12 @@ namespace Dune {
     //**********************************************************
     //**********************************************************
     //! Constructor
-    DofManager (const GridType & grid) : grid_(grid) , chunkSize_ (100)
-                                         , indexRPop_( *this, insertIndices_ , removeIndices_ ) {}
+    DofManager (const GridType & grid)
+      : grid_(grid)
+        , chunkSize_ (100)
+        , defaultChunkSize_(100)
+        , indexRPop_( *this, insertIndices_ , removeIndices_ )
+    {}
 
     //! Desctructor, removes all MemObjects and IndexSetObjects
     ~DofManager ();
@@ -909,27 +945,7 @@ namespace Dune {
 
     //! remove MemObject, is called from DiscreteFucntionSpace at sign out of
     //! DiscreteFunction
-    bool removeDofSet (const MemObjectInterface & obj)
-    {
-      bool removed = false;
-
-      ListIteratorType endit = memList_.end();
-      for( ListIteratorType it = memList_.begin();
-           it != endit ; ++it)
-      {
-        if(*it == &obj)
-        {
-          // alloc new mem and copy old mem
-          MemObjectInterface * mobj = (*it);
-          memList_.erase( it );
-          dverb << "Removing '" << obj.name() << "' from DofManager!\n";
-          if(mobj) delete mobj;
-          removed = true;
-          break;
-        }
-      }
-      return removed;
-    }
+    bool removeDofSet (const MemObjectInterface & obj);
 
     //! returns the index set restrinction and prolongation operator
     IndexSetRestrictProlongType & indexSetRPop ()
@@ -966,7 +982,7 @@ namespace Dune {
     void reserveMemory (int nsize)
     {
       // remember the chunksize
-      chunkSize_ = std::max(nsize,100);
+      chunkSize_ = std::max(nsize, defaultChunkSize_ );
       assert( chunkSize_ > 0 );
       resizeMemObjs_.apply ( chunkSize_ );
     }
@@ -1031,8 +1047,11 @@ namespace Dune {
         ListIteratorType endit  = memList_.end();
         for(ListIteratorType it = memList_.begin(); it != endit ; ++it)
         {
-          // if correponding index was not compressed yet, yhis is called in
+          // if correponding index was not compressed yet, this is called in
           // the MemObject dofCompress, if index has not changes, nothing happens
+          // if IndexSet actual needs  no compress, nothing happens to the
+          // data either
+          // also data is resized, which means the vector is getting shorter
           (*it)->dofCompress () ;
         }
       }
@@ -1144,6 +1163,30 @@ namespace Dune {
         if(iobj) delete iobj;
       }
     }
+  }
+
+  template <class GridType>
+  inline bool DofManager<GridType>::
+  removeDofSet (const MemObjectInterface & obj)
+  {
+    bool removed = false;
+
+    ListIteratorType endit = memList_.end();
+    for( ListIteratorType it = memList_.begin();
+         it != endit ; ++it)
+    {
+      if(*it == &obj)
+      {
+        // alloc new mem and copy old mem
+        MemObjectInterface * mobj = (*it);
+        memList_.erase( it );
+        dverb << "Removing '" << obj.name() << "' from DofManager!\n";
+        if(mobj) delete mobj;
+        removed = true;
+        break;
+      }
+    }
+    return removed;
   }
 
 
@@ -1318,7 +1361,14 @@ namespace Dune {
     typedef typename ListType::Iterator ListIteratorType;
 
     //! list that store pairs of grid/dofmanager pointers
-    static ListType gridList_;
+    //! singleton grid list
+    inline static ListType & gridList()
+    {
+      //! list that store pairs of grid/dofmanager pointers
+      static ListType gridList_;
+      return gridList_;
+    }
+
   public:
     //! return reference to the DofManager for the given grid.
     //! If the object does not exist, then it is created first.
@@ -1333,7 +1383,7 @@ namespace Dune {
         dm = new DofManagerType ( grid );
         assert( dm );
         std::pair < const GridType * , DofManagerType * > tmp ( & grid , dm );
-        gridList_.insert_after( gridList_.rbegin() , tmp );
+        gridList().insert_after( gridList().rbegin() , tmp );
       }
 
       return *dm;
@@ -1342,12 +1392,12 @@ namespace Dune {
     //! delete the dof manager that belong to the given grid
     inline static void deleteDofManager (DofManagerType & dm )
     {
-      ListIteratorType endit = gridList_.end();
-      for(ListIteratorType it = gridList_.begin(); it!=endit; ++it)
+      ListIteratorType endit = gridList().end();
+      for(ListIteratorType it = gridList().begin(); it!=endit; ++it)
       {
         if( (*it).second == (& dm ))
         {
-          gridList_.erase( it );
+          gridList().erase( it );
           DofManagerType * tmp = & dm ;
           std::cout << "Deleting dm = " << tmp << "\n";
           if( tmp ) delete tmp;
@@ -1379,8 +1429,8 @@ namespace Dune {
     // return pointer to dof manager for given grid
     inline static DofManagerType * getDmFromList(const GridType &grid)
     {
-      ListIteratorType endit = gridList_.end();
-      for(ListIteratorType it = gridList_.begin(); it!=endit; ++it)
+      ListIteratorType endit = gridList().end();
+      for(ListIteratorType it = gridList().begin(); it!=endit; ++it)
       {
         if( (*it).first == & grid )
         {
@@ -1390,14 +1440,23 @@ namespace Dune {
       return 0;
     }
 
+    // constructor
     DofManagerFactory () {};
+
+  public:
+    // destructor
+    ~DofManagerFactory ()
+    {
+      while (gridList().rbegin() != gridList().rend())
+      {
+        ListIteratorType it = gridList().rbegin();
+        DofManagerType * tmp = (*it);
+        gridList().erase( it );
+        std::cout << "Deleting dm = " << tmp << "\n";
+        if( tmp ) delete tmp;
+      }
+    }
   };
 
-  //! singleton (not quite...)
-  template <class DofManagerImp>
-  DoubleLinkedList < std::pair < const typename DofManagerImp :: GridType * , DofManagerImp * > >
-  DofManagerFactory<DofManagerImp>::gridList_;
-
 } // end namespace Dune
-
 #endif
