@@ -3,6 +3,8 @@
 #ifndef DUNE_MATRIX_INDEX_SET_HH
 #define DUNE_MATRIX_INDEX_SET_HH
 
+#include <vector>
+
 namespace Dune {
 
 
@@ -140,7 +142,7 @@ namespace Dune {
 
     }
 
-    Dune::Array<std::vector<int> > indices;
+    std::vector<std::vector<int> > indices;
 
     int rows_, cols_;
 
