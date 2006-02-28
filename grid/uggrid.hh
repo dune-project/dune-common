@@ -491,6 +491,8 @@ namespace Dune {
     void collapse() {
       if (Collapse(multigrid_))
         DUNE_THROW(GridError, "UG" << dim << "d::Collapse() returned error code!");
+
+      setIndices();
     }
 
     /** \brief Sets a vertex to a new position
