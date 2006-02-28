@@ -83,7 +83,7 @@ namespace Dune {
     }
 
     //! for dof manager, to check whether it has to copy dof or not
-    bool indexNew (int num) const
+    bool indexIsNew (int num) const
     {
       return (num != oldIndex(num));
     }
@@ -146,6 +146,8 @@ namespace Dune {
     {
       return this->size();
     }
+
+    bool needsCompress () const { return indexSet_.needsCompress(); }
   };
 
 
@@ -187,9 +189,9 @@ namespace Dune {
     }
 
     //! for dof manager, to check whether it has to copy dof or not
-    bool indexNew (int num) const
+    bool indexIsNew (int num) const
     {
-      return indexSet_.indexNew(num, myCodim );
+      return indexSet_.indexIsNew(num, myCodim );
     }
 
     //! return old index, for dof manager only
@@ -225,15 +227,19 @@ namespace Dune {
       return numLocalDofs_;
     }
 
+    //! return number of dofs per entity, i.e. number of basis funcitons per entity
     int numDofs () const
     {
       return numLocalDofs_;
     }
 
+    //! return newSize of functions space
     int newSize() const
     {
       return this->size();
     }
+    //! return the sets needsCompress
+    bool needsCompress () const { return indexSet_.needsCompress(); }
   };
 
   template <class IndexSetImp, int dimrange>
@@ -268,11 +274,11 @@ namespace Dune {
     }
 
     //! for dof manager, to check whether it has to copy dof or not
-    bool indexNew (int num) const
+    bool indexIsNew (int num) const
     {
       // all numbers of one entity are maped to the one number of the set
       const int newn = static_cast<int> (num/dimrange);
-      return indexSet_.template indexNew(newn,0);
+      return indexSet_.template indexIsNew(newn,0);
     }
 
     //! return old index, for dof manager only
@@ -328,6 +334,8 @@ namespace Dune {
       assert( numberOfDofs_ == dimrange );
       return numberOfDofs_;
     }
+    //! return the sets needsCompress
+    bool needsCompress () const { return indexSet_.needsCompress(); }
   };
 
   template <class IndexSetImp>
@@ -359,9 +367,9 @@ namespace Dune {
     }
 
     //! for dof manager, to check whether it has to copy dof or not
-    bool indexNew (int num) const
+    bool indexIsNew (int num) const
     {
-      return indexSet_.template indexNew(num,0);
+      return indexSet_.template indexIsNew(num,0);
     }
 
     //! return old index, for dof manager only
@@ -402,10 +410,13 @@ namespace Dune {
       return 1;
     }
 
+    //! return number of dof per entity, here this method returns 1
     int numDofs () const
     {
       return 1;
     }
+    //! return the sets needsCompress
+    bool needsCompress () const { return indexSet_.needsCompress(); }
   };
 
 } // end namespace Dune
