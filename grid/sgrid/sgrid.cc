@@ -805,6 +805,26 @@ namespace Dune {
   }
 
   template<int dim, int dimworld>
+  inline SGrid<dim,dimworld>::SGrid (FieldVector<int,dim> N_, FieldVector<sgrid_ctype,dim> L_,
+                                     FieldVector<sgrid_ctype,dim> H_)
+    : theleafindexset(*this), theglobalidset(*this)
+  {
+    IsTrue< dimworld <= std::numeric_limits<int>::digits >::yes();
+
+    sgrid_ctype LL[dim], HH[dim];
+    int NN[dim];
+
+    for (int i=0; i<dim; ++i)
+    {
+      LL[i] = L_[i]; HH[i] = H_[i]; NN[i] = N_[i];
+    }
+
+    makeSGrid(NN, LL, HH);
+    indexsets.push_back( new SGridLevelIndexSet<const SGrid<dim,dimworld> >(*this,0) );
+  }
+
+
+  template<int dim, int dimworld>
   inline SGrid<dim,dimworld>::SGrid ()
     : theleafindexset(*this), theglobalidset(*this)
   {
