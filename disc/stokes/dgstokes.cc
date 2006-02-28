@@ -652,7 +652,6 @@ void DGStokes<G,ordr>::assembleStokesSystem()
   b = 0.0;
 
 
-
   // loop over all elements
   ElementIterator it = grid.template lbegin<0>(level);
   ElementIterator itend = grid.template lend<0>(level);
@@ -660,7 +659,7 @@ void DGStokes<G,ordr>::assembleStokesSystem()
   {
     EntityPointer epointer = it;
     int eid = grid.levelIndexSet(level).index(*epointer);
-    stokessystem.assembleVolumeTerm(*epointer,AA,bb);
+    stokessystem.assembleVolumeTerm(*epointer,A[eid][eid],b[eid]);
 
     IntersectionIterator endis = it->iend();
     IntersectionIterator is = it->ibegin();
@@ -668,19 +667,42 @@ void DGStokes<G,ordr>::assembleStokesSystem()
     if(is.neighbor())
     {
       int fid = grid.levelIndexSet(level).index(*is.outside());
-      stokessystem.assembleFaceTerm(*epointer,*ispointer,AA,AA,AA,bb);
+      stokessystem.assembleFaceTerm(*epointer,*ispointer,A[eid][eid],A[eid][fid],A[fid][eid],b[eid]);
     }
     else
-      stokessystem.assembleBoundaryTerm(*epointer,*ispointer,AA,bb);
-
-
-
-    //modify matrix for introducing pressrure boundary condition
-
+      stokessystem.assembleBoundaryTerm(*epointer,*ispointer,A[eid][eid],b[eid]);
   }
 
+  //changing istl matrix to spmatrix for superLU
+
+  for (typename Matrix::RowIterator i=A.begin(); i!=A.end(); ++i)
+  {
+    std::cout<<"row: "<<i.index()<<std::endl;
+    for (typename Matrix::ColIterator j=(*i).begin(); j!=(*i).end(); ++j)
+    {
+      std::cout<<"col: "<<j.index()<<std::endl;
+      for(int m=0; m<BlockSize; ++m)
+      {
+        for(int n=0; n<BlockSize; ++n)
+        {
+          std::cout<<"i: "<<i.index()*BlockSize+m<<" j: "<<j.index()*BlockSize+n<<"\n";
+          AA.add(i.index()*BlockSize+m,j.index()*BlockSize+n,A[i.index()][j.index()][m][n]);
+        }
+      }
+    }
+  }
+
+  //--- this part needs more thought and nice implementation!!
+  //modify matrix for introducing pressrure boundary condition
+  // 12th row corresponds to pressure constant basis
+  for(int j=0; j<N*ndof; ++j)
+    AA.remove(12,j);
+  AA.set(12,12,1);
+  //rhs corresponds to the term is set to zero
+  b[0][12]=0.0;
 
 } // end of assemble
+
 
 
 template<class G,int ordr>
