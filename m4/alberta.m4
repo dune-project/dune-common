@@ -88,9 +88,12 @@ fi
 if test x$HAVE_ALBERTA = x1 ; then
   # construct libname
   # the zero is the sign of the no-debug-lib
+  # define varaible lib name depending on problem and world dim, to change
+  # afterwards easily 
+  variablealbertalibname="ALBERTA$``(``DUNE_PROBLEM_DIM``)``$``(``DUNE_WORLD_DIM``)``_0"
   albertalibname="ALBERTA${with_problem_dim}${with_world_dim}_${with_alberta_debug}"
   AC_CHECK_LIB($albertalibname,[mesh_traverse],
-	[ALBERTA_LIBS="-l$albertalibname $ALBERTA_LIBS $ALBERTA_EXTRA"],
+	[ALBERTA_LIBS="-l$variablealbertalibname $ALBERTA_LIBS $ALBERTA_EXTRA"],
 	[HAVE_ALBERTA="0"
 	AC_MSG_WARN(lib$albertalibname.a not found!)])
 fi
