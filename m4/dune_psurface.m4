@@ -55,7 +55,7 @@ fi
 if test x$HAVE_PSURFACE = x1 ; then
    LIBS="$LIBS -lpsurface $AMIRAMESH_LDFLAGS $AMIRAMESH_LIBS"
 
-   AC_LINK_IFELSE(AC_LANG_PROGRAM([#include "psurface.h"], [AmiraLoadMesh("label", "filename");]),
+   AC_LINK_IFELSE(AC_LANG_PROGRAM([#include "psurface.h"], [psurface::LoadMesh("label", "filename");]),
 	[PSURFACE_LIBS="-lpsurface"
          PSURFACE_LDFLAGS="-L$PSURFACE_LIB_PATH"
          LIBS="$LIBS $PSURFACE_LIBS"],
