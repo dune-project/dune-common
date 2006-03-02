@@ -47,7 +47,7 @@ public:
     barCoords[0] += b[0];
     barCoords[1] += b[1];
 
-    AmiraCallPositionParametrizationForDomain(domain_, triangle_, barCoords, &result[0]);
+    psurface::CallPositionParametrizationForDomain(domain_, triangle_, barCoords, &result[0]);
 
     return result;
   }
@@ -67,22 +67,22 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createDomain(UGGrid<3,3>& grid,
 
   std::string domainname = filename;
   /* Load data */
-  if(AmiraLoadMesh(domainname.c_str(), filename.c_str()) != AMIRA_OK)
+  if (psurface::LoadMesh(domainname.c_str(), filename.c_str()) != psurface::OK)
     DUNE_THROW(IOError, "Error in AmiraMeshReader<Dune::UGGrid<3,3> >::createDomain:"
                << "Domain file could not be opened!");
 
-  if(AmiraStartEditingDomain(domainname.c_str()) != AMIRA_OK)
+  if (psurface::StartEditingDomain(domainname.c_str()) != psurface::OK)
     DUNE_THROW(IOError, "Error in AmiraMeshReader<Dune::UGGrid<3,3> >::createDomain:"
                << "StartEditing failed!");
 
   // All further queries to the psurface library refer to the most recently
   // loaded parametrization.
 
-  int noOfSegments = AmiraGetNoOfSegments();
+  int noOfSegments = psurface::GetNoOfSegments();
   if(noOfSegments <= 0)
     DUNE_THROW(IOError, "no segments found");
 
-  int noOfNodes = AmiraGetNoOfNodes();
+  int noOfNodes = psurface::GetNoOfNodes();
   if(noOfNodes <= 0)
     DUNE_THROW(IOError, "No nodes found");
 
@@ -91,7 +91,7 @@ void Dune::AmiraMeshReader<Dune::UGGrid<3,3> >::createDomain(UGGrid<3,3>& grid,
   for(int i = 0; i < noOfSegments; i++) {
 
     // Gets the vertices of a boundary segment
-    AmiraGetNodeNumbersOfSegment(point, i);
+    psurface::GetNodeNumbersOfSegment(point, i);
 
     std::vector<unsigned int> vertices(3);
     vertices[0] = point[0];
