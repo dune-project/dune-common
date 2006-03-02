@@ -39,25 +39,24 @@ void markOne ( GridType & grid , int num , int ref )
   grid.postAdapt();
 }
 
-
-
 int main () {
   try {
+    const int dim      = DUNE_PROBLEM_DIM;
+    const int dimworld = DUNE_WORLD_DIM;
     /* use grid-file appropriate for dimensions */
     std::ostringstream filename;
-    filename << "alberta-testgrid-" << DUNE_PROBLEM_DIM
-             << "-" << DUNE_WORLD_DIM << ".al";
+    filename << "alberta-testgrid-" << dim
+             << "-" << dimworld << ".al";
 
-    std::cout << std::endl << "AlbertaGrid<" << DUNE_PROBLEM_DIM
-              << "," << DUNE_WORLD_DIM
+    std::cout << std::endl << "AlbertaGrid<" << dim
+              << "," << dimworld
               << "> with grid file: " << filename.str()
               << std::endl << std::endl;
 
     // extra-environment to check destruction
     {
       factorEpsilon = 5e2;
-      Dune::AlbertaGrid<DUNE_PROBLEM_DIM,DUNE_WORLD_DIM>
-      grid(filename.str());
+      Dune::AlbertaGrid<dim,dimworld> grid(filename.str());
 
       gridcheck(grid); // check macro grid
       for(int i=0; i<2; i++)
@@ -65,9 +64,10 @@ int main () {
         grid.globalRefine(1);
         gridcheck(grid);
       }
+
       for(int i=0; i<2; i++)
       {
-        markOne(grid,0,DUNE_PROBLEM_DIM);
+        markOne(grid,0,dim);
         gridcheck(grid);
       }
 
