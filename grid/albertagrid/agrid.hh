@@ -9,18 +9,18 @@
 #include <assert.h>
 #include <algorithm>
 
-#ifndef DUNE_PROBLEM_DIM
-#error "DUNE_PROBLEM_DIM needed to compile AlbertaGrid! \n"
-#endif
-
-#ifndef DUNE_WORLD_DIM
-#error "DUNE_WORLD_DIM needed to compile AlbertaGrid! \n"
-#endif
-
 #if defined GRIDDIM && defined GRIDDIMWORLD
   #define DIM GRIDDIM
   #define DIM_OF_WORLD GRIDDIMWORLD
 #else
+  #ifndef DUNE_PROBLEM_DIM
+    #error "DUNE_PROBLEM_DIM needed to compile AlbertaGrid! \n"
+  #endif
+
+  #ifndef DUNE_WORLD_DIM
+    #error "DUNE_WORLD_DIM needed to compile AlbertaGrid! \n"
+  #endif
+
   #define DIM DUNE_PROBLEM_DIM
   #define DIM_OF_WORLD DUNE_WORLD_DIM
 #endif
