@@ -10,23 +10,24 @@
 
 
 template<class G,int ordr>
-void DGStokes<G,ordr>::assembleVolumeTerm(Entity& epointer, LocalMatrixBlock& Aee,LocalVectorBlock& Be) const
+void DGForm<G,ordr>::assembleVolumeTerm(Entity& ent, LocalMatrixBlock& Aee,LocalVectorBlock& Be) const
 {
   Gradient grad_phi_ei[dim],grad_phi_ej[dim],temp;
-  ctype phi_ei, phi_ej,psi_ei,psi_ej;
+  ctype psi_ei,psi_ej;
   ctype entry;
 
   //get the shape function set
   ShapeFunctionSet vsfs(ordr);; //for  velocity
   ShapeFunctionSet psfs(ordr-1); // for pressure
+
   //shape function size and total dof
   int vdof=vsfs.size()*2; // two velocity components and total velocity sfs size
-  int pdof=psfs.size();
+  //int pdof=psfs.size(); // pressure dof
   //get parameter
   DGStokesParameters parameter;
 
   //get the geometry type
-  Dune::GeometryType gt = *epointer.geometry().type();
+  Dune::GeometryType gt = ent.geometry().type();
   //specify the quadrature order ?
   int qord=18;
   for (int nqp=0; nqp<Dune::QuadratureRules<ctype,dim>::rule(gt,qord).size(); ++nqp)
@@ -34,13 +35,13 @@ void DGStokes<G,ordr>::assembleVolumeTerm(Entity& epointer, LocalMatrixBlock& Ae
     //local position of quad points
     const Dune::FieldVector<ctype,dim> & quad_point_loc = Dune::QuadratureRules<ctype,2>::rule(gt,qord)[nqp].position();
     //global position
-    Dune::FieldVector<ctype,dim> quad_point_glob = *epointer.geometry().global(quad_point_loc);
+    Dune::FieldVector<ctype,dim> quad_point_glob = ent.geometry().global(quad_point_loc);
     // calculate inv jacobian
-    InverseJacobianMatrix inv_jac=*epointer.geometry().jacobianInverseTransposed(quad_point_loc);
+    InverseJacobianMatrix inv_jac=ent.geometry().jacobianInverseTransposed(quad_point_loc);
     // quadrature weight
     double quad_wt=Dune::QuadratureRules<ctype,dim>::rule(gt,qord)[nqp].weight();
     // get the determinant jacobian
-    ctype detjac=*epointer.geometry().integrationElement(quad_point_loc);
+    ctype detjac=ent.geometry().integrationElement(quad_point_loc);
 
 
     //================================================//
@@ -80,7 +81,6 @@ void DGStokes<G,ordr>::assembleVolumeTerm(Entity& epointer, LocalMatrixBlock& Ae
           inv_jac.umv(temp,grad_phi_ej[dm-1]);
           int jj=(dm-1)*vsfs.size()+j;
           entry =parameter.mu*(grad_phi_ei[dm-1]*grad_phi_ej[dm-1])*detjac*quad_wt;
-          //Aee.add(ii,jj,entry);
           Aee[ii][jj]+=entry;
 
         }
@@ -139,10 +139,10 @@ void DGStokes<G,ordr>::assembleVolumeTerm(Entity& epointer, LocalMatrixBlock& Ae
 
 
 template<class G,int ordr>
-void DGStokes<G,ordr>::assembleFaceTerm(Entity& epointer, IntersectionIterator& ispointer, LocalMatrixBlock& Aee, LocalMatrixBlock& Aef,LocalMatrixBlock& Afe, LocalVectorBlock& Be) const
+void DGForm<G,ordr>::assembleFaceTerm(Entity& ent, IntersectionIterator& isit, LocalMatrixBlock& Aee, LocalMatrixBlock& Aef,LocalMatrixBlock& Afe, LocalVectorBlock& Be) const
 {
-  Gradient grad_phi_ei[dim],grad_phi_ej[dim],grad_phi_fi[dim],grad_phi_fj[dim],temp;
-  ctype phi_ei[dim],phi_ej[dim],phi_fi[dim],phi_fj[dim],psi_ei,psi_ej,psi_fi,psi_fj;
+  Gradient grad_phi_ei[dim],grad_phi_ej[dim],temp;
+  ctype phi_ei[dim],phi_ej[dim],phi_fi[dim],phi_fj[dim],psi_ei,psi_ej;
   ctype entry;
   //get the shape function set
   //self shape functions
@@ -157,7 +157,7 @@ void DGStokes<G,ordr>::assembleFaceTerm(Entity& epointer, IntersectionIterator& 
   //get parameter
   DGStokesParameters parameter;
   //get the geometry type of the face
-  Dune::GeometryType gtface = *ispointer.intersectionSelfLocal().type();
+  Dune::GeometryType gtface = isit.intersectionSelfLocal().type();
   //specify the quadrature order ?
   int qord=18;
 
@@ -165,17 +165,17 @@ void DGStokes<G,ordr>::assembleFaceTerm(Entity& epointer, IntersectionIterator& 
   {
     //quadrature position on the edge/face in local=facelocal
     const Dune::FieldVector<ctype,dim-1>& local = Dune::QuadratureRules<ctype,dim-1>::rule(gtface,qord)[qedg].position();
-    Dune:: FieldVector<ctype,dim> face_self_local = *ispointer.intersectionSelfLocal().global(local);
-    Dune:: FieldVector<ctype,dim> face_neighbor_local = *ispointer.intersectionNeighborLocal().global(local);
-    Dune::FieldVector<ctype,2> global = *ispointer.intersectionGlobal().global(local);
+    Dune:: FieldVector<ctype,dim> face_self_local = isit.intersectionSelfLocal().global(local);
+    Dune:: FieldVector<ctype,dim> face_neighbor_local = isit.intersectionNeighborLocal().global(local);
+    Dune::FieldVector<ctype,2> global = isit.intersectionGlobal().global(local);
     // calculating the inverse jacobian check if it is correct
-    InverseJacobianMatrix inv_jac= *epointer.geometry().jacobianInverseTransposed(face_self_local);
+    InverseJacobianMatrix inv_jac= ent.geometry().jacobianInverseTransposed(face_self_local);
     // get quadrature weight
     double quad_wt_face = Dune::QuadratureRules<ctype,dim-1>::rule(gtface,qord)[qedg].weight();
-    ctype detjacface = *ispointer.intersectionGlobal().integrationElement(local);
+    ctype detjacface = isit.intersectionGlobal().integrationElement(local);
     // get the face normal-- unit normal.
-    Dune::FieldVector<ctype,dim> normal = *ispointer.unitOuterNormal(local);
-    double norm_e= *ispointer.intersectionGlobal().integrationElement(local);
+    Dune::FieldVector<ctype,dim> normal = isit.unitOuterNormal(local);
+    double norm_e= isit.intersectionGlobal().integrationElement(local);
 
     //================================================//
     // term to be evaluated : TERM:2
@@ -409,7 +409,7 @@ void DGStokes<G,ordr>::assembleFaceTerm(Entity& epointer, IntersectionIterator& 
 
 
 template<class G,int ordr>
-void DGStokes<G,ordr>::assembleBoundaryTerm(Entity& epointer, IntersectionIterator& ispointer, LocalMatrixBlock& Aee, LocalVectorBlock& Be) const
+void DGForm<G,ordr>::assembleBoundaryTerm(Entity& ent, IntersectionIterator& isit, LocalMatrixBlock& Aee, LocalVectorBlock& Be) const
 {
   Gradient grad_phi_ei[dim],grad_phi_ej[dim],temp;
   ctype phi_ei[dim],phi_ej[dim],psi_ei,psi_ej;
@@ -427,22 +427,22 @@ void DGStokes<G,ordr>::assembleBoundaryTerm(Entity& epointer, IntersectionIterat
   //get parameter
   DGStokesParameters parameter;
   //get the geometry type of the face
-  Dune::GeometryType gtboundary = *ispointer.intersectionSelfLocal().type();
+  Dune::GeometryType gtboundary = isit.intersectionSelfLocal().type();
   //specify the quadrature order ?
   int qord=18;
   for(int bq=0; bq<Dune::QuadratureRules<ctype,dim-1>::rule(gtboundary,qord).size(); ++bq)
   {
     const Dune::FieldVector<ctype,dim-1>& boundlocal = Dune::QuadratureRules<ctype,dim-1>::rule(gtboundary,qord)[bq].position();
-    Dune:: FieldVector<ctype,dim-1> blocal = *ispointer.intersectionSelfLocal().global(boundlocal);
-    Dune::FieldVector<ctype,dim-1> bglobal = *ispointer.intersectionGlobal().global(boundlocal);
-    double norm_eb=*ispointer.intersectionGlobal().integrationElement(boundlocal);
+    Dune:: FieldVector<ctype,dim> blocal = isit.intersectionSelfLocal().global(boundlocal);
+    Dune::FieldVector<ctype,dim> bglobal = isit.intersectionGlobal().global(boundlocal);
+    double norm_eb=isit.intersectionGlobal().integrationElement(boundlocal);
     // calculating the inverse jacobian
-    InverseJacobianMatrix inv_jac= *epointer.geometry().jacobianInverseTransposed(blocal);
+    InverseJacobianMatrix inv_jac= ent.geometry().jacobianInverseTransposed(blocal);
     // get quadrature weight
     double quad_wt_bound = Dune::QuadratureRules<ctype,dim-1>::rule(gtboundary,qord)[bq].weight();
-    ctype detjacbound = *ispointer.intersectionGlobal().integrationElement(boundlocal);
+    ctype detjacbound = isit.intersectionGlobal().integrationElement(boundlocal);
     // get the boundary normal
-    Dune::FieldVector<ctype,dim> boundnormal = *ispointer.unitOuterNormal(boundlocal);
+    Dune::FieldVector<ctype,dim> boundnormal = isit.unitOuterNormal(boundlocal);
 
     // finding velocity boundary condition
     //horizontal component
@@ -614,13 +614,18 @@ void DGStokes<G,ordr>::assembleStokesSystem()
   int pdof=psfs.size();
   int ndof=vdof+pdof; // total dofs per element
   int N = ndof*grid.size(level, 0);
+  std::cout<<"N: "<<N;
   int nz=N;
   DGStokesParameters parameter;
   //sparserowmatrix
-  Dune::SparseRowMatrix<double> AA(N,N,nz);
-  Dune::SimpleVector<double> bb(N);
+  Dune::SparseRowMatrix<double> SP(N,N,nz);
+  AA=SP;
+  Dune::SimpleVector<double> SV(N);
+  bb=SV;
   bb=0.0;
+
   //istl matrix
+  N = grid.size(level, 0);
   Matrix tmp(N,N,Matrix::row_wise);
   typename Matrix::CreateIterator mit=tmp.createbegin();
   // build up the matrix structure
@@ -659,38 +664,58 @@ void DGStokes<G,ordr>::assembleStokesSystem()
   {
     EntityPointer epointer = it;
     int eid = grid.levelIndexSet(level).index(*epointer);
-    stokessystem.assembleVolumeTerm(*epointer,A[eid][eid],b[eid]);
+    stokessystem.assembleVolumeTerm(*it,A[eid][eid],b[eid]);
+
+    //printmatrix(std::cout,A[1][1],"Matrix","row");
 
     IntersectionIterator endis = it->iend();
     IntersectionIterator is = it->ibegin();
-    EntityPointer ispointer = is;
+
     if(is.neighbor())
     {
+      //InterSectionPointer ispointer = is;
       int fid = grid.levelIndexSet(level).index(*is.outside());
-      stokessystem.assembleFaceTerm(*epointer,*ispointer,A[eid][eid],A[eid][fid],A[fid][eid],b[eid]);
+      stokessystem.assembleFaceTerm(*it,is,A[eid][eid],A[eid][fid],A[fid][eid],b[eid]);
     }
     else
-      stokessystem.assembleBoundaryTerm(*epointer,*ispointer,A[eid][eid],b[eid]);
+    {
+      stokessystem.assembleBoundaryTerm(*it,is,A[eid][eid],b[eid]);
+    }
   }
 
   //changing istl matrix to spmatrix for superLU
 
+  //printmatrix(std::cout,A,"Matrix","row");
+  std::cout<<A.N()<<std::endl;
+
   for (typename Matrix::RowIterator i=A.begin(); i!=A.end(); ++i)
   {
-    std::cout<<"row: "<<i.index()<<std::endl;
+    //std::cout<<"row: "<<i.index()<<std::endl;
     for (typename Matrix::ColIterator j=(*i).begin(); j!=(*i).end(); ++j)
     {
-      std::cout<<"col: "<<j.index()<<std::endl;
+      //std::cout<<"col: "<<j.index()<<std::endl;
       for(int m=0; m<BlockSize; ++m)
       {
         for(int n=0; n<BlockSize; ++n)
         {
-          std::cout<<"i: "<<i.index()*BlockSize+m<<" j: "<<j.index()*BlockSize+n<<"\n";
-          AA.add(i.index()*BlockSize+m,j.index()*BlockSize+n,A[i.index()][j.index()][m][n]);
+          //std::cout<<"row: "<<i.index()*BlockSize+m<<"col: "<<j.index()*BlockSize+n<<std::endl;
+          AA.set(i.index()*BlockSize+m,j.index()*BlockSize+n,A[i.index()][j.index()][m][n]);
         }
       }
     }
   }
+  //AA.print(std::cout,3);
+
+  printvector(std::cout,b,"Vector","row");
+
+  for(typename Vector::iterator i=b.begin(); i!=b.end(); ++i)
+  {
+    for(int m=0; m<BlockSize; ++m)
+      bb[i.index()*BlockSize+m]=b[i.index()][m];
+  }
+  bb.print(1,"BB","row");
+
+  std::cout<<"ur here "<<std::endl;
 
   //--- this part needs more thought and nice implementation!!
   //modify matrix for introducing pressrure boundary condition
@@ -701,6 +726,7 @@ void DGStokes<G,ordr>::assembleStokesSystem()
   //rhs corresponds to the term is set to zero
   b[0][12]=0.0;
 
+
 } // end of assemble
 
 
@@ -709,4 +735,67 @@ template<class G,int ordr>
 void DGStokes<G,ordr>::solveStokesSystem()
 {
   std::cout << "Solving Stokes System using superLU solver\n";
+
+  //------------------superLU-----------------------------------
+  //std::cout<<"----Creating Super Matix----"<<std::endl;
+  SuperMatrix _A;
+  AA.createSuperMatrix(_A);
+  //dPrint_CompCol_Matrix ( "Matrix _A", &_A );
+  //dPrint_Dense_Matrix ( "Dense A", &_A );
+
+  SuperMatrix BB;
+  dCreate_Dense_Matrix(&BB, bb.size(), 1, bb.raw(), bb.size(),
+                       SLU_DN, SLU_D, SLU_GE);
+  //dPrint_Dense_Matrix ( "MatrixB", &BB );
+  int n = bb.size();
+  // setup the solver
+  SuperMatrix L, U;
+  int *perm_r = new int[n];    /* row permutations from partial pivoting */
+  int *perm_c = new int[n];    /* column permutation vector */
+  superlu_options_t options;
+
+  SuperLUStat_t stat;
+  int info;
+
+  /* Set the default input options. */
+  set_default_options(&options);
+
+  //dPrint_CompCol_Matrix ( "Matrix _A", &_A );
+  //      Initialize the statistics variables.
+  StatInit(&stat);
+  dgssv(&options, &_A, perm_c, perm_r, &L, &U, &BB, &stat, &info);
+
+  if ( options.PrintStat )
+  {
+    StatPrint ( &stat );
+  }
+
+  // #ifdef VERBOSE
+  //dPrint_CompCol_Matrix ( "Matrix _A", &_A );
+
+  //     dPrint_SuperNode_Matrix ( "Factor L", &L );
+
+  //     dPrint_CompCol_Matrix ( "Factor U", &U );
+
+  //dPrint_Dense_Matrix ( "Solution X", &BB );
+
+  //bb.print(1,"BB","row");
+
+  //#endif
+
+
+  //  dPrint_Dense_Matrix ( "Solution X", &BB );
+  //  b.print(1,"Solution:","row");
+
+  // // clean up superLU
+  SUPERLU_FREE (perm_r);
+  SUPERLU_FREE (perm_c);
+  AA.destroySuperMatrix(_A);
+  Destroy_SuperMatrix_Store(&BB);
+  Destroy_SuperNode_Matrix(&L);
+  Destroy_CompCol_Matrix(&U);
+  StatFree(&stat);
+
+  //     //-----------------------------------------------------
+
 }

@@ -11,7 +11,7 @@
 #include "istl/operators.hh"
 #include "istl/bvector.hh"
 #include "istl/bcrsmatrix.hh"
-
+#include <dune/istl/io.hh>
 #define HAVE_SUPERLU
 #include <dune/fem/feop/spmatrix.hh>
 
@@ -24,65 +24,105 @@ namespace Dune
 
 
   template<class G,int ordr>
-  class DGStokes
+  class DGForm
   {
     //dimension of grid
     enum {dim=G::dimension};
     enum { dimw=G::dimensionworld };
   public:
+    //Grid
     typedef G Grid;
-    //domain field type
+    //coordinate type
     typedef typename Grid::ctype ctype;
-
     typedef Dune::FieldVector< double , dim> Gradient;
     typedef Dune::FieldMatrix< double , dim, dim> InverseJacobianMatrix;
-
-
     //shapefn order
     // "order" is order of velocity shapefn
     // order of pressure shapefn  is (order-1) i.e, always one order less than that of velocity
     enum {order = ordr};
+    //local vector and matrix blocks
+    // local block size is sum of velocity dof and pressure dof
+    //block size = 2*vdof.size() + pdof.size()
+    static const int BlockSize =2*Dune::MonomialShapeFunctionSetSize<dim,ordr>::maxSize+Dune::MonomialShapeFunctionSetSize<dim,ordr-1>::maxSize;
+    typedef Dune::FieldVector<double,BlockSize> LocalVectorBlock;
+    typedef Dune::FieldMatrix<double,BlockSize,BlockSize> LocalMatrixBlock;
     //shapefn
     typedef Dune::MonomialShapeFunctionSet<ctype,double,dim> ShapeFunctionSet;
     inline const ShapeFunctionSet & getShapeFunctionSet(Dune::GeometryType gt) const;
+
+    typedef typename Grid::template Codim<0>::LevelIterator ElementIterator;
+    typedef typename Grid::template Codim<0>::EntityPointer EntityPointer;
+    typedef typename Grid::template Codim<0>::Entity Entity;
+    typedef typename Grid::template Codim<dim>::LevelIterator VertexIterator;
+    typedef typename Grid::template Codim<0>::IntersectionIterator IntersectionIterator;
+    typedef typename Grid::template Codim<1>::EntityPointer InterSectionPointer;
+
+    DGForm () {};
+    //local assembly
+    void assembleVolumeTerm(Entity& ep, LocalMatrixBlock& Aee,LocalVectorBlock& Be) const;
+    void assembleFaceTerm(Entity& ep,IntersectionIterator& isp, LocalMatrixBlock& Aee,LocalMatrixBlock& Aef,LocalMatrixBlock& Afe, LocalVectorBlock& Be) const;
+    void assembleBoundaryTerm(Entity& ep, IntersectionIterator& isp, LocalMatrixBlock& Aee,LocalVectorBlock& Be) const ;
+
+
   private:
+
+    Dune::MonomialShapeFunctionSetContainer<ctype,double,order> space;
+    DGStokesParameters param;
+  };
+
+
+
+  template<class G,int ordr=2>
+  class DGStokes
+  {
+
+  public:
+    //dimension of grid
+    enum {dimension=G::dimension};
+    enum { dimensionworld=G::dimensionworld };
+    typedef G Grid;
+  private:
+    enum {dim=G::dimension};
+    enum { dimw=G::dimensionworld };
+    typedef typename Grid::ctype ctype;
     // Iterators
     typedef typename Grid::template Codim<0>::LevelIterator ElementIterator;
     typedef typename Grid::template Codim<0>::EntityPointer EntityPointer;
     typedef typename Grid::template Codim<0>::Entity Entity;
     typedef typename Grid::template Codim<dim>::LevelIterator VertexIterator;
     typedef typename Grid::template Codim<0>::IntersectionIterator IntersectionIterator;
-    //local vector and matrix blocks
-    // use of spmatrix inorder as the solver is superLU
-    // local block size is sum of velocity dof and pressure dof
-    //block size = 2*vdof.size() + pdof.size()
-    static const int BlockSize =3*Dune::MonomialShapeFunctionSetSize<dim,ordr>::maxSize;
-    typedef Dune::FieldVector<double,BlockSize> LocalVectorBlock;
-    typedef Dune::FieldMatrix<double,BlockSize,BlockSize> LocalMatrixBlock;
-    // typedef Dune::SparseRowMatrix<double> LocalMatrixBlock;
-    //  typedef Dune::SimpleVector<double> LocalVectorBlock;
+    typedef typename Grid::template Codim<1>::EntityPointer InterSectionPointer;
+    static const int BlockSize =2*Dune::MonomialShapeFunctionSetSize<dim,ordr>::maxSize+Dune::MonomialShapeFunctionSetSize<dim,ordr-1>::maxSize;
+    typedef typename DGForm<G,ordr>::Gradient Gradient;
+    typedef typename DGForm<G,ordr>::LocalVectorBlock LocalVectorBlock;
+    typedef typename DGForm<G,ordr>::LocalMatrixBlock LocalMatrixBlock;
     typedef Dune::BlockVector<LocalVectorBlock> Vector;
     typedef Dune::BCRSMatrix<LocalMatrixBlock> Matrix;
 
   public:
+
     DGStokes(Grid &g) : grid(g) {};
-    // assembling local matrix entries
-    void assembleVolumeTerm(Entity& ep, LocalMatrixBlock& Aee,LocalVectorBlock& Be) const;
-    void assembleFaceTerm(Entity& ep,IntersectionIterator& isp, LocalMatrixBlock& Aee,LocalMatrixBlock& Aef,LocalMatrixBlock& Afe, LocalVectorBlock& Be) const;
-    void assembleBoundaryTerm(Entity& ep, IntersectionIterator& isp, LocalMatrixBlock& Aee,LocalVectorBlock& Be) const ;
     // global assembly and solving
     void assembleStokesSystem() ;
     void solveStokesSystem();
+
+
+  private:
+    typedef typename DGForm<G,ordr>::ShapeFunctionSet ShapeFunctionSet;
+    inline const ShapeFunctionSet &getShapeFunctionSet(const EntityPointer &ep) const;
   public:
     Grid & grid;
     int level;
   private:
-    DGStokes<G,ordr> stokessystem;
-    // Dune::SparseRowMatrix<double> AA;
-    //  Dune::SimpleVector<double> bb;
+    DGForm<G,ordr> stokessystem;
+    Dune::SparseRowMatrix<double> AA;
+    Dune::SimpleVector<double> bb;
     Matrix A;
     Vector b;
   };
+
+
+
 
 #include "dgstokes.cc"
 
