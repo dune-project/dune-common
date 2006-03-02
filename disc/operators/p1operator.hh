@@ -390,7 +390,7 @@ namespace Dune
 
       for (int c=0; c<n-1; c++)
       {
-        s += 2*is.size(c,GeometryType(GeometryType::cube,G::dimension-c))*(1<<(n-c-1));
+        s += 2*is.size(GeometryType(GeometryType::cube,G::dimension-c))*(1<<(n-c-1));
         //		  std::cout << "nnz cubes codim " << c << " is " << g.size(c,cube) << std::endl;
       }
 

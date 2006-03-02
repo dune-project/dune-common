@@ -148,13 +148,13 @@ namespace Dune
             if (c<G::dimension-1)
             {
               offset[c][is.geomTypes(c)[i]] = n;
-              n += is.size(c,is.geomTypes(c)[i]);
+              n += is.size(is.geomTypes(c)[i]);
             }
             else               // the grid is only allowed to deliver one geometry type !
             {
               // put entry with arbitrary BasicType in the map because they are equal
               offset[c][GeometryType(GeometryType::cube,G::dimension-c)] = n;
-              n += is.size(c,is.geomTypes(c)[i]);
+              n += is.size(is.geomTypes(c)[i]);
             }
           }
     }
