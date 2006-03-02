@@ -195,11 +195,11 @@ namespace Dune {
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
-  inline int ALU3dGrid<dim, dimworld, elType>::size(int level, int codim, GeometryType type) const
+  inline int ALU3dGrid<dim, dimworld, elType>::size(int level, GeometryType type) const
   {
-    if(elType == tetra) if(!type.isSimplex()) return 0;
-    if(elType == hexa ) if(!type.isCube   ()) return 0;
-    return size(level,codim);
+    if(elType == tetra && !type.isSimplex()) return 0;
+    if(elType == hexa  && !type.isCube   ()) return 0;
+    return size(level,dim-type.dim());
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
@@ -212,11 +212,11 @@ namespace Dune {
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
-  inline int ALU3dGrid<dim, dimworld, elType>::size(int codim, GeometryType type) const
+  inline int ALU3dGrid<dim, dimworld, elType>::size(GeometryType type) const
   {
-    if(elType == tetra) if(!type.isSimplex()) return 0;
-    if(elType == hexa ) if(!type.isCube   ()) return 0;
-    return size(codim);
+    if(elType == tetra && !type.isSimplex()) return 0;
+    if(elType == hexa  && !type.isCube   ()) return 0;
+    return size(dim-type.dim());
   }
 
   // calc all necessary things that might have changed

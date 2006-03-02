@@ -4162,7 +4162,7 @@ namespace Dune
   inline int AlbertaGrid < dim, dimworld >::size (int level, int codim) const
   {
     if( (level > maxlevel_) || (level < 0) ) return 0;
-    assert( this->levelIndexSet(level).size(codim,GeometryType(GeometryType::simplex,codim) )
+    assert( this->levelIndexSet(level).size(GeometryType(GeometryType::simplex,codim) )
             == sizeCache_->size(level,codim) );
     assert( sizeCache_ );
     return sizeCache_->size(level,codim);
@@ -4170,21 +4170,21 @@ namespace Dune
 
 
   template < int dim, int dimworld >
-  inline int AlbertaGrid < dim, dimworld >::size (int level, int codim, GeometryType type) const
+  inline int AlbertaGrid < dim, dimworld >::size (int level, GeometryType type) const
   {
-    return type.isSimplex() ? this->size(level,codim) : 0;
+    return type.isSimplex() ? this->size(level,dim-type.dim()) : 0;
   }
 
   template < int dim, int dimworld >
-  inline int AlbertaGrid < dim, dimworld >::size (int codim, GeometryType type) const
+  inline int AlbertaGrid < dim, dimworld >::size (GeometryType type) const
   {
-    return type.isSimplex() ? this->size(codim) : 0;
+    return type.isSimplex() ? this->size(dim-type.dim()) : 0;
   }
 
   template < int dim, int dimworld >
   inline int AlbertaGrid < dim, dimworld >::size (int codim) const
   {
-    assert( this->leafIndexSet().size(codim,GeometryType(GeometryType::simplex,codim) )
+    assert( this->leafIndexSet().size(GeometryType(GeometryType::simplex,codim) )
             == sizeCache_->size(codim) );
     assert( sizeCache_ );
     return sizeCache_->size(codim);

@@ -385,11 +385,11 @@ namespace Dune {
     //! number of leaf entities per codim in this process
     int size (int codim) const;
 
-    //! number of entities per level, codim and geometry type in this process
-    int size (int level, int codim, GeometryType type) const;
+    //! number of entities per level and geometry type in this process
+    int size (int level, GeometryType type) const;
 
-    //! number of leaf entities per codim and geometry type in this process
-    int size (int codim, GeometryType type) const;
+    //! number of leaf entities per geometry type in this process
+    int size (GeometryType type) const;
 
     //! number of grid entities on all levels for given codim
     int global_size (int cd) const ;
