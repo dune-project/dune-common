@@ -943,7 +943,7 @@ namespace Dune {
 
   private:
     // the data, very simply a built in array with rowwise ordering
-    row_type p[n];
+    row_type p[(n > 0) ? n : 1];
   };
 
 
