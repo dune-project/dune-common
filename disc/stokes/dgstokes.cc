@@ -22,7 +22,7 @@ void DGForm<G,ordr>::assembleVolumeTerm(Entity& ent, LocalMatrixBlock& Aee,Local
 
   //shape function size and total dof
   int vdof=vsfs.size()*2; // two velocity components and total velocity sfs size
-  //int pdof=psfs.size(); // pressure dof
+  int pdof=psfs.size(); // pressure dof
   //get parameter
   DGStokesParameters parameter;
 
@@ -614,7 +614,6 @@ void DGStokes<G,ordr>::assembleStokesSystem()
   int pdof=psfs.size();
   int ndof=vdof+pdof; // total dofs per element
   int N = ndof*grid.size(level, 0);
-  std::cout<<"N: "<<N;
   int nz=N;
   DGStokesParameters parameter;
   //sparserowmatrix
@@ -665,28 +664,31 @@ void DGStokes<G,ordr>::assembleStokesSystem()
     EntityPointer epointer = it;
     int eid = grid.levelIndexSet(level).index(*epointer);
     stokessystem.assembleVolumeTerm(*it,A[eid][eid],b[eid]);
-
+    printmatrix(std::cout,A,"Matrix","row");
     //printmatrix(std::cout,A[1][1],"Matrix","row");
 
     IntersectionIterator endis = it->iend();
     IntersectionIterator is = it->ibegin();
-
-    if(is.neighbor())
+    for(; is != endis; ++is)
     {
-      //InterSectionPointer ispointer = is;
-      int fid = grid.levelIndexSet(level).index(*is.outside());
-      stokessystem.assembleFaceTerm(*it,is,A[eid][eid],A[eid][fid],A[fid][eid],b[eid]);
-    }
-    else
-    {
-      stokessystem.assembleBoundaryTerm(*it,is,A[eid][eid],b[eid]);
+      if(is.neighbor())
+      {
+        //InterSectionPointer ispointer = is;
+        int fid = grid.levelIndexSet(level).index(*is.outside());
+        stokessystem.assembleFaceTerm(*it,is,A[eid][eid],A[eid][fid],A[fid][eid],b[eid]);
+      }
+      if (is.boundary())
+      {
+        std::cout<<"ur here: "<<std::endl;
+        stokessystem.assembleBoundaryTerm(*it,is,A[eid][eid],b[eid]);
+      }
     }
   }
 
   //changing istl matrix to spmatrix for superLU
 
   //printmatrix(std::cout,A,"Matrix","row");
-  std::cout<<A.N()<<std::endl;
+
 
   for (typename Matrix::RowIterator i=A.begin(); i!=A.end(); ++i)
   {
@@ -706,16 +708,16 @@ void DGStokes<G,ordr>::assembleStokesSystem()
   }
   //AA.print(std::cout,3);
 
-  printvector(std::cout,b,"Vector","row");
+  //printvector(std::cout,b,"Vector","row");
 
   for(typename Vector::iterator i=b.begin(); i!=b.end(); ++i)
   {
     for(int m=0; m<BlockSize; ++m)
       bb[i.index()*BlockSize+m]=b[i.index()][m];
   }
-  bb.print(1,"BB","row");
+  //bb.print(1,"BB","row");
 
-  std::cout<<"ur here "<<std::endl;
+
 
   //--- this part needs more thought and nice implementation!!
   //modify matrix for introducing pressrure boundary condition
@@ -724,9 +726,10 @@ void DGStokes<G,ordr>::assembleStokesSystem()
     AA.remove(12,j);
   AA.set(12,12,1);
   //rhs corresponds to the term is set to zero
-  b[0][12]=0.0;
+  bb[12]=0.0;
 
-
+  AA.print(std::cout,3);
+  bb.print(1,"BB","row");
 } // end of assemble
 
 
@@ -784,7 +787,7 @@ void DGStokes<G,ordr>::solveStokesSystem()
   //#endif
 
 
-  //  dPrint_Dense_Matrix ( "Solution X", &BB );
+  dPrint_Dense_Matrix ( "Solution X", &BB );
   //  b.print(1,"Solution:","row");
 
   // // clean up superLU
