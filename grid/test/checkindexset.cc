@@ -338,7 +338,7 @@ namespace Dune {
       assert( vertexCoordsMap.size() == count );
 
       // check whether size of vertices of set equals all found vertices
-      assert( count == (unsigned int)lset.size(dim,Dune::GeometryType(0)) );
+      assert( count == (unsigned int)lset.size(Dune::GeometryType(0)) );
     }
 
     {

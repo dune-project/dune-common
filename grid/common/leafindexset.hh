@@ -676,8 +676,9 @@ namespace Dune {
     }
 
     //! return size of grid entities per level and codim
-    int size ( int codim , GeometryType type ) const
+    int size (GeometryType type ) const
     {
+      int codim=GridType::dimension-type.dim();
       if( !codimUsed_[codim] )
       {
         assert( hIndexSet_.geomTypes(codim).size() == 1 );
@@ -690,7 +691,7 @@ namespace Dune {
     int size ( int codim ) const
     {
       assert( hIndexSet_.geomTypes(codim).size() == 1 );
-      return size(codim,hIndexSet_.geomTypes(codim)[0]);
+      return size(hIndexSet_.geomTypes(codim)[0]);
     }
 
     //! returns vector with geometry tpyes this index set has indices for

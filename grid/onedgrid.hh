@@ -293,17 +293,17 @@ namespace Dune {
       return leafIndexSet().size(codim);
     }
 
-    //! number of entities per level, codim and geometry type in this process
-    int size (int level, int codim, GeometryType type) const
+    //! number of entities per level and geometry type in this process
+    int size (int level, GeometryType type) const
     {
       // There is only one type for each codim
-      return size(level,codim);
+      return size(level,1-type.dim());
     }
 
-    //! number of leaf entities per codim and geometry type in this process
-    int size (int codim, GeometryType type) const
+    //! number of leaf entities per geometry type in this process
+    int size (GeometryType type) const
     {
-      return leafIndexSet().size(codim, type);
+      return leafIndexSet().size(type);
     }
 
     /** \brief The processor overlap for parallel computing.  Always zero because

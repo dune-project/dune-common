@@ -75,8 +75,10 @@ namespace Dune {
     }
 
     //! get number of entities of given codim, type and on this level
-    int size (int codim, GeometryType type) const
+    int size (GeometryType type) const
     {
+      int codim = GridImp::dimension-type.dim();
+
       if (codim==0) {
         if (type.isSimplex())
           return numSimplices_;
@@ -341,9 +343,9 @@ namespace Dune {
     }
 
     //! get number of entities of given codim and type
-    int size (int codim, GeometryType type) const
+    int size (GeometryType type) const
     {
-      if (codim==0) {
+      if (type.dim()==GridImp::dimension) {
         if (type.isSimplex())
           return numSimplices_;
         else if (type.isPyramid())
@@ -355,21 +357,18 @@ namespace Dune {
         else
           return 0;
       }
-      if (codim==dim) {
+      if (type.dim()==0) {
         return numVertices_;
       }
-      if (codim==dim-1) {
+      if (type.dim()==1) {
         return numEdges_;
       }
-      if (codim==1) {
-        if (type.isSimplex())
-          return numTriFaces_;
-        else if (type.isCube())
-          return numQuadFaces_;
-        else
-          return 0;
-      }
-      DUNE_THROW(NotImplemented, "Wrong codim!");
+      if (type.isTriangle())
+        return numTriFaces_;
+      else if (type.isQuadrilateral())
+        return numQuadFaces_;
+
+      return 0;
     }
 
     /** deliver all geometry types used in this grid */

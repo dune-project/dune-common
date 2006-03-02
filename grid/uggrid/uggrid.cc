@@ -360,23 +360,23 @@ inline int Dune::UGGrid < dim, dimworld >::size (int level, int codim) const
 #ifndef ModelP
   if(codim == 0)
   {
-    return levelIndexSet(level).size(0,GeometryType(GeometryType::simplex,dim))
-           + levelIndexSet(level).size(0,GeometryType(GeometryType::cube,dim))
-           + levelIndexSet(level).size(0,GeometryType(GeometryType::pyramid,dim))
-           + levelIndexSet(level).size(0,GeometryType(GeometryType::prism,dim));
+    return levelIndexSet(level).size(GeometryType(GeometryType::simplex,dim))
+           + levelIndexSet(level).size(GeometryType(GeometryType::cube,dim))
+           + levelIndexSet(level).size(GeometryType(GeometryType::pyramid,dim))
+           + levelIndexSet(level).size(GeometryType(GeometryType::prism,dim));
   }
   if(codim == dim)
   {
-    return this->levelIndexSet(level).size(dim,GeometryType(GeometryType::cube,0));
+    return this->levelIndexSet(level).size(GeometryType(0));
   }
   if (codim == dim-1)
   {
-    return this->levelIndexSet(level).size(dim-1,GeometryType(GeometryType::cube,1));
+    return this->levelIndexSet(level).size(GeometryType(1));
   }
   if (codim == 1)
   {
-    return levelIndexSet(level).size(1,GeometryType(GeometryType::cube,dim-1))
-           + levelIndexSet(level).size(1,GeometryType(GeometryType::simplex,dim-1));
+    return levelIndexSet(level).size(GeometryType(GeometryType::cube,dim-1))
+           + levelIndexSet(level).size(GeometryType(GeometryType::simplex,dim-1));
   }
   DUNE_THROW(GridError, "UGGrid<" << dim << ", " << dimworld
                                   << ">::size(int level, int codim) is only implemented"

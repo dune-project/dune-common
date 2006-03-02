@@ -53,10 +53,10 @@ namespace Dune {
       return grid_->getRealImplementation(e).template subLevelIndex<cc>(i);
     }
 
-    //! get number of entities of given codim, type and on this level
-    int size (int codim, GeometryType type) const
+    //! get number of entities of given type and on this level
+    int size (GeometryType type) const
     {
-      return grid_->size(level_,codim, type);
+      return grid_->size(level_,type);
     }
 
     //! get number of entities of given codim, type and on this level
@@ -179,19 +179,19 @@ namespace Dune {
     }
 
     //! get number of entities of given codim, type on the leaf level
-    int size (int codim, GeometryType type) const
+    int size (GeometryType type) const
     {
-      if (codim==GridImp::dimension) {
+      if (type.isVertex()) {
 
         return numVertices_;
 
-      } else if (codim==0) {
+      } else if (type.isLine()) {
 
-        return (type.isLine()) ? numElements_ : 0;
+        return numElements_;
 
-      } else {
-        DUNE_THROW(NotImplemented, "OneDGridLeafIndexSet::size(codim,type) for codim neither 0 nor 1");
       }
+
+      return 0;
     }
 
     /** deliver all geometry types used in this grid */

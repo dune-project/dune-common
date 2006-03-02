@@ -972,10 +972,10 @@ namespace Dune {
       return grid.template getRealEntity<0>(e).template subCompressedIndex<cc>(i);
     }
 
-    //! get number of entities of given codim, type and level (the level is known to the object)
-    int size (int codim, GeometryType type) const
+    //! get number of entities of given type and level (the level is known to the object)
+    int size (GeometryType type) const
     {
-      return grid.size(level,codim);
+      return grid.size(level,GridImp::dimension-type.dim());
     }
 
     //! deliver all geometry types used in this grid
@@ -1058,10 +1058,10 @@ namespace Dune {
       return grid.template getRealEntity<0>(e).template subCompressedLeafIndex<cc>(i);
     }
 
-    //! get number of entities of given codim, type and level (the level is known to the object)
-    int size (int codim, GeometryType type) const
+    //! get number of entities of given type
+    int size (GeometryType type) const
     {
-      return grid.size(grid.maxLevel(),codim);
+      return grid.size(grid.maxLevel(),GridImp::dimension-type.dim());
     }
 
     //! deliver all geometry types used in this grid
@@ -1344,35 +1344,16 @@ namespace Dune {
       return size(maxLevel(),codim);
     }
 
-    //! number of entities per level, codim and geometry type in this process
-    int size (int level, int codim, GeometryType type) const
+    //! number of entities per level and geometry type in this process
+    int size (int level, GeometryType type) const
     {
-      if (type.isCube()) return size(level,codim);
-      switch (dim-codim)
-      {
-      case 0 :
-        if (type.isVertex()) return size(level,codim);
-        break;
-
-      case 1 :
-        if (type.isLine()) return size(level,codim);
-        break;
-
-      case 2 :
-        if (type.isQuadrilateral()) return size(level,codim);
-        break;
-
-      case 3 :
-        if (type.isHexahedron()) return size(level,codim);
-        break;
-      }
-      return 0;
+      return (type.isCube()) ? size(level,dim-type.dim()) : 0;
     }
 
     //! number of leaf entities per codim and geometry type in this process
-    int size (int codim, GeometryType type) const
+    int size (GeometryType type) const
     {
-      return size(maxLevel(),codim,type);
+      return size(maxLevel(),type);
     }
 
 

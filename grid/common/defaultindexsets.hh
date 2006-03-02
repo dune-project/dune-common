@@ -437,9 +437,9 @@ namespace Dune {
 
     //! return size of IndexSet for a given level and codim
     //! this method is to be revised
-    int size ( int codim , GeometryType type ) const
+    int size ( GeometryType type ) const
     {
-      return size_[codim];
+      return size_[GridType::dimension-type.dim()];
     }
 
     //! do calculation of the index set, has to be called when grid was

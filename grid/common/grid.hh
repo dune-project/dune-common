@@ -264,26 +264,26 @@ namespace Dune {
       return asImp().size(codim);
     }
 
-    //! number of entities per level, codim and geometry type in this process
-    int size (int level, int codim, GeometryType type) const
-    {
-      // compare addresses of the method, if they are equal then derived
-      // class has the method not overloaded which leads to a seg fault
-      CHECK_INTERFACE_IMPLEMENTATION(
-        ((int (GridImp::*)(int,int,GeometryType) const) &(ThisType::size)),
-        ((int (GridImp::*)(int,int,GeometryType) const) &(GridImp::size)));
-      return asImp().size(level,codim,type);
-    }
-
-    //! number of leaf entities per codim and geometry type in this process
-    int size (int codim, GeometryType type) const
+    //! number of entities per level and geometry type in this process
+    int size (int level, GeometryType type) const
     {
       // compare addresses of the method, if they are equal then derived
       // class has the method not overloaded which leads to a seg fault
       CHECK_INTERFACE_IMPLEMENTATION(
         ((int (GridImp::*)(int,GeometryType) const) &(ThisType::size)),
         ((int (GridImp::*)(int,GeometryType) const) &(GridImp::size)));
-      return asImp().size(codim,type);
+      return asImp().size(level,type);
+    }
+
+    //! number of leaf entities per geometry type in this process
+    int size (GeometryType type) const
+    {
+      // compare addresses of the method, if they are equal then derived
+      // class has the method not overloaded which leads to a seg fault
+      CHECK_INTERFACE_IMPLEMENTATION(
+        ((int (GridImp::*)(GeometryType) const) &(ThisType::size)),
+        ((int (GridImp::*)(GeometryType) const) &(GridImp::size)));
+      return asImp().size(type);
     }
 
     //! return size (= distance in graph) of overlap region

@@ -466,10 +466,10 @@ struct GridInterface
     g.size(0,0);
     // number of leaf entities per codim in this process
     g.size(0);
-    // number of entities per level, codim and geometry type in this process
-    g.size(0, 0, Dune::GeometryType(Dune::GeometryType::cube,Grid::dimension));
-    // number of leaf entities per codim and geometry type in this process
+    // number of entities per level and geometry type in this process
     g.size(0, Dune::GeometryType(Dune::GeometryType::cube,Grid::dimension));
+    // number of leaf entities per geometry type in this process
+    g.size(Dune::GeometryType(Dune::GeometryType::cube,Grid::dimension));
 
     // Check overlap and ghost size on level 0
     g.overlapSize(0,0);
@@ -504,7 +504,7 @@ struct GridInterface
     g.levelIndexSet(0).index(*g.template lbegin<0>(0));
     /** \todo Test for subindex is missing, because I don't know yet
        how to test for the existence of certain codims */
-    g.levelIndexSet(0).size(0, Dune::GeometryType(Dune::GeometryType::simplex,Grid::dimension));
+    g.levelIndexSet(0).size(Dune::GeometryType(Dune::GeometryType::simplex,Grid::dimension));
     for (int codim = 0; codim < Grid::dimension; codim++)
       g.levelIndexSet(0).geomTypes(codim);
 
@@ -512,7 +512,7 @@ struct GridInterface
     g.leafIndexSet().index(*g.template leafbegin<0>());
     /** \todo Test for subindex is missing, because I don't know yet
        how to test for the existence of certain codims */
-    g.leafIndexSet().size(0, Dune::GeometryType(Dune::GeometryType::simplex,Grid::dimension));
+    g.leafIndexSet().size(Dune::GeometryType(Dune::GeometryType::simplex,Grid::dimension));
     for (int codim = 0; codim < Grid::dimension; codim++)
       g.leafIndexSet().geomTypes(codim);
 

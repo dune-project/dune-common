@@ -114,16 +114,15 @@ namespace Dune
       return asImp().template subIndex<cc>(e,i);
     }
 
-    /** @brief Return total number of entities of given codim and type in this index set.
+    /** @brief Return total number of entities of given type in this index set.
 
-       \param codim A valid codimension.
        \param type A valid geometry type.
 
        \return number of entities.
      */
-    int size (int codim, GeometryType type) const
+    int size (GeometryType type) const
     {
-      return asImp().size(codim,type);
+      return asImp().size(type);
     }
 
     /** @brief Return total number of entities of given codim as a sum
@@ -136,7 +135,7 @@ namespace Dune
       int s=0;
       const std::vector<GeometryType>& geomTs = this->geomTypes(codim);
       for (unsigned int i=0; i<geomTs.size(); i++)
-        s += this->size(codim,geomTs[i]);
+        s += this->size(geomTs[i]);
 
       return s;
     }

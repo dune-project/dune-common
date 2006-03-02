@@ -285,16 +285,16 @@ namespace Dune {
       return 0;
     }
 
-    //! number of entities per level, codim and geometry type in this process
-    int size (int level, int codim, GeometryType type) const
+    //! number of entities per level and geometry type in this process
+    int size (int level, GeometryType type) const
     {
-      return this->levelIndexSet(level).size(codim,type);
+      return this->levelIndexSet(level).size(type);
     }
 
-    //! number of leaf entities per codim and geometry type in this process
-    int size (int codim, GeometryType type) const
+    //! number of leaf entities per geometry type in this process
+    int size (GeometryType type) const
     {
-      return this->leafIndexSet().size(codim,type);
+      return this->leafIndexSet().size(type);
     }
 
     /** \brief Access to the GlobalIdSet */
