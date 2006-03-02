@@ -17,8 +17,13 @@
 #error "DUNE_WORLD_DIM needed to compile AlbertaGrid! \n"
 #endif
 
-#define DIM DUNE_PROBLEM_DIM
-#define DIM_OF_WORLD DUNE_WORLD_DIM
+#if defined GRIDDIM && defined GRIDDIMWORLD
+  #define DIM GRIDDIM
+  #define DIM_OF_WORLD GRIDDIMWORLD
+#else
+  #define DIM DUNE_PROBLEM_DIM
+  #define DIM_OF_WORLD DUNE_WORLD_DIM
+#endif
 
 // Dune includes
 #include <dune/common/misc.hh>
@@ -232,7 +237,7 @@ namespace Dune
     //! Note that if both methods are called on the same element, then
     //! call jacobianInverseTransposed first because integration element is calculated
     //! during calculation of the transposed of the jacobianInverse
-    const FieldMatrix<albertCtype,mydim,mydim>& jacobianInverseTransposed (const FieldVector<albertCtype, cdim>& global) const;
+    const FieldMatrix<albertCtype,mydim,mydim>& jacobianInverseTransposed (const FieldVector<albertCtype, mydim>& local) const;
 
     //***********************************************************************
     //!  Methods that not belong to the Interface, but have to be public
@@ -1483,14 +1488,13 @@ namespace Dune
      * because lbegin and lend are none const, and we need this methods
      * counting the entities on each level, you know.
      */
-
     int size (int level, int codim) const;
-
-    //! number of leaf entities per codim in this process
-    int size (int codim) const;
 
     //! number of entities per level and geometry type in this process
     int size (int level, GeometryType type) const;
+
+    //! number of leaf entities per codim in this process
+    int size (int codim) const;
 
     //! number of leaf entities per geometry type in this process
     int size (GeometryType type) const;
@@ -1886,5 +1890,4 @@ namespace Dune
 #undef DIM
 #undef DIM_OF_WORLD
 #include "alberta_undefs.hh"
-
 #endif
