@@ -106,25 +106,16 @@ namespace Dune {
     //! no extra memory for restriction is needed
     int additionalSizeEstimate () const { return 0; }
 
-    //! returns true if index idx of codim cd is new, here all indices are old
-    bool indexIsNew( int idx, int cd ) const { return false; }
-
-    //! returns true if index idx is new, here all indices are old
-    bool indexIsNew( int idx ) const { return false; }
-
-    //! we have no old size
-    int oldSize ( int codim ) const { return 0; }
-
     int type() const { return myType; }
 
+    //! we have no old size
+    int numberOfHoles ( int codim ) const { return 0; }
+
     //! return old index, for dof manager only
-    int oldIndex (int elNum, int codim ) const { return 0; }
+    int oldIndex (int hole, int codim ) const { return 0; }
 
     //! return new index, for dof manager only
-    int newIndex (int elNum, int codim ) const
-    {
-      return 0;
-    }
+    int newIndex (int hole, int codim ) const { return 0; }
 
     //! write index set to xdr file
     bool write_xdr(const std::basic_string<char> filename , int timestep)
@@ -207,19 +198,15 @@ namespace Dune {
     IndexSetWrapper(const IndexSetWrapper<IndexSetImp> & s) : set_(s.set_) {}
 
     //! return size of set for codim
-    int size ( int codim , GeometryType type ) const
+    int size ( GeometryType type ) const
     {
-      return set_.size(codim,type);
+      return set_.size(type);
     }
 
     //! return size of grid entities per level and codim
     int size ( int codim ) const
     {
-      int s = 0;
-      const std::vector< GeometryType > & types = set_.geomTypes(codim);
-      for(unsigned int i=0; i<types.size(); i++)
-        s += set_.size(codim,types[i]);
-      return s;
+      return set_.size(codim);
     }
 
     //! return index of en
