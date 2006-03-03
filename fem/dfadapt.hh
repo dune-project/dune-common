@@ -60,14 +60,15 @@ namespace Dune {
         > DiscreteFunctionDefaultType;
     friend class DiscreteFunctionDefault< DFAdaptTraits<DiscreteFunctionSpaceType> >;
 
+
+    enum { myId_ = 0};
+
+  public:
     typedef typename DiscreteFunctionSpaceType::GridType GridType;
 
     typedef DofManager<GridType> DofManagerType;
     typedef DofManagerFactory<DofManagerType> DofManagerFactoryType;
 
-    enum { myId_ = 0};
-
-  public:
     typedef typename DiscreteFunctionSpaceType::Traits::MapperType MapperType;
     typedef typename DiscreteFunctionSpaceType::Traits::RangeFieldType DofType;
     typedef typename DofArrayType::DofIteratorType DofIteratorType;
