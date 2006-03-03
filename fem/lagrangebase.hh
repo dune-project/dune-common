@@ -196,12 +196,7 @@ namespace Dune {
     void makeFunctionSpace (GridPartType& gridPart);
 
     //! get the right BaseFunctionSet for a given Entity
-    template <class EntityType>
-    BaseFunctionSetType* setBaseFuncSetPointer(EntityType &en);
-
-    //! make base function set depending on GeometryType and polynomial order
-    //template <GeometryType ElType, int pO >
-    //BaseFunctionSetType* makeBaseSet (const IndexSetType& iset);
+    BaseFunctionSetType* setBaseFuncSetPointer(GeometryType type);
 
   protected:
     //! the corresponding vector of base function sets
