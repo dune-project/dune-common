@@ -384,9 +384,9 @@ namespace Dune {
     //! actual geometry type
     mutable GeometryType geoType_;
     //! id of last initialized entity
-    mutable IdType id_;
+    //mutable IdType id_;
     //! corresponding local id set
-    const LocalIdSetType& idSet_;
+    //const LocalIdSetType& idSet_;
   }; // end LocalFunctionAdapt
 
 } // end namespace Dune
