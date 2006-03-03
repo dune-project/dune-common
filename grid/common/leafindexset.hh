@@ -41,11 +41,12 @@ namespace Dune {
       capacity_ = this->n;
     }
 
-    void resize(int m)
+    //! resize and set capacity
+    void resize(const int m)
     {
-      if( m<= capacity_ )
+      if( m <= capacity_ )
       {
-        this->n = m;
+        this->n = (m < 0) ? 0 : m;
         return;
       }
       Array<T> :: resize(m);
@@ -53,11 +54,12 @@ namespace Dune {
     }
 
     //! reallocate array with size m
-    void realloc (int m)
+    void realloc (const int m)
     {
       if(m <= this->n)
       {
-        this->n = m;
+        // if m is smaller then zero, set size to zero
+        this->n = (m < 0) ? 0 : m;
         return;
       }
 
@@ -154,8 +156,8 @@ namespace Dune {
     //! reallocate the vector for new size
     void resize ( int newSize )
     {
-      //std::cout << "Resize with max = " << hIndexSet_.size(myCodim_) << "\n";
       int oldSize = leafIndex_.size();
+      if(oldSize > newSize) return;
 
       leafIndex_.realloc( newSize );
       state_.realloc( newSize );
@@ -642,8 +644,8 @@ namespace Dune {
       // codim 0 is used by default
       codimUsed_[0] = true;
       // all higher codims are not used by default
-      //for(int i=1; i<ncodim; i++) codimUsed_[i] = false;
-      for(int i=1; i<ncodim; i++) codimUsed_[i] = true;
+      for(int i=1; i<ncodim; i++) codimUsed_[i] = false;
+      //for(int i=1; i<ncodim; i++) codimUsed_[i] = true;
 
       // set the codim of each Codim Set.
       for(int i=0; i<ncodim; i++) codimLeafSet_[i].setCodim( i );
