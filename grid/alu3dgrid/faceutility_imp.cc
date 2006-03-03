@@ -274,15 +274,14 @@ namespace Dune {
       const double (&_p1)[3] = face.myvertex(1)->Point();
       const double (&_p2)[3] = face.myvertex(2)->Point();
 
-      // see mapp_tetra_3d.h for this piece of code
-      outerNormal_[0] = -0.5 * ((_p1[1]-_p0[1]) *(_p2[2]-_p1[2]) - (_p2[1]-_p1[1]) *(_p1[2]-_p0[2]));
-      outerNormal_[1] = -0.5 * ((_p1[2]-_p0[2]) *(_p2[0]-_p1[0]) - (_p2[2]-_p1[2]) *(_p1[0]-_p0[0]));
-      outerNormal_[2] = -0.5 * ((_p1[0]-_p0[0]) *(_p2[1]-_p1[1]) - (_p2[0]-_p1[0]) *(_p1[1]-_p0[1]));
-
       // change sign if face normal points into inner element
-      if (this->connector_.innerTwist() < 0) {
-        outerNormal_ *= -1.0;
-      } // end if
+      const double factor = (this->connector_.innerTwist() < 0) ? 0.5 : -0.5;
+
+      // see mapp_tetra_3d.h for this piece of code
+      outerNormal_[0] = factor * ((_p1[1]-_p0[1]) *(_p2[2]-_p1[2]) - (_p2[1]-_p1[1]) *(_p1[2]-_p0[2]));
+      outerNormal_[1] = factor * ((_p1[2]-_p0[2]) *(_p2[0]-_p1[0]) - (_p2[2]-_p1[2]) *(_p1[0]-_p0[0]));
+      outerNormal_[2] = factor * ((_p1[0]-_p0[0]) *(_p2[1]-_p1[1]) - (_p2[0]-_p1[0]) *(_p1[1]-_p0[1]));
+
       normalUp2Date_ = true;
     } // end if mapp ...
 
