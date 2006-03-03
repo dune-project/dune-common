@@ -213,10 +213,8 @@ namespace Dune {
 
         for( ; it != endit; ++it)
         {
-          std::cout << " coarsen \n";
           if((*it).state() == COARSEN)
           {
-            std::cout << "do coarsen \n";
             restop.restrictLocal( en , *it, initialize);
             initialize = false;
           }
