@@ -152,7 +152,7 @@ namespace Dune {
     inline alu3d_ctype integrationElement (const FieldVector<alu3d_ctype, mydim>& local) const;
 
     //! can only be called for dim=dimworld!
-    inline const FieldMatrix<alu3d_ctype,mydim,mydim>& jacobianInverseTransposed (const FieldVector<alu3d_ctype, cdim>& local) const;
+    inline const FieldMatrix<alu3d_ctype,mydim,mydim>& jacobianInverseTransposed (const FieldVector<alu3d_ctype, mydim>& local) const;
 
     //***********************************************************************
     //!  Methods that not belong to the Interface, but have to be public
@@ -193,12 +193,12 @@ namespace Dune {
     //! the vertex coordinates
     mutable FieldMatrix<alu3d_ctype, mydim+1, cdim> coord_;
 
-    enum { matrows = (mydim > 0) ? mydim : 1 };
-    enum { matcols = (mydim > 0) ? cdim  : 1 };
-    mutable FieldMatrix<alu3d_ctype,matcols,matrows> Jinv_; //!< storage for inverse of jacobian
+    mutable FieldMatrix<alu3d_ctype,mydim,mydim> Jinv_; //!< storage for inverse of jacobian
     mutable alu3d_ctype detDF_;                             //!< storage of integration_element
-    mutable FieldMatrix<alu3d_ctype, matrows, cdim> AT_;    //!< transformation matrix (transposed)
+    mutable FieldMatrix<alu3d_ctype, cdim , mydim> A_;    //!< transformation matrix (transposed)
+    mutable FieldMatrix<alu3d_ctype, mydim, mydim> AT_A_;    //!< transformation matrix (transposed)
 
+    mutable FieldVector<alu3d_ctype, mydim> AT_x_;
     mutable FieldVector<alu3d_ctype, mydim> localCoord_;
     mutable FieldVector<alu3d_ctype, cdim>  globalCoord_;
 
@@ -267,7 +267,7 @@ namespace Dune {
 
     //! can only be called for dim=dimworld! (Trivially true, since there is no
     //! other specialization...)
-    const FieldMatrix<alu3d_ctype,mydim,mydim>& jacobianInverseTransposed (const FieldVector<alu3d_ctype, cdim>& local) const;
+    const FieldMatrix<alu3d_ctype,mydim,mydim>& jacobianInverseTransposed (const FieldVector<alu3d_ctype, mydim>& local) const;
 
     //***********************************************************************
     //!  Methods that not belong to the Interface, but have to be public
@@ -305,7 +305,7 @@ namespace Dune {
     TrilinearMapping* triMap_;
     BilinearSurfaceMapping* biMap_;
 
-    mutable FieldMatrix<alu3d_ctype, 3, 3> jInv_;
+    mutable FieldMatrix<alu3d_ctype, mydim, mydim> jInv_;
 
   };
 
