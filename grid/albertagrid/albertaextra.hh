@@ -185,10 +185,12 @@ public:
 // Traverse Stacks
 //***********************************************************
 static inline void initTraverseStack(TRAVERSE_STACK *stack);
+static inline void resetTraverseStack(TRAVERSE_STACK *stack);
 
 inline static TRAVERSE_STACK *getTraverseStack(void)
 {
   TRAVERSE_STACK * stack = get_traverse_stack();
+  assert( stack );
   // if we use copyTraverseStack we should only create stacks with
   // stack_size > 0 otherwise we get errors in TreeIterator
   if(stack->stack_size <= 0) enlargeTraverseStack( stack );
@@ -197,6 +199,8 @@ inline static TRAVERSE_STACK *getTraverseStack(void)
 
 inline static TRAVERSE_STACK *freeTraverseStack(TRAVERSE_STACK *stack)
 {
+  // reset stack, i.e set pointer to mesh to 0 ...
+  resetTraverseStack(stack);
   free_traverse_stack(stack);
   return 0;
 }
@@ -284,19 +288,35 @@ inline void copyTraverseStack( TRAVERSE_STACK* stack, const TRAVERSE_STACK* org 
   return;
 }
 
-static inline void initTraverseStack(TRAVERSE_STACK *stack)
+static inline void resetTraverseStack(TRAVERSE_STACK *stack)
 {
   stack->traverse_mesh = 0;
   stack->traverse_level = 0;
   stack->traverse_mel = 0;
-  stack->stack_size = 0;
   stack->stack_used = 0;
+  stack->save_stack_used = 0;
+  stack->el_count = 0;
+  return;
+}
+
+static inline void initTraverseStack(TRAVERSE_STACK *stack)
+{
+  // integers and pointers
+  stack->traverse_mesh = 0;
+  stack->traverse_level = 0;
+  stack->traverse_mel = 0;
+  stack->el_count = 0;
+  stack->stack_used = 0;
+  stack->save_stack_used = 0;
+
+  // pointers to stacks and sizes
   stack->elinfo_stack = 0;
+  stack->stack_size = 0;
   stack->info_stack = 0;
   stack->save_elinfo_stack = 0;
   stack->save_info_stack = 0;
-  stack->save_stack_used = 0;
-  stack->el_count = 0;
+
+  // pointer to next stack
   stack->next = 0;
   return;
 }
@@ -412,7 +432,7 @@ namespace AlbertHelp
     }
     else
     {
-      printf("No Father for macro element, return macro element\n");
+      assert( (true) ? (printf("No Father for macro element, return macro element\n"),1) : 1);
       return elInfo;
     }
     return fatherInfo;
