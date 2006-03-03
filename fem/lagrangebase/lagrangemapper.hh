@@ -82,12 +82,6 @@ namespace Dune {
       return indexSet_.template index<codim> (en,localNum);
     }
 
-    //! for dof manager, to check whether it has to copy dof or not
-    bool indexIsNew (int num) const
-    {
-      return (num != oldIndex(num));
-    }
-
     //! return old index, for dof manager only
     int oldIndex (int elNum) const
     {
@@ -115,13 +109,13 @@ namespace Dune {
       return elNum;
     }
 
-    //! return old size of function space
-    int oldSize () const
+    int numberOfHoles () const
     {
+      assert(false);
       int s = 0;
       for(int i=0; i<numCodims; i++)
       {
-        if(dofCodim_[i]) s += indexSet_.oldSize(i);
+        if(dofCodim_[i]) s += indexSet_.numberOfCodims(i);
       }
       return dimrange * s;
     }
@@ -132,21 +126,19 @@ namespace Dune {
       return indexSet_.additionalSizeEstimate();
     }
 
-    int numberOfDofs () const DUNE_DEPRECATED
-    {
-      return numberOfDofs_;
-    }
-
+    //! return number of dofs per entity
     int numDofs () const
     {
       return numberOfDofs_;
     }
 
+    //! return new size of the set
     int newSize() const
     {
       return this->size();
     }
 
+    //! return if compress of data is needed
     bool needsCompress () const { return indexSet_.needsCompress(); }
   };
 
@@ -162,7 +154,6 @@ namespace Dune {
     int numLocalDofs_;
 
     const IndexSetImp & indexSet_;
-    //const IndexSetWrapper<IndexSetImp> indexSet_;
   public:
     typedef IndexSetImp IndexSetType;
 
@@ -188,29 +179,22 @@ namespace Dune {
       return indexSet_.template index<codim> (en,localNum);
     }
 
-    //! for dof manager, to check whether it has to copy dof or not
-    bool indexIsNew (int num) const
-    {
-      return indexSet_.indexIsNew(num, myCodim );
-    }
-
     //! return old index, for dof manager only
-    int oldIndex (int elNum) const
+    int oldIndex (int hole) const
     {
-      return indexSet_.oldIndex(elNum, myCodim );
+      return indexSet_.oldIndex(hole, myCodim );
     }
 
     //! return new index, for dof manager only
-    int newIndex (int elNum) const
+    int newIndex (int hole) const
     {
-      return indexSet_.newIndex(elNum, myCodim );
+      return indexSet_.newIndex(hole, myCodim );
     }
 
-    //! return old size of functions space
-    int oldSize () const
+    //! return number of holes
+    int numberOfHoles () const
     {
-      // this index set works only for codim = 0 at the moment
-      return indexSet_.oldSize( myCodim );
+      return indexSet_.numberOfHoles( myCodim );
     }
 
     // is called once and calcs the insertion points too
@@ -219,13 +203,8 @@ namespace Dune {
       return indexSet_.additionalSizeEstimate();
     }
 
+    //! not used at the moment
     void calcInsertPoints () {};
-
-    //! use numDofs instead
-    int numberOfDofs () const DUNE_DEPRECATED
-    {
-      return numLocalDofs_;
-    }
 
     //! return number of dofs per entity, i.e. number of basis funcitons per entity
     int numDofs () const
@@ -238,9 +217,16 @@ namespace Dune {
     {
       return this->size();
     }
+
     //! return the sets needsCompress
     bool needsCompress () const { return indexSet_.needsCompress(); }
   };
+
+  //*****************************************************************
+  //
+  // specialisation for polynom order 0 and arbitray dimrange
+  //
+  //*****************************************************************
 
   template <class IndexSetImp, int dimrange>
   class LagrangeMapper<IndexSetImp,0,dimrange>
@@ -273,42 +259,33 @@ namespace Dune {
       return (dimrange * indexSet_.template index<0> (en,localNum)) + localNum;
     }
 
-    //! for dof manager, to check whether it has to copy dof or not
-    bool indexIsNew (int num) const
-    {
-      // all numbers of one entity are maped to the one number of the set
-      const int newn = static_cast<int> (num/dimrange);
-      return indexSet_.template indexIsNew(newn,0);
-    }
-
     //! return old index, for dof manager only
     //! this is the mapping from gobal to old leaf index
-    int oldIndex (int num) const
+    int oldIndex (int hole) const
     {
       // corresponding number of set is newn
-      const int newn  = static_cast<int> (num/dimrange);
+      const int newn  = static_cast<int> (hole/dimrange);
       // local number of dof is local
-      const int local = (num % dimrange);
+      const int local = (hole % dimrange);
       return (dimrange * indexSet_.oldIndex(newn,0)) + local;
     }
 
     //! return new index, for dof manager only
     //! this is the mapping from global to leaf index
-    int newIndex (int num) const
+    int newIndex (int hole) const
     {
-
       // corresponding number of set is newn
-      const int newn = static_cast<int> (num / dimrange);
+      const int newn = static_cast<int> (hole / dimrange);
       // local number of dof is local
-      const int local = (num % dimrange);
+      const int local = (hole % dimrange);
       return (dimrange * indexSet_.newIndex(newn,0)) + local;
     }
 
     //! return old size of functions space
-    int oldSize () const
+    int numberOfHoles () const
     {
       // this index set works only for codim = 0 at the moment
-      return dimrange * indexSet_.oldSize(0);
+      return dimrange * indexSet_.numberOfHoles(0);
     }
 
     // is called once and calcs the insertion points too
@@ -323,17 +300,13 @@ namespace Dune {
       return dimrange * indexSet_.additionalSizeEstimate();
     }
 
-    //! use numDofs instead
-    int numberOfDofs () const DUNE_DEPRECATED
-    {
-      return numberOfDofs_;
-    }
-
+    //! return number of dof per element
     int numDofs () const
     {
       assert( numberOfDofs_ == dimrange );
       return numberOfDofs_;
     }
+
     //! return the sets needsCompress
     bool needsCompress () const { return indexSet_.needsCompress(); }
   };
@@ -366,30 +339,23 @@ namespace Dune {
       return indexSet_.template index<0> (en,localNum);
     }
 
-    //! for dof manager, to check whether it has to copy dof or not
-    bool indexIsNew (int num) const
-    {
-      return indexSet_.template indexIsNew(num,0);
-    }
-
     //! return old index, for dof manager only
-    int oldIndex (int num) const
+    int oldIndex (int hole) const
     {
-      return indexSet_.oldIndex(num,0);
+      return indexSet_.oldIndex(hole,0);
     }
 
     //! return new index, for dof manager only
-    int newIndex (int num) const
+    int newIndex (int hole) const
     {
-      return indexSet_.newIndex(num,0);
+      return indexSet_.newIndex(hole,0);
     }
 
-    //! return size of grid entities per level and codim
-    //! for dof mapper
-    int oldSize () const
+    //! return old size of functions space
+    int numberOfHoles () const
     {
       // this index set works only for codim = 0 at the moment
-      return indexSet_.oldSize(0);
+      return indexSet_.numberOfHoles(0);
     }
 
     // is called once and calcs the insertion points too
@@ -404,12 +370,6 @@ namespace Dune {
       return indexSet_.additionalSizeEstimate();
     }
 
-    //! use numDofs instead
-    int numberOfDofs () const DUNE_DEPRECATED
-    {
-      return 1;
-    }
-
     //! return number of dof per entity, here this method returns 1
     int numDofs () const
     {
@@ -420,5 +380,4 @@ namespace Dune {
   };
 
 } // end namespace Dune
-
 #endif
