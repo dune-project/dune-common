@@ -667,9 +667,6 @@ namespace Dune
     // local coordinates within father
     typedef MakeableInterfaceObject<Geometry> GeometryObject;
 
-    mutable GeometryObject fatherReLocalObj_;
-    mutable GeometryImp & fatherReLocal_;
-
     //! the cuurent geometry
     mutable GeometryObject geoObj_;
     mutable GeometryImp & geo_;
