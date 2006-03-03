@@ -191,6 +191,7 @@ namespace Dune {
     _b [3][0] = _p3 [0] - _p2 [0] - _b [1][0] ;
     _b [3][1] = _p3 [1] - _p2 [1] - _b [1][1] ;
     _b [3][2] = _p3 [2] - _p2 [2] - _b [1][2] ;
+
     _n [0][0] = _b [1][1] * _b [2][2] - _b [1][2] * _b [2][1] ;
     _n [0][1] = _b [1][2] * _b [2][0] - _b [1][0] * _b [2][2] ;
     _n [0][2] = _b [1][0] * _b [2][1] - _b [1][1] * _b [2][0] ;
@@ -217,21 +218,23 @@ namespace Dune {
 
   inline void BilinearSurfaceMapping ::
   map2world (const coord2_t& map, coord3_t& wld) const {
-    double x = map [0];
-    double y = map [1];
-    double xy = x * y ;
-    wld[0] = _b [0][0] + x * _b [1][0] + y * _b [2][0] + xy * _b [3][0] ;
-    wld[1] = _b [0][1] + x * _b [1][1] + y * _b [2][1] + xy * _b [3][1] ;
-    wld[2] = _b [0][2] + x * _b [1][2] + y * _b [2][2] + xy * _b [3][2] ;
-    return ;
+    map2world(map[0],map[1],wld);
   }
 
   inline void BilinearSurfaceMapping ::
   map2world (double x, double y, coord3_t& w) const {
-    coord2_t p ;
-    p [0] = x ;
-    p [1] = y ;
-    map2world (p,w) ;
+    double xy = x * y ;
+    w[0] = _b [0][0] + x * _b [1][0] + y * _b [2][0] + xy * _b [3][0] ;
+    w[1] = _b [0][1] + x * _b [1][1] + y * _b [2][1] + xy * _b [3][1] ;
+    w[2] = _b [0][2] + x * _b [1][2] + y * _b [2][2] + xy * _b [3][2] ;
+    return ;
+  }
+
+  inline void BilinearSurfaceMapping ::
+  world2map (const coord3_t& wld, coord2_t& map) const {
+    assert(false);
+    //  Newton - Iteration zum Invertieren der Abbildung f.
+    map[0] = map[1] = 0.0;
     return ;
   }
 

@@ -61,6 +61,8 @@ namespace Dune {
 
     double _b [4][3] ;
     double _n [3][3] ;
+    static const double _epsilon ;
+
   public:
     //! Constructor creating empty mapping with double , i.e. zero
     BilinearSurfaceMapping (double);
@@ -76,6 +78,7 @@ namespace Dune {
 
     void map2world(const coord2_t&, coord3_t&) const ;
     void map2world(double x, double y, coord3_t&) const ;
+    void world2map(const coord3_t &, coord2_t & ) const;
     void normal(const coord2_t&, coord3_t&) const ;
 
     // builds _b and _n, called from the constructors

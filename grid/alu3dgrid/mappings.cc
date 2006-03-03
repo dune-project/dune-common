@@ -4,6 +4,7 @@
 
 namespace Dune {
   const double TrilinearMapping :: _epsilon = 1.0e-8 ;
+  const double BilinearSurfaceMapping :: _epsilon = 1.0e-8 ;
 
 
   NonConformingFaceMapping<tetra>::
