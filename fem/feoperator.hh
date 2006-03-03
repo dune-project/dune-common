@@ -351,7 +351,9 @@ namespace Dune {
             assert(false);     // * temporary hack
             int neigh = nit.number_in_self();
 
-            if(en.geometry().type() == triangle)
+            GeometryType type = en.geometry().type();
+
+            if(type.isTriangle())
             {
               int numDof = 3;
               //std::cout << "Dreieck erkannt "<< en.index() << std::endl;
@@ -367,7 +369,7 @@ namespace Dune {
                 dest_it[col] = arg_it[col];
               }
             }
-            if(en.geometry().type() == tetrahedron)
+            if(type.isTetrahedron())
             {
               int numDof = 4;
               for(int i=1; i<numDof; i++)
@@ -382,7 +384,7 @@ namespace Dune {
 
               }
             }
-            if(en.geometry().type() == quadrilateral)
+            if(type.isQuadrilateral())
             {
               for(int i=0; i<2; i++)
               {
@@ -398,7 +400,6 @@ namespace Dune {
             }
           }
         }
-
       }
 
     } // end finalizeLocal
