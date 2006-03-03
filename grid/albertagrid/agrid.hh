@@ -188,7 +188,7 @@ namespace Dune
     AlbertaGridGeometry();
 
     //! constructor building geometry in father
-    AlbertaGridGeometry(const int child);
+    AlbertaGridGeometry(const int child, const int orientation );
 
     //! return the element type identifier
     //! line , triangle or tetrahedron, depends on dim
@@ -267,7 +267,7 @@ namespace Dune
 
   private:
     // build geometry with local coords of child in reference element
-    void buildGeomInFather(const int child);
+    void buildGeomInFather(const int child, const int orientation);
 
     // calculate Matrix for Mapping from reference element to actual element
     void calcElMatrix () const;

@@ -39,10 +39,10 @@ namespace Dune
 
   template <int mydim, int cdim, class GridImp>
   inline AlbertaGridGeometry<mydim,cdim,GridImp>::
-  AlbertaGridGeometry(const int child) : myGeomType_(GeometryType::simplex,mydim)
+  AlbertaGridGeometry(const int child, const int orientation) : myGeomType_(GeometryType::simplex,mydim)
   {
     // make empty element
-    buildGeomInFather(child);
+    buildGeomInFather(child,orientation);
   }
 
   template <int mydim, int cdim, class GridImp>
@@ -348,7 +348,7 @@ namespace Dune
   inline albertCtype AlbertaGridGeometry<3,3,const AlbertaGrid<3,3> >::elDeterminant () const
   {
     calcElMatrix();
-    return std::abs ( elMat_.determinant () );
+    return elMat_.determinant ();
   }
 
   // volume of one Geometry, here point
@@ -440,15 +440,6 @@ namespace Dune
   {
     assert( calcedDet_ );
     return elDet_;
-    // if inverse was built, volume was calced already
-    /*
-       if(calcedDet_)
-       return elDet_;
-
-       elDet_ = elDeterminant();
-       calcedDet_ = true;
-       return elDet_;
-     */
   }
 
   template <int mydim, int cdim, class GridImp>
@@ -612,6 +603,7 @@ namespace Dune
         typedef GridImp :: LeafDataType::Data LeafDataType;
         LeafDataType * ldata = (LeafDataType *) el->child[1];
         assert( ldata );
+
         elDet_ = ldata->determinant;
         calcedDet_ = true;
       }
@@ -621,6 +613,7 @@ namespace Dune
         calcedDet_ = true;
       }
 
+      //assert(elDeterminant() > 0.0);
       // geometry built
       return true;
     }
@@ -676,17 +669,19 @@ namespace Dune
   // built Geometry
   template <int mydim, int cdim, class GridImp>
   inline void AlbertaGridGeometry<mydim,cdim,GridImp>::
-  buildGeomInFather(const int child)
+  buildGeomInFather(const int child, const int orientation )
   {
     initGeom();
     // its a child of the reference element ==> det = 0.5
     elDet_ = 0.5;
     calcedDet_ = true;
 
+    // reset coordinate vectors
+    coord_ = 0.0;
+
     assert( (child == 0) || (child == 1) );
     if(mydim == 2)
     {
-      coord_ = 0.0;
       /*
          //////////////////////////////////////////////
          //
@@ -709,37 +704,45 @@ namespace Dune
 
       if( child == 0 )
       {
-        coord_[0][0] = 0.0; coord_[0][1] = 1.0;
-        coord_[1][0] = 0.0; coord_[1][1] = 0.0;
-        coord_[2][0] = 0.5; coord_[2][1] = 0.0;
+        coord_[0][1] = 1.0; // (0,1)
+        coord_[1]    = 0.0; // (0,0)
+        coord_[2][0] = 0.5; // (0.5,0)
       }
       if( child == 1 )
       {
-        coord_[0][0] = 1.0; coord_[0][1] = 0.0;
-        coord_[1][0] = 0.0; coord_[1][1] = 1.0;
-        coord_[2][0] = 0.5; coord_[2][1] = 0.0;
+        coord_[0][0] = 1.0; // (1,0)
+        coord_[1][1] = 1.0; // (0,1)
+        coord_[2][0] = 0.5; // (0.5,0)
       }
       return ;
     }
 
     if(mydim == 3)
     {
-      assert(false);
-      coord_ = 0.0;
-
       if( child == 0 )
       {
         coord_[0] = 0.0; // (0,0,0)
-        coord_[1] = 0.0; coord_[1][1] = 1.0; // (0,1,0)
-        coord_[2] = 0.0; coord_[2][2] = 1.0; // (0,0,1)
-        coord_[3] = 0.0; coord_[3][0] = 0.5; // (0.5,0,0)
+        coord_[1][1] = 1.0; // (0,1,0)
+        coord_[2][2] = 1.0; // (0,0,1)
+        coord_[3][0] = 0.5; // (0.5,0,0)
       }
       if( child == 1 )
       {
-        coord_[0] = 0.0; coord_[0][0] = 1.0; // (1,0,0)
-        coord_[1] = 0.0; coord_[1][1] = 1.0; // (0,1,0)
-        coord_[2] = 0.0; coord_[2][2] = 1.0; // (0,0,1)
-        coord_[3] = 0.0; coord_[3][0] = 0.5; // (0.5,0,0)
+        coord_[0][0] = 1.0; // (1,0,0)
+
+        // depending on orientation the coood 1 and 2 are swaped
+        // see Alberta Docu page 5
+        if(orientation > 0)
+        {
+          coord_[1][1] = 1.0; // (0,1,0)
+          coord_[2][2] = 1.0; // (0,0,1)
+        }
+        else
+        {
+          coord_[1][2] = 1.0; // (0,1,0)
+          coord_[2][1] = 1.0; // (0,0,1)
+        }
+        coord_[3][0] = 0.5; // (0.5,0,0)
       }
       return ;
     }
@@ -1362,14 +1365,15 @@ namespace Dune
   // GeometryType schould be of type Dune::Geometry
   template <class GeometryType>
   static inline GeometryType &
-  getGeometryInFather(const int child)
+  getGeometryInFather(const int child, const int orientation = 1)
   {
     typedef typename GeometryType :: ImplementationType GeometryImp;
-    static GeometryType child0 (GeometryImp(0)); // child 0
-    static GeometryType child1 (GeometryImp(1)); // child 1
+    static GeometryType child0       (GeometryImp(0,1)); // child 0
+    static GeometryType child1_plus  (GeometryImp(1,1)); // child 1
+    static GeometryType child1_minus (GeometryImp(1,-1)); // child 1, orientation < 0
 
     if(child == 0) return child0;
-    if(child == 1) return child1;
+    if(child == 1) return (orientation > 0) ? child1_plus : child1_minus;
 
     DUNE_THROW(NotImplemented,"wrong number of child given!");
     return child0;
@@ -1386,7 +1390,28 @@ namespace Dune
   inline const AlbertaGridEntity <0,3,const AlbertaGrid<3,3> >::Geometry &
   AlbertaGridEntity <0,3,const AlbertaGrid<3,3> >::geometryInFather() const
   {
-    return getGeometryInFather<Geometry> (this->nChild());
+    // see Alberta Docu for definition  of el_type, values are 0,1,2
+    const int orientation =
+#if DIM == 3
+      (elInfo_->el_type == 1) ? -1 :
+#endif
+      1;
+
+    /*
+       int orient = (elInfo_->orientation);
+       int elType = elInfo_->el_type;
+
+       std::cout << orient << " orient of ch " << nChild() << "\n";
+       //double det = grid_.getRealImplementation(geometry()).elDeterminant();
+       //if(det < 0) assert(orientation == -1);
+       Geometry & geo = getGeometryInFather<Geometry> (this->nChild(),orientation);
+       std::cout << "Geometry[eltype=" << elType<<"] = [ ";
+       for(int i=0; i<geo.corners(); ++i)
+       std::cout << "{" << geo[i] << "},";
+       std::cout << " ] \n";
+       return geo;
+     */
+    return getGeometryInFather<Geometry> (this->nChild(),orientation);
   }
   // end AlbertaGridEntity
 
