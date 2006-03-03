@@ -287,14 +287,11 @@ namespace Dune {
     void realloc ( int nsize )
     {
       assert(myProperty_);
+      assert(nsize >= 0);
 
       if(!myProperty_)
-      {
-        std::cerr << "DofArray::realloc : I can't realloc, because I'm not the owner of the memory! \n";
-        return;
-      }
+        DUNE_THROW(OutOfMemoryError,"Not my property to change mem size!");
 
-      assert(nsize >= 0);
       if(nsize <= memSize_)
       {
         size_ = nsize;
@@ -565,16 +562,13 @@ namespace Dune {
     {
       if( mapper_.needsCompress() )
       {
-        //std::cout << "Called compress of memObj " << name () << "\n";
-        // run over all indices of array and copy values
-        for(int i=0; i<mapper_.oldSize(); i++)
+        // run over all holes and copy array vules to new place
+        const int holes = mapper_.numberOfHoles();
+        for(int i=0; i<holes; ++i)
         {
-          // this can be made more cache efficient
-          if(mapper_.indexIsNew(i))
-          {
-            // copy value
-            array_[ mapper_.newIndex(i) ] = array_[ mapper_.oldIndex(i) ];
-          }
+          // copy value
+          array_[ mapper_.newIndex(i) ]
+            = array_[ mapper_.oldIndex(i) ];
         }
       }
 
@@ -647,10 +641,9 @@ namespace Dune {
     //! return true if array needs resize
     bool resizeNeeded () const
     {
-      //assert( (size() != newSize()) ?
-      //    (std::cerr << "WARNING: DummyMemObject's vector is not up to date! \n" , 0) : 1);
-      //return false;
-      return true;
+      assert( (size() != newSize()) ?
+              (std::cerr << "WARNING: DummyMemObject's vector is not up to date! \n" , 0) : 1);
+      return false;
     }
 
     //! return number of dofs on one element
