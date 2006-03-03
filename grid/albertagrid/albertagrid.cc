@@ -1350,7 +1350,7 @@ namespace Dune
     ALBERTA EL_INFO * fatherInfo = ALBERTA AlbertHelp::getFatherInfo(travStack_,elInfo_,level_);
     assert( fatherInfo );
 
-    std::cout << "Father of el[" << grid_.getElementNumber(element_) << "] is father[" << grid_.getElementNumber(fatherInfo->el) << "\n";
+    //std::cout << "Father of el[" << grid_.getElementNumber(element_) << "] is father[" << grid_.getElementNumber(fatherInfo->el) << "\n";
 
     int fatherLevel = (level_ > 0) ? (level_-1) : 0;
 
