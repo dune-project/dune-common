@@ -237,7 +237,7 @@ inline void cutHierarchicStack(TRAVERSE_STACK* copy, TRAVERSE_STACK* org)
   copy->save_info_stack[0] = org->save_info_stack[used];
   copy->save_info_stack[1] = 0;
 
-  copy->save_stack_used = org->save_stack_used;
+  copy->save_stack_used = 1; //org->save_stack_used;
   copy->el_count = 1;
   return;
 }

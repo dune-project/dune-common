@@ -38,6 +38,14 @@ namespace Dune
   }
 
   template <int mydim, int cdim, class GridImp>
+  inline AlbertaGridGeometry<mydim,cdim,GridImp>::
+  AlbertaGridGeometry(const int child) : myGeomType_(GeometryType::simplex,mydim)
+  {
+    // make empty element
+    buildGeomInFather(child);
+  }
+
+  template <int mydim, int cdim, class GridImp>
   inline ALBERTA EL_INFO * AlbertaGridGeometry<mydim,cdim,GridImp>::
   makeEmptyElInfo()
   {
@@ -667,22 +675,92 @@ namespace Dune
 
   // built Geometry
   template <int mydim, int cdim, class GridImp>
-  template <class GeometryType>
-  inline bool AlbertaGridGeometry<mydim,cdim,GridImp>::
-  buildGeomInFather(const GeometryType &fatherGeom , const GeometryType & myGeom)
+  inline void AlbertaGridGeometry<mydim,cdim,GridImp>::
+  buildGeomInFather(const int child)
   {
     initGeom();
-
-    // compute the local coordinates in father refelem
-    for(int i=0; i < myGeom.corners() ; i++)
-      coord_[i] = fatherGeom.local( myGeom[i] );
-
-    elDet_ = elDeterminant();
+    // its a child of the reference element ==> det = 0.5
+    elDet_ = 0.5;
     calcedDet_ = true;
-    return true;
+
+    assert( (child == 0) || (child == 1) );
+    if(mydim == 2)
+    {
+      coord_ = 0.0;
+      //////////////////////////////////////////////
+      //
+      //             (0.0,1.0)
+      //                /|\
+      //               /0|1\
+      //              /  |  \
+      //             /   |   \
+      //            /    |    \
+      //           /     |     \
+      //          /      |      \
+      //         / ch 0  | ch 1  \
+      //        /1      2|2      0\
+      //        -------------------
+      //   (0.0,0.0)              (1.0, 0.0)
+      //
+      //
+      ///////////////////////////////////////////
+
+      if( child == 0 )
+      {
+        coord_[0][0] = 0.0; coord_[0][1] = 1.0;
+        coord_[1][0] = 0.0; coord_[1][1] = 0.0;
+        coord_[2][0] = 0.0; coord_[2][1] = 0.5;
+      }
+      if( child == 1 )
+      {
+        coord_[0][0] = 1.0; coord_[0][1] = 0.0;
+        coord_[1][0] = 0.0; coord_[1][1] = 1.0;
+        coord_[2][0] = 0.0; coord_[2][1] = 0.5;
+      }
+      return ;
+    }
+
+    if(mydim == 3)
+    {
+      assert(false);
+      coord_ = 0.0;
+
+      //////////////////////////////////////////////
+      //
+      //             (0.0,1.0)
+      //                /|\
+      //               /0|1\
+      //              /  |  \
+      //             /   |   \
+      //            /    |    \
+      //           /     |     \
+      //          /      |      \
+      //         / ch 0  | ch 1  \
+      //        /1      2|2      0\
+      //        -------------------
+      //   (0.0,0.0)              (1.0, 0.0)
+      //
+      //
+      ///////////////////////////////////////////
+      if( child == 0 )
+      {
+        coord_[0] = 0.0; // (0,0,0)
+        coord_[1] = 0.0; coord_[1][1] = 1.0; // (0,1,0)
+        coord_[2] = 0.0; coord_[2][2] = 1.0; // (0,0,1)
+        coord_[3] = 0.0; coord_[3][0] = 0.5; // (0.5,0,0)
+      }
+      if( child == 1 )
+      {
+        coord_[0] = 0.0; coord_[0][0] = 1.0; // (1,0,0)
+        coord_[1] = 0.0; coord_[1][1] = 1.0; // (0,1,0)
+        coord_[2] = 0.0; coord_[2][2] = 1.0; // (0,0,1)
+        coord_[3] = 0.0; coord_[3][0] = 0.5; // (0.5,0,0)
+      }
+      return ;
+    }
+
+    DUNE_THROW(NotImplemented,"wrong dimension given!");
   }
-
-
 
   //*************************************************************************
   //
@@ -1276,21 +1354,58 @@ namespace Dune
     ALBERTA EL_INFO * fatherInfo = ALBERTA AlbertHelp::getFatherInfo(travStack_,elInfo_,level_);
     assert( fatherInfo );
 
+    std::cout << "Father of el[" << grid_.getElementNumber(element_) << "] is father[" << grid_.getElementNumber(fatherInfo->el) << "\n";
+
     int fatherLevel = (level_ > 0) ? (level_-1) : 0;
+
     assert( (fatherLevel == fatherInfo->level) );
 
     return AlbertaGridEntityPointer<0,GridImp> (grid_,travStack_,fatherLevel,fatherInfo,0,0,0);
   }
 
-  template< int dim, class GridImp >
-  inline const typename AlbertaGridEntity <0,dim,GridImp>::Geometry &
-  AlbertaGridEntity <0,dim,GridImp>::geometryInFather() const
+  template<int dim, class GridImp>
+  inline int AlbertaGridEntity <0,dim,GridImp>::nChild() const
   {
-    const typename GridImp::template Codim<0> :: EntityPointer ep = father();
+    // get father and check which child we have
+    const ALBERTA EL * father = elInfo_->parent;
+    assert( father );
 
-    fatherReLocal_.buildGeomInFather( (*ep).geometry() , geometry() );
+    int child = 0;
+    if(father->child[1] == element_) child = 1;
 
-    return fatherReLocalObj_;
+    assert( father->child[child] == element_ );
+    return child;
+  }
+
+  // singletons of geometry in father geometries
+  // GeometryType schould be of type Dune::Geometry
+  template <class GeometryType>
+  static inline GeometryType &
+  getGeometryInFather(const int child)
+  {
+    typedef typename GeometryType :: ImplementationType GeometryImp;
+    static GeometryType child0 (GeometryImp(0)); // child 0
+    static GeometryType child1 (GeometryImp(1)); // child 1
+
+    if(child == 0) return child0;
+    if(child == 1) return child1;
+
+    DUNE_THROW(NotImplemented,"wrong number of child given!");
+    return child0;
+  }
+
+  template<>
+  inline const AlbertaGridEntity <0,2,const AlbertaGrid<2,2> >::Geometry &
+  AlbertaGridEntity <0,2,const AlbertaGrid<2,2> >::geometryInFather() const
+  {
+    return getGeometryInFather<Geometry> (this->nChild());
+  }
+
+  template<>
+  inline const AlbertaGridEntity <0,3,const AlbertaGrid<3,3> >::Geometry &
+  AlbertaGridEntity <0,3,const AlbertaGrid<3,3> >::geometryInFather() const
+  {
+    return getGeometryInFather<Geometry> (this->nChild());
   }
   // end AlbertaGridEntity
 
@@ -1478,7 +1593,7 @@ namespace Dune
         // this means, we go until leaf level
         stack->traverse_fill_flag = CALL_LEAF_EL | stack->traverse_fill_flag;
         // exact here has to stand Grid->maxlevel, but is ok anyway
-        maxlevel_ = this->grid_.maxLevel(); //123456789;
+        maxlevel_ = this->grid_.maxLevel();
       }
       // set new traverse level
       stack->traverse_level = maxlevel_;

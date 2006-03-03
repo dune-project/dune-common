@@ -180,11 +180,15 @@ namespace Dune
     public GeometryDefaultImplementation<mydim,cdim,GridImp,AlbertaGridGeometry>
   {
 
+    typedef AlbertaGridGeometry<mydim,cdim,GridImp> ThisType;
     //! know dimension of barycentric coordinates
     enum { dimbary=mydim+1};
   public:
     //! Default constructor
     AlbertaGridGeometry();
+
+    //! constructor building geometry in father
+    AlbertaGridGeometry(const int child);
 
     //! return the element type identifier
     //! line , triangle or tetrahedron, depends on dim
@@ -252,10 +256,6 @@ namespace Dune
     bool builtLocalGeom(const GeometryType & geo , const LocalGeomType & lg,
                         ALBERTA EL_INFO *elInfo, int face);
 
-    //! build geometry in father
-    template <class GeometryType>
-    bool buildGeomInFather(const GeometryType & fatherGeom , const GeometryType & myGeom );
-
     // init geometry with zeros
     //! no interface method
     void initGeom();
@@ -266,6 +266,9 @@ namespace Dune
     void print (std::ostream& ss) const;
 
   private:
+    // build geometry with local coords of child in reference element
+    void buildGeomInFather(const int child);
+
     // calculate Matrix for Mapping from reference element to actual element
     void calcElMatrix () const;
 
@@ -640,6 +643,9 @@ namespace Dune
     void setEntity (const AlbertaGridEntity<0,dim,GridImp> & org);
 
   private:
+    //! return which number of child we are, i.e. 0 or 1
+    int nChild () const;
+
     //! make a new AlbertaGridEntity
     void makeDescription();
 
