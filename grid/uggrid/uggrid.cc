@@ -461,6 +461,14 @@ bool Dune::UGGrid < dim, dimworld >::mark(const typename Traits::template Codim<
 }
 
 template < int dim, int dimworld >
+bool Dune::UGGrid < dim, dimworld >::preAdapt()
+{
+  // returns always true, because for red-green refinement always some
+  // elements are coarsend, even if not marked.
+  return true;
+}
+
+template < int dim, int dimworld >
 bool Dune::UGGrid < dim, dimworld >::adapt()
 {
 
