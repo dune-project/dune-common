@@ -70,7 +70,7 @@ namespace Dune
         if (!first) std::cout << ",";
         std::cout << grid.leafIndexSet().geomTypes(c)[i]
                   << "[" << c << "]"
-                  << "=" << grid.leafIndexSet().size(c,grid.leafIndexSet().geomTypes(c)[i]);
+                  << "=" << grid.leafIndexSet().size(grid.leafIndexSet().geomTypes(c)[i]);
         first=false;
       }
     }
