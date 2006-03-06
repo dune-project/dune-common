@@ -348,7 +348,7 @@ namespace Dune
   inline albertCtype AlbertaGridGeometry<3,3,const AlbertaGrid<3,3> >::elDeterminant () const
   {
     calcElMatrix();
-    return elMat_.determinant ();
+    return std::abs(elMat_.determinant ());
   }
 
   // volume of one Geometry, here point
@@ -672,10 +672,6 @@ namespace Dune
   buildGeomInFather(const int child, const int orientation )
   {
     initGeom();
-    // its a child of the reference element ==> det = 0.5
-    elDet_ = 0.5;
-    calcedDet_ = true;
-
     // reset coordinate vectors
     coord_ = 0.0;
 
@@ -714,7 +710,6 @@ namespace Dune
         coord_[1][1] = 1.0; // (0,1)
         coord_[2][0] = 0.5; // (0.5,0)
       }
-      return ;
     }
 
     if(mydim == 3)
@@ -744,9 +739,13 @@ namespace Dune
         }
         coord_[3][0] = 0.5; // (0.5,0,0)
       }
-      return ;
     }
 
+    // its a child of the reference element ==> det = 0.5
+    elDet_ = elDeterminant();
+    calcedDet_ = true;
+
+    if( elDet_ > 0.0 ) return;
     DUNE_THROW(NotImplemented,"wrong dimension given!");
   }
 
@@ -1396,21 +1395,6 @@ namespace Dune
       (elInfo_->el_type == 1) ? -1 :
 #endif
       1;
-
-    /*
-       int orient = (elInfo_->orientation);
-       int elType = elInfo_->el_type;
-
-       std::cout << orient << " orient of ch " << nChild() << "\n";
-       //double det = grid_.getRealImplementation(geometry()).elDeterminant();
-       //if(det < 0) assert(orientation == -1);
-       Geometry & geo = getGeometryInFather<Geometry> (this->nChild(),orientation);
-       std::cout << "Geometry[eltype=" << elType<<"] = [ ";
-       for(int i=0; i<geo.corners(); ++i)
-       std::cout << "{" << geo[i] << "},";
-       std::cout << " ] \n";
-       return geo;
-     */
     return getGeometryInFather<Geometry> (this->nChild(),orientation);
   }
   // end AlbertaGridEntity
@@ -3827,14 +3811,12 @@ namespace Dune
   inline bool AlbertaGrid < dim, dimworld >::postAdapt()
   {
     isMarked_ = false;
-    if(leafIndexSet_)
-    {
-      leafIndexSet_->compress();
-      // the number of leaf elements is store in mesh
-      // check that they are the same
-      assert( mesh_->n_elements == leafIndexSet_->size(0) );
-    }
-
+    assert( (leafIndexSet_) ? (mesh_->n_elements == leafIndexSet_->size(0) ?   1 : 0) : 1);
+    assert( (leafIndexSet_) ? (mesh_->n_vertices == leafIndexSet_->size(dim) ? 1 : 0) : 1);
+    assert( (leafIndexSet_) ? (mesh_->n_edges == leafIndexSet_->size(dim-1) ?  1 : 0) : 1);
+#if DIM == 3
+    assert( (leafIndexSet_ && dim == 3) ? (mesh_->n_faces == leafIndexSet_->size(1) ? 1 : 0) : 1);
+#endif
     return wasChanged_;
   }
 
@@ -4318,8 +4300,6 @@ namespace Dune
   inline int AlbertaGrid < dim, dimworld >::size (int level, int codim) const
   {
     if( (level > maxlevel_) || (level < 0) ) return 0;
-    assert( this->levelIndexSet(level).size(GeometryType(GeometryType::simplex,dim-codim) )
-            == sizeCache_->size(level,codim) );
     assert( sizeCache_ );
     return sizeCache_->size(level,codim);
   }
@@ -4340,8 +4320,6 @@ namespace Dune
   template < int dim, int dimworld >
   inline int AlbertaGrid < dim, dimworld >::size (int codim) const
   {
-    assert( this->leafIndexSet().size(GeometryType(GeometryType::simplex,dim-codim) )
-            == sizeCache_->size(codim) );
     assert( sizeCache_ );
     return sizeCache_->size(codim);
   }
@@ -4362,7 +4340,7 @@ namespace Dune
   inline const typename AlbertaGrid < dim, dimworld > :: Traits :: LeafIndexSet &
   AlbertaGrid < dim, dimworld > :: leafIndexSet () const
   {
-    if(!leafIndexSet_) leafIndexSet_ = new LeafIndexSet (*this);
+    if(!leafIndexSet_) leafIndexSet_ = new LeafIndexSetImp (*this);
     return *leafIndexSet_;
   }
 
@@ -4436,23 +4414,21 @@ namespace Dune
 #endif
 
     // unset up2Dat status, if lbegin is called then this status is updated
-    for(int l=0; l<MAXL; l++) vertexMarkerLevel_[l].unsetUp2Date();
+    for(int l=0; l<MAXL; ++l) vertexMarkerLevel_[l].unsetUp2Date();
 
     // unset up2Dat status, if leafbegin is called then this status is updated
     vertexMarkerLeaf_.unsetUp2Date();
 
-    // if levelIndexSet exists, then update now
-    for(unsigned int i=0; i<levelIndexVec_.size(); i++)
-      if(levelIndexVec_[i]) (*levelIndexVec_[i]).calcNewIndex();
-
-    if( leafIndexSet_ ) (*leafIndexSet_).resize();
-
-    // this is done in postAdapt
-    //if( leafIndexSet_ ) (*leafIndexSet_).compress();
-
     if(sizeCache_) delete sizeCache_;
     // first bool says we have simplex, second not cube, third, worryabout
     sizeCache_ = new SizeCacheType (*this,true,false,true);
+
+    // if levelIndexSet exists, then update now
+    for(unsigned int i=0; i<levelIndexVec_.size(); ++i)
+      if(levelIndexVec_[i]) (*levelIndexVec_[i]).calcNewIndex();
+
+    // create new Leaf Index
+    if( leafIndexSet_ ) leafIndexSet_->calcNewIndex();
 
     // we have a new grid
     wasChanged_ = true;

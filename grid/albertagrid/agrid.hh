@@ -71,8 +71,6 @@ namespace Dune {
 
 // contains the communication for parallel computing for this grid
 #include "agcommunicator.hh"
-#include <dune/grid/common/leafindexset.hh>
-
 
 namespace Dune
 {
@@ -1236,7 +1234,8 @@ namespace Dune
     typedef AlbertaGrid<dim,dimworld> GridImp;
 
     typedef DefaultLevelIndexSet< AlbertaGrid<dim,dimworld> > LevelIndexSetImp;
-    typedef AdaptiveLeafIndexSet< AlbertaGrid<dim,dimworld> > LeafIndexSetImp;
+    //typedef AdaptiveLeafIndexSet< AlbertaGrid<dim,dimworld> > LeafIndexSetImp;
+    typedef DefaultLeafIndexSet< AlbertaGrid<dim,dimworld> > LeafIndexSetImp;
 
     typedef AlbertaGridIdSet<dim,dimworld> IdSetImp;
     typedef int IdType;
@@ -1281,7 +1280,8 @@ namespace Dune
       };
 
       typedef IndexSet<GridImp,LevelIndexSetImp,DefaultLevelIteratorTypes<GridImp> > LevelIndexSet;
-      typedef LeafIndexSetImp LeafIndexSet;
+      typedef IndexSet<GridImp,LeafIndexSetImp,DefaultLeafIteratorTypes<GridImp> > LeafIndexSet;
+      //typedef LeafIndexSetImp LeafIndexSet;
       typedef IdSet<GridImp,IdSetImp,IdType> GlobalIdSet;
       typedef IdSet<GridImp,IdSetImp,IdType> LocalIdSet;
     };
@@ -1371,7 +1371,8 @@ namespace Dune
     typedef typename Traits::template Codim<0>::LeafIterator LeafIterator;
 
     typedef AlbertaGridHierarchicIndexSet<dim,dimworld> HierarchicIndexSet;
-    typedef DefaultLevelIndexSet< AlbertaGrid<dim,dimworld> > LevelIndexSetImp;
+    typedef typename GridFamily:: LevelIndexSetImp LevelIndexSetImp;
+    typedef typename GridFamily:: LeafIndexSetImp LeafIndexSetImp;
     typedef typename Traits :: LeafIndexSet LeafIndexSet;
 
     typedef AlbertaGridIdSet<dim,dimworld> IdSetImp;
@@ -1843,7 +1844,7 @@ namespace Dune
 
     // the leaf index set, is generated from the HierarchicIndexSet
     // is generated, when accessed
-    mutable LeafIndexSet* leafIndexSet_;
+    mutable LeafIndexSetImp* leafIndexSet_;
 
     //! stores geometry types of this grid
     std::vector < std::vector< GeometryType > > geomTypes_;
