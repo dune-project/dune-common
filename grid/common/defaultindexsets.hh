@@ -29,6 +29,7 @@ namespace Dune {
   {
     // dummy value
     enum { myType = -1 };
+    const bool adaptive_;
   public:
     template <class IndexSetType, class EntityType,int enCodim, int codim>
     struct IndexWrapper
@@ -83,22 +84,28 @@ namespace Dune {
     };
 
     //! default constructor
-    DefaultEmptyIndexSet () {}
+    DefaultEmptyIndexSet (bool adaptive) : adaptive_(adaptive) {}
 
     //! return false mean the no memory has to be allocated
     //! and no compress of date has to be done
-    bool compress () { return false; }
+    bool compress () {
+      return false;
+    }
 
     //! returns true if index set gernally needs compress after adaptation
     bool needsCompress () const { return false; }
 
     //! do nothing here, because fathers index should already exist
     template <class EntityType>
-    void insertNewIndex( const EntityType & en ) {}
+    void insertNewIndex( const EntityType & en ) {
+      assert(adaptive_) ;
+    }
 
     //! do nothing here, because fathers index should already exist
     template <class EntityType>
-    void removeOldIndex( const EntityType & en ) {}
+    void removeOldIndex( const EntityType & en ) {
+      assert(adaptive_) ;
+    }
 
     //! nothing to do here
     void resize () {}
@@ -192,10 +199,12 @@ namespace Dune {
   {
   public:
     //! store const reference to set
-    IndexSetWrapper(const IndexSetImp & set) : set_(set) {}
+    IndexSetWrapper(const IndexSetImp & set, bool adaptive = false)
+      : DefaultEmptyIndexSet(adaptive), set_(set) {}
 
     //! store const reference to set
-    IndexSetWrapper(const IndexSetWrapper<IndexSetImp> & s) : set_(s.set_) {}
+    IndexSetWrapper(const IndexSetWrapper<IndexSetImp> & s)
+      : DefaultEmptyIndexSet(s.adaptive_), set_(s.set_) {}
 
     //! return size of set for codim
     int size ( GeometryType type ) const
@@ -293,7 +302,7 @@ namespace Dune {
 
     //! constructor
     DefaultGridIndexSet ( const GridType & grid , const int level =-1 )
-      : IndexSetWrapper< HSetType > (grid.hierarchicIndexSet()) {}
+      : IndexSetWrapper< HSetType > (grid.hierarchicIndexSet(),true) {}
 
     //! return type (for Grape In/Output)
     int type() const { return myType; }
