@@ -175,8 +175,8 @@ namespace Dune {
       LevelIterator it  = grid_.template lbegin<codim> (level);
       LevelIterator end = grid_.template lend<codim>   (level);
 
-      GeometryType type (((isSimplex_) ?  GeometryType::simplex :  GeometryType::cube ),dim-codim);
-      assert( type.isCube() == isCube_ );
+      GeometryType type (((isSimplex_) ? GeometryType::simplex : GeometryType::cube ),dim-codim);
+      assert( ((dim-codim) > 1) ? (type.isCube() == isCube_) : 1);
       if( notWorry_ ) return countElements(it,end,type);
       return countElements(it,end);
     }
@@ -188,7 +188,7 @@ namespace Dune {
       LeafIterator it  = grid_.template leafbegin<codim> ();
       LeafIterator end = grid_.template leafend<codim>   ();
       GeometryType type (((isSimplex_) ? GeometryType::simplex : GeometryType::cube ),dim-codim);
-      assert( type.isCube() == isCube_ );
+      assert( ((dim-codim) > 1) ? (type.isCube() == isCube_) : 1);
       if( notWorry_ ) return countElements(it,end,type);
       return countElements(it,end);
     }
