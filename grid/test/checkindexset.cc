@@ -436,6 +436,16 @@ namespace Dune {
               // dont check neighbour, if we check level index sets
               if(levelIndex)
               {
+                if(grid.type() == AlbertaGrid_Id )
+                {
+                  static bool visited = false;
+                  if(!visited )
+                  {
+                    derr << "WARNING: Neighbor Relations for AlbertaGrid not working correctly for level != leaf level! \n";
+                    visited = true;
+                  }
+                  continue;
+                }
                 if(it->level() != en.level()) continue;
               }
               checkSubEntity<codim> (grid, en, lset, sout,
