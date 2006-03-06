@@ -47,6 +47,12 @@ namespace Dune
       static const bool v = false;
     };
 
+    template<class Grid>
+    struct hasBackupRestoreFacilities
+    {
+      static const bool v = false;
+    };
+
     /*
        forward
        Capabilities::Something<const Grid>
@@ -82,6 +88,12 @@ namespace Dune
     struct hasHangingNodes<const Grid>
     {
       static const bool v = Dune::Capabilities::hasHangingNodes<Grid>::v;
+    };
+
+    template<class Grid>
+    struct hasBackupRestoreFacilities<const Grid>
+    {
+      static const bool v = Dune::Capabilities::hasBackupRestoreFacilities<Grid>::v;
     };
 
   }
