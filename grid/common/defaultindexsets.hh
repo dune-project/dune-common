@@ -825,5 +825,35 @@ namespace Dune {
     Array<int> index_[ncodim];
   };
 
+
+  //! class for combining 2 index sets together for adaptation process
+  template <class A, class B >
+  class CombinedAdaptProlongRestrict
+  {
+    //! space A and B
+    const A & _a;
+    const B & _b;
+  public:
+    //! constructor storing the two references
+    CombinedAdaptProlongRestrict ( const A & a, const B & b ) : _a ( a ) , _b ( b )
+    {}
+
+    //! restrict data to father
+    template <class EntityType>
+    void restrictLocal ( EntityType &father, EntityType &son, bool initialize ) const
+    {
+      _a.restrictLocal(father,son,initialize);
+      _b.restrictLocal(father,son,initialize);
+    }
+
+    //! prolong data to children
+    template <class EntityType>
+    void prolongLocal ( EntityType &father, EntityType &son, bool initialize ) const
+    {
+      _a.prolongLocal(father,son,initialize);
+      _b.prolongLocal(father,son,initialize);
+    }
+  };
+
 } // end namespace Dune
 #endif
