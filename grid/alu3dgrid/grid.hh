@@ -3,6 +3,10 @@
 #ifndef DUNE_ALU3DGRIDGRID_HH
 #define DUNE_ALU3DGRIDGRID_HH
 
+#if defined ALUGRID_PLL_TETRA || defined ALUGRID_PLL_HEXA
+  #define _ALU3DGRID_PARALLEL_
+#endif
+
 //- System includes
 #include <vector>
 
@@ -105,7 +109,7 @@ namespace Dune {
     //! Type of the level index set
     typedef DefaultLevelIndexSet<ALU3dGrid < dim, dimworld, elType > >  LevelIndexSetImp;
     //! Type of the leaf index set
-    typedef AdaptiveLeafIndexSet<ALU3dGrid < dim, dimworld, elType > >  LeafIndexSetImp;
+    typedef DefaultLeafIndexSet<ALU3dGrid < dim, dimworld, elType > >   LeafIndexSetImp;
 
     //! type of ALU3dGrids global id
     typedef bigunsignedint<6*32> GlobalIdType;
@@ -154,13 +158,13 @@ namespace Dune {
       };
 
       typedef IndexSet<GridImp,LevelIndexSetImp,DefaultLevelIteratorTypes<GridImp> > LevelIndexSet;
-      typedef LeafIndexSetImp LeafIndexSet;
+      typedef IndexSet<GridImp,LeafIndexSetImp,DefaultLeafIteratorTypes<GridImp> > LeafIndexSet;
       typedef IdSet<GridImp,LocalIdSetImp,LocalIdType> LocalIdSet;
-#ifdef _ALU3DGRID_PARALLEL_
-      typedef IdSet<GridImp,GlobalIdSetImp,GlobalIdType> GlobalIdSet;
-#else
+      //#ifdef _ALU3DGRID_PARALLEL_
+      //      typedef IdSet<GridImp,GlobalIdSetImp,GlobalIdType> GlobalIdSet;
+      //#else
       typedef LocalIdSet GlobalIdSet;
-#endif
+      //#endif
     };
   };
 
@@ -234,12 +238,12 @@ namespace Dune {
     //! Type of the local id set
     typedef ALU3dGridLocalIdSet<dim,dimworld,elType> LocalIdSetImp;
 
-#ifdef _ALU3DGRID_PARALLEL_
-    //! Type of the global id set
-    typedef ALU3dGridGlobalIdSet<dim,dimworld,elType> GlobalIdSetImp;
-#else
+    //#ifdef _ALU3DGRID_PARALLEL_
+    //    //! Type of the global id set
+    //    typedef ALU3dGridGlobalIdSet<dim,dimworld,elType> GlobalIdSetImp;
+    //#else
     typedef LocalIdSetImp GlobalIdSetImp;
-#endif
+    //#endif
 
     //! Type of the global id set
     typedef typename Traits :: GlobalIdSet GlobalIdSet;
@@ -248,9 +252,9 @@ namespace Dune {
     typedef typename Traits :: LocalIdSet LocalIdSet;
 
     //! Type of the level index set
-    typedef DefaultLevelIndexSet<MyType>           LevelIndexSetImp;
+    typedef typename GridFamily :: LevelIndexSetImp LevelIndexSetImp;
     //! Type of the leaf index set
-    typedef AdaptiveLeafIndexSet<MyType>           LeafIndexSetImp;
+    typedef typename GridFamily :: LeafIndexSetImp LeafIndexSetImp;
 
     typedef typename SelectType<elType == tetra,
         ReferenceSimplex<alu3d_ctype, dim>,
@@ -262,7 +266,6 @@ namespace Dune {
     typedef typename Traits::template Codim<0>::LeafIterator LeafIterator;
 
     typedef ALU3dGridHierarchicIterator<MyType> HierarchicIteratorImp;
-
 
     //! maximal number of levels
     enum { MAXL = 64 };
@@ -647,14 +650,14 @@ namespace Dune {
   {
     typedef ALU3dGridMakeableEntity<0,GridImp::dimension,const GridImp> EntityImp;
     template <class EntityProviderType>
-    static ALU3dGridMakeableEntity<0,GridImp::dimension,const GridImp> *
+    inline static ALU3dGridMakeableEntity<0,GridImp::dimension,const GridImp> *
     getNewEntity (const GridImp & grid, EntityProviderType & ep, int level)
     {
       return ep.getObject( grid, level);
     }
 
     template <class EntityProviderType>
-    static void freeEntity( EntityProviderType & ep, EntityImp * e )
+    inline static void freeEntity( EntityProviderType & ep, EntityImp * e )
     {
       ep.freeObject( e );
     }
@@ -695,6 +698,13 @@ namespace Dune {
     {
       static const bool v = true;
     };
+
+    template<int dim, int dimw, Dune::ALU3dGridElementType elType>
+    struct hasBackupRestoreFacilities< ALU3dGrid<dim,dimw,elType> >
+    {
+      static const bool v = true;
+    };
+
   } // end namespace Capabilities
 
 } // end namespace Dune

@@ -207,7 +207,6 @@ namespace Dune {
   {
     assert( codim >= 0 );
     assert( codim < dim +1 );
-    //assert( leafIndexSet().size(codim) == sizeCache_->size(codim) );
     return sizeCache_->size(codim);
   }
 
@@ -241,19 +240,21 @@ namespace Dune {
   template <int dim, int dimworld, ALU3dGridElementType elType>
   inline void ALU3dGrid<dim, dimworld, elType>::calcExtras()
   {
+    if(sizeCache_) delete sizeCache_;
+    bool isSimplex = (elType == tetra) ? true : false;
+    sizeCache_ = new SizeCacheType (*this,isSimplex,!isSimplex,true);
+
     for(unsigned int i=0; i<levelIndexVec_.size(); i++)
     {
       if(levelIndexVec_[i]) (*(levelIndexVec_[i])).calcNewIndex();
     }
 
+    if(leafIndexSet_) leafIndexSet_->calcNewIndex();
+
     // update id set, i.e. insert new elements
     if(globalIdSet_) globalIdSet_->updateIdSet();
 
     for(unsigned int i=0; i<MAXL; i++) vertexList_[i].unsetUp2Date();
-
-    if(sizeCache_) delete sizeCache_;
-    bool isSimplex = (elType == tetra) ? true : false;
-    sizeCache_ = new SizeCacheType (*this,isSimplex,!isSimplex,true);
 
     coarsenMarked_ = 0;
     refineMarked_  = 0;
@@ -552,27 +553,12 @@ namespace Dune {
   inline bool ALU3dGrid<dim, dimworld, elType>::adapt()
   {
     bool ref = false;
-    if(leafIndexSet_)
-    {
-      EntityImp f ( *this, this->maxLevel() );
-      EntityImp s ( *this, this->maxLevel() );
-
-      typedef typename Traits :: LeafIndexSet LeafIndexSetType;
-
-      ALU3DSPACE AdaptRestrictProlongImpl<ALU3dGrid<dim, dimworld, elType>,
-          EntityImp, LeafIndexSetType, LeafIndexSetType >
-      rp(*this,f,s, *leafIndexSet_  ,*leafIndexSet_);
-
-      ref = myGrid().duneAdapt(rp); // adapt grid
-    }
-    else
-    {
 #ifdef _ALU3DGRID_PARALLEL_
-      ref = myGrid().dAdapt(); // adapt grid
+    ref = myGrid().dAdapt(); // adapt grid
 #else
-      ref = myGrid().adapt(); // adapt grid
+    ref = myGrid().adapt(); // adapt grid
 #endif
-    }
+
     if(ref)
     {
       // calcs maxlevel and other extras
@@ -592,15 +578,6 @@ namespace Dune {
 
     EntityImp f ( *this, this->maxLevel() );
     EntityImp s ( *this, this->maxLevel() );
-
-    if(leafIndexSet_)
-    {
-      if( ! dm.checkIndexSetExists( *leafIndexSet_ ))
-      {
-        std::cout << "Add LeafIndexSet to DofManager! \n";
-        dm.addIndexSet( *this , *leafIndexSet_ );
-      }
-    }
 
     typedef typename DofManagerType :: IndexSetRestrictProlongType IndexSetRPType;
     typedef CombinedAdaptProlongRestrict < IndexSetRPType,RestrictProlongOperatorType > COType;
@@ -690,8 +667,6 @@ namespace Dune {
       }
     }
 #endif
-    // compress leaf index set
-    if( leafIndexSet_ ) (*leafIndexSet_).compress();
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType> template <class T>
@@ -764,15 +739,6 @@ namespace Dune {
     EntityImp en     ( *this, this->maxLevel() );
     EntityImp father ( *this, this->maxLevel() );
     EntityImp son    ( *this, this->maxLevel() );
-
-    if(leafIndexSet_)
-    {
-      if( ! dc.checkIndexSetExists( *leafIndexSet_ ))
-      {
-        std::cout << "Add LeafIndexSet to DofManager! \n";
-        dc.addIndexSet( *this , *leafIndexSet_ );
-      }
-    }
 
     ALU3DSPACE GatherScatterImpl< ALU3dGrid<dim, dimworld, elType>, EntityImp, DataCollectorType >
     gs(*this,en,dc);
