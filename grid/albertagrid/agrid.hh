@@ -1235,7 +1235,6 @@ namespace Dune
     typedef AlbertaGrid<dim,dimworld> GridImp;
 
     typedef DefaultLevelIndexSet< AlbertaGrid<dim,dimworld> > LevelIndexSetImp;
-    //typedef AdaptiveLeafIndexSet< AlbertaGrid<dim,dimworld> > LeafIndexSetImp;
     typedef DefaultLeafIndexSet< AlbertaGrid<dim,dimworld> > LeafIndexSetImp;
 
     typedef AlbertaGridIdSet<dim,dimworld> IdSetImp;
@@ -1262,9 +1261,6 @@ namespace Dune
 
         typedef typename SelectEntityImp<cd,dim,GridImp>::Entity Entity;
 
-        //typedef Dune::Entity<cd, dim, const GridImp, AlbertaGridEntity> Entity;
-        //typedef Dune::EntityDefaultImplementation<cd,dim,const GridImp> Entity;
-
         typedef Dune::LevelIterator<cd,All_Partition,const GridImp,AlbertaGridLevelIterator> LevelIterator;
 
         typedef Dune::LeafIterator<cd,All_Partition,const GridImp,AlbertaGridLeafIterator> LeafIterator;
@@ -1282,7 +1278,6 @@ namespace Dune
 
       typedef IndexSet<GridImp,LevelIndexSetImp,DefaultLevelIteratorTypes<GridImp> > LevelIndexSet;
       typedef IndexSet<GridImp,LeafIndexSetImp,DefaultLeafIteratorTypes<GridImp> > LeafIndexSet;
-      //typedef LeafIndexSetImp LeafIndexSet;
       typedef IdSet<GridImp,IdSetImp,IdType> GlobalIdSet;
       typedef IdSet<GridImp,IdSetImp,IdType> LocalIdSet;
     };
