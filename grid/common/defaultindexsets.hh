@@ -259,8 +259,7 @@ namespace Dune {
   //! Wraps LevelIndexSet for use with LagrangeFunctionSpace
   template <class GridType, GridIndexType GridIndex = LevelIndex>
   class DefaultGridIndexSet
-    : public IndexSetWrapper< typename GridType :: Traits:: LevelIndexSet>
-
+    : public IndexSetWrapper< typename GridType :: Traits:: LevelIndexSet >
   {
     // my type, to be revised
     enum { myType = 1 };
@@ -330,21 +329,21 @@ namespace Dune {
   //*********************************************************************
 
   template <class DefaultLevelIndexSetType, int codim>
-  struct CalcLevelForCodim
+  struct CheckLevelForCodim
   {
     static void recursive(DefaultLevelIndexSetType & d)
     {
-      d.template calcLevelIndexForCodim<codim> ();
-      CalcLevelForCodim<DefaultLevelIndexSetType,codim-1>::recursive(d);
+      d.template checkLevelIndexForCodim<codim> ();
+      CheckLevelForCodim<DefaultLevelIndexSetType,codim-1>::recursive(d);
     }
   };
 
   template <class DefaultLevelIndexSetType>
-  struct CalcLevelForCodim<DefaultLevelIndexSetType,0>
+  struct CheckLevelForCodim<DefaultLevelIndexSetType,0>
   {
     static void recursive(DefaultLevelIndexSetType & d)
     {
-      d.template calcLevelIndexForCodim<0> ();
+      d.template checkLevelIndexForCodim<0> ();
     }
   };
 
@@ -377,18 +376,62 @@ namespace Dune {
   {
     typedef GridImp GridType;
     enum { dim = GridType :: dimension };
-    enum { numCodim = dim + 1 };
-    typedef typename GridType :: HierarchicIndexSet HierarchicIndexSetType;
-
-    typedef DefaultLevelIndexSet<GridType> MyType;
-
   public:
     enum { ncodim = GridType::dimension + 1 };
+  private:
+    typedef typename GridType :: HierarchicIndexSet HierarchicIndexSetType;
+
+    typedef DefaultLevelIndexSet<GridType> ThisType;
+
+    template <class EntityType, int codim>
+    struct InsertEntity
+    {
+      template <class HierarchicIndexSet, class IndexArrayType>
+      static void insert(const EntityType & en,
+                         const HierarchicIndexSet & hset,
+                         IndexArrayType (&index)[ncodim],
+                         int (&num)[ncodim])
+      {
+        IndexArrayType & idx = index[codim];
+        for(int i=0; i<en.template count<codim>(); ++i)
+        {
+          const int id = hset.template subIndex<codim>(en,i);
+          if( idx[id] < 0)
+          {
+            idx[id] = num[codim];
+            ++num[codim];
+          }
+        }
+        InsertEntity<EntityType,codim-1>::insert(en,hset,index,num);
+      }
+    };
+
+    template <class EntityType>
+    struct InsertEntity<EntityType,0>
+    {
+      template <class HierarchicIndexSet, class IndexArrayType>
+      static void insert(const EntityType & en,
+                         const HierarchicIndexSet & hset,
+                         IndexArrayType (&index)[ncodim],
+                         int (&num)[ncodim])
+      {
+        enum { codim = 0 };
+        IndexArrayType & idx = index[codim];
+        const int id = hset.index(en);
+        if( idx[id] < 0 )
+        {
+          idx[id] = num[codim];
+          ++num[codim];
+        }
+      }
+    };
+
+  public:
     //! create LevelIndex by using the HierarchicIndexSet of a grid
     //! for the given level
     DefaultLevelIndexSet(const GridType & grid , int level ) :
       grid_(grid) , level_(level) , hIndexSet_ ( grid.hierarchicIndexSet() )
-      , size_ ( numCodim )
+      , size_ ( ncodim )
     {
       calcNewIndex ();
     }
@@ -399,8 +442,11 @@ namespace Dune {
     {
       // this must not be true for vertices
       // therefore only check other codims
-      assert( (cd == dim) ? (1) : (level_ == en.level() ));
-      assert( levelIndex_[cd][ hIndexSet_.index(en) ] >= 0 );
+#ifndef NDEBUG
+      const int codim = cd;
+      assert( (codim == dim) ? (1) : (level_ == en.level() ));
+      assert( levelIndex_[codim][ hIndexSet_.index(en) ] >= 0 );
+#endif
       return levelIndex_[cd][ hIndexSet_.index(en) ];
     }
 
@@ -411,8 +457,11 @@ namespace Dune {
     {
       // this must not be true for vertices
       // therefore only check other codims
-      assert( (cd == dim) ? (1) : (level_ == en.level() ));
-      assert(levelIndex_[cd][ hIndexSet_.template subIndex<cd>(en,i) ] >= 0 );
+#ifndef NDEBUG
+      const int codim = cd;
+      assert( (codim == dim) ? (1) : (level_ == en.level() ));
+      assert(levelIndex_[codim][ hIndexSet_.template subIndex<cd>(en,i) ] >= 0 );
+#endif
       return levelIndex_[cd][ hIndexSet_.template subIndex<cd>(en,i) ];
     }
 
@@ -433,33 +482,55 @@ namespace Dune {
     //! changed or if index set is created
     void calcNewIndex ()
     {
-      // make new size and set all levels to -1 ==> new calc
-      CalcLevelForCodim<MyType,dim>::recursive(*this);
+      // resize arrays to new size
+      for(int cd=0; cd<ncodim; ++cd)
+      {
+        resizeVectors(levelIndex_[cd], hIndexSet_.size(cd));
+      }
+
+      // walk grid and store index
+      typedef typename DefaultLevelIteratorTypes<GridImp>:: template Codim<0>::
+      template Partition<All_Partition> :: Iterator IteratorType;
+
+      // we start with zero for all codims
+      int num[ncodim];
+      for(int cd=0; cd<ncodim; ++cd) num[cd] = 0;
+
+      IteratorType endit  = this->template end  < 0, All_Partition > ();
+      for(IteratorType it = this->template begin< 0, All_Partition > ();
+          it != endit; ++it)
+      {
+        insertEntity(*it,num);
+      }
+
+      // remember the number of entity on level and cd = 0
+      for(int cd=0; cd<ncodim; ++cd)
+      {
+        size_[cd] = num[cd];
+        assert( size_[cd] == grid_.size(level_,cd) );
+      }
+
+#ifndef NDEBUG
+      CheckLevelForCodim<ThisType,dim>::recursive(*this);
+#endif
     }
 
     // calculate index for the codim
     template <int cd>
-    void calcLevelIndexForCodim ()
+    void checkLevelIndexForCodim ()
     {
-      int nEntities = hIndexSet_.size(cd);
-
       Array<int> & levIndex = levelIndex_[cd];
       // resize memory if necessary
-      if(nEntities > levIndex.size())
-        makeNewSize(levIndex, nEntities);
-
       // walk grid and store index
-      typedef typename DefaultLevelIteratorTypes<GridImp>:: template Codim<cd>::template Partition<All_Partition> :: Iterator LevelIterator;
-      int num = 0;
+      typedef typename DefaultLevelIteratorTypes<GridImp>:: template Codim<cd>::
+      template Partition<All_Partition> :: Iterator LevelIterator;
+      //int num = 0;
       LevelIterator endit  = this->template end  < cd , All_Partition > ();
       for(LevelIterator it = this->template begin< cd , All_Partition > (); it != endit; ++it)
       {
         int no = hIndexSet_.index(*it);
-        levIndex[no] = num;
-        num++;
+        assert( levIndex[no] >= 0 );
       }
-      // remember the number of entity on level and cd = 0
-      size_[cd] = num;
     }
 
     //! deliver all geometry types used in this grid
@@ -467,7 +538,6 @@ namespace Dune {
     {
       return grid_.geomTypes(codim);
     }
-
 
     /** @brief Iterator to first entity of given codimension and partition type.
      */
@@ -488,8 +558,15 @@ namespace Dune {
     }
 
   private:
+    // calculate index for the codim
+    template <class EntityType>
+    void insertEntity(EntityType & en, int (&num)[ncodim])
+    {
+      InsertEntity<EntityType,dim>::insert(en,hIndexSet_,levelIndex_,num);
+    }
+
     // resize vectors of index set
-    void makeNewSize(Array<int> &a, int newNumberOfEntries)
+    void resizeVectors(Array<int> &a, int newNumberOfEntries)
     {
       if(newNumberOfEntries > a.size())
       {
@@ -499,7 +576,7 @@ namespace Dune {
     }
 
     // method prints indices of given codim, for debugging
-    void print (int codim)
+    void print (int codim) const
     {
       for(int i=0; i<levelIndex_[codim].size(); i++)
       {
@@ -521,10 +598,232 @@ namespace Dune {
 
     //*********************************************************
     // Methods for mapping the hierarchic Index to index on Level
-    Array<int> levelIndex_[numCodim];
+    Array<int> levelIndex_[ncodim];
 
   };
 
-} // end namespace Dune
 
+  //! LeafIterator tpyes for all codims and partition types
+  template <class GridImp>
+  struct DefaultLeafIteratorTypes
+  {
+    //! The types of the iterator
+    template<int cd>
+    struct Codim
+    {
+      template<PartitionIteratorType pitype>
+      struct Partition
+      {
+        typedef typename GridImp::Traits::template Codim<cd>::
+        template Partition<pitype>::LeafIterator Iterator;
+      };
+    };
+  };
+
+
+  //! Default LeafIndexSet
+  template <class GridImp>
+  class DefaultLeafIndexSet :
+    public IndexSet< GridImp,
+        DefaultLeafIndexSet <GridImp>,
+        DefaultLeafIteratorTypes<GridImp> >
+
+  {
+    typedef GridImp GridType;
+    enum { dim = GridType :: dimension };
+  public:
+    enum { ncodim = dim + 1 };
+    typedef typename GridType :: HierarchicIndexSet HierarchicIndexSetType;
+
+  private:
+    typedef DefaultLeafIndexSet<GridType> ThisType;
+
+    template <class EntityType, int codim>
+    struct InsertEntity
+    {
+      template <class HierarchicIndexSet, class IndexArrayType>
+      static void insert(const EntityType & en,
+                         const HierarchicIndexSet & hset,
+                         IndexArrayType (&index)[ncodim],
+                         int (&num)[ncodim])
+      {
+        IndexArrayType & idx = index[codim];
+        for(int i=0; i<en.template count<codim>(); ++i)
+        {
+          const int id = hset.template subIndex<codim>(en,i);
+          if( idx[id] < 0)
+          {
+            idx[id] = num[codim];
+            ++num[codim];
+          }
+        }
+        InsertEntity<EntityType,codim-1>::insert(en,hset,index,num);
+      }
+    };
+
+    template <class EntityType>
+    struct InsertEntity<EntityType,0>
+    {
+      template <class HierarchicIndexSet, class IndexArrayType>
+      static void insert(const EntityType & en,
+                         const HierarchicIndexSet & hset,
+                         IndexArrayType (&index)[ncodim],
+                         int (&num)[ncodim])
+      {
+        enum { codim = 0 };
+        IndexArrayType & idx = index[codim];
+        const int id = hset.index(en);
+        if( idx[id] < 0 )
+        {
+          idx[id] = num[codim];
+          ++num[codim];
+        }
+      }
+    };
+
+  public:
+    //! create LevelIndex by using the HierarchicIndexSet of a grid
+    //! for the given level
+    DefaultLeafIndexSet(const GridType & grid)
+      : grid_(grid)
+        , hIndexSet_ ( grid.hierarchicIndexSet() )
+        , size_ ( ncodim )
+    {
+      calcNewIndex ();
+    }
+
+    //! return LevelIndex of given entity
+    template<int cd>
+    int index (const typename GridImp::template Codim<cd>::Entity& en) const
+    {
+      // this must not be true for vertices
+      // therefore only check other codims
+      assert( index_[cd][ hIndexSet_.index(en) ] >= 0 );
+      return index_[cd][ hIndexSet_.index(en) ];
+    }
+
+    //! return subIndex (LevelIndex) for a given Entity of codim = 0 and a
+    //! given SubEntity codim and number of SubEntity
+    template <int cd>
+    int subIndex (const typename GridType::template Codim<0>::Entity & en, int i) const
+    {
+      // this must not be true for vertices
+      // therefore only check other codims
+      assert(index_[cd][ hIndexSet_.template subIndex<cd>(en,i) ] >= 0 );
+      return index_[cd][ hIndexSet_.template subIndex<cd>(en,i) ];
+    }
+
+    //! return size of IndexSet for a given level and codim
+    int size ( int codim ) const
+    {
+      return size_[codim];
+    }
+
+    //! return size of IndexSet for a codim
+    //! this method is to be revised
+    int size ( GeometryType type ) const
+    {
+      return size_[GridType::dimension-type.dim()];
+    }
+
+    //! do calculation of the index set, has to be called when grid was
+    //! changed or if index set is created
+    void calcNewIndex ()
+    {
+      // resize arrays to new size
+      for(int cd=0; cd<ncodim; ++cd)
+      {
+        resizeVectors(index_[cd], hIndexSet_.size(cd));
+      }
+
+      // walk grid and store index
+      typedef typename DefaultLeafIteratorTypes<GridImp>:: template Codim<0>::
+      template Partition<All_Partition> :: Iterator IteratorType;
+
+      // we start with zero for all codims
+      int num[ncodim];
+      for(int cd=0; cd<ncodim; ++cd) num[cd] = 0;
+
+      IteratorType endit  = this->template end  < 0, All_Partition > ();
+      for(IteratorType it = this->template begin< 0, All_Partition > ();
+          it != endit; ++it)
+      {
+        insertEntity(*it,num);
+      }
+
+      // remember the number of entity on level and cd = 0
+      for(int cd=0; cd<ncodim; ++cd)
+      {
+        size_[cd] = num[cd];
+        assert( size_[cd] == grid_.size(cd) );
+      }
+    }
+
+    //! deliver all geometry types used in this grid
+    const std::vector<GeometryType>& geomTypes (int codim) const
+    {
+      return grid_.geomTypes(codim);
+    }
+
+
+    /** @brief Iterator to first entity of given codimension and partition type.
+     */
+    template<int cd, PartitionIteratorType pitype>
+    typename DefaultLeafIteratorTypes<GridImp>::template Codim<cd>::
+    template Partition<pitype>::Iterator begin () const
+    {
+      return this->grid_.template leafbegin<cd,pitype> ();
+    }
+
+    /** @brief Iterator to one past the last entity of given codim for partition type
+     */
+    template<int cd, PartitionIteratorType pitype>
+    typename DefaultLeafIteratorTypes<GridImp>::template Codim<cd>::
+    template Partition<pitype>::Iterator end () const
+    {
+      return this->grid_.template leafend<cd,pitype> ();
+    }
+
+  private:
+    // calculate index for the codim
+    template <class EntityType>
+    void insertEntity(EntityType & en, int (&num)[ncodim])
+    {
+      InsertEntity<EntityType,dim>::insert(en,hIndexSet_,index_,num);
+    }
+
+    // resize vectors of index set
+    void resizeVectors(Array<int> &a, int newNumberOfEntries)
+    {
+      if(newNumberOfEntries > a.size())
+      {
+        a.resize(newNumberOfEntries);
+      }
+      for(int i=0; i<a.size(); i++) a[i] = -1;
+    }
+
+    // method prints indices of given codim, for debugging
+    void print (int codim) const
+    {
+      for(int i=0; i<index_[codim].size(); i++)
+      {
+        std::cout << "levelind[" << i << "] = " << index_[codim][i] << "\n";
+      }
+    }
+
+    // grid this level set belongs to
+    const GridType & grid_;
+
+    // the grids HierarchicIndexSet
+    const HierarchicIndexSetType & hIndexSet_;
+
+    // number of entitys of each level an codim
+    Array<int> size_;
+
+    //*********************************************************
+    // Methods for mapping the hierarchic Index to index on Level
+    Array<int> index_[ncodim];
+  };
+
+} // end namespace Dune
 #endif
