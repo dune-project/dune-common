@@ -20,7 +20,6 @@
 #include "../common/grid.hh"
 #include "../common/referenceelements.hh"
 #include "../common/defaultindexsets.hh"
-#include "../common/leafindexset.hh"
 #include "../common/sizecache.hh"
 #include "../common/intersectioniteratorwrapper.hh"
 
