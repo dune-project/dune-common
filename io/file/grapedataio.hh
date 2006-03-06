@@ -7,14 +7,14 @@
 
 //- Dune includes
 #include <dune/common/misc.hh>
+#include <dune/common/capabilities.hh>
 #include <dune/grid/common/grid.hh>
 
 #include <dune/io/file/asciiparser.hh>
 #include <dune/fem/dofmanager.hh>
 
-#include <dune/grid/sgrid.hh>
-
 //- Local includes
+
 
 namespace Dune {
 
@@ -61,7 +61,7 @@ namespace Dune {
     return tmp;
   };
 
-  template <int dim, int dimworld, class GridImp>
+  template <int dim, int dimworld, class GridImp, bool hasBackupRestore>
   class GrapeDataIOImp
   {
     typedef GridImp GridType;
@@ -79,12 +79,22 @@ namespace Dune {
     //! get Grid from file with time and timestep , return true if ok
     inline static bool readGrid (GridType & grid,
                                  const GrapeIOStringType & fnprefix , double & time , int timestep);
+
+    //! get Grid from file with time and timestep , return true if ok
+    inline static GridType * restoreGrid (
+      const GrapeIOStringType & fnprefix , double & time , int timestep)
+    {
+      GridType * grid = new GridType ();
+      assert( grid );
+      readGrid(*grid,fnprefix,time,timestep);
+      return grid;
+    }
   };
 
-  template <int dim, int dimworld>
-  class GrapeDataIOImp<dim,dimworld,SGrid<dim,dimworld> >
+  template <int dim, int dimworld, class GridImp>
+  class GrapeDataIOImp<dim,dimworld,GridImp,false>
   {
-    typedef SGrid<dim,dimworld> GridType;
+    typedef GridImp GridType;
   public:
     /** Write Grid with GridType file filename and time
      *
@@ -105,7 +115,15 @@ namespace Dune {
     {
       return false;
     }
+
+    //! get Grid from file with time and timestep , return true if ok
+    inline static GridType * restoreGrid (
+      const GrapeIOStringType & fnprefix , double & time , int timestep)
+    {
+      return 0;
+    }
   };
+
 
   template <class GridType>
   class GrapeDataIO
@@ -123,7 +141,8 @@ namespace Dune {
                            const GrapeIOFileFormatType ftype, const GrapeIOStringType fnprefix
                            , double time=0.0, int timestep=0, int precision = 6) const
     {
-      return GrapeDataIOImp<GridType::dimension,GridType::dimensionworld,GridType>::
+      const bool hasBackupRestore = Capabilities::hasBackupRestoreFacilities<GridType>::v;
+      return GrapeDataIOImp<GridType::dimension,GridType::dimensionworld,GridType,hasBackupRestore>::
              writeGrid(grid,ftype,fnprefix,time,timestep,precision);
     }
 
@@ -131,9 +150,17 @@ namespace Dune {
     inline bool readGrid (GridType & grid,
                           const GrapeIOStringType fnprefix , double & time , int timestep)
     {
-      return
-        GrapeDataIOImp<GridType::dimension,GridType::dimensionworld,GridType>::
-        readGrid(grid,fnprefix,time,timestep);
+      const bool hasBackupRestore = Capabilities::hasBackupRestoreFacilities<GridType>::v;
+      return GrapeDataIOImp<GridType::dimension,GridType::dimensionworld,GridType,hasBackupRestore>::
+             readGrid(grid,fnprefix,time,timestep);
+    }
+
+    //! get Grid from file with time and timestep , return true if ok
+    inline GridType * restoreGrid(const GrapeIOStringType fnprefix , double & time , int timestep)
+    {
+      const bool hasBackupRestore = Capabilities::hasBackupRestoreFacilities<GridType>::v;
+      return GrapeDataIOImp<GridType::dimension,GridType::dimensionworld,GridType,hasBackupRestore>::
+             restoreGrid(fnprefix,time,timestep);
     }
 
     /**
@@ -153,9 +180,8 @@ namespace Dune {
                          const GrapeIOStringType filename, int timestep);
   };
 
-
-  template <int dim, int dimworld, class GridImp>
-  inline bool GrapeDataIOImp<dim,dimworld,GridImp> :: writeGrid
+  template <int dim, int dimworld, class GridImp, bool hasBackupRestore>
+  inline bool GrapeDataIOImp<dim,dimworld,GridImp,hasBackupRestore> :: writeGrid
     (const GridImp & grid,
     const GrapeIOFileFormatType ftype, const GrapeIOStringType & fnprefix ,
     double time, int timestep, int precision )
@@ -188,6 +214,7 @@ namespace Dune {
       {
       case xdr  :   return grid.template writeGrid<xdr>  (fnstr,time);
       case ascii :   return grid.template writeGrid<ascii>(fnstr,time);
+      //case xdr  :   return grid.writeGrid(xdr,fnstr,time);
       default :
       {
         std::cerr << ftype << " GrapeIOFileFormatType not supported at the moment! " << __FILE__ << __LINE__ << "\n";
@@ -202,8 +229,8 @@ namespace Dune {
 
   }
 
-  template <int dim, int dimworld, class GridImp>
-  inline bool GrapeDataIOImp<dim,dimworld,GridImp> :: readGrid
+  template <int dim, int dimworld, class GridImp, bool hasBackupRestore>
+  inline bool GrapeDataIOImp<dim,dimworld,GridImp,hasBackupRestore> :: readGrid
     (GridImp & grid, const GrapeIOStringType & fnprefix , double & time , int timestep)
   {
     int helpType;
