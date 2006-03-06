@@ -630,6 +630,8 @@ namespace Dune {
     // true if any of the higher codims is used
     mutable bool higherCodims_;
 
+    mutable bool compressed_;
+
   public:
     //! type traits of this class
     typedef LeafIteratorTypes<GridType> Traits;
@@ -640,6 +642,7 @@ namespace Dune {
         hIndexSet_( grid.hierarchicIndexSet() ) ,
         marked_ (false) , markAllU_ (false) , higherCodims_ (false)
         //marked_ (false) , markAllU_ (false) , higherCodims_ (true)
+        , compressed_(true) // at start the set is compressed
     {
       // codim 0 is used by default
       codimUsed_[0] = true;
@@ -802,6 +805,7 @@ namespace Dune {
     //! lie below the old entities
     void resize ()
     {
+      //std::cout << "Resizing the index set " << this << " \n";
       resizeVectors();
 
       // give all entities that lie below the old entities new numbers
@@ -812,8 +816,15 @@ namespace Dune {
     //! return true, if at least one hole existed
     bool compress ()
     {
+      if(compressed_) return false;
+
+      //std::cout << marked_ << " m|u " << markAllU_ << "\n";
       // if not marked, mark which indices are still used
-      if( ((!marked_) && markAllU_) || higherCodims_ ) markAllUsed();
+      //if( (!marked_ && markAllU_) || higherCodims_ )
+      {
+        //std::cout << "Marking the low level for " << this << "\n";
+        markAllUsed();
+      }
 
       // true if a least one dof must be copied
       bool haveToCopy = codimLeafSet_[0].compress();
@@ -827,11 +838,12 @@ namespace Dune {
       marked_   = false;
       markAllU_ = false;
 
+      compressed_ = true;
       return haveToCopy;
     }
 
     //! this index set needs compress after adaptation, here true is returned
-    bool needsCompress () const {  return true; }
+    bool needsCompress () const { return true; }
 
     //! memorise index
     // --insert
@@ -846,6 +858,7 @@ namespace Dune {
           iterateCodims ( hIndexSet_, codimLeafSet_, en , codimUsed_ );
         }
       }
+      compressed_ = false;
     }
 
     //! set indices to unsed so that they are cleaned on compress
@@ -862,6 +875,7 @@ namespace Dune {
           removeCodims ( hIndexSet_, codimLeafSet_, en , codimUsed_ );
         }
       }
+      compressed_ = false;
     }
 
     //! return approximate size that is used during restriction
@@ -919,6 +933,7 @@ namespace Dune {
       // already a number
       if(!canInsert)
       {
+        // if index >= 0, then all children may  also appear in the set
         // from now on, indices can be inserted
         if( codimLeafSet_[0].index( hIndexSet_.index (en ) ) >= 0 )
         {
@@ -930,11 +945,11 @@ namespace Dune {
       }
       else
       {
+        // we insert to get an index
         this->insert ( en );
+        // we remove to unmark, because this is not a leaf entity
         this->remove ( en );
-        // set unused here, because index is only needed for prolongation
       }
-
       return true;
     }
 
@@ -1130,191 +1145,5 @@ namespace Dune {
 
   }; // end of class AdaptiveLeafIndexSet
 
-
-  template <class GridType>
-  class DefaultLeafIndexSet : public DefaultGridIndexSetBase <GridType>
-  {
-    typedef typename GridType :: LeafIndexSet LeafIndexSetType;
-    LeafIndexSetType & leafIndexSet_;
-
-  public:
-    enum { ncodim = GridType::dimension + 1 };
-    DefaultLeafIndexSet ( GridType & grid ) :
-      DefaultGridIndexSetBase <GridType> (grid) ,
-      leafIndexSet_ ( grid.leafIndexSet() )
-    {}
-
-    virtual ~DefaultLeafIndexSet () {};
-
-    void insertNewIndex (const typename GridType::template codim<0>::Entity & en )
-    {
-      leafIndexSet_.insertNewIndex(en);
-    }
-
-    void removeOldIndex (const typename GridType::template codim<0>::Entity & en )
-    {
-      std::cout << "Remove old index \n";
-      leafIndexSet_.removeOldIndex(en);
-    }
-
-    //! if grid has changed, resize index vectors, and create
-    //! indices for new entities, new entities are entities that
-    //! lie below the old entities
-    void resize ()
-    {
-      leafIndexSet_.resize();
-    }
-
-    //! make to index numbers consecutive
-    //! return true, if at least one hole was closed
-    bool compress ()
-    {
-      return leafIndexSet_.compress();
-    }
-
-    //! return how much extra memory is needed for restriction
-    int additionalSizeEstimate () const { return leafIndexSet_.additionalSizeEstimate (); }
-
-    //! return size of grid entities per level and codim
-    int size ( int level , int codim ) const
-    {
-      return leafIndexSet_.size(level,codim);
-    }
-
-    //! return global index
-    //! for dof mapper
-    template <int codim, class EntityType>
-    int index (EntityType & en, int num) const
-    {
-      return leafIndexSet_.template index<codim>(en,num);
-    }
-
-    //! return global index
-    //! for dof mapper
-    template <class EntityType>
-    int index (EntityType & en) const
-    {
-      return leafIndexSet_.index(en);
-    }
-
-    //! return size of grid entities per level and codim
-    //! for dof mapper
-    int oldSize ( int level , int codim ) const
-    {
-      return leafIndexSet_.oldSize(level,codim);
-    }
-
-    //! return old index, for dof manager only
-    int oldIndex (int elNum, int codim ) const
-    {
-      return leafIndexSet_.oldIndex(elNum,codim);
-    }
-
-    //! return new index, for dof manager only returns index
-    int newIndex (int elNum , int codim ) const
-    {
-      return leafIndexSet_.newIndex(elNum,codim);
-    }
-
-  public:
-
-    // write indexset to xdr file
-    bool write_xdr(const std::basic_string<char> filename, int timestep)
-    {
-      return leafIndexSet_.write_xdr( filename, timestep );
-    }
-
-    //! read index set from given xdr file
-    bool read_xdr(const std::basic_string<char> filename , int timestep)
-    {
-      return leafIndexSet_.read_xdr( filename, timestep );
-    }
-
-  }; // end of class DefaultLeafIndexSet
-
-
-  template <class GridType>
-  inline void AdaptiveLeafIndexSet<GridType>::
-  print (const char * msg, bool oldtoo ) const
-  {
-#ifdef DEBUG_LEAFINDEXSET
-    const CodimLeafIndexSet & cls = codimLeafSet_[0];
-    std::cout << "Size " << cls.size() << "\n";
-    std::cout << "i    |   val    | state  \n";
-    int actSize =0;
-
-    for(int i=0; i< cls.realSize(); i++)
-    {
-      if( cls.state( i ) != UNUSED ) actSize ++;
-      std::cout << i << " | " << cls.index(i) << " | " << cls.state( i );
-      std::cout << "\n";
-    }
-
-    std::cout << "Real Size " << cls.size() << "\n";
-    std::cout << "ActSize   " << actSize << "\n";
-    std::cout << "Grid global Size " << hIndexSet_.size(0) << "\n";
-
-    std::cout << msg;
-#endif
-  }
-
-  //! class for combining 2 index sets together for adaptation process
-  template <class A, class B >
-  class CombinedAdaptProlongRestrict
-  {
-    //! space A and B
-    const A & _a;
-    const B & _b;
-  public:
-    CombinedAdaptProlongRestrict ( const A & a, const B & b ) : _a ( a ) , _b ( b )
-    {}
-
-    template <class EntityType>
-    void restrictLocal ( EntityType &father, EntityType &son, bool initialize ) const
-    {
-      _a.restrictLocal(father,son,initialize);
-      _b.restrictLocal(father,son,initialize);
-    }
-
-    //! prolong data to children
-    template <class EntityType>
-    void prolongLocal ( EntityType &father, EntityType &son, bool initialize ) const
-    {
-      _a.prolongLocal(father,son,initialize);
-      _b.prolongLocal(father,son,initialize);
-    }
-  };
-
-  /*
-     template <int codim>
-     struct CallInitMethod
-     {
-     template <class IndexSetImp>
-     CallInitMethod ( IndexSetImp & iset)
-     {
-      iset.initialize(codim);
-     }
-     };
-
-     template <> struct InitializeCodim<0>
-     {
-     template <class IndexSet>
-     InitializeCodim (IndexSet &iset)
-     {
-     }
-     };
-
-     template <int codim>
-     struct InitializeCodim
-     {
-     template <class IndexSet>
-     InitializeCodim (IndexSet &iset)
-     {
-      static CallInitMethod<codim> a(iset);
-     }
-     };
-   */
-
 } // end namespace Dune
-
 #endif
