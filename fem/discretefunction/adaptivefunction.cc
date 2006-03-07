@@ -169,22 +169,14 @@ namespace Dune {
 
     JacobianRangeType tmp(0.0);
 
-    for (int i = 0; i < this->numDofs(); ++i) {
-      // tmpGrad_ *= 0.0;
+    for (int i = 0; i < this->numDofs(); ++i)
+    {
       bSet.jacobian(i, quad,quadPoint, tmpGrad_);
       tmpGrad_ *= *values_[i];
-      /*
-         for (int l = 0; l < dimRange; ++l) {
-         tmpGrad_[l] *= *values_[i];
-         // * umtv or umv?
-         // jti.umv(tmpGrad_[l], ret[l]);
-         }
-       */
       tmp += tmpGrad_;
     }
     for (int l = 0; l < dimRange; ++l)
       jti.umv(tmp[l],ret[l]);
-    // jacobianLocal(en, quad.point(quadPoint), ret);
   }
 
   template <class DiscreteFunctionSpaceImp>
