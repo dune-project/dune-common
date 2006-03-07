@@ -13,15 +13,22 @@ using std::flush;
 namespace ALUGridSpace {
 
   //! the corresponding interface class is defined in bsinclude.hh
-  template <class GridType, class EntityType, class DataCollectorType >
+  template <class GridType, class DataCollectorType , int codim >
   class GatherScatterImpl : public GatherScatter
   {
     GridType & grid_;
-    typedef typename GridType::template Codim<0>::Entity Entity;
-    typedef typename Dune::ALU3dImplTraits<GridType::elementType>::PLLBndFaceType PLLBndFaceType;
-    Entity & en_;
-    EntityType & realEntity_;
+    typedef typename GridType::template Codim<codim>::Entity EntityType;
+    typedef typename EntityType :: ImplementationType RealEntityType;
 
+    //typedef typename Dune::ALU3dImplTraits<GridType::elementType>::PLLBndFaceType PLLBndFaceType;
+
+    typedef typename Dune::ALU3dImplTraits<GridType::elementType>::
+    template Codim<codim>::ImplementationType ImplElementType;
+    typedef typename Dune::ALU3dImplTraits<GridType::elementType>::
+    template Codim<codim>::InterfaceType HElementType;
+
+    EntityType     & entity_;
+    RealEntityType & realEntity_;
 
     DataCollectorType & dc_;
 
@@ -29,61 +36,81 @@ namespace ALUGridSpace {
 
   public:
     //! Constructor
-    GatherScatterImpl(GridType & grid, EntityType & en, DataCollectorType & dc)
-      : grid_(grid), en_(en), realEntity_(en) , dc_(dc) {}
+    GatherScatterImpl(GridType & grid, EntityType & en, RealEntityType & realEntity , DataCollectorType & dc)
+      : grid_(grid), entity_(en), realEntity_(realEntity) , dc_(dc) {}
 
     //! this method is called from the dunePackAll method of the corresponding
     //! Macro element class of the BSGrid, see gitter_dune_pll*.*
     //! here the data is written to the ObjectStream
-    virtual void inlineData ( ObjectStreamType & str , HElementType & elem )
+    void inlineData ( ObjectStreamType & str , HElementType & elem )
     {
       // set element and then start
       realEntity_.setElement(elem);
-      dc_.inlineData(str,en_);
+      //dc_.inlineData(str,entity_);
+      dc_.gather(str,entity_);
     }
 
     //! this method is called from the duneUnpackSelf method of the corresponding
     //! Macro element class of the BSGrid, see gitter_dune_pll*.*
     //! here the data is read from the ObjectStream
-    virtual void xtractData ( ObjectStreamType & str , HElementType & elem )
+    void xtractData ( ObjectStreamType & str , HElementType & elem )
     {
       // set element and then start
       grid_.updateStatus();
       realEntity_.setElement(elem);
-      dc_.xtractData(str,en_);
+      /*
+         dc_.xtractData(str,entity_);
+       */
+      dc_.scatter(str,entity_,0);
     }
 
     //! write Data of one lement to stream
-    virtual void sendData ( ObjectStreamType & str , const HElementType & elem )
+    void sendData ( ObjectStreamType & str , const HElementType & elem )
     {
-      realEntity_.setElement( const_cast<HElementType &> (elem) );
-      dc_.scatter(str, en_);
+      realEntity_.setElement( const_cast<HElementType &> (elem));
+      dc_.scatter(str, entity_);
     }
 
     //! read Data of one element from stream
-    virtual void recvData ( ObjectStreamType & str , HGhostType & ghost )
+    void recvData ( ObjectStreamType & str , HElementType & elem )
     {
       // set ghost as entity
-      PLLBndFaceType & gh = static_cast <PLLBndFaceType &> (ghost);
-      realEntity_.setGhost( gh );
-
-      dc_.insertNewIndex( en_ );
+      realEntity_.setElement( elem );
+      dc_.insertNewIndex( entity_ );
       dc_.checkMemorySize();
-      dc_.gather(str, en_);
+      dc_.gather(str, entity_ );
     }
-
   };
 
+  //***********************************************************
+  //
+  //  --specialisation for codim 0
+  //
+  //***********************************************************
 
   //! the corresponding interface class is defined in bsinclude.hh
-  template <class GridType, class EntityType, class DataCollectorType >
-  class GatherScatterExchange : public GatherScatter
+  template <class GridType, class DataCollectorType >
+  class GatherScatterImpl<GridType,DataCollectorType,0> : public GatherScatter
   {
+    enum { codim = 0 };
     GridType & grid_;
-    typedef typename GridType::template Codim<0>::Entity Entity;
-    typedef typename Dune::ALU3dImplTraits<GridType::elementType>::PLLBndFaceType PLLBndFaceType;
-    Entity & en_;
-    EntityType & realEntity_;
+    typedef typename GridType::template Codim<codim>::Entity EntityType;
+    typedef typename EntityType :: ImplementationType RealEntityType;
+
+    typedef typename Dune::ALU3dImplTraits<GridType::elementType>::
+    template Codim<codim>::ImplementationType IMPLElementType;
+    typedef typename Dune::ALU3dImplTraits<GridType::elementType>::
+    template Codim<codim>::InterfaceType HElementType;
+
+    typedef typename Dune::ALU3dImplTraits<GridType::elementType>::
+    template Codim<codim>::GhostInterfaceType HGhostType;
+    typedef typename Dune::ALU3dImplTraits<GridType::elementType>::
+    template Codim<codim>::GhostImplementationType ImplGhostType;
+
+
+
+    EntityType     & entity_;
+    RealEntityType & realEntity_;
 
     DataCollectorType & dc_;
 
@@ -91,45 +118,48 @@ namespace ALUGridSpace {
 
   public:
     //! Constructor
-    GatherScatterExchange(GridType & grid, EntityType & en, DataCollectorType & dc)
-      : grid_(grid), en_(en), realEntity_(en) , dc_(dc) {}
+    GatherScatterImpl(GridType & grid, EntityType & en, RealEntityType & realEntity , DataCollectorType & dc)
+      : grid_(grid), entity_(en), realEntity_(realEntity) , dc_(dc) {}
 
     //! this method is called from the dunePackAll method of the corresponding
     //! Macro element class of the BSGrid, see gitter_dune_pll*.*
     //! here the data is written to the ObjectStream
-    virtual void inlineData ( ObjectStreamType & str , HElementType & elem )
+    void inlineData ( ObjectStreamType & str , HElementType & elem )
     {
-      cerr << "Wrong Operator, do not use for load balance! in: " <<__FILE__ << " line: " << __LINE__ << endl;
-      abort();
+      // set element and then start
+      realEntity_.setElement(elem,0,0);
+      dc_.inlineData(str,entity_);
     }
 
     //! this method is called from the duneUnpackSelf method of the corresponding
     //! Macro element class of the BSGrid, see gitter_dune_pll*.*
     //! here the data is read from the ObjectStream
-    virtual void xtractData ( ObjectStreamType & str , HElementType & elem )
+    void xtractData ( ObjectStreamType & str , HElementType & elem )
     {
-      cerr << "Wrong Operator, do not use for load balance! in: " <<__FILE__ << " line: " << __LINE__ << endl;
-      abort();
+      // set element and then start
+      grid_.updateStatus();
+      realEntity_.setElement(elem,0,0);
+      dc_.xtractData(str,entity_);
     }
 
     //! write Data of one lement to stream
-    virtual void sendData ( ObjectStreamType & str , const HElementType & elem )
+    void sendData ( ObjectStreamType & str , const HElementType & elem )
     {
-      realEntity_.setElement( const_cast<HElementType &> (elem) );
-      dc_.scatter(str, en_);
+      realEntity_.setElement( const_cast<HElementType &> (elem),0,0 );
+      dc_.scatter(str, entity_);
     }
 
     //! read Data of one element from stream
-    virtual void recvData ( ObjectStreamType & str , HGhostType & ghost )
+    void recvData ( ObjectStreamType & str , HGhostType & ghost )
     {
       // set ghost as entity
-      PLLBndFaceType & gh = static_cast <PLLBndFaceType &> (ghost);
+      ImplGhostType & gh = static_cast <ImplGhostType &> (ghost);
       realEntity_.setGhost( gh );
 
-      // old set ghost method
-      dc_.gather(str, en_);
+      dc_.insertNewIndex( entity_ );
+      dc_.checkMemorySize();
+      dc_.gather(str, entity_);
     }
-
   };
 
   template <class GridType, class EntityType, class DofManagerType, class RestrictProlongOperatorType >
