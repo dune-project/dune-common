@@ -793,7 +793,7 @@ namespace Dune {
   // adapt grid
   template <int dim, int dimworld, ALU3dGridElementType elType> template <class DataHandle>
   inline void ALU3dGrid<dim, dimworld, elType>::
-  communicate (DataHandle& data, InterfaceType iftype, CommunicationDirection dir)
+  communicate (DataHandle& data, InterfaceType iftype, CommunicationDirection dir) const
   //communicate(DataCollectorType & dc)
   {
 #ifdef _ALU3DGRID_PARALLEL_
