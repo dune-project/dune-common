@@ -1501,12 +1501,6 @@ namespace Dune
     //! number of leaf entities per geometry type in this process
     int size (GeometryType type) const;
 
-    /** dummy collective communication */
-    const CollectiveCommunication<AlbertaGrid>& comm () const
-    {
-      return ccobj;
-    }
-
   private:
     CollectiveCommunication<AlbertaGrid> ccobj;
 
@@ -1553,6 +1547,12 @@ namespace Dune
        template <class DofManagerType>
        bool communicate (DofManagerType & dm) { return false; }
      */
+
+    /** dummy collective communication */
+    const CollectiveCommunication<AlbertaGrid>& comm () const
+    {
+      return ccobj;
+    }
 
     /** \brief return type of grid, here AlbertaGrid_Id. */
     GridIdentifier type () const { return AlbertaGrid_Id; };
