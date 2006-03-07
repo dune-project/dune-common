@@ -27,6 +27,8 @@
 #include "alu3dinclude.hh"
 #include "indexsets.hh"
 #include "memory.hh"
+#include "datahandle.hh"
+
 
 namespace Dune {
 
@@ -196,6 +198,7 @@ namespace Dune {
     CompileTimeChecker<(dimworld == 3)> ALU3dGrid_only_implemented_for_3dw;
 
     typedef ALU3dGrid<dim,dimworld,elType> MyType;
+    typedef ALU3dGrid<dim,dimworld,elType> ThisType;
 
     friend class ALU3dGridEntity <0,dim,MyType>;
     friend class ALU3dGridEntity <0,dim,const MyType>;
@@ -425,8 +428,8 @@ namespace Dune {
     bool loadBalance (DofManagerType & dm);
 
     //! calculate load of each proc and repartition if neccessary
-    template <class DofManagerType>
-    bool communicate (DofManagerType & dm);
+    //template <class DofManagerType>
+    //bool communicate (DofManagerType & dm);
 
     /** \brief ghostSize is zero for this grid  */
     int ghostSize (int level, int codim) const { return 0; }
@@ -447,8 +450,7 @@ namespace Dune {
 
     /** dummy communicate */
     template<class DataHandle>
-    void communicate (DataHandle& data, InterfaceType iftype, CommunicationDirection dir) const
-    {}
+    void communicate (DataHandle& data, InterfaceType iftype, CommunicationDirection dir);
 
     /** dummy collective communication */
     const CollectiveCommunication<ALU3dGrid>& comm () const
