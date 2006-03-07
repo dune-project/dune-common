@@ -859,14 +859,25 @@ namespace Dune {
        gs.inlineData(objstr,*el);
        }
      */
-    enum { codim = 3 };
-    typedef ALU3dGridMakeableEntity<codim,dim,const ThisType> EntityImp;
-    EntityImp en ( *this, this->maxLevel() );
+    typedef ALU3dGridMakeableEntity<dim,dim,const ThisType> VertexImp;
+    VertexImp vx( *this, this->maxLevel() );
 
-    ALU3DSPACE GatherScatterImpl < ThisType, DataHandle, codim>
-    gs(*this,en,this->getRealImplementation(en),data);
+    ALU3DSPACE GatherScatterImpl < ThisType, DataHandle, dim>
+    vertexData(*this,vx,this->getRealImplementation(vx),data);
 
-    myGrid().ALUcomm(gs);
+    typedef ALU3dGridMakeableEntity<dim-1,dim,const ThisType> EdgeImp;
+    EdgeImp edge( *this, this->maxLevel() );
+
+    ALU3DSPACE GatherScatterImpl < ThisType, DataHandle, dim-1>
+    edgeData(*this,edge,this->getRealImplementation(edge),data);
+
+    typedef ALU3dGridMakeableEntity<1,dim,const ThisType> FaceImp;
+    FaceImp face( *this, this->maxLevel() );
+
+    ALU3DSPACE GatherScatterImpl < ThisType, DataHandle, 1>
+    faceData(*this,face,this->getRealImplementation(face),data);
+
+    myGrid().ALUcomm(vertexData,edgeData,faceData);
     //return true;
 #else
     //return false;
