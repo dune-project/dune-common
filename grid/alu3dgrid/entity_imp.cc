@@ -37,6 +37,7 @@ namespace Dune {
   inline void ALU3dGridEntity<cd,dim,GridImp> ::
   removeElement()
   {
+    father_ = 0;
     item_ = 0;
   }
 
