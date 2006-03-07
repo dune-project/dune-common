@@ -255,34 +255,7 @@ namespace Dune {
     //! number of leaf entities per codim in this process
     int size (int codim) const
     {
-      if (codim==0)
-      {
-        if (dim==2)
-          return size(codim,GeometryType(GeometryType::simplex,2))
-                 + size(codim,GeometryType(GeometryType::cube,2));
-
-        if (dim==3)
-          return size(codim,GeometryType(GeometryType::simplex,3))
-                 + size(codim,GeometryType(GeometryType::pyramid,3))
-                 + size(codim,GeometryType(GeometryType::prism,3))
-                 + size(codim,GeometryType(GeometryType::cube,3));
-      }
-      if (codim==dim)
-      {
-        return size(codim,GeometryType(0));
-      }
-      if (codim==dim-1)
-      {
-        return size(codim,GeometryType(1));
-      }
-      if (codim==1)
-      {
-        return size(1,GeometryType(GeometryType::simplex,dim-1))
-               + size(1, GeometryType(GeometryType::cube,dim-1));
-      }
-
-      DUNE_THROW(NotImplemented, "dim=" << dim << " codim=" << codim);
-      return 0;
+      return leafIndexSet().size(codim);
     }
 
     //! number of entities per level and geometry type in this process
