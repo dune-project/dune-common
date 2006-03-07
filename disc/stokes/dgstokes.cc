@@ -4,7 +4,7 @@
 # include "config.h"     // autoconf defines, needed by the dune headers
 #endif
 #include "dgstokes.hh"
-#include "testfunctions.hh"
+
 
 
 
@@ -26,7 +26,7 @@ void DGFiniteElementMethod<G,ordr>::assembleVolumeTerm(Entity& ent, LocalMatrixB
   int vdof=vsfs.size()*dim; // dim velocity components
 
   //get parameter
-  DGStokesParameters parameter;
+  //DGStokesParameters parameter;
 
   //get the geometry type
   Dune::GeometryType gt = ent.geometry().type();
@@ -35,7 +35,7 @@ void DGFiniteElementMethod<G,ordr>::assembleVolumeTerm(Entity& ent, LocalMatrixB
   for (int nqp=0; nqp<Dune::QuadratureRules<ctype,dim>::rule(gt,qord).size(); ++nqp)
   {
     //local position of quad points
-    const Dune::FieldVector<ctype,dim> & quad_point_loc = Dune::QuadratureRules<ctype,2>::rule(gt,qord)[nqp].position();
+    const Dune::FieldVector<ctype,dim> & quad_point_loc = Dune::QuadratureRules<ctype,dim>::rule(gt,qord)[nqp].position();
     //global position
     Dune::FieldVector<ctype,dim> quad_point_glob = ent.geometry().global(quad_point_loc);
     // calculate inv jacobian
@@ -65,7 +65,7 @@ void DGFiniteElementMethod<G,ordr>::assembleVolumeTerm(Entity& ent, LocalMatrixB
         int ii=(dm-1)*vsfs.size()+i;
         // get the rhs value
         double f;
-        RHS rhs;
+        RightHandSide rhs;
         if (dm==1)
         {
           rhs.u_rhs(quad_point_glob[0],quad_point_glob[1],f);
@@ -432,7 +432,7 @@ void DGFiniteElementMethod<G,ordr>::assembleBoundaryTerm(Entity& ent, Intersecti
   {
     const Dune::FieldVector<ctype,dim-1>& boundlocal = Dune::QuadratureRules<ctype,dim-1>::rule(gtboundary,qord)[bq].position();
     Dune:: FieldVector<ctype,dim> blocal = isit.intersectionSelfLocal().global(boundlocal);
-    Dune::FieldVector<ctype,dim> bglobal = isit.intersectionGlobal().global(boundlocal);
+    const Dune::FieldVector<ctype,dim> bglobal = isit.intersectionGlobal().global(boundlocal);
     double norm_eb=isit.intersectionGlobal().integrationElement(boundlocal);
     // calculating the inverse jacobian
     InverseJacobianMatrix inv_jac= ent.geometry().jacobianInverseTransposed(blocal);
@@ -442,12 +442,14 @@ void DGFiniteElementMethod<G,ordr>::assembleBoundaryTerm(Entity& ent, Intersecti
     // get the boundary normal
     Dune::FieldVector<ctype,dim> boundnormal = isit.unitOuterNormal(boundlocal);
 
-    // finding velocity boundary condition
+    // velocity boundary condition
     //horizontal component
-    exact_u(bglobal[0],bglobal[1],dirichlet[0]);
-    //vertical component
-    exact_v(bglobal[0],bglobal[1],dirichlet[1]);
+    dirichlet[0]=dirichletvalue.dirichletValue(0,bglobal,blocal);
 
+    //exact_u(bglobal[0],bglobal[1],dirichlet[0]);
+    //vertical component
+    //exact_v(bglobal[0],bglobal[1],dirichlet[1]);
+    dirichlet[1]=dirichletvalue.dirichletValue(1,bglobal,blocal);
 
     //================================================//
     //
@@ -658,7 +660,7 @@ void DGStokes<G,ordr>::assembleStokesSystem()
   {
     EntityPointer epointer = it;
     int eid = grid.levelIndexSet(level).index(*epointer);
-    stokessystem.assembleVolumeTerm(*it,A[eid][eid],b[eid]);
+    dgfem.assembleVolumeTerm(*it,A[eid][eid],b[eid]);
     IntersectionIterator endis = it->iend();
     IntersectionIterator is = it->ibegin();
     for(; is != endis; ++is)
@@ -666,17 +668,18 @@ void DGStokes<G,ordr>::assembleStokesSystem()
       if(is.neighbor())
       {
         int fid = grid.levelIndexSet(level).index(*is.outside());
-        stokessystem.assembleFaceTerm(*it,is,A[eid][eid],A[eid][fid],A[fid][eid],b[eid]);
+        dgfem.assembleFaceTerm(*it,is,A[eid][eid],A[eid][fid],A[fid][eid],b[eid]);
       }
       if (is.boundary())
       {
-        stokessystem.assembleBoundaryTerm(*it,is,A[eid][eid],b[eid]);
+        dgfem.assembleBoundaryTerm(*it,is,A[eid][eid],b[eid]);
       }
     }
   }
-
+  //------------
   //changing istl matrix to spmatrix for superLU
   // supeLU needs matrix in supermatrix format
+  //------------
   for (typename Matrix::RowIterator i=A.begin(); i!=A.end(); ++i)
   {
     for (typename Matrix::ColIterator j=(*i).begin(); j!=(*i).end(); ++j)
@@ -690,7 +693,9 @@ void DGStokes<G,ordr>::assembleStokesSystem()
       }
     }
   }
+  //------------
   // chainging block vector rhs to simple vector for superLU
+  //------------
   for(typename Vector::iterator i=b.begin(); i!=b.end(); ++i)
   {
     for(int m=0; m<BlockSize; ++m)
@@ -763,43 +768,41 @@ void DGStokes<G,ordr>::solveStokesSystem()
 
 }
 
-// template<class G,int ordr>
-// double DGStokes<G,ordr>::l2errorStokesSystem() const
-// {
-//    long double error = 0.0;
-//    // loop over all elements
-//      ElementIterator it = grid.template lbegin<0>(level);
-//     ElementIterator itend = grid.template lend<0>(level);
-//      for (; it != itend; ++it)
-//        {
-//              Dune::FieldVector <ctype,dim> qp_loc(0.0);
-//              Dune::FieldVector <ctype,dim> qp_glob(0.0);
-//        }
-// }
-
-
 template <class G,int ordr>
-double
-DGFiniteElementMethod<G,ordr>::evaluateL2error(int component, Entity& element,const LocalVectorBlock& xe) const
+inline const typename DGStokes<G,ordr>::ShapeFunctionSet &
+DGStokes<G,ordr>::getShapeFunctionSet(const EntityPointer & ep) const
 {
-  ExactSolution<double,dim> exact;
-  double error[component]=0.0;
-  Dune::FieldVector<ctype, dim> qp_loc(0.0);
-  Dune::FieldVector<ctype, dim> qp_glob(0.0);
-  Dune::GeometryType gt = element.geometry().type();
-  //quadrature rule
-  // need to find quad order based on the governing eqn..???
-  int qord=18;
-  for (int qp=0; qp<Dune::QuadratureRules<ctype,dim>::rule(gt,qord).size(); ++qp)
-  {
-    qp_loc = Dune::QuadratureRules<ctype,dim>::rule(gt,qord)[qp].position();
-    qp_glob =element.geometry().global(qp_loc);
-    double weight = Dune::QuadratureRules<ctype,dim>::rule(gt,qord)[qp].weight();
-    double detjac = element.geometry().integrationElement(qp_loc);
-    error[component]+=weight*detjac*exact.velocity(component,qp_glob);
-  }
-  return error[component];
+  return dgfem.getShapeFunctionSet(ep->geometry().type());
 }
+template <class G,int ordr>
+inline double DGStokes<G,ordr>::evaluateSolution(const EntityPointer & e,
+                                                 const Dune::FieldVector<ctype, dim> & local
+                                                 ) const
+{
+  int eid = grid.levelIndexSet(level).index(*e);
+  return dgfem.evaluateSolution(0,*e, local, b[eid]);
+}
+
+template<class G,int ordr>
+double DGStokes<G,ordr>::l2errorStokesSystem() const
+{
+
+  double error_u = 0.0; //x comp
+  double error_v = 0.0; //y comp
+  // loop over all elements
+  ElementIterator it = grid.template lbegin<0>(level);
+  ElementIterator itend = grid.template lend<0>(level);
+  for (; it != itend; ++it)
+  {
+    Dune::FieldVector <ctype,dim> qp_loc(0.0);
+    Dune::FieldVector <ctype,dim> qp_glob(0.0);
+    int eid = grid.levelIndexSet(level).index(*it);
+    error_u+=dgfem.evaluateL2error(0,exact, *it,b[eid]);
+    error_v+=dgfem.evaluateL2error(1, exact,*it,b[eid]);
+  }
+  return sqrt(error_u);
+}
+
 
 // calculated value at local coord in e
 template <class G, int ordr>
@@ -824,4 +827,33 @@ inline const typename DGFiniteElementMethod<G,ordr>::ShapeFunctionSet &
 DGFiniteElementMethod<G,ordr>::getShapeFunctionSet(Dune::GeometryType gt) const
 {
   return space(gt, order);
+}
+
+
+
+
+
+template <class G,int ordr>
+double
+DGFiniteElementMethod<G,ordr>::evaluateL2error(int component,const ExactSolution<ctype, dim> & exact,const Entity& element,const LocalVectorBlock& xe) const
+
+{
+  //ExactSolution<double,dim> exact;
+  double error=0.0;
+  Dune::FieldVector<ctype, dim> qp_loc(0.0);
+  Dune::FieldVector<ctype, dim> qp_glob(0.0);
+  Dune::GeometryType gt = element.geometry().type();
+  //quadrature rule
+  // need to find quad order based on the governing eqn..???
+  int qord=18;
+  for (int qp=0; qp<Dune::QuadratureRules<ctype,dim>::rule(gt,qord).size(); ++qp)
+  {
+    qp_loc = Dune::QuadratureRules<ctype,dim>::rule(gt,qord)[qp].position();
+    qp_glob =element.geometry().global(qp_loc);
+    double weight = Dune::QuadratureRules<ctype,dim>::rule(gt,qord)[qp].weight();
+    double detjac = element.geometry().integrationElement(qp_loc);
+    error+=weight*detjac*(exact.velocity(component,qp_glob)-0)*(exact.velocity(component,qp_glob)-0);
+  }
+  return error;
+
 }
