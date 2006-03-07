@@ -7,8 +7,8 @@ namespace Dune
 {
 
   // Constructor making discrete function
-  template<class DiscreteFunctionSpaceType >
-  inline DiscFuncArray< DiscreteFunctionSpaceType >::
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::
   DiscFuncArray(const DiscreteFunctionSpaceType & f)
     : DiscreteFunctionDefaultType ( f )
       , name_ ( "no name" )
@@ -18,8 +18,8 @@ namespace Dune
   }
 
   // Constructor making discrete function
-  template<class DiscreteFunctionSpaceType >
-  inline DiscFuncArray< DiscreteFunctionSpaceType >::
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::
   DiscFuncArray(const char * name, const DiscreteFunctionSpaceType & f )
     : DiscreteFunctionDefaultType ( f )
       , name_ ( name )
@@ -28,8 +28,8 @@ namespace Dune
     getMemory();
   }
 
-  template<class DiscreteFunctionSpaceType >
-  inline DiscFuncArray< DiscreteFunctionSpaceType >::
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::
   DiscFuncArray(const DiscFuncArray <DiscreteFunctionSpaceType> & df ) :
     DiscreteFunctionDefaultType ( df.functionSpace_ )
     , localFunc_ ( df.localFunc_ )
@@ -40,8 +40,8 @@ namespace Dune
     dofVec_ = df.dofVec_;
   }
 
-  template<class DiscreteFunctionSpaceType >
-  inline void DiscFuncArray< DiscreteFunctionSpaceType >::getMemory()
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline void DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::getMemory()
   {
     // the last level is done always
     int length = this->functionSpace_.size();
@@ -51,27 +51,27 @@ namespace Dune
   }
 
   // Desctructor
-  template<class DiscreteFunctionSpaceType >
-  inline DiscFuncArray< DiscreteFunctionSpaceType >::
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::
   ~DiscFuncArray()
   {}
 
 
-  template<class DiscreteFunctionSpaceType >
-  inline void DiscFuncArray< DiscreteFunctionSpaceType >::set ( RangeFieldType x )
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline void DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::set ( RangeFieldType x )
   {
     for(int i=0; i<dofVec_.size(); i++)
       dofVec_[i] = x;
   }
 
-  template<class DiscreteFunctionSpaceType >
-  inline void DiscFuncArray< DiscreteFunctionSpaceType >::clear ()
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline void DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::clear ()
   {
     set ( 0.0 );
   }
 
-  template<class DiscreteFunctionSpaceType >
-  inline void DiscFuncArray< DiscreteFunctionSpaceType >::print(std::ostream &s ) const
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline void DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::print(std::ostream &s ) const
   {
     s << "DiscFuncArray '" << name_ << "'\n";
     ConstDofIteratorType enddof = this->dend ();
@@ -84,66 +84,66 @@ namespace Dune
   //*************************************************************************
   //  Interface Methods
   //*************************************************************************
-  template<class DiscreteFunctionSpaceType > template <class EntityType>
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp > template <class EntityType>
   inline void
-  DiscFuncArray< DiscreteFunctionSpaceType >::
+  DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::
   localFunction ( const EntityType &en , LocalFunctionType &lf )
   {
     lf.init ( en );
   }
 
-  template<class DiscreteFunctionSpaceType > template <class EntityType>
-  inline typename DiscFuncArray< DiscreteFunctionSpaceType >:: LocalFunctionType
-  DiscFuncArray< DiscreteFunctionSpaceType >:: localFunction ( const EntityType &en ) const
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp > template <class EntityType>
+  inline typename DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >:: LocalFunctionType
+  DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >:: localFunction ( const EntityType &en ) const
   {
     return LocalFunctionType (en,*this);
   }
 
-  template<class DiscreteFunctionSpaceType >
-  inline typename DiscFuncArray< DiscreteFunctionSpaceType >:: LocalFunctionImp *
-  DiscFuncArray< DiscreteFunctionSpaceType >::
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline typename DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >:: LocalFunctionImp *
+  DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::
   newLocalFunctionObject () const
 
   {
     return new LocalFunctionImp ( this->functionSpace_ , dofVec_ );
   }
 
-  template<class DiscreteFunctionSpaceType >
-  inline typename DiscFuncArray< DiscreteFunctionSpaceType >:: LocalFunctionType
-  DiscFuncArray< DiscreteFunctionSpaceType >:: newLocalFunction ()
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline typename DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >:: LocalFunctionType
+  DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >:: newLocalFunction ()
   {
     return LocalFunctionType (*this);
   }
 
-  template<class DiscreteFunctionSpaceType >
-  inline typename DiscFuncArray<DiscreteFunctionSpaceType>::DofIteratorType
-  DiscFuncArray< DiscreteFunctionSpaceType >::dbegin ()
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline typename DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::DofIteratorType
+  DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::dbegin ()
   {
     DofIteratorType tmp ( dofVec_ , 0 );
     return tmp;
   }
 
 
-  template<class DiscreteFunctionSpaceType >
-  inline typename DiscFuncArray<DiscreteFunctionSpaceType>::DofIteratorType
-  DiscFuncArray< DiscreteFunctionSpaceType >::dend ( )
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline typename DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::DofIteratorType
+  DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::dend ( )
   {
     DofIteratorType tmp ( dofVec_  , dofVec_.size() );
     return tmp;
   }
 
-  template<class DiscreteFunctionSpaceType >
-  inline typename DiscFuncArray<DiscreteFunctionSpaceType>::ConstDofIteratorType
-  DiscFuncArray< DiscreteFunctionSpaceType >::dbegin ( ) const
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline typename DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::ConstDofIteratorType
+  DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::dbegin ( ) const
   {
     DofIteratorType tmp ( dofVec_ , 0 );
     ConstDofIteratorType tmp2(tmp);
     return tmp2;
   }
 
-  template<class DiscreteFunctionSpaceType >
-  inline typename DiscFuncArray<DiscreteFunctionSpaceType>::ConstDofIteratorType
-  DiscFuncArray< DiscreteFunctionSpaceType >::dend ( ) const
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline typename DiscFuncArray< DiscreteFunctionSpaceType,CoeffStorageImp >::ConstDofIteratorType
+  DiscFuncArray< DiscreteFunctionSpaceType,CoeffStorageImp >::dend ( ) const
   {
     DofIteratorType tmp ( dofVec_ , dofVec_.size() );
     ConstDofIteratorType tmp2(tmp);
@@ -152,8 +152,8 @@ namespace Dune
   //**************************************************************************
   //  Read and Write Methods
   //**************************************************************************
-  template<class DiscreteFunctionSpaceType >
-  inline bool DiscFuncArray< DiscreteFunctionSpaceType >::
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline bool DiscFuncArray< DiscreteFunctionSpaceType,CoeffStorageImp >::
   write_xdr( const char *fn )
   {
     FILE  *file;
@@ -177,8 +177,8 @@ namespace Dune
     return true;
   }
 
-  template<class DiscreteFunctionSpaceType >
-  inline bool DiscFuncArray< DiscreteFunctionSpaceType >::
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline bool DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::
   read_xdr( const char *fn )
   {
     FILE   *file;
@@ -205,8 +205,8 @@ namespace Dune
     return true;
   }
 
-  template<class DiscreteFunctionSpaceType >
-  inline bool DiscFuncArray< DiscreteFunctionSpaceType >::
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline bool DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::
   write_ascii( const char *fn )
   {
     std::fstream outfile( fn , std::ios::out );
@@ -231,8 +231,8 @@ namespace Dune
   }
 
 
-  template<class DiscreteFunctionSpaceType >
-  inline bool DiscFuncArray< DiscreteFunctionSpaceType >::
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline bool DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::
   read_ascii( const char *fn )
   {
     FILE *infile=NULL;
@@ -261,8 +261,8 @@ namespace Dune
     return true;
   }
 
-  template<class DiscreteFunctionSpaceType >
-  inline bool DiscFuncArray< DiscreteFunctionSpaceType >::
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline bool DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::
   write_pgm( const char *fn )
   {
     std::ofstream out( fn );
@@ -285,8 +285,8 @@ namespace Dune
     return true;
   }
 
-  template<class DiscreteFunctionSpaceType >
-  inline bool DiscFuncArray< DiscreteFunctionSpaceType >::
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline bool DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::
   read_pgm( const char *fn )
   {
     FILE *in;
@@ -306,9 +306,9 @@ namespace Dune
   }
 
 
-  template<class DiscreteFunctionSpaceType >
-  inline void DiscFuncArray< DiscreteFunctionSpaceType >::
-  addScaled( const DiscFuncArray<DiscreteFunctionSpaceType> &g,
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline void DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::
+  addScaled( const DiscFuncArray< DiscreteFunctionSpaceType,CoeffStorageImp > &g,
              const RangeFieldType &scalar )
   {
     int length = dofVec_.size();
@@ -319,16 +319,16 @@ namespace Dune
       dofVec_[i] += scalar*gvec[i];
   }
 
-  template<class DiscreteFunctionSpaceType >
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
   template<class GridIteratorType>
-  inline void DiscFuncArray< DiscreteFunctionSpaceType >::
+  inline void DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::
   addScaledLocal( GridIteratorType &it ,
-                  const DiscFuncArray<DiscreteFunctionSpaceType> &g, const RangeFieldType &scalar )
+                  const DiscFuncArray< DiscreteFunctionSpaceType,CoeffStorageImp > &g, const RangeFieldType &scalar )
   {
     localFunction( *it , localFunc_ );
 
-    DiscFuncArray<DiscreteFunctionSpaceType> &G =
-      const_cast<DiscFuncArray<DiscreteFunctionSpaceType> &> (g);
+    DiscFuncArray< DiscreteFunctionSpaceType,CoeffStorageImp > &G =
+      const_cast<DiscFuncArray< DiscreteFunctionSpaceType,CoeffStorageImp > &> (g);
     G.localFunction(*it,G.localFunc_);
 
     int length = localFunc_.numberOfDofs();
@@ -349,16 +349,16 @@ namespace Dune
     }
   }
 
-  template<class DiscreteFunctionSpaceType >
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
   template<class GridIteratorType>
-  inline void DiscFuncArray< DiscreteFunctionSpaceType >::
+  inline void DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::
   addLocal( GridIteratorType &it ,
-            const DiscFuncArray<DiscreteFunctionSpaceType> &g)
+            const DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp > &g)
   {
     localFunction( *it , localFunc_ );
 
-    DiscFuncArray<DiscreteFunctionSpaceType> &G =
-      const_cast<DiscFuncArray<DiscreteFunctionSpaceType> &> (g);
+    DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp > &G =
+      const_cast<DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp > &> (g);
     G.localFunction(*it,G.localFunc_);
 
     int length = localFunc_.numberOfDofs();
@@ -366,16 +366,16 @@ namespace Dune
       localFunc_[i] += G.localFunc_[i];
   }
 
-  template<class DiscreteFunctionSpaceType >
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
   template<class GridIteratorType>
-  inline void DiscFuncArray< DiscreteFunctionSpaceType >::
+  inline void DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::
   substractLocal( GridIteratorType &it ,
-                  const DiscFuncArray<DiscreteFunctionSpaceType> &g)
+                  const DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp > &g)
   {
     localFunction( *it , localFunc_ );
 
-    DiscFuncArray<DiscreteFunctionSpaceType> &G =
-      const_cast<DiscFuncArray<DiscreteFunctionSpaceType> &> (g);
+    DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp > &G =
+      const_cast<DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp > &> (g);
     G.localFunction(*it,G.localFunc_);
 
     int length = localFunc_.numberOfDofs();
@@ -383,9 +383,9 @@ namespace Dune
       localFunc_[i] -= G.localFunc_[i];
   }
 
-  template<class DiscreteFunctionSpaceType >
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
   template<class GridIteratorType>
-  inline void DiscFuncArray< DiscreteFunctionSpaceType >::
+  inline void DiscFuncArray< DiscreteFunctionSpaceType, CoeffStorageImp >::
   setLocal( GridIteratorType &it , const RangeFieldType & scalar )
   {
     localFunction( *it , localFunc_ );
@@ -396,47 +396,48 @@ namespace Dune
   //**********************************************************************
   //  --LocalFunctionArray
   //**********************************************************************
-  template<class DiscreteFunctionSpaceType >
-  inline LocalFunctionArray < DiscreteFunctionSpaceType >::
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline LocalFunctionArray < DiscreteFunctionSpaceType, CoeffStorageImp >::
   LocalFunctionArray( const DiscreteFunctionSpaceType &f ,
-                      Array < RangeFieldType > & dofVec )
+                      CoeffStorageImp  & dofVec )
     : fSpace_ ( f ), dofVec_ ( dofVec )
       , uniform_(true), init_(false) {}
 
-  template<class DiscreteFunctionSpaceType >
-  inline LocalFunctionArray < DiscreteFunctionSpaceType >::~LocalFunctionArray()
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline LocalFunctionArray < DiscreteFunctionSpaceType, CoeffStorageImp >::~LocalFunctionArray()
   {}
 
-  template<class DiscreteFunctionSpaceType >
-  inline typename LocalFunctionArray < DiscreteFunctionSpaceType >::RangeFieldType &
-  LocalFunctionArray < DiscreteFunctionSpaceType >::operator [] (int num)
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline typename LocalFunctionArray < DiscreteFunctionSpaceType, CoeffStorageImp >::RangeFieldType &
+  LocalFunctionArray < DiscreteFunctionSpaceType, CoeffStorageImp >::operator [] (int num)
   {
     return (* (values_[num]));
   }
 
-  template<class DiscreteFunctionSpaceType >
-  inline const typename LocalFunctionArray < DiscreteFunctionSpaceType >::RangeFieldType &
-  LocalFunctionArray < DiscreteFunctionSpaceType >::operator [] (int num) const
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline const typename LocalFunctionArray < DiscreteFunctionSpaceType, CoeffStorageImp >::RangeFieldType &
+  LocalFunctionArray < DiscreteFunctionSpaceType, CoeffStorageImp >::operator [] (int num) const
   {
     return (* (values_[num]));
   }
 
-  template<class DiscreteFunctionSpaceType >
-  inline int LocalFunctionArray < DiscreteFunctionSpaceType >::
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline int LocalFunctionArray < DiscreteFunctionSpaceType, CoeffStorageImp >::
   numberOfDofs () const
   {
     return numOfDof_;
   }
 
-  template<class DiscreteFunctionSpaceType >
-  inline int LocalFunctionArray < DiscreteFunctionSpaceType >::
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  inline int LocalFunctionArray < DiscreteFunctionSpaceType, CoeffStorageImp >::
   numDofs () const
   {
     return numOfDof_;
   }
 
-  template<class DiscreteFunctionSpaceType> template <class EntityType>
-  inline void LocalFunctionArray < DiscreteFunctionSpaceType >::
+  template<class DiscreteFunctionSpaceType,class CoeffStorageImp >
+  template <class EntityType>
+  inline void LocalFunctionArray < DiscreteFunctionSpaceType, CoeffStorageImp >::
   evaluate (EntityType &en, const DomainType & x, RangeType & ret) const
   {
     ret = 0.0;
@@ -444,8 +445,8 @@ namespace Dune
     evaluateLocal(en, xtmp_, ret);
   }
 
-  template<class DiscreteFunctionSpaceType> template <class EntityType>
-  inline void LocalFunctionArray < DiscreteFunctionSpaceType>::
+  template<class DiscreteFunctionSpaceType,class CoeffStorageImp > template <class EntityType>
+  inline void LocalFunctionArray < DiscreteFunctionSpaceType, CoeffStorageImp >::
   evaluateLocal (EntityType &en, const DomainType & x, RangeType & ret) const
   {
     enum { dimRange = DiscreteFunctionSpaceType::DimRange };
@@ -463,25 +464,25 @@ namespace Dune
     }
   }
 
-  template<class DiscreteFunctionSpaceType >
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
   template <class EntityType, class QuadratureType>
-  inline void LocalFunctionArray < DiscreteFunctionSpaceType >::
+  inline void LocalFunctionArray < DiscreteFunctionSpaceType, CoeffStorageImp >::
   evaluate (EntityType &en, QuadratureType &quad, int quadPoint, RangeType & ret) const
   {
     evaluateLocal(en, quad.point(quadPoint), ret);
   }
 
-  template<class DiscreteFunctionSpaceType>
+  template<class DiscreteFunctionSpaceType,class CoeffStorageImp >
   template <class EntityType, class QuadratureType>
-  inline void LocalFunctionArray < DiscreteFunctionSpaceType>::
+  inline void LocalFunctionArray < DiscreteFunctionSpaceType, CoeffStorageImp >::
   jacobian (EntityType &en, QuadratureType &quad, int quadPoint, JacobianRangeType & ret) const
   {
     jacobianLocal(en, quad.point(quadPoint), ret);
   }
 
-  template<class DiscreteFunctionSpaceType>
+  template<class DiscreteFunctionSpaceType,class CoeffStorageImp >
   template <class EntityType>
-  inline void LocalFunctionArray<DiscreteFunctionSpaceType>::
+  inline void LocalFunctionArray < DiscreteFunctionSpaceType, CoeffStorageImp >::
   jacobian(EntityType& en, const DomainType& x,
            JacobianRangeType& ret) const
   {
@@ -490,9 +491,9 @@ namespace Dune
     jacobianLocal(en, xtmp_, ret);
   }
 
-  template<class DiscreteFunctionSpaceType>
+  template<class DiscreteFunctionSpaceType,class CoeffStorageImp >
   template <class EntityType>
-  inline void LocalFunctionArray<DiscreteFunctionSpaceType>::
+  inline void LocalFunctionArray < DiscreteFunctionSpaceType, CoeffStorageImp >::
   jacobianLocal(EntityType& en, const DomainType& x,
                 JacobianRangeType& ret) const
   {
@@ -515,8 +516,9 @@ namespace Dune
     }
   }
 
-  template<class DiscreteFunctionSpaceType > template <class EntityType>
-  inline void LocalFunctionArray < DiscreteFunctionSpaceType >::
+  template<class DiscreteFunctionSpaceType, class CoeffStorageImp >
+  template <class EntityType>
+  inline void LocalFunctionArray < DiscreteFunctionSpaceType, CoeffStorageImp >::
   init (const EntityType &en ) const
   {
     if(!uniform_ || !init_)
