@@ -30,10 +30,7 @@ namespace ALUGridSpace {
   //#endif
 
 #ifdef _ALU3DGRID_PARALLEL_
-
   typedef GatherScatter GatherScatterType;
-
-
 
   typedef GitterDunePll GitterType;
   typedef GitterDunePll GitterImplType;
@@ -129,6 +126,8 @@ namespace Dune {
   struct ALU3dImplTraits<tetra>::Codim<0> {
     typedef ALU3DSPACE GitterType::helement_STI InterfaceType;
     typedef IMPLElementType ImplementationType;
+    typedef ALU3DSPACE HBndSegType GhostInterfaceType;
+    typedef PLLBndFaceType GhostImplementationType;
   };
 
   template <>
