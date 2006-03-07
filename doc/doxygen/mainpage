@@ -2,11 +2,14 @@
 
 \section intro Introduction
 
-Welcome to %Dune
+Welcome to the %Dune documentation pages. This documentation has been
+generated using Doxygen, a free source code documentation system for
+documenting C/C++ code.
 
 \section mods Modules
 
-For an overview of the existing modules have a look at \subpage modules
+The best way to start is from the page \subpage modules which gives
+you access to the documentation by category.
 
 */
 

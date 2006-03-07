@@ -11,7 +11,12 @@
 
 namespace Dune
 {
-  // a default class for collective communication
+  /*! @brief Collective communication sequential default implementation
+
+     This class implements global communication functions in a sequential
+     environment without doing any communication. In specializations
+     one can implement the real thing.
+   */
   template<typename C>
   class CollectiveCommunication
   {

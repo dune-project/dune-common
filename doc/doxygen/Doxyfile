@@ -452,6 +452,7 @@ WARN_LOGFILE           =
 
 INPUT                  = mainpage \
                          modules \
+                         ../../grid/modules \
                          ../../grid \
                          ../../disc \
                          ../../common \
