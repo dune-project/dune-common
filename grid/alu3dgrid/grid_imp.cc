@@ -768,6 +768,7 @@ namespace Dune {
     return false;
 #endif
 #endif
+    return false;
   }
 
   /*
