@@ -237,7 +237,7 @@ namespace Dune {
 
           const int faceCodim = 1;
 
-          if( (t == simplex) || (t == triangle) || (t == tetrahedron ) )
+          if(t.isSimplex())
           {
             const BoundaryEntityType & bEl = nit.boundaryEntity();
             if( bEl.id() != 0 )
@@ -256,7 +256,7 @@ namespace Dune {
               }
             }
           }
-          if((t == quadrilateral) || (t == cube) || (t == hexahedron))
+          if(t.isCube())
           {
             static ReferenceCube< coordType, dim > refElem;
             int novx = refElem.size( face, faceCodim , dim );
