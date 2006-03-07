@@ -1280,6 +1280,8 @@ namespace Dune
       typedef IndexSet<GridImp,LeafIndexSetImp,DefaultLeafIteratorTypes<GridImp> > LeafIndexSet;
       typedef IdSet<GridImp,IdSetImp,IdType> GlobalIdSet;
       typedef IdSet<GridImp,IdSetImp,IdType> LocalIdSet;
+
+      typedef CollectiveCommunication<GridImp> CollectiveCommunication;
     };
   };
 

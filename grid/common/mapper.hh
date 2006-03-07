@@ -15,7 +15,7 @@
  *
  */
 
-/*! @defgroup Mapper Mapper
+/*! @addtogroup Mapper Mapper
    \ingroup Grid
 
 

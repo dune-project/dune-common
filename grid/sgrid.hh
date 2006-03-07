@@ -1158,7 +1158,9 @@ namespace Dune {
         SGridGlobalIdSet<const SGrid<dim,dimworld> >,
         bigunsignedint<dim*sgrid_dim_bits+sgrid_level_bits+sgrid_codim_bits>,
         SGridGlobalIdSet<const SGrid<dim,dimworld> >,
-        bigunsignedint<dim*sgrid_dim_bits+sgrid_level_bits+sgrid_codim_bits> > Traits;
+        bigunsignedint<dim*sgrid_dim_bits+sgrid_level_bits+sgrid_codim_bits>,
+        CollectiveCommunication<Dune::SGrid<dim,dimworld> > >
+    Traits;
   };
 
 

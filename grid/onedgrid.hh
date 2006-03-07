@@ -7,6 +7,7 @@
 
 #include <dune/common/misc.hh>
 #include <dune/common/capabilities.hh>
+#include <dune/common/collectivecommunication.hh>
 #include <dune/grid/common/grid.hh>
 
 
@@ -167,7 +168,9 @@ namespace Dune {
         OneDGridIdSet<const OneDGrid<dim,dimw> >,
         unsigned int,
         OneDGridIdSet<const OneDGrid<dim,dimw> >,
-        unsigned int> Traits;
+        unsigned int,
+        CollectiveCommunication<Dune::OneDGrid<dim,dimw> > >
+    Traits;
   };
 
   //**********************************************************************
@@ -399,7 +402,25 @@ namespace Dune {
      */
     void globalRefine(int refCount);
 
+    // dummy parallel functions
+
+    template<class DataHandle>
+    void communicate (DataHandle& data, InterfaceType iftype, CommunicationDirection dir, int level) const
+    {}
+
+    template<class DataHandle>
+    void communicate (DataHandle& data, InterfaceType iftype, CommunicationDirection dir) const
+    {}
+
+    const CollectiveCommunication<OneDGrid>& comm () const
+    {
+      return ccobj;
+    }
+
+
   private:
+
+    CollectiveCommunication<OneDGrid> ccobj;
 
     /** \brief Update all indices and ids */
     void setIndices();

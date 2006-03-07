@@ -31,35 +31,34 @@ namespace Dune {
 #define CHECK_INTERFACE_IMPLEMENTATION(a,b)
 
   /**
-     @defgroup Grid Grid
+         @addtogroup Grid Grid
 
-     The Dune Grid module defines a general interface to a hierarchical
-     finite element mesh.  The interface is independent of dimension and
-     element type.
+         The Dune Grid module defines a general interface to a hierarchical
+         finite element mesh.  The interface is independent of dimension and
+         element type.
    */
 
   /**
-     @defgroup GridInterface Grid Application API
-     @ingroup Grid
-     \brief Interfaces needed when working with a \ref Grid "Dune::Grid"
+         @addtogroup GridInterface Abstract Grid Interface
+         @ingroup Grid
+         @brief Interfaces needed when working with a \ref Grid "Dune::Grid"
    */
 
   /**
-     @defgroup GridDevel Grid Developer API
-     @ingroup Grid
-     \brief Interfaces needed to implement a new \ref Grid "Dune::Grid"
+         @addtogroup GridDevel Grid Developer API
+         @ingroup Grid
+         @brief Interfaces needed to implement a new \ref Grid "Dune::Grid"
    */
 
   /**
-     @defgroup GridImplementations Implementations Overview
-     @ingroup Grid
-     \brief A List of the different Implementations of the Dune Grid Interface.
+         @addtogroup GridImplementations Implementations Overview
+         @ingroup Grid
+         @brief A List of the different Implementations of the Dune Grid Interface.
    */
 
-  /**
-     @ingroup GridInterface
+  /*! Possible states of an entity before and/or after grid adaptation
+     @ingroup GIRelatedTypes
    */
-
   enum AdaptationState {
     NONE ,   //!< notin' to do and notin' was done
     COARSEN, //!< entity could be coarsend in adaptation step
@@ -67,36 +66,12 @@ namespace Dune {
   };
 
 
-  /*! Parameter to be used for the communication functions
-   */
-  enum InterfaceType {
-    InteriorBorder_InteriorBorder_Interface=0,
-    InteriorBorder_All_Interface=1,
-    Overlap_OverlapFront_Interface=2,
-    Overlap_All_Interface=3,
-    All_All_Interface=4
-  };
+  /*! \brief Attributes used in the generic overlap model
 
-  /*! Parameter to be used for the parallel level iterators
-   */
-  enum PartitionIteratorType {
-    Interior_Partition=0,
-    InteriorBorder_Partition=1,
-    Overlap_Partition=2,
-    OverlapFront_Partition=3,
-    All_Partition=4,
-    Ghost_Partition=5
-  };
+     The values are ordered intentionally in order to be able to
+     define ranges of partition types.
 
-
-  /*! Define a type for communication direction parameter
-   */
-  enum CommunicationDirection {
-    ForwardCommunication,
-    BackwardCommunication
-  };
-
-  /*! Attributes used in the generic overlap model
+     @ingroup GIRelatedTypes
    */
   enum PartitionType {
     InteriorEntity=0,     //!< all interior entities
@@ -106,7 +81,9 @@ namespace Dune {
     GhostEntity=4         //!< ghost entities
   };
 
-  //! provide names for the partition types
+  /*! Provide names for the partition types
+     @ingroup GIRelatedTypes
+   */
   inline std::string PartitionName(PartitionType type)
   {
     switch(type) {
@@ -125,8 +102,41 @@ namespace Dune {
     }
   }
 
+  /*! Parameter to be used for the communication functions
+     @ingroup GIRelatedTypes
+   */
+  enum InterfaceType {
+    InteriorBorder_InteriorBorder_Interface=0,     //!< send/receive interior and border entities
+    InteriorBorder_All_Interface=1,                //!< send interior and border, receive all entities
+    Overlap_OverlapFront_Interface=2,              //!< send overlap, receive overlap and front entities
+    Overlap_All_Interface=3,                       //!< send overlap, receive all entities
+    All_All_Interface=4                            //!< send all and receive all entities
+  };
+
+  /*! Parameter to be used for the parallel level iterators
+     @ingroup GIRelatedTypes
+   */
+  enum PartitionIteratorType {
+    Interior_Partition=0,           //!< only interior entities
+    InteriorBorder_Partition=1,     //!< interior and border entities
+    Overlap_Partition=2,            //!< only overlap entities
+    OverlapFront_Partition=3,       //!< overlap and front entities
+    All_Partition=4,                //!< all entities
+    Ghost_Partition=5               //!< only ghost entities
+  };
+
+
+  /*! Define a type for communication direction parameter
+     @ingroup GIRelatedTypes
+   */
+  enum CommunicationDirection {
+    ForwardCommunication,         //!< communicate as given in InterfaceType
+    BackwardCommunication         //!< reverse communication direction
+  };
+
   /*! GridIndexType specifies which Index of the Entities of the grid
         should be used, i.e. globalIndex() or index()
+     @ingroup GIRelatedTypes
    */
   enum GridIndexType { GlobalIndex , //!< use globalIndex() of entity
                        LevelIndex  ,  //!< use index() of entity
@@ -166,6 +176,7 @@ namespace Dune {
 
   /**
      \brief Grid interface class
+     @ingroup GIGrid
 
      This class should actually be called GridInterface since it defines the
      basic interface for all grid classes
@@ -175,7 +186,7 @@ namespace Dune {
    * <tt>dimworld</tt> precifies the dimension of the surrounding space, this can be
        different from dim, if the grid is defined on a manifold .
    * <tt>ct</tt> field type of the world vector space.
-   * <tt>GridFamily</tt> trait class providing all information
+   * <tt>GridFamily</tt> traits class providing all types
        associated with the grid implementation.
    */
   template< int dim, int dimworld, class ct, class GridFamily>
@@ -214,6 +225,9 @@ namespace Dune {
       typedef typename GridFamily::Traits::LeafIndexSet LeafIndexSet;
       typedef typename GridFamily::Traits::GlobalIdSet GlobalIdSet;
       typedef typename GridFamily::Traits::LocalIdSet LocalIdSet;
+
+      typedef typename GridFamily::Traits::CollectiveCommunication CollectiveCommunication;
+
     };
 
     enum {
@@ -540,18 +554,6 @@ namespace Dune {
     //! the traits of this class
     typedef typename GridFamily::Traits Traits;
 
-    enum {
-      //! \brief The dimension of the grid
-      dimension=dim
-    };
-
-    enum {
-      //! \brief The dimension of the world the grid lives in.
-      dimensionworld=dimworld
-    };
-
-    //! Define type used for coordinates in grid module
-    typedef ct ctype;
     //***************************************************************
     //  Interface for Adaptation
     //***************************************************************
@@ -648,7 +650,7 @@ namespace Dune {
       template<class> class HierarchicIteratorImp,
       template<int,PartitionIteratorType,class> class LeafIteratorImp,
       class LevelIndexSetImp, class LevelIndexSetTypes, class LeafIndexSetImp, class LeafIndexSetTypes,
-      class GlobalIdSetImp, class GIDType, class LocalIdSetImp, class LIDType>
+      class GlobalIdSetImp, class GIDType, class LocalIdSetImp, class LIDType, class CCType>
   struct GridTraits
   {
     typedef GridImp Grid;
@@ -685,6 +687,8 @@ namespace Dune {
     typedef IndexSet<const GridImp,LeafIndexSetImp,LeafIndexSetTypes> LeafIndexSet;
     typedef IdSet<const GridImp,GlobalIdSetImp,GIDType> GlobalIdSet;
     typedef IdSet<const GridImp,LocalIdSetImp,LIDType> LocalIdSet;
+
+    typedef CCType CollectiveCommunication;
   };
 
   /*! \internal

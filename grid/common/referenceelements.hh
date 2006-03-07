@@ -49,7 +49,7 @@ namespace Dune
 
 
   /**
-     @defgroup GridReferenceElements Reference Elements
+     @addtogroup GridReferenceElements Reference Elements
      @ingroup Grid
      @brief Classes describing the geometry of the reference elements.
 

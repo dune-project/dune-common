@@ -110,7 +110,9 @@ namespace Dune {
         UGGridGlobalIdSet< const UGGrid<dim,dimworld> >,
         unsigned int,
         UGGridLocalIdSet< const UGGrid<dim,dimworld> >,
-        unsigned int> Traits;
+        unsigned int,
+        CollectiveCommunication<Dune::UGGrid<dim,dimworld> > >
+    Traits;
   };
 
 

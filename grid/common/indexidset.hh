@@ -15,13 +15,12 @@
         @brief Provides base classes for index and id sets
  */
 
-/** @defgroup IndexIdSets Index and Id Sets
-   \ingroup Grid
+/** @addtogroup IndexIdSets Index and Id Sets
+        \ingroup Grid
 
-   @section Intro Introduction
-   <!--====================-->
+        @section Intro Introduction
 
-   still missing
+        still missing
 
  */
 
