@@ -143,6 +143,42 @@ namespace Dune {
                        LeafIndex    //!< use index() of entity
   };
 
+  /*! Id for each model of the grid interface
+        @ingroup GIRelatedTypes
+   */
+  enum GridIdentifier {
+    SGrid_Id,            //!< Id for SGrid
+    AlbertaGrid_Id ,     //!< Id for AlbertaGrid
+    UGGrid_Id,           //!< Id for UGGrid
+    YaspGrid_Id ,        //!< Id for YaspGrid
+    ALU3dGrid_Id,        //!< Id for ALU3dGrid
+    OneDGrid_Id          //!< Id for OneDGrid
+  };
+
+  /*! Provide names for the different grid types.
+        @ingroup GIRelatedTypes
+   */
+  inline std::string transformToGridName(GridIdentifier type)
+  {
+    switch(type) {
+    case SGrid_Id :
+      return "SGrid";
+    case AlbertaGrid_Id :
+      return "AlbertaGrid";
+    case ALU3dGrid_Id :
+      return "ALU3dGrid";
+    case UGGrid_Id :
+      return "UGGrid";
+    case YaspGrid_Id :
+      return "YaspGrid";
+    case OneDGrid_Id :
+      return "OneDGrid";
+    default :
+      return "unknown";
+    }
+  }
+
+
   //************************************************************************
   // G R I D E R R O R
   //************************************************************************
@@ -175,18 +211,21 @@ namespace Dune {
   //************************************************************************
 
   /**
-     \brief Grid interface class
+     \brief Grid abstract base class
      @ingroup GIGrid
 
-     This class should actually be called GridInterface since it defines the
-     basic interface for all grid classes
+     This class is the base class for all grid implementations. Although
+     no virtual functions are used we call it abstract base class since its
+     methods do not contain an implementation but forward to the methods of
+     the derived class.
 
-     template parameters:
-   * <tt>dim</tt> precifies the dimesion of the grid.
-   * <tt>dimworld</tt> precifies the dimension of the surrounding space, this can be
+     Template parameters:
+
+     - <tt>dim</tt> specifies the dimension of the grid.
+     - <tt>dimworld</tt> specifies the dimension of the surrounding space, this can be
        different from dim, if the grid is defined on a manifold .
-   * <tt>ct</tt> field type of the world vector space.
-   * <tt>GridFamily</tt> traits class providing all types
+     - <tt>ct</tt> field type of the world vector space.
+     - <tt>GridFamily</tt> traits class providing all types
        associated with the grid implementation.
    */
   template< int dim, int dimworld, class ct, class GridFamily>
@@ -195,46 +234,111 @@ namespace Dune {
     typedef Grid<dim,dimworld,ct,GridFamily> ThisType;
   public:
 
+    /** \brief A Traits struct that collects all associated types of one implementation
+
+       Template parameter:
+
+       - <tt>cd</tt> codimension. Note that not all types in this struct depend on this template parameter.
+     */
     template <int cd>
     struct Codim
     {
-      // IMPORTANT: Codim<codim>::Geometry == Geometry<dim-codim,dimworld>
+      //! A type that is a model of Dune::Geometry<dim-cd,dimworld>.
       typedef typename GridFamily::Traits::template Codim<cd>::Geometry Geometry;
+
+      //! A type that is a model of Dune::Geometry<dim-cd,dim>.
       typedef typename GridFamily::Traits::template Codim<cd>::LocalGeometry LocalGeometry;
 
+      //! A type that is a model of a Dune::Entity<cd,dim,...>.
       typedef typename GridFamily::Traits::template Codim<cd>::Entity Entity;
 
-      typedef typename GridFamily::Traits::template Codim<cd>::LevelIterator LevelIterator;
-
-      typedef typename GridFamily::Traits::template Codim<cd>::LeafIterator LeafIterator;
-
+      //! A type that is a model of Dune::EntityPointer<cd,dim,...>.
       typedef typename GridFamily::Traits::template Codim<cd>::EntityPointer EntityPointer;
 
+      //! A struct collecting all types depending on the partition iterator type.
       template <PartitionIteratorType pitype>
       struct Partition
       {
+        /*! \brief A type that is a model of Dune::LevelIterator<cd,pitype,...>
+              which is s type of iterator that may be used to examine, but not to modify, the
+              entities of codimension cd with partition type
+              pitype  on a certain level of the grid, i. e. the increment of
+              the iterator adjusts it to the next entity on that level.
+         */
         typedef typename GridFamily::Traits::template Codim<cd>::template Partition<pitype>::LevelIterator LevelIterator;
+        /*! \brief A type that is a model of Dune::LeafIterator<cd,pitype,...>
+              which is a type of iterator that may be used to examine, but not to modify, the
+              entities of codimension cd with partition type
+              pitype in the leaf grid, i. e. the increment of
+              the iterator adjusts it to the next entity in the leaf grid.
+         */
         typedef typename GridFamily::Traits::template Codim<cd>::template Partition<pitype>::LeafIterator LeafIterator;
       };
 
-      typedef typename GridFamily::Traits::HierarchicIterator HierarchicIterator;
-
+      /*! \brief A type that is a model of Dune::IntersectionIterator
+         which is an iterator that allows to examine, but not to modify, the
+         intersections of codimension 1 of an element (entity of codimension 0)
+         with other elements.
+       */
       typedef typename GridFamily::Traits::IntersectionIterator IntersectionIterator;
 
+      /*! \brief A type that is a model of Dune::HierarchicIterator
+         A type of iterator that allows to examine, but not to modify, entities
+         of codimension 0 that result from refinement of an entity of
+         codimension 0.
+       */
+      typedef typename GridFamily::Traits::HierarchicIterator HierarchicIterator;
+
+      /*! \brief A type that is a model of Dune::LevelIterator with partition type All_Partition
+       */
+      typedef typename GridFamily::Traits::template Codim<cd>::LevelIterator LevelIterator;
+
+      /*! \brief A type that is a model of Dune::LeafIterator with partition type All_Partition
+       */
+      typedef typename GridFamily::Traits::template Codim<cd>::LeafIterator LeafIterator;
+
+      /*!  \brief A type that is a model of Dune::IndexSet
+         which provides a consecutive, but non persistent, numbering for
+         entities on a grid level.
+       */
       typedef typename GridFamily::Traits::LevelIndexSet LevelIndexSet;
+
+      /*! \brief A type that is a model of Dune::IndexSet
+         which provides a consecutive, but non persistent, numbering for
+         entities in the leaf grid.
+       */
       typedef typename GridFamily::Traits::LeafIndexSet LeafIndexSet;
+
+      /*!  \brief A type that is a model of Dune::IdSet
+         which provides a unique and persistent numbering for
+         all entities in the grid. The numbering is unique over all processes
+         over which the grid is partitioned. The numbering is not necessarily
+         consecutive.
+       */
       typedef typename GridFamily::Traits::GlobalIdSet GlobalIdSet;
+
+      /*! \brief A type that is a model of Dune::IdSet
+         which provides a unique and persistent numbering for
+         all entities in the grid. The numbering is only unique in a single process
+         and it is not necessarily consecutive.
+       */
       typedef typename GridFamily::Traits::LocalIdSet LocalIdSet;
 
+      /*! \brief A type that is a model of Dune::CollectiveCommunication.
+         It provides a portable way for collective communication on the set
+         of processes used by the grid.
+       */
       typedef typename GridFamily::Traits::CollectiveCommunication CollectiveCommunication;
 
     };
 
+    //! A constant that exports the template parameter dim
     enum {
       //! \brief The dimension of the grid
       dimension=dim
     };
 
+    //! A constant that exports the template parameter dimworld
     enum {
       //! \brief The dimension of the world the grid lives in.
       dimensionworld=dimworld
@@ -243,7 +347,25 @@ namespace Dune {
     //! Define type used for coordinates in grid module
     typedef ct ctype;
 
-    /*! Return maximum level defined in this grid. Levels are numbered
+
+    //===========================================================
+    // grid id
+    //===========================================================
+
+    //! Return the id of the grid
+    GridIdentifier type() const
+    {
+      CHECK_INTERFACE_IMPLEMENTATION(
+        ((GridIdentifier (GridImp::*)() const) &(ThisType::type)),
+        ((GridIdentifier (GridImp::*)() const) &(GridImp::type)));
+      return asImp().type();
+    }
+
+    //===========================================================
+    // size methods
+    //===========================================================
+
+    /*! \brief Return maximum level defined in this grid. Levels are numbered
        0 ... maxLevel with 0 the coarsest level.
      */
     int maxLevel() const
@@ -256,7 +378,7 @@ namespace Dune {
       return asImp().maxLevel();
     }
 
-    //! Return number of grid entities of a given codim on a given level
+    //! Return number of grid entities of a given codim on a given level in this process
     int size (int level, int codim) const
     {
       // compare addresses of the method, if they are equal then derived
@@ -267,7 +389,7 @@ namespace Dune {
       return asImp().size(level,codim);
     }
 
-    //! number of leaf entities per codim in this process
+    //! Return number of leaf entities of a given codim in this process
     int size (int codim) const
     {
       // compare addresses of the method, if they are equal then derived
@@ -278,7 +400,7 @@ namespace Dune {
       return asImp().size(codim);
     }
 
-    //! number of entities per level and geometry type in this process
+    //! Return number of entities per level and geometry type in this process
     int size (int level, GeometryType type) const
     {
       // compare addresses of the method, if they are equal then derived
@@ -289,7 +411,7 @@ namespace Dune {
       return asImp().size(level,type);
     }
 
-    //! number of leaf entities per geometry type in this process
+    //! Return number of leaf entities per geometry type in this process
     int size (GeometryType type) const
     {
       // compare addresses of the method, if they are equal then derived
@@ -300,49 +422,11 @@ namespace Dune {
       return asImp().size(type);
     }
 
-    //! return size (= distance in graph) of overlap region
-    int overlapSize (int level, int codim) const
-    {
-      // compare addresses of the method, if they are equal then derived
-      // class has the method not overloaded which leads to a seg fault
-      CHECK_INTERFACE_IMPLEMENTATION(
-        ((int (GridImp::*)(int,int) const) &(ThisType::overlapSize)),
-        ((int (GridImp::*)(int,int) const) &(GridImp::overlapSize )));
-      return asImp().overlapSize(level,codim);
-    }
 
-    //! return size (= distance in graph) of overlap region
-    int overlapSize (int codim) const
-    {
-      // compare addresses of the method, if they are equal then derived
-      // class has the method not overloaded which leads to a seg fault
-      CHECK_INTERFACE_IMPLEMENTATION(
-        ((int (GridImp::*)(int) const) &(ThisType::overlapSize)),
-        ((int (GridImp::*)(int) const) &(GridImp::overlapSize )));
-      return asImp().overlapSize(codim);
-    }
+    //===========================================================
+    // iterators
+    //===========================================================
 
-    //! return size (= distance in graph) of ghost region
-    int ghostSize (int level, int codim) const
-    {
-      // compare addresses of the method, if they are equal then derived
-      // class has the method not overloaded which leads to a seg fault
-      CHECK_INTERFACE_IMPLEMENTATION(
-        ((int (GridImp::*)(int,int) const) &(ThisType::ghostSize)),
-        ((int (GridImp::*)(int,int) const) &(GridImp:: ghostSize)));
-      return asImp().ghostSize(level,codim);
-    }
-
-    //! return size (= distance in graph) of ghost region
-    int ghostSize (int codim) const
-    {
-      // compare addresses of the method, if they are equal then derived
-      // class has the method not overloaded which leads to a seg fault
-      CHECK_INTERFACE_IMPLEMENTATION(
-        ((int (GridImp::*)(int) const) &(ThisType::ghostSize)),
-        ((int (GridImp::*)(int) const) &(GridImp:: ghostSize)));
-      return asImp().ghostSize(codim);
-    }
 
     //! Iterator to first entity of given codim on level
     template<int cd, PartitionIteratorType pitype>
@@ -396,7 +480,7 @@ namespace Dune {
       return asImp().template lend<cd>(level);
     }
 
-    //! Iterator to first entity of given codim on leaf level of the grid
+    //! Iterator to first entity of given codim on leaf grid
     template<int cd, PartitionIteratorType pitype>
     typename Codim<cd>::template Partition<pitype>::LeafIterator leafbegin () const
     {
@@ -409,7 +493,7 @@ namespace Dune {
       return asImp().template leafbegin<cd,pitype>();
     }
 
-    //! one past the end on the leaf level of this grid
+    //! one past the end on the leaf level grid
     template<int cd, PartitionIteratorType pitype>
     typename Codim<cd>::template Partition<pitype>::LeafIterator leafend () const
     {
@@ -422,7 +506,7 @@ namespace Dune {
       return asImp().template leafend<cd,pitype>();
     }
 
-    //! Iterator to first entity of given codim on leaf level of the grid
+    //! Iterator to first entity of given codim on leaf grid for PartitionType All_Partition
     template<int cd>
     typename Codim<cd>::template Partition<All_Partition>::LeafIterator leafbegin () const
     {
@@ -435,7 +519,7 @@ namespace Dune {
       return asImp().template leafbegin<cd,All_Partition>();
     }
 
-    //! one past the end on the leaf level of this grid
+    //! one past the end on the leaf grid for PartitionType All_Partition
     template<int cd>
     typename Codim<cd>::template Partition<All_Partition>::LeafIterator leafend () const
     {
@@ -447,6 +531,12 @@ namespace Dune {
         ((ItType (GridImp::*)() const) &(GridImp ::template leafend<cd>)));
       return asImp().template leafend<cd,All_Partition>();
     }
+
+
+    //===========================================================
+    // access to index and id sets
+    //===========================================================
+
 
     //! return const reference to the grids global id set
     const typename Codim<0>::GlobalIdSet& globalIdSet() const
@@ -491,6 +581,178 @@ namespace Dune {
         ((const typename Codim<0>::LeafIndexSet& (GridImp::*)() const) &GridImp::leafIndexSet));
       return asImp().leafIndexSet();
     }
+
+
+    //===========================================================
+    // adaptivity & grid refinement
+    //===========================================================
+
+    //! Refine the grid refCount times using the default refinement rule.
+    void globalRefine (int refCount)
+    {
+      // compare addresses of the method, if they are equal then derived
+      // class has the method not overloaded which leads to a seg fault
+      CHECK_INTERFACE_IMPLEMENTATION(
+        ((void (GridImp::*)() ) &ThisType::globalRefine),
+        ((void (GridImp::*)() ) &GridImp::globalRefine));
+      asImp().globalRefine(refCount);
+      return;
+    }
+
+    /** \brief Marks an entity to be refined in a subsequent adapt.
+
+       \param[in] refCount Number of subdivisions that should be applied. Negative value means coarsening.
+       \param[in] e        Entity that should be refined
+
+       \return true if entity was marked, false otherwise.
+     */
+    template <class T>
+    bool mark( int refCount, T & e )
+    {
+      IsTrue<Conversion<T, typename Grid<dim,dimworld,ct,GridFamily>::template Codim<0>::EntityPointer>::exists >::yes();
+      return asImp.template mark<T>(refCount,e);
+    }
+
+    /*! \brief To be called after entities have been marked and before adapt() is called.
+
+       \return true if an entity may be coarsened during a subsequent adapt(), false otherwise.
+     */
+    bool preAdapt ()
+    {
+      // compare addresses of the method, if they are equal then derived
+      // class has the method not overloaded which leads to a seg fault
+      CHECK_INTERFACE_IMPLEMENTATION(
+        ((bool (GridImp::*)() ) &ThisType::preAdapt),
+        ((bool (GridImp::*)() ) &GridImp::preAdapt));
+      return asImp.preAdapt();
+    }
+
+    /** \brief Refine all positive marked leaf entities,
+        coarsen all negative marked entities if possible
+
+            \return true if a least one entity was refined
+
+            The complete adaptation process works as follows:
+
+            - mark entities with the mark() method
+            - call preAdapt()
+            - if preAdapt() returned true: possibly save current solution
+            - call adapt()
+            - if adapt() returned true: possibly interpolate the (saved) solution
+            - call postAdapt()
+     */
+    bool adapt ()
+    {
+      // compare addresses of the method, if they are equal then derived
+      // class has the method not overloaded which leads to a seg fault
+      CHECK_INTERFACE_IMPLEMENTATION(
+        ((bool (GridImp::*)() ) &ThisType::adapt),
+        ((bool (GridImp::*)() ) &GridImp::adapt));
+      return asImp.adapt();
+    }
+
+    //! To be called after grid has been adapted and information left over by the adaptation has been processed.
+    void postAdapt()
+    {
+      // compare addresses of the method, if they are equal then derived
+      // class has the method not overloaded which leads to a seg fault
+      CHECK_INTERFACE_IMPLEMENTATION(
+        ((bool (GridImp::*)() ) &ThisType::postAdapt),
+        ((bool (GridImp::*)() ) &GridImp::postAdapt));
+      return asImp.postAdapt();
+    }
+
+
+    //===========================================================
+    // parallel stuff
+    //===========================================================
+
+    /*! \brief Communicate information on distributed entities on a given level
+          Template parameter is a model of Dune::CommDataHandle
+     */
+    template<class DataHandle>
+    void communicate (DataHandle& data, InterfaceType iftype, CommunicationDirection dir, int level) const
+    {
+      // compare addresses of the method, if they are equal then derived
+      // class has the method not overloaded which leads to a seg fault
+      //     CHECK_INTERFACE_IMPLEMENTATION(
+      //       ((void (GridImp::*)(DataHandle&,InterfaceType,CommunicationDirection,int) const) &(ThisType::template communicate<DataHandle>)),
+      //       ((void (GridImp::*)(DataHandle&,InterfaceType,CommunicationDirection,int) const) &(GridImp ::template communicate<DataHandle>)));
+      asImp().template communicate<DataHandle>(data,iftype,dir,level);
+      return;
+    }
+
+    /*! \brief Communicate information on distributed entities on the leaf grid
+          Template parameter is a model of Dune::CommDataHandle
+     */
+    template<class DataHandle>
+    void communicate (DataHandle& data, InterfaceType iftype, CommunicationDirection dir) const
+    {
+      // compare addresses of the method, if they are equal then derived
+      // class has the method not overloaded which leads to a seg fault
+      //     CHECK_INTERFACE_IMPLEMENTATION(
+      //       ((void (GridImp::*)(DataHandle&,InterfaceType,CommunicationDirection) const) &(ThisType::template communicate<DataHandle>)),
+      //       ((void (GridImp::*)(DataHandle&,InterfaceType,CommunicationDirection) const) &(GridImp ::template communicate<DataHandle>)));
+      asImp().template communicate<DataHandle>(data,iftype,dir);
+      return;
+    }
+
+    //! return const reference to a collective communication object. The return type is a model of Dune::CollectiveCommunication.
+    const typename Codim<0>::CollectiveCommunication& comm () const
+    {
+      // compare addresses of the method, if they are equal then derived
+      // class has the method not overloaded which leads to a seg fault
+      CHECK_INTERFACE_IMPLEMENTATION(
+        ((const typename Codim<0>::CollectiveCommunication& (GridImp::*)() const) &ThisType::comm),
+        ((const typename Codim<0>::CollectiveCommunication& (GridImp::*)() const) &GridImp::comm));
+      return asImp().comm();
+    }
+
+
+    //! Return size of overlap for a given codim on a given level
+    int overlapSize (int level, int codim) const
+    {
+      // compare addresses of the method, if they are equal then derived
+      // class has the method not overloaded which leads to a seg fault
+      CHECK_INTERFACE_IMPLEMENTATION(
+        ((int (GridImp::*)(int,int) const) &(ThisType::overlapSize)),
+        ((int (GridImp::*)(int,int) const) &(GridImp::overlapSize )));
+      return asImp().overlapSize(level,codim);
+    }
+
+    //! Return size of overlap region for a given codim on the leaf grid
+    int overlapSize (int codim) const
+    {
+      // compare addresses of the method, if they are equal then derived
+      // class has the method not overloaded which leads to a seg fault
+      CHECK_INTERFACE_IMPLEMENTATION(
+        ((int (GridImp::*)(int) const) &(ThisType::overlapSize)),
+        ((int (GridImp::*)(int) const) &(GridImp::overlapSize )));
+      return asImp().overlapSize(codim);
+    }
+
+    //! Return size of ghost region for a given codim on a given level
+    int ghostSize (int level, int codim) const
+    {
+      // compare addresses of the method, if they are equal then derived
+      // class has the method not overloaded which leads to a seg fault
+      CHECK_INTERFACE_IMPLEMENTATION(
+        ((int (GridImp::*)(int,int) const) &(ThisType::ghostSize)),
+        ((int (GridImp::*)(int,int) const) &(GridImp:: ghostSize)));
+      return asImp().ghostSize(level,codim);
+    }
+
+    //! Return size of ghost region for a given codim on the leaf grid
+    int ghostSize (int codim) const
+    {
+      // compare addresses of the method, if they are equal then derived
+      // class has the method not overloaded which leads to a seg fault
+      CHECK_INTERFACE_IMPLEMENTATION(
+        ((int (GridImp::*)(int) const) &(ThisType::ghostSize)),
+        ((int (GridImp::*)(int) const) &(GridImp:: ghostSize)));
+      return asImp().ghostSize(codim);
+    }
+
 
   private:
     //!  Barton-Nackman trick
@@ -641,6 +903,15 @@ namespace Dune {
 
   /** @} */
 
+  /**
+     \brief A traits struct that collects all associated types of one grid model
+     @ingroup GIMiscellaneous
+
+
+     Template parameters:
+
+     - <tt>dim</tt>
+   */
   template <int dim, int dimw, class GridImp,
       template<int,int,class> class GeometryImp,
       template<int,int,class> class EntityImp,
@@ -662,7 +933,7 @@ namespace Dune {
     template <int cd>
     struct Codim
     {
-      // IMPORTANT: Codim<codim>::Geometry == Geometry<dim-codim,dimw>
+      //! IMPORTANT: Codim<codim>::Geometry == Geometry<dim-codim,dimw>
       typedef Dune::Geometry<dim-cd, dimw, const GridImp, GeometryImp> Geometry;
       typedef Dune::Geometry<dim-cd, dim, const GridImp, GeometryImp> LocalGeometry;
       // we could - if needed - introduce another struct for dimglobal of Geometry
@@ -690,35 +961,6 @@ namespace Dune {
 
     typedef CCType CollectiveCommunication;
   };
-
-  /*! \internal
-        Used for grid I/O
-   */
-  enum GridIdentifier { SGrid_Id, AlbertaGrid_Id , SimpleGrid_Id, UGGrid_Id,
-                        YaspGrid_Id , ALU3dGrid_Id, OneDGrid_Id };
-
-  //! provide names for the different grid types
-  inline std::string transformToGridName(GridIdentifier type)
-  {
-    switch(type) {
-    case SGrid_Id :
-      return "SGrid";
-    case AlbertaGrid_Id :
-      return "AlbertaGrid";
-    case ALU3dGrid_Id :
-      return "ALU3dGrid";
-    case SimpleGrid_Id :
-      return "SimpleGrid";
-    case UGGrid_Id :
-      return "UGGrid";
-    case YaspGrid_Id :
-      return "YaspGrid";
-    case OneDGrid_Id :
-      return "OneDGrid";
-    default :
-      return "unknown";
-    }
-  }
 
   // define of capabilties for the interface class
   namespace Capabilities
