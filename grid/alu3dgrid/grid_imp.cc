@@ -576,8 +576,8 @@ namespace Dune {
   {
     assert( ((verbose) ? (dverb << "ALU3dGrid :: adapt() new method called!\n", 1) : 1 ) );
 
-    EntityImp f ( *this, this->maxLevel() );
-    EntityImp s ( *this, this->maxLevel() );
+    EntityImp f  ( *this, this->maxLevel() );
+    EntityImp s  ( *this, this->maxLevel() );
 
     typedef typename DofManagerType :: IndexSetRestrictProlongType IndexSetRPType;
     typedef CombinedAdaptProlongRestrict < IndexSetRPType,RestrictProlongOperatorType > COType;
@@ -735,6 +735,7 @@ namespace Dune {
   inline bool ALU3dGrid<dim, dimworld, elType>::
   loadBalance(DataCollectorType & dc)
   {
+#if 0
 #ifdef _ALU3DGRID_PARALLEL_
     EntityImp en     ( *this, this->maxLevel() );
     EntityImp father ( *this, this->maxLevel() );
@@ -766,24 +767,111 @@ namespace Dune {
 #else
     return false;
 #endif
-  }
-
-  // adapt grid
-  template <int dim, int dimworld, ALU3dGridElementType elType> template <class DataCollectorType>
-  inline bool ALU3dGrid<dim, dimworld, elType>::communicate(DataCollectorType & dc)
-  {
-#ifdef _ALU3DGRID_PARALLEL_
-    EntityImp en ( *this, this->maxLevel() );
-
-    ALU3DSPACE GatherScatterExchange < ALU3dGrid<dim, dimworld, elType> , EntityImp ,
-        DataCollectorType > gs(*this,en,dc);
-
-    myGrid().duneExchangeData(gs);
-    return true;
-#else
-    return false;
 #endif
   }
+
+  /*
+     // adapt grid
+     template <int dim, int dimworld, ALU3dGridElementType elType> template <class DataCollectorType>
+     inline bool ALU3dGrid<dim, dimworld, elType>::communicate(DataCollectorType & dc)
+     {
+     #ifdef _ALU3DGRID_PARALLEL_
+     EntityImp en ( *this, this->maxLevel() );
+
+     ALU3DSPACE GatherScatterExchange < ALU3dGrid<dim, dimworld, elType> , EntityImp ,
+        DataCollectorType > gs(*this,en,dc);
+
+     myGrid().duneExchangeData(gs);
+     return true;
+     #else
+     return false;
+     #endif
+     }
+   */
+
+  // adapt grid
+  template <int dim, int dimworld, ALU3dGridElementType elType> template <class DataHandle>
+  inline void ALU3dGrid<dim, dimworld, elType>::
+  communicate (DataHandle& data, InterfaceType iftype, CommunicationDirection dir)
+  //communicate(DataCollectorType & dc)
+  {
+#ifdef _ALU3DGRID_PARALLEL_
+    /*
+       ObjectStreamType objstr;
+       {
+       enum { codim = 0 };
+       typedef ALU3dGridMakeableEntity<codim,dim,const ThisType> EntityImp;
+
+       typedef typename Dune::ALU3dImplTraits<elementType>::
+          template Codim<codim>::InterfaceType HElementType;
+
+       EntityImp en ( *this, this->maxLevel() );
+       ALU3DSPACE GatherScatterImpl< ThisType , DofManagerType, codim >
+       gs(*this,en,this->getRealImplementation(en),dm);
+
+       HElementType * el = 0;
+       gs.inlineData(objstr,*el);
+       }
+
+       {
+       enum { codim = 1 };
+       typedef ALU3dGridMakeableEntity<codim,dim,const ThisType> EntityImp;
+
+       typedef typename Dune::ALU3dImplTraits<elementType>::
+          template Codim<codim>::InterfaceType HElementType;
+
+       EntityImp en ( *this, this->maxLevel() );
+       ALU3DSPACE GatherScatterImpl< ThisType , DofManagerType, codim >
+       gs(*this,en,this->getRealImplementation(en),dm);
+
+       HElementType * el = 0;
+       gs.inlineData(objstr,*el);
+       }
+
+       {
+       enum { codim = 2 };
+       typedef ALU3dGridMakeableEntity<codim,dim,const ThisType> EntityImp;
+
+       typedef typename Dune::ALU3dImplTraits<elementType>::
+          template Codim<codim>::InterfaceType HElementType;
+
+       EntityImp en ( *this, this->maxLevel() );
+       ALU3DSPACE GatherScatterImpl< ThisType , DofManagerType, codim >
+       gs(*this,en,this->getRealImplementation(en),dm);
+
+       HElementType * el = 0;
+       gs.inlineData(objstr,*el);
+       }
+
+       {
+       enum { codim = 3 };
+       typedef ALU3dGridMakeableEntity<codim,dim,const ThisType> EntityImp;
+
+       typedef typename Dune::ALU3dImplTraits<elementType>::
+          template Codim<codim>::InterfaceType HElementType;
+
+       EntityImp en ( *this, this->maxLevel() );
+       ALU3DSPACE GatherScatterImpl< ThisType , DofManagerType, codim >
+       gs(*this,en,this->getRealImplementation(en),dm);
+
+       HElementType * el = 0;
+       gs.inlineData(objstr,*el);
+       }
+     */
+    enum { codim = 3 };
+    typedef ALU3dGridMakeableEntity<codim,dim,const ThisType> EntityImp;
+    EntityImp en ( *this, this->maxLevel() );
+
+    ALU3DSPACE GatherScatterImpl < ThisType, DataHandle, codim>
+    gs(*this,en,this->getRealImplementation(en),data);
+
+    myGrid().ALUcomm(gs);
+    //return true;
+#else
+    //return false;
+#endif
+  }
+
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
   inline bool ALU3dGrid<dim, dimworld, elType>::
