@@ -1,6 +1,6 @@
 # $Id$
 
 operatorincludedir = $(includedir)/dune/operator
-operatorinclude_HEADERS = discreteoperator.hh solveoperator.hh
+operatorinclude_HEADERS =
 
 include $(top_srcdir)/am/global-rules
