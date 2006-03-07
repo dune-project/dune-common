@@ -11,12 +11,16 @@
 <li><a href="installation-notes.html">Installation Notes</a></li>
 </ul>
 
-<h2>Documentation for application writers</h2>
+<h2>DUNE main documentation</h2>
+
+can be found <a href="$(ROOT)/doc/doxygen/html/index.html">here</a>. 
+It has been generated with <a href="http://www.doxygen.org/">Doxygen</a>.
+
+
+<h2>More Documentation for application writers</h2>
 
 <ul>
 <li>A short list of the main <a href="$(ROOT)/doc/devel/features.html">features</a> </li>
-<li><a href="$(ROOT)/doc/doxygen/html/index.html">The class documentation</a> (generated 
-with <a href="http://www.doxygen.org/">Doxygen</a>)</li>
 <li><a href="$(ROOT)/doc/doxygen/html/group__GridReferenceElements.html">The Reference Elements</a></li>
 <li>The <a href="$(ROOT)/doc/view-concept.html">view concept</a> is the
       fundamental idea of the grid interface</li>
@@ -26,7 +30,7 @@ with <a href="http://www.doxygen.org/">Doxygen</a>)</li>
     system for local and temporary refinements.</li>
 </ul>
 
-<h2>Documentation for developers of the core library</h2>
+<h2>More Documentation for developers of the core library</h2>
 
 <ul>
 <li><a href="devel/codingstyle.html">Coding Style</a></li>
