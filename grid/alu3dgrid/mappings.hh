@@ -59,8 +59,18 @@ namespace Dune {
     // type of coordinate vectors from elements
     typedef double double3_t[3];
 
+    // type for helper matrices
+    typedef FieldMatrix<double,3,3> mat3_t;
+    typedef FieldMatrix<double,2,2> mat2_t;
+
+    mutable mat3_t Df,Dfi;
+    mutable mat2_t inv_;
+    mutable double DetDf;
     double _b [4][3] ;
     double _n [3][3] ;
+
+    mutable coord3_t normal_;
+    mutable coord3_t tmp_;
     static const double _epsilon ;
 
   public:
@@ -76,12 +86,31 @@ namespace Dune {
     BilinearSurfaceMapping (const BilinearSurfaceMapping &) ;
     ~BilinearSurfaceMapping () {}
 
-    void map2world(const coord2_t&, coord3_t&) const ;
-    void map2world(double x, double y, coord3_t&) const ;
-    void world2map(const coord3_t &, coord2_t & ) const;
-    void normal(const coord2_t&, coord3_t&) const ;
+    void inverse (const coord3_t&) const;
+    mat2_t jacobianInverse(const coord2_t&) const ;
 
+    // calculates determinant of mapping
+    double det(const coord3_t&) const;
+
+    // maps from local coordinates to global coordinates
+    void world2map(const coord3_t &, coord2_t & ) const;
+
+    // calcuates normal
+    void normal(const coord2_t&, coord3_t&) const ;
+    void normal(const double, const double, coord3_t&) const;
+
+    // maps form global coordinates to local (within reference element)
+    // coordinates
+    void map2world(const coord2_t&, coord3_t&) const ;
+    void map2world(const double ,const double , coord3_t&) const ;
+
+  private:
+    void map2worldnormal(const double, const double, const double , coord3_t&) const;
+    void map2worldlinear(const double, const double, const double ) const;
+
+  public:
     // builds _b and _n, called from the constructors
+    // public because also used in faceutility
     template <class vector_t>
     void buildMapping (const vector_t & , const vector_t & ,
                        const vector_t & , const vector_t & );

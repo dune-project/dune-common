@@ -207,12 +207,16 @@ namespace Dune {
   inline BilinearSurfaceMapping ::
   BilinearSurfaceMapping (const BilinearSurfaceMapping & m)
   {
-    {for (int i = 0 ; i < 4 ; i ++)
-       for (int j = 0 ; j < 3 ; j ++ )
-         _b [i][j] = m._b [i][j] ;}
-    {for (int i = 0 ; i < 3 ; i ++)
-       for (int j = 0 ; j < 3 ; j ++ )
-         _n [i][j] = m._n [i][j] ;}
+    {
+      for (int i = 0 ; i < 4 ; i ++)
+        for (int j = 0 ; j < 3 ; j ++ )
+          _b [i][j] = m._b [i][j] ;
+    }
+    {
+      for (int i = 0 ; i < 3 ; i ++)
+        for (int j = 0 ; j < 3 ; j ++ )
+          _n [i][j] = m._n [i][j] ;
+    }
     return ;
   }
 
@@ -230,21 +234,113 @@ namespace Dune {
     return ;
   }
 
+
   inline void BilinearSurfaceMapping ::
-  world2map (const coord3_t& wld, coord2_t& map) const {
-    assert(false);
-    //  Newton - Iteration zum Invertieren der Abbildung f.
-    map[0] = map[1] = 0.0;
+  map2worldnormal (double x, double y,double z, coord3_t& w) const
+  {
+    normal(x,y,normal_);
+
+    double xy = x * y ;
+    w[0] = _b [0][0] + x * _b [1][0] + y * _b [2][0] + xy * _b [3][0] + z*normal_[0];
+    w[1] = _b [0][1] + x * _b [1][1] + y * _b [2][1] + xy * _b [3][1] + z*normal_[1];
+    w[2] = _b [0][2] + x * _b [1][2] + y * _b [2][2] + xy * _b [3][2] + z*normal_[2];
     return ;
   }
 
   inline void BilinearSurfaceMapping ::
-  normal (const coord2_t& map, coord3_t& normal) const {
-    double x = map [0];
-    double y = map [1];
-    normal [0] = -(_n [0][0] + _n [1][0] * x + _n [2][0] * y);
-    normal [1] = -(_n [0][1] + _n [1][1] * x + _n [2][1] * y);
-    normal [2] = -(_n [0][2] + _n [1][2] * x + _n [2][2] * y);
+  map2worldlinear(double x, double y,double z) const
+  {
+    normal(x,y,normal_);
+
+    Df[0][0] = _b [1][0] + y * _b [3][0]+ z*_n[1][0] ;
+    Df[1][0] = _b [1][1] + y * _b [3][1]+ z*_n[1][1] ;
+    Df[2][0] = _b [1][2] + y * _b [3][2]+ z*_n[1][2] ;
+
+    Df[0][1] = _b [2][0] + x * _b [3][0]+ z*_n[2][0] ;
+    Df[1][1] = _b [2][1] + x * _b [3][1]+ z*_n[2][1] ;
+    Df[2][1] = _b [2][2] + x * _b [3][2]+ z*_n[2][2] ;
+
+    Df[0][2] = normal_[0];
+    Df[1][2] = normal_[1];
+    Df[2][2] = normal_[2];
+
+    return ;
+  }
+
+
+  inline double BilinearSurfaceMapping :: det(const coord3_t& point ) const
+  {
+    //  Determinante der Abbildung f:[-1,1]^3 -> Hexaeder im Punkt point.
+    map2worldlinear (point[0],point[1],point[2]) ;
+    return (DetDf = Df.determinant());
+  }
+
+  inline void BilinearSurfaceMapping :: inverse(const coord3_t& p ) const
+  {
+    //  Kramer - Regel, det() rechnet Df und DetDf neu aus.
+    double val = 1.0 / det(p) ;
+    inv_[0][0] = Dfi[0][0] = ( Df[1][1] * Df[2][2] - Df[1][2] * Df[2][1] ) * val ;
+    inv_[0][1] = Dfi[0][1] = ( Df[0][2] * Df[2][1] - Df[0][1] * Df[2][2] ) * val ;
+    Dfi[0][2] = ( Df[0][1] * Df[1][2] - Df[0][2] * Df[1][1] ) * val ;
+    inv_[1][0] = Dfi[1][0] = ( Df[1][2] * Df[2][0] - Df[1][0] * Df[2][2] ) * val ;
+    inv_[1][1] = Dfi[1][1] = ( Df[0][0] * Df[2][2] - Df[0][2] * Df[2][0] ) * val ;
+    Dfi[1][2] = ( Df[0][2] * Df[1][0] - Df[0][0] * Df[1][2] ) * val ;
+    Dfi[2][0] = ( Df[1][0] * Df[2][1] - Df[1][1] * Df[2][0] ) * val ;
+    Dfi[2][1] = ( Df[0][1] * Df[2][0] - Df[0][0] * Df[2][1] ) * val ;
+    Dfi[2][2] = ( Df[0][0] * Df[1][1] - Df[0][1] * Df[1][0] ) * val ;
+    return ;
+  }
+
+  inline FieldMatrix<double, 2, 2>
+  BilinearSurfaceMapping::jacobianInverse(const coord2_t & local) const
+  {
+    map2worldnormal (local[0],local[1],0.0,tmp_);
+    inverse (tmp_) ;
+    return inv_;
+  }
+
+  inline void BilinearSurfaceMapping::world2map (const coord3_t& wld , coord2_t& map ) const
+  {
+    //  Newton - Iteration zum Invertieren der Abbildung f.
+    double err = 10.0 * _epsilon ;
+    coord3_t map_ ;
+#ifndef NDEBUG
+    int count = 0 ;
+#endif
+    map_ [0] = map_ [1] = map_ [2] = .0 ;
+    do {
+      coord3_t upd ;
+      map2worldnormal (map_[0],map_[1],map_[2], upd) ;
+      inverse (map_) ;
+      double u0 = upd [0] - wld [0] ;
+      double u1 = upd [1] - wld [1] ;
+      double u2 = upd [2] - wld [2] ;
+      double c0 = Dfi [0][0] * u0 + Dfi [0][1] * u1 + Dfi [0][2] * u2 ;
+      double c1 = Dfi [1][0] * u0 + Dfi [1][1] * u1 + Dfi [1][2] * u2 ;
+      double c2 = Dfi [2][0] * u0 + Dfi [2][1] * u1 + Dfi [2][2] * u2 ;
+      map_ [0] -= c0 ;
+      map_ [1] -= c1 ;
+      map_ [2] -= c2 ;
+      err = fabs (c0) + fabs (c1) + fabs (c2) ;
+      assert (count ++ < 3000);
+    } while (err > _epsilon) ;
+    map[0]=map_[0];
+    map[1]=map_[1];
+    return ;
+  }
+
+  inline void BilinearSurfaceMapping ::
+  normal (const coord2_t& map, coord3_t& norm) const
+  {
+    normal(map[0],map[1],norm);
+    return ;
+  }
+
+  inline void BilinearSurfaceMapping ::
+  normal (const double x, const double y, coord3_t& norm) const {
+    norm [0] = -(_n [0][0] + _n [1][0] * x + _n [2][0] * y);
+    norm [1] = -(_n [0][1] + _n [1][1] * x + _n [2][1] * y);
+    norm [2] = -(_n [0][2] + _n [1][2] * x + _n [2][2] * y);
     return ;
   }
 
