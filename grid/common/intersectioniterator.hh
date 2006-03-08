@@ -81,7 +81,7 @@ namespace Dune
      interface in Dune one can only identify a boundary by it's
      boundaryId().
 
-     @ingroup GridInterface
+     @ingroup GIIterators
    */
   template<class GridImp, template<class> class IntersectionIteratorImp>
   class IntersectionIterator

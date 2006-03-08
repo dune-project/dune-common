@@ -801,7 +801,7 @@ namespace Dune {
   //
 
   /**
-     \ingroup GridInterface
+     \ingroup GridDevel
      @{
 
      A Grid is a container of grid entities. Given a dimension dim

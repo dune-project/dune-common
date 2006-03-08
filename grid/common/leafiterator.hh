@@ -11,7 +11,7 @@ namespace Dune
      @brief Enables iteration over all leaf entities
      of a codimension zero of a grid.
 
-     @ingroup GridInterface
+     @ingroup GIIterators
    */
   template<int codim, PartitionIteratorType pitype, class GridImp,
       template<int,PartitionIteratorType,class> class LeafIteratorImp>

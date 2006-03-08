@@ -24,14 +24,14 @@ namespace Dune
   //*****************************************************************************
 
   /** \brief Encapsulates the geometric aspects of grid elements and subelements
-     \ingroup GridInterface
 
-     \tparam mydim Dimension of this geometry
-     \tparam cdim  Dimension of the surrounding space
-     \tparam GridImp The grid class whose elements we are encapsulating
-     \tparam GeometryImp The class that implements the actual geometry
+          \tparam mydim Dimension of this geometry
+          \tparam cdim  Dimension of the surrounding space
+          \tparam GridImp The grid class whose elements we are encapsulating
+          \tparam GeometryImp The class that implements the actual geometry
+
+          \ingroup GIGeometry
    */
-
   template<int mydim, int cdim, class GridImp, template<int,int,class> class GeometryImp>
   class Geometry {
     // save typing

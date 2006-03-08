@@ -16,6 +16,8 @@ namespace Dune
      This class implements global communication functions in a sequential
      environment without doing any communication. In specializations
      one can implement the real thing.
+
+     \ingroup GICollectiveCommunication
    */
   template<typename C>
   class CollectiveCommunication

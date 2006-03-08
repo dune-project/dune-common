@@ -13,7 +13,7 @@ namespace Dune
 {
 
   /** \brief Encapsulates the static part of an arbitrary Grid::Iterator
-      \ingroup GridInterface
+      \ingroup GIEntityPointer
 
       The EntityPointer can be used like a static iterator. It points to a
       Dune::Entity and can be dereferenced, compared and it knows the

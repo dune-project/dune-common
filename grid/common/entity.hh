@@ -62,7 +62,7 @@ namespace Dune
      meshes. The number of neigbors may be different from the number of
      faces/edges of an element!
 
-     \ingroup GridInterface
+     \ingroup GIEntity
    */
   template<int cd, int dim, class GridImp, template<int,int,class> class EntityImp>
   class Entity {
@@ -160,7 +160,7 @@ namespace Dune
         }
      \enddot
 
-     \ingroup GridInterface
+     \ingroup GIEntity
    */
   template<int dim, class GridImp, template<int,int,class> class EntityImp>
   class Entity <0,dim,GridImp,EntityImp>
@@ -373,7 +373,7 @@ namespace Dune
         }
      \enddot
 
-     \ingroup GridInterface
+     \ingroup GIEntity
    */
   template<int dim, class GridImp, template<int,int,class> class EntityImp>
   class Entity <dim,dim,GridImp,EntityImp>

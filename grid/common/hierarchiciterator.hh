@@ -18,7 +18,7 @@ namespace Dune {
      This is redundant but important for memory efficient
      implementations of unstructured hierarchically refined meshes.
 
-     @ingroup GridInterface
+     @ingroup GIIterators
    */
   template<class GridImp, template<class> class HierarchicIteratorImp>
   class HierarchicIterator :
