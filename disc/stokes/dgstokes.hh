@@ -37,9 +37,8 @@ namespace Dune
     typedef typename Grid::ctype ctype;
     typedef Dune::FieldVector< double , dim> Gradient;
     typedef Dune::FieldMatrix< double , dim, dim> InverseJacobianMatrix;
-    //shapefn order
     // "order" is order of velocity shapefn
-    // order of pressure shapefn  is (order-1) i.e, always one order less than that of velocity
+    // order of pressure shapefn  is (order-1) i.e, assumed one order less than that of velocity
     enum {order = ordr};
     //local vector and matrix blocks
     // local block size is sum of velocity dof and pressure dof
@@ -49,7 +48,8 @@ namespace Dune
     typedef Dune::FieldMatrix<double,BlockSize,BlockSize> LocalMatrixBlock;
     //shapefn
     typedef Dune::MonomialShapeFunctionSet<ctype,double,dim> ShapeFunctionSet;
-    inline const ShapeFunctionSet & getShapeFunctionSet(Dune::GeometryType gt) const;
+    inline const ShapeFunctionSet & getVelocityShapeFunctionSet(Dune::GeometryType gt) const;
+    inline const ShapeFunctionSet & getPressureShapeFunctionSet(Dune::GeometryType gt) const;
 
     typedef typename Grid::template Codim<0>::LevelIterator ElementIterator;
     typedef typename Grid::template Codim<0>::EntityPointer EntityPointer;
@@ -58,26 +58,30 @@ namespace Dune
     typedef typename Grid::template Codim<0>::IntersectionIterator IntersectionIterator;
     typedef typename Grid::template Codim<1>::EntityPointer InterSectionPointer;
 
-    DGFiniteElementMethod () {};
+    DGFiniteElementMethod (const DGStokesParameters& par, DirichletBoundary<G>& db, RightHandSide<G>& rh) : parameter(par),dirichletvalue(db), rhsvalue(rh) {};
     //local assembly
     void assembleVolumeTerm(Entity& ep, LocalMatrixBlock& Aee,LocalVectorBlock& Be) const;
-    void assembleFaceTerm(Entity& ep,IntersectionIterator& isp, LocalMatrixBlock& Aee,LocalMatrixBlock& Aef,LocalMatrixBlock& Afe, LocalVectorBlock& Be) const;
+    void assembleFaceTerm(Entity& ep,IntersectionIterator& isp, LocalMatrixBlock& Aee,
+                          LocalMatrixBlock& Aef,LocalMatrixBlock& Afe, LocalVectorBlock& Be) const;
     void assembleBoundaryTerm(Entity& ep, IntersectionIterator& isp, LocalMatrixBlock& Aee,LocalVectorBlock& Be) const ;
 
-    double evaluateSolution(int component,const Entity& element,const Dune::FieldVector<ctype,dim>& local, const LocalVectorBlock& xe) const;
-    double evaluateL2error(int component,const ExactSolution<ctype, dim> & exact,const Entity& element,const LocalVectorBlock& xe) const;
+    double evaluateSolution(int component,const Entity& element,const Dune::FieldVector<ctype,dim>& local,
+                            const LocalVectorBlock& xe) const;
+    double evaluateL2error(int component,const ExactSolution<ctype, dim> & exact,const Entity& element,
+                           const LocalVectorBlock& xe) const;
 
   private:
 
     Dune::MonomialShapeFunctionSetContainer<ctype,double,dim,order> space;
     DGStokesParameters parameter;
     DirichletBoundary<G> dirichletvalue;
-    ExactSolution<ctype,dim> exact;
+    RightHandSide<G> rhsvalue;
+    //ExactSolution<ctype,dim>& exact;
   };
 
 
 
-  template<class G,int ordr=2>
+  template<class G,int ordr>
   class DGStokes
   {
 
@@ -97,7 +101,7 @@ namespace Dune
     typedef typename Grid::template Codim<dim>::LevelIterator VertexIterator;
     typedef typename Grid::template Codim<0>::IntersectionIterator IntersectionIterator;
     typedef typename Grid::template Codim<1>::EntityPointer InterSectionPointer;
-    static const int BlockSize =2*Dune::MonomialShapeFunctionSetSize<dim,ordr>::maxSize+Dune::MonomialShapeFunctionSetSize<dim,ordr-1>::maxSize;
+    static const int BlockSize =((dim*Dune::MonomialShapeFunctionSetSize<dim,ordr>::maxSize)+(Dune::MonomialShapeFunctionSetSize<dim,ordr-1>::maxSize));
     typedef typename DGFiniteElementMethod<G,ordr>::Gradient Gradient;
     typedef typename DGFiniteElementMethod<G,ordr>::LocalVectorBlock LocalVectorBlock;
     typedef typename DGFiniteElementMethod<G,ordr>::LocalMatrixBlock LocalMatrixBlock;
@@ -106,7 +110,9 @@ namespace Dune
     typedef Dune::LevelDGFunction<Grid, double, ordr> DGFunction;
   public:
     //inline constructor with initializer list
-    DGStokes(Grid &g) : grid(g), dgfem(),x(grid, level),exact(){};
+    //DGStokes(Grid &g) : grid(g), dgfem(),x(grid, level), exact(){};
+    DGStokes(Grid &g, ExactSolution<ctype,dim>& ex, DGStokesParameters& par, DirichletBoundary<Grid>& db, RightHandSide<Grid>& rh ) : grid(g),exact(ex), dgfem(par,db, rh),x(grid, level) {};
+
     // global assembly and solving
     void assembleStokesSystem() ;
     void solveStokesSystem();
@@ -114,17 +120,18 @@ namespace Dune
                             const Dune::FieldVector<ctype, dim> & local) const;
 
     //l2error computation
-    double l2errorStokesSystem() const;
+    double l2errorStokesSystem(int comp) const;
 
     const DGFunction & solution() const { return x; }
 
   private:
     typedef typename DGFiniteElementMethod<G,ordr>::ShapeFunctionSet ShapeFunctionSet;
-    inline const ShapeFunctionSet &getShapeFunctionSet(const EntityPointer &ep) const;
+    inline const ShapeFunctionSet & getVelocityShapeFunctionSet(const EntityPointer &ep) const;
+    inline const ShapeFunctionSet & getPressureShapeFunctionSet(const EntityPointer &ep) const;
   public:
     Grid & grid;
     int level;
-    ExactSolution<ctype,dim> exact;
+    ExactSolution<ctype,dim>& exact;
   private:
     DGFiniteElementMethod<G,ordr> dgfem;
     Dune::SparseRowMatrix<double> AA;
