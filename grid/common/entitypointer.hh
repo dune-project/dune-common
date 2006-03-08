@@ -100,36 +100,39 @@ namespace Dune
     //! type of real implementation
     typedef IteratorImp ImplementationType;
 
-    // autocheck wether imp is convertable into imp::base
+    /// autocheck wether imp is convertable into imp::base
     typedef typename
     Dune::EnableIfInterOperable<typename IteratorImp::base,IteratorImp,
         typename IteratorImp::base>::type base;
 
+    /** \brief The Entity that this EntityPointer can point to */
     typedef typename IteratorImp::Entity Entity;
+
+    /** \brief The codimension of this EntityPointer */
     enum { codim = IteratorImp::codimension };
 
+    /** \todo Please doc me! */
     typedef IteratorImp DerivedType;
 
-    /** Dereferencing operator. */
+    /** \brief Dereferencing operator. */
     Entity & operator*() const
     {
       return realIterator.dereference();
     }
 
-    /** Pointer operator. */
+    /** \brief Pointer operator. */
     Entity * operator->() const
     {
       return & realIterator.dereference();
     }
 
-    /** ask for level of entity */
+    /** \brief Ask for level of entity */
     int level () const
     {
       return realIterator.level();
     }
 
-    /**
-       Copy Constructor from an Iterator implementation.
+    /** \brief Copy Constructor from an Iterator implementation.
 
        You can supply LeafIterator LevelIterator HierarchicIterator
        EntityPointer or IntersectionIterator.
@@ -137,32 +140,34 @@ namespace Dune
     EntityPointer(const IteratorImp & i) :
       realIterator(i) {};
 
-    /* indirect copy constructor from arbitrary IteratorImp */
+    /** \brief Indirect copy constructor from arbitrary IteratorImp */
     template<class ItImp>
     EntityPointer(const EntityPointer<GridImp,ItImp> & ep) :
       realIterator(ep.realIterator) {}
 
-    /** cast to ,,base class'' */
+    /** \brief Cast to ,,base class'' */
     operator EntityPointer<GridImp,base>&()
     {
       return reinterpret_cast<EntityPointer<GridImp,base>&>(*this);
     };
 
-    /** cast to const ,,base class'' */
+    /** \brief Cast to const ,,base class'' */
     operator const EntityPointer<GridImp,base>&() const
     {
       return reinterpret_cast<const EntityPointer<GridImp,base>&>(*this);
     };
 
-    /** Checks for equality.
-     * only works EntityPointers on the same grid */
+    /** \briefChecks for equality.
+
+       Only works EntityPointers on the same grid */
     bool operator==(const EntityPointer<GridImp,base>& rhs) const
     {
       return rhs.equals(*this);
     }
 
-    /** Checks for inequality.
-     * only works EntityPointers on the same grid */
+    /** \brief Checks for inequality.
+
+       Only works EntityPointers on the same grid */
     bool operator!=(const EntityPointer<GridImp,base>& rhs) const
     {
       return ! rhs.equals(*this);
