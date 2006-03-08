@@ -53,12 +53,12 @@ void DGFiniteElementMethod<G,ordr>::assembleVolumeTerm(Entity& ent, LocalMatrixB
     // TERM 1 : \int (mu*grad_u*grad_v)
     //================================================//
     // dimension - 2 velocity comps. (now assumming dim==2)
-    for(int dm=1; dm<=2; ++dm)
+    for(int dm=1; dm<=dim; ++dm)
     {
       for (int i=0; i<vsfs.size(); ++i)
       {
         //space dimension-sd  (now assumed dim==2)
-        for (int sd=0; sd<2; sd++)
+        for (int sd=0; sd<dim; sd++)
           temp[sd] = vsfs[i].evaluateDerivative(0,sd,quad_point_loc);
         grad_phi_ei[dm-1] = 0;
         //matrix vect multiplication
@@ -66,23 +66,11 @@ void DGFiniteElementMethod<G,ordr>::assembleVolumeTerm(Entity& ent, LocalMatrixB
         inv_jac.umv(temp,grad_phi_ei[dm-1]);
         int ii=(dm-1)*vsfs.size()+i;
         // get the rhs value
-        // double f;
-        //                        RightHandSide rhs;
-
         rhsval[dm-1] = rhsvalue.rhsValue(dm-1,quad_point_glob,quad_point_loc);
-        // if (dm==1)
-        //                              {
-        //                                rhs.u_rhs(quad_point_glob[0],quad_point_glob[1],f);
-        //                              }
-        //                        else
-        //                              {
-        //                                rhs.v_rhs(quad_point_glob[0],quad_point_glob[1],f);
-        //                              }
         Be[ii]+=rhsval[dm-1]*vsfs[i].evaluateFunction(0,quad_point_loc)*detjac*quad_wt;
-
         for (int j=0; j<vsfs.size(); ++j)
         {
-          for (int sd=0; sd<2; sd++)                        //space dimension -sd
+          for (int sd=0; sd<dim; sd++)                        //space dimension -sd
             temp[sd] = vsfs[j].evaluateDerivative(0,sd,quad_point_loc);
           grad_phi_ej[dm-1] = 0;
           inv_jac.umv(temp,grad_phi_ej[dm-1]);
@@ -96,12 +84,12 @@ void DGFiniteElementMethod<G,ordr>::assembleVolumeTerm(Entity& ent, LocalMatrixB
     //================================================//
     // -  p * div v
     //================================================//
-    for(int dm=1; dm<=2; ++dm)    //(now assumming dim==2)
+    for(int dm=1; dm<=dim; ++dm)    //(now assumming dim==2)
     {
       for (int i=0; i<vsfs.size(); ++i)
       {
         int ii=(dm-1)*vsfs.size()+i;
-        for (int sd=0; sd<2; sd++)                  //space dimension -sd
+        for (int sd=0; sd<dim; sd++)                  //space dimension -sd
           temp[sd] = vsfs[i].evaluateDerivative(0,sd,quad_point_loc);
         grad_phi_ei[dm-1] = 0;
         inv_jac.umv(temp,grad_phi_ei[dm-1]);
@@ -118,7 +106,7 @@ void DGFiniteElementMethod<G,ordr>::assembleVolumeTerm(Entity& ent, LocalMatrixB
     //================================================//
     //   -  q* div u
     //================================================//
-    for(int dm=1; dm<=2; ++dm)    //(now assumming dim==2)
+    for(int dm=1; dm<=dim; ++dm)    //(now assumming dim==2)
     {
       for (int i=0; i<psfs.size(); ++i)           // pressure shapefns
       {
@@ -128,7 +116,7 @@ void DGFiniteElementMethod<G,ordr>::assembleVolumeTerm(Entity& ent, LocalMatrixB
         for (int j=0; j<vsfs.size(); ++j)
         {
           int jj=(dm-1)*vsfs.size()+j;
-          for (int sd=0; sd<2; sd++)                        //space dimension -sd
+          for (int sd=0; sd<dim; sd++)                        //space dimension -sd
             temp[sd] = vsfs[j].evaluateDerivative(0,sd,quad_point_loc);
           grad_phi_ej[dm-1] = 0;
           inv_jac.umv(temp,grad_phi_ej[dm-1]);
@@ -168,7 +156,7 @@ void DGFiniteElementMethod<G,ordr>::assembleFaceTerm(Entity& ent, IntersectionIt
   //get the geometry type of the face
   Dune::GeometryType gtface = isit.intersectionSelfLocal().type();
   //specify the quadrature order ?
-  #warning fixed quadrature order
+  #warning now fixed quadrature order. order need to be decided automatically, how?
   int qord=18;
 
   for (int qedg=0; qedg<Dune::QuadratureRules<ctype,dim-1>::rule(gtface,qord).size(); ++qedg)
@@ -193,7 +181,7 @@ void DGFiniteElementMethod<G,ordr>::assembleFaceTerm(Entity& ent, IntersectionIt
     //================================================//
     // diagonal block
     // -mu* 0.5 * grad_phi_ei * normal* phi_ej
-    for(int dm=1; dm<=2; ++dm)
+    for(int dm=1; dm<=dim; ++dm)
     {
       for (int i=0; i<vsfs.size(); ++i)
       {
@@ -202,7 +190,7 @@ void DGFiniteElementMethod<G,ordr>::assembleFaceTerm(Entity& ent, IntersectionIt
         for (int j=0; j<vsfs.size(); ++j)
         {
           int jj=(dm-1)*vsfs.size()+j;
-          for (int sd=0; sd<2; sd++)
+          for (int sd=0; sd<dim; sd++)
             temp[sd] = vsfs[j].evaluateDerivative(0,sd,face_self_local);
           grad_phi_ej[dm-1] = 0;
           // transform gradient to global ooordinates by multiplying with inverse jacobian
@@ -215,7 +203,7 @@ void DGFiniteElementMethod<G,ordr>::assembleFaceTerm(Entity& ent, IntersectionIt
     }
     // offdiagonal entry
     // mu* 0.5 * grad_phi_ei * normal* phi_fj
-    for(int dm=1; dm<=2; ++dm)
+    for(int dm=1; dm<=dim; ++dm)
     {
       for (int i=0; i<nbvsfs.size(); ++i)
       {
@@ -224,7 +212,7 @@ void DGFiniteElementMethod<G,ordr>::assembleFaceTerm(Entity& ent, IntersectionIt
         for (int j=0; j<vsfs.size(); ++j)
         {
           int jj=(dm-1)*vsfs.size()+j;
-          for (int sd=0; sd<2; sd++)
+          for (int sd=0; sd<dim; sd++)
             temp[sd] = vsfs[j].evaluateDerivative(0,sd,face_self_local);
           grad_phi_ej[dm-1] = 0;
           inv_jac.umv(temp,grad_phi_ej[dm-1]);
@@ -240,12 +228,12 @@ void DGFiniteElementMethod<G,ordr>::assembleFaceTerm(Entity& ent, IntersectionIt
     //================================================//
     // diagonal term
     // mu* 0.5 * parameter.epsilon* phi_ei * grad_phi_ej* normal
-    for(int dm=1; dm<=2; ++dm)
+    for(int dm=1; dm<=dim; ++dm)
     {
       for (int i=0; i<vsfs.size(); ++i)
       {
         int ii=(dm-1)*vsfs.size()+i;
-        for (int sd=0; sd<2; sd++)
+        for (int sd=0; sd<dim; sd++)
           temp[sd] = vsfs[i].evaluateDerivative(0,sd,face_self_local);
         grad_phi_ei[dm-1] = 0;
         inv_jac.umv(temp,grad_phi_ei[dm-1]);
@@ -261,12 +249,12 @@ void DGFiniteElementMethod<G,ordr>::assembleFaceTerm(Entity& ent, IntersectionIt
     }
     // offdiagonal block
     // -mu* 0.5 * parameter.epsilon * grad_phi_ej * normal* phi_fi
-    for(int dm=1; dm<=2; ++dm)
+    for(int dm=1; dm<=dim; ++dm)
     {
       for (int i=0; i<vsfs.size(); ++i)
       {
         int ii=(dm-1)*vsfs.size()+i;
-        for (int sd=0; sd<2; sd++)
+        for (int sd=0; sd<dim; sd++)
           temp[sd] = vsfs[i].evaluateDerivative(0,sd,face_self_local);
         grad_phi_ei[dm-1] = 0;
         inv_jac.umv(temp,grad_phi_ei[dm-1]);
@@ -287,7 +275,7 @@ void DGFiniteElementMethod<G,ordr>::assembleFaceTerm(Entity& ent, IntersectionIt
     //================================================//
     // Diagonalblock :
     // \mu. (\parameter.sigma/abs(e)).\int phi_ie. phi_je  where abs(e) =  norm (e) ???
-    for(int dm=1; dm<=2; ++dm)
+    for(int dm=1; dm<=dim; ++dm)
     {
       for (int i=0; i<vsfs.size(); ++i)
       {
@@ -304,7 +292,7 @@ void DGFiniteElementMethod<G,ordr>::assembleFaceTerm(Entity& ent, IntersectionIt
     }
     // offdiagonal block
     //- mu*(parameter.sigma/norm_e)*phi_ei*phi_fj*detjacface*quad_wt_face;
-    for(int dm=1; dm<=2; ++dm)
+    for(int dm=1; dm<=dim; ++dm)
     {
       for (int i=0; i<vsfs.size(); ++i)
       {
@@ -326,7 +314,7 @@ void DGFiniteElementMethod<G,ordr>::assembleFaceTerm(Entity& ent, IntersectionIt
     //================================================//
     //diagonal block
     // term==  0.5 * psi_ei. phi_ej* normal
-    for(int dm=1; dm<=2; ++dm)
+    for(int dm=1; dm<=dim; ++dm)
     {
       for (int i=0; i<vsfs.size(); ++i)
       {
@@ -344,7 +332,7 @@ void DGFiniteElementMethod<G,ordr>::assembleFaceTerm(Entity& ent, IntersectionIt
 
     //offdiagonal block
     // term==  -0.5 * psi_ei. phi_fj* normal
-    for(int dm=1; dm<=2; ++dm)
+    for(int dm=1; dm<=dim; ++dm)
     {
       for (int i=0; i<nbvsfs.size(); ++i)
       {
@@ -369,7 +357,7 @@ void DGFiniteElementMethod<G,ordr>::assembleFaceTerm(Entity& ent, IntersectionIt
     //================================================//
     //diagonal block
     // term==  0.5 * psi_ej. phi_ei* normal
-    for(int dm=1; dm<=2; ++dm)
+    for(int dm=1; dm<=dim; ++dm)
     {
       for (int i=0; i<psfs.size(); ++i)
       {
@@ -388,7 +376,7 @@ void DGFiniteElementMethod<G,ordr>::assembleFaceTerm(Entity& ent, IntersectionIt
     //offdiagonal block
     // term==  -0.5 * psi_ej. phi_fi* normal
 
-    for(int dm=1; dm<=2; ++dm)
+    for(int dm=1; dm<=dim; ++dm)
     {
       for (int i=0; i<psfs.size(); ++i)
       {
@@ -450,10 +438,7 @@ void DGFiniteElementMethod<G,ordr>::assembleBoundaryTerm(Entity& ent, Intersecti
     // velocity boundary condition
     //horizontal component
     dirichlet[0]=dirichletvalue.dirichletValue(0,bglobal,blocal);
-
-    //exact_u(bglobal[0],bglobal[1],dirichlet[0]);
     //vertical component
-    //exact_v(bglobal[0],bglobal[1],dirichlet[1]);
     dirichlet[1]=dirichletvalue.dirichletValue(1,bglobal,blocal);
 
     //================================================//
@@ -462,7 +447,7 @@ void DGFiniteElementMethod<G,ordr>::assembleBoundaryTerm(Entity& ent, Intersecti
     //- (\mu \int \nabla u. normal . v)
     //================================================//
 
-    for(int dm=1; dm<=2; ++dm)
+    for(int dm=1; dm<=dim; ++dm)
     {
 
       for (int i=0; i<vsfs.size(); ++i)
@@ -472,7 +457,7 @@ void DGFiniteElementMethod<G,ordr>::assembleBoundaryTerm(Entity& ent, Intersecti
         for (int j=0; j<vsfs.size(); ++j)
         {
           int jj=(dm-1)*vsfs.size()+j;
-          for (int sd=0; sd<2; sd++)
+          for (int sd=0; sd<dim; sd++)
             temp[sd] = vsfs[j].evaluateDerivative(0,sd,blocal);
           grad_phi_ej[dm-1] = 0;
           inv_jac.umv(temp,grad_phi_ej[dm-1]);
@@ -486,13 +471,13 @@ void DGFiniteElementMethod<G,ordr>::assembleBoundaryTerm(Entity& ent, Intersecti
     //  TERM:15
     // rhs entry:  parameter.mu * parameter.epsilon* g * \nabla v * n
     //================================================//
-    for(int dm=1; dm<=2; ++dm)
+    for(int dm=1; dm<=dim; ++dm)
     {
 
       for (int i=0; i<vsfs.size(); ++i)
       {
         int ii=(dm-1)*vsfs.size()+i;
-        for (int sd=0; sd<2; sd++)
+        for (int sd=0; sd<dim; sd++)
           temp[sd] = vsfs[i].evaluateDerivative(0,sd,blocal);
         grad_phi_ei[dm-1] = 0;
         inv_jac.umv(temp,grad_phi_ei[dm-1]);
@@ -518,7 +503,7 @@ void DGFiniteElementMethod<G,ordr>::assembleBoundaryTerm(Entity& ent, Intersecti
     // TERM:16
     // rhs entry: mu*parameter.sigma/norm_e * g * v
     //================================================//
-    for(int dm=1; dm<=2; ++dm)
+    for(int dm=1; dm<=dim; ++dm)
     {
 
       for (int i=0; i<vsfs.size(); ++i)
@@ -548,7 +533,7 @@ void DGFiniteElementMethod<G,ordr>::assembleBoundaryTerm(Entity& ent, Intersecti
     // TERM:10
     //    \int p v n
     //================================================//
-    for(int dm=1; dm<=2; ++dm)
+    for(int dm=1; dm<=dim; ++dm)
     {
       for (int i=0; i<vsfs.size(); ++i)
       {
@@ -569,7 +554,7 @@ void DGFiniteElementMethod<G,ordr>::assembleBoundaryTerm(Entity& ent, Intersecti
     // psi_ej * phi_ei * normal
     //================================================//
 
-    for(int dm=1; dm<=2; ++dm)
+    for(int dm=1; dm<=dim; ++dm)
     {
 
       for (int i=0; i<psfs.size(); ++i)

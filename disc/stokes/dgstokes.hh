@@ -64,10 +64,10 @@ namespace Dune
     void assembleFaceTerm(Entity& ep,IntersectionIterator& isp, LocalMatrixBlock& Aee,
                           LocalMatrixBlock& Aef,LocalMatrixBlock& Afe, LocalVectorBlock& Be) const;
     void assembleBoundaryTerm(Entity& ep, IntersectionIterator& isp, LocalMatrixBlock& Aee,LocalVectorBlock& Be) const ;
-
-    double evaluateSolution(int component,const Entity& element,const Dune::FieldVector<ctype,dim>& local,
+    // stokes system has dim+1 variables (dim velocity comps and 1 pressure)
+    double evaluateSolution(int variable,const Entity& element,const Dune::FieldVector<ctype,dim>& local,
                             const LocalVectorBlock& xe) const;
-    double evaluateL2error(int component,const ExactSolution<ctype, dim> & exact,const Entity& element,
+    double evaluateL2error(int variable,const ExactSolution<ctype, dim> & exact,const Entity& element,
                            const LocalVectorBlock& xe) const;
 
   private:
@@ -76,7 +76,7 @@ namespace Dune
     DGStokesParameters parameter;
     DirichletBoundary<G> dirichletvalue;
     RightHandSide<G> rhsvalue;
-    //ExactSolution<ctype,dim>& exact;
+
   };
 
 
@@ -120,7 +120,8 @@ namespace Dune
                             const Dune::FieldVector<ctype, dim> & local) const;
 
     //l2error computation
-    double l2errorStokesSystem(int comp) const;
+    // stokes system has dim+1 variables (dim velocity comps and 1 pressure)
+    double l2errorStokesSystem(int variable) const;
 
     const DGFunction & solution() const { return x; }
 
