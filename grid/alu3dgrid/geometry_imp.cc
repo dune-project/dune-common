@@ -583,7 +583,10 @@ namespace Dune {
   ALU3dGridGeometry<2, 3, const ALU3dGrid<3, 3, hexa> >::
   jacobianInverseTransposed (const FieldVector<alu3d_ctype, 2>& local) const {
     assert( biMap_ );
-    //biMap_->jacobianInverse(local,jInv_);
+#ifndef NDEBUG
+    dwarn << "WARNING: ALU3dGridGeometry<2,3>::jacobianInverseTransposed: method not tested yet! \n";
+#endif
+    jInv_ = biMap_->jacobianInverse(local);
     return jInv_;
   }
 
