@@ -6,9 +6,6 @@
 #include "dgstokes.hh"
 
 
-
-
-
 template<class G,int ordr>
 void DGFiniteElementMethod<G,ordr>::assembleVolumeTerm(Entity& ent, LocalMatrixBlock& Aee,LocalVectorBlock& Be) const
 {
