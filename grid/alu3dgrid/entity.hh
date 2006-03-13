@@ -426,6 +426,9 @@ namespace Dune {
     //! typedef of my type
     typedef ThisType ALU3dGridEntityPointerType;
 
+    //! make base type available in derived types
+    typedef ALU3dGridEntityPointerBase<cd,GridImp> Base;
+
     //! Constructor for EntityPointer that points to an element
     ALU3dGridEntityPointerBase(const GridImp & grid,
                                const MyHElementType & item);

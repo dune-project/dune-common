@@ -93,6 +93,10 @@ namespace Dune
     // we must be able to initialize a GenericLeafIterator.realIterator from
     // EntityPointer.realIterator
     friend class Dune::GenericLeafIterator<GridImp>;
+
+    // need to make copy constructor of EntityPointer work for any iterator
+    friend class EntityPointer<GridImp,typename IteratorImp::Base>;
+
   protected:
     IteratorImp realIterator;
 

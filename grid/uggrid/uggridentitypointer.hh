@@ -16,6 +16,7 @@ namespace Dune {
     enum { dim = GridImp::dimension };
   public:
     typedef typename GridImp::template Codim<codim>::Entity Entity;
+    typedef UGGridEntityPointer<codim,GridImp> Base;
 
     //! constructor
     UGGridEntityPointer () : virtualEntity_(-1) {

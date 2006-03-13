@@ -700,6 +700,7 @@ namespace Dune
     typedef typename GridImp::template Codim<cd>::Entity Entity;
     typedef typename SelectEntityImp<cd,dim,GridImp>::EntityImp EntityImp;
     typedef typename SelectEntityImp<cd,dim,GridImp>::EntityObject EntityObject;
+    typedef AlbertaGridEntityPointer<cd,GridImp> Base;
 
     //! typedef of my type
     typedef AlbertaGridEntityPointer<cd,GridImp> AlbertaGridEntityPointerType;
