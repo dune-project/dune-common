@@ -33,9 +33,151 @@ namespace Dune {
   /**
          @addtogroup Grid Grid
 
-         The Dune Grid module defines a general interface to a hierarchical
+         The Dune Grid module defines a general interface to a parallel, in general
+     nonconforming, locally refined and hierarchical
          finite element mesh.  The interface is independent of dimension and
          element type.
+
+         @section Grid1 Terminology
+
+
+         @subsection subs1 Entity
+
+         An entity is a geometric object that is part of a grid. It is
+     generalized polytope that has the same dimensionality as the grid
+     or a lower dimension.
+
+
+         @subsection subs20 Dimension
+
+         A grid has a fixed dimension \f$d\f$ which is the number of coordinates
+     required to specify any point in the grid. The dimension is a template parameter
+     of a grid.
+
+
+         @subsection subs21 Codimension of an entity
+
+         Each entity has a codimension \f$c\f$ where \f$0 \leq c \leq d\f$ (the dimension of the grid).
+         An entity with codimension \f$ c\f$ in a grid of dimension \f$ d\f$ is a \f$d-c\f$-dimensional
+         object.
+
+
+         @subsection subs5 Subentity
+
+         Entities are hierarchically constructed in the sense that entities of
+         codimension 0 are made up of entities of codimension 1 which are themselves
+         made up of entities of codimension 2 etc. until entities of codimension \f$d-1\f$
+         which consist of entities of codimension \f$ d\f$.
+
+
+         @subsection subs3 Element
+
+         An element is an entity of codimension 0.
+
+
+         @subsection subs4 Vertex
+
+         A vertex is an entity of codimension \f$ d\f$ (the same as the grid's dimension).
+
+
+         @subsection subs22 World dimension
+
+         Each grid has a world dimension \f$ w\f$ with \f$ w\geq d\f$. This is the number
+     of coordinates of the positions of the grid's vertices.
+
+
+         @subsection subs6 Assignable
+
+         A type is said to be assignable if it has a (public) copy constructor and
+         assignment operator. Note that this definition requires always both methods.
+
+
+         @subsection subs7 Default-constructible
+
+         A type is said to be default-constructible if it has a constructor without arguments.
+
+
+         @subsection subs8 Copy-constructible from type X
+
+         A type is said to be copy constructible from some other type X if it has
+         a copy constructor that takes a reference to an object of type X.
+
+
+         @subsection subs9 Equality-comparable
+
+         A type is said to be equality-comparable if it has an operator==.
+
+
+         @subsection subs10 LessThan-comparable
+
+         A type is lessthan-comparable if it has an operator<.
+
+
+         @subsection subs11 Iterator
+
+         An iterator is a type that can be dereferenced to yield an object of
+         its value type, i.e. it behaves like a pointer, and that can be incremented to
+         point to the next element in a linear sequence. In that respect it is comparable to
+         ForwardIterator in the Standard Template Library.
+
+
+         @subsection subs12 Mutable iterator
+
+         An iterator is called mutable if the value it refers to can be changed, i.e. it is
+         assignable.
+
+
+         @subsection subs13 Immutable iterator
+
+         An iterator is called immutable if the value referenced by the iterator can not
+         be changed, i. e. the value is not assignable and only methods marked const on the value
+         can be called.
+
+
+         @subsection subs14 Model
+
+         A type M is called a model of another type X if it implements all the methods
+         of X with the intended semantics. Typically X is a type that describes an interface.
+
+
+
+         @section Grid2 Types related to a grid
+
+     Each implementation of the Dune grid interface consist of a number of related types.
+         These are the following:
+
+         - %Grid which is a model of Dune::Grid where the template parameters are at least the
+         dimension and the world dimension. It is a container of entities that allows to access
+         these entities and that knows the number of entities.
+
+         - %Entity which is a model of Dune::Entity. This class is parametrized by dimension and
+         codimension. The entity encapsulates the topological part of an entity, i.e. its hierarchical
+         construction from subentities
+
+         - %Geometry which is a model of Dune::Geometry
+
+         - %EntityPointer which is a model of Dune::EntityPointer
+
+         - %LevelIterator which is a model of Dune::LevelIterator
+
+         - %LeafIterator which is a model of Dune::LeafIterator
+
+         - %HierarchicIterator which is a model of Dune::HierarchicIterator
+
+         - %IntersectionIterator which is a model of Dune::IntersectionIterator
+
+         - %Index sets which is are model of Dune::IndexSet
+
+         - %Id sets which is are model of Dune::IdSet
+
+
+         @section Grid3 Types common to all grid implementations
+
+         - GeometryType
+
+         - ReferenceElement
+
+
    */
 
   /**
