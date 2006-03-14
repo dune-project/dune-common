@@ -23,12 +23,37 @@ namespace Dune
   //
   //*****************************************************************************
 
-  /** \brief Encapsulates the geometric aspects of grid elements and subelements
+  /**
+     @brief Wrapper class for geometries
 
-          \tparam mydim Dimension of this geometry
-          \tparam cdim  Dimension of the surrounding space
-          \tparam GridImp The grid class whose elements we are encapsulating
-          \tparam GeometryImp The class that implements the actual geometry
+
+     Template parameters are:
+
+     - <tt>mydim</tt> Dimension of the domain
+     - <tt>cdim</tt> Dimension of the range
+     - <tt>GridImp</tt> Type that is a model of Dune::Grid
+     - <tt>GeometryImp</tt> Class template that is a model of Dune::Geometry
+
+     <H3>Maps</H3>
+
+     A Geometry defines a map \f[ g : D \to W\f] where
+     \f$D\subseteq\mathbf{R}^\textrm{mydim}\f$ and
+     \f$W\subseteq\mathbf{R}^\textrm{cdim}\f$.
+     The domain \f$D\f$ is one of a set of predefined convex polytopes, the
+     so-called reference elements (see also Dune::ReferenceElement). The dimensionality
+     of \f$D\f$ is <tt>mydim</tt>.
+     In general \f$\textrm{mydim}\leq\textrm{cdim}\f$, i.e.
+     the convex polytope may be mapped to a manifold. Moreover, we require that
+     \f$ g\in \left( C^1(D) \right)^\textrm{cdim}\f$ and one-to-one.
+
+
+     <H3>Engine Concept</H3>
+
+     The Geometry class template wraps an object of type GeometryImp and forwards all member
+     function calls to corresponding members of this class. In that sense Geometry
+     defines the interface and GeometryImp supplies the implementation.
+
+
 
           \ingroup GIGeometry
    */
@@ -54,33 +79,48 @@ namespace Dune
     //! define type used for coordinates in grid module
     typedef ct ctype;
 
-    //! return the geometry type identifier
+
+    /** \brief Return the name of the reference element. The type can
+            be used to access the Dune::ReferenceElement.
+     */
     GeometryType type () const { return realGeometry.type(); };
 
-    //! return the number of corners of this geometry. Corners are numbered 0...n-1
+    /** \brief Return the number of corners of the reference element. Since
+            this is a convex polytope the number of corners is a well-defined concept.
+            The method is redundant because this information is also available
+            via the reference element. It is here for efficiency and ease of use.
+     */
     int corners () const { return realGeometry.corners(); };
 
-    /** \brief Access to coordinates of corners.
-     * \param i The number of the corner
+    /** \brief Access to corners of the geometry.
+            \param[in] i The number of the corner
+            \return const reference to a vector containing the position \f$g(c_i)\f$ where
+            \f$c_i\f$ is the position of the i'th corner of the reference element.
      */
     const FieldVector<ct, cdim>& operator[] (int i) const
     {
       return realGeometry[i];
     }
 
-    //! maps a local coordinate within reference geometry to global coordinate in geometry
+    /** \brief Evaluate the map \f$ g\f$.
+            \param[in] local Position in the reference element \f$D\f$
+            \return Position in \f$W\f$
+     */
     FieldVector<ct, cdim> global (const FieldVector<ct, mydim>& local) const
     {
       return realGeometry.global(local);
     }
 
-    //! Maps a global coordinate within the geometry to a local coordinate in its reference geometry
+    /** \brief Evaluate the inverse map \f$ g^{-1}\f$
+            \param[in] global Position in \f$W\f$
+            \return Position in \f$D\f$ that maps to global
+     */
     FieldVector<ct, mydim> local (const FieldVector<ct, cdim>& global) const
     {
       return realGeometry.local(global);
     }
 
-    //! Return true if the point in local coordinates lies inside the reference geometry
+    //! Return true if the point is in the reference element \f$D\f$ of the map
     bool checkInside (const FieldVector<ct, mydim>& local) const
     {
       return realGeometry.checkInside(local);
@@ -88,82 +128,47 @@ namespace Dune
 
     /** \brief Return the factor appearing in the integral transformation formula
 
-       Integration over a general geometry is done by integrating over the reference geometry
-       and using the transformation from the reference geometry to the global geometry as follows:
-       \f[\int\limits_{\Omega_e} f(x) dx = \int\limits_{\Omega_{ref}} f(g(l)) A(l) dl \f] where
-       \f$g\f$ is the local to global mapping and \f$A(l)\f$ is the integration geometry.
+            Let \f$ g : D \to W\f$ denote the transformation described by the Geometry.
+            Then the jacobian of the transformation is defined as the
+            \f$\textrm{cdim}\times\textrm{mydim}\f$ matrix
+            \f[ J_g(x) = \left( \begin{array}{ccc} \frac{\partial g_0}{\partial x_0} &
+            \cdots & \frac{\partial g_0}{\partial x_{n-1}} \\
+            \vdots & \ddots & \vdots \\ \frac{\partial g_{m-1}}{\partial x_0} &
+            \cdots & \frac{\partial g_{m-1}}{\partial x_{n-1}}
+            \end{array} \right).\f]
+            Here we abbreviated \f$m=\textrm{cdim}\f$ and \f$n=\textrm{mydim}\f$ for ease of
+            readability.
 
-       For a general map \f$g(l)\f$ involves partial derivatives of the map (surface geometry of
-       the first kind if \f$d=2,w=3\f$, determinant of the Jacobian of the transformation for
-       \f$d=w\f$, \f$\|dg/dl\|\f$ for \f$d=1\f$).
+            The integration element \f$\mu(x)\f$ for any \f$x\in D\f$ is then defined as
+            \f[ \mu(x) = \sqrt{|\det J_g^T(x)J_g(x)|}.\f]
 
-       For linear geometries, the derivatives of the map with respect to local coordinates
-       do not depend on the local coordinates and are the same over the whole geometry.
+            \param[in] local Position \f$x\in D\f$
+            \return    integration element \f$\mu(x)\f$
 
-       For a structured mesh where all edges are parallel to the coordinate axes, the
-       computation is the length, area or volume of the geometry is very simple to compute.
-
-       Each grid module implements the integration geometry with optimal efficieny. This
-       will directly translate in substantial savings in the computation of finite geometry
-       stiffness matrices.
+            \note Each implementation computes the integration element with optimal
+            efficieny. For example in an equidistant structured mesh it may be as
+            simple as \f$h^\textrm{mydim}\f$.
      */
     ct integrationElement (const FieldVector<ct, mydim>& local) const
     {
       return realGeometry.integrationElement(local);
     }
 
-    /** \brief can only be called for mydim=cdim!
+    /** \brief Return inverse of transposed of Jacobian
 
-       @par Calculating the inverse Jacobian
-       <!---------------------------------->
+       The jacobian is defined in the documentation of Dune::Geometry::integrationElement().
 
-       The definition of the inverse Jacobian is:
+       \param[in] local Position \f$x\in D\f$
+       \return \f$J_g^{-T}(x)\f$
 
-       \f[x^l=J^{-1}\cdot x^g\f]
+       The use of this function is to compute the gradient of some function
+       \f$ f : W \to \textbf{R} \f$ at some position \f$y=g(x)\f$ with \f$x\in D\f$ and
+       \f$g\f$ the transformation of the Geometry. When we set \f$\hat{f}(x) = f(g(x))\f$
+       and apply the chain rule we get
+       \f[\nabla f (g(x)) = J_g^{-T}(x) \nabla \hat{f}(x). \f]
 
-       Consider \f$\vec{x}\f$ represented in two bases: \f$x^l\f$ for the
-       local base of the reference geometry \f$\vec{l}_\alpha\f$ and
-       \f$x^g\f$ for the global base \f$\vec{g}_\alpha\f$.
-
-       \f[\vec{x}=\vec{g}_\alpha\cdot x^g_\alpha=\vec{l}_\alpha\cdot x^l_\alpha\f]
-
-       Or, for two dimensions:
-
-       \f[\vec{x}=\left(\begin{array}{cc}\vec{g}_0&\vec{g}_1\end{array}\right)
-               \cdot\left(\begin{array}{c}x^g_0\\x^g_1\end{array}\right)
-              =\left(\begin{array}{cc}\vec{l}_0&\vec{l}_1\end{array}\right)
-               \cdot\left(\begin{array}{c}x^l_0\\x^l_1\end{array}\right)\f]
-
-       We can represent the global base in terms of the local base as well:
-
-       \f[\vec{g}_\alpha=\left(\begin{array}{cc}\vec{l}_0&\vec{l}_1\end{array}\right)
-                      \cdot\left(\begin{array}{c}g^l_{\alpha,0}\\g^l_{\alpha,1}\end{array}\right)\f]
-
-       Which leads to
-
-       \f[\left(\begin{array}{cc}\vec{g}_0&\vec{g}_1\end{array}\right)=
-       \left(\begin{array}{cc}\vec{l}_0&\vec{l}_1\end{array}\right)
-       \cdot\left(\begin{array}{cc}g^l_{0,0}&g^l_{0,1}\\g^l_{1,0}&g^l_{1,1}\end{array}\right)\f]
-
-       We can plug that into the formula above and identify the things to
-       the right side of
-       \f$\left(\begin{array}{cc}\vec{l}_0&\vec{l}_1\end{array}\right)\f$:
-
-       \f[\left(\begin{array}{c}x^l_0\\x^l_1\end{array}\right)=
-       \left(\begin{array}{cc}g^l_{0,0}&g^l_{0,1}\\g^l_{1,0}&g^l_{1,1}\end{array}\right)
-       \cdot\left(\begin{array}{c}x^g_0\\x^g_1\end{array}\right)\f]
-
-       To get back to the general case:
-
-       \f[x^l_\alpha=g^l_{\beta,\alpha}\cdot x^g_\beta\f]
-
-       So:
-
-       \f[\left(J^{-1}\right)_{\alpha,\beta}=g^l_{\beta,\alpha}\f]
-
-       To get the inverse Jacobian, we have to take the global unit vectors
-       \f$g^g_\alpha\f$, tranform them into local coordinates
-       \f$g^l_\alpha\f$ and use them as columns of the matrix.
+       \note This function may only be called in the case \f$\textrm{cdim}=\textrm{mydim}\f$
+       because otherwise the inverse is not defined.
      */
     const FieldMatrix<ct,mydim,mydim>& jacobianInverseTransposed (const FieldVector<ct, mydim>& local) const
     {

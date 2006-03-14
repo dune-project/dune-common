@@ -12,8 +12,21 @@
 namespace Dune
 {
 
-  /** \brief Encapsulates the static part of an arbitrary Grid::Iterator
-      \ingroup GIEntityPointer
+  /**
+     @brief Wrapper class for pointers to entities
+
+     Template parameters are:
+
+     - <tt>GridImp</tt> Type that is a model of Dune::Grid
+     - <tt>IteratorImp</tt> Class template that is a model of Dune::EntityPointer
+
+     <H3>Engine Concept</H3>
+
+     The EntityPointer class template wraps an object of type IteratorImp and forwards all member
+     function calls to corresponding members of this class. In that sense EntityPointer
+     defines the interface and IteratorImp supplies the implementation.
+
+     <H3>Relation of EntityPointer and Iterators</H3>
 
       The EntityPointer can be used like a static iterator. It points to a
       Dune::Entity and can be dereferenced, compared and it knows the
@@ -33,9 +46,6 @@ namespace Dune
          public Dune::EntityPointer<...>;
 
       class Dune::LeafIterator<...> :
-         public Dune::EntityPointer<...>;
-
-      class Dune::IntersectionIterator<...> :
          public Dune::EntityPointer<...>;
       \endcode
 
@@ -64,15 +74,15 @@ namespace Dune
       Dune::EntityPointer<..., SLevelIterator> and
       Dune::HierarchicIterator<..., SHierarchicIterator> inherits
       Dune::EntityPointer<..., SHierarchicIterator>.
-      And vitualy all Dune::EntityPointer<..., SXxxIterator> are descendents
+      And virtualy all Dune::EntityPointer<..., SXxxIterator> are descendents
       of Dune::EntityPointer<..., SEntityPointer>.
 
       Now you can compare Dune::LevelIterator with Dune::EntityPointer and
-      Dune::LeafIterator with Dune::IntersectionIterator. And you can assign
+      Dune::LeafIterator with Dune::HierarchicIterator. And you can at least copy-construct
       Dune::EntityPointer from any Dune::XxxIterator class. Even more, you can
       cast an Iterator refence to a reference pointing to Dune::EntityPointer.
 
-      The compiler take care that you only assign/compare Iterators from the same
+      The compiler takes care that you only assign/compare Iterators from the same
       Grid.
 
       The downside (or advantage) of this inheritance is that you can
@@ -84,8 +94,8 @@ namespace Dune
       different behavior in the same situation. So now they are forced to
       show the same behavior.
 
-      \tparam GridImp The grid class whose elements we are encapsulating
-      \tparam IteratorImp The class that implements the actual Iterator/Pointer
+
+      \ingroup GIEntityPointer
    */
   template<class GridImp, class IteratorImp>
   class EntityPointer
@@ -115,8 +125,20 @@ namespace Dune
     /** \brief The codimension of this EntityPointer */
     enum { codim = IteratorImp::codimension };
 
-    /** \todo Please doc me! */
+    /** \brief Engine is also derived from this class */
     typedef IteratorImp DerivedType;
+
+
+    //===========================================================
+    /** @name User interface
+     */
+    //@{
+    //===========================================================
+
+    /** \brief Indirect copy constructor from arbitrary IteratorImp */
+    template<class ItImp>
+    EntityPointer(const EntityPointer<GridImp,ItImp> & ep) :
+      realIterator(ep.realIterator) {}
 
     /** \brief Dereferencing operator. */
     Entity & operator*() const
@@ -136,18 +158,21 @@ namespace Dune
       return realIterator.level();
     }
 
-    /** \brief Copy Constructor from an Iterator implementation.
+    /** \brief Checks for equality.
 
-       You can supply LeafIterator LevelIterator HierarchicIterator
-       EntityPointer or IntersectionIterator.
-     */
-    EntityPointer(const IteratorImp & i) :
-      realIterator(i) {};
+       Only works for EntityPointers on the same grid */
+    bool operator==(const EntityPointer<GridImp,base>& rhs) const
+    {
+      return rhs.equals(*this);
+    }
 
-    /** \brief Indirect copy constructor from arbitrary IteratorImp */
-    template<class ItImp>
-    EntityPointer(const EntityPointer<GridImp,ItImp> & ep) :
-      realIterator(ep.realIterator) {}
+    /** \brief Checks for inequality.
+
+       Only works for EntityPointers on the same grid */
+    bool operator!=(const EntityPointer<GridImp,base>& rhs) const
+    {
+      return ! rhs.equals(*this);
+    }
 
     /** \brief Cast to ,,base class'' */
     operator EntityPointer<GridImp,base>&()
@@ -160,28 +185,32 @@ namespace Dune
     {
       return reinterpret_cast<const EntityPointer<GridImp,base>&>(*this);
     };
+    //@}
 
-    /** \briefChecks for equality.
 
-       Only works EntityPointers on the same grid */
-    bool operator==(const EntityPointer<GridImp,base>& rhs) const
-    {
-      return rhs.equals(*this);
-    }
+    //===========================================================
+    /** @name Implementor interface
+     */
+    //@{
+    //===========================================================
 
-    /** \brief Checks for inequality.
 
-       Only works EntityPointers on the same grid */
-    bool operator!=(const EntityPointer<GridImp,base>& rhs) const
-    {
-      return ! rhs.equals(*this);
-    }
+    /** \brief Copy Constructor from an Iterator implementation.
 
-    /** @brief forward equality check to realIterator */
+       You can supply LeafIterator, LevelIterator, HierarchicIterator
+       or EntityPointer.
+     */
+    EntityPointer(const IteratorImp & i) :
+      realIterator(i) {};
+
+    /** @brief Forward equality check to realIterator */
     bool equals(const EntityPointer& rhs) const
     {
       return this->realIterator.equals(rhs.realIterator);
     }
+
+    //@}
+
   };
 
   //**********************************************************************
