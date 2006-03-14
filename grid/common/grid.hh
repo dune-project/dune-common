@@ -86,6 +86,33 @@ namespace Dune {
      of coordinates of the positions of the grid's vertices.
 
 
+         @subsection subs33 Hierarchical grid
+
+         The %Dune grid interface describes not only a single grid but a sequence of
+         grids with different resolution. This is achieved by beginning with an
+         intentionally coarse grid, the so-called macro grid. Then each
+     element may be individually subdivided to yield new (smaller) elements.
+         This construction is recursive such that each macro element and
+         all the elements that resulted from subdividing it form a tree structure.
+
+         @subsection subs33333 Grid refinement
+
+         The grid can only be modified in special phases, the so-called refinement phase.
+         In between refinement phases the entities of the grid can not be modified in any way.
+         During refinement currently only the hierachic subdivision can be modified.
+
+
+         @subsection subs3333 Grid level
+
+         All elements of the macro grid form level 0 of the grid structure. All
+         elements that are obtained from an \f$ l\f$-fold subdivision of a macro
+         element form level \f$ l\f$ of the grid structure.
+
+         @subsection subs333 Leaf grid
+
+         All elements of a grid that are not subdivided any further make up
+         the leaf grid. The leaf grid is the mesh with the finest resolution.
+
          @subsection subs6 Assignable
 
          A type is said to be assignable if it has a (public) copy constructor and
@@ -112,6 +139,11 @@ namespace Dune {
 
          A type is lessthan-comparable if it has an operator<.
 
+
+         @subsection subs11 Dereferenceable
+
+         A type is dereferenceable if it has an operator* that delivers
+         a reference to a value type.
 
          @subsection subs11 Iterator
 
@@ -140,11 +172,20 @@ namespace Dune {
          of X with the intended semantics. Typically X is a type that describes an interface.
 
 
+         @section Grid3 Types common to all grid implementations
 
-         @section Grid2 Types related to a grid
+         - Dune::ReferenceElement describes the topology and geometry of standard entities.
+         Any given entity of the grid can be completely specified by a reference element
+         and a map from this reference element to world coordinate space.
 
-     Each implementation of the Dune grid interface consist of a number of related types.
-         These are the following:
+         - Dune::GeometryType defines names for the reference elements.
+
+
+
+         @section Grid2 Types making up a grid implementation
+
+     Each implementation of the Dune grid interface consist of a number of related types which
+         together form a model of the grid interface. These types are the following:
 
          - %Grid which is a model of Dune::Grid where the template parameters are at least the
          dimension and the world dimension. It is a container of entities that allows to access
@@ -152,30 +193,137 @@ namespace Dune {
 
          - %Entity which is a model of Dune::Entity. This class is parametrized by dimension and
          codimension. The entity encapsulates the topological part of an entity, i.e. its hierarchical
-         construction from subentities
+         construction from subentities and the relation to other entities. Entities cannot
+         be created, copied or modified by the user. They can only be read-accessed through
+         immutable iterators.
 
-         - %Geometry which is a model of Dune::Geometry
+         - %Geometry which is a model of Dune::Geometry. This class encapsulates the geometric part
+         of an entity by mapping local coordinates in a reference element to world coordinates.
 
-         - %EntityPointer which is a model of Dune::EntityPointer
+         - %EntityPointer which is a model of Dune::EntityPointer. This is a dereferenceable
+         type that delivers a reference to an entity. Moreover it is immutable, i.e. the
+         referenced entity can not be modified.
 
-         - %LevelIterator which is a model of Dune::LevelIterator
+         - %LevelIterator which is a model of Dune::LevelIterator is an immutable iterator
+     that provides access to all entities of a given codimension and level of the
+         grid. %EntityPointer is copy-constructible from a %LevelIterator.
 
-         - %LeafIterator which is a model of Dune::LeafIterator
+         - %LeafIterator which is a model of Dune::LeafIterator is an immutable iterator
+         that provides access to all entities of a given codimension of the leaf grid.
+         %EntityPointer is copy-constructible from a %LeafIterator.
 
-         - %HierarchicIterator which is a model of Dune::HierarchicIterator
+         - %HierarchicIterator which is a model of Dune::HierarchicIterator is an immutable
+         iterator that provides access to all entities of codimension 0 that resulted from subdivision
+         of a given entity of codimension 0. %EntityPointer is copy-constructible from a
+         %HierarchicIterator.
 
          - %IntersectionIterator which is a model of Dune::IntersectionIterator
+         provides access to all entities of codimension 0 that have an intersection of
+         codimension 1 with a given entity of codimension 0. In a conforming mesh these
+         are the face neighbors of an element. For two entities with a common intersection
+         the %IntersectionIterator also provides information about the geometric location
+         of the intersection. Furthermore it also provides information about intersections
+         of an entity with the internal or external boundaries.
 
-         - %Index sets which is are model of Dune::IndexSet
+         - %LevelIndexSet and %LeafIndexSet which are both models of Dune::IndexSet are
+         used to attach any kind of user-defined data to (subsets of) entities of the grid.
+         This data is supposed to be stored in one-dimensional arrays for reasons
+         of efficiency.
 
-         - %Id sets which is are model of Dune::IdSet
+         - %LocalIdSet and %GlobalIdSet which are both models of Dune::IdSet are used to
+         save user data during a grid refinement phase and during dynamic load balancing
+         in the parallel case.
 
 
-         @section Grid3 Types common to all grid implementations
+         @section Grid22 Overview of basic capabilities of the types
 
-         - GeometryType
+         <TABLE>
+         <TR>
+         <TD>Class</TD>
+         <TD>Assignable</TD>
+         <TD>DefaultConstructible</TD>
+         <TD>EqualityComparable</TD>
+         <TD>LessThanComparable</TD>
+         </TR>
+         <TR>
+         <TD>Grid</TD>
+         <TD>no</TD>
+         <TD>no</TD>
+         <TD>no</TD>
+         <TD>no</TD>
+         </TR>
+         <TR>
+         <TD>Entity</TD>
+         <TD>no</TD>
+         <TD>no</TD>
+         <TD>no</TD>
+         <TD>no</TD>
+         </TR>
+         <TR>
+         <TD>GeometryType</TD>
+         <TD>yes</TD>
+         <TD>yes</TD>
+         <TD>yes</TD>
+         <TD>yes</TD>
+         </TR>
+         <TR>
+         <TD>Geometry</TD>
+         <TD>no</TD>
+         <TD>no</TD>
+         <TD>no</TD>
+         <TD>no</TD>
+         </TR>
+         <TR>
+         <TD>EntityPointer</TD>
+         <TD>yes</TD>
+         <TD>no</TD>
+         <TD>yes</TD>
+         <TD>no</TD>
+         </TR>
+         <TR>
+         <TD>LevelIterator</TD>
+         <TD>yes</TD>
+         <TD>no</TD>
+         <TD>yes</TD>
+         <TD>no</TD>
+         </TR>
+         <TR>
+         <TD>LeafIterator</TD>
+         <TD>yes</TD>
+         <TD>no</TD>
+         <TD>yes</TD>
+         <TD>no</TD>
+         </TR>
+         <TR>
+         <TD>HierarchicIterator</TD>
+         <TD>yes</TD>
+         <TD>no</TD>
+         <TD>yes</TD>
+         <TD>no</TD>
+         </TR>
+         <TR>
+         <TD>IntersectionIterator</TD>
+         <TD>yes</TD>
+         <TD>no</TD>
+         <TD>yes</TD>
+         <TD>no</TD>
+         </TR>
+         <TR>
+         <TD>IndexSet</TD>
+         <TD>no</TD>
+         <TD>no</TD>
+         <TD>no</TD>
+         <TD>no</TD>
+         </TR>
+         <TR>
+         <TD>IdSet</TD>
+         <TD>no</TD>
+         <TD>no</TD>
+         <TD>no</TD>
+         <TD>no</TD>
+         </TR>
+         </TABLE>
 
-         - ReferenceElement
 
 
    */
