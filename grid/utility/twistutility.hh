@@ -3,15 +3,14 @@
 #ifndef DUNE_TWISTUTILITY_HH
 #define DUNE_TWISTUTILITY_HH
 
-
-#ifndef HAVE_ALBERTA_FOUND
-#ifdef HAVE_ALBERTA
-#if HAVE_ALBERTA
-#define HAVE_ALBERTA_FOUND
-#endif
-#endif
+// is Alberta was found then also include headers
+#ifndef HAVE_ALBERTA
+#define HAVE_ALBERTA_FOUND 0
+#else
+#define HAVE_ALBERTA_FOUND HAVE_ALBERTA
 #endif
 
+// is ALU3dGrid was found then also include headers
 #ifndef HAVE_ALUGRID
 #define HAVE_ALUGRID_FOUND 0
 #else
@@ -22,7 +21,7 @@
 #include <dune/grid/alu3dgrid.hh>
 #endif
 
-#ifdef HAVE_ALBERTA_FOUND
+#if HAVE_ALBERTA_FOUND
 #include <dune/grid/albertagrid.hh>
 #endif
 
@@ -43,13 +42,13 @@ namespace Dune {
       grid_(grid)
     {}
 
+    // default twist is zero
     int twistInSelf(IntersectionIterator& it) const {
-      //DUNE_THROW(NotImplemented, "Hey, implement it yourself if you need it!");
       return 0;
     }
 
+    // default twist is zero
     int twistInNeighbor(IntersectionIterator& it) const {
-      //DUNE_THROW(NotImplemented, "Hey, implement it yourself if you need it!");
       return 0;
     }
 
@@ -57,7 +56,7 @@ namespace Dune {
     const GridType& grid_;
   };
 
-#ifdef HAVE_ALBERTA_FOUND
+#if HAVE_ALBERTA_FOUND
   template <int dim, int dimW>
   class TwistUtility<AlbertaGrid<dim, dimW> >
   {
@@ -82,7 +81,7 @@ namespace Dune {
   };
 #endif
 
-#ifdef HAVE_ALUGRID_FOUND
+#if HAVE_ALUGRID_FOUND
   template <int dim, int dimW, ALU3dGridElementType elType>
   class TwistUtility<ALU3dGrid<dim, dimW, elType>  >
   {
@@ -113,6 +112,6 @@ namespace Dune {
 
 #undef HAVE_ALBERTA_FOUND
 #undef HAVE_ALUGRID_FOUND
-}
+} // end namespace Dune
 
 #endif
