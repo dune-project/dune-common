@@ -344,7 +344,7 @@ namespace Dune {
    */
 
   /**
-         @addtogroup GridImplementations Implementations Overview
+         @addtogroup GridImplementations Implementations of the Dune grid interface
          @ingroup Grid
          @brief A List of the different Implementations of the Dune Grid Interface.
    */
