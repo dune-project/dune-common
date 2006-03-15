@@ -10,8 +10,9 @@ namespace Dune
   /**
      @brief Enables iteration over all leaf entities
      of a codimension zero of a grid.
+     See also the documentation of Dune::EntityPointer.
 
-     @ingroup GIIterators
+     @ingroup GIEntityPointer
    */
   template<int codim, PartitionIteratorType pitype, class GridImp,
       template<int,PartitionIteratorType,class> class LeafIteratorImp>
@@ -39,9 +40,16 @@ namespace Dune
     }
 
   public:
+    //===========================================================
+    /** @name Implementor interface
+     */
+    //@{
+    //===========================================================
+
     /** @brief copy constructor from LevelIteratorImp */
     LeafIterator (const LeafIteratorImp<codim, pitype, const GridImp> & i) :
       EntityPointer<GridImp, LeafIteratorImp<codim, pitype, GridImp> >(i) {};
+    //@}
   };
 
   //**********************************************************************

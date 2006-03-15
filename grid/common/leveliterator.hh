@@ -9,11 +9,11 @@ namespace Dune
 {
 
   /**********************************************************************/
-  /**
-     @brief Enables iteration over all entities
-     of a given codimension and level of a grid.
+  /** @brief Enables iteration over all entities
+          of a given codimension and level of a grid.
+          See also the documentation of Dune::EntityPointer.
 
-     @ingroup GIIterators
+     @ingroup GIEntityPointer
    */
   template<int codim, PartitionIteratorType pitype, class GridImp,
       template<int,PartitionIteratorType,class> class LevelIteratorImp>
@@ -48,12 +48,17 @@ namespace Dune
     }
 
   public:
-    /**
-       @brief copy constructor from LevelIteratorImp
+    //===========================================================
+    /** @name Implementor interface
+     */
+    //@{
+    //===========================================================
+
+    /** @brief copy constructor from LevelIteratorImp
      */
     LevelIterator(const LevelIteratorImp<codim,pitype,const GridImp> & i) :
       EntityPointer<GridImp, LevelIteratorImp<codim,pitype,GridImp> >(i) {};
-
+    //@}
   };
 
   //**********************************************************************

@@ -528,6 +528,7 @@ EXAMPLE_RECURSIVE      = NO
 
 IMAGE_PATH             = ../../grid/sgrid \
                          ../../grid/yaspgrid \
+                         ../../grid/common \
                          ../appl/refelements \
                          ../refinement
 

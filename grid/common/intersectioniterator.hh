@@ -8,27 +8,75 @@
 namespace Dune
 {
 
-  /**
-     \brief Mesh entities of codimension 0 ("elements") allow to visit all
-     intersections with neighboring elements and with the domain
+  /** \brief Mesh entities of codimension 0 ("elements") allow to visit all
+     intersections with "neighboring" elements and with the domain
      boundary.
+
+     Template parameters are:
+
+     - <tt>GridImp</tt> Type that is a model of Dune::Grid
+     - <tt>IntersectionIteratorImp</tt> Class template that is a model of
+     Dune::IntersectionIterator
+
+     @warning The name IntersectionIterator may be somewhat misleading. This
+     class has neither an operator* nor an operator->. It iterates over codimension
+     1 intersections with other entities and the (sub-)domain boundary.
 
      @warning The number of neigbors may be different from the number of
      faces/edges of an element!
 
      <h2>Overview</h2>
 
-     These intersections are codimension 1 objects. These
+     Intersections are codimension 1 objects. These
      intersections are accessed via a IntersectionIterator. This allows
-     the implementation of non-matching meshes, as one face can now
+     the implementation of non-matching grids, as one face can now
      consist of several intersections.
+     In a conforming mesh such an intersection corresponds to an entity of
+     codimension 1 but in the general non-conforming case there will be no entity
+     in the mesh that directly corresponds to the intersection. Thus, the
+     IntersectionIterator describes these intersections implicitly.
 
-     Currently it is not possible to access this codimension 1 entity
-     itself, but the IntersectionIterator provides the basic entity
-     informations.
+     <H2>Engine Concept</H2>
+
+     The IntersectionIterator class template wraps an object of type IntersectionIteratorImp
+     and forwards all member
+     function calls to corresponding members of this class. In that sense IntersectionIterator
+     defines the interface and IntersectionIteratorImp supplies the implementation.
 
 
-     Depending on the state of boundary() and neighbor() one can destinguish different cases:
+     <h2>Intersections and locally refined meshes</h2>
+
+     Consider a situtation where two elements a and b have a common intersection.
+     %Element b has been refined into an element c (and others) while a has not
+     been refined and elements a and c have a common intersection in the leaf grid.
+     In one space dimension this situation is depicted in the figure below.
+
+     \image html  islocalref.png "IntersectionIterator in a locally refined mesh."
+     \image latex islocalref.eps "IntersectionIterator in a locally refined mesh." width=\textwidth
+
+     Here the rule is the following: The IntersectionIterator deleivers the
+     intersection with an entity on the same level if possible or with an element
+     on a lower level which must be a leaf element in this case.
+
+     This means that if element c has an intersection with element a, a does
+     not necessarily have an intersection with element c. In the example above, a
+     would have an intersection with element b.
+
+
+     <h2>Intersections, leaf grid and level grid</h2>
+
+     Note that the intersections of an element accessible via the IntersectionIterator
+     are independent of whether the element results from a grid traversal with
+     a LevelIterator or a LeafIterator. For example, if the grid is traversed
+     with a LevelIterator the IntersectionIterator may provide access to an element
+     that is not on the same level (it may be on a lower level).
+
+
+     <h2>Interior and boundary entities</h2>
+
+     Depending on the boolean values returned by the methods boundary() and neighbor()
+     one can detect the position of an entity relative to the boundary. The
+     following cases are possible.
 
      <table>
      <tr>
@@ -43,7 +91,7 @@ namespace Dune
      <tr>
      <td>2</td><td>inner cell</td>
      <td>true</td><td>true <em>for inner boundaries,</em><br>false <em>otherwise</em></td>
-     <td>the real neighbor entity</td>
+     <td>the neighbor entity</td>
      </tr>
 
      <tr>
@@ -59,9 +107,9 @@ namespace Dune
      <h2>Handling periodic boundaries</h2>
      - The IntersectionIterator stops at periodic boundaries
      - periodic grids are handled in correspondence to parallel grids
-     - At the periodic boundary one can adjust an overlap- or ghost-layer.
-     - outer() returns a ghost or overlap cell (for gost and overlap look into the documentation of the parallel grid interface)
-     - outer() cell has a periodicelly transformed geometry (so that one does not see a jump or something like that)
+     - %At the periodic boundary one can adjust an overlap- or ghost-layer.
+     - outer() returns a ghost or overlap cell (for ghost and overlap look into the documentation of the parallel grid interface)
+     - outer() cell has a periodically transformed geometry (so that one does not see a jump or something like that)
      - outer() cell has its own index
      - outer() cell has the same id as the corresponding "original" cell
 
@@ -81,7 +129,7 @@ namespace Dune
      interface in Dune one can only identify a boundary by it's
      boundaryId().
 
-     @ingroup GIIterators
+     @ingroup GIIntersectionIterator
    */
   template<class GridImp, template<class> class IntersectionIteratorImp>
   class IntersectionIterator
@@ -124,14 +172,14 @@ namespace Dune
       return realIterator.level();
     }
 
-    /** @brief Preincrement operator. */
+    /** @brief Preincrement operator. Proceed to next intersection.*/
     IntersectionIterator& operator++()
     {
       this->realIterator.increment();
       return *this;
     }
 
-    /** @brief Postincrement operator. */
+    /** @brief Postincrement operator. Deprecated, do not use it anymore.*/
     IntersectionIterator operator++(int) DUNE_DEPRECATED
     {
       const IntersectionIterator tmp(*this);
@@ -139,7 +187,7 @@ namespace Dune
       return tmp;
     }
 
-    //! return true if intersection is with boundary
+    //! return true if intersection is with interior or exterior boundary (see the cases above)
     bool boundary () const
     {
       return this->realIterator.boundary();
@@ -149,7 +197,7 @@ namespace Dune
        \brief Identifier for boundary segment from macro grid.
 
        One can attach a boundary Id to a boundary segment on the macro
-       grid. This Id will also be used for all fragment of these
+       grid. This Id will also be used for all fragments of these
        boundary segments.
 
        The numbering is defined as:
@@ -164,16 +212,14 @@ namespace Dune
       return this->realIterator.boundaryId();
     }
 
-    //! @brief return true if intersection is with neighbor on this level.
+    //! @brief return true if intersection is shared with another element.
     bool neighbor () const
     {
       return this->realIterator.neighbor();
     }
 
     /*! @brief return EntityPointer to the Entity on the inside of this
-       intersection.
-
-       (that is the Entity where we started this Iterator)
+       intersection. That is the Entity where we started this Iterator.
      */
     EntityPointer inside() const
     {
@@ -181,9 +227,7 @@ namespace Dune
     }
 
     /*! @brief return EntityPointer to the Entity on the outside of this
-       intersection.
-
-       (that is the neighboring Entity)
+       intersection. That is the neighboring Entity.
 
        @warning Don't call this method if there is no neighboring Entity
        (neighbor() returns false). In this case the result is undefined.
@@ -195,8 +239,7 @@ namespace Dune
 
     /*! @brief geometrical information about this intersection in local
        coordinates of the inside() entity.
-
-       This method return a Geometry object that provides a mapping from
+       This method returns a Geometry object that provides a mapping from
        local coordinates of the intersection to local coordinates of the
        inside() entity.
      */
@@ -206,8 +249,7 @@ namespace Dune
     }
     /*! @brief geometrical information about this intersection in local
        coordinates of the outside() entity.
-
-       This method return a Geometry object that provides a mapping from
+       This method returns a Geometry object that provides a mapping from
        local coordinates of the intersection to local coordinates of the
        outside() entity.
      */
@@ -217,34 +259,31 @@ namespace Dune
     }
 
     /*! @brief geometrical information about this intersection in global coordinates.
-
-       This method return a Geometry object that provides a mapping from
-       local coordinates of the intersection to global coordinates.
+       This method returns a Geometry object that provides a mapping from
+       local coordinates of the intersection to global (world) coordinates.
      */
     const Geometry& intersectionGlobal () const
     {
       return this->realIterator.intersectionGlobal();
     }
 
-    //! local number of codim 1 entity in self where intersection is contained in
+    //! Local number of codim 1 entity in the inside() Entity where intersection is contained in
     int numberInSelf () const
     {
       return this->realIterator.numberInSelf ();
     }
 
-    //! local number of codim 1 entity in neighbor where intersection is contained in
+    //! Local number of codim 1 entity in outside() Entity where intersection is contained in
     int numberInNeighbor () const
     {
       return this->realIterator.numberInNeighbor ();
     }
 
-    /*! @brief return an outer normal (length not necessarily 1)
-
+    /*! @brief Return an outer normal (length not necessarily 1)
        The returned Vector is copied to take advantage from the return
        type optimization.  Usually one will use the normal in several
        calculations, so that one stores it before using it. The
-       returned vector should be dependent on local coordinates for
-       higher order boundary.
+       returned vector may depend on local position within the intersection.
      */
     FieldVector<ct, dimworld> outerNormal (const FieldVector<ct, dim-1>& local) const
     {
@@ -252,20 +291,18 @@ namespace Dune
     }
 
     /*! @brief return outer normal scaled with the integration element
-
-       @copydoc outerNormal
-
-       The normal is scaled with the integration element of the intersection.
+          @copydoc outerNormal
+       The normal is scaled with the integration element of the intersection. This
+          method is redundant but it may be more efficent to use this function
+          rather than computing the integration element via intersectionGlobal.
      */
     FieldVector<ct, dimworld> integrationOuterNormal (const FieldVector<ct, dim-1>& local) const
     {
       return this->realIterator.integrationOuterNormal(local);
     }
     /*! @brief return unit outer normal (length == 1)
-
        @copydoc outerNormal
-
-       The normal is scaled a length of 1.
+       The normal vector scaled to length 1.
      */
     FieldVector<ct, dimworld> unitOuterNormal (const FieldVector<ct, dim-1>& local) const
     {
@@ -273,8 +310,7 @@ namespace Dune
     }
 
     /** @brief Checks for equality.
-
-        Only Iterators pointing same intersection from the same Entity
+        Only Iterators pointing to the same intersection from the same Entity
         are equal. Pointing to the same intersection from neighbor is
         unequal as inside and outside are permuted.
      */
@@ -284,22 +320,25 @@ namespace Dune
     }
 
     /** @brief Checks for inequality.
-
-        Only Iterators pointing same intersection from the same Entity
-        are equal. Pointing to the same intersection from neighbor is
-        unequal as inside and outside are permuted.
+            @copydoc operator==
      */
     bool operator!=(const IntersectionIterator& rhs) const
     {
       return ! rhs.equals(*this);
     }
 
+
+    //===========================================================
+    /** @name Implementor interface
+     */
+    //@{
+    //===========================================================
+
     /** @brief forward equality check to realIterator */
     bool equals(const IntersectionIterator& rhs) const
     {
       return this->realIterator.equals(rhs.realIterator);
     }
-
 
     /** Copy Constructor from IntersectionIteratorImp */
     IntersectionIterator(const IntersectionIteratorImp<const GridImp> & i) :
@@ -308,6 +347,7 @@ namespace Dune
     /** Copy constructor */
     IntersectionIterator(const IntersectionIterator& i) :
       realIterator(i.realIterator) {}
+    //@}
 
     typedef typename RemoveConst<GridImp>::Type mutableGridImp;
   protected:

@@ -78,7 +78,7 @@ namespace Dune
       of Dune::EntityPointer<..., SEntityPointer>.
 
       Now you can compare Dune::LevelIterator with Dune::EntityPointer and
-      Dune::LeafIterator with Dune::HierarchicIterator. And you can at least copy-construct
+      Dune::LeafIterator with Dune::HierarchicIterator. And you can assign
       Dune::EntityPointer from any Dune::XxxIterator class. Even more, you can
       cast an Iterator refence to a reference pointing to Dune::EntityPointer.
 
@@ -122,23 +122,56 @@ namespace Dune
     /** \brief The Entity that this EntityPointer can point to */
     typedef typename IteratorImp::Entity Entity;
 
-    /** \brief The codimension of this EntityPointer */
-    enum { codim = IteratorImp::codimension };
+    enum {
+      /** \brief The codimension of this EntityPointer */
+      codim = IteratorImp::codimension
+    };
 
     /** \brief Engine is also derived from this class */
     typedef IteratorImp DerivedType;
 
 
     //===========================================================
-    /** @name User interface
+    /** @name Constructor & conversion
      */
     //@{
     //===========================================================
 
-    /** \brief Indirect copy constructor from arbitrary IteratorImp */
+    /** \brief Templatized copy constructor from arbitrary IteratorImp.
+            This enables that an EntityPointer can be copy-constructed from
+            LevelIterator, LeafIterator and HierarchicIterator (because
+            these are derived from EntityPointer<...> with their
+            corresponding implementation.
+     */
     template<class ItImp>
     EntityPointer(const EntityPointer<GridImp,ItImp> & ep) :
       realIterator(ep.realIterator) {}
+
+    /** \brief Cast to EntityPointer with base class of implementation as engine.
+            This conversion ensures assignablity of LevelIterator, LeafIterator and
+            HierarchicIterator to EntityPointer.
+     */
+    operator EntityPointer<GridImp,base>&()
+    {
+      return reinterpret_cast<EntityPointer<GridImp,base>&>(*this);
+    };
+
+    /** \brief Cast to EntityPointer with const base class of implementation as engine.
+            This conversion ensures assignablity of LevelIterator, LeafIterator and
+            HierarchicIterator to EntityPointer.
+     */
+    operator const EntityPointer<GridImp,base>&() const
+    {
+      return reinterpret_cast<const EntityPointer<GridImp,base>&>(*this);
+    };
+    //@}
+
+
+    //===========================================================
+    /** @name Dereferencing
+     */
+    //@{
+    //===========================================================
 
     /** \brief Dereferencing operator. */
     Entity & operator*() const
@@ -151,40 +184,53 @@ namespace Dune
     {
       return & realIterator.dereference();
     }
+    //@}
 
-    /** \brief Ask for level of entity */
-    int level () const
-    {
-      return realIterator.level();
-    }
+
+    //===========================================================
+    /** @name Dereferencing methods
+     */
+    //@{
+    //===========================================================
 
     /** \brief Checks for equality.
-
-       Only works for EntityPointers on the same grid */
+            Only works for EntityPointers and iterators on the same grid.
+            Due to the conversion operators one can compare
+            all kinds of iterators and EntityPointer.
+     */
     bool operator==(const EntityPointer<GridImp,base>& rhs) const
     {
       return rhs.equals(*this);
     }
 
     /** \brief Checks for inequality.
-
-       Only works for EntityPointers on the same grid */
+            Only works for EntityPointers and iterators on the same grid.
+            Due to the conversion operators one can compare
+            all kinds of iterators and EntityPointer.
+     */
     bool operator!=(const EntityPointer<GridImp,base>& rhs) const
     {
       return ! rhs.equals(*this);
     }
+    //@}
 
-    /** \brief Cast to ,,base class'' */
-    operator EntityPointer<GridImp,base>&()
-    {
-      return reinterpret_cast<EntityPointer<GridImp,base>&>(*this);
-    };
 
-    /** \brief Cast to const ,,base class'' */
-    operator const EntityPointer<GridImp,base>&() const
+    //===========================================================
+    /** @name Query methods
+     */
+    //@{
+    //===========================================================
+
+    /** \brief Ask for level of entity.
+            This method is redundant and is only there for efficiency reasons.
+            It allows an implementation to return the level without actually
+            constructing the entity.
+     */
+    int level () const
     {
-      return reinterpret_cast<const EntityPointer<GridImp,base>&>(*this);
-    };
+      return realIterator.level();
+    }
+
     //@}
 
 
@@ -208,7 +254,6 @@ namespace Dune
     {
       return this->realIterator.equals(rhs.realIterator);
     }
-
     //@}
 
   };

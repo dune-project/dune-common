@@ -180,6 +180,9 @@ namespace Dune {
 
          - Dune::GeometryType defines names for the reference elements.
 
+         - Dune::CollectiveCommunication defines an interface to global communication
+         operations in a portable and transparent way. In particular also for sequential grids.
+
 
 
          @section Grid2 Types making up a grid implementation
