@@ -579,26 +579,6 @@ namespace Dune
 
   };
 
-  /********************************************************************/
-  /**
-     @brief Interface Definition for EntityImp
-
-     @note this is the general version, but there are specializations
-     for codim=0 and codim=dim
-
-     @ingroup GridDevel
-   */
-
-
-  //********************************************************************
-  /**
-     @brief Interface Definition for EntityImp (Elements [cd=0])
-
-     @note
-     this specialization has an extended interface compared to the general case
-
-     @ingroup GridDevel
-   */
   //********************************************************************
   /**
      @brief Default Implementations for EntityImp
