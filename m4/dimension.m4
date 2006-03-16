@@ -1,5 +1,5 @@
 # $Id$
-# asks for problem-dimension and world-dimension to pass on to Albert/UG
+# asks for problem-dimension and world-dimension to pass on to Alberta
 
 AC_DEFUN([DUNE_DIMENSION],[
 
