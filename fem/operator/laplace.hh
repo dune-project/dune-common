@@ -192,7 +192,7 @@ namespace Dune
       }
 
       for(i=0; i<matSize; i++)
-        for (j=matSize; j>i; j--)
+        for (j=matSize-1; j>i; j--)
           mat[j][i] = mat[i][j];
 
     }
