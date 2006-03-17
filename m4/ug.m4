@@ -93,6 +93,26 @@ AC_DEFUN([DUNE_PATH_UG],[
 	      )
 	  fi
 
+          # Okay.  We have found a UG installation.  But has it been built with --enable-dune?
+          # We check this by trying to link to the field int UG::duneMarker, which is there
+          # do indicate just this.
+          if test x$HAVE_UG = x1 ; then
+            AC_MSG_CHECKING([whether UG has been built with --enable-dune])
+            AC_TRY_LINK(
+                [#define FOR_DUNE
+                    #include "dunemarker.h"],
+                [int i = UG::duneMarker],
+                [#UG_LDFLAGS="$LDFLAGS"
+                AC_MSG_RESULT(yes)
+                ],
+                [AC_MSG_RESULT(no)
+                 AC_MSG_WARN([UG has not been built with --enable-dune, or you are using an old version of UG!])
+                #HAVE_UG="0"
+                ]
+                )
+          fi
+
+
       fi
       AC_LANG_POP([C++])
       
