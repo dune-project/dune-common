@@ -13,8 +13,14 @@
 #include <dune/common/helpertemplates.hh>
 #include <dune/common/exceptions.hh>
 
+#include "referenceelements.hh"
+
 namespace Dune
 {
+
+  // forward deklaration for volume implementation
+  template<typename ctype, int dim> class ReferenceElement;
+  template<typename ctype, int dim> class ReferenceElements;
 
   //*****************************************************************************
   //
@@ -55,7 +61,7 @@ namespace Dune
 
 
 
-          \ingroup GIGeometry
+     \ingroup GIGeometry
    */
   template<int mydim, int cdim, class GridImp, template<int,int,class> class GeometryImp>
   class Geometry {
@@ -81,21 +87,21 @@ namespace Dune
 
 
     /** \brief Return the name of the reference element. The type can
-            be used to access the Dune::ReferenceElement.
+       be used to access the Dune::ReferenceElement.
      */
     GeometryType type () const { return realGeometry.type(); };
 
     /** \brief Return the number of corners of the reference element. Since
-            this is a convex polytope the number of corners is a well-defined concept.
-            The method is redundant because this information is also available
-            via the reference element. It is here for efficiency and ease of use.
+       this is a convex polytope the number of corners is a well-defined concept.
+       The method is redundant because this information is also available
+       via the reference element. It is here for efficiency and ease of use.
      */
     int corners () const { return realGeometry.corners(); };
 
     /** \brief Access to corners of the geometry.
-            \param[in] i The number of the corner
-            \return const reference to a vector containing the position \f$g(c_i)\f$ where
-            \f$c_i\f$ is the position of the i'th corner of the reference element.
+       \param[in] i The number of the corner
+       \return const reference to a vector containing the position \f$g(c_i)\f$ where
+       \f$c_i\f$ is the position of the i'th corner of the reference element.
      */
     const FieldVector<ct, cdim>& operator[] (int i) const
     {
@@ -103,8 +109,8 @@ namespace Dune
     }
 
     /** \brief Evaluate the map \f$ g\f$.
-            \param[in] local Position in the reference element \f$D\f$
-            \return Position in \f$W\f$
+       \param[in] local Position in the reference element \f$D\f$
+       \return Position in \f$W\f$
      */
     FieldVector<ct, cdim> global (const FieldVector<ct, mydim>& local) const
     {
@@ -112,8 +118,8 @@ namespace Dune
     }
 
     /** \brief Evaluate the inverse map \f$ g^{-1}\f$
-            \param[in] global Position in \f$W\f$
-            \return Position in \f$D\f$ that maps to global
+       \param[in] global Position in \f$W\f$
+       \return Position in \f$D\f$ that maps to global
      */
     FieldVector<ct, mydim> local (const FieldVector<ct, cdim>& global) const
     {
@@ -128,30 +134,36 @@ namespace Dune
 
     /** \brief Return the factor appearing in the integral transformation formula
 
-            Let \f$ g : D \to W\f$ denote the transformation described by the Geometry.
-            Then the jacobian of the transformation is defined as the
-            \f$\textrm{cdim}\times\textrm{mydim}\f$ matrix
-            \f[ J_g(x) = \left( \begin{array}{ccc} \frac{\partial g_0}{\partial x_0} &
-            \cdots & \frac{\partial g_0}{\partial x_{n-1}} \\
-            \vdots & \ddots & \vdots \\ \frac{\partial g_{m-1}}{\partial x_0} &
-            \cdots & \frac{\partial g_{m-1}}{\partial x_{n-1}}
-            \end{array} \right).\f]
-            Here we abbreviated \f$m=\textrm{cdim}\f$ and \f$n=\textrm{mydim}\f$ for ease of
-            readability.
+       Let \f$ g : D \to W\f$ denote the transformation described by the Geometry.
+       Then the jacobian of the transformation is defined as the
+       \f$\textrm{cdim}\times\textrm{mydim}\f$ matrix
+       \f[ J_g(x) = \left( \begin{array}{ccc} \frac{\partial g_0}{\partial x_0} &
+       \cdots & \frac{\partial g_0}{\partial x_{n-1}} \\
+       \vdots & \ddots & \vdots \\ \frac{\partial g_{m-1}}{\partial x_0} &
+       \cdots & \frac{\partial g_{m-1}}{\partial x_{n-1}}
+       \end{array} \right).\f]
+       Here we abbreviated \f$m=\textrm{cdim}\f$ and \f$n=\textrm{mydim}\f$ for ease of
+       readability.
 
-            The integration element \f$\mu(x)\f$ for any \f$x\in D\f$ is then defined as
-            \f[ \mu(x) = \sqrt{|\det J_g^T(x)J_g(x)|}.\f]
+       The integration element \f$\mu(x)\f$ for any \f$x\in D\f$ is then defined as
+       \f[ \mu(x) = \sqrt{|\det J_g^T(x)J_g(x)|}.\f]
 
-            \param[in] local Position \f$x\in D\f$
-            \return    integration element \f$\mu(x)\f$
+       \param[in] local Position \f$x\in D\f$
+       \return    integration element \f$\mu(x)\f$
 
-            \note Each implementation computes the integration element with optimal
-            efficieny. For example in an equidistant structured mesh it may be as
-            simple as \f$h^\textrm{mydim}\f$.
+       \note Each implementation computes the integration element with optimal
+       efficieny. For example in an equidistant structured mesh it may be as
+       simple as \f$h^\textrm{mydim}\f$.
      */
     ct integrationElement (const FieldVector<ct, mydim>& local) const
     {
       return realGeometry.integrationElement(local);
+    }
+
+    /** \brief return volume of geometry */
+    ct volume () const
+    {
+      return realGeometry.volume();
     }
 
     /** \brief Return inverse of transposed of Jacobian
@@ -212,25 +224,52 @@ namespace Dune
   template<int mydim, int cdim, class GridImp, template<int,int,class> class GeometryImp>
   class GeometryDefaultImplementation
   {
+  public:
     // save typing
-    typedef typename GridImp::ctype ct;
+    typedef typename GridImp::ctype ctype;
+
+    //! return volume of the geometry
+    ctype volume () const
+    {
+      GeometryType type = asImp().type();
+
+      // get corresponding reference element
+      const ReferenceElement< ctype , mydim > & refElement =
+        ReferenceElements< ctype, mydim >::general(type);
+
+      FieldVector<ctype,mydim> localBaryCenter (0.0);
+      // calculate local bary center
+      const int corners = refElement.size(0,0,mydim);
+      for(int i=0; i<corners; ++i) localBaryCenter += refElement.position(i,mydim);
+      localBaryCenter *= (ctype) (1.0/corners);
+
+      // volume is volume of reference element times integrationElement
+      return refElement.volume() * asImp().integrationElement(localBaryCenter);
+    }
+
   private:
     //!  Barton-Nackman trick
     GeometryImp<mydim,cdim,GridImp>& asImp () {return static_cast<GeometryImp<mydim,cdim,GridImp>&>(*this);}
     const GeometryImp<mydim,cdim,GridImp>& asImp () const {return static_cast<const GeometryImp<mydim,cdim,GridImp>&>(*this);}
   }; // end GeometryDefault
 
-  //! Default implementation for class Geometry (vertex)
   template<int cdim, class GridImp, template<int,int,class> class GeometryImp>
-  class GeometryDefaultImplementation <0,cdim,GridImp,GeometryImp>
+  class GeometryDefaultImplementation<0,cdim,GridImp,GeometryImp>
   {
+    // my dimension
+    enum { mydim = 0 };
+  public:
     // save typing
-    typedef typename GridImp::ctype ct;
+    typedef typename GridImp::ctype ctype;
+
+    //! return volume of the geometry
+    ctype volume () const { return 1.0; }
+
   private:
     //!  Barton-Nackman trick
-    GeometryImp<0,cdim,GridImp>& asImp () {return static_cast<GeometryImp<0,cdim,GridImp>&>(*this);}
-    const GeometryImp<0,cdim,GridImp>& asImp () const {return static_cast<const GeometryImp<0,cdim,GridImp>&>(*this);}
-  }; // end GeometryDefault, dim = 0
+    GeometryImp<mydim,cdim,GridImp>& asImp () {return static_cast<GeometryImp<mydim,cdim,GridImp>&>(*this);}
+    const GeometryImp<mydim,cdim,GridImp>& asImp () const {return static_cast<const GeometryImp<mydim,cdim,GridImp>&>(*this);}
+  }; // end GeometryDefault
 
 }
 #endif // DUNE_GRID_GEOMETRY_HH
