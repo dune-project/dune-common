@@ -135,13 +135,13 @@ namespace Dune
     PartitionType partitionType () const { return realEntity.partitionType(); }
 
     /*! \brief Each entity encapsulates an object of type
-          Dune::Geometry<dimension-codimension,dimensionworld,...> that
-          gives (among other things) the map from a reference element to world coordinates.
-          This method delivers a const reference to such a geometry.
+       Dune::Geometry<dimension-codimension,dimensionworld,...> that
+       gives (among other things) the map from a reference element to world coordinates.
+       This method delivers a const reference to such a geometry.
 
-          \note Be careful when storing such references. If the state
-          of any object is changed, e.g. an iterator is advanced, there
-          is no guarantee that the reference remains valid.
+       \note Be careful when storing such references. If the state
+       of any object is changed, e.g. an iterator is advanced, there
+       is no guarantee that the reference remains valid.
      */
     const Geometry& geometry () const { return realEntity.geometry(); }
     //@}
@@ -159,7 +159,7 @@ namespace Dune
 
     /**
        \brief Id of the boundary which is associated with the entity,
-           returns 0 for inner entities, arbitrary int otherwise
+       returns 0 for inner entities, arbitrary int otherwise
      */
     int boundaryId () const { return realEntity.boundaryId(); }
     //@}
@@ -290,9 +290,9 @@ namespace Dune
     //===========================================================
 
     /**\brief Number of subentities with codimension <tt>cc</tt>. This method is in
-           principle redundant because this information can be obtained via the reference
-           element of the geometry. It is there for efficiency reasons and to make
-           the interface self-contained.
+       principle redundant because this information can be obtained via the reference
+       element of the geometry. It is there for efficiency reasons and to make
+       the interface self-contained.
      */
     template<int cc> int count () const { return realEntity.count<cc>(); }
 
@@ -306,7 +306,7 @@ namespace Dune
     /**\brief Intra-level access to intersections with neighboring elements.
        A neighbor is an entity of codimension 0
        which has an intersection of codimension 1 in common with this entity.
-           Access to those neighbors is provided using the IntersectionIterator.
+       Access to those neighbors is provided using the IntersectionIterator.
        This method returns an iterator refering to the first neighbor.
      */
     IntersectionIterator ibegin () const
@@ -322,8 +322,8 @@ namespace Dune
     }
 
     /**\brief Inter-level access to father entity on the next-coarser grid.
-           The given entity resulted directly from a subdivision of its father
-           entity. For the macro elements dereferencing the EntityPointer is undefined.
+       The given entity resulted directly from a subdivision of its father
+       entity. For the macro elements dereferencing the EntityPointer is undefined.
      */
     EntityPointer father () const
     {
@@ -337,15 +337,15 @@ namespace Dune
     }
 
     /**\brief Provides information how this element has been subdivided from
-           its father element.
-           The returned LocalGeometry is a model of Dune::Geometry<dimension,dimension,...>
-           mapping from the reference element of the given element to the reference
-           element of the father element.
+       its father element.
+       The returned LocalGeometry is a model of Dune::Geometry<dimension,dimension,...>
+       mapping from the reference element of the given element to the reference
+       element of the father element.
        This is sufficient to interpolate all degrees of freedom in the
-           conforming case. Nonconforming may require access to neighbors of father and
+       conforming case. Nonconforming may require access to neighbors of father and
        computations with local coordinates.
        On the fly case is somewhat inefficient since degrees of freedom
-           may be visited several times.
+       may be visited several times.
        If we store interpolation matrices, this is tolerable. We assume that on-the-fly
        implementation of interpolation is only done for simple discretizations.
      */
@@ -355,10 +355,10 @@ namespace Dune
     }
 
     /**\brief Inter-level access to elements that resulted from (recursive)
-           subdivision of this element.
+       subdivision of this element.
 
-           \param[in] maxlevel Iterator does not stop at elements with level greater than maxlevel.
-           \return Iterator to the first son (level is not greater than maxlevel)
+       \param[in] maxlevel Iterator does not stop at elements with level greater than maxlevel.
+       \return Iterator to the first son (level is not greater than maxlevel)
      */
     HierarchicIterator hbegin (int maxlevel) const
     {
@@ -372,9 +372,17 @@ namespace Dune
       return realEntity.hend(maxlevel);
     }
 
+    /**\brief Returns true, if entity was refined during last adaptation cycle
+     */
+    bool wasRefined () const { return realEntity.wasRefined(); }
+
+    /**\brief Returns true, if entity might be coarsened during next adaption cycle
+     */
+    bool mightBeCoarsened () const { return realEntity.mightBeCoarsened (); }
+
     /**\brief Return current adaptation state of entity. See explanation of AdaptationState.
      */
-    AdaptationState state () const { return realEntity.state(); }
+    AdaptationState state () const DUNE_DEPRECATED { return realEntity.state(); }
     //@}
 
 
@@ -515,7 +523,7 @@ namespace Dune
     //===========================================================
 
     /** \brief Returns EntityPointer to an element on the next-coarser level
-            that contains this vertex.
+       that contains this vertex.
        This method is for fast implementations of interpolation for linear conforming elements.
        Of course, there may be more than one element on the coarser grid containing this
        vertex.  In that case it is not prescribed precisely which of those elements
@@ -524,8 +532,8 @@ namespace Dune
     EntityPointer ownersFather () const { return realEntity.ownersFather(); }
 
     /** \brief This vertex' position in local coordinates of the element returned
-            by the ownersFather() method. Thus both methods together allow
-            the pointwise interpolation for conforming finite elements.
+       by the ownersFather() method. Thus both methods together allow
+       the pointwise interpolation for conforming finite elements.
      */
     const FieldVector<ct, dim>& positionInOwnersFather () const
     { return realEntity.positionInOwnersFather(); }
@@ -673,7 +681,15 @@ namespace Dune
     //! (REFINED) or nothing happend (NONE)
     //! @return The default implementation returns NONE for grid with no
     //! adaptation
-    AdaptationState state () const { return NONE; }
+    AdaptationState state () const DUNE_DEPRECATED { return NONE; }
+
+    /**\brief Returns true, if entity was refined during last adaptation cycle
+     */
+    bool wasRefined () const { return asImp().state() == REFINED; }
+
+    /**\brief Returns true, if entity might be coarsened during next adaption cycle
+     */
+    bool mightBeCoarsened () const { return asImp().state() == COARSEN; }
 
   private:
     //  Barton-Nackman trick
