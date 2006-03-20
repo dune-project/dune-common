@@ -49,22 +49,20 @@ AC_DEFUN([DUNE_PATH_UG],[
 	  [HAVE_UG="0"]
       )
 
-      # For the time being: only check for the 2d-libs of UG, even though later
-      # we assume that 2d and 3d libs are present.
-      UG_DIM="2"
-
+      # Currently we only check for libug2
+      # todo: Check for all the libraries that make up UG
       AC_LANG_PUSH([C++])
       if test x$HAVE_UG = x1 ; then
 
 	  CPPFLAGS="$UG_CPPFLAGS"
-	  UG_LIBS="-lug$UG_DIM -ldomS$UG_DIM -lgg$UG_DIM -ldevS"
+	  UG_LIBS="-lug2 -ldomS2 -lgg2 -lug3 -ldomS3 -lgg3 -ldevS"
 	  
-	  AC_MSG_CHECKING([libug$UG_DIM (without MPI)])
+	  AC_MSG_CHECKING([UG libraries (without MPI)])
 	  LIBS="$UG_LIBS"
           AC_TRY_LINK(
               [#define INT int
                #include "initug.h"],
-	      [int i = UG${UG_DIM}d::InitUg(0,0)],
+	      [int i = UG2d::InitUg(0,0)],
               [UG_LDFLAGS="$LDFLAGS"
 	       HAVE_UG="1"
 	       AC_MSG_RESULT(yes)
@@ -77,12 +75,12 @@ AC_DEFUN([DUNE_PATH_UG],[
 	  if test x$HAVE_UG != x1 && test x"$MPI_LDFLAGS" != x"" ; then
 	    # try again with added MPI-libs
 	    UG_LIBS="$UG_LIBS $MPI_LDFLAGS"
-	    AC_MSG_CHECKING([libug$UG_DIM (with MPI)])
+	    AC_MSG_CHECKING([UG libraries (with MPI)])
 	    LIBS="$UG_LIBS"
             AC_TRY_LINK(
               [#define INT int
                #include "initug.h"],
-	      [int i = UG${UG_DIM}d::InitUg(0,0)],
+	      [int i = UG2d::InitUg(0,0)],
               [UG_LDFLAGS="$LDFLAGS"
 	       UG_CPPFLAGS="$UG_CPPFLAGS -DModelP"
 	       HAVE_UG="1"
@@ -123,12 +121,6 @@ AC_DEFUN([DUNE_PATH_UG],[
       if test x$HAVE_UG = x1 ; then
 	  AC_SUBST(UG_LDFLAGS, $UG_LDFLAGS)
 	  AC_SUBST(UG_LIBS, $UG_LIBS)
-          # The libs necessary to instantiate UGGrid<2,2>
-	  AC_SUBST(UG_LIBS2, "-lug2 -ldomS2 -lgg2 -ldevS")
-          # The libs necessary to instantiate UGGrid<3,3>
-          # TODO: We tacitly assume that we can link to 3d-UG, even though we've
-          #       only checked for the existence of the 2d-libs.
-	  AC_SUBST(UG_LIBS3, "-lug3 -ldomS3 -lgg3 -ldevS")
 	  AC_SUBST(UG_CPPFLAGS, $UG_CPPFLAGS)
 	  AC_DEFINE(HAVE_UG, 1, [Define to 1 if UG is found])
 	  
