@@ -97,6 +97,9 @@ class ManageTravStack
   mutable bool owner_;
 
 public:
+  //! initialize the member variables
+  ManageTravStack() : stack_ (0) , refCount_ (0) , owner_(false) {}
+
   //! if a copy is made, the refcout is increased
   ManageTravStack(const ManageTravStack & copy)
   {
@@ -106,27 +109,21 @@ public:
     {
       stack_ = copy.stack_;
       refCount_ = copy.refCount_;
-      (*refCount_)++;
+      ++(*refCount_);
       copy.owner_ = false;
       owner_ = true;
     }
   }
 
-  //! initialize the member variables
-  ManageTravStack() : stack_ (0) , refCount_ (0) , owner_(false) {}
-
   //! get new TRAVERSE_STACK using the original Albert Routine
   //! get_traverse_stack, which get an new or free stack
-  void makeItNew(bool realyMakeIt)
+  void create ()
   {
-    if(realyMakeIt)
-    {
-      stack_ = getTraverseStack();
-      int * tmp = new int;
-      refCount_ = tmp;
-      (*refCount_) = 1;
-      owner_ = true;
-    }
+    assert( stack_ == 0 );
+    assert( refCount_ ==  0 );
+    stack_ = getTraverseStack();
+    refCount_ = new int (1);
+    owner_ = true;
   }
 
   //! set Stack free, if no more refences exist
@@ -162,7 +159,7 @@ public:
     return stack_;
   }
 
-  //private:
+private:
   //! if copy is made than one more Reference exists
   ManageTravStack & operator = (const ManageTravStack & copy)
   {
@@ -175,7 +172,7 @@ public:
       copy.owner_ = false;
       owner_ = true;
     }
-    //assert(false);
+    assert(false);
     return (*this);
   }
 };

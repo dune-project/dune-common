@@ -236,6 +236,9 @@ namespace Dune
     // A(l)
     albertCtype integrationElement (const FieldVector<albertCtype, mydim>& local) const;
 
+    // volume if geometry
+    albertCtype volume () const;
+
     //! can only be called for dim=dimworld!
     //! Note that if both methods are called on the same element, then
     //! call jacobianInverseTransposed first because integration element is calculated
@@ -330,6 +333,7 @@ namespace Dune
 
     mutable FieldVector<albertCtype,mydim> AT_x_;
     const GeometryType myGeomType_;
+    const albertCtype detFactor_;
   };
 
   //**********************************************************************
@@ -592,7 +596,15 @@ namespace Dune
 
     //! return whether entity could be cosrsend (COARSEND) or was refined
     //! (REFIEND) or nothing happend (NONE)
-    AdaptationState state () const;
+    AdaptationState state () const DUNE_DEPRECATED ;
+
+    /**\brief Returns true, if entity was refined during last adaptation
+        cycle */
+    bool wasRefined () const ;
+
+    /**\brief Returns true, if entity might be coarsened during next
+        adaption cycle */
+    bool mightBeCoarsened () const ;
 
     //***************************************************************
     //  Interface for parallelisation
@@ -623,12 +635,6 @@ namespace Dune
 
     // returns true if entity comes from LeafIterator
     bool leafIt () const { return leafIt_; }
-
-    // called from HierarchicIterator, because only this
-    // class changes the level of the entity, otherwise level is set by
-    // Constructor
-    void setLevel ( int actLevel );
-    void setNewLevel( int level, bool leafIt );
 
     // face, edge and vertex only for codim > 0, in this
     // case just to supply the same interface
