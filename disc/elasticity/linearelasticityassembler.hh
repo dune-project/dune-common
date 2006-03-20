@@ -17,8 +17,9 @@
 #include "grid/common/referenceelements.hh"
 #include "istl/operators.hh"
 #include "istl/bvector.hh"
-#include <dune/disc/operators/localstiffness.hh>
 
+#include <dune/quadrature/quadraturerules.hh>
+#include <dune/disc/operators/localstiffness.hh>
 #include "disc/shapefunctions/lagrangeshapefunctions.hh"
 #include "disc/operators/boundaryconditions.hh"
 
@@ -166,8 +167,6 @@ namespace Dune
 
         // determinant of jacobian
         DT detjac = e.geometry().integrationElement(local);
-
-        RT factor = weight*detjac;
 
         // evaluate gradients at Gauss points
         Dune::FieldVector<DT,dim> grad[LocalStiffness<GridType,RT,m>::SIZE], temp, gv;
