@@ -269,7 +269,10 @@ namespace Dune
 
 
 
-  /*! wrap any vector to use it as a P0 function
+  /*! Wrap any vector of a appropriate size to use it as a P0 function.
+        Should work with all grids with a single geometry type when
+        using a plain index set or for any grid when a
+        MultipleCodimMultipleGeomTypeMapper is used.
    */
   template<class G, class T>
   class LeafP0FunctionWrapper : virtual public GridFunction<G,typename T::value_type,1>,
@@ -309,7 +312,7 @@ namespace Dune
     LeafP0FunctionWrapper (const G& g, const T& v)
       : grid(g), is(g.leafIndexSet()), mapper(g,g.leafIndexSet()), coeff(v)
     {
-      if (mapper.size()!=v.size())
+      if ((unsigned int)mapper.size()!=v.size())
         DUNE_THROW(MathError,"LeafP0FunctionWrapper: size of vector does not match grid size");
 
     }
