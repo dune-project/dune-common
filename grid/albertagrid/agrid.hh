@@ -746,6 +746,7 @@ namespace Dune
 
     //! return reference to internal entity imp
     EntityImp & entityImp ();
+
     //! return const reference to internal entity imp
     const EntityImp & entityImp () const;
 
@@ -807,6 +808,8 @@ namespace Dune
     void increment();
 
   private:
+    const int startLevel_;
+
     //! the actual Level of this Hierarichic Iterator
     int level_;
 
@@ -825,6 +828,9 @@ namespace Dune
 
     //! The nessesary things for Albert
     ALBERTA EL_INFO * recursiveTraverse(ALBERTA TRAVERSE_STACK * stack);
+
+    //! The nessesary things for Albert
+    ALBERTA EL_INFO * firstChild(ALBERTA TRAVERSE_STACK * stack);
 
     //! make empty HierarchicIterator
     void makeIterator();
@@ -1881,6 +1887,12 @@ namespace Dune
     {
       static const bool v = false;
     };
+    template<int dim, int dimw>
+    struct hasBackupRestoreFacilities< AlbertaGrid<dim,dimw> >
+    {
+      static const bool v = true;
+    };
+
   } // end namespace Capabilities
 
 } // namespace Dune

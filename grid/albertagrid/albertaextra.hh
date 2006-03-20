@@ -80,7 +80,7 @@ inline void fillMacroInfo(TRAVERSE_STACK *stack,
 inline void enlargeTraverseStack(TRAVERSE_STACK *stack);
 inline static TRAVERSE_STACK *getTraverseStack(void);
 inline static TRAVERSE_STACK *freeTraverseStack(TRAVERSE_STACK *stack);
-inline void printTraverseStack(TRAVERSE_STACK *stack);
+inline void printTraverseStack(const TRAVERSE_STACK *stack);
 
 //! organize the TRAVERSE_STACK Management, so we can use the nice Albert
 //! functions get_traverse_stack and free_traverse_stack
@@ -190,6 +190,10 @@ static inline void resetTraverseStack(TRAVERSE_STACK *stack);
 inline static TRAVERSE_STACK *getTraverseStack(void)
 {
   TRAVERSE_STACK * stack = get_traverse_stack();
+
+  //TRAVERSE_STACK * stack = new TRAVERSE_STACK();
+  //initTraverseStack(stack);
+
   assert( stack );
   // if we use copyTraverseStack we should only create stacks with
   // stack_size > 0 otherwise we get errors in TreeIterator
@@ -202,44 +206,8 @@ inline static TRAVERSE_STACK *freeTraverseStack(TRAVERSE_STACK *stack)
   // reset stack, i.e set pointer to mesh to 0 ...
   resetTraverseStack(stack);
   free_traverse_stack(stack);
+  //delete stack;
   return 0;
-}
-
-inline void cutHierarchicStack(TRAVERSE_STACK* copy, TRAVERSE_STACK* org)
-{
-  copy->traverse_mesh = org->traverse_mesh;
-  copy->traverse_level = org->traverse_level;
-  copy->traverse_fill_flag = org->traverse_fill_flag;
-  copy->traverse_mel = org->traverse_mel;
-
-  if(copy->stack_size < org->stack_size)
-  {
-    enlargeTraverseStack(copy);
-  }
-
-  int used = org->stack_used;
-  copy->stack_used = 1;
-
-  // copy only the last 2 elements
-  int copyUse = used-1;
-  if(copyUse < 0) copyUse = 0;
-
-  memcpy(copy->elinfo_stack,org->elinfo_stack+copyUse,
-         2*sizeof(EL_INFO));
-
-  copy->info_stack[0] = org->info_stack[used];
-  // go to child 0
-  copy->info_stack[1] = 0;
-
-  memcpy(copy->save_elinfo_stack,org->save_elinfo_stack+copyUse,
-         2*sizeof(EL_INFO));
-
-  copy->save_info_stack[0] = org->save_info_stack[used];
-  copy->save_info_stack[1] = 0;
-
-  copy->save_stack_used = 1; //org->save_stack_used;
-  copy->el_count = 1;
-  return;
 }
 
 inline void copyTraverseStack( TRAVERSE_STACK* stack, const TRAVERSE_STACK* org )
@@ -285,6 +253,12 @@ inline void copyTraverseStack( TRAVERSE_STACK* stack, const TRAVERSE_STACK* org 
   memcpy(stack->save_elinfo_stack,org->save_elinfo_stack,used * sizeof(EL_INFO));
   memcpy(stack->save_info_stack  ,org->save_info_stack,  used * sizeof(U_CHAR));
 
+  /*
+     std::cout << "Print original\n";
+     printTraverseStack(org);
+     std::cout << "Print copy \n";
+     printTraverseStack(stack);
+   */
   return;
 }
 
@@ -345,7 +319,7 @@ inline void enlargeTraverseStack(TRAVERSE_STACK *stack)
   stack->stack_size = new_stack_size;
 }
 
-inline void printTraverseStack(TRAVERSE_STACK *stack)
+inline void printTraverseStack(const TRAVERSE_STACK *stack)
 {
   FUNCNAME("printTraverseStack");
   MSG("****************************************************\n");
@@ -359,6 +333,14 @@ inline void printTraverseStack(TRAVERSE_STACK *stack)
 
   MSG("stack_used        = %d\n",stack->stack_used);
   MSG("save_stack_used   = %d\n",stack->save_stack_used);
+
+  MSG("Current elements :\n");
+  for(int i=0; i<stack->stack_used+1; ++i)
+  {
+    //int no = stack->elinfo_stack[i].el->dof[6][0];
+    MSG("have element %p \n",stack->elinfo_stack[i].el);
+  }
+
   MSG("****************************************************\n");
 }
 
@@ -419,16 +401,22 @@ namespace AlbertHelp
 
   static EL_INFO * getFatherInfo(TRAVERSE_STACK * stack, EL_INFO * elInfo, int level)
   {
-    assert( level == elInfo->level );
+    //assert( level == elInfo->level );
     EL_INFO * fatherInfo = 0;
+
+    //std::cout << elInfo->el << " element \n";
 
     // if this level > 0 return father = elInfoStack -1,
     // else return father = this
     assert(stack != 0);
 
+    //std::cout << "get father of level "<< level << "\n";
+
     if(level > 0)
     {
-      fatherInfo = & (stack->elinfo_stack)[level];
+      fatherInfo = stack->elinfo_stack + level;
+      //std::cout << fatherInfo->el << " father \n";
+      //std::cout << fatherInfo->el->child[0] << " ch 0 | ch 1 " << fatherInfo->el->child[1] << "\n";
     }
     else
     {
