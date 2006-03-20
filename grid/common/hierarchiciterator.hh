@@ -38,7 +38,7 @@ namespace Dune {
       return *this;
     }
 
-    //private:
+  private:
     //! should not be used
     /**
        @brief Postincrement operator.
