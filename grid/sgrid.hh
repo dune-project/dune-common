@@ -207,6 +207,19 @@ namespace Dune {
       return 1.;
     }
 
+    //! returns always true
+    bool checkInside (const FieldVector<sgrid_ctype, 0>& local) const
+    {
+      return true;
+    }
+
+    //! can only be called for dim=dimworld!
+    const FieldMatrix<sgrid_ctype,0,0>& jacobianInverseTransposed (const FieldVector<sgrid_ctype, 0>& local) const
+    {
+      static FieldMatrix<sgrid_ctype,0,0> dummy;
+      return dummy;
+    }
+
   protected:
     FieldVector<sgrid_ctype, cdim> s;             //!< position of element
   };
