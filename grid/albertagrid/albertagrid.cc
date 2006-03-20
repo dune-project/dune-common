@@ -3886,8 +3886,8 @@ namespace Dune
     isMarked_ = false;
     assert( (leafIndexSet_) ? (mesh_->n_elements == leafIndexSet_->size(0) ?   1 : 0) : 1);
     assert( (leafIndexSet_) ? (mesh_->n_vertices == leafIndexSet_->size(dim) ? 1 : 0) : 1);
-    assert( (leafIndexSet_) ? (mesh_->n_edges == leafIndexSet_->size(dim-1) ?  1 : 0) : 1);
 #if DIM == 3
+    //assert( (leafIndexSet_ && dim == 3) ? (mesh_->n_edges == leafIndexSet_->size(dim-1) ?  1 :0) :1);
     assert( (leafIndexSet_ && dim == 3) ? (mesh_->n_faces == leafIndexSet_->size(1) ? 1 : 0) : 1);
 #endif
     return wasChanged_;
