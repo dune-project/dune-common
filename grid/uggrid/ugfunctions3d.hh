@@ -46,11 +46,15 @@ namespace Dune {
 
     enum {COARSEN_CE = UG3d::COARSEN_CE};
 
-    enum {REFINECLASS_CE = UG2d::REFINECLASS_CE};
+    enum {REFINECLASS_CE = UG3d::REFINECLASS_CE};
+
+    enum {ECLASS_CE = UG3d::ECLASS_CE};
 
     enum {RED = UG3d::RED};
 
-    enum {YELLOW_CLASS = UG2d::YELLOW_CLASS};
+    enum {YELLOW_CLASS = UG3d::YELLOW_CLASS};
+
+    enum {RED_CLASS = UG3d::RED_CLASS};
 
     enum {COARSE = UG3d::COARSE};
 
@@ -127,6 +131,13 @@ namespace Dune {
       using UG3d::ELEMENT;
       using UG3d::control_entries;
       return REFINECLASS(theElement) == YELLOW_CLASS;
+    }
+
+    //! return true if element has an exact copy on the next level
+    static bool isRegular (TargetType<0,3>::T* theElement) {
+      using UG3d::ELEMENT;
+      using UG3d::control_entries;
+      return ECLASS(theElement) == RED_CLASS;
     }
 
     //! \todo Please doc me!

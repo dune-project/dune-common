@@ -51,9 +51,13 @@ namespace Dune {
 
     enum {REFINECLASS_CE = UG2d::REFINECLASS_CE};
 
+    enum {ECLASS_CE = UG2d::ECLASS_CE};
+
     enum {RED = UG2d::RED};
 
     enum {YELLOW_CLASS = UG2d::YELLOW_CLASS};
+
+    enum {RED_CLASS = UG2d::RED_CLASS};
 
     enum {COARSE = UG2d::COARSE};
 
@@ -137,6 +141,13 @@ namespace Dune {
       using UG2d::ELEMENT;
       using UG2d::control_entries;
       return REFINECLASS(theElement) == YELLOW_CLASS;
+    }
+
+    //! return true if element has an exact copy on the next level
+    static bool isRegular (TargetType<0,2>::T* theElement) {
+      using UG2d::ELEMENT;
+      using UG2d::control_entries;
+      return ECLASS(theElement) == RED_CLASS;
     }
 
     //! \todo Please doc me!

@@ -404,6 +404,11 @@ namespace Dune {
       return UG_NS<dim>::isLeaf(target_);
     }
 
+    //! returns true if element is of regular type
+    bool isRegular() const {
+      return UG_NS<dim>::isRegular(target_);
+    }
+
     //! Inter-level access to father element on coarser grid.
     //! Assumes that meshes are nested.
     UGGridLevelIterator<0,All_Partition,GridImp> father () const;
