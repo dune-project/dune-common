@@ -167,6 +167,9 @@ namespace Dune {
     //! level of this element
     int level () const {return target_->level_;}
 
+    //! only interior entities
+    PartitionType partitionType () const { return InteriorEntity; }
+
     unsigned int levelIndex() const {return target_->levelIndex_;}
 
     unsigned int leafIndex() const {return target_->leafIndex_;}
@@ -252,6 +255,9 @@ namespace Dune {
 
     //! Level of this element
     int level () const {return target_->level_;}
+
+    //! only interior entities
+    PartitionType partitionType () const { return InteriorEntity; }
 
     //! Level index is unique and consecutive per level and codim
     unsigned int levelIndex() const {return target_->levelIndex_;}
