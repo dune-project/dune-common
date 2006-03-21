@@ -519,7 +519,7 @@ namespace Dune
       for (int i=0; i<vertexmapper.size(); i++)
         if (hanging[i]) hangingnodes++;
 
-      std::cout << "=== P1OperatorBase hanging node detection + add links " <<  watch.elapsed() << std::endl;
+      //          std::cout << "=== P1OperatorBase hanging node detection + add links " <<  watch.elapsed() << std::endl;
 
       // compute additional links due to extended overlap
       watch.reset();
@@ -545,7 +545,7 @@ namespace Dune
 
       // Note: links contains now also connections that are standard.
       // So below we have throw out these connections again!
-      std::cout << "=== P1OperatorBase parallel extend overlap " <<  watch.elapsed() << std::endl;
+      //          std::cout << "=== P1OperatorBase parallel extend overlap " <<  watch.elapsed() << std::endl;
 
       return true;
     }
@@ -656,11 +656,12 @@ namespace Dune
 
     {
       // be verbose
-      std::cout << g.comm().rank() << ": " << "vector size = " << vertexmapper.size() << " + " << extraDOFs << std::endl;
-      std::cout << g.comm().rank() << ": " << "making " << size() << "x" << size() << " matrix with " << nnz(indexset) << " nonzeros" << std::endl;
-      std::cout << g.comm().rank() << ": " << "allmapper has size " << allmapper.size() << std::endl;
-      std::cout << g.comm().rank() << ": " << "vertexmapper has size " << vertexmapper.size() << std::endl;
-      std::cout << g.comm().rank() << ": " << "hanging nodes=" << hangingnodes << " links=" << links.size() << std::endl;
+      //          std::cout << g.comm().rank() << ": " << "vector size = " << vertexmapper.size() << " + " << extraDOFs << std::endl;
+      //          std::cout << g.comm().rank() << ": " << "making " << size() << "x"
+      //                                << size() << " matrix with " << nnz(indexset) << " nonzeros" << std::endl;
+      //          std::cout << g.comm().rank() << ": " << "allmapper has size " << allmapper.size() << std::endl;
+      //          std::cout << g.comm().rank() << ": " << "vertexmapper has size " << vertexmapper.size() << std::endl;
+      //          std::cout << g.comm().rank() << ": " << "hanging nodes=" << hangingnodes << " links=" << links.size() << std::endl;
 
       // set size of all rows to zero
       for (int i=0; i<g.size(n); i++)
@@ -720,13 +721,13 @@ namespace Dune
       }
 
       // additional links due to hanging nodes
-      std::cout << g.comm().rank() << ": " << "now links=" << links.size() << std::endl;
+      //          std::cout << g.comm().rank() << ": " << "now links=" << links.size() << std::endl;
       for (typename std::set<P1OperatorLink>::iterator i=links.begin(); i!=links.end(); ++i)
         A.incrementrowsize(i->first);
 
       // now the row sizes have been set
       A.endrowsizes();
-      std::cout << "=== P1OperatorBase compute row sizes " <<  watch.elapsed() << std::endl;
+      //          std::cout << "=== P1OperatorBase compute row sizes " <<  watch.elapsed() << std::endl;
 
       // clear the flags for the next round, actually that is not necessary because addindex takes care of this
       for (int i=0; i<allmapper.size(); i++) visited[i] = false;
@@ -782,12 +783,12 @@ namespace Dune
 
       // now the matrix is ready for use
       A.endindices();
-      std::cout << "=== P1OperatorBase index insertion " <<  watch.elapsed() << std::endl;
+      //          std::cout << "=== P1OperatorBase index insertion " <<  watch.elapsed() << std::endl;
 
       // delete additional links
       links.clear();
 
-      std::cout << grid.comm().rank() << ": " << "matrix initialized" << std::endl;
+      //          std::cout << grid.comm().rank() << ": " << "matrix initialized" << std::endl;
     }
 
     //! return const reference to operator matrix
@@ -966,7 +967,7 @@ namespace Dune
       this->watch.reset();
       this->A = 0;
       *f = 0;
-      std::cout << "=== P1OperatorBase clear matrix " <<  this->watch.elapsed() << std::endl;
+      //          std::cout << "=== P1OperatorBase clear matrix " <<  this->watch.elapsed() << std::endl;
 
       // allocate flag vector to hold flags for essential boundary conditions
       std::vector<BCBlockType> essential(this->vertexmapper.size());
@@ -1367,7 +1368,7 @@ namespace Dune
         }
       }
 
-      std::cout << "placed " << extra << " extra marks" << std::endl;
+      //          std::cout << "placed " << extra << " extra marks" << std::endl;
       marked.clear();
       return;
     }
