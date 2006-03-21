@@ -16,6 +16,7 @@
 #include "grid/common/grid.hh"
 #include "grid/common/referenceelements.hh"
 #include "dune/common/geometrytype.hh"
+#include "dune/quadrature/quadraturerules.hh"
 
 #include "disc/shapefunctions/lagrangeshapefunctions.hh"
 #include "disc/operators/boundaryconditions.hh"
