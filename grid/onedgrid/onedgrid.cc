@@ -593,16 +593,19 @@ void Dune::OneDGrid < dim, dimworld >::setIndices()
 template <int dim, int dimworld>
 void Dune::OneDGrid<dim,dimworld>::globalRefine(int refCount)
 {
-  // mark all entities for grid refinement
-  typename Traits::template Codim<0>::LevelIterator iIt    = lbegin<0>(maxLevel());
-  typename Traits::template Codim<0>::LevelIterator iEndIt = lend<0>(maxLevel());
+  for (int i=0; i<refCount; i++)
+  {
+    // mark all entities for grid refinement
+    typename Traits::template Codim<0>::LevelIterator iIt    = lbegin<0>(maxLevel());
+    typename Traits::template Codim<0>::LevelIterator iEndIt = lend<0>(maxLevel());
 
-  for (; iIt!=iEndIt; ++iIt)
-    mark(1, iIt);
+    for (; iIt!=iEndIt; ++iIt)
+      mark(1, iIt);
 
-  this->preAdapt();
-  adapt();
-  this->postAdapt();
+    this->preAdapt();
+    adapt();
+    this->postAdapt();
+  }
 }
 
 template <int dim, int dimworld>
