@@ -479,6 +479,68 @@ namespace Dune
   };
 
 
+  //! specialization for d=0
+  template<typename ctype>
+  class ReferenceCube<ctype,0>
+  {
+  public:
+    enum {MAXE = 1};
+    enum {d=0};
+
+    typedef ctype CoordType;
+
+    ReferenceCube ()
+    {   }
+
+    //! number of entities of codim c
+    int size (int c) const
+    {
+      return 1;
+    }
+
+    //! number of subentities of codim cc of entitity (i,c)
+    int size (int i, int c, int cc) const
+    {
+      return 1;
+    }
+
+    //! number of ii'th subentity with codim cc of (i,c)
+    int subEntity (int i, int c, int ii, int cc) const
+    {
+      return 0;
+    }
+
+    //! position of entity (i,c)
+    const FieldVector<ctype,d>& position (int i, int c) const
+    {
+      return pos;
+    }
+
+    //! maps local coordinate on subentity i of codim cdim onto reference element coordinates
+    template <int codim>
+    FieldVector<ctype, d> global(const FieldVector<ctype, d-codim>& local, int i, int cdim) const
+    {
+      return pos;
+    }
+
+    //! type of (i,c)
+    GeometryType type (int i, int c) const
+    {
+      return GeometryType(GeometryType::simplex,d-c);
+    }
+
+    //! volume of the reference element
+    double volume () const
+    {
+      return 0;
+    }
+
+  private:
+
+    FieldVector<ctype,d> pos;
+  };
+
+
   //! Make the reference cube accessible as a container
   template<typename ctype, int dim>
   class ReferenceCubeContainer
@@ -893,6 +955,66 @@ namespace Dune
   };
 
 
+  //! specialization for d=0
+  template<typename ctype>
+  class ReferenceSimplex<ctype,0>
+  {
+  public:
+    enum {MAXE = 1};
+    enum {d=0};
+
+    typedef ctype CoordType;
+
+    ReferenceSimplex ()
+    {   }
+
+    //! number of entities of codim c
+    int size (int c) const
+    {
+      return 1;
+    }
+
+    //! number of subentities of codim cc of entitity (i,c)
+    int size (int i, int c, int cc) const
+    {
+      return 1;
+    }
+
+    //! number of ii'th subentity with codim cc of (i,c)
+    int subEntity (int i, int c, int ii, int cc) const
+    {
+      return 0;
+    }
+
+    //! position of entity (i,c)
+    const FieldVector<ctype,d>& position (int i, int c) const
+    {
+      return pos;
+    }
+
+    //! maps local coordinate on subentity i of codim cdim onto reference element coordinates
+    template <int codim>
+    FieldVector<ctype, d> global(const FieldVector<ctype, d-codim>& local, int i, int cdim) const
+    {
+      return pos;
+    }
+
+    //! type of (i,c)
+    GeometryType type (int i, int c) const
+    {
+      return GeometryType(GeometryType::simplex,d-c);
+    }
+
+    //! volume of the reference element
+    double volume () const
+    {
+      return 0;
+    }
+
+  private:
+
+    FieldVector<ctype,d> pos;
+  };
 
 
   //! Make the reference simplex accessible as a container
