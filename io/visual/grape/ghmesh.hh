@@ -26,19 +26,23 @@ typedef struct dune_elem
   int level;
   int level_of_interest;
   int has_children;
+
   /* is the pointer to LevelIterator or to LeafIterator */
   void          * liter;
+  void          * enditer;
+
+  // pointer fo hierarchic iterator */
   void          * hiter;
 
   /* points to actual iterator to compare an get type */
+  /* down cast to EntityPointer */
   void          * actElement;
 
+  // pointer to my display class
   void          * display;
 
+  // pointer to mesh
   void          * mesh;
-
-  int isLeafIterator;
-
 };
 
 typedef struct dune_fdata
@@ -52,14 +56,20 @@ typedef struct dune_fdata
   evalCoord_t * evalCoord;
   evalDof_t   * evalDof;
 
-  /* pointer to object of discrete function */
+  /* pointer to object of discrete function or vector */
   const void *discFunc;
+
+  /* pointer to index set of underlying datas */
+  const void *indexSet;
 
   /* are all Levels occupied? */
   int allLevels;
 
   /* dimension of value, i.e. the length of the vector  */
   int dimVal;
+
+  /* dimension of data, when vectorial data is interpreted as scalar data */
+  int dimRange;
 
   /* index of current component */
   /* for scalar this vec has length 1 and contains the component number */
@@ -77,18 +87,45 @@ typedef struct dune_fdata
 
 };
 
+typedef struct dune_dat DUNE_DAT;
+
+struct dune_dat
+{
+  /* the actual first and next macro for Iteration  */
+  int (* first_macro)(DUNE_ELEM *) ;
+  int (* next_macro)(DUNE_ELEM *) ;
+
+  /* first and next child , if 0, then no child iteration */
+  int (* first_child)(DUNE_ELEM *) ;
+  int (* next_child)(DUNE_ELEM *) ;
+
+  void * (* copy)(const void *) ;
+
+  int (* check_inside)(DUNE_ELEM *, const double * ) ;
+  int (* wtoc)(DUNE_ELEM *, const double *, double * ) ;
+  void (* ctow)(DUNE_ELEM *, const double *, double * ) ;
+
+  /* selects the iterators, like leaf iterator .. */
+  void (* setIterationModus)(DUNE_DAT *);
+
+  /* to which processor partition the element belongs */
+  int partition;
+
+  /* type of choosen iterator */
+  int iteratorType;
+
+  /* type of partition to iterate */
+  int partitionIteratorType;
+
+  DUNE_ELEM * all;
+};
+
+
 /* setup hmesh with given data */
 extern void *hmesh(
-  int (* const f_leaf) (DUNE_ELEM *), int (* const n_leaf) (DUNE_ELEM *),
-  int (* const f_mac) (DUNE_ELEM *), int (* const n_mac) (DUNE_ELEM *),
-  int (* const f_chi) (DUNE_ELEM *), int (* const n_chi) (DUNE_ELEM *),
-  void * (* const cp)(const void *),
-  int  (* const check_inside) (DUNE_ELEM *, const double *),
-  int  (* const wtoc) (DUNE_ELEM *, const double *, double *),
-  void (* const ctow) (DUNE_ELEM *, const double *, double *),
   void (* const func_real) (DUNE_ELEM *, DUNE_FDATA*, int ind, const double *coord,  double *),
-  const int noe, const int nov, const int maxlev,int partition,
-  DUNE_ELEM *he , DUNE_FDATA * fe);
+  const int noe, const int nov, const int maxlev,
+  DUNE_FDATA * fe, DUNE_DAT * dune);
 
 extern void displayTimeScene(INFO * info);
 extern void handleMesh (void *hmesh);

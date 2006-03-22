@@ -1,6 +1,5 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-
 #include "geldesc.hh"
 
 namespace Dune
@@ -11,6 +10,31 @@ namespace Dune
   //  Routines for evaluation of the data
   //
   //*******************************************************************
+  template<class EvalImp>
+  inline void EvalFunctionData<EvalImp>::
+  evalCoord (DUNE_ELEM *he, DUNE_FDATA *df, const double *coord, double * val)
+  {
+    typedef typename GridType::template Codim<0>::EntityPointer EntityPointerType;
+    EntityPointerType * ep = (EntityPointerType *) he->actElement;
+    assert( ep );
+    evalCoordNow(*ep[0],df,coord,val);
+  }
+
+  template<class EvalImp>
+  inline void EvalFunctionData<EvalImp>::
+  evalDof (DUNE_ELEM *he, DUNE_FDATA *df,int localNum, double * val)
+  {
+    typedef typename GridType::template Codim<0>::EntityPointer EntityPointerType;
+    EntityPointerType * ep = (EntityPointerType *) he->actElement;
+    assert( ep );
+    int geomType = he->type;
+    evalDofNow( *ep[0] ,geomType,df,localNum,val);
+    return ;
+  }
+
+  //*******************************************************************
+  //  --EvalDiscreteFunctions
+  //*******************************************************************
   // evaluate scalar functions, means val has length 1
   template <class GridType, class DiscreteFunctionType>
   inline void EvalDiscreteFunctions<GridType,DiscreteFunctionType>::
@@ -18,7 +42,6 @@ namespace Dune
               DiscreteFunctionType & func, LocalFunctionType &lf,
               const int * comp, int localNum, double * val)
   {
-    enum { numberOfComp = DiscreteFunctionType::FunctionSpaceType::DimRange };
     enum { polynomialOrder = FunctionSpaceType :: polynomialOrder };
     static const GrapeLagrangePoints<ctype,dim,dimworld,polynomialOrder> lagrangePoints;
     const FieldVector<ctype,dim> & localPoint =
@@ -115,46 +138,6 @@ namespace Dune
 
   template<class GridType, class DiscreteFunctionType>
   inline void EvalDiscreteFunctions<GridType,DiscreteFunctionType>::
-  evalDof (DUNE_ELEM *he, DUNE_FDATA *df,int localNum, double * val)
-  {
-    enum { dim = GridType::dimension };
-    enum { dimRange = DiscreteFunctionType::FunctionSpaceType::DimRange };
-    void *iter = he->actElement;
-    int geomType = he->type;
-    if(iter == he->liter)
-    {
-      if(he->isLeafIterator == 1)
-      {
-        typedef typename GridType::template Codim<0>::LeafIterator LeafIt;
-        LeafIt *it = (LeafIt *) he->liter;
-        evalDofNow( *it[0],geomType,df,localNum,val);
-        return;
-      }
-      else
-      {
-        typedef typename GridType::Traits::template Codim<0>::LevelIterator LevIt;
-        LevIt *it = (LevIt *) he->liter;
-        evalDofNow(*it[0],geomType,df,localNum,val);
-        return;
-      }
-    }
-    else if(iter == he->hiter)
-    {
-      typedef typename GridType::Traits::template Codim<0>::Entity::HierarchicIterator HierIt;
-      HierIt *it = (HierIt *) he->hiter;
-      evalDofNow(*it[0],geomType,df,localNum,val);
-      return;
-    }
-    else
-    {
-      std::cerr << "ERROR: No Iterator in evalDof! file = " << __FILE__ << ", line = " << __LINE__ << "\n";
-      abort();
-    }
-    return;
-  }
-
-  template<class GridType, class DiscreteFunctionType>
-  inline void EvalDiscreteFunctions<GridType,DiscreteFunctionType>::
   evalCoordNow(EntityType &en, DUNE_FDATA *df , const double *coord, double * val)
   {
     enum { dim = GridType::dimension };
@@ -191,46 +174,64 @@ namespace Dune
       return;
     }
   }
-  template<class GridType, class DiscreteFunctionType>
-  inline void EvalDiscreteFunctions<GridType,DiscreteFunctionType>::
-  evalCoord (DUNE_ELEM *he, DUNE_FDATA *df, const double *coord, double * val)
-  {
-    enum { dim = GridType::dimension };
 
-    void *iter = he->actElement;
-    // cast pointer back to the iterator we have
-    if(iter == he->liter)
-    {
-      if(he->isLeafIterator)
-      {
-        typedef typename GridType::template Codim<0>::LeafIterator LeafIt;
-        LeafIt *it = (LeafIt *) he->liter;
-        evalCoordNow(*it[0],df,coord,val);
-        return;
-      }
-      else
-      {
-        typedef typename GridType::Traits::template Codim<0>::LevelIterator LevIt;
-        LevIt *it = (LevIt *) he->liter;
-        evalCoordNow(*it[0],df,coord,val);
-        return;
-      }
-    }
-    else if(iter == he->hiter)
-    {
-      typedef typename GridType::Traits::template Codim<0>::Entity::HierarchicIterator HierIt;
-      HierIt *it = (HierIt *) he->hiter;
-      evalCoordNow(*it[0],df,coord,val);
-      return;
-    }
-    else
-    {
-      std::cerr << "ERROR: No Iterator in evalCoord! file = " << __FILE__ << ", line = " << __LINE__ << "\n";
-      abort();
-    }
-    return;
+
+  //*******************************************************************
+  //  --EvalVectorData
+  //*******************************************************************
+  template <class GridType, class VectorType, class IndexSetImp >
+  inline void EvalVectorData<GridType,VectorType,IndexSetImp>::
+  evalVectorLinear (EntityType &en, int geomType,
+                    VectorType & func, const IndexSetImp & set,
+                    const int * comp, int vlength , int localNum, double * val)
+  {
+    int idx = vlength * set.template subIndex<dim> (en,localNum) ;
+    for(int i=0; i<vlength; ++i) val[i] = func[idx + comp[i]];
+    return ;
   }
 
+  template <class GridType, class VectorType, class IndexSetImp >
+  inline void EvalVectorData<GridType,VectorType,IndexSetImp>::
+  evalVectorConst (EntityType &en, int geomType,
+                   VectorType & func, const IndexSetImp & set,
+                   const int * comp, int vlength , int localNum, double * val)
+  {
+    int idx = vlength * set.index(en) ;
+    val[0] = func[idx + comp[0]];
+    return ;
+  }
+
+  template <class GridType, class VectorType, class IndexSetImp >
+  inline void EvalVectorData<GridType,VectorType,IndexSetImp>::
+  evalDofNow (EntityType &en, int geomType, DUNE_FDATA *df, int localNum, double * val)
+  {
+    assert( df );
+    assert( df->discFunc );
+
+    VectorType & func = *((VectorType *)  (df->discFunc));
+
+    assert( df->indexSet );
+    const IndexSetImp * set = (const IndexSetImp *) df->indexSet;
+
+    const int * comp = df->comp;
+    assert( comp );
+    int dimRange = df->dimRange;
+
+    int polOrd = df->polyOrd;
+
+    if( polOrd > 0 )
+      evalVectorLinear(en,geomType,func,*set,comp,dimRange,localNum,val);
+    else
+      evalVectorConst(en,geomType,func,*set,comp,dimRange,localNum,val);
+    return ;
+  }
+
+  template <class GridType, class VectorType,class IndexSetImp>
+  inline void EvalVectorData<GridType,VectorType,IndexSetImp>::
+  evalCoordNow(EntityType &en, DUNE_FDATA *df , const double *coord, double * val)
+  {
+    assert( false );
+  }
 
   //****************************************************************
   //
@@ -299,31 +300,15 @@ namespace Dune
     return ;
   }
 
-
   template<class GridType>
   template<class DiscFuncType>
   inline void GrapeDataDisplay<GridType>::
-  addData(DiscFuncType &func , const char * name , double time , bool vector)
+  addData(DiscFuncType &func , std::string name , double time , bool vector)
   {
     int comp[dim];
     for(int i=0; i<dim; i++) comp[i] = i;
-    DATAINFO dinf = { name , name , 0 , (vector) ? dim : 1 , (int *) &comp };
+    DATAINFO dinf = { name.c_str() , name.c_str() , 0 , (vector) ? dim : 1 , (int *) &comp };
     addData(func,&dinf,time);
-  }
-
-  template<class GridType>
-  template<class VectorPointerType>
-  inline void GrapeDataDisplay<GridType>::
-  displayVector(const VectorPointerType * vector)
-  {
-    /*
-       typedef typename FunctionSpaceType :: Traits :: GridPartType GridPartType;
-       GridPartType part (this->grid_, this->leafset_ );
-       FunctionSpaceType space ( part );
-
-       DiscFuncType func ( "my data" , space , vector );
-       dataDisplay(func,false);
-     */
   }
 
   template<class GridType>
@@ -365,6 +350,7 @@ namespace Dune
         vecFdata_[n]->allLevels = 0;
 
         vecFdata_[n]->discFunc = (void *) &func;
+        vecFdata_[n]->indexSet = 0;
         vecFdata_[n]->polyOrd = func.getFunctionSpace().polynomOrder();
         vecFdata_[n]->continuous = (func.getFunctionSpace().continuous() == true ) ? 1 : 0;
         if(vecFdata_[n]->polyOrd == 0) vecFdata_[n]->continuous = 0;
@@ -382,7 +368,121 @@ namespace Dune
           comp[0] = n-size;
           vecFdata_[n]->compName = n-size;
         }
-        vecFdata_[n]->dimVal = dimVal;
+        vecFdata_[n]->dimVal   = dimVal;
+        vecFdata_[n]->dimRange = FunctionSpaceType::DimRange;
+        GrapeInterface<dim,dimworld>::addDataToHmesh(this->hmesh_,vecFdata_[n],&func_real);
+      }
+    }
+  }
+
+  template<class GridType>
+  template<class VectorType,class IndexSetType>
+  inline void GrapeDataDisplay<GridType>::
+  displayVector(const std::string name,
+                const VectorType & data,
+                const IndexSetType & indexSet,
+                const int polOrd,
+                const int dimRange,
+                bool continuous )
+  {
+    // polOrd < 0 makes no sense
+    assert( polOrd >= 0 );
+
+    // only polord 0 or 1 supported
+    assert( polOrd < 2 );
+
+    // add to display
+    this->addVector(name,data,indexSet,0.0,polOrd,dimRange,continuous);
+
+    // display
+    GrapeInterface<dim,dimworld>::handleMesh ( this->hmesh_ );
+    return;
+  }
+
+  template<class GridType>
+  template<class VectorType,class IndexSetType>
+  inline void GrapeDataDisplay<GridType>::
+  addVector(const std::string name,
+            const VectorType & data,
+            const IndexSetType & indexSet,
+            const double time,
+            const int polOrd,
+            const int dimRange,
+            bool continuous )
+  {
+    int * comp = new int [dimRange];
+    for(int i=0; i<dimRange; ++i) comp[i] = i;
+
+    DATAINFO dinf = { name.c_str() , name.c_str() , 0 , 1 , comp };
+    /* add function data */
+    this->addVector(data,indexSet,&dinf,time,polOrd,dimRange,continuous);
+
+    // display
+    GrapeInterface<dim,dimworld>::handleMesh ( this->hmesh_ );
+
+    delete [] comp;
+    return;
+  }
+
+  template<class GridType>
+  template<class VectorType, class IndexSetType >
+  inline void GrapeDataDisplay<GridType>::
+  addVector(const VectorType & func , const IndexSetType & indexSet,
+            const DATAINFO * dinf, const double time ,
+            const int polOrd , const int dimRange, bool continuous )
+  {
+    assert(dinf);
+    const char * name = dinf->name;
+    assert( dinf->dimVal > 0);
+
+    bool vector = (dinf->dimVal > 1) ? true : false;
+
+    bool already=false;
+    int size = vecFdata_.size();
+
+    // add function wether is exists or not
+    if(!already)
+    {
+      int num = dimRange;
+      if(vector) num = 1;
+
+      vecFdata_.resize(size+num);
+      for(int n=size; n < size+num; n++)
+      {
+        vecFdata_[n] = new DUNE_FDATA ();
+
+        // set the rigth evaluation functions
+        vecFdata_[n]->evalDof =
+          EvalVectorData<GridType,VectorType,IndexSetType>::evalDof;
+
+        vecFdata_[n]->evalCoord =
+          EvalVectorData<GridType,VectorType,IndexSetType>::evalCoord;
+
+        vecFdata_[n]->mynum = n;
+        vecFdata_[n]->name = name;
+        vecFdata_[n]->allLevels = 0;
+
+        vecFdata_[n]->discFunc = (void *) &func;
+        vecFdata_[n]->indexSet = (void *) &indexSet;
+        vecFdata_[n]->polyOrd  = polOrd;
+        vecFdata_[n]->continuous = (continuous == true ) ? 1 : 0;
+        if(vecFdata_[n]->polyOrd == 0) vecFdata_[n]->continuous = 0;
+
+        int dimVal = dinf->dimVal;
+        int * comp = new int [dimVal];
+        vecFdata_[n]->comp = comp;
+        if(vector)
+        {
+          for(int j=0; j<dimVal; j++) comp[j] = dinf->comp[j];
+          vecFdata_[n]->compName = -1;
+        }
+        else
+        {
+          comp[0] = n-size;
+          vecFdata_[n]->compName = n-size;
+        }
+        vecFdata_[n]->dimVal   = dimVal;
+        vecFdata_[n]->dimRange = dimRange;
         GrapeInterface<dim,dimworld>::addDataToHmesh(this->hmesh_,vecFdata_[n],&func_real);
       }
     }

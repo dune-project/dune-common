@@ -8,35 +8,115 @@
 
 #include "grapecommon.hh"
 
+enum { numberOfPartitionTypes = 6 };
+static char *partitionNames[numberOfPartitionTypes] = {
+  "Interior_Partition",
+  "InteriorBorder_Partition",
+  "Overlap_Partition",
+  "OverlapFront_Partition",
+  "All_Partition",
+  "Ghost_Partition"
+};
+
+enum { numberOfIterators = 3 };
+static char *iteratorNames[numberOfIterators] = {
+  "LeafIterator",
+  "LevelIterator",
+  "Macro + HierarchicIterator",
+};
+
+static int actualPartitionType = 0;
+
+static BUTTON *button_set_current_data_item(int pnr)
+{
+  BUTTON *lbutton = 0;
+
+  lbutton = (BUTTON *)START_METHOD(G_INSTANCE);
+  assert( lbutton );
+  actualPartitionType = pnr;
+
+  END_METHOD(lbutton);
+}
+
 /* add Button which can switch between LevelIteration and LeafIteration */
 inline void setupLeafButton(MANAGER *mgr, void *sc, int yesTimeScene)
 {
-  assert(!leafButton);
+  assert(!iteratorButton);
   assert(!maxlevelButton);
 
-  leafButton = (BUTTON *)
-               new_item (Button,
-                         I_Label, "LeafIterator",
-                         I_Instance, sc,
-                         I_Method, "leaf-button-on-off",
-                         I_Size, 12., 1.,
-                         I_FillMode, MENU_FILL_BOTTOM,
-                         I_End);
+
+  // partition types
+  {
+    int num = numberOfPartitionTypes;
+    CYCLE_LABEL *clabel;
+
+    clabel = (CYCLE_LABEL *) malloc(sizeof(CYCLE_LABEL) * (num + 1));
+
+    for (int i=0; i<num; i++)
+    {
+      clabel[i].value = i;
+      clabel[i].label = partitionNames[i];
+    }
+    // last of list is 0,and NULL
+    clabel[num].value = 0;
+    clabel[num].label = NULL;
+
+    GRAPE(Button,"add-method") ("set-current-data-item",
+                                button_set_current_data_item);
+
+
+    partitionTypeButton = (COMBOBUTTON *)GRAPE(ComboButton,"new-instance")
+                            ("set-current-data-item",NULL,"",clabel);
+    GRAPE(partitionTypeButton, "set-fill-mode") (MENU_FILL_BOTTOM);
+
+    GRAPE(partitionTypeButton,"set-instance") (partitionTypeButton);
+    GRAPE(partitionTypeButton,"set-label") (clabel[0].label);
+    GRAPE(partitionTypeButton,"set-pref-size") (12.0,1.0);
+
+    GRAPE(mgr,"add-inter") (partitionTypeButton);
+  }
+
+  // iterator types
+  {
+    int num = numberOfIterators;
+    CYCLE_LABEL *clabel;
+
+    clabel = (CYCLE_LABEL *) malloc(sizeof(CYCLE_LABEL) * (num + 1));
+
+    for (int i=0; i<num; ++i)
+    {
+      clabel[i].value = i;
+      clabel[i].label = iteratorNames[i];
+    }
+    // last of list is 0,and NULL
+    clabel[num].value = 0;
+    clabel[num].label = NULL;
+
+    //GRAPE(Button,"add-method")("set-current-data-item",
+    //                           button_set_current_data_item);
+
+    iteratorButton = (COMBOBUTTON *)GRAPE(ComboButton,"new-instance")
+                       ("set-current-data-item",NULL,"",clabel);
+    GRAPE(iteratorButton, "set-fill-mode") (MENU_FILL_BOTTOM);
+
+    GRAPE(iteratorButton,"set-instance") (iteratorButton);
+    GRAPE(iteratorButton,"set-label") (clabel[0].label);
+    GRAPE(iteratorButton,"set-pref-size") (12.0,1.0);
+
+    GRAPE(mgr,"add-inter") (iteratorButton);
+  }
 
   maxlevelButton = (BUTTON *)
                    new_item (Button,
-                             I_Label, "use maxlevel",
+                             I_Label, "use only maxlevel",
                              I_Instance, sc,
                              I_Method, "maxlevel-on-off",
                              I_Size, 12., 1.,
                              I_FillMode, MENU_FILL_BOTTOM,
                              I_End);
 
-  GRAPE(mgr,"add-inter") (leafButton);
   GRAPE(mgr,"add-inter") (maxlevelButton);
 
-  GRAPE(leafButton,"set-state") (PRESSED);
-  leafButton->on_off = OFF;
   GRAPE(maxlevelButton,"set-state") (PRESSED);
   maxlevelButton->on_off = OFF;
 }
@@ -155,8 +235,7 @@ inline void displayTimeScene(INFO * info, int numberOfProcs )
 
     mgr = (MANAGER *)GRAPE(Manager,"get-stdmgr") ();
 
-    if((!leafButton) || (!maxlevelButton))
-      setupLeafButton(mgr,tsc,1);
+    if(!maxlevelButton && !iteratorButton) setupLeafButton(mgr,tsc,1);
 
     GRAPE(mgr,"handle") (tsc);
   }

@@ -100,7 +100,6 @@ inline static DUNE_ELEM * getNewDuneElem ()
   elem->has_children = 0;;
 
   elem->mesh = 0;
-  elem->isLeafIterator = 1;;
 
   for(int i=0; i<MAX_EL_DOF; i++)
   {
@@ -213,23 +212,31 @@ inline static HELEMENT * first_macro (GENMESHnD *mesh, MESH_ELEMENT_FLAGS flag)
   assert(el);
   assert(elem);
 
+  DUNE_DAT * dat = (DUNE_DAT *) mesh->user_data;
+  assert( dat );
+
+  // set iterator type depending on value of button
+  GRAPE(iteratorButton,      "get-value") (&(dat->iteratorType));
+  GRAPE(partitionTypeButton, "get-value") (&(dat->partitionIteratorType));
+
+  assert( dat->setIterationModus );
+  dat->setIterationModus(dat);
+
   /* store level of interest for LeafIterator */
   if(maxlevelButton->on_off == OFF) /* dont know why wrong, but it works */
     elem->level_of_interest = -1;
   else
     elem->level_of_interest = mesh->level_of_interest;
 
-  elem->isLeafIterator = switchMethods(mesh);
-
   el->present = hefAll;
   el->parent = NULL;
 
-  elem->display = ((struct dune_dat *)mesh->user_data)->all->display;
+  elem->display = dat->all->display;
   elem->hiter = NULL;
 
   {
     /* call first macro and check for first element */
-    int test = (*(((struct dune_dat *)(mesh->user_data))->first_macro))(elem) ;
+    int test = dat->first_macro(elem) ;
     // means no element exits at all
     if(!test) return NULL;
   }
@@ -255,7 +262,6 @@ inline static HELEMENT * first_macro (GENMESHnD *mesh, MESH_ELEMENT_FLAGS flag)
 inline static HELEMENT * next_macro(HELEMENT * el, MESH_ELEMENT_FLAGS flag)
 {
   int mflag=0;
-
   assert(el) ;
 
   el->present = (MESH_ELEMENT_FLAGS) (hefAll & ! hefVinh);
@@ -268,7 +274,8 @@ inline static HELEMENT * next_macro(HELEMENT * el, MESH_ELEMENT_FLAGS flag)
   }
   else
   { /*printf("next macro: bin draussen flag = %i \n",mflag);*/
-    gFreeElement((ELEMENT *)el) ; return NULL ;
+    gFreeElement((ELEMENT *)el) ;
+    return NULL ;
   }
 }
 
@@ -277,48 +284,58 @@ inline static HELEMENT * next_macro(HELEMENT * el, MESH_ELEMENT_FLAGS flag)
 /************************************************************/
 inline static HELEMENT * first_child (HELEMENT * ael, MESH_ELEMENT_FLAGS flag)
 {
-  HELEMENT * el;
-  DUNE_ELEM * elem;
   int actlevel = ael->level;
 
-  if ( actlevel < ((HMESH *)ael->mesh)->level_of_interest )
+  DUNE_DAT * dat = (DUNE_DAT *) ael->mesh->user_data;
+  assert( dat );
+
+  // if pointer is zero then no child iteration
+  if(dat->first_child)
   {
-    el = get_stackentry();
-    assert(el);
-
-    elem = (DUNE_ELEM *)el->user_data;
-    assert(elem);
-
-    el->present = (MESH_ELEMENT_FLAGS) (hefAll & !hefVinh);
-
-    elem->display = ((DUNE_ELEM *)ael->user_data)->display;
-    elem->liter = ((DUNE_ELEM *)ael->user_data)->liter;
-    elem->hiter = ((DUNE_ELEM *)ael->user_data)->hiter;
-
-    /* call the dune method */
-    if((*(((struct dune_dat *)(ael->mesh->user_data))->first_child))(elem))
+    if ( actlevel < ((HMESH *)ael->mesh)->level_of_interest )
     {
-      el->level = actlevel+1;
-      el->mesh  = ael->mesh ;
+      HELEMENT * el = get_stackentry();
+      assert(el);
 
-      helementUpdate(elem,el);
-      el->parent    = ael;
-      ((STACKENTRY *)el)->hmax = ((STACKENTRY *)ael)->hmax *0.5;
+      DUNE_ELEM * elem = (DUNE_ELEM *)el->user_data;
+      assert(elem);
 
-      el->vinh  = NULL ;
-      ((STACKENTRY *)el)->ref_flag   = -1;
-      /****************************************************/
-      // is this assertion is thrown then something with the geometry types is
-      // wrong
-      assert( el->descr != 0 );
-      return(el);
-    }
-    else
-    {
-      gFreeElement((ELEMENT *)el) ; return NULL ;
+      el->present = (MESH_ELEMENT_FLAGS) (hefAll & !hefVinh);
+
+      DUNE_ELEM * aelem = (DUNE_ELEM *)ael->user_data;
+
+      elem->display = aelem->display;
+      elem->liter   = aelem->liter;
+      elem->hiter   = aelem->hiter;
+
+      /* call the dune method */
+      if(dat->first_child(elem))
+      {
+        el->level = actlevel+1;
+        el->mesh  = ael->mesh ;
+
+        helementUpdate(elem,el);
+
+        el->parent    = ael;
+        ((STACKENTRY *)el)->hmax = ((STACKENTRY *)ael)->hmax * 0.5;
+
+        el->vinh  = NULL ;
+        ((STACKENTRY *)el)->ref_flag   = -1;
+        /****************************************************/
+        // is this assertion is thrown then something with the geometry types is
+        // wrong
+        assert( el->descr != 0 );
+        return(el);
+      }
+      else
+      {
+        gFreeElement((ELEMENT *)el) ;
+        return NULL ;
+      }
     }
   }
-  else { return NULL ; }
+
+  return NULL ;
 }
 
 /* go to next child of the current element */
@@ -326,28 +343,34 @@ inline static HELEMENT * next_child(HELEMENT * el, MESH_ELEMENT_FLAGS flag)
 {
   assert(el) ;
   el->present = (MESH_ELEMENT_FLAGS) (hefAll & !hefVinh);
+  DUNE_ELEM * elem = ((DUNE_ELEM *)el->user_data);
+  assert( elem );
 
-  if((*(((struct dune_dat *)(el->mesh->user_data))->next_child))((DUNE_ELEM *)el->user_data))
+  DUNE_DAT * dat = (DUNE_DAT *) el->mesh->user_data;
+  assert( dat );
+
+  if(dat->next_child)
   {
-    DUNE_ELEM * elem = ((DUNE_ELEM *)el->user_data);
-    ((STACKENTRY *)el)->ref_flag++;
-    helementUpdate(elem,el);
-
-    if(elem->type == 3) // triangle ????
+    if(dat->next_child(elem))
     {
-      el->vinh = NULL;
-    }
+      DUNE_ELEM * elem = ((DUNE_ELEM *)el->user_data);
+      ((STACKENTRY *)el)->ref_flag++;
+      helementUpdate(elem,el);
 
-    return(el) ;
+      if(elem->type == 3) // triangle ????
+      {
+        el->vinh = NULL;
+      }
+
+      return(el) ;
+    }
+    else
+    {
+      gFreeElement((ELEMENT *)el) ;
+      return NULL ;
+    }
   }
 
-  else { gFreeElement((ELEMENT *)el) ; return NULL ; }
-
-}
-
-/* fake that no children exixst */
-inline static HELEMENT * fake_child (HELEMENT * ael, MESH_ELEMENT_FLAGS flag)
-{
   return NULL;
 }
 
@@ -695,47 +718,19 @@ inline HMESH * get_partition_number (int * partition)
 **
 ******************************************************************************
 *****************************************************************************/
-inline void * hmesh(int (* const f_leaf) (DUNE_ELEM *), int (* const n_leaf) (DUNE_ELEM *),
-                    int (* const f_mac) (DUNE_ELEM *), int (* const n_mac) (DUNE_ELEM *),
-                    int (* const f_chi) (DUNE_ELEM *), int (* const n_chi) (DUNE_ELEM *),
-                    void * (* const cp)(const void *),
-                    int (* const check_inside) (DUNE_ELEM *, const double *),
-                    int (* const wtoc) (DUNE_ELEM *, const double *, double *),
-                    void (* const ctow) (DUNE_ELEM *, const double *, double *),
-                    void (* const func_real) (DUNE_ELEM *, DUNE_FDATA*, int ind, const double *, double *),
-                    const int noe, const int nov, const int maxlev, int partition,
-                    DUNE_ELEM *he , DUNE_FDATA * fe)
+inline void * hmesh( void (* const func_real) (DUNE_ELEM *, DUNE_FDATA*, int ind, const double *, double *),
+                     const int noe, const int nov, const int maxlev,
+                     DUNE_FDATA * fe, DUNE_DAT * dune )
 {
-  DUNE_DAT *dune   = (DUNE_DAT *) malloc(sizeof(DUNE_DAT));
-  assert(dune != NULL);
-
   GRAPEMESH * mesh = (GRAPEMESH *) GRAPE(GrapeMesh,"new-instance") ("Dune Mesh");
   assert(mesh != NULL);
-
-  dune->fst_leaf = f_leaf;
-  dune->nxt_leaf = n_leaf;
-  dune->fst_macro = f_mac;
-  dune->nxt_macro = n_mac;
-
-  /* we start with leaf */
-  dune->first_macro = f_leaf;
-  dune->next_macro  = n_leaf;
-
-  dune->first_child = f_chi;
-  dune->next_child  = n_chi;
-
-  dune->copy         = cp;
-  dune->wtoc         = wtoc;
-  dune->ctow         = ctow;
-  dune->check_inside = check_inside;
-  dune->all          = he;
-  dune->partition    = partition;
 
   mesh->first_macro = first_macro ;
   mesh->next_macro  = next_macro ;
 
-  mesh->first_child = &fake_child;
-  mesh->next_child  = &fake_child;
+  mesh->first_child = first_child ;
+  mesh->next_child  = next_child ;
+
   mesh->select_child  = select_child;
 
   mesh->copy_element  = copy_element ;
@@ -833,8 +828,7 @@ inline void handleMesh(void *hmesh)
 
   sc->object = (TREEOBJECT *)mesh;
 
-  if((!leafButton) || (!maxlevelButton))
-    setupLeafButton(mgr,sc,0);
+  if((!maxlevelButton)) setupLeafButton(mgr,sc,0);
 
   grape_add_remove_methods();
 
@@ -1124,25 +1118,6 @@ inline static HMESH *prev_f_data_send(void)
   END_METHOD(self);
 }
 
-inline SCENE* scene_leaf_button_on_off ()
-{
-  SCENE*   sc = (SCENE*) START_METHOD (G_INSTANCE);
-  ALERT (sc, "level-button-on-off: No hmesh!", END_METHOD(NULL));
-  assert(leafButton);
-
-  if( leafButton->on_off == ON )
-  {
-    GRAPE(leafButton,"set-state") (UNPRESSED);
-    leafButton->on_off = OFF;
-  }
-  else
-  {
-    GRAPE(leafButton,"set-state") (PRESSED);
-    leafButton->on_off = ON;
-  }
-  END_METHOD (sc);
-}
-
 inline SCENE* scene_maxlevel_on_off ()
 {
   SCENE* sc = (SCENE*) START_METHOD (G_INSTANCE);
@@ -1194,8 +1169,6 @@ inline static void grape_add_remove_methods(void)
     GRAPE(GenMesh3d,"delete-method") ("clip-isoline-select-disp");
     printf("\n");
 #endif
-    if( ! (GRAPE(Scene,"find-method") ("leaf-button-on-off")) )
-      GRAPE(Scene,"add-method") ("leaf-button-on-off",scene_leaf_button_on_off);
     if( ! (GRAPE(Scene,"find-method") ("maxlevel-on-off")) )
       GRAPE(Scene,"add-method") ("maxlevel-on-off",scene_maxlevel_on_off);
 
@@ -1208,69 +1181,4 @@ inline static void grape_add_remove_methods(void)
     calledAddMethods = 1;
   }
 }
-
-/* switch methods from LevelIterator to LeafIterator */
-inline int switchMethods(GENMESHnD *actHmesh)
-{
-  DUNE_DAT * dune = (DUNE_DAT *) actHmesh->user_data;
-  GENMESH_FDATA *fd = NULL;
-  int isLeaf = 0;
-  assert(dune != NULL);
-
-  /* check if data on all Levels or not */
-  fd = actHmesh->f_data;
-  /*
-     if(fd)
-     {
-     if(( !((DUNE_FDATA *) fd->function_data)->allLevels)
-         && (leafButton->on_off == OFF))
-       printf("Warning: Only data on leaf level, use LeafIterator! \n");
-     }
-   */
-
-  // this marks the state before
-  if(leafButton->on_off == OFF) // off means it is going to be on
-  {
-    /* the button is pressed */
-    dune->first_macro = dune->fst_leaf;
-    dune->next_macro  = dune->nxt_leaf;
-    actHmesh->first_child = &fake_child;
-    actHmesh->next_child = &fake_child;
-    isLeaf = 1;
-    /*printf("Leaf is on \n");*/
-  }
-  else
-  {
-    /* the button is not pressed */
-    dune->first_macro = dune->fst_macro;
-    dune->next_macro  = dune->nxt_macro;
-    actHmesh->first_child = &first_child;
-    actHmesh->next_child = &next_child;
-    /*printf("Leaf is off \n");*/
-  }
-
-  return isLeaf;
-}
-
-
-/* action function for the levelButton */
-/* switch button on or off */
-inline GENMESH3D * genmesh3d_switch_iterateLeafs_on_off()
-{
-  GENMESH3D * self = (GENMESH3D *) START_METHOD(G_INSTANCE);
-  assert(self!=NULL);
-
-  if(leafButton->on_off == ON)
-  {
-    /* the button is not pressed */
-    GRAPE(leafButton,"set-state") (UNPRESSED);
-  }
-  else
-  {
-    /* the button is pressed */
-    GRAPE(leafButton,"set-state") (PRESSED);
-  }
-  END_METHOD(self);
-}
-
 #endif

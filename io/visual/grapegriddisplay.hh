@@ -3,6 +3,9 @@
 #ifndef DUNE_GRAPEGRIDDISPLAY_HH
 #define DUNE_GRAPEGRIDDISPLAY_HH
 
+//- system includes
+#include <list>
+
 //- Dune includes
 #include <dune/grid/common/grid.hh>
 
@@ -23,6 +26,14 @@ namespace Dune
     g_Ghost_Partition          = Ghost_Partition
   };
 
+  // the internal grape partition iterator types
+  enum GrapeIteratorType
+  {
+    g_LeafIterator       = 0,
+    g_LevelIterator      = 1,
+    g_HierarchicIterator = 2
+  };
+
   template<class GridType>
   class GrapeGridDisplay
   {
@@ -32,19 +43,21 @@ namespace Dune
 
     // defined in griddisplay.hh
     typedef typename GrapeInterface<dim,dimworld>::DUNE_ELEM DUNE_ELEM;
+    typedef typename GrapeInterface<dim,dimworld>::DUNE_DAT DUNE_DAT;
 
   public:
     typedef GridType MyGridType;
 
     typedef typename GridType::Traits::template Codim<0>::LevelIterator LevelIteratorType ;
     //typedef typename GridType::Traits::template Codim<0>::template Partition<Ghost_Partition>::LeafIterator LeafIteratorType ;
-    typedef typename GridType::Traits::template Codim<0>::template Partition<All_Partition>::LeafIterator LeafIteratorType ;
+    typedef typename GridType::Traits::template Codim<0>::template Partition<Interior_Partition>::LeafIterator LeafIteratorType ;
+
+    typedef typename GridType::template Codim<0>:: HierarchicIterator
+    HierarchicIteratorType;
 
     typedef typename GridType::Traits::LocalIdSet LocalIdSetType;
     typedef typename GridType::Traits::LeafIndexSet LeafIndexSetType;
-    //typedef typename GridType::HierarchicIndexSet LeafIndexSetType;
 
-    //typedef typename GridType::Traits::template Codim<0>::template Partition<Interior_Partition>:: LeafIterator LeafIteratorType;
   protected:
     //! the grid we want to display
     const GridType &grid_;
@@ -58,20 +71,17 @@ namespace Dune
     //! my process number
     const int myRank_;
 
-    //! my interal level iterators
-    LevelIteratorType *myIt_;
-    LevelIteratorType *myEndIt_;
-
-    //! my internal leaf iterators
-    LeafIteratorType *myLeafIt_;
-    LeafIteratorType *myLeafEndIt_;
-
     //! store the actual element pointer
     DUNE_ELEM hel_;
+    DUNE_DAT dune_;
 
     // no better way than this canot export HMESH structure to here
     //! pointer to hmesh
-    void *hmesh_;
+    void * hmesh_;
+
+    typedef std::list<HierarchicIteratorType *> HierarchicIteratorList;
+    typedef typename HierarchicIteratorList::iterator ListIteratorType;
+    HierarchicIteratorList hierList_;
 
   public:
     //! Constructor, make a GrapeGridDisplay for given grid
@@ -115,23 +125,28 @@ namespace Dune
     //
     //****************************************************************
     // update element from entity
-    template <class GridIteratorType>
-    inline int el_update (GridIteratorType *, DUNE_ELEM *) ;
+    template <class EntityPointerType>
+    inline int el_update (EntityPointerType *, DUNE_ELEM *) ;
 
     // update child element
-    template <class GridIteratorType>
-    inline int child_update (GridIteratorType *, DUNE_ELEM *) ;
+    template <class EntityPointerType>
+    inline int child_update (EntityPointerType * , DUNE_ELEM *) ;
 
-    template <class GridIteratorType>
-    inline int child_n_update (GridIteratorType *, DUNE_ELEM *) ;
+    template <class EntityPointerType>
+    inline int child_n_update (EntityPointerType *, DUNE_ELEM *) ;
 
     // first and next macro element via LevelIterator level 0
+    template <PartitionIteratorType pitype>
     inline int first_leaf (DUNE_ELEM * he) ;
+    template <PartitionIteratorType pitype>
     inline int next_leaf (DUNE_ELEM * he) ;
 
-    // first and next macro element via LevelIterator level 0
-    inline int first_macro (DUNE_ELEM * he) ;
-    inline int next_macro (DUNE_ELEM * he) ;
+    // first and next macro element via LevelIterator level
+    template <PartitionIteratorType pitype>
+    inline int first_level (DUNE_ELEM * he, int level) ;
+
+    template <PartitionIteratorType pitype>
+    inline int next_level (DUNE_ELEM * he) ;
 
     // first and next child via HierarchicIterator with given maxlevel in Grape
     inline int first_child (DUNE_ELEM * he) ;
@@ -173,17 +188,60 @@ namespace Dune
     template <class EntityType>
     inline void local_to_world(EntityType &en, const double * c, double * w);
 
-    // wrapper methods for first_child and next_child
-    inline static int first_mac (DUNE_ELEM * he);
-    inline static int next_mac (DUNE_ELEM * he);
+    template <PartitionIteratorType pitype>
+    inline void selectIterators(DUNE_DAT * dat) const;
 
-    // wrapper methods for first_child and next_child
-    inline static int fst_leaf (DUNE_ELEM * he);
-    inline static int nxt_leaf (DUNE_ELEM * he);
+    inline void setIterationMethods(DUNE_DAT * dat) const;
 
-    // wrapper methods for first_child and next_child
-    inline static int fst_child (DUNE_ELEM * he);
-    inline static int nxt_child (DUNE_ELEM * he);
+    template <PartitionIteratorType pitype>
+    struct IterationMethods
+    {
+      // wrapper methods for first_child and next_child
+      inline static int first_mac (DUNE_ELEM * he)
+      {
+        MyDisplayType & disp = *((MyDisplayType *) he->display);
+        return disp.template first_level<pitype>(he,0);
+      }
+
+      // wrapper methods for first_child and next_child
+      inline static int first_lev (DUNE_ELEM * he)
+      {
+        MyDisplayType & disp = *((MyDisplayType *) he->display);
+        return disp.template first_level<pitype>(he,he->level_of_interest);
+      }
+
+      inline static int next_lev  (DUNE_ELEM * he)
+      {
+        MyDisplayType & disp = *((MyDisplayType *) he->display);
+        return disp.template next_level<pitype>(he);
+      }
+
+      // wrapper methods for first_child and next_child
+      inline static int fst_leaf (DUNE_ELEM * he)
+      {
+        MyDisplayType & disp = *((MyDisplayType *) he->display);
+        return disp.template first_leaf<pitype>(he);
+      }
+      inline static int nxt_leaf (DUNE_ELEM * he)
+      {
+        MyDisplayType & disp = *((MyDisplayType *) he->display);
+        return disp.template next_leaf<pitype>(he);
+      }
+
+      // wrapper methods for first_child and next_child
+      inline static int fst_child (DUNE_ELEM * he)
+      {
+        MyDisplayType & disp = *((MyDisplayType *) he->display);
+        return disp.first_child(he);
+      }
+      inline static int nxt_child (DUNE_ELEM * he)
+      {
+        MyDisplayType & disp = *((MyDisplayType *) he->display);
+        return disp.next_child(he);
+      }
+    };
+
+    inline static void setIterationModus(DUNE_DAT * dat);
 
   }; // end class GrapeGridDisplay
 

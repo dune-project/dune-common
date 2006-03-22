@@ -46,45 +46,6 @@ enum GR_ElementType
  gr_unknown=127};
 enum { numberOfUsedGrapeElementTypes = 6 };
 
-/**************************************************************************/
-
-
-
-typedef struct dune_dat DUNE_DAT;
-
-struct dune_dat
-{
-  /* first and next macro for LeafIterator */
-  int (* fst_leaf)(DUNE_ELEM *);
-  int (* nxt_leaf)(DUNE_ELEM *);
-
-  /* first and next macro for LevelIterator */
-  int (* fst_macro)(DUNE_ELEM *) ;
-  int (* nxt_macro)(DUNE_ELEM *) ;
-
-  /* the actual first and next macro for LevelIterator */
-  int (* first_macro)(DUNE_ELEM *) ;
-  int (* next_macro)(DUNE_ELEM *) ;
-
-  /* first and next macro for HierarchicIterator */
-  int (* first_child)(DUNE_ELEM *) ;
-  int (* next_child)(DUNE_ELEM *) ;
-
-  void * (* copy)(const void *) ;
-
-  int (* check_inside)(DUNE_ELEM *, const double * ) ;
-  int (* wtoc)(DUNE_ELEM *, const double *, double * ) ;
-  void (* ctow)(DUNE_ELEM *, const double *, double * ) ;
-
-  /* to which processor partition the element belongs */
-  int partition;
-
-  DUNE_ELEM * all;
-
-};
-
-
-
 /*****************************************************************************
 * HELEMENT2D_DESCRIPTION for Triangles               *
 *****************************************************************************/

@@ -1,12 +1,16 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef __GRAPE_COMMON_H__
-#define __GRAPE_COMMON_H__
+#ifndef DUNE_GRAPECOMMON_HH
+#define DUNE_GRAPECOMMON_HH
 
-/* global variables for leaf iterator display */
-static BUTTON * leafButton=0;
 /* global variables for maxlevel use */
 static BUTTON * maxlevelButton=0;
+
+/* global variables for iterator choice */
+static COMBOBUTTON  * iteratorButton = 0;
+
+/* global variables for partition type choice */
+static COMBOBUTTON * partitionTypeButton = 0;
 
 static TIMESCENE * globalTsc = 0;
 
