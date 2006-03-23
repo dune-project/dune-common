@@ -80,22 +80,25 @@ namespace ALUGridSpace {
       dc_.set(str,entity_);
     }
 
-    //! write Data of one lement to stream
-    void sendData ( ObjectStreamType & str , const HElementType & elem )
-    {
-      realEntity_.setElement( const_cast<HElementType &> (elem));
-      dc_.scatter(str, entity_);
-    }
-
     //! read Data of one element from stream
     void recvData ( ObjectStreamType & str , HElementType & elem )
     {
       // set ghost as entity
       realEntity_.setElement( elem );
-      dc_.insertNewIndex( entity_ );
-      dc_.checkMemorySize();
+      //dc_.insertNewIndex( entity_ );
+      //dc_.checkMemorySize();
       dc_.gather(str, entity_ );
     }
+
+    //! write Data of one lement to stream
+    void sendData ( ObjectStreamType & str , HElementType & elem )
+    {
+      realEntity_.setElement( const_cast<HElementType &> (elem));
+      //dc_.insertNewIndex( entity_ );
+      //dc_.checkMemorySize();
+      dc_.scatter(str, entity_);
+    }
+
   };
 
   //***********************************************************
@@ -164,7 +167,7 @@ namespace ALUGridSpace {
     }
 
     //! write Data of one lement to stream
-    void sendData ( ObjectStreamType & str , const HElementType & elem )
+    void sendData ( ObjectStreamType & str , HElementType & elem )
     {
       realEntity_.setElement( const_cast<HElementType &> (elem),0,0 );
       dc_.scatter(str, entity_);
@@ -177,8 +180,8 @@ namespace ALUGridSpace {
       ImplGhostType & gh = static_cast <ImplGhostType &> (ghost);
       realEntity_.setGhost( gh );
 
-      dc_.insertNewIndex( entity_ );
-      dc_.checkMemorySize();
+      //dc_.insertNewIndex( entity_ );
+      //dc_.checkMemorySize();
       dc_.gather(str, entity_);
     }
   };
