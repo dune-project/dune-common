@@ -476,6 +476,15 @@ namespace Dune {
       return levelIndex_[cd][ hIndexSet_.template subIndex<cd>(en,i) ];
     }
 
+    //! returns true if this set provides an index for given entity
+    template<class EntityType>
+    bool contains (const EntityType& en) const
+    {
+      enum { cd = EntityType :: codimension };
+      return ((en.level() == level_) &&
+              (levelIndex_[cd][ hIndexSet_.index(en) ] >= 0 ));
+    }
+
     //! return size of IndexSet for a given level and codim
     int size ( int codim ) const
     {
@@ -722,6 +731,14 @@ namespace Dune {
       // therefore only check other codims
       assert(index_[cd][ hIndexSet_.template subIndex<cd>(en,i) ] >= 0 );
       return index_[cd][ hIndexSet_.template subIndex<cd>(en,i) ];
+    }
+
+    //! returns true if this set provides an index for given entity
+    template<class EntityType>
+    bool contains (const EntityType& en) const
+    {
+      enum { cd = EntityType :: codimension };
+      return (en.isLeaf() && (index_[cd][ hIndexSet_.index(en) ] >= 0 ));
     }
 
     //! return size of IndexSet for a given level and codim
