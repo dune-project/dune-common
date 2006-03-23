@@ -121,6 +121,28 @@ inline void setupLeafButton(MANAGER *mgr, void *sc, int yesTimeScene)
   maxlevelButton->on_off = OFF;
 }
 
+#if 0
+COLORBAR *colorbar_eval_samples_layer(XLIST *xlist)
+{
+  COLORBAR *self;
+
+  ASSURE( self=(COLORBAR *)START_METHOD(G_INSTANCE),"", END_METHOD(NULL));
+
+  if( xlist->chosen ) {
+    if( samples[xlist->chosen_key].func )
+      samples[xlist->chosen_key].func(self);
+  }
+
+  /* update the display */
+
+  GRAPE(GRAPE(Manager,"get-stdmgr") (),"set-graphic-redraw") (rfOn);
+  g_hide_layer((ITEM *)xlist);
+
+  END_METHOD(self);
+}
+#endif
+
+
 inline void timeSceneInit(INFO *info, int n_info, int procs, int time_bar)
 {
   int n,p;

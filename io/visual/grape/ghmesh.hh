@@ -140,5 +140,6 @@ extern void addHmeshToTimeScene(void * timescene, double time, void  *hmesh , in
 
 extern void addHmeshToGlobalTimeScene(double time, void  *hmesh , int proc);
 extern void tsc_timebar(void *timescene, double t_start, double t_end);
+extern void colorBarMinMax(const double min, const double max);
 
 #endif

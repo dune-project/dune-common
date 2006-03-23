@@ -8,6 +8,9 @@
 #include "ghmesh.hh"
 #include "geldesc.hh"
 
+extern "C" {
+  extern MESH2D * mesh2d_isoline_disp();
+}
 /*****************************************************************************
 * Globale defines                  *                     **
 *****************************************************************************/
@@ -799,6 +802,41 @@ static inline void addProjectUIF()
     g_project_add(p_name);
     firstCall = 0;
   }
+}
+
+/*
+   inline void switchToHsvRedToBlue(COLORBAR *self)
+   {
+   CBMHSV *module;
+
+   module = (CBMHSV *)GRAPE(CbmHsv,"new-instance")("hsv redtoblue");
+   //self = (COLORBAR *) colorbar_get_module_inst (module);
+
+   //GRAPE(self,"add-module")(module);
+   GRAPE(self->module_sel,"set-value")(5);
+   //GRAPE(module,"set-offset")(0.135);
+   return;
+   }
+
+   extern "C" {
+   extern MESH2D * mesh2d_isoline_disp();
+   }
+ */
+
+// set min and max value of colorbar
+inline void colorBarMinMax(const double min, const double max)
+{
+  //GRAPE(mesh, "value-min-max")(min, max);
+
+  //g_colorbar_settings.disable_predefined_maps = 1;
+  GRAPE(Colorbar,"set-default-min-max") (min,max,0,0);
+
+  /*
+     COLORBAR * self = (COLORBAR*)GRAPE(Colorbar,"get-stdcolorbar")
+        (mesh2d_isoline_disp,"mesh2d-isoline") ;
+
+     switchToHsvRedToBlue(self);
+   */
 }
 
 /* forward declaration */

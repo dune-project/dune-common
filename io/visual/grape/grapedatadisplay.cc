@@ -185,6 +185,8 @@ namespace Dune
                     VectorType & func, const IndexSetImp & set,
                     const int * comp, int vlength , int localNum, double * val)
   {
+    if(! set.contains(en) ) return ;
+
     int idx = vlength * set.template subIndex<dim> (en,localNum) ;
     for(int i=0; i<vlength; ++i) val[i] = func[idx + comp[i]];
     return ;
@@ -196,6 +198,8 @@ namespace Dune
                    VectorType & func, const IndexSetImp & set,
                    const int * comp, int vlength , int localNum, double * val)
   {
+    if(! set.contains(en) ) return ;
+
     int idx = vlength * set.index(en) ;
     val[0] = func[idx + comp[0]];
     return ;
@@ -295,6 +299,7 @@ namespace Dune
   {
     /* add function data */
     this->addData(func,"myFunc",0.0,vector);
+
     /* display mesh */
     GrapeInterface<dim,dimworld>::handleMesh ( this->hmesh_ );
     return ;
@@ -370,6 +375,7 @@ namespace Dune
         }
         vecFdata_[n]->dimVal   = dimVal;
         vecFdata_[n]->dimRange = FunctionSpaceType::DimRange;
+
         GrapeInterface<dim,dimworld>::addDataToHmesh(this->hmesh_,vecFdata_[n],&func_real);
       }
     }
@@ -394,6 +400,18 @@ namespace Dune
     // add to display
     this->addVector(name,data,indexSet,0.0,polOrd,dimRange,continuous);
 
+    double min = data[0];
+    double max = data[0];
+
+    int cd = (polOrd == 0) ? 0 : dim ;
+
+    for(int i=0; i<indexSet.size(cd)*dimRange; ++i)
+    {
+      min = std::min(data[i],min);
+      max = std::max(data[i],max);
+    }
+    setMinMaxValue(min,max);
+
     // display
     GrapeInterface<dim,dimworld>::handleMesh ( this->hmesh_ );
     return;
@@ -416,9 +434,6 @@ namespace Dune
     DATAINFO dinf = { name.c_str() , name.c_str() , 0 , 1 , comp };
     /* add function data */
     this->addVector(data,indexSet,&dinf,time,polOrd,dimRange,continuous);
-
-    // display
-    GrapeInterface<dim,dimworld>::handleMesh ( this->hmesh_ );
 
     delete [] comp;
     return;
@@ -486,6 +501,13 @@ namespace Dune
         GrapeInterface<dim,dimworld>::addDataToHmesh(this->hmesh_,vecFdata_[n],&func_real);
       }
     }
+  }
+
+  template<class GridType>
+  inline void GrapeDataDisplay<GridType>::
+  setMinMaxValue(const double minValue, const double maxValue) const
+  {
+    GrapeInterface<dim,dimworld>::colorBarMinMax(minValue,maxValue);
   }
 
 } // end namespace Dune

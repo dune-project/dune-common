@@ -14,7 +14,6 @@ namespace Dune
   GrapeGridDisplay(const GridType &grid, const int myrank ) :
     grid_(grid)
     , leafset_(grid.leafIndexSet())
-    // , leafset_(grid.hierarchicIndexSet())
     , lid_(grid.localIdSet())
     , myRank_(myrank)
     , hmesh_ (0)
@@ -31,7 +30,6 @@ namespace Dune
   GrapeGridDisplay(const GridType &grid ) :
     grid_(grid)
     , leafset_(grid.leafIndexSet())
-    //, leafset_(grid.hierarchicIndexSet())
     , lid_(grid.localIdSet())
     , myRank_(-1)
     , hmesh_ (0)
@@ -222,18 +220,15 @@ namespace Dune
     he->liter   = 0;
     he->enditer = 0;
 
+    // for leaf level, level has the value -1
     if(level < 0) level = grid_.maxLevel();
 
-    // myIt ist Zeiger auf LevelIteratorType, definiert innerhalb der Klasse
-    // rufe default CopyConstructor auf
     typedef typename GridType :: template Codim<0> ::
     template Partition<pitype> :: LevelIterator LevelIteratorType;
 
+    // class copy constructor
     LevelIteratorType * it    = new LevelIteratorType( grid_.template lbegin<0,pitype> (level) );
     LevelIteratorType * endit = new LevelIteratorType( grid_.template lend<0,pitype>   (level) );
-
-    // funktioniert nur, wenn man im Macro
-    // HM_ALL_TEST_IF_PROCEED !tip_element->has_children entfernt
 
     if(it[0] == endit[0])
     {
@@ -299,22 +294,16 @@ namespace Dune
 
     HierarchicIteratorType * hit = (HierarchicIteratorType *) he->hiter;
 
-    EntityType *newEn  = 0;
+    EntityType *newEn = (!hit) ? (&en) : (hit[0].operator -> ()) ;
 
-    if(!hit)
-    {
-      newEn = &en;
-    }
-    else
-    {
-      newEn = (hit[0].operator -> ());
-    }
+    assert( newEn );
 
     // if entity is leaf, then no first child
     if( newEn->isLeaf() ) return 0;
 
     int childLevel = newEn->level() + 1;
 
+    // store former pointer for removal later
     if(hit) hierList_.push_back( hit );
 
     // create HierarchicIterator with default constructor
@@ -516,7 +505,9 @@ namespace Dune
       return ;
     }
 
+    // wrong iteratorType here
     assert(false);
+    abort();
   }
 
 
@@ -527,13 +518,21 @@ namespace Dune
   {
     switch(dune->partitionIteratorType)
     {
-    case g_All_Partition :            selectIterators<All_Partition> (dune) ; return;
-    case g_Interior_Partition :       selectIterators<Interior_Partition> (dune) ; return;
-    case g_InteriorBorder_Partition : selectIterators<InteriorBorder_Partition> (dune) ; return;
-    case g_Overlap_Partition :        selectIterators<Overlap_Partition> (dune) ; return;
-    case g_OverlapFront_Partition :   selectIterators<OverlapFront_Partition> (dune) ; return;
-    case g_Ghost_Partition :          selectIterators<Ghost_Partition> (dune) ; return;
-    default : assert(false); return ;
+    case g_All_Partition :            selectIterators<All_Partition> (dune) ;
+      return;
+    case g_Interior_Partition :       selectIterators<Interior_Partition> (dune) ;
+      return;
+    case g_InteriorBorder_Partition : selectIterators<InteriorBorder_Partition> (dune) ;
+      return;
+    case g_Overlap_Partition :        selectIterators<Overlap_Partition> (dune) ;
+      return;
+    case g_OverlapFront_Partition :   selectIterators<OverlapFront_Partition> (dune) ;
+      return;
+    case g_Ghost_Partition :          selectIterators<Ghost_Partition> (dune) ;
+      return;
+    default : assert(false);
+      abort();
+      return ;
     }
   }
 

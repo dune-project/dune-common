@@ -84,6 +84,11 @@ namespace Dune
     {
       GrapeInterface_two_two::addHmeshToGlobalTimeScene(time,hmesh,proc);
     }
+
+    inline static void colorBarMinMax(const double min, const double max)
+    {
+      GrapeInterface_two_two::colorBarMinMax(min,max);
+    }
   };
 
   // not tested yet
@@ -172,6 +177,11 @@ namespace Dune
     inline static void addHmeshToGlobalTimeScene(double time, void  *hmesh , int proc)
     {
       GrapeInterface_three_three::addHmeshToGlobalTimeScene(time,hmesh,proc);
+    }
+
+    inline static void colorBarMinMax(const double min, const double max)
+    {
+      GrapeInterface_three_three::colorBarMinMax(min,max);
     }
   };
 
