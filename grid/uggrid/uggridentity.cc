@@ -49,15 +49,6 @@ inline bool Dune::UGGridEntity < 0, dim ,GridImp >::mightBeCoarsened () const
   return ((!isRegular()) || (UG_NS<dim>::ReadCW(target_, UG_NS<dim>::COARSEN_CE)));
 }
 
-template< int dim, class GridImp>
-inline Dune::AdaptationState Dune::UGGridEntity < 0, dim ,GridImp >::state() const
-{
-  if(wasRefined()) return REFINED;
-  if(mightBeCoarsened()) return COARSEN;
-  return NONE;
-}
-
-
 //*****************************************************************8
 // count
 template <int dim, class GridImp>

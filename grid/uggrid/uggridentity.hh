@@ -447,9 +447,6 @@ namespace Dune {
        returns false) */
     bool mightBeCoarsened() const;
 
-    /** method deprecated, removed soon */
-    AdaptationState state() const DUNE_DEPRECATED;
-
     //private:
     void setToTarget(typename TargetType<0,dim>::T* target, int level);
 

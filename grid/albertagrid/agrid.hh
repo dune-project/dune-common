@@ -594,10 +594,6 @@ namespace Dune
     //! Returns iterator to one past the last son
     AlbertaGridHierarchicIterator<GridImp> hend (int maxlevel) const;
 
-    //! return whether entity could be cosrsend (COARSEND) or was refined
-    //! (REFIEND) or nothing happend (NONE)
-    AdaptationState state () const DUNE_DEPRECATED ;
-
     /**\brief Returns true, if entity was refined during last adaptation
         cycle */
     bool wasRefined () const ;

@@ -1116,15 +1116,6 @@ namespace Dune
   }
 
   template<int dim, class GridImp>
-  inline AdaptationState AlbertaGridEntity <0,dim,GridImp>::
-  state() const
-  {
-    if( mightBeCoarsened () ) return COARSEN;
-    if( wasRefined () ) return REFINED;
-    return NONE;
-  }
-
-  template<int dim, class GridImp>
   inline bool AlbertaGridEntity <0,dim,GridImp>::
   wasRefined () const
   {
