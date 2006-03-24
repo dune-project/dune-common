@@ -31,6 +31,7 @@ namespace Dune
     // defined in griddisplay.hh
     typedef typename GrapeInterface<dim,dimworld>::DUNE_ELEM DUNE_ELEM;
     typedef typename GrapeInterface<dim,dimworld>::DUNE_FDATA DUNE_FDATA;
+    typedef typename GrapeInterface<dim,dimworld>::DUNE_DAT DUNE_DAT;
 
   protected:
     typedef typename std::list< DisplayType * > DisplayListType;
@@ -47,6 +48,9 @@ namespace Dune
 
     // actual element data
     DUNE_ELEM hel_;
+
+    // actual dat struct
+    DUNE_DAT dune_;
 
   public:
 
@@ -146,6 +150,9 @@ namespace Dune
     // function to evaluate data
     inline static void func_real (DUNE_ELEM *he , DUNE_FDATA * fe,int ind,
                                   const double *coord, double *val);
+
+    inline void setIterationMethods(DUNE_DAT * dat);
+    static inline void setIterationModus(DUNE_DAT * dat);
 
   }; // end class GrapeGridDisplay
 

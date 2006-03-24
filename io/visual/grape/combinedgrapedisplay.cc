@@ -41,48 +41,6 @@ namespace Dune
   //****************************************************************
   template<class DisplayType>
   inline int CombinedGrapeDisplay<DisplayType>::
-  first_leaf (DUNE_ELEM * he)
-  {
-    assert( !dispList_.empty() );
-    grditer_ = dispList_.begin();
-    enditer_ = dispList_.end();
-    disp_ = 0;
-    if(grditer_ != enditer_)
-    {
-      disp_ = *grditer_;
-      GrapeInterface<dim,dimworld>::setThread( disp_->myRank() );
-      return disp_->first_leaf(he);
-    }
-    return 0;
-  }
-
-
-  template<class DisplayType>
-  inline int CombinedGrapeDisplay<DisplayType>::
-  next_leaf (DUNE_ELEM * he)
-  {
-    int ret = 0;
-    if( disp_ )
-    {
-      ret = disp_->next_leaf(he);
-      if(!ret)
-      {
-        ++grditer_;
-        disp_ = 0;
-        if(grditer_ != enditer_)
-        {
-          disp_ = *grditer_;
-          GrapeInterface<dim,dimworld>::setThread( disp_->myRank() );
-          return disp_->first_leaf(he);
-        }
-      }
-    }
-    return ret;
-  }
-
-
-  template<class DisplayType>
-  inline int CombinedGrapeDisplay<DisplayType>::
   first_macro (DUNE_ELEM * he)
   {
     grditer_ = dispList_.begin();
@@ -93,11 +51,10 @@ namespace Dune
     {
       disp_ = *grditer_;
       GrapeInterface<dim,dimworld>::setThread( disp_->myRank() );
-      return disp_->first_macro(he);
+      return disp_->firstMacro(he);
     }
     return 0;
   }
-
 
   template<class DisplayType>
   inline int CombinedGrapeDisplay<DisplayType>::
@@ -106,7 +63,7 @@ namespace Dune
     int ret = 0;
     if( disp_ )
     {
-      ret = disp_->next_macro(he);
+      ret = disp_->nextMacro(he);
       if(!ret)
       {
         ++grditer_;
@@ -115,7 +72,7 @@ namespace Dune
         {
           disp_ = *grditer_;
           GrapeInterface<dim,dimworld>::setThread( disp_->myRank() );
-          return disp_->first_macro(he);
+          return disp_->firstMacro(he);
         }
       }
     }
@@ -126,7 +83,8 @@ namespace Dune
   inline int CombinedGrapeDisplay<DisplayType>::
   first_child(DUNE_ELEM * he)
   {
-    if(disp_) return disp_->first_child(he);
+    if(disp_)
+      return disp_->firstChild(he);
     else
       return 0;
   }
@@ -137,7 +95,7 @@ namespace Dune
   next_child(DUNE_ELEM * he)
   {
     if( disp_ )
-      return disp_->next_child(he);
+      return disp_->nextChild(he);
     else
       return 0;
   }
@@ -209,8 +167,8 @@ namespace Dune
   inline int CombinedGrapeDisplay<DisplayType>::
   first_mac (DUNE_ELEM * he)
   {
-    MyDisplayType * disp = (MyDisplayType *) he->display;
-    return disp[0].first_macro(he);
+    MyDisplayType & disp = *((MyDisplayType *) he->display);
+    return disp.first_macro(he);
   }
 
 
@@ -218,25 +176,8 @@ namespace Dune
   inline int CombinedGrapeDisplay<DisplayType>::
   next_mac (DUNE_ELEM * he)
   {
-    MyDisplayType * disp = (MyDisplayType *) he->display;
-    return disp[0].next_macro(he);
-  }
-
-  template<class DisplayType>
-  inline int CombinedGrapeDisplay<DisplayType>::
-  fst_leaf (DUNE_ELEM * he)
-  {
-    MyDisplayType * disp = (MyDisplayType *) he->display;
-    return disp[0].first_leaf(he);
-  }
-
-
-  template<class DisplayType>
-  inline int CombinedGrapeDisplay<DisplayType>::
-  nxt_leaf (DUNE_ELEM * he)
-  {
-    MyDisplayType * disp = (MyDisplayType *) he->display;
-    return disp[0].next_leaf(he);
+    MyDisplayType & disp = *((MyDisplayType *) he->display);
+    return disp.next_macro(he);
   }
 
   template<class DisplayType>
@@ -254,6 +195,25 @@ namespace Dune
   {
     MyDisplayType * disp = (MyDisplayType *) he->display;
     return disp[0].next_child(he);
+  }
+
+  template<class DisplayType>
+  inline void CombinedGrapeDisplay<DisplayType>::
+  setIterationModus(DUNE_DAT * dat)
+  {
+    MyDisplayType * disp = (MyDisplayType *) dat->all->display;
+    disp[0].setIterationMethods(dat);
+  }
+
+  template<class DisplayType>
+  inline void CombinedGrapeDisplay<DisplayType>::
+  setIterationMethods(DUNE_DAT * dat)
+  {
+    enditer_ = dispList_.end();
+    for(grditer_ = dispList_.begin(); grditer_ != enditer_; ++grditer_)
+    {
+      (*grditer_)->setIterationMethods(dat);
+    }
   }
 
   template<class DisplayType>
@@ -384,12 +344,34 @@ namespace Dune
 
     hel_.display = (void *) this;
     hel_.liter = NULL;
+    hel_.enditer = 0;
     hel_.hiter = NULL;
     hel_.actElement = NULL;
 
+    DUNE_DAT * dune = &dune_;
+
+    dune->first_macro = &first_mac;
+    dune->next_macro  = &next_mac;
+
+    dune->first_child = &fst_child;
+    dune->next_child  = &nxt_child;
+
+    dune->copy         = 0; // no copy at the moment
+    dune->wtoc         = wtoc;
+    dune->ctow         = ctow;
+    dune->check_inside = check_inside;
+
+    // set method to select iterators
+    dune->setIterationModus = &setIterationModus;
+
+    dune->all          = &hel_;
+    dune->partition    = __MaxPartition-1;
+
+    dune->iteratorType          = g_LeafIterator;
+    dune->partitionIteratorType = g_All_Partition;
+
     /* return hmesh with no data */
-    return GrapeInterface<dim,dimworld>::hmesh(fst_leaf,nxt_leaf,first_mac,next_mac,fst_child,nxt_child,
-                                               NULL,check_inside,wtoc,ctow,NULL,noe,nov,maxlevel,__MaxPartition-1,&hel_,NULL);
+    return GrapeInterface<dim,dimworld>::hmesh(NULL,noe,nov,maxlevel,NULL,dune);
   }
 
 } // end namespace Dune

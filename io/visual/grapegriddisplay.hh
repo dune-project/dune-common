@@ -148,6 +148,12 @@ namespace Dune
     template <PartitionIteratorType pitype>
     inline int next_level (DUNE_ELEM * he) ;
 
+    // methods to call for combined display
+    inline int firstMacro (DUNE_ELEM * elem) { return dune_.first_macro(elem); }
+    inline int nextMacro  (DUNE_ELEM * elem) { return dune_.next_macro(elem);  }
+    inline int firstChild (DUNE_ELEM * elem) { return (dune_.first_child) ? dune_.first_child(elem) : 0; }
+    inline int nextChild  (DUNE_ELEM * elem) { return (dune_.next_child) ? dune_.next_child(elem) : 0; }
+
     // first and next child via HierarchicIterator with given maxlevel in Grape
     inline int first_child (DUNE_ELEM * he) ;
     inline int next_child (DUNE_ELEM * he) ;
