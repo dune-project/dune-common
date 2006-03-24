@@ -38,14 +38,22 @@ inline int Dune::UGGridEntity<codim,dim,GridImp>::count () const
 ////////////////////////////////////////////////////////////////////////////
 
 template< int dim, class GridImp>
+inline bool Dune::UGGridEntity < 0, dim ,GridImp >::wasRefined () const
+{
+  return UG_NS<dim>::ReadCW(target_, UG_NS<dim>::NEWEL_CE);
+}
+
+template< int dim, class GridImp>
+inline bool Dune::UGGridEntity < 0, dim ,GridImp >::mightBeCoarsened () const
+{
+  return ((!isRegular()) || (UG_NS<dim>::ReadCW(target_, UG_NS<dim>::COARSEN_CE)));
+}
+
+template< int dim, class GridImp>
 inline Dune::AdaptationState Dune::UGGridEntity < 0, dim ,GridImp >::state() const
 {
-  if (UG_NS<dim>::ReadCW(target_, UG_NS<dim>::NEWEL_CE))
-    return REFINED;
-
-  if (UG_NS<dim>::ReadCW(target_, UG_NS<dim>::COARSEN_CE))
-    return COARSEN;
-
+  if(wasRefined()) return REFINED;
+  if(mightBeCoarsened()) return COARSEN;
   return NONE;
 }
 
