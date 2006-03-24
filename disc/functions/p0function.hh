@@ -86,7 +86,7 @@ namespace Dune
   public:
     typedef BlockVector<FieldVector<RT,m> > RepresentationType;
 
-    //! allocate a vector with the data
+    //! create function with undefined degrees of freedom
     P0Function (const G& g,  const IS& indexset) : grid_(g), is(indexset), mapper_(g,indexset)
     {
       oldcoeff = 0;
@@ -99,6 +99,31 @@ namespace Dune
       }
       std::cout << "making  function with " << mapper_.size() << " components" << std::endl;
     }
+
+    //! create function with initialization from a vector
+    template<class V>
+    P0Function (const G& g,  const IS& indexset, const V& v)
+      : grid_(g), is(indexset), mapper_(g,indexset)
+    {
+      oldcoeff = 0;
+      try {
+        coeff = new RepresentationType(mapper_.size());
+      }
+      catch (std::bad_alloc) {
+        std::cerr << "not enough memory in P0Function" << std::endl;
+        throw;         // rethrow exception
+      }
+      std::cout << "making  function with " << mapper_.size() << " components" << std::endl;
+
+      // check size of initialization vector
+      if (v.size()!=(unsigned int)mapper_.size())
+        DUNE_THROW(Exception,"vector size in initializaton of P0 function does not match");
+
+      // copy
+      for (unsigned int i=0; i<v.size(); i++)
+        (*coeff)[i] = v[i];
+    }
+
 
     //! deallocate the vector
     ~P0Function ()
@@ -253,6 +278,10 @@ namespace Dune
     LeafP0Function (const G& grid)
       : P0Function<G,RT,typename G::template Codim<0>::LeafIndexSet,m>(grid,grid.leafIndexSet())
     {}
+    template<class V>
+    LeafP0Function (const G& grid, const V& v)
+      : P0Function<G,RT,typename G::template Codim<0>::LeafIndexSet,m>(grid,grid.leafIndexSet(),v)
+    {}
   };
 
 
@@ -264,6 +293,10 @@ namespace Dune
   public:
     LevelP0Function (const G& grid, int level)
       : P0Function<G,RT,typename G::template Codim<0>::LevelIndexSet,m>(grid,grid.levelIndexSet(level))
+    {}
+    template<class V>
+    LevelP0Function (const G& grid, int level, const V& v)
+      : P0Function<G,RT,typename G::template Codim<0>::LevelIndexSet,m>(grid,grid.levelIndexSet(level),v)
     {}
   };
 
