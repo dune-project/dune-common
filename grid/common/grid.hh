@@ -427,15 +427,6 @@ namespace Dune {
     BackwardCommunication         //!< reverse communication direction
   };
 
-  /*! GridIndexType specifies which Index of the Entities of the grid
-        should be used, i.e. globalIndex() or index()
-     @ingroup GIRelatedTypes
-   */
-  enum GridIndexType { GlobalIndex , //!< use globalIndex() of entity
-                       LevelIndex  ,  //!< use index() of entity
-                       LeafIndex    //!< use index() of entity
-  };
-
   /*! Id for each model of the grid interface
         @ingroup GIRelatedTypes
    */
