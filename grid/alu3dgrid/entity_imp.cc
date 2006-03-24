@@ -626,31 +626,20 @@ namespace Dune {
     return false;
   }
 
-
   // Adaptation methods
   template<int dim, class GridImp>
-  inline AdaptationState ALU3dGridEntity<0,dim,GridImp> :: state () const
+  inline bool ALU3dGridEntity<0,dim,GridImp> :: wasRefined () const
   {
-    //assert((item_ != 0) || (ghost_ != 0));
-    assert(item_ != 0);
-    if(item_)
-    {
-      if((*item_).requestrule() == coarse_element_t)
-      {
-        return COARSEN;
-      }
-
-      if(item_->hasBeenRefined())
-      {
-        return REFINED;
-      }
-
-      return NONE;
-    }
-    // is case of ghosts return none, because they are not considered
-    return NONE;
+    assert( item_ );
+    return item_->hasBeenRefined();
   }
 
+  template<int dim, class GridImp>
+  inline bool ALU3dGridEntity<0,dim,GridImp> :: mightBeCoarsened () const
+  {
+    assert( item_ );
+    return ((*item_).requestrule() == coarse_element_t);
+  }
 
   //*******************************************************************
   //

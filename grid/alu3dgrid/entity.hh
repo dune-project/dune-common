@@ -328,15 +328,17 @@ namespace Dune {
     //***************************************************************
     //  Interface for Adaptation
     //***************************************************************
+    //! returns true, if entity was created during last adaptation cycle
+    bool wasRefined () const;
 
+    //! returns true, if entity might be coarsened during next adaptation cycle
+    bool mightBeCoarsened () const;
+
+    // private method
     //! marks an element for refCount refines. if refCount is negative the
     //! element is coarsend -refCount times
     //! mark returns true if element was marked, otherwise false
     bool mark( int refCount ) const;
-
-    //! return whether entity could be cosrsend (COARSEND) or was refined
-    //! (REFINED) or nothing happend (NONE)
-    AdaptationState state () const;
 
     /*! private methods, but public because of datahandle and template
         arguments of these methods
