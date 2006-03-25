@@ -23,7 +23,6 @@ namespace Dune {
   {}
 
   //   B U I L T G E O M   - - -
-
   template<int mydim, int cdim>
   inline void ALU3dGridGeometry<mydim,cdim,const ALU3dGrid<3, 3, tetra> >::
   calcElMatrix () const

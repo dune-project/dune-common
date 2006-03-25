@@ -290,7 +290,6 @@ namespace Dune {
     //! no interface method
     void print (std::ostream& ss) const;
 
-
   private:
     // create triMap from coordinates , deletes old mapping
     void buildMapping();

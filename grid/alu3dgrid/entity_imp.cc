@@ -334,16 +334,43 @@ namespace Dune {
 #endif
     return geo_;
   }
+  /*
+     // singletons of geometry in father geometries
+     // GeometryType schould be of type Dune::Geometry
+     template <class GeometryType>
+     static inline GeometryType &
+     getALU3dGridGeometryInFather(const int child, const int orientation = 1)
+     {
+     typedef typename GeometryType :: ImplementationType GeometryImp;
+     static GeometryType child0 (GeometryImp(0,1)); // child 0
+     static GeometryType child1 (GeometryImp(1,1)); // child 1
+     static GeometryType child2 (GeometryImp(1,-1)); // child 1, orientation
+
+     if(child == 0) return child0;
+     if(child == 1) return (orientation > 0) ? child1_plus : child1_minus;
+
+     DUNE_THROW(NotImplemented,"wrong number of child given!");
+     return child0;
+     return 0;
+     }
+   */
 
   template<int dim, class GridImp>
   inline const typename ALU3dGridEntity<0,dim,GridImp>::Geometry &
   ALU3dGridEntity<0,dim,GridImp> :: geometryInFather () const
   {
-    const typename GridImp::template Codim<0> ::
-    EntityPointer ep = father();
-
-    geoInFather_.buildGeomInFather( (*ep).geometry() , geometry() );
-    return geoInFather_;
+    assert( item_ );
+    const int child = item_->nChild();
+    typedef typename Geometry::ImplementationType GeometryImp;
+    // to be improved, when we using not the refine 8 rule
+    static LocalGeometryStorage<Geometry,8> geoms;
+    if(!geoms.geomCreated(child))
+    {
+      typedef typename GridImp::template Codim<0> ::EntityPointer EntityPointer;
+      const EntityPointer ep = father();
+      geoms.create(grid_,(*ep).geometry(),geometry(),child );
+    }
+    return geoms[child];
   }
 
   template<int dim, class GridImp>
@@ -698,6 +725,19 @@ namespace Dune {
   }
 
   template<int codim, class GridImp >
+  inline ALU3dGridEntityPointerBase<codim,GridImp> &
+  ALU3dGridEntityPointerBase<codim,GridImp> ::
+  operator = (const ALU3dGridEntityPointerType & org)
+  {
+    assert( &grid_ == &org.grid_ );
+    // if entity exists, just free and reset pointers
+    if(entity_) this->done();
+    // set item
+    item_ = org.item_;
+    return *this;
+  }
+
+  template<int codim, class GridImp >
   inline ALU3dGridEntityPointerBase<codim,GridImp> ::
   ~ALU3dGridEntityPointerBase()
   {
@@ -789,6 +829,17 @@ namespace Dune {
       , twist_(org.twist_)
       , face_(org.face_)
   {}
+
+  template<int codim, class GridImp >
+  inline ALU3dGridEntityPointer<codim,GridImp> &
+  ALU3dGridEntityPointer<codim,GridImp>::
+  operator = (const ALU3dGridEntityPointerType & org)
+  {
+    ALU3dGridEntityPointerBase<codim,GridImp>::operator = (org);
+    twist_ = org.twist_;
+    face_  = org.face_;
+    return *this;
+  }
 
   template<int codim, class GridImp >
   inline typename ALU3dGridEntityPointer<codim,GridImp>::Entity &

@@ -448,6 +448,9 @@ namespace Dune {
     //! equality
     bool equals (const ALU3dGridEntityPointerType& i) const;
 
+    //! assignment operator
+    ThisType & operator = (const ThisType & org);
+
     //! dereferencing
     Entity & dereference () const ;
 
@@ -466,9 +469,6 @@ namespace Dune {
     void updateGhostPointer( HBndSegType & ghostFace );
     // update underlying item pointer and set entity
     void updateEntityPointer( MyHElementType * item );
-
-    // not allowed
-    ThisType & operator = (const ALU3dGridEntityPointerType & org);
 
     // reference to grid
     const GridImp & grid_;
@@ -569,15 +569,15 @@ namespace Dune {
     //! dereferencing
     Entity & dereference () const ;
 
+    //! assignment operator
+    ThisType & operator = (const ThisType & org);
+
   protected:
     //! Constructor for EntityPointer init of Level-, and Leaf-, and
     //! HierarchicIterator
     ALU3dGridEntityPointer(const GridImp & grid, int level )
       : ALU3dGridEntityPointerBase<cd,GridImp> (grid,level)
         , twist_(0) , face_(-1) {}
-
-    // not allowed
-    ThisType & operator = (const ALU3dGridEntityPointerType & org);
 
     // twist of face, for codim 1 only
     const int twist_;
