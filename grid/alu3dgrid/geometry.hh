@@ -41,63 +41,6 @@ namespace Dune {
 
      dimworld: Each corner is a point with dimworld coordinates.
    */
-  //! MakeableGeometry
-  template<int mydim, int coorddim, class GridImp>
-  class ALU3dGridMakeableGeometry : public Geometry<mydim, coorddim,
-                                        GridImp, ALU3dGridGeometry>
-  {
-    typedef Geometry<mydim, coorddim, GridImp, ALU3dGridGeometry> InterfaceGeometryType;
-    typedef typename ALU3dImplTraits<GridImp::elementType>::PLLBndFaceType PLLBndFaceType;
-
-    friend class ALU3dGridIntersectionIterator<GridImp>;
-
-  public:
-    typedef FieldMatrix<alu3d_ctype,
-        EntityCount<GridImp::elementType>::numVerticesPerFace,
-        3> FaceCoordinatesType;
-
-    ALU3dGridMakeableGeometry() :
-      InterfaceGeometryType (ALU3dGridGeometry<mydim, coorddim,GridImp>()) {}
-
-    ALU3dGridMakeableGeometry(GridImp & grid , int level ) :
-      InterfaceGeometryType (ALU3dGridGeometry<mydim, coorddim,GridImp>()) {}
-
-    //! build geometry out of different ALU3dGrid Geometrys
-    //! ItemType are HElementType, HFaceType, HEdgeType and VertexType
-    template <class ItemType>
-    bool buildGeom(const ItemType & item, int twist = 0 , int face = -1 )
-    {
-      return this->realGeometry.buildGeom(item, twist,face);
-    }
-
-    bool buildGeom(const ALU3DSPACE HFaceType& item, int twist, int face ) {
-      return this->realGeometry.buildGeom(item, twist, face );
-    }
-
-    bool buildGeom(const FaceCoordinatesType& coords) {
-      return this->realGeometry.buildGeom(coords);
-    }
-
-    // call buildGhost of realGeometry
-    bool buildGhost(const PLLBndFaceType & ghost)
-    {
-      return this->realGeometry.buildGhost(ghost);
-    }
-
-    //! build geometry of local coordinates relative to father
-    template <class GeometryType>
-    bool buildGeomInFather(const GeometryType &fatherGeom , const GeometryType & myGeom)
-    {
-      return this->realGeometry.buildGeomInFather(fatherGeom,myGeom);
-    }
-
-    // print real entity for debugging
-    void print (std::ostream& ss) const
-    {
-      this->realGeometry.print(ss);
-    }
-  };
-
   //! ALU3dGridGeometry
   //! Empty definition, needs to be specialized for element type
   template <int mydim, int cdim, class GridImp>
@@ -158,7 +101,7 @@ namespace Dune {
     //!  Methods that not belong to the Interface, but have to be public
     //***********************************************************************
     //! generate the geometry for out of given ALU3dGridElement
-    inline bool buildGeom(const IMPLElementType & item, int twist , int);
+    inline bool buildGeom(const IMPLElementType & item);
     inline bool buildGeom(const ALU3DSPACE HFaceType & item, int twist, int face );
     inline bool buildGeom(const FaceCoordinatesType& coords);
     inline bool buildGeom(const ALU3DSPACE HEdgeType & item, int twist, int );
@@ -273,7 +216,7 @@ namespace Dune {
     //!  Methods that not belong to the Interface, but have to be public
     //***********************************************************************
     //! generate the geometry out of a given ALU3dGridElement
-    bool buildGeom(const IMPLElementType & item, int twist, int);
+    bool buildGeom(const IMPLElementType & item);
     bool buildGeom(const ALU3DSPACE HFaceType & item, int twist, int faceNum);
     bool buildGeom(const FaceCoordinatesType& coords);
     bool buildGeom(const ALU3DSPACE HEdgeType & item, int twist, int);

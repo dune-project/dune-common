@@ -727,8 +727,10 @@ namespace Dune {
     typedef typename GridImp::template Codim<1>::Geometry Geometry;
     typedef typename GridImp::template Codim<1>::LocalGeometry LocalGeometry;
     typedef ALU3dGridMakeableEntity<0,dim,GridImp> EntityImp;
-    typedef ALU3dGridMakeableGeometry<dim-1,dimworld,GridImp> GeometryImp;
-    typedef ALU3dGridMakeableGeometry<dim-1,dimworld,GridImp> LocalGeometryImp;
+
+    typedef ALU3dGridGeometry<dim-1,dimworld,GridImp> GeometryImp;
+    typedef MakeableInterfaceObject<Geometry> GeometryObject;
+
     typedef FieldVector<alu3d_ctype, dimworld> NormalType;
     typedef ALU3dGridEntityPointer<0,GridImp> EntityPointer;
 
@@ -857,10 +859,6 @@ namespace Dune {
     mutable FaceInfoType connector_;
     mutable GeometryInfoType geoProvider_; // need to initialise
 
-    mutable GeometryImp intersectionGlobal_;
-    mutable GeometryImp intersectionSelfLocal_;
-    mutable GeometryImp intersectionNeighborLocal_;
-
     // reference to grid
     const GridImp & grid_;
 
@@ -873,6 +871,13 @@ namespace Dune {
 
     mutable bool generatedGlobalGeometry_;
     mutable bool generatedLocalGeometries_;
+
+    mutable GeometryObject intersectionGlobal_;
+    mutable GeometryImp &  intersectionGlobalImp_;
+    mutable GeometryObject intersectionSelfLocal_;
+    mutable GeometryImp &  intersectionSelfLocalImp_;
+    mutable GeometryObject intersectionNeighborLocal_;
+    mutable GeometryImp &  intersectionNeighborLocalImp_;
 
     // unit outer normal
     mutable NormalType unitOuterNormal_;

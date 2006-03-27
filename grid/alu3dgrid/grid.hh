@@ -43,8 +43,6 @@ namespace Dune {
   template<int cd, class GridImp >
   class ALU3dGridEntityPointer;
   template<int mydim, int coorddim, class GridImp>
-  class ALU3dGridMakeableGeometry;
-  template<int mydim, int coorddim, class GridImp>
   class ALU3dGridGeometry;
   template<class GridImp>
   class ALU3dGridHierarchicIterator;
@@ -206,6 +204,9 @@ namespace Dune {
 
     friend class ALU3dGridEntity <0,dim,MyType>;
     friend class ALU3dGridEntity <0,dim,const MyType>;
+    friend class ALU3dGridEntity <1,dim,const MyType>;
+    friend class ALU3dGridEntity <2,dim,const MyType>;
+    friend class ALU3dGridEntity <3,dim,const MyType>;
     friend class ALU3dGridIntersectionIterator<MyType>;
 
     friend class ALU3dGridEntityPointerBase<0,const MyType >;

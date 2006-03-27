@@ -32,6 +32,12 @@ namespace Dune {
     index_(0),
     generatedGlobalGeometry_(false),
     generatedLocalGeometries_(false),
+    intersectionGlobal_(GeometryImp()),
+    intersectionGlobalImp_(grid_.getRealImplementation(intersectionGlobal_)),
+    intersectionSelfLocal_(GeometryImp()),
+    intersectionSelfLocalImp_(grid_.getRealImplementation(intersectionSelfLocal_)),
+    intersectionNeighborLocal_(GeometryImp()),
+    intersectionNeighborLocalImp_(grid_.getRealImplementation(intersectionNeighborLocal_)),
     done_(true)
   {}
 
@@ -50,6 +56,12 @@ namespace Dune {
     index_(0),
     generatedGlobalGeometry_(false),
     generatedLocalGeometries_(false),
+    intersectionGlobal_(GeometryImp()),
+    intersectionGlobalImp_(grid_.getRealImplementation(intersectionGlobal_)),
+    intersectionSelfLocal_(GeometryImp()),
+    intersectionSelfLocalImp_(grid_.getRealImplementation(intersectionSelfLocal_)),
+    intersectionNeighborLocal_(GeometryImp()),
+    intersectionNeighborLocalImp_(grid_.getRealImplementation(intersectionNeighborLocal_)),
     done_(end)
   {
     if (!end)
@@ -112,6 +124,12 @@ namespace Dune {
     walkLevel_(org.walkLevel_),
     generatedGlobalGeometry_(false),
     generatedLocalGeometries_(false),
+    intersectionGlobal_(GeometryImp()),
+    intersectionGlobalImp_(grid_.getRealImplementation(intersectionGlobal_)),
+    intersectionSelfLocal_(GeometryImp()),
+    intersectionSelfLocalImp_(grid_.getRealImplementation(intersectionSelfLocal_)),
+    intersectionNeighborLocal_(GeometryImp()),
+    intersectionNeighborLocalImp_(grid_.getRealImplementation(intersectionNeighborLocal_)),
     done_(org.done_)
   {
     if(org.item_) { // else it's a end iterator
@@ -165,16 +183,20 @@ namespace Dune {
 
     const GEOFaceType * nextFace = 0;
 
-    // When neighbour element is refined, try to get the next child on the face
-    if (connector_.conformanceState() == FaceInfoType::REFINED_OUTER) {
-      nextFace = connector_.face().next();
+    // the dune interface gives neighbour on the same level
+    // there dont go down anymore, but keep the code
+    /*
+       // When neighbour element is refined, try to get the next child on the face
+       if (connector_.conformanceState() == FaceInfoType::REFINED_OUTER) {
+       nextFace = connector_.face().next();
 
-      // There was a next child face...
-      if (nextFace) {
+       // There was a next child face...
+       if (nextFace) {
         setNewFace(*nextFace);
         return; // we found what we were looking for...
-      }
-    } // end if
+       }
+       } // end if
+     */
 
     // Next face number of starting element
     ++index_;
@@ -192,10 +214,12 @@ namespace Dune {
 
     // Check whether we need to go down first
     //if (nextFace has children which need to be visited)
-    if (canGoDown(*nextFace)) {
-      nextFace = nextFace->down();
-      assert(nextFace);
-    }
+    /*
+       if (canGoDown(*nextFace)) {
+       nextFace = nextFace->down();
+       assert(nextFace);
+       }
+     */
 
     setNewFace(*nextFace);
     return;
@@ -341,15 +365,15 @@ namespace Dune {
 
   template <class GridImp>
   void ALU3dGridIntersectionIterator<GridImp>::buildGlobalGeometry() const {
-    intersectionGlobal_.buildGeom(geoProvider_.intersectionGlobal());
+    intersectionGlobalImp_.buildGeom(geoProvider_.intersectionGlobal());
     generatedGlobalGeometry_ = true;
   }
 
   template <class GridImp>
   void ALU3dGridIntersectionIterator<GridImp>::buildLocalGeometries() const {
-    intersectionSelfLocal_.buildGeom(geoProvider_.intersectionSelfLocal());
+    intersectionSelfLocalImp_.buildGeom(geoProvider_.intersectionSelfLocal());
     if (!connector_.outerBoundary()) {
-      intersectionNeighborLocal_.buildGeom(geoProvider_.intersectionNeighborLocal());
+      intersectionNeighborLocalImp_.buildGeom(geoProvider_.intersectionNeighborLocal());
     }
     generatedLocalGeometries_ = true;
   }

@@ -18,7 +18,25 @@ namespace Dune {
     face_(-1),
     item_(0),
     father_(0),
-    geo_(),
+    geo_( GeometryImp() ),
+    geoImp_(grid.getRealImplementation(geo_)),
+    builtgeometry_(false),
+    localFCoordCalced_ (false)
+  {}
+
+  // --Entity
+  template <int cd, int dim, class GridImp>
+  inline ALU3dGridEntity<cd,dim,GridImp> ::
+  ALU3dGridEntity(const ALU3dGridEntity<cd,dim,GridImp> & org) :
+    grid_(org.grid_),
+    level_(org.level_),
+    gIndex_(org.gIndex_),
+    twist_(org.twist_),
+    face_(org.face_),
+    item_(org.item_),
+    father_(org.father_),
+    geo_( GeometryImp() ),
+    geoImp_(grid_.getRealImplementation(geo_)),
     builtgeometry_(false),
     localFCoordCalced_ (false)
   {}
@@ -133,7 +151,7 @@ namespace Dune {
   ALU3dGridEntity<cd,dim,GridImp>:: geometry() const
   {
     //assert( (cd == 1) ? (face_ >= 0) : 1 );
-    if(!builtgeometry_) builtgeometry_ = geo_.buildGeom(*item_, twist_, face_ );
+    if(!builtgeometry_) builtgeometry_ = geoImp_.buildGeom(*item_, twist_, face_ );
     return geo_;
   }
 
@@ -174,13 +192,31 @@ namespace Dune {
   ALU3dGridEntity(const GridImp  &grid, int wLevel)
     : grid_(grid)
       , item_(0)
-      //, ghost_(0)
-      , isGhost_(false), geo_() , builtgeometry_(false)
+      , isGhost_(false)
+      , geo_(GeometryImp())
+      , geoImp_ (grid_.getRealImplementation(geo_))
+      , builtgeometry_(false)
       , walkLevel_ (wLevel)
-      //, glIndex_(-1)
       , level_(-1)
-      , geoInFather_ ()
+      , geoInFather_ (GeometryImp())
+      , geoInFatherImp_(grid_.getRealImplementation(geoInFather_))
       , isLeaf_ (false)
+  {  }
+
+  template<int dim, class GridImp>
+  inline ALU3dGridEntity<0,dim,GridImp> ::
+  ALU3dGridEntity(const ALU3dGridEntity<0,dim,GridImp> & org)
+    : grid_(org.grid_)
+      , item_(org.item_)
+      , isGhost_(org.isGhost_)
+      , geo_(GeometryImp())
+      , geoImp_ (grid_.getRealImplementation(geo_))
+      , builtgeometry_(false)
+      , walkLevel_ (org.walkLevel_)
+      , level_(org.level_)
+      , geoInFather_ (GeometryImp())
+      , geoInFatherImp_(grid_.getRealImplementation(geoInFather_))
+      , isLeaf_ (org.isLeaf_)
   {  }
 
   template<int dim, class GridImp>
@@ -320,57 +356,44 @@ namespace Dune {
     if(!builtgeometry_)
     {
       if(item_)
-        builtgeometry_ = geo_.buildGeom(*item_);
+        builtgeometry_ = geoImp_.buildGeom(*item_);
       /*
          else
          {
           assert(ghost_);
-          builtgeometry_ = geo_.buildGhost(*ghost_);
+          builtgeometry_ = geoImp_.buildGhost(*ghost_);
          }
        */
     }
 #else
-    if(!builtgeometry_) builtgeometry_ = geo_.buildGeom(*item_);
+    if(!builtgeometry_) builtgeometry_ = geoImp_.buildGeom(*item_);
 #endif
     return geo_;
   }
-  /*
-     // singletons of geometry in father geometries
-     // GeometryType schould be of type Dune::Geometry
-     template <class GeometryType>
-     static inline GeometryType &
-     getALU3dGridGeometryInFather(const int child, const int orientation = 1)
-     {
-     typedef typename GeometryType :: ImplementationType GeometryImp;
-     static GeometryType child0 (GeometryImp(0,1)); // child 0
-     static GeometryType child1 (GeometryImp(1,1)); // child 1
-     static GeometryType child2 (GeometryImp(1,-1)); // child 1, orientation
-
-     if(child == 0) return child0;
-     if(child == 1) return (orientation > 0) ? child1_plus : child1_minus;
-
-     DUNE_THROW(NotImplemented,"wrong number of child given!");
-     return child0;
-     return 0;
-     }
-   */
 
   template<int dim, class GridImp>
   inline const typename ALU3dGridEntity<0,dim,GridImp>::Geometry &
   ALU3dGridEntity<0,dim,GridImp> :: geometryInFather () const
   {
-    assert( item_ );
-    const int child = item_->nChild();
-    typedef typename Geometry::ImplementationType GeometryImp;
-    // to be improved, when we using not the refine 8 rule
-    static LocalGeometryStorage<Geometry,8> geoms;
-    if(!geoms.geomCreated(child))
-    {
-      typedef typename GridImp::template Codim<0> ::EntityPointer EntityPointer;
-      const EntityPointer ep = father();
-      geoms.create(grid_,(*ep).geometry(),geometry(),child );
-    }
-    return geoms[child];
+    /* new version , not working with ALUGrid-0.14
+     * uncomment when new ALUGrid Version is published
+       assert( item_ );
+       const int child = item_->nChild();
+       typedef typename Geometry::ImplementationType GeometryImp;
+       // to be improved, when we using not the refine 8 rule
+       static LocalGeometryStorage<Geometry,8> geoms;
+       if(!geoms.geomCreated(child))
+       {
+       typedef typename GridImp::template Codim<0> ::EntityPointer EntityPointer;
+       const EntityPointer ep = father();
+       geoms.create(grid_,(*ep).geometry(),geometry(),child );
+       }
+       return geoms[child];
+     */
+    typedef typename GridImp::template Codim<0> ::EntityPointer EntityPointer;
+    const EntityPointer ep = father();
+    geoInFatherImp_.buildGeomInFather((*ep).geometry(),geometry());
+    return geoInFather_;
   }
 
   template<int dim, class GridImp>

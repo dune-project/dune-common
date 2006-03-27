@@ -114,7 +114,6 @@ namespace Dune {
     friend class ALU3dGrid < dim , dimworld, GridImp::elementType >;
     friend class ALU3dGridEntity < 0, dim, GridImp >;
     friend class ALU3dGridLevelIterator < cd, All_Partition, GridImp >;
-    friend class ALU3dGridMakeableEntity <cd, dim, GridImp >;
 
     friend class ALU3dGridHierarchicIndexSet<dim,dimworld,GridImp::elementType>;
 
@@ -124,7 +123,10 @@ namespace Dune {
 
     typedef typename GridImp::template Codim<cd>::Entity Entity;
     typedef typename GridImp::template Codim<cd>::Geometry Geometry;
-    typedef ALU3dGridMakeableGeometry<dim-cd,GridImp::dimensionworld,GridImp> GeometryImp;
+
+    typedef ALU3dGridGeometry<dim-cd,GridImp::dimensionworld,GridImp> GeometryImp;
+    typedef MakeableInterfaceObject<Geometry> GeometryObject;
+
     typedef typename GridImp::template Codim<0>::EntityPointer EntityPointer;
 
     //! level of this element
@@ -135,6 +137,9 @@ namespace Dune {
 
     //! Constructor
     ALU3dGridEntity(const GridImp &grid, int level);
+
+    //! copy Constructor
+    ALU3dGridEntity(const ALU3dGridEntity & org);
 
     //! geometry of this entity
     const Geometry & geometry () const;
@@ -167,10 +172,10 @@ namespace Dune {
     //! set item from other entity, mainly for copy constructor of entity pointer
     void setEntity ( const ALU3dGridEntity<cd,dim,GridImp> & org );
 
-  private:
     // return reference to internal item
     const IMPLElementType & getItem () const { return *item_; }
 
+  private:
     //! index is unique within the grid hierachy and per codim
     int getIndex () const;
 
@@ -187,7 +192,9 @@ namespace Dune {
     const ALU3DSPACE HElementType * father_;
 
     //! the cuurent geometry
-    mutable GeometryImp geo_;
+    mutable GeometryObject geo_;
+    mutable GeometryImp & geoImp_;
+
     mutable bool builtgeometry_;       //!< true if geometry has been constructed
 
     mutable bool localFCoordCalced_;
@@ -253,7 +260,8 @@ namespace Dune {
 
   public:
     typedef typename GridImp::template Codim<0>::Geometry Geometry;
-    typedef ALU3dGridMakeableGeometry<dim,dimworld,GridImp> GeometryImp;
+    typedef ALU3dGridGeometry<dim,dimworld,GridImp> GeometryImp;
+    typedef MakeableInterfaceObject<Geometry> GeometryObject;
     typedef ALU3dGridIntersectionIterator<GridImp> IntersectionIteratorImp;
     typedef IntersectionIteratorWrapper<GridImp> ALU3dGridIntersectionIteratorType;
 
@@ -268,6 +276,9 @@ namespace Dune {
 
     //! Constructor creating empty Entity
     ALU3dGridEntity(const GridImp &grid, int level);
+
+    //! copy Constructor
+    ALU3dGridEntity(const ALU3dGridEntity & org);
 
     //! level of this element
     int level () const ;
@@ -380,14 +391,16 @@ namespace Dune {
     mutable bool isGhost_; //! true if entity is ghost entity
 
     //! the cuurent geometry
-    mutable GeometryImp geo_;
+    mutable GeometryObject geo_;
+    mutable GeometryImp & geoImp_;
     mutable bool builtgeometry_; //!< true if geometry has been constructed
 
     int walkLevel_; //! tells the actual level of walk put to LevelIterator..
 
     int level_;  //!< level of element
 
-    mutable GeometryImp geoInFather_;
+    mutable GeometryObject geoInFather_;
+    mutable GeometryImp &  geoInFatherImp_;
 
     // is true if entity is leaf entity
     bool isLeaf_;
