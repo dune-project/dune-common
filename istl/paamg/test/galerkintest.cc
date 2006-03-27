@@ -75,14 +75,15 @@ void testCoarsenIndices(int N)
 
   typename Dune::PropertyMapTypeSelector<Dune::Amg::VertexVisitedTag,PropertiesGraph>::Type visitedMap = Dune::get(Dune::Amg::VertexVisitedTag(), pg);
 
-  coarseInfo.buildGlobalLookup(noAggregates);
   pinfo.buildGlobalLookup(aggregatesMap.noVertices());
 
-  Dune::Amg::IndicesCoarsener<ParallelInformation,Dune::EnumItem<GridFlag,GridAttributes::copy> >::coarsen(pinfo,
-                                                                                                           pg,
-                                                                                                           visitedMap,
-                                                                                                           aggregatesMap,
-                                                                                                           coarseInfo);
+  int noCoarseVertices = Dune::Amg::IndicesCoarsener<ParallelInformation,Dune::EnumItem<GridFlag,GridAttributes::copy> >::coarsen(pinfo,
+                                                                                                                                  pg,
+                                                                                                                                  visitedMap,
+                                                                                                                                  aggregatesMap,
+                                                                                                                                  coarseInfo);
+
+  coarseInfo.buildGlobalLookup(noCoarseVertices);
   std::cout << rank <<": coarse indices: " <<coarseIndices << std::endl;
   std::cout << rank <<": coarse remote indices:"<<coarseRemote <<std::endl;
 
@@ -94,7 +95,7 @@ void testCoarsenIndices(int N)
 
   typedef Dune::Amg::GlobalAggregatesMap<Vertex,ParallelIndexSet> GlobalMap;
 
-  GlobalMap gmap(aggregatesMap, pinfo.globalLookup());
+  GlobalMap gmap(aggregatesMap, coarseInfo.globalLookup());
 
   communicator.build<GlobalMap>(interface);
 
@@ -131,7 +132,7 @@ void testCoarsenIndices(int N)
                                             Dune::EnumItem<GridFlag,GridAttributes::copy>());
 
   pinfo.freeGlobalLookup();
-  productBuilder.calculate(mat, aggregatesMap, *coarseMat, pinfo, Dune::EnumItem<GridFlag,GridAttributes::copy>());
+  productBuilder.calculate(mat, aggregatesMap, *coarseMat, coarseInfo, Dune::EnumItem<GridFlag,GridAttributes::copy>());
 
   if(N<5) {
     Dune::printmatrix(std::cout,mat,"fine","row",9,1);
