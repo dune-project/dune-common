@@ -1,6 +1,6 @@
 # $Id$
 
-SUBDIRS = common barycenter fixedorder gaussquadrature
+SUBDIRS = common barycenter fixedorder gaussquadrature test
 
 # the standard debug streams are put into the libdune
 noinst_LTLIBRARIES = libquadrature.la

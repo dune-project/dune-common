@@ -222,6 +222,7 @@ AC_CONFIG_FILES([Makefile
          quadrature/barycenter/Makefile
          quadrature/gaussquadrature/Makefile
          quadrature/fixedorder/Makefile
+         quadrature/test/Makefile
          solver/Makefile
          solver/common/Makefile
          doc/Makefile

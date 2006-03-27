@@ -1,0 +1,8 @@
+Makefile
+Makefile.in
+.deps
+.libs
+test-quadrature
+semantic.cache
+*.gcda
+*.gcno
