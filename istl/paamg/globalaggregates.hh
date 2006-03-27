@@ -108,12 +108,7 @@ namespace Dune
 
       static void scatter(GlobalAggregatesMap<T,TI>& ga, GlobalIndex global, size_t i)
       {
-        if(global < AggregatesMap<T>::ISOLATED)
-          ga.put(global, i);
-        else{
-          assert(global != AggregatesMap<T>::UNAGGREGATED);
-          ga.get(i)=global;
-        }
+        ga[i]=global;
       }
     };
 
