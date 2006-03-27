@@ -128,6 +128,10 @@ namespace Dune
         return gli;
       }
 
+      template<class V>
+      void copyOwnerToAll(V& v, V& v1) const
+      {}
+
       SequentialInformation(const CollectiveCommunication<void*>&)
       {}
 
