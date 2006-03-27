@@ -6,6 +6,9 @@
 /* global variables for maxlevel use */
 static BUTTON * maxlevelButton=0;
 
+/* on click set min and max value of function to colorbar */
+static BUTTON * minMaxColorbar=0;
+
 /* global variables for iterator choice */
 static COMBOBUTTON  * iteratorButton = 0;
 

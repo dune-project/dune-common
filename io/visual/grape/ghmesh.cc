@@ -1174,9 +1174,17 @@ inline SCENE* scene_maxlevel_on_off ()
   END_METHOD (sc);
 }
 
+inline SCENE* scene_set_min_max_values ()
+{
+  SCENE* sc = (SCENE*) START_METHOD (G_INSTANCE);
+  ALERT( sc, "set-min-max-values: No hmesh!", END_METHOD(NULL));
 
-//HMESH3D * new_hmesh3d_clip(double (*f)(),
-//        void *var, void (*draw_clip)() , void *scal);
+  double min = -1e37, max = 1e37;
+  GRAPE(sc, "value-min-max") (min, max);
+  colorBarMinMax(min,max);
+
+  END_METHOD (sc);
+}
 
 GENMESH3D * genmesh3d_switch_iterateLeafs_on_off();
 
@@ -1210,6 +1218,8 @@ inline static void grape_add_remove_methods(void)
     if( ! (GRAPE(Scene,"find-method") ("maxlevel-on-off")) )
       GRAPE(Scene,"add-method") ("maxlevel-on-off",scene_maxlevel_on_off);
 
+    if( ! (GRAPE(Scene,"find-method") ("set-min-max-values")) )
+      GRAPE(Scene,"add-method") ("set-min-max-values",scene_set_min_max_values);
     {
       char p_name[32];
       sprintf(p_name,"uif-m%d",GRAPE_DIM);
