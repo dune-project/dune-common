@@ -78,20 +78,33 @@ namespace Dune
               ParallelInformation& coarseInfo);
 
     private:
-      template<typename G>
+      template<typename G, typename I>
       class ParallelAggregateRenumberer : public AggregateRenumberer<G>
       {
         typedef typename G::VertexDescriptor Vertex;
 
+        typedef I GlobalLookupIndexSet;
+
+        typedef typename GlobalLookupIndexSet::IndexPair IndexPair;
+
+        typedef typename IndexPair::GlobalIndex GlobalIndex;
+
       public:
-        ParallelAggregateRenumberer(AggregatesMap<Vertex>& aggregates)
-          :  AggregateRenumberer<G>(aggregates), isPublic_(false)
+        ParallelAggregateRenumberer(AggregatesMap<Vertex>& aggregates, const I& lookup)
+          :  AggregateRenumberer<G>(aggregates),  isPublic_(false), lookup_(lookup),
+            globalIndex_(std::numeric_limits<Vertex>::max())
         {}
 
 
         void operator()(const typename G::ConstEdgeIterator& edge)
         {
           AggregateRenumberer<G>::operator()(edge);
+          const IndexPair* pair= lookup_.pair(edge.target());
+          if(pair!=0) {
+            globalIndex(pair->global());
+            attribute(pair->local().attribute());
+            isPublic(pair->local().isPublic());
+          }
         }
 
         Vertex operator()(const GlobalIndex& global)
@@ -113,6 +126,7 @@ namespace Dune
 
         void reset()
         {
+          globalIndex_ = std::numeric_limits<GlobalIndex>::max();
           isPublic_=false;
         }
 
@@ -126,25 +140,37 @@ namespace Dune
           return attribute_;
         }
 
+        const GlobalIndex& globalIndex() const
+        {
+          return globalIndex_;
+        }
+
+        void globalIndex(const GlobalIndex& global)
+        {
+          globalIndex_ = global;
+        }
+
       private:
         bool isPublic_;
         Attribute attribute_;
+        const GlobalLookupIndexSet& lookup_;
+        GlobalIndex globalIndex_;
       };
 
-      template<typename Graph, typename VM>
+      template<typename Graph, typename VM, typename I>
       static void buildCoarseIndexSet(const ParallelInformation& pinfo,
                                       Graph& fineGraph,
                                       VM& visitedMap,
                                       AggregatesMap<typename Graph::VertexDescriptor>& aggregates,
                                       ParallelIndexSet& coarseIndices,
-                                      ParallelAggregateRenumberer<Graph>& renumberer);
+                                      ParallelAggregateRenumberer<Graph,I>& renumberer);
 
-      template<typename Graph>
+      template<typename Graph,typename I>
       static void buildCoarseRemoteIndices(const RemoteIndices& fineRemote,
                                            const AggregatesMap<typename Graph::VertexDescriptor>& aggregates,
                                            ParallelIndexSet& coarseIndices,
                                            RemoteIndices& coarseRemote,
-                                           ParallelAggregateRenumberer<Graph>& renumberer);
+                                           ParallelAggregateRenumberer<Graph,I>& renumberer);
 
     };
 
@@ -176,8 +202,7 @@ namespace Dune
                                    AggregatesMap<typename Graph::VertexDescriptor>& aggregates,
                                    ParallelInformation& coarseInfo)
     {
-      ParallelAggregateRenumberer<Graph> renumberer(aggregates);
-      //fineInfo.buildGlobalLookup(aggregates.noVertices());
+      ParallelAggregateRenumberer<Graph,typename ParallelInformation::GlobalLookupIndexSet> renumberer(aggregates, fineInfo.globalLookup());
       buildCoarseIndexSet(fineInfo, fineGraph, visitedMap, aggregates,
                           coarseInfo.indexSet(), renumberer);
       buildCoarseRemoteIndices(fineInfo.remoteIndices(), aggregates, coarseInfo.indexSet(),
@@ -187,20 +212,20 @@ namespace Dune
     }
 
     template<typename T, typename E>
-    template<typename Graph, typename VM>
+    template<typename Graph, typename VM, typename I>
     void IndicesCoarsener<T,E>::buildCoarseIndexSet(const ParallelInformation& pinfo,
                                                     Graph& fineGraph,
                                                     VM& visitedMap,
                                                     AggregatesMap<typename Graph::VertexDescriptor>& aggregates,
                                                     ParallelIndexSet& coarseIndices,
-                                                    ParallelAggregateRenumberer<Graph>& renumberer)
+                                                    ParallelAggregateRenumberer<Graph,I>& renumberer)
     {
       typedef typename Graph::VertexDescriptor Vertex;
       typedef typename Graph::ConstVertexIterator Iterator;
-      typedef typename ParallelInformation::GlobalLookupIndexSet GlobalLookup;
+      typedef typename ParallelInformation::GlobalLookupIndexSet GlobalLookupIndexSet;
 
       Iterator end = fineGraph.end();
-      const GlobalLookup& lookup = pinfo.globalLookup();
+      const GlobalLookupIndexSet& lookup = pinfo.globalLookup();
 
       coarseIndices.beginResize();
 
@@ -211,23 +236,27 @@ namespace Dune
         if(aggregates[*index]!=AggregatesMap<typename Graph::VertexDescriptor>::ISOLATED)
           if(!get(visitedMap, *index)) {
 
-            typedef typename GlobalLookup::IndexPair IndexPair;
+            typedef typename GlobalLookupIndexSet::IndexPair IndexPair;
             const IndexPair* pair= lookup.pair(*index);
 
             renumberer.reset();
-            if(pair==0) {
-              // Reconstruct aggregate and mark vertices as visited
-              aggregates.template breadthFirstSearch<false>(*index, aggregates[*index],
-                                                            fineGraph, renumberer, visitedMap);
-            }
-            else if(!ExcludedAttributes::contains(pair->local().attribute())) {
+            if(pair!=0 && !ExcludedAttributes::contains(pair->local().attribute())) {
               renumberer.attribute(pair->local().attribute());
               renumberer.isPublic(pair->local().isPublic());
+              renumberer.globalIndex(pair->global());
+            }
 
-              // Reconstruct aggregate and mark vertices as visited
-              aggregates.template breadthFirstSearch<false>(*index, aggregates[*index],
-                                                            fineGraph, renumberer, visitedMap);
-              coarseIndices.add(pair->global(),
+            // Reconstruct aggregate and mark vertices as visited
+            aggregates.template breadthFirstSearch<false>(*index, aggregates[*index],
+                                                          fineGraph, renumberer, visitedMap);
+
+            typedef typename GlobalLookupIndexSet::IndexPair::GlobalIndex GlobalIndex;
+
+            const GlobalIndex& max = std::numeric_limits<GlobalIndex>::max();
+
+            if(renumberer.globalIndex()!=std::numeric_limits<GlobalIndex>::max()) {
+              //std::cout <<" Adding global="<< renumberer.globalIndex()<<" local="<<static_cast<std::size_t>(renumberer)<<std::endl;
+              coarseIndices.add(renumberer.globalIndex(),
                                 LocalIndex(renumberer, renumberer.attribute(),
                                            renumberer.isPublic()));
             }
@@ -239,7 +268,7 @@ namespace Dune
 
       coarseIndices.endResize();
 
-      assert(static_cast<std::size_t>(renumberer) <= coarseIndices.size());
+      assert(static_cast<std::size_t>(renumberer) >= coarseIndices.size());
 
       // Reset the visited flags
       for(Iterator vertex=fineGraph.begin(); vertex != end; ++vertex)
@@ -247,14 +276,16 @@ namespace Dune
     }
 
     template<typename T, typename E>
-    template<typename Graph>
+    template<typename Graph, typename I>
     void IndicesCoarsener<T,E>::buildCoarseRemoteIndices(const RemoteIndices& fineRemote,
                                                          const AggregatesMap<typename Graph::VertexDescriptor>& aggregates,
                                                          ParallelIndexSet& coarseIndices,
                                                          RemoteIndices& coarseRemote,
-                                                         ParallelAggregateRenumberer<Graph>& renumberer)
+                                                         ParallelAggregateRenumberer<Graph,I>& renumberer)
     {
-      std::vector<char> attributes(coarseIndices.size());
+      std::vector<char> attributes(static_cast<std::size_t>(renumberer));
+
+      GlobalLookupIndexSet<ParallelIndexSet> coarseLookup(coarseIndices, static_cast<std::size_t>(renumberer));
 
       typedef typename RemoteIndices::const_iterator Iterator;
       Iterator end = fineRemote.end();
@@ -266,12 +297,14 @@ namespace Dune
         assert(neighbour->second.first==neighbour->second.second);
 
         // Mark all as not known
-        for(size_t i=0; i < coarseIndices.size(); i++)
-          attributes[i] = std::numeric_limits<char>::max();
+        typedef typename std::vector<char>::iterator CIterator;
 
-        typedef typename RemoteIndices::RemoteIndexList::const_iterator
-        Iterator;
+        for(CIterator iter=attributes.begin(); iter!= attributes.end(); ++iter)
+          *iter = std::numeric_limits<char>::max();
+
+        typedef typename RemoteIndices::RemoteIndexList::const_iterator Iterator;
         Iterator riEnd = neighbour->second.second->end();
+
         for(Iterator index = neighbour->second.second->begin();
             index != riEnd; ++index) {
           if(!E::contains(index->localIndexPair().local().attribute()) &&
@@ -279,6 +312,7 @@ namespace Dune
              AggregatesMap<typename Graph::VertexDescriptor>::ISOLATED)
           {
             typename Graph::VertexDescriptor aggregate = index->localIndexPair().local();
+            //std::cout<<* coarseLookup.pair(aggregates[aggregate]) << " also present on "<<neighbour->first<<std::endl;
             assert(aggregates[aggregate]<(int)attributes.size());
             assert(attributes[aggregates[index->localIndexPair().local()]] == std::numeric_limits<char>::max()
                    || attributes[aggregates[index->localIndexPair().local()]] == index->attribute());
@@ -294,12 +328,12 @@ namespace Dune
         Modifier coarseList = coarseRemote.template getModifier<false,true>(process);
 
         IndexIterator iend = coarseIndices.end();
-        int i=0;
-        for(IndexIterator index = coarseIndices.begin(); index != iend; ++index, ++i)
-          if(attributes[i] != std::numeric_limits<char>::max()) {
+        for(IndexIterator index = coarseIndices.begin(); index != iend; ++index)
+          if(attributes[index->local()] != std::numeric_limits<char>::max()) {
             // remote index is present
-            coarseList.insert(RemoteIndex(Attribute(attributes[i]), &(*index)));
+            coarseList.insert(RemoteIndex(Attribute(attributes[index->local()]), &(*index)));
           }
+        //std::cout<<coarseRemote<<std::endl;
       }
 
       // The number of neighbours should not change!
