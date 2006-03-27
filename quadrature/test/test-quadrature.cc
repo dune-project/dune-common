@@ -9,8 +9,9 @@
 #include <dune/grid/common/referenceelements.hh>
 
 template<class ctype, int dim>
-void checkQuadrature(Dune::GeometryType t, int p)
+bool checkQuadrature(Dune::GeometryType t, int p)
 {
+  double success = true;
   double volume = 0;
   // Quadratures
   typedef Dune::QuadratureRule<ctype, dim> Quad;
@@ -25,19 +26,24 @@ void checkQuadrature(Dune::GeometryType t, int p)
   }
   if (std::abs(volume -
                Dune::ReferenceElements<ctype, dim>::general(t).volume())
-      > std::numeric_limits<double>::epsilon())
+      > 10*std::numeric_limits<double>::epsilon())
   {
     std::cerr << "Error: Quadrature for " << t << " and order=" << p
               << " does not sum to volume of RefElem" << std::endl;
+    std::cerr << "\tSums to " << volume << "( RefElem.volume() = "
+              << Dune::ReferenceElements<ctype, dim>::general(t).volume()
+              << ")" << std::endl;
+    success = false;
   }
-  checkQuadrature<ctype,dim>(t, p+1);
+  success = success && checkQuadrature<ctype,dim>(t, p+1);
+  return success;
 }
 
 template<class ctype, int dim>
-void checkQuadrature(Dune::GeometryType t)
+bool checkQuadrature(Dune::GeometryType t)
 {
   try {
-    checkQuadrature<ctype,dim>(t, 1);
+    return checkQuadrature<ctype,dim>(t, 1);
   }
   catch (Dune::NotImplemented & e) {
     std::cout << e.what() << std::endl;
@@ -46,6 +52,8 @@ void checkQuadrature(Dune::GeometryType t)
 
 int main ()
 {
+  bool success = true;
+
   try {
     Dune::GeometryType cube1d(Dune::GeometryType::cube,1);
     Dune::GeometryType cube2d(Dune::GeometryType::cube,2);
@@ -57,15 +65,22 @@ int main ()
     Dune::GeometryType prism3d(Dune::GeometryType::prism,3);
     Dune::GeometryType pyramid3d(Dune::GeometryType::pyramid,3);
 
-    checkQuadrature<double, 1>(cube1d);
-    checkQuadrature<double, 2>(cube2d);
-    checkQuadrature<double, 3>(cube3d);
+    success = success &&
+              checkQuadrature<double, 1>(cube1d);
+    success = success &&
+              checkQuadrature<double, 2>(cube2d);
+    success = success &&
+              checkQuadrature<double, 3>(cube3d);
 
-    checkQuadrature<double, 2>(simplex2d);
-    checkQuadrature<double, 3>(simplex3d);
+    success = success &&
+              checkQuadrature<double, 2>(simplex2d);
+    success = success &&
+              checkQuadrature<double, 3>(simplex3d);
 
-    checkQuadrature<double, 3>(prism3d);
-    checkQuadrature<double, 3>(pyramid3d);
+    success = success &&
+              checkQuadrature<double, 3>(prism3d);
+    success = success &&
+              checkQuadrature<double, 3>(pyramid3d);
   }
   catch (Dune::Exception &e) {
     std::cerr << e << std::endl;
@@ -76,5 +91,5 @@ int main ()
     return 2;
   }
 
-  return 0;
+  return success ? 0 : 1;
 }
