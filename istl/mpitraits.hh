@@ -64,15 +64,14 @@ namespace Dune
   template<class K, int n>
   struct MPITraits<FieldVector<K,n> >
   {
-    static MPI_Datatype* datatype;
-    static MPI_Datatype* vectortype;
+    static MPI_Datatype datatype;
+    static MPI_Datatype vectortype;
 
     static inline MPI_Datatype getType()
     {
-      if(datatype==0) {
-        vectortype = new MPI_Datatype();
-        MPI_Type_contiguous(n, MPITraits<K>::getType(), vectortype);
-        datatype = new MPI_Datatype();
+      if(datatype==MPI_DATATYPE_NULL) {
+        MPI_Type_contiguous(n, MPITraits<K>::getType(), &vectortype);
+        MPI_Type_commit(&vectortype);
         FieldVector<K,n> fvector;
         MPI_Aint base;
         MPI_Aint displ;
@@ -81,8 +80,8 @@ namespace Dune
         displ -= base;
         int length[1]={1};
 
-
-        MPI_Type_struct(1, length, &displ, vectortype, datatype);
+        MPI_Type_struct(1, length, &displ, &vectortype, &datatype);
+        MPI_Type_commit(&datatype);
       }
       return datatype;
     }
@@ -90,8 +89,45 @@ namespace Dune
   };
 
   template<class K, int n>
-  MPI_Datatype* MPITraits<FieldVector<K,n> >::datatype = 0;
+  MPI_Datatype MPITraits<FieldVector<K,n> >::datatype = MPI_DATATYPE_NULL;
+  template<class K, int n>
+  MPI_Datatype MPITraits<FieldVector<K,n> >::vectortype = {MPI_DATATYPE_NULL};
 
+
+  template<int k>
+  class bigunsignedint;
+
+  template<int k>
+  struct MPITraits<bigunsignedint<k> >
+  {
+    static MPI_Datatype datatype;
+    static MPI_Datatype vectortype;
+
+    static inline MPI_Datatype getType()
+    {
+      if(datatype==0) {
+        MPI_Type_contiguous(bigunsignedint<k>::n, MPITraits<unsigned short>::getType(),
+                            &vectortype);
+        //MPI_Type_commit(&vectortype);
+        bigunsignedint<k> data;
+        MPI_Aint base;
+        MPI_Aint displ;
+        MPI_Address(&data, &base);
+        MPI_Address(&(data.digit), &displ);
+        displ -= base;
+        int length[1]={1};
+        MPI_Type_struct(1, length, &displ, &vectortype, &datatype);
+        MPI_Type_commit(&datatype);
+      }
+      return datatype;
+    }
+  };
+
+
+  template<int k>
+  MPI_Datatype MPITraits<bigunsignedint<k> >::datatype = MPI_DATATYPE_NULL;
+  template<int k>
+  MPI_Datatype MPITraits<bigunsignedint<k> >::vectortype = MPI_DATATYPE_NULL;
   /** @} */
 }
 
