@@ -77,7 +77,9 @@ namespace Dune
       typename M::CreateIterator row_;
       /** @brief The aggregates mapping. */
       const AggregatesMap<V>& aggregates_;
-
+#ifdef DUNE_ISTL_WITH_CHECKING
+      bool diagonalInserted;
+#endif
     };
 
     class BaseGalerkinProduct
@@ -259,6 +261,7 @@ namespace Dune
                           const T& pinfo,
                           const AggregatesMap<Vertex>& aggregates,
                           const O& overlap,
+                          const std::size_t* overlapStart,
                           const OverlapVertex<Vertex>* overlapVertices,
                           const OverlapVertex<Vertex>* overlapEnd,
                           R& row);
@@ -314,10 +317,11 @@ namespace Dune
                                                                    const OverlapVertex<typename G::VertexDescriptor>*& seed,
                                                                    const OverlapVertex<typename G::VertexDescriptor>* overlapEnd)
     {
-      const typename G::VertexDescriptor aggregate=seed->aggregate;
-      row.insert(aggregate);
       ConnectedBuilder<G,R,V> conBuilder(aggregates, graph, visitedMap, row);
+      const typename G::VertexDescriptor aggregate=seed->aggregate;
+
       while(seed != overlapEnd && aggregate == seed->aggregate) {
+        row.insert(seed->aggregate);
         // Walk over all neighbours and add them to the connected array.
         visitNeighbours(graph, seed->vertex, conBuilder);
         // Mark vertex as visited
@@ -391,12 +395,17 @@ namespace Dune
 
       overlapStart_ = new std::size_t[graph.maxVertex()];
 
+#ifndef NDEBUG
+      for(int i=0; i < graph.maxVertex(); ++i)
+        overlapStart_[i]=-1;
+#endif
+
       std::size_t startIndex = 0;
 
       Vertex aggregate = graph.maxVertex()+1;
+      OverlapVertex<Vertex>* vend = overlapVertices+overlapCount;
 
-      for(OverlapVertex<Vertex>* vertex=overlapVertices; vertex != overlapVertices+overlapCount;
-          ++vertex) {
+      for(OverlapVertex<Vertex>* vertex=overlapVertices; vertex != vend; ++vertex) {
         if(aggregate != vertex->aggregate) {
           aggregate = vertex->aggregate;
           startIndex=vertex-overlapVertices;
@@ -413,6 +422,7 @@ namespace Dune
                                                const T& pinfo,
                                                const AggregatesMap<Vertex>& aggregates,
                                                const O& overlap,
+                                               const std::size_t* overlapStart,
                                                const OverlapVertex<Vertex>* overlapVertices,
                                                const OverlapVertex<Vertex>* overlapEnd,
                                                R& row)
@@ -424,6 +434,10 @@ namespace Dune
 
       VertexIterator vend=graph.end();
 
+#ifdef DUNE_ISTL_WITH_CHECKING
+      std::set<Vertex> examined;
+#endif
+
       // The aggregates owned by the process have lower local indices
       // then those not owned. We process them in the first pass.
       // They represent the rows 0, 1, ..., n of the coarse matrix
@@ -433,6 +447,10 @@ namespace Dune
           typedef typename GlobalLookup::IndexPair IndexPair;
           const IndexPair* pair = lookup.pair(*vertex);
           if(pair==0 || !overlap.contains(pair->local().attribute())) {
+#ifdef DUNE_ISTL_WITH_CHECKING
+            assert(examined.find(aggregates[*vertex])==examined.end());
+            examined.insert(aggregates[*vertex]);
+#endif
             constructNonOverlapConnectivity(row, graph, visitedMap, aggregates, *vertex);
             ++row;
           }
@@ -440,17 +458,20 @@ namespace Dune
 
       // Now come the aggregates not owned by use.
       // They represent the rows n+1, ..., N
-      for(VertexIterator vertex = graph.begin(); vertex != vend; ++vertex)
-        if(!get(visitedMap, *vertex)) {
+      while(overlapVertices != overlapEnd)
+        if(overlapVertices->aggregate!=AggregatesMap<Vertex>::ISOLATED) {
 
-#ifdef ISTL_WITH_CHECKING
+#ifdef DUNE_ISTL_WITH_CHECKING
           typedef typename GlobalLookup::IndexPair IndexPair;
-          const IndexPair* pair = lookup.pair(seed);
+          const IndexPair* pair = lookup.pair(overlapVertices->vertex);
           assert(pair!=0 && overlap.contains(pair->local().attribute()));
+          assert(examined.find(aggregates[overlapVertices->vertex])==examined.end());
+          examined.insert(aggregates[overlapVertices->vertex]);
 #endif
-
           constructOverlapConnectivity(row, graph, visitedMap, aggregates, overlapVertices, overlapEnd);
           ++row;
+        }else{
+          ++overlapVertices;
         }
     }
 
@@ -477,18 +498,29 @@ namespace Dune
     template<class M, class V>
     SparsityBuilder<M,V>::SparsityBuilder(M& matrix, const AggregatesMap<V>& aggregates)
       : row_(matrix.createbegin()), aggregates_(aggregates)
-    {}
+    {
+#ifdef DUNE_ISTL_WITH_CHECKING
+      diagonalInserted = false;
+#endif
+    }
 
     template<class M, class V>
     void SparsityBuilder<M,V>::operator++()
     {
       ++row_;
+#ifdef DUNE_ISTL_WITH_CHECKING
+      assert(diagonalInserted);
+      diagonalInserted = false;
+#endif
     }
 
     template<class M, class V>
     void SparsityBuilder<M,V>::insert(const typename M::size_type& index)
     {
       row_.insert(index);
+#ifdef DUNE_ISTL_WITH_CHECKING
+      diagonalInserted = diagonalInserted || row_.index()==index;
+#endif
     }
 
     template<class T>
@@ -524,7 +556,8 @@ namespace Dune
       SparsityBuilder<M,typename G::VertexDescriptor> sparsityBuilder(*coarseMatrix, aggregates);
 
       ConnectivityConstructor<G,T>::examine(fineGraph, visitedMap, pinfo,
-                                            aggregates, overlap, overlapVertices,
+                                            aggregates, overlap, overlapStart_,
+                                            overlapVertices,
                                             overlapVertices+count,
                                             sparsityBuilder);
 
