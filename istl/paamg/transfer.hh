@@ -144,7 +144,7 @@ namespace Dune
                                                                                             OwnerOverlapCopyCommunication<T1,T2>& comm)
     {
       Transfer<V,BlockVector<B>,SequentialInformation>::restrict (aggregates, coarse, fine, SequentialInformation());
-      comm.copyOwnerToAll(coarse, coarse);
+      comm.project(coarse);
     }
     /** @} */
   }    // namspace Amg
