@@ -511,7 +511,7 @@ namespace Dune
           DUNE_THROW(NotImplemented, "Accumulation to fewer processes not yet implemented!");
         }
 
-        dinfo << "Building aggregates took "<<watch.elapsed()<<" seconds."<<std::endl;
+        dinfo << "Building "<<noAggregates<<" aggregates (took "<<watch.elapsed()<<" seconds."<<std::endl;
 
 
         parallelInformation_.addCoarser(infoLevel->communicator());
