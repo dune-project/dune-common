@@ -294,6 +294,9 @@ namespace Dune
     class SymmetricCriterion : public AggregationCriterion<SymmetricDependency<M,Norm> >
     {};
 
+    template<class M, class Norm>
+    class UnSymmetricCriterion : public AggregationCriterion<Dependency<M,Norm> >
+    {};
     // forward declaration
     template<class G> class Aggregator;
 
@@ -673,7 +676,7 @@ namespace Dune
        * @param aggregates Aggregate map we will build. All entries should be initialized
        * to UNAGGREGATED!
        * @param c The coarsening criterion to use.
-       * @return The number of aggregates built.
+       * @return The number of (not skipped) aggregates built.
        */
       template<class M, class C>
       int build(const M& m, G& graph,
@@ -1208,21 +1211,21 @@ namespace Dune
     {
       maxValue_ = std::min(- std::numeric_limits<typename Matrix::field_type>::max(), std::numeric_limits<typename Matrix::field_type>::min());
       row_ = index;
-      diagonal_ = norm_(matrix_->operator[](row_)[row_]);
+      diagonal_ = matrix_->operator[](row_)[row_];
     }
 
     template<class M, class N>
     inline void Dependency<M,N>::examine(const ColIter& col)
     {
       maxValue_ = std::max(maxValue_,
-                           (norm_(*col)));
+                           -*col);
     }
 
     template<class M, class N>
     template<class G>
     inline void Dependency<M,N>::examine(G& graph, const typename G::EdgeIterator& edge, const ColIter& col)
     {
-      if(norm_(*col) >= maxValue_ * alpha()) {
+      if(-*col >= maxValue_ * alpha()) {
         edge.properties().setDepends();
         edge.properties().setInfluences();
       }
@@ -1231,7 +1234,7 @@ namespace Dune
     template<class M, class N>
     inline bool Dependency<M,N>::isIsolated()
     {
-      return maxValue_  < beta();
+      return maxValue_  < beta() * diagonal_;
     }
 
     template<class G>
@@ -2062,7 +2065,7 @@ namespace Dune
 
       delete aggregate_;
       delete[] distanceSpheres_;
-      return conAggregates+isoAggregates;
+      return conAggregates; //+isoAggregates;
     }
 
     template<class G>
