@@ -273,11 +273,11 @@ namespace Dune
       if(matrix == matrices_->matrices().coarsest()) {
         // Solve directly
         InverseOperatorResult res;
+        pinfo->copyOwnerToAll(*rhs, *rhs);
         solver_->apply(*lhs, *rhs, res);
         if(!res.converged)
           DUNE_THROW(MathError, "Coarse solver did not converge");
       }else{
-
         // presmoothing
         for(std::size_t i=0; i < steps_; ++i) {
           smoother->apply(*lhs, *rhs);
@@ -316,9 +316,10 @@ namespace Dune
         --level;
         //prolongate and add the correction (update is in coarse left hand side)
         --matrix;
-        --pinfo;
 
         typename Hierarchy<Domain,A>::Iterator coarseLhs = lhs--;
+
+        --pinfo;
 
         Transfer<typename MatrixHierarchy::AggregatesMap::AggregateDescriptor,Range,ParallelInformation>
         ::prolongate(*(*aggregates), *coarseLhs, *lhs, 1.6);
