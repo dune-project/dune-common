@@ -137,10 +137,33 @@ void setBoundary(Dune::BlockVector<Dune::FieldVector<double,BS> >& lhs,
     G y = i->global()%n;
 
     if(x==0 || y ==0 || x==n-1 || y==n-1) {
-      double h = 1.0 / ((double) n);
-      lhs[i->local()]=rhs[i->local()]=((double)(x/(n-1)))*(double(y/(n-1)))*h*h;
+      double h = 1.0 / ((double) (n-1));
+      lhs[i->local()]=rhs[i->local()]=0;((double)x)*((double)y)*h*h;
     }
   }
+}
+
+template<int BS, class G>
+void setBoundary(Dune::BlockVector<Dune::FieldVector<double,BS> >& lhs,
+                 Dune::BlockVector<Dune::FieldVector<double,BS> >& rhs,
+                 const G& N)
+{
+  for(int j=0; j < N; ++j)
+    for(int i=0; i < N; i++)
+      if(i==0 || j ==0 || i==N-1 || j==N-1) {
+        double h = 1.0 / ((double) (N-1));
+        double x, y;
+        if(i==N-1)
+          x=1;
+        else
+          x = ((double) i)*h;
+        if(j==N-1)
+          y = 1;
+        else
+          y = ((double) j)*h;
+
+        lhs[j*N+i]=rhs[j*N+i]=0;x*y;
+      }
 }
 
 template<int BS, class G, class L, int s>
