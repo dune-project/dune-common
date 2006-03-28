@@ -13,7 +13,6 @@
 #include <dune/common/exceptions.hh>
 #include "dune/grid/common/mcmgmapper.hh"
 #include "dune/grid/common/referenceelements.hh"
-#include "dune/disc/functions/functions.hh"
 
 
 // namespace base64
@@ -120,8 +119,6 @@ namespace Dune
   template<class GridImp, class IS=typename GridImp::template Codim<0>::LeafIndexSet>
   class VTKWriter {
 
-    class VTKFunction;
-
     // extract types
     enum {n=GridImp::dimension};
     enum {w=GridImp::dimensionworld};
@@ -129,8 +126,44 @@ namespace Dune
     typedef typename GridImp::Traits::template Codim<0>::Entity Entity;
     typedef typename GridImp::Traits::template Codim<0>::Entity Cell;
     typedef typename GridImp::Traits::template Codim<n>::Entity Vertex;
+
+  public:
+    // A base class for grid functions with any return type and dimension
+    // Trick : use double as return type
+    class VTKFunction
+    {
+    public:
+      //! return number of components
+      virtual int ncomps () const = 0;
+
+      //! evaluate single component comp in the entity e at local coordinates xi
+      /*! Evaluate the function in an entity at local coordinates.
+            @param[in]  comp   number of component to be evaluated
+            @param[in]  e      reference to grid entity of codimension 0
+            @param[in]  xi     point in local coordinates of the reference element of e
+            \return            value of the component
+       */
+      virtual double evaluate (int comp, const Entity& e, const Dune::FieldVector<DT,n>& xi) const = 0;
+
+      // get name
+      virtual std::string name () const = 0;
+
+      // virtual destructor
+      virtual ~VTKFunction () {}
+    };
+
+  private:
     typedef typename std::list<VTKFunction*>::iterator functioniterator;
 
+    template<int dim>
+    struct P0Layout
+    {
+      bool contains (int codim, Dune::GeometryType gt)
+      {
+        if (codim==0) return true;
+        return false;
+      }
+    };
     template<int dim>
     struct P1Layout
     {
@@ -144,7 +177,105 @@ namespace Dune
     static const PartitionIteratorType vtkPartition = InteriorBorder_Partition;
     typedef typename IS::template Codim<0>::template Partition<vtkPartition>::Iterator CellIterator;
     typedef typename IS::template Codim<n>::template Partition<vtkPartition>::Iterator VertexIterator;
-    typedef MultipleCodimMultipleGeomTypeMapper<GridImp,IS,P1Layout> VM;
+    typedef MultipleCodimMultipleGeomTypeMapper<GridImp,IS,P0Layout> VM0;
+    typedef MultipleCodimMultipleGeomTypeMapper<GridImp,IS,P1Layout> VM1;
+
+
+    // take a vector and interpret it as cell data
+    template<class V>
+    class P0VectorWrapper : public VTKFunction
+    {
+    public:
+      //! return number of components
+      virtual int ncomps () const
+      {
+        return 1;
+      }
+
+      //! evaluate
+      virtual double evaluate (int comp, const Entity& e, const Dune::FieldVector<DT,n>& xi) const
+      {
+        return v[mapper.map(e)];
+      }
+
+      //! get name
+      virtual std::string name () const
+      {
+        return s;
+      }
+
+      // construct from a vector and a name
+      P0VectorWrapper (const GridImp& g_, const IS& is_, const V& v_, std::string s_)
+        : g(g_), is(is_), v(v_), s(s_), mapper(g_,is_)
+      {
+        if (v.size()!=(unsigned int)mapper.size())
+          DUNE_THROW(IOError,"VTKWriter::P0VectorWrapper: size mismatch");
+      }
+
+      virtual ~P0VectorWrapper() {}
+
+    private:
+      const GridImp& g;
+      const IS& is;
+      const V& v;
+      std::string s;
+      VM0 mapper;
+    };
+
+    // take a vector and interpret it as vertex data
+    template<class V>
+    class P1VectorWrapper : public VTKFunction
+    {
+    public:
+      //! return number of components
+      virtual int ncomps () const
+      {
+        return 1;
+      }
+
+      //! evaluate
+      virtual double evaluate (int comp, const Entity& e, const Dune::FieldVector<DT,n>& xi) const
+      {
+        double min=1E100;
+        int imin=-1;
+        Dune::GeometryType gt = e.geometry().type();
+        for (int i=0; i<e.template count<n>(); ++i)
+        {
+          Dune::FieldVector<DT,n>
+          local = Dune::ReferenceElements<DT,n>::general(gt).position(i,n);
+          local -= xi;
+          if (local.infinity_norm()<min)
+          {
+            min = local.infinity_norm();
+            imin = i;
+          }
+        }
+        return v[mapper.template map<n>(e,imin)];
+      }
+
+      //! get name
+      virtual std::string name () const
+      {
+        return s;
+      }
+
+      // construct from a vector and a name
+      P1VectorWrapper (const GridImp& g_, const IS& is_, const V& v_, std::string s_)
+        : g(g_), is(is_), v(v_), s(s_), mapper(g_,is_)
+      {
+        if (v.size()!=(unsigned int)mapper.size())
+          DUNE_THROW(IOError,"VTKWriter::P1VectorWrapper: size mismatch");
+      }
+
+      virtual ~P1VectorWrapper() {}
+
+    private:
+      const GridImp& g;
+      const IS& is;
+      const V& v;
+      std::string s;
+      VM1 mapper;
+    };
 
   public:
     //! constructor from a grid (uses a leaf indexset)
@@ -162,18 +293,30 @@ namespace Dune
     }
 
     //! add a grid function for output
-    template<class RT, int m>
-    void addCellData (const GridFunction<GridImp,RT,m>& f, std::string name)
+    void addCellData (VTKFunction* p)
     {
-      VTKFunction* p = new GridFunctionWrapper<RT,m>(f,name);
       celldata.push_back(p);
     }
 
     //! add a grid function for output
-    template<class RT, int m>
-    void addVertexData (const GridFunction<GridImp,RT,m>& f, std::string name)
+    template<class V>
+    void addCellData (const V& v, std::string name)
     {
-      VTKFunction* p = new GridFunctionWrapper<RT,m>(f,name);
+      VTKFunction* p = new P0VectorWrapper<V>(grid,is,v,name);
+      celldata.push_back(p);
+    }
+
+    //! add a grid function for output
+    void addVertexData (VTKFunction* p)
+    {
+      vertexdata.push_back(p);
+    }
+
+    //! add a grid function for output
+    template<class V>
+    void addVertexData (const V& v, std::string name)
+    {
+      VTKFunction* p = new P1VectorWrapper<V>(grid,is,v,name);
       vertexdata.push_back(p);
     }
 
@@ -509,7 +652,7 @@ namespace Dune
       indentUp();
 
       // Piece
-      vertexmapper = new VM(grid,is);
+      vertexmapper = new VM1(grid,is);
       number.resize(vertexmapper->size());
       for (std::vector<int>::size_type i=0; i<number.size(); i++) number[i] = -1;
       nvertices = 0;
@@ -1002,70 +1145,6 @@ namespace Dune
       std::ostream& s;
     };
 
-    // A base class for grid functions with any return type and dimension
-    // Trick : use double as return type
-    class VTKFunction
-    {
-    public:
-      //! return number of components
-      virtual int ncomps () const = 0;
-
-      //! evaluate single component comp in the entity e at local coordinates xi
-      /*! Evaluate the function in an entity at local coordinates.
-            @param[in]  comp   number of component to be evaluated
-            @param[in]  e      reference to grid entity of codimension 0
-            @param[in]  xi     point in local coordinates of the reference element of e
-            \return            value of the component
-       */
-      virtual double evaluate (int comp, const Entity& e, const Dune::FieldVector<DT,n>& xi) const = 0;
-
-      // get name
-      virtual std::string name () const = 0;
-
-      // virtual destructor
-      virtual ~VTKFunction () {}
-    };
-
-    //!
-    template<class RT, int m>
-    class GridFunctionWrapper : public VTKFunction
-    {
-    public:
-      //! return number of components
-      virtual int ncomps () const
-      {
-        return m;
-      }
-
-      //! evaluate single component comp in the entity e at local coordinates xi
-      /*! Evaluate the function in an entity at local coordinates.
-            @param[in]  comp   number of component to be evaluated
-            @param[in]  e      reference to grid entity of codimension 0
-            @param[in]  xi     point in local coordinates of the reference element of e
-            \return            value of the component
-       */
-      virtual double evaluate (int comp, const Entity& e, const Dune::FieldVector<DT,n>& xi) const
-      {
-        return func.evallocal(comp,e,xi);
-      }
-
-      // get name
-      virtual std::string name () const
-      {
-        return myname;
-      }
-
-      // constructor remembers reference to a grid function
-      GridFunctionWrapper (const GridFunction<GridImp,RT,m>& f, std::string s) : func(f), myname(s)
-      {}
-
-      virtual ~GridFunctionWrapper() {}
-
-    private:
-      const GridFunction<GridImp,RT,m>& func;
-      std::string myname;
-    };
-
     void indentUp ()
     {
       indentCount++;
@@ -1119,7 +1198,7 @@ namespace Dune
     int ncells;
     int nvertices;
     int ncorners;
-    VM* vertexmapper;
+    VM1* vertexmapper;
     std::vector<int> number;
     VTKOptions::Type datamode;
     unsigned int bytecount;
