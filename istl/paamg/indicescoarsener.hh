@@ -309,9 +309,7 @@ namespace Dune
              aggregates[index->localIndexPair().local()] !=
              AggregatesMap<typename Graph::VertexDescriptor>::ISOLATED)
           {
-            typename Graph::VertexDescriptor aggregate = index->localIndexPair().local();
-            //std::cout<<* coarseLookup.pair(aggregates[aggregate]) << " also present on "<<neighbour->first<<std::endl;
-            assert(aggregates[aggregate]<(int)attributes.size());
+            assert(aggregates[index->localIndexPair().local()]<(int)attributes.size());
             assert(attributes[aggregates[index->localIndexPair().local()]] == std::numeric_limits<char>::max()
                    || attributes[aggregates[index->localIndexPair().local()]] == index->attribute());
             attributes[aggregates[index->localIndexPair().local()]] = index->attribute();
