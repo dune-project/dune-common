@@ -36,17 +36,18 @@ void checkQuadrature(Dune::GeometryType t, int p)
               << ")" << std::endl;
     success = false;
   }
-  checkQuadrature<ctype,dim>(t, p+1);
+  //  checkQuadrature<ctype,dim>(t, p+1);
 }
 
 template<class ctype, int dim>
 void checkQuadrature(Dune::GeometryType t)
 {
-  try {
-    checkQuadrature<ctype,dim>(t, 1);
-  }
-  catch (Dune::NotImplemented & e) {
-    std::cout << e.what() << std::endl;
+  for (int i=0; i<100; i++)
+  {
+    try {
+      checkQuadrature<ctype,dim>(t, i);
+    }
+    catch (Dune::QuadratureOrderOutOfRange & e) {}
   }
 }
 
