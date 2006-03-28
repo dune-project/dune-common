@@ -252,8 +252,6 @@ namespace Dune
 
             typedef typename GlobalLookupIndexSet::IndexPair::GlobalIndex GlobalIndex;
 
-            const GlobalIndex& max = std::numeric_limits<GlobalIndex>::max();
-
             if(renumberer.globalIndex()!=std::numeric_limits<GlobalIndex>::max()) {
               //std::cout <<" Adding global="<< renumberer.globalIndex()<<" local="<<static_cast<std::size_t>(renumberer)<<std::endl;
               coarseIndices.add(renumberer.globalIndex(),
