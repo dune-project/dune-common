@@ -79,8 +79,8 @@ namespace Dune {
     // force creation of symbols and code ...
     void init_referenceelements()
     {
-      InitReferenceElements<double, 3> i1;
-      InitReferenceElements<float, 3> i2;
+      InitReferenceElements<double, 5> i1;
+      InitReferenceElements<float, 5> i2;
     }
 
   };
