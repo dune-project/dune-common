@@ -22,6 +22,7 @@
 #include "dune/istl/operators.hh"
 #include "dune/istl/bcrsmatrix.hh"
 #include "dune/disc/shapefunctions/lagrangeshapefunctions.hh"
+#include "dune/io/file/vtk/vtkwriter.hh"
 
 // same directory includes
 #include "functions.hh"
@@ -97,7 +98,7 @@ namespace Dune
         std::cerr << "not enough memory in P0Function" << std::endl;
         throw;         // rethrow exception
       }
-      std::cout << "making  function with " << mapper_.size() << " components" << std::endl;
+      //          std::cout << "making  function with " << mapper_.size() << " components" << std::endl;
     }
 
     //! create function with initialization from a vector
@@ -113,7 +114,7 @@ namespace Dune
         std::cerr << "not enough memory in P0Function" << std::endl;
         throw;         // rethrow exception
       }
-      std::cout << "making  function with " << mapper_.size() << " components" << std::endl;
+      //          std::cout << "making  function with " << mapper_.size() << " components" << std::endl;
 
       // check size of initialization vector
       if (v.size()!=(unsigned int)mapper_.size())
@@ -249,6 +250,13 @@ namespace Dune
     const MultipleCodimMultipleGeomTypeMapper<G,IS,P0Layout>& mapper () const
     {
       return mapper_;
+    }
+
+    //! VTK output
+    void vtkout (VTKWriter<G,IS>& vtkwriter, std::string s)
+    {
+      typename VTKWriter<G,IS>::VTKFunction *p = new VTKGridFunctionWrapper<G,IS,RT,m>(*this,s);
+      vtkwriter.addCellData(p);
     }
 
   private:

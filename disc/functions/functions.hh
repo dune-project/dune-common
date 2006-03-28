@@ -10,6 +10,8 @@
 #include "common/exceptions.hh"
 #include "grid/common/grid.hh"
 #include "grid/utility/hierarchicsearch.hh"
+#include "dune/io/file/vtk/vtkwriter.hh"
+
 
 /**
  * @file dune/disc/functions/functions.hh
@@ -516,6 +518,53 @@ namespace Dune
      */
     virtual int order () const {return InfinitelyDifferentiable;}
   };
+
+
+  // Wrapper for VTK output of grid functions
+  template<class GridImp, class IS, class RT, int m>
+  class VTKGridFunctionWrapper : public VTKWriter<GridImp,IS>::VTKFunction
+  {
+    enum {n=GridImp::dimension};
+    typedef typename GridImp::ctype DT;
+    typedef typename GridImp::Traits::template Codim<0>::Entity Entity;
+
+  public:
+    //! return number of components
+    virtual int ncomps () const
+    {
+      return m;
+    }
+
+    //! evaluate single component comp in the entity e at local coordinates xi
+    /*! Evaluate the function in an entity at local coordinates.
+       @param[in]  comp   number of component to be evaluated
+       @param[in]  e      reference to grid entity of codimension 0
+       @param[in]  xi     point in local coordinates of the reference element of e
+       \return            value of the component
+     */
+    virtual double evaluate (int comp, const Entity& e, const Dune::FieldVector<DT,n>& xi) const
+    {
+      return func.evallocal(comp,e,xi);
+    }
+
+    // get name
+    virtual std::string name () const
+    {
+      return myname;
+    }
+
+    // constructor remembers reference to a grid function
+    VTKGridFunctionWrapper (const GridFunction<GridImp,RT,m>& f, std::string s) : func(f), myname(s)
+    {}
+
+    virtual ~VTKGridFunctionWrapper() {}
+
+  private:
+    const GridFunction<GridImp,RT,m>& func;
+    std::string myname;
+  };
+
+
 
 
 
