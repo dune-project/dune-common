@@ -614,7 +614,6 @@ namespace Dune
       InfoIterator info = parallelInformation_.coarsest();
       int i=0;
       for(Iterator level=matrices_.coarsest(), finest=matrices_.finest(); level != finest;  --level, --info, ++amap) {
-        std::cout<<"Freeing level "<<i++<<std::endl;
         (*amap)->free();
         delete *amap;
         delete &level->getmat();
