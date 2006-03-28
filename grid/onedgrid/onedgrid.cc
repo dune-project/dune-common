@@ -22,8 +22,6 @@ namespace Dune {
     template <Dune::PartitionIteratorType PiType>
     static Dune::OneDGridLevelIterator<1,PiType, const Dune::OneDGrid<1,1> >
     lbegin(const Dune::OneDGrid<1,1> * g, int level) {
-      if (level<0 || level>g->maxLevel())
-        DUNE_THROW(Dune::GridError, "LevelIterator in nonexisting level " << level << " requested!");
 
       return Dune::OneDGridLevelIterator<1,PiType, const Dune::OneDGrid<1,1> >(g->vertices[level].begin);
     }
@@ -36,8 +34,6 @@ namespace Dune {
     template <Dune::PartitionIteratorType PiType>
     static Dune::OneDGridLevelIterator<0,PiType, const Dune::OneDGrid<1,1> >
     lbegin(const Dune::OneDGrid<1,1> * g, int level) {
-      if (level<0 || level>g->maxLevel())
-        DUNE_THROW(Dune::GridError, "LevelIterator in nonexisting level " << level << " requested!");
 
       return Dune::OneDGridLevelIterator<0,PiType, const Dune::OneDGrid<1,1> >(g->elements[level].begin);
     }
@@ -170,6 +166,9 @@ template <int codim>
 typename Dune::OneDGrid<dim,dimworld>::Traits::template Codim<codim>::LevelIterator
 Dune::OneDGrid<dim,dimworld>::lbegin(int level) const
 {
+  if (level<0 || level>maxLevel())
+    DUNE_THROW(Dune::GridError, "LevelIterator in nonexisting level " << level << " requested!");
+
   return OneDGridLevelIteratorFactory<codim>::template lbegin<All_Partition>(this, level);
 }
 
@@ -189,6 +188,9 @@ template <int codim, Dune::PartitionIteratorType PiType>
 typename Dune::OneDGrid<dim,dimworld>::Traits::template Codim<codim>::template Partition<PiType>::LevelIterator
 Dune::OneDGrid<dim,dimworld>::lbegin(int level) const
 {
+  if (level<0 || level>maxLevel())
+    DUNE_THROW(Dune::GridError, "LevelIterator in nonexisting level " << level << " requested!");
+
   return OneDGridLevelIteratorFactory<codim>::template lbegin<PiType>(this, level);
 }
 
@@ -309,40 +311,41 @@ bool Dune::OneDGrid<dim,dimworld>::adapt()
 
     for (eIt = elements[i].begin; eIt!=NULL; eIt = eIt->succ_) {
 
-      if (eIt->markState_ == COARSEN)
-        DUNE_THROW(NotImplemented, "Coarsening is not implemented for OneDGrid");
-#if 0
-      if (eIt->markState_ == COARSEN
-          && !eIt->isLeaf()) {
+      if (eIt->markState_ == COARSEN && eIt->isLeaf()) {
 
         OneDEntityImp<1>* leftElement = eIt->pred_;
 
         OneDEntityImp<1>* rightElement = eIt->succ_;
 
         // Is the left vertex obsolete?
-        if (leftElement->geo_.vertex(1) != eIt->geo_.vertex(0))
-          vertices[i].erase(eIt->geo_.vertex(0));
+        if (leftElement->vertex_[1] != eIt->vertex_[0]) {
+          vertices[i].remove(eIt->vertex_[0]);
+          delete(eIt->vertex_[0]);
+        }
 
         // Is the right vertex obsolete?
-        if (rightElement->geo_.vertex(0) != eIt->geo_.vertex(1))
-          vertices[i].erase(eIt->geo_.vertex(1));
+        if (rightElement->vertex_[0] != eIt->vertex_[1]) {
+          vertices[i].remove(eIt->vertex_[1]);
+          delete(eIt->vertex_[1]);
+        }
 
         // Remove reference from the father element
-        if (eIt->father()->sons_[0] == eIt)
-          eIt->father()->sons_[0] = elements[i].end();
+        if (eIt->father_->sons_[0] == eIt)
+          eIt->father_->sons_[0] = NULL;
         else {
-          assert (eIt->father()->sons_[1] == eIt);
-          eIt->father()->sons_[1] = elements[i].end();
+          assert (eIt->father_->sons_[1] == eIt);
+          eIt->father_->sons_[1] = NULL;
         }
 
         // Actually delete element
-        elements[i].erase(eIt);
+        elements[i].remove(eIt);
+        delete(eIt);
 
         // The grid has been changed
         changedGrid = true;
 
       }
-#endif
+
     }
 
   }
