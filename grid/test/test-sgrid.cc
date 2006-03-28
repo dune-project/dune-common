@@ -49,15 +49,15 @@ int main () {
       checkIntersectionIterator(g2);
     };
 
-    {
-      std::cout << std::endl << "SGrid<4,4>" << std::endl << std::endl;
-      Dune::SGrid<4,4> g3(n, h);
-      gridcheck(g3);
+    //     {
+    //       std::cout << std::endl << "SGrid<4,4>" << std::endl << std::endl;
+    //       Dune::SGrid<4,4> g3(n, h);
+    //       gridcheck(g3);
 
-      g3.globalRefine(1);
-      checkGeometryInFather(g3);
-      checkIntersectionIterator(g3);
-    };
+    //       g3.globalRefine(1);
+    //       checkGeometryInFather(g3);
+    //       checkIntersectionIterator(g3);
+    //     };
 
   } catch (Dune::Exception &e) {
     std::cerr << e << std::endl;
