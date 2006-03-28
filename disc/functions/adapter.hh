@@ -35,7 +35,7 @@ namespace Dune
     GridFunctionAdapter (const GridFunctionAdapter&);
   public:
     //! create Adaptor from a Function
-    GridFunctionAdapter(const Function<DT,RT,n,m>& f) : _fnkt(f) {};
+    GridFunctionAdapter(const FunctionBase<DT,RT,n,m>& f) : _fnkt(f) {};
 
     // forward the evaluation to _fnkt
     virtual RT eval (int comp, const Dune::FieldVector<DT,n>& x) const
@@ -43,7 +43,7 @@ namespace Dune
       return _fnkt.eval(comp, x);
     }
   private:
-    const Function<DT,RT,n,m>& _fnkt;
+    const FunctionBase<DT,RT,n,m>& _fnkt;
   };
 
 }; // end namespace Dune
