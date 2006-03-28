@@ -425,11 +425,11 @@ namespace Dune {
      * \param local Local evaluation point
      *
      * \return The return type is int because the macro INVERSE_TRANSFORMATION
-     *  return 1 on failure.
+     *  returns 1 on failure.
      */
     static int Transformation(int n, double** x,
                               const FieldVector<double, 3>& local, FieldMatrix<double,3,3>& mat) {
-      typedef DOUBLE DOUBLE_VECTOR[3];
+      using UG3d::DOUBLE_VECTOR;
       double det;
       INVERSE_TRANSFORMATION(n, x, local, mat, det);
       return 0;
