@@ -7,7 +7,7 @@
 
 namespace Dune {
 
-  //! \brief Class that wraps IntersectionIteratorImp of a grid adn gets it's
+  //! \brief Class that wraps IntersectionIteratorImp of a grid and gets it's
   //! internal object from a object stack hold by the grid
   template <class GridImp>
   class IntersectionIteratorWrapper
