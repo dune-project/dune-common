@@ -256,6 +256,19 @@ namespace Dune
     }
     //@}
 
+  protected:
+
+    // give the GridDefaultImplementation class access to the realImp
+    friend class GridDefaultImplementation<
+        GridImp::dimension, GridImp::dimensionworld,
+        typename GridImp::ctype,
+        typename GridImp::GridFamily> ;
+
+    //! return reference to the real implementation
+    ImplementationType & getRealImp() { return realIterator; }
+    //! return reference to the real implementation
+    const ImplementationType & getRealImp() const { return realIterator; }
+
   };
 
   //**********************************************************************
