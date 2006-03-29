@@ -842,6 +842,8 @@ namespace Dune {
     //! assignment operator
     SIntersectionIterator& operator = (const SIntersectionIterator& it)
     {
+      assert(grid == it.grid);
+
       /* Assert same Iterator Context */
       if (! self.equals(it.self))
         DUNE_THROW(GridError, "assignment of SIntersectionIterator "
@@ -862,8 +864,9 @@ namespace Dune {
   private:
     void make (int _count) const;               //!< reinitialze iterator with given neighbor
     void makeintersections () const;            //!< compute intersections
-    const SEntityPointer<0,GridImp> self;       //!< EntityPointer for myself
-    mutable SEntityPointer<0,GridImp> ne;       //!< EntityPointer for neighbor
+    const EntityPointer self;                   //!< EntityPointer for myself
+    mutable EntityPointer ne;                   //!< EntityPointer for neighbor
+    const GridImp * grid;                       //!< Pointer to the grid
     const int partition;                        //!< partition number of self, needed for coordinate expansion
     const FixedArray<int,dim> zred;               //!< reduced coordinates of myself, allows easy computation of neighbors
     mutable int count;                            //!< number of neighbor

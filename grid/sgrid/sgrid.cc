@@ -528,9 +528,9 @@ namespace Dune {
     count = _count;
 
     // check if count is valid
-    if (count<0 || count>=self.e.template count<1>())
+    if (count<0 || count>=grid->getRealImplementation(self).e.template count<1>())
     {
-      ne.id = -1;
+      grid->getRealImplementation(ne).id = -1;
       return;     // done, this is end iterator
     }
     valid_count = true;
@@ -543,30 +543,26 @@ namespace Dune {
       zrednb[count/2] -= 1;           // even
 
     // now check if neighbor exists
-    is_on_boundary = !ne.grid->exists(self.l,zrednb);
+    is_on_boundary = !grid->exists(grid->getRealImplementation(self).l,zrednb);
     if (is_on_boundary)
     {
-      ne.id = -1;
+      grid->getRealImplementation(ne).id = -1;
       return;     // ok, done it
     }
 
     // now neighbor is in the grid and must be initialized.
     // First compute its id
-    ne.id = ne.grid->n(self.l,
-                       ne.grid->expand(self.l,zrednb,partition));
-
-    //        ne.id = id;
-    //        ne.l = l;
-    ne.e.make(ne.l,ne.id);
+    grid->getRealImplementation(ne).id = grid->n(grid->getRealImplementation(self).l,
+                                                 grid->expand(grid->getRealImplementation(self).l,zrednb,partition));
+    grid->getRealImplementation(ne).e.make(grid->getRealImplementation(ne).l,grid->getRealImplementation(ne).id);
   }
 
   template<class GridImp>
   inline SIntersectionIterator<GridImp>::SIntersectionIterator
     (GridImp* _grid, const SEntity<0,dim,GridImp>* _self, int _count) :
-    self(*_self), ne(self),
-    //    grid(_grid), l(_self->l), id(_self->id),
-    partition(_grid->partition(ne.l,_self->z)),
-    zred(_grid->compress(ne.l,_self->z))
+    self(*_self), ne(self), grid(_grid),
+    partition(_grid->partition(grid->getRealImplementation(ne).l,_self->z)),
+    zred(_grid->compress(grid->getRealImplementation(ne).l,_self->z))
   {
     // make neighbor
     make(_count);
@@ -575,13 +571,13 @@ namespace Dune {
   template<class GridImp>
   inline bool SIntersectionIterator<GridImp>::equals (const SIntersectionIterator<GridImp>& i) const
   {
-    return (self.id==i.self.id)&&(self.l==i.self.l)&&(count==i.count);
+    return (self == i.self) && (count==i.count);
   }
 
   template<class GridImp>
   inline int SIntersectionIterator<GridImp>::level () const
   {
-    return ne.l;
+    return grid->getRealImplementation(ne).l;
   }
 
   template<class GridImp>
@@ -626,7 +622,8 @@ namespace Dune {
     int c = count%2;
 
     // compute expanded coordinates of entity
-    FixedArray<int,dim> z1 = self.grid->template getRealEntity<0>(self.e).z;
+    FixedArray<int,dim> z1 =
+      grid->getRealImplementation(grid->getRealImplementation(self).e).z;
     if (c==1)
       z1[dir] += 1;           // odd
     else
@@ -676,9 +673,9 @@ namespace Dune {
       {
         // each i!=dir gives one direction vector
         z1[i] += 1;                 // direction i => even
-        p2 = ne.grid->pos(self.level(),z1);
+        p2 = grid->pos(self.level(),z1);
         z1[i] -= 2;                 // direction i => even
-        p1 = ne.grid->pos(self.level(),z1);
+        p1 = grid->pos(self.level(),z1);
         z1[i] += 1;                 // revert t to original state
         __As[t] = p2-p1;
         ++t;
@@ -686,7 +683,7 @@ namespace Dune {
     for (int i=0; i<dim; i++)
       if (i!=dir)
         z1[i] -= 1;
-    __As[t] = ne.grid->pos(self.level(),z1);
+    __As[t] = grid->pos(self.level(),z1);
     is_global.make(__As);     // build geometry
 
     built_intersections = true;
