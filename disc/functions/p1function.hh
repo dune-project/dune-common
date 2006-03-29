@@ -545,52 +545,6 @@ namespace Dune
             << "(" << extraDOFs << " extra degrees of freedom)" << std::endl;
     }
 
-    //! allocate data with initialization from vector
-    template<class V>
-    P1Function (const G& g,  const IS& indexset, const V& v, LC lcomm, bool extendoverlap=false)
-      : grid_(g), is(indexset), mapper_(g,indexset), lc(lcomm), oldcoeff(0)
-    {
-      // check if overlap extension is possible
-      if (extendoverlap && g.overlapSize(0)>0)
-        DUNE_THROW(GridError,"P1Function: extending overlap requires nonoverlapping grid");
-
-      // check size of initialization vector
-      if (v.size()!=(unsigned int)mapper_.size())
-        DUNE_THROW(Exception,"vector size in initializaton of P1 function does not match");
-
-      // no extra DOFs so far
-      extraDOFs = 0;
-      extendOverlap = extendoverlap;
-
-      // overlap extension
-      if (extendoverlap)
-      {
-        // set of neighbors in global ids for border vertices
-        std::map<int,GIDSet> borderlinks;
-        std::map<IdType,int> gid2index;
-
-        // compute extension
-        P1ExtendOverlap<G,IS,VM,LC> extender(lc);
-        extender.extend(g,indexset,mapper_,borderlinks,extraDOFs,gid2index);
-      }
-
-      // allocate the vector
-      oldcoeff = 0;
-      try {
-        coeff = new RepresentationType(mapper_.size()+extraDOFs);
-      }
-      catch (std::bad_alloc) {
-        std::cerr << "not enough memory in P1Function" << std::endl;
-        throw;         // rethrow exception
-      }
-      dverb << "making FE function with " << mapper_.size()+extraDOFs << " components"
-            << "(" << extraDOFs << " extra degrees of freedom)" << std::endl;
-
-      // copy
-      for (unsigned int i=0; i<v.size(); i++)
-        (*coeff)[i] = v[i];
-    }
-
     //! deallocate the vector
     ~P1Function ()
     {
@@ -978,11 +932,6 @@ namespace Dune
     LeafP1Function (const G& grid, bool extendoverlap=false)
       : P1Function<G,RT,typename G::template Codim<0>::LeafIndexSet,LeafCommunicate<G>,m>(grid,grid.leafIndexSet(),LeafCommunicate<G>(grid),extendoverlap)
     {}
-
-    template<class V>
-    LeafP1Function (const G& grid, const V& v, bool extendoverlap=false)
-      : P1Function<G,RT,typename G::template Codim<0>::LeafIndexSet,LeafCommunicate<G>,m>(grid,grid.leafIndexSet(),v,LeafCommunicate<G>(grid),extendoverlap)
-    {}
   };
 
 
@@ -1001,11 +950,6 @@ namespace Dune
      */
     LevelP1Function (const G& grid, int level, bool extendoverlap=false)
       : P1Function<G,RT,typename G::template Codim<0>::LevelIndexSet,LevelCommunicate<G>,m>(grid,grid.levelIndexSet(level),LevelCommunicate<G>(grid,level),extendoverlap)
-    {}
-
-    template<class V>
-    LevelP1Function (const G& grid, int level, const V& v, bool extendoverlap=false)
-      : P1Function<G,RT,typename G::template Codim<0>::LevelIndexSet,LevelCommunicate<G>,m>(grid,grid.levelIndexSet(level),v,LevelCommunicate<G>(grid,level),extendoverlap)
     {}
   };
 
