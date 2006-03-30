@@ -1,7 +1,7 @@
 # $Id$
 
 SUBDIRS = common dgspace discfuncarray feop lagrangebase norms \
-  operator transfer space discretefunction test
+  operator transfer space discretefunction
 
 femincludedir = $(includedir)/dune/fem
 feminclude_HEADERS = dfadapt.hh dgspace.hh discfuncarray.hh \
