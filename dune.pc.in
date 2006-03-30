@@ -2,10 +2,13 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
+CXX=@CXX@
+CC=@CC@
 
 Name: Dune
 Version: @VERSION@
 Description: the Dune numerics library
+URL: http://dune.uni-hd.de/
 Requires:
 Libs:
 Cflags: -I${includedir}
