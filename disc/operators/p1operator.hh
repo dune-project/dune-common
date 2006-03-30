@@ -657,12 +657,12 @@ namespace Dune
 
     {
       // be verbose
-      std::cout << g.comm().rank() << ": " << "vector size = " << vertexmapper.size() << " + " << extraDOFs << std::endl;
+      //          std::cout << g.comm().rank() << ": " << "vector size = " << vertexmapper.size() << " + " << extraDOFs << std::endl;
       std::cout << g.comm().rank() << ": " << "making " << size() << "x"
                 << size() << " matrix with " << nnz(indexset) << " nonzeros" << std::endl;
-      std::cout << g.comm().rank() << ": " << "allmapper has size " << allmapper.size() << std::endl;
-      std::cout << g.comm().rank() << ": " << "vertexmapper has size " << vertexmapper.size() << std::endl;
-      std::cout << g.comm().rank() << ": " << "hanging nodes=" << hangingnodes << " links=" << links.size() << std::endl;
+      //          std::cout << g.comm().rank() << ": " << "allmapper has size " << allmapper.size() << std::endl;
+      //          std::cout << g.comm().rank() << ": " << "vertexmapper has size " << vertexmapper.size() << std::endl;
+      //          std::cout << g.comm().rank() << ": " << "hanging nodes=" << hangingnodes << " links=" << links.size() << std::endl;
 
       // set size of all rows to zero
       for (int i=0; i<is.size(n); i++)
