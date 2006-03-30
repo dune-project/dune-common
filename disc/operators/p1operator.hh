@@ -14,7 +14,7 @@
 
 #include "dune/common/timer.hh"
 #include "dune/common/fvector.hh"
-#include "dune/common/exceptions.hh"
+#include "dune/common/fmatrix.hh"
 #include "dune/common/exceptions.hh"
 #include "dune/common/geometrytype.hh"
 #include "dune/grid/common/grid.hh"
@@ -22,7 +22,8 @@
 #include "dune/istl/bvector.hh"
 #include "dune/istl/operators.hh"
 #include "dune/istl/bcrsmatrix.hh"
-#include "disc/functions/p1function.hh" // for parallel extender class
+#include "dune/disc/functions/p1function.hh" // for parallel extender class
+#include "dune/disc/shapefunctions/lagrangeshapefunctions.hh"
 #include "boundaryconditions.hh"
 #include "localstiffness.hh"
 
@@ -656,15 +657,15 @@ namespace Dune
 
     {
       // be verbose
-      //          std::cout << g.comm().rank() << ": " << "vector size = " << vertexmapper.size() << " + " << extraDOFs << std::endl;
-      //          std::cout << g.comm().rank() << ": " << "making " << size() << "x"
-      //                                << size() << " matrix with " << nnz(indexset) << " nonzeros" << std::endl;
-      //          std::cout << g.comm().rank() << ": " << "allmapper has size " << allmapper.size() << std::endl;
-      //          std::cout << g.comm().rank() << ": " << "vertexmapper has size " << vertexmapper.size() << std::endl;
-      //          std::cout << g.comm().rank() << ": " << "hanging nodes=" << hangingnodes << " links=" << links.size() << std::endl;
+      std::cout << g.comm().rank() << ": " << "vector size = " << vertexmapper.size() << " + " << extraDOFs << std::endl;
+      std::cout << g.comm().rank() << ": " << "making " << size() << "x"
+                << size() << " matrix with " << nnz(indexset) << " nonzeros" << std::endl;
+      std::cout << g.comm().rank() << ": " << "allmapper has size " << allmapper.size() << std::endl;
+      std::cout << g.comm().rank() << ": " << "vertexmapper has size " << vertexmapper.size() << std::endl;
+      std::cout << g.comm().rank() << ": " << "hanging nodes=" << hangingnodes << " links=" << links.size() << std::endl;
 
       // set size of all rows to zero
-      for (int i=0; i<g.size(n); i++)
+      for (int i=0; i<is.size(n); i++)
         A.setrowsize(i,0);
 
       // build needs a flag for all entities of all codims
