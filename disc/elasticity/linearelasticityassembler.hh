@@ -418,6 +418,10 @@ namespace Dune
 
     }
 
+    //! should allow to assmble boundary conditions only
+    void assembleBoundaryCondition (const Entity& e, int k=1)
+    {}
+
   private:
 
     // parameters given in constructor

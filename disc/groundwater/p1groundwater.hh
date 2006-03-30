@@ -77,8 +77,10 @@ namespace Dune
 
     //! Constructor
     GroundwaterEquationLocalStiffness (const GroundwaterEquationParameters<G,RT>& params,
+                                       bool levelBoundaryAsDirichlet_,
                                        bool procBoundaryAsDirichlet_=true)
-      : problem(params),procBoundaryAsDirichlet(procBoundaryAsDirichlet_)
+      : problem(params),levelBoundaryAsDirichlet(levelBoundaryAsDirichlet_),
+        procBoundaryAsDirichlet(procBoundaryAsDirichlet_)
     {}
 
 
@@ -108,6 +110,46 @@ namespace Dune
         for (int j=0; j<sfs.size(); j++)
           this->A[i][j] = 0;
       }
+
+      assembleV(e,k);
+      assembleBC(e,k);
+    }
+
+    //! assemble only boundary conditions for given element
+    /*! On exit the following things have been done:
+       - The boundary conditions have been evaluated and are accessible with the bc() method
+       - The right hand side contains either the value of the essential boundary
+       condition or the assembled neumann boundary condition. It is accessible via the rhs() method.
+       @param[in]  e    a codim 0 entity reference
+       @param[in]  k    order of Lagrange basis
+     */
+    void assembleBoundaryCondition (const Entity& e, int k=1)
+    {
+      // extract some important parameters
+      Dune::GeometryType gt = e.geometry().type();
+      const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type&
+      sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,k);
+      setcurrentsize(sfs.size());
+
+      // clear assemble data
+      for (int i=0; i<sfs.size(); i++)
+      {
+        this->b[i] = 0;
+        this->bctype[i][0] = BoundaryConditions::neumann;
+      }
+
+      assembleBC(e,k);
+    }
+
+  private:
+
+    void assembleV (const Entity& e, int k=1)
+    {
+      // extract some important parameters
+      Dune::GeometryType gt = e.geometry().type();
+      const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type&
+      sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,k);
+      setcurrentsize(sfs.size());
 
       // Loop over all quadrature points and assemble matrix and right hand side
       int p=2;
@@ -152,19 +194,39 @@ namespace Dune
           }
         }
       }
+    }
+
+    void assembleBC (const Entity& e, int k=1)
+    {
+      // extract some important parameters
+      Dune::GeometryType gt = e.geometry().type();
+      const typename Dune::LagrangeShapeFunctionSetContainer<DT,RT,n>::value_type&
+      sfs=Dune::LagrangeShapeFunctions<DT,RT,n>::general(gt,k);
+      setcurrentsize(sfs.size());
+
+      // determine quadrature order
+      int p=2;
+      if (gt.isSimplex()) p=1;
+      if (k>1) p=2*(k-1);
 
       // evaluate boundary conditions via intersection iterator
       IntersectionIterator endit = e.iend();
       for (IntersectionIterator it = e.ibegin(); it!=endit; ++it)
       {
-        // if we have a neighbor then we assume there is no boundary
-        // (it might still be an interior boundary ... )
-        if (it.neighbor()) continue;
+        // if we have a neighbor then we assume there is no boundary (forget interior boundaries)
+        // in level assemble treat non-level neighbors as boundary
+        if (it.neighbor())
+        {
+          if (levelBoundaryAsDirichlet && it.outside()->level()==e.level())
+            continue;
+          if (!levelBoundaryAsDirichlet)
+            continue;
+        }
 
         // determine boundary condition type for this face, initialize with processor boundary
         typename BoundaryConditions::Flags bctypeface = BoundaryConditions::process;
 
-        // handle face on exterior boundary
+        // handle face on exterior boundary, this assumes there are no interior boundaries
         if (it.boundary())
         {
           Dune::GeometryType gtface = it.intersectionSelfLocal().type();
@@ -190,10 +252,13 @@ namespace Dune
           if (bctypeface==BoundaryConditions::neumann) continue;                 // was a neumann face, go to next face
         }
 
-        // If we are here, then its either an exterior boundary face with Dirichlet condition
-        // or a processor boundary (i.e. neither boundary() nor neighbor() was true)
+        // If we are here, then it is
+        // (i)   an exterior boundary face with Dirichlet condition, or
+        // (ii)  a processor boundary (i.e. neither boundary() nor neighbor() was true), or
+        // (iii) a level boundary in case of level-wise assemble
         // How processor boundaries are handled depends on the processor boundary mode
-        if (bctypeface==BoundaryConditions::process && procBoundaryAsDirichlet==false)
+        if (bctypeface==BoundaryConditions::process && procBoundaryAsDirichlet==false
+            && levelBoundaryAsDirichlet==false)
           continue;               // then it acts like homogeneous Neumann
 
         // now handle exterior or interior Dirichlet boundary
@@ -238,9 +303,9 @@ namespace Dune
       }
     }
 
-  private:
     // parameters given in constructor
     const GroundwaterEquationParameters<G,RT>& problem;
+    bool levelBoundaryAsDirichlet;
     bool procBoundaryAsDirichlet;
   };
 
