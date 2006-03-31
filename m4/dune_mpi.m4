@@ -51,6 +51,11 @@ AC_DEFUN([DUNE_MPI],[
   # implicitly sets the HAVE_MPI-define and the MPICXX-substitution
   ACX_MPI()
 
+  # remove HAVE_MPI from confdefs.h
+  cp confdefs.h confdefs.h.tmp
+  grep -v "^#define HAVE_MPI " confdefs.h.tmp > confdefs.h
+  rm -f confdefs.h.tmp
+
   # disable runtest if we have a queuing system
   AC_ARG_ENABLE(mpiruntest,
     AC_HELP_STRING([--disable-mpiruntest],
@@ -245,6 +250,7 @@ dune_mpi_remove () {
   if test x"$with_mpi" != xno ; then
     AC_SUBST(MPI_CPPFLAGS, $MPI_CPPFLAGS)
     AC_SUBST(MPI_LDFLAGS, $MPI_LDFLAGS)
+    AC_DEFINE(HAVE_MPI,1,[Define if you have the MPI library.])
   else
     AC_SUBST(MPI_CPPFLAGS, "")
     AC_SUBST(MPI_LDFLAGS, "")
