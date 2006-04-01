@@ -43,6 +43,7 @@ namespace Dune
   template<class G, class RT, int m=1>
   class P1MGTransfer
   {
+  public:
     // export type used to store the matrix
     typedef FieldMatrix<RT,m,m> BlockType;
     typedef BCRSMatrix<BlockType> RepresentationType;
@@ -72,8 +73,6 @@ namespace Dune
     typedef std::set<int> IntSet;
     typedef std::map<int,IntSet> Graph;
 
-  public:
-
     /** \brief create a sparse matrix with structure for interpolation
             from coarse to fine grid
      */
@@ -93,6 +92,7 @@ namespace Dune
 
       // allocate a flag vector to handle each vertex exactly once
       std::vector<bool> treated(finemapper.size(),false);
+
 
       // build the graph structure from the mesh
       for (ElementLevelIterator it = grid.template lbegin<0>(level);
@@ -161,6 +161,12 @@ namespace Dune
 
       // deallocate the map
       graph.clear();
+
+      // allocate skip flag vectors
+      for (int compi=0; compi<m; compi++)
+        skipflag[compi] = new std::vector<bool>(finemapper.size(),false);
+      for (int compi=0; compi<m; compi++)
+        coarseskipflag[compi] = new std::vector<bool>(coarsemapper.size(),false);
     }
 
 
@@ -172,6 +178,40 @@ namespace Dune
       // allocate vertex mappers for the fine and coarse grid
       VM finemapper(grid,grid.levelIndexSet(level));
       VM coarsemapper(grid,grid.levelIndexSet(level-1));
+
+      // clear data
+      (*A) = 0;
+      for (int compi=0; compi<m; compi++)
+        for (int i=0; i<finemapper.size(); i++)
+          (*skipflag[compi])[i] = false;
+      for (int compi=0; compi<m; compi++)
+        for (int i=0; i<coarsemapper.size(); i++)
+          (*coarseskipflag[compi])[i] = false;
+
+      // determine coarse grid skip flags !
+      for (ElementLevelIterator it = grid.template lbegin<0>(level-1);
+           it!=grid.template lend<0>(level-1); ++it)
+      {
+        // get geometry type of entity
+        GeometryType gt = it->geometry().type();
+
+        // assemble boundary conditions for the given element
+        loc.assembleBoundaryCondition(*it);
+
+        // connect every vertex of the fine grid element with
+        // with every vertex of the coarse grid element
+        for (int i=0; i<it->template count<n>(); i++)
+        {
+          // get index of fine grid vertex
+          int indexi = coarsemapper.template map<n>(*it,i);
+
+          // set skipflag if essential boundary condition is encountered
+          for (int compi=0; compi<m; compi++)
+            if (loc.bc(i)[compi]==BoundaryConditions::process ||
+                loc.bc(i)[compi]==BoundaryConditions::dirichlet)
+              (*coarseskipflag[compi])[indexi] = true;
+        }
+      }
 
       // allocate a flag vector to handle each vertex exactly once
       std::vector<bool> treated(finemapper.size(),false);
@@ -189,12 +229,21 @@ namespace Dune
         // get geometry type of father
         GeometryType gtf = father->geometry().type();
 
+        // assemble boundary conditions for the given element
+        loc.assembleBoundaryCondition(*it);
+
         // connect every vertex of the fine grid element with
         // with every vertex of the coarse grid element
         for (int i=0; i<it->template count<n>(); i++)
         {
           // get index of fine grid vertex
           int indexi = finemapper.template map<n>(*it,i);
+
+          // set skipflag if essential boundary condition is encountered
+          for (int compi=0; compi<m; compi++)
+            if (loc.bc(i)[compi]==BoundaryConditions::process ||
+                loc.bc(i)[compi]==BoundaryConditions::dirichlet)
+              (*skipflag[compi])[indexi] = true;
 
           // skip vertices that have already been treated
           if (treated[indexi]) continue;
@@ -215,14 +264,18 @@ namespace Dune
               // get global index of that basis function
               int indexj = coarsemapper.template map<n>(*father,j);
 
-              // fill diagonal matrix block;
+              // fill diagonal matrix block; consider coarse skip flags
               BlockType D;
               for (int compi=0; compi<m; compi++)
+              {
+                double scale=1.0;
+                if ((*coarseskipflag[compi])[indexj]) scale=0;
                 for (int compj=0; compj<m; compj++)
                   if (compi==compj)
-                    D[compi][compj] = phi;
+                    D[compi][compj] = phi*scale;
                   else
                     D[compi][compj] = 0.0;
+              }
 
               // set entry
               (*A)[indexi][indexj] = D;
@@ -235,35 +288,38 @@ namespace Dune
       }
 
 
-      // second round: eliminate interpolation in rows with essential boundary conditions
-      for (ElementLevelIterator it = grid.template lbegin<0>(level);
-           it!=grid.template lend<0>(level); ++it)
-      {
-        // assemble boundary conditions for the given element
-        loc.assembleBoundaryCondition(*it);
+      // eliminate interpolation in rows with essential boundary conditions
+      //          rowiterator endi=(*A).end();
+      //          for (rowiterator i=(*A).begin(); i!=endi; ++i)
+      //                {
+      //                  int indexi = i.index();
 
-        // look at all vertices to detect essential boundary conditions
-        for (int i=0; i<it->template count<n>(); i++)
-        {
-          // get index of fine grid vertex
-          int indexi = finemapper.template map<n>(*it,i);
-
-          // go through all components at this vertex
-          for (int compi=0; compi<m; compi++)
-            if (loc.bc(i)[compi]==BoundaryConditions::process ||
-                loc.bc(i)[compi]==BoundaryConditions::dirichlet)
-            {
-              // we have to set this row to zero
-              coliterator colend = (*A)[indexi].end();
-              for (coliterator colit=(*A)[indexi].begin(); colit!=colend; ++colit)
-                for (int compj=0; compj<m; compj++)
-                  (*colit)[compi][compj] = 0;
-            }
-        }
-      }
+      //                  // go through all components at this vertex
+      //                  for (int compi=0; compi<m; compi++)
+      //                        if ((*skipflag[compi])[indexi])
+      //                          {
+      //                                // we have to set this row to zero
+      //                                coliterator colend = (*i).end();
+      //                                for (coliterator colit=(*i).begin(); colit!=colend; ++colit)
+      //                                  for (int compj=0; compj<m; compj++)
+      //                                        (*colit)[compi][compj] = 0;
+      //                          }
+      //                }
 
       //          printmatrix(std::cout,*A,"prolongation matrix","row",9,1);
 
+    }
+
+    // return the skip flag
+    bool skipFlag (int compi, int indexi) const
+    {
+      return (*skipflag[compi])[indexi];
+    }
+
+    // return the skip flag
+    bool coarseSkipFlag (int compi, int indexi) const
+    {
+      return (*coarseskipflag[compi])[indexi];
     }
 
     //! return const reference to operator matrix
@@ -284,6 +340,10 @@ namespace Dune
     ~P1MGTransfer ()
     {
       delete A;
+      for (int compi=0; compi<m; compi++)
+        delete skipflag[compi];
+      for (int compi=0; compi<m; compi++)
+        delete coarseskipflag[compi];
     }
 
   private:
@@ -296,6 +356,8 @@ namespace Dune
     const G& grid;
     int level;
     RepresentationType* A;
+    std::vector<bool>* skipflag[m];
+    std::vector<bool>* coarseskipflag[m];
   };
 
 
