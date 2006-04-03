@@ -100,7 +100,7 @@ namespace Dune {
       typedef UG_Quadratures::QUADRATURE QUADRATURE;
       QUADRATURE * quad = UG_Quadratures::GetQuadratureRule(dim,numberOfCorners,polOrd);
       RangeField ref = 1.0;
-      if(dim > 1) RangeField ref = static_cast<RangeField> (ref/((dim-1)*dim));
+      if(dim > 1) ref = static_cast<RangeField> (ref/((dim-1)*dim));
       RangeField w(ref * static_cast<RangeField> (quad->weight[i]));
       return w;
     }
