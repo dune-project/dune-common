@@ -127,7 +127,6 @@ namespace Dune
                                                                               ParallelInformation<T>& comm)
     {
       Transfer<V,BlockVector<B>,SequentialInformation>::restrict (aggregates, coarse, fine, SequentialInformation());
-      comm.template forward<CopyGatherScatter<BlockVector<B> > >(coarse, coarse);
     }
 
     template<class V, class B, class T1, class T2>
@@ -144,7 +143,7 @@ namespace Dune
                                                                                             OwnerOverlapCopyCommunication<T1,T2>& comm)
     {
       Transfer<V,BlockVector<B>,SequentialInformation>::restrict (aggregates, coarse, fine, SequentialInformation());
-      comm.project(coarse);
+      //      comm.project(coarse);
     }
     /** @} */
   }    // namspace Amg
