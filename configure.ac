@@ -180,7 +180,6 @@ AC_CONFIG_FILES([Makefile
          disc/shapefunctions/test/Makefile
          fem/Makefile
          fem/norms/Makefile
-         fem/operator/Makefile
          fem/transfer/Makefile
          grid/Makefile
          grid/albertagrid/Makefile
