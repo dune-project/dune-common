@@ -841,7 +841,7 @@ void iterate(Grid &g)
     lit->geometry()[0];
   }
 
-};
+}
 
 template <class Grid>
 void iteratorEquals (Grid &g)
@@ -926,4 +926,4 @@ void gridcheck (Grid &g)
   for(int lvl = 0; lvl <= g.maxLevel () ; lvl ++ )
     Dune::checkIndexSet (g,g.levelIndexSet(lvl), Dune::dvverb,true);
 
-};
+}

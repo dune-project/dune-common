@@ -186,9 +186,9 @@ namespace Dune {
     void readObject (int) { assert(false); }
     void readObject (double) { assert(false); }
     template <class T>
-    void writeObject (T &) { assert(false); };
-    void writeObject (int) { assert(false); } ;
-    void writeObject (double) { assert(false); };
+    void writeObject (T &) { assert(false); }
+    void writeObject (int) { assert(false); }
+    void writeObject (double) { assert(false); }
   };
 
   /*! Combination of different DataCollectors

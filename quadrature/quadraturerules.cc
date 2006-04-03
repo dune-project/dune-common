@@ -29,4 +29,4 @@ namespace Dune {
   template<> QuadratureRuleContainer<double, 2> QuadratureRules<double, 2>::rule(19);
   template<> QuadratureRuleContainer<double, 3> QuadratureRules<double, 3>::rule(19);
 
-}; // namespace
+} // namespace

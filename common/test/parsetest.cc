@@ -55,4 +55,4 @@
 #include <dune/common/typetraits.hh>
 #include <dune/common/vectorspace.hh>
 
-int main () {};
+int main () {}

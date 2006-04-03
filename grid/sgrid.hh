@@ -1327,7 +1327,7 @@ namespace Dune {
     typename Traits::template Codim<cd>::template Partition<All_Partition>::LeafIterator leafbegin () const
     {
       return leafbegin<cd,All_Partition>();
-    };
+    }
 
     //! return LeafIterator which points behind the last entity
     template<int cd>
