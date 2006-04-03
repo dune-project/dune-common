@@ -86,6 +86,7 @@ echo Checking for libraries the self-test could use:
 echo
 
 # -- check for other grid-libs so that they may be included into tests
+DUNE_PATH_GRAPE
 # Alberta-check
 DUNE_PATH_ALBERTA
 # UG-check
@@ -207,7 +208,6 @@ AC_CONFIG_FILES([Makefile
 	 io/visual/Makefile
 	 io/visual/grape/Makefile
          lib/Makefile
-         operator/Makefile
          quadrature/Makefile
          quadrature/gaussquadrature/Makefile
          quadrature/test/Makefile
