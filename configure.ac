@@ -217,22 +217,10 @@ AC_CONFIG_FILES([Makefile
          lib/Makefile
          operator/Makefile
          quadrature/Makefile
-         quadrature/common/Makefile
-         quadrature/barycenter/Makefile
          quadrature/gaussquadrature/Makefile
-         quadrature/fixedorder/Makefile
          quadrature/test/Makefile
          solver/Makefile
          solver/common/Makefile
-         doc/Makefile
-	 doc/devel/Makefile
-	 doc/appl/Makefile
-	 doc/appl/refelements/Makefile
-	 doc/istl/Makefile
-	 doc/istl/comm/Makefile
-	 doc/layout/Makefile
-	 doc/refinement/Makefile
-	 doc/doxygen/Makefile
          m4/Makefile
 	 am/Makefile
 	 bin/wmlwrap
