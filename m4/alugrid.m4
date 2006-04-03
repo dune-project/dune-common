@@ -51,8 +51,8 @@ if test x$with_alugrid != x && test x$with_alugrid != xno ; then
     HAVE_ALUGRID="1"],
     AC_MSG_WARN([alugrid_serial.h not found in $ALUGRID_INCLUDE_PATH]))
    
-  ALU3D_INC_FLAG_PARA="-I$ALUGRID_INCLUDE_PATH/parallel $MPI_CPPFLAGS"
-  CPPFLAGS="$CPPFLAGS $ALU3D_INC_FLAG_PARA"
+  ALU3D_INC_FLAG_PARA="-I$ALUGRID_INCLUDE_PATH/parallel"
+  CPPFLAGS="$CPPFLAGS $ALU3D_INC_FLAG_PARA $MPI_CPPFLAGS"
   # check for parallel header 
   AC_CHECK_HEADERS([alugrid_parallel.h], 
      [ALUGRID_CPPFLAGS="$ALU3D_INC_FLAG $ALU3D_INC_FLAG_PARA"
