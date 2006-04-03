@@ -11,7 +11,8 @@
 #include <dune/grid/common/grid.hh>
 
 #include <dune/io/file/asciiparser.hh>
-#include <dune/fem/dofmanager.hh>
+
+//#include <dune/fem/dofmanager.hh>
 
 //- Local includes
 
@@ -124,6 +125,194 @@ namespace Dune {
     }
   };
 
+#if 0
+  template <int dim, int dimworld>
+  class GrapeDataIOImp<dim,dimworld,YaspGrid<dim,dimworld> >
+  {
+    typedef YaspGrid<dim,dimworld> GridType;
+    typedef GridType GridImp;
+  public:
+    /** Write Grid with GridType file filename and time
+     *
+     * This method uses the Grid Interface Method writeGrid
+     * to actually write the grid, within this method the real file name is
+     * generated out of filename and timestep
+     */
+    inline static bool writeGrid (const GridType & grid,
+                                  const GrapeIOFileFormatType ftype, const GrapeIOStringType & fnprefix
+                                  , double time=0.0, int timestep=0, int precision = 6)
+    {
+      // write dof manager, that corresponds to grid
+      bool hasDm = false;
+      {
+        typedef DofManager<GridImp> DofManagerType;
+        typedef DofManagerFactory<DofManagerType> DMFactoryType;
+
+        std::string dmname(fnprefix);
+        dmname += "_dm";
+        hasDm = DMFactoryType::writeDofManager(grid,dmname,timestep);
+      }
+
+      // write Grid itself
+      {
+        const char *path = "";
+        std::fstream file (fnprefix.c_str(),std::ios::out);
+        file << "Grid: "   << transformToGridName(grid.type()) << std::endl;
+        file << "Format: " << ftype <<  std::endl;
+        file << "Precision: " << precision << std::endl;
+        int writeDm = (hasDm) ? 1 : 0;
+        file << "DofManager: " << writeDm << std::endl;
+
+        GrapeIOStringType fnstr = genFilename(path,fnprefix,timestep,precision);
+
+        file.close();
+        return grid.backup(fnstr,time);
+      }
+      return false;
+    }
+
+    //! get Grid from file with time and timestep , return true if ok
+    inline static bool readGrid (GridType & grid,
+                                 const GrapeIOStringType & fnprefix , double & time , int timestep)
+    {
+      return false;
+    }
+
+    //! get Grid from file with time and timestep , return true if ok
+    inline static GridType * restoreGrid (
+      const GrapeIOStringType & fnprefix , double & time , int timestep)
+    {
+      int helpType;
+
+      char gridname [1024];
+      readParameter(fnprefix,"Grid",gridname);
+      std::string gname (gridname);
+
+      readParameter(fnprefix,"Format",helpType);
+      GrapeIOFileFormatType ftype = (GrapeIOFileFormatType) helpType;
+
+      int precision = 6;
+      readParameter(fnprefix,"Precision",precision);
+
+      int hasDm = 0;
+      readParameter(fnprefix,"DofManager",hasDm);
+
+      const char *path = "";
+      GrapeIOStringType fn = genFilename(path,fnprefix,timestep,precision);
+      std::cout << "Read file: fnprefix = `" << fn << "' \n";
+
+      GridType * grd = createGrid(fn,time);
+      GridType & grid = *grd;
+
+      bool succeded = false;
+      // write dof manager, that corresponds to grid
+      if(hasDm)
+      {
+        typedef DofManager<GridImp> DofManagerType;
+        typedef DofManagerFactory<DofManagerType> DMFactoryType;
+
+        std::string dmname(fn);
+        dmname += "_dm";
+        //std::cout << "Read DofManager from file " << dmname << "\n";
+        // this call creates DofManager if not already existing
+        DMFactoryType::getDofManager(grid);
+        succeded = DMFactoryType::writeDofManager(grid,dmname,timestep);
+      }
+      return grd;
+    }
+
+
+    inline static GridType * createGrid(
+      const GrapeIOStringType & fnprefix , double & time)
+    {
+      enum { d = GridType :: dimension };
+      typedef typename GridType :: ctype ct;
+      //! define types used for arguments
+
+      std::ifstream in (fnprefix.c_str());
+      //FILE * file = fopen(fnprefix.c_str(),"r");
+      //assert( file );
+
+      //fscanf(file,"%le",&time);
+      double t;
+      in >> t;
+      time = t;
+
+      typedef FieldVector<int, d> iTupel;
+      typedef FieldVector<ct, d> fTupel;
+      fTupel s;
+      for(int k=0 ; k<d; ++k)
+      {
+        ct val;
+        //fscanf(file,"%f",&val);
+        in >> val;
+        s[k] = val;
+      }
+
+      iTupel L;
+      for(int k=0 ; k<d; ++k)
+      {
+        int val;
+        //fscanf(file,"%d",&val);
+        in >> val;
+        L[k] = val;
+      }
+
+      iTupel so;
+      for(int k=0 ; k<d; ++k)
+      {
+        int val;
+        //fscanf(file,"%d",&val);
+        in >> val;
+        so[k] = val;
+      }
+
+      iTupel sn;
+      for(int k=0 ; k<d; ++k)
+      {
+        int val;
+        //fscanf(file,"%d",&val);
+        in >> val;
+        sn[k] = val;
+      }
+
+      typedef FieldVector<bool, d> bTupel;
+      bTupel p;
+      for(int k=0 ; k<d; ++k)
+      {
+        int val;
+        //fscanf(file,"%d",&val);
+        in >> val;
+        p[k] = (val == 0) ? false : true;
+      }
+
+      int overlap;
+      //fscanf(file,"%d",&overlap);
+      in >> overlap;
+      int mxl;
+      in >> mxl;
+      //fscanf(file,"%d",&mxl);
+
+      std::cout << time << " time \n";
+      std::cout << s << " intervals \n";
+      std::cout << L << " intervals \n";
+      std::cout << p << " intervals \n";
+      std::cout << overlap << " intervals \n";
+
+      GridType * grid = new GridType (
+#if HAVE_MPI
+        MPI_COMM_WORLD,
+#endif
+        s,L,so,sn,p,overlap);
+      assert( grid );
+      grid->globalRefine(mxl);
+
+      //fclose(file);
+
+      return grid;
+    }
+  };
+#endif
 
   template <class GridType>
   class GrapeDataIO
@@ -186,16 +375,18 @@ namespace Dune {
     const GrapeIOFileFormatType ftype, const GrapeIOStringType & fnprefix ,
     double time, int timestep, int precision )
   {
-    // write dof manager, that corresponds to grid
     bool hasDm = false;
-    {
-      typedef DofManager<GridImp> DofManagerType;
-      typedef DofManagerFactory<DofManagerType> DMFactoryType;
+    /*
+       // write dof manager, that corresponds to grid
+       {
+       typedef DofManager<GridImp> DofManagerType;
+       typedef DofManagerFactory<DofManagerType> DMFactoryType;
 
-      std::string dmname(fnprefix);
-      dmname += "_dm";
-      hasDm = DMFactoryType::writeDofManager(grid,dmname,timestep);
-    }
+       std::string dmname(fnprefix);
+       dmname += "_dm";
+       hasDm = DMFactoryType::writeDofManager(grid,dmname,timestep);
+       }
+     */
 
     // write Grid itself
     {
@@ -272,19 +463,21 @@ namespace Dune {
     }
     }
 
-    // write dof manager, that corresponds to grid
-    if(hasDm)
-    {
-      typedef DofManager<GridImp> DofManagerType;
-      typedef DofManagerFactory<DofManagerType> DMFactoryType;
+    /*
+       // write dof manager, that corresponds to grid
+       if(hasDm)
+       {
+       typedef DofManager<GridImp> DofManagerType;
+       typedef DofManagerFactory<DofManagerType> DMFactoryType;
 
-      std::string dmname(fn);
-      dmname += "_dm";
-      //std::cout << "Read DofManager from file " << dmname << "\n";
-      // this call creates DofManager if not already existing
-      DMFactoryType::getDofManager(grid);
-      succeded = DMFactoryType::writeDofManager(grid,dmname,timestep);
-    }
+       std::string dmname(fn);
+       dmname += "_dm";
+       //std::cout << "Read DofManager from file " << dmname << "\n";
+       // this call creates DofManager if not already existing
+       DMFactoryType::getDofManager(grid);
+       succeded = DMFactoryType::writeDofManager(grid,dmname,timestep);
+       }
+     */
     return succeded;
   }
 
