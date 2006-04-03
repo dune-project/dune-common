@@ -63,33 +63,6 @@ namespace Dune {
   template <class GridImp, int codim>
   struct ALU3dGridEntityFactory;
 
-  //! contains list of vertices of one level
-  //! needed for VertexLevelIterator
-  class ALU3dGridVertexList
-  {
-  public:
-    // level vertex iterator list
-    typedef std::vector < ALU3DSPACE VertexType * > VertexListType;
-    typedef VertexListType :: iterator IteratorType;
-
-    ALU3dGridVertexList () : up2Date_(false) {}
-
-    size_t size () const { return vertexList_.size(); }
-
-    bool up2Date () const { return up2Date_;  }
-    void unsetUp2Date ()  { up2Date_ = false; }
-
-    // make grid walkthrough and calc global size
-    template <class GridType>
-    void setupVxList (const GridType & grid, int level);
-
-    IteratorType begin () { return vertexList_.begin(); }
-    IteratorType end   () { return vertexList_.end(); }
-  private:
-    bool up2Date_;
-    VertexListType vertexList_;
-  };
-
   //**********************************************************************
   //
   // --ALU3dGrid
