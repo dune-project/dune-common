@@ -1,6 +1,6 @@
 # $Id$
 
-SUBDIRS = common gaussquadrature test
+SUBDIRS = gaussquadrature test
 
 # the standard debug streams are put into the libdune
 noinst_LTLIBRARIES = libquadrature.la
