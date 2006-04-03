@@ -1,6 +1,6 @@
 # $Id$
 
-SUBDIRS = norms operator transfer
+SUBDIRS = norms transfer
 
 femincludedir = $(includedir)/dune/fem
 feminclude_HEADERS = l2projection.hh
