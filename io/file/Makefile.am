@@ -4,7 +4,7 @@ SUBDIRS = alberta amiramesh rawdata test
 
 iofiledir = $(includedir)/dune/io/file
 iofile_HEADERS = amirameshreader.hh asciiparser.hh rawdatawriter.hh \
-  amirameshwriter.hh grapedataio.hh albertawriter.hh alugridwriter.hh
+  amirameshwriter.hh albertawriter.hh alugridwriter.hh
 
 noinst_LTLIBRARIES = libfileio.la
 
