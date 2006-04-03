@@ -105,7 +105,7 @@ public:
   {
     stack_ = 0;
     refCount_ = 0;
-    if(copy.stack_ != 0)
+    if(copy.stackExists())
     {
       stack_ = copy.stack_;
       refCount_ = copy.refCount_;
@@ -119,6 +119,9 @@ public:
   //! get_traverse_stack, which get an new or free stack
   void create ()
   {
+    // remove existing stack, does nothing if no stack exists
+    remove();
+
     assert( stack_ == 0 );
     assert( refCount_ ==  0 );
     stack_ = getTraverseStack();
@@ -128,6 +131,44 @@ public:
 
   //! set Stack free, if no more refences exist
   ~ManageTravStack()
+  {
+    remove();
+  }
+
+  bool stackExists() const
+  {
+    return stack_ != 0;
+  }
+
+  //! return the TRAVERSE_STACK pointer for use
+  TRAVERSE_STACK * getStack() const
+  {
+    // if this assertion is thrown then either the stack = 0
+    // or we want to uese the pointer but are not the owner
+    assert( stack_ );
+    assert( (!owner_) ? (std::cerr << "\nERROR:The feature of copying iterators is not supported by AlbertaGrid at the moment! \n\n", 0) : 1);
+    return stack_;
+  }
+
+private:
+  //! if copy is made than one more Reference exists
+  ManageTravStack & operator = (const ManageTravStack & copy)
+  {
+    remove();
+    // do not use this method
+    if(copy.stack_ != 0)
+    {
+      stack_ = copy.stack_;
+      refCount_ = copy.refCount_;
+      ++(*refCount_);
+      copy.owner_ = false;
+      owner_ = true;
+    }
+    assert(false);
+    return (*this);
+  }
+
+  void remove()
   {
     if(refCount_ && stack_)
     {
@@ -147,33 +188,8 @@ public:
         }
       }
     }
-  }
-
-  //! return the TRAVERSE_STACK pointer for use
-  TRAVERSE_STACK * getStack() const
-  {
-    // if this assertion is thrown then either the stack = 0
-    // or we want to uese the pointer but are not the owner
-    assert( stack_ );
-    assert( (!owner_) ? (std::cerr << "\nERROR:The feature of copying iterators is not supported by AlbertaGrid at the moment! \n\n", 0) : 1);
-    return stack_;
-  }
-
-private:
-  //! if copy is made than one more Reference exists
-  ManageTravStack & operator = (const ManageTravStack & copy)
-  {
-    // do not use this method
-    if(copy.stack_ != 0)
-    {
-      stack_ = copy.stack_;
-      refCount_ = copy.refCount_;
-      (*refCount_)++;
-      copy.owner_ = false;
-      owner_ = true;
-    }
-    assert(false);
-    return (*this);
+    stack_ = 0;
+    refCount_ = 0;
   }
 };
 

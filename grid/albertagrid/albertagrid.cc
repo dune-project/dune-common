@@ -1651,9 +1651,18 @@ namespace Dune
   operator = (const AlbertaGridHierarchicIterator<GridImp> & org)
   {
     const_cast<int &> (startLevel_) = org.startLevel_;
-    level_ = ( org.level_ );
-    maxlevel_ = ( org.maxlevel_ );
-    manageStack_ = ( org.manageStack_ );
+    level_    = org.level_;
+    maxlevel_ = org.maxlevel_;
+
+    if(org.manageStack_.stackExists())
+    {
+      // full copy of stack
+      manageStack_.create();
+      ALBERTA TRAVERSE_STACK * stack = manageStack_.getStack();
+      const ALBERTA TRAVERSE_STACK * orgStack = org.manageStack_.getStack();
+      ALBERTA copyTraverseStack( stack , orgStack );
+    }
+
     if( org.virtualEntity_.getElInfo() )
       virtualEntity_.setEntity( org.virtualEntity_ );
     else
@@ -3557,9 +3566,7 @@ namespace Dune
     }
     else
     {
-      double time = 0.0;
-      GrapeDataIO < AlbertaGrid <dim,dimworld> > dataIO;
-      dataIO.readGrid ( *this, MacroTriangFilename,time,0);
+      DUNE_THROW(NotImplemented,"Constructor reading backup file not implemented!");
     }
     std::cout << "AlbertaGrid<"<<dim<<","<<dimworld<<"> created from macro grid file '" << macroTriangFilename << "'. \n\n";
   }
