@@ -42,6 +42,15 @@ namespace Dune
     {
       return _fnkt.eval(comp, x);
     }
+
+    //! VTK output
+    template<class IS>
+    typename VTKWriter<G,IS>::VTKFunction *
+    vtkFunction (VTKWriter<G,IS>& vtkwriter, std::string s)
+    {
+      return new VTKGridFunctionWrapper<G,IS,RT,m>(*this,s);
+    }
+
   private:
     const FunctionBase<DT,RT,n,m>& _fnkt;
   };
