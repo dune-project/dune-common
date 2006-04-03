@@ -1,10 +1,10 @@
 # $Id$
 
-#if MPI
+if MPI
   MPITESTS = graphtest
   TESTPROGS = galerkintest hierarchytest amgtest pamgtest transfertest
   TESTRUNS = run-galerkin run-hierarchy run-amg
-#endif
+endif
 
 # link against libcommon to utilize dune stdstreams
 AM_LDFLAGS = $(top_builddir)/common/libcommon.la
