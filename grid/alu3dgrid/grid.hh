@@ -7,7 +7,7 @@
 #include <vector>
 
 //- Dune includes
-#include <dune/io/file/grapedataio.hh>
+#include <dune/grid/utility/grapedataioformattypes.hh>
 #include <dune/common/capabilities.hh>
 #include <dune/common/interfaces.hh>
 #include <dune/common/collectivecommunication.hh>
