@@ -103,7 +103,7 @@ namespace Dune {
         CombinedRestProl <RestProlOperatorImp,RestProlOperatorType> > &
     operator + (const AdaptOperator<GridType,RestProlOperatorType> &op)
     {
-      std::cout << "Operator + of AdaptOperator\n";
+      //std::cout << "Operator + of AdaptOperator\n";
       typedef AdaptOperator<GridType,RestProlOperatorType> CopyType;
       typedef CombinedRestProl <RestProlOperatorImp,RestProlOperatorType> COType;
 
@@ -213,7 +213,7 @@ namespace Dune {
 
         for( ; it != endit; ++it)
         {
-          if((*it).state() == COARSEN)
+          if( (*it).mightBeCoarsened() )
           {
             restop.restrictLocal( en , *it, initialize);
             initialize = false;
@@ -234,7 +234,7 @@ namespace Dune {
           it != endit; ++it)
       {
         assert( !en.isLeaf() );
-        if((*it).state() == REFINED)
+        if( (*it).wasRefined() )
         {
           prolop.prolongLocal( *(it->father()), *it , initialize );
           initialize = false;
