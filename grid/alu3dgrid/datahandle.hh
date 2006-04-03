@@ -20,8 +20,6 @@ namespace ALUGridSpace {
     typedef typename GridType::template Codim<codim>::Entity EntityType;
     typedef typename EntityType :: ImplementationType RealEntityType;
 
-    //typedef typename Dune::ALU3dImplTraits<GridType::elementType>::PLLBndFaceType PLLBndFaceType;
-
     typedef typename Dune::ALU3dImplTraits<GridType::elementType>::
     template Codim<codim>::ImplementationType ImplElementType;
     typedef typename Dune::ALU3dImplTraits<GridType::elementType>::
@@ -93,12 +91,11 @@ namespace ALUGridSpace {
     //! write Data of one lement to stream
     void sendData ( ObjectStreamType & str , HElementType & elem )
     {
-      realEntity_.setElement( const_cast<HElementType &> (elem));
+      realEntity_.setElement(elem);
       //dc_.insertNewIndex( entity_ );
       //dc_.checkMemorySize();
-      dc_.scatter(str, entity_);
+      dc_.scatter(str,entity_,dc_.size(entity_));
     }
-
   };
 
   //***********************************************************
@@ -186,17 +183,18 @@ namespace ALUGridSpace {
     }
   };
 
-  template <class GridType, class EntityType, class DofManagerType, class RestrictProlongOperatorType >
+  template <class GridType, class DofManagerType, class RestrictProlongOperatorType >
   class AdaptRestrictProlongImpl : public AdaptRestrictProlongType
   {
     GridType & grid_;
     typedef typename GridType::template Codim<0>::Entity Entity;
+    typedef typename Entity :: ImplementationType EntityImp;
     typedef typename GridType::Traits::LeafIndexSet LeafIndexSetType;
 
     Entity & reFather_;
     Entity & reSon_;
-    EntityType & realFather_;
-    EntityType & realSon_;
+    EntityImp & realFather_;
+    EntityImp & realSon_;
 
     DofManagerType & dm_;
     RestrictProlongOperatorType & rp_;
@@ -207,22 +205,19 @@ namespace ALUGridSpace {
 
   public:
     //! Constructor
-    AdaptRestrictProlongImpl (GridType & grid, EntityType & f,
-                              EntityType & s, DofManagerType & dm, RestrictProlongOperatorType & rp )
-      : grid_(grid), reFather_(f), reSon_(s), realFather_(f)
-        , realSon_(s) , dm_(dm) , rp_(rp) , maxlevel_(-1)
-    {
-      //#ifndef NDEBUG
-      //    global_Geometry_lock = true;
-      //#endif
-    }
+    AdaptRestrictProlongImpl (GridType & grid,
+                              Entity & f, EntityImp & rf, Entity & s, EntityImp & rs,
+                              DofManagerType & dm, RestrictProlongOperatorType & rp )
+      : grid_(grid)
+        , reFather_(f)
+        , reSon_(s)
+        , realFather_(rf)
+        , realSon_(rs)
+        , dm_(dm) , rp_(rp) , maxlevel_(-1)
+    {}
 
     virtual ~AdaptRestrictProlongImpl ()
-    {
-      //#ifndef NDEBUG
-      //    global_Geometry_lock = false;
-      //#endif
-    }
+    {}
 
     //! restrict data , elem is always the father
     int preCoarsening ( HElementType & elem )
@@ -333,16 +328,17 @@ namespace ALUGridSpace {
   //
   //***************************************************************
 
-  template <class GridType, class EntityType, class DofManagerType >
+  template <class GridType, class DofManagerType>
   class LoadBalanceRestrictProlongImpl : public AdaptRestrictProlongType
   {
     GridType & grid_;
     typedef typename GridType::template Codim<0>::Entity Entity;
+    typedef typename Entity :: ImplementationType EntityImp;
 
     Entity & reFather_;
     Entity & reSon_;
-    EntityType & realFather_;
-    EntityType & realSon_;
+    EntityImp & realFather_;
+    EntityImp & realSon_;
 
     DofManagerType & dm_;
 
@@ -352,17 +348,16 @@ namespace ALUGridSpace {
 
   public:
     //! Constructor
-    LoadBalanceRestrictProlongImpl (GridType & grid, EntityType & f,
-                                    EntityType & s, DofManagerType & dm )
-      : grid_(grid), reFather_(f), reSon_(s), realFather_(f)
-        , realSon_(s) , dm_(dm), newMemSize_ (0) {}
+    LoadBalanceRestrictProlongImpl (GridType & grid, Entity & f, EntityImp &
+                                    rf, Entity & s, EntityImp & rs, DofManagerType & dm )
+      : grid_(grid), reFather_(f), realFather_(rf) , reSon_(s), realSon_(rs)
+        , dm_(dm), newMemSize_ (0) {}
 
     virtual ~LoadBalanceRestrictProlongImpl () {};
 
     //! restrict data , elem is always the father
     int postRefinement ( HElementType & elem )
     {
-      //cout << "create element durin ldb , el = " << elem.getIndex() << "\n";
       realFather_.setElement(elem);
       dm_.removeOldIndex( reFather_ );
 
@@ -380,7 +375,6 @@ namespace ALUGridSpace {
     //! prolong data, elem is the father
     int preCoarsening ( HElementType & elem )
     {
-      //cout << "remove element durin ldb , el = " << elem.getIndex() << "\n";
       realFather_.setElement(elem);
       dm_.insertNewIndex( reFather_ );
 
@@ -398,7 +392,6 @@ namespace ALUGridSpace {
     //! this method is for ghost elements
     int preCoarsening ( HBndSegType & el )
     {
-      //cout << "remove ghost durin ldb , el = " << el.getIndex() << "\n";
       PLLBndFaceType & elem = static_cast<PLLBndFaceType &> (el);
 
       realFather_.setGhost(elem);
@@ -419,7 +412,6 @@ namespace ALUGridSpace {
     //! this method is for ghost elements
     int postRefinement ( HBndSegType & el )
     {
-      //cout << "create ghost durin ldb , el = " << el.getIndex() << "\n";
       PLLBndFaceType & elem = static_cast<PLLBndFaceType &> (el);
 
       PLLBndFaceType * vati = static_cast<PLLBndFaceType *> ( elem.up());

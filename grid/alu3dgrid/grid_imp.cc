@@ -576,8 +576,9 @@ namespace Dune {
   {
     assert( ((verbose) ? (dverb << "ALU3dGrid :: adapt() new method called!\n", 1) : 1 ) );
 
-    EntityImp f  ( *this, this->maxLevel() );
-    EntityImp s  ( *this, this->maxLevel() );
+    typedef typename EntityObject :: ImplementationType EntityImp;
+    EntityObject f  ( EntityImp(*this, this->maxLevel()) );
+    EntityObject s  ( EntityImp(*this, this->maxLevel()) );
 
     typedef typename DofManagerType :: IndexSetRestrictProlongType IndexSetRPType;
     typedef CombinedAdaptProlongRestrict < IndexSetRPType,RestrictProlongOperatorType > COType;
@@ -589,8 +590,11 @@ namespace Dune {
     // guess how many new elements we get
     int newElements = std::max( actChunk , defaultChunk );
     ALU3DSPACE AdaptRestrictProlongImpl<ALU3dGrid<dim, dimworld, elType>,
-        EntityImp, DofManagerType, COType >
-    rp(*this,f,s,dm,tmprpop);
+        DofManagerType, COType >
+    rp(*this,
+       f,this->getRealImplementation(f),
+       s,this->getRealImplementation(s),
+       dm,tmprpop);
 
     dm.reserveMemory( newElements );
     bool ref = myGrid().duneAdapt(rp); // adapt grid
@@ -737,11 +741,12 @@ namespace Dune {
   {
 #if 0
 #ifdef _ALU3DGRID_PARALLEL_
-    EntityImp en     ( *this, this->maxLevel() );
-    EntityImp father ( *this, this->maxLevel() );
-    EntityImp son    ( *this, this->maxLevel() );
+    typedef typename EntityObject :: ImplementationType EntityImp;
+    EntityObject en     ( EntityImp(*this, this->maxLevel()) );
+    EntityObject father ( EntityImp(*this, this->maxLevel()) );
+    EntityObject son    ( EntityImp(*this, this->maxLevel()) );
 
-    ALU3DSPACE GatherScatterImpl< ALU3dGrid<dim, dimworld, elType>, EntityImp, DataCollectorType >
+    ALU3DSPACE GatherScatterImpl< ALU3dGrid<dim, dimworld, elType>, DataCollectorType >
     gs(*this,en,dc);
 
     ALU3DSPACE LoadBalanceRestrictProlongImpl < MyType , EntityImp,
@@ -796,92 +801,35 @@ namespace Dune {
   communicate (DataHandle& data, InterfaceType iftype, CommunicationDirection dir) const
   //communicate(DataCollectorType & dc)
   {
-#ifdef _ALU3DGRID_PARALLEL_
     /*
-       ObjectStreamType objstr;
-       {
-       enum { codim = 0 };
-       typedef ALU3dGridMakeableEntity<codim,dim,const ThisType> EntityImp;
+       #ifdef _ALU3DGRID_PARALLEL_
+       typedef MakeableInterfaceObject<typename Traits::template Codim<dim>::Entity> VertexObject;
+       typedef typename Traits :: template Codim<dim>::Entity::ImplementationType VertexImp;
+       VertexObject vx( VertexImp(*this, this->maxLevel()) );
 
-       typedef typename Dune::ALU3dImplTraits<elementType>::
-          template Codim<codim>::InterfaceType HElementType;
+       ALU3DSPACE GatherScatterImpl < ThisType, DataHandle, dim>
+       vertexData(*this,vx,this->getRealImplementation(vx),data);
 
-       EntityImp en ( *this, this->maxLevel() );
-       ALU3DSPACE GatherScatterImpl< ThisType , DofManagerType, codim >
-       gs(*this,en,this->getRealImplementation(en),dm);
+       typedef MakeableInterfaceObject<typename Traits::template Codim<dim-1>::Entity> EdgeObject;
+       typedef typename Traits::template Codim<dim-1>::Entity::ImplementationType EdgeImp;
+       EdgeObject edge( EdgeImp(*this, this->maxLevel()) );
 
-       HElementType * el = 0;
-       gs.inlineData(objstr,*el);
-       }
+       ALU3DSPACE GatherScatterImpl < ThisType, DataHandle, dim-1>
+       edgeData(*this,edge,this->getRealImplementation(edge),data);
 
-       {
-       enum { codim = 1 };
-       typedef ALU3dGridMakeableEntity<codim,dim,const ThisType> EntityImp;
+       typedef MakeableInterfaceObject<typename Traits::template Codim<1>::Entity> FaceObject;
+       typedef typename Traits::template Codim<1>::Entity::ImplementationType FaceImp;
+       FaceObject face( FaceImp(*this, this->maxLevel()) );
 
-       typedef typename Dune::ALU3dImplTraits<elementType>::
-          template Codim<codim>::InterfaceType HElementType;
+       ALU3DSPACE GatherScatterImpl < ThisType, DataHandle, 1>
+       faceData(*this,face,this->getRealImplementation(face),data);
 
-       EntityImp en ( *this, this->maxLevel() );
-       ALU3DSPACE GatherScatterImpl< ThisType , DofManagerType, codim >
-       gs(*this,en,this->getRealImplementation(en),dm);
-
-       HElementType * el = 0;
-       gs.inlineData(objstr,*el);
-       }
-
-       {
-       enum { codim = 2 };
-       typedef ALU3dGridMakeableEntity<codim,dim,const ThisType> EntityImp;
-
-       typedef typename Dune::ALU3dImplTraits<elementType>::
-          template Codim<codim>::InterfaceType HElementType;
-
-       EntityImp en ( *this, this->maxLevel() );
-       ALU3DSPACE GatherScatterImpl< ThisType , DofManagerType, codim >
-       gs(*this,en,this->getRealImplementation(en),dm);
-
-       HElementType * el = 0;
-       gs.inlineData(objstr,*el);
-       }
-
-       {
-       enum { codim = 3 };
-       typedef ALU3dGridMakeableEntity<codim,dim,const ThisType> EntityImp;
-
-       typedef typename Dune::ALU3dImplTraits<elementType>::
-          template Codim<codim>::InterfaceType HElementType;
-
-       EntityImp en ( *this, this->maxLevel() );
-       ALU3DSPACE GatherScatterImpl< ThisType , DofManagerType, codim >
-       gs(*this,en,this->getRealImplementation(en),dm);
-
-       HElementType * el = 0;
-       gs.inlineData(objstr,*el);
-       }
+       const_cast<MyType &> (*this).myGrid().ALUcomm(vertexData,edgeData,faceData);
+       //return true;
+       #else
+       //return false;
+       #endif
      */
-    typedef ALU3dGridMakeableEntity<dim,dim,const ThisType> VertexImp;
-    VertexImp vx( *this, this->maxLevel() );
-
-    ALU3DSPACE GatherScatterImpl < ThisType, DataHandle, dim>
-    vertexData(*this,vx,this->getRealImplementation(vx),data);
-
-    typedef ALU3dGridMakeableEntity<dim-1,dim,const ThisType> EdgeImp;
-    EdgeImp edge( *this, this->maxLevel() );
-
-    ALU3DSPACE GatherScatterImpl < ThisType, DataHandle, dim-1>
-    edgeData(*this,edge,this->getRealImplementation(edge),data);
-
-    typedef ALU3dGridMakeableEntity<1,dim,const ThisType> FaceImp;
-    FaceImp face( *this, this->maxLevel() );
-
-    ALU3DSPACE GatherScatterImpl < ThisType, DataHandle, 1>
-    faceData(*this,face,this->getRealImplementation(face),data);
-
-    myGrid().ALUcomm(vertexData,edgeData,faceData);
-    //return true;
-#else
-    //return false;
-#endif
   }
 
 
@@ -1107,23 +1055,6 @@ namespace Dune {
   inline GridIdentifier ALU3dGrid<dim, dimworld, elType>::type () const
   {
     return ALU3dGrid_Id;
-  }
-
-  // return Grid type
-  template <int dim, int dimworld, ALU3dGridElementType elType>
-  template <int cd>
-  inline ALU3dGridMakeableEntity<cd,dim,const ALU3dGrid<dim,dimworld,elType> > *
-  ALU3dGrid<dim,dimworld,elType>::getNewEntity (int level) const
-  {
-    return ALU3dGridEntityFactory<MyType,cd>::getNewEntity(*this,entityProvider_,level);
-  }
-
-  template <int dim, int dimworld, ALU3dGridElementType elType>
-  template <int cd>
-  inline void ALU3dGrid<dim,dimworld,elType>::
-  freeEntity (ALU3dGridMakeableEntity<cd,dim,const ALU3dGrid<dim,dimworld,elType> > * e) const
-  {
-    return ALU3dGridEntityFactory<MyType,cd>::freeEntity(entityProvider_, e);
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>

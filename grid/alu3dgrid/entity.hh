@@ -32,73 +32,6 @@ namespace Dune {
   template<int dim, int dimworld, ALU3dGridElementType elType>
   class ALU3dGrid;
 
-  //**********************************************************************
-  //
-  // --ALU3dGridEntity
-  // --Entity
-  // --Men
-  //
-  //**********************************************************************
-  template<int cd, int dim, class GridImp>
-  class ALU3dGridMakeableEntity :
-    public GridImp::template Codim<cd>::Entity
-  {
-    // typedef typename GridImp::template Codim<codim>::Entity EntityType;
-    friend class ALU3dGridEntity<cd, dim, GridImp>;
-    typedef ALU3dImplTraits<GridImp::elementType> ImplTraitsType;
-
-    typedef typename ImplTraitsType::PLLBndFaceType PLLBndFaceType;
-    typedef typename ALU3dImplTraits<GridImp::elementType>::
-    template Codim<cd>::ImplementationType IMPLElementType;
-    typedef typename ALU3dImplTraits<GridImp::elementType>::
-    template Codim<cd>::InterfaceType MyHElementType;
-
-  public:
-
-    // Constructor creating the realEntity
-    ALU3dGridMakeableEntity(const GridImp & grid, int level) :
-      GridImp::template Codim<cd>::
-      Entity (ALU3dGridEntity<cd, dim, GridImp>(grid,level)) {}
-
-    //! set element as normal entity
-    //! ItemTypes are HElementType, HFaceType, HEdgeType and VertexType
-    template <class ItemType>
-    void setElement(ItemType & item, int twist = 0, int face = -1)
-    {
-      this->realEntity.setElement(item, twist,face);
-    }
-
-    //! set original element pointer to fake entity
-    void setGhost(ALU3DSPACE HBndSegType &ghost)
-    {
-      this->realEntity.setGhost(ghost);
-    }
-
-    void reset ( int l )
-    {
-      this->realEntity.reset(l);
-    }
-
-    void removeElement ()
-    {
-      this->realEntity.removeElement();
-    }
-
-    bool equals ( const ALU3dGridMakeableEntity<cd,dim,GridImp> & org )
-    {
-      return this->realEntity.equals(org.realEntity);
-    }
-
-    void setEntity ( const ALU3dGridMakeableEntity<cd,dim,GridImp> & org )
-    {
-      this->realEntity.setEntity(org.realEntity);
-    }
-
-    // return reference to internal item
-    // should be private, but the list of friends would be to long
-    const MyHElementType & getItem () const { return this->realEntity.getItem(); }
-  };
-
   /*!
      A Grid is a container of grid entities. An entity is parametrized by the codimension.
      An entity of codimension c in dimension d is a d-c dimensional object.
@@ -248,7 +181,6 @@ namespace Dune {
     friend class ALU3dGridLeafIterator <1, All_Partition,GridImp>;
     friend class ALU3dGridLeafIterator <2, All_Partition,GridImp>;
     friend class ALU3dGridLeafIterator <3, All_Partition,GridImp>;
-    friend class ALU3dGridMakeableEntity<0,dim,GridImp>;
 
     friend class ALU3dGridHierarchicIndexSet<dim,dimworld,GridImp::elementType>;
 
@@ -354,10 +286,10 @@ namespace Dune {
     /*! private methods, but public because of datahandle and template
         arguments of these methods
      */
-    void setElement(ALU3DSPACE HElementType &element, int , int );
+    void setElement(ALU3DSPACE HElementType &element);
 
     //! set original element pointer to fake entity
-    void setGhost(ALU3DSPACE HBndSegType  &ghost);
+    void setGhost(ALU3DSPACE HBndSegType & ghost);
 
     //! set actual walk level
     void reset ( int l );
@@ -375,10 +307,10 @@ namespace Dune {
     //! for use in hierarchical index set
     template<int cc> int getSubIndex (int i) const;
 
-  private:
     // return reference to internal item
     const IMPLElementType & getItem () const { return *item_; }
 
+  private:
     //! index is unique within the grid hierachie and per codim
     int getIndex () const;
 
@@ -436,7 +368,8 @@ namespace Dune {
     //! type of Entity
     typedef typename GridImp::template Codim<cd>::Entity Entity;
     //! underlying EntityImplementation
-    typedef ALU3dGridMakeableEntity<cd,dim,GridImp> EntityImp;
+    typedef MakeableInterfaceObject<Entity> EntityObject;
+    typedef typename Entity :: ImplementationType EntityImp;
 
     //! typedef of my type
     typedef ThisType ALU3dGridEntityPointerType;
@@ -490,7 +423,12 @@ namespace Dune {
     MyHElementType * item_;
 
     // entity that this EntityPointer points to
-    mutable EntityImp * entity_;
+    mutable EntityObject * entity_;
+    // return reference to internal entity implementation
+    EntityImp & entityImp () const {
+      assert( entity_ );
+      return grid_.getRealImplementation(*entity_);
+    }
   };
 
   //! ALUGridEntityPointer points to an entity
@@ -516,8 +454,6 @@ namespace Dune {
   public:
     //! type of Entity
     typedef typename GridImp::template Codim<cd>::Entity Entity;
-    //! underlying EntityImplementation
-    typedef ALU3dGridMakeableEntity<cd,dim,GridImp> EntityImp;
 
     //! typedef of my type
     typedef ThisType ALU3dGridEntityPointerType;
@@ -563,8 +499,6 @@ namespace Dune {
   public:
     //! type of Entity
     typedef typename GridImp::template Codim<cd>::Entity Entity;
-    //! underlying EntityImplementation
-    typedef ALU3dGridMakeableEntity<cd,dim,GridImp> EntityImp;
 
     //! typedef of my type
     typedef ALU3dGridEntityPointer<cd,GridImp> ALU3dGridEntityPointerType;

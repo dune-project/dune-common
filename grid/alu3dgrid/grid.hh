@@ -3,10 +3,6 @@
 #ifndef DUNE_ALU3DGRIDGRID_HH
 #define DUNE_ALU3DGRIDGRID_HH
 
-#if defined ALUGRID_PLL_TETRA || defined ALUGRID_PLL_HEXA
-  #define _ALU3DGRID_PARALLEL_
-#endif
-
 //- System includes
 #include <vector>
 
@@ -64,8 +60,11 @@ namespace Dune {
   class ALUMemoryProvider;
   template<int dim, int dimworld, ALU3dGridElementType elType>
   class ALU3dGrid;
+  template <class GridImp, int codim>
+  struct ALU3dGridEntityFactory;
 
   //! contains list of vertices of one level
+  //! needed for VertexLevelIterator
   class ALU3dGridVertexList
   {
   public:
@@ -290,8 +289,8 @@ namespace Dune {
     //! Constructor which reads an ALU3dGrid Macro Triang file
     //! or given GridFile
 #ifdef _ALU3DGRID_PARALLEL_
-    ALU3dGrid(const std::string macroTriangFilename , MPI_Comm mpiComm);
-    ALU3dGrid(MPI_Comm mpiComm);
+    ALU3dGrid(const std::string macroTriangFilename , MPI_Comm mpiComm = MPI_COMM_WORLD );
+    ALU3dGrid(MPI_Comm mpiComm = MPI_COMM_WORLD);
 #else
     ALU3dGrid(const std::string macroTriangFilename );
     //! empty Constructor
@@ -603,14 +602,22 @@ namespace Dune {
     mutable LeafIndexSetImp * leafIndexSet_;
 
     // the entity codim 0
-    typedef ALU3dGridMakeableEntity<0,dim,const MyType> EntityImp;
-    typedef ALUMemoryProvider< EntityImp > EntityProvider;
+    //typedef typename EntityTypeSelector<0>::EntityObject EntityObject;
+    typedef MakeableInterfaceObject<typename Traits::template Codim<0>::Entity> EntityObject;
+    typedef ALUMemoryProvider< EntityObject > EntityProvider;
 
     template <int codim>
-    ALU3dGridMakeableEntity<codim,dim,const MyType> * getNewEntity ( int level ) const;
+    inline MakeableInterfaceObject<typename Traits::template Codim<codim>::Entity> *
+    getNewEntity ( int level ) const
+    {
+      return ALU3dGridEntityFactory<MyType,codim>::getNewEntity(*this,entityProvider_,level);
+    }
 
     template <int codim>
-    void freeEntity (ALU3dGridMakeableEntity<codim,dim,const MyType> * en) const;
+    inline void freeEntity (MakeableInterfaceObject<typename Traits::template Codim<codim>::Entity> * en) const
+    {
+      ALU3dGridEntityFactory<MyType,codim>::freeEntity(entityProvider_, en);
+    }
 
     mutable EntityProvider entityProvider_;
 
@@ -636,37 +643,45 @@ namespace Dune {
     mutable IntersectionIteratorProviderType interItProvider_;
   }; // end class ALU3dGrid
 
+
   template <class GridImp, int codim>
   struct ALU3dGridEntityFactory
   {
-    typedef ALU3dGridMakeableEntity<codim,GridImp::dimension,const GridImp> EntityImp;
+    typedef typename GridImp :: template Codim<codim> :: Entity Entity;
+    typedef MakeableInterfaceObject<Entity> EntityObject;
+    typedef typename Entity :: ImplementationType EntityImp;
+
     template <class EntityProviderType>
-    static ALU3dGridMakeableEntity<codim,GridImp::dimension,const GridImp> *
+    static EntityObject *
     getNewEntity (const GridImp & grid, EntityProviderType & ep, int level)
     {
-      return new EntityImp( grid, level );
+      return new EntityObject(EntityImp( grid, level ));
     }
 
     template <class EntityProviderType>
-    static void freeEntity( EntityProviderType & ep, EntityImp * e )
+    static void freeEntity( EntityProviderType & ep, EntityObject * e )
     {
-      if( e ) delete e;
+      delete e;
     }
   };
 
   template <class GridImp>
   struct ALU3dGridEntityFactory<GridImp,0>
   {
-    typedef ALU3dGridMakeableEntity<0,GridImp::dimension,const GridImp> EntityImp;
+    enum { codim = 0 };
+    typedef typename GridImp :: template Codim<codim> :: Entity Entity;
+    typedef MakeableInterfaceObject<Entity> EntityObject;
+    typedef typename Entity :: ImplementationType EntityImp;
+
     template <class EntityProviderType>
-    inline static ALU3dGridMakeableEntity<0,GridImp::dimension,const GridImp> *
+    inline static EntityObject *
     getNewEntity (const GridImp & grid, EntityProviderType & ep, int level)
     {
-      return ep.getObject( grid, level);
+      return ep.template getEntityObject( grid, level, (EntityImp *) 0);
     }
 
     template <class EntityProviderType>
-    inline static void freeEntity( EntityProviderType & ep, EntityImp * e )
+    inline static void freeEntity( EntityProviderType & ep, EntityObject * e )
     {
       ep.freeObject( e );
     }

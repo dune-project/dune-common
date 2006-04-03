@@ -611,7 +611,7 @@ namespace Dune {
     // don't dereference empty entity pointer
     assert( this->item_ );
     assert( this->entity_ );
-    assert( this->item_ == & (*this->entity_).getItem() );
+    assert( this->item_ == & this->entityImp().getItem() );
     return (*this->entity_);
   }
 
@@ -698,7 +698,7 @@ namespace Dune {
     // don't dereference empty entity pointer
     assert( this->item_ );
     assert( this->entity_ );
-    assert( this->item_ == & (*this->entity_).getItem() );
+    assert( this->item_ == & this->entityImp().getItem() );
     return (*this->entity_);
   }
 
@@ -811,7 +811,7 @@ namespace Dune {
     // don't dereference empty entity pointer
     assert( this->item_ );
     assert( this->entity_ );
-    assert( this->item_ == & (*this->entity_).getItem() );
+    assert( this->item_ == & this->entityImp().getItem() );
     return (*this->entity_);
   }
 

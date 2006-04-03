@@ -12,6 +12,7 @@ namespace Dune {
   ALU3dGridGeometry()
     : coord_()
       , Jinv_ ()
+      , volume_(-1.0)
       , A_()
       , AT_x_()
       , localCoord_()
@@ -19,7 +20,8 @@ namespace Dune {
       , tmpV_()
       , tmpU_()
       , myGeomType_(GeometryType::simplex,mydim)
-      , builtinverse_ (false) , builtA_ (false) , builtDetDF_ (false)
+      , builtinverse_ (false) , builtA_ (false)
+      , builtDetDF_ (false)
   {}
 
   //   B U I L T G E O M   - - -
@@ -131,7 +133,7 @@ namespace Dune {
   buildGeomInFather(const GeometryType &fatherGeom , const GeometryType & myGeom)
   {
     // reset flags, because mappings need to be calculated again
-    builtinverse_ = builtA_ = builtDetDF_ = false;
+    builtinverse_ = builtA_ = false;
 
     // compute the local coordinates in father refelem
     for(int i=0; i < myGeom.corners() ; ++i)
@@ -142,6 +144,7 @@ namespace Dune {
         if ( coord_[i][j] < 1e-16) coord_[i][j] = 0.0;
     }
 
+    calculateDeterminant();
     return true;
   }
 
@@ -163,51 +166,17 @@ namespace Dune {
     enum { dim = 3 };
     enum { dimworld = 3};
 
-    //assert( ! ALU3DSPACE global_Geometry_lock );
+    builtinverse_ = builtA_ = false;
 
-    builtinverse_ = builtA_ = builtDetDF_ = false;
-    //detDF_ = 6.0 * item.volume();
-
+#ifndef NDEBUG
+    builtDetDF_ = true ;
+#endif
+    volume_ = item.volume();
+    detDF_ = 6.0 * volume_;
     for(int i=0; i<4; ++i)
     {
       copyCoordVec(item.myvertex(ElementTopo::dune2aluVertex(i))->Point(), coord_[i]);
     }
-    return true;
-  }
-
-  template <>
-  inline bool ALU3dGridGeometry<3,3, const ALU3dGrid<3,3,tetra> > ::
-  buildGhost(const PLLBndFaceType & ghost)
-  {
-    enum { dim = 3 };
-    enum { dimworld = 3};
-
-    builtinverse_ = builtA_ = builtDetDF_ = false;
-
-    GEOFaceType & face = dynamic_cast<GEOFaceType &> (*(ghost.myhface3(0)));
-
-    // here apply the negative twist, because the twist is from the
-    // neighbouring element's point of view which is outside of the ghost
-    // element
-    const int map[3] = { (ghost.twist(0) < 0) ? 2 : 0 , 1 , (ghost.twist(0) < 0) ? 0 : 2 };
-
-    for (int i=0; i<dim; i++) // col is the point vector
-    {
-      const double (&p)[3] = face.myvertex(map[i])->Point();
-      for (int j=0; j<dimworld; j++) // row is the coordinate of the point
-      {
-        coord_[i][j] = p[j];
-      }
-    }
-
-    {
-      const double (&p)[3] = ghost.oppositeVertex(0);
-      for (int j=0; j<dimworld; j++)
-      {
-        coord_[3][j] = p[j];
-      }
-    }
-
     return true;
   }
 
@@ -399,23 +368,62 @@ namespace Dune {
     return true;
   }
 
+  // for elements this is already calculated
+  template<>
+  inline alu3d_ctype
+  ALU3dGridGeometry<3,3,const ALU3dGrid<3, 3, tetra> > ::
+  integrationElement (const FieldVector<alu3d_ctype, 3>& local) const
+  {
+    assert( builtDetDF_ );
+    return detDF_;
+  }
+
+  template<int mydim, int cdim>
+  inline void
+  ALU3dGridGeometry<mydim,cdim,const ALU3dGrid<3, 3, tetra> > ::
+  calculateDeterminant() const
+  {
+    calcElMatrix();
+
+    detDF_ = A_.determinant();
+    assert(detDF_ > 0.0);
+
+    enum { factor = Factorial<mydim>::factorial };
+    volume_ = detDF_ / factor ;
+
+    builtDetDF_ = true;
+  }
+
   template<int mydim, int cdim>
   inline alu3d_ctype
   ALU3dGridGeometry<mydim,cdim,const ALU3dGrid<3, 3, tetra> > ::integrationElement (const FieldVector<alu3d_ctype, mydim>& local) const
   {
-    //return detDF_;
     if(builtDetDF_)
       return detDF_;
 
-    calcElMatrix();
-
-    detDF_ = A_.determinant();
-
-    assert(detDF_ > 0.0);
-
-    builtDetDF_ = true;
+    calculateDeterminant() ;
     return detDF_;
   }
+
+  template<>
+  inline alu3d_ctype
+  ALU3dGridGeometry<3,3,const ALU3dGrid<3, 3, tetra> > ::volume () const
+  {
+    assert( builtDetDF_ );
+    return volume_;
+  }
+
+  template<int mydim, int cdim>
+  inline alu3d_ctype
+  ALU3dGridGeometry<mydim,cdim,const ALU3dGrid<3, 3, tetra> > ::volume () const
+  {
+    if( builtDetDF_ )
+      return volume_;
+
+    calculateDeterminant() ;
+    return volume_;
+  }
+
 
   //  J A C O B I A N _ I N V E R S E  - - -
 
@@ -457,7 +465,8 @@ namespace Dune {
     coord_(0.0),
     myGeomType_(GeometryType::cube,mydim),
     triMap_(0),
-    biMap_(0)
+    biMap_(0),
+    localBaryCenter_(0.5)
   {}
 
   template <>
@@ -466,7 +475,9 @@ namespace Dune {
     coord_(0.0),
     myGeomType_(GeometryType::cube,3),
     triMap_(0),
-    biMap_(0)
+    biMap_(0),
+    localBaryCenter_(0.5),
+    volume_(-1.0)
   {}
 
   template <>
@@ -475,7 +486,8 @@ namespace Dune {
     : coord_(0.0),
       myGeomType_(GeometryType::cube,2),
       triMap_(0),
-      biMap_(0)
+      biMap_(0),
+      localBaryCenter_(0.5)
   {}
 
   template <>
@@ -484,7 +496,8 @@ namespace Dune {
     : coord_(0.0),
       myGeomType_(GeometryType::cube,2),
       triMap_(0),
-      biMap_(0)
+      biMap_(0),
+      localBaryCenter_(0.5)
   {}
 
 
@@ -580,6 +593,23 @@ namespace Dune {
     return (this->operator[] (0) - this->operator[] (1)).two_norm();
   }
 
+  template<>
+  inline alu3d_ctype
+  ALU3dGridGeometry<3, 3, const ALU3dGrid<3, 3, hexa> >::
+  volume() const
+  {
+    return volume_;
+  }
+
+  template<int mydim, int cdim>
+  inline alu3d_ctype
+  ALU3dGridGeometry<mydim, cdim, const ALU3dGrid<3, 3, hexa> >::
+  volume () const
+  {
+    return integrationElement(localBaryCenter_);
+  }
+
+
   template <>
   inline const FieldMatrix<alu3d_ctype, 3, 3>&
   ALU3dGridGeometry<3, 3, const ALU3dGrid<3, 3, hexa> >::
@@ -595,7 +625,12 @@ namespace Dune {
   jacobianInverseTransposed (const FieldVector<alu3d_ctype, 2>& local) const {
     assert( biMap_ );
 #ifndef NDEBUG
-    dwarn << "WARNING: ALU3dGridGeometry<2,3>::jacobianInverseTransposed: method not tested yet! \n";
+    static bool called = false;
+    if(!called)
+    {
+      dwarn << "WARNING: ALU3dGridGeometry<2,3>::jacobianInverseTransposed: method not tested yet! \n";
+      called = true;
+    }
 #endif
     jInv_ = biMap_->jacobianInverse(local);
     return jInv_;
@@ -655,6 +690,7 @@ namespace Dune {
     enum { dim = 3 };
     enum { dimworld = 3 };
 
+    volume_ = item.volume();
     for (int i = 0; i < corners(); ++i) {
       const double (&p)[3] =
         item.myvertex(ElementTopo::dune2aluVertex(i))->Point();
@@ -665,64 +701,6 @@ namespace Dune {
 
     // delete old mapping and creats new mapping
     buildMapping();
-    return true;
-  }
-
-  template <>
-  inline bool
-  ALU3dGridGeometry<3,3, const ALU3dGrid<3,3,hexa> >::
-  buildGhost(const PLLBndFaceType & ghost) {
-    enum { dim = 3 };
-    enum { dimworld = 3 };
-
-    GEOFaceType & face = dynamic_cast<GEOFaceType &> (*(ghost.myhface4(0)));
-
-    // The ghost element can be oriented to your liking. The convention here is
-    // the following: the 0th vertex of the face is mapped to the 0th vertex of
-    // the ghost entity. mapFront takes into account the different numbering
-    // conventions of dune and alugrid and the twist of the face. (Take into
-    // account that a twist is defined with regard to the inner entity, so it is
-    // actually the opposite of the twist with respect to the ghost...
-    //
-    //  (dune)   4 ------ 5     neg. twist: (alu)     pos. twist: (alu)
-    //           /|     /|            .      .              .      .
-    //          / |    / |           .      .              .      .
-    //        0 ------ 1 |         0 ------ 3            0 ------ 1
-    //        .| 6 --.|-- 7         |      |              |      |
-    //       . | /  . | /           | .    | .            | .    | .
-    //      .  |/  .  |/            |.     |.             |.     |.
-    //        2 ------ 3           1 ------ 2            3 ------ 2
-    //       .       .
-    //      .       .
-    //
-    // mapFront: i \in reference hexahedron vertex index dune -> l \in reference
-    // quad face vertex index alu + twist
-    // Note: due to the vertex numbering for dune hexahedrons, mapFront can also
-    // be used to map the back plane. The entries {0, 1, 2, 3} refer to the local
-    // vertex numbers {4, 5, 6, 7} of the (dune) reference hexahedron then
-    bool negativeTwist = ghost.twist(0) < 0;
-    const int mapFront[4] = { 0,
-                              negativeTwist ? 3 : 1,
-                              negativeTwist ? 1 : 3,
-                              2 };
-
-    // Store the coords of the ghost element incident with the boundary face
-    // 4 is the number of vertices of the boundary faces for hexas
-    for (int i = 0; i < 4; ++i) {
-      const double (&p)[3] = face.myvertex(mapFront[i])->Point();
-      for (int j = 0; j < dimworld; ++j) {
-        coord_[i][j] = p[j];
-      }
-    }
-
-    // 4 is the number of vertices of the face opposite the boundary
-    for (int i = 0; i < 4; ++i) {
-      const double (&p)[3] = ghost.oppositeVertex(mapFront[i]);
-      for (int j = 0; j < dimworld; ++j) {
-        coord_[4+i][j] = p[j];
-      }
-    }
-
     return true;
   }
 

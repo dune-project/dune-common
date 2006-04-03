@@ -97,6 +97,8 @@ namespace Dune {
     //! can only be called for dim=dimworld!
     inline const FieldMatrix<alu3d_ctype,mydim,mydim>& jacobianInverseTransposed (const FieldVector<alu3d_ctype, mydim>& local) const;
 
+    //! returns volume of geometry
+    inline alu3d_ctype volume () const;
     //***********************************************************************
     //!  Methods that not belong to the Interface, but have to be public
     //***********************************************************************
@@ -107,9 +109,6 @@ namespace Dune {
     inline bool buildGeom(const ALU3DSPACE HEdgeType & item, int twist, int );
     inline bool buildGeom(const ALU3DSPACE VertexType & item, int twist, int);
 
-    //! build ghost out of internal boundary segment
-    inline bool buildGhost(const PLLBndFaceType & ghost);
-
     //! build geometry of local coordinates relative to father
     template <class GeometryImpType>
     inline bool buildGeomInFather(const GeometryImpType &fatherGeom , const GeometryImpType & myGeom);
@@ -119,6 +118,9 @@ namespace Dune {
     inline void print (std::ostream& ss) const;
 
   private:
+    // calculates determinant and volume
+    void calculateDeterminant () const ;
+
     //! calculates the vertex index in the reference element out of a face index
     //! and a local vertex index
     inline int faceIndex(int faceIdx, int vtxIdx) const;
@@ -137,7 +139,8 @@ namespace Dune {
     mutable FieldMatrix<alu3d_ctype, mydim+1, cdim> coord_;
 
     mutable FieldMatrix<alu3d_ctype,mydim,mydim> Jinv_; //!< storage for inverse of jacobian
-    mutable alu3d_ctype detDF_;                             //!< storage of integration_element
+    mutable alu3d_ctype detDF_;              //!< storage of integration_element
+    mutable alu3d_ctype volume_;             //!< storage of volume
     mutable FieldMatrix<alu3d_ctype, cdim , mydim> A_;    //!< transformation matrix (transposed)
     mutable FieldMatrix<alu3d_ctype, mydim, mydim> AT_A_;    //!< transformation matrix (transposed)
 
@@ -154,7 +157,6 @@ namespace Dune {
     mutable bool builtinverse_;
     mutable bool builtA_;
     mutable bool builtDetDF_;
-
   };
 
   //! Specialisation for hexahedra
@@ -212,6 +214,9 @@ namespace Dune {
     //! other specialization...)
     const FieldMatrix<alu3d_ctype,mydim,mydim>& jacobianInverseTransposed (const FieldVector<alu3d_ctype, mydim>& local) const;
 
+    //! returns volume of geometry
+    alu3d_ctype volume () const;
+
     //***********************************************************************
     //!  Methods that not belong to the Interface, but have to be public
     //***********************************************************************
@@ -249,6 +254,8 @@ namespace Dune {
 
     mutable FieldMatrix<alu3d_ctype, mydim, mydim> jInv_;
 
+    mutable FieldVector<alu3d_ctype, mydim> localBaryCenter_;
+    mutable alu3d_ctype volume_;
   };
 
 } // end namespace Dune
