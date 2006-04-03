@@ -1200,15 +1200,29 @@ namespace Dune {
     {}
 
   protected:
-    //! return real implementation of interface class
-    template <class InterfaceType>
-    typename InterfaceType :: ImplementationType &
-    getRealImplementation (InterfaceType &i) const { return i.getRealImp(); }
+    /**
+     * @brief Helper class to choose correct implemetation return type for getRealImplementation
+     *
+     * If the template parameter is const, const typename T::ImplementationType is returned otherwise
+     * just typename ::ImplementationType.
+     */
+    template<class T>
+    struct ReturnImplementationType
+    {
+      /** @brief The correct type of the implementation to return. */
+      typedef typename T::ImplementationType ImplementationType;
+    };
+
+    template<class T>
+    struct ReturnImplementationType<const T>
+    {
+      typedef const typename T::ImplementationType ImplementationType;
+    };
 
     //! return real implementation of interface class
     template <class InterfaceType>
-    const typename InterfaceType :: ImplementationType &
-    getRealImplementation (const InterfaceType &i) const { return i.getRealImp(); }
+    typename ReturnImplementationType<InterfaceType>::ImplementationType &
+    getRealImplementation (InterfaceType &i) const { return i.getRealImp(); }
 
   protected:
     //! Barton-Nackman trick
