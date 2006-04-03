@@ -67,6 +67,6 @@ namespace Dune {
       InitLagrangeShapefunctions<double, float, 3> i3;
       InitLagrangeShapefunctions<float, float, 3> i4;
     }
-  };
+  }
 
-};
+}
