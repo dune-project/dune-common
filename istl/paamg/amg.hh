@@ -311,7 +311,7 @@ namespace Dune
         *update=0;
 
         // next level
-        mgc(smoother, matrix, pinfo, aggregates, lhs, update, rhs, defect);
+        mgc(smoother, matrix, pinfo, aggregates, lhs, update, rhs);
 
         if(matrix != matrices_->matrices().coarsest()) {
           --smoother;
@@ -374,7 +374,7 @@ namespace Dune
       delete &(*lhs_->finest());
       delete lhs_;
       delete &(*update_->finest());
-      delete defect_;
+      delete update_;
       delete &(*rhs_->finest());
       delete rhs_;
     }
