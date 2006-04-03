@@ -607,6 +607,4 @@ namespace Dune {
 
 } // end namespace Dune
 
-#include "indexsets_imp.cc"
-
 #endif
