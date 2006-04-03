@@ -104,8 +104,8 @@ namespace Dune
                typename ParallelInformationHierarchy::Iterator& pinfo,
                typename MatrixHierarchy::AggregatesMapList::const_iterator& aggregates,
                typename Hierarchy<Domain,A>::Iterator& lhs,
-               typename Hierarchy<Range,A>::Iterator& rhs,
-               typename Hierarchy<Range,A>::Iterator& defect);
+               typename Hierarchy<Domain,A>::Iterator& update,
+               typename Hierarchy<Range,A>::Iterator& rhs);
 
       //      void setupIndices(typename Matrix::ParallelIndexSet& indices, const Matrix& matrix);
 
@@ -119,10 +119,10 @@ namespace Dune
       CoarseSolver* solver_;
       /** @brief The right hand side of our problem. */
       Hierarchy<Range,A>* rhs_;
-      /** @brief The current defect. */
-      Hierarchy<Range,A>* defect_;
       /** @brief The left approximate solution of our problem. */
       Hierarchy<Domain,A>* lhs_;
+      /** @brief The total update for the outer solver. */
+      Hierarchy<Domain,A>* update_;
       /** @brief The type of the chooser of the scalar product. */
       typedef ScalarProductChooser<X,PI,M::category> ScalarProductChooser;
       /** @brief The type of the scalar product for the coarse solver. */
@@ -196,12 +196,13 @@ namespace Dune
       Range* copy = new Range(b);
       rhs_ = new Hierarchy<Range,A>(*copy);
       copy = new Range(b);
-      defect_ = new Hierarchy<Range,A>(*copy);
       Domain* dcopy = new Domain(x);
       lhs_ = new Hierarchy<Domain,A>(*dcopy);
+      dcopy = new Domain(x);
+      update_ = new Hierarchy<Domain,A>(*dcopy);
       matrices_->coarsenVector(*rhs_);
-      matrices_->coarsenVector(*defect_);
       matrices_->coarsenVector(*lhs_);
+      matrices_->coarsenVector(*update_);
 
       // Preprocess all smoothers
       typedef typename Hierarchy<Smoother,A>::Iterator Iterator;
@@ -251,15 +252,15 @@ namespace Dune
       typename ParallelInformationHierarchy::Iterator pinfo = matrices_->parallelInformation().finest();
       typename MatrixHierarchy::AggregatesMapList::const_iterator aggregates = matrices_->aggregatesMaps().begin();
       typename Hierarchy<Domain,A>::Iterator lhs = lhs_->finest();
+      typename Hierarchy<Domain,A>::Iterator update = update_->finest();
       typename Hierarchy<Range,A>::Iterator rhs = rhs_->finest();
-      typename Hierarchy<Range,A>::Iterator defect = defect_->finest();
 
       *lhs = v;
       *rhs = d;
-
+      *update=0;
       level=0;
-      mgc(smoother, matrix, pinfo, aggregates, lhs, rhs, defect);
-      v=*lhs;
+      mgc(smoother, matrix, pinfo, aggregates, lhs, update, rhs);
+      v=*update;
     }
 
     template<class M, class X, class S, class P, class A>
@@ -268,46 +269,49 @@ namespace Dune
                              typename ParallelInformationHierarchy::Iterator& pinfo,
                              typename MatrixHierarchy::AggregatesMapList::const_iterator& aggregates,
                              typename Hierarchy<Domain,A>::Iterator& lhs,
-                             typename Hierarchy<Range,A>::Iterator& rhs,
-                             typename Hierarchy<Range,A>::Iterator& defect){
+                             typename Hierarchy<Domain,A>::Iterator& update,
+                             typename Hierarchy<Range,A>::Iterator& rhs){
       if(matrix == matrices_->matrices().coarsest()) {
         // Solve directly
         InverseOperatorResult res;
         pinfo->copyOwnerToAll(*rhs, *rhs);
-        solver_->apply(*lhs, *rhs, res);
+        solver_->apply(*update, *rhs, res);
         if(!res.converged)
           DUNE_THROW(MathError, "Coarse solver did not converge");
       }else{
         // presmoothing
         for(std::size_t i=0; i < steps_; ++i) {
+          *lhs=0;
           smoother->apply(*lhs, *rhs);
+          // Accumulate update
+          *update += *lhs;
+          // update defect
+          matrix->applyscaleadd(-1,static_cast<const Domain&>(*lhs), *rhs);
         }
 
-        // calculate defect
-        *defect = *rhs;
-        matrix->applyscaleadd(-1,static_cast<const Domain&>(*lhs), *defect);
-
         //restrict defect to coarse level right hand side.
-        ++rhs;
+        typename Hierarchy<Range,A>::Iterator fineRhs = rhs++;
         ++pinfo;
 
         Transfer<typename MatrixHierarchy::AggregatesMap::AggregateDescriptor,Range,ParallelInformation>
-        ::restrict (*(*aggregates), *rhs, static_cast<const Range&>(*defect), *pinfo);
+        ::restrict (*(*aggregates), *rhs, static_cast<const Range&>(*fineRhs), *pinfo);
 
         // prepare coarse system
         ++lhs;
-        ++defect;
+        ++update;
         ++matrix;
         ++level;
-        *lhs=0;
 
         if(matrix != matrices_->matrices().coarsest()) {
           ++smoother;
           ++aggregates;
         }
 
+        // prepare the update on the next level
+        *update=0;
+
         // next level
-        mgc(smoother, matrix, pinfo, aggregates, lhs, rhs, defect);
+        mgc(smoother, matrix, pinfo, aggregates, lhs, update, rhs, defect);
 
         if(matrix != matrices_->matrices().coarsest()) {
           --smoother;
@@ -317,20 +321,29 @@ namespace Dune
         //prolongate and add the correction (update is in coarse left hand side)
         --matrix;
 
-        typename Hierarchy<Domain,A>::Iterator coarseLhs = lhs--;
-
+        //typename Hierarchy<Domain,A>::Iterator coarseLhs = lhs--;
+        --lhs;
         --pinfo;
 
-        Transfer<typename MatrixHierarchy::AggregatesMap::AggregateDescriptor,Range,ParallelInformation>
-        ::prolongate(*(*aggregates), *coarseLhs, *lhs, 1.6);
 
+        *lhs=0;
+        Transfer<typename MatrixHierarchy::AggregatesMap::AggregateDescriptor,Range,ParallelInformation>
+        ::prolongate(*(*aggregates), *update, *lhs, 1.6);
+
+        --update;
         --rhs;
-        --defect;
+
+        *update += *lhs;
 
         // postsmoothing
         for(std::size_t i=0; i < steps_; ++i) {
+          // update defect
+          matrix->applyscaleadd(-1,static_cast<const Domain&>(*lhs), *rhs);
+          *lhs=0;
           smoother->apply(*lhs, *rhs);
+          *update += *lhs;
         }
+
       }
     }
 
@@ -360,7 +373,7 @@ namespace Dune
 
       delete &(*lhs_->finest());
       delete lhs_;
-      delete &(*defect_->finest());
+      delete &(*update_->finest());
       delete defect_;
       delete &(*rhs_->finest());
       delete rhs_;
