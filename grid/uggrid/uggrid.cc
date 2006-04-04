@@ -264,7 +264,7 @@ inline Dune::UGGrid < dim, dimworld >::~UGGrid()
   for (unsigned int i=0; i<levelIndexSets_.size(); i++)
     if (levelIndexSets_[i])
       delete levelIndexSets_[i];
-};
+}
 
 template < int dim, int dimworld >
 inline int Dune::UGGrid < dim, dimworld >::maxLevel() const
