@@ -201,7 +201,6 @@ AC_CONFIG_FILES([Makefile
 	 grid/utility/Makefile
      grid/yaspgrid/Makefile
      fem/Makefile
-     fem/norms/Makefile
      fem/transfer/Makefile
      istl/Makefile
      istl/tutorial/Makefile
