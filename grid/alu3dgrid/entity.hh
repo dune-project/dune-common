@@ -404,6 +404,9 @@ namespace Dune {
     int level () const ;
 
   protected:
+    // clones object
+    void clone (const ALU3dGridEntityPointerType & org);
+
     //! has to be called when iterator is finished
     void done ();
 

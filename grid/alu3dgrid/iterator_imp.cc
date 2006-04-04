@@ -763,13 +763,13 @@ namespace Dune {
   ALU3dGridHierarchicIterator(const GridImp & grid ,
                               const ALU3DSPACE HElementType & elem, int maxlevel ,bool end)
     : ALU3dGridEntityPointer<0,GridImp> ( grid, maxlevel )
-      , elem_(elem)
+      , elem_(&elem)
       , maxlevel_(maxlevel)
   {
     if (!end)
     {
       ALU3DSPACE HElementType * item =
-        const_cast<ALU3DSPACE HElementType *> (elem_.down());
+        const_cast<ALU3DSPACE HElementType *> (elem.down());
       if(item)
       {
         // we have children and they lie in the disired level range
@@ -798,6 +798,20 @@ namespace Dune {
   {}
 
   template <class GridImp>
+  inline ALU3dGridHierarchicIterator<GridImp> &
+  ALU3dGridHierarchicIterator<GridImp> ::
+  operator = (const ALU3dGridHierarchicIterator<GridImp> & org)
+  {
+    elem_     = org.elem_;
+    maxlevel_ = org.maxlevel_;
+
+    // this method will free entity
+    this->clone(org);
+
+    return *this;
+  }
+
+  template <class GridImp>
   inline ALU3DSPACE HElementType * ALU3dGridHierarchicIterator<GridImp>::
   goNextElement(ALU3DSPACE HElementType * oldelem )
   {
@@ -820,12 +834,12 @@ namespace Dune {
     }
 
     nextelem = oldelem->up();
-    if(nextelem == &elem_) return 0;
+    if(nextelem == elem_) return 0;
 
     while( !nextelem->next() )
     {
       nextelem = nextelem->up();
-      if(nextelem == &elem_) return 0;
+      if(nextelem == elem_) return 0;
     }
 
     if(nextelem) nextelem = nextelem->next();

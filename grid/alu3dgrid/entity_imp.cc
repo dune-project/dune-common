@@ -735,6 +735,27 @@ namespace Dune {
   }
 
   template<int codim, class GridImp >
+  inline void
+  ALU3dGridEntityPointerBase<codim,GridImp> ::
+  clone (const ALU3dGridEntityPointerType & org)
+  {
+    assert( &grid_ == &org.grid_ );
+    // set item
+    item_ = org.item_;
+
+    // if entity exists, just remove item pointer
+    if(entity_)
+    {
+      if(item_)
+        this->entityImp().setElement( *item_ );
+      else
+        this->entityImp().removeElement();
+    }
+
+    return ;
+  }
+
+  template<int codim, class GridImp >
   inline ALU3dGridEntityPointerBase<codim,GridImp> ::
   ~ALU3dGridEntityPointerBase()
   {
