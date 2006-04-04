@@ -8,9 +8,13 @@
 
 #include <dune/grid/alu3dgrid.hh>
 
+#define ALUGRID_TESTING
 #include "gridcheck.cc"
+#undef ALUGRID_TESTING
+
 #include "checkgeometryinfather.cc"
 #include "checkintersectionit.cc"
+
 
 using namespace Dune;
 
