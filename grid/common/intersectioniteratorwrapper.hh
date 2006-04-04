@@ -95,6 +95,12 @@ namespace Dune {
     //! return true if across the intersection a neighbor on this level exists
     bool neighbor () const { return it().neighbor(); }
 
+    //! return true if across the intersection a neighbor on this level exists
+    bool levelNeighbor () const { return it().levelNeighbor(); }
+
+    //! return true if across the intersection a neighbor on this level exists
+    bool leafNeighbor () const { return it().leafNeighbor(); }
+
     //! return information about the Boundary
     int boundaryId () const { return it().boundaryId(); }
 

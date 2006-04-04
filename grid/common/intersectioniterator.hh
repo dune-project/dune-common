@@ -205,9 +205,20 @@ namespace Dune
     }
 
     //! @brief return true if intersection is shared with another element.
-    bool neighbor () const
+    bool neighbor () const DUNE_DEPRECATED
     {
       return this->realIterator.neighbor();
+    }
+    //! @brief return true if intersection is shared with another element on the same level.
+    bool levelNeighbor () const
+    {
+      return this->realIterator.levelNeighbor();
+    }
+
+    //! @brief return true if intersection is shared with another leaf element.
+    bool leafNeighbor () const
+    {
+      return this->realIterator.leafNeighbor();
     }
 
     /*! @brief return EntityPointer to the Entity on the inside of this
@@ -394,6 +405,21 @@ namespace Dune
       n /= n.two_norm();
       return n;
     }
+
+    //! default using old neighbor method
+    bool levelNeighbor () const
+    {
+      return (asImp().neighbor()) ?
+             (asImp().outside()->level() == asImp().inside()->level()) : false;
+    }
+
+    //! default using old neighbor method
+    bool leafNeighbor () const
+    {
+      return (asImp().neighbor()) ?
+             (asImp().outside()->isLeaf()) : false;
+    }
+
   private:
     //!  Barton-Nackman trick
     IntersectionIteratorImp<GridImp>& asImp ()
