@@ -286,28 +286,6 @@ namespace Dune
           treated[indexi] = true;
         }
       }
-
-
-      // eliminate interpolation in rows with essential boundary conditions
-      //          rowiterator endi=(*A).end();
-      //          for (rowiterator i=(*A).begin(); i!=endi; ++i)
-      //                {
-      //                  int indexi = i.index();
-
-      //                  // go through all components at this vertex
-      //                  for (int compi=0; compi<m; compi++)
-      //                        if ((*skipflag[compi])[indexi])
-      //                          {
-      //                                // we have to set this row to zero
-      //                                coliterator colend = (*i).end();
-      //                                for (coliterator colit=(*i).begin(); colit!=colend; ++colit)
-      //                                  for (int compj=0; compj<m; compj++)
-      //                                        (*colit)[compi][compj] = 0;
-      //                          }
-      //                }
-
-      //          printmatrix(std::cout,*A,"prolongation matrix","row",9,1);
-
     }
 
     // return the skip flag
