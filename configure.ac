@@ -220,8 +220,6 @@ AC_CONFIG_FILES([Makefile
      quadrature/Makefile
      quadrature/gaussquadrature/Makefile
      quadrature/test/Makefile
-     solver/Makefile
-     solver/common/Makefile
      m4/Makefile
 	 am/Makefile
 	 bin/wmlwrap
