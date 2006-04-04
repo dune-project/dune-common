@@ -12,7 +12,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/..
 commonincludedir = $(includedir)/dune/common
 commoninclude_HEADERS = dlist.cc stdstreams.cc alignment.hh \
   array.hh arraylist.hh bitfield.hh capabilities.hh debugstream.hh dlist.hh \
-  dynamictype.hh enumset.hh exceptions.hh fixedarray.hh fmatrix.hh \
+  enumset.hh exceptions.hh fixedarray.hh fmatrix.hh \
   fvector.hh genericiterator.hh \
   helpertemplates.hh interfaces.hh iteratorfacades.hh logictraits.hh \
   matrix.hh misc.hh poolallocator.hh simplevector.hh \
