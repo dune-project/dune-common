@@ -200,8 +200,6 @@ AC_CONFIG_FILES([Makefile
      grid/uggrid/Makefile
 	 grid/utility/Makefile
      grid/yaspgrid/Makefile
-     fem/Makefile
-     fem/transfer/Makefile
      istl/Makefile
      istl/tutorial/Makefile
 	 istl/test/Makefile

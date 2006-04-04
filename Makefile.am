@@ -4,7 +4,7 @@
 # need automake >= 1.5
 AUTOMAKE_OPTIONS = foreign 1.5
 
-SUBDIRS = common fem disc grid quadrature io istl lib doc bin m4 am
+SUBDIRS = common disc grid quadrature io istl lib doc bin m4 am
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = dune.pc
