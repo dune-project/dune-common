@@ -169,55 +169,64 @@ AC_CONFIG_FILES([Makefile
 	 bin/Makefile
 	 common/Makefile
 	 common/test/Makefile
+     doc/Makefile
+     doc/devel/Makefile
+     doc/appl/Makefile
+     doc/appl/refelements/Makefile
+     doc/istl/Makefile
+     doc/istl/comm/Makefile
+     doc/layout/Makefile
+     doc/refinement/Makefile
+     doc/doxygen/Makefile
 	 disc/Makefile
 	 disc/elasticity/Makefile
-         disc/functions/Makefile
+     disc/functions/Makefile
 	 disc/groundwater/Makefile
 	 disc/miscoperators/Makefile
-         disc/operators/Makefile
+     disc/operators/Makefile
 	 disc/shapefunctions/Makefile
 	 disc/shapefunctions/dgspace/Makefile
 	 disc/shapefunctions/lagrange/Makefile
-         disc/shapefunctions/test/Makefile
-         fem/Makefile
-         fem/norms/Makefile
-         fem/transfer/Makefile
-         grid/Makefile
-         grid/albertagrid/Makefile
-         grid/alu3dgrid/Makefile
-         grid/common/Makefile
-         grid/common/test/Makefile
+     disc/shapefunctions/test/Makefile
+     grid/Makefile
+     grid/albertagrid/Makefile
+     grid/alu3dgrid/Makefile
+     grid/common/Makefile
+     grid/common/test/Makefile
 	 grid/common/refinement/Makefile
-         grid/onedgrid/Makefile
-         grid/sgrid/Makefile
-         grid/test/Makefile
-         grid/uggrid/Makefile
+     grid/onedgrid/Makefile
+     grid/sgrid/Makefile
+     grid/test/Makefile
+     grid/uggrid/Makefile
 	 grid/utility/Makefile
-         grid/yaspgrid/Makefile
-         istl/Makefile
-         istl/tutorial/Makefile
+     grid/yaspgrid/Makefile
+     fem/Makefile
+     fem/norms/Makefile
+     fem/transfer/Makefile
+     istl/Makefile
+     istl/tutorial/Makefile
 	 istl/test/Makefile
 	 istl/paamg/Makefile
 	 istl/paamg/test/Makefile
 	 io/Makefile
 	 io/file/Makefile
-         io/file/alberta/Makefile
+     io/file/alberta/Makefile
 	 io/file/amiramesh/Makefile
 	 io/file/rawdata/Makefile
-         io/file/test/Makefile
+     io/file/test/Makefile
 	 io/visual/Makefile
 	 io/visual/grape/Makefile
-         lib/Makefile
-         quadrature/Makefile
-         quadrature/gaussquadrature/Makefile
-         quadrature/test/Makefile
-         solver/Makefile
-         solver/common/Makefile
-         m4/Makefile
+     lib/Makefile
+     quadrature/Makefile
+     quadrature/gaussquadrature/Makefile
+     quadrature/test/Makefile
+     solver/Makefile
+     solver/common/Makefile
+     m4/Makefile
 	 am/Makefile
 	 bin/wmlwrap
 	 bin/check-log-store
-         dune.pc])
+     dune.pc])
 AC_OUTPUT
 
 chmod +x bin/wmlwrap

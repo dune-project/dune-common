@@ -1,6 +1,6 @@
 # $Id$
 
 disc_operatorsdir = $(includedir)/disc/operators
-disc_operators_HEADERS = p1operator.hh boundaryconditions.hh localstiffness.hh
+disc_operators_HEADERS = p1operator.hh p1mgtransfer.hh boundaryconditions.hh localstiffness.hh
 
 include $(top_srcdir)/am/global-rules
