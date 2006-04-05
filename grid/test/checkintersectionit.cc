@@ -129,10 +129,19 @@ void checkIntersectionIterator(const GridType& grid) {
         //   Check the geometry returned by intersectionSelfLocal()
         // //////////////////////////////////////////////////////////
 
-        const typename IntersectionIterator::LocalGeometry& intersectionSelfLocal = iIt.intersectionSelfLocal();
+        {
+          const typename IntersectionIterator::LocalGeometry& intersectionSelfLocal = iIt.intersectionSelfLocal();
+          if (intersectionSelfLocal.corners() <= 0)
+            DUNE_THROW(GridError, "Local intersection has nonpositive number of corners!");
 
-        if (intersectionSelfLocal.corners() <= 0)
-          DUNE_THROW(GridError, "Local intersection has nonpositive number of corners!");
+          // check points of intersection self
+          for(int k=0; k<intersectionSelfLocal.corners(); ++k)
+          {
+            if (( eIt->geometry().global( intersectionSelfLocal[k] )
+                  - intersectionGlobal[k] ).infinity_norm() > 1e-6)
+              DUNE_THROW(GridError, "global( intersectionSelfLocal[" << k << "] ) is not the same as intersectionGlobal[" << k <<"]!");
+          }
+        }
 
         // ////////////////////////////////////////////////////////////////
         //   Check the geometry returned by intersectionNeighborLocal()
@@ -148,6 +157,16 @@ void checkIntersectionIterator(const GridType& grid) {
 
           if (intersectionNeighborLocal.corners() != intersectionSelfLocal.corners())
             DUNE_THROW(GridError, "Geometry of intersection is incosistent from left and right hand side!");
+
+          typedef typename EntityType::EntityPointer EntityPointer;
+          EntityPointer outside = iIt.outside();
+          // check points of intersection neighbor local
+          for(int k=0; k<intersectionNeighborLocal.corners(); ++k)
+          {
+            if (( outside->geometry().global( intersectionNeighborLocal[k] )
+                  - intersectionGlobal[k] ).infinity_norm() > 1e-6)
+              DUNE_THROW(GridError, "global( intersectionNeighborLocal[" << k << "] ) is not the same as intersectionGlobal[" << k <<"]!");
+          }
 
         }
 
