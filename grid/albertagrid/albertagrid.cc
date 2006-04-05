@@ -1506,6 +1506,7 @@ namespace Dune
   template<int codim, class GridImp >
   inline AlbertaGridEntityPointer<codim,GridImp> :: ~AlbertaGridEntityPointer()
   {
+    this->done();
     grid_.template freeEntity<codim>( entity_ );
     entityImp_ = 0;
   }
@@ -1944,7 +1945,7 @@ namespace Dune
   {
     builtNeigh_ = false;
     // is like go to the next neighbour
-    neighborCount_++;
+    ++neighborCount_;
 
     // (dim+1) is neigbourCount for end iterators
     if(neighborCount_ > dim)
