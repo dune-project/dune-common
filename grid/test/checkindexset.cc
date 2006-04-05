@@ -427,28 +427,12 @@ namespace Dune {
           IntersectionIterator endnit  = it->iend();
           for(IntersectionIterator nit = it->ibegin(); nit != endnit; ++nit)
           {
-            if(nit.neighbor())
+            if((levelIndex && nit.levelNeighbor()) || (!levelIndex && nit.leafNeighbor()))
             {
               typedef typename GridType :: template Codim<0> :: EntityPointer EnPointer;
               EnPointer ep = nit.outside();
-              const EntityCodim0Type & en = *ep;
 
-              // dont check neighbour, if we check level index sets
-              if(levelIndex)
-              {
-                if(grid.type() == AlbertaGrid_Id )
-                {
-                  static bool visited = false;
-                  if(!visited )
-                  {
-                    derr << "WARNING: Neighbor Relations for AlbertaGrid not working correctly for level != leaf level! \n";
-                    visited = true;
-                  }
-                  continue;
-                }
-                if(it->level() != en.level()) continue;
-              }
-              checkSubEntity<codim> (grid, en, lset, sout,
+              checkSubEntity<codim> (grid, *ep, lset, sout,
                                      subEntities, vertices, vertexCoordsMap);
             }
           }

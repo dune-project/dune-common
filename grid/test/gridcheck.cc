@@ -239,22 +239,23 @@ struct IntersectionIteratorInterface
 
     // state
     i.boundary();
-    i.neighbor();
+    i.levelNeighbor();
+    i.leafNeighbor();
 
     // id of boundary segment
     i.boundaryId();
 
     // neighbouring elements
     i.inside();
-    if(i.neighbor()) i.outside();
+    if(i.leafNeighbor() || i.levelNeighbor()) i.outside();
 
     // geometry
     i.intersectionSelfLocal();
-    if(i.neighbor()) i.intersectionNeighborLocal();
+    if(i.leafNeighbor() || i.levelNeighbor()) i.intersectionNeighborLocal();
     i.intersectionGlobal();
 
     i.numberInSelf();
-    if(i.neigbor()) i.numberInNeighbor();
+    if(i.leafNeighbor() || i.levelNeighbor()) i.numberInNeighbor();
 
     Dune::FieldVector<ct, dim-1> v(0);
     i.outerNormal(v);
@@ -672,6 +673,7 @@ void assertNeighbor (Grid &g)
   const LevelIterator eend = g.template lend<0>(0);
 
 #ifdef ALUGRID_TESTING
+  #warning "ALU3dGrid does not support assignment of Level- or LeafIterators!"
   static bool called = false;
   if(!called)
   {
@@ -694,7 +696,8 @@ void assertNeighbor (Grid &g)
       IntersectionIterator it = e->ibegin();
       // state
       it.boundary();
-      it.neighbor();
+      it.leafNeighbor();
+      it.levelNeighbor();
       // id of boundary segment
       it.boundaryId();
       // check id
@@ -713,7 +716,7 @@ void assertNeighbor (Grid &g)
         int num = it.numberInSelf();
         assert( num >= 0 && num < e->template count<1> () );
 
-        if(it.neighbor())
+        if(it.leafNeighbor() || it.levelNeighbor())
         {
           // geometry
           it.intersectionNeighborLocal();
@@ -732,7 +735,7 @@ void assertNeighbor (Grid &g)
         it.integrationOuterNormal(v);
         it.unitOuterNormal(v);
         // search neighbouring cell
-        if (it.neighbor())
+        if (it.leafNeighbor() || it.levelNeighbor())
         {
           assert(globalid.id(*(it.outside())) >= 0);
           assert(globalid.id(*(it.outside())) !=
@@ -790,6 +793,7 @@ void iterate(Grid &g)
   for (; it != endit; ++it)
   {
 #ifdef ALUGRID_TESTING
+  #warning "ALU3dGrid does not support assignment of Level- or LeafIterators!"
     static bool called = false;
     if(!called)
     {
@@ -885,6 +889,7 @@ void iteratorEquals (Grid &g)
 
   // assign
 #ifdef ALUGRID_TESTING
+  #warning "ALU3dGrid does not support assignment of Level- or LeafIterators!"
   static bool called = false;
   if(!called)
   {
@@ -907,14 +912,14 @@ void iteratorEquals (Grid &g)
     i == h2; \
     i == L2; \
     i == i2.inside(); \
-    if (i2.neighbor()) i == i2.outside(); \
+    if (i2.leafNeighbor() || i2.levelNeighbor()) i == i2.outside(); \
 }
   TestEquals(e1);
   TestEquals(l1);
   TestEquals(h1);
   TestEquals(L1);
   TestEquals(i1.inside());
-  if (i1.neighbor()) TestEquals(i1.outside());
+  if (i2.leafNeighbor() || i2.levelNeighbor()) TestEquals(i1.outside());
 }
 
 template <class Grid>

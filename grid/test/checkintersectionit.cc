@@ -59,24 +59,26 @@ void checkIntersectionIterator(const GridType& grid) {
         //   Check the consistency of numberInSelf, numberInNeighbor
         //   and the indices of the subface between.
         // /////////////////////////////////////////////////////////////
-        if (iIt.neighbor()) {
-
+        if (iIt.levelNeighbor()) {
           typedef typename EntityType::EntityPointer EntityPointer;
           EntityPointer outside = iIt.outside();
           int numberInSelf     = iIt.numberInSelf();
           int numberInNeighbor = iIt.numberInNeighbor();
 
-          if (outside->level() == eIt->level()) {
+          assert(grid.levelIndexSet(i).template subIndex<1>(*eIt, numberInSelf)
+                 == grid.levelIndexSet(i).template subIndex<1>(*outside, numberInNeighbor));
 
-            assert(grid.levelIndexSet(i).template subIndex<1>(*eIt, numberInSelf)
-                   == grid.levelIndexSet(i).template subIndex<1>(*outside, numberInNeighbor));
+          assert(grid.localIdSet().template subId<1>(*eIt, numberInSelf)
+                 == grid.localIdSet().template subId<1>(*outside, numberInNeighbor));
 
-            assert(grid.localIdSet().template subId<1>(*eIt, numberInSelf)
-                   == grid.localIdSet().template subId<1>(*outside, numberInNeighbor));
-
-            assert(grid.globalIdSet().template subId<1>(*eIt, numberInSelf)
-                   == grid.globalIdSet().template subId<1>(*outside, numberInNeighbor));
-          }
+          assert(grid.globalIdSet().template subId<1>(*eIt, numberInSelf)
+                 == grid.globalIdSet().template subId<1>(*outside, numberInNeighbor));
+        }
+        if (iIt.leafNeighbor()) {
+          typedef typename EntityType::EntityPointer EntityPointer;
+          EntityPointer outside = iIt.outside();
+          int numberInSelf     = iIt.numberInSelf();
+          int numberInNeighbor = iIt.numberInNeighbor();
 
           // if entity is leaf entity then check leaf index set
           if((eIt->isLeaf()) && (outside->isLeaf()))
@@ -136,12 +138,16 @@ void checkIntersectionIterator(const GridType& grid) {
         //   Check the geometry returned by intersectionNeighborLocal()
         // ////////////////////////////////////////////////////////////////
 
-        if (iIt.neighbor()) {
+        if (iIt.levelNeighbor() || iIt.leafNeighbor()) {
 
           const typename IntersectionIterator::LocalGeometry& intersectionNeighborLocal = iIt.intersectionNeighborLocal();
+          const typename IntersectionIterator::LocalGeometry& intersectionSelfLocal = iIt.intersectionSelfLocal();
 
           if (intersectionNeighborLocal.corners() <= 0)
             DUNE_THROW(GridError, "Local intersection has nonpositive number of corners!");
+
+          if (intersectionNeighborLocal.corners() != intersectionSelfLocal.corners())
+            DUNE_THROW(GridError, "Geometry of intersection is incosistent from left and right hand side!");
 
         }
 
