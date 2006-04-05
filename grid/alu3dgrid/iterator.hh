@@ -763,7 +763,7 @@ namespace Dune {
     bool boundary () const;
 
     //! return true if across the edge an neighbor on this level exists
-    bool neighbor () const DUNE_DEPRECATED;
+    bool neighbor () const;
 
     //! return true if across the edge an neighbor on this level exists
     bool levelNeighbor () const;
