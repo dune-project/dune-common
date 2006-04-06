@@ -150,14 +150,14 @@ namespace Dune {
     //! Here returned element is in LOCAL coordinates of the element
     //! where iteration started.
     const LocalGeometry& intersectionSelfLocal () const {
-      intersectionSelfLocal_.pos_ = (numberInSelf() == 0) ? 0 : 1;
+      intersectionSelfLocal_.setPosition( (numberInSelf() == 0) ? 0 : 1 );
       return intersectionSelfLocal_;
     }
 
     //! intersection of codimension 1 of this neighbor with element where iteration started.
     //! Here returned element is in LOCAL coordinates of neighbor
     const LocalGeometry& intersectionNeighborLocal () const {
-      intersectionNeighborLocal_.pos_ = (numberInSelf() == 0) ? 1 : 0;
+      intersectionNeighborLocal_.setPosition( (numberInSelf() == 0) ? 1 : 0 );
       return intersectionNeighborLocal_;
     }
 
@@ -213,18 +213,12 @@ namespace Dune {
     int neighbor_;
 
     /** \brief The geometry that's being returned when intersectionSelfLocal() is called
-        \todo This one is returned either with coordinate 1 or zero.  Can't we make two
-        static instances of this class and return those instead of carrying them around
-        in the iterator?
      */
-    mutable OneDGridVertex<GridImp> intersectionSelfLocal_;
+    mutable OneDMakeableGeometry<0,1,GridImp> intersectionSelfLocal_;
 
     /** \brief The geometry that's being returned when intersectionSelfLocal() is called
-        \todo This one is returned either with coordinate 1 or zero.  Can't we make two
-        static instances of this class and return those instead of carrying them around
-        in the iterator?
      */
-    mutable OneDGridVertex<GridImp> intersectionNeighborLocal_;
+    mutable OneDMakeableGeometry<0,1,GridImp> intersectionNeighborLocal_;
 
     //! The geometry that's being returned when intersectionSelfGlobal() is called
     mutable OneDMakeableGeometry<dim-1,dimworld,GridImp> intersectionGlobal_;
