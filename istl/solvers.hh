@@ -270,7 +270,7 @@ namespace Dune {
 
       // final print
       if (_verbose>0)
-        printf("=== rate=%g, T=%g, TIT=%g\n",r.conv_rate,r.elapsed,r.elapsed/i);
+        printf("=== rate=%g, T=%g, TIT=%g, IT=%d\n",r.conv_rate,r.elapsed,r.elapsed/i,i);
     }
 
     //! \copydoc InverseOperator::apply(X&,Y&,double,InverseOperatorResult&)
@@ -384,7 +384,7 @@ namespace Dune {
       r.conv_rate  = pow(r.reduction,1.0/i);
       r.elapsed = watch.elapsed();
       if (_verbose>0)                 // final print
-        printf("=== rate=%g, T=%g, TIT=%g\n",r.conv_rate,r.elapsed,r.elapsed/i);
+        printf("=== rate=%g, T=%g, TIT=%g, IT=%d\n",r.conv_rate,r.elapsed,r.elapsed/i,i);
     }
 
     /*!
@@ -470,7 +470,7 @@ namespace Dune {
         r.conv_rate  = 0;
         r.elapsed=0;
         if (_verbose>0)                           // final print
-          printf("=== rate=%g, T=%g, TIT=%g\n",r.conv_rate,r.elapsed,r.elapsed);
+          printf("=== rate=%g, T=%g, TIT=%g, IT=%d\n",r.conv_rate,r.elapsed,r.elapsed,0);
         return;
       }
 
@@ -530,7 +530,7 @@ namespace Dune {
       r.conv_rate  = pow(r.reduction,1.0/i);
       r.elapsed = watch.elapsed();
       if (_verbose>0)                     // final print
-        printf("=== rate=%g, T=%g, TIT=%g\n",r.conv_rate,r.elapsed,r.elapsed/i);
+        printf("=== rate=%g, T=%g, TIT=%g, IT=%d\n",r.conv_rate,r.elapsed,r.elapsed/i,i);
     }
 
     /*!
@@ -601,7 +601,7 @@ namespace Dune {
      */
     virtual void apply (X& x, X& b, InverseOperatorResult& res)
     {
-      const double EPSILON=1e-40;
+      const double EPSILON=1e-80;
 
       int it;
       field_type rho, rho_new, alpha, beta, h, omega;
@@ -785,7 +785,7 @@ namespace Dune {
       res.conv_rate  = pow(res.reduction,1.0/it);
       res.elapsed = watch.elapsed();
       if (_verbose>0)                     // final print
-        printf("=== rate=%g, T=%g, TIT=%g\n",res.conv_rate,res.elapsed,res.elapsed/it);
+        printf("=== rate=%g, T=%g, TIT=%g, IT=%d\n",res.conv_rate,res.elapsed,res.elapsed/it,it);
     }
 
     /*!
