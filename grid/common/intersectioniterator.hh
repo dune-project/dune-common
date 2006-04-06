@@ -54,14 +54,13 @@ namespace Dune
      \image html  islocalref.png "IntersectionIterator in a locally refined mesh."
      \image latex islocalref.eps "IntersectionIterator in a locally refined mesh." width=\textwidth
 
-     Here the rule is the following: The IntersectionIterator deleivers the
-     intersection with an entity on the same level if possible or with an element
-     on a lower level which must be a leaf element in this case.
+     Here the rule is the following: The IntersectionIterator delivers all intersections
+     with elements on the same level and in addition intersections with all leaf elements
+     that are on a lower level.
 
-     This means that if element c has an intersection with element a, a does
-     not necessarily have an intersection with element c. In the example above, a
-     would have an intersection with element b.
-
+     According to this rule the intersection iterator started at a delivers an intersection
+     with b and c, the intersection itersection iterator started at c delivers intersections
+     with a and d and b has an intersection with a.
 
      <h2>Intersections, leaf grid and level grid</h2>
 
@@ -77,6 +76,13 @@ namespace Dune
      Depending on the boolean values returned by the methods boundary() and neighbor()
      one can detect the position of an entity relative to the boundary. The
      following cases are possible.
+
+     <h2>Intersections and processor boundaries</h2>
+
+     At processor boundaries, i.e. when an element has an intersection with another element
+     in the sequential grid but this element is only stored in other processors the
+     intersection iterator stops but neither leafNeighbor(), levelNeighbor() nor boundary()
+     are true.
 
      <table>
      <tr>
