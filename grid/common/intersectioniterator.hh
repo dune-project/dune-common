@@ -56,7 +56,7 @@ namespace Dune
 
      Here the rule is the following: The IntersectionIterator delivers all intersections
      with elements on the same level and in addition intersections with all leaf elements
-     that are on a lower level.
+     if it has been started on a leaf element.
 
      According to this rule the intersection iterator started at a delivers an intersection
      with b and c, the intersection itersection iterator started at c delivers intersections
