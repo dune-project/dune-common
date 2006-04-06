@@ -562,8 +562,8 @@ template <int dim, int dimworld>
 void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template Codim<0>::EntityPointer & e,
                                                       int elementSide,
                                                       int maxl,
-                                                      Array<typename Dune::UGGridEntityPointer<0, UGGrid> >& childElements,
-                                                      Array<unsigned char>& childElementSides) const
+                                                      std::vector<typename Traits::template Codim<0>::EntityPointer>& childElements,
+                                                      std::vector<unsigned char>& childElementSides) const
 {
 
   typedef typename TargetType<0,dim>::T ElementType;
@@ -574,7 +574,8 @@ void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template 
   // The starting level
   int level = e->level();
 
-  const int MAX_SONS = 30;    // copied from UG
+  /** \todo This is a copy from within UG.  It should be used directly. */
+  const int MAX_SONS = 30;
 
   // //////////////////////////////////////////////////////////////////////
   //   Change the input face number from Dune numbering to UG numbering
@@ -643,20 +644,23 @@ void Dune::UGGrid<dim,dimworld>::getChildrenOfSubface(typename Traits::template 
   // //////////////////////////////
   //   Extract result from stack
   // //////////////////////////////
-  childElements.resize(list.size());
+
+  /** \todo Initialized with a dummy value because EntityPointer isn't default constructible */
+  childElements.resize(list.size(), lbegin<0>(0));
   childElementSides.resize(list.size());
 
   int i=0;
   for (f = list.begin(); f!=list.end(); ++f, ++i) {
 
     // Set element
-    childElements[i].setToTarget(Element<0>::get(*f), Element<2>::get(*f));
+    //childElements[i].setToTarget(Element<0>::get(*f), Element<2>::get(*f));
+    this->getRealImplementation(childElements[i]).setToTarget(Element<0>::get(*f), Element<2>::get(*f));
 
     int side = Element<1>::get(*f);
 
     // Dune numbers the faces of several elements differently than UG.
     // The following switch does the transformation
-    side = UGGridRenumberer<dim>::facesUGtoDUNE(side, childElements[i].dereference().geometry().type());
+    side = UGGridRenumberer<dim>::facesUGtoDUNE(side, childElements[i]->geometry().type());
     childElementSides[i] = side;
 
   }

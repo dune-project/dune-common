@@ -450,8 +450,8 @@ namespace Dune {
     void getChildrenOfSubface(typename Traits::template Codim<0>::EntityPointer & e,
                               int elementSide,
                               int maxl,
-                              Array<typename Dune::UGGridEntityPointer<0,UGGrid> >& childElements,
-                              Array<unsigned char>& childElementSides) const;
+                              std::vector<typename Traits::template Codim<0>::EntityPointer>& childElements,
+                              std::vector<unsigned char>& childElementSides) const;
 
     /** \brief The different forms of grid refinement that UG supports */
     enum RefinementType {
