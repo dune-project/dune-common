@@ -107,6 +107,13 @@ IMMDX_LIB_METIS(,AC_MSG_WARN([METIS not found]))
 # check for ParMETIS
 DUNE_PATH_PARMETIS
 
+#check for blas
+ACX_BLAS(AC_MSG_WARN(,[BLAS not found]))
+
+# check for superlu
+DUNE_PATH_SUPERLU
+DUNE_PATH_SUPERLU_DIST
+
 # create symlink for consistent paths even when $(top_srcdir) is not
 # called dune/ (if filesystem/OS supports symlinks)
 AC_PROG_LN_S

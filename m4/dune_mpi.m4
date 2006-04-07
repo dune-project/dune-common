@@ -237,7 +237,7 @@ dune_mpi_remove () {
 
       if test x"$with_mpi" = xLAM ; then
         AC_MSG_NOTICE([Stopping LAM via "lamhalt"...])
-        lamhalt -H
+        lamhalt -H; sleep 1
       fi
     fi
 

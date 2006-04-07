@@ -55,6 +55,9 @@ dnl check all components
   AC_REQUIRE([DUNE_MPI])
   AC_REQUIRE([IMMDX_LIB_METIS])
   AC_REQUIRE([DUNE_PATH_PARMETIS])
+  AC_REQUIRE([DUNE_PATH_SUPERLU])
+  AC_REQUIRE([DUNE_PATH_SUPERLU_DIST])
+  AC_REQUIRE([ACX_BLAS])
   AC_REQUIRE([DUNE_PATH_ALUGRID])
 
   if test x$HAVE_DUNE != x1 ; then
@@ -86,6 +89,8 @@ AC_DEFUN([DUNE_SUMMARY_ALL],[
   echo "MPI..............: $with_mpi"
   echo "METIS............: $with_metis"
   echo "ParMETIS.........: $with_parmetis"
+  echo "SuperLU..........: $with_superlu"
+  echo "SuperLU-DIST.....: $with_superlu_dist"	
   echo "OpenGL...........: $with_opengl"
   echo "UG...............: $with_ug"
   echo
