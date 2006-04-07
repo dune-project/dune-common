@@ -46,7 +46,7 @@ namespace Dune {
         \todo Should be private
      */
     UGGridIntersectionIterator(typename TargetType<0,GridImp::dimensionworld>::T* center, int nb, int level)
-      : center_(center), level_(level), neighborCount_(nb)
+      : center_(center), level_(level), neighborCount_(nb), subCount_(0)
     {}
 
     //! The Destructor
@@ -58,12 +58,23 @@ namespace Dune {
 
     //! equality
     bool equals(const UGGridIntersectionIterator<GridImp>& i) const {
-      return center_==i.center_ && neighborCount_ == i.neighborCount_;
+      return center_==i.center_ && neighborCount_ == i.neighborCount_ && subCount_==i.subCount_;
     }
 
     //! prefix increment
     void increment() {
-      neighborCount_++;
+      typename UGTypes<dim>::Element* p = getLevelNeighbor();
+      bool secondnb=false;
+      if (subCount_==0 && p!=0)
+        if (UG_NS<dim>::isLeaf(p)==false && getLeafNeighbor()!=NULL)
+          secondnb=true;
+      if (secondnb)
+        subCount_++;
+      else
+      {
+        neighborCount_++;
+        subCount_=0;
+      }
       if (neighborCount_ >= UG_NS<GridImp::dimensionworld>::Sides_Of_Elem(center_))
         neighborCount_ = -1;
     }
@@ -131,6 +142,12 @@ namespace Dune {
     //! get neighbor on same or lower level or 0
     typename UGTypes<GridImp::dimension>::Element* getNeighbor () const;
 
+    //! returns a neighbor that is a leaf or nothing (neighbor might be on the same level)
+    typename UGTypes<GridImp::dimension>::Element* getLeafNeighbor () const;
+
+    //! return a neighbor that is on the same level or nothing (neighbor might be a leaf)
+    typename UGTypes<GridImp::dimension>::Element* getLevelNeighbor () const;
+
     //! vector storing the outer normal
     mutable FieldVector<UGCtype, dimworld> outerNormal_;
 
@@ -152,7 +169,8 @@ namespace Dune {
     //! count on which neighbor we are lookin' at. Note that this is interpreted in UG's ordering!
     int neighborCount_;
 
-
+    // count number of neighbors on current face that have been treated
+    int subCount_;
   };
 
 #include "ugintersectionit.cc"

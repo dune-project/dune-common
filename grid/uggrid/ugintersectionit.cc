@@ -3,23 +3,71 @@
 template<class GridImp>
 inline typename UGTypes<GridImp::dimension>::Element* UGGridIntersectionIterator< GridImp >::getNeighbor () const
 {
-  // if we have a neighbor on this level, then return it
-  if (UG_NS<dim>::NbElem(center_, neighborCount_)!=NULL)
-    return UG_NS<dim>::NbElem(center_, neighborCount_);
+  // if subcount is zero and there is a level neighbor return it
+  if (subCount_==0 && getLevelNeighbor()!=NULL)
+    return getLevelNeighbor();
 
-  // now go down the stack of copies to find a lower level leaf neighbor
-  typename UGTypes<dim>::Element* father_ = UG_NS<GridImp::dimensionworld>::EFather(center_);
-  while (father_!=0)
+  // now we are either in subcount 1 or there is no level neighbor. If we are a leaf return leaf neighbor
+  if (UG_NS<dim>::isLeaf(center_))
+    return getLeafNeighbor();
+
+  // return nothing
+  return NULL;
+}
+
+// returns a neighbor that is a leaf or nothing (neighbor might be on the same level)
+// works only on leaf elements!
+template<class GridImp>
+inline typename UGTypes<GridImp::dimension>::Element* UGGridIntersectionIterator< GridImp >::getLeafNeighbor () const
+{
+  // if the level neighbor exists and is a leaf then return it
+  typename UGTypes<dim>::Element* p = UG_NS<dim>::NbElem(center_, neighborCount_);
+  if (p!=NULL)
+    if (UG_NS<dim>::isLeaf(p))
+      return p;
+
+  // now I must be a leaf to proceed
+  if (!UG_NS<dim>::isLeaf(center_))
+    return NULL;
+
+  // up or down ?
+  if (p==NULL)
   {
-    if (!UG_NS<dim>::hasCopy(father_)) break;       // father must be a copy
-    if (UG_NS<dim>::NbElem(father_, neighborCount_)!=NULL)       // check existence of neighbor
-      if (UG_NS<dim>::isLeaf(UG_NS<dim>::NbElem(father_, neighborCount_)))           // check leafness
-        return UG_NS<dim>::NbElem(father_, neighborCount_);
-    father_ = UG_NS<dim>::EFather(father_);
+    // I am a leaf and the neighbor does not exist: go down
+    typename UGTypes<dim>::Element* father_ = UG_NS<GridImp::dimensionworld>::EFather(center_);
+    while (father_!=0)
+    {
+      if (!UG_NS<dim>::hasCopy(father_)) break;             // father must be a copy
+      if (UG_NS<dim>::NbElem(father_, neighborCount_)!=NULL)             // check existence of neighbor
+        if (UG_NS<dim>::isLeaf(UG_NS<dim>::NbElem(father_, neighborCount_)))                 // check leafness
+          return UG_NS<dim>::NbElem(father_, neighborCount_);
+      father_ = UG_NS<dim>::EFather(father_);
+    }
+  }
+  else
+  {
+    // I am a leaf and the neighbor exists and the neighbor is not a leaf: go up
+    while (p!=0)
+    {
+      if (!UG_NS<dim>::hasCopy(p)) break;             // element must be copy refined
+      typename UGTypes<dim>::Element *sons[32];
+      UG_NS<dim>::GetSons(p,sons);
+      p = sons[0];
+      if (UG_NS<dim>::isLeaf(p))
+        return p;
+    }
   }
 
   // nothing found, return 0 (might be a processor boundary)
   return NULL;
+}
+
+// return a neighbor that is on the same level or nothing (neighbor might be a leaf)
+template<class GridImp>
+inline typename UGTypes<GridImp::dimension>::Element* UGGridIntersectionIterator< GridImp >::getLevelNeighbor () const
+{
+  // return level neighbor or NULL
+  return UG_NS<dim>::NbElem(center_, neighborCount_);
 }
 
 template<class GridImp>
