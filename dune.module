@@ -1,0 +1,15 @@
+Module: Dune
+Suggests: UG Alberta Alu3d
+
+run_configure () {
+  if test "x$HAVE_UG" == "xyes"; then
+    PARAM="--with-ug=$PATH_UG"
+  fi
+  if test "x$HAVE_Alberta" == "xyes"; then
+    PARAM="$PARAM --with-alberta=$PATH_Alberta"
+  fi
+  if test "x$HAVE_Alu3d" == "xyes"; then
+    PARAM="$PARAM --with-alberta=$PATH_Alu3d"
+  fi
+  ./configure $PARAM
+}

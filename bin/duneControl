@@ -1,0 +1,205 @@
+#!/bin/sh
+
+set -e
+
+###############################################
+
+#
+# Configuration
+#
+
+# name of the "control" files
+CONTROL="dune.module"
+
+###############################################
+
+#
+# LIB
+#
+
+parse_control() {
+  if test -f "$1"; then
+	export module=$(echo $(grep Module: "$1" | cut -d ':' -f2))
+    deps=$(echo $(grep Depends: "$1" | cut -d ':' -f2))
+    sugs=$(echo $(grep Suggests: "$1" | cut -d ':' -f2))
+	path=$(dirname "$1")
+    if test "x$module" != "x"; then
+      export HAVE_${module}=yes
+	  export PATH_${module}="$path"
+	  export DEPS_${module}="$deps"
+	  export SUGS_${module}="$sugs"
+    fi
+  else
+	echo "ERROR: could not read file $1"
+	false
+  fi
+}
+
+find_modules() {
+  if test -d "$1"; then
+    dir=$(cd "$1" && pwd)
+	while read m; do
+	  if test "x$m" != "x"; then
+		export module=""
+		parse_control "$m"
+        export MODULES="$MODULES $module"
+      fi
+	done <<EOF
+ $(find "$dir" -name $CONTROL )
+EOF
+  else
+	echo "ERROR: could not find directory $1"
+	false
+  fi
+}
+
+#
+# load the $CONTROL file, skip all control variables
+# and run a command
+#
+# parameters:
+# $1 command to execute
+# $2 full path of the $CONTROL file
+#
+eval_control() {
+  command=$1
+  file=$2
+  shift 2
+  if test -f "$file"; then
+	# open subshell
+	(
+      # load functions defined in $file
+	  # if $command is not defined in $file,
+	  # then the default implementation will be executed
+	  eval "$(grep -v -e '^[[:alnum:]]\+:' $file)"
+	  # execute $command
+      $command $@
+    )
+  fi
+}
+
+_build_module() {
+  command=$1
+  module=$2
+  shift 2
+  if test "x$(eval echo \$BUILD_DONE_$command_$module)" != "xyes"; then
+    echo "--- building $module ---"
+	# resolve dependencies
+	for dep in $(eval "echo \$DEPS_$module"); do
+      echo "--- $module depends on $dep ... calling ---"
+      _build_module $command $dep
+    done
+	# resolve suggestions
+	for dep in $(eval "echo \$SUGS_$module"); do
+      echo -n "--- $module suggests $dep ... "
+      if test "x$(eval echo \$HAVE_$dep)" != "x"; then
+		echo "calling ---"
+        _build_module $command $dep
+	  else
+		echo "skipping ---"
+	  fi
+    done
+	# really build this module
+	echo "--- calling $command for $module ---"
+	path=$(eval "echo \$PATH_$module")
+	pushd "$path" > /dev/null
+	eval_control $command $path/$CONTROL $@
+	popd > /dev/null
+    export BUILD_DONE_$command_$module=yes
+  else
+    echo "--- skipping $module ---"
+  fi
+}
+
+build_modules() {
+  command=run_$1
+  shift
+  for m in $MODULES; do
+    _build_module $command $m $@
+  done
+}
+
+usage () {
+    echo "Usage: build COMMAND [COMMAND-OPTIONS]"
+	echo "  COMMANDS:"
+	echo "            help"
+	for i in $COMMANDS; do
+      echo "            $i"
+    done
+}
+
+###############################################
+
+#
+# default implementations for commands... 
+# these can be overwritten in the $CONTROL files
+#
+
+COMMANDS="update autogen configure make all"
+
+run_list () { echo -n; }
+
+run_update () { echo "WARNING: Doing nothing"; }
+
+run_autogen () {
+  if test -x autogen.sh; then
+	for m in $MODULES; do
+	  path=$(eval "echo \$PATH_$m")
+	  if test -d $path/m4; then
+		ACLOCAL_FLAGS="-I$path/m4 $ACLOCAL_FLAGS"
+	  fi
+	done
+	./autogen.sh $@
+  fi
+}
+
+run_configure () {
+  if test -x configure; then
+	./configure $@
+  else
+    if test -f configure.in || test -f configure.ac; then
+	  echo "ERROR: configure.[in|ac] found, but configure missing"
+	  echo "did you forget to run autoconf?"
+	  false
+	fi
+  fi
+}
+
+run_make () { make; }
+
+run_all () {
+  run_autogen $@
+  run_configure $@
+  run_make $@
+}
+
+###############################################
+
+#
+# main
+#
+
+if test "x$1" == "x"; then
+  usage
+  exit 1
+fi
+
+command=$1
+shift
+
+case "$command" in
+  update | autogen | configure | make | all | list)
+    find_modules .
+    build_modules $command $@
+    ;;
+  help | --help | -h)
+	usage
+	;;
+  *)
+    echo "ERROR: unknown command \"$command\""
+	usage
+    false
+	;;
+esac
+
+exit 0
