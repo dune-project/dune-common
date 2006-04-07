@@ -54,21 +54,22 @@ namespace Dune
      \image html  islocalref.png "IntersectionIterator in a locally refined mesh."
      \image latex islocalref.eps "IntersectionIterator in a locally refined mesh." width=\textwidth
 
-     Here the rule is the following: The IntersectionIterator delivers all intersections
+     Here the rule is the following: The %IntersectionIterator delivers all intersections
      with elements on the same level and in addition intersections with all leaf elements
      if it has been started on a leaf element.
 
-     According to this rule the intersection iterator started at a delivers an intersection
+     According to this rule the intersection iterator started at element a in the example above
+     delivers an intersection
      with b and c, the intersection itersection iterator started at c delivers intersections
      with a and d and b has an intersection with a.
 
      <h2>Intersections, leaf grid and level grid</h2>
 
-     Note that the intersections of an element accessible via the IntersectionIterator
+     Note that the intersections of an element accessible via the %IntersectionIterator
      are independent of whether the element results from a grid traversal with
-     a LevelIterator or a LeafIterator. For example, if the grid is traversed
-     with a LevelIterator the IntersectionIterator may provide access to an element
-     that is not on the same level (it may be on a lower level).
+     a %LevelIterator or a %LeafIterator. For example, if the grid is traversed
+     with a %LevelIterator the %IntersectionIterator may provide access to an element
+     that is not on the same level (but only if started at a leaf element).
 
 
      <h2>Interior and boundary entities</h2>
@@ -79,7 +80,7 @@ namespace Dune
 
      <h2>Intersections and processor boundaries</h2>
 
-     At processor boundaries, i.e. when an element has an intersection with another element
+     %At processor boundaries, i.e. when an element has an intersection with another element
      in the sequential grid but this element is only stored in other processors the
      intersection iterator stops but neither leafNeighbor(), levelNeighbor() nor boundary()
      are true.
