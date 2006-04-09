@@ -57,18 +57,21 @@ namespace Dune {
             , MPI_Comm mpiComm
 #endif
             )
-    : mygrid_ (0) , maxlevel_(0)
-      , coarsenMarked_(0) , refineMarked_(0)
+    : mygrid_ (0)
 #ifdef _ALU3DGRID_PARALLEL_
-      , mpAccess_(mpiComm) , myRank_( mpAccess_.myrank() )
+      , mpAccess_(mpiComm)
+      , myRank_( mpAccess_.myrank() )
 #else
-      ,  myRank_(-1)
+      , myRank_(-1)
 #endif
+      , maxlevel_(0)
+      , coarsenMarked_(0) , refineMarked_(0)
       , geomTypes_(dim+1,1)
       , hIndexSet_ (*this)
       , globalIdSet_(0), localIdSet_(*this)
       , levelIndexVec_(MAXL,0) , leafIndexSet_(0)
       , sizeCache_ (0)
+      , ghostElements_(0)
   {
     makeGeomTypes();
 
@@ -101,28 +104,33 @@ namespace Dune {
 #ifdef _ALU3DGRID_PARALLEL_
   template <int dim, int dimworld, ALU3dGridElementType elType>
   inline ALU3dGrid<dim, dimworld, elType>::ALU3dGrid(MPI_Comm mpiComm)
-    : mygrid_ (0) , maxlevel_(0)
+    : mygrid_ (0)
+      , mpAccess_(mpiComm)
+      , myRank_( mpAccess_.myrank() )
+      , maxlevel_(0)
       , coarsenMarked_(0) , refineMarked_(0)
-      , mpAccess_(mpiComm) , myRank_( mpAccess_.myrank() )
       , geomTypes_(dim+1,1)
       , hIndexSet_ (*this)
       , globalIdSet_(0), localIdSet_(*this)
       , levelIndexVec_(MAXL,0) , leafIndexSet_(0)
       , sizeCache_ (0)
+      , ghostElements_(0)
   {
     makeGeomTypes();
   }
 #else
   template <int dim, int dimworld, ALU3dGridElementType elType>
   inline ALU3dGrid<dim, dimworld, elType>::ALU3dGrid(int myrank)
-    : mygrid_ (0) , maxlevel_(0)
-      , coarsenMarked_(0) , refineMarked_(0)
+    : mygrid_ (0)
       , myRank_(myrank)
+      , maxlevel_(0)
+      , coarsenMarked_(0) , refineMarked_(0)
       , geomTypes_(dim+1,1)
       , hIndexSet_ (*this)
       , globalIdSet_ (0)
       , localIdSet_ (*this)
       , levelIndexVec_(MAXL,0) , leafIndexSet_(0)
+      , ghostElements_(0)
   {
     makeGeomTypes();
   }
@@ -130,15 +138,17 @@ namespace Dune {
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
   inline ALU3dGrid<dim, dimworld, elType>::ALU3dGrid(const ALU3dGrid<dim, dimworld, elType> & g)
-    : mygrid_ (0) , maxlevel_(0)
-      , coarsenMarked_(0) , refineMarked_(0)
+    : mygrid_ (0)
       , myRank_(-1)
+      , maxlevel_(0)
+      , coarsenMarked_(0) , refineMarked_(0)
       , geomTypes_(dim+1,1)
       , hIndexSet_(*this)
       , globalIdSet_ (0)
       , localIdSet_ (*this)
       , levelIndexVec_(MAXL,0) , leafIndexSet_(0)
       , sizeCache_ (0)
+      , ghostElements_(0)
   {
     DUNE_THROW(GridError,"Do not use copy constructor of ALU3dGrid! \n");
   }
@@ -171,6 +181,7 @@ namespace Dune {
 
     //assert( levelIndexSet(level).size(codim,this->geomTypes(codim)[0]) ==
     //   sizeCache_->size(level,codim) );
+    assert( sizeCache_ );
     return sizeCache_->size(level,codim);
   }
 
@@ -207,7 +218,26 @@ namespace Dune {
   {
     assert( codim >= 0 );
     assert( codim < dim +1 );
-    return sizeCache_->size(codim);
+
+    assert( sizeCache_ );
+    int size = sizeCache_->size(codim);
+
+    //#ifdef _ALU3DGRID_PARALLEL_
+    if(elType == tetra)
+    {
+      // first is zero, because already exact size
+      const int offset[4] = {0,3,3,1};
+      size += offset[codim] * ghostElements_;
+    }
+    if(elType == hexa)
+    {
+      // first is zero, because already exact size
+      const int offset[4] = {0,5,8,4};
+      size += offset[codim] * ghostElements_;
+    }
+    //#endif
+
+    return size;
   }
 
   template <int dim, int dimworld, ALU3dGridElementType elType>
@@ -243,6 +273,21 @@ namespace Dune {
     if(sizeCache_) delete sizeCache_;
     bool isSimplex = (elType == tetra) ? true : false;
     sizeCache_ = new SizeCacheType (*this,isSimplex,!isSimplex,true);
+
+#ifdef _ALU3DGRID_PARALLEL_
+    {
+      ghostElements_ = 0;
+      typedef typename Traits :: template Codim<0> ::template
+      Partition<Ghost_Partition> :: LeafIterator IteratorType;
+
+      IteratorType end = this->template leafend<0,Ghost_Partition> ();
+      for(IteratorType it = this->template leafbegin<0,Ghost_Partition> ();
+          it != end; ++it)
+      {
+        ++ghostElements_;
+      }
+    }
+#endif
 
     for(unsigned int i=0; i<levelIndexVec_.size(); i++)
     {

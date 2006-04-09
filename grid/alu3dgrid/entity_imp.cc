@@ -182,11 +182,6 @@ namespace Dune {
     return localFatherCoords_;
   }
 
-  // --0Entity
-  template <int dim, class GridImp>
-  const typename ALU3dGridEntity<0, dim, GridImp>::ReferenceElementType
-  ALU3dGridEntity<0, dim, GridImp>::refElem_;
-
   template<int dim, class GridImp>
   inline ALU3dGridEntity<0,dim,GridImp> ::
   ALU3dGridEntity(const GridImp  &grid, int wLevel)
@@ -201,6 +196,7 @@ namespace Dune {
       , geoInFather_ (GeometryImp())
       , geoInFatherImp_(grid_.getRealImplementation(geoInFather_))
       , isLeaf_ (false)
+      , refElem_(grid_.referenceElement())
   {  }
 
   template<int dim, class GridImp>
@@ -217,6 +213,7 @@ namespace Dune {
       , geoInFather_ (GeometryImp())
       , geoInFatherImp_(grid_.getRealImplementation(geoInFather_))
       , isLeaf_ (org.isLeaf_)
+      , refElem_(grid_.referenceElement())
   {  }
 
   template<int dim, class GridImp>
@@ -250,11 +247,9 @@ namespace Dune {
   {
     item_          = org.item_;
     isGhost_       = org.isGhost_;
-    //ghost_         = org.ghost_;
     builtgeometry_ = false;
     level_         = org.level_;
     walkLevel_     = org.walkLevel_;
-    //glIndex_       = org.glIndex_;
     isLeaf_        = org.isLeaf_;
   }
 
@@ -265,53 +260,26 @@ namespace Dune {
   {
     // int argument (twist) is only a dummy parameter here,
     // needed for consistency reasons
-    //if(item_) if(glIndex_ == element.getIndex()) return;
 
     item_= static_cast<IMPLElementType *> (&element);
     isGhost_ = false;
-    //ghost_ = 0;
     builtgeometry_=false;
     level_   = (*item_).level();
-    //glIndex_ = (*item_).getIndex();
     isLeaf_  = ((*item_).down() == 0);
-
-    /*
-       std::cout << "Elements[" << glIndex_ << "] child number is " << item_->nChild() << "\n";
-       for(int i=0; i<item_->nFaces(); ++i)
-       {
-       std::cout << item_->myhface4(i)->nChild() << " ";
-       }
-     */
-    /*
-       std::cout << "Twist: ";
-       for (int i = 0; i < item_->nFaces(); ++i) {
-       std::cout << item_->twist(i) << ", ";
-       }
-       std::cout << std::endl;
-     */
   }
 
   template<int dim, class GridImp>
   inline void
   ALU3dGridEntity<0,dim,GridImp> :: setGhost(ALU3DSPACE HBndSegType & ghost)
   {
-#ifdef __USE_INTERNAL_FACES__
-    // use internal faces as ghost
-    typedef typename ALU3dImplTraits<GridImp::elementType>::PLLBndFaceType PLLBndFaceType;
-    item_    = 0;
-    //ghost_   = static_cast<PLLBndFaceType *> (&ghost);
-    //glIndex_ = ghost_->getIndex();
-    level_   = ghost_->level();
-#else
     // use element as ghost
     typedef typename ALU3dImplTraits<GridImp::elementType>::IMPLElementType IMPLElementType;
     item_    = static_cast<IMPLElementType *> (ghost.getGhost());
+
+    // method getGhost can return 0, but then is something wrong
     assert(item_);
-    //ghost_   = 0;
-    //glIndex_ = item_->getIndex();
+
     level_   = item_->level();
-    //int level_ = item_->level();
-#endif
     isGhost_ = true;
     builtgeometry_ = false;
 

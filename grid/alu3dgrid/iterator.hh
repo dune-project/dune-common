@@ -391,6 +391,37 @@ namespace ALUGridSpace {
     IteratorType & outer () { return wo_; }
   };
 
+  class LevelIteratorTT
+  {
+    typedef ALUHElementType<1>::ElementType ElType;
+
+    typedef any_has_level< ElType > StopRule_t;
+
+    typedef Insert < AccessIteratorTT < ElType > :: InnerHandle,
+        TreeIterator < ElType, StopRule_t > > InnerIteratorType;
+
+    typedef Insert < AccessIteratorTT < ElType > :: OuterHandle,
+        TreeIterator < ElType, StopRule_t > > OuterIteratorType;
+
+    typedef IteratorSTI < ElType > IteratorType;
+
+    AccessIteratorTT < ElType > :: InnerHandle mif_;
+    AccessIteratorTT < ElType > :: OuterHandle mof_;
+
+    InnerIteratorType wi_;
+    OuterIteratorType wo_;
+  public:
+
+    LevelIteratorTT( GitterImplType & gitter , int link , int level )
+      : mif_ (gitter.containerPll (),link) , mof_ (gitter.containerPll (),link)
+        , wi_ (mif_)
+        , wo_ (mof_)
+    {}
+
+    IteratorType & inner () { return wi_; }
+    IteratorType & outer () { return wo_; }
+  };
+
   //****************************
   //
   //  --GhostIterator
@@ -401,21 +432,13 @@ namespace ALUGridSpace {
     : public IteratorWrapperInterface< LeafValType >
   {
     GitterImplType & gitter_;
-
     typedef ALUHElementType<1>::ElementType ElType;
-    //typedef IteratorElType<0>::ElType ElType;
-  private:
 
-
-    //typedef LeafIteratorTT < ElType > IteratorType;
     typedef LeafLevelIteratorTT IteratorType;
     IteratorType * iterTT_;
 
     typedef IteratorSTI < ElType > InnerIteratorType;
     InnerIteratorType * it_;
-
-    //typedef InnerIteratorType :: val_t val_t;
-
 
     // number of links
     const int nl_;
