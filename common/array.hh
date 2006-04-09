@@ -113,7 +113,7 @@ namespace Dune
 
     //! export base type of array
     typedef T MemberType;
-    typedef T value_type;     // definition conforming to STL
+    typedef T value_type;   // definition conforming to STL
 
     /** \brief Print contents of the array to cout.
      *
