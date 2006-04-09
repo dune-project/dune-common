@@ -13,9 +13,18 @@
 
 <h2>DUNE main documentation</h2>
 
+<p>
 can be found <a href="$(ROOT)/doc/doxygen/html/index.html">here</a>. 
-It has been generated with <a href="http://www.doxygen.org/">Doxygen</a>.
+It has been generated with <a
+href="http://www.doxygen.org/">Doxygen</a>.
+</p>
 
+<h2>Learning DUNE</h2>
+
+<ul>
+<li><a href="grid-howto/">Dune Grid Howto</a>: Tutorial on the Dune
+grid interface</li>
+</ul>
 
 <h2>More Documentation for application writers</h2>
 
