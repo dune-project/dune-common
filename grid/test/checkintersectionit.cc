@@ -10,12 +10,12 @@
  */
 
 template<class K, int N>
-struct less< Dune : FieldVector<K,N> >
+struct ltfv
 {
-  bool operator()(const Dune : FieldVector<K,N> v1, const Dune : FieldVector<K,N> v2) const
+  bool operator()(const Dune::FieldVector<K,N> & v1, const Dune::FieldVector<K,N> & v2) const
   {
     for (int i=0; i<N; i++)
-      if (v1[i] < v2[i]) return true;
+      if (v1[i] != v2[i]) return (v1[i] < v2[i]);
     return false;
   }
 };
@@ -88,7 +88,7 @@ void checkIntersectionIterator(const GridType& grid) {
           assert(grid.globalIdSet().template subId<1>(*eIt, numberInSelf)
                  == grid.globalIdSet().template subId<1>(*outside, numberInNeighbor));
 #else
-#warning
+#warning Test disabled, as UG does not have Face IDs
 #endif
         }
         if (iIt.leafNeighbor()) {
@@ -123,9 +123,6 @@ void checkIntersectionIterator(const GridType& grid) {
 #ifndef DUNE_UGGRID_HH
         // The geometry center in local coordinates
         FieldVector<ctype, Geometry::mydimension> localCenter = intersectionGlobal.local(center);
-#else
-#warning
-#endif
 
         // Check whether center is within the intersection
         // This implicitly assumes convex intersections
@@ -145,6 +142,9 @@ void checkIntersectionIterator(const GridType& grid) {
 
         const FieldMatrix<ctype, Geometry::mydimension, Geometry::mydimension> jacobi
           = intersectionGlobal.jacobianInverseTransposed(localCenter);
+#else
+#warning Test disabled, as UG does support local-to-global for faces
+#endif
 
         // //////////////////////////////////////////////////////////
         //   Check the geometry returned by intersectionSelfLocal()
@@ -186,31 +186,40 @@ void checkIntersectionIterator(const GridType& grid) {
           EntityPointer outside = iIt.outside();
           EntityPointer inside = iIt.inside();
 
-          std::set< FieldVector<ctype,GridType::dimensionworld> >
-          corners_self, corners_neighbor, corners_global;
+          typedef
+          std::set< FieldVector<ctype,GridType::dimensionworld>, ltfv<ctype,GridType::dimensionworld> >
+          CornerSet;
+          CornerSet corners_self, corners_neighbor, corners_global;
 
           for(int k=0; k<intersectionSelfLocal.corners(); ++k) {
             corners_self.insert( inside->geometry().global( intersectionSelfLocal[k]) );
             corners_neighbor.insert( outside->geometry().global( intersectionNeighborLocal[k]) );
-            corners_global.insert( intersectionGlobalLocal[k] );
+            corners_global.insert( intersectionGlobal[k] );
           }
 
           // check points of intersection neighbor local
-          std::set< FieldVector<ctype,GridType::dimensionworld> > s_i = corners_self.begin();
-          std::set< FieldVector<ctype,GridType::dimensionworld> > n_i = corners_neighbor.begin();
-          std::set< FieldVector<ctype,GridType::dimensionworld> > g_i = corners_global.begin();
+          typename CornerSet::iterator s_i = corners_self.begin();
+          typename CornerSet::iterator n_i = corners_neighbor.begin();
+          typename CornerSet::iterator
+          g_i = corners_global.begin();
           for(int k=0; k<intersectionNeighborLocal.corners(); ++k)
           {
             if (( *s_i - *g_i ).infinity_norm() > 1e-6)
               DUNE_THROW(GridError,
-                         "global( intersectionSelfLocal[" << *s_i << "] ) is not the same as intersectionGlobal[" << *g_i <<"]!");
+                         "global( intersectionSelfLocal[" << *s_i << "] ) is not the same as intersectionGlobal[" << *g_i <<
+                         "] (delta_max = " << ( *s_i - *g_i ).infinity_norm() << ")!");
             if (( *n_i - *g_i ).infinity_norm() > 1e-6)
               DUNE_THROW(GridError,
-                         "global( intersectionNeighborLocal[" << *n_i << "] ) is not the same as intersectionGlobal[" << *g_i <<"]!");
+                         "global( intersectionNeighborLocal[" << *n_i << "] ) is not the same as intersectionGlobal[" << *g_i <<
+                         "] (delta_max = " << ( *n_i - *g_i ).infinity_norm() << ")!");
             if (( *s_i - *n_i ).infinity_norm() > 1e-6)
               DUNE_THROW(GridError,
                          "global( intersectionSelfLocal[" << *s_i <<
-                         "] ) is not the same as global( intersectionNeighborLocal[" << *n_i << "]!");
+                         "] ) is not the same as global( intersectionNeighborLocal[" << *n_i <<
+                         "] (delta_max = " << ( *s_i - *n_i ).infinity_norm() << ")!");
+            s_i++;
+            n_i++;
+            g_i++;
           }
 
         }
