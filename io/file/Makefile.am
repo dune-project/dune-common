@@ -1,6 +1,6 @@
 # $Id$
 
-SUBDIRS = alberta amiramesh rawdata test
+SUBDIRS = alberta amiramesh test
 
 iofiledir = $(includedir)/dune/io/file
 iofile_HEADERS = amirameshreader.hh asciiparser.hh rawdatawriter.hh \
