@@ -1,6 +1,10 @@
 #!/bin/sh
 
 set -e
+if test "x$DEBUG" == "xyes"; then
+  set -x
+  set -v
+fi
 
 ###############################################
 
@@ -73,7 +77,7 @@ eval_control() {
 	  # then the default implementation will be executed
 	  eval "$(grep -v -e '^[[:alnum:]]\+:' $file)"
 	  # execute $command
-      $command $@
+      $command "$@"
     )
   fi
 }
@@ -82,30 +86,31 @@ _build_module() {
   command=$1
   module=$2
   shift 2
-  if test "x$(eval echo \$BUILD_DONE_$command_$module)" != "xyes"; then
+  if test "x$(eval echo \$BUILD_DONE_${command}_${module})" != "xyes"; then
     echo "--- building $module ---"
 	# resolve dependencies
 	for dep in $(eval "echo \$DEPS_$module"); do
       echo "--- $module depends on $dep ... calling ---"
-      _build_module $command $dep
+      (_build_module $command $dep "$@")
     done
 	# resolve suggestions
 	for dep in $(eval "echo \$SUGS_$module"); do
       echo -n "--- $module suggests $dep ... "
       if test "x$(eval echo \$HAVE_$dep)" != "x"; then
 		echo "calling ---"
-        _build_module $command $dep
+        (_build_module $command $dep "$@")
 	  else
 		echo "skipping ---"
 	  fi
     done
 	# really build this module
 	echo "--- calling $command for $module ---"
-	path=$(eval "echo \$PATH_$module")
-	pushd "$path" > /dev/null
-	eval_control $command $path/$CONTROL $@
-	popd > /dev/null
-    export BUILD_DONE_$command_$module=yes
+	path=$(eval "echo \$PATH_${module}")
+	(
+      cd "$path"
+	  eval_control $command $path/$CONTROL "$@"
+    )
+    export BUILD_DONE_${command}_${module}=yes
   else
     echo "--- skipping $module ---"
   fi
@@ -115,7 +120,7 @@ build_modules() {
   command=run_$1
   shift
   for m in $MODULES; do
-    _build_module $command $m $@
+    _build_module $command $m "$@"
   done
 }
 
@@ -146,16 +151,28 @@ run_autogen () {
 	for m in $MODULES; do
 	  path=$(eval "echo \$PATH_$m")
 	  if test -d $path/m4; then
-		ACLOCAL_FLAGS="-I$path/m4 $ACLOCAL_FLAGS"
+		ACLOCAL_FLAGS="$path $ACLOCAL_FLAGS"
 	  fi
 	done
-	./autogen.sh $@
+	eval ./autogen.sh "$ACLOCAL_FLAGS" "$@"
   fi
 }
 
 run_configure () {
   if test -x configure; then
-	./configure $@
+    if test "x$HAVE_dune_common" == "xyes"; then
+      PARAMS="$PARAMS \"--with-dunecommon=$PATH_dune_common\""
+    fi
+    if test "x$HAVE_dune_grid" == "xyes"; then
+      PARAMS="$PARAMS \"--with-dunegrid=$PATH_dune_grid\""
+    fi
+    if test "x$HAVE_dune_istl" == "xyes"; then
+      PARAMS="$PARAMS \"--with-duneistl=$PATH_dune_istl\""
+    fi
+    if test "x$HAVE_dune_disc" == "xyes"; then
+      PARAMS="$PARAMS \"--with-dunecommon=$PATH_dune_disc\""
+    fi
+	eval ./configure "$PARAMS"
   else
     if test -f configure.in || test -f configure.ac; then
 	  echo "ERROR: configure.[in|ac] found, but configure missing"
@@ -165,12 +182,15 @@ run_configure () {
   fi
 }
 
-run_make () { make; }
+run_make () {
+  echo make "$PARAMS";
+  eval make "$PARAMS";
+}
 
 run_all () {
-  run_autogen $@
-  run_configure $@
-  run_make $@
+  run_autogen "$@"
+  run_configure "$@"
+  run_make "$@"
 }
 
 ###############################################
@@ -187,10 +207,19 @@ fi
 command=$1
 shift
 
+if test "x$1" != "x"; then
+  PARAMS="$PARAMS \"$1\""
+  while shift; do
+    if test "x$1" != "x"; then
+      PARAMS="$PARAMS \"$1\""
+    fi
+  done
+fi
+
 case "$command" in
   update | autogen | configure | make | all | list)
     find_modules .
-    build_modules $command $@
+    build_modules $command "$@"
     ;;
   help | --help | -h)
 	usage

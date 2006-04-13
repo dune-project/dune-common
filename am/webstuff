@@ -16,7 +16,7 @@ export BASEDIR
 
 # pass files through wrapper
 .wml.html:
-	sh $(top_srcdir)/bin/wmlwrap $< -o $@
+	sh $(DUNECOMMONROOT)/bin/wmlwrap $< -o $@
 
 web-install: all
 	if test -d $(DUNEWEBDIR) && test -r $(DUNEWEBDIR)/Make.global ; then \

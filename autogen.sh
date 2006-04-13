@@ -82,4 +82,4 @@ echo "--> autoconf..."
 autoconf$ACVERSION
 
 ## tell the user what to do next
-echo "Now run ./configure to setup your Dune"
+echo "Now run ./configure to setup dune-common"

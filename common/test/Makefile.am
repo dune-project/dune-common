@@ -2,7 +2,8 @@
 
 TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
 	sllisttest iteratorfacadetest tuplestest fmatrixtest \
-	poolallocatortest settest gcdlcdtest streamtest exprtmpl
+	poolallocatortest settest gcdlcdtest streamtest
+# exprtmpl
 
 # which tests to run
 TESTS = $(TESTPROGS)

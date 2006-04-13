@@ -3,7 +3,7 @@
 # Process this file with autoconf to produce a configure script.
 AC_INIT(dune, 0.0, dune@hal.iwr.uni-heidelberg.de)
 AM_INIT_AUTOMAKE(dune, 0.0, dune@hal.iwr.uni-heidelberg.de)
-AC_CONFIG_SRCDIR([grid/common/grid.hh])
+AC_CONFIG_SRCDIR([common/stdstreams.cc])
 AM_CONFIG_HEADER([config.h])
 
 # do almost nothing, an application using Dune should provide the
@@ -127,7 +127,7 @@ if test x"$LN_S" = x"ln -s" ; then
   if test -e dune ; then
     # exists: is a symlink?
     if test -L dune ; then
-      if test -r dune/grid/common/grid.hh ; then
+      if test -r dune/$ac_unique_file ; then
         # suppose that the link is ok and use it
         AM_CPPFLAGS='-I$(top_builddir)';
       else
@@ -140,7 +140,7 @@ if test x"$LN_S" = x"ln -s" ; then
     ln -s $srcdir dune
 
     # sanity check
-    if test -r dune/grid/common/grid.hh ; then
+    if test -r dune/$ac_unique_file ; then
       AM_CPPFLAGS='-I$(top_builddir)';
     else
       AC_MSG_ERROR([Sanity check for symlink failed! Please send a bugreport to dune@hal.iwr.uni-heidelberg.de])
@@ -164,6 +164,9 @@ fi
 # preset variable to path such that #include <dune/...> works
 AC_SUBST(AM_CPPFLAGS)
 
+AC_SUBST(LIBDUNE, "\$(top_builddir)/common/libcommon.la")
+AC_SUBST(DUNECOMMONROOT, "\$(top_srcdir)")
+
 echo
 echo Note: Most of the libraries checked for above are only used for the self-test
 echo of Dune.  The library itself will build and the headers will work even if
@@ -173,60 +176,17 @@ echo
 
 # write output
 AC_CONFIG_FILES([Makefile
-	 bin/Makefile
-	 common/Makefile
-	 common/test/Makefile
+     bin/Makefile
+     common/Makefile
+     common/test/Makefile
      doc/Makefile
      doc/devel/Makefile
-     doc/appl/Makefile
-     doc/appl/refelements/Makefile
-     doc/istl/Makefile
-     doc/istl/comm/Makefile
      doc/layout/Makefile
-     doc/refinement/Makefile
      doc/doxygen/Makefile
-	 disc/Makefile
-	 disc/elasticity/Makefile
-     disc/functions/Makefile
-	 disc/groundwater/Makefile
-	 disc/miscoperators/Makefile
-     disc/operators/Makefile
-	 disc/shapefunctions/Makefile
-	 disc/shapefunctions/dgspace/Makefile
-	 disc/shapefunctions/lagrange/Makefile
-     disc/shapefunctions/test/Makefile
-     grid/Makefile
-     grid/albertagrid/Makefile
-     grid/alu3dgrid/Makefile
-     grid/common/Makefile
-     grid/common/test/Makefile
-	 grid/common/refinement/Makefile
-     grid/onedgrid/Makefile
-     grid/sgrid/Makefile
-     grid/test/Makefile
-     grid/uggrid/Makefile
-	 grid/utility/Makefile
-     grid/yaspgrid/Makefile
-     istl/Makefile
-     istl/tutorial/Makefile
-	 istl/test/Makefile
-	 istl/paamg/Makefile
-	 istl/paamg/test/Makefile
-	 io/Makefile
-	 io/file/Makefile
-     io/file/alberta/Makefile
-	 io/file/amiramesh/Makefile
-     io/file/test/Makefile
-	 io/visual/Makefile
-	 io/visual/grape/Makefile
-     lib/Makefile
-     quadrature/Makefile
-     quadrature/gaussquadrature/Makefile
-     quadrature/test/Makefile
      m4/Makefile
-	 am/Makefile
-	 bin/wmlwrap
-	 bin/check-log-store
+     am/Makefile
+     bin/wmlwrap
+     bin/check-log-store
      dune.pc])
 AC_OUTPUT
 

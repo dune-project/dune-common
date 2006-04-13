@@ -1,4 +1,0 @@
-To use ISTL you just have to add the new istl-directory and
-istl/common to your include-path, e.g.
-
-  g++ -I ~/istl -I ~/istl/common myprogram.cc

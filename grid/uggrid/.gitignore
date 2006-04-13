@@ -1,7 +1,0 @@
-Makefile
-Makefile.in
-.deps
-.libs
-*.lo
-libuggrid.la
-semantic.cache

@@ -15,7 +15,7 @@
 # app_LIBADD = $(LIBDUNE)
 #
 
-LIBDUNE = $(top_builddir)/lib/libdune.la
+LIBDUNE = @LIBDUNE@
 
 %.la: MAKELIBS.force
 	make -C $$(dirname $@) $$(basename $@)

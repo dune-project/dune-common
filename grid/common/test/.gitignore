@@ -1,8 +1,0 @@
-Makefile
-Makefile.in
-.deps
-.libs
-mcmgmappertest
-semantic.cache
-*.gcda
-*.gcno
