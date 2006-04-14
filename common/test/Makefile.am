@@ -55,6 +55,7 @@ settest_DEPENDENCIES = $(LIBDUNE)
 gcdlcdtest_SOURCES = gcdlcdtest.cc
 gcdlcdtest_DEPENDENCIES = $(LIBDUNE)
 
+sourcescheck_NOSOURCES = exprtmpl.cc
 # bin_PROGRAMS = exprtmpl timing_old timing_xpr timing_flt
 #
 exprtmpl_SOURCES = exprtmpl.cc

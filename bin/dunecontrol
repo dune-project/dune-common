@@ -72,13 +72,14 @@ eval_control() {
   if test -f "$file"; then
 	# open subshell
 	(
+      set -e
       # load functions defined in $file
 	  # if $command is not defined in $file,
 	  # then the default implementation will be executed
 	  eval "$(grep -v -e '^[[:alnum:]]\+:' $file)"
 	  # execute $command
       $command "$@"
-    )
+    ) || false
   fi
 }
 
@@ -91,14 +92,14 @@ _build_module() {
 	# resolve dependencies
 	for dep in $(eval "echo \$DEPS_$module"); do
       echo "--- $module depends on $dep ... calling ---"
-      (_build_module $command $dep "$@")
+      (set -e; _build_module $command $dep "$@") || false
     done
 	# resolve suggestions
 	for dep in $(eval "echo \$SUGS_$module"); do
       echo -n "--- $module suggests $dep ... "
       if test "x$(eval echo \$HAVE_$dep)" != "x"; then
 		echo "calling ---"
-        (_build_module $command $dep "$@")
+        (set -e; _build_module $command $dep "$@") || false
 	  else
 		echo "skipping ---"
 	  fi
@@ -107,9 +108,10 @@ _build_module() {
 	echo "--- calling $command for $module ---"
 	path=$(eval "echo \$PATH_${module}")
 	(
+      set -e
       cd "$path"
 	  eval_control $command $path/$CONTROL "$@"
-    )
+    ) || false
     export BUILD_DONE_${command}_${module}=yes
   else
     echo "--- skipping $module ---"
@@ -142,11 +144,11 @@ usage () {
 
 COMMANDS="update autogen configure make all"
 
-run_list () { echo -n; }
+run_default_list () { echo -n; }
 
-run_update () { echo "WARNING: Doing nothing"; }
+run_default_update () { echo "WARNING: Doing nothing"; }
 
-run_autogen () {
+run_default_autogen () {
   if test -x autogen.sh; then
 	for m in $MODULES; do
 	  path=$(eval "echo \$PATH_$m")
@@ -158,7 +160,7 @@ run_autogen () {
   fi
 }
 
-run_configure () {
+run_default_configure () {
   if test -x configure; then
     if test "x$HAVE_dune_common" == "xyes"; then
       PARAMS="$PARAMS \"--with-dunecommon=$PATH_dune_common\""
@@ -172,6 +174,7 @@ run_configure () {
     if test "x$HAVE_dune_disc" == "xyes"; then
       PARAMS="$PARAMS \"--with-dunecommon=$PATH_dune_disc\""
     fi
+	echo ./configure "$PARAMS"
 	eval ./configure "$PARAMS"
   else
     if test -f configure.in || test -f configure.ac; then
@@ -182,15 +185,34 @@ run_configure () {
   fi
 }
 
-run_make () {
+run_default_make () {
   echo make "$PARAMS";
   eval make "$PARAMS";
 }
 
-run_all () {
+run_default_all () {
   run_autogen "$@"
   run_configure "$@"
   run_make "$@"
+}
+
+run_list () {
+  run_default_list "$@"
+}
+run_update () {
+  run_default_update "$@"
+}
+run_autogen () {
+  run_default_autogen "$@"
+}
+run_configure () {
+  run_default_configure "$@"
+}
+run_make () {
+  run_default_make "$@"
+}
+run_all () {
+  run_default_all "$@"
 }
 
 ###############################################
@@ -199,10 +221,17 @@ run_all () {
 # main
 #
 
+onfailure() {
+  echo Execution terminated due to errors!
+  exit 1
+}
+
 if test "x$1" == "x"; then
   usage
   exit 1
 fi
+
+trap onfailure EXIT
 
 command=$1
 shift
@@ -227,8 +256,10 @@ case "$command" in
   *)
     echo "ERROR: unknown command \"$command\""
 	usage
-    false
+    exit 1
 	;;
 esac
 
-exit 0
+trap - EXIT
+
+echo done

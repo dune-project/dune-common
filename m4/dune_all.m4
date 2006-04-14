@@ -53,6 +53,7 @@ dnl check all components
   AC_REQUIRE([DUNE_PATH_UG])
 #  AC_REQUIRE([DUNE_PATH_F5])
   AC_REQUIRE([DUNE_PATH_AMIRAMESH])
+  AC_REQUIRE([DUNE_PATH_PSURFACE])
   AC_REQUIRE([DUNE_MPI])
   AC_REQUIRE([IMMDX_LIB_METIS])
   AC_REQUIRE([DUNE_PATH_PARMETIS])
@@ -78,6 +79,11 @@ AC_DEFUN([DUNE_SUMMARY_ALL],[
   echo
   echo "-----------------------------"
   echo  
+  echo "Dune-common......: $with_dunecommon"
+  echo "Dune-grid........: $with_dunegrid"
+  echo "Dune-istl........: $with_duneistl"
+  echo "Dune-disc........: $with_dunedisc"
+  echo "Dune-fem.........: $with_dunefem"
   echo "Alberta..........: $with_alberta"
   echo "ALUGrid..........: $with_alugrid"
   echo "AmiraMesh........: $with_amiramesh"
@@ -97,5 +103,73 @@ AC_DEFUN([DUNE_SUMMARY_ALL],[
   echo
   echo "See ./configure --help and config.log for reasons why a component wasn't found"
   echo
+
+])
+
+AC_DEFUN([DUNE_CHECK_ALL_M],[
+  AC_REQUIRE([DUNE_SYMLINK])
+  # don't build shared libs per default, this is way better for debugging...
+  AC_REQUIRE([AC_DISABLE_SHARED])
+
+# check for auxiliary tools so that it's not fatal if they're missing
+AC_CHECK_PROGS([DOXYGEN], [doxygen], [true])
+AC_CHECK_PROGS([TEX], [latex], [true])
+AC_CHECK_PROGS([BIBTEX], [bibtex], [true])
+AC_CHECK_PROGS([DVIPDF], [dvipdf], [true])
+AC_CHECK_PROGS([DVIPS], [dvips], [true])
+AC_CHECK_PROGS([WML], [wml], [true])
+AM_CONDITIONAL([WML], [test "x$WML" != xtrue])
+AC_CHECK_PROGS([PERL], [perl], [true])
+DUNE_INKSCAPE
+AC_CHECK_PROGS([CONVERT], [convert], [true])
+
+# doxygen and latex take a lot of time...
+AC_ARG_ENABLE(documentation,
+   AC_HELP_STRING([--disable-documentation],[don't generate docs, speeds up the build]))
+AM_CONDITIONAL(BUILD_DOCS, test x$enable_documentation != xno)
+
+# special variable to include the documentation into the website
+AC_ARG_WITH(duneweb,
+    AC_HELP_STRING([--with-duneweb=PATH],[Only needed for website-generation, path to checked out version of dune-web]))
+
+if test x$with_duneweb != x ; then
+   # parameter is set. Check it
+   AC_MSG_CHECKING([whether passed Dune-Web directory appears correct])
+   WEBTESTFILE="$with_duneweb/layout/default.wml"
+   if test -d "$with_duneweb" && test -e "$WEBTESTFILE" ; then
+      AC_MSG_RESULT([ok])
+      # normalize path
+      with_duneweb=`(cd $with_duneweb && pwd)` ;
+   else
+      if test -d "$with_duneweb" ; then
+        AC_MSG_ERROR([$WEBTESTFILE not found in Dune-web dir $with_duneweb!])
+      else
+        AC_MSG_ERROR([Dune-Web directory $with_duneweb not found!])
+      fi
+   fi
+fi
+AC_SUBST(DUNEWEBDIR, $with_duneweb)
+
+# special settings for check-log
+AC_ARG_WITH(hostid,
+  AC_HELP_STRING([--with-hostid=HOST_IDENTIFIER],
+                 [host identifier used for automated test runs]))
+if test "x$with_hostid" = "xno" ; then 
+  with_hostid="$ac_hostname ($(uname -sm), $COMPILER_NAME)";
+fi
+AC_SUBST(host, $with_hostid)
+AC_ARG_WITH(tag,
+  AC_HELP_STRING([--with-tag=TAG],
+                 [tag to use for automated test runs]))
+if test "x$with_tag" = "xno" ; then with_tag=foo; fi
+AC_SUBST(tag, $with_tag)
+AC_ARG_WITH(revision,
+  AC_HELP_STRING([--with-revision=TAG],
+                 [revision to use for automated test runs]))
+if test "x$with_revision" = "xno" ; then with_revision=bar; fi
+AC_SUBST(revision, $with_revision)
+
+  AC_REQUIRE([DUNE_CHECK_ALL])
+  AC_REQUIRE([DUNE_DEV_MODE])
 
 ])

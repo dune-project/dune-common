@@ -15,12 +15,12 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
 
   # ____DUNE_CHECK_MODULES_____ ($1)
 
-  m4_define(_dune_module,$1)
-  m4_define(_DUNE_MODULE,m4_toupper($1))
-  m4_define(_dune_header,$2)
-  m4_define(_dune_ldpath,$3)
-  m4_define(_dune_lib,$3)
-  m4_define(_dune_symbol,$4)
+  AC_DEFUN([_dune_module], [$1])
+  AC_DEFUN([_dune_header], [$2])
+  AC_DEFUN([_dune_ldpath], [$3])
+  AC_DEFUN([_dune_lib],    [$4])
+  AC_DEFUN([_dune_symbol], [$5])
+  AC_DEFUN([_DUNE_MODULE], [m4_toupper(_dune_module)])
 
   # switch tests to c++
   AC_LANG_PUSH([C++])
@@ -36,7 +36,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   LIBS=""
 
   # is a directory set?
-  if test $withval != x ; then
+  if test x$withval != x ; then
     # expand tilde
     if test -d $withval ; then
       # expand tilde / other stuff
@@ -50,14 +50,15 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   fi
 
   # test for an arbitrary header
-  AC_CHECK_HEADER([dune/_dune_header],
+  AC_CHECK_HEADER([dune/[]_dune_header],
     [HAVE_[]_DUNE_MODULE=1
      _DUNE_MODULE[]_CPPFLAGS="$CPPFLAGS"],
-    [HAVE_[]_DUNE_MODULE=0]
+    [HAVE_[]_DUNE_MODULE=0
+     AC_MSG_ERROR([$withval does not seem to contain a valid _dune_module (dune/[]_dune_header not found)])]
   )
 
   ## check for lib (if lib name was provided)
-  ifelse(_dune_lib,,,[
+  ifelse(_dune_lib,,[echo _dune_module does not provide libs],[
     # did we find the headers?
     if test x$HAVE[]_DUNE_MODULE = x1 ; then
       ac_save_LDFLAGS="$LDFLAGS"
@@ -76,6 +77,8 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
             # provide arguments like normal lib-check
             _DUNE_MODULE[]_LIBS="-l[]_dune_lib"
             HAVE_[]_DUNE_MODULE=1
+        else
+            AC_MSG_ERROR([$withval does not seem to contain a valid _dune_module (lib[]_dune_lib[].la not found)])
         fi
       fi
 
@@ -89,7 +92,8 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
          AC_TRY_LINK(,_dune_symbol,
               [HAVE_[]_DUNE_MODULE=1
                _DUNE_MODULE[]_LIBS="$LIBS"],
-              [HAVE_[]_DUNE_MODULE=0]
+              [HAVE_[]_DUNE_MODULE=0
+               AC_MSG_ERROR([failed to link with lib[]_dune_lib[].la])]
           )
       fi
 
@@ -101,11 +105,11 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
 
   # did we succeed?
   if test x$HAVE_[]_DUNE_MODULE = x1 ; then
-    AC_SUBST(_DUNE_MODULE[]_CPPFLAGS, $_DUNE_MODULE_[]_CPPFLAGS)
-    AC_SUBST(_DUNE_MODULE[]_LDFLAGS, $_DUNE_MODULE[]_LDFLAGS)
-    AC_SUBST(_DUNE_MODULE[]_LIBS, $_DUNE_MODULE[]_LIBS)
+    AC_SUBST(_DUNE_MODULE[]_CPPFLAGS, "$_DUNE_MODULE[]_CPPFLAGS")
+    AC_SUBST(_DUNE_MODULE[]_LDFLAGS, "$_DUNE_MODULE[]_LDFLAGS")
+    AC_SUBST(_DUNE_MODULE[]_LIBS, "$_DUNE_MODULE[]_LIBS")
+    AC_SUBST(_DUNE_MODULE[]ROOT, "$_DUNE_MODULE[]ROOT")
     AC_DEFINE(HAVE_[]_DUNE_MODULE, 1, [Define to 1 if _dune_module was found])
-    AC_SUBST(_DUNE_MODULE[]ROOT, $_DUNE_MODULE[]ROOT)
 	
     # add to global list
     DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $DUNE_CPPFLAGS"
@@ -122,8 +126,10 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
 ])
 
 AC_DEFUN([DUNE_ALL_MODULES],[
+  echo checking for dunecommon
   DUNE_CHECK_MODULES([dunecommon], [common/stdstreams.hh], [common], [common], [Dune::derr.active();])
-  DUNE_CHECK_MODULES([duneistl], [istl/allocator.hh])
+  echo checking for duneistl
+  DUNE_CHECK_MODULES([duneistl], [istl/allocator.hh],,,)
 ])
 
 AC_DEFUN([DUNE_DEV_MODE],[
@@ -132,5 +138,39 @@ AC_DEFUN([DUNE_DEV_MODE],[
 
   if test x"$enable_dunedevel" = xyes ; then
     AC_DEFINE(DUNE_DEVEL_MODE, 1, [Activates developer output])
+  fi
+])
+
+AC_DEFUN([DUNE_SYMLINK],[
+  # create symlink for consistent paths even when $(top_srcdir) is not
+  # called dune/ (if filesystem/OS supports symlinks)
+  AC_PROG_LN_S
+  if test x"$LN_S" = x"ln -s" ; then
+    # Symlinks possible!
+ 
+    # Note: we are currently in the build directory which may be != the
+    # source directory
+ 
+    # does a file already exist?
+    if test -e dune ; then
+      # exists: is a symlink?
+      if test -L dune ; then
+        if ! test -r dune/$ac_unique_file ; then
+          AC_MSG_ERROR([Symlink 'dune' exists but appears to be wrong! Please remove it manually])
+        fi
+      fi
+    else
+      echo Creating dune-symlink...
+      # set symlink in build directory to sources
+      ln -s $srcdir dune
+
+      # sanity check
+      if ! test -r dune/$ac_unique_file ; then
+        AC_MSG_ERROR([Sanity check for symlink failed! Please send a bugreport to dune@hal.iwr.uni-heidelberg.de])
+      fi
+    fi 
+  else
+    # no symlinks possible... check name of directory
+    AC_MSG_ERROR([No symlinks supported! You have to install dune. No inplace usage possible!])
   fi
 ])

@@ -1,17 +1,2 @@
 # Important: module names aren't allowed to have '-' characters
 Module: dune_common
-Suggests: UG Alberta Alu3d
-
-run_configure () {
-echo HUHU
-  if test "x$HAVE_UG" == "xyes"; then
-    PARAMS="$PARAMS \"--with-ug=$PATH_UG\""
-  fi
-  if test "x$HAVE_Alberta" == "xyes"; then
-    PARAMS="$PARAMS \"--with-alberta=$PATH_Alberta\""
-  fi
-  if test "x$HAVE_Alu3d" == "xyes"; then
-    PARAMS="$PARAMS \"--with-alberta=$PATH_Alu3d\""
-  fi
-  eval "./configure $PARAMS"
-}
