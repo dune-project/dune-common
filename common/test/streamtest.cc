@@ -26,6 +26,11 @@ int main () {
     Dune::derr << "Teststring" << std::endl;
 
     Dune::derr << VALUE << std::endl;
+    Dune::dverb << VALUE << std::endl;
+    Dune::dvverb << VALUE << std::endl;
+    Dune::dinfo << VALUE << std::endl;
+    Dune::dwarn << VALUE << std::endl;
+    Dune::dgrave << VALUE << std::endl;
 
     // instantiate private stream and connect global stream
     {

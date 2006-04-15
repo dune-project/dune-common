@@ -15,6 +15,8 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
 
   # ____DUNE_CHECK_MODULES_____ ($1)
 
+  echo checking for $1
+
   AC_DEFUN([_dune_module], [$1])
   AC_DEFUN([_dune_header], [$2])
   AC_DEFUN([_dune_ldpath], [$3])
@@ -43,17 +45,19 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       _DUNE_MODULE[]ROOT=`cd $withval && pwd`
 
       # expand search path (otherwise empty CPPFLAGS)
-      CPPFLAGS="-I$_DUNE_MODULE[]ROOT"
+      _DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]ROOT"
     else
       AC_MSG_ERROR([_dune_module-directory $withval does not exist])
     fi
   fi
 
+  CPPFLAGS="$DUNE_CPPFLAGS $_DUNE_MODULE[]_CPPFLAGS"
   # test for an arbitrary header
   AC_CHECK_HEADER([dune/[]_dune_header],
     [HAVE_[]_DUNE_MODULE=1
      _DUNE_MODULE[]_CPPFLAGS="$CPPFLAGS"],
     [HAVE_[]_DUNE_MODULE=0
+     _DUNE_MODULE[]_CPPFLAGS=""
      AC_MSG_ERROR([$withval does not seem to contain a valid _dune_module (dune/[]_dune_header not found)])]
   )
 
@@ -105,11 +109,17 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
 
   # did we succeed?
   if test x$HAVE_[]_DUNE_MODULE = x1 ; then
+    # set variables for our modules
     AC_SUBST(_DUNE_MODULE[]_CPPFLAGS, "$_DUNE_MODULE[]_CPPFLAGS")
     AC_SUBST(_DUNE_MODULE[]_LDFLAGS, "$_DUNE_MODULE[]_LDFLAGS")
     AC_SUBST(_DUNE_MODULE[]_LIBS, "$_DUNE_MODULE[]_LIBS")
     AC_SUBST(_DUNE_MODULE[]ROOT, "$_DUNE_MODULE[]ROOT")
     AC_DEFINE(HAVE_[]_DUNE_MODULE, 1, [Define to 1 if _dune_module was found])
+
+    # set DUNE_* variables
+    AC_SUBST(DUNE_CPPFLAGS, "$DUNE_CPPFLAGS $_DUNE_MODULE[]_CPPFLAGS")
+    AC_SUBST(DUNE_LDFLAGS, "$DUNE_LDFLAGS $_DUNE_MODULE[]_LDFLAGS")
+    AC_SUBST(DUNE_LIBS, "$DUNE_LIBS $_DUNE_MODULE[]_LIBS")
 	
     # add to global list
     DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $DUNE_CPPFLAGS"
@@ -125,11 +135,17 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   AC_LANG_POP([C++])
 ])
 
-AC_DEFUN([DUNE_ALL_MODULES],[
-  echo checking for dunecommon
-  DUNE_CHECK_MODULES([dunecommon], [common/stdstreams.hh], [common], [common], [Dune::derr.active();])
-  echo checking for duneistl
-  DUNE_CHECK_MODULES([duneistl], [istl/allocator.hh],,,)
+AC_DEFUN([DUNE_CHECK_DISPATCH],[
+  ifelse([$1], [], [],
+         [$1], [dunecommon],[
+           DUNE_CHECK_MODULES([dunecommon], [common/stdstreams.hh], [common], [common], [Dune::derr.active();])],
+         [$1], [dunegrid],[
+           DUNE_CHECK_MODULES([dunegrid], [grid/common/grid.hh], [grid], [grid], [Dune::PartitionName])],
+         [$1], [duneistl],[
+           DUNE_CHECK_MODULES([duneistl], [istl/allocator.hh],,,)],
+         [$1], [dunedist],[
+           DUNE_CHECK_MODULES([dunedisc], [disc/functions/functions.hh], [disc], [disc], [Dune::LagrangeShapeFunctions<double, double, 3>::general])],
+         [AC_MSG_ERROR([Unknown module $1])])
 ])
 
 AC_DEFUN([DUNE_DEV_MODE],[
@@ -139,6 +155,10 @@ AC_DEFUN([DUNE_DEV_MODE],[
   if test x"$enable_dunedevel" = xyes ; then
     AC_DEFINE(DUNE_DEVEL_MODE, 1, [Activates developer output])
   fi
+])
+
+AC_DEFUN([DUNE_MODULE_DEPENDENCIES],[
+  ifelse($#, 0, , $#, 1, [DUNE_CHECK_DISPATCH($1)], [DUNE_CHECK_DISPATCH($1) DUNE_MODULE_DEPENDENCIES(m4_shift($@))])
 ])
 
 AC_DEFUN([DUNE_SYMLINK],[

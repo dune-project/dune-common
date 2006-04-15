@@ -149,6 +149,7 @@ run_default_list () { echo -n; }
 run_default_update () { echo "WARNING: Doing nothing"; }
 
 run_default_autogen () {
+  PARAMS="$CMD_PARAMS"
   if test -x autogen.sh; then
 	for m in $MODULES; do
 	  path=$(eval "echo \$PATH_$m")
@@ -161,6 +162,7 @@ run_default_autogen () {
 }
 
 run_default_configure () {
+  PARAMS="$CMD_PARAMS"
   if test -x configure; then
     if test "x$HAVE_dune_common" == "xyes"; then
       PARAMS="$PARAMS \"--with-dunecommon=$PATH_dune_common\""
@@ -172,7 +174,7 @@ run_default_configure () {
       PARAMS="$PARAMS \"--with-duneistl=$PATH_dune_istl\""
     fi
     if test "x$HAVE_dune_disc" == "xyes"; then
-      PARAMS="$PARAMS \"--with-dunecommon=$PATH_dune_disc\""
+      PARAMS="$PARAMS \"--with-dunedisc=$PATH_dune_disc\""
     fi
 	echo ./configure "$PARAMS"
 	eval ./configure "$PARAMS"
@@ -186,6 +188,7 @@ run_default_configure () {
 }
 
 run_default_make () {
+  PARAMS="$CMD_PARAMS"
   echo make "$PARAMS";
   eval make "$PARAMS";
 }
@@ -237,10 +240,10 @@ command=$1
 shift
 
 if test "x$1" != "x"; then
-  PARAMS="$PARAMS \"$1\""
+  CMD_PARAMS="$PARAMS \"$1\""
   while shift; do
     if test "x$1" != "x"; then
-      PARAMS="$PARAMS \"$1\""
+      CMD_PARAMS="$PARAMS \"$1\""
     fi
   done
 fi

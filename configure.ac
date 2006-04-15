@@ -1,22 +1,22 @@
 #! /bin/bash
 # $Id$
 # Process this file with autoconf to produce a configure script.
-AC_INIT(dune, 0.0, dune@hal.iwr.uni-heidelberg.de)
-AM_INIT_AUTOMAKE(dune, 0.0, dune@hal.iwr.uni-heidelberg.de)
+AC_INIT(dune-common, 0.0, dune@hal.iwr.uni-heidelberg.de)
+AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([common/stdstreams.cc])
 AM_CONFIG_HEADER([config.h])
 
 # check all dune-module stuff
-DUNE_CHECK_ALL_M
+DUNE_CHECK_ALL_M([dunecommon])
 
 if test x$HAVE_DUNECOMMON != x1 ; then
   AC_MSG_ERROR([Can't work without the dune-common module. Maybe you have to supply your dune-common directory as --with-dunecommon=dir])
 fi
 
 # preset variable to path such that #include <dune/...> works
-AC_SUBST([AM_CPPFLAGS], '$(DUNECOMMON_CPPFLAGS)')
+AC_SUBST([AM_CPPFLAGS], '-I$(top_srcdir)')
 
-AC_SUBST([LIBDUNE], '$(DUNECOMMONROOT)/common/libcommon.la')
+AC_SUBST([LIBDUNE], '$(top_builddir)/common/libcommon.la')
 
 DUNE_SUMMARY_ALL
 

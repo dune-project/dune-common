@@ -7,7 +7,7 @@ noinst_LTLIBRARIES = libcommon.la
 
 libcommon_la_SOURCES = stdstreams.cc configparser.cc exprtmpl.cc
 
-AM_CPPFLAGS = -I$(top_srcdir)/..
+AM_CPPFLAGS = @AN_CPPFLAGS@ -I$(top_srcdir)/..
 
 commonincludedir = $(includedir)/dune/common
 commoninclude_HEADERS = dlist.cc stdstreams.cc alignment.hh \

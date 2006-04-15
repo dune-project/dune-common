@@ -44,7 +44,8 @@ dnl check for library functions
   AC_LANG_POP([C++])
 
 dnl check all components
-  AC_REQUIRE([DUNE_ALL_MODULES])
+  AC_REQUIRE([DUNE_MODULE_DEPENDENCIES])
+  DUNE_MODULE_DEPENDENCIES($@)
 #  AC_REQUIRE([DUNE_PATH_DUNE])
   AC_REQUIRE([DUNE_PATH_XDR])
   AC_REQUIRE([DUNE_PATH_GRAPE])
@@ -168,8 +169,14 @@ AC_ARG_WITH(revision,
                  [revision to use for automated test runs]))
 if test "x$with_revision" = "xno" ; then with_revision=bar; fi
 AC_SUBST(revision, $with_revision)
+  AC_LANG_PUSH([C++])
 
+  AC_REQUIRE([DUNE_MODULE_DEPENDENCIES])
+  echo "Resolving Dependencies: $@"
+  echo "Resolving Dependencies: shift($@)"
+  DUNE_MODULE_DEPENDENCIES($@)
   AC_REQUIRE([DUNE_CHECK_ALL])
   AC_REQUIRE([DUNE_DEV_MODE])
 
+  AC_LANG_POP([C++])
 ])
