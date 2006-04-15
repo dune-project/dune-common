@@ -64,9 +64,10 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   ## check for lib (if lib name was provided)
   ifelse(_dune_lib,,[echo _dune_module does not provide libs],[
     # did we find the headers?
-    if test x$HAVE[]_DUNE_MODULE = x1 ; then
+    if test x$HAVE_[]_DUNE_MODULE = x1 ; then
       ac_save_LDFLAGS="$LDFLAGS"
       ac_save_LIBS="$LIBS"
+      HAVE[]_DUNE_MODULE=0
 
       ## special test for a local installation
       if test x$_DUNE_MODULE[]ROOT != x ; then
@@ -87,7 +88,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       fi
 
       ## normal test for a systemwide install
-      if test x$HAVE[]_DUNE_MODULE = x0 ; then
+      if test x$HAVE_[]_DUNE_MODULE = x0 ; then
          # !!! should be pkg-config later (which would save the special
          # header-check as well)
 
@@ -99,6 +100,10 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
               [HAVE_[]_DUNE_MODULE=0
                AC_MSG_ERROR([failed to link with lib[]_dune_lib[].la])]
           )
+      fi
+
+      if test x$_DUNE_MODULE[]_LIBS = x; then
+        AC_MSG_ERROR([failed to find lib[]_dune_lib[] needed of module _dune_module])
       fi
 
       # reset variables
@@ -125,6 +130,8 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
     DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $DUNE_CPPFLAGS"
     DUNE_PKG_LIBS="$DUNE_PKG_LIBS $LIBS"
     DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $DUNE_LDFLAGS"
+  else
+    AC_MSG_ERROR([could not find required module _dune_module])
   fi
 
   # reset previous flags
@@ -143,7 +150,7 @@ AC_DEFUN([DUNE_CHECK_DISPATCH],[
            DUNE_CHECK_MODULES([dunegrid], [grid/common/grid.hh], [grid], [grid], [Dune::PartitionName])],
          [$1], [duneistl],[
            DUNE_CHECK_MODULES([duneistl], [istl/allocator.hh],,,)],
-         [$1], [dunedist],[
+         [$1], [dunedisc],[
            DUNE_CHECK_MODULES([dunedisc], [disc/functions/functions.hh], [disc], [disc], [Dune::LagrangeShapeFunctions<double, double, 3>::general])],
          [AC_MSG_ERROR([Unknown module $1])])
 ])

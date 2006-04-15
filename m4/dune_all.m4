@@ -173,7 +173,6 @@ AC_SUBST(revision, $with_revision)
 
   AC_REQUIRE([DUNE_MODULE_DEPENDENCIES])
   echo "Resolving Dependencies: $@"
-  echo "Resolving Dependencies: shift($@)"
   DUNE_MODULE_DEPENDENCIES($@)
   AC_REQUIRE([DUNE_CHECK_ALL])
   AC_REQUIRE([DUNE_DEV_MODE])

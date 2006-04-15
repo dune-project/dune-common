@@ -34,6 +34,14 @@ for OPT in "$@"; do
 			AMVERSION=$arg
 			;;
 	-h|--help) usage ; exit 0 ;;
+	*)
+            if test -d "$OPT/m4"; then
+              ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $OPT/m4"
+            fi
+            if test -d "$OPT/am"; then
+              am_dir="$OPT/am"
+            fi
+            ;;
     esac
 done
 
