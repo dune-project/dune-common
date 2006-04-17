@@ -77,7 +77,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
         # only check for a .la-file
         if test -s $_DUNE_MODULE[]ROOT/_dune_ldpath/lib[]_dune_lib[].la ; then
             _DUNE_MODULE[]_LDFLAGS="-L$_DUNE_MODULE[]ROOT/_dune_ldpath"
-            echo found lib[]_dune_lib.la, setting LDFLAGS to _DUNE_MODULE[]_LDFLAGS
+            echo found lib[]_dune_lib.la, setting LDFLAGS to $_DUNE_MODULE[]_LDFLAGS
 
             # provide arguments like normal lib-check
             _DUNE_MODULE[]_LIBS="-l[]_dune_lib"
