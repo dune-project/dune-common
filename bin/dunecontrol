@@ -1,7 +1,12 @@
 #!/bin/sh
 
 set -e
-if test "x$DEBUG" == "xyes"; then
+
+if test "x$1" = "x--debug"; then
+  DEBUG=yes
+fi
+
+if test "x$DEBUG" = "xyes"; then
   set -x
   set -v
 fi
@@ -119,20 +124,22 @@ _build_module() {
 }
 
 build_modules() {
-  command=run_$1
+  command=$1
+  runcommand=run_$command
   shift
+  load_opts $command
   for m in $MODULES; do
-    _build_module $command $m "$@"
+    _build_module $runcommand $m "$@"
   done
 }
 
-usage () {
-    echo "Usage: build COMMAND [COMMAND-OPTIONS]"
-	echo "  COMMANDS:"
-	echo "            help"
-	for i in $COMMANDS; do
-      echo "            $i"
-    done
+load_opts() {
+  command=$1
+  COMMAND=$(echo $command | tr '[:lower:]' '[:upper:]')
+  if test "x$OPTS_FILE" != "x"; then
+    echo "----- loading default flags \$${COMMAND}_FLAGS from $OPTS_FILE -----"
+    CMD_PARAMS="$(. $OPTS_FILE; eval echo \$${COMMAND}_FLAGS)"
+  fi
 }
 
 ###############################################
@@ -142,9 +149,11 @@ usage () {
 # these can be overwritten in the $CONTROL files
 #
 
-COMMANDS="update autogen configure make all"
+COMMANDS="autogen configure make all exec"
 
-run_default_list () { echo -n; }
+run_default_nothing () { echo -n; }
+
+run_default_exec () { bash -c "eval $CMD_PARAMS"; }
 
 run_default_update () { echo "WARNING: Doing nothing"; }
 
@@ -177,12 +186,12 @@ run_default_configure () {
       PARAMS="$PARAMS \"--with-dunedisc=$PATH_dune_disc\""
     fi
 	echo ./configure "$PARAMS"
-	eval ./configure "$PARAMS"
+	eval ./configure "$PARAMS" || exit 1
   else
     if test -f configure.in || test -f configure.ac; then
 	  echo "ERROR: configure.[in|ac] found, but configure missing"
 	  echo "did you forget to run autoconf?"
-	  false
+	  exit 1
 	fi
   fi
 }
@@ -194,13 +203,19 @@ run_default_make () {
 }
 
 run_default_all () {
+  load_opts autogen
   run_autogen "$@"
+  load_opts configure
   run_configure "$@"
+  load_opts make
   run_make "$@"
 }
 
-run_list () {
-  run_default_list "$@"
+run_nothing () {
+  run_default_nothing "$@"
+}
+run_exec () {
+  run_default_exec "$@"
 }
 run_update () {
   run_default_update "$@"
@@ -229,6 +244,24 @@ onfailure() {
   exit 1
 }
 
+usage () {
+    echo "Usage: $0 [OPTIONS] COMMAND [COMMAND-OPTIONS]"
+    echo ""
+    echo "Execute COMMAND for all Dune modules."
+    echo "Dependencies are controlled by the dune.module files."
+    echo ""
+	echo "Options:"
+	echo "  -h, --help         show this help"
+	echo "      --debug        enable debug output of this script"
+	echo "      --opts=FILE    load default options from FILE (see dune-common/bin/example.opts)"
+	echo "Commands:"
+	echo "  \`help'"
+	for i in $COMMANDS; do
+      echo "  \`$i'"
+    done
+    echo
+}
+
 if test "x$1" == "x"; then
   usage
   exit 1
@@ -236,24 +269,64 @@ fi
 
 trap onfailure EXIT
 
-command=$1
-shift
+while test "x$1" != "x"; do
+	# get option
+	option=$1
+	shift
 
-if test "x$1" != "x"; then
-  CMD_PARAMS="$PARAMS \"$1\""
-  while shift; do
-    if test "x$1" != "x"; then
-      CMD_PARAMS="$PARAMS \"$1\""
-    fi
-  done
-fi
+	# get args
+    set +e
+    # stolen from configure...
+    # when no option is set, this returns an error code
+    arg=`expr "x$option" : 'x[^=]*=\(.*\)'`
+    set -e
+
+	# switch
+    case "$option" in
+	--opts=*)
+	  if test "x$arg" == "x"; then
+		usage
+		echo "ERROR: Parameter for --opts is missing"
+		echo
+		exit 1;
+	  fi
+	  OPTS_FILE=$(cd $(dirname $arg); pwd)/$(basename $arg)
+	  if ! test -r "$OPTS_FILE"; then
+		usage
+		echo "ERROR: could not read opts file \"$OPTS_FILE\""
+		echo
+		exit 1;
+	  fi
+	;;
+	-h|--help) 
+      command=help
+	  break
+    ;;
+	--debug) true ;;
+	*)
+      command=$option
+	  break
+    ;;
+    esac
+done
+
+while test "x$1" != "x"; do
+  # setup paramter list
+  CMD_PARAMS="$CMD_PARAMS \"$1\""
+  shift
+  # disable usage of opts file
+  if test "x$OPTS_FILE" != "x"; then
+	echo "WARNING: commandline parameters will overwrite setting in opts file \"$OPTS_FILE\""
+  fi 
+  OPTS_FILE=""
+done
 
 case "$command" in
-  update | autogen | configure | make | all | list)
+  update | autogen | configure | make | all | exec | nothing)
     find_modules .
     build_modules $command "$@"
     ;;
-  help | --help | -h)
+  help)
 	usage
 	;;
   *)
