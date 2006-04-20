@@ -452,15 +452,7 @@ WARN_LOGFILE           =
 
 INPUT                  = mainpage \
                          modules \
-                         ../../grid/modules \
-                         ../../grid \
-                         ../../disc \
-                         ../../common \
-                         ../../fem \
-                         ../../quadrature \
-                         ../../solver \
-                         ../../istl \
-                         ../../io
+                         ../../common
 
 # If the value of the INPUT tag contains directories, you can use the 
 # FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 
