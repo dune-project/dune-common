@@ -48,7 +48,6 @@ done
 ## report parameters
 if test "x$ACVERSION" != "x"; then
 	echo "Forcing autoconf version «$ACVERSION»"
-	ACVERSION=-$ACVERSION
 	if ! which autoconf$ACVERSION > /dev/null; then
 		echo
 		echo "Error: Could not find autoconf$ACVERSION"
@@ -58,7 +57,6 @@ if test "x$ACVERSION" != "x"; then
 fi
 if test "x$AMVERSION" != "x"; then
 	echo "Forcing automake version «$AMVERSION»"
-	AMVERSION=-$AMVERSION
 	if ! which automake$AMVERSION > /dev/null; then
 		echo
 		echo "Error: Could not find automake$AMVERSION"

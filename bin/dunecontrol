@@ -166,7 +166,7 @@ run_default_autogen () {
 		ACLOCAL_FLAGS="$path $ACLOCAL_FLAGS"
 	  fi
 	done
-	eval ./autogen.sh "$ACLOCAL_FLAGS" "$@"
+	eval ./autogen.sh "$ACLOCAL_FLAGS" "$PARAMS" || exit 1
   fi
 }
 
@@ -198,8 +198,8 @@ run_default_configure () {
 
 run_default_make () {
   PARAMS="$CMD_PARAMS"
-  echo make "$PARAMS";
-  eval make "$PARAMS";
+  echo make "$PARAMS"
+  eval make "$PARAMS"
 }
 
 run_default_all () {
