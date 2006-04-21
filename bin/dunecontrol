@@ -111,13 +111,13 @@ _build_module() {
     done
 	# really build this module
 	echo "--- calling $command for $module ---"
+    export BUILD_DONE_${command}_${module}=yes
 	path=$(eval "echo \$PATH_${module}")
 	(
       set -e
       cd "$path"
 	  eval_control $command $path/$CONTROL "$@"
-    ) || false
-    export BUILD_DONE_${command}_${module}=yes
+    ) || exit 1
   else
     echo "--- skipping $module ---"
   fi
