@@ -302,6 +302,15 @@ while test "x$1" != "x"; do
       command=help
 	  break
     ;;
+	--module=*)
+	    if test "x$arg" == "x"; then
+		usage
+		echo "ERROR: Parameter for --opts is missing"
+		echo
+		exit 1;
+	  fi
+	    MODULE=$arg
+	;;
 	--debug) true ;;
 	*)
       command=$option
@@ -323,8 +332,13 @@ done
 
 case "$command" in
   update | autogen | configure | make | all | exec | nothing)
-    find_modules .
-    build_modules $command
+      find_modules .
+    if test "x$MODULE" != "x"; then
+	load_opts $command
+	_build_module run_$command $MODULE
+    else
+	build_modules $command
+    fi
     ;;
   help)
 	usage
