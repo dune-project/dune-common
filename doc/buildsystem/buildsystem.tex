@@ -1,0 +1,511 @@
+\documentclass[11pt,a4paper,headinclude,footinclude,DIV16,normalheadings]{scrartcl}
+\usepackage[automark]{scrpage2}
+\usepackage[ansinew]{inputenc}
+%\usepackage{german}
+%\usepackage{bibgerm}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{theorem}
+\usepackage{color}
+\usepackage{listings}
+\lstset{language=C++, basicstyle=\ttfamily,
+  keywordstyle=\color{black}\bfseries, tabsize=4,
+  stringstyle=\ttfamily, commentstyle=\it, extendedchars=true}
+\usepackage{hyperref}
+\usepackage{psfrag}
+\usepackage{pstricks}
+\usepackage{makeidx}
+\usepackage{xspace}
+
+\usepackage{graphicx}
+
+\newtheorem{lst}{Listing}
+
+\newcommand{\dune}{\texttt{DUNE}\xspace}
+\newcommand{\autoconf}{\texttt{autoconf}\xspace}
+\newcommand{\automake}{\texttt{automake}\xspace}
+\newcommand{\autogen}{\texttt{autogen.sh}\xspace}
+\newcommand{\libtool}{\texttt{libtool}\xspace}
+\newcommand{\configure}{\texttt{configure}\xspace}
+\newcommand{\configureac}{\texttt{configure.ac}\xspace}
+\newcommand{\makefile}{\texttt{Makefile}\xspace}
+\newcommand{\makefilein}{\texttt{Makefile.in}\xspace}
+\newcommand{\makefileam}{\texttt{Makefile.am}\xspace}
+\newcommand{\dunecommon}{\texttt{dune-common}\xspace}
+\newcommand{\duneistl}{\texttt{dune-istl}\xspace}
+\newcommand{\dunegrid}{\texttt{dune-grid}\xspace}
+\newcommand{\dunedisc}{\texttt{dune-disc}\xspace}
+\newcommand{\dunecontrol}{\texttt{dunecontrol}\xspace}
+\newcommand{\dunemodule}{\texttt{dune.module}\xspace}
+\newcommand{\make}{\texttt{make}\xspace}
+
+\pagestyle{scrheadings}
+
+\title{The DUNE Buildsystem HOWTO}
+
+\author{Christian Engwer$^\ast$}
+
+\date{\today}
+
+\publishers{%
+{\normalsize $^\ast$Interdisziplinäres Zentrum für Wissenschaftliches Rechnen,
+Universität Heidelberg,\\
+Im Neuenheimer Feld 368, D-69120 Heidelberg, Germany}\\
+\bigskip
+{\normalsize \texttt{\url{http://hal.iwr.uni-heidelberg.de/dune/index.html}}}\\
+}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\pagebreak
+\section{Structure of DUNE}
+\dune consists of several independent modules:
+\begin{itemize}
+\item \dunecommon
+\item \dunegrid
+\item \duneistl
+\item \dunedisc
+\item \texttt{dune-fem}
+\end{itemize}
+
+These modules interact very tightly and depend on each
+other.
+
+The build system is structured as follows:
+\begin{itemize}
+\item Modules are build using the GNU autotools.
+\item Each module has a set of modules it depends on, these modules
+  have to be built before building the module itself.
+\item Each module has a file \dunemodule which hold dependecies and
+  other information regarding the module.
+\item The modules can be built in the appropriate order using the
+  \dunecontrol script (shippedwith \dunecommon)
+\end{itemize}
+
+\section{Toolchain}
+\subsection{Autotools}
+
+Software is generally developed to be used on multiple
+platforms. Since each of these platforms have different compilers,
+different include files, there is a need to write Makefiles and build
+scripts so that they can work on a variety of platforms. The free
+software community (Project GNU), faced with this problem, devised a
+set of tools to generate Makefiles and build scripts that work on a
+variety of platforms. If you have downloaded and built any GNU
+software from source, you are familiar with the \configure script. The
+\configure script runs a series of tests to determine information about
+your machine.
+
+The autotools simplify the generation of portable Makefiles and
+configure scripts.
+
+\minisec{autoconf}
+
+\autoconf is used to create the \configure script. \configure is
+created from \configureac, using a set of \texttt{m4} files.
+
+\begin{center}
+\psset{unit=0.5mm}
+\psset{linewidth=0.4pt}
+\begin{pspicture}(140,50)
+\put(-26,45){\parbox{40\unitlength}{\centering{}\configureac}}
+\put(116,45){\parbox{40\unitlength}{\centering{}\tt{}m4/*.m4}}
+\put(0,36)
+{
+  \psset{linewidth=1pt}
+  \psline[linearc=4]{c-}(-2,2)(-2,-2)(67.5,-2)(67.5,-6)
+  \psline[linearc=4]{c-}(137,2)(137,-2)(67.5,-2)(67.5,-6)
+  \psline{->}(67.5,-5.5)(67.5,-20)
+}
+\put(72,22){\textit{\autoconf}}
+\put(50,7){\parbox{40\unitlength}{\centering{}\configure}}
+\end{pspicture}
+\end{center}
+
+How to write a \configureac for \dune is described in \ref{configure.ac}
+
+\minisec{automake}
+
+\automake is used to create the \makefilein files (needed for
+\configure) from \makefileam files and, using a set of include files
+located in the \texttt{am} directory. These include files provide
+additional features, not provided by the standard \automake (see
+\ref{am_includes}). The \texttt{am} directory is in the \dunecommon
+module and each module intending to use one of these includes has to
+create symlink; this is usually done by \autogen (see
+\ref{autogen.sh}).
+
+\begin{center}
+\psset{unit=0.5mm}
+\psset{linewidth=0.4pt}
+\begin{pspicture}(140,80)
+\put(-26,75){\parbox{40\unitlength}{\centering{}\makefileam}}
+\put(116,75){\parbox{40\unitlength}{\centering{}\tt{}am/*}}
+\put(0,66)
+{
+  \psset{linewidth=1pt}
+  \psline[linearc=4]{c-}(-2,2)(-2,-2)(67.5,-2)(67.5,-6)
+  \psline[linearc=4]{c-}(137,2)(137,-2)(67.5,-2)(67.5,-6)
+  \psline{->}(67.5,-5.5)(67.5,-20)
+}
+\put(72,52){\textit{\automake}}
+\put(50,37){\parbox{40\unitlength}{\centering{}\texttt{Makefile.in}}}
+\put(0,34)
+{
+  \psset{linewidth=1pt}
+  \psline[linestyle=dashed,dash=1.5pt 1.5pt]{->}(67.5,0)(67.5,-14.5)
+}
+\put(72,25){\textit{\configure}}
+\put(50,10){\parbox{40\unitlength}{\centering{}\texttt{Makefile}}}
+\end{pspicture}
+\end{center}
+
+How to write a \configureac for \dune is described in \ref{configure.ac}
+
+\minisec{libtool}
+
+\libtool is used to build libraries on all platforms. This way we
+don't have to deal will platform specific issues.
+
+\subsection{Makefile.am}
+\label{makefile.am}
+
+\subsubsection{Overview}
+
+Let's start off with a simple program {\em hello} built from
+\texttt{hello.c}. As automake is designed to build and install a
+package it needs to know
+
+\begin{itemize}
+\item what programs it should build
+\item where to put them when installing
+\item which sources to use
+\end{itemize}
+
+The \makefileam thus looks like this:
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+noinst_PROGRAMS = hello
+hello_SOURCES = hello.c
+\end{lstlisting}
+
+This would build hello and won't install it when \texttt{make
+  install} is called. Using \lstinline!bin_PROGRAMS! instead of
+\lstinline!noinst_PROGRAMS! would install the hello-binary into a
+\texttt{textit{prefix}/bin} directory which we don't want to do with
+most of the \dune applications.
+
+Building more programs with a couple of source-files works like this
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+noinst_PROGRAMS = hello bye
+
+hello_SOURCES = common.c common.h hello.c
+bye_SOURCES = common.c common.h bye.c parser.y lexer.l
+\end{lstlisting}
+
+automake has more integrated rules than the standard make, the example
+above would automatically use yacc/lex to create
+\texttt{parser.c/lexer.c} and build them into the {\em bye} binary.
+
+Make-Variables may be defined and used as usual:
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+noinst_PROGRAMS = hello bye
+
+COMMON = common.c common.h
+
+hello_SOURCES =  hello.c
+bye_SOURCES =  bye.c parser.y lexer.l
+\end{lstlisting}
+
+Even normal make-rules may be used in a \makefileam.
+
+\minisec{Using flags}
+
+Compiler/linker/preprocessor-flags can be set either globally:
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+noinst_PROGRAMS = hello bye
+
+AM_CPPFLAGS = -DDEBUG
+
+hello_SOURCES = hello.c
+bye_SOURCES = bye.c
+\end{lstlisting}
+
+or locally:
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+noinst_PROGRAMS = hello bye
+
+hello_SOURCES = hello.c
+hello_CPPFLAGS = -DHELLO
+
+bye_SOURCES = bye.c
+bye_CPPFLAGS = -DBYE
+\end{lstlisting}
+
+The local setting overrides the global one, thus
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+hello_CPPFLAGS =  -Dmyflags
+\end{lstlisting}
+
+may be a good idea.
+
+It is even possible to compile the same sources with different flags:
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+noinst_PROGRAMS = hello bye
+
+hello_SOURCES = generic-greeting.c
+hello_CPPFLAGS = -DHELLO
+
+bye_SOURCES = generic-greeting.c
+bye_CPPFLAGS = -DBYE
+\end{lstlisting}
+
+Perhaps you're wondering why the above examples used
+\texttt{AM\_CPPFLAGS} instead of the normal \texttt{CPPFLAGS}? The
+reason for this is that the variables \texttt{CFLAGS},
+\texttt{CPPFLAGS}, \texttt{CXXFLAGS} etc. are considered {\em user
+  variables} which may be set on the commandline:
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+make CXXFLAGS="-O2000"
+\end{lstlisting}
+
+This would override any settings in Makefile.am which might be
+necessary to build. Thus, if the variables should be set even if the
+user wishes to modify the values, you should use the \texttt{AM\_*}
+version. 
+
+The real compile-command always uses both \texttt{AM\_\textit{VAR}} and
+\texttt{\it VAR}. Options that
+autoconf finds are stored in the user variables (so that they may be
+overridden) 
+
+Commonly used variables are:
+\begin{itemize}
+\item \texttt{AM\_CPPFLAGS}: flags for the C-Preprocessor. This
+  includes preprocessor defines like \texttt{-DNDEBUG} and include
+  pathes like \texttt{-I/usr/local/package/include}
+\item \texttt{AM\_CFLAGS}, \texttt{AM\_CXXFLAGS}: flags for the
+  compiler (-g, -O, ...). One difference between these and the
+  \texttt{CPPFLAGS} is that the linker will get
+  \texttt{CFLAGS}/\texttt{CXXFLAGS} and \texttt{LDFLAGS} but not
+  \texttt{CPPFLAGS}
+\item \texttt{AM\_LDFLAGS} options for the linker
+\item \texttt{LDADD}: libraries to link to a binary
+\item \texttt{LIBADD}: libraries to add to a library
+\item \texttt{SOURCES}: list of source-files (may include headers as well)
+\end{itemize}
+
+\minisec{Conditional builds}
+
+Some parts of \dune only make sense if certain addon-packages were
+found. autoconf therefore defines {\em conditionals} which automake can
+use:
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+if OPENGL
+  PROGS = hello glhello
+else
+  PROGS = hello
+endif
+
+hello_SOURCES = hello.c
+
+glhello_SOURCES = glhello.c hello.c
+\end{lstlisting}
+
+This will only build the {\em glhello} program if OpenGL was found. An
+important feature of these conditionals is that they work with any
+make program, even those without a native {\em if} construct like GNU-make.
+
+\minisec{Default targets}
+
+An automake-generated Makefile does not only know the usual {\em all},
+{\em clean} and {\em install} targets but also
+\begin{itemize}
+\item {\bf tags} travel recursively through the directories and create
+  TAGS-files which can be used in many editors to quickly find where
+  symbols/functions are defined (use emacs-format)
+\item {\bf ctags} the same as "tags" but uses the vi-format for the tags-files
+\item {\bf dist} create a distribution tarball
+\item {\bf distcheck} create a tarball and do a test-build if it really works
+\end{itemize}
+
+\minisec{Further documentation}
+
+Further documentation no hwo to weite and maintain a \makefileam can
+be found in the \automake manual
+(\texttt{\url{http://www.gnu.org/software/automake/manual/}})
+
+\subsubsection{Building Documentation}
+\label{am_includes}
+
+If you want to build documentation you might need additional make
+rules. \dune offers a set of predefined rules to create certain kinds
+of documentation. Therefor you have to include the appropriate rules
+from the \texttt{am/} directory.
+
+\minisec{html pages}
+Webpages are created from wml sources, using the program \texttt{wml}
+(\texttt{\url{http://thewml.org/}}).\\
+\texttt{\$(top\_srcdir)/am/webstuff} containes the necessary rules.
+
+
+\begin{lst}[File Makefile.am] \mbox{}
+
+\lstinputlisting[basicstyle=\ttfamily\scriptsize,numbers=left,
+numberstyle=\tiny, numbersep=5pt]{../Makefile.am}
+\end{lst}
+
+\minisec{\LaTeX documents}
+In order to compile \LaTeX documents you can include
+\texttt{\$(top\_srcdir)/am/latex}. This way you get rules for creation
+of DVI files, PS files and PDF files.
+
+\minisec{SVG graphics}
+SVG graphics can be converted to png, in order to include them into
+the web page. This conversion can be done using inkscape
+(\texttt{\url{http://www.inkscape.org/}}).
+\texttt{\$(top\_srcdir)/am/inkscape.am} offers the necessary rules.
+
+
+\subsection{configure.ac}
+\label{configure.ac}
+
+\configureac  is a normal text file that contains several \autoconf
+macros. These macros are evaluated my the \texttt{m4} macro processor
+and transformed into a shell script.
+
+\begin{lst}[File dune-common/configure.ac] \mbox{}
+
+\lstinputlisting[basicstyle=\ttfamily\scriptsize,numbers=left,
+numberstyle=\tiny, numbersep=5pt]{../../configure.ac}
+\end{lst}
+
+We offer a set of macros that can be used in your \configureac:
+
+\begin{itemize}
+\item \texttt{DUNE\_CHECK\_ALL\_M}
+  runs all checks usually needed by a {\em \dune module}.
+  This macros takes list of other \dune modules it should search for
+  as parameters.
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+DUNE_CHECK_ALL_M([dunecommon], [dunegrid])
+\end{lstlisting}
+  will search for \texttt{dune-common} and \texttt{dune-grid}
+  (Attention: you have to provide the modules in such an order that
+  the dependencies are checked already).
+\item \texttt{DUNE\_CHECK\_ALL}
+  same as \texttt{DUNE\_CHECK\_ALL\_M}, except that it only runs the
+  tests needed for a {\em \dune application}
+\item \texttt{DUNE\_SUMMARY\_ALL}
+  prints information on the results of all major checks run by
+  \texttt{DUNE\_CHECK\_ALL} or \texttt{DUNE\_CHECK\_ALL\_M}.
+\end{itemize}
+
+\texttt{DUNE\_CHECK\_ALL} and \texttt{DUNE\_CHECK\_ALL\_M} define certain
+variables that can be used in the \configure script or in the
+\makefileam:
+
+\begin{itemize}
+\item \texttt{DUNE\textit{\,MODULE\,}\_CPPFLAGS}
+\item \texttt{DUNE\textit{\,MODULE\,}\_LDFLAGS}
+\item \texttt{DUNE\textit{\,MODULE\,}\_LIBS}
+\item \texttt{DUNE\textit{\,MODULE\,}ROOT}
+\end{itemize}
+
+For further information have a look at the autoconf manual \\
+(\texttt{\url{http://www.gnu.org/software/autoconf/manual/}}).
+
+\subsection{autogen.sh}
+\label{autogen.sh}
+
+\subsection{dunecontrol}
+\label{dunecontrol}
+\dunecontrol helps you building the different \dune modules in the
+appropriate order. Each module has a \dunemodule file which contains
+information on the module needed by \dunecontrol. 
+
+\dunecontrol searches for \dunemodule files recursively from where you
+are executing the program. For each \dune module found it will execute
+a \dunecontrol command. All commands offered by \dunecontrol have a
+default implementation. This default implementation can be overwriten
+and extended in the \dunemodule file.
+
+The commands you are interested in right now are
+\begin{itemize}
+\item \texttt{autogen} runs \autogensh for each module. A list of
+  directories containing \dunemodule files and the parameters given on
+  the commandline are passed as paramters to \autogensh.
+\item \texttt{configure} runs \configure for each
+  module. \texttt{--with-dune\textit{module}} parameters are created
+  for a set of known \dune modules.
+\item \texttt{make} runs \make for each module.
+\item \texttt{all} runs \autogensh, \configure and \make for each module.
+\end{itemize}
+
+In order to build \dune the first time you will need the \texttt{all}
+command. In pseudo code \texttt{all} does the following:
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+foreach ($module in $Modules) {
+  foreach (command in {autogen,configure,make) {
+    run $command in $module
+  }
+}
+\end{lstlisting}
+
+This differs from calling
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+dunecontrol autogen
+dunecontrol configure
+dunecontrol make
+\end{lstlisting}
+as it ensures that i.e. \dunecommon is fully built before \configure
+is executed in \dunegrid. Otherwise \configure in \dunegrid would
+complain that \texttt{libcommon.la} from \dunecommon is missing.
+
+Further more you can add parameters to the commands; these parameters
+get passed on to the program being executed. Assuming you want to call
+\texttt{make clean} in all \dune modules you can execute
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+dunecontrol make clean
+\end{lstlisting}
+
+\minisec{opts files}
+You can also let \dunecontrol read the command parameters from a file.
+
+\minisec{dune.module}
+
+\begin{lst}[File dune.module] \mbox{}
+
+\lstinputlisting[basicstyle=\ttfamily\scriptsize,numbers=left,
+numberstyle=\tiny, numbersep=5pt]{../../dune.module}
+\end{lst}
+
+
+
+\section{Creating a new Dune module}
+
+In order to create new \dune module, you have to provide 
+
+\section{Creating a new Dune application}
+
+
+\section{Futher questions}
+
+
+
+\end{document}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 

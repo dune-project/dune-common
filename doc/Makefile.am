@@ -1,19 +1,27 @@
 # $Id$
 
-SUBDIRS = devel doxygen layout
+# also build these sub directories
+SUBDIRS = devel doxygen layout buildsystem
 
+# only build html pages, if documentation is enabled
 if BUILD_DOCS
  PAGES = index.html buildsystem.html view-concept.html installation-notes.html
 endif
 
+# automatically create these web pages
 all: $(PAGES)
 
 # setting like in dune-web
-BASEDIR=..
 CURDIR=doc
+# position of the web base directory,
+# relative to $(CURDIR)
+BASEDIR=..
 
+# include rules for wml -> html transformation
 include $(top_srcdir)/am/webstuff
 
+# remove html pages on ``make  clean''
 CLEANFILES = $(PAGES)
 
+# include further rules needed by Dune
 include $(top_srcdir)/am/global-rules
