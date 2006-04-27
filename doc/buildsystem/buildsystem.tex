@@ -726,7 +726,7 @@ for OPT in "$@"; do
 			;;
 	-h|--help) usage ; exit 0 ;;
 	*)
-            if test -f "$OPT/m4"; then
+            if test -d "$OPT/m4"; then
               ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $(cd $OPT/m4; pwd)"
             fi
             if test -d "$OPT/am"; then
