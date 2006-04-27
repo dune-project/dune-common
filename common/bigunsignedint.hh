@@ -12,6 +12,12 @@
  * @brief  Portable very large unsigned integers
  * @author Peter Bastian
  */
+
+namespace std
+{
+  template<class T> struct numeric_limits;
+}
+
 namespace Dune
 {
   /** @addtogroup Common
@@ -114,6 +120,8 @@ namespace Dune
     unsigned int touint() const;
 
     friend class bigunsignedint<k/2>;
+    friend class std::numeric_limits<bigunsignedint<k> >;
+
   private:
     unsigned short digit[n];
 #ifdef HAVE_MPI
@@ -494,4 +502,89 @@ namespace Dune
 
   /** @} */
 }
+
+namespace std
+{
+  template<class T> struct numeric_limits;
+
+  template<int k>
+  struct numeric_limits<Dune::bigunsignedint<k> >
+  {
+    static const bool is_specialized = true;
+
+    static Dune::bigunsignedint<k> min()
+    {
+      return static_cast<Dune::bigunsignedint<k> >(0);
+    }
+
+    static Dune::bigunsignedint<k> max()
+    {
+      Dune::bigunsignedint<k> max_;
+      for(std::size_t i=0; i < Dune::bigunsignedint<k>::n; ++i)
+        max_.digit[i]=std::numeric_limits<unsigned short>::max();
+      return max_;
+    }
+
+
+    static const int digits = Dune::bigunsignedint<k>::bits *
+                              Dune::bigunsignedint<k>::n;
+    static const bool is_signed = false;
+    static const bool is_integer = true;
+    static const bool is_exact = true;
+    static const int radix = 2;
+
+    static Dune::bigunsignedint<k> epsilon()
+    {
+      return static_cast<Dune::bigunsignedint<k> >(0);
+    }
+
+    static Dune::bigunsignedint<k> round_error()
+    {
+      return static_cast<Dune::bigunsignedint<k> >(0);
+    }
+
+    static const int min_exponent = 0;
+    static const int min_exponent10 = 0;
+    static const int max_exponent = 0;
+    static const int max_exponent10 = 0;
+
+    static const bool has_infinity = false;
+    static const bool has_quiet_NaN = false;
+    static const bool has_signaling_NaN = false;
+
+    static const float_denorm_style has_denorm = denorm_absent;
+    static const bool has_denorm_loss = false;
+
+    static Dune::bigunsignedint<k> infinity() throw()
+    {
+      return static_cast<Dune::bigunsignedint<k> >(0);
+    }
+
+    static Dune::bigunsignedint<k> quiet_NaN() throw()
+    {
+      return static_cast<Dune::bigunsignedint<k> >(0);
+    }
+
+    static Dune::bigunsignedint<k> signaling_NaN() throw()
+    {
+      return static_cast<Dune::bigunsignedint<k> >(0);
+    }
+
+    static Dune::bigunsignedint<k> denorm_min() throw()
+    {
+      return static_cast<Dune::bigunsignedint<k> >(0);
+    }
+
+    static const bool is_iec559 = false;
+    static const bool is_bounded = true;
+    static const bool is_modulo = true;
+
+    static const bool traps = __glibcxx_integral_traps;
+    static const bool tinyness_before = false;
+    static const float_round_style round_style = round_toward_zero;
+
+  };
+
+}
+
 #endif

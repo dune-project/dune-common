@@ -2,7 +2,8 @@
 
 TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
 	sllisttest iteratorfacadetest tuplestest fmatrixtest \
-	poolallocatortest settest gcdlcdtest streamtest
+	poolallocatortest settest gcdlcdtest streamtest \
+	bigunsignedinttest
 # exprtmpl
 
 # which tests to run
@@ -12,6 +13,10 @@ TESTS = $(TESTPROGS)
 check_PROGRAMS = $(TESTPROGS)
 
 # define the programs
+
+
+bigunsignedinttest_SOURCES=bigunsignedinttest.cc
+bigunsignedinttest_DEPENDENCIES = $(LIBDUNE)
 
 parsetest_SOURCES = parsetest.cc
 parsetest_DEPENDENCIES = $(LOCAL_LIBS)
