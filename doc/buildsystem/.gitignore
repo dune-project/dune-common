@@ -1,0 +1,9 @@
+*.aux
+*.log
+*.dvi
+*.ps
+*.toc
+*.out
+Makefile.in
+Makefile
+auto
