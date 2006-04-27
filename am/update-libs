@@ -3,19 +3,19 @@
 #
 # -- update libs in an other directory --
 #
-# applications linking against libdune should also depend on libdune
+# applications linking against local libraries should also depend on these libs
 #
 # app_SOURCE = app.cc
-# app_LDADD = $(LIBDUNE)
-# app_DEPENDENCIES = $(LIBDUNE)
+# app_LDADD = $(LOCAL_LIBS)
+# app_DEPENDENCIES = $(LOCAL_LIBS)
 #
 # instead, you can also write
 #
 # app_SOURCE = app.cc
-# app_LIBADD = $(LIBDUNE)
+# app_LIBADD = $(LOCAL_LIBS)
 #
 
-LIBDUNE = @LIBDUNE@
+LOCAL_LIBS = @LOCAL_LIBS@
 
 %.la: MAKELIBS.force
 	make -C $$(dirname $@) $$(basename $@)

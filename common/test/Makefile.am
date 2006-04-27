@@ -16,7 +16,7 @@ check_PROGRAMS = $(TESTPROGS)
 
 
 bigunsignedinttest_SOURCES=bigunsignedinttest.cc
-bigunsignedinttest_DEPENDENCIES = $(LIBDUNE)
+bigunsignedinttest_DEPENDENCIES = $(LOCAL_LIBS)
 
 parsetest_SOURCES = parsetest.cc
 parsetest_DEPENDENCIES = $(LOCAL_LIBS)
