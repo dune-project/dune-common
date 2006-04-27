@@ -1,7 +1,7 @@
 # $Id: Makefile.am 4499 2006-04-13 14:56:35Z christi $
 
 if BUILD_DOCS
-  buildsystem.pdf buildsystem.ps
+  DOCS=buildsystem.pdf buildsystem.ps
 endif
 
 all: $(DOCS)
