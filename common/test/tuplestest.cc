@@ -73,12 +73,47 @@ int copyTest()
   return 0;
 }
 
+int referenceTest()
+{
+  int k=5;
+  int& kr(k);
+  kr=20;
+  int i=50;
+  double d=-3.3;
+  long j=-666;
+  Tuple<int,double,long> t1(100, 5.0, 10);
+  Tuple<int,int,int> t2(1,5,9);
+  std::cout << "i="<<i<<" d="<<d<<" j="<<j<<std::endl;
+
+  Tuple<int&,double&,long&> tr(i,d,j);
+
+  std::cout <<"tr="<< tr<<std::endl;
+
+  Tuple<int> i1(5);
+  Tuple<int&> ir(i);
+  ir=i1;
+
+  t1=t2;
+
+  std::cout <<"tr="<< tr<<std::endl;
+  std::cout <<"t1="<< t1<<std::endl;
+  tr=t1;
+
+  if(tr!=t1)
+    return 1;
+  else
+    std::cout<<"t1="<<t1<< " tr="<<tr<<std::endl;
+
+
+  return 0;
+}
+
 int main(int argc, char** argv)
 {
   Tuple<float,int,double,char,std::string> tuple;
 
   test(tuple);
   test(static_cast<const Tuple<float,int,double,char,std::string>&>(tuple));
-  exit(copyTest()+iteratorTupleTest());
+  exit(copyTest()+iteratorTupleTest()+referenceTest());
 
 }
