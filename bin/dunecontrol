@@ -28,37 +28,37 @@ CONTROL="dune.module"
 
 parse_control() {
   if test -f "$1"; then
-	export module=$(echo $(grep Module: "$1" | cut -d ':' -f2))
+    export module=$(echo $(grep Module: "$1" | cut -d ':' -f2))
     local deps=$(echo $(grep Depends: "$1" | cut -d ':' -f2))
     local sugs=$(echo $(grep Suggests: "$1" | cut -d ':' -f2))
-	local path=$(dirname "$1")
+    local path=$(dirname "$1")
     if test "x$module" != "x"; then
       export HAVE_${module}=yes
-	  export PATH_${module}="$path"
-	  export DEPS_${module}="$deps"
-	  export SUGS_${module}="$sugs"
+      export PATH_${module}="$path"
+      export DEPS_${module}="$deps"
+      export SUGS_${module}="$sugs"
     fi
   else
-	echo "ERROR: could not read file $1"
-	false
+    echo "ERROR: could not read file $1"
+    false
   fi
 }
 
 find_modules() {
   if test -d "$1"; then
     local dir=$(cd "$1" && pwd)
-	while read m; do
-	  if test "x$m" != "x"; then
-		export module=""
-		parse_control "$m"
+    while read m; do
+      if test "x$m" != "x"; then
+        export module=""
+        parse_control "$m"
         export MODULES="$MODULES $module"
       fi
-	done <<EOF
+    done <<EOF
  $(find "$dir" -name $CONTROL )
 EOF
   else
-	echo "ERROR: could not find directory $1"
-	false
+    echo "ERROR: could not find directory $1"
+    false
   fi
 }
 
@@ -75,14 +75,14 @@ eval_control() {
   local file=$2
   shift 2
   if test -f "$file"; then
-	# open subshell
-	(
+    # open subshell
+    (
       set -e
       # load functions defined in $file
-	  # if $command is not defined in $file,
-	  # then the default implementation will be executed
-	  eval "$(grep -v -e '^[[:alnum:]]\+:' $file)"
-	  # execute $command
+      # if $command is not defined in $file,
+      # then the default implementation will be executed
+      eval "$(grep -v -e '^[[:alnum:]]\+:' $file)"
+      # execute $command
       $command
     ) || false
   fi
@@ -94,29 +94,29 @@ _build_module() {
   shift 2
   if test "x$(eval echo \$BUILD_DONE_${command}_${module})" != "xyes"; then
     echo "--- building $module ---"
-	# resolve dependencies
-	for dep in $(eval "echo \$DEPS_$module"); do
+    # resolve dependencies
+    for dep in $(eval "echo \$DEPS_$module"); do
       echo "--- $module depends on $dep ... calling ---"
       _build_module $command $dep
     done
-	# resolve suggestions
-	for dep in $(eval "echo \$SUGS_$module"); do
+    # resolve suggestions
+    for dep in $(eval "echo \$SUGS_$module"); do
       echo -n "--- $module suggests $dep ... "
       if test "x$(eval echo \$HAVE_$dep)" != "x"; then
-		echo "calling ---"
+        echo "calling ---"
         _build_module $command $dep
-	  else
-		echo "skipping ---"
-	  fi
+      else
+        echo "skipping ---"
+      fi
     done
-	# really build this module
-	echo "--- calling $command for $module ---"
+    # really build this module
+    echo "--- calling $command for $module ---"
     export BUILD_DONE_${command}_${module}=yes
-	local path=$(eval "echo \$PATH_${module}")
-	(
+    local path=$(eval "echo \$PATH_${module}")
+    (
       set -e
       cd "$path"
-	  eval_control $command $path/$CONTROL
+      eval_control $command $path/$CONTROL
     ) || exit 1
   else
     echo "--- skipping $module ---"
@@ -131,6 +131,20 @@ build_modules() {
   for m in $MODULES; do
     _build_module $runcommand $m
   done
+}
+
+build_single_module() {
+  command=$1
+  module=$1
+  for m in $MODULES; do
+    if test "x$m" = "x$module"; then  
+      load_opts $command
+      _build_module run_$command $MODULE
+      return
+    fi
+  done
+  usage
+  echo "ERROR: could not find module $module"
 }
 
 load_opts() {
@@ -160,13 +174,13 @@ run_default_update () { echo "WARNING: Doing nothing"; }
 run_default_autogen () {
   PARAMS="$CMD_PARAMS"
   if test -x autogen.sh; then
-	for m in $MODULES; do
-	  path=$(eval "echo \$PATH_$m")
-	  if test -d $path/m4; then
-		ACLOCAL_FLAGS="$path $ACLOCAL_FLAGS"
-	  fi
-	done
-	eval ./autogen.sh "$ACLOCAL_FLAGS" "$PARAMS" || exit 1
+    for m in $MODULES; do
+      path=$(eval "echo \$PATH_$m")
+      if test -d $path/m4; then
+        ACLOCAL_FLAGS="$path $ACLOCAL_FLAGS"
+      fi
+    done
+    eval ./autogen.sh "$ACLOCAL_FLAGS" "$PARAMS" || exit 1
   fi
 }
 
@@ -185,14 +199,14 @@ run_default_configure () {
     if test "x$HAVE_dune_disc" == "xyes"; then
       PARAMS="$PARAMS \"--with-dunedisc=$PATH_dune_disc\""
     fi
-	echo ./configure "$PARAMS"
-	eval ./configure "$PARAMS" || exit 1
+    echo ./configure "$PARAMS"
+    eval ./configure "$PARAMS" || exit 1
   else
     if test -f configure.in || test -f configure.ac; then
-	  echo "ERROR: configure.[in|ac] found, but configure missing"
-	  echo "did you forget to run autoconf?"
-	  exit 1
-	fi
+      echo "ERROR: configure.[in|ac] found, but configure missing"
+      echo "did you forget to run autoconf?"
+      exit 1
+    fi
   fi
 }
 
@@ -250,13 +264,13 @@ usage () {
     echo "Execute COMMAND for all Dune modules."
     echo "Dependencies are controlled by the dune.module files."
     echo ""
-	echo "Options:"
-	echo "  -h, --help         show this help"
-	echo "      --debug        enable debug output of this script"
-	echo "      --opts=FILE    load default options from FILE (see dune-common/bin/example.opts)"
-	echo "Commands:"
-	echo "  \`help'"
-	for i in $COMMANDS; do
+    echo "Options:"
+    echo "  -h, --help         show this help"
+    echo "      --debug        enable debug output of this script"
+    echo "      --opts=FILE    load default options from FILE (see dune-common/bin/example.opts)"
+    echo "Commands:"
+    echo "  \`help'"
+    for i in $COMMANDS; do
       echo "  \`$i'"
     done
     echo
@@ -270,51 +284,51 @@ fi
 trap onfailure EXIT
 
 while test "x$1" != "x"; do
-	# get option
-	option=$1
-	shift
+    # get option
+    option=$1
+    shift
 
-	# get args
+    # get args
     set +e
     # stolen from configure...
     # when no option is set, this returns an error code
     arg=`expr "x$option" : 'x[^=]*=\(.*\)'`
     set -e
 
-	# switch
+    # switch
     case "$option" in
-	--opts=*)
-	  if test "x$arg" == "x"; then
-		usage
-		echo "ERROR: Parameter for --opts is missing"
-		echo
-		exit 1;
-	  fi
-	  OPTS_FILE=$(cd $(dirname $arg); pwd)/$(basename $arg)
-	  if ! test -r "$OPTS_FILE"; then
-		usage
-		echo "ERROR: could not read opts file \"$OPTS_FILE\""
-		echo
-		exit 1;
-	  fi
-	;;
-	-h|--help) 
-      command=help
-	  break
+    --opts=*)
+      if test "x$arg" == "x"; then
+        usage
+        echo "ERROR: Parameter for --opts is missing"
+        echo
+        exit 1;
+      fi
+      OPTS_FILE=$(cd $(dirname $arg); pwd)/$(basename $arg)
+      if ! test -r "$OPTS_FILE"; then
+        usage
+        echo "ERROR: could not read opts file \"$OPTS_FILE\""
+        echo
+        exit 1;
+      fi
     ;;
-	--module=*)
-	    if test "x$arg" == "x"; then
-		usage
-		echo "ERROR: Parameter for --module is missing"
-		echo
-		exit 1;
-	  fi
-	    MODULE=$arg
-	;;
-	--debug) true ;;
-	*)
+    -h|--help) 
+      command=help
+      break
+    ;;
+    --module=*)
+      if test "x$arg" == "x"; then
+        usage
+        echo "ERROR: Parameter for --module is missing"
+        echo
+        exit 1;
+      fi
+      MODULE=$arg
+    ;;
+    --debug) true ;;
+    *)
       command=$option
-	  break
+      break
     ;;
     esac
 done
@@ -325,29 +339,28 @@ while test "x$1" != "x"; do
   shift
   # disable usage of opts file
   if test "x$OPTS_FILE" != "x"; then
-	echo "WARNING: commandline parameters will overwrite setting in opts file \"$OPTS_FILE\""
+    echo "WARNING: commandline parameters will overwrite setting in opts file \"$OPTS_FILE\""
   fi 
   OPTS_FILE=""
 done
 
 case "$command" in
   update | autogen | configure | make | all | exec | nothing)
-      find_modules .
+    find_modules .
     if test "x$MODULE" != "x"; then
-	load_opts $command
-	_build_module run_$command $MODULE
+      build_single_module $MODULE $command
     else
-	build_modules $command
+      build_modules $command
     fi
     ;;
   help)
-	usage
-	;;
+    usage
+    ;;
   *)
     echo "ERROR: unknown command \"$command\""
-	usage
+    usage
     exit 1
-	;;
+    ;;
 esac
 
 trap - EXIT
