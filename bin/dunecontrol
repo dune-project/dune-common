@@ -134,8 +134,8 @@ build_modules() {
 }
 
 build_single_module() {
-  command=$1
   module=$1
+  command=$2
   for m in $MODULES; do
     if test "x$m" = "x$module"; then  
       load_opts $command
