@@ -44,4 +44,4 @@ if true; then
 	cat $logfile
 fi > $storelog
 
-trap EXIT
+trap - EXIT
