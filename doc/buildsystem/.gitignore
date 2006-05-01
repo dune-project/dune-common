@@ -2,6 +2,7 @@
 *.log
 *.dvi
 *.ps
+*.pdf
 *.toc
 *.out
 Makefile.in
