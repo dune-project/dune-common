@@ -305,7 +305,7 @@ while test "x$1" != "x"; do
 	--module=*)
 	    if test "x$arg" == "x"; then
 		usage
-		echo "ERROR: Parameter for --opts is missing"
+		echo "ERROR: Parameter for --module is missing"
 		echo
 		exit 1;
 	  fi
