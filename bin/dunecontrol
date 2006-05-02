@@ -145,7 +145,7 @@ build_modules() {
       cd "$path"
       eval_control $runcommand $path/$CONTROL
     ) || (echo "--- Failed to build $module ---"; exit 1)
-	echo "--- done ---"
+	echo "--- $module done ---"
   done
 return
   local command=$1
@@ -374,6 +374,7 @@ case "$command" in
     fi
     echo "--- going to build $MODULES ---"
       build_modules $command
+    echo "--- done ---"
     ;;
   print)
     find_modules .
@@ -395,5 +396,3 @@ case "$command" in
 esac
 
 trap - EXIT
-
-echo done
