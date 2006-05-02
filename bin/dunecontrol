@@ -33,20 +33,22 @@ parse_control() {
     local sugs=$(echo $(grep Suggests: "$1" | cut -d ':' -f2))
     local path=$(dirname "$1")
     if test "x$module" != "x"; then
-      if checkonly_modname "$module"; then
+      if check_modname "$module"; then
         export HAVE_${module}=yes
         export PATH_${module}="$path"
         export DEPS_${module}="$deps"
         export SUGS_${module}="$sugs"
       else
-        echo "ERROR: $CONTROL files $1 contain an invalid Module entry"
+        echo "ERROR: $CONTROL files $1 contains an invalid Module entry"
+		exit 1
       fi
     else
       echo "ERROR: $CONTROL files $1 does not contain a Module entry"
+	  exit 1
     fi
   else
     echo "ERROR: could not read file $1"
-    false
+    exit 1
   fi
 }
 
@@ -66,6 +68,41 @@ EOF
     echo "ERROR: could not find directory $1"
     false
   fi
+}
+
+_sort_module() {
+  local module=$1
+  shift 1
+  check_modname $module || (echo "ERROR: invalid module name $1"; exit 1)
+  if test "x$(eval echo \$SORT_DONE_${command}_${module})" != "xyes"; then
+    # resolve dependencies
+    for dep in $(eval "echo \$DEPS_$module"); do
+	  check_modname $dep || (echo "ERROR: invalid module name $1"; exit 1)
+      if test "x$(eval echo \$HAVE_$dep)" != "x"; then
+        _sort_module $dep
+      else
+        echo "ERROR: could not find module $dep"
+        exit 1
+      fi
+    done
+    # resolve suggestions
+    for dep in $(eval "echo \$SUGS_$module"); do
+	  check_modname $dep || (echo "ERROR: invalid module name $1"; exit 1)
+      if test "x$(eval echo \$HAVE_$dep)" != "x"; then
+        _sort_module $dep
+      fi
+    done
+    # insert this module into the list
+    export SORT_DONE_${command}_${module}=yes
+    export SORTEDMODULES="$SORTEDMODULES $module"
+  fi
+}
+
+sort_modules() {
+  for m in "$@"; do
+    _sort_module $m
+  done
+  export MODULES=$SORTEDMODULES
 }
 
 #
@@ -97,53 +134,21 @@ eval_control() {
   fi
 }
 
-_build_module() {
-  local command=$1
-  local module=$2
-  shift 2
-  check_modname $module
-  if test "x$(eval echo \$BUILD_DONE_${command}_${module})" != "xyes"; then
-    echo "--- building $module ---"
-    # resolve dependencies
-    for dep in $(eval "echo \$DEPS_$module"); do
-	  check_modname $dep
-      echo "--- $module depends on $dep ... calling ---"
-      if test "x$(eval echo \$HAVE_$dep)" != "x"; then
-        echo "calling ---"
-        _build_module $command $dep
-      else
-        echo "ERROR: could not find module $dep"
-        exit 1
-      fi
-    done
-    # resolve suggestions
-    for dep in $(eval "echo \$SUGS_$module"); do
-	  check_modname $dep
-      echo -n "--- $module suggests $dep ... "
-      if test "x$(eval echo \$HAVE_$dep)" != "x"; then
-        echo "calling ---"
-        _build_module $command $dep
-      else
-        echo "skipping ---"
-      fi
-    done
-    # really build this module
-    echo "--- calling $command for $module ---"
-    export BUILD_DONE_${command}_${module}=yes
+build_modules() {
+  load_opts $command
+  local runcommand=run_$command
+  for module in $MODULES; do
     local path=$(eval "echo \$PATH_${module}")
+	echo "--- calling $command for $module ---"
     (
       set -e
       cd "$path"
-      eval_control $command $path/$CONTROL
-    ) || exit 1
-  else
-    echo "--- skipping $module ---"
-  fi
-}
-
-build_modules() {
+      eval_control $runcommand $path/$CONTROL
+    ) || (echo "--- Failed to build $module ---"; exit 1)
+	echo "--- done ---"
+  done
+return
   local command=$1
-  local runcommand=run_$command
   shift
   load_opts $command
   for m in $MODULES; do
@@ -151,30 +156,7 @@ build_modules() {
   done
 }
 
-build_single_module() {
-  module=$1
-  command=$2
-  local runcommand=run_$command
-  load_opts $command
-  check_modname $module
-  if test "x$(eval echo \$HAVE_$module)" != "x"; then
-    _build_module $runcommand $module
-  else
-    echo "ERROR: could not find module $dep"
-    echo available modules are:
-    echo $MODULES
-    exit 1
-  fi
-}
-
 check_modname() {
-  if ! echo "$1" | grep -q '^[a-zA-Z0-9_]\+$'; then
-    echo "ERROR: invalid module name $1"
-    exit 1
-  fi
-}
-
-checkonly_modname() {
   if ! echo "$1" | grep -q '^[a-zA-Z0-9_]\+$'; then
     return 1
   fi
@@ -350,6 +332,10 @@ while test "x$1" != "x"; do
       command=help
       break
     ;;
+    -p|--print) 
+      command=print
+      break
+    ;;
     --module=*)
       if test "x$arg" == "x"; then
         usage
@@ -381,11 +367,22 @@ done
 case "$command" in
   update | autogen | configure | make | all | exec | nothing)
     find_modules .
-    if test "x$MODULE" != "x"; then
-      build_single_module $MODULE $command
+	if test "x$MODULE" = "x"; then
+      sort_modules $MODULES
     else
-      build_modules $command
+      sort_modules $MODULE
     fi
+    echo "--- going to build $MODULES ---"
+      build_modules $command
+    ;;
+  print)
+    find_modules .
+	if test "x$MODULE" = "x"; then
+      sort_modules $MODULES
+    else
+      sort_modules $MODULE
+    fi
+    echo $MODULES
     ;;
   help)
     usage
