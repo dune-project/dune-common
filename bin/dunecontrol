@@ -33,10 +33,16 @@ parse_control() {
     local sugs=$(echo $(grep Suggests: "$1" | cut -d ':' -f2))
     local path=$(dirname "$1")
     if test "x$module" != "x"; then
-      export HAVE_${module}=yes
-      export PATH_${module}="$path"
-      export DEPS_${module}="$deps"
-      export SUGS_${module}="$sugs"
+      if checkonly_modname "$module"; then
+        export HAVE_${module}=yes
+        export PATH_${module}="$path"
+        export DEPS_${module}="$deps"
+        export SUGS_${module}="$sugs"
+      else
+        echo "ERROR: $CONTROL files $1 contain an invalid Module entry"
+      fi
+    else
+      echo "ERROR: $CONTROL files $1 does not contain a Module entry"
     fi
   else
     echo "ERROR: could not read file $1"
@@ -85,6 +91,9 @@ eval_control() {
       # execute $command
       $command
     ) || false
+  else
+    echo "ERROR: could not find $file"
+    exit 1
   fi
 }
 
@@ -92,15 +101,24 @@ _build_module() {
   local command=$1
   local module=$2
   shift 2
+  check_modname $module
   if test "x$(eval echo \$BUILD_DONE_${command}_${module})" != "xyes"; then
     echo "--- building $module ---"
     # resolve dependencies
     for dep in $(eval "echo \$DEPS_$module"); do
+	  check_modname $dep
       echo "--- $module depends on $dep ... calling ---"
-      _build_module $command $dep
+      if test "x$(eval echo \$HAVE_$dep)" != "x"; then
+        echo "calling ---"
+        _build_module $command $dep
+      else
+        echo "ERROR: could not find module $dep"
+        exit 1
+      fi
     done
     # resolve suggestions
     for dep in $(eval "echo \$SUGS_$module"); do
+	  check_modname $dep
       echo -n "--- $module suggests $dep ... "
       if test "x$(eval echo \$HAVE_$dep)" != "x"; then
         echo "calling ---"
@@ -136,15 +154,31 @@ build_modules() {
 build_single_module() {
   module=$1
   command=$2
-  for m in $MODULES; do
-    if test "x$m" = "x$module"; then  
-      load_opts $command
-      _build_module run_$command $MODULE
-      return
-    fi
-  done
-  usage
-  echo "ERROR: could not find module $module"
+  local runcommand=run_$command
+  load_opts $command
+  check_modname $module
+  if test "x$(eval echo \$HAVE_$module)" != "x"; then
+    _build_module $runcommand $module
+  else
+    echo "ERROR: could not find module $dep"
+    echo available modules are:
+    echo $MODULES
+    exit 1
+  fi
+}
+
+check_modname() {
+  if ! echo "$1" | grep -q '^[a-zA-Z0-9_]\+$'; then
+    echo "ERROR: invalid module name $1"
+    exit 1
+  fi
+}
+
+checkonly_modname() {
+  if ! echo "$1" | grep -q '^[a-zA-Z0-9_]\+$'; then
+    return 1
+  fi
+  return 0
 }
 
 load_opts() {
