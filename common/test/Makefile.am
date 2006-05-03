@@ -12,9 +12,9 @@ TESTS = $(TESTPROGS)
 # programs just to build when "make check" is used
 check_PROGRAMS = $(TESTPROGS)
 
+AM_LDFLAGS = $(LOCAL_LIBS)
+
 # define the programs
-
-
 bigunsignedinttest_SOURCES=bigunsignedinttest.cc
 bigunsignedinttest_DEPENDENCIES = $(LOCAL_LIBS)
 
