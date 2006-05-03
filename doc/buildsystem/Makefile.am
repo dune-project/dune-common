@@ -6,6 +6,16 @@ endif
 
 all: $(DOCS)
 
+# setting like in dune-web
+CURDIR=doc
+# position of the web base directory,
+# relative to $(CURDIR)
+BASEDIR=..
+EXTRAINSTALL = buildsystem.pdf
+
+# include rules for wml -> html transformation
+include $(top_srcdir)/am/webstuff
+
 include $(top_srcdir)/am/latex
 
 # remove html pages on ``make  clean''
