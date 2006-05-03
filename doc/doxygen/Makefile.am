@@ -51,7 +51,7 @@ doxygen-install:
 	if test -d $(DUNEWEBDIR) && test -r $(DUNEWEBDIR)/Make.global ; then \
 	  pushd html; \
 	    $(MAKE) -f $(DUNEWEBDIR)/Make.global \
-          EXTRAINSTALL="$(DOXYGENINSTALL)" CURDIR="$(CURDIR)/html" install ; \
+          EXTRAINSTALL="$(DOXYGENINSTALL)" CURDIR="$(CURDIR)/dune-common-html" install ; \
 	  popd; \
 	fi
 
