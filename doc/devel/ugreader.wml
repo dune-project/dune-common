@@ -25,7 +25,7 @@ following steps:
 <p>
       First of all you have to call
 <pre>
-grid.createbegin();
+grid.createBegin();
 </pre>
     This will set up the internal grid creation process.
 
@@ -101,14 +101,14 @@ Control over the allocated objects is taken from you, and the grid object
 will take care of their destruction.
 </p>
 
-<h2> 6) Finish construction </h2>
+<h2> 5) Finish construction </h2>
 
 <p>
 To finish off the construction of the UGGrid object call
 </p>
 
 <pre>
-grid.createend();
+grid.createEnd();
 </pre>
 
 <h2> Loading a Grid on a Parallel Machine </h2>
