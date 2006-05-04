@@ -6,6 +6,8 @@
 #define DUNE_BIGUNSIGNEDINT_HH
 
 #include <iostream>
+#include <limits>
+#include <dune/common/exceptions.hh>
 
 /**
  * @file
@@ -89,7 +91,7 @@ namespace Dune
     bigunsignedint<k> operator~ () const;
 
 
-    //! left shift
+    //! left shift1/
     bigunsignedint<k> operator<< (int i) const;
 
     //! right shift
@@ -269,6 +271,9 @@ namespace Dune
   template <int k>
   inline bigunsignedint<k> bigunsignedint<k>::operator/ (const bigunsignedint<k>& x) const
   {
+    if(x==0)
+      DUNE_THROW(Dune::MathError, "division by zero!");
+
     // better slow than nothing
     bigunsignedint<k> temp(*this);
     bigunsignedint<k> result(0);
@@ -579,7 +584,7 @@ namespace std
     static const bool is_bounded = true;
     static const bool is_modulo = true;
 
-    static const bool traps = __glibcxx_integral_traps;
+    static const bool traps = false;
     static const bool tinyness_before = false;
     static const float_round_style round_style = round_toward_zero;
 
