@@ -40,11 +40,11 @@ parse_control() {
         export SUGS_${module}="$sugs"
       else
         echo "ERROR: $CONTROL files $1 contains an invalid Module entry"
-		exit 1
+        exit 1
       fi
     else
       echo "ERROR: $CONTROL files $1 does not contain a Module entry"
-	  exit 1
+      exit 1
     fi
   else
     echo "ERROR: could not read file $1"
@@ -73,11 +73,11 @@ EOF
 _sort_module() {
   local module=$1
   shift 1
-  check_modname $module || (echo "ERROR: invalid module name $1"; exit 1)
+  if ! check_modname $module; then echo "ERROR: invalid module name $module"; exit 1; fi
   if test "x$(eval echo \$SORT_DONE_${command}_${module})" != "xyes"; then
     # resolve dependencies
     for dep in $(eval "echo \$DEPS_$module"); do
-	  check_modname $dep || (echo "ERROR: invalid module name $1"; exit 1)
+      if ! check_modname $dep; then echo "ERROR: invalid module name $dep"; exit 1; fi
       if test "x$(eval echo \$HAVE_$dep)" != "x"; then
         _sort_module $dep
       else
@@ -87,7 +87,7 @@ _sort_module() {
     done
     # resolve suggestions
     for dep in $(eval "echo \$SUGS_$module"); do
-	  check_modname $dep || (echo "ERROR: invalid module name $1"; exit 1)
+      if ! check_modname $dep; then echo "ERROR: invalid module name $dep"; exit 1; fi
       if test "x$(eval echo \$HAVE_$dep)" != "x"; then
         _sort_module $dep
       fi
@@ -139,20 +139,13 @@ build_modules() {
   local runcommand=run_$command
   for module in $MODULES; do
     local path=$(eval "echo \$PATH_${module}")
-	echo "--- calling $command for $module ---"
-    (
+    echo "--- calling $command for $module ---"
+    if ! (
       set -e
       cd "$path"
       eval_control $runcommand $path/$CONTROL
-    ) || (echo "--- Failed to build $module ---"; exit 1)
-	echo "--- $module done ---"
-  done
-return
-  local command=$1
-  shift
-  load_opts $command
-  for m in $MODULES; do
-    _build_module $runcommand $m
+    ); then echo "--- Failed to build $module ---"; exit 1; fi
+    echo "--- $module done ---"
   done
 }
 
@@ -189,14 +182,15 @@ run_default_update () { echo "WARNING: Doing nothing"; }
 
 run_default_autogen () {
   PARAMS="$CMD_PARAMS"
+  local M4_PATH=""
   if test -x autogen.sh; then
     for m in $MODULES; do
       path=$(eval "echo \$PATH_$m")
       if test -d $path/m4; then
-        ACLOCAL_FLAGS="$path $ACLOCAL_FLAGS"
+        M4_PATH="$path $M4_PATH"
       fi
     done
-    eval ./autogen.sh "$ACLOCAL_FLAGS" "$PARAMS" || exit 1
+    eval ./autogen.sh "$M4_PATH" "$PARAMS" || exit 1
   fi
 }
 
@@ -367,7 +361,7 @@ done
 case "$command" in
   update | autogen | configure | make | all | exec | nothing)
     find_modules .
-	if test "x$MODULE" = "x"; then
+    if test "x$MODULE" = "x"; then
       sort_modules $MODULES
     else
       sort_modules $MODULE
@@ -378,7 +372,7 @@ case "$command" in
     ;;
   print)
     find_modules .
-	if test "x$MODULE" = "x"; then
+    if test "x$MODULE" = "x"; then
       sort_modules $MODULES
     else
       sort_modules $MODULE
