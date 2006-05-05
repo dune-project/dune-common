@@ -206,53 +206,62 @@ cd UG-3.9.1
 <li><p>Install UG with</p> <kbd>make install</kbd></li>
 </ol>
 
-<h2>Compilation and Installation of DUNE</h2>
+<h2>Installation of DUNE modules</h2>
 <ol>
-<li>Download DUNE:
-<ul><li>
-   <p> Download via CVS</p>
+<li><p> Downloading DUNE modules</p>
+</li>
 <p>
-    Use
+Download all DUNE modules via svn. All modules are dependent 
+on the base module dune-common and hence it is necessary to have 
+dune-common at position
 </p>
-<kbd>
-    cvs -z3 -d \
-    :pserver:anonymous@hal.iwr.uni-heidelberg.de:/var/lib/cvs-public \
-    checkout dune
-</kbd></li>
-<li>
-    <p>Download via HTML</p>
+
+<kbd> <pre>
+     svn checkout svn+ssh://hal.iwr.uni-heidelberg.de/var/lib/svn/dune-common/trunk dune-common
+
+     svn checkout svn+ssh://hal.iwr.uni-heidelberg.de/var/lib/svn/dune-grid/trunk dune-grid
+
+     svn checkout svn+ssh://hal.iwr.uni-heidelberg.de/var/lib/svn/dune-istl/trunk dune-istl
+
+     svn checkout svn+ssh://hal.iwr.uni-heidelberg.de/var/lib/svn/dune-disc/trunk dune-disc
+ </pre>
+</kbd>
 <p>
-    View the CVS-version of DUNE. There is also an option to get the full source as a
-    tarball at the bottom of the page. However, those tarballs are not
-    like a final release will be, the instructions in README.CVS still
-    apply. 
-</p></li></ul></li>
-<li>Configure Dune with all available grids
-<ul><li>
-    <p>If you are using the cvs version first build the configure
-    script via</p>
-    <kbd>./autogen.sh</kbd></li>
+    Read <a href="http://hal.iwr.uni-heidelberg.de/dune/svn.html">Checkout DUNE Modules</a> 
+    section for more details. 
+</p>
 
-    <li><p>Configure DUNE, e. g via</p>
-    <kbd>
-    ./configure  --with-ug=/ug/install/path \
-    --with-amiramesh=/amiramesh/install/path \
-    --with-alugrid=/ALUGrid/install/path \
-    --with-alberta=/alberta/install/path \
-    --prefix=/absolute/path/to/install/dune/to CXX=g++-3.4
-</kbd></li></ul>
+<li> <p>Building all DUNE modules</p></li>
 <p>
-   With --prefix the absolute path of the directory we install to has
-    to be given.
-</p><p>
-    The optional --with-*= parameters take the absolute pathes of the
-    installed grids.
-    </p><p>
-    With the variable CXX we tell configure the C++
-    compiler and linker to use.
-</p></li>
+ Check out all dune modules into same directory (say dune-home)
+</p>
+<p>
+ Run dunecontrol script available in the base module dune-common/bin. This will run autogen.sh, configure and make for each module.
+</p>
+<kbd> <pre> ./dune-common/bin/dunecontrol all</pre> </kbd> 
 
-<li><p>Compile DUNE with</p><kbd>make</kbd></li>
+<p>
+ Read <a href="http://hal.iwr.uni-heidelberg.de/dune/svn.html">Building DUNE </a> section for more details. 
+</p>
 
-<li><p>Install DUNE with</p> <kbd>make install</kbd></li>
+<li> <p>Building a specific DUNE module (and its dependent modules)</p></li>
+<p> Run dunecontrol script 
+<kbd> <pre>
+./dune-common/bin/dunecontrol --module=module_name all
+</pre> </kbd> 
+where module_name is the name of that particular module given in the dune.module file 
+</p>
+<p> Read <a href="http://hal.iwr.uni-heidelberg.de/dune/dunemodule.html">Maintaining new Dune modules and applications</a> section for more details.
+</p>
+<li> <p>Building using certain configure options</p></li>
+<p> Run dunecontrol script 
+<kbd> <pre>
+./dune-common/bin/dunecontrol --opts=/path to/file.opts --module=module_name all
+</pre> </kbd> 
+where file.opts is the name of the file with configure options specified (you can find an example.opts file in the dune-common/bin directory) 
+</p>
+
+<p> Read <a href="http://hal.iwr.uni-heidelberg.de/dune/dunemodule.html">Maintaining new Dune modules and applications</a> section for more details.
+</p>
+</li>
 </ol>
