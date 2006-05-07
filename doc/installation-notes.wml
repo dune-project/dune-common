@@ -263,5 +263,7 @@ where file.opts is the name of the file with configure options specified (you ca
 
 <p> Read <a href="http://hal.iwr.uni-heidelberg.de/dune/dunemodule.html">Maintaining new Dune modules and applications</a> section for more details.
 </p>
+<p> <a href="http://hal.iwr.uni-heidelberg.de/dune/doc/buildsystem/buildsystem.pdf"> DUNE Build System Howto</a> will also give you an excellent introduction to the build system and how to create new modules/projects your own.
+</p>
 </li>
 </ol>
