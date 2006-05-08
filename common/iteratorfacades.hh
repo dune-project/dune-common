@@ -16,7 +16,7 @@ namespace Dune
      With using these facades writing iterators for arbitrary containers becomes much less
      cumbersome as only few functions have to be implemented. All other functions needed by
      the stl are provided by the facades using the Barton-Nackman trick (also known as
-     curiously recurring template pattern.
+     curiously recurring template pattern).
 
      The following example illustrates how a random access iterator might be written:
      \include dune/common/test/iteratorfacadetest.hh
