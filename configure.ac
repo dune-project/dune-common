@@ -25,6 +25,7 @@ echo
 
 # write output
 AC_CONFIG_FILES([Makefile
+     lib/Makefile
      bin/Makefile
      common/Makefile
      common/test/Makefile

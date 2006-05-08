@@ -4,7 +4,7 @@
 # need automake >= 1.5
 AUTOMAKE_OPTIONS = foreign 1.5
 
-SUBDIRS = common doc bin m4 am
+SUBDIRS = lib common doc bin m4 am
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = dune.pc
