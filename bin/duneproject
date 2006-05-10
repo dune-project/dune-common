@@ -313,12 +313,22 @@ cat> "$PROJECT/$PROJECT.cc" << CC_DELIM
 # include "config.h"     
 #endif
 #include <iostream>
-#include <dune/common/exceptions.hh>
+#include"dune/grid/sgrid.hh" // load sgrid definition 
+#include"dune/grid/common/gridinfo.hh" // definition of gridinfo 
 int main()
 {
  try
 	 {
   std::cout << "Hello World! This is ${PROJECT}." << std::endl;
+// make a grid 
+const int dim=3; 
+typedef Dune::SGrid<dim,dim> GridType; 
+Dune::FieldVector<int,dim> N(3); 
+Dune::FieldVector<GridType::ctype,dim> L(-1.0); 
+Dune::FieldVector<GridType::ctype,dim> H(1.0); 
+GridType grid(N,L,H); 
+// print some information about the grid 
+  Dune::gridinfo(grid); 
   return 0;
      }
  catch (Dune::Exception &e)
