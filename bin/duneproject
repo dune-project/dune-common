@@ -19,7 +19,11 @@ echo -----------------------------
 while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
   PROJECT=""
   while [ -z $PROJECT ]; do
-    read -p "New Project/Module name? " PROJECT
+    read -p "New Project name?(a directory with this name will be created, eg: dune-grid): " PROJECT
+  done
+  MODULE=""
+  while [ -z $MODULE ]; do
+    read -p "Name of the module? (to be used in dune.module file, eg:dune_grid (only alphanumeric character)): " MODULE
   done
   VERSION=""
   while [ -z $VERSION ]; do
@@ -36,7 +40,8 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
 
   read -p "Are these informations correct? [y/N] " DATACORRECT
   echo
-  echo "Look at README and dune.module files in the project"
+  echo "Look at README and dune.module files in the \"$PROJECT\" directory "
+  echo "A sample code $MODULE.cc is generated in the \"$PROJECT\" directory"
   echo "Sometimes you may have to tweak the configure.ac a bit"
   echo "Now you can run dunecontrol script which would setup new module"
 done
@@ -51,7 +56,7 @@ cat > "$PROJECT/dune.module" <<C_DELIM
 ##############################
 
 #Name of the module
-Module:dune_$PROJECT
+Module:$MODULE
 #depending on 
 Depends:dune_common dune_grid dune_disc dune_istl
 C_DELIM
@@ -63,7 +68,7 @@ cat > "$PROJECT/configure.ac" <<C_DELIM
 AC_PREREQ(2.50)
 AC_INIT($PROJECT, $VERSION, $MAINTAINER)
 AM_INIT_AUTOMAKE($PROJECT, $VERSION, $MAINTAINER)
-AC_CONFIG_SRCDIR([$PROJECT.cc])
+AC_CONFIG_SRCDIR([$MODULE.cc])
 AM_CONFIG_HEADER([config.h])
 
 
@@ -293,12 +298,12 @@ cat> "$PROJECT/Makefile.am" << M_DELIM
 #LDADD = \$(UG_LDFLAGS) \$(AMIRAMESH_LDFLAGS) \$(UG_LIBS) \$(AMIRAMESH_LIBS)
 #AM_CPPFLAGS = \$(UG_CPPFLAGS) \$(AMIRAMESH_CPPFLAGS)
 
-noinst_PROGRAMS = ${PROJECT}
+noinst_PROGRAMS = ${MODULE}
 
-${PROJECT}_SOURCES = ${PROJECT}.cc
+${MODULE}_SOURCES = ${MODULE}.cc
 
-${PROJECT}_CXXFLAGS = \$(MPI_CPPFLAGS) \$(UG_CPPFLAGS) \$(AMIRAMESH_CPPFLAGS) \$(ALBERTA_CPPFLAGS) -DWITH_INDEX_SETS
-${PROJECT}_LDADD = \$(MPI_LDFLAGS) \$(ALBERTA_LDFLAGS) \$(ALBERTA_LIBS) \$(AMIRAMESH_LDFLAGS) \$(AMIRAMESH_LIBS) \$(UG_LDFLAGS) \$(UG_LIBS) \$(MPI_LDFLAGS) \$(DUNE_LDFLAGS) \$(DUNE_LIBS)
+${MODULE}_CXXFLAGS = \$(MPI_CPPFLAGS) \$(UG_CPPFLAGS) \$(AMIRAMESH_CPPFLAGS) \$(ALBERTA_CPPFLAGS) -DWITH_INDEX_SETS
+${MODULE}_LDADD = \$(MPI_LDFLAGS) \$(ALBERTA_LDFLAGS) \$(ALBERTA_LIBS) \$(AMIRAMESH_LDFLAGS) \$(AMIRAMESH_LIBS) \$(UG_LDFLAGS) \$(UG_LIBS) \$(MPI_LDFLAGS) \$(DUNE_LDFLAGS) \$(DUNE_LIBS)
 
 # don't follow the full GNU-standard
 # we need automake 1.5
@@ -308,7 +313,7 @@ DISTCHECK_CONFIGURE_FLAGS = --with-dune=\$(DUNEROOT) CXX="\$(CXX)" CC="\$(CC)"
 M_DELIM
 
 ################## PROJECT.CC ##################
-cat> "$PROJECT/$PROJECT.cc" << CC_DELIM
+cat> "$PROJECT/$MODULE.cc" << CC_DELIM
 #ifdef HAVE_CONFIG_H
 # include "config.h"     
 #endif
