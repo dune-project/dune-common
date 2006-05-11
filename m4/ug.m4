@@ -62,7 +62,7 @@ AC_DEFUN([DUNE_PATH_UG],[
           AC_TRY_LINK(
               [#define INT int
                #include "initug.h"],
-	      [int i = UG2d::InitUg(0,0)],
+	      [int i = UG::D2::InitUg(0,0)],
               [UG_LDFLAGS="$LDFLAGS"
 	       HAVE_UG="1"
 	       AC_MSG_RESULT(yes)
@@ -80,7 +80,7 @@ AC_DEFUN([DUNE_PATH_UG],[
             AC_TRY_LINK(
               [#define INT int
                #include "initug.h"],
-	      [int i = UG2d::InitUg(0,0)],
+	      [int i = UG::D2::InitUg(0,0)],
               [UG_LDFLAGS="$LDFLAGS"
 	       UG_CPPFLAGS="$UG_CPPFLAGS -DModelP"
 	       HAVE_UG="1"
