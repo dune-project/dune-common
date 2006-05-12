@@ -171,7 +171,6 @@ if test "x$with_revision" = "xno" ; then with_revision=bar; fi
 AC_SUBST(revision, $with_revision)
   AC_LANG_PUSH([C++])
 
-  AC_REQUIRE([DUNE_MODULE_DEPENDENCIES])
   echo "Resolving Dependencies: $@"
   DUNE_MODULE_DEPENDENCIES($@)
   AC_REQUIRE([DUNE_CHECK_ALL])
