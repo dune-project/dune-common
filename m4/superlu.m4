@@ -6,11 +6,11 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
 	AC_MSG_CHECKING(for SuperLU library)
 	AC_REQUIRE([AC_PROG_CC])
 	AC_REQUIRE([AC_PATH_XTRA])
-	AC_REQUIRE([AC_F77_LIBRARY_LDFLAGS])
+	#AC_REQUIRE([AC_F77_LIBRARY_LDFLAGS])
 	AC_REQUIRE([ACX_BLAS])
 
   #
-  # USer hints ...
+  # User hints ...
   #
 	my_lib_path=""
 	my_include_path=""
