@@ -13,6 +13,12 @@ CURDIR=doc
 BASEDIR=..
 EXTRAINSTALL = buildsystem.pdf
 
+EXTRA_DIST = $(DOCS)
+
+# install the html pages
+docdir=$(datadir)/doc/dune
+doc_DATA = $(DOCS)
+
 # include rules for wml -> html transformation
 include $(top_srcdir)/am/webstuff
 

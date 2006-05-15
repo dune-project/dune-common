@@ -29,6 +29,7 @@ AC_CONFIG_FILES([Makefile
      bin/Makefile
      common/Makefile
      common/test/Makefile
+     common/exprtmpl/Makefile
      doc/Makefile
      doc/devel/Makefile
      doc/layout/Makefile

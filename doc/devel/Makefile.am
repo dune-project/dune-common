@@ -11,6 +11,11 @@ all: $(PAGES)
 BASEDIR=../..
 CURDIR=doc/devel
 
+# install the html pages
+docdir=$(datadir)/doc/dune/devel
+doc_DATA = $(PAGES)
+EXTRA_DIST= $(PAGES)
+
 include $(top_srcdir)/am/webstuff
 
 CLEANFILES = $(PAGES)

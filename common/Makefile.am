@@ -1,6 +1,6 @@
 # $Id$
 
-SUBDIRS = . test
+SUBDIRS = . test exprtmpl
 
 # the standard debug streams are put into the libdune
 noinst_LTLIBRARIES = libcommon.la

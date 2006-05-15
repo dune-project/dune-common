@@ -17,6 +17,11 @@ CURDIR=doc
 # relative to $(CURDIR)
 BASEDIR=..
 
+# install the html pages
+docdir=$(datadir)/doc/dune
+doc_DATA = $(PAGES)
+EXTRA_DIST = $(PAGES)
+
 # include rules for wml -> html transformation
 include $(top_srcdir)/am/webstuff
 
