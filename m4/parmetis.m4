@@ -3,7 +3,7 @@
 # searches for ParMetis headers and libs
 
 AC_DEFUN([DUNE_PATH_PARMETIS],[
-  AC_MSG_CHECKING(for METIS library)
+  AC_MSG_CHECKING(for ParMETIS library)
   AC_REQUIRE([AC_PROG_CC])
   AC_REQUIRE([AC_PATH_XTRA])
   AC_REQUIRE([DUNE_MPI])
