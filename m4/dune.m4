@@ -34,6 +34,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   # backup of flags
   ac_save_CPPFLAGS="$CPPFLAGS"
   ac_save_LIBS="$LIBS"
+  ac_save_LDFLAGS="$LDFLAGS"
   CPPFLAGS=""
   LIBS=""
 
@@ -45,7 +46,14 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       _DUNE_MODULE[]ROOT=`cd $withval && pwd`
 
       # expand search path (otherwise empty CPPFLAGS)
-      _DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]ROOT"
+      if test -d $_DUNE_MODULE[]ROOT/include/dune; then
+	# Dune was installed into directory given by with-dunecommon
+	LINSTALL=1
+	_DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]ROOT/include"
+	LDFLAGS="$LDFLAGS -L$_DUNE_MODULE[]ROOT/lib"
+      else
+      	_DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]ROOT"
+      fi
     else
       AC_MSG_ERROR([_dune_module-directory $withval does not exist])
     fi
@@ -67,10 +75,10 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
     if test x$HAVE_[]_DUNE_MODULE = x1 ; then
       ac_save_LDFLAGS="$LDFLAGS"
       ac_save_LIBS="$LIBS"
-      HAVE[]_DUNE_MODULE=0
+      HAVE_[]_DUNE_MODULE=0
 
       ## special test for a local installation
-      if test x$_DUNE_MODULE[]ROOT != x ; then
+      if test x$_DUNE_MODULE[]ROOT != x && test ! $LINSTALL; then
         # have a look into the dune module directory
         LDFLAGS="$LDFLAGS -L$_DUNE_MODULE[]ROOT/dune/_dune_ldpath"
 
@@ -82,22 +90,28 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
             # provide arguments like normal lib-check
             _DUNE_MODULE[]_LIBS="-l[]_dune_lib"
             HAVE_[]_DUNE_MODULE=1
-        else
-            AC_MSG_ERROR([$withval does not seem to contain a valid _dune_module (lib[]_dune_lib[].la not found)])
+        else 
+	    AC_MSG_ERROR([$withval does not seem to contain a valid _dune_module (lib[]_dune_lib[].la not found)])
+
         fi
       fi
-
+    
       ## normal test for a systemwide install
       if test x$HAVE_[]_DUNE_MODULE = x0 ; then
          # !!! should be pkg-config later (which would save the special
          # header-check as well)
 
          # Beware! Untested!!!
-         LIBS="-l[]_dune_lib"
-         AC_TRY_LINK(,_dune_symbol,
-              [HAVE_[]_DUNE_MODULE=1
+         LIBS="-ldune[]_dune_lib"
+	 AC_MSG_CHECKING([for dune[]_dune_lib library])
+         AC_TRY_LINK(dnl
+	     [#]include<dune/[]_dune_header>,
+	     _dune_symbol,
+              [AC_MSG_RESULT([yes])
+               HAVE_[]_DUNE_MODULE=1
                _DUNE_MODULE[]_LIBS="$LIBS"],
-              [HAVE_[]_DUNE_MODULE=0
+              [AC_MSG_RESULT([no])
+	       HAVE_[]_DUNE_MODULE=0
                AC_MSG_ERROR([failed to link with lib[]_dune_lib[].la])]
           )
       fi
