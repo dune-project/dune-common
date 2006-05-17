@@ -5,7 +5,7 @@ EXTRA_DIST = inkscape.am webstuff global-rules sourcescheck \
 
 #noinst_DATA = inkscape.am
 
-amdir = $(datadir)/am
+amdir = $(datadir)/dune-common/am
 am_DATA = $(EXTRA_DIST)
 
 include $(top_srcdir)/am/global-rules
