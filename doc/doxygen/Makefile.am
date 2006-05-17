@@ -59,13 +59,13 @@ doxy-header.html:BASEDIR=../../..
 doxygen-tag: FORCE $(DOXYGENHEADER)
 	set -e; \
 	if test -e Doxyfile; then \
-	if test ! -e doxygen-tag || test x"`find $(top_srcdir) \( $(DEPENDON) \) -a -cnewer doxygen-tag -print`" != x ; then \
-	  echo Running doxygen. This may take a while... ; \
-	  ( cat Doxyfile; $(DOYXFILE_OVERWRITE) ) > Doxyfile.tmp; \
-	  $(DOXYGEN) Doxyfile.tmp > doxygen.log 2>&1 <&- ; \
-	  rm -f Doxyfile.tmp; \
-	  touch doxygen-tag ; \
-	fi; \
+	  if test ! -e doxygen-tag || test x"`find $(top_srcdir) \( $(DEPENDON) \) -a -cnewer doxygen-tag -print`" != x ; then \
+	    echo Running doxygen. This may take a while... ; \
+	    ( cat Doxyfile; $(DOYXFILE_OVERWRITE) ) > Doxyfile.tmp; \
+	    $(DOXYGEN) Doxyfile.tmp > doxygen.log 2>&1 <&- ; \
+	    rm -f Doxyfile.tmp; \
+	    touch doxygen-tag ; \
+	  fi; \
 	fi
 
 html: $(DOXYGENTAG)
@@ -89,6 +89,6 @@ include $(top_srcdir)/am/webstuff
 clean-local:
 	rm -rf html latex *~
 
-CLEANFILES = $(WHAT) $(DOXYGENHEADER)
+CLEANFILES = $(WHAT) $(DOXYGENTAG) $(DOXYGENHEADER)
 
 include $(top_srcdir)/am/global-rules
