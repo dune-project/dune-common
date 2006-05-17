@@ -9,7 +9,7 @@ install-sh
 missing
 mkinstalldirs
 libtool
-dune.pc
+dune-common.pc
 semantic.cache
 configure.lineno
 stamp-h1

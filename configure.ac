@@ -39,7 +39,7 @@ AC_CONFIG_FILES([Makefile
      am/Makefile
      bin/wmlwrap
      bin/check-log-store
-     dune.pc])
+     dune-common.pc])
 AC_OUTPUT
 
 chmod +x bin/wmlwrap
