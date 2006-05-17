@@ -4,6 +4,7 @@
 #define DUNE_BITFIELD_HH
 
 #include <vector>
+#include <iostream>
 
 namespace Dune {
 
