@@ -1,25 +1,22 @@
 # $Id$
 
 # distribute these files:
-DOXY_DIST = Doxyfile Doxydep \
-  doxy-footer.html doxy-header.html dune-doxy.css mainpage
+#DOXY_DIST = Doxyfile Doxydep \
+#  doxy-footer.html doxy-header.html dune-doxy.css mainpage
 
 if BUILD_DOCS
-  WHAT = bestpractice.html doxygen-tag
+  DOXYGENTAG = doxygen-tag
+  WHAT = bestpractice.html
 endif
 
-#we need this in the distribution
-EXTRA_DIST = bestpractice.html $(DOXY_DIST)
+DISTCLEANFILES = doxygen.log doxygen-tag
 
-DISTCLEANFILES = doxygen.log
-
-all: $(WHAT)
+all: $(WHAT) html
 
 # setting like in dune-web
 BASEDIR=../..
 CURDIR=doc/doxygen
 EXTRAINSTALL = doxygen.log
-
 # EXTRAINSTALL in the html subdirectory
 DOXYGENINSTALL = *.html *.css *.png *.gif
 
@@ -33,6 +30,24 @@ DOYXFILE_OVERWRITE = echo "HTML_HEADER = $(DOXYGENHEADER)"; \
   echo "HTML_STYLESHEET = $(DOXYGENSTYLESHEET)";
 endif
 
+
+#we need this in the distribution
+EXTRA_DIST = $(WHAT) html $(DOXYGENHEADER)
+
+doxygendir = $(datadir)/doc/dune-common/doxygen
+doxygen_DATA = $(WHAT)
+
+install-data-local: html
+	$(mkinstalldirs) $(DESTDIR)/$(doxygendir); \
+	list="$(srcdir)/html/*.html $(srcdir)/html/*.css $(srcdir)/html/*.png $(srcdir)/html/*.gif"; \
+	for p in $$list; do \
+		$(install_sh_DATA) $$p $(DESTDIR)/$(doxygendir); \
+	done
+
+uninstall-local:
+	rm -f $(DESTDIR)/$(doxygendir)/*.html $(DESTDIR)/$(doxygendir)/*.css \
+	$(DESTDIR)/$(doxygendir)/*.png $(DESTDIR)/$(doxygendir)/*.gif
+
 # what files does the doxygen-generated stuff depend on (find-syntax)
 DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.png
 
@@ -43,13 +58,17 @@ doxy-header.html:BASEDIR=../../..
 # check dependency ourself to be robust
 doxygen-tag: FORCE $(DOXYGENHEADER)
 	set -e; \
+	if test -e Doxyfile; then \
 	if test ! -e doxygen-tag || test x"`find $(top_srcdir) \( $(DEPENDON) \) -a -cnewer doxygen-tag -print`" != x ; then \
 	  echo Running doxygen. This may take a while... ; \
 	  ( cat Doxyfile; $(DOYXFILE_OVERWRITE) ) > Doxyfile.tmp; \
 	  $(DOXYGEN) Doxyfile.tmp > doxygen.log 2>&1 <&- ; \
 	  rm -f Doxyfile.tmp; \
 	  touch doxygen-tag ; \
+	fi; \
 	fi
+
+html: $(DOXYGENTAG)
 
 # how to install the doxygen documentation
 doxygen-install:

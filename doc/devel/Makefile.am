@@ -12,7 +12,7 @@ BASEDIR=../..
 CURDIR=doc/devel
 
 # install the html pages
-docdir=$(datadir)/doc/dune/devel
+docdir=$(datadir)/doc/dune-common/devel
 doc_DATA = $(PAGES)
 EXTRA_DIST= $(PAGES)
 
