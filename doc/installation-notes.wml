@@ -208,26 +208,12 @@ cd UG-3.9.1
 
 <h2>Installation of DUNE modules</h2>
 <ol>
-<li><p> Downloading DUNE modules</p>
+<li><p>Download DUNE modules</p>
 </li>
 <p>
-Download all DUNE modules via svn. All modules are dependent 
-on the base module dune-common and hence it is necessary to have 
-dune-common at position
-</p>
-
-<kbd> <pre>
-     svn checkout svn+ssh://hal.iwr.uni-heidelberg.de/var/lib/svn/dune-common/trunk dune-common
-
-     svn checkout svn+ssh://hal.iwr.uni-heidelberg.de/var/lib/svn/dune-grid/trunk dune-grid
-
-     svn checkout svn+ssh://hal.iwr.uni-heidelberg.de/var/lib/svn/dune-istl/trunk dune-istl
-
-     svn checkout svn+ssh://hal.iwr.uni-heidelberg.de/var/lib/svn/dune-disc/trunk dune-disc
- </pre>
-</kbd>
-<p>
-    Read <a href="http://hal.iwr.uni-heidelberg.de/dune/svn.html">Checkout DUNE Modules</a> 
+    See <a
+    href="http://hal.iwr.uni-heidelberg.de/dune/download.html">Download
+    Section</a> 
     section for more details. 
 </p>
 
