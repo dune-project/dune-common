@@ -7,7 +7,7 @@
 #include "alignment.hh"
 #include "helpertemplates.hh"
 #include "lcm.hh"
-//#include<typeinfo>
+#include <typeinfo>
 #include <iostream>
 #include <cassert>
 
