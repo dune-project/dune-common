@@ -90,7 +90,7 @@ template<typename T,class A>
 void randomizeListBack(Dune::SLList<T,A>& alist){
   using namespace Dune;
 
-  srand((unsigned)time(0));
+  srand(300);
 
   int lowest=0, highest=1000, range=(highest-lowest)+1;
 
@@ -109,7 +109,7 @@ template<typename T,class A>
 void randomizeListFront(Dune::SLList<T,A>& alist){
   using namespace Dune;
 
-  srand((unsigned)time(0));
+  srand(300);
   T vals[10];
 
   int lowest=0, highest=1000, range=(highest-lowest)+1;

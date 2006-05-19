@@ -50,7 +50,7 @@ int testBidirectionalIterator(Iter begin, Iter end, Opt opt)
     opt(*tend);
 
   typename Iter::difference_type size = std::distance(begin, end);
-  srand((unsigned)time(0));
+  srand(300);
 
   int no= (size>10) ? 10 : size;
 
@@ -79,7 +79,7 @@ int testRandomAccessIterator(Iter begin, Iter end, Opt opt){
 
   typename Iter::difference_type size = end-begin;
 
-  srand((unsigned)time(0));
+  srand(300);
 
   int no= (size>10) ? 10 : size;
 

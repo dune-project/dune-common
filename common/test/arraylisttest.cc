@@ -26,7 +26,7 @@ template<class T, int size>
 void randomizeList(Dune::ArrayList<T,size>& alist){
   using namespace Dune;
 
-  srand((unsigned)time(0));
+  srand(300);
 
   int lowest=0, highest=1000, range=(highest-lowest)+1;
 
