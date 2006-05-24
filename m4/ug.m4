@@ -104,8 +104,8 @@ AC_DEFUN([DUNE_PATH_UG],[
                 AC_MSG_RESULT(yes)
                 ],
                 [AC_MSG_RESULT(no)
-                 AC_MSG_WARN([UG has not been built with --enable-dune, or you are using an old version of UG!])
-                #HAVE_UG="0"
+                 AC_MSG_WARN([UG has not been built with --enable-dune!])
+                HAVE_UG="0"
                 ]
                 )
           fi
