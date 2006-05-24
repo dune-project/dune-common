@@ -162,6 +162,8 @@ AC_DEFUN([DUNE_CHECK_DISPATCH],[
            DUNE_CHECK_MODULES([dunecommon], [common/stdstreams.hh], [common], [common], [Dune::derr.active();])],
          [$1], [dunegrid],[
            DUNE_CHECK_MODULES([dunegrid], [grid/common/grid.hh], [grid], [grid], [Dune::PartitionName])],
+         [$1], [dunefem],[
+           DUNE_CHECK_MODULES([dunefem], [fem/basefunctions/common/storageinterface.hh], [], [], [])],
          [$1], [duneistl],[
            DUNE_CHECK_MODULES([duneistl], [istl/allocator.hh],,,)],
          [$1], [dunedisc],[
