@@ -16,6 +16,13 @@ namespace Dune {
   {
     class ISTLError : public Exception {};
   public:
+
+    /** \brief Export the type representing the components */
+    typedef T block_type;
+
+    /** \brief Type for indices and sizes */
+    typedef int size_type;
+
     /** \brief Create empty matrix */
     Matrix() : data(0), rows_(0), cols_(0)
     {}
@@ -72,12 +79,12 @@ namespace Dune {
     }
 
     /** \brief Return the number of rows */
-    int rows() const {
+    size_type M() const {
       return rows_;
     }
 
     /** \brief Return the number of columns */
-    int cols() const {
+    size_type N() const {
       return cols_;
     }
 
@@ -92,9 +99,9 @@ namespace Dune {
 
     /** \brief Return the transpose of the matrix */
     Matrix transpose() const {
-      Matrix out(cols(), rows());
-      for (int i=0; i<rows(); i++)
-        for (int j=0; j<cols(); j++)
+      Matrix out(N(), M());
+      for (int i=0; i<M(); i++)
+        for (int j=0; j<N(); j++)
           out[j][i] = (*this)[i][j];
 
       return out;
@@ -103,10 +110,10 @@ namespace Dune {
     //! Multiplication of the transposed matrix times a vector
     SimpleVector<T> transposedMult(const SimpleVector<T>& vec) {
 #ifdef DUNE_ISTL_WITH_CHECKING
-      if (rows()!=vec.size())
+      if (N()!=vec.size())
         DUNE_THROW(ISTLError, "Vector size doesn't match the number of matrix rows!");
 #endif
-      SimpleVector<T> out(cols());
+      SimpleVector<T> out(M());
       out = 0;
 
       for (int i=0; i<out.size(); i++ ) {
@@ -119,12 +126,12 @@ namespace Dune {
 
     /// Generic matrix multiplication.
     friend Matrix<T> operator*(const Matrix<T>& m1, const Matrix<T>& m2) {
-      Matrix<T> out(m1.rows(), m2.cols());
+      Matrix<T> out(m1.N(), m2.M());
       out.clear();
 
-      for (int i=0; i<out.rows(); i++ ) {
-        for ( int j=0; j<out.cols(); j++ )
-          for (int k=0; k<m1.cols(); k++)
+      for (int i=0; i<out.N(); i++ ) {
+        for ( int j=0; j<out.M(); j++ )
+          for (int k=0; k<m1.M(); k++)
             out[i][j] += m1[i][k]*m2[k][j];
       }
 
@@ -134,10 +141,10 @@ namespace Dune {
     /// Generic matrix-vector multiplication.
     friend SimpleVector<T> operator*(const Matrix<T>& m, const SimpleVector<T>& vec) {
 #ifdef DUNE_ISTL_WITH_CHECKING
-      if (cols()!=vec.size())
+      if (M()!=vec.size())
         DUNE_THROW(ISTLError, "Vector size doesn't match the number of matrix columns!");
 #endif
-      SimpleVector<T> out(m.rows());
+      SimpleVector<T> out(m.N());
       out = 0;
 
       for (int i=0; i<out.size(); i++ ) {
@@ -178,8 +185,8 @@ namespace Dune {
   template<class T>
   std::ostream& operator<< (std::ostream& s, const Matrix<T>& m)
   {
-    for (int row=0; row<m.rows(); row++) {
-      for (int col=0; col<m.cols(); col++)
+    for (int row=0; row<m.N(); row++) {
+      for (int col=0; col<m.M(); col++)
         s << m[row][col] << "  ";
 
       s << std::endl;
