@@ -6,8 +6,9 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <cassert>
+
 #include <rpc/rpc.h>
-#include <assert.h>
 #include "exceptions.hh"
 
 namespace Dune
