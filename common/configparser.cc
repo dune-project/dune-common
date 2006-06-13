@@ -44,6 +44,17 @@ void ConfigParser::parseFile(string file)
       {
         string key = prefix+trim(line.substr(0, mid));
         string value = trim(line.substr(mid+1));
+
+        // handle quoted strings
+        if (value.length()>1)
+        {
+          if ((value[0] == '\'')and (value[value.length()-1] == '\''))
+            value = value.substr(1, value.length()-2);
+          else
+          if ((value[0] == '"')and (value[value.length()-1] == '"'))
+            value = value.substr(1, value.length()-2);
+        }
+
         if (keysInFile.count(key) != 0)
           DUNE_THROW(Exception, "Key '" << key << "' appears twice in file '" << file << "' !");
         else
