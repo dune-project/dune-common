@@ -60,8 +60,7 @@ AC_DEFUN([DUNE_PATH_UG],[
 	  AC_MSG_CHECKING([UG libraries (without MPI)])
 	  LIBS="$UG_LIBS"
           AC_TRY_LINK(
-              [#define INT int
-               #include "initug.h"],
+              [#include "initug.h"],
 	      [int i = UG::D2::InitUg(0,0)],
               [UG_LDFLAGS="$LDFLAGS"
 	       HAVE_UG="1"
@@ -78,8 +77,7 @@ AC_DEFUN([DUNE_PATH_UG],[
 	    AC_MSG_CHECKING([UG libraries (with MPI)])
 	    LIBS="$UG_LIBS"
             AC_TRY_LINK(
-              [#define INT int
-               #include "initug.h"],
+              [#include "initug.h"],
 	      [int i = UG::D2::InitUg(0,0)],
               [UG_LDFLAGS="$LDFLAGS"
 	       UG_CPPFLAGS="$UG_CPPFLAGS -DModelP"
