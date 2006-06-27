@@ -12,7 +12,7 @@ The following external grids support the DUNE Grid interface:
 <table>
 <tbody>
 <tr><td>ALBERTA</td><td>1.2</td><td><a href="http://www.alberta-fem.de/">http://www.alberta-fem.de/</a></td></tr>
-<tr><td>ALUGrid</td><td>0.11</td><td><a href="http://www.mathematik.uni-freiburg.de/IAM/Research/alugrid/">http://www.mathematik.uni-freiburg.de/IAM/Research/alugrid/</a></td></tr>
+<tr><td>ALUGrid</td><td>0.3</td><td><a href="http://www.mathematik.uni-freiburg.de/IAM/Research/alugrid/">http://www.mathematik.uni-freiburg.de/IAM/Research/alugrid/</a></td></tr>
 <tr><td>UG (non-free licence)</td><td></td><td><a href=" http://cox.iwr.uni-heidelberg.de/~ug/"> http://cox.iwr.uni-heidelberg.de/~ug/</a></td></tr>
 </tbody>
 </table>
@@ -100,12 +100,12 @@ available for download.  You'll have to inquire via email.
 
 <h3>ALUGrid</h3>
 <ol>
-<li>Download at least version 0.11 of ALUGrid from the <a href="http://www.mathematik.uni-freiburg.de/IAM/Research/alugrid/">ALUGrid homepage</a>.</li>
+<li>Download at least version 0.3 of ALUGrid from the <a href="http://www.mathematik.uni-freiburg.de/IAM/Research/alugrid/">ALUGrid homepage</a>.</li>
 <li><p>Unpack it in a directory</p>
-	   <kbd>tar xzf aALUGrid-0.11.tar.gz</kbd>
+	   <kbd>tar xzf ALUGrid-0.3.tar.gz</kbd>
     <p>and move to that directory</p>
 <kbd>
-	cd ALUGrid-0,11
+	cd ALUGrid-0.3
 </kbd></li>
 
 <li><p>Configure ALUGrid, e. g.</p>
