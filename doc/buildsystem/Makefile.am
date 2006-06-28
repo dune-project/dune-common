@@ -7,7 +7,7 @@ endif
 all: $(DOCS)
 
 # setting like in dune-web
-CURDIR=doc
+CURDIR=doc/buildsystem
 # position of the web base directory,
 # relative to $(CURDIR)
 BASEDIR=..
@@ -16,7 +16,7 @@ EXTRAINSTALL = buildsystem.pdf
 EXTRA_DIST = $(DOCS)
 
 # install the html pages
-docdir=$(datadir)/doc/dune
+docdir=$(datadir)/doc/buildsystem
 doc_DATA = $(DOCS)
 
 # include rules for wml -> html transformation
