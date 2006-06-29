@@ -1,9 +1,5 @@
 # $Id$
 
-# distribute these files:
-#DOXY_DIST = Doxyfile Doxydep \
-#  doxy-footer.html doxy-header.html dune-doxy.css mainpage
-
 if BUILD_DOCS
   DOXYGENTAG = doxygen-tag
   WHAT = bestpractice.html
@@ -28,18 +24,20 @@ DOXYGENSTYLESHEET = dune-doxy.css
 DOYXFILE_OVERWRITE = echo "HTML_HEADER = $(DOXYGENHEADER)"; \
   echo "HTML_FOOTER = $(DOXYGENFOOTER)"; \
   echo "HTML_STYLESHEET = $(DOXYGENSTYLESHEET)";
+DOXYFILESHORT_OVERWRITE = $(DOYXFILE_OVERWRITE) \
+  echo "SHORT_NAMES = YES";
 endif
 
 
 #we need this in the distribution
-EXTRA_DIST = $(WHAT) html $(DOXYGENHEADER)
+EXTRA_DIST = $(WHAT) html-dist $(DOXYGENHEADER)
 
 doxygendir = $(datadir)/doc/dune-common/doxygen
 doxygen_DATA = $(WHAT)
 
-install-data-local: html
+install-data-local: html-dist
 	$(mkinstalldirs) $(DESTDIR)/$(doxygendir); \
-	list="$(srcdir)/html/*.html $(srcdir)/html/*.css $(srcdir)/html/*.png $(srcdir)/html/*.gif"; \
+	list="$(srcdir)/html-dist/*.html $(srcdir)/html-dist/*.css $(srcdir)/html-dist/*.png $(srcdir)/html-dist/*.gif"; \
 	for p in $$list; do \
 		$(install_sh_DATA) $$p $(DESTDIR)/$(doxygendir); \
 	done
@@ -68,7 +66,18 @@ doxygen-tag: FORCE $(DOXYGENHEADER)
 	  fi; \
 	fi
 
-html: $(DOXYGENTAG)
+html: doxygen-tag
+
+html-dist: $(DOXYGENHEADER)
+	rm -rf html; \
+	set -e; \
+	if test -e Doxyfile; then \
+	  ( cat Doxyfile; $(DOXYFILESHORT_OVERWRITE) ) > Doxyfile.tmp; \
+	  echo Running doxygen. This may take a while... ; \
+	  $(DOXYGEN) Doxyfile.tmp > doxygen.log 2>&1 <&- ; \
+	  rm -f Doxyfile.tmp; \
+	fi; \
+	mv html html-dist
 
 # how to install the doxygen documentation
 doxygen-install:
@@ -87,7 +96,7 @@ FORCE:
 include $(top_srcdir)/am/webstuff
 
 clean-local:
-	rm -rf html latex *~
+	rm -rf html html-dist latex *~
 
 CLEANFILES = $(WHAT) $(DOXYGENTAG) $(DOXYGENHEADER)
 
