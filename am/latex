@@ -2,23 +2,23 @@
 
 # rerun TEX if log-file suggests that
 .tex.dvi:
-	$(TEX) </dev/null $<
+	set -e; \
+	TEXINPUTS=.:$(srcdir):${TEXINPUTS}: $(TEX) </dev/null $*; \
 	while grep Rerun $*.log > /dev/null ; do \
-	  $(TEX) </dev/null $< || exit $$?; \
-	done
-# check if Bibtex needs to be called
+	  TEXINPUTS=.:$(srcdir):${TEXINPUTS}: $(TEX) </dev/null $* || exit $$?; \
+	done; \
 	if grep '^\\bibdata{' *.aux > /dev/null \
 	   && grep '^\\citation{' *.aux > /dev/null; \
 	then \
-	  $(BIBTEX) $< || exit $$?; \
-	  $(TEX) </dev/null $< || exit $$?; \
+	  BSTINPUTS=.:$(srcdir):${BSTINPUTS}: BIBINPUTS=.:$(srcdir):${BIBINPUTS}: $(BIBTEX) $* || exit $$?; \
+	  TEXINPUTS=.:$(srcdir):${TEXINPUTS}: $(TEX) </dev/null $* || exit $$?; \
 	  while grep Rerun $*.log > /dev/null ; do \
-	    $(TEX) </dev/null $< || exit $$?; \
+	    TEXINPUTS=.:$(srcdir):${TEXINPUTS}: $(TEX) </dev/null $* || exit $$?; \
 	  done ; \
 	fi
 
 .dvi.pdf:
-	$(DVIPDF) $*
+	TEXINPUTS=.:$(srcdir):${TEXINPUTS}: $(DVIPDF) $*
 
 .dvi.ps:
-	$(DVIPS) $*
+	TEXINPUTS=.:$(srcdir):${TEXINPUTS}: $(DVIPS) $*
