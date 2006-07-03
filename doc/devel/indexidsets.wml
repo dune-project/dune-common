@@ -62,14 +62,14 @@
 
     <p>
       <b>Note 3:</b> The classes LevelIndexSet and LeafIndexSet implement the same
-      <a href="$(ROOT)/doxygen/html/classDune_1_1IndexSet.html">interface</a>.
+      <a href="$(ROOT)/doxygen/dune-grid-html/classDune_1_1IndexSet.html">interface</a>.
       This enables us to write other classes independent of whether they used with a level
       or leaf index. This also requires the size methods to be in these classes.
     </p>
 
     <p>
       <b>Note 4:</b> GlobalIdSet and LocalIdSet implement the same 
-      <a href="$(ROOT)/doxygen/html/classDune_1_1IdSet.html">interface</a>.
+      <a href="$(ROOT)/doxygen/dune-grid-html/classDune_1_1IdSet.html">interface</a>.
     </p>
 
     <p>
