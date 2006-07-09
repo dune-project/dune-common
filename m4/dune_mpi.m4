@@ -41,163 +41,185 @@
 # breaks often. Bad luck. Blame the MPI folks for this mess. And blame
 # them a lot. [Thimo 26.8.2004]
 
-# TODO:
-#
-# - add --disable-mpi
+# Sometimes ACX_MPI will not be able to find the correct MPI compiler,
+# or sometimes you might have several MPI installations. Specify the
+# MPICC variable to enforce a certain MPI compiler.
+
+# In order to diasble the usage of MPI (and make Dune pure
+# sequentiell) you can supply the option
+#   --disable-parallel
+# [Christian 9.7.2006]
 
 AC_DEFUN([DUNE_MPI],[
   AC_PREREQ(2.50) dnl for AC_LANG_CASE
 
-  # implicitly sets the HAVE_MPI-define and the MPICXX-substitution
-  ACX_MPI()
+  AC_LANG_PUSH([C])
 
-  # remove HAVE_MPI from confdefs.h
-  cp confdefs.h confdefs.h.tmp
-  grep -v "^#define HAVE_MPI " confdefs.h.tmp > confdefs.h
-  rm -f confdefs.h.tmp
+  # enable/disable parallel features
+  AC_ARG_ENABLE(parallel,
+    AC_HELP_STRING([--disable-parallel],
+      [Try to use the parallel feature of Dune. This option requires MPI to be present. 
+       configure will try to determin your MPI automatically,
+       you can overwrite this setting by specifying the MPICC veriable]),
+    [with_parallel=$enableval],
+    [with_parallel=yes]
+  )
 
   # disable runtest if we have a queuing system
   AC_ARG_ENABLE(mpiruntest,
     AC_HELP_STRING([--disable-mpiruntest],
       [Don't try to run a MPI program during configure. (This is need if you depend on a queuing system)]),
-    [mpiruntest=$enable],
+    [mpiruntest=${enableval}],
     [mpiruntest=yes]
   )
 
-# somehow variables like $1, $2 seem to disappear after m4... Quote them...
-dune_mpi_getflags () {
-    # -- call mpiCC, remove compiler name
-    # compiler-name is first word in line _if_ it doesn't start with a dash!
-    # needed because mpiCC sometimes does not include compiler (newer LAM)
+  with_mpi="no"
 
-    # the additional brackets keep m4 from interpreting the brackets
-    # in the sed-command...
-    retval=[`$MPICOMP ${1} ${2} 2>/dev/null | head -1 | sed -e 's/^[^-][^ ]\+ //'`]
-    # remove dummy-parameter (if existing)
-    if test ${#} = 2 ; then
-      retval=`echo $retval | sed -e "s/${2}//"`
-    fi
-}
+  # //
+  # helper shell functions
 
-# removes regexp $2 from string $1
-dune_mpi_remove () {
-   retval=`echo ${1} | sed -e "s/${2}//"`
-}
+    # somehow variables like $1, $2 seem to disappear after m4... Quote them...
+    dune_mpi_getflags () {
+      # -- call mpiCC, remove compiler name
+      # compiler-name is first word in line _if_ it doesn't start with a dash!
+      # needed because mpiCC sometimes does not include compiler (newer LAM)
 
-  # get compilation script
-  AC_LANG_CASE([C],[
-	MPICOMP="$MPICC"
-        dune_mpi_isgnu="$GCC"
-],
-[C++],[
-	MPICOMP="$MPICXX"
-        dune_mpi_isgnu="$GXX"
-]
-)
-
-  # taken from acx_mpi: test succeeded if MPILIBS is not empty
-  if test x != x"$MPILIBS" -a x != x"$MPICOMP" ; then
-    with_mpi="no"
-
-    AC_MSG_CHECKING([MPI-package])
-    # the LAM mpiCC knows a -showme parameter
-    dune_mpi_getflags "-showme"
-    if test x"$retval" != x ; then
-      with_mpi="LAM"
-
-      # try new -showme:xxx function
-      dune_mpi_getflags "-showme:compile"
-      if test x"$retval" != x ; then
-        # seems like LAM >= 7.1 which supports extraction of parameters without
-        # dummy files
-        AC_MSG_RESULT([LAM >= 7.1])
-        MPI_CPPFLAGS="$retval"
-
-        dune_mpi_getflags "-showme:link"
-        MPI_LDFLAGS="$retval"
-      else
-        AC_MSG_RESULT([LAM <= 7.0])
-        # use -showme and dummy parameters to extract flags        
-        AC_LANG_CASE([C], [MPISOURCE="dummy.c"],
-	  [C++], [MPISOURCE="dummy.cc"])
-
-        dune_mpi_getflags "-showme" "-c $MPISOURCE"
-        MPI_CPPFLAGS="$retval"
-
-        dune_mpi_getflags "-showme" "dummy.o -o dummy"
-        MPI_LDFLAGS="$retval"
+      # the additional brackets keep m4 from interpreting the brackets
+      # in the sed-command...
+      retval=[`$MPICOMP ${1} ${2} 2>/dev/null | head -1 | sed -e 's/^[^-][^ ]\+ //'`]
+      # remove dummy-parameter (if existing)
+      if test ${#} = 2 ; then
+        retval=`echo $retval | sed -e "s/${2}//"`
       fi
-    else
-      # the MPICH mpiCC knows a -show parameter
-      dune_mpi_getflags "-show"
+    }
+    # removes regexp $2 from string $1
+    dune_mpi_remove () {
+      retval=`echo ${1} | sed -e "s/${2}//"`
+    }
+  # //
+
+  # 1) no paramter : ''
+  #    => use ACX_MPI to find the mpi Compiler
+  # 2) --with-mpi=/opt/special-mpi/bin/mpicc : '/opt/special-mpi/bin/mpicc'
+  #    => use /opt/special-mpi/bin/mpicc as MPI compiler
+  # 3) --without-mpi : 'no'
+  #    => disable MPI
+
+  ## do nothing if --disable-parallel is used
+  if test x$with_parallel == xyes ; then
+  
+    # implicitly sets the HAVE_MPI-define and the MPICXX-substitution
+    ACX_MPI()
+    # remove HAVE_MPI from confdefs.h
+    cp confdefs.h confdefs.h.tmp
+    grep -v "^#define HAVE_MPI " confdefs.h.tmp > confdefs.h
+    rm -f confdefs.h.tmp
+    # get compilation script
+    AC_LANG_CASE([C],[
+        MPICOMP="$MPICC"
+        dune_mpi_isgnu="$GCC"
+      ],
+      [C++],[
+        MPICOMP="$MPICXX"
+        dune_mpi_isgnu="$GXX"
+      ])
+  
+    # taken from acx_mpi: test succeeded if MPILIBS is not empty
+    if test x != x"$MPICOMP" ; then
+
+      AC_MSG_CHECKING([MPI-package])
+      # the LAM mpiCC knows a -showme parameter
+      dune_mpi_getflags "-showme"
       if test x"$retval" != x ; then
-        with_mpi="MPICH"
-
-        # use special commands to extract options      
-
-        dune_mpi_getflags "-compile_info"
-        MPI_CPPFLAGS="$retval"
-        # hack in option to disable MPICH-C++-bindings...
-        AC_LANG_CASE([C++], [MPI_CPPFLAGS="$MPI_CPPFLAGS -DMPICH_SKIP_MPICXX"])
-
-        # remove implicitly set -c
-	dune_mpi_remove "$MPI_CPPFLAGS" '-c'
-	MPI_CPPFLAGS="$retval"
-
-        dune_mpi_getflags "-link_info"
-        MPI_LDFLAGS="$retval"
-
-        AC_MSG_RESULT([MPICH])
-      else	
-	# check exitcode of -v
-        if $MPICOMP -v -c $MPISOURCE > /dev/null 2>&1 ; then
-          AC_MSG_RESULT([IBM MPI])
-          with_mpi="IBM MPI"
-
-          dune_mpi_getflags "-v" "-c dummy.c"
-	  # mpCC passes on it's own parameter...
-          retval=`echo $retval | sed -e "s/-v//"`
-	  # remove compiler name (double bracket to quote for m4)
-          retval=`echo $retval | sed -e 's/^xl[[cC]] //'`
-	  # remove stuff we passed
-          retval=`echo $retval | sed -e "s/-c dummy.c//"`
-
-	  # mpCC assumes xlc is used...
-	  if test x$dune_mpi_isgnu = xyes ; then
-	    # change commandline if GNU compiler is used
-            retval=`echo $retval | sed -e 's/\(-b[[^ ]]*\)/-Xlinker \1/g'`
-          fi
+        with_mpi="LAM"
+  
+        # try new -showme:xxx function
+        dune_mpi_getflags "-showme:compile"
+        if test x"$retval" != x ; then
+          # seems like LAM >= 7.1 which supports extraction of parameters without
+          # dummy files
+          AC_MSG_RESULT([LAM >= 7.1])
           MPI_CPPFLAGS="$retval"
-
-          dune_mpi_getflags "-v" "dummy.o -o dummy"
-	  # mpCC passes on it's own parameter...
-          retval=`echo $retval | sed -e "s/-v//"`
-	  # remove compiler name
-          retval=`echo $retval | sed -e 's/^xl[[cC]] //'`
-	  # remove stuff we passed
-          retval=`echo $retval | sed -e "s/dummy.o -o dummy//"`
-
-	  if test x$dune_mpi_isgnu = xyes ; then
-	    # change commandline if GNU compiler is used
-            retval=`echo $retval | sed -e 's/\(-b[[^ ]]*\)/-Xlinker \1/g'`
-          fi
-
+  
+          dune_mpi_getflags "-showme:link"
           MPI_LDFLAGS="$retval"
         else
-          # don't know MPI....
-          AC_MSG_RESULT([unknown])
+          AC_MSG_RESULT([LAM <= 7.0])
+          # use -showme and dummy parameters to extract flags        
+          AC_LANG_CASE([C], [MPISOURCE="dummy.c"],
+            [C++], [MPISOURCE="dummy.cc"])
+          dune_mpi_getflags "-showme" "-c $MPISOURCE"
+          MPI_CPPFLAGS="$retval"
+          dune_mpi_getflags "-showme" "dummy.o -o dummy"
+          MPI_LDFLAGS="$retval"
+        fi
+      else
+        # the MPICH mpiCC knows a -show parameter
+        dune_mpi_getflags "-show"
+        if test x"$retval" != x ; then
+          with_mpi="MPICH"
+          # use special commands to extract options      
+          dune_mpi_getflags "-compile_info"
+          MPI_CPPFLAGS="$retval"
+          # hack in option to disable MPICH-C++-bindings...
+          AC_LANG_CASE([C++], [MPI_CPPFLAGS="$MPI_CPPFLAGS -DMPICH_SKIP_MPICXX"])
+          # remove implicitly set -c
+          dune_mpi_remove "$MPI_CPPFLAGS" '-c'
+          MPI_CPPFLAGS="$retval"
+          dune_mpi_getflags "-link_info"
+          MPI_LDFLAGS="$retval"
+          AC_MSG_RESULT([MPICH])
+        else  
+          # check exitcode of -v
+          if $MPICOMP -v -c $MPISOURCE > /dev/null 2>&1 ; then
+            AC_MSG_RESULT([IBM MPI])
+            with_mpi="IBM MPI"
+  
+            dune_mpi_getflags "-v" "-c dummy.c"
+            # mpCC passes on it's own parameter...
+            retval=`echo $retval | sed -e "s/-v//"`
+            # remove compiler name (double bracket to quote for m4)
+            retval=`echo $retval | sed -e 's/^xl[[cC]] //'`
+            # remove stuff we passed
+            retval=`echo $retval | sed -e "s/-c dummy.c//"`
+  
+            # mpCC assumes xlc is used...
+            if test x$dune_mpi_isgnu = xyes ; then
+              # change commandline if GNU compiler is used
+              retval=`echo $retval | sed -e 's/\(-b[[^ ]]*\)/-Xlinker \1/g'`
+            fi
+            MPI_CPPFLAGS="$retval"
+  
+            dune_mpi_getflags "-v" "dummy.o -o dummy"
+            # mpCC passes on it's own parameter...
+            retval=`echo $retval | sed -e "s/-v//"`
+            # remove compiler name
+            retval=`echo $retval | sed -e 's/^xl[[cC]] //'`
+            # remove stuff we passed
+            retval=`echo $retval | sed -e "s/dummy.o -o dummy//"`
+
+            if test x$dune_mpi_isgnu = xyes ; then
+              # change commandline if GNU compiler is used
+              retval=`echo $retval | sed -e 's/\(-b[[^ ]]*\)/-Xlinker \1/g'`
+            fi
+
+            MPI_LDFLAGS="$retval"
+          else
+            # don't know MPI....
+            AC_MSG_RESULT([unknown])
+          fi
         fi
       fi
-    fi
 
-    # fallback... can't extract flags :( 
-    if test x"$with_mpi" = xno ; then
-      AC_MSG_WARN([Could not identify MPI-package! Please send a bugreport and tell us what MPI-package you're using])
+      # fallback... can't extract flags :( 
+      if test x"$with_mpi" = xno ; then
+        AC_MSG_WARN([Could not identify MPI-package! Please send a bugreport and tell us what MPI-package you're using])
+      fi
+    else
+      # ACX_MPI didn't find anything
+      with_mpi="no"
     fi
-  else
-    # ACX_MPI didn't find anything
-    with_mpi="no"
-  fi
+  fi # end of MPI identification
 
   # if an MPI implementation was found..
   if test x"$with_mpi" != xno ; then
@@ -206,7 +228,7 @@ dune_mpi_remove () {
     # store old values
     ac_save_LIBS="$LIBS"
     ac_save_CPPFLAGS="$CPPFLAGS"
-	
+    
     # looks weird but as the -l... are contained in the MPI_LDFLAGS these
     # parameters have to be last on the commandline: with LIBS this is true
     LIBS="$MPI_LDFLAGS"
@@ -216,10 +238,12 @@ dune_mpi_remove () {
       AC_MSG_WARN([Diabled test whether compiling/running with $with_mpi works.])    
     else
       AC_MSG_CHECKING([whether compiling/running with $with_mpi works])
-	
+  
       if test x"$with_mpi" = xLAM ; then
         AC_MSG_NOTICE([Starting "lamboot" for checking...])
         lamboot -H
+        sleep 2s
+        AC_MSG_NOTICE(["lamboot" started...])
       fi
 
       # try to create program
@@ -227,17 +251,18 @@ dune_mpi_remove () {
         AC_LANG_SOURCE(
           [ #include <mpi.h>
             int main (int argc, char** argv) { 
-	        MPI_Init(&argc, &argv); 
+            MPI_Init(&argc, &argv); 
             MPI_Finalize(); }]),
-        [ AC_MSG_RESULT([yes]) ],
-        [ AC_MSG_RESULT([no])
-          AC_MSG_WARN([could not compile or run MPI testprogram, deactivating MPI! See config.log for details])
-          with_mpi=no]
+          [ AC_MSG_RESULT([yes]) ],
+          [ AC_MSG_RESULT([no])
+            AC_MSG_WARN([could not compile or run MPI testprogram, deactivating MPI! See config.log for details])
+            with_mpi=no]
       )
 
       if test x"$with_mpi" = xLAM ; then
         AC_MSG_NOTICE([Stopping LAM via "lamhalt"...])
-        lamhalt -H; sleep 1
+        lamhalt -H; sleep 2s
+        AC_MSG_NOTICE(["lamboot" stopped...])
       fi
     fi
 
@@ -257,4 +282,6 @@ dune_mpi_remove () {
   fi
 
   AM_CONDITIONAL(MPI, test x"$with_mpi" != xno)
+
+  AC_LANG_POP
 ])
