@@ -3,11 +3,13 @@
 if BUILD_DOCS
   DOXYGENTAG = doxygen-tag
   WHAT = bestpractice.html
+  DOXYGEN_HTML = html
+  DOXYGEN_DIST = html-dist
 endif
 
 DISTCLEANFILES = doxygen.log doxygen-tag
 
-all: $(WHAT) html
+all: $(WHAT) $(DOXYGEN_HTML)
 
 # setting like in dune-web
 BASEDIR=../..
@@ -30,7 +32,7 @@ endif
 
 
 #we need this in the distribution
-EXTRA_DIST = $(WHAT) html-dist $(DOXYGENHEADER)
+EXTRA_DIST = $(WHAT) $(DOXYGEN_DIST) $(DOXYGENHEADER)
 
 doxygendir = $(datadir)/doc/dune-common/doxygen
 doxygen_DATA = $(WHAT)
