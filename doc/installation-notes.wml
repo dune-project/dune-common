@@ -53,10 +53,12 @@ For optional packages see the README file of ALUGRID.
 </p>
 <h3>UGGrid</h3>
 <p>
-Currently, the only way to create a UGGrid object is to load it from
-a file in the AmiraMesh format.  Therefore, if you want to use UGGrids,
-you'll need the <a href="http://www.amiravis.com">AmiraMesh</a> library
-in addition to the UG library.  It should be free, however, it is not
+There are no mandatory packages for UGGrid.
+</p>
+<p>
+You can (but you don't have to) create UGGrid objects from AmiraMesh files.
+For this you'll need the <a href="http://www.amiravis.com">AmiraMesh</a> library.
+It should be free, however, it is not
 available for download.  You'll have to inquire via email.
 </p>
 
