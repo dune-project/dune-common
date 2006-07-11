@@ -153,6 +153,9 @@ AC_DEFUN([DUNE_MPI],[
           dune_mpi_getflags "-showme" "dummy.o -o dummy"
           MPI_LDFLAGS="$retval"
         fi
+        # hack in option to disable MPICH-C++-bindings...
+        # we fake to have mpicxx.h read already
+        MPI_CPPFLAGS="$MPI_CPPFLAGS -DMPIPP_H"
       else
         # the MPICH mpiCC knows a -show parameter
         dune_mpi_getflags "-show"
@@ -162,7 +165,7 @@ AC_DEFUN([DUNE_MPI],[
           dune_mpi_getflags "-compile_info"
           MPI_CPPFLAGS="$retval"
           # hack in option to disable MPICH-C++-bindings...
-          AC_LANG_CASE([C++], [MPI_CPPFLAGS="$MPI_CPPFLAGS -DMPICH_SKIP_MPICXX"])
+          MPI_CPPFLAGS="$MPI_CPPFLAGS -DMPICH_SKIP_MPICXX"
           # remove implicitly set -c
           dune_mpi_remove "$MPI_CPPFLAGS" '-c'
           MPI_CPPFLAGS="$retval"
@@ -237,8 +240,6 @@ AC_DEFUN([DUNE_MPI],[
     if test "x$mpiruntest" != "xyes" ; then
       AC_MSG_WARN([Diabled test whether compiling/running with $with_mpi works.])    
     else
-      AC_MSG_CHECKING([whether compiling/running with $with_mpi works])
-  
       if test x"$with_mpi" = xLAM ; then
         AC_MSG_NOTICE([Starting "lamboot" for checking...])
         lamboot -H
@@ -246,7 +247,9 @@ AC_DEFUN([DUNE_MPI],[
         AC_MSG_NOTICE(["lamboot" started...])
       fi
 
-      # try to create program
+      # try to create c++ program
+	  AC_LANG_PUSH([C++])
+      AC_MSG_CHECKING([whether compiling/running with $with_mpi works])
       AC_RUN_IFELSE(
         AC_LANG_SOURCE(
           [ #include <mpi.h>
@@ -258,6 +261,7 @@ AC_DEFUN([DUNE_MPI],[
             AC_MSG_WARN([could not compile or run MPI testprogram, deactivating MPI! See config.log for details])
             with_mpi=no]
       )
+	  AC_LANG_POP
 
       if test x"$with_mpi" = xLAM ; then
         AC_MSG_NOTICE([Stopping LAM via "lamhalt"...])
