@@ -4,6 +4,7 @@ bestpractice.html
 doxygen-tag
 doxygen.log
 html
+html-dist
 latex
 Makefile
 Makefile.in
