@@ -330,7 +330,7 @@ usage () {
     echo "  -h, --help         show this help"
     echo "      --debug        enable debug output of this script"
     echo "      --opts=FILE    load default options from FILE"
-    echo "                     (see dune-common/bin/example.opts)"
+    echo "                     (see dune-common/doc/example.opts)"
     echo "Commands:"
     printf "  \`help'\tguess what :-)\n"
     printf "  \`print'\tprint the list of modules sorted after their dependencies\n"

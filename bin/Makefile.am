@@ -1,7 +1,7 @@
 # $Id$
 
 # put scripts into dist-tarball
-EXTRA_DIST = duneproject idrename wmlwrap
+EXTRA_DIST = duneproject wmlwrap dunecontrol
 
 # ... and install some
 bin_SCRIPTS = duneproject

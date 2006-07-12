@@ -16,6 +16,7 @@ CURDIR=doc
 # position of the web base directory,
 # relative to $(CURDIR)
 BASEDIR=..
+EXTRAINSTALL=example.opts
 
 # install the html pages
 docdir=$(datadir)/doc/dune-common

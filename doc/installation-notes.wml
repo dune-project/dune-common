@@ -214,9 +214,14 @@ cd UG-3.9.1
 </li>
 <p>
     See <a
-    href="http://hal.iwr.uni-heidelberg.de/dune/download.html">Download
+    href="http://dune-project.org/download.html">Download
     Section</a> 
     section for more details. 
+</p>
+<p>
+When using the unstable version via svn, you might be interested in
+the <a href="http://dune-project.org/svn.html">DUNE SVN Developer
+Info</a> section.
 </p>
 
 <li> <p>Building all DUNE modules</p></li>
@@ -229,7 +234,9 @@ cd UG-3.9.1
 <kbd> <pre> ./dune-common/bin/dunecontrol all</pre> </kbd> 
 
 <p>
- Read <a href="http://hal.iwr.uni-heidelberg.de/dune/svn.html">Building DUNE </a> section for more details. 
+ Read the <a
+ href="http://dune-project.org/doc/buildsystem/buildsystem.pdf">DUNE
+ Build System Howto</a> section for more details. 
 </p>
 
 <li> <p>Building a specific DUNE module (and its dependent modules)</p></li>
@@ -239,19 +246,24 @@ cd UG-3.9.1
 </pre> </kbd> 
 where module_name is the name of that particular module given in the dune.module file 
 </p>
-<p> Read <a href="http://hal.iwr.uni-heidelberg.de/dune/dunemodule.html">Maintaining new Dune modules and applications</a> section for more details.
+<p> Read <a href="http://dune-project.org/dunemodule.html">Maintaining new Dune modules and applications</a> section for more details.
 </p>
 <li> <p>Building using certain configure options</p></li>
 <p> Run dunecontrol script 
 <kbd> <pre>
-./dune-common/bin/dunecontrol --opts=/path to/file.opts --module=module_name all
+./dune-common/bin/dunecontrol --opts=/path_to/file.opts --module=module_name all
 </pre> </kbd> 
-where file.opts is the name of the file with configure options specified (you can find an example.opts file in the dune-common/bin directory) 
+where file.opts is the name of the file with configure options
+specified (you can find an <a href="example.opts">example.opts</a>
+file in the dune-common/doc directory)
 </p>
 
-<p> Read <a href="http://hal.iwr.uni-heidelberg.de/dune/dunemodule.html">Maintaining new Dune modules and applications</a> section for more details.
+<p>Read <a href="http://dune-project.org/dunemodule.html">Maintaining new Dune modules and applications</a> section for more details.
 </p>
-<p> <a href="http://hal.iwr.uni-heidelberg.de/dune/doc/buildsystem/buildsystem.pdf"> DUNE Build System Howto</a> will also give you an excellent introduction to the build system and how to create new modules/projects your own.
+<p> <a
+href="http://dune-project.org/doc/buildsystem/buildsystem.pdf">DUNE
+Build System Howto</a> will also give you an excellent introduction to
+the build system and how to create new modules/projects your own.
 </p>
 </li>
 </ol>
