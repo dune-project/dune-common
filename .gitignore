@@ -13,7 +13,7 @@ dune-common.pc
 semantic.cache
 configure.lineno
 stamp-h1
-dune-*.tar.gz
-dune-?.?
+dune-common-*.tar.gz
+dune-common-?.?
 ltmain.sh
 dune
