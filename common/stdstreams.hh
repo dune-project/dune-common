@@ -61,7 +61,7 @@ namespace Dune {
    * If the  level of a stream is bigger than this value
    * it will be activated.
    */
-  static const DebugLevel MINIMAL_DEBUG_LEVEL = 4;
+  static const DebugLevel MINIMAL_DEBUG_LEVEL = 3;
 
   /**
    * @brief The level of the very verbose debug stream.

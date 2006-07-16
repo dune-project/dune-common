@@ -27,7 +27,8 @@ namespace Dune {
       simplex,               //!< Simplicial element in any nonnegative dimension
       cube,                  //!< Cube element in any nonnegative dimension
       pyramid,               //!< Four sided pyramid in three dimensions
-      prism                  //!< Prism element in three dimensions
+      prism,                  //!< Prism element in three dimensions
+      undefined
     };
 
   private:
@@ -36,11 +37,12 @@ namespace Dune {
     BasicType basicType_ : 16;
 
     /** \brief Dimension of the element */
-    short dim_;
+    unsigned int dim_;
 
   public:
     /** \brief Default constructor, not initializing anything */
-    GeometryType () {}
+    GeometryType ()
+    {}
 
     /** \brief Constructor */
     GeometryType(BasicType basicType, unsigned int dim)
