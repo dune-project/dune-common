@@ -27,8 +27,7 @@ namespace Dune {
       simplex,               //!< Simplicial element in any nonnegative dimension
       cube,                  //!< Cube element in any nonnegative dimension
       pyramid,               //!< Four sided pyramid in three dimensions
-      prism,                  //!< Prism element in three dimensions
-      undefined
+      prism                  //!< Prism element in three dimensions
     };
 
   private:
