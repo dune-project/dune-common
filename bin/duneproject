@@ -69,6 +69,17 @@ Depends:$DEPENDENCIES
 C_DELIM
 
 ################## CONFIGURE.AC ##################
+
+## Create the parameters passed to DUNE_CHECK_ALL
+j=0
+for i in $DEPENDENCIES; do
+    if [ "$j" = "0" ]; then
+      CHECK="[$i]"
+      j=1
+    else
+      CHECK="$CHECK,[$i]"
+    fi
+done
 cat > "$PROJECT/configure.ac" <<C_DELIM
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
@@ -80,23 +91,7 @@ AM_CONFIG_HEADER([config.h])
 
 
 # we need no more than the standard DUNE-stuff
-DUNE_CHECK_ALL([dunecommon],[dunegrid],[duneistl],[dunedisc])
-if test x\$HAVE_DUNECOMMON != x1 ; then
-  AC_MSG_ERROR([Can't work without the dune-common module. Maybe you have to supply your dune-common directory as --with-dunecommon=dir])
-fi
-
-if test x\$HAVE_DUNEGRID != x1 ; then
-  AC_MSG_ERROR([Can't work without the dune-grid module. Maybe you have to supply your dune-grid directory as --with-dunegrid=dir])
-fi
-
-if test x\$HAVE_DUNEDISC != x1 ; then
-  AC_MSG_ERROR([Can't work without the dune-disc module. Maybe you have to supply your dune-disc directory as --with-dunedisc=dir])
-fi
-
-if test x\$HAVE_DUNEISTL != x1 ; then
-  AC_MSG_ERROR([Can't work without the dune-istl module. Maybe you have to supply your dune-istl directory as --with-duneistl=dir])
-fi
-
+DUNE_CHECK_ALL($CHECK)
 
 # implicitly set the Dune-flags everywhere
 AC_SUBST(AM_CPPFLAGS, \$DUNE_CPPFLAGS)
