@@ -30,7 +30,7 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
   find_modules .
   DEPENDENCIES=""
   while [ -z $DEPENDENCIES ]; do
-      read -p "Modules this module depends on (separated by spaces). Available modules are $MODULES :" DEPENDENCIES
+      read -p "Modules this module depends on (separated by spaces). Available modules are $MODULES : " DEPENDENCIES
   done
   VERSION=""
   while [ -z $VERSION ]; do
