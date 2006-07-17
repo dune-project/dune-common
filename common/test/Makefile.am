@@ -3,7 +3,7 @@
 TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
 	sllisttest iteratorfacadetest tuplestest fmatrixtest \
 	poolallocatortest settest gcdlcdtest streamtest \
-	bigunsignedinttest mpihelpertest
+	bigunsignedinttest mpihelpertest singletontest
 # exprtmpl
 
 # which tests to run
@@ -77,5 +77,8 @@ timing_flt_DEPENDENCIES = $(LOCAL_LIBS)
 mpihelpertest_SOURCES = mpihelpertest.cc
 mpihelpertest_CXXFLAGS = $(MPI_CPPFLAGS)
 mpihelpertest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
+
+singletontest_SOURCES = singletontest.cc
+singletontest_LDFLAGS = $(LOCAL_LIBS)
 
 include $(top_srcdir)/am/global-rules

@@ -24,3 +24,4 @@ timing_old
 timing_flt
 bigunsignedinttest
 mpihelpertest
+singletontest
