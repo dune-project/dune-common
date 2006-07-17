@@ -5,7 +5,7 @@
 #
 # * anpasen, dass bei installiertem Dune das DUNEDIR nicht an
 #   autogen.sh uebergeben weden muss.
-#
+# * Check whether the module and module directory does not exists already,
 
 set -e
 
@@ -25,6 +25,13 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
   while [ -z $MODULE ]; do
     read -p "Name of the module? (to be used in dune.module file, eg:dune_grid (only alphanumeric character)): " MODULE
   done
+  # Read the modules find part
+. $(cd $(dirname $0); pwd)/dunemodules.inc
+  find_modules .
+  DEPENDENCIES=""
+  while [ -z $DEPENDENCIES ]; do
+      read -p "Modules this module depends on (separated by spaces). Available modules are $MODULES :" DEPENDENCIES
+  done
   VERSION=""
   while [ -z $VERSION ]; do
     read -p "Project/Module version? " VERSION
@@ -37,7 +44,7 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
   echo
   echo -n "creating Project \"$PROJECT\", version $VERSION "
   echo "with maintainer \"$MAINTAINER\""
-
+  echo "which depends on \"$DEPENDENCIES\""
   read -p "Are these informations correct? [y/N] " DATACORRECT
   echo
   echo "Look at README and dune.module files in the \"$PROJECT\" directory "
@@ -58,7 +65,7 @@ cat > "$PROJECT/dune.module" <<C_DELIM
 #Name of the module
 Module:$MODULE
 #depending on 
-Depends:dune_common dune_grid dune_disc dune_istl
+Depends:$DEPENDENCIES
 C_DELIM
 
 ################## CONFIGURE.AC ##################
