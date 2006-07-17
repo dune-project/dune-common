@@ -150,7 +150,7 @@ namespace Dune
       return MPI_COMM_WORLD;
     }
 
-    static MPIHelper& instance(int argc, char** argv)
+    static MPIHelper& instance(int& argc, char**& argv)
     {
       if(instance_.get() == 0)
         instance_.set(new MPIHelper(argc, argv));
@@ -158,7 +158,7 @@ namespace Dune
     }
 
   private:
-    MPIHelper(int argc, char** argv)
+    MPIHelper(int& argc, char**& argv)
     {
       MPI_Init(&argc, &argv);
     }
