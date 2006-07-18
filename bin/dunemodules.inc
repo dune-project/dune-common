@@ -1,3 +1,4 @@
+# -*-sh-*-
 
 ###############################################
 ###
@@ -18,7 +19,8 @@ CONTROL="dune.module"
 #
 parse_control() {
   if test -f "$1"; then
-    fix_and_assign module $(echo $(grep Module: "$1" | cut -d ':' -f2))
+    local name=$(echo $(grep Module: "$1" | cut -d ':' -f2))
+    fix_and_assign module $name
     local deps=$(echo $(grep Depends: "$1" | cut -d ':' -f2))
     local sugs=$(echo $(grep Suggests: "$1" | cut -d ':' -f2))
     local path=$(dirname "$1")
@@ -26,6 +28,7 @@ parse_control() {
       if check_modname "$module"; then
         export HAVE_${module}=yes
         export PATH_${module}="$path"
+		export NAME_${module}="$name"
 		fix_and_assign DEPS_${module} "$deps"
 		fix_and_assign SUGS_${module} "$sugs"
       else

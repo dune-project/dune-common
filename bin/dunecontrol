@@ -295,7 +295,10 @@ case "$command" in
     else
       sort_modules $MODULE
     fi
-    echo $MODULES
+    for mod in $MODULES; do
+      echo -n "$(eval echo \$NAME_$mod) "
+    done
+    echo
     ;;
   help)
     usage
