@@ -21,10 +21,8 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
   while [ -z $PROJECT ]; do
     read -p "New Project name?(a directory with this name will be created, eg: dune-grid): " PROJECT
   done
-  MODULE=""
-  while [ -z $MODULE ]; do
-    read -p "Name of the module? (to be used in dune.module file, eg:dune_grid (only alphanumeric character)): " MODULE
-  done
+  MODULE="$PROJECT"
+
   # Read the modules find part
 . $(cd $(dirname $(readlink --canonicalize $0)); pwd)/dunemodules.inc
   find_modules .
