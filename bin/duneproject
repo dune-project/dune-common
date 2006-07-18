@@ -26,7 +26,7 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
     read -p "Name of the module? (to be used in dune.module file, eg:dune_grid (only alphanumeric character)): " MODULE
   done
   # Read the modules find part
-. $(cd $(dirname $0); pwd)/dunemodules.inc
+. $(cd $(dirname $(readlink --canonicalize $0)); pwd)/dunemodules.inc
   find_modules .
   DEPENDENCIES=""
   while [ -z $DEPENDENCIES ]; do
