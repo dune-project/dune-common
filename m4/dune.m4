@@ -25,8 +25,6 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   m4_pushdef([_dune_symbol], [$5])
   m4_pushdef([_DUNE_MODULE], [m4_toupper(_dune_module)])
 
-  echo Module _dune_module_plain mapps to _DUNE_MODULE
-
   # switch tests to c++
   AC_LANG_PUSH([C++])
 
