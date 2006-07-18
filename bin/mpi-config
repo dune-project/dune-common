@@ -1,0 +1,297 @@
+#!/bin/sh
+
+set -e
+
+version=0.1
+verbose=0
+
+usage()
+{
+  cat <<EOF
+Usage: mpi-config [OPTIONS] [LIBRARIES]
+Options:
+ [--mpicc[=COMPILER]]
+ [--disable-cxx]
+ [--verbose]
+ [--version]
+ [--mpiversion]
+ [--libs]
+ [--cflags]
+EOF
+  exit $1
+}
+
+if test $# -eq 0 ; then
+  usage 1 1>&2
+fi
+
+while test $# -gt 0 ; do
+  case "$1" in
+  -*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+  *) optarg= ;;
+  esac
+
+  case $1 in
+  --mpicc=*)
+    MPICC=$optarg
+    ;;
+  --version)
+    echo $version
+    exit 0
+    ;;
+  --verbose)
+    verbose=1
+    ;;
+  --disable-cxx)
+    disablecxx=yes
+    ;;
+  --mpiversion)
+    tasks="$tasks print_mpiversion"
+    ;;
+  --cflags)
+    tasks="$tasks print_cflags"
+    ;;
+  --libs)
+    tasks="$tasks print_libs"
+    ;;
+  *)
+    usage 1 1>&2
+    ;;
+  esac
+  shift
+done
+
+if test x$MPICC == x ; then
+  MPICC=mpicc
+fi
+
+mpi_trybuild () {
+  $MPICC ${1} > /dev/null 2>&1 || return 1
+  return 0
+}
+
+mpi_preprocess () {
+  $MPICC -E -c ${1} 2> /dev/null
+}
+
+mpi_getflags () {
+  # -- call mpiCC, remove compiler name
+  # compiler-name is first word in line _if_ it doesn't start with a dash!
+  # needed because mpiCC sometimes does not include compiler (newer LAM)
+
+  # the additional brackets keep m4 from interpreting the brackets
+  # in the sed-command...
+  retval=`$MPICC ${1} ${2} 2>/dev/null | head -1 | sed -e 's/^[^-][^ ]\+ //'`
+  # remove dummy-parameter (if existing)
+  if test ${#} = 2 ; then
+    retval=`echo $retval | sed -e "s/${2}//"`
+  fi
+}
+# removes regexp $2 from string $1
+mpi_remove () {
+  retval=`echo ${1} | sed -e "s/${2}//"`
+}
+
+msg_checking() {
+  if test $verbose -gt 0; then
+    echo -n "checking $@..."
+  fi
+}
+
+msg_result() {
+  if test $verbose -gt 0; then
+    echo " $@"
+  fi
+}
+
+msg_error() {
+  echo Error: $@
+  exit 1
+}
+
+test_lam () {
+  msg_checking for lam
+  cat >conftest.c <<_EOF
+#include <mpi.h>
+#include <stdio.h>
+#include <lam_config.h>
+
+int main() {
+  printf ("%i%i\n", LAM_MAJOR_VERSION, LAM_MINOR_VERSION);
+  return 0;
+ }
+_EOF
+
+  if mpi_trybuild "-c conftest.c"; then
+    # try new -showme:xxx function
+    mpi_getflags "-showme:compile"
+    if test x"$retval" != x ; then
+      # seems like LAM >= 7.1 which supports extraction of parameters without
+      # dummy files
+      MPI_VERSION="LAM >= 7.1"
+      MPI_CPPFLAGS="$retval"
+      mpi_getflags "-showme:link"
+      MPI_LDFLAGS="$retval"
+    else
+      MPI_VERSION="LAM < 7.1"
+      # use -showme and dummy parameters to extract flags        
+      mpi_getflags "-showme" "-c $MPISOURCE"
+      MPI_CPPFLAGS="$retval"
+      mpi_getflags "-showme" "dummy.o -o dummy"
+      MPI_LDFLAGS="$retval"
+    fi
+    # hack in option to disable LAM-C++-bindings...
+    # we fake to have mpicxx.h read already
+    MPI_NOCXXFLAGS="-DMPIPP_H"
+    msg_result yes
+    rm -f conftest*
+    return 0    
+  fi
+
+  rm -f conftest*
+  msg_result no
+  return 1
+}
+
+test_mpich () {
+  msg_checking for mpich
+  cat >conftest.c <<_EOF
+#include <mpi.h>
+
+int main() { return 0; }
+_EOF
+
+  if (mpi_preprocess conftest.c \
+      | grep -q MPICHX_PARALLELSOCKETS_PARAMETERS); then
+    MPI_VERSION="MPICH"
+    # use special commands to extract options      
+    mpi_getflags "-compile_info"
+    MPI_CPPFLAGS="$retval"
+    # remove implicitly set -c
+    mpi_remove "$MPI_CPPFLAGS" '-c'
+    MPI_CPPFLAGS="$retval"
+    mpi_getflags "-link_info"
+    MPI_LDFLAGS="$retval"
+    # hack in option to disable MPICH-C++-bindings...
+    MPI_NOCXXFLAGS="-DMPICH_SKIP_MPICXX"
+
+    msg_result yes
+    rm -f conftest*
+    return 0    
+  fi
+
+  rm -f conftest*
+  msg_result no
+  return 1
+}
+
+test_openmpi () {
+  msg_checking for OpenMPI
+  cat >conftest.c <<_EOF
+#include <mpi.h>
+
+int main() { return 0; }
+_EOF
+
+  if (mpi_preprocess conftest.c | grep -q ompi_communicator_t); then
+    MPI_VERSION="OpenMPI"
+    MPI_NOCXXFLAGS="-DMPIPP_H"
+
+    msg_result yes
+    rm -f conftest*
+    return 0    
+  fi
+
+  rm -f conftest*
+  msg_result no
+  return 1
+}
+
+test_ibmmpi() {
+  msg_checking for IBM MPI
+  if $MPICC -v -c conftest.c > /dev/null 2>&1; then
+    mpi_getflags "-v" "-c dummy.c"
+    if (echo $retval | grep '^xl[cC]'); then
+      MPI_VERSION="IBM MPI"
+
+      # mpCC passes on it's own parameter...
+      retval=`echo $retval | sed -e "s/-v//"`
+      # remove compiler name
+      retval=`echo $retval | sed -e 's/^xl[cC] //'`
+      # remove stuff we passed
+      retval=`echo $retval | sed -e "s/-c dummy.c//"`
+  
+      # get compilation script
+#      AC_LANG_CASE([C],[
+#        MPICOMP="$MPICC"
+#        dune_mpi_isgnu="$GCC"
+#      ],
+#      [C++],[
+#        MPICOMP="$MPICXX"
+#        dune_mpi_isgnu="$GXX"
+#      ])
+      # mpCC assumes xlc is used...
+#      if test x$dune_mpi_isgnu = xyes ; then
+#        # change commandline if GNU compiler is used
+#        retval=`echo $retval | sed -e 's/\(-b[[^ ]]*\)/-Xlinker \1/g'`
+#      fi
+      MPI_CPPFLAGS="$retval"
+  
+      mpi_getflags "-v" "dummy.o -o dummy"
+      # mpCC passes on it's own parameter...
+      retval=`echo $retval | sed -e "s/-v//"`
+      # remove compiler name
+      retval=`echo $retval | sed -e 's/^xl[cC] //'`
+      # remove stuff we passed
+      retval=`echo $retval | sed -e "s/dummy.o -o dummy//"`
+
+#      if test x$dune_mpi_isgnu = xyes ; then
+#        # change commandline if GNU compiler is used
+#        retval=`echo $retval | sed -e 's/\(-b[[^ ]]*\)/-Xlinker \1/g'`
+#      fi
+
+      MPI_LDFLAGS="$retval"
+
+      msg_result yes
+      rm -f conftest*
+      return 0    
+    fi
+  fi
+}
+
+get_mpiparameters() {
+  if test x"$MPI_VERSION" != x; then
+    return
+  fi 
+
+  test_lam && return
+  test_mpich && return
+  test_openmpi && return
+  test_ibmmpi && return
+   
+  MPI_VERSION="unknown"
+  msg_error "Could not identify MPI-package! Please send a bugreport and tell us what MPI-package you're using."
+}
+
+print_mpiversion() {
+  get_mpiparameters
+  echo $MPI_VERSION
+}
+
+print_cflags() {
+  get_mpiparameters
+  local CFLAGS="$MPI_CPPFLAGS"
+  if test x$disablecxx == xyes; then
+    CFLAGS="$MPI_CPPFLAGS $MPI_NOCXXFLAGS"
+  fi
+  echo $CFLAGS
+}
+
+print_libs() {
+  get_mpiparameters
+  echo $MPI_LDFLAGS
+}
+
+for task in $tasks; do
+  eval $task
+done
