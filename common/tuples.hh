@@ -6,6 +6,7 @@
 
 #include <ostream>
 #include "typetraits.hh"
+#include "helpertemplates.hh"
 
 namespace Dune
 {
@@ -477,6 +478,21 @@ namespace Dune
   }
 
   /**
+   * @brief Less operator for tuples.
+   * @param tuple1 The first tuple.
+   * @param tuple2 The second tuple,
+   */
+  template<typename T1, typename T2, typename U1, typename U2>
+  inline bool operator<(const Pair<T1,T2>& tuple1, const Pair<U1,U2>& tuple2)
+  {
+    IsTrue<IsInteroperable<T1,U1>::value>::yes();
+    IsTrue<! SameType<T2,Nil>::value>::yes();
+    IsTrue<! SameType<U2,Nil>::value>::yes();
+    return tuple1.first() < tuple2.first()
+           || (tuple1.first() == tuple2.first() && tuple1.second() < tuple2.second());
+  }
+
+  /**
    * @brief Equality comparison operator for tuples.
    * @param tuple1 The first tuple.
    * @param tuple2 The second tuple,
@@ -495,9 +511,20 @@ namespace Dune
   template<typename T1, typename U1>
   inline bool operator!=(const Pair<T1,Nil>& tuple1, const Pair<U1,Nil>& tuple2)
   {
+    IsTrue<IsInteroperable<T1,U1>::value>::yes();
     return (tuple1.first()!=tuple2.first());
   }
 
+  /**
+   * @brief Less operator for tuples.
+   * @param tuple1 The first tuple.
+   * @param tuple2 The second tuple,
+   */
+  template<typename T1, typename U1>
+  inline bool operator<(const Pair<T1,Nil>& tuple1, const Pair<U1,Nil>& tuple2)
+  {
+    return (tuple1.first()<tuple2.first());
+  }
 
   /**
    * @brief Equality comparison operator for tuples.

@@ -56,6 +56,25 @@ int iteratorTupleTest()
   return ret;
 }
 
+int lessTest()
+{
+  Tuple<int,float,double> t1(1,2.0,3.0);
+  Tuple<int,int,int> t2(1,2,1);
+
+  int ret=0;
+
+  if ((t1<t2) != false) ret++;
+  std::cout << "[" << t1 << "] < [" << t2 << "] = " << (t1<t2) << std::endl;
+  if ((t2<t1) != true) ret++;
+  std::cout << "[" << t2 << "] < [" << t1 << "] = " << (t2<t1) << std::endl;
+
+  // This would result in a compiler error
+  //  Tuple<int,int> t3(1,2);
+  //  std::cout << "[" << t3 << "] < [" << t1 << "] = " << (t3<t1) << std::endl;
+
+  return ret;
+}
+
 int copyTest()
 {
   Tuple<float,int,double,char,std::string> tuple, tuple1(3.0,1,3.3,'c',std::string("hallo")), tuple2(tuple1);
@@ -114,6 +133,6 @@ int main(int argc, char** argv)
 
   test(tuple);
   test(static_cast<const Tuple<float,int,double,char,std::string>&>(tuple));
-  exit(copyTest()+iteratorTupleTest()+referenceTest());
+  exit(copyTest()+iteratorTupleTest()+referenceTest()+lessTest());
 
 }
