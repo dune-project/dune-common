@@ -13,7 +13,8 @@ fi
 
 
 # Read the modules find part
-. $(cd $(dirname $0); pwd)/dunemodules.inc
+INCDIR=$(dirname $(readlink --canonicalize $0))
+. $INCDIR/dunemodules.inc
 
 
 ###
