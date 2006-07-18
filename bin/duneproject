@@ -91,7 +91,7 @@ AM_CONFIG_HEADER([config.h])
 
 
 # we need no more than the standard DUNE-stuff
-DUNE_CHECK_ALL($CHECK)
+DUNE_CHECK_ALL_M($CHECK)
 
 # implicitly set the Dune-flags everywhere
 AC_SUBST(AM_CPPFLAGS, \$DUNE_CPPFLAGS)
@@ -349,46 +349,3 @@ GridType grid(N,L,H);
 }
 CC_DELIM
 
-################## GCC.OPTS ##################
-cat> "$PROJECT/gcc.opts" << GCC_DELIM
-# \$Id$
-
-# options for gcc/g++
-# remember to run ./autogen.sh after changing these values!
-
-# name of compiler binaries
-COMP="gcc"
-CXXCOMP="g++"
-
-# flags set in any case
-FLAGS="-Wall"
-
-# additional flags for debugging
-DEBUGFLAGS="-g"
-
-# additional flags for optimization
-OPTIMFLAGS="-O3"
-
-GCC_DELIM
-
-################## GCC.OPTS ##################
-cat> "$PROJECT/icc.opts" << ICC_DELIM
-# \$Id$
-
-# options for icc
-# remember to run ./autogen.sh after changing these values!
-
-# name of compiler binaries
-COMP="icc"
-CXXCOMP="icc"
-
-# flags set in any case
-FLAGS="-Wall"
-
-# additional flags for debugging
-DEBUGFLAGS="-O0 -g"
-
-# additional flags for optimization
-OPTIMFLAGS="-O3 -Ob2 -unroll"
-
-ICC_DELIM
