@@ -108,7 +108,20 @@ AC_DEFUN([DUNE_MPI],[
   ## do nothing if --disable-parallel is used
   if test x$with_parallel == xyes ; then
   
+    # is the mpi compilation script already specified?
+    AC_LANG_CASE([C],[
+        MPICOMP="$MPICC"
+      ],
+      [C++],[
+        MPICOMP="$MPICXX"
+      ])
+	AC_MSG_NOTICE([user specific mpi compiler would be ... $MPICC])	
     # implicitly sets the HAVE_MPI-define and the MPICXX-substitution
+    if test x == x"$MPICOMP"; then
+        ACX_MPI()
+    else
+        AC_MSG_NOTICE([using user specific mpi compiler... $MPICC])
+	fi
     ACX_MPI()
     # remove HAVE_MPI from confdefs.h
     cp confdefs.h confdefs.h.tmp
@@ -127,7 +140,7 @@ AC_DEFUN([DUNE_MPI],[
     # taken from acx_mpi: test succeeded if MPILIBS is not empty
     if test x != x"$MPICOMP" ; then
 
-      AC_MSG_CHECKING([MPI-package])
+      AC_MSG_CHECKING([for a known MPI package])
       # the LAM mpiCC knows a -showme parameter
       dune_mpi_getflags "-showme"
       if test x"$retval" != x ; then

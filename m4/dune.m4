@@ -17,19 +17,24 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
 
   echo checking for $1
 
-  AC_DEFUN([_dune_module], [$1])
-  AC_DEFUN([_dune_header], [$2])
-  AC_DEFUN([_dune_ldpath], [$3])
-  AC_DEFUN([_dune_lib],    [$4])
-  AC_DEFUN([_dune_symbol], [$5])
-  AC_DEFUN([_DUNE_MODULE], [m4_toupper(_dune_module)])
+  m4_pushdef([_dune_module_plain], [$1])
+  m4_pushdef([_dune_module], [m4_translit(_dune_module_plain, [-], [_])])
+  m4_pushdef([_dune_header], [$2])
+  m4_pushdef([_dune_ldpath], [$3])
+  m4_pushdef([_dune_lib],    [$4])
+  m4_pushdef([_dune_symbol], [$5])
+  m4_pushdef([_DUNE_MODULE], [m4_toupper(_dune_module)])
+
+  echo Module _dune_module_plain mapps to _DUNE_MODULE
 
   # switch tests to c++
   AC_LANG_PUSH([C++])
 
   # the usual option...
-  AC_ARG_WITH([_dune_module],
-    AC_HELP_STRING([--with-_dune_module=PATH],[_dune_module directory]))
+  withval=""
+  AC_ARG_WITH(_dune_module_plain,
+    AC_HELP_STRING([--with-_dune_module_plain=PATH],[_dune_module directory]))
+  withval=$with_[]_dune_module
 
   # backup of flags
   ac_save_CPPFLAGS="$CPPFLAGS"
@@ -43,20 +48,25 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
     # expand tilde
     if test -d $withval ; then
       # expand tilde / other stuff
-      _DUNE_MODULE[]ROOT=`cd $withval && pwd`
+      _DUNE_MODULE[]_ROOT=`cd $withval && pwd`
 
       # expand search path (otherwise empty CPPFLAGS)
-      if test -d $_DUNE_MODULE[]ROOT/include/dune; then
+      if test -d $_DUNE_MODULE[]_ROOT/include/dune; then
 	# Dune was installed into directory given by with-dunecommon
 	LINSTALL=1
-	_DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]ROOT/include"
-	LDFLAGS="$LDFLAGS -L$_DUNE_MODULE[]ROOT/lib"
+	_DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]_ROOT/include"
+	LDFLAGS="$LDFLAGS -L$_DUNE_MODULE[]_ROOT/lib"
       else
-      	_DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]ROOT"
+      	_DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]_ROOT"
       fi
     else
       AC_MSG_ERROR([_dune_module-directory $withval does not exist])
     fi
+    # set correct dune path
+    with_[]_dune_module="$withval"
+  else
+    # set correct dune path
+    with_[]_dune_module="global installation"
   fi
 
   CPPFLAGS="$DUNE_CPPFLAGS $_DUNE_MODULE[]_CPPFLAGS"
@@ -66,7 +76,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
      _DUNE_MODULE[]_CPPFLAGS="$CPPFLAGS"],
     [HAVE_[]_DUNE_MODULE=0
      _DUNE_MODULE[]_CPPFLAGS=""
-     AC_MSG_ERROR([$withval does not seem to contain a valid _dune_module (dune/[]_dune_header not found)])]
+     AC_MSG_ERROR([$with_[]_dune_module does not seem to contain a valid _dune_module (dune/[]_dune_header not found)])]
   )
 
   ## check for lib (if lib name was provided)
@@ -78,20 +88,20 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       HAVE_[]_DUNE_MODULE=0
 
       ## special test for a local installation
-      if test x$_DUNE_MODULE[]ROOT != x && test ! $LINSTALL; then
+      if test x$_DUNE_MODULE[]_ROOT != x && test ! $LINSTALL; then
         # have a look into the dune module directory
-        LDFLAGS="$LDFLAGS -L$_DUNE_MODULE[]ROOT/dune/_dune_ldpath"
+        LDFLAGS="$LDFLAGS -L$_DUNE_MODULE[]_ROOT/dune/_dune_ldpath"
 
         # only check for a .la-file
-        if test -s $_DUNE_MODULE[]ROOT/_dune_ldpath/lib[]_dune_lib[].la ; then
-            _DUNE_MODULE[]_LDFLAGS="-L$_DUNE_MODULE[]ROOT/_dune_ldpath"
+        if test -s $_DUNE_MODULE[]_ROOT/_dune_ldpath/lib[]_dune_lib[].la ; then
+            _DUNE_MODULE[]_LDFLAGS="-L$_DUNE_MODULE[]_ROOT/_dune_ldpath"
             echo found lib[]_dune_lib.la, setting LDFLAGS to $_DUNE_MODULE[]_LDFLAGS
 
             # provide arguments like normal lib-check
             _DUNE_MODULE[]_LIBS="-l[]_dune_lib"
             HAVE_[]_DUNE_MODULE=1
         else 
-	    AC_MSG_ERROR([$withval does not seem to contain a valid _dune_module (lib[]_dune_lib[].la not found)])
+	    AC_MSG_ERROR([$with_[]_dune_module does not seem to contain a valid _dune_module (lib[]_dune_lib[].la not found)])
 
         fi
       fi
@@ -132,7 +142,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
     AC_SUBST(_DUNE_MODULE[]_CPPFLAGS, "$_DUNE_MODULE[]_CPPFLAGS")
     AC_SUBST(_DUNE_MODULE[]_LDFLAGS, "$_DUNE_MODULE[]_LDFLAGS")
     AC_SUBST(_DUNE_MODULE[]_LIBS, "$_DUNE_MODULE[]_LIBS")
-    AC_SUBST(_DUNE_MODULE[]ROOT, "$_DUNE_MODULE[]ROOT")
+    AC_SUBST(_DUNE_MODULE[]_ROOT, "$_DUNE_MODULE[]_ROOT")
     AC_DEFINE(HAVE_[]_DUNE_MODULE, 1, [Define to 1 if _dune_module was found])
 
     # set DUNE_* variables
@@ -144,6 +154,8 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
     DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $DUNE_CPPFLAGS"
     DUNE_PKG_LIBS="$DUNE_PKG_LIBS $LIBS"
     DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $DUNE_LDFLAGS"
+
+    with_[]_dune_module="yes"
   else
     AC_MSG_ERROR([could not find required module _dune_module])
   fi
@@ -152,22 +164,31 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   CPPFLAGS="$ac_save_CPPFLAGS"
   LIBS="$ac_save_LIBS"
 
+  # remove local variables
+  m4_popdef([_dune_module_plain])
+  m4_popdef([_dune_module])
+  m4_popdef([_dune_header])
+  m4_popdef([_dune_ldpath])
+  m4_popdef([_dune_lib])
+  m4_popdef([_dune_symbol])
+  m4_popdef([_DUNE_MODULE])
+
   # restore previous language settings (leave C++)
   AC_LANG_POP([C++])
 ])
 
 AC_DEFUN([DUNE_CHECK_DISPATCH],[
   ifelse([$1], [], [],
-         [$1], [dunecommon],[
-           DUNE_CHECK_MODULES([dunecommon], [common/stdstreams.hh], [common], [common], [Dune::derr.active();])],
-         [$1], [dunegrid],[
-           DUNE_CHECK_MODULES([dunegrid], [grid/common/grid.hh], [grid], [grid], [Dune::PartitionName])],
-         [$1], [dunefem],[
-           DUNE_CHECK_MODULES([dunefem], [fem/basefunctions/common/storageinterface.hh], [], [], [])],
-         [$1], [duneistl],[
-           DUNE_CHECK_MODULES([duneistl], [istl/allocator.hh],,,)],
-         [$1], [dunedisc],[
-           DUNE_CHECK_MODULES([dunedisc], [disc/functions/functions.hh], [disc], [disc], [Dune::LagrangeShapeFunctions<double, double, 3>::general])],
+         [$1], [dune-common],[
+           DUNE_CHECK_MODULES([dune-common], [common/stdstreams.hh], [common], [common], [Dune::derr.active();])],
+         [$1], [dune-grid],[
+           DUNE_CHECK_MODULES([dune-grid], [grid/common/grid.hh], [grid], [grid], [Dune::PartitionName])],
+         [$1], [dune-fem],[
+           DUNE_CHECK_MODULES([dune-fem], [fem/basefunctions/common/storageinterface.hh], [], [], [])],
+         [$1], [dune-istl],[
+           DUNE_CHECK_MODULES([dune-istl], [istl/allocator.hh],,,)],
+         [$1], [dune-disc],[
+           DUNE_CHECK_MODULES([dune-disc], [disc/functions/functions.hh], [disc], [disc], [Dune::LagrangeShapeFunctions<double, double, 3>::general])],
          [AC_MSG_ERROR([Unknown module $1])])
 ])
 
