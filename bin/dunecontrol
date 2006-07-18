@@ -243,7 +243,7 @@ while test $# -gt 0; do
         echo
         exit 1;
       fi
-      MODULE=$arg
+      fix_and_assign MODULE "$arg"
     ;;
     --only=*)
       if test "x$arg" == "x"; then
@@ -252,8 +252,8 @@ while test $# -gt 0; do
         echo
         exit 1;
       fi
-      ONLY=$arg
-      MODULE=$arg
+      fix_and_assign ONLY "$arg"
+      fix_and_assign MODULE "$arg"
     ;;
     --debug) true ;;
     *)

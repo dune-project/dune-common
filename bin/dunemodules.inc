@@ -18,7 +18,7 @@ CONTROL="dune.module"
 #
 parse_control() {
   if test -f "$1"; then
-    export module=$(echo $(grep Module: "$1" | cut -d ':' -f2))
+    fix_and_assign module $(echo $(grep Module: "$1" | cut -d ':' -f2))
     local deps=$(echo $(grep Depends: "$1" | cut -d ':' -f2))
     local sugs=$(echo $(grep Suggests: "$1" | cut -d ':' -f2))
     local path=$(dirname "$1")
@@ -26,8 +26,8 @@ parse_control() {
       if check_modname "$module"; then
         export HAVE_${module}=yes
         export PATH_${module}="$path"
-        export DEPS_${module}="$deps"
-        export SUGS_${module}="$sugs"
+		fix_and_assign DEPS_${module} "$deps"
+		fix_and_assign SUGS_${module} "$sugs"
       else
         echo "ERROR: $CONTROL files $1 contains an invalid Module entry"
         exit 1
@@ -143,6 +143,21 @@ eval_control() {
   fi
 }
 
+#
+# fix a value such that it is suitable for a variable name and assign it
+#
+# parameters:
+# $1 name of variable
+# $2 value
+#
+fix_and_assign() {
+  local name=$1
+  shift 1
+  if ! check_modname $name; then
+    echo ERROR: error in assignment. $name is not a valid variabel name.
+  fi
+  export $name=$(echo "$@" | sed -e 's/-/_/g')
+}
 
 #
 # make sure the module name fits the naming convention
@@ -151,8 +166,11 @@ eval_control() {
 # $1 module name
 #
 check_modname() {
-  if ! echo "$1" | grep -q '^[a-zA-Z0-9_]\+$'; then
+  if sh -c "$ID=huhu" > /dev/null 2>&1; then
     return 1
   fi
+#  if ! echo "$1" | grep -q '^[a-zA-Z0-9_]\+$'; then
+#    return 1
+#  fi
   return 0
 }
