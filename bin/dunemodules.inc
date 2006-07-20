@@ -18,31 +18,41 @@ CONTROL="dune.module"
 # $1 file to read
 #
 parse_control() {
-  if test -f "$1"; then
-    local name=$(echo $(grep Module: "$1" | cut -d ':' -f2))
-    fix_and_assign module $name
-    local deps=$(echo $(grep Depends: "$1" | cut -d ':' -f2))
-    local sugs=$(echo $(grep Suggests: "$1" | cut -d ':' -f2))
-    local path=$(dirname "$1")
-    if test "x$module" != "x"; then
-      if check_modname "$module"; then
-        export HAVE_${module}=yes
-        export PATH_${module}="$path"
-		export NAME_${module}="$name"
-		fix_and_assign DEPS_${module} "$deps"
-		fix_and_assign SUGS_${module} "$sugs"
-      else
-        echo "ERROR: $CONTROL files $1 contains an invalid Module entry"
-        exit 1
-      fi
-    else
-      echo "ERROR: $CONTROL files $1 does not contain a Module entry"
-      exit 1
-    fi
-  else
+  # check file existence
+  if ! test -f "$1"; then
     echo "ERROR: could not read file $1"
     exit 1
   fi
+  # read parameters from control file
+  local name=$(echo $(grep Module: "$1" | cut -d ':' -f2))
+  if test "x$name" == "x"; then
+    echo "ERROR: $CONTROL files $1 does not contain a Module entry"
+    exit 1
+  fi
+  local deps=$(echo $(grep Depends: "$1" | cut -d ':' -f2))
+  local sugs=$(echo $(grep Suggests: "$1" | cut -d ':' -f2))
+  local path=$(dirname "$1")
+  # create and check variable name from module name
+  fix_and_assign module $name
+  if ! check_modname "$module"; then
+    echo "ERROR: $CONTROL files $1 contains an invalid Module entry"
+    exit 1
+  fi
+  # avoid multiple definition of the same module
+  if test "x$(eval echo \$HAVE_$module)" != "x"; then
+    echo "ERROR: multiple definition of module $name"
+    echo "previous defined in:"
+    echo "  $(eval echo \$PATH_$module)/$CONTROL"
+    echo "redefined in:"
+    echo "  $path/$CONTROL"
+    exit 1
+  fi
+  # set status variables
+  export HAVE_${module}=yes
+  export PATH_${module}="$path"
+  export NAME_${module}="$name"
+  fix_and_assign DEPS_${module} "$deps"
+  fix_and_assign SUGS_${module} "$sugs"
 }
 
 #
