@@ -29,7 +29,7 @@ The following packages are mandatory to compile ALBERTA:
 </p>
 <dl>
 <dt>Fortran 77</dt><dd>compiler, e.&nbsp;g. g77</dd>
-<dt>OpenGL</dt><dd>  A free implementation is available from 
+<dt>OpenGL</dt><dd>  A free implementation is available from
         <a href="http://www.mesa3d.org/">http://www.mesa3d.org/</a></dd>
 <dt>BLAS</dt><dd><p>&quot;Basic Linear Algebra Subprograms&quot;</p>
 <p>
@@ -37,7 +37,7 @@ The following packages are mandatory to compile ALBERTA:
         is called atlas3 and has to be installed together with the
         header package atlas3-headers).
 </p><p>
-	If it does not come with your distribution you can get it from 
+	If it does not come with your distribution you can get it from
 	http://math-atlas.sourceforge.net
 </p></dd>
 </dl>
@@ -47,7 +47,7 @@ For optional packages see the README file of ALBERTA
 
 <h3>ALUGrid</h3>
 <p>
-There are no mandatory packages for ALUGrid. 
+There are no mandatory packages for ALUGrid.
 </p><p>
 For optional packages see the README file of ALUGRID.
 </p>
@@ -59,7 +59,7 @@ There are no mandatory packages for UGGrid.
 You can (but you don't have to) create UGGrid objects from AmiraMesh files.
 For this you'll need the <a href="http://www.amiravis.com">AmiraMesh</a> library.
 It should be free, however, it is not
-available for download.  You'll have to inquire via email.
+available for download. You'll have to inquire via email.
 </p>
 
 <h2>Compilation and Installation of the External Grids</h2>
@@ -75,8 +75,8 @@ available for download.  You'll have to inquire via email.
 	<kbd>cd alberta-1.2</kbd>
 </li>
 <li><p>Configure ALBERTA, e. g.</p>
-    <kbd>   ./configure --prefix=/directory/to/install/alberta/to \
-       --with-blas-name=blas-3 --disable-shared \
+    <kbd>   ./configure --prefix=/directory/to/install/alberta/to \\
+       --with-blas-name=blas-3 --disable-shared \\
        CXX=g++-3.4 CC=gcc-3.4
 </kbd>
 <p>
@@ -89,7 +89,7 @@ available for download.  You'll have to inquire via email.
 </p><p>
     With the variable CC and CXX we tell configure the C and C++
     compiler and linker to use. These have to be the same compilers
-    and linkers  you will use  to compile DUNE!!
+    and linkers you will use to compile DUNE!!
 </p>
    <p> For more information and additional options see</p>
     <kbd>./configure --help</kbd>
@@ -111,11 +111,11 @@ available for download.  You'll have to inquire via email.
 </kbd></li>
 
 <li><p>Configure ALUGrid, e. g.</p>
-    <kbd>
-       ./configure --prefix=/directory/to/install/ALUGrid/to \
+<kbd>
+       ./configure --prefix=/directory/to/install/ALUGrid/to \\
        CXX=g++-3.4 CC=gcc-3.4
 </kbd>
-       <p>for the sequential use of ALUGrid.</p>
+<p>for the sequential use of ALUGrid.</p>
 <p>
     With --prefix the absolute path of the directory we install to has
     to be given.
@@ -123,31 +123,51 @@ available for download.  You'll have to inquire via email.
 <p>
     With the variable CC and CXX we tell configure the C and C++
     compiler and linker to use. These have to be the same compilers
-    and linkers you will use  to compile DUNE!!
+    and linkers you will use to compile DUNE!!
 </p>
 <p>
     If you want to use the parallel version of ALUGrid one has to
     proceed as follows. As the compiler used to compile your mpi
     version might differ from the version needed for DUNE instead of
     specify mpi as the compiler we provide the include path and linker
-    path of MPI:
+    path of MPI.
 </p>
 <p>
-    Go to the DUNE directory and configure DUNE without any additional
-    grids like described below. Then lookup the values of the
-    variables MPI_CPPFLAGS and MPI_LDFLAGS and provides those values
-    as the values of the variables CPPFLAGS and LDFLAGS to conigure.
+    In order to retrieve the CPPFLAGS and LDFLAGS necessary for MPI,
+    dune-common offers a script <i>dune-common/bin/mpi-config</i>:
+</p>
+<kbd>
+       Usage: mpi-config [OPTIONS] [LIBRARIES]
+       Options:
+        [--mpicc[=COMPILER]]
+        [--disable-cxx]
+        [--verbose]
+        [--version]
+        [--mpiversion]
+        [--libs]
+        [--cflags]
+</kbd>
+<p>
+     mpi-config calls the MPI compiler and tries to extract the
+	 parameters. One can specify which MPI compiler to use, by setting
+	 the $MPICC environment variable or by supplying the
+	 --mpicc=<i>MPICOMPILER</i> option.
 </p>
 <p>
-    E. g. for lam-mpi:
+     Using mpi-config one can pass the approriate CPPFLAGS and LDFLAGS
+     to configure.
 </p>
-   <kbd> /configure --prefix=/directory/to/install/ALUGrid/to \
-       CXX=g++-3.4 CC=gcc-3.4 \
-       CPPFLAGS="-I/usr/lib/lam/include -pthread" \
-       LDFLAGS="-L/usr/lib/lam/lib -llammpio -llammpi++ -llamf77mpi \
-    -lmpi -llam -lutil -ldl" </kbd>
 <p>
-    For more information and additional options see
+     E. g. for the MPI compiler <i>/opt/foo-mpi/bin/mpicc</i>:
+</p>
+<kbd>
+       ./configure --prefix=/directory/to/install/ALUGrid/to \\
+       CXX=g++-3.4 CC=gcc-3.4 \\
+       CPPFLAGS="mpi-config --cflags --disable-cxx --mpicc=/opt/foo-mpi/bin/mpicc" \\
+       LDFLAGS="mpi-config --libs --disable-cxx --mpicc=/opt/foo-mpi/bin/mpicc"
+</kbd>
+<p>
+    For further information and additional options see
     </p><kbd>./configure --help</kbd>
 </li>
 <li><p>Compile ALUGrid with</p> <kbd>make</kbd></li>
@@ -168,22 +188,22 @@ to install it.
 </li>
 <li>
 <p>
-Get the UG library.  You can obtain it at 
+Get the UG library. You can obtain it at
 <a href="http://cox.iwr.uni-heidelberg.de/~ug">http://cox.iwr.uni-heidelberg.de/~ug</a>. 
 Unfortunately, the version of UG available for download there (3.8 at the
 time of writing) is not new enough to be compatible with DUNE. Please
 write to one of the contact addresses given on the page
 and ask for a more recent version of UG.
 </p>
-<li>Unpack the tarball and move into the ug source tree.</li>
+<li>Unpack the tarball and move into the ug source tree.
     <pre>
 tar zxvf UG-3.9.1.tar.gz
 cd UG-3.9.1
     </pre>
-
+</li>
 <li><p>Build the UG Make System</p>
 <kbd>
-    ./configure --prefix=my_favourite_ug_installation_path \
+    ./configure --prefix=my_favourite_ug_installation_path \\
    --enable-dune CXX=g++-3.4 CC=g++-3.4
 </kbd>
 <p>
@@ -193,66 +213,59 @@ cd UG-3.9.1
     With --enable-dune we enable special features needed by Dune.
 </p><p>
     With the variable CC and CXX we tell configure the C and C++
-    compiler and linker to use.  Don't forget that the compiler has to
+    compiler and linker to use. Don't forget that the compiler has to
     be binary-compatible with the one you're using for Dune.
 </p><p>
     <b>Note:</b> Even CC has to be set to the C++ and not
     the C compiler !!!
 </p></li>
-
-<li> 
+<li>
         <p>Compile UG with</p>
         <kbd> make</kbd>
 </li>
-
 <li><p>Install UG with</p> <kbd>make install</kbd></li>
 </ol>
 
 <h2>Installation of DUNE modules</h2>
 <ol>
 <li><p>Download DUNE modules</p>
-</li>
 <p>
     See <a
     href="http://dune-project.org/download.html">Download
-    Section</a> 
-    section for more details. 
+    Section</a>
+    section for more details.
 </p>
 <p>
 When using the unstable version via svn, you might be interested in
 the <a href="http://dune-project.org/svn.html">DUNE SVN Developer
 Info</a> section.
 </p>
-
-<li> <p>Building all DUNE modules</p></li>
+</li>
+<li> <p>Building all DUNE modules</p>
 <p>
  Check out all dune modules into same directory (say dune-home)
 </p>
 <p>
  Run dunecontrol script available in the base module dune-common/bin. This will run autogen.sh, configure and make for each module.
 </p>
-<kbd> <pre> ./dune-common/bin/dunecontrol all</pre> </kbd> 
-
+<kbd>./dune-common/bin/dunecontrol all</kbd>
 <p>
  Read the <a
  href="http://dune-project.org/doc/buildsystem/buildsystem.pdf">DUNE
- Build System Howto</a> section for more details. 
+ Build System Howto</a> section for more details.
 </p>
-
-<li> <p>Building a specific DUNE module (and its dependent modules)</p></li>
-<p> Run dunecontrol script 
-<kbd> <pre>
-./dune-common/bin/dunecontrol --module=module_name all
-</pre> </kbd> 
-where module_name is the name of that particular module given in the dune.module file 
+</li>
+<li> <p>Building a specific DUNE module (and its dependent modules)</p>
+<p> Run dunecontrol script
+<kbd>./dune-common/bin/dunecontrol --module=module_name all</kbd>
+where module_name is the name of that particular module given in the dune.module file
 </p>
 <p> Read <a href="http://dune-project.org/dunemodule.html">Maintaining new Dune modules and applications</a> section for more details.
 </p>
-<li> <p>Building using certain configure options</p></li>
-<p> Run dunecontrol script 
-<kbd> <pre>
-./dune-common/bin/dunecontrol --opts=/path_to/file.opts --module=module_name all
-</pre> </kbd> 
+</li>
+<li> <p>Building using certain configure options</p>
+<p> Run dunecontrol script
+<kbd>./dune-common/bin/dunecontrol --opts=/path_to/file.opts --module=module_name all</kbd>
 where file.opts is the name of the file with configure options
 specified (you can find an <a href="example.opts">example.opts</a>
 file in the dune-common/doc directory)
