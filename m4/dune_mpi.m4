@@ -53,6 +53,14 @@
 AC_DEFUN([DUNE_MPI],[
   AC_PREREQ(2.50) dnl for AC_LANG_CASE
 
+  # get compilation script
+  AC_LANG_CASE([C],[
+    dune_mpi_isgnu="$GCC"
+  ],
+  [C++],[
+    dune_mpi_isgnu="$GXX"
+  ])
+
   AC_LANG_PUSH([C])
 
   # enable/disable parallel features
@@ -75,56 +83,20 @@ AC_DEFUN([DUNE_MPI],[
 
   with_mpi="no"
 
-  # 1) no paramter : ''
-  #    => use ACX_MPI to find the mpi Compiler
-  # 2) --with-mpi=/opt/special-mpi/bin/mpicc : '/opt/special-mpi/bin/mpicc'
-  #    => use /opt/special-mpi/bin/mpicc as MPI compiler
-  # 3) --without-mpi : 'no'
-  #    => disable MPI
-
   ## do nothing if --disable-parallel is used
   if test x$with_parallel == xyes ; then
   
-    # is the mpi compilation script already specified?
-    AC_LANG_CASE([C],[
-        MPICOMP="$MPICC"
-      ],
-      [C++],[
-        MPICOMP="$MPICXX"
-      ])
-	AC_MSG_NOTICE([user specific mpi compiler would be ... $MPICC])	
-    # implicitly sets the HAVE_MPI-define and the MPICXX-substitution
-    if test x == x"$MPICOMP"; then
-        ACX_MPI()
-    else
-        AC_MSG_NOTICE([using user specific mpi compiler... $MPICC])
-	fi
-    ACX_MPI()
-    # remove HAVE_MPI from confdefs.h
-    cp confdefs.h confdefs.h.tmp
-    grep -v "^#define HAVE_MPI " confdefs.h.tmp > confdefs.h
-    rm -f confdefs.h.tmp
-    # get compilation script
-    AC_LANG_CASE([C],[
-        MPICOMP="$MPICC"
-        dune_mpi_isgnu="$GCC"
-      ],
-      [C++],[
-        MPICOMP="$MPICXX"
-        dune_mpi_isgnu="$GXX"
-      ])
-  
-    # taken from acx_mpi: test succeeded if MPILIBS is not empty
-    if test x != x"$MPICOMP" ; then
-      MPICC="$MPICOMP"
+    ACX_MPI([
+      MPICOMP="$MPICC"
+
       MPI_CONFIG()
-      MPI_CPPFLAGS="$MPI_CPPFLAGS $MPI_NOCXXFLAGS"
+      MPI_CPPFLAGS="$MPI_CPPFLAGS $MPI_NOCXXFLAGS -DENABLE_MPI=1"
 
       with_mpi="yes ($MPI_VERSION)"
-    else
+    ],[
       # ACX_MPI didn't find anything
       with_mpi="no"
-    fi
+    ])
   fi # end of MPI identification
 
   # if an MPI implementation was found..
@@ -182,7 +154,9 @@ AC_DEFUN([DUNE_MPI],[
   if test x"$with_mpi" != xno ; then
     AC_SUBST(MPI_CPPFLAGS, $MPI_CPPFLAGS)
     AC_SUBST(MPI_LDFLAGS, $MPI_LDFLAGS)
-    AC_DEFINE(HAVE_MPI,1,[Define if you have the MPI library.])
+    AC_DEFINE(HAVE_MPI,ENABLE_MPI,[Define if you have the MPI library.
+    This is only true if MPI was found by configure 
+    _and_ if the application uses the MPI_CPPFLAGS])
   else
     AC_SUBST(MPI_CPPFLAGS, "")
     AC_SUBST(MPI_LDFLAGS, "")
