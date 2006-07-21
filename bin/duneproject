@@ -89,7 +89,7 @@ AM_CONFIG_HEADER([config.h])
 
 
 # we need no more than the standard DUNE-stuff
-DUNE_CHECK_ALL_M($CHECK)
+DUNE_CHECK_ALL($CHECK)
 
 # implicitly set the Dune-flags everywhere
 AC_SUBST(AM_CPPFLAGS, \$DUNE_CPPFLAGS)
