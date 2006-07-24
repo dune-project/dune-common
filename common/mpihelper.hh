@@ -3,6 +3,8 @@
 // $Id: $
 #ifndef DUNE_MPIHELPER
 #define DUNE_MPIHELPER
+
+#include <cassert>
 #if HAVE_MPI
 #include "mpi.h"
 #endif
@@ -144,6 +146,15 @@ namespace Dune
       return *instance_.get();
     }
 
+    /**
+     * @brief return rank of process, i.e. zero
+     */
+    int rank () const { return 0; }
+    /**
+     * @brief return rank of process, i.e. one
+     */
+    int size () const { return 1; }
+
   private:
     FakeMPIHelper()
     {}
@@ -247,10 +258,29 @@ namespace Dune
       return *instance_.get();
     }
 
+
+    /**
+     * @brief return rank of process
+     */
+    int rank () const { return rank_; }
+    /**
+     * @brief return number of processes
+     */
+    int size () const { return size_; }
+
   private:
+    int rank_;
+    int size_;
+
     MPIHelper(int& argc, char**& argv)
     {
+      rank_ = -1;
+      size_ = -1;
       MPI_Init(&argc, &argv);
+      MPI_Comm_rank(MPI_COMM_WORLD,&rank_);
+      MPI_Comm_size(MPI_COMM_WORLD,&size_);
+      assert( rank_ >= 0 );
+      assert( size_ >= 1 );
     }
     ~MPIHelper()
     {
