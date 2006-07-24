@@ -42,6 +42,12 @@ namespace Dune
     };
 
     template<class Grid>
+    struct isLeafwiseConforming
+    {
+      static const bool v = false;
+    };
+
+    template<class Grid>
     struct hasHangingNodes
     {
       static const bool v = false;
@@ -51,6 +57,11 @@ namespace Dune
     struct hasBackupRestoreFacilities
     {
       static const bool v = false;
+    };
+
+    template <class Grid>
+    struct IsUnstructured {
+      static const bool v = true;
     };
 
     /*
@@ -85,6 +96,12 @@ namespace Dune
     };
 
     template<class Grid>
+    struct isLeafwiseConforming<const Grid>
+    {
+      static const bool v = Dune::Capabilities::isLeafwiseConforming<Grid>::v;
+    };
+
+    template<class Grid>
     struct hasHangingNodes<const Grid>
     {
       static const bool v = Dune::Capabilities::hasHangingNodes<Grid>::v;
@@ -94,6 +111,11 @@ namespace Dune
     struct hasBackupRestoreFacilities<const Grid>
     {
       static const bool v = Dune::Capabilities::hasBackupRestoreFacilities<Grid>::v;
+    };
+
+    template <class Grid>
+    struct IsUnstructured<const Grid> {
+      static const bool v = Dune::Capabilities::IsUnstructured<Grid>::v;
     };
 
   }
