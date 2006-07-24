@@ -34,7 +34,7 @@ build_modules() {
   local runcommand=run_$command
   for module in $MODULES; do
     local path=$(eval "echo \$PATH_${module}")
-    echo "--- calling $command for $module ---"
+    eval echo "--- calling $command for \$NAME_${module} ---"
     if ! (
       set -e
       cd "$path"
