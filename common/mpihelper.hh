@@ -166,7 +166,7 @@ namespace Dune
 
   FakeMPIHelper::InstancePointer FakeMPIHelper::instance_ = FakeMPIHelper::InstancePointer();
 
-#ifdef HAVE_MPI
+#if HAVE_MPI
   /**
    * @brief A real mpi helper.
    *
