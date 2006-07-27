@@ -66,7 +66,7 @@ load_opts() {
 ###
 
 # list of all dunecontrol commands
-COMMANDS="update autogen configure make all exec"
+COMMANDS="update autogen configure make all exec svn"
 
 # help string for the commands
 update_HELP="updated all modules from the repository"
@@ -160,6 +160,13 @@ run_default_all () {
   run_configure
   load_opts make
   run_make
+}
+
+run_default_svn () {
+  if test -d .svn; then
+	PARAMS="$CMD_PARAMS"
+	eval svn "$PARAMS"
+  fi
 }
 
 ###############################################
