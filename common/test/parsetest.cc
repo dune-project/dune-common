@@ -18,7 +18,6 @@
 #include <dune/common/arraylist.hh>
 #include <dune/common/bigunsignedint.hh>
 #include <dune/common/bitfield.hh>
-#include <dune/common/capabilities.hh>
 #include <dune/common/configparser.hh>
 #include <dune/common/debugstream.hh>
 #include <dune/common/dlist.hh>
