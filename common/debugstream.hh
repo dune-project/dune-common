@@ -323,6 +323,21 @@ namespace Dune {
       return *this;
     };
 
+    //! \brief pass on flush to underlying output stream
+    DebugStream& flush() {
+      if (activator<thislevel, dlevel>::value) {
+        if (! _tied) {
+          if (_active)
+            current->out.flush();
+        } else {
+          if (_active && tiedstate->_active)
+            tiedstate->current->out.flush();
+        };
+      }
+
+      return *this;
+    };
+
     //! \brief set activation flag and store old value
     void push(bool b) {
       // are we at all active?
