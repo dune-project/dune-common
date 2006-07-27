@@ -113,9 +113,9 @@ AC_DEFUN([DUNE_MPI],[
     CPPFLAGS="$CPPFLAGS $MPI_CPPFLAGS"
 
     if test "x$mpiruntest" != "xyes" ; then
-      AC_MSG_WARN([Diabled test whether compiling/running with $with_mpi works.])    
+      AC_MSG_WARN([Diabled test whether compiling/running with $MPI_VERSION works.])    
     else
-      if test x"$with_mpi" = xLAM ; then
+      if test x"$MPI_VERSION" = xLAM ; then
         AC_MSG_NOTICE([Starting "lamboot" for checking...])
         lamboot -H
         sleep 2s
@@ -124,7 +124,7 @@ AC_DEFUN([DUNE_MPI],[
 
       # try to create c++ program
 	  AC_LANG_PUSH([C++])
-      AC_MSG_CHECKING([whether compiling/running with $with_mpi works])
+      AC_MSG_CHECKING([whether compiling/running with $MPI_VERSION works])
       AC_RUN_IFELSE(
         AC_LANG_SOURCE(
           [ #include <mpi.h>
@@ -138,7 +138,7 @@ AC_DEFUN([DUNE_MPI],[
       )
 	  AC_LANG_POP
 
-      if test x"$with_mpi" = xLAM ; then
+      if test x"$MPI_VERSION" = xLAM ; then
         AC_MSG_NOTICE([Stopping LAM via "lamhalt"...])
         lamhalt -H; sleep 2s
         AC_MSG_NOTICE(["lamboot" stopped...])
@@ -154,6 +154,7 @@ AC_DEFUN([DUNE_MPI],[
   if test x"$with_mpi" != xno ; then
     AC_SUBST(MPI_CPPFLAGS, $MPI_CPPFLAGS)
     AC_SUBST(MPI_LDFLAGS, $MPI_LDFLAGS)
+    AC_SUBST(MPI_VERSION, $MPI_VERSION)
     AC_DEFINE(HAVE_MPI,ENABLE_MPI,[Define if you have the MPI library.
     This is only true if MPI was found by configure 
     _and_ if the application uses the MPI_CPPFLAGS])
