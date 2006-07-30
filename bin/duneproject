@@ -25,11 +25,23 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
 
   # Read the modules find part
 . $(cd $(dirname $(readlink --canonicalize $0)); pwd)/dunemodules.inc
-  find_modules .
-  DEPENDENCIES=""
-  while [ -z $DEPENDENCIES ]; do
-      read -p "Modules this module depends on (separated by spaces). Available modules are $MODULES : " DEPENDENCIES
+
+  if [ "$MODULES" = "" ]; then
+    find_modules .
+  fi
+
+  # Replace _ with -
+  CMODULES=""
+  for i in $MODULES; do
+    mod=$(echo "$i" | sed -e 's/_/-/g')
+    CMODULES="$CMODULES $mod"
   done
+
+  DEPENDENCIES=""
+  while [ -z "$DEPENDENCIES" ]; do
+      read -p "Modules this module depends on (separated by spaces). Available modules are $CMODULES : " DEPENDENCIES
+  done
+
   VERSION=""
   while [ -z $VERSION ]; do
     read -p "Project/Module version? " VERSION
@@ -78,13 +90,17 @@ for i in $DEPENDENCIES; do
       CHECK="$CHECK,[$i]"
     fi
 done
+
+# we need the module with _ instead of - to not confuse automake
+fix_and_assign CMODULE $MODULE
+
 cat > "$PROJECT/configure.ac" <<C_DELIM
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.50)
 AC_INIT($PROJECT, $VERSION, $MAINTAINER)
 AM_INIT_AUTOMAKE($PROJECT, $VERSION, $MAINTAINER)
-AC_CONFIG_SRCDIR([$MODULE.cc])
+AC_CONFIG_SRCDIR([$CMODULE.cc])
 AM_CONFIG_HEADER([config.h])
 
 
@@ -298,12 +314,12 @@ cat> "$PROJECT/Makefile.am" << M_DELIM
 #LDADD = \$(UG_LDFLAGS) \$(AMIRAMESH_LDFLAGS) \$(UG_LIBS) \$(AMIRAMESH_LIBS)
 #AM_CPPFLAGS = \$(UG_CPPFLAGS) \$(AMIRAMESH_CPPFLAGS)
 
-noinst_PROGRAMS = ${MODULE}
+noinst_PROGRAMS = ${CMODULE}
 
-${MODULE}_SOURCES = ${MODULE}.cc
+${CMODULE}_SOURCES = $CMODULE.cc
 
-${MODULE}_CXXFLAGS = \$(MPI_CPPFLAGS) \$(UG_CPPFLAGS) \$(AMIRAMESH_CPPFLAGS) \$(ALBERTA_CPPFLAGS) -DWITH_INDEX_SETS
-${MODULE}_LDADD = \$(MPI_LDFLAGS) \$(ALBERTA_LDFLAGS) \$(ALBERTA_LIBS) \$(AMIRAMESH_LDFLAGS) \$(AMIRAMESH_LIBS) \$(UG_LDFLAGS) \$(UG_LIBS) \$(MPI_LDFLAGS) \$(DUNE_LDFLAGS) \$(DUNE_LIBS)
+${CMODULE}_CXXFLAGS = \$(MPI_CPPFLAGS) \$(UG_CPPFLAGS) \$(AMIRAMESH_CPPFLAGS) \$(ALBERTA_CPPFLAGS) -DWITH_INDEX_SETS
+${CMODULE}_LDADD = \$(MPI_LDFLAGS) \$(ALBERTA_LDFLAGS) \$(ALBERTA_LIBS) \$(AMIRAMESH_LDFLAGS) \$(AMIRAMESH_LIBS) \$(UG_LDFLAGS) \$(UG_LIBS) \$(MPI_LDFLAGS) \$(DUNE_LDFLAGS) \$(DUNE_LIBS)
 
 # don't follow the full GNU-standard
 # we need automake 1.5
@@ -313,37 +329,33 @@ DISTCHECK_CONFIGURE_FLAGS = --with-dune=\$(DUNEROOT) CXX="\$(CXX)" CC="\$(CC)"
 M_DELIM
 
 ################## PROJECT.CC ##################
-cat> "$PROJECT/$MODULE.cc" << CC_DELIM
+cat> "$PROJECT/$CMODULE.cc" << CC_DELIM
 #ifdef HAVE_CONFIG_H
 # include "config.h"     
 #endif
 #include <iostream>
-#include"dune/grid/sgrid.hh" // load sgrid definition 
-#include"dune/grid/common/gridinfo.hh" // definition of gridinfo 
-int main()
+#include"dune/common/mpihelper.hh" // An initializer of MPI
+#include"dune/common/exceptions.hh" // We use exceptions
+
+int main(int argc, char** argv)
 {
- try
-	 {
-  std::cout << "Hello World! This is ${PROJECT}." << std::endl;
-// make a grid 
-const int dim=3; 
-typedef Dune::SGrid<dim,dim> GridType; 
-Dune::FieldVector<int,dim> N(3); 
-Dune::FieldVector<GridType::ctype,dim> L(-1.0); 
-Dune::FieldVector<GridType::ctype,dim> H(1.0); 
-GridType grid(N,L,H); 
-// print some information about the grid 
-  Dune::gridinfo(grid); 
-  return 0;
-     }
- catch (Dune::Exception &e)
-	{
-		std::cerr << "Dune reported error: " << e << std::endl;
-	}
-  catch (...)
-	{
-	  std::cerr << "Unknown exception thrown!" << std::endl;
-	};
+  try{
+    //Maybe initialize Mpi
+    Dune::MPIHelper& helper = Dune::MPIHelper::instance(argc, argv);
+    std::cout << "Hello World! This is ${PROJECT}." << std::endl;
+    if(Dune::MPIHelper::isFake)
+      std::cout<< "This is a sequential program." << std::endl;
+    else
+      std::cout<<"I am rank "<<helper.rank()<<" of "<<helper.size()
+        <<" processes!"<<std::endl;
+    return 0;
+  }
+  catch (Dune::Exception &e){
+    std::cerr << "Dune reported error: " << e << std::endl;
+  }
+  catch (...){
+    std::cerr << "Unknown exception thrown!" << std::endl;
+  }
 }
 CC_DELIM
 
