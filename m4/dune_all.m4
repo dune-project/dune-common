@@ -7,6 +7,15 @@
 # the entries are more or less copied from an "autoscan"-run in the
 # dune-directory
 
+#
+# There are two test available:
+# 1) DUNE_CHECK_ALL
+#    This test is for people writing an application based on dune
+# 2) DUNE_CHECK_ALL_M
+#    This test is for dune modules.
+#    In addition to DUNE_CHECK_ALL it run some additional tests
+#    and sets up some things needed for modules (i.e. the 'dune' symlink)
+
 AC_DEFUN([DUNE_CHECK_ALL],[
   AC_LANG_PUSH([C++])
 dnl check for programs
@@ -130,7 +139,7 @@ AC_DEFUN([DUNE_SUMMARY_ALL],[
   DUNE_SUMMARY([Dune-grid........: ], [$with_dune_grid], [$DUNE_GRID_ROOT])
   DUNE_SUMMARY([Dune-istl........: ], [$with_dune_istl], [$DUNE_ISTL_ROOT])
   DUNE_SUMMARY([Dune-disc........: ], [$with_dune_disc], [$DUNE_DISC_ROOT])
-  DUNE_SUMMARY([Dune-fem........: ], [$with_dune_fem], [$DUNE_FEM_ROOT])
+  DUNE_SUMMARY([Dune-fem.........: ], [$with_dune_fem], [$DUNE_FEM_ROOT])
   echo "Alberta..........: $with_alberta"
   echo "ALUGrid..........: $with_alugrid"
   echo "AmiraMesh........: $with_amiramesh"
@@ -174,12 +183,10 @@ AC_SUBST(tag, $with_tag)
 AC_ARG_WITH(revision,
   AC_HELP_STRING([--with-revision=TAG],
                  [revision to use for automated test runs]))
-if test "x$with_revision" = "xno" ; then with_revision=bar; fi
-AC_SUBST(revision, $with_revision)
+  if test "x$with_revision" = "xno" ; then with_revision=bar; fi
+  AC_SUBST(revision, $with_revision)
   AC_LANG_PUSH([C++])
 
-  AC_MSG_NOTICE([Resolving Dependencies: $@])
-  DUNE_MODULE_DEPENDENCIES($@)
   AC_REQUIRE([DUNE_CHECK_ALL])
   AC_REQUIRE([DUNE_DEV_MODE])
 
