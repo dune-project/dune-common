@@ -112,19 +112,25 @@ AC_DEFUN([DUNE_MPI],[
     LIBS="$MPI_LDFLAGS"
     CPPFLAGS="$CPPFLAGS $MPI_CPPFLAGS"
 
-    if test "x$mpiruntest" != "xyes" ; then
-      AC_MSG_WARN([Diabled test whether compiling/running with $MPI_VERSION works.])    
-    else
-      if test x"$MPI_VERSION" = xLAM ; then
-        AC_MSG_NOTICE([Starting "lamboot" for checking...])
-        lamboot -H
-        sleep 2s
-        AC_MSG_NOTICE(["lamboot" started...])
-      fi
+    # try to create MPI program
+    AC_LANG_PUSH([C++])
+    AC_COMPILE_IFELSE(
+      AC_LANG_SOURCE(
+        [ #include <mpi.h>
+          int main (int argc, char** argv) { 
+          MPI_Init(&argc, &argv); 
+          MPI_Finalize(); }]),
+        [ AC_MSG_RESULT([yes]) ],
+        [ AC_MSG_RESULT([no])
+          AC_MSG_ERROR([could not compile MPI testprogram!
+          See config.log for details])
+          with_mpi=no]
+    )
 
-      # try to create c++ program
-	  AC_LANG_PUSH([C++])
-      AC_MSG_CHECKING([whether compiling/running with $MPI_VERSION works])
+    if test "x$mpiruntest" != "xyes" ; then
+      AC_MSG_WARN([Diabled test whether running with $MPI_VERSION works.])    
+    else
+      AC_MSG_CHECKING([whether running with $MPI_VERSION works])
       AC_RUN_IFELSE(
         AC_LANG_SOURCE(
           [ #include <mpi.h>
@@ -133,17 +139,14 @@ AC_DEFUN([DUNE_MPI],[
             MPI_Finalize(); }]),
           [ AC_MSG_RESULT([yes]) ],
           [ AC_MSG_RESULT([no])
-            AC_MSG_WARN([could not compile or run MPI testprogram, deactivating MPI! See config.log for details])
+            AC_MSG_ERROR([could not run MPI testprogram!
+            Did you forget to setup your MPI environment?
+            Some MPI implementations require a special deamon to be running!
+            See config.log for details])
             with_mpi=no]
       )
-	  AC_LANG_POP
-
-      if test x"$MPI_VERSION" = xLAM ; then
-        AC_MSG_NOTICE([Stopping LAM via "lamhalt"...])
-        lamhalt -H; sleep 2s
-        AC_MSG_NOTICE(["lamboot" stopped...])
-      fi
     fi
+    AC_LANG_POP
 
     # restore variables
     LIBS="$ac_save_LIBS"
