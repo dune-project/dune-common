@@ -13,7 +13,7 @@ AC_DEFUN([DUNE_PATH_ALBERTA],[
   AC_REQUIRE([AC_PROG_CC])
   AC_REQUIRE([AC_PATH_XTRA])
   AC_REQUIRE([DUNE_PATH_OPENGL])
-  AC_REQUIRE([DUNE_DIMENSION])
+  AC_REQUIRE([DUNE_DIMENSION_ALBERTA])
 
   AC_ARG_WITH(alberta,
     AC_HELP_STRING([--with-alberta=PATH],[directory with Alberta (Albert
@@ -133,5 +133,27 @@ AM_CONDITIONAL(ALBERTA, test x$HAVE_ALBERTA = x1)
 LIBS="$ac_save_LIBS"
 CPPFLAGS="$ac_save_CPPFLAGS"
 LDFLAGS="$ac_save_LDFLAGS"
+
+])
+
+# asks for problem-dimension and world-dimension to pass on to Alberta
+AC_DEFUN([DUNE_DIMENSION_ALBERTA],[
+
+# default dimension of a problem is 2
+AC_ARG_WITH(alberta_dim,
+            AC_HELP_STRING([--with-alberta-dim=2|3],
+	        [dimension of Alberta grid (default=2)]),,with_alberta_dim=2)
+AC_SUBST(ALBERTA_DIM, $with_alberta_dim)
+AC_DEFINE_UNQUOTED(ALBERTA_DIM, $with_alberta_dim,
+            [Dimension of Alberta grid])
+
+# default dimension of the world coordinates is 2
+AC_ARG_WITH(alberta_world_dim,
+            AC_HELP_STRING([--with-alberta-world-dim=2|3],
+	        [dimension of world enclosing the Alberta grid (default=alberta-dim)]),,
+            with_alberta_world_dim=$with_alberta_dim)
+AC_SUBST(ALBERTA_WORLD_DIM, $with_alberta_world_dim)
+AC_DEFINE_UNQUOTED(ALBERTA_WORLD_DIM, $with_alberta_world_dim,
+            [Dimension of world enclosing the Alberta grid])
 
 ])

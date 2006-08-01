@@ -3,7 +3,6 @@
 
 AC_DEFUN([DUNE_PATH_BLAS],[
   AC_REQUIRE([AC_PROG_CC])
-  AC_REQUIRE([DUNE_DIMENSION])
 
   AC_ARG_ENABLE(blas,
    AC_HELP_STRING([--enable-blas], [enable use of BLAS Library (default is disabled)]),
