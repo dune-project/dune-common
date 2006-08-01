@@ -93,7 +93,6 @@ fi
 AC_SUBST(DUNEWEBDIR, $with_duneweb)
 
   dnl check all components
-  AC_REQUIRE([DUNE_MODULE_DEPENDENCIES])
   DUNE_MODULE_DEPENDENCIES($@)
   AC_REQUIRE([DUNE_PATH_XDR])
   AC_REQUIRE([DUNE_PATH_GRAPE])
@@ -190,7 +189,6 @@ AC_DEFUN([DUNE_CHECK_ALL_M],[
   if test "x$with_revision" = "xno" ; then with_revision=bar; fi
   AC_SUBST(revision, $with_revision)
 
-  AC_REQUIRE([DUNE_MODULE_DEPENDENCIES])
   DUNE_MODULE_DEPENDENCIES($@)
   AC_REQUIRE([DUNE_CHECK_ALL])
   AC_REQUIRE([DUNE_DEV_MODE])
