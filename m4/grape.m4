@@ -89,7 +89,6 @@ fi
 if test x$HAVE_GRAPE = x1 ; then
   with_grape="yes"
 else
-  AC_MSG_WARN([X libs,includes not found, skipping Grape test !!!])
   with_grape="no"
 fi
 
