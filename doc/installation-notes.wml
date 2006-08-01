@@ -280,3 +280,11 @@ the build system and how to create new modules/projects your own.
 </p>
 </li>
 </ol>
+<h2>Creating your own DUNE project module</h2>
+<ol>
+<p>
+You can create your own dune project module by using the duneproject script available in dune-common/bin directory.
+Running the script will create a directory with supporting files (configure.ac ,Makefile.am etc.) and a sample .cc file.
+After creating the module you can build this as explained above under "Building a specific DUNE module".
+</p>
+</ol>
