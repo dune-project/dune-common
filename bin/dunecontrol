@@ -285,7 +285,7 @@ done
 eval '
 case "$command" in
   '$(echo $COMMANDS | sed -e 's/ \+/ | /g')')
-    find_modules .
+    find_modules_in_path
     if test "x$MODULE" = "x"; then
       sort_modules $MODULES
     else
@@ -296,7 +296,7 @@ case "$command" in
     echo "--- done ---"
     ;;
   print)
-    find_modules .
+    find_modules_in_path
     if test "x$MODULE" = "x"; then
       sort_modules $MODULES
     else
