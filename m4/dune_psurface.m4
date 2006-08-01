@@ -40,14 +40,17 @@ AC_LANG_PUSH([C++])
 AC_CHECK_HEADER([psurface.h], 
    [PSURFACE_CPPFLAGS="-I$PSURFACE_INCLUDE_PATH"
 	HAVE_PSURFACE="1"],
-  AC_MSG_WARN([psurface.h not found in $PSURFACE_INCLUDE_PATH]))
+   [if test "x$with_psurface" != x ; then
+    AC_MSG_WARN([psurface.h not found in $PSURFACE_INCLUDE_PATH])
+    fi
+   ])
 
 CPPFLAGS="$PSURFACE_CPPFLAGS"
 
 # Psurface uses the AmiraMesh data format to read a write parametrized surfaces to disk.
 # Therefore, its installation only makes sense if AmiraMesh support is installed as well.
 if test x$HAVE_AMIRAMESH != x1 ; then
-  AC_MSG_WARN(Check for psurface library aborted because AmiraMesh is unavailable!) 
+  AC_MSG_NOTICE(Check for psurface library aborted because AmiraMesh is unavailable!) 
   HAVE_PSURFACE="0"
 fi
 
@@ -60,7 +63,7 @@ if test x$HAVE_PSURFACE = x1 ; then
          PSURFACE_LDFLAGS="-L$PSURFACE_LIB_PATH"
          LIBS="$LIBS $PSURFACE_LIBS"],
 	[HAVE_PSURFACE="0"
-	AC_MSG_WARN(libpsurface not found!)])
+	AC_MSG_WARN(psurface header found, but libpsurface missing!)])
 fi
 
 AC_LANG_POP([C++])
