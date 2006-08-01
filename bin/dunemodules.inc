@@ -84,7 +84,12 @@ EOF
 #
 sort_modules() {
   for m in "$@"; do
-    _sort_module $m
+    if test "x$(eval echo \$HAVE_$m)" != "x"; then
+      _sort_module $m
+    else
+      echo "ERROR: could not find module $dep"
+      exit 1
+    fi
   done
   if test x"$ONLY" != x; then
 	SORTEDMODULES=$ONLY
@@ -169,7 +174,7 @@ fix_and_assign() {
   if ! check_modname $name; then
     echo ERROR: error in assignment. $name is not a valid variabel name.
   fi
-  export $name=$(echo "$@" | sed -e 's/-/_/g')
+  export $name="$(echo "$@" | sed -e 's/-/_/g')"
 }
 
 #
