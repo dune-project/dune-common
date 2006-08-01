@@ -102,6 +102,7 @@ AC_DEFUN([DUNE_MPI],[
   # if an MPI implementation was found..
   if test x"$with_mpi" != xno ; then
     ### do a sanity check: can we compile and link a trivial MPI program?
+    AC_MSG_CHECKING([whether compiling with $MPI_VERSION works])
 
     # store old values
     ac_save_LIBS="$LIBS"
