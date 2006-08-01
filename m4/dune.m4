@@ -9,9 +9,18 @@
 #   #export PKG_CONFIG_LIBDIR=$with_dune/dune
 #  #PKG_CHECK_MODULES(DUNE, dune)  
 
+AC_DEFUN([DUNE_DISABLE_LIBCHECK],[
+  # hidden feature... --enable-dunelibcheck tells the dune module check to
+  # check only for the headers and not for the libs. This feature is used
+  # when building the web page, because we don't need the libs in this case
+
+  AC_ARG_ENABLE(dunelibcheck,[],,enable_dunelibcheck=yes)
+])
+
 AC_DEFUN([DUNE_CHECK_MODULES],[
   AC_REQUIRE([AC_PROG_CXX])
   AC_REQUIRE([AC_PROG_CXXCPP])
+  AC_REQUIRE([DUNE_DISABLE_LIBCHECK])
 
   # ____DUNE_CHECK_MODULES_____ ($1)
 
@@ -50,15 +59,15 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
 
       # expand search path (otherwise empty CPPFLAGS)
       if test -d $_DUNE_MODULE[]_ROOT/include/dune; then
-	# Dune was installed into directory given by with-dunecommon
-	LINSTALL=1
-	_DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]_ROOT/include"
-	LDFLAGS="$LDFLAGS -L$_DUNE_MODULE[]_ROOT/lib"
+    # Dune was installed into directory given by with-dunecommon
+    LINSTALL=1
+    _DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]_ROOT/include"
+    LDFLAGS="$LDFLAGS -L$_DUNE_MODULE[]_ROOT/lib"
       else
-      	_DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]_ROOT"
+        _DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]_ROOT"
       fi
     else
-      AC_MSG_ERROR([_dune_module-directory $withval does not exist])
+      AC_MSG_ERROR([_dune_module_plain-directory $withval does not exist])
     fi
     # set correct dune path
     with_[]_dune_module="$withval"
@@ -74,13 +83,17 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
      _DUNE_MODULE[]_CPPFLAGS="$CPPFLAGS"],
     [HAVE_[]_DUNE_MODULE=0
      _DUNE_MODULE[]_CPPFLAGS=""
-     AC_MSG_ERROR([$with_[]_dune_module does not seem to contain a valid _dune_module (dune/[]_dune_header not found)])]
+     AC_MSG_ERROR([$with_[]_dune_module does not seem to contain a valid _dune_module_plain (dune/[]_dune_header not found)])]
   )
 
   ## check for lib (if lib name was provided)
-  ifelse(_dune_lib,,[echo _dune_module does not provide libs],[
+  ifelse(_dune_lib,,AC_MSG_NOTICE([_dune_module_plain does not provide libs]),[
+    if test "x$enable_dunelibcheck" != "xyes"; then
+      AC_MSG_WARN([library check for _dune_module_plain is disabled. DANGEROUS!])    
+    fi
     # did we find the headers?
-    if test x$HAVE_[]_DUNE_MODULE = x1 ; then
+    if test x$HAVE_[]_DUNE_MODULE = x1 &&
+       test "x$enable_dunelibcheck" = "xyes"; then
       ac_save_LDFLAGS="$LDFLAGS"
       ac_save_LIBS="$LIBS"
       HAVE_[]_DUNE_MODULE=0
@@ -92,40 +105,39 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
 
         # only check for a .la-file
         if test -s $_DUNE_MODULE[]_ROOT/_dune_ldpath/lib[]_dune_lib[].la ; then
-            _DUNE_MODULE[]_LDFLAGS="-L$_DUNE_MODULE[]_ROOT/_dune_ldpath"
-            echo found lib[]_dune_lib.la, setting LDFLAGS to $_DUNE_MODULE[]_LDFLAGS
+          _DUNE_MODULE[]_LDFLAGS="-L$_DUNE_MODULE[]_ROOT/_dune_ldpath"
+          echo found lib[]_dune_lib.la, setting LDFLAGS to $_DUNE_MODULE[]_LDFLAGS
 
-            # provide arguments like normal lib-check
-            _DUNE_MODULE[]_LIBS="-l[]_dune_lib"
-            HAVE_[]_DUNE_MODULE=1
+          # provide arguments like normal lib-check
+          _DUNE_MODULE[]_LIBS="-l[]_dune_lib"
+          HAVE_[]_DUNE_MODULE=1
         else 
-	    AC_MSG_ERROR([$with_[]_dune_module does not seem to contain a valid _dune_module (lib[]_dune_lib[].la not found)])
-
+          AC_MSG_ERROR([$with_[]_dune_module does not seem to contain a valid _dune_module_plain (lib[]_dune_lib[].la not found)])
         fi
       fi
-    
+
       ## normal test for a systemwide install
       if test x$HAVE_[]_DUNE_MODULE = x0 ; then
-         # !!! should be pkg-config later (which would save the special
-         # header-check as well)
+        # !!! should be pkg-config later (which would save the special
+        # header-check as well)
 
-         # Beware! Untested!!!
-         LIBS="-ldune[]_dune_lib"
-	 AC_MSG_CHECKING([for dune[]_dune_lib library])
-         AC_TRY_LINK(dnl
-	     [#]include<dune/[]_dune_header>,
-	     _dune_symbol,
-              [AC_MSG_RESULT([yes])
-               HAVE_[]_DUNE_MODULE=1
-               _DUNE_MODULE[]_LIBS="$LIBS"],
-              [AC_MSG_RESULT([no])
-	       HAVE_[]_DUNE_MODULE=0
-               AC_MSG_ERROR([failed to link with lib[]_dune_lib[].la])]
-          )
+        # Beware! Untested!!!
+        LIBS="-ldune[]_dune_lib"
+        AC_MSG_CHECKING([for dune[]_dune_lib library])
+        AC_TRY_LINK(dnl
+        [#]include<dune/[]_dune_header>,
+        _dune_symbol,
+            [AC_MSG_RESULT([yes])
+             HAVE_[]_DUNE_MODULE=1
+             _DUNE_MODULE[]_LIBS="$LIBS"],
+            [AC_MSG_RESULT([no])
+             HAVE_[]_DUNE_MODULE=0
+             AC_MSG_ERROR([failed to link with lib[]_dune_lib[].la])]
+        )
       fi
 
       if test x$_DUNE_MODULE[]_LIBS = x; then
-        AC_MSG_ERROR([failed to find lib[]_dune_lib[] needed of module _dune_module])
+        AC_MSG_ERROR([failed to find lib[]_dune_lib[] needed of module _dune_module_plain])
       fi
 
       # reset variables
@@ -147,7 +159,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
     AC_SUBST(DUNE_CPPFLAGS, "$DUNE_CPPFLAGS $_DUNE_MODULE[]_CPPFLAGS")
     AC_SUBST(DUNE_LDFLAGS, "$DUNE_LDFLAGS $_DUNE_MODULE[]_LDFLAGS")
     AC_SUBST(DUNE_LIBS, "$DUNE_LIBS $_DUNE_MODULE[]_LIBS")
-	
+    
     # add to global list
     DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $DUNE_CPPFLAGS"
     DUNE_PKG_LIBS="$DUNE_PKG_LIBS $LIBS"
@@ -155,7 +167,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
 
     with_[]_dune_module="yes"
   else
-    AC_MSG_ERROR([could not find required module _dune_module])
+    AC_MSG_ERROR([could not find required module _dune_module_plain])
   fi
 
   # reset previous flags
@@ -190,6 +202,10 @@ AC_DEFUN([DUNE_CHECK_DISPATCH],[
          [AC_MSG_ERROR([Unknown module $1])])
 ])
 
+AC_DEFUN([DUNE_MODULE_DEPENDENCIES],[
+  ifelse($#, 0, , $#, 1, [DUNE_CHECK_DISPATCH($1)], [DUNE_CHECK_DISPATCH($1) DUNE_MODULE_DEPENDENCIES(m4_shift($@))])
+])
+
 AC_DEFUN([DUNE_DEV_MODE],[
   AC_ARG_ENABLE(dunedevel,
     AC_HELP_STRING([--enable-dunedevel],[activate Dune-Developer-mode]))
@@ -197,10 +213,6 @@ AC_DEFUN([DUNE_DEV_MODE],[
   if test x"$enable_dunedevel" = xyes ; then
     AC_DEFINE(DUNE_DEVEL_MODE, 1, [Activates developer output])
   fi
-])
-
-AC_DEFUN([DUNE_MODULE_DEPENDENCIES],[
-  ifelse($#, 0, , $#, 1, [DUNE_CHECK_DISPATCH($1)], [DUNE_CHECK_DISPATCH($1) DUNE_MODULE_DEPENDENCIES(m4_shift($@))])
 ])
 
 AC_DEFUN([DUNE_SYMLINK],[
