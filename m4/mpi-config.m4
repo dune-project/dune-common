@@ -117,6 +117,11 @@ _EOF
 
   if (mpi_preprocess conftest.c | grep -q ompi_communicator_t); then
     MPI_VERSION="OpenMPI"
+
+    mpi_getflags "-showme:compile"
+    MPI_CPPFLAGS="$retval"
+    mpi_getflags "-showme:link"
+    MPI_LDFLAGS="$retval"
     MPI_NOCXXFLAGS="-DMPIPP_H"
 
     AC_MSG_RESULT([yes])
