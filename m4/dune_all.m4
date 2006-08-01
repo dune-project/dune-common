@@ -108,6 +108,7 @@ AC_SUBST(DUNEWEBDIR, $with_duneweb)
   AC_REQUIRE([DUNE_PATH_SUPERLU_DIST])
   AC_REQUIRE([ACX_BLAS])
   AC_REQUIRE([DUNE_PATH_ALUGRID])
+  AC_REQUIRE([DUNE_EXPRTMPL])
 
   # convenience-variables if every found package should be used
   AC_SUBST(ALL_PKG_LIBS, "$LIBS $DUNE_PKG_LIBS")

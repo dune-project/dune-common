@@ -5,7 +5,7 @@ SUBDIRS = . test exprtmpl
 # the standard debug streams are put into the libdune
 noinst_LTLIBRARIES = libcommon.la
 
-libcommon_la_SOURCES = stdstreams.cc configparser.cc exprtmpl.cc
+libcommon_la_SOURCES = stdstreams.cc configparser.cc
 
 AM_CPPFLAGS = @AM_CPPFLAGS@ -I$(top_srcdir)/..
 
@@ -19,8 +19,14 @@ commoninclude_HEADERS = dlist.cc stdstreams.cc alignment.hh \
   sllist.hh smartpointer.hh stack.hh stdstreams.hh timer.hh tuples.hh \
   typeinfo.hh typetraits.hh precision.hh bigunsignedint.hh \
   gcd.hh lcm.hh configparser.hh propertymap.hh \
-  exprtmpl.hh exprtmpl/scalar.inc exprtmpl/exprexpr.inc \
   collectivecommunication.hh mpihelper.hh singleton.hh \
   mpicollectivecommunication.hh geometrytype.hh tripel.hh utility.hh
+
+if EXPRESSIONTEMPLATES
+commoninclude_HEADERS += exprtmpl.hh exprtmpl/scalar.inc exprtmpl/exprexpr.inc
+libcommon_la_SOURCES += exprtmpl.cc
+else
+sourcescheck_NOSOURCES = exprtmpl.hh exprtmpl.cc
+endif
 
 include $(top_srcdir)/am/global-rules

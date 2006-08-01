@@ -55,29 +55,13 @@ settest_DEPENDENCIES = $(LOCAL_LIBS)
 gcdlcdtest_SOURCES = gcdlcdtest.cc
 gcdlcdtest_DEPENDENCIES = $(LOCAL_LIBS)
 
-sourcescheck_NOSOURCES = exprtmpl.cc timing.cc
-# bin_PROGRAMS = exprtmpl timing_old timing_xpr timing_flt
-#
-# exprtmpl_SOURCES = exprtmpl.cc
-# exprtmpl_CXXFLAGS = -DDUNE_EXPRESSIONTEMPLATES -DDUNE_ISTL_WITH_CHECKING -g
-# -DNOPRINT
-# exprtmpl_DEPENDENCIES = $(LOCAL_LIBS)
-
-# dist_noinst_DATA = timing.cc
-# timing_old_SOURCES = timing.cc
-# timing_old_DEPENDENCIES = $(LOCAL_LIBS)
-# timing_xpr_SOURCES = timing.cc
-# timing_xpr_CXXFLAGS = -DDUNE_EXPRESSIONTEMPLATES -g
-# timing_xpr_DEPENDENCIES = $(LOCAL_LIBS)
-# timing_flt_SOURCES = timing.cc
-# timing_flt_CXXFLAGS = -DDUNE_EXPRESSIONTEMPLATES -DDUNE_FLATIT -g
-# timing_flt_DEPENDENCIES = $(LOCAL_LIBS)
-
 mpihelpertest_SOURCES = mpihelpertest.cc
 mpihelpertest_CXXFLAGS = $(MPI_CPPFLAGS)
 mpihelpertest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
 
 singletontest_SOURCES = singletontest.cc
 singletontest_LDFLAGS = $(LOCAL_LIBS)
+
+sourcescheck_NOSOURCES = exprtmpl.cc timing.cc
 
 include $(top_srcdir)/am/global-rules
