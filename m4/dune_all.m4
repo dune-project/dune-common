@@ -21,6 +21,7 @@ AC_DEFUN([DUNE_CHECK_ALL],[
 dnl check for programs
   AC_REQUIRE([AC_PROG_CXX])
   AC_REQUIRE([AC_PROG_CPP])
+  AC_REQUIRE([AC_PROG_CXXCPP])
   AC_REQUIRE([DUNE_CHECK_COMPILER])
   AC_REQUIRE([DUNE_LINKCXX])
   AC_REQUIRE([DUNE_CHECKDEPRECATED])
@@ -164,29 +165,30 @@ AC_DEFUN([DUNE_SUMMARY_ALL],[
 ])
 
 AC_DEFUN([DUNE_CHECK_ALL_M],[
+  AC_LANG_PUSH([C++])
+
   AC_REQUIRE([DUNE_SYMLINK])
   # don't build shared libs per default, this is way better for debugging...
   AC_REQUIRE([AC_DISABLE_SHARED])
 
-# special settings for check-log
-AC_ARG_WITH(hostid,
-  AC_HELP_STRING([--with-hostid=HOST_IDENTIFIER],
+  # special settings for check-log
+  AC_ARG_WITH(hostid,
+    AC_HELP_STRING([--with-hostid=HOST_IDENTIFIER],
                  [host identifier used for automated test runs]))
-if test "x$with_hostid" = "xno" ; then 
-  with_hostid="$ac_hostname ($(uname -sm), $COMPILER_NAME)";
-fi
-AC_SUBST(host, $with_hostid)
-AC_ARG_WITH(tag,
-  AC_HELP_STRING([--with-tag=TAG],
+  if test "x$with_hostid" = "xno" ; then 
+    with_hostid="$ac_hostname ($(uname -sm), $COMPILER_NAME)";
+  fi
+  AC_SUBST(host, $with_hostid)
+  AC_ARG_WITH(tag,
+    AC_HELP_STRING([--with-tag=TAG],
                  [tag to use for automated test runs]))
-if test "x$with_tag" = "xno" ; then with_tag=foo; fi
-AC_SUBST(tag, $with_tag)
-AC_ARG_WITH(revision,
-  AC_HELP_STRING([--with-revision=TAG],
+  if test "x$with_tag" = "xno" ; then with_tag=foo; fi
+    AC_SUBST(tag, $with_tag)
+  AC_ARG_WITH(revision,
+    AC_HELP_STRING([--with-revision=TAG],
                  [revision to use for automated test runs]))
   if test "x$with_revision" = "xno" ; then with_revision=bar; fi
   AC_SUBST(revision, $with_revision)
-  AC_LANG_PUSH([C++])
 
   AC_REQUIRE([DUNE_MODULE_DEPENDENCIES])
   DUNE_MODULE_DEPENDENCIES($@)
