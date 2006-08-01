@@ -103,9 +103,6 @@ sort_modules() {
       exit 1
     fi
   done
-  if test x"$ONLY" != x; then
-	SORTEDMODULES=$ONLY
-  fi
   export MODULES=$SORTEDMODULES
 }
 
