@@ -116,8 +116,7 @@ namespace Dune {
     case 10 : { sprintf(cp, "%010d", ntime); break; }
     default :
     {
-      std::cerr << "Couldn't gernerate filename with precision = "<<precision << ", file = " << __FILE__ << ", line = " << __LINE__ << "\n";
-      abort();
+      DUNE_THROW(Exception, "Couldn't gernerate filename with precision = "<<precision);
     }
     }
     name << cp;
