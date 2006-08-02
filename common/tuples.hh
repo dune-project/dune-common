@@ -485,9 +485,6 @@ namespace Dune
   template<typename T1, typename T2, typename U1, typename U2>
   inline bool operator<(const Pair<T1,T2>& tuple1, const Pair<U1,U2>& tuple2)
   {
-    IsTrue<IsInteroperable<T1,U1>::value>::yes();
-    IsTrue<! SameType<T2,Nil>::value>::yes();
-    IsTrue<! SameType<U2,Nil>::value>::yes();
     return tuple1.first() < tuple2.first()
            || (tuple1.first() == tuple2.first() && tuple1.second() < tuple2.second());
   }
