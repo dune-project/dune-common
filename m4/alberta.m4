@@ -55,14 +55,17 @@ ALBERTA_INCLUDE_PATH="$ALBERTAROOT/include"
 REM_CPPFLAGS=$CPPFLAGS
 
 LDFLAGS="$LDFLAGS -L$ALBERTA_LIB_PATH"
-ALBERTADIM="-DDIM=$with_problem_dim -DDIM_OF_WORLD=$with_world_dim"
+ALBERTADIM="-DDIM=$with_alberta_dim -DDIM_OF_WORLD=$with_alberta_world_dim"
 CPPFLAGS="$CPPFLAGS $ALBERTADIM -DEL_INDEX=0 -I$ALBERTA_INCLUDE_PATH"
 
 # check for header
 AC_CHECK_HEADER([alberta.h], 
    [ALBERTA_CPPFLAGS="-I$ALBERTA_INCLUDE_PATH"
 	HAVE_ALBERTA="1"],
-  AC_MSG_WARN([alberta.h not found in $ALBERTA_INCLUDE_PATH]))
+   [if test "x$with_alberta" != x ; then
+    AC_MSG_WARN([alberta.h not found in $ALBERTA_INCLUDE_PATH])
+    fi
+   ])
 
 CPPFLAGS="$REM_CPPFLAGS -I$ALBERTA_INCLUDE_PATH"
 REM_CPPFLAGS=
@@ -90,8 +93,8 @@ if test x$HAVE_ALBERTA = x1 ; then
   # the zero is the sign of the no-debug-lib
   # define varaible lib name depending on problem and world dim, to change
   # afterwards easily 
-  variablealbertalibname="ALBERTA$``(``DUNE_PROBLEM_DIM``)``$``(``DUNE_WORLD_DIM``)``_0"
-  albertalibname="ALBERTA${with_problem_dim}${with_world_dim}_${with_alberta_debug}"
+  variablealbertalibname="ALBERTA$``(``ALBERTA_DIM``)``$``(``ALBERTA_WORLD_DIM``)``_0"
+  albertalibname="ALBERTA${with_alberta_dim}${with_alberta_world_dim}_${with_alberta_debug}"
   AC_CHECK_LIB($albertalibname,[mesh_traverse],
 	[ALBERTA_LIBS="-l$variablealbertalibname $ALBERTA_LIBS $ALBERTA_EXTRA"],
 	[HAVE_ALBERTA="0"
