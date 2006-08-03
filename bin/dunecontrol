@@ -220,6 +220,7 @@ while test $# -gt 0; do
     # stolen from configure...
     # when no option is set, this returns an error code
     arg=`expr "x$option" : 'x[^=]*=\(.*\)'`
+    arg=$(eval "echo $arg")
     set -e
 
     # switch
@@ -231,7 +232,7 @@ while test $# -gt 0; do
         echo
         exit 1;
       fi
-      OPTS_FILE=$(cd $(dirname $arg); pwd)/$(basename $arg)
+      OPTS_FILE=$(cd $(dirname $(readlink -f $arg)); pwd)/$(basename $arg)
       if ! test -r "$OPTS_FILE"; then
         usage
         echo "ERROR: could not read opts file \"$OPTS_FILE\""
