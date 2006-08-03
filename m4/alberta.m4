@@ -1,22 +1,14 @@
 # $Id$
 # searches for alberta-headers and libs
 
-# TODO:
-#
-# - Quickhack mit lib-dependencies durch alberta.pc ersetzen
-# - alberta kann wahlweise GRAPE oder gltools
-#   (http://www.wias-berlin.de/software/gltools/) verwenden, die sollten
-#   vorher getestet werden
-# - debug-Ziffer
-
 AC_DEFUN([DUNE_PATH_ALBERTA],[
   AC_REQUIRE([AC_PROG_CC])
   AC_REQUIRE([AC_PATH_XTRA])
   AC_REQUIRE([DUNE_PATH_OPENGL])
-  AC_REQUIRE([DUNE_DIMENSION_ALBERTA])
+  AC_REQUIRE([DUNE_ALBERTA_DIMENSION])
 
   AC_ARG_WITH(alberta,
-    AC_HELP_STRING([--with-alberta=PATH],[directory with Alberta (Albert
+    AC_HELP_STRING([--with-alberta=PATH],[directory with ALBERTA (ALBERTA
     version 1.2 and higher) inside]))
 # do not use alberta debug lib 
 with_alberta_debug=0
@@ -36,12 +28,12 @@ if test x$with_alberta != x && test x$with_alberta != xno ; then
 
   # is --with-alberta=bla used?
   if test "x$with_alberta" != x ; then
-	if ! test -d $with_alberta; then
-        AC_MSG_WARN([Alberta directory $with_alberta does not exist])
-	else
+  if ! test -d $with_alberta; then
+        AC_MSG_WARN([ALBERTA directory $with_alberta does not exist])
+  else
         # expand tilde / other stuff
-		ALBERTAROOT=`cd $with_alberta && pwd`
-	fi
+    ALBERTAROOT=`cd $with_alberta && pwd`
+  fi
   fi
   if test "x$ALBERTAROOT" = x; then
     # use some default value...
@@ -61,11 +53,8 @@ CPPFLAGS="$CPPFLAGS $ALBERTADIM -DEL_INDEX=0 -I$ALBERTA_INCLUDE_PATH"
 # check for header
 AC_CHECK_HEADER([alberta.h], 
    [ALBERTA_CPPFLAGS="-I$ALBERTA_INCLUDE_PATH"
-	HAVE_ALBERTA="1"],
-   [if test "x$with_alberta" != x ; then
-    AC_MSG_WARN([alberta.h not found in $ALBERTA_INCLUDE_PATH])
-    fi
-   ])
+  HAVE_ALBERTA="1"],
+  AC_MSG_WARN([alberta.h not found in $ALBERTA_INCLUDE_PATH]))
 
 CPPFLAGS="$REM_CPPFLAGS -I$ALBERTA_INCLUDE_PATH"
 REM_CPPFLAGS=
@@ -80,11 +69,11 @@ LDFLAGS="$LDFLAGS -static"
 # if header is found...
 if test x$HAVE_ALBERTA = x1 ; then
   AC_CHECK_LIB(alberta_util,[alberta_calloc],
-	[ALBERTA_LIBS="-lalberta_util"
+  [ALBERTA_LIBS="-lalberta_util"
          ALBERTA_LDFLAGS="-L$ALBERTA_LIB_PATH"
          LIBS="$LIBS $ALBERTA_LIBS"],
-	[HAVE_ALBERTA="0"
-	AC_MSG_WARN(libalberta_util not.a found!)])
+  [HAVE_ALBERTA="0"
+  AC_MSG_WARN(libalberta_util not.a found!)])
 fi
 
 # still everything found?
@@ -96,9 +85,9 @@ if test x$HAVE_ALBERTA = x1 ; then
   variablealbertalibname="ALBERTA$``(``ALBERTA_DIM``)``$``(``ALBERTA_WORLD_DIM``)``_0"
   albertalibname="ALBERTA${with_alberta_dim}${with_alberta_world_dim}_${with_alberta_debug}"
   AC_CHECK_LIB($albertalibname,[mesh_traverse],
-	[ALBERTA_LIBS="-l$variablealbertalibname $ALBERTA_LIBS $ALBERTA_EXTRA"],
-	[HAVE_ALBERTA="0"
-	AC_MSG_WARN(lib$albertalibname.a not found!)])
+  [ALBERTA_LIBS="-l$variablealbertalibname $ALBERTA_LIBS $ALBERTA_EXTRA"],
+  [HAVE_ALBERTA="0"
+  AC_MSG_WARN(lib$albertalibname.a not found!)])
 fi
 
 LDFLAGS=$REM_LDFLAGS
@@ -140,23 +129,35 @@ LDFLAGS="$ac_save_LDFLAGS"
 ])
 
 # asks for problem-dimension and world-dimension to pass on to Alberta
-AC_DEFUN([DUNE_DIMENSION_ALBERTA],[
+AC_DEFUN([DUNE_ALBERTA_DIMENSION],[
+  AC_REQUIRE([DUNE_GRID_DIMENSION])
 
 # default dimension of a problem is 2
 AC_ARG_WITH(alberta_dim,
             AC_HELP_STRING([--with-alberta-dim=2|3],
-	        [dimension of Alberta grid (default=2)]),,with_alberta_dim=2)
-AC_SUBST(ALBERTA_DIM, $with_alberta_dim)
-AC_DEFINE_UNQUOTED(ALBERTA_DIM, $with_alberta_dim,
-            [Dimension of Alberta grid])
+          [dimension of ALBERTA grid (default=grid-dim if delivered otherwise 2)]),,with_alberta_dim=2)
 
 # default dimension of the world coordinates is 2
 AC_ARG_WITH(alberta_world_dim,
             AC_HELP_STRING([--with-alberta-world-dim=2|3],
-	        [dimension of world enclosing the Alberta grid (default=alberta-dim)]),,
+          [dimension of world enclosing the ALBERTA grid (default=alberta-dim)]),,
             with_alberta_world_dim=$with_alberta_dim)
-AC_SUBST(ALBERTA_WORLD_DIM, $with_alberta_world_dim)
+
+if test x$with_grid_dim != x0 ; then 
+  variablealbertdim="$``(``GRIDDIM``)``"
+  variablealbertdimworld="$``(``GRIDDIMWORLD``)``"
+  AC_SUBST(ALBERTA_DIM, $variablealbertdim ) 
+  AC_SUBST(ALBERTA_WORLD_DIM, $variablealbertdimworld ) 
+else 
+  variablealbertdim=$with_alberta_dim
+  variablealbertdimworld=$with_alberta_world_dim
+  AC_SUBST(ALBERTA_DIM, $variablealbertdim ) 
+  AC_SUBST(ALBERTA_WORLD_DIM, $variablealbertdimworld ) 
+fi 
+
+AC_DEFINE_UNQUOTED(ALBERTA_DIM, $with_alberta_dim,
+            [Dimension of ALBERTA grid])
 AC_DEFINE_UNQUOTED(ALBERTA_WORLD_DIM, $with_alberta_world_dim,
-            [Dimension of world enclosing the Alberta grid])
+            [Dimension of world enclosing the ALBERTA grid])
 
 ])
