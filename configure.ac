@@ -19,7 +19,7 @@ DUNE_SUMMARY_ALL
 echo
 echo Note: Most of the libraries checked for above are only used for the self-test
 echo of Dune.  The library itself will build and the headers will work even if
-echo Albert, MPI, etc. cannot be found.  An exception to this are UG and AmiraMesh
+echo ALBERTA, MPI, etc. cannot be found.  An exception to this are UG and AmiraMesh
 echo which need to be found right now if you want to use them later.
 echo
 
