@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <sstream>
+#include "exceptions.hh"
 
 namespace Dune {
 
