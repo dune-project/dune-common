@@ -95,6 +95,7 @@ AC_SUBST(DUNEWEBDIR, $with_duneweb)
   dnl check all components
   DUNE_MODULE_DEPENDENCIES($@)
   AC_REQUIRE([DUNE_PATH_XDR])
+  AC_REQUIRE([DUNE_GRID_DIMENSION])
   AC_REQUIRE([DUNE_PATH_GRAPE])
   AC_REQUIRE([DUNE_PATH_ALBERTA])
   AC_REQUIRE([DUNE_PATH_BLAS])
@@ -143,7 +144,7 @@ AC_DEFUN([DUNE_SUMMARY_ALL],[
   DUNE_SUMMARY([Dune-istl........: ], [$with_dune_istl], [$DUNE_ISTL_ROOT])
   DUNE_SUMMARY([Dune-disc........: ], [$with_dune_disc], [$DUNE_DISC_ROOT])
   DUNE_SUMMARY([Dune-fem.........: ], [$with_dune_fem], [$DUNE_FEM_ROOT])
-  echo "Alberta..........: $with_alberta"
+  echo "ALBERTA..........: $with_alberta"
   echo "ALUGrid..........: $with_alugrid"
   echo "AmiraMesh........: $with_amiramesh"
   echo "BLAS-lib.........: $with_blas"
