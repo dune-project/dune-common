@@ -5,6 +5,11 @@
 
 #include "typetraits.hh"
 
+/** @file
+   @author Robert Kloefkorn
+   @brief Provides a Interfaces for detection of specific behavior
+ */
+
 namespace Dune {
 
   //! An interface class for cloneable objects
