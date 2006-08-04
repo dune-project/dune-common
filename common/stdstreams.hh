@@ -22,6 +22,10 @@ namespace Dune {
      standard debug streams with level below MINIMAL_DEBUG_LEVEL will
      collapse to doing nothing if output is requested.
 
+     MINIMAL_DEBUG_LEVEL is set to DUNE_MINIMAL_DEBUG_LEVEL, wich is
+     defined in config.h and can be changed by the configure option
+     @code --with-minimal-debug-level=[grave|warn|info|verb|vverb] @endcode
+
      For a Dune-Release this should be set to at least 4 so that only
      important messages are active. Dune-developers may adapt this
      setting to their debugging needs locally
@@ -61,7 +65,7 @@ namespace Dune {
    * If the  level of a stream is bigger than this value
    * it will be activated.
    */
-  static const DebugLevel MINIMAL_DEBUG_LEVEL = 4;
+  static const DebugLevel MINIMAL_DEBUG_LEVEL = DUNE_MINIMAL_DEBUG_LEVEL;
 
   /**
    * @brief The level of the very verbose debug stream.
