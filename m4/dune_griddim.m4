@@ -32,7 +32,7 @@ if test x$with_grid_dim != x0 ; then
   fi
   
   variablegriddimworld="$``(``GRIDDIM``)``"
-  griddim_cppflags="-DGRIDDIM=$``(``GRIDDIM``)`` -DGRIDTYPE=$``(``GRIDTYPE``)``"
+  griddim_cppflags="-DGRIDDIM=$``(``GRIDDIM``)`` -D$``(``GRIDTYPE``)``"
   AC_SUBST(GRIDDIM, $with_grid_dim)
   AC_SUBST(GRIDDIMWORLD, $variablegriddimworld )
   AC_SUBST(GRIDTYPE, $with_grid_type )
