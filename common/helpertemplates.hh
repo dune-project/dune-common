@@ -41,7 +41,22 @@ template<class T1, class T2, class T3 = T1> struct Can_multiply {
   Can_multiply() { void (*p)(T1,T2,T3) = constraints; }
 };
 
-/** \brief Helper template so that compilation fails if condition is not true
+/**
+    \brief Helper template so that compilation fails if condition is not true.
+
+    If the condition is true a static function yes is available, othewise the
+    only function available is no().
+
+    Example for compile time check whether two types are the same:
+    \begincode
+    IsTrue<SameType<int,int>::value>::yes(); //
+    IsTrue<SameType<bool,int>::value>::yes(); // false, will trigger a compile time error
+    \endcode
+
+    A test that trigger a compile time error if condition is true:
+    \begincode
+    IsTrue<condition>::no()
+    \endcode
  */
 template <bool condition>
 struct IsTrue
@@ -49,8 +64,6 @@ struct IsTrue
   static void no() {};
 };
 
-/** \brief Helper template so that compilation fails if condition is not true
- */
 template <>
 struct IsTrue<true>
 {
