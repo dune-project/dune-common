@@ -132,7 +132,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
              _DUNE_MODULE[]_LIBS="$LIBS"],
             [AC_MSG_RESULT([no])
              HAVE_[]_DUNE_MODULE=0
-             AC_MSG_ERROR([failed to link with lib[]_dune_lib[].la])]
+             AC_MSG_ERROR([failed to link with libdune[]_dune_lib[].la])]
         )
       fi
 
@@ -198,7 +198,7 @@ AC_DEFUN([DUNE_CHECK_DISPATCH],[
          [$1], [dune-istl],[
            DUNE_CHECK_MODULES([dune-istl], [istl/allocator.hh],,,)],
          [$1], [dune-disc],[
-           DUNE_CHECK_MODULES([dune-disc], [disc/functions/functions.hh], [disc], [disc], [Dune::LagrangeShapeFunctions<double, double, 3>::general])],
+           DUNE_CHECK_MODULES([dune-disc], [disc/shapefunctions/lagrangeshapefunctions.hh], [disc], [disc], [Dune::LagrangeShapeFunctions<double[,]double[,]3>::general])],
          [AC_MSG_ERROR([Unknown module $1])])
 ])
 
