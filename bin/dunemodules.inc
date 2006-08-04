@@ -86,8 +86,15 @@ find_modules() {
  $(find "$dir" -name $CONTROL )
 EOF
   else
-    echo "ERROR: could not find directory $1"
-    false
+    if test -f "$1" && 
+       test "$(basename $1)" = "$CONTROL"; then
+      export module=""
+      parse_control "$1"
+      export MODULES="$MODULES $module"
+    else
+      echo "ERROR: '$1' is neither a directory nor a $CONTROL file"
+      false
+    fi
   fi
 }
 
