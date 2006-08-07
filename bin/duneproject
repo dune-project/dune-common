@@ -24,7 +24,7 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
   MODULE="$PROJECT"
 
   # Read the modules find part
-. $(cd $(dirname $(readlink --canonicalize $0)); pwd)/dunemodules.inc
+. $(cd $(dirname $(readlink -f $0)); pwd)/dunemodules.inc
 
   if [ "$MODULES" = "" ]; then
     find_modules .
