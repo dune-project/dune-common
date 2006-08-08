@@ -289,7 +289,7 @@ done
 # We need to run this via eval in order construct the case for the commands
 eval '
 case "$command" in
-  '$(echo $COMMANDS | sed -e 's/ \+/ | /g')')
+  '$(echo $COMMANDS | sed -e 's/ / | /g')')
     find_modules_in_path
     if test "x$MODULE" = "x"; then
       sort_modules $MODULES
