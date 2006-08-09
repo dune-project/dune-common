@@ -269,8 +269,8 @@ noinst_PROGRAMS = hello bye
 
 COMMON = common.c common.h
 
-hello_SOURCES =  hello.c
-bye_SOURCES =  bye.c parser.y lexer.l
+hello_SOURCES = $(COMMON) hello.c
+bye_SOURCES = $(COMMON) bye.c parser.y lexer.l
 \end{lstlisting}
 
 Even normal make-rules may be used in a \makefileam.
@@ -303,7 +303,7 @@ bye_CPPFLAGS = -DBYE
 The local setting overrides the global one, thus
 
 \begin{lstlisting}[language=make]
-hello_CPPFLAGS =  -Dmyflags
+hello_CPPFLAGS = $(AM_CPPFLAGS) -Dmyflags
 \end{lstlisting}
 
 may be a good idea.
@@ -336,7 +336,7 @@ user wishes to modify the values, you should use the \texttt{AM\_*}
 version. 
 
 The real compile-command always uses both \texttt{AM\_\textit{VAR}} and
-\texttt{\it VAR}. Options that
+\texttt{\textit{VAR}}. Options that
 autoconf finds are stored in the user variables (so that they may be
 overridden) 
 
@@ -483,7 +483,7 @@ end not
 AC_CONFIG_FILES([Makefile.in doc/Makefile.in])
 \end{lstlisting}
 After you told \autoconf which files to create you have to actually
-trigger their creation iwth command \texttt{AC\_OUTPUT}
+trigger their creation with command \texttt{AC\_OUTPUT}
 
 \subsection{autogen.sh}
 \label{autogen.sh}
@@ -557,9 +557,9 @@ dunecontrol make clean
 
 \minisec{opts files}
 You can also let \dunecontrol read the command parameters from a file.
-For each command you can specify parameters. THe parameters are stored
+For each command you can specify parameters. The parameters are stored
 in a varible called \texttt{\textit{COMMAND}\,\_FLAGS} with
-\texttt{\textit{COMMAND}} writen in capital letters.
+\texttt{\textit{COMMAND}} written in capital letters.
 
 \begin{lst}[File examle.opts] \mbox{}
 \lstinputlisting{../example.opts}
@@ -606,7 +606,7 @@ run_configure () {
 
 The parameter section will be parsed by \dunecontrol will effect
 i.e. the order in which the modules are built. The parameters and
-their values are speperated by colon. Possible parameters are
+their values are seperated by colon. Possible parameters are
 \begin{itemize}
 \item \texttt{Module} (\em required\em) is the name of the module. The
   name is of the form \texttt{[a-zA-Z0-9\_]+}.
@@ -691,6 +691,7 @@ In order to create new \dune module, you have to provide
 \begin{lst}[Example autogen.sh for a \dune application]
 \label{example_autogen.sh}
 \begin{lstlisting}[language=bash]
+
 #!/bin/sh
 
 set -e
