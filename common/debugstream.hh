@@ -41,7 +41,7 @@ namespace Dune {
      \section DebugAppl Applications
 
      Applications using the Dune-library should create an independent set
-     of DebugStreams so that the debug levels can be changed seperately.
+     of DebugStreams so that the debug levels can be changed separately.
      Example:
 
      \code
