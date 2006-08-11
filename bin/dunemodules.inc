@@ -83,7 +83,7 @@ find_modules() {
         export MODULES="$MODULES $module"
       fi
     done <<EOF
- $(find "$dir" -name $CONTROL | grep -v 'dune\-[-a-zA-Z_]*\-[0-9]\+.[0-9]\+/')
+ $(find "$dir" -name $CONTROL | grep -v 'dune-[-_a-zA-Z]/dune\-[-a-zA-Z_]*\-[0-9]\+.[0-9]\+/')
 EOF
   else
     if test -f "$1" && 
