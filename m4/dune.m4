@@ -190,7 +190,9 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
 AC_DEFUN([DUNE_CHECK_DISPATCH],[
   ifelse([$1], [], [],
          [$1], [dune-common],[
-           DUNE_CHECK_MODULES([dune-common], [common/stdstreams.hh], [common], [common], [Dune::derr.active();])],
+           DUNE_CHECK_MODULES([dune-common], [common/stdstreams.hh], [common], [common], 
+	[#define DUNE_MINIMAL_DEBUG_LEVEL 1
+	Dune::derr.active();])],
          [$1], [dune-grid],[
            DUNE_CHECK_MODULES([dune-grid], [grid/common/grid.hh], [grid], [grid], [Dune::PartitionName])],
          [$1], [dune-fem],[
