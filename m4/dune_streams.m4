@@ -11,7 +11,7 @@ AC_DEFUN([DUNE_SET_MINIMAL_DEBUG_LEVEL],[
   # WARN_DEBUG_LEVEL = 4;
   # GRAVE_DEBUG_LEVEL = 5;
 
-  AC_ARG_WITH(minimal-debug-level,
+  AC_ARG_WITH(minimal_debug_level,
     AC_HELP_STRING([--with-minimal-debug-level=[grave|warn|info|verb|vverb]],
      [set the MINIMAL_DEBUG_LEVEL. Standard debug streams with level below 
       MINIMAL_DEBUG_LEVEL will collapse to doing nothing if output is 
@@ -21,7 +21,7 @@ AC_DEFUN([DUNE_SET_MINIMAL_DEBUG_LEVEL],[
 
   MINIMAL_DEBUG_LEVEL=4
 
-  case "$with_psurface" in
+  case "$with_minimal_debug_level" in
     grave)
       MINIMAL_DEBUG_LEVEL=5
     ;;
