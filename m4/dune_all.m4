@@ -113,6 +113,7 @@ AC_SUBST(DUNEWEBDIR, $with_duneweb)
   AC_REQUIRE([ACX_BLAS])
   AC_REQUIRE([DUNE_PATH_ALUGRID])
   AC_REQUIRE([DUNE_EXPRTMPL])
+  AC_REQUIRE([DUNE_PATH_HDF5])
 
   # convenience-variables if every found package should be used
   AC_SUBST(ALL_PKG_LIBS, "$LIBS $DUNE_PKG_LIBS")
@@ -150,7 +151,7 @@ AC_DEFUN([DUNE_SUMMARY_ALL],[
   echo "AmiraMesh........: $with_amiramesh"
   echo "BLAS-lib.........: $with_blas"
   echo "Grape............: $with_grape"
-#  echo "HDF5.............: $with_hdf5"
+  echo "HDF5.............: $with_hdf5"
 #  echo "FiberHDF5........: $with_f5"
   echo "MPI..............: $with_mpi"
   echo "METIS............: $with_metis"
