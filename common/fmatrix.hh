@@ -30,201 +30,6 @@ namespace Dune {
   /** @brief Error thrown if operations of a FieldMatrix fail. */
   class FMatrixError : public Exception {};
 
-  // template meta program for assignment from scalar
-  template<int I>
-  struct fmmeta_assignscalar {
-    template<class T, class K>
-    static void assignscalar (T* x, const K& k)
-    {
-      fmmeta_assignscalar<I-1>::assignscalar(x,k);
-      x[I] = k;
-    }
-  };
-  template<>
-  struct fmmeta_assignscalar<0> {
-    template<class T, class K>
-    static void assignscalar (T* x, const K& k)
-    {
-      x[0] = k;
-    }
-  };
-
-  // template meta program for operator+=
-  template<int I>
-  struct fmmeta_plusequal {
-    template<class T>
-    static void plusequal (T& x, const T& y)
-    {
-      x[I] += y[I];
-      fmmeta_plusequal<I-1>::plusequal(x,y);
-    }
-  };
-  template<>
-  struct fmmeta_plusequal<0> {
-    template<class T>
-    static void plusequal (T& x, const T& y)
-    {
-      x[0] += y[0];
-    }
-  };
-
-  // template meta program for operator-=
-  template<int I>
-  struct fmmeta_minusequal {
-    template<class T>
-    static void minusequal (T& x, const T& y)
-    {
-      x[I] -= y[I];
-      fmmeta_minusequal<I-1>::minusequal(x,y);
-    }
-  };
-  template<>
-  struct fmmeta_minusequal<0> {
-    template<class T>
-    static void minusequal (T& x, const T& y)
-    {
-      x[0] -= y[0];
-    }
-  };
-
-  // template meta program for operator*=
-  template<int I>
-  struct fmmeta_multequal {
-    template<class T, class K>
-    static void multequal (T& x, const K& k)
-    {
-      x[I] *= k;
-      fmmeta_multequal<I-1>::multequal(x,k);
-    }
-  };
-  template<>
-  struct fmmeta_multequal<0> {
-    template<class T, class K>
-    static void multequal (T& x, const K& k)
-    {
-      x[0] *= k;
-    }
-  };
-
-  // template meta program for operator/=
-  template<int I>
-  struct fmmeta_divequal {
-    template<class T, class K>
-    static void divequal (T& x, const K& k)
-    {
-      x[I] /= k;
-      fmmeta_divequal<I-1>::divequal(x,k);
-    }
-  };
-  template<>
-  struct fmmeta_divequal<0> {
-    template<class T, class K>
-    static void divequal (T& x, const K& k)
-    {
-      x[0] /= k;
-    }
-  };
-
-  // template meta program for dot
-  template<int I>
-  struct fmmeta_dot {
-    template<class X, class Y, class K>
-    static K dot (const X& x, const Y& y)
-    {
-      return x[I]*y[I] + fmmeta_dot<I-1>::template dot<X,Y,K>(x,y);
-    }
-  };
-  template<>
-  struct fmmeta_dot<0> {
-    template<class X, class Y, class K>
-    static K dot (const X& x, const Y& y)
-    {
-      return x[0]*y[0];
-    }
-  };
-
-  // template meta program for umv(x,y)
-  template<int I>
-  struct fmmeta_umv {
-    template<class Mat, class X, class Y, int c>
-    static void umv (const Mat& A, const X& x, Y& y)
-    {
-      typedef typename Mat::row_type R;
-      typedef typename Mat::field_type K;
-      y[I] += fmmeta_dot<c>::template dot<R,X,K>(A[I],x);
-      fmmeta_umv<I-1>::template umv<Mat,X,Y,c>(A,x,y);
-    }
-  };
-
-  template<>
-  struct fmmeta_umv<0> {
-    template<class Mat, class X, class Y, int c>
-    static void umv (const Mat& A, const X& x, Y& y)
-    {
-      typedef typename Mat::row_type R;
-      typedef typename Mat::field_type K;
-      y[0] += fmmeta_dot<c>::template dot<R,X,K>(A[0],x);
-    }
-  };
-
-  // template meta program for mmv(x,y)
-  template<int I>
-  struct fmmeta_mmv {
-    template<class Mat, class X, class Y, int c>
-    static void mmv (const Mat& A, const X& x, Y& y)
-    {
-      typedef typename Mat::row_type R;
-      typedef typename Mat::field_type K;
-      y[I] -= fmmeta_dot<c>::template dot<R,X,K>(A[I],x);
-      fmmeta_mmv<I-1>::template mmv<Mat,X,Y,c>(A,x,y);
-    }
-  };
-  template<>
-  struct fmmeta_mmv<0> {
-    template<class Mat, class X, class Y, int c>
-    static void mmv (const Mat& A, const X& x, Y& y)
-    {
-      typedef typename Mat::row_type R;
-      typedef typename Mat::field_type K;
-      y[0] -= fmmeta_dot<c>::template dot<R,X,K>(A[0],x);
-    }
-  };
-
-  template<class K, int n, int m, class X, class Y>
-  inline void fm_mmv (const FieldMatrix<K,n,m>& A,  const X& x, Y& y)
-  {
-    for (int i=0; i<n; i++)
-      for (int j=0; j<m; j++)
-        y[i] -= A[i][j]*x[j];
-  }
-
-  template<class K>
-  inline void fm_mmv (const FieldMatrix<K,1,1>& A, const FieldVector<K,1>& x, FieldVector<K,1>& y)
-  {
-    y[0] -= A[0][0]*x[0];
-  }
-
-  // template meta program for usmv(x,y)
-  template<int I>
-  struct fmmeta_usmv {
-    template<class Mat, class K, class X, class Y, int c>
-    static void usmv (const Mat& A, const K& alpha, const X& x, Y& y)
-    {
-      typedef typename Mat::row_type R;
-      y[I] += alpha*fmmeta_dot<c>::template dot<R,X,K>(A[I],x);
-      fmmeta_usmv<I-1>::template usmv<Mat,K,X,Y,c>(A,alpha,x,y);
-    }
-  };
-  template<>
-  struct fmmeta_usmv<0> {
-    template<class Mat, class K,  class X, class Y, int c>
-    static void usmv (const Mat& A, const K& alpha, const X& x, Y& y)
-    {
-      typedef typename Mat::row_type R;
-      y[0] += alpha*fmmeta_dot<c>::template dot<R,X,K>(A[0],x);
-    }
-  };
-
   // conjugate komplex does nothing for non-complex types
   template<class K>
   inline K fm_ck (const K& k)
@@ -425,73 +230,6 @@ namespace Dune {
     A[1][1] =  temp*detinv;
   }
 
-  //! left multiplication with matrix
-  template<class K, int n, int m>
-  void fm_leftmultiply (const FieldMatrix<K,n,n>& M, FieldMatrix<K,n,m>& A)
-  {
-    FieldMatrix<K,n,m> C(A);
-
-    for (int i=0; i<n; i++)
-      for (int j=0; j<m; j++)
-      {
-        A[i][j] = 0;
-        for (int k=0; k<n; k++)
-          A[i][j] += M[i][k]*C[k][j];
-      }
-  }
-
-  //! left multiplication with matrix, n=1
-  template<class K>
-  void fm_leftmultiply (const FieldMatrix<K,1,1>& M, FieldMatrix<K,1,1>& A)
-  {
-    A[0][0] *= M[0][0];
-  }
-
-  //! left multiplication with matrix, n=2
-  template<class K>
-  void fm_leftmultiply (const FieldMatrix<K,2,2>& M, FieldMatrix<K,2,2>& A)
-  {
-    FieldMatrix<K,2,2> C(A);
-
-    A[0][0] = M[0][0]*C[0][0] + M[0][1]*C[1][0];
-    A[0][1] = M[0][0]*C[0][1] + M[0][1]*C[1][1];
-    A[1][0] = M[1][0]*C[0][0] + M[1][1]*C[1][0];
-    A[1][1] = M[1][0]*C[0][1] + M[1][1]*C[1][1];
-  }
-
-  //! right multiplication with matrix
-  template<class K, int n, int m>
-  void fm_rightmultiply (const FieldMatrix<K,m,m>& M, FieldMatrix<K,n,m>& A)
-  {
-    FieldMatrix<K,n,m> C(A);
-
-    for (int i=0; i<n; i++)
-      for (int j=0; j<m; j++)
-      {
-        A[i][j] = 0;
-        for (int k=0; k<m; k++)
-          A[i][j] += C[i][k]*M[k][j];
-      }
-  }
-
-  //! right multiplication with matrix, n=1
-  template<class K>
-  void fm_rightmultiply (const FieldMatrix<K,1,1>& M, FieldMatrix<K,1,1>& A)
-  {
-    A[0][0] *= M[0][0];
-  }
-
-  //! right multiplication with matrix, n=2
-  template<class K>
-  void fm_rightmultiply (const FieldMatrix<K,2,2>& M, FieldMatrix<K,2,2>& A)
-  {
-    FieldMatrix<K,2,2> C(A);
-
-    A[0][0] = C[0][0]*M[0][0] + C[0][1]*M[1][0];
-    A[0][1] = C[0][0]*M[0][1] + C[0][1]*M[1][1];
-    A[1][0] = C[1][0]*M[0][0] + C[1][1]*M[1][0];
-    A[1][1] = C[1][0]*M[0][1] + C[1][1]*M[1][1];
-  }
 
   /**
       @brief A dense n x m matrix.
@@ -645,7 +383,8 @@ namespace Dune {
     //===== assignment from scalar
     FieldMatrix& operator= (const K& k)
     {
-      fmmeta_assignscalar<n-1>::assignscalar(p,k);
+      for (int i=0; i<n; i++)
+        p[i] = k;
       return *this;
     }
 
@@ -654,28 +393,32 @@ namespace Dune {
     //! vector space addition
     FieldMatrix& operator+= (const FieldMatrix& y)
     {
-      fmmeta_plusequal<n-1>::plusequal(*this,y);
+      for (int i=0; i<n; i++)
+        p[i] += y.p[i];
       return *this;
     }
 
     //! vector space subtraction
     FieldMatrix& operator-= (const FieldMatrix& y)
     {
-      fmmeta_minusequal<n-1>::minusequal(*this,y);
+      for (int i=0; i<n; i++)
+        p[i] -= y.p[i];
       return *this;
     }
 
     //! vector space multiplication with scalar
     FieldMatrix& operator*= (const K& k)
     {
-      fmmeta_multequal<n-1>::multequal(*this,k);
+      for (int i=0; i<n; i++)
+        p[i] *= k;
       return *this;
     }
 
     //! vector space division by scalar
     FieldMatrix& operator/= (const K& k)
     {
-      fmmeta_divequal<n-1>::divequal(*this,k);
+      for (int i=0; i<n; i++)
+        p[i] /= k;
       return *this;
     }
 
@@ -689,10 +432,9 @@ namespace Dune {
       if (x.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
       if (y.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
-      fmmeta_umv<n-1>::template umv<FieldMatrix,X,Y,m-1>(*this,x,y);
-      //       for (int i=0; i<n; i++)
-      //         for (int j=0; j<m; j++)
-      //           y[i] += (*this)[i][j] * x[j];
+      for (size_type i=0; i<n; i++)
+        for (size_type j=0; j<m; j++)
+          y[i] += (*this)[i][j] * x[j];
     }
 
     //! y += A^T x
@@ -731,8 +473,9 @@ namespace Dune {
       if (x.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
       if (y.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
-      fmmeta_mmv<n-1>::template mmv<FieldMatrix,X,Y,m-1>(*this,x,y);
-      //fm_mmv(*this,x,y);
+      for (size_type i=0; i<n; i++)
+        for (size_type j=0; j<m; j++)
+          y[i] -= (*this)[i][j] * x[j];
     }
 
     //! y -= A^T x
@@ -771,7 +514,9 @@ namespace Dune {
       if (x.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
       if (y.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
-      fmmeta_usmv<n-1>::template usmv<FieldMatrix,K,X,Y,m-1>(*this,alpha,x,y);
+      for (size_type i=0; i<n; i++)
+        for (size_type j=0; j<m; j++)
+          y[i] += alpha * (*this)[i][j] * x[j];
     }
 
     //! y += alpha A^T x
@@ -863,14 +608,29 @@ namespace Dune {
     //! Multiplies M from the left to this matrix
     FieldMatrix& leftmultiply (const FieldMatrix<K,n,n>& M)
     {
-      fm_leftmultiply(M,*this);
+      FieldMatrix<K,n,m> C(*this);
+
+      for (int i=0; i<n; i++)
+        for (int j=0; j<m; j++) {
+          (*this)[i][j] = 0;
+          for (int k=0; k<n; k++)
+            (*this)[i][j] += M[i][k]*C[k][j];
+        }
+
       return *this;
     }
 
     //! Multiplies M from the right to this matrix
     FieldMatrix& rightmultiply (const FieldMatrix<K,n,n>& M)
     {
-      fm_rightmultiply(M,*this);
+      FieldMatrix<K,n,m> C(*this);
+
+      for (int i=0; i<n; i++)
+        for (int j=0; j<m; j++) {
+          (*this)[i][j] = 0;
+          for (int k=0; k<m; k++)
+            (*this)[i][j] += C[i][k]*M[k][j];
+        }
       return *this;
     }
 
@@ -942,7 +702,7 @@ namespace Dune {
     }
 
   private:
-    // the data, very simply a built in array with rowwise ordering
+    // the data, very simply a built in array with row-wise ordering
     row_type p[(n > 0) ? n : 1];
   };
 
@@ -1251,7 +1011,7 @@ namespace Dune {
     //! infinity norm (row sum norm, how to generalize for blocks?)
     double infinity_norm () const
     {
-      return fvmeta_abs(a[0]);
+      return std::abs(a[0]);
     }
 
     //! simplified infinity norm (uses Manhattan norm for complex values)

@@ -32,164 +32,9 @@ namespace Dune {
   // forward declaration of template
   template<class K, int n> class FieldVector;
 
-  // template meta program for assignment from scalar
-  template<int I>
-  struct fvmeta_assignscalar {
-    template<class K, int n>
-    static K& assignscalar (FieldVector<K,n>& x, const K& k)
-    {
-      x[I] = fvmeta_assignscalar<I-1>::assignscalar(x,k);
-      return x[I];
-    }
-  };
-  template<>
-  struct fvmeta_assignscalar<0> {
-    template<class K, int n>
-    static K& assignscalar (FieldVector<K,n>& x, const K& k)
-    {
-      x[0] = k;
-      return x[0];
-    }
-  };
-
-  // template meta program for operator+=
-  template<int I>
-  struct fvmeta_plusequal {
-    template<class K, int n>
-    static void plusequal (FieldVector<K,n>& x, const FieldVector<K,n>& y)
-    {
-      fvmeta_plusequal<I-1>::plusequal(x,y);
-      x[I] += y[I];
-    }
-    template<class K, int n>
-    static void plusequal (FieldVector<K,n>& x, const K& y)
-    {
-      fvmeta_plusequal<I-1>::plusequal(x,y);
-      x[I] += y;
-    }
-  };
-  template<>
-  struct fvmeta_plusequal<0> {
-    template<class K, int n>
-    static void plusequal (FieldVector<K,n>& x, const FieldVector<K,n>& y)
-    {
-      x[0] += y[0];
-    }
-    template<class K, int n>
-    static void plusequal (FieldVector<K,n>& x, const K& y)
-    {
-      x[0] += y;
-    }
-  };
-
-  // template meta program for operator-=
-  template<int I>
-  struct fvmeta_minusequal {
-    template<class K, int n>
-    static void minusequal (FieldVector<K,n>& x, const FieldVector<K,n>& y)
-    {
-      fvmeta_minusequal<I-1>::minusequal(x,y);
-      x[I] -= y[I];
-    }
-    template<class K, int n>
-    static void minusequal (FieldVector<K,n>& x, const K& y)
-    {
-      fvmeta_minusequal<I-1>::minusequal(x,y);
-      x[I] -= y;
-    }
-  };
-  template<>
-  struct fvmeta_minusequal<0> {
-    template<class K, int n>
-    static void minusequal (FieldVector<K,n>& x, const FieldVector<K,n>& y)
-    {
-      x[0] -= y[0];
-    }
-    template<class K, int n>
-    static void minusequal (FieldVector<K,n>& x, const K& y)
-    {
-      x[0] -= y;
-    }
-  };
-
-  // template meta program for operator*=
-  template<int I>
-  struct fvmeta_multequal {
-    template<class K, int n>
-    static void multequal (FieldVector<K,n>& x, const K& k)
-    {
-      fvmeta_multequal<I-1>::multequal(x,k);
-      x[I] *= k;
-    }
-  };
-  template<>
-  struct fvmeta_multequal<0> {
-    template<class K, int n>
-    static void multequal (FieldVector<K,n>& x, const K& k)
-    {
-      x[0] *= k;
-    }
-  };
-
-  // template meta program for operator/=
-  template<int I>
-  struct fvmeta_divequal {
-    template<class K, int n>
-    static void divequal (FieldVector<K,n>& x, const K& k)
-    {
-      fvmeta_divequal<I-1>::divequal(x,k);
-      x[I] /= k;
-    }
-  };
-  template<>
-  struct fvmeta_divequal<0> {
-    template<class K, int n>
-    static void divequal (FieldVector<K,n>& x, const K& k)
-    {
-      x[0] /= k;
-    }
-  };
-
 #endif
 
-  // template meta program for operator==
-  template<int I>
-  struct fvmeta_equality {
-    template<class K, int n>
-    static bool equality (const FieldVector<K,n>& x, const FieldVector<K,n>& y)
-    {
-      return x[I] == y[I] && fvmeta_equality<I-1>::equality(x,y);
-    }
-  };
-  template<>
-  struct fvmeta_equality<0> {
-    template<class K, int n>
-    static bool equality (const FieldVector<K,n>& x, const FieldVector<K,n>& y)
-    {
-      return x[0] == y[0];
-    }
-  };
-
 #ifndef DUNE_EXPRESSIONTEMPLATES
-
-  // template meta program for axpy
-  template<int I>
-  struct fvmeta_axpy {
-    template<class K, int n>
-    static void axpy (FieldVector<K,n>& x, const K& a, const FieldVector<K,n>& y)
-    {
-      fvmeta_axpy<I-1>::axpy(x,a,y);
-      x[I] += a*y[I];
-    }
-  };
-  template<>
-  struct fvmeta_axpy<0> {
-    template<class K, int n>
-    static void axpy (FieldVector<K,n>& x, const K& a, const FieldVector<K,n>& y)
-    {
-      x[0] += a*y[0];
-    }
-  };
 
   // template meta program for dot
   template<int I>
@@ -209,23 +54,10 @@ namespace Dune {
     }
   };
 
-  // some abs functions needed for the norms
-  template<class K>
-  inline double fvmeta_abs (const K& k)
-  {
-    return (k >= 0) ? k : -k;
-  }
-
-  template<class K>
-  inline double fvmeta_abs (const std::complex<K>& c)
-  {
-    return sqrt(c.real()*c.real() + c.imag()*c.imag());
-  }
-
   template<class K>
   inline double fvmeta_absreal (const K& k)
   {
-    return fvmeta_abs(k);
+    return std::abs(k);
   }
 
   template<class K>
@@ -252,7 +84,7 @@ namespace Dune {
     template<class K, int n>
     static double one_norm (const FieldVector<K,n>& x)
     {
-      return fvmeta_abs(x[I]) + fvmeta_one_norm<I-1>::one_norm(x);
+      return std::abs(x[I]) + fvmeta_one_norm<I-1>::one_norm(x);
     }
   };
   template<>
@@ -260,7 +92,7 @@ namespace Dune {
     template<class K, int n>
     static double one_norm (const FieldVector<K,n>& x)
     {
-      return fvmeta_abs(x[0]);
+      return std::abs(x[0]);
     }
   };
 
@@ -306,7 +138,7 @@ namespace Dune {
     template<class K, int n>
     static double infinity_norm (const FieldVector<K,n>& x)
     {
-      return std::max(fvmeta_abs(x[I]),fvmeta_infinity_norm<I-1>::infinity_norm(x));
+      return std::max(std::abs(x[I]),fvmeta_infinity_norm<I-1>::infinity_norm(x));
     }
   };
   template<>
@@ -314,7 +146,7 @@ namespace Dune {
     template<class K, int n>
     static double infinity_norm (const FieldVector<K,n>& x)
     {
-      return fvmeta_abs(x[0]);
+      return std::abs(x[0]);
     }
   };
 
@@ -634,7 +466,9 @@ namespace Dune {
     //! Assignment operator for scalar
     FieldVector& operator= (const K& k)
     {
-      fvmeta_assignscalar<SIZE-1>::assignscalar(*this,k);
+      //fvmeta_assignscalar<SIZE-1>::assignscalar(*this,k);
+      for (size_type i=0; i<SIZE; i++)
+        p[i] = k;
       return *this;
     }
 
@@ -787,14 +621,16 @@ namespace Dune {
     //! vector space addition
     FieldVector& operator+= (const FieldVector& y)
     {
-      fvmeta_plusequal<SIZE-1>::plusequal(*this,y);
+      for (size_type i=0; i<SIZE; i++)
+        p[i] += y.p[i];
       return *this;
     }
 
     //! vector space subtraction
     FieldVector& operator-= (const FieldVector& y)
     {
-      fvmeta_minusequal<SIZE-1>::minusequal(*this,y);
+      for (size_type i=0; i<SIZE; i++)
+        p[i] -= y.p[i];
       return *this;
     }
 
@@ -815,28 +651,32 @@ namespace Dune {
     //! vector space add scalar to all comps
     FieldVector& operator+= (const K& k)
     {
-      fvmeta_plusequal<SIZE-1>::plusequal(*this,k);
+      for (size_type i=0; i<SIZE; i++)
+        p[i] += k;
       return *this;
     }
 
     //! vector space subtract scalar from all comps
     FieldVector& operator-= (const K& k)
     {
-      fvmeta_minusequal<SIZE-1>::minusequal(*this,k);
+      for (size_type i=0; i<SIZE; i++)
+        p[i] -= k;
       return *this;
     }
 
     //! vector space multiplication with scalar
     FieldVector& operator*= (const K& k)
     {
-      fvmeta_multequal<SIZE-1>::multequal(*this,k);
+      for (size_type i=0; i<SIZE; i++)
+        p[i] *= k;
       return *this;
     }
 
     //! vector space division by scalar
     FieldVector& operator/= (const K& k)
     {
-      fvmeta_divequal<SIZE-1>::divequal(*this,k);
+      for (size_type i=0; i<SIZE; i++)
+        p[i] /= k;
       return *this;
     }
 
@@ -845,14 +685,19 @@ namespace Dune {
     //! Binary vector comparison
     bool operator== (const FieldVector& y) const
     {
-      return fvmeta_equality<SIZE-1>::equality(*this,y);
+      for (size_type i=0; i<SIZE; i++)
+        if (p[i]!=y.p[i])
+          return false;
+
+      return true;
     }
 
     //! vector space axpy operation
     FieldVector& axpy (const K& a, const FieldVector& y)
     {
 #ifndef DUNE_EXPRESSIONTEMPLATES
-      fvmeta_axpy<SIZE-1>::axpy(*this,a,y);
+      for (size_type i=0; i<SIZE; i++)
+        p[i] += a*y.p[i];
 #else
       *this += a*y;
 #endif
@@ -922,8 +767,9 @@ namespace Dune {
       return SIZE;
     }
 
-    //! Send vector to output stream
-    void print (std::ostream& s) const
+    /** \brief Send vector to output stream
+        \deprecated Use operator << instead */
+    void print (std::ostream& s) const DUNE_DEPRECATED
     {
       for (size_type i=0; i<SIZE; i++)
         if (i>0)
@@ -941,7 +787,8 @@ namespace Dune {
   template<typename K, int n>
   std::ostream& operator<< (std::ostream& s, const FieldVector<K,n>& v)
   {
-    v.print(s);
+    for (typename FieldVector<K,n>::size_type i=0; i<n; i++)
+      s << ((i>0) ? " " : "") << v[i];
     return s;
   }
 
@@ -1213,7 +1060,7 @@ namespace Dune {
     //! one norm (sum over absolute values of entries)
     double one_norm () const
     {
-      return fvmeta_abs(p);
+      return std::abs(p);
     }
 
     //! simplified one norm (uses Manhattan norm for complex values)
@@ -1237,7 +1084,7 @@ namespace Dune {
     //! infinity norm (maximum of absolute values of entries)
     double infinity_norm () const
     {
-      return fvmeta_abs(p);
+      return std::abs(p);
     }
 
     //! simplified infinity norm (uses Manhattan norm for complex values)
@@ -1261,8 +1108,9 @@ namespace Dune {
       return 1;
     }
 
-    //! Send vector to output stream
-    void print (std::ostream& s) const
+    /** \brief Send vector to output stream
+        \deprecated Use operator << instead */
+    void print (std::ostream& s) const DUNE_DEPRECATED
     {
       s << p;
     }
