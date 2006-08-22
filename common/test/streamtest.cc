@@ -9,7 +9,7 @@
 
  */
 
-#include <config.h>
+#include "config.h"
 #include <fstream>
 
 #include <dune/common/stdstreams.hh>
