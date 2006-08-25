@@ -11,9 +11,9 @@ canonicalizepath(){
   local searchpath="$PATH:.:$(dirname $0)"
   local prog=$(echo $0 | sed 's/.*\/\([-_a-zA-Z0-9]*\)$/\1/')
   for i in `echo $searchpath | sed -e 's/:/ /g'`; do
-    if test -x "$i/$prog" ; then
+    if test -e "$i/$prog" ; then
 	canonicalpath="$i"
-	return
+	return 0
     fi
   done
   echo "Error: no canonical path found"
