@@ -2,6 +2,24 @@
 
 set -e
 
+# Get the canonical path (without using readlink)
+canonicalizepath(){
+  if test $# -ne 1; then
+     echo Usage: canonicalizepath path
+     return 1
+  fi
+  local searchpath="$PATH:.:$(dirname $0)"
+  local prog=$(echo $0 | sed 's/.*\/\([-_a-zA-Z0-9]*\)$/\1/')
+  for i in `echo $searchpath | sed -e 's/:/ /g'`; do
+    if test -x "$i/$prog" ; then
+	canonicalpath="$i"
+	return
+    fi
+  done
+  echo "Error: no canonical path found"
+  exit 1
+}
+
 version=0.1
 verbose=0
 
@@ -73,10 +91,10 @@ fi
 #
 
 # Read the modules find part
-INCDIR=$(dirname $(readlink --canonicalize $0))
+canonicalizepath $0
 
 eval "$(
-m4 -I$INCDIR/../m4/ <<EOF
+m4 -I$canonicalpath/../m4/ <<EOF
 changequote([, ])
 define([AC_DEFUN],[define([\$1],[\$2])])
 define([AC_MSG_CHECKING],[

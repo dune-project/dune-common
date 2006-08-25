@@ -2,6 +2,25 @@
 
 set -e
 
+# Get the canonical path (without using readlink)
+# Does not work for weired file names
+canonicalizepath(){
+  if test $# -ne 1; then
+     echo Usage: canonicalizepath path
+     return 1
+  fi
+  local searchpath="$PATH:.:$(dirname $0)"
+  local prog=$(echo $0 | sed 's/.*\/\([-_a-zA-Z0-9]*\)$/\1/')
+  for i in `echo $searchpath | sed -e 's/:/ /g'`; do
+    if test -x "$i/$prog" ; then
+	canonicalpath="$i"
+	return 0
+    fi
+  done
+  echo "Error: no canonical path found"
+  exit 1
+}
+
 if test "x$1" = "x--debug"; then
   DEBUG=yes
 fi
@@ -13,8 +32,8 @@ fi
 
 
 # Read the modules find part
-INCDIR=$(dirname $(readlink -f $0))
-. $INCDIR/dunemodules.inc
+canonicalizepath $0
+. $canonicalpath/dunemodules.inc
 
 
 ###

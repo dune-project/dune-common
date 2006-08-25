@@ -9,6 +9,24 @@
 
 set -e
 
+# Get the canonical path (without using readlink)
+canonicalizepath(){
+  if test $# -ne 1; then
+     echo Usage: canonicalizepath path
+     return 1
+  fi
+  local searchpath="$PATH:.:$(dirname $0)"
+  local prog=$(echo $0 | sed 's/.*\/\([-_a-zA-Z0-9]*\)$/\1/')
+  for i in `echo $searchpath | sed -e 's/:/ /g'`; do
+    if test -x "$i/$prog" ; then
+	canonicalpath="$i"
+	break
+    fi
+  done
+  echo "Error: no canonical path found"
+  exit 1
+}
+
 echo Dune project/module generator
 echo -----------------------------
 
@@ -24,7 +42,8 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
   MODULE="$PROJECT"
 
   # Read the modules find part
-. $(cd $(dirname $(readlink -f $0)); pwd)/dunemodules.inc
+  canonicalizepath $0
+. $(cd $canonicalpath); pwd)/dunemodules.inc
 
   if [ "$MODULES" = "" ]; then
     find_modules .
