@@ -57,6 +57,8 @@ namespace Dune {
   //! Tagging interface to indicate that class is of Type DofManager
   struct IsDofManager {};
 
-} // end namespace Dune
+  //! Tagging interface to indicate that Grid has HierarchicIndexSet
+  struct HasHierarchicIndexSet {};
 
+} // end namespace Dune
 #endif
