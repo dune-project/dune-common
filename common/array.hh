@@ -102,7 +102,7 @@ namespace Dune
 
     //! Sets all entries to the same value
     void set(const T& v) {
-      for (int i=0; i<size(); i++)
+      for (int i=0; i<size(); ++i)
         (*this)[i] = v;
     }
 
@@ -416,5 +416,4 @@ namespace Dune
   /** @} */
 
 } // end namespace Dune
-
 #endif
