@@ -20,7 +20,7 @@ canonicalizepath(){
   for i in `echo $searchpath | sed -e 's/:/ /g'`; do
     if test -e "$i/$prog" ; then
 	canonicalpath="$i"
-	break
+	return
     fi
   done
   echo "Error: no canonical path found"
@@ -43,7 +43,7 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
 
   # Read the modules find part
   canonicalizepath $0
-. $(cd $canonicalpath); pwd)/dunemodules.inc
+. $(cd $canonicalpath; pwd)/dunemodules.inc
 
   if [ "$MODULES" = "" ]; then
     find_modules .
