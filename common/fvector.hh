@@ -767,17 +767,6 @@ namespace Dune {
       return SIZE;
     }
 
-    /** \brief Send vector to output stream
-        \deprecated Use operator << instead */
-    void print (std::ostream& s) const DUNE_DEPRECATED
-    {
-      for (size_type i=0; i<SIZE; i++)
-        if (i>0)
-          s << " " << p[i];
-        else
-          s << p[i];
-    }
-
   private:
     // the data, very simply a built in array
     K p[(SIZE > 0) ? SIZE : 1];
@@ -1108,12 +1097,6 @@ namespace Dune {
       return 1;
     }
 
-    /** \brief Send vector to output stream
-        \deprecated Use operator << instead */
-    void print (std::ostream& s) const DUNE_DEPRECATED
-    {
-      s << p;
-    }
     //===== conversion operator
 
     /** \brief Conversion operator */
