@@ -1,4 +1,4 @@
-/** \mainpage DUNE Automatic Documentation
+/** \mainpage dune-common Automatic Documentation
 
 \section intro Introduction
 
@@ -13,5 +13,5 @@ you access to the documentation by category.
 
 */
 
-/** \page modules DUNE Modules
+/** \page modules dune-common Modules
 */
