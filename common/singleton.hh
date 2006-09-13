@@ -77,7 +77,7 @@ namespace Dune
       }
       /**
        * @brief Set the pointer.
-       * @paramter pointer A pointer to the instance.
+       * @param pointer A pointer to the instance.
        */
       void set(T* pointer)
       {
