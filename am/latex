@@ -21,4 +21,4 @@
 	TEXINPUTS=.:$(srcdir):${TEXINPUTS}: $(DVIPDF) $*
 
 .dvi.ps:
-	TEXINPUTS=.:$(srcdir):${TEXINPUTS}: $(DVIPS) $*
+	TEXINPUTS=.:$(srcdir):${TEXINPUTS}: $(DVIPS) $* -o
