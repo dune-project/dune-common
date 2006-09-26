@@ -59,12 +59,9 @@ AC_CHECK_HEADER([alberta.h],
 CPPFLAGS="$REM_CPPFLAGS -I$ALBERTA_INCLUDE_PATH"
 REM_CPPFLAGS=
 
-REM_LDFLAGS=$LDFLAGS
-
 # TODO: check if static flag exists 
 # link_static_flag defines the flag for the linker to link only static
 # didnt work, with $link_static_flag, so quick hack here
-LDFLAGS="$LDFLAGS -static"
 
 # if header is found...
 if test x$HAVE_ALBERTA = x1 ; then
@@ -73,7 +70,7 @@ if test x$HAVE_ALBERTA = x1 ; then
          ALBERTA_LDFLAGS="-L$ALBERTA_LIB_PATH"
          LIBS="$LIBS $ALBERTA_LIBS"],
   [HAVE_ALBERTA="0"
-  AC_MSG_WARN(libalberta_util not.a found!)])
+  AC_MSG_WARN(-lalberta_util not found!)])
 fi
 
 # still everything found?
@@ -87,10 +84,8 @@ if test x$HAVE_ALBERTA = x1 ; then
   AC_CHECK_LIB($albertalibname,[mesh_traverse],
   [ALBERTA_LIBS="-l$variablealbertalibname $ALBERTA_LIBS $ALBERTA_EXTRA"],
   [HAVE_ALBERTA="0"
-  AC_MSG_WARN(lib$albertalibname.a not found!)])
+  AC_MSG_WARN(-l$albertalibname not found!)])
 fi
-
-LDFLAGS=$REM_LDFLAGS
 
 ## end of alberta check (--without wasn't set)
 fi
