@@ -9,6 +9,8 @@
 #include "mpi.h"
 #endif
 
+#include "stdstreams.hh"
+
 namespace Dune
 {
   /**
@@ -61,45 +63,6 @@ namespace Dune
   class FakeMPIHelper
   {
   public:
-    /**
-     * @brief A simple smart pointer responsible for creation
-     * and deletion of the instance.
-     */
-    class InstancePointer
-    {
-    public:
-      /** @brief Construct a null pointer. */
-      InstancePointer() : pointer_(0)
-      {}
-      /** @brief Delete the instance we point to. */
-      ~InstancePointer()
-      {
-        if(pointer_ != 0)
-          delete pointer_;
-      }
-      /**
-       * @brief Get a pointer to the instance.
-       * @return The instance we store.
-       */
-      FakeMPIHelper* get()
-      {
-        return pointer_;
-      }
-      /**
-       * @brief Set the pointer.
-       * @param pointer A pointer to the instance.
-       */
-      void set(FakeMPIHelper* pointer)
-      {
-        if(pointer != 0) {
-          delete pointer_;
-          pointer_ = pointer;
-        }
-      }
-    private:
-      FakeMPIHelper* pointer_;
-    };
-  public:
     enum {
       /**
        * @brief Are we fake (i. e. pretend to have MPI support but are compiled
@@ -107,7 +70,6 @@ namespace Dune
        */
       isFake = true
     };
-
 
     /**
      * @brief The type of the mpi communicator.
@@ -141,9 +103,9 @@ namespace Dune
      */
     static FakeMPIHelper& instance(int argc, char** argv)
     {
-      if(instance_.get() == 0)
-        instance_.set(new FakeMPIHelper());
-      return *instance_.get();
+      // create singleton instance
+      static FakeMPIHelper singleton;
+      return singleton;
     }
 
     /**
@@ -156,15 +118,10 @@ namespace Dune
     int size () const { return 1; }
 
   private:
-    FakeMPIHelper()
-    {}
+    FakeMPIHelper() {}
     FakeMPIHelper(const FakeMPIHelper&);
     FakeMPIHelper& operator=(const FakeMPIHelper);
-
-    static InstancePointer instance_;
   };
-
-  FakeMPIHelper::InstancePointer FakeMPIHelper::instance_ = FakeMPIHelper::InstancePointer();
 
 #if HAVE_MPI
   /**
@@ -174,45 +131,6 @@ namespace Dune
    */
   class MPIHelper
   {
-  public:
-    /**
-     * @brief A simple smart pointer responsible for creation
-     * and deletion of the instance.
-     */
-    class InstancePointer
-    {
-    public:
-      /** @brief Construct a null pointer. */
-      InstancePointer() : pointer_(0)
-      {}
-      /** @brief Delete the instance we point to. */
-      ~InstancePointer()
-      {
-        if(pointer_ != 0)
-          delete pointer_;
-      }
-      /**
-       * @brief Get a pointer to the instance.
-       * @return The instance we store.
-       */
-      MPIHelper* get()
-      {
-        return pointer_;
-      }
-      /**
-       * @brief Set the pointer.
-       * @param pointer A pointer to the instance.
-       */
-      void set(MPIHelper* pointer)
-      {
-        if(pointer != 0) {
-          delete pointer_;
-          pointer_ = pointer;
-        }
-      }
-    private:
-      MPIHelper* pointer_;
-    };
   public:
     enum {
       /**
@@ -253,11 +171,10 @@ namespace Dune
      */
     static MPIHelper& instance(int& argc, char**& argv)
     {
-      if(instance_.get() == 0)
-        instance_.set(new MPIHelper(argc, argv));
-      return *instance_.get();
+      // create singleton instance
+      static MPIHelper singleton (argc, argv);
+      return singleton;
     }
-
 
     /**
      * @brief return rank of process
@@ -272,6 +189,7 @@ namespace Dune
     int rank_;
     int size_;
 
+    //! \brief calls MPI_Init with argc and argv as parameters
     MPIHelper(int& argc, char**& argv)
     {
       rank_ = -1;
@@ -279,26 +197,26 @@ namespace Dune
       MPI_Init(&argc, &argv);
       MPI_Comm_rank(MPI_COMM_WORLD,&rank_);
       MPI_Comm_size(MPI_COMM_WORLD,&size_);
+
       assert( rank_ >= 0 );
       assert( size_ >= 1 );
+
+      dvverb << "Called  MPI_Init on p=" << rank_ << "!" << std::endl;
     }
+    //! \brief calls MPI_Finalize
     ~MPIHelper()
     {
       MPI_Finalize();
+      dvverb << "Called MPI_Finalize on p=" << rank_ << "!" <<std::endl;
     }
     MPIHelper(const MPIHelper&);
     MPIHelper& operator=(const MPIHelper);
-
-    static InstancePointer instance_;
   };
-
-  MPIHelper::InstancePointer MPIHelper::instance_ = MPIHelper::InstancePointer();
-
 #else
   // We do not have MPI therefore FakeMPIHelper
   // is the MPIHelper
   /** @brief If no MPI is available FakeMPIHelper becomes the MPIHelper */
-#define MPIHelper FakeMPIHelper
+  typedef FakeMPIHelper MPIHelper;
 
 #endif
 
