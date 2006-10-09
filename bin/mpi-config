@@ -2,22 +2,20 @@
 
 set -e
 
-# Get the canonical path (without using readlink)
-canonicalizepath(){
+canonicalname(){
   if test $# -ne 1; then
-     echo Usage: canonicalizepath path
+     echo Usage: canonicalname path > /dev/stderr
      return 1
   fi
-  local searchpath="$PATH:.:$(dirname $0)"
-  local prog=$(echo $0 | sed 's/.*\/\([-_a-zA-Z0-9]*\)$/\1/')
-  for i in `echo $searchpath | sed -e 's/:/ /g'`; do
-    if test -e "$i/$prog" ; then
-	canonicalpath="$i"
-	return 0
-    fi
-  done
-  echo "Error: no canonical path found"
-  exit 1
+  readlink $1 || echo "$(dirname $1)/$(basename $1)"
+}
+
+canonicalpath(){
+  if test $# -ne 1; then
+     echo Usage: canonicalpath path > /dev/stderr
+     return 1
+  fi
+  (cd $(dirname $(canonicalname $1)) && pwd)
 }
 
 version=0.1
@@ -90,11 +88,8 @@ fi
 # load mpi-config.m4
 #
 
-# Read the modules find part
-canonicalizepath $0
-
 eval "$(
-m4 -I$canonicalpath/../m4/ <<EOF
+m4 -I$(canonicalpath $0/../m4/) <<EOF
 changequote([, ])
 define([AC_DEFUN],[define([\$1],[\$2])])
 define([AC_MSG_CHECKING],[
