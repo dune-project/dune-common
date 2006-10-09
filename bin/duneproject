@@ -37,7 +37,7 @@ echo -----------------------------
 while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
   PROJECT=""
   while [ -z $PROJECT ]; do
-    read -p "New Project name?(a directory with this name will be created, eg: dune-grid): " PROJECT
+    read -p "New Project name? (A directory with this name will be created, e.g.: dune-grid): " PROJECT
   done
   MODULE="$PROJECT"
 
@@ -75,13 +75,13 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
   echo "with maintainer \"$MAINTAINER\""
   echo "which depends on \"$DEPENDENCIES\""
   read -p "Are these informations correct? [y/N] " DATACORRECT
-  echo
-  echo "Look at README and dune.module files in the \"$PROJECT\" directory "
-  echo "A sample code $MODULE.cc is generated in the \"$PROJECT\" directory"
-  echo "Sometimes you may have to tweak the configure.ac a bit"
-  echo "Now you can run dunecontrol script which would setup new module"
 done
 
+echo
+echo "A sample code $MODULE.cc is generated in the \"$PROJECT\" directory."
+echo "Look at the README and dune.module files there."
+echo "Now you can run dunecontrol script which will setup the new module."
+echo "Sometimes you may have to tweak configure.ac a bit."
 
 mkdir "$PROJECT"
 
