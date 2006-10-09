@@ -688,16 +688,10 @@ namespace Dune {
     //===== conversion operator
 
     /** \brief Sends the matrix to an output stream */
-    void print (std::ostream& s) const
-    {
-      for (size_type i=0; i<n; i++)
-        s << p[i] << std::endl;
-    }
-
-    /** \brief Sends the matrix to an output stream */
     friend std::ostream& operator<< (std::ostream& s, const FieldMatrix<K,n,m>& a)
     {
-      a.print(s);
+      for (size_type i=0; i<n; i++)
+        s << a.p[i] << std::endl;
       return s;
     }
 
