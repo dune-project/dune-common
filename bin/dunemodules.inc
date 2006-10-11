@@ -167,7 +167,7 @@ eval_control() {
       # load functions defined in $file
       # if $command is not defined in $file,
       # then the default implementation will be executed
-      eval "$(grep -v -e '^[[:alnum:]]\+:' $file)"
+      eval "$(grep -v '^[[:alnum:]]\+:' $file)"
       # execute $command
       $command
     ) || false
