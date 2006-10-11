@@ -25,7 +25,7 @@ parse_control() {
   fi
   # read parameters from control file
   local name=$(echo $(grep Module: "$1" | cut -d ':' -f2))
-  if test "x$name" == "x"; then
+  if test "x$name" = "x"; then
     echo "ERROR: $CONTROL files $1 does not contain a Module entry"
     exit 1
   fi
