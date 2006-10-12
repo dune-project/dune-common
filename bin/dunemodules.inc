@@ -24,14 +24,14 @@ parse_control() {
     exit 1
   fi
   # read parameters from control file
-  local name=$(echo $(grep Module: "$1" | cut -d ':' -f2))
+  local name="$(echo $(grep Module: "$1" | cut -d ':' -f2))"
   if test "x$name" = "x"; then
     echo "ERROR: $CONTROL files $1 does not contain a Module entry"
     exit 1
   fi
-  local deps=$(echo $(grep Depends: "$1" | cut -d ':' -f2))
-  local sugs=$(echo $(grep Suggests: "$1" | cut -d ':' -f2))
-  local path=$(dirname "$1")
+  local deps="$(echo $(grep Depends: "$1" | cut -d ':' -f2))"
+  local sugs="$(echo $(grep Suggests: "$1" | cut -d ':' -f2))"
+  local path="$(dirname "$1")"
   # create and check variable name from module name
   fix_and_assign module $name
   if ! check_modname "$module"; then
@@ -75,7 +75,7 @@ EOF
 #
 find_modules() {
   if test -d "$1"; then
-    local dir=$(cd "$1" && pwd)
+    local dir="$(cd "$1" && pwd)"
     while read m; do
       if test "x$m" != "x"; then
         export module=""
@@ -110,7 +110,7 @@ sort_modules() {
       exit 1
     fi
   done
-  export MODULES=$SORTEDMODULES
+  export MODULES="$SORTEDMODULES"
 }
 
 #
@@ -121,7 +121,7 @@ sort_modules() {
 # $1 name of the modules
 #
 _sort_module() {
-  local module=$1
+  local module="$1"
   shift 1
   if ! check_modname $module; then echo "ERROR: invalid module name $module"; exit 1; fi
   if test "x$(eval echo \$SORT_DONE_${command}_${module})" != "xyes"; then
@@ -157,8 +157,8 @@ _sort_module() {
 # $2 full path of the $CONTROL file
 #
 eval_control() {
-  local command=$1
-  local file=$2
+  local command="$1"
+  local file="$2"
   shift 2
   if test -f "$file"; then
     # open subshell
@@ -185,7 +185,7 @@ eval_control() {
 # $2 value
 #
 fix_and_assign() {
-  local name=$1
+  local name="$1"
   shift 1
   if ! check_modname $name; then
     echo ERROR: error in assignment. $name is not a valid variabel name.
