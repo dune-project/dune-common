@@ -20,14 +20,14 @@ for OPT in "$@"; do
 
     case "$OPT" in
 	--ac=*|--acversion=*)
-			if test "x$arg" == "x"; then
+			if test "x$arg" = "x"; then
 				usage; 
 				exit 1;
 			fi
 			ACVERSION=$arg
 			;;
 	--am=*|--amversion=*)
-			if test "x$arg" == "x"; then
+			if test "x$arg" = "x"; then
 				usage; 
 				exit 1;
 			fi
