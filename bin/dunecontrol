@@ -1,6 +1,20 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
+
+###############################################
+###
+### check for environment variables
+###
+
+if test -z $MAKE; then
+  MAKE=make
+fi
+
+###############################################
+###
+### read lib
+###
 
 canonicalname(){
   if test $# -ne 1; then
@@ -31,11 +45,7 @@ fi
 # Read the modules find part
 . $(canonicalpath $0)/dunemodules.inc
 
-
-###
-### LIB
-###
-
+###############################################
 
 #
 # for each module load the $CONTROL script part and run $command
@@ -65,7 +75,7 @@ build_modules() {
 
 #
 # load command options from an opts file
-# the name of the opts file is stored in the global variable $OPTS_FILE
+# the name of the opts file is stored in the global variable $DUNE_OPTS_FILE
 #
 # parameters:
 # $1 command
@@ -73,9 +83,9 @@ build_modules() {
 load_opts() {
   local command=$1
   local COMMAND=$(echo $command | tr '[:lower:]' '[:upper:]')
-  if test "x$OPTS_FILE" != "x"; then
-    echo "----- loading default flags \$${COMMAND}_FLAGS from $OPTS_FILE -----"
-    CMD_PARAMS="$(. $OPTS_FILE; eval echo \$${COMMAND}_FLAGS)"
+  if test "x$DUNE_OPTS_FILE" != "x"; then
+    echo "----- loading default flags \$${COMMAND}_FLAGS from $DUNE_OPTS_FILE -----"
+    CMD_PARAMS="$(. $DUNE_OPTS_FILE; eval echo \$${COMMAND}_FLAGS)"
   fi
 }
 
@@ -169,7 +179,7 @@ run_default_configure () {
 run_default_make () {
   PARAMS="$CMD_PARAMS"
   echo make "$PARAMS"
-  eval make "$PARAMS"
+  eval $MAKE "$PARAMS"
 }
 
 run_default_all () {
@@ -247,10 +257,10 @@ while test $# -gt 0; do
         echo
         exit 1;
       fi
-      OPTS_FILE=$(canonicalpath $arg)/$(basename $arg)
-      if ! test -r "$OPTS_FILE"; then
+      DUNE_OPTS_FILE=$(canonicalpath $arg)/$(basename $arg)
+      if ! test -r "$DUNE_OPTS_FILE"; then
         usage
-        echo "ERROR: could not read opts file \"$OPTS_FILE\""
+        echo "ERROR: could not read opts file \"$DUNE_OPTS_FILE\""
         echo
         exit 1;
       fi
@@ -295,10 +305,10 @@ while test $# -gt 0; do
   CMD_PARAMS="$CMD_PARAMS \"$1\""
   shift
   # disable usage of opts file
-  if test "x$OPTS_FILE" != "x"; then
-    echo "WARNING: commandline parameters will overwrite setting in opts file \"$OPTS_FILE\""
+  if test "x$DUNE_OPTS_FILE" != "x"; then
+    echo "WARNING: commandline parameters will overwrite setting in opts file \"$DUNE_OPTS_FILE\""
   fi 
-  OPTS_FILE=""
+  DUNE_OPTS_FILE=""
 done
 
 # We need to run this via eval in order construct the case for the commands

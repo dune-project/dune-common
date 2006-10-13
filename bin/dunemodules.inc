@@ -9,7 +9,18 @@
 CONTROL="dune.module"
 
 ###############################################
+###
+### check for environment variables
+###
 
+if test -z $DUNE_CONTROL_PATH; then
+  DUNE_CONTROL_PATH=.
+fi
+if test -z $GREP; then
+  GREP=grep
+fi
+
+###############################################
 
 #
 # read paramters from a $CONTROL file
@@ -24,13 +35,13 @@ parse_control() {
     exit 1
   fi
   # read parameters from control file
-  local name="$(echo $(grep Module: "$1" | cut -d ':' -f2))"
+  local name="$(echo $($GREP Module: "$1" | cut -d ':' -f2))"
   if test "x$name" = "x"; then
     echo "ERROR: $CONTROL files $1 does not contain a Module entry"
     exit 1
   fi
-  local deps="$(echo $(grep Depends: "$1" | cut -d ':' -f2))"
-  local sugs="$(echo $(grep Suggests: "$1" | cut -d ':' -f2))"
+  local deps="$(echo $($GREP Depends: "$1" | cut -d ':' -f2))"
+  local sugs="$(echo $($GREP Suggests: "$1" | cut -d ':' -f2))"
   local path="$(dirname "$1")"
   # create and check variable name from module name
   fix_and_assign module $name
@@ -63,7 +74,7 @@ find_modules_in_path() {
   while read dir; do
     find_modules $dir
   done <<EOF
-  $(echo ${DUNE_CONTROL_PATH:-.} | sed -e 's/:/\n/g') 
+  $(echo $DUNE_CONTROL_PATH | sed -e 's/:/\n/g') 
 EOF
 }
 
@@ -83,7 +94,7 @@ find_modules() {
         export MODULES="$MODULES $module"
       fi
     done <<EOF
- $(find "$dir" -name $CONTROL | grep -v 'dune-[-_a-zA-Z]/dune\-[-a-zA-Z_]*\-[0-9]\+.[0-9]\+/')
+ $(find "$dir" -name $CONTROL | $GREP -v 'dune-[-_a-zA-Z]/dune\-[-a-zA-Z_]*\-[0-9]\+.[0-9]\+/')
 EOF
   else
     if test -f "$1" && 
@@ -167,7 +178,7 @@ eval_control() {
       # load functions defined in $file
       # if $command is not defined in $file,
       # then the default implementation will be executed
-      eval "$(grep -v '^[[:alnum:]]\+:' $file)"
+      eval "$($GREP -v '^[[:alnum:]]\+:' $file)"
       # execute $command
       $command
     ) || false
@@ -203,7 +214,7 @@ check_modname() {
   if sh -c "$ID=huhu" > /dev/null 2>&1; then
     return 1
   fi
-#  if ! echo "$1" | grep -q '^[a-zA-Z0-9_]\+$'; then
+#  if ! echo "$1" | $GREP -q '^[a-zA-Z0-9_]\+$'; then
 #    return 1
 #  fi
   return 0
