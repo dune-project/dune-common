@@ -45,21 +45,26 @@ namespace Dune
      * @brief Copy constructor.
      * @param pointer The object to copy.
      */
-    inline SmartPointer(const SmartPointer& pointer);
+    inline SmartPointer(const SmartPointer<T>& pointer);
 
     /**
      * @brief Destructor.
      */
     inline ~SmartPointer();
 
-    inline SmartPointer& operator=(const SmartPointer& pointer);
+    /** \brief Assignment operator */
+    inline SmartPointer& operator=(const SmartPointer<T>& pointer);
 
+    /** \brief Dereference as object */
     inline MemberType& operator*();
 
+    /** \brief Dereference as pointer */
     inline MemberType* operator->();
 
+    /** \brief Dereference as const object */
     inline const MemberType& operator*() const;
 
+    /** \brief Dereference as const pointer */
     inline const MemberType* operator->() const;
 
     /**
