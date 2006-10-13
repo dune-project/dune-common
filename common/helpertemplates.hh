@@ -48,13 +48,13 @@ template<class T1, class T2, class T3 = T1> struct Can_multiply {
     only function available is no().
 
     Example for compile time check whether two types are the same:
-    \begincode
+    \code
     IsTrue<SameType<int,int>::value>::yes(); //
     IsTrue<SameType<bool,int>::value>::yes(); // false, will trigger a compile time error
     \endcode
 
     A test that trigger a compile time error if condition is true:
-    \begincode
+    \code
     IsTrue<condition>::no()
     \endcode
  */
