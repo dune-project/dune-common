@@ -19,7 +19,7 @@ namespace Dune
      curiously recurring template pattern).
 
      The following example illustrates how a random access iterator might be written:
-     \include dune/common/test/iteratorfacadetest.hh
+
      \code
      #include<dune/common/iteratorfacades.hh>
 
