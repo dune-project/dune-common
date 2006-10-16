@@ -76,11 +76,14 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
     with_[]_dune_module="global installation"
   fi
 
-  CPPFLAGS="$DUNE_CPPFLAGS $_DUNE_MODULE[]_CPPFLAGS"
+  DUNE_CPPFLAGS="$DUNE_CPPFLAGS $_DUNE_MODULE[]_CPPFLAGS"
+  CPPFLAGS="$DUNE_CPPFLAGS"
+  SET_CPPFLAGS="$_DUNE_MODULE[]_CPPFLAGS"
+  
   # test for an arbitrary header
   AC_CHECK_HEADER([dune/[]_dune_header],
     [HAVE_[]_DUNE_MODULE=1
-     _DUNE_MODULE[]_CPPFLAGS="$CPPFLAGS"],
+     _DUNE_MODULE[]_CPPFLAGS="$SET_CPPFLAGS"],
     [HAVE_[]_DUNE_MODULE=0
      _DUNE_MODULE[]_CPPFLAGS=""
      AC_MSG_ERROR([$with_[]_dune_module does not seem to contain a valid _dune_module_plain (dune/[]_dune_header not found)])]
@@ -156,14 +159,16 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
     AC_DEFINE(HAVE_[]_DUNE_MODULE, 1, [Define to 1 if _dune_module was found])
 
     # set DUNE_* variables
-    AC_SUBST(DUNE_CPPFLAGS, "$DUNE_CPPFLAGS $_DUNE_MODULE[]_CPPFLAGS")
+    AC_SUBST(DUNE_CPPFLAGS, "$DUNE_CPPFLAGS")
     AC_SUBST(DUNE_LDFLAGS, "$DUNE_LDFLAGS $_DUNE_MODULE[]_LDFLAGS")
     AC_SUBST(DUNE_LIBS, "$DUNE_LIBS $_DUNE_MODULE[]_LIBS")
     
     # add to global list
-    DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $DUNE_CPPFLAGS"
+    # only add my flags other flags are added by other packages 
+    DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $_DUNE_MODULE[]_CPPFLAGS"
     DUNE_PKG_LIBS="$DUNE_PKG_LIBS $LIBS"
-    DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $DUNE_LDFLAGS"
+    #DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $DUNE_LDFLAGS"
+    DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $_DUNE_MODULE[]_LDFLAGS"
 
     with_[]_dune_module="yes"
   else
