@@ -165,7 +165,7 @@ namespace Dune
    * @brief Checks wether a type is derived from another.
    *
    * Inspired by
-   * @link http://www.kotiposti.net/epulkkin/instructive/base-class-determination.html @endlink
+   * <A HREF="http://www.kotiposti.net/epulkkin/instructive/base-class-determination.html"> this website</A>
    */
   template<class From, class To>
   class Conversion

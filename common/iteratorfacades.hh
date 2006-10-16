@@ -156,8 +156,8 @@ namespace Dune
      * void increment()
      * </pre>
      *
-     * For an elaborate explanation see the STL Documentation
-     * @link http://www.sgi.com/tech/stl/iterator_traits.html @endlink
+     * For an elaborate explanation see the
+     * <A HREF="http://www.sgi.com/tech/stl/iterator_traits.html">STL Documentation</A>!
      */
     typedef T DerivedType;
 
@@ -288,8 +288,8 @@ namespace Dune
      *
      * </pre>
      *
-     * For an elaborate explanation see the STL Documentation
-     * @link http://www.sgi.com/tech/stl/iterator_traits.html @endlink
+     * For an elaborate explanation see the
+     * <A HREF="http://www.sgi.com/tech/stl/iterator_traits.html">STL Documentation</A>
      */
     typedef T DerivedType;
 
@@ -442,8 +442,8 @@ namespace Dune
      * DifferenceType distanceTo(j) const;
      * </pre>
      *
-     * For an elaborate explanation see the STL Documentation
-     * @link http://www.sgi.com/tech/stl/iterator_traits.html @endlink
+     * For an elaborate explanation see the
+     * <A HREF="http://www.sgi.com/tech/stl/iterator_traits.html">STL Documentation</A>
      */
     typedef T DerivedType;
 
