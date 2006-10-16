@@ -165,6 +165,9 @@ run_default_configure () {
     if test "x$HAVE_dune_disc" = "xyes"; then
       PARAMS="$PARAMS \"--with-dune-disc=$PATH_dune_disc\""
     fi
+    if test "x$HAVE_dune_fem" = "xyes"; then
+      PARAMS="$PARAMS \"--with-dune-fem=$PATH_dune_fem\""
+    fi
     echo ./configure "$PARAMS"
     eval ./configure "$PARAMS" || exit 1
   else
