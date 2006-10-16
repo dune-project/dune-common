@@ -44,193 +44,6 @@ namespace Dune {
     return std::complex<K>(c.real(),-c.imag());
   }
 
-
-  //! solve small system
-  template<class K, int n, class V>
-  void fm_solve (const FieldMatrix<K,n,n>& Ain,  V& x, const V& b)
-  {
-    // make a copy of a to store factorization
-    FieldMatrix<K,n,n> A(Ain);
-
-    // Gaussian elimination with maximum column pivot
-    double norm=A.infinity_norm_real();     // for relative thresholds
-    double pivthres = std::max(FMatrixPrecision<>::absolute_limit(),norm*FMatrixPrecision<>::pivoting_limit());
-    double singthres = std::max(FMatrixPrecision<>::absolute_limit(),norm*FMatrixPrecision<>::singular_limit());
-    V& rhs = x;          // use x to store rhs
-    rhs = b;             // copy data
-
-    // elimination phase
-    for (int i=0; i<n; i++)      // loop over all rows
-    {
-      double pivmax=fvmeta_absreal(A[i][i]);
-
-      // pivoting ?
-      if (pivmax<pivthres)
-      {
-        // compute maximum of row
-        int imax=i; double abs;
-        for (int k=i+1; k<n; k++)
-          if ((abs=fvmeta_absreal(A[k][i]))>pivmax)
-          {
-            pivmax = abs; imax = k;
-          }
-        // swap rows
-        if (imax!=i)
-          for (int j=i; j<n; j++)
-            std::swap(A[i][j],A[imax][j]);
-      }
-
-      // singular ?
-      if (pivmax<singthres)
-        DUNE_THROW(FMatrixError,"matrix is singular");
-
-      // eliminate
-      for (int k=i+1; k<n; k++)
-      {
-        K factor = -A[k][i]/A[i][i];
-        for (int j=i+1; j<n; j++)
-          A[k][j] += factor*A[i][j];
-        rhs[k] += factor*rhs[i];
-      }
-    }
-
-    // backsolve
-    for (int i=n-1; i>=0; i--)
-    {
-      for (int j=i+1; j<n; j++)
-        rhs[i] -= A[i][j]*x[j];
-      x[i] = rhs[i]/A[i][i];
-    }
-  }
-
-  //! special case for 1x1 matrix, x and b may be identical
-  template<class K, class V>
-  inline void fm_solve (const FieldMatrix<K,1,1>& A,  V& x, const V& b)
-  {
-#ifdef DUNE_FMatrix_WITH_CHECKING
-    if (fvmeta_absreal(A[0][0])<FMatrixPrecision<>::absolute_limit())
-      DUNE_THROW(FMatrixError,"matrix is singular");
-#endif
-    x[0] = b[0]/A[0][0];
-  }
-
-  //! special case for 2x2 matrix, x and b may be identical
-  template<class K, class V>
-  inline void fm_solve (const FieldMatrix<K,2,2>& A,  V& x, const V& b)
-  {
-#ifdef DUNE_FMatrix_WITH_CHECKING
-    K detinv = A[0][0]*A[1][1]-A[0][1]*A[1][0];
-    if (fvmeta_absreal(detinv)<FMatrixPrecision<>::absolute_limit())
-      DUNE_THROW(FMatrixError,"matrix is singular");
-    detinv = 1/detinv;
-#else
-    K detinv = 1.0/(A[0][0]*A[1][1]-A[0][1]*A[1][0]);
-#endif
-
-    K temp = b[0];
-    x[0] = detinv*(A[1][1]*b[0]-A[0][1]*b[1]);
-    x[1] = detinv*(A[0][0]*b[1]-A[1][0]*temp);
-  }
-
-
-
-  //! compute inverse
-  template<class K, int n>
-  void fm_invert (FieldMatrix<K,n,n>& B)
-  {
-    FieldMatrix<K,n,n> A(B);
-    FieldMatrix<K,n,n>& L=A;
-    FieldMatrix<K,n,n>& U=A;
-
-    double norm=A.infinity_norm_real();     // for relative thresholds
-    double pivthres = std::max(FMatrixPrecision<>::absolute_limit(),norm*FMatrixPrecision<>::pivoting_limit());
-    double singthres = std::max(FMatrixPrecision<>::absolute_limit(),norm*FMatrixPrecision<>::singular_limit());
-
-    // LU decomposition of A in A
-    for (int i=0; i<n; i++)      // loop over all rows
-    {
-      double pivmax=fvmeta_absreal(A[i][i]);
-
-      // pivoting ?
-      if (pivmax<pivthres)
-      {
-        // compute maximum of column
-        int imax=i; double abs;
-        for (int k=i+1; k<n; k++)
-          if ((abs=fvmeta_absreal(A[k][i]))>pivmax)
-          {
-            pivmax = abs; imax = k;
-          }
-        // swap rows
-        if (imax!=i)
-          for (int j=i; j<n; j++)
-            std::swap(A[i][j],A[imax][j]);
-      }
-
-      // singular ?
-      if (pivmax<singthres)
-        DUNE_THROW(FMatrixError,"matrix is singular");
-
-      // eliminate
-      for (int k=i+1; k<n; k++)
-      {
-        K factor = A[k][i]/A[i][i];
-        L[k][i] = factor;
-        for (int j=i+1; j<n; j++)
-          A[k][j] -= factor*A[i][j];
-      }
-    }
-
-    // initialize inverse
-    B = 0;
-    for (int i=0; i<n; i++) B[i][i] = 1;
-
-    // L Y = I; multiple right hand sides
-    for (int i=0; i<n; i++)
-      for (int j=0; j<i; j++)
-        for (int k=0; k<n; k++)
-          B[i][k] -= L[i][j]*B[j][k];
-
-    // U A^{-1} = Y
-    for (int i=n-1; i>=0; i--)
-      for (int k=0; k<n; k++)
-      {
-        for (int j=i+1; j<n; j++)
-          B[i][k] -= U[i][j]*B[j][k];
-        B[i][k] /= U[i][i];
-      }
-  }
-
-  //! compute inverse n=1
-  template<class K>
-  void fm_invert (FieldMatrix<K,1,1>& A)
-  {
-#ifdef DUNE_FMatrix_WITH_CHECKING
-    if (fvmeta_absreal(A[0][0])<FMatrixPrecision<>::absolute_limit())
-      DUNE_THROW(FMatrixError,"matrix is singular");
-#endif
-    A[0][0] = 1/A[0][0];
-  }
-
-  //! compute inverse n=2
-  template<class K>
-  void fm_invert (FieldMatrix<K,2,2>& A)
-  {
-    K detinv = A[0][0]*A[1][1]-A[0][1]*A[1][0];
-#ifdef DUNE_FMatrix_WITH_CHECKING
-    if (fvmeta_absreal(detinv)<FMatrixPrecision<>::absolute_limit())
-      DUNE_THROW(FMatrixError,"matrix is singular");
-#endif
-    detinv = 1/detinv;
-
-    K temp=A[0][0];
-    A[0][0] =  A[1][1]*detinv;
-    A[0][1] = -A[0][1]*detinv;
-    A[1][0] = -A[1][0]*detinv;
-    A[1][1] =  temp*detinv;
-  }
-
-
   /**
       @brief A dense n x m matrix.
 
@@ -588,19 +401,13 @@ namespace Dune {
      * \exception FMatrixError if the matrix is singular
      */
     template<class V>
-    void solve (V& x, const V& b) const
-    {
-      fm_solve(*this,x,b);
-    }
+    void solve (V& x, const V& b) const;
 
     /** \brief Compute inverse
      *
      * \exception FMatrixError if the matrix is singular
      */
-    void invert ()
-    {
-      fm_invert(*this);
-    }
+    void invert();
 
     //! calculates the determinant of this matrix
     K determinant () const;
@@ -700,57 +507,217 @@ namespace Dune {
     row_type p[(n > 0) ? n : 1];
   };
 
+  template <class K, int n, int m>
+  template <class V>
+  inline void FieldMatrix<K,n,m>::solve(V& x, const V& b) const
+  {
+    // never mind those ifs, because they get optimized away
+    if (n!=m)
+      DUNE_THROW(FMatrixError, "Can't solve for a " << n << "x" << m << " matrix!");
 
-  namespace HelpMat {
+    // no need to implement the case 1x1, because the whole matrix class is
+    // specialized for this
 
-    // calculation of determinat of matrix
-    template <class K, int row,int col>
-    static inline K determinantMatrix (const FieldMatrix<K,row,col> &matrix)
-    {
-      if (row!=col)
-        DUNE_THROW(FMatrixError, "There is no determinant for a " << row << "x" << col << " matrix!");
+    if (n==2) {
 
-      DUNE_THROW(FMatrixError, "No implementation of determinantMatrix "
-                 << "for FieldMatrix<" << row << "," << col << "> !");
+#ifdef DUNE_FMatrix_WITH_CHECKING
+      K detinv = p[0][0]*p[1][1]-p[0][1]*p[1][0];
+      if (fvmeta_absreal(detinv)<FMatrixPrecision<>::absolute_limit())
+        DUNE_THROW(FMatrixError,"matrix is singular");
+      detinv = 1/detinv;
+#else
+      K detinv = 1.0/(p[0][0]*p[1][1]-p[0][1]*p[1][0]);
+#endif
 
-      return 0.0;
+      x[0] = detinv*(p[1][1]*b[0]-p[0][1]*b[1]);
+      x[1] = detinv*(p[0][0]*b[1]-p[1][0]*b[0]);
+
+    } else {
+
+      // ////////////////////////////////////////////////////
+      // Gaussian elimination with maximum column pivot
+      // ////////////////////////////////////////////////////
+
+      // make a copy of a to store factorization
+      FieldMatrix<K,n,n> A(*this);
+
+      double norm=A.infinity_norm_real();       // for relative thresholds
+      double pivthres = std::max(FMatrixPrecision<>::absolute_limit(),norm*FMatrixPrecision<>::pivoting_limit());
+      double singthres = std::max(FMatrixPrecision<>::absolute_limit(),norm*FMatrixPrecision<>::singular_limit());
+      V& rhs = x;            // use x to store rhs
+      rhs = b;               // copy data
+
+      // elimination phase
+      for (int i=0; i<n; i++)        // loop over all rows
+      {
+        double pivmax=fvmeta_absreal(A[i][i]);
+
+        // pivoting ?
+        if (pivmax<pivthres)
+        {
+          // compute maximum of row
+          int imax=i; double abs;
+          for (int k=i+1; k<n; k++)
+            if ((abs=fvmeta_absreal(A[k][i]))>pivmax)
+            {
+              pivmax = abs; imax = k;
+            }
+          // swap rows
+          if (imax!=i)
+            for (int j=i; j<n; j++)
+              std::swap(A[i][j],A[imax][j]);
+        }
+
+        // singular ?
+        if (pivmax<singthres)
+          DUNE_THROW(FMatrixError,"matrix is singular");
+
+        // eliminate
+        for (int k=i+1; k<n; k++)
+        {
+          K factor = -A[k][i]/A[i][i];
+          for (int j=i+1; j<n; j++)
+            A[k][j] += factor*A[i][j];
+          rhs[k] += factor*rhs[i];
+        }
+      }
+
+      // backsolve
+      for (int i=n-1; i>=0; i--)
+      {
+        for (int j=i+1; j<n; j++)
+          rhs[i] -= A[i][j]*x[j];
+        x[i] = rhs[i]/A[i][i];
+      }
+
     }
 
-    template <typename K>
-    static inline K determinantMatrix (const FieldMatrix<K,1,1> &matrix)
-    {
-      return matrix[0][0];
+  }
+
+  template <class K, int n, int m>
+  inline void FieldMatrix<K,n,m>::invert()
+  {
+    // never mind those ifs, because they get optimized away
+    if (n!=m)
+      DUNE_THROW(FMatrixError, "Can't invert a " << n << "x" << m << " matrix!");
+
+    // no need to implement the case 1x1, because the whole matrix class is
+    // specialized for this
+
+    if (n==2) {
+
+      K detinv = p[0][0]*p[1][1]-p[0][1]*p[1][0];
+#ifdef DUNE_FMatrix_WITH_CHECKING
+      if (fvmeta_absreal(detinv)<FMatrixPrecision<>::absolute_limit())
+        DUNE_THROW(FMatrixError,"matrix is singular");
+#endif
+      detinv = 1/detinv;
+
+      K temp=p[0][0];
+      p[0][0] =  p[1][1]*detinv;
+      p[0][1] = -p[0][1]*detinv;
+      p[1][0] = -p[1][0]*detinv;
+      p[1][1] =  temp*detinv;
+
+    } else {
+
+      FieldMatrix<K,n,n> A(*this);
+      FieldMatrix<K,n,n>& L=A;
+      FieldMatrix<K,n,n>& U=A;
+
+      double norm=A.infinity_norm_real();       // for relative thresholds
+      double pivthres = std::max(FMatrixPrecision<>::absolute_limit(),norm*FMatrixPrecision<>::pivoting_limit());
+      double singthres = std::max(FMatrixPrecision<>::absolute_limit(),norm*FMatrixPrecision<>::singular_limit());
+
+      // LU decomposition of A in A
+      for (int i=0; i<n; i++)        // loop over all rows
+      {
+        double pivmax=fvmeta_absreal(A[i][i]);
+
+        // pivoting ?
+        if (pivmax<pivthres)
+        {
+          // compute maximum of column
+          int imax=i; double abs;
+          for (int k=i+1; k<n; k++)
+            if ((abs=fvmeta_absreal(A[k][i]))>pivmax)
+            {
+              pivmax = abs; imax = k;
+            }
+          // swap rows
+          if (imax!=i)
+            for (int j=i; j<n; j++)
+              std::swap(A[i][j],A[imax][j]);
+        }
+
+        // singular ?
+        if (pivmax<singthres)
+          DUNE_THROW(FMatrixError,"matrix is singular");
+
+        // eliminate
+        for (int k=i+1; k<n; k++)
+        {
+          K factor = A[k][i]/A[i][i];
+          L[k][i] = factor;
+          for (int j=i+1; j<n; j++)
+            A[k][j] -= factor*A[i][j];
+        }
+      }
+
+      // initialize inverse
+      *this = 0;
+      for (int i=0; i<n; i++) p[i][i] = 1;
+
+      // L Y = I; multiple right hand sides
+      for (int i=0; i<n; i++)
+        for (int j=0; j<i; j++)
+          for (int k=0; k<n; k++)
+            p[i][k] -= L[i][j]*p[j][k];
+
+      // U A^{-1} = Y
+      for (int i=n-1; i>=0; i--)
+        for (int k=0; k<n; k++)
+        {
+          for (int j=i+1; j<n; j++)
+            p[i][k] -= U[i][j]*p[j][k];
+          p[i][k] /= U[i][i];
+        }
+
     }
 
-    template <typename K>
-    static inline K determinantMatrix (const FieldMatrix<K,2,2> &matrix)
-    {
-      return matrix[0][0]*matrix[1][1] - matrix[0][1]*matrix[1][0];
-    }
-
-    template <typename K>
-    static inline K determinantMatrix (const FieldMatrix<K,3,3> &matrix)
-    {
-      // code generated by maple
-      K t4  = matrix[0][0] * matrix[1][1];
-      K t6  = matrix[0][0] * matrix[1][2];
-      K t8  = matrix[0][1] * matrix[1][0];
-      K t10 = matrix[0][2] * matrix[1][0];
-      K t12 = matrix[0][1] * matrix[2][0];
-      K t14 = matrix[0][2] * matrix[2][0];
-
-      K det = (t4*matrix[2][2]-t6*matrix[2][1]-t8*matrix[2][2]+
-               t10*matrix[2][1]+t12*matrix[1][2]-t14*matrix[1][1]);
-      return det;
-    }
-
-  } // end namespace HelpMat
+  }
 
   // implementation of the determinant
   template <class K, int n, int m>
-  inline K FieldMatrix<K,n,m>::determinant () const
+  inline K FieldMatrix<K,n,m>::determinant() const
   {
-    return HelpMat::determinantMatrix(*this);
+    // never mind those ifs, because they get optimized away
+    if (n!=m)
+      DUNE_THROW(FMatrixError, "There is no determinant for a " << n << "x" << m << " matrix!");
+
+    // no need to implement the case 1x1, because the whole matrix class is
+    // specialized for this
+
+    if (n==2)
+      return p[0][0]*p[1][1] - p[0][1]*p[1][0];
+
+    if (n==3) {
+      // code generated by maple
+      K t4  = p[0][0] * p[1][1];
+      K t6  = p[0][0] * p[1][2];
+      K t8  = p[0][1] * p[1][0];
+      K t10 = p[0][2] * p[1][0];
+      K t12 = p[0][1] * p[2][0];
+      K t14 = p[0][2] * p[2][0];
+
+      return (t4*p[2][2]-t6*p[2][1]-t8*p[2][2]+
+              t10*p[2][1]+t12*p[1][2]-t14*p[1][1]);
+
+    }
+
+    DUNE_THROW(FMatrixError, "No implementation of determinantMatrix "
+               << "for FieldMatrix<" << n << "," << m << "> !");
+
   }
 
 
@@ -1019,12 +986,20 @@ namespace Dune {
     //! Solve system A x = b
     void solve (FieldVector<K,1>& x, const FieldVector<K,1>& b) const
     {
+#ifdef DUNE_FMatrix_WITH_CHECKING
+      if (fvmeta_absreal(a[0][0])<FMatrixPrecision<>::absolute_limit())
+        DUNE_THROW(FMatrixError,"matrix is singular");
+#endif
       x.p = b.p/a[0];
     }
 
     //! compute inverse
     void invert ()
     {
+#ifdef DUNE_FMatrix_WITH_CHECKING
+      if (fvmeta_absreal(a[0][0])<FMatrixPrecision<>::absolute_limit())
+        DUNE_THROW(FMatrixError,"matrix is singular");
+#endif
       a[0] = 1/a[0];
     }
 
