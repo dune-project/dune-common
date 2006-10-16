@@ -32,7 +32,7 @@ AC_DEFUN([DUNE_PATH_F5],[
    echo -n "checking for make/arch... "
    if test -x $F5ARCH ; then
      echo "yes"
-     LDFLAGS="$HDF5_LDFLAGS -L$with_f5/lib/$($F5ARCH)"
+     LDFLAGS="$HDF5_LDFLAGS -L$with_f5/lib/`$F5ARCH`"
      F5_LDFLAGS="$LDFLAGS"
      CPPFLAGS="$CPPFLAGS -I$with_f5"
    else

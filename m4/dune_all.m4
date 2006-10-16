@@ -180,7 +180,7 @@ AC_DEFUN([DUNE_CHECK_ALL_M],[
     AC_HELP_STRING([--with-hostid=HOST_IDENTIFIER],
                  [host identifier used for automated test runs]))
   if test "x$with_hostid" = "xno" ; then 
-    with_hostid="$ac_hostname ($(uname -sm), $COMPILER_NAME)";
+    with_hostid="$ac_hostname (`uname -sm`, $COMPILER_NAME)";
   fi
   AC_SUBST(host, $with_hostid)
   AC_ARG_WITH(tag,

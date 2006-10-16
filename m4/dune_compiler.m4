@@ -43,7 +43,7 @@ if test "x$compilercheck" != "xyes" ; then
   AC_MSG_WARN([compilercheck is disabled. DANGEROUS!])    
 else
   if $CXX conftest.cc -o conftest.$ac_exeext >&5; then
-	COMPILER_NAME=$(./conftest.$ac_exeext)
+	COMPILER_NAME=`./conftest.$ac_exeext`
     rm -f conftest.$ac_exeext
   else
     AC_MSG_ERROR([Your compiler is not officially supported by dune
