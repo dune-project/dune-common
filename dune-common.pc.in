@@ -5,10 +5,10 @@ includedir=@includedir@
 CXX=@CXX@
 CC=@CC@
 
-Name: Dune
+Name: @PACKAGE_NAME@
 Version: @VERSION@
-Description: the Dune numerics library
-URL: http://dune.uni-hd.de/
-Requires:
+Description: Dune (Distributed and Unified Numerics Environment) common module
+URL: http://dune-project.org/
+Requires: @REQUIRES@
 Libs:
 Cflags: -I${includedir}
