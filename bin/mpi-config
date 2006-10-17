@@ -89,7 +89,7 @@ fi
 #
 
 eval "$(
-m4 -I$(canonicalpath $0/../m4/) <<EOF
+m4 -I$(canonicalpath $0)/../m4/ <<EOF
 changequote([, ])
 define([AC_DEFUN],[define([\$1],[\$2])])
 define([AC_MSG_CHECKING],[
