@@ -32,8 +32,11 @@ and refers you to more detailed documentation.
           <li> <a href="$(ROOT)/doc/doxygen/dune-grid-html/classDune_1_1OneDGrid.html">OneDGrid:</a>
             A sequential locally adaptive grid in one space dimension
           </li>
-          <li> <a href="$(ROOT)/doc/doxygen/dune-grid-html/classDune_1_1ALU3dGrid.html">ALU3dGrid:</a>
-            A 3d hexahedral and tetrahedral grid with nonconforming refinement</li>
+          <li> 
+            <a href="$(ROOT)/doc/doxygen/dune-grid-html/classDune_1_1ALUSimplexGrid.html">ALUSimplexGrid</a>,
+            <a href="$(ROOT)/doc/doxygen/dune-grid-html/classDune_1_1ALUCubeGrid.html">ALUCubeGrid</a>:
+            A hexahedral, tetrahedral, and triangular grid with nonconforming refinement 
+              including parallelization with dynamic load-balancing. </li>
         </ul>
       </li>
     <br>
@@ -71,7 +74,7 @@ and refers you to more detailed documentation.
     <br>
     <li> <b> Input/Output </b>
       <ul>
-        <li> Visualization using GRAPE </li>
+        <li> Visualization using <a href="http://www.mathematik.uni-freiburg.de/IAM/Research/grape/GENERAL/">GRAPE</a> </li>
         <li> Output in Data Explorer format </li>
         <li> Reading and writing in the AmiraMesh format </li>
         <li> Subsampling of high-order functions </li>
