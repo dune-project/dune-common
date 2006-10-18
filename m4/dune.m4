@@ -32,17 +32,16 @@ AC_DEFUN([DUNE_PKG_CONFIG_REQUIRES],[
 AC_DEFUN([DUNE_CHECK_MODULES],[
   AC_REQUIRE([AC_PROG_CXX])
   AC_REQUIRE([AC_PROG_CXXCPP])
+  AC_REQUIRE([PKG_PROG_PKG_CONFIG])
   AC_REQUIRE([DUNE_DISABLE_LIBCHECK])
 
   # ____DUNE_CHECK_MODULES_____ ($1)
 
-  echo checking for $1
-
-  m4_pushdef([_dune_module_plain], [$1])
-  m4_pushdef([_dune_module], [m4_translit(_dune_module_plain, [-], [_])])
+  m4_pushdef([_dune_name], [$1])
+  m4_pushdef([_dune_module], [m4_translit(_dune_name, [-], [_])])
   m4_pushdef([_dune_header], [$2])
-  m4_pushdef([_dune_ldpath], [$3])
-  m4_pushdef([_dune_lib],    [$4])
+  m4_pushdef([_dune_ldpath], [lib])
+  m4_pushdef([_dune_lib],    [m4_translit(_dune_name, [-], [])])
   m4_pushdef([_dune_symbol], [$5])
   m4_pushdef([_DUNE_MODULE], [m4_toupper(_dune_module)])
 
@@ -50,10 +49,8 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   AC_LANG_PUSH([C++])
 
   # the usual option...
-  withval=""
-  AC_ARG_WITH(_dune_module_plain,
-    AC_HELP_STRING([--with-_dune_module_plain=PATH],[_dune_module directory]))
-  withval=$with_[]_dune_module
+  AC_ARG_WITH(_dune_name,
+    AC_HELP_STRING([--with-_dune_name=PATH],[_dune_module directory]))
 
   # backup of flags
   ac_save_CPPFLAGS="$CPPFLAGS"
@@ -62,98 +59,110 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   CPPFLAGS=""
   LIBS=""
 
+  ##
+  ## Where is the module $1?
+  ##
+
+  AC_MSG_CHECKING([for $1 installation or source tree])
+
   # is a directory set?
-  if test x$withval != x ; then
-    # expand tilde
-    if test -d $withval ; then
+  if test x$with_[]_dune_module = x ; then
+    #
+    # search module $1 via pkg-config
+    #
+    with_[]_dune_module="global installation"
+    if test -z "$PKG_CONFIG"; then
+      AC_MSG_RESULT([failed])
+      AC_MSG_NOTICE([could not search for module _dune_name])
+      AC_MSG_ERROR([pkg-config is required for using installed modules])
+    fi
+    if AC_RUN_LOG([$PKG_CONFIG --exists --print-errors "$1"]); then
+      _DUNE_MODULE[]_CPPFLAGS="`$PKG_CONFIG --cflags _dune_name`" 2>/dev/null
+      _DUNE_MODULE[]_ROOT="`$PKG_CONFIG --variable=prefix _dune_name`" 2>/dev/null 
+      ifelse(_dune_symbol,,,[
+        _DUNE_MODULE[]_LDFLAGS="`$PKG_CONFIG --variable=libdir _dune_name`" 2>/dev/null 
+        _DUNE_MODULE[]_LIBS="-l_dune_lib"
+      ])
+      dune_is_installed=1
+      AC_MSG_RESULT([
+        global installation in $_DUNE_MODULE[]_ROOT])
+    else
+      AC_MSG_RESULT([not found])
+    fi
+  else
+    #
+    # path for module $1 is specified via command line
+    #
+    if test -d $with_[]_dune_module ; then
       # expand tilde / other stuff
-      _DUNE_MODULE[]_ROOT=`cd $withval && pwd`
+      _DUNE_MODULE[]_ROOT=`cd $with_[]_dune_module && pwd`
 
       # expand search path (otherwise empty CPPFLAGS)
       if test -d $_DUNE_MODULE[]_ROOT/include/dune; then
-    # Dune was installed into directory given by with-dunecommon
-    LINSTALL=1
-    _DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]_ROOT/include"
-    LDFLAGS="$LDFLAGS -L$_DUNE_MODULE[]_ROOT/lib"
+        # Dune was installed into directory given by with-dunecommon
+        dune_is_installed=1
+        _DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]_ROOT/include"
       else
         _DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]_ROOT"
       fi
+      ifelse(_dune_symbol,,,[
+        _DUNE_MODULE[]_LDFLAGS="-L$_DUNE_MODULE[]_ROOT/lib"
+        _DUNE_MODULE[]_LIBS="-l_dune_lib"
+      ])
+      # set expanded module path
+      with_[]_dune_module="$_DUNE_MODULE[]_ROOT"
+      AC_MSG_RESULT([
+        found in $_DUNE_MODULE[]_ROOT])
     else
-      AC_MSG_ERROR([_dune_module_plain-directory $withval does not exist])
+      AC_MSG_RESULT([not found])
+      AC_MSG_ERROR([_dune_name-directory $with_[]_dune_module does not exist])
     fi
-    # set correct dune path
-    with_[]_dune_module="$withval"
-  else
-    # set correct dune path
-    with_[]_dune_module="global installation"
   fi
 
   DUNE_CPPFLAGS="$DUNE_CPPFLAGS $_DUNE_MODULE[]_CPPFLAGS"
   CPPFLAGS="$DUNE_CPPFLAGS"
   SET_CPPFLAGS="$_DUNE_MODULE[]_CPPFLAGS"
-  
-  # test for an arbitrary header
+
+  ##  
+  ## check for an arbitrary header
+  ##
   AC_CHECK_HEADER([dune/[]_dune_header],
     [HAVE_[]_DUNE_MODULE=1
      _DUNE_MODULE[]_CPPFLAGS="$SET_CPPFLAGS"],
     [HAVE_[]_DUNE_MODULE=0
      _DUNE_MODULE[]_CPPFLAGS=""
-     AC_MSG_ERROR([$with_[]_dune_module does not seem to contain a valid _dune_module_plain (dune/[]_dune_header not found)])]
+     AC_MSG_ERROR([$with_[]_dune_module does not seem to contain a valid _dune_name (dune/[]_dune_header not found)])]
   )
 
+  ##
   ## check for lib (if lib name was provided)
-  ifelse(_dune_lib,,AC_MSG_NOTICE([_dune_module_plain does not provide libs]),[
+  ##
+  ifelse(_dune_symbol,,AC_MSG_NOTICE([_dune_name does not provide libs]),[
     if test "x$enable_dunelibcheck" != "xyes"; then
-      AC_MSG_WARN([library check for _dune_module_plain is disabled. DANGEROUS!])    
-    fi
-    # did we find the headers?
-    if test x$HAVE_[]_DUNE_MODULE = x1 &&
-       test "x$enable_dunelibcheck" = "xyes"; then
+      AC_MSG_WARN([library check for _dune_name is disabled. DANGEROUS!])    
+    if test x$HAVE_[]_DUNE_MODULE != x 
+      && test x$enable_dunelibcheck == "xyes"; then
+
+      # save current LDFLAGS
       ac_save_LDFLAGS="$LDFLAGS"
       ac_save_LIBS="$LIBS"
       HAVE_[]_DUNE_MODULE=0
 
-      ## special test for a local installation
-      if test x$_DUNE_MODULE[]_ROOT != x && test ! $LINSTALL; then
-        # have a look into the dune module directory
-        LDFLAGS="$LDFLAGS -L$_DUNE_MODULE[]_ROOT/dune/_dune_ldpath"
+      # use module LDFLAGS
+      LDFLAGS="$LDFLAGS $_DUNE_MODULE[]_LDFLAGS"
+      LIBS="$_DUNE_MODULE[]_LIBS"
 
-        # only check for a .la-file
-        if test -s $_DUNE_MODULE[]_ROOT/_dune_ldpath/lib[]_dune_lib[].la ; then
-          _DUNE_MODULE[]_LDFLAGS="-L$_DUNE_MODULE[]_ROOT/_dune_ldpath"
-          echo found lib[]_dune_lib.la, setting LDFLAGS to $_DUNE_MODULE[]_LDFLAGS
-
-          # provide arguments like normal lib-check
-          _DUNE_MODULE[]_LIBS="-l[]_dune_lib"
-          HAVE_[]_DUNE_MODULE=1
-        else 
-          AC_MSG_ERROR([$with_[]_dune_module does not seem to contain a valid _dune_module_plain (lib[]_dune_lib[].la not found)])
-        fi
-      fi
-
-      ## normal test for a systemwide install
-      if test x$HAVE_[]_DUNE_MODULE = x0 ; then
-        # !!! should be pkg-config later (which would save the special
-        # header-check as well)
-
-        # Beware! Untested!!!
-        LIBS="-ldune[]_dune_lib"
-        AC_MSG_CHECKING([for dune[]_dune_lib library])
-        AC_TRY_LINK(dnl
+      AC_MSG_CHECKING([for lib[]_dune_lib])
+      AC_TRY_LINK(dnl
         [#]include<dune/[]_dune_header>,
         _dune_symbol,
-            [AC_MSG_RESULT([yes])
-             HAVE_[]_DUNE_MODULE=1
-             _DUNE_MODULE[]_LIBS="$LIBS"],
-            [AC_MSG_RESULT([no])
-             HAVE_[]_DUNE_MODULE=0
-             AC_MSG_ERROR([failed to link with libdune[]_dune_lib[].la])]
-        )
-      fi
-
-      if test x$_DUNE_MODULE[]_LIBS = x; then
-        AC_MSG_ERROR([failed to find lib[]_dune_lib[] needed of module _dune_module_plain])
-      fi
+          [AC_MSG_RESULT([yes])
+           HAVE_[]_DUNE_MODULE=1
+           _DUNE_MODULE[]_LIBS="$LIBS"],
+          [AC_MSG_RESULT([no])
+           HAVE_[]_DUNE_MODULE=0
+           AC_MSG_ERROR([$with_[]_dune_module does not seem to contain a valid _dune_name (failed to link with lib[]_dune_lib[].la)])]
+      )
 
       # reset variables
       LDFLAGS="$ac_save_LDFLAGS"
@@ -179,12 +188,12 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
     # only add my flags other flags are added by other packages 
     DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $_DUNE_MODULE[]_CPPFLAGS"
     DUNE_PKG_LIBS="$DUNE_PKG_LIBS $LIBS"
-    #DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $DUNE_LDFLAGS"
     DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $_DUNE_MODULE[]_LDFLAGS"
 
     with_[]_dune_module="yes"
   else
-    AC_MSG_ERROR([could not find required module _dune_module_plain])
+    with_[]_dune_module="no"
+    AC_MSG_ERROR([could not find required module _dune_name])
   fi
 
   # reset previous flags
@@ -192,7 +201,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   LIBS="$ac_save_LIBS"
 
   # remove local variables
-  m4_popdef([_dune_module_plain])
+  m4_popdef([_dune_name])
   m4_popdef([_dune_module])
   m4_popdef([_dune_header])
   m4_popdef([_dune_ldpath])
@@ -207,17 +216,18 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
 AC_DEFUN([DUNE_CHECK_DISPATCH],[
   ifelse([$1], [], [],
          [$1], [dune-common],[
-           DUNE_CHECK_MODULES([dune-common], [common/stdstreams.hh], [common], [common], 
+          #DUNE_CHECK_MODULES(module_name, test_header, test_symbol)
+           DUNE_CHECK_MODULES([dune-common], [common/stdstreams.hh],
 	[#define DUNE_MINIMAL_DEBUG_LEVEL 1
 	Dune::derr.active();])],
          [$1], [dune-grid],[
-           DUNE_CHECK_MODULES([dune-grid], [grid/common/grid.hh], [grid], [grid], [Dune::PartitionName])],
+           DUNE_CHECK_MODULES([dune-grid], [grid/common/grid.hh], [Dune::PartitionName])],
          [$1], [dune-fem],[
-           DUNE_CHECK_MODULES([dune-fem], [fem/basefunctions/common/storageinterface.hh],,,)],
+           DUNE_CHECK_MODULES([dune-fem], [fem/basefunctions/common/storageinterface.hh])],
          [$1], [dune-istl],[
-           DUNE_CHECK_MODULES([dune-istl], [istl/allocator.hh],,,)],
+           DUNE_CHECK_MODULES([dune-istl], [istl/allocator.hh])],
          [$1], [dune-disc],[
-           DUNE_CHECK_MODULES([dune-disc], [disc/shapefunctions/lagrangeshapefunctions.hh], [disc], [disc], [Dune::LagrangeShapeFunctions<double[,]double[,]3>::general])],
+           DUNE_CHECK_MODULES([dune-disc], [disc/shapefunctions/lagrangeshapefunctions.hh], [Dune::LagrangeShapeFunctions<double[,]double[,]3>::general])],
          [AC_MSG_ERROR([Unknown module $1])])
 ])
 
