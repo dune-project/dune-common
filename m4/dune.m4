@@ -23,7 +23,7 @@ AC_DEFUN([DUNE_PKG_CONFIG_REQUIRES],[
     || failure=yes
   if test x$failure = xyes; then
     AC_MSG_RESULT([Failure])
-    AC_MSG_ERROR([Could not determin requirements for $PACKAGE_NAME])
+    AC_MSG_ERROR([Could not determine requirements for $PACKAGE_NAME])
   fi
   AC_MSG_RESULT([$REQUIRES])
   AC_SUBST(REQUIRES, [$REQUIRES])
