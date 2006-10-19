@@ -3,9 +3,9 @@
 #
 # TODO:
 #
-# * anpasen, dass bei installiertem Dune das DUNEDIR nicht an
-#   autogen.sh uebergeben weden muss.
-# * Check whether the module and module directory does not exists already,
+# * In case of an installed Dune, it should not be necessary to pass the
+#   dune-common dir to autogen.sh.
+# * Check module names entered as dependencies.
 
 set -e
 
@@ -25,60 +25,72 @@ canonicalpath(){
   (cd $(dirname $(canonicalname $1)) && pwd)
 }
 
-echo Dune project/module generator
-echo -----------------------------
+echo
+echo == Dune project/module generator ==
+echo
+echo duneproject will assist you in the creation of a new Dune application.
+echo During this process a new directory with the name of your project will be
+echo created. This directory will hold all configuration and Makefiles and a
+echo simple example application.
+echo
 
+################## FIND AVAILABLE MODULES ##################
 
+. $(canonicalpath $0)/dunemodules.inc
+
+if [ "$MODULES" = "" ]; then
+  find_modules_in_path
+fi
+
+# get the real module names
+SRC_MODULES=""
+for i in $MODULES; do
+  mod=$(eval echo \$NAME_$i)
+  SRC_MODULES="$SRC_MODULES $mod"
+done
+
+# get installed modules
+PKG_MODULES="`pkg-config --list-all | grep dune | cut -d' ' -f1`"
+
+# merge lists
+ALL_MODULES="`echo $SRC_MODULES $PKG_MODULES | tr ' ' '\n' | sort | uniq`"
 
 ################## READ OPTIONS ##################
 
 while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
   PROJECT=""
   while [ -z $PROJECT ]; do
-    read -p "New Project name? (A directory with this name will be created, e.g.: dune-grid): " PROJECT
+    read -p "1) Name of your new Project? (e.g.: dune-grid): " PROJECT
+    if echo "$ALL_MODULES" | grep -q ^$PROJECT$; then
+      read -p "   A module named $PROJECT already exists. Continue anyway? [y/N] " CONT
+      if test x$DELETE = xy -o x$DELETE = xY; then
+        PROJECT=""
+      fi
+    fi
   done
   MODULE="$PROJECT"
 
-  # Read the modules find part
-  . $(canonicalpath $0)/dunemodules.inc
-
-  if [ "$MODULES" = "" ]; then
-    find_modules_in_path
-  fi
-
-  # get the real module names
-  SRC_MODULES=""
-  for i in $MODULES; do
-    mod=$(eval echo \$NAME_$i)
-    SRC_MODULES="$SRC_MODULES $mod"
-  done
-
-  # get installed modules
-  PKG_MODULES="`pkg-config --list-all | grep dune | cut -d' ' -f1`"
-
-  # merge lists
-  ALL_MODULES="`echo $SRC_MODULES $PKG_MODULES | tr ' ' '\n' | sort | uniq`"
-
   DEPENDENCIES=""
-  echo "Which modules should this module depend on? Following modules are found:"
-  for i in $ALL_MODULES; do echo "    $i"; done
+  echo "2) Which modules should this module depend on?"
+  echo "   Following modules are found:"
+  for i in $ALL_MODULES; do echo "      $i"; done
   while [ -z "$DEPENDENCIES" ]; do
-      read -p "Enter space separated list: " DEPENDENCIES
+      read -p "  Enter space separated list: " DEPENDENCIES
   done
 
   VERSION=""
   while [ -z $VERSION ]; do
-    read -p "Project/Module version? " VERSION
+    read -p "3) Project/Module version? " VERSION
   done
   MAINTAINER=""
   while [ -z $MAINTAINER ]; do
-    read -p "Maintainers email address? " MAINTAINER
+    read -p "4) Maintainers email address? " MAINTAINER
   done
 
   echo
-  echo -n "creating Project \"$PROJECT\", version $VERSION "
-  echo "with maintainer \"$MAINTAINER\""
+  echo "creating Project \"$PROJECT\", version $VERSION "
   echo "which depends on \"$DEPENDENCIES\""
+  echo "with maintainer \"$MAINTAINER\""
   read -p "Are these informations correct? [y/N] " DATACORRECT
 done
 
@@ -88,6 +100,17 @@ echo "Look at the README and dune.module files there."
 echo "Now you can run dunecontrol script which will setup the new module."
 echo "Sometimes you may have to tweak configure.ac a bit."
 
+if test -d $PROJECT; then
+  echo WARNING:
+  echo "A directory with the name $PROJECT already exists."
+  echo "Do you want to continue anyway?"
+  read -p "Type Y to overwrite the old directory, N to abort. [y/N] " DELETE
+  if test x$DELETE != xy -a x$DELETE != xY; then
+    echo Abort...
+    exit 1
+  fi
+  rm -rf "$PROJECT"
+fi
 mkdir "$PROJECT"
 
 ################## dune.module ##################
@@ -106,20 +129,34 @@ C_DELIM
 
 ## Create the parameters passed to DUNE_CHECK_ALL
 j=0
-for i in $DEPENDENCIES; do
+# save module list of dunemodules.inc
+save_MODULES=$MODULES
+for name in $DEPENDENCIES; do
+  mod="`fix_variable_name $name`"
+  if test "x$(eval echo \$HAVE_$mod)" != "x"; then
+    # found via dunemodules.inc
+    sort_modules $mod
+    M_DEPS=$MODULES
+    MODULES=$save_MODULES
+  else
+    # found via pkg-config
+    M_DEPS="`pkg-config --variable=Requires $name`"
+  fi
+  for dep in $M_DEPS; do
     if [ "$j" = "0" ]; then
-      CHECK="[$i]"
+      CHECK="[$dep]"
       j=1
     else
-      CHECK="$CHECK,[$i]"
+      CHECK="$CHECK,[$dep]"
     fi
+  done
 done
 
 # we need the module with _ instead of - to not confuse automake
 fix_and_assign CMODULE $MODULE
 
 cat > "$PROJECT/configure.ac" <<C_DELIM
-#                                               -*- Autoconf -*-
+# -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.50)
 AC_INIT($PROJECT, $VERSION, $MAINTAINER)
@@ -129,6 +166,8 @@ AM_CONFIG_HEADER([config.h])
 
 
 # we need no more than the standard DUNE-stuff
+# this module depends on $DEPENDENCIES
+# this implies checking for $CHECK
 DUNE_CHECK_ALL($CHECK)
 
 # implicitly set the Dune-flags everywhere
