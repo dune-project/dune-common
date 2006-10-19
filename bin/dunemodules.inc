@@ -213,14 +213,14 @@ eval_control() {
 # $2 value
 #
 fix_variable_name() {
-  if ! check_modname $name; then
-    echo "ERROR: error in assignment. $name is not a valid variabel name." > /dev/stderr
-  fi
   echo "$@" | tr '-' '_'
 }
 
 fix_and_assign() {
   local name="$1"
+  if ! check_modname $name; then
+    echo "ERROR: error in assignment. $name is not a valid variabel name." > /dev/stderr
+  fi
   shift 1
   export $name=$(fix_variable_name $@)
 }
