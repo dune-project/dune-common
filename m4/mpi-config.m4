@@ -174,7 +174,7 @@ test_ibmmpi() {
 }
 
 get_mpiparameters() {
-  AC_MSG_NOTICE([Trying to identify the version of $MPICC])
+  AC_MSG_NOTICE([Trying to identify the version of MPI compiler $MPICC])
 
   if test x"$MPI_VERSION" != x; then
     return
