@@ -20,7 +20,8 @@ commoninclude_HEADERS = dlist.cc stdstreams.cc alignment.hh \
   typetraits.hh precision.hh bigunsignedint.hh \
   gcd.hh lcm.hh configparser.hh propertymap.hh \
   collectivecommunication.hh mpihelper.hh singleton.hh \
-  mpicollectivecommunication.hh geometrytype.hh tripel.hh utility.hh
+  mpicollectivecommunication.hh geometrytype.hh tripel.hh utility.hh \
+  bartonnackmanifcheck.hh
 
 if EXPRESSIONTEMPLATES
 commoninclude_HEADERS += exprtmpl.hh exprtmpl/scalar.inc exprtmpl/exprexpr.inc
