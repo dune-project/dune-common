@@ -135,8 +135,10 @@ for name in $DEPENDENCIES; do
   mod="`fix_variable_name $name`"
   if test "x$(eval echo \$HAVE_$mod)" != "x"; then
     # found via dunemodules.inc
-    sort_modules $mod
-    M_DEPS=$MODULES
+    sort_modules "$mod"
+    for mod in $MODULES; do
+      M_DEPS="$M_DEPS $(eval echo \$NAME_$mod)"
+    done
     MODULES=$save_MODULES
   else
     # found via pkg-config
