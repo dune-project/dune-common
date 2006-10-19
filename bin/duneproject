@@ -43,19 +43,27 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
   . $(canonicalpath $0)/dunemodules.inc
 
   if [ "$MODULES" = "" ]; then
-    find_modules .
+    find_modules_in_path
   fi
 
-  # Replace _ with -
-  CMODULES=""
+  # get the real module names
+  SRC_MODULES=""
   for i in $MODULES; do
-    mod=$(echo "$i" | sed -e 's/_/-/g')
-    CMODULES="$CMODULES $mod"
+    mod=$(eval echo \$NAME_$i)
+    SRC_MODULES="$SRC_MODULES $mod"
   done
 
+  # get installed modules
+  PKG_MODULES="`pkg-config --list-all | grep dune | cut -d' ' -f1`"
+
+  # merge lists
+  ALL_MODULES="`echo $SRC_MODULES $PKG_MODULES | tr ' ' '\n' | sort | uniq`"
+
   DEPENDENCIES=""
+  echo "Which modules should this module depend on? Following modules are found:"
+  for i in $ALL_MODULES; do echo "    $i"; done
   while [ -z "$DEPENDENCIES" ]; do
-      read -p "Modules this module depends on (separated by spaces). Available modules are $CMODULES : " DEPENDENCIES
+      read -p "Enter space separated list: " DEPENDENCIES
   done
 
   VERSION=""
