@@ -44,7 +44,6 @@
 #include <dune/common/stdstreams.hh>
 #include <dune/common/timer.hh>
 #include <dune/common/tuples.hh>
-#include <dune/common/typeinfo.hh>
 #include <dune/common/typetraits.hh>
 
 int main () {}
