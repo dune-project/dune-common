@@ -42,7 +42,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   m4_pushdef([_dune_header], [$2])
   m4_pushdef([_dune_ldpath], [lib])
   m4_pushdef([_dune_lib],    [m4_translit(_dune_name, [-], [])])
-  m4_pushdef([_dune_symbol], [$5])
+  m4_pushdef([_dune_symbol], [$3])
   m4_pushdef([_DUNE_MODULE], [m4_toupper(_dune_module)])
 
   # switch tests to c++
@@ -81,7 +81,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       _DUNE_MODULE[]_ROOT="`$PKG_CONFIG --variable=prefix _dune_name`" 2>/dev/null 
       ifelse(_dune_symbol,,,[
         _DUNE_MODULE[]_LDFLAGS="`$PKG_CONFIG --variable=libdir _dune_name`" 2>/dev/null 
-        _DUNE_MODULE[]_LIBS="-l_dune_lib"
+        _DUNE_MODULE[]_LIBS="-l[]_dune_lib"
       ])
       dune_is_installed=1
       AC_MSG_RESULT([
@@ -107,7 +107,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       fi
       ifelse(_dune_symbol,,,[
         _DUNE_MODULE[]_LDFLAGS="-L$_DUNE_MODULE[]_ROOT/lib"
-        _DUNE_MODULE[]_LIBS="-l_dune_lib"
+        _DUNE_MODULE[]_LIBS="-l[]_dune_lib"
       ])
       # set expanded module path
       with_[]_dune_module="$_DUNE_MODULE[]_ROOT"
@@ -139,9 +139,9 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   ##
   ifelse(_dune_symbol,,AC_MSG_NOTICE([_dune_name does not provide libs]),[
     if test "x$enable_dunelibcheck" != "xyes"; then
-      AC_MSG_WARN([library check for _dune_name is disabled. DANGEROUS!])    
-    if test x$HAVE_[]_DUNE_MODULE != x 
-      && test x$enable_dunelibcheck == "xyes"; then
+      AC_MSG_WARN([library check for _dune_name is disabled. DANGEROUS!])
+    fi
+    if test x$HAVE_[]_DUNE_MODULE != x -a x$enable_dunelibcheck == "xyes"; then
 
       # save current LDFLAGS
       ac_save_LDFLAGS="$LDFLAGS"
@@ -149,8 +149,8 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       HAVE_[]_DUNE_MODULE=0
 
       # use module LDFLAGS
-      LDFLAGS="$LDFLAGS $_DUNE_MODULE[]_LDFLAGS"
-      LIBS="$_DUNE_MODULE[]_LIBS"
+      LDFLAGS="$LDFLAGS $DUNE_LDFLAGS $_DUNE_MODULE[]_LDFLAGS"
+      LIBS="$DUNE_LIBS $_DUNE_MODULE[]_LIBS"
 
       AC_MSG_CHECKING([for lib[]_dune_lib])
       AC_TRY_LINK(dnl
