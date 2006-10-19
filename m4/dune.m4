@@ -138,6 +138,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   ## check for lib (if lib name was provided)
   ##
   ifelse(_dune_symbol,,AC_MSG_NOTICE([_dune_name does not provide libs]),[
+    enable_dunelibcheck=no
     if test "x$enable_dunelibcheck" != "xyes"; then
       AC_MSG_WARN([library check for _dune_name is disabled. DANGEROUS!])
     fi
