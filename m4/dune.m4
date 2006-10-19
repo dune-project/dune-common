@@ -32,6 +32,7 @@ AC_DEFUN([DUNE_PKG_CONFIG_REQUIRES],[
 AC_DEFUN([DUNE_CHECK_MODULES],[
   AC_REQUIRE([AC_PROG_CXX])
   AC_REQUIRE([AC_PROG_CXXCPP])
+  AC_REQUIRE([AC_PROG_LIBTOOL])
   AC_REQUIRE([PKG_PROG_PKG_CONFIG])
   AC_REQUIRE([DUNE_DISABLE_LIBCHECK])
 
@@ -138,7 +139,6 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   ## check for lib (if lib name was provided)
   ##
   ifelse(_dune_symbol,,AC_MSG_NOTICE([_dune_name does not provide libs]),[
-    enable_dunelibcheck=no
     if test "x$enable_dunelibcheck" != "xyes"; then
       AC_MSG_WARN([library check for _dune_name is disabled. DANGEROUS!])
     fi
@@ -147,7 +147,12 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       # save current LDFLAGS
       ac_save_LDFLAGS="$LDFLAGS"
       ac_save_LIBS="$LIBS"
+      ac_save_CXX="$CXX"
       HAVE_[]_DUNE_MODULE=0
+
+      # define LTCXXCOMPILE like it will be defined in the Makefile
+      LTCXXLINK="$srcdir/libtool --tag=CXX --mode=link $CXX $CXXFLAGS $LDFLAGS"
+      CXX="$LTCXXLINK"
 
       # use module LDFLAGS
       LDFLAGS="$LDFLAGS $DUNE_LDFLAGS $_DUNE_MODULE[]_LDFLAGS"
@@ -168,6 +173,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       # reset variables
       LDFLAGS="$ac_save_LDFLAGS"
       LIBS="$ac_save_LIBS"
+      CXX="$ac_save_CXX"
     fi
   ])
 
