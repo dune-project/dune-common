@@ -5,6 +5,7 @@
 
 
 #include <map>
+#include <vector>
 #include <string>
 #include <iostream>
 
@@ -57,6 +58,7 @@ namespace Dune {
   {
   public:
 
+    typedef std::vector<std::string> KeyVector;
 
     /** \brief Create new ConfigParser
      */
@@ -182,7 +184,27 @@ namespace Dune {
     bool get(const std::string& key, bool defaultValue);
 
 
+    /** \brief get value keys
+     *
+     * Returns a vector of all keys associated to (key,values) entries in order of appearance
+     *
+     * \return reference to entry vector
+     */
+    const KeyVector& getValueKeys() const;
+
+
+    /** \brief get substructure keys
+     *
+     * Returns a vector of all keys associated to (key,substructure) entries in order of appearance
+     *
+     * \return reference to entry vector
+     */
+    const KeyVector& getSubKeys() const;
+
   private:
+    KeyVector valueKeys;
+    KeyVector subKeys;
+
     std::map<std::string, std::string> values;
     std::map<std::string, ConfigParser> subs;
     std::string trim(std::string s);
