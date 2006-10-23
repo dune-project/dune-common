@@ -169,11 +169,17 @@ string& ConfigParser::operator[] (const string& key)
 
   if (dot != string::npos)
   {
+    if (not (hasSub(key.substr(0,dot))))
+      subKeys.push_back(key.substr(0,dot));
     ConfigParser& s = sub(key.substr(0,dot));
     return s[key.substr(dot+1)];
   }
   else
+  {
+    if (not (hasKey(key)))
+      valueKeys.push_back(key);
     return values[key];
+  }
 }
 
 string ConfigParser::get(const string& key, string defaultValue)
@@ -237,4 +243,14 @@ string ConfigParser::trim(string s)
 
   s.erase(i);
   return s;
+}
+
+const ConfigParser::KeyVector& ConfigParser::getValueKeys() const
+{
+  return valueKeys;
+}
+
+const ConfigParser::KeyVector& ConfigParser::getSubKeys() const
+{
+  return subKeys;
 }
