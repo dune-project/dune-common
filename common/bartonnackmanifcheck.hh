@@ -16,7 +16,10 @@
 #include <dune/common/exceptions.hh>
 
 namespace Dune {
+#define CHECK_INTERFACE_IMPLEMENTATION(dummy)
 #ifndef NDEBUG
+#ifdef DUNE_DEVEL_MODE
+#undef CHECK_INTERFACE_IMPLEMENTATION
 #define CHECK_INTERFACE_IMPLEMENTATION(__interface_method_to_call__) \
   {\
     static bool call = false; \
@@ -26,8 +29,7 @@ namespace Dune {
     (__interface_method_to_call__); \
     call = false; \
   }
-#else
-#define CHECK_INTERFACE_IMPLEMENTATION(dummy)
+#endif
 #endif
 } // end namespace Dune
 #endif
