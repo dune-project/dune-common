@@ -1,8 +1,5 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef DUNE_BARTONNACKMANIFCHECK_HH
-#define DUNE_BARTONNACKMANIFCHECK_HH
-
 /** @file
    @author Robert Kloefkorn
    @brief Provides check for implementation of interface methods when using
@@ -15,7 +12,25 @@
 //- Dune includes
 #include <dune/common/exceptions.hh>
 
-namespace Dune {
+/** The macro CHECK_AND_CALL_INTERFACE_IMPLEMENTATION throws an exception,
+   if the interface method ist not implemented and just calls the method
+   otherwise. If NDEBUG is defined and DUNE_DEVEL_MODE is not defined not
+   checking is done and the method is just called.
+ */
+
+#ifndef CHECK_AND_CALL_INTERFACE_IMPLEMENTATION
+#define CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(__interface_method_to_call__) \
+  (__interface_method_to_call__)
+#ifndef NDEBUG
+#ifdef DUNE_DEVEL_MODE
+#undef CHECK_AND_CALL_INTERFACE_IMPLEMENTATION
+#define CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(__interface_method_to_call__) \
+  CHECK_INTERFACE_IMPLEMENTATION(__interface_method_to_call__)
+#endif
+#endif
+#endif
+
+#ifndef CHECK_INTERFACE_IMPLEMENTATION
 #define CHECK_INTERFACE_IMPLEMENTATION(dummy)
 #ifndef NDEBUG
 #ifdef DUNE_DEVEL_MODE
@@ -31,5 +46,4 @@ namespace Dune {
   }
 #endif
 #endif
-} // end namespace Dune
 #endif
