@@ -14,7 +14,7 @@
 
 /** The macro CHECK_AND_CALL_INTERFACE_IMPLEMENTATION throws an exception,
    if the interface method ist not implemented and just calls the method
-   otherwise. If NDEBUG is defined and DUNE_DEVEL_MODE is not defined not
+   otherwise. If NDEBUG is defined no
    checking is done and the method is just called.
  */
 
@@ -22,11 +22,9 @@
 #define CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(__interface_method_to_call__) \
   (__interface_method_to_call__)
 #ifndef NDEBUG
-#ifdef DUNE_DEVEL_MODE
 #undef CHECK_AND_CALL_INTERFACE_IMPLEMENTATION
 #define CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(__interface_method_to_call__) \
   CHECK_INTERFACE_IMPLEMENTATION(__interface_method_to_call__)
-#endif
 #endif
 #endif
 
