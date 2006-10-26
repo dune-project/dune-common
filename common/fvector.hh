@@ -36,24 +36,6 @@ namespace Dune {
 
 #ifndef DUNE_EXPRESSIONTEMPLATES
 
-  // template meta program for dot
-  template<int I>
-  struct fvmeta_dot {
-    template<class K, int n>
-    static K dot (const FieldVector<K,n>& x, const FieldVector<K,n>& y)
-    {
-      return x[I]*y[I] + fvmeta_dot<I-1>::dot(x,y);
-    }
-  };
-  template<>
-  struct fvmeta_dot<0> {
-    template<class K, int n>
-    static K dot (const FieldVector<K,n>& x, const FieldVector<K,n>& y)
-    {
-      return x[0]*y[0];
-    }
-  };
-
   template<class K>
   inline double fvmeta_absreal (const K& k)
   {
@@ -77,96 +59,6 @@ namespace Dune {
   {
     return c.real()*c.real() + c.imag()*c.imag();
   }
-
-  // template meta program for one_norm
-  template<int I>
-  struct fvmeta_one_norm {
-    template<class K, int n>
-    static double one_norm (const FieldVector<K,n>& x)
-    {
-      return std::abs(x[I]) + fvmeta_one_norm<I-1>::one_norm(x);
-    }
-  };
-  template<>
-  struct fvmeta_one_norm<0> {
-    template<class K, int n>
-    static double one_norm (const FieldVector<K,n>& x)
-    {
-      return std::abs(x[0]);
-    }
-  };
-
-  // template meta program for one_norm_real
-  template<int I>
-  struct fvmeta_one_norm_real {
-    template<class K, int n>
-    static double one_norm_real (const FieldVector<K,n>& x)
-    {
-      return fvmeta_absreal(x[I]) + fvmeta_one_norm_real<I-1>::one_norm_real(x);
-    }
-  };
-  template<>
-  struct fvmeta_one_norm_real<0> {
-    template<class K, int n>
-    static double one_norm_real (const FieldVector<K,n>& x)
-    {
-      return fvmeta_absreal(x[0]);
-    }
-  };
-
-  // template meta program for two_norm squared
-  template<int I>
-  struct fvmeta_two_norm2 {
-    template<class K, int n>
-    static double two_norm2 (const FieldVector<K,n>& x)
-    {
-      return fvmeta_abs2(x[I]) + fvmeta_two_norm2<I-1>::two_norm2(x);
-    }
-  };
-  template<>
-  struct fvmeta_two_norm2<0> {
-    template<class K, int n>
-    static double two_norm2 (const FieldVector<K,n>& x)
-    {
-      return fvmeta_abs2(x[0]);
-    }
-  };
-
-  // template meta program for infinity norm
-  template<int I>
-  struct fvmeta_infinity_norm {
-    template<class K, int n>
-    static double infinity_norm (const FieldVector<K,n>& x)
-    {
-      return std::max(std::abs(x[I]),fvmeta_infinity_norm<I-1>::infinity_norm(x));
-    }
-  };
-  template<>
-  struct fvmeta_infinity_norm<0> {
-    template<class K, int n>
-    static double infinity_norm (const FieldVector<K,n>& x)
-    {
-      return std::abs(x[0]);
-    }
-  };
-
-  // template meta program for simplified infinity norm
-  template<int I>
-  struct fvmeta_infinity_norm_real {
-    template<class K, int n>
-    static double infinity_norm_real (const FieldVector<K,n>& x)
-    {
-      return std::max(fvmeta_absreal(x[I]),fvmeta_infinity_norm_real<I-1>::infinity_norm_real(x));
-    }
-  };
-  template<>
-  struct fvmeta_infinity_norm_real<0> {
-    template<class K, int n>
-    static double infinity_norm_real (const FieldVector<K,n>& x)
-    {
-      return fvmeta_absreal(x[0]);
-    }
-  };
 
 #endif
 
@@ -710,46 +602,67 @@ namespace Dune {
     //! scalar product
     K operator* (const FieldVector& y) const
     {
-      return fvmeta_dot<SIZE-1>::dot(*this,y);
+      K result = 0;
+      for (int i=0; i<size; i++)
+        result += p[i]*y[i];
+      return result;
     }
 
 
     //===== norms
 
     //! one norm (sum over absolute values of entries)
-    double one_norm () const
-    {
-      return fvmeta_one_norm<SIZE-1>::one_norm(*this);
+    double one_norm() const {
+      double result = 0;
+      for (int i=0; i<size; i++)
+        result += std::abs(p[i]);
+      return result;
     }
+
 
     //! simplified one norm (uses Manhattan norm for complex values)
     double one_norm_real () const
     {
-      return fvmeta_one_norm_real<SIZE-1>::one_norm_real(*this);
+      double result = 0;
+      for (int i=0; i<size; i++)
+        result += fvmeta_absreal(p[i]);
+      return result;
     }
 
     //! two norm sqrt(sum over squared values of entries)
     double two_norm () const
     {
-      return sqrt(fvmeta_two_norm2<SIZE-1>::two_norm2(*this));
+      double result = 0;
+      for (int i=0; i<size; i++)
+        result += fvmeta_abs2(p[i]);
+      return std::sqrt(result);
     }
 
-    //! sqare of two norm (sum over squared values of entries), need for block recursion
+    //! square of two norm (sum over squared values of entries), need for block recursion
     double two_norm2 () const
     {
-      return fvmeta_two_norm2<SIZE-1>::two_norm2(*this);
+      double result = 0;
+      for (int i=0; i<size; i++)
+        result += fvmeta_abs2(p[i]);
+      return result;
     }
 
     //! infinity norm (maximum of absolute values of entries)
     double infinity_norm () const
     {
-      return fvmeta_infinity_norm<SIZE-1>::infinity_norm(*this);
+      double result = 0;
+      for (int i=0; i<size; i++)
+        result += std::max(result, std::abs(p[i]));
+      return result;
     }
 
     //! simplified infinity norm (uses Manhattan norm for complex values)
     double infinity_norm_real () const
     {
-      return fvmeta_infinity_norm_real<SIZE-1>::infinity_norm_real(*this);
+      double result = 0;
+      for (int i=0; i<size; i++)
+        result += std::max(result, fvmeta_absreal(p[i]));
+      return result;
     }
 #endif
 
