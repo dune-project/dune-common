@@ -486,8 +486,8 @@ namespace Dune {
     bool exists (size_type i, size_type j) const
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
-      if (i<0 || i>=n) DUNE_THROW(FMatrixError,"index out of range");
-      if (j<0 || i>=m) DUNE_THROW(FMatrixError,"index out of range");
+      if (i<0 || i>=n) DUNE_THROW(FMatrixError,"row index out of range");
+      if (j<0 || j>=m) DUNE_THROW(FMatrixError,"column index out of range");
 #endif
       return true;
     }
