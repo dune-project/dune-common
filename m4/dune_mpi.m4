@@ -66,9 +66,10 @@ AC_DEFUN([DUNE_MPI],[
   # enable/disable parallel features
   AC_ARG_ENABLE(parallel,
     AC_HELP_STRING([--disable-parallel],
-      [Try to use the parallel feature of Dune. This option requires MPI to be present. 
-       configure will try to determin your MPI automatically,
-       you can overwrite this setting by specifying the MPICC veriable]),
+      [Disable the parallel features of Dune. 
+       By default configure will try to enable the parallel features
+       and will will try to determin your MPI automatically, you can
+       overwrite this setting by specifying the MPICC veriable]),
     [with_parallel=$enableval],
     [with_parallel=yes]
   )
