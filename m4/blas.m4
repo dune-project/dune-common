@@ -62,6 +62,13 @@ if test x$HAVE_BLAS = x1 ; then
 fi
 AC_LANG_POP([Fortran 77])
 
+# if g2c is found add to libs too 
+if test x$HAVE_BLAS = x1 ; then
+  AC_CHECK_LIB(g2c, [main],
+               [BLAS_LIBS="$BLAS_LIBS -lg2c"],
+               [])
+fi
+
 # end of checks (can be skipped with --without-blas)
 fi
 
