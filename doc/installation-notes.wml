@@ -199,7 +199,7 @@ to install it.
 <li>
 <p>
 Get the UG library. You can obtain it at
-<a href="http://cox.iwr.uni-heidelberg.de/~ug">http://cox.iwr.uni-heidelberg.de/~ug</a>. 
+<a href="http://sit.iwr.uni-heidelberg.de/~ug">http://sit.iwr.uni-heidelberg.de/~ug</a>. 
 Unfortunately, the version of UG available for download there (3.8 at the
 time of writing) is not new enough to be compatible with DUNE. Please
 write to one of the contact addresses given on the page
