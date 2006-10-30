@@ -12,7 +12,7 @@ The following external grids support the DUNE Grid interface:
 <table>
 <tbody>
 <tr><td>ALBERTA</td><td>1.2</td><td><a href="http://www.alberta-fem.de/">http://www.alberta-fem.de/</a></td></tr>
-<tr><td>ALUGrid</td><td>0.3</td><td><a href="http://www.mathematik.uni-freiburg.de/IAM/Research/alugrid/">http://www.mathematik.uni-freiburg.de/IAM/Research/alugrid/</a></td></tr>
+<tr><td>ALUGrid</td><td>0.4</td><td><a href="http://www.mathematik.uni-freiburg.de/IAM/Research/alugrid/">http://www.mathematik.uni-freiburg.de/IAM/Research/alugrid/</a></td></tr>
 <tr><td>UG (non-free licence)</td><td></td><td><a href="http://sit.iwr.uni-heidelberg.de/~ug/">http://sit.iwr.uni-heidelberg.de/~ug/</a></td></tr>
 </tbody>
 </table>
