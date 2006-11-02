@@ -77,6 +77,12 @@ and refers you to more detailed documentation.
         <li> Visualization using <a href="http://www.mathematik.uni-freiburg.de/IAM/Research/grape/GENERAL/">GRAPE</a> </li>
         <li> Output in Data Explorer format </li>
         <li> Reading and writing in the AmiraMesh format </li>
+        <li> Reading grid files in the grid independent Dune grid format
+             <a href="$(ROOT)/doc/doxygen/dune-grid-html/group__DuneGridFormatParser.html">DGF</a>
+        <li> Reading simplex grids through DGF  
+             constructed using the tools Tetgen/Triangle 
+             (http://tetgen.berlios.de,
+              http://www.cs.cmu.edu/~quake/triangle.html)
         <li> Subsampling of high-order functions </li>
         <li> Write grids and data in the format of the visualization toolkit (vtk) </li>
       </ul>
