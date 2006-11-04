@@ -168,6 +168,9 @@ run_default_configure () {
     if test "x$HAVE_dune_fem" = "xyes"; then
       PARAMS="$PARAMS \"--with-dune-fem=$PATH_dune_fem\""
     fi
+    if test "x$HAVE_duneweb" = "xyes"; then
+      PARAMS="$PARAMS \"--with-duneweb=$PATH_duneweb\""
+    fi
     echo ./configure "$PARAMS"
     eval ./configure "$PARAMS" || exit 1
   else
