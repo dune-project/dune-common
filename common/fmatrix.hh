@@ -428,7 +428,7 @@ namespace Dune {
     }
 
     //! Multiplies M from the right to this matrix
-    FieldMatrix& rightmultiply (const FieldMatrix<K,n,n>& M)
+    FieldMatrix& rightmultiply (const FieldMatrix<K,m,m>& M)
     {
       FieldMatrix<K,n,m> C(*this);
 
