@@ -43,10 +43,11 @@ AC_DEFUN([DUNE_PATH_UG],[
       CPPFLAGS="$CPPFLAGS -I$UG_INCLUDE_PATH"
 
       # check for central header
-      AC_CHECK_FILE([$UG_INCLUDE_PATH/gm.h],
+      AC_CHECK_HEADER([$UG_INCLUDE_PATH/gm.h],
 	  [UG_CPPFLAGS="-I$UG_INCLUDE_PATH"
 	      HAVE_UG="1"],
-	  [HAVE_UG="0"]
+	  [HAVE_UG="0"
+	  AC_MSG_WARN([gm.h not found in $UG_INCLUDE_PATH]))]
       )
 
       # Currently we only check for libug2
