@@ -47,7 +47,7 @@ AC_DEFUN([DUNE_PATH_UG],[
 	  [UG_CPPFLAGS="-I$UG_INCLUDE_PATH"
 	      HAVE_UG="1"],
 	  [HAVE_UG="0"
-	  AC_MSG_WARN([gm.h not found in $UG_INCLUDE_PATH]))]
+	  AC_MSG_WARN([gm.h not found in $UG_INCLUDE_PATH])]
       )
 
       # Currently we only check for libug2
