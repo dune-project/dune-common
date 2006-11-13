@@ -42,6 +42,10 @@ AC_DEFUN([DUNE_PATH_UG],[
       LDFLAGS="$LDFLAGS -L$UG_LIB_PATH"
       CPPFLAGS="$CPPFLAGS -I$UG_INCLUDE_PATH"
 
+      # backup CPPFLAGS so I can add an additional flag just for AC_CHECk_HEADER
+      CPPFLAGS_BACKUP="$CPPFLAGS"
+      CPPFLAGS="$CPPFLAGS -D_2"
+
       # check for central header
       AC_CHECK_HEADER([$UG_INCLUDE_PATH/gm.h],
 	  [UG_CPPFLAGS="-I$UG_INCLUDE_PATH"
@@ -49,6 +53,9 @@ AC_DEFUN([DUNE_PATH_UG],[
 	  [HAVE_UG="0"
 	  AC_MSG_WARN([gm.h not found in $UG_INCLUDE_PATH])]
       )
+
+      # Restore CPPFLAGS
+      CPPFLAGS="$CPPFLAGS_BACKUP"
 
       # Currently we only check for libug2
       # todo: Check for all the libraries that make up UG
