@@ -45,8 +45,8 @@
 # or sometimes you might have several MPI installations. Specify the
 # MPICC variable to enforce a certain MPI compiler.
 
-# In order to diasble the usage of MPI (and make Dune pure
-# sequentiell) you can supply the option
+# In order to disable the usage of MPI (and make Dune purely
+# sequential) you can supply the option
 #   --disable-parallel
 # [Christian 9.7.2006]
 
