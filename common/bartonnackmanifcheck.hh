@@ -12,25 +12,10 @@
 //- Dune includes
 #include <dune/common/exceptions.hh>
 
-/** The macro CHECK_AND_CALL_INTERFACE_IMPLEMENTATION throws an exception,
-   if the interface method ist not implemented and just calls the method
-   otherwise. If NDEBUG is defined no
-   checking is done and the method is just called.
- */
-
-#ifndef CHECK_AND_CALL_INTERFACE_IMPLEMENTATION
-#define CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(__interface_method_to_call__) \
-  (__interface_method_to_call__)
-#ifndef NDEBUG
-#undef CHECK_AND_CALL_INTERFACE_IMPLEMENTATION
-#define CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(__interface_method_to_call__) \
-  CHECK_INTERFACE_IMPLEMENTATION(__interface_method_to_call__)
-#endif
-#endif
-
 #ifndef CHECK_INTERFACE_IMPLEMENTATION
 #define CHECK_INTERFACE_IMPLEMENTATION(dummy)
 #ifndef NDEBUG
+// only do checking if DUNE_DEVEL_MODE is defined aswell
 #ifdef DUNE_DEVEL_MODE
 #undef CHECK_INTERFACE_IMPLEMENTATION
 #define CHECK_INTERFACE_IMPLEMENTATION(__interface_method_to_call__) \
@@ -42,6 +27,24 @@
     (__interface_method_to_call__); \
     call = false; \
   }
+#endif
+#endif
+#endif
+
+/** The macro CHECK_AND_CALL_INTERFACE_IMPLEMENTATION throws an exception,
+   if the interface method ist not implemented and just calls the method
+   otherwise. If NDEBUG is defined no
+   checking is done and the method is just called.
+ */
+#ifndef CHECK_AND_CALL_INTERFACE_IMPLEMENTATION
+#define CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(__interface_method_to_call__) \
+  (__interface_method_to_call__)
+#ifndef NDEBUG
+// only do checking if DUNE_DEVEL_MODE is defined aswell
+#ifdef DUNE_DEVEL_MODE
+#undef CHECK_AND_CALL_INTERFACE_IMPLEMENTATION
+#define CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(__interface_method_to_call__) \
+  CHECK_INTERFACE_IMPLEMENTATION(__interface_method_to_call__)
 #endif
 #endif
 #endif
