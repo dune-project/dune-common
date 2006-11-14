@@ -245,7 +245,7 @@ namespace Dune
     T min (T& in) const     // MPI does not know about const :-(
     {
       T out;
-      allreduce<Min >(&in,&out,1);
+      allreduce<Min<T> >(&in,&out,1);
       return out;
     }
 
@@ -253,7 +253,7 @@ namespace Dune
     template<typename T>
     int min (T* inout, int len) const
     {
-      return allreduce<Min >(inout,len);
+      return allreduce<Min<T> >(inout,len);
     }
 
 
@@ -262,7 +262,7 @@ namespace Dune
     T max (T& in) const     // MPI does not know about const :-(
     {
       T out;
-      allreduce<Max >(&in,&out,1);
+      allreduce<Max<T> >(&in,&out,1);
       return out;
     }
 
@@ -270,7 +270,7 @@ namespace Dune
     template<typename T>
     int max (T* inout, int len) const
     {
-      return allreduce<Max >(inout,len);
+      return allreduce<Max<T> >(inout,len);
     }
 
     //! @copydoc CollectiveCommunication::barrier()
@@ -286,7 +286,6 @@ namespace Dune
       return MPI_Bcast(inout,len,Generic_MPI_Datatype<T>::get(),root,communicator);
     }
 
-
     //! @copydoc CollectiveCommunication::gather()
     template<typename T>
     int gather (T* in, T* out, int len, int root) const     // note out must have space for P*len elements
@@ -295,7 +294,6 @@ namespace Dune
                         out,len,Generic_MPI_Datatype<T>::get(),
                         root,communicator);
     }
-
 
     operator MPI_Comm () const
     {
