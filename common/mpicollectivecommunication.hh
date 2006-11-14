@@ -6,9 +6,11 @@
 #include <iostream>
 #include <complex>
 #include <algorithm>
+#include <functional>
 
 #include "exceptions.hh"
 #include "collectivecommunication.hh"
+#include "binaryfunctions.hh"
 
 // MPI header
 #include <mpi.h>
@@ -76,14 +78,10 @@ namespace Dune
   // generate MPI operations
   //=======================================================
 
-  //===========
-  // sum
-  //===========
-
-  // the general case, assumes operator+ for type T
-  template<typename T>
-  class GenericSum_MPI_Op
+  template<typename Type, typename BinaryFunction>
+  class Generic_MPI_Op
   {
+
   public:
     static MPI_Op get ()
     {
@@ -95,220 +93,87 @@ namespace Dune
       return *op;
     }
   private:
-    static void operation (T *in, T *inout, int *len, MPI_Datatype *dptr)
+    static void operation (Type *in, Type *inout, int *len, MPI_Datatype *dptr)
     {
-      for (int i=0; i< *len; ++i)
-      {
-        T temp;
-        temp = (*in)+(*inout);
+      BinaryFunction func;
+
+      for (int i=0; i< *len; ++i, ++in, ++inout) {
+        Type temp;
+        temp = func(*in, *inout);
         *inout = temp;
-        in++; inout++;
       }
     }
-    GenericSum_MPI_Op () {}
-    GenericSum_MPI_Op (const GenericSum_MPI_Op& ) {}
+    Generic_MPI_Op () {}
+    Generic_MPI_Op (const Generic_MPI_Op& ) {}
     static MPI_Op* op;
   };
 
-  template<typename T>
-  MPI_Op* GenericSum_MPI_Op<T>::op = 0;
 
-  // char
-  template<>
-  class GenericSum_MPI_Op<char>
-  {
-  public:
-    static MPI_Op get ()
-    {
-      return MPI_SUM;
-    }
-  private:
-    GenericSum_MPI_Op () {}
-    GenericSum_MPI_Op (const GenericSum_MPI_Op& ) {}
-  };
+  template<typename Type, typename BinaryFunction>
+  MPI_Op* Generic_MPI_Op<Type,BinaryFunction>::op = 0;
 
-  // short
-  template<>
-  class GenericSum_MPI_Op<short>
-  {
-  public:
-    static MPI_Op get ()
-    {
-      return MPI_SUM;
-    }
-  private:
-    GenericSum_MPI_Op () {}
-    GenericSum_MPI_Op (const GenericSum_MPI_Op& ) {}
-  };
-
-  // int
-  template<>
-  class GenericSum_MPI_Op<int>
-  {
-  public:
-    static MPI_Op get ()
-    {
-      return MPI_SUM;
-    }
-  private:
-    GenericSum_MPI_Op () {}
-    GenericSum_MPI_Op (const GenericSum_MPI_Op& ) {}
-  };
-
-  // long int
-  template<>
-  class GenericSum_MPI_Op<long int>
-  {
-  public:
-    static MPI_Op get ()
-    {
-      return MPI_SUM;
-    }
-  private:
-    GenericSum_MPI_Op () {}
-    GenericSum_MPI_Op (const GenericSum_MPI_Op& ) {}
-  };
-
-  // float
-  template<>
-  class GenericSum_MPI_Op<float>
-  {
-  public:
-    static MPI_Op get ()
-    {
-      return MPI_SUM;
-    }
-  private:
-    GenericSum_MPI_Op () {}
-    GenericSum_MPI_Op (const GenericSum_MPI_Op& ) {}
-  };
-
-  // double
-  template<>
-  class GenericSum_MPI_Op<double>
-  {
-  public:
-    static MPI_Op get ()
-    {
-      return MPI_SUM;
-    }
-  private:
-    GenericSum_MPI_Op () {}
-    GenericSum_MPI_Op (const GenericSum_MPI_Op& ) {}
+#define ComposeMPIOp(type,func,op) \
+  template<> \
+  class Generic_MPI_Op<type, func<type> >{ \
+  public:\
+    static MPI_Op get(){ \
+      return op; \
+    } \
+  private:\
+    Generic_MPI_Op () {}\
+    Generic_MPI_Op (const Generic_MPI_Op & ) {}\
   };
 
 
-  //===========
-  // product
-  //===========
+  ComposeMPIOp(char, std::plus, MPI_SUM);
+  ComposeMPIOp(unsigned char, std::plus, MPI_SUM);
+  ComposeMPIOp(short, std::plus, MPI_SUM);
+  ComposeMPIOp(unsigned short, std::plus, MPI_SUM);
+  ComposeMPIOp(int, std::plus, MPI_SUM);
+  ComposeMPIOp(unsigned int, std::plus, MPI_SUM);
+  ComposeMPIOp(long, std::plus, MPI_SUM);
+  ComposeMPIOp(unsigned long, std::plus, MPI_SUM);
+  ComposeMPIOp(float, std::plus, MPI_SUM);
+  ComposeMPIOp(double, std::plus, MPI_SUM);
+  ComposeMPIOp(long double, std::plus, MPI_SUM);
 
-  // the general case, assumes operator+ for type T
-  template<typename T>
-  class GenericProduct_MPI_Op
-  {
-  public:
-    static MPI_Op get ()
-    {
-      if (op==0)
-      {
-        op = new MPI_Op;
-        MPI_Op_create((void (*)(void*, void*, int*, MPI_Datatype*))&operation,true,op);
-      }
-      return *op;
-    }
-  private:
-    static void operation (T *in, T *inout, int *len, MPI_Datatype *dptr)
-    {
-      for (int i=0; i< *len; ++i)
-      {
-        T temp;
-        temp = (*in)*(*inout);
-        *inout = temp;
-        in++; inout++;
-      }
-    }
-    GenericProduct_MPI_Op () {}
-    GenericProduct_MPI_Op (const GenericProduct_MPI_Op& ) {}
-    static MPI_Op* op;
-  };
+  ComposeMPIOp(char, std::multiplies, MPI_PROD);
+  ComposeMPIOp(unsigned char, std::multiplies, MPI_PROD);
+  ComposeMPIOp(short, std::multiplies, MPI_PROD);
+  ComposeMPIOp(unsigned short, std::multiplies, MPI_PROD);
+  ComposeMPIOp(int, std::multiplies, MPI_PROD);
+  ComposeMPIOp(unsigned int, std::multiplies, MPI_PROD);
+  ComposeMPIOp(long, std::multiplies, MPI_PROD);
+  ComposeMPIOp(unsigned long, std::multiplies, MPI_PROD);
+  ComposeMPIOp(float, std::multiplies, MPI_PROD);
+  ComposeMPIOp(double, std::multiplies, MPI_PROD);
+  ComposeMPIOp(long double, std::multiplies, MPI_PROD);
 
-  template<typename T>
-  MPI_Op* GenericProduct_MPI_Op<T>::op = 0;
+  ComposeMPIOp(char, Min, MPI_MIN);
+  ComposeMPIOp(unsigned char, Min, MPI_MIN);
+  ComposeMPIOp(short, Min, MPI_MIN);
+  ComposeMPIOp(unsigned short, Min, MPI_MIN);
+  ComposeMPIOp(int, Min, MPI_MIN);
+  ComposeMPIOp(unsigned int, Min, MPI_MIN);
+  ComposeMPIOp(long, Min, MPI_MIN);
+  ComposeMPIOp(unsigned long, Min, MPI_MIN);
+  ComposeMPIOp(float, Min, MPI_MIN);
+  ComposeMPIOp(double, Min, MPI_MIN);
+  ComposeMPIOp(long double, Min, MPI_MIN);
 
+  ComposeMPIOp(char, Max, MPI_MAX);
+  ComposeMPIOp(unsigned char, Max, MPI_MAX);
+  ComposeMPIOp(short, Max, MPI_MAX);
+  ComposeMPIOp(unsigned short, Max, MPI_MAX);
+  ComposeMPIOp(int, Max, MPI_MAX);
+  ComposeMPIOp(unsigned int, Max, MPI_MAX);
+  ComposeMPIOp(long, Max, MPI_MAX);
+  ComposeMPIOp(unsigned long, Max, MPI_MAX);
+  ComposeMPIOp(float, Max, MPI_MAX);
+  ComposeMPIOp(double, Max, MPI_MAX);
+  ComposeMPIOp(long double, Max, MPI_MAX);
 
-  //===========
-  // min
-  //===========
-
-  // the general case, assumes operator+ for type T
-  template<typename T>
-  class GenericMin_MPI_Op
-  {
-  public:
-    static MPI_Op get ()
-    {
-      if (op==0)
-      {
-        op = new MPI_Op;
-        MPI_Op_create((void (*)(void*, void*, int*, MPI_Datatype*))&operation,true,op);
-      }
-      return *op;
-    }
-  private:
-    static void operation (T *in, T *inout, int *len, MPI_Datatype *dptr)
-    {
-      for (int i=0; i< *len; ++i)
-      {
-        T temp;
-        temp = std::min(*in,*inout);
-        *inout = temp;
-        in++; inout++;
-      }
-    }
-    GenericMin_MPI_Op () {}
-    GenericMin_MPI_Op (const GenericMin_MPI_Op& ) {}
-    static MPI_Op* op;
-  };
-
-  template<typename T>
-  MPI_Op* GenericMin_MPI_Op<T>::op = 0;
-
-  //===========
-  // max
-  //===========
-
-  // the general case, assumes operator+ for type T
-  template<typename T>
-  class GenericMax_MPI_Op
-  {
-  public:
-    static MPI_Op get ()
-    {
-      if (op==0)
-      {
-        op = new MPI_Op;
-        MPI_Op_create((void (*)(void*, void*, int*, MPI_Datatype*))&operation,true,op);
-      }
-      return *op;
-    }
-  private:
-    static void operation (T *in, T *inout, int *len, MPI_Datatype *dptr)
-    {
-      for (int i=0; i< *len; ++i)
-      {
-        T temp;
-        temp = std::max(*in,*inout);
-        *inout = temp;
-        in++; inout++;
-      }
-    }
-    GenericMax_MPI_Op () {}
-    GenericMax_MPI_Op (const GenericMax_MPI_Op& ) {}
-    static MPI_Op* op;
-  };
-
-  template<typename T>
-  MPI_Op* GenericMax_MPI_Op<T>::op = 0;
+#undef ComposeMPIOp
 
 
   //=======================================================
@@ -348,8 +213,7 @@ namespace Dune
     T sum (T& in) const     // MPI does not know about const :-(
     {
       T out;
-      MPI_Allreduce(&in,&out,1,Generic_MPI_Datatype<T>::get(),
-                    GenericSum_MPI_Op<T>::get(),communicator);
+      allreduce<std::plus<T> >(&in,&out,1);
       return out;
     }
 
@@ -357,9 +221,7 @@ namespace Dune
     template<typename T>
     int sum (T* inout, int len) const
     {
-      T* in(inout);
-      return MPI_Allreduce(in,inout,len,Generic_MPI_Datatype<T>::get(),
-                           GenericSum_MPI_Op<T>::get(),communicator);
+      return allreduce<std::plus<T> >(inout,len);
     }
 
     //! @copydoc CollectiveCommunication::prod(T&)
@@ -367,8 +229,7 @@ namespace Dune
     T prod (T& in) const     // MPI does not know about const :-(
     {
       T out;
-      MPI_Allreduce(&in,&out,1,Generic_MPI_Datatype<T>::get(),
-                    GenericProduct_MPI_Op<T>::get(),communicator);
+      allreduce<std::multiplies<T> >(&in,&out,1);
       return out;
     }
 
@@ -376,9 +237,7 @@ namespace Dune
     template<typename T>
     int prod (T* inout, int len) const
     {
-      T* in(inout);     // copy input
-      return MPI_Allreduce(&in,&inout,len,Generic_MPI_Datatype<T>::get(),
-                           GenericProduct_MPI_Op<T>::get(),communicator);
+      return allreduce<std::plus<T> >(inout,len);
     }
 
     //! @copydoc CollectiveCommunication::min(T&)
@@ -386,8 +245,7 @@ namespace Dune
     T min (T& in) const     // MPI does not know about const :-(
     {
       T out;
-      MPI_Allreduce(&in,&out,1,Generic_MPI_Datatype<T>::get(),
-                    GenericMin_MPI_Op<T>::get(),communicator);
+      allreduce<Min >(&in,&out,1);
       return out;
     }
 
@@ -395,18 +253,16 @@ namespace Dune
     template<typename T>
     int min (T* inout, int len) const
     {
-      T* in(inout);     // copy input
-      return MPI_Allreduce(&in,&inout,len,Generic_MPI_Datatype<T>::get(),
-                           GenericMin_MPI_Op<T>::get(),communicator);
+      return allreduce<Min >(inout,len);
     }
+
 
     //! @copydoc CollectiveCommunication::max(T&)
     template<typename T>
     T max (T& in) const     // MPI does not know about const :-(
     {
       T out;
-      MPI_Allreduce(&in,&out,1,Generic_MPI_Datatype<T>::get(),
-                    GenericMax_MPI_Op<T>::get(),communicator);
+      allreduce<Max >(&in,&out,1);
       return out;
     }
 
@@ -414,9 +270,7 @@ namespace Dune
     template<typename T>
     int max (T* inout, int len) const
     {
-      T* in(inout);     // copy input
-      return MPI_Allreduce(&in,&inout,len,Generic_MPI_Datatype<T>::get(),
-                           GenericMax_MPI_Op<T>::get(),communicator);
+      return allreduce<Max >(inout,len);
     }
 
     //! @copydoc CollectiveCommunication::barrier()
@@ -446,6 +300,23 @@ namespace Dune
     operator MPI_Comm () const
     {
       return communicator;
+    }
+
+    template<typename BinaryFunction, typename Type>
+    int allreduce(Type* inout, int len) const
+    {
+      Type* out = new Type[len];
+      int ret = allreduce<BinaryFunction>(inout,out,len);
+      std::copy(out, out+len, inout);
+      delete[] out;
+      return ret;
+    }
+
+    template<typename BinaryFunction, typename Type>
+    int allreduce(Type* in, Type* out, int len) const
+    {
+      return MPI_Allreduce(in, out, len, Generic_MPI_Datatype<Type>::get(),
+                           Generic_MPI_Op<Type, BinaryFunction>::get(),communicator);
     }
 
   private:

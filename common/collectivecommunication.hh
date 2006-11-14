@@ -152,6 +152,43 @@ namespace Dune
         out[i] = in[i];
       return 0;
     }
+
+    /**
+     * @brief Compute something over all processes
+     * for each component of an array and return the result
+     * in every process.
+     *
+     * The template parameter BinaryFunction is the type of
+     * the binary function to use for the computation
+     *
+     * @param inout The array to compute on.
+     * @param len The number of components in the array
+     */
+    template<typename BinaryFunction, typename Type>
+    int allreduce(Type* inout, int len) const
+    {
+      return 0;
+    }
+
+    /**
+     * @brief Compute something over all processes
+     * for each component of an array and return the result
+     * in every process.
+     *
+     * The template parameter BinaryFunction is the type of
+     * the binary function to use for the computation
+     *
+     * @param in The array to compute on.
+     * @param out The array to store the results in.
+     * @param len The number of components in the array
+     */
+    template<typename BinaryFunction, typename Type>
+    void allreduce(Type* in, Type* out, int len) const
+    {
+      std::copy(in, in+len, out);
+      return 0;
+    }
+
   };
 }
 
