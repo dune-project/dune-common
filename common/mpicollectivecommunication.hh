@@ -46,159 +46,29 @@ namespace Dune
   template<typename T>
   MPI_Datatype* Generic_MPI_Datatype<T>::type = 0;
 
-  // char
-  template<>
-  class Generic_MPI_Datatype<char>
-  {
-  public:
-    static MPI_Datatype get ()
-    {
-      return MPI_CHAR;
-    }
-  private:
-    Generic_MPI_Datatype () {}
-    Generic_MPI_Datatype (const Generic_MPI_Datatype& ) {}
+  // A Macro for defining traits for the primitive data types
+#define ComposeMPITraits(p,m) \
+  template<> \
+  struct Generic_MPI_Datatype<p>{ \
+    static inline MPI_Datatype get(){ \
+      return m; \
+    } \
   };
 
-  // short
-  template<>
-  class Generic_MPI_Datatype<short>
-  {
-  public:
-    static MPI_Datatype get ()
-    {
-      return MPI_SHORT;
-    }
-  private:
-    Generic_MPI_Datatype () {}
-    Generic_MPI_Datatype (const Generic_MPI_Datatype& ) {}
-  };
 
-  // int
-  template<>
-  class Generic_MPI_Datatype<int>
-  {
-  public:
-    static MPI_Datatype get ()
-    {
-      return MPI_INT;
-    }
-  private:
-    Generic_MPI_Datatype () {}
-    Generic_MPI_Datatype (const Generic_MPI_Datatype& ) {}
-  };
+  ComposeMPITraits(char, MPI_CHAR);
+  ComposeMPITraits(unsigned char,MPI_UNSIGNED_CHAR);
+  ComposeMPITraits(short,MPI_SHORT);
+  ComposeMPITraits(unsigned short,MPI_UNSIGNED_SHORT);
+  ComposeMPITraits(int,MPI_INT);
+  ComposeMPITraits(unsigned int,MPI_UNSIGNED);
+  ComposeMPITraits(long,MPI_LONG);
+  ComposeMPITraits(unsigned long,MPI_UNSIGNED_LONG);
+  ComposeMPITraits(float,MPI_FLOAT);
+  ComposeMPITraits(double,MPI_DOUBLE);
+  ComposeMPITraits(long double,MPI_LONG_DOUBLE);
 
-  // long int
-  template<>
-  class Generic_MPI_Datatype<long int>
-  {
-  public:
-    static MPI_Datatype get ()
-    {
-      return MPI_LONG;
-    }
-  private:
-    Generic_MPI_Datatype () {}
-    Generic_MPI_Datatype (const Generic_MPI_Datatype& ) {}
-  };
-
-  // unsigned char
-  template<>
-  class Generic_MPI_Datatype<unsigned char>
-  {
-  public:
-    static MPI_Datatype get ()
-    {
-      return MPI_UNSIGNED_CHAR;
-    }
-  private:
-    Generic_MPI_Datatype () {}
-    Generic_MPI_Datatype (const Generic_MPI_Datatype& ) {}
-  };
-
-  // unsigned short
-  template<>
-  class Generic_MPI_Datatype<unsigned short>
-  {
-  public:
-    static MPI_Datatype get ()
-    {
-      return MPI_UNSIGNED_SHORT;
-    }
-  private:
-    Generic_MPI_Datatype () {}
-    Generic_MPI_Datatype (const Generic_MPI_Datatype& ) {}
-  };
-
-  // unsigned int
-  template<>
-  class Generic_MPI_Datatype<unsigned int>
-  {
-  public:
-    static MPI_Datatype get ()
-    {
-      return MPI_UNSIGNED;
-    }
-  private:
-    Generic_MPI_Datatype () {}
-    Generic_MPI_Datatype (const Generic_MPI_Datatype& ) {}
-  };
-
-  // long int
-  template<>
-  class Generic_MPI_Datatype<unsigned long int>
-  {
-  public:
-    static MPI_Datatype get ()
-    {
-      return MPI_UNSIGNED_LONG;
-    }
-  private:
-    Generic_MPI_Datatype () {}
-    Generic_MPI_Datatype (const Generic_MPI_Datatype& ) {}
-  };
-
-  // float
-  template<>
-  class Generic_MPI_Datatype<float>
-  {
-  public:
-    static MPI_Datatype get ()
-    {
-      return MPI_FLOAT;
-    }
-  private:
-    Generic_MPI_Datatype () {}
-    Generic_MPI_Datatype (const Generic_MPI_Datatype& ) {}
-  };
-
-  // double
-  template<>
-  class Generic_MPI_Datatype<double>
-  {
-  public:
-    static MPI_Datatype get ()
-    {
-      return MPI_DOUBLE;
-    }
-  private:
-    Generic_MPI_Datatype () {}
-    Generic_MPI_Datatype (const Generic_MPI_Datatype& ) {}
-  };
-
-  // long double
-  template<>
-  class Generic_MPI_Datatype<long double>
-  {
-  public:
-    static MPI_Datatype get ()
-    {
-      return MPI_LONG_DOUBLE;
-    }
-  private:
-    Generic_MPI_Datatype () {}
-    Generic_MPI_Datatype (const Generic_MPI_Datatype& ) {}
-  };
+#undef ComposeMPITraits
 
 
   //=======================================================
@@ -487,8 +357,8 @@ namespace Dune
     template<typename T>
     int sum (T* inout, int len) const
     {
-      T in(inout);     // copy input
-      return MPI_Allreduce(&in,&inout,len,Generic_MPI_Datatype<T>::get(),
+      T* in(inout);
+      return MPI_Allreduce(in,inout,len,Generic_MPI_Datatype<T>::get(),
                            GenericSum_MPI_Op<T>::get(),communicator);
     }
 
@@ -506,7 +376,7 @@ namespace Dune
     template<typename T>
     int prod (T* inout, int len) const
     {
-      T in(inout);     // copy input
+      T* in(inout);     // copy input
       return MPI_Allreduce(&in,&inout,len,Generic_MPI_Datatype<T>::get(),
                            GenericProduct_MPI_Op<T>::get(),communicator);
     }
@@ -525,7 +395,7 @@ namespace Dune
     template<typename T>
     int min (T* inout, int len) const
     {
-      T in(inout);     // copy input
+      T* in(inout);     // copy input
       return MPI_Allreduce(&in,&inout,len,Generic_MPI_Datatype<T>::get(),
                            GenericMin_MPI_Op<T>::get(),communicator);
     }
@@ -544,7 +414,7 @@ namespace Dune
     template<typename T>
     int max (T* inout, int len) const
     {
-      T in(inout);     // copy input
+      T* in(inout);     // copy input
       return MPI_Allreduce(&in,&inout,len,Generic_MPI_Datatype<T>::get(),
                            GenericMax_MPI_Op<T>::get(),communicator);
     }
