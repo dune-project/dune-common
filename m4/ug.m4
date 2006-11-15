@@ -54,6 +54,9 @@ AC_DEFUN([DUNE_PATH_UG],[
 	  AC_MSG_WARN([gm.h not found in $UG_INCLUDE_PATH])]
       )
 
+      # pre-set variable for summary
+      with_ug="no"
+      
       # Restore CPPFLAGS
       CPPFLAGS="$CPPFLAGS_BACKUP"
 
@@ -72,6 +75,7 @@ AC_DEFUN([DUNE_PATH_UG],[
 	      [int i = UG::D2::InitUg(0,0)],
               [UG_LDFLAGS="$LDFLAGS"
 	       HAVE_UG="1"
+               with_ug="yes (sequential)"
 	       AC_MSG_RESULT(yes)
               ],
               [AC_MSG_RESULT(no)
@@ -90,6 +94,7 @@ AC_DEFUN([DUNE_PATH_UG],[
               [UG_LDFLAGS="$LDFLAGS"
 	       UG_CPPFLAGS="$UG_CPPFLAGS -DModelP"
 	       HAVE_UG="1"
+               with_ug="yes (parallel)"
 	       AC_MSG_RESULT(yes)
               ],
               [AC_MSG_RESULT(no)
@@ -112,6 +117,7 @@ AC_DEFUN([DUNE_PATH_UG],[
                 [AC_MSG_RESULT(no)
                  AC_MSG_WARN([UG has not been built with --enable-dune!])
                 HAVE_UG="0"
+                with_ug="no"
                 ]
                 )
           fi
@@ -119,9 +125,6 @@ AC_DEFUN([DUNE_PATH_UG],[
 
       fi
       AC_LANG_POP([C++])
-      
-      # pre-set variable for summary
-      with_ug="no"
       
       # did it work?
       if test x$HAVE_UG = x1 ; then
@@ -135,8 +138,6 @@ AC_DEFUN([DUNE_PATH_UG],[
 	  DUNE_PKG_LIBS="$DUNE_PKG_LIBS $UG_LIBS"
 	  DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $UG_CPPFLAGS"
 	  
-    # re-set variable correctly
-	  with_ug="yes"
       fi 
       
   # end of "no --without-ug"
