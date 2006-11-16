@@ -108,6 +108,9 @@ int referenceTest()
 
   Tuple<int&,double&,long&> tr(i,d,j);
 
+  Element<0>::get(tr)=3;
+  assert(Element<0>::get(tr)==3);
+
   std::cout <<"tr="<< tr<<std::endl;
 
   Tuple<int> i1(5);
@@ -129,12 +132,86 @@ int referenceTest()
   return 0;
 }
 
+int pointerTest()
+{
+  int k=5, k1=6;
+  int* kr(&k);
+  *kr=20;
+  int i=50;
+  double d=-3.3, d1=7.8;
+  long j=-666, j1=-300;
+  Tuple<int*,double*,long*> t1(&k, &d, &j);
+  Tuple<int*,double*,long*> t2(&k1,&d1,&j1);
+  std::cout << "i="<<i<<" d="<<d<<" j="<<j<<std::endl;
+
+  Tuple<int*,double*,long*> tr(&i,&d,&j);
+
+  *Element<0>::get(tr)=3;
+  assert(*Element<0>::get(tr)==3);
+
+  std::cout <<"tr="<< tr<<std::endl;
+
+  Tuple<int> i1(5);
+  Tuple<int*> ir(&i);
+
+  t2=t1;
+
+  std::cout <<"tr="<< tr<<std::endl;
+  std::cout <<"t1="<< t1<<std::endl;
+  tr=t1;
+
+  if(tr!=t1)
+    return 1;
+  else
+    std::cout<<"t1="<<t1<< " tr="<<tr<<std::endl;
+
+
+  return 0;
+}
+
+int constPointerTest()
+{
+  int k=5, k1=88;
+  const int* kr(&k);
+  int i=50;
+  double d=-3.3, d1=6.8;
+  long j=-666, j1=-500;
+  Tuple<const int*, const double*, const long*> t1(&k, &d, &j);
+  Tuple<int*, double*, long*> t2(&k1,&d1,&j1);
+  std::cout << "i="<<i<<" d="<<d<<" j="<<j<<std::endl;
+
+  Tuple<const int*, const double*, const long*> tr(&i,&d,&j);
+
+  std::cout << *Element<0>::get(tr)<<std::endl;
+
+  std::cout <<"tr="<< tr<<std::endl;
+
+  Tuple<int> i1(5);
+  Tuple<const int*> ir(&i);
+
+  t1=t2;
+
+  std::cout <<"tr="<< tr<<std::endl;
+  std::cout <<"t1="<< t1<<std::endl;
+  tr=t1;
+
+  if(tr!=t1)
+    return 1;
+  else
+    std::cout<<"t1="<<t1<< " tr="<<tr<<std::endl;
+
+
+  return 0;
+}
+
 int main(int argc, char** argv)
 {
   Tuple<float,int,double,char,std::string> tuple;
 
   test(tuple);
+  test(static_cast<Tuple<float,int,double,char,std::string>& >(tuple));
   test(static_cast<const Tuple<float,int,double,char,std::string>&>(tuple));
-  exit(copyTest()+iteratorTupleTest()+referenceTest()+lessTest());
+  exit(copyTest()+iteratorTupleTest()+referenceTest()+lessTest()
+       +pointerTest()+constPointerTest());
 
 }
