@@ -186,6 +186,28 @@ namespace Dune
     };
   };
 
+  template <class From>
+  class Conversion<From, void>
+  {
+  public:
+    enum {
+      exists = false,
+      isTwoWay = false,
+      sameType = false
+    };
+  };
+
+  template <class To>
+  class Conversion<void, To>
+  {
+  public:
+    enum {
+      exists = false,
+      isTwoWay = false,
+      sameType = false
+    };
+  };
+
   template<class T>
   class Conversion<T,T>{
   public:
