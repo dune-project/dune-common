@@ -3,13 +3,15 @@
 #ifndef DUNE_TIMER_HH
 #define DUNE_TIMER_HH
 
+#ifndef TIMER_USE_STD_CLOCK
 // headers for getrusage(2)
-#include <sys/time.h>
 #include <sys/resource.h>
-#include <unistd.h>
+#endif
+
+#include <ctime>
 
 // headers for stderror(3)
-#include <string.h>
+#include <cstring>
 
 // access to errno in C++
 #include <cerrno>
@@ -52,23 +54,35 @@ namespace Dune {
     //! Reset timer
     void reset() throw (TimerError)
     {
+#ifdef TIMER_USE_STD_CLOCK
+      cstart = std::clock();
+#else
       rusage ru;
       if (getrusage(RUSAGE_SELF, &ru))
         DUNE_THROW(TimerError, strerror(errno));
       cstart = ru.ru_utime;
+#endif
     }
 
     //! Get elapsed user-time in seconds
     double elapsed () const throw (TimerError)
     {
+#ifdef TIMER_USE_STD_CLOCK
+      return (std::clock()-cstart) / static_cast<double>(CLOCKS_PER_SEC);
+#else
       rusage ru;
       if (getrusage(RUSAGE_SELF, &ru))
         DUNE_THROW(TimerError, strerror(errno));
       return 1.0 * (ru.ru_utime.tv_sec - cstart.tv_sec) + (ru.ru_utime.tv_usec - cstart.tv_usec) / (1000.0 * 1000.0);
+#endif
     }
 
   private:
+#ifdef TIMER_USE_STD_CLOCK
+    std::clock_t cstart
+#else
     struct timeval cstart;
+#endif
   }; // end class Timer
 
   /** @} end documentation */
