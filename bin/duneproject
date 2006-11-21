@@ -48,6 +48,45 @@ modulesexist(){
   return $allfound
 }
 
+make_unique(){
+  if [ "$#" = "1" ]; then
+      # take first word
+      for exclude_word in $1; do
+	  break;
+      done
+      make_unique $exclude_word "$1" 0
+  else
+      local exclude_word="$1"
+      local words="$2"
+      local pos="$3"
+      local length=0
+      local i=0
+      local new_words=""
+      local cur=0
+      for word in $words; do
+	  if [ $i -le $pos ]; then
+	      i=$((i+1))
+	      length=$((length+1))
+	      new_words="$new_words $word"
+	      continue
+	  fi
+	  if [ "$word" != "$exclude_word" ]; then
+	      new_words="$new_words $word"
+	      if [ "$((length-1))" = "$pos" ]; then
+		  next_word="$word"
+	      fi
+	      length=$((length+1))
+	  fi
+      done
+      if [ "$pos" -lt "$length" ]; then
+       # process next word
+	  make_unique "$next_word" "$new_words" $((pos+1))
+      else
+	  export UNIQUE_WORDS="$new_words"
+      fi
+  fi
+}
+       
 echo
 echo == Dune project/module generator ==
 echo
@@ -190,11 +229,14 @@ for name in $DEPENDENCIES; do
       CHECK="[$dep]"
       j=1
     else
-      CHECK="$CHECK,[$dep]"
+      CHECK="$CHECK [$dep]"
     fi
   done
 done
 
+
+make_unique "$CHECK"
+CHECK=`echo $UNIQUE_WORDS| sed -e 's/\] \[/\], \[/g'`
 # we need the module with _ instead of - to not confuse automake
 fix_and_assign CMODULE $MODULE
 
@@ -208,7 +250,7 @@ AC_CONFIG_SRCDIR([$CMODULE.cc])
 AM_CONFIG_HEADER([config.h])
 
 
-# we need no more than the standard DUNE-stuff
+# we need no more than the standard DE-stuff
 # this module depends on $DEPENDENCIES
 # this implies checking for $CHECK
 DUNE_CHECK_ALL($CHECK)
