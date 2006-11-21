@@ -58,7 +58,7 @@ build_modules() {
   load_opts $command
   local runcommand=run_$command
   modules="$MODULES"
-  if test x"$ONY" != x; then
+  if test x"$ONLY" != x; then
 	modules="$ONLY"
   fi  
   for module in $modules; do
