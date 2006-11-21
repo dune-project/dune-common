@@ -208,7 +208,7 @@ C_DELIM
 ################## CONFIGURE.AC ##################
 
 ## Create the parameters passed to DUNE_CHECK_ALL
-j=0
+
 # save module list of dunemodules.inc
 save_MODULES=$MODULES
 for name in $DEPENDENCIES; do
@@ -225,18 +225,23 @@ for name in $DEPENDENCIES; do
     M_DEPS="`pkg-config --variable=Requires $name`"
   fi
   for dep in $M_DEPS; do
-    if [ "$j" = "0" ]; then
-      CHECK="[$dep]"
-      j=1
-    else
       CHECK="$CHECK [$dep]"
-    fi
   done
 done
 
-
 make_unique "$CHECK"
-CHECK=`echo $UNIQUE_WORDS| sed -e 's/\] \[/\], \[/g'`
+
+# insert , between modules
+j=0
+for dep in $UNIQUE_WORDS; do
+if [ "$j" = "0" ]; then
+      CHECK="$dep"
+      j=1
+    else
+      CHECK="$CHECK, $dep"
+    fi
+done
+
 # we need the module with _ instead of - to not confuse automake
 fix_and_assign CMODULE $MODULE
 
