@@ -58,7 +58,7 @@ build_modules() {
   load_opts $command
   local runcommand=run_$command
   modules="$MODULES"
-  if test x"$ONLY" != x; then
+  if test x"$ONY" != x; then
 	modules="$ONLY"
   fi  
   for module in $modules; do
@@ -224,6 +224,10 @@ usage () {
     echo "Options:"
     echo "  -h, --help         show this help"
     echo "      --debug        enable debug output of this script"
+    echo "      --module=mod   only apply the actions on module mod"
+    echo "                     and all modules it depends on"
+    echo "      --only=mod     only apply the actions on module mod"
+    echo "                     and not the modules it depends on"
     echo "      --opts=FILE    load default options from FILE"
     echo "                     (see dune-common/doc/example.opts)"
     echo "Commands:"
