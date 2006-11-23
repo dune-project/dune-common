@@ -1,7 +1,7 @@
 # $Id$
 
 # put scripts into dist-tarball
-EXTRA_DIST = duneproject wmlwrap dunecontrol perhapsstartmpi perhapsstopmpi \
+EXTRA_DIST = duneproject wmlwrap dunecontrol \
   dunemodules.inc
 
 # ... and install some
