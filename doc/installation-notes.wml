@@ -250,6 +250,17 @@ When using the unstable version via svn, you might be interested in
 the <a href="http://dune-project.org/svn.html">DUNE SVN Developer
 Info</a> section.
 </p>
+<p>
+When using the svn version, you will have to have further packages
+installled, but there are no tests for these, because they are needed
+during the first build stage, by autogen.sh.
+</p>
+<ul>
+  <li>automake in version &ge; 1.5</li>
+  <li>autoconf in version &ge; 2.50</li>
+  <li>libtool</li>
+  <li>pkg-config</li>
+</ul>
 </li>
 <li> <p>Building all DUNE modules</p>
 <p>
