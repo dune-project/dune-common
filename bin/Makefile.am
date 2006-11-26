@@ -2,9 +2,9 @@
 
 # put scripts into dist-tarball
 EXTRA_DIST = duneproject wmlwrap dunecontrol \
-  dunemodules.inc
+  dunemodules.inc mpi-config
 
 # ... and install some
-bin_SCRIPTS = duneproject dunemodules.inc dunecontrol
+bin_SCRIPTS = duneproject dunemodules.inc dunecontrol mpi-config
 
 include $(top_srcdir)/am/global-rules
