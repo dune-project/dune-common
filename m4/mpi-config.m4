@@ -36,7 +36,6 @@ test_lam () {
   cat >conftest.c <<_EOF
 #include <mpi.h>
 #include <stdio.h>
-#include <lam_config.h>
 
 int main() {
   printf ("%i%i\n", LAM_MAJOR_VERSION, LAM_MINOR_VERSION);
