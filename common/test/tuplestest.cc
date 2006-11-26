@@ -135,8 +135,6 @@ int referenceTest()
 int pointerTest()
 {
   int k=5, k1=6;
-  int* kr(&k);
-  *kr=20;
   int i=50;
   double d=-3.3, d1=7.8;
   long j=-666, j1=-300;
@@ -172,7 +170,6 @@ int pointerTest()
 int constPointerTest()
 {
   int k=5, k1=88;
-  const int* kr(&k);
   int i=50;
   double d=-3.3, d1=6.8;
   long j=-666, j1=-500;
