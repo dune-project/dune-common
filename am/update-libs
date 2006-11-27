@@ -18,6 +18,8 @@
 LOCAL_LIBS = @LOCAL_LIBS@
 
 %.la: MAKELIBS.force
-	make -C $$(dirname $@) $$(basename $@)
+	cd $$(dirname $@) && $(MAKE) $$(basename $@)
+
+MAKELIBS.force:
 
 .PHONY: MAKELIBS.force

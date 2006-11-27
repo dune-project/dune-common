@@ -9,13 +9,11 @@
 
 # CURDIR should be defined in the same way as in dune-web
 
-
-# pass on this variables to wmlwrap via environment
-export DUNEWEBDIR
-export BASEDIR
-
 # pass files through wrapper
+# pass variables to wmlwrap via environment
 .wml.html:
+	export DUNEWEBDIR=$(DUNEWEBDIR); \
+	export BASEDIR=$(BASEDIR); \
 	sh $(DUNE_COMMON_ROOT)/bin/wmlwrap -I $(srcdir) $< -o $@
 
 web-install: all

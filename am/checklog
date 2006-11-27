@@ -11,7 +11,7 @@ LOG_SET_OPTIONS = \
 	dir=$$(basename $$path)
 
 $(DUNE_COMMON_ROOT)/bin/check-log-store: $(DUNE_COMMON_ROOT)/bin/check-log-store.in
-	$(MAKE) -C $(DUNE_COMMON_ROOT)/bin/ check-log-store
+	cd $(DUNE_COMMON_ROOT)/bin/ && $(MAKE) check-log-store
 
 check-log: $(DUNE_COMMON_ROOT)/bin/check-log-store
 check-log:
