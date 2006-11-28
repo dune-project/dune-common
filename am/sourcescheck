@@ -6,8 +6,10 @@ sourcescheck_LIST = $(SOURCES) $(DIST_SOURCES) $(HEADERS) $(DIST_HEADERS) \
 
 sourcescheck: sourcescheck-recursive
 
+#	@(for f in $(sourcescheck_LIST) fnord; do echo $$f; done) | \
+#	 grep '\.[hc][hc]$$' | sort | uniq > header_CHECK.install
 sourcescheck-am:
-	@(for f in $(sourcescheck_LIST); do echo $$f; done) | \
+	@echo $(sourcescheck_LIST) | tr ' ' '\n' | \
 	 grep '\.[hc][hc]$$' | sort | uniq > header_CHECK.install
 	@ls | \
 	 grep '\.[hc][hc]$$' | sort | uniq > header_CHECK.present
