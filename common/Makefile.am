@@ -7,9 +7,6 @@ noinst_LTLIBRARIES = libcommon.la
 
 libcommon_la_SOURCES = stdstreams.cc configparser.cc
 
-libcommon_la__CXXFLAGS = $(MPI_CPPFLAGS)
-libcommon_la_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
-
 AM_CPPFLAGS = @AM_CPPFLAGS@ -I$(top_srcdir)/..
 
 commonincludedir = $(includedir)/dune/common
