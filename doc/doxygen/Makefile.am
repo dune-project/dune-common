@@ -20,7 +20,8 @@ DOXYGENINSTALL = *.html *.css *.png *.gif
 
 if WML
 # themeing doxygen
-DOXYGENHEADER = doxy-header.html.build
+DOXYGENHEADER = doxy-header.html
+DOXYGENHEADERBUILD = $(DOXYGENHEADER).build
 DOXYGENFOOTER = doxy-footer.html
 DOXYGENSTYLESHEET = dune-doxy.css
 DOYXFILE_OVERWRITE = echo "HTML_HEADER = $(DOXYGENHEADER)"; \
@@ -53,11 +54,11 @@ DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.png
 
 # as all doxygen files fill be installed in the html subdirectory
 # the BASEDIR has to be adjusted
-doxy-header.html.build: FORCE
-	$(MAKE) doxy-header.html BASEDIR=../../..
+%.build: FORCE
+	$(MAKE) $* BASEDIR=../../..
 
 # check dependency ourself to be robust
-doxygen-tag: FORCE $(DOXYGENHEADER)
+doxygen-tag: FORCE $(DOXYGENHEADERBUILD)
 	set -e; \
 	if test -e Doxyfile; then \
 	  if test ! -e doxygen-tag || test x"`find $(top_srcdir) \( $(DEPENDON) \) -a -newer doxygen-tag -print`" != x ; then \
@@ -71,7 +72,7 @@ doxygen-tag: FORCE $(DOXYGENHEADER)
 
 html: doxygen-tag
 
-html-dist: $(DOXYGENHEADER)
+html-dist: $(DOXYGENHEADERBUILD)
 	rm -rf html; \
 	set -e; \
 	if test -e Doxyfile; then \
