@@ -48,12 +48,11 @@ AC_DEFUN([DUNE_PATH_UG],[
 
       # check for central header
       AC_CHECK_HEADER([$UG_INCLUDE_PATH/gm.h],
-      	  [UG_CPPFLAGS="-I$UG_INCLUDE_PATH"
-	         HAVE_UG="1"],
-      	  [HAVE_UG="0"
-	      AC_MSG_WARN([gm.h not found in $UG_INCLUDE_PATH])]
+	  [UG_CPPFLAGS="-I$UG_INCLUDE_PATH"
+	      HAVE_UG="1"],
+	  [HAVE_UG="0"
+	  AC_MSG_WARN([gm.h not found in $UG_INCLUDE_PATH])]
       )
-      FOUND_UG_HEADER=$HAVE_UG
 
       # pre-set variable for summary
       with_ug="no"
@@ -66,63 +65,63 @@ AC_DEFUN([DUNE_PATH_UG],[
       AC_LANG_PUSH([C++])
       if test x$HAVE_UG = x1 ; then
 
-        CPPFLAGS="$UG_CPPFLAGS"
-        UG_LIBS="-lug2 -ldomS2 -lgg2 -lug3 -ldomS3 -lgg3 -ldevS"
-        
-        AC_MSG_CHECKING([UG libraries (without MPI)])
-        LIBS="$UG_LIBS"
-              AC_TRY_LINK(
-                  [#include "initug.h"],
-            [int i = UG::D2::InitUg(0,0)],
-                  [UG_LDFLAGS="$LDFLAGS"
-             HAVE_UG="1"
-                   with_ug="yes (sequential)"
-             AC_MSG_RESULT(yes)
-                  ],
-                  [AC_MSG_RESULT(no)
-             HAVE_UG="0"]
-            )
+	  CPPFLAGS="$UG_CPPFLAGS"
+	  UG_LIBS="-lug2 -ldomS2 -lgg2 -lug3 -ldomS3 -lgg3 -ldevS"
+	  
+	  AC_MSG_CHECKING([UG libraries (without MPI)])
+	  LIBS="$UG_LIBS"
+          AC_TRY_LINK(
+              [#include "initug.h"],
+	      [int i = UG::D2::InitUg(0,0)],
+              [UG_LDFLAGS="$LDFLAGS"
+	       HAVE_UG="1"
+               with_ug="yes (sequential)"
+	       AC_MSG_RESULT(yes)
+              ],
+              [AC_MSG_RESULT(no)
+	       HAVE_UG="0"]
+	      )
 
-        # sequential lib not found/does not work?
-        if test x$HAVE_UG != x1 && test x"$MPI_LDFLAGS" != x"" ; then
-          # try again with added MPI-libs
-          UG_LIBS="$UG_LIBS $MPI_LDFLAGS"
-          AC_MSG_CHECKING([UG libraries (with MPI)])
-          LIBS="$UG_LIBS"
-                AC_TRY_LINK(
-                  [#include "initug.h"],
-            [int i = UG::D2::InitUg(0,0)],
-                  [UG_LDFLAGS="$LDFLAGS"
-             UG_CPPFLAGS="$UG_CPPFLAGS -DModelP"
-             HAVE_UG="1"
-                   with_ug="yes (parallel)"
-             AC_MSG_RESULT(yes)
-                  ],
-                  [AC_MSG_RESULT(no)
-             HAVE_UG="0"]
-            )
-        fi
+	  # sequential lib not found/does not work?
+	  if test x$HAVE_UG != x1 && test x"$MPI_LDFLAGS" != x"" ; then
+	    # try again with added MPI-libs
+	    UG_LIBS="$UG_LIBS $MPI_LDFLAGS"
+	    AC_MSG_CHECKING([UG libraries (with MPI)])
+	    LIBS="$UG_LIBS"
+            AC_TRY_LINK(
+              [#include "initug.h"],
+	      [int i = UG::D2::InitUg(0,0)],
+              [UG_LDFLAGS="$LDFLAGS"
+	       UG_CPPFLAGS="$UG_CPPFLAGS -DModelP"
+	       HAVE_UG="1"
+               with_ug="yes (parallel)"
+	       AC_MSG_RESULT(yes)
+              ],
+              [AC_MSG_RESULT(no)
+	       HAVE_UG="0"]
+	      )
+	  fi
 
-        # Okay. If UG header were found, then check whether 
-        # UG installation has been built with --enable-dune?
-        # We check this by trying to link to the field int UG::duneMarker, which is there
-        # do indicate just this.
-        if test x$FOUND_UG_HEADER != x0 ; then
-        AC_MSG_CHECKING([whether UG has been built with --enable-dune])
-        AC_TRY_LINK(
-            [#define FOR_DUNE
-                #include "dunemarker.h"],
-            [int i = UG::duneMarker],
-            [#UG_LDFLAGS="$LDFLAGS"
-            AC_MSG_RESULT(yes)
-            ],
-            [AC_MSG_RESULT(no)
-             AC_MSG_WARN([UG has not been built with --enable-dune! Rebuild UG using configure flags 'CC=$CXX' and '--enable-dune'!])
-            HAVE_UG="0"
-            with_ug="no (rebuild UG using configure flags 'CC=$CXX' and '--enable-dune')"
-            ]
-            )
-        fi   
+          # Okay.  We have found a UG installation.  But has it been built with --enable-dune?
+          # We check this by trying to link to the field int UG::duneMarker, which is there
+          # do indicate just this.
+          if test x$HAVE_UG = x1 ; then
+            AC_MSG_CHECKING([whether UG has been built with --enable-dune])
+            AC_TRY_LINK(
+                [#define FOR_DUNE
+                    #include "dunemarker.h"],
+                [int i = UG::duneMarker],
+                [#UG_LDFLAGS="$LDFLAGS"
+                AC_MSG_RESULT(yes)
+                ],
+                [AC_MSG_RESULT(no)
+                 AC_MSG_WARN([UG has not been built with --enable-dune!])
+                HAVE_UG="0"
+                with_ug="no"
+                ]
+                )
+          fi
+
 
       fi
       AC_LANG_POP([C++])
