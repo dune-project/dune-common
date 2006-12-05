@@ -42,6 +42,15 @@ AC_DEFUN([DUNE_PATH_UG],[
       LDFLAGS="$LDFLAGS -L$UG_LIB_PATH"
       CPPFLAGS="$CPPFLAGS -I$UG_INCLUDE_PATH"
 
+      AC_ARG_ENABLE(ug-lgmdomain,
+        AC_HELP_STRING([--enable-ug-lgmdomain],[use UG LGM domain (default is standard domain)]))
+      if test x"$enable_ug_lgmdomain" = xyes ; then
+        AC_DEFINE(UG_LGMDOMAIN, 1, [use UG LGM domain])
+        UG_LIBS="-lug2 -ldomL2 -lgg2 -lug3 -ldomL3 -lgg3 -ldevS"
+      else
+        UG_LIBS="-lug2 -ldomS2 -lgg2 -lug3 -ldomS3 -lgg3 -ldevS"
+      fi
+
       # backup CPPFLAGS so I can add an additional flag just for AC_CHECk_HEADER
       CPPFLAGS_BACKUP="$CPPFLAGS"
       CPPFLAGS="$CPPFLAGS -D_2"
@@ -66,7 +75,6 @@ AC_DEFUN([DUNE_PATH_UG],[
       if test x$HAVE_UG = x1 ; then
 
 	  CPPFLAGS="$UG_CPPFLAGS"
-	  UG_LIBS="-lug2 -ldomS2 -lgg2 -lug3 -ldomS3 -lgg3 -ldevS"
 	  
 	  AC_MSG_CHECKING([UG libraries (without MPI)])
 	  LIBS="$UG_LIBS"
