@@ -46,7 +46,8 @@ AC_DEFUN([DUNE_PATH_UG],[
         AC_HELP_STRING([--enable-ug-lgmdomain],[use UG LGM domain (default is standard domain)]))
       if test x"$enable_ug_lgmdomain" = xyes ; then
         AC_DEFINE(UG_LGMDOMAIN, 1, [use UG LGM domain])
-        UG_LIBS="-lug2 -ldomL2 -lgg2 -lug3 -ldomL3 -lgg3 -ldevS"
+        # TODO: The lgm libraries contain a circular dependency!
+        UG_LIBS="-lug2 -ldomL2 -lug2 -lgg2 -lug3 -ldomL3 -lug3 -lgg3 -ldevS"
       else
         UG_LIBS="-lug2 -ldomS2 -lgg2 -lug3 -ldomS3 -lgg3 -ldevS"
       fi
