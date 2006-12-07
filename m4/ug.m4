@@ -136,6 +136,12 @@ AC_DEFUN([DUNE_PATH_UG],[
       AC_LANG_POP([C++])
       
       # did it work?
+      if test x$HAVE_UG = x0 ; then
+	  # reset flags, so they do not appear in makefiles
+	  UG_LDFLAGS=""
+	  UG_LIBS=""
+	  UG_CPPFLAGS=""
+      fi
       if test x$HAVE_UG = x1 ; then
 	  AC_SUBST(UG_LDFLAGS, $UG_LDFLAGS)
 	  AC_SUBST(UG_LIBS, $UG_LIBS)
