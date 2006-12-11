@@ -144,6 +144,11 @@ AC_DEFUN([DUNE_MPI],[
             AC_MSG_ERROR([could not run MPI testprogram!
             Did you forget to setup your MPI environment?
             Some MPI implementations require a special deamon to be running!
+            If you don't want to use MPI you can use --disable-parallel to disable
+            all parallel code in Dune.
+            If you want to use parallel code, but can not disable the MPI run test
+            during configure (This is need if you depend on a queuing system), you
+            might use the --disable-mpiruntest switch.
             See config.log for details])
             with_mpi=no]
       )
