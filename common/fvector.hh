@@ -894,22 +894,6 @@ namespace Dune {
       return *this;
     }
 
-#ifndef DUNE_EXPRESSIONTEMPLATES
-    //! Binary vector addition
-    FieldVector operator+ (const FieldVector& b) const
-    {
-      FieldVector z = *this;
-      return (z+=b);
-    }
-
-    //! Binary vector subtraction
-    FieldVector operator- (const FieldVector& b) const
-    {
-      FieldVector z = *this;
-      return (z-=b);
-    }
-#endif
-
     //! vector space add scalar to each comp
     FieldVector& operator+= (const K& k)
     {
@@ -944,7 +928,6 @@ namespace Dune {
       p += a*y.p;
       return *this;
     }
-
 
     //===== Euclidean scalar product
 
@@ -1020,6 +1003,57 @@ namespace Dune {
     // the data
     K p;
   };
+
+#ifndef DUNE_EXPRESSIONTEMPLATES
+  //! Binary vector addition
+  template<class K>
+  inline FieldVector<K,1> operator+ (const FieldVector<K,1>& a, const FieldVector<K,1>& b)
+  {
+    FieldVector<K,1> z = a;
+    return (z+=b);
+  }
+
+  //! Binary vector subtraction
+  template<class K>
+  inline FieldVector<K,1> operator- (const FieldVector<K,1>& a, const FieldVector<K,1>& b)
+  {
+    FieldVector<K,1> z = a;
+    return (z-=b);
+  }
+
+  //! Binary addition, when using FieldVector<K,1> like K
+  template<class K>
+  inline FieldVector<K,1> operator+ (const FieldVector<K,1>& a, const K b)
+  {
+    FieldVector<K,1> z = a;
+    return (z[0]+=b);
+  }
+
+  //! Binary subtraction, when using FieldVector<K,1> like K
+  template<class K>
+  inline FieldVector<K,1> operator- (const FieldVector<K,1>& a, const K b)
+  {
+    FieldVector<K,1> z = a;
+    return (z[0]-=b);
+  }
+
+  //! Binary addition, when using FieldVector<K,1> like K
+  template<class K>
+  inline FieldVector<K,1> operator+ (const K a, const FieldVector<K,1>& b)
+  {
+    FieldVector<K,1> z = a;
+    return (z[0]+=b);
+  }
+
+  //! Binary subtraction, when using FieldVector<K,1> like K
+  template<class K>
+  inline FieldVector<K,1> operator- (const K a, const FieldVector<K,1>& b)
+  {
+    FieldVector<K,1> z = a;
+    return (z[0]-=b);
+  }
+#endif
+
 
   /** @} end documentation */
 

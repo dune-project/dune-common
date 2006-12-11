@@ -50,23 +50,15 @@ public:
 
     a = v + a;
     a = v - a;
-    a = v * a;
-    a = v * a;
 
     v = v + a;
     v = v - a;
-    v = v * a;
-    v = v * a;
 
     a = a + v;
     a = a - v;
-    a = a * v;
-    a = a * v;
 
     v = a + v;
     v = a - v;
-    v = a * v;
-    v = a * v;
   }
 };
 
