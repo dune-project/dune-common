@@ -1,7 +1,7 @@
 # $Id$
 
 TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
-	sllisttest iteratorfacadetest tuplestest fmatrixtest \
+	sllisttest iteratorfacadetest tuplestest fvectortest fmatrixtest \
 	poolallocatortest settest gcdlcdtest streamtest \
 	bigunsignedinttest mpihelpertest singletontest mpicollcomm
 
@@ -42,6 +42,9 @@ streamtest_DEPENDENCIES = $(LOCAL_LIBS)
 iteratorfacadetest_SOURCES = iteratorfacadetest.cc iteratorfacadetest.hh \
    iteratortest.hh
 iteratorfacadetest_DEPENDENCIES = $(LOCAL_LIBS)
+
+fvectortest_SOURCES = fvectortest.cc
+fvectortest_DEPENDENCIES = $(LOCAL_LIBS)
 
 fmatrixtest_SOURCES = fmatrixtest.cc
 fmatrixtest_DEPENDENCIES = $(LOCAL_LIBS)
