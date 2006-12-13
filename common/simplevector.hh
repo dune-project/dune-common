@@ -21,13 +21,13 @@ namespace Dune
 
   //! A simple vector class
   template <class T>
-  class SimpleVector : public Array<T> {
+  class SimpleVector : public Array<T>  {
   public:
     //! make empty vector
-    SimpleVector() {};
+    SimpleVector() DUNE_DEPRECATED {};
 
     //! make array with m components
-    explicit SimpleVector(int m) : Array<T>::Array(m) {}
+    explicit SimpleVector(int m) DUNE_DEPRECATED : Array<T>::Array(m) {}
 
     SimpleVector<T>& operator= (const T t)
     {
