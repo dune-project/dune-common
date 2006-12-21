@@ -118,7 +118,7 @@ sort_modules() {
     if test "x$(eval echo \$HAVE_$m)" != "x"; then
       _sort_module $m
     else
-      echo "ERROR: could not find module $dep" > /dev/stderr
+      echo "ERROR: could not find module $(eval echo \$NAME_$m)" > /dev/stderr
       exit 1
     fi
   done
@@ -144,7 +144,7 @@ _sort_module() {
     for name in $(eval "echo \$DEPS_$module"); do
 	  dep=$(fix_variable_name $name)
       if ! check_modname $dep; then 
-        echo "ERROR: invalid module name $dep" > /dev/stderr
+        echo "ERROR: invalid module name $name" > /dev/stderr
         exit 1
       fi
       if test "x$(eval echo \$HAVE_$dep)" != "x"; then
@@ -153,7 +153,7 @@ _sort_module() {
         # perhaps this module is installed,
         # then it should be handled via pkg-config
         if ! pkg-config $name; then
-          echo "ERROR: could not find module $dep" > /dev/stderr
+          echo "ERROR: could not find module $(eval echo \$NAME_$dep)" > /dev/stderr
           echo "       module is also unknown to pkg-config" > /dev/stderr
           exit 1
         fi
@@ -163,7 +163,7 @@ _sort_module() {
     for name in $(eval "echo \$SUGS_$module"); do
 	  dep=$(fix_variable_name $name)
       if ! check_modname $dep; then
-        echo "ERROR: invalid module name $dep" > /dev/stderr
+        echo "ERROR: invalid module name $name" > /dev/stderr
         exit 1
       fi
       if test "x$(eval echo \$HAVE_$dep)" != "x"; then
@@ -213,7 +213,7 @@ eval_control() {
 # $2 value
 #
 fix_variable_name() {
-  echo "$@" | tr '-' '_'
+  echo -n "$@" | tr '[:punct:]' '__'
 }
 
 fix_and_assign() {

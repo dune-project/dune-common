@@ -297,6 +297,7 @@ while test $# -gt 0; do
         echo  > /dev/stderr
         exit 1;
       fi
+      export NAME_`fix_variable_name $arg`="$arg"
       fix_and_assign MODULE "$arg"
     ;;
     --only=*)
@@ -306,6 +307,7 @@ while test $# -gt 0; do
         echo  > /dev/stderr
         exit 1;
       fi
+      export NAME_`fix_variable_name $arg`="$arg"
       fix_and_assign ONLY "$arg"
       fix_and_assign MODULE "$arg"
     ;;
