@@ -545,7 +545,7 @@ namespace Dune {
   template<typename K, int n, int m>
   void FieldMatrix<K,n,m>::ElimPivot::swap(int i, int j)
   {
-    std::swap(pivot_[i], pivot_[j]);
+    pivot_[i]=j;
   }
 
   template<typename K, int n, int m>
@@ -593,7 +593,7 @@ namespace Dune {
           }
         // swap rows
         if (imax!=i) {
-          for (int j=i; j<n; j++)
+          for (int j=0; j<n; j++)
             std::swap(A[i][j],A[imax][j]);
           func.swap(i, imax);     // swap the pivot or rhs
         }
@@ -694,14 +694,14 @@ namespace Dune {
       *this=0;
 
       for(int i=0; i<n; ++i)
-        p[pivot[i]][i]=1;
+        p[i][i]=1;
 
       // L Y = I; multiple right hand sides
       for (int i=0; i<n; i++) {
         int row = pivot[i];
         for (int j=0; j<i; j++)
           for (int k=0; k<n; k++)
-            p[row][k] -= L[i][j]*p[j][k];
+            p[i][k] -= L[i][j]*p[j][k];
       }
 
       // U A^{-1} = Y
@@ -709,9 +709,15 @@ namespace Dune {
         int row = pivot[i];
         for (int k=0; k<n; k++) {
           for (int j=i+1; j<n; j++)
-            p[row][k] -= U[i][j]*p[j][k];
-          p[row][k] /= U[i][i];
+            p[i][k] -= U[i][j]*p[j][k];
+          p[i][k] /= U[i][i];
         }
+      }
+
+      for(int i=n-1; i>=0; --i) {
+        if(i!=pivot[i])
+          for(int j=0; j<n; ++j)
+            std::swap(p[j][pivot[i]], p[j][i]);
       }
     }
   }
