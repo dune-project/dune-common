@@ -505,7 +505,115 @@ namespace Dune {
   private:
     // the data, very simply a built in array with row-wise ordering
     row_type p[(n > 0) ? n : 1];
+
+    struct ElimPivot
+    {
+      ElimPivot(size_type pivot[n]);
+
+      void swap(int i, int j);
+
+      template<typename T>
+      void operator()(const T&, int k, int i)
+      {}
+
+      size_type* pivot_;
+    };
+
+    template<typename V>
+    struct Elim
+    {
+      Elim(V& rhs);
+
+      void swap(int i, int j);
+
+      void operator()(const typename V::field_type& factor, int k, int i);
+
+      V* rhs_;
+    };
+
+    template<class Func>
+    void luDecomposition(FieldMatrix<K,n,n>& A, Func func) const;
   };
+
+  template<typename K, int n, int m>
+  FieldMatrix<K,n,m>::ElimPivot::ElimPivot(size_type pivot[n])
+    : pivot_(pivot)
+  {
+    for(int i=0; i < n; ++i) pivot[i]=i;
+  }
+
+  template<typename K, int n, int m>
+  void FieldMatrix<K,n,m>::ElimPivot::swap(int i, int j)
+  {
+    std::swap(pivot_[i], pivot_[j]);
+  }
+
+  template<typename K, int n, int m>
+  template<typename V>
+  FieldMatrix<K,n,m>::Elim<V>::Elim(V& rhs)
+    : rhs_(&rhs)
+  {}
+
+  template<typename K, int n, int m>
+  template<typename V>
+  void FieldMatrix<K,n,m>::Elim<V>::swap(int i, int j)
+  {
+    std::swap((*rhs_)[i], (*rhs_)[j]);
+  }
+
+  template<typename K, int n, int m>
+  template<typename V>
+  void FieldMatrix<K,n,m>::
+  Elim<V>::operator()(const typename V::field_type& factor, int k, int i)
+  {
+    (*rhs_)[k] -= factor*(*rhs_)[i];
+  }
+  template<typename K, int n, int m>
+  template<typename Func>
+  inline void FieldMatrix<K,n,m>::luDecomposition(FieldMatrix<K,n,n>& A, Func func) const
+  {
+    double norm=A.infinity_norm_real(); // for relative thresholds
+    double pivthres = std::max(FMatrixPrecision<>::absolute_limit(),norm*FMatrixPrecision<>::pivoting_limit());
+    double singthres = std::max(FMatrixPrecision<>::absolute_limit(),norm*FMatrixPrecision<>::singular_limit());
+
+    // LU decomposition of A in A
+    for (int i=0; i<n; i++)  // loop over all rows
+    {
+      double pivmax=fvmeta_absreal(A[i][i]);
+
+      // pivoting ?
+      if (pivmax<pivthres)
+      {
+        // compute maximum of column
+        int imax=i; double abs;
+        for (int k=i+1; k<n; k++)
+          if ((abs=fvmeta_absreal(A[k][i]))>pivmax)
+          {
+            pivmax = abs; imax = k;
+          }
+        // swap rows
+        if (imax!=i) {
+          for (int j=i; j<n; j++)
+            std::swap(A[i][j],A[imax][j]);
+          func.swap(i, imax);     // swap the pivot or rhs
+        }
+      }
+
+      // singular ?
+      if (pivmax<singthres)
+        DUNE_THROW(FMatrixError,"matrix is singular");
+
+      // eliminate
+      for (int k=i+1; k<n; k++)
+      {
+        K factor = A[k][i]/A[i][i];
+        A[k][i] = factor;
+        for (int j=i+1; j<n; j++)
+          A[k][j] -= factor*A[i][j];
+        func(factor, k, i);
+      }
+    }
+  }
 
   template <class K, int n, int m>
   template <class V>
@@ -533,65 +641,20 @@ namespace Dune {
       x[1] = detinv*(p[0][0]*b[1]-p[1][0]*b[0]);
 
     } else {
-
-      // ////////////////////////////////////////////////////
-      // Gaussian elimination with maximum column pivot
-      // ////////////////////////////////////////////////////
-
-      // make a copy of a to store factorization
+      V& rhs = x;     // use x to store rhs
+      rhs = b;     // copy data
+      Elim<V> elim(rhs);
       FieldMatrix<K,n,n> A(*this);
 
-      double norm=A.infinity_norm_real();       // for relative thresholds
-      double pivthres = std::max(FMatrixPrecision<>::absolute_limit(),norm*FMatrixPrecision<>::pivoting_limit());
-      double singthres = std::max(FMatrixPrecision<>::absolute_limit(),norm*FMatrixPrecision<>::singular_limit());
-      V& rhs = x;            // use x to store rhs
-      rhs = b;               // copy data
-
-      // elimination phase
-      for (int i=0; i<n; i++)        // loop over all rows
-      {
-        double pivmax=fvmeta_absreal(A[i][i]);
-
-        // pivoting ?
-        if (pivmax<pivthres)
-        {
-          // compute maximum of row
-          int imax=i; double abs;
-          for (int k=i+1; k<n; k++)
-            if ((abs=fvmeta_absreal(A[k][i]))>pivmax)
-            {
-              pivmax = abs; imax = k;
-            }
-          // swap rows
-          if (imax!=i)
-            for (int j=i; j<n; j++)
-              std::swap(A[i][j],A[imax][j]);
-        }
-
-        // singular ?
-        if (pivmax<singthres)
-          DUNE_THROW(FMatrixError,"matrix is singular");
-
-        // eliminate
-        for (int k=i+1; k<n; k++)
-        {
-          K factor = -A[k][i]/A[i][i];
-          for (int j=i+1; j<n; j++)
-            A[k][j] += factor*A[i][j];
-          rhs[k] += factor*rhs[i];
-        }
-      }
+      luDecomposition(A, elim);
 
       // backsolve
-      for (int i=n-1; i>=0; i--)
-      {
+      for(int i=n-1; i>=0; i--) {
         for (int j=i+1; j<n; j++)
           rhs[i] -= A[i][j]*x[j];
         x[i] = rhs[i]/A[i][i];
       }
-
     }
-
   }
 
   template <class K, int n, int m>
@@ -622,69 +685,35 @@ namespace Dune {
     } else {
 
       FieldMatrix<K,n,n> A(*this);
-      FieldMatrix<K,n,n>& L=A;
-      FieldMatrix<K,n,n>& U=A;
-
-      double norm=A.infinity_norm_real();       // for relative thresholds
-      double pivthres = std::max(FMatrixPrecision<>::absolute_limit(),norm*FMatrixPrecision<>::pivoting_limit());
-      double singthres = std::max(FMatrixPrecision<>::absolute_limit(),norm*FMatrixPrecision<>::singular_limit());
-
-      // LU decomposition of A in A
-      for (int i=0; i<n; i++)        // loop over all rows
-      {
-        double pivmax=fvmeta_absreal(A[i][i]);
-
-        // pivoting ?
-        if (pivmax<pivthres)
-        {
-          // compute maximum of column
-          int imax=i; double abs;
-          for (int k=i+1; k<n; k++)
-            if ((abs=fvmeta_absreal(A[k][i]))>pivmax)
-            {
-              pivmax = abs; imax = k;
-            }
-          // swap rows
-          if (imax!=i)
-            for (int j=i; j<n; j++)
-              std::swap(A[i][j],A[imax][j]);
-        }
-
-        // singular ?
-        if (pivmax<singthres)
-          DUNE_THROW(FMatrixError,"matrix is singular");
-
-        // eliminate
-        for (int k=i+1; k<n; k++)
-        {
-          K factor = A[k][i]/A[i][i];
-          L[k][i] = factor;
-          for (int j=i+1; j<n; j++)
-            A[k][j] -= factor*A[i][j];
-        }
-      }
+      size_type pivot[n];
+      luDecomposition(A, ElimPivot(pivot));
+      FieldMatrix<K,n,m>& L=A;
+      FieldMatrix<K,n,m>& U=A;
 
       // initialize inverse
-      *this = 0;
-      for (int i=0; i<n; i++) p[i][i] = 1;
+      *this=0;
+
+      for(int i=0; i<n; ++i)
+        p[pivot[i]][i]=1;
 
       // L Y = I; multiple right hand sides
-      for (int i=0; i<n; i++)
+      for (int i=0; i<n; i++) {
+        int row = pivot[i];
         for (int j=0; j<i; j++)
           for (int k=0; k<n; k++)
-            p[i][k] -= L[i][j]*p[j][k];
+            p[row][k] -= L[i][j]*p[j][k];
+      }
 
       // U A^{-1} = Y
-      for (int i=n-1; i>=0; i--)
-        for (int k=0; k<n; k++)
-        {
+      for (int i=n-1; i>=0; i--) {
+        int row = pivot[i];
+        for (int k=0; k<n; k++) {
           for (int j=i+1; j<n; j++)
-            p[i][k] -= U[i][j]*p[j][k];
-          p[i][k] /= U[i][i];
+            p[row][k] -= U[i][j]*p[j][k];
+          p[row][k] /= U[i][i];
         }
-
+      }
     }
-
   }
 
   // implementation of the determinant
