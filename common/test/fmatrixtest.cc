@@ -69,6 +69,16 @@ int test_invert_solve(T A_data[n*n], T inv_data[n*n],
 
   std::cout<<"Checking solution for rhs="<<b<<std::endl;
 
+  // Check whether given solution is correct
+  FieldVector<T,n> trhs=b;
+
+  copy.mmv(x,trhs);
+  equal=true;
+
+  if (trhs.infinity_norm() > 1e-6) {
+    std::cerr<<"Given rhs does not fit solution"<<std::endl;
+    equal=false;
+  }
   copy.solve(calced_x, b);
   FieldVector<T,n> xcopy(calced_x);
   xcopy-=x;
@@ -86,7 +96,7 @@ int test_invert_solve(T A_data[n*n], T inv_data[n*n],
     std::cerr<<"Calculated solution was:"<<std::endl;
     std::cerr <<calced_x<<std::endl;
     std::cerr<<"Should have been"<<std::endl;
-    std::cerr<<x;
+    std::cerr<<x<<std::endl;
     std::cerr<<"difference is "<<xcopy<<std::endl;
   }else
     std::cout<<"Result is "<<calced_x<<std::endl;
@@ -109,7 +119,7 @@ int test_invert_solve()
   double A_data0[9] = {-0.5, 0, -0.25, 0.5, 0, -0.25, 0, 0.5, 0};
   double inv_data0[9] = {-1, 1, 0, 0, 0, 2, -2, -2, 0};
   double b0[3] = {32,75,201};
-  double x0[3] = {1,2,3};
+  double x0[3] = {43, 402, -214};
 
   ret += test_invert_solve<double,3>(A_data0, inv_data0, x0, b0);
 
