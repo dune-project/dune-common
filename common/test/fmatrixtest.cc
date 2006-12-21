@@ -14,7 +14,7 @@ int test_invert_solve(T A_data[n*n], T inv_data[n*n],
 {
   int ret=0;
 
-  std::cout <<"Checking invertion of:"<<std::endl;
+  std::cout <<"Checking inversion of:"<<std::endl;
 
   FieldMatrix<T,n,n> A, inv, calced_inv;
   FieldVector<T,n> x, b, calced_x;
@@ -29,6 +29,19 @@ int test_invert_solve(T A_data[n*n], T inv_data[n*n],
   }
 
   std::cout<<A<<std::endl;
+
+  // Check whether given inverse is correct
+  FieldMatrix<T,n,n> prod = A;
+  prod.rightmultiply(inv);
+  for (int i=0; i<n; i++)
+    prod[i][i] -= 1;
+
+  bool equal=true;
+  if (A.infinity_norm() > 1e-6) {
+    std::cerr<<"Given inverse wrong"<<std::endl;
+    equal=false;
+  }
+
   FieldMatrix<T,n,n> copy(A);
   A.invert();
 
@@ -36,7 +49,6 @@ int test_invert_solve(T A_data[n*n], T inv_data[n*n],
   A-=inv;
 
 
-  bool equal=true;
   double singthres = FMatrixPrecision<>::singular_limit()*10;
   for(int i =0; i < n; ++i)
     for(int j=0; j <n; ++j)
@@ -50,7 +62,7 @@ int test_invert_solve(T A_data[n*n], T inv_data[n*n],
     std::cerr<<"Calculated inverse was:"<<std::endl;
     std::cerr <<calced_inv<<std::endl;
     std::cerr<<"Should have been"<<std::endl;
-    std::cerr<<inv;
+    std::cerr<<inv << std::endl;
   }else
     std::cout<<"Result is"<<std::endl<<calced_inv<<std::endl;
 
@@ -92,8 +104,14 @@ int test_invert_solve()
   double b[3] = {32,75,201};
   double x[3] = {1,2,3};
 
-
   ret += test_invert_solve<double,3>(A_data, inv_data, x, b);
+
+  double A_data0[9] = {-0.5, 0, -0.25, 0.5, 0, -0.25, 0, 0.5, 0};
+  double inv_data0[9] = {-1, 1, 0, 0, 0, 2, -2, -2, 0};
+  double b0[3] = {32,75,201};
+  double x0[3] = {1,2,3};
+
+  ret += test_invert_solve<double,3>(A_data0, inv_data0, x0, b0);
 
   double A_data1[9] = {0, 1, 0, 1, 0, 0, 0, 0, 1};
   double b1[3] = {0,1,2};
