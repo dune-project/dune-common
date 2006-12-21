@@ -395,68 +395,61 @@ following programs installed on your system:
 Getting started
 ---------------
 
-If these preliminaries are met, you should run the script
+If these preliminaries are met, you should run 
 
-  ./autogen.sh
+  dunecontrol all
 
-which calls the GNU autoconf/automake to create a ./configure-script
-and the Makefiles. Most probably you'll have to provide where to find
-the DUNE-files by
+which will find all installed dune modules as well as all dune modules 
+(not installed) which sources reside in a subdirectory of the current 
+directory. Note that if dune is not installed properly you will either
+have to add the directory where the dunecontrol script resides (probably 
+./dune-common/bin) to your path or specify the relative path of the script.
 
-   ./autogen.sh --with-dune=PATH
+On your project and all uninstalled DUNE source modules found the script 
+will then calls the GNU autoconf/automake to create a ./configure-script 
+and the Makefiles. Afterwards that configure script will be called and the
+modules will be build using make all
 
-where PATH is a directory with a dune/-subdirectory inside (this
-convention is needed to keep the #include-syntax consistent even when
-the headers are installed into /usr/include/dune later).
+Most probably you'll have to provide additional information to dunecontrol 
+(e. g. compilers, configure options) and/or make options. 
 
+The most convenient way is to use options files in this case. The files
+defining three variables:
 
-Passing options to ./configure
-------------------------------
+AUTOGEN_FLAGS    flags passed to autogen
+CONFIGURE_FLAGS  flags passed to configure
+MAKE_FLAGS       flags passed to make
 
-autogen.sh also calls the newly created configure-script to
-conveniently pass on options about the used compiler. Thus you'll have
-to provide autogen.sh any options you want configure to get, e.g.
+An example options file might look like this:
 
-  ./autogen.sh --with-dune=... --with-albert=... --without-x
+#use this options to autogen, configure and make if no other options are given
+AUTOGEN_FLAGS="--ac=2.50 --ac=1.8" #Forces automake 2,50 and autoconf 1.8
+CONFIGURE_FLAGS="CXX=g++-3.4 --prefix=/install/path" #force g++-3.4 as compiler
+MAKE_FLAGS=install #Per default run make install instead of simply make
 
+If you save this information into example.opts you can path the opts file to
+dunecontrol via the --opts option, e. g.
 
-Choosing the compiler and the options
--------------------------------------
+  dunecontrol --opts=example.opts all
 
-The selection of the compiler works as follows: if --gnu or --intel is
-passed to autogen it reads the content of gcc.opts or icc.opts to get
-the default compiler flags. With the option --optim you can switch the
-compiler-specific optimization parameters on.
+To get a full list of available configure flags just run
 
-If you want to change the compiler options to your favourites you can
-either
+  dunecontrol configure --help
 
- - adapt the appropriate .opts-file and rerun autogen.sh. Please don't
-   commit this changed file to CVS if you're not sure if the options
-   work for everybody.
-
- - copy an existing .opts-file to a new name, change the options and
-   use
-
-      ./autogen.sh --opts=my.opts
-
+after running at least 
+  dunecontrol autogen
 
 More info
 ---------
 
 See
 
-     ./autogen.sh --help
+     dunecontrol --help
    
-and (if it exists)
- 
-     ./configure --help
-
 for further options.
 
 
-The full build-system is described in the dune/doc/Buildsystem (not in
-duneapps/doc!)
+The full build-system is described in the dune-common/doc/buildsystem (SVN version) or under share/doc/dune-common/buildsystem if you installed DUNE!
 
 \$Id$
 
