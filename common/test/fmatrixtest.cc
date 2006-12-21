@@ -37,7 +37,7 @@ int test_invert_solve(T A_data[n*n], T inv_data[n*n],
     prod[i][i] -= 1;
 
   bool equal=true;
-  if (A.infinity_norm() > 1e-6) {
+  if (prod.infinity_norm() > 1e-6) {
     std::cerr<<"Given inverse wrong"<<std::endl;
     equal=false;
   }
