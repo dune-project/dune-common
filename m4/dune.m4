@@ -276,7 +276,7 @@ AC_DEFUN([DUNE_SYMLINK],[
 
       # sanity check
       if ! test -r dune/$ac_unique_file ; then
-        AC_MSG_ERROR([Sanity check for symlink failed! Please send a bugreport to dune@hal.iwr.uni-heidelberg.de])
+        AC_MSG_ERROR([Sanity check for symlink failed! Please send a bugreport to dune@dune-project.org])
       fi
     fi 
   else
