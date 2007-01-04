@@ -340,9 +340,13 @@ case "$command" in
     else
       sort_modules $MODULE
     fi
-    for mod in $MODULES; do
-      NAMES="$NAMES$(eval echo \$NAME_$mod) "
-    done
+    if test x$ONLY != x; then
+      NAMES="$(eval echo \$NAME_$ONLY)"
+    else
+      for mod in $MODULES; do
+        NAMES="$NAMES$(eval echo \$NAME_$mod) "
+      done
+    fi
     echo "--- going to build $NAMES ---"
       build_modules $command
     echo "--- done ---"
