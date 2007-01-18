@@ -196,7 +196,7 @@ namespace Dune {
     //===== assignment from scalar
     FieldMatrix& operator= (const K& k)
     {
-      for (int i=0; i<n; i++)
+      for (size_type i=0; i<n; i++)
         p[i] = k;
       return *this;
     }
@@ -206,7 +206,7 @@ namespace Dune {
     //! vector space addition
     FieldMatrix& operator+= (const FieldMatrix& y)
     {
-      for (int i=0; i<n; i++)
+      for (size_type i=0; i<n; i++)
         p[i] += y.p[i];
       return *this;
     }
@@ -214,7 +214,7 @@ namespace Dune {
     //! vector space subtraction
     FieldMatrix& operator-= (const FieldMatrix& y)
     {
-      for (int i=0; i<n; i++)
+      for (size_type i=0; i<n; i++)
         p[i] -= y.p[i];
       return *this;
     }
@@ -222,7 +222,7 @@ namespace Dune {
     //! vector space multiplication with scalar
     FieldMatrix& operator*= (const K& k)
     {
-      for (int i=0; i<n; i++)
+      for (size_type i=0; i<n; i++)
         p[i] *= k;
       return *this;
     }
@@ -230,7 +230,7 @@ namespace Dune {
     //! vector space division by scalar
     FieldMatrix& operator/= (const K& k)
     {
-      for (int i=0; i<n; i++)
+      for (size_type i=0; i<n; i++)
         p[i] /= k;
       return *this;
     }
@@ -417,10 +417,10 @@ namespace Dune {
     {
       FieldMatrix<K,n,m> C(*this);
 
-      for (int i=0; i<n; i++)
-        for (int j=0; j<m; j++) {
+      for (size_type i=0; i<n; i++)
+        for (size_type j=0; j<m; j++) {
           (*this)[i][j] = 0;
-          for (int k=0; k<n; k++)
+          for (size_type k=0; k<n; k++)
             (*this)[i][j] += M[i][k]*C[k][j];
         }
 
@@ -432,10 +432,10 @@ namespace Dune {
     {
       FieldMatrix<K,n,m> C(*this);
 
-      for (int i=0; i<n; i++)
-        for (int j=0; j<m; j++) {
+      for (size_type i=0; i<n; i++)
+        for (size_type j=0; j<m; j++) {
           (*this)[i][j] = 0;
-          for (int k=0; k<m; k++)
+          for (size_type k=0; k<m; k++)
             (*this)[i][j] += C[i][k]*M[k][j];
         }
       return *this;
@@ -693,30 +693,28 @@ namespace Dune {
       // initialize inverse
       *this=0;
 
-      for(int i=0; i<n; ++i)
+      for(size_type i=0; i<n; ++i)
         p[i][i]=1;
 
       // L Y = I; multiple right hand sides
-      for (int i=0; i<n; i++) {
-        int row = pivot[i];
-        for (int j=0; j<i; j++)
-          for (int k=0; k<n; k++)
+      for (size_type i=0; i<n; i++) {
+        for (size_type j=0; j<i; j++)
+          for (size_type k=0; k<n; k++)
             p[i][k] -= L[i][j]*p[j][k];
       }
 
       // U A^{-1} = Y
-      for (int i=n-1; i>=0; i--) {
-        int row = pivot[i];
-        for (int k=0; k<n; k++) {
-          for (int j=i+1; j<n; j++)
+      for (size_type i=n-1; i!=0; i--) {
+        for (size_type k=0; k<n; k++) {
+          for (size_type j=i+1; j<n; j++)
             p[i][k] -= U[i][j]*p[j][k];
           p[i][k] /= U[i][i];
         }
       }
 
-      for(int i=n-1; i>=0; --i) {
+      for(size_type i=n-1; i!=0; --i) {
         if(i!=pivot[i])
-          for(int j=0; j<n; ++j)
+          for(size_type j=0; j<n; ++j)
             std::swap(p[j][pivot[i]], p[j][i]);
       }
     }
