@@ -704,7 +704,8 @@ namespace Dune {
       }
 
       // U A^{-1} = Y
-      for (size_type i=n-1; i!=0; i--) {
+      for (size_type i=n; i>0;) {
+        --i;
         for (size_type k=0; k<n; k++) {
           for (size_type j=i+1; j<n; j++)
             p[i][k] -= U[i][j]*p[j][k];
@@ -712,7 +713,8 @@ namespace Dune {
         }
       }
 
-      for(size_type i=n-1; i!=0; --i) {
+      for(size_type i=n; i>0; ) {
+        --i;
         if(i!=pivot[i])
           for(size_type j=0; j<n; ++j)
             std::swap(p[j][pivot[i]], p[j][i]);
