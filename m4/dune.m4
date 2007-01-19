@@ -230,7 +230,7 @@ AC_DEFUN([DUNE_CHECK_DISPATCH],[
          [$1], [dune-grid],[
            DUNE_CHECK_MODULES([dune-grid], [grid/common/grid.hh], [Dune::PartitionName])],
          [$1], [dune-fem],[
-           DUNE_CHECK_MODULES([dune-fem], [fem/basefunctions/common/storageinterface.hh])],
+           DUNE_CHECK_MODULES([dune-fem], [fem/space/basefunctions/storageinterface.hh])],
          [$1], [dune-istl],[
            DUNE_CHECK_MODULES([dune-istl], [istl/allocator.hh])],
          [$1], [dune-disc],[
