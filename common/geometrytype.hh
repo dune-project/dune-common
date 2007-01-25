@@ -16,7 +16,7 @@ namespace Dune {
      This class has to be extended if a grid implementation with new entity types
      is added to DUNE.
 
-      \ingroup GIGeometryType
+      \ingroup COGeometryType
    */
   class GeometryType
   {

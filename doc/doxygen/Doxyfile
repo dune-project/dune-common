@@ -452,6 +452,7 @@ WARN_LOGFILE           =
 
 INPUT                  = mainpage \
                          modules \
+                         ../../common/modules \
                          ../../common
 
 # If the value of the INPUT tag contains directories, you can use the 
