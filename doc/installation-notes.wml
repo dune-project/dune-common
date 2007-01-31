@@ -57,9 +57,7 @@ There are no mandatory packages for UGGrid.
 </p>
 <p>
 You can (but you don't have to) create UGGrid objects from AmiraMesh files.
-For this you'll need the <a href="http://www.amiravis.com">AmiraMesh</a> library.
-It should be free, however, it is not
-available for download. You'll have to inquire via email.
+For this you'll need the <a href="http://www.amiravis.com/resources/Ext411-01-libamiramesh/index.html">AmiraMesh</a> library.
 </p>
 
 <h2>Compilation and Installation of the External Grids</h2>
@@ -186,49 +184,39 @@ available for download. You'll have to inquire via email.
 <h3>UGGrid</h3>
 
 <ol>
-<li><p>Get and Install AmiraMesh</p>
-<p>
-Once you have the tarball type
-</p><pre>
-tar xvf libamiramesh.tar
-cd libamiramesh/src
-make
-</pre>
-to install it.
-</li>
 <li>
 <p>
-Get the UG library. You can obtain it at
+Get the UG library.  If you intend to use the release 1.0 of DUNE you can
+download to appropriate UG library at
 <a href="http://sit.iwr.uni-heidelberg.de/~ug">http://sit.iwr.uni-heidelberg.de/~ug</a>. 
-Unfortunately, the version of UG available for download there (3.8 at the
-time of writing) is not new enough to be compatible with DUNE. Please
-write to one of the contact addresses given on the page
-and ask for a more recent version of UG.
+For more recent versions of DUNE you will need a newer UG.
+Please ask on the mailing list for details.
 </p>
-<li>Unpack the tarball and move into the ug source tree.
+<li>Unpack the tarball and move into the UG source tree.
     <pre>
 tar zxvf UG-3.9.1.tar.gz
 cd UG-3.9.1
     </pre>
 </li>
-<li><p>Build the UG Make System</p>
+<li><p>Build the UG make system</p>
 <kbd>
-    ./configure --prefix=my_favourite_ug_installation_path \\
-   --enable-dune CXX=g++-3.4 CC=g++-3.4
+    ./configure --prefix=my_favourite_ug_installation_path --enable-dune CC=g++
 </kbd>
-<p>
-   With --prefix the absolute path of the directory we install to has
-    to be given.
-</p><p>
-    With --enable-dune we enable special features needed by Dune.
-</p><p>
-    With the variable CC and CXX we tell configure the C and C++
-    compiler and linker to use. Don't forget that the compiler has to
-    be binary-compatible with the one you're using for Dune.
-</p><p>
-    <b>Note:</b> Even CC has to be set to the C++ and not
-    the C compiler !!!
-</p></li>
+        <ul>
+          <li>
+   <tt>--prefix</tt> determines the absolute path of the directory we install to.
+          </li>
+          <li>
+   <tt>--enable-dune</tt> enables special features needed by Dune.
+          </li>
+          <li>
+    CC=g++ tells the build system to compile everything as C++,
+    even though it is technically C.    This is necessary when
+    using UG through the DUNE interface. Don't forget that the 
+    compiler has to be binary-compatible with the one you're using for Dune.
+</li>
+</ul>
+</li>
 <li>
         <p>Compile UG with</p>
         <kbd> make</kbd>
