@@ -8,7 +8,7 @@
 
 using namespace Dune;
 
-template<typename T, int n>
+template<typename T, std::size_t n>
 int test_invert_solve(T A_data[n*n], T inv_data[n*n],
                       T x_data[n], T b_data[n])
 {
