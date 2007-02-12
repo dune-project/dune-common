@@ -75,7 +75,7 @@ AC_DEFUN([DUNE_PATH_UG],[
       AC_LANG_PUSH([C++])
       if test x$HAVE_UG = x1 ; then
 
-	  CPPFLAGS="$UG_CPPFLAGS"
+	  CPPFLAGS="$UG_CPPFLAGS -D_2"
 	  
 	  AC_MSG_CHECKING([UG libraries (without MPI)])
 	  LIBS="$UG_LIBS"
