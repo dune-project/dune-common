@@ -33,7 +33,7 @@ dnl check for programs
 
 dnl checks for header files.
   AC_REQUIRE([AC_HEADER_STDC])
-  AC_CHECK_HEADERS([malloc.h string.h])
+  AC_CHECK_HEADERS([malloc.h string.h tr1/type_traits])
 
 dnl checks for typedefs, structures, and compiler characteristics.
 #  doesn't work, but we don't need it currently
