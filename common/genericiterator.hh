@@ -91,8 +91,8 @@ namespace Dune {
   class GenericIterator :
     public Dune::RandomAccessIteratorFacade<GenericIterator<C,T>,T, T&, D>
   {
-    friend class GenericIterator<typename Dune::RemoveConst<C>::Type, typename Dune::RemoveConst<T>::Type >;
-    friend class GenericIterator<const typename Dune::RemoveConst<C>::Type, const typename Dune::RemoveConst<T>::Type >;
+    friend class GenericIterator<typename remove_const<C>::type, typename remove_const<T>::type >;
+    friend class GenericIterator<const typename remove_const<C>::type, const typename remove_const<T>::type >;
 
   public:
 
@@ -140,7 +140,7 @@ namespace Dune {
      * 1. if we are mutable this is the only valid copy constructor, as the arguments is a mutable iterator
      * 2. if we are a const iterator the argument is a mutable iterator => This is the needed conversion to initialize a const iterator form a mutable one.
      */
-    GenericIterator(const GenericIterator<typename Dune::RemoveConst<Container>::Type, typename Dune::RemoveConst<T>::Type >& other) : container_(other.container_), position_(other.position_)
+    GenericIterator(const GenericIterator<typename remove_const<Container>::type, typename remove_const<T>::type >& other) : container_(other.container_), position_(other.position_)
     {}
 
     /**
@@ -152,17 +152,17 @@ namespace Dune {
      * 1. if we are mutable the arguments is a const iterator and therefore calling this method is mistake in the users code and results in a (probably not understandable compiler error
      * 2. If we are a const iterator this is the default copy constructor as the argument is a const iterator too.
      */
-    GenericIterator(const GenericIterator<const typename Dune::RemoveConst<Container>::Type, const typename Dune::RemoveConst<T>::Type >& other) : container_(other.container_), position_(other.position_)
+    GenericIterator(const GenericIterator<const typename remove_const<Container>::type, const typename remove_const<T>::type >& other) : container_(other.container_), position_(other.position_)
     {}
 
     // Methods needed by the forward iterator
-    bool equals(const GenericIterator<typename Dune::RemoveConst<Container>::Type,typename Dune::RemoveConst<T>::Type>& other) const
+    bool equals(const GenericIterator<typename remove_const<Container>::type,typename remove_const<T>::type>& other) const
     {
       return position_ == other.position_ && container_ == other.container_;
     }
 
 
-    bool equals(const GenericIterator<const typename Dune::RemoveConst<Container>::Type,const typename Dune::RemoveConst<T>::Type>& other) const
+    bool equals(const GenericIterator<const typename remove_const<Container>::type,const typename remove_const<T>::type>& other) const
     {
       return position_ == other.position_ && container_ == other.container_;
     }
@@ -189,13 +189,13 @@ namespace Dune {
       position_=position_+n;
     }
 
-    std::ptrdiff_t distanceTo(GenericIterator<const typename Dune::RemoveConst<Container>::Type,const typename Dune::RemoveConst<T>::Type> other) const
+    std::ptrdiff_t distanceTo(GenericIterator<const typename remove_const<Container>::type,const typename remove_const<T>::type> other) const
     {
       assert(other.container_==container_);
       return other.position_ - position_;
     }
 
-    std::ptrdiff_t distanceTo(GenericIterator<typename Dune::RemoveConst<Container>::Type, typename Dune::RemoveConst<T>::Type> other) const
+    std::ptrdiff_t distanceTo(GenericIterator<typename remove_const<Container>::type, typename remove_const<T>::type> other) const
     {
       assert(other.container_==container_);
       return other.position_ - position_;

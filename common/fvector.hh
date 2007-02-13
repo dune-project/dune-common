@@ -67,8 +67,8 @@ namespace Dune {
   class FieldIterator :
     public Dune::RandomAccessIteratorFacade<FieldIterator<C,T>,T, T&, int>
   {
-    friend class FieldIterator<typename Dune::RemoveConst<C>::Type, typename Dune::RemoveConst<T>::Type >;
-    friend class FieldIterator<const typename Dune::RemoveConst<C>::Type, const typename Dune::RemoveConst<T>::Type >;
+    friend class FieldIterator<typename remove_const<C>::type, typename remove_const<T>::type >;
+    friend class FieldIterator<const typename remove_const<C>::type, const typename remove_const<T>::type >;
 
   public:
 
@@ -86,12 +86,12 @@ namespace Dune {
       : container_(&cont), position_(pos)
     {}
 
-    FieldIterator(const FieldIterator<typename Dune::RemoveConst<C>::Type, typename Dune::RemoveConst<T>::Type >& other)
+    FieldIterator(const FieldIterator<typename remove_const<C>::type, typename remove_const<T>::type >& other)
       : container_(other.container_), position_(other.position_)
     {}
 
 #if 0
-    FieldIterator(const FieldIterator<const typename Dune::RemoveConst<C>::Type, const typename Dune::RemoveConst<T>::Type >& other)
+    FieldIterator(const FieldIterator<const typename remove_const<C>::type, const typename remove_const<T>::type >& other)
       : container_(other.container_), position_(other.position_)
     {}
 #endif
@@ -101,13 +101,13 @@ namespace Dune {
     {}
 #endif
     // Methods needed by the forward iterator
-    bool equals(const FieldIterator<typename Dune::RemoveConst<C>::Type,typename Dune::RemoveConst<T>::Type>& other) const
+    bool equals(const FieldIterator<typename remove_const<C>::type,typename remove_const<T>::type>& other) const
     {
       return position_ == other.position_ && container_ == other.container_;
     }
 
 
-    bool equals(const FieldIterator<const typename Dune::RemoveConst<C>::Type,const typename Dune::RemoveConst<T>::Type>& other) const
+    bool equals(const FieldIterator<const typename remove_const<C>::type,const typename remove_const<T>::type>& other) const
     {
       return position_ == other.position_ && container_ == other.container_;
     }
@@ -134,13 +134,13 @@ namespace Dune {
       position_=position_+n;
     }
 
-    std::ptrdiff_t distanceTo(FieldIterator<const typename Dune::RemoveConst<C>::Type,const typename Dune::RemoveConst<T>::Type> other) const
+    std::ptrdiff_t distanceTo(FieldIterator<const typename remove_const<C>::type,const typename remove_const<T>::type> other) const
     {
       assert(other.container_==container_);
       return other.position_ - position_;
     }
 
-    std::ptrdiff_t distanceTo(FieldIterator<typename Dune::RemoveConst<C>::Type, typename Dune::RemoveConst<T>::Type> other) const
+    std::ptrdiff_t distanceTo(FieldIterator<typename remove_const<C>::type, typename remove_const<T>::type> other) const
     {
       assert(other.container_==container_);
       return other.position_ - position_;
