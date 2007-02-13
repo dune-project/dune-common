@@ -5,6 +5,10 @@
 
 #include <dune/common/logictraits.hh>
 
+#ifdef HAVE_TR1_TYPE_TRAITS
+#include <tr1/type_traits>
+#endif
+
 namespace Dune
 {
 
@@ -160,6 +164,19 @@ namespace Dune
   {
     typedef typename RemoveConstHelper<T, IsVolatile<T>::value>::Type Type;
   };
+
+#ifdef HAVE_TR1_TYPE_TRAITS
+  using std::tr1::remove_const;
+#else
+  /**
+   * @brief Removes a const qualifier while preserving others.
+   */
+  template<typename T>
+  struct remove_const
+  {
+    typedef typename RemoveConstHelper<T, IsVolatile<T>::value>::Type type;
+  };
+#endif
 
   /**
    * @brief Checks wether a type is derived from another.
