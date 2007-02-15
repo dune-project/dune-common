@@ -276,10 +276,34 @@ namespace Dune
     : public EnableIf<IsInteroperable<T1,T2>::value, Type>
   {};
 
+#ifdef HAVE_TR1_TYPE_TRAITS
+  using std::tr1::is_same;
+#else
+  /**
+   * @brief Compile time test for testing whether
+   * two types are the same.
+   */
+  template<typename T1, typename T2>
+  struct is_same
+  {
+    enum {
+      /* @brief Whether T1 is the same type as T2. */
+      value=false
+    };
+  };
+
+
+  template<typename T>
+  struct is_same<T,T>
+  {
+    enum { value=true};
+  };
+#endif
 
   /**
    * @brief Compile time test for testing whether
    * two types are the same.
+   * \deprecated Use is_same instead
    */
   template<typename T1, typename T2>
   struct SameType
