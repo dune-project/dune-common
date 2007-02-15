@@ -46,10 +46,9 @@ AC_DEFUN([DUNE_PATH_UG],[
         AC_HELP_STRING([--enable-ug-lgmdomain],[use UG LGM domain (default is standard domain)]))
       if test x"$enable_ug_lgmdomain" = xyes ; then
         AC_DEFINE(UG_LGMDOMAIN, 1, [use UG LGM domain])
-        # TODO: The lgm libraries contain a circular dependency!
-        UG_LIBS="-lug2 -ldomL2 -lug2 -lgg2 -lug3 -ldomL3 -lug3 -lgg3 -ldevS"
+        UG_LIBS="-lugL2 -lugL3 -ldevS"
       else
-        UG_LIBS="-lug2 -ldomS2 -lgg2 -lug3 -ldomS3 -lgg3 -ldevS"
+        UG_LIBS="-lugS2 -lugS3 -ldevS"
       fi
 
       # backup CPPFLAGS so I can add an additional flag just for AC_CHECk_HEADER
@@ -73,37 +72,45 @@ AC_DEFUN([DUNE_PATH_UG],[
       # Currently we only check for libug2
       # todo: Check for all the libraries that make up UG
       AC_LANG_PUSH([C++])
-      if test x$HAVE_UG = x1 ; then
 
-	  CPPFLAGS="$UG_CPPFLAGS -D_2"
+      # define LTCXXCOMPILE like it will be defined in the Makefile
+      ac_save_CXX="$CXX"
+      LTCXXLINK="$srcdir/libtool --tag=CXX --mode=link $CXX $CXXFLAGS $LDFLAGS"
+      CXX="$LTCXXLINK"
+
+      if test x$HAVE_UG = x1 ; then
 	  
-	  AC_MSG_CHECKING([UG libraries (without MPI)])
-	  LIBS="$UG_LIBS"
-          AC_TRY_LINK(
-              [#include "initug.h"],
-	      [int i = UG::D2::InitUg(0,0)],
+	    # try again with added MPI-libs
+	    AC_MSG_CHECKING([UG libraries (parallel)])
+	    LIBS="$UG_LIBS $MPI_LDFLAGS"
+        CPPFLAGS="$UG_CPPFLAGS -DModelP -D_2"
+            AC_TRY_LINK(
+              [#include "initug.h"
+               #include "parallel.h"],
+	      [int i = UG::D2::InitDDD()],
               [UG_LDFLAGS="$LDFLAGS"
+	       UG_CPPFLAGS="$UG_CPPFLAGS -DModelP"
 	       HAVE_UG="1"
-               with_ug="yes (sequential)"
+		   UG_LIBS="$UG_LIBS $MPI_LDFLAGS"
+           with_ug="yes (parallel)"
 	       AC_MSG_RESULT(yes)
               ],
               [AC_MSG_RESULT(no)
 	       HAVE_UG="0"]
 	      )
 
-	  # sequential lib not found/does not work?
+	  # parallel lib not found/does not work?
 	  if test x$HAVE_UG != x1 && test x"$MPI_LDFLAGS" != x"" ; then
-	    # try again with added MPI-libs
-	    UG_LIBS="$UG_LIBS $MPI_LDFLAGS"
-	    AC_MSG_CHECKING([UG libraries (with MPI)])
+	    AC_MSG_CHECKING([UG libraries (sequential)])
 	    LIBS="$UG_LIBS"
-            AC_TRY_LINK(
-              [#include "initug.h"],
+        CPPFLAGS="$UG_CPPFLAGS -D_2"
+          AC_TRY_LINK(
+              [#define _2
+               #include "initug.h"],
 	      [int i = UG::D2::InitUg(0,0)],
               [UG_LDFLAGS="$LDFLAGS"
-	       UG_CPPFLAGS="$UG_CPPFLAGS -DModelP"
 	       HAVE_UG="1"
-               with_ug="yes (parallel)"
+               with_ug="yes (sequential)"
 	       AC_MSG_RESULT(yes)
               ],
               [AC_MSG_RESULT(no)
@@ -133,6 +140,8 @@ AC_DEFUN([DUNE_PATH_UG],[
 
 
       fi
+
+	  CXX="$ac_save_CXX"
       AC_LANG_POP([C++])
       
       # did it work?
@@ -160,6 +169,7 @@ AC_DEFUN([DUNE_PATH_UG],[
   
   # tell automake	
   AM_CONDITIONAL(UG, test x$HAVE_UG = x1)
+  AM_CONDITIONAL(UG_LGMDOMAIN, test x$UG_LGMDOMAIN = x1)
   
   # restore variables
   LDFLAGS="$ac_save_LDFLAGS"
