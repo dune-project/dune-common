@@ -69,6 +69,4 @@ mpicollcomm_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
 singletontest_SOURCES = singletontest.cc
 singletontest_LDFLAGS = $(LOCAL_LIBS)
 
-sourcescheck_NOSOURCES = exprtmpl.cc timing.cc
-
 include $(top_srcdir)/am/global-rules

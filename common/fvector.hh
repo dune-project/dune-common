@@ -90,16 +90,6 @@ namespace Dune {
       : container_(other.container_), position_(other.position_)
     {}
 
-#if 0
-    FieldIterator(const FieldIterator<const typename Dune::RemoveConst<C>::Type, const typename Dune::RemoveConst<T>::Type >& other)
-      : container_(other.container_), position_(other.position_)
-    {}
-#endif
-#if 0
-    FieldIterator(const FieldIterator<C,T>& other)
-      : container_(other.container_), position_(other.position_)
-    {}
-#endif
     // Methods needed by the forward iterator
     bool equals(const FieldIterator<typename Dune::RemoveConst<C>::Type,typename Dune::RemoveConst<T>::Type>& other) const
     {
