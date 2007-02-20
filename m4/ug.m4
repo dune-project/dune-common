@@ -20,16 +20,16 @@ AC_DEFUN([DUNE_PATH_UG],[
       
       # is --with-ug=bla used?
       if test "x$with_ug" != x ; then
-		  if ! test -d $with_ug; then
-			  AC_MSG_WARN([UG directory $with_ug does not exist!])
-		  else
+          if ! test -d $with_ug; then
+              AC_MSG_WARN([UG directory $with_ug does not exist!])
+          else
               # expand tilde / other stuff
-			  UGROOT=`cd $with_ug && pwd`
-		  fi
-	  fi
+              UGROOT=`cd $with_ug && pwd`
+          fi
+      fi
       if test "x$UGROOT" = x; then
           # use some default value...
-		  UGROOT="/usr/local/ug"
+          UGROOT="/usr/local/ug"
       fi
       
       # intermediate variables
@@ -45,7 +45,6 @@ AC_DEFUN([DUNE_PATH_UG],[
       AC_ARG_ENABLE(ug-lgmdomain,
         AC_HELP_STRING([--enable-ug-lgmdomain],[use UG LGM domain (default is standard domain)]))
       if test x"$enable_ug_lgmdomain" = xyes ; then
-        AC_DEFINE(UG_LGMDOMAIN, 1, [use UG LGM domain])
         UG_LIBS="-lugL2 -lugL3 -ldevS"
       else
         UG_LIBS="-lugS2 -lugS3 -ldevS"
@@ -57,10 +56,10 @@ AC_DEFUN([DUNE_PATH_UG],[
 
       # check for central header
       AC_CHECK_HEADER([$UG_INCLUDE_PATH/gm.h],
-	  [UG_CPPFLAGS="-I$UG_INCLUDE_PATH"
-	      HAVE_UG="1"],
-	  [HAVE_UG="0"
-	  AC_MSG_WARN([gm.h not found in $UG_INCLUDE_PATH])]
+      [UG_CPPFLAGS="-I$UG_INCLUDE_PATH"
+          HAVE_UG="1"],
+      [HAVE_UG="0"
+      AC_MSG_WARN([gm.h not found in $UG_INCLUDE_PATH])]
       )
 
       # pre-set variable for summary
@@ -79,44 +78,44 @@ AC_DEFUN([DUNE_PATH_UG],[
       CXX="$LTCXXLINK"
 
       if test x$HAVE_UG = x1 ; then
-	  
-	    # try again with added MPI-libs
-	    AC_MSG_CHECKING([UG libraries (parallel)])
-	    LIBS="$UG_LIBS $MPI_LDFLAGS"
+      
+        # try again with added MPI-libs
+        AC_MSG_CHECKING([UG libraries (parallel)])
+        LIBS="$UG_LIBS $MPI_LDFLAGS"
         CPPFLAGS="$UG_CPPFLAGS -DModelP -D_2"
             AC_TRY_LINK(
               [#include "initug.h"
                #include "parallel.h"],
-	      [int i = UG::D2::InitDDD()],
+          [int i = UG::D2::InitDDD()],
               [UG_LDFLAGS="$LDFLAGS"
-	       UG_CPPFLAGS="$UG_CPPFLAGS -DModelP"
-	       HAVE_UG="1"
-		   UG_LIBS="$UG_LIBS $MPI_LDFLAGS"
+           UG_CPPFLAGS="$UG_CPPFLAGS -DModelP"
+           HAVE_UG="1"
+           UG_LIBS="$UG_LIBS $MPI_LDFLAGS"
            with_ug="yes (parallel)"
-	       AC_MSG_RESULT(yes)
+           AC_MSG_RESULT(yes)
               ],
               [AC_MSG_RESULT(no)
-	       HAVE_UG="0"]
-	      )
+           HAVE_UG="0"]
+          )
 
-	  # parallel lib not found/does not work?
-	  if test x$HAVE_UG != x1 && test x"$MPI_LDFLAGS" != x"" ; then
-	    AC_MSG_CHECKING([UG libraries (sequential)])
-	    LIBS="$UG_LIBS"
+      # parallel lib not found/does not work?
+      if test x$HAVE_UG != x1 && test x"$MPI_LDFLAGS" != x"" ; then
+        AC_MSG_CHECKING([UG libraries (sequential)])
+        LIBS="$UG_LIBS"
         CPPFLAGS="$UG_CPPFLAGS -D_2"
           AC_TRY_LINK(
               [#define _2
                #include "initug.h"],
-	      [int i = UG::D2::InitUg(0,0)],
+          [int i = UG::D2::InitUg(0,0)],
               [UG_LDFLAGS="$LDFLAGS"
-	       HAVE_UG="1"
+           HAVE_UG="1"
                with_ug="yes (sequential)"
-	       AC_MSG_RESULT(yes)
+           AC_MSG_RESULT(yes)
               ],
               [AC_MSG_RESULT(no)
-	       HAVE_UG="0"]
-	      )
-	  fi
+           HAVE_UG="0"]
+          )
+      fi
 
           # Okay.  We have found a UG installation.  But has it been built with --enable-dune?
           # We check this by trying to link to the field int UG::duneMarker, which is there
@@ -141,35 +140,38 @@ AC_DEFUN([DUNE_PATH_UG],[
 
       fi
 
-	  CXX="$ac_save_CXX"
+      CXX="$ac_save_CXX"
       AC_LANG_POP([C++])
       
       # did it work?
       if test x$HAVE_UG = x0 ; then
-	  # reset flags, so they do not appear in makefiles
-	  UG_LDFLAGS=""
-	  UG_LIBS=""
-	  UG_CPPFLAGS=""
+      # reset flags, so they do not appear in makefiles
+      UG_LDFLAGS=""
+      UG_LIBS=""
+      UG_CPPFLAGS=""
       fi
       if test x$HAVE_UG = x1 ; then
-	  AC_SUBST(UG_LDFLAGS, $UG_LDFLAGS)
-	  AC_SUBST(UG_LIBS, $UG_LIBS)
-	  AC_SUBST(UG_CPPFLAGS, $UG_CPPFLAGS)
-	  AC_DEFINE(HAVE_UG, 1, [Define to 1 if UG is found])
-	  
+      AC_SUBST(UG_LDFLAGS, $UG_LDFLAGS)
+      AC_SUBST(UG_LIBS, $UG_LIBS)
+      AC_SUBST(UG_CPPFLAGS, $UG_CPPFLAGS)
+      AC_DEFINE(HAVE_UG, 1, [Define to 1 if UG is found])
+      if test x"$enable_ug_lgmdomain" = xyes ; then
+        AC_DEFINE(UG_LGMDOMAIN, 1, [use UG LGM domain])
+      fi
+      
     # add to global list
-	  DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $UG_LDFLAGS"
-	  DUNE_PKG_LIBS="$DUNE_PKG_LIBS $UG_LIBS"
-	  DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $UG_CPPFLAGS"
-	  
+      DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $UG_LDFLAGS"
+      DUNE_PKG_LIBS="$DUNE_PKG_LIBS $UG_LIBS"
+      DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $UG_CPPFLAGS"
+      
       fi 
       
   # end of "no --without-ug"
   fi
   
-  # tell automake	
+  # tell automake   
   AM_CONDITIONAL(UG, test x$HAVE_UG = x1)
-  AM_CONDITIONAL(UG_LGMDOMAIN, test x$UG_LGMDOMAIN = x1)
+  AM_CONDITIONAL(UG_LGMDOMAIN, test x$HAVE_UG = x1 && test x$UG_LGMDOMAIN = x1)
   
   # restore variables
   LDFLAGS="$ac_save_LDFLAGS"
