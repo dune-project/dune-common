@@ -1081,7 +1081,7 @@ namespace Dune {
     typename FieldType<A>::type
     operator * (const Vector<A> & a, const Expression<B> & b)
     {
-      IsTrue< SameType<FieldType<A>,FieldType<B> >::value == true >::yes();
+      IsTrue< is_same<FieldType<A>,FieldType<B> >::value == true >::yes();
       assert(a.N() == b.N());
       typename FieldType<A>::type x = 0;
       for (size_t i=0; i<a.N(); i++)
@@ -1094,7 +1094,7 @@ namespace Dune {
     typename FieldType<A>::type
     operator * (const Expression<A> & a, const Vector<B> & b)
     {
-      IsTrue< SameType<FieldType<A>,FieldType<B> >::value == true >::yes();
+      IsTrue< is_same<FieldType<A>,FieldType<B> >::value == true >::yes();
       assert(a.N() == b.N());
       typename FieldType<A>::type x = 0;
       for (size_t i=0; i<a.N(); i++)
