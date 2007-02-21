@@ -99,7 +99,6 @@ AC_SUBST(DUNEWEBDIR, $with_duneweb)
   AC_REQUIRE([DUNE_GRID_DIMENSION])
   AC_REQUIRE([DUNE_PATH_GRAPE])
   AC_REQUIRE([DUNE_PATH_ALBERTA])
-  AC_REQUIRE([DUNE_PATH_BLAS])
   AC_REQUIRE([DUNE_PATH_UG])
   AC_REQUIRE([DUNE_PATH_AMIRAMESH])
   AC_REQUIRE([DUNE_PATH_PSURFACE])
@@ -150,7 +149,7 @@ AC_DEFUN([DUNE_SUMMARY_ALL],[
   echo "ALBERTA..........: $with_alberta"
   echo "ALUGrid..........: $with_alugrid"
   echo "AmiraMesh........: $with_amiramesh"
-  echo "BLAS-lib.........: $with_blas"
+  echo "BLAS.............: $acx_blas_ok"
   echo "Grape............: $with_grape"
   echo "HDF5.............: $with_hdf5"
 #  echo "FiberHDF5........: $with_f5"
