@@ -141,6 +141,10 @@ namespace Dune
     };
   };
 
+#ifdef HAVE_TR1_TYPE_TRAITS
+  using std::tr1::remove_const;
+#else
+
   template<typename T, bool isVolatile>
   struct RemoveConstHelper
   {
@@ -153,19 +157,6 @@ namespace Dune
     typedef volatile typename ConstantVolatileTraits<T>::UnqualifiedType Type;
   };
 
-
-  /**
-   * @brief Removes a const qualifier while preserving others.
-   */
-  template<typename T>
-  struct RemoveConst
-  {
-    typedef typename RemoveConstHelper<T, IsVolatile<T>::value>::Type Type;
-  };
-
-#ifdef HAVE_TR1_TYPE_TRAITS
-  using std::tr1::remove_const;
-#else
   /**
    * @brief Removes a const qualifier while preserving others.
    */
@@ -296,27 +287,6 @@ namespace Dune
     enum { value=true};
   };
 #endif
-
-  /**
-   * @brief Compile time test for testing whether
-   * two types are the same.
-   * \deprecated Use is_same instead
-   */
-  template<typename T1, typename T2>
-  struct SameType
-  {
-    enum {
-      /* @brief Whether T1 is the same type as T2. */
-      value=false
-    };
-  };
-
-
-  template<typename T>
-  struct SameType<T,T>
-  {
-    enum { value=true};
-  };
 
   /**
    * @brief Select a type based on a condition.
