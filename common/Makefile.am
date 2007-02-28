@@ -23,11 +23,6 @@ commoninclude_HEADERS = dlist.cc stdstreams.cc alignment.hh \
   mpicollectivecommunication.hh geometrytype.hh tripel.hh utility.hh \
   bartonnackmanifcheck.hh binaryfunctions.hh
 
-if EXPRESSIONTEMPLATES
-commoninclude_HEADERS += exprtmpl.hh exprtmpl/scalar.inc exprtmpl/exprexpr.inc
-libcommon_la_SOURCES += exprtmpl.cc
-else
 sourcescheck_NOSOURCES = exprtmpl.hh exprtmpl.cc
-endif
 
 include $(top_srcdir)/am/global-rules
