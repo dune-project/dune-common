@@ -73,6 +73,7 @@ AC_DEFUN([DUNE_MPI],[
     [with_parallel=$enableval],
     [with_parallel=yes]
   )
+  AC_SUBST(ENABLE_PARALLEL, "$with_parallel")
 
   # disable runtest if we have a queuing system
   AC_ARG_ENABLE(mpiruntest,
