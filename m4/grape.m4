@@ -65,7 +65,7 @@ if test "x$X_LIBS" != x && test x$with_grape != xno ; then
     LDFLAGS="$LDFLAGS $GL_LDFLAGS"
 
     AC_CHECK_LIB(gr, grape, 
-      [GRAPE_LDFLAGS="-L$GRAPEROOT $GL_LDFLAGS"
+      [GRAPE_LDFLAGS="-L$GRAPEROOT $GL_LDFLAGS -Wl,--rpath -Wl,$GRAPEROOT"
        GRAPE_CPPFLAGS="$CPPFLAGS"
        GRAPE_LIBS="-lgr $GL_LIBS -lXext"], 
       [HAVE_GRAPE="0"])
