@@ -155,6 +155,7 @@ _sort_module() {
         if ! pkg-config $name; then
           echo "ERROR: could not find module $(eval echo \$NAME_$dep)" > /dev/stderr
           echo "       module is also unknown to pkg-config" > /dev/stderr
+	  echo "       Maybe you need to adjust PKG_CONFIG_PATH!" > /dev/stderr
           exit 1
         fi
       fi
