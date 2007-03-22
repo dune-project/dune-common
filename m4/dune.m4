@@ -33,7 +33,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   AC_REQUIRE([AC_PROG_CXX])
   AC_REQUIRE([AC_PROG_CXXCPP])
   AC_REQUIRE([AC_PROG_LIBTOOL])
-#  AC_REQUIRE([PKG_PROG_PKG_CONFIG])
+  AC_REQUIRE([PKG_PROG_PKG_CONFIG])
   AC_REQUIRE([DUNE_DISABLE_LIBCHECK])
 
   # ____DUNE_CHECK_MODULES_____ ($1)
@@ -81,7 +81,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       _DUNE_MODULE[]_CPPFLAGS="`$PKG_CONFIG --cflags _dune_name`" 2>/dev/null
       _DUNE_MODULE[]_ROOT="`$PKG_CONFIG --variable=prefix _dune_name`" 2>/dev/null 
       ifelse(_dune_symbol,,,[
-        _DUNE_MODULE[]_LDFLAGS="`$PKG_CONFIG --variable=libdir _dune_name`" 2>/dev/null 
+        _DUNE_MODULE[]_LDFLAGS="-L`$PKG_CONFIG --variable=libdir _dune_name`" 2>/dev/null 
         _DUNE_MODULE[]_LIBS="-l[]_dune_lib"
       ])
       dune_is_installed=1
