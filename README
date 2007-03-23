@@ -51,23 +51,28 @@ A more comprehensive introduction to the build system can be found in [2].
 License
 -------
 
-The Dune-library and headers are licensed under version 2 of the GNU
-General Public License, with the so-called "runtime exception," as
-follows:
+The DUNE library and headers are licensed under version 2 of the GNU
+General Public License, with a special exception for linking and
+compiling against DUNE, the so-called "runtime exception."  The
+license is intended to be similiar to the GNU Lesser General Public
+License, which by itself isn't suitable for a template library.
 
-   As a special exception, you may use the DUNE source files as part of a
-   free software library without restriction.  Specifically, if other
-   files instantiate templates or use macros or inline functions
-   from one or more of the DUNE source file, or you compile one or
-   more of the DUNE source files and link them with other files to
-   produce an executable, this the DUNE source files used do  not by
-   themselves cause the resulting executable to be covered by the GNU
-   General Public License.  This exception does not however invalidate
-   any other reasons why the executable file might be covered by
-   the GNU General Public License.
+The exact wording of the exception reads as follows:
+
+   As a special exception, you may use the DUNE source files as part
+   of a software library or application without restriction.
+   Specifically, if other files instantiate templates or use macros or
+   inline functions from one or more of the DUNE source files, or you
+   compile one or more of the DUNE source files and link them with
+   other files to produce an executable, this does not by itself cause
+   the resulting executable to be covered by the GNU General Public
+   License.  This exception does not however invalidate any other
+   reasons why the executable file might be covered by the GNU General
+   Public License.
 
 This licence clones the one of the libstc++ library. For further
-implications of this library please see their licence page [3]
+implications please see the licence page of libstdc++ [3].  For the
+complete text of the GNU GPL see the COPYING file in this directory.
 
 Links
 -----
