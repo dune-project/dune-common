@@ -100,9 +100,9 @@ FORCE:
 include $(top_srcdir)/am/webstuff
 
 clean-local:
-	if test -e Doxydep; then rm -rf html html-dist; fi
+	if test -e Doxydep; then rm -rf $(WHAT) html html-dist; fi
 	rm -rf latex *~
 
-CLEANFILES = $(WHAT) $(DOXYGENTAG) $(DOXYGENHEADER)
+CLEANFILES = $(DOXYGENTAG) $(DOXYGENHEADER)
 
 include $(top_srcdir)/am/global-rules
