@@ -150,7 +150,7 @@ run_default_autogen () {
         M4_PATH="$path $M4_PATH"
       fi
     done
-    eval ./autogen.sh "$M4_PATH" "$PARAMS" || exit 1
+    eval ./autogen.sh "$GLOBAL_M4_PATH" "$M4_PATH" "$PARAMS" || exit 1
   fi
 }
 

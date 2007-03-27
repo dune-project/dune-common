@@ -158,6 +158,7 @@ _sort_module() {
 	  echo "       Maybe you need to adjust PKG_CONFIG_PATH!" > /dev/stderr
           exit 1
         fi
+	export GLOBAL_M4_PATH="$GLOBAL_M4_PATH $(eval pkg-config --variable=prefix $name)"
       fi
     done
     # resolve suggestions
