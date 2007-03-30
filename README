@@ -1,78 +1,66 @@
 DUNE-library
 ============
 
+DUNE, the Distributed and Unified Numerics Environment is a modular toolbox
+for solving partial differential equations with grid-based methods.
+.
+The main intention is to create slim interfaces allowing an efficient use of
+legacy and/or new libraries. Using C+techniques DUNE allows to use very
+different implementation of the same concept (i.e. grid, solver, ...) under
+a common interface with a very low overhead.
+
+DUNE was desined with flexibility in mind. It supports easy discretization
+using methods, like Finite Elements, Finite Volume and also Finite
+Differences. Through speration of data structures DUNE allows fast Linear
+Algebra like provided in the ISTL module, or usage of external libraries
+like blas.
+
+This package contains the basic DUNE common classes.
+
+Dependencies
+------------
+
+dune-common depends on the following software packages
+
+- pkg-config
+- icc (C/C++) >= 7.0 or GNU C, C++ >=3.4
+
+The following software is recommend but optional:
+
+- MPI (either OpenMPI, lam, or mpich suffice)
 
 For a full explanation of the DUNE installation process please read
 the installation notes [0]. The following introduction is meant for
 the impatient.
 
-Getting started
----------------
-
-Suppose you have downloaded all DUNE modules of interest to you and
-extracted then in one common directory. See [1] for a list of
-available modules.
-
-To compile the modules Dune has to check several components of
-your system and whether prerequisites within the modules are met. For
-the ease of users we have designed a custom build system on top of the
-automake tools. Run
-
-  ./dune-common/bin/dunecontrol all
-
-to commence those tests and build all modules you have
-downloaded. Don't worry about messages telling you that libraries are
-missing: they are only needed for grid-self-checks we need for
-developing.
-
-You can customize the build to your specific needs by using an options file
-
-  ./dune-common/bin/dunecontrol --opts=/path_to/file.opts
-
-An example of an options file is
-
-  # use a special compiler (g++ version 3.4) and install to a custom
-  # directory, default is /usr/local/bin
-  CONFIGURE_FLAGS="CXX=g++-3.4 --prefix='/tmp/Hu Hu'"
-  # Set the default target of make to install. Now the call above will
-  # not just build the DUNE modules but also install it
-   MAKE_FLAGS=install
-
-If you did not tell dunecontrol to install with an options file you
-need to run
-
-  ./dune-common/bin/dunecontrol make install
-
-to install Dune (you may need root-permissions for the install
-part depending on the prefix set)
-
-A more comprehensive introduction to the build system can be found in [2].
-
 License
 -------
 
-The DUNE library and headers are licensed under version 2 of the GNU
-General Public License, with a special exception for linking and
-compiling against DUNE, the so-called "runtime exception."  The
-license is intended to be similiar to the GNU Lesser General Public
-License, which by itself isn't suitable for a template library.
+The Dune-library and headers are licensed under version 2 of the GNU
+General Public License, with the so-called "runtime exception," as
+follows:
 
-The exact wording of the exception reads as follows:
-
-   As a special exception, you may use the DUNE source files as part
-   of a software library or application without restriction.
-   Specifically, if other files instantiate templates or use macros or
-   inline functions from one or more of the DUNE source files, or you
-   compile one or more of the DUNE source files and link them with
-   other files to produce an executable, this does not by itself cause
-   the resulting executable to be covered by the GNU General Public
-   License.  This exception does not however invalidate any other
-   reasons why the executable file might be covered by the GNU General
-   Public License.
+   As a special exception, you may use the DUNE source files as part of a
+   free software library without restriction.  Specifically, if other
+   files instantiate templates or use macros or inline functions
+   from one or more of the DUNE source file, or you compile one or
+   more of the DUNE source files and link them with other files to
+   produce an executable, this the DUNE source files used do  not by
+   themselves cause the resulting executable to be covered by the GNU
+   General Public License.  This exception does not however invalidate
+   any other reasons why the executable file might be covered by
+   the GNU General Public License.
 
 This licence clones the one of the libstc++ library. For further
-implications please see the licence page of libstdc++ [3].  For the
-complete text of the GNU GPL see the COPYING file in this directory.
+implications of this library please see their licence page [3]
+
+See the file COPYING for full copying permissions.
+
+Installation
+------------
+
+Short installation instructions can be found in file INSTALL. For the
+full instructions please see [0].
 
 Links
 -----
