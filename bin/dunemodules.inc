@@ -63,7 +63,15 @@ parse_control() {
   export PATH_${module}="$path"
   export NAME_${module}="$name"
   export DEPS_${module}="$deps"
+  for name in $deps; do
+    mod=$(fix_variable_name $name)
+    export NAME_${mod}="$name"
+  done
   export SUGS_${module}="$sugs"
+  for name in $sugs; do
+    mod=$(fix_variable_name $name)
+    export NAME_${mod}="$name"
+  done
 }
 
 #
@@ -155,7 +163,8 @@ _sort_module() {
         if ! pkg-config $name; then
           echo "ERROR: could not find module $(eval echo \$NAME_$dep)" > /dev/stderr
           echo "       module is also unknown to pkg-config" > /dev/stderr
-	  echo "       Maybe you need to adjust PKG_CONFIG_PATH!" > /dev/stderr
+          echo "       Maybe you need to adjust PKG_CONFIG_PATH!" > /dev/stderr
+          echo "       $(eval echo \$NAME_$dep) is required by $(eval echo \$NAME_$module)" > /dev/stderr
           exit 1
         fi
       fi
