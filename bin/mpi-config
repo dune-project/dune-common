@@ -18,6 +18,23 @@ canonicalpath(){
   (cd $(dirname $(canonicalname $1)) && pwd)
 }
 
+findm4dir() {
+  BINDIR="$(canonicalpath $0)"
+  M4DIR="$BINDIR/../m4"
+  if test -f "$M4DIR/mpi-config.m4"; then
+    echo "$M4DIR"
+    return
+  fi
+  M4DIR="$BINDIR/../share/aclocal"
+  if test -f "$M4DIR/mpi-config.m4"; then
+    echo "$M4DIR"
+    return
+  fi
+  echo "ERROR: could not find mpi-config.m4! Incomplete installation?" \
+    > /dev/stderr
+  exit 1
+}
+
 version=0.1
 verbose=0
 
@@ -88,8 +105,11 @@ fi
 # load mpi-config.m4
 #
 
+# find m4 file
+M4DIR=`findm4dir`
+
 eval "$(
-m4 -I$(canonicalpath $0)/../m4/ <<EOF
+m4 -I$M4DIR <<EOF
 changequote([, ])
 define([AC_DEFUN],[define([\$1],[\$2])])
 define([AC_MSG_CHECKING],[
