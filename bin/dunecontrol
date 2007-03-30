@@ -214,7 +214,7 @@ run_default_svn () {
 ###
 
 onfailure() {
-  echo Execution terminated due to errors! > /dev/stderr
+  echo "Execution of $(basename $0) terminated due to errors!" > /dev/stderr
   exit 1
 }
 
