@@ -20,12 +20,20 @@ canonicalpath(){
 
 findm4dir() {
   BINDIR="$(canonicalpath $0)"
+  # source-build
   M4DIR="$BINDIR/../m4"
   if test -f "$M4DIR/mpi-config.m4"; then
     echo "$M4DIR"
     return
   fi
+  # installed
   M4DIR="$BINDIR/../share/aclocal"
+  if test -f "$M4DIR/mpi-config.m4"; then
+    echo "$M4DIR"
+    return
+  fi
+  # downloaded
+  M4DIR="$BINDIR"
   if test -f "$M4DIR/mpi-config.m4"; then
     echo "$M4DIR"
     return
