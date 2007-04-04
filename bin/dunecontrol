@@ -89,6 +89,8 @@ load_opts() {
   if test "x$DUNE_OPTS_FILE" != "x"; then
     echo "----- loading default flags \$${COMMAND}_FLAGS from $DUNE_OPTS_FILE -----"
     CMD_PARAMS="$(. $DUNE_OPTS_FILE; eval echo \$${COMMAND}_FLAGS)"
+  else
+    CMD_PARAMS="$(eval echo \$${COMMAND}_FLAGS)"
   fi
 }
 
@@ -96,6 +98,19 @@ load_opts() {
 ###
 ### Commands
 ###
+
+# check wheteher the parameter is valid command or not
+is_command() {
+eval '
+case "$1" in
+  '$(echo $COMMANDS | sed -e 's/ / | /g')')
+    return 0
+    ;;
+  *)
+    return 1
+    ;;
+esac'
+}
 
 # list of all dunecontrol commands
 COMMANDS="update autogen configure make all exec svn"
@@ -236,6 +251,8 @@ usage () {
     echo "                     and not the modules it depends on"
     echo "      --opts=FILE    load default options from FILE"
     echo "                     (see dune-common/doc/example.opts)"
+    echo "      --[COMMAND]-opts=opts   set options for COMMAND"
+    echo "                     (this is mainly usefull for the all COMMAND)"
     echo "Commands:"
     printf "  \`help'\tguess what :-)\n"
     printf "  \`print'\tprint the list of modules sorted after their dependencies\n"
@@ -255,6 +272,13 @@ fi
 
 trap onfailure EXIT
 
+# clear command opts
+for i in $COMMANDS; do
+  COMMAND=$(echo $i | tr '[:lower:]' '[:upper:]')
+  export ${COMMAND}_FLAGS=""
+done
+
+# parse commandline parameters
 while test $# -gt 0; do
     # get option
     option=$1
@@ -265,7 +289,6 @@ while test $# -gt 0; do
     # stolen from configure...
     # when no option is set, this returns an error code
     arg=`expr "x$option" : 'x[^=]*=\(.*\)'`
-    arg=$(eval "echo $arg")
     set -e
 
     # switch
@@ -283,6 +306,17 @@ while test $# -gt 0; do
         echo "ERROR: could not read opts file \"$DUNE_OPTS_FILE\""  > /dev/stderr
         echo  > /dev/stderr
         exit 1;
+      fi
+    ;;
+	--*-opts=*)
+      optcmd=`expr "x$option=" : 'x--\([^-]*\)-opts=.*'`
+      if is_command $optcmd; then
+        COMMAND=$(echo $optcmd | tr '[:lower:]' '[:upper:]')
+        export ${COMMAND}_FLAGS="$arg"
+      else
+        usage
+        echo "ERROR: unknown option \"$option\""  > /dev/stderr
+        exit 1
       fi
     ;;
     -h|--help) 
@@ -334,26 +368,7 @@ while test $# -gt 0; do
 done
 
 # We need to run this via eval in order construct the case for the commands
-eval '
 case "$command" in
-  '$(echo $COMMANDS | sed -e 's/ / | /g')')
-    find_modules_in_path
-    if test "x$MODULE" = "x"; then
-      sort_modules $MODULES
-    else
-      sort_modules $MODULE
-    fi
-    if test x$ONLY != x; then
-      NAMES="$(eval echo \$NAME_$ONLY)"
-    else
-      for mod in $MODULES; do
-        NAMES="$NAMES$(eval echo \$NAME_$mod) "
-      done
-    fi
-    echo "--- going to build $NAMES ---"
-      build_modules $command
-    echo "--- done ---"
-    ;;
   print)
     find_modules_in_path
     if test "x$MODULE" = "x"; then
@@ -389,10 +404,29 @@ case "$command" in
     usage
     ;;
   *)
-    echo "ERROR: unknown command \"$command\""  > /dev/stderr
-    usage
-    exit 1
+    if is_command $command; then
+      find_modules_in_path
+      if test "x$MODULE" = "x"; then
+        sort_modules $MODULES
+      else
+        sort_modules $MODULE
+      fi
+      if test x$ONLY != x; then
+        NAMES="$(eval echo \$NAME_$ONLY)"
+      else
+        for mod in $MODULES; do
+          NAMES="$NAMES$(eval echo \$NAME_$mod) "
+        done
+      fi
+      echo "--- going to build $NAMES ---"
+        build_modules $command
+      echo "--- done ---"
+	else
+      usage
+      echo "ERROR: unknown command \"$command\""  > /dev/stderr
+      exit 1
+    fi
     ;;
-esac'
+esac
 
 trap - EXIT
