@@ -78,6 +78,10 @@ AC_DEFUN([DUNE_PATH_UG],[
       CXX="$LTCXXLINK"
 
       if test x$HAVE_UG = x1; then
+
+          # We have found the headers for sure.  Now we reuse the flag to signal
+          # whether we found the libs as well.
+          HAVE_UG="0"
       
         # If MPI is installed look for the parallel UG
         if test x"$MPI_LDFLAGS" != x""; then
