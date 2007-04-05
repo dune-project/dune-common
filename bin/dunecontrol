@@ -357,8 +357,10 @@ while test $# -gt 0; do
 done
 
 while test $# -gt 0; do
+  COMMAND=$(echo $command | tr '[:lower:]' '[:upper:]')
   # setup paramter list
   CMD_PARAMS="$CMD_PARAMS \"$1\""
+  export ${COMMAND}_FLAGS="$CMD_PARAMS"
   shift
   # disable usage of opts file
   if test "x$DUNE_OPTS_FILE" != "x"; then
