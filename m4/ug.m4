@@ -77,12 +77,13 @@ AC_DEFUN([DUNE_PATH_UG],[
       LTCXXLINK="$srcdir/libtool --tag=CXX --mode=link $CXX $CXXFLAGS $LDFLAGS"
       CXX="$LTCXXLINK"
 
-      if test x$HAVE_UG = x1 && test x"$MPI_LDFLAGS" != x""; then
+      if test x$HAVE_UG = x1; then
       
-        # try again with added MPI-libs
-        AC_MSG_CHECKING([UG libraries (parallel)])
-        LIBS="$UG_LIBS $MPI_LDFLAGS"
-        CPPFLAGS="$UG_CPPFLAGS -DModelP -D_2"
+        # If MPI is installed look for the parallel UG
+        if test x"$MPI_LDFLAGS" != x""; then
+            AC_MSG_CHECKING([UG libraries (parallel)])
+            LIBS="$UG_LIBS $MPI_LDFLAGS"
+            CPPFLAGS="$UG_CPPFLAGS -DModelP -D_2"
             AC_TRY_LINK(
               [#include "initug.h"
                #include "parallel.h"],
@@ -97,8 +98,9 @@ AC_DEFUN([DUNE_PATH_UG],[
               [AC_MSG_RESULT(no)
            HAVE_UG="0"]
           )
+        fi
 
-      # parallel lib not found/does not work?
+      # parallel lib not found/does not work?  Let's check for the sequential one
       if test x$HAVE_UG != x1; then
         AC_MSG_CHECKING([UG libraries (sequential)])
         LIBS="$UG_LIBS"
