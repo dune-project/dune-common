@@ -9,17 +9,19 @@ namespace Dune {
    *
    * @{
    */
+  /** \deprecated This class will be removed after version 1.0 */
   template<bool T1, bool T2>
   struct And
   {
     const static bool value=T1 && T2;
-  };
+  } DUNE_DEPRECATED;
 
+  /** \deprecated This class will be removed after version 1.0 */
   template<bool T1, bool T2>
   struct Or
   {
     const static bool value=T1 || T2;
-  };
+  } DUNE_DEPRECATED;
 
   /** @} */
 }
