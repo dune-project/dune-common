@@ -3,8 +3,6 @@
 #ifndef DUNE_TYPETRAITS_HH
 #define DUNE_TYPETRAITS_HH
 
-#include <dune/common/logictraits.hh>
-
 namespace Dune
 {
 
@@ -228,8 +226,7 @@ namespace Dune
        * @brief True if either a conversion from T1 to T2 or vice versa
        * exists.
        */
-      value=Or<Conversion<T1,T2>::exists,
-          Conversion<T2,T1>::exists>::value
+      value = Conversion<T1,T2>::exists || Conversion<T2,T1>::exists
     };
   };
 
