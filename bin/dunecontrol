@@ -187,6 +187,9 @@ run_default_configure () {
     if test "x$HAVE_dune_fem" = "xyes"; then
       PARAMS="$PARAMS \"--with-dune-fem=$PATH_dune_fem\""
     fi
+    if test "x$HAVE_dune_subgrid" = "xyes"; then
+      PARAMS="$PARAMS \"--with-dune-subgrid=$PATH_dune_subgrid\""
+    fi
     if test "x$HAVE_duneweb" = "xyes"; then
       PARAMS="$PARAMS \"--with-duneweb=$PATH_duneweb\""
     fi
