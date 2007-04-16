@@ -20,8 +20,8 @@ EXTRAINSTALL=example.opts
 
 # install the html pages
 docdir=$(datadir)/doc/dune-common
-doc_DATA = $(PAGES)
-EXTRA_DIST = $(PAGES)
+doc_DATA = $(PAGES) example.opts
+EXTRA_DIST = $(PAGES) example.opts
 
 # include rules for wml -> html transformation
 include $(top_srcdir)/am/webstuff
