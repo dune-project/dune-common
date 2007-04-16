@@ -235,6 +235,8 @@ AC_DEFUN([DUNE_CHECK_DISPATCH],[
            DUNE_CHECK_MODULES([dune-istl], [istl/allocator.hh])],
          [$1], [dune-disc],[
            DUNE_CHECK_MODULES([dune-disc], [disc/shapefunctions/lagrangeshapefunctions.hh], [Dune::LagrangeShapeFunctions<double[,]double[,]3>::general])],
+         [$1], [dune-subgrid],[
+           DUNE_CHECK_MODULES([dune-subgrid], [subgrid/subgrid.hh])],
          [AC_MSG_ERROR([Unknown module $1])])
 ])
 
