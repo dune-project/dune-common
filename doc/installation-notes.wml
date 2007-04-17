@@ -54,9 +54,9 @@ your system and whether prerequisites within the modules are met. For
 the ease of users we have designed a custom build system on top of the
 automake tools. Run
 </p>
-<kbd>
+<pre>
   ./dune-common/bin/dunecontrol all
-</kbd>
+</pre>
 <p>
 to commence those tests and build all modules you have
 downloaded. Don't worry about messages telling you that libraries are
@@ -67,16 +67,16 @@ developing.
 You can customize the build to your specific needs by using an options file
 (see below)
 </p>
-<kbd>
+<pre>
   ./dune-common/bin/dunecontrol --opts=/path_to/file.opts
-</kbd>
+</pre>
 <p>
 If you did not tell dunecontrol to install with an options file you
 need to run
 </p>
-<kbd>
+<pre>
   ./dune-common/bin/dunecontrol make install
-</kbd>
+</pre>
 <p>
 to install DUNE (you may need root-permissions for the install
 part depending on the prefix set)
@@ -86,7 +86,29 @@ A more comprehensive introduction to the build system can be found in
 the <a href="buildsystem/buildsystem.pdf">Dune Build System Howto</a>.
 </p>
 
-<h2>Passing options to the build process</h2>
+<h3>Building a specific DUNE module (and its dependent modules)</h3>
+
+<p>You can instruct dunecontrol to build only a certain dune module,
+using the <kbd>--only=module_name&gt;</kbd> swtich.
+Runnning dunecontrol script
+<p>
+<pre>
+./dune-common/bin/dunecontrol --module=&lt;module_name&gt; all
+</pre>
+</p>
+where &lt;module_name&gt; is the name of that particular module given in the
+dune.module file, will build only the module &lt;module_name&gt;.
+</p>
+
+<p>If you want to build a module and the modules it depends on, you
+must run:</p>
+<pre>
+./dune-common/bin/dunecontrol --module=module_name all
+</pre>
+<p> Read <a href="http://dune-project.org/dunemodule.html">Maintaining new Dune modules and applications</a> section for more details.
+</p>
+
+<h3>Passing options to the build process</h3>
 
 <p>
 Using the dunecontrol script the following atomic commands can be
@@ -117,42 +139,42 @@ each module.
 <p>
 As it is often not convenient (and for the target all impossible) to
 specify the options for each command as parameters after the call, one
-can pass the options via file specified by the <tt>--opts=&lt;file&gt;</tt>
+can pass the options via file specified by the <kbd>--opts=&lt;file&gt;</kbd>
 option. For each atomic command one specify the options via a ine
 </p>
-<kbd>
+<pre>
 &lt;COMMANY_UPPERCASE&gt;_FLAGS=&lt;flags&gt; # e.g.: MAKE_FLAGS=install
-</kbd>
+</pre>
 <p>
 The available options for make and svn are the natural ones. The
 configure commands available can be found by issuing
 </p>
-<kbd>
+<pre>
 dunecontrol --only=dune-common configure --help
-</kbd>
+</pre>
 <p>
 and for autogen by
 </p>
-<kbd>
+<pre>
 dunecontrol --only=dune-common autogen --help
-</kbd>
+</pre>
 <p>
 (In the svn version this has to be calles after running autogen.)
 </p>
 <p>
 An example of an options file is 
 </p>
-<kbd>
-  # use a special compiler (g++ version 3.4) and install to a custom
-  # directory, default is /usr/local/bin
-  CONFIGURE_FLAGS="CXX=g++-3.4 --prefix='/tmp/Hu Hu'"
-  # Set the default target of make to install. Now the call above will
-  # not just build the DUNE modules but also install it
+<pre>
+  \# use a special compiler (g++ version 3.4) and install to a custom
+  \# directory, default is /usr/local/bin
+  CONFIGURE_FLAGS="CXX=g++-3.4 --prefix='/tmp/HuHu'"
+  \# Set the default target of make to install. Now the call above will
+  \# not just build the DUNE modules but also install it
   MAKE_FLAGS=install
-  # The default versions of automake and autogen are not sufficient
-  # therefore we need to specify what versions to use
+  \# The default versions of automake and autogen are not sufficient
+  \# therefore we need to specify what versions to use
   AUTOGEN_FLAGS="--ac=2.59 --am=1.9"
-</kbd>
+</pre>
 
 <h2>Creating your own DUNE project module</h2>
 <p>
@@ -160,4 +182,9 @@ You can create your own dune project module by using the duneproject script avai
 Running the script will create a directory with supporting files
 (configure.ac, Makefile.am etc.) and a sample .cc file.
 After creating the module you can build this as explained above under "Building a specific DUNE module".
+</p>
+<p>The <a
+href="http://dune-project.org/doc/buildsystem/buildsystem.pdf">DUNE
+Build System Howto</a> will also give you an excellent introduction to
+the build system and how to create new modules/projects your own.
 </p>
