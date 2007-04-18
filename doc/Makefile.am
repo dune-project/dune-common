@@ -5,7 +5,7 @@ SUBDIRS = devel doxygen layout buildsystem
 
 # only build html pages, if documentation is enabled
 if BUILD_DOCS
- PAGES = view-concept.html installation-notes.html
+ PAGES = view-concept.html installation-notes.html contrib-software.html
 endif
 
 # automatically create these web pages
