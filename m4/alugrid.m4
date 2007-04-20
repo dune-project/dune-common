@@ -23,10 +23,28 @@ if test x$with_alugrid != x && test x$with_alugrid != xno ; then
   # is --with-alugrid=bla used?
   if test "x$with_alugrid" != x ; then
 	if ! test -d $with_alugrid; then
-        AC_MSG_WARN([Alugrid directory $with_alugrid does not exist])
+        AC_MSG_WARN([ALUGrid directory $with_alugrid does not exist])
 	else
-        # expand tilde / other stuff
+    # expand tilde / other stuff
 		ALUGRIDROOT=`cd $with_alugrid && pwd`
+
+    VERSIONCHECK=$ALUGRIDROOT/bin/alugridversion
+    ## check version number 
+    NEEDEDVERSION=1.0
+
+    echo -n "checking ALUGrid version >= $NEEDEDVERSION... " 
+    if test -f $VERSIONCHECK; then 
+      VERSION=`$VERSIONCHECK -c $NEEDEDVERSION`
+      if test "x$VERSION" != "x-1"; then 
+        VERSIONNO=`$VERSIONCHECK -v`
+        echo "yes (ALUGrid-$VERSIONNO)"
+      else 
+        AC_MSG_ERROR([ALUGrid version is too old!])
+      fi 
+      
+    else 
+      AC_MSG_WARN([Couldn't find ALUGrid version checker! ALUGrid version too old!])
+    fi   
 	fi
   fi
   if test "x$ALUGRIDROOT" = x; then
