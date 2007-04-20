@@ -237,14 +237,17 @@ int testIterator(Container& c, Opt& opt)
     std::cerr<<"constant and mutable iterators should be equal!"<<std::endl;
     ret=1;
   }
-  return ret + testConstIterator(cbegin, cend, opt) +
-         testIterator(begin,end,opt);
+  ret += testConstIterator(cbegin, cend, opt);
+  if(testSort)
+    ret += testIterator(begin,end,opt);
+
+  return ret;
 }
 
 template<class Container, class Opt>
 int testIterator(Container& c, Opt& opt)
 {
-  testIterator<Container,Opt,true>(c,opt);
+  return testIterator<Container,Opt,true>(c,opt);
 }
 
 template<class Iter, class Opt>
