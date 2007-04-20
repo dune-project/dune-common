@@ -195,17 +195,33 @@ int testConstIterator(Iter& begin, Iter& end, Opt& opt)
   return ret;
 }
 
-template<class Container, typename IteratorTag>
-void testSorting(Container& C, IteratorTag tag)
-{ }
-
-template<class Container>
-void testSorting(Container& c, std::random_access_iterator_tag)
+template<bool>
+struct TestSorting
 {
-  std::sort(c.begin(), c.end());
+  template<class Container, typename IteratorTag>
+  static void testSorting(Container& c, IteratorTag tag)
+  {}
+  template<class Container>
+  static void testSorting(Container& c, std::random_access_iterator_tag)
+  {
+    std::sort(c.begin(), c.end());
+  }
 }
+;
 
-template<class Container, class Opt>
+template<>
+struct TestSorting<false>
+{
+  template<class Container>
+  static void testSorting(Container& c, std::random_access_iterator_tag)
+  {}
+  template<class Container, typename IteratorTag>
+  static void testSorting(Container& c, IteratorTag tag)
+  {}
+};
+
+
+template<class Container, class Opt, bool testSort>
 int testIterator(Container& c, Opt& opt)
 {
   typename Container::iterator begin=c.begin(), end=c.end();
@@ -214,16 +230,24 @@ int testIterator(Container& c, Opt& opt)
   typename Container::const_iterator cend=c.end();
   int ret = 0;
 
-  testSorting(c, typename std::iterator_traits<typename Container::iterator>::iterator_category());
+  TestSorting<testSort>::testSorting(c, typename std::iterator_traits<typename Container::iterator>::iterator_category());
 
-  if(end!=cend ||
-     cend!=end)
+  if(end!=cend || cend!=end)
   {
     std::cerr<<"constant and mutable iterators should be equal!"<<std::endl;
     ret=1;
   }
-  return ret + testConstIterator(cbegin, cend, opt) +
-         testIterator(begin,end,opt);
+  ret += testConstIterator(cbegin, cend, opt);
+  if(testSort)
+    ret += testIterator(begin,end,opt);
+
+  return ret;
+}
+
+template<class Container, class Opt>
+int testIterator(Container& c, Opt& opt)
+{
+  return testIterator<Container,Opt,true>(c,opt);
 }
 
 template<class Iter, class Opt>
