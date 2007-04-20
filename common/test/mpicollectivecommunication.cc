@@ -9,11 +9,13 @@
 int main(int argc, char** argv)
 {
   typedef Dune::MPIHelper Helper;
+  typedef Helper::MPICommunicator MPIComm;
 
   {
     Helper& mpi = Helper::instance(argc, argv);
 
-    Dune::CollectiveCommunication<MPI_Comm> comm(mpi.getCommunicator());
+
+    Dune::CollectiveCommunication<MPIComm> comm(mpi.getCommunicator());
 
     enum { length = 5 };
     double values[5];
