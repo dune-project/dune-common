@@ -12,6 +12,7 @@
 #include "collectivecommunication.hh"
 #include "binaryfunctions.hh"
 
+#if HAVE_MPI
 // MPI header
 #include <mpi.h>
 
@@ -324,4 +325,5 @@ namespace Dune
   };
 } // namespace dune
 
+#endif
 #endif
