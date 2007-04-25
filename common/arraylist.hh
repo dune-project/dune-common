@@ -39,7 +39,7 @@ namespace Dune
    *
    * Internally the data is organized in a list of arrays of fixed size.
    * Whenever the capacity of the array list is not sufficient a new
-   * Dune::FixedArray is allocated. In contrast to
+   * Dune::array is allocated. In contrast to
    * std::vector this approach prevents data copying. On the outside
    * we provide the same interface as the stl random access containers.
    */
@@ -188,7 +188,7 @@ namespace Dune
     /**
      * @brief The allocators for the fixed array.
      */
-    typedef typename A::template rebind<SmartPointer<FixedArray<MemberType,chunkSize_> > >::other
+    typedef typename A::template rebind<SmartPointer<array<MemberType,chunkSize_> > >::other
     SmartPointerAllocator;
 
     /**
@@ -198,7 +198,7 @@ namespace Dune
     friend class ConstArrayListIterator<T,N,A>;
 
     /** @brief the data chunks of our list. */
-    std::vector<SmartPointer<FixedArray<MemberType,chunkSize_> >,
+    std::vector<SmartPointer<array<MemberType,chunkSize_> >,
         SmartPointerAllocator> chunks_;
     /** @brief The current data capacity. */
     size_type capacity_;
@@ -473,7 +473,7 @@ namespace Dune
     size_t index=start_+size_;
     if(index==capacity_)
     {
-      chunks_.push_back(SmartPointer<FixedArray<MemberType,chunkSize_> >());
+      chunks_.push_back(SmartPointer<array<MemberType,chunkSize_> >());
       capacity_ += chunkSize_;
     }
     elementAt(index)=entry;
@@ -539,7 +539,7 @@ namespace Dune
       // Number of chunks with entries in it;
       size_t chunks = ((start_%chunkSize_ + size_)/chunkSize_ );
 
-      typedef typename std::vector<SmartPointer<FixedArray<MemberType,
+      typedef typename std::vector<SmartPointer<array<MemberType,
                   chunkSize_> > >::iterator iterator;
 
       // Copy chunks to the left.
