@@ -36,6 +36,8 @@ namespace Dune
   {
   public:
     //! Construct default object
+    CollectiveCommunication()
+    {}
     CollectiveCommunication (const C&)
     {}
 
