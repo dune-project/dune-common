@@ -929,15 +929,6 @@ namespace Dune {
       return *this;
     }
 
-    //===== Euclidean scalar product
-
-    //! scalar product
-    const K operator* (const FieldVector& y) const
-    {
-      return p*y.p;
-    }
-
-
     //===== norms
 
     //! one norm (sum over absolute values of entries)
