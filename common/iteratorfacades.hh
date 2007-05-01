@@ -144,7 +144,7 @@ namespace Dune
      * The iterator has to define following
      * functions have to be present:
      *
-     * <pre>
+     * \code
      *
      * // Access the value referred to.
      * Reference dereference() const;
@@ -154,7 +154,7 @@ namespace Dune
      *
      * // position the iterator at the next element.
      * void increment()
-     * </pre>
+     * \endcode
      *
      * For an elaborate explanation see the
      * <A HREF="http://www.sgi.com/tech/stl/iterator_traits.html">STL Documentation</A>!
@@ -272,7 +272,7 @@ namespace Dune
      * The iterator has to define following
      * functions have to be present:
      *
-     * <pre>
+     * \code
      *
      * // Access the value referred to.
      * Reference dereference() const;
@@ -286,7 +286,7 @@ namespace Dune
      * // position the iterator at the previous element.
      * void decrement()
      *
-     * </pre>
+     * \endcode
      *
      * For an elaborate explanation see the
      * <A HREF="http://www.sgi.com/tech/stl/iterator_traits.html">STL Documentation</A>
@@ -420,7 +420,7 @@ namespace Dune
      * The iterator has to define following
      * functions have to be present:
      *
-     * <pre>
+     * \code
      *
      * // Access the value referred to.
      * Reference dereference() const;
@@ -440,7 +440,7 @@ namespace Dune
      * // One should incorporate an assertion wether
      * // the same containers are referenced
      * DifferenceType distanceTo(j) const;
-     * </pre>
+     * \endcode
      *
      * For an elaborate explanation see the
      * <A HREF="http://www.sgi.com/tech/stl/iterator_traits.html">STL Documentation</A>
