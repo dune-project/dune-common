@@ -125,7 +125,7 @@ esac'
 }
 
 # list of all dunecontrol commands
-COMMANDS="update autogen configure make all exec svn"
+COMMANDS="update autogen configure make all exec status svn"
 
 # help string for the commands
 update_HELP="updated all modules from the repository"
@@ -136,6 +136,7 @@ make_HELP="run make for each module"
 all_HELP="\trun 'autogen', 'configure' and 'make' command for each module"
        # "NOTE: run all for an initial setup"
 exec_HELP="execute an arbitrary command in each module directory"
+status_HELP="show vc status for all modules"
 svn_HELP="\trun svn command for each svn managed module"
 
 #
@@ -153,6 +154,33 @@ done
 #
 
 run_default_exec () { bash -c "eval $CMD_PARAMS"; }
+
+run_default_status () {
+  # is out output connected to a tty?
+  if test -t 1; then
+    blue="\e[1m\e[34m"
+    green="\e[1m\e[32m"
+    reset="\e[0m\e[37m"
+  fi
+
+  if eval test "x$CMD_PARAMS" = "x-v"; then
+    svn status | grep -E "^M|^A|^D"
+  elif eval test "x$CMD_PARAMS" = "x-vv"; then
+    svn status
+  fi
+
+  count=$(svn status | grep -E "^M|^A|^D" | wc -l)
+
+  name="$(eval echo \$NAME_$module)"
+
+  if [ $count = 0 ]; then
+    echo -e "$green[no changes]$reset $name"
+  elif [ $count = 1 ]; then
+    echo -e "$blue[1 change]$reset $name"
+  else
+    echo -e "$blue[$count changes]$reset $name"
+  fi
+}
 
 run_default_update () {
   if test -d .svn; then
