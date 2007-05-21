@@ -218,6 +218,7 @@ cd UG/ug
 </li>
 <li><p>Build the UG make system</p>
 <pre>
+./autogen.sh
 ./configure --prefix=my_favourite_ug_installation_path --enable-dune CC=g++
 </pre>
         <ul>
