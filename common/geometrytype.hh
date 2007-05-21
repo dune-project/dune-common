@@ -145,7 +145,8 @@ namespace Dune {
       return ! ((*this)==other);
     }
 
-    bool operator<(const GeometryType& other) const {
+    /** \brief lesser operation for use with maps */
+    bool operator < (const GeometryType& other) const {
       if (dim() != other.dim())
         return dim() < other.dim();
       else if (dim()==0 || dim()==1)
