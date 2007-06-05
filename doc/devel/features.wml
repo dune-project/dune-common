@@ -80,9 +80,7 @@ and refers you to more detailed documentation.
         <li> Reading grid files in the grid independent Dune grid format
              <a href="$(ROOT)/doc/doxygen/dune-grid-html/group__DuneGridFormatParser.html">DGF</a>
         <li> Reading simplex grids through DGF  
-             constructed using the tools Tetgen/Triangle 
-             (http://tetgen.berlios.de,
-              http://www.cs.cmu.edu/~quake/triangle.html)
+             constructed using the tools <a href="http://tetgen.berlios.de">Tetgen</a> and <a href="http://www.cs.cmu.edu/~quake/triangle.html">Triangle</a>
         <li> Subsampling of high-order functions </li>
         <li> Write grids and data in the format of the visualization toolkit (vtk) </li>
       </ul>
