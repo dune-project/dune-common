@@ -12,7 +12,7 @@ The following external grids support the DUNE Grid interface:
 <table>
 <tbody>
 <tr><td>ALBERTA</td><td>1.2</td><td><a href="http://www.alberta-fem.de/">http://www.alberta-fem.de/</a></td></tr>
-<tr><td>ALUGrid</td><td>0.4</td><td><a href="http://www.mathematik.uni-freiburg.de/IAM/Research/alugrid/">http://www.mathematik.uni-freiburg.de/IAM/Research/alugrid/</a></td></tr>
+<tr><td>ALUGrid</td><td>1.0</td><td><a href="http://www.mathematik.uni-freiburg.de/IAM/Research/alugrid/">http://www.mathematik.uni-freiburg.de/IAM/Research/alugrid/</a></td></tr>
 <tr><td>UG (non-free licence)</td><td></td><td><a href="http://sit.iwr.uni-heidelberg.de/~ug/">http://sit.iwr.uni-heidelberg.de/~ug/</a></td></tr>
 </tbody>
 </table>
@@ -92,9 +92,9 @@ For optional packages see the README file of ALUGRID.
 <ol>
 <li>Download the latest version of ALUGrid from the <a href="http://www.mathematik.uni-freiburg.de/IAM/Research/alugrid/">ALUGrid homepage</a>.</li>
 <li><p>Unpack it in a directory</p>
-	   <pre>tar xzf ALUGrid-0.x.tar.gz</pre>
+	   <pre>tar xzf ALUGrid-1.x.tar.gz</pre>
     <p>and move to that directory</p>
-<pre>cd ALUGrid-0.x</pre>
+<pre>cd ALUGrid-1.x</pre>
     <p>and read the README file first.</p>
   </li>
 
