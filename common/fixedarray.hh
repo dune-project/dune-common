@@ -47,6 +47,9 @@ namespace Dune
       for (int i=0; i<N; i++) a[i]=t;
     }
 
+    /** \brief Return array size */
+    int size() const {return N;}
+
     //! Assign value to all entries
     FixedArray<T,N>& operator= (const T& t)
     {
