@@ -1,9 +1,9 @@
 # -*- html -*-
 # $Id$
 
-#use wml::layout::default title="DUNE - Constrib Software Installation Notes"
+#use wml::layout::default title="DUNE - Contrib Software Installation Notes"
 
-<h1>Constrib Software Installation Notes</h1>
+<h1>Contrib Software Installation Notes</h1>
 
 <h2>Additional Grids supported by DUNE</h2>
 <p>
