@@ -25,3 +25,5 @@ timing_flt
 bigunsignedinttest
 mpihelpertest
 singletontest
+fvectortest
+mpicollcomm
