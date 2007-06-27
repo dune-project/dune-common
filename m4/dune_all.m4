@@ -106,14 +106,9 @@ AC_SUBST(DUNEWEBDIR, $with_duneweb)
   # call IMDX_LIB_METIS directly and not via AC_REQUIRE
   # because AC_REQUIRE support not allow parameters
   IMMDX_LIB_METIS(,[true])
-  AC_REQUIRE([DUNE_PATH_PARMETIS])
-  AC_REQUIRE([DUNE_PATH_SUPERLU])
-  AC_REQUIRE([DUNE_PATH_SUPERLU_DIST])
-  AC_REQUIRE([__AC_FC_NAME_MANGLING])
   AC_REQUIRE([ACX_BLAS])
+  AC_REQUIRE([__AC_FC_NAME_MANGLING])
   AC_REQUIRE([DUNE_PATH_ALUGRID])
-  AC_REQUIRE([DUNE_EXPRTMPL])
-  AC_REQUIRE([DUNE_PATH_HDF5])
 
   # convenience-variables if every found package should be used
   AC_SUBST(ALL_PKG_LIBS, "$LIBS $DUNE_PKG_LIBS")
@@ -151,13 +146,8 @@ AC_DEFUN([DUNE_SUMMARY_ALL],[
   echo "AmiraMesh........: $with_amiramesh"
   echo "BLAS.............: $acx_blas_ok"
   echo "Grape............: $with_grape"
-  echo "HDF5.............: $with_hdf5"
-#  echo "FiberHDF5........: $with_f5"
   echo "MPI..............: $with_mpi"
   echo "METIS............: $with_metis"
-  echo "ParMETIS.........: $with_parmetis"
-  echo "SuperLU..........: $with_superlu"
-  echo "SuperLU-DIST.....: $with_superlu_dist"	
   echo "OpenGL...........: $with_opengl"
   echo "UG...............: $with_ug"
   echo

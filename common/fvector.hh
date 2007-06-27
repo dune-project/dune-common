@@ -11,13 +11,7 @@
 #include "exceptions.hh"
 #include "genericiterator.hh"
 
-#ifdef DUNE_EXPRESSIONTEMPLATES
-#include "exprtmpl.hh"
-#endif
-
 namespace Dune {
-
-#ifndef DUNE_EXPRESSIONTEMPLATES
 
   /** @defgroup DenseMatVec Dense Matrix and Vector Template Library
       @ingroup Common
@@ -31,10 +25,6 @@ namespace Dune {
 
   // forward declaration of template
   template<class K, int n> class FieldVector;
-
-#endif
-
-#ifndef DUNE_EXPRESSIONTEMPLATES
 
   template<class K>
   inline double fvmeta_absreal (const K& k)
@@ -59,8 +49,6 @@ namespace Dune {
   {
     return c.real()*c.real() + c.imag()*c.imag();
   }
-
-#endif
 
   //! Iterator class for sequential access to FieldVector and FieldMatrix
   template<class C, class T>
@@ -160,123 +148,6 @@ namespace Dune {
     typedef typename T::ConstIterator type;
   };
 
-#ifdef DUNE_EXPRESSIONTEMPLATES
-  //! Iterator class for flat sequential access to a nested Vector
-  template<class V>
-  class FlatIterator :
-    public ForwardIteratorFacade<FlatIterator<V>,
-        typename Dune::FieldType<V>::type,
-        typename Dune::FieldType<V>::type&,
-        int>
-  {
-  public:
-    typedef typename IteratorType<V>::type BlockIterator;
-    typedef std::ptrdiff_t DifferenceType;
-    //    typedef typename BlockIterator::DifferenceType DifferenceType;
-    typedef typename BlockType<V>::type block_type;
-    typedef typename FieldType<V>::type field_type;
-    typedef FlatIterator<block_type> SubBlockIterator;
-    FlatIterator(const BlockIterator & i) :
-      it(i), bit(i->begin()), bend(i->end()) {};
-    void increment ()
-    {
-      ++bit;
-      if (bit == bend)
-      {
-        ++it;
-        bit = it->begin();
-        bend = it->end();
-      }
-    }
-    bool equals (const FlatIterator & fit) const
-    {
-      return fit.it == it && fit.bit == bit;
-    }
-    field_type& dereference() const
-    {
-      return *bit;
-    }
-    //! return index
-    DifferenceType index () const
-    {
-      return bit.index();
-    }
-  private:
-    BlockIterator it;
-    SubBlockIterator bit;
-    SubBlockIterator bend;
-  };
-
-  //! Specialization for FieldVector
-  //! acts as the end of the recursive template
-  template<class K, int N>
-  class FlatIterator< FieldVector<K,N> > :
-    public ForwardIteratorFacade<FlatIterator< FieldVector<K,N> >,
-        K, K&, int>
-  {
-  public:
-    typedef typename FieldVector<K,N>::Iterator BlockIterator;
-    typedef std::ptrdiff_t DifferenceType;
-    //    typedef typename BlockIterator::DifferenceType DifferenceType;
-    typedef typename FieldVector<K,N>::field_type field_type;
-    FlatIterator(const BlockIterator & i) : it(i) {};
-    void increment ()
-    {
-      ++it;
-    }
-    bool equals (const FlatIterator & fit) const
-    {
-      return fit.it == it;
-    }
-    field_type& dereference() const
-    {
-      return *it;
-    }
-    //! return index
-    DifferenceType index () const
-    {
-      return it.index();
-    }
-  private:
-    BlockIterator it;
-  };
-
-  //! Specialization for const FieldVector
-  //! acts as the end of the recursive template
-  template<class K, int N>
-  class FlatIterator< const FieldVector<K,N> > :
-    public ForwardIteratorFacade<FlatIterator< const FieldVector<K,N> >,
-        const K, const K&, int>
-  {
-  public:
-    typedef typename FieldVector<K,N>::ConstIterator BlockIterator;
-    typedef std::ptrdiff_t DifferenceType;
-    //    typedef typename BlockIterator::DifferenceType DifferenceType;
-    typedef typename FieldVector<K,N>::field_type field_type;
-    FlatIterator(const BlockIterator & i) : it(i) {};
-    void increment ()
-    {
-      ++it;
-    }
-    bool equals (const FlatIterator & fit) const
-    {
-      return fit.it == it;
-    }
-    const field_type& dereference() const
-    {
-      return *it;
-    }
-    //! return index
-    DifferenceType index () const
-    {
-      return it.index();
-    }
-  private:
-    BlockIterator it;
-  };
-#endif
-
-#ifdef DUNE_EXPRESSIONTEMPLATES
   /** \brief Construct a vector space out of a tensor product of fields.
 
          K is the field type (use float, double, complex, etc) and n
@@ -288,20 +159,6 @@ namespace Dune {
    */
   template<class K, int SIZE>
   class FieldVector
-    : public Dune::ExprTmpl::Vector< FieldVector<K,SIZE> >
-#else
-  /** \brief Construct a vector space out of a tensor product of fields.
-
-         K is the field type (use float, double, complex, etc) and n
-         is the number of components.
-
-         It is generally assumed that K is a numerical type compatible with double
-         (E.g. norms are always computed in double precision).
-
-   */
-  template<class K, int SIZE>
-  class FieldVector
-#endif
   {
   public:
     // remember size of vector
@@ -335,7 +192,6 @@ namespace Dune {
     //! Constructor making uninitialized vector
     FieldVector() {}
 
-#ifndef DUNE_EXPRESSIONTEMPLATES
     //! Constructor making vector with identical coordinates
     explicit FieldVector (const K& t)
     {
@@ -351,53 +207,6 @@ namespace Dune {
         p[i] = k;
       return *this;
     }
-
-#else
-    //! Constructor making vector with identical coordinates
-    explicit FieldVector (const K& t)
-    {
-#ifdef DUNE_VVERBOSE
-      Dune::dvverb << INDENT << "FieldVector Copy Constructor Scalar\n";
-#endif
-      assignFrom(t);
-    }
-    //! Assignment operator for scalar
-    FieldVector& operator= (const K& k)
-    {
-#ifdef DUNE_VVERBOSE
-      Dune::dvverb << INDENT << "FieldVector Assignment Operator Scalar\n";
-#endif
-      return assignFrom(k);
-    }
-    template <class E>
-    FieldVector (Dune::ExprTmpl::Expression<E> op) {
-#ifdef DUNE_VVERBOSE
-      Dune::dvverb << INDENT << "FieldVector Copy Constructor Expression\n";
-#endif
-      assignFrom(op);
-    }
-    template <class V>
-    FieldVector (const Dune::ExprTmpl::Vector<V> & op) {
-#ifdef DUNE_VVERBOSE
-      Dune::dvverb << INDENT << "FieldVector Copy Operator Vector\n";
-#endif
-      assignFrom(op);
-    }
-    template <class E>
-    FieldVector&  operator = (Dune::ExprTmpl::Expression<E> op) {
-#ifdef DUNE_VVERBOSE
-      Dune::dvverb << INDENT << "FieldVector Assignment Operator Expression\n";
-#endif
-      return assignFrom(op);
-    }
-    template <class V>
-    FieldVector& operator = (const Dune::ExprTmpl::Vector<V> & op) {
-#ifdef DUNE_VVERBOSE
-      Dune::dvverb << INDENT << "FieldVector Assignment Operator Vector\n";
-#endif
-      return assignFrom(op);
-    }
-#endif
 
     //===== access to components
 
@@ -495,7 +304,6 @@ namespace Dune {
         return ConstIterator(*this,SIZE);
     }
 
-#ifndef DUNE_EXPRESSIONTEMPLATES
     //===== vector space arithmetic
 
     //! vector space addition
@@ -560,8 +368,6 @@ namespace Dune {
       return *this;
     }
 
-#endif
-
     //! Binary vector comparison
     bool operator== (const FieldVector& y) const
     {
@@ -575,16 +381,11 @@ namespace Dune {
     //! vector space axpy operation
     FieldVector& axpy (const K& a, const FieldVector& y)
     {
-#ifndef DUNE_EXPRESSIONTEMPLATES
       for (size_type i=0; i<SIZE; i++)
         p[i] += a*y.p[i];
-#else
-      *this += a*y;
-#endif
       return *this;
     }
 
-#ifndef DUNE_EXPRESSIONTEMPLATES
     //===== Euclidean scalar product
 
     //! scalar product
@@ -652,7 +453,6 @@ namespace Dune {
         result = std::max(result, fvmeta_absreal(p[i]));
       return result;
     }
-#endif
 
     //===== sizes
 
@@ -686,18 +486,10 @@ namespace Dune {
   // forward declarations
   template<class K, int n, int m> class FieldMatrix;
 
-#ifdef DUNE_EXPRESSIONTEMPLATES
   /**! Vectors containing only one component
    */
   template<class K>
   class FieldVector<K,1>
-    : public Dune::ExprTmpl::Vector< FieldVector<K,1> >
-#else
-  /**! Vectors containing only one component
-   */
-  template<class K>
-  class FieldVector<K,1>
-#endif
   {
     enum { n = 1 };
   public:
@@ -741,37 +533,6 @@ namespace Dune {
       p = k;
       return *this;
     }
-
-#ifdef DUNE_EXPRESSIONTEMPLATES
-    template <class E>
-    FieldVector (Dune::ExprTmpl::Expression<E> op) {
-#ifdef DUNE_VVERBOSE
-      Dune::dvverb << INDENT << "FieldVector<1> Copy Constructor Expression\n";
-#endif
-      assignFrom(op);
-    }
-    template <class V>
-    FieldVector (const Dune::ExprTmpl::Vector<V> & op) {
-#ifdef DUNE_VVERBOSE
-      Dune::dvverb << INDENT << "FieldVector<1> Copy Operator Vector\n";
-#endif
-      assignFrom(op);
-    }
-    template <class E>
-    FieldVector&  operator = (Dune::ExprTmpl::Expression<E> op) {
-#ifdef DUNE_VVERBOSE
-      Dune::dvverb << INDENT << "FieldVector<1> Assignment Operator Expression\n";
-#endif
-      return assignFrom(op);
-    }
-    template <class V>
-    FieldVector& operator = (const Dune::ExprTmpl::Vector<V> & op) {
-#ifdef DUNE_VVERBOSE
-      Dune::dvverb << INDENT << "FieldVector<1> Assignment Operator Vector\n";
-#endif
-      return assignFrom(op);
-    }
-#endif
 
     //===== access to components
 
@@ -994,7 +755,6 @@ namespace Dune {
     K p;
   };
 
-#ifndef DUNE_EXPRESSIONTEMPLATES
   //! Binary vector addition
   template<class K>
   inline FieldVector<K,1> operator+ (const FieldVector<K,1>& a, const FieldVector<K,1>& b)
@@ -1042,8 +802,6 @@ namespace Dune {
     FieldVector<K,1> z = a;
     return (z[0]-=b);
   }
-#endif
-
 
   /** @} end documentation */
 
