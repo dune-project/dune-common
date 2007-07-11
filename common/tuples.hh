@@ -470,6 +470,33 @@ namespace Dune
   };
 
   /**
+   * @brief Template meta_programm to query the size of a tuple
+   *
+   */
+  template<typename T>
+  struct Size
+  {
+    enum {
+      /** @brief The value of the size of the tuple */
+      value = -100000
+    };
+  };
+
+  template<typename T1, typename T2>
+  struct Size<Pair<T1,T2> >
+  {
+    enum { value=1+Size<T2>::value};
+  };
+
+
+  template<typename T1>
+  struct Size<Pair<T1,Nil> >
+  {
+    enum { value=1};
+  };
+
+
+  /**
    * @brief Equality comparison operator for tuples.
    * @param tuple1 The first tuple.
    * @param tuple2 The second tuple,
