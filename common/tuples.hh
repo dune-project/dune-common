@@ -476,7 +476,10 @@ namespace Dune
   template<class T>
   struct Size
   {
-    enum { value=Size<typename T::FirstPair>::value};
+    enum {
+      // @brief The number of Elements in the tuple.
+      value=Size<typename T::FirstPair>::value
+    };
 
 
   };
