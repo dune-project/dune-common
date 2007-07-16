@@ -4,11 +4,24 @@
 #include "config.h"
 
 #include <dune/common/tuples.hh>
+#include <dune/common/helpertemplates.hh>
 #include <string>
 #include <iostream>
 #include <vector>
 #include <cassert>
 using namespace Dune;
+
+template<int i, int j>
+struct Same
+{
+  enum { value = false};
+};
+
+template<int i>
+struct Same<i,i>
+{
+  enum { value = true};
+};
 
 template<class T>
 void test(T& tuple)
@@ -39,8 +52,8 @@ int iteratorTupleTest()
 
 
   Tuple tuple(v.begin(), v.begin(), v.end());
+  IsTrue<Size<Tuple>::value==3>::yes();
 
-  assert(Size<Tuple>::value==3);
   int ret=0;
 
   if(Element<0>::get(tuple)!= v.begin()) {

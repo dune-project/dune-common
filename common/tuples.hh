@@ -473,13 +473,12 @@ namespace Dune
    * @brief Template meta_programm to query the size of a tuple
    *
    */
-  template<typename T>
+  template<class T>
   struct Size
   {
-    enum {
-      /** @brief The value of the size of the tuple */
-      value = -100000
-    };
+    enum { value=Size<typename T::FirstPair>::value};
+
+
   };
 
   template<typename T1, typename T2>
