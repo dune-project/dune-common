@@ -8,8 +8,11 @@
 #include "typetraits.hh"
 #include "helpertemplates.hh"
 
-namespace Dune
-{
+#ifdef HAVE_TR1_TUPLE
+#include <tr1/tuple>
+#endif
+
+namespace Dune {
   /** @addtogroup Common
    *
    * @{
@@ -27,19 +30,6 @@ namespace Dune
    * @author Markus Blatt
    */
 
-  /**
-   * @brief An empty class.
-   */
-  struct Nil
-  {};
-
-  namespace
-  {
-    inline const Nil nullType()
-    {
-      return Nil();
-    }
-  }
 
   template<class T>
   struct TupleAccessTraits
@@ -64,6 +54,23 @@ namespace Dune
     typedef T& NonConstType;
     typedef T& ParameterType;
   };
+
+#ifdef HAVE_TR1_TUPLE
+  using std::tr1::tuple;
+#else
+  /**
+   * @brief An empty class.
+   */
+  struct Nil
+  {};
+
+  namespace
+  {
+    inline const Nil nullType()
+    {
+      return Nil();
+    }
+  }
 
   /**
    * @brief A tuple consisting of two objects.
@@ -259,42 +266,42 @@ namespace Dune
    *
    * Use the following construction to access the individual elements.
      \code
-      Tuple<std::string, float*, int> my_tuple;
+      tuple<std::string, float*, int> my_tuple;
 
-      std:string& s = Element<0>::get(my_tuple);
-      float*      p = Element<1>::get(my_tuple);
+      std:string& s = get<0>(my_tuple);
+      float*      p = get<1>(my_tuple);
 
       // Access the third element in a generic way
-      typedef ElementType<2, Tuple<std::string, float*, int> >::Type Type;
-      Type&       i = Element<2>::get(my_tuple);
+      typedef tuple_element<2, tuple<std::string, float*, int> >::type Type;
+      Type&       i = get<2>(my_tuple);
      \endcode
    */
   template<typename T1, typename T2 = Nil, typename T3 = Nil,
       typename T4 = Nil, typename T5 = Nil,typename T6 = Nil,
       typename T7 = Nil, typename T8 = Nil, typename T9 = Nil>
-  class Tuple : public TupleToPairs<T1,T2,T3,T4,T5,T6,T7,T8,T9>::Type
+  class tuple : public TupleToPairs<T1,T2,T3,T4,T5,T6,T7,T8,T9>::Type
   {
   public:
     //! Type of the first Pair defining the Tuple
     typedef typename TupleToPairs<T1,T2,T3,T4,T5,T6,T7,T8,T9>::Type FirstPair;
 
-    Tuple()
+    tuple()
     {}
 
-    Tuple(typename TupleAccessTraits<T1>::ParameterType t1)
+    tuple(typename TupleAccessTraits<T1>::ParameterType t1)
       : FirstPair(t1, nullType(), nullType(), nullType(),
                   nullType(), nullType(), nullType(), nullType(),
                   nullType())
     {}
 
-    Tuple(typename TupleAccessTraits<T1>::ParameterType t1,
+    tuple(typename TupleAccessTraits<T1>::ParameterType t1,
           typename TupleAccessTraits<T2>::ParameterType t2)
       : FirstPair(t1, t2, nullType(), nullType(),
                   nullType(), nullType(), nullType(), nullType(),
                   nullType())
     {}
 
-    Tuple(typename TupleAccessTraits<T1>::ParameterType t1,
+    tuple(typename TupleAccessTraits<T1>::ParameterType t1,
           typename TupleAccessTraits<T2>::ParameterType t2,
           typename TupleAccessTraits<T3>::ParameterType t3)
       : FirstPair(t1, t2, t3, nullType(),
@@ -302,7 +309,7 @@ namespace Dune
                   nullType())
     {}
 
-    Tuple(typename TupleAccessTraits<T1>::ParameterType t1,
+    tuple(typename TupleAccessTraits<T1>::ParameterType t1,
           typename TupleAccessTraits<T2>::ParameterType t2,
           typename TupleAccessTraits<T3>::ParameterType t3,
           typename TupleAccessTraits<T4>::ParameterType t4)
@@ -311,7 +318,7 @@ namespace Dune
                   nullType())
     {}
 
-    Tuple(typename TupleAccessTraits<T1>::ParameterType t1,
+    tuple(typename TupleAccessTraits<T1>::ParameterType t1,
           typename TupleAccessTraits<T2>::ParameterType t2,
           typename TupleAccessTraits<T3>::ParameterType t3,
           typename TupleAccessTraits<T4>::ParameterType t4,
@@ -321,7 +328,7 @@ namespace Dune
                   nullType())
     {}
 
-    Tuple(typename TupleAccessTraits<T1>::ParameterType t1,
+    tuple(typename TupleAccessTraits<T1>::ParameterType t1,
           typename TupleAccessTraits<T2>::ParameterType t2,
           typename TupleAccessTraits<T3>::ParameterType t3,
           typename TupleAccessTraits<T4>::ParameterType t4,
@@ -332,7 +339,7 @@ namespace Dune
                   nullType())
     {}
 
-    Tuple(typename TupleAccessTraits<T1>::ParameterType t1,
+    tuple(typename TupleAccessTraits<T1>::ParameterType t1,
           typename TupleAccessTraits<T2>::ParameterType t2,
           typename TupleAccessTraits<T3>::ParameterType t3,
           typename TupleAccessTraits<T4>::ParameterType t4,
@@ -344,7 +351,7 @@ namespace Dune
                   nullType())
     {}
 
-    Tuple(typename TupleAccessTraits<T1>::ParameterType t1,
+    tuple(typename TupleAccessTraits<T1>::ParameterType t1,
           typename TupleAccessTraits<T2>::ParameterType t2,
           typename TupleAccessTraits<T3>::ParameterType t3,
           typename TupleAccessTraits<T4>::ParameterType t4,
@@ -357,7 +364,7 @@ namespace Dune
                   nullType())
     {}
 
-    Tuple(typename TupleAccessTraits<T1>::ParameterType t1,
+    tuple(typename TupleAccessTraits<T1>::ParameterType t1,
           typename TupleAccessTraits<T2>::ParameterType t2,
           typename TupleAccessTraits<T3>::ParameterType t3,
           typename TupleAccessTraits<T4>::ParameterType t4,
@@ -370,41 +377,79 @@ namespace Dune
     {}
 
     template<class U1, class U2>
-    Tuple& operator=(const Pair<U1,U2>& other)
+    tuple& operator=(const Pair<U1,U2>& other)
     {
       FirstPair::operator=(other);
       return *this;
     }
   };
 
+#endif
+
+  // be backwards compatible
+#define Tuple tuple
+
+#ifdef HAVE_TR1_TUPLE
+  using std::tr1::tuple_element;
+#else
   /**
    * @brief Get the type of the N-th element of the tuple.
    */
   template<int N, class Tuple>
-  struct ElementType;
-
-  template<int N, typename T1, typename T2>
-  struct ElementType<N,Pair<T1,T2> >
+  struct tuple_element
   {
     /**
      * @brief The type of the N-th element of the tuple.
      */
-    typedef typename ElementType<N-1,T2>::Type Type;
+    typedef typename tuple_element<N,typename Tuple::FirstPair>::type type;
+    typedef typename tuple_element<N,typename Tuple::FirstPair>::type Type;
+  };
+
+  template<int N, typename T1, typename T2>
+  struct tuple_element<N,Pair<T1,T2> >
+  {
+    /**
+     * @brief The type of the N-th element of the tuple.
+     */
+    typedef typename tuple_element<N-1,T2>::Type type;
+    typedef typename tuple_element<N-1,T2>::Type Type;
   };
 
   /**
    * @brief Get the type of the first element of the tuple.
    */
   template<typename T1, typename T2>
-  struct ElementType<0, Pair<T1,T2> >
+  struct tuple_element<0, Pair<T1,T2> >
   {
     /**
      * @brief The type of the first element of the tuple.
      */
+    typedef T1 type;
     typedef T1 Type;
   };
 
+#endif
+#define ElementType tuple_element
 
+#ifdef HAVE_TR1_TUPLE
+  using std::tr1::get;
+
+  // for backwards compartibility
+  template<int i>
+  struct Element {
+    template<typename T1>
+    static typename TupleAccessTraits<typename tuple_element<i,T1>::type>::NonConstType get(T1& t)
+    {
+      return std::tr1::get<i>(t);
+    }
+
+    template<typename T1>
+    static typename TupleAccessTraits<typename tuple_element<i,T1>::type>::ConstType get(const T1& t)
+    {
+      return std::tr1::get<i>(t);
+    }
+  };
+#else
   /**
    * @brief Get the N-th element of a tuple.
    */
@@ -418,7 +463,7 @@ namespace Dune
      */
     template<typename T1, typename T2>
     static typename TupleAccessTraits<
-        typename ElementType<N,Pair<T1,T2> >::Type
+        typename tuple_element<N,Pair<T1,T2> >::type
         >::NonConstType
     get(Pair<T1,T2>& tuple)
     {
@@ -432,7 +477,7 @@ namespace Dune
      */
     template<typename T1, typename T2>
     static typename TupleAccessTraits<
-        typename ElementType<N,Pair<T1,T2> >::Type
+        typename tuple_element<N,Pair<T1,T2> >::type
         >::ConstType
     get(const Pair<T1,T2>& tuple)
     {
@@ -469,35 +514,88 @@ namespace Dune
     }
   };
 
+  template<int i, typename T1, typename T2, typename T3, typename T4,
+      typename T5, typename T6, typename T7, typename T8, typename T9>
+  typename TupleAccessTraits<typename tuple_element<i, tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> >::type>
+  ::NonConstType
+  get(tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>& t)
+  {
+    return Element<i>::get(t);
+  }
+
+#endif
+
+#ifdef HAVE_TR1_TUPLE
+  using std::tr1::tuple_size;
+#else
   /**
    * @brief Template meta_programm to query the size of a tuple
    *
    */
   template<class T>
-  struct Size
+  struct tuple_size
   {
     enum {
       // @brief The number of Elements in the tuple.
-      value=Size<typename T::FirstPair>::value
+      value=tuple_size<typename T::FirstPair>::value
     };
 
 
   };
 
   template<typename T1, typename T2>
-  struct Size<Pair<T1,T2> >
+  struct tuple_size<Pair<T1,T2> >
   {
-    enum { value=1+Size<T2>::value};
+    enum { value=1+tuple_size<T2>::value};
   };
 
 
   template<typename T1>
-  struct Size<Pair<T1,Nil> >
+  struct tuple_size<Pair<T1,Nil> >
   {
     enum { value=1};
   };
+#endif
+
+#define Size  tuple_size
+
+#ifdef HAVE_TR1_TUPLE
+  using std::tr1::tie;
+  using std::tr1::make_tuple;
+
+  template<int i>
+  struct tuple_writer
+  {
+    template<class Tuple>
+    static std::ostream& put(std::ostream& os, const Tuple& t)
+    {
+      return tuple_writer<i-1>::put(os,t)<<", "<<get<i-1>(t);
+    }
+  };
+
+  template<>
+  struct tuple_writer<0>
+  {
+    template<class Tuple>
+    static std::ostream& put(std::ostream& os, const Tuple& t)
+    {
+      return os;
+    }
+  };
+
+  /**
+   * \brief Print a tuple.
+   */
+  template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7,
+      typename T8, typename T9>
+  inline std::ostream& operator<<( std::ostream& os, tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> t)
+  {
+    typedef tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> Tuple;
+    return tuple_writer<tuple_size<Tuple>::value>::put(os, t);
+  }
 
 
+#else
   /**
    * @brief Equality comparison operator for tuples.
    * @param tuple1 The first tuple.
@@ -628,7 +726,7 @@ namespace Dune
   }
 
   /**
-   * @brief Print a pair or tuple.
+   * @brief Print aa pair or  tuple.
    */
   template<typename T1, typename T2>
   inline std::ostream& operator<<(std::ostream& os, const Pair<T1,T2>& pair)
@@ -645,59 +743,115 @@ namespace Dune
   }
 
   template<class T1>
-  inline Tuple<T1&> tie(T1& t1) {
-    return Tuple<T1&> (t1);
+  inline tuple<T1&> tie(T1& t1) {
+    return tuple<T1&> (t1);
   }
 
   template<class T1, class T2>
-  inline Tuple<T1&, T2&> tie(T1& t1, T2& t2) {
-    return Tuple<T1&, T2&> (t1, t2);
+  inline tuple<T1&, T2&> tie(T1& t1, T2& t2) {
+    return tuple<T1&, T2&> (t1, t2);
   }
 
   template<class T1, class T2, class T3>
-  inline Tuple<T1&, T2&, T3&> tie(T1& t1, T2& t2, T3& t3) {
-    return Tuple<T1&, T2&, T3&> (t1, t2, t3);
+  inline tuple<T1&, T2&, T3&> tie(T1& t1, T2& t2, T3& t3) {
+    return tuple<T1&, T2&, T3&> (t1, t2, t3);
   }
 
   template<class T1, class T2, class T3, class T4>
-  inline Tuple<T1&, T2&, T3&, T4&> tie(T1& t1, T2& t2, T3& t3, T4& t4) {
-    return Tuple<T1&, T2&, T3&, T4&> (t1, t2, t3, t4);
+  inline tuple<T1&, T2&, T3&, T4&> tie(T1& t1, T2& t2, T3& t3, T4& t4) {
+    return tuple<T1&, T2&, T3&, T4&> (t1, t2, t3, t4);
   }
 
   template<class T1, class T2, class T3, class T4, class T5>
-  inline Tuple<T1&, T2&, T3&, T4&, T5&>
+  inline tuple<T1&, T2&, T3&, T4&, T5&>
   tie(T1& t1, T2& t2, T3& t3, T4& t4, T5& t5) {
-    return Tuple<T1&, T2&, T3&, T4&, T5&> (t1, t2, t3, t4, t5);
+    return tuple<T1&, T2&, T3&, T4&, T5&> (t1, t2, t3, t4, t5);
   }
 
   template<class T1, class T2, class T3, class T4, class T5, class T6>
-  inline Tuple<T1&, T2&, T3&, T4&, T5&, T6&>
+  inline tuple<T1&, T2&, T3&, T4&, T5&, T6&>
   tie(T1& t1, T2& t2, T3& t3, T4& t4, T5& t5, T6& t6) {
-    return Tuple<T1&, T2&, T3&, T4&, T5&, T6&> (t1, t2, t3, t4, t5, t6);
+    return tuple<T1&, T2&, T3&, T4&, T5&, T6&> (t1, t2, t3, t4, t5, t6);
   }
 
   template<class T1, class T2, class T3, class T4, class T5, class T6, class T7>
-  inline Tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&>
+  inline tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&>
   tie(T1& t1, T2& t2, T3& t3, T4& t4, T5& t5, T6& t6, T7& t7) {
-    return Tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&> (t1, t2, t3, t4, t5, t6, t7);
+    return tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&> (t1, t2, t3, t4, t5, t6, t7);
   }
 
   template<class T1, class T2, class T3, class T4, class T5, class T6, class T7,
       class T8>
-  inline Tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&, T8&>
+  inline tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&, T8&>
   tie(T1& t1, T2& t2, T3& t3, T4& t4, T5& t5, T6& t6, T7& t7, T8& t8) {
-    return Tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&, T8&>
+    return tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&, T8&>
              (t1, t2, t3, t4, t5, t6, t7, t8);
   }
 
   template<class T1, class T2, class T3, class T4, class T5, class T6, class T7,
       class T8, class T9>
-  inline Tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&, T8&, T9&>
+  inline tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&, T8&, T9&>
   tie(T1& t1, T2& t2, T3& t3, T4& t4, T5& t5, T6& t6, T7& t7, T8& t8, T9& t9) {
-    return Tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&, T8&, T9&>
+    return tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&, T8&, T9&>
              (t1, t2, t3, t4, t5, t6, t7, t8, t9);
   }
 
+  template<class T1>
+  inline tuple<T1> make_tuple(const T1& t1) {
+    return tuple<T1> (t1);
+  }
+
+  template<class T1, class T2>
+  inline tuple<T1, T2> make_tuple(const T1& t1, const T2& t2) {
+    return tuple<T1, T2> (t1, t2);
+  }
+
+  template<class T1, class T2, class T3>
+  inline tuple<T1, T2, T3> make_tuple(const T1& t1, const T2& t2, const T3& t3) {
+    return tuple<T1, T2, T3> (t1, t2, t3);
+  }
+
+  template<class T1, class T2, class T3, class T4>
+  inline tuple<T1, T2, T3, T4> make_tuple(const T1& t1, const T2& t2, const T3& t3, const T4& t4) {
+    return tuple<T1, T2, T3, T4> (t1, t2, t3, t4);
+  }
+
+  template<class T1, class T2, class T3, class T4, class T5>
+  inline tuple<T1, T2, T3, T4, T5>
+  make_tuple(const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5) {
+    return tuple<T1, T2, T3, T4, T5> (t1, t2, t3, t4, t5);
+  }
+
+  template<class T1, class T2, class T3, class T4, class T5, class T6>
+  inline tuple<T1, T2, T3, T4, T5, T6>
+  make_tuple(const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6) {
+    return tuple<T1, T2, T3, T4, T5, T6> (t1, t2, t3, t4, t5, t6);
+  }
+
+  template<class T1, class T2, class T3, class T4, class T5, class T6, class T7>
+  inline tuple<T1, T2, T3, T4, T5, T6, T7>
+  make_tuple(const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6,
+             const T7& t7) {
+    return tuple<T1, T2, T3, T4, T5, T6, T7> (t1, t2, t3, t4, t5, t6, t7);
+  }
+
+  template<class T1, class T2, class T3, class T4, class T5, class T6, class T7,
+      class T8>
+  inline tuple<T1, T2, T3, T4, T5, T6, T7, T8>
+  make_tuple(const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6,
+             const T7& t7, const T8& t8) {
+    return tuple<T1, T2, T3, T4, T5, T6, T7, T8>
+             (t1, t2, t3, t4, t5, t6, t7, t8);
+  }
+
+  template<class T1, class T2, class T3, class T4, class T5, class T6, class T7,
+      class T8, class T9>
+  inline tuple<T1, T2, T3, T4, T5, T6, T7, T8, T9>
+  make_tuple(const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6,
+             const T7& t7, const T8& t8, const T9& t9) {
+    return tuple<T1, T2, T3, T4, T5, T6, T7, T8, T9>
+             (t1, t2, t3, t4, t5, t6, t7, t8, t9);
+  }
 
   template<typename T1, typename TT>
   template<typename T2, typename T3, typename T4, typename T5,
@@ -824,6 +978,6 @@ namespace Dune
     return first_;
   }
 
+#endif
 }
-
 #endif

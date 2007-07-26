@@ -51,25 +51,25 @@ int iteratorTupleTest()
   typedef Tuple<iterator,const_iterator, const_iterator> Tuple;
 
 
-  Tuple tuple(v.begin(), v.begin(), v.end());
+  Tuple tuple_(v.begin(), v.begin(), v.end());
   IsTrue<Size<Tuple>::value==3>::yes();
 
   int ret=0;
 
-  if(Element<0>::get(tuple)!= v.begin()) {
+  if(Element<0>::get(tuple_)!= v.begin()) {
     std::cerr<<"Iterator tuple construction failed!"<<std::endl;
     ret++;
   }
-  assert(Element<0>::get(tuple) == v.begin());
-  assert(Element<1>::get(tuple) == Element<0>::get(tuple));
-  if(Element<2>::get(tuple)!= v.end()) {
+  assert(Element<0>::get(tuple_) == v.begin());
+  assert(Element<1>::get(tuple_) == Element<0>::get(tuple_));
+  if(Element<2>::get(tuple_)!= v.end()) {
     std::cerr<<"Iterator tuple construction failed!"<<std::endl;
     ret++;
   }
 
-  assert(Element<2>::get(tuple) == v.end());
-  assert(Element<0>::get(tuple) != v.end());
-  assert(Element<1>::get(tuple)!= Element<2>::get(tuple));
+  assert(Element<2>::get(tuple_) == v.end());
+  assert(Element<0>::get(tuple_) != v.end());
+  assert(Element<1>::get(tuple_)!= Element<2>::get(tuple_));
   return ret;
 }
 
@@ -94,14 +94,14 @@ int lessTest()
 
 int copyTest()
 {
-  Tuple<float,int,double,char,std::string> tuple, tuple1(3.0,1,3.3,'c',std::string("hallo")), tuple2(tuple1);
+  Tuple<float,int,double,char,std::string> tuple_, tuple1(3.0,1,3.3,'c',std::string("hallo")), tuple2(tuple1);
 
   std::cout<<tuple1<<std::endl;
   std::cout<<tuple2<<std::endl;
-  tuple=tuple1;
-  std::cout<<tuple<<std::endl;
+  tuple_=tuple1;
+  std::cout<<tuple_<<std::endl;
 
-  if(tuple!=tuple1)
+  if(tuple_!=tuple1)
     return 1;
   if(tuple2!=tuple1)
     return 1;
@@ -216,14 +216,38 @@ int constPointerTest()
   return 0;
 }
 
+int tuple_tr1_test()
+{
+  int ret=0;
+
+  tuple<int,double> t(1,3.14);
+  int sz = tuple_size<tuple<int, double, char> >::value;
+  if(sz!=3) ++ret;
+
+  // contruct a tuple
+
+  t= make_tuple(5, 10.9);
+
+
+  // get the second element
+  tuple_element<1,tuple<int,double> >::type d=get<1>(t);
+
+  get<0>(t)=16;
+
+  std::cout<<t<<std::endl;
+
+  return ret;
+}
+
+
 int main(int argc, char** argv)
 {
-  Tuple<float,int,double,char,std::string> tuple;
+  Tuple<float,int,double,char,std::string> tuple_;
 
-  test(tuple);
-  test(static_cast<Tuple<float,int,double,char,std::string>& >(tuple));
-  test(static_cast<const Tuple<float,int,double,char,std::string>&>(tuple));
+  test(tuple_);
+  test(static_cast<Tuple<float,int,double,char,std::string>& >(tuple_));
+  test(static_cast<const Tuple<float,int,double,char,std::string>&>(tuple_));
   exit(copyTest()+iteratorTupleTest()+referenceTest()+lessTest()
-       +pointerTest()+constPointerTest());
+       +pointerTest()+constPointerTest()+tuple_tr1_test());
 
 }
