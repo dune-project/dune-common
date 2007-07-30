@@ -25,7 +25,12 @@ include $(top_srcdir)/am/webstuff
 include $(top_srcdir)/am/latex
 
 # remove html pages on ``make  clean''
-CLEANFILES = *.ps *.pdf auto *.aux *.dvi *.log *.out *.toc
+CLEANFILES = auto *.aux *.dvi *.log *.out *.toc
+
+# PDFs and PSs are only clean in svn version not in the tarballs
+SVNCLEANFILES = *.pdf *.ps
+clean-local:
+	if test -e $(top_srcdir)/$(CURDIR)/doxygen/Doxydep; then rm -rf $(SVNCLEANFILES) ; fi
 
 # include further rules needed by Dune
 include $(top_srcdir)/am/global-rules
