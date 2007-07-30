@@ -27,7 +27,9 @@ EXTRA_DIST = $(PAGES) example.opts
 include $(top_srcdir)/am/webstuff
 
 # remove html pages on ``make  clean''
-CLEANFILES = $(PAGES)
+SVNCLEANFILES = $(PAGES)
+clean-local:
+	if test -e $(top_srcdir)/doc/doxygen/Doxydep; then rm -rf $(SVNCLEANFILES); fi
 
 # include further rules needed by Dune
 include $(top_srcdir)/am/global-rules

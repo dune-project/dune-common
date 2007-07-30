@@ -15,6 +15,7 @@ all: $(WHAT) $(DOXYGEN_HTML)
 BASEDIR=../..
 CURDIR=doc/doxygen
 EXTRAINSTALL = doxygen.log
+
 # EXTRAINSTALL in the html subdirectory
 DOXYGENINSTALL = *.html *.css *.png *.gif
 
@@ -33,7 +34,7 @@ endif
 
 
 #we need this in the distribution
-EXTRA_DIST = $(WHAT) $(DOXYGEN_DIST) $(DOXYGENHEADER) doxy-footer.html $(PAGES)
+EXTRA_DIST = $(WHAT) html-dist $(DOXYGEN_DIST) $(DOXYGENHEADER) doxy-footer.html $(PAGES)
 
 doxygendir = $(datadir)/doc/dune-common/doxygen
 doxygen_DATA = $(WHAT)
@@ -99,10 +100,21 @@ FORCE:
 
 include $(top_srcdir)/am/webstuff
 
+# file to clean only in svn and not in tarball tree
+SVNCLEANFILES = html html-dist $(WHAT) $(DOXYGENHEADER)
+
 clean-local:
+<<<<<<< .working
 	if test -e Doxydep; then rm -rf $(WHAT) html html-dist; fi
+=======
+	if test -e $(top_srcdir)/doc/doxygen/Doxydep; then rm -rf $(SVNCLEANFILES);fi
+>>>>>>> .merge-rechts.r4960
 	rm -rf latex *~
 
+<<<<<<< .working
 CLEANFILES = $(DOXYGENTAG) $(DOXYGENHEADER)
+=======
+CLEANFILES = $(DOXYGENTAG)
+>>>>>>> .merge-rechts.r4960
 
 include $(top_srcdir)/am/global-rules

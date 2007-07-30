@@ -18,6 +18,9 @@ EXTRA_DIST= $(PAGES)
 
 include $(top_srcdir)/am/webstuff
 
-CLEANFILES = $(PAGES)
+# remove html pages on ``make  clean'' if we are not a tarball
+SVNCLEANFILES = $(PAGES)
+clean-local:
+	if test -e $(top_srcdir)/doc/doxygen/Doxydep; then rm -rf $(SVNCLEANFILES); fi
 
 include $(top_srcdir)/am/global-rules
