@@ -104,17 +104,9 @@ include $(top_srcdir)/am/webstuff
 SVNCLEANFILES = html html-dist $(WHAT) $(DOXYGENHEADER)
 
 clean-local:
-<<<<<<< .working
-	if test -e Doxydep; then rm -rf $(WHAT) html html-dist; fi
-=======
 	if test -e $(top_srcdir)/doc/doxygen/Doxydep; then rm -rf $(SVNCLEANFILES);fi
->>>>>>> .merge-rechts.r4960
 	rm -rf latex *~
 
-<<<<<<< .working
-CLEANFILES = $(DOXYGENTAG) $(DOXYGENHEADER)
-=======
 CLEANFILES = $(DOXYGENTAG)
->>>>>>> .merge-rechts.r4960
 
 include $(top_srcdir)/am/global-rules
