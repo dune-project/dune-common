@@ -4,6 +4,8 @@
 #ifndef DUNE_LOCICTRAITS_H
 #define DUNE_LOCICTRAITS_H
 
+#include <dune/common/deprectaed.hh>
+
 namespace Dune {
   /** @addtogroup Common
    *
