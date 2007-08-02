@@ -12,6 +12,8 @@
 #include <iomanip>
 #include <string>
 
+#include <dune/common/deprecated.hh>
+
 // Include system implementation of array class if present
 #ifdef HAVE_ARRAY
 #include <array>
