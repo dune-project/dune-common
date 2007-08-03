@@ -14,7 +14,7 @@ commoninclude_HEADERS = dlist.cc stdstreams.cc alignment.hh \
   array.hh arraylist.hh bitfield.hh debugstream.hh dlist.hh \
   enumset.hh exceptions.hh fixedarray.hh fmatrix.hh \
   fvector.hh genericiterator.hh \
-  helpertemplates.hh interfaces.hh iteratorfacades.hh logictraits.hh \
+  helpertemplates.hh interfaces.hh iteratorfacades.hh \
   misc.hh poolallocator.hh \
   sllist.hh smartpointer.hh stack.hh stdstreams.hh timer.hh tuples.hh \
   typetraits.hh precision.hh bigunsignedint.hh \
