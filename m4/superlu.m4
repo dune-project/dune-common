@@ -40,16 +40,16 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
 		    AC_MSG_RESULT(yes)
 		else
 		    with_superlu=/usr/
-		    my_include_path=include
+		    my_include_path=include/superlu
 		    my_lib_path=lib
 		    if test ! -f "$with_superlu/$my_include_path/dsp_defs.h" ; then
 		#Try to find headers under superludist
-			my_include_path=include/superlu
+			my_include_path=include
 			if test ! -f "$with_superlu/$my_include_path/dsp_defs.h" ; then
 			    with_superlu=/usr/local/
-			    my_include_path=include
+			    my_include_path=include/superlu
 			    if test ! -f "$with_superlu/$my_include_path/dsp_defs.h" ; then
-				my_include_path=include/superlu
+				my_include_path=include
 				if test ! -f "$with_superlu/$my_include_path/dsp_defs.h" ; then
 				    with_superlu="no"
 				    AC_MSG_RESULT(failed)
@@ -112,7 +112,7 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
 		LIBS="$BLAS_LIBS $LIBS $FLIBS"
 
 		AC_CHECK_LIB(superlu, [dgssvx],[
-			SUPERLU_LIBS="$LIBS"
+			SUPERLU_LIBS="-lsuperlu $LIBS"
 			SUPERLU_LDFLAGS="$LDFLAGS"
 			HAVE_SUPERLU="1"
 			],[
@@ -144,7 +144,7 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
 		    fi
 		fi
 	    fi
-      
+      echo "SUPERLU_LIBS=$SUPERLU_LIBS"
       # pre-set variable for summary
       #with_superlu="no"
       
