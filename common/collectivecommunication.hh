@@ -9,9 +9,24 @@
 
 #include "exceptions.hh"
 
+/*! \defgroup ParallelCommunication Parallel Communication
+   \ingroup Common
+
+   Dune offers an abstraction to the basic methods of parallel
+   communication. It allows to switch parallel features on and of,
+   without changing the code.
+
+ */
+
 namespace Dune
 {
   /*! @brief Collective communication interface and sequential default implementation
+
+     CollectiveCommunication offers an abstraction to the basic methods
+     of parallel communication, following the message-passing
+     paradigm. It allows to switch parallel features on and of, without
+     changing the code. Currently only MPI and sequential code are
+     supported.
 
      A CollectiveCommunication object is returned by all grids (also
      the sequential ones) in order to allow code to be written in
@@ -29,7 +44,7 @@ namespace Dune
      is not visible in the interface, i.e. Dune grid implementations
      are not restricted to MPI.
 
-     \ingroup GICollectiveCommunication
+     \ingroup ParallelCommunication
    */
   template<typename C>
   class CollectiveCommunication

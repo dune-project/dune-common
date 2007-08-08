@@ -16,6 +16,7 @@ namespace Dune
   /**
    * @file
    * @brief This file contains helpers for dealing with MPI.
+   * @ingroup ParallelCommunication
    *
    * Basically there are two helpers available:
    * <dl>
@@ -126,6 +127,7 @@ namespace Dune
 #if HAVE_MPI
   /**
    * @brief A real mpi helper.
+   * @ingroup ParallelCommunication
    *
    * This helper should be used for parallel programs.
    */
@@ -215,7 +217,10 @@ namespace Dune
 #else
   // We do not have MPI therefore FakeMPIHelper
   // is the MPIHelper
-  /** @brief If no MPI is available FakeMPIHelper becomes the MPIHelper */
+  /**
+   * @brief If no MPI is available FakeMPIHelper becomes the MPIHelper
+   * @ingroup ParallelCommunication
+   */
   typedef FakeMPIHelper MPIHelper;
 
 #endif
