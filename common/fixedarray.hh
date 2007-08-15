@@ -135,7 +135,7 @@ namespace Dune
     enum { dimension = N };
 
     //! Create uninitialized array
-    FixedArray () DUNE_DEPRECATED {}
+    FixedArray () {}
 
     //! Initialize all components with same size
     FixedArray (T t) DUNE_DEPRECATED
@@ -146,11 +146,19 @@ namespace Dune
     /** \brief Return array size */
     int size() const {return N;}
 
-    //! Assign value to all entries
-    FixedArray<T,N>& operator= (const T& t)
+    /** \brief Assign value to all entries
+     * @deprecated Use assign instead.
+     */
+    FixedArray<T,N>& operator= (const T& t) DUNE_DEPRECATED
+    {
+      assign(t);
+      return (*this);
+    }
+
+    //! \brief Assign value to all entries
+    void assign(const T& t)
     {
       for (int i=0; i<N; i++) a[i]=t;
-      return (*this);
     }
 
     //! Component access
