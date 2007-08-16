@@ -32,7 +32,6 @@
 #include <dune/common/interfaces.hh>
 #include <dune/common/iteratorfacades.hh>
 #include <dune/common/lcm.hh>
-#include <dune/common/logictraits.hh>
 #include <dune/common/misc.hh>
 #include <dune/common/poolallocator.hh>
 #include <dune/common/precision.hh>
