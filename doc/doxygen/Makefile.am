@@ -34,15 +34,19 @@ endif
 
 
 #we need this in the distribution
-EXTRA_DIST = $(WHAT) html-dist $(DOXYGEN_DIST) $(DOXYGENHEADER) doxy-footer.html $(PAGES)
+EXTRA_DIST = $(WHAT) $(DOXYGEN_DIST) $(DOXYGENHEADER) doxy-footer.html $(PAGES)
 
 doxygendir = $(datadir)/doc/dune-common/doxygen
 doxygen_DATA = $(WHAT)
 
 install-data-local: html-dist
+	echo peng > /dev/stderr
+	echo $(datadir) > /dev/stderr
+	echo $(DESTDIR) > /dev/stderr
 	$(mkinstalldirs) $(DESTDIR)/$(doxygendir); \
 	list="$(srcdir)/html-dist/*.html $(srcdir)/html-dist/*.css $(srcdir)/html-dist/*.png $(srcdir)/html-dist/*.gif"; \
 	for p in $$list; do \
+	    echo $(install_sh_DATA) $$p $(DESTDIR)/$(doxygendir) > /dev/stderr; \
 		$(install_sh_DATA) $$p $(DESTDIR)/$(doxygendir); \
 	done
 
