@@ -40,13 +40,9 @@ doxygendir = $(datadir)/doc/dune-common/doxygen
 doxygen_DATA = $(WHAT)
 
 install-data-local: html-dist
-	echo peng > /dev/stderr
-	echo $(datadir) > /dev/stderr
-	echo $(DESTDIR) > /dev/stderr
 	$(mkinstalldirs) $(DESTDIR)/$(doxygendir); \
 	list="$(srcdir)/html-dist/*.html $(srcdir)/html-dist/*.css $(srcdir)/html-dist/*.png $(srcdir)/html-dist/*.gif"; \
 	for p in $$list; do \
-	    echo $(install_sh_DATA) $$p $(DESTDIR)/$(doxygendir) > /dev/stderr; \
 		$(install_sh_DATA) $$p $(DESTDIR)/$(doxygendir); \
 	done
 
@@ -66,7 +62,7 @@ DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.png
 doxygen-tag: FORCE $(DOXYGENHEADERBUILD)
 	set -e; \
 	if test -e Doxyfile; then \
-	  if test ! -e doxygen-tag || test x"`find $(top_srcdir) \( $(DEPENDON) \) -a -newer doxygen-tag -print`" != x ; then \
+	  if test ! -e doxygen-tag || test x"`find $(top_srcdir) \( $(DEPENDON) \) -a -cnewer doxygen-tag -print`" != x ; then \
 	    echo Running doxygen. This may take a while... ; \
 	    ( cat Doxyfile; $(DOYXFILE_OVERWRITE) ) > Doxyfile.tmp; \
 	    $(DOXYGEN) Doxyfile.tmp > doxygen.log 2>&1 <&- ; \
