@@ -47,8 +47,10 @@ install-data-local: html-dist
 	done
 
 uninstall-local:
-	rm -f $(DESTDIR)/$(doxygendir)/*.html $(DESTDIR)/$(doxygendir)/*.css \
-	$(DESTDIR)/$(doxygendir)/*.png $(DESTDIR)/$(doxygendir)/*.gif
+	rm -f $(DESTDIR)/$(doxygendir)/*.html
+	rm -f $(DESTDIR)/$(doxygendir)/*.css
+	rm -f $(DESTDIR)/$(doxygendir)/*.png
+	rm -f $(DESTDIR)/$(doxygendir)/*.gif
 
 # what files does the doxygen-generated stuff depend on (find-syntax)
 DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.png
