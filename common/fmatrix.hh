@@ -49,10 +49,8 @@ namespace Dune {
 
      Matrices represent linear maps from a vector space V to a vector space W.
        This class represents such a linear map by storing a two-dimensional
-       array of numbers of a given field type K. The number of rows and
+       %array of numbers of a given field type K. The number of rows and
        columns is given at compile time.
-
-           Implementation of all members uses template meta programs where appropriate
    */
 #ifdef DUNE_EXPRESSIONTEMPLATES
   template<class K, int n, int m>
