@@ -638,7 +638,28 @@ namespace Dune {
       x[0] = detinv*(p[1][1]*b[0]-p[0][1]*b[1]);
       x[1] = detinv*(p[0][0]*b[1]-p[1][0]*b[0]);
 
+    } else if (n==3) {
+
+      K d = determinant();
+#ifdef DUNE_FMatrix_WITH_CHECKING
+      if (fvmeta_absreal(d)<FMatrixPrecision<>::absolute_limit())
+        DUNE_THROW(FMatrixError,"matrix is singular");
+#endif
+
+      x[0] = (b[0]*p[1][1]*p[2][2] - b[0]*p[2][1]*p[1][2]
+              - b[1] *p[0][1]*p[2][2] + b[1]*p[2][1]*p[0][2]
+              + b[2] *p[0][1]*p[1][2] - b[2]*p[1][1]*p[0][2]) / d;
+
+      x[1] = (p[0][0]*b[1]*p[2][2] - p[0][0]*b[2]*p[1][2]
+              - p[1][0] *b[0]*p[2][2] + p[1][0]*b[2]*p[0][2]
+              + p[2][0] *b[0]*p[1][2] - p[2][0]*b[1]*p[0][2]) / d;
+
+      x[2] = (p[0][0]*p[1][1]*b[2] - p[0][0]*p[2][1]*b[1]
+              - p[1][0] *p[0][1]*b[2] + p[1][0]*p[2][1]*b[0]
+              + p[2][0] *p[0][1]*b[1] - p[2][0]*p[1][1]*b[0]) / d;
+
     } else {
+
       V& rhs = x;     // use x to store rhs
       rhs = b;     // copy data
       Elim<V> elim(rhs);
