@@ -229,6 +229,48 @@ bool ConfigParser::get(const string& key, bool defaultValue)
   return (atoi(ret.c_str()) !=0 );
 }
 
+// This namespace here is needed to make the code compile...
+namespace Dune {
+
+  template<>
+  string ConfigParser::get<string>(const string& key)
+  {
+    if (hasKey(key))
+      return (*this)[key];
+
+    DUNE_THROW(RangeError, "Key '" << key << "' not found in parameter file!");
+  }
+
+  template<>
+  int ConfigParser::get<int>(const string& key)
+  {
+    if (hasKey(key))
+      return std::atoi((*this)[key].c_str());
+
+    DUNE_THROW(RangeError, "Key '" << key << "' not found in parameter file!");
+  }
+
+  template<>
+  double ConfigParser::get<double>(const string& key)
+  {
+    if (hasKey(key))
+      return std::atof((*this)[key].c_str());
+
+    DUNE_THROW(RangeError, "Key '" << key << "' not found in parameter file!");
+  }
+
+  template<>
+  bool ConfigParser::get<bool>(const string& key)
+  {
+    if (hasKey(key))
+      return (std::atoi((*this)[key].c_str()) !=0 );
+
+    DUNE_THROW(RangeError, "Key '" << key << "' not found in parameter file!");
+  }
+
+
+}  // end namespace Dune
+
 string ConfigParser::trim(string s)
 {
   int i = 0;
