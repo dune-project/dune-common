@@ -191,13 +191,6 @@ string ConfigParser::get(const string& key, string defaultValue)
 }
 
 
-string ConfigParser::get(const string& key, char* defaultValue)
-{
-  string s = defaultValue;
-
-  return get(key, s);
-}
-
 int ConfigParser::get(const string& key, int defaultValue)
 {
   stringstream stream;

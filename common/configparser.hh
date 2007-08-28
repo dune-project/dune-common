@@ -148,9 +148,6 @@ namespace Dune {
     std::string get(const std::string& key, std::string defaultValue);
 
 
-    std::string get(const std::string& key, char* defaultValue);
-
-
     /** \brief get value as int
      *
      * Returns value for given key interpreted as int.
