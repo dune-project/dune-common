@@ -145,7 +145,7 @@ namespace Dune {
      * \param defaultValue default if key does not exist
      * \return value as string
      */
-    std::string get(const std::string& key, std::string defaultValue);
+    std::string get(const std::string& key, const std::string& defaultValue);
 
 
     /** \brief get value as int

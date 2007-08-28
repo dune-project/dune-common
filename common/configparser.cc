@@ -182,7 +182,7 @@ string& ConfigParser::operator[] (const string& key)
   }
 }
 
-string ConfigParser::get(const string& key, string defaultValue)
+string ConfigParser::get(const string& key, const string& defaultValue)
 {
   if (hasKey(key))
     return (*this)[key];
