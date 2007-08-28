@@ -147,6 +147,18 @@ namespace Dune {
      */
     std::string get(const std::string& key, const std::string& defaultValue);
 
+    /** \brief get value as string
+     *
+     * Returns pure string value for given key.
+     *
+     * \todo This is a hack so get("my_key", "xyz") compiles
+     * (without this method "xyz" resolves to bool instead of std::string)
+     * \param key key name
+     * \param defaultValue default if key does not exist
+     * \return value as string
+     */
+    std::string get(const std::string& key, char* defaultValue);
+
 
     /** \brief get value as int
      *

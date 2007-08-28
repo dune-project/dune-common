@@ -190,6 +190,14 @@ string ConfigParser::get(const string& key, const string& defaultValue)
     return defaultValue;
 }
 
+string ConfigParser::get(const string& key, char* defaultValue)
+{
+  if (hasKey(key))
+    return (*this)[key];
+  else
+    return defaultValue;
+}
+
 
 int ConfigParser::get(const string& key, int defaultValue)
 {
