@@ -5,7 +5,7 @@ ALLM4S = acx_blas.m4 acx_mpi.m4 acx_pthread.m4 alberta.m4 alugrid.m4	\
          dune_amira.m4 dune_compiler.m4 dune_deprecated.m4 dune_griddim.m4 \
          dune_linkcxx.m4 dune.m4 dune_mpi.m4           \
          dune_psurface.m4 dune_streams.m4 fortran_overwrite.m4 grape.m4  \
-	 inkscape.m4 mpi-config.m4 opengl.m4         \
+	 immdx_lib_metis.m4 inkscape.m4 mpi-config.m4 opengl.m4         \
          ug.m4 xdr.m4
 
 aclocaldir = $(datadir)/aclocal
