@@ -40,7 +40,7 @@ AC_DEFUN([DUNE_PATH_UG],[
 
       # set variables so that tests can use them
       LDFLAGS="$LDFLAGS -L$UG_LIB_PATH"
-      CPPFLAGS="$CPPFLAGS -I$UG_INCLUDE_PATH"
+      CPPFLAGS="$CPPFLAGS -I$UG_INCLUDE_PATH -DENABLE_UG"
 
       AC_ARG_ENABLE(ug-lgmdomain,
         AC_HELP_STRING([--enable-ug-lgmdomain],[use UG LGM domain (default is standard domain)]))
@@ -56,7 +56,7 @@ AC_DEFUN([DUNE_PATH_UG],[
 
       # check for central header
       AC_CHECK_HEADER([$UG_INCLUDE_PATH/gm.h],
-      [UG_CPPFLAGS="-I$UG_INCLUDE_PATH"
+      [UG_CPPFLAGS="-I$UG_INCLUDE_PATH -DENABLE_UG"
           HAVE_UG="1"],
       [HAVE_UG="0"
       AC_MSG_WARN([gm.h not found in $UG_INCLUDE_PATH])]
@@ -159,7 +159,9 @@ AC_DEFUN([DUNE_PATH_UG],[
       AC_SUBST(UG_LDFLAGS, $UG_LDFLAGS)
       AC_SUBST(UG_LIBS, $UG_LIBS)
       AC_SUBST(UG_CPPFLAGS, $UG_CPPFLAGS)
-      AC_DEFINE(HAVE_UG, 1, [Define to 1 if UG is found])
+      AC_DEFINE(HAVE_UG, ENABLE_UG, 
+        [This is only true if UG was found by configure 
+         _and_ if the application uses the UG_CPPFLAGS])
       if test x"$enable_ug_lgmdomain" = xyes ; then
         AC_DEFINE(UG_LGMDOMAIN, 1, [use UG LGM domain])
       fi

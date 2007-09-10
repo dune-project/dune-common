@@ -59,7 +59,7 @@ if test x$with_alugrid != x && test x$with_alugrid != xno ; then
   REM_CPPFLAGS=$CPPFLAGS
 
   LDFLAGS="$LDFLAGS -L$ALUGRID_LIB_PATH"
-  ALU3D_INC_FLAG="-I$ALUGRID_INCLUDE_PATH -I$ALUGRID_INCLUDE_PATH/serial -I$ALUGRID_INCLUDE_PATH/duneinterface"
+  ALU3D_INC_FLAG="-I$ALUGRID_INCLUDE_PATH -I$ALUGRID_INCLUDE_PATH/serial -I$ALUGRID_INCLUDE_PATH/duneinterface -DENABLE_ALUGRID"
   CPPFLAGS="$CPPFLAGS $ALU3D_INC_FLAG"
 
   # check for header
@@ -103,7 +103,9 @@ if test x$HAVE_ALUGRID = x1 ; then
   AC_SUBST(ALUGRID_LIBS, $ALUGRID_LIBS)
   AC_SUBST(ALUGRID_LDFLAGS, $ALUGRID_LDFLAGS)
   AC_SUBST(ALUGRID_CPPFLAGS, $ALUGRID_CPPFLAGS)
-  AC_DEFINE(HAVE_ALUGRID, 1, [Define to 1 if alugrid-library is found])
+  AC_DEFINE(HAVE_ALUGRID, ENABLE_ALUGRID,
+    [This is only true if alugrid-library was found by configure 
+     _and_ if the application uses the ALUGRID_CPPFLAGS])
 
   # add to global list
   DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $ALUGRID_LDFLAGS"
