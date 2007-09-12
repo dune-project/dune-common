@@ -62,9 +62,9 @@ implementations. Therefore it is important to know about possible caveats.
 </p>
 <ul>
 <li>
-<a href="http://www.newsforge.com/article.pl?sid=04/03/01/1554205">
+<a href="http://www.linux.com/articles/34658">
 What to watch out for when writing portable shell scripts</a>
-(article in newsforge)
+(article in linux.com)
 </li>
 <li>
 <a href="http://code.dogmap.org/lintsh/">lintsh</a>: a collection of
