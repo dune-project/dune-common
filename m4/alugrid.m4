@@ -34,8 +34,8 @@ if test x$with_alugrid != x && test x$with_alugrid != xno ; then
 
     echo -n "checking ALUGrid version >= $NEEDEDVERSION... " 
     if test -f $VERSIONCHECK; then 
-      VERSION=`$VERSIONCHECK -c $NEEDEDVERSION`
-      if test "x$VERSION" != "x-1"; then 
+      ALUVERSION=`$VERSIONCHECK -c $NEEDEDVERSION`
+      if test "x$ALUVERSION" != "x-1"; then 
         VERSIONNO=`$VERSIONCHECK -v`
         echo "yes (ALUGrid-$VERSIONNO)"
       else 
