@@ -28,16 +28,16 @@ if test x$with_alugrid != x && test x$with_alugrid != xno ; then
     # expand tilde / other stuff
 		ALUGRIDROOT=`cd $with_alugrid && pwd`
 
-    VERSIONCHECK=$ALUGRIDROOT/bin/alugridversion
+    ALUGRID_VERSIONCHECK=$ALUGRIDROOT/bin/alugridversion
     ## check version number 
-    NEEDEDVERSION=1.0
+    NEEDEDALUGRID_VERSION=1.0
 
-    echo -n "checking ALUGrid version >= $NEEDEDVERSION... " 
-    if test -f $VERSIONCHECK; then 
-      ALUVERSION=`$VERSIONCHECK -c $NEEDEDVERSION`
-      if test "x$ALUVERSION" != "x-1"; then 
-        VERSIONNO=`$VERSIONCHECK -v`
-        echo "yes (ALUGrid-$VERSIONNO)"
+    echo -n "checking ALUGrid version >= $NEEDEDALUGRID_VERSION... " 
+    if test -f $ALUGRID_VERSIONCHECK; then 
+      ALUGRID_VERSION=`$ALUGRID_VERSIONCHECK -c $NEEDEDALUGRID_VERSION`
+      if test "x$ALUGRID_VERSION" != "x-1"; then 
+        ALUGRID_VERSIONNO=`$ALUGRID_VERSIONCHECK -v`
+        echo "yes (ALUGrid-$ALUGRID_VERSIONNO)"
       else 
         AC_MSG_ERROR([ALUGrid version is too old!])
       fi 
