@@ -52,7 +52,7 @@ CPPFLAGS="$CPPFLAGS $ALBERTADIM -DEL_INDEX=0 -I$ALBERTA_INCLUDE_PATH"
 
 # check for header
 AC_CHECK_HEADER([alberta.h], 
-   [ALBERTA_CPPFLAGS="-I$ALBERTA_INCLUDE_PATH"
+   [ALBERTA_CPPFLAGS="-I$ALBERTA_INCLUDE_PATH -DENABLE_ALBERTA"
   HAVE_ALBERTA="1"],
   AC_MSG_WARN([alberta.h not found in $ALBERTA_INCLUDE_PATH]))
 
@@ -95,7 +95,9 @@ if test x$HAVE_ALBERTA = x1 ; then
   AC_SUBST(ALBERTA_LIBS, $ALBERTA_LIBS)
   AC_SUBST(ALBERTA_LDFLAGS, $ALBERTA_LDFLAGS)
   AC_SUBST(ALBERTA_CPPFLAGS, $ALBERTA_CPPFLAGS)
-  AC_DEFINE(HAVE_ALBERTA, 1, [Define to 1 if alberta-library is found])
+  AC_DEFINE(HAVE_ALBERTA, ENABLE_ALBERTA,
+    [This is only true if alberta-library was found by configure 
+     _and_ if the application uses the ALBERTA_CPPFLAGS])
 
   # add to global list
   DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $ALBERTA_LDFLAGS"

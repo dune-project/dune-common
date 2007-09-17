@@ -40,7 +40,7 @@ AC_DEFUN([DUNE_PATH_UG],[
 
       # set variables so that tests can use them
       LDFLAGS="$LDFLAGS -L$UG_LIB_PATH"
-      CPPFLAGS="$CPPFLAGS -I$UG_INCLUDE_PATH"
+      CPPFLAGS="$CPPFLAGS -I$UG_INCLUDE_PATH -DENABLE_UG"
 
       UG_LIBS="-lug2 -ldomS2 -lgg2 -lug3 -ldomS3 -lgg3 -ldevS"
 
@@ -50,7 +50,7 @@ AC_DEFUN([DUNE_PATH_UG],[
 
       # check for central header
       AC_CHECK_HEADER([$UG_INCLUDE_PATH/gm.h],
-	  [UG_CPPFLAGS="-I$UG_INCLUDE_PATH"
+	  [UG_CPPFLAGS="-I$UG_INCLUDE_PATH -DENABLE_UG"
 	      HAVE_UG="1"],
 	  [HAVE_UG="0"
 	  AC_MSG_WARN([gm.h not found in $UG_INCLUDE_PATH])]
@@ -138,9 +138,11 @@ AC_DEFUN([DUNE_PATH_UG],[
 	  AC_SUBST(UG_LDFLAGS, $UG_LDFLAGS)
 	  AC_SUBST(UG_LIBS, $UG_LIBS)
 	  AC_SUBST(UG_CPPFLAGS, $UG_CPPFLAGS)
-	  AC_DEFINE(HAVE_UG, 1, [Define to 1 if UG is found])
-	  
-    # add to global list
+      AC_DEFINE(HAVE_UG, ENABLE_UG, 
+        [This is only true if UG was found by configure 
+         _and_ if the application uses the UG_CPPFLAGS])
+
+      # add to global list
 	  DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $UG_LDFLAGS"
 	  DUNE_PKG_LIBS="$DUNE_PKG_LIBS $UG_LIBS"
 	  DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $UG_CPPFLAGS"
