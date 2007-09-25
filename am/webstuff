@@ -14,7 +14,7 @@
 .wml.html:
 	export DUNEWEBDIR=$(DUNEWEBDIR); \
 	export BASEDIR=$(BASEDIR); \
-	sh $(top_builddir)/bin/wmlwrap -I $(srcdir) $< -o $@
+	sh $(DUNE_COMMON_ROOT)/bin/wmlwrap -I $(srcdir) $< -o $@
 
 web-install: all
 	if test -d $(DUNEWEBDIR) && test -r $(DUNEWEBDIR)/Make.global ; then \
