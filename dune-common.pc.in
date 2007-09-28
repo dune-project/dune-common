@@ -10,6 +10,6 @@ Name: @PACKAGE_NAME@
 Version: @VERSION@
 Description: Dune (Distributed and Unified Numerics Environment) common module
 URL: http://dune-project.org/
-Requires: ${MODULES_DEPENDENCIES}
+Requires: ${DEPENDENCIES}
 Libs: -L${libdir} -ldunecommon
 Cflags: -I${includedir}
