@@ -37,6 +37,19 @@ canonicalpath(){
   (cd $(dirname $(canonicalname $1)) && pwd)
 }
 
+pkg_config_dependencies(){
+    if test $# -ne 1; then
+	echo Usage: pkg_config_dependencies name > /dev/stderr
+	return 1
+    fi
+    name="$1"
+    depends="`pkg-config --variable=DEPENDENCIES $name| sed -e 's/,/ /g'`"
+    for pkg in $depends; do
+	depends="$depends `pkg_config_dependencies $pkg`"
+    done
+    echo $depends
+}
+
 modulesexist(){
   allfound=0
 
@@ -119,15 +132,6 @@ if [ "$MODULES" = "" ]; then
   find_modules_in_path
 fi
 
-if [ "$MODULES" = "" ]; then
-  echo "ERROR">/dev/stderr
-  echo "No dune modules were found!">/dev/stderr
-  echo "Did you forget to specify the places where ">/dev/stderr
-  echo "you installed your modules in the ">/dev/stderr
-  echo "DUNE_CONTROL_PATH environment variable?" >/dev/stderr
-  exit 1;
-fi
-
 # get the real module names
 SRC_MODULES=""
 for i in $MODULES; do
@@ -140,6 +144,18 @@ PKG_MODULES="`pkg-config --list-all | grep dune | cut -d' ' -f1`"
 
 # merge lists
 ALL_MODULES="`echo $SRC_MODULES $PKG_MODULES | tr ' ' '\n' | sort | uniq`"
+
+
+if [ "$ALL_MODULES" = "" ]; then
+  echo "ERROR">/dev/stderr
+  echo "No dune modules were found!">/dev/stderr
+  echo "Did you forget to specify the places where ">/dev/stderr
+  echo "you installed your modules in the ">/dev/stderr
+  echo "DUNE_CONTROL_PATH environment variable">/dev/stderr
+  echo "and adjusted the PKG_CONFIG_PATH environment">/dev/stderr
+  echo "accordingly?" >/dev/stderr
+  exit 1;
+fi
 
 ################## READ OPTIONS ##################
 
@@ -225,6 +241,7 @@ C_DELIM
 ## Create the parameters passed to DUNE_CHECK_ALL
 
 # save module list of dunemodules.inc
+set -x
 save_MODULES=$MODULES
 for name in $DEPENDENCIES; do
   mod="`fix_variable_name $name`"
@@ -237,13 +254,14 @@ for name in $DEPENDENCIES; do
     MODULES=$save_MODULES
   else
     # found via pkg-config
-    M_DEPS="`pkg-config --variable=Requires $name`"
+    M_DEPS="`pkg_config_dependencies $name` $name"
+    #M_DEPS="`pkg-config --variable=Requires $name`"
   fi
   for dep in $M_DEPS; do
       CHECK="$CHECK [$dep]"
   done
 done
-
+set +x
 make_unique "$CHECK"
 
 # insert , between modules
