@@ -7,7 +7,19 @@ canonicalname(){
      echo Usage: canonicalname path > /dev/stderr
      return 1
   fi
-  readlink $1 || echo "$(dirname $1)/$(basename $1)"
+  name="$1"
+  while test -L "$name"; do
+    if ! test -e "$name"; then
+      echo $name: file not found > /dev/stderr
+      return 1
+    fi
+    if newname="`readlink $name`"; then
+      name="$newname"
+    else
+      echo "$(dirname $name)/$(basename $name)"
+    fi
+  done
+  echo $name
 }
 
 canonicalpath(){
