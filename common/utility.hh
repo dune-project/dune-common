@@ -24,37 +24,121 @@ namespace Dune {
    * A tuple of NULL pointers may be useful when you use a tuple of pointers
    * in a class which you can only initialise in a later stage.
    */
-  template <class PairT>
+  template <class Tuple>
   class NullPointerInitialiser {};
 
-  /**
-   * @brief Specialisation for standard tuple element.
-   */
-  template <class Head, class Tail>
-  class NullPointerInitialiser<Pair<Head*, Tail> > {
-  public:
-    //! The subpart of the tuple which is handed back to the next instance
-    //! of the NullPointerInitialiser.
-    typedef Pair<Head*, Tail> ResultType;
-  public:
-    //! Static method to build up tuple.
-    static inline ResultType apply() {
-      return ResultType(0, NullPointerInitialiser<Tail>::apply());
-    }
-  };
+  namespace
+  {
+    /**
+     * @brief Helper class for initialising null pointers.
+     *
+     * First template parameter is the tuple.
+     * Second templates parameter is the size of the tuple.
+     */
+    template<class T, int size>
+    struct InitialiserHelper
+    {};
 
-  /**
-   * @brief Specialisation for last (Nil) element.
-   */
-  template <>
-  class NullPointerInitialiser<Nil> {
+    template<typename T1, typename T2, typename T3, typename T4, typename T5,
+        typename T6, typename T7, typename T8, typename T9>
+    struct InitialiserHelper<tuple<T1*,T2,T3,T4,T5,T6,T7,T8,T9>,1>
+    {
+      static inline tuple<T1*,T2,T3,T4,T5,T6,T7,T8,T9> apply()
+      {
+        return tuple<T1*,T2,T3,T4,T5,T6,T7,T8,T9>(0);
+      }
+    };
+
+    template<typename T1, typename T2, typename T3, typename T4, typename T5,
+        typename T6, typename T7, typename T8, typename T9>
+    struct InitialiserHelper<tuple<T1*,T2*,T3,T4,T5,T6,T7,T8,T9>,2>
+    {
+      static inline tuple<T1*,T2*,T3,T4,T5,T6,T7,T8,T9> apply()
+      {
+        return tuple<T1*,T2*,T3,T4,T5,T6,T7,T8,T9>(0,0);
+      }
+    };
+
+    template<typename T1, typename T2, typename T3, typename T4, typename T5,
+        typename T6, typename T7, typename T8, typename T9>
+    struct InitialiserHelper<tuple<T1*,T2*,T3*,T4,T5,T6,T7,T8,T9>,3>
+    {
+      static inline tuple<T1*,T2*,T3*,T4,T5,T6,T7,T8,T9> apply()
+      {
+        return tuple<T1*,T2*,T3*,T4,T5,T6,T7,T8,T9>(0,0,0);
+      }
+    };
+
+    template<typename T1, typename T2, typename T3, typename T4, typename T5,
+        typename T6, typename T7, typename T8, typename T9>
+    struct InitialiserHelper<tuple<T1*,T2*,T3*,T4*,T5,T6,T7,T8,T9>,4>
+    {
+      static inline tuple<T1*,T2*,T3*,T4*,T5,T6,T7,T8,T9> apply()
+      {
+        return tuple<T1*,T2*,T3*,T4*,T5,T6,T7,T8,T9>(0,0,0,0);
+      }
+    };
+
+    template<typename T1, typename T2, typename T3, typename T4, typename T5,
+        typename T6, typename T7, typename T8, typename T9>
+    struct InitialiserHelper<tuple<T1*,T2*,T3*,T4*,T5*,T6,T7,T8,T9>,5>
+    {
+      static inline tuple<T1*,T2*,T3*,T4*,T5*,T6,T7,T8,T9> apply()
+      {
+        return tuple<T1*,T2*,T3*,T4*,T5*,T6,T7,T8,T9>(0,0,0,0,0);
+      }
+    };
+
+    template<typename T1, typename T2, typename T3, typename T4, typename T5,
+        typename T6, typename T7, typename T8, typename T9>
+    struct InitialiserHelper<tuple<T1*,T2*,T3*,T4*,T5*,T6*,T7,T8,T9>,6>
+    {
+      static inline tuple<T1*,T2*,T3*,T4*,T5*,T6*,T7,T8,T9> apply()
+      {
+        return tuple<T1*,T2*,T3*,T4*,T5*,T6*,T7,T8,T9>(0,0,0,0,0,0);
+      }
+    };
+
+    template<typename T1, typename T2, typename T3, typename T4, typename T5,
+        typename T6, typename T7, typename T8, typename T9>
+    struct InitialiserHelper<tuple<T1*,T2*,T3*,T4*,T5*,T6*,T7*,T8,T9>,7>
+    {
+      static inline tuple<T1*,T2*,T3*,T4*,T5*,T6*,T7*,T8,T9> apply()
+      {
+        return tuple<T1*,T2*,T3*,T4*,T5*,T6*,T7*,T8,T9>(0,0,0,0,0,0,0);
+      }
+    };
+    template<typename T1, typename T2, typename T3, typename T4, typename T5,
+        typename T6, typename T7, typename T8, typename T9>
+    struct InitialiserHelper<tuple<T1*,T2*,T3*,T4*,T5*,T6*,T7*,T8*,T9>,8>
+    {
+      static inline tuple<T1*,T2*,T3*,T4*,T5*,T6*,T7*,T8*,T9> apply()
+      {
+        return tuple<T1*,T2*,T3*,T4*,T5*,T6*,T7*,T8*,T9>(0,0,0,0,0,0,0,0);
+      }
+    };
+
+    template<typename T1, typename T2, typename T3, typename T4, typename T5,
+        typename T6, typename T7, typename T8, typename T9>
+    struct InitialiserHelper<tuple<T1*,T2*,T3*,T4*,T5*,T6*,T7*,T8*,T9*>,9>
+    {
+      static inline tuple<T1*,T2*,T3*,T4*,T5*,T6*,T7*,T8*,T9*> apply()
+      {
+        return tuple<T1*,T2*,T3*,T4*,T5*,T6*,T7*,T8*,T9*>(0,0,0,0,0,0,0,0,0);
+      }
+    };
+  }
+
+  template<typename T1, typename T2, typename T3, typename T4, typename T5,
+      typename T6, typename T7, typename T8, typename T9>
+  class NullPointerInitialiser<tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> >
+  {
   public:
-    //! The return type of the close is Nil.
-    typedef Nil ResultType;
-  public:
-    //! Provide closure of tuple
-    static inline ResultType apply() {
-      return Nil();
+    typedef tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> ResultType;
+
+    static inline ResultType apply()
+    {
+      return InitialiserHelper<ResultType, tuple_size<ResultType>::value>::apply();
     }
   };
 
@@ -64,58 +148,162 @@ namespace Dune {
    * \warning Pointers cannot be set to NULL, so calling the Deletor twice
    * or accessing elements of a deleted tuple leads to unforeseeable results!
    */
-  template <class PairT>
+  template <class Tuple>
   struct PointerPairDeletor {};
 
-  /**
-   * @brief Specialisation for a standard tuple element.
-   */
-  template <class Head, class Tail>
-  struct PointerPairDeletor<Pair<Head*, Tail> > {
-    //! Deletes object pointed to by first element and triggers deletion on
-    //! subsequent pairs.
-    static void apply(Pair<Head*, Tail>& p) {
-      delete p.first();
-      PointerPairDeletor<Tail>::apply(p.second());
-    }
-  };
+  namespace
+  {
 
-  /**
-   * @brief Specialisation for last (non-Nil) tuple element.
-   */
-  template <class Head>
-  struct PointerPairDeletor<Pair<Head*, Nil> > {
-    //! Deletes object pointed to by first element.
-    static void apply(Pair<Head*, Nil>& p) {
-      delete p.first();
+    template<class T, int s>
+    struct PointerDeletor
+    {};
+
+    template<typename T1, typename T2, typename T3, typename T4, typename T5,
+        typename T6, typename T7, typename T8, typename T9, int s>
+    struct PointerDeletor<tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>,s>
+    {
+      static void apply(tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>& t)
+      {
+
+        PointerDeletor<tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>,s-1>::apply(t);
+        delete get<s-1>(t);
+      }
+    };
+    template<typename T1, typename T2, typename T3, typename T4, typename T5,
+        typename T6, typename T7, typename T8, typename T9>
+    struct PointerDeletor<tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>,0>
+    {
+      static void apply(tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>& t)
+      {}
+    };
+  }
+
+  template<typename T1, typename T2, typename T3, typename T4, typename T5,
+      typename T6, typename T7, typename T8, typename T9>
+  struct PointerPairDeletor<tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> >
+  {
+    static void apply(tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>& t)
+    {
+      PointerDeletor<tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>,
+          tuple_size<tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> >::value>
+      ::apply(t);
     }
+
   };
 
   /**
    * @brief Helper template to calculate length of a tuple.
    */
-  template <class PairT>
+  template <class Tuple>
   struct Length {};
 
-  /**
-   * @brief Specialisation for a standard tuple element.
-   *
-   * The length of the tuple is stored by the enumeration value.
-   */
-  template <class Head, class Tail>
-  struct Length<Pair<Head, Tail> > {
-    //! The length of the (sub)tuple.
-    enum { value = 1 + Length<Tail>::value };
+  template<typename T1, typename T2, typename T3, typename T4, typename T5,
+      typename T6, typename T7, typename T8, typename T9>
+  struct Length<tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> >
+  {
+    enum {
+      value=tuple_size<tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> >::value
+    };
   };
 
-  /**
-   * @brief Specialisation for the closure.
-   */
-  template <>
-  struct Length<Nil> {
-    //! The length of an empty tuple is zero by definition.
-    enum { value = 0 };
-  };
+  namespace
+  {
+    /**
+     * @brief Helper class for getting a converted tuple.
+     *
+     * Eval describes the conversion policy, T is the tuple type
+     * and s is the size of the (sub) tuple, to process.
+     */
+    template<template <class> class Eval, typename T, int s>
+    struct ForEachTypeHelper
+    {};
+
+    template<template <class> class Eval, typename T1, typename T2, typename T3, typename T4, typename T5,
+        typename T6, typename T7, typename T8, typename T9>
+    struct ForEachTypeHelper<Eval,tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>,0>
+    {
+      typedef tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> Type;
+    };
+
+
+    template<template <class> class Eval, typename T1, typename T2, typename T3, typename T4, typename T5,
+        typename T6, typename T7, typename T8, typename T9>
+    struct ForEachTypeHelper<Eval,tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>,1>
+    {
+      typedef tuple<typename Eval<T1>::Type,T2,T3,T4,T5,T6,T7,T8,T9> Type;
+    };
+
+    template<template <class> class Eval, typename T1, typename T2, typename T3, typename T4, typename T5,
+        typename T6, typename T7, typename T8, typename T9>
+    struct ForEachTypeHelper<Eval,tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>,2>
+    {
+      typedef tuple<typename Eval<T1>::Type,typename Eval<T2>::Type,T3,T4,T5,T6,T7,T8,T9> Type;
+    };
+
+    template<template <class> class Eval, typename T1, typename T2, typename T3, typename T4, typename T5,
+        typename T6, typename T7, typename T8, typename T9>
+    struct ForEachTypeHelper<Eval,tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>,3>
+    {
+      typedef tuple<typename Eval<T1>::Type,typename Eval<T2>::Type,typename Eval<T3>::Type,
+          T4,T5,T6,T7,T8,T9> Type;
+    };
+
+    template<template <class> class Eval, typename T1, typename T2, typename T3, typename T4, typename T5,
+        typename T6, typename T7, typename T8, typename T9>
+    struct ForEachTypeHelper<Eval,tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>,4>
+    {
+      typedef tuple<typename Eval<T1>::Type,typename Eval<T2>::Type,typename Eval<T3>::Type,
+          typename Eval<T4>::Type,T5,T6,T7,T8,T9> Type;
+    };
+
+
+    template<template <class> class Eval, typename T1, typename T2, typename T3, typename T4, typename T5,
+        typename T6, typename T7, typename T8, typename T9>
+    struct ForEachTypeHelper<Eval,tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>,5>
+    {
+      typedef tuple<typename Eval<T1>::Type,typename Eval<T2>::Type,typename Eval<T3>::Type,
+          typename Eval<T4>::Type,typename Eval<T5>::Type,T6,T7,T8,T9> Type;
+    };
+
+
+    template<template <class> class Eval, typename T1, typename T2, typename T3, typename T4, typename T5,
+        typename T6, typename T7, typename T8, typename T9>
+    struct ForEachTypeHelper<Eval,tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>,6>
+    {
+      typedef tuple<typename Eval<T1>::Type,typename Eval<T2>::Type,typename Eval<T3>::Type,
+          typename Eval<T4>::Type,typename Eval<T5>::Type,typename Eval<T6>::Type,
+          T7,T8,T9> Type;
+    };
+
+    template<template <class> class Eval, typename T1, typename T2, typename T3, typename T4, typename T5,
+        typename T6, typename T7, typename T8, typename T9>
+    struct ForEachTypeHelper<Eval,tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>,7>
+    {
+      typedef tuple<typename Eval<T1>::Type,typename Eval<T2>::Type,typename Eval<T3>::Type,
+          typename Eval<T4>::Type,typename Eval<T5>::Type,typename Eval<T6>::Type,
+          typename Eval<T7>::Type,T8,T9> Type;
+    };
+
+
+    template<template <class> class Eval, typename T1, typename T2, typename T3, typename T4, typename T5,
+        typename T6, typename T7, typename T8, typename T9>
+    struct ForEachTypeHelper<Eval,tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>,8>
+    {
+      typedef tuple<typename Eval<T1>::Type,typename Eval<T2>::Type,typename Eval<T3>::Type,
+          typename Eval<T4>::Type,typename Eval<T5>::Type,typename Eval<T6>::Type,
+          typename Eval<T7>::Type,typename Eval<T8>::Type,T9> Type;
+    };
+
+    template<template <class> class Eval, typename T1, typename T2, typename T3, typename T4, typename T5,
+        typename T6, typename T7, typename T8, typename T9>
+    struct ForEachTypeHelper<Eval,tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>,9>
+    {
+      typedef tuple<typename Eval<T1>::Type,typename Eval<T2>::Type,typename Eval<T3>::Type,
+          typename Eval<T4>::Type,typename Eval<T5>::Type,typename Eval<T6>::Type,
+          typename Eval<T7>::Type,typename Eval<T8>::Type,typename Eval<T9>::Type> Type;
+    };
+  }
+
 
   /**
    * @brief Helper template to clone the type definition of a tuple with the
@@ -136,32 +324,48 @@ namespace Dune {
    * the storage types of the tuple defined by the tuple ATuple.
    */
   template <template <class> class TypeEvaluator, class TupleType>
-  struct ForEachType {};
+  struct ForEachType {
+    typedef typename ForEachTypeHelper<TypeEvaluator,TupleType,
+        tuple_size<TupleType>::value>::Type Type;
 
-  /**
-   * @brief Specialisation for standard tuple element
-   */
-  template <template <class> class TypeEvaluator, class Head, class Tail>
-  struct ForEachType<TypeEvaluator, Pair<Head, Tail> > {
-    //! Defines type corresponding to the subtuple defined by Pair<Head, Tail>
-    typedef Pair<typename TypeEvaluator<Head>::Type,
-        typename ForEachType<TypeEvaluator, Tail>::Type> Type;
   };
 
-  /**
-   * @brief Specialisation for last element
-   */
-  template <template <class> class TypeEvaluator>
-  struct ForEachType<TypeEvaluator, Nil> {
-    typedef Nil Type;
-  };
+  namespace
+  {
+    template<int i, typename T1,typename F>
+    struct Visitor
+    {
+      static inline void visit(F& func, T1& t1)
+      {
+        func.visit(get<tuple_size<T1>::value-i>(t1));
+        Visitor<i-1,T1,F>::visit(func, t1);
+      }
+    };
 
-  //   template <template <class> class TypeEvaluator, class Head>
-  //   struct ForEachType<TypeEvaluator, Pair<Head, Nil> > {
-  //     //! For the storage element, Head is replaced by the expression provided
-  //     //! by the TypeEvaluator helper template.
-  //     typedef Pair<typename TypeEvaluator<Head>::Type, Nil> Type;
-  //   };
+    template<typename T1,typename F>
+    struct Visitor<0,T1,F>
+    {
+      static inline void visit(F& func, T1& t1)
+      {}
+    };
+
+    template<int i, typename T1, typename T2,typename F>
+    struct PairVisitor
+    {
+      static inline void visit(F& func, T1& t1, T2& t2)
+      {
+        func.visit(get<tuple_size<T1>::value-i>(t1), get<tuple_size<T2>::value-i>(t2));
+        PairVisitor<i-1,T1,T2,F>::visit(func, t1, t2);
+      }
+    };
+
+    template<typename T1, typename T2, typename F>
+    struct PairVisitor<0,T1,T2,F>
+    {
+      static inline void visit(F& func, T1& t1, T2& t2)
+      {}
+    };
+  }
 
   /**
    * @brief Helper template which implements iteration over all storage
@@ -207,21 +411,7 @@ namespace Dune {
     //! \param f Function object.
     template <class Functor>
     void apply(Functor& f) {
-      apply(f, tuple_);
-    }
-
-  private:
-    //! Specialisation for the last element
-    template <class Functor, class Head>
-    void apply(Functor& f, Pair<Head, Nil>& last) {
-      f.visit(last.first());
-    }
-
-    //! Specialisation for a standard tuple element
-    template <class Functor, class Head, class Tail>
-    void apply(Functor& f, Pair<Head, Tail>& pair) {
-      f.visit(pair.first());
-      apply(f, pair.second());
+      Visitor<tuple_size<TupleType>::value,TupleType,Functor>::visit(f, tuple_);
     }
   private:
     TupleType& tuple_;
@@ -258,23 +448,9 @@ namespace Dune {
     //! \param f The function object to apply on the pair of tuples.
     template <class Functor>
     void apply(Functor& f) {
-      apply(f, tuple1_, tuple2_);
+      PairVisitor<tuple_size<TupleType1>::value,TupleType1,TupleType2,Functor>
+      ::visit(f, tuple1_, tuple2_);
     }
-
-  private:
-    //! Specialisation for the last element.
-    template <class Functor, class Head1, class Head2>
-    void apply(Functor& f, Pair<Head1, Nil>& last1, Pair<Head2, Nil>& last2) {
-      f.visit(last1.first(), last2.first());
-    }
-
-    //! Specialisation for a standard element.
-    template <class Functor, class Head1, class Tail1, class Head2,class Tail2>
-    void apply(Functor& f, Pair<Head1, Tail1>& p1, Pair<Head2, Tail2>& p2) {
-      f.visit(p1.first(), p2.first());
-      apply(f, p1.second(), p2.second());
-    }
-
   private:
     TupleType1& tuple1_;
     TupleType2& tuple2_;
@@ -302,20 +478,26 @@ namespace Dune {
   template <int N>
   struct At
   {
-    template <class T1, class T2>
-    static typename ElementType<Length<Pair<T1, T2> >::value - N - 1,
-        Pair<T1, T2> >::Type&
-    get(Pair<T1, T2>& tuple) {
-      return Element<Length<Pair<T1, T2> >::value - N - 1>::get(tuple);
+
+    template<typename T1, typename T2, typename T3, typename T4, typename T5,
+        typename T6, typename T7, typename T8, typename T9>
+    static typename TupleAccessTraits<
+        typename tuple_element<tuple_size<tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> >::value - N - 1,
+            tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> >::type>::NonConstType
+    get(tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>& t)
+    {
+      return Dune::get<tuple_size<tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> >::value - N - 1>(t);
     }
 
-    template <class T1, class T2>
-    static const typename ElementType<Length<Pair<T1, T2> >::value - N - 1,
-        Pair<T1, T2> >::Type&
-    get(const Pair<T1, T2>& tuple) {
-      return Element<Length<Pair<T1, T2> >::value - N - 1>::get(tuple);
+    template<typename T1, typename T2, typename T3, typename T4, typename T5,
+        typename T6, typename T7, typename T8, typename T9>
+    static typename TupleAccessTraits<
+        typename tuple_element<tuple_size<tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> >::value - N - 1,
+            tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> >::type>::ConstType
+    get(const tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>& t)
+    {
+      return Dune::get<tuple_size<tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> >::value - N - 1>(t);
     }
-
   };
 
 }
