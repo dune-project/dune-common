@@ -3,7 +3,8 @@
 TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
 	sllisttest iteratorfacadetest tuplestest fvectortest fmatrixtest \
 	poolallocatortest settest gcdlcdtest streamtest \
-	bigunsignedinttest mpihelpertest singletontest mpicollcomm
+	bigunsignedinttest mpihelpertest singletontest mpicollcomm \
+	utilitytest
 
 # which tests to run
 TESTS = $(TESTPROGS)
@@ -68,6 +69,9 @@ mpicollcomm_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
 
 singletontest_SOURCES = singletontest.cc
 singletontest_LDFLAGS = $(LOCAL_LIBS)
+
+utilitytest_SOURCES = utilitytest.cc
+utilitytest_LDFLAGS = $(LOCAL_LIBS)
 
 sourcescheck_NOSOURCES = exprtmpl.cc timing.cc
 
