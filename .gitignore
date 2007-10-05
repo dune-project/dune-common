@@ -17,4 +17,5 @@ dune-common-*.tar.gz
 dune-common-?.?
 ltmain.sh
 dune
+dune-config.h
 .libs
