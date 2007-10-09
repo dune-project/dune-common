@@ -30,7 +30,7 @@ int main(int argc, char** argv)
   typedef Dune::Tuple<int*,double*,long*,char*> PointerTuple;
 
   Dune::Tuple<int*,double*,long*,char*> pointers = Dune::NullPointerInitialiser<PointerTuple>::apply();
-  int ret;
+  int ret=0;
 
   if(Dune::get<0>(pointers)!=0) {
     std::cerr<<"First pointer not null"<<std::endl;
