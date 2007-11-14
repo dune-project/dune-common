@@ -91,6 +91,12 @@ namespace Dune
       return (*this);
     }
 
+    //! \brief Assign value to all entries
+    void assign(const T& t)
+    {
+      for (int i=0; i<N; i++) a[i]=t;
+    }
+
     //! Component access
     reference operator[] (size_type i)
     {
