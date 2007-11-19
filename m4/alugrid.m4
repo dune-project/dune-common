@@ -84,7 +84,7 @@ if test x$with_alugrid != x && test x$with_alugrid != xno ; then
 
   # if header is found...
   if test x$HAVE_ALUGRID = x1 ; then
-    AC_CHECK_LIB(alugrid,[main],
+    AC_CHECK_LIB(alugrid,[malloc],
     [ALUGRID_LIBS="-lalugrid"
            ALUGRID_LDFLAGS="-L$ALUGRID_LIB_PATH"
            LIBS="$LIBS $ALUGRID_LIBS"],
