@@ -225,7 +225,9 @@ AC_DEFUN([DUNE_CHECK_DISPATCH],[
          [$1], [dune-common],[
           #DUNE_CHECK_MODULES(module_name, test_header, test_symbol)
            DUNE_CHECK_MODULES([dune-common], [common/stdstreams.hh],
-	[#define DUNE_MINIMAL_DEBUG_LEVEL 1
+	[#ifndef DUNE_MINIMAL_DEBUG_LEVEL 
+   #define DUNE_MINIMAL_DEBUG_LEVEL 1
+   #endif
 	Dune::derr.active();])],
          [$1], [dune-grid],[
            DUNE_CHECK_MODULES([dune-grid], [grid/common/grid.hh], [Dune::PartitionName])],
