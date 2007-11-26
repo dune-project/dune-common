@@ -3,6 +3,8 @@ Makefile.in
 .deps
 .libs
 semantic.cache
+fvectortest
+mpicollcomm
 lrutest
 parsetest
 test-stack
