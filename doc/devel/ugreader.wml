@@ -15,7 +15,7 @@ Hence, your file reader method signature may look like this:
 </p>
 
 <pre>
-void readMyFileFormat(Dune::UGGrid&lt;3,3&gt;& grid, const std::string& filename)
+void readMyFileFormat(Dune::UGGrid&lt;3&gt;& grid, const std::string& filename)
 </pre>
 
 Now, in order to create a valid UGGrid object do the
@@ -123,10 +123,10 @@ other process.  Call <tt>loadBalance()</tt> to actually distribute the grid.
 <b>WARNING:</b> UG internally requests that all boundary vertices be
 inserted before the inner ones.  That means that if your input grid
 doesn't comply with this, it will have its vertices reordered by
-<tt>createend()</tt>.  So don't be surprised if you just read a grid and write
+<tt>createEnd()</tt>.  So don't be surprised if you just read a grid and write
 it back to disk to find your vertex numberings changed.
 </p>
 
 <p>
-Mail comments, critique, and corrections to sander@math.fu.berlin.de.
+Mail comments, critique, and corrections to sander@mi.fu.berlin.de.
 </p>
