@@ -4,7 +4,7 @@ TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
 	sllisttest iteratorfacadetest tuplestest fvectortest fmatrixtest \
 	poolallocatortest settest gcdlcdtest streamtest \
 	bigunsignedinttest mpihelpertest singletontest mpicollcomm \
-	utilitytest
+	utilitytest lrutest
 
 # which tests to run
 TESTS = $(TESTPROGS)
@@ -20,6 +20,9 @@ bigunsignedinttest_DEPENDENCIES = $(LOCAL_LIBS)
 
 parsetest_SOURCES = parsetest.cc
 parsetest_DEPENDENCIES = $(LOCAL_LIBS)
+
+lrutest_SOURCES = lrutest.cc
+lrutest_DEPENDENCIES = $(LOCAL_LIBS)
 
 sllisttest_SOURCES = sllisttest.cc
 sllisttest_DEPENDENCIES = $(LOCAL_LIBS)
