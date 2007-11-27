@@ -89,7 +89,7 @@ the <a href="buildsystem/buildsystem.pdf">Dune Build System Howto</a>.
 <h3>Building a specific DUNE module (and its dependent modules)</h3>
 
 <p>You can instruct dunecontrol to build only a certain dune module,
-using the <kbd>--only=module_name&gt;</kbd> swtich.
+using the <kbd>--only=module_name&gt;</kbd> switch.
 Runnning dunecontrol script
 <p>
 <pre>
