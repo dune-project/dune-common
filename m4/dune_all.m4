@@ -66,9 +66,7 @@ dnl check for library functions
   AC_CHECK_PROGS([CONVERT], [convert], [true])
 
   # doxygen and latex take a lot of time...
-  AC_ARG_ENABLE(documentation,
-   AC_HELP_STRING([--disable-documentation],[don't generate docs, speeds up the build]))
-  AM_CONDITIONAL(BUILD_DOCS, test x$enable_documentation != xno)
+  AC_REQUIRE([DUNE_DOCUMENTATION])
 
   # special variable to include the documentation into the website
   AC_ARG_WITH(duneweb,
