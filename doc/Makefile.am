@@ -24,7 +24,15 @@ EXTRAINSTALL=example.opts
 # install the html pages
 docdir=$(datadir)/doc/dune-common
 doc_DATA = $(PAGES) example.opts
+
 EXTRA_DIST = $(PAGES) example.opts
+
+if ! BUILD_DOCS
+# add tag to notify that dist has been build without documentation
+dist-hook:
+	echo "# No documentation included in distribution! " > $(distdir)/$(DOCUMENTATION_TAG_FILE)
+endif
+
 
 # include rules for wml -> html transformation
 include $(top_srcdir)/am/webstuff
