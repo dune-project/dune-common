@@ -2,7 +2,10 @@
 
 if BUILD_DOCS
   DOXYGENTAG = doxygen-tag
+# only build html when wml is available
+if WML
   WHAT = bestpractice.html
+endif
   DOXYGEN_HTML = html
   DOXYGEN_DIST = html-dist
 endif
