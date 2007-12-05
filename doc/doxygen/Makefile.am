@@ -19,8 +19,10 @@ BASEDIR=../..
 CURDIR=doc/doxygen
 EXTRAINSTALL = doxygen.log
 
+if BUILD_DOCS
 # EXTRAINSTALL in the html subdirectory
 DOXYGENINSTALL = *.html *.css *.png *.gif
+endif
 
 if WML
 # themeing doxygen
@@ -35,8 +37,8 @@ DOXYFILESHORT_OVERWRITE = $(DOYXFILE_OVERWRITE) \
   echo "SHORT_NAMES = YES";
 endif
 
-
 #we need this in the distribution
+if BUILD_DOCS
 EXTRA_DIST = $(WHAT) $(DOXYGEN_DIST) $(DOXYGENHEADER) doxy-footer.html $(PAGES)
 
 doxygendir = $(datadir)/doc/dune-common/doxygen
@@ -54,6 +56,7 @@ uninstall-local:
 	rm -f $(DESTDIR)/$(doxygendir)/*.css
 	rm -f $(DESTDIR)/$(doxygendir)/*.png
 	rm -f $(DESTDIR)/$(doxygendir)/*.gif
+endif
 
 # what files does the doxygen-generated stuff depend on (find-syntax)
 DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.png
