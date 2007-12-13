@@ -179,6 +179,34 @@ namespace Dune {
       return it->second;
     }
 
+    /**
+     *
+     */
+    size_type size() const
+    {
+      return _data.size();
+    }
+
+    /**
+     *
+     */
+    void resize(size_type new_size)
+    {
+      assert(new_size <= size());
+
+      while (new_size < size())
+        pop_back();
+    }
+
+    /**
+     *
+     */
+    void clear()
+    {
+      _data.clear();
+      _index.clear();
+    }
+
   private:
     list_type _data;
     map_type _index;
