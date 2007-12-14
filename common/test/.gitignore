@@ -29,3 +29,8 @@ bigunsignedinttest
 mpihelpertest
 singletontest
 utilitytest
+testfassign_fail1
+testfassign_fail2
+testfassign1
+testfassign2
+testfassign3

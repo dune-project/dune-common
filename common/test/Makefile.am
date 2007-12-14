@@ -4,10 +4,15 @@ TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
 	sllisttest iteratorfacadetest tuplestest fvectortest fmatrixtest \
 	poolallocatortest settest gcdlcdtest streamtest \
 	bigunsignedinttest mpihelpertest singletontest mpicollcomm \
-	utilitytest lrutest
+	utilitytest lrutest \
+	testfassign1 testfassign2 testfassign3 \
+    testfassign_fail1 testfassign_fail2
+
 
 # which tests to run
 TESTS = $(TESTPROGS)
+
+XFAIL_TESTS = testfassign_fail1 testfassign_fail2
 
 # programs just to build when "make check" is used
 check_PROGRAMS = $(TESTPROGS)
@@ -75,6 +80,21 @@ singletontest_LDFLAGS = $(LOCAL_LIBS)
 
 utilitytest_SOURCES = utilitytest.cc
 utilitytest_LDFLAGS = $(LOCAL_LIBS)
+
+testfassign1_SOURCES = testfassign.cc testfassign2.cc
+testfassign1_CPPFLAGS = $(AM_CPPFLAGS) -D_SIZE=3 -D_VALUES="1,2,3"
+
+testfassign2_SOURCES = testfassign.cc
+testfassign2_CPPFLAGS = $(AM_CPPFLAGS) -D_SIZE=3 -D_VALUES="1,Dune::zero"
+
+testfassign3_SOURCES = testfassign.cc
+testfassign3_CPPFLAGS = $(AM_CPPFLAGS) -D_SIZE=3 -D_VALUES="Dune::zero"
+
+testfassign_fail1_SOURCES = testfassign.cc
+testfassign_fail1_CPPFLAGS = $(AM_CPPFLAGS) -D_SIZE=3 -D_VALUES="1,2"
+
+testfassign_fail2_SOURCES = testfassign.cc
+testfassign_fail2_CPPFLAGS = $(AM_CPPFLAGS) -D_SIZE=3 -D_VALUES="1,2,3,4"
 
 sourcescheck_NOSOURCES = exprtmpl.cc timing.cc
 
