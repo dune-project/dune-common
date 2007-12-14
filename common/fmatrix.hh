@@ -235,6 +235,19 @@ namespace Dune {
 
     //===== linear maps
 
+    //! y = A x
+    template<class X, class Y>
+    void mv (const X& x, Y& y) const
+    {
+#ifdef DUNE_FMatrix_WITH_CHECKING
+      if (x.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
+      if (y.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
+#endif
+      for (size_type i=0; i<n; i++)
+        for (size_type j=0; j<m; j++)
+          y[i] = (*this)[i][j] * x[j];
+    }
+
     //! y += A x
     template<class X, class Y>
     void umv (const X& x, Y& y) const
@@ -954,6 +967,12 @@ namespace Dune {
     }
 
     //===== linear maps
+
+    //! y = A x
+    void mv (const FieldVector<K,1>& x, FieldVector<K,1>& y) const
+    {
+      y.p = a[0] * x.p;
+    }
 
     //! y += A x
     void umv (const FieldVector<K,1>& x, FieldVector<K,1>& y) const
