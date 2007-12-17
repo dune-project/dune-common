@@ -275,13 +275,13 @@ namespace Dune {
 string ConfigParser::trim(string s)
 {
   int i = 0;
-  while (s[i] == ' ')
+  while ((s[i] == ' ')or (s[i] == '\n') or (s[i] == '\r'))
     i++;
 
   s.erase(0,i);
 
   i = s.length();
-  while (s[i-1] == ' ')
+  while ((s[i-1] == ' ')or (s[i-1] == '\n') or (s[i-1] == '\r'))
     i--;
 
   s.erase(i);
