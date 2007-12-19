@@ -355,6 +355,57 @@ namespace Dune
   {
     typedef T2 Type;
   };
+
+  /**
+   * @brief provided one allocator, get the same allocator for a different object type
+   *
+   * the resulting type is exported as Type
+   *
+   * this class does not implement anything, it must be specialized
+   * for each allocator class in use
+   */
+
+  template <class A, class T>
+  struct AllocatorType;
+
+  /**
+     @copydoc AllocatorType
+
+     specialization for all allocators of the for ALLOCATOR<TYPE>
+
+     this is expected to work for
+
+     std::allocator
+     __gnu_cxx::new_allocator<T>
+     __gnu_cxx::malloc_allocator<T>
+     __gnu_cxx::__pool_alloc<T>
+     __gnu_cxx::__mt_alloc<T>
+     __gnu_cxx::bitmap_allocator<T>
+     __gnu_cxx::array_allocator<T>
+     __gnu_cxx::throw_allocator<T>
+   */
+  template <template<class> class Allocator, class T1, class T2>
+  struct AllocatorType< Allocator<T1>, T2 >
+  {
+    typedef Allocator<T2> Type;
+  };
+
+#ifdef _DEBUG_ALLOCATOR_H
+  /**
+     @copydoc AllocatorType
+
+     if you want to use this specialization, you have to ensure that
+     <ext/debug_allocator.h> is included before <dune/common/typetraits.hh>
+
+     specialization for __gnu_cxx::debug_allocator< Allocator >
+   */
+  template <class A, class T>
+  struct AllocatorType< __gnu_cxx::debug_allocator<A>, T >
+  {
+    typedef typename __gnu_cxx::debug_allocator< typename AllocatorType<A,T>::Type > Type;
+  };
+#endif
+
   /** @} */
 }
 #endif
