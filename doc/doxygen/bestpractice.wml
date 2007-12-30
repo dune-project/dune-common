@@ -3,19 +3,19 @@
 
 #use wml::layout::default title="DUNE - Doxygen Best Practice"
 #use wml::std::grid
+#use wml::std::toc style=ol type=A111
 
-<h1> Doxygen Best Practice </h1>
+<h1* class="firstchild"> Doxygen Best Practice </h1*>
 
-<h2> Overview </h2>
-<p>usefull tips when documenting your code</p>
-<ul>
-<li><a href="#copydoc">\copydoc</a></li>
-<li><a href="#ordermodules">Ordering Modules</a></li>
-</ul>
+<div class="toc">
+<div class="ignore_first_ol">
+<toc>
+</div>
+</div>
 
 <h2> usefull tips when documenting your code </h2>
 
-<h3><a id="copydoc">\copydoc &lt;link-object&gt;</a></h3>
+<h3>\copydoc &lt;link-object&gt;</h3>
 
 <p>
 <em>
@@ -44,7 +44,7 @@ To copy the documentation for a member of a class for instance one can
 put the following in the documentation
 </p>
 
-<h3><a id="ordermodules">Ordering Modules</a></h3>
+<h3>Ordering Modules</h3>
 
 <p><em>Use the file <tt>doxygen/modules</tt> to change the ordering of modules
 on the modules page</em></p>
