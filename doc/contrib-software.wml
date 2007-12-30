@@ -21,7 +21,7 @@ Within the DUNE source tree OneDGrid, SGrid and YaspGrid are
 available.
 </p>
 
-<h2><a id="alberta">ALBERTA Grid</a></h2>
+<h2>ALBERTA Grid</h2>
 
 <h3>Dependencies</h3>
 <p>
@@ -80,7 +80,7 @@ For optional packages see the README file of ALBERTA
 <li> <p>Install ALBERTA with</p> <pre>make install</pre></li>
 </ol>
 
-<h2><a id="alugrid">ALUGrid</a></h2>
+<h2>ALUGrid</h2>
 <h3>Dependencies</h3>
 <p>
 There are no mandatory packages for ALUGrid.
@@ -168,7 +168,7 @@ Options:
 <li><p>Install ALUGrid with</p> <pre>make install</pre></li>
 </ol>
 
-<h2><a id="uggrid">UGGrid</a></h2>
+<h2>UGGrid</h2>
 
 <p>
 <tt>dune-grid</tt> can make use of the UG grid manager. UG is a software tool
