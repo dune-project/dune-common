@@ -3,6 +3,12 @@
 #ifndef DUNE_ARRAY_HH
 #define DUNE_ARRAY_HH
 
+/** \file
+    \brief A dynamical array class, similar to std::vector
+    \deprecated Use std::vector instead of Dune::Array
+ */
+#warning This file is deprecated.  Please use std::vector instead of Dune::Array!
+
 #include <iostream>
 #include <iomanip>
 #include <string>
