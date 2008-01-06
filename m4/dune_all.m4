@@ -91,7 +91,7 @@ fi
 AC_SUBST(DUNEWEBDIR, $with_duneweb)
 
   dnl check all components
-  DUNE_MODULE_DEPENDENCIES($@)
+  ifelse([x$@],[x], , [DUNE_MODULE_DEPENDENCIES($@)])
   AC_REQUIRE([DUNE_SET_MINIMAL_DEBUG_LEVEL])
   AC_REQUIRE([DUNE_PATH_XDR])
   AC_REQUIRE([DUNE_GRID_DIMENSION])
@@ -192,7 +192,7 @@ AC_DEFUN([DUNE_CHECK_ALL_M],[
   if test "x$with_revision" = "xno" ; then with_revision=bar; fi
   AC_SUBST(revision, $with_revision)
 
-  DUNE_MODULE_DEPENDENCIES($@)
+  ifelse([x$@],[x], , [DUNE_MODULE_DEPENDENCIES($@)])
   AC_REQUIRE([DUNE_CHECK_ALL])
   AC_REQUIRE([DUNE_DEV_MODE])
   AC_REQUIRE([DUNE_PKG_CONFIG_REQUIRES])
