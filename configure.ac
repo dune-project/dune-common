@@ -1,7 +1,11 @@
 #! /bin/bash
 # $Id$
 # Process this file with autoconf to produce a configure script.
-AC_INIT(dune-common, 0.0, dune@dune-project.org)
+
+# get module version from dune.module file
+m4_define([DUNE_MOD_VERSION],
+  [m4_esyscmd([grep ^Version: dune.module | sed -e 's/^.*://' -e 's/\s*//'])])
+AC_INIT(dune-common, DUNE_MOD_VERSION, dune@dune-project.org)
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([common/stdstreams.cc])
 AM_CONFIG_HEADER([config.h])
