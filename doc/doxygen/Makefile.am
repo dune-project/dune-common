@@ -17,11 +17,10 @@ all: $(WHAT) $(DOXYGEN_HTML)
 # setting like in dune-web
 BASEDIR=../..
 CURDIR=doc/doxygen
-EXTRAINSTALL = doxygen.log
 
 if BUILD_DOCS
 # EXTRAINSTALL in the html subdirectory
-DOXYGENINSTALL = *.html *.css *.png *.gif
+DOXYGENINSTALL = *.html *.css *.png *.gif ../doxygen.log
 endif
 
 if WML
