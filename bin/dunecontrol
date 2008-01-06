@@ -322,6 +322,17 @@ create_module_list() {
   fi
 }
 
+# print the module list
+print_module_list() {
+  DELIM=$1
+  shift
+  while test -n "$2"; do
+    echo -n "$(eval echo \$NAME_$1)$DELIM"
+    shift
+  done
+  echo -n "$(eval echo \$NAME_$1)"
+}
+
 if test "x$1" = "x"; then
   usage
   exit 1
@@ -436,10 +447,15 @@ done
 case "$command" in
   print)
     create_module_list
-    for mod in $MODULES; do
-      echo -n "$(eval echo \$NAME_$mod) "
-    done
-    echo
+    eval "print_module_list ' ' $MODULES"
+    echo > /dev/stderr
+    ;;
+  m4print)
+    create_module_list
+    eval "print_module_list ',' $MODULES"
+    echo -n "Dependencies are: " > /dev/stderr
+    eval "print_module_list ',' $MODULES" > /dev/stderr
+    echo "." > /dev/stderr
     ;;
   export)
     create_module_list
