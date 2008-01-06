@@ -308,6 +308,19 @@ usage () {
   )  > /dev/stderr
 }
 
+# create the module list
+create_module_list() {
+  find_modules_in_path
+  if test "x$MODULE" = "x"; then
+	sort_modules $MODULES
+  else
+	sort_modules $SEARCH_MODULES
+  fi
+  if test "x$ONLY" != x; then
+    export MODULES="$ONLY"
+  fi
+}
+
 if test "x$1" = "x"; then
   usage
   exit 1
@@ -421,24 +434,14 @@ done
 # We need to run this via eval in order construct the case for the commands
 case "$command" in
   print)
-    find_modules_in_path
-    if test "x$SEARCH_MODULES" = "x"; then
-      sort_modules $MODULES
-    else
-      sort_modules $SEARCH_MODULES
-    fi
+    create_module_list
     for mod in $MODULES; do
       echo -n "$(eval echo \$NAME_$mod) "
     done
     echo
     ;;
   export)
-    find_modules_in_path
-    if test "x$MODULE" = "x"; then
-      sort_modules $MODULES
-    else
-      sort_modules $MODULE
-    fi
+    create_module_list
     if test x. = x$DUNE_CONTROL_PATH; then
       DUNE_CONTROL_PATH=""
     fi
@@ -456,15 +459,7 @@ case "$command" in
     ;;
   *)
     if is_command $command; then
-      find_modules_in_path
-      if test "x$MODULE" = "x"; then
-        sort_modules $MODULES
-      else
-        sort_modules $MODULE
-      fi
-      if test "x$ONLY" != x; then
-          MODULES="$ONLY"
-      fi
+      create_module_list
       for mod in $MODULES; do
           NAMES="$NAMES$(eval echo \$NAME_$mod) "
       done
