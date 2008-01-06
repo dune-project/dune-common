@@ -377,8 +377,11 @@ while test $# -gt 0; do
         echo  > /dev/stderr
         exit 1;
       fi
-      export NAME_`fix_variable_name $arg`="$arg"
-      fix_and_assign MODULE "$arg"
+	  for a in `echo $arg | tr ',' ' '`; do
+        export NAME_`fix_variable_name $arg`="$a"
+        fix_and_assign MODULE "$a"
+        export SEARCH_MODULES="$SEARCH_MODULES $MODULE"
+      done
     ;;
     --only=*)
       if test "x$arg" = "x"; then
@@ -387,9 +390,12 @@ while test $# -gt 0; do
         echo  > /dev/stderr
         exit 1;
       fi
-      export NAME_`fix_variable_name $arg`="$arg"
-      fix_and_assign ONLY "$arg"
-      fix_and_assign MODULE "$arg"
+	  for a in `echo $arg | tr ',' ' '`; do
+        export NAME_`fix_variable_name $arg`="$a"
+        fix_and_assign MODULE "$a"
+        export SEARCH_MODULES="$SEARCH_MODULES $MODULE"
+        export ONLY="$ONLY $MODULE"
+      done
     ;;
     --debug) true ;;
     *)
@@ -416,10 +422,10 @@ done
 case "$command" in
   print)
     find_modules_in_path
-    if test "x$MODULE" = "x"; then
+    if test "x$SEARCH_MODULES" = "x"; then
       sort_modules $MODULES
     else
-      sort_modules $MODULE
+      sort_modules $SEARCH_MODULES
     fi
     for mod in $MODULES; do
       echo -n "$(eval echo \$NAME_$mod) "
@@ -456,13 +462,12 @@ case "$command" in
       else
         sort_modules $MODULE
       fi
-      if test x$ONLY != x; then
-        NAMES="$(eval echo \$NAME_$ONLY)"
-      else
-        for mod in $MODULES; do
-          NAMES="$NAMES$(eval echo \$NAME_$mod) "
-        done
+      if test "x$ONLY" != x; then
+          MODULES="$ONLY"
       fi
+      for mod in $MODULES; do
+          NAMES="$NAMES$(eval echo \$NAME_$mod) "
+      done
       echo "--- going to build $NAMES ---"
         build_modules $command
       echo "--- done ---"
