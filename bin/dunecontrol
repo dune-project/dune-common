@@ -199,7 +199,7 @@ run_default_autogen () {
   PARAMS="$CMD_PARAMS"
   local M4_PATH=""
   if test -x autogen.sh; then
-    for m in $MODULES; do
+    for m in $FOUND_MODULES; do
       path=$(eval "echo \$PATH_$m")
       if test -d $path/m4; then
         M4_PATH="$path $M4_PATH"
@@ -311,6 +311,7 @@ usage () {
 # create the module list
 create_module_list() {
   find_modules_in_path
+  export FOUND_MODULES=$MODULES
   if test "x$MODULE" = "x"; then
 	sort_modules $MODULES
   else
