@@ -311,7 +311,6 @@ usage () {
 # create the module list
 create_module_list() {
   find_modules_in_path
-  export FOUND_MODULES=$MODULES
   if test "x$MODULE" = "x"; then
 	sort_modules $MODULES
   else
@@ -459,9 +458,7 @@ case "$command" in
     ;;
   export)
     create_module_list
-    if test x. = x$DUNE_CONTROL_PATH; then
-      DUNE_CONTROL_PATH=""
-    fi
+    DUNE_CONTROL_PATH=""
     for mod in $MODULES; do
       if test x != x$DUNE_CONTROL_PATH; then
         export DUNE_CONTROL_PATH="$DUNE_CONTROL_PATH:$(eval echo \$PATH_$mod/dune.module)"
@@ -470,7 +467,10 @@ case "$command" in
       fi
     done
     echo export DUNE_CONTROL_PATH=$DUNE_CONTROL_PATH
-    ;;    
+    ;;
+  unexport)
+	echo export DUNE_CONTROL_PATH=""
+    ;;
   help)
     usage
     ;;

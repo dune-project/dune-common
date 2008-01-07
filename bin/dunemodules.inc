@@ -78,12 +78,15 @@ parse_control() {
 # search for modules in each directory in DUNE_CONTROL_PATH
 #
 find_modules_in_path() {
-  # foreach dir in $@
-  while read dir; do
-    find_modules $dir
-  done <<EOF
-  $(echo $DUNE_CONTROL_PATH | sed -e 's/:/\n/g') 
+  if test -z "$FOUND_MODULES"; then
+    # foreach dir in $@
+    while read dir; do
+      find_modules $dir
+    done <<EOF
+    $(echo $DUNE_CONTROL_PATH | sed -e 's/:/\n/g') 
 EOF
+  fi
+  export FOUND_MODULES=$MODULES
 }
 
 #
