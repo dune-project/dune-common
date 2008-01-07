@@ -124,6 +124,9 @@ EOF
 # sort $MODULES according to the dependencies
 #
 sort_modules() {
+  # reset list
+  export SORTEDMODULES=""
+  # handle each modules passed as parameter
   for m in "$@"; do
     # did we find a module file for this mopdule?
     if test "x$(eval echo \$HAVE_$m)" != "x"; then
@@ -133,7 +136,12 @@ sort_modules() {
       exit 1
     fi
   done
+  # save result
   export MODULES="$SORTEDMODULES"
+  # clean up temporary variables
+  for m in $MODULES; do
+    export SORT_DONE_${m}=""
+  done
 }
 
 #
@@ -150,7 +158,7 @@ _sort_module() {
     echo "ERROR: invalid module name $module" > /dev/stderr
     exit 1
   fi
-  if test "x$(eval echo \$SORT_DONE_${command}_${module})" != "xyes"; then
+  if test "x$(eval echo \$SORT_DONE_${module})" != "xyes"; then
     # resolve dependencies
     for name in $(eval "echo \$DEPS_$module"); do
 	  dep=$(fix_variable_name $name)
@@ -184,7 +192,7 @@ _sort_module() {
       fi
     done
     # insert this module into the list
-    export SORT_DONE_${command}_${module}=yes
+    export SORT_DONE_${module}=yes
     export SORTEDMODULES="$SORTEDMODULES $module"
   fi
 }

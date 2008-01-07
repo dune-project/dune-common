@@ -84,7 +84,7 @@ build_modules() {
       cd "$path"
       eval_control $runcommand $path/$CONTROL
     ); then echo "--- Failed to build $module ---"; exit 1; fi
-    echo "--- $module done ---"
+    eval echo "--- \$NAME_${module} done ---"
   done
 }
 
@@ -311,10 +311,10 @@ usage () {
 # create the module list
 create_module_list() {
   find_modules_in_path
-  if test "x$MODULE" = "x"; then
-	sort_modules $MODULES
-  else
+  if test "x$SEARCH_MODULES" != "x"; then
 	sort_modules $SEARCH_MODULES
+  else
+	sort_modules $MODULES
   fi
   if test "x$ONLY" != x; then
     export MODULES="$ONLY"
@@ -344,6 +344,11 @@ for i in $COMMANDS; do
   COMMAND=$(echo $i | tr '[:lower:]' '[:upper:]')
   export ${COMMAND}_FLAGS=""
 done
+
+# clear variables
+export SEARCH_MODULES=""
+export MODULES=""
+export ONLY=""
 
 # parse commandline parameters
 while test $# -gt 0; do
