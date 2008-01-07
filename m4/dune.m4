@@ -242,18 +242,9 @@ AC_DEFUN([DUNE_CHECK_DISPATCH],[
          [AC_MSG_ERROR([Unknown module $1])])
 ])
 
-AC_DEFUN([_DUNE_MODULE_DEPENDENCIES],[
-  echo "Dependencies: !$1!"
-  ifelse($#, 0, , $#, 1, [DUNE_CHECK_DISPATCH($1)], [DUNE_CHECK_DISPATCH($1) _DUNE_MODULE_DEPENDENCIES(m4_shift($@))])
+AC_DEFUN([DUNE_MODULE_DEPENDENCIES],[
+  ifelse($#, 0, , $#, 1, [DUNE_CHECK_DISPATCH($1)], [DUNE_CHECK_DISPATCH($1) DUNE_MODULE_DEPENDENCIES(m4_shift($@))])
 ])
-
-AC_DEFUN([_PRINT],[--module=$1])
-
-AC_DEFUN([_DUNE_MODULE_PARAM_EXPAND], 
-  [ifelse($#, 0, , $#, 1, [--module=$1], [--module=$1 _DUNE_MODULE_PARAM_EXPAND(m4_shift($@))])])
-
-AC_DEFUN([DUNE_MODULE_DEPENDENCIES],
-  [_DUNE_MODULE_DEPENDENCIES(m4_esyscmd(dunecontrol _DUNE_MODULE_PARAM_EXPAND($@) m4print))])
 
 AC_DEFUN([DUNE_DEV_MODE],[
   AC_ARG_ENABLE(dunedevel,
