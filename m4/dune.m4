@@ -221,6 +221,8 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
 ])
 
 AC_DEFUN([DUNE_CHECK_DISPATCH],[
+  m4_syscmd(test -n "$1" \
+    && echo "   dune.m4: adding dependency check for $1" > /dev/stderr)
   ifelse([$1], [], [],
          [$1], [dune-common],[
           #DUNE_CHECK_MODULES(module_name, test_header, test_symbol)
@@ -242,9 +244,13 @@ AC_DEFUN([DUNE_CHECK_DISPATCH],[
          [AC_MSG_ERROR([Unknown module $1])])
 ])
 
-AC_DEFUN([DUNE_MODULE_DEPENDENCIES],[
-  ifelse($#, 0, , $#, 1, [DUNE_CHECK_DISPATCH($1)], [DUNE_CHECK_DISPATCH($1) DUNE_MODULE_DEPENDENCIES(m4_shift($@))])
+AC_DEFUN([_DUNE_MODULE_DEPENDENCIES],[
+  ifelse($#, 0, , $#, 1, [DUNE_CHECK_DISPATCH($1)], [DUNE_CHECK_DISPATCH($1) _DUNE_MODULE_DEPENDENCIES(m4_shift($@))])
 ])
+
+AC_DEFUN([DUNE_MODULE_DEPENDENCIES],[
+   m4_syscmd(echo "   dune.m4: getting dependencies for $@" > /dev/stderr)
+   _DUNE_MODULE_DEPENDENCIES(m4_esyscmd(dunecontrol --only=$@ m4depends))])
 
 AC_DEFUN([DUNE_DEV_MODE],[
   AC_ARG_ENABLE(dunedevel,
