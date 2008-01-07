@@ -83,7 +83,7 @@ build_modules() {
       set -e
       cd "$path"
       eval_control $runcommand $path/$CONTROL
-    ); then echo "--- Failed to build $module ---"; exit 1; fi
+    ); then eval echo "--- Failed to build \$NAME_${module} ---"; exit 1; fi
     eval echo "--- \$NAME_${module} done ---"
   done
 }
@@ -454,12 +454,16 @@ case "$command" in
     eval "print_module_list ' ' $MODULES"
     echo > /dev/stderr
     ;;
-  m4print)
-    create_module_list
+  m4depends)
+    find_modules_in_path
+    if test "x$SEARCH_MODULES" != "x"; then
+	  MODULES=$SEARCH_MODULES
+    fi
+    if test "x$ONLY" != x; then
+	  MODULES=$ONLY
+    fi
+	sort_dependecies $MODULES
     eval "print_module_list ',' $MODULES"
-    echo -n "Dependencies are: " > /dev/stderr
-    eval "print_module_list ',' $MODULES" > /dev/stderr
-    echo "." > /dev/stderr
     ;;
   export)
     create_module_list

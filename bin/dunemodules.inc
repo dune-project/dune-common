@@ -145,6 +145,36 @@ sort_modules() {
 }
 
 #
+# sort $MODULES's dependencies according to the dependencies
+# don't include $MODULE itself
+#
+sort_dependecies() {
+  # reset list
+  export SORTEDMODULES=""
+  # handle each modules passed as parameter
+  for m in "$@"; do
+    # did we find a module file for this mopdule?
+    if test "x$(eval echo \$HAVE_$m)" != "x"; then
+	  if test "x$(eval echo \$DEPS_$m)" != "x" ; then
+        for name in $(eval echo \$DEPS_$m); do
+          dep=$(fix_variable_name $name)
+          _sort_module $dep
+        done
+      fi
+    else
+      echo "ERROR: could not find module $(eval echo \$NAME_$m)" > /dev/stderr
+      exit 1
+    fi
+  done
+  # save result
+  export MODULES="$SORTEDMODULES"
+  # clean up temporary variables
+  for m in $MODULES; do
+    export SORT_DONE_${m}=""
+  done
+}
+
+#
 # recursive part of sort_modules
 # evaluate dependencies of one module
 #
