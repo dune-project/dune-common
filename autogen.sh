@@ -75,6 +75,8 @@ libtoolize --force
 
 # prepare everything
 echo "--> aclocal..."
+rm -f aclocal.m4
+rm -rf autom4te.cache
 aclocal$AMVERSION -I m4
 
 # applications should provide a config.h for now
