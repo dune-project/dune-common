@@ -11,6 +11,9 @@ usage () {
     echo "  -h,    --help                you already found this :-)"
 }
 
+# add current dir to PATH
+PATH=$PATH:`dirname $0`/bin
+
 for OPT in "$@"; do
     set +e
     # stolen from configure...
@@ -41,6 +44,7 @@ for OPT in "$@"; do
             if test -d "$OPT/am"; then
               am_dir="$OPT/am"
             fi
+			PATH=$PATH:$OPT/bin
             ;;
     esac
 done
