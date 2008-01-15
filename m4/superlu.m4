@@ -2,8 +2,49 @@
 # $Id$
 # searches for SuperLU headers and libs
 
+AC_DEFUN([_slu_lib_path],
+    [
+	my_include_path=include/superlu
+	my_lib_path=lib
+	my_slu_found=yes
+	if test ! -f "$1/$my_include_path/$2" ; then
+	    #Try to find headers under superlu
+	    my_include_path=include
+	    if test ! -f "$with_superlu/$my_include_path/$2" ; then
+		my_include_path=SRC
+		my_lib_path=""
+		if test ! -f "$with_superlu/$my_include_path/$2"; then
+		    my_slu_found=no
+		fi
+	    fi
+	fi
+    ]
+)
+
+AC_DEFUN([_slu_search_versions],
+    [
+	my_slu_header=dsp_defs.h
+	_slu_lib_path($1, $my_slu_header)
+	if test "$my_slu_found" != "yes"; then 
+	    my_slu_header=slu_cdefs.h
+	    _slu_lib_path($1, $my_slu_header)
+	fi
+    ]
+)
+
+AC_DEFUN([_slu_search_default],
+    [
+	with_superlu=/usr
+	_slu_search_versions($with_superlu)
+	
+	if test "$my_slu_found" = "no"; then
+	    with_superlu=/usr/local
+	    _slu_search_versions($with_superlu)
+	fi
+    ]
+)
+
 AC_DEFUN([DUNE_PATH_SUPERLU],[
-	AC_MSG_CHECKING(for SuperLU library)
 	AC_REQUIRE([AC_PROG_CC])
 	#AC_REQUIRE([AC_F77_LIBRARY_LDFLAGS])
 	AC_REQUIRE([ACX_BLAS])
@@ -13,68 +54,32 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
   #
 	my_lib_path=""
 	my_include_path=""
-	AC_ARG_VAR([SUPERLU], [SuperLU library location])
 	AC_ARG_WITH([superlu],
 	    [AC_HELP_STRING([--with-superlu],[user defined path to SuperLU library])],
 	    [
-		if test -n "$SUPERLU" ; then
-		    AC_MSG_RESULT(yes)
-		    with_superlu=$SUPERLU
-		elif test "$withval" != no ; then
-		    AC_MSG_RESULT(yes)
-		    with_superlu=$withval
-		else
-		    AC_MSG_RESULT(no)
-		fi
-		if test "$withval" != no ; then
-		    my_lib_path=""
-		    header="$with_superlu/SRC/dsp_defs.h"
-		    if test -f "$header"; then
-			my_include_path="SRC"
+		echo withval=$withval
+		if  test "$withval" != no ; then
+		    # get absolute path
+		    with_superlu=`eval cd $withval && pwd`
+		    echo with_superlu=$with_superlu
+		    if test "$withval" = yes; then
+		        # Search in default locations
+			_slu_search_default
+		    else
+		        # Search for the headers in the specified location
+			_slu_search_versions("$with_superlu")
 		    fi
 		fi
 		],
 	    [
-		if test -n "$SUPERLU" ; then
-		    with_superlu=$SUPERLU
-		    AC_MSG_RESULT(yes)
-		else
-		    with_superlu=/usr/
-		    my_include_path=include/superlu
-		    my_lib_path=lib
-		    if test ! -f "$with_superlu/$my_include_path/dsp_defs.h" ; then
-		#Try to find headers under superludist
-			my_include_path=include
-			if test ! -f "$with_superlu/$my_include_path/dsp_defs.h" ; then
-			    with_superlu=/usr/local/
-			    my_include_path=include/superlu
-			    if test ! -f "$with_superlu/$my_include_path/dsp_defs.h" ; then
-				my_include_path=include
-				if test ! -f "$with_superlu/$my_include_path/dsp_defs.h" ; then
-				    with_superlu="no"
-				    AC_MSG_RESULT(failed)
-				else
-				    AC_MSG_RESULT(yes)
-				fi
-			    else
-				AC_MSG_RESULT(yes)
-			    fi
-			else
-			    AC_MSG_RESULT(yes)
-			fi
-		    else
-			AC_MSG_RESULT(yes) 
-		    fi
-		fi
+		# Search in default locations
+		    _slu_search_default
 		])
   
-	AC_ARG_VAR([SUPERLU_LIB], [The static SuperLU library name])
 	AC_ARG_WITH([super_lu_lib],
 	    [AC_HELP_STRING([--with-superlu-lib],[The name of the static SuperLU library to link to. By default the shared library with the name superlu-mpi is tried])],
 	    [
-		if test -n "$SUPERLU_LIB"; then
-		    with_spuperlu_lib=$SUPERLU_LIB
-		elif test "$withval" != no ; then
+		if test "$withval" != no ; then
 		    with_superlu_lib=$withval
 		fi
 	    ]
@@ -87,8 +92,8 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
   ## do nothing if --without-superlu is used
 	if test x"$with_superlu" != x"no" ; then
       # defaultpath
-	    SUPERLU_LIB_PATH="$with_superlu$my_lib_path"
-	    SUPERLU_INCLUDE_PATH="$with_superlu$my_include_path"
+	    SUPERLU_LIB_PATH="$with_superlu/$my_lib_path"
+	    SUPERLU_INCLUDE_PATH="$with_superlu/$my_include_path"
 	    
 	    SUPERLU_LDFLAGS="-L$SUPERLU_LIB_PATH"
 	    
@@ -96,11 +101,11 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
 	    CPPFLAGS="$CPPFLAGS -I$SUPERLU_INCLUDE_PATH"
 	    
       # check for central header
-	    AC_CHECK_HEADER([dsp_defs.h],[
+	    AC_CHECK_HEADER([$my_slu_header],[
 		    SUPERLU_CPPFLAGS="$CPPFLAGS"
 		    HAVE_SUPERLU="1"],[
 		    HAVE_SUPERLU="0"
-		    AC_MSG_WARN([dsp_defs.h not found in $SUPERLU_INCLUDE_PATH with $CPPFLAGS])]
+		    AC_MSG_WARN([$my_slu_header not found in $SUPERLU_INCLUDE_PATH with $CPPFLAGS])]
 	    )
 	    
       # if header is found check for the libs
@@ -110,22 +115,27 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
 		OLDFLAGS="$LDFLAGS"
 		LDFLAGS="$LDFLAGS -L$SUPERLU_LIB_PATH"
 		LIBS="$BLAS_LIBS $LIBS $FLIBS"
+		HAVE_SUPERLU=0
 
-		AC_CHECK_LIB(superlu, [dgssvx],[
-			SUPERLU_LIBS="-lsuperlu $LIBS"
-			SUPERLU_LDFLAGS="$LDFLAGS"
-			HAVE_SUPERLU="1"
-			],[
-			HAVE_SUPERLU="0"
-			AC_MSG_WARN(libsuperlu not found)])
-		
+		if test x$with_superlu_lib = x; then
+		    AC_CHECK_LIB(superlu, [dgssvx],[
+			    SUPERLU_LIBS="-lsuperlu $LIBS"
+			    SUPERLU_LDFLAGS="$LDFLAGS"
+			    HAVE_SUPERLU="1"
+			    ],[
+			    HAVE_SUPERLU="0"
+			    AC_MSG_WARN(libsuperlu not found)])
+		fi
 		if test "$HAVE_SUPERLU" = 0; then
-		    if test x$SUPERLU_LIB = x ; then
-			SUPERLU_LIB=superlu.a
+		    echo with_superlu_lib=$with_superlu_lib
+		    if test x$with_superlu_lib = x ; then
+			with_superlu_lib=superlu.a
 		    fi
-		    AC_MSG_CHECKING([static superlu library superlu.a in "$SUPERLU_LIB_PATH"])
-		    if test -f "$SUPERLU_LIB_PATH/superlu.a"; then
-			LIBS="$SUPERLU_LIB_PATH/superlu.a $LIBS"
+		    AC_MSG_CHECKING([static superlu library "$with_superlu_lib" in "$SUPERLU_LIB_PATH"])
+		    echo "";echo if test -f "$SUPERLU_LIB_PATH/$with_superlu_lib"
+		    if test -f "$SUPERLU_LIB_PATH/$with_superlu_lib" ; then
+			LIBS="$SUPERLU_LIB_PATH/$with_superlu_lib $LIBS"
+			echo "checking 	LIBS=$SUPERLU_LIB_PATH/$with_superlu_lib $LIBS"
 			AC_CHECK_FUNC(dgssvx,
 			    [
 				SUPERLU_LDFLAGS="$OLDFLAGS"
@@ -139,6 +149,7 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
 			    ]
 			)
 		    else
+			echo "lib not found"
 			HAVE_SUPERLU="0"
 			AC_MSG_RESULT(failed)
 		    fi
