@@ -23,11 +23,11 @@ AC_DEFUN([_slu_lib_path],
 
 AC_DEFUN([_slu_search_versions],
     [
-	my_slu_header=dsp_defs.h
-	_slu_lib_path($1, $my_slu_header)
+	my_slu_header=slu_ddefs.h
+	_slu_lib_path($1, "$my_slu_header")
 	if test "$my_slu_found" != "yes"; then 
-	    my_slu_header=slu_cdefs.h
-	    _slu_lib_path($1, $my_slu_header)
+	    my_slu_header="dsp_defs.h"
+	    _slu_lib_path($1, "$my_slu_header")
 	fi
     ]
 )
@@ -56,12 +56,10 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
 	my_include_path=""
 	AC_ARG_WITH([superlu],
 	    [AC_HELP_STRING([--with-superlu],[user defined path to SuperLU library])],
-	    [
-		echo withval=$withval
+	    [dnl
 		if  test "$withval" != no ; then
 		    # get absolute path
 		    with_superlu=`eval cd $withval && pwd`
-		    echo with_superlu=$with_superlu
 		    if test "$withval" = yes; then
 		        # Search in default locations
 			_slu_search_default
@@ -127,15 +125,12 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
 			    AC_MSG_WARN(libsuperlu not found)])
 		fi
 		if test "$HAVE_SUPERLU" = 0; then
-		    echo with_superlu_lib=$with_superlu_lib
 		    if test x$with_superlu_lib = x ; then
 			with_superlu_lib=superlu.a
 		    fi
 		    AC_MSG_CHECKING([static superlu library "$with_superlu_lib" in "$SUPERLU_LIB_PATH"])
-		    echo "";echo if test -f "$SUPERLU_LIB_PATH/$with_superlu_lib"
 		    if test -f "$SUPERLU_LIB_PATH/$with_superlu_lib" ; then
 			LIBS="$SUPERLU_LIB_PATH/$with_superlu_lib $LIBS"
-			echo "checking 	LIBS=$SUPERLU_LIB_PATH/$with_superlu_lib $LIBS"
 			AC_CHECK_FUNC(dgssvx,
 			    [
 				SUPERLU_LDFLAGS="$OLDFLAGS"
@@ -149,13 +144,11 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
 			    ]
 			)
 		    else
-			echo "lib not found"
 			HAVE_SUPERLU="0"
 			AC_MSG_RESULT(failed)
 		    fi
 		fi
 	    fi
-      echo "SUPERLU_LIBS=$SUPERLU_LIBS"
       # pre-set variable for summary
       #with_superlu="no"
       
@@ -166,6 +159,9 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
 		AC_SUBST(SUPERLU_LIBS, $SUPERLU_LIBS)
 		AC_SUBST(SUPERLU_CPPFLAGS, $SUPERLU_CPPFLAGS)
 		AC_DEFINE(HAVE_SUPERLU, 1, [Define to 1 if SUPERLU is found])
+		if test "$my_slu_header" = "slu_ddefs.h"; then
+		    AC_DEFINE(SUPERLU_POST_2005_VERSION, 1, [define to 1 if there is  a header slu_ddefs.h in SuperLU])
+		fi
 		AC_MSG_RESULT(ok)
 		
     # add to global list
