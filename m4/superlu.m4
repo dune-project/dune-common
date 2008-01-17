@@ -65,6 +65,7 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
 			_slu_search_default
 		    else
 		        # Search for the headers in the specified location
+			with_superlu="$withval"
 			_slu_search_versions("$with_superlu")
 		    fi
 		fi
