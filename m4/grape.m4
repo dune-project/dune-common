@@ -1,22 +1,13 @@
 # $Id$
 # searches for albert-headers and libs
 
-# grape.h und libgr.a/libgr.so, normalerweise in einem Verzeichnis
-
-#<@strcmp> In meinem simpel-makefile ist es I=/home/grape/lib/  CFLAGS= -I$I 
-#          -D_BSD_SOURCE  $(CC) -o grape $O -L$I -L/usr/X11R6/lib -lgr -lGL 
-#          -lX11 -lXext -lXi -ldl -lm -rdynamic -Wl,-rpath,$I  
-#<@strcmp> Ob man das -D_BSD_SOURCE noch braucht, weiss ich nicht, es gibt 
-#          libc-Versionen, wo ein schlichtes #include <rpc/xdr.h> ohne nicht 
-#          funktioniert. Was ich fuer einen Fehler halte.
-#<@strcmp> Ah, das -Wl,-rpath,$(INSTALL) braucht man, wenn die
-#          libgr.so nicht in einem der Standardpfade liegt. In /usr/local/
-#          brauchst Dus also nicht.
+# grape.h und libgr.a/libgr.so are located in the same discretory 
 
 AC_DEFUN([DUNE_PATH_GRAPE],[
   AC_REQUIRE([AC_PROG_CC])
   AC_REQUIRE([AC_PATH_XTRA])
   AC_REQUIRE([DUNE_PATH_OPENGL])
+  AC_REQUIRE([AC_LIB_PROG_LD_GNU])
 
   AC_ARG_WITH(grape,
     AC_HELP_STRING([--with-grape=PATH],[directory with Grape inside]))
@@ -64,8 +55,13 @@ if test "x$X_LIBS" != x && test x$with_grape != xno ; then
     LIBS="$LIBS $GL_LIBS -lXext"
     LDFLAGS="$LDFLAGS $GL_LDFLAGS"
 
+    # if we use the gnu linker add the grape path 
+    if test x$acl_cv_prog_gnu_ld = xyes ; then 
+      GRAPE_LINKER_FLAGS="-Wl,--rpath -Wl,$GRAPEROOT"
+    fi  
+
     AC_CHECK_LIB(gr, grape, 
-      [GRAPE_LDFLAGS="-L$GRAPEROOT $GL_LDFLAGS -Wl,--rpath -Wl,$GRAPEROOT"
+      [GRAPE_LDFLAGS="-L$GRAPEROOT $GL_LDFLAGS $GRAPE_LINKER_FLAGS"
        GRAPE_CPPFLAGS="$CPPFLAGS"
        GRAPE_LIBS="-lgr $GL_LIBS -lXext"], 
       [HAVE_GRAPE="0"])
