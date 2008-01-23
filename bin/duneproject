@@ -282,7 +282,7 @@ cat > "$PROJECT/configure.ac" <<C_DELIM
 # -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.50)
-AC_INIT($PROJECT, $VERSION, $MAINTAINER)
+DUNE_AC_INIT # gets module version from dune.module file
 AM_INIT_AUTOMAKE($PROJECT, $VERSION, $MAINTAINER)
 AC_CONFIG_SRCDIR([$CMODULE.cc])
 AM_CONFIG_HEADER([config.h])
@@ -355,6 +355,7 @@ for OPT in "\$@"; do
             if test -d "\$OPT/share/dune-common/am"; then
               am_dir="\$OPT/share/dune-common/am"
             fi
+            PATH="\$PATH:\$OPT/bin"
             ;;
     esac
 done
