@@ -1,8 +1,49 @@
 #! /bin/bash
 # $Id$
 # searches for Superlu_Dist headers and libs
+AC_DEFUN([_slu_dist_lib_path],
+    [
+	my_include_path=include/superludist
+	my_lib_path=lib
+	my_slu_found=yes
+	if test ! -f "$1/$my_include_path/$2" ; then
+	    #Try to find headers under superlu
+	    my_include_path=include
+	    if test ! -f "$with_superlu/$my_include_path/$2" ; then
+		my_include_path=SRC
+		my_lib_path=""
+		if test ! -f "$with_superlu/$my_include_path/$2"; then
+		    my_slu_found=no
+		fi
+	    fi
+	fi
+    ]
+)
 
-AC_DEFUN([DUNE_PATH_SUPERLU_DIST],[
+#AC_DEFUN([_slu_dist_search_versions],
+#    [
+#	my_slu_header=slu_ddefs.h
+#	_slu_dist_lib_path($1, "$my_slu_header")
+#	if test "$my_slu_found" != "yes"; then 
+#	    my_slu_header="dsp_defs.h"
+#	    _slu_dist_lib_path($1, "$my_slu_header")
+#	fi
+#    ]
+#)
+
+AC_DEFUN([_slu_dist_search_default],
+    [
+	with_superlu_dist=/usr
+	_slu_dist_lib_path($with_superlu_dist, "superlu_ddefs.h")
+	
+	if test "$my_slu_found" = "no"; then
+	    with_superlu_dist=/usr/local
+	    _slu_dist_lib_path($with_superlu_dist, "superlu_ddefs.h")
+	fi
+    ]
+)
+
+AC_DEFUN([DUNE_PATH_SUPERLU_DIS],[
 	AC_MSG_CHECKING(for SuperLUDist library)
 	AC_REQUIRE([AC_PROG_CC])
 	AC_REQUIRE([ACX_BLAS])
@@ -13,67 +54,30 @@ AC_DEFUN([DUNE_PATH_SUPERLU_DIST],[
   #
 	my_lib_path=""
 	my_include_path=""
-	AC_ARG_VAR([SUPERLU_DIST], [SuperLU-Dist library location])
 	AC_ARG_WITH([superlu_dist],
 	    [AC_HELP_STRING([--with-superlu-dist],[user defined path to SuperLUDist library])],
-	    [
-		if test -n "$SUPERLU_DIST" ; then
-		    AC_MSG_RESULT(yes)
-		    with_superlu_dist=$SUPERLU_DIST
-		elif test "$withval" != no ; then
-		    AC_MSG_RESULT(yes)
-		    with_superlu_dist=$withval
-		else
-		    AC_MSG_RESULT(no)
-		fi
+	    [dnl
 		if test "$withval" != no ; then
-		    header="$with_superlu_dist/SRC/superlu_ddefs.h"
-		    if test -f "$header"; then
-			my_include_path="SRC"
+		    # get absolute path
+		    with_superlu_dist=`eval cd $withval 2>&1 && pwd`
+		    if test "$withval" = yes; then
+		        # Search in default locations
+			_slu_dist_search_default
+		    else
+		        # Search for the headers in the specified location
+			_slu_dist_lib_path("$with_superlu_dist", "superlu_ddefs.h")
 		    fi
 		fi
 		],
-	    [
-		if test -n "$SUPERLU_DIST" ; then
-		    with_superlu_dist=$SUPERLU_DIST
-		    AC_MSG_RESULT(yes)
-		else
-		    with_superlu_dist=/usr/
-		    my_include_path=include
-		    my_lib_path=lib
-		    if test ! -f "$with_superlu_dist/$my_include_path/superlu_ddefs.h" ; then
-		#Try to find headers under superlu_dist
-			my_include_path=include/superludist
-			if test ! -f "$with_superlu_dist/$my_include_path/superlu_ddefs.h" ; then
-			    with_superlu_dist=/usr/local/
-			    my_include_path=include
-			    if test ! -f "$with_superlu_dist/$my_include_path/superlu_ddefs.h" ; then
-				my_include_path=include/superludist
-				if test ! -f "$with_superlu_dist/$my_include_path/superlu_ddefs.h" ; then
-				    with_superlu_dist="no"
-				    AC_MSG_RESULT(failed)
-				else
-				    AC_MSG_RESULT(yes)
-				fi
-			    else
-				AC_MSG_RESULT(yes)
-			    fi
-			else
-			    AC_MSG_RESULT(yes)
-			fi
-		    else
-			AC_MSG_RESULT(yes) 
-		    fi
-		fi
+	    [dnl
+		# Search in default locations
+		    _slu_dist_search_default
 		])
 	
-	AC_ARG_VAR([SUPERLU_DIST_LIB], [The static SuperLU-Dist library name])
 	AC_ARG_WITH([super_lu_dist_lib],
 	    [AC_HELP_STRING([--with-superlu-dist-lib],[The name of the static SuperLUDist library to link to. By default the shared library with the name superlu-mpi is tried])],
 	    [
-		if test -n "$SUPERLU_DIST_LIB"; then
-		    with_spuperlu_dist_lib=$SUPERLU_DIST_LIB
-		elif test "$withval" != no ; then
+		if test "$withval" != no ; then
 		    with_superlu_dist_lib=$withval
 		fi
 	    ]
@@ -88,8 +92,8 @@ AC_DEFUN([DUNE_PATH_SUPERLU_DIST],[
 	if test x"$with_superlu_dist" != x"no" ; then
 	    
       # defaultpath
-	    SUPERLU_DIST_LIB_PATH="$with_superlu_dist$my_lib_path"
-	    SUPERLU_DIST_INCLUDE_PATH="$with_superlu_dist$my_include_path"
+	    SUPERLU_DIST_LIB_PATH="$with_superlu_dist/$my_lib_path"
+	    SUPERLU_DIST_INCLUDE_PATH="$with_superlu_dist/$my_include_path"
 	    
 	    SUPERLU_DIST_LDFLAGS="-L$SUPERLU_DIST_LIB_PATH $MPI_LDFLAGS"
 	    
@@ -115,22 +119,25 @@ AC_DEFUN([DUNE_PATH_SUPERLU_DIST],[
 		LDFLAGS="$LDFLAGS -L$SUPERLU_DIST_LIB_PATH $MPI_LDFLAGS"
 		LIBS="$BLAS_LIBS $LIBS $FLIBS $MPILIBS $MPI_LDFLAGS"
 
-		AC_CHECK_LIB(superlu-mpi, [pdgssvx],[
+		AC_CHECK_LIB(superlu-mpi, [pdgssvx],
+		    [dnl
 			SUPERLU_DIST_LIBS="-lsuperlu-mpi $LIBS"
 			SUPERLU_DIST_LDFLAGS="$LDFLAGS"
 			HAVE_SUPERLU_DIST="1"
-			],[
+			AC_MSG_RESULT(yes)
+			],[dnl
 			HAVE_SUPERLU_DIST="0"
 			AC_MSG_WARN(libsuperlu-mpi not found)])
 
 		if test "$HAVE_SUPERLU_DIST" = 0; then
-		    if test x$SUPERLU_DIST_LIB = x ; then
-			SUPERLU_DIST_LIB=superlu_mpi.a
+		    #check for the static library
+		    if test x$with_superlu_dist_lib = x ; then
+			with_superlu_dist_lib=superlu_mpi.a
 		    fi
-		    AC_MSG_CHECKING([static SuperLUDist library $SUPERLU_DIST_LIB in "$SUPERLU_DIST_LIB_PATH"])
+		    AC_MSG_CHECKING([static SuperLUDist library $with_superlu_dist_lib in "$SUPERLU_DIST_LIB_PATH"])
 		    
-		    if test -f "$SUPERLU_DIST_LIB_PATH/$SUPERLU_DIST_LIB"; then
-			LIBS="$SUPERLU_DIST_LIB_PATH/$SUPERLU_DIST_LIB $LIBS"
+		    if test -f "$SUPERLU_DIST_LIB_PATH/$with_superlu_dist_lib"; then
+			LIBS="$SUPERLU_DIST_LIB_PATH/$with_superlu_dist_lib $LIBS"
 			LDFLAGS="$OLDFLAGS"
 			AC_CHECK_FUNC(pdgssvx,
 			    [
@@ -141,12 +148,12 @@ AC_DEFUN([DUNE_PATH_SUPERLU_DIST],[
 				],
 			    [ 
 				HAVE_SUPERLU_DIST="0"
-				AC_MSG_RESULT(failed) 
+				AC_MSG_RESULT(failed)
 			    ]
 			)
 		    else
-			HAVE_SUPERLU_DIST="0"
 			AC_MSG_RESULT(failed)
+			HAVE_SUPERLU_DIST="0"
 		    fi
 		fi
 	    fi
