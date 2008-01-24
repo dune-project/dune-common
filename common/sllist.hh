@@ -102,6 +102,12 @@ namespace Dune
     typedef SLListModifyIterator<T,A> ModifyIterator;
 
     /**
+     * @brief Assignment operator.
+     */
+    SLList<T,A>& operator=(const SLList<T,A>& other);
+
+
+    /**
      * @brief Add a new entry to the end of the list.
      * @param item The item to add.
      */
@@ -205,17 +211,6 @@ namespace Dune
 
     };
 
-    template<typename T1, typename A1>
-    SLList<T,A>& operator=(SLList<T1,A1>& other)
-    {
-      return *this;
-    }
-
-    SLList<T,A>& operator=(SLList<T,A>& other)
-    {
-      return *this;
-    }
-
     /**
      * @brief Delete the next element in the list.
      * @param current Element whose next element should be deleted.
@@ -226,8 +221,7 @@ namespace Dune
      * @brief Copy the elements from another list.
      * @param other The other list.
      */
-    template<class T1, class A1>
-    void copyElements(const SLList<T1,A1>& other);
+    void copyElements(const SLList<T,A>& other);
 
     /**
      * @brief Delete the next element in the list.
@@ -598,8 +592,7 @@ namespace Dune
   }
 
   template<typename T, typename A>
-  template<typename T1, class A1>
-  void SLList<T,A>::copyElements(const SLList<T1,A1>& other)
+  void SLList<T,A>::copyElements(const SLList<T,A>& other)
   {
     assert(tail_==&beforeHead_);
     assert(size_==0);
@@ -615,6 +608,14 @@ namespace Dune
   SLList<T,A>::~SLList()
   {
     clear();
+  }
+
+  template<typename T, class A>
+  SLList<T,A>& SLList<T,A>::operator=(const SLList<T,A>& other)
+  {
+    clear();
+    copyElements(other);
+    return *this;
   }
 
   template<typename T, class A>
@@ -721,9 +722,6 @@ namespace Dune
       this->template deleteNext<false>(&beforeHead_);
     }
 
-#ifdef NDEBUG
-    size_=0;
-#endif
     assert(size_==0);
     // update the tail!
     tail_ = &beforeHead_;

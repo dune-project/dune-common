@@ -122,6 +122,26 @@ void randomizeListFront(Dune::SLList<T,A>& alist){
 
   check(alist, vals);
 }
+int testAssign()
+{
+  typedef Dune::SLList<int,IntAllocator> List;
+  List alist, blist;
+
+  alist.push_back(3);
+  alist.push_back(4);
+  alist.push_back(5);
+
+  blist.push_back(-1);
+
+  blist=alist;
+  List::iterator biter=blist.begin(), aiter=alist.begin();
+  for(; aiter!=alist.end(); ++aiter, ++biter)
+    if(*aiter!=*biter) {
+      std::cerr<<"Asignment failed "<<__FILE__<<":"<<__LINE__<<std::endl;
+      return 1;
+    }
+  return 0;
+}
 
 int testDelete()
 {
@@ -293,29 +313,6 @@ int testInsert()
   return ret;
 }
 
-template<typename T>
-int testOneBeforeBegin(T& alist)
-{
-  typename T::iterator iterBefore = alist.oneBeforeBegin(),
-  iter = alist.begin();
-  typename T::const_iterator citerBefore = alist.oneBeforeBegin();
-
-  int ret=0;
-  ++iterBefore;
-  ++citerBefore;
-
-  if(iterBefore!=iter || &(*iterBefore) != &(*iter)) {
-    std::cerr<<"one before iterator incremented once should point to begin()! "<<__FILE__<<":"<<__LINE__<<std::endl;
-    ret++;
-  }
-  if(citerBefore!=iter || &(*citerBefore) != &(*iter)) {
-    std::cerr<<"one before iterator incremented once should point to begin()! "<<__FILE__<<":"<<__LINE__<<std::endl;
-    ret++;
-  }
-  return ret;
-}
-
-
 int testPushPop(){
   using namespace Dune;
   int ret=0;
@@ -392,45 +389,46 @@ int main()
       }
   }
 
-  //randomizeListFront(list2);
-  /*
-     Printer<std::iterator_traits<Dune::SLList<double,DoubleAllocator>::ModifyIterator>::value_type> print;
+  randomizeListFront(list2);
 
-     Dune::SLList<double,DoubleAllocator>::ModifyIterator lbegin = list.beginModify(), lend = list.endModify();
+  Printer<std::iterator_traits<Dune::SLList<double,DoubleAllocator>::ModifyIterator>::value_type> print;
 
-     double& d = lbegin.dereference();
+  Dune::SLList<double,DoubleAllocator>::ModifyIterator lbegin = list.beginModify(), lend = list.endModify();
 
-     d= 2.0;
+  double& d = lbegin.dereference();
 
-     double& d1 = lbegin.dereference();
+  d= 2.0;
 
-     lbegin.dereference()=5.0;
+  double& d1 = lbegin.dereference();
 
-     lbegin.operator*()=5.0;
+  lbegin.dereference()=5.0;
 
-     *lbegin=5.0;
+  lbegin.operator*()=5.0;
 
-     std::cout << "Testing ConstIterator "<<std::endl;
-     ret+=testConstIterator(lbegin, lend, print);
-     std::cout << "Testing Iterator "<<std::endl;
-     ret+=testIterator(list);
-     std::cout << "Testing Iterator "<<std::endl;
-     ret+=testIterator(list1);
+  *lbegin=5.0;
 
-     std::cout<< " Test PushPop "<<std::endl;
-     ret+=testPushPop();
-     std::cout<<" Test OneBeforeBegin"<<std::endl;
+  std::cout << "Testing ConstIterator "<<std::endl;
+  ret+=testConstIterator(lbegin, lend, print);
+  std::cout << "Testing Iterator "<<std::endl;
+  ret+=testIterator(list);
+  std::cout << "Testing Iterator "<<std::endl;
+  ret+=testIterator(list1);
 
-     ret+=testOneBeforeBegin(list1);
+  std::cout<< " Test PushPop "<<std::endl;
+  ret+=testPushPop();
+  std::cout<<" Test OneBeforeBegin"<<std::endl;
 
-     std::cout<< "test empty"<<std::endl;
-     ret+=testEmpty();
-     std::cout<< "test insert"<<std::endl;
+  //ret+=testOneBeforeBegin(list1);
 
-     ret+=testInsert();
-     std::cout<< "test delete"<<std::endl;
-     ret+=testDelete();
-   */
+  std::cout<< "test empty"<<std::endl;
+  ret+=testEmpty();
+  std::cout<< "test insert"<<std::endl;
+
+  ret+=testInsert();
+  std::cout<< "test delete"<<std::endl;
+  ret+=testDelete();
+
+  ret+=testAssign();
   list.clear();
   list1.clear();
   list2.clear();
