@@ -36,8 +36,19 @@ AC_DEFUN([DUNE_CHECK_DEPENDENCIES], [
 
 AC_DEFUN([DUNE_CHECK_ALL],[
   AC_LANG_PUSH([C++])
-dnl check for programs
+  dnl check for programs
+  AC_REQUIRE([AC_PROG_CC])
+  # add -Wall if the compiler is gcc
+  if test "$ac_test_CFLAGS" != set && \
+    test "$GCC" = yes; then
+    CFLAGS="$CFLAGS -Wall"
+  fi
+  # add -Wall if the compiler is g++
   AC_REQUIRE([AC_PROG_CXX])
+  if test "$ac_test_CXXFLAGS" != set && \
+    test "$GXX" = yes; then
+    CXXFLAGS="$CXXFLAGS -Wall"
+  fi
   AC_REQUIRE([AC_PROG_CPP])
   AC_REQUIRE([AC_PROG_CXXCPP])
   AC_REQUIRE([DUNE_CHECK_COMPILER])
