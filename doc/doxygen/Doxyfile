@@ -202,6 +202,15 @@ OPTIMIZE_OUTPUT_FOR_C  = NO
 
 OPTIMIZE_OUTPUT_JAVA   = NO
 
+# If you use STL classes (i.e. std::string, std::vector, etc.) but do not want to 
+# include (a tag file for) the STL sources as input, then you should 
+# set this tag to YES in order to let doxygen match functions declarations and 
+# definitions whose arguments contain STL classes (e.g. func(std::string); v.s. 
+# func(std::string) {}). This also make the inheritance and collaboration 
+# diagrams that involve STL classes more complete and accurate.
+
+BUILTIN_STL_SUPPORT    = YES
+
 # Set the SUBGROUPING tag to YES (the default) to allow class member groups of 
 # the same type (for instance a group of public functions) to be put as a 
 # subgroup of that type (e.g. under the Public Functions section). Set it to 
