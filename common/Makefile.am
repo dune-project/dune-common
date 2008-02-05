@@ -21,7 +21,8 @@ commoninclude_HEADERS = dlist.cc alignment.hh \
   gcd.hh lcm.hh configparser.hh propertymap.hh \
   collectivecommunication.hh mpihelper.hh singleton.hh \
   mpicollectivecommunication.hh geometrytype.hh utility.hh \
-  bartonnackmanifcheck.hh binaryfunctions.hh lru.hh fassign.hh
+  bartonnackmanifcheck.hh binaryfunctions.hh lru.hh fassign.hh \
+  static_assert.hh
 
 if EXPRESSIONTEMPLATES
 commoninclude_HEADERS += exprtmpl.hh exprtmpl/scalar.inc exprtmpl/exprexpr.inc
