@@ -43,7 +43,7 @@ AC_DEFUN([_slu_dist_search_default],
     ]
 )
 
-AC_DEFUN([DUNE_PATH_SUPERLU_DIS],[
+AC_DEFUN([DUNE_PATH_SUPERLU_DIST],[
 	AC_MSG_CHECKING(for SuperLUDist library)
 	AC_REQUIRE([AC_PROG_CC])
 	AC_REQUIRE([ACX_BLAS])

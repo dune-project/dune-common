@@ -18,13 +18,13 @@
 
 m4_define([DUNE_PARSE_MODULE_FILE],[
   m4_define([DUNE_MOD_VERSION], 
-    [m4_esyscmd([grep ^Version: dune.module | tr '\n' ' ' | sed -e 's/^.*://' -e 's/\s*//'])])
+    [m4_esyscmd([grep ^Version: dune.module | tr '\n' ' ' | sed -e 's/^.*://' -e 's/\s*//g'])])
   m4_define([DUNE_MOD_NAME], 
-    [m4_esyscmd([grep ^Module: dune.module | tr '\n' ' ' | sed -e 's/^.*://' -e 's/\s*//'])])
+    [m4_esyscmd([grep ^Module: dune.module | tr '\n' ' ' | sed -e 's/^.*://' -e 's/\s*//g'])])
 ])
 
 m4_define([DUNE_AC_INIT],[
-PARSE_MODULE_FILE
+DUNE_PARSE_MODULE_FILE
 AC_INIT(DUNE_MOD_NAME, DUNE_MOD_VERSION, dune@dune-project.org)
 ])
 
