@@ -243,9 +243,10 @@ namespace Dune {
       if (x.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
       if (y.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
-      for (size_type i=0; i<n; i++)
-        for (size_type j=0; j<m; j++)
-          y[i] = (*this)[i][j] * x[j];
+      for (size_type i=0; i<n; ++i)
+      {
+        y[i] = (*this)[i] * x;
+      }
     }
 
     //! y += A x
