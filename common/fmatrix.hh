@@ -245,7 +245,9 @@ namespace Dune {
 #endif
       for (size_type i=0; i<n; ++i)
       {
-        y[i] = (*this)[i] * x;
+        y[i] = 0;
+        for (size_type j=0; j<m; j++)
+          y[i] += (*this)[i][j] * x[j];
       }
     }
 
