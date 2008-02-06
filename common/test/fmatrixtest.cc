@@ -193,6 +193,21 @@ void test_matrix()
 
   // matrix vector product
   A.umv(v,f);
+  // check that mv and umv are doing the same thing
+  {
+    FieldVector<K,n> res2(0);
+    FieldVector<K,n> res1;
+
+    FieldVector<K,m> b(1);
+
+    A.mv(b, res1);
+    A.umv(b, res2);
+
+    if( (res1 - res2).two_norm() > 1e-12 )
+    {
+      DUNE_THROW(FMatrixError,"mv and umv are not doing the same!");
+    }
+  }
 
   A.infinity_norm();
 
