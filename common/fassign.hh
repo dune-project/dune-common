@@ -4,6 +4,7 @@
 #define DUNE_ASSIGN_HH
 
 #include <dune/common/fvector.hh>
+#include <dune/common/fmatrix.hh>
 
 namespace Dune {
 
@@ -11,10 +12,11 @@ namespace Dune {
    * Emtpy namespace make this class and the object local to one object file
    */
   namespace {
+
     /**
      *  @brief Initializer class for
      *
-     *  overload operator <<= for fvector assignment from Dune::Zero
+     *  overload operator <<= for FieldVector assignment from Dune::Zero
      */
     class Zero {
       /** \brief Conversion operator to double */
@@ -22,6 +24,14 @@ namespace Dune {
       /** \brief Conversion operator to int */
       operator int () { return 0; }
     } zero;
+
+    /**
+     *  @brief Marker class for next row
+     *
+     *  overload operator <<= for FiledMatrix assignment
+     */
+    class NextRow {} nextRow;
+
   } // end empty namespace
 
   /**
@@ -123,6 +133,132 @@ namespace Dune {
   fvector_assigner<T,s> operator <<= (FieldVector<T,s> & v, Zero z)
   {
     return fvector_assigner<T,s>(v,true).append(z);
+  }
+
+  /**
+   *  @brief fvector assignment operator
+   *
+   *  overload operator <<= for fvector assignment from Dune::Zero
+   *
+   *  after including fassing.hh you can easily assign data to a FieldVector
+   *  using
+   *
+   *  @code
+   *  FieldVector<double, 4> x; x <<= 1.0, 4.0, 10.0, 11.0;
+   *  @endcode
+   *
+   *  The operator checks that the whole vector is initalized.
+   *  In case you know that all following entries will be zero padded, you can use
+   *
+   *  @code
+   *  FieldVector<double, 40> x; x <<= 1.0, 4.0, 10.0, 11.0, zero;
+   *  @endcode
+   *
+   */
+  template <class T, int n, int m>
+  class fmatrix_assigner
+  {
+  private:
+    FieldMatrix<T,n,m> & A;
+    int c;
+    int r;
+    bool temporary;
+    void end_row()
+    {
+      if (!temporary && c!=m)
+        DUNE_THROW(MathError, "Trying to assign " << c <<
+                   " entries to a FieldMatrix row of size " << m);
+      c=0;
+    }
+  public:
+    /*! @brief Copy Constructor */
+    fmatrix_assigner(fmatrix_assigner & a) : A(a.A), c(a.c), r(a.r), temporary(false)
+    {}
+    /*! @brief Constructor from matrix and temporary flag
+       \param v matrix which should be initialized
+       \param t bool indicating, that this is a temporary object (see ~fmatrix_assigner)
+     */
+    fmatrix_assigner(FieldMatrix<T,n,m> & _A, bool t) : A(_A), c(0), r(0), temporary(t)
+    {};
+    /*! @brief Destructor
+       checks for complete initialization of the matrix.
+       The check is skipped, if this object is marked temporary.
+     */
+    ~fmatrix_assigner()
+    {
+      end_row();
+      if (!temporary && r!=n-1)
+        DUNE_THROW(MathError, "Trying to assign " << r <<
+                   " rows to a FieldMatrix of size " << n << " x " << m);
+    }
+    /*! @brief append data to this matrix */
+    fmatrix_assigner & append (const T & t)
+    {
+      A[r][c++] = t;
+      return *this;
+    }
+    /*! @brief append zeros to this matrix
+     */
+    fmatrix_assigner & append (Zero z)
+    {
+      while (c!=m) A[r][c++] = 0;
+      return *this;
+    }
+    /*! @brief append zeros to this matrix
+     */
+    fmatrix_assigner & append (NextRow nr)
+    {
+      end_row();
+      r++;
+      return *this;
+    }
+    /*! @brief append data to this matrix
+       the overloaded comma operator is used to assign a comma seperated list
+       of values to the matrix
+     */
+    fmatrix_assigner & operator , (const T & t)
+    {
+      return append(t);
+    }
+    /*! @brief append zeros to this matrix
+       the overloaded comma operator is used to stop the assign of values
+       to the matrix, all remaining entries are assigned 0.
+     */
+    fmatrix_assigner & operator , (Zero z)
+    {
+      return append(z);
+    }
+    /*! @brief append zeros to this matrix
+       the overloaded comma operator is used to stop the assign of values
+       to the matrix, all remaining entries are assigned 0.
+     */
+    fmatrix_assigner & operator , (NextRow nr)
+    {
+      return append(nr);
+    }
+  };
+
+  /**
+   *  @brief FieldMatrix assignment operator
+   *
+   *  overload operator <<= for FieldMatrix assignment
+   *  from comma seperated list of values
+   */
+  template <class T, int n, int m>
+  fmatrix_assigner<T,n,m> operator <<= (FieldMatrix<T,n,m> & v, const T & t)
+  {
+    return fmatrix_assigner<T,n,m>(v,true).append(t);
+  }
+
+  /**
+   *  @brief fFileMatrix assignment operator
+   *
+   *  overload operator <<= for FieldMatrix row assignment from Dune::Zero
+   */
+  template <class T, int n, int m>
+  fmatrix_assigner<T,n,m> operator <<= (FieldMatrix<T,n,m> & v, Zero z)
+  {
+    return fmatrix_assigner<T,n,m>(v,true).append(z);
   }
 
 } // end namespace Dune

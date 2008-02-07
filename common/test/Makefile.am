@@ -6,13 +6,16 @@ TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
 	bigunsignedinttest mpihelpertest singletontest mpicollcomm \
 	utilitytest lrutest \
 	testfassign1 testfassign2 testfassign3 \
-    testfassign_fail1 testfassign_fail2
+	testfassign4 \
+    testfassign_fail1 testfassign_fail2 testfassign_fail3\
+    testfassign_fail4 testfassign_fail5 testfassign_fail6
 
 
 # which tests to run
 TESTS = $(TESTPROGS)
 
-XFAIL_TESTS = testfassign_fail1 testfassign_fail2
+XFAIL_TESTS = testfassign_fail1 testfassign_fail2 testfassign_fail3\
+    testfassign_fail4 testfassign_fail5 testfassign_fail6
 
 # programs just to build when "make check" is used
 check_PROGRAMS = $(TESTPROGS)
@@ -82,19 +85,34 @@ utilitytest_SOURCES = utilitytest.cc
 utilitytest_LDFLAGS = $(LOCAL_LIBS)
 
 testfassign1_SOURCES = testfassign.cc testfassign2.cc
-testfassign1_CPPFLAGS = $(AM_CPPFLAGS) -D_SIZE=3 -D_VALUES="1,2,3"
+testfassign1_CPPFLAGS = $(AM_CPPFLAGS) -D_N=3 -D_VALUES="1,2,3"
 
 testfassign2_SOURCES = testfassign.cc
-testfassign2_CPPFLAGS = $(AM_CPPFLAGS) -D_SIZE=3 -D_VALUES="1,Dune::zero"
+testfassign2_CPPFLAGS = $(AM_CPPFLAGS) -D_N=3 -D_VALUES="1,zero"
 
 testfassign3_SOURCES = testfassign.cc
-testfassign3_CPPFLAGS = $(AM_CPPFLAGS) -D_SIZE=3 -D_VALUES="Dune::zero"
+testfassign3_CPPFLAGS = $(AM_CPPFLAGS) -D_N=3 -D_VALUES="zero"
+
+testfassign4_SOURCES = testfassign.cc
+testfassign4_CPPFLAGS = $(AM_CPPFLAGS) -D_N=2 -D_M=3 -D_VALUES="1, zero, nextRow, 2, 3, 4"
 
 testfassign_fail1_SOURCES = testfassign.cc
-testfassign_fail1_CPPFLAGS = $(AM_CPPFLAGS) -D_SIZE=3 -D_VALUES="1,2"
+testfassign_fail1_CPPFLAGS = $(AM_CPPFLAGS) -D_N=3 -D_VALUES="1,2"
 
 testfassign_fail2_SOURCES = testfassign.cc
-testfassign_fail2_CPPFLAGS = $(AM_CPPFLAGS) -D_SIZE=3 -D_VALUES="1,2,3,4"
+testfassign_fail2_CPPFLAGS = $(AM_CPPFLAGS) -D_N=3 -D_VALUES="1,2,3,4"
+
+testfassign_fail3_SOURCES = testfassign.cc
+testfassign_fail3_CPPFLAGS = $(AM_CPPFLAGS) -D_N=2 -D_M=2 -D_VALUES="1, nextRow, 2, 3"
+
+testfassign_fail4_SOURCES = testfassign.cc
+testfassign_fail4_CPPFLAGS = $(AM_CPPFLAGS) -D_N=2 -D_M=2 -D_VALUES="1, 2, 3, nextRow, 2, 3"
+
+testfassign_fail5_SOURCES = testfassign.cc
+testfassign_fail5_CPPFLAGS = $(AM_CPPFLAGS) -D_N=2 -D_M=2 -D_VALUES="1, 2"
+
+testfassign_fail6_SOURCES = testfassign.cc
+testfassign_fail6_CPPFLAGS = $(AM_CPPFLAGS) -D_N=2 -D_M=2 -D_VALUES="1, 2, nextRow, 2, 3, nextRow, 4, 5"
 
 sourcescheck_NOSOURCES = exprtmpl.cc timing.cc
 
