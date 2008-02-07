@@ -18,19 +18,22 @@ namespace Dune {
      *
      *  overload operator <<= for FieldVector assignment from Dune::Zero
      */
-    class Zero {
+    struct Zero {
+      Zero (int) {};
       /** \brief Conversion operator to double */
       operator double () { return 0.0; }
       /** \brief Conversion operator to int */
       operator int () { return 0; }
-    } zero;
+    } zero = 0;
 
     /**
      *  @brief Marker class for next row
      *
      *  overload operator <<= for FiledMatrix assignment
      */
-    class NextRow {} nextRow;
+    struct NextRow {
+      NextRow (int) {};
+    } nextRow = 0;
 
   } // end empty namespace
 
