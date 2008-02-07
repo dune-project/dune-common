@@ -156,30 +156,62 @@ done
 run_default_exec () { bash -c "eval $CMD_PARAMS"; }
 
 run_default_status () {
+  local verbose=0
+  local update=""
+  for i in $CMD_PARAMS; do
+    if eval test "x$i" = "x-v"; then verbose=1; fi
+    if eval test "x$i" = "x-vv"; then verbose=2; fi
+    if eval test "x$i" = "x-u"; then update="-u"; fi
+  done
   # is out output connected to a tty?
   if test -t 1; then
     blue="\e[1m\e[34m"
     green="\e[1m\e[32m"
+    red="\e[1m\e[31m"
     reset="\e[0m\e[37m"
   fi
 
-  if eval test "x$CMD_PARAMS" = "x-v"; then
-    svn status | grep -E "^M|^A|^D"
-  elif eval test "x$CMD_PARAMS" = "x-vv"; then
-    svn status
+  if test $verbose -eq 1; then
+    svn status $update | grep -E "^M|^A|^D|^C|^U"
+  elif test $verbose -eq 2; then
+    svn status $update
   fi
-
-  count=$(svn status | grep -E "^M|^A|^D" | wc -l)
 
   name="$(eval echo \$NAME_$module)"
+  changed=$(svn status | grep -E "^M|^A|^D" | wc -l)
+  collisions=$(svn status | grep -E "^C"| wc -l)
+  pending=$(svn status $update | grep -E "^...... \* " | wc -l)
 
-  if [ $count = 0 ]; then
-    echo -e "$green[no changes]$reset $name"
-  elif [ $count = 1 ]; then
-    echo -e "$blue[1 change]$reset $name"
+  color=$green
+  text="no changes"
+  if [ $changed -eq 0 ]; then
+	true
+  elif [ $changed -eq 1 ]; then
+	color=$blue;
+    text="1 change"
   else
-    echo -e "$blue[$count changes]$reset $name"
+	color=$blue;
+    text="$changed changes"
   fi
+  if [ $pending -eq 0 ]; then
+	true
+  elif [ $pending -eq 1 ]; then
+	color=$blue;
+    text="$text, 1 update pending"
+  else
+	color=$blue;
+    text="$text, $pending updates pending"
+  fi
+  if [ $collisions -eq 0 ]; then
+	true
+  elif [ $collisions -eq 1 ]; then
+	color=$red
+    text="$text, 1 collision"
+  else
+	color=$red
+    text="$text, $count collisions"
+  fi
+  echo -e "$color[$text]$reset $name"
 }
 
 run_default_update () {
