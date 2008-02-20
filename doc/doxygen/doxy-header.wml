@@ -4,7 +4,7 @@
 ## praktische Tags
 #use wml::std::tags
 
-#use wml::layout::header title="$projectname - $title"
+#use wml::layout::header title="$title ($projectname $projectnumber)"
 #use wml::layout::navigation
 
 <enter STYLESHEETS>
