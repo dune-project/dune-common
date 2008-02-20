@@ -80,6 +80,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
     if AC_RUN_LOG([$PKG_CONFIG --exists --print-errors "$1"]); then
       _DUNE_MODULE[]_CPPFLAGS="`$PKG_CONFIG --cflags _dune_name`" 2>/dev/null
       _DUNE_MODULE[]_ROOT="`$PKG_CONFIG --variable=prefix _dune_name`" 2>/dev/null 
+      _DUNE_MODULE[]_VERSION="`$PKG_CONFIG --modversion _dune_name`" 2>/dev/null
       ifelse(_dune_symbol,,,[
         _DUNE_MODULE[]_LDFLAGS="-L`$PKG_CONFIG --variable=libdir _dune_name`" 2>/dev/null 
         _DUNE_MODULE[]_LIBS="-l[]_dune_lib"
@@ -103,8 +104,10 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
         # Dune was installed into directory given by with-dunecommon
         dune_is_installed=1
         _DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]_ROOT/include"
+		_DUNE_MODULE[]_VERSION="`PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$_DUNE_MODULE[]_ROOT/lib/pkgconfig $PKG_CONFIG --modversion _dune_name`" 2>/dev/null
       else
         _DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]_ROOT"
+		_DUNE_MODULE[]_VERSION="`PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$_DUNE_MODULE[]_ROOT $PKG_CONFIG --modversion _dune_name`" 2>/dev/null
       fi
       ifelse(_dune_symbol,,,[
         _DUNE_MODULE[]_LDFLAGS="-L$_DUNE_MODULE[]_ROOT/lib"
@@ -185,6 +188,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
     AC_SUBST(_DUNE_MODULE[]_LIBS, "$_DUNE_MODULE[]_LIBS")
     AC_SUBST(_DUNE_MODULE[]_ROOT, "$_DUNE_MODULE[]_ROOT")
     AC_DEFINE(HAVE_[]_DUNE_MODULE, 1, [Define to 1 if _dune_module was found])
+    AC_DEFINE_UNQUOTED(_DUNE_MODULE[]_VERSION, "$_DUNE_MODULE[]_VERSION", [Define to the version of _dune_module.])
 
     # set DUNE_* variables
     AC_SUBST(DUNE_CPPFLAGS, "$DUNE_CPPFLAGS")
