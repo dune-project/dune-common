@@ -153,15 +153,6 @@ AC_SUBST(DUNEWEBDIR, $with_duneweb)
   AC_SUBST(am_dir, $DUNE_COMMON_ROOT/am)
 ])
 
-AC_DEFUN([DUNE_SUMMARY],[
-  if test xyes == x$2 || test xno == x$2; then
-    echo -n "$1"
-    echo -n "$2"
-    if test x$3 != x; then echo " ($3)"
-    else echo; fi
-  fi
-])
-
 AC_DEFUN([DUNE_SUMMARY_ALL],[
   # show search results
 
@@ -170,11 +161,7 @@ AC_DEFUN([DUNE_SUMMARY_ALL],[
   echo
   echo "-----------------------------"
   echo  
-  DUNE_SUMMARY([Dune-common......: ], [$with_dune_common], [$DUNE_COMMON_ROOT])
-  DUNE_SUMMARY([Dune-grid........: ], [$with_dune_grid], [$DUNE_GRID_ROOT])
-  DUNE_SUMMARY([Dune-istl........: ], [$with_dune_istl], [$DUNE_ISTL_ROOT])
-  DUNE_SUMMARY([Dune-disc........: ], [$with_dune_disc], [$DUNE_DISC_ROOT])
-  DUNE_SUMMARY([Dune-fem.........: ], [$with_dune_fem], [$DUNE_FEM_ROOT])
+  eval $DUNE_SUMMARY
   echo "ALBERTA..........: $with_alberta"
   echo "ALUGrid..........: $with_alugrid"
   echo "AmiraMesh........: $with_amiramesh"

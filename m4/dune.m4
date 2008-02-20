@@ -85,7 +85,6 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
         _DUNE_MODULE[]_LDFLAGS="-L`$PKG_CONFIG --variable=libdir _dune_name`" 2>/dev/null 
         _DUNE_MODULE[]_LIBS="-l[]_dune_lib"
       ])
-      dune_is_installed=1
       AC_MSG_RESULT([
         global installation in $_DUNE_MODULE[]_ROOT])
     else
@@ -102,12 +101,11 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       # expand search path (otherwise empty CPPFLAGS)
       if test -d $_DUNE_MODULE[]_ROOT/include/dune; then
         # Dune was installed into directory given by with-dunecommon
-        dune_is_installed=1
         _DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]_ROOT/include"
 		_DUNE_MODULE[]_VERSION="`PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$_DUNE_MODULE[]_ROOT/lib/pkgconfig $PKG_CONFIG --modversion _dune_name`" 2>/dev/null
       else
         _DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]_ROOT"
-		_DUNE_MODULE[]_VERSION="`PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$_DUNE_MODULE[]_ROOT $PKG_CONFIG --modversion _dune_name`" 2>/dev/null
+		_DUNE_MODULE[]_VERSION="`grep Version $_DUNE_MODULE[]_ROOT/dune.module | sed -e 's/^Version: *//'`" 2>/dev/null
       fi
       ifelse(_dune_symbol,,,[
         _DUNE_MODULE[]_LDFLAGS="-L$_DUNE_MODULE[]_ROOT/lib"
@@ -210,6 +208,19 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   # reset previous flags
   CPPFLAGS="$ac_save_CPPFLAGS"
   LIBS="$ac_save_LIBS"
+
+  # add this module to DUNE_SUMMARY
+  txt=_dune_name
+  len=${#txt}
+  let len=17-$len
+  txt="$txt`for i in \`seq $len\`; do echo -n '.'; done`: $with_[]_dune_module"
+  if test "x$_DUNE_MODULE[]_ROOT" != "x"; then
+	txt="$txt ($_DUNE_MODULE[]_ROOT)"
+  fi
+  if test "x$_DUNE_MODULE[]_VERSION" != "x"; then
+	txt="$txt version $_DUNE_MODULE[]_VERSION"
+  fi
+  DUNE_SUMMARY="$DUNE_SUMMARY echo '$txt';"
 
   # remove local variables
   m4_popdef([_dune_name])
