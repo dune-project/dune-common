@@ -30,7 +30,7 @@ if test x$with_alugrid != x && test x$with_alugrid != xno ; then
 
     ALUGRID_VERSIONCHECK=$ALUGRIDROOT/bin/alugridversion
     ## check version number 
-    NEEDEDALUGRID_VERSION=1.0
+    NEEDEDALUGRID_VERSION=1.1
 
     echo -n "checking ALUGrid version >= $NEEDEDALUGRID_VERSION... " 
     if test -f $ALUGRID_VERSIONCHECK; then 
