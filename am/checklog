@@ -5,10 +5,10 @@ LOG_FILE = $(top_srcdir)/check-log.log
 LOG_DIR = $(top_srcdir)/check-log
 LOG_STORE = $(SHELL) $(DUNE_COMMON_ROOT)/bin/check-log-store $(LOG_FILE) $(LOG_DIR)
 LOG_SET_OPTIONS = \
-	path=$$(test "$(subdir)" = "." && \
-	echo "/@PACKAGE_NAME@"|| echo "/@PACKAGE_NAME@/$(subdir)"); \
-	ppath=$$(dirname $$path); \
-	dir=$$(basename $$path)
+	path=`test "$(subdir)" = "." && \
+	echo "/@PACKAGE_NAME@" || echo "/@PACKAGE_NAME@/$(subdir)"`; \
+	ppath=`dirname $$path`; \
+	dir=`basename $$path`
 
 $(DUNE_COMMON_ROOT)/bin/check-log-store: $(DUNE_COMMON_ROOT)/bin/check-log-store.in
 	cd $(DUNE_COMMON_ROOT)/bin/ && $(MAKE) check-log-store
