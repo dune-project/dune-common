@@ -12,7 +12,7 @@ usage () {
 }
 
 # add current dir to PATH
-PATH=$PATH:`dirname $0`/bin
+PATH=`dirname $0`/bin:$PATH
 
 for OPT in "$@"; do
     set +e
