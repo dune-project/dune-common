@@ -45,9 +45,8 @@ for OPT in "$@"; do
 	-h|--help) usage ; exit 0 ;;
 	*)
             if test -d "$OPT/m4"; then
-				if [ -d m4 ]; then
-					cat "$OPT/m4/"*.m4 >> dune-all.m4
-				fi
+              echo "... merging $OPT/m4 into dune-all.m4"
+			  cat "$OPT/m4/"*.m4 >> dune-all.m4
             fi
             if test -d "$OPT/am"; then
               am_dir="$OPT/am"
@@ -58,7 +57,7 @@ for OPT in "$@"; do
             if test -d "$OPT/share/dune-common/am"; then
               am_dir="$OPT/share/dune-common/am"
             fi
-			PATH=$PATH:$OPT/bin
+			      PATH=$OPT/bin:$PATH
             ;;
     esac
 done
@@ -97,10 +96,24 @@ if [ -d m4 ]; then
 fi
 
 # prepare everything
-echo "--> aclocal... $ACLOCAL_FLAGS"
+echo "--> aclocal..."
 rm -f aclocal.m4
 rm -rf autom4te.cache
 aclocal$AMVERSION -I .
+
+# create a link to the dune-common am directory
+if [ "$name" != "dune-common" ]; then
+  if [ -n "$am_dir" ] && [ -d $am_dir ]; then
+    echo "--> linking dune-common/am..."
+    rm -f am
+    ln -s $am_dir am
+  else
+    echo
+    echo "Error: Could not find dune-common/am!"
+    usage
+    exit 1
+  fi
+fi
 
 # applications should provide a config.h for now
 echo "--> autoheader..."
