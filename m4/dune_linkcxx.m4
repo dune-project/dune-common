@@ -3,6 +3,8 @@
 
 AC_DEFUN([DUNE_LINKCXX],[
 
+AC_LANG_PUSH([C++])
+
 AC_MSG_CHECKING([whether compiling C++ code works])
 AC_COMPILE_IFELSE(
   AC_LANG_SOURCE(
@@ -27,5 +29,7 @@ AC_COMPILE_IFELSE(
   [ AC_MSG_RESULT([no])
     AC_MSG_ERROR([Could not compile C++ code])]
 )
+
+AC_LANG_POP([C++])
 
 ])
