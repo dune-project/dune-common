@@ -2,6 +2,8 @@
 // vi: set et ts=4 sw=2 sts=2:
 #include "configparser.hh"
 
+#include <cstdlib>
+
 #include <string>
 #include <sstream>
 #include <fstream>
