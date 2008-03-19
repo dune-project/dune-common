@@ -16,13 +16,15 @@
 #    In addition to DUNE_CHECK_ALL it run some additional tests
 #    and sets up some things needed for modules (i.e. the 'dune' symlink)
 
+# m4_define([DUNE_GET_MODULE_VAR],[m4_esyscmd([grep ^Version: dune.module | cut -d ':' -f 2 | tr -d '\n '])])
+
 m4_define([DUNE_PARSE_MODULE_FILE],[
   m4_define([DUNE_MOD_VERSION], 
-    [m4_esyscmd([grep ^Version: dune.module | tr '\n' ' ' | sed -e 's/^.*://' -e 's/\s*//g'])])
+    [m4_esyscmd([grep ^Version: dune.module | cut -d ':' -f 2 | tr -d '\n '])])
   m4_define([DUNE_MOD_NAME], 
-    [m4_esyscmd([grep ^Module: dune.module | tr '\n' ' ' | sed -e 's/^.*://' -e 's/\s*//g'])])
+    [m4_esyscmd([grep ^Module: dune.module | cut -d ':' -f 2 | tr -d '\n '])])
   m4_define([DUNE_MAINTAINER_NAME], 
-    [m4_esyscmd([grep ^Maintainer: dune.module | tr '\n' ' ' | sed -e 's/^.*://' -e 's/\s*//g'])])
+    [m4_esyscmd([grep ^Maintainer: dune.module | cut -d ':' -f 2 | tr -d '\n '])])
 ])
 
 m4_define([DUNE_AC_INIT],[
@@ -32,6 +34,7 @@ AC_INIT(DUNE_MOD_NAME, DUNE_MOD_VERSION, DUNE_MAINTAINER_NAME)
 
 AC_DEFUN([DUNE_CHECK_DEPENDENCIES], [
   AC_REQUIRE([PKG_PROG_PKG_CONFIG])
+  AC_REQUIRE([AC_PROG_LIBTOOL])
   DUNE_PARSE_MODULE_FILE
   DUNE_MODULE_DEPENDENCIES(DUNE_MOD_NAME)
 ])
@@ -60,7 +63,6 @@ AC_DEFUN([DUNE_CHECK_ALL],[
   AC_REQUIRE([AC_PROG_LN_S])
   AC_REQUIRE([AC_PROG_MAKE_SET])
   AC_REQUIRE([AC_PROG_RANLIB])
-  AC_REQUIRE([AC_PROG_LIBTOOL])
 
 dnl checks for header files.
   AC_REQUIRE([AC_HEADER_STDC])
