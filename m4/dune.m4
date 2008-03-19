@@ -211,9 +211,9 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
 
   # add this module to DUNE_SUMMARY
   txt=_dune_name
-  len=${#txt}
-  let len=17-$len
-  txt="$txt`for i in \`seq $len\`; do echo -n '.'; done`: $with_[]_dune_module"
+  indentlen=17
+  while test `echo -n $txt | wc -c` -lt $indentlen; do txt=$txt.; done
+  txt="$txt: $with_[]_dune_module"
   if test "x$_DUNE_MODULE[]_ROOT" != "x"; then
 	txt="$txt ($_DUNE_MODULE[]_ROOT)"
   fi
