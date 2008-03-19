@@ -29,14 +29,14 @@ AC_DEFUN([DUNE_PATH_F5],[
      AC_MSG_ERROR([FiberHDF5-directory $with_f5 does not exist])
    fi
    F5ARCH="$with_f5/make/arch"
-   echo -n "checking for make/arch... "
+   AC_MSG_CHECKING([for make/arch])
    if test -x $F5ARCH ; then
-     echo "yes"
+     AC_MSG_RESULT([yes])
      LDFLAGS="$HDF5_LDFLAGS -L$with_f5/lib/`$F5ARCH`"
      F5_LDFLAGS="$LDFLAGS"
      CPPFLAGS="$CPPFLAGS -I$with_f5"
    else
-     echo "no"
+     AC_MSG_RESULT([no])
      AC_MSG_ERROR([FiberHDF5 installation incomplete ($F5ARCH missing)])
    fi
  fi

@@ -15,7 +15,7 @@ AC_DEFUN([DUNE_GRID_DIMENSION],[
           
 if test x$with_grid_dim != x0 ; then 
   
-  echo -n "checking grid-dim and grid-type... "
+  AC_MSG_CHECKING([grid-dim and grid-type])
   # make sure that given grid dim is valid 
   if test x$with_grid_dim != x1 && test x$with_grid_dim != x2 && test x$with_grid_dim != x3 ; then 
     AC_MSG_ERROR([Delivered grid-dim = $with_grid_dim is not valid. Valid are only 1, 2, or 3 .])
@@ -40,6 +40,6 @@ if test x$with_grid_dim != x0 ; then
   AC_SUBST(GRIDTYPE, $with_grid_type )
   AC_SUBST(GRIDDIM_CPPFLAGS, $griddim_cppflags)
   DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $griddim_cppflags"
-  echo "yes (GRIDDIM=$GRIDDIM and GRIDTYPE=$GRIDTYPE)" 
+  AC_MSG_RESULT([yes (GRIDDIM=$GRIDDIM and GRIDTYPE=$GRIDTYPE)])
 fi 
 ])

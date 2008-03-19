@@ -32,12 +32,12 @@ if test x$with_alugrid != x && test x$with_alugrid != xno ; then
     ## check version number 
     NEEDEDALUGRID_VERSION=1.0
 
-    echo -n "checking ALUGrid version >= $NEEDEDALUGRID_VERSION... " 
+    AC_MSG_CHECKING([ALUGrid version >= $NEEDEDALUGRID_VERSION])
     if test -f $ALUGRID_VERSIONCHECK; then 
       ALUGRID_VERSION=`$ALUGRID_VERSIONCHECK -c $NEEDEDALUGRID_VERSION`
       if test "x$ALUGRID_VERSION" != "x-1"; then 
         ALUGRID_VERSIONNO=`$ALUGRID_VERSIONCHECK -v`
-        echo "yes (ALUGrid-$ALUGRID_VERSIONNO)"
+        AC_MSG_RESULT([yes (ALUGrid-$ALUGRID_VERSIONNO)])
       else 
         AC_MSG_ERROR([ALUGrid version is too old!])
       fi 
