@@ -7,7 +7,7 @@ AC_DEFUN([DUNE_PATH_GRAPE],[
   AC_REQUIRE([AC_PROG_CC])
   AC_REQUIRE([AC_PATH_XTRA])
   AC_REQUIRE([DUNE_PATH_OPENGL])
-  AC_REQUIRE([AC_LIB_PROG_LD_GNU])
+  AC_REQUIRE([AC_PROG_LD_GNU])
 
   AC_ARG_WITH(grape,
     AC_HELP_STRING([--with-grape=PATH],[directory with Grape inside]))
@@ -56,7 +56,7 @@ if test "x$X_LIBS" != x && test x$with_grape != xno ; then
     LDFLAGS="$LDFLAGS $GL_LDFLAGS"
 
     # if we use the gnu linker add the grape path 
-    if test x$acl_cv_prog_gnu_ld = xyes ; then 
+    if test x$lt_cv_prog_gnu_ld = xyes ; then 
       GRAPE_LINKER_FLAGS="-Wl,--rpath -Wl,$GRAPEROOT"
     fi  
 
