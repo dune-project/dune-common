@@ -16,7 +16,7 @@ ac_save_LIBS="$LIBS"
 ## do nothing if no --with-alugrid was supplied
 if test x$with_alugrid != x && test x$with_alugrid != xno ; then
 
-  if test x$with_alugrid == xyes ; then
+  if test x$with_alugrid = xyes ; then
     AC_MSG_ERROR([You have to provide a directory --with-alugrid=PATH])
   fi
 

@@ -143,7 +143,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
     if test "x$enable_dunelibcheck" != "xyes"; then
       AC_MSG_WARN([library check for _dune_name is disabled. DANGEROUS!])
     fi
-    if test x$HAVE_[]_DUNE_MODULE != x -a x$enable_dunelibcheck == "xyes"; then
+    if test x$HAVE_[]_DUNE_MODULE != x -a x$enable_dunelibcheck = "xyes"; then
 
       # save current LDFLAGS
       ac_save_LDFLAGS="$LDFLAGS"

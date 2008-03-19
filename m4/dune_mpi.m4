@@ -85,7 +85,7 @@ AC_DEFUN([DUNE_MPI],[
   with_mpi="no"
 
   ## do nothing if --disable-parallel is used
-  if test x$with_parallel == xyes ; then
+  if test x$with_parallel = xyes ; then
   
     ACX_MPI([
       MPICOMP="$MPICC"
