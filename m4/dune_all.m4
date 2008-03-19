@@ -165,7 +165,7 @@ AC_DEFUN([DUNE_SUMMARY_ALL],[
   echo
   echo "-----------------------------"
   echo  
-  eval $DUNE_SUMMARY
+  [eval $DUNE_SUMMARY]
   echo "ALBERTA..........: $with_alberta"
   echo "ALUGrid..........: $with_alugrid"
   echo "AmiraMesh........: $with_amiramesh"

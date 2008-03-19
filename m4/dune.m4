@@ -220,7 +220,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   if test "x$_DUNE_MODULE[]_VERSION" != "x"; then
 	txt="$txt version $_DUNE_MODULE[]_VERSION"
   fi
-  DUNE_SUMMARY="$DUNE_SUMMARY echo '$txt';"
+  [DUNE_SUMMARY="$DUNE_SUMMARY echo '$txt';"]
 
   # remove local variables
   m4_popdef([_dune_name])
