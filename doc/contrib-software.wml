@@ -177,16 +177,47 @@ unstructured meshes in two and three space dimensions using multigrid
 methods. UG is written in C. DUNE offers an abstraction to the UG grid
 manager.
 </p>
+
+<h3>Getting UG</h3>
 <p>
-The 1.0 release of DUNE works with the vanilla UG, available at <a
-href="http://sit.iwr.uni-heidelberg.de/~ug">http://sit.iwr.uni-heidelberg.de/~ug</a>.
+The appriopriate UG version for you depends on which version of DUNE you want
+to use.  In addition to the central UG repository we maintain sets of patches.
+These patches contain bugfixes and further features that are needed for newer
+versions of DUNE.  For legal reasons we cannot provide a patched UG directly.
 </p>
+
+<ul>
+  <li>
+        The 1.0 release of DUNE works with the vanilla UG, available at 
+        <a href="http://sit.iwr.uni-heidelberg.de/~ug">http://sit.iwr.uni-heidelberg.de/~ug</a>.
+  </li>
+  <li>
+        The 1.1 release of DUNE works with the vanilla UG plus a set
+        of <a href="http://www.dune-project.org/download/ug-dune-patches-1.1.diff">patches</a>.
+  </li>
+  <li>
+        For the current svn version of DUNE you need the latest set of patches, which dates from
+        <a href="http://www.dune-project.org/download/ug-dune-patches-2008-03-25.diff">2008-03-25</a>.
+  </li>
+</ul>
+
 <p>
-The grid interface of the development version of DUNE will not work
-with the current version UG. It was necessary to apply some changes to
-the grid manager of UG. In accordance to the UG license we will make these
-changes available in due course.
-</p>
+Here's how you get a patched UG:
+<ul>
+  <li>
+    Check out the latest version of UG from the central repository at 
+    <a href="http://sit.iwr.uni-heidelberg.de/~ug">http://sit.iwr.uni-heidelberg.de/~ug</a>.
+    UG will appear in a directory called <tt>UG</tt>.
+  </li>
+  <li>
+    Put the appropriate patch file in the same directory as <tt>UG</tt>.
+  <li>
+    <tt>cd UG/ug</tt>
+  </li>
+  <li>
+    <tt>patch -p1 < ../../my_patch_file</tt>
+  </li>
+</ul>
 
 <h3>Dependencies</h3>
 <p>
