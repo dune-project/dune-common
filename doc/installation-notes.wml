@@ -143,7 +143,7 @@ can pass the options via file specified by the <kbd>--opts=&lt;file&gt;</kbd>
 option. For each atomic command one specify the options via a ine
 </p>
 <pre>
-&lt;COMMANY_UPPERCASE&gt;_FLAGS=&lt;flags&gt; # e.g.: MAKE_FLAGS=install
+&lt;COMMAND_UPPERCASE&gt;_FLAGS=&lt;flags&gt; # e.g.: MAKE_FLAGS=install
 </pre>
 <p>
 The available options for make and svn are the natural ones. The
