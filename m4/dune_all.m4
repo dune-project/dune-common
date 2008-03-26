@@ -28,13 +28,20 @@ m4_define([DUNE_PARSE_MODULE_FILE],[
 ])
 
 m4_define([DUNE_AC_INIT],[
-DUNE_PARSE_MODULE_FILE
-AC_INIT(DUNE_MOD_NAME, DUNE_MOD_VERSION, DUNE_MAINTAINER_NAME)
+  DUNE_PARSE_MODULE_FILE
+  AC_INIT(DUNE_MOD_NAME, DUNE_MOD_VERSION, DUNE_MAINTAINER_NAME)
+  # don't build shared libs per default, this is way better for debugging...
+  LT_INIT([disable-shared])
+  AC_DISABLE_SHARED
 ])
 
 AC_DEFUN([DUNE_CHECK_DEPENDENCIES], [
   AC_REQUIRE([PKG_PROG_PKG_CONFIG])
-  AC_REQUIRE([AC_PROG_LIBTOOL])
+  LT_LANG([C])
+  LT_LANG([C++])
+  AC_PROG_CXX
+  AC_PROG_LIBTOOL
+  LT_OUTPUT
   DUNE_PARSE_MODULE_FILE
   DUNE_MODULE_DEPENDENCIES(DUNE_MOD_NAME)
 ])
@@ -192,8 +199,6 @@ AC_DEFUN([DUNE_CHECK_ALL_M],[
   AC_LANG_PUSH([C++])
 
   AC_REQUIRE([DUNE_SYMLINK])
-  # don't build shared libs per default, this is way better for debugging...
-  AC_REQUIRE([AC_DISABLE_SHARED])
 
   # special settings for check-log
   AC_ARG_WITH(hostid,
