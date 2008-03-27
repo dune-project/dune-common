@@ -3,8 +3,6 @@
 #ifndef DUNE_TYPETRAITS_HH
 #define DUNE_TYPETRAITS_HH
 
-#include <dune/common/deprecated.hh>
-
 #ifdef HAVE_TR1_TYPE_TRAITS
 #include <tr1/type_traits>
 #elif defined HAVE_TYPE_TRAITS
@@ -174,16 +172,6 @@ namespace Dune
 #endif
 
   /**
-   * @brief Removes a const qualifier while preserving others.
-   * \deprecated Use remove_const instead!
-   */
-  template<typename T>
-  struct RemoveConst
-  {
-    typedef typename RemoveConstHelper<T, IsVolatile<T>::value>::Type Type;
-  } DUNE_DEPRECATED;
-
-  /**
    * @brief Checks wether a type is derived from another.
    *
    * Inspired by
@@ -305,30 +293,6 @@ namespace Dune
     enum { value=true};
   };
 #endif
-
-  /**
-   * @brief Compile time test for testing whether two types are the same.
-   * \deprecated Use is_same instead!
-   */
-  template<typename T1, typename T2>
-  struct SameType
-  {
-    enum {
-      /* @brief Whether T1 is the same type as T2. */
-      value=false
-    };
-  } DUNE_DEPRECATED;
-
-
-  /**
-   * @brief Compile time test for testing whether two types are the same.
-   * \deprecated Use is_same instead!
-   */
-  template<typename T>
-  struct SameType<T,T>
-  {
-    enum { value=true};
-  } DUNE_DEPRECATED;
 
   /**
    * @brief Select a type based on a condition.
