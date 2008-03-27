@@ -5,7 +5,7 @@
 set -e
 
 usage () {
-    echo "Usage: dune-autogen [options]"
+    echo "Usage: dune-autogen DUNE_MODULE_PATH_LIST [options]"
     echo "  --ac=, --acversion=VERSION   use a specific VERSION of autoconf"
     echo "  --am=, --amversion=VERSION   use a specific VERSION of automake"
     echo "  -h,    --help                you already found this :-)"
