@@ -2,17 +2,18 @@
 // vi: set et ts=4 sw=2 sts=2:
 #include "config.h"
 
+#include <iostream>
+
 #include <dune/common/gcd.hh>
 #include <dune/common/lcm.hh>
-#include <dune/common/helpertemplates.hh>
-#include <iostream>
+#include <dune/common/static_assert.hh>
 
 void test()
 {
-  IsTrue<(Dune::Gcd<2*2*2*5*5*5*11, 2*2*5*13>::value == 2*2*5)>::yes();
-  IsTrue<Dune::Lcm<11,3>::value == 33>::yes();
-  IsTrue<Dune::Lcm<18,15>::value == 18*15/3>::yes();
-  IsTrue<Dune::Lcm<10800,Dune::Lcm<36000,7680>::value>::value==1728000>::yes();
+  dune_static_assert((Dune::Gcd<2*2*2*5*5*5*11, 2*2*5*13>::value == 2*2*5), "gcd not working properly");
+  dune_static_assert((Dune::Lcm<11,3>::value == 33), "lcm not working properly");
+  dune_static_assert((Dune::Lcm<18,15>::value == 18*15/3), "lcm not working properly");
+  dune_static_assert((Dune::Lcm<10800,Dune::Lcm<36000,7680>::value>::value==1728000), "lcm not working properly");
 }
 
 int main()
