@@ -1004,7 +1004,7 @@ INCLUDE_FILE_PATTERNS  =
 # undefined via #undef or recursively expanded use the := operator 
 # instead of the = operator.
 
-PREDEFINED             = DOXYGEN HAVE_MPI:=1 _DEBUG_ALLOCATOR_H:=1
+PREDEFINED             = DOXYGEN HAVE_MPI:=1 _DEBUG_ALLOCATOR_H:=1 DUNE_DEPRECATED:="/** \deprecated */"
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then 
 # this tag can be used to specify a list of macro names that should be expanded. 
