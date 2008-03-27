@@ -31,16 +31,16 @@ m4_define([DUNE_AC_INIT],[
   DUNE_PARSE_MODULE_FILE
   AC_INIT(DUNE_MOD_NAME, DUNE_MOD_VERSION, DUNE_MAINTAINER_NAME)
   # don't build shared libs per default, this is way better for debugging...
-  LT_INIT([disable-shared])
+  m4_ifdef([LT_INIT],
+    [LT_INIT],
+    [AC_DEFUN([LT_OUTPUT])])
   AC_DISABLE_SHARED
 ])
 
 AC_DEFUN([DUNE_CHECK_DEPENDENCIES], [
   AC_REQUIRE([PKG_PROG_PKG_CONFIG])
-  LT_LANG([C])
-  LT_LANG([C++])
-  AC_PROG_CXX
   AC_PROG_LIBTOOL
+  AC_PROG_CXX
   LT_OUTPUT
   DUNE_PARSE_MODULE_FILE
   DUNE_MODULE_DEPENDENCIES(DUNE_MOD_NAME)
@@ -107,7 +107,6 @@ dnl check for library functions
 
   # doxygen and latex take a lot of time...
   AC_REQUIRE([DUNE_DOCUMENTATION])
-
   # special variable to include the documentation into the website
   AC_ARG_WITH(duneweb,
     AC_HELP_STRING([--with-duneweb=PATH],[Only needed for website-generation, path to checked out version of dune-web]))

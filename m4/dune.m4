@@ -33,7 +33,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   AC_REQUIRE([AC_PROG_CXX])
   AC_REQUIRE([AC_PROG_CXXCPP])
   AC_REQUIRE([AC_PROG_LIBTOOL])
-  AC_REQUIRE([LT_OUTPUT])
+  m4_ifdef([LT_OUTPUT],[LT_OUTPUT])
   AC_REQUIRE([PKG_PROG_PKG_CONFIG])
   AC_REQUIRE([DUNE_DISABLE_LIBCHECK])
 
@@ -153,7 +153,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       HAVE_[]_DUNE_MODULE=0
 
       # define LTCXXCOMPILE like it will be defined in the Makefile
-      LTCXXLINK="./libtool --tag=CXX --mode=link $CXX $CXXFLAGS $LDFLAGS"
+      LTCXXLINK="$srcdir/libtool --tag=CXX --mode=link $CXX $CXXFLAGS $LDFLAGS"
       CXX="$LTCXXLINK"
 
       # use module LDFLAGS
