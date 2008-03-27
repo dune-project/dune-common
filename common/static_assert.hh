@@ -3,8 +3,18 @@
 #ifndef DUNE_STATIC_ASSERT_HH
 #define DUNE_STATIC_ASSERT_HH
 
+#include "deprecated.hh"
+
 /**
-    \brief Helper template so that compilation fails if condition is not true.
+ * @addtogroup Common
+ *
+ * @{
+ */
+
+/**
+    \brief (DEPRECATED) Helper template so that compilation fails if condition is not true.
+
+    \deprecated Use dune_static_assert instead.
 
     If the condition is true a static function yes is available, othewise the
     only function available is no().
@@ -23,13 +33,13 @@
 template <bool condition>
 struct IsTrue
 {
-  static void no() {};
+  static void no() DUNE_DEPRECATED {};
 };
 
 template <>
 struct IsTrue<true>
 {
-  static void yes() {};
+  static void yes() DUNE_DEPRECATED {};
 };
 
 
@@ -55,13 +65,39 @@ template <> struct static_assert_failure<true> { };
 template<int x> struct static_assert_test {};
 
 /**
-   dune_static_assert(1<=2, "fehler");
-   dune_static_assert(1<=3, "fehler");
-   dune_static_assert(3<=2, "fehler");
+    \brief Helper template so that compilation fails if condition is not true.
+
+    \code
+    dune_static_assert(CONDITION, ERRORMSG);
+    \endcode
+
+    If CONDITION is not true, dune_static_assert fails.
+
+    If the C++0x language feature static_assert is available, dune_static_assert
+    should break down static_assert. Otherwise dune_static_assert implements a
+    test that trigger a compile time error if condition is false.
+
+    Example:
+
+    \code
+    dune_static_assert(1<=2, "error");
+    dune_static_assert((is_same<int,int>::value),  "error msg");
+    dune_static_assert((is_same<bool,int>::value), "error msg"); // false, will trigger a compile time error
+    \endcode
+
+    Be aware that...
+    <ol>
+    <li>dune_static_assert is not in the namespace Dune</li>
+    <li>you must use extra brackets, you condition contains ','.
+    This is because dune_static_assert is a preprocessor macro</li>
+    </ol>
+
  */
-#define dune_static_assert(B,MSG) \
+#define dune_static_assert(COND,MSG) \
   typedef static_assert_test<\
-    sizeof(static_assert_failure< (bool)( B )>)\
+    sizeof(static_assert_failure< (bool)( COND )>)\
     > CPPMAGIC_JOIN (dune_static_assert_typedef_, __LINE__)
+
+/* @} */
 
 #endif
