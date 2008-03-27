@@ -2,7 +2,7 @@
 
 TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
 	sllisttest iteratorfacadetest tuplestest fvectortest fmatrixtest \
-	poolallocatortest settest gcdlcdtest streamtest \
+	poolallocatortest settest gcdlcmtest streamtest \
 	bigunsignedinttest mpihelpertest singletontest mpicollcomm \
 	utilitytest lrutest \
 	testfassign1 testfassign2 testfassign3 \
@@ -67,8 +67,8 @@ poolallocatortest_DEPENDENCIES = $(LOCAL_LIBS)
 settest_SOURCES=settest.cc
 settest_DEPENDENCIES = $(LOCAL_LIBS)
 
-gcdlcdtest_SOURCES = gcdlcdtest.cc
-gcdlcdtest_DEPENDENCIES = $(LOCAL_LIBS)
+gcdlcmtest_SOURCES = gcdlcmtest.cc
+gcdlcmtest_DEPENDENCIES = $(LOCAL_LIBS)
 
 mpihelpertest_SOURCES = mpihelpertest.cc
 mpihelpertest_CXXFLAGS = $(MPI_CPPFLAGS)

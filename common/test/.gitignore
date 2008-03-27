@@ -19,7 +19,7 @@ poolallocatortest
 *.gcda
 *.gcno
 gmon.out
-gcdlcdtest
+gcdlcmtest
 streamtest
 exprtmpl
 timing_xpr
