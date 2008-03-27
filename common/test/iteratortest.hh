@@ -269,7 +269,7 @@ int testIterator(Iter& begin, Iter& end, Opt& opt)
 
 template<class T>
 class Printer {
-  typename Dune::RemoveConst<T>::Type res;
+  typename Dune::remove_const<T>::type res;
 public:
   Printer() : res(0){}
   void operator()(const T& t){
