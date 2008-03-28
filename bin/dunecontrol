@@ -53,9 +53,10 @@ if test "x$DEBUG" = "xyes"; then
   set -v
 fi
 
+export COMMAND_DIR="`canonicalpath $0`"
 
 # Read the modules find part
-. `canonicalpath $0`/dunemodules.inc
+. "$COMMAND_DIR/dunemodules.inc"
 
 # create PKG_CONFIG_PATH for installed dune modules
 export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:`canonicalpath $0`/../lib/pkgconfig"
@@ -238,7 +239,7 @@ run_default_autogen () {
       fi
     done
 #    eval ./autogen.sh "$M4_PATH" "$PARAMS" || exit 1
-    eval `canonicalpath $0`/dune-autogen "$M4_PATH" "$PARAMS" || exit 1
+    eval "$COMMAND_DIR/dune-autogen" "$M4_PATH" "$PARAMS" || exit 1
   fi
 }
 
