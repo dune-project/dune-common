@@ -4,7 +4,7 @@ if BUILD_DOCS
 # only build html when wml is available
 if WML
 PAGES = codingstyle.html portability.html \
-  ugreader.html tests.html features.html indexidsets.html
+  tests.html features.html indexidsets.html
 endif
 endif
 
