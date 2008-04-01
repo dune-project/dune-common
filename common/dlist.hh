@@ -20,7 +20,9 @@ namespace Dune {
   //! exception thrown on illegal element access
   class DoubleLinkedListError : public RangeError {};
 
-  /*! A doubly-linked list */
+  /*! \brief (DEPRECATED) A doubly-linked list
+     \deprecated Please use std::list
+   */
   template <class T>
   class DoubleLinkedList {
   private:
@@ -117,7 +119,7 @@ namespace Dune {
     Iterator head;            // erstes Element der Liste
     Iterator tail;            // letztes Element der Liste
     int numelements;          // Anzahl Elemente in der Liste
-  } ;
+  } DUNE_DEPRECATED;
 
 }
 
