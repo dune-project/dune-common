@@ -9,7 +9,7 @@ AC_DEFUN([DUNE_PATH_ALBERTA],[
 
   AC_ARG_WITH(alberta,
     AC_HELP_STRING([--with-alberta=PATH],[directory with ALBERTA (ALBERTA
-    version 1.2 and higher) inside]))
+    version 1.2) inside]))
 # do not use alberta debug lib 
 with_alberta_debug=0
 
@@ -54,7 +54,7 @@ CPPFLAGS="$CPPFLAGS $ALBERTADIM -DEL_INDEX=0 -I$ALBERTA_INCLUDE_PATH"
 AC_CHECK_HEADER([alberta.h], 
    [ALBERTA_CPPFLAGS="-I$ALBERTA_INCLUDE_PATH -DENABLE_ALBERTA"
   HAVE_ALBERTA="1"],
-  AC_MSG_WARN([alberta.h not found in $ALBERTA_INCLUDE_PATH]))
+  AC_MSG_WARN(["alberta.h not found in "$ALBERTA_INCLUDE_PATH" - make sure you got ALBERTA version 1.2"]))
 
 CPPFLAGS="$REM_CPPFLAGS -I$ALBERTA_INCLUDE_PATH"
 REM_CPPFLAGS=
