@@ -81,7 +81,7 @@ namespace Dune {
 
 
     //! empty constructor
-    DoubleLinkedList();
+    DoubleLinkedList() DUNE_DEPRECATED;
 
     //! copy constructor
     DoubleLinkedList (const DoubleLinkedList<T>&);
