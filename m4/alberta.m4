@@ -41,13 +41,20 @@ if test x$with_alberta != x && test x$with_alberta != xno ; then
   fi
 
 ALBERTA_LIB_PATH="$ALBERTAROOT/lib"
-ALBERTA_INCLUDE_PATH="$ALBERTAROOT/include"
+# take both include paths 
+ALBERTA_INCLUDE_PATH="$ALBERTAROOT/include/alberta"
+# if path of version 2.0 not exists take old version 
+ALBERTA_VERSION="2.0"
+if ! test -d $ALBERTA_INCLUDE_PATH ; then 
+  ALBERTA_INCLUDE_PATH="$ALBERTAROOT/include -DALBERTA_VERSION_12"
+  ALBERTA_VERSION="1.2"
+fi
 
 # set variables so that tests can use them
 REM_CPPFLAGS=$CPPFLAGS
 
 LDFLAGS="$LDFLAGS -L$ALBERTA_LIB_PATH"
-ALBERTADIM="-DDIM=$with_alberta_dim -DDIM_OF_WORLD=$with_alberta_world_dim"
+ALBERTADIM="-DDIM=$with_alberta_dim -DDIM_OF_WORLD=$with_alberta_dim"
 CPPFLAGS="$CPPFLAGS $ALBERTADIM -DEL_INDEX=0 -I$ALBERTA_INCLUDE_PATH"
 
 # check for header
@@ -79,12 +86,22 @@ if test x$HAVE_ALBERTA = x1 ; then
   # the zero is the sign of the no-debug-lib
   # define varaible lib name depending on problem and world dim, to change
   # afterwards easily 
-  variablealbertalibname="ALBERTA$``(``ALBERTA_DIM``)``$``(``ALBERTA_WORLD_DIM``)``_0"
-  albertalibname="ALBERTA${with_alberta_dim}${with_alberta_world_dim}_${with_alberta_debug}"
+  variablealbertalibname="alberta_$``(``ALBERTA_DIM``)``d"
+  albertalibname="alberta_${with_alberta_dim}d"
   AC_CHECK_LIB($albertalibname,[mesh_traverse],
   [ALBERTA_LIBS="-l$variablealbertalibname $ALBERTA_LIBS $ALBERTA_EXTRA"],
-  [HAVE_ALBERTA="0"
+  [NEW_ALBERTA_LIB="0"
   AC_MSG_WARN(-l$albertalibname not found!)])
+    
+  # if new lib not found check old version   
+  if test x$NEW_ALBERTA_LIB = x0 ; then 
+    variablealbertalibname="ALBERTA$``(``ALBERTA_DIM``)``$``(``ALBERTA_DIM``)``_0"
+    albertalibname="ALBERTA${with_alberta_dim}${with_alberta_dim}_${with_alberta_debug}"
+    AC_CHECK_LIB($albertalibname,[mesh_traverse],
+    [ALBERTA_LIBS="-l$variablealbertalibname $ALBERTA_LIBS $ALBERTA_EXTRA"],
+    [HAVE_ALBERTA="0"
+    AC_MSG_WARN(-l$albertalibname not found!)])
+  fi 
 fi
 
 ## end of alberta check (--without wasn't set)
@@ -105,7 +122,7 @@ if test x$HAVE_ALBERTA = x1 ; then
   DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $ALBERTA_CPPFLAGS"
 
   # set variable for summary
-  with_alberta="yes"
+  with_alberta="yes (Version $ALBERTA_VERSION)"
 else
   AC_SUBST(ALBERTA_LIBS, "")
   AC_SUBST(ALBERTA_LDFLAGS, "")
@@ -129,7 +146,6 @@ LDFLAGS="$ac_save_LDFLAGS"
 AC_DEFUN([DUNE_ALBERTA_DIMENSION],[
   AC_REQUIRE([DUNE_GRID_DIMENSION])
 
-# default dimension of a problem is 2
 AC_ARG_WITH(alberta_dim,
             AC_HELP_STRING([--with-alberta-dim=2|3],
           [dimension of ALBERTA grid (default=grid-dim if delivered otherwise 2)]),,with_alberta_dim=2)
@@ -142,19 +158,13 @@ AC_ARG_WITH(alberta_world_dim,
 
 if test x$with_grid_dim != x0 ; then 
   variablealbertdim="$``(``GRIDDIM``)``"
-  variablealbertdimworld="$``(``GRIDDIMWORLD``)``"
   AC_SUBST(ALBERTA_DIM, $variablealbertdim ) 
-  AC_SUBST(ALBERTA_WORLD_DIM, $variablealbertdimworld ) 
 else 
   variablealbertdim=$with_alberta_dim
-  variablealbertdimworld=$with_alberta_world_dim
   AC_SUBST(ALBERTA_DIM, $variablealbertdim ) 
-  AC_SUBST(ALBERTA_WORLD_DIM, $variablealbertdimworld ) 
 fi 
 
 AC_DEFINE_UNQUOTED(ALBERTA_DIM, $with_alberta_dim,
             [Dimension of ALBERTA grid])
-AC_DEFINE_UNQUOTED(ALBERTA_WORLD_DIM, $with_alberta_world_dim,
-            [Dimension of world enclosing the ALBERTA grid])
 
 ])
