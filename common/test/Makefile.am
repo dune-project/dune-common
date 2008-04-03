@@ -72,11 +72,11 @@ gcdlcmtest_DEPENDENCIES = $(LOCAL_LIBS)
 
 mpihelpertest_SOURCES = mpihelpertest.cc
 mpihelpertest_CXXFLAGS = $(MPI_CPPFLAGS)
-mpihelpertest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
+mpihelpertest_LDFLAGS = $(LOCAL_LIBS) $(MPI_LDFLAGS) $(MPI_LIBS)
 
 mpicollcomm_SOURCES = mpicollectivecommunication.cc
 mpicollcomm_CXXFLAGS = $(MPI_CPPFLAGS)
-mpicollcomm_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
+mpicollcomm_LDFLAGS = $(LOCAL_LIBS) $(MPI_LDFLAGS) $(MPI_LIBS)
 
 singletontest_SOURCES = singletontest.cc
 singletontest_LDFLAGS = $(LOCAL_LIBS)
