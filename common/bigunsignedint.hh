@@ -37,6 +37,8 @@ namespace Dune
    *
    * Implements (arbitrarily) large unsigned integers to be used as global
    * ids in some grid managers. Size is a template parameter.
+   *
+   * \tparam k Number of bits of the integer type
    */
 
   template<int k>
