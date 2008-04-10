@@ -194,6 +194,7 @@ versions of DUNE.  For legal reasons we cannot provide a patched UG directly.
   <li>
         The 1.1 release of DUNE works with the vanilla UG plus a set
         of <a href="http://www.dune-project.org/download/ug-dune-patches-1.1.diff">patches</a>.
+        These patches were created on 2008-03-25.
   </li>
   <li>
         For the current svn version of DUNE you need the latest set of patches, which dates from
@@ -205,8 +206,10 @@ versions of DUNE.  For legal reasons we cannot provide a patched UG directly.
 Here's how you get a patched UG:
 <ul>
   <li>
-    Check out the latest version of UG from the central repository at 
-    <a href="http://sit.iwr.uni-heidelberg.de/~ug">http://sit.iwr.uni-heidelberg.de/~ug</a>.
+    Check out the version of UG from the central repository at 
+    <a href="http://sit.iwr.uni-heidelberg.de/~ug">http://sit.iwr.uni-heidelberg.de/~ug</a>
+    of the day your patch file was created on.  You can do that by using the option
+    <tt>-D MM/DD/YYYY</tt> when checking out the sources.
     UG will appear in a directory called <tt>UG</tt>.
   </li>
   <li>
