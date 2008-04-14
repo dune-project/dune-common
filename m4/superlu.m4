@@ -190,6 +190,8 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
 	CPPFLAGS="$ac_save_CPPFLAGS"
 	LIBS="$ac_save_LIBS"
 	
+    DUNE_ADD_SUMMARY_ENTRY([SuperLU],[$with_superlu])
+
     ]
 )
     

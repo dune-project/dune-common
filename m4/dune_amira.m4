@@ -91,4 +91,6 @@ LIBS="$ac_save_LIBS"
 CPPFLAGS="$ac_save_CPPFLAGS"
 LDFLAGS="$ac_save_LDFLAGS"
 
+DUNE_ADD_SUMMARY_ENTRY([AmiraMesh],[$with_amiramesh])
+
 ])

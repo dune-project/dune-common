@@ -140,6 +140,8 @@ LIBS="$ac_save_LIBS"
 CPPFLAGS="$ac_save_CPPFLAGS"
 LDFLAGS="$ac_save_LDFLAGS"
 
+DUNE_ADD_SUMMARY_ENTRY([ALBERTA],[$with_alberta])
+
 ])
 
 # asks for problem-dimension and world-dimension to pass on to Alberta

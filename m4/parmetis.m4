@@ -138,6 +138,8 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
   CPPFLAGS="$ac_save_CPPFLAGS"
   LIBS="$ac_save_LIBS"
   
+  DUNE_ADD_SUMMARY_ENTRY([ParMETIS],[$with_parmetis])
+
 ])
 
 dnl Local Variables:

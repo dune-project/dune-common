@@ -184,6 +184,8 @@ AC_DEFUN([DUNE_PATH_UG],[
   LDFLAGS="$ac_save_LDFLAGS"
   CPPFLAGS="$ac_save_CPPFLAGS"
   LIBS="$ac_save_LIBS"
+
+  DUNE_ADD_SUMMARY_ENTRY([UG],[$with_ug])
   
 ])
 

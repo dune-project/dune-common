@@ -29,6 +29,20 @@ AC_DEFUN([DUNE_PKG_CONFIG_REQUIRES],[
   AC_SUBST(REQUIRES, [$REQUIRES])
 ])
 
+AC_DEFUN([DUNE_ADD_MODULE_SUMMARY_ENTRY],[
+  m4_pushdef([_dune_name], [$1])
+  m4_pushdef([_dune_module], [m4_translit(_dune_name, [-], [_])])
+  m4_pushdef([_DUNE_MODULE], [m4_toupper(_dune_module)])
+  result="$with_[]_dune_module"
+  if test "x$_DUNE_MODULE[]_ROOT" != "x"; then
+	result="$result ($_DUNE_MODULE[]_ROOT)"
+  fi
+  if test "x$_DUNE_MODULE[]_VERSION" != "x"; then
+	result="$result version $_DUNE_MODULE[]_VERSION"
+  fi
+  DUNE_ADD_SUMMARY_ENTRY(_dune_name,[$result])
+])
+
 AC_DEFUN([DUNE_CHECK_MODULES],[
   AC_REQUIRE([AC_PROG_CXX])
   AC_REQUIRE([AC_PROG_CXXCPP])
@@ -86,9 +100,11 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
         _DUNE_MODULE[]_LDFLAGS="-L`$PKG_CONFIG --variable=libdir _dune_name`" 2>/dev/null 
         _DUNE_MODULE[]_LIBS="-l[]_dune_lib"
       ])
+      HAVE_[]_DUNE_MODULE=1
       AC_MSG_RESULT([
         global installation in $_DUNE_MODULE[]_ROOT])
     else
+      HAVE_[]_DUNE_MODULE=0
       AC_MSG_RESULT([not found])
     fi
   else
@@ -114,9 +130,11 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       ])
       # set expanded module path
       with_[]_dune_module="$_DUNE_MODULE[]_ROOT"
+      HAVE_[]_DUNE_MODULE=1
       AC_MSG_RESULT([
         found in $_DUNE_MODULE[]_ROOT])
     else
+      HAVE_[]_DUNE_MODULE=0
       AC_MSG_RESULT([not found])
       AC_MSG_ERROR([_dune_name-directory $with_[]_dune_module does not exist])
     fi
@@ -134,7 +152,9 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
      _DUNE_MODULE[]_CPPFLAGS="$SET_CPPFLAGS"],
     [HAVE_[]_DUNE_MODULE=0
      _DUNE_MODULE[]_CPPFLAGS=""
-     AC_MSG_ERROR([$with_[]_dune_module does not seem to contain a valid _dune_name (dune/[]_dune_header not found)])]
+     if test x$_DUNE_MODULE[]_ROOT != x; then
+       AC_MSG_WARN([$_DUNE_MODULE[]_ROOT does not seem to contain a valid _dune_name (dune/[]_dune_header not found)])]
+     fi
   )
 
   ##
@@ -144,7 +164,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
     if test "x$enable_dunelibcheck" != "xyes"; then
       AC_MSG_WARN([library check for _dune_name is disabled. DANGEROUS!])
     fi
-    if test x$HAVE_[]_DUNE_MODULE != x -a x$enable_dunelibcheck = "xyes"; then
+    if test x$HAVE_[]_DUNE_MODULE = x1 -a x$enable_dunelibcheck = "xyes"; then
 
       # save current LDFLAGS
       ac_save_LDFLAGS="$LDFLAGS"
@@ -169,7 +189,9 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
            _DUNE_MODULE[]_LIBS="$LIBS"],
           [AC_MSG_RESULT([no])
            HAVE_[]_DUNE_MODULE=0
-           AC_MSG_ERROR([$with_[]_dune_module does not seem to contain a valid _dune_name (failed to link with lib[]_dune_lib[].la)])]
+		   if test x$_DUNE_MODULE[]_ROOT != x; then
+             AC_MSG_WARN([$with_[]_dune_module does not seem to contain a valid _dune_name (failed to link with lib[]_dune_lib[].la)])]
+           fi
       )
 
       # reset variables
@@ -180,7 +202,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   ])
 
   # did we succeed?
-  if test x$HAVE_[]_DUNE_MODULE = x1 ; then
+  if test x$HAVE_[]_DUNE_MODULE = x1; then
     # set variables for our modules
     AC_SUBST(_DUNE_MODULE[]_CPPFLAGS, "$_DUNE_MODULE[]_CPPFLAGS")
     AC_SUBST(_DUNE_MODULE[]_LDFLAGS, "$_DUNE_MODULE[]_LDFLAGS")
@@ -203,7 +225,6 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
     with_[]_dune_module="yes"
   else
     with_[]_dune_module="no"
-    AC_MSG_ERROR([could not find required module _dune_name])
   fi
 
   # reset previous flags
@@ -211,17 +232,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   LIBS="$ac_save_LIBS"
 
   # add this module to DUNE_SUMMARY
-  txt=_dune_name
-  indentlen=17
-  while test `echo $txt | tr -d '\n' | wc -c` -lt $indentlen; do txt=$txt.; done
-  txt="$txt: $with_[]_dune_module"
-  if test "x$_DUNE_MODULE[]_ROOT" != "x"; then
-	txt="$txt ($_DUNE_MODULE[]_ROOT)"
-  fi
-  if test "x$_DUNE_MODULE[]_VERSION" != "x"; then
-	txt="$txt version $_DUNE_MODULE[]_VERSION"
-  fi
-  [DUNE_SUMMARY="$DUNE_SUMMARY echo '$txt';"]
+  DUNE_ADD_MODULE_SUMMARY_ENTRY(_dune_name)
 
   # remove local variables
   m4_popdef([_dune_name])
@@ -236,37 +247,60 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   AC_LANG_POP([C++])
 ])
 
-AC_DEFUN([DUNE_CHECK_DISPATCH],[
+AC_DEFUN([DUNE_FEM_CHECK_MODULE],
+[
+    DUNE_CHECK_MODULES([dune-fem], [fem/space/basefunctions/storageinterface.hh], [] )
+])
+AC_DEFUN([DUNE_FEM_CHECKS])
+
+AC_DEFUN([DUNE_DISC_CHECK_MODULE],
+[
+    DUNE_CHECK_MODULES([dune-disc], [disc/shapefunctions/lagrangeshapefunctions.hh], [Dune::LagrangeShapeFunctions<double[,]double[,]3>::general])
+])
+AC_DEFUN([DUNE_DISC_CHECKS])
+
+AC_DEFUN([DUNE_SUBGRID_CHECK_MODULE],
+[
+    DUNE_CHECK_MODULES([dune-subgrid], [subgrid/subgrid.hh], [])
+])
+AC_DEFUN([DUNE_SUBGRID_CHECKS])
+
+AC_DEFUN([_DUNE_CALL_CHECK],
+[
+  [# checks for module] $1
   m4_syscmd(test -n "$1" \
-    && echo "   dune.m4: adding dependency check for $1" > /dev/stderr)
-  ifelse([$1], [], [],
-         [$1], [dune-common],[
-          #DUNE_CHECK_MODULES(module_name, test_header, test_symbol)
-           DUNE_CHECK_MODULES([dune-common], [common/stdstreams.hh],
-	[#ifndef DUNE_MINIMAL_DEBUG_LEVEL 
-   #define DUNE_MINIMAL_DEBUG_LEVEL 1
-   #endif
-	Dune::derr.active();])],
-         [$1], [dune-grid],[
-           DUNE_CHECK_MODULES([dune-grid], [grid/common/grid.hh], [Dune::PartitionName])],
-         [$1], [dune-fem],[
-           DUNE_CHECK_MODULES([dune-fem], [fem/space/basefunctions/storageinterface.hh], [] )],
-         [$1], [dune-istl],[
-           DUNE_CHECK_MODULES([dune-istl], [istl/allocator.hh])],
-         [$1], [dune-disc],[
-           DUNE_CHECK_MODULES([dune-disc], [disc/shapefunctions/lagrangeshapefunctions.hh], [Dune::LagrangeShapeFunctions<double[,]double[,]3>::general])],
-         [$1], [dune-subgrid],[
-           DUNE_CHECK_MODULES([dune-subgrid], [subgrid/subgrid.hh])],
-         [AC_MSG_ERROR([Unknown module $1])])
+    && echo "        ... adding check for $1" > /dev/stderr)
+  m4_pushdef([_dune_name], [$1])
+  m4_pushdef([_dune_module], [m4_translit(_dune_name, [-], [_])])
+  m4_pushdef([_DUNE_MODULE], [m4_toupper(_dune_module)])
+  # invoke checks required by this module
+  AC_REQUIRE(_DUNE_MODULE[]_CHECKS)
+  # invoke check for this module
+  AC_REQUIRE(_DUNE_MODULE[]_CHECK_MODULE)
+  if test x$with_[]_dune_module = xno; then
+    ifelse($2,[DEP], AC_MSG_ERROR([could not find required module _dune_name]),
+		AC_MSG_WARN([could not find suggested module _dune_name]))
+  fi
+  m4_popdef([_dune_name])
+  m4_popdef([_dune_module])
+  m4_popdef([_DUNE_MODULE])
 ])
 
 AC_DEFUN([_DUNE_MODULE_DEPENDENCIES],[
-  ifelse($#, 0, , $#, 1, [DUNE_CHECK_DISPATCH($1)], [DUNE_CHECK_DISPATCH($1) _DUNE_MODULE_DEPENDENCIES(m4_shift($@))])
+  ifelse($1,[], , $#, 1, [_DUNE_CALL_CHECK($1,[DEP])], [_DUNE_CALL_CHECK($1[],[DEP]) _DUNE_MODULE_DEPENDENCIES(m4_shift($@))])
 ])
 
 AC_DEFUN([DUNE_MODULE_DEPENDENCIES],[
    m4_syscmd(echo "   dune.m4: getting dependencies for $@" > /dev/stderr)
    _DUNE_MODULE_DEPENDENCIES(m4_esyscmd(dunecontrol --only=$@ m4depends))])
+
+AC_DEFUN([_DUNE_MODULE_SUGGESTIONS],[
+  ifelse($1,[], , $#, 1, [_DUNE_CALL_CHECK($1,[SUG])], [_DUNE_CALL_CHECK($1[],[SUG]) _DUNE_MODULE_DEPENDENCIES(m4_shift($@))])
+])
+
+AC_DEFUN([DUNE_MODULE_SUGGESTIONS],[
+   m4_syscmd(echo "   dune.m4: getting suggestions for $@" > /dev/stderr)
+   _DUNE_MODULE_SUGGESTIONS(m4_esyscmd(dunecontrol --only=$@ m4suggests))])
 
 AC_DEFUN([DUNE_DEV_MODE],[
   AC_ARG_ENABLE(dunedevel,
@@ -309,4 +343,30 @@ AC_DEFUN([DUNE_SYMLINK],[
     # no symlinks possible... check name of directory
     AC_MSG_ERROR([No symlinks supported! You have to install dune. No inplace usage possible!])
   fi
+])
+
+AC_DEFUN([DUNE_WEB],
+[
+  # special variable to include the documentation into the website
+  AC_ARG_WITH(duneweb,
+    AC_HELP_STRING([--with-duneweb=PATH],[Only needed for website-generation, path to checked out version of dune-web]))
+
+  if test x$with_duneweb != x ; then
+     # parameter is set. Check it
+     AC_MSG_CHECKING([whether passed Dune-Web directory appears correct])
+     WEBTESTFILE="$with_duneweb/layout/default.wml"
+     if test -d "$with_duneweb" && test -e "$WEBTESTFILE" ; then
+        AC_MSG_RESULT([ok])
+        # normalize path
+        with_duneweb=`(cd $with_duneweb && pwd)` ;
+     else
+        if test -d "$with_duneweb" ; then
+          AC_MSG_ERROR([$WEBTESTFILE not found in Dune-web dir $with_duneweb!])
+        else
+          AC_MSG_ERROR([Dune-Web directory $with_duneweb not found!])
+        fi
+     fi
+  fi
+  AC_SUBST(DUNEWEBDIR, $with_duneweb)
+
 ])

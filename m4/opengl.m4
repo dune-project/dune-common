@@ -16,4 +16,6 @@ dnl use test from autoconf-archive
     # need pthreads-stuff in linker commandline as well
     AC_SUBST(GL_LDFLAGS, $PTHREAD_CFLAGS)
   fi
+
+  DUNE_ADD_SUMMARY_ENTRY([OpenGL],[$with_opengl])
 ])

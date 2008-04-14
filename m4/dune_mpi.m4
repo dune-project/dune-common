@@ -175,5 +175,7 @@ AC_DEFUN([DUNE_MPI],[
 
   AM_CONDITIONAL(MPI, test x"$with_mpi" != xno)
 
+  DUNE_ADD_SUMMARY_ENTRY([MPI],[$with_mpi])
+
   AC_LANG_POP
 ])

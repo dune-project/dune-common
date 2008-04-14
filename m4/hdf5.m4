@@ -79,4 +79,6 @@ AC_DEFUN([DUNE_PATH_HDF5],[
  LDFLAGS="$ac_save_LDFLAGS"
  CPPFLAGS="$ac_save_CPPFLAGS"
 
+ DUNE_ADD_SUMMARY_ENTRY([HDF5],[$with_hdf5])
+
 ])

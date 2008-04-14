@@ -75,4 +75,6 @@ AC_DEFUN([DUNE_PATH_F5],[
  LIBS="$ac_save_LIBS"
  LDFLAGS="$ac_save_LDFLAGS"
 
+ DUNE_ADD_SUMMARY_ENTRY([FiberHDF5],[$with_f5])
+
 ])

@@ -194,6 +194,8 @@ AC_DEFUN([DUNE_PATH_SUPERLU_DIST],[
 	CPPFLAGS="$ac_save_CPPFLAGS"
 	LIBS="$ac_save_LIBS"
 	
+    DUNE_ADD_SUMMARY_ENTRY([SuperLU-DIST],[$with_superlu_dist])	
+
     ]
 )
 
