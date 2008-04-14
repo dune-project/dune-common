@@ -493,10 +493,15 @@ case "$command" in
     if test "x$SEARCH_MODULES" != "x"; then
 	  MODULES=$SEARCH_MODULES
     fi
-    if test "x$ONLY" != x; then
-	  MODULES=$ONLY
+	sort_dependencies $MODULES
+    eval "print_module_list ',' $MODULES"
+    ;;
+  m4suggests)
+    find_modules_in_path
+    if test "x$SEARCH_MODULES" != "x"; then
+	  MODULES=$SEARCH_MODULES
     fi
-	sort_dependecies $MODULES
+	sort_suggestions $MODULES
     eval "print_module_list ',' $MODULES"
     ;;
   export)
