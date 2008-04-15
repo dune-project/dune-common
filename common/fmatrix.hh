@@ -470,30 +470,6 @@ namespace Dune {
       return m;
     }
 
-    //! row dimension of block r
-    size_type rowdim (size_type r) const
-    {
-      return 1;
-    }
-
-    //! col dimension of block c
-    size_type coldim (size_type c) const
-    {
-      return 1;
-    }
-
-    //! dimension of the destination vector space
-    size_type rowdim () const
-    {
-      return n;
-    }
-
-    //! dimension of the source vector space
-    size_type coldim () const
-    {
-      return m;
-    }
-
     //===== query
 
     //! return true when (i,j) is in pattern
