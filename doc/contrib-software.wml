@@ -194,11 +194,11 @@ versions of DUNE.  For legal reasons we cannot provide a patched UG directly.
   <li>
         The 1.1 release of DUNE works with the vanilla UG plus a set
         of <a href="http://www.dune-project.org/download/ug-dune-patches-1.1.diff">patches</a>.
-        These patches were created on 2008-03-25.
+        These patches were created on 2008-04-18.
   </li>
   <li>
         For the current svn version of DUNE you need the latest set of patches, which dates from
-        <a href="http://www.dune-project.org/download/ug-dune-patches-2008-03-25.diff">2008-03-25</a>.
+        <a href="http://www.dune-project.org/download/ug-dune-patches-2008-04-18.diff">2008-04-18</a>.
   </li>
 </ul>
 
