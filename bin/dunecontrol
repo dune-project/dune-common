@@ -461,6 +461,12 @@ while test $# -gt 0; do
       done
     ;;
     --debug) true ;;
+    --*)
+      usage
+      echo "ERROR: Unknown option \`$option'"  > /dev/stderr
+      echo  > /dev/stderr
+	  exit 1
+      ;;
     *)
       command=$option
       break
