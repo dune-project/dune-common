@@ -60,7 +60,7 @@ AC_DEFUN([DUNE_COMMON_CHECKS],
   AC_CHECK_PROGS([WML], [wml], [true])
   AM_CONDITIONAL([WML], [test "x$WML" != xtrue])
   AC_CHECK_PROGS([PERL], [perl], [true])
-  DUNE_INKSCAPE
+  AC_REQUIRE([DUNE_INKSCAPE])
   AC_CHECK_PROGS([CONVERT], [convert], [true])
 ])
 
