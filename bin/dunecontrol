@@ -83,6 +83,7 @@ build_modules() {
     if ! (
       set -e
       cd "$path"
+	  export module
       eval_control $runcommand $path/$CONTROL
     ); then eval echo "--- Failed to build \$NAME_${module} ---"; exit 1; fi
     eval echo "--- \$NAME_${module} done ---"
@@ -238,6 +239,11 @@ run_default_autogen () {
         M4_PATH="$path $M4_PATH"
       fi
     done
+    if test -f autogen.sh; then
+      eval echo "WARNING: \$NAME_$module contains obsolete autogen.sh," \
+		  > /dev/stderr
+	  echo "         dune-autogen is used instead." > /dev/stderr
+    fi
 #    eval ./autogen.sh "$M4_PATH" "$PARAMS" || exit 1
     eval "$COMMAND_DIR/dune-autogen" "$M4_PATH" "$PARAMS" || exit 1
   fi
