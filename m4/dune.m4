@@ -351,22 +351,28 @@ AC_DEFUN([DUNE_WEB],
   AC_ARG_WITH(duneweb,
     AC_HELP_STRING([--with-duneweb=PATH],[Only needed for website-generation, path to checked out version of dune-web]))
 
-  if test x$with_duneweb != x ; then
-     # parameter is set. Check it
-     AC_MSG_CHECKING([whether passed Dune-Web directory appears correct])
-     WEBTESTFILE="$with_duneweb/layout/default.wml"
-     if test -d "$with_duneweb" && test -e "$WEBTESTFILE" ; then
-        AC_MSG_RESULT([ok])
-        # normalize path
-        with_duneweb=`(cd $with_duneweb && pwd)` ;
-     else
-        if test -d "$with_duneweb" ; then
-          AC_MSG_ERROR([$WEBTESTFILE not found in Dune-web dir $with_duneweb!])
-        else
-          AC_MSG_ERROR([Dune-Web directory $with_duneweb not found!])
-        fi
+  if test x$with_duneweb != x; then
+     if test x$with_duneweb != xno; then
+       # parameter is set. Check it
+       AC_MSG_CHECKING([whether passed Dune-Web ($with_duneweb) directory appears correct])
+       WEBTESTFILE="$with_duneweb/layout/default.wml"
+       if test -d "$with_duneweb" && test -e "$WEBTESTFILE" ; then
+         AC_MSG_RESULT([ok])
+         # normalize path
+         with_duneweb=`(cd $with_duneweb && pwd)` ;
+       else
+         if test -d "$with_duneweb" ; then
+           AC_MSG_ERROR([$WEBTESTFILE not found in Dune-web dir $with_duneweb!])
+         else
+           AC_MSG_ERROR([Dune-Web directory $with_duneweb not found!])
+         fi
+		 with_duneweb=no
+	   fi
      fi
+	 DUNE_ADD_SUMMARY_ENTRY([dune web],[$with_duneweb])
+  else
+    with_duneweb=no
   fi
   AC_SUBST(DUNEWEBDIR, $with_duneweb)
-
+  AM_CONDITIONAL(DUNEWEB, test x$with_duneweb != xno)
 ])
