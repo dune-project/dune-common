@@ -18,7 +18,7 @@ name=`grep '^Module:' dune.module | cut -d ':' -f 2 | sed -e 's/ //g'`
 rm -f dune-all.m4
 
 # add current dir to PATH
-PATH=$PATH:`dirname $0`/bin
+PATH=`dirname $0`:$PATH
 
 for OPT in "$@"; do
     set +e
