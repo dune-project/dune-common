@@ -528,6 +528,79 @@ case "$command" in
     done
     echo export DUNE_CONTROL_PATH=$DUNE_CONTROL_PATH
     ;;
+  m4create)
+    find_modules_in_path
+	mainmod=`echo $SEARCH_MODULES`
+	fname="dependencies.m4"
+	name=`eval echo \\${NAME_$mainmod}`
+	version=`eval echo \\${VERS_$mainmod}`
+	maintainer=`eval echo \\${MAIN_$mainmod}`
+	echo "writing $fname"
+	echo "    for $name $version $maintainer"
+	cat > $fname <<EOF
+m4_define([DUNE_AC_INIT],[
+  AC_INIT([$name], [$version], [$maintainer])
+  AC_SUBST([DUNE_MOD_VERSION], [$version])
+  AC_SUBST([DUNE_MOD_NAME], [$name])
+  AC_SUBST([DUNE_MAINTAINER_NAME], [$maintainer])
+  # don't build shared libs per default, this is way better for debugging...
+  m4_ifdef([LT_INIT],
+    [LT_INIT],
+    [AC_DEFUN([LT_OUTPUT])])
+  AC_DISABLE_SHARED
+])
+
+AC_DEFUN([DUNE_CHECK_MOD_DEPENDENCIES], [
+  AC_REQUIRE([PKG_PROG_PKG_CONFIG])
+  AC_PROG_LIBTOOL
+  AC_PROG_CXX
+  LT_OUTPUT
+EOF
+	### DEPENDENCIES
+    if test "x$SEARCH_MODULES" != "x"; then
+	  MODULES=$SEARCH_MODULES
+    fi
+	sort_dependencies $MODULES
+    for mod in $MODULES; do
+	  name=`eval echo \\$NAME_$mod`
+	  MOD=`echo $mod | tr [:lower:] [:upper:]`
+	  cat >> $fname <<EOF
+  ### check dependency $name
+  # invoke checks required by this module
+  AC_REQUIRE([${MOD}_CHECKS])
+  # invoke check for this module
+  AC_REQUIRE([${MOD}_CHECK_MODULE])
+  if test x\$with_$mod = xno; then
+    AC_MSG_ERROR([could not find required module _dune_name])
+  fi
+EOF
+    done
+	### 
+	sort_suggestions $mainmod
+    for mod in $MODULES; do
+	  name=`eval echo \\$NAME_$mod`
+	  MOD=`echo $mod | tr [:lower:] [:upper:]`
+	  cat >> $fname <<EOF
+  ### check suggestion $name
+  # invoke checks required by this module
+  AC_REQUIRE([${MOD}_CHECKS])
+  # invoke check for this module
+  AC_REQUIRE([${MOD}_CHECK_MODULE])
+  if test x\$with_$mod = xno; then
+    AC_MSG_WARN([could not find suggested module _dune_name])
+  fi
+EOF
+    done
+	###
+	mod=$mainmod
+	name=`eval echo \\$NAME_$mod`
+	MOD=`echo $mod | tr [:lower:] [:upper:]`
+	cat >> $fname <<EOF
+  ### invoke checks for $name
+  AC_REQUIRE([${MOD}_CHECKS])
+])
+EOF
+	;;
   unexport)
 	echo export DUNE_CONTROL_PATH=""
     ;;
