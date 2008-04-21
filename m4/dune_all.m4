@@ -72,8 +72,8 @@ AC_DEFUN([DUNE_CHECK_ALL],[
 
 AC_DEFUN([DUNE_ADD_SUMMARY_ENTRY],[
   indentlen=17
-  txt=$1
-  while test `echo $txt | tr -d '\n' | wc -c` -lt $indentlen; do txt=$txt.; done
+  txt="$1"
+  while test `echo "$txt" | tr -d '\n' | wc -c` -lt $indentlen; do txt="$txt."; done
   txt="$txt: $2"
   [DUNE_SUMMARY="$DUNE_SUMMARY echo '$txt';"]
 ])
