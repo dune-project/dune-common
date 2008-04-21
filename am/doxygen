@@ -1,0 +1,92 @@
+# -*-makefile-automake-*-
+
+if BUILD_DOCS
+  DOXYGENTAG = doxygen-tag 
+  DOXYGEN_HTML = html 
+  # EXTRAINSTALL in the html subdirectory
+  DOXYGENHTMLFILES = *.html *.css *.png *.gif
+#  DOXYGENDISTFILES = html html/*.html html/*.css html/*.png html/*.gif doxygen-tag
+  DOXYGENINSTALL = $(DOXYGENHTMLFILES) ../doxygen.log
+endif
+
+DISTCLEANFILES = doxygen.log doxygen-tag
+
+if MAKEDIST
+if WML
+  # themeing doxygen
+  DOXYGENHEADER = doxy-header.html
+  DOXYGENFOOTER = doxy-footer.html
+  DOXYGENSTYLESHEET = dune-doxy.css
+endif
+endif
+
+DOXYGENFILES = $(DOXYGEN_HTML) $(DOXYGENHEADER) $(DOXYGENFOOTER)
+
+#we need this in the distribution
+if BUILD_DOCS
+
+install-doxygen-data: $(DOXYGEN_HTML)
+	$(mkinstalldirs) $(DESTDIR)/$(doxygendir); \
+	dir=$(srcdir); \
+	if test -d ./html; then dir=.; fi; echo "dir=$$dir"; \
+	list='$(DOXYGENHTMLFILES)'; \
+	for p in $$list; do \
+		$(install_sh_DATA) $$dir/html/$$p $(DESTDIR)/$(doxygendir); \
+	done
+
+uninstall-doxygen-data:
+	list='$(DOXYGENHTMLFILES)'; \
+	for p in $$list; do \
+	  rm -f $(DESTDIR)/$(doxygendir)/$$p; \
+	done
+
+install-data-local: install-doxygen-data
+uninstall-local: uninstall-doxygen-data
+
+endif
+
+# what files does the doxygen-generated stuff depend on (find-syntax)
+DOXYGEN_DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.png
+
+# as all doxygen files fill be installed in the html subdirectory
+# the BASEDIR has to be adjusted
+doxy-header.html: BASEDIR:=$(BASEDIR)/..
+doxy-header.html:
+
+# check dependency ourself to be robust
+doxygen-tag: FORCE $(DOXYGENHEADER)
+	set -e; \
+	  if test ! -e doxygen-tag || test x"`find $(top_srcdir) \( $(DOXYGEN_DEPENDON) \) -a -cnewer doxygen-tag -print`" != x ; then \
+	    echo Running doxygen. This may take a while... ; \
+	    $(DOXYGEN) Doxyfile > doxygen.log 2>&1 <&- ; \
+	    touch doxygen-tag ; \
+	fi
+
+#	  fi; \
+#	if ! (test "x$(VPATH)" != "x" && test -e $(srcdir)/doxygen-tag); then \
+#
+
+html: doxygen-tag
+
+if WML
+# how to install the doxygen documentation
+web-install-doxygen:
+	if test -d $(DUNEWEBDIR) && test -r $(DUNEWEBDIR)/Make.global ; then \
+	  pushd html; \
+	    $(MAKE) -f $(DUNEWEBDIR)/Make.global \
+          EXTRAINSTALL="$(DOXYGENINSTALL)" CURDIR="$(CURDIR)/dune-common-html" install ; \
+	  popd; \
+	fi
+
+web-install: web-install-doxygen
+endif
+
+clean-local: clean-doxygen
+
+clean-doxygen:
+	rm -rf html latex $(DOXYGENTAG) *~
+
+# nice trick from the GNU make infopage to force a rule to run
+FORCE:
+
+include $(top_srcdir)/am/webstuff

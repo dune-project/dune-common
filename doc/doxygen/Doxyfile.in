@@ -17,13 +17,13 @@
 # The PROJECT_NAME tag is a single word (or a sequence of words surrounded 
 # by quotes) that should identify the project.
 
-PROJECT_NAME           = dune-common
+PROJECT_NAME           = @DUNE_MOD_NAME@
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. 
 # This could be handy for archiving the generated documentation or 
 # if some version control system is used.
 
-PROJECT_NUMBER         = 
+PROJECT_NUMBER         = @DUNE_MOD_VERSION@
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) 
 # base path where the generated documentation will be put. 
@@ -130,7 +130,8 @@ STRIP_FROM_INC_PATH    =
 # (but less readable) file names. This can be useful is your file systems 
 # doesn't support long names like on DOS, Mac, or CD-ROM.
 
-SHORT_NAMES            = NO
+@DUNEWEB_TRUE@SHORT_NAMES            = NO
+@DUNEWEB_FALSE@SHORT_NAMES            = YES
 
 # If the JAVADOC_AUTOBRIEF tag is set to YES then Doxygen 
 # will interpret the first line (until the first dot) of a JavaDoc-style 
@@ -459,10 +460,10 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = mainpage \
-                         modules \
-                         ../../common/modules \
-                         ../../common
+INPUT                  = @srcdir@/mainpage \
+                         @srcdir@/modules \
+                         @top_srcdir@/common/modules \
+                         @top_srcdir@/common
 
 # If the value of the INPUT tag contains directories, you can use the 
 # FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 
@@ -484,7 +485,7 @@ RECURSIVE              = YES
 # excluded from the INPUT source files. This way you can easily exclude a 
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
-EXCLUDE                = ../../common/test
+EXCLUDE                = @top_srcdir@/common/test
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or 
 # directories that are symbolic links (a Unix filesystem feature) are excluded 
@@ -642,13 +643,15 @@ HTML_FILE_EXTENSION    = .html
 # each generated HTML page. If it is left blank doxygen will generate a 
 # standard header.
 
-HTML_HEADER            =
+@DUNEWEB_TRUE@HTML_HEADER            = doxy-header.html
+@DUNEWEB_FALSE@HTML_HEADER            =
 
 # The HTML_FOOTER tag can be used to specify a personal HTML footer for 
 # each generated HTML page. If it is left blank doxygen will generate a 
 # standard footer.
 
-HTML_FOOTER            =
+@DUNEWEB_TRUE@HTML_FOOTER            = doxy-footer.html
+@DUNEWEB_FALSE@HTML_FOOTER            =
 
 # The HTML_STYLESHEET tag can be used to specify a user-defined cascading 
 # style sheet that is used by each HTML page. It can be used to 
@@ -657,7 +660,8 @@ HTML_FOOTER            =
 # the style sheet file to the HTML output directory, so don't put your own 
 # stylesheet in the HTML output directory as well, or it will be erased!
 
-HTML_STYLESHEET        =
+@DUNEWEB_TRUE@HTML_STYLESHEET        = dune-doxy.css
+@DUNEWEB_FALSE@HTML_STYLESHEET        =
 
 # If the HTML_ALIGN_MEMBERS tag is set to YES, the members of classes, 
 # files or namespaces will be aligned in HTML using tables. If set to 

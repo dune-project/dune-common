@@ -43,6 +43,9 @@ AC_DEFUN([DUNE_CHECK_DEPENDENCIES], [
   AC_PROG_CXX
   LT_OUTPUT
   DUNE_PARSE_MODULE_FILE
+  AC_SUBST([DUNE[]_MOD_VERSION], [DUNE_MOD_VERSION])
+  AC_SUBST([DUNE[]_MOD_NAME], [DUNE_MOD_NAME])
+  AC_SUBST(ALL_PKG_LIBS, "$LIBS $DUNE_PKG_LIBS")
   [## invoke checks for] DUNE_MOD_NAME
   m4_pushdef([_dune_module], [m4_translit(DUNE_MOD_NAME, [-], [_])])
   m4_pushdef([_DUNE_MODULE], [m4_toupper(_dune_module)])
@@ -58,6 +61,18 @@ AC_DEFUN([DUNE_CHECK_ALL],[
   # doxygen and latex take a lot of time...
   AC_REQUIRE([DUNE_DOCUMENTATION])
   AC_REQUIRE([DUNE_WEB])
+
+
+  AC_ARG_ENABLE(enabledist,
+    AC_HELP_STRING([--enable-dist],
+                 [go into create-tarballs-mode [[default=no]]]),
+    [enabledist=$enable],
+    [enabledist=no]
+  )
+  AM_CONDITIONAL(MAKEDIST, test x$enabledist = xyes)
+  if x$enabledist = xyes; then
+    AM_CONDITIONAL(DUNEWEB, false)
+  fi
 
   dnl check all components
   AC_REQUIRE([DUNE_CHECK_DEPENDENCIES])
