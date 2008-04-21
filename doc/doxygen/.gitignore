@@ -1,4 +1,5 @@
 .deps
+Doxyfile
 doxy-header.html
 bestpractice.html
 doxygen-tag
