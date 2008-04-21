@@ -149,8 +149,8 @@ void test_matrix()
   // assign matrix
   A=0;
   // random access matrix
-  for (size_type i=0; i<A.rowdim(); i++)
-    for (size_type j=0; j<A.coldim(); j++)
+  for (size_type i=0; i<n; i++)
+    for (size_type j=0; j<m; j++)
       A[i][j] = i*j;
   // iterator matrix
   typename FieldMatrix<K,n,m>::RowIterator rit = A.begin();
