@@ -93,6 +93,14 @@ AC_DEFUN([DUNE_ADD_SUMMARY_ENTRY],[
   [DUNE_SUMMARY="$DUNE_SUMMARY echo '$txt';"]
 ])
 
+AC_DEFUN([DUNE_ADD_SUMMARY_MOD_ENTRY],[
+  indentlen=17
+  txt=$1
+  while test `echo $txt | tr -d '\n' | wc -c` -lt $indentlen; do txt=$txt.; done
+  txt="$txt: $2"
+  [DUNE_MODULES_SUMMARY="$DUNE_MODULES_SUMMARY echo '$txt';"]
+])
+
 AC_DEFUN([DUNE_SUMMARY_ALL],[
   # show search results
 
@@ -101,7 +109,8 @@ AC_DEFUN([DUNE_SUMMARY_ALL],[
   echo
   echo "-----------------------------"
   echo  
-  [eval $DUNE_SUMMARY]
+  [(eval $DUNE_MODULES_SUMMARY) | sort]
+  [(eval $DUNE_SUMMARY) | sort]
   echo
   echo "-----------------------------"
   echo

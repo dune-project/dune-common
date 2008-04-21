@@ -1,5 +1,5 @@
 #! /bin/sh
-# $Id$
+# $Id: dune.m4 5163 2008-04-21 13:50:27Z christi $
 # checks for dune-headers and everything they need
 
 # TODO
@@ -29,7 +29,7 @@ AC_DEFUN([DUNE_PKG_CONFIG_REQUIRES],[
   AC_SUBST(REQUIRES, [$REQUIRES])
 ])
 
-AC_DEFUN([DUNE_ADD_MODULE_SUMMARY_ENTRY],[
+AC_DEFUN([DUNE_MODULE_ADD_SUMMARY_ENTRY],[
   m4_pushdef([_dune_name], [$1])
   m4_pushdef([_dune_module], [m4_translit(_dune_name, [-], [_])])
   m4_pushdef([_DUNE_MODULE], [m4_toupper(_dune_module)])
@@ -40,7 +40,7 @@ AC_DEFUN([DUNE_ADD_MODULE_SUMMARY_ENTRY],[
   if test "x$_DUNE_MODULE[]_VERSION" != "x"; then
 	result="$result version $_DUNE_MODULE[]_VERSION"
   fi
-  DUNE_ADD_SUMMARY_ENTRY(_dune_name,[$result])
+  DUNE_ADD_SUMMARY_MOD_ENTRY(_dune_name,[$result])
 ])
 
 AC_DEFUN([DUNE_CHECK_MODULES],[
@@ -232,7 +232,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   LIBS="$ac_save_LIBS"
 
   # add this module to DUNE_SUMMARY
-  DUNE_ADD_MODULE_SUMMARY_ENTRY(_dune_name)
+  DUNE_MODULE_ADD_SUMMARY_ENTRY(_dune_name)
 
   # remove local variables
   m4_popdef([_dune_name])
