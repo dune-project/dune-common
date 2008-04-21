@@ -42,6 +42,8 @@ parse_control() {
   fi
   local deps="$(echo $($GREP Depends: "$1" | cut -d ':' -f2))"
   local sugs="$(echo $($GREP Suggests: "$1" | cut -d ':' -f2))"
+  local vers="$(echo $($GREP Version: "$1" | cut -d ':' -f2))"
+  local main="$(echo $($GREP Maintainer: "$1" | cut -d ':' -f2))"
   local path="$(dirname "$1")"
   # create and check variable name from module name
   export module=$(fix_variable_name $name)
@@ -61,7 +63,9 @@ parse_control() {
   # set status variables
   export HAVE_${module}=yes
   export PATH_${module}="$path"
+  export VERS_${module}="$vers"
   export NAME_${module}="$name"
+  export MAIN_${module}="$main"
   export DEPS_${module}="$deps"
   for name in $deps; do
     mod=$(fix_variable_name $name)
