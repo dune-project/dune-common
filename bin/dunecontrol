@@ -232,21 +232,19 @@ run_default_update () {
 run_default_autogen () {
   PARAMS="$CMD_PARAMS"
   local M4_PATH=""
-  if test -x autogen.sh; then
-    for m in $FOUND_MODULES; do
-      path=$(eval "echo \$PATH_$m")
-      if test -d $path/m4; then
-        M4_PATH="$path $M4_PATH"
-      fi
-    done
-    if test -f autogen.sh; then
-      eval echo "WARNING: \$NAME_$module contains obsolete autogen.sh," \
-		  > /dev/stderr
-	  echo "         dune-autogen is used instead." > /dev/stderr
+  for m in $FOUND_MODULES; do
+    path=$(eval "echo \$PATH_$m")
+    if test -d $path/m4; then
+      M4_PATH="$path $M4_PATH"
     fi
-#    eval ./autogen.sh "$M4_PATH" "$PARAMS" || exit 1
-    eval "$COMMAND_DIR/dune-autogen" "$M4_PATH" "$PARAMS" || exit 1
+  done
+  if test -f autogen.sh; then
+    eval echo "WARNING: \$NAME_$module contains obsolete autogen.sh," \
+                > /dev/stderr
+        echo "         dune-autogen is used instead." > /dev/stderr
   fi
+#    eval ./autogen.sh "$M4_PATH" "$PARAMS" || exit 1
+  eval "$COMMAND_DIR/dune-autogen" "$M4_PATH" "$PARAMS" || exit 1
 }
 
 run_default_configure () {
