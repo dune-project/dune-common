@@ -4,13 +4,13 @@ set -e
 
 canonicalname(){
   if test $# -ne 1; then
-     echo Usage: canonicalname path > /dev/stderr
+     echo Usage: canonicalname path >&2
      return 1
   fi
   name="$1"
   while test -L "$name"; do
     if ! test -e "$name"; then
-      echo $name: file not found > /dev/stderr
+      echo $name: file not found >&2
       return 1
     fi
     if newname="`readlink $name`"; then
@@ -24,7 +24,7 @@ canonicalname(){
 
 canonicalpath(){
   if test $# -ne 1; then
-     echo Usage: canonicalpath path > /dev/stderr
+     echo Usage: canonicalpath path >&2
      return 1
   fi
   (cd $(dirname $(canonicalname $1)) && pwd)
@@ -50,8 +50,7 @@ findm4dir() {
     echo "$M4DIR"
     return
   fi
-  echo "ERROR: could not find mpi-config.m4! Incomplete installation?" \
-    > /dev/stderr
+  echo "ERROR: could not find mpi-config.m4! Incomplete installation?" >&2
   exit 1
 }
 

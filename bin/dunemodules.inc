@@ -31,13 +31,13 @@ fi
 parse_control() {
   # check file existence
   if ! test -f "$1"; then
-    echo "ERROR: could not read file $1" > /dev/stderr
+    echo "ERROR: could not read file $1" >&2
     exit 1
   fi
   # read parameters from control file
   local name="$(echo $($GREP Module: "$1" | cut -d ':' -f2))"
   if test "x$name" = "x"; then
-    echo "ERROR: $CONTROL files $1 does not contain a Module entry" > /dev/stderr
+    echo "ERROR: $CONTROL files $1 does not contain a Module entry" >&2
     exit 1
   fi
   local deps="$(echo $($GREP Depends: "$1" | cut -d ':' -f2))"
@@ -48,16 +48,16 @@ parse_control() {
   # create and check variable name from module name
   export module=$(fix_variable_name $name)
   if ! check_modname "$module"; then
-    echo "ERROR: $CONTROL files $1 contains an invalid Module entry" > /dev/stderr
+    echo "ERROR: $CONTROL files $1 contains an invalid Module entry" >&2
     exit 1
   fi
   # avoid multiple definition of the same module
   if test "x$(eval echo \$HAVE_$module)" != "x"; then
-    echo "ERROR: multiple definition of module $name" > /dev/stderr
-    echo "previous defined in:" > /dev/stderr
-    echo "  $(eval echo \$PATH_$module)/$CONTROL" > /dev/stderr
-    echo "redefined in:" > /dev/stderr
-    echo "  $path/$CONTROL" > /dev/stderr
+    echo "ERROR: multiple definition of module $name" >&2
+    echo "previous defined in:" >&2
+    echo "  $(eval echo \$PATH_$module)/$CONTROL" >&2
+    echo "redefined in:" >&2
+    echo "  $path/$CONTROL" >&2
     exit 1
   fi
   # set status variables
@@ -118,7 +118,7 @@ EOF
       parse_control "$1"
       export MODULES="$MODULES $module"
     else
-      echo "ERROR: '$1' is neither a directory nor a $CONTROL file" > /dev/stderr
+      echo "ERROR: '$1' is neither a directory nor a $CONTROL file" >&2
       false
     fi
   fi
@@ -136,7 +136,7 @@ sort_modules() {
     if test "x$(eval echo \$HAVE_$m)" != "x"; then
       _sort_module $m
     else
-      echo "ERROR: could not find module $(eval echo \$NAME_$m)" > /dev/stderr
+      echo "ERROR: could not find module $(eval echo \$NAME_$m)" >&2
       exit 1
     fi
   done
@@ -166,7 +166,7 @@ sort_dependencies() {
         done
       fi
     else
-      echo "ERROR: could not find module $(eval echo \$NAME_$m)" > /dev/stderr
+      echo "ERROR: could not find module $(eval echo \$NAME_$m)" >&2
       exit 1
     fi
   done
@@ -201,7 +201,7 @@ sort_suggestions() {
         done
       fi
     else
-      echo "ERROR: could not find module $(eval echo \$NAME_$m)" > /dev/stderr
+      echo "ERROR: could not find module $(eval echo \$NAME_$m)" >&2
       exit 1
     fi
   done
@@ -236,7 +236,7 @@ _sort_module() {
   local module="$1"
   shift 1
   if ! check_modname $module; then 
-    echo "ERROR: invalid module name $module" > /dev/stderr
+    echo "ERROR: invalid module name $module" >&2
     exit 1
   fi
   if test "x$(eval echo \$SORT_DONE_${module})" != "xyes"; then
@@ -244,7 +244,7 @@ _sort_module() {
     for name in $(eval "echo \$DEPS_$module"); do
 	  dep=$(fix_variable_name $name)
       if ! check_modname $dep; then 
-        echo "ERROR: invalid module name $name" > /dev/stderr
+        echo "ERROR: invalid module name $name" >&2
         exit 1
       fi
       if test "x$(eval echo \$HAVE_$dep)" != "x"; then
@@ -253,10 +253,10 @@ _sort_module() {
         # perhaps this module is installed,
         # then it should be handled via pkg-config
         if ! pkg-config $name; then
-          echo "ERROR: could not find module $(eval echo \$NAME_$dep)" > /dev/stderr
-          echo "       module is also unknown to pkg-config" > /dev/stderr
-          echo "       Maybe you need to adjust PKG_CONFIG_PATH!" > /dev/stderr
-          echo "       $(eval echo \$NAME_$dep) is required by $(eval echo \$NAME_$module)" > /dev/stderr
+          echo "ERROR: could not find module $(eval echo \$NAME_$dep)" >&2
+          echo "       module is also unknown to pkg-config" >&2
+          echo "       Maybe you need to adjust PKG_CONFIG_PATH!" >&2
+          echo "       $(eval echo \$NAME_$dep) is required by $(eval echo \$NAME_$module)" >&2
           exit 1
         fi
       fi
@@ -265,7 +265,7 @@ _sort_module() {
     for name in $(eval "echo \$SUGS_$module"); do
 	  dep=$(fix_variable_name $name)
       if ! check_modname $dep; then
-        echo "ERROR: invalid module name $name" > /dev/stderr
+        echo "ERROR: invalid module name $name" >&2
         exit 1
       fi
       if test "x$(eval echo \$HAVE_$dep)" != "x"; then
@@ -302,7 +302,7 @@ eval_control() {
       $command
     ) || false
   else
-    echo "ERROR: could not find $file" > /dev/stderr
+    echo "ERROR: could not find $file" >&2
     exit 1
   fi
 }
@@ -321,7 +321,7 @@ fix_variable_name() {
 fix_and_assign() {
   local name="$1"
   if ! check_modname $name; then
-    echo "ERROR: error in assignment. $name is not a valid variabel name." > /dev/stderr
+    echo "ERROR: error in assignment. $name is not a valid variabel name." >&2
   fi
   shift 1
   export $name=$(fix_variable_name $@)

@@ -11,13 +11,13 @@ set -e
 
 canonicalname(){
   if test $# -ne 1; then
-     echo Usage: canonicalname path > /dev/stderr
+     echo Usage: canonicalname path >&2
      return 1
   fi
   name="$1"
   while test -L "$name"; do
     if ! test -e "$name"; then
-      echo $name: file not found > /dev/stderr
+      echo $name: file not found >&2
       return 1
     fi
     if newname="`readlink $name`"; then
@@ -31,7 +31,7 @@ canonicalname(){
 
 canonicalpath(){
   if test $# -ne 1; then
-     echo Usage: canonicalpath path > /dev/stderr
+     echo Usage: canonicalpath path >&2
      return 1
   fi
   (cd $(dirname $(canonicalname $1)) && pwd)
@@ -39,7 +39,7 @@ canonicalpath(){
 
 pkg_config_dependencies(){
     if test $# -ne 1; then
-	echo Usage: pkg_config_dependencies name > /dev/stderr
+	echo Usage: pkg_config_dependencies name >&2
 	return 1
     fi
     name="$1"
@@ -62,11 +62,11 @@ modulesexist(){
 	  fi
       done
       if [ "$found" = "0" ]; then
-	  echo "ERROR:">/dev/stderr
-	  echo "Module with name $dep was not found" > /dev/stderr
-	  echo "Did you forget to specify it's location" > /dev/stderr
-	  echo "in the DUNE_CONTROL_PATH variable?"> /dev/stderr
-	  echo >/dev/stderr
+	  echo "ERROR:">&2
+	  echo "Module with name $dep was not found" >&2
+	  echo "Did you forget to specify it's location" >&2
+	  echo "in the DUNE_CONTROL_PATH variable?">&2
+	  echo >&2
 	  allfound=1
       fi
   done
@@ -147,13 +147,13 @@ ALL_MODULES="`echo $SRC_MODULES $PKG_MODULES | tr ' ' '\n' | sort | uniq`"
 
 
 if [ "$ALL_MODULES" = "" ]; then
-  echo "ERROR">/dev/stderr
-  echo "No dune modules were found!">/dev/stderr
-  echo "Did you forget to specify the places where ">/dev/stderr
-  echo "you installed your modules in the ">/dev/stderr
-  echo "DUNE_CONTROL_PATH environment variable">/dev/stderr
-  echo "and adjusted the PKG_CONFIG_PATH environment">/dev/stderr
-  echo "accordingly?" >/dev/stderr
+  echo "ERROR">&2
+  echo "No dune modules were found!">&2
+  echo "Did you forget to specify the places where ">&2
+  echo "you installed your modules in the ">&2
+  echo "DUNE_CONTROL_PATH environment variable">&2
+  echo "and adjusted the PKG_CONFIG_PATH environment">&2
+  echo "accordingly?" >&2
   exit 1;
 fi
 
