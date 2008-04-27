@@ -49,12 +49,16 @@ for OPT in "$@"; do
 			  cat "$OPT/m4/"*.m4 >> dune-all.m4
             fi
             if test \( -d "$OPT/am" \) -a ! \( -h "$OPT/am" \) ; then
+              echo "Found am directory $OPT/am"
               am_dir="$OPT/am"
             fi
             if test -d "$OPT/share/aclocal"; then
-              ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $OPT/share/aclocal"
+#              ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $OPT/share/aclocal"
+              echo "... merging $OPT/share/aclocal into dune-all.m4"
+			  cat "$OPT/share/aclocal/"*.m4 >> dune-all.m4
             fi
             if test -d "$OPT/share/dune-common/am"; then
+              echo "Found am directory $OPT/share/dune-common/am"
               am_dir="$OPT/share/dune-common/am"
             fi
 			      PATH=$OPT/bin:$PATH

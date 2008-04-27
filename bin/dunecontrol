@@ -250,16 +250,14 @@ run_default_autogen () {
   if test -x autogen.sh; then
     for m in $FOUND_MODULES; do
       path=$(eval "echo \$PATH_$m")
-      if test -d $path/m4; then
-        M4_PATH="$path $M4_PATH"
-      fi
+      MODULE_PATHS="$MODULE_PATHS$path "
     done
     if test -f autogen.sh; then
       eval echo "WARNING: \$NAME_$module contains obsolete autogen.sh," >&2
 	  echo "         dune-autogen is used instead." >&2
     fi
 #    eval ./autogen.sh "$M4_PATH" "$PARAMS" || exit 1
-    eval "$COMMAND_DIR/dune-autogen" "$M4_PATH" "$PARAMS" || exit 1
+    eval "$COMMAND_DIR/dune-autogen" "$MODULE_PATHS" "$PARAMS" || exit 1
   fi
 }
 
