@@ -511,7 +511,6 @@ done
 case "$command" in
   print)
     create_module_list
-  echo "FOUND_MODULES=$FOUND_MODULES"
     eval "print_module_list ' ' $MODULES"
     echo >&2
     ;;
