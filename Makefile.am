@@ -10,10 +10,12 @@ AUTOMAKE_OPTIONS = foreign 1.5
 SUBDIRS = lib common doc bin m4 am
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = dune-common.pc
+pkgconfig_DATA = @DUNE_MOD_NAME@.pc
+
+moduledir = $(libdir)/dunecontrol/@DUNE_MOD_NAME@
+module_DATA = dune.module
 
 # use configured compiler for "make distcheck"
-# doxygen is difficult to convince to build in a special directory...
 DISTCHECK_CONFIGURE_FLAGS = CXX="$(CXX)" CC="$(CC)" --enable-parallel=@ENABLE_PARALLEL@ MPICC="$(MPICC)"
 
 include $(top_srcdir)/am/global-rules

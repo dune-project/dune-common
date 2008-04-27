@@ -22,6 +22,51 @@ fi
 
 ###############################################
 
+canonicalname(){
+	if test $# -ne 1; then
+		echo Usage: canonicalname path >&2
+		return 1
+	fi
+	file="$1"
+	if test ! -e "$file"; then
+		echo $file: file not found >&2
+		return 1
+	fi
+    # if this is a symlink, then follow the symlink
+	if test -L "$file"; then
+		fdir="`dirname \"$file\"`"
+		flink="`readlink \"$file\"`"
+		if test -e "$flink"; then
+			# these are absolute links, or links in the CWD
+			canonicalname "$flink"
+		else
+			canonicalname "$fdir/$flink"
+		fi
+	else
+        # if this is a file, then remember the filename and
+        # canonicalize the directory name
+		if test -f "$file"; then
+			fdir="`dirname \"$file\"`"
+			fname="`basename \"$file\"`"
+			fdir="`canonicalname \"$fdir\"`"
+			echo "$fdir/$fname"
+		fi
+        # if this is a directory, then create an absolute 
+        # directory name and we are done
+		if test -d "$file"; then
+			(cd "$file"; pwd)
+		fi
+	fi
+}
+
+canonicalpath(){
+  if test $# -ne 1; then
+     echo Usage: canonicalpath path >&2
+     return 1
+  fi
+  dirname $(canonicalname "$1")
+}
+
 #
 # read paramters from a $CONTROL file
 #
@@ -40,13 +85,27 @@ parse_control() {
     echo "ERROR: $CONTROL files $1 does not contain a Module entry" >&2
     exit 1
   fi
+  # create and check variable name from module name
+  export module_inst=""
+  export module=$(fix_variable_name $name)
+  # read dune.module file
   local deps="$(echo $($GREP Depends: "$1" | cut -d ':' -f2))"
   local sugs="$(echo $($GREP Suggests: "$1" | cut -d ':' -f2))"
   local vers="$(echo $($GREP Version: "$1" | cut -d ':' -f2))"
   local main="$(echo $($GREP Maintainer: "$1" | cut -d ':' -f2))"
-  local path="$(dirname "$1")"
-  # create and check variable name from module name
-  export module=$(fix_variable_name $name)
+  # guess the path of the dune module:
+  # - installed module: ${path}/lib/dunecontrol/${name}/dune.module
+  #   and there is a file ${path}/lib/pkgconfig/${name}.pc
+  # - source module: ${path}/dune.module
+  #   and there is a file ${path}/${name}.pc.in
+  local path="$(canonicalpath "$1")"
+  if test -f $path/../../../lib/dunecontrol/${name}/dune.module; then
+	  path=$(canonicalname "$path/../../../")
+      export module_inst="true"
+      export INST_${module}=yes
+  else
+      export INST_${module}=no
+  fi
   if ! check_modname "$module"; then
     echo "ERROR: $CONTROL files $1 contains an invalid Module entry" >&2
     exit 1
@@ -85,12 +144,20 @@ find_modules_in_path() {
   if test -z "$FOUND_MODULES"; then
     # foreach dir in $@
     while read dir; do
-      find_modules $dir
+      if test -d "$dir"; then
+        while read m; do
+          find_modules $m
+        done <<EOFM
+        $(find "$dir" -name $CONTROL | $GREP -v 'dune-[-_a-zA-Z]/dune\-[-a-zA-Z_]*\-[0-9]\+.[0-9]\+/')
+EOFM
+	  else
+        find_modules $dir
+	  fi
     done <<EOF
-    $(echo $DUNE_CONTROL_PATH | sed -e 's/:/\n/g') 
+    $(echo $DUNE_CONTROL_PATH | tr ':' '\n') 
 EOF
+    export FOUND_MODULES="$MODULES$INSTMODULES"
   fi
-  export FOUND_MODULES=$MODULES
 }
 
 #
@@ -100,27 +167,19 @@ EOF
 # $1 directory to search for modules
 #
 find_modules() {
-  if test -d "$1"; then
-    local dir="$(cd "$1" && pwd)"
-    while read m; do
-      if test "x$m" != "x"; then
-        export module=""
-        parse_control "$m"
-        export MODULES="$MODULES $module"
-      fi
-    done <<EOF
- $(find "$dir" -name $CONTROL | $GREP -v 'dune-[-_a-zA-Z]/dune\-[-a-zA-Z_]*\-[0-9]\+.[0-9]\+/')
-EOF
-  else
-    if test -f "$1" && 
-       test "$(basename $1)" = "$CONTROL"; then
+  if test -f "$1" && 
+      test "$(basename $1)" = "$CONTROL"; then
       export module=""
+      export module_inst=""
       parse_control "$1"
-      export MODULES="$MODULES $module"
-    else
-      echo "ERROR: '$1' is neither a directory nor a $CONTROL file" >&2
+      if test -n "$module_inst"; then
+        export INSTMODULES="$MODULES$module "
+      else
+        export MODULES="$MODULES$module "
+	  fi
+  else
+      echo "ERROR: '$1' is no $CONTROL file" >&2
       false
-    fi
   fi
 }
 

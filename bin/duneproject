@@ -145,32 +145,30 @@ echo
 # create PKG_CONFIG_PATH for installed dune modules
 export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$(canonicalpath $0)/../lib/pkgconfig"
 
-if [ "$MODULES" = "" ]; then
-  find_modules_in_path
-fi
+# search for modules, both installed and src modules
+find_modules_in_path
+
+echo "FOUND_MODULES=$FOUND_MODULES"
 
 # get the real module names
-SRC_MODULES=""
-for i in $MODULES; do
+MODULES=""
+for i in $FOUND_MODULES; do
   mod=$(eval echo \$NAME_$i)
-  SRC_MODULES="$SRC_MODULES $mod"
+  MODULES="$SRC_MODULES$mod "
+echo "$i ... MODULES=$MODULES" >&2
+
 done
 
-# get installed modules
-PKG_MODULES="`pkg-config --list-all | grep dune | cut -d' ' -f1`"
+echo "MODULES=$MODULES" >&2
 
-# merge lists
-ALL_MODULES="`echo $SRC_MODULES $PKG_MODULES | tr ' ' '\n' | sort | uniq`"
-
-
-if [ "$ALL_MODULES" = "" ]; then
-  echo "ERROR">&2
-  echo "No dune modules were found!">&2
-  echo "Did you forget to specify the places where ">&2
-  echo "you installed your modules in the ">&2
-  echo "DUNE_CONTROL_PATH environment variable">&2
-  echo "and adjusted the PKG_CONFIG_PATH environment">&2
-  echo "accordingly?" >&2
+if [ "$MODULES" = "" ]; then
+  echo "ERROR:">&2
+  echo "  No dune modules were found!">&2
+  echo "  Did you forget to specify the places where ">&2
+  echo "  you installed your modules in the ">&2
+  echo "  DUNE_CONTROL_PATH environment variable">&2
+  echo "  and adjusted the PKG_CONFIG_PATH environment">&2
+  echo "  accordingly?" >&2
   exit 1;
 fi
 
@@ -180,7 +178,7 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
   PROJECT=""
   while [ -z $PROJECT ]; do
     read -p "1) Name of your new Project? (e.g.: dune-grid): " PROJECT
-    if echo "$ALL_MODULES" | grep -q ^$PROJECT$; then
+    if echo "$MODULES" | grep -q ^$PROJECT$; then
       read -p "   A module named $PROJECT already exists. Continue anyway? [y/N] " CONT
       if test x$DELETE = xy -o x$DELETE = xY; then
         PROJECT=""
@@ -195,13 +193,14 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
   DEPENDENCIES=""
   echo "2) Which modules should this module depend on?"
   echo "   Following modules are found:"
-  for i in $ALL_MODULES; do echo -n " $i"; done
-  echo ""
+  echo "   $MODULES"
+#  for i in $MODULES; do echo -n " $i"; done
+#  echo ""
   while [ -z "$DEPENDENCIES" ]; do
-      read -p "  Enter space separated list: " DEPENDENCIES
+      read -p "   Enter space separated list: " DEPENDENCIES
   done
   set +e
-  modulesexist "$DEPENDENCIES" "$ALL_MODULES"
+  modulesexist "$DEPENDENCIES" "$MODULES"
   DEPOK=$?
   set -e
   done

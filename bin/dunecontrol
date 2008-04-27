@@ -88,12 +88,10 @@ export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:`canonicalpath $0`/../lib/pkgconfig"
 #
 build_modules() {
   command="$1"
+  shift
   load_opts $command
   local runcommand=run_$command
-  modules="$MODULES"
-  if test x"$ONLY" != x; then
-	modules="$ONLY"
-  fi  
+  modules="$@"
   for module in $modules; do
     local path=$(eval "echo \$PATH_${module}")
     eval echo "--- calling $command for \$NAME_${module} ---"
@@ -513,6 +511,7 @@ done
 case "$command" in
   print)
     create_module_list
+  echo "FOUND_MODULES=$FOUND_MODULES"
     eval "print_module_list ' ' $MODULES"
     echo >&2
     ;;
@@ -626,11 +625,16 @@ EOF
   *)
     if is_command $command; then
       create_module_list
+      NAMES=""
+      BUILDMODULES=""
       for mod in $MODULES; do
+        if test "$(eval echo \$INST_$mod)" != "yes"; then
           NAMES="$NAMES$(eval echo \$NAME_$mod) "
+          BUILDMODULES="$BUILDMODULES$mod "
+        fi
       done
       echo "--- going to build $NAMES ---"
-        build_modules $command
+        build_modules $command $BUILDMODULES
       echo "--- done ---"
 	else
       usage
