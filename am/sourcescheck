@@ -2,7 +2,7 @@
 # $Id$
 
 sourcescheck_LIST = $(SOURCES) $(DIST_SOURCES) $(HEADERS) $(DIST_HEADERS) \
-	$(sourcescheck_NOSOURCES) $(dist_noinst_DATA)
+	$(sourcescheck_NOSOURCES) $(dist_noinst_DATA) $(EXTRA_DIST)
 
 sourcescheck: sourcescheck-recursive
 
@@ -10,9 +10,9 @@ sourcescheck: sourcescheck-recursive
 #	 grep '\.[hc][hc]$$' | sort | uniq > header_CHECK.install
 sourcescheck-am:
 	@echo $(sourcescheck_LIST) | tr ' ' '\n' | \
-	 grep '\.[hc][hc]$$' | sort | uniq > header_CHECK.install
+	 grep '\.[hcm][hc4]$$' | sort | uniq > header_CHECK.install
 	@ls | \
-	 grep '\.[hc][hc]$$' | sort | uniq > header_CHECK.present
+	 grep '\.[hcm][hc4]$$' | sort | uniq > header_CHECK.present
 	@RESULT=0; \
 	if diff header_CHECK.* | grep ^[\<\>] -q; then \
 		echo "==== WARNING ===="; \
