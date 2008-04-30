@@ -48,7 +48,8 @@ for OPT in "$@"; do
               echo "... merging $OPT/m4 into dune-all.m4"
 			  cat "$OPT/m4/"*.m4 >> dune-all.m4
             fi
-            if test \( -d "$OPT/am" \) -a ! \( -h "$OPT/am" \) ; then
+            if test -f "$OPT/dune-common.pc.in" ; then
+#            if test \( -d "$OPT/am" \) -a ! \( -h "$OPT/am" \) ; then
               echo "Found am directory $OPT/am"
               am_dir="$OPT/am"
             fi
