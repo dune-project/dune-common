@@ -70,7 +70,7 @@ AC_DEFUN([DUNE_CHECK_ALL],[
     [enabledist=no]
   )
   AM_CONDITIONAL(MAKEDIST, test x$enabledist = xyes)
-  if x$enabledist = xyes; then
+  if test x$enabledist = xyes; then
     AM_CONDITIONAL(DUNEWEB, false)
   fi
 
