@@ -15,7 +15,6 @@ esac
 # Get fortran linker names of PARDISO functions to check for.
 AC_F77_FUNC(pardisoinit)
 acx_pardiso_save_LIBS="$LIBS"
-LIBS="$BLAS_LIBS -llapack -lg2c $LIBS $FLIBS"
 LIBS="$LAPACK_LIBS $BLAS_LIBS $LIBS $FLIBS"
 
 # First, check PARDISO_LIBS environment variable
