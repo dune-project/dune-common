@@ -31,7 +31,9 @@ AC_DEFUN([DUNE_COMMON_CHECKS],
 
   dnl checks for header files.
   AC_REQUIRE([AC_HEADER_STDC])
+  AC_LANG_PUSH([C++])
   AC_CHECK_HEADERS([malloc.h string.h type_traits tr1/type_traits array tr1/array tuple tr1/tuple])
+  AC_LANG_POP([C++])
 
   dnl checks for typedefs, structures, and compiler characteristics.
   #  doesn't work, but we don't need it currently
