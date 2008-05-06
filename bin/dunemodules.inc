@@ -89,10 +89,10 @@ parse_control() {
   export module_inst=""
   export module=$(fix_variable_name $name)
   # read dune.module file
-  local deps="$(echo $($GREP Depends: "$1" | cut -d ':' -f2))"
-  local sugs="$(echo $($GREP Suggests: "$1" | cut -d ':' -f2))"
-  local vers="$(echo $($GREP Version: "$1" | cut -d ':' -f2))"
-  local main="$(echo $($GREP Maintainer: "$1" | cut -d ':' -f2))"
+  local deps="$(echo $($GREP ^[[:space:]]*Depends: "$1" | cut -d ':' -f2))"
+  local sugs="$(echo $($GREP ^[[:space:]]*Suggests: "$1" | cut -d ':' -f2))"
+  local vers="$(echo $($GREP ^[[:space:]]*Version: "$1" | cut -d ':' -f2))"
+  local main="$(echo $($GREP ^[[:space:]]*Maintainer: "$1" | cut -d ':' -f2))"
   # guess the path of the dune module:
   # - installed module: ${path}/lib/dunecontrol/${name}/dune.module
   #   and there is a file ${path}/lib/pkgconfig/${name}.pc
