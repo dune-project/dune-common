@@ -5,6 +5,7 @@
 
 #include <dune/common/dlist.hh>
 #include <dune/common/exceptions.hh>
+#include <dune/common/deprecated.hh>
 
 namespace Dune {
 
@@ -22,7 +23,7 @@ namespace Dune {
   //! Exception thrown by the stack
   class StackException : public RangeError {};
 
-  /** dynamic stack implemented with a double linked list
+  /** \brief (DEPRECATED) dynamic stack implemented with a double linked list
 
      This class can be used instead of the standard STL-stack if
      detailed knowledge about the stacks implementation is needed. For
@@ -41,17 +42,17 @@ namespace Dune {
     bool full () const;
 
     //! Put a new object onto the stack
-    void push (T& t);
+    void push (T& t) DUNE_DEPRECATED;
 
     //! Removes and returns the uppermost object from the stack
-    T pop ();
+    T pop () DUNE_DEPRECATED;
 
     //! Returns the uppermost object from the stack
     T top () const;
 
     //! Number of elements on the stack
     int size() const;
-  } ;
+  } DUNE_DEPRECATED ;
 
   template<class T>
   inline int Stack<T>::size () const
