@@ -7,7 +7,7 @@ EXTRA_DIST=dune.module dune-common.m4
 # need automake >= 1.5
 AUTOMAKE_OPTIONS = foreign 1.5
 
-SUBDIRS = lib common doc bin m4 am
+SUBDIRS = common lib doc bin m4 am
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = @DUNE_MOD_NAME@.pc
