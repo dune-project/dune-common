@@ -1,0 +1,25 @@
+# -*- Makefile -*-
+# $Id$
+#
+# -- update libs in an other directory --
+#
+# applications linking against local libraries should also depend on these libs
+#
+# app_SOURCE = app.cc
+# app_LDADD = $(LOCAL_LIBS)
+# app_DEPENDENCIES = $(LOCAL_LIBS)
+#
+# instead, you can also write
+#
+# app_SOURCE = app.cc
+# app_LIBADD = $(LOCAL_LIBS)
+#
+
+LOCAL_LIBS = @LOCAL_LIBS@
+
+%.la: MAKELIBS.force
+	cd $$(dirname $@) && $(MAKE) $$(basename $@)
+
+MAKELIBS.force:
+
+.PHONY: MAKELIBS.force
