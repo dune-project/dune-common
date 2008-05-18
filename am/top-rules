@@ -1,0 +1,9 @@
+# -*-makefile-*-
+
+ACLOCAL_AMFLAGS=-I.
+DUNECONTROL=@DUNE_COMMON_ROOT@/bin/dunecontrol
+
+all-am: dependencies.m4
+
+@DUNE_MOD_NAME@.m4: dune.module
+	cd $(srcdir) && $(DUNECONTROL) --only=@DUNE_MOD_NAME@ m4create
