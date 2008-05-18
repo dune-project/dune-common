@@ -353,6 +353,8 @@ usage () {
     echo "                     and all modules it depends on"
     echo "      --only=mod     only apply the actions on module mod"
     echo "                     and not the modules it depends on"
+    echo "      --current      only apply the actions on the current module,"
+    echo "                     the one in whichs source tree we are standing"
     echo "      --opts=FILE    load default options from FILE"
     echo "                     (see dune-common/doc/example.opts)"
     echo "      --[COMMAND]-opts=opts   set options for COMMAND"
@@ -468,7 +470,7 @@ while test $# -gt 0; do
         exit 1;
       fi
 	  for a in `echo $arg | tr ',' ' '`; do
-        export NAME_`fix_variable_name $arg`="$a"
+        export NAME_`fix_variable_name $a`="$a"
         fix_and_assign MODULE "$a"
         export SEARCH_MODULES="$SEARCH_MODULES $MODULE"
       done
@@ -481,11 +483,25 @@ while test $# -gt 0; do
         exit 1;
       fi
 	  for a in `echo $arg | tr ',' ' '`; do
-        export NAME_`fix_variable_name $arg`="$a"
+        export NAME_`fix_variable_name $a`="$a"
         fix_and_assign MODULE "$a"
         export SEARCH_MODULES="$SEARCH_MODULES $MODULE"
         export ONLY="$ONLY $MODULE"
       done
+	;;
+    --current)
+	  while ! test -f $CONTROL; do
+        cd ..
+	 	if test "$OLDPWD" = "$PWD"; then
+		  echo "You are not inside the source tree of a DUNE module." >&2
+		  exit -1
+ 		fi
+	  done;
+	  parse_control $PWD/$CONTROL
+      fix_and_assign MODULE "$module"
+      export SEARCH_MODULES="$SEARCH_MODULES $MODULE"
+      export ONLY="$ONLY $MODULE"
+      export HAVE_${module}=
     ;;
     --debug) true ;;
     --*)
