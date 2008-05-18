@@ -521,22 +521,6 @@ case "$command" in
     eval "print_module_list ' ' $MODULES"
     echo > /dev/stderr
     ;;
-  m4depends)
-    find_modules_in_path
-    if test "x$SEARCH_MODULES" != "x"; then
-	  MODULES=$SEARCH_MODULES
-    fi
-	sort_dependencies $MODULES
-    eval "print_module_list ',' $MODULES"
-    ;;
-  m4suggests)
-    find_modules_in_path
-    if test "x$SEARCH_MODULES" != "x"; then
-	  MODULES=$SEARCH_MODULES
-    fi
-	sort_suggestions $MODULES
-    eval "print_module_list ',' $MODULES"
-    ;;
   export)
     create_module_list
     DUNE_CONTROL_PATH=""

@@ -47,6 +47,7 @@ for OPT in "$@"; do
             if test -d "$OPT/m4"; then
               echo "... merging $OPT/m4 into dune-all.m4"
 			  cat "$OPT/m4/"*.m4 >> dune-all.m4
+              ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $OPT/m4"
             fi
             if test -f "$OPT/dune-common.pc.in" ; then
 #            if test \( -d "$OPT/am" \) -a ! \( -h "$OPT/am" \) ; then
@@ -94,17 +95,15 @@ echo "--> libtoolize..."
 # PITA when you want to upgrade libtool, thus I'm setting --force
 libtoolize --force
 
-# merge m4 files
-if [ -d m4 ]; then
-  echo "--> collect m4 files"
-  cat m4/*.m4 > $name.m4
-fi
+# writing privat m4 file
+echo -n "--> "
+dunecontrol --only=$name m4create
 
 # prepare everything
 echo "--> aclocal..."
 rm -f aclocal.m4
 rm -rf autom4te.cache
-aclocal$AMVERSION -I .
+aclocal$AMVERSION -I. $ACLOCAL_FLAGS
 
 # create a link to the dune-common am directory
 if [ "$name" != "dune-common" ]; then
