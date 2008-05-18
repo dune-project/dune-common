@@ -55,7 +55,7 @@ canonicalname(){
 
 canonicalpath(){
   if test $# -ne 1; then
-     echo Usage: canonicalpath path >&2
+     echo Usage: canonicalpath path > /dev/stderr
      return 1
   fi
   dirname $(canonicalname "$1")
@@ -232,6 +232,14 @@ run_default_status () {
 }
 
 run_default_update () {
+  if test -d .git/svn; then
+	git checkout master
+    git svn rebase
+	echo '*.o *.lo *.la #*# .*.rej *.rej .*~ *~ .#* .DS_Store' | tr ' ' '\n' \
+      > .git/info/exclude
+	git-svn show-ignore >> .git/info/exclude
+    return
+  fi
   if test -d .svn; then
     svn update
     return
@@ -253,8 +261,9 @@ run_default_autogen () {
       MODULE_PATHS="$MODULE_PATHS$path "
     done
     if test -f autogen.sh; then
-      eval echo "WARNING: \$NAME_$module contains obsolete autogen.sh," >&2
-	  echo "         dune-autogen is used instead." >&2
+      eval echo "WARNING: \$NAME_$module contains obsolete autogen.sh," \
+		  > /dev/stderr
+	  echo "         dune-autogen is used instead." > /dev/stderr
     fi
 #    eval ./autogen.sh "$M4_PATH" "$PARAMS" || exit 1
     eval "$COMMAND_DIR/dune-autogen" "$MODULE_PATHS" "$PARAMS" || exit 1
@@ -289,8 +298,8 @@ run_default_configure () {
     eval ./configure "$PARAMS" || exit 1
   else
     if test -f configure.in || test -f configure.ac; then
-      echo "ERROR: configure.[in|ac] found, but configure missing" >&2
-      echo "did you forget to run autoconf?" >&2
+      echo "ERROR: configure.[in|ac] found, but configure missing" > /dev/stderr
+      echo "did you forget to run autoconf?" > /dev/stderr
       exit 1
     fi
   fi
@@ -324,7 +333,7 @@ run_default_svn () {
 ###
 
 onfailure() {
-  echo "Execution of $(basename $0) terminated due to errors!" >&2
+  echo "Execution of $(basename $0) terminated due to errors!" > /dev/stderr
   exit 1
 }
 
@@ -357,7 +366,7 @@ usage () {
     printf "  \`export'\trun eval \`dunecontrol export\` to save the list of\n"
     printf "  \t\tdune.module files to the DUNE_CONTROL_PATH variable\n"
     echo
-  )  >&2
+  )  > /dev/stderr
 }
 
 # create the module list
@@ -420,15 +429,15 @@ while test $# -gt 0; do
     --opts=*)
       if test "x$arg" = "x"; then
         usage
-        echo "ERROR: Parameter for --opts is missing"  >&2
-        echo  >&2
+        echo "ERROR: Parameter for --opts is missing"  > /dev/stderr
+        echo  > /dev/stderr
         exit 1;
       fi
       DUNE_OPTS_FILE=$(canonicalpath $arg)/$(basename $arg)
       if ! test -r "$DUNE_OPTS_FILE"; then
         usage
-        echo "ERROR: could not read opts file \"$DUNE_OPTS_FILE\""  >&2
-        echo  >&2
+        echo "ERROR: could not read opts file \"$DUNE_OPTS_FILE\""  > /dev/stderr
+        echo  > /dev/stderr
         exit 1;
       fi
     ;;
@@ -439,7 +448,7 @@ while test $# -gt 0; do
         export ${COMMAND}_FLAGS="$arg"
       else
         usage
-        echo "ERROR: unknown option \"$option\""  >&2
+        echo "ERROR: unknown option \"$option\""  > /dev/stderr
         exit 1
       fi
     ;;
@@ -454,8 +463,8 @@ while test $# -gt 0; do
     --module=*)
       if test "x$arg" = "x"; then
         usage
-        echo "ERROR: Parameter for --module is missing"  >&2
-        echo  >&2
+        echo "ERROR: Parameter for --module is missing"  > /dev/stderr
+        echo  > /dev/stderr
         exit 1;
       fi
 	  for a in `echo $arg | tr ',' ' '`; do
@@ -467,8 +476,8 @@ while test $# -gt 0; do
     --only=*)
       if test "x$arg" = "x"; then
         usage
-        echo "ERROR: Parameter for --only is missing"  >&2
-        echo  >&2
+        echo "ERROR: Parameter for --only is missing"  > /dev/stderr
+        echo  > /dev/stderr
         exit 1;
       fi
 	  for a in `echo $arg | tr ',' ' '`; do
@@ -481,8 +490,8 @@ while test $# -gt 0; do
     --debug) true ;;
     --*)
       usage
-      echo "ERROR: Unknown option \`$option'"  >&2
-      echo  >&2
+      echo "ERROR: Unknown option \`$option'"  > /dev/stderr
+      echo  > /dev/stderr
 	  exit 1
       ;;
     *)
@@ -510,7 +519,7 @@ case "$command" in
   print)
     create_module_list
     eval "print_module_list ' ' $MODULES"
-    echo >&2
+    echo > /dev/stderr
     ;;
   m4depends)
     find_modules_in_path
@@ -635,7 +644,7 @@ EOF
       echo "--- done ---"
 	else
       usage
-      echo "ERROR: unknown command \"$command\""  >&2
+      echo "ERROR: unknown command \"$command\""  > /dev/stderr
       exit 1
     fi
     ;;
