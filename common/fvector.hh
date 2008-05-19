@@ -30,7 +30,7 @@ namespace Dune {
    */
 
   // forward declaration of template
-  template<class K, int n> class FieldVector;
+  template<class K, int SIZE> class FieldVector;
 
 #endif
 
@@ -302,7 +302,7 @@ namespace Dune {
 #else
   /** \brief Construct a vector space out of a tensor product of fields.
 
-         K is the field type (use float, double, complex, etc) and n
+         K is the field type (use float, double, complex, etc) and SIZE
          is the number of components.
 
          It is generally assumed that K is a numerical type compatible with double
@@ -928,6 +928,16 @@ namespace Dune {
       p += a*y.p;
       return *this;
     }
+
+#ifndef DUNE_EXPRESSIONTEMPLATES
+    //===== Euclidean scalar product
+
+    //! scalar product
+    inline K operator* ( const FieldVector &y ) const
+    {
+      return p * y[ 0 ];
+    }
+#endif
 
     //===== norms
 
