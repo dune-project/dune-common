@@ -1,7 +1,7 @@
-# $Id: Makefile.am 5198 2008-05-15 16:13:23Z christi $
+# $Id$
 
 # we need the module file to be able to build via dunecontrol
-EXTRA_DIST=dune.module dune-common.m4
+EXTRA_DIST=dune.module
 
 # don't follow the full GNU-standard
 # need automake >= 1.5
