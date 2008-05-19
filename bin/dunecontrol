@@ -255,7 +255,7 @@ run_default_update () {
 run_default_autogen () {
   PARAMS="$CMD_PARAMS"
   local M4_PATH=""
-  if test -x autogen.sh; then
+  if test -d .svn || test -d .git || test -d CVS || test -f stamp-vc; then
     for m in $FOUND_MODULES; do
       path=$(eval "echo \$PATH_$m")
       MODULE_PATHS="$MODULE_PATHS$path "
@@ -265,8 +265,9 @@ run_default_autogen () {
 		  >&2
 	  echo "         dune-autogen is used instead." >&2
     fi
-#    eval ./autogen.sh "$M4_PATH" "$PARAMS" || exit 1
     eval "$COMMAND_DIR/dune-autogen" "$MODULE_PATHS" "$PARAMS" || exit 1
+  else
+	echo Skipping dune-autogen
   fi
 }
 
@@ -312,10 +313,13 @@ run_default_make () {
 }
 
 run_default_all () {
+  eval echo "--- calling autogen for \$NAME_${module} ---"
   load_opts autogen
   run_autogen
+  eval echo "--- calling configure for \$NAME_${module} ---"
   load_opts configure
   run_configure
+  eval echo "--- calling make for \$NAME_${module} ---"
   load_opts make
   run_make
 }
@@ -556,6 +560,8 @@ case "$command" in
 	name=`eval echo \\${NAME_$mainmod}`
 	version=`eval echo \\${VERS_$mainmod}`
 	maintainer=`eval echo \\${MAIN_$mainmod}`
+	# ensure a version number
+	if test "x$version" = "x"; then version="0.0"; fi
 	echo "writing $fname"
 	echo "    for $name $version $maintainer"
 	cat > $fname <<EOF
