@@ -6,6 +6,7 @@ if BUILD_DOCS
   # EXTRAINSTALL in the html subdirectory
   DOXYGENHTMLFILES = *.html *.css *.png *.gif
 #  DOXYGENDISTFILES = html html/*.html html/*.css html/*.png html/*.gif doxygen-tag
+  DOXYGENDISTFILES = 
   DOXYGENINSTALL = $(DOXYGENHTMLFILES) ../doxygen.log
 endif
 
@@ -77,9 +78,9 @@ web-install-doxygen:
           EXTRAINSTALL="$(DOXYGENINSTALL)" CURDIR="$(CURDIR)/@DUNE_MOD_NAME@-html" install ; \
 	  popd; \
 	fi
-
-web-install: web-install-doxygen
 endif
+
+web-install: web-install-doxygen web-install-default
 
 clean-local: clean-doxygen
 

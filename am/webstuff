@@ -11,12 +11,14 @@
 
 # pass files through wrapper
 # pass variables to wmlwrap via environment
+if WML
+
 .wml.html:
 	export DUNEWEBDIR=$(DUNEWEBDIR); \
 	export BASEDIR=$(BASEDIR); \
 	sh $(DUNE_COMMON_ROOT)/bin/wmlwrap -I $(srcdir) $< -o $@
 
-web-install: all
+web-install-default: all
 	if test -d $(DUNEWEBDIR) && test -r $(DUNEWEBDIR)/Make.global ; then \
 	  for DIR in $(SUBDIRS) ; do \
 	    $(MAKE) -C $$DIR web-install || exit 1; \
@@ -24,3 +26,7 @@ web-install: all
 	  $(MAKE) -f $(DUNEWEBDIR)/Make.global \
             EXTRAINSTALL="$(EXTRAINSTALL)" CURDIR="$(CURDIR)" install ; \
 	fi
+
+endif
+
+web-install: web-install-default
