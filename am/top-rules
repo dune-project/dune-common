@@ -1,6 +1,6 @@
 # -*-makefile-*-
 
-ACLOCAL_AMFLAGS=-I.
+ACLOCAL_AMFLAGS=-I .
 DUNECONTROL=@DUNE_COMMON_ROOT@/bin/dunecontrol
 
 all-am: dependencies.m4
