@@ -265,43 +265,6 @@ AC_DEFUN([DUNE_SUBGRID_CHECK_MODULE],
 ])
 AC_DEFUN([DUNE_SUBGRID_CHECKS])
 
-AC_DEFUN([_DUNE_CALL_CHECK],
-[
-  [# checks for module] $1
-  m4_syscmd(test -n "$1" \
-    && echo "        ... adding check for $1" > /dev/stderr)
-  m4_pushdef([_dune_name], [$1])
-  m4_pushdef([_dune_module], [m4_translit(_dune_name, [-], [_])])
-  m4_pushdef([_DUNE_MODULE], [m4_toupper(_dune_module)])
-  # invoke checks required by this module
-  AC_REQUIRE(_DUNE_MODULE[]_CHECKS)
-  # invoke check for this module
-  AC_REQUIRE(_DUNE_MODULE[]_CHECK_MODULE)
-  if test x$with_[]_dune_module = xno; then
-    ifelse($2,[DEP], AC_MSG_ERROR([could not find required module _dune_name]),
-		AC_MSG_WARN([could not find suggested module _dune_name]))
-  fi
-  m4_popdef([_dune_name])
-  m4_popdef([_dune_module])
-  m4_popdef([_DUNE_MODULE])
-])
-
-AC_DEFUN([_DUNE_MODULE_DEPENDENCIES],[
-  ifelse($1,[], , $#, 1, [_DUNE_CALL_CHECK($1,[DEP])], [_DUNE_CALL_CHECK($1[],[DEP]) _DUNE_MODULE_DEPENDENCIES(m4_shift($@))])
-])
-
-AC_DEFUN([DUNE_MODULE_DEPENDENCIES],[
-   m4_syscmd(echo "   dune.m4: getting dependencies for $@" > /dev/stderr)
-   _DUNE_MODULE_DEPENDENCIES(m4_esyscmd(dunecontrol --only=$@ m4depends))])
-
-AC_DEFUN([_DUNE_MODULE_SUGGESTIONS],[
-  ifelse($1,[], , $#, 1, [_DUNE_CALL_CHECK($1,[SUG])], [_DUNE_CALL_CHECK($1[],[SUG]) _DUNE_MODULE_DEPENDENCIES(m4_shift($@))])
-])
-
-AC_DEFUN([DUNE_MODULE_SUGGESTIONS],[
-   m4_syscmd(echo "   dune.m4: getting suggestions for $@" > /dev/stderr)
-   _DUNE_MODULE_SUGGESTIONS(m4_esyscmd(dunecontrol --only=$@ m4suggests))])
-
 AC_DEFUN([DUNE_DEV_MODE],[
   AC_ARG_ENABLE(dunedevel,
     AC_HELP_STRING([--enable-dunedevel],[activate Dune-Developer-mode]))
