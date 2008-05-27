@@ -1,4 +1,4 @@
-# $Id: dune_all.m4 5164 2008-04-21 14:08:28Z christi $
+# $Id$
 
 # this meta-check calls everything needed for Dune to work and all
 # possible components. Applications should use this so that
@@ -40,6 +40,8 @@ AC_DEFUN([DUNE_CHECK_ALL],[
   AC_SUBST(ALL_PKG_LIBS, "$LIBS $DUNE_PKG_LIBS")
   AC_SUBST(ALL_PKG_LDFLAGS, "$LDFLAGS $DUNE_PKG_LDFLAGS")
   AC_SUBST(ALL_PKG_CPPFLAGS, "$CPPFLAGS $DUNE_PKG_CPPFLAGS")
+
+  AC_SUBST(ACLOCAL_AMFLAGS, "$ACLOCAL_AMFLAGS")
 
   AC_SUBST(am_dir, $DUNE_COMMON_ROOT/am)
 ])
