@@ -61,10 +61,18 @@ canonicalpath(){
   dirname $(canonicalname "$1")
 }
 
-if test "x$1" = "x--debug"; then
-  DEBUG=yes
-fi
+checkdebug () {
+  while test $# -gt 0; do
+    if test x$1 = x--debug; then
+      echo yes
+      return
+    fi
+    shift
+  done
+  echo no
+}
 
+DEBUG=`checkdebug $@`
 if test "x$DEBUG" = "xyes"; then
   set -x
   set -v
@@ -87,7 +95,7 @@ export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:`canonicalpath $0`/../lib/pkgconfig"
 # $1 command to execute
 #
 build_modules() {
-  command="$1"
+  local command="$1"
   shift
   load_opts $command
   local runcommand=run_$command
@@ -274,27 +282,19 @@ run_default_autogen () {
 run_default_configure () {
   PARAMS="$CMD_PARAMS"
   if test -x configure; then
-    if test "x$HAVE_dune_common" = "xyes"; then
-      PARAMS="$PARAMS \"--with-dune-common=$PATH_dune_common\""
-    fi
-    if test "x$HAVE_dune_grid" = "xyes"; then
-      PARAMS="$PARAMS \"--with-dune-grid=$PATH_dune_grid\""
-    fi
-    if test "x$HAVE_dune_istl" = "xyes"; then
-      PARAMS="$PARAMS \"--with-dune-istl=$PATH_dune_istl\""
-    fi
-    if test "x$HAVE_dune_disc" = "xyes"; then
-      PARAMS="$PARAMS \"--with-dune-disc=$PATH_dune_disc\""
-    fi
-    if test "x$HAVE_dune_fem" = "xyes"; then
-      PARAMS="$PARAMS \"--with-dune-fem=$PATH_dune_fem\""
-    fi
-    if test "x$HAVE_dune_subgrid" = "xyes"; then
-      PARAMS="$PARAMS \"--with-dune-subgrid=$PATH_dune_subgrid\""
-    fi
-    if test "x$HAVE_duneweb" = "xyes"; then
-      PARAMS="$PARAMS \"--with-duneweb=$PATH_duneweb\""
-    fi
+	ACLOCAL_FLAGS="-I ."
+	for m in $FOUND_MODULES; do
+      path=$(eval "echo \$PATH_$m")
+      name=$(eval "echo \$NAME_$m")
+      if test -d "$path/m4"; then
+          ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $path/m4"
+      fi
+      if test -d "$path/share/aclocal"; then
+          ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $path/share/aclocal"
+      fi
+	  PARAMS="$PARAMS \"--with-$name=$path\""
+	done
+	PARAMS="$PARAMS ACLOCAL_AMFLAGS=\"$ACLOCAL_FLAGS\""
     echo ./configure "$PARAMS"
     eval ./configure "$PARAMS" || exit 1
   else
@@ -313,15 +313,11 @@ run_default_make () {
 }
 
 run_default_all () {
-  eval echo "--- calling autogen for \$NAME_${module} ---"
-  load_opts autogen
-  run_autogen
-  eval echo "--- calling configure for \$NAME_${module} ---"
-  load_opts configure
-  run_configure
-  eval echo "--- calling make for \$NAME_${module} ---"
-  load_opts make
-  run_make
+  for cmd in autogen configure make; do
+    eval echo "--- calling $cmd for \$NAME_${module} ---"
+    load_opts $cmd
+    run_$cmd
+  done
 }
 
 run_default_svn () {
@@ -507,7 +503,7 @@ while test $# -gt 0; do
       export ONLY="$ONLY $MODULE"
       export HAVE_${module}=
     ;;
-    --debug) true ;;
+    --debug) true ;; # ignore this option, it is handled right at the beginning
     --*)
       usage
       echo "ERROR: Unknown option \`$option'"  >&2
