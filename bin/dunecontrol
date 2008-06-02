@@ -263,7 +263,8 @@ run_default_update () {
 run_default_autogen () {
   PARAMS="$CMD_PARAMS"
   local M4_PATH=""
-  if test -d .svn || test -d .git || test -d CVS || test -f stamp-vc; then
+  if test -f configure.ac && \
+     ( test -d .svn || test -d .git || test -d CVS || test -f stamp-vc ); then
     for m in $FOUND_MODULES; do
       path=$(eval "echo \$PATH_$m")
       MODULE_PATHS="$MODULE_PATHS$path "
@@ -275,7 +276,7 @@ run_default_autogen () {
     fi
     eval "$COMMAND_DIR/dune-autogen" "$MODULE_PATHS" "$PARAMS" || exit 1
   else
-	echo Skipping dune-autogen
+    echo Skipping dune-autogen
   fi
 }
 
