@@ -12,7 +12,7 @@ endif
 
 DISTCLEANFILES = doxygen.log doxygen-tag
 
-if MAKEDIST
+if DUNEWEB
 if WML
   # themeing doxygen
   DOXYGENHEADER = doxy-header.html
