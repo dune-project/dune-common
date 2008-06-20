@@ -3,7 +3,7 @@
 #ifndef DUNE_LCM_HH
 #define DUNE_LCM_HH
 
-#include <dune/common/helpertemplates.hh>
+#include <dune/common/static_assert.hh>
 #include <dune/common/gcd.hh>
 
 namespace Dune
@@ -27,8 +27,8 @@ namespace Dune
   {
     static void conceptCheck()
     {
-      IsTrue<0<m>::yes();
-      IsTrue<0<n>::yes();
+      dune_static_assert(0<m, "m must be positive!");
+      dune_static_assert(0<n, "n must be positive!");
     }
     /**
      * @brief The least common multiple of the template parameters

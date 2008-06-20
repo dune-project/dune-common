@@ -3,7 +3,7 @@
 #ifndef DUNE_GCD_HH
 #define DUNE_GCD_HH
 
-#include "helpertemplates.hh"
+#include "static_assert.hh"
 namespace Dune
 {
   /**
@@ -32,8 +32,8 @@ namespace Dune
      */
     static void conceptCheck()
     {
-      IsTrue<b<a>::yes();
-      IsTrue<0<b>::yes();
+      dune_static_assert(b<a, "b<a must hold!");
+      dune_static_assert(0<b, "b must be positive");
     }
 
 

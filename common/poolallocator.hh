@@ -5,7 +5,7 @@
 #define DUNE_COMMON_POOLALLOCATOR_HH
 
 #include "alignment.hh"
-#include "helpertemplates.hh"
+#include "static_assert.hh"
 #include "lcm.hh"
 #include <typeinfo>
 #include <iostream>
@@ -439,14 +439,14 @@ namespace Dune
   inline Pool<T,S>::Pool()
     : head_(0), chunks_(0), allocated_(0)
   {
-    IsTrue<sizeof(T)<=unionSize>::yes();
-    IsTrue<sizeof(Reference)<=unionSize>::yes();
-    IsTrue<unionSize<=alignedSize>::yes();
-    IsTrue<sizeof(T)<=chunkSize>::yes();
-    IsTrue<sizeof(Reference)<=chunkSize>::yes();
-    IsTrue<(chunkSize - (alignment - 1)) % alignment == 0>::yes();
-    IsTrue<elements>=1>::yes();
-    IsTrue<elements*alignedSize<=chunkSize>::yes();
+    dune_static_assert(sizeof(T)<=unionSize, "Library Error: type T is too big");
+    dune_static_assert(sizeof(Reference)<=unionSize, "Library Error: type of referene is too big");
+    dune_static_assert(unionSize<=alignedSize, "Library Error: alignedSize too small");
+    dune_static_assert(sizeof(T)<=chunkSize, "Library Error: chunkSize must be able to hold at least one value");
+    dune_static_assert(sizeof(Reference)<=chunkSize, "Library Error: chunkSize must be able to hold at least one reference");
+    dune_static_assert((chunkSize - (alignment - 1)) % alignment == 0, "Library Error: compiler cannot calculate!");
+    dune_static_assert(elements>=1, "Library Error: we need to hold at least one element!");
+    dune_static_assert(elements*alignedSize<=chunkSize, "Library Error: aligned elements must fit into chuck!");
   }
 
   template<class T, std::size_t S>

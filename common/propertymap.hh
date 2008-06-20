@@ -5,7 +5,7 @@
 #define DUNE_PROPERTYMAP_HH
 
 #include <cstddef>
-#include "helpertemplates.hh"
+#include "static_assert.hh"
 #include "typetraits.hh"
 
 namespace Dune
@@ -91,8 +91,8 @@ namespace Dune
   put(const RAPropertyMapHelper<Reference,PropertyMap>& pmap,
       const Key& key, const Value& value)
   {
-    IsTrue<Conversion<typename PropertyMap::Category,WritablePropertyMapTag>
-        ::exists>::yes();
+    dune_static_assert((Conversion<typename PropertyMap::Category,WritablePropertyMapTag>
+                        ::exists), "WritablePropertyMapTag required!");
     static_cast<const PropertyMap&>(pmap)[key] = value;
   }
 
@@ -146,7 +146,7 @@ namespace Dune
      * to the difference_type of the iterator.
      */
     inline IteratorPropertyMap(RandomAccessIterator iter,
-                               const IndexMap& im)
+                               const IndexMap& im=IndexMap())
       : iter_(iter), indexMap_(im)
     {}
 
