@@ -683,13 +683,43 @@ namespace Dune {
     K p[(SIZE > 0) ? SIZE : 1];
   };
 
-  //! Send vector to output stream
+  /** \brief Write a FieldVector to an output stream
+   *  \relates FieldVector
+   *
+   *  \param[in]  s  std :: ostream to write to
+   *  \param[in]  v  FieldVector to write
+   *
+   *  \returns the output stream (s)
+   */
   template<typename K, int n>
   std::ostream& operator<< (std::ostream& s, const FieldVector<K,n>& v)
   {
     for (typename FieldVector<K,n>::size_type i=0; i<n; i++)
       s << ((i>0) ? " " : "") << v[i];
     return s;
+  }
+
+  /** \brief Read a FieldVector from an input stream
+   *  \relates FieldVector
+   *
+   *  \note This operator is STL compilant, i.e., the content of v is only
+   *        changed if the read operation is successful.
+   *
+   *  \param[in]  in  std :: istream to read from
+   *  \param[out] v   FieldVector to be read
+   *
+   *  \returns the input stream (in)
+   */
+  template< class K, int SIZE >
+  inline std :: istream &operator>> ( std :: istream &in,
+                                      FieldVector< K, SIZE > &v )
+  {
+    FieldVector< K, SIZE > w;
+    for( typename FieldVector< K, SIZE > :: size_type i = 0; i < SIZE; ++i )
+      in >> w[ i ];
+    if( in )
+      v = w;
+    return in;
   }
 
 
