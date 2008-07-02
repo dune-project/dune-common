@@ -397,9 +397,11 @@ int main()
 
   double& d = lbegin.dereference();
 
-  d= 2.0;
+  d=2.0;
 
   double& d1 = lbegin.dereference();
+
+  d1=3.0;
 
   lbegin.dereference()=5.0;
 
