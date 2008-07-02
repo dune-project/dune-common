@@ -19,10 +19,10 @@ int test_invert_solve(T A_data[n*n], T inv_data[n*n],
   FieldMatrix<T,n,n> A, inv, calced_inv;
   FieldVector<T,n> x, b, calced_x;
 
-  for(int i =0; i < n; ++i) {
+  for(size_t i =0; i < n; ++i) {
     x[i]=x_data[i];
     b[i]=b_data[i];
-    for(int j=0; j <n; ++j) {
+    for(size_t j=0; j <n; ++j) {
       A[i][j] = A_data[i*n+j];
       inv[i][j] = inv_data[i*n+j];
     }
@@ -33,7 +33,7 @@ int test_invert_solve(T A_data[n*n], T inv_data[n*n],
   // Check whether given inverse is correct
   FieldMatrix<T,n,n> prod = A;
   prod.rightmultiply(inv);
-  for (int i=0; i<n; i++)
+  for (size_t i=0; i<n; i++)
     prod[i][i] -= 1;
 
   bool equal=true;
@@ -50,8 +50,8 @@ int test_invert_solve(T A_data[n*n], T inv_data[n*n],
 
 
   double singthres = FMatrixPrecision<>::singular_limit()*10;
-  for(int i =0; i < n; ++i)
-    for(int j=0; j <n; ++j)
+  for(size_t i =0; i < n; ++i)
+    for(size_t j=0; j <n; ++j)
       if(std::abs(A[i][j])>singthres) {
         std::cerr<<"calculated inverse wrong at ("<<i<<","<<j<<")"<<std::endl;
         equal=false;
@@ -85,7 +85,7 @@ int test_invert_solve(T A_data[n*n], T inv_data[n*n],
 
   equal=true;
 
-  for(int i =0; i < n; ++i)
+  for(size_t i =0; i < n; ++i)
     if(std::abs(xcopy[i])>singthres) {
       std::cerr<<"calculated isolution wrong at ("<<i<<")"<<std::endl;
       equal=false;
