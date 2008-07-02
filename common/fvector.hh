@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <cstdlib>
 #include <complex>
 
 #include "exceptions.hh"
