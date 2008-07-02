@@ -103,5 +103,4 @@ AC_DEFUN([DUNE_CHECK_ALL_M],[
   AC_SUBST(revision, $with_revision)
 
   AC_REQUIRE([DUNE_CHECK_ALL])
-  AC_REQUIRE([DUNE_DEV_MODE])
 ])
