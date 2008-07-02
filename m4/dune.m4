@@ -17,18 +17,6 @@ AC_DEFUN([DUNE_DISABLE_LIBCHECK],[
   AC_ARG_ENABLE(dunelibcheck,[],,enable_dunelibcheck=yes)
 ])
 
-AC_DEFUN([DUNE_PKG_CONFIG_REQUIRES],[
-  AC_MSG_CHECKING([$PACKAGE_NAME requirements])
-  REQUIRES="`grep ^Depends: $srcdir/dune.module | cut -d ':' -f 2`" \
-    || failure=yes
-  if test x$failure = xyes; then
-    AC_MSG_RESULT([Failure])
-    AC_MSG_ERROR([Could not determine requirements for $PACKAGE_NAME])
-  fi
-  AC_MSG_RESULT([$REQUIRES])
-  AC_SUBST(REQUIRES, [$REQUIRES])
-])
-
 AC_DEFUN([DUNE_MODULE_ADD_SUMMARY_ENTRY],[
   m4_pushdef([_dune_name], [$1])
   m4_pushdef([_dune_module], [m4_translit(_dune_name, [-], [_])])
