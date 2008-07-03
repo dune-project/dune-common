@@ -417,6 +417,9 @@ AUTOMAKE_OPTIONS = foreign 1.5
 DISTCHECK_CONFIGURE_FLAGS = --with-dune=\$(DUNEROOT) CXX="\$(CXX)" CC="\$(CC)"
 M_DELIM
 
+################## STAMP-VC ##################
+touch $PROJECT/stamp-vc
+
 ################## PROJECT.CC ##################
 cat> "$PROJECT/$CMODULE.cc" << CC_DELIM
 #ifdef HAVE_CONFIG_H
