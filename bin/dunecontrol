@@ -300,8 +300,12 @@ run_default_configure () {
     eval ./configure "$PARAMS" || exit 1
   else
     if test -f configure.in || test -f configure.ac; then
-      echo "ERROR: configure.[in|ac] found, but configure missing" >&2
-      echo "did you forget to run autoconf?" >&2
+      echo "ERROR: configure.[in|ac] found, but configure missing." >&2
+      echo "Did you forget to run autoconf?" >&2
+      echo "Perhaps you didn't update your project to" >&2
+      echo "the latest buildsystem changes (FS#382)." >&2
+      echo "If your project is under version control, please make sure" >&2
+      echo "you have a file stamp-vc in you top_srcdir." >&2
       exit 1
     fi
   fi
