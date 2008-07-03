@@ -87,18 +87,24 @@ namespace Dune {
    */
   class Exception {
   public:
-    void message(std::string message); //!< store string in internal message buffer
-
-    std::string what() { return _message; }; //!< output internal message buffer
+    void message(const std::string &message); //!< store string in internal message buffer
+    const std::string& what() const;        //!< output internal message buffer
   private:
     std::string _message;
   };
 
-  inline void Exception::message(std::string message) {
+  inline void Exception::message(const std::string &message)
+  {
     _message = message;
   }
 
-  inline std::ostream& operator<<(std::ostream &stream, Exception &e) {
+  inline const std::string& Exception::what() const
+  {
+    return _message;
+  }
+
+  inline std::ostream& operator<<(std::ostream &stream, const Exception &e)
+  {
     return stream << e.what();
   }
 
