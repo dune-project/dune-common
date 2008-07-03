@@ -584,6 +584,16 @@ AC_DEFUN([DUNE_CHECK_MOD_DEPENDENCIES], [
   AC_PROG_CXX
   LT_OUTPUT
 EOF
+    ### initialize AM_CONDITIONAL for suggestions
+    for name in $(eval echo \$SUGS_$mainmod); do
+      mod=$(fix_variable_name $name)
+	  MOD=`echo $mod | tr [:lower:] [:upper:]`
+      cat >> $fname <<EOF
+  ### add a conditional check for $name,
+  # just in case the module is not available at autogen time
+  AM_CONDITIONAL([HAVE_${MOD}], false)
+EOF
+    done
 	### DEPENDENCIES
     if test "x$SEARCH_MODULES" != "x"; then
 	  MODULES=$SEARCH_MODULES
