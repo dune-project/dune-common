@@ -16,6 +16,7 @@ name=`grep '^Module:' dune.module | cut -d ':' -f 2 | sed -e 's/ //g'`
 
 ## dune-all.m4
 rm -f dune-all.m4
+rm -f $name.m4
 
 # add current dir to PATH
 PATH=`dirname $0`:$PATH
