@@ -620,6 +620,8 @@ EOF
 	  MOD=`echo $mod | tr [:lower:] [:upper:]`
 	  cat >> $fname <<EOF
   ### check suggestion $name
+  # add a conditional check, just in case the module is not available
+  AM_CONDITIONAL([HAVE_${MOD}])
   # invoke checks required by this module
   AC_REQUIRE([${MOD}_CHECKS])
   # invoke check for this module
