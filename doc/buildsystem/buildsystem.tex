@@ -1,4 +1,5 @@
 \documentclass[11pt,a4paper,headinclude,footinclude,DIV16,normalheadings]{scrartcl}
+\usepackage[today,nofancy]{svninfo}
 \usepackage[automark]{scrpage2}
 \usepackage[ansinew]{inputenc}
 %\usepackage{german}
@@ -6,14 +7,13 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{theorem}
+\usepackage{pst-all}
 \usepackage{color}
 \usepackage{listings}
 \lstset{language=bash, basicstyle=\normalfont\ttfamily\scriptsize,
   keywordstyle=\color{black}\bfseries, tabsize=4,
   stringstyle=\ttfamily, commentstyle=\it, extendedchars=true}
 \usepackage{hyperref}
-\usepackage{psfrag}
-\usepackage{pstricks}
 \usepackage{makeidx}
 \usepackage{xspace}
 
@@ -24,7 +24,7 @@
 \newcommand{\dune}{\texttt{DUNE}\xspace}
 \newcommand{\autoconf}{\texttt{autoconf}\xspace}
 \newcommand{\automake}{\texttt{automake}\xspace}
-\newcommand{\autogen}{\texttt{autogen.sh}\xspace}
+\newcommand{\autogen}{\texttt{dune-autogen}\xspace}
 \newcommand{\libtool}{\texttt{libtool}\xspace}
 \newcommand{\configure}{\texttt{configure}\xspace}
 \newcommand{\configureac}{\texttt{configure.ac}\xspace}
@@ -38,6 +38,7 @@
 \newcommand{\dunecontrol}{\texttt{dunecontrol}\xspace}
 \newcommand{\dunemodule}{\texttt{dune.module}\xspace}
 \newcommand{\make}{\texttt{make}\xspace}
+\newcommand{\topsrc}{\$(top\_srcdir)}
 
 \pagestyle{scrheadings}
 
@@ -45,7 +46,7 @@
 
 \author{Christian Engwer$^\ast$}
 
-\date{\today}
+\date{\svnToday}
 
 \publishers{%
 {\normalsize $^\ast$Interdisziplinäres Zentrum für Wissenschaftliches Rechnen,
@@ -154,7 +155,7 @@ additional features, not provided by the standard \automake (see
 \ref{am_includes}). The \texttt{am} directory is in the \dunecommon
 module and each module intending to use one of these includes has to
 create symlink; this is usually done by \autogen (see
-\ref{autogen.sh}).
+\ref{autogen}).
 
 \begin{center}
 \psset{unit=0.5mm}
@@ -440,22 +441,30 @@ and transformed into a shell script.
 We offer a set of macros that can be used in your \configureac:
 
 \begin{itemize}
-\item \texttt{DUNE\_CHECK\_ALL\_M}
-  runs all checks usually needed by a {\em \dune module}.
-  This macros takes list of other \dune modules it should search for
-  as parameters.
-\begin{lstlisting}[language=make]
-DUNE_CHECK_ALL_M([dunecommon], [dunegrid])
-\end{lstlisting}
-  will search for \texttt{dune-common} and \texttt{dune-grid}
-  (Attention: you have to provide the modules in such an order that
-  the dependencies are checked already).
 \item \texttt{DUNE\_CHECK\_ALL}
-  same as \texttt{DUNE\_CHECK\_ALL\_M}, except that it only runs the
-  tests needed for a {\em \dune application}
+  runs all checks usually needed by a {\em \dune module}.
+  It checks for all dependencies and suggestions and for their
+  prerequisites.
+  In order to make the dependencies knwon to \configure \autogen calls
+  \texttt{dunecontrol m4create} and write a file
+  \texttt{dependencies.m4}.
+\item \texttt{DUNE\_SYMLINK}
+  creates symlink \texttt{\$(top\_srcdir)/dune} $\rightarrow$
+  \texttt{\$(top\_srcdir)}. The programming guidelines (\ref{guidelines})
+  require that the include statements be like \texttt{\#include
+    <dune/...>}. If your module has a directory structure
+  \texttt{\topsrc/foo}, you will need such a link. However, you are
+  encouraged to store the files directly in a directory structure
+  \texttt{\topsrc/dune/foo} in order to avoid any inconvience when
+  copying the files. This will also eliminate the necessity for
+  \texttt{DUNE\_SYMLINK}.
+\item \texttt{DUNE\_AUTOBUILD\_FLAGS}
+  adds configure flags needed to create log files for
+  \texttt{dune-autobuild}. If you want to add your module to the
+  \texttt{dune-autobuild} system, you have to call this macro.
 \item \texttt{DUNE\_SUMMARY\_ALL}
   prints information on the results of all major checks run by
-  \texttt{DUNE\_CHECK\_ALL} or \texttt{DUNE\_CHECK\_ALL\_M}.
+  \texttt{DUNE\_CHECK\_ALL}.
 \end{itemize}
 
 \texttt{DUNE\_CHECK\_ALL} and \texttt{DUNE\_CHECK\_ALL\_M} define certain
@@ -485,8 +494,8 @@ AC_CONFIG_FILES([Makefile.in doc/Makefile.in])
 After you told \autoconf which files to create you have to actually
 trigger their creation with command \texttt{AC\_OUTPUT}
 
-\subsection{autogen.sh}
-\label{autogen.sh}
+\subsection{dune-autogen}
+\label{autogen}
 
 The \autogen script is used to bring the freshly checked out module
 into that state that you expect from a module received via the
@@ -495,6 +504,8 @@ tarball. That means it runs all necessary stepts so that you can call
 \autogen runs
 \begin{itemize}
 \item \texttt{libtoolize} (prepare the module for \libtool)
+\item \texttt{dunecontrol m4create} (create an m4 file containing the
+  dependencies of this module)
 \item \texttt{aclocal} (collect all \autoconf macros needed for this module)
 \item \texttt{autoheader} (create the \texttt{config.h.in})
 \item \texttt{automake} (create the \makefilein)
@@ -503,6 +514,53 @@ tarball. That means it runs all necessary stepts so that you can call
 
 If needed it will also create the symbolic link to the
 \texttt{dune-common/am/} directory (see \ref{am_includes}).
+
+\subsection{m4 files}
+\label{m4files}
+
+\texttt{m4} files contain macros which are then composed into
+\configure and are run during execution of \configure.
+
+\minisec{private m4 macros}
+
+You can add new tests to configure by providing additional macro files
+in the directory \texttt{module/m4/}.
+
+\minisec{dependencies.m4}
+
+\texttt{\topsrc/dependencies.m4} hold all information about the
+dependencies and suggestions of this module. It is an automatically
+generated file. It is generated by \texttt{dunecontrol m4create}.
+
+For each dependencies of your module \texttt{\emph{MODULE}\_CHECKS}
+and \texttt{\emph{MODULE}\_CHECK\_MODULE} is called. Last
+\texttt{\emph{MODULE}\_CHECKS} is called for your module, in order to
+check all prerequisites for your module.
+
+What you just read implies that you have to provide the two macros
+\texttt{\emph{MODULE}\_CHECKS} and
+\texttt{\emph{MODULE}\_CHECK\_MODULE} for your module. These should be
+written to a \texttt{m4/*.m4} file.
+
+Here follows an example for the module \texttt{dune-foo}:
+
+\begin{lstlisting}
+AC_DEFUN([DUNE_FOO_CHECKS])
+AC_DEFUN([DUNE_FOO_CHECK_MODULE],[
+  DUNE_CHECK_MODULES([dune-foo],        dnl module name
+                     [foo/foo.hh],      dnl header file
+                     [Dune::FooFnkt])   dnl symbol in libdunefoo
+])
+\end{lstlisting}
+
+The first one calls all checks required to make use of
+\texttt{dune-foo}. The dependency checks are not to be included, they
+are run automatically. The second macro tells how to check for your
+module. In case you are only writing an application and don't want to
+make this module available to other modules, you can just leave it
+empty. If you have to provide some way to find your module. The
+easiest is to use the \texttt{DUNE\_CHECK\_MODULES} macro, which is
+defined in \texttt{dune-common/m4/dune.m4}.
 
 \subsection{dunecontrol}
 \label{dunecontrol}
@@ -576,6 +634,11 @@ you will get a warning.
 You can further control the behavior of \dunecontrol by certain
 environment variables.
 \begin{itemize}
+\item \texttt{DUNE\_CONTROL\_PATH} specifies the paths, where
+  \dunecontrol is searcing for modules. All entries have to be colon
+  seperated and should point to either a directory (which is search
+  recursively for \texttt{dune.module} files) or a directly
+  \texttt{dune.module} file.
 \item \texttt{DUNE\_OPTS\_FILE} specifies the opts file that should be
   read by dunecontrol. This variable will be overwritten by the
   \texttt{--opts=} option.
@@ -609,7 +672,7 @@ run_configure () {
     PARAMS="$PARAMS \"--with-alberta=$PATH_Alberta\""
   fi  
   if test "x$HAVE_Alu3d" == "xyes"; then
-    PARAMS="$PARAMS \"--with-alberta=$PATH_Alu3d\""
+    PARAMS="$PARAMS \"--with-alugrid=$PATH_Alu3d\""
   fi
   # call the default implementation
   run_default_configure
@@ -641,26 +704,42 @@ you can add these to \texttt{\$PARAMS} and then call the default
 implementation of the command via
 \texttt{run\_default\_\textit{command}}.
 
-\section{Creating a new Dune module}
+\section{Creating a new Dune project}
+
+From a buildsystem point of view there is no difference between a \dune
+application and a \dune module.
 
 \dune modules are packages that offer a certain functionality that can
-be used by \dune applications. Therefor \dune modules offer libraries
-and/or header files.
+be used by \dune applications. Therefore \dune modules offer libraries
+and/or header files. A \dune module needs to comply to a certain rules
+(see \ref{guidelines}).
 
-In order to create new \dune module, you have to provide 
+In order to create new \dune project, you have to provide 
 \begin{itemize}
 \item a \dunemodule file\\
   Usually you will only need to specify the parameters \texttt{Module}
   and \texttt{Depends}.
-\item an \autogen script\\
-  For most of the modules it should be sufficient to copy the \autogen
-  from \dunegrid.
+\item \emph{Note:} an \autogen script is \emph{not} needed any more!
+\item a basic m4 file\\
+  You need to provide two macros \texttt{\emph{MODULE}\_CHECKS}
+  and \texttt{\emph{MODULE}\_CHECK\_MODULE}.
 \item a \configureac file\\
   Have look at the \configureac in \dunegrid for example. The most
-  important part is the call to \texttt{DUNE\_CHECK\_ALL\_M} which
+  important part is the call to \texttt{DUNE\_CHECK\_ALL} which
   runs all checks needed for a \dune module, plus the checks for the
   dependencies.
+\item a basic \texttt{m4} file\\
 \end{itemize}
+
+\emph{Note:} The program \texttt{duneproject} (found in
+\texttt{dune-common/bin}) can assist you in setting up the basic
+buildsystem files for your project. In case you are using unstable
+\dune you should be aware that the buildsystem is a running target,
+just like the source code. Therefore it might be that
+\texttt{duneproject} is not up to date with the latest changes.
+
+\section{Dune module guidelines}
+\label{guidelines}
 
 A \dune module should comply with the following rules:
 \begin{itemize}
@@ -669,119 +748,17 @@ A \dune module should comply with the following rules:
 \item \automake includes are located in \dunecommon. To use them, you
   will have to make a symbolic link to \texttt{dune-common/am/} (see
   \ref{am_includes}). The symlink creation should be handled by the
-  \autogen (see \ref{autogen.sh}).
+  \autogen (see \ref{autogen}).
 \item The \texttt{am/} directory does not get included in the tarball.
 \item Header files that can be used by other \dune modules should be
   accessible via \verb!#include <dune/foo/bar.hh>!. In order to work
   with a freshly checkout version of your module you will usually need
   to create a local symbolic link \texttt{dune ->
     \textit{module-direcotry/}}. This link gets created by the
-  \texttt{DUNE\_CHECK\_ALL\_M} command of your \configureac. When running
+  \texttt{DUNE\_SYMLINK} command in your \configureac. When running
   \texttt{make install} all header files should be installed into
   \texttt{\textit{prefix}/include/dune/}.
 \end{itemize}
-
-\section{Creating a new Dune application}
-
-A \dune application does not differ a lot from a \dune module.
-The only difference is that it does not offer functionality to other
-\dune projects. This make somethings a little bit easier.
-
-In order to create new \dune module, you have to provide 
-\begin{itemize}
-\item a \dunemodule file\\
-  Usually you will only need to specify the parameters \texttt{Module}
-  and \texttt{Depends}.
-\item an \autogen script\\
-  For most of the application the \autogen following further below
-  should be sufficient.
-\item a \configureac file\\
-  The \configureac looks more less the same as for a \dune module
-  except that you call \texttt{DUNE\_CHECK\_ALL} instead of
-  \texttt{DUNE\_CHECK\_ALL\_M}.
-\end{itemize}
-
-\begin{lst}[Example autogen.sh for a \dune application]
-\label{example_autogen.sh}
-\begin{lstlisting}[language=bash]
-
-#!/bin/sh
-
-set -e
-
-usage () {
-    echo "Usage: ./autogen.sh [options]"
-    echo "  --ac=, --acversion=VERSION   use a specific VERSION of autoconf"
-    echo "  --am=, --amversion=VERSION   use a specific VERSION of automake"
-    echo "  -h,    --help                you already found this :-)"
-}
-
-for OPT in "$@"; do
-    set +e
-    # stolen from configure...
-    # when no option is set, this returns an error code
-    arg=`expr "x$OPT" : 'x[^=]*=\(.*\)'`
-    set -e
-
-    case "$OPT" in
-	--ac=*|--acversion=*)
-			if test "x$arg" == "x"; then
-				usage; 
-				exit 1;
-			fi
-			ACVERSION=$arg
-			;;
-	--am=*|--amversion=*)
-			if test "x$arg" == "x"; then
-				usage; 
-				exit 1;
-			fi
-			AMVERSION=$arg
-			;;
-	-h|--help) usage ; exit 0 ;;
-	*)
-            if test -d "$OPT/m4"; then
-              ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $(cd $OPT/m4; pwd)"
-            fi
-            if test -d "$OPT/am"; then
-              am_dir="$OPT/am"
-            fi
-            ;;
-    esac
-done
-
-if test x$1 = "x" ; then
-  usage
-  exit 0
-fi
-
-if test "x$ACLOCAL_FLAGS" = "x"; then
-  echo dune-common/m4 not found. Please supply directory!
-  usage
-  exit 1
-fi
-
-if test -d m4 ; then
-  ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I m4"
-fi
-
-if test "x$AMVERS" != x ; then
-  echo Warning: explicitly using automake version $AMVERS
-  # binaries are called automake-$AMVERS
-  AMVERS="-$AMVERS"
-fi
-
-aclocal$AMVERSION $ACLOCAL_FLAGS
-
-libtoolize --automake --force
-
-autoheader$ACVERSION
-
-automake$AMVERSION --add-missing
-
-autoconf$ACVERSION
-\end{lstlisting}
-\end{lst}
 
 \section{Futher documentation}
 
@@ -817,6 +794,7 @@ version.
 
 \end{document}
 
+%%% Local IspellDict: "american"
 %%% Local Variables: 
 %%% mode: latex
 %%% TeX-master: t
