@@ -11,6 +11,3 @@ include $(top_srcdir)/am/sourcescheck
 
 # add "check-log"-target to create automated build logs
 include $(top_srcdir)/am/checklog
-
-# automaticly update libs
-include $(top_srcdir)/am/update-libs
