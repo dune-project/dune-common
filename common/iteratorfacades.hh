@@ -127,6 +127,10 @@ namespace Dune
   /**
    * @brief Base class for stl conformant forward iterators.
    *
+   * \tparam T The derived class
+   * \tparam V The value type
+   * \tparam R The reference type
+   * \tparam D The type for differences between two iterators
    */
   template<class T, class V, class R = V&, class D = std::ptrdiff_t>
   class ForwardIteratorFacade :
