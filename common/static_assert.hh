@@ -88,7 +88,7 @@ template<int x> struct static_assert_test {};
     Be aware that...
     <ol>
     <li>dune_static_assert is not in the namespace Dune</li>
-    <li>you must use extra brackets, you condition contains ','.
+    <li>you must use extra parentheses if your condition contains ','.
     This is because dune_static_assert is a preprocessor macro</li>
     </ol>
 
