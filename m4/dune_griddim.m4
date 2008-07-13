@@ -5,10 +5,16 @@ AC_DEFUN([DUNE_GRID_DIMENSION],[
 
 # default is disabled 
   AC_ARG_WITH(grid_dim,
-            AC_HELP_STRING([--with-grid-dim=1|2|3],
-          [dimension of grid mainly used to determine grids dimension
-          during compilation (default=disabled)]),, with_grid_dim=0)
-          
+              AC_HELP_STRING([--with-grid-dim=1|2|3],
+                             [dimension of grid; mainly used to determine grid
+                              dimension during compilation (default=disabled)]),
+                              , with_grid_dim=0)
+  AC_ARG_WITH(world_dim,
+              AC_HELP_STRING([-with-world-dim=1|2|3],
+                             [dimension of world; mainly used to determine grid
+                              dimension during compilation (default=grid-dim)]),
+              , with_world_dim=0)
+
   AC_ARG_WITH(grid_type,
             AC_HELP_STRING([--with-grid-type= ALBERTAGRID | ALUGRID_CUBE | ALUGRID_SIMPLEX | ALUGRID_CONFORM | ONEDGRID | SGRID | UGGRID | YASPGRID],
           [only enabled if grid-dim deliverd, sets type of grid (default=YASPGRID)]),, with_grid_type=YASPGRID)
@@ -32,14 +38,21 @@ if test x$with_grid_dim != x0 ; then
      test $with_grid_type != "YASPGRID" ; then 
     AC_MSG_ERROR([Delivered grid-type = $with_grid_type is not valid. Run ./configure --help for valid values.])
   fi
+
+  if test x$with_world_dim = x0 ; then
+    with_world_dim=$with_grid_dim
+  fi
   
-  variablegriddimworld="$``(``GRIDDIM``)``"
-  griddim_cppflags="-DGRIDDIM=$``(``GRIDDIM``)`` -D$``(``GRIDTYPE``)``"
+  variablegriddimgrid="$``(``GRIDDIM``)``"
+  variablegriddimworld="$``(``WORLDDIM``)``"
+  griddim_cppflags="-DGRIDDIM=$``(``GRIDDIM``)`` -DWORLDDIM=$``(``WORLDDIM``)`` -D$``(``GRIDTYPE``)``"
   AC_SUBST(GRIDDIM, $with_grid_dim)
+  AC_SUBST(WORLDDIM, $with_world_dim)
+  AC_SUBST(GRIDDIMGRID, $variablegriddimgrid )
   AC_SUBST(GRIDDIMWORLD, $variablegriddimworld )
   AC_SUBST(GRIDTYPE, $with_grid_type )
   AC_SUBST(GRIDDIM_CPPFLAGS, $griddim_cppflags)
   DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $griddim_cppflags"
-  AC_MSG_RESULT([yes (GRIDDIM=$GRIDDIM and GRIDTYPE=$GRIDTYPE)])
+  AC_MSG_RESULT([yes (GRIDDIM=$GRIDDIM, WORLDDIM=$WORLDDIM and GRIDTYPE=$GRIDTYPE)])
 fi 
 ])
