@@ -5,6 +5,7 @@ TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
 	poolallocatortest settest gcdlcmtest streamtest \
 	bigunsignedinttest mpihelpertest singletontest mpicollcomm \
 	utilitytest lrutest \
+	smallobject \
 	testfassign1 testfassign2 testfassign3 \
 	testfassign4 \
     testfassign_fail1 testfassign_fail2 testfassign_fail3\
@@ -21,6 +22,8 @@ XFAIL_TESTS = testfassign_fail1 testfassign_fail2 testfassign_fail3\
 check_PROGRAMS = $(TESTPROGS)
 
 AM_LDFLAGS = $(LOCAL_LIBS)
+
+smallobject_SOURCES = smallobject.cc
 
 # define the programs
 bigunsignedinttest_SOURCES=bigunsignedinttest.cc
