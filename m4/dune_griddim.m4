@@ -17,7 +17,7 @@ AC_DEFUN([DUNE_GRID_DIMENSION],[
 
   AC_ARG_WITH(grid_type,
             AC_HELP_STRING([--with-grid-type= ALBERTAGRID | ALUGRID_CUBE | ALUGRID_SIMPLEX | ALUGRID_CONFORM | ONEDGRID | SGRID | UGGRID | YASPGRID],
-          [only enabled if grid-dim deliverd, sets type of grid (default=YASPGRID)]),, with_grid_type=YASPGRID)
+          [only enabled if grid-dim is given, sets type of grid (default=YASPGRID)]),, with_grid_type=YASPGRID)
           
 if test x$with_grid_dim != x0 ; then 
   
