@@ -1237,6 +1237,25 @@ namespace Dune {
       return det;
     }
 
+    //! calculates ret = A * B
+    template< class K, int m, int n, int p >
+    static inline void multMatrix ( const FieldMatrix< K, m, n > &A,
+                                    const FieldMatrix< K, n, p > &B,
+                                    FieldMatrix< K, m, p > &ret )
+    {
+      typedef typename FieldMatrix< K, m, p > :: size_type size_type;
+
+      for( size_type i = 0; i < m; ++i )
+      {
+        for( size_type j = 0; j < p; ++j )
+        {
+          ret[ i ][ j ] = K( 0 );
+          for( size_type k = 0; k < n; ++k )
+            ret[ i ][ j ] += A[ i ][ k ] * B[ k ][ j ];
+        }
+      }
+    }
+
     //! calculates ret= A_t*A
     template <typename K, int rows,int cols>
     static inline void multTransposedMatrix(const FieldMatrix<K,rows,cols> &matrix, FieldMatrix<K,cols,cols>& ret)
@@ -1251,78 +1270,50 @@ namespace Dune {
     }
 
     //! calculates ret = matrix * x
-    template <typename K, int dim>
-    static inline void multAssign(const FieldMatrix<K,dim,dim> &matrix, const FieldVector<K,dim> & x, FieldVector<K,dim> & ret)
-    {
-      typedef typename FieldMatrix<K,dim,dim>::size_type size_type;
-
-      for(size_type i=0; i<dim; i++)
-      {
-        ret[i] = 0.0;
-        for(size_type j=0; j<dim; j++)
-        {
-          ret[i] += matrix[i][j]*x[j];
-        }
-      }
-    }
-
-    //! calculates ret = matrix * x
     template <typename K, int rows,int cols>
     static inline void multAssign(const FieldMatrix<K,rows,cols> &matrix, const FieldVector<K,cols> & x, FieldVector<K,rows> & ret)
     {
       typedef typename FieldMatrix<K,rows,cols>::size_type size_type;
 
-      for(size_type i=0; i<rows; i++)
+      for(size_type i=0; i<rows; ++i)
       {
         ret[i] = 0.0;
-        for(size_type j=0; j<cols; j++)
+        for(size_type j=0; j<cols; ++j)
         {
           ret[i] += matrix[i][j]*x[j];
         }
       }
     }
 
-    //! calculates ret = matrix * x
-    template <typename K, int dim>
-    static inline void multAssignTransposed( const FieldMatrix<K,dim,dim> &matrix, const FieldVector<K,dim> & x, FieldVector<K,dim> & ret)
+    //! calculates ret = matrix^T * x
+    template <typename K, int rows, int cols>
+    static inline void multAssignTransposed( const FieldMatrix<K,rows,cols> &matrix, const FieldVector<K,rows> & x, FieldVector<K,cols> & ret)
     {
-      typedef typename FieldMatrix<K,dim,dim>::size_type size_type;
+      typedef typename FieldMatrix<K,rows,cols>::size_type size_type;
 
-      for(size_type i=0; i<dim; i++)
+      for(size_type i=0; i<cols; ++i)
       {
         ret[i] = 0.0;
-        for(size_type j=0; j<dim; j++)
-        {
+        for(size_type j=0; j<rows; ++j)
           ret[i] += matrix[j][i]*x[j];
-        }
       }
     }
 
     //! calculates ret = matrix * x
-    template <typename K, int dim>
-    static inline FieldVector<K,dim> mult(const FieldMatrix<K,dim,dim> &matrix, const FieldVector<K,dim> & x)
+    template <typename K, int rows,int cols>
+    static inline FieldVector<K,rows> mult(const FieldMatrix<K,rows,cols> &matrix, const FieldVector<K,cols> & x)
     {
-      FieldVector<K,dim> ret;
+      FieldVector<K,rows> ret;
       multAssign(matrix,x,ret);
       return ret;
     }
-
-
 
     //! calculates ret = matrix^T * x
     template <typename K, int rows, int cols>
     static inline FieldVector<K,cols> multTransposed(const FieldMatrix<K,rows,cols> &matrix, const FieldVector<K,rows> & x)
     {
       FieldVector<K,cols> ret;
-      typedef typename FieldMatrix<K,rows,cols>::size_type size_type;
-      for(size_type i=0; i<cols; i++)
-      {
-        ret[i] = 0.0;
-        for(size_type j=0; j<rows; j++)
-        {
-          ret[i] += matrix[j][i]*x[j];
-        }
-      }
+      multAssignTransposed( matrix, x, ret );
       return ret;
     }
 
