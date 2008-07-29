@@ -39,20 +39,24 @@ if test x$with_grid_dim != x0 ; then
     AC_MSG_ERROR([Delivered grid-type = $with_grid_type is not valid. Run ./configure --help for valid values.])
   fi
 
-  if test x$with_world_dim = x0 ; then
-    with_world_dim=$with_grid_dim
-  fi
-  
-  variablegriddimgrid="$``(``GRIDDIM``)``"
-  variablegriddimworld="$``(``WORLDDIM``)``"
+  variable_griddim="$``(``GRIDDIM``)``"
+  variable_worlddim="$``(``WORLDDIM``)``"
   griddim_cppflags="-DGRIDDIM=$``(``GRIDDIM``)`` -DWORLDDIM=$``(``WORLDDIM``)`` -D$``(``GRIDTYPE``)``"
   AC_SUBST(GRIDDIM, $with_grid_dim)
-  AC_SUBST(WORLDDIM, $with_world_dim)
-  AC_SUBST(GRIDDIMGRID, $variablegriddimgrid )
-  AC_SUBST(GRIDDIMWORLD, $variablegriddimworld )
+  if test x$with_world_dim = x0 ; then
+    AC_SUBST(WORLDDIM, $variable_griddim)
+  else
+    AC_SUBST(WORLDDIM, $with_world_dim)
+  fi
+  AC_SUBST(GRIDDIMGRID, $variable_griddim )
+  AC_SUBST(GRIDDIMWORLD, $variable_worlddim )
   AC_SUBST(GRIDTYPE, $with_grid_type )
   AC_SUBST(GRIDDIM_CPPFLAGS, $griddim_cppflags)
   DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $griddim_cppflags"
-  AC_MSG_RESULT([yes (GRIDDIM=$GRIDDIM, WORLDDIM=$WORLDDIM and GRIDTYPE=$GRIDTYPE)])
+  if test x$with_world_dim = x0 ; then
+    AC_MSG_RESULT([yes (GRIDDIM=$GRIDDIM, WORLDDIM=GRIDDIM and GRIDTYPE=$GRIDTYPE)])
+  else
+    AC_MSG_RESULT([yes (GRIDDIM=$GRIDDIM, WORLDDIM=$WORLDDIM and GRIDTYPE=$GRIDTYPE)])
+  fi
 fi 
 ])
