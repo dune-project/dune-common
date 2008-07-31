@@ -133,6 +133,26 @@ _EOF
   return 1
 }
 
+test_mvapich() {
+  AC_MSG_CHECKING([for MVAPICH])
+  if $MPICC -v -c conftest.c > /dev/null 2>&1; then
+    mpi_getflags "-v" "-c dummy.c"
+    MPI_VERSION=`echo $retval | sed -e 's/for \(MVAPICH[[0-9]]\+\)-[[0-9.]]\+/\1/'`
+    if (echo $MPI_VERSION | grep ^MVAPICH>/dev/null);then
+      ADDFLAGS="-DMPICH_IGNORE_CXX_SEEK"
+      mpi_getflags "-compile_info $ADDFLAGS" "dummy.o -o dummy"
+      MPI_CPPFLAGS="$retval"
+      mpi_getflags "-link_info $ADDFLAGS" "dummy.o -o dummy"
+      MPI_LDFLAGS="$retval"
+      AC_MSG_RESULT([yes])
+      rm -f conftest*
+      return 0 
+    fi
+  fi
+  AC_MSG_RESULT([no])
+  return 1
+}
+
 test_ibmmpi() {
   AC_MSG_CHECKING([for IBM MPI])
   if $MPICC -v -c conftest.c > /dev/null 2>&1; then
@@ -167,9 +187,12 @@ test_ibmmpi() {
 
       AC_MSG_RESULT([yes])
       rm -f conftest*
-      return 0    
+      return 0  
     fi
   fi
+  
+  AC_MSG_RESULT([no])
+  return 1
 }
 
 get_mpiparameters() {
@@ -182,6 +205,7 @@ get_mpiparameters() {
   test_lam && return
   test_mpich && return
   test_openmpi && return
+  test_mvapich && return
   test_ibmmpi && return
    
   MPI_VERSION="unknown"
