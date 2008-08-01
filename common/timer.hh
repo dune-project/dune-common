@@ -79,7 +79,7 @@ namespace Dune {
 
   private:
 #ifdef TIMER_USE_STD_CLOCK
-    std::clock_t cstart
+    std::clock_t cstart;
 #else
     struct timeval cstart;
 #endif
