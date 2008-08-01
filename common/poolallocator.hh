@@ -29,19 +29,21 @@ namespace Dune
 
 namespace std
 {
-  template<class T, std::size_t S>
-  inline ostream& operator<<(ostream& os, Dune::Pool<T,S>& pool)
-  {
-    os<<"pool="<<&pool<<" allocated_="<<pool.allocated_;
-    return os;
-  }
+  /*
+     template<class T, std::size_t S>
+     inline ostream& operator<<(ostream& os, Dune::Pool<T,S>& pool)
+     {
+     os<<"pool="<<&pool<<" allocated_="<<pool.allocated_;
+     return os;
+     }
 
-  template<class T, std::size_t S>
-  inline ostream& operator<<(ostream& os, Dune::PoolAllocator<T,S>& pool)
-  {
-    os<<pool.memoryPool_<<std::endl;
-    return os;
-  }
+     template<class T, std::size_t S>
+     inline ostream& operator<<(ostream& os, Dune::PoolAllocator<T,S>& pool)
+     {
+     os<<pool.memoryPool_<<std::endl;
+     return os;
+     }
+   */
 }
 
 
@@ -81,7 +83,7 @@ namespace Dune
   {
     friend int ::testPool<s,T>();
 
-    friend std::ostream& std::operator<<<>(std::ostream&,Pool<T,s>&);
+    //friend std::ostream& std::operator<<<>(std::ostream&,Pool<T,s>&);
 
   private:
 
@@ -211,7 +213,7 @@ namespace Dune
     /** @brief Our memory chunks. */
     Chunk *chunks_;
     /* @brief The number of currently allocated elements. */
-    size_t allocated_;
+    //size_t allocated_;
 
   };
 
@@ -228,7 +230,7 @@ namespace Dune
   template<class T, std::size_t s>
   class PoolAllocator
   {
-    friend std::ostream& std::operator<<<>(std::ostream&,PoolAllocator<T,s>&);
+    //friend std::ostream& std::operator<<<>(std::ostream&,PoolAllocator<T,s>&);
 
   public:
     /**
@@ -437,7 +439,7 @@ namespace Dune
 
   template<class T, std::size_t S>
   inline Pool<T,S>::Pool()
-    : head_(0), chunks_(0), allocated_(0)
+    : head_(0), chunks_(0) //, allocated_(0)
   {
     dune_static_assert(sizeof(T)<=unionSize, "Library Error: type T is too big");
     dune_static_assert(sizeof(Reference)<=unionSize, "Library Error: type of referene is too big");
@@ -452,12 +454,12 @@ namespace Dune
   template<class T, std::size_t S>
   inline Pool<T,S>::~Pool()
   {
-
-    if(allocated_!=0)
-      std::cerr<<"There are still "<<allocated_<<" allocated elements by the Pool<"<<typeid(T).name()<<","<<S<<"> "
+    /*
+       if(allocated_!=0)
+       std::cerr<<"There are still "<<allocated_<<" allocated elements by the Pool<"<<typeid(T).name()<<","<<S<<"> "
                <<static_cast<void*>(this)<<"! This is a memory leak and might result in segfaults"
                <<std::endl;
-
+     */
     // delete the allocated chunks.
     Chunk *current=chunks_;
 
@@ -506,7 +508,7 @@ namespace Dune
       Reference* freed = reinterpret_cast<Reference*>(b);
       freed->next_ = head_;
       head_ = freed;
-      --allocated_;
+      //--allocated_;
     }else
       std::cerr<< "Tried to free null pointer! "<<b<<std::endl;
   }
@@ -519,7 +521,7 @@ namespace Dune
 
     Reference* p = head_;
     head_ = p->next_;
-    ++allocated_;
+    //++allocated_;
     return reinterpret_cast<T*>(p);
   }
 
