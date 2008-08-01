@@ -155,6 +155,11 @@ AC_DEFUN([DUNE_MPI],[
     fi
     AC_LANG_POP
 
+    # Check for MPI-2 Standard
+    # We have to provide a dummy lib here as we do not know what the name
+    # of the mpi is. -lm should be save.
+    AC_CHECK_LIB(m,[MPI_Finalized], [AC_DEFINE(MPI_2, 1, [Define to 1 MPI supports MPI-2])])
+
     # restore variables
     LIBS="$ac_save_LIBS"
     CPPFLAGS="$ac_save_CPPFLAGS"
