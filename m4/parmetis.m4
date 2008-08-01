@@ -80,7 +80,7 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
       
       # if header is found check for the libs
 
-      LIBS="$MPILIBS $MPI_LDFLAGS"
+      LIBS="$LIBS $MPILIBS $MPI_LDFLAGS"
       
       if test x$HAVE_PARMETIS = x1 ; then
 	  AC_CHECK_LIB(metis, [metis_partgraphkway],[
