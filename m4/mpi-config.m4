@@ -18,17 +18,17 @@ mpi_getflags () {
   # in the sed-command...
   retval=`$MPICC ${1} ${2} 2>/dev/null | head -1`
   # remove compiler name
-  retval=`echo $retval | sed -e 's/^[[^-]][[^ ]]\+ //'`
+  retval=`echo $retval | sed -e 's/^[[^-]][[^ ]][[^ ]]* //'`
   # remove dummy-parameter (if existing)
-  retval=`echo $retval | sed -e "s/${1}//"`
+  retval=`echo $retval | sed -e "s/ ${1} / /"`
   if test ${#} = 2 ; then
-    retval=`echo $retval | sed -e "s/${2}//"`
+    retval=`echo $retval | sed -e "s/ ${2} / /"`
   fi
 }
 
 # removes regexp $2 from string $1
 mpi_remove () {
-  retval=`echo ${1} | sed -e "s/${2}//"`
+  retval=`echo ${1} | sed -e "s/ ${2} / /"`
 }
 
 test_lam () {
@@ -137,7 +137,7 @@ test_mvapich() {
   AC_MSG_CHECKING([for MVAPICH])
   if $MPICC -v -c conftest.c > /dev/null 2>&1; then
     mpi_getflags "-v" "-c dummy.c"
-    MPI_VERSION=`echo $retval | sed -e 's/for \(MVAPICH[[0-9]]\+\)-[[0-9.]]\+/\1/'`
+    MPI_VERSION=`echo $retval | sed -e 's/for \(MVAPICH[[0-9]][[0-9]]*\)-[[0-9.]][[0-9.]]*/\1/'`
     if (echo $MPI_VERSION | grep ^MVAPICH>/dev/null);then
       ADDFLAGS="-DMPICH_IGNORE_CXX_SEEK"
       mpi_getflags "-compile_info $ADDFLAGS" "dummy.o -o dummy"
