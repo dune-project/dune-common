@@ -571,7 +571,7 @@ namespace Dune {
       return true;
     }
 
-    //! vector space axpy operation
+    //! vector space axpy operation ( *this += a y )
     FieldVector& axpy (const K& a, const FieldVector& y)
     {
 #ifndef DUNE_EXPRESSIONTEMPLATES
@@ -924,7 +924,7 @@ namespace Dune {
       return *this;
     }
 
-    //! vector space axpy operation
+    //! vector space axpy operation ( *this += a y )
     FieldVector& axpy (const K& a, const FieldVector& y)
     {
       p += a*y.p;
