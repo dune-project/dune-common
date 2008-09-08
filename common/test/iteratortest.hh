@@ -6,6 +6,7 @@
 #define DUNE_ITERATORTEST_HH
 #include <iostream>
 #include <algorithm>
+#include <dune/common/typetraits.hh>
 
 /**
  * @brief Tests the capabilities of a forward iterator.
