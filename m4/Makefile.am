@@ -8,7 +8,8 @@ ALLM4S = acx_blas.m4 acx_mpi.m4 acx_pthread.m4 alberta.m4 alugrid.m4 \
          f5.m4 fortran_overwrite.m4 grape.m4 hdf5.m4 \
          immdx_lib_metis.m4 inkscape.m4 mpi-config.m4 opengl.m4 \
          parmetis.m4 superlu-dist.m4 superlu.m4 ug.m4 xdr.m4 \
-         acx_lapack.m4 dune_common.m4 dune_istl.m4 pardiso.m4
+         acx_lapack.m4 dune_common.m4 dune_istl.m4 pardiso.m4 \
+		 dune_autobuild.m4
 
 
 aclocaldir = $(datadir)/aclocal
