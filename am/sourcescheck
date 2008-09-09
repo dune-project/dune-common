@@ -48,4 +48,4 @@ sourcescheck-recursive:
 	  $(MAKE) $(AM_MAKEFLAGS) "$$target-am" || exit 1; \
 	fi; test -z "$$fail"
 
-.PHONY: sourcescheck sourcescheck-recursive
+.PHONY: sourcescheck sourcescheck-recursive sourcescheck-am
