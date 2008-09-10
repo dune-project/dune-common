@@ -11,12 +11,12 @@ TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
     testfassign_fail1 testfassign_fail2 testfassign_fail3\
     testfassign_fail4 testfassign_fail5 testfassign_fail6
 
-
 # which tests to run
-TESTS = $(TESTPROGS)
+TESTS = $(TESTPROGS) static_assert_test_run
 
 XFAIL_TESTS = testfassign_fail1 testfassign_fail2 testfassign_fail3\
-    testfassign_fail4 testfassign_fail5 testfassign_fail6
+    testfassign_fail4 testfassign_fail5 testfassign_fail6\
+	static_assert_test_run
 
 # programs just to build when "make check" is used
 check_PROGRAMS = $(TESTPROGS)

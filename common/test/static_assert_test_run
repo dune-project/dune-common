@@ -1,0 +1,3 @@
+#!/bin/bash
+
+make static_assert_test.o
