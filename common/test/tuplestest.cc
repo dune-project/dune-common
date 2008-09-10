@@ -9,6 +9,8 @@
 #include <iostream>
 #include <vector>
 #include <cassert>
+#include <cstdlib>
+
 using namespace Dune;
 
 template<int i, int j>
