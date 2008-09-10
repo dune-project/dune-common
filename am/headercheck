@@ -29,13 +29,14 @@ headercheck-am:
 	  CCFILE=hctest.cc; \
 	  OFILE=hctest.o; \
 	  LOGFILE=hctest.log; \
-	  echo "#include <config.h>" > $$CCFILE; \
+	  rm -f $$CCFILE; \
+	  test -n "$$NO_CONFIG_H" || echo "#include <config.h>" > $$CCFILE; \
 	  echo "#include <$${HEADER}>" >> $$CCFILE; \
 	  echo "#include <$${HEADER}>" >> $$CCFILE; \
 	  echo "int main () {}" >> $$CCFILE; \
 	  make $$OFILE > $$LOGFILE 2>&1; \
 	  SUCCESS=$$?; \
-	  (test $$SUCCESS -eq 0 && test ! -s $$LOGFILE) || echo "Error in $$HEADER"; \
+	  test $$SUCCESS -eq 0 || echo "Error in $$HEADER"; \
 	  test $$SUCCESS -eq 0 || cat $$LOGFILE; \
 	  rm -f $$OFILE; \
 	  rm -f $$CCFILE; \

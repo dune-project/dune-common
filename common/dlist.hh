@@ -4,6 +4,7 @@
 #define DUNE_DLIST_HH
 
 #include <dune/common/exceptions.hh>
+#include <dune/common/deprecated.hh>
 
 namespace Dune {
 
