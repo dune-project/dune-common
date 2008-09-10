@@ -36,8 +36,10 @@ headercheck-am:
 	  echo "int main () {}" >> $$CCFILE; \
 	  make $$OFILE > $$LOGFILE 2>&1; \
 	  SUCCESS=$$?; \
-	  test $$SUCCESS -eq 0 || echo "Error in $$HEADER"; \
-	  test $$SUCCESS -eq 0 || cat $$LOGFILE; \
+	  if ! (test $$SUCCESS -eq 0 && test -e $$OFILE); then \
+	    echo "Error in $$HEADER"; \
+	    (echo "$$MAKEFLAGS" | grep 's' -q) || cat $$LOGFILE; \
+	  fi; \
 	  rm -f $$OFILE; \
 	  rm -f $$CCFILE; \
 	  rm -f $$LOGFILE; \
@@ -49,7 +51,7 @@ headercheck-recursive:
 	dot_seen=no; \
 	target=`echo $@ | sed s/-recursive//`; \
 	list='$(DIST_SUBDIRS)'; for subdir in $$list; do \
-	  echo "Making $$target in $$subdir"; \
+	  echo "Making $$target in $(subdir)/$$subdir"; \
 	  if test "$$subdir" = "."; then \
 	    dot_seen=yes; \
 	    local_target="$$target-am"; \
