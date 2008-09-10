@@ -9,5 +9,8 @@
 # add "sourcescheck"-target testing if all source files are mentioned
 include $(top_srcdir)/am/sourcescheck
 
+# check consistency of the headers (see FS#394)
+include $(top_srcdir)/am/headercheck
+
 # add "check-log"-target to create automated build logs
 include $(top_srcdir)/am/checklog

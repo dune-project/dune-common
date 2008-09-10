@@ -1,0 +1,65 @@
+# -*- Makefile -*-
+# $Id: sourcescheck 5183 2008-04-27 17:37:08Z christi $
+
+headercheck_PATTERN = *.hh
+headercheck_IGNORE =
+
+hctest.o: hctest.cc
+	$(CXX) -I$(top_srcdir) \
+	  $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) \
+	  $(MPI_CPPFLAGS) $(ALL_PKG_CPPFLAGS) -c -o $@ $<
+
+headercheck:
+	@if test x"$$HEADER" = "x"; then \
+	  $(MAKE) $(AM_MAKEFLAGS) headercheck-recursive; \
+	else \
+	  $(MAKE) $(AM_MAKEFLAGS) headercheck-am; \
+	fi
+
+headercheck-am:
+	@if test x"$$HEADER" != "x"; then \
+	  list="$$HEADER"; \
+	else \
+	  list=`echo $(headercheck_PATTERN)`; \
+	fi; \
+	test "$$list" != "$(headercheck_PATTERN)" || exit 0; \
+	for f in $$list; do \
+	  HEADER="dune/$(subdir)/$$f"; \
+	  echo "$$MAKEFLAGS" | grep 's' -q || echo "checking $$HEADER"; \
+	  CCFILE=hctest.cc; \
+	  OFILE=hctest.o; \
+	  LOGFILE=hctest.log; \
+	  echo "#include <config.h>" > $$CCFILE; \
+	  echo "#include <$${HEADER}>" >> $$CCFILE; \
+	  echo "#include <$${HEADER}>" >> $$CCFILE; \
+	  echo "int main () {}" >> $$CCFILE; \
+	  make $$OFILE > $$LOGFILE 2>&1; \
+	  SUCCESS=$$?; \
+	  (test $$SUCCESS -eq 0 && test ! -s $$LOGFILE) || echo "Error in $$HEADER"; \
+	  test $$SUCCESS -eq 0 || cat $$LOGFILE; \
+	  rm -f $$OFILE; \
+	  rm -f $$CCFILE; \
+	  rm -f $$LOGFILE; \
+	  test $$SUCCESS -eq 0 || exit $$SUCCESS; \
+	done
+
+headercheck-recursive:
+	@set fnord $$MAKEFLAGS; amf=$$2; \
+	dot_seen=no; \
+	target=`echo $@ | sed s/-recursive//`; \
+	list='$(DIST_SUBDIRS)'; for subdir in $$list; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    dot_seen=yes; \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+	done; \
+	if test "$$dot_seen" = "no"; then \
+	  $(MAKE) $(AM_MAKEFLAGS) "$$target-am" || exit 1; \
+	fi; test -z "$$fail"
+
+.PHONY: headercheck headercheck-recursive headercheck-am
