@@ -199,10 +199,6 @@ namespace Dune
      */
     int size () const { return size_; }
 
-    void barrier() const {
-      MPI_Barrier(getCommunicator());
-    }
-
   private:
     int rank_;
     int size_;
@@ -225,7 +221,7 @@ namespace Dune
     ~MPIHelper()
     {
       MPI_Finalize();
-      dvverb << "Called MPI_Finalize on p=" << rank_ << "!" <<std::endl;
+      dverb << "Called MPI_Finalize on p=" << rank_ << "!" <<std::endl;
     }
     MPIHelper(const MPIHelper&);
     MPIHelper& operator=(const MPIHelper);
