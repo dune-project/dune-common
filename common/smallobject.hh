@@ -3,6 +3,7 @@
 #ifndef DUNE_SMALLOBJECT_HH
 #define DUNE_SMALLOBJECT_HH
 
+#include <cassert>
 #include <new>
 
 namespace Dune
@@ -36,7 +37,14 @@ namespace Dune
     ~SmallObjectPool ()
     {
       for( unsigned int i = 0; i < maxBlocks; ++i )
-        delete list_[ i ];
+      {
+        for( Block *next = list_[ i ]; next != 0; )
+        {
+          Block *current = next;
+          next = current->next;
+          delete[] current;
+        }
+      }
     }
 
     static SmallObjectPool &instance ()
@@ -47,6 +55,7 @@ namespace Dune
 
     static Block *&list ( unsigned int blocks )
     {
+      assert( blocks < maxBlocks );
       return instance().list_[ blocks ];
     }
 
@@ -54,25 +63,27 @@ namespace Dune
     static void *allocate ( unsigned int size )
     {
       const unsigned int blocks = (size + (blockSize-1)) / blockSize;
-      if( blocks > maxBlocks )
+      if( blocks >= maxBlocks )
         return 0;
-      Block *blockPtr = list( blocks );
-      if( blockPtr != 0 )
-        list( blocks ) = blockPtr->next;
+      Block *&next = list( blocks );
+      Block *current = next;
+      if( current != 0 )
+        next = current->next;
       else
-        blockPtr = new Block[ blocks+1 ];
-      blockPtr->blocks = blocks;
-      return blockPtr+1;
+        current = new Block[ blocks+1 ];
+      current->blocks = blocks;
+      return current + 1;
     }
 
     static void free ( void *ptr )
     {
       if( ptr != 0 )
       {
-        Block *blockPtr = reinterpret_cast< Block * >( ptr ) - 1;
-        const unsigned int blocks = blockPtr->blocks;
-        blockPtr->next = list( blocks );
-        list( blocks ) = blockPtr;
+        Block *current = reinterpret_cast< Block * >( ptr ) - 1;
+        const unsigned int blocks = current->blocks;
+        Block *&next = list( blocks );
+        current->next = next;
+        next = current;
       }
     }
   };

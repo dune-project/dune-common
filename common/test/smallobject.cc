@@ -37,7 +37,7 @@ int main ( int argc, char **argv )
 {
   Timer timer;
 
-  const unsigned long iterations = 1 << 26;
+  const unsigned long iterations = 1 << 30;
   std :: cout << "Performing " << iterations << " iterations." << std :: endl;
 
   timer.reset();
