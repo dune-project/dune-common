@@ -571,6 +571,7 @@ m4_define([DUNE_AC_INIT],[
   AC_SUBST([DUNE_MOD_VERSION], [$version])
   AC_SUBST([DUNE_MOD_NAME], [$name])
   AC_SUBST([DUNE_MAINTAINER_NAME], [$maintainer])
+  DUNE_PARSE_MODULE_VERSION([$name], [$version])
   # don't build shared libs per default, this is way better for debugging...
   m4_ifdef([LT_INIT],
     [LT_INIT],

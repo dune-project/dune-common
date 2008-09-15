@@ -31,6 +31,31 @@ AC_DEFUN([DUNE_MODULE_ADD_SUMMARY_ENTRY],[
   DUNE_ADD_SUMMARY_MOD_ENTRY(_dune_name,[$result])
 ])
 
+AC_DEFUN([DUNE_PARSE_MODULE_VERSION],[
+  m4_pushdef([_dune_name], [$1])
+  m4_pushdef([_dune_version], [$2])
+  m4_pushdef([_dune_module], [m4_translit(_dune_name, [-], [_])])
+  m4_pushdef([_DUNE_MODULE], [m4_toupper(_dune_module)])
+
+  -DUNE_MODULE[]_VERSION=_dune_version
+  _DUNE_MODULE[]_VERSION_MAJOR="`echo _dune_version | awk '{ split($[]0,s,"."); match(s[[1]],/[[[[:digit:]]]]*/,n); print n[[0]] }'`"
+  _DUNE_MODULE[]_VERSION_MINOR="`echo _dune_version | awk '{ split($[]0,s,"."); match(s[[2]],/[[[[:digit:]]]]*/,n); print n[[0]] }'`"
+  _DUNE_MODULE[]_VERSION_REVISION="`echo _dune_version | awk '{ split($[]0,s,"."); match(s[[3]],/[[[[:digit:]]]]*/,n); print n[[0]] }'`"
+  if test x$_DUNE_MODULE[]_VERSION_REVISION = x ; then
+    _DUNE_MODULE[]_VERSION_REVISION=0
+  fi
+
+  AC_DEFINE_UNQUOTED(_DUNE_MODULE[]_VERSION, "_dune_version", [Define to the version of] _dune_name)
+  AC_DEFINE_UNQUOTED(_DUNE_MODULE[]_VERSION_MAJOR, $_DUNE_MODULE[]_VERSION_MAJOR, [Define to the major version of] _dune_name)
+  AC_DEFINE_UNQUOTED(_DUNE_MODULE[]_VERSION_MINOR, $_DUNE_MODULE[]_VERSION_MINOR, [Define to the minor version of] _dune_name)
+  AC_DEFINE_UNQUOTED(_DUNE_MODULE[]_VERSION_REVISION, $_DUNE_MODULE[]_VERSION_REVISION, [Define to the revision of] _dune_name)
+
+  m4_popdef([_DUNE_MODULE])
+  m4_popdef([_dune_module])
+  m4_popdef([_dune_version])
+  m4_popdef([_dune_name])
+])
+
 AC_DEFUN([DUNE_CHECK_MODULES],[
   AC_REQUIRE([AC_PROG_CXX])
   AC_REQUIRE([AC_PROG_CXXCPP])
@@ -107,10 +132,10 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       if test -d $_DUNE_MODULE[]_ROOT/include/dune; then
         # Dune was installed into directory given by with-dunecommon
         _DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]_ROOT/include"
-		_DUNE_MODULE[]_VERSION="`PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$_DUNE_MODULE[]_ROOT/lib/pkgconfig $PKG_CONFIG --modversion _dune_name`" 2>/dev/null
+	_DUNE_MODULE[]_VERSION="`PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$_DUNE_MODULE[]_ROOT/lib/pkgconfig $PKG_CONFIG --modversion _dune_name`" 2>/dev/null
       else
         _DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]_ROOT"
-		_DUNE_MODULE[]_VERSION="`grep Version $_DUNE_MODULE[]_ROOT/dune.module | sed -e 's/^Version: *//'`" 2>/dev/null
+	_DUNE_MODULE[]_VERSION="`grep Version $_DUNE_MODULE[]_ROOT/dune.module | sed -e 's/^Version: *//'`" 2>/dev/null
       fi
       ifelse(_dune_symbol,,,[
         _DUNE_MODULE[]_LDFLAGS="-L$_DUNE_MODULE[]_ROOT/lib"
@@ -196,8 +221,9 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
     AC_SUBST(_DUNE_MODULE[]_LDFLAGS, "$_DUNE_MODULE[]_LDFLAGS")
     AC_SUBST(_DUNE_MODULE[]_LIBS, "$_DUNE_MODULE[]_LIBS")
     AC_SUBST(_DUNE_MODULE[]_ROOT, "$_DUNE_MODULE[]_ROOT")
-    AC_DEFINE(HAVE_[]_DUNE_MODULE, 1, [Define to 1 if _dune_module was found])
-    AC_DEFINE_UNQUOTED(_DUNE_MODULE[]_VERSION, "$_DUNE_MODULE[]_VERSION", [Define to the version of _dune_module.])
+    AC_DEFINE(HAVE_[]_DUNE_MODULE, 1, [Define to 1 if] _dune_name [was found])
+
+    DUNE_PARSE_MODULE_VERSION(_dune_name, $_DUNE_MODULE[]_VERSION)
 
     # set DUNE_* variables
     AC_SUBST(DUNE_CPPFLAGS, "$DUNE_CPPFLAGS")
