@@ -17,7 +17,6 @@
 #    and sets up some things needed for modules (i.e. the 'dune' symlink)
 
 AC_DEFUN([DUNE_CHECK_ALL],[
-  AC_LANG_PUSH([C++])
   # doxygen and latex take a lot of time...
   AC_REQUIRE([DUNE_DOCUMENTATION])
   AC_REQUIRE([DUNE_WEB])
@@ -45,7 +44,6 @@ AC_DEFUN([DUNE_CHECK_ALL],[
   AC_SUBST(ACLOCAL_AMFLAGS, "$ACLOCAL_AMFLAGS")
 
   AC_SUBST(am_dir, $DUNE_COMMON_ROOT/am)
-  AC_LANG_POP([C++])
 ])
 
 AC_DEFUN([DUNE_ADD_SUMMARY_ENTRY],[
