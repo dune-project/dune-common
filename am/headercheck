@@ -38,7 +38,7 @@ headercheck-am:
 	  SUCCESS=$$?; \
 	  if ! (test $$SUCCESS -eq 0 && test -e $$OFILE); then \
 	    echo "Error in $$HEADER"; \
-	    (echo "$$MAKEFLAGS" | grep 's' -q) || cat $$LOGFILE; \
+	    (echo "$$MAKEFLAGS" | grep 's' -q) && cat $$LOGFILE; \
 	  fi; \
 	  rm -f $$OFILE; \
 	  rm -f $$CCFILE; \
