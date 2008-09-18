@@ -5,6 +5,8 @@
 #define DUNE_PROPERTYMAP_HH
 
 #include <cstddef>
+#include <iterator>
+
 #include "static_assert.hh"
 #include "typetraits.hh"
 
