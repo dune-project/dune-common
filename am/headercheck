@@ -11,9 +11,15 @@ hctest.o: hctest.cc
 
 headercheck:
 	@if test x"$$HEADER" = "x"; then \
-	  $(MAKE) $(AM_MAKEFLAGS) headercheck-recursive; \
+          if test x"$$SILENT" = "x"; then \
+            SILENTSTR='SILENT=1' ; \
+          fi ; \
+	  $(MAKE) $$SILENTSTR $(AM_MAKEFLAGS) headercheck-recursive; \
 	else \
-	  $(MAKE) $(AM_MAKEFLAGS) headercheck-am; \
+          if test x"$$SILENT" = "x"; then \
+            SILENTSTR='SILENT=0' ; \
+          fi ; \
+	  $(MAKE) $$SILENTSTR $(AM_MAKEFLAGS) headercheck-am; \
 	fi
 
 headercheck-am:
@@ -24,8 +30,8 @@ headercheck-am:
 	fi; \
 	test "$$list" != "$(headercheck_PATTERN)" || exit 0; \
 	for f in $$list; do \
-	  HEADER="dune/$(subdir)/$$f"; \
-	  echo "$$MAKEFLAGS" | grep 's' -q || echo "checking $$HEADER"; \
+	  HEADER="$(subdir)/$$f"; \
+	  test $$SILENT -ne 0 || echo "checking $$HEADER"; \
 	  CCFILE=hctest.cc; \
 	  OFILE=hctest.o; \
 	  LOGFILE=hctest.log; \
@@ -38,7 +44,7 @@ headercheck-am:
 	  SUCCESS=$$?; \
 	  if ! (test $$SUCCESS -eq 0 && test -e $$OFILE); then \
 	    echo "Error in $$HEADER"; \
-	    (echo "$$MAKEFLAGS" | grep 's' -q) && cat $$LOGFILE; \
+            test $$SILENT -ne 0 || cat $$LOGFILE; \
 	  fi; \
 	  rm -f $$OFILE; \
 	  rm -f $$CCFILE; \
