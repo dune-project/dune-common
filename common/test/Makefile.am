@@ -8,24 +8,40 @@ TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
 	smallobject \
 	testfassign1 testfassign2 testfassign3 \
 	testfassign4 \
-    testfassign_fail1 testfassign_fail2 testfassign_fail3\
+    testfassign_fail1 testfassign_fail2 testfassign_fail3 \
     testfassign_fail4 testfassign_fail5 testfassign_fail6
 
 # which tests to run
-TESTS = $(TESTPROGS) static_assert_test_run
+COMPILE_XFAIL=$(DUNE_COMMON_ROOT)/bin/xfail-compile-tests
 
-XFAIL_TESTS = testfassign_fail1 testfassign_fail2 testfassign_fail3\
-    testfassign_fail4 testfassign_fail5 testfassign_fail6\
-	static_assert_test_run
+COMPILE_XFAIL_TESTS = static_assert_test
+
+compile_XFAIL:
+	for i in $(COMPILE_XFAIL_TESTS); do \
+	  if $(MAKE) $$i; then \
+	    echo "ERROR: target $$i did compile, although it is listed in the COMPILE_XFAIL_TESTS"; \
+	    exit 1; \
+	  else true; \
+	  fi; \
+	done
+
+EXTRA_PROGRAMS = $(COMPILE_XFAIL_TESTS)
+
+TESTS = $(TESTPROGS) $(COMPILE_XFAIL)
+
+XFAIL_TESTS = testfassign_fail1 testfassign_fail2 testfassign_fail3 \
+    testfassign_fail4 testfassign_fail5 testfassign_fail6
 
 # programs just to build when "make check" is used
 check_PROGRAMS = $(TESTPROGS)
 
 AM_LDFLAGS = $(LOCAL_LIBS)
 
+# define the programs
 smallobject_SOURCES = smallobject.cc
 
-# define the programs
+static_assert_test_SOURCES = static_assert_test.cc
+
 bigunsignedinttest_SOURCES=bigunsignedinttest.cc
 
 parsetest_SOURCES = parsetest.cc
