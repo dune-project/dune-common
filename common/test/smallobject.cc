@@ -37,7 +37,7 @@ int main ( int argc, char **argv )
 {
   Timer timer;
 
-  const unsigned long iterations = 1 << 30;
+  const unsigned long iterations = 1 << 25;
   std :: cout << "Performing " << iterations << " iterations." << std :: endl;
 
   timer.reset();
@@ -71,4 +71,11 @@ int main ( int argc, char **argv )
   double timeB2 = timer.elapsed();
   std :: cout << "Time with pool allocator: " << timeB2 << std :: endl;
   std :: cout << "Result: pool allocator is " << (timeA / timeB2) << " times faster." << std :: endl;
+  std :: cout << "Result: pool allocator is " << (timeB / timeB2) << " times faster than SmallObject." << std :: endl;
+
+  // we require a speedup due to SmallObject
+  assert((timeA / timeB) > 1.0);
+
+  // we require the speed of the poolallocator
+  // assert((timeB2 / timeB) > 1.0);
 }
