@@ -5,17 +5,17 @@ AC_DEFUN([GXX0X],[
                  [try to enabel c++0x feature for g++ [[default=yes]]]),
 		  		 [gxx0xcheck=$enable],
 				 [gxx0xcheck=yes])
-  AC_LANG_PUSH([C++])
   if test "x$GXX" = xyes && test "x$gxx0xcheck" = xyes; then
     AC_MSG_CHECKING([whether g++ accepts -std=c++0x])
-    ac_save_CXXFLAGS="$CXXFLAGS"
-    CXXFLAGS="$CXXFLAGS -std=c++0x"
+    ac_save_CXX="$CXX"
+    CXX="$CXX -std=c++0x"
+	AC_LANG_PUSH([C++])
     AC_TRY_COMPILE([],[],[
       AC_MSG_RESULT(yes)], [
-      CXXFLAGS="$ac_save_CXXFLAGS"
+      CXX="$ac_save_CXX"
       AC_MSG_RESULT(no)])
+    AC_LANG_POP
   fi
-  AC_LANG_POP
 ])
 
 AC_DEFUN([STATIC_ASSERT_CHECK],[
