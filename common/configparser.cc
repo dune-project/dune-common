@@ -31,16 +31,18 @@ void ConfigParser::parseFile(std::string file)
     string line;
     getline(in, line);
     line = trim(line);
-    if (line[0] == '#')
-    {}
-    else if ((line[0] == '[')and (line[line.length()-1] == ']'))
-    {
-      prefix = trim(line.substr(1, line.length()-2)) + ".";
-      if (prefix == ".")
-        prefix = "";
-    }
-    else
-    {
+    switch (line[0]) {
+    case '#' :
+      break;
+    case '[' :
+      if (line[line.length()-1] == ']')
+      {
+        prefix = trim(line.substr(1, line.length()-2));
+        if (prefix != "")
+          prefix += ".";
+      }
+      break;
+    default :
       string::size_type mid = line.find("=");
       if (mid != string::npos)
       {
@@ -50,11 +52,18 @@ void ConfigParser::parseFile(std::string file)
         // handle quoted strings
         if (value.length()>1)
         {
-          if ((value[0] == '\'')and (value[value.length()-1] == '\''))
-            value = value.substr(1, value.length()-2);
-          else
-          if ((value[0] == '"')and (value[value.length()-1] == '"'))
-            value = value.substr(1, value.length()-2);
+          switch (value[0]) {
+          case '\'' :
+            if (value[value.length()-1] == '\'')
+              value = value.substr(1, value.length()-2);
+            break;
+          case '"' :
+            if (value[value.length()-1] == '"')
+              value = value.substr(1, value.length()-2);
+            break;
+          default :
+            break;
+          }
         }
 
         if (keysInFile.count(key) != 0)
@@ -65,6 +74,7 @@ void ConfigParser::parseFile(std::string file)
           keysInFile.insert(key);
         }
       }
+      break;
     }
   }
 
