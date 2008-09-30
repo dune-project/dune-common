@@ -226,7 +226,7 @@ namespace Dune {
 
     std::map<std::string, std::string> values;
     std::map<std::string, ConfigParser> subs;
-    std::string trim(std::string s);
+    std::string trim(const std::string& s) const;
 
 
   };
