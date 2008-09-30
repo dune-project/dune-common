@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # $Id: autogen.sh 5054 2008-01-08 15:06:55Z christi $
 
 # barf on errors
@@ -12,7 +12,8 @@ usage () {
 }
 
 ## get my name...
-name=`grep '^Module:' dune.module | cut -d ':' -f 2 | sed -e 's/ //g'`
+grep -q '^Module:' dune.module || echo "Parser Error: Module entry missing in dune.module"
+name=`awk '/^Module:/ { print $2 }' dune.module`
 
 ## dune-all.m4
 rm -f dune-all.m4
@@ -90,7 +91,10 @@ fi
 echo "--> libtoolize..."
 # this script won't rewrite the files if they already exist. This is a
 # PITA when you want to upgrade libtool, thus I'm setting --force
-libtoolize --force
+if [ x`type -t glibtoolize` = xfile ]; then
+  LIBTOOLIZE=glibtoolize
+fi
+${LIBTOOLIZE-libtoolize} --force 
 
 # writing privat m4 file
 echo -n "--> "
