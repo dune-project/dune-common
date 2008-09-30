@@ -19,7 +19,7 @@ namespace Dune {
 
 
   //! exception thrown on illegal element access
-  class DoubleLinkedListError : public RangeError {};
+  class DoubleLinkedListError : public RangeError {} DUNE_DEPRECATED;
 
   /*! \brief (DEPRECATED) A doubly-linked list
      \deprecated Please use std::list
