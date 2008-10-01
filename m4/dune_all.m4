@@ -24,7 +24,7 @@ AC_DEFUN([DUNE_CHECK_ALL],[
   AC_ARG_ENABLE(enabledist,
     AC_HELP_STRING([--enable-dist],
                  [go into create-tarballs-mode [[default=no]]]),
-    [enabledist=$enable],
+    [enabledist=$enableval],
     [enabledist=no]
   )
   AM_CONDITIONAL(MAKEDIST, test x$enabledist = xyes)

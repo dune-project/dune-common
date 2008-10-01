@@ -6,7 +6,7 @@ AC_DEFUN([DUNE_CHECK_COMPILER],[
 AC_ARG_ENABLE(compilercheck,
   AC_HELP_STRING([--enable-compilercheck],
                  [check for supported compilers [[default=yes]]]),
-  [compilercheck=$enable],
+  [compilercheck=$enableval],
   [compilercheck=yes]
 )
 

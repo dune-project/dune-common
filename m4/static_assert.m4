@@ -2,8 +2,8 @@ AC_DEFUN([GXX0X],[
   AC_REQUIRE([AC_PROG_CXX])
   AC_ARG_ENABLE(gxx0xcheck,
 		AC_HELP_STRING([--disable-gxx0xcheck],
-                 [try to enabel c++0x feature for g++ [[default=yes]]]),
-		  		 [gxx0xcheck=$enable],
+                 [try to enable c++0x feature for g++ [[default=yes]]]),
+				 [gxx0xcheck=$enableval],
 				 [gxx0xcheck=yes])
   if test "x$GXX" = xyes && test "x$gxx0xcheck" = xyes; then
     AC_MSG_CHECKING([whether g++ accepts -std=c++0x])
