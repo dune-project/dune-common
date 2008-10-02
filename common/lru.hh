@@ -31,7 +31,7 @@ namespace Dune {
     typedef typename list_type::iterator iterator;
     typedef typename std::less<key_type> cmp;
     typedef std::map< key_type, iterator, cmp,
-        typename allocator::template rebind<std::pair<key_type, iterator> >::other > map_type;
+        typename allocator::template rebind<std::pair<const key_type, iterator> >::other > map_type;
   };
 
   template <typename _Key, typename _Tp,
