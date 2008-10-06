@@ -13,7 +13,7 @@ usage () {
 
 ## get my name...
 grep -q '^Module:' dune.module || echo "Parser Error: Module entry missing in dune.module"
-name=`awk '/^Module:/ { print $2 }' dune.module`
+name=`awk '{ sub(/:/,": ") }; /^Module:/ { print $2 }' dune.module`
 
 ## dune-all.m4
 rm -f dune-all.m4
