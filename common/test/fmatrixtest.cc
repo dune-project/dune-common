@@ -147,7 +147,7 @@ void test_matrix()
   FieldVector<K,m> v;
 
   // assign matrix
-  A=0;
+  A=K();
   // random access matrix
   for (size_type i=0; i<n; i++)
     for (size_type j=0; j<m; j++)
