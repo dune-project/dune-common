@@ -401,3 +401,104 @@ check_modname() {
 #  fi
   return 0
 }
+
+#
+# compare a sub part of the version string
+#
+# parameters:
+# $1 version
+# $2 part
+#
+# parts:
+# 1: major
+# 2: minor
+# 3: revision
+#
+get_sub_version() {
+  echo $1 | awk "{ split(\$0,s,\".\"); match(s[$2],/[[:digit:]]*/); print substr(s[$2],RSTART,RLENGTH) }"
+}
+
+#
+# compare to versions
+#
+# parameters:
+# $1 version1
+# $2 version1
+#
+# return:
+# 0: equal
+# 1: v1 > v2
+# 2: v1 < v2
+#
+compare_versions() {
+  local v1="$1"
+  local v2="$2"
+  local result
+
+  for i in 1 2 3; do
+    result=0
+    compare_sub_version $v1 $v2 $i || return 0
+  done
+
+  echo "eq"
+}
+
+compare_sub_version() {
+  # compare sub version number
+  local sub1=`get_sub_version $1 $3`
+  local sub2=`get_sub_version $2 $3`
+  if test x$sub1 = x ; then
+    sub1=0
+  fi
+  if test x$sub2 = x ; then
+    sub2=0
+  fi
+
+  if test $sub1 -gt $sub2; then
+    echo "gt"
+	return 1
+  fi
+  if test $sub1 -lt $sub2; then
+    echo "lt"
+	return 1
+  fi
+
+  return 0
+}
+
+check_version() {
+  local v=$1
+  local PATTERN="^ *\([<>=]*\) *\([0-9.]*\)\(.*\)$"
+  if test x != `echo "$2" | sed -e "s/$PATTERN/x/"`; then
+    echo "ERROR: invalid version constraint $2" >&2
+    exit 1
+  fi
+  local op=`echo "$2" | sed -e "s/$PATTERN/\1/"`
+  local v2=`echo "$2" | sed -e "s/$PATTERN/\2/"`
+  local rest=`echo "$2" | sed -e "s/$PATTERN/\3/" -e 's/ //g'`
+  local result=1
+  
+  local rel=`compare_versions $v $v2`
+
+  case $rel$op in
+  "eq<="|"eq="|"eq>="|\
+  "gt>="|"gt>"|\
+  "lt<="|"lt<")
+    result=0
+	;;
+  esac
+  if test -z "$rest"; then
+    return $result
+  fi
+  PATTERN="\([|&]\{2\}\)\(.*\)$"
+  if test xx != x`echo "$rest" | sed -e "s/$PATTERN/x/"`; then
+    echo "ERROR: invalid version constraint '$rest'" >&2
+    exit 1
+  fi
+  op=`echo "$rest" | sed -e "s/$PATTERN/\1/"`
+  v2=`echo "$rest" | sed -e "s/$PATTERN/\2/"`
+  if eval "test $result -eq 0" $op "check_version \"$v\" \"$v2\""; then
+    return 0
+  fi
+  return 1
+}
