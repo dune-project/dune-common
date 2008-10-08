@@ -415,7 +415,7 @@ check_modname() {
 # 3: revision
 #
 get_sub_version() {
-  echo $1 | awk "{ split(\$0,s,\".\"); match(s[$2],/[[:digit:]]*/); print substr(s[$2],RSTART,RLENGTH) }"
+  echo $1 | awk -F. -v FIELD=$2 '{ print int($FIELD) }'
 }
 
 #
@@ -447,12 +447,6 @@ compare_sub_version() {
   # compare sub version number
   local sub1=`get_sub_version $1 $3`
   local sub2=`get_sub_version $2 $3`
-  if test x$sub1 = x ; then
-    sub1=0
-  fi
-  if test x$sub2 = x ; then
-    sub2=0
-  fi
 
   if test $sub1 -gt $sub2; then
     echo "gt"

@@ -31,19 +31,19 @@ AC_DEFUN([DUNE_MODULE_ADD_SUMMARY_ENTRY],[
   DUNE_ADD_SUMMARY_MOD_ENTRY(_dune_name,[$result])
 ])
 
+m4_define([_dune_sub_version],"`echo $1 | awk -F. -v FIELD=$2 '{ print int($FIELD) }'`")
+
 AC_DEFUN([DUNE_PARSE_MODULE_VERSION],[
+  AC_REQUIRE([DUNE_SUB_VERSION_FUNCTION])
   m4_pushdef([_dune_name], [$1])
   m4_pushdef([_dune_version], [$2])
   m4_pushdef([_dune_module], [m4_translit(_dune_name, [-], [_])])
   m4_pushdef([_DUNE_MODULE], [m4_toupper(_dune_module)])
 
   _DUNE_MODULE[]_VERSION=_dune_version
-  _DUNE_MODULE[]_VERSION_MAJOR="`echo _dune_version | awk '{ split($[]0,s,"."); match(s[[1]],/[[[[:digit:]]]]*/); print substr(s[[1]],RSTART,RLENGTH) }'`"
-  _DUNE_MODULE[]_VERSION_MINOR="`echo _dune_version | awk '{ split($[]0,s,"."); match(s[[2]],/[[[[:digit:]]]]*/); print substr(s[[2]],RSTART,RLENGTH) }'`"
-  _DUNE_MODULE[]_VERSION_REVISION="`echo _dune_version | awk '{ split($[]0,s,"."); match(s[[3]],/[[[[:digit:]]]]*/); print substr(s[[3]],RSTART,RLENGTH) }'`"
-  if test x$_DUNE_MODULE[]_VERSION_REVISION = x ; then
-    _DUNE_MODULE[]_VERSION_REVISION=0
-  fi
+  _DUNE_MODULE[]_VERSION_MAJOR=_dune_sub_version(_dune_version,1)
+  _DUNE_MODULE[]_VERSION_MINOR=_dune_sub_version(_dune_version,2)
+  _DUNE_MODULE[]_VERSION_REVISION=_dune_sub_version(_dune_version,3)
 
   AC_DEFINE_UNQUOTED(_DUNE_MODULE[]_VERSION, "_dune_version", [Define to the version of] _dune_name)
   AC_DEFINE_UNQUOTED(_DUNE_MODULE[]_VERSION_MAJOR, $_DUNE_MODULE[]_VERSION_MAJOR, [Define to the major version of] _dune_name)
