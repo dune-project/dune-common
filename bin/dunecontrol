@@ -97,7 +97,6 @@ export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:`canonicalpath $0`/../lib/pkgconfig"
 build_modules() {
   local command="$1"
   shift
-  load_opts $command
   local runcommand=run_$command
   modules="$@"
   for module in $modules; do
@@ -123,11 +122,15 @@ build_modules() {
 load_opts() {
   local command=$1
   local COMMAND=$(echo $command | tr '[:lower:]' '[:upper:]')
+  CMD_FLAGS="$(eval echo \$${COMMAND}_FLAGS)"
+  local CMD_FLAGS_FILE=""
   if test "x$DUNE_OPTS_FILE" != "x"; then
-    echo "----- loading default flags \$${COMMAND}_FLAGS from $DUNE_OPTS_FILE -----"
-    CMD_PARAMS="$(. $DUNE_OPTS_FILE; eval echo \$${COMMAND}_FLAGS)"
-  else
-    CMD_PARAMS="$(eval echo \$${COMMAND}_FLAGS)"
+    CMD_FLAGS_FILE="$(eval ${COMMAND}_FLAGS=""; . $DUNE_OPTS_FILE; eval echo \$${COMMAND}_FLAGS)"
+  fi
+  if test -n "$CMD_FLAGS_FILE"; then
+    echo "----- using default flags \$${COMMAND}_FLAGS from $DUNE_OPTS_FILE -----"
+  elif test -n "$CMD_FLAGS"; then
+    echo "----- using default flags \$${COMMAND}_FLAGS from environment -----"
   fi
 }
 
@@ -138,20 +141,15 @@ load_opts() {
 
 # check wheteher the parameter is valid command or not
 is_command() {
-  local commands="$1"
-  local command=""
-  for command in `echo $commands | tr ':' ' '`; do
-    eval '
-      case "$command" in
-        '$(echo $COMMANDS | sed -e 's/ / | /g')')
-          true
-          ;;
-        *)
-          return 1
-          ;;
-      esac'
-  done
-  return 0
+eval '
+case "$1" in
+  '`echo $COMMANDS | sed -e 's/ / | /g'`')
+    return 0
+    ;;
+  *)
+    return 1
+    ;;
+esac'
 }
 
 # list of all dunecontrol commands
@@ -183,12 +181,12 @@ done
 # these can be overwritten in the $CONTROL files
 #
 
-run_default_exec () { bash -c "eval $CMD_PARAMS"; }
+run_default_exec () { bash -c "eval $CMD_FLAGS"; }
 
 run_default_status () {
   local verbose=0
   local update=""
-  for i in $CMD_PARAMS; do
+  for i in $CMD_FLAGS; do
     if eval test "x$i" = "x-v"; then verbose=1; fi
     if eval test "x$i" = "x-vv"; then verbose=2; fi
     if eval test "x$i" = "x-u"; then update="-u"; fi
@@ -266,7 +264,7 @@ run_default_update () {
 }
 
 run_default_autogen () {
-  PARAMS="$CMD_PARAMS"
+  PARAMS="$CMD_FLAGS"
   local M4_PATH=""
   if test -f configure.ac && \
      ( test -d .svn || test -d .git || test -d CVS || test -f stamp-vc ); then
@@ -286,7 +284,7 @@ run_default_autogen () {
 }
 
 run_default_configure () {
-  PARAMS="$CMD_PARAMS"
+  PARAMS="$CMD_FLAGS"
   if test -x configure; then
 	ACLOCAL_FLAGS="-I ."
 	for m in $FOUND_MODULES; do
@@ -317,7 +315,7 @@ run_default_configure () {
 }
 
 run_default_make () {
-  PARAMS="$CMD_PARAMS"
+  PARAMS="$CMD_FLAGS"
   echo make "$PARAMS"
   eval $MAKE "$PARAMS"
 }
@@ -332,7 +330,7 @@ run_default_all () {
 
 run_default_svn () {
   if test -d .svn; then
-	PARAMS="$CMD_PARAMS"
+	PARAMS="$CMD_FLAGS"
 	eval svn "$PARAMS"
   fi
 }
@@ -414,10 +412,10 @@ fi
 trap onfailure EXIT
 
 # clear command opts
-for i in $COMMANDS; do
-  COMMAND=$(echo $i | tr '[:lower:]' '[:upper:]')
-  export ${COMMAND}_FLAGS=""
-done
+#for i in $COMMANDS; do
+#  COMMAND=$(echo $i | tr '[:lower:]' '[:upper:]')
+#  export ${COMMAND}_FLAGS=""
+#done
 
 # clear variables
 export SEARCH_MODULES=""
@@ -428,7 +426,6 @@ export ONLY=""
 while test $# -gt 0; do
     # get option
     option=$1
-    shift
 
     # get args
     set +e
@@ -522,27 +519,38 @@ while test $# -gt 0; do
 	  exit 1
       ;;
     *)
-      commands=$option
       break
     ;;
     esac
+
+    shift
 done
 
 while test $# -gt 0; do
-  COMMAND=$(echo $command | tr '[:lower:]' '[:upper:]')
-  # setup paramter list
-  CMD_PARAMS="$CMD_PARAMS \"$1\""
-  export ${COMMAND}_FLAGS="$CMD_PARAMS"
+  # get command
+  command=$1
   shift
-  # disable usage of opts file
-  if test "x$DUNE_OPTS_FILE" != "x"; then
-    echo "WARNING: commandline parameters will overwrite setting in opts file \"$DUNE_OPTS_FILE\""
-  fi 
-  DUNE_OPTS_FILE=""
-done
 
-# We need to run this via eval in order construct the case for the commands
-for command in `echo $commands | tr ':' ' '`; do
+  # get command options
+  CMD_FLAGS=
+  while test $# -gt 0 && test "$1" != ":"; do
+    COMMAND=$(echo $command | tr '[:lower:]' '[:upper:]')
+    # setup paramter list
+    CMD_FLAGS="$CMD_FLAGS \"$1\""
+    shift
+  done
+  if test -z "$CMD_FLAGS"; then
+    load_opts $command
+  else
+    # disable usage of opts file
+    if test "x$DUNE_OPTS_FILE" != "x"; then
+      echo "WARNING: commandline parameters will overwrite setting in opts file \"$DUNE_OPTS_FILE\""
+    fi 
+  fi
+
+  # skip command delimiter
+  if test "$1" = ":"; then shift; fi
+
   case "$command" in
     print)
       create_module_list
