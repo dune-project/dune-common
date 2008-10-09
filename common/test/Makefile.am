@@ -5,7 +5,7 @@ TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
 	poolallocatortest settest gcdlcmtest streamtest \
 	bigunsignedinttest mpihelpertest singletontest mpicollcomm \
 	utilitytest lrutest \
-	smallobject \
+	smallobject nullptr-test \
 	testfassign1 testfassign2 testfassign3 \
 	testfassign4 \
     testfassign_fail1 testfassign_fail2 testfassign_fail3 \
@@ -14,7 +14,7 @@ TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
 # which tests to run
 COMPILE_XFAIL=$(DUNE_COMMON_ROOT)/bin/xfail-compile-tests
 
-COMPILE_XFAIL_TESTS = static_assert_test
+COMPILE_XFAIL_TESTS = nullptr-test-fail static_assert_test
 
 compile_XFAIL:
 	for i in $(COMPILE_XFAIL_TESTS); do \
@@ -39,6 +39,10 @@ AM_LDFLAGS = $(LOCAL_LIBS)
 
 # define the programs
 smallobject_SOURCES = smallobject.cc
+
+nullptr_test_SOURCES = nullptr-test.cc nullptr-test2.cc
+nullptr_test_fail_SOURCES = nullptr-test.cc
+nullptr_test_fail_CPPFLAGS = -DFAIL
 
 static_assert_test_SOURCES = static_assert_test.cc
 
