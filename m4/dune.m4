@@ -34,7 +34,6 @@ AC_DEFUN([DUNE_MODULE_ADD_SUMMARY_ENTRY],[
 m4_define([_dune_sub_version],"`echo $1 | awk -F. -v FIELD=$2 '{ print int($FIELD) }'`")
 
 AC_DEFUN([DUNE_PARSE_MODULE_VERSION],[
-  AC_REQUIRE([DUNE_SUB_VERSION_FUNCTION])
   m4_pushdef([_dune_name], [$1])
   m4_pushdef([_dune_version], [$2])
   m4_pushdef([_dune_module], [m4_translit(_dune_name, [-], [_])])
