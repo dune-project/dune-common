@@ -129,6 +129,7 @@ load_opts() {
   fi
   if test -n "$CMD_FLAGS_FILE"; then
     echo "----- using default flags \$${COMMAND}_FLAGS from $DUNE_OPTS_FILE -----"
+    CMD_FLAGS="$CMD_FLAGS $(eval ${COMMAND}_FLAGS=""; . $DUNE_OPTS_FILE; eval echo \$${COMMAND}_FLAGS)"
   elif test -n "$CMD_FLAGS"; then
     echo "----- using default flags \$${COMMAND}_FLAGS from environment -----"
   fi
