@@ -123,13 +123,13 @@ load_opts() {
   local command=$1
   local COMMAND=$(echo $command | tr '[:lower:]' '[:upper:]')
   CMD_FLAGS="$(eval echo \$${COMMAND}_FLAGS)"
-  local CMD_FLAGS_FILE=""
+  local CMD_FLAGS_FROM_FILE=""
   if test "x$DUNE_OPTS_FILE" != "x"; then
-    CMD_FLAGS_FILE="$(eval ${COMMAND}_FLAGS=""; . $DUNE_OPTS_FILE; eval echo \$${COMMAND}_FLAGS)"
+    CMD_FLAGS_FROM_FILE="$(eval ${COMMAND}_FLAGS=""; . $DUNE_OPTS_FILE; eval echo \$${COMMAND}_FLAGS)"
   fi
-  if test -n "$CMD_FLAGS_FILE"; then
+  if test -n "$CMD_FLAGS_FROM_FILE"; then
     echo "----- using default flags \$${COMMAND}_FLAGS from $DUNE_OPTS_FILE -----"
-    CMD_FLAGS="$CMD_FLAGS $(eval ${COMMAND}_FLAGS=""; . $DUNE_OPTS_FILE; eval echo \$${COMMAND}_FLAGS)"
+    CMD_FLAGS=$CMD_FLAGS_FROM_FILE
   elif test -n "$CMD_FLAGS"; then
     echo "----- using default flags \$${COMMAND}_FLAGS from environment -----"
   fi
