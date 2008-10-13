@@ -21,7 +21,7 @@ canonicalname(){
 		echo Usage: canonicalname path >&2
 		return 1
 	fi
-	file="$1"
+	file="`eval echo $1`" # expand ~
 	if test ! -e "$file"; then
 		echo $file: file not found >&2
 		return 1
@@ -58,7 +58,7 @@ canonicalpath(){
      echo Usage: canonicalpath path >&2
      return 1
   fi
-  dirname $(canonicalname "$1")
+  dirname `canonicalname "$1"`
 }
 
 checkdebug () {
@@ -444,7 +444,7 @@ while test $# -gt 0; do
         echo  >&2
         exit 1;
       fi
-      DUNE_OPTS_FILE=$(canonicalpath $arg)/$(basename $arg)
+      DUNE_OPTS_FILE=`canonicalname $arg`
       if ! test -r "$DUNE_OPTS_FILE"; then
         usage
         echo "ERROR: could not read opts file \"$DUNE_OPTS_FILE\""  >&2
@@ -455,7 +455,7 @@ while test $# -gt 0; do
 	--*-opts=*)
       optcmd=`expr "x$option=" : 'x--\([^-]*\)-opts=.*'`
       if is_command $optcmd; then
-        COMMAND=$(echo $optcmd | tr '[:lower:]' '[:upper:]')
+        COMMAND=`echo $optcmd | tr '[:lower:]' '[:upper:]'`
         export ${COMMAND}_FLAGS="$arg"
       else
         usage

@@ -20,53 +20,6 @@ if test -z $GREP; then
   GREP=grep
 fi
 
-###############################################
-
-canonicalname(){
-	if test $# -ne 1; then
-		echo Usage: canonicalname path >&2
-		return 1
-	fi
-	file="$1"
-	if test ! -e "$file"; then
-		echo $file: file not found >&2
-		return 1
-	fi
-    # if this is a symlink, then follow the symlink
-	if test -L "$file"; then
-		fdir="`dirname \"$file\"`"
-		flink="`readlink \"$file\"`"
-		if test -e "$flink"; then
-			# these are absolute links, or links in the CWD
-			canonicalname "$flink"
-		else
-			canonicalname "$fdir/$flink"
-		fi
-	else
-        # if this is a file, then remember the filename and
-        # canonicalize the directory name
-		if test -f "$file"; then
-			fdir="`dirname \"$file\"`"
-			fname="`basename \"$file\"`"
-			fdir="`canonicalname \"$fdir\"`"
-			echo "$fdir/$fname"
-		fi
-        # if this is a directory, then create an absolute 
-        # directory name and we are done
-		if test -d "$file"; then
-			(cd "$file"; pwd)
-		fi
-	fi
-}
-
-canonicalpath(){
-  if test $# -ne 1; then
-     echo Usage: canonicalpath path >&2
-     return 1
-  fi
-  dirname $(canonicalname "$1")
-}
-
 #
 # read paramters from a $CONTROL file
 #
