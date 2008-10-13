@@ -282,7 +282,7 @@ namespace Dune
      * Reference dereference() const;
      *
      * // Compare for equality with j
-     * equals(i);
+     * bool equals(j);
      *
      * // position the iterator at the next element.
      * void increment()
