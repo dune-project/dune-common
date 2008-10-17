@@ -23,11 +23,10 @@
    || ((DUNE_VERSION_JOIN(module,MAJOR) == major) && (DUNE_VERSION_JOIN(module,MINOR) == minor) \
        && (DUNE_VERSION_JOIN(module,REVISION) >= revision)))
 
-#define DUNE_VERSION_ID(module) \
-  (unsigned int( \
-     (DUNE_VERSION_JOIN(module,MAJOR) << 24) + \
-     (DUNE_VERSION_JOIN(module,MINOR) << 16) + \
-     (DUNE_VERSION_JOIN(module,REVISION)) \
-     ))
+#define DUNE_VERSION_ID(major,minor,revision) \
+  ((unsigned int)((major << 24) + (minor << 16) + revision))
+
+#define DUNE_MODULE_VERSION_ID(module) \
+  DUNE_VERSION_ID( DUNE_VERSION_JOIN(module,MAJOR), DUNE_VERSION_JOIN(module,MINOR), DUNE_VERSION_JOIN(module,REVISION) )
 
 #endif
