@@ -8,6 +8,9 @@
 # name of the "control" files
 CONTROL="dune.module"
 
+# pattern needed to parse the Suggests and Depnds entries
+PARSE_SUGDEP_PATTERN='^ *\([^ ^:]\{1,\}\) *\(([^)]*)\)\{0,1\},\{0,1\} *\(.*\)$'
+
 ###############################################
 ###
 ### check for environment variables
@@ -167,18 +170,30 @@ sort_modules() {
 sort_dependencies() {
   # reset list
   export SORTEDMODULES=""
+  local deps=""
+  local name=""
+  local dep=""
+  local ver=""
+  local xdeps=""
   # handle each modules passed as parameter
   for m in "$@"; do
     # did we find a module file for this mopdule?
     if test "x$(eval echo \$HAVE_$m)" != "x"; then
-	  if test "x$(eval echo \$DEPS_$m)" != "x" ; then
-        for name in $(eval echo \$DEPS_$m); do
-          dep=$(fix_variable_name $name)
-          _sort_module $dep
-        done
-      fi
+      eval deps=\$DEPS_$m
+	  while test -n "$deps"; do
+        PATTERN=$PARSE_SUGDEP_PATTERN
+		name=`echo $deps | sed -e "s/$PATTERN/\1/"`
+		xdeps=`echo $deps | sed -e "s/$PATTERN/\3/"`
+		if test "$deps" = "$xdeps"; then
+          eval echo ERROR: parsing dependency string \$DEPS_$m >&2
+		  exit 1
+		fi
+		deps=$xdeps
+        dep=`fix_variable_name $name`
+        _sort_module $dep
+      done
     else
-      echo "ERROR: could not find module $(eval echo \$NAME_$m)" >&2
+      eval echo ERROR: could not find module \$NAME_$m >&2
       exit 1
     fi
   done
@@ -246,6 +261,14 @@ sort_suggestions() {
 #
 _sort_module() {
   local module="$1"
+  local modname=""
+  eval modname=\$NAME_$module
+  local deps=""
+  local name=""
+  local dep=""
+  local ver=""
+  local depver=""
+  local xdeps=""
   shift 1
   if ! check_modname $module; then 
     echo "ERROR: invalid module name $module" >&2
@@ -253,22 +276,39 @@ _sort_module() {
   fi
   if test "x$(eval echo \$SORT_DONE_${module})" != "xyes"; then
     # resolve dependencies
-    for name in $(eval "echo \$DEPS_$module"); do
+    eval deps=\$DEPS_$module
+    while test -n "$deps"; do
+      PATTERN=$PARSE_SUGDEP_PATTERN
+      name=`echo $deps | sed -e "s/$PATTERN/\1/"`
+      depver=`echo $deps | sed -e "s/$PATTERN/\2/" -e 's/[()]//g'`
+      xdeps=`echo $deps | sed -e "s/$PATTERN/\3/"`
+      if test "$deps" = "$xdeps"; then
+        echo "ERROR: parsing dependencies for $modname" >&2
+		exit 1
+      fi
+      deps="$xdeps"
 	  dep=$(fix_variable_name $name)
       if ! check_modname $dep; then 
         echo "ERROR: invalid module name $name" >&2
         exit 1
       fi
       if test "x$(eval echo \$HAVE_$dep)" != "x"; then
+	    eval ver=\$VERS_$dep
+        if ! check_version "$ver" "$depver"; then
+          echo "ERROR: version mismatch." >&2
+          echo "       $modname requires $name $depver," >&2
+          echo "       but only $name = $ver available." >&2
+          exit 1
+        fi
         _sort_module $dep
       else
         # perhaps this module is installed,
         # then it should be handled via pkg-config
         if ! pkg-config $name; then
-          echo "ERROR: could not find module $(eval echo \$NAME_$dep)" >&2
-          echo "       module is also unknown to pkg-config" >&2
+          echo "ERROR: could not find module $name," >&2
+          echo "       module is also unknown to pkg-config." >&2
           echo "       Maybe you need to adjust PKG_CONFIG_PATH!" >&2
-          echo "       $(eval echo \$NAME_$dep) is required by $(eval echo \$NAME_$module)" >&2
+          echo "       $name is required by $modname" >&2
           exit 1
         fi
       fi
@@ -414,6 +454,9 @@ compare_sub_version() {
 }
 
 check_version() {
+  if test -z "$2"; then # if no constraint is given, check_version is true
+    return 0
+  fi
   local v=$1
   local PATTERN="^ *\([<>=]*\) *\([0-9.]*\)\(.*\)$"
   if test x != `echo "$2" | sed -e "s/$PATTERN/x/"`; then

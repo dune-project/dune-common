@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 ###############################################
 ###
 ### read lib
@@ -100,3 +102,33 @@ test_version_check "1.2.3" "> 1.2"
 test_version_check "1.2.3" "= 1.2"
 test_version_check "1.2.3" "< 1.2"
 
+check_pattern()
+{
+  PATTERN=$PARSE_SUGDEP_PATTERN
+}
+
+parse_version()
+{
+  local deps="$1"
+  local name=""
+  local dep=""
+  local xdeps=""
+  echo start: $deps
+  while test -n "$deps"; do
+    PATTERN=$PARSE_SUGDEP_PATTERN
+    name=`echo $deps | sed -e "s/$PATTERN/\1/"`
+    ver=`echo $deps | sed -e "s/$PATTERN/\2/" -e 's/[()]//g'`
+    xdeps=`echo $deps | sed -e "s/$PATTERN/\3/"`
+    if test "$deps" = "$xdeps"; then
+      echo Error parsing dependency string \"$1\"
+	  exit 1
+    fi
+    deps=$xdeps
+    echo $name version $ver ... $deps
+  done
+  echo done
+}
+
+parse_version "dune-common (>= 1.2), dune-istl (<999)"
+parse_version "alf (12) bart()c"
+parse_version "a b () c"
