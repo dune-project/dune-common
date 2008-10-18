@@ -236,16 +236,15 @@ mkdir "$PROJECT"
 
 ################## dune.module ##################
 cat > "$PROJECT/dune.module" <<C_DELIM
-
 #dune module information file#
 ##############################
 
 #Name of the module
-Module:$MODULE
-Version:$VERSION
-Maintainer:$MAINTAINER
+Module: $MODULE
+Version: $VERSION
+Maintainer: $MAINTAINER
 #depending on 
-Depends:$DEPENDENCIES
+Depends: $DEPENDENCIES
 C_DELIM
 
 ################## CONFIGURE.AC ##################
@@ -416,6 +415,9 @@ AUTOMAKE_OPTIONS = foreign 1.5
 # pass most important options when "make distcheck" is used
 DISTCHECK_CONFIGURE_FLAGS = --with-dune=\$(DUNEROOT) CXX="\$(CXX)" CC="\$(CC)"
 M_DELIM
+
+include $(top_srcdir)/am/top-rules
+include $(top_srcdir)/am/global-rules
 
 ################## STAMP-VC ##################
 touch $PROJECT/stamp-vc
