@@ -26,20 +26,17 @@ namespace Dune {
 
     //! Constructor which initializes the field
     BitField(int n, bool v) : std::vector<bool>(n) {
-      for (size_t i=0; i<size(); i++)
-        (*this)[i] = v;
+      this->assign(size(), v);
     }
 
     //! Sets all entries to <tt> true </tt>
     void setAll() {
-      for (size_t i=0; i<size(); i++)
-        (*this)[i] = true;
+      this->assign(size(), true);
     }
 
     //! Sets all entries to <tt> false </tt>
     void unsetAll() {
-      for (size_t i=0; i<size(); i++)
-        (*this)[i] = false;
+      this->assign(size(), false);
     }
 
     //! Returns the number of set bits
