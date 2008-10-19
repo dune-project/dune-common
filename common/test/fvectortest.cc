@@ -80,12 +80,15 @@ public:
 int main()
 {
   try {
+    FieldVectorTest<int, 0>();
     FieldVectorTest<int, 1>();
     FieldVectorTest<int, 2>();
     FieldVectorTest<int, 3>();
+    FieldVectorTest<float, 0>();
     FieldVectorTest<float, 1>();
     FieldVectorTest<float, 2>();
     FieldVectorTest<float, 3>();
+    FieldVectorTest<double, 0>();
     FieldVectorTest<double, 1>();
     FieldVectorTest<double, 2>();
     FieldVectorTest<double, 3>();
