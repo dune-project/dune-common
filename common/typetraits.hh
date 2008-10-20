@@ -218,6 +218,17 @@ namespace Dune
     };
   };
 
+  template<>
+  class Conversion< int, double >
+  {
+  public:
+    enum {
+      exists = true,
+      isTwoWay = false,
+      sameType = false
+    };
+  };
+
   template<class T>
   class Conversion<T,T>{
   public:

@@ -9,7 +9,8 @@ TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
 	testfassign1 testfassign2 testfassign3 \
 	testfassign4 \
     testfassign_fail1 testfassign_fail2 testfassign_fail3 \
-    testfassign_fail4 testfassign_fail5 testfassign_fail6
+    testfassign_fail4 testfassign_fail5 testfassign_fail6 \
+    conversiontest
 
 # which tests to run
 COMPILE_XFAIL=$(DUNE_COMMON_ROOT)/bin/xfail-compile-tests
@@ -121,6 +122,8 @@ testfassign_fail5_CPPFLAGS = $(AM_CPPFLAGS) -D_N=2 -D_M=2 -D_VALUES="1, 2"
 
 testfassign_fail6_SOURCES = testfassign.cc
 testfassign_fail6_CPPFLAGS = $(AM_CPPFLAGS) -D_N=2 -D_M=2 -D_VALUES="1, 2, nextRow, 2, 3, nextRow, 4, 5"
+
+conversiontest_SOURCES = conversiontest.cc
 
 sourcescheck_NOSOURCES = exprtmpl.cc timing.cc
 
