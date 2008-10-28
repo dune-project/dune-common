@@ -24,7 +24,7 @@ namespace Dune {
       block_number(block_number)
     {};
 
-    typedef typename BlockBitField<block_size>::BlockLessBaseClass BlockLess;
+    typedef typename BlockBitField<block_size>::BlocklessBaseClass BlockLess;
 
   public:
     typedef std::vector<bool>::reference BitReference;
