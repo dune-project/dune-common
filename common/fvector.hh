@@ -5,6 +5,7 @@
 #define DUNE_FVECTOR_HH
 
 #include <cmath>
+#include <cstdlib>
 #include <cstddef>
 #include <complex>
 
