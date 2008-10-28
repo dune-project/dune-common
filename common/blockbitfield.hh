@@ -13,7 +13,7 @@
 
 namespace Dune {
 
-  template <int block_size> class BlockBitField;
+  template <int block_size, class Allocator=std::allocator<bool> > class BlockBitField;
 
   template <int block_size>
   class BlockBitFieldReference
@@ -68,8 +68,8 @@ namespace Dune {
   /** \brief A dynamic array of blocks of booleans
    *
    */
-  template <int block_size>
-  class BlockBitField : private std::vector<bool>
+  template <int block_size, class Allocator>
+  class BlockBitField : private std::vector<bool, Allocator>
   {
   protected:
 
