@@ -74,6 +74,19 @@ _EOF
   return 1
 }
 
+mpi_getmpichflags() {
+    # use special commands to extract options      
+    mpi_getflags "-compile_info"
+    MPI_CPPFLAGS="$retval"
+    # remove implicitly set -c
+    mpi_remove "$MPI_CPPFLAGS" '-c'
+    MPI_CPPFLAGS="$retval"
+    mpi_getflags "-link_info"
+    MPI_LDFLAGS="$retval"
+    # hack in option to disable MPICH-C++-bindings...
+    MPI_NOCXXFLAGS="-DMPICH_SKIP_MPICXX"
+}
+
 test_mpich () {
   AC_MSG_CHECKING([for mpich])
   cat >conftest.c <<_EOF
@@ -85,16 +98,29 @@ _EOF
   if (mpi_preprocess conftest.c \
       | grep -q MPICHX_PARALLELSOCKETS_PARAMETERS); then
     MPI_VERSION="MPICH"
-    # use special commands to extract options      
-    mpi_getflags "-compile_info"
-    MPI_CPPFLAGS="$retval"
-    # remove implicitly set -c
-    mpi_remove "$MPI_CPPFLAGS" '-c'
-    MPI_CPPFLAGS="$retval"
-    mpi_getflags "-link_info"
-    MPI_LDFLAGS="$retval"
-    # hack in option to disable MPICH-C++-bindings...
-    MPI_NOCXXFLAGS="-DMPICH_SKIP_MPICXX"
+    mpi_getmpichflags
+
+    AC_MSG_RESULT([yes])
+    rm -f conftest*
+    return 0    
+  fi
+
+  rm -f conftest*
+  AC_MSG_RESULT([no])
+  return 1
+}
+
+test_mpich2 () {
+  AC_MSG_CHECKING([for mpich])
+  cat >conftest.c <<_EOF
+#include <mpi.h>
+#include <stdio.h>
+int main() { printf ("%s\n", MPICH2_VERSION); return 0; }
+_EOF
+
+  if mpi_trybuild "-c conftest.c"; then
+    MPI_VERSION="MPICH2"
+    mpi_getmpichflags
 
     AC_MSG_RESULT([yes])
     rm -f conftest*
@@ -206,6 +232,7 @@ get_mpiparameters() {
   test_mpich && return
   test_openmpi && return
   test_mvapich && return
+  test_mpich2 && return
   test_ibmmpi && return
    
   MPI_VERSION="unknown"
