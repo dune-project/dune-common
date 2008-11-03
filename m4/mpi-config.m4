@@ -111,7 +111,7 @@ _EOF
 }
 
 test_mpich2 () {
-  AC_MSG_CHECKING([for mpich])
+  AC_MSG_CHECKING([for mpich2])
   cat >conftest.c <<_EOF
 #include <mpi.h>
 #include <stdio.h>
