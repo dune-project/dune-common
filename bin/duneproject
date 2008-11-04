@@ -414,10 +414,11 @@ ${CMODULE}_LDADD = \$(MPI_LDFLAGS) \$(ALBERTA_LDFLAGS) \$(ALBERTA_LIBS) \$(AMIRA
 AUTOMAKE_OPTIONS = foreign 1.5
 # pass most important options when "make distcheck" is used
 DISTCHECK_CONFIGURE_FLAGS = --with-dune=\$(DUNEROOT) CXX="\$(CXX)" CC="\$(CC)"
-M_DELIM
 
-include $(top_srcdir)/am/top-rules
-include $(top_srcdir)/am/global-rules
+include \$(top_srcdir)/am/top-rules
+include \$(top_srcdir)/am/global-rules
+
+M_DELIM
 
 ################## STAMP-VC ##################
 touch $PROJECT/stamp-vc
