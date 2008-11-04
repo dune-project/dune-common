@@ -285,9 +285,14 @@ if [ "$j" = "0" ]; then
     fi
 done
 
+echo "------------------------------------------"
+echo "writing initial files:"
+
 # we need the module with _ instead of - to not confuse automake
 fix_and_assign CMODULE $MODULE
 
+################## OCNFIGURE.AC ##################
+echo "- $PROJECT/configure.ac"
 cat > "$PROJECT/configure.ac" <<C_DELIM
 # -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
@@ -308,13 +313,17 @@ AC_SUBST(AM_CPPFLAGS, \$DUNE_CPPFLAGS)
 AC_SUBST(AM_LDFLAGS, \$DUNE_LDFLAGS)
 LIBS="\$DUNE_LIBS"
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([
+  Makefile
+  $MODULE.pc
+])
 AC_OUTPUT
 # finally print the summary information
 DUNE_SUMMARY_ALL
 C_DELIM
 
 ################## README ##################
+echo "- $PROJECT/README"
 cat > "$PROJECT/README" <<R_DELIM
 Preparing the Sources
 =========================
@@ -392,6 +401,7 @@ The full build-system is described in the dune-common/doc/buildsystem (SVN versi
 R_DELIM
 
 ################## MAKEFILE.AM ##################
+echo "- $PROJECT/Makefile.am"
 cat> "$PROJECT/Makefile.am" << M_DELIM
 # \$Id$
 
@@ -421,9 +431,33 @@ include \$(top_srcdir)/am/global-rules
 M_DELIM
 
 ################## STAMP-VC ##################
+echo "- $PROJECT/stamp-vc"
 touch $PROJECT/stamp-vc
 
+################## PROJECT.PC.IN ##################
+echo "- $PROJECT/$MODULE.pc.in"
+cat> "$PROJECT/$MODULE.pc.in" << CC_DELIM
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+CXX=@CXX@
+CC=@CC@
+DEPENDENCIES=@REQUIRES@
+
+Name: @PACKAGE_NAME@
+Version: @VERSION@
+Description: $MODULE module
+URL: http://dune-project.org/
+Requires: ${DEPENDENCIES}
+Libs: -L${libdir}
+Cflags: -I${includedir}
+CC_DELIM
+echo "    Please remember to update your $PROJECT/$MODULE.pc.in,"
+echo "    Description and URL are missing right now."
+
 ################## PROJECT.CC ##################
+echo "- $PROJECT/$CMODULE.cc"
 cat> "$PROJECT/$CMODULE.cc" << CC_DELIM
 #ifdef HAVE_CONFIG_H
 # include "config.h"     
@@ -454,3 +488,8 @@ int main(int argc, char** argv)
 }
 CC_DELIM
 
+## done
+echo "done."
+echo "------------------------------------------"
+echo "For further details read the Dune Buildsystem-Howto:"
+echo "http://www.dune-project.org/doc/buildsystem/buildsystem.pdf"
