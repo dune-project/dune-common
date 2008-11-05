@@ -16,8 +16,8 @@ EXTRAINSTALL = buildsystem.pdf
 EXTRA_DIST = $(DOCS)
 
 # install the html pages
-docdir=$(datadir)/doc/buildsystem
-doc_DATA = $(DOCS)
+buildsystemdir=$(datadir)/doc/dune-common/buildsystem
+buildsystem_DATA = $(DOCS)
 
 # include rules for wml -> html transformation
 include $(top_srcdir)/am/webstuff
