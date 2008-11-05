@@ -3,9 +3,7 @@
 if BUILD_DOCS
   DOXYGENTAG = doxygen-tag
 # only build html when wml is available
-if WML
   WHAT = bestpractice.html
-endif
   DOXYGEN_HTML = html
   DOXYGEN_DIST = html-dist
 endif
@@ -23,7 +21,6 @@ if BUILD_DOCS
 DOXYGENINSTALL = *.html *.css *.png *.gif ../doxygen.log
 endif
 
-if WML
 # themeing doxygen
 DOXYGENHEADER = doxy-header.html
 DOXYGENHEADERBUILD = $(DOXYGENHEADER).build
@@ -34,7 +31,6 @@ DOYXFILE_OVERWRITE = echo "HTML_HEADER = $(DOXYGENHEADER)"; \
   echo "HTML_STYLESHEET = $(DOXYGENSTYLESHEET)";
 DOXYFILESHORT_OVERWRITE = $(DOYXFILE_OVERWRITE) \
   echo "SHORT_NAMES = YES";
-endif
 
 #we need this in the distribution
 if BUILD_DOCS
