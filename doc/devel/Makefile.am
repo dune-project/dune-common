@@ -14,8 +14,8 @@ CURDIR=doc/devel
 
 # install the html pages
 if BUILD_DOCS
-docdir=$(datadir)/doc/dune-common/devel
-doc_DATA = $(PAGES)
+develdir=$(datadir)/doc/dune-common/devel
+devel_DATA = $(PAGES)
 EXTRA_DIST= $(PAGES)
 endif
 
