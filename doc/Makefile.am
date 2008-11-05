@@ -6,9 +6,7 @@ SUBDIRS = devel doxygen layout buildsystem
 # only build html pages, if documentation is enabled
 if BUILD_DOCS
 # only build html when wml is available
-if WML
  PAGES = view-concept.html installation-notes.html contrib-software.html
-endif
 endif
 
 # automatically create these web pages
