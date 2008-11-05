@@ -3,6 +3,8 @@
 #ifndef DUNE_BITFIELD_HH
 #define DUNE_BITFIELD_HH
 
+#warning This file is deprecated! Use blockbitfield.hh instead!
+
 #include <vector>
 #include <iostream>
 
@@ -58,7 +60,7 @@ namespace Dune {
       return s;
     }
 
-  };
+  } DUNE_DEPRECATED;
 
 }
 
