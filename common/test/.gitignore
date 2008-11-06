@@ -42,3 +42,4 @@ testfassign4
 smallobject
 conversiontest
 nullptr-test
+blockbitfieldtest

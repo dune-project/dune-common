@@ -10,7 +10,7 @@ TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
 	testfassign4 \
     testfassign_fail1 testfassign_fail2 testfassign_fail3 \
     testfassign_fail4 testfassign_fail5 testfassign_fail6 \
-    conversiontest
+    conversiontest blockbitfieldtest
 
 # which tests to run
 COMPILE_XFAIL=$(DUNE_COMMON_ROOT)/bin/xfail-compile-tests
@@ -40,6 +40,8 @@ AM_LDFLAGS = $(LOCAL_LIBS)
 
 # define the programs
 smallobject_SOURCES = smallobject.cc
+
+blockbitfieldtest_SOURCES = blockbitfieldtest.cc
 
 nullptr_test_SOURCES = nullptr-test.cc nullptr-test2.cc
 nullptr_test_fail_SOURCES = nullptr-test.cc
