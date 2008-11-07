@@ -749,8 +749,9 @@ namespace Dune {
   template<typename T1, typename U1>
   inline bool operator!=(const Pair<T1,Nil>& tuple1, const Pair<U1,Nil>& tuple2)
   {
-    dune_static_assert((IsInteroperable<T1,U1>::value), "T1 and U1 have to be interoperable, "<<
-                       "i.e. either conversion from one to the other must exist!");
+    dune_static_assert( (IsInteroperable<T1,U1>::value),
+                        "T1 and U1 have to be interoperable, i.e., either "
+                        "conversion from one to the other must exist." );
     return (tuple1.first()!=tuple2.first());
   }
 
