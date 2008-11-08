@@ -147,7 +147,7 @@ namespace Dune {
    */
   template<class C, class T, class R=T&, class D = std::ptrdiff_t>
   class GenericIterator :
-    public Dune::RandomAccessIteratorFacade<GenericIterator<C,T>,T,R,D>
+    public Dune::RandomAccessIteratorFacade<GenericIterator<C,T,R,D>,T,R,D>
   {
     friend class GenericIterator<typename remove_const<C>::type, typename remove_const<T>::type, typename mutable_reference<R>::type, D>;
     friend class GenericIterator<const typename remove_const<C>::type, const typename remove_const<T>::type, typename const_reference<R>::type, D>;
