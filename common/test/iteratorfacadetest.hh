@@ -6,12 +6,13 @@
 #include <dune/common/genericiterator.hh>
 #include <dune/common/typetraits.hh>
 
-template<class T>
+template<class T,
+    template<class,class,class,class> class IteratorFacade=Dune::RandomAccessIteratorFacade>
 class TestContainer {
 public:
-  typedef Dune::GenericIterator<TestContainer<T>,T> iterator;
+  typedef Dune::GenericIterator<TestContainer<T,IteratorFacade>,T,T&,std::ptrdiff_t,IteratorFacade> iterator;
 
-  typedef Dune::GenericIterator<const TestContainer<T>,const T> const_iterator;
+  typedef Dune::GenericIterator<const TestContainer<T,IteratorFacade>,const T,const T&,std::ptrdiff_t,IteratorFacade> const_iterator;
 
   TestContainer(){
     for(int i=0; i < 100; i++)

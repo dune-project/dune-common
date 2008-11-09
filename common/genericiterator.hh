@@ -145,12 +145,16 @@ namespace Dune {
    * If template parameter C has a const qualifier we are a const iterator, otherwise we
    * are a mutable iterator.
    */
-  template<class C, class T, class R=T&, class D = std::ptrdiff_t>
+  template<class C, class T, class R=T&, class D = std::ptrdiff_t,
+      template<class,class,class,class> class IteratorFacade=RandomAccessIteratorFacade>
   class GenericIterator :
-    public Dune::RandomAccessIteratorFacade<GenericIterator<C,T,R,D>,T,R,D>
+    public IteratorFacade<GenericIterator<C,T,R,D,IteratorFacade>,T,R,D>
   {
-    friend class GenericIterator<typename remove_const<C>::type, typename remove_const<T>::type, typename mutable_reference<R>::type, D>;
-    friend class GenericIterator<const typename remove_const<C>::type, const typename remove_const<T>::type, typename const_reference<R>::type, D>;
+    friend class GenericIterator<typename remove_const<C>::type, typename remove_const<T>::type, typename mutable_reference<R>::type, D, IteratorFacade>;
+    friend class GenericIterator<const typename remove_const<C>::type, const typename remove_const<T>::type, typename const_reference<R>::type, D, IteratorFacade>;
+
+    typedef GenericIterator<typename remove_const<C>::type, typename remove_const<T>::type, typename mutable_reference<R>::type, D, IteratorFacade> MutableIterator;
+    typedef GenericIterator<const typename remove_const<C>::type, const typename remove_const<T>::type, typename const_reference<R>::type, D, IteratorFacade> ConstIterator;
 
   public:
 
@@ -179,7 +183,7 @@ namespace Dune {
     /**
      * @brief The type of the reference to the values accessed.
      */
-    typedef T& Reference;
+    typedef R Reference;
 
     // Constructors needed by the base iterators.
     GenericIterator() : container_(0), position_(0)
@@ -203,7 +207,7 @@ namespace Dune {
      * 1. if we are mutable this is the only valid copy constructor, as the arguments is a mutable iterator
      * 2. if we are a const iterator the argument is a mutable iterator => This is the needed conversion to initialize a const iterator form a mutable one.
      */
-    GenericIterator(const GenericIterator<typename remove_const<C>::type,typename remove_const<T>::type, typename mutable_reference<R>::type, D>& other) : container_(other.container_), position_(other.position_)
+    GenericIterator(const MutableIterator& other) : container_(other.container_), position_(other.position_)
     {}
 
     /**
@@ -215,16 +219,16 @@ namespace Dune {
      * 1. if we are mutable the arguments is a const iterator and therefore calling this method is mistake in the users code and results in a (probably not understandable compiler error
      * 2. If we are a const iterator this is the default copy constructor as the argument is a const iterator too.
      */
-    GenericIterator(const GenericIterator<const typename remove_const<C>::type, const typename remove_const<T>::type, typename const_reference<R>::type, D>& other) : container_(other.container_), position_(other.position_)
+    GenericIterator(const ConstIterator& other) : container_(other.container_), position_(other.position_)
     {}
 
     // Methods needed by the forward iterator
-    bool equals(const GenericIterator<typename remove_const<Container>::type,typename remove_const<T>::type, typename mutable_reference<R>::type, D>& other) const
+    bool equals(const MutableIterator & other) const
     {
       return position_ == other.position_ && container_ == other.container_;
     }
 
-    bool equals(const GenericIterator<const typename remove_const<C>::type,const typename remove_const<T>::type, typename const_reference<R>::type, D>& other) const
+    bool equals(const ConstIterator & other) const
     {
       return position_ == other.position_ && container_ == other.container_;
     }
@@ -251,17 +255,18 @@ namespace Dune {
       position_=position_+n;
     }
 
-    DifferenceType distanceTo(const GenericIterator<const typename remove_const<Container>::type,const typename remove_const<T>::type, typename const_reference<R>::type, D> & other) const
+    DifferenceType distanceTo(const MutableIterator& other) const
     {
       assert(other.container_==container_);
       return other.position_ - position_;
     }
 
-    DifferenceType distanceTo(const GenericIterator<typename remove_const<Container>::type, typename remove_const<T>::type, typename mutable_reference<R>::type, D> & other) const
+    DifferenceType distanceTo(const ConstIterator& other) const
     {
       assert(other.container_==container_);
       return other.position_ - position_;
     }
+
   private:
     Container *container_;
     DifferenceType position_;
