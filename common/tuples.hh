@@ -435,7 +435,12 @@ namespace Dune {
   };
 
 #endif
-#define ElementType tuple_element
+
+  template< int N, class Tuple >
+  struct ElementType
+  {
+    typedef typename tuple_element< N, Tuple > :: type Type DUNE_DEPRECATED;
+  };
 
 #if defined HAVE_TUPLE || defined HAVE_TR1_TUPLE
 #ifdef HAVE_TUPLE
