@@ -16,22 +16,34 @@
 
 namespace Dune {
 
-  template <int block_size, class Alloc> class BlockBitField;
+  template <int block_size, class Alloc> class BitSetVector;
+  template <int block_size, class Alloc> class BitSetVectorReference;
 
+  /**
+     \brief A proxy class that acts as a const reference to a single
+     bitset in a BitSetVector.
+
+     It contains a conversion to std::bitset and most of the
+     interface of const std::bitset.
+
+     \warning As this is only a proxy class, you can not get the
+     address of the bitset.
+   */
   template <int block_size, class Alloc>
-  class BlockBitFieldConstReference
+  class BitSetVectorConstReference
   {
   protected:
 
-    typedef Dune::BlockBitField<block_size, Alloc> BlockBitField;
-    friend class Dune::BlockBitField<block_size, Alloc>;
+    typedef Dune::BitSetVector<block_size, Alloc> BitSetVector;
+    friend class Dune::BitSetVector<block_size, Alloc>;
 
-    BlockBitFieldConstReference(const BlockBitField& blockBitField, int block_number) :
+    BitSetVectorConstReference(const BitSetVector& blockBitField, int block_number) :
       blockBitField(blockBitField),
       block_number(block_number)
     {};
 
   public:
+
     typedef std::bitset<block_size> bitset;
 
     // bitset interface typedefs
@@ -81,7 +93,7 @@ namespace Dune {
     //! Returns true if any bits are set.
     bool any() const
     {
-      return nSetBits();
+      return count();
     }
 
     //! Returns true if no bits are set.
@@ -101,29 +113,43 @@ namespace Dune {
       return getBit(i);
     }
 
-    //! Returns the total number of set bits
-    size_type nSetBits() const
-    {
-      return count();
-    }
-
     //! cast to bitset
     operator bitset() const
     {
-      return blockBitField.getLocalBits(block_number);
+      return blockBitField.getRepr(block_number);
+    }
+
+    //! Equality of reference and std::bitset
+    bool operator== (const bitset& bs) const
+    {
+      return equals(bs);
+    }
+
+    //! Equality of reference and other reference
+    bool operator== (const BitSetVectorConstReference& bs) const
+    {
+      return equals(bs);
+    }
+
+    //! Inequality of reference and std::bitset
+    bool operator!= (const bitset& bs) const
+    {
+      return ! equals(bs);
+    }
+
+    //! Inequality of reference and other reference
+    bool operator!= (const BitSetVectorConstReference& bs) const
+    {
+      return ! equals(bs);
     }
 
     /*!
        missing operators:
 
-       - bool operator==(const bitset&) const
-       - bool operator==(const BlockBitFieldReferenceBase&) const
-       - bool operator!=(const bitset&) const
-       - bool operator!=(const BlockBitFieldReferenceBase&) const
        - unsigned long to_ulong() const
      */
 
-    friend std::ostream& operator<< (std::ostream& s, const BlockBitFieldConstReference& v)
+    friend std::ostream& operator<< (std::ostream& s, const BitSetVectorConstReference& v)
     {
       s << "(";
       for(int i=0; i<block_size; ++i)
@@ -133,7 +159,7 @@ namespace Dune {
     }
 
   protected:
-    const BlockBitField& blockBitField;
+    const BitSetVector& blockBitField;
     int block_number;
 
     const_reference getBit(size_type i) const
@@ -141,32 +167,66 @@ namespace Dune {
       return blockBitField.getBit(block_number,i);
     }
 
+    template<class BS>
+    bool equals(const BS & bs) const
+    {
+      bool eq = true;
+      for(int i=0; i<block_size; ++i)
+        eq &= (getBit(i) == bs[i]);
+      return eq;
+    }
+
+  private:
+    /**
+       This is only a Proxy class, you can't get the address of the
+       object it references
+     */
+    void operator & ();
   };
 
+  /**
+     \brief A proxy class that acts as a mutable reference to a
+     single bitset in a BitSetVector.
+
+     It contains an assignment operator from std::bitset.  It
+     inherits the const std::bitset interface provided by
+     BitSetVectorConstReference and adds most of the non-const
+     methods of std::bitset.
+
+     \warning As this is only a proxy class, you can not get the
+     address of the bitset.
+   */
   template <int block_size, class Alloc>
-  class BlockBitFieldReference : public BlockBitFieldConstReference<block_size,Alloc>
+  class BitSetVectorReference : public BitSetVectorConstReference<block_size,Alloc>
   {
   protected:
 
-    typedef Dune::BlockBitField<block_size, Alloc> BlockBitField;
-    friend class Dune::BlockBitField<block_size, Alloc>;
+    typedef Dune::BitSetVector<block_size, Alloc> BitSetVector;
+    friend class Dune::BitSetVector<block_size, Alloc>;
 
-    typedef Dune::BlockBitFieldConstReference<block_size,Alloc> BlockBitFieldConstReference;
+    typedef Dune::BitSetVectorConstReference<block_size,Alloc> BitSetVectorConstReference;
 
-    BlockBitFieldReference(BlockBitField& blockBitField, int block_number) :
-      BlockBitFieldConstReference(blockBitField, block_number),
+    BitSetVectorReference(BitSetVector& blockBitField, int block_number) :
+      BitSetVectorConstReference(blockBitField, block_number),
       blockBitField(blockBitField)
     {};
 
   public:
     typedef std::bitset<block_size> bitset;
 
-    // bitset interface typedefs
+    //! bitset interface typedefs
+    //! \{
+    //! A proxy class that acts as a reference to a single bit.
     typedef typename std::vector<bool, Alloc>::reference reference;
+    //! A proxy class that acts as a const reference to a single bit.
     typedef typename std::vector<bool, Alloc>::const_reference const_reference;
+    //! \}
+
+    //! size_type typedef (an unsigned integral type)
     typedef size_t size_type;
 
-    BlockBitFieldReference& operator=(bool b)
+    //! Assignment from bool, sets each bit in the bitset to b
+    BitSetVectorReference& operator=(bool b)
     {
       for(int i=0; i<block_size; ++i)
         getBit(i) = b;
@@ -174,7 +234,8 @@ namespace Dune {
       return (*this);
     }
 
-    BlockBitFieldReference& operator=(const bitset & b)
+    //! Assignment from bitset
+    BitSetVectorReference& operator=(const bitset & b)
     {
       for(int i=0; i<block_size; ++i)
         getBit(i) = b[i];
@@ -182,7 +243,8 @@ namespace Dune {
       return (*this);
     }
 
-    BlockBitFieldReference& operator=(const BlockBitFieldConstReference & b)
+    //! Assignment from BitSetVectorConstReference
+    BitSetVectorReference& operator=(const BitSetVectorConstReference & b)
     {
       for(int i=0; i<block_size; ++i)
         getBit(i) = b[i];
@@ -191,7 +253,7 @@ namespace Dune {
     }
 
     //! Bitwise and.
-    BlockBitFieldReference& operator&=(const BlockBitFieldConstReference& x)
+    BitSetVectorReference& operator&=(const BitSetVectorConstReference& x)
     {
       for (size_type i=0; i<block_size; i++)
         set(i, getBit(i) & x.getBit(i));
@@ -199,7 +261,7 @@ namespace Dune {
     }
 
     //! Bitwise inclusive or.
-    BlockBitFieldReference& operator|=(const BlockBitFieldConstReference& x)
+    BitSetVectorReference& operator|=(const BitSetVectorConstReference& x)
     {
       for (size_type i=0; i<block_size; i++)
         set(i, getBit(i) | x.getBit(i));
@@ -207,7 +269,7 @@ namespace Dune {
     }
 
     //! Bitwise exclusive or.
-    BlockBitFieldReference& operator^=(const BlockBitFieldConstReference& x)
+    BitSetVectorReference& operator^=(const BitSetVectorConstReference& x)
     {
       for (size_type i=0; i<block_size; i++)
         set(i, getBit(i) ^ x.getBit(i));
@@ -215,7 +277,7 @@ namespace Dune {
     }
 
     //! Left shift.
-    BlockBitFieldReference& operator<<=(size_type n)
+    BitSetVectorReference& operator<<=(size_type n)
     {
       for (size_type i=0; i<block_size-n; i++)
         set(i, getBit(i+n));
@@ -223,7 +285,7 @@ namespace Dune {
     }
 
     //! Right shift.
-    BlockBitFieldReference& operator>>=(size_type n)
+    BitSetVectorReference& operator>>=(size_type n)
     {
       for (size_type i=0; i<block_size-n; i++)
         set(i+n, getBit(i));
@@ -231,7 +293,7 @@ namespace Dune {
     }
 
     // Sets every bit.
-    BlockBitFieldReference& set()
+    BitSetVectorReference& set()
     {
       for (size_type i=0; i<block_size; i++)
         set(i);
@@ -239,7 +301,7 @@ namespace Dune {
     }
 
     //! Flips the value of every bit.
-    BlockBitFieldReference& flip()
+    BitSetVectorReference& flip()
     {
       for (size_type i=0; i<block_size; i++)
         flip(i);
@@ -247,28 +309,27 @@ namespace Dune {
     }
 
     //! Clears every bit.
-    BlockBitFieldReference& reset()
+    BitSetVectorReference& reset()
     {}
 
     //! Sets bit n if val is nonzero, and clears bit n if val is zero.
-    BlockBitFieldReference& set(size_type n, int val = 1)
+    BitSetVectorReference& set(size_type n, int val = 1)
     {
       getBit(n) = val;
       return *this;
     }
 
     //! Clears bit n.
-    BlockBitFieldReference& reset(size_type n)
+    BitSetVectorReference& reset(size_type n)
     {
       set(n, false);
       return *this;
     }
 
     //! Flips bit n.
-    BlockBitFieldReference& flip(size_type n)
+    BitSetVectorReference& flip(size_type n)
     {
-      bool val = ! getBit(n);
-      set(n, val);
+      getBit(n).flip();
       return *this;
     }
 
@@ -278,7 +339,7 @@ namespace Dune {
     }
 
   protected:
-    BlockBitField& blockBitField;
+    BitSetVector& blockBitField;
 
     reference getBit(size_type i)
     {
@@ -287,28 +348,58 @@ namespace Dune {
   };
 
   /**
+     typetraits for BitSetVectorReference
+   */
+  template<int block_size, class Alloc>
+  struct const_reference< BitSetVectorReference<block_size,Alloc> >
+  {
+    typedef BitSetVectorConstReference<block_size,Alloc> type;
+  };
+
+  template<int block_size, class Alloc>
+  struct const_reference< BitSetVectorConstReference<block_size,Alloc> >
+  {
+    typedef BitSetVectorConstReference<block_size,Alloc> type;
+  };
+
+  template<int block_size, class Alloc>
+  struct mutable_reference< BitSetVectorReference<block_size,Alloc> >
+  {
+    typedef BitSetVectorReference<block_size,Alloc> type;
+  };
+
+  template<int block_size, class Alloc>
+  struct mutable_reference< BitSetVectorConstReference<block_size,Alloc> >
+  {
+    typedef BitSetVectorReference<block_size,Alloc> type;
+  };
+
+  /**
      \brief A dynamic array of blocks of booleans
    */
   template <int block_size, class Allocator=std::allocator<bool> >
-  class BlockBitField : private std::vector<bool, Allocator>
+  class BitSetVector : private std::vector<bool, Allocator>
   {
     /** \brief The implementation class: an unblocked bitfield */
     typedef std::vector<bool, Allocator> BlocklessBaseClass;
 
   public:
     //! container interface typedefs
-    //! {
+    //! \{
     typedef std::bitset<block_size> value_type;
-    typedef BlockBitFieldReference<block_size,Allocator> reference;
-    typedef BlockBitFieldConstReference<block_size,Allocator> const_reference;
+    typedef BitSetVectorReference<block_size,Allocator> reference;
+    typedef BitSetVectorConstReference<block_size,Allocator> const_reference;
+    typedef BitSetVectorReference<block_size,Allocator>* pointer;
+    typedef BitSetVectorConstReference<block_size,Allocator>* const_pointer;
     typedef typename std::vector<bool, Allocator>::size_type size_type;
-    //! }
+    typedef Allocator allocator_type;
+    //! \}
 
     //! iterators
-    //! {
-    typedef Dune::GenericIterator<BlockBitField<block_size,Allocator>, value_type, reference> iterator;
-    typedef Dune::GenericIterator<const BlockBitField<block_size,Allocator>, const value_type, const reference> const_iterator;
-    //! }
+    //! \{
+    typedef Dune::GenericIterator<BitSetVector<block_size,Allocator>, value_type, reference, std::ptrdiff_t, ForwardIteratorFacade> iterator;
+    typedef Dune::GenericIterator<const BitSetVector<block_size,Allocator>, const value_type, const_reference, std::ptrdiff_t, ForwardIteratorFacade> const_iterator;
+    //! \}
 
     //! Returns a iterator pointing to the beginning of the vector.
     iterator begin(){
@@ -322,21 +413,21 @@ namespace Dune {
 
     //! Returns an iterator pointing to the end of the vector.
     iterator end(){
-      return iterator(*this, 100);
+      return iterator(*this, size());
     }
 
     //! Returns a const_iterator pointing to the end of the vector.
     const_iterator end() const {
-      return const_iterator(*this, 100);
+      return const_iterator(*this, size());
     }
 
     //! Default constructor
-    BlockBitField() :
+    BitSetVector() :
       BlocklessBaseClass()
     {}
 
     //! Construction from an unblocked bitfield
-    BlockBitField(const BlocklessBaseClass& blocklessBitField) :
+    BitSetVector(const BlocklessBaseClass& blocklessBitField) :
       BlocklessBaseClass(blocklessBitField)
     {
       if (blocklessBitField.size()%block_size != 0)
@@ -346,12 +437,12 @@ namespace Dune {
     /** Constructor with a given length
         \param n Number of blocks
      */
-    explicit BlockBitField(int n) :
+    explicit BitSetVector(int n) :
       BlocklessBaseClass(n*block_size)
     {}
 
     //! Constructor which initializes the field with true or false
-    BlockBitField(int n, bool v) :
+    BitSetVector(int n, bool v) :
       BlocklessBaseClass(n*block_size,v)
     {}
 
@@ -408,7 +499,19 @@ namespace Dune {
     }
 
     //! Returns the total number of set bits
-    size_type nSetBits() const
+    size_type nSetBits() const DUNE_DEPRECATED
+    {
+      return count();
+    }
+
+    //! Returns the number of set bits, while each block is masked with 1<<i
+    int nSetBits(int i) const DUNE_DEPRECATED
+    {
+      return countmasked(i);
+    }
+
+    //! Returns the number of bits that are set.
+    size_type count() const
     {
       size_type n = 0;
       for(size_type i=0; i<BlocklessBaseClass::size(); ++i)
@@ -416,8 +519,8 @@ namespace Dune {
       return n;
     }
 
-    //! Returns the number of set bits for given component
-    int nSetBits(int j) const
+    //! Returns the number of set bits, while each block is masked with 1<<i
+    int countmasked(int j) const
     {
       size_type n = 0;
       size_type blocks = size();
@@ -426,18 +529,8 @@ namespace Dune {
       return n;
     }
 
-
-    /** \brief Return i-th block by value */
-    value_type getLocalBits(int i) const
-    {
-      value_type bits;
-      for(int j=0; j<block_size; ++j)
-        bits.set(j, getBit(i,j));
-      return bits;
-    }
-
     //! Send bitfield to an output stream
-    friend std::ostream& operator<< (std::ostream& s, const BlockBitField& v)
+    friend std::ostream& operator<< (std::ostream& s, const BitSetVector& v)
     {
       for (size_t i=0; i<v.size(); i++)
         s << v[i] << "  ";
@@ -448,6 +541,15 @@ namespace Dune {
 
   private:
 
+    // get a prepresentation as value_type
+    value_type getRepr(int i) const
+    {
+      value_type bits;
+      for(int j=0; j<block_size; ++j)
+        bits.set(j, getBit(i,j));
+      return bits;
+    }
+
     typename std::vector<bool>::reference getBit(size_type i, size_type j) {
       return BlocklessBaseClass::operator[](i*block_size+j);
     }
@@ -456,8 +558,8 @@ namespace Dune {
       return BlocklessBaseClass::operator[](i*block_size+j);
     }
 
-    friend class BlockBitFieldReference<block_size,Allocator>;
-    friend class BlockBitFieldConstReference<block_size,Allocator>;
+    friend class BitSetVectorReference<block_size,Allocator>;
+    friend class BitSetVectorConstReference<block_size,Allocator>;
   };
 
 }  // namespace Dune
