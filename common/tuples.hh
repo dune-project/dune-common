@@ -391,7 +391,112 @@ namespace Dune {
 #endif
 
   // be backwards compatible
-#define Tuple tuple
+  template<typename T1, typename T2 = Nil, typename T3 = Nil,
+      typename T4 = Nil, typename T5 = Nil,typename T6 = Nil,
+      typename T7 = Nil, typename T8 = Nil, typename T9 = Nil>
+  struct Tuple
+    : public tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>
+  {
+    Tuple() DUNE_DEPRECATED
+    {}
+
+    Tuple(typename TupleAccessTraits<T1>::ParameterType t1) DUNE_DEPRECATED
+      : tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>(t1, nullType(), nullType(), nullType(),
+                                          nullType(), nullType(), nullType(), nullType(),
+                                          nullType())
+    {}
+
+    Tuple(typename TupleAccessTraits<T1>::ParameterType t1,
+          typename TupleAccessTraits<T2>::ParameterType t2) DUNE_DEPRECATED
+      : tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>(t1, t2, nullType(), nullType(),
+                                          nullType(), nullType(), nullType(), nullType(),
+                                          nullType())
+    {}
+
+    Tuple(typename TupleAccessTraits<T1>::ParameterType t1,
+          typename TupleAccessTraits<T2>::ParameterType t2,
+          typename TupleAccessTraits<T3>::ParameterType t3) DUNE_DEPRECATED
+      : tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>(t1, t2, t3, nullType(),
+                                          nullType(), nullType(), nullType(), nullType(),
+                                          nullType())
+    {}
+
+    Tuple(typename TupleAccessTraits<T1>::ParameterType t1,
+          typename TupleAccessTraits<T2>::ParameterType t2,
+          typename TupleAccessTraits<T3>::ParameterType t3,
+          typename TupleAccessTraits<T4>::ParameterType t4) DUNE_DEPRECATED
+      : tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>(t1, t2, t3, t4,
+                                          nullType(), nullType(), nullType(), nullType(),
+                                          nullType())
+    {}
+
+    Tuple(typename TupleAccessTraits<T1>::ParameterType t1,
+          typename TupleAccessTraits<T2>::ParameterType t2,
+          typename TupleAccessTraits<T3>::ParameterType t3,
+          typename TupleAccessTraits<T4>::ParameterType t4,
+          typename TupleAccessTraits<T5>::ParameterType t5) DUNE_DEPRECATED
+      : tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>(t1, t2, t3, t4,
+                                          t5, nullType(), nullType(), nullType(),
+                                          nullType())
+    {}
+
+    Tuple(typename TupleAccessTraits<T1>::ParameterType t1,
+          typename TupleAccessTraits<T2>::ParameterType t2,
+          typename TupleAccessTraits<T3>::ParameterType t3,
+          typename TupleAccessTraits<T4>::ParameterType t4,
+          typename TupleAccessTraits<T5>::ParameterType t5,
+          typename TupleAccessTraits<T6>::ParameterType t6) DUNE_DEPRECATED
+      : tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>(t1, t2, t3, t4,
+                                          t5, t6, nullType(), nullType(),
+                                          nullType())
+    {}
+
+    Tuple(typename TupleAccessTraits<T1>::ParameterType t1,
+          typename TupleAccessTraits<T2>::ParameterType t2,
+          typename TupleAccessTraits<T3>::ParameterType t3,
+          typename TupleAccessTraits<T4>::ParameterType t4,
+          typename TupleAccessTraits<T5>::ParameterType t5,
+          typename TupleAccessTraits<T6>::ParameterType t6,
+          typename TupleAccessTraits<T7>::ParameterType t7) DUNE_DEPRECATED
+      : tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>(t1, t2, t3, t4,
+                                          t5, t6, t7, nullType(),
+                                          nullType())
+    {}
+
+    Tuple(typename TupleAccessTraits<T1>::ParameterType t1,
+          typename TupleAccessTraits<T2>::ParameterType t2,
+          typename TupleAccessTraits<T3>::ParameterType t3,
+          typename TupleAccessTraits<T4>::ParameterType t4,
+          typename TupleAccessTraits<T5>::ParameterType t5,
+          typename TupleAccessTraits<T6>::ParameterType t6,
+          typename TupleAccessTraits<T7>::ParameterType t7,
+          typename TupleAccessTraits<T8>::ParameterType t8) DUNE_DEPRECATED
+      : tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>(t1, t2, t3, t4,
+                                          t5, t6, t7, t8,
+                                          nullType())
+    {}
+
+    Tuple(typename TupleAccessTraits<T1>::ParameterType t1,
+          typename TupleAccessTraits<T2>::ParameterType t2,
+          typename TupleAccessTraits<T3>::ParameterType t3,
+          typename TupleAccessTraits<T4>::ParameterType t4,
+          typename TupleAccessTraits<T5>::ParameterType t5,
+          typename TupleAccessTraits<T6>::ParameterType t6,
+          typename TupleAccessTraits<T7>::ParameterType t7,
+          typename TupleAccessTraits<T8>::ParameterType t8,
+          typename TupleAccessTraits<T9>::ParameterType t9) DUNE_DEPRECATED
+      : tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>(t1, t2, t3, t4, t5, t6, t7, t8, t9)
+    {}
+
+    template<class U1, class U2, class U3, class U4, class U5, class U6,
+        class U7, class U8, class U9>
+    Tuple& operator=(const Tuple<U1,U2,U3,U4,U5,U6,U7,U8,U9>& other)
+    {
+      tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>::operator=(other);
+      return *this;
+    }
+  };
+
 
 #ifdef HAVE_TUPLE
   using std::tuple_element;
@@ -457,13 +562,13 @@ namespace Dune {
     template<typename T1>
     static typename TupleAccessTraits<typename tuple_element<i,T1>::type>::NonConstType get(T1& t)
     {
-      return TUPLE_NS::get<i>(t);
+      return TUPLE_NS::get<i>(t) DUNE_DEPRECATED;
     }
 
     template<typename T1>
     static typename TupleAccessTraits<typename tuple_element<i,T1>::type>::ConstType get(const T1& t)
     {
-      return TUPLE_NS::get<i>(t);
+      return TUPLE_NS::get<i>(t) DUNE_DEPRECATED;
     }
   };
   #undef TUPLE_NS
@@ -592,8 +697,10 @@ namespace Dune {
     enum { value=0};
   };
 #endif
+  template<typename T>
+  struct Size : public tuple_size<T>
+  {};
 
-#define Size  tuple_size
 
 #ifdef HAVE_TUPLE
   using std::tie;
