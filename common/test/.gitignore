@@ -42,4 +42,5 @@ testfassign4
 smallobject
 conversiontest
 nullptr-test
-bitsetvectortest
+blockbitfieldtest
+deprecatedtuplestest

@@ -10,7 +10,7 @@ TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
 	testfassign4 \
     testfassign_fail1 testfassign_fail2 testfassign_fail3 \
     testfassign_fail4 testfassign_fail5 testfassign_fail6 \
-    conversiontest bitsetvectortest
+    conversiontest bitsetvectortest deprecatedtuplestest
 
 # which tests to run
 COMPILE_XFAIL=$(DUNE_COMMON_ROOT)/bin/xfail-compile-tests
@@ -64,6 +64,8 @@ arraylisttest_SOURCES = arraylisttest.cc
 smartpointertest_SOURCES = smartpointertest.cc
 
 tuplestest_SOURCES = tuplestest.cc
+
+deprecatedtuplestest_SOURCES = deprtuplestest.cc
 
 streamtest_SOURCES = streamtest.cc
 
