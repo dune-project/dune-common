@@ -391,112 +391,7 @@ namespace Dune {
 #endif
 
   // be backwards compatible
-  template<typename T1, typename T2 = Nil, typename T3 = Nil,
-      typename T4 = Nil, typename T5 = Nil,typename T6 = Nil,
-      typename T7 = Nil, typename T8 = Nil, typename T9 = Nil>
-  struct Tuple
-    : public tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>
-  {
-    Tuple() DUNE_DEPRECATED
-    {}
-
-    Tuple(typename TupleAccessTraits<T1>::ParameterType t1) DUNE_DEPRECATED
-      : tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>(t1, nullType(), nullType(), nullType(),
-                                          nullType(), nullType(), nullType(), nullType(),
-                                          nullType())
-    {}
-
-    Tuple(typename TupleAccessTraits<T1>::ParameterType t1,
-          typename TupleAccessTraits<T2>::ParameterType t2) DUNE_DEPRECATED
-      : tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>(t1, t2, nullType(), nullType(),
-                                          nullType(), nullType(), nullType(), nullType(),
-                                          nullType())
-    {}
-
-    Tuple(typename TupleAccessTraits<T1>::ParameterType t1,
-          typename TupleAccessTraits<T2>::ParameterType t2,
-          typename TupleAccessTraits<T3>::ParameterType t3) DUNE_DEPRECATED
-      : tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>(t1, t2, t3, nullType(),
-                                          nullType(), nullType(), nullType(), nullType(),
-                                          nullType())
-    {}
-
-    Tuple(typename TupleAccessTraits<T1>::ParameterType t1,
-          typename TupleAccessTraits<T2>::ParameterType t2,
-          typename TupleAccessTraits<T3>::ParameterType t3,
-          typename TupleAccessTraits<T4>::ParameterType t4) DUNE_DEPRECATED
-      : tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>(t1, t2, t3, t4,
-                                          nullType(), nullType(), nullType(), nullType(),
-                                          nullType())
-    {}
-
-    Tuple(typename TupleAccessTraits<T1>::ParameterType t1,
-          typename TupleAccessTraits<T2>::ParameterType t2,
-          typename TupleAccessTraits<T3>::ParameterType t3,
-          typename TupleAccessTraits<T4>::ParameterType t4,
-          typename TupleAccessTraits<T5>::ParameterType t5) DUNE_DEPRECATED
-      : tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>(t1, t2, t3, t4,
-                                          t5, nullType(), nullType(), nullType(),
-                                          nullType())
-    {}
-
-    Tuple(typename TupleAccessTraits<T1>::ParameterType t1,
-          typename TupleAccessTraits<T2>::ParameterType t2,
-          typename TupleAccessTraits<T3>::ParameterType t3,
-          typename TupleAccessTraits<T4>::ParameterType t4,
-          typename TupleAccessTraits<T5>::ParameterType t5,
-          typename TupleAccessTraits<T6>::ParameterType t6) DUNE_DEPRECATED
-      : tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>(t1, t2, t3, t4,
-                                          t5, t6, nullType(), nullType(),
-                                          nullType())
-    {}
-
-    Tuple(typename TupleAccessTraits<T1>::ParameterType t1,
-          typename TupleAccessTraits<T2>::ParameterType t2,
-          typename TupleAccessTraits<T3>::ParameterType t3,
-          typename TupleAccessTraits<T4>::ParameterType t4,
-          typename TupleAccessTraits<T5>::ParameterType t5,
-          typename TupleAccessTraits<T6>::ParameterType t6,
-          typename TupleAccessTraits<T7>::ParameterType t7) DUNE_DEPRECATED
-      : tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>(t1, t2, t3, t4,
-                                          t5, t6, t7, nullType(),
-                                          nullType())
-    {}
-
-    Tuple(typename TupleAccessTraits<T1>::ParameterType t1,
-          typename TupleAccessTraits<T2>::ParameterType t2,
-          typename TupleAccessTraits<T3>::ParameterType t3,
-          typename TupleAccessTraits<T4>::ParameterType t4,
-          typename TupleAccessTraits<T5>::ParameterType t5,
-          typename TupleAccessTraits<T6>::ParameterType t6,
-          typename TupleAccessTraits<T7>::ParameterType t7,
-          typename TupleAccessTraits<T8>::ParameterType t8) DUNE_DEPRECATED
-      : tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>(t1, t2, t3, t4,
-                                          t5, t6, t7, t8,
-                                          nullType())
-    {}
-
-    Tuple(typename TupleAccessTraits<T1>::ParameterType t1,
-          typename TupleAccessTraits<T2>::ParameterType t2,
-          typename TupleAccessTraits<T3>::ParameterType t3,
-          typename TupleAccessTraits<T4>::ParameterType t4,
-          typename TupleAccessTraits<T5>::ParameterType t5,
-          typename TupleAccessTraits<T6>::ParameterType t6,
-          typename TupleAccessTraits<T7>::ParameterType t7,
-          typename TupleAccessTraits<T8>::ParameterType t8,
-          typename TupleAccessTraits<T9>::ParameterType t9) DUNE_DEPRECATED
-      : tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>(t1, t2, t3, t4, t5, t6, t7, t8, t9)
-    {}
-
-    template<class U1, class U2, class U3, class U4, class U5, class U6,
-        class U7, class U8, class U9>
-    Tuple& operator=(const Tuple<U1,U2,U3,U4,U5,U6,U7,U8,U9>& other)
-    {
-      tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>::operator=(other);
-      return *this;
-    }
-  };
-
+#define Tuple tuple
 
 #ifdef HAVE_TUPLE
   using std::tuple_element;
@@ -541,10 +436,10 @@ namespace Dune {
 
 #endif
 
-  template< int N, class Tuple >
+  template< int N, class T >
   struct ElementType
   {
-    typedef typename tuple_element< N, Tuple > :: type Type DUNE_DEPRECATED;
+    typedef typename tuple_element< N, T > :: type Type DUNE_DEPRECATED;
   };
 
 #if defined HAVE_TUPLE || defined HAVE_TR1_TUPLE
@@ -562,13 +457,13 @@ namespace Dune {
     template<typename T1>
     static typename TupleAccessTraits<typename tuple_element<i,T1>::type>::NonConstType get(T1& t)
     {
-      return TUPLE_NS::get<i>(t) DUNE_DEPRECATED;
+      return TUPLE_NS::get<i>(t);
     }
 
     template<typename T1>
     static typename TupleAccessTraits<typename tuple_element<i,T1>::type>::ConstType get(const T1& t)
     {
-      return TUPLE_NS::get<i>(t) DUNE_DEPRECATED;
+      return TUPLE_NS::get<i>(t);
     }
   };
   #undef TUPLE_NS
@@ -714,8 +609,8 @@ namespace Dune {
   template<int i>
   struct tuple_writer
   {
-    template<class Tuple>
-    static std::ostream& put(std::ostream& os, const Tuple& t)
+    template<class T>
+    static std::ostream& put(std::ostream& os, const T& t)
     {
       return tuple_writer<i-1>::put(os,t)<<", "<<get<i-1>(t);
     }
@@ -724,8 +619,8 @@ namespace Dune {
   template<>
   struct tuple_writer<0>
   {
-    template<class Tuple>
-    static std::ostream& put(std::ostream& os, const Tuple& t)
+    template<class T>
+    static std::ostream& put(std::ostream& os, const T& t)
     {
       return os;
     }
@@ -737,74 +632,74 @@ namespace Dune {
   template<typename T1>
   inline std::ostream& operator<<( std::ostream& os, const tuple<T1> & t)
   {
-    typedef tuple<T1> Tuple;
-    return tuple_writer<tuple_size<Tuple>::value>::put(os, t);
+    typedef tuple<T1> TupleT;
+    return tuple_writer<tuple_size<TupleT>::value>::put(os, t);
   }
 
   template<typename T1, typename T2>
   inline std::ostream& operator<<( std::ostream& os, const tuple<T1,T2> & t)
   {
-    typedef tuple<T1,T2> Tuple;
-    return tuple_writer<tuple_size<Tuple>::value>::put(os, t);
+    typedef tuple<T1,T2> TupleT;
+    return tuple_writer<tuple_size<TupleT>::value>::put(os, t);
   }
 
   template<typename T1, typename T2, typename T3>
   inline std::ostream& operator<<( std::ostream& os, const tuple<T1,T2,T3> & t)
   {
-    typedef tuple<T1,T2,T3> Tuple;
-    return tuple_writer<tuple_size<Tuple>::value>::put(os, t);
+    typedef tuple<T1,T2,T3> TupleT;
+    return tuple_writer<tuple_size<TupleT>::value>::put(os, t);
   }
 
   template<typename T1, typename T2, typename T3, typename T4>
   inline std::ostream& operator<<( std::ostream& os, const tuple<T1,T2,T3,T4> & t)
   {
-    typedef tuple<T1,T2,T3,T4> Tuple;
-    return tuple_writer<tuple_size<Tuple>::value>::put(os, t);
+    typedef tuple<T1,T2,T3,T4> TupleT;
+    return tuple_writer<tuple_size<TupleT>::value>::put(os, t);
   }
 
   template<typename T1, typename T2, typename T3, typename T4, typename T5>
   inline std::ostream& operator<<( std::ostream& os, const tuple<T1,T2,T3,T4,T5> & t)
   {
-    typedef tuple<T1,T2,T3,T4,T5> Tuple;
-    return tuple_writer<tuple_size<Tuple>::value>::put(os, t);
+    typedef tuple<T1,T2,T3,T4,T5> TupleT;
+    return tuple_writer<tuple_size<TupleT>::value>::put(os, t);
   }
 
   template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
   inline std::ostream& operator<<( std::ostream& os, const tuple<T1,T2,T3,T4,T5,T6> & t)
   {
-    typedef tuple<T1,T2,T3,T4,T5,T6> Tuple;
-    return tuple_writer<tuple_size<Tuple>::value>::put(os, t);
+    typedef tuple<T1,T2,T3,T4,T5,T6> TupleT;
+    return tuple_writer<tuple_size<TupleT>::value>::put(os, t);
   }
 
   template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7>
   inline std::ostream& operator<<( std::ostream& os, const tuple<T1,T2,T3,T4,T5,T6,T7> & t)
   {
-    typedef tuple<T1,T2,T3,T4,T5,T6,T7> Tuple;
-    return tuple_writer<tuple_size<Tuple>::value>::put(os, t);
+    typedef tuple<T1,T2,T3,T4,T5,T6,T7> TupleT;
+    return tuple_writer<tuple_size<TupleT>::value>::put(os, t);
   }
 
   template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7,
       typename T8>
   inline std::ostream& operator<<( std::ostream& os, const tuple<T1,T2,T3,T4,T5,T6,T7,T8> & t)
   {
-    typedef tuple<T1,T2,T3,T4,T5,T6,T7,T8> Tuple;
-    return tuple_writer<tuple_size<Tuple>::value>::put(os, t);
+    typedef tuple<T1,T2,T3,T4,T5,T6,T7,T8> TupleT;
+    return tuple_writer<tuple_size<TupleT>::value>::put(os, t);
   }
 
   template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7,
       typename T8, typename T9>
   inline std::ostream& operator<<( std::ostream& os, const tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> & t)
   {
-    typedef tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> Tuple;
-    return tuple_writer<tuple_size<Tuple>::value>::put(os, t);
+    typedef tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> TupleT;
+    return tuple_writer<tuple_size<TupleT>::value>::put(os, t);
   }
 
   template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7,
       typename T8, typename T9, typename T10>
   inline std::ostream& operator<<( std::ostream& os, const tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10> & t)
   {
-    typedef tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10> Tuple;
-    return tuple_writer<tuple_size<Tuple>::value>::put(os, t);
+    typedef tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10> TupleT;
+    return tuple_writer<tuple_size<TupleT>::value>::put(os, t);
   }
 
 #else
