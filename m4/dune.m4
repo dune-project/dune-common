@@ -260,12 +260,6 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   AC_LANG_POP([C++])
 ])
 
-AC_DEFUN([DUNE_FEM_CHECK_MODULE],
-[
-    DUNE_CHECK_MODULES([dune-fem], [fem/space/basefunctions/storageinterface.hh], [] )
-])
-AC_DEFUN([DUNE_FEM_CHECKS])
-
 AC_DEFUN([DUNE_DISC_CHECK_MODULE],
 [
     DUNE_CHECK_MODULES([dune-disc], [disc/shapefunctions/lagrangeshapefunctions.hh], [Dune::LagrangeShapeFunctions<double[,]double[,]3>::general])
