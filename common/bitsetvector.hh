@@ -375,7 +375,7 @@ namespace Dune {
   };
 
   /**
-     \brief A dynamic array of blocks of booleans
+     \brief A dynamic %array of blocks of booleans
    */
   template <int block_size, class Allocator=std::allocator<bool> >
   class BitSetVector : private std::vector<bool, Allocator>
@@ -386,12 +386,26 @@ namespace Dune {
   public:
     //! container interface typedefs
     //! \{
+
+    /** \brief Type of the values stored by the container */
     typedef std::bitset<block_size> value_type;
+
+    /** \brief Reference to a small block of bits */
     typedef BitSetVectorReference<block_size,Allocator> reference;
+
+    /** \brief Const reference to a small block of bits */
     typedef BitSetVectorConstReference<block_size,Allocator> const_reference;
+
+    /** \brief Pointer to a small block of bits */
     typedef BitSetVectorReference<block_size,Allocator>* pointer;
+
+    /** \brief Const pointer to a small block of bits */
     typedef BitSetVectorConstReference<block_size,Allocator>* const_pointer;
+
+    /** \brief size type */
     typedef typename std::vector<bool, Allocator>::size_type size_type;
+
+    /** \brief The type of the allocator */
     typedef Allocator allocator_type;
     //! \}
 
