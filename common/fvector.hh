@@ -402,6 +402,7 @@ namespace Dune {
     FieldVector& operator= (const FieldVector& other) {
       for (size_type i=0; i<SIZE; i++)
         p[i] = other[i];
+      return *this;
     }
 
 
