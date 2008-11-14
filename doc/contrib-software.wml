@@ -198,7 +198,7 @@ versions of DUNE.  For legal reasons we cannot provide a patched UG directly.
   </li>
   <li>
         For the current svn version of DUNE you need the latest set of patches, which dates from
-        <a href="http://www.dune-project.org/download/ug-dune-patches-2008-04-18.diff">2008-04-18</a>.
+        <a href="http://www.dune-project.org/download/ug-dune-patches-2008-11-13.diff">2008-11-13</a>.
   </li>
 </ul>
 
