@@ -32,17 +32,29 @@ void testContainer(BBF & bbf)
   bitset x = bbf[3];
   reference y = bbf[4];
   const_reference z = bbf[4];
+  const reference v = bbf[4];
 
   // assignement
   y = false;
   y[2] = true;
   y = x;
+  y = z;
+  y = v;
   x = y;
   x = z;
+  x = v;
   y = cbbf[1];
   x = cbbf[1];
   bbf[4] = x;
+  bbf[4] = v;
+  bbf[4] = y;
   bbf[4] = true;
+
+  // invoke methods
+  x.size();
+  y.size();
+  z.size();
+  v.size();
 
   // equality
   y == cbbf[2];
