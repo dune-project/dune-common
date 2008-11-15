@@ -3,7 +3,9 @@
 // $Id$
 
 /* test if the common headers can be parsed without errors */
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 /*
 

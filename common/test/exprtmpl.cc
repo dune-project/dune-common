@@ -11,7 +11,9 @@
    - FlatColIterator<Matrix> does not work if Matrix is mutable
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <iostream>
 #include <fstream>

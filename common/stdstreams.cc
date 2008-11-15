@@ -2,7 +2,10 @@
 // vi: set et ts=4 sw=2 sts=2:
 // $Id$
 
-#include <config.h>
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "stdstreams.hh"
 
 namespace Dune {
