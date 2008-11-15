@@ -11,6 +11,7 @@
 #include <bitset>
 #include <iostream>
 
+#include <dune/common/deprecated.hh>
 #include <dune/common/genericiterator.hh>
 #include <dune/common/exceptions.hh>
 
@@ -344,6 +345,8 @@ namespace Dune {
       getBit(n).flip();
       return *this;
     }
+
+    using BitSetVectorConstReference::operator[];
 
     reference operator[](size_type i)
     {

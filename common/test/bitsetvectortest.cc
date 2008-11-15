@@ -20,6 +20,21 @@ struct ConstReferenceOp
   }
 };
 
+template <class T>
+void testConstBitSetMethods(const T t)
+{
+  t.size();
+  t[0];
+  t[t.size()-1];
+  t << 2;
+  t >> 2;
+  ~t;
+  t.count();
+  t.any();
+  t.none();
+  t.test(0);
+}
+
 template<class BBF>
 void testContainer(BBF & bbf)
 {
@@ -51,10 +66,12 @@ void testContainer(BBF & bbf)
   bbf[4] = true;
 
   // invoke methods
-  x.size();
-  y.size();
-  z.size();
-  v.size();
+  testConstBitSetMethods(x);
+  testConstBitSetMethods(y);
+  testConstBitSetMethods(z);
+  testConstBitSetMethods(v);
+  testConstBitSetMethods(bbf[1]);
+  testConstBitSetMethods(cbbf[2]);
 
   // equality
   y == cbbf[2];
