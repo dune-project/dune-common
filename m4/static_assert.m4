@@ -12,7 +12,7 @@ AC_DEFUN([GXX0X],[
     CXX="$CXX -std=c++0x"
     HAVE_CXX0X=no
     AC_TRY_COMPILE([],[],[HAVE_CXX0X=yes],[])
-    if test "x$HAVE_CXXOX" == "xyes" ; then
+    if test "x$HAVE_CXX0X" == "xyes" ; then
       CXXCPP="$CXXCPP -std=c++0x"
     else
       CXX="$ac_save_CXX"
