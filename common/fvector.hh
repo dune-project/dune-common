@@ -601,7 +601,7 @@ namespace Dune {
 #ifndef DUNE_EXPRESSIONTEMPLATES
     //===== Euclidean scalar product
 
-    //! scalar product
+    //! scalar product (x^T y)
     K operator* (const FieldVector& y) const
     {
       K result = 0;
@@ -609,7 +609,6 @@ namespace Dune {
         result += p[i]*y[i];
       return result;
     }
-
 
     //===== norms
 
@@ -946,7 +945,7 @@ namespace Dune {
       return *this;
     }
 
-    //! scalar product
+    //! scalar product (x^T y)
     inline K operator* ( const K & k ) const
     {
       return p * k;
@@ -989,7 +988,6 @@ namespace Dune {
     {
       return fvmeta_abs_real(p);
     }
-
 
     //===== sizes
 
