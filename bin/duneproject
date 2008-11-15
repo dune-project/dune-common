@@ -265,7 +265,6 @@ for name in $DEPENDENCIES; do
   else
     # found via pkg-config
     M_DEPS="`pkg_config_dependencies $name` $name"
-    #M_DEPS="`pkg-config --variable=Requires $name`"
   fi
   for dep in $M_DEPS; do
       CHECK="$CHECK [$dep]"
