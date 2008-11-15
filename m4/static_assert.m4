@@ -6,14 +6,18 @@ AC_DEFUN([GXX0X],[
 				 [gxx0xcheck=$enableval],
 				 [gxx0xcheck=yes])
   if test "x$GXX" = xyes && test "x$gxx0xcheck" = xyes; then
+    AC_LANG_PUSH([C++])
     AC_MSG_CHECKING([whether g++ accepts -std=c++0x])
     ac_save_CXX="$CXX"
     CXX="$CXX -std=c++0x"
-	AC_LANG_PUSH([C++])
-    AC_TRY_COMPILE([],[],[
-      AC_MSG_RESULT(yes)], [
+    HAVE_CXX0X=no
+    AC_TRY_COMPILE([],[],[HAVE_CXX0X=yes],[])
+    if test "x$HAVE_CXXOX" == "xyes" ; then
+      CXXCPP="$CXXCPP -std=c++0x"
+    else
       CXX="$ac_save_CXX"
-      AC_MSG_RESULT(no)])
+    fi
+    AC_MSG_RESULT([$HAVE_CXX0X])
     AC_LANG_POP
   fi
 ])
