@@ -577,10 +577,25 @@ while test $# -gt 0; do
       name=`eval echo \\${NAME_$mainmod}`
       version=`eval echo \\${VERS_$mainmod}`
       maintainer=`eval echo \\${MAIN_$mainmod}`
+      # get dependencies
+      eval deps=\$DEPS_$module
+      while test -n "$deps"; do
+        PATTERN=$PARSE_SUGDEP_PATTERN
+        depname=`echo $deps | sed -e "s/$PATTERN/\1/"`
+        depver=`echo $deps | sed -e "s/$PATTERN/\2/" -e 's/[()]//g'`
+        xdeps=`echo $deps | sed -e "s/$PATTERN/\3/"`
+        if test "$deps" = "$xdeps"; then
+          echo "ERROR: parsing dependencies for $modname" >&2
+	      exit 1
+        fi
+        requires="requires $depname $depver "
+        deps="$xdeps"
+      done
       # ensure a version number
       if test "x$version" = "x"; then version="0.0"; fi
       echo "writing $fname"
       echo "    for $name $version $maintainer"
+      echo "        requires $requires"
       cat > $fname <<EOF
 m4_define([DUNE_AC_INIT],[
   AC_INIT([$name], [$version], [$maintainer])
@@ -593,6 +608,9 @@ m4_define([DUNE_AC_INIT],[
     [LT_INIT],
     [AC_DEFUN([LT_OUTPUT])])
   AC_DISABLE_SHARED
+
+  REQUIRES="$requires"
+  AC_SUBST(REQUIRES, [$REQUIRES])
 ])
 
 AC_DEFUN([DUNE_CHECK_MOD_DEPENDENCIES], [
