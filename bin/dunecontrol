@@ -588,7 +588,7 @@ while test $# -gt 0; do
           echo "ERROR: parsing dependencies for $modname" >&2
 	      exit 1
         fi
-        requires="requires $depname $depver "
+        requires="$requires $depname $depver "
         deps="$xdeps"
       done
       # ensure a version number
