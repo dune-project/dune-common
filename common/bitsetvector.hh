@@ -565,8 +565,6 @@ namespace Dune {
     {
       for (size_t i=0; i<v.size(); i++)
         s << v[i] << "  ";
-
-      s << std::endl;
       return s;
     }
 
