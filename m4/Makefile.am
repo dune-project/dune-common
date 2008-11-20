@@ -1,6 +1,6 @@
 # $Id$
 
-ALLM4S = acx_blas.m4 acx_mpi.m4 acx_pthread.m4 alberta.m4 alugrid.m4 \
+ALLM4S = acx_blas.m4 acx_mpi.m4 acx_pthread.m4 alugrid.m4 \
          ax_check_gl.m4 ax_lang_compiler_ms.m4 dune_all.m4 \
          dune_amira.m4 dune_compiler.m4 dune_deprecated.m4 \
          dune_griddim.m4 dune_exprtmpl.m4 dune_linkcxx.m4 dune.m4 \
