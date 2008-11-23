@@ -55,7 +55,7 @@ namespace Dune
     static inline MPI_Datatype get(){ \
       return m; \
     } \
-  };
+  }
 
 
   ComposeMPITraits(char, MPI_CHAR);
@@ -122,7 +122,7 @@ namespace Dune
   private:\
     Generic_MPI_Op () {}\
     Generic_MPI_Op (const Generic_MPI_Op & ) {}\
-  };
+  }
 
 
   ComposeMPIOp(char, std::plus, MPI_SUM);
