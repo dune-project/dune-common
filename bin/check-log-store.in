@@ -9,7 +9,7 @@ set -e
 # parameter:
 # $(LOG_FILE) $(LOG_DIR) "build" "$$target" "$$path"
 
-host="@host@"
+host="@hostid@"
 tag="@tag@"
 revision="@revision@"
 
