@@ -74,6 +74,29 @@ _EOF
   return 1
 }
 
+mpi_getmpichflags() {
+    # use special commands to extract options      
+    mpi_getflags "-compile_info"
+    MPI_CPPFLAGS="$retval"
+    # remove implicitly set -c
+    mpi_remove "$MPI_CPPFLAGS" '-c'
+    MPI_CPPFLAGS="$retval"
+    
+    # get linker options
+    mpi_getflags "-link_info"
+    MPI_LDFLAGS="$retval"
+    # strip -o option
+    mpi_remove "$MPI_LDFLAGS" "-o"
+    MPI_LDFLAGS="$retval"
+    #strip MPI_CPPFLAGS (which are included for mpich2 on jugene)
+    enc=`echo "$MPI_CPPFLAGS" | sed -e 's/\\//\\\\\\//g'`
+    MPI_LDFLAGS=`echo "$retval" | sed -e "s/$enc / /"`
+
+
+    # hack in option to disable MPICH-C++-bindings...
+    MPI_NOCXXFLAGS="-DMPICH_SKIP_MPICXX"
+}
+
 mpi_getmpich2flags() {
     # use special commands to extract options      
     mpi_getflags "-show" "-c"
@@ -108,7 +131,7 @@ _EOF
   if (mpi_preprocess conftest.c \
       | grep -q MPICHX_PARALLELSOCKETS_PARAMETERS); then
     MPI_VERSION="MPICH"
-    mpi_getmpich2flags
+    mpi_getmpichflags
 
     AC_MSG_RESULT([yes])
     rm -f conftest*
