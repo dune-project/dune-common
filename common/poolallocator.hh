@@ -77,6 +77,9 @@ namespace Dune
    * @warning Due to aligned issues at the number of bytes of the
    * alignment prerequisite (< 4 bytes) are wasted. This effect
    * becomes neglectable for big sizes of chunkSize.
+   *
+   * \tparam T The type that is allocated by us.
+   * \tparam s The size of a memory chunk in bytes.
    */
   template<class T, std::size_t s>
   class Pool
@@ -223,9 +226,16 @@ namespace Dune
    * This allocator is specifically useful for small data types
    * where new and delete are too expensive.
    *
+   * It uses a pool of memory chunks where the objects will be allocated.
+   * This means that assuming that N objects fit into memory only every N-th
+   * rewuest for an object will result in memory allocation.
+   *
    * @warning It is not suitable
    * for the use in standard containers as it cannot allocate
    * arrays of arbitrary size
+   *
+   * \tparam T The type that will be allocated.
+   * \tparam s The number of elements to fit into one memory chunk.
    */
   template<class T, std::size_t s>
   class PoolAllocator
@@ -241,7 +251,7 @@ namespace Dune
     enum
     {
       /**
-       * @brief The size in bytes to use for every memory chunk
+       * @brief The number of object to fit into one memory chunk
        * allocated.
        */
       size=s*sizeof(value_type)
