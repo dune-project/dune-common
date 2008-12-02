@@ -225,7 +225,7 @@ namespace Dune
    *
    * @warning It is not suitable
    * for the use in standard containers as it cannot allocate
-   * arrays of arbituary size
+   * arrays of arbitrary size
    */
   template<class T, std::size_t s>
   class PoolAllocator
