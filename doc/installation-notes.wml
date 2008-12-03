@@ -33,11 +33,11 @@ When building the development version of DUNE you will also need
 This will provide you with the core DUNE features.</p>
 <p>
 Some DUNE modules might support further software. Using this software
-is optional. The dune-grid module for example support different
+is optional. The dune-grid module for example supports different
 external grid managers like Albert or UG; these have to be downloaded
 separately. For a list of supported contrib software packages and
-their installation see the
-<a href="contrib-software.html">Contrib Software Installation Notes</a>.
+their installation see the notes on
+<a href="$(ROOT)/external_libraries/external_libraries.html">Installation External Libraries</a>.
 </p>
 
 <h2>Installing the core DUNE modules</h2>
