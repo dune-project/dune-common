@@ -76,7 +76,7 @@ namespace Dune
    * size of a pointer memory is wasted.
    * @warning Due to aligned issues at the number of bytes of the
    * alignment prerequisite (< 4 bytes) are wasted. This effect
-   * becomes neglectable for big sizes of chunkSize.
+   * becomes negligable for big sizes of chunkSize.
    *
    * \tparam T The type that is allocated by us.
    * \tparam s The size of a memory chunk in bytes.
@@ -228,7 +228,7 @@ namespace Dune
    *
    * It uses a pool of memory chunks where the objects will be allocated.
    * This means that assuming that N objects fit into memory only every N-th
-   * rewuest for an object will result in memory allocation.
+   * request for an object will result in memory allocation.
    *
    * @warning It is not suitable
    * for the use in standard containers as it cannot allocate
@@ -251,7 +251,7 @@ namespace Dune
     enum
     {
       /**
-       * @brief The number of object to fit into one memory chunk
+       * @brief The number of objects to fit into one memory chunk
        * allocated.
        */
       size=s*sizeof(value_type)
