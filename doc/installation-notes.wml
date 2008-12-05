@@ -37,7 +37,7 @@ is optional. The dune-grid module for example supports different
 external grid managers like Albert or UG; these have to be downloaded
 separately. For a list of supported contrib software packages and
 their installation see the notes on
-<a href="$(ROOT)/external_libraries/external_libraries.html">Installation External Libraries</a>.
+<a href="$(ROOT)/external_libraries/index.html">Installation External Libraries</a>.
 </p>
 
 <h2>Installing the core DUNE modules</h2>
