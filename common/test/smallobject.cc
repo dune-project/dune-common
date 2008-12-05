@@ -39,8 +39,9 @@ int main ( int argc, char **argv )
 {
   Timer timer;
 
-  const unsigned long iterations = 1 << 25;
-  std :: cout << "Performing " << iterations << " iterations." << std :: endl;
+  const unsigned long iterations = 1 << 27;
+  const unsigned long factor = 16;
+  std :: cout << "Performing " << (factor*iterations) << " iterations." << std :: endl;
 
   timer.reset();
   for( unsigned long i = 0; i < iterations; ++i )
@@ -48,11 +49,11 @@ int main ( int argc, char **argv )
     A *a = new A( (int)i );
     delete a;
   }
-  double timeA = timer.elapsed();
+  double timeA = factor*timer.elapsed();
   std :: cout << "Time without SmallObject: " << timeA << std :: endl;
 
   timer.reset();
-  for( unsigned long i = 0; i < iterations; ++i )
+  for( unsigned long i = 0; i < factor*iterations; ++i )
   {
     B *b = new B( (int)i );
     delete b;
@@ -63,7 +64,7 @@ int main ( int argc, char **argv )
 
   timer.reset();
   PoolAllocator<B,100> pool;
-  for( unsigned long i = 0; i < iterations; ++i )
+  for( unsigned long i = 0; i < factor*iterations; ++i )
   {
     B *b = pool.allocate(1);
     pool.construct(b, B((int)i ));
