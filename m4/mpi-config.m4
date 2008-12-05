@@ -29,6 +29,8 @@ mpi_getflags () {
 # removes regexp $2 from string $1
 mpi_remove () {
   retval=`echo ${1} | sed -e "s/ ${2} / /"`
+  # string to remove might be on the beginning of the line
+  retval=`echo ${retval} | sed -e "s/^${2} / /"`
 }
 
 test_lam () {
