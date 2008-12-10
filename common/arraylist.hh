@@ -37,11 +37,22 @@ namespace Dune
   /**
    * @brief A dynamically growing  random access list.
    *
-   * Internally the data is organized in a list of arrays of fixed size.
+   * Internally the data is organised in a list of arrays of fixed size.
    * Whenever the capacity of the array list is not sufficient a new
    * Dune::array is allocated. In contrast to
    * std::vector this approach prevents data copying. On the outside
    * we provide the same interface as the stl random access containers.
+   *
+   * While the concept sounds quite similar to std::deque there are slight
+   * but crucial differences:
+   * - In contrast to std:deque the actual implementation (a list of arrays)
+   * is known. While
+   * for std::deque there are at least two possible implementations
+   * (dynamic array or using a double linked list.
+   * - In contrast to std:deque there is not insert which invalidates iterators
+   * but our push_back method leaves all iterators valid.
+   * - Additional functionality lets one delete entries before and at an
+   * iterator while moving the iterator to the next valid position.
    */
   template<class T, int N=100, class A=std::allocator<T> >
   class ArrayList
