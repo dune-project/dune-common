@@ -244,13 +244,14 @@ run_default_status () {
 }
 
 run_default_update () {
-  if test -d .git/svn; then
-	git checkout master
-    git svn rebase
-	echo '*.o *.lo *.la #*# .*.rej *.rej .*~ *~ .#* .DS_Store' | tr ' ' '\n' \
-      > .git/info/exclude
-	git svn show-ignore >> .git/info/exclude
-    return
+  if test -d .git/svn && type git > /dev/null &&
+      test x`git config --get dune.autoupdate` = xtrue; then
+      git checkout master
+      git svn rebase
+      echo '*.o *.lo *.la #*# .*.rej *.rej .*~ *~ .#* .DS_Store' | tr ' ' '\n' \
+          > .git/info/exclude
+      git svn show-ignore >> .git/info/exclude
+      return
   fi
   if test -d .svn; then
     svn update
