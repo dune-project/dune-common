@@ -367,7 +367,9 @@ eval_control() {
 # $2 value
 #
 fix_variable_name() {
-  echo -n "$@" | tr '[:punct:]' '__'
+  # The replacement sequence has to be extended explicitly the the length of
+  # the matching set for SunOS compatibility
+  echo -n "$@" | tr '[:punct:]' '[_*]'
 }
 
 fix_and_assign() {
