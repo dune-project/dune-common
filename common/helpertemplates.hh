@@ -41,6 +41,4 @@ template<class T1, class T2, class T3 = T1> struct Can_multiply {
   Can_multiply() { void (*p)(T1,T2,T3) = constraints; }
 };
 
-#include "static_assert.hh"
-
 #endif
