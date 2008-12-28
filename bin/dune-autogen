@@ -12,8 +12,15 @@ usage () {
 }
 
 ## get my name...
-grep -q '^Module:' dune.module || echo "Parser Error: Module entry missing in dune.module"
-name=`awk '{ sub(/:/,": ") }; /^Module:/ { print $2 }' dune.module`
+grep '^Module:' dune.module >/dev/null || echo "Parser Error: Module entry missing in dune.module"
+name=
+while read head name rest
+do case "$head" in
+   Module:) break;;
+   Module:*) name="${head#Module:}"; break;;
+   esac
+   name=
+done <dune.module
 
 ## dune-all.m4
 rm -f dune-all.m4

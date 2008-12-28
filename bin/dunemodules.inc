@@ -8,9 +8,6 @@
 # name of the "control" files
 CONTROL="dune.module"
 
-# pattern needed to parse the Suggests and Depnds entries
-PARSE_SUGDEP_PATTERN='^ *\([^ ^:]\{1,\}\) *\(([^)]*)\)\{0,1\},\{0,1\} *\(.*\)$'
-
 ###############################################
 ###
 ### check for environment variables
@@ -22,6 +19,26 @@ fi
 if test -z $GREP; then
   GREP=grep
 fi
+# SunOS [e]grep does not seem to comprehend character classes.  Set up
+# some variables to spell them out
+UPPER=ABCDEFGHIJKLMNOPQRSTUVWXYZ
+LOWER=abcdefghijklmnopqrstuvwxyz
+ALPHA="$UPPER$LOWER"
+DIGIT=0123456789
+ALNUM="$ALPHA$DIGIT"
+
+space=" "
+formfeed=""
+newline="
+"
+cr="
+"
+tab="	"
+vtab=""
+# $SPACE will unfortunately not work since grep will not accept an
+# embedded newline.  Instead one can often get away with using $BLANK
+SPACE="$space$formfeed$newline$cr$tab$vtab"
+BLANK="$space$tab"
 
 #
 # read paramters from a $CONTROL file
@@ -45,10 +62,10 @@ parse_control() {
   export module_inst=""
   export module=$(fix_variable_name $name)
   # read dune.module file
-  local deps="$(echo $($GREP ^[[:space:]]*Depends: "$1" | cut -d ':' -f2))"
-  local sugs="$(echo $($GREP ^[[:space:]]*Suggests: "$1" | cut -d ':' -f2))"
-  local vers="$(echo $($GREP ^[[:space:]]*Version: "$1" | cut -d ':' -f2))"
-  local main="$(echo $($GREP ^[[:space:]]*Maintainer: "$1" | cut -d ':' -f2))"
+  local deps="$(echo $($GREP "^[$BLANK]*Depends:" "$1" | cut -d ':' -f2))"
+  local sugs="$(echo $($GREP "^[$BLANK]*Suggests:" "$1" | cut -d ':' -f2))"
+  local vers="$(echo $($GREP "^[$BLANK]*Version:" "$1" | cut -d ':' -f2))"
+  local main="$(echo $($GREP "^[$BLANK]*Maintainer:" "$1" | cut -d ':' -f2))"
   # guess the path of the dune module:
   # - installed module: ${path}/lib/dunecontrol/${name}/dune.module
   #   and there is a file ${path}/lib/pkgconfig/${name}.pc
@@ -104,7 +121,7 @@ find_modules_in_path() {
         while read m; do
           find_modules $m
         done <<EOFM
-        $(find "$dir" -name $CONTROL | $GREP -v 'dune-[-_a-zA-Z]/dune\-[-a-zA-Z_]*\-[0-9]\+.[0-9]\+/')
+        $(find "$dir" -name $CONTROL | $GREP -v 'dune-[-_a-zA-Z]/dune-[-a-zA-Z_]*-[0-9]\{1,\}.[0-9]\{1,\}/')
 EOFM
 	  else
         find_modules $dir
@@ -180,15 +197,8 @@ sort_dependencies() {
     # did we find a module file for this mopdule?
     if test "x$(eval echo \$HAVE_$m)" != "x"; then
       eval deps=\$DEPS_$m
-	  while test -n "$deps"; do
-        PATTERN=$PARSE_SUGDEP_PATTERN
-		name=`echo $deps | sed -e "s/$PATTERN/\1/"`
-		xdeps=`echo $deps | sed -e "s/$PATTERN/\3/"`
-		if test "$deps" = "$xdeps"; then
-          eval echo ERROR: parsing dependency string \$DEPS_$m >&2
-		  exit 1
-		fi
-		deps=$xdeps
+      deps=`echo "$deps" | sed 's/,/ /g;s/([^)]*)/ /'`
+      for name in $deps; do
         dep=`fix_variable_name $name`
         _sort_module $dep
       done
@@ -277,17 +287,26 @@ _sort_module() {
   if test "x$(eval echo \$SORT_DONE_${module})" != "xyes"; then
     # resolve dependencies
     eval deps=\$DEPS_$module
+    #initially remove leading space
+    deps=`echo "$deps" | sed 's/^ *//'`
     while test -n "$deps"; do
-      PATTERN=$PARSE_SUGDEP_PATTERN
-      name=`echo $deps | sed -e "s/$PATTERN/\1/"`
-      depver=`echo $deps | sed -e "s/$PATTERN/\2/" -e 's/[()]//g'`
-      xdeps=`echo $deps | sed -e "s/$PATTERN/\3/"`
-      if test "$deps" = "$xdeps"; then
-        echo "ERROR: parsing dependencies for $modname" >&2
-		exit 1
-      fi
-      deps="$xdeps"
-	  dep=$(fix_variable_name $name)
+      #the end of the name is marked either by space, opening paren
+      #or comma
+      name="${deps%%[ (,]*}"
+      #remove the name and adjacent whitespace
+      deps=`echo "$deps" | sed 's/^[^ (,]* *//'`
+      #check whether there is a dependency version
+      case "$deps" in
+      '('*) deps="${deps#(}"
+            depver="${deps%%)*}"
+            deps="${deps#*)}"
+            ;;
+      *)    depver=
+            ;;
+      esac
+      #remove any leading whitespace or commas for te next iteration
+      deps=`echo "$deps" | sed 's/^[, ]*//'`
+      dep=$(fix_variable_name $name)
       if ! check_modname $dep; then 
         echo "ERROR: invalid module name $name" >&2
         exit 1
@@ -349,7 +368,7 @@ eval_control() {
       # load functions defined in $file
       # if $command is not defined in $file,
       # then the default implementation will be executed
-      eval "$($GREP -v '^[[:alnum:]]\+:' $file)"
+      eval "$($GREP -v "^[$ALNUM]\{1,\}:" $file)"
       # execute $command
       $command
     ) || false
@@ -391,7 +410,7 @@ check_modname() {
   if sh -c "$ID=huhu" > /dev/null 2>&1; then
     return 1
   fi
-#  if ! echo "$1" | $GREP -q '^[a-zA-Z0-9_]\+$'; then
+#  if ! echo "$1" | $GREP '^[a-zA-Z0-9_]\{1,\}$' >/dev/null; then
 #    return 1
 #  fi
   return 0
@@ -410,11 +429,15 @@ check_modname() {
 # 3: revision
 #
 get_sub_version() {
-  echo $1 | awk -F. -v FIELD=$2 '{ print int($FIELD) }'
+  #it would be nice to give the part to awk via a "-v FIELD=$2"
+  #command line argument.  Unfortunatly, SunOS does not support this.
+  #Worse, we cannot use awks int() function here, since under SunOS it
+  #will always return 0 for string input.
+  echo $1 | cut -d. -f"$2" | sed 's/[^0-9].*$//;s/^$/0/'
 }
 
 #
-# compare to versions
+# compare two versions
 #
 # parameters:
 # $1 version1
@@ -428,10 +451,8 @@ get_sub_version() {
 compare_versions() {
   local v1="$1"
   local v2="$2"
-  local result
 
   for i in 1 2 3; do
-    result=0
     compare_sub_version $v1 $v2 $i || return 0
   done
 

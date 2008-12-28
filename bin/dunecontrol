@@ -580,17 +580,27 @@ while test $# -gt 0; do
       maintainer=`eval echo \\${MAIN_$mainmod}`
       # get dependencies
       eval deps=\$DEPS_$module
+      #initially remove leading space
+      deps=`echo "$deps" | sed 's/^ *//'`
       while test -n "$deps"; do
-        PATTERN=$PARSE_SUGDEP_PATTERN
-        depname=`echo $deps | sed -e "s/$PATTERN/\1/"`
-        depver=`echo $deps | sed -e "s/$PATTERN/\2/" -e 's/[()]//g'`
-        xdeps=`echo $deps | sed -e "s/$PATTERN/\3/"`
-        if test "$deps" = "$xdeps"; then
-          echo "ERROR: parsing dependencies for $modname" >&2
-	      exit 1
-        fi
+        #the end of the name is marked either by space, opening paren
+        #or comma
+        depname="${deps%%[ (,]*}"
+        #remove the name and adjacent whitespace
+        deps=`echo "$deps" | sed 's/^[^ (,]* *//'`
+        #check whether there is a dependency version
+        case "$deps" in
+        '('*) deps="${deps#(}"
+              depver="${deps%%)*}"
+              deps="${deps#*)}"
+              ;;
+        *)    depver=
+              ;;
+        esac
+        #remove any leading whitespace or commas for te next iteration
+        deps=`echo "$deps" | sed 's/^[, ]*//'`
+  
         requires="$requires $depname $depver "
-        deps="$xdeps"
       done
       # ensure a version number
       if test "x$version" = "x"; then version="0.0"; fi
