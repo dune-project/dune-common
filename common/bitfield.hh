@@ -3,7 +3,7 @@
 #ifndef DUNE_BITFIELD_HH
 #define DUNE_BITFIELD_HH
 
-#warning This file is deprecated! Use blockbitfield.hh instead!
+#warning This file is deprecated! Use bitsetvector.hh instead!
 
 #include <vector>
 #include <iostream>
