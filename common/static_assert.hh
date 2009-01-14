@@ -67,6 +67,7 @@ template<int x> struct static_assert_test {};
     \brief Helper template so that compilation fails if condition is not true.
 
     \code
+   #include <dune/common/static_assert.hh>
     dune_static_assert(CONDITION, ERRORMSG);
     \endcode
 
