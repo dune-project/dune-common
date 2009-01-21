@@ -11,7 +11,7 @@ AM_CONFIG_HEADER([config.h])
 DUNE_SYMLINK
 # add configure flags needed to create log files for dune-autobuild
 DUNE_AUTOBUILD_FLAGS
-# check all dune dependecies an prerequisits
+# check all dune dependecies and prerequisits
 DUNE_CHECK_ALL
 
 # preset variable to path such that #include <dune/...> works
@@ -45,10 +45,3 @@ chmod +x bin/check-log-store
 
 # print results
 DUNE_SUMMARY_ALL
-
-echo
-echo Note: Most of the libraries checked for above are only used for the self-test
-echo of Dune.  The library itself will build and the headers will work even if
-echo ALBERTA, MPI, etc. cannot be found.  An exception to this are UG and AmiraMesh
-echo which need to be found right now if you want to use them later.
-echo
