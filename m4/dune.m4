@@ -258,18 +258,6 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   AC_LANG_POP([C++])
 ])
 
-AC_DEFUN([DUNE_DISC_CHECK_MODULE],
-[
-    DUNE_CHECK_MODULES([dune-disc], [disc/shapefunctions/lagrangeshapefunctions.hh], [Dune::LagrangeShapeFunctions<double[,]double[,]3>::general])
-])
-AC_DEFUN([DUNE_DISC_CHECKS])
-
-AC_DEFUN([DUNE_SUBGRID_CHECK_MODULE],
-[
-    DUNE_CHECK_MODULES([dune-subgrid], [subgrid/subgrid.hh], [])
-])
-AC_DEFUN([DUNE_SUBGRID_CHECKS])
-
 AC_DEFUN([DUNE_DEV_MODE],[
   AC_ARG_ENABLE(dunedevel,
     AC_HELP_STRING([--enable-dunedevel],[activate Dune-Developer-mode]))
