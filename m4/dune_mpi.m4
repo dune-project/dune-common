@@ -77,7 +77,7 @@ AC_DEFUN([DUNE_MPI],[
   # disable runtest if we have a queuing system
   AC_ARG_ENABLE(mpiruntest,
     AC_HELP_STRING([--disable-mpiruntest],
-      [Don't try to run a MPI program during configure. (This is need if you depend on a queuing system)]),
+      [Don't try to run a MPI program during configure. (This is needed if you depend on a queuing system)]),
     [mpiruntest=${enableval}],
     [mpiruntest=yes]
   )
