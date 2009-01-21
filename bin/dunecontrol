@@ -616,7 +616,7 @@ m4_define([DUNE_AC_INIT],[
   DUNE_PARSE_MODULE_VERSION([$name], [$version])
   # don't build shared libs per default, this is way better for debugging...
   m4_ifdef([LT_INIT],
-    [LT_INIT],
+    [LT_INIT([disable-shared])],
     [AC_DEFUN([LT_OUTPUT])])
   AC_DISABLE_SHARED
 
@@ -632,7 +632,6 @@ AC_DEFUN([DUNE_CHECK_MOD_DEPENDENCIES], [
   AC_REQUIRE([AC_PROG_CXXCPP])
   AC_REQUIRE([AC_PROG_LIBTOOL])
   m4_ifdef([AC_LIBTOOL_LANG_CXX_CONFIG],[AC_LIBTOOL_LANG_CXX_CONFIG])
-  AC_REQUIRE([LT_OUTPUT])
 EOF
       ### initialize AM_CONDITIONAL for suggestions that were not found
       for name in $(eval echo \$SUGS_$mainmod); do
