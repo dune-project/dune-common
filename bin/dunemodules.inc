@@ -119,7 +119,7 @@ find_modules_in_path() {
     while read dir; do
       if test -d "$dir"; then
         while read m; do
-          find_modules $m
+          test -n "$m" && find_modules "$m"
         done <<EOFM
         $(find "$dir" -name $CONTROL | $GREP -v 'dune-[-_a-zA-Z]/dune-[-a-zA-Z_]*-[0-9]\{1,\}.[0-9]\{1,\}/')
 EOFM
