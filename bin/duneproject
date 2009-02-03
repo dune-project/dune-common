@@ -413,6 +413,8 @@ cat> "$PROJECT/Makefile.am" << M_DELIM
 # we need the module file to be able to build via dunecontrol
 EXTRA_DIST=dune.module
 
+SUBDIRS = m4
+
 # possible options
 #LDADD = \$(UG_LDFLAGS) \$(AMIRAMESH_LDFLAGS) \$(UG_LIBS) \$(AMIRAMESH_LIBS)
 #AM_CPPFLAGS = \$(UG_CPPFLAGS) \$(AMIRAMESH_CPPFLAGS)
