@@ -499,7 +499,7 @@ CC_DELIM
 mkdir "$PROJECT/m4"
 echo "- $PROJECT/m4/Makefile.am"
 cat> "$PROJECT/m4/Makefile.am" << CC_DELIM
-M4FILES = $MODULE.m4"
+M4FILES = $MODULE.m4
 
 aclocaldir = $\(datadir\)/aclocal
 aclocal_DATA = $\(M4FILES\)
