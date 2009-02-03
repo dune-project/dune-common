@@ -401,6 +401,11 @@ The full build-system is described in the dune-common/doc/buildsystem (SVN versi
 R_DELIM
 
 ################## MAKEFILE.AM ##################
+DISTCHECK_CONFIGURE_FLAGS=
+for name in $DEPENDENCIES; do
+  capital=`echo $name | tr '[a-z-]' '[A-Z_]'`
+  DISTCHECK_CONFIGURE_FLAGS=$DISTCHECK_CONFIGURE_FLAGS"--with-${name}=\$(${capital}_ROOT) "
+done
 echo "- $PROJECT/Makefile.am"
 cat> "$PROJECT/Makefile.am" << M_DELIM
 # \$Id$
@@ -423,7 +428,7 @@ ${CMODULE}_LDADD = \$(MPI_LDFLAGS) \$(ALBERTA_LDFLAGS) \$(ALBERTA_LIBS) \$(AMIRA
 # we need automake 1.5
 AUTOMAKE_OPTIONS = foreign 1.5
 # pass most important options when "make distcheck" is used
-DISTCHECK_CONFIGURE_FLAGS = --with-dune=\$(DUNEROOT) CXX="\$(CXX)" CC="\$(CC)"
+DISTCHECK_CONFIGURE_FLAGS = $DISTCHECK_CONFIGURE_FLAGS CXX="\$(CXX)" CC="\$(CC)"
 
 include \$(top_srcdir)/am/top-rules
 include \$(top_srcdir)/am/global-rules
