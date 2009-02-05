@@ -1,3 +1,4 @@
+# -*- tab-width: 4; indent-tabs-mode: nil -*-
 # $Id$
 
 TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
@@ -10,7 +11,8 @@ TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
 	testfassign4 \
     testfassign_fail1 testfassign_fail2 testfassign_fail3 \
     testfassign_fail4 testfassign_fail5 testfassign_fail6 \
-    conversiontest bitsetvectortest deprecatedtuplestest
+    conversiontest bitsetvectortest deprecatedtuplestest \
+    float_cmp
 
 # which tests to run
 COMPILE_XFAIL=$(DUNE_COMMON_ROOT)/bin/xfail-compile-tests
@@ -130,5 +132,7 @@ testfassign_fail6_CPPFLAGS = $(AM_CPPFLAGS) -D_N=2 -D_M=2 -D_VALUES="1, 2, nextR
 conversiontest_SOURCES = conversiontest.cc
 
 sourcescheck_NOSOURCES = exprtmpl.cc timing.cc
+
+float_cmp_SOURCES = float_cmp.cc
 
 include $(top_srcdir)/am/global-rules
