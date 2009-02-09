@@ -173,7 +173,9 @@ namespace Dune
        */
       Chunk()
       {
-        unsigned long lmemory = reinterpret_cast<unsigned long>(chunk_);
+        // Make sure the alignment is correct!
+        // long long should be 64bit safe!
+        unsigned long long lmemory = reinterpret_cast<unsigned long long>(chunk_);
         if(lmemory % alignment != 0)
           lmemory = (lmemory / alignment + 1)
                     * alignment;
@@ -459,6 +461,8 @@ namespace Dune
     dune_static_assert((chunkSize - (alignment - 1)) % alignment == 0, "Library Error: compiler cannot calculate!");
     dune_static_assert(elements>=1, "Library Error: we need to hold at least one element!");
     dune_static_assert(elements*alignedSize<=chunkSize, "Library Error: aligned elements must fit into chuck!");
+    std::cout<<"s= "<<S<<" : T: "<<sizeof(T)<<" Reference: "<<sizeof(Reference)<<" union: "<<unionSize<<" alignment: "<<alignment<<
+    "aligned: "<<alignedSize<<" chunk: "<< chunkSize<<" elements: "<<elements<<std::endl;
   }
 
   template<class T, std::size_t S>
