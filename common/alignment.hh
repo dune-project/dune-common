@@ -4,6 +4,11 @@
 #ifndef DUNE_ALIGNMENT_HH
 #define DUNE_ALIGNMENT_HH
 #include <cstddef>
+#ifdef HAVE_TR1_TYPE_TRAITS
+#include <type_traits>
+#elif HAVE_TYPE_TRAITS
+#include <tr1/type_traits>
+#endif
 
 namespace Dune
 {
@@ -25,6 +30,7 @@ namespace Dune
   {
     char c;
     T t;
+    void hack();
   };
 
   /** \todo Please doc me! */
@@ -75,10 +81,17 @@ namespace Dune
   template <class T>
   struct AlignmentOf
   {
+
     enum
     {
       /** @brief The alginment requirement. */
-      value = AlignmentTester<T, sizeof(AlignmentStruct<T>) - sizeof(T) - 1>::result
+#ifdef HAVE_TYPE_TRAITS
+      value = std::alignment_of<T>::value
+#elif HAVE_TR1_TYPETRAITS
+      value = std::tr1::alignment_of<T>::value
+#else
+      value = AlignmentTester<T, sizeof(AlignmentStruct<T>) - sizeof(T) -1>::result
+#endif
     };
   };
 
