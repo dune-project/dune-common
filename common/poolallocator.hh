@@ -461,8 +461,8 @@ namespace Dune
     dune_static_assert((chunkSize - (alignment - 1)) % alignment == 0, "Library Error: compiler cannot calculate!");
     dune_static_assert(elements>=1, "Library Error: we need to hold at least one element!");
     dune_static_assert(elements*alignedSize<=chunkSize, "Library Error: aligned elements must fit into chuck!");
-    std::cout<<"s= "<<S<<" : T: "<<sizeof(T)<<" Reference: "<<sizeof(Reference)<<" union: "<<unionSize<<" alignment: "<<alignment<<
-    "aligned: "<<alignedSize<<" chunk: "<< chunkSize<<" elements: "<<elements<<std::endl;
+    /*std::cout<<"s= "<<S<<" : T: "<<sizeof(T)<<" Reference: "<<sizeof(Reference)<<" union: "<<unionSize<<" alignment: "<<alignment<<
+       "aligned: "<<alignedSize<<" chunk: "<< chunkSize<<" elements: "<<elements<<std::endl;*/
   }
 
   template<class T, std::size_t S>
