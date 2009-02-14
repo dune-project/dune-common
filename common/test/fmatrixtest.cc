@@ -228,6 +228,9 @@ int main()
     test_matrix<double, 1, 1>();
     test_matrix<int, 10, 5>();
     test_matrix<double, 5, 10>();
+    Dune::FieldMatrix<double, 34, 34> A(1e-15);
+    for (int i=0; i<34; i++) A[i][i] = 1;
+    A.invert();
     return test_invert_solve();
   }
   catch (Dune::Exception & e)

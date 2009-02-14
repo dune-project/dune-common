@@ -284,6 +284,7 @@ namespace Dune {
     void mv (const X& x, Y& y) const
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
+      assert(&x != &y);
       if (x.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
       if (y.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
@@ -485,6 +486,22 @@ namespace Dune {
       return *this;
     }
 
+    //! Multiplies M from the left to this matrix, this matrix is not modified
+    template<int l>
+    FieldMatrix<K,l,m> leftmultiplyany (const FieldMatrix<K,l,n>& M)
+    {
+      FieldMatrix<K,l,m> C;
+
+      for (size_type i=0; i<l; i++) {
+        for (size_type j=0; j<m; j++) {
+          C[i][j] = 0;
+          for (size_type k=0; k<n; k++)
+            C[i][j] += M[i][k]*(*this)[k][j];
+        }
+      }
+      return C;
+    }
+
     //! Multiplies M from the right to this matrix
     FieldMatrix& rightmultiply (const FieldMatrix<K,m,m>& M)
     {
@@ -497,6 +514,22 @@ namespace Dune {
             (*this)[i][j] += C[i][k]*M[k][j];
         }
       return *this;
+    }
+
+    //! Multiplies M from the right to this matrix, this matrix is not modified
+    template<int l>
+    FieldMatrix<K,n,l> rightmultiplyany (const FieldMatrix<K,m,l>& M)
+    {
+      FieldMatrix<K,n,l> C;
+
+      for (size_type i=0; i<n; i++) {
+        for (size_type j=0; j<l; j++) {
+          C[i][j] = 0;
+          for (size_type k=0; k<m; k++)
+            C[i][j] += (*this)[i][k]*M[k][j];
+        }
+      }
+      return C;
     }
 
 
