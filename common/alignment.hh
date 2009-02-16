@@ -4,9 +4,9 @@
 #ifndef DUNE_ALIGNMENT_HH
 #define DUNE_ALIGNMENT_HH
 #include <cstddef>
-#ifdef HAVE_TR1_TYPE_TRAITS
+#if HAVE_TYPE_TRAITS
 #include <type_traits>
-#elif HAVE_TYPE_TRAITS
+#elif HAVE_TR1_TYPE_TRAITS
 #include <tr1/type_traits>
 #endif
 
