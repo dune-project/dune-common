@@ -34,8 +34,10 @@
 \newcommand{\dunecommon}{\texttt{dune-common}\xspace}
 \newcommand{\duneistl}{\texttt{dune-istl}\xspace}
 \newcommand{\dunegrid}{\texttt{dune-grid}\xspace}
+\newcommand{\dunefem}{\texttt{dune-fem}\xspace}
 \newcommand{\dunedisc}{\texttt{dune-disc}\xspace}
 \newcommand{\dunecontrol}{\texttt{dunecontrol}\xspace}
+\newcommand{\duneproject}{\texttt{duneproject}\xspace}
 \newcommand{\dunemodule}{\texttt{dune.module}\xspace}
 \newcommand{\make}{\texttt{make}\xspace}
 \newcommand{\topsrc}{\$(top\_srcdir)}
@@ -44,16 +46,24 @@
 
 \title{The DUNE Buildsystem HOWTO}
 
-\author{Christian Engwer$^\ast$}
+\author{Christian Engwer$^\ast$ \and
+Felix Albrecht$^\dagger$}
 
 % \date{\svnToday}
 
-\date{July 4, 2008}
+\date{January 20, 2009}
 
 \publishers{%
+\vspace{10mm}
 {\normalsize $^\ast$Interdisziplinäres Zentrum für Wissenschaftliches Rechnen,
 Universität Heidelberg,\\
 Im Neuenheimer Feld 368, D-69120 Heidelberg, Germany}\\
+%
+\bigskip
+{\normalsize $^\dagger$Institut für Numerische und Angewandte Mathematik,
+Westfälische Wilhelms-Universität Münster,\\
+Einsteinstr. 62, D-48149 Münster, Germany}\\
+%
 \bigskip
 {\normalsize \texttt{\url{http://www.dune-project.org/}}}\\
 }
@@ -63,14 +73,420 @@ Im Neuenheimer Feld 368, D-69120 Heidelberg, Germany}\\
 \maketitle
 \tableofcontents
 \pagebreak
-\section{Structure of DUNE}
+
+\section{Getting started (using \duneproject)}\label{section::getting_started}
+This section tells you how to begin working with \dune without explainig any
+further details. For a closer look on \duneproject, see section
+\ref{section::creating_new_dune_project}.\\
+
+Once you've downloaded all the \dune modules you're interested in, you probably
+wonder ``How do I start working with \dune?''. It's quite easy.
+Let's assume you have a terminal open and are inside a directory containing
+some \dune modules. Let's say
+ 
+\begin{lstlisting}[language=make]
+ls -l
+\end{lstlisting}
+produces something like:
+
+\begin{lstlisting}[language=make]
+dune-common/
+dune-grid/
+dune-fem/
+config.opts
+\end{lstlisting}
+
+Since there is no difference between a \dune module you've downloaded from
+the homepage and your own work (in terms of the buildsystem), you can just
+create your own module (or project, to begin with) in order to work with \dune.
+This way \dunecontrol takes care of configuring your project and creating the
+correct \texttt{Makefile}s (so you can easily link and use all the other \dune
+modules). It can be done by calling
+ 
+\begin{lstlisting}[language=make]
+./dune-common/bin/duneproject
+\end{lstlisting}
+
+\duneproject is provided by the buildsystem in \dunecommon to
+help you set up your own \dune project.
+After calling \duneproject, you have to provide a name for your project
+(without whitespace), i.e. \texttt{foo}\xspace. You are then asked to provide a
+list of all modules the new project should depend on (this will be
+something like \dunecommon \dunegrid). At last, you should provide
+the version of your project (i.e. \texttt{0.1}\xspace) and your email adress.\\
+\duneproject now creates a folder with the name of your project,
+containing some files needed in order to work with \dune.
+In our example,
+ 
+\begin{lstlisting}[language=make]
+ls -l foo/
+\end{lstlisting}
+should produce something like
+
+\begin{lstlisting}[language=make]
+autogen.sh
+configure.ac
+dune.module
+foo.cc
+Makefile.am
+README
+\end{lstlisting}
+
+You can now call \dunecontrol for your new project, as you would do
+for any other \dune module. If you have a \texttt{config.opts}\xspace
+file configured to your needs (see e.g. ``Installation Notes'' on
+\texttt{www.dune-project.org}), a simple call of
+
+\begin{lstlisting}[language=make]
+./dune-common/bin/dunecontrol --module=foo --opts=config.opts all
+\end{lstlisting}
+should now call \autogen, \configure and \make for your
+project (in fact, by using the option \texttt{{-}-module=...}\xspace you've told
+\dunecontrol to call those commands for all modules your project
+depends on first).\\
+\textbf{Remark:} always call \dunecontrol from the directory
+containing \dunecommon and all other \dune modules.\\
+You can now have a look at \texttt{foo.cc}\xspace in your project's directory to
+see
+how to include \dune header files, or you can simply run
+
+\begin{lstlisting}[language=make]
+./foo/foo
+\end{lstlisting}
+which should produce something like
+
+\begin{lstlisting}[language=make]
+Hello World! This is foo.
+This is a sequential program.
+\end{lstlisting}
+
+Now you are ready to do some work with \dune by simply editing
+\texttt{foo.cc}\xspace
+and calling 
+
+\begin{lstlisting}[language=make]
+make
+\end{lstlisting}
+in your project's directory.
+
+\section{Creating your own \dune module}\label{section::creating_dune_module}
+This section explains how to set up your \dune module correctly so other people
+can use it easily. For further guidelines or
+explanations, see section \ref{section::dune_module_guidelines}.\\
+
+If you want your \dune module to be useable by other people your design should
+follow a certain structure. A good way to indicate that your module is set up
+like the other \dune modules is by naming it with the prefix
+\texttt{dune-}\xspace. 
+Since your module should be concerned with a certain topic, you should give it
+a meaningful name (e.g. \dunegrid is about \texttt{grid}s). 
+Following section \ref{section::getting_started} you
+might want to create your new module with the name \texttt{dune-foo}\xspace
+(since it is about foo) by running \duneproject. Again, after typing 
+
+\begin{lstlisting}[language=make]
+ls -l dune-foo/
+\end{lstlisting}
+in a terminal of your choice we are left with a bare \dune project:
+
+\begin{lstlisting}[language=make]
+autogen.sh
+configure.ac
+dune_foo.cc
+dune.module
+Makefile.am
+README
+\end{lstlisting}
+
+Our next step is to create the subfolders \texttt{doc/}\xspace,
+\texttt{foo/}\xspace and \texttt{src/}\xspace.\\
+\texttt{foo/}\xspace will contain any headers that are of interest to other
+users (like the subfolder \texttt{common/}\xspace in
+\dunecommon, \texttt{grid/}\xspace in \dunegrid, etc.). Other users will have to
+include those files if they want to work with them. Let's say we already have some interface implementation
+in a file \texttt{bar.hh}\xspace. We put this one into the subfolder
+\texttt{foo/}\xspace.\\
+It is then convenient to collect whatever documentation exists about those
+header files in \texttt{doc/}\xspace and since there should
+at least exist some doxygen documentation we create the
+subdirectory \texttt{doc/doxygen/}\xspace (see ``Coding Style'' in the
+setion ``Developing Dune'' on \texttt{www.dune-project.org} for details).
+We will need a \makefileam in
+\texttt{doc/}\xspace and \texttt{doc/doxygen/}\xspace so we copy the
+\makefileam from \texttt{dune-foo/Makefile.am}\xspace to
+\texttt{dune-foo/doc/Makefile.am}. Since we also need
+some other files for \texttt{doxygen}\xspace to work we just copy the
+following files from e.g. \texttt{dune-grid/doc/doxygen/}\xspace to
+\texttt{dune-foo/doc/doxygen/}\xspace:
+
+\begin{lstlisting}[language=make]
+Doxydep
+Doxyfile
+doxy-footer.html
+doxy-header.wml
+dune-doxy.css
+mainpage
+Makefile.am
+modules
+\end{lstlisting}
+
+The \texttt{src/}\xspace subdirectory will contain the sources of your
+implementation (usually at least a \texttt{.cc}\xspace file with
+\texttt{main}\xspace). Since we already have such a file
+(\texttt{dune\_foo.cc}), we move it to \texttt{src/}\xspace. We also need
+a \makefileam in \texttt{src/}\xspace so we copy our \makefileam from
+\texttt{dune-foo/Makefile.am}\xspace to
+\texttt{dune-foo/src/Makefile.am}\xspace.\\
+Of course we will have to edit those copies later on. But let's take a
+look at the structure of our project.
+
+\begin{lstlisting}[language=make]
+dune-common/
+dune-grid/
+dune-foo/
+-> autogen.sh
+-> configure.ac
+-> doc/
+   -> doxygen/
+      -> Doxydep
+      -> Doxyfile
+      -> doxy-footer.html
+      -> doxy-header.wml
+      -> dune-doxy.css
+      -> mainpage
+      -> Makefile.am
+      -> modules
+   -> Makefile.am
+-> dune.module
+-> foo/
+   -> bar.hh
+-> Makefile.am
+-> README
+-> src/
+   -> dune_foo.cc
+\end{lstlisting}
+
+Now all that's left to do is to edit those \texttt{Makefile.am}s, the
+\configureac and some \texttt{doxygen} files.\\
+Te begin with we open the file \texttt{dune-foo/Makefile.am}. Ignoring
+comments, you should edit the file as follows:
+
+\begin{lstlisting}[numbers=left,numberstyle=\tiny,numbersep=5pt,language=make]
+EXTRA_DIST=dune.module
+
+DIST_SUBDIRS = doc src
+
+if BUILD_DOCS
+SUBDIRS = doc src
+else
+SUBDIRS = src
+endif
+
+AUTOMAKE_OPTIONS = foreign 1.5
+
+DISTCHECK_CONFIGURE_FLAGS = --with-dune=$(DUNEROOT) CXX="$(CXX)" CC="$(CC)"
+
+include $(top_srcdir)/am/global-rules
+\end{lstlisting}
+Lines $5-9$ state that all interesting stuff happens in the subdirectories
+(in \texttt{doc/} and \texttt{src/} if your module is being
+configured without the \texttt{--disable-documentation} flag or just in
+\texttt{src/} otherwise). Line 13 might look a bit different on your
+machine, so you should copy this line from the original \makefileam in that
+case.\\
+We can leave \texttt{dune-foo/src/Makefile.am} nearly as it is, only the line 
+
+\begin{lstlisting}[language=make]
+EXTRA_DIST=dune.module
+\end{lstlisting}
+should be removed.\\
+
+Now we have to tell \autogen a bit about the structure of
+our project. This can easily be done by opening \texttt{dune-foo/configure.ac}
+and editing just two lines.\\
+Since we moved \texttt{dune\_foo.cc} into \texttt{src/} we have to tell
+\configure where it is now. Therefore we change the line
+
+\begin{lstlisting}[language=make]
+AC_CONFIG_SRCDIR([dune_foo.cc])
+\end{lstlisting}
+to 
+
+\begin{lstlisting}[language=make]
+AC_CONFIG_SRCDIR([src/dune_foo.cc])
+\end{lstlisting}
+
+If we take a look at line
+
+\begin{lstlisting}[language=make]
+AC_CONFIG_FILES([Makefile])
+\end{lstlisting}
+
+we see that we should add some \texttt{Makefile}s so \configure can take care about
+them for us. So we replace the above line with the following:
+
+\begin{lstlisting}[language=make]
+AC_CONFIG_FILES([Makefile
+    src/Makefile
+    doc/Makefile
+    doc/doxygen/Makefile])
+\end{lstlisting}
+
+Now your module is nearly ready to being configured by \dunecontrol. Only the 
+\texttt{doxygen} part is missing (in fact, configuring it with the
+\texttt{--disable-documentation} flag would work from this point on).\\
+
+To configure \texttt{doxygen} we have to edit two \texttt{Makefile.am}s and some
+\texttt{doxygen} files. The first \makefileam to edit is of course
+\texttt{dune-foo/doc/Makefile.am}. Ignoring comments again, the file should
+look like:
+
+\begin{lstlisting}[numbers=left,numberstyle=\tiny,numbersep=5pt,language=make]
+SUBDIRS = doxygen
+
+all: $(PAGES)
+
+CURDIR=doc
+
+BASEDIR=..
+
+docdir=$(datadir)/doc/dune-foo
+
+include $(top_srcdir)/am/webstuff
+
+CLEANFILES = $(PAGES)
+
+if ! BUILD_DOCS
+dist-hook:
+	echo "# No documentation included in distribution! " > $(distdir)/$(DOCUMENTATION_TAG_FILE)
+endif
+
+include $(top_srcdir)/am/global-rules
+\end{lstlisting}
+
+Now we can take a look at \makefileam in \texttt{dune-foo/doc/doxygen/}.
+Since this one was copied from \dunegrid it should suffice to change all
+occurences of \texttt{grid} into \texttt{foo}. In \dune release 1.1.1 this
+should be just the lines
+
+\begin{lstlisting}[language=make]
+doxygendir = $(datadir)/doc/dune-grid/doxygen
+\end{lstlisting}
+and
+
+\begin{lstlisting}[language=make]
+EXTRAINSTALL="$(DOXYGENINSTALL)" CURDIR="$(CURDIR)/dune-grid-html" install ; \
+\end{lstlisting}
+which have to be changed to 
+
+\begin{lstlisting}[language=make]
+doxygendir = $(datadir)/doc/dune-foo/doxygen
+\end{lstlisting}
+and
+
+\begin{lstlisting}[language=make]
+EXTRAINSTALL="$(DOXYGENINSTALL)" CURDIR="$(CURDIR)/dune-foo-html" install ; \
+\end{lstlisting}
+respectively.\\
+Now \dunecontrol is ready to take care of building the documentation. But since
+we copied some \texttt{doxygen} stuff from \dunegrid there are some
+\texttt{doxygen} files left we have to take care of. These are
+\texttt{Doxyfile}, \texttt{mainpage} and \texttt{modules}. You can edit the
+latter two as you like. They will form the main page and the module page of the
+\texttt{html} documentation of \texttt{doxygen}.\\
+We are basicaly left to change all occurences of \texttt{grid} in the
+\texttt{Doxyfile} as well as some settings. If you open the file 
+\texttt{dune-foo/doc/doxygen/Doxyfile} the first thing you should see is a line
+like
+
+\begin{lstlisting}[language=make]
+PROJECT_NAME = dune-grid
+\end{lstlisting}
+which should obviously be changed into
+
+\begin{lstlisting}[language=make]
+PROJECT_NAME = dune-foo
+\end{lstlisting}
+to state the name of your module.
+
+The next thing we're interested in are the lines
+
+\begin{lstlisting}[language=make]
+INPUT = mainpage \
+        modules \
+        ../../grid/modules \
+        ../../grid
+\end{lstlisting}
+which should of course look like
+
+\begin{lstlisting}[language=make]
+INPUT = mainpage \
+        modules \
+        ../../foo
+\end{lstlisting}
+
+Then there are some settings of \dunegrid left which we probably don't want to
+have. So we just ncomment all the following lines by just adding a \texttt{\#}
+at the beginning of every line.
+
+\begin{lstlisting}[language=make]
+EXCLUDE = ../../grid/onedgrid \
+          ../../grid/uggrid \
+          ../../grid/test
+\end{lstlisting}
+
+\begin{lstlisting}[language=make]
+EXAMPLE_PATH = ../../grid/io/file/dgfparser/test 
+\end{lstlisting}
+
+\begin{lstlisting}[language=make]
+IMAGE_PATH = ../../grid/sgrid \
+             ../../grid/yaspgrid \
+             ../../grid/common \
+             ../../grid/io/file/dgfparser/test \
+             ../appl/refelements \
+             ../refinement
+\end{lstlisting}
+
+Now we are done editing files and ready to configure the module without the
+option\\ \texttt{--disable-documentation} (provided you have \texttt{doxygen} and
+the necessary tools installed on your system).\\
+After running
+
+\begin{lstlisting}[language=make]
+./dune-common/bin/dunecontrol --module=foo --opts=config.opts all
+\end{lstlisting}
+with a \texttt{config.opts} that enables documentation you should now find a
+\texttt{html} \texttt{doxygen} documentation in
+\texttt{dune-foo/doc/doxygen/html/index.html}.\\
+
+If you take a look at the other modules you will also find a symlink
+
+\begin{lstlisting}[language=make]
+dune -> .
+\end{lstlisting}
+in each folder. If you go to your module directory \texttt{dune-foo/} and
+type
+
+\begin{lstlisting}[language=make]
+ln -s . dune
+\end{lstlisting}
+you will now find a similar symlink in your module. This way you can now incude
+your own header files in \texttt{dune-foo/foo/} like any other \dune header (as
+it is done in the first lines of \texttt{dune\_foo.cc}):
+
+\begin{lstlisting}[language=make]
+#include<dune/foo/bar.hh>
+\end{lstlisting}
+
+\section{Structure of \dune}
 \dune consists of several independent modules:
 \begin{itemize}
 \item \dunecommon
 \item \dunegrid
 \item \duneistl
 \item \dunedisc
-\item \texttt{dune-fem}
+\item \dunefem
 \end{itemize}
 
 Single modules can depend on other modules and so the \dune modules
@@ -706,7 +1122,7 @@ you can add these to \texttt{\$PARAMS} and then call the default
 implementation of the command via
 \texttt{run\_default\_\textit{command}}.
 
-\section{Creating a new Dune project}
+\section{Creating a new Dune project}\label{section::creating_new_dune_project}
 
 From a buildsystem point of view there is no difference between a \dune
 application and a \dune module.
@@ -740,7 +1156,7 @@ buildsystem files for your project. In case you are using unstable
 just like the source code. Therefore it might be that
 \texttt{duneproject} is not up to date with the latest changes.
 
-\section{Dune module guidelines}
+\section{Dune module guidelines}\label{section::dune_module_guidelines}
 \label{guidelines}
 
 A \dune module should comply with the following rules:
