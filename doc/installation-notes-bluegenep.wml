@@ -1,0 +1,67 @@
+# -*- html -*-
+# $Id: installation-notes.wml 5391 2008-12-05 17:58:52Z christi $
+
+#use wml::layout::default title="DUNE - Installation Notes"
+
+<h1>Installation Notes for Blue Gene P</h1>
+
+<p>On IBM's Blue Gene System P the system and architecture
+  (like <a href="http://www.fz-juelich.de/jsc/jugene">Jugene in
+  J&uuml;lich</a> of the
+  front node (where one can login and compile stuff) and the compute
+  node (where the parallel problem will run) are different from each
+  other. Therefore one has to facilitate the auto-tool-chain's cross
+  compilation powers. This is a little bit tricky and it took me (Markus
+  Blatt) quite some time to compile DUNE in a way that it is reliably
+  working. Thanks to IBM's support I got it working now.
+</p>
+<p>In addition to the
+  normal <a href="installation-notes.html">Installation Notes</a> you
+  need the follwing special options to compile and link DUNE on Blue
+  Gene P.</p>
+<p>On the jugene all the tools needed for the cross compilation are
+  available in the directory
+  /bgsys/drivers/ppcfloor/gnu-linux/bin/. We therefore we need to add it
+  to our PATH:
+<pre>export PATH=/bgsys/drivers/ppcfloor/gnu-linux/bin/:$PATH</pre>.</p>
+<p>We need to tell condigure that we want to cross compile using the
+  <pre--host</pre> option. Furthermore we certainly want to enable the
+  parallel DUNE using the <pre>--enable-parallel</pre> option. As all
+  the tests take place on the front node we cannot start any parallel
+  program and therefore disable the tests with
+  the <pre>--disable-mpiruntest</pre option.</p>
+<p>Jugene uses static linkage by default. Unfortunately this seems not
+  to work out of the box with autotools-chain. If one tries to
+  configure and compile stuff with the default options libtool gets
+  messed up like this when linking to libdunecommon:
+  <pre>
+checking for dune-common installation or source tree...     found in /homeb/jicg42/jicg4201/DUNE/dune-common
+checking dune/common/stdstreams.hh usability... yes
+checking dune/common/stdstreams.hh presence... yes
+checking for dune/common/stdstreams.hh... yes
+checking for libdunecommon... no
+configure: WARNING: /homeb/jicg42/jicg4201/DUNE/dune-common does not seem to contain a valid dune-common (failed to link with libdunecommon.la)
+</pre>
+
+A closer look into config.log reveals the actual problem:
+<pre>
+configure:22583: ./libtool --tag=CXX --mode=link powerpc-bgp-linux-g++ -I/bgsys/local/libtiff/v3.8.2_gcc/include -I/bgsys/local/libjpeg/v6b_gcc/include -I/bgsys/drivers/ppcfloor/arch/include/ -DNOOUTPUT -g -O0 -DNDEBUG -Wall  -L/bgsys/local/libtiff/v3.8.2_gcc/lib/ -L/bgsys/local/libjpeg/v6b_gcc/lib -o conftest -I/bgsys/local/libtiff/v3.8.2_gcc/include -I/bgsys/local/libjpeg/v6b_gcc/include -I/bgsys/drivers/ppcfloor/arch/include/ -DNOOUTPUT -g -O0 -DNDEBUG -Wall  -I/homeb/jicg42/jicg4201/DUNE/dune-common  -L/bgsys/local/libtiff/v3.8.2_gcc/lib/ -L/bgsys/local/libjpeg/v6b_gcc/lib  -L/homeb/jicg42/jicg4201/DUNE/dune-common/lib conftest.cc  -ldunecommon >&5
+mkdir .libs
+powerpc-bgp-linux-g++ -I/bgsys/local/libtiff/v3.8.2_gcc/include -I/bgsys/local/libjpeg/v6b_gcc/include -I/bgsys/drivers/ppcfloor/arch/include/ -DNOOUTPUT -g -O0 -DNDEBUG -Wall -o conftest -I/bgsys/local/libtiff/v3.8.2_gcc/include -I/bgsys/local/libjpeg/v6b_gcc/include -I/bgsys/drivers/ppcfloor/arch/include/ -DNOOUTPUT -g -O0 -DNDEBUG -Wall -I/homeb/jicg42/jicg4201/DUNE/dune-common conftest.cc  -L/bgsys/local/libtiff/v3.8.2_gcc/lib/ -L/bgsys/local/libjpeg/v6b_gcc/lib -L/homeb/jicg42/jicg4201/DUNE/dune-common/lib /homeb/jicg42/jicg4201/DUNE/dune-common/lib/.libs/libdunecommon.a /bgsys/drivers/V1R3M0_460_2008-081112P/ppc/gnu-linux/powerpc-bgp-linux/lib/libstdc++.so -L/bgsys/drivers/V1R3M0_460_2008-081112P/ppc/toolchain/gnu/build-powerpc-bgp-linux/gcc-4.1.2-build/powerpc-bgp-linux/libstdc++-v3/src -L/bgsys/drivers/V1R3M0_460_2008-081112P/ppc/toolchain/gnu/build-powerpc-bgp-linux/gcc-4.1.2-build/powerpc-bgp-linux/libstdc++-v3/src/.libs -L/bgsys/drivers/V1R3M0_460_2008-081112P/ppc/toolchain/gnu/build-powerpc-bgp-linux/gcc-4.1.2-build/./gcc -L/bgsys/drivers/V1R3M0_460_2008-081112P/ppc/gnu-linux/powerpc-bgp-linux/bin -L/bgsys/drivers/V1R3M0_460_2008-081112P/ppc/gnu-linux/powerpc-bgp-linux/lib -L/bgsys/drivers/V1R3M0_460_2008-081112P/ppc/gnu-linux/lib/../powerpc-bgp-linux/lib -lc -lgcc_s -lm -Wl,--rpath -Wl,/bgsys/drivers/V1R3M0_460_2008-081112P/ppc/gnu-linux/powerpc-bgp-linux/lib -Wl,--rpath -Wl,/bgsys/drivers/V1R3M0_460_2008-081112P/ppc/gnu-linux/powerpc-bgp-linux/lib
+/bgsys/drivers/V1R3M0_460_2008-081112P/ppc/gnu-linux/lib/gcc/powerpc-bgp-linux/4.1.2/../../../../powerpc-bgp-linux/bin/ld: attempted static link of dynamic object `/bgsys/drivers/V1R3M0_460_2008-081112P/ppc/gnu-linux/powerpc-bgp-linux/lib/l
+ibstdc++.so'
+collect2: ld returned 1 exit status
+configure:22589: $? = 1
+</pre>
+</p>
+<p>To get rid of this one needs to force shared linkage within the
+  compiler flags using the <pre>-dynamic</pre> compiler option for the
+  Darwin linker
+</p>
+<p>To pass all these options to DUNE one can use the following options
+  file:
+<pre>
+CONFIGURE_FLAGS=&quot;--prefix=$HOME/dune_install --disable-documentation --disable-mpiruntest --enable-parallel --host=powerpc-bgp-linux  --without-x CXXFLAGS=\&quot;-I/bgsys/drivers/ppcfloor/arch/include/ -DNOOUTPUT -g -O3 -dynamic -DNDEBUG -Wall\&quot; CFLAGS=\&quot;-I/bgsys/drivers/ppcfloor/arch/include/ -DNOOUTPUT -g -O3 -dynamic -DNDEBUG -Wall\&quot;\&quot;&quot;
+MAKE_FLAGS=&quot;all&quot;
+</pre>
+</p>
