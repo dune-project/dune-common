@@ -7,7 +7,7 @@ SUBDIRS = devel doxygen layout buildsystem
 if BUILD_DOCS
 # only build html when wml is available
 if WML
- PAGES = view-concept.html installation-notes.html installation-notes-buegenep.html
+ PAGES = view-concept.html installation-notes.html installation-notes-bluegenep.html
 endif
 endif
 
