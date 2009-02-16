@@ -51,8 +51,7 @@ AC_DEFUN([DUNE_COMMON_CHECKS],
 	[Prevents checking for  tr1 headers like tuple, array, etc. 
 	This might be needed for broken compilers like xlc on Blue Gene]), 
 	[], [    
-	  AC_CHECK_HEADERS([type_traits tr1/type_traits
-                        array tr1/array tuple tr1/tuple])
+	  AC_CHECK_HEADERS([type_traits tr1/type_traits array tr1/array tuple tr1/tuple])
 	  ])
   
   AC_LANG_POP([C++])
