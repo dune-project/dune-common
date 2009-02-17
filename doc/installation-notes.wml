@@ -178,7 +178,7 @@ An example of an options file is
 
 <p>On some platforms special care might have to be taken to make
   things comile, e.g. this is the cause for IBM's Blue Gene System
-  P. If you want to run DUNE there please read the <a href="installation-notes-jugene.html">instructions</a> of
+  P. If you want to run DUNE there please read the <a href="installation-notes-bluegenep.html">instructions</a> of
   Markus and save yourself a lot of time.
 <h2>Creating your own DUNE project module</h2>
 <p>
