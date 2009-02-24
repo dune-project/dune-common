@@ -3,5 +3,6 @@ Makefile.in
 .deps
 .libs
 *.lo
+*.swp
 libcommon.la
 semantic.cache
