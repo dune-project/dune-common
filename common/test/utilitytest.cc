@@ -27,9 +27,9 @@ struct Counter {
 int main(int argc, char** argv)
 {
 
-  typedef Dune::Tuple<int*,double*,long*,char*> PointerTuple;
+  typedef Dune::tuple<int*,double*,long*,char*> PointerTuple;
 
-  Dune::Tuple<int*,double*,long*,char*> pointers = Dune::NullPointerInitialiser<PointerTuple>::apply();
+  Dune::tuple<int*,double*,long*,char*> pointers = Dune::NullPointerInitialiser<PointerTuple>::apply();
   int ret=0;
 
   if(Dune::get<0>(pointers)!=0) {
@@ -57,7 +57,7 @@ int main(int argc, char** argv)
   long l= 4;
   char c= 's';
 
-  typedef Dune::Tuple<int*,char*,long*,char*> PointerTuple1;
+  typedef Dune::tuple<int*,char*,long*,char*> PointerTuple1;
 
   PointerTuple1 pointers1(&i,&c,&l,&c);
 
