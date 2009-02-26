@@ -53,7 +53,7 @@ int iteratorTupleTest()
 
   typedef std::vector<int>::iterator iterator;
   typedef std::vector<int>::const_iterator const_iterator;
-  typedef Tuple<iterator,const_iterator, const_iterator> Tuple;
+  typedef tuple<iterator,const_iterator, const_iterator> Tuple;
 
 
   Tuple tuple_(v.begin(), v.begin(), v.end());
@@ -80,8 +80,8 @@ int iteratorTupleTest()
 
 int lessTest()
 {
-  Tuple<int,float,double> t1(1,2.0,3.0);
-  Tuple<int,int,int> t2(1,2,1);
+  tuple<int,float,double> t1(1,2.0,3.0);
+  tuple<int,int,int> t2(1,2,1);
 
   int ret=0;
 
@@ -99,7 +99,7 @@ int lessTest()
 
 int copyTest()
 {
-  Tuple<float,int,double,char,std::string> tuple_, tuple1(3.0,1,3.3,'c',std::string("hallo")), tuple2(tuple1);
+  tuple<float,int,double,char,std::string> tuple_, tuple1(3.0,1,3.3,'c',std::string("hallo")), tuple2(tuple1);
 
   std::cout<<tuple1<<std::endl;
   std::cout<<tuple2<<std::endl;
@@ -122,19 +122,19 @@ int referenceTest()
   int i=50;
   double d=-3.3;
   long j=-666;
-  Tuple<int,double,long> t1(100, 5.0, 10);
-  Tuple<int,int,int> t2(1,5,9);
+  tuple<int,double,long> t1(100, 5.0, 10);
+  tuple<int,int,int> t2(1,5,9);
   std::cout << "i="<<i<<" d="<<d<<" j="<<j<<std::endl;
 
-  Tuple<int&,double&,long&> tr(i,d,j);
+  tuple<int&,double&,long&> tr(i,d,j);
 
   Element<0>::get(tr)=3;
   assert(Element<0>::get(tr)==3);
 
   std::cout <<"tr="<< tr<<std::endl;
 
-  Tuple<int> i1(5);
-  Tuple<int&> ir(i);
+  tuple<int> i1(5);
+  tuple<int&> ir(i);
   ir=i1;
 
   t1=t2;
@@ -158,19 +158,19 @@ int pointerTest()
   int i=50;
   double d=-3.3, d1=7.8;
   long j=-666, j1=-300;
-  Tuple<int*,double*,long*> t1(&k, &d, &j);
-  Tuple<int*,double*,long*> t2(&k1,&d1,&j1);
+  tuple<int*,double*,long*> t1(&k, &d, &j);
+  tuple<int*,double*,long*> t2(&k1,&d1,&j1);
   std::cout << "i="<<i<<" d="<<d<<" j="<<j<<std::endl;
 
-  Tuple<int*,double*,long*> tr(&i,&d,&j);
+  tuple<int*,double*,long*> tr(&i,&d,&j);
 
   *Element<0>::get(tr)=3;
   assert(*Element<0>::get(tr)==3);
 
   std::cout <<"tr="<< tr<<std::endl;
 
-  Tuple<int> i1(5);
-  Tuple<int*> ir(&i);
+  tuple<int> i1(5);
+  tuple<int*> ir(&i);
 
   t2=t1;
 
@@ -193,18 +193,18 @@ int constPointerTest()
   int i=50;
   double d=-3.3, d1=6.8;
   long j=-666, j1=-500;
-  Tuple<const int*, const double*, const long*> t1(&k, &d, &j);
-  Tuple<int*, double*, long*> t2(&k1,&d1,&j1);
+  tuple<const int*, const double*, const long*> t1(&k, &d, &j);
+  tuple<int*, double*, long*> t2(&k1,&d1,&j1);
   std::cout << "i="<<i<<" d="<<d<<" j="<<j<<std::endl;
 
-  Tuple<const int*, const double*, const long*> tr(&i,&d,&j);
+  tuple<const int*, const double*, const long*> tr(&i,&d,&j);
 
   std::cout << *Element<0>::get(tr)<<std::endl;
 
   std::cout <<"tr="<< tr<<std::endl;
 
-  Tuple<int> i1(5);
-  Tuple<const int*> ir(&i);
+  tuple<int> i1(5);
+  tuple<const int*> ir(&i);
 
   t1=t2;
 
@@ -247,11 +247,11 @@ int tuple_tr1_test()
 
 int main(int argc, char** argv)
 {
-  Tuple<float,int,double,char,std::string> tuple_;
+  tuple<float,int,double,char,std::string> tuple_;
 
   test(tuple_);
-  test(static_cast<Tuple<float,int,double,char,std::string>& >(tuple_));
-  test(static_cast<const Tuple<float,int,double,char,std::string>&>(tuple_));
+  test(static_cast<tuple<float,int,double,char,std::string>& >(tuple_));
+  test(static_cast<const tuple<float,int,double,char,std::string>&>(tuple_));
   exit(copyTest()+iteratorTupleTest()+referenceTest()+lessTest()
        +pointerTest()+constPointerTest()+tuple_tr1_test());
 
