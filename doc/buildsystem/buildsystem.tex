@@ -1,5 +1,5 @@
 \documentclass[11pt,a4paper,headinclude,footinclude,DIV16,normalheadings]{scrartcl}
-% \usepackage[today,nofancy]{svninfo}
+\usepackage[today,nofancy]{svninfo}
 \usepackage[automark]{scrpage2}
 \usepackage[ansinew]{inputenc}
 %\usepackage{german}
@@ -49,9 +49,7 @@
 \author{Christian Engwer$^\ast$ \and
 Felix Albrecht$^\dagger$}
 
-% \date{\svnToday}
-
-\date{January 20, 2009}
+\date{\svnToday}
 
 \publishers{%
 \vspace{10mm}
@@ -79,10 +77,10 @@ This section tells you how to begin working with \dune without explainig any
 further details. For a closer look on \duneproject, see section
 \ref{section::creating_new_dune_project}.\\
 
-Once you've downloaded all the \dune modules you're interested in, you probably
-wonder ``How do I start working with \dune?''. It's quite easy.
-Let's assume you have a terminal open and are inside a directory containing
-some \dune modules. Let's say
+Once you have downloaded all the \dune modules you are interested in, you probably
+wonder ``How do I start working with \dune?''. It is quite easy.
+Let us assume you have a terminal open and are inside a directory containing
+some \dune modules. Let us say
  
 \begin{lstlisting}[language=make]
 ls -l
@@ -92,11 +90,10 @@ produces something like:
 \begin{lstlisting}[language=make]
 dune-common/
 dune-grid/
-dune-fem/
 config.opts
 \end{lstlisting}
 
-Since there is no difference between a \dune module you've downloaded from
+Since there is no difference between a \dune module you have downloaded from
 the homepage and your own work (in terms of the buildsystem), you can just
 create your own module (or project, to begin with) in order to work with \dune.
 This way \dunecontrol takes care of configuring your project and creating the
@@ -107,8 +104,11 @@ modules). It can be done by calling
 ./dune-common/bin/duneproject
 \end{lstlisting}
 
-\duneproject is provided by the buildsystem in \dunecommon to
-help you set up your own \dune project.
+\emph{Note:} In case you are using unstable
+\dune you should be aware that the buildsystem is a running target,
+just like the source code. Therefore it might be that
+\texttt{duneproject} is not up to date with the latest changes. \\
+
 After calling \duneproject, you have to provide a name for your project
 (without whitespace), i.e. \texttt{foo}\xspace. You are then asked to provide a
 list of all modules the new project should depend on (this will be
@@ -199,7 +199,7 @@ README
 \end{lstlisting}
 
 Our next step is to create the subfolders \texttt{doc/}\xspace,
-\texttt{foo/}\xspace and \texttt{src/}\xspace.\\
+\texttt{foo/}\xspace and \texttt{src/}\xspace in \texttt{dune-foo/}\xspace.\\
 \texttt{foo/}\xspace will contain any headers that are of interest to other
 users (like the subfolder \texttt{common/}\xspace in
 \dunecommon, \texttt{grid/}\xspace in \dunegrid, etc.). Other users will have to
@@ -366,7 +366,7 @@ include $(top_srcdir)/am/global-rules
 
 Now we can take a look at \makefileam in \texttt{dune-foo/doc/doxygen/}.
 Since this one was copied from \dunegrid it should suffice to change all
-occurences of \texttt{grid} into \texttt{foo}. In \dune release 1.1.1 this
+occurences of \texttt{grid} into \texttt{foo}. In \dune release 1.2 this
 should be just the lines
 
 \begin{lstlisting}[language=make]
@@ -426,7 +426,7 @@ INPUT = mainpage \
 \end{lstlisting}
 
 Then there are some settings of \dunegrid left which we probably don't want to
-have. So we just ncomment all the following lines by just adding a \texttt{\#}
+have. So we just comment all the following lines by just adding a \texttt{\#}
 at the beginning of every line.
 
 \begin{lstlisting}[language=make]
@@ -471,8 +471,12 @@ type
 \begin{lstlisting}[language=make]
 ln -s . dune
 \end{lstlisting}
-you will now find a similar symlink in your module. This way you can now incude
-your own header files in \texttt{dune-foo/foo/} like any other \dune header (as
+you will now find a similar symlink in your module. You can also let \texttt{configure} do this for you automatically if you include this line 
+\begin{lstlisting}[language=make]
+DUNE_SYMLINK
+\end{lstlisting}
+in your \texttt{configure.ac} file. \\
+You can now include your header files in \texttt{dune-foo/foo/} like any other \dune header (as
 it is done in the first lines of \texttt{dune\_foo.cc}):
 
 \begin{lstlisting}[language=make]
@@ -1045,7 +1049,7 @@ When you specify an opts file and command line paramters
 \begin{lstlisting}
 dunecontrol --opts=some.opts configure --with-foo=bar
 \end{lstlisting}
-dunecontrol will ignore the parameters specified in the opts file and
+\dunecontrol will ignore the parameters specified in the opts file and
 you will get a warning.
 
 \minisec{environment variables}
@@ -1058,7 +1062,7 @@ environment variables.
   recursively for \texttt{dune.module} files) or a directly
   \texttt{dune.module} file.
 \item \texttt{DUNE\_OPTS\_FILE} specifies the opts file that should be
-  read by dunecontrol. This variable will be overwritten by the
+  read by \dunecontrol. This variable will be overwritten by the
   \texttt{--opts=} option.
 \item \texttt{MAKE} tells \dunecontrol which command to invoke for
   'make'. This can be useful for exmaple, if you want to use
@@ -1122,17 +1126,21 @@ you can add these to \texttt{\$PARAMS} and then call the default
 implementation of the command via
 \texttt{run\_default\_\textit{command}}.
 
-\section{Creating a new Dune project}\label{section::creating_new_dune_project}
+\section{Creating a new \dune project}\label{section::creating_new_dune_project}
 
 From a buildsystem point of view there is no difference between a \dune
-application and a \dune module.
+application and a \dune module.\\
 
 \dune modules are packages that offer a certain functionality that can
 be used by \dune applications. Therefore \dune modules offer libraries
-and/or header files. A \dune module needs to comply to a certain rules
+and/or header files. A \dune module needs to comply with certain rules
 (see \ref{guidelines}).
 
-In order to create new \dune project, you have to provide 
+Creating a new \dune project has been covered in detail in 
+\ref{section::creating_dune_module} using \texttt{duneproject} to take
+work off of the user. This is also the recommended way to start a new project. 
+If for whatever reasons you do not wish to use \duneproject here is 
+the bare minimum you have to provide in order to create a new project:
 \begin{itemize}
 \item a \dunemodule file\\
   Usually you will only need to specify the parameters \texttt{Module}
@@ -1146,15 +1154,7 @@ In order to create new \dune project, you have to provide
   important part is the call to \texttt{DUNE\_CHECK\_ALL} which
   runs all checks needed for a \dune module, plus the checks for the
   dependencies.
-\item a basic \texttt{m4} file\\
 \end{itemize}
-
-\emph{Note:} The program \texttt{duneproject} (found in
-\texttt{dune-common/bin}) can assist you in setting up the basic
-buildsystem files for your project. In case you are using unstable
-\dune you should be aware that the buildsystem is a running target,
-just like the source code. Therefore it might be that
-\texttt{duneproject} is not up to date with the latest changes.
 
 \section{Dune module guidelines}\label{section::dune_module_guidelines}
 \label{guidelines}
@@ -1209,6 +1209,10 @@ The autobook is a complete book describing the GNU toolchain
 (\autoconf, \automake and \libtool). It contains many recipies on how
 to use the autotools. The book is available as an online 
 version.
+
+\minisec{dune-project}
+\texttt{\url{http://www.dune-project.org/}}\\
+The official homepage of \dune.
 
 \end{document}
 
