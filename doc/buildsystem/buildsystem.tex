@@ -54,14 +54,14 @@ Felix Albrecht$^\dagger$}
 
 \publishers{%
 \vspace{10mm}
-{\normalsize $^\ast$Interdisziplinäres Zentrum für Wissenschaftliches Rechnen,
-Universität Heidelberg,\\
+{\normalsize $^\ast$Interdisziplinï¿½res Zentrum fï¿½r Wissenschaftliches Rechnen,
+Universitï¿½t Heidelberg,\\
 Im Neuenheimer Feld 368, D-69120 Heidelberg, Germany}\\
 %
 \bigskip
-{\normalsize $^\dagger$Institut für Numerische und Angewandte Mathematik,
-Westfälische Wilhelms-Universität Münster,\\
-Einsteinstr. 62, D-48149 Münster, Germany}\\
+{\normalsize $^\dagger$Institut fï¿½r Numerische und Angewandte Mathematik,
+Westfï¿½lische Wilhelms-Universitï¿½t Mï¿½nster,\\
+Einsteinstr. 62, D-48149 Mï¿½nster, Germany}\\
 %
 \bigskip
 {\normalsize \texttt{\url{http://www.dune-project.org/}}}\\
@@ -73,13 +73,18 @@ Einsteinstr. 62, D-48149 Münster, Germany}\\
 \tableofcontents
 \pagebreak
 
-\section{Getting started (using \duneproject)}\label{section::getting_started}
-This section tells you how to begin working with \dune without explainig any
+\section{Getting started}\label{section::getting_started}
+
+\textbf{TODO: How do I build the grid howto?}
+
+\section{Creating your own \dune module}\label{section::creating_dune_module}
+
+This section tells you how to begin working with \dune without explaining any
 further details. For a closer look on \duneproject, see section
 \ref{section::creating_new_dune_project}.\\
 
 Once you have downloaded all the \dune modules you are interested in, you probably
-wonder ``How do I start working with \dune?''. It is quite easy.
+wonder ``How do I start working with \dune?'' It is quite easy.
 Let us assume you have a terminal open and are inside a directory containing
 some \dune modules. Let us say
  
@@ -94,10 +99,9 @@ dune-grid/
 config.opts
 \end{lstlisting}
 
-Since there is no difference between a \dune module you have downloaded from
-the homepage and your own work (in terms of the buildsystem), you can just
-create your own module (or project, to begin with) in order to work with \dune.
-This way \dunecontrol takes care of configuring your project and creating the
+There is no difference between a \dune module you have downloaded from
+the web and modules you created yourself.
+\dunecontrol takes care of configuring your project and creating the
 correct \texttt{Makefile}s (so you can easily link and use all the other \dune
 modules). It can be done by calling
  
@@ -105,22 +109,25 @@ modules). It can be done by calling
 ./dune-common/bin/duneproject
 \end{lstlisting}
 
-\emph{Note:} In case you are using unstable
-\dune you should be aware that the buildsystem is a running target,
+\emph{Note:} In case you are using the unstable version
+\dune you should be aware that the buildsystem may change,
 just like the source code. Therefore it might be that
 \texttt{duneproject} is not up to date with the latest changes. \\
 
 After calling \duneproject, you have to provide a name for your project
-(without whitespace), i.e. \texttt{foo}\xspace. You are then asked to provide a
+(without whitespace), e.g., \texttt{dune-foo}. 
+The prefix \texttt{dune-} is considered good practice, but it is not
+mandatory.
+You are then asked to provide a
 list of all modules the new project should depend on (this will be
-something like \dunecommon \dunegrid). At last, you should provide
-the version of your project (i.e. \texttt{0.1}\xspace) and your email adress.\\
-\duneproject now creates a folder with the name of your project,
+something like \dunecommon \dunegrid, etc.). At last, you should provide
+the version of your project (e.g., \texttt{0.1}) and your email address.
+\duneproject now creates your new project which is a folder with the name of your project,
 containing some files needed in order to work with \dune.
 In our example,
  
 \begin{lstlisting}[language=make]
-ls -l foo/
+ls -l dune-foo/
 \end{lstlisting}
 should produce something like
 
@@ -128,76 +135,42 @@ should produce something like
 autogen.sh
 configure.ac
 dune.module
-foo.cc
+dune-foo.cc
 Makefile.am
 README
 \end{lstlisting}
 
-You can now call \dunecontrol for your new project, as you would do
-for any other \dune module. If you have a \texttt{config.opts}\xspace
-file configured to your needs (see e.g. ``Installation Notes'' on
+You can now call \dunecontrol for your new project, as you would for any other \dune module. If you have a \texttt{config.opts}\xspace
+file configured to your needs (see e.g. the ``Installation Notes'' on
 \texttt{www.dune-project.org}), a simple call of
 
 \begin{lstlisting}[language=make]
-./dune-common/bin/dunecontrol --module=foo --opts=config.opts all
+./dune-common/bin/dunecontrol --module=dune-foo --opts=config.opts all
 \end{lstlisting}
-should now call \autogen, \configure and \make for your
-project (in fact, by using the option \texttt{{-}-module=...}\xspace you've told
-\dunecontrol to call those commands for all modules your project
-depends on first).\\
-\textbf{Remark:} always call \dunecontrol from the directory
-containing \dunecommon and all other \dune modules.\\
-You can now have a look at \texttt{foo.cc}\xspace in your project's directory to
-see
-how to include \dune header files, or you can simply run
+should call \autogen, \configure and \make for your
+project and all modules your project depends on first.
+
+\textbf{Remark:} Always call \dunecontrol from the directory
+containing \dunecommon.
+
+You can now  simply run
 
 \begin{lstlisting}[language=make]
-./foo/foo
+./dune-foo/dune-foo
 \end{lstlisting}
 which should produce something like
 
 \begin{lstlisting}[language=make]
-Hello World! This is foo.
+Hello World! This is dune-foo.
 This is a sequential program.
 \end{lstlisting}
-
-Now you are ready to do some work with \dune by simply editing
-\texttt{foo.cc}\xspace
-and calling 
-
-\begin{lstlisting}[language=make]
-make
-\end{lstlisting}
-in your project's directory.
-
-\section{Creating your own \dune module}\label{section::creating_dune_module}
-This section explains how to set up your \dune module correctly so other people
-can use it easily. For further guidelines or
-explanations, see section \ref{section::dune_module_guidelines}.\\
 
 If you want your \dune module to be useable by other people your design should
 follow a certain structure. A good way to indicate that your module is set up
 like the other \dune modules is by naming it with the prefix
 \texttt{dune-}\xspace. 
 Since your module should be concerned with a certain topic, you should give it
-a meaningful name (e.g. \dunegrid is about \texttt{grid}s). 
-Following section \ref{section::getting_started} you
-might want to create your new module with the name \texttt{dune-foo}\xspace
-(since it is about foo) by running \duneproject. Again, after typing 
-
-\begin{lstlisting}[language=make]
-ls -l dune-foo/
-\end{lstlisting}
-in a terminal of your choice we are left with a bare \dune project:
-
-\begin{lstlisting}[language=make]
-autogen.sh
-configure.ac
-dune_foo.cc
-dune.module
-Makefile.am
-README
-\end{lstlisting}
+a meaningful name (e.g. \dunegrid is about grids). 
 
 Our next step is to create the subfolders \texttt{doc/}\xspace,
 \texttt{foo/}\xspace and \texttt{src/}\xspace in \texttt{dune-foo/}\xspace.\\
@@ -232,14 +205,14 @@ modules
 \end{lstlisting}
 
 The \texttt{src/}\xspace subdirectory will contain the sources of your
-implementation (usually at least a \texttt{.cc}\xspace file with
-\texttt{main}\xspace). Since we already have such a file
+implementation (usually at least one \texttt{.cc}\xspace file with a
+\texttt{main} method). Since we already have such a file
 (\texttt{dune\_foo.cc}), we move it to \texttt{src/}\xspace. We also need
 a \makefileam in \texttt{src/}\xspace so we copy our \makefileam from
 \texttt{dune-foo/Makefile.am}\xspace to
 \texttt{dune-foo/src/Makefile.am}\xspace.\\
 Of course we will have to edit those copies later on. But let's take a
-look at the structure of our project.
+look at the structure of our project now.
 
 \begin{lstlisting}[language=make]
 dune-common/
@@ -269,7 +242,7 @@ dune-foo/
 
 Now all that's left to do is to edit those \texttt{Makefile.am}s, the
 \configureac and some \texttt{doxygen} files.\\
-Te begin with we open the file \texttt{dune-foo/Makefile.am}. Ignoring
+First we open the file \texttt{dune-foo/Makefile.am}. Ignoring
 comments, you should edit the file as follows:
 
 \begin{lstlisting}[numbers=left,numberstyle=\tiny,numbersep=5pt,language=make]
@@ -289,11 +262,11 @@ DISTCHECK_CONFIGURE_FLAGS = --with-dune=$(DUNEROOT) CXX="$(CXX)" CC="$(CC)"
 
 include $(top_srcdir)/am/global-rules
 \end{lstlisting}
-Lines $5-9$ state that all interesting stuff happens in the subdirectories
-(in \texttt{doc/} and \texttt{src/} if your module is being
+Lines $5-9$ state that there are two relevant subdirectories
+(in \texttt{doc/} and \texttt{src/}) if your module is being
 configured without the \texttt{--disable-documentation} flag or just in
-\texttt{src/} otherwise). Line 13 might look a bit different on your
-machine, so you should copy this line from the original \makefileam in that
+\texttt{src/} otherwise. Line 13 might look different on your
+machine, and you should use the line from the original \makefileam in that
 case.\\
 We can leave \texttt{dune-foo/src/Makefile.am} nearly as it is, only the line 
 
@@ -302,7 +275,7 @@ EXTRA_DIST=dune.module
 \end{lstlisting}
 should be removed.\\
 
-Now we have to tell \autogen a bit about the structure of
+Now we have to tell \autogen something about the structure of
 our project. This can easily be done by opening \texttt{dune-foo/configure.ac}
 and editing just two lines.\\
 Since we moved \texttt{dune\_foo.cc} into \texttt{src/} we have to tell
@@ -317,14 +290,13 @@ to
 AC_CONFIG_SRCDIR([src/dune_foo.cc])
 \end{lstlisting}
 
-If we take a look at line
+Also we have to tell \configure about all the \makefile{}s we need created.
+We do this by editing the line
 
 \begin{lstlisting}[language=make]
 AC_CONFIG_FILES([Makefile])
 \end{lstlisting}
-
-we see that we should add some \texttt{Makefile}s so \configure can take care about
-them for us. So we replace the above line with the following:
+For our example, we replace the above line with the following:
 
 \begin{lstlisting}[language=make]
 AC_CONFIG_FILES([Makefile
@@ -367,7 +339,7 @@ include $(top_srcdir)/am/global-rules
 
 Now we can take a look at \makefileam in \texttt{dune-foo/doc/doxygen/}.
 Since this one was copied from \dunegrid it should suffice to change all
-occurences of \texttt{grid} into \texttt{foo}. In \dune release 1.2 this
+occurrences of \texttt{grid} into \texttt{foo}. In \dune release 1.2 this
 should be just the lines
 
 \begin{lstlisting}[language=make]
@@ -395,7 +367,7 @@ we copied some \texttt{doxygen} stuff from \dunegrid there are some
 \texttt{Doxyfile}, \texttt{mainpage} and \texttt{modules}. You can edit the
 latter two as you like. They will form the main page and the module page of the
 \texttt{html} documentation of \texttt{doxygen}.\\
-We are basicaly left to change all occurences of \texttt{grid} in the
+We are basically left to change all occurrences of \texttt{grid} in the
 \texttt{Doxyfile} as well as some settings. If you open the file 
 \texttt{dune-foo/doc/doxygen/Doxyfile} the first thing you should see is a line
 like
@@ -484,7 +456,7 @@ it is done in the first lines of \texttt{dune\_foo.cc}):
 #include<dune/foo/bar.hh>
 \end{lstlisting}
 
-\section{Structure of \dune}
+\section{The Structure of \dune}
 \dune consists of several independent modules:
 \begin{itemize}
 \item \dunecommon
@@ -502,7 +474,7 @@ The build system is structured as follows:
 \item Modules are build using the GNU autotools.
 \item Each module has a set of modules it depends on, these modules
   have to be built before building the module itself.
-\item Each module has a file \dunemodule which hold dependecies and
+\item Each module has a file \dunemodule which hold dependencies and
   other information regarding the module.
 \item The modules can be built in the appropriate order using the
   \dunecontrol script (shipped with \dunecommon)
@@ -636,7 +608,7 @@ library and depending on the result enable or disable
 Many test will also store their results in the \texttt{config.h}
 header file. A headerfile can then use an \verb!#ifdef! statement to
 disable parts of the code that don't work without a certain
-feature. This can be used in the applications aswell as in the headers
+feature. This can be used in the applications as well as in the headers
 in a \dune module. When we stick to the example of the ALUGrid
 library \texttt{config.h} will contain a \verb!#define HAVE_ALUGRID!
 if ALUGrid was found.
@@ -830,7 +802,7 @@ this link should be done by the \autogen script.
 \minisec{html pages}
 Webpages are created from wml sources, using the program \texttt{wml}
 (\texttt{\url{http://thewml.org/}}).\\
-\texttt{\$(top\_srcdir)/am/webstuff} containes the necessary rules.
+\texttt{\$(top\_srcdir)/am/webstuff} contains the necessary rules.
 
 \hspace*{-2ex}\begin{minipage}{\textwidth}
 \begin{lst}[File Makefile.am] \mbox{}
@@ -868,7 +840,7 @@ We offer a set of macros that can be used in your \configureac:
   runs all checks usually needed by a {\em \dune module}.
   It checks for all dependencies and suggestions and for their
   prerequisites.
-  In order to make the dependencies knwon to \configure \autogen calls
+  In order to make the dependencies known to \configure \autogen calls
   \texttt{dunecontrol m4create} and write a file
   \texttt{dependencies.m4}.
 \item \texttt{DUNE\_SYMLINK}
@@ -878,7 +850,7 @@ We offer a set of macros that can be used in your \configureac:
     <dune/...>}. If your module has a directory structure
   \texttt{\topsrc/foo}, you will need such a link. However, you are
   encouraged to store the files directly in a directory structure
-  \texttt{\topsrc/dune/foo} in order to avoid any inconvience when
+  \texttt{\topsrc/dune/foo} in order to avoid any inconvenience when
   copying the files. This will also eliminate the necessity for
   \texttt{DUNE\_SYMLINK}.
 \item \texttt{DUNE\_AUTOBUILD\_FLAGS}
@@ -922,7 +894,7 @@ trigger their creation with command \texttt{AC\_OUTPUT}
 
 The \autogen script is used to bring the freshly checked out module
 into that state that you expect from a module received via the
-tarball. That means it runs all necessary stepts so that you can call
+tarball. That means it runs all necessary steps so that you can call
 \configure to setup your module. In the case of \dune this means that
 \autogen runs
 \begin{itemize}
@@ -994,14 +966,14 @@ information on the module needed by \dunecontrol.
 \dunecontrol searches for \dunemodule files recursively from where you
 are executing the program. For each \dune module found it will execute
 a \dunecontrol command. All commands offered by \dunecontrol have a
-default implementation. This default implementation can be overwriten
+default implementation. This default implementation can be overwritten
 and extended in the \dunemodule file.
 
 The commands you are interested in right now are
 \begin{itemize}
 \item \texttt{autogen} runs \autogen for each module. A list of
   directories containing \dunemodule files and the parameters given on
-  the commandline are passed as paramters to \autogen.
+  the commandline are passed as parameters to \autogen.
 \item \texttt{configure} runs \configure for each
   module. \texttt{--with-dune\textit{module}} parameters are created
   for a set of known \dune modules.
@@ -1011,7 +983,7 @@ The commands you are interested in right now are
 
 In order to build \dune the first time you will need the \texttt{all}
 command. In pseudo code \texttt{all} does the following:
-\begin{lstlisting}[language=perl]
+\begin{lstlisting}[language=Perl]
 foreach ($module in $Modules) {
   foreach (command in {autogen,configure,make) {
     run $command in $module
@@ -1039,14 +1011,14 @@ dunecontrol make clean
 \minisec{opts files}
 You can also let \dunecontrol read the command parameters from a file.
 For each command you can specify parameters. The parameters are stored
-in a varible called \texttt{\textit{COMMAND}\,\_FLAGS} with
+in a variable called \texttt{\textit{COMMAND}\,\_FLAGS} with
 \texttt{\textit{COMMAND}} written in capital letters.
 
-\begin{lst}[File examle.opts] \mbox{}
+\begin{lst}[File example.opts] \mbox{}
 \lstinputlisting{../example.opts}
 \end{lst}
 
-When you specify an opts file and command line paramters
+When you specify an opts file and command line parameters
 \begin{lstlisting}
 dunecontrol --opts=some.opts configure --with-foo=bar
 \end{lstlisting}
@@ -1058,16 +1030,16 @@ You can further control the behavior of \dunecontrol by certain
 environment variables.
 \begin{itemize}
 \item \texttt{DUNE\_CONTROL\_PATH} specifies the paths, where
-  \dunecontrol is searcing for modules. All entries have to be colon
-  seperated and should point to either a directory (which is search
+  \dunecontrol is searching for modules. All entries have to be colon
+  separated and should point to either a directory (which is search
   recursively for \texttt{dune.module} files) or a directly
   \texttt{dune.module} file.
 \item \texttt{DUNE\_OPTS\_FILE} specifies the opts file that should be
   read by \dunecontrol. This variable will be overwritten by the
   \texttt{--opts=} option.
 \item \texttt{MAKE} tells \dunecontrol which command to invoke for
-  'make'. This can be useful for exmaple, if you want to use
-  \texttt{\textit{gmake}} as a make dropin.
+  'make'. This can be useful for example, if you want to use
+  \texttt{\textit{gmake}} as a make drop-in.
 \item \texttt{GREP} tells \dunecontrol which command to invoke for 'grep'.
 \end{itemize}
 
@@ -1080,14 +1052,14 @@ implementation of a command called via \dunecontrol.
 
 \begin{lst}[File dune.module] \mbox{}
 \begin{lstlisting}
-# paramters for dune control
+# parameters for dune control
 Module: dune_grid
 Depends: dune_common
 Suggests: UG Alberta Alu3d
 
 # overload the run_configure command
 run_configure () {
-  # lets extend the paramter list $CMD_FLAGS
+  # lets extend the parameter list $CMD_FLAGS
   if test "x$HAVE_UG" == "xyes"; then
     CMD_FLAGS="$CMD_FLAGS \"--with-ug=$PATH_UG\""
   fi
@@ -1105,14 +1077,14 @@ run_configure () {
 
 The parameter section will be parsed by \dunecontrol will effect
 i.e. the order in which the modules are built. The parameters and
-their values are seperated by colon. Possible parameters are
+their values are separated by colon. Possible parameters are
 \begin{itemize}
 \item \texttt{Module} (\em required\em) is the name of the module. The
   name is of the form \texttt{[a-zA-Z0-9\_]+}.
-\item \texttt{Depends} (\em required\em) takes a space seperated list
+\item \texttt{Depends} (\em required\em) takes a space separated list
   of required modules. This module is not functional without these
   other modules.
-\item \texttt{Suggests} (\em optional\em) takes a space seperated list
+\item \texttt{Suggests} (\em optional\em) takes a space separated list
   of optional modules. This module is functional without these
   other modules, but can offer further functionality if one or more of
   the suggested modules are found.
@@ -1173,13 +1145,13 @@ A \dune module should comply with the following rules:
   accessible via \verb!#include <dune/foo/bar.hh>!. In order to work
   with a freshly checkout version of your module you will usually need
   to create a local symbolic link \texttt{dune ->
-    \textit{module-direcotry/}}. This link gets created by the
+    \textit{module-directory/}}. This link gets created by the
   \texttt{DUNE\_SYMLINK} command in your \configureac. When running
   \texttt{make install} all header files should be installed into
   \texttt{\textit{prefix}/include/dune/}.
 \end{itemize}
 
-\section{Futher documentation}
+\section{Further documentation}
 
 \minisec{automake \& Makefile.am}
 \texttt{\url{http://www.gnu.org/software/automake/manual/}}\\
@@ -1207,7 +1179,7 @@ problems/aspects of creating portable libraries.
 \minisec{autobook}
 \texttt{\url{http://sources.redhat.com/autobook/}}\\
 The autobook is a complete book describing the GNU toolchain
-(\autoconf, \automake and \libtool). It contains many recipies on how
+(\autoconf, \automake and \libtool). It contains many recipes on how
 to use the autotools. The book is available as an online 
 version.
 
