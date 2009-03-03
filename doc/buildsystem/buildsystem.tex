@@ -20,6 +20,7 @@
 \usepackage{graphicx}
 
 \newtheorem{lst}{Listing}
+\newtheorem{remark}{Remark}[section]
 
 \newcommand{\dune}{\texttt{DUNE}\xspace}
 \newcommand{\autoconf}{\texttt{autoconf}\xspace}
@@ -36,11 +37,15 @@
 \newcommand{\dunegrid}{\texttt{dune-grid}\xspace}
 \newcommand{\dunefem}{\texttt{dune-fem}\xspace}
 \newcommand{\dunedisc}{\texttt{dune-disc}\xspace}
+\newcommand{\dunegridhowto}{\texttt{dune-grid-howto}\xspace}
+\newcommand{\dunegriddevhowto}{\texttt{dune-grid-dev-howto}\xspace}
 \newcommand{\dunecontrol}{\texttt{dunecontrol}\xspace}
 \newcommand{\duneproject}{\texttt{duneproject}\xspace}
 \newcommand{\dunemodule}{\texttt{dune.module}\xspace}
 \newcommand{\make}{\texttt{make}\xspace}
 \newcommand{\topsrc}{\$(top\_srcdir)}
+
+\newcommand{\executable}[1]{{\em #1}\xspace}
 
 \pagestyle{scrheadings}
 
@@ -150,8 +155,9 @@ file configured to your needs (see e.g. the ``Installation Notes'' on
 should call \autogen, \configure and \make for your
 project and all modules your project depends on first.
 
-\textbf{Remark:} Always call \dunecontrol from the directory
-containing \dunecommon.
+\begin{remark}
+Always call \dunecontrol from the directory containing \dunecommon.
+\end{remark}
 
 You can now  simply run
 
@@ -433,28 +439,31 @@ with a \texttt{config.opts} that enables documentation you should now find a
 \texttt{html} \texttt{doxygen} documentation in
 \texttt{dune-foo/doc/doxygen/html/index.html}.\\
 
-If you take a look at the other modules you will also find a symlink
-
+If you take a look at the \dune core modules you will find a symlink
 \begin{lstlisting}[language=make]
 dune -> .
 \end{lstlisting}
-in each folder. If you go to your module directory \texttt{dune-foo/} and
-type
-
+in each main folder. Its purpose is to allow inclusion directives like
+\begin{lstlisting}[language=c++]
+#include<dune/foo/bar.hh>
+\end{lstlisting}
+If you want header files from your module to be includable from other
+modules you should have this link.  You can set it manually
+by goint to your module directory \texttt{dune-foo/} and typing
 \begin{lstlisting}[language=make]
 ln -s . dune
 \end{lstlisting}
-you will now find a similar symlink in your module. You can also let \texttt{configure} do this for you automatically if you include this line 
+You can also let \configure do this for you automatically if you include this line 
 \begin{lstlisting}[language=make]
 DUNE_SYMLINK
 \end{lstlisting}
-in your \texttt{configure.ac} file. \\
-You can now include your header files in \texttt{dune-foo/foo/} like any other \dune header (as
-it is done in the first lines of \texttt{dune\_foo.cc}):
+in your \configureac file.
 
-\begin{lstlisting}[language=make]
-#include<dune/foo/bar.hh>
-\end{lstlisting}
+\begin{remark}
+ This mechanism is under discussion and may change in a future version of \dune.
+\end{remark}
+
+
 
 \section{The Structure of \dune}
 \dune consists of several independent modules:
@@ -462,25 +471,26 @@ it is done in the first lines of \texttt{dune\_foo.cc}):
 \item \dunecommon
 \item \dunegrid
 \item \duneistl
-\item \dunedisc
-\item \dunefem
+\item \dunegridhowto
+\item \dunegriddevhowto
 \end{itemize}
 
 Single modules can depend on other modules and so the \dune modules
-build a dependency graph.
+form a dependency graph.  The build system has to track and resolve
+these inter-module dependencies.
 
 The build system is structured as follows:
 \begin{itemize}
-\item Modules are build using the GNU autotools.
+\item Each module is built using the GNU AutoTools.
 \item Each module has a set of modules it depends on, these modules
   have to be built before building the module itself.
-\item Each module has a file \dunemodule which hold dependencies and
+\item Each module has a file \dunemodule which holds dependencies and
   other information regarding the module.
 \item The modules can be built in the appropriate order using the
   \dunecontrol script (shipped with \dunecommon)
 \end{itemize}
 
-The reasons to use the GNU autotools for \dune were the following
+The reasons to use the GNU AutoTools for \dune were the following
 \begin{itemize}
 \item We need platform independent build.
 \item Enabling or disabling of certain features depending on
@@ -492,25 +502,25 @@ The reasons to use the GNU autotools for \dune were the following
 The reasons to add the \dunecontrol script and the \dunemodule
 description files were
 \begin{itemize}
-\item One tool to setup all modules (autotools can only work on one
+\item One tool to setup all modules (the AutoTools can only work on one
   module).
 \item Automatic dependency tracking.
-\item Automatic collection of commandline parameters (\configure needs
-  special commandline parameters for all modules it uses)
+\item Automatic collection of command-line parameters (\configure needs
+  special command-line parameters for all modules it uses)
 \end{itemize}
 
-\section{Toolchain}
-\subsection{Autotools}
+\section{Building Single Modules Using the GNU AutoTools}
 
 Software is generally developed to be used on multiple
-platforms. Since each of these platforms have different compilers,
-different include files, there is a need to write Makefiles and build
-scripts so that they can work on a variety of platforms. The free
-software community (Project GNU), faced with this problem, devised a
-set of tools to generate Makefiles and build scripts that work on a
-variety of platforms. If you have downloaded and built any GNU
+platforms. Since each of these platforms has different compilers,
+different header files, there is a need to write makefiles and build
+scripts that work on a variety of platforms. The Free
+Software Foundation (FSF), faced with this problem, devised a
+set of tools to generate makefiles and build scripts that work on a
+variety of platforms. These are the GNU AutoTools. 
+If you have downloaded and built any GNU
 software from source, you are familiar with the \configure script. The
-\configure script runs a series of tests to determine information about
+\configure script runs a series of tests to get information about
 your machine.
 
 The autotools simplify the generation of portable Makefiles and
@@ -539,18 +549,18 @@ created from \configureac, using a set of \texttt{m4} files.
 \end{pspicture}
 \end{center}
 
-How to write a \configureac for \dune is described in \ref{configure.ac}
+How to write a \configureac for \dune is described in Sec.\,\ref{configure.ac}.
 
 \minisec{automake}
 
 \automake is used to create the \makefilein files (needed for
-\configure) from \makefileam files and, using a set of include files
-located in the \texttt{am} directory. These include files provide
-additional features, not provided by the standard \automake (see
-\ref{am_includes}). The \texttt{am} directory is in the \dunecommon
+\configure) from \makefileam files, using a set of include files
+located in a directory called \texttt{am}. These include files provide
+additional features not provided by the standard \automake (see
+Sec.\,\ref{am_includes}). The \texttt{am} directory is in the \dunecommon
 module and each module intending to use one of these includes has to
-create symlink; this is usually done by \autogen (see
-\ref{autogen}).
+have a symlink \texttt{am} that points to \texttt{dune-common/am}.
+This link is usually created by \autogen (see Sec.\,\ref{autogen}).
 
 \begin{center}
 \psset{unit=0.5mm}
@@ -589,31 +599,28 @@ and library usage. When linking a library or an executable you (or
 \automake) can call the compiler via \libtool. \libtool will then take
 care of
 \begin{itemize}
-\item \em platform specific \em commandline parameters for the linker
-\item library dependencies
+\item platform specific command-line parameters for the linker,
+\item library dependencies.
 \end{itemize}
 
 \minisec{configure}
 \label{configure}
 \configure will run the set of tests specified in your \configureac.
 Using the results of these tests configure can check that all
-necessary features (libs, programs, etc.) are present and can activate
-and deactivate certain features of the module depending on the feature
-of the system.
+necessary features (libraries, programs, etc.) are present and can activate
+and deactivate certain features of the module depending on what is
+available on your system.
 
 For example \configure in \dunegrid will search for the ALUGrid
-library and depending on the result enable or disable
-\texttt{Dune::ALU3dGrid}.
-
-Many test will also store their results in the \texttt{config.h}
-header file. A headerfile can then use an \verb!#ifdef! statement to
-disable parts of the code that don't work without a certain
+library and  enable or disable \texttt{Dune::ALU3dGrid}.
+This is done by writing a preprocessor macro \verb!#define HAVE_ALUGRID!
+in the \texttt{config.h}
+header file. A header file can then use an \verb!#ifdef! statement to
+disable parts of the code that do not work without a certain
 feature. This can be used in the applications as well as in the headers
-in a \dune module. When we stick to the example of the ALUGrid
-library \texttt{config.h} will contain a \verb!#define HAVE_ALUGRID!
-if ALUGrid was found.
+of a \dune module.
 
-The \texttt{config.h} file is created by configure from a
+The \texttt{config.h} file is created by \configure from a
 \texttt{config.h.in} file, which is automatically created from the
 list of tests used in the \configureac.
 
@@ -622,30 +629,29 @@ list of tests used in the \configureac.
 
 \subsubsection{Overview}
 
-Let's start off with a simple program {\em hello} built from
-\texttt{hello.c}. As automake is designed to build and install a
+Let's start off with a simple program \executable{hello} built from
+\texttt{hello.c}. As \automake is designed to build and install a
 package it needs to know
 
 \begin{itemize}
-\item what programs it should build
-\item where to put them when installing
-\item which sources to use
+\item what programs it should build,
+\item where to put them when installing,
+\item which sources to use.
 \end{itemize}
 
-The \makefileam thus looks like this:
+The core of a \makefileam thus looks like this:
 
 \begin{lstlisting}[language=make]
 noinst_PROGRAMS = hello
 hello_SOURCES = hello.c
 \end{lstlisting}
 
-This would build hello and won't install it when \texttt{make
+This would build \executable{hello} but not install it when \texttt{make
   install} is called. Using \verb!bin_PROGRAMS! instead of
-\verb!noinst_PROGRAMS! would install the hello-binary into a
-\texttt{\textit{prefix}/bin} directory which we don't want to do with
-most of the \dune applications.
+\verb!noinst_PROGRAMS! would install the \executable{hello}-binary into a
+\texttt{\textit{prefix}/bin} directory.
 
-Building more programs with a couple of source-files works like this
+Building more programs with several source files works like this
 
 \begin{lstlisting}[language=make]
 noinst_PROGRAMS = hello bye
@@ -654,7 +660,7 @@ hello_SOURCES = common.c common.h hello.c
 bye_SOURCES = common.c common.h bye.c parser.y lexer.l
 \end{lstlisting}
 
-automake has more integrated rules than the standard make, the example
+\automake has more integrated rules than the standard make, the example
 above would automatically use yacc/lex to create
 \texttt{parser.c/lexer.c} and build them into the {\em bye} binary.
 
@@ -957,7 +963,7 @@ empty. If you have to provide some way to find your module. The
 easiest is to use the \texttt{DUNE\_CHECK\_MODULES} macro, which is
 defined in \texttt{dune-common/m4/dune.m4}.
 
-\subsection{dunecontrol}
+\section{Building Sets of Modules Using \dunecontrol}
 \label{dunecontrol}
 \dunecontrol helps you building the different \dune modules in the
 appropriate order. Each module has a \dunemodule file which contains
