@@ -219,6 +219,8 @@ void test_matrix()
   std::cout << A << std::endl;
   // print vector
   std::cout << f << std::endl;
+
+  A.axpy( K( 1 ), A );
 }
 
 int main()

@@ -277,6 +277,14 @@ namespace Dune {
       return *this;
     }
 
+    //! vector space axpy operation (*this += k y)
+    FieldMatrix &axpy ( const K &k, const FieldMatrix &y )
+    {
+      for( size_type i = 0; i < n; ++i )
+        p[ i ].axpy( k, y[ i ] );
+      return *this;
+    }
+
     //===== linear maps
 
     //! y = A x
@@ -997,6 +1005,13 @@ namespace Dune {
     FieldMatrix& operator/= (const K& k)
     {
       a[0] /= k;
+      return *this;
+    }
+
+    //! vector space axpy operation (*this += a y)
+    FieldMatrix &axpy ( const K &k, const FieldMatrix &y )
+    {
+      a[ 0 ] += k * y.a[ 0 ];
       return *this;
     }
 
