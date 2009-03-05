@@ -4,7 +4,7 @@ AC_DEFUN([DUNE_PATH_ALUGRID],[
   AC_REQUIRE([AC_PROG_CXX])
 
   AC_ARG_WITH(alugrid,
-    AC_HELP_STRING([--with-alugrid=PATH],[directory with ALU3d-Grid inside]))
+    AC_HELP_STRING([--with-alugrid=PATH],[directory where ALUGrid is installed]))
 # do not use alugrid debug lib 
 
 # store old values
