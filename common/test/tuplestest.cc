@@ -40,7 +40,7 @@ void test(T& tuple)
   c = get<3>(tuple);
   std::string s;
   s = get<4>(tuple);
-  typename tuple_element<4,T>::type s2 = get<4>(tuple);
+  typename tuple_element<4,typename remove_const<T>::type>::type s2 = get<4>(tuple);
 }
 
 int iteratorTupleTest()
