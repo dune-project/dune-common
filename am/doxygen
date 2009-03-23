@@ -5,8 +5,7 @@ if BUILD_DOCS
   DOXYGEN_HTML = html 
   # EXTRAINSTALL in the html subdirectory
   DOXYGENHTMLFILES = *.html *.css *.png *.gif
-#  DOXYGENDISTFILES = html html/*.html html/*.css html/*.png html/*.gif doxygen-tag
-  DOXYGENDISTFILES = 
+  DOXYGENDISTFILES = doxygen-tag
   DOXYGENINSTALL = $(DOXYGENHTMLFILES) ../doxygen.log
 endif
 
@@ -66,6 +65,14 @@ doxygen-tag: FORCE $(DOXYGENHEADER)
 #	  fi; \
 #	if ! (test "x$(VPATH)" != "x" && test -e $(srcdir)/doxygen-tag); then \
 #
+
+doxygen-dist-install: doxygen-tag
+	mkdir $(distdir)/html
+	pushd $(srcdir)/html; \
+	for i in $(DOXYGENHTMLFILES); do \
+	  cp $$i $(distdir)/html; done; popd
+
+dist-hook: doxygen-dist-install
 
 html: doxygen-tag
 
