@@ -113,7 +113,13 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
 
 		OLDFLAGS="$LDFLAGS"
 		LDFLAGS="$LDFLAGS -L$SUPERLU_LIB_PATH"
-		LIBS="$BLAS_LIBS $LIBS $FLIBS"
+		# if no blas was found, we assume that superlu was compiled with 
+		# internal blas
+		if test "x$BLAS_LIBS" = "x"; then
+		  LIBS="$BLAS_LIBS $LIBS $FLIBS"
+		else
+		  LIBS="-lblas $LIBS $FLIBS"
+		fi
 		HAVE_SUPERLU=0
 
 		if test x$with_superlu_lib = x; then
