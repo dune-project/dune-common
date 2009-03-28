@@ -5,6 +5,7 @@ Makefile.in
 semantic.cache
 fvectortest
 mpicollcomm
+bitsetvectortest
 lrutest
 parsetest
 test-stack
