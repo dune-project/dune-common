@@ -218,7 +218,7 @@ done
 echo
 echo "A sample code $MODULE.cc is generated in the \"$PROJECT\" directory."
 echo "Look at the README and dune.module files there."
-echo "Now you can run dunecontrol script which will setup the new module."
+echo "Now you can run the dunecontrol script which will setup the new module."
 echo "Sometimes you may have to tweak configure.ac a bit."
 
 if test -d $PROJECT; then
@@ -236,8 +236,9 @@ mkdir "$PROJECT"
 
 ################## dune.module ##################
 cat > "$PROJECT/dune.module" <<C_DELIM
-#dune module information file#
-##############################
+################################
+# Dune module information file #
+################################
 
 #Name of the module
 Module: $MODULE
@@ -290,7 +291,7 @@ echo "writing initial files:"
 # we need the module with _ instead of - to not confuse automake
 fix_and_assign CMODULE $MODULE
 
-################## OCNFIGURE.AC ##################
+################## CONFIGURE.AC ##################
 echo "- $PROJECT/configure.ac"
 cat > "$PROJECT/configure.ac" <<C_DELIM
 # -*- Autoconf -*-
@@ -298,7 +299,7 @@ cat > "$PROJECT/configure.ac" <<C_DELIM
 AC_PREREQ(2.50)
 DUNE_AC_INIT # gets module version from dune.module file
 AM_INIT_AUTOMAKE
-AC_CONFIG_SRCDIR([$CMODULE.cc])
+AC_CONFIG_SRCDIR([src/$CMODULE.cc])
 AM_CONFIG_HEADER([config.h])
 
 
@@ -314,6 +315,8 @@ LIBS="\$DUNE_LIBS"
 
 AC_CONFIG_FILES([
   Makefile
+  src/Makefile
+  doc/Makefile
   m4/Makefile
   $MODULE.pc
 ])
@@ -413,22 +416,19 @@ cat> "$PROJECT/Makefile.am" << M_DELIM
 # we need the module file to be able to build via dunecontrol
 EXTRA_DIST=dune.module
 
-SUBDIRS = m4
+DIST_SUBDIRS = doc src m4
 
-# possible options
-#LDADD = \$(UG_LDFLAGS) \$(AMIRAMESH_LDFLAGS) \$(UG_LIBS) \$(AMIRAMESH_LIBS)
-#AM_CPPFLAGS = \$(UG_CPPFLAGS) \$(AMIRAMESH_CPPFLAGS)
+SUBDIRS = src m4
 
-noinst_PROGRAMS = ${CMODULE}
-
-${CMODULE}_SOURCES = $CMODULE.cc
-
-${CMODULE}_CXXFLAGS = \$(MPI_CPPFLAGS) \$(UG_CPPFLAGS) \$(AMIRAMESH_CPPFLAGS) \$(ALBERTA_CPPFLAGS) \$(ALU_CPPFLAGS)
-${CMODULE}_LDADD = \$(MPI_LDFLAGS) \$(ALBERTA_LDFLAGS) \$(ALBERTA_LIBS) \$(ALU_LIBS) \$(AMIRAMESH_LDFLAGS) \$(AMIRAMESH_LIBS) \$(UG_LDFLAGS) \$(UG_LIBS) \$(MPI_LDFLAGS) \$(DUNE_LDFLAGS) \$(DUNE_LIBS)
+if BUILD_DOCS
+# TODO: set up documentation tree automatically
+#SUBDIRS += doc
+endif
 
 # don't follow the full GNU-standard
 # we need automake 1.5
 AUTOMAKE_OPTIONS = foreign 1.5
+
 # pass most important options when "make distcheck" is used
 DISTCHECK_CONFIGURE_FLAGS = $DISTCHECK_CONFIGURE_FLAGS CXX="\$(CXX)" CC="\$(CC)"
 
@@ -439,7 +439,7 @@ M_DELIM
 
 ################## STAMP-VC ##################
 echo "- $PROJECT/stamp-vc"
-touch $PROJECT/stamp-vc
+echo 'A stamp file to signify that this directory comes from a version control system, not an unpacked tarball' > $PROJECT/stamp-vc
 
 ################## PROJECT.PC.IN ##################
 echo "- $PROJECT/$MODULE.pc.in"
@@ -463,9 +463,42 @@ CC_DELIM
 echo "    Please remember to update your $PROJECT/$MODULE.pc.in,"
 echo "    Description and URL are missing right now."
 
+###############################################################
+################## The source subdirectory ####################
+###############################################################
+
+mkdir "$PROJECT/src"
+
+################## src/MAKEFILE.AM ##################
+
+echo "- $PROJECT/src/Makefile.am"
+cat> "$PROJECT/src/Makefile.am" << M_DELIM
+
+SUBDIRS =
+
+noinst_PROGRAMS = ${CMODULE}
+
+${CMODULE}_SOURCES = $CMODULE.cc
+
+${CMODULE}_CXXFLAGS = \$(MPI_CPPFLAGS) \$(UG_CPPFLAGS) \$(AMIRAMESH_CPPFLAGS) \$(ALBERTA_CPPFLAGS) \$(ALU_CPPFLAGS)
+${CMODULE}_LDADD = \$(MPI_LDFLAGS) \$(ALBERTA_LDFLAGS) \$(ALBERTA_LIBS) \$(ALU_LIBS) \$(AMIRAMESH_LDFLAGS) \$(AMIRAMESH_LIBS) \$(UG_LDFLAGS) \$(UG_LIBS) \$(MPI_LDFLAGS) \$(DUNE_LDFLAGS) \$(DUNE_LIBS)
+
+# don't follow the full GNU-standard
+# we need automake 1.5
+AUTOMAKE_OPTIONS = foreign 1.5
+
+# pass most important options when "make distcheck" is used
+DISTCHECK_CONFIGURE_FLAGS = $DISTCHECK_CONFIGURE_FLAGS CXX="\$(CXX)" CC="\$(CC)"
+
+include \$(top_srcdir)/am/global-rules
+
+M_DELIM
+
+
+
 ################## PROJECT.CC ##################
-echo "- $PROJECT/$CMODULE.cc"
-cat> "$PROJECT/$CMODULE.cc" << CC_DELIM
+echo "- $PROJECT/src/$CMODULE.cc"
+cat> "$PROJECT/src/$CMODULE.cc" << CC_DELIM
 #ifdef HAVE_CONFIG_H
 # include "config.h"     
 #endif
@@ -519,8 +552,51 @@ AC_DEFUN([${M4_MODULE}_CHECKS])
 AC_DEFUN([${M4_MODULE}_CHECK_MODULE])
 CC_DELIM
 
+
+################################################################
+################## The headers subdirectory ####################
+################################################################
+
+mkdir "$PROJECT/$PROJECT"
+
+
+###############################################################
+################## The doc subdirectory ####################
+###############################################################
+
+mkdir "$PROJECT/doc"
+
+################## doc/Makefile.am ####################
+echo "- $PROJECT/doc/Makefile.am"
+cat> "$PROJECT/doc/Makefile.am" << CC_DELIM
+
+#SUBDIRS = doxygen
+
+CURDIR = doc
+
+BASEDIR = ..
+
+docdir=\$(datadir)/doc/${PROJECT}
+
+include \$(top_srcdir)/am/webstuff
+
+CLEANFILES = \$(PAGES)
+
+if ! BUILD_DOCS
+# add tag to notify that dist has been build without documentation
+dist-hook:
+        echo "# No documentation included in distribution! " > \$(distdir)/\$(DOCUMENTATION_TAG_FILE)
+endif
+
+include \$(top_srcdir)/am/global-rules
+CC_DELIM
+
+mkdir "$PROJECT/doc/doxygen"
+
+
 ## done
 echo "done."
 echo "------------------------------------------"
 echo "For further details read the Dune Buildsystem-Howto:"
 echo "http://www.dune-project.org/doc/buildsystem/buildsystem.pdf"
+
