@@ -10,6 +10,8 @@ parsetest
 test-stack
 arraylisttest
 smartpointertest
+float_cmp
+bitsetvectortest
 iteratorfacadetest
 sllisttest
 tuplestest
