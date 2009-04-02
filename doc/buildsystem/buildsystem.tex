@@ -137,12 +137,13 @@ ls -l dune-foo/
 should produce something like
 
 \begin{lstlisting}[language=make]
-autogen.sh
 configure.ac
 dune.module
-dune-foo.cc
 Makefile.am
 README
+src
+ --> dune-foo.cc
+doc
 \end{lstlisting}
 
 You can now call \dunecontrol for your new project, as you would for any other \dune module. If you have a \texttt{config.opts}\xspace
@@ -162,7 +163,7 @@ Always call \dunecontrol from the directory containing \dunecommon.
 You can now  simply run
 
 \begin{lstlisting}[language=make]
-./dune-foo/dune-foo
+./dune-foo/src/dune-foo
 \end{lstlisting}
 which should produce something like
 
@@ -177,26 +178,23 @@ like the other \dune modules is by naming it with the prefix
 \texttt{dune-}\xspace. 
 Since your module should be concerned with a certain topic, you should give it
 a meaningful name (e.g. \dunegrid is about grids). 
-
-Our next step is to create the subfolders \texttt{doc/}\xspace,
-\texttt{foo/}\xspace and \texttt{src/}\xspace in \texttt{dune-foo/}\xspace.\\
+You will also see that there are subfolders \texttt{doc/}\xspace,
+\texttt{foo/}\xspace and \texttt{src/}\xspace in \texttt{dune-foo/}\xspace.
 \texttt{foo/}\xspace will contain any headers that are of interest to other
 users (like the subfolder \texttt{common/}\xspace in
 \dunecommon, \texttt{grid/}\xspace in \dunegrid, etc.). Other users will have to
 include those files if they want to work with them. Let's say we already have some interface implementation
 in a file \texttt{bar.hh}\xspace. We put this one into the subfolder
-\texttt{foo/}\xspace.\\
+\texttt{foo/}\xspace.
+
 It is then convenient to collect whatever documentation exists about those
 header files in \texttt{doc/}\xspace and since there should
-at least exist some doxygen documentation we create the
+at least exist some doxygen documentation there is  the
 subdirectory \texttt{doc/doxygen/}\xspace (see ``Coding Style'' in the
 setion ``Developing Dune'' on \texttt{www.dune-project.org} for details).
-We will need a \makefileam in
-\texttt{doc/}\xspace and \texttt{doc/doxygen/}\xspace so we copy the
-\makefileam from \texttt{dune-foo/Makefile.am}\xspace to
-\texttt{dune-foo/doc/Makefile.am}. Since we also need
-some other files for \texttt{doxygen}\xspace to work we just copy the
-following files from e.g. \texttt{dune-grid/doc/doxygen/}\xspace to
+Since we also need
+some other files for \texttt{doxygen}\xspace to work we copy the
+following files from \texttt{dune-grid/doc/doxygen/}\xspace to
 \texttt{dune-foo/doc/doxygen/}\xspace:
 
 \begin{lstlisting}[language=make]
@@ -212,19 +210,11 @@ modules
 
 The \texttt{src/}\xspace subdirectory will contain the sources of your
 implementation (usually at least one \texttt{.cc}\xspace file with a
-\texttt{main} method). Since we already have such a file
-(\texttt{dune\_foo.cc}), we move it to \texttt{src/}\xspace. We also need
-a \makefileam in \texttt{src/}\xspace so we copy our \makefileam from
-\texttt{dune-foo/Makefile.am}\xspace to
-\texttt{dune-foo/src/Makefile.am}\xspace.\\
-Of course we will have to edit those copies later on. But let's take a
+\texttt{main} method).  But let's take a
 look at the structure of our project now.
 
 \begin{lstlisting}[language=make]
-dune-common/
-dune-grid/
 dune-foo/
--> autogen.sh
 -> configure.ac
 -> doc/
    -> doxygen/
@@ -246,102 +236,11 @@ dune-foo/
    -> dune_foo.cc
 \end{lstlisting}
 
-Now all that's left to do is to edit those \texttt{Makefile.am}s, the
-\configureac and some \texttt{doxygen} files.\\
-First we open the file \texttt{dune-foo/Makefile.am}. Ignoring
-comments, you should edit the file as follows:
-
-\begin{lstlisting}[numbers=left,numberstyle=\tiny,numbersep=5pt,language=make]
-EXTRA_DIST=dune.module
-
-DIST_SUBDIRS = doc src
-
-if BUILD_DOCS
-SUBDIRS = doc src
-else
-SUBDIRS = src
-endif
-
-AUTOMAKE_OPTIONS = foreign 1.5
-
-DISTCHECK_CONFIGURE_FLAGS = --with-dune=$(DUNEROOT) CXX="$(CXX)" CC="$(CC)"
-
-include $(top_srcdir)/am/global-rules
-\end{lstlisting}
-Lines $5-9$ state that there are two relevant subdirectories
-(in \texttt{doc/} and \texttt{src/}) if your module is being
-configured without the \texttt{--disable-documentation} flag or just in
-\texttt{src/} otherwise. Line 13 might look different on your
-machine, and you should use the line from the original \makefileam in that
-case.\\
-We can leave \texttt{dune-foo/src/Makefile.am} nearly as it is, only the line 
-
-\begin{lstlisting}[language=make]
-EXTRA_DIST=dune.module
-\end{lstlisting}
-should be removed.\\
-
-Now we have to tell \autogen something about the structure of
-our project. This can easily be done by opening \texttt{dune-foo/configure.ac}
-and editing just two lines.\\
-Since we moved \texttt{dune\_foo.cc} into \texttt{src/} we have to tell
-\configure where it is now. Therefore we change the line
-
-\begin{lstlisting}[language=make]
-AC_CONFIG_SRCDIR([dune_foo.cc])
-\end{lstlisting}
-to 
-
-\begin{lstlisting}[language=make]
-AC_CONFIG_SRCDIR([src/dune_foo.cc])
-\end{lstlisting}
-
-Also we have to tell \configure about all the \makefile{}s we need created.
-We do this by editing the line
-
-\begin{lstlisting}[language=make]
-AC_CONFIG_FILES([Makefile])
-\end{lstlisting}
-For our example, we replace the above line with the following:
-
-\begin{lstlisting}[language=make]
-AC_CONFIG_FILES([Makefile
-    src/Makefile
-    doc/Makefile
-    doc/doxygen/Makefile])
-\end{lstlisting}
 
 Now your module is nearly ready to being configured by \dunecontrol. Only the 
 \texttt{doxygen} part is missing (in fact, configuring it with the
 \texttt{--disable-documentation} flag would work from this point on).\\
 
-To configure \texttt{doxygen} we have to edit two \texttt{Makefile.am}s and some
-\texttt{doxygen} files. The first \makefileam to edit is of course
-\texttt{dune-foo/doc/Makefile.am}. Ignoring comments again, the file should
-look like:
-
-\begin{lstlisting}[numbers=left,numberstyle=\tiny,numbersep=5pt,language=make]
-SUBDIRS = doxygen
-
-all: $(PAGES)
-
-CURDIR=doc
-
-BASEDIR=..
-
-docdir=$(datadir)/doc/dune-foo
-
-include $(top_srcdir)/am/webstuff
-
-CLEANFILES = $(PAGES)
-
-if ! BUILD_DOCS
-dist-hook:
-	echo "# No documentation included in distribution! " > $(distdir)/$(DOCUMENTATION_TAG_FILE)
-endif
-
-include $(top_srcdir)/am/global-rules
-\end{lstlisting}
 
 Now we can take a look at \makefileam in \texttt{dune-foo/doc/doxygen/}.
 Since this one was copied from \dunegrid it should suffice to change all
