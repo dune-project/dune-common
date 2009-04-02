@@ -137,7 +137,6 @@ ls -l dune-foo/
 should produce something like
 
 \begin{lstlisting}[language=make]
-autogen.sh
 configure.ac
 dune.module
 dune-foo.cc
@@ -221,10 +220,7 @@ Of course we will have to edit those copies later on. But let's take a
 look at the structure of our project now.
 
 \begin{lstlisting}[language=make]
-dune-common/
-dune-grid/
 dune-foo/
--> autogen.sh
 -> configure.ac
 -> doc/
    -> doxygen/
