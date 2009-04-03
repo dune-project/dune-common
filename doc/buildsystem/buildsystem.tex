@@ -199,12 +199,10 @@ following files from \texttt{dune-grid/doc/doxygen/}\xspace to
 
 \begin{lstlisting}[language=make]
 Doxydep
-Doxyfile
 doxy-footer.html
 doxy-header.wml
 dune-doxy.css
 mainpage
-Makefile.am
 modules
 \end{lstlisting}
 
@@ -239,33 +237,10 @@ dune-foo/
 
 Now your module is nearly ready to being configured by \dunecontrol. Only the 
 \texttt{doxygen} part is missing (in fact, configuring it with the
-\texttt{--disable-documentation} flag would work from this point on).\\
+\texttt{--disable-documentation} flag would work from this point on).
 
 
-Now we can take a look at \makefileam in \texttt{dune-foo/doc/doxygen/}.
-Since this one was copied from \dunegrid it should suffice to change all
-occurrences of \texttt{grid} into \texttt{foo}. In \dune release 1.2 this
-should be just the lines
 
-\begin{lstlisting}[language=make]
-doxygendir = $(datadir)/doc/dune-grid/doxygen
-\end{lstlisting}
-and
-
-\begin{lstlisting}[language=make]
-EXTRAINSTALL="$(DOXYGENINSTALL)" CURDIR="$(CURDIR)/dune-grid-html" install ; \
-\end{lstlisting}
-which have to be changed to 
-
-\begin{lstlisting}[language=make]
-doxygendir = $(datadir)/doc/dune-foo/doxygen
-\end{lstlisting}
-and
-
-\begin{lstlisting}[language=make]
-EXTRAINSTALL="$(DOXYGENINSTALL)" CURDIR="$(CURDIR)/dune-foo-html" install ; \
-\end{lstlisting}
-respectively.\\
 Now \dunecontrol is ready to take care of building the documentation. But since
 we copied some \texttt{doxygen} stuff from \dunegrid there are some
 \texttt{doxygen} files left we have to take care of. These are
