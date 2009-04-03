@@ -317,6 +317,7 @@ AC_CONFIG_FILES([
   Makefile
   src/Makefile
   doc/Makefile
+  doc/doxygen/Makefile
   m4/Makefile
   $MODULE.pc
 ])
@@ -570,7 +571,7 @@ mkdir "$PROJECT/doc"
 echo "- $PROJECT/doc/Makefile.am"
 cat> "$PROJECT/doc/Makefile.am" << CC_DELIM
 
-#SUBDIRS = doxygen
+SUBDIRS = doxygen
 
 CURDIR = doc
 
@@ -603,6 +604,37 @@ mkdir "$PROJECT/doc/doxygen"
 echo "- $PROJECT/doc/doxygen/Doxyfile"
 doxygen -g "$PROJECT/doc/doxygen/Doxyfile" > /dev/null
 
+################# doc/doxygen/Makefile.am #####################
+
+echo "- $PROJECT/doc/doxygen/Makefile.am"
+cat> "$PROJECT/doc/doxygen/Makefile.am" << CC_DELIM
+
+BASEDIR=../..
+CURDIR=doc/doxygen
+WHAT=
+
+doxygendir = \$(datadir)/doc/$PROJECT/doxygen
+doxygen_DATA = \$(WHAT)
+
+#we need this in the distribution
+EXTRA_DIST = \$(WHAT) \$(DOXYGENDISTFILES)
+
+all: \$(WHAT) \$(DOXYGENFILES)
+
+include \$(top_srcdir)/am/doxygen
+include \$(top_srcdir)/am/global-rules
+
+# file to clean only in svn and not in tarball tree
+SVNCLEANFILES = html \$(WHAT) \$(DOXYGENHEADER)
+
+clean-local:
+	if test "x\$(VPATH)" != "x" && test ! -e \$(srcdir)/doxygen-tag; then \
+	  if test -e \$(top_srcdir)/doc/doxygen/Doxydep; then \
+	    rm -rf \$(SVNCLEANFILES); \
+	  fi; \
+	fi
+
+CC_DELIM
 
 ## done
 echo "done."
