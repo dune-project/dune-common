@@ -591,7 +591,17 @@ endif
 include \$(top_srcdir)/am/global-rules
 CC_DELIM
 
+###############################################################
+############### The doc/doxygen subdirectory ##################
+###############################################################
+
 mkdir "$PROJECT/doc/doxygen"
+
+
+#################### template Doxyfile ########################
+
+echo "- $PROJECT/doc/doxygen/Doxyfile"
+doxygen -g "$PROJECT/doc/doxygen/Doxyfile" > /dev/null
 
 
 ## done
