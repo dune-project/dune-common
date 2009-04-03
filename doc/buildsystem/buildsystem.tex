@@ -321,17 +321,7 @@ in each main folder. Its purpose is to allow inclusion directives like
 \begin{lstlisting}[language=c++]
 #include<dune/foo/bar.hh>
 \end{lstlisting}
-If you want header files from your module to be includable from other
-modules you should have this link.  You can set it manually
-by goint to your module directory \texttt{dune-foo/} and typing
-\begin{lstlisting}[language=make]
-ln -s . dune
-\end{lstlisting}
-You can also let \configure do this for you automatically if you include this line 
-\begin{lstlisting}[language=make]
-DUNE_SYMLINK
-\end{lstlisting}
-in your \configureac file.
+
 
 \begin{remark}
  This mechanism is under discussion and may change in a future version of \dune.
