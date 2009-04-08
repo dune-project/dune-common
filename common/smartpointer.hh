@@ -94,6 +94,8 @@ namespace Dune
       PointerRep() : count_(1), rep_(new MemberType) {}
       /** @brief Constructor from existing Pointer. */
       PointerRep(MemberType * p) : count_(1), rep_(p) {}
+      /** @brief Destructor, deletes MemberType* rep_. */
+      ~PointerRep() { delete rep_; }
     } *rep_;
   };
 
