@@ -42,6 +42,14 @@ namespace Dune
     inline SmartPointer();
 
     /**
+     * @brief Constructs a new smart pointer from a preallocated Object.
+     *
+     * note: the object must be allocated on the heap and after handing the pointer to
+     * SmartPointer the ownership of the pointer is also handed to the SmartPointer.
+     */
+    inline SmartPointer(T * pointer);
+
+    /**
      * @brief Copy constructor.
      * @param pointer The object to copy.
      */
@@ -81,16 +89,24 @@ namespace Dune
       /** @brief The number of references. */
       int count_;
       /** @brief The representative. */
-      MemberType rep_;
-      /** @brief Constructor. */
-      PointerRep(const MemberType& rep) : count_(1), rep_(rep){}
+      MemberType * rep_;
+      /** @brief Default Constructor. */
+      PointerRep() : count_(1), rep_(new MemberType) {}
+      /** @brief Constructor from existing Pointer. */
+      PointerRep(MemberType * p) : count_(1), rep_(p) {}
     } *rep_;
   };
 
   template<class T>
+  inline SmartPointer<T>::SmartPointer(T * p)
+  {
+    rep_ = new PointerRep(p);
+  }
+
+  template<class T>
   inline SmartPointer<T>::SmartPointer()
   {
-    rep_ = new PointerRep(MemberType());
+    rep_ = new PointerRep;
   }
 
   template<class T>
@@ -120,25 +136,25 @@ namespace Dune
   template<class T>
   inline T& SmartPointer<T>::operator*()
   {
-    return rep_->rep_;
+    return *(rep_->rep_);
   }
 
   template<class T>
   inline T *SmartPointer<T>::operator->()
   {
-    return &(rep_->rep_);
+    return rep_->rep_;
   }
 
   template<class T>
   inline const T& SmartPointer<T>::operator*() const
   {
-    return rep_->rep_;
+    return *(rep_->rep_);
   }
 
   template<class T>
   inline const T *SmartPointer<T>::operator->() const
   {
-    return &(rep_->rep_);
+    return rep_->rep_;
   }
 
   template<class T>
