@@ -52,6 +52,9 @@ namespace Dune {
      \endverbatim
    *
    * All keys with a common 'prefix.' belong to the same substructure called 'prefix'.
+   * Leading and trailing spaces and tabs are removed from the values unless you use
+   * single or double quotes around them.
+   * Using single or double quotes you can also have multiline values.
    *
    */
   class ConfigParser
@@ -226,9 +229,8 @@ namespace Dune {
 
     std::map<std::string, std::string> values;
     std::map<std::string, ConfigParser> subs;
-    std::string trim(const std::string& s) const;
-
-
+    static std::string ltrim(const std::string& s);
+    static std::string rtrim(const std::string& s);
   };
 } // end namespace dune
 

@@ -30,14 +30,15 @@ void ConfigParser::parseFile(std::string file)
   {
     string line;
     getline(in, line);
-    line = trim(line);
+    line = ltrim(line);
     switch (line[0]) {
     case '#' :
       break;
     case '[' :
+      line = rtrim(line);
       if (line[line.length()-1] == ']')
       {
-        prefix = trim(line.substr(1, line.length()-2));
+        prefix = rtrim(ltrim(line.substr(1, line.length()-2)));
         if (prefix != "")
           prefix += ".";
       }
@@ -46,24 +47,32 @@ void ConfigParser::parseFile(std::string file)
       string::size_type mid = line.find("=");
       if (mid != string::npos)
       {
-        string key = prefix+trim(line.substr(0, mid));
-        string value = trim(line.substr(mid+1));
+        string key = prefix+rtrim(ltrim(line.substr(0, mid)));
+        string value = ltrim(line.substr(mid+1));
 
-        // handle quoted strings
-        if (value.length()>1)
+        if (value.length()>0)
         {
-          switch (value[0]) {
-          case '\'' :
-            if (value[value.length()-1] == '\'')
-              value = value.substr(1, value.length()-2);
-            break;
-          case '"' :
-            if (value[value.length()-1] == '"')
-              value = value.substr(1, value.length()-2);
-            break;
-          default :
-            break;
+          // handle quoted strings
+          if ((value[0]=='\'')or (value[0]=='"'))
+          {
+            char quote = value[0];
+            value=value.substr(1);
+            while (*(rtrim(value).rbegin())!=quote)
+            {
+              if (not in.eof())
+              {
+                string l;
+                getline(in, l);
+                value = value+"\n"+l;
+              }
+              else
+                value = value+quote;
+            }
+            value = rtrim(value);
+            value = value.substr(0,value.length()-1);
           }
+          else
+            value = rtrim(value);
         }
 
         if (keysInFile.count(key) != 0)
@@ -116,7 +125,7 @@ void ConfigParser::report(const string prefix) const
   ValueIt vend = values.end();
 
   for(; vit!=vend; ++vit)
-    cout << prefix + vit->first << " = " << vit->second << endl;
+    cout << prefix + vit->first << " = \"" << vit->second << "\"" << endl;
 
   typedef map<string, ConfigParser>::const_iterator SubIt;
   SubIt sit = subs.begin();
@@ -284,37 +293,22 @@ namespace Dune {
 
 }  // end namespace Dune
 
-
-static inline bool is_space(char c)
+string ConfigParser::ltrim(const string& s)
 {
-  switch (c) {
-  case ' ' :
-  case '\n' :
-  case '\r' :
-    return true;
-  default :
-    return false;
-  }
+  std::size_t firstNonWS = s.find_first_not_of(" \t\n\r");
+
+  if (firstNonWS!=string::npos)
+    return s.substr(firstNonWS);
+  return string();
 }
 
-string ConfigParser::trim(const string& s) const
+string ConfigParser::rtrim(const string& s)
 {
-  string::const_iterator b = s.begin();
-  string::const_iterator e = s.end();
+  std::size_t lastNonWS = s.find_last_not_of(" \t\n\r");
 
-  for ( ; ; )
-    if (b != e)
-      if (is_space(*b))
-        ++b;
-      else
-        break;
-    else
-      return string();
-
-  while (is_space(e[-1]))
-    --e;
-
-  return string(b, e);
+  if (lastNonWS!=string::npos)
+    return s.substr(0, lastNonWS+1);
+  return string();
 }
 
 const ConfigParser::KeyVector& ConfigParser::getValueKeys() const
