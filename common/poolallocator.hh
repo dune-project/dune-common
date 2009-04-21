@@ -540,7 +540,8 @@ namespace Dune
   }
 
   template<class T, std::size_t s>
-  Pool<T,PoolAllocator<T,s>::size> PoolAllocator<T,s>::memoryPool_;
+  Pool<T,PoolAllocator<T,s>::size> PoolAllocator<T,s>::memoryPool_
+    = Pool<T,PoolAllocator<T,s>::size>();
 
   template<class T, std::size_t s>
   inline PoolAllocator<T,s>::PoolAllocator()
