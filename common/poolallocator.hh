@@ -358,11 +358,14 @@ namespace Dune
       typedef PoolAllocator<U,s> other;
     };
 
+    /** @brief The type of the memory pool we use. */
+    typedef Pool<T,size> PoolType;
+
   private:
     /**
      * @brief The underlying memory pool.
      */
-    static Pool<T,PoolAllocator::size> memoryPool_;
+    static PoolType memoryPool_;
   };
 
   // specialization for void
@@ -541,8 +544,7 @@ namespace Dune
   }
 
   template<class T, std::size_t s>
-  Pool<T,PoolAllocator<T,s>::size> PoolAllocator<T,s>::memoryPool_
-    = Pool<T,PoolAllocator<T,s>::size>();
+  typename PoolAllocator<T,s>::PoolType PoolAllocator<T,s>::memoryPool_;
 
   template<class T, std::size_t s>
   inline PoolAllocator<T,s>::PoolAllocator()
