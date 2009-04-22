@@ -19,7 +19,7 @@ int testPool();
 namespace Dune
 {
 
-  template<typename T, std::size_t size>
+  template<typename T, std::size_t s>
   class Pool;
 
   template<typename T, std::size_t s>
@@ -87,6 +87,7 @@ namespace Dune
     friend int ::testPool<s,T>();
 
     //friend std::ostream& std::operator<<<>(std::ostream&,Pool<T,s>&);
+    template< class, std::size_t > friend class PoolAllocator;
 
   private:
 
