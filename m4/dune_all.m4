@@ -47,7 +47,7 @@ AC_DEFUN([DUNE_CHECK_ALL],[
 ])
 
 AC_DEFUN([DUNE_ADD_SUMMARY_ENTRY],[
-  indentlen=17
+  indentlen=24
   txt="$1"
   while test `echo "$txt" | tr -d '\n' | wc -c` -lt $indentlen; do txt="$txt."; done
   txt="$txt: $2"
@@ -55,7 +55,7 @@ AC_DEFUN([DUNE_ADD_SUMMARY_ENTRY],[
 ])
 
 AC_DEFUN([DUNE_ADD_SUMMARY_MOD_ENTRY],[
-  indentlen=17
+  indentlen=24
   txt=$1
   while test `echo $txt | tr -d '\n' | wc -c` -lt $indentlen; do txt=$txt.; done
   txt="$txt: $2"
@@ -68,12 +68,12 @@ AC_DEFUN([DUNE_SUMMARY_ALL],[
   echo
   echo "Found the following Dune-components: "
   echo
-  echo "-----------------------------"
+  echo "----------------------------------------"
   echo  
   [(eval $DUNE_MODULES_SUMMARY) | sort]
   [(eval $DUNE_SUMMARY) | sort]
   echo
-  echo "-----------------------------"
+  echo "----------------------------------------"
   echo
   echo "See ./configure --help and config.log for reasons why a component wasn't found"
   echo
