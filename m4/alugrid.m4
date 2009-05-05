@@ -2,6 +2,7 @@
 
 AC_DEFUN([DUNE_PATH_ALUGRID],[
   AC_REQUIRE([AC_PROG_CXX])
+  AC_REQUIRE([DUNE_MPI])
 
   AC_ARG_WITH(alugrid,
     AC_HELP_STRING([--with-alugrid=PATH],[directory where ALUGrid is installed]))
@@ -85,8 +86,8 @@ if test x$with_alugrid != x && test x$with_alugrid != xno ; then
   # if header is found...
   if test x$HAVE_ALUGRID = x1 ; then
     AC_CHECK_LIB(alugrid,[malloc],
-    [ALUGRID_LIBS="-lalugrid"
-           ALUGRID_LDFLAGS="-L$ALUGRID_LIB_PATH"
+    [ALUGRID_LIBS="-lalugrid $MPI_LDFLAGS"
+           ALUGRID_LDFLAGS="-L$ALUGRID_LIB_PATH $MPI_LDFLAGS"
            LIBS="$LIBS $ALUGRID_LIBS"],
 	  [HAVE_ALUGRID="0"
 	  AC_MSG_WARN(libalugrid not found!)])
