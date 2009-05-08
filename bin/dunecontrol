@@ -377,6 +377,8 @@ usage () {
     echo "                     and not the modules it depends on"
     echo "      --current      only apply the actions on the current module,"
     echo "                     the one in whichs source tree we are standing"
+    echo "      --resume       resume a previous run (only consider the modules"
+    echo "                     not built successfully on the previous run)"
     echo "      --opts=FILE    load default options from FILE"
     echo "                     (see dune-common/doc/example.opts)"
     echo "      --[COMMAND]-opts=opts   set options for COMMAND"
