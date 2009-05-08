@@ -4,3 +4,6 @@ Makefile.in
 semantic.cache
 check-log-store
 wmlwrap
+
+*.swp
+*.resume

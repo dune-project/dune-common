@@ -79,6 +79,7 @@ if test "x$DEBUG" = "xyes"; then
 fi
 
 export COMMAND_DIR="`canonicalpath $0`"
+export RESUME_FILE="$0.resume"
 
 # Read the modules find part
 . "$COMMAND_DIR/dunemodules.inc"
@@ -99,6 +100,9 @@ build_modules() {
   shift
   local runcommand=run_$command
   modules="$@"
+  for module in $modules ; do
+    echo $module
+  done > $RESUME_FILE
   for module in $modules; do
     local path=$(eval "echo \$PATH_${module}")
     eval echo "--- calling $command for \$NAME_${module} ---"
@@ -108,6 +112,14 @@ build_modules() {
 	  export module
       eval_control $runcommand $path/$CONTROL
     ); then eval echo "--- Failed to build \$NAME_${module} ---"; exit 1; fi
+
+    modules_togo=`cat $RESUME_FILE`
+    for module_togo in $modules_togo ; do
+      if test x$module_togo != x$module ; then
+        echo $module_togo
+      fi
+    done > $RESUME_FILE
+
     eval echo "--- \$NAME_${module} done ---"
   done
 }
@@ -512,6 +524,20 @@ while test $# -gt 0; do
       export SEARCH_MODULES="$SEARCH_MODULES $MODULE"
       export ONLY="$ONLY $MODULE"
       export HAVE_${module}=
+    ;;
+    --resume)
+      if test -s $RESUME_FILE ; then
+        RESUME="`cat $RESUME_FILE`"
+        for a in $RESUME ; do
+          export NAME_`fix_variable_name $a`="$a"
+          fix_and_assign MODULE "$a"
+          export SEARCH_MODULES="$SEARCH_MODULES $MODULE"
+          export ONLY="$ONLY $MODULE"
+        done
+      else
+        echo "Error: No previous run to resume. ('$RESUME_FILE' is empty or does not exist)"
+        exit 1
+      fi
     ;;
     --debug) true ;; # ignore this option, it is handled right at the beginning
     --*)
