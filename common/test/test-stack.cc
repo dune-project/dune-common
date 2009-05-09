@@ -7,7 +7,7 @@
 
 #include <cassert>
 
-#include <dune/common/stack.hh>
+#include <dune/common/finitestack.hh>
 
 // stack depth to test
 static const int MAX = 100;
@@ -34,16 +34,13 @@ void exercise_stack (SType &S) {
 }
 
 int main () {
-  // initialize both kinds of stack, push stuff and check if it comes out again
-  Dune::Stack<int> stack;
-  exercise_stack(stack);
-
+  // initialize stack, push stuff and check if it comes out again
   Dune::FiniteStack<int, MAX> fixedstack;
   exercise_stack(fixedstack);
 
   // check error handling of Stack
   try {
-    Dune::Stack<int> stack1;
+    Dune::FiniteStack<int, MAX> stack1;
 
     assert(stack1.empty());
     stack1.pop();

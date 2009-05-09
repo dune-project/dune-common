@@ -24,6 +24,7 @@
 #include <dune/common/dlist.hh>
 #include <dune/common/enumset.hh>
 #include <dune/common/exceptions.hh>
+#include <dune/common/finitestack.hh>
 #include <dune/common/fixedarray.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/fvector.hh>
@@ -38,7 +39,6 @@
 #include <dune/common/propertymap.hh>
 #include <dune/common/sllist.hh>
 #include <dune/common/smartpointer.hh>
-#include <dune/common/stack.hh>
 #include <dune/common/stdstreams.hh>
 #include <dune/common/timer.hh>
 #include <dune/common/tuples.hh>
