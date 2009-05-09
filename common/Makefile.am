@@ -10,8 +10,8 @@ libcommon_la_SOURCES = stdstreams.cc configparser.cc
 AM_CPPFLAGS = @AM_CPPFLAGS@ -I$(top_srcdir)/..
 
 commonincludedir = $(includedir)/dune/common
-commoninclude_HEADERS = dlist.cc alignment.hh \
-  arraylist.hh bitsetvector.hh debugstream.hh deprecated.hh dlist.hh \
+commoninclude_HEADERS = alignment.hh \
+  arraylist.hh bitsetvector.hh debugstream.hh deprecated.hh \
   enumset.hh exceptions.hh fixedarray.hh fmatrix.hh \
   fvector.hh genericiterator.hh \
   helpertemplates.hh iteratorfacades.hh \

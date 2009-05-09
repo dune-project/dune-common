@@ -21,7 +21,6 @@
 #include <dune/common/bitsetvector.hh>
 #include <dune/common/configparser.hh>
 #include <dune/common/debugstream.hh>
-#include <dune/common/dlist.hh>
 #include <dune/common/enumset.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/finitestack.hh>
