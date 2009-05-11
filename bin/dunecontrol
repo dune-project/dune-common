@@ -376,7 +376,7 @@ usage () {
     echo "      --only=mod     only apply the actions on module mod"
     echo "                     and not the modules it depends on"
     echo "      --current      only apply the actions on the current module,"
-    echo "                     the one in whichs source tree we are standing"
+    echo "                     the one whose source tree we are standing in"
     echo "      --resume       resume a previous run (only consider the modules"
     echo "                     not built successfully on the previous run)"
     echo "      --opts=FILE    load default options from FILE"
@@ -384,7 +384,7 @@ usage () {
     echo "      --[COMMAND]-opts=opts   set options for COMMAND"
     echo "                     (this is mainly useful for the all COMMAND)"
     echo "COMMANDS:"
-    echo "  Colon seperated list of commands. Availabel commands are:"
+    echo "  Colon-separated list of commands. Available commands are:"
     printf "  \`help'\tguess what :-)\n"
     printf "  \`print'\tprint the list of modules sorted after their dependencies\n"
     for i in $COMMANDS; do
