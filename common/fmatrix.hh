@@ -1441,4 +1441,5 @@ namespace Dune {
 
 } // end namespace
 
+#include "fmatrixev.hh"
 #endif
