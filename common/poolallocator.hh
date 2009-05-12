@@ -19,7 +19,7 @@ int testPool();
 namespace Dune
 {
 
-  template<typename T, std::size_t size>
+  template<typename T, std::size_t s>
   class Pool;
 
   template<typename T, std::size_t s>
@@ -87,6 +87,7 @@ namespace Dune
     friend int ::testPool<s,T>();
 
     //friend std::ostream& std::operator<<<>(std::ostream&,Pool<T,s>&);
+    template< class, std::size_t > friend class PoolAllocator;
 
   private:
 
@@ -355,11 +356,14 @@ namespace Dune
       typedef PoolAllocator<U,s> other;
     };
 
+    /** @brief The type of the memory pool we use. */
+    typedef Pool<T,size> PoolType;
+
   private:
     /**
      * @brief The underlying memory pool.
      */
-    static Pool<T,PoolAllocator::size> memoryPool_;
+    static PoolType memoryPool_;
   };
 
   // specialization for void
@@ -536,7 +540,7 @@ namespace Dune
   }
 
   template<class T, std::size_t s>
-  Pool<T,PoolAllocator<T,s>::size> PoolAllocator<T,s>::memoryPool_;
+  typename PoolAllocator<T,s>::PoolType PoolAllocator<T,s>::memoryPool_;
 
   template<class T, std::size_t s>
   inline PoolAllocator<T,s>::PoolAllocator()
