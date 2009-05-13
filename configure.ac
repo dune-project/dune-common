@@ -34,13 +34,11 @@ AC_CONFIG_FILES([Makefile
      doc/buildsystem/Makefile
      m4/Makefile
      am/Makefile
-     bin/wmlwrap
      bin/check-log-store
      dune-common.pc])
 AC_OUTPUT
 
 # make scripts executable
-chmod +x bin/wmlwrap
 chmod +x bin/check-log-store
 
 # print results

@@ -9,15 +9,18 @@
 
 # CURDIR should be defined in the same way as in dune-web
 
-# pass files through wrapper
-# pass variables to wmlwrap via environment
+if DUNEWEB
+WMLCMD = cd $(DUNEWEBDIR) && @WML@ --nocd -DROOT=$(BASEDIR)
+else
+WMLCMD = @WML@
+endif
+
 if WML
-
 .wml.html:
-	export DUNEWEBDIR=$(DUNEWEBDIR); \
-	export BASEDIR=$(BASEDIR); \
-	sh $(DUNE_COMMON_ROOT)/bin/wmlwrap -I $(srcdir) $< -o $@
+	$(WMLCMD) -I $(abs_srcdir) $(abs_builddir)/$< -o $(abs_builddir)/$@
+endif
 
+if DUNEWEB
 web-install-default: all
 	if test -d $(DUNEWEBDIR) && test -r $(DUNEWEBDIR)/Make.global ; then \
 	  for DIR in $(SUBDIRS) ; do \
@@ -26,7 +29,6 @@ web-install-default: all
 	  $(MAKE) -f $(DUNEWEBDIR)/Make.global \
             EXTRAINSTALL="$(EXTRAINSTALL)" CURDIR="$(CURDIR)" install ; \
 	fi
-
 endif
 
 web-install: web-install-default
