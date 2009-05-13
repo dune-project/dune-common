@@ -46,7 +46,7 @@ uninstall-local: uninstall-doxygen-data
 endif
 
 # what files does the doxygen-generated stuff depend on (find-syntax)
-DOXYGEN_DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.png
+DOXYGEN_DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.png -o -name Doxyfile
 
 # as all doxygen files fill be installed in the html subdirectory
 # the BASEDIR has to be adjusted
@@ -54,7 +54,7 @@ doxy-header.html: BASEDIR:=$(BASEDIR)/..
 doxy-header.html:
 
 # check dependency ourself to be robust
-doxygen-tag: FORCE $(DOXYGENHEADER)
+doxygen-tag: FORCE Doxyfile $(DOXYGENHEADER)
 	set -e; \
 	  if test ! -e doxygen-tag || test x"`find $(top_srcdir) \( $(DOXYGEN_DEPENDON) \) -a -cnewer doxygen-tag -print`" != x ; then \
 	    echo Running doxygen. This may take a while... ; \
