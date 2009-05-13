@@ -3,6 +3,8 @@
 ACLOCAL_AMFLAGS=@ACLOCAL_AMFLAGS@
 DUNECONTROL=@DUNE_COMMON_ROOT@/bin/dunecontrol
 
+sourcescheck_NOSOURCES = aclocal.m4 dependencies.m4
+
 all-am: dependencies.m4
 
 @DUNE_MOD_NAME@.m4: dune.module
