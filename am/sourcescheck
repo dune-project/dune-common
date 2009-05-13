@@ -1,6 +1,8 @@
 # -*- Makefile -*-
 # $Id$
 
+sourcescheck_IGNORE = aclocal.m4 dependencies.m4
+
 sourcescheck_LIST = $(SOURCES) $(DIST_SOURCES) $(HEADERS) $(DIST_HEADERS) \
 	$(sourcescheck_NOSOURCES) $(dist_noinst_DATA) $(EXTRA_DIST)
 
