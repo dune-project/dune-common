@@ -1,7 +1,7 @@
 # $Id$
 
 # put scripts into dist-tarball
-EXTRA_DIST = duneproject wmlwrap dunecontrol \
+EXTRA_DIST = duneproject dunecontrol \
   dunemodules.inc mpi-config dune-autogen \
   xfail-compile-tests
 
