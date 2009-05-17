@@ -660,8 +660,7 @@ HTML_FILE_EXTENSION    = .html
 # the style sheet file to the HTML output directory, so don't put your own 
 # stylesheet in the HTML output directory as well, or it will be erased!
 
-@DUNEWEB_TRUE@HTML_STYLESHEET        = dune-doxy.css
-@DUNEWEB_FALSE@HTML_STYLESHEET        =
+HTML_STYLESHEET        =
 
 # If the HTML_ALIGN_MEMBERS tag is set to YES, the members of classes, 
 # files or namespaces will be aligned in HTML using tables. If set to 

@@ -13,10 +13,23 @@ DISTCLEANFILES = doxygen.log doxygen-tag
 
 if DUNEWEB
 if WML
+  DUNEWEBDOXY = @DUNEWEBDIR@/doc/doxygen
   # themeing doxygen
   DOXYGENHEADER = doxy-header.html
   DOXYGENFOOTER = doxy-footer.html
   DOXYGENSTYLESHEET = dune-doxy.css
+
+doxy-header.html: BASEDIR=../../..
+doxy-footer.html: BASEDIR=../../..
+doxy-header.html: WMLOPTS=
+doxy-footer.html: WMLOPTS=
+
+doxy-header.html: @DUNEWEBDIR@/doc/doxygen/doxy-header.wml
+	$(WMLCMD) -I @DUNEWEBDIR@/doc/doxygen/ @DUNEWEBDIR@/doc/doxygen/doxy-header.wml -o $(abs_builddir)/doxy-header.html
+
+doxy-footer.html: @DUNEWEBDIR@/doc/doxygen/doxy-footer.wml
+	$(WMLCMD) -I @DUNEWEBDIR@/doc/doxygen/ @DUNEWEBDIR@/doc/doxygen/doxy-footer.wml -o $(abs_builddir)/doxy-footer.html
+
 endif
 endif
 
@@ -48,23 +61,17 @@ endif
 # what files does the doxygen-generated stuff depend on (find-syntax)
 DOXYGEN_DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.png -o -name Doxyfile
 
-# as all doxygen files fill be installed in the html subdirectory
-# the BASEDIR has to be adjusted
-doxy-header.html: BASEDIR:=$(BASEDIR)/..
-doxy-header.html:
-
 # check dependency ourself to be robust
-doxygen-tag: FORCE Doxyfile $(DOXYGENHEADER)
+doxygen-tag: FORCE Doxyfile $(DOXYGENHEADER) $(DOXYGENFOOTER)
 	set -e; \
 	  if test ! -e doxygen-tag || test x"`find $(top_srcdir) \( $(DOXYGEN_DEPENDON) \) -a -cnewer doxygen-tag -print`" != x ; then \
 	    echo Running doxygen. This may take a while... ; \
-	    $(DOXYGEN) Doxyfile > doxygen.log 2>&1 <&- ; \
+	    $(DOXYGEN) $(srcdir)/Doxyfile > doxygen.log 2>&1 <&- ; \
 	    touch doxygen-tag ; \
 	fi
-
-#	  fi; \
-#	if ! (test "x$(VPATH)" != "x" && test -e $(srcdir)/doxygen-tag); then \
-#
+if DUNEWEB
+	$(DUNEWEBDOXY)/update-doxygen.css html html
+endif
 
 doxygen-dist-install: doxygen-tag
 	mkdir $(distdir)/html
@@ -92,7 +99,7 @@ web-install: web-install-doxygen web-install-default
 clean-local: clean-doxygen
 
 clean-doxygen:
-	rm -rf html latex $(DOXYGENTAG) *~
+	rm -rf $(DOXYGENTAG) $(DOXYGENFILES) *~
 
 # nice trick from the GNU make infopage to force a rule to run
 FORCE:
