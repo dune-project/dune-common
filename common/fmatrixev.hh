@@ -73,6 +73,11 @@ extern "C" {
 
 namespace Dune {
 
+  /**
+     @addtogroup DenseMatVec
+     @{
+   */
+
   namespace FMatrixHelp {
 
     /** \brief calculates the eigen values of a field matrix
@@ -172,5 +177,8 @@ namespace Dune {
     }
 
   } // end namespace FMatrixHelp
+
+  /** @} end documentation */
+
 } // end namespace Dune
 #endif
