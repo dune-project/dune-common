@@ -16,8 +16,8 @@
 namespace Dune {
 
   /**
-              @addtogroup DenseMatVec
-              @{
+      @addtogroup DenseMatVec
+      @{
    */
 
   /*! \file
@@ -670,7 +670,7 @@ namespace Dune {
         if (imax!=i) {
           for (int j=0; j<n; j++)
             std::swap(A[i][j],A[imax][j]);
-          func.swap(i, imax);     // swap the pivot or rhs
+          func.swap(i, imax); // swap the pivot or rhs
         }
       }
 
@@ -737,8 +737,8 @@ namespace Dune {
 
     } else {
 
-      V& rhs = x;     // use x to store rhs
-      rhs = b;     // copy data
+      V& rhs = x; // use x to store rhs
+      rhs = b; // copy data
       Elim<V> elim(rhs);
       FieldMatrix<K,n,n> A(*this);
 
