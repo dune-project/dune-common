@@ -10,7 +10,7 @@ AC_DEFUN([DUNE_AUTOBUILD_FLAGS],[
   if test "x$with_hostid" = "xno" ; then 
     with_hostid="$ac_hostname (`uname -sm`, $COMPILER_NAME)";
   fi
-echo HOSTID: $with_hostid
+
   AC_SUBST([hostid], [$with_hostid])
   AC_ARG_WITH([tag],
     AC_HELP_STRING([--with-tag=TAG],
