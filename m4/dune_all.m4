@@ -7,15 +7,6 @@
 # the entries are more or less copied from an "autoscan"-run in the
 # dune-directory
 
-#
-# There are two test available:
-# 1) DUNE_CHECK_ALL
-#    This test is for people writing an application based on dune
-# 2) DUNE_CHECK_ALL_M
-#    This test is for dune modules.
-#    In addition to DUNE_CHECK_ALL it run some additional tests
-#    and sets up some things needed for modules (i.e. the 'dune' symlink)
-
 AC_DEFUN([DUNE_CHECK_ALL],[
   # doxygen and latex take a lot of time...
   AC_REQUIRE([DUNE_DOCUMENTATION])
@@ -81,6 +72,13 @@ AC_DEFUN([DUNE_SUMMARY_ALL],[
 ])
 
 AC_DEFUN([DUNE_CHECK_ALL_M],[
+        [echo
+        echo "    The build system of your module has called the deprecated method DUNE_CHECK_ALL_M."
+        echo "    Please replace that call (in configure.ac) by a call to DUNE_CHECK_ALL.  If you"
+        echo "    need the dune -> . symlink add DUNE_SYMLINK to your configure.ac."
+        echo "    Press 'enter' to continue!"
+        echo
+        read -u 7]
   AC_REQUIRE([DUNE_SYMLINK])
   AC_REQUIRE([DUNE_CHECK_ALL])
   AC_REQUIRE([DUNE_AUTOBUILD_FLAGS])
