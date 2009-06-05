@@ -27,7 +27,7 @@ When building the development version of DUNE you will also need
 <ul>
 <li>automake (&gt;= 1.5)</li>
 <li>autoconf (&gt;= 2.50)</li>
-<li>libtool</li>
+<li>libtool (&gt;= 2)</li>
 </ul>
 <p>
 This will provide you with the core DUNE features.</p>
