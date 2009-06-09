@@ -6,6 +6,6 @@ EXTRA_DIST = duneproject dunecontrol \
   xfail-compile-tests
 
 # ... and install some
-bin_SCRIPTS = duneproject dunemodules.inc dunecontrol mpi-config
+bin_SCRIPTS = duneproject dunemodules.inc dunecontrol mpi-config dune-autogen
 
 include $(top_srcdir)/am/global-rules
