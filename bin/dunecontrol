@@ -79,7 +79,7 @@ if test "x$DEBUG" = "xyes"; then
 fi
 
 export COMMAND_DIR="`canonicalpath $0`"
-export RESUME_FILE="$0.resume"
+export RESUME_FILE="$HOME/.dune.resume"
 
 # Read the modules find part
 . "$COMMAND_DIR/dunemodules.inc"
