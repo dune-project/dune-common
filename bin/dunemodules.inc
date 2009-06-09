@@ -14,7 +14,7 @@ CONTROL="dune.module"
 ###
 
 if test -z $DUNE_CONTROL_PATH; then
-  DUNE_CONTROL_PATH=.
+  DUNE_CONTROL_PATH=.:/usr/local/lib/dunecontrol/:/usr/lib/dunecontrol/
 fi
 if test -z $GREP; then
   GREP=grep
