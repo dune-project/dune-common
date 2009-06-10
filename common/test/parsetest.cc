@@ -16,6 +16,7 @@
  */
 
 #include <dune/common/alignment.hh>
+#include <dune/common/array.hh>
 #include <dune/common/arraylist.hh>
 #include <dune/common/bigunsignedint.hh>
 #include <dune/common/bitsetvector.hh>
@@ -24,7 +25,6 @@
 #include <dune/common/enumset.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/finitestack.hh>
-#include <dune/common/fixedarray.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/gcd.hh>
