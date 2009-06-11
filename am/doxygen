@@ -59,7 +59,7 @@ uninstall-local: uninstall-doxygen-data
 endif
 
 # what files does the doxygen-generated stuff depend on (find-syntax)
-DOXYGEN_DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.png -o -name Doxyfile
+DOXYGEN_DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.png -o -name Doxyfile -o -name modules
 
 # check dependency ourself to be robust
 doxygen-tag: FORCE Doxyfile $(DOXYGENHEADER) $(DOXYGENFOOTER)
