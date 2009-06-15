@@ -223,6 +223,21 @@ void test_matrix()
   A.axpy( K( 1 ), A );
 }
 
+int test_determinant()
+{
+  FieldMatrix<double, 4, 4> B;
+  B[0][0] =  3.0; B[0][1] =  0.0; B[0][2] =  1.0; B[0][3] =  0.0;
+  B[1][0] = -1.0; B[1][1] =  3.0; B[1][2] =  0.0; B[1][3] =  0.0;
+  B[2][0] = -3.0; B[2][1] =  0.0; B[2][2] = -1.0; B[2][3] =  2.0;
+  B[3][0] =  0.0; B[3][1] = -1.0; B[3][2] =  0.0; B[3][3] =  1.0;
+  if (std::abs(B.determinant() + 2.0) > 1e-12)
+  {
+    std::cerr << "Determinant test failed" << std::endl;
+    return 1;
+  }
+  return 0;
+}
+
 int main()
 {
   try {
@@ -230,6 +245,7 @@ int main()
     test_matrix<double, 1, 1>();
     test_matrix<int, 10, 5>();
     test_matrix<double, 5, 10>();
+    test_determinant();
     Dune::FieldMatrix<double, 34, 34> A(1e-15);
     for (int i=0; i<34; i++) A[i][i] = 1;
     A.invert();
