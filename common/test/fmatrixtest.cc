@@ -225,6 +225,8 @@ void test_matrix()
 
 int test_determinant()
 {
+  int ret = 0;
+
   FieldMatrix<double, 4, 4> B;
   B[0][0] =  3.0; B[0][1] =  0.0; B[0][2] =  1.0; B[0][3] =  0.0;
   B[1][0] = -1.0; B[1][1] =  3.0; B[1][2] =  0.0; B[1][3] =  0.0;
@@ -232,9 +234,20 @@ int test_determinant()
   B[3][0] =  0.0; B[3][1] = -1.0; B[3][2] =  0.0; B[3][3] =  1.0;
   if (std::abs(B.determinant() + 2.0) > 1e-12)
   {
-    std::cerr << "Determinant test failed" << std::endl;
-    return 1;
+    std::cerr << "Determinant 1 test failed" << std::endl;
+    ++ret;
   }
+
+  B[0][0] =  3.0; B[0][1] =  0.0; B[0][2] =  1.0; B[0][3] =  0.0;
+  B[1][0] = -1.0; B[1][1] =  3.0; B[1][2] =  0.0; B[1][3] =  0.0;
+  B[2][0] = -3.0; B[2][1] =  0.0; B[2][2] = -1.0; B[2][3] =  2.0;
+  B[3][0] = -1.0; B[3][1] =  3.0; B[3][2] =  0.0; B[3][3] =  2.0;
+  if (B.determinant() != 0.0)
+  {
+    std::cerr << "Determinant 2 test failed" << std::endl;
+    ++ret;
+  }
+
   return 0;
 }
 

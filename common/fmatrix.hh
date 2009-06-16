@@ -881,7 +881,14 @@ namespace Dune {
 
     FieldMatrix<K,n,n> A(*this);
     K det;
-    luDecomposition(A, ElimDet(det));
+    try
+    {
+      luDecomposition(A, ElimDet(det));
+    }
+    catch (FMatrixError&)
+    {
+      return 0;
+    }
     for (int i = 0; i < n; ++i)
       det *= A[i][i];
     return det;
