@@ -51,11 +51,11 @@ int main(int argc, char** argv)
     ret=4;
   }
 
-  int i=3;
-  int *ii=&i;
-  double d=2;
-  long l= 4;
-  char c= 's';
+  int i = 3;
+  int *ii; ii = &i;
+  double d; d = 2;
+  long l = 4;
+  char c = 's';
 
   typedef Dune::tuple<int*,char*,long*,char*> PointerTuple1;
 

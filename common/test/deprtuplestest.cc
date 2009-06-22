@@ -235,7 +235,8 @@ int tuple_tr1_test()
 
 
   // get the second element
-  tuple_element<1,tuple<int,double> >::type d=get<1>(t);
+  tuple_element<1,tuple<int,double> >::type d;
+  d=get<1>(t);
 
   get<0>(t)=16;
 
