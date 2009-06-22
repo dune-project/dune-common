@@ -117,42 +117,42 @@ namespace Dune {
     template <class T, CmpStyle style>
     bool eq(const T &first,
             const T &second,
-            typename EpsilonType<T>::Type epsilon = DefaultEpsilon<T, style>::value())
+            typename EpsilonType<T>::Type epsilon)
     {
       return Detail::eq_t<T, style>::eq(first, second, epsilon);
     }
     template <class T, CmpStyle style>
     bool ne(const T &first,
             const T &second,
-            typename EpsilonType<T>::Type epsilon = DefaultEpsilon<T, style>::value())
+            typename EpsilonType<T>::Type epsilon)
     {
       return !eq<T, style>(first, second, epsilon);
     }
     template <class T, CmpStyle style>
     bool gt(const T &first,
             const T &second,
-            typename EpsilonType<T>::Type epsilon = DefaultEpsilon<T, style>::value())
+            typename EpsilonType<T>::Type epsilon)
     {
       return first > second && ne<T, style>(first, second, epsilon);
     }
     template <class T, CmpStyle style>
     bool lt(const T &first,
             const T &second,
-            typename EpsilonType<T>::Type epsilon = DefaultEpsilon<T, style>::value())
+            typename EpsilonType<T>::Type epsilon)
     {
       return first < second && ne<T, style>(first, second, epsilon);
     }
     template <class T, CmpStyle style>
     bool ge(const T &first,
             const T &second,
-            typename EpsilonType<T>::Type epsilon = DefaultEpsilon<T, style>::value())
+            typename EpsilonType<T>::Type epsilon)
     {
       return first > second || eq<T, style>(first, second, epsilon);
     }
     template <class T, CmpStyle style>
     bool le(const T &first,
             const T &second,
-            typename EpsilonType<T>::Type epsilon = DefaultEpsilon<T, style>::value())
+            typename EpsilonType<T>::Type epsilon)
     {
       return first < second || eq<T, style>(first, second, epsilon);
     }
@@ -282,7 +282,7 @@ namespace Dune {
       };
     } // namespace Detail
     template<class I, class T, CmpStyle cstyle, RoundingStyle rstyle>
-    I round(const T &val, typename EpsilonType<T>::Type epsilon = DefaultEpsilon<T, cstyle>::value())
+    I round(const T &val, typename EpsilonType<T>::Type epsilon /*= DefaultEpsilon<T, cstyle>::value()*/)
     {
       return Detail::round_t<I, T, cstyle, rstyle>::round(val, epsilon);
     }
@@ -378,7 +378,7 @@ namespace Dune {
       };
     } // namespace Detail
     template<class I, class T, CmpStyle cstyle, RoundingStyle rstyle>
-    I trunc(const T &val, typename EpsilonType<T>::Type epsilon = DefaultEpsilon<T, cstyle>::value())
+    I trunc(const T &val, typename EpsilonType<T>::Type epsilon /*= DefaultEpsilon<T, cstyle>::value()*/)
     {
       return Detail::trunc_t<I, T, cstyle, rstyle>::trunc(val, epsilon);
     }
