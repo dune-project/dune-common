@@ -218,13 +218,13 @@ namespace Dune
    * This operation is only defined if either D2
    * is convertible to D1 or vice versa. If that is
    * not the case the compiler will report an error
-   * as EnableIfInterOperable<D1,D2,bool>::Type is
+   * as EnableIfInterOperable<D1,D2,bool>::type is
    * not defined.
    *
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename EnableIfInterOperable<T1,T2,bool>::Type
+  inline typename EnableIfInterOperable<T1,T2,bool>::type
   operator==(const ForwardIteratorFacade<T1,V1,R1,D>& lhs,
              const ForwardIteratorFacade<T2,V2,R2,D>& rhs)
   {
@@ -240,13 +240,13 @@ namespace Dune
    * This operation is only defined if either D2
    * is convertible to D1 or vice versa. If that is
    * not the case the compiler will report an error
-   * as EnableIfInterOperable<D1,D2,bool>::Type is
+   * as EnableIfInterOperable<D1,D2,bool>::type is
    * not defined.
    *
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename EnableIfInterOperable<T1,T2,bool>::Type
+  inline typename EnableIfInterOperable<T1,T2,bool>::type
   operator!=(const ForwardIteratorFacade<T1,V1,R1,D>& lhs,
              const ForwardIteratorFacade<T2,V2,R2,D>& rhs)
   {
@@ -366,13 +366,13 @@ namespace Dune
    * This operation is only defined if either D2
    * is convertible to D1 or vice versa. If that is
    * not the case the compiler will report an error
-   * as EnableIfInterOperable<D1,D2,bool>::Type is
+   * as EnableIfInterOperable<D1,D2,bool>::type is
    * not defined.
    *
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename EnableIfInterOperable<T1,T2,bool>::Type
+  inline typename EnableIfInterOperable<T1,T2,bool>::type
   operator==(const BidirectionalIteratorFacade<T1,V1,R1,D>& lhs,
              const BidirectionalIteratorFacade<T2,V2,R2,D>& rhs)
   {
@@ -388,13 +388,13 @@ namespace Dune
    * This operation is only defined if either D2
    * is convertible to D1 or vice versa. If that is
    * not the case the compiler will report an error
-   * as EnableIfInterOperable<D1,D2,bool>::Type is
+   * as EnableIfInterOperable<D1,D2,bool>::type is
    * not defined.
    *
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename EnableIfInterOperable<T1,T2,bool>::Type
+  inline typename EnableIfInterOperable<T1,T2,bool>::type
   operator!=(const BidirectionalIteratorFacade<T1,V1,R1,D>& lhs,
              const BidirectionalIteratorFacade<T2,V2,R2,D>& rhs)
   {
@@ -558,13 +558,13 @@ namespace Dune
    * This operation is only defined if either D2
    * is convertible to D1 or vice versa. If that is
    * not the case the compiler will report an error
-   * as EnableIfInterOperable<D1,D2,bool>::Type is
+   * as EnableIfInterOperable<D1,D2,bool>::type is
    * not defined.
    *
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename EnableIfInterOperable<T1,T2,bool>::Type
+  inline typename EnableIfInterOperable<T1,T2,bool>::type
   operator==(const RandomAccessIteratorFacade<T1,V1,R1,D>& lhs,
              const RandomAccessIteratorFacade<T2,V2,R2,D>& rhs)
   {
@@ -580,13 +580,13 @@ namespace Dune
    * This operation is only defined if either D2
    * is convertible to D1 or vice versa. If that is
    * not the case the compiler will report an error
-   * as EnableIfInterOperable<D1,D2,bool>::Type is
+   * as EnableIfInterOperable<D1,D2,bool>::type is
    * not defined.
    *
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename EnableIfInterOperable<T1,T2,bool>::Type
+  inline typename EnableIfInterOperable<T1,T2,bool>::type
   operator!=(const RandomAccessIteratorFacade<T1,V1,R1,D>& lhs,
              const RandomAccessIteratorFacade<T2,V2,R2,D>& rhs)
   {
@@ -602,13 +602,13 @@ namespace Dune
    * This operation is only defined if either D2
    * is convertible to D1 or vice versa. If that is
    * not the case the compiler will report an error
-   * as EnableIfInterOperable<D1,D2,bool>::Type is
+   * as EnableIfInterOperable<D1,D2,bool>::type is
    * not defined.
    *
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename EnableIfInterOperable<T1,T2,bool>::Type
+  inline typename EnableIfInterOperable<T1,T2,bool>::type
   operator<(const RandomAccessIteratorFacade<T1,V1,R1,D>& lhs,
             const RandomAccessIteratorFacade<T2,V2,R2,D>& rhs)
   {
@@ -625,13 +625,13 @@ namespace Dune
    * This operation is only defined if either D2
    * is convertible to D1 or vice versa. If that is
    * not the case the compiler will report an error
-   * as EnableIfInterOperable<D1,D2,bool>::Type is
+   * as EnableIfInterOperable<D1,D2,bool>::type is
    * not defined.
    *
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename EnableIfInterOperable<T1,T2,bool>::Type
+  inline typename EnableIfInterOperable<T1,T2,bool>::type
   operator<=(const RandomAccessIteratorFacade<T1,V1,R1,D>& lhs,
              const RandomAccessIteratorFacade<T2,V2,R2,D>& rhs)
   {
@@ -648,13 +648,13 @@ namespace Dune
    * This operation is only defined if either D2
    * is convertible to D1 or vice versa. If that is
    * not the case the compiler will report an error
-   * as EnableIfInterOperable<D1,D2,bool>::Type is
+   * as EnableIfInterOperable<D1,D2,bool>::type is
    * not defined.
    *
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename EnableIfInterOperable<T1,T2,bool>::Type
+  inline typename EnableIfInterOperable<T1,T2,bool>::type
   operator>(const RandomAccessIteratorFacade<T1,V1,R1,D>& lhs,
             const RandomAccessIteratorFacade<T2,V2,R2,D>& rhs)
   {
@@ -670,13 +670,13 @@ namespace Dune
    * This operation is only defined if either D2
    * is convertible to D1 or vice versa. If that is
    * not the case the compiler will report an error
-   * as EnableIfInterOperable<D1,D2,bool>::Type is
+   * as EnableIfInterOperable<D1,D2,bool>::type is
    * not defined.
    *
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename EnableIfInterOperable<T1,T2,bool>::Type
+  inline typename EnableIfInterOperable<T1,T2,bool>::type
   operator>=(const RandomAccessIteratorFacade<T1,V1,R1,D>& lhs,
              const RandomAccessIteratorFacade<T2,V2,R2,D>& rhs)
   {
@@ -692,13 +692,13 @@ namespace Dune
    * This operation is only defined if either D2
    * is convertible to D1 or vice versa. If that is
    * not the case the compiler will report an error
-   * as EnableIfInterOperable<D1,D2,bool>::Type is
+   * as EnableIfInterOperable<D1,D2,bool>::type is
    * not defined.
    *
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename EnableIfInterOperable<T1,T2,D>::Type
+  inline typename EnableIfInterOperable<T1,T2,D>::type
   operator-(const RandomAccessIteratorFacade<T1,V1,R1,D>& lhs,
             const RandomAccessIteratorFacade<T2,V2,R2,D>& rhs)
   {
