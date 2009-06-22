@@ -6,6 +6,7 @@
 #endif
 
 #include <cassert>
+#include <iostream>
 
 #include <dune/common/finitestack.hh>
 
@@ -46,12 +47,23 @@ int main () {
     stack1.pop();
 
     // exception has to happen
+    std::cerr << "Expected exception Dune::RangeError, but nothing caught\n";
     return 1;
   } catch (Dune::RangeError &e) {
     // exception was correctly reported
+    std::cerr << "Caught expected Dune::RangeError: " << e.what() << std::endl;
     return 0;
+  } catch (Dune::Exception &e) {
+    // exception was correctly reported
+    std::cerr << "Dune::Exception: " << e.what() << std::endl;
+    return 1;
+  } catch (std::exception &e) {
+    // exception was correctly reported
+    std::cerr << "std::exception: " << e.what() << std::endl;
+    return 1;
   } catch (...) {
     // wrong type of exception
+    std::cerr << "unknown exception\n";
     return 1;
   }
 
