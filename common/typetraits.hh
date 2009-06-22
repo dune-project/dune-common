@@ -9,8 +9,6 @@
 #include <tr1/type_traits>
 #endif
 
-#include <dune/common/deprecated.hh>
-
 namespace Dune
 {
 
@@ -254,23 +252,6 @@ namespace Dune
     };
   };
 
-  /**
-   * @brief Enable typedef if condition is met.
-   *
-   * Depending on the value of b the type T is provided as typedef type.
-   * \deprecated Use enable_if instead
-   */
-  template<bool b, typename T=void>
-  struct EnableIf
-  {
-    typedef T type;
-    typedef T Type;
-  } DUNE_DEPRECATED;
-
-  template<typename T>
-  struct EnableIf<false,T>
-  {} DUNE_DEPRECATED;
-
 #ifdef HAVE_TYPE_TRAITS
   using std::enable_if;
 #else
@@ -299,7 +280,7 @@ namespace Dune
    */
   template<class T1, class T2, class Type>
   struct EnableIfInterOperable
-    : public EnableIf<IsInteroperable<T1,T2>::value, Type>
+    : public enable_if<IsInteroperable<T1,T2>::value, Type>
   {};
 
 #if defined HAVE_TYPE_TRAITS
