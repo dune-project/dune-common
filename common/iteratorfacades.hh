@@ -513,7 +513,7 @@ namespace Dune
       return *static_cast<DerivedType *>(this);
     }
 
-    DerivedType operator+(DifferenceType n)
+    DerivedType operator+(DifferenceType n) const
     {
       DerivedType tmp(static_cast<DerivedType const&>(*this));
       tmp.advance(n);
@@ -542,7 +542,7 @@ namespace Dune
       return *static_cast<DerivedType *>(this);
     }
 
-    DerivedType operator-(DifferenceType n)
+    DerivedType operator-(DifferenceType n) const
     {
       DerivedType tmp(static_cast<DerivedType const&>(*this));
       tmp.advance(-n);
