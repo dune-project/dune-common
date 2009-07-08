@@ -204,8 +204,13 @@ sort_dependencies() {
       eval deps=\$DEPS_$m
       deps=`echo "$deps" | sed 's/,/ /g;s/([^)]*)/ /'`
       for name in $deps; do
-        dep=`fix_variable_name $name`
-        _sort_module $dep
+
+        case "$name" in
+        '('*) ;;
+        *)    dep=`fix_variable_name $name`
+              _sort_module $dep
+              ;;
+        esac
       done
     else
       eval echo ERROR: could not find module \$NAME_$m >&2
