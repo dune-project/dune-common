@@ -70,7 +70,7 @@ doxygen-tag: FORCE Doxyfile $(DOXYGENHEADER) $(DOXYGENFOOTER)
 	    touch doxygen-tag ; \
 	fi
 if DUNEWEB
-	$(DUNEWEBDOXY)/update-doxygen.css html html
+	$(DUNEWEBDOXY)/update-doxygen.css $(abs_builddir)/html
 endif
 
 doxygen-dist-install: doxygen-tag
