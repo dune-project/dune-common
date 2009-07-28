@@ -72,3 +72,5 @@ headercheck-recursive:
 	fi; test -z "$$fail"
 
 .PHONY: headercheck headercheck-recursive headercheck-am
+
+# vim:set filetype=automake:
