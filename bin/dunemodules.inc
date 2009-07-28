@@ -202,15 +202,10 @@ sort_dependencies() {
     # did we find a module file for this mopdule?
     if test "x$(eval echo \$HAVE_$m)" != "x"; then
       eval deps=\$DEPS_$m
-      deps=`echo "$deps" | sed 's/,/ /g;s/([^)]*)/ /'`
+      deps=`echo "$deps" | sed 's/,/ /g;s/([^)]*)/ /g'`
       for name in $deps; do
-
-        case "$name" in
-        '('*) ;;
-        *)    dep=`fix_variable_name $name`
-              _sort_module $dep
-              ;;
-        esac
+        dep=`fix_variable_name $name`
+        _sort_module $dep
       done
     else
       eval echo ERROR: could not find module \$NAME_$m >&2
