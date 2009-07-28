@@ -1,6 +1,7 @@
 .deps
 Doxyfile
 doxy-header.html
+doxy-footer.html
 bestpractice.html
 doxygen-tag
 doxygen.log
