@@ -99,6 +99,26 @@ namespace Dune
       return a[i];
     }
 
+    iterator begin ()
+    {
+      return a;
+    }
+
+    const_iterator begin () const
+    {
+      return a;
+    }
+
+    iterator end ()
+    {
+      return a + N;
+    }
+
+    const_iterator end () const
+    {
+      return a + N;
+    }
+
   protected:
     T a[(N > 0) ? N : 1];
   };
