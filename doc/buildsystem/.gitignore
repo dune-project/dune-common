@@ -5,6 +5,9 @@
 *.pdf
 *.toc
 *.out
+*.ind
+*.ilg
+*.backup
 Makefile.in
 Makefile
 auto
