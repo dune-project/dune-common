@@ -602,14 +602,24 @@ namespace Dune {
   using std::tr1::make_tuple;
 #endif
 
-#if defined HAVE_TUPLE || defined HAVE_TR1_TUPLE
+
   template<int i>
   struct tuple_writer
   {
     template<class T>
-    static std::ostream& put(std::ostream& os, const T& t)
+    static std::ostream& put(std::ostream& os, const T& t, const char* delim=", ")
     {
-      return tuple_writer<i-1>::put(os,t)<<", "<<get<i-1>(t);
+      return tuple_writer<i-1>::put(os,t,delim)<<delim<<get<i-1>(t);
+    }
+  };
+
+  template<>
+  struct tuple_writer<1>
+  {
+    template<class T>
+    static std::ostream& put(std::ostream& os, const T& t, const char* delim=", ")
+    {
+      return os<<get<0>(t);
     }
   };
 
@@ -617,12 +627,13 @@ namespace Dune {
   struct tuple_writer<0>
   {
     template<class T>
-    static std::ostream& put(std::ostream& os, const T& t)
+    static std::ostream& put(std::ostream& os, const T& t, const char* delim=", ")
     {
       return os;
     }
   };
 
+#if defined HAVE_TUPLE || defined HAVE_TR1_TUPLE
   /**
    * \brief Print a tuple.
    */
