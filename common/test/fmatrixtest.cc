@@ -220,7 +220,27 @@ void test_matrix()
   // print vector
   std::cout << f << std::endl;
 
-  A.axpy( K( 1 ), A );
+
+  {
+    FieldMatrix<K,n,m> A2 = A;
+    A2 *= 2;
+
+    FieldMatrix<K,n,m> B = A;
+    B += A;
+    B -= A2;
+    if (std::abs(B.infinity_norm()) > 1e-12)
+      DUNE_THROW(FMatrixError,"Operator +=/-= test failed!");
+  }
+  {
+    FieldMatrix<K,n,m> A3 = A;
+    A3 *= 3;
+
+    FieldMatrix<K,n,m> B = A;
+    B.axpy( K( 2 ), B );
+    B -= A3;
+    if (std::abs(B.infinity_norm()) > 1e-12)
+      DUNE_THROW(FMatrixError,"Axpy test failed!");
+  }
 }
 
 int test_determinant()
