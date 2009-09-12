@@ -80,9 +80,9 @@ namespace Dune {
 
   namespace FMatrixHelp {
 
-    /** \brief calculates the eigen values of a field matrix
-        \param[in]  matrix matrix eigen values are calculated for
-        \param[out] eigenvalues FieldVector that contains eigen values in
+    /** \brief calculates the eigenvalues of a field matrix
+        \param[in]  matrix matrix eigenvalues are calculated for
+        \param[out] eigenvalues FieldVector that contains eigenvalues in
                     ascending order
      */
     template <typename K>
@@ -92,9 +92,9 @@ namespace Dune {
       eigenvalues[0] = matrix[0][0];
     }
 
-    /** \brief calculates the eigen values of a field matrix
-        \param[in]  matrix matrix eigen values are calculated for
-        \param[out] eigenvalues FieldVector that contains eigen values in
+    /** \brief calculates the eigenvalues of a field matrix
+        \param[in]  matrix matrix eigenvalues are calculated for
+        \param[out] eigenvalues FieldVector that contains eigenvalues in
                     ascending order
      */
     template <typename K>
@@ -122,9 +122,9 @@ namespace Dune {
       eigenvalues[1] = p + q;
     }
 
-    /** \brief calculates the eigen values of a field matrix
-        \param[in]  matrix matrix eigen values are calculated for
-        \param[out] eigenvalues FieldVector that contains eigen values in
+    /** \brief calculates the eigenvalues of a field matrix
+        \param[in]  matrix matrix eigenvalues are calculated for
+        \param[out] eigenvalues FieldVector that contains eigenvalues in
                     ascending order
 
         \note LAPACK::dsyev is used to calculate the eigen values
@@ -136,7 +136,7 @@ namespace Dune {
 #if HAVE_LAPACK
       {
         const long int N = dim ;
-        const char jobz = 'n'; // only calculate eigen values
+        const char jobz = 'n'; // only calculate eigenvalues
         const char uplo = 'u'; // use upper triangular matrix
 
         // length of matrix vector
@@ -167,12 +167,12 @@ namespace Dune {
 
         if( info != 0 )
         {
-          std::cerr << "For matrix " << matrix << " eigen value calculation falied! " << std::endl;
+          std::cerr << "For matrix " << matrix << " eigenvalue calculation failed! " << std::endl;
           DUNE_THROW(InvalidStateException,"eigenValues: Eigenvalue calculation failed!");
         }
       }
 #else
-      DUNE_THROW(NotImplemented,"LAPACK is not availble, therefore no eigen value calculation");
+      DUNE_THROW(NotImplemented,"LAPACK is not available, therefore no eigenvalue calculation");
 #endif
     }
 
