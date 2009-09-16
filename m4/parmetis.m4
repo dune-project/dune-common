@@ -112,7 +112,7 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 	  AC_SUBST(PARMETIS_LDFLAGS, $PARMETIS_LDFLAGS)
 	  AC_SUBST(PARMETIS_LIBS, $PARMETIS_LIBS)
 	  AC_SUBST(PARMETIS_CPPFLAGS, $PARMETIS_CPPFLAGS)
-	  AC_DEFINE(HAVE_MPI,ENABLE_MPI,[Define if you have the Parmetis library.
+	  AC_DEFINE(HAVE_PARMETIS,ENABLE_PARMETIS,[Define if you have the Parmetis library.
 		  This is only true if MPI was found by configure 
 		  _and_ if the application uses the PARMETIS_CPPFLAGS])
 	  AC_MSG_RESULT(ok)
