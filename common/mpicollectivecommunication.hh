@@ -192,8 +192,13 @@ namespace Dune
     CollectiveCommunication (const MPI_Comm& c)
       : communicator(c)
     {
-      MPI_Comm_rank(communicator,&me);
-      MPI_Comm_size(communicator,&procs);
+      if(communicator!=MPI_COMM_NULL) {
+        MPI_Comm_rank(communicator,&me);
+        MPI_Comm_size(communicator,&procs);
+      }else{
+        procs=0;
+        me=-1;
+      }
     }
 
     //! @copydoc CollectiveCommunication::rank()

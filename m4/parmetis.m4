@@ -19,8 +19,9 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 	    AC_MSG_RESULT(yes)
 	    with_parmetis=$PARMETIS
 	elif test "$withval" != no ; then
+	    # get absolute path
+	    with_parmetis=`eval cd $withval 2>&1 && pwd`
 	    AC_MSG_RESULT(yes)
-	    with_parmetis=$withval
 	else
 	    AC_MSG_RESULT(no)
 	fi
@@ -74,17 +75,17 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 	      AC_MSG_WARN([parmetis.h not found in $PARMETIS_INCLUDE_PATH with $CPPFLAGS])]
       )
 
-      PARMETIS_CPPFLAGS="${MPI_CPPFLAGS} ${PARMETIS_CPPFLAGS}"
+      PARMETIS_CPPFLAGS="${MPI_CPPFLAGS} ${PARMETIS_CPPFLAGS} -DENABLE_PARMETIS=1"
 
 #      AC_LANG_PUSH([C++])
       
       # if header is found check for the libs
 
-      LIBS="$LIBS $MPILIBS $MPI_LDFLAGS"
+      LIBS="$LIBS $MPILIBS $MPI_LDFLAGS -lm"
       
       if test x$HAVE_PARMETIS = x1 ; then
 	  AC_CHECK_LIB(metis, [metis_partgraphkway],[
-		  PARMETIS_LIBS=" -lmetis"
+		  PARMETIS_LIBS="-lm -lmetis"
 		  PARMETIS_LDFLAGS="-L$PARMETIS_LIB_PATH"
 		  LIBS="$LIBS -lmetis"],[
 		  HAVE_PARMETIS="0"
@@ -111,7 +112,9 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 	  AC_SUBST(PARMETIS_LDFLAGS, $PARMETIS_LDFLAGS)
 	  AC_SUBST(PARMETIS_LIBS, $PARMETIS_LIBS)
 	  AC_SUBST(PARMETIS_CPPFLAGS, $PARMETIS_CPPFLAGS)
-	  AC_DEFINE(HAVE_PARMETIS, 1, [Define to 1 if PARMETIS is found])
+	  AC_DEFINE(HAVE_MPI,ENABLE_MPI,[Define if you have the Parmetis library.
+		  This is only true if MPI was found by configure 
+		  _and_ if the application uses the PARMETIS_CPPFLAGS])
 	  AC_MSG_RESULT(ok)
 	  
     # add to global list
