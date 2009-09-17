@@ -602,7 +602,15 @@ mkdir "$PROJECT/doc/doxygen"
 #################### template Doxyfile ########################
 
 echo "- $PROJECT/doc/doxygen/Doxyfile"
-doxygen -g "$PROJECT/doc/doxygen/Doxyfile" > /dev/null
+if [ "x`which doxygen`" == "x" ]; then
+    echo "Doxygen is not installed! Creating empty file $PROJECT/doc/doxygen/Doxyfile"
+    echo "You might want to install doxygen and call "
+    echo "doxygen -g \"$PROJECT/doc/doxygen/Doxyfile\""
+    echo "manually later."
+    echo /dev/null > $PROJECT/doc/doxygen/Doxyfile
+else
+    doxygen -g "$PROJECT/doc/doxygen/Doxyfile" > /dev/null
+fi
 
 ################# doc/doxygen/Makefile.am #####################
 
