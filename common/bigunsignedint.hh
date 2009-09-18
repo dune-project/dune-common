@@ -147,7 +147,7 @@ namespace Dune
   bigunsignedint<k>::bigunsignedint (int y)
   {
     std::size_t x = std::abs(y);
-    assign(y);
+    assign(x);
   }
 
   template<int k>
