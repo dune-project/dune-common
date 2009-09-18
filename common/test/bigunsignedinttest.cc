@@ -47,8 +47,25 @@ int main()
 
   Dune::bigunsignedint<100> a, b, c;
   a=100;
+  int ret=0;
+  if(a.touint()!=100)
+  {
+    std::cerr<<"wrong conversion"<<std::endl;
+    ++ret;
+  }
+
   b=3;
+  if(b.touint()!=3)
+  {
+    std::cerr<<"wrong conversion"<<std::endl;
+    ++ret;
+  }
   c=a/b;
+  if(c.touint()!=100/3)
+  {
+    std::cerr<<"wrong conversion"<<std::endl;
+    ++ret;
+  }
   std::cout<<a<<"/"<<b<<"="<<c<<std::endl;
 
   try{
@@ -57,8 +74,13 @@ int main()
     b=0;
     c=a/1;
     std::cout<<a1<<"/"<<b1<<"="<<c1<<std::endl;
+    return ret;
+
   }
   catch(Dune::MathError e) {
     std::cout<<e<<std::endl;
+    return 1;
   }
+
+
 }

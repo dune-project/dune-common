@@ -47,7 +47,8 @@ namespace Dune
   public:
 
     // unsigned short is 16 bits wide, n is the number of digits needed
-    enum { n=k/16+(k%16!=0), bits=16, hexdigits=4, bitmask=0xFFFF, compbitmask=0xFFFF0000,
+    enum { bits=std::numeric_limits<unsigned short>::digits, n=k/bits+(k%bits!=0),
+           hexdigits=4, bitmask=0xFFFF, compbitmask=0xFFFF0000,
            overflowmask=0x1 };
 
     //! Construct uninitialized
@@ -57,7 +58,7 @@ namespace Dune
     bigunsignedint (int x);
 
     //! Construct from unsigned int
-    bigunsignedint (unsigned int x);
+    bigunsignedint (std::size_t x);
 
     //! Print number in hex notation
     void print (std::ostream& s) const ;
@@ -132,6 +133,8 @@ namespace Dune
 #if HAVE_MPI
     friend class MPITraits<bigunsignedint<k> >;
 #endif
+    inline void assign(std::size_t x);
+
 
   } ;
 
@@ -143,20 +146,25 @@ namespace Dune
   template<int k>
   bigunsignedint<k>::bigunsignedint (int y)
   {
-    unsigned int x = std::abs(y);
-    // assume unsigned int is 32 bits
-    digit[0] = (x&bitmask);
-    if (n>1) digit[1] = (x>>bits)&bitmask;
-    for (unsigned int i=2; i<n; i++) digit[i]=0;
+    std::size_t x = std::abs(y);
+    assign(y);
   }
 
   template<int k>
-  bigunsignedint<k>::bigunsignedint (unsigned int x)
+  bigunsignedint<k>::bigunsignedint (std::size_t x)
   {
-    // assume unsigned int is 32 bits
-    digit[0] = (x&bitmask);
-    if (n>1) digit[1] = (x>>bits)&bitmask;
-    for (unsigned int i=2; i<n; i++) digit[i]=0;
+    assign(x);
+  }
+  template<int k>
+  void bigunsignedint<k>::assign(std::size_t x)
+  {
+    int no=std::numeric_limits<std::size_t>::digits/bits;
+
+    for(int i=0; i<no; ++i) {
+      digit[i] = (x&bitmask);
+      x=x>>bits;
+    }
+    for (unsigned int i=no; i<n; i++) digit[i]=0;
   }
 
   // export
@@ -438,70 +446,70 @@ namespace Dune
 
 
   template <int k>
-  inline bigunsignedint<k> operator+ (const bigunsignedint<k>& x, unsigned int y)
+  inline bigunsignedint<k> operator+ (const bigunsignedint<k>& x, std::size_t y)
   {
     bigunsignedint<k> temp(y);
     return x+temp;
   }
 
   template <int k>
-  inline bigunsignedint<k> operator- (const bigunsignedint<k>& x, unsigned int y)
+  inline bigunsignedint<k> operator- (const bigunsignedint<k>& x, std::size_t y)
   {
     bigunsignedint<k> temp(y);
     return x-temp;
   }
 
   template <int k>
-  inline bigunsignedint<k> operator* (const bigunsignedint<k>& x, unsigned int y)
+  inline bigunsignedint<k> operator* (const bigunsignedint<k>& x, std::size_t y)
   {
     bigunsignedint<k> temp(y);
     return x*temp;
   }
 
   template <int k>
-  inline bigunsignedint<k> operator/ (const bigunsignedint<k>& x, unsigned int y)
+  inline bigunsignedint<k> operator/ (const bigunsignedint<k>& x, std::size_t y)
   {
     bigunsignedint<k> temp(y);
     return x/temp;
   }
 
   template <int k>
-  inline bigunsignedint<k> operator% (const bigunsignedint<k>& x, unsigned int y)
+  inline bigunsignedint<k> operator% (const bigunsignedint<k>& x, std::size_t y)
   {
     bigunsignedint<k> temp(y);
     return x%temp;
   }
 
   template <int k>
-  inline bigunsignedint<k> operator+ (unsigned int x, const bigunsignedint<k>& y)
+  inline bigunsignedint<k> operator+ (std::size_t x, const bigunsignedint<k>& y)
   {
     bigunsignedint<k> temp(x);
     return temp+y;
   }
 
   template <int k>
-  inline bigunsignedint<k> operator- (unsigned int x, const bigunsignedint<k>& y)
+  inline bigunsignedint<k> operator- (std::size_t x, const bigunsignedint<k>& y)
   {
     bigunsignedint<k> temp(x);
     return temp-y;
   }
 
   template <int k>
-  inline bigunsignedint<k> operator* (unsigned int x, const bigunsignedint<k>& y)
+  inline bigunsignedint<k> operator* (std::size_t x, const bigunsignedint<k>& y)
   {
     bigunsignedint<k> temp(x);
     return temp*y;
   }
 
   template <int k>
-  inline bigunsignedint<k> operator/ (unsigned int x, const bigunsignedint<k>& y)
+  inline bigunsignedint<k> operator/ (std::size_t x, const bigunsignedint<k>& y)
   {
     bigunsignedint<k> temp(x);
     return temp/y;
   }
 
   template <int k>
-  inline bigunsignedint<k> operator% (unsigned int x, const bigunsignedint<k>& y)
+  inline bigunsignedint<k> operator% (std::size_t x, const bigunsignedint<k>& y)
   {
     bigunsignedint<k> temp(x);
     return temp%y;
