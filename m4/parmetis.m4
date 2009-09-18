@@ -61,10 +61,9 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
       PARMETIS_LIB_PATH="$with_parmetis$lib_path"
       PARMETIS_INCLUDE_PATH="$with_parmetis$lib_path"
                   
-      PARMETIS_LDFLAGS="-L$PARMETIS_LIB_PATH $MPI_LDFLAGS"
+      PARMETIS_LIBS="-L$PARMETIS_LIB_PATH $MPI_LDFLAGS $MPI_LIBS"
 
       # set variables so that tests can use them
-      LDFLAGS="$LDFLAGS -L$PARMETIS_LIB_PATH $MPI_LDFLAGS"
       CPPFLAGS="$CPPFLAGS -I$PARMETIS_INCLUDE_PATH $MPI_CPPFLAGS"
 
       # check for central header
@@ -81,21 +80,19 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
       
       # if header is found check for the libs
 
-      LIBS="$LIBS $MPILIBS $MPI_LDFLAGS -lm"
+      LIBS="$LIBS $PARMETIS_LIBS -lm"
       
       if test x$HAVE_PARMETIS = x1 ; then
 	  AC_CHECK_LIB(metis, [metis_partgraphkway],[
-		  PARMETIS_LIBS="-lm -lmetis"
-		  PARMETIS_LDFLAGS="-L$PARMETIS_LIB_PATH"
+		  PARMETIS_LIBS="$PARMETIS_LIBS -lmetis"
 		  LIBS="$LIBS -lmetis"],[
 		  HAVE_PARMETIS="0"
-		  AC_MSG_WARN(libparmetis not found!)])
+		  AC_MSG_WARN(libmetis not found!)])
       fi
 
       if test x$HAVE_PARMETIS = x1 ; then
 	  AC_CHECK_LIB(parmetis, [parmetis_v3_partkway],[
-		  PARMETIS_LIBS="-lparmetis -lmetis $MPILIBS $MPI_LDFLAGS"
-		  PARMETIS_LDFLAGS="$MPI_LDFLAGS -L$PARMETIS_LIB_PATH"
+		  PARMETIS_LIBS="$PARMETIS_LIBS -lparmetis -lmetis"
 		  HAVE_PARMETIS="1"],[
 		  HAVE_PARMETIS="0"
 		  AC_MSG_WARN(libparmetis not found!)])
@@ -109,7 +106,6 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
       # did it work?
       AC_MSG_CHECKING(ParMETIS in $with_parmetis)
       if test x$HAVE_PARMETIS = x1 ; then
-	  AC_SUBST(PARMETIS_LDFLAGS, $PARMETIS_LDFLAGS)
 	  AC_SUBST(PARMETIS_LIBS, $PARMETIS_LIBS)
 	  AC_SUBST(PARMETIS_CPPFLAGS, $PARMETIS_CPPFLAGS)
 	  AC_DEFINE(HAVE_PARMETIS,ENABLE_PARMETIS,[Define if you have the Parmetis library.
@@ -118,13 +114,13 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 	  AC_MSG_RESULT(ok)
 	  
     # add to global list
-	  DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $PARMETIS_LDFLAGS"
 	  DUNE_PKG_LIBS="$DUNE_PKG_LIBS $PARMETIS_LIBS"
 	  DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $PARMETIS_CPPFLAGS"
 	  
     # re-set variable correctly
 	  with_parmetis="yes"
       else
+	  with_parmetis="no"
 	  AC_MSG_RESULT(failed)
       fi 
       

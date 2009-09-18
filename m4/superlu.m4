@@ -94,7 +94,6 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
 	    SUPERLU_LIB_PATH="$with_superlu/$my_lib_path"
 	    SUPERLU_INCLUDE_PATH="$with_superlu/$my_include_path"
 	    
-	    SUPERLU_LDFLAGS="-L$SUPERLU_LIB_PATH"
 	    
       # set variables so that tests can use them
 	    CPPFLAGS="$CPPFLAGS -I$SUPERLU_INCLUDE_PATH"
@@ -110,9 +109,6 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
       # if header is found check for the libs
 	    
 	    if test x$HAVE_SUPERLU = x1 ; then
-
-		OLDFLAGS="$LDFLAGS"
-		LDFLAGS="$LDFLAGS -L$SUPERLU_LIB_PATH"
 		# if no blas was found, we assume that superlu was compiled with 
 		# internal blas
 		if test "x$BLAS_LIBS" = "x"; then
@@ -124,8 +120,7 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
 
 		if test x$with_superlu_lib = x; then
 		    AC_CHECK_LIB(superlu, [dgssvx],[
-			    SUPERLU_LIBS="-lsuperlu $LIBS"
-			    SUPERLU_LDFLAGS="$LDFLAGS"
+			    SUPERLU_LIBS="$SUPERLU_LIBS -lsuperlu $LIBS"
 			    HAVE_SUPERLU="1"
 			    ],[
 			    HAVE_SUPERLU="0"
@@ -140,7 +135,6 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
 			LIBS="$SUPERLU_LIB_PATH/$with_superlu_lib $LIBS"
 			AC_CHECK_FUNC(dgssvx,
 			    [
-				SUPERLU_LDFLAGS="$OLDFLAGS"
 				SUPERLU_LIBS="$LIBS"
 				HAVE_SUPERLU="1"
 				AC_MSG_RESULT(yes)
@@ -162,7 +156,6 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
       # did it work?
 	    AC_MSG_CHECKING([SuperLU in $with_superlu])
 	    if test x$HAVE_SUPERLU = x1 ; then
-		AC_SUBST(SUPERLU_LDFLAGS, $SUPERLU_LDFLAGS)
 		AC_SUBST(SUPERLU_LIBS, $SUPERLU_LIBS)
 		AC_SUBST(SUPERLU_CPPFLAGS, $SUPERLU_CPPFLAGS)
 		AC_DEFINE(HAVE_SUPERLU, 1, [Define to 1 if SUPERLU is found])
@@ -172,7 +165,6 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
 		AC_MSG_RESULT(ok)
 		
     # add to global list
-		DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $SUPERLU_LDFLAGS"
 		DUNE_PKG_LIBS="$DUNE_PKG_LIBS $SUPERLU_LIBS"
 		DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $SUPERLU_CPPFLAGS"
 		
