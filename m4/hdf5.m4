@@ -32,8 +32,8 @@ AC_DEFUN([DUNE_PATH_HDF5],[
    else
      AC_MSG_ERROR([HDF5-directory $with_hdf5 does not exist])
    fi
-   LDFLAGS="$LDFLAGS -L$with_hdf5/lib"
-   HDF5_LDFLAGS="$LDFLAGS"
+   LIBS="$LIBS -L$with_hdf5/lib"
+   HDF5_LIBS="$LIBS"
    CPPFLAGS="$CPPFLAGS -I$with_hdf5/include"
  fi
 

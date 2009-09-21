@@ -32,8 +32,8 @@ AC_DEFUN([DUNE_PATH_F5],[
    AC_MSG_CHECKING([for make/arch])
    if test -x $F5ARCH ; then
      AC_MSG_RESULT([yes])
-     LDFLAGS="$HDF5_LDFLAGS -L$with_f5/lib/`$F5ARCH`"
-     F5_LDFLAGS="$LDFLAGS"
+     LIBS="$HDF5_LIBS -L$with_f5/lib/`$F5ARCH`"
+     F5_LIBS="$LIBS"
      CPPFLAGS="$CPPFLAGS -I$with_f5"
    else
      AC_MSG_RESULT([no])

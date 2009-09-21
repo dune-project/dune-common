@@ -66,6 +66,7 @@ AC_DEFUN([IMMDX_LIB_METIS], [
 		if test -n "$with_metis" ; then
 			old_CFLAGS=$CFLAGS
 			old_LDFLAGS=$LDFLAGS
+			old_LIBS=$LIBS
 
 			if test -f "$with_metis/include/metis.h"; then
 				lib_path="/lib"
@@ -78,7 +79,7 @@ AC_DEFUN([IMMDX_LIB_METIS], [
 				include_path="/Lib"
 			fi
 			CFLAGS="-I$with_metis/$include_path"
-			LDFLAGS="-L$with_metis/$lib_path"
+			LIBS="-L$with_metis/$lib_path"
 
 			AC_LANG_SAVE
 			AC_LANG_C
@@ -95,12 +96,13 @@ AC_DEFUN([IMMDX_LIB_METIS], [
 
 			CFLAGS=$old_CFLAGS
 			LDFLAGS=$old_LDFLAGS
+			LIBS=$old_LIBS
 
 			AC_MSG_CHECKING(METIS in $with_metis)
 			if test "$metis_lib" = "yes" -a "$metis_h" = "yes" ; then
 				AC_SUBST(METIS_INCLUDE, [-I$with_metis$include_path])
-				AC_SUBST(METIS_LDFLAGS, [-L$with_metis$lib_path])
-				AC_SUBST(METIS_LIB, [-lmetis])
+				AC_SUBST(METIS_LDFLAGS, [])
+				AC_SUBST(METIS_LIB, [-L$with_metis$lib_path -lmetis])
 				AC_MSG_RESULT(ok)
 			else
 				AC_MSG_RESULT(failed)

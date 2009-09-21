@@ -1,5 +1,6 @@
 AC_DEFUN([DUNE_PARDISO], [
 AC_PREREQ(2.50)
+dnl this will set the variable FLIBS (*not* ..._LDFLAGS)
 AC_REQUIRE([AC_F77_LIBRARY_LDFLAGS])
 AC_REQUIRE([ACX_LAPACK])
 acx_pardiso_ok=no

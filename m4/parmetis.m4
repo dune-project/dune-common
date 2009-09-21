@@ -55,13 +55,14 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
   ac_save_LIBS="$LIBS"
   
   ## do nothing if --without-parmetis is used
-  if test x"$MPI_LDFLAGS" != x"" && test x"$with_parmetis" != x"no" ; then
+  if test x"$MPI_LIBS" != x"" && test x"$with_parmetis" != x"no" ; then
           
       # defaultpath
       PARMETIS_LIB_PATH="$with_parmetis$lib_path"
       PARMETIS_INCLUDE_PATH="$with_parmetis$lib_path"
                   
-      PARMETIS_LIBS="-L$PARMETIS_LIB_PATH $MPI_LDFLAGS $MPI_LIBS"
+      PARMETIS_LIBS="-L$PARMETIS_LIB_PATH $MPI_LIBS"
+      PARMETIS_LDFLAGS="$MPI_LDFLAGS"
 
       # set variables so that tests can use them
       CPPFLAGS="$CPPFLAGS -I$PARMETIS_INCLUDE_PATH $MPI_CPPFLAGS"
@@ -81,6 +82,7 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
       # if header is found check for the libs
 
       LIBS="$LIBS $PARMETIS_LIBS -lm"
+      LDFLAGS="$LDFLAGS $PARMETIS_LDFLAGS"
       
       if test x$HAVE_PARMETIS = x1 ; then
 	  AC_CHECK_LIB(metis, [metis_partgraphkway],[
@@ -106,6 +108,7 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
       # did it work?
       AC_MSG_CHECKING(ParMETIS in $with_parmetis)
       if test x$HAVE_PARMETIS = x1 ; then
+	  AC_SUBST(PARMETIS_LDFLAGS, $PARMETIS_LDFLAGS)
 	  AC_SUBST(PARMETIS_LIBS, $PARMETIS_LIBS)
 	  AC_SUBST(PARMETIS_CPPFLAGS, $PARMETIS_CPPFLAGS)
 	  AC_DEFINE(HAVE_PARMETIS,ENABLE_PARMETIS,[Define if you have the Parmetis library.
@@ -114,6 +117,7 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 	  AC_MSG_RESULT(ok)
 	  
     # add to global list
+	  DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $PARMETIS_LDFLAGS"
 	  DUNE_PKG_LIBS="$DUNE_PKG_LIBS $PARMETIS_LIBS"
 	  DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $PARMETIS_CPPFLAGS"
 	  

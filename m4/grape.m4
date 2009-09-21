@@ -36,7 +36,7 @@ if test "x$X_LIBS" != x && test x$with_grape != xno ; then
   fi
 
   CPPFLAGS="$CPPFLAGS -I$GRAPEROOT"
-  LDFLAGS="$LDFLAGS -L$GRAPEROOT"
+  LIBS="$LIBS -L$GRAPEROOT"
 
   # check for header
   # we have to use CC for checking the header!!
@@ -61,9 +61,9 @@ if test "x$X_LIBS" != x && test x$with_grape != xno ; then
     fi  
 
     AC_CHECK_LIB(gr, grape, 
-      [GRAPE_LDFLAGS="-L$GRAPEROOT $GL_LDFLAGS $GRAPE_LINKER_FLAGS"
+      [GRAPE_LDFLAGS="$GL_LDFLAGS $GRAPE_LINKER_FLAGS"
        GRAPE_CPPFLAGS="$CPPFLAGS"
-       GRAPE_LIBS="-lgr $GL_LIBS -lXext"], 
+       GRAPE_LIBS="-L$GRAPEROOT -lgr $GL_LIBS -lXext"], 
       [HAVE_GRAPE="0"])
   fi
 

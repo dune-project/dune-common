@@ -54,14 +54,14 @@ _EOF
       MPI_VERSION="LAM >= 7.1"
       MPI_CPPFLAGS="$retval"
       mpi_getflags "-showme:link"
-      MPI_LDFLAGS="$retval"
+      MPI_LIBS="$retval"
     else
       MPI_VERSION="LAM < 7.1"
       # use -showme and dummy parameters to extract flags        
       mpi_getflags "-showme" "-c $MPISOURCE"
       MPI_CPPFLAGS="$retval"
       mpi_getflags "-showme" "dummy.o -o dummy"
-      MPI_LDFLAGS="$retval"
+      MPI_LIBS="$retval"
     fi
     # hack in option to disable LAM-C++-bindings...
     # we fake to have mpicxx.h read already
@@ -86,13 +86,13 @@ mpi_getmpichflags() {
     
     # get linker options
     mpi_getflags "-link_info"
-    MPI_LDFLAGS="$retval"
+    MPI_LIBS="$retval"
     # strip -o option
-    mpi_remove "$MPI_LDFLAGS" "-o"
-    MPI_LDFLAGS="$retval"
+    mpi_remove "$MPI_LIBS" "-o"
+    MPI_LIBS="$retval"
     #strip MPI_CPPFLAGS (which are included for mpich2 on jugene)
     enc=`echo "$MPI_CPPFLAGS" | sed -e 's/\\//\\\\\\//g'`
-    MPI_LDFLAGS=`echo "$retval" | sed -e "s/$enc / /"`
+    MPI_LIBS=`echo "$MPI_LIBS" | sed -e "s/$enc / /"`
 
 
     # hack in option to disable MPICH-C++-bindings...
@@ -109,13 +109,13 @@ mpi_getmpich2flags() {
     
     # get linker options
     mpi_getflags "-show" "-o"
-    MPI_LDFLAGS="$retval"
+    MPI_LIBS="$retval"
     # strip -o option
-    mpi_remove "$MPI_LDFLAGS" "-o"
-    MPI_LDFLAGS="$retval"
+    mpi_remove "$MPI_LIBS" "-o"
+    MPI_LIBS="$retval"
     #strip MPI_CPPFLAGS (which are included for mpich2 on jugene)
     enc=`echo "$MPI_CPPFLAGS" | sed -e 's/\\//\\\\\\//g'`
-    MPI_LDFLAGS=`echo "$retval" | sed -e "s/$enc / /"`
+    MPI_LIBS=`echo "$retval" | sed -e "s/$enc / /"`
 
 
     # hack in option to disable MPICH-C++-bindings...
@@ -181,7 +181,7 @@ _EOF
     mpi_getflags "-showme:compile"
     MPI_CPPFLAGS="$retval"
     mpi_getflags "-showme:link"
-    MPI_LDFLAGS="$retval"
+    MPI_LIBS="$retval"
     MPI_NOCXXFLAGS="-DMPIPP_H"
 
     AC_MSG_RESULT([yes])
@@ -204,7 +204,7 @@ test_mvapich() {
       mpi_getflags "-compile_info $ADDFLAGS" "dummy.o -o dummy"
       MPI_CPPFLAGS="$retval"
       mpi_getflags "-link_info $ADDFLAGS" "dummy.o -o dummy"
-      MPI_LDFLAGS="$retval"
+      MPI_LIBS="$retval"
       AC_MSG_RESULT([yes])
       rm -f conftest*
       return 0 
@@ -244,7 +244,7 @@ test_ibmmpi() {
 #        retval=`echo $retval | sed -e 's/\(-b[[^ ]]*\)/-Xlinker \1/g'`
 #      fi
 
-      MPI_LDFLAGS="$retval"
+      MPI_LIBS="$retval"
 
       AC_MSG_RESULT([yes])
       rm -f conftest*
@@ -264,7 +264,7 @@ test_intelmpi() {
       MPI_VERSION="Intel MPI"
       mpi_getflags "-show"
       MPI_CPPFLAGS="$retval"
-      MPI_LDFLAGS="$retval"
+      MPI_LIBS="$retval"
       AC_MSG_RESULT([yes])
       rm -f conftest*
       return 0

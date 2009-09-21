@@ -109,9 +109,7 @@ AC_DEFUN([DUNE_MPI],[
     ac_save_LIBS="$LIBS"
     ac_save_CPPFLAGS="$CPPFLAGS"
     
-    # looks weird but as the -l... are contained in the MPI_LDFLAGS these
-    # parameters have to be last on the commandline: with LIBS this is true
-    LIBS="$MPI_LDFLAGS"
+    LIBS="$MPI_LIBS"
     CPPFLAGS="$CPPFLAGS $MPI_CPPFLAGS"
 
     # try to create MPI program
@@ -169,6 +167,7 @@ AC_DEFUN([DUNE_MPI],[
   if test x"$with_mpi" != xno ; then
     AC_SUBST(MPI_CPPFLAGS, $MPI_CPPFLAGS)
     AC_SUBST(MPI_LDFLAGS, $MPI_LDFLAGS)
+    AC_SUBST(MPI_LIBS, $MPI_LIBS)
     AC_SUBST(MPI_VERSION, $MPI_VERSION)
     AC_DEFINE(HAVE_MPI,ENABLE_MPI,[Define if you have the MPI library.
     This is only true if MPI was found by configure 
@@ -176,6 +175,7 @@ AC_DEFUN([DUNE_MPI],[
   else
     AC_SUBST(MPI_CPPFLAGS, "")
     AC_SUBST(MPI_LDFLAGS, "")
+    AC_SUBST(MPI_LIBS, "")
   fi
 
   AM_CONDITIONAL(MPI, test x"$with_mpi" != xno)
