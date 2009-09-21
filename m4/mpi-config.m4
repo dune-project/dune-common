@@ -256,6 +256,25 @@ test_ibmmpi() {
   return 1
 }
 
+test_intelmpi() {
+  AC_MSG_CHECKING([for Intel MPI])
+  if $MPICC -v -c conftest.c > /dev/null 2>&1; then
+    mpi_getflags "-v"
+    if (echo $retval | grep 'Intel(R) MPI Library'); then
+      MPI_VERSION="Intel MPI"
+      mpi_getflags "-show"
+      MPI_CPPFLAGS="$retval"
+      MPI_LDFLAGS="$retval"
+      AC_MSG_RESULT([yes])
+      rm -f conftest*
+      return 0
+    fi
+  fi
+
+  AC_MSG_RESULT([no])
+  return 1
+}
+
 get_mpiparameters() {
   AC_MSG_NOTICE([Trying to identify the version of MPI compiler $MPICC])
 
@@ -269,6 +288,7 @@ get_mpiparameters() {
   test_mvapich && return
   test_mpich2 && return
   test_ibmmpi && return
+  test_intelmpi && return
    
   MPI_VERSION="unknown"
   AC_MSG_ERROR([Could not identify MPI-package! Please send a bugreport and tell us what MPI-package you're using.])
