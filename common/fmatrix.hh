@@ -1204,7 +1204,7 @@ namespace Dune {
     //! calculates the determinant of this matrix
     K determinant () const
     {
-      return std::abs(a[0]);
+      return a[ 0 ];
     }
 
     //! left multiplication
