@@ -158,7 +158,8 @@ namespace Dune
   template<int k>
   void bigunsignedint<k>::assign(std::size_t x)
   {
-    int no=std::numeric_limits<std::size_t>::digits/bits;
+    int no=std::min(static_cast<int>(n),
+                    static_cast<int>(std::numeric_limits<std::size_t>::digits/bits));
 
     for(int i=0; i<no; ++i) {
       digit[i] = (x&bitmask);
