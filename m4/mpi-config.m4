@@ -276,17 +276,13 @@ test_ibmmpi() {
 
 test_intelmpi() {
   AC_MSG_CHECKING([for Intel MPI])
-  if $MPICC -v -c conftest.c > /dev/null 2>&1; then
-    mpi_getflags "-v"
-    if (echo $retval | grep 'Intel(R) MPI Library'); then
-      MPI_VERSION="Intel MPI"
-      mpi_getflags "-show"
-      MPI_CPPFLAGS="$retval"
-      MPI_LDFLAGS="$retval"
-      AC_MSG_RESULT([yes])
-      rm -f conftest*
-      return 0
-    fi
+  mpi_getflags "-v"
+  if (echo $retval | grep 'Intel(R) MPI Library'); then
+    MPI_VERSION="Intel MPI"
+    mpi_getmpich2flags
+
+    AC_MSG_RESULT([yes])
+    return 0
   fi
 
   AC_MSG_RESULT([no])
