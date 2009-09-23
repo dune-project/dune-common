@@ -15,6 +15,43 @@
 
 <h2> usefull tips when documenting your code </h2>
 
+<h3>correct #include statements</h3>
+
+<p>
+Doxygen tends to strip the while path from the include statements. In
+Dune we usually require include statements like
+<pre>
+  \#include &lt;dune/common/fvector.hh&gt;
+</pre>
+Doxygen will just write
+<pre>
+  \#include &lt;fvector.hh&gt;
+</pre>
+In order to trick/force Doxygen to write the correct include statement
+you have to adjust your Doxyfile.in as follows:
+</p>
+
+<ol>
+<li>
+<p>use <tt>@top_srcdir@/dune/...</tt> to point to the include
+  directories:
+</p>
+<pre>
+  INPUT                  = @srcdir@/mainpage \
+                         @srcdir@/modules \
+                         @top_srcdir@/dune/common/modules \
+                         @top_srcdir@/dune/common
+</pre>
+</li>
+<li>
+<p>set the <tt>STRIP_FROM_INC_PATH</tt> to point to your
+  abs_top_srcdir:</p>
+<pre>
+  STRIP_FROM_INC_PATH    = @abs_top_srcdir@
+</pre>
+</li>
+</ol>
+
 <h3>\copydoc &lt;link-object&gt;</h3>
 
 <p>
