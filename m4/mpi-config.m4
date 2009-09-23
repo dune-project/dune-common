@@ -196,20 +196,38 @@ _EOF
 
 test_mvapich() {
   AC_MSG_CHECKING([for MVAPICH])
-  if $MPICC -v -c conftest.c > /dev/null 2>&1; then
-    mpi_getflags "-v" "-c dummy.c"
-    MPI_VERSION=`echo $retval | sed -e 's/for \(MVAPICH[[0-9]][[0-9]]*\)-[[0-9.]][[0-9.]]*/\1/'`
-    if (echo $MPI_VERSION | grep ^MVAPICH>/dev/null);then
-      ADDFLAGS="-DMPICH_IGNORE_CXX_SEEK"
-      mpi_getflags "-compile_info $ADDFLAGS" "dummy.o -o dummy"
-      MPI_CPPFLAGS="$retval"
-      mpi_getflags "-link_info $ADDFLAGS" "dummy.o -o dummy"
-      MPI_LDFLAGS="$retval"
+
+  mpi_getflags "-v" "-c dummy.c"
+  if (echo $MPI_VERSION | grep ^MVAPICH>/dev/null);then
+      get_mpichflags
+
       AC_MSG_RESULT([yes])
-      rm -f conftest*
       return 0 
-    fi
   fi
+
+  AC_MSG_RESULT([no])
+  return 1
+}
+
+test_mvapich2() {
+  AC_MSG_CHECKING([for MVAPICH2])
+  cat >conftest.c <<_EOF
+#define _OSU_MVAPICH_
+#include <mpi.h>
+#include <stdio.h>
+int main() { printf("%s\n",MVAPICH2_VERSION); return 0; }
+_EOF
+
+  if mpi_trybuild "-c conftest.c"; then
+    MPI_VERSION="MVAPICH2"
+    mpi_getmpich2flags
+
+    AC_MSG_RESULT([yes])
+    rm -f conftest*
+    return 0 
+  fi
+
+  rm -f conftest*
   AC_MSG_RESULT([no])
   return 1
 }
@@ -286,6 +304,7 @@ get_mpiparameters() {
   test_mpich && return
   test_openmpi && return
   test_mvapich && return
+  test_mvapich2 && return
   test_mpich2 && return
   test_ibmmpi && return
   test_intelmpi && return
