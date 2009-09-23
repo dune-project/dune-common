@@ -261,6 +261,10 @@ namespace Dune
 
     typedef typename A::size_type size_type;
 
+    typedef typename A::reference reference;
+
+    typedef typename A::const_reference const_reference;
+
     enum
     {
       /**
@@ -300,13 +304,13 @@ namespace Dune
      * @brief Get the value of the list at an arbitrary position.
      * @return The value at that postion.
      */
-    inline MemberType& elementAt(size_type i) const;
+    inline reference elementAt(size_type i) const;
 
     /**
      * @brief Access the element at the current position.
      * @return The element at the current position.
      */
-    inline MemberType& dereference() const;
+    inline reference dereference() const;
 
     /**
      * @brief Erase all entries before the current position
@@ -379,6 +383,9 @@ namespace Dune
 
     typedef typename A::size_type size_type;
 
+    typedef typename A::reference reference;
+
+    typedef typename A::const_reference const_reference;
     enum
     {
       /**
@@ -416,13 +423,13 @@ namespace Dune
      * @brief Get the value of the list at an arbitrary position.
      * @return The value at that postion.
      */
-    inline const MemberType& elementAt(size_type i) const;
+    inline const_reference elementAt(size_type i) const;
 
     /**
      * @brief Access the element at the current position.
      * @return The element at the current position.
      */
-    inline const MemberType& dereference() const;
+    inline const_reference dereference() const;
 
     inline const ConstArrayListIterator<T,N,A>& operator=(const ConstArrayListIterator<T,N,A>& other);
 
@@ -627,26 +634,25 @@ namespace Dune
   }
 
   template<class T, int N, class A>
-  typename ArrayListIterator<T,N,A>::MemberType& ArrayListIterator<T,N,A>::elementAt(size_type i) const
-  {
-    i+=position_;
-    return list_->elementAt(i+position_);
-  }
-
-  template<class T, int N, class A>
-  const typename ConstArrayListIterator<T,N,A>::MemberType& ConstArrayListIterator<T,N,A>::elementAt(size_type i) const
+  typename ArrayListIterator<T,N,A>::reference ArrayListIterator<T,N,A>::elementAt(size_type i) const
   {
     return list_->elementAt(i+position_);
   }
 
   template<class T, int N, class A>
-  typename ArrayListIterator<T,N,A>::MemberType& ArrayListIterator<T,N,A>::dereference() const
+  typename ConstArrayListIterator<T,N,A>::const_reference ConstArrayListIterator<T,N,A>::elementAt(size_type i) const
+  {
+    return list_->elementAt(i+position_);
+  }
+
+  template<class T, int N, class A>
+  typename ArrayListIterator<T,N,A>::reference ArrayListIterator<T,N,A>::dereference() const
   {
     return list_->elementAt(position_);
   }
 
   template<class T, int N, class A>
-  const typename ConstArrayListIterator<T,N,A>::MemberType& ConstArrayListIterator<T,N,A>::dereference() const
+  typename ConstArrayListIterator<T,N,A>::const_reference ConstArrayListIterator<T,N,A>::dereference() const
   {
     return list_->elementAt(position_);
   }
