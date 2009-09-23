@@ -214,6 +214,14 @@ test_mvapich2() {
   cat >conftest.c <<_EOF
 #define _OSU_MVAPICH_
 #include <mpi.h>
+/* MVAPICH2_VERSION is only defined for MVAPICH2 1.4+
+ * MVAPICH_VERSION is only defined for MVAPICH2 1.2.*
+ * We can thus fall back to MVAPICH_VERSION if MVAPICH2_VERSION
+ * is not defined.
+ */
+#ifndef MVAPICH2_VERSION
+#define MVAPICH2_VERSION MVAPICH_VERSION
+#endif
 #include <stdio.h>
 int main() { printf("%s\n",MVAPICH2_VERSION); return 0; }
 _EOF
