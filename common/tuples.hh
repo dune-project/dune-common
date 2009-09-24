@@ -105,6 +105,13 @@ namespace Dune {
      *
      * @param t1 The value of the first field.
      * @param t2 The value of the second field.
+     * @param t3 The value of the third field.
+     * @param t4 The value of the 4th field.
+     * @param t5 The value of the 5th field.
+     * @param t6 The value of the 6th field.
+     * @param t7 The value of the 7th field.
+     * @param t8 The value of the 8th field.
+     * @param t9 The value of the 9th field.
      */
     template<typename T2, typename T3, typename T4, typename T5,
         typename T6, typename T7, typename T8, typename T9>
@@ -192,16 +199,14 @@ namespace Dune {
 
     /**
      * @brief Constructor.
-     * @param t1 The values for the first field.
-     * @param t2 The value for the second field.
+     * @param first The values for the first field.
      */
     Pair(typename TupleAccessTraits<T1>::ParameterType first, const Nil&, const Nil&, const Nil&, const Nil&,
          const Nil&, const Nil&, const Nil&, const Nil&);
 
     /**
      * @brief Constructor.
-     * @param t1 The values for the first field.
-     * @param t2 The value for the second field.
+     * @param first The values for the first field.
      */
     Pair(typename TupleAccessTraits<T1>::ParameterType first,
          const Nil&);
