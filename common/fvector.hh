@@ -37,24 +37,40 @@ namespace Dune {
 
 #ifndef DUNE_EXPRESSIONTEMPLATES
 
+  /**
+     \private
+     \memberof FieldVector
+   */
   template<class K>
   inline double fvmeta_absreal (const K& k)
   {
     return std::abs(k);
   }
 
+  /**
+     \private
+     \memberof FieldVector
+   */
   template<class K>
   inline double fvmeta_absreal (const std::complex<K>& c)
   {
     return fvmeta_abs(c.real()) + fvmeta_abs(c.imag());
   }
 
+  /**
+     \private
+     \memberof FieldVector
+   */
   template<class K>
   inline double fvmeta_abs2 (const K& k)
   {
     return k*k;
   }
 
+  /**
+     \private
+     \memberof FieldVector
+   */
   template<class K>
   inline double fvmeta_abs2 (const std::complex<K>& c)
   {
