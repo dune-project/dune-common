@@ -197,7 +197,7 @@ namespace Dune {
 
     /** \brief Get value
      *
-     * \param T Type of the value
+     * \tparam T Type of the value
      * \param key Key name
      * \throws RangeError if key does not exist
      * \throws NotImplemented Type is not supported
