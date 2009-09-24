@@ -44,7 +44,7 @@ headercheck-am:
 	  SUCCESS=$$?; \
 	  if ! (test $$SUCCESS -eq 0 && test -e $$OFILE); then \
 	    echo "Error in $$HEADER"; \
-            test $$SILENT -ne 0 || cat $$LOGFILE; \
+            test $$SILENT -ne 0 && echo "run with SILENT=0 to show details" || cat $$LOGFILE; \
 	  fi; \
 	  rm -f $$OFILE; \
 	  rm -f $$CCFILE; \
