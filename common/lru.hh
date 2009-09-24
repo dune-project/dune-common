@@ -10,28 +10,37 @@
 /** @file
     @author Christian Engwer
     @brief LRU Cache Container, using an STL like interface
-
-    Implementatation of an LRU (least recently used) cache
-    container. This implementation follows the approach presented in
-    http://aim.adc.rmit.edu.au/phd/sgreuter/papers/graphite2003.pdf
-
  */
 
 namespace Dune {
 
-  template <typename _Key, typename _Tp,
-      typename _Alloc = std::allocator<_Tp> >
-  struct _lru_default_traits
-  {
-    typedef _Key key_type;
-    typedef _Alloc allocator;
-    typedef std::list< std::pair<_Key, _Tp> > list_type;
-    typedef typename list_type::iterator iterator;
-    typedef typename std::less<key_type> cmp;
-    typedef std::map< key_type, iterator, cmp,
-        typename allocator::template rebind<std::pair<const key_type, iterator> >::other > map_type;
-  };
+  namespace {
 
+    /*
+       hide the default traits in an empty namespace
+     */
+    template <typename _Key, typename _Tp,
+        typename _Alloc = std::allocator<_Tp> >
+    struct _lru_default_traits
+    {
+      typedef _Key key_type;
+      typedef _Alloc allocator;
+      typedef std::list< std::pair<_Key, _Tp> > list_type;
+      typedef typename list_type::iterator iterator;
+      typedef typename std::less<key_type> cmp;
+      typedef std::map< key_type, iterator, cmp,
+          typename allocator::template rebind<std::pair<const key_type, iterator> >::other > map_type;
+    };
+
+  } // end empty namespace
+
+  /**
+      @brief LRU Cache Container
+
+      Implementatation of an LRU (least recently used) cache
+      container. This implementation follows the approach presented in
+      http://aim.adc.rmit.edu.au/phd/sgreuter/papers/graphite2003.pdf
+   */
   template <typename _Key, typename _Tp,
       typename _Traits = _lru_default_traits<_Key, _Tp> >
   class lru
