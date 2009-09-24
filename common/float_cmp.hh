@@ -144,6 +144,8 @@ namespace Dune {
     /**
      * @tparam T     Type of the values to compare
      * @tparam style How to compare. This defaults to defaultCmpStyle.
+     * @param first   left operand of equals operation
+     * @param second  right operand of equals operation
      * @param epsilon The epsilon to use in the comparison
      */
     template <class T, CmpStyle style /*= defaultCmpStyle*/>
@@ -154,6 +156,8 @@ namespace Dune {
     /**
      * @tparam T     Type of the values to compare
      * @tparam style How to compare. This defaults to defaultCmpStyle.
+     * @param first   left operand of not-equal operation
+     * @param second  right operand of not-equal operation
      * @param epsilon The epsilon to use in the comparison
      * @return        !eq(first, second, epsilon)
      */
@@ -165,6 +169,8 @@ namespace Dune {
     /**
      * @tparam T     Type of the values to compare
      * @tparam style How to compare. This defaults to defaultCmpStyle.
+     * @param first   left operand of greater-than operation
+     * @param second  right operand of greater-than operation
      * @param epsilon The epsilon to use in the comparison
      * @return        ne(first, second, epsilon) && first > second
      *
@@ -179,6 +185,8 @@ namespace Dune {
     /**
      * @tparam T     Type of the values to compare
      * @tparam style How to compare. This defaults to defaultCmpStyle.
+     * @param first   left operand of less-than operation
+     * @param second  right operand of less-than operation
      * @param epsilon The epsilon to use in the comparison
      * @return        ne(first, second, epsilon) && first < second
      *
@@ -193,6 +201,8 @@ namespace Dune {
     /**
      * @tparam T     Type of the values to compare
      * @tparam style How to compare. This defaults to defaultCmpStyle.
+     * @param first   left operand of greater-or-equals operation
+     * @param second  right operand of greater-or-equals operation
      * @param epsilon The epsilon to use in the comparison
      * @return        eq(first, second, epsilon) || first > second
      *
@@ -207,6 +217,8 @@ namespace Dune {
     /**
      * @tparam T     Type of the values to compare
      * @tparam style How to compare. This defaults to defaultCmpStyle.
+     * @param first   left operand of less-or-equals operation
+     * @param second  right operand of less-or-equals operation
      * @param epsilon The epsilon to use in the comparison
      * @return        eq(first, second) || first > second
      *
