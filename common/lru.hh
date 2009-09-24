@@ -13,8 +13,6 @@
 
     Implementatation of an LRU (least recently used) cache
     container. This implementation follows the approach presented in
-
-    \url
     http://aim.adc.rmit.edu.au/phd/sgreuter/papers/graphite2003.pdf
 
  */
