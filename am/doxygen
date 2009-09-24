@@ -6,7 +6,7 @@ if BUILD_DOCS
   # EXTRAINSTALL in the html subdirectory
   DOXYGENHTMLFILES = *.html *.css *.png *.gif
   DOXYGENDISTFILES = doxygen-tag
-  DOXYGENINSTALL = $(DOXYGENHTMLFILES) ../doxygen.log
+  DOXYGENINSTALL = $(DOXYGENHTMLFILES) ../doxygen.log ../doxyerr.log
 endif
 
 DISTCLEANFILES = doxygen.log doxygen-tag
@@ -68,6 +68,7 @@ doxygen-tag: FORCE Doxyfile $(DOXYGENHEADER) $(DOXYGENFOOTER)
 	    echo Running doxygen. This may take a while... ; \
 	    $(DOXYGEN) $(srcdir)/Doxyfile > doxygen.log 2>&1 <&- ; \
 	    touch doxygen-tag ; \
+		if test "$$DOXYQUIET" != "1" && test -f doxyerr.log; then cat doxyerr.log; fi; \
 	fi
 if DUNEWEB
 	$(DUNEWEBDOXY)/update-doxygen.css $(abs_builddir)/html
