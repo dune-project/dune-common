@@ -241,6 +241,8 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
     with_[]_dune_module="no"
   fi
 
+  AM_CONDITIONAL(HAVE_[]_DUNE_MODULE, test x$HAVE_[]_DUNE_MODULE = x1)
+
   # reset previous flags
   CPPFLAGS="$ac_save_CPPFLAGS"
   LIBS="$ac_save_LIBS"
