@@ -11,6 +11,7 @@
 #include "exceptions.hh"
 #include "collectivecommunication.hh"
 #include "binaryfunctions.hh"
+#include "smartpointer.hh"
 
 #if HAVE_MPI
 // MPI header
