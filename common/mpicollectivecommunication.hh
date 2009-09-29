@@ -31,22 +31,22 @@ namespace Dune
   public:
     static MPI_Datatype get ()
     {
-      if (type==0)
+      if (type.operator->()==0)
       {
-        type = new MPI_Datatype;
-        MPI_Type_contiguous(sizeof(T),MPI_BYTE,type);
-        MPI_Type_commit(type);
+        type = SmartPointer<MPI_Datatype>(new MPI_Datatype);
+        MPI_Type_contiguous(sizeof(T),MPI_BYTE,type.operator->());
+        MPI_Type_commit(type.operator->());
       }
       return *type;
     }
   private:
     Generic_MPI_Datatype () {}
     Generic_MPI_Datatype (const Generic_MPI_Datatype& ) {}
-    static MPI_Datatype *type;
+    static SmartPointer<MPI_Datatype> type;
   };
 
   template<typename T>
-  MPI_Datatype* Generic_MPI_Datatype<T>::type = 0;
+  SmartPointer<MPI_Datatype> Generic_MPI_Datatype<T>::type = SmartPointer<MPI_Datatype>(0);
 
   // A Macro for defining traits for the primitive data types
 #define ComposeMPITraits(p,m) \
@@ -85,10 +85,10 @@ namespace Dune
   public:
     static MPI_Op get ()
     {
-      if (op==0)
+      if (op.operator->()==0)
       {
-        op = new MPI_Op;
-        MPI_Op_create((void (*)(void*, void*, int*, MPI_Datatype*))&operation,true,op);
+        op = SmartPointer<MPI_Op>(new MPI_Op);
+        MPI_Op_create((void (*)(void*, void*, int*, MPI_Datatype*))&operation,true,op.operator->());
       }
       return *op;
     }
@@ -105,12 +105,12 @@ namespace Dune
     }
     Generic_MPI_Op () {}
     Generic_MPI_Op (const Generic_MPI_Op& ) {}
-    static MPI_Op* op;
+    static SmartPointer<MPI_Op> op;
   };
 
 
   template<typename Type, typename BinaryFunction>
-  MPI_Op* Generic_MPI_Op<Type,BinaryFunction>::op = 0;
+  SmartPointer<MPI_Op> Generic_MPI_Op<Type,BinaryFunction>::op = SmartPointer<MPI_Op>(0);
 
 #define ComposeMPIOp(type,func,op) \
   template<> \
