@@ -69,10 +69,8 @@ doxygen-tag: FORCE Doxyfile $(DOXYGENHEADER) $(DOXYGENFOOTER)
 	    $(DOXYGEN) $(srcdir)/Doxyfile > doxygen.log 2>&1 <&- ; \
 	    touch doxygen-tag ; \
 		if test "$$DOXYQUIET" != "1" && test -f doxyerr.log; then cat doxyerr.log; fi; \
+	    test -x "$(DUNEWEBDOXY)/update-doxygen.css" && $(DUNEWEBDOXY)/update-doxygen.css $(abs_builddir)/html; \
 	fi
-if DUNEWEB
-	$(DUNEWEBDOXY)/update-doxygen.css $(abs_builddir)/html
-endif
 
 doxygen-dist-install: doxygen-tag
 	mkdir $(distdir)/html
