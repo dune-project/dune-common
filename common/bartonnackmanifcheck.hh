@@ -24,8 +24,15 @@
     if( call == true ) \
       DUNE_THROW(NotImplemented,"Interface method not implemented!");\
     call = true; \
-    (__interface_method_to_call__); \
-    call = false; \
+    try { \
+      (__interface_method_to_call__); \
+      call = false; \
+    } \
+    catch ( ... ) \
+    { \
+      call = false; \
+      throw; \
+    } \
   }
 #endif
 #endif
