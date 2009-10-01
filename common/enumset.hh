@@ -35,6 +35,23 @@ namespace Dune
   };
 
   /**
+   * @brief An set containing everything.
+   */
+  template<typename TA>
+  class AllSet
+  {
+  public:
+    /**
+     * @brief The POD type the set holds.
+     */
+    typedef TA Type;
+    /**
+     * @brief Always returns false.
+     */
+    static bool contains(const Type& attribute);
+  };
+
+  /**
    * @brief A set consisting only of one item.
    */
   template<typename TA, int item>
@@ -98,6 +115,12 @@ namespace Dune
   inline bool EmptySet<TA>::contains(const TA& attribute)
   {
     return false;
+  }
+
+  template<typename TA>
+  inline bool AllSet<TA>::contains(const TA& attribute)
+  {
+    return true;
   }
 
   template<typename TA,int i>
