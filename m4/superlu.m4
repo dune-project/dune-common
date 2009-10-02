@@ -60,12 +60,12 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
 		if  test "$withval" != no ; then
 		    # get absolute path
 		    with_superlu=`eval cd $withval 2>&1 && pwd`
+		    echo withval=$withval with_superlu=$with_superlu
 		    if test "$withval" = yes; then
 		        # Search in default locations
 			_slu_search_default
 		    else
 		        # Search for the headers in the specified location
-			with_superlu="$withval"
 			_slu_search_versions("$with_superlu")
 		    fi
 		fi
