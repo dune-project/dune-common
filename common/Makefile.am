@@ -23,7 +23,8 @@ commoninclude_HEADERS = alignment.hh array.hh \
   mpicollectivecommunication.hh geometrytype.hh utility.hh \
   bartonnackmanifcheck.hh binaryfunctions.hh lru.hh fassign.hh \
   static_assert.hh smallobject.hh version.hh \
-  float_cmp.cc float_cmp.hh nullptr.hh
+  float_cmp.cc float_cmp.hh nullptr.hh \
+	forloop.hh
 
 if EXPRESSIONTEMPLATES
 commoninclude_HEADERS += exprtmpl.hh exprtmpl/scalar.inc exprtmpl/exprexpr.inc
