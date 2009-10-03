@@ -72,7 +72,7 @@ namespace Dune
   {
     typedef T ValueType;
     typedef const ValueType& Reference;
-    typedef std::ptrdiff_t KeyTyoe;
+    typedef std::ptrdiff_t KeyType;
     typedef LvaluePropertyMapTag Category;
   };
 
