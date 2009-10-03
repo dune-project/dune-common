@@ -85,6 +85,13 @@ template<int x> struct static_assert_test {};
     dune_static_assert((is_same<bool,int>::value), "error msg"); // false, will trigger a compile time error
     \endcode
 
+    \note
+    \code
+   dune_static_assert(false, "error");
+    \endcode
+    will usually not do what was intended, see Dune::AlwaysFalse for a way to
+    achieve the desired result.
+
     Be aware that...
     <ol>
     <li>dune_static_assert is not in the namespace Dune</li>
@@ -103,6 +110,54 @@ template<int x> struct static_assert_test {};
     sizeof(static_assert_failure< (bool)( COND )>)\
     > CPPMAGIC_JOIN (dune_static_assert_typedef_, __LINE__)
 #endif
+
+namespace Dune {
+  //! template which always yields a false value
+  /**
+   *  \tparam T Some type.  It sould be a type expression involving template
+   *            parameters of the class or function using AlwaysFalse.
+   *
+   *  Suppose you have a template class.  You want to document the required
+   *  members of this class in the non-specialized template, but you know that
+   *  actually instantiating the non-specialized template is an error.  You
+   *  can try something like this:
+   *  \code
+     template<typename T>
+     struct Traits {
+     dune_static_assert(false,
+                     "Instanciating this non-specialized template is an "
+                     "error.  You should use one of the specializations "
+                     "instead.");
+     //! The type used to frobnicate T
+     typedef void FrobnicateType;
+     };
+   *  \endcode
+   *  This will trigger dune_static_assert() as soon as the compiler read the
+   *  definition for the Traits template, since it knows that "false" can
+   *  never become true, no matter what the template parameters of Traits are.
+   *  As a workaround you can use AlwaysFalse: replace <tt>false</tt> by
+   *  <tt>AlwaysFalse<T>::value</tt>, like this:
+   *  \code
+     template<typename T>
+     struct Traits {
+     dune_static_assert(AlwaysFalse<T>::value,
+                     "Instanciating this non-specialized template is an "
+                     "error.  You should use one of the specializations "
+                     "instead.");
+     //! The type used to frobnicate T
+     typedef void FrobnicateType;
+     };
+   *  \endcode
+   *  Since there might be an specialization of AlwaysFalse for template
+   *  parameter T, the compiler cannot trigger dune_static_assert() until the
+   *  type of T is known, that is, until Traits<T> is instantiated.
+   */
+  template<typename T>
+  struct AlwaysFalse {
+    //! always a false value
+    static const bool value = false;
+  };
+} // namespace Dune
 
 /* @} */
 
