@@ -17,7 +17,6 @@ if WML
   # themeing doxygen
   DOXYGENHEADER = doxy-header.html
   DOXYGENFOOTER = doxy-footer.html
-  DOXYGENSTYLESHEET = dune-doxy.css
 
 doxy-header.html: BASEDIR=../../..
 doxy-footer.html: BASEDIR=../../..
