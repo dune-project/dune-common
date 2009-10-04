@@ -93,7 +93,7 @@ AC_DEFUN([DUNE_MPI],[
       MPI_CONFIG()
       MPI_CPPFLAGS="$MPI_CPPFLAGS $MPI_NOCXXFLAGS -DENABLE_MPI=1"
 
-      with_mpi="yes ($MPI_VERSION)"
+      with_mpi="yes ($dune_MPI_VERSION)"
     ],[
       # ACX_MPI didn't find anything
       with_mpi="no"
@@ -103,7 +103,7 @@ AC_DEFUN([DUNE_MPI],[
   # if an MPI implementation was found..
   if test x"$with_mpi" != xno ; then
     ### do a sanity check: can we compile and link a trivial MPI program?
-    AC_MSG_CHECKING([whether compiling with $MPI_VERSION works])
+    AC_MSG_CHECKING([whether compiling with $dune_MPI_VERSION works])
 
     # store old values
     ac_save_LIBS="$LIBS"
@@ -130,9 +130,9 @@ AC_DEFUN([DUNE_MPI],[
     )
 
     if test "x$mpiruntest" != "xyes" ; then
-      AC_MSG_WARN([Diabled test whether running with $MPI_VERSION works.])    
+      AC_MSG_WARN([Diabled test whether running with $dune_MPI_VERSION works.])    
     else
-      AC_MSG_CHECKING([whether running with $MPI_VERSION works])
+      AC_MSG_CHECKING([whether running with $dune_MPI_VERSION works])
       AC_RUN_IFELSE(
         AC_LANG_SOURCE(
           [ #include <mpi.h>
@@ -169,7 +169,7 @@ AC_DEFUN([DUNE_MPI],[
   if test x"$with_mpi" != xno ; then
     AC_SUBST(MPI_CPPFLAGS, $MPI_CPPFLAGS)
     AC_SUBST(MPI_LDFLAGS, $MPI_LDFLAGS)
-    AC_SUBST(MPI_VERSION, $MPI_VERSION)
+    AC_SUBST(MPI_VERSION, $dune_MPI_VERSION)
     AC_DEFINE(HAVE_MPI,ENABLE_MPI,[Define if you have the MPI library.
     This is only true if MPI was found by configure 
     _and_ if the application uses the MPI_CPPFLAGS])

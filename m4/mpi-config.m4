@@ -51,12 +51,12 @@ _EOF
     if test x"$retval" != x ; then
       # seems like LAM >= 7.1 which supports extraction of parameters without
       # dummy files
-      MPI_VERSION="LAM >= 7.1"
+      dune_MPI_VERSION="LAM >= 7.1"
       MPI_CPPFLAGS="$retval"
       mpi_getflags "-showme:link"
       MPI_LDFLAGS="$retval"
     else
-      MPI_VERSION="LAM < 7.1"
+      dune_MPI_VERSION="LAM < 7.1"
       # use -showme and dummy parameters to extract flags        
       mpi_getflags "-showme" "-c $MPISOURCE"
       MPI_CPPFLAGS="$retval"
@@ -132,7 +132,7 @@ _EOF
 
   if (mpi_preprocess conftest.c \
       | grep -q MPICHX_PARALLELSOCKETS_PARAMETERS); then
-    MPI_VERSION="MPICH"
+    dune_MPI_VERSION="MPICH"
     mpi_getmpichflags
 
     AC_MSG_RESULT([yes])
@@ -154,7 +154,7 @@ int main() { printf ("%s\n", MPICH2_VERSION); return 0; }
 _EOF
 
   if mpi_trybuild "-c conftest.c"; then
-    MPI_VERSION="MPICH2"
+    dune_MPI_VERSION="MPICH2"
     mpi_getmpich2flags
 
     AC_MSG_RESULT([yes])
@@ -176,7 +176,7 @@ int main() { return 0; }
 _EOF
 
   if (mpi_preprocess conftest.c | grep -q ompi_communicator_t); then
-    MPI_VERSION="OpenMPI"
+    dune_MPI_VERSION="OpenMPI"
 
     mpi_getflags "-showme:compile"
     MPI_CPPFLAGS="$retval"
@@ -198,7 +198,7 @@ test_mvapich() {
   AC_MSG_CHECKING([for MVAPICH])
 
   mpi_getflags "-v" "-c dummy.c"
-  if (echo $MPI_VERSION | grep ^MVAPICH>/dev/null);then
+  if (echo $dune_MPI_VERSION | grep ^MVAPICH>/dev/null);then
       get_mpichflags
 
       AC_MSG_RESULT([yes])
@@ -227,7 +227,7 @@ int main() { printf("%s\n",MVAPICH2_VERSION); return 0; }
 _EOF
 
   if mpi_trybuild "-c conftest.c"; then
-    MPI_VERSION="MVAPICH2"
+    dune_MPI_VERSION="MVAPICH2"
     mpi_getmpich2flags
 
     AC_MSG_RESULT([yes])
@@ -245,7 +245,7 @@ test_ibmmpi() {
   if $MPICC -v -c conftest.c > /dev/null 2>&1; then
     mpi_getflags "-v" "-c dummy.c"
     if (echo $retval | grep '^xl[[cC]]'); then
-      MPI_VERSION="IBM MPI"
+      dune_MPI_VERSION="IBM MPI"
 
       # get compilation script
 #      AC_LANG_CASE([C],[
@@ -286,7 +286,7 @@ test_intelmpi() {
   AC_MSG_CHECKING([for Intel MPI])
   mpi_getflags "-v"
   if (echo $retval | grep 'Intel(R) MPI Library'); then
-    MPI_VERSION="Intel MPI"
+    dune_MPI_VERSION="Intel MPI"
     mpi_getmpich2flags
 
     AC_MSG_RESULT([yes])
@@ -300,7 +300,7 @@ test_intelmpi() {
 get_mpiparameters() {
   AC_MSG_NOTICE([Trying to identify the version of MPI compiler $MPICC])
 
-  if test x"$MPI_VERSION" != x; then
+  if test x"$dune_MPI_VERSION" != x; then
     return
   fi 
 
@@ -313,7 +313,7 @@ get_mpiparameters() {
   test_ibmmpi && return
   test_intelmpi && return
    
-  MPI_VERSION="unknown"
+  dune_MPI_VERSION="unknown"
   AC_MSG_ERROR([Could not identify MPI-package! Please send a bugreport and tell us what MPI-package you're using.])
 }
 ])
