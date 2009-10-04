@@ -12,7 +12,7 @@
 if DUNEWEB
 WMLCMD = cd $(DUNEWEBDIR) && @WML@ --nocd -DROOT=$(BASEDIR)
 else
-WMLCMD = @WML@
+WMLCMD = cd $(DUNE_COMMON_ROOT)/doc && @WML@ --nocd
 endif
 
 if WML
