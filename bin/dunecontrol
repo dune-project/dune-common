@@ -292,7 +292,11 @@ run_default_configure () {
   PARAMS="$CMD_FLAGS"
   if test -x configure; then
 	ACLOCAL_FLAGS="-I ."
-	for m in $FOUND_MODULES; do
+    MY_MODULES=
+    # get dependencies & suggestions
+    sort_modules $module
+	for m in $MODULES; do
+      if test x$module = x$m; then continue; fi # skip myself
       path=$(eval "echo \$PATH_$m")
       name=$(eval "echo \$NAME_$m")
       if test -d "$path/m4"; then
