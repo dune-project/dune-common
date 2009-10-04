@@ -66,13 +66,12 @@ doxygen-tag: FORCE Doxyfile $(DOXYGENHEADER) $(DOXYGENFOOTER)
 	set -e; \
 	if test ! -e doxygen-tag || test x"`find $(top_srcdir) \( $(DOXYGEN_DEPENDON) \) -a -cnewer doxygen-tag -print`" != x ; then \
 	    echo Running doxygen. This may take a while... ; \
-	    $(DOXYGEN) $(srcdir)/Doxyfile > doxygen.log 2>&1 <&- ; \
+	    $(DOXYGEN) Doxyfile > doxygen.log 2>&1 <&- ; \
 	    touch doxygen-tag ; \
-		if test "$$DOXYQUIET" != "1" && test -f doxyerr.log; then cat doxyerr.log; fi; \
-	    test -x "$(DUNEWEBDOXY)/update-doxygen.css" && $(DUNEWEBDOXY)/update-doxygen.css $(abs_builddir)/html; \
-	    # Make sure to always return a true exit code (even when the	\
-            # previous test failed)						\
-	    true;								\
+	    if test "$$DOXYQUIET" != "1" && test -f doxyerr.log; \
+	      then cat doxyerr.log; fi; \
+	    if test -x "$(DUNEWEBDOXY)/update-doxygen.css"; \
+	      then $(DUNEWEBDOXY)/update-doxygen.css $(abs_builddir)/html; fi; \
 	fi
 
 doxygen-dist-install: doxygen-tag
