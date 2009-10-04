@@ -508,6 +508,9 @@ while test $# -gt 0; do
         export ONLY="$ONLY $MODULE"
       done
 	;;
+	--skipversioncheck)
+      export SKIPVERSIONCHECK=yes
+	;;
     --current)
 	  while ! test -f $CONTROL; do
         cd ..
@@ -721,6 +724,7 @@ EOF
     ;;
     *)
       if is_command $command; then
+		if test $command == update; then export SKIPVERSIONCHECK=yes; fi
         create_module_list
         NAMES=""
         BUILDMODULES=""

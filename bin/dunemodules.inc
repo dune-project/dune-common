@@ -318,7 +318,7 @@ _sort_module() {
       fi
       if test "x$(eval echo \$HAVE_$dep)" != "x"; then
 	    eval ver=\$VERS_$dep
-        if ! check_version "$ver" "$depver"; then
+        if test "$SKIPVERSIONCHECK" != "yes" && ! check_version "$ver" "$depver"; then
           echo "ERROR: version mismatch." >&2
           echo "       $modname requires $name $depver," >&2
           echo "       but only $name = $ver available." >&2
