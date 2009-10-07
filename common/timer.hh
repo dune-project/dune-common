@@ -45,6 +45,7 @@ namespace Dune {
   class Timer
   {
   public:
+
     //! A new timer, start immediately
     Timer () throw(TimerError)
     {
