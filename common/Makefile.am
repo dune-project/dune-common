@@ -24,7 +24,7 @@ commoninclude_HEADERS = alignment.hh array.hh \
   bartonnackmanifcheck.hh binaryfunctions.hh lru.hh fassign.hh \
   static_assert.hh smallobject.hh version.hh \
   float_cmp.cc float_cmp.hh nullptr.hh \
-	forloop.hh
+  forloop.hh function.hh
 
 if EXPRESSIONTEMPLATES
 commoninclude_HEADERS += exprtmpl.hh exprtmpl/scalar.inc exprtmpl/exprexpr.inc
