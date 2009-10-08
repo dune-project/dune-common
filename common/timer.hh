@@ -46,42 +46,107 @@ namespace Dune {
   {
   public:
 
-    //! A new timer, start immediately
+    //! A new timer, reset and start immediately.
     Timer () throw(TimerError)
     {
+      isRunning_ = true;
       reset();
     }
 
-    //! Reset timer
+
+    //! Reset timer and restart if running.
     void reset() throw (TimerError)
     {
+      sumElapsed_ = 0.0;
+      storedLastElapsed_ = 0.0;
+      rawReset();
+    }
+
+
+    //! Start the timer and continue measurement if it is not running. Otherwise do nothing.
+    void start() throw (TimerError)
+    {
+      if (not (isRunning_))
+      {
+        rawReset();
+        isRunning_ = true;
+      }
+    }
+
+
+    //! Get elapsed user-time from last reset until now/last stop in seconds.
+    double elapsed () const throw (TimerError)
+    {
+      // if timer is running add the time elapsed since last start to sum
+      if (isRunning_)
+        return sumElapsed_ + lastElapsed();
+
+      return sumElapsed_;
+    }
+
+
+    //! Get elapsed user-time from last start until now/last stop in seconds.
+    double lastElapsed () const throw (TimerError)
+    {
+      // if timer is running return the current value
+      if (isRunning_)
+        return rawElapsed();
+
+      // if timer is not running return stored value from last run
+      return storedLastElapsed_;
+    }
+
+
+    //! Stop the timer and return elapsed().
+    double stop() throw (TimerError)
+    {
+      if (isRunning_)
+      {
+        // update storedLastElapsed_ and  sumElapsed_ and stop timer
+        storedLastElapsed_ = lastElapsed();
+        sumElapsed_ += storedLastElapsed_;
+        isRunning_ = false;
+      }
+      return elapsed();
+    }
+
+
+  private:
+
+    bool isRunning_;
+    double sumElapsed_;
+    double storedLastElapsed_;
+
+
 #ifdef TIMER_USE_STD_CLOCK
+    void rawReset() throw (TimerError)
+    {
       cstart = std::clock();
+    }
+
+    double rawElapsed () const throw (TimerError)
+    {
+      return (std::clock()-cstart) / static_cast<double>(CLOCKS_PER_SEC);
+    }
+
+    std::clock_t cstart;
 #else
+    void rawReset() throw (TimerError)
+    {
       rusage ru;
       if (getrusage(RUSAGE_SELF, &ru))
         DUNE_THROW(TimerError, strerror(errno));
       cstart = ru.ru_utime;
-#endif
     }
 
-    //! Get elapsed user-time in seconds
-    double elapsed () const throw (TimerError)
+    double rawElapsed () const throw (TimerError)
     {
-#ifdef TIMER_USE_STD_CLOCK
-      return (std::clock()-cstart) / static_cast<double>(CLOCKS_PER_SEC);
-#else
       rusage ru;
       if (getrusage(RUSAGE_SELF, &ru))
         DUNE_THROW(TimerError, strerror(errno));
       return 1.0 * (ru.ru_utime.tv_sec - cstart.tv_sec) + (ru.ru_utime.tv_usec - cstart.tv_usec) / (1000.0 * 1000.0);
-#endif
     }
 
-  private:
-#ifdef TIMER_USE_STD_CLOCK
-    std::clock_t cstart;
-#else
     struct timeval cstart;
 #endif
   }; // end class Timer
