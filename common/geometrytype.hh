@@ -170,6 +170,7 @@ namespace Dune {
         break;
       case prism :
         s << "prism";
+        break;
       default :
         s << "invalid geometry type";
       }
