@@ -1,16 +1,14 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-// $Id$
+// $Id: smartpointer.hh 5504 2009-04-08 13:35:31Z christi $
 
-#ifndef DUNE_SMARTPOINTER_HH
-#define DUNE_SMARTPOINTER_HH
-
-#warning This file is deprecated.  Please use shared_ptr.hh instead!
+#ifndef DUNE_SHARED_PTR_HH
+#define DUNE_SHARED_PTR_HH
 
 /**
  * @file
- * @brief This file implements the class SmartPointer which is a reference counting
- * pointer.
+ * @brief This file implements the class shared_ptr (a reference counting
+ * pointer), for those systems that don't have it in the standard library.
  * @author Markus Blatt
  */
 namespace Dune
@@ -27,7 +25,7 @@ namespace Dune
    * references to it.
    */
   template<class T>
-  class SmartPointer
+  class shared_ptr
   {
   public:
     /**
@@ -35,46 +33,46 @@ namespace Dune
      *
      * This has to have a parameterless constructor.
      */
-    typedef T MemberType;
+    typedef T element_type;
 
     /**
      * @brief Constructs a new smart pointer and allocates the referenced Object.
      */
-    inline SmartPointer();
+    inline shared_ptr();
 
     /**
      * @brief Constructs a new smart pointer from a preallocated Object.
      *
      * note: the object must be allocated on the heap and after handing the pointer to
-     * SmartPointer the ownership of the pointer is also handed to the SmartPointer.
+     * shared_ptr the ownership of the pointer is also handed to the shared_ptr.
      */
-    inline SmartPointer(T * pointer);
+    inline shared_ptr(T * pointer);
 
     /**
      * @brief Copy constructor.
      * @param pointer The object to copy.
      */
-    inline SmartPointer(const SmartPointer<T>& pointer);
+    inline shared_ptr(const shared_ptr<T>& pointer);
 
     /**
      * @brief Destructor.
      */
-    inline ~SmartPointer();
+    inline ~shared_ptr();
 
     /** \brief Assignment operator */
-    inline SmartPointer& operator=(const SmartPointer<T>& pointer);
+    inline shared_ptr& operator=(const shared_ptr<T>& pointer);
 
     /** \brief Dereference as object */
-    inline MemberType& operator*();
+    inline element_type& operator*();
 
     /** \brief Dereference as pointer */
-    inline MemberType* operator->();
+    inline element_type* operator->();
 
     /** \brief Dereference as const object */
-    inline const MemberType& operator*() const;
+    inline const element_type& operator*() const;
 
     /** \brief Dereference as const pointer */
-    inline const MemberType* operator->() const;
+    inline const element_type* operator->() const;
 
     /**
      * @brief Deallocates the references object if no other
@@ -86,40 +84,40 @@ namespace Dune
     /** @brief The object we reference. */
     class PointerRep
     {
-      friend class SmartPointer<MemberType>;
+      friend class shared_ptr<element_type>;
       /** @brief The number of references. */
       int count_;
       /** @brief The representative. */
-      MemberType * rep_;
+      element_type * rep_;
       /** @brief Default Constructor. */
-      PointerRep() : count_(1), rep_(new MemberType) {}
+      PointerRep() : count_(1), rep_(new element_type) {}
       /** @brief Constructor from existing Pointer. */
-      PointerRep(MemberType * p) : count_(1), rep_(p) {}
-      /** @brief Destructor, deletes MemberType* rep_. */
+      PointerRep(element_type * p) : count_(1), rep_(p) {}
+      /** @brief Destructor, deletes element_type* rep_. */
       ~PointerRep() { delete rep_; }
     } *rep_;
   };
 
   template<class T>
-  inline SmartPointer<T>::SmartPointer(T * p)
+  inline shared_ptr<T>::shared_ptr(T * p)
   {
     rep_ = new PointerRep(p);
   }
 
   template<class T>
-  inline SmartPointer<T>::SmartPointer()
+  inline shared_ptr<T>::shared_ptr()
   {
     rep_ = new PointerRep;
   }
 
   template<class T>
-  inline SmartPointer<T>::SmartPointer(const SmartPointer<T>& other) : rep_(other.rep_)
+  inline shared_ptr<T>::shared_ptr(const shared_ptr<T>& other) : rep_(other.rep_)
   {
     ++(rep_->count_);
   }
 
   template<class T>
-  inline SmartPointer<T>& SmartPointer<T>::operator=(const SmartPointer<T>& other)
+  inline shared_ptr<T>& shared_ptr<T>::operator=(const shared_ptr<T>& other)
   {
     (other.rep_->count_)++;
     if(rep_!=0 && --(rep_->count_)<=0) delete rep_;
@@ -128,7 +126,7 @@ namespace Dune
   }
 
   template<class T>
-  inline SmartPointer<T>::~SmartPointer()
+  inline shared_ptr<T>::~shared_ptr()
   {
     if(rep_!=0 && --(rep_->count_)==0) {
       delete rep_;
@@ -137,37 +135,37 @@ namespace Dune
   }
 
   template<class T>
-  inline T& SmartPointer<T>::operator*()
+  inline T& shared_ptr<T>::operator*()
   {
     return *(rep_->rep_);
   }
 
   template<class T>
-  inline T *SmartPointer<T>::operator->()
+  inline T *shared_ptr<T>::operator->()
   {
     return rep_->rep_;
   }
 
   template<class T>
-  inline const T& SmartPointer<T>::operator*() const
+  inline const T& shared_ptr<T>::operator*() const
   {
     return *(rep_->rep_);
   }
 
   template<class T>
-  inline const T *SmartPointer<T>::operator->() const
+  inline const T *shared_ptr<T>::operator->() const
   {
     return rep_->rep_;
   }
 
   template<class T>
-  inline int SmartPointer<T>::count() const
+  inline int shared_ptr<T>::count() const
   {
     return rep_->count_;
   }
 
   template<class T>
-  inline void SmartPointer<T>::deallocate()
+  inline void shared_ptr<T>::deallocate()
   {
     assert(rep_!=0 && rep_->count_==1);
     delete rep_;
