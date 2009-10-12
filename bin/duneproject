@@ -166,10 +166,15 @@ if [ "$MODULES" = "" ]; then
   exit 1;
 fi
 
+################## READ CMDLINE OPTIONS ##########
+PROJECT="$1"
+DEPENDENCIES="$2"
+VERSION="$3"
+MAINTAINER="$4"
+
 ################## READ OPTIONS ##################
 
 while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
-  PROJECT=""
   while [ -z $PROJECT ]; do
     read -p "1) Name of your new Project? (e.g.: dune-grid): " PROJECT
     if echo "$MODULES" | grep -q ^$PROJECT$; then
@@ -184,7 +189,6 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
   DEP_OK=1
 
   while [ "$DEPOK" != 0 ]; do
-  DEPENDENCIES=""
   echo "2) Which modules should this module depend on?"
   echo "   Following modules are found:"
   echo "   $MODULES"
@@ -197,13 +201,14 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
   modulesexist "$DEPENDENCIES" "$MODULES"
   DEPOK=$?
   set -e
+  if [ "$DEPOK" != 0 ]; then
+    DEPENDENCIES=""
+  fi
   done
 
-  VERSION=""
   while [ -z $VERSION ]; do
     read -p "3) Project/Module version? " VERSION
   done
-  MAINTAINER=""
   while [ -z $MAINTAINER ]; do
     read -p "4) Maintainers email address? " MAINTAINER
   done
@@ -213,6 +218,14 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
   echo "which depends on \"$DEPENDENCIES\""
   echo "with maintainer \"$MAINTAINER\""
   read -p "Are these informations correct? [y/N] " DATACORRECT
+
+  # reset data if necessary
+  if [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; then
+    PROJECT=""
+    DEPENDENCIES=""
+    VERSION=""
+    MAINTAINER=""
+  fi
 done
 
 echo
@@ -495,8 +508,6 @@ include \$(top_srcdir)/am/global-rules
 
 M_DELIM
 
-
-
 ################## PROJECT.CC ##################
 echo "- $PROJECT/src/$CMODULE.cc"
 cat> "$PROJECT/src/$CMODULE.cc" << CC_DELIM
@@ -558,7 +569,39 @@ CC_DELIM
 ################## The headers subdirectory ####################
 ################################################################
 
-mkdir "$PROJECT/$PROJECT"
+NAME=`echo $PROJECT | sed -e 's/dune[_-]//' -e 's/-/_/'`
+
+echo "- $PROJECT/dune/$NAME"
+mkdir "$PROJECT/dune"
+mkdir "$PROJECT/dune/$NAME"
+
+################## dune/Makefile.am ####################
+echo "- $PROJECT/dune/Makefile.am"
+cat> $PROJECT/dune/Makefile.am <<EOF
+SUBDIRS = $NAME
+
+include \$(top_srcdir)/am/global-rules
+EOF
+
+################## dune/$NAME/Makefile.am ##############
+echo "- $PROJECT/dune/$NAME/Makefile.am"
+cat> $PROJECT/dune/$NAME/Makefile.am <<EOF
+${NAME}includedir = \$(includedir)/dune/${NAME}
+${NAME}include_HEADERS = ${NAME}.hh
+
+include \$(top_srcdir)/am/global-rules
+EOF
+
+################## dune/$NAME/$NAME.hh #################
+echo "- $PROJECT/dune/$NAME/$NAME.hh"
+cat> $PROJECT/dune/$NAME/$NAME.hh <<EOF
+#ifndef DUNE_$NAME.hh
+#define DUNE_$NAME.hh
+
+// add your classes here
+
+#endif // DUNE_$NAME.hh
+EOF
 
 
 ###############################################################
@@ -599,18 +642,46 @@ CC_DELIM
 mkdir "$PROJECT/doc/doxygen"
 
 
-#################### template Doxyfile ########################
+#################### basic Doxylocal ##########################
 
-echo "- $PROJECT/doc/doxygen/Doxyfile"
+echo "- $PROJECT/doc/doxygen/Doxylocal"
 if [ "x`which doxygen`" == "x" ]; then
-    echo "Doxygen is not installed! Creating empty file $PROJECT/doc/doxygen/Doxyfile"
-    echo "You might want to install doxygen and call "
-    echo "doxygen -g \"$PROJECT/doc/doxygen/Doxyfile\""
-    echo "manually later."
-    echo /dev/null > $PROJECT/doc/doxygen/Doxyfile
-else
-    doxygen -g "$PROJECT/doc/doxygen/Doxyfile" > /dev/null
+    echo "Doxygen is not installed! Your documentation will not work without."
 fi
+# Where to search and which files to use
+cat> $PROJECT/doc/doxygen/Doxylocal << CC_DELIM
+# This file contains local changes to the doxygen configuration
+# please us '+=' to add file/directories to the lists
+
+# The INPUT tag can be used to specify the files and/or directories that contain
+# documented source files. You may enter file names like "myfile.cpp" or
+# directories like "/usr/src/myproject". Separate the files or directories
+# with spaces.
+
+INPUT                 += @top_srcdir@/dune/
+# see e.g. dune-grid for the examples of mainpage and modules
+# INPUT                 += @srcdir@/mainpage \
+#                          @srcdir@/modules
+
+# The EXCLUDE tag can be used to specify files and/or directories that should
+# excluded from the INPUT source files. This way you can easily exclude a
+# subdirectory from a directory tree whose root is specified with the INPUT tag.
+
+# EXCLUDE               += @top_srcdir@/dune/$NAME/test
+
+# The EXAMPLE_PATH tag can be used to specify one or more files or
+# directories that contain example code fragments that are included (see
+# the \include command).
+
+# EXAMPLE_PATH          += @top_srcdir@/src
+
+# The IMAGE_PATH tag can be used to specify one or more files or
+# directories that contain image that are included in the documentation (see
+# the \image command).
+
+# IMAGE_PATH            += @top_srcdir@/dune/$NAME/pics
+
+CC_DELIM
 
 ################# doc/doxygen/Makefile.am #####################
 
