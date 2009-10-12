@@ -1,0 +1,31 @@
+#!/bin/bash
+
+find_doxystyle()
+{
+  for i in `dirname $0`/../doc/doxygen/Doxystyle `dirname $0`/../share/dune-common/doc/doxygen/Doxystyle; do
+    if test -f $i; then
+      export DOXYSTYLE=$i
+      return
+    fi
+  done
+  echo "Error: dunedoxynize global style not found"
+  exit 1
+}
+
+STUB=doc/doxygen/Doxylocal
+if ! test -f $STUB; then
+  exit 0
+fi
+
+if ! test -f configure.ac; then
+  echo dunedoxynize must be called from the top_srcdir of your module
+  exit 1
+fi
+
+echo "Generating doc/doygen/Doxyfile.in from "
+find_doxystyle
+echo "    global style"
+cat $DOXYSTYLE > doc/doxygen/Doxyfile.in
+echo "    and $STUB"
+cat $STUB >> doc/doxygen/Doxyfile.in
+echo "    ... done"

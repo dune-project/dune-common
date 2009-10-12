@@ -1,0 +1,8 @@
+# Where to search and which files to use
+INPUT                 += @srcdir@/mainpage \
+                         @srcdir@/modules \
+                         @srcdir@/concepts \
+                         @top_srcdir@/dune/common/modules \
+                         @top_srcdir@/dune/common
+EXCLUDE               += @top_srcdir@/dune/common/test
+
