@@ -7,7 +7,7 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{theorem}
-\usepackage{pst-all}
+\usepackage{tikz}
 \usepackage{color}
 \usepackage{listings}
 \lstset{language=bash, basicstyle=\normalfont\ttfamily\scriptsize,
@@ -51,8 +51,9 @@
 
 \title{The DUNE Buildsystem HOWTO}
 
-\author{Christian Engwer$^\ast$ \and
-Felix Albrecht$^\dagger$}
+\author{Christian Engwer$^\ast$ 
+% \and Felix Albrecht$^\dagger$
+}
 
 %\date{\svnToday}
 \date{March 1 2009}
@@ -63,11 +64,11 @@ Felix Albrecht$^\dagger$}
 Universit\"at Heidelberg,\\
 Im Neuenheimer Feld 368, D-69120 Heidelberg, Germany}\\
 %
-\bigskip
-{\normalsize $^\dagger$Institut f\"ur Numerische und Angewandte Mathematik,
-Westf\"alische Wilhelms-Universit\"at M\"unster,\\
-Einsteinstr. 62, D-48149 M\"unster, Germany}\\
-%
+% \bigskip
+% {\normalsize $^\dagger$Institut f\"ur Numerische und Angewandte Mathematik,
+% Westf\"alische Wilhelms-Universit\"at M\"unster,\\
+% Einsteinstr. 62, D-48149 M\"unster, Germany}\\
+% %
 \bigskip
 {\normalsize \texttt{\url{http://www.dune-project.org/}}}\\
 }
@@ -82,7 +83,37 @@ Einsteinstr. 62, D-48149 M\"unster, Germany}\\
 
 \textbf{TODO: How do I build the grid howto?}
 
-\section{Creating your own \dune module}\label{section::creating_dune_module}
+\section{Creating a new \dune project}\label{section::creating_new_dune_project}
+
+From a buildsystem point of view there is no difference between a \dune
+application and a \dune module.\\
+
+\dune modules are packages that offer a certain functionality that can
+be used by \dune applications. Therefore \dune modules offer libraries
+and/or header files. A \dune module needs to comply with certain rules
+(see \ref{guidelines}).
+
+Creating a new \dune project has been covered in detail in 
+\ref{section::creating_dune_module} using \texttt{duneproject} to take
+work off of the user. This is also the recommended way to start a new project. 
+If for whatever reasons you do not wish to use \duneproject here is 
+the bare minimum you have to provide in order to create a new project:
+\begin{itemize}
+\item a \dunemodule file\\
+  Usually you will only need to specify the parameters \texttt{Module}
+  and \texttt{Depends}.
+\item \emph{Note:} an \autogen script is \emph{not} needed any more!
+\item a basic m4 file\\
+  You need to provide two macros \texttt{\emph{MODULE}\_CHECKS}
+  and \texttt{\emph{MODULE}\_CHECK\_MODULE}.
+\item a \configureac file\\
+  Have look at the \configureac in \dunegrid for example. The most
+  important part is the call to \texttt{DUNE\_CHECK\_ALL} which
+  runs all checks needed for a \dune module, plus the checks for the
+  dependencies.
+\end{itemize}
+
+\subsection{Configuring new \dune module using \duneproject}\label{section::creating_dune_module}
 
 This section tells you how to begin working with \dune without explaining any
 further details. For a closer look on \duneproject, see section
@@ -148,7 +179,7 @@ doc
 
 You can now call \dunecontrol for your new project, as you would for any other \dune module. If you have a \texttt{config.opts}\xspace
 file configured to your needs (see e.g. the ``Installation Notes'' on
-\texttt{www.dune-project.org}), a simple call of
+\texttt{\url{http://www.dune-project.org}}), a simple call of
 
 \begin{lstlisting}[language=make]
 ./dune-common/bin/dunecontrol --module=dune-foo --opts=config.opts all
@@ -172,140 +203,43 @@ Hello World! This is dune-foo.
 This is a sequential program.
 \end{lstlisting}
 
-If you want your \dune module to be useable by other people your design should
-follow a certain structure. A good way to indicate that your module is set up
-like the other \dune modules is by naming it with the prefix
-\texttt{dune-}\xspace. 
-Since your module should be concerned with a certain topic, you should give it
-a meaningful name (e.g. \dunegrid is about grids). 
-You will also see that there are subfolders \texttt{doc/}\xspace,
-\texttt{foo/}\xspace and \texttt{src/}\xspace in \texttt{dune-foo/}\xspace.
-\texttt{foo/}\xspace will contain any headers that are of interest to other
-users (like the subfolder \texttt{common/}\xspace in
-\dunecommon, \texttt{grid/}\xspace in \dunegrid, etc.). Other users will have to
-include those files if they want to work with them. Let's say we already have some interface implementation
-in a file \texttt{bar.hh}\xspace. We put this one into the subfolder
-\texttt{foo/}\xspace.
-
-It is then convenient to collect whatever documentation exists about those
-header files in \texttt{doc/}\xspace and since there should
-at least exist some doxygen documentation there is  the
-subdirectory \texttt{doc/doxygen/}\xspace (see ``Coding Style'' in the
-setion ``Developing Dune'' on \texttt{www.dune-project.org} for details).
-Since we also need
-some other files for \texttt{doxygen}\xspace to work we copy the
-following files from \texttt{dune-grid/doc/doxygen/}\xspace to
-\texttt{dune-foo/doc/doxygen/}\xspace:
-
-\begin{lstlisting}[language=make]
-Doxydep
-doxy-footer.html
-doxy-header.wml
-dune-doxy.css
-mainpage
-modules
-\end{lstlisting}
-
-The \texttt{src/}\xspace subdirectory will contain the sources of your
-implementation (usually at least one \texttt{.cc}\xspace file with a
-\texttt{main} method).  But let's take a
-look at the structure of our project now.
+If you want your \dune module to be useable by other people your
+design should follow a certain structure. A good way to indicate that
+your module is set up like the other \dune modules is by naming it
+with the prefix \texttt{dune-}\xspace.  Since your module should be
+concerned with a certain topic, you should give it a meaningful name
+(e.g. \dunegrid is about grids).  You will also see that there are
+subfolders \texttt{doc/}\xspace, \texttt{foo/}\xspace and
+\texttt{src/}\xspace in \texttt{dune-foo/}\xspace.
+\texttt{foo/}\xspace will contain any headers that are of interest to
+other users (like the subfolder \texttt{common/}\xspace in
+\dunecommon, \texttt{grid/}\xspace in \dunegrid, etc.). Other users
+will have to include those files if they want to work with them. Let's
+say your project provides some interface implementation in a file
+\texttt{foo.hh}\xspace. \duneproject already put this an example file
+into the subfolder \texttt{dune/foo/}.
 
 \begin{lstlisting}[language=make]
 dune-foo/
 -> configure.ac
 -> doc/
    -> doxygen/
-      -> Doxydep
-      -> Doxyfile
-      -> doxy-footer.html
-      -> doxy-header.wml
-      -> dune-doxy.css
-      -> mainpage
+      -> Doxylocal
       -> Makefile.am
-      -> modules
    -> Makefile.am
 -> dune.module
--> foo/
-   -> bar.hh
+-> dune/
+   -> foo/
+      -> foo.hh
+      -> Makefile.am
+   -> Makefile.am
 -> Makefile.am
 -> README
 -> src/
    -> dune_foo.cc
 \end{lstlisting}
 
-
-Now your module is nearly ready to being configured by \dunecontrol. Only the 
-\texttt{doxygen} part is missing (in fact, configuring it with the
-\texttt{--disable-documentation} flag would work from this point on).
-
-
-
-Now \dunecontrol is ready to take care of building the documentation. But since
-we copied some \texttt{doxygen} stuff from \dunegrid there are some
-\texttt{doxygen} files left we have to take care of. These are
-\texttt{Doxyfile}, \texttt{mainpage} and \texttt{modules}. You can edit the
-latter two as you like. They will form the main page and the module page of the
-\texttt{html} documentation of \texttt{doxygen}.\\
-We are basically left to change all occurrences of \texttt{grid} in the
-\texttt{Doxyfile} as well as some settings. If you open the file 
-\texttt{dune-foo/doc/doxygen/Doxyfile} the first thing you should see is a line
-like
-
-\begin{lstlisting}[language=make]
-PROJECT_NAME = dune-grid
-\end{lstlisting}
-which should obviously be changed into
-
-\begin{lstlisting}[language=make]
-PROJECT_NAME = dune-foo
-\end{lstlisting}
-to state the name of your module.
-
-The next thing we're interested in are the lines
-
-\begin{lstlisting}[language=make]
-INPUT = mainpage \
-        modules \
-        ../../grid/modules \
-        ../../grid
-\end{lstlisting}
-which should of course look like
-
-\begin{lstlisting}[language=make]
-INPUT = mainpage \
-        modules \
-        ../../foo
-\end{lstlisting}
-
-Then there are some settings of \dunegrid left which we probably don't want to
-have. So we just comment all the following lines by just adding a \texttt{\#}
-at the beginning of every line.
-
-\begin{lstlisting}[language=make]
-EXCLUDE = ../../grid/onedgrid \
-          ../../grid/uggrid \
-          ../../grid/test
-\end{lstlisting}
-
-\begin{lstlisting}[language=make]
-EXAMPLE_PATH = ../../grid/io/file/dgfparser/test 
-\end{lstlisting}
-
-\begin{lstlisting}[language=make]
-IMAGE_PATH = ../../grid/sgrid \
-             ../../grid/yaspgrid \
-             ../../grid/common \
-             ../../grid/io/file/dgfparser/test \
-             ../appl/refelements \
-             ../refinement
-\end{lstlisting}
-
-Now we are done editing files and ready to configure the module without the
-option\\ \texttt{--disable-documentation} (provided you have \texttt{doxygen} and
-the necessary tools installed on your system).\\
 After running
-
 \begin{lstlisting}[language=make]
 ./dune-common/bin/dunecontrol --module=foo --opts=config.opts all
 \end{lstlisting}
@@ -313,21 +247,27 @@ with a \texttt{config.opts} that enables documentation you should now find a
 \texttt{html} \texttt{doxygen} documentation in
 \texttt{dune-foo/doc/doxygen/html/index.html}.\\
 
-If you take a look at the \dune core modules you will find a symlink
-\begin{lstlisting}[language=make]
-dune -> .
-\end{lstlisting}
-in each main folder. Its purpose is to allow inclusion directives like
-\begin{lstlisting}[language=c++]
-#include<dune/foo/bar.hh>
-\end{lstlisting}
+\section{Dune module guidelines}\label{section::dune_module_guidelines}
+\label{guidelines}
 
-
-\begin{remark}
- This mechanism is under discussion and may change in a future version of \dune.
-\end{remark}
-
-
+A \dune module should comply with the following rules:
+\begin{itemize}
+\item Documentation is located under \texttt{doc/} and gets
+  web-installed under \texttt{BASEDIR/doc/}.
+\item \automake includes are located in \dunecommon. To use them, you
+  will have to make a symbolic link to \texttt{dune-common/am/} (see
+  \ref{am_includes}). The symlink creation should be handled by the
+  \autogen (see \ref{autogen}).
+\item The \texttt{am/} directory does not get included in the tarball.
+\item Header files that can be used by other \dune modules should be
+  accessible via \verb!#include <dune/foo/bar.hh>!. In order to work
+  with a freshly checkout version of your module you will usually need
+  to create a local symbolic link \texttt{dune ->
+    \textit{module-directory/}}. This link gets created by the
+  \texttt{DUNE\_SYMLINK} command in your \configureac. When running
+  \texttt{make install} all header files should be installed into
+  \texttt{\textit{prefix}/include/dune/}.
+\end{itemize}
 
 \section{The Structure of \dune}
 \dune consists of several independent modules:
@@ -396,21 +336,15 @@ configure scripts.
 created from \configureac, using a set of \texttt{m4} files.
 
 \begin{center}
-\psset{unit=0.5mm}
-\psset{linewidth=0.4pt}
-\begin{pspicture}(140,50)
-\put(-26,45){\parbox{40\unitlength}{\centering{}\configureac}}
-\put(116,45){\parbox{40\unitlength}{\centering{}\tt{}m4/*.m4}}
-\put(0,36)
-{
-  \psset{linewidth=1pt}
-  \psline[linearc=4]{c-}(-2,2)(-2,-2)(67.5,-2)(67.5,-6)
-  \psline[linearc=4]{c-}(137,2)(137,-2)(67.5,-2)(67.5,-6)
-  \psline{->}(67.5,-5.5)(67.5,-20)
-}
-\put(72,22){\textit{\autoconf}}
-\put(50,7){\parbox{40\unitlength}{\centering{}\configure}}
-\end{pspicture}
+  \begin{tikzpicture}[scale=0.05,line width=1pt,rounded corners=8pt]
+    \draw (-2,2) node [anchor=south] {\configureac}
+          -- (-2,-2) -- (67.5,-2) -- (67.5,-6);
+    \draw (137,2) node [anchor=south] {\tt{}m4/*.m4}
+          -- (137,-2) -- (67.5,-2) -- (67.5,-6);
+    \draw[->] (67.5,-5.5)
+          -- (67.5,-10) node [anchor=west] {\textit{\autoconf}}
+          -- (67.5,-20) node [anchor=north] {\configure};
+  \end{tikzpicture}
 \end{center}
 
 How to write a \configureac for \dune is described in Sec.\,\ref{configure.ac}.
@@ -427,28 +361,18 @@ have a symlink \texttt{am} that points to \texttt{dune-common/am}.
 This link is usually created by \autogen (see Sec.\,\ref{autogen}).
 
 \begin{center}
-\psset{unit=0.5mm}
-\psset{linewidth=0.4pt}
-\begin{pspicture}(140,80)
-\put(-26,75){\parbox{40\unitlength}{\centering{}\makefileam}}
-\put(116,75){\parbox{40\unitlength}{\centering{}\tt{}am/*}}
-\put(0,66)
-{
-  \psset{linewidth=1pt}
-  \psline[linearc=4]{c-}(-2,2)(-2,-2)(67.5,-2)(67.5,-6)
-  \psline[linearc=4]{c-}(137,2)(137,-2)(67.5,-2)(67.5,-6)
-  \psline{->}(67.5,-5.5)(67.5,-20)
-}
-\put(72,52){\textit{\automake}}
-\put(50,37){\parbox{40\unitlength}{\centering{}\texttt{Makefile.in}}}
-\put(0,34)
-{
-  \psset{linewidth=1pt}
-  \psline[linestyle=dashed,dash=1.5pt 1.5pt]{->}(67.5,0)(67.5,-14.5)
-}
-\put(72,25){\textit{\configure}}
-\put(50,10){\parbox{40\unitlength}{\centering{}\texttt{Makefile}}}
-\end{pspicture}
+  \begin{tikzpicture}[scale=0.05,line width=1pt,rounded corners=8pt]
+    \draw (-2,2) node [anchor=south] {\makefileam}
+          -- (-2,-2) -- (67.5,-2) -- (67.5,-6);
+    \draw (137,2) node [anchor=south] {\tt{}am/*}
+          -- (137,-2) -- (67.5,-2) -- (67.5,-6);
+    \draw[->] (67.5,-5.5)
+          -- (67.5,-10) node [anchor=west] {\textit{\automake}}
+          -- (67.5,-20) node [anchor=north] {\texttt{Makefile.in}};
+    \draw[dashed, ->] (67.5,-30)
+          -- (67.5,-37) node [anchor=west] {\textit{\configure}}
+          -- (67.5,-44) node [anchor=north] {\texttt{Makefile}};
+  \end{tikzpicture}
 \end{center}
 
 Information on writing a \makefileam is described in \ref{makefile.am}
@@ -668,6 +592,35 @@ from the \texttt{am/} directory. These rules are stored in the
 these rules in your \dune module or application you will have to
 create a symbolic link to \texttt{dune-common/am/}. The creation of
 this link should be done by the \autogen script.
+
+\minisec{doxygen}
+
+The source code documentation system \texttt{doxygen}\xspace is the
+preferable way to document your source and header files.
+
+In order to build \texttt{doxygen} documentation you can include
+\texttt{\$(top\_srcdir)/am/doxygen}. Additionally you have create a
+file \texttt{Doxylocal} which contains your local \texttt{doxygen}
+configuration.
+
+Your \texttt{doxygen} documentation should be located in the
+subdirectory \texttt{doc/doxygen/}\xspace (see ``Coding Style'' in the
+setion ``Developing Dune'' on
+\texttt{\url{http://www.dune-project.org/}} for details). \em After
+running \duneproject the basic setup is already done\em.
+
+The file \texttt{doc/doxygen/Doxylocal}\xspace contains the basic
+information where header and source files are located in your
+project. Usually you will not have to adjust this file, it is already
+created by \duneproject. It only
+contains the very basic information. During the \texttt{dune-autogen}\xspace
+run the script \texttt{dunedoxynize}\xspace use the information contained in
+\texttt{Doxylocal}, merge them with the global \dune \texttt{doxygen}\xspace
+styles and write \texttt{Doxyfile.in}, which will be translated into a
+full \texttt{Doxyfile}\xspace during the \configure run. For details about
+the configuration of \texttt{doxygen}\xspace and about documenting your
+source code we refer to the \texttt{doxygen}\xspace web-site
+\texttt{\url{http://www.doxygen.org/}}.
 
 \minisec{html pages}
 Webpages are created from wml sources, using the program \texttt{wml}
@@ -992,58 +945,6 @@ you can add these to \texttt{\$CMD\_FLAGS} and then call the default
 implementation of the command via
 \texttt{run\_default\_\textit{command}}.
 
-\section{Creating a new \dune project}\label{section::creating_new_dune_project}
-
-From a buildsystem point of view there is no difference between a \dune
-application and a \dune module.\\
-
-\dune modules are packages that offer a certain functionality that can
-be used by \dune applications. Therefore \dune modules offer libraries
-and/or header files. A \dune module needs to comply with certain rules
-(see \ref{guidelines}).
-
-Creating a new \dune project has been covered in detail in 
-\ref{section::creating_dune_module} using \texttt{duneproject} to take
-work off of the user. This is also the recommended way to start a new project. 
-If for whatever reasons you do not wish to use \duneproject here is 
-the bare minimum you have to provide in order to create a new project:
-\begin{itemize}
-\item a \dunemodule file\\
-  Usually you will only need to specify the parameters \texttt{Module}
-  and \texttt{Depends}.
-\item \emph{Note:} an \autogen script is \emph{not} needed any more!
-\item a basic m4 file\\
-  You need to provide two macros \texttt{\emph{MODULE}\_CHECKS}
-  and \texttt{\emph{MODULE}\_CHECK\_MODULE}.
-\item a \configureac file\\
-  Have look at the \configureac in \dunegrid for example. The most
-  important part is the call to \texttt{DUNE\_CHECK\_ALL} which
-  runs all checks needed for a \dune module, plus the checks for the
-  dependencies.
-\end{itemize}
-
-\section{Dune module guidelines}\label{section::dune_module_guidelines}
-\label{guidelines}
-
-A \dune module should comply with the following rules:
-\begin{itemize}
-\item Documentation is located under \texttt{doc/} and gets
-  web-installed under \texttt{BASEDIR/doc/}.
-\item \automake includes are located in \dunecommon. To use them, you
-  will have to make a symbolic link to \texttt{dune-common/am/} (see
-  \ref{am_includes}). The symlink creation should be handled by the
-  \autogen (see \ref{autogen}).
-\item The \texttt{am/} directory does not get included in the tarball.
-\item Header files that can be used by other \dune modules should be
-  accessible via \verb!#include <dune/foo/bar.hh>!. In order to work
-  with a freshly checkout version of your module you will usually need
-  to create a local symbolic link \texttt{dune ->
-    \textit{module-directory/}}. This link gets created by the
-  \texttt{DUNE\_SYMLINK} command in your \configureac. When running
-  \texttt{make install} all header files should be installed into
-  \texttt{\textit{prefix}/include/dune/}.
-\end{itemize}
-
 \section{Further documentation}
 
 \minisec{automake \& Makefile.am}
@@ -1062,6 +963,12 @@ The Autoconf Macro Archive provides macros that can be integrated in
 your \configureac in order to search for certain software. These
 macros are useful to many software writers using the autoconf tool, but too
 specific to be included into autoconf itself.
+
+\minisec{doxygen}
+\texttt{\url{http://www.doxygen.org/}}\\
+The \texttt{doxygen} website offers documentation on how to document
+your source code and also on the configuration parameters in your
+\texttt{Doxylocal} file.
 
 \minisec{libtool}
 \texttt{\url{http://www.gnu.org/software/libtool/manual.html}}\\
