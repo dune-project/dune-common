@@ -4,6 +4,8 @@
 #define DUNE_FUNCTION_HH
 
 
+#include "typetraits.hh"
+
 namespace Dune {
 
   /** @addtogroup Common
@@ -25,6 +27,12 @@ namespace Dune {
   class Function
   {
   public:
+
+    //! Raw type of input variable with removed reference and constness
+    typedef typename ConstantVolatileTraits<typename TypeTraits< Domain >::ReferredType >::UnqualifiedType DomainType;
+
+    //! Raw type of output variable with removed reference and constness
+    typedef typename ConstantVolatileTraits<typename TypeTraits< Range >::ReferredType >::UnqualifiedType RangeType;
 
     /**
      * \brief Function evaluation.
