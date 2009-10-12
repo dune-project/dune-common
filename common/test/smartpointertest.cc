@@ -5,7 +5,7 @@
 #include "config.h"
 #endif
 
-#include <dune/common/smartpointer.hh>
+#include <dune/common/shared_ptr.hh>
 #include <iostream>
 #include <vector>
 #include <cstdlib>
@@ -14,9 +14,9 @@ int main(){
   using namespace Dune;
   int ret=0;
   {
-    SmartPointer<double> b;
+    shared_ptr<double> b;
     {
-      SmartPointer<double> d(b);
+      shared_ptr<double> d(b);
       *b = 7;
     }
     if(b.count()!=1) {
@@ -25,7 +25,7 @@ int main(){
       ret=1;
     }
     {
-      SmartPointer<double> c(b);
+      shared_ptr<double> c(b);
 
       if(*b!=*c) {
         std::cerr<<"References do not match! "<<__LINE__<<":"<<
