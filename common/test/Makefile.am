@@ -11,7 +11,7 @@ TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
 	testfassign4 \
     testfassign_fail1 testfassign_fail2 testfassign_fail3 \
     testfassign_fail4 testfassign_fail5 testfassign_fail6 \
-    conversiontest bitsetvectortest deprecatedtuplestest \
+    conversiontest bitsetvectortest deprtuplestest \
     float_cmp
 
 # which tests to run
@@ -67,7 +67,7 @@ smartpointertest_SOURCES = smartpointertest.cc
 
 tuplestest_SOURCES = tuplestest.cc
 
-deprecatedtuplestest_SOURCES = deprtuplestest.cc
+deprtuplestest_SOURCES = deprtuplestest.cc
 
 streamtest_SOURCES = streamtest.cc
 
