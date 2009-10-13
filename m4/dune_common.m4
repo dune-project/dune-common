@@ -29,16 +29,14 @@ AC_DEFUN([DUNE_COMMON_CHECKS],
   dnl check for programs
   AC_REQUIRE([AC_PROG_CC])
   # add -Wall if the compiler is gcc
-  if test "$ac_test_CFLAGS" != set && \
-    test "$GCC" = yes; then
+  AS_IF([test "x$ac_test_CFLAGS" != "xset" -a "x$GCC" = "xyes"],[
     CFLAGS="$CFLAGS -Wall"
-  fi
+  ])
   # add -Wall if the compiler is g++
   AC_REQUIRE([AC_PROG_CXX])
-  if test "$ac_test_CXXFLAGS" != set && \
-    test "$GXX" = yes; then
+  AS_IF([test "x$ac_test_CXXFLAGS" != "xset" -a "x$GXX" = "xyes"],[
     CXXFLAGS="$CXXFLAGS -Wall"
-  fi
+  ])
 
   dnl checks for header files.
   AC_REQUIRE([AC_HEADER_STDC])
@@ -48,12 +46,12 @@ AC_DEFUN([DUNE_COMMON_CHECKS],
 
   # Allow disabling tr1 headers. E.g. needed for broken xlc on Blue Gene
   AC_ARG_ENABLE(tr1-headers, 
-	AC_HELP_STRING([--disable-tr1-headers], 
+	AS_HELP_STRING([--disable-tr1-headers],
 	[Prevents checking for  tr1 headers like tuple, array, etc. 
-	This might be needed for broken compilers like xlc on Blue Gene]), 
-	[], [    
+	This might be needed for broken compilers like xlc on Blue Gene]))
+  AS_IF([test "x$enable_tr1_headers" = "xyes"],
 	  AC_CHECK_HEADERS([type_traits tr1/type_traits array tr1/array tuple tr1/tuple])
-	  ])
+  )
   
   AC_LANG_POP([C++])
 

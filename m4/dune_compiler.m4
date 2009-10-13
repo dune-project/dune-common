@@ -4,11 +4,8 @@
 AC_DEFUN([DUNE_CHECK_COMPILER],[
 
 AC_ARG_ENABLE(compilercheck,
-  AC_HELP_STRING([--enable-compilercheck],
-                 [check for supported compilers [[default=yes]]]),
-  [compilercheck=$enableval],
-  [compilercheck=yes]
-)
+  AS_HELP_STRING([--enable-compilercheck],
+                 [check for supported compilers [[default=yes]]]))
 
 SUPPORTED_COMPILER="gcc (>= 3.4.1) or icc (>= 7.0)"
 
@@ -39,20 +36,17 @@ int main() {
 }
 _ACEOF
 
-if test "x$compilercheck" != "xyes" ; then
-  AC_MSG_WARN([compilercheck is disabled. DANGEROUS!])    
-else
-  if $CXX conftest.cc -o conftest.$ac_exeext >&5; then
-	COMPILER_NAME=`./conftest.$ac_exeext`
-    rm -f conftest.$ac_exeext
-  else
+AS_IF([test "x$compilercheck" != "xno"],[
+  AC_MSG_WARN([compilercheck is disabled. DANGEROUS!])],[
+  AS_IF([$CXX conftest.cc -o conftest.$ac_exeext >&5],[
+    COMPILER_NAME=`./conftest.$ac_exeext`;
+    rm -f conftest.$ac_exeext],[
     AC_MSG_ERROR([Your compiler is not officially supported by dune
                   dune is known to work with $SUPPORTED_COMPILER])
-  fi
-fi
+    ]
+  )]
+)
 
-if test "x$COMPILER_NAME" = "x"; then
-	COMPILER_NAME="unknown compiler"
-fi
-
+AS_IF([test -z "$COMPILER_NAME"],[
+	COMPILER_NAME="unknown compiler"])
 ])

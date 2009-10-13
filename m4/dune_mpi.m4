@@ -65,28 +65,21 @@ AC_DEFUN([DUNE_MPI],[
 
   # enable/disable parallel features
   AC_ARG_ENABLE(parallel,
-    AC_HELP_STRING([--enable-parallel],
+    AS_HELP_STRING([--enable-parallel],
       [Enable the parallel features of Dune. If enabled
        configure will try to determine your MPI automatically. You can
-       overwrite this setting by specifying the MPICC variable]),
-    [with_parallel=$enableval],
-    [with_parallel=no]
-  )
-  AC_SUBST(ENABLE_PARALLEL, "$with_parallel")
+       overwrite this setting by specifying the MPICC variable]))
+  AC_SUBST(ENABLE_PARALLEL, "$enable_parallel")
 
   # disable runtest if we have a queuing system
   AC_ARG_ENABLE(mpiruntest,
-    AC_HELP_STRING([--disable-mpiruntest],
-      [Don't try to run a MPI program during configure. (This is needed if you depend on a queuing system)]),
-    [mpiruntest=${enableval}],
-    [mpiruntest=yes]
-  )
+    AS_HELP_STRING([--disable-mpiruntest],
+      [Don\'t try to run a MPI program during configure. (This is needed if you depend on a queuing system)]))
 
   with_mpi="no"
 
   ## do nothing if --disable-parallel is used
-  if test x$with_parallel = xyes ; then
-  
+  AS_IF([test "x$enable_parallel" = "xyes"],[
     ACX_MPI([
       MPICOMP="$MPICC"
 
@@ -97,11 +90,10 @@ AC_DEFUN([DUNE_MPI],[
     ],[
       # ACX_MPI didn't find anything
       with_mpi="no"
-    ])
-  fi # end of MPI identification
+    ])])
 
   # if an MPI implementation was found..
-  if test x"$with_mpi" != xno ; then
+  AS_IF([test "x$with_mpi" != "xno"],[
     ### do a sanity check: can we compile and link a trivial MPI program?
     AC_MSG_CHECKING([whether compiling with $dune_MPI_VERSION works])
 
@@ -129,9 +121,9 @@ AC_DEFUN([DUNE_MPI],[
           with_mpi=no]
     )
 
-    if test "x$mpiruntest" != "xyes" ; then
+    AS_IF([test "x$mpiruntest" != "xyes"],[
       AC_MSG_WARN([Diabled test whether running with $dune_MPI_VERSION works.])    
-    else
+    ],[
       AC_MSG_CHECKING([whether running with $dune_MPI_VERSION works])
       AC_RUN_IFELSE(
         AC_LANG_SOURCE(
@@ -152,7 +144,7 @@ AC_DEFUN([DUNE_MPI],[
             See config.log for details])
             with_mpi=no]
       )
-    fi
+    ])
     AC_LANG_POP
 
     # Check for MPI-2 Standard
@@ -163,22 +155,22 @@ AC_DEFUN([DUNE_MPI],[
     # restore variables
     LIBS="$ac_save_LIBS"
     CPPFLAGS="$ac_save_CPPFLAGS"
-  fi
+  ])
     
   # set flags
-  if test x"$with_mpi" != xno ; then
+  AS_IF([test "x$with_mpi" != "xno"],[
     AC_SUBST(MPI_CPPFLAGS, $MPI_CPPFLAGS)
     AC_SUBST(MPI_LDFLAGS, $MPI_LDFLAGS)
     AC_SUBST(MPI_VERSION, $dune_MPI_VERSION)
     AC_DEFINE(HAVE_MPI,ENABLE_MPI,[Define if you have the MPI library.
     This is only true if MPI was found by configure 
     _and_ if the application uses the MPI_CPPFLAGS])
-  else
+  ],[
     AC_SUBST(MPI_CPPFLAGS, "")
     AC_SUBST(MPI_LDFLAGS, "")
-  fi
+  ])
 
-  AM_CONDITIONAL(MPI, test x"$with_mpi" != xno)
+  AM_CONDITIONAL(MPI, [test "x$with_mpi" != "xno"])
 
   DUNE_ADD_SUMMARY_ENTRY([MPI],[$with_mpi])
 

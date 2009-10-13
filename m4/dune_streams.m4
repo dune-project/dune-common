@@ -12,7 +12,7 @@ AC_DEFUN([DUNE_SET_MINIMAL_DEBUG_LEVEL],[
   # GRAVE_DEBUG_LEVEL = 5;
 
   AC_ARG_WITH(minimal_debug_level,
-    AC_HELP_STRING([--with-minimal-debug-level=[grave|warn|info|verb|vverb]],
+    AS_HELP_STRING([--with-minimal-debug-level=[grave|warn|info|verb|vverb]],
      [set the MINIMAL_DEBUG_LEVEL. Standard debug streams with level below 
       MINIMAL_DEBUG_LEVEL will collapse to doing nothing if output is 
       requested. (default=warn)]
