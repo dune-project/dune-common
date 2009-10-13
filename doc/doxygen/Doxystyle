@@ -15,6 +15,8 @@ FILE_PATTERNS          = *.hh \
 INPUT                  =
 EXCLUDE                = 
 
+EXCLUDE_PATTERNS       = */.svn/* */test/*
+
 # The STRIP_FROM_INC_PATH tag can be used to strip a user-defined part of
 # the path mentioned in the documentation of a class, which tells
 # the reader which header file to include in order to use a class.
