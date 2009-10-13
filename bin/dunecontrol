@@ -256,16 +256,23 @@ run_default_status () {
 }
 
 run_default_update () {
+  DUNELINK=0
+  if test -L dune; then
+    rm dune
+    DUNELINK=1
+  fi
   if test -d .svn; then
     svn update
-    return
-  fi
-  if test -d CVS; then
+  elif test -d CVS; then
     cvs update -dP
-    return
+  else
+    echo "WARNING: $module is not under a known version control system."
+    echo "         We support svn and cvs."
   fi
-  echo "WARNING: $module is not under a known version control system."
-  echo "         We support svn and cvs."
+  if test "$DUNELINK" != 0 && ! test -d dune; then
+    echo "WARNING: $module is using the deprecated dune symlink"
+    ln -s . dune
+  fi
 }
 
 run_default_autogen () {
