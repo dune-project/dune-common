@@ -7,7 +7,7 @@ EXTRA_DIST=dune.module
 # need automake >= 1.5
 AUTOMAKE_OPTIONS = foreign 1.5
 
-SUBDIRS = common lib doc bin m4 am
+SUBDIRS = dune lib doc bin m4 am
 
 sourcescheck_NOSOURCES=aclocal.m4  dependencies.m4
 

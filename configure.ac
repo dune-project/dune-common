@@ -4,7 +4,7 @@
 
 DUNE_AC_INIT # gets module version from dune.module file
 AM_INIT_AUTOMAKE
-AC_CONFIG_SRCDIR([common/stdstreams.cc])
+AC_CONFIG_SRCDIR([dune/common/stdstreams.cc])
 AM_CONFIG_HEADER([config.h])
 
 # create symlink dune -> $top_srcdir
@@ -23,9 +23,10 @@ AC_SUBST([LOCAL_LIBS], '$(top_builddir)/common/libcommon.la')
 AC_CONFIG_FILES([Makefile
      lib/Makefile
      bin/Makefile
-     common/Makefile
-     common/test/Makefile
-     common/exprtmpl/Makefile
+     dune/Makefile
+     dune/common/Makefile
+     dune/common/test/Makefile
+     dune/common/exprtmpl/Makefile
      doc/Makefile
      doc/devel/Makefile
      doc/layout/Makefile
