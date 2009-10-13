@@ -19,7 +19,7 @@ int main(){
       shared_ptr<double> d(b);
       *b = 7;
     }
-    if(b.count()!=1) {
+    if(b.use_count()!=1) {
       std::cout << "Reference count is wrong! "<<__LINE__<<":"<<
       __FILE__<<std::endl;
       ret=1;
@@ -32,7 +32,7 @@ int main(){
         __FILE__<<std::endl;
         ret=1;
       }
-      if(b.count()!=2 || c.count()!=2) {
+      if(b.use_count()!=2 || c.use_count()!=2) {
         std::cout << "Reference count is wrong! "<<__LINE__<<":"<<
         __FILE__<<std::endl;
         ret=1;
@@ -45,7 +45,7 @@ int main(){
       }
     }
 
-    if(b.count()!=1) {
+    if(b.use_count()!=1) {
       std::cout << "Reference count is wrong! "<<__LINE__<<":"<<
       __FILE__<<std::endl;
       ret=1;
