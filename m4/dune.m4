@@ -273,6 +273,7 @@ AC_DEFUN([DUNE_DEV_MODE],[
 ])
 
 AC_DEFUN([DUNE_SYMLINK],[
+  AC_MSG_WARN([Module is using the deprecated 'dune' symlink.])
   # create symlink for consistent paths even when $(top_srcdir) is not
   # called dune/ (if filesystem/OS supports symlinks)
   AC_PROG_LN_S
