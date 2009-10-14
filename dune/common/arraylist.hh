@@ -7,7 +7,7 @@
 
 #include <cassert>
 #include <vector>
-#include "shared_ptr.hh"
+#include "smartpointer.hh"
 #include "array.hh"
 #include "iteratorfacades.hh"
 
@@ -199,7 +199,7 @@ namespace Dune
     /**
      * @brief The allocators for the fixed array.
      */
-    typedef typename A::template rebind<shared_ptr<array<MemberType,chunkSize_> > >::other
+    typedef typename A::template rebind<SmartPointer<array<MemberType,chunkSize_> > >::other
     SmartPointerAllocator;
 
     /**
@@ -209,7 +209,7 @@ namespace Dune
     friend class ConstArrayListIterator<T,N,A>;
 
     /** @brief the data chunks of our list. */
-    std::vector<shared_ptr<array<MemberType,chunkSize_> >,
+    std::vector<SmartPointer<array<MemberType,chunkSize_> >,
         SmartPointerAllocator> chunks_;
     /** @brief The current data capacity. */
     size_type capacity_;
@@ -491,7 +491,7 @@ namespace Dune
     size_t index=start_+size_;
     if(index==capacity_)
     {
-      chunks_.push_back(shared_ptr<array<MemberType,chunkSize_> >());
+      chunks_.push_back(SmartPointer<array<MemberType,chunkSize_> >());
       capacity_ += chunkSize_;
     }
     elementAt(index)=entry;
@@ -557,7 +557,7 @@ namespace Dune
       // Number of chunks with entries in it;
       size_t chunks = ((start_%chunkSize_ + size_)/chunkSize_ );
 
-      typedef typename std::vector<shared_ptr<array<MemberType,
+      typedef typename std::vector<SmartPointer<array<MemberType,
                   chunkSize_> > >::iterator iterator;
 
       // Copy chunks to the left.
