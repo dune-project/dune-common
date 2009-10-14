@@ -126,7 +126,7 @@ namespace Dune
   template<class T>
   inline shared_ptr<T>::shared_ptr()
   {
-    rep_ = new PointerRep;
+    rep_ = NULL;
   }
 
   template<class T>

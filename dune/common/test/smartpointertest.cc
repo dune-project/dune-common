@@ -14,7 +14,7 @@ int main(){
   using namespace Dune;
   int ret=0;
   {
-    shared_ptr<double> b;
+    shared_ptr<double> b(new double(42.0));
     {
       shared_ptr<double> d(b);
       *b = 7;
