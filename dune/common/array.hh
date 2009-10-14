@@ -14,9 +14,10 @@
 // Include system implementation of array class if present
 #ifdef HAVE_ARRAY
 #include <array>
-#endif
-#ifdef HAVE_TR1_ARRAY
+#elif defined HAVE_TR1_ARRAY
 #include <tr1/array>
+#else
+#include <algorithm>
 #endif
 
 
@@ -122,6 +123,35 @@ namespace Dune
   protected:
     T a[(N > 0) ? N : 1];
   };
+
+
+
+  // Comparison Operators (see [lib.container.requirements])
+  // -------------------------------------------------------
+
+  template< class T, int N >
+  inline bool operator< ( const array< T, N > &a, const array< T, N > &b )
+  {
+    return std::lexicographical_compare( a.begin(), a.end(), b.begin(), b.end() );
+  }
+
+  template< class T, int N >
+  inline bool operator> ( const array< T, N > &a, const array< T, N > &b )
+  {
+    return b < a;
+  }
+
+  template< class T, int N >
+  inline bool operator<= ( const array< T, N > &a, const array< T, N > &b )
+  {
+    return !(a > b);
+  }
+
+  template< class T, int N >
+  inline bool operator>= ( const array< T, N > &a, const array< T, N > &b )
+  {
+    return !(a < b);
+  }
 #endif
   //! Output operator for array
   template <class T, int N>
