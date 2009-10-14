@@ -28,14 +28,7 @@ AS_IF([test "x$with_grid_dim" != "x0"],[
   ])
 
   # make sure that given grid type is valid 
-  AS_IF([test "x$with_grid_type" != "xALBERTAGRID" -a
-              "x$with_grid_type" != "xALUGRID_CUBE" -a
-              "x$with_grid_type" != "xALUGRID_SIMPLEX" -a
-              "x$with_grid_type" != "xALUGRID_CONFORM" -a
-              "x$with_grid_type" != "xONEDGRID" -a
-              "x$with_grid_type" != "xSGRID" -a
-              "x$with_grid_type" != "xUGGRID" -a
-              "x$with_grid_type" != "xYASPGRID"],[
+  AS_IF([test "x$with_grid_type" != "xALBERTAGRID" -a "x$with_grid_type" != "xALUGRID_CUBE" -a "x$with_grid_type" != "xALUGRID_SIMPLEX" -a "x$with_grid_type" != "xALUGRID_CONFORM" -a "x$with_grid_type" != "xONEDGRID" -a "x$with_grid_type" != "xSGRID" -a "x$with_grid_type" != "xUGGRID" -a "x$with_grid_type" != "xYASPGRID"],[
     AC_MSG_ERROR([Delivered grid-type = $with_grid_type is not valid. Run ./configure --help for valid values.])
   ])
 
@@ -55,7 +48,7 @@ AS_IF([test "x$with_grid_dim" != "x0"],[
   DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $griddim_cppflags"
   AS_IF([test "x$with_world_dim" = "x0"],[
     AC_MSG_RESULT([yes (GRIDDIM=$GRIDDIM, WORLDDIM=GRIDDIM and GRIDTYPE=$GRIDTYPE)])
-  ].[
+  ],[
     AC_MSG_RESULT([yes (GRIDDIM=$GRIDDIM, WORLDDIM=$WORLDDIM and GRIDTYPE=$GRIDTYPE)])
 ])
 ])
