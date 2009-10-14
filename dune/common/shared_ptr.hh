@@ -178,7 +178,7 @@ namespace Dune
   }
 
   template<class T>
-  inline int shared_ptr<T>::count() const
+  inline int shared_ptr<T>::use_count() const
   {
     return rep_->count_;
   }
