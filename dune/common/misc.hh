@@ -9,15 +9,15 @@
 
 #include <iostream>
 #include <sstream>
+#include <complex>
 #include "exceptions.hh"
-#include "deprecated.hh"
 
 namespace Dune {
 
   /** \brief Map an integer value to a type
 
-     This comes in handy if one tries to emulate member function specialization.
-     The idea how to do it is presented in "Modern C++ Design" by Alexandrescu.
+      This comes in handy if one tries to emulate member function specialization.
+      The idea how to do it is presented in "Modern C++ Design" by Alexandrescu.
    */
   template <int N>
   struct Int2Type {
@@ -28,6 +28,23 @@ namespace Dune {
 
           @{
    */
+
+  //! compute conjugate complex of x
+  // conjugate complex does nothing for non-complex types
+  template<class K>
+  inline K conjugateComplex (const K& x)
+  {
+    return x;
+  }
+
+#ifndef DOXYGEN
+  // specialization for complex
+  template<class K>
+  inline std::complex<K> conjugateComplex (const std::complex<K>& c)
+  {
+    return std::complex<K>(c.real(),-c.imag());
+  }
+#endif
 
   //! Return the sign of the value
   template <class T>
