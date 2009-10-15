@@ -6,7 +6,6 @@
 
 #include <cmath>
 #include <cstddef>
-#include <complex>
 #include <iostream>
 #include "exceptions.hh"
 #include "fvector.hh"
@@ -15,10 +14,10 @@
 
 namespace Dune {
 
-  template<class K, int n, int m> class FieldMatrix;
+  template<class K, int ROWS, int COLS> class FieldMatrix;
 
-  template<class K, int n, int m>
-  struct FieldTraits< FieldMatrix<K,n,m> >
+  template<class K, int ROWS, int COLS>
+  struct FieldTraits< FieldMatrix<K,ROWS,COLS> >
   {
     typedef const typename FieldTraits<K>::field_type field_type;
     typedef const typename FieldTraits<K>::real_type real_type;
@@ -35,8 +34,11 @@ namespace Dune {
      representing a field and compile-time given number of rows and columns.
    */
 
-  template<class K, int n, int m, typename T>
-  void istl_assign_to_fmatrix(FieldMatrix<K,n,m>& f, const T& t)
+  /**
+     \brief you have to specialize this function for any type T that should be assignable to a FieldMatrix
+   */
+  template<class K, int ROWS, int COLS, typename T>
+  void istl_assign_to_fmatrix(FieldMatrix<K,ROWS,COLS>& f, const T& t)
   {
     DUNE_THROW(NotImplemented, "You need to specialise this function for type T!");
   }
@@ -46,8 +48,8 @@ namespace Dune {
     template<bool b>
     struct Assigner
     {
-      template<class K, int n, int m, class T>
-      static void assign(FieldMatrix<K,n,m>& fm, const T& t)
+      template<class K, int ROWS, int COLS, class T>
+      static void assign(FieldMatrix<K,ROWS,COLS>& fm, const T& t)
       {
         istl_assign_to_fmatrix(fm, t);
       }
@@ -58,8 +60,8 @@ namespace Dune {
     template<>
     struct Assigner<true>
     {
-      template<class K, int n, int m, class T>
-      static void assign(FieldMatrix<K,n,m>& fm, const T& t)
+      template<class K, int ROWS, int COLS, class T>
+      static void assign(FieldMatrix<K,ROWS,COLS>& fm, const T& t)
       {
         fm = static_cast<const K>(t);
       }
@@ -68,20 +70,6 @@ namespace Dune {
 
   /** @brief Error thrown if operations of a FieldMatrix fail. */
   class FMatrixError : public Exception {};
-
-  // conjugate komplex does nothing for non-complex types
-  template<class K>
-  inline K fm_ck (const K& k)
-  {
-    return k;
-  }
-
-  // conjugate komplex
-  template<class K>
-  inline std::complex<K> fm_ck (const std::complex<K>& c)
-  {
-    return std::complex<K>(c.real(),-c.imag());
-  }
 
   /**
       @brief A dense n x m matrix.
@@ -92,10 +80,10 @@ namespace Dune {
        columns is given at compile time.
    */
 #ifdef DUNE_EXPRESSIONTEMPLATES
-  template<class K, int n, int m>
-  class FieldMatrix : ExprTmpl::Matrix< FieldMatrix<K,n,m> >
+  template<class K, int ROWS, int COLS>
+  class FieldMatrix : ExprTmpl::Matrix< FieldMatrix<K,ROWS,COLS> >
 #else
-  template<class K, int n, int m>
+  template<class K, int ROWS, int COLS>
   class FieldMatrix
 #endif
   {
@@ -119,16 +107,16 @@ namespace Dune {
       blocklevel = 1
     };
 
-    //! Each row is implemented by a field vector
-    typedef FieldVector<K,m> row_type;
-
     //! export size
     enum {
       //! The number of rows.
-      rows = n,
+      rows = ROWS,
       //! The number of columns.
-      cols = m
+      cols = COLS
     };
+
+    //! Each row is implemented by a field vector
+    typedef FieldVector<K,cols> row_type;
 
     //===== constructors
     /** \brief Default constructor
@@ -139,7 +127,7 @@ namespace Dune {
      */
     explicit FieldMatrix (const K& k)
     {
-      for (size_type i=0; i<n; i++) p[i] = k;
+      for (size_type i=0; i<rows; i++) p[i] = k;
     }
 
     template<typename T>
@@ -171,7 +159,7 @@ namespace Dune {
 
     //===== iterator interface to rows of the matrix
     //! Iterator class for sequential access
-    typedef FieldIterator<FieldMatrix<K,n,m>,row_type> Iterator;
+    typedef FieldIterator<FieldMatrix<K,rows,cols>,row_type> Iterator;
     //! typedef for stl compliant access
     typedef Iterator iterator;
     //! rename the iterators for easier access
@@ -188,13 +176,13 @@ namespace Dune {
     //! end iterator
     Iterator end ()
     {
-      return Iterator(*this,n);
+      return Iterator(*this,rows);
     }
 
     //! begin iterator
     Iterator rbegin ()
     {
-      return Iterator(*this,n-1);
+      return Iterator(*this,rows-1);
     }
 
     //! end iterator
@@ -204,7 +192,7 @@ namespace Dune {
     }
 
     //! Iterator class for sequential access
-    typedef FieldIterator<const FieldMatrix<K,n,m>,const row_type> ConstIterator;
+    typedef FieldIterator<const FieldMatrix<K,rows,cols>,const row_type> ConstIterator;
     //! typedef for stl compliant access
     typedef ConstIterator const_iterator;
     //! rename the iterators for easier access
@@ -221,13 +209,13 @@ namespace Dune {
     //! end iterator
     ConstIterator end () const
     {
-      return ConstIterator(*this,n);
+      return ConstIterator(*this,rows);
     }
 
     //! begin iterator
     ConstIterator rbegin () const
     {
-      return ConstIterator(*this,n-1);
+      return ConstIterator(*this,rows-1);
     }
 
     //! end iterator
@@ -239,7 +227,7 @@ namespace Dune {
     //===== assignment from scalar
     FieldMatrix& operator= (const K& k)
     {
-      for (size_type i=0; i<n; i++)
+      for (size_type i=0; i<rows; i++)
         p[i] = k;
       return *this;
     }
@@ -255,7 +243,7 @@ namespace Dune {
     //! vector space addition
     FieldMatrix& operator+= (const FieldMatrix& y)
     {
-      for (size_type i=0; i<n; i++)
+      for (size_type i=0; i<rows; i++)
         p[i] += y.p[i];
       return *this;
     }
@@ -263,7 +251,7 @@ namespace Dune {
     //! vector space subtraction
     FieldMatrix& operator-= (const FieldMatrix& y)
     {
-      for (size_type i=0; i<n; i++)
+      for (size_type i=0; i<rows; i++)
         p[i] -= y.p[i];
       return *this;
     }
@@ -271,7 +259,7 @@ namespace Dune {
     //! vector space multiplication with scalar
     FieldMatrix& operator*= (const K& k)
     {
-      for (size_type i=0; i<n; i++)
+      for (size_type i=0; i<rows; i++)
         p[i] *= k;
       return *this;
     }
@@ -279,7 +267,7 @@ namespace Dune {
     //! vector space division by scalar
     FieldMatrix& operator/= (const K& k)
     {
-      for (size_type i=0; i<n; i++)
+      for (size_type i=0; i<rows; i++)
         p[i] /= k;
       return *this;
     }
@@ -287,7 +275,7 @@ namespace Dune {
     //! vector space axpy operation (*this += k y)
     FieldMatrix &axpy ( const K &k, const FieldMatrix &y )
     {
-      for( size_type i = 0; i < n; ++i )
+      for( size_type i = 0; i < rows; ++i )
         p[ i ].axpy( k, y[ i ] );
       return *this;
     }
@@ -303,10 +291,10 @@ namespace Dune {
       if (x.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
       if (y.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
-      for (size_type i=0; i<n; ++i)
+      for (size_type i=0; i<rows; ++i)
       {
         y[i] = 0;
-        for (size_type j=0; j<m; j++)
+        for (size_type j=0; j<cols; j++)
           y[i] += (*this)[i][j] * x[j];
       }
     }
@@ -322,10 +310,10 @@ namespace Dune {
       if( y.N() != M() )
         DUNE_THROW( FMatrixError, "Index out of range." );
 #endif
-      for( size_type i = 0; i < m; ++i )
+      for( size_type i = 0; i < cols; ++i )
       {
         y[ i ] = 0;
-        for( size_type j = 0; j < n; ++j )
+        for( size_type j = 0; j < rows; ++j )
           y[ i ] += (*this)[ j ][ i ] * x[ j ];
       }
     }
@@ -338,8 +326,8 @@ namespace Dune {
       if (x.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
       if (y.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
-      for (size_type i=0; i<n; i++)
-        for (size_type j=0; j<m; j++)
+      for (size_type i=0; i<rows; i++)
+        for (size_type j=0; j<cols; j++)
           y[i] += (*this)[i][j] * x[j];
     }
 
@@ -352,8 +340,8 @@ namespace Dune {
       if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
 
-      for (size_type i=0; i<n; i++)
-        for (size_type j=0; j<m; j++)
+      for (size_type i=0; i<rows; i++)
+        for (size_type j=0; j<cols; j++)
           y[j] += p[i][j]*x[i];
     }
 
@@ -366,9 +354,9 @@ namespace Dune {
       if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
 
-      for (size_type i=0; i<n; i++)
-        for (size_type j=0; j<m; j++)
-          y[j] += fm_ck(p[i][j])*x[i];
+      for (size_type i=0; i<rows; i++)
+        for (size_type j=0; j<cols; j++)
+          y[j] += conjugateComplex(p[i][j])*x[i];
     }
 
     //! y -= A x
@@ -379,8 +367,8 @@ namespace Dune {
       if (x.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
       if (y.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
-      for (size_type i=0; i<n; i++)
-        for (size_type j=0; j<m; j++)
+      for (size_type i=0; i<rows; i++)
+        for (size_type j=0; j<cols; j++)
           y[i] -= (*this)[i][j] * x[j];
     }
 
@@ -393,8 +381,8 @@ namespace Dune {
       if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
 
-      for (size_type i=0; i<n; i++)
-        for (size_type j=0; j<m; j++)
+      for (size_type i=0; i<rows; i++)
+        for (size_type j=0; j<cols; j++)
           y[j] -= p[i][j]*x[i];
     }
 
@@ -407,9 +395,9 @@ namespace Dune {
       if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
 
-      for (size_type i=0; i<n; i++)
-        for (size_type j=0; j<m; j++)
-          y[j] -= fm_ck(p[i][j])*x[i];
+      for (size_type i=0; i<rows; i++)
+        for (size_type j=0; j<cols; j++)
+          y[j] -= conjugateComplex(p[i][j])*x[i];
     }
 
     //! y += alpha A x
@@ -420,8 +408,8 @@ namespace Dune {
       if (x.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
       if (y.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
-      for (size_type i=0; i<n; i++)
-        for (size_type j=0; j<m; j++)
+      for (size_type i=0; i<rows; i++)
+        for (size_type j=0; j<cols; j++)
           y[i] += alpha * (*this)[i][j] * x[j];
     }
 
@@ -434,8 +422,8 @@ namespace Dune {
       if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
 
-      for (size_type i=0; i<n; i++)
-        for (size_type j=0; j<m; j++)
+      for (size_type i=0; i<rows; i++)
+        for (size_type j=0; j<cols; j++)
           y[j] += alpha*p[i][j]*x[i];
     }
 
@@ -448,9 +436,9 @@ namespace Dune {
       if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
 
-      for (size_type i=0; i<n; i++)
-        for (size_type j=0; j<m; j++)
-          y[j] += alpha*fm_ck(p[i][j])*x[i];
+      for (size_type i=0; i<rows; i++)
+        for (size_type j=0; j<cols; j++)
+          y[j] += alpha*conjugateComplex(p[i][j])*x[i];
     }
 
     //===== norms
@@ -459,7 +447,7 @@ namespace Dune {
     typename FieldTraits<K>::real_type frobenius_norm () const
     {
       typename FieldTraits<K>::real_type sum=0;
-      for (size_type i=0; i<n; ++i) sum += p[i].two_norm2();
+      for (size_type i=0; i<rows; ++i) sum += p[i].two_norm2();
       return sqrt(sum);
     }
 
@@ -467,7 +455,7 @@ namespace Dune {
     typename FieldTraits<K>::real_type frobenius_norm2 () const
     {
       typename FieldTraits<K>::real_type sum=0;
-      for (size_type i=0; i<n; ++i) sum += p[i].two_norm2();
+      for (size_type i=0; i<rows; ++i) sum += p[i].two_norm2();
       return sum;
     }
 
@@ -475,7 +463,7 @@ namespace Dune {
     typename FieldTraits<K>::real_type infinity_norm () const
     {
       typename FieldTraits<K>::real_type max=0;
-      for (size_type i=0; i<n; ++i) max = std::max(max,p[i].one_norm());
+      for (size_type i=0; i<rows; ++i) max = std::max(max,p[i].one_norm());
       return max;
     }
 
@@ -483,7 +471,7 @@ namespace Dune {
     typename FieldTraits<K>::real_type infinity_norm_real () const
     {
       typename FieldTraits<K>::real_type max=0;
-      for (size_type i=0; i<n; ++i) max = std::max(max,p[i].one_norm_real());
+      for (size_type i=0; i<rows; ++i) max = std::max(max,p[i].one_norm_real());
       return max;
     }
 
@@ -493,7 +481,7 @@ namespace Dune {
      *
      * \exception FMatrixError if the matrix is singular
      */
-    template<class V>
+    template <class V>
     void solve (V& x, const V& b) const;
 
     /** \brief Compute inverse
@@ -506,14 +494,14 @@ namespace Dune {
     K determinant () const;
 
     //! Multiplies M from the left to this matrix
-    FieldMatrix& leftmultiply (const FieldMatrix<K,n,n>& M)
+    FieldMatrix& leftmultiply (const FieldMatrix<K,rows,rows>& M)
     {
-      FieldMatrix<K,n,m> C(*this);
+      FieldMatrix<K,rows,cols> C(*this);
 
-      for (size_type i=0; i<n; i++)
-        for (size_type j=0; j<m; j++) {
+      for (size_type i=0; i<rows; i++)
+        for (size_type j=0; j<cols; j++) {
           (*this)[i][j] = 0;
-          for (size_type k=0; k<n; k++)
+          for (size_type k=0; k<rows; k++)
             (*this)[i][j] += M[i][k]*C[k][j];
         }
 
@@ -522,14 +510,14 @@ namespace Dune {
 
     //! Multiplies M from the left to this matrix, this matrix is not modified
     template<int l>
-    FieldMatrix<K,l,m> leftmultiplyany (const FieldMatrix<K,l,n>& M)
+    FieldMatrix<K,l,cols> leftmultiplyany (const FieldMatrix<K,l,rows>& M)
     {
-      FieldMatrix<K,l,m> C;
+      FieldMatrix<K,l,cols> C;
 
       for (size_type i=0; i<l; i++) {
-        for (size_type j=0; j<m; j++) {
+        for (size_type j=0; j<cols; j++) {
           C[i][j] = 0;
-          for (size_type k=0; k<n; k++)
+          for (size_type k=0; k<rows; k++)
             C[i][j] += M[i][k]*(*this)[k][j];
         }
       }
@@ -537,14 +525,14 @@ namespace Dune {
     }
 
     //! Multiplies M from the right to this matrix
-    FieldMatrix& rightmultiply (const FieldMatrix<K,m,m>& M)
+    FieldMatrix& rightmultiply (const FieldMatrix<K,cols,cols>& M)
     {
-      FieldMatrix<K,n,m> C(*this);
+      FieldMatrix<K,rows,cols> C(*this);
 
-      for (size_type i=0; i<n; i++)
-        for (size_type j=0; j<m; j++) {
+      for (size_type i=0; i<rows; i++)
+        for (size_type j=0; j<cols; j++) {
           (*this)[i][j] = 0;
-          for (size_type k=0; k<m; k++)
+          for (size_type k=0; k<rows; k++)
             (*this)[i][j] += C[i][k]*M[k][j];
         }
       return *this;
@@ -552,14 +540,14 @@ namespace Dune {
 
     //! Multiplies M from the right to this matrix, this matrix is not modified
     template<int l>
-    FieldMatrix<K,n,l> rightmultiplyany (const FieldMatrix<K,m,l>& M)
+    FieldMatrix<K,rows,l> rightmultiplyany (const FieldMatrix<K,cols,l>& M)
     {
-      FieldMatrix<K,n,l> C;
+      FieldMatrix<K,rows,l> C;
 
-      for (size_type i=0; i<n; i++) {
+      for (size_type i=0; i<rows; i++) {
         for (size_type j=0; j<l; j++) {
           C[i][j] = 0;
-          for (size_type k=0; k<m; k++)
+          for (size_type k=0; k<cols; k++)
             C[i][j] += (*this)[i][k]*M[k][j];
         }
       }
@@ -572,13 +560,13 @@ namespace Dune {
     //! number of blocks in row direction
     size_type N () const
     {
-      return n;
+      return rows;
     }
 
     //! number of blocks in column direction
     size_type M () const
     {
-      return m;
+      return cols;
     }
 
     //===== query
@@ -596,20 +584,21 @@ namespace Dune {
     //===== conversion operator
 
     /** \brief Sends the matrix to an output stream */
-    friend std::ostream& operator<< (std::ostream& s, const FieldMatrix<K,n,m>& a)
+    friend std::ostream& operator<< (std::ostream& s, const FieldMatrix<K,rows,cols>& a)
     {
-      for (size_type i=0; i<n; i++)
+      for (size_type i=0; i<rows; i++)
         s << a.p[i] << std::endl;
       return s;
     }
 
   private:
     // the data, very simply a built in array with row-wise ordering
-    row_type p[(n > 0) ? n : 1];
+    row_type p[(rows > 0) ? rows : 1];
 
+#ifndef DOXYGEN
     struct ElimPivot
     {
-      ElimPivot(size_type pivot[n]);
+      ElimPivot(size_type pivot[ROWS]);
 
       void swap(int i, int j);
 
@@ -645,54 +634,56 @@ namespace Dune {
 
       K& sign_;
     };
+#endif // DOXYGEN
 
     template<class Func>
-    void luDecomposition(FieldMatrix<K,n,n>& A, Func func) const;
+    void luDecomposition(FieldMatrix<K,ROWS,ROWS>& A, Func func) const;
   };
 
-  template<typename K, int n, int m>
-  FieldMatrix<K,n,m>::ElimPivot::ElimPivot(size_type pivot[n])
+#ifndef DOXYGEN
+  template<typename K, int ROWS, int COLS>
+  FieldMatrix<K,ROWS,COLS>::ElimPivot::ElimPivot(size_type pivot[ROWS])
     : pivot_(pivot)
   {
-    for(int i=0; i < n; ++i) pivot[i]=i;
+    for(int i=0; i < rows; ++i) pivot[i]=i;
   }
 
-  template<typename K, int n, int m>
-  void FieldMatrix<K,n,m>::ElimPivot::swap(int i, int j)
+  template<typename K, int ROWS, int COLS>
+  void FieldMatrix<K,ROWS,COLS>::ElimPivot::swap(int i, int j)
   {
     pivot_[i]=j;
   }
 
-  template<typename K, int n, int m>
+  template<typename K, int ROWS, int COLS>
   template<typename V>
-  FieldMatrix<K,n,m>::Elim<V>::Elim(V& rhs)
+  FieldMatrix<K,ROWS,COLS>::Elim<V>::Elim(V& rhs)
     : rhs_(&rhs)
   {}
 
-  template<typename K, int n, int m>
+  template<typename K, int ROWS, int COLS>
   template<typename V>
-  void FieldMatrix<K,n,m>::Elim<V>::swap(int i, int j)
+  void FieldMatrix<K,ROWS,COLS>::Elim<V>::swap(int i, int j)
   {
     std::swap((*rhs_)[i], (*rhs_)[j]);
   }
 
-  template<typename K, int n, int m>
+  template<typename K, int ROWS, int COLS>
   template<typename V>
-  void FieldMatrix<K,n,m>::
+  void FieldMatrix<K,ROWS,COLS>::
   Elim<V>::operator()(const typename V::field_type& factor, int k, int i)
   {
     (*rhs_)[k] -= factor*(*rhs_)[i];
   }
-  template<typename K, int n, int m>
+  template<typename K, int ROWS, int COLS>
   template<typename Func>
-  inline void FieldMatrix<K,n,m>::luDecomposition(FieldMatrix<K,n,n>& A, Func func) const
+  inline void FieldMatrix<K,ROWS,COLS>::luDecomposition(FieldMatrix<K,ROWS,ROWS>& A, Func func) const
   {
     typename FieldTraits<K>::real_type norm=A.infinity_norm_real(); // for relative thresholds
     typename FieldTraits<K>::real_type pivthres = std::max(FMatrixPrecision<>::absolute_limit(),norm*FMatrixPrecision<>::pivoting_limit());
     typename FieldTraits<K>::real_type singthres = std::max(FMatrixPrecision<>::absolute_limit(),norm*FMatrixPrecision<>::singular_limit());
 
     // LU decomposition of A in A
-    for (int i=0; i<n; i++)  // loop over all rows
+    for (int i=0; i<rows; i++)  // loop over all rows
     {
       typename FieldTraits<K>::real_type pivmax=fvmeta_absreal(A[i][i]);
 
@@ -701,14 +692,14 @@ namespace Dune {
       {
         // compute maximum of column
         int imax=i; typename FieldTraits<K>::real_type abs;
-        for (int k=i+1; k<n; k++)
+        for (int k=i+1; k<rows; k++)
           if ((abs=fvmeta_absreal(A[k][i]))>pivmax)
           {
             pivmax = abs; imax = k;
           }
         // swap rows
         if (imax!=i) {
-          for (int j=0; j<n; j++)
+          for (int j=0; j<rows; j++)
             std::swap(A[i][j],A[imax][j]);
           func.swap(i, imax); // swap the pivot or rhs
         }
@@ -719,29 +710,29 @@ namespace Dune {
         DUNE_THROW(FMatrixError,"matrix is singular");
 
       // eliminate
-      for (int k=i+1; k<n; k++)
+      for (int k=i+1; k<rows; k++)
       {
         K factor = A[k][i]/A[i][i];
         A[k][i] = factor;
-        for (int j=i+1; j<n; j++)
+        for (int j=i+1; j<rows; j++)
           A[k][j] -= factor*A[i][j];
         func(factor, k, i);
       }
     }
   }
 
-  template <class K, int n, int m>
+  template <class K, int ROWS, int COLS>
   template <class V>
-  inline void FieldMatrix<K,n,m>::solve(V& x, const V& b) const
+  inline void FieldMatrix<K,ROWS,COLS>::solve(V& x, const V& b) const
   {
     // never mind those ifs, because they get optimized away
-    if (n!=m)
-      DUNE_THROW(FMatrixError, "Can't solve for a " << n << "x" << m << " matrix!");
+    if (rows!=cols)
+      DUNE_THROW(FMatrixError, "Can't solve for a " << rows << "x" << cols << " matrix!");
 
     // no need to implement the case 1x1, because the whole matrix class is
     // specialized for this
 
-    if (n==2) {
+    if (rows==2) {
 
 #ifdef DUNE_FMatrix_WITH_CHECKING
       K detinv = p[0][0]*p[1][1]-p[0][1]*p[1][0];
@@ -755,7 +746,7 @@ namespace Dune {
       x[0] = detinv*(p[1][1]*b[0]-p[0][1]*b[1]);
       x[1] = detinv*(p[0][0]*b[1]-p[1][0]*b[0]);
 
-    } else if (n==3) {
+    } else if (rows==3) {
 
       K d = determinant();
 #ifdef DUNE_FMatrix_WITH_CHECKING
@@ -780,30 +771,30 @@ namespace Dune {
       V& rhs = x; // use x to store rhs
       rhs = b; // copy data
       Elim<V> elim(rhs);
-      FieldMatrix<K,n,n> A(*this);
+      FieldMatrix<K,rows,rows> A(*this);
 
       luDecomposition(A, elim);
 
       // backsolve
-      for(int i=n-1; i>=0; i--) {
-        for (int j=i+1; j<n; j++)
+      for(int i=rows-1; i>=0; i--) {
+        for (int j=i+1; j<rows; j++)
           rhs[i] -= A[i][j]*x[j];
         x[i] = rhs[i]/A[i][i];
       }
     }
   }
 
-  template <class K, int n, int m>
-  inline void FieldMatrix<K,n,m>::invert()
+  template <class K, int ROWS, int COLS>
+  inline void FieldMatrix<K,ROWS,COLS>::invert()
   {
     // never mind those ifs, because they get optimized away
-    if (n!=m)
-      DUNE_THROW(FMatrixError, "Can't invert a " << n << "x" << m << " matrix!");
+    if (rows!=cols)
+      DUNE_THROW(FMatrixError, "Can't invert a " << rows << "x" << cols << " matrix!");
 
     // no need to implement the case 1x1, because the whole matrix class is
     // specialized for this
 
-    if (n==2) {
+    if (rows==2) {
 
       K detinv = p[0][0]*p[1][1]-p[0][1]*p[1][0];
 #ifdef DUNE_FMatrix_WITH_CHECKING
@@ -820,59 +811,58 @@ namespace Dune {
 
     } else {
 
-      FieldMatrix<K,n,n> A(*this);
-      size_type pivot[n];
+      FieldMatrix<K,rows,rows> A(*this);
+      size_type pivot[rows];
       luDecomposition(A, ElimPivot(pivot));
-      FieldMatrix<K,n,m>& L=A;
-      FieldMatrix<K,n,m>& U=A;
+      FieldMatrix<K,rows,cols>& L=A;
+      FieldMatrix<K,rows,cols>& U=A;
 
       // initialize inverse
       *this=K();
 
-      for(size_type i=0; i<n; ++i)
+      for(size_type i=0; i<rows; ++i)
         p[i][i]=1;
 
       // L Y = I; multiple right hand sides
-      for (size_type i=0; i<n; i++) {
+      for (size_type i=0; i<rows; i++)
         for (size_type j=0; j<i; j++)
-          for (size_type k=0; k<n; k++)
+          for (size_type k=0; k<rows; k++)
             p[i][k] -= L[i][j]*p[j][k];
-      }
 
       // U A^{-1} = Y
-      for (size_type i=n; i>0;) {
+      for (size_type i=rows; i>0;) {
         --i;
-        for (size_type k=0; k<n; k++) {
-          for (size_type j=i+1; j<n; j++)
+        for (size_type k=0; k<rows; k++) {
+          for (size_type j=i+1; j<rows; j++)
             p[i][k] -= U[i][j]*p[j][k];
           p[i][k] /= U[i][i];
         }
       }
 
-      for(size_type i=n; i>0; ) {
+      for(size_type i=rows; i>0; ) {
         --i;
         if(i!=pivot[i])
-          for(size_type j=0; j<n; ++j)
+          for(size_type j=0; j<rows; ++j)
             std::swap(p[j][pivot[i]], p[j][i]);
       }
     }
   }
 
   // implementation of the determinant
-  template <class K, int n, int m>
-  inline K FieldMatrix<K,n,m>::determinant() const
+  template <class K, int ROWS, int COLS>
+  inline K FieldMatrix<K,ROWS,COLS>::determinant() const
   {
     // never mind those ifs, because they get optimized away
-    if (n!=m)
-      DUNE_THROW(FMatrixError, "There is no determinant for a " << n << "x" << m << " matrix!");
+    if (rows!=cols)
+      DUNE_THROW(FMatrixError, "There is no determinant for a " << rows << "x" << cols << " matrix!");
 
     // no need to implement the case 1x1, because the whole matrix class is
     // specialized for this
 
-    if (n==2)
+    if (rows==2)
       return p[0][0]*p[1][1] - p[0][1]*p[1][0];
 
-    if (n==3) {
+    if (rows==3) {
       // code generated by maple
       K t4  = p[0][0] * p[1][1];
       K t6  = p[0][0] * p[1][2];
@@ -886,7 +876,7 @@ namespace Dune {
 
     }
 
-    FieldMatrix<K,n,n> A(*this);
+    FieldMatrix<K,rows,rows> A(*this);
     K det;
     try
     {
@@ -896,11 +886,10 @@ namespace Dune {
     {
       return 0;
     }
-    for (int i = 0; i < n; ++i)
+    for (int i = 0; i < rows; ++i)
       det *= A[i][i];
     return det;
   }
-
 
   /** \brief Special type for 1x1 matrices
    */
@@ -981,7 +970,7 @@ namespace Dune {
 
     //===== iterator interface to rows of the matrix
     //! Iterator class for sequential access
-    typedef FieldIterator<FieldMatrix<K,n,m>,row_type> Iterator;
+    typedef FieldIterator<FieldMatrix<K,rows,cols>,row_type> Iterator;
     //! typedef for stl compliant access
     typedef Iterator iterator;
     //! rename the iterators for easier access
@@ -1014,7 +1003,7 @@ namespace Dune {
     }
 
     //! Iterator class for sequential access
-    typedef FieldIterator<const FieldMatrix<K,n,m>,const row_type> ConstIterator;
+    typedef FieldIterator<const FieldMatrix<K,rows,cols>,const row_type> ConstIterator;
     //! typedef for stl compliant access
     typedef ConstIterator const_iterator;
     //! rename the iterators for easier access
@@ -1121,7 +1110,7 @@ namespace Dune {
     //! y += A^H x
     void umhv (const FieldVector<K,1>& x, FieldVector<K,1>& y) const
     {
-      y.p += fm_ck(a[0]) * x.p;
+      y.p += conjugateComplex(a[0]) * x.p;
     }
 
     //! y -= A x
@@ -1139,7 +1128,7 @@ namespace Dune {
     //! y -= A^H x
     void mmhv (const FieldVector<K,1>& x, FieldVector<K,1>& y) const
     {
-      y.p -= fm_ck(a[0]) * x.p;
+      y.p -= conjugateComplex(a[0]) * x.p;
     }
 
     //! y += alpha A x
@@ -1157,7 +1146,7 @@ namespace Dune {
     //! y += alpha A^H x
     void usmhv (const K& alpha, const FieldVector<K,1>& x, FieldVector<K,1>& y) const
     {
-      y.p += alpha * fm_ck(a[0]) * x.p;
+      y.p += alpha * conjugateComplex(a[0]) * x.p;
     }
 
     //===== norms
@@ -1284,9 +1273,9 @@ namespace Dune {
     row_type a;
 
   };
+#endif // DOXYGEN
 
   namespace FMatrixHelp {
-
 
     //! invert scalar without changing the original matrix
     template <typename K>
@@ -1418,9 +1407,11 @@ namespace Dune {
 
       for(size_type i=0; i<cols; i++)
         for(size_type j=0; j<cols; j++)
-        { ret[i][j]=0.0;
+        {
+          ret[i][j]=0.0;
           for(size_type k=0; k<rows; k++)
-            ret[i][j]+=matrix[k][i]*matrix[k][j];}
+            ret[i][j]+=matrix[k][i]*matrix[k][j];
+        }
     }
 
     //! calculates ret = matrix * x

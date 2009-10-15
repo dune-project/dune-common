@@ -758,7 +758,7 @@ namespace Dune {
   template<class K, int n, int m> class FieldMatrix;
 
 
-
+#ifndef DOXYGEN
   /** \brief Vectors containing only one component
    */
   template< class K >
@@ -1092,6 +1092,7 @@ namespace Dune {
     FieldVector<K,1> z = a;
     return (z[0]-=b);
   }
+#endif
 #endif
 
   /** @} end documentation */
