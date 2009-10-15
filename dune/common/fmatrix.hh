@@ -15,6 +15,15 @@
 
 namespace Dune {
 
+  template<class K, int n, int m> class FieldMatrix;
+
+  template<class K, int n, int m>
+  struct FieldTraits< FieldMatrix<K,n,m> >
+  {
+    typedef const typename FieldTraits<K>::field_type field_type;
+    typedef const typename FieldTraits<K>::real_type real_type;
+  };
+
   /**
       @addtogroup DenseMatVec
       @{
@@ -25,8 +34,6 @@ namespace Dune {
      \brief  This file implements a matrix constructed from a given type
      representing a field and compile-time given number of rows and columns.
    */
-
-  template<class K, int n, int m> class FieldMatrix;
 
   template<class K, int n, int m, typename T>
   void istl_assign_to_fmatrix(FieldMatrix<K,n,m>& f, const T& t)
@@ -449,33 +456,33 @@ namespace Dune {
     //===== norms
 
     //! frobenius norm: sqrt(sum over squared values of entries)
-    double frobenius_norm () const
+    typename FieldTraits<K>::real_type frobenius_norm () const
     {
-      double sum=0;
+      typename FieldTraits<K>::real_type sum=0;
       for (size_type i=0; i<n; ++i) sum += p[i].two_norm2();
       return sqrt(sum);
     }
 
     //! square of frobenius norm, need for block recursion
-    double frobenius_norm2 () const
+    typename FieldTraits<K>::real_type frobenius_norm2 () const
     {
-      double sum=0;
+      typename FieldTraits<K>::real_type sum=0;
       for (size_type i=0; i<n; ++i) sum += p[i].two_norm2();
       return sum;
     }
 
     //! infinity norm (row sum norm, how to generalize for blocks?)
-    double infinity_norm () const
+    typename FieldTraits<K>::real_type infinity_norm () const
     {
-      double max=0;
+      typename FieldTraits<K>::real_type max=0;
       for (size_type i=0; i<n; ++i) max = std::max(max,p[i].one_norm());
       return max;
     }
 
     //! simplified infinity norm (uses Manhattan norm for complex values)
-    double infinity_norm_real () const
+    typename FieldTraits<K>::real_type infinity_norm_real () const
     {
-      double max=0;
+      typename FieldTraits<K>::real_type max=0;
       for (size_type i=0; i<n; ++i) max = std::max(max,p[i].one_norm_real());
       return max;
     }
@@ -680,20 +687,20 @@ namespace Dune {
   template<typename Func>
   inline void FieldMatrix<K,n,m>::luDecomposition(FieldMatrix<K,n,n>& A, Func func) const
   {
-    double norm=A.infinity_norm_real(); // for relative thresholds
-    double pivthres = std::max(FMatrixPrecision<>::absolute_limit(),norm*FMatrixPrecision<>::pivoting_limit());
-    double singthres = std::max(FMatrixPrecision<>::absolute_limit(),norm*FMatrixPrecision<>::singular_limit());
+    typename FieldTraits<K>::real_type norm=A.infinity_norm_real(); // for relative thresholds
+    typename FieldTraits<K>::real_type pivthres = std::max(FMatrixPrecision<>::absolute_limit(),norm*FMatrixPrecision<>::pivoting_limit());
+    typename FieldTraits<K>::real_type singthres = std::max(FMatrixPrecision<>::absolute_limit(),norm*FMatrixPrecision<>::singular_limit());
 
     // LU decomposition of A in A
     for (int i=0; i<n; i++)  // loop over all rows
     {
-      double pivmax=fvmeta_absreal(A[i][i]);
+      typename FieldTraits<K>::real_type pivmax=fvmeta_absreal(A[i][i]);
 
       // pivoting ?
       if (pivmax<pivthres)
       {
         // compute maximum of column
-        int imax=i; double abs;
+        int imax=i; typename FieldTraits<K>::real_type abs;
         for (int k=i+1; k<n; k++)
           if ((abs=fvmeta_absreal(A[k][i]))>pivmax)
           {
@@ -1156,25 +1163,25 @@ namespace Dune {
     //===== norms
 
     //! frobenius norm: sqrt(sum over squared values of entries)
-    double frobenius_norm () const
+    typename FieldTraits<K>::real_type frobenius_norm () const
     {
       return sqrt(fvmeta_abs2(a[0]));
     }
 
     //! square of frobenius norm, need for block recursion
-    double frobenius_norm2 () const
+    typename FieldTraits<K>::real_type frobenius_norm2 () const
     {
       return fvmeta_abs2(a[0]);
     }
 
     //! infinity norm (row sum norm, how to generalize for blocks?)
-    double infinity_norm () const
+    typename FieldTraits<K>::real_type infinity_norm () const
     {
       return std::abs(a[0]);
     }
 
     //! simplified infinity norm (uses Manhattan norm for complex values)
-    double infinity_norm_real () const
+    typename FieldTraits<K>::real_type infinity_norm_real () const
     {
       return fvmeta_abs_real(a[0]);
     }

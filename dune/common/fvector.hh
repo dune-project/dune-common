@@ -12,28 +12,33 @@
 #include "exceptions.hh"
 #include "genericiterator.hh"
 
+#include "ftraits.hh"
+
 #ifdef DUNE_EXPRESSIONTEMPLATES
 #include "exprtmpl.hh"
 #endif
 
 namespace Dune {
 
-#ifndef DUNE_EXPRESSIONTEMPLATES
+  // forward declaration of template
+  template<class K, int SIZE> class FieldVector;
+
+  template<class K, int SIZE>
+  struct FieldTraits< FieldVector<K,SIZE> >
+  {
+    typedef const typename FieldTraits<K>::field_type field_type;
+    typedef const typename FieldTraits<K>::real_type real_type;
+  };
 
   /** @defgroup DenseMatVec Dense Matrix and Vector Template Library
       @ingroup Common
-          @{
+      @{
    */
 
   /*! \file
    * \brief This file implements a vector constructed from a given type
      representing a field and a compile-time given size.
    */
-
-  // forward declaration of template
-  template<class K, int SIZE> class FieldVector;
-
-#endif
 
 #ifndef DUNE_EXPRESSIONTEMPLATES
 
@@ -42,7 +47,7 @@ namespace Dune {
      \memberof FieldVector
    */
   template<class K>
-  inline double fvmeta_absreal (const K& k)
+  inline typename FieldTraits<K>::real_type fvmeta_absreal (const K& k)
   {
     return std::abs(k);
   }
@@ -52,7 +57,7 @@ namespace Dune {
      \memberof FieldVector
    */
   template<class K>
-  inline double fvmeta_absreal (const std::complex<K>& c)
+  inline typename FieldTraits<K>::real_type fvmeta_absreal (const std::complex<K>& c)
   {
     return fvmeta_abs(c.real()) + fvmeta_abs(c.imag());
   }
@@ -62,7 +67,7 @@ namespace Dune {
      \memberof FieldVector
    */
   template<class K>
-  inline double fvmeta_abs2 (const K& k)
+  inline typename FieldTraits<K>::real_type fvmeta_abs2 (const K& k)
   {
     return k*k;
   }
@@ -72,7 +77,7 @@ namespace Dune {
      \memberof FieldVector
    */
   template<class K>
-  inline double fvmeta_abs2 (const std::complex<K>& c)
+  inline typename FieldTraits<K>::real_type fvmeta_abs2 (const std::complex<K>& c)
   {
     return c.real()*c.real() + c.imag()*c.imag();
   }
@@ -636,8 +641,8 @@ namespace Dune {
     //===== norms
 
     //! one norm (sum over absolute values of entries)
-    double one_norm() const {
-      double result = 0;
+    typename FieldTraits<K>::real_type one_norm() const {
+      typename FieldTraits<K>::real_type result = 0;
       for (int i=0; i<size; i++)
         result += std::abs(p[i]);
       return result;
@@ -645,45 +650,45 @@ namespace Dune {
 
 
     //! simplified one norm (uses Manhattan norm for complex values)
-    double one_norm_real () const
+    typename FieldTraits<K>::real_type one_norm_real () const
     {
-      double result = 0;
+      typename FieldTraits<K>::real_type result = 0;
       for (int i=0; i<size; i++)
         result += fvmeta_absreal(p[i]);
       return result;
     }
 
     //! two norm sqrt(sum over squared values of entries)
-    double two_norm () const
+    typename FieldTraits<K>::real_type two_norm () const
     {
-      double result = 0;
+      typename FieldTraits<K>::real_type result = 0;
       for (int i=0; i<size; i++)
         result += fvmeta_abs2(p[i]);
       return std::sqrt(result);
     }
 
     //! square of two norm (sum over squared values of entries), need for block recursion
-    double two_norm2 () const
+    typename FieldTraits<K>::real_type two_norm2 () const
     {
-      double result = 0;
+      typename FieldTraits<K>::real_type result = 0;
       for (int i=0; i<size; i++)
         result += fvmeta_abs2(p[i]);
       return result;
     }
 
     //! infinity norm (maximum of absolute values of entries)
-    double infinity_norm () const
+    typename FieldTraits<K>::real_type infinity_norm () const
     {
-      double result = 0;
+      typename FieldTraits<K>::real_type result = 0;
       for (int i=0; i<size; i++)
         result = std::max(result, std::abs(p[i]));
       return result;
     }
 
     //! simplified infinity norm (uses Manhattan norm for complex values)
-    double infinity_norm_real () const
+    typename FieldTraits<K>::real_type infinity_norm_real () const
     {
-      double result = 0;
+      typename FieldTraits<K>::real_type result = 0;
       for (int i=0; i<size; i++)
         result = std::max(result, fvmeta_absreal(p[i]));
       return result;
@@ -977,37 +982,37 @@ namespace Dune {
     //===== norms
 
     //! one norm (sum over absolute values of entries)
-    double one_norm () const
+    typename FieldTraits<K>::real_type one_norm () const
     {
       return std::abs(p);
     }
 
     //! simplified one norm (uses Manhattan norm for complex values)
-    double one_norm_real () const
+    typename FieldTraits<K>::real_type one_norm_real () const
     {
       return fvmeta_abs_real(p);
     }
 
     //! two norm sqrt(sum over squared values of entries)
-    double two_norm () const
+    typename FieldTraits<K>::real_type two_norm () const
     {
       return sqrt(fvmeta_abs2(p));
     }
 
     //! square of two norm (sum over squared values of entries), need for block recursion
-    double two_norm2 () const
+    typename FieldTraits<K>::real_type two_norm2 () const
     {
       return fvmeta_abs2(p);
     }
 
     //! infinity norm (maximum of absolute values of entries)
-    double infinity_norm () const
+    typename FieldTraits<K>::real_type infinity_norm () const
     {
       return std::abs(p);
     }
 
     //! simplified infinity norm (uses Manhattan norm for complex values)
-    double infinity_norm_real () const
+    typename FieldTraits<K>::real_type infinity_norm_real () const
     {
       return fvmeta_abs_real(p);
     }
