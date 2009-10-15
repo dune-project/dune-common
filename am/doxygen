@@ -85,8 +85,10 @@ html: doxygen-tag
 
 DUNEDOXYNIZE=@DUNE_COMMON_ROOT@/bin/dunedoxynize
 
-$(srcdir)/Doxyfile.in: $(srcdir)/Doxylocal
-	cd $(top_srcdir) && $(DUNEDOXYNIZE)
+$(srcdir)/Doxyfile.in: FORCE
+	if test -f $(srcdir)/Doxylocal && test $(srcdir)/Doxylocal -nt $(srcdir)/Doxyfile.in; then \
+	  cd $(top_srcdir) && $(DUNEDOXYNIZE); \
+	fi
 
 if WML
 # how to install the doxygen documentation
