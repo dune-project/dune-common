@@ -7,12 +7,15 @@
 #include <cmath>
 #include <cstddef>
 #include <iostream>
-#include "exceptions.hh"
-#include "fvector.hh"
-#include "precision.hh"
-#include "static_assert.hh"
 
-namespace Dune {
+#include <dune/common/misc.hh>
+#include <dune/common/exceptions.hh>
+#include <dune/common/fvector.hh>
+#include <dune/common/precision.hh>
+#include <dune/common/static_assert.hh>
+
+namespace Dune
+{
 
   template<class K, int ROWS, int COLS> class FieldMatrix;
 
