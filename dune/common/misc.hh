@@ -14,14 +14,6 @@
 
 namespace Dune {
 
-  //! Check condition at compilation time
-  template <bool flag> class CompileTimeChecker;
-
-  //! it exists only an implementation for true so the compiler throws an
-  //! error if the condition is false
-  template <> class CompileTimeChecker<true> { } DUNE_DEPRECATED;
-
-
   /** \brief Map an integer value to a type
 
      This comes in handy if one tries to emulate member function specialization.
