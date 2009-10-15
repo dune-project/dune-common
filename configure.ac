@@ -15,7 +15,7 @@ DUNE_AUTOBUILD_FLAGS
 DUNE_CHECK_ALL
 
 # preset variable to path such that #include <dune/...> works
-AC_SUBST([DUNE_COMMON_ROOT], '$(top_builddir)')
+AC_SUBST([DUNE_COMMON_ROOT], '$(abs_top_builddir)')
 AC_SUBST([AM_CPPFLAGS], '-I$(top_srcdir)')
 AC_SUBST([LOCAL_LIBS], '$(top_builddir)/dune/common/libcommon.la')
 
