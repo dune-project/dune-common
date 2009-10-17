@@ -13,7 +13,7 @@ commonincludedir = $(includedir)/dune/common
 commoninclude_HEADERS = alignment.hh array.hh \
   arraylist.hh bitsetvector.hh debugstream.hh deprecated.hh \
   enumset.hh exceptions.hh fixedarray.hh fmatrix.hh fmatrixev.hh \
-  fvector.hh genericiterator.hh \
+  fvector.hh ftraits.hh genericiterator.hh \
   helpertemplates.hh iteratorfacades.hh \
   misc.hh poolallocator.hh finitestack.hh \
   sllist.hh shared_ptr.hh smartpointer.hh stdstreams.hh timer.hh tuples.hh \
