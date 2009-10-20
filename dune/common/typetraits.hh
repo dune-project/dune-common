@@ -183,7 +183,8 @@ namespace Dune
     struct Big {char dummy[2];};
     static Small test(To);
     static Big test(...);
-    static From makeFrom();
+    static typename TypeTraits< From >::ReferredType &makeFrom ();
+
   public:
     enum {
       /** @brief True if the conversion exists. */
