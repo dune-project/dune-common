@@ -5,7 +5,7 @@ headercheck_PATTERN = *.hh
 headercheck_IGNORE =
 
 hctest.o: hctest.cc
-	$(CXX) -I$(top_srcdir) \
+	$(CXX) -I$(top_srcdir) -DHEADERCHECK \
 	  $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	  $(MPI_CPPFLAGS) $(ALL_PKG_CPPFLAGS) -c -o $@ $<
 
