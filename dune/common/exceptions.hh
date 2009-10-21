@@ -119,6 +119,10 @@ namespace Dune {
 
   /*! Macro to throw an exception
 
+     \code
+     #include <dune/common/exceptions.hh>
+     \endcode
+
      \param E exception class derived from Dune::Exception
      \param m reason for this exception in ostream-notation
 
