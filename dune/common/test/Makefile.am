@@ -2,7 +2,7 @@
 # $Id$
 
 TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
-	sllisttest iteratorfacadetest tuplestest fvectortest fmatrixtest \
+	sllisttest iteratorfacadetest iteratorfacadetest2 tuplestest fvectortest fmatrixtest \
 	poolallocatortest settest gcdlcmtest streamtest \
 	bigunsignedinttest mpihelpertest singletontest mpicollcomm \
 	utilitytest lrutest \
@@ -37,6 +37,8 @@ XFAIL_TESTS = testfassign_fail1 testfassign_fail2 testfassign_fail3 \
 
 # programs just to build when "make check" is used
 check_PROGRAMS = $(TESTPROGS)
+
+noinst_HEADERS = dummyiterator.hh
 
 AM_LDFLAGS = $(LOCAL_LIBS)
 
@@ -74,6 +76,8 @@ streamtest_SOURCES = streamtest.cc
 # mention headers so that they are distributed too
 iteratorfacadetest_SOURCES = iteratorfacadetest.cc iteratorfacadetest.hh \
    iteratortest.hh
+
+iteratorfacadetest2_SOURCES = iteratorfacadetest2.cc
 
 fvectortest_SOURCES = fvectortest.cc
 
