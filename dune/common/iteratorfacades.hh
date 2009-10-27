@@ -363,23 +363,36 @@ namespace Dune
   /**
    * @brief Checks for equality.
    *
-   * This operation is only defined if either D2
-   * is convertible to D1 or vice versa. If that is
-   * not the case the compiler will report an error
-   * as EnableIfInterOperable<D1,D2,bool>::type is
-   * not defined.
-   *
+   * This operation is only defined if T2 is convertible to T1, otherwise it
+   * is removed from the overload set since the enable_if for the return type
+   * yield an invalid type expression.
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename EnableIfInterOperable<T1,T2,bool>::type
+  inline typename enable_if<Conversion<T2,T1>::exists,bool>::type
   operator==(const BidirectionalIteratorFacade<T1,V1,R1,D>& lhs,
              const BidirectionalIteratorFacade<T2,V2,R2,D>& rhs)
   {
-    if(Conversion<T2,T1>::exists)
-      return static_cast<const T1&>(lhs).equals(static_cast<const T2&>(rhs));
-    else
-      return static_cast<const T2&>(rhs).equals(static_cast<const T1&>(lhs));
+    return static_cast<const T1&>(lhs).equals(static_cast<const T2&>(rhs));
+  }
+
+  /**
+   * @brief Checks for equality.
+   *
+   * This operation is only defined if either T1 is convertible to T2, and T2
+   * is not convetible to T1.  Otherwise the operator is removed from the
+   * overload set since the enable_if for the return type yield an invalid
+   * type expression.
+   */
+  template<class T1, class V1, class R1, class D,
+      class T2, class V2, class R2>
+  inline
+  typename enable_if<Conversion<T1,T2>::exists && !Conversion<T2,T1>::exists,
+      bool>::type
+  operator==(const BidirectionalIteratorFacade<T1,V1,R1,D>& lhs,
+             const BidirectionalIteratorFacade<T2,V2,R2,D>& rhs)
+  {
+    return static_cast<const T2&>(rhs).equals(static_cast<const T1&>(lhs));
   }
 
   /**
@@ -398,10 +411,7 @@ namespace Dune
   operator!=(const BidirectionalIteratorFacade<T1,V1,R1,D>& lhs,
              const BidirectionalIteratorFacade<T2,V2,R2,D>& rhs)
   {
-    if(Conversion<T2,T1>::exists)
-      return !static_cast<const T1&>(lhs).equals(static_cast<const T2&>(rhs));
-    else
-      return !static_cast<const T2&>(rhs).equals(static_cast<const T1&>(lhs));
+    return !(lhs == rhs);
   }
 
   /**
