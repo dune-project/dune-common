@@ -17,7 +17,7 @@ TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
 # which tests to run
 COMPILE_XFAIL=$(DUNE_COMMON_ROOT)/bin/xfail-compile-tests
 
-COMPILE_XFAIL_TESTS = nullptr-test-fail static_assert_test
+COMPILE_XFAIL_TESTS = genericiterator_compile_fail nullptr-test-fail static_assert_test
 
 compile_XFAIL:
 	for i in $(COMPILE_XFAIL_TESTS); do \
@@ -134,5 +134,7 @@ conversiontest_SOURCES = conversiontest.cc
 sourcescheck_NOSOURCES = exprtmpl.cc timing.cc
 
 float_cmp_SOURCES = float_cmp.cc
+
+genericiterator_compile_fail_SOURCES = genericiterator_compile_fail.cc
 
 include $(top_srcdir)/am/global-rules
