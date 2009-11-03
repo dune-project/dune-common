@@ -74,10 +74,10 @@ namespace Dune {
     void makeTetrahedron() {basicType_ = simplex; dim_ = 3;}
 
     /** \brief Make a pyramid */
-    void makePyramid() {basicType_ = pyramid;}
+    void makePyramid() {basicType_ = pyramid;  dim_ = 3;}
 
     /** \brief Make a prism */
-    void makePrism() {basicType_ = prism;}
+    void makePrism() {basicType_ = prism;  dim_ = 3;}
 
     /** \brief Make a hexahedron */
     void makeHexahedron() {basicType_ = cube; dim_ = 3;}
@@ -170,6 +170,9 @@ namespace Dune {
         break;
       case prism :
         s << "prism";
+        break;
+      default :
+        s << "invalid geometry type";
       }
 
       return s;
