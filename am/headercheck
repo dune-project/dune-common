@@ -2,7 +2,10 @@
 # $Id: sourcescheck 5183 2008-04-27 17:37:08Z christi $
 
 headercheck_PATTERN = *.hh
-headercheck_IGNORE =
+
+# set 
+# headercheck_IGNORE = foo.hh
+# to ignore foo.hh
 
 hctest.o: hctest.cc
 	$(CXX) -I$(top_srcdir) -DHEADERCHECK \
@@ -30,6 +33,9 @@ headercheck-am:
 	fi; \
 	test "$$list" != "$(headercheck_PATTERN)" || exit 0; \
 	for f in $$list; do \
+	echo "$$f"; \
+	echo "$(headercheck_IGNORE)" | tr ' ' '\n' | grep -q "$$f"; \
+	  if echo "$(headercheck_IGNORE)" | tr ' ' '\n' | grep -q "$$f"; then continue; fi; \
 	  HEADER="$(subdir)/$$f"; \
 	  test $$SILENT -ne 0 || echo "checking $$HEADER"; \
 	  CCFILE=hctest.cc; \
