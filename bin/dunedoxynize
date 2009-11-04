@@ -108,6 +108,11 @@ if ! [ -f dune.module ]; then
   exit 1
 fi
 
+# don't do anything if we have old style Doxyfile or Doxyfile.in, but no Doxylocal
+if [ $# -eq 0 ] && ! [ -f "$DOXYDIR/Doxylocal" ]; then
+  exit 0
+fi
+
 # quite if your module doesn't have any documentation
 if ! [ -d "$OUTDIR" ]; then
   if [ $# -eq 0 ]; then
