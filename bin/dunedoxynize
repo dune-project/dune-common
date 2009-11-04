@@ -1,31 +1,123 @@
-#!/bin/bash
+#!/bin/sh
+
+export DOXYOUT=${1:-doc/doxygen/Doxyfile.in}
+shift
+export DOXYDIR=doc/doxygen/
 
 find_doxystyle()
 {
   for i in `dirname $0`/../doc/doxygen/Doxystyle `dirname $0`/../share/dune-common/doc/doxygen/Doxystyle; do
-    if test -f $i; then
+    if [ -f "$i" ]; then
       export DOXYSTYLE=$i
-      return
+      return 0
     fi
   done
-  echo "Error: dunedoxynize global style not found"
-  exit 1
+  return 1
 }
 
-STUB=doc/doxygen/Doxylocal
-if ! test -f $STUB; then
-  exit 0
-fi
+test_doxylocal()
+{
+  while [ -n "$1" ]; do
+    if [ -f "$1/dune.module" ]; then
+      return 0
+    fi
+    shift
+  done
+  return 1
+}
 
-if ! test -f configure.ac; then
-  echo dunedoxynize must be called from the top_srcdir of your module
+parse_doxyfile()
+{
+  # Doxylocal is used _as is_
+  if [ "$2" = "Doxylocal" ]; then
+    cat $1/$DOXYDIR/$2
+    return
+  fi
+
+  local FILE=$1/$DOXYDIR/$2
+  local FOUND=0
+  local line
+
+  # find lines that match the pattern
+  set `grep -n '^ *\(INPUT\|EXCLUDE\|PREDEFINED\) *[+=]' $FILE | cut -d: -f1`
+
+  # search lines in $@ and proceeding lines
+  grep -n . $FILE |
+  sed -e 's/\\/\\\\/g' |
+  while read line; do
+	if [ "${line%%:*}" -eq "${1:-0}" ]; then
+	  FOUND=1
+	  # subst = by += if necessary
+	  start="${line%%=*}"
+	  case "$start" in
+		*+) ;;
+		*)  line="$start+=${line#*=}" ;;
+	  esac
+	  shift
+	fi
+	if [ $FOUND -eq 1 ]; then
+	  echo "$line"
+	else
+	  continue
+	fi
+	# check for trailing '\'
+	case "$line" in
+	  *\\) FOUND=1 ;;
+	  *)   FOUND=0 ;;
+	esac
+  done | sed -e 's/^[0-9]*://'
+}
+
+parse_doxylocal()
+{
+  if echo $1 | grep -q "^/"; then
+    srcdir=$1/$DOXYDIR
+    top_srcdir=$1
+    parse_doxyfile $1 $2 | sed -e "s!@\(abs_\)*srcdir@!$srcdir!" -e "s!@\(abs_\)*top_srcdir@!$top_srcdir!";
+  else
+    parse_doxyfile $1 $2
+  fi
+}
+
+get_module_name()
+{
+  grep "^Module:" $1/dune.module | sed -e 's/^Module: *//'
+}
+
+generate_doxyout()
+{
+  echo "Generating $DOXYOUT from "
+  echo "    global style"
+  cat $DOXYSTYLE > $DOXYOUT
+  while [ -n "$1" ]; do
+    for DOXY in Doxylocal Doxyfile.in Doxyfile; do
+      if [ -f "$1/$DOXYDIR/$DOXY" ]; then
+        echo "    and `get_module_name $1` config"
+        parse_doxylocal $1 $DOXY >> $DOXYOUT
+		break
+      fi
+	done
+    shift
+  done
+  echo "    ... done"
+}
+
+# make sure we are in dune module
+if ! [ -f dune.module ]; then
+  echo "Error: dunedoxynize must be called from the top_srcdir of your module"
   exit 1
 fi
 
-echo "Generating doc/doygen/Doxyfile.in from "
-find_doxystyle
-echo "    global style"
-cat $DOXYSTYLE > doc/doxygen/Doxyfile.in
-echo "    and $STUB"
-cat $STUB >> doc/doxygen/Doxyfile.in
-echo "    ... done"
+# search for doxygen style
+if ! find_doxystyle; then
+  echo "Error: dunedoxynize global style not found"
+  exit 1
+fi
+
+# make sure that there is at least one Doxylocal file
+if ! test_doxylocal "${@:-.}" || [ $# -eq 0 ]; then
+  echo "Error: you didn't supply any valid Doxylocal file"
+  exit 1
+fi
+
+generate_doxyout "${@:-.}"
