@@ -279,13 +279,13 @@ AC_DEFUN([DUNE_DEV_MODE],[
 ])
 
 AC_DEFUN([DUNE_SYMLINK],[
-  AC_MSG_WARN([Module is using the deprecated \'dune\' symlink.])
+  AC_PROG_LN_S
+  AC_MSG_WARN([Module is using the deprecated 'dune' symlink.])
   # create symlink for consistent paths even when $(top_srcdir) is not
   # called dune/ (if filesystem/OS supports symlinks)
-  AC_PROG_LN_S
   AS_IF([test "x$LN_S" = "xln -s"],[
     # Symlinks possible!
- 
+
     # Note: we are currently in the build directory which may be != the
     # source directory
  
@@ -294,8 +294,11 @@ AC_DEFUN([DUNE_SYMLINK],[
       # exists: is a symlink?
       AS_IF([test -L "dune"],[
         AS_IF([! test -r dune/$ac_unique_file],[
-          AC_MSG_ERROR([Symlink \'dune\' exists but appears to be wrong\! Please remove it manually])
+          AC_MSG_ERROR([Symlink 'dune' exists but appears to be wrong! Please remove it manually])
         ])
+      ],[
+        # if we are in the source directory we can make sure that there is no directory
+		AC_MSG_ERROR([Module is using the DUNE[]_SYMLINK directive but contains a directory 'dune'!])
       ])
     ],[
       echo Creating dune-symlink...
