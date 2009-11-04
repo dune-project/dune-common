@@ -186,7 +186,7 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
   done
   MODULE="$PROJECT"
 
-  DEP_OK=1
+  DEPOK=1
 
   while [ "$DEPOK" != 0 ]; do
   echo "2) Which modules should this module depend on?"
