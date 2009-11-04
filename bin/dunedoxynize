@@ -103,6 +103,19 @@ generate_doxyout()
   echo "    ... done"
 }
 
+generate_doxylocal()
+{
+  echo "Generating $DOXYOUT from "
+  for DOXY in Doxyfile.in Doxyfile; do
+    if [ -f "$1/$DOXYDIR/$DOXY" ]; then
+      echo "    `get_module_name .` $DOXY"
+      parse_doxylocal . $DOXY > $DOXYOUT
+      break
+    fi
+  done
+  echo "    ... done"
+}
+
 # make sure we are in dune module
 if ! [ -f dune.module ]; then
   echo "Error: dunedoxynize must be called from the top_srcdir of your module"
@@ -147,4 +160,8 @@ if ! (test_doxylocal "${@:-.}" || [ $# -eq 0 ]); then
   exit 1
 fi
 
-generate_doxyout "${@:-.}"
+if [ "`basename $DOXYOUT`" = "Doxylocal" ]; then
+  generate_doxylocal "${@:-.}"
+else
+  generate_doxyout "${@:-.}"
+fi
