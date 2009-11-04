@@ -1098,6 +1098,12 @@ namespace Dune
       y.p = a[0] * x.p;
     }
 
+    //! y = A^T x
+    void mtv ( const FieldVector< K, 1 > &x, FieldVector< K, 1 > &y ) const
+    {
+      y.p = a[ 0 ] * x.p;
+    }
+
     //! y += A x
     void umv (const FieldVector<K,1>& x, FieldVector<K,1>& y) const
     {
