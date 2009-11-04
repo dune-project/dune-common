@@ -1,8 +1,8 @@
 #!/bin/sh
 
-export DOXYOUT=${1:-doc/doxygen/Doxyfile.in}
-shift
-export DOXYDIR=doc/doxygen/
+DOXYOUT=${1:-doc/doxygen/Doxyfile.in}
+OUTDIR=`dirname "$DOXYOUT"`
+DOXYDIR="doc/doxygen/"
 
 find_doxystyle()
 {
@@ -108,12 +108,24 @@ if ! [ -f dune.module ]; then
   exit 1
 fi
 
+# quite if your module doesn't have any documentation
+if ! [ -d "$OUTDIR" ]; then
+  if [ $# -eq 0 ]; then
+    exit 0
+  else
+    echo "Error: output directory $OUTDIR does not exist."
+    exit 0
+  fi
+fi
+
 # search for doxygen style
 if ! find_doxystyle; then
   echo "Error: dunedoxynize global style not found"
   exit 1
 fi
 
+# drop the parameter of the output file
+shift
 # make sure that there is at least one Doxylocal file
 if ! (test_doxylocal "${@:-.}" || [ $# -eq 0 ]); then
   echo "Error: you didn't supply any valid Doxylocal file"
