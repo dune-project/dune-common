@@ -39,32 +39,32 @@ parse_doxyfile()
   local line
 
   # find lines that match the pattern
-  set `grep -n '^ *\(INPUT\|EXCLUDE\|PREDEFINED\) *[+=]' $FILE | cut -d: -f1`
+  set `grep -n '^ *\(INPUT\|EXAMPLE_PATH\|IMAGE_PATH\|PREDEFINED\|EXCLUDE\|EXAMPLE_PATTERNS\) *[+=]' $FILE | cut -d: -f1`
 
   # search lines in $@ and proceeding lines
   grep -n . $FILE |
   sed -e 's/\\/\\\\/g' |
   while read line; do
-	if [ "${line%%:*}" -eq "${1:-0}" ]; then
-	  FOUND=1
-	  # subst = by += if necessary
-	  start="${line%%=*}"
-	  case "$start" in
-		*+) ;;
-		*)  line="$start+=${line#*=}" ;;
-	  esac
-	  shift
-	fi
-	if [ $FOUND -eq 1 ]; then
-	  echo "$line"
-	else
-	  continue
-	fi
-	# check for trailing '\'
-	case "$line" in
-	  *\\) FOUND=1 ;;
-	  *)   FOUND=0 ;;
-	esac
+    if [ "${line%%:*}" -eq "${1:-0}" ]; then
+      FOUND=1
+      # subst = by += if necessary
+      start="${line%%=*}"
+      case "$start" in
+        *+) ;;
+        *)  line="$start+=${line#*=}" ;;
+      esac
+      shift
+    fi
+    if [ $FOUND -eq 1 ]; then
+      echo "$line"
+    else
+      continue
+    fi
+    # check for trailing '\'
+    case "$line" in
+      *\\) FOUND=1 ;;
+      *)   FOUND=0 ;;
+    esac
   done | sed -e 's/^[0-9]*://'
 }
 
@@ -94,9 +94,9 @@ generate_doxyout()
       if [ -f "$1/$DOXYDIR/$DOXY" ]; then
         echo "    and `get_module_name $1` config"
         parse_doxylocal $1 $DOXY >> $DOXYOUT
-		break
+        break
       fi
-	done
+    done
     shift
   done
   echo "    ... done"
@@ -110,6 +110,15 @@ fi
 
 # don't do anything if we have old style Doxyfile or Doxyfile.in, but no Doxylocal
 if [ $# -eq 0 ] && ! [ -f "$DOXYDIR/Doxylocal" ]; then
+  for DOXY in Doxyfile.in Doxyfile; do
+    if [ -f "$DOXYDIR/$DOXY" ]; then
+      echo "Warning: module still uses handwritten $DOXY"
+      echo "         You can transform it to an initial Doxylocal by calling"
+      echo "         dune-common/bin/dunedoxynize doc/doxygen/Doxylocal ."
+      echo "         in the top source directory of this module"
+      exit 0
+    fi
+  done
   exit 0
 fi
 
