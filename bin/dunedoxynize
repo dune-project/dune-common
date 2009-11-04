@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -x
+
 export DOXYOUT=${1:-doc/doxygen/Doxyfile.in}
 shift
 export DOXYDIR=doc/doxygen/
@@ -115,7 +117,7 @@ if ! find_doxystyle; then
 fi
 
 # make sure that there is at least one Doxylocal file
-if ! test_doxylocal "${@:-.}" || [ $# -eq 0 ]; then
+if ! (test_doxylocal "${@:-.}" || [ $# -eq 0 ]); then
   echo "Error: you didn't supply any valid Doxylocal file"
   exit 1
 fi
