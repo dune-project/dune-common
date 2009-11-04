@@ -75,6 +75,7 @@ AC_DEFUN([DUNE_COMMON_CHECKS],
 
   # check for auxiliary tools so that it's not fatal if they're missing
   AC_CHECK_PROGS([DOXYGEN], [doxygen], [true])
+  AM_CONDITIONAL([DOXYGEN], [test "x$DOXYGEN" != xtrue])
   AC_CHECK_PROGS([TEX], [latex], [true])
   AC_CHECK_PROGS([BIBTEX], [bibtex], [true])
   AC_CHECK_PROGS([DVIPDF], [dvipdf], [true])
