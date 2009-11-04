@@ -91,6 +91,7 @@ generate_doxyout()
   cat $DOXYSTYLE > $DOXYOUT
   while [ -n "$1" ]; do
     for DOXY in Doxylocal Doxyfile.in Doxyfile; do
+	  if [ "$1/$DOXYDIR/$DOXY" -ef "$DOXYOUT" ]; then continue; fi
       if [ -f "$1/$DOXYDIR/$DOXY" ]; then
         echo "    and `get_module_name $1` config"
         parse_doxylocal $1 $DOXY >> $DOXYOUT
