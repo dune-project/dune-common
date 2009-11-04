@@ -1,7 +1,5 @@
 #!/bin/sh
 
-set -x
-
 export DOXYOUT=${1:-doc/doxygen/Doxyfile.in}
 shift
 export DOXYDIR=doc/doxygen/
