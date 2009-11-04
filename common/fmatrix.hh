@@ -303,6 +303,27 @@ namespace Dune {
       }
     }
 
+
+    //! y = A^T x
+    template< class X, class Y >
+    void mtv ( const X &x, Y &y ) const
+    {
+#ifdef DUNE_FMatrix_WITH_CHECKING
+      assert( &x != &y );
+      if( x.N() != N() )
+        DUNE_THROW( FMatrixError, "Index out of range." );
+      if( y.N() != M() )
+        DUNE_THROW( FMatrixError, "Index out of range." );
+#endif
+      for( size_type i = 0; i < cols; ++i )
+      {
+        y[ i ] = 0;
+        for( size_type j = 0; j < rows; ++j )
+          y[ i ] += (*this)[ j ][ i ] * x[ j ];
+      }
+    }
+
+
     //! y += A x
     template<class X, class Y>
     void umv (const X& x, Y& y) const
@@ -1023,6 +1044,12 @@ namespace Dune {
       y.p = a[0] * x.p;
     }
 
+    //! y = A^T x
+    void mtv ( const FieldVector< K, 1 > &x, FieldVector< K, 1 > &y ) const
+    {
+      y.p = a[ 0 ] * x.p;
+    }
+
     //! y += A x
     void umv (const FieldVector<K,1>& x, FieldVector<K,1>& y) const
     {
@@ -1128,7 +1155,7 @@ namespace Dune {
     //! calculates the determinant of this matrix
     K determinant () const
     {
-      return std::abs(a[0]);
+      return a[ 0 ];
     }
 
     //! left multiplication
