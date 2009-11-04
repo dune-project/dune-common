@@ -7,15 +7,14 @@ AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([dune/common/stdstreams.cc])
 AM_CONFIG_HEADER([config.h])
 
-# create symlink dune -> $top_srcdir
-DUNE_SYMLINK
 # add configure flags needed to create log files for dune-autobuild
 DUNE_AUTOBUILD_FLAGS
 # check all dune dependecies and prerequisits
 DUNE_CHECK_ALL
 
 # preset variable to path such that #include <dune/...> works
-AC_SUBST([DUNE_COMMON_ROOT], '$(abs_top_builddir)')
+AC_SUBST([DUNE_COMMON_ROOT], '$(abs_top_srcdir)')
+AC_SUBST([DUNE_COMMON_BIN], '$(abs_top_srcdir)/bin/')
 AC_SUBST([AM_CPPFLAGS], '-I$(top_srcdir)')
 AC_SUBST([LOCAL_LIBS], '$(top_builddir)/dune/common/libcommon.la')
 

@@ -15,7 +15,7 @@ TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
     float_cmp
 
 # which tests to run
-COMPILE_XFAIL=$(DUNE_COMMON_ROOT)/bin/xfail-compile-tests
+COMPILE_XFAIL=$(DUNE_COMMON_BIN)/xfail-compile-tests
 
 COMPILE_XFAIL_TESTS = genericiterator_compile_fail nullptr-test-fail static_assert_test
 
