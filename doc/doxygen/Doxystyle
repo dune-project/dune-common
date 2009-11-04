@@ -31,6 +31,10 @@ SEARCH_INCLUDES        = NO # don't warn about missing stl-headers etc.
 
 STRIP_FROM_INC_PATH    = @abs_top_srcdir@
 
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES
+WARN_NO_PARAMDOC       = NO
 WARN_LOGFILE           = doxyerr.log
 
 #################################################################################
@@ -110,7 +114,7 @@ REFERENCES_RELATION    = YES
 ALPHABETICAL_INDEX     = YES
 COLS_IN_ALPHA_INDEX    = 3
 HTML_OUTPUT            = html
-SEARCHENGINE           = YES
+SEARCHENGINE           = NO
 
 GENERATE_TODOLIST      = YES
 GENERATE_TESTLIST      = YES
