@@ -7,7 +7,7 @@ if BUILD_DOCS
   DOXYGENHTMLFILES = *.html *.css *.png *.gif
   DOXYGENDISTFILES = doxygen-tag
   DOXYGENINSTALL = $(DOXYGENHTMLFILES) ../doxygen.log ../doxyerr.log
-endif
+endif # BUILD_DOCS
 
 DISTCLEANFILES = doxygen.log doxygen-tag
 
@@ -29,10 +29,12 @@ doxy-header.html: @DUNEWEBDIR@/doc/doxygen/doxy-header.wml
 doxy-footer.html: @DUNEWEBDIR@/doc/doxygen/doxy-footer.wml
 	$(WMLCMD) -I @DUNEWEBDIR@/doc/doxygen/ @DUNEWEBDIR@/doc/doxygen/doxy-footer.wml -o $(abs_builddir)/doxy-footer.html
 
-endif
-endif
+endif # WML
+endif # DUNEWEB
 
+if DOXYGEN
 DOXYGENFILES = $(DOXYGEN_HTML) $(DOXYGENHEADER) $(DOXYGENFOOTER)
+endif #  DOXYGEN
 
 #we need this in the distribution
 if BUILD_DOCS
@@ -55,7 +57,9 @@ uninstall-doxygen-data:
 install-data-local: install-doxygen-data
 uninstall-local: uninstall-doxygen-data
 
-endif
+endif # BUILD_DOCS
+
+if DOXYGEN
 
 # what files does the doxygen-generated stuff depend on (find-syntax)
 DOXYGEN_DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.png -o -name Doxyfile -o -name modules
@@ -65,7 +69,7 @@ doxygen-tag: FORCE Doxyfile $(DOXYGENHEADER) $(DOXYGENFOOTER)
 	set -e; \
 	if test ! -e doxygen-tag || test x"`find $(top_srcdir) \( $(DOXYGEN_DEPENDON) \) -a -cnewer doxygen-tag -print`" != x ; then \
 	    echo Running doxygen. This may take a while... ; \
-	    $(DOXYGEN) Doxyfile > doxygen.log 2>&1 <&- ; \
+	    $(DOXYGEN) Doxyfile > doxygen.log <&-; \
 	    touch doxygen-tag ; \
 	    if test "$$DOXYQUIET" != "1" && test -f doxyerr.log; \
 	      then cat doxyerr.log; fi; \
@@ -74,10 +78,14 @@ doxygen-tag: FORCE Doxyfile $(DOXYGENHEADER) $(DOXYGENFOOTER)
 	fi
 
 doxygen-dist-install: doxygen-tag
-	mkdir $(distdir)/html
-	pushd $(srcdir)/html; \
-	for i in $(DOXYGENHTMLFILES); do \
-	  cp $$i $(distdir)/html; done; popd
+	set -e;\
+	mkdir $(distdir)/html; \
+	cd $(abs_builddir)/html; \
+	list=`echo $(DOXYGENHTMLFILES)`; \
+	cd $(abs_builddir); \
+	for i in $$list; do \
+	  cp html/$$i $(distdir)/html; \
+	done;
 
 dist-hook: doxygen-dist-install
 
@@ -99,9 +107,10 @@ web-install-doxygen:
           EXTRAINSTALL="$(DOXYGENINSTALL)" CURDIR="$(CURDIR)/@DUNE_MOD_NAME@-html" install ; \
 	  popd; \
 	fi
-endif
+endif # WML
 
 web-install: web-install-doxygen web-install-default
+endif # DOXYGEN
 
 clean-local: clean-doxygen
 
