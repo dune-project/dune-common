@@ -1,5 +1,9 @@
 #!/bin/sh
 
+if [ "x$DEBUG" = "xyes" ]; then
+  set -x
+fi
+
 DOXYOUT=${1:-doc/doxygen/Doxyfile.in}
 OUTDIR=`dirname "$DOXYOUT"`
 DOXYDIR="doc/doxygen/"
