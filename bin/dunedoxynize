@@ -157,9 +157,12 @@ if ! find_doxystyle; then
 fi
 
 # drop the parameter of the output file
-shift
+if [ $# -gt 0 ]; then
+  shift
+fi
+
 # make sure that there is at least one Doxylocal file
-if ! (test_doxylocal "${@:-.}" || [ $# -eq 0 ]); then
+if ! {test_doxylocal "${@:-.}" || [ $# -eq 0 ]}; then
   echo "Error: you didn't supply any valid Doxylocal file"
   exit 1
 fi
