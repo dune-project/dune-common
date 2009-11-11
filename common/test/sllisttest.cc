@@ -253,8 +253,9 @@ int testEmpty()
 
 int testInsert()
 {
-  typedef Dune::SLList<int,IntAllocator> List;
-  //typedef Dune::SLList<int> List;
+  // test fails if IntAllocator is used
+  //typedef Dune::SLList<int,IntAllocator> List;
+  typedef Dune::SLList<int> List;
 
   List alist;
 

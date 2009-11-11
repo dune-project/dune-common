@@ -1,8 +1,7 @@
 # $Id$
 
-TESTPROGSFAIL=sllisttest
 TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
-	iteratorfacadetest tuplestest fvectortest fmatrixtest \
+	sllisttest iteratorfacadetest tuplestest fvectortest fmatrixtest \
 	poolallocatortest settest gcdlcmtest streamtest \
 	bigunsignedinttest mpihelpertest singletontest mpicollcomm \
 	utilitytest lrutest \
@@ -12,7 +11,6 @@ TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
     testfassign_fail1 testfassign_fail2 testfassign_fail3 \
     testfassign_fail4 testfassign_fail5 testfassign_fail6 \
     conversiontest bitsetvectortest deprecatedtuplestest
-    # $(TESTPROGSFAIL)
 
 # which tests to run
 COMPILE_XFAIL=$(DUNE_COMMON_ROOT)/bin/xfail-compile-tests
