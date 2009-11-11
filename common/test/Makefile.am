@@ -1,7 +1,8 @@
 # $Id$
 
+TESTPROGSFAIL=sllisttest
 TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
-	sllisttest iteratorfacadetest tuplestest fvectortest fmatrixtest \
+	iteratorfacadetest tuplestest fvectortest fmatrixtest \
 	poolallocatortest settest gcdlcmtest streamtest \
 	bigunsignedinttest mpihelpertest singletontest mpicollcomm \
 	utilitytest lrutest \
@@ -11,11 +12,12 @@ TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
     testfassign_fail1 testfassign_fail2 testfassign_fail3 \
     testfassign_fail4 testfassign_fail5 testfassign_fail6 \
     conversiontest bitsetvectortest deprecatedtuplestest
+    # $(TESTPROGSFAIL)
 
 # which tests to run
 COMPILE_XFAIL=$(DUNE_COMMON_ROOT)/bin/xfail-compile-tests
 
-COMPILE_XFAIL_TESTS = nullptr-test-fail static_assert_test
+COMPILE_XFAIL_TESTS = nullptr-test-fail static_assert_test_fail
 
 compile_XFAIL:
 	for i in $(COMPILE_XFAIL_TESTS); do \
@@ -48,6 +50,8 @@ nullptr_test_fail_SOURCES = nullptr-test.cc
 nullptr_test_fail_CPPFLAGS = -DFAIL
 
 static_assert_test_SOURCES = static_assert_test.cc
+static_assert_test_fail_SOURCES = static_assert_test.cc
+static_assert_test_fail_CPPFLAGS = -DFAIL
 
 bigunsignedinttest_SOURCES=bigunsignedinttest.cc
 

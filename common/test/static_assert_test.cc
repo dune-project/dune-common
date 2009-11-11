@@ -8,6 +8,8 @@
 int main()
 {
   dune_static_assert(true, "OK");
+#ifdef FAIL
   dune_static_assert(false, "FAIL");
+#endif
   return 0;
 }
