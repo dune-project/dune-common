@@ -51,7 +51,7 @@ if test "x$X_LIBS" != x && test x$with_grape != xno ; then
     # if GL was found, add it implicitly...
     #   This is not the best choice, but testing without GL first and
     #   then trying again fails due to caching...
-    CPPFLAGS="$GRAPE_CPPFLAGS $GL_CFLAGS"
+    CPPFLAGS="$GRAPE_CPPFLAGS $GL_CFLAGS -DENABLE_GRAPE"
     LIBS="$LIBS $GL_LIBS -lXext"
     LDFLAGS="$LDFLAGS $GL_LDFLAGS"
 
@@ -72,7 +72,9 @@ if test "x$X_LIBS" != x && test x$with_grape != xno ; then
     AC_SUBST(GRAPE_LIBS, $GRAPE_LIBS)
     AC_SUBST(GRAPE_LDFLAGS, $GRAPE_LDFLAGS)
     AC_SUBST(GRAPE_CPPFLAGS, $GRAPE_CPPFLAGS)
-    AC_DEFINE(HAVE_GRAPE, 1, [Define to 1 if grape-library is found])
+    AC_DEFINE(HAVE_GRAPE, ENABLE_GRAPE,
+          [This is only true if grape-library was found by configure 
+           _and_ if the application uses the GRAPE_CPPFLAGS])
 
     # add to global list
     DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $GRAPE_LDFLAGS"
