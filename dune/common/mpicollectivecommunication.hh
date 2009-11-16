@@ -47,7 +47,7 @@ namespace Dune
   };
 
   template<typename T>
-  shared_ptr<MPI_Datatype> Generic_MPI_Datatype<T>::type = shared_ptr<MPI_Datatype>(0);
+  shared_ptr<MPI_Datatype> Generic_MPI_Datatype<T>::type = shared_ptr<MPI_Datatype>(static_cast<MPI_Datatype*>(0));
 
   // A Macro for defining traits for the primitive data types
 #define ComposeMPITraits(p,m) \
@@ -111,7 +111,7 @@ namespace Dune
 
 
   template<typename Type, typename BinaryFunction>
-  shared_ptr<MPI_Op> Generic_MPI_Op<Type,BinaryFunction>::op = shared_ptr<MPI_Op>(0);
+  shared_ptr<MPI_Op> Generic_MPI_Op<Type,BinaryFunction>::op = shared_ptr<MPI_Op>(static_cast<MPI_Op*>(0));
 
 #define ComposeMPIOp(type,func,op) \
   template<> \
