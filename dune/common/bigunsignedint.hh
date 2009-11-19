@@ -124,6 +124,7 @@ namespace Dune
     //! export to other types
     //	operator unsigned int () const;
     unsigned int touint() const;
+    double todouble() const;
 
     friend class bigunsignedint<k/2>;
     friend class std::numeric_limits<bigunsignedint<k> >;
@@ -141,7 +142,9 @@ namespace Dune
   // Constructors
   template<int k>
   bigunsignedint<k>::bigunsignedint ()
-  {  }
+  {
+    assign(0u);
+  }
 
   template<int k>
   bigunsignedint<k>::bigunsignedint (int y)
@@ -175,6 +178,24 @@ namespace Dune
     return (digit[1]<<bits)+digit[0];
   }
 
+  template<int k>
+  inline double bigunsignedint<k>::todouble() const
+  {
+    int firstInZeroRange=n;
+    for(int i=n-1; i>=0; --i)
+      if(digit[i]!=0)
+        break;
+      else
+        --firstInZeroRange;
+    int representableDigits=std::numeric_limits<double>::digits/bits;
+    int lastInRepresentableRange=0;
+    if(representableDigits<firstInZeroRange)
+      lastInRepresentableRange=firstInZeroRange-representableDigits;
+    double val=0;
+    for(int i=firstInZeroRange-1; i>=lastInRepresentableRange; --i)
+      val =val*(1<<bits)+digit[i];
+    return val*(1<<(bits*lastInRepresentableRange));
+  }
   // print
   template<int k>
   inline void bigunsignedint<k>::print (std::ostream& s) const
