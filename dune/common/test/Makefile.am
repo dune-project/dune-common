@@ -2,7 +2,7 @@
 # $Id$
 
 TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
-	sllisttest iteratorfacadetest iteratorfacadetest2 tuplestest fvectortest fmatrixtest \
+	iteratorfacadetest iteratorfacadetest2 tuplestest fvectortest fmatrixtest \
 	poolallocatortest settest gcdlcmtest streamtest \
 	bigunsignedinttest mpihelpertest singletontest mpicollcomm \
 	utilitytest lrutest \
@@ -28,7 +28,7 @@ compile_XFAIL:
 	  fi; \
 	done
 
-EXTRA_PROGRAMS = $(COMPILE_XFAIL_TESTS)
+EXTRA_PROGRAMS = $(COMPILE_XFAIL_TESTS) sllisttest
 
 TESTS = $(TESTPROGS) $(COMPILE_XFAIL)
 
