@@ -7,8 +7,8 @@
     \brief Miscellaneous helper stuff
  */
 
-#include <cstdio>
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <complex>
 #include "exceptions.hh"
@@ -112,28 +112,9 @@ namespace Dune {
       name << path;
       name << "/";
     }
-    name << fn;
+    name << fn << std::setw(precision) << std::setfill('0') << ntime;
 
-    char cp[256];
-    switch(precision)
-    {
-    case 2  : { std::sprintf(cp, "%02d", ntime); break; }
-    case 3  : { std::sprintf(cp, "%03d", ntime); break; }
-    case 4  : { std::sprintf(cp, "%04d", ntime); break; }
-    case 5  : { std::sprintf(cp, "%05d", ntime); break; }
-    case 6  : { std::sprintf(cp, "%06d", ntime); break; }
-    case 7  : { std::sprintf(cp, "%07d", ntime); break; }
-    case 8  : { std::sprintf(cp, "%08d", ntime); break; }
-    case 9  : { std::sprintf(cp, "%09d", ntime); break; }
-    case 10 : { std::sprintf(cp, "%010d", ntime); break; }
-    default :
-    {
-      DUNE_THROW(Exception, "Couldn't generate filename with precision = "<<precision);
-    }
-    }
-    name << cp;
-
-    // here implicitly a string is generated
+    // Return the string corresponding to the stringstream
     return name.str();
   }
 
