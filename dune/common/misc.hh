@@ -128,7 +128,7 @@ namespace Dune {
     case 10 : { std::sprintf(cp, "%010d", ntime); break; }
     default :
     {
-      DUNE_THROW(Exception, "Couldn't gernerate filename with precision = "<<precision);
+      DUNE_THROW(Exception, "Couldn't generate filename with precision = "<<precision);
     }
     }
     name << cp;
