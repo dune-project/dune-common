@@ -7,6 +7,7 @@
     \brief Miscellaneous helper stuff
  */
 
+#include <cstdio>
 #include <iostream>
 #include <sstream>
 #include <complex>
@@ -116,15 +117,15 @@ namespace Dune {
     char cp[256];
     switch(precision)
     {
-    case 2  : { sprintf(cp, "%02d", ntime); break; }
-    case 3  : { sprintf(cp, "%03d", ntime); break; }
-    case 4  : { sprintf(cp, "%04d", ntime); break; }
-    case 5  : { sprintf(cp, "%05d", ntime); break; }
-    case 6  : { sprintf(cp, "%06d", ntime); break; }
-    case 7  : { sprintf(cp, "%07d", ntime); break; }
-    case 8  : { sprintf(cp, "%08d", ntime); break; }
-    case 9  : { sprintf(cp, "%09d", ntime); break; }
-    case 10 : { sprintf(cp, "%010d", ntime); break; }
+    case 2  : { std::sprintf(cp, "%02d", ntime); break; }
+    case 3  : { std::sprintf(cp, "%03d", ntime); break; }
+    case 4  : { std::sprintf(cp, "%04d", ntime); break; }
+    case 5  : { std::sprintf(cp, "%05d", ntime); break; }
+    case 6  : { std::sprintf(cp, "%06d", ntime); break; }
+    case 7  : { std::sprintf(cp, "%07d", ntime); break; }
+    case 8  : { std::sprintf(cp, "%08d", ntime); break; }
+    case 9  : { std::sprintf(cp, "%09d", ntime); break; }
+    case 10 : { std::sprintf(cp, "%010d", ntime); break; }
     default :
     {
       DUNE_THROW(Exception, "Couldn't gernerate filename with precision = "<<precision);
