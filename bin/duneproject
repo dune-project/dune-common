@@ -303,6 +303,7 @@ echo "writing initial files:"
 
 # we need the module with _ instead of - to not confuse automake
 fix_and_assign CMODULE $MODULE
+NAME=`echo $PROJECT | sed -e 's/dune[_-]//' -e 's/-/_/'`
 
 ################## CONFIGURE.AC ##################
 echo "- $PROJECT/configure.ac"
@@ -331,6 +332,9 @@ AC_CONFIG_FILES([
   src/Makefile
   doc/Makefile
   doc/doxygen/Makefile
+  doc/doxygen/Doxyfile
+  dune/Makefile
+  dune/$NAME/Makefile
   m4/Makefile
   $MODULE.pc
 ])
@@ -430,9 +434,7 @@ cat> "$PROJECT/Makefile.am" << M_DELIM
 # we need the module file to be able to build via dunecontrol
 EXTRA_DIST=dune.module
 
-DIST_SUBDIRS = doc src m4
-
-SUBDIRS = src m4
+SUBDIRS = src m4 dune doc
 
 if BUILD_DOCS
 # TODO: set up documentation tree automatically
@@ -568,8 +570,6 @@ CC_DELIM
 ################################################################
 ################## The headers subdirectory ####################
 ################################################################
-
-NAME=`echo $PROJECT | sed -e 's/dune[_-]//' -e 's/-/_/'`
 
 echo "- $PROJECT/dune/$NAME"
 mkdir "$PROJECT/dune"
