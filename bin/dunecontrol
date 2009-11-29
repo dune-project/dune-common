@@ -422,18 +422,7 @@ print_module_list() {
   echo -n "$(eval echo \$NAME_$1)"
 }
 
-if test "x$1" = "x"; then
-  usage
-  exit 1
-fi
-
 trap onfailure EXIT
-
-# clear command opts
-#for i in $COMMANDS; do
-#  COMMAND=$(echo $i | tr '[:lower:]' '[:upper:]')
-#  export ${COMMAND}_FLAGS=""
-#done
 
 # clear variables
 export SEARCH_MODULES=""
@@ -561,6 +550,12 @@ while test $# -gt 0; do
     shift
 done
 
+# we assume there should be a command...
+if test "x$1" = "x"; then
+  usage
+  exit 1
+fi
+
 while test $# -gt 0; do
   # get command
   command=$1
@@ -648,10 +643,11 @@ m4_define([DUNE_AC_INIT],[
   AC_SUBST([DUNE_MAINTAINER_NAME], [$maintainer])
   DUNE_PARSE_MODULE_VERSION([$name], [$version])
   # don't build shared libs per default, this is way better for debugging...
-  m4_ifdef([LT_INIT],
-    [LT_INIT([disable-shared])],
-    [AC_DEFUN([LT_OUTPUT])])
-  AC_DISABLE_SHARED
+#  m4_ifdef([LT_INIT],
+#    [LT_INIT([disable-shared])],
+#    [AC_DEFUN([LT_OUTPUT])])
+#  AC_DISABLE_SHARED
+  LT_INIT([disable-shared])
 
   REQUIRES="$requires"
   AC_SUBST(REQUIRES, [$REQUIRES])
@@ -662,9 +658,10 @@ AC_DEFUN([DUNE_CHECK_MOD_DEPENDENCIES], [
   AC_REQUIRE([AC_PROG_CC])
   AC_REQUIRE([AC_PROG_CPP])
   AC_REQUIRE([AC_PROG_CXX])
-  AC_REQUIRE([AC_PROG_CXXCPP])
+#  AC_REQUIRE([AC_PROG_CXXCPP])
   AC_REQUIRE([AC_PROG_LIBTOOL])
-  m4_ifdef([AC_LIBTOOL_LANG_CXX_CONFIG],[AC_LIBTOOL_LANG_CXX_CONFIG])
+#  AC_REQUIRE([AC_LIBTOOL_LANG_CXX_CONFIG])
+#  m4_ifdef([],[AC_LIBTOOL_LANG_CXX_CONFIG])
 EOF
       ### initialize AM_CONDITIONAL for suggestions that were not found
       for name in $(eval echo \$SUGS_$mainmod); do
