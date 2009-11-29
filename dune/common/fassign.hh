@@ -28,12 +28,12 @@ namespace Dune {
      *  overload operator <<= for FieldVector assignment from Dune::Zero
      */
     struct Zero {
-      Zero (int) {};
+      explicit Zero (int) {};
       /** \brief Conversion operator to double */
       operator double () { return 0.0; }
       /** \brief Conversion operator to int */
       operator int () { return 0; }
-    } zero = 0;
+    } zero(0);
 
     /**
      *  @brief Marker class for next row
@@ -41,8 +41,8 @@ namespace Dune {
      *  overload operator <<= for FiledMatrix assignment
      */
     struct NextRow {
-      NextRow (int) {};
-    } nextRow = 0;
+      explicit NextRow (int) {};
+    } nextRow(0);
 
   } // end empty namespace
 
@@ -73,6 +73,7 @@ namespace Dune {
     FieldVector<T,s> & v;
     int c;
     bool temporary;
+    fvector_assigner();
   public:
     /*! @brief Copy Constructor */
     fvector_assigner(fvector_assigner & a) : v(a.v), c(a.c), temporary(false)
@@ -130,8 +131,8 @@ namespace Dune {
    *  overload operator <<= for fvector assignment
    *  from comma seperated list of values
    */
-  template <class T, int s>
-  fvector_assigner<T,s> operator <<= (FieldVector<T,s> & v, const T & t)
+  template <class T, class K, int s>
+  fvector_assigner<T,s> operator <<= (FieldVector<T,s> & v, const K & t)
   {
     return fvector_assigner<T,s>(v,true).append(t);
   }
@@ -256,8 +257,8 @@ namespace Dune {
    *  overload operator <<= for FieldMatrix assignment
    *  from comma seperated list of values
    */
-  template <class T, int n, int m>
-  fmatrix_assigner<T,n,m> operator <<= (FieldMatrix<T,n,m> & v, const T & t)
+  template <class T, class K, int n, int m>
+  fmatrix_assigner<T,n,m> operator <<= (FieldMatrix<T,n,m> & v, const K & t)
   {
     return fmatrix_assigner<T,n,m>(v,true).append(t);
   }

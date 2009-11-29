@@ -12,7 +12,7 @@ TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
     testfassign_fail1 testfassign_fail2 testfassign_fail3 \
     testfassign_fail4 testfassign_fail5 testfassign_fail6 \
     conversiontest bitsetvectortest deprtuplestest \
-    float_cmp
+    float_cmp, fassigntest
 
 # which tests to run
 COMPILE_XFAIL=$(DUNE_COMMON_BIN)/xfail-compile-tests
@@ -52,6 +52,8 @@ nullptr_test_fail_SOURCES = nullptr-test.cc
 nullptr_test_fail_CPPFLAGS = -DFAIL
 
 static_assert_test_SOURCES = static_assert_test.cc
+
+fassigntest_SOURCES = fassigntest.cc
 
 bigunsignedinttest_SOURCES=bigunsignedinttest.cc
 
