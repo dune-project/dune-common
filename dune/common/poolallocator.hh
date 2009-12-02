@@ -51,10 +51,8 @@ namespace Dune
 {
   /**
    * @file
-   * This file implements the class ArrayList which behaves like
-   * dynamically growing array together with
-   * the class ArrayListIterator which is random access iterator as needed
-   * by the stl for sorting and other algorithms.
+   * This file implements the classes Pool and PoolAllocator providing
+   * memory allocation for objects in chunks.
    * @author Markus Blatt
    */
   /**
