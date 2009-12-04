@@ -5,6 +5,8 @@
 #ifndef DUNE_SMARTPOINTER_HH
 #define DUNE_SMARTPOINTER_HH
 
+#include <cassert>
+
 #warning This file is deprecated.  Please use shared_ptr.hh instead!
 
 /**
