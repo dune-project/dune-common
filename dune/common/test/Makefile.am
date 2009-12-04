@@ -17,7 +17,7 @@ TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
 COMPILE_XFAIL=$(DUNE_COMMON_BIN)/xfail-compile-tests
 
 COMPILE_XFAIL_TESTS = genericiterator_compile_fail nullptr-test-fail static_assert_test_fail
-x
+
 compile_XFAIL:
 	for i in $(COMPILE_XFAIL_TESTS); do \
 	  if $(MAKE) $$i; then \
