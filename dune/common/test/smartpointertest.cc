@@ -51,5 +51,5 @@ int main(){
       ret=1;
     }
   }
-  exit(ret);
+  return (ret);
 }

@@ -56,5 +56,5 @@ int main(){
   ret += containerTest(bidicontainer);
   ret += containerTest(randomcontainer);
 
-  exit(ret);
+  return (ret);
 }

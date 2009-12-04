@@ -12,13 +12,12 @@ TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
     testfassign_fail1 testfassign_fail2 testfassign_fail3 \
     testfassign_fail4 testfassign_fail5 testfassign_fail6 \
     conversiontest bitsetvectortest deprtuplestest \
-    float_cmp fassigntest
-
+    float_cmp fassigntest static_assert_test
 # which tests to run
 COMPILE_XFAIL=$(DUNE_COMMON_BIN)/xfail-compile-tests
 
-COMPILE_XFAIL_TESTS = genericiterator_compile_fail nullptr-test-fail static_assert_test
-
+COMPILE_XFAIL_TESTS = genericiterator_compile_fail nullptr-test-fail static_assert_test_fail
+x
 compile_XFAIL:
 	for i in $(COMPILE_XFAIL_TESTS); do \
 	  if $(MAKE) $$i; then \
