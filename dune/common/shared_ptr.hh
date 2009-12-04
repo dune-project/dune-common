@@ -90,6 +90,11 @@ namespace Dune
     /** \brief Dereference as const pointer */
     inline const element_type* operator->() const;
 
+    /** \brief Decrease the reference count by one and free the memory if the
+        reference count has reached 0
+     */
+    inline void reset();
+
     /**
      * @brief Deallocates the references object if no other
      * pointers reference it.
@@ -181,6 +186,15 @@ namespace Dune
   inline int shared_ptr<T>::use_count() const
   {
     return rep_->count_;
+  }
+
+  template<class T>
+  inline void shared_ptr<T>::reset()
+  {
+    if(rep_!=0 && --(rep_->count_)==0) {
+      delete rep_;
+      rep_=0;
+    }
   }
 
   template<class T>
