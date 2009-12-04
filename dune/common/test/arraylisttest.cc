@@ -178,6 +178,7 @@ int main(){
   ArrayList<double,100> alist;
 
   randomizeList(alist);
+
   int ret=testIterator(alist);
 
   if(0!=testComparison()) {
@@ -199,6 +200,6 @@ int main(){
     ret++;
     cerr<< "Erasing failed!"<<endl;
   }
-  exit(ret);
+  return ret;
 
 }
