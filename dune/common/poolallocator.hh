@@ -313,7 +313,7 @@ namespace Dune
     /**
      * @brief Free objects.
      *
-     * Does not call the contructor!
+     * Does not call the destructor!
      * @param n The number of object to free. Has to be one!
      * @param p Pointer to the first object.
      */
