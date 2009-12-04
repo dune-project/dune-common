@@ -15,7 +15,7 @@ namespace Dune
   /**
    * @file
    * @brief Traits for type conversions and type information.
-   * @author Markus Blatt
+   * @author Markus Blatt, Christian Engwer
    */
   /** @addtogroup Common
    *
@@ -171,7 +171,10 @@ namespace Dune
 #endif
 
   /**
-   * @brief Checks wether a type is derived from another.
+   * @brief Checks wether a type is convertible to another.
+   *
+   * @tparam From type you want to convert
+   * @tparam To type you want to obtain
    *
    * Inspired by
    * <A HREF="http://www.kotiposti.net/epulkkin/instructive/base-class-determination.html"> this website</A>
@@ -233,6 +236,30 @@ namespace Dune
   class Conversion<T,T>{
   public:
     enum { exists=true, isTwoWay=true, sameType=true};
+  };
+
+  /**
+   * @brief Checks wether a type is derived from another.
+   *
+   * @tparam Base the potential base class you want to test for
+   * @tparam Derived type you want to test
+   *
+   * Similar idea to
+   * <A HREF="http://www.kotiposti.net/epulkkin/instructive/base-class-determination.html"> this website</A>
+   */
+  template <class Base, class Derived>
+  class IsBaseOf
+  {
+    typedef char Small;
+    struct Big {char dummy[2];};
+    static Small test(Base*);
+    static Big test(...);
+    static typename TypeTraits< Derived* >::ReferredType &makePtr ();
+  public:
+    enum {
+      /** @brief True if Base is a base class of Derived. */
+      value = sizeof(test(makePtr())) == sizeof(Small)
+    };
   };
 
   /**
