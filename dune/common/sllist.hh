@@ -210,10 +210,11 @@ namespace Dune
        */
       MemberType item_;
 
-      Element(const MemberType& item);
+      Element(const MemberType& item, Element* next_=0);
 
       Element();
 
+      ~Element();
     };
 
     /**
@@ -563,14 +564,20 @@ namespace Dune
 {
 
   template<typename T, class A>
-  SLList<T,A>::Element::Element(const T& item)
-    : next_(0), item_(item)
+  SLList<T,A>::Element::Element(const T& item, Element* next)
+    : next_(next), item_(item)
   {}
 
   template<typename T, class A>
   SLList<T,A>::Element::Element()
     : next_(0), item_()
   {}
+
+  template<typename T, class A>
+  SLList<T,A>::Element::~Element()
+  {
+    next_=0;
+  }
 
   template<typename T, class A>
   SLList<T,A>::SLList()
@@ -678,10 +685,9 @@ namespace Dune
     current->next_ = allocator_.allocate(1, 0);
 
     // Use copy constructor to initialize memory
-    ::new(static_cast<void*>(&(current->next_->item_)))T(item);
+    allocator_.construct(current->next_, Element(item,tmp));
 
-    // Set next element
-    current->next_->next_=tmp;
+    //::new(static_cast<void*>(&(current->next_->item_))) T(item);
 
     if(!current->next_->next_) {
       // Update tail
@@ -731,8 +737,7 @@ namespace Dune
       }
 
     current->next_ = next->next_;
-    next->item_.~T();
-    next->next_ = 0;
+    allocator_.destroy(next);
     allocator_.deallocate(next, 1);
     --size_;
     assert(!watchForTail || &beforeHead_ != tail_ || size_==0);
