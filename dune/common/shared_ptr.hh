@@ -95,12 +95,6 @@ namespace Dune
      */
     inline void reset();
 
-    /**
-     * @brief Deallocates the references object if no other
-     * pointers reference it.
-     */
-    inline void deallocate();
-
     /** \brief The number of shared_ptrs pointing to the object we point to */
     int use_count() const;
 
@@ -197,13 +191,6 @@ namespace Dune
     }
   }
 
-  template<class T>
-  inline void shared_ptr<T>::deallocate()
-  {
-    assert(rep_!=0 && rep_->count_==1);
-    delete rep_;
-    rep_=0;
-  }
   /** @} */
 #endif  // #ifdef SHARED_PTR_NAMESPACE
 
