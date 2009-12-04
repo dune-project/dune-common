@@ -509,6 +509,10 @@ namespace Dune
     char* start = chunks_->memory_;
     char* last  = &start[elements*alignedSize];
     Reference* ref = new (start) (Reference);
+
+    // grow is only called if head==0,
+    assert(!head_);
+
     head_ = ref;
 
     for(char* element=start+alignedSize; element<last; element=element+alignedSize) {
