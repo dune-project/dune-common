@@ -82,6 +82,15 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
 		fi
 	    ]
 	)
+AC_ARG_WITH([superlu_blaslib],
+             [AC_HELP_STRING([--with-superlu-blaslib],[The name of the static blas library         to link to. By default the shared library with the name superlu-mpi is tried])],
+            [
+                 if test "$withval" != no ; then
+                     with_superlu_blaslib=$withval
+                 fi
+             ]
+         )
+
   # store old values
 	ac_save_LDFLAGS="$LDFLAGS"
 	ac_save_CPPFLAGS="$CPPFLAGS"
@@ -130,8 +139,9 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
 			with_superlu_lib=superlu.a
 		    fi
 		    AC_MSG_CHECKING([static superlu library "$with_superlu_lib" in "$SUPERLU_LIB_PATH"])
+echo "BLAS_LIBS=$BLAS_LIBS LIBS=$LIBS"
 		    if test -f "$SUPERLU_LIB_PATH/$with_superlu_lib" ; then
-			LIBS="$SUPERLU_LIB_PATH/$with_superlu_lib $LIBS"
+			LIBS="$SUPERLU_LIB_PATH/$with_superlu_lib $SUPERLU_LIB_PATH/$with_superlu_blaslib $LIBS"
 			AC_CHECK_FUNC(dgssvx,
 			    [
 				SUPERLU_LIBS="$LIBS"
