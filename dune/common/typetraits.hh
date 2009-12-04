@@ -250,11 +250,13 @@ namespace Dune
   template <class Base, class Derived>
   class IsBaseOf
   {
+    typedef typename ConstantVolatileTraits< typename TypeTraits< Base >::ReferredType >::UnqualifiedType RawBase;
+    typedef typename ConstantVolatileTraits< typename TypeTraits< Derived >::ReferredType >::UnqualifiedType RawDerived;
     typedef char Small;
     struct Big {char dummy[2];};
-    static Small test(Base*);
+    static Small test(RawBase*);
     static Big test(...);
-    static typename TypeTraits< Derived* >::ReferredType &makePtr ();
+    static RawDerived* &makePtr ();
   public:
     enum {
       /** @brief True if Base is a base class of Derived. */
