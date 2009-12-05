@@ -51,6 +51,7 @@ nullptr_test_fail_SOURCES = nullptr-test.cc
 nullptr_test_fail_CPPFLAGS = -DFAIL
 
 static_assert_test_SOURCES = static_assert_test.cc
+static_assert_test_fail_SOURCES = static_assert_test_fail.cc
 
 fassigntest_SOURCES = fassigntest.cc
 
