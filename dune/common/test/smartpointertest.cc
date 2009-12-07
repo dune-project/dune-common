@@ -6,6 +6,8 @@
 #endif
 
 #include <dune/common/shared_ptr.hh>
+
+#include <cassert>
 #include <iostream>
 #include <vector>
 #include <cstdlib>
@@ -14,11 +16,35 @@ int main(){
   using namespace Dune;
   int ret=0;
   {
+    // test default constructor
+    shared_ptr<int> foo;
+
+    // test cast-to-bool
+    if (foo) {
+      std::cout << "Default constructor doesn't create a NULL pointer!" << std::endl;
+      ret=1;
+    }
+
+    // test constructor from a given pointer
+    shared_ptr<double> bar(new double(43.0));
+    assert(bar);
+
+    // test reset()
+    bar.reset();
+    assert(!bar);
+
+    // test reset(T*)
+    bar.reset(new double(44.0));
+    assert(bar);
+    assert(bar.use_count()==1);
+
+    // test constructor from a given pointer
     shared_ptr<double> b(new double(42.0));
     {
       shared_ptr<double> d(b);
       *b = 7;
     }
+
     if(b.use_count()!=1) {
       std::cout << "Reference count is wrong! "<<__LINE__<<":"<<
       __FILE__<<std::endl;
