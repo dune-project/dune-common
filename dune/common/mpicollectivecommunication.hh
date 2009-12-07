@@ -35,8 +35,8 @@ namespace Dune
       if (!type)
       {
         type = shared_ptr<MPI_Datatype>(new MPI_Datatype);
-        MPI_Type_contiguous(sizeof(T),MPI_BYTE,type.operator->());
-        MPI_Type_commit(type.operator->());
+        MPI_Type_contiguous(sizeof(T),MPI_BYTE,type.get());
+        MPI_Type_commit(type.get());
       }
       return *type;
     }
@@ -89,7 +89,7 @@ namespace Dune
       if (!op)
       {
         op = shared_ptr<MPI_Op>(new MPI_Op);
-        MPI_Op_create((void (*)(void*, void*, int*, MPI_Datatype*))&operation,true,op.operator->());
+        MPI_Op_create((void (*)(void*, void*, int*, MPI_Datatype*))&operation,true,op.get());
       }
       return *op;
     }
