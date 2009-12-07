@@ -90,6 +90,11 @@ namespace Dune
     /** \brief Dereference as const pointer */
     inline const element_type* operator->() const;
 
+    /** \brief Access to the raw pointer, if you really want it */
+    element_type* get() const {
+      return rep_->rep_;
+    }
+
     /** \brief Decrease the reference count by one and free the memory if the
         reference count has reached 0
      */
