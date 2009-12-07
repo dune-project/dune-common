@@ -45,18 +45,33 @@ namespace Dune {
     //! Puts a new object onto the stack
     void push (const T& t)
     {
+#ifndef NDEBUG
+      if (full())
+        DUNE_THROW(Dune::RangeError,
+                   "trying to call push on a full FiniteStack");
+#endif
       s[f++] = t;
     }
 
     //! Removes and returns the uppermost object from the stack
     T pop ()
     {
+#ifndef NDEBUG
+      if (empty())
+        DUNE_THROW(Dune::RangeError,
+                   "trying to call top on an empty FiniteStack");
+#endif
       return s[--f];
     }
 
     //! Returns the uppermost object on the stack
     T top () const
     {
+#ifndef NDEBUG
+      if (empty())
+        DUNE_THROW(Dune::RangeError,
+                   "trying to call pop on an empty FiniteStack");
+#endif
       return s[f-1];
     }
 

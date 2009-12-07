@@ -47,6 +47,7 @@ int main () {
     stack1.pop();
 
     // exception has to happen
+    // make sure you compile this test without NDEBUG
     std::cerr << "Expected exception Dune::RangeError, but nothing caught\n";
     return 1;
   } catch (Dune::RangeError &e) {
