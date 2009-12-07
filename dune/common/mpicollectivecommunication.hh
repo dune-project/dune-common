@@ -32,7 +32,7 @@ namespace Dune
   public:
     static MPI_Datatype get ()
     {
-      if (type.operator->()==0)
+      if (!type)
       {
         type = shared_ptr<MPI_Datatype>(new MPI_Datatype);
         MPI_Type_contiguous(sizeof(T),MPI_BYTE,type.operator->());
@@ -86,7 +86,7 @@ namespace Dune
   public:
     static MPI_Op get ()
     {
-      if (op.operator->()==0)
+      if (!op)
       {
         op = shared_ptr<MPI_Op>(new MPI_Op);
         MPI_Op_create((void (*)(void*, void*, int*, MPI_Datatype*))&operation,true,op.operator->());
