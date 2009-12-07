@@ -37,7 +37,7 @@
 #include <dune/common/precision.hh>
 #include <dune/common/propertymap.hh>
 #include <dune/common/sllist.hh>
-#include <dune/common/smartpointer.hh>
+#include <dune/common/shared_ptr.hh>
 #include <dune/common/stdstreams.hh>
 #include <dune/common/timer.hh>
 #include <dune/common/tuples.hh>
