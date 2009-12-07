@@ -95,6 +95,9 @@ namespace Dune
      */
     inline void reset();
 
+    /** \brief Detach shared pointer and set it anew for the given pointer */
+    inline void reset(T* pointer);
+
     /** \brief The number of shared_ptrs pointing to the object we point to */
     int use_count() const;
 
@@ -114,6 +117,19 @@ namespace Dune
       /** @brief Destructor, deletes element_type* rep_. */
       ~PointerRep() { delete rep_; }
     } *rep_;
+
+    // Needed for the implicit conversion to "bool"
+  private:
+    typedef T* shared_ptr::PointerRep::*__unspecified_bool_type;
+
+  public:
+    /** \brief Implicit conversion to "bool" */
+    operator __unspecified_bool_type() const     // never throws
+    {
+      return rep_ == 0 ? 0 : &shared_ptr::PointerRep::rep_;
+    }
+
+
   };
 
   template<class T>
@@ -189,6 +205,13 @@ namespace Dune
       delete rep_;
       rep_=0;
     }
+  }
+
+  template<class T>
+  inline void shared_ptr<T>::reset(T* pointer)
+  {
+    reset();
+    rep_ = new PointerRep(pointer);
   }
 
   /** @} */
