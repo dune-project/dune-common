@@ -1,7 +1,7 @@
 # -*- tab-width: 4; indent-tabs-mode: nil -*-
 # $Id$
 
-TESTPROGS = parsetest test-stack arraylisttest smartpointertest \
+TESTPROGS = parsetest test-stack arraylisttest shared_ptrtest \
 	iteratorfacadetest iteratorfacadetest2 tuplestest fvectortest fmatrixtest \
 	poolallocatortest settest gcdlcmtest streamtest \
 	bigunsignedinttest mpihelpertest singletontest mpicollcomm \
@@ -67,7 +67,7 @@ test_stack_SOURCES = test-stack.cc
 
 arraylisttest_SOURCES = arraylisttest.cc
 
-smartpointertest_SOURCES = smartpointertest.cc
+shared_ptrtest_SOURCES = shared_ptrtest.cc
 
 tuplestest_SOURCES = tuplestest.cc
 
