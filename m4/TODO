@@ -1,0 +1,7 @@
+- how to check for -lXext in Grape-test?
+
+- provide a wrapper for ACX_MPI called DUNE_PATH_MPI (should also fix
+  the aclocal-1.4-problem)
+
+- do we perhaps need -ldl for Grape? libltdl instead? What about -Wl,-rpath?
+

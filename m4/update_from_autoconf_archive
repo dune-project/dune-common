@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# where is the autoconf-archive installed?
+ARCHDIR=/usr/share/autoconf-archive/
+# if anyone wants this as an option, tell me (Thimo)
+
+for NAME in *.m4 ; do
+  # newer version installed?
+  if test $ARCHDIR/$NAME -nt $NAME ; then
+    echo Updating $NAME
+    cp $ARCHDIR/$NAME $NAME
+  fi
+done

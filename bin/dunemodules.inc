@@ -1,0 +1,522 @@
+# -*-sh-*-
+
+###############################################
+###
+### Configuration
+###
+
+# name of the "control" files
+CONTROL="dune.module"
+
+###############################################
+###
+### check for environment variables
+###
+
+if test -z $DUNE_CONTROL_PATH; then
+  DUNE_CONTROL_PATH=.
+  for i in /usr/local/lib/dunecontrol/ /usr/lib/dunecontrol/; do
+    if test -d $i; then 
+      DUNE_CONTROL_PATH=$DUNE_CONTROL_PATH:$i
+    fi
+  done
+fi
+if test -z $GREP; then
+  GREP=grep
+fi
+# SunOS [e]grep does not seem to comprehend character classes.  Set up
+# some variables to spell them out
+UPPER=ABCDEFGHIJKLMNOPQRSTUVWXYZ
+LOWER=abcdefghijklmnopqrstuvwxyz
+ALPHA="$UPPER$LOWER"
+DIGIT=0123456789
+ALNUM="$ALPHA$DIGIT"
+
+space=" "
+formfeed=""
+newline="
+"
+cr="
+"
+tab="	"
+vtab=""
+# $SPACE will unfortunately not work since grep will not accept an
+# embedded newline.  Instead one can often get away with using $BLANK
+SPACE="$space$formfeed$newline$cr$tab$vtab"
+BLANK="$space$tab"
+
+#
+# read paramters from a $CONTROL file
+#
+# paramters:
+# $1 file to read
+#
+parse_control() {
+  # check file existence
+  if ! test -f "$1"; then
+    echo "ERROR: could not read file $1" >&2
+    exit 1
+  fi
+  # read parameters from control file
+  local name="$(echo $($GREP Module: "$1" | cut -d ':' -f2))"
+  if test "x$name" = "x"; then
+    echo "ERROR: $CONTROL files $1 does not contain a Module entry" >&2
+    exit 1
+  fi
+  # create and check variable name from module name
+  export module_inst=""
+  export module=$(fix_variable_name $name)
+  # read dune.module file
+  local deps="$(echo $($GREP "^[$BLANK]*Depends:" "$1" | cut -d ':' -f2))"
+  local sugs="$(echo $($GREP "^[$BLANK]*Suggests:" "$1" | cut -d ':' -f2))"
+  local vers="$(echo $($GREP "^[$BLANK]*Version:" "$1" | cut -d ':' -f2))"
+  local main="$(echo $($GREP "^[$BLANK]*Maintainer:" "$1" | cut -d ':' -f2))"
+  # guess the path of the dune module:
+  # - installed module: ${path}/lib/dunecontrol/${name}/dune.module
+  #   and there is a file ${path}/lib/pkgconfig/${name}.pc
+  # - source module: ${path}/dune.module
+  #   and there is a file ${path}/${name}.pc.in
+  local path="$(canonicalpath "$1")"
+  if test -f $path/../../../lib/dunecontrol/${name}/dune.module; then
+	  path=$(canonicalname "$path/../../../")
+      export module_inst="true"
+      export INST_${module}=yes
+  else
+      export INST_${module}=no
+  fi
+  if ! check_modname "$module"; then
+    echo "ERROR: $CONTROL files $1 contains an invalid Module entry" >&2
+    exit 1
+  fi
+  # avoid multiple definition of the same module
+  if test "x$(eval echo \$HAVE_$module)" != "x"; then
+    echo "ERROR: multiple definition of module $name" >&2
+    echo "previous defined in:" >&2
+    echo "  $(eval echo \$PATH_$module)/$CONTROL" >&2
+    echo "redefined in:" >&2
+    echo "  $path/$CONTROL" >&2
+    exit 1
+  fi
+  # set status variables
+  export HAVE_${module}=yes
+  export PATH_${module}="$path"
+  export VERS_${module}="$vers"
+  export NAME_${module}="$name"
+  export MAIN_${module}="$main"
+  export DEPS_${module}="$deps"
+  for name in $deps; do
+    mod=$(fix_variable_name $name)
+    export NAME_${mod}="$name"
+  done
+  export SUGS_${module}="$sugs"
+  for name in $sugs; do
+    mod=$(fix_variable_name $name)
+    export NAME_${mod}="$name"
+  done
+}
+
+#
+# search for modules in each directory in DUNE_CONTROL_PATH
+#
+find_modules_in_path() {
+  if test -z "$FOUND_MODULES"; then
+    # foreach dir in $@
+    while read dir; do
+      if test -d "$dir"; then
+        while read m; do
+          test -n "$m" && find_modules "$m"
+        done <<EOFM
+        $(find "$dir" -name $CONTROL | $GREP -v 'dune-[-_a-zA-Z]/dune-[-a-zA-Z_]*-[0-9]\{1,\}.[0-9]\{1,\}/')
+EOFM
+	  else
+        find_modules $dir
+	  fi
+    done <<EOF
+    $(echo $DUNE_CONTROL_PATH | tr ':' '\n') 
+EOF
+    export FOUND_MODULES="$MODULES$INSTMODULES"
+  fi
+}
+
+#
+# search a directory recursively for $CONTROL files
+#
+# paramters:
+# $1 directory to search for modules
+#
+find_modules() {
+  if test -f "$1" && 
+      test "$(basename $1)" = "$CONTROL"; then
+      export module=""
+      export module_inst=""
+      parse_control "$1"
+      if test -n "$module_inst"; then
+        export INSTMODULES="$MODULES$module "
+      else
+        export MODULES="$MODULES$module "
+	  fi
+  else
+      echo "ERROR: '$1' is no $CONTROL file" >&2
+      false
+  fi
+}
+
+#
+# sort $MODULES according to the dependencies
+#
+sort_modules() {
+  # reset list
+  export SORTEDMODULES=""
+  # handle each modules passed as parameter
+  for m in "$@"; do
+    # did we find a module file for this mopdule?
+    if test "x$(eval echo \$HAVE_$m)" != "x"; then
+      _sort_module $m
+    else
+      echo "ERROR: could not find module $(eval echo \$NAME_$m)" >&2
+      exit 1
+    fi
+  done
+  # save result
+  export MODULES="$SORTEDMODULES"
+  # clean up temporary variables
+  for m in $MODULES; do
+    export SORT_DONE_${m}=""
+  done
+}
+
+#
+# sort $MODULES's dependencies according to the dependencies
+# don't include $MODULE itself
+#
+sort_dependencies() {
+  # reset list
+  export SORTEDMODULES=""
+  local deps=""
+  local name=""
+  local dep=""
+  local ver=""
+  local xdeps=""
+  # handle each modules passed as parameter
+  for m in "$@"; do
+    # did we find a module file for this mopdule?
+    if test "x$(eval echo \$HAVE_$m)" != "x"; then
+      eval deps=\$DEPS_$m
+      deps=`echo "$deps" | sed 's/,/ /g;s/([^)]*)/ /g'`
+      for name in $deps; do
+        dep=`fix_variable_name $name`
+        _sort_module $dep
+      done
+    else
+      eval echo ERROR: could not find module \$NAME_$m >&2
+      exit 1
+    fi
+  done
+  # save result
+  export MODULES="$SORTEDMODULES"
+  # clean up temporary variables
+  for m in $MODULES; do
+    export SORT_DONE_${m}=""
+  done
+}
+
+#
+# sort $MODULES's dependencies according to the dependencies
+# don't include $MODULE itself
+#
+sort_suggestions() {
+  # get dependencies
+  sort_dependencies $@
+  export DEPENDENCIES="$SORTEDMODULES"
+  # reset list
+  export SORTEDMODULES=""
+  # handle each modules passed as parameter
+  for m in "$@"; do
+    # did we find a module file for this mopdule?
+    if test "x$(eval echo \$HAVE_$m)" != "x"; then
+	  if test "x$(eval echo \$SUGS_$m)" != "x" ; then
+        for name in $(eval echo \$SUGS_$m); do
+			dep=$(fix_variable_name $name)
+			if test "x$(eval echo \$HAVE_$dep)" != "x"; then
+				_sort_module $dep
+			fi
+        done
+      fi
+    else
+      echo "ERROR: could not find module $(eval echo \$NAME_$m)" >&2
+      exit 1
+    fi
+  done
+  # save result
+  local FOUND=no
+  export MODULES=""
+  for m in $SORTEDMODULES; do
+    FOUND=no
+    for d in $DEPENDENCIES; do
+      if test "x$m" = "x$d"; then
+        FOUND=yes
+      fi
+    done
+    if test "x$FOUND" = "xno"; then
+      export MODULES="$MODULES $m"
+    fi
+  done
+  # clean up temporary variables
+  for m in $MODULES; do
+    export SORT_DONE_${m}=""
+  done
+}
+
+#
+# recursive part of sort_modules
+# evaluate dependencies of one module
+#
+# paramters:
+# $1 name of the modules
+#
+_sort_module() {
+  local module="$1"
+  local modname=""
+  eval modname=\$NAME_$module
+  local deps=""
+  local name=""
+  local dep=""
+  local ver=""
+  local depver=""
+  local xdeps=""
+  shift 1
+  if ! check_modname $module; then 
+    echo "ERROR: invalid module name $module" >&2
+    exit 1
+  fi
+  if test "x$(eval echo \$SORT_DONE_${module})" != "xyes"; then
+    # resolve dependencies
+    eval deps=\$DEPS_$module
+    #initially remove leading space
+    deps=`echo "$deps" | sed 's/^ *//'`
+    while test -n "$deps"; do
+      #the end of the name is marked either by space, opening paren
+      #or comma
+      name="${deps%%[ (,]*}"
+      #remove the name and adjacent whitespace
+      deps=`echo "$deps" | sed 's/^[^ (,]* *//'`
+      #check whether there is a dependency version
+      case "$deps" in
+      '('*) deps="${deps#(}"
+            depver="${deps%%)*}"
+            deps="${deps#*)}"
+            ;;
+      *)    depver=
+            ;;
+      esac
+      #remove any leading whitespace or commas for te next iteration
+      deps=`echo "$deps" | sed 's/^[, ]*//'`
+      dep=$(fix_variable_name $name)
+      if ! check_modname $dep; then 
+        echo "ERROR: invalid module name $name" >&2
+        exit 1
+      fi
+      if test "x$(eval echo \$HAVE_$dep)" != "x"; then
+	    eval ver=\$VERS_$dep
+        if test "$SKIPVERSIONCHECK" != "yes" && ! check_version "$ver" "$depver"; then
+          echo "ERROR: version mismatch." >&2
+          echo "       $modname requires $name $depver," >&2
+          echo "       but only $name = $ver available." >&2
+          exit 1
+        fi
+        _sort_module $dep
+      else
+        # perhaps this module is installed,
+        # then it should be handled via pkg-config
+        if ! pkg-config $name; then
+          echo "ERROR: could not find module $name," >&2
+          echo "       module is also unknown to pkg-config." >&2
+          echo "       Maybe you need to adjust PKG_CONFIG_PATH!" >&2
+          echo "       $name is required by $modname" >&2
+          exit 1
+        fi
+      fi
+    done
+    # resolve suggestions
+    for name in $(eval "echo \$SUGS_$module"); do
+	  dep=$(fix_variable_name $name)
+      if ! check_modname $dep; then
+        echo "ERROR: invalid module name $name" >&2
+        exit 1
+      fi
+      if test "x$(eval echo \$HAVE_$dep)" != "x"; then
+        _sort_module $dep
+      fi
+    done
+    # insert this module into the list
+    export SORT_DONE_${module}=yes
+    export SORTEDMODULES="$SORTEDMODULES $module"
+  fi
+}
+
+#
+# load the $CONTROL file, skip all control variables
+# and run a command
+#
+# parameters:
+# $1 command to execute
+# $2 full path of the $CONTROL file
+#
+eval_control() {
+  local command="$1"
+  local file="$2"
+  shift 2
+  if test -f "$file"; then
+    # open subshell
+    (
+      set -e
+      # load functions defined in $file
+      # if $command is not defined in $file,
+      # then the default implementation will be executed
+      eval "$($GREP -v "^[$ALNUM]\{1,\}:" $file)"
+      # execute $command
+      $command
+    ) || false
+  else
+    echo "ERROR: could not find $file" >&2
+    exit 1
+  fi
+}
+
+#
+# fix a value such that it is suitable for a variable name and assign it
+#
+# parameters:
+# $1 name of variable
+# $2 value
+#
+fix_variable_name() {
+  # The replacement sequence has to be extended explicitly to the length of
+  # the matching set for SunOS compatibility
+  echo -n "$@" | tr '[:punct:]' '[_*]'
+}
+
+fix_and_assign() {
+  local name="$1"
+  if ! check_modname $name; then
+    echo "ERROR: error in assignment. $name is not a valid variabel name." >&2
+  fi
+  shift 1
+  export $name=$(fix_variable_name $@)
+}
+
+#
+# make sure the module name fits the naming convention
+#
+# parameters:
+# $1 module name
+#
+check_modname() {
+  if sh -c "$ID=huhu" > /dev/null 2>&1; then
+    return 1
+  fi
+#  if ! echo "$1" | $GREP '^[a-zA-Z0-9_]\{1,\}$' >/dev/null; then
+#    return 1
+#  fi
+  return 0
+}
+
+#
+# compare a sub part of the version string
+#
+# parameters:
+# $1 version
+# $2 part
+#
+# parts:
+# 1: major
+# 2: minor
+# 3: revision
+#
+get_sub_version() {
+  #it would be nice to give the part to awk via a "-v FIELD=$2"
+  #command line argument.  Unfortunatly, SunOS does not support this.
+  #Worse, we cannot use awks int() function here, since under SunOS it
+  #will always return 0 for string input.
+  echo $1 | cut -d. -f"$2" | sed 's/[^0-9].*$//;s/^$/0/'
+}
+
+#
+# compare two versions
+#
+# parameters:
+# $1 version1
+# $2 version1
+#
+# return:
+# 0: equal
+# 1: v1 > v2
+# 2: v1 < v2
+#
+compare_versions() {
+  local v1="$1"
+  local v2="$2"
+
+  for i in 1 2 3; do
+    compare_sub_version $v1 $v2 $i || return 0
+  done
+
+  echo "eq"
+}
+
+compare_sub_version() {
+  # compare sub version number
+  local sub1=`get_sub_version $1 $3`
+  local sub2=`get_sub_version $2 $3`
+
+  if test $sub1 -gt $sub2; then
+    echo "gt"
+	return 1
+  fi
+  if test $sub1 -lt $sub2; then
+    echo "lt"
+	return 1
+  fi
+
+  return 0
+}
+
+check_version() {
+  if test -z "$2"; then # if no constraint is given, check_version is true
+    return 0
+  fi
+  local v=$1
+  local PATTERN="^ *\([<>=]*\) *\([0-9.]*\)\(.*\)$"
+  if test x != `echo "$2" | sed -e "s/$PATTERN/x/"`; then
+    echo "ERROR: invalid version constraint $2" >&2
+    exit 1
+  fi
+  local op=`echo "$2" | sed -e "s/$PATTERN/\1/"`
+  local v2=`echo "$2" | sed -e "s/$PATTERN/\2/"`
+  local rest=`echo "$2" | sed -e "s/$PATTERN/\3/" -e 's/ //g'`
+  local result=1
+  
+  local rel=`compare_versions $v $v2`
+
+  case $rel$op in
+  "eq<="|"eq="|"eq>="|\
+  "gt>="|"gt>"|\
+  "lt<="|"lt<")
+    result=0
+	;;
+  esac
+  if test -z "$rest"; then
+    return $result
+  fi
+  PATTERN="\([|&]\{2\}\)\(.*\)$"
+  if test xx != x`echo "$rest" | sed -e "s/$PATTERN/x/"`; then
+    echo "ERROR: invalid version constraint '$rest'" >&2
+    exit 1
+  fi
+  op=`echo "$rest" | sed -e "s/$PATTERN/\1/"`
+  v2=`echo "$rest" | sed -e "s/$PATTERN/\2/"`
+  if eval "test $result -eq 0" $op "check_version \"$v\" \"$v2\""; then
+    return 0
+  fi
+  return 1
+}
