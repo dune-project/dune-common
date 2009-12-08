@@ -51,14 +51,14 @@ check-log-sources-am:
 check-log-libs-am:
 	$(LOG_SET_OPTIONS); \
 	for lib in $(LTLIBRARIES); do \
-	  $(LOG_TIMING) $(MAKE) $$lib > $(LOG_FILE) 2>&1; \
+	  $(LOG_TIMING) ($(MAKE) $$lib) > $(LOG_FILE) 2>&1; \
 	  $(LOG_STORE) "lib" "$$lib" "$$path"; \
 	done;
 
 check-log-build-am:
 	$(LOG_SET_OPTIONS); \
 	for target in $(check_PROGRAMS) $(PROGRAMS); do \
-	  $(LOG_TIMING) $(MAKE) $$target > $(LOG_FILE) 2>&1; \
+	  $(LOG_TIMING) ($(MAKE) $$target) > $(LOG_FILE) 2>&1; \
 	  $(LOG_STORE) "build" "$$target" "$$path"; \
 	done;
 
