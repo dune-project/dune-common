@@ -31,18 +31,20 @@ headercheck-am:
 	else \
 	  list=`echo $(headercheck_PATTERN)`; \
 	fi; \
+    test -z "$$NO_CONFIG_H" && NO_CONFIG_H=0; \
+    test -z "$$SILENT" && SILENT=1; \
 	test "$$list" != "$(headercheck_PATTERN)" || exit 0; \
 	for f in $$list; do \
-	echo "$$f"; \
 	echo "$(headercheck_IGNORE)" | tr ' ' '\n' | grep -q "$$f"; \
 	  if echo "$(headercheck_IGNORE)" | tr ' ' '\n' | grep -q "$$f"; then continue; fi; \
 	  HEADER="$(subdir)/$$f"; \
-	  test $$SILENT -ne 0 || echo "checking $$HEADER"; \
+	  echo "checking $$HEADER"; \
 	  CCFILE=hctest.cc; \
 	  OFILE=hctest.o; \
 	  LOGFILE=hctest.log; \
 	  rm -f $$CCFILE; \
-	  test -n "$$NO_CONFIG_H" || echo "#include <config.h>" > $$CCFILE; \
+	  test $$NO_CONFIG_H -ne 0 && echo "    without config.h" \
+	    || echo "#include <config.h>" > $$CCFILE; \
 	  echo "#include <$${HEADER}>" >> $$CCFILE; \
 	  echo "#include <$${HEADER}>" >> $$CCFILE; \
 	  echo "int main () {}" >> $$CCFILE; \
