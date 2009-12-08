@@ -1,4 +1,0 @@
-# use these options for configure if no options a provided on the cmdline
-AUTOGEN_FLAGS="--ac=2.50 --am=-1.8"
-CONFIGURE_FLAGS="CXX=g++-3.4 --prefix='/tmp/Hu Hu'"
-MAKE_FLAGS=install
