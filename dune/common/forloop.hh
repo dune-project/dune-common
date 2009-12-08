@@ -11,7 +11,7 @@ namespace Dune
    * @brief A static loop using TMP
    *
    * The ForLoop takes a
-   *   \code template<int i> class Operation
+   *   \code template<int i> class Operation \endcode
    * template argument with a static apply method
    * which is called for i=first...last (first<=last are int template arguments).
    * A specialization for class template class Operation for i=first
@@ -23,24 +23,26 @@ namespace Dune
    * It is possible to pass a subclass to the ForLoop
    * (since no specialization is needed).
    * Example of usage:
-   * template <class Foo>
-   * struct A
-   * {
-   *   template <int i>
-   *   struct Operation
-   *   {
-   *     template <class T>
-   *     static void apply(const double &x,const T &t, T &ret)
-   *     {
-   *       ret = "hallo" + t;
-   *     }
-   *   };
-   *   void useForLoop()
-   *   {
-   *     std::string world;
-   *     ForLoop<Operation,1,10>::apply(1.,"hallo",world);
-   *   }
-   * };
+   * \code
+     template <class Foo>
+     struct A
+     {
+     template <int i>
+     struct Operation
+     {
+     template <class T>
+     static void apply(const double &x,const T &t, T &ret)
+     {
+      ret = "hallo" + t;
+     }
+     };
+     void useForLoop()
+     {
+     std::string world;
+     ForLoop<Operation,1,10>::apply(1.,"hallo",world);
+     }
+     };
+   * \endcode
    */
 
   template< template< int > class Operation, int first, int last >
