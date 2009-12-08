@@ -4,6 +4,7 @@
 LOG_FILE = $(top_srcdir)/check-log.log
 LOG_DIR = $(top_srcdir)/check-log
 LOG_STORE = $(SHELL) $(DUNE_COMMON_ROOT)/bin/check-log-store $(LOG_FILE) $(LOG_DIR)
+LOG_TIMING = 
 LOG_SET_OPTIONS = \
 	path=`test "$(subdir)" = "." && \
 	echo "/@PACKAGE_NAME@" || echo "/@PACKAGE_NAME@/$(subdir)"`; \
@@ -21,30 +22,43 @@ check-log: check-log-libs
 check-log: check-log-build
 check-log: check-log-test
 check-log: check-log-sources
+check-log: check-log-headers
 check-log: check-log-dir
 
 check-log-libs: check-log-libs-recursive
 check-log-build: check-log-build-recursive
 check-log-test: check-log-test-recursive
 check-log-sources: check-log-sources-recursive
+check-log-headers: check-log-headers-recursive
 check-log-dir: check-log-dir-recursive
+
+check-log-headers-am:
+	$(LOG_SET_OPTIONS); \
+	list=`echo $(headercheck_PATTERN)`; \
+	test "$$list" != "$(headercheck_PATTERN)" || exit 0; \
+	for f in $$list; do \
+	  echo "$(MAKE) headercheck-am HEADER=$$f"; \
+	  $(LOG_TIMING) ($(MAKE) headercheck-am SILENT=0 HEADER=$$f; \
+	    $(MAKE) headercheck-am SILENT=0 HEADER=$$f NO_CONFIG_H=1) > $(LOG_FILE) 2>&1; \
+	  $(LOG_STORE) "headercheck" "$$f" "$$path"; \
+	done
 
 check-log-sources-am:
 	$(LOG_SET_OPTIONS); \
-	$(MAKE) sourcescheck-am > $(LOG_FILE) 2>&1; \
+	$(LOG_TIMING) $(MAKE) sourcescheck-am > $(LOG_FILE) 2>&1; \
 	$(LOG_STORE) "sources" "Makefile.am" "$$path"
 
 check-log-libs-am:
 	$(LOG_SET_OPTIONS); \
 	for lib in $(LTLIBRARIES); do \
-	  $(MAKE) $$lib > $(LOG_FILE) 2>&1; \
+	  $(LOG_TIMING) $(MAKE) $$lib > $(LOG_FILE) 2>&1; \
 	  $(LOG_STORE) "lib" "$$lib" "$$path"; \
 	done;
 
 check-log-build-am:
 	$(LOG_SET_OPTIONS); \
 	for target in $(check_PROGRAMS) $(PROGRAMS); do \
-	  $(MAKE) $$target > $(LOG_FILE) 2>&1; \
+	  $(LOG_TIMING) $(MAKE) $$target > $(LOG_FILE) 2>&1; \
 	  $(LOG_STORE) "build" "$$target" "$$path"; \
 	done;
 
@@ -59,7 +73,8 @@ check-log-test-am:
 	  if test -f ./$$tst; then dir=./; \
 	  elif test -f $$tst; then dir=; \
 	  else dir="$(srcdir)/"; fi; \
-	  if $(TESTS_ENVIRONMENT) $${dir}$$tst > $(LOG_FILE) 2>&1; then \
+	  echo "TEST $${dir}$$tst"; \
+	  if $(LOG_TIMING) $(TESTS_ENVIRONMENT) $${dir}$$tst > $(LOG_FILE) 2>&1; then \
 	    case " $(XFAIL_TESTS) " in \
 	    *" $$tst "*) \
 	      LOG "ERROR: XPASS ($$tst)"; \
@@ -95,6 +110,7 @@ check-log-libs-recursive \
 check-log-build-recursive \
 check-log-test-recursive \
 check-log-sources-recursive \
+check-log-headers-recursive \
 check-log-dir-recursive:
 	@set fnord $$MAKEFLAGS; amf=$$2; \
 	dot_seen=no; \
