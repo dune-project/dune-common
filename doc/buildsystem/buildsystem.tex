@@ -527,25 +527,86 @@ user wishes to modify the values, you should use the \texttt{AM\_*}
 version. 
 
 The real compile-command always uses both \texttt{AM\_\textit{VAR}} and
-\texttt{\textit{VAR}}. Options that
+\texttt{\textit{VAR}} (or \texttt{\texttt{progname}\_\textit{VAR}} and
+\texttt{\textit{VAR}}).  Options that
 autoconf finds are stored in the user variables (so that they may be
-overridden) 
+overridden).
+
+Besides the three types of variables mentioned so far (user-, automake- and
+program-variables) there exists a fourth type by convention: variables of
+dependend libraries.  These variables have the form
+\texttt{\textit{LIBRARY}\_\textit{VAR}} and contain flags neccessary to build
+programs or libraries which depend on that library.  They are usually included
+in \texttt{\textit{program}\_\textit{VAR}}, like this:
+\begin{lstlisting}[language=make]
+foo_CPPFLAGS = $(AM_CPPFLAGS) $(SUPERLU_CPPFLAGS)
+\end{lstlisting}
+If all programs build by the same makefile depend on a library,
+\texttt{\textit{program}\_\textit{VAR}} can be included in
+\texttt{AM\_\textit{VAR}} instead:
+\begin{lstlisting}[language=make]
+AM_CPPFLAGS = @AM_CPPFLAGS@ $(SUPERLU_CPPFLAGS)
+\end{lstlisting}
+%$\end{lstlisting}
 
 Commonly used variables are:
-\begin{itemize}
-\item \texttt{AM\_CPPFLAGS}: flags for the C-Preprocessor. This
-  includes preprocessor defines like \texttt{-DNDEBUG} and include
-  pathes like \texttt{-I/usr/local/package/include}
-\item \texttt{AM\_CFLAGS}, \texttt{AM\_CXXFLAGS}: flags for the
-  compiler (-g, -O, ...). One difference between these and the
-  \texttt{CPPFLAGS} is that the linker will get
-  \texttt{CFLAGS}/\texttt{CXXFLAGS} and \texttt{LDFLAGS} but not
-  \texttt{CPPFLAGS}
-\item \texttt{AM\_LDFLAGS} options for the linker
-\item \texttt{LDADD}: libraries to link to a binary
-\item \texttt{LIBADD}: libraries to add to a library
-\item \texttt{SOURCES}: list of source-files (may include headers as well)
-\end{itemize}
+\begin{description}
+\item[C-preprocessor flags] \texttt{CPPFLAGS} (user), \texttt{AM\_CPPFLAGS}
+  (automake),
+  \texttt{\textit{program}\_CPPFLAGS}/\texttt{\textit{library}\_CPPFLAGS}
+  (program/library), \texttt{\textit{LIBRARY}\_CPPFLAGS} (dependend library).
+  These flags contain things like the include path \texttt{-I\textit{path}}
+  and preprocessor defines
+  \texttt{-D\textit{DEFINE}}/\texttt{-U\textit{DEFINE}}.  Include paths should
+  rarely go in the user variable.  For defines it depends on what the define
+  does: things like \texttt{NDEBUG} are a definite candidate for the user
+  variable, while \texttt{HAVE\_CONFIG\_H} is set by autoconf in
+  \texttt{AM\_CPPFLAGS}.
+\item[C++-compiler flags] \texttt{CXXFLAGS} (user), \texttt{AM\_CXXFLAGS}
+  (automake),
+  \texttt{\textit{program}\_CXXFLAGS}/\texttt{\textit{library}\_CXXFLAGS}
+  (program/library), \texttt{\textit{LIBRARY}\_CXXFLAGS} (dependend library).
+  This includes things that change the behaviour of the compiler.  Candidates
+  for the user variable are \texttt{-g}, \texttt{-Wall}, \texttt{-O3} and
+  \texttt{-funroll\_loops}.  Candidates for the other variables are
+  \texttt{-std=c++0x}.  These variables are used not only when compiling, but
+  also when calling the C++-compiler to do linking only.
+\item[C-compiler flags] \texttt{CFLAGS} (user), \texttt{AM\_CFLAGS}
+  (automake),
+  \texttt{\textit{program}\_CFLAGS}/\texttt{\textit{library}\_CFLAGS}
+  (program/library), \texttt{\textit{LIBRARY}\_CFLAGS} (dependend library).
+  Like the variables for C++-compiler, but for the plain C-compiler.  If you
+  link a library written in C to a program or library written in C++, it may
+  be neccessary to include \texttt{\textit{LIBRARY}\_CFLAGS} in
+  \texttt{\textit{program}\_CXXFLAGS}/\texttt{\textit{library}\_CXXFLAGS} or
+  \texttt{AM\_CXXFLAGS}.
+\item[linker flags] \texttt{LDFLAGS} (user), \texttt{AM\_LDFLAGS} (automake),
+  \texttt{\textit{program}\_LDFLAGS}/\texttt{\textit{library}\_LDFLAGS}
+  (program/library), \texttt{\textit{LIBRARY}\_LDFLAGS} (dependend library).
+  This variable should not contain any \texttt{-L\textit{path}} or
+  \texttt{-l\textit{library}} options -- those should go into the following
+  variables.
+\item[libraries to link to] \texttt{LIBS} (automake),
+  \texttt{\textit{program}\_LDADD}/\texttt{\textit{library}\_LIBADD}
+  (program/library), \texttt{\textit{LIBRARY}\_LIBS} (dependend library).
+  Note that there is no user variable.  This variables should contain the
+  libraries to link to -- either directly by file name
+  \texttt{\textit{path/to/library.so}} or by using the
+  \texttt{-L\textit{path}} and \texttt{-l\textit{library}} options.  If
+  \texttt{-l\textit{library}} is used, it must be preceded by a matching
+  \texttt{-L\textit{path}} (except for standard libraries like \texttt{-lm}).
+  This is especially importand for the dependend library variable
+  \texttt{\textit{LIBRARY}\_LIBS} -- otherwise different dependend libraries
+  will fight for control other the linkers search path.  It has happend that
+  one dependend library wanted to link against a library
+  \texttt{-l\textit{foo}}, which was incorrectly found in another libraries
+  linker search path.  Object files \texttt{\textit{foo}.o} should not usually
+  be directly included.
+\item[source files]
+  \texttt{\textit{program}\_SOURCES}/\texttt{\textit{library}\_SOURCES}
+  (program/library).  This is used to list the source files for a binary in a
+  \texttt{Makefile.am}.  See the automake documentation for details.
+\end{description}
 
 \minisec{Conditional builds}
 
