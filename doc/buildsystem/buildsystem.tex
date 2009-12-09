@@ -549,6 +549,81 @@ AM_CPPFLAGS = @AM_CPPFLAGS@ $(SUPERLU_CPPFLAGS)
 \end{lstlisting}
 %$\end{lstlisting}
 
+There are five classes of variables in automake-generated makefiles:
+\begin{description}
+\item[automake] Example: \texttt{AM\_CPPFLAGS}.  Values for these variables
+  are determined by \texttt{configure} and substituted by \texttt{config.sub}
+  when generating the \texttt{Makefile} from the \texttt{Makefile.in}.  To
+  make this possible, automake puts something like the following line into the
+  \texttt{Makefile.in}:
+  \begin{lstlisting}[language=make]
+AM_CPPFLAGS = @AM_CPPFLAGS@
+  \end{lstlisting}
+  The names of these variables begin with \texttt{AM\_} most of the time, but
+  there are some variables which don't have that prefix.  Often these
+  variables are used as defaults for {\bf target-specific} variables (they
+  also belong to the {\bf makefile-default} class below.  In that case, the
+  \texttt{configure}-detected value for that variable can be augmented by
+  putting something like
+  \begin{lstlisting}[language=make]
+AM_CPPFLAGS = @AM_CPPFLAGS@ -DMY_DIR=`pwd`
+  \end{lstlisting}
+  in the \texttt{Makefile.am}.  Automake will then put this line into the
+  \texttt{Makefile.in} instead of the default one.
+\item[makefile-default] Example: \texttt{LDADD}.  These variables usually
+  provide default values and can be overridden by {\bf target-specific}
+  variables.  If they are {\bf automake} variables, a default value will be
+  provided by \texttt{configure}.  Otherwise, they are per default undefined
+  and the developer can give them a default value in the \texttt{Makefile.am}:
+  \begin{lstlisting}[language=make]
+LDADD = -lm
+  \end{lstlisting}
+\item[target-specific] Example: \texttt{\textit{target}\_CPPFLAGS}.  The names
+  of these variables are of the form canonical target name followed by an
+  underscore followed some uppercase letters.  If there is a {\bf
+    makefile-default} variable corresponding to this {\bf target-specific}
+  variable, the uppercase letters at the end of the name usually correspond to
+  the name of that {\bf makefile-default} variable.  These variables provide
+  target-specific information.  They are defined by the developer in the
+  \texttt{Makefile.am} and are documented in the automake manual.  If there is
+  corresponding a {\bf makefile-default} variable it provides a default which
+  is used when the {\bf target-specific} is not defined.  Example definition:
+  \begin{lstlisting}[language=make]
+false_SOURCES = true.c
+false_CPPFLAGS = $(AM_CPPFLAGS) -DEXIT_CODE=1
+  \end{lstlisting}
+  %$\end{lstlisting}
+\item[user] Example: \texttt{CPPFLAGS}.  These variables are for the user to
+  set on the make command line:
+  \begin{lstlisting}[language=sh]
+make CPPFLAGS=-DNDEBUG
+  \end{lstlisting}
+  They usually augment some {\bf target-specific} or {\bf makefile-default}
+  variable in the build rules.  Often these variables are {\em precious} (see
+  autoconf manual), so the user can tell \texttt{configure} what values these
+  variables should have.  Thus, the developer should not usually set this
+  variables in the \texttt{Makefile.am}, because that would override the
+  user-provided values given to configure.  Instead, \texttt{configure.ac}
+  must be tweaked to set a different default if the user does not give a value
+  to \texttt{configure}.
+\item[external-library] Example: \texttt{\textit{LIB}\_CPPFLAGS}.  These
+  variables contain settings needed when using external libraries in a
+  target.  They should be included in the value for the corresponding {\bf
+    target-specific} variable
+  \begin{lstlisting}[language=make]
+testprog_CPPFLAGS = $(AM_CPPFLAGS) $(SUPERLU_CPPFLAGS)
+  \end{lstlisting}
+  or the {\bf makefile-default} variable
+  \begin{lstlisting}[language=make]
+AM_CPPFLAGS = @AM_CPPFLAGS@ $(SUPERLU_CPPFLAGS)
+  \end{lstlisting}
+  %$\end{lstlisting}
+  Values for these variables are determined by \texttt{configure}.  Usually,
+  \texttt{configure.ac} must call the right autoconf macro to determine these
+  variables.
+\end{description}
+
+
 Commonly used variables are:
 \begin{description}
 \item[C-preprocessor flags] \texttt{CPPFLAGS} (user), \texttt{AM\_CPPFLAGS}
