@@ -73,15 +73,15 @@ namespace Dune
   /**
    * @brief A set representing a range including the borders.
    */
-  template<typename T,int from, int end>
+  template<typename TA,int from, int end>
   class EnumRange //: public PODSet<EnumRange<T,from,end>,T>
   {
   public:
     /**
      * @brief The type the set holds.
      */
-    typedef T Type;
-    static bool contains(const T& item);
+    typedef TA Type;
+    static bool contains(const TA& item);
   };
 
   /**
