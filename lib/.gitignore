@@ -1,4 +1,7 @@
-.libs
+libdunecommon.la
+
 Makefile.in
 Makefile
-libdunecommon.la
+
+.deps
+.libs
