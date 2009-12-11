@@ -9,7 +9,7 @@ lrutest
 parsetest
 test-stack
 arraylisttest
-smartpointertest
+shared_ptrtest
 float_cmp
 bitsetvectortest
 iteratorfacadetest
