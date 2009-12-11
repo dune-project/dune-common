@@ -9,8 +9,6 @@ AUTOMAKE_OPTIONS = foreign 1.5
 
 SUBDIRS = dune lib doc bin m4 am
 
-sourcescheck_NOSOURCES=aclocal.m4  dependencies.m4
-
 # use configured compiler for "make distcheck"
 DISTCHECK_CONFIGURE_FLAGS = CXX="$(CXX)" CC="$(CC)" --enable-parallel=@ENABLE_PARALLEL@ MPICC="$(MPICC)"
 
