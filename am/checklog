@@ -1,6 +1,31 @@
 # -*- Makefile -*-
 # $Id$
 
+#
+# check-log
+#
+# This file implements the build-rules needed by the automated tests.
+# "make check-log" will build the whole package and run all tests. For
+# each test a log file under $(topsrc_dir)/check-log is created which
+# contains the name of the test and what kind of test it was (build,
+# lib, run, ...). If a test fails this is logged, but all otehr tests
+# are still run.
+#
+# make OPTIONS:
+# LOG_TIMING - specific command to measure the time needed for each test
+#              example: "make LOG_TIMING='time -p' check-log"
+#
+# IMPLEMENTATION: check-log depends on different targets for different
+# kinds of tests. These can run idividually by calling check-log-XXX.
+# Possible variants are (in order of dependence)
+#   - libs    (build all libraries)
+#   - build   (build all applications and tests)
+#   - test    (run each test from $(TESTS))
+#   - sources (run sourcescheck in each directory)
+#   - headers (run headercheck for each header)
+#   - dir     (create dir entries for database, no actual tests are run)
+#
+
 LOG_FILE = $(top_srcdir)/check-log.log
 LOG_DIR = $(top_srcdir)/check-log
 LOG_STORE = $(SHELL) $(DUNE_COMMON_ROOT)/bin/check-log-store $(LOG_FILE) $(LOG_DIR)
