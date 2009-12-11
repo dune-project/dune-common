@@ -19,20 +19,17 @@ AC_DEFUN([DUNE_CHECK_ALL],[
   AS_IF([test "x$enabledist" = "xyes"],[
     AM_CONDITIONAL(DUNEWEB, false)])
 
-  dnl check the compilers
+  # check the compilers (before using libtool !!!)
   AC_REQUIRE([PKG_PROG_PKG_CONFIG])
   AC_REQUIRE([AC_PROG_CC])
   AC_REQUIRE([AC_PROG_CPP])
   AC_REQUIRE([AC_PROG_CXX])
   AC_REQUIRE([AC_PROG_CXXCPP])
   AC_REQUIRE([AC_PROG_F77])
+  AC_REQUIRE([LT_COMPAT])
+  # we need libtool
   AC_REQUIRE([AC_PROG_LIBTOOL])
   # don't build shared libs per default, this is way better for debugging...
-  m4_ifdef([LT_INIT], [],
-  [
-    AC_DEFUN([LT_OUTPUT])
-    AC_DEFUN([LT_INIT], [AC_DISABLE_SHARED])
-  ])
   LT_INIT([disable-shared])
 
   dnl check dependencies of this module
