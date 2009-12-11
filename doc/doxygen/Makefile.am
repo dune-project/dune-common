@@ -3,10 +3,11 @@
 # setting like in dune-web
 BASEDIR=../..
 CURDIR=doc/doxygen
+WHAT =
 
 if BUILD_DOCS
 if WML
-  WHAT = bestpractice.html
+  WHAT += bestpractice.html
 endif
 endif
 
