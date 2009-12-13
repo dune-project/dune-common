@@ -5,8 +5,12 @@
 #ifndef DUNE_COMMON_HELPERTEMPLATES
 #define DUNE_COMMON_HELPERTEMPLATES
 
+// deprecated in dune 2.0
+#warning Header file dune/common/helpertemplates.hh is deprecated
+
 /** \file
     \brief Compile-time constraint checks from the Stroustrup FAQ
+    \deprecated
  */
 
 namespace Dune {
