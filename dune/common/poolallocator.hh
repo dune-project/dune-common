@@ -308,7 +308,7 @@ namespace Dune
      * @param hint Ignored hint.
      * @return A pointer tp the allocated elements.
      */
-    inline pointer allocate(size_t n, const_pointer hint=0);
+    inline pointer allocate(std::size_t n, const_pointer hint=0);
 
     /**
      * @brief Free objects.
@@ -555,7 +555,8 @@ namespace Dune
   { }
 
   template<class T, std::size_t s>
-  inline T* PoolAllocator<T,s>::allocate(std::size_t n, const T* hint)
+  inline typename PoolAllocator<T,s>::pointer
+  PoolAllocator<T,s>::allocate(std::size_t n, const_pointer hint)
   {
     if(n==1)
       return static_cast<T*>(memoryPool_.allocate());
@@ -571,7 +572,7 @@ namespace Dune
   }
 
   template<class T, std::size_t s>
-  inline void PoolAllocator<T,s>::construct(T* p, const T& value)
+  inline void PoolAllocator<T,s>::construct(pointer p, const_reference value)
   {
     ::new (static_cast<void*>(p))T(value);
   }

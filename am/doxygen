@@ -98,6 +98,8 @@ $(srcdir)/Doxyfile.in: FORCE
 	  cd $(top_srcdir) && $(DUNEDOXYNIZE); \
 	fi
 
+include $(top_srcdir)/am/webstuff
+
 if WML
 # how to install the doxygen documentation
 web-install-doxygen:
@@ -119,5 +121,3 @@ clean-doxygen:
 
 # nice trick from the GNU make infopage to force a rule to run
 FORCE:
-
-include $(top_srcdir)/am/webstuff
