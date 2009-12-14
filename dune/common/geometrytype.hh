@@ -27,7 +27,8 @@ namespace Dune {
       simplex,               //!< Simplicial element in any nonnegative dimension
       cube,                  //!< Cube element in any nonnegative dimension
       pyramid,               //!< Four sided pyramid in three dimensions
-      prism                  //!< Prism element in three dimensions
+      prism,                 //!< Prism element in three dimensions
+      none                   //!< Generic element in any nonnegative dimension
     };
 
   private:
@@ -88,6 +89,9 @@ namespace Dune {
     /** \brief Make a hypercube of given dimension */
     void makeCube(unsigned int dim) {basicType_ = cube; dim_ = dim;}
 
+    /** \brief Make a singular of given dimension */
+    void makeNone(unsigned int dim) {basicType_ = none; dim_ = dim;}
+
     /*@}*/
 
 
@@ -122,6 +126,9 @@ namespace Dune {
 
     /** \brief Return true if entity is a cube of any dimension */
     bool isCube() const {return basicType_==cube || dim_ < 2;}
+
+    /** \brief Return true if entity is a singular of any dimension */
+    bool isNone() const {return basicType_==none;}
 
     /** \brief Return dimension of the entity */
     unsigned int dim() const {return dim_;}
