@@ -1,3 +1,6 @@
+# -*- makefile -*-
+# $Id$
+
 # Rules for latex stuff
 
 # rerun TEX if log-file suggests that
