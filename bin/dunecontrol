@@ -641,6 +641,7 @@ while test $# -gt 0; do
       cat > $fname <<EOF
 m4_define([DUNE_AC_INIT],[
   AC_INIT([$name], [$version], [$maintainer])
+  AM_INIT_AUTOMAKE([foreign 1.5 tar-pax])
   AC_SUBST([DUNE_MOD_VERSION], [$version])
   AC_SUBST([DUNE_MOD_NAME], [$name])
   AC_SUBST([DUNE_MAINTAINER_NAME], [$maintainer])
