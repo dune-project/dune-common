@@ -1,22 +1,16 @@
 # -*-makefile-automake-*-
 
-if BUILD_DOCS
-  DOXYGENTAG = doxygen-tag 
-  DOXYGEN_HTML = html 
-  # EXTRAINSTALL in the html subdirectory
-  DOXYGENHTMLFILES = *.html *.css *.png *.gif
-  DOXYGENDISTFILES = doxygen-tag
-  DOXYGENINSTALL = $(DOXYGENHTMLFILES) ../doxygen.log ../doxyerr.log
-endif # BUILD_DOCS
+doxygendir = $(docdir)/doxygen
 
-DISTCLEANFILES = doxygen.log doxygen-tag
-
+####
+# doxygen style files
 if DUNEWEB
 if WML
-  DUNEWEBDOXY = @DUNEWEBDIR@/doc/doxygen
-  # themeing doxygen
-  DOXYGENHEADER = doxy-header.html
-  DOXYGENFOOTER = doxy-footer.html
+
+DUNEWEBDOXY = @DUNEWEBDIR@/doc/doxygen
+# themeing doxygen
+DOXYGENHEADER = doxy-header.html
+DOXYGENFOOTER = doxy-footer.html
 
 doxy-header.html: BASEDIR=../../..
 doxy-footer.html: BASEDIR=../../..
@@ -32,11 +26,67 @@ doxy-footer.html: @DUNEWEBDIR@/doc/doxygen/doxy-footer.wml
 endif # WML
 endif # DUNEWEB
 
-if DOXYGEN
-DOXYGENFILES = $(DOXYGEN_HTML) $(DOXYGENHEADER) $(DOXYGENFOOTER)
-endif #  DOXYGEN
+####
+# how to build doxygen documentation
+if BUILD_DOCS
+  DOXYGENTAG = doxygen-tag
+  DOXYGEN_HTML = html 
+  # EXTRAINSTALL in the html subdirectory
+  DOXYGENHTMLFILES = *.html *.css *.png *.gif
+  DOXYGENDISTFILES = doxygen-tag
+  DOXYGENINSTALL = $(DOXYGENHTMLFILES) ../doxygen.log ../doxyerr.log
+endif # BUILD_DOCS
 
-#we need this in the distribution
+if DOXYGEN
+
+DUNEDOXYNIZE=@DUNE_COMMON_ROOT@/bin/dunedoxynize
+$(srcdir)/Doxyfile.in: FORCE
+	if test -f $(srcdir)/Doxylocal && test $(srcdir)/Doxylocal -nt $(srcdir)/Doxyfile.in; then \
+	  cd $(top_srcdir) && $(DUNEDOXYNIZE); \
+	fi
+
+# build doxygen when 'make doc' is called
+# what files does the doxygen-generated stuff depend on (find-syntax)
+DOXYGEN_DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.png -o -name Doxyfile -o -name modules
+# check dependency ourself to be robust
+doxygen-tag: FORCE Doxyfile $(DOXYGENHEADER) $(DOXYGENFOOTER)
+	set -e; \
+	if test ! -e doxygen-tag || test x"`find $(top_srcdir) \( $(DOXYGEN_DEPENDON) \) -a -cnewer doxygen-tag -print`" != x ; then \
+	    echo Running doxygen. This may take a while... ; \
+	    $(DOXYGEN) Doxyfile > doxygen.log <&-; \
+	    touch doxygen-tag ; \
+	    if test "$$DOXYQUIET" != "1" && test -f doxyerr.log; \
+	      then cat doxyerr.log; fi; \
+	    if test -x "$(DUNEWEBDOXY)/update-doxygen.css"; \
+	      then $(DUNEWEBDOXY)/update-doxygen.css $(abs_builddir)/html; fi; \
+	fi
+doc-doxygen: $(DOXYGEN_HTML) $(DOXYGENHEADER) $(DOXYGENFOOTER)
+else
+doc-doxygen:
+endif # DOXYGEN
+doc-am: doc-doxygen
+
+####
+# how to store doxygen in the tarball
+if DOXYGEN
+doxygen-dist-install: doxygen-tag
+	set -e;\
+	mkdir $(distdir)/html; \
+	cd $(abs_builddir)/html; \
+	list=`echo $(DOXYGENHTMLFILES)`; \
+	cd $(abs_builddir); \
+	for i in $$list; do \
+	  cp html/$$i $(distdir)/html; \
+	done;
+
+dist-hook: doxygen-dist-install
+
+html: doxygen-tag
+
+endif # DOXYGEN
+
+####
+# how to install doxygen
 if BUILD_DOCS
 
 install-doxygen-data: $(DOXYGEN_HTML)
@@ -59,49 +109,11 @@ uninstall-local: uninstall-doxygen-data
 
 endif # BUILD_DOCS
 
-if DOXYGEN
-
-# what files does the doxygen-generated stuff depend on (find-syntax)
-DOXYGEN_DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.png -o -name Doxyfile -o -name modules
-
-# check dependency ourself to be robust
-doxygen-tag: FORCE Doxyfile $(DOXYGENHEADER) $(DOXYGENFOOTER)
-	set -e; \
-	if test ! -e doxygen-tag || test x"`find $(top_srcdir) \( $(DOXYGEN_DEPENDON) \) -a -cnewer doxygen-tag -print`" != x ; then \
-	    echo Running doxygen. This may take a while... ; \
-	    $(DOXYGEN) Doxyfile > doxygen.log <&-; \
-	    touch doxygen-tag ; \
-	    if test "$$DOXYQUIET" != "1" && test -f doxyerr.log; \
-	      then cat doxyerr.log; fi; \
-	    if test -x "$(DUNEWEBDOXY)/update-doxygen.css"; \
-	      then $(DUNEWEBDOXY)/update-doxygen.css $(abs_builddir)/html; fi; \
-	fi
-
-doxygen-dist-install: doxygen-tag
-	set -e;\
-	mkdir $(distdir)/html; \
-	cd $(abs_builddir)/html; \
-	list=`echo $(DOXYGENHTMLFILES)`; \
-	cd $(abs_builddir); \
-	for i in $$list; do \
-	  cp html/$$i $(distdir)/html; \
-	done;
-
-dist-hook: doxygen-dist-install
-
-html: doxygen-tag
-
-DUNEDOXYNIZE=@DUNE_COMMON_ROOT@/bin/dunedoxynize
-
-$(srcdir)/Doxyfile.in: FORCE
-	if test -f $(srcdir)/Doxylocal && test $(srcdir)/Doxylocal -nt $(srcdir)/Doxyfile.in; then \
-	  cd $(top_srcdir) && $(DUNEDOXYNIZE); \
-	fi
-
+####
+# howto install doxygen in the web page
 include $(top_srcdir)/am/webstuff
-
-if WML
-# how to install the doxygen documentation
+if DUNEWEB
+# how to install the doxygen documentation for the web site
 web-install-doxygen:
 	if test -d $(DUNEWEBDIR) && test -r $(DUNEWEBDIR)/Make.global ; then \
 	  pushd html; \
@@ -109,15 +121,22 @@ web-install-doxygen:
           EXTRAINSTALL="$(DOXYGENINSTALL)" CURDIR="$(CURDIR)/@DUNE_MOD_NAME@-html" install ; \
 	  popd; \
 	fi
-endif # WML
+else
+web-install-doxygen:
+endif # DUNEWEB
+web-install-am: web-install-doxygen
 
-web-install: web-install-doxygen web-install-default
-endif # DOXYGEN
+####
+# how to clean the doxygen stuff
+maintainer-clean-local: doxygen-maintainer-clean
+dist-clean-local: doxygen-dist-clean
 
-clean-local: clean-doxygen
+doxygen-dist-clean:
+	rm -f doxygen.log doxygen-tag
 
-clean-doxygen:
-	rm -rf $(DOXYGENTAG) $(DOXYGENFILES) *~
+doxygen-maintainer-clean:
+	rm -rf $(DOXYGENTAG) $(DOXYGEN_HTML) $(DOXYGENHEADER) $(DOXYGENFOOTER) *~
+	test -f Doxylocal &&  rm -f Doxygen.in
 
 # nice trick from the GNU make infopage to force a rule to run
 FORCE:
