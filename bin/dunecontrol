@@ -314,6 +314,9 @@ run_default_configure () {
       fi
 	  PARAMS="$PARAMS \"--with-$name=$path\""
 	done
+	if test "x$HAVE_duneweb" == "xyes"; then
+	  PARAMS="$PARAMS \"--with-duneweb=$PATH_duneweb\""
+	fi
 	PARAMS="$PARAMS ACLOCAL_AMFLAGS=\"$ACLOCAL_FLAGS\""
     echo ./configure "$PARAMS"
     eval ./configure "$PARAMS" || exit 1
