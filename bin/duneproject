@@ -615,23 +615,15 @@ echo "- $PROJECT/doc/Makefile.am"
 cat> "$PROJECT/doc/Makefile.am" << CC_DELIM
 
 SUBDIRS = doxygen
-
 CURDIR = doc
-
 BASEDIR = ..
+
+# add list of html files to generate from wml
+PAGES=
 
 docdir=\$(datadir)/doc/${PROJECT}
 
 include \$(top_srcdir)/am/webstuff
-
-CLEANFILES = \$(PAGES)
-
-if ! BUILD_DOCS
-# add tag to notify that dist has been build without documentation
-dist-hook:
-	echo "# No documentation included in distribution! " > \$(distdir)/\$(DOCUMENTATION_TAG_FILE)
-endif
-
 include \$(top_srcdir)/am/global-rules
 CC_DELIM
 
@@ -690,28 +682,9 @@ cat> "$PROJECT/doc/doxygen/Makefile.am" << CC_DELIM
 
 BASEDIR=../..
 CURDIR=doc/doxygen
-WHAT=
-
-doxygendir = \$(datadir)/doc/$PROJECT/doxygen
-doxygen_DATA = \$(WHAT)
-
-#we need this in the distribution
-EXTRA_DIST = \$(WHAT) \$(DOXYGENDISTFILES)
-
-all: \$(WHAT) \$(DOXYGENFILES)
 
 include \$(top_srcdir)/am/doxygen
 include \$(top_srcdir)/am/global-rules
-
-# file to clean only in svn and not in tarball tree
-SVNCLEANFILES = html \$(WHAT) \$(DOXYGENHEADER)
-
-clean-local:
-	if test "x\$(VPATH)" != "x" && test ! -e \$(srcdir)/doxygen-tag; then \
-	  if test -e \$(top_srcdir)/doc/doxygen/Doxydep; then \
-	    rm -rf \$(SVNCLEANFILES); \
-	  fi; \
-	fi
 
 CC_DELIM
 
