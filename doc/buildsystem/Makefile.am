@@ -4,8 +4,6 @@ if BUILD_DOCS
   DOCS=buildsystem.pdf buildsystem.ps
 endif
 
-all: $(DOCS)
-
 # setting like in dune-web
 CURDIR=doc/buildsystem
 # position of the web base directory,
