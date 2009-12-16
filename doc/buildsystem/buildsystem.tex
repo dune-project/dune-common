@@ -610,6 +610,12 @@ setion ``Developing Dune'' on
 \texttt{\url{http://www.dune-project.org/}} for details). \em After
 running \duneproject the basic setup is already done\em.
 
+You should only have one \texttt{doxygen} directory and the files are
+automatically installed into\\
+\texttt{\$prefix/share/doc/\$modulename/doxygen/}. If for any reason
+you really have to change the installation path you can set the
+variable \texttt{doxygendir} \em after \em including \texttt{am/doxygen}.
+
 The file \texttt{doc/doxygen/Doxylocal}\xspace contains the basic
 information where header and source files are located in your
 project. Usually you will not have to adjust this file, it is already
@@ -627,6 +633,9 @@ source code we refer to the \texttt{doxygen}\xspace web-site
 Webpages are created from wml sources, using the program \texttt{wml}
 (\texttt{\url{http://thewml.org/}}).\\
 \texttt{\$(top\_srcdir)/am/webstuff} contains the necessary rules.
+
+Add all \texttt{html} files to the \texttt{PAGES} variable to build
+and install them.
 
 \hspace*{-2ex}\begin{minipage}{\textwidth}
 \begin{lst}[File Makefile.am] \mbox{}
