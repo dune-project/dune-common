@@ -39,4 +39,10 @@ else
 web-install-default:
 endif
 
+web-build: $(PAGES)
+web-clean:
+	rm -f $(PAGES)
+
+maintainer-clean-local: web-clean
 web-install-am: web-install-default
+doc-am: web-build

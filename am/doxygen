@@ -136,7 +136,8 @@ doxygen-dist-clean:
 
 doxygen-maintainer-clean:
 	rm -rf $(DOXYGENTAG) $(DOXYGEN_HTML) $(DOXYGENHEADER) $(DOXYGENFOOTER) *~
-	test -f Doxylocal &&  rm -f Doxygen.in
+	rm -f doxyerr.log doxygen.log
+	test -f Doxylocal && rm -f Doxygen.in
 
 # nice trick from the GNU make infopage to force a rule to run
 FORCE:
