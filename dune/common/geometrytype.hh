@@ -178,6 +178,9 @@ namespace Dune {
       case prism :
         s << "prism";
         break;
+      case none :
+        s << "(none, " << a.dim_ << ")";
+        break;
       default :
         s << "invalid geometry type";
       }
@@ -195,6 +198,7 @@ namespace Dune {
     case GeometryType::cube :    s << "cube";    break;
     case GeometryType::pyramid : s << "pyramid"; break;
     case GeometryType::prism :   s << "prism";   break;
+    case GeometryType::none :    s << "none";    break;
     default : s << "[unknown GeometryType::BasicType: " << int(type) << "]";
     }
     return s;
