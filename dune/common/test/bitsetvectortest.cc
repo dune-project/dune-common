@@ -95,6 +95,34 @@ void testContainer(BBF & bbf)
   z != y;
   y != z;
 
+  // &=
+  y &= cbbf[2];
+  y &= bbf[3];
+  y &= x;
+  x &= y;
+  x &= z;
+  y &= z;
+
+  // |=
+  y |= cbbf[2];
+  y |= bbf[3];
+  y |= x;
+  x |= y;
+  x |= z;
+  y |= z;
+
+  // ^=
+  y ^= cbbf[2];
+  y ^= bbf[3];
+  y ^= x;
+  x ^= y;
+  x ^= z;
+  y ^= z;
+
+  // shift operator
+  y <<= 1;
+  y >>= 1;
+
   // flip
   y.flip();
   y.flip(2);
