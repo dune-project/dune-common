@@ -1,7 +1,7 @@
 # -*- tab-width: 4; indent-tabs-mode: nil -*-
 # $Id$
 
-TESTPROGS = parsetest test-stack arraylisttest shared_ptrtest \
+TESTPROGS = test-stack arraylisttest shared_ptrtest \
 	iteratorfacadetest iteratorfacadetest2 tuplestest fvectortest fmatrixtest \
 	poolallocatortest settest gcdlcmtest streamtest \
 	bigunsignedinttest mpihelpertest singletontest mpicollcomm \
@@ -56,8 +56,6 @@ static_assert_test_fail_SOURCES = static_assert_test_fail.cc
 fassigntest_SOURCES = fassigntest.cc
 
 bigunsignedinttest_SOURCES=bigunsignedinttest.cc
-
-parsetest_SOURCES = parsetest.cc
 
 lrutest_SOURCES = lrutest.cc
 
