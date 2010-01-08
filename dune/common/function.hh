@@ -26,13 +26,23 @@ namespace Dune {
   template <class Domain, class Range>
   class Function
   {
+    typedef typename ConstantVolatileTraits<typename TypeTraits< Domain >::ReferredType >::UnqualifiedType RawDomainType;
+    typedef typename ConstantVolatileTraits<typename TypeTraits< Range >::ReferredType >::UnqualifiedType RawRangeType;
+
   public:
 
     //! Raw type of input variable with removed reference and constness
-    typedef typename ConstantVolatileTraits<typename TypeTraits< Domain >::ReferredType >::UnqualifiedType DomainType;
+    typedef RawRangeType RangeType;
 
     //! Raw type of output variable with removed reference and constness
-    typedef typename ConstantVolatileTraits<typename TypeTraits< Range >::ReferredType >::UnqualifiedType RangeType;
+    typedef RawDomainType DomainType;
+
+    //! Traits class containing raw types
+    struct Traits
+    {
+      typedef RawDomainType DomainType;
+      typedef RawRangeType RangeType;
+    };
 
     /**
      * \brief Function evaluation.
