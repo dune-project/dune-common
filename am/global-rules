@@ -14,3 +14,6 @@ include $(top_srcdir)/am/headercheck
 
 # add "check-log"-target to create automated build logs
 include $(top_srcdir)/am/checklog
+
+# add "doc"-target to create and clean documentation
+include $(top_srcdir)/am/documentation

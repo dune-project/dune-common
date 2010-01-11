@@ -15,3 +15,8 @@ module_DATA = dune.module
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = @DUNE_MOD_NAME@.pc
+
+maintainer-clean-local: top-clean
+
+top-clean:
+	rm -f dependencies.m4

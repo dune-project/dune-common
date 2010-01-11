@@ -197,6 +197,8 @@ namespace Dune
       /** @brief True if To and From are the same type. */
       sameType = false
     };
+    Conversion(){}
+
   };
 
   template <class From>
@@ -262,6 +264,8 @@ namespace Dune
       /** @brief True if Base is a base class of Derived. */
       value = sizeof(test(makePtr())) == sizeof(Small)
     };
+    IsBaseOf(){}
+
   };
 
   /**

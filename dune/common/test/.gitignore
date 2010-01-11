@@ -6,7 +6,6 @@ semantic.cache
 fvectortest
 mpicollcomm
 lrutest
-parsetest
 test-stack
 arraylisttest
 shared_ptrtest

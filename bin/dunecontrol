@@ -314,6 +314,9 @@ run_default_configure () {
       fi
 	  PARAMS="$PARAMS \"--with-$name=$path\""
 	done
+	if test "x$HAVE_duneweb" == "xyes"; then
+	  PARAMS="$PARAMS \"--with-duneweb=$PATH_duneweb\""
+	fi
 	PARAMS="$PARAMS ACLOCAL_AMFLAGS=\"$ACLOCAL_FLAGS\""
     echo ./configure "$PARAMS"
     eval ./configure "$PARAMS" || exit 1
@@ -638,6 +641,7 @@ while test $# -gt 0; do
       cat > $fname <<EOF
 m4_define([DUNE_AC_INIT],[
   AC_INIT([$name], [$version], [$maintainer])
+  AM_INIT_AUTOMAKE([foreign 1.5 tar-pax])
   AC_SUBST([DUNE_MOD_VERSION], [$version])
   AC_SUBST([DUNE_MOD_NAME], [$name])
   AC_SUBST([DUNE_MAINTAINER_NAME], [$maintainer])

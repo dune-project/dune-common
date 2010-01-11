@@ -12,22 +12,27 @@ AC_DEFUN([_slu_lib_path],
 	    my_include_path=include
 	    if test ! -f "$with_superlu/$my_include_path/$2" ; then
 		my_include_path=SRC
-		my_lib_path=""
 		if test ! -f "$with_superlu/$my_include_path/$2"; then
 		    my_slu_found=no
+		else
+		    echo "$with_superlu/$my_lib_path"
+		    if ! test -d "$with_superlu/$my_lib_path"; then
+			my_lib_path=""
+		    fi
 		fi
 	    fi
 	fi
+	echo "my_lib_path=$my_lib_path my_include_path=$my_include_path my_slu_found=$my_slu_found 2=$2"
     ]
 )
 
 AC_DEFUN([_slu_search_versions],
     [
 	my_slu_header=slu_ddefs.h
-	_slu_lib_path($1, "$my_slu_header")
+	_slu_lib_path($1, $my_slu_header)
 	if test "$my_slu_found" != "yes"; then 
 	    my_slu_header="dsp_defs.h"
-	    _slu_lib_path($1, "$my_slu_header")
+	    _slu_lib_path($1, $my_slu_header)
 	fi
     ]
 )
@@ -141,7 +146,12 @@ AC_ARG_WITH([superlu_blaslib],
 		    AC_MSG_CHECKING([static superlu library "$with_superlu_lib" in "$SUPERLU_LIB_PATH"])
 echo "BLAS_LIBS=$BLAS_LIBS LIBS=$LIBS"
 		    if test -f "$SUPERLU_LIB_PATH/$with_superlu_lib" ; then
-			LIBS="$SUPERLU_LIB_PATH/$with_superlu_lib $SUPERLU_LIB_PATH/$with_superlu_blaslib $LIBS"
+			if test -f "$SUPERLU_LIB_PATH/$with_superlu_blaslib"; then
+			    LIBS="$SUPERLU_LIB_PATH/$with_superlu_lib $SUPERLU_LIB_PATH/$with_superlu_blaslib $LIBS"
+			else
+			    LIBS="$SUPERLU_LIB_PATH/$with_superlu_lib $LIBS"
+			fi
+			echo "LIBS=$LIBS"
 			AC_CHECK_FUNC(dgssvx,
 			    [
 				SUPERLU_LIBS="$LIBS"
@@ -170,6 +180,9 @@ echo "BLAS_LIBS=$BLAS_LIBS LIBS=$LIBS"
 		AC_DEFINE(HAVE_SUPERLU, 1, [Define to 1 if SUPERLU is found])
 		if test "$my_slu_header" = "slu_ddefs.h"; then
 		    AC_DEFINE(SUPERLU_POST_2005_VERSION, 1, [define to 1 if there is  a header slu_ddefs.h in SuperLU])
+		    AC_CHECK_MEMBERS([mem_usage_t.expansions],[],[],[#include"slu_ddefs.h"])
+		else
+		    AC_CHECK_MEMBERS([mem_usage_t.expansions],[],[],[#include "dsp_defs.h"])
 		fi
 		AC_MSG_RESULT(ok)
 		

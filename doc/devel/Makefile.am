@@ -8,8 +8,6 @@ PAGES = codingstyle.html portability.html \
 endif
 endif
 
-all: $(PAGES)
-
 # place in website
 BASEDIR=../..
 CURDIR=doc/devel
