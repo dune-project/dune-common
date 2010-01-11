@@ -19,19 +19,19 @@
    @code
     1.99999999999999977796 == 2.00000000000000000000
    @endcode
-   which is false.  The solution is to compare approximately, using an epsilon
-   with says how much deviation to accept.
+   which is false.  One solution is to compare approximately, using an epsilon
+   which says how much deviation to accept.
 
    The most straightforward way of comparing is using an @em absolute epsilon.
-   The comparison is done like
+   This means comparison for equality is replaced by
    @code
     abs(first-second) <= epsilon
    @endcode
    This has a severe disadvantage: if you have an epsilon like 1e-10 but first
    and second are of the magnitude 1e-15 everything will compare equal which is
    certainly not what you want.  This can be overcome by selecting an
-   appropriate epsilon.  Nethertheless this method of comparing is not
-   recommended in general, since we will present a more robus method in the
+   appropriate epsilon.  Nevertheless this method of comparing is not
+   recommended in general, and we will present a more robus method in the
    next paragraph.
 
    There is another way of comparing approximately, using a @em relative
@@ -49,7 +49,7 @@
    @code
     abs(first-second) <= epsilon * min(abs(first), abs(second))
    @endcode
-   Both variants are good but in practice the relative_weak variant is
+   Both variants are good, but in practice the relative_weak variant is
    preferred.  This is also the default variant.
 
    \note Although using a relative epsilon is better than using an absolute
