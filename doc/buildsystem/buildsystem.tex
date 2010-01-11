@@ -677,6 +677,10 @@ $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS)
     \texttt{configure}, it may contain debugging and optimization options per
     default (like \texttt{-DNDEBUG}).  The value of \texttt{CPPFLAGS} always
     appears after the other preprocessor flags.
+  \item[\texttt{\textit{LIB}CPPFLAGS}] Class: {\bf external-library}.
+    Preprocessor flags when building with library \textit{LIB}.  This variable
+    should be include in \texttt{\textit{target}\_CPPFLAGS} or
+    \texttt{AM\_CPPFLAGS} in the \texttt{Makefile.am}.
   \end{description}
 
 \item[C-compiler flags] These flags are passed in any build rule that calls
@@ -743,9 +747,10 @@ $(target_LDFLAGS) $(LDFLAGS)
 \begin{lstlisting}[language=make]
 $(AM_LDFLAGS) $(LDFLAGS)
 \end{lstlisting}
-  is used.  These variables are inapropriate to pass any \texttt{-L} or
-  \texttt{-l} options or library files.  Use a variable from the {\em
-    libraries to link to} set to do that.
+  is used.  These variables are inapropriate to pass any options or parameters
+  that specify libraries of object files, in particular \texttt{-L} or
+  \texttt{-l} or the libtool options \texttt{-dlopen} and \texttt{-dlpreopen}.
+  Use a variable from the {\em libraries to link to} set to do that.
   \begin{description}
   \item[\texttt{\textit{target}\_LDFLAGS}] Class: {\bf target-specific}.
     Target-specific C++ compiler flags.  If this variable exists, it overrides
@@ -760,10 +765,15 @@ $(AM_LDFLAGS) $(LDFLAGS)
     \texttt{configure}, it may contain debugging, optimization and warning
     options per default.  The value of \texttt{LDFLAGS} always appears after
     the other linker flags.
+  \item[\texttt{\textit{LIB}LDFLAGS}] Class: {\bf external-library}.  Linker
+    flags needed when linking to library \textit{LIB}.  This variable should
+    be include in \texttt{\textit{target}\_LDFLAGS} or \texttt{AM\_LDFLAGS} in
+    the \texttt{Makefile.am}.
   \end{description}
 
 \item[libraries to link to] These variables are used to determine the
-  libraries to link to.  They are passed whenever the linker is called.  When
+  libraries and object files to link to.  They are passed whenever the linker
+  is called.  When
   linking a program, extra libraries and objects to link to are given by
   \begin{lstlisting}[language=make]
 $(target_LDADD) $(LIBS)
@@ -771,8 +781,9 @@ $(target_LDADD) $(LIBS)
   If the {\bf target-specific} variable \texttt{\textit{target}\_LDADD} is not
   defined, automake supplies
   \begin{lstlisting}[language=make]
-$(target_LDADD) = $(LDADD)
+target_LDADD = $(LDADD)
   \end{lstlisting}
+  %$\end{lstlisting}
   When linking a library, extra libraries and objects to link to are given by
   \begin{lstlisting}[language=make]
 $(target_LIBADD) $(LIBS)
@@ -780,16 +791,27 @@ $(target_LIBADD) $(LIBS)
   If the {\bf target-specific} variable \texttt{\textit{target}\_LIBADD} is
   not defined, automake defines it empty
   \begin{lstlisting}[language=make]
-$(target_LIBADD) =
+target_LIBADD =
   \end{lstlisting}
-  %$\end{lstlisting}
-  Linker flags except \texttt{-L} or \texttt{-l} are generally inapropriate
-  for there variables.
+  Libraries and objects to link to must be given in reverse order: a library
+  or object file must come before the libraries or object files it depends on
+  on the linker command line.  Thus the value of the \texttt{LIBS} variable is
+  included after the value of the \texttt{\textit{target}\_LDADD} or
+  \texttt{\textit{target}\_LIBADD} variable.
+
+  In general, any linker flags and argument that specify libraries and object
+  files should be included in these variables, and nothing else.  In
+  particular that means library and object file names, the options \texttt{-L}
+  and \texttt{-l}, and the libtool options \texttt{-dlopen} and
+  \texttt{-dlpreopen}.  The option \texttt{-L} should come directly before any
+  \texttt{-l} options it sets the linker path for, otherwise a path set by
+  another \texttt{-L} option may take precedence, which may happen to contain
+  a library by the same name.
   \begin{description}
   \item[\texttt{\textit{target}\_LDADD}] Class: {\bf target-specific}.
     Target-specific libraries and objects to link to {\em for programs}.  If
     this variable does not exist, it defaults to \texttt{\$(LDADD)}.
-  \item[\texttt{LDADD}] Class: {\bf target-specific}.  Libraries and objects
+  \item[\texttt{LDADD}] Class: {\bf automake}.  Libraries and objects
     to link to {\em for programs}.  Default for
     \texttt{\textit{target}\_LDADD}.
   \item[\texttt{\textit{target}\_LIBADD}] Class: {\bf target-specific}.
@@ -799,7 +821,37 @@ $(target_LIBADD) =
     the empty value is assumed.
   \item[\texttt{LIBS}] Class: {\bf automake}, {\bf configure-substituted}.
     Libraries discovered by configure.
+  \item[\texttt{\textit{LIB}LIBS}] Class: {\bf external-library}.  Libraries
+    and object files needed to linking against library \textit{LIB}, including
+    that library itself.  This variable should be include in
+    \texttt{\textit{target}\_LDADD}, \texttt{LDADD}, or
+    \texttt{\textit{target}\_LIBADD} in the \texttt{Makefile.am}.
   \end{description}
+\end{description}
+
+\minisec{Individual library variables}
+
+\begin{description}
+\item[MPI] The \texttt{DUNE\_MPI} macro sets the following variables with the
+  help of the macros \texttt{ACX\_MPI} and \texttt{MPI\_CONFIG}: For
+  compilation with the MPI compiler \texttt{MPICC} and \texttt{MPILIBS}.
+  These are not used in \dune except that \texttt{MPICC} may be set on the
+  configure command line to select which MPI installation to use.  For
+  compilation with the standard compiler it sets \texttt{DUNEMPICPPFLAGS},
+  \texttt{DUNEMPILDFLAGS} and \texttt{DUNEMPILIBS}, and the deprecated
+  variables \texttt{MPI\_CPPFLAGS} and \texttt{MPI\_LDFLAGS} (note there is no
+  \texttt{MPI\_LIBS}).  Unfortunately with most MPI implementations it is
+  impossible to obtain the linker flags seperately from the libraries to link
+  to.  Therefore, this macro stuffs everything into \texttt{DUNEMPILIBS},
+  which has the advantage that it works and the disavantage that users are
+  unable to overwrite the linker flags.  If that is a problem users should set
+  these variables themselves on the configure command line.
+
+  In addition, this macro substitutes \texttt{MPI\_VERSION} a text string
+  identifying the detected version of MPI.  It defines the following
+  preprocessor defines: \texttt{MPI\_2}, defined if the detected MPI supports
+  the MPI-2 standard.  \texttt{HAVE_MPI}, 1 if MPI is detected and enabled.
+  It also defines the automake conditional \texttt{MPI}.
 \end{description}
 
 \minisec{Conditional builds}

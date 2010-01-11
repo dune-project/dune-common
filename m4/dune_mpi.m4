@@ -84,7 +84,7 @@ AC_DEFUN([DUNE_MPI],[
       MPICOMP="$MPICC"
 
       MPI_CONFIG()
-      MPI_CPPFLAGS="$MPI_CPPFLAGS $MPI_NOCXXFLAGS -DENABLE_MPI=1"
+      DUNEMPICPPFLAGS="$DUNEMPICPPFLAGS $MPI_NOCXXFLAGS -DENABLE_MPI=1"
 
       with_mpi="yes ($dune_MPI_VERSION)"
     ],[
@@ -99,12 +99,14 @@ AC_DEFUN([DUNE_MPI],[
 
     # store old values
     ac_save_LIBS="$LIBS"
+    ac_save_LDFLAGS="$LDFLAGS"
     ac_save_CPPFLAGS="$CPPFLAGS"
     
     # looks weird but as the -l... are contained in the MPI_LDFLAGS these
     # parameters have to be last on the commandline: with LIBS this is true
-    LIBS="$MPI_LDFLAGS"
-    CPPFLAGS="$CPPFLAGS $MPI_CPPFLAGS"
+    LIBS="$DUNEMPILIBS $LIBS"
+    LDFLAGS="$LDFLAGS $DUNEMPILDFLAGS"
+    CPPFLAGS="$CPPFLAGS $DUNEMPICPPFLAGS"
 
     # try to create MPI program
     AC_LANG_PUSH([C++])
@@ -122,7 +124,7 @@ AC_DEFUN([DUNE_MPI],[
     )
 
     AS_IF([test "x$mpiruntest" != "xyes"],[
-      AC_MSG_WARN([Diabled test whether running with $dune_MPI_VERSION works.])    
+      AC_MSG_WARN([Disabled test whether running with $dune_MPI_VERSION works.])    
     ],[
       AC_MSG_CHECKING([whether running with $dune_MPI_VERSION works])
       AC_RUN_IFELSE(
@@ -158,14 +160,24 @@ AC_DEFUN([DUNE_MPI],[
   ])
     
   # set flags
+  MPI_CPPFLAGS="$DUNEMPICPPFLAGS"
+  MPI_LDFLAGS="$DUNEMPILDFLAGS $DUNEMPILIBS"
   AS_IF([test "x$with_mpi" != "xno"],[
+    AC_SUBST(DUNEMPICPPFLAGS, $DUNEMPICPPFLAGS)
+    AC_SUBST(DUNEMPILDFLAGS, $DUNEMPILDFLAGS)
+    AC_SUBST(DUNEMPILIBS, $DUNEMPILIBS)
+
     AC_SUBST(MPI_CPPFLAGS, $MPI_CPPFLAGS)
     AC_SUBST(MPI_LDFLAGS, $MPI_LDFLAGS)
     AC_SUBST(MPI_VERSION, $dune_MPI_VERSION)
     AC_DEFINE(HAVE_MPI,ENABLE_MPI,[Define if you have the MPI library.
-    This is only true if MPI was found by configure 
-    _and_ if the application uses the MPI_CPPFLAGS])
+    This is only true if MPI was found by configure _and_ if the application
+    uses the DUNEMPICPPFLAGS (or the deprecated MPI_CPPFLAGS)])
   ],[
+    AC_SUBST(DUNEMPICPPFLAGS, "")
+    AC_SUBST(DUNEMPILDFLAGS, "")
+    AC_SUBST(DUNEMPILIBS, "")
+
     AC_SUBST(MPI_CPPFLAGS, "")
     AC_SUBST(MPI_LDFLAGS, "")
   ])
