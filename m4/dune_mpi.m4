@@ -1,3 +1,4 @@
+dnl -*- autoconf -*-
 # $Id$
 
 # wrapper for the autoconf-archive check. Note: compiling MPI-stuff sucks!
@@ -52,6 +53,7 @@
 
 AC_DEFUN([DUNE_MPI],[
   AC_PREREQ(2.50) dnl for AC_LANG_CASE
+  AC_REQUIRE([DUNE_CPPINCLUDEOPT])
 
   # get compilation script
   AC_LANG_CASE([C],[
@@ -160,15 +162,16 @@ AC_DEFUN([DUNE_MPI],[
   ])
     
   # set flags
-  MPI_CPPFLAGS="$DUNEMPICPPFLAGS"
-  MPI_LDFLAGS="$DUNEMPILDFLAGS $DUNEMPILIBS"
+  AS_IF([test yes = "$HAVE_CPPINCLUDEOPT"],
+    [dune_mpicppflagswarn="${CPPINCLUDEOPT}dune/common/warnings/mpi_cppflags_deprecation.hh"],
+    [dune_mpicppflagswarn=""])
   AS_IF([test "x$with_mpi" != "xno"],[
     AC_SUBST(DUNEMPICPPFLAGS, $DUNEMPICPPFLAGS)
     AC_SUBST(DUNEMPILDFLAGS, $DUNEMPILDFLAGS)
     AC_SUBST(DUNEMPILIBS, $DUNEMPILIBS)
 
-    AC_SUBST(MPI_CPPFLAGS, $MPI_CPPFLAGS)
-    AC_SUBST(MPI_LDFLAGS, $MPI_LDFLAGS)
+    AC_SUBST(MPI_CPPFLAGS, "$dune_mpicppflagswarn $DUNEMPICPPFLAGS")
+    AC_SUBST(MPI_LDFLAGS, "$DUNEMPILDFLAGS $DUNEMPILIBS")
     AC_SUBST(MPI_VERSION, $dune_MPI_VERSION)
     AC_DEFINE(HAVE_MPI,ENABLE_MPI,[Define if you have the MPI library.
     This is only true if MPI was found by configure _and_ if the application
@@ -178,7 +181,7 @@ AC_DEFUN([DUNE_MPI],[
     AC_SUBST(DUNEMPILDFLAGS, "")
     AC_SUBST(DUNEMPILIBS, "")
 
-    AC_SUBST(MPI_CPPFLAGS, "")
+    AC_SUBST(MPI_CPPFLAGS, "$dune_mpicppflagswarn")
     AC_SUBST(MPI_LDFLAGS, "")
   ])
 

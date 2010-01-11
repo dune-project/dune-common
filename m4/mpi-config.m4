@@ -55,18 +55,18 @@ _EOF
       if test x"$DUNEMPICPPFLAGS" = x; then
         DUNEMPICPPFLAGS="$retval"
       fi
-      if x"$DUNEMPILIBS" = x; then
+      if test x"$DUNEMPILIBS" = x; then
         mpi_getflags "-showme:link"
         DUNEMPILIBS="$retval"
       fi
     else
       dune_MPI_VERSION="LAM < 7.1"
       # use -showme and dummy parameters to extract flags        
-      if x"$DUNEMPICPPFLAGS" = x; then
+      if test x"$DUNEMPICPPFLAGS" = x; then
         mpi_getflags "-showme" "-c $MPISOURCE"
         DUNEMPICPPFLAGS="$retval"
       fi
-      if x"$DUNEMPILIBS" = x; then
+      if test x"$DUNEMPILIBS" = x; then
         mpi_getflags "-showme" "dummy.o -o dummy"
         DUNEMPILIBS="$retval"
       fi
@@ -94,7 +94,7 @@ mpi_getmpichflags() {
     DUNEMPICPPFLAGS="$retval"
   fi
     
-  if x"$DUNEMPILIBS" = x; then
+  if test x"$DUNEMPILIBS" = x; then
     # get linker options
     mpi_getflags "-link_info"
     DUNEMPILIBS="$retval"
@@ -120,7 +120,7 @@ mpi_getmpich2flags() {
     DUNEMPICPPFLAGS="$retval"
   fi
     
-  if x"$DUNEMPILIBS" = x; then
+  if test x"$DUNEMPILIBS" = x; then
     # get linker options
     mpi_getflags "-show" "-o"
     DUNEMPILIBS="$retval"
@@ -196,7 +196,7 @@ _EOF
       mpi_getflags "-showme:compile"
       DUNEMPICPPFLAGS="$retval"
     fi
-    if x"$DUNEMPILIBS" = x; then
+    if test x"$DUNEMPILIBS" = x; then
       mpi_getflags "-showme:link"
       DUNEMPILIBS="$retval"
     fi
@@ -269,7 +269,7 @@ test_ibmmpi() {
         DUNEMPICPPFLAGS="$retval"
       fi
   
-      if x"$DUNEMPILIBS" = x; then
+      if test x"$DUNEMPILIBS" = x; then
         mpi_getflags "-v" "dummy.o -o dummy"
         DUNEMPILIBS="$retval"
       fi
