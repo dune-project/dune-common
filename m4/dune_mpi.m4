@@ -170,7 +170,8 @@ AC_DEFUN([DUNE_MPI],[
     AC_SUBST(DUNEMPILDFLAGS, $DUNEMPILDFLAGS)
     AC_SUBST(DUNEMPILIBS, $DUNEMPILIBS)
 
-    AC_SUBST(MPI_CPPFLAGS, "$dune_mpicppflagswarn $DUNEMPICPPFLAGS")
+    DUNE_DEPRECATED_CPPFLAGS(MPI_CPPFLAGS, "$dune_mpicppflagswarn $DUNEMPICPPFLAGS",
+      [The MPI_CPPFLAGS configure substitute is deprecated.  Please change your Makefile.am to use DUNEMPICPPFLAGS instead.  Note that it is a good idea to change any occurance of MPI_LDFLAGS into DUNEMPILIBS and DUNEMPILDFLAGS as apropriate, since it is not possible to issue a deprecation warning in that case.])
     AC_SUBST(MPI_LDFLAGS, "$DUNEMPILDFLAGS $DUNEMPILIBS")
     AC_SUBST(MPI_VERSION, $dune_MPI_VERSION)
     AC_DEFINE(HAVE_MPI,ENABLE_MPI,[Define if you have the MPI library.
@@ -181,7 +182,8 @@ AC_DEFUN([DUNE_MPI],[
     AC_SUBST(DUNEMPILDFLAGS, "")
     AC_SUBST(DUNEMPILIBS, "")
 
-    AC_SUBST(MPI_CPPFLAGS, "$dune_mpicppflagswarn")
+    DUNE_DEPRECATED_CPPFLAGS(MPI_CPPFLAGS, "$dune_mpicppflagswarn",
+      [The MPI_CPPFLAGS configure substitute is deprecated.  Please change your Makefile.am to use DUNEMPICPPFLAGS instead.  Note that it is a good idea to change any occurance of MPI_LDFLAGS into DUNEMPILIBS and DUNEMPILDFLAGS as apropriate, since it is not possible to issue a deprecation warning in that case.])
     AC_SUBST(MPI_LDFLAGS, "")
   ])
 
