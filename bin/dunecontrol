@@ -136,8 +136,9 @@ load_opts() {
   local COMMAND=$(echo $command | tr '[:lower:]' '[:upper:]')
   CMD_FLAGS="$(eval echo \$${COMMAND}_FLAGS)"
   local CMD_FLAGS_FROM_FILE=""
+  BUILDDIR=$DUNE_BUILDDIR
   if test "x$DUNE_OPTS_FILE" != "x"; then
-    BUILDDIR="$(eval BUILDDIR=""; . $DUNE_OPTS_FILE; eval echo \$BUILDDIRy)"
+    BUILDDIR="$(eval BUILDDIR=""; . $DUNE_OPTS_FILE; eval echo \$BUILDDIR)"
     CMD_FLAGS_FROM_FILE="$(eval ${COMMAND}_FLAGS=""; . $DUNE_OPTS_FILE; eval echo \$${COMMAND}_FLAGS)"
   fi
   if test -n "$CMD_FLAGS_FROM_FILE"; then
@@ -522,13 +523,10 @@ while test $# -gt 0; do
       done
 	;;
     --builddir=*)
-      if test "x$arg" = "x"; then
-        usage
-        echo "ERROR: Parameter for --builddir is missing"  >&2
-        echo  >&2
-        exit 1;
-      fi
-	  export BUILDDIR=$arg
+	  export DUNE_BUILDDIR=$arg
+	;;
+    --no-builddir)
+	  export DUNE_BUILDDIR=""
 	;;
 	--skipversioncheck)
       export SKIPVERSIONCHECK=yes
