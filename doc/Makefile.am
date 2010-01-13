@@ -20,7 +20,8 @@ EXTRAINSTALL=example.opts
 
 # install the html pages
 docdir=$(datadir)/doc/dune-common
-doc_DATA = $(PAGES) example.opts
+DOCFILES = $(PAGES)
+DOCFILES_EXTRA = example.opts
 
 EXTRA_DIST = $(PAGES) example.opts
 

@@ -39,10 +39,12 @@ else
 web-install-default:
 endif
 
+####
+# how to clean up
 web-build: $(PAGES)
 web-clean:
-	rm -f $(PAGES)
+	-test -z $(PAGES) || rm -f $(PAGES)
 
-maintainer-clean-local: web-clean
-web-install-am: web-install-default
-doc-am: web-build
+doc-clean-local: web-clean
+web-install-local: web-install-default
+doc-local: web-build

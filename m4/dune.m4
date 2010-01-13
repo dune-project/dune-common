@@ -23,10 +23,10 @@ AC_DEFUN([DUNE_MODULE_ADD_SUMMARY_ENTRY],[
   m4_pushdef([_DUNE_MODULE], [m4_toupper(_dune_module)])
   result="$with_[]_dune_module"
   AS_IF([test -n "$_DUNE_MODULE[]_ROOT"],[
-	result="$result ($_DUNE_MODULE[]_ROOT)"
+    result="$result ($_DUNE_MODULE[]_ROOT)"
   ])
   AS_IF([test -n "$_DUNE_MODULE[]_VERSION"],[
-	result="$result version $_DUNE_MODULE[]_VERSION"
+    result="$result version $_DUNE_MODULE[]_VERSION"
   ])
   DUNE_ADD_SUMMARY_MOD_ENTRY(_dune_name,[$result])
 ])
@@ -131,10 +131,16 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       AS_IF([test -d "$_DUNE_MODULE[]_ROOT/include/dune"],[
         # Dune was installed into directory given by with-dunecommon
         _DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]_ROOT/include"
-	_DUNE_MODULE[]_VERSION="`PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$_DUNE_MODULE[]_ROOT/lib/pkgconfig $PKG_CONFIG --modversion _dune_name`" 2>/dev/null
+        _DUNE_MODULE[]_BUILDDIR=_DUNE_MODULE[]_ROOT
+        _DUNE_MODULE[]_VERSION="`PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$_DUNE_MODULE[]_ROOT/lib/pkgconfig $PKG_CONFIG --modversion _dune_name`" 2>/dev/null
       ],[
-        _DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]_ROOT"
-	_DUNE_MODULE[]_VERSION="`grep Version $_DUNE_MODULE[]_ROOT/dune.module | sed -e 's/^Version: *//'`" 2>/dev/null
+        _DUNE_MODULE[]_SRCDIR=$_DUNE_MODULE[]_ROOT
+        # extract src and build path from Makefile, if found
+	    AS_IF([test -f $_DUNE_MODULE[]_ROOT/Makefile],[
+          _DUNE_MODULE[]_SRCDIR="`grep '^abs_top_srcdir = ' $_DUNE_MODULE[]_ROOT/Makefile | sed -e 's/^abs_top_srcdir = //'`"
+		])
+        _DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]_SRCDIR"
+        _DUNE_MODULE[]_VERSION="`grep Version $_DUNE_MODULE[]_SRCDIR/dune.module | sed -e 's/^Version: *//'`" 2>/dev/null
       ])
       ifelse(_dune_symbol,,,[
         _DUNE_MODULE[]_LDFLAGS="-L$_DUNE_MODULE[]_ROOT/lib"
@@ -298,7 +304,7 @@ AC_DEFUN([DUNE_SYMLINK],[
         ])
       ],[
         # if we are in the source directory we can make sure that there is no directory
-		AC_MSG_ERROR([Module is using the DUNE[]_SYMLINK directive but contains a directory 'dune'!])
+        AC_MSG_ERROR([Module is using the DUNE[]_SYMLINK directive but contains a directory 'dune'!])
       ])
     ],[
       echo Creating dune-symlink...
@@ -337,10 +343,10 @@ AC_DEFUN([DUNE_WEB],
          ],[
            AC_MSG_ERROR([Dune-Web directory $with_duneweb not found!])
          ])
-		 with_duneweb=no
+         with_duneweb=no
       ])
     ])
-	 DUNE_ADD_SUMMARY_ENTRY([dune web],[$with_duneweb])
+     DUNE_ADD_SUMMARY_ENTRY([dune web],[$with_duneweb])
   ],[
     with_duneweb=no
   ])

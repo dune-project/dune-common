@@ -25,3 +25,13 @@
 
 .dvi.ps:
 	TEXINPUTS=.:$(srcdir):${TEXINPUTS}: $(DVIPS) $* -o
+
+TEXCLEANFILES = *.aux *.bbl *.blg *.log *.out *.toc *.dvi
+clean-local: latex-clean
+doc-clean-local: latex-doc-clean
+latex-clean:
+	-test -z "$(TEXCLEANFILES)" || rm -f $(TEXCLEANFILES)
+	-rm -rf auto
+
+latex-doc-clean: latex-clean
+	-rm -f *.pdf *.ps
