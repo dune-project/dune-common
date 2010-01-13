@@ -10,7 +10,7 @@ headercheck_PATTERN = *.hh
 hctest.o: hctest.cc
 	$(CXX) -I$(top_srcdir) -DHEADERCHECK \
 	  $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) \
-	  $(MPI_CPPFLAGS) $(ALL_PKG_CPPFLAGS) -c -o $@ $<
+	  $(DUNEMPICPPFLAGS) $(ALL_PKG_CPPFLAGS) -c -o $@ $<
 
 headercheck:
 	@if test x"$$HEADER" = "x"; then \
