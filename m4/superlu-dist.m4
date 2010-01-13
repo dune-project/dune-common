@@ -95,10 +95,10 @@ AC_DEFUN([DUNE_PATH_SUPERLU_DIST],[
 	    SUPERLU_DIST_LIB_PATH="$with_superlu_dist/$my_lib_path"
 	    SUPERLU_DIST_INCLUDE_PATH="$with_superlu_dist/$my_include_path"
 	    
-	    SUPERLU_DIST_LDFLAGS="-L$SUPERLU_DIST_LIB_PATH $MPI_LDFLAGS"
+	    SUPERLU_DIST_LDFLAGS="-L$SUPERLU_DIST_LIB_PATH $DUNEMPILDFLAGS"
 	    
       # set variables so that tests can use them
-	    CPPFLAGS="$CPPFLAGS -I$SUPERLU_DIST_INCLUDE_PATH $MPI_CPPFLAGS"
+	    CPPFLAGS="$CPPFLAGS -I$SUPERLU_DIST_INCLUDE_PATH $DUNEMPICPPFLAGS"
 	    
       # check for central header
 	    AC_CHECK_HEADER([superlu_ddefs.h],[
@@ -108,7 +108,7 @@ AC_DEFUN([DUNE_PATH_SUPERLU_DIST],[
 		    AC_MSG_WARN([superlu_ddefs.h not found in $SUPERLU_DIST_INCLUDE_PATH with $CPPFLAGS])]
 	    )
 
-	    SUPERLU_DIST_CPPFLAGS="-I$SUPERLU_DIST_INCLUDE_PATH $MPI_CPPFLAGS"
+	    SUPERLU_DIST_CPPFLAGS="-I$SUPERLU_DIST_INCLUDE_PATH $DUNEMPICPPFLAGS"
 	    
       # if header is found check for the libs
 	    	    
@@ -116,8 +116,8 @@ AC_DEFUN([DUNE_PATH_SUPERLU_DIST],[
 
 		# set variables so that tests can use them
 		OLDFLAGS="$LDFLAGS"
-		LDFLAGS="$LDFLAGS -L$SUPERLU_DIST_LIB_PATH $MPI_LDFLAGS"
-		LIBS="$BLAS_LIBS $LIBS $FLIBS $MPILIBS $MPI_LDFLAGS"
+		LDFLAGS="$LDFLAGS -L$SUPERLU_DIST_LIB_PATH $DUNEMPILDFLAGS"
+		LIBS="$BLAS_LIBS $LIBS $FLIBS $DUNEMPILIBS"
 
 		AC_CHECK_LIB(superlu-mpi, [pdgssvx],
 		    [dnl

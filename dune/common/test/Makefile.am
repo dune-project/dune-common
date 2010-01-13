@@ -39,7 +39,7 @@ check_PROGRAMS = $(TESTPROGS)
 
 noinst_HEADERS = dummyiterator.hh
 
-AM_LDFLAGS = $(LOCAL_LIBS)
+LDADD = $(LOCAL_LIBS)
 
 # define the programs
 smallobject_SOURCES = smallobject.cc
@@ -48,7 +48,7 @@ bitsetvectortest_SOURCES = bitsetvectortest.cc
 
 nullptr_test_SOURCES = nullptr-test.cc nullptr-test2.cc
 nullptr_test_fail_SOURCES = nullptr-test.cc
-nullptr_test_fail_CPPFLAGS = -DFAIL
+nullptr_test_fail_CPPFLAGS = $(AM_CPPFLAGS) -DFAIL
 
 static_assert_test_SOURCES = static_assert_test.cc
 static_assert_test_fail_SOURCES = static_assert_test_fail.cc
@@ -90,18 +90,18 @@ settest_SOURCES=settest.cc
 gcdlcmtest_SOURCES = gcdlcmtest.cc
 
 mpihelpertest_SOURCES = mpihelpertest.cc
-mpihelpertest_CXXFLAGS = $(MPI_CPPFLAGS)
-mpihelpertest_LDFLAGS = $(LOCAL_LIBS) $(MPI_LDFLAGS) $(MPI_LIBS)
+mpihelpertest_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)
+mpihelpertest_LDADD = $(DUNEMPILIBS) $(LDADD)
+mpihelpertest_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
 
 mpicollcomm_SOURCES = mpicollectivecommunication.cc
-mpicollcomm_CXXFLAGS = $(MPI_CPPFLAGS)
-mpicollcomm_LDFLAGS = $(LOCAL_LIBS) $(MPI_LDFLAGS) $(MPI_LIBS)
+mpicollcomm_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)
+mpicollcomm_LDADD = $(DUNEMPILIBS) $(LDADD)
+mpicollcomm_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
 
 singletontest_SOURCES = singletontest.cc
-singletontest_LDFLAGS = $(LOCAL_LIBS)
 
 utilitytest_SOURCES = utilitytest.cc
-utilitytest_LDFLAGS = $(LOCAL_LIBS)
 
 testfassign1_SOURCES = testfassign.cc testfassign2.cc
 testfassign1_CPPFLAGS = $(AM_CPPFLAGS) -D_N=3 -D_VALUES="1,2,3"

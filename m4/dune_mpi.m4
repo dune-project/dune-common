@@ -51,6 +51,39 @@ dnl -*- autoconf -*-
 #   --disable-parallel
 # [Christian 9.7.2006]
 
+# DUNE_MPI()
+#
+# With the help of ACX_MPI find the MPI compiler, and with the help of
+# MPI_CONFIG find the libraries and compiler and linker options necessary to
+# compile MPI programs with the standard compiler.  Will set the following
+# things:
+#
+# configure shell variables:
+#   MPICC
+#   MPILIBS
+#   DUNEMPICPPFLAGS
+#   DUNEMPILDFLAGS
+#   DUNEMPILIBS
+#   MPI_CPPFLAGS (deprecated in favor of DUNEMPICPPFLAGS)
+#   MPI_LDFLAGS (deprecated in favor of DUNEMPILIBS and DUNEMPILDFLAGS)
+#   dune_MPI_VERSION
+#   with_mpi
+#
+# configure substitutions/Makefile variables
+#   MPICC
+#   MPILIBS
+#   DUNEMPICPPFLAGS
+#   DUNEMPILDFLAGS
+#   DUNEMPILIBS
+#   MPI_CPPFLAGS (deprecated in favor of DUNEMPICPPFLAGS)
+#   MPI_LDFLAGS (deprecated in favor of DUNEMPILIBS and DUNEMPILDFLAGS)
+#   MPI_VERSION (set from dune_MPI_VERSION)
+#
+# preprocessor defines
+#   HAVE_MPI (defined when $with_mpi!=no)
+#
+# automake conditionals
+#   MPI (true when $with_mpi!=no)
 AC_DEFUN([DUNE_MPI],[
   AC_PREREQ(2.50) dnl for AC_LANG_CASE
 
