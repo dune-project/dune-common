@@ -527,25 +527,332 @@ user wishes to modify the values, you should use the \texttt{AM\_*}
 version. 
 
 The real compile-command always uses both \texttt{AM\_\textit{VAR}} and
-\texttt{\textit{VAR}}. Options that
+\texttt{\textit{VAR}} (or \texttt{\texttt{progname}\_\textit{VAR}} and
+\texttt{\textit{VAR}}).  Options that
 autoconf finds are stored in the user variables (so that they may be
-overridden) 
+overridden).
+
+Besides the three types of variables mentioned so far (user-, automake- and
+program-variables) there exists a fourth type by convention: variables of
+dependend libraries.  These variables have the form
+\texttt{\textit{LIBRARY}\_\textit{VAR}} and contain flags neccessary to build
+programs or libraries which depend on that library.  They are usually included
+in \texttt{\textit{program}\_\textit{VAR}}, like this:
+\begin{lstlisting}[language=make]
+foo_CPPFLAGS = $(AM_CPPFLAGS) $(SUPERLU_CPPFLAGS)
+\end{lstlisting}
+If all programs build by the same makefile depend on a library,
+\texttt{\textit{program}\_\textit{VAR}} can be included in
+\texttt{AM\_\textit{VAR}} instead:
+\begin{lstlisting}[language=make]
+AM_CPPFLAGS = @AM_CPPFLAGS@ $(SUPERLU_CPPFLAGS)
+\end{lstlisting}
+%$\end{lstlisting}
+
+There are five classes of variables in automake-generated makefiles:
+\begin{description}
+\item[automake] Example: \texttt{AM\_CPPFLAGS}.  These variables are usually
+  undefined by default and the developer may assign them default values in the
+  \texttt{Makefile.am}:
+  \begin{lstlisting}[language=make]
+AM_CPPFLAGS = -DMY_DIR=`pwd`
+  \end{lstlisting}
+  {\bf Automake} variables are not automatically substituted by
+  \texttt{configure}, though it is common for the developer to
+  \lstinline[language=make]{AC_SUBST} them.  In this case a different
+  technique must be  used to assign values to them, or the substituted value
+  will be ignored.  See the {\bf configure-substituted} class below.  The
+  names of {\bf automake} variables begin with \texttt{AM\_} most of the time,
+  but there are some variables which don't have that prefix.  These variables
+  give defaults for {\bf target-specific} variables.
+\item[configure-substituted] Example: \lstinline[language=make]{srcdir}.
+  Anything can be made a {\bf configure-substituted} variable by calling
+  \lstinline[language=sh]{AC_SUBST} in \texttt{configure.ac}.  Some
+  variables always substituted by autoconf\footnote{autoconf manual, section
+    ``Preset Output Variables''} or automake, others are only substituted when
+  certain autoconf macros are used.  In Dune, it is quiet common to substitute
+  {\bf automake} variables:
+  \begin{lstlisting}[language=sh]
+AC_SUBST(AM_CPPFLAGS, $DUNE_CPPFLAGS)
+  \end{lstlisting}
+  %$\end{lstlisting}
+  The value substituted by \texttt{configure} can be augmented in the
+  \texttt{Makefile.am} like this:
+  \begin{lstlisting}[language=make]
+AM_CPPFLAGS = @AM_CPPFLAGS@ -DMY_DIR=`pwd`
+  \end{lstlisting}
+\item[target-specific] Example: \texttt{\textit{target}\_CPPFLAGS}.  The names
+  of these variables are of the form canonical target name followed by an
+  underscore followed some uppercase letters.  If there is a {\bf automake}
+  variable corresponding to this {\bf target-specific} variable, the uppercase
+  letters at the end of the name usually correspond to the name of that {\bf
+    automake} variable.  These variables provide target-specific information.
+  They are defined by the developer in the \texttt{Makefile.am} and are
+  documented in the automake manual.  If there is corresponding a {\bf
+    automake} variable it provides a default which is used when the {\bf
+    target-specific} variable is not defined.  Example definition:
+  \begin{lstlisting}[language=make]
+false_SOURCES = true.c
+false_CPPFLAGS = $(AM_CPPFLAGS) -DEXIT_CODE=1
+  \end{lstlisting}
+  %$\end{lstlisting}
+  This example also shows how to include the value of the corresponding {\bf
+    automake} variable.
+\item[user] Example: \texttt{CPPFLAGS}.  These variables are for the user to
+  set on the make command line:
+  \begin{lstlisting}[language=sh]
+make CPPFLAGS=-DNDEBUG
+  \end{lstlisting}
+  They usually augment some {\bf target-specific} or {\bf makefile-default}
+  variable in the build rules.  Often these variables are {\em
+    precious}\footnote{autoconf manual,
+    \lstinline[language=sh]{AC_ARG_VAR}}, and the user can tell
+  \texttt{configure} what values these variables should have.  These variables
+  are {\bf configure-substituted}.
+
+  The developer should never set this
+  variables in the \texttt{Makefile.am}, because that would override the
+  user-provided values given to configure.  Instead, \texttt{configure.ac}
+  must be tweaked to set a different default if the user does not give a value
+  to \texttt{configure}.
+\item[external-library] Example: \texttt{\textit{LIB}CPPFLAGS}.  These
+  variables contain settings needed when using external libraries in a
+  target.  They should be included in the value for the corresponding {\bf
+    target-specific} variable
+  \begin{lstlisting}[language=make]
+testprog_CPPFLAGS = $(AM_CPPFLAGS) $(SUPERLUCPPFLAGS)
+  \end{lstlisting}
+  or the {\bf makefile-default} variable
+  \begin{lstlisting}[language=make]
+AM_CPPFLAGS = @AM_CPPFLAGS@ $(SUPERLUCPPFLAGS)
+  \end{lstlisting}
+  %$\end{lstlisting}
+  Values for these variables are determined by \texttt{configure}, thus they
+  are {\bf configure-substituted}.  Usually,
+  \texttt{configure.ac} must call the right autoconf macro to determine these
+  variables.
+
+  Note that the variable name with an underscore
+  \texttt{\textit{LIB}\_CPPFLAGS} is not recommended\footnote{Autoconf
+    manual, section ``Flag Variables Ordering''}, although this pattern is
+  common.
+\end{description}
 
 Commonly used variables are:
-\begin{itemize}
-\item \texttt{AM\_CPPFLAGS}: flags for the C-Preprocessor. This
-  includes preprocessor defines like \texttt{-DNDEBUG} and include
-  pathes like \texttt{-I/usr/local/package/include}
-\item \texttt{AM\_CFLAGS}, \texttt{AM\_CXXFLAGS}: flags for the
-  compiler (-g, -O, ...). One difference between these and the
-  \texttt{CPPFLAGS} is that the linker will get
-  \texttt{CFLAGS}/\texttt{CXXFLAGS} and \texttt{LDFLAGS} but not
-  \texttt{CPPFLAGS}
-\item \texttt{AM\_LDFLAGS} options for the linker
-\item \texttt{LDADD}: libraries to link to a binary
-\item \texttt{LIBADD}: libraries to add to a library
-\item \texttt{SOURCES}: list of source-files (may include headers as well)
-\end{itemize}
+\begin{description}
+\item[preprocessor flags] These flags are passed in any build rule that calls
+  the preprocessor.  If there is a {\bf target-specific} variable
+  \texttt{\textit{target}\_CPPFLAGS} defined, the flags are given by
+\begin{lstlisting}[language=make]
+$(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(target_CPPFLAGS) $(CPPFLAGS)
+\end{lstlisting}
+  %$\end{lstlisting}
+  otherwise
+\begin{lstlisting}[language=make]
+$(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS)
+\end{lstlisting}
+  %$\end{lstlisting}
+  is used.
+  \begin{description}
+  \item[\texttt{DEFS}] Class: {\bf configure-substituted}.  Contains all the
+    preprocessor defines from \lstinline[language=sh]{AC_DEFINE} and friends.
+    If a \texttt{config.h} header is used, contains just the value
+    \texttt{-DHAVE\_CONFIG\_H} instead.
+  \item[\texttt{DEFAULT\_INCLUDES}] Class: {\bf configure-substituted}.  This
+    variables contains a set of default include paths: \texttt{-I.},
+    \texttt{-I\$(srcdir)}, and an path to the directory of \texttt{config.h},
+    if that is used.
+  \item[\texttt{INCLUDES}] Class: {\bf automake}.  This is an obsolete
+    alternative to \texttt{AM\_CPPFLAGS}.  Use that instead.
+  \item[\texttt{\textit{target}\_CPPFLAGS}] Class: {\bf target-specific}.
+    Target-specific preprocessor flags.  If this variable exists, it overrides
+    \texttt{AM\_CPPFLAGS} and causes the renaming of object
+    files\footnote{automake manual, ``Why are object files sometimes
+      renamed?''}.
+  \item[\texttt{AM\_CPPFLAGS}] Class: {\bf automake}.  This is the makefile
+    default for any preprocessor flags.
+  \item[\texttt{CPPFLAGS}] Class: {\bf user}, {\bf configure-substituted}.
+    Flags given by the user, either to \texttt{configure} or when invoking
+    \texttt{make}.  If the user didn't provide any value to
+    \texttt{configure}, it may contain debugging and optimization options per
+    default (like \texttt{-DNDEBUG}).  The value of \texttt{CPPFLAGS} always
+    appears after the other preprocessor flags.
+  \item[\texttt{\textit{LIB}CPPFLAGS}] Class: {\bf external-library}.
+    Preprocessor flags when building with library \textit{LIB}.  This variable
+    should be include in \texttt{\textit{target}\_CPPFLAGS} or
+    \texttt{AM\_CPPFLAGS} in the \texttt{Makefile.am}.
+  \end{description}
+
+\item[C-compiler flags] These flags are passed in any build rule that calls
+  the C compiler or the C linker.  If there is a {\bf target-specific}
+  variable \texttt{\textit{target}\_CFLAGS} defined, the flags are given by
+\begin{lstlisting}[language=make]
+$(target_CFLAGS) $(CFLAGS)
+\end{lstlisting}
+  otherwise
+\begin{lstlisting}[language=make]
+$(AM_CFLAGS) $(CFLAGS)
+\end{lstlisting}
+  is used.
+  \begin{description}
+  \item[\texttt{\textit{target}\_CFLAGS}] Class: {\bf target-specific}.
+    Target-specific C compiler flags.  If this variable exists, it overrides
+    \texttt{AM\_CFLAGS} and causes the renaming of object
+    files\footnote{automake manual, ``Why are object files sometimes
+      renamed?''}.
+  \item[\texttt{AM\_CFLAGS}] Class: {\bf automake}.  This is the makefile
+    default for any C compiler flags.
+  \item[\texttt{CFLAGS}] Class: {\bf user}, {\bf configure-substituted}.
+    Flags given by the user, either to \texttt{configure} or when invoking
+    \texttt{make}.  If the user didn't provide any value to
+    \texttt{configure}, it may contain debugging, optimization and warning
+    options per default (like \texttt{-g -O2 -Wall}).  The value of
+    \texttt{CFLAGS} always appears after the other C compiler flags.
+  \end{description}
+
+\item[C++-compiler flags] These flags are passed in any build rule that calls
+  the C++ compiler or the C++ linker.  If there is a {\bf target-specific}
+  variable \texttt{\textit{target}\_CXXFLAGS} defined, the flags are given by
+\begin{lstlisting}[language=make]
+$(target_CXXFLAGS) $(CXXFLAGS)
+\end{lstlisting}
+  otherwise
+\begin{lstlisting}[language=make]
+$(AM_CXXFLAGS) $(CXXFLAGS)
+\end{lstlisting}
+  is used.
+  \begin{description}
+  \item[\texttt{\textit{target}\_CXXFLAGS}] Class: {\bf target-specific}.
+    Target-specific C++ compiler flags.  If this variable exists, it overrides
+    \texttt{AM\_CXXFLAGS} and causes the renaming of object
+    files\footnote{automake manual, ``Why are object files sometimes
+      renamed?''}.
+  \item[\texttt{AM\_CXXFLAGS}] Class: {\bf automake}.  This is the makefile
+    default for any C++ compiler flags.
+  \item[\texttt{CXXFLAGS}] Class: {\bf user}, {\bf configure-substituted}.
+    Flags given by the user, either to \texttt{configure} or when invoking
+    \texttt{make}.  If the user didn't provide any value to
+    \texttt{configure}, it may contain debugging, optimization and warning
+    options per default (like \texttt{-g -O2 -Wall}).  The value of
+    \texttt{CXXFLAGS} always appears after the other C++ compiler flags.
+  \end{description}
+
+\item[linker flags] These flags are passed in any build rule that calls the
+  linker.  If there is a {\bf target-specific} variable
+  \texttt{\textit{target}\_LDFLAGS} defined, the flags are given by
+\begin{lstlisting}[language=make]
+$(target_LDFLAGS) $(LDFLAGS)
+\end{lstlisting}
+  otherwise
+\begin{lstlisting}[language=make]
+$(AM_LDFLAGS) $(LDFLAGS)
+\end{lstlisting}
+  is used.  These variables are inapropriate to pass any options or parameters
+  that specify libraries of object files, in particular \texttt{-L} or
+  \texttt{-l} or the libtool options \texttt{-dlopen} and \texttt{-dlpreopen}.
+  Use a variable from the {\em libraries to link to} set to do that.
+  \begin{description}
+  \item[\texttt{\textit{target}\_LDFLAGS}] Class: {\bf target-specific}.
+    Target-specific C++ compiler flags.  If this variable exists, it overrides
+    \texttt{AM\_LDFLAGS}.  The existance of this variable does {\em not} cause
+    renaming of object files\footnote{automake manual, ``Why are object files
+      sometimes renamed?''}.
+  \item[\texttt{AM\_LDFLAGS}] Class: {\bf automake}.  This is the makefile
+    default for any linker flags.
+  \item[\texttt{LDFLAGS}] Class: {\bf user}, {\bf configure-substituted}.
+    Flags given by the user, either to \texttt{configure} or when invoking
+    \texttt{make}.  If the user didn't provide any value to
+    \texttt{configure}, it may contain debugging, optimization and warning
+    options per default.  The value of \texttt{LDFLAGS} always appears after
+    the other linker flags.
+  \item[\texttt{\textit{LIB}LDFLAGS}] Class: {\bf external-library}.  Linker
+    flags needed when linking to library \textit{LIB}.  This variable should
+    be include in \texttt{\textit{target}\_LDFLAGS} or \texttt{AM\_LDFLAGS} in
+    the \texttt{Makefile.am}.
+  \end{description}
+
+\item[libraries to link to] These variables are used to determine the
+  libraries and object files to link to.  They are passed whenever the linker
+  is called.  When
+  linking a program, extra libraries and objects to link to are given by
+  \begin{lstlisting}[language=make]
+$(target_LDADD) $(LIBS)
+  \end{lstlisting}
+  If the {\bf target-specific} variable \texttt{\textit{target}\_LDADD} is not
+  defined, automake supplies
+  \begin{lstlisting}[language=make]
+target_LDADD = $(LDADD)
+  \end{lstlisting}
+  %$\end{lstlisting}
+  When linking a library, extra libraries and objects to link to are given by
+  \begin{lstlisting}[language=make]
+$(target_LIBADD) $(LIBS)
+  \end{lstlisting}
+  If the {\bf target-specific} variable \texttt{\textit{target}\_LIBADD} is
+  not defined, automake defines it empty
+  \begin{lstlisting}[language=make]
+target_LIBADD =
+  \end{lstlisting}
+  Libraries and objects to link to must be given in reverse order: a library
+  or object file must come before the libraries or object files it depends on
+  on the linker command line.  Thus the value of the \texttt{LIBS} variable is
+  included after the value of the \texttt{\textit{target}\_LDADD} or
+  \texttt{\textit{target}\_LIBADD} variable.
+
+  In general, any linker flags and argument that specify libraries and object
+  files should be included in these variables, and nothing else.  In
+  particular that means library and object file names, the options \texttt{-L}
+  and \texttt{-l}, and the libtool options \texttt{-dlopen} and
+  \texttt{-dlpreopen}.  The option \texttt{-L} should come directly before any
+  \texttt{-l} options it sets the linker path for, otherwise a path set by
+  another \texttt{-L} option may take precedence, which may happen to contain
+  a library by the same name.
+  \begin{description}
+  \item[\texttt{\textit{target}\_LDADD}] Class: {\bf target-specific}.
+    Target-specific libraries and objects to link to {\em for programs}.  If
+    this variable does not exist, it defaults to \texttt{\$(LDADD)}.
+  \item[\texttt{LDADD}] Class: {\bf automake}.  Libraries and objects
+    to link to {\em for programs}.  Default for
+    \texttt{\textit{target}\_LDADD}.
+  \item[\texttt{\textit{target}\_LIBADD}] Class: {\bf target-specific}.
+    Target-specific objects to link to {\em for libraries}.  If the target is
+    a libtool library, then other libtool libraries may also be specified
+    here.  This variable has no makefile-wide default, if it does not exist
+    the empty value is assumed.
+  \item[\texttt{LIBS}] Class: {\bf automake}, {\bf configure-substituted}.
+    Libraries discovered by configure.
+  \item[\texttt{\textit{LIB}LIBS}] Class: {\bf external-library}.  Libraries
+    and object files needed to linking against library \textit{LIB}, including
+    that library itself.  This variable should be include in
+    \texttt{\textit{target}\_LDADD}, \texttt{LDADD}, or
+    \texttt{\textit{target}\_LIBADD} in the \texttt{Makefile.am}.
+  \end{description}
+\end{description}
+
+\minisec{Individual library variables}
+
+\begin{description}
+\item[MPI] The \texttt{DUNE\_MPI} macro sets the following variables with the
+  help of the macros \texttt{ACX\_MPI} and \texttt{MPI\_CONFIG}: For
+  compilation with the MPI compiler \texttt{MPICC} and \texttt{MPILIBS}.
+  These are not used in \dune except that \texttt{MPICC} may be set on the
+  configure command line to select which MPI installation to use.  For
+  compilation with the standard compiler it sets \texttt{DUNEMPICPPFLAGS},
+  \texttt{DUNEMPILDFLAGS} and \texttt{DUNEMPILIBS}, and the deprecated
+  variables \texttt{MPI\_CPPFLAGS} and \texttt{MPI\_LDFLAGS} (note there is no
+  \texttt{MPI\_LIBS}).  Unfortunately with most MPI implementations it is
+  impossible to obtain the linker flags seperately from the libraries to link
+  to.  Therefore, this macro stuffs everything into \texttt{DUNEMPILIBS},
+  which has the advantage that it works and the disavantage that users are
+  unable to overwrite the linker flags.  If that is a problem users should set
+  these variables themselves on the configure command line.
+
+  In addition, this macro substitutes \texttt{MPI\_VERSION} a text string
+  identifying the detected version of MPI.  It defines the following
+  preprocessor defines: \texttt{MPI\_2}, defined if the detected MPI supports
+  the MPI-2 standard.  \texttt{HAVE\_MPI}, 1 if MPI is detected and enabled.
+  It also defines the automake conditional \texttt{MPI}.
+\end{description}
 
 \minisec{Conditional builds}
 

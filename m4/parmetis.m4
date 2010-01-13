@@ -1,4 +1,5 @@
-#! /bin/bash
+dnl -*- mode: autoconf; tab-width: 8; indent-tabs-mode: nil; -*-
+dnl vi: set et ts=8 sw=2 sts=2:
 # $Id$
 # searches for ParMetis headers and libs
 
@@ -55,13 +56,14 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
   ac_save_LIBS="$LIBS"
   
   ## do nothing if --without-parmetis is used
-  if test x"$MPI_LDFLAGS" != x"" && test x"$with_parmetis" != x"no" ; then
+  if test x"$with_mpi" != x"no" && test x"$with_parmetis" != x"no" ; then
           
       # defaultpath
       PARMETIS_LIB_PATH="$with_parmetis$lib_path"
       PARMETIS_INCLUDE_PATH="$with_parmetis$lib_path"
                   
-      PARMETIS_LIBS="-L$PARMETIS_LIB_PATH $MPI_LDFLAGS $MPI_LIBS"
+      PARMETIS_LIBS="-L$PARMETIS_LIB_PATH -lmetis $DUNEMPILIBS -lm"
+      PARMETIS_LDFLAGS="$DUNEMPILDFLAGS"
 
       # set variables so that tests can use them
       CPPFLAGS="$CPPFLAGS -I$PARMETIS_INCLUDE_PATH $MPI_CPPFLAGS"
@@ -80,22 +82,27 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
       
       # if header is found check for the libs
 
-      LIBS="$LIBS $PARMETIS_LIBS -lm"
+      LIBS="$DUNEMPILIBS -lm $LIBS"
       
       if test x$HAVE_PARMETIS = x1 ; then
-	  AC_CHECK_LIB(metis, [metis_partgraphkway],[
-		  PARMETIS_LIBS="$PARMETIS_LIBS -lmetis"
-		  LIBS="$LIBS -lmetis"],[
+	  DUNE_CHECK_LIB_EXT(["$PARMETIS_LIB_PATH"], [metis], [metis_partgraphkway],
+              [
+		  PARMETIS_LIBS="-L$PARMETIS_LIB_PATH -lmetis $DUNEMPILIBS -lm"
+		  LIBS="$PARMETIS_LIBS $ac_save_LIBS"
+              ],[
 		  HAVE_PARMETIS="0"
-		  AC_MSG_WARN(libmetis not found!)])
+		  AC_MSG_WARN(libmetis not found!)
+              ])
       fi
 
       if test x$HAVE_PARMETIS = x1 ; then
-	  AC_CHECK_LIB(parmetis, [parmetis_v3_partkway],[
-		  PARMETIS_LIBS="$PARMETIS_LIBS -lparmetis -lmetis"
-		  HAVE_PARMETIS="1"],[
+	  DUNE_CHECK_LIB_EXT(["$PARMETIS_LIB_PATH"], [parmetis], [parmetis_v3_partkway],
+              [
+		  PARMETIS_LIBS="-L$PARMETIS_LIB_PATH -lparmetis -lmetis $DUNEMPILIBS -lm"
+              ],[
 		  HAVE_PARMETIS="0"
-		  AC_MSG_WARN(libparmetis not found!)])
+		  AC_MSG_WARN(libparmetis not found!)
+              ])
       fi
 
 #      AC_LANG_POP([C++])
@@ -107,6 +114,7 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
       AC_MSG_CHECKING(ParMETIS in $with_parmetis)
       if test x$HAVE_PARMETIS = x1 ; then
 	  AC_SUBST(PARMETIS_LIBS, $PARMETIS_LIBS)
+	  AC_SUBST(PARMETIS_LDFLAGS, $PARMETIS_LDFLAGS)
 	  AC_SUBST(PARMETIS_CPPFLAGS, $PARMETIS_CPPFLAGS)
 	  AC_DEFINE(HAVE_PARMETIS,ENABLE_PARMETIS,[Define if you have the Parmetis library.
 		  This is only true if MPI was found by configure 
@@ -114,7 +122,8 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 	  AC_MSG_RESULT(ok)
 	  
     # add to global list
-	  DUNE_PKG_LIBS="$DUNE_PKG_LIBS $PARMETIS_LIBS"
+	  DUNE_PKG_LIBS="$PARMETIS_LIBS $DUNE_PKG_LIBS"
+	  DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $PARMETIS_LDFLAGS"
 	  DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $PARMETIS_CPPFLAGS"
 	  
     # re-set variable correctly
@@ -140,7 +149,3 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
   DUNE_ADD_SUMMARY_ENTRY([ParMETIS],[$with_parmetis])
 
 ])
-
-dnl Local Variables:
-dnl mode: shell-script
-dnl End:

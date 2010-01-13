@@ -104,6 +104,9 @@ while test $# -gt 0 ; do
   --cflags)
     tasks="$tasks print_cflags"
     ;;
+  --ldflags)
+    tasks="$tasks print_ldflags"
+    ;;
   --libs)
     tasks="$tasks print_libs"
     ;;
@@ -169,14 +172,19 @@ print_mpiversion() {
 print_cflags() {
   get_mpiparameters
   if test x$disablecxx = xyes; then
-    MPI_CPPFLAGS="$MPI_CPPFLAGS $MPI_NOCXXFLAGS"
+    DUNEMPICPPFLAGS="$DUNEMPICPPFLAGS $MPI_NOCXXFLAGS"
   fi
-  echo $MPI_CPPFLAGS
+  echo $DUNEMPICPPFLAGS
+}
+
+print_ldflags() {
+  get_mpiparameters
+  echo $DUNEMPILDFLAGS
 }
 
 print_libs() {
   get_mpiparameters
-  echo $MPI_LDFLAGS
+  echo $DUNEMPILIBS
 }
 
 for task in $tasks; do

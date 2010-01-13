@@ -1,3 +1,4 @@
+dnl -*- autoconf -*-
 # $Id$
 
 # wrapper for the autoconf-archive check. Note: compiling MPI-stuff sucks!
@@ -50,6 +51,39 @@
 #   --disable-parallel
 # [Christian 9.7.2006]
 
+# DUNE_MPI()
+#
+# With the help of ACX_MPI find the MPI compiler, and with the help of
+# MPI_CONFIG find the libraries and compiler and linker options necessary to
+# compile MPI programs with the standard compiler.  Will set the following
+# things:
+#
+# configure shell variables:
+#   MPICC
+#   MPILIBS
+#   DUNEMPICPPFLAGS
+#   DUNEMPILDFLAGS
+#   DUNEMPILIBS
+#   MPI_CPPFLAGS (deprecated in favor of DUNEMPICPPFLAGS)
+#   MPI_LDFLAGS (deprecated in favor of DUNEMPILIBS and DUNEMPILDFLAGS)
+#   dune_MPI_VERSION
+#   with_mpi
+#
+# configure substitutions/Makefile variables
+#   MPICC
+#   MPILIBS
+#   DUNEMPICPPFLAGS
+#   DUNEMPILDFLAGS
+#   DUNEMPILIBS
+#   MPI_CPPFLAGS (deprecated in favor of DUNEMPICPPFLAGS)
+#   MPI_LDFLAGS (deprecated in favor of DUNEMPILIBS and DUNEMPILDFLAGS)
+#   MPI_VERSION (set from dune_MPI_VERSION)
+#
+# preprocessor defines
+#   HAVE_MPI (defined when $with_mpi!=no)
+#
+# automake conditionals
+#   MPI (true when $with_mpi!=no)
 AC_DEFUN([DUNE_MPI],[
   AC_PREREQ(2.50) dnl for AC_LANG_CASE
 
@@ -84,7 +118,7 @@ AC_DEFUN([DUNE_MPI],[
       MPICOMP="$MPICC"
 
       MPI_CONFIG()
-      MPI_CPPFLAGS="$MPI_CPPFLAGS $MPI_NOCXXFLAGS -DENABLE_MPI=1"
+      DUNEMPICPPFLAGS="$DUNEMPICPPFLAGS $MPI_NOCXXFLAGS -DENABLE_MPI=1"
 
       with_mpi="yes ($dune_MPI_VERSION)"
     ],[
@@ -99,12 +133,14 @@ AC_DEFUN([DUNE_MPI],[
 
     # store old values
     ac_save_LIBS="$LIBS"
+    ac_save_LDFLAGS="$LDFLAGS"
     ac_save_CPPFLAGS="$CPPFLAGS"
     
     # looks weird but as the -l... are contained in the MPI_LDFLAGS these
     # parameters have to be last on the commandline: with LIBS this is true
-    LIBS="$MPI_LDFLAGS"
-    CPPFLAGS="$CPPFLAGS $MPI_CPPFLAGS"
+    LIBS="$DUNEMPILIBS $LIBS"
+    LDFLAGS="$LDFLAGS $DUNEMPILDFLAGS"
+    CPPFLAGS="$CPPFLAGS $DUNEMPICPPFLAGS"
 
     # try to create MPI program
     AC_LANG_PUSH([C++])
@@ -122,7 +158,7 @@ AC_DEFUN([DUNE_MPI],[
     )
 
     AS_IF([test "x$mpiruntest" != "xyes"],[
-      AC_MSG_WARN([Diabled test whether running with $dune_MPI_VERSION works.])    
+      AC_MSG_WARN([Disabled test whether running with $dune_MPI_VERSION works.])    
     ],[
       AC_MSG_CHECKING([whether running with $dune_MPI_VERSION works])
       AC_RUN_IFELSE(
@@ -159,16 +195,21 @@ AC_DEFUN([DUNE_MPI],[
     
   # set flags
   AS_IF([test "x$with_mpi" != "xno"],[
-    AC_SUBST(MPI_CPPFLAGS, $MPI_CPPFLAGS)
-    AC_SUBST(MPI_LDFLAGS, $MPI_LDFLAGS)
-    AC_SUBST(MPI_VERSION, $dune_MPI_VERSION)
+    MPI_LDFLAGS="$DUNEMPILDFLAGS $DUNEMPILIBS"
     AC_DEFINE(HAVE_MPI,ENABLE_MPI,[Define if you have the MPI library.
-    This is only true if MPI was found by configure 
-    _and_ if the application uses the MPI_CPPFLAGS])
+      This is only true if MPI was found by configure _and_ if the application
+      uses the DUNEMPICPPFLAGS (or the deprecated MPI_CPPFLAGS)])
   ],[
-    AC_SUBST(MPI_CPPFLAGS, "")
-    AC_SUBST(MPI_LDFLAGS, "")
+    MPI_LDFLAGS=""
   ])
+  AC_SUBST(DUNEMPICPPFLAGS)
+  AC_SUBST(DUNEMPILDFLAGS)
+  AC_SUBST(DUNEMPILIBS)
+  AC_SUBST(MPI_VERSION, $dune_MPI_VERSION)
+
+  DUNE_DEPRECATED_CPPFLAGS(MPI_CPPFLAGS, "$DUNEMPICPPFLAGS",
+    [The MPI_CPPFLAGS configure substitute is deprecated.  Please change your Makefile.am to use DUNEMPICPPFLAGS instead.  Note that it is a good idea to change any occurance of MPI_LDFLAGS into DUNEMPILIBS and DUNEMPILDFLAGS as apropriate, since it is not possible to issue a deprecation warning in that case.])
+  AC_SUBST(MPI_LDFLAGS)
 
   AM_CONDITIONAL(MPI, [test "x$with_mpi" != "xno"])
 

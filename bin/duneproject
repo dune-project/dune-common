@@ -496,8 +496,31 @@ noinst_PROGRAMS = ${CMODULE}
 
 ${CMODULE}_SOURCES = $CMODULE.cc
 
-${CMODULE}_CXXFLAGS = \$(MPI_CPPFLAGS) \$(UG_CPPFLAGS) \$(AMIRAMESH_CPPFLAGS) \$(ALBERTA_CPPFLAGS) \$(ALUGRID_CPPFLAGS)
-${CMODULE}_LDADD = \$(MPI_LDFLAGS) \$(ALBERTA_LDFLAGS) \$(ALBERTA_LIBS) \$(ALUGRID_LDFLAGS) \$(ALUGRID_LIBS) \$(AMIRAMESH_LDFLAGS) \$(AMIRAMESH_LIBS) \$(UG_LDFLAGS) \$(UG_LIBS) \$(MPI_LDFLAGS) \$(DUNE_LDFLAGS) \$(DUNE_LIBS)
+${CMODULE}_CXXFLAGS = \$(AM_CXXFLAGS) \\
+	\$(DUNEMPICPPFLAGS) \\
+	\$(UG_CPPFLAGS) \\
+	\$(AMIRAMESH_CPPFLAGS) \\
+	\$(ALBERTA_CPPFLAGS) \\
+	\$(ALUGRID_CPPFLAGS)
+# The libraries have to be given in reverse order (most basic libraries
+# last).  Also, due to some misunderstanding, a lot of libraries include the
+# -L option in LDFLAGS instead of LIBS -- so we have to include the LDFLAGS
+# here as well.
+${CMODULE}_LDADD = \\
+	\$(DUNE_LDFLAGS) \$(DUNE_LIBS) \\
+	\$(ALUGRID_LDFLAGS) \$(ALUGRID_LIBS) \\
+	\$(ALBERTA_LDFLAGS) \$(ALBERTA_LIBS) \\
+	\$(AMIRAMESH_LDFLAGS) \$(AMIRAMESH_LIBS) \\
+	\$(UG_LDFLAGS) \$(UG_LIBS) \\
+	\$(DUNEMPILIBS)	\\
+	\$(LDADD)
+${CMODULE}_LDFLAGS = \$(AM_LDFLAGS) \\
+	\$(DUNEMPILDFLAGS) \\
+	\$(UG_LDFLAGS) \\
+	\$(AMIRAMESH_LDFLAGS) \\
+	\$(ALBERTA_LDFLAGS) \\
+	\$(ALUGRID_LDFLAGS) \\
+	\$(DUNE_LDFLAGS)
 
 # don't follow the full GNU-standard
 # we need automake 1.5

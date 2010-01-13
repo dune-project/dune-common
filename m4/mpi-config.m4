@@ -52,16 +52,24 @@ _EOF
       # seems like LAM >= 7.1 which supports extraction of parameters without
       # dummy files
       dune_MPI_VERSION="LAM >= 7.1"
-      MPI_CPPFLAGS="$retval"
-      mpi_getflags "-showme:link"
-      MPI_LDFLAGS="$retval"
+      if test x"$DUNEMPICPPFLAGS" = x; then
+        DUNEMPICPPFLAGS="$retval"
+      fi
+      if test x"$DUNEMPILIBS" = x; then
+        mpi_getflags "-showme:link"
+        DUNEMPILIBS="$retval"
+      fi
     else
       dune_MPI_VERSION="LAM < 7.1"
       # use -showme and dummy parameters to extract flags        
-      mpi_getflags "-showme" "-c $MPISOURCE"
-      MPI_CPPFLAGS="$retval"
-      mpi_getflags "-showme" "dummy.o -o dummy"
-      MPI_LDFLAGS="$retval"
+      if test x"$DUNEMPICPPFLAGS" = x; then
+        mpi_getflags "-showme" "-c $MPISOURCE"
+        DUNEMPICPPFLAGS="$retval"
+      fi
+      if test x"$DUNEMPILIBS" = x; then
+        mpi_getflags "-showme" "dummy.o -o dummy"
+        DUNEMPILIBS="$retval"
+      fi
     fi
     # hack in option to disable LAM-C++-bindings...
     # we fake to have mpicxx.h read already
@@ -77,49 +85,55 @@ _EOF
 }
 
 mpi_getmpichflags() {
+  if test x"$DUNEMPICPPFLAGS" = x; then
     # use special commands to extract options      
     mpi_getflags "-compile_info"
-    MPI_CPPFLAGS="$retval"
+    DUNEMPICPPFLAGS="$retval"
     # remove implicitly set -c
-    mpi_remove "$MPI_CPPFLAGS" '-c'
-    MPI_CPPFLAGS="$retval"
+    mpi_remove "$DUNEMPICPPFLAGS" '-c'
+    DUNEMPICPPFLAGS="$retval"
+  fi
     
+  if test x"$DUNEMPILIBS" = x; then
     # get linker options
     mpi_getflags "-link_info"
-    MPI_LDFLAGS="$retval"
+    DUNEMPILIBS="$retval"
     # strip -o option
-    mpi_remove "$MPI_LDFLAGS" "-o"
-    MPI_LDFLAGS="$retval"
-    #strip MPI_CPPFLAGS (which are included for mpich2 on jugene)
-    enc=`echo "$MPI_CPPFLAGS" | sed -e 's/\\//\\\\\\//g'`
-    MPI_LDFLAGS=`echo "$retval" | sed -e "s/$enc / /"`
+    mpi_remove "$DUNEMPILIBS" "-o"
+    DUNEMPILIBS="$retval"
+    #strip DUNEMPICPPFLAGS (which are included for mpich2 on jugene)
+    enc=`echo "$DUNEMPICPPFLAGS" | sed -e 's/\\//\\\\\\//g'`
+    DUNEMPILIBS=`echo "$retval" | sed -e "s/$enc / /"`
+  fi
 
-
-    # hack in option to disable MPICH-C++-bindings...
-    MPI_NOCXXFLAGS="-DMPICH_SKIP_MPICXX"
+  # hack in option to disable MPICH-C++-bindings...
+  MPI_NOCXXFLAGS="-DMPICH_SKIP_MPICXX"
 }
 
 mpi_getmpich2flags() {
+  if test x"$DUNEMPICPPFLAGS" = x; then
     # use special commands to extract options      
     mpi_getflags "-show" "-c"
-    MPI_CPPFLAGS="$retval"
+    DUNEMPICPPFLAGS="$retval"
     # remove implicitly set -c
-    mpi_remove "$MPI_CPPFLAGS" '-c'
-    MPI_CPPFLAGS="$retval"
+    mpi_remove "$DUNEMPICPPFLAGS" '-c'
+    DUNEMPICPPFLAGS="$retval"
+  fi
     
+  if test x"$DUNEMPILIBS" = x; then
     # get linker options
     mpi_getflags "-show" "-o"
-    MPI_LDFLAGS="$retval"
+    DUNEMPILIBS="$retval"
     # strip -o option
-    mpi_remove "$MPI_LDFLAGS" "-o"
-    MPI_LDFLAGS="$retval"
-    #strip MPI_CPPFLAGS (which are included for mpich2 on jugene)
-    enc=`echo "$MPI_CPPFLAGS" | sed -e 's/\\//\\\\\\//g'`
-    MPI_LDFLAGS=`echo "$retval" | sed -e "s/$enc / /"`
+    mpi_remove "$DUNEMPILIBS" "-o"
+    DUNEMPILIBS="$retval"
+    #strip DUNEMPICPPFLAGS (which are included for mpich2 on jugene)
+    enc=`echo "$DUNEMPICPPFLAGS" | sed -e 's/\\//\\\\\\//g'`
+    DUNEMPILIBS=`echo "$retval" | sed -e "s/$enc / /"`
+  fi
 
-
-    # hack in option to disable MPICH-C++-bindings...
-    MPI_NOCXXFLAGS="-DMPICH_SKIP_MPICXX"
+  # hack in option to disable MPICH-C++-bindings...
+  MPI_NOCXXFLAGS="-DMPICH_SKIP_MPICXX"
 }
 
 test_mpich () {
@@ -178,10 +192,14 @@ _EOF
   if (mpi_preprocess conftest.c | grep -q ompi_communicator_t); then
     dune_MPI_VERSION="OpenMPI"
 
-    mpi_getflags "-showme:compile"
-    MPI_CPPFLAGS="$retval"
-    mpi_getflags "-showme:link"
-    MPI_LDFLAGS="$retval"
+    if test x"$DUNEMPICPPFLAGS" = x; then
+      mpi_getflags "-showme:compile"
+      DUNEMPICPPFLAGS="$retval"
+    fi
+    if test x"$DUNEMPILIBS" = x; then
+      mpi_getflags "-showme:link"
+      DUNEMPILIBS="$retval"
+    fi
     MPI_NOCXXFLAGS="-DMPIPP_H"
 
     AC_MSG_RESULT([yes])
@@ -247,30 +265,14 @@ test_ibmmpi() {
     if (echo $retval | grep '^xl[[cC]]'); then
       dune_MPI_VERSION="IBM MPI"
 
-      # get compilation script
-#      AC_LANG_CASE([C],[
-#        MPICOMP="$MPICC"
-#        dune_mpi_isgnu="$GCC"
-#      ],
-#      [C++],[
-#        MPICOMP="$MPICXX"
-#        dune_mpi_isgnu="$GXX"
-#      ])
-      # mpCC assumes xlc is used...
-#      if test x$dune_mpi_isgnu = xyes ; then
-#        # change commandline if GNU compiler is used
-#        retval=`echo $retval | sed -e 's/\(-b[[^ ]]*\)/-Xlinker \1/g'`
-#      fi
-      MPI_CPPFLAGS="$retval"
+      if test x"$DUNEMPICPPFLAGS" = x; then
+        DUNEMPICPPFLAGS="$retval"
+      fi
   
-      mpi_getflags "-v" "dummy.o -o dummy"
-
-#      if test x$dune_mpi_isgnu = xyes ; then
-#        # change commandline if GNU compiler is used
-#        retval=`echo $retval | sed -e 's/\(-b[[^ ]]*\)/-Xlinker \1/g'`
-#      fi
-
-      MPI_LDFLAGS="$retval"
+      if test x"$DUNEMPILIBS" = x; then
+        mpi_getflags "-v" "dummy.o -o dummy"
+        DUNEMPILIBS="$retval"
+      fi
 
       AC_MSG_RESULT([yes])
       rm -f conftest*
