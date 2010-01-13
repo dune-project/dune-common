@@ -8,13 +8,13 @@ AC_DEFUN([DUNE_CHECK_LIB_EXT],
 [
   dune_cle_save_LDFLAGS="$LDFLAGS"
   LDFLAGS="$LDFLAGS -L$1"
-  m4_ifelse(m4_eval([$# <= 3]), [1],
-    [AC_CHECK_LIBS([$2], [$3],
+  m4_if(m4_eval([$# <= 3]), [1],
+    [AC_CHECK_LIB([$2], [$3],
       [
         LIBS="-L$1 -l$2 $LIBS"
         AC_DEFINE([HAVE_LIB]m4_translit([[$2]], [-a-z], [_A-Z]), [1],
                   [Define to 1 if you have the `$2' library (-l$2).])
       ])],
-    [AC_CHECK_LIBS(m4_shift($@))])
+    [AC_CHECK_LIB(m4_shift($@))])
   LDFLAGS="$dune_cle_save_LDFLAGS"
 ])
