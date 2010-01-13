@@ -67,7 +67,8 @@ dnl -*- autoconf -*-
 #   MPI_CPPFLAGS (deprecated in favor of DUNEMPICPPFLAGS)
 #   MPI_LDFLAGS (deprecated in favor of DUNEMPILIBS and DUNEMPILDFLAGS)
 #   dune_MPI_VERSION
-#   with_mpi
+#   with_mpi ("no" if MPI is missing, "yes" followed by some more details if
+#             MPI is present)
 #
 # configure substitutions/Makefile variables
 #   MPICC
