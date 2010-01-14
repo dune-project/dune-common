@@ -852,6 +852,44 @@ target_LIBADD =
   preprocessor defines: \texttt{MPI\_2}, defined if the detected MPI supports
   the MPI-2 standard.  \texttt{HAVE\_MPI}, 1 if MPI is detected and enabled.
   It also defines the automake conditional \texttt{MPI}.
+\item[\dune modules] For each \dune module there are the variables
+  \texttt{\textit{MODULE}\_CPPFLAGS}, \texttt{\textit{MODULE}\_LDFLAGS} and
+  \texttt{\textit{MODULE}\_LIBS}.  They contain everything to use that module
+  with its most basic functionality.  For instance, for \texttt{dune-grid}
+  they do not contain the stuff for MPI, Alberta, ALU Grid or UG, even if
+  those were detected.  They do contain the stuff for \texttt{dune-common},
+  possibly with duplicates removed, since that is absolutely required for the
+  operation of \texttt{dune-grid}.  Example use:
+  \begin{lstlisting}[language=make]
+foo_SOURCES = foo.cc
+foo_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(UG_CPPFLAGS) \
+	$(DUNE_GRID_CPPFLAGS)
+foo_LDFLAGS = $(AM_LDFLAGS) \
+	$(UG_LDFLAGS) \
+	$(DUNE_GRID_LDFLAGS)
+foo_LDADD = \
+	$(DUNE_GRID_LIBS) \
+	$(UG_LIBS) \
+	$(LDADD)
+  \end{lstlisting}
+  %$\end{lstlisting}
+  Note that there are no such variables for the current module -- these
+  variables are used in the process of building the current module, so that
+  module is incomplete when detecting these variables.  Note alse that by
+  ``\dune module'' we mean a software package which uses the \dune
+  buildsystem, not one of the official dune modules.
+\item[Basic \dune] To use the basic functionality af all detected \dune
+  modules, the variables \texttt{DUNE\_CPPFLAGS}, \texttt{DUNE\_LDFLAGS} and
+  \texttt{DUNE\_LIBS} may be used.  They collect the contents of all \dune
+  module variables, possibly with duplicates removed.
+\item[Extended \dune] To use \dune with all functionality that requires
+  external libraries, the variables \texttt{ALL\_PKG\_CPPFLAGS},
+  \texttt{ALL\_PKG\_LDFLAGS} and \texttt{ALL\_PKG\_LIBS} may be used.  They
+  provide everything neccessary to build with any external library detected by
+  configure.  In the case of Alberta a choise must be made between 2D and 3D.
+  Here the \texttt{ALL\_PKG\_*} variables just follow the choice of the
+  corresponding \texttt{ALBERTA\_*} variables.
 \end{description}
 
 \minisec{Conditional builds}
