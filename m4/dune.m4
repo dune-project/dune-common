@@ -1,4 +1,4 @@
-#! /bin/sh
+dnl -*- autoconf -*-
 # $Id$
 # checks for dune-headers and everything they need
 
@@ -33,6 +33,22 @@ AC_DEFUN([DUNE_MODULE_ADD_SUMMARY_ENTRY],[
 
 m4_define([_dune_sub_version],"`echo $1 | $AWK -F. -v FIELD=$2 '{ print int($FIELD) }'`")
 
+# DUNE_PARSE_MODULE_VERSION(NAME, VERSION)
+#
+# NAME    Name of the module, lowercase with dashes (like "dune-common").  The
+#         value must be known when autoconf runs, so shell variables in the
+#         value are not permissible.
+# VERSION Version of the module.  May contain shell variables.  Numbers
+#         seperated by ".".
+#
+# In the following, module is NAME with any "-" replaced by "_" and MODULE is
+# the uppercase version of module.
+#
+# configure/shell variables and preprocessor defines:
+#   MODULE_VERSION (complete version, same as VERSION)
+#   MODULE_VERSION_MAJOR (first component of VERSION)
+#   MODULE_VERSION_MINOR (second component of VERSION)
+#   MODULE_VERSION_REVISION (third component of VERSION)
 AC_DEFUN([DUNE_PARSE_MODULE_VERSION],[
   AC_REQUIRE([AC_PROG_AWK])
 
@@ -57,6 +73,66 @@ AC_DEFUN([DUNE_PARSE_MODULE_VERSION],[
   m4_popdef([_dune_name])
 ])
 
+# DUNE_CHECK_MODULES(NAME, HEADER, SYMBOL)
+#
+# NAME   Name of the module, lowercase with dashes (like "dune-common").  The
+#        value must be known when autoconf runs, so shell variables in the
+#        value are not permissible.
+#
+# HEADER Header to check for.  The check will really be for <dune/HEADER>, so
+#        the header must reside within a directory called "dune".
+#
+# SYMBOL Symbol to check for in the module's library.  If this argument is
+#        empty or missing, it is assumed that the module does not provide a
+#        library.  The value must be known when autoconf runs, so shell
+#        variables in the value are not permissible.  The name of the library
+#        is assumed to be the same as the module name, with any occurance of
+#        "-" removed.  The path of the library is obtained from pkgconfig for
+#        installed modules, or assumed to be the directory "lib" within the
+#        modules root for non-installed modules.
+#
+# In the following, module is NAME with any "-" replaced by "_" and MODULE is
+# the uppercase version of module.
+#
+# configure options:
+#   --with-NAME
+#
+# configure/shell variables:
+#   MODULE_CPPFLAGS
+#   MODULE_ROOT
+#   MODULE_LDFLAGS
+#   MODULE_LIBS
+#   HAVE_MODULE (1 or 0)
+#   with_module ("yes" or "no")
+#   DUNE_CPPFLAGS (adds the modules values here)
+#   DUNE_LDFLAGS (adds the modules values here)
+#   DUNE_LIBS (adds the modules values here)
+#   DUNE_PKG_CPPFLAGS (deprecated, adds the modules values here)
+#   DUNE_PKG_LDFLAGS (deprecated, adds the modules values here)
+#   DUNE_PKG_LIBS (deprecated, adds the modules values here)
+#   MODULE_VERSION
+#   MODULE_VERSION_MAJOR
+#   MODULE_VERSION_MINOR
+#   MODULE_VERSION_REVISION
+#
+# configure substitutions/makefile variables:
+#   MODULE_CPPFLAGS
+#   MODULE_LDFLAGS
+#   MODULE_LIBS
+#   MODULE_ROOT
+#   DUNE_CPPFLAGS
+#   DUNE_LDFLAGS
+#   DUNE_LIBS
+#
+# preprocessor defines:
+#   HAVE_MODULE (1 or undefined)
+#   MODULE_VERSION
+#   MODULE_VERSION_MAJOR
+#   MODULE_VERSION_MINOR
+#   MODULE_VERSION_REVISION
+#
+# automake conditionals:
+#   HAVE_MODULE
 AC_DEFUN([DUNE_CHECK_MODULES],[
   AC_REQUIRE([AC_PROG_CXX])
   AC_REQUIRE([AC_PROG_CXXCPP])
