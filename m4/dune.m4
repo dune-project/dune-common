@@ -194,10 +194,10 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       _DUNE_MODULE[]_CPPFLAGS="`$PKG_CONFIG --cflags _dune_name`" 2>/dev/null
       _DUNE_MODULE[]_ROOT="`$PKG_CONFIG --variable=prefix _dune_name`" 2>/dev/null 
       _DUNE_MODULE[]_VERSION="`$PKG_CONFIG --modversion _dune_name`" 2>/dev/null
-      ifelse(_dune_symbol,,,[
-        _DUNE_MODULE[]_LDFLAGS="-L`$PKG_CONFIG --variable=libdir _dune_name`" 2>/dev/null 
-        _DUNE_MODULE[]_LIBS="-l[]_dune_lib"
-      ])
+      _DUNE_MODULE[]_LDFLAGS=""
+      ifelse(_dune_symbol,,
+        [_DUNE_MODULE[]_LIBS=""],
+        [_DUNE_MODULE[]_LIBS="-L`$PKG_CONFIG --variable=libdir _dune_name 2>/dev/null` -l[]_dune_lib"])
       HAVE_[]_DUNE_MODULE=1
       AC_MSG_RESULT([global installation in $_DUNE_MODULE[]_ROOT])
     ],[
@@ -227,10 +227,10 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
         _DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]_SRCDIR"
         _DUNE_MODULE[]_VERSION="`grep Version $_DUNE_MODULE[]_SRCDIR/dune.module | sed -e 's/^Version: *//'`" 2>/dev/null
       ])
-      ifelse(_dune_symbol,,,[
-        _DUNE_MODULE[]_LDFLAGS="-L$_DUNE_MODULE[]_ROOT/lib"
-        _DUNE_MODULE[]_LIBS="-l[]_dune_lib"
-      ])
+      _DUNE_MODULE[]_LDFLAGS=""
+      ifelse(_dune_symbol,,
+        [_DUNE_MODULE[]_LIBS=""],
+        [_DUNE_MODULE[]_LIBS="-L$_DUNE_MODULE[]_ROOT/lib -l[]_dune_lib"])
       # set expanded module path
       with_[]_dune_module="$_DUNE_MODULE[]_ROOT"
       HAVE_[]_DUNE_MODULE=1

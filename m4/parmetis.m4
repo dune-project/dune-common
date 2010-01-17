@@ -85,7 +85,7 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
       LIBS="$DUNEMPILIBS -lm $LIBS"
       
       if test x$HAVE_PARMETIS = x1 ; then
-	  DUNE_CHECK_LIB_EXT(["$PARMETIS_LIB_PATH"], [metis], [metis_partgraphkway],
+	  DUNE_CHECK_LIB_EXT([$PARMETIS_LIB_PATH], [metis], [metis_partgraphkway],
               [
 		  PARMETIS_LIBS="-L$PARMETIS_LIB_PATH -lmetis $DUNEMPILIBS -lm"
 		  LIBS="$PARMETIS_LIBS $ac_save_LIBS"
@@ -96,7 +96,7 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
       fi
 
       if test x$HAVE_PARMETIS = x1 ; then
-	  DUNE_CHECK_LIB_EXT(["$PARMETIS_LIB_PATH"], [parmetis], [parmetis_v3_partkway],
+	  DUNE_CHECK_LIB_EXT([$PARMETIS_LIB_PATH], [parmetis], [parmetis_v3_partkway],
               [
 		  PARMETIS_LIBS="-L$PARMETIS_LIB_PATH -lparmetis -lmetis $DUNEMPILIBS -lm"
               ],[
