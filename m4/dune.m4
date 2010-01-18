@@ -222,7 +222,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
         _DUNE_MODULE[]_SRCDIR=$_DUNE_MODULE[]_ROOT
         # extract src and build path from Makefile, if found
 	    AS_IF([test -f $_DUNE_MODULE[]_ROOT/Makefile],[
-          _DUNE_MODULE[]_SRCDIR="`sed -ne '/^abs_top_srcdir = /{s/^abs_top_srcdir = //; p}' $_DUNE_MODULE[]_ROOT/Makefile`"
+          _DUNE_MODULE[]_SRCDIR="`sed -ne '/^abs_top_srcdir = /{s/^abs_top_srcdir = //; p;}' $_DUNE_MODULE[]_ROOT/Makefile`"
 		])
         _DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]_SRCDIR"
         _DUNE_MODULE[]_VERSION="`grep Version $_DUNE_MODULE[]_SRCDIR/dune.module | sed -e 's/^Version: *//'`" 2>/dev/null
