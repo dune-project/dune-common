@@ -9,6 +9,101 @@ dnl -*- autoconf -*-
 #   #export PKG_CONFIG_LIBDIR=$with_dune/dune
 #  #PKG_CHECK_MODULES(DUNE, dune)  
 
+# DUNE_ADD_ALL_PKG (TAG, [CPPFLAGS], [LDFLAGS], [LIBS])
+#
+# Add the flags and libs of an external library to the ALL_PKG_* variables,
+# avoiding duplicates.
+#
+# TAG Tag used to avoid duplicate entries in the global variables.  This
+#     should be the same in all invocations of this macro for the same
+#     library, even for different modules.
+#
+# CPPFLAGS The preprocessor flags to add.
+#
+# LDFLAGS The linker flags to add.
+#
+# LIBS The libraries to add.
+#
+# All arguments allow shell substitutions.  Each argument should be suitable
+# for use inside shell double quotes.
+#
+# configure/shell variables:
+#   ALL_PKG_CPPFLAGS
+#   ALL_PKG_LDFLAGS
+#   ALL_PKG_LIBS
+AC_DEFUN([DUNE_ADD_ALL_PKG],
+[AS_VAR_PUSHDEF([_dune_aap_TAG], [_dune_aap_tag_$1])dnl
+AS_VAR_SET_IF([_dune_aap_TAG], [],
+[AS_VAR_APPEND([ALL_PKG_CPPFLAGS], [" $2"])
+AS_VAR_APPEND([ALL_PKG_LDFLAGS], [" $3"])
+ALL_PKG_LIBS="$4 $ALL_PKG_LIBS"
+AS_VAR_SET([_dune_aap_TAG], [1])
+])
+AS_VAR_POPDEF([_dune_aap_TAG])dnl
+])
+
+# DUNE_ADD_MODULE_DEPS (MODULE, TAG, [CPPFLAGS], [LDFLAGS], [LIBS])
+#
+# Add the flags and libs of an external library to the modules flags
+# and libs and to the the DUNE_* and ALL_PKG_* families of global flags and
+# libs.
+#
+# MODULE The name to the DUNE module to add the flags for.  It should be
+#     lowercase with components seperated by dashes (like "dune-common").
+#
+# TAG Tag used to avoid duplicate entries in the global variables.  This
+#     should be the same in all invocations of this macro for the same
+#     library, even for different modules.
+#
+# CPPFLAGS The preprocessor flags to add.
+#
+# LDFLAGS The linker flags to add.
+#
+# LIBS The libraries to add.
+#
+# All arguments allow shell substitutions.  Each argument should be suitable
+# for use inside shell double quotes.
+#
+# configure/shell variables (MODULE_upper denotes an uppercase version of
+# MODULE as obtained by AS_TR_CPP):
+#   {MODULE_upper}_DEPS_CPPFLAGS
+#   {MODULE_upper}_DEPS_LDFLAGS
+#   {MODULE_upper}_DEPS_LIBS
+#   ALL_PKG_CPPFLAGS
+#   ALL_PKG_LDFLAGS
+#   ALL_PKG_LIBS
+#   DUNE_CPPFLAGS
+#   DUNE_LDFLAGS
+#   DUNE_LIBS
+AC_DEFUN([DUNE_ADD_MODULE_DEPS],
+[# Add module specific flags and libs
+AS_VAR_PUSHDEF([_dune_amd_CPPFLAGS], [AS_TR_CPP([$1])_DEPS_CPPFLAGS])dnl
+AS_VAR_APPEND([_dune_amd_CPPFLAGS], [" $3"])
+AS_VAR_POPDEF([_dune_amd_CPPFLAGS])dnl
+AS_VAR_PUSHDEF([_dune_amd_LDFLAGS], [AS_TR_CPP([$1])_DEPS_LDFLAGS])dnl
+AS_VAR_APPEND([_dune_amd_LDFLAGS], [" $4"])
+AS_VAR_POPDEF([_dune_amd_LDFLAGS])dnl
+AS_VAR_PUSHDEF([_dune_amd_LIBS], [AS_TR_CPP([$1])_DEPS_LIBS])dnl
+AS_VAR_COPY([_dune_amd_tmp], [_dune_amd_LIBS])
+AS_VAR_SET([_dune_amd_LIBS], ["$5 "$_dune_amd_tmp])
+AS_VAR_POPDEF([_dune_amd_LIBS])dnl
+# add flags and libs to the ALL_PKG_* family
+DUNE_ADD_ALL_PKG([$2], [$3], [$4], [$5])
+# add flags and libs to the DUNE_* family
+AS_VAR_PUSHDEF([_dune_amd_TAG], [_dune_amd_tag_$2])dnl
+AS_VAR_SET_IF([_dune_amd_TAG], ,
+[AS_VAR_APPEND([DUNE_CPPFLAGS], [" $3"])
+AS_VAR_APPEND([DUNE_LDFLAGS], [" $4"])
+DUNE_LIBS="$5 $DUNE_LIBS"
+# add flags to the deprecated DUNE_PKG_* family as well
+AS_VAR_APPEND([DUNE_PKG_CPPFLAGS], [" $3"])
+AS_VAR_APPEND([DUNE_PKG_LDFLAGS], [" $4"])
+DUNE_PKG_LIBS="$5 DUNE_PKG_LIBS"
+AS_VAR_SET([_dune_amd_TAG], [1])
+])
+AS_VAR_POPDEF([_dune_amd_TAG], [_dune_amd_tag_$2])dnl
+])
+
 AC_DEFUN([DUNE_DISABLE_LIBCHECK],[
   # hidden feature... --enable-dunelibcheck tells the dune module check to
   # check only for the headers and not for the libs. This feature is used
@@ -191,13 +286,13 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       AC_MSG_ERROR([pkg-config is required for using installed modules])
     ])
     AS_IF(AC_RUN_LOG([$PKG_CONFIG --exists --print-errors "$1"]),[
-      _DUNE_MODULE[]_CPPFLAGS="`$PKG_CONFIG --cflags _dune_name`" 2>/dev/null
+      _dune_cm_CPPFLAGS="`$PKG_CONFIG --cflags _dune_name`" 2>/dev/null
       _DUNE_MODULE[]_ROOT="`$PKG_CONFIG --variable=prefix _dune_name`" 2>/dev/null 
       _DUNE_MODULE[]_VERSION="`$PKG_CONFIG --modversion _dune_name`" 2>/dev/null
-      _DUNE_MODULE[]_LDFLAGS=""
+      _dune_cm_LDFLAGS=""
       ifelse(_dune_symbol,,
-        [_DUNE_MODULE[]_LIBS=""],
-        [_DUNE_MODULE[]_LIBS="-L`$PKG_CONFIG --variable=libdir _dune_name 2>/dev/null` -l[]_dune_lib"])
+        [_dune_cm_LIBS=""],
+        [_dune_cm_LIBS="-L`$PKG_CONFIG --variable=libdir _dune_name 2>/dev/null` -l[]_dune_lib"])
       HAVE_[]_DUNE_MODULE=1
       AC_MSG_RESULT([global installation in $_DUNE_MODULE[]_ROOT])
     ],[
@@ -215,7 +310,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       # expand search path (otherwise empty CPPFLAGS)
       AS_IF([test -d "$_DUNE_MODULE[]_ROOT/include/dune"],[
         # Dune was installed into directory given by with-dunecommon
-        _DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]_ROOT/include"
+        _dune_cm_CPPFLAGS="-I$_DUNE_MODULE[]_ROOT/include"
         _DUNE_MODULE[]_BUILDDIR=_DUNE_MODULE[]_ROOT
         _DUNE_MODULE[]_VERSION="`PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$_DUNE_MODULE[]_ROOT/lib/pkgconfig $PKG_CONFIG --modversion _dune_name`" 2>/dev/null
       ],[
@@ -224,13 +319,13 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
 	    AS_IF([test -f $_DUNE_MODULE[]_ROOT/Makefile],[
           _DUNE_MODULE[]_SRCDIR="`sed -ne '/^abs_top_srcdir = /{s/^abs_top_srcdir = //; p;}' $_DUNE_MODULE[]_ROOT/Makefile`"
 		])
-        _DUNE_MODULE[]_CPPFLAGS="-I$_DUNE_MODULE[]_SRCDIR"
+        _dune_cm_CPPFLAGS="-I$_DUNE_MODULE[]_SRCDIR"
         _DUNE_MODULE[]_VERSION="`grep Version $_DUNE_MODULE[]_SRCDIR/dune.module | sed -e 's/^Version: *//'`" 2>/dev/null
       ])
-      _DUNE_MODULE[]_LDFLAGS=""
+      _dune_cm_LDFLAGS=""
       ifelse(_dune_symbol,,
-        [_DUNE_MODULE[]_LIBS=""],
-        [_DUNE_MODULE[]_LIBS="-L$_DUNE_MODULE[]_ROOT/lib -l[]_dune_lib"])
+        [_dune_cm_LIBS=""],
+        [_dune_cm_LIBS="-L$_DUNE_MODULE[]_ROOT/lib -l[]_dune_lib"])
       # set expanded module path
       with_[]_dune_module="$_DUNE_MODULE[]_ROOT"
       HAVE_[]_DUNE_MODULE=1
@@ -242,18 +337,13 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
     ])
   ])
 
-  DUNE_CPPFLAGS="$DUNE_CPPFLAGS $_DUNE_MODULE[]_CPPFLAGS"
-  CPPFLAGS="$DUNE_CPPFLAGS"
-  SET_CPPFLAGS="$_DUNE_MODULE[]_CPPFLAGS"
-
+  CPPFLAGS="$ac_save_CPPFLAGS $DUNE_CPPFLAGS $_dune_cm_CPPFLAGS"
   ##  
   ## check for an arbitrary header
   ##
   AC_CHECK_HEADER([dune/[]_dune_header],
-    [HAVE_[]_DUNE_MODULE=1
-     _DUNE_MODULE[]_CPPFLAGS="$SET_CPPFLAGS"],
+    [HAVE_[]_DUNE_MODULE=1],
     [HAVE_[]_DUNE_MODULE=0
-     _DUNE_MODULE[]_CPPFLAGS=""
      AS_IF([test -n "$_DUNE_MODULE[]_ROOT"],[
        AC_MSG_WARN([$_DUNE_MODULE[]_ROOT does not seem to contain a valid _dune_name (dune/[]_dune_header not found)])
      ])
@@ -272,19 +362,15 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       AS_IF([test "x$HAVE_[]_DUNE_MODULE" = "x1"],[
 
         # save current LDFLAGS
-        ac_save_LDFLAGS="$LDFLAGS"
-
-        ac_save_LIBS="$LIBS"
         ac_save_CXX="$CXX"
         HAVE_[]_DUNE_MODULE=0
 
-        # define LTCXXCOMPILE like it will be defined in the Makefile
-        LTCXXLINK="./libtool --tag=CXX --mode=link $CXX $CXXFLAGS $LDFLAGS"
-        CXX="$LTCXXLINK"
+        # define LTCXXLINK like it will be defined in the Makefile
+        CXX="./libtool --tag=CXX --mode=link $ac_save_CXX"
 
         # use module LDFLAGS
-        LDFLAGS="$LDFLAGS $DUNE_PKG_LDFLAGS $_DUNE_MODULE[]_LDFLAGS"
-        LIBS="$DUNE_LIBS $_DUNE_MODULE[]_LIBS"
+        LDFLAGS="$ac_save_LDFLAGS $DUNE_LDFLAGS $DUNE_PKG_LDFLAGS $_dune_cm_LDFLAGS"
+        LIBS="$_dune_cm_LIBS $DUNE_LIBS $LIBS"
 
         AC_MSG_CHECKING([for lib[]_dune_lib])
 
@@ -294,7 +380,6 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
           [
             AC_MSG_RESULT([yes])
             HAVE_[]_DUNE_MODULE=1
-            _DUNE_MODULE[]_LIBS="$LIBS"
           ],[
             AC_MSG_RESULT([no])
             HAVE_[]_DUNE_MODULE=0
@@ -306,14 +391,14 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       ])
 
       # reset variables
-      LDFLAGS="$ac_save_LDFLAGS"
-      LIBS="$ac_save_LIBS"
       CXX="$ac_save_CXX"
     ])
   )
 
   # did we succeed?
   AS_IF([test "x$HAVE_[]_DUNE_MODULE" = "x1"],[
+    DUNE_ADD_MODULE_DEPS(m4_defn([_dune_name]), m4_defn([_dune_name]),
+        [$_dune_cm_CPPFLAGS], [$_dune_cm_LDFLAGS], [$_dune_cm_LIBS])
     # set variables for our modules
     AC_SUBST(_DUNE_MODULE[]_CPPFLAGS, "$_DUNE_MODULE[]_CPPFLAGS")
     AC_SUBST(_DUNE_MODULE[]_LDFLAGS, "$_DUNE_MODULE[]_LDFLAGS")
@@ -343,6 +428,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
 
   # reset previous flags
   CPPFLAGS="$ac_save_CPPFLAGS"
+  LDFLAGS="$ac_save_LDFLAGS"
   LIBS="$ac_save_LIBS"
 
   # add this module to DUNE_SUMMARY
