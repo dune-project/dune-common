@@ -9,6 +9,28 @@ dnl -*- autoconf -*-
 #   #export PKG_CONFIG_LIBDIR=$with_dune/dune
 #  #PKG_CHECK_MODULES(DUNE, dune)  
 
+AC_DEFUN([DUNE_VAR_IF],
+[m4_ifdef([AS_VAR_IF],
+  [AS_VAR_IF([$1], [$2], [$3], [$4])],
+  [AS_IF([{ _dune_var_if_tmp="$2"
+            eval "test x\"\$AS_ESCAPE([$1])\" = x\"\$_dune_var_if_tmp\""
+          }], [$3], [$4])])
+])
+#  [AS_IF([test x"`eval "echo \"\$$1\""`" = x"AS_ESCAPE([$2])"], [$3], [$4])])
+
+AC_DEFUN([DUNE_VAR_COPY],
+[m4_ifdef([AS_VAR_COPY],
+  [AS_VAR_COPY([$1], [$2])],
+  [eval "$1=\$$2"])
+])
+
+AC_DEFUN([DUNE_VAR_APPEND],
+[m4_ifdef([AS_VAR_APPEND],
+  [AS_VAR_APPEND([$1], [$2])],
+  [DUNE_VAR_COPY([_dune_va_tmp], [$1])
+AS_VAR_SET([$1], ["$_dune_va_tmp"$2])])
+])
+
 # DUNE_ADD_ALL_PKG (TAG, [CPPFLAGS], [LDFLAGS], [LIBS])
 #
 # Add the flags and libs of an external library to the ALL_PKG_* variables,
@@ -34,8 +56,8 @@ dnl -*- autoconf -*-
 AC_DEFUN([DUNE_ADD_ALL_PKG],
 [AS_VAR_PUSHDEF([_dune_aap_TAG], [_dune_aap_tag_$1])dnl
 AS_VAR_SET_IF([_dune_aap_TAG], [],
-[AS_VAR_APPEND([ALL_PKG_CPPFLAGS], [" $2"])
-AS_VAR_APPEND([ALL_PKG_LDFLAGS], [" $3"])
+[DUNE_VAR_APPEND([ALL_PKG_CPPFLAGS], [" $2"])
+DUNE_VAR_APPEND([ALL_PKG_LDFLAGS], [" $3"])
 ALL_PKG_LIBS="$4 $ALL_PKG_LIBS"
 AS_VAR_SET([_dune_aap_TAG], [1])
 ])
@@ -78,13 +100,13 @@ AS_VAR_POPDEF([_dune_aap_TAG])dnl
 AC_DEFUN([DUNE_ADD_MODULE_DEPS],
 [# Add module specific flags and libs
 AS_VAR_PUSHDEF([_dune_amd_CPPFLAGS], [AS_TR_CPP([$1])_DEPS_CPPFLAGS])dnl
-AS_VAR_APPEND([_dune_amd_CPPFLAGS], [" $3"])
+DUNE_VAR_APPEND([_dune_amd_CPPFLAGS], [" $3"])
 AS_VAR_POPDEF([_dune_amd_CPPFLAGS])dnl
 AS_VAR_PUSHDEF([_dune_amd_LDFLAGS], [AS_TR_CPP([$1])_DEPS_LDFLAGS])dnl
-AS_VAR_APPEND([_dune_amd_LDFLAGS], [" $4"])
+DUNE_VAR_APPEND([_dune_amd_LDFLAGS], [" $4"])
 AS_VAR_POPDEF([_dune_amd_LDFLAGS])dnl
 AS_VAR_PUSHDEF([_dune_amd_LIBS], [AS_TR_CPP([$1])_DEPS_LIBS])dnl
-AS_VAR_COPY([_dune_amd_tmp], [_dune_amd_LIBS])
+DUNE_VAR_COPY([_dune_amd_tmp], [_dune_amd_LIBS])
 AS_VAR_SET([_dune_amd_LIBS], ["$5 "$_dune_amd_tmp])
 AS_VAR_POPDEF([_dune_amd_LIBS])dnl
 # add flags and libs to the ALL_PKG_* family
@@ -92,12 +114,12 @@ DUNE_ADD_ALL_PKG([$2], [$3], [$4], [$5])
 # add flags and libs to the DUNE_* family
 AS_VAR_PUSHDEF([_dune_amd_TAG], [_dune_amd_tag_$2])dnl
 AS_VAR_SET_IF([_dune_amd_TAG], ,
-[AS_VAR_APPEND([DUNE_CPPFLAGS], [" $3"])
-AS_VAR_APPEND([DUNE_LDFLAGS], [" $4"])
+[DUNE_VAR_APPEND([DUNE_CPPFLAGS], [" $3"])
+DUNE_VAR_APPEND([DUNE_LDFLAGS], [" $4"])
 DUNE_LIBS="$5 $DUNE_LIBS"
 # add flags to the deprecated DUNE_PKG_* family as well
-AS_VAR_APPEND([DUNE_PKG_CPPFLAGS], [" $3"])
-AS_VAR_APPEND([DUNE_PKG_LDFLAGS], [" $4"])
+DUNE_VAR_APPEND([DUNE_PKG_CPPFLAGS], [" $3"])
+DUNE_VAR_APPEND([DUNE_PKG_LDFLAGS], [" $4"])
 DUNE_PKG_LIBS="$5 DUNE_PKG_LIBS"
 AS_VAR_SET([_dune_amd_TAG], [1])
 ])

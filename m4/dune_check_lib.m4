@@ -33,14 +33,14 @@ AS_VAR_PUSHDEF([dune_Lib],
                [dune_cv_lib_$1]AS_LITERAL_IF([$1], , [['']])dnl
 [_$2]AS_LITERAL_IF([$2], , [['']])dnl
 [_$3])dnl
-AC_CACHE_CHECK([for $3 in -L$1 -l$2], [dune_Lib],
+AC_CACHE_CHECK([for $3 in -L$1 -l$2], dune_Lib,
 [dune_check_lib_ext_save_LIBS=$LIBS
 LIBS="-L$1 -l$2 $6 $LIBS"
 AC_LINK_IFELSE([AC_LANG_CALL([], [$3])],
-	       [AS_VAR_SET([dune_Lib], [yes])],
-	       [AS_VAR_SET([dune_Lib], [no])])
+	       [AS_VAR_SET(dune_Lib, [yes])],
+	       [AS_VAR_SET(dune_Lib, [no])])
 LIBS=$dune_check_lib_ext_save_LIBS])
-AS_VAR_IF([dune_Lib], [yes],
+DUNE_VAR_IF([dune_Lib], [yes],
       [m4_default([$4], [AC_DEFINE_UNQUOTED(AS_TR_CPP([HAVE_LIB$2]))
   LIBS="-L$1 -l$2 $LIBS"
 ])],
