@@ -69,6 +69,9 @@ dnl -*- autoconf -*-
 #   dune_MPI_VERSION
 #   with_mpi ("no" if MPI is missing, "yes" followed by some more details if
 #             MPI is present)
+#   ALL_PKG_CPPFLAGS (adds its stuff here)
+#   ALL_PKG_LDFLAGS (adds its stuff here)
+#   ALL_PKG_LIBS (adds its stuff here)
 #
 # configure substitutions/Makefile variables
 #   MPICC
@@ -211,6 +214,8 @@ AC_DEFUN([DUNE_MPI],[
   DUNE_DEPRECATED_CPPFLAGS(MPI_CPPFLAGS, "$DUNEMPICPPFLAGS",
     [The MPI_CPPFLAGS configure substitute is deprecated.  Please change your Makefile.am to use DUNEMPICPPFLAGS instead.  Note that it is a good idea to change any occurance of MPI_LDFLAGS into DUNEMPILIBS and DUNEMPILDFLAGS as apropriate, since it is not possible to issue a deprecation warning in that case.])
   AC_SUBST(MPI_LDFLAGS)
+
+  DUNE_ADD_ALL_PKG([MPI], [$DUNEMPICPPFLAGS], [$DUNEMPILDFLAGS], [$DUNEMPILIBS])
 
   AM_CONDITIONAL(MPI, [test "x$with_mpi" != "xno"])
 
