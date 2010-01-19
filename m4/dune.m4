@@ -240,7 +240,7 @@ AC_DEFUN([DUNE_PARSE_MODULE_VERSION],[
 #   --with-{NAME}
 #
 # configure/shell variables:
-#   {MODULE}_ROOT
+#   {MODULE}_ROOT, {MODULE}_LIBDIR
 #   HAVE_{MODULE} (1 or 0)
 #   with_{module} ("yes" or "no")
 #   DUNE_CPPFLAGS, DUNE_LDFLAGS, DUNE_LIBS (adds the modules values here,
@@ -257,6 +257,7 @@ AC_DEFUN([DUNE_PARSE_MODULE_VERSION],[
 # configure substitutions/makefile variables:
 #   {MODULE}_CPPFLAGS, {MODULE}_LDFLAGS, {MODULE}_LIBS
 #   {MODULE}_ROOT
+#   {MODULE}_LIBDIR (only if modules provides a library)
 #
 # preprocessor defines:
 #   HAVE_{MODULE} (1 or undefined)
@@ -321,8 +322,10 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       _DUNE_MODULE[]_VERSION="`$PKG_CONFIG --modversion _dune_name`" 2>/dev/null
       _dune_cm_LDFLAGS=""
       ifelse(_dune_symbol,,
-        [_dune_cm_LIBS=""],
-        [_dune_cm_LIBS="-L`$PKG_CONFIG --variable=libdir _dune_name 2>/dev/null` -l[]_dune_lib"])
+        [_DUNE_MODULE[]_LIBDIR=""
+         _dune_cm_LIBS=""],
+        [_DUNE_MODULE[]_LIBDIR=`$PKG_CONFIG --variable=libdir _dune_name 2>/dev/null`
+         _dune_cm_LIBS="-L$_DUNE_MODULE[]_LIBDIR -l[]_dune_lib"])
       HAVE_[]_DUNE_MODULE=1
       AC_MSG_RESULT([global installation in $_DUNE_MODULE[]_ROOT])
     ],[
@@ -354,8 +357,10 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       ])
       _dune_cm_LDFLAGS=""
       ifelse(_dune_symbol,,
-        [_dune_cm_LIBS=""],
-        [_dune_cm_LIBS="-L$_DUNE_MODULE[]_ROOT/lib -l[]_dune_lib"])
+        [_DUNE_MODULE[]_LIBDIR=""
+         _dune_cm_LIBS=""],
+        [_DUNE_MODULE[]_LIBDIR="$_DUNE_MODULE[]_ROOT/lib"
+         _dune_cm_LIBS="-L$_DUNE_MODULE[]_LIBDIR -l[]_dune_lib"])
       # set expanded module path
       with_[]_dune_module="$_DUNE_MODULE[]_ROOT"
       HAVE_[]_DUNE_MODULE=1
@@ -437,6 +442,10 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
     AC_SUBST(_DUNE_MODULE[]_LDFLAGS, "$_DUNE_MODULE[]_LDFLAGS")
     AC_SUBST(_DUNE_MODULE[]_LIBS, "$_DUNE_MODULE[]_LIBS")
     AC_SUBST(_DUNE_MODULE[]_ROOT, "$_DUNE_MODULE[]_ROOT")
+    ifelse(m4_defn([_dune_symbol]),,
+      [],
+      [AC_SUBST(_DUNE_MODULE[]_LIBDIR)
+    ])
     AC_DEFINE(HAVE_[]_DUNE_MODULE, 1, [Define to 1 if] _dune_name [was found])
 
     DUNE_PARSE_MODULE_VERSION(_dune_name, $_DUNE_MODULE[]_VERSION)
