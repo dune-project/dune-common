@@ -9,6 +9,10 @@ dnl -*- autoconf -*-
 #   #export PKG_CONFIG_LIBDIR=$with_dune/dune
 #  #PKG_CHECK_MODULES(DUNE, dune)  
 
+# DUNE_VAR_IF (VAR, [TEXT], [IF-EQUAL], [IF-NOT-EQUAL])
+#
+# Compatibility wrapper around AS_VAR_IF.  If AS_VAR_IF is available, use it,
+# otherwise emulate it.
 AC_DEFUN([DUNE_VAR_IF],
 [m4_ifdef([AS_VAR_IF],
   [AS_VAR_IF([$1], [$2], [$3], [$4])],
@@ -16,14 +20,21 @@ AC_DEFUN([DUNE_VAR_IF],
             eval "test x\"\$AS_ESCAPE([$1])\" = x\"\$_dune_var_if_tmp\""
           }], [$3], [$4])])
 ])
-#  [AS_IF([test x"`eval "echo \"\$$1\""`" = x"AS_ESCAPE([$2])"], [$3], [$4])])
 
+# DUNE_VAR_COPY (DEST, SRC)
+#
+# Compatibility wrapper around AS_VAR_COPY.  If AS_VAR_COPY is available, use
+# it, otherwise emulate it.
 AC_DEFUN([DUNE_VAR_COPY],
 [m4_ifdef([AS_VAR_COPY],
   [AS_VAR_COPY([$1], [$2])],
   [eval "$1=\$$2"])
 ])
 
+# DUNE_VAR_APPEND (VAR, TEXT)
+#
+# Compatibility wrapper around AS_VAR_APPEND.  If AS_VAR_APPEND is available,
+# use it, otherwise emulate it.
 AC_DEFUN([DUNE_VAR_APPEND],
 [m4_ifdef([AS_VAR_APPEND],
   [AS_VAR_APPEND([$1], [$2])],
@@ -102,21 +113,26 @@ AC_DEFUN([DUNE_ADD_MODULE_DEPS],
 AS_VAR_PUSHDEF([_dune_amd_CPPFLAGS], [AS_TR_CPP([$1])_DEPS_CPPFLAGS])dnl
 DUNE_VAR_APPEND([_dune_amd_CPPFLAGS], [" $3"])
 AS_VAR_POPDEF([_dune_amd_CPPFLAGS])dnl
+
 AS_VAR_PUSHDEF([_dune_amd_LDFLAGS], [AS_TR_CPP([$1])_DEPS_LDFLAGS])dnl
 DUNE_VAR_APPEND([_dune_amd_LDFLAGS], [" $4"])
 AS_VAR_POPDEF([_dune_amd_LDFLAGS])dnl
+
 AS_VAR_PUSHDEF([_dune_amd_LIBS], [AS_TR_CPP([$1])_DEPS_LIBS])dnl
 DUNE_VAR_COPY([_dune_amd_tmp], [_dune_amd_LIBS])
 AS_VAR_SET([_dune_amd_LIBS], ["$5 "$_dune_amd_tmp])
 AS_VAR_POPDEF([_dune_amd_LIBS])dnl
+
 # add flags and libs to the ALL_PKG_* family
 DUNE_ADD_ALL_PKG([$2], [$3], [$4], [$5])
+
 # add flags and libs to the DUNE_* family
 AS_VAR_PUSHDEF([_dune_amd_TAG], [_dune_amd_tag_$2])dnl
 AS_VAR_SET_IF([_dune_amd_TAG], ,
 [DUNE_VAR_APPEND([DUNE_CPPFLAGS], [" $3"])
 DUNE_VAR_APPEND([DUNE_LDFLAGS], [" $4"])
 DUNE_LIBS="$5 $DUNE_LIBS"
+
 # add flags to the deprecated DUNE_PKG_* family as well
 DUNE_VAR_APPEND([DUNE_PKG_CPPFLAGS], [" $3"])
 DUNE_VAR_APPEND([DUNE_PKG_LDFLAGS], [" $4"])
