@@ -240,31 +240,23 @@ AC_DEFUN([DUNE_PARSE_MODULE_VERSION],[
 #   --with-{NAME}
 #
 # configure/shell variables:
-#   {MODULE}_CPPFLAGS
 #   {MODULE}_ROOT
-#   {MODULE}_LDFLAGS
-#   {MODULE}_LIBS
 #   HAVE_{MODULE} (1 or 0)
 #   with_{module} ("yes" or "no")
-#   DUNE_CPPFLAGS (adds the modules values here)
-#   DUNE_LDFLAGS (adds the modules values here)
-#   DUNE_LIBS (adds the modules values here)
-#   DUNE_PKG_CPPFLAGS (deprecated, adds the modules values here)
-#   DUNE_PKG_LDFLAGS (deprecated, adds the modules values here)
-#   DUNE_PKG_LIBS (deprecated, adds the modules values here)
+#   DUNE_CPPFLAGS, DUNE_LDFLAGS, DUNE_LIBS (adds the modules values here,
+#         substitution done by DUNE_CHECK_ALL)
+#   ALL_PKG_CPPFLAGS, ALL_PKG_LDFLAGS, ALL_PKG_LIBS (adds the modules values
+#         here, substitution done by DUNE_CHECK_ALL)
+#   DUNE_PKG_CPPFLAGS, DUNE_PKG_LDFLAGS, DUNE_PKG_LIBS (deprecated, adds the
+#         modules values here)
 #   {MODULE}_VERSION
 #   {MODULE}_VERSION_MAJOR
 #   {MODULE}_VERSION_MINOR
 #   {MODULE}_VERSION_REVISION
 #
 # configure substitutions/makefile variables:
-#   {MODULE}_CPPFLAGS
-#   {MODULE}_LDFLAGS
-#   {MODULE}_LIBS
+#   {MODULE}_CPPFLAGS, {MODULE}_LDFLAGS, {MODULE}_LIBS
 #   {MODULE}_ROOT
-#   DUNE_CPPFLAGS
-#   DUNE_LDFLAGS
-#   DUNE_LIBS
 #
 # preprocessor defines:
 #   HAVE_{MODULE} (1 or undefined)
@@ -435,8 +427,11 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
 
   # did we succeed?
   AS_IF([test "x$HAVE_[]_DUNE_MODULE" = "x1"],[
+    # add the module's own flags and libs to the modules and the global
+    # variables
     DUNE_ADD_MODULE_DEPS(m4_defn([_dune_name]), m4_defn([_dune_name]),
         [$_dune_cm_CPPFLAGS], [$_dune_cm_LDFLAGS], [$_dune_cm_LIBS])
+
     # set variables for our modules
     AC_SUBST(_DUNE_MODULE[]_CPPFLAGS, "$_DUNE_MODULE[]_CPPFLAGS")
     AC_SUBST(_DUNE_MODULE[]_LDFLAGS, "$_DUNE_MODULE[]_LDFLAGS")
@@ -447,9 +442,10 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
     DUNE_PARSE_MODULE_VERSION(_dune_name, $_DUNE_MODULE[]_VERSION)
 
     # set DUNE_* variables
-    AC_SUBST(DUNE_CPPFLAGS, "$DUNE_CPPFLAGS")
-    AC_SUBST(DUNE_LDFLAGS, "$DUNE_LDFLAGS $_DUNE_MODULE[]_LDFLAGS")
-    AC_SUBST(DUNE_LIBS, "$DUNE_LIBS $_DUNE_MODULE[]_LIBS")
+    # This should actually be unneccesary, but I'm keeping it in here for now
+    # for backward compatibility
+    DUNE_LDFLAGS="$DUNE_LDFLAGS $_DUNE_MODULE[]_LDFLAGS"
+    DUNE_LIBS="$_DUNE_MODULE[]_LIBS $DUNE_LIBS"
     
     # add to global list
     # only add my flags other flags are added by other packages 

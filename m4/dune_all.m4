@@ -1,3 +1,4 @@
+## -*- autoconf -*-
 # $Id$
 
 # this meta-check calls everything needed for Dune to work and all
@@ -38,11 +39,16 @@ dnl do not use LT_INIT since we want to be compatible with libtool 1.5
   AC_REQUIRE([DUNE_CHECK_MOD_DEPENDENCIES])
 
   # convenience-variables if every found package should be used
-  AC_SUBST(ALL_PKG_LIBS, "$LIBS $DUNE_PKG_LIBS")
-  AC_SUBST(ALL_PKG_LDFLAGS, "$LDFLAGS $DUNE_PKG_LDFLAGS")
-  AC_SUBST(ALL_PKG_CPPFLAGS, "$CPPFLAGS $DUNE_PKG_CPPFLAGS")
+  AC_SUBST([ALL_PKG_LIBS], "$LIBS $DUNE_PKG_LIBS")
+  AC_SUBST([ALL_PKG_LDFLAGS], "$LDFLAGS $DUNE_PKG_LDFLAGS")
+  AC_SUBST([ALL_PKG_CPPFLAGS], "$CPPFLAGS $DUNE_PKG_CPPFLAGS")
+  
+  # convenience variables for all basic dune packages without extras
+  AC_SUBST([DUNE_CPPFLAGS])
+  AC_SUBST([DUNE_LDFLAGS])
+  AC_SUBST([DUNE_LIBS])
 
-  AC_SUBST(ACLOCAL_AMFLAGS, "$ACLOCAL_AMFLAGS")
+  AC_SUBST([ACLOCAL_AMFLAGS], "$ACLOCAL_AMFLAGS")
 
   AC_SUBST([abs_top_srcdir])
   AC_SUBST([abs_top_builddir])
