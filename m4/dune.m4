@@ -120,7 +120,7 @@ DUNE_LIBS="$5 $DUNE_LIBS"
 # add flags to the deprecated DUNE_PKG_* family as well
 DUNE_VAR_APPEND([DUNE_PKG_CPPFLAGS], [" $3"])
 DUNE_VAR_APPEND([DUNE_PKG_LDFLAGS], [" $4"])
-DUNE_PKG_LIBS="$5 DUNE_PKG_LIBS"
+DUNE_PKG_LIBS="$5 $DUNE_PKG_LIBS"
 AS_VAR_SET([_dune_amd_TAG], [1])
 ])
 AS_VAR_POPDEF([_dune_amd_TAG], [_dune_amd_tag_$2])dnl
