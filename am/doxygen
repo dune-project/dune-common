@@ -69,7 +69,7 @@ doxygen-html-install:
 	set -e; \
 	OLDPWD=$$PWD; \
 	dir=$(abs_srcdir); \
-	if test -d $(abs_builddir)/$(DOXYGENTAG); then dir=$(abs_builddir); fi; \
+	if test -f $(abs_builddir)/$(DOXYGENTAG); then dir=$(abs_builddir); fi; \
 	cd "$$dir/html/"; \
 	list=`echo $(DOXYGENHTMLFILES)`; \
 	cd "$$OLDPWD"; \
