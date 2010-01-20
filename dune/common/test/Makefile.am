@@ -39,8 +39,6 @@ check_PROGRAMS = $(TESTPROGS)
 
 noinst_HEADERS = dummyiterator.hh
 
-LDADD = $(LOCAL_LIBS)
-
 # define the programs
 smallobject_SOURCES = smallobject.cc
 
