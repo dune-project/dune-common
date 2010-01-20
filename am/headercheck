@@ -29,7 +29,9 @@ headercheck-am:
 	@if test x"$$HEADER" != "x"; then \
 	  list="$$HEADER"; \
 	else \
+	  pushd "$(srcdir)" > /dev/null; \
 	  list=`echo $(headercheck_PATTERN)`; \
+	  popd > /dev/null; \
 	fi; \
     test -z "$$NO_CONFIG_H" && NO_CONFIG_H=0; \
     test -z "$$SILENT" && SILENT=1; \
@@ -48,7 +50,7 @@ headercheck-am:
 	  echo "#include <$${HEADER}>" >> $$CCFILE; \
 	  echo "#include <$${HEADER}>" >> $$CCFILE; \
 	  echo "int main () {}" >> $$CCFILE; \
-	  make $$OFILE > $$LOGFILE 2>&1; \
+	  make 	$$OFILE > $$LOGFILE 2>&1; \
 	  SUCCESS=$$?; \
 	  if ! (test $$SUCCESS -eq 0 && test -e $$OFILE); then \
 	    echo "Error in $$HEADER"; \
