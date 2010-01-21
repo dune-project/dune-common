@@ -373,7 +373,7 @@ eval_control() {
       # load functions defined in $file
       # if $command is not defined in $file,
       # then the default implementation will be executed
-      eval "$($GREP -v "^[$ALNUM]\{1,\}:" $file)"
+      eval "$($GREP -v "^[-$ALNUM]\{1,\}:" $file)"
       # execute $command
       $command
     ) || false
