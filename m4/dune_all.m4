@@ -50,7 +50,9 @@ dnl do not use LT_INIT since we want to be compatible with libtool 1.5
 
   AC_SUBST([ACLOCAL_AMFLAGS], "$ACLOCAL_AMFLAGS")
 
+  AC_SUBST([abs_srcdir])
   AC_SUBST([abs_top_srcdir])
+  AC_SUBST([abs_builddir])
   AC_SUBST([abs_top_builddir])
   AC_SUBST(am_dir, $DUNE_COMMON_ROOT/am)
 ])
