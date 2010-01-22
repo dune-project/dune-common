@@ -46,15 +46,17 @@ namespace Dune {
   {
   public:
 
-    //! A new timer, reset and start immediately.
-    Timer () throw(TimerError)
+    /** \brief A new timer, create and reset
+     *
+     * \param startImmediately If true (default) the timer starts counting immediately
+     */
+    Timer (bool startImmediately=true) throw(TimerError)
     {
-      isRunning_ = true;
+      isRunning_ = startImmediately;
       reset();
     }
 
-
-    //! Reset timer and restart if running.
+    //! Reset timer while keeping the running/stoped state
     void reset() throw (TimerError)
     {
       sumElapsed_ = 0.0;
