@@ -7,7 +7,7 @@ dnl -*- autoconf -*-
 # ============
 #
 
-# compilation of MPI-programs is normally done by a
+# Compilation of MPI programs is normally done by a
 # mpicc/mpiCC-wrapper that adds all options needed. Thus, it may seem
 # possible to just replace the compiler call by the wrapper and
 # everything works. Unfortunately that's not the case: automake and
@@ -17,7 +17,7 @@ dnl -*- autoconf -*-
 # should work (at least I've found reports claiming this) but that is
 # not what we want: mainly, it just adds a level of possible errors
 # (mpiCC from MPICH does _nothing_ if "mpicc -c dummy.cc" is called!)
-# and might introduce nice library-clashes.
+# and may introduce nice library-clashes.
 #
 # The next approach would be to include
 #       if MPI
@@ -212,7 +212,7 @@ AC_DEFUN([DUNE_MPI],[
   AC_SUBST(MPI_VERSION, $dune_MPI_VERSION)
 
   DUNE_DEPRECATED_CPPFLAGS(MPI_CPPFLAGS, "$DUNEMPICPPFLAGS",
-    [The MPI_CPPFLAGS configure substitute is deprecated.  Please change your Makefile.am to use DUNEMPICPPFLAGS instead.  Note that it is a good idea to change any occurance of MPI_LDFLAGS into DUNEMPILIBS and DUNEMPILDFLAGS as apropriate, since it is not possible to issue a deprecation warning in that case.])
+    [The MPI_CPPFLAGS configure substitute is deprecated.  Please change your Makefile.am to use DUNEMPICPPFLAGS instead.  Note that it is a good idea to change any occurance of MPI_LDFLAGS into DUNEMPILIBS and DUNEMPILDFLAGS as appropriate, since it is not possible to issue a deprecation warning in that case.])
   AC_SUBST(MPI_LDFLAGS)
 
   DUNE_ADD_ALL_PKG([MPI], [$DUNEMPICPPFLAGS], [$DUNEMPILDFLAGS], [$DUNEMPILIBS])
