@@ -56,7 +56,7 @@ namespace Dune {
       reset();
     }
 
-    //! Reset timer while keeping the running/stoped state
+    //! Reset timer while keeping the running/stopped state
     void reset() throw (TimerError)
     {
       sumElapsed_ = 0.0;
