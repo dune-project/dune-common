@@ -18,9 +18,13 @@ protected:
     FieldVector<ct,d> w(2);
     bool b;
 
+    // Test whether the norm methods compile
     (w+v).two_norm();
     (w+v).two_norm2();
     (w+v).one_norm();
+    (w+v).one_norm_real();
+    (w+v).infinity_norm();
+    (w+v).infinity_norm_real();
 
     b = (w != v);
     b = (w == v);
