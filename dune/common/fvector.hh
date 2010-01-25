@@ -990,7 +990,7 @@ namespace Dune {
     //! simplified one norm (uses Manhattan norm for complex values)
     typename FieldTraits<K>::real_type one_norm_real () const
     {
-      return fvmeta_abs_real(p);
+      return fvmeta_absreal(p);
     }
 
     //! two norm sqrt(sum over squared values of entries)
@@ -1014,7 +1014,7 @@ namespace Dune {
     //! simplified infinity norm (uses Manhattan norm for complex values)
     typename FieldTraits<K>::real_type infinity_norm_real () const
     {
-      return fvmeta_abs_real(p);
+      return fvmeta_absreal(p);
     }
 
     //===== sizes
