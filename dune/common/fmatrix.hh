@@ -1181,7 +1181,7 @@ namespace Dune
     //! simplified infinity norm (uses Manhattan norm for complex values)
     typename FieldTraits<K>::real_type infinity_norm_real () const
     {
-      return fvmeta_abs_real(a[0]);
+      return fvmeta_absreal(a[0]);
     }
 
     //===== solve
