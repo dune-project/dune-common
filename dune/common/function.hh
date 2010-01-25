@@ -67,7 +67,7 @@ namespace Dune {
     public Function<const DomainType&, RangeType&>
   {
   public:
-
+    virtual ~VirtualFunction() {}
     /**
      * \brief Function evaluation.
      *
