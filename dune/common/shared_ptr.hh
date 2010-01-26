@@ -16,6 +16,7 @@
 # include <boost/shared_ptr.hpp>
 #endif
 
+#include <dune/common/nullptr.hh>
 /**
  * @file
  * @brief This file implements the class shared_ptr (a reference counting
@@ -146,7 +147,7 @@ namespace Dune
   template<class T>
   inline shared_ptr<T>::shared_ptr()
   {
-    rep_ = NULL;
+    rep_ = null_ptr;
   }
 
   template<class T>
