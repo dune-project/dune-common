@@ -66,6 +66,20 @@ namespace Dune
     inline shared_ptr(T * pointer);
 
     /**
+     * @brief Constructs a new smart pointer from a preallocated Object.
+     *
+     * \tparam Deleter This class must by copyconstructable, the copy constructor must not throw an exception
+     * and it must implement void operator() (T*) const
+     *
+     * \param deleter A copy of this deleter is stored
+     *
+     * note: the object must be allocated on the heap and after handing the pointer to
+     * shared_ptr the ownership of the pointer is also handed to the shared_ptr.
+     */
+    template<class Deleter>
+    inline shared_ptr(T * pointer, Deleter deleter);
+
+    /**
      * @brief Copy constructor.
      * @param pointer The object to copy.
      */
@@ -93,8 +107,11 @@ namespace Dune
 
     /** \brief Access to the raw pointer, if you really want it */
     element_type* get() const {
-      return rep_->rep_;
+      return rep_==0 ? 0 : rep_->rep_;
     }
+
+    /** \brief Swap content of this shared_ptr and another */
+    inline void swap(shared_ptr& other);
 
     /** \brief Decrease the reference count by one and free the memory if the
         reference count has reached 0
@@ -103,6 +120,10 @@ namespace Dune
 
     /** \brief Detach shared pointer and set it anew for the given pointer */
     inline void reset(T* pointer);
+
+    //** \brief Same as shared_ptr(pointer,deleter).swap(*this)
+    template<class Deleter>
+    inline void reset(T* pointer, Deleter deleter);
 
     /** \brief The number of shared_ptrs pointing to the object we point to */
     int use_count() const;
@@ -116,16 +137,44 @@ namespace Dune
       int count_;
       /** @brief The representative. */
       element_type * rep_;
-      /** @brief Default Constructor. */
-      PointerRep() : count_(1), rep_(new element_type) {}
       /** @brief Constructor from existing Pointer. */
       PointerRep(element_type * p) : count_(1), rep_(p) {}
       /** @brief Destructor, deletes element_type* rep_. */
-      ~PointerRep() { delete rep_; }
-    } *rep_;
+      virtual ~PointerRep() {};
+    };
+
+    /** @brief Adds call to deleter to PointerRep. */
+    template<class Deleter>
+    class PointerRepImpl :
+      public PointerRep
+    {
+      friend class shared_ptr<element_type>;
+
+      /** @brief Constructor from existing Pointer with custom deleter. */
+      PointerRepImpl(element_type * p, const Deleter& deleter) :
+        PointerRep(p),
+        deleter_(deleter)
+      {}
+
+      /** @brief Destructor, deletes element_type* rep_ using deleter. */
+      ~PointerRepImpl()
+      { deleter_(this->rep_); }
+
+      // store a copy of the deleter
+      Deleter deleter_;
+    };
+
+    /** \brief A default deleter that just calls delete */
+    struct DefaultDeleter
+    {
+      void operator() (element_type* p) const
+      { delete p; }
+    };
+
+
+    PointerRep *rep_;
 
     // Needed for the implicit conversion to "bool"
-  private:
     typedef T* shared_ptr::PointerRep::*__unspecified_bool_type;
 
   public:
@@ -141,7 +190,14 @@ namespace Dune
   template<class T>
   inline shared_ptr<T>::shared_ptr(T * p)
   {
-    rep_ = new PointerRep(p);
+    rep_ = new PointerRepImpl<DefaultDeleter>(p, DefaultDeleter());
+  }
+
+  template<class T>
+  template<class Deleter>
+  inline shared_ptr<T>::shared_ptr(T * p, Deleter deleter)
+  {
+    rep_ = new PointerRepImpl<Deleter>(p, deleter);
   }
 
   template<class T>
@@ -205,19 +261,30 @@ namespace Dune
   }
 
   template<class T>
+  inline void shared_ptr<T>::swap(shared_ptr<T>& other)
+  {
+    PointerRep* dummy = rep_;
+    rep_ = other.rep_;
+    other.rep_ = dummy;
+  }
+
+  template<class T>
   inline void shared_ptr<T>::reset()
   {
-    if(rep_!=0 && --(rep_->count_)==0) {
-      delete rep_;
-      rep_=0;
-    }
+    shared_ptr<T>().swap(*this);
   }
 
   template<class T>
   inline void shared_ptr<T>::reset(T* pointer)
   {
-    reset();
-    rep_ = new PointerRep(pointer);
+    shared_ptr<T>(pointer).swap(*this);
+  }
+
+  template<class T>
+  template<class Deleter>
+  inline void shared_ptr<T>::reset(T* pointer, Deleter deleter)
+  {
+    shared_ptr<T>(pointer, deleter).swap(*this);
   }
 
   /** @} */
