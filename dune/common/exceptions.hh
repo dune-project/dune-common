@@ -130,7 +130,7 @@ namespace Dune {
 
      \code
      if (filehandle == 0)
-      DUNE_THROW(FileError, "Could not open " << filename << " for reading!")
+      DUNE_THROW(FileError, "Could not open " << filename << " for reading!");
      \endcode
 
      DUNE_THROW automatically adds information about the exception thrown
