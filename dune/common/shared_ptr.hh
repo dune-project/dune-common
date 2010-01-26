@@ -147,7 +147,7 @@ namespace Dune
   template<class T>
   inline shared_ptr<T>::shared_ptr()
   {
-    rep_ = null_ptr;
+    rep_ = nullptr;
   }
 
   template<class T>
