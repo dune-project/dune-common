@@ -13,7 +13,7 @@ BASEDIR=../..
 CURDIR=doc/devel
 
 # install the html pages
-develdir=$(datadir)/doc/dune-common/devel
+docdir=$(datadir)/doc/dune-common/devel
 if BUILD_DOCS
 DOCFILES = $(PAGES)
 EXTRA_DIST = $(PAGES)
