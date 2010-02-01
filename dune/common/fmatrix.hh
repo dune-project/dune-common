@@ -451,7 +451,7 @@ namespace Dune
     {
       typename FieldTraits<K>::real_type sum=0;
       for (size_type i=0; i<rows; ++i) sum += p[i].two_norm2();
-      return sqrt(sum);
+      return fvmeta::sqrt(sum);
     }
 
     //! square of frobenius norm, need for block recursion
@@ -688,7 +688,7 @@ namespace Dune
     // LU decomposition of A in A
     for (int i=0; i<rows; i++)  // loop over all rows
     {
-      typename FieldTraits<K>::real_type pivmax=fvmeta_absreal(A[i][i]);
+      typename FieldTraits<K>::real_type pivmax=fvmeta::absreal(A[i][i]);
 
       // pivoting ?
       if (pivmax<pivthres)
@@ -696,7 +696,7 @@ namespace Dune
         // compute maximum of column
         int imax=i; typename FieldTraits<K>::real_type abs;
         for (int k=i+1; k<rows; k++)
-          if ((abs=fvmeta_absreal(A[k][i]))>pivmax)
+          if ((abs=fvmeta::absreal(A[k][i]))>pivmax)
           {
             pivmax = abs; imax = k;
           }
@@ -739,7 +739,7 @@ namespace Dune
 
 #ifdef DUNE_FMatrix_WITH_CHECKING
       K detinv = p[0][0]*p[1][1]-p[0][1]*p[1][0];
-      if (fvmeta_absreal(detinv)<FMatrixPrecision<>::absolute_limit())
+      if (fvmeta::absreal(detinv)<FMatrixPrecision<>::absolute_limit())
         DUNE_THROW(FMatrixError,"matrix is singular");
       detinv = 1/detinv;
 #else
@@ -753,7 +753,7 @@ namespace Dune
 
       K d = determinant();
 #ifdef DUNE_FMatrix_WITH_CHECKING
-      if (fvmeta_absreal(d)<FMatrixPrecision<>::absolute_limit())
+      if (fvmeta::absreal(d)<FMatrixPrecision<>::absolute_limit())
         DUNE_THROW(FMatrixError,"matrix is singular");
 #endif
 
@@ -801,7 +801,7 @@ namespace Dune
 
       K detinv = p[0][0]*p[1][1]-p[0][1]*p[1][0];
 #ifdef DUNE_FMatrix_WITH_CHECKING
-      if (fvmeta_absreal(detinv)<FMatrixPrecision<>::absolute_limit())
+      if (fvmeta::absreal(detinv)<FMatrixPrecision<>::absolute_limit())
         DUNE_THROW(FMatrixError,"matrix is singular");
 #endif
       detinv = 1/detinv;
@@ -1163,17 +1163,17 @@ namespace Dune
     //! frobenius norm: sqrt(sum over squared values of entries)
     typename FieldTraits<K>::real_type frobenius_norm () const
     {
-      return sqrt(fvmeta_abs2(a[0]));
+      return fvmeta::sqrt(fvmeta::abs2(a[0]));
     }
 
     //! square of frobenius norm, need for block recursion
     typename FieldTraits<K>::real_type frobenius_norm2 () const
     {
-      return fvmeta_abs2(a[0]);
+      return fvmeta::abs2(a[0]);
     }
 
     //! infinity norm (row sum norm, how to generalize for blocks?)
-    typename FieldTraits<K>::real_type infinity_norm () const
+    typename FieldTraits<K>::field_type infinity_norm () const
     {
       return std::abs(a[0]);
     }
@@ -1181,7 +1181,7 @@ namespace Dune
     //! simplified infinity norm (uses Manhattan norm for complex values)
     typename FieldTraits<K>::real_type infinity_norm_real () const
     {
-      return fvmeta_absreal(a[0]);
+      return fvmeta::absreal(a[0]);
     }
 
     //===== solve
@@ -1190,7 +1190,7 @@ namespace Dune
     void solve (FieldVector<K,1>& x, const FieldVector<K,1>& b) const
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
-      if (fvmeta_absreal(a[0][0])<FMatrixPrecision<>::absolute_limit())
+      if (fvmeta::absreal(a[0][0])<FMatrixPrecision<>::absolute_limit())
         DUNE_THROW(FMatrixError,"matrix is singular");
 #endif
       x.p = b.p/a[0];
@@ -1200,7 +1200,7 @@ namespace Dune
     void invert ()
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
-      if (fvmeta_absreal(a[0][0])<FMatrixPrecision<>::absolute_limit())
+      if (fvmeta::absreal(a[0][0])<FMatrixPrecision<>::absolute_limit())
         DUNE_THROW(FMatrixError,"matrix is singular");
 #endif
       a[0] = 1/a[0];

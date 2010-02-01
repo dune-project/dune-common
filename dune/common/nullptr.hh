@@ -26,6 +26,18 @@ private:
 
 typedef dune_nullptr_t nullptr_t;
 
+template<class T>
+bool operator == (T* t, dune_nullptr_t)
+{
+  return (t == static_cast<T*>(nullptr));
+}
+
+template<class T>
+bool operator == (dune_nullptr_t, T* t)
+{
+  return (t == static_cast<T*>(nullptr));
+}
+
 #endif // HAVE_NULLPTR
 
 #endif // DUNE_NULLPTR_HH
