@@ -17,6 +17,7 @@ void basic_tests()
   int n2 = 0;            // n2 is zero
   if( ch == 0 ) ;        // evaluates to true
   if( ch == nullptr ) ;  // evaluates to true
+  if( nullptr == ch ) ;  // evaluates to true
   if( ch ) ;             // evaluates to false
   if( n2 == 0 ) ;        // evaluates to true
   ch = ch2;
