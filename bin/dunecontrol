@@ -585,6 +585,8 @@ while test $# -gt 0; do
   command=$1
   shift
 
+  # only load other parameters
+  load_opts NONE
   # get command options
   CMD_FLAGS=
   while test $# -gt 0 && test "$1" != ":"; do
