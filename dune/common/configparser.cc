@@ -125,7 +125,7 @@ void ConfigParser::report(const string prefix) const
   ValueIt vend = values.end();
 
   for(; vit!=vend; ++vit)
-    cout << prefix + vit->first << " = \"" << vit->second << "\"" << endl;
+    cout << vit->first << " = \"" << vit->second << "\"" << endl;
 
   typedef map<string, ConfigParser>::const_iterator SubIt;
   SubIt sit = subs.begin();
