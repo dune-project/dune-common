@@ -6,17 +6,17 @@
 # rerun TEX if log-file suggests that
 .tex.dvi:
 	set -e; \
-	TEXINPUTS=.:$(srcdir):${TEXINPUTS}: $(TEX) </dev/null $*; \
-	while grep Rerun $*.log > /dev/null ; do \
-	  TEXINPUTS=.:$(srcdir):${TEXINPUTS}: $(TEX) </dev/null $* || exit $$?; \
+	pushd $(srcdir); $(TEX) -output-directory=$(builddir) </dev/null $*; popd; \
+	while grep Rerun $(builddir)/$*.log > /dev/null ; do \
+	  pushd $(srcdir); $(TEX) -output-directory=$(builddir) </dev/null $*; popd; \
 	done; \
-	if grep '^\\bibdata{' *.aux > /dev/null \
-	   && grep '^\\citation{' *.aux > /dev/null; \
+	if grep '^\\bibdata{' $(builddir)/*.aux > /dev/null \
+	   && grep '^\\citation{' $(builddir)/*.aux > /dev/null; \
 	then \
 	  BSTINPUTS=.:$(srcdir):${BSTINPUTS}: BIBINPUTS=.:$(srcdir):${BIBINPUTS}: $(BIBTEX) $* || exit $$?; \
-	  TEXINPUTS=.:$(srcdir):${TEXINPUTS}: $(TEX) </dev/null $* || exit $$?; \
-	  while grep Rerun $*.log > /dev/null ; do \
-	    TEXINPUTS=.:$(srcdir):${TEXINPUTS}: $(TEX) </dev/null $* || exit $$?; \
+	  pushd $(srcdir); $(TEX) -output-directory=$(builddir) </dev/null $*; popd; \
+	  while grep Rerun $(builddir)/$*.log > /dev/null ; do \
+	    pushd $(srcdir); $(TEX) -output-directory=$(builddir) </dev/null $*; popd; \
 	  done ; \
 	fi
 
