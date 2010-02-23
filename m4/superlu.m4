@@ -204,11 +204,12 @@ AC_ARG_WITH([superlu-blaslib],
 	    
 	    
       # set variables so that tests can use them
-	    CPPFLAGS="$CPPFLAGS -I$SUPERLU_INCLUDE_PATH"
+            direct_SUPERLU_CPPFLAGS="-I$SUPERLU_INCLUDE_PATH -DENABLE_SUPERLU"
+            SUPERLU_CPPFLAGS="-I$SUPERLU_INCLUDE_PATH -DENABLE_SUPERLU"
+	    CPPFLAGS="$CPPFLAGS $direct_SUPERLU_CPPFLAGS"
 	    
       # check for central header
 	    AC_CHECK_HEADER([$my_slu_header],[
-		    SUPERLU_CPPFLAGS="$CPPFLAGS"
 		    HAVE_SUPERLU="1"],[
 		    HAVE_SUPERLU="0"
 		    AC_MSG_WARN([$my_slu_header not found in $SUPERLU_INCLUDE_PATH with $CPPFLAGS])]
@@ -217,96 +218,105 @@ AC_ARG_WITH([superlu-blaslib],
       # if header is found check for the libs
 	    
 	    if test x$HAVE_SUPERLU = x1 ; then
-		# if no blas was found, we assume that superlu was compiled with 
-		# internal blas
-		if test "x$BLAS_LIBS" = "x"; then
-		  LIBS="$BLAS_LIBS $LIBS $FLIBS"
-		else
-		  LIBS="-lblas $LIBS $FLIBS"
-		fi
-		HAVE_SUPERLU=0
+                HAVE_SUPERLU=0
 
-### This won't work, LDFLAGS needs to be set
-		if test x$with_superlu_lib = x; then
-		    AC_CHECK_LIB(superlu, [dgssvx],[
-			    SUPERLU_LIBS="$SUPERLU_LIBS -lsuperlu $LIBS"
-			    HAVE_SUPERLU="1"
-			    ],[
-			    HAVE_SUPERLU="0"
-			    AC_MSG_WARN(libsuperlu not found)])
-		fi
-		if test "$HAVE_SUPERLU" = 0; then
-		    if test x$with_superlu_lib = x ; then
-			with_superlu_lib=superlu.a
-		    fi
-		    AC_MSG_CHECKING([static superlu library "$with_superlu_lib" in "$SUPERLU_LIB_PATH"])
-echo "BLAS_LIBS=$BLAS_LIBS LIBS=$LIBS"
-		    if test -f "$SUPERLU_LIB_PATH/$with_superlu_lib" ; then
-			if test -f "$SUPERLU_LIB_PATH/$with_superlu_blaslib"; then
-			    LIBS="$SUPERLU_LIB_PATH/$with_superlu_lib $SUPERLU_LIB_PATH/$with_superlu_blaslib $LIBS"
-			else
-			    LIBS="$SUPERLU_LIB_PATH/$with_superlu_lib $LIBS"
-			fi
-			echo "LIBS=$LIBS"
-			AC_CHECK_FUNC(dgssvx,
-			    [
-				SUPERLU_LIBS="$LIBS"
-				HAVE_SUPERLU="1"
-				AC_MSG_RESULT(yes)
-			    ],
-			    [
-				HAVE_SUPERLU="0"
-				AC_MSG_RESULT(failed)
-			    ]
-			)
-		    else
-			HAVE_SUPERLU="0"
-			AC_MSG_RESULT(failed)
-		    fi
-		fi
+                # if neither --with-superlu-lib nor --with-superlu-blaslib was
+                # given, try to link dynamically or with properly names static libs
+                if test x"$with_superlu_lib$with_superlu_blaslib" = x; then
+                  LDFLAGS="$ac_save_LDFLAGS -L$SUPERLU_LIB_PATH"
+		  LIBS="$ac_save_LIBS"
+                  AC_CHECK_LIB([superlu], [dgssvx], [
+                    direct_SUPERLU_LIBS="-L$SUPERLU_LIB_PATH -lsuperlu $BLAS_LIBS $FLIBS"
+	            SUPERLU_LIBS="-L$SUPERLU_LIB_PATH -lsuperlu \${BLAS_LIBS} \${FLIBS}"
+		    HAVE_SUPERLU="1"
+		  ], [], [$BLAS_LIBS $FLIBS])
+                fi
+
+                if test $HAVE_SUPERLU = 0 &&
+                    test x"$with_superlu_lib" = x; then
+                  # set the default
+                  with_superlu_lib=superlu.a
+                fi
+                
+                if test $HAVE_SUPERLU = 0 &&
+                    test x"$with_superlu_blaslib" = x; then
+                  # try system blas
+                  LDFLAGS="$ac_save_LDFLAGS"
+		  LIBS="$SUPERLU_LIB_PATH/$with_superlu_lib $BLAS_LIBS $FLIBS $ac_save_LIBS"
+		  AC_CHECK_FUNC([dgssvx], [
+                    direct_SUPERLU_LIBS="$SUPERLU_LIB_PATH/$with_superlu_lib $BLAS_LIBS $FLIBS"
+	            SUPERLU_LIBS="$SUPERLU_LIB_PATH/$with_superlu_lib \${BLAS_LIBS} \${FLIBS}"
+		    HAVE_SUPERLU="1"
+                  ])
+                fi
+
+                # No default for with_superlu_blaslib
+
+                if test $HAVE_SUPERLU = 0 &&
+                    test x"$with_superlu_blaslib" != x; then
+                  # try internal blas
+                  LDFLAGS="$ac_save_LDFLAGS"
+		  LIBS="$SUPERLU_LIB_PATH/$with_superlu_lib $SUPERLU_LIB_PATH/$with_superlu_blaslib $FLIBS $ac_save_LIBS"
+		  AC_CHECK_FUNC([dgssvx], [
+                    direct_SUPERLU_LIBS="$SUPERLU_LIB_PATH/$with_superlu_lib $SUPERLU_LIB_PATH/$with_superlu_blaslib $FLIBS"
+	            SUPERLU_LIBS="$SUPERLU_LIB_PATH/$with_superlu_lib $SUPERLU_LIB_PATH/$with_superlu_blaslib \${FLIBS}"
+		    HAVE_SUPERLU="1"
+                  ])
+                fi
 	    fi
-      # pre-set variable for summary
-      #with_superlu="no"
       
-      # did it work?
-	    AC_MSG_CHECKING([SuperLU in $with_superlu])
-	    if test x$HAVE_SUPERLU = x1 ; then
-		AC_SUBST(SUPERLU_LIBS, $SUPERLU_LIBS)
-		AC_SUBST(SUPERLU_CPPFLAGS, $SUPERLU_CPPFLAGS)
-		AC_DEFINE(HAVE_SUPERLU, 1, [Define to 1 if SUPERLU is found])
-		if test "$my_slu_header" = "slu_ddefs.h"; then
-		    AC_DEFINE(SUPERLU_POST_2005_VERSION, 1, [define to 1 if there is  a header slu_ddefs.h in SuperLU])
-		    AC_CHECK_MEMBERS([mem_usage_t.expansions],[],[],[#include"slu_ddefs.h"])
-		else
-		    AC_CHECK_MEMBERS([mem_usage_t.expansions],[],[],[#include "dsp_defs.h"])
-		fi
-		AC_MSG_RESULT(ok)
-		
-    # add to global list
-		DUNE_PKG_LIBS="$DUNE_PKG_LIBS $SUPERLU_LIBS"
-		DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $SUPERLU_CPPFLAGS"
-		
-    # re-set variable correctly
-		with_superlu="yes"
+        else
+            HAVE_SUPERLU=0
+        fi
+
+        # Inform the user whether SuperLU was sucessfully found
+        AC_MSG_CHECKING([SuperLU])
+        if test x$HAVE_SUPERLU = x1 ; then
+	    if test "$my_slu_header" = "slu_ddefs.h"; then
+                with_superlu="yes (post 2005)"
+            else
+                with_superlu="yes (pre 2005)"
+            fi
+        else
+            with_superlu="no"
+        fi
+        AC_MSG_RESULT([$with_superlu])
+
+        # check for optional member
+	if test $HAVE_SUPERLU = 1 ; then
+	    if test "$my_slu_header" = "slu_ddefs.h"; then
+		AC_CHECK_MEMBERS([mem_usage_t.expansions],[],[],[#include "slu_ddefs.h"])
 	    else
-		with_superlu="no"
-		AC_MSG_RESULT(failed)
-	    fi 
-	    
-  # end of "no --without-superlu"
-	else
-	    with_superlu="no"
-	fi
-	
-  # tell automake	
+		AC_CHECK_MEMBERS([mem_usage_t.expansions],[],[],[#include "dsp_defs.h"])
+	    fi
+        fi
+
+        # substitute variables
+	if test x$HAVE_SUPERLU = x0 ; then
+            SUPERLU_LIBS=
+            SUPERLU_CPPFLAGS=
+        fi
+        AC_SUBST([SUPERLU_LIBS])
+        AC_SUBST([SUPERLU_CPPFLAGS])
+        DUNE_ADD_ALL_PKG([SUPERLU], [\${SUPERLU_CPPFLAGS}], [], [\${SUPERLU_LIBS}])
+
+        # tell automake	
 	AM_CONDITIONAL(SUPERLU, test x$HAVE_SUPERLU = x1)
-	
+
+        # tell the preprocessor
+	if test x$HAVE_SUPERLU = x1 ; then
+	    AC_DEFINE([HAVE_SUPERLU], [ENABLE_SUPERLU], [Define to ENABLE_SUPERLU if SUPERLU is found])
+	    if test "$my_slu_header" = "slu_ddefs.h"; then
+		AC_DEFINE([SUPERLU_POST_2005_VERSION], 1, [define to 1 if there is  a header slu_ddefs.h in SuperLU])
+	    fi
+        fi
+		
+        # summary
+        DUNE_ADD_SUMMARY_ENTRY([SuperLU],[$with_superlu])
+
   # restore variables
 	LDFLAGS="$ac_save_LDFLAGS"
 	CPPFLAGS="$ac_save_CPPFLAGS"
 	LIBS="$ac_save_LIBS"
-	
-    DUNE_ADD_SUMMARY_ENTRY([SuperLU],[$with_superlu])
-
     ]
 )
