@@ -98,49 +98,39 @@ AC_DEFUN([_slu_search_default],
 #
 # Shell variables:
 #   with_superlu
-#     "no", path, yes->("/usr", "/usr/local"); => yes, no
-#   my_slu_header
-#      The name of the header that was found: first of "slu_ddefs.h" or
-#      "dsp_defs.h".  Contents is only meaningful for my_slu_found=yes.
-#   my_include_path
-#      The subpath the header was found in: "include/superlu", "include", or
-#      "SRC".  Contents is only meaningful for my_slu_found=yes.
-#   my_lib_path
-#      The subpath for the library: "lib" or "". Contents is only meaningful
-#      for my_slu_found=yes.
-#   my_slu_found
-#      Whether any of the headers.  Either "yes" or "no".
-#   with_superlu_lib
-#      ""->"superlu.a", "yes", arg
-#   with_superlu_blaslib
-#      "", "yes", path
-#   SUPERLU_LIB_PATH
-#      "$with_superlu/$my_lib_path"
-#   SUPERLU_INCLUDE_PATH
-#      "$with_superlu/$my_include_path"
+#     "no", "yes (post 2005)" or "yes (pre 2005)"
+#   direct_SUPERLU_CPPFLAGS
+#   direct_SUPERLU_LIBS
+#      CPPFLAGS and LIBS necessary to link against SuperLU.  This variable
+#      contains no indirect references and is suitable for use inside
+#      configure.  Guaranteed empty if SuperLU was not found.
 #   SUPERLU_CPPFLAGS
-#      "$CPPFLAGS -I$SUPERLU_INCLUDE_PATH"
-#   HAVE_SUPERLU
-#      "0", "1"
 #   SUPERLU_LIBS
-#      "$SUPERLU_LIBS -lsuperlu $BLAS_LIBS $LIBS $FLIBS" or
-#      "$SUPERLU_LIBS -lsuperlu -lblas $LIBS $FLIBS" or
-#      "$SUPERLU_LIB_PATH/$with_superlu_lib $SUPERLU_LIB_PATH/$with_superlu_blaslib $BLAS_LIBS $LIBS $FLIBS"
-#      or
-#      "$SUPERLU_LIB_PATH/$with_superlu_lib $SUPERLU_LIB_PATH/$with_superlu_blaslib -lblas $LIBS $FLIBS"
-#      or "$SUPERLU_LIB_PATH/$with_superlu_lib $BLAS_LIBS $LIBS $FLIBS"
-#      or "$SUPERLU_LIB_PATH/$with_superlu_lib -lblas $LIBS $FLIBS"
-#   DUNE_PKG_LIBS
-#   DUNE_PKG_CPPFLAGS
+#      CPPFLAGS and LIBS necessary to link against SuperLU.  This variable may
+#      contain indirect references and is suitable for use inside makefiles.
+#      Guaranteed empty if SuperLU was not found.
+#   HAVE_SUPERLU
+#      "0" or "1" depending on whether SuperLU was found.
 #
 # Substitutions:
 #   SUPERLU_LIBS
 #   SUPERLU_CPPFLAGS
+#     Substitutes the values of the corresponding shell variables.
+#   ALL_PKG_LIBS
+#   ALL_PKG_CPPFLAGS
+#     Adds references to SuperLU's substitutions.
 #
 # Defines:
 #   HAVE_SUPERLU
+#     ENABLE_SUPERLU or undefined.  Whether SuperLU was found.  The correct
+#     way to check this is "#if HAVE_SUPERLU": This way SuperLU features will
+#     be disabled unless ${SUPERLU_CPPFLAGS} was given when compiling.
 #   SUPERLU_POST_2005_VERSION
+#     1 or undefined.  A post-2005 version of SuperLU uses the header
+#     "slu_ddefs.h" while earlier versions use "dsp_defs.h".
 #   HAVE_MEM_USAGE_T_EXPANSIONS
+#     1 or undefined.  Whether "mem_usage_t.expansions" was found in
+#     "slu_ddefs.h" or "dsp_defs.h" as apropriate.
 #
 # Conditionals:
 #   SUPERLU
