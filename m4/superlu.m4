@@ -121,11 +121,11 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
 		    _slu_search_default
 		])
   
-	AC_ARG_WITH([super_lu_lib],
+	AC_ARG_WITH([superlu-lib],
 	    [AC_HELP_STRING([--with-superlu-lib],[The name of the static SuperLU library to link to. By default the shared library with the name superlu-mpi is tried])],
 	    [
-		if test "$withval" != no ; then
-		    with_superlu_lib=$withval
+		if test "$withval" = no ; then
+		    with_superlu_lib=
 		fi
 	    ]
 	)
