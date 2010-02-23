@@ -33,14 +33,12 @@ AC_DEFUN([_slu_lib_path],
 		if test ! -f "$1/$my_include_path/$2"; then
 		    my_slu_found=no
 		else
-		    echo "$1/$my_lib_path"
 		    if ! test -d "$1/$my_lib_path"; then
 			my_lib_path=""
 		    fi
 		fi
 	    fi
 	fi
-	echo "my_lib_path=$my_lib_path my_include_path=$my_include_path my_slu_found=$my_slu_found 2=$2"
     ]
 )
 
