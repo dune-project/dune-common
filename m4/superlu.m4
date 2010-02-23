@@ -42,6 +42,22 @@ AC_DEFUN([_slu_lib_path],
     ]
 )
 
+# _slu_search_versions(SUPERLU_ROOT)
+#
+# Search for either "slu_ddefs.h" or "dsp_defs.h" using _slu_lib_path().
+#
+# Shell variables:
+#   my_slu_header
+#      The name of the header that was found: first of "slu_ddefs.h" or
+#      "dsp_defs.h".  Contents is only meaningful for my_slu_found=yes.
+#   my_include_path
+#      The subpath the header was found in: "include/superlu", "include", or
+#      "SRC".  Contents is only meaningful for my_slu_found=yes.
+#   my_lib_path
+#      The subpath for the library: "lib" or "". Contents is only meaningful
+#      for my_slu_found=yes.
+#   my_slu_found
+#      Whether any of the headers.  Either "yes" or "no".
 AC_DEFUN([_slu_search_versions],
     [
 	my_slu_header=slu_ddefs.h
