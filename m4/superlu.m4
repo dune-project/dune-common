@@ -2,6 +2,24 @@
 # $Id$
 # searches for SuperLU headers and libs
 
+# _slu_lib_path(SUPERLU_ROOT, HEADER)
+#
+# Try to find the subpath unter SUPERLU_ROOT containing HEADER.  Try
+# SUPERLU_ROOT/"include/superlu", SUPERLU_ROOT/"include", and
+# SUPERLU_ROOT/"SRC", in that order.  Set the subpath for the library to
+# "lib".  If HEADER was found in SUPERLU_ROOT/"SRC", check whether
+# SUPERLU_ROOT/"lib" is a directory, and set the subpath for the library to
+# the empty string "" if it isn't.
+#
+# Shell variables:
+#   my_include_path
+#      The subpath HEADER was found in: "include/superlu", "include", or
+#      "SRC".  Contents is only meaningful for my_slu_found=yes.
+#   my_lib_path
+#      The subpath for the library: "lib" or "". Contents is only meaningful
+#      for my_slu_found=yes.
+#   my_slu_found
+#      Whether HEADER was found at all.  Either "yes" or "no".
 AC_DEFUN([_slu_lib_path],
     [
 	my_include_path=include/superlu
@@ -10,13 +28,13 @@ AC_DEFUN([_slu_lib_path],
 	if test ! -f "$1/$my_include_path/$2" ; then
 	    #Try to find headers under superlu
 	    my_include_path=include
-	    if test ! -f "$with_superlu/$my_include_path/$2" ; then
+	    if test ! -f "$1/$my_include_path/$2" ; then
 		my_include_path=SRC
-		if test ! -f "$with_superlu/$my_include_path/$2"; then
+		if test ! -f "$1/$my_include_path/$2"; then
 		    my_slu_found=no
 		else
-		    echo "$with_superlu/$my_lib_path"
-		    if ! test -d "$with_superlu/$my_lib_path"; then
+		    echo "$1/$my_lib_path"
+		    if ! test -d "$1/$my_lib_path"; then
 			my_lib_path=""
 		    fi
 		fi
