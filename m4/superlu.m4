@@ -69,6 +69,16 @@ AC_DEFUN([_slu_search_versions],
     ]
 )
 
+
+# _slu_search_default()
+#
+# Search for SuperLU in the default locations "/usr" and "/usr/local".
+#
+# Shell variables:
+#   with_superlu
+#     Root of the SuperLU installation: first of "/usr" and "/usr/local".
+#     Contents is only meaningful for my_slu_found=yes.
+#   For other output variables see documentation of _slu_search_versions().
 AC_DEFUN([_slu_search_default],
     [
 	with_superlu=/usr
