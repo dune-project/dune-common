@@ -1,4 +1,4 @@
-#! /bin/bash
+## -*- autoconf -*-
 # $Id$
 # searches for SuperLU headers and libs
 
@@ -310,7 +310,3 @@ echo "BLAS_LIBS=$BLAS_LIBS LIBS=$LIBS"
 
     ]
 )
-    
-dnl Local Variables:
-dnl mode: shell-script
-dnl End:
