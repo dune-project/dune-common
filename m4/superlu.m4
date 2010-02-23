@@ -129,11 +129,11 @@ AC_DEFUN([DUNE_PATH_SUPERLU],[
 		fi
 	    ]
 	)
-AC_ARG_WITH([superlu_blaslib],
+AC_ARG_WITH([superlu-blaslib],
              [AC_HELP_STRING([--with-superlu-blaslib],[The name of the static blas library         to link to. By default the shared library with the name superlu-mpi is tried])],
             [
-                 if test "$withval" != no ; then
-                     with_superlu_blaslib=$withval
+                 if test "$withval" = no ; then
+                     with_superlu_blaslib=
                  fi
              ]
          )
