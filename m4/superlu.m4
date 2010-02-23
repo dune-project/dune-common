@@ -91,6 +91,59 @@ AC_DEFUN([_slu_search_default],
     ]
 )
 
+
+# DUNE_PATH_SUPERLU()
+#
+# REQUIRES: AC_PROG_CC, ACX_BLAS
+#
+# Shell variables:
+#   with_superlu
+#     "no", path, yes->("/usr", "/usr/local"); => yes, no
+#   my_slu_header
+#      The name of the header that was found: first of "slu_ddefs.h" or
+#      "dsp_defs.h".  Contents is only meaningful for my_slu_found=yes.
+#   my_include_path
+#      The subpath the header was found in: "include/superlu", "include", or
+#      "SRC".  Contents is only meaningful for my_slu_found=yes.
+#   my_lib_path
+#      The subpath for the library: "lib" or "". Contents is only meaningful
+#      for my_slu_found=yes.
+#   my_slu_found
+#      Whether any of the headers.  Either "yes" or "no".
+#   with_superlu_lib
+#      ""->"superlu.a", "yes", arg
+#   with_superlu_blaslib
+#      "", "yes", path
+#   SUPERLU_LIB_PATH
+#      "$with_superlu/$my_lib_path"
+#   SUPERLU_INCLUDE_PATH
+#      "$with_superlu/$my_include_path"
+#   SUPERLU_CPPFLAGS
+#      "$CPPFLAGS -I$SUPERLU_INCLUDE_PATH"
+#   HAVE_SUPERLU
+#      "0", "1"
+#   SUPERLU_LIBS
+#      "$SUPERLU_LIBS -lsuperlu $BLAS_LIBS $LIBS $FLIBS" or
+#      "$SUPERLU_LIBS -lsuperlu -lblas $LIBS $FLIBS" or
+#      "$SUPERLU_LIB_PATH/$with_superlu_lib $SUPERLU_LIB_PATH/$with_superlu_blaslib $BLAS_LIBS $LIBS $FLIBS"
+#      or
+#      "$SUPERLU_LIB_PATH/$with_superlu_lib $SUPERLU_LIB_PATH/$with_superlu_blaslib -lblas $LIBS $FLIBS"
+#      or "$SUPERLU_LIB_PATH/$with_superlu_lib $BLAS_LIBS $LIBS $FLIBS"
+#      or "$SUPERLU_LIB_PATH/$with_superlu_lib -lblas $LIBS $FLIBS"
+#   DUNE_PKG_LIBS
+#   DUNE_PKG_CPPFLAGS
+#
+# Substitutions:
+#   SUPERLU_LIBS
+#   SUPERLU_CPPFLAGS
+#
+# Defines:
+#   HAVE_SUPERLU
+#   SUPERLU_POST_2005_VERSION
+#   HAVE_MEM_USAGE_T_EXPANSIONS
+#
+# Conditionals:
+#   SUPERLU
 AC_DEFUN([DUNE_PATH_SUPERLU],[
 	AC_REQUIRE([AC_PROG_CC])
 	#AC_REQUIRE([AC_F77_LIBRARY_LDFLAGS])
@@ -173,6 +226,7 @@ AC_ARG_WITH([superlu-blaslib],
 		fi
 		HAVE_SUPERLU=0
 
+### This won't work, LDFLAGS needs to be set
 		if test x$with_superlu_lib = x; then
 		    AC_CHECK_LIB(superlu, [dgssvx],[
 			    SUPERLU_LIBS="$SUPERLU_LIBS -lsuperlu $LIBS"
