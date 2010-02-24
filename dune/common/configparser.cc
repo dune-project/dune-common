@@ -231,11 +231,10 @@ int ConfigParser::get(const string& key, int defaultValue)
 
 double ConfigParser::get(const string& key, double defaultValue)
 {
-  stringstream stream;
-  stream << defaultValue;
-  string ret = get(key, stream.str());
-
-  return atof(ret.c_str());
+  if(hasKey(key))
+    return atof((*this)[key].c_str());
+  else
+    return defaultValue;
 }
 
 bool ConfigParser::get(const string& key, bool defaultValue)
