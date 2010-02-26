@@ -1093,67 +1093,78 @@ namespace Dune
     //===== linear maps
 
     //! y = A x
-    void mv (const FieldVector<K,1>& x, FieldVector<K,1>& y) const
+    template<class X, class Y>
+    void mv (const X& x, Y& y) const
     {
       y.p = a[0] * x.p;
     }
 
     //! y = A^T x
-    void mtv ( const FieldVector< K, 1 > &x, FieldVector< K, 1 > &y ) const
+    template<class X, class Y>
+    void mtv ( const X &x, Y &y ) const
     {
       y.p = a[ 0 ] * x.p;
     }
 
     //! y += A x
-    void umv (const FieldVector<K,1>& x, FieldVector<K,1>& y) const
+    template<class X, class Y>
+    void umv (const X& x, Y& y) const
     {
       y.p += a[0] * x.p;
     }
 
     //! y += A^T x
-    void umtv (const FieldVector<K,1>& x, FieldVector<K,1>& y) const
+    template<class X, class Y>
+    void umtv (const X& x, Y& y) const
     {
       y.p += a[0] * x.p;
     }
 
     //! y += A^H x
-    void umhv (const FieldVector<K,1>& x, FieldVector<K,1>& y) const
+    template<class X, class Y>
+    void umhv (const X& x, Y& y) const
     {
       y.p += conjugateComplex(a[0]) * x.p;
     }
 
     //! y -= A x
-    void mmv (const FieldVector<K,1>& x, FieldVector<K,1>& y) const
+    template<class X, class Y>
+    void mmv (const X& x, Y& y) const
     {
       y.p -= a[0] * x.p;
     }
 
     //! y -= A^T x
-    void mmtv (const FieldVector<K,1>& x, FieldVector<K,1>& y) const
+    template<class X, class Y>
+    void mmtv (const X& x, Y& y) const
     {
       y.p -= a[0] * x.p;
     }
 
     //! y -= A^H x
-    void mmhv (const FieldVector<K,1>& x, FieldVector<K,1>& y) const
+    template<class X, class Y>
+    void mmhv (const X& x, Y& y) const
     {
       y.p -= conjugateComplex(a[0]) * x.p;
     }
 
     //! y += alpha A x
-    void usmv (const K& alpha, const FieldVector<K,1>& x, FieldVector<K,1>& y) const
+    template<class X, class Y>
+    void usmv (const K& alpha, const X& x, Y& y) const
     {
       y.p += alpha * a[0] * x.p;
     }
 
     //! y += alpha A^T x
-    void usmtv (const K& alpha, const FieldVector<K,1>& x, FieldVector<K,1>& y) const
+    template<class X, class Y>
+    void usmtv (const K& alpha, const X& x, Y& y) const
     {
       y.p += alpha * a[0] * x.p;
     }
 
     //! y += alpha A^H x
-    void usmhv (const K& alpha, const FieldVector<K,1>& x, FieldVector<K,1>& y) const
+    template<class X, class Y>
+    void usmhv (const K& alpha, const X& x, Y& y) const
     {
       y.p += alpha * conjugateComplex(a[0]) * x.p;
     }
