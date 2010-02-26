@@ -211,7 +211,25 @@ void test_matrix()
     }
   }
 
-  A.infinity_norm();
+  // test the various matrix-vector products
+  A.mv(v,f);
+  A.mtv(v,f);
+  A.umv(v,f);
+  A.umtv(v,f);
+  A.umhv(v,f);
+  A.mmv(v,f);
+  A.mmtv(v,f);
+  A.mmhv(v,f);
+  A.usmv(0.5,v,f);
+  A.usmtv(0.5,v,f);
+  A.usmhv(0.5,v,f);
+
+
+  // Test the different matrix norms
+  assert( A.frobenius_norm() >= 0 );
+  assert( A.frobenius_norm2() >= 0 );
+  assert( A.infinity_norm() >= 0 );
+  assert( A.infinity_norm_real() >= 0);
 
   std::sort(v.begin(), v.end());
 
