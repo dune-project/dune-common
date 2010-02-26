@@ -151,7 +151,7 @@ namespace Dune
 #endif
   //! Output operator for array
   template <class T, int N>
-  inline std::ostream& operator<< (std::ostream& s, array<T,N> e)
+  inline std::ostream& operator<< (std::ostream& s, const array<T,N>& e)
   {
     s << "[";
     for (int i=0; i<N-1; i++) s << e[i] << ",";
