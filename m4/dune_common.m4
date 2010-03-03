@@ -27,6 +27,7 @@ AC_DEFUN([DUNE_COMMON_CHECKS],
   AC_REQUIRE([DUNE_MPI])
   AC_REQUIRE([DUNE_EXPRTMPL])
   AC_REQUIRE([DUNE_DEV_MODE])
+  AC_REQUIRE([DUNE_TR1_HEADERS])
 
   dnl check for programs
   AC_REQUIRE([AC_PROG_CC])
@@ -46,15 +47,6 @@ AC_DEFUN([DUNE_COMMON_CHECKS],
 
   AC_CHECK_HEADERS([malloc.h string.h])
 
-  # Allow disabling tr1 headers. E.g. needed for broken xlc on Blue Gene
-  AC_ARG_ENABLE(tr1-headers, 
-	AS_HELP_STRING([--disable-tr1-headers],
-	[Prevents checking for  tr1 headers like tuple, array, etc. 
-	This might be needed for broken compilers like xlc on Blue Gene]))
-  AS_IF([test "x$enable_tr1_headers" != "xno"],[
-	  AC_CHECK_HEADERS([type_traits tr1/type_traits array tr1/array tuple tr1/tuple])
-  ])
-  
   AC_LANG_POP([C++])
 
   dnl checks for typedefs, structures, and compiler characteristics.

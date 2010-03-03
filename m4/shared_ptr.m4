@@ -19,8 +19,11 @@ dnl
 
 AC_DEFUN([SHARED_PTR],[
 dnl  AC_REQUIRE([PANDORA_CHECK_CXX_STANDARD])
+  AC_REQUIRE([DUNE_TR1_HEADERS])
   AC_LANG_PUSH(C++)
-  AC_CHECK_HEADERS(memory tr1/memory boost/shared_ptr.hpp)
+  AS_IF([test "x$enable_tr1_headers" != "xno"],
+    [AC_CHECK_HEADERS([memory tr1/memory])])
+  AC_CHECK_HEADERS([boost/shared_ptr.hpp])
   AC_CACHE_CHECK([the location of shared_ptr header file],
     [ac_cv_shared_ptr_h],[
       for namespace in std tr1 std::tr1 boost
