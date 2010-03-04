@@ -133,6 +133,7 @@ namespace Dune
     class PointerRep
     {
       friend class shared_ptr<element_type>;
+    protected:
       /** @brief The number of references. */
       int count_;
       /** @brief The representative. */

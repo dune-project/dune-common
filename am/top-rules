@@ -18,5 +18,9 @@ pkgconfig_DATA = @DUNE_MOD_NAME@.pc
 
 maintainer-clean-local: top-clean
 
+# we use LT_OUTPUT, thus we might have a config.lt file -- remove it!
+distclean-libtool:
+	-rm -f libtool config.lt
+
 top-clean:
 	rm -f dependencies.m4
