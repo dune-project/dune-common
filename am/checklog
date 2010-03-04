@@ -62,6 +62,8 @@ check-log-headers-am:
 	list=`echo $(headercheck_PATTERN)`; \
 	test "$$list" != "$(headercheck_PATTERN)" || exit 0; \
 	for f in $$list; do \
+	  echo "$(headercheck_IGNORE)" | tr ' ' '\n' | grep -q "$$f"; \
+	    if echo "$(headercheck_IGNORE)" | tr ' ' '\n' | grep -q "$$f"; then continue; fi; \
 	  $(LOG_TIMING) ($(MAKE) headercheck-am SILENT=0 HEADER=$$f; \
 	    $(MAKE) headercheck-am SILENT=0 HEADER=$$f NO_CONFIG_H=1) > $(LOG_FILE) 2>&1; \
 	  $(LOG_STORE) "headercheck" "$$f" "$$path"; \
