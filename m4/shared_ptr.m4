@@ -49,8 +49,12 @@ shared_ptr<string> test_ptr(new string("test string"));
             ],[ac_cv_shared_ptr_namespace=missing])
        done
   ])
-  AC_DEFINE_UNQUOTED([SHARED_PTR_NAMESPACE],
-                     ${ac_cv_shared_ptr_namespace},
-                     [The namespace in which SHARED_PTR can be found])
+  AS_IF([ test "x$ac_cv_shared_ptr_namespace" = xmissing ],
+    [], [
+      AC_DEFINE_UNQUOTED([SHARED_PTR_NAMESPACE],
+                         ${ac_cv_shared_ptr_namespace},
+                         [The namespace in which SHARED_PTR can be found])
+    ]
+  )
   AC_LANG_POP()
 ])
