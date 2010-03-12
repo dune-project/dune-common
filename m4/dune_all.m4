@@ -9,8 +9,6 @@
 # dune-directory
 
 AC_DEFUN([DUNE_CHECK_ALL],[
-  # doxygen and latex take a lot of time...
-  AC_REQUIRE([DUNE_DOCUMENTATION])
   AC_REQUIRE([DUNE_WEB])
 
   AC_ARG_ENABLE(enabledist,
