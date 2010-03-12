@@ -162,44 +162,55 @@ namespace Dune {
       return basicType_ < other.basicType_;
     }
 
-    /** \brief Prints the type to an output stream */
-    friend std::ostream& operator<< (std::ostream& s, const GeometryType& a)
-    {
-      switch (a.basicType_) {
-      case simplex :
-        s << "(simplex, " << a.dim_ << ")";
-        break;
-      case cube :
-        s << "(cube, " << a.dim_ << ")";
-        break;
-      case pyramid :
-        s << "pyramid";
-        break;
-      case prism :
-        s << "prism";
-        break;
-      case none :
-        s << "(none, " << a.dim_ << ")";
-        break;
-      default :
-        s << "invalid geometry type";
-      }
-
-      return s;
-    }
-
+    friend inline std::ostream& operator<< (std::ostream& s, const GeometryType& a);
   };
+
+  /** \brief Prints the type to an output stream */
+  inline std::ostream& operator<< (std::ostream& s, const GeometryType& a)
+  {
+    switch (a.basicType_) {
+    case GeometryType::simplex :
+      s << "(simplex, " << a.dim_ << ")";
+      break;
+    case GeometryType::cube :
+      s << "(cube, " << a.dim_ << ")";
+      break;
+    case GeometryType::pyramid :
+      s << "pyramid";
+      break;
+    case GeometryType::prism :
+      s << "prism";
+      break;
+    case GeometryType::none :
+      s << "(none, " << a.dim_ << ")";
+      break;
+    default :
+      s << "invalid geometry type";
+    }
+    return s;
+  }
 
   /** \brief Prints a GeometryType::BasicType to an output stream */
   inline std::ostream& operator<< (std::ostream& s, GeometryType::BasicType type)
   {
     switch (type) {
-    case GeometryType::simplex : s << "simplex"; break;
-    case GeometryType::cube :    s << "cube";    break;
-    case GeometryType::pyramid : s << "pyramid"; break;
-    case GeometryType::prism :   s << "prism";   break;
-    case GeometryType::none :    s << "none";    break;
-    default : s << "[unknown GeometryType::BasicType: " << int(type) << "]";
+    case GeometryType::simplex :
+      s << "simplex";
+      break;
+    case GeometryType::cube :
+      s << "cube";
+      break;
+    case GeometryType::pyramid :
+      s << "pyramid";
+      break;
+    case GeometryType::prism :
+      s << "prism";
+      break;
+    case GeometryType::none :
+      s << "none";
+      break;
+    default :
+      s << "[unknown GeometryType::BasicType: " << int(type) << "]";
     }
     return s;
   }

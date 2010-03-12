@@ -1,0 +1,12 @@
+/**
+\namespace STL
+\brief <i>preudo namespace</i> for STL concepts
+*/
+
+
+/**
+\interface STL::RandomAccessContainer
+\brief the STL random-access-container interface
+
+see http://www.sgi.com/tech/stl/RandomAccessContainer.html .
+*/
