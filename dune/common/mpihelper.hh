@@ -77,7 +77,7 @@ namespace Dune
     /**
      * @brief The type of the mpi communicator.
      */
-    struct MPICommunicator {};
+    typedef int MPICommunicator;
 
     /**
      * @brief Get the default communicator.
@@ -86,7 +86,7 @@ namespace Dune
      */
     static MPICommunicator getCommunicator()
     {
-      return MPICommunicator();
+      return -1;
     }
 
     static CollectiveCommunication<MPICommunicator>
@@ -208,7 +208,7 @@ namespace Dune
     {
       rank_ = -1;
       size_ = -1;
-      static int is_initialized = MPI_Init(&argc, &argv);
+      MPI_Init(&argc, &argv);
       MPI_Comm_rank(MPI_COMM_WORLD,&rank_);
       MPI_Comm_size(MPI_COMM_WORLD,&size_);
 
