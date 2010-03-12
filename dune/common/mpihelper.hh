@@ -86,7 +86,7 @@ namespace Dune
      */
     static MPICommunicator getCommunicator()
     {
-      static MPICommunicator comm();
+      static MPICommunicator comm;
       return comm;
     }
 
