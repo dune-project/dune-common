@@ -1096,77 +1096,77 @@ namespace Dune
     template<class X, class Y>
     void mv (const X& x, Y& y) const
     {
-      y.p = a[0] * x.p;
+      y[0] = a[0] * x[0];
     }
 
     //! y = A^T x
     template<class X, class Y>
     void mtv ( const X &x, Y &y ) const
     {
-      y.p = a[ 0 ] * x.p;
+      y[0] = a[ 0 ] * x[0];
     }
 
     //! y += A x
     template<class X, class Y>
     void umv (const X& x, Y& y) const
     {
-      y.p += a[0] * x.p;
+      y[0] += a[0] * x[0];
     }
 
     //! y += A^T x
     template<class X, class Y>
     void umtv (const X& x, Y& y) const
     {
-      y.p += a[0] * x.p;
+      y[0] += a[0] * x[0];
     }
 
     //! y += A^H x
     template<class X, class Y>
     void umhv (const X& x, Y& y) const
     {
-      y.p += conjugateComplex(a[0]) * x.p;
+      y[0] += conjugateComplex(a[0]) * x[0];
     }
 
     //! y -= A x
     template<class X, class Y>
     void mmv (const X& x, Y& y) const
     {
-      y.p -= a[0] * x.p;
+      y[0] -= a[0] * x[0];
     }
 
     //! y -= A^T x
     template<class X, class Y>
     void mmtv (const X& x, Y& y) const
     {
-      y.p -= a[0] * x.p;
+      y[0] -= a[0] * x[0];
     }
 
     //! y -= A^H x
     template<class X, class Y>
     void mmhv (const X& x, Y& y) const
     {
-      y.p -= conjugateComplex(a[0]) * x.p;
+      y[0] -= conjugateComplex(a[0]) * x[0];
     }
 
     //! y += alpha A x
     template<class X, class Y>
     void usmv (const K& alpha, const X& x, Y& y) const
     {
-      y.p += alpha * a[0] * x.p;
+      y[0] += alpha * a[0] * x[0];
     }
 
     //! y += alpha A^T x
     template<class X, class Y>
     void usmtv (const K& alpha, const X& x, Y& y) const
     {
-      y.p += alpha * a[0] * x.p;
+      y[0] += alpha * a[0] * x[0];
     }
 
     //! y += alpha A^H x
     template<class X, class Y>
     void usmhv (const K& alpha, const X& x, Y& y) const
     {
-      y.p += alpha * conjugateComplex(a[0]) * x.p;
+      y[0] += alpha * conjugateComplex(a[0]) * x[0];
     }
 
     //===== norms
