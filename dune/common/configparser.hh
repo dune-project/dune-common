@@ -94,7 +94,7 @@ namespace Dune {
      * \param key key name
      * \return true if key exists in structure, otherwise false
      */
-    bool hasKey(const std::string& key) const;
+    bool hasKey(const std::string& key);
 
 
     /** \brief test for substructure
@@ -104,7 +104,7 @@ namespace Dune {
      * \param sub substructure name
      * \return true if substructure exists in structure, otherwise false
      */
-    bool hasSub(const std::string& sub) const;
+    bool hasSub(const std::string& sub);
 
 
     /** \brief get value reference for key
@@ -138,14 +138,6 @@ namespace Dune {
      * \return reference to substructure
      */
     ConfigParser& sub(const std::string& sub);
-
-
-    /** \brief get const substructure by name
-     *
-     * \param sub substructure name
-     * \return reference to substructure
-     */
-    const ConfigParser& sub(const std::string& sub) const;
 
 
     /** \brief get value as string
