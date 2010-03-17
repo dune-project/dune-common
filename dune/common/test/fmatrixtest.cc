@@ -142,20 +142,20 @@ int test_invert_solve()
 
 template<class K, int n, int m, class X, class Y>
 void test_mult(FieldMatrix<K, n, m>& A,
-               const X& v, Y& f)
+               X& v, Y& f)
 {
   // test the various matrix-vector products
   A.mv(v,f);
-  A.mtv(v,f);
+  A.mtv(f,v);
   A.umv(v,f);
-  A.umtv(v,f);
-  A.umhv(v,f);
+  A.umtv(f,v);
+  A.umhv(f,v);
   A.mmv(v,f);
-  A.mmtv(v,f);
-  A.mmhv(v,f);
+  A.mmtv(f,v);
+  A.mmhv(f,v);
   A.usmv(0.5,v,f);
-  A.usmtv(0.5,v,f);
-  A.usmhv(0.5,v,f);
+  A.usmtv(0.5,f,v);
+  A.usmhv(0.5,f,v);
 }
 
 
@@ -231,21 +231,24 @@ void test_matrix()
     }
   }
 
-  test_mult(A, v, f );
+  {
+    FieldVector<K,m> v0 ( v );
+    test_mult(A, v0, f );
+  }
 
   {
-    std::vector<K> v1( n ) ;
-    std::vector<K> f1( m, 1 ) ;
+    std::vector<K> v1( m ) ;
+    std::vector<K> f1( n, 1 ) ;
     // random access vector
-    for (size_type i=0; i<n; i++) v1[i] = i;
+    for (size_type i=0; i<v1.size(); i++) v1[i] = i;
     test_mult(A, v1, f1 );
   }
   {
-    K v2[ n ];
-    K f2[ m ];
+    K v2[ m ];
+    K f2[ n ];
     // random access vector
-    for (size_type i=0; i<n; i++) v2[i] = i;
-    for (size_type i=0; i<m; i++) f2[i] = 1;
+    for (size_type i=0; i<m; ++i) v2[i] = i;
+    for (size_type i=0; i<n; ++i) f2[i] = 1;
     test_mult(A, v2, f2 );
   }
 
