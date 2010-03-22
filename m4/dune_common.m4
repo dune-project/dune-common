@@ -66,19 +66,6 @@ AC_DEFUN([DUNE_COMMON_CHECKS],
   AC_CHECK_LIB([m], [pow])
   AC_CHECK_FUNCS([sqrt strchr])
   AC_LANG_POP([C++])
-
-  # check for auxiliary tools so that it's not fatal if they're missing
-  AC_CHECK_PROGS([DOXYGEN], [doxygen], [true])
-  AM_CONDITIONAL([DOXYGEN], [test "x$DOXYGEN" != xtrue])
-  AC_CHECK_PROGS([TEX], [latex], [true])
-  AC_CHECK_PROGS([BIBTEX], [bibtex], [true])
-  AC_CHECK_PROGS([DVIPDF], [dvipdf], [true])
-  AC_CHECK_PROGS([DVIPS], [dvips], [true])
-  AC_CHECK_PROGS([WML], [wml], [true])
-  AM_CONDITIONAL([WML], [test "x$WML" != xtrue])
-  AC_CHECK_PROGS([PERL], [perl], [true])
-  AC_REQUIRE([DUNE_INKSCAPE])
-  AC_CHECK_PROGS([CONVERT], [convert], [true])
 ])
 
 AC_DEFUN([DUNE_COMMON_CHECK_MODULE],

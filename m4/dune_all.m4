@@ -11,7 +11,6 @@
 AC_DEFUN([DUNE_CHECK_ALL],[
   # doxygen and latex take a lot of time...
   AC_REQUIRE([DUNE_DOCUMENTATION])
-  AC_REQUIRE([DUNE_WEB])
 
   AC_ARG_ENABLE(enabledist,
     AS_HELP_STRING([--enable-dist],
@@ -75,6 +74,7 @@ AC_DEFUN([DUNE_ADD_SUMMARY_MOD_ENTRY],[
 
 AC_DEFUN([DUNE_SUMMARY_ALL],[
   # show search results
+  AC_REQUIRE([DUNE_OFFICIAL_TARBALLS])
 
   echo
   echo "Found the following Dune-components: "
@@ -86,6 +86,14 @@ AC_DEFUN([DUNE_SUMMARY_ALL],[
   echo
   echo "----------------------------------------"
   echo
+  
+  AS_IF([test "x$enable_officialtarballs" = "xyes"],[
+    echo Dune official tarball mode!
+    echo
+    echo "----------------------------------------"
+    echo
+  ])
+
   echo "See ./configure --help and config.log for reasons why a component wasn't found"
   echo
 
@@ -102,4 +110,9 @@ AC_DEFUN([DUNE_CHECK_ALL_M],[
   AC_REQUIRE([DUNE_SYMLINK])
   AC_REQUIRE([DUNE_CHECK_ALL])
   AC_REQUIRE([DUNE_AUTOBUILD_FLAGS])
+])
+
+AC_DEFUN([DUNE_OFFICIAL_TARBALLS],[
+  AC_ARG_ENABLE(officialtarballs,
+    AS_HELP_STRING([--disable-officialtarballs],[enforce configuration necessary for official tarballs]))
 ])

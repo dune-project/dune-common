@@ -535,35 +535,3 @@ AC_DEFUN([DUNE_SYMLINK],[
     AC_MSG_ERROR([No symlinks supported! You have to install dune. No inplace usage possible!])
   ])
 ])
-
-AC_DEFUN([DUNE_WEB],
-[
-  # special variable to include the documentation into the website
-  AC_ARG_WITH(duneweb,
-    AS_HELP_STRING([--with-duneweb=PATH],[Only needed for website-generation, path to checked out version of dune-web]))
-
-  AS_IF([test -n "$with_duneweb"],[
-    AS_IF([test "x$with_duneweb" != "xno"],[
-      # parameter is set. Check it
-      AC_MSG_CHECKING([whether passed Dune-Web ($with_duneweb) directory appears correct])
-      WEBTESTFILE="$with_duneweb/layout/default.wml"
-      AS_IF([test -d "$with_duneweb" -a -e "$WEBTESTFILE"],[
-         AC_MSG_RESULT([ok])
-         # normalize path
-         with_duneweb=`(cd $with_duneweb && pwd)` ;
-      ],[
-         AS_IF([test -d "$with_duneweb"],[
-           AC_MSG_ERROR([$WEBTESTFILE not found in Dune-web dir $with_duneweb!])
-         ],[
-           AC_MSG_ERROR([Dune-Web directory $with_duneweb not found!])
-         ])
-         with_duneweb=no
-      ])
-    ])
-     DUNE_ADD_SUMMARY_ENTRY([dune web],[$with_duneweb])
-  ],[
-    with_duneweb=no
-  ])
-  AC_SUBST(DUNEWEBDIR, $with_duneweb)
-  AM_CONDITIONAL(DUNEWEB, [test "x$with_duneweb" != "xno"])
-])
