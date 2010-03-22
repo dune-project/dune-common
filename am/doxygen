@@ -79,6 +79,7 @@ doxygen-html-install:
 
 ####
 # how to store doxygen in the tarball
+if BUILD_DOCS
 if DOXYGEN
 doxygen-dist-install: $(DOXYGENTAG)
 	set -e; mkdir $(distdir)/html; \
@@ -90,6 +91,7 @@ doxygen-dist-install: $(DOXYGENTAG)
 dist-hook: doxygen-dist-install
 
 endif # DOXYGEN
+endif # BUILD_DOCS
 
 ####
 # how to install doxygen
