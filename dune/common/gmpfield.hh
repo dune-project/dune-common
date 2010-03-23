@@ -85,7 +85,7 @@ namespace Dune
   inline std::ostream &
   operator<< ( std::ostream &out, const GMPField< precision > &value )
   {
-    return out << value.get_d();
+    return out << static_cast<const mpf_class&>(value);
   }
 
 }
