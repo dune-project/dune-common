@@ -1,18 +1,38 @@
 # -*- tab-width: 4; indent-tabs-mode: nil -*-
 # $Id$
 
-TESTPROGS = test-stack arraylisttest shared_ptrtest \
-	iteratorfacadetest iteratorfacadetest2 tuplestest fvectortest fmatrixtest \
-	poolallocatortest settest gcdlcmtest streamtest \
-	bigunsignedinttest mpihelpertest singletontest mpicollcomm \
-	utilitytest lrutest \
-	smallobject nullptr-test \
-	testfassign1 testfassign2 testfassign3 \
-	testfassign4 \
-    testfassign_fail1 testfassign_fail2 testfassign_fail3 \
-    testfassign_fail4 testfassign_fail5 testfassign_fail6 \
-    conversiontest bitsetvectortest deprtuplestest \
-    float_cmp fassigntest static_assert_test
+TESTPROGS = \
+    arraylisttest \
+	bigunsignedinttest \
+    bitsetvectortest \
+    conversiontest \
+    deprtuplestest \
+    gcdlcmtest \
+    fassigntest \
+        testfassign1 testfassign2 testfassign3 testfassign4 \
+        testfassign_fail1 testfassign_fail2 testfassign_fail3 \
+        testfassign_fail4 testfassign_fail5 testfassign_fail6 \
+    fmatrixtest \
+    fvectortest \
+    float_cmp \
+	iteratorfacadetest \
+    iteratorfacadetest2 \
+    lrutest \
+    mpihelpertest \
+    mpicollcomm \
+    mpiguard \
+    nullptr-test \
+	poolallocatortest \
+    settest \
+    shared_ptrtest \
+    singletontest \
+	smallobject \
+    static_assert_test \
+    streamtest \
+    tuplestest \
+    test-stack \
+	utilitytest
+
 # which tests to run
 COMPILE_XFAIL=$(DUNE_COMMON_BIN)/xfail-compile-tests
 
@@ -96,6 +116,11 @@ mpicollcomm_SOURCES = mpicollectivecommunication.cc
 mpicollcomm_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)
 mpicollcomm_LDADD = $(DUNEMPILIBS) $(LDADD)
 mpicollcomm_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
+
+mpiguard_SOURCES = mpiguard.cc
+mpiguard_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)
+mpiguard_LDADD = $(DUNEMPILIBS) $(LDADD)
+mpiguard_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
 
 singletontest_SOURCES = singletontest.cc
 
