@@ -9,6 +9,7 @@ docdir=$(datadir)/doc/dune-common/buildsystem
 if BUILD_DOCS
   DOCFILES=buildsystem.pdf
   EXTRA_DIST=buildsystem.pdf
+  EXTRAINSTALL=buildsystem.pdf
 endif
 
 # include predefined rules
