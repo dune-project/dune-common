@@ -11,10 +11,10 @@ sourcescheck: sourcescheck-recursive
 #	@(for f in $(sourcescheck_LIST) fnord; do echo $$f; done) | \
 #	 grep '\.[hc][hc]$$' | sort | uniq > header_CHECK.install
 sourcescheck-am:
-	@echo $(sourcescheck_LIST) | tr ' ' '\n' | \
+	@echo $(sourcescheck_LIST) dummy.cc | tr ' ' '\n' | \
 	 grep '\.[hcm][hc4]$$' | sort | uniq > header_CHECK.install
 	@ls | \
-	 grep '\.[hcm][hc4]$$' | sort | uniq > header_CHECK.present
+	 (echo dummy.cc; grep '\.[hcm][hc4]$$') | sort | uniq > header_CHECK.present
 	@RESULT=0; \
 	if diff header_CHECK.* | grep ^[\<\>] -q; then \
 		echo "==== WARNING ===="; \
