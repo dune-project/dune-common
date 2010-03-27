@@ -49,6 +49,8 @@ namespace Dune
       virtual int size() { return comm.size(); };
       virtual int sum(int i) { return comm.sum(i); }
     };
+
+#if HAVE_MPI
     // specialization for MPI_Comm
     template <>
     struct GenericGuardCommunicator<MPI_Comm>
@@ -58,6 +60,7 @@ namespace Dune
         GenericGuardCommunicator< CollectiveCommunication<MPI_Comm> >(
           CollectiveCommunication<MPI_Comm>(c)) {}
     };
+#endif
 
     template<class C>
     GuardCommunicator * GuardCommunicator::create(const C & comm)
