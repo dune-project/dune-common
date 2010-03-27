@@ -205,6 +205,13 @@ namespace Dune {
    */
   class InvalidStateException : public Exception {};
 
+  /*! \brief Default exception if an error in the parallel
+   * communication of the programm occured
+   * \ingroup ParallelCommunication
+   */
+  class ParallelError : public Exception {};
+
+
 } // end namespace
 
 #endif
