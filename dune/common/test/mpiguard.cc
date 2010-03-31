@@ -32,6 +32,7 @@ int main(int argc, char** argv)
     std::cout << "---- guard(MPI_COMM_WORLD)" << std::endl;
   try
   {
+#if HAVE_MPI
     // at the end of this block the guard is destroyed and possible exceptions are communicated
     {
       Dune::MPIGuard guard(MPI_COMM_WORLD);
@@ -39,6 +40,9 @@ int main(int argc, char** argv)
         DUNE_THROW(Dune::Exception, "Fakeproblem on process " << mpihelper.rank());
       guard.finalize();
     }
+#else
+    std::cout << "Info: no mpi used\n";
+#endif
   }
   catch (Dune::Exception & e)
   {
