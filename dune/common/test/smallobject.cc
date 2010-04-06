@@ -63,18 +63,31 @@ int main ( int argc, char **argv )
   std :: cout << "Result: SmallObject is " << (timeA / timeB) << " times faster." << std :: endl;
 
   timer.reset();
-  PoolAllocator<B,100> pool;
+  SmallObjectAllocator< A > alloc;
   for( unsigned long i = 0; i < factor*iterations; ++i )
   {
-    B *b = pool.allocate(1);
-    pool.construct(b, B((int)i ));
-    pool.destroy(b);
-    pool.deallocate(b,1);
+    A *a = alloc.allocate( 1 );
+    alloc.construct( a, A( int( i ) ) );
+    alloc.destroy( a );
+    alloc.deallocate( a, 1 );
   }
-  double timeB2 = timer.elapsed();
-  std :: cout << "Time with pool allocator: " << timeB2 << std :: endl;
-  std :: cout << "Result: pool allocator is " << (timeA / timeB2) << " times faster." << std :: endl;
-  std :: cout << "Result: pool allocator is " << (timeB / timeB2) << " times faster than SmallObject." << std :: endl;
+  double timeC = timer.elapsed();
+  std :: cout << "Time with SmallObjectAllocator: " << timeC << std :: endl;
+  std :: cout << "Result: SmallObject is " << (timeA / timeC) << " times faster." << std :: endl;
+
+  timer.reset();
+  PoolAllocator< A, 100 > pool;
+  for( unsigned long i = 0; i < factor*iterations; ++i )
+  {
+    A *a = pool.allocate(1);
+    pool.construct( a, A( int( i ) ) );
+    pool.destroy( a );
+    pool.deallocate( a, 1 );
+  }
+  double timeD = timer.elapsed();
+  std :: cout << "Time with pool allocator: " << timeD << std :: endl;
+  std :: cout << "Result: pool allocator is " << (timeA / timeD) << " times faster." << std :: endl;
+  std :: cout << "Result: pool allocator is " << (timeB / timeD) << " times faster than SmallObject." << std :: endl;
 
   // we require a speedup due to SmallObject
   //assert((timeA / timeB) > 1.0);

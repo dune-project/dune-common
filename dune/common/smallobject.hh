@@ -75,11 +75,11 @@ namespace Dune
       return current + 1;
     }
 
-    static void free ( void *ptr )
+    static void free ( void *p )
     {
-      if( ptr != 0 )
+      if( p != 0 )
       {
-        Block *current = reinterpret_cast< Block * >( ptr ) - 1;
+        Block *current = reinterpret_cast< Block * >( p ) - 1;
         const unsigned int blocks = current->blocks;
         Block *&next = list( blocks );
         current->next = next;
@@ -97,15 +97,97 @@ namespace Dune
   {
     void *operator new ( size_t size )
     {
-      return SmallObjectPool :: allocate( size );
+      return SmallObjectPool::allocate( size );
     }
 
-    void operator delete ( void *ptr )
+    void operator delete ( void *p )
     {
-      SmallObjectPool :: free( ptr );
+      SmallObjectPool::free( p );
     }
   };
 
+
+
+  // SmallObjectAllocator
+  // --------------------
+
+  template< class T >
+  struct SmallObjectAllocator;
+
+  template<>
+  struct SmallObjectAllocator< void >
+  {
+    typedef void value_type;
+
+    typedef void *pointer;
+    typedef const void *const_pointer;
+
+    template< class U > struct rebind { typedef SmallObjectAllocator< U > other; };
+  };
+
+  template< class T >
+  struct SmallObjectAllocator
+  {
+    typedef T value_type;
+    typedef size_t size_type;
+    typedef ptrdiff_t difference_type;
+
+    typedef T *pointer;
+    typedef const T *const_pointer;
+
+    typedef T &reference;
+    typedef const T &const_reference;
+
+    template< class U > struct rebind { typedef SmallObjectAllocator< U > other; };
+
+    SmallObjectAllocator () throw () {}
+    template< class U > SmallObjectAllocator ( const SmallObjectAllocator< U > & ) throw () {}
+    ~SmallObjectAllocator () throw () {}
+
+    pointer address ( reference r ) const { return &r; }
+    const_pointer address ( const_reference r ) const { return &r; }
+
+    pointer allocate ( size_type n, SmallObjectAllocator< void >::const_pointer hint = 0 );
+    void deallocate ( pointer p, size_type n );
+
+    void construct ( pointer p, const T &value ) { new( p ) T( value ); }
+    void destroy ( pointer p ) { p->~T(); }
+  };
+
+
+
+  // Implementation of SmallObjectAllocator
+  // --------------------------------------
+
+  template< class T >
+  inline typename SmallObjectAllocator< T >::pointer
+  SmallObjectAllocator< T >::allocate ( size_type n, SmallObjectAllocator< void >::const_pointer hint )
+  {
+    return reinterpret_cast< pointer >( SmallObjectPool::allocate( n * sizeof( T ) ) );
+  }
+
+
+  template< class T >
+  inline void
+  SmallObjectAllocator< T >::deallocate ( pointer p, size_type n )
+  {
+    SmallObjectPool::free( p );
+  }
+
+
+  template< class T >
+  bool operator== ( const SmallObjectAllocator< T > &, const SmallObjectAllocator< T > & ) throw()
+  {
+    return true;
+  }
+
+
+  template< class T >
+  bool operator!= ( const SmallObjectAllocator< T > &, const SmallObjectAllocator< T > & ) throw()
+  {
+    return false;
+  }
+
 }
 
-#endif
+#endif // #ifndef DUNE_SMALLOBJECT_HH
