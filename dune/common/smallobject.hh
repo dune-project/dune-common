@@ -156,6 +156,20 @@ namespace Dune
 
 
 
+  // SmallObjectPolyAllocator
+  // ------------------------
+
+  struct SmallObjectPolyAllocator
+  {
+    template< class T > T *allocate ( size_t n = 1 );
+    template< class T > void deallocate ( T *p );
+
+    template< class T > void construct ( T *p, const T &value ) { new( p ) T( value ); }
+    template< class T > void destroy ( T *p ) { p->~T(); }
+  };
+
+
+
   // Implementation of SmallObjectAllocator
   // --------------------------------------
 
@@ -163,7 +177,7 @@ namespace Dune
   inline typename SmallObjectAllocator< T >::pointer
   SmallObjectAllocator< T >::allocate ( size_type n, SmallObjectAllocator< void >::const_pointer hint )
   {
-    return reinterpret_cast< pointer >( SmallObjectPool::allocate( n * sizeof( T ) ) );
+    return static_cast< pointer >( SmallObjectPool::allocate( n * sizeof( T ) ) );
   }
 
 
@@ -186,6 +200,23 @@ namespace Dune
   bool operator!= ( const SmallObjectAllocator< T > &, const SmallObjectAllocator< T > & ) throw()
   {
     return false;
+  }
+
+
+
+  // Implementation of SmallObjectPolyAllocator
+  // ------------------------------------------
+
+  template< class T >
+  inline T *SmallObjectPolyAllocator::allocate ( size_t n )
+  {
+    return static_cast< T * >( SmallObjectPool::allocate( n * sizeof( T ) ) );
+  }
+
+  template< class T >
+  inline void SmallObjectPolyAllocator::deallocate ( T *p )
+  {
+    SmallObjectPool::free( p );
   }
 
 }
