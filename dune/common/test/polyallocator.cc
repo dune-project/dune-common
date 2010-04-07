@@ -3,6 +3,7 @@
 #include <config.h>
 
 #include <iostream>
+#include <memory>
 
 #include <dune/common/polyallocator.hh>
 
@@ -73,6 +74,54 @@ private:
   A *a_;
 };
 
+template< class Allocator >
+struct H
+{
+  explicit H ( int k, const Allocator &alloc = Allocator() )
+    : alloc_( alloc )
+  {
+    if( k > 0 )
+      create< B >( B( k ) );
+    else
+      create< C >( C() );
+  }
+
+  ~H()
+  {
+    destroy_( *this );
+  }
+
+  void test()
+  {
+    a_->test();
+  }
+
+private:
+  template< class Impl >
+  void create ( const Impl &impl )
+  {
+    typename Allocator::template rebind< Impl >::other alloc( alloc_ );
+    Impl *p = alloc.allocate( 1 );
+    alloc.construct( p, impl );
+    a_ = p;
+    destroy_ = destroy< Impl >;
+  }
+
+  template< class Impl >
+  static void destroy ( H &h )
+  {
+    typename Allocator::template rebind< Impl >::other alloc( h.alloc_ );
+    alloc.destroy( (Impl*)h.a_ );
+    alloc.deallocate( (Impl*)h.a_, 1 );
+  }
+
+  typedef void (*Destroy)( H &h );
+
+  Allocator alloc_;
+  A *a_;
+  Destroy destroy_;
+};
+
 int main ( int argc, char **argv )
 {
   int k = 0;
@@ -81,7 +130,12 @@ int main ( int argc, char **argv )
 
   {
     G<Dune::PolyAllocator> g(k);
-    g.test( );
+    g.test();
+  }
+
+  {
+    H< std::allocator< A > > h( k );
+    h.test();
   }
 
   return 0;
