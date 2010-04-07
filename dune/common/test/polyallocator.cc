@@ -6,63 +6,83 @@
 
 #include <dune/common/polyallocator.hh>
 
+// A test of the PolyAllocator as used in the GenericGeometries:
+// struct A   -> HybridMapping
+// struct B,C -> VirtualMapping, i.e., HybridMappingImpl
+// struct G   -> BasicGeometry
+
 struct A
 {
   virtual ~A () {}
-  virtual void test ( int i ) = 0;
+  virtual void test ( ) = 0;
 };
-
 
 struct B
   : public A
 {
   B( int i ) : k( i ) {}
 
-  void test ( int i )
+  void test ( )
   {
-    std::cout << "B( " << k << " ).test( " << i << " )" << std::endl;
+    std::cout << "B( " << k << " ).test( )" << std::endl;
   }
 
+private:
   int k;
 };
-
 
 struct C
   : public A
 {
-  void test ( int i )
+  void test ( )
   {
-    std::cout << "C.test( " << i << " )" << std::endl;
+    std::cout << "C.test( )" << std::endl;
   }
 };
 
-
-A *create ( int argc, char **argv, Dune::PolyAllocator &allocator )
+template <class Allocator>
+struct G
 {
-  if( argc > 1 )
+  explicit G( int k, const Allocator &alloc = Allocator() ) :
+    alloc_(alloc)
   {
-    B *b = allocator.allocate< B >();
-    allocator.construct( b, B( atoi( argv[ 1 ] ) ) );
-    return b;
+    if( k>0 )
+    {
+      B *b = alloc_.template allocate< B >();
+      alloc_.construct( b, B( k ) );
+      a_ = b;
+    }
+    else
+    {
+      C *c = alloc_.template allocate< C >();
+      alloc_.construct( c, C() );
+      a_ = c;
+    }
   }
-  else
+  ~G()
   {
-    C *c = allocator.allocate< C >();
-    allocator.construct( c, C() );
-    return c;
+    alloc_.destroy( a_ );
+    alloc_.deallocate( a_ );
   }
-}
-
+  void test()
+  {
+    a_->test();
+  }
+private:
+  Allocator alloc_;
+  A *a_;
+};
 
 int main ( int argc, char **argv )
 {
-  Dune::PolyAllocator allocator;
-  A *a = create( argc, argv, allocator );
+  int k = 0;
+  if( argc > 1 )
+    k = atoi(argv[1]);
 
-  a->test( 2 );
-
-  allocator.destroy( a );
-  allocator.deallocate( a );
+  {
+    G<Dune::PolyAllocator> g(k);
+    g.test( );
+  }
 
   return 0;
 }
