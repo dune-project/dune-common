@@ -16,6 +16,7 @@ sllisttest
 tuplestest
 settest
 fmatrixtest
+polyallocator
 poolallocatortest
 *.gcda
 *.gcno

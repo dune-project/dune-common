@@ -22,6 +22,7 @@ TESTPROGS = \
     mpicollcomm \
     mpiguard \
     nullptr-test \
+    polyallocator \
 	poolallocatortest \
     settest \
     shared_ptrtest \
@@ -100,6 +101,8 @@ iteratorfacadetest2_SOURCES = iteratorfacadetest2.cc
 fvectortest_SOURCES = fvectortest.cc
 
 fmatrixtest_SOURCES = fmatrixtest.cc
+
+polyallocator_SOURCES = polyallocator.cc
 
 poolallocatortest_SOURCES = poolallocatortest.cc
 
