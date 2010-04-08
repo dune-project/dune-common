@@ -303,8 +303,7 @@ namespace Dune
 
     /**
      * @brief Allocates objects.
-     * @param n The number of objects to allocate. Has to be less
-     * than Pool<T,s>::elements!
+     * @param n The number of objects to allocate. Has to be one!
      * @param hint Ignored hint.
      * @return A pointer tp the allocated elements.
      */
