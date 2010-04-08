@@ -17,40 +17,40 @@ fi
 ###
 
 canonicalname(){
-	if test $# -ne 1; then
-		echo Usage: canonicalname path >&2
-		return 1
-	fi
-	file="`eval echo $1`" # expand ~
-	if test ! -e "$file"; then
-		echo $file: file not found >&2
-		return 1
-	fi
+    if test $# -ne 1; then
+        echo Usage: canonicalname path >&2
+        return 1
+    fi
+    file="`eval echo $1`" # expand ~
+    if test ! -e "$file"; then
+        echo $file: file not found >&2
+        return 1
+    fi
     # if this is a symlink, then follow the symlink
-	if test -L "$file"; then
-		fdir="`dirname \"$file\"`"
-		flink="`readlink \"$file\"`"
-		if test -e "$flink"; then
-			# these are absolute links, or links in the CWD
-			canonicalname "$flink"
-		else
-			canonicalname "$fdir/$flink"
-		fi
-	else
+    if test -L "$file"; then
+        fdir="`dirname \"$file\"`"
+        flink="`readlink \"$file\"`"
+        if test -e "$flink"; then
+            # these are absolute links, or links in the CWD
+            canonicalname "$flink"
+        else
+            canonicalname "$fdir/$flink"
+        fi
+    else
         # if this is a file, then remember the filename and
         # canonicalize the directory name
-		if test -f "$file"; then
-			fdir="`dirname \"$file\"`"
-			fname="`basename \"$file\"`"
-			fdir="`canonicalname \"$fdir\"`"
-			echo "$fdir/$fname"
-		fi
+        if test -f "$file"; then
+            fdir="`dirname \"$file\"`"
+            fname="`basename \"$file\"`"
+            fdir="`canonicalname \"$fdir\"`"
+            echo "$fdir/$fname"
+        fi
         # if this is a directory, then create an absolute 
         # directory name and we are done
-		if test -d "$file"; then
-			(cd "$file"; pwd)
-		fi
-	fi
+        if test -d "$file"; then
+            (cd "$file"; pwd)
+        fi
+    fi
 }
 
 canonicalpath(){
@@ -93,34 +93,62 @@ export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:`canonicalpath $0`/../lib/pkgconfig"
 # for each module load the $CONTROL script part and run $command
 #
 # parameters:
-# $1 command to execute
+# $1 list of modules
+# $2-$* commands + parameters to execute
 #
 build_modules() {
-  local command="$1"
+  local modules=$1
   shift
-  local runcommand=run_$command
-  modules="$@"
-  for module in $modules ; do
-    echo $module
-  done > $RESUME_FILE
-  for module in $modules; do
-    local path=$(eval "echo \$PATH_${module}")
-    eval echo "--- calling $command for \$NAME_${module} ---"
-    if ! (
-      set -e
-      cd "$path"
-	  export module
-      eval_control $runcommand $path/$CONTROL
-    ); then eval echo "--- Failed to build \$NAME_${module} ---"; exit 1; fi
+  while test $# -gt 0; do
+    # get command
+    command=$1
+    shift
 
-    modules_togo=`cat $RESUME_FILE`
-    for module_togo in $modules_togo ; do
-      if test x$module_togo != x$module ; then
-        echo $module_togo
-      fi
+    # only load other parameters
+    load_opts NONE
+    # get command options
+    CMD_FLAGS=
+    while test $# -gt 0 && test "$1" != ":"; do
+      COMMAND=$(echo $command | tr '[:lower:]' '[:upper:]')
+      # setup paramter list
+      CMD_FLAGS="$CMD_FLAGS \"$1\""
+      shift
+    done
+    if test -z "$CMD_FLAGS"; then
+      load_opts $command
+    else
+      # disable usage of opts file
+      if test "x$DUNE_OPTS_FILE" != "x"; then
+        echo "WARNING: commandline parameters will overwrite setting in opts file \"$DUNE_OPTS_FILE\""
+      fi 
+    fi
+
+    # skip command delimiter
+    if test "$1" = ":"; then shift; fi
+
+    # actually run the commands (we already know that these are valid commands)
+    local runcommand=run_$command
+    for module in $modules ; do
+      echo $module
     done > $RESUME_FILE
+    for module in $modules; do
+      local path=$(eval "echo \$PATH_${module}")
+      eval echo "--- calling $command for \$NAME_${module} ---"
+      if ! (
+        set -e
+        cd "$path"
+        export module
+        eval_control $runcommand $path/$CONTROL
+      ); then eval echo "--- Failed to build \$NAME_${module} ---"; exit 1; fi
 
-    eval echo "--- \$NAME_${module} done ---"
+      modules_togo=`cat $RESUME_FILE`
+      for module_togo in $modules_togo ; do
+        if test x$module_togo != x$module ; then
+          echo $module_togo
+        fi
+      done > $RESUME_FILE
+      eval echo "--- \$NAME_${module} done ---"
+    done
   done
 }
 
@@ -153,6 +181,27 @@ load_opts() {
 ###
 ### Commands
 ###
+
+# check all parameter
+check_commands() {
+  while test $# -gt 0; do
+    # get command
+    command=$1
+    shift
+    # skip command options
+    while test $# -gt 0 && test "$1" != ":"; do
+      shift
+    done
+    # skip command delimiter
+    if test "$1" = ":"; then shift; fi
+    # test the commands
+    if ! is_command $command; then
+      usage
+      echo "ERROR: unknown command \"$command\""  >&2
+      exit 1
+    fi
+  done
+}
 
 # check wheteher the parameter is valid command or not
 is_command() {
@@ -226,30 +275,30 @@ run_default_status () {
   color=$green
   text="no changes"
   if [ $changed -eq 0 ]; then
-	true
+    true
   elif [ $changed -eq 1 ]; then
-	color=$blue;
+    color=$blue;
     text="1 change"
   else
-	color=$blue;
+    color=$blue;
     text="$changed changes"
   fi
   if [ $pending -eq 0 ]; then
-	true
+    true
   elif [ $pending -eq 1 ]; then
-	color=$blue;
+    color=$blue;
     text="$text, 1 update pending"
   else
-	color=$blue;
+    color=$blue;
     text="$text, $pending updates pending"
   fi
   if [ $collisions -eq 0 ]; then
-	true
+    true
   elif [ $collisions -eq 1 ]; then
-	color=$red
+    color=$red
     text="$text, 1 collision"
   else
-	color=$red
+    color=$red
     text="$text, $count collisions"
   fi
   echo -e "$color[$text]$reset $name"
@@ -286,8 +335,8 @@ run_default_autogen () {
     done
     if test -f autogen.sh; then
       eval echo "WARNING: \$NAME_$module contains obsolete autogen.sh," \
-		  >&2
-	  echo "         dune-autogen is used instead." >&2
+          >&2
+      echo "         dune-autogen is used instead." >&2
     fi
     eval "$COMMAND_DIR/dune-autogen" "$MODULE_PATHS" "$PARAMS" || exit 1
   else
@@ -298,11 +347,11 @@ run_default_autogen () {
 run_default_configure () {
   PARAMS="$CMD_FLAGS"
   if test -x configure; then
-	ACLOCAL_FLAGS="-I ."
+    ACLOCAL_FLAGS="-I ."
     MY_MODULES=
     # get dependencies & suggestions
     sort_modules $module
-	for m in $MODULES; do
+    for m in $MODULES; do
       if test x$module = x$m; then continue; fi # skip myself
       path=$(eval "echo \$PATH_$m")
       name=$(eval "echo \$NAME_$m")
@@ -312,26 +361,26 @@ run_default_configure () {
       if test -d "$path/share/aclocal"; then
           ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $path/share/aclocal"
       fi
-	  if test -d "$path/$BUILDDIR"; then
-	    PARAMS="$PARAMS \"--with-$name=$path/$BUILDDIR\""
-	  else
-	    PARAMS="$PARAMS \"--with-$name=$path\""
-	  fi
-	done
-	if test "x$HAVE_duneweb" == "xyes"; then
-	  PARAMS="$PARAMS \"--with-duneweb=$PATH_duneweb\""
-	fi
-	PARAMS="$PARAMS ACLOCAL_AMFLAGS=\"$ACLOCAL_FLAGS\""
+      if test -d "$path/$BUILDDIR"; then
+        PARAMS="$PARAMS \"--with-$name=$path/$BUILDDIR\""
+      else
+        PARAMS="$PARAMS \"--with-$name=$path\""
+      fi
+    done
+    if test "x$HAVE_duneweb" == "xyes"; then
+      PARAMS="$PARAMS \"--with-duneweb=$PATH_duneweb\""
+    fi
+    PARAMS="$PARAMS ACLOCAL_AMFLAGS=\"$ACLOCAL_FLAGS\""
     echo ./configure "$PARAMS"
     # create build directory of requested
-	if test -n "$BUILDDIR"; then
-	  test -d "$BUILDDIR" || mkdir "$BUILDDIR"
-	  SRCDIR="$PWD"
-	  cd "$BUILDDIR"
+    if test -n "$BUILDDIR"; then
+      test -d "$BUILDDIR" || mkdir "$BUILDDIR"
+      SRCDIR="$PWD"
+      cd "$BUILDDIR"
       eval "$SRCDIR/configure" "$PARAMS" || exit 1
-	else
+    else
       eval ./configure "$PARAMS" || exit 1
-	fi
+    fi
   else
     if test -f configure.in || test -f configure.ac; then
       echo "ERROR: configure.[in|ac] found, but configure missing." >&2
@@ -362,8 +411,8 @@ run_default_all () {
 
 run_default_svn () {
   if test -d .svn; then
-	PARAMS="$CMD_FLAGS"
-	eval svn "$PARAMS"
+    PARAMS="$CMD_FLAGS"
+    eval svn "$PARAMS"
   fi
 }
 
@@ -383,7 +432,7 @@ usage () {
     echo ""
     echo "  Execute COMMANDS for all Dune modules found. All entries in the"
     echo "  DUNE_CONTROL_PATH variable are scanned recursively for Dune modules."
-	echo "  If DUNE_CONTROL_PATH is empty, the current directory is scanned."
+    echo "  If DUNE_CONTROL_PATH is empty, the current directory is scanned."
     echo "  Dependencies are controlled by the $CONTROL files."
     echo ""
     echo "OPTIONS:"
@@ -400,7 +449,7 @@ usage () {
     echo "      --opts=FILE    load default options from FILE"
     echo "                     (see dune-common/doc/example.opts)"
     echo "      --builddir=NAME make out-of-source builds in a subdir NAME."
-	echo "                     This directory is create inside each module."
+    echo "                     This directory is create inside each module."
     echo "      --[COMMAND]-opts=opts   set options for COMMAND"
     echo "                     (this is mainly useful for the all COMMAND)"
     echo "COMMANDS:"
@@ -420,9 +469,9 @@ usage () {
 create_module_list() {
   find_modules_in_path
   if test "x$SEARCH_MODULES" != "x"; then
-	sort_modules $SEARCH_MODULES
+    sort_modules $SEARCH_MODULES
   else
-	sort_modules $MODULES
+    sort_modules $MODULES
   fi
   if test "x$ONLY" != x; then
     export MODULES="$ONLY"
@@ -476,7 +525,7 @@ while test $# -gt 0; do
         exit 1;
       fi
     ;;
-	--*-opts=*)
+    --*-opts=*)
       optcmd=`expr "x$option=" : 'x--\([^-]*\)-opts=.*'`
       if is_command $optcmd; then
         COMMAND=`echo $optcmd | tr '[:lower:]' '[:upper:]'`
@@ -502,7 +551,7 @@ while test $# -gt 0; do
         echo  >&2
         exit 1;
       fi
-	  for a in `echo $arg | tr ',' ' '`; do
+      for a in `echo $arg | tr ',' ' '`; do
         export NAME_`fix_variable_name $a`="$a"
         fix_and_assign MODULE "$a"
         export SEARCH_MODULES="$SEARCH_MODULES $MODULE"
@@ -515,31 +564,31 @@ while test $# -gt 0; do
         echo  >&2
         exit 1;
       fi
-	  for a in `echo $arg | tr ',' ' '`; do
+      for a in `echo $arg | tr ',' ' '`; do
         export NAME_`fix_variable_name $a`="$a"
         fix_and_assign MODULE "$a"
         export SEARCH_MODULES="$SEARCH_MODULES $MODULE"
         export ONLY="$ONLY $MODULE"
       done
-	;;
+    ;;
     --builddir=*)
-	  export DUNE_BUILDDIR=$arg
-	;;
+      export DUNE_BUILDDIR=$arg
+    ;;
     --no-builddir)
-	  export DUNE_BUILDDIR=""
-	;;
-	--skipversioncheck)
+      export DUNE_BUILDDIR=""
+    ;;
+    --skipversioncheck)
       export SKIPVERSIONCHECK=yes
-	;;
+    ;;
     --current)
-	  while ! test -f $CONTROL; do
+      while ! test -f $CONTROL; do
         cd ..
-	 	if test "$OLDPWD" = "$PWD"; then
-		  echo "You are not inside the source tree of a DUNE module." >&2
-		  exit -1
- 		fi
-	  done;
-	  parse_control $PWD/$CONTROL
+        if test "$OLDPWD" = "$PWD"; then
+          echo "You are not inside the source tree of a DUNE module." >&2
+          exit -1
+        fi
+      done;
+      parse_control $PWD/$CONTROL
       fix_and_assign MODULE "$module"
       export SEARCH_MODULES="$SEARCH_MODULES $MODULE"
       export ONLY="$ONLY $MODULE"
@@ -564,7 +613,7 @@ while test $# -gt 0; do
       usage
       echo "ERROR: Unknown option \`$option'"  >&2
       echo  >&2
-	  exit 1
+      exit 1
       ;;
     *)
       break
@@ -580,90 +629,63 @@ if test "x$1" = "x"; then
   exit 1
 fi
 
-while test $# -gt 0; do
-  # get command
-  command=$1
-  shift
+case "$1" in
+  print)
+    create_module_list
+    eval "print_module_list ' ' $MODULES"
+    echo >&2
+    ;;
+  export)
+    create_module_list
+    DUNE_CONTROL_PATH=""
+    for mod in $MODULES; do
+      if test x != x$DUNE_CONTROL_PATH; then
+        export DUNE_CONTROL_PATH="$DUNE_CONTROL_PATH:$(eval echo \$PATH_$mod/dune.module)"
+      else
+        export DUNE_CONTROL_PATH="$(eval echo \$PATH_$mod/dune.module)"
+      fi
+    done
+    echo export DUNE_CONTROL_PATH=$DUNE_CONTROL_PATH
+    ;;
+  m4create)
+    find_modules_in_path
+    mainmod=`echo $SEARCH_MODULES`
+    fname="dependencies.m4"
+    name=`eval echo \\${NAME_$mainmod}`
+    version=`eval echo \\${VERS_$mainmod}`
+    maintainer=`eval echo \\${MAIN_$mainmod}`
+    # get dependencies
+    eval deps=\$DEPS_$module
+    #initially remove leading space
+    deps=`echo "$deps" | sed 's/^ *//'`
+    while test -n "$deps"; do
+      #the end of the name is marked either by space, opening paren
+      #or comma
+      depname="${deps%%[ (,]*}"
+      #remove the name and adjacent whitespace
+      deps=`echo "$deps" | sed 's/^[^ (,]* *//'`
+      #check whether there is a dependency version
+      case "$deps" in
+      '('*) deps="${deps#(}"
+            depver="${deps%%)*}"
+            deps="${deps#*)}"
+            ;;
+      *)    depver=
+            ;;
+      esac
+      #remove any leading whitespace or commas for te next iteration
+      deps=`echo "$deps" | sed 's/^[, ]*//'`
 
-  # only load other parameters
-  load_opts NONE
-  # get command options
-  CMD_FLAGS=
-  while test $# -gt 0 && test "$1" != ":"; do
-    COMMAND=$(echo $command | tr '[:lower:]' '[:upper:]')
-    # setup paramter list
-    CMD_FLAGS="$CMD_FLAGS \"$1\""
-    shift
-  done
-  if test -z "$CMD_FLAGS"; then
-    load_opts $command
-  else
-    # disable usage of opts file
-    if test "x$DUNE_OPTS_FILE" != "x"; then
-      echo "WARNING: commandline parameters will overwrite setting in opts file \"$DUNE_OPTS_FILE\""
-    fi 
-  fi
-
-  # skip command delimiter
-  if test "$1" = ":"; then shift; fi
-
-  case "$command" in
-    print)
-      create_module_list
-      eval "print_module_list ' ' $MODULES"
-      echo >&2
-      ;;
-    export)
-      create_module_list
-      DUNE_CONTROL_PATH=""
-      for mod in $MODULES; do
-        if test x != x$DUNE_CONTROL_PATH; then
-          export DUNE_CONTROL_PATH="$DUNE_CONTROL_PATH:$(eval echo \$PATH_$mod/dune.module)"
-        else
-          export DUNE_CONTROL_PATH="$(eval echo \$PATH_$mod/dune.module)"
-        fi
-      done
-      echo export DUNE_CONTROL_PATH=$DUNE_CONTROL_PATH
-      ;;
-    m4create)
-      find_modules_in_path
-      mainmod=`echo $SEARCH_MODULES`
-      fname="dependencies.m4"
-      name=`eval echo \\${NAME_$mainmod}`
-      version=`eval echo \\${VERS_$mainmod}`
-      maintainer=`eval echo \\${MAIN_$mainmod}`
-      # get dependencies
-      eval deps=\$DEPS_$module
-      #initially remove leading space
-      deps=`echo "$deps" | sed 's/^ *//'`
-      while test -n "$deps"; do
-        #the end of the name is marked either by space, opening paren
-        #or comma
-        depname="${deps%%[ (,]*}"
-        #remove the name and adjacent whitespace
-        deps=`echo "$deps" | sed 's/^[^ (,]* *//'`
-        #check whether there is a dependency version
-        case "$deps" in
-        '('*) deps="${deps#(}"
-              depver="${deps%%)*}"
-              deps="${deps#*)}"
-              ;;
-        *)    depver=
-              ;;
-        esac
-        #remove any leading whitespace or commas for te next iteration
-        deps=`echo "$deps" | sed 's/^[, ]*//'`
-  
-        requires="$requires $depname $depver "
-      done
-      # ensure a version number
-      if test "x$version" = "x"; then version="0.0"; fi
-      echo "writing $fname"
-      echo "    for $name $version $maintainer"
-      echo "        requires $requires"
-	  AC_MACRO_DIR="."
-	  test ! -d m4 || AC_MACRO_DIR=m4
-      cat > $fname <<EOF
+      requires="$requires $depname $depver "
+    done
+    # ensure a version number
+    if test "x$version" = "x"; then version="0.0"; fi
+    echo "writing $fname"
+    echo "    for $name $version $maintainer"
+    echo "        requires $requires"
+      AC_MACRO_DIR="."
+      test ! -d m4 || AC_MACRO_DIR=m4
+    cat > $fname <<EOF
 # dependencies.m4 generated by dunecontrol
 
 m4_define([DUNE_AC_INIT],[
@@ -680,27 +702,27 @@ m4_define([DUNE_AC_INIT],[
 
 AC_DEFUN([DUNE_CHECK_MOD_DEPENDENCIES], [
 EOF
-      ### initialize AM_CONDITIONAL for suggestions that were not found
-      for name in $(eval echo \$SUGS_$mainmod); do
-        mod=$(fix_variable_name $name)
-        MOD=`echo $mod | tr [:lower:] [:upper:]`
-        if test "x$(eval echo \$HAVE_$mod)" = "x"; then
-          cat >> $fname <<EOF
+    ### initialize AM_CONDITIONAL for suggestions that were not found
+    for name in $(eval echo \$SUGS_$mainmod); do
+      mod=$(fix_variable_name $name)
+      MOD=`echo $mod | tr [:lower:] [:upper:]`
+      if test "x$(eval echo \$HAVE_$mod)" = "x"; then
+        cat >> $fname <<EOF
   ### add a conditional check for $name,
   # just in case the module is not available at autogen time
   AM_CONDITIONAL([HAVE_${MOD}], false)
 EOF
-        fi
-      done
-      ### DEPENDENCIES
-      if test "x$SEARCH_MODULES" != "x"; then
-        MODULES=$SEARCH_MODULES
       fi
-      sort_dependencies $MODULES
-      for mod in $MODULES; do
-        name=`eval echo \\$NAME_$mod`
-        MOD=`echo $mod | tr [:lower:] [:upper:]`
-        cat >> $fname <<EOF
+    done
+    ### DEPENDENCIES
+    if test "x$SEARCH_MODULES" != "x"; then
+      MODULES=$SEARCH_MODULES
+    fi
+    sort_dependencies $MODULES
+    for mod in $MODULES; do
+      name=`eval echo \\$NAME_$mod`
+      MOD=`echo $mod | tr [:lower:] [:upper:]`
+      cat >> $fname <<EOF
   ### check dependency $name
   # invoke checks required by this module
   AC_REQUIRE([${MOD}_CHECKS])
@@ -710,13 +732,13 @@ EOF
     AC_MSG_ERROR([could not find required module _dune_name])
   fi
 EOF
-      done
-      ### 
-      sort_suggestions $mainmod
-      for mod in $MODULES; do
-        name=`eval echo \\$NAME_$mod`
-        MOD=`echo $mod | tr [:lower:] [:upper:]`
-        cat >> $fname <<EOF
+    done
+    ### 
+    sort_suggestions $mainmod
+    for mod in $MODULES; do
+      name=`eval echo \\$NAME_$mod`
+      MOD=`echo $mod | tr [:lower:] [:upper:]`
+      cat >> $fname <<EOF
   ### check suggestion $name
   # invoke checks required by this module
   AC_REQUIRE([${MOD}_CHECKS])
@@ -726,50 +748,44 @@ EOF
     AC_MSG_WARN([could not find suggested module _dune_name])
   fi
 EOF
-      done
-      ###
-	  # only test for the module if we really define our own checks
-	  if test -d m4; then
-		  mod=$mainmod
-		  name=`eval echo \\$NAME_$mod`
-		  MOD=`echo $mod | tr [:lower:] [:upper:]`
-		  cat >> $fname <<EOF
+    done
+    ###
+    # only test for the module if we really define our own checks
+    if test -d m4; then
+      mod=$mainmod
+      name=`eval echo \\$NAME_$mod`
+      MOD=`echo $mod | tr [:lower:] [:upper:]`
+      cat >> $fname <<EOF
   ### invoke checks for $name
   AC_REQUIRE([${MOD}_CHECKS])
 EOF
-	  fi
-      cat >> $fname <<EOF
+    fi
+    cat >> $fname <<EOF
 ])
 EOF
-    ;;
-    unexport)
-      echo export DUNE_CONTROL_PATH=""
-    ;;
-    help)
-      usage
-    ;;
-    *)
-      if is_command $command; then
-		if test $command == update; then export SKIPVERSIONCHECK=yes; fi
-        create_module_list
-        NAMES=""
-        BUILDMODULES=""
-        for mod in $MODULES; do
-          if test "$(eval echo \$INST_$mod)" != "yes"; then
-            NAMES="$NAMES$(eval echo \$NAME_$mod) "
-            BUILDMODULES="$BUILDMODULES$mod "
-          fi
-        done
-        echo "--- going to build $NAMES ---"
-          build_modules "$command" $BUILDMODULES
-        echo "--- done ---"
-      else
-        usage
-        echo "ERROR: unknown command \"$command\""  >&2
-        exit 1
+  ;;
+  unexport)
+    echo export DUNE_CONTROL_PATH=""
+  ;;
+  help)
+    usage
+  ;;
+  *)
+    if test $1 == update; then export SKIPVERSIONCHECK=yes; fi
+    check_commands "$@"
+    create_module_list
+    NAMES=""
+    BUILDMODULES=""
+    for mod in $MODULES; do
+      if test "$(eval echo \$INST_$mod)" != "yes"; then
+        NAMES="$NAMES$(eval echo \$NAME_$mod) "
+        BUILDMODULES="$BUILDMODULES$mod "
       fi
-    ;;
-  esac
-done
+    done
+    echo "--- going to build $NAMES ---"
+      build_modules "$BUILDMODULES" $@
+    echo "--- done ---"
+  ;;
+esac
 
 trap - EXIT
