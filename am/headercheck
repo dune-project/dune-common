@@ -8,7 +8,7 @@ headercheck_PATTERN = *.hh
 # to ignore foo.hh
 
 hctest.o: hctest.cc
-	$(CXX) -I$(top_srcdir) -DHEADERCHECK \
+	$(CXX) -I$(top_builddir) -I$(top_srcdir) -DHEADERCHECK \
 	  $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	  $(DUNEMPICPPFLAGS) $(ALL_PKG_CPPFLAGS) -c -o $@ $<
 
