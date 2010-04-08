@@ -51,7 +51,6 @@ namespace Dune
     {
       return static_cast<const mpf_class&>(*this);
     }
-
   };
 
 
@@ -109,14 +108,23 @@ namespace Dune
 
 namespace std
 {
+
   template< unsigned int precision >
   inline Dune::GMPField< precision >
   sqrt ( const Dune::GMPField< precision > &a )
   {
     return Dune::GMPField< precision >(sqrt(static_cast<const mpf_class&>(a)));
   }
+
+  template< unsigned int precision >
+  inline Dune::GMPField< precision >
+  abs ( const Dune::GMPField< precision > &a )
+  {
+    return Dune::GMPField< precision >( abs( static_cast< const mpf_class & >( a ) ) );
+  }
+
 }
 
 #endif // HAVE_GMP
 
-#endif // #ifndef DUNE_MULTIPRECISION_HH
+#endif // #ifndef DUNE_GMPFIELD_HH
