@@ -314,7 +314,7 @@ namespace Dune
      * @brief Free objects.
      *
      * Does not call the destructor!
-     * @param n The number of object to free. Has to be one!
+     * @param n The number of objects to free. Has to be one!
      * @param p Pointer to the first object.
      */
     inline void deallocate(pointer p, std::size_t n);
