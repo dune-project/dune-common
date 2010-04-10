@@ -783,7 +783,7 @@ EOF
       fi
     done
     echo "--- going to build $NAMES ---"
-      build_modules "$BUILDMODULES" $@
+      build_modules "$BUILDMODULES" "$@"
     echo "--- done ---"
   ;;
 esac
