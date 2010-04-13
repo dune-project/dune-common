@@ -55,6 +55,11 @@ namespace Dune {
   }
 
   /** \brief Compute the square of T */
+  /**
+   * \code
+   *#include <dune/common/misc.hh>
+   * \endcode
+   */
   template<class T>
   T SQR (T t)
   {
