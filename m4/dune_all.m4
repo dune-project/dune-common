@@ -12,13 +12,6 @@ AC_DEFUN([DUNE_CHECK_ALL],[
   # doxygen and latex take a lot of time...
   AC_REQUIRE([DUNE_DOCUMENTATION])
 
-  AC_ARG_ENABLE(enabledist,
-    AS_HELP_STRING([--enable-dist],
-                 [go into create-tarballs-mode [[default=no]]]))
-  AM_CONDITIONAL(MAKEDIST, [test "x$enabledist" = "xyes"])
-  AS_IF([test "x$enabledist" = "xyes"],[
-    AM_CONDITIONAL(DUNEWEB, false)])
-
   # check the compilers (before using libtool !!!)
   AC_REQUIRE([PKG_PROG_PKG_CONFIG])
   AC_REQUIRE([AC_PROG_CC])
@@ -114,5 +107,5 @@ AC_DEFUN([DUNE_CHECK_ALL_M],[
 
 AC_DEFUN([DUNE_OFFICIAL_TARBALLS],[
   AC_ARG_ENABLE(officialtarballs,
-    AS_HELP_STRING([--disable-officialtarballs],[enforce configuration necessary for official tarballs]))
+    AS_HELP_STRING([--enable-officialtarballs],[enforce configuration necessary for official tarballs]))
 ])
