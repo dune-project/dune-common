@@ -144,7 +144,7 @@ PREDEFINED             = DOXYGEN \
                          _DEBUG_ALLOCATOR_H:=1 \
                          "DUNE_DEPRECATED:=/** \deprecated */"
 
-HAVE_DOT               = YES
+@DOT_TRUE@HAVE_DOT               = YES
 
 # If set to YES, the inheritance and collaboration graphs will show the
 # relations between templates and their instances.
