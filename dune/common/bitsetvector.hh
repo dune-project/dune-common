@@ -513,7 +513,7 @@ namespace Dune {
     }
 
     /** \brief Return the number of blocks */
-    int size() const
+    size_type size() const
     {
       return BlocklessBaseClass::size()/block_size;
     }
@@ -574,7 +574,7 @@ namespace Dune {
     }
 
     //! Returns the number of set bits, while each block is masked with 1<<i
-    int countmasked(int j) const
+    size_type countmasked(int j) const
     {
       size_type n = 0;
       size_type blocks = size();
