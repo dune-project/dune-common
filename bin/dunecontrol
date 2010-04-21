@@ -89,6 +89,11 @@ export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:`canonicalpath $0`/../lib/pkgconfig"
 
 ###############################################
 
+onbuildfailure() {
+  echo "Terminating $(basename $0) due to previous errors!" >&2
+  exit 1
+}
+
 #
 # for each module load the $CONTROL script part and run $command
 #
@@ -134,12 +139,14 @@ build_modules() {
     for module in $modules; do
       local path=$(eval "echo \$PATH_${module}")
       eval echo "--- calling $command for \$NAME_${module} ---"
+	  trap onbuildfailure EXIT
       if ! (
         set -e
         cd "$path"
         export module
         eval_control $runcommand $path/$CONTROL
       ); then eval echo "--- Failed to build \$NAME_${module} ---"; exit 1; fi
+	  trap onfailure EXIT
 
       modules_togo=`cat $RESUME_FILE`
       for module_togo in $modules_togo ; do
