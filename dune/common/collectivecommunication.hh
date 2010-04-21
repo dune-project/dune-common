@@ -20,6 +20,11 @@
 
 namespace Dune
 {
+
+  /* define some type that definitely differs from MPI_Comm */
+  struct No_Comm {};
+
+
   /*! @brief Collective communication interface and sequential default implementation
 
      CollectiveCommunication offers an abstraction to the basic methods
