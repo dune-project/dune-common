@@ -65,7 +65,7 @@ AC_DEFUN([DUNE_PATH_HDF5],[
 
  CPPFLAGS="$CPPFLAGS $_dune_hdf5_incpath"
 
- HDF5_CPPFLAGS=""
+ HDF5_CPPFLAGS="$_dune_hdf5_incpath"
  HDF5_LDFLAGS=""
  HDF5_LIBS=""
  HDF5_PARALLEL=0
