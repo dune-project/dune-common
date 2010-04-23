@@ -12,6 +12,8 @@ AC_DEFUN([DUNE_DOCUMENTATION],[
   AC_CHECK_PROGS([DVIPS], [dvips], [true])
   AC_CHECK_PROGS([WML], [wml], [true])
   AM_CONDITIONAL([WML], [test "x$WML" != xtrue])
+  AC_CHECK_PROGS([DOT], [dot], [true])
+  AM_CONDITIONAL([DOT], [test "x$DOT" != xtrue])
   AC_CHECK_PROGS([PERL], [perl], [true])
   AC_REQUIRE([DUNE_INKSCAPE])
   AC_CHECK_PROGS([CONVERT], [convert], [true])
@@ -30,6 +32,8 @@ AC_DEFUN([DUNE_DOCUMENTATION],[
       AC_MSG_ERROR([dvips is missing. This program is required for official tarballs!])])
     AS_IF([test "x$WML" = "xtrue"],[
       AC_MSG_ERROR([wml is missing. This program is required for official tarballs!])])
+    AS_IF([test "x$DOT" = "xtrue"],[
+      AC_MSG_ERROR([dot is missing. This program is required for official tarballs!])])
     AS_IF([test "x$PERL" = "xtrue"],[
       AC_MSG_ERROR([perl is missing. This program is required for official tarballs!])])
     AS_IF([test "x$CONVERT" = "xtrue"],[
