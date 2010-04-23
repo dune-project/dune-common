@@ -161,11 +161,8 @@ namespace Dune
 
   struct SmallObjectPolyAllocator
   {
-    template< class T > T *allocate ( size_t n = 1 );
-    template< class T > void deallocate ( T *p );
-
-    template< class T > void construct ( T *p, const T &value ) { new( p ) T( value ); }
-    template< class T > void destroy ( T *p ) { p->~T(); }
+    template< class T > T *create ( const T &value );
+    template< class T > void destroy ( T *p );
   };
 
 
@@ -208,14 +205,16 @@ namespace Dune
   // ------------------------------------------
 
   template< class T >
-  inline T *SmallObjectPolyAllocator::allocate ( size_t n )
+  inline T *SmallObjectPolyAllocator::create ( const T &value )
   {
-    return static_cast< T * >( SmallObjectPool::allocate( n * sizeof( T ) ) );
+    void *address = SmallObjectPool::allocate( sizeof( T ) );
+    return new( address ) T( value );
   }
 
   template< class T >
-  inline void SmallObjectPolyAllocator::deallocate ( T *p )
+  inline void SmallObjectPolyAllocator::destroy ( T *p )
   {
+    p.~T();
     SmallObjectPool::free( p );
   }
 

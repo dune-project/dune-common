@@ -14,24 +14,15 @@ namespace Dune
   struct PolyAllocator
   {
     template< class T >
-    T *allocate ( size_t n = 1 )
+    T *create ( const T &value )
     {
-      return static_cast< T * >( operator new( n * sizeof( T ) ) );
+      return new T( value );
     }
 
-    template< class T > void deallocate ( T *p )
+    template< class T >
+    void destroy ( T *p )
     {
-      operator delete( p );
-    }
-
-    template< class T > void construct ( T *p, const T &value )
-    {
-      new( p ) T( value );
-    }
-
-    template< class T > void destroy ( T *p )
-    {
-      p->~T();
+      delete p;
     }
   };
 
