@@ -48,27 +48,21 @@ struct G
     alloc_(alloc)
   {
     if( k>0 )
-    {
-      B *b = alloc_.template allocate< B >();
-      alloc_.construct( b, B( k ) );
-      a_ = b;
-    }
+      a_ = alloc_.create( B( k ) );
     else
-    {
-      C *c = alloc_.template allocate< C >();
-      alloc_.construct( c, C() );
-      a_ = c;
-    }
+      a_ = alloc_.create( C() );
   }
+
   ~G()
   {
     alloc_.destroy( a_ );
-    alloc_.deallocate( a_ );
   }
+
   void test()
   {
     a_->test();
   }
+
 private:
   Allocator alloc_;
   A *a_;
