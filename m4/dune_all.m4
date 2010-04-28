@@ -92,15 +92,20 @@ AC_DEFUN([DUNE_SUMMARY_ALL],[
 
 ])
 
-AC_DEFUN([DUNE_CHECK_ALL_M],[
+AC_DEFUN([DUNE_CHECK_ALL_WARNING],
         [echo
-        echo "    The build system of your module has called the deprecated method DUNE_CHECK_ALL_M."
-        echo "    Please replace that call (in configure.ac) by a call to DUNE_CHECK_ALL.  If you"
-        echo "    need the dune -> . symlink add DUNE_SYMLINK to your configure.ac."
+        echo "    The build system of your module has called the deprecated method [DUNE_CHECK_ALL_M]."
+        echo "    Please replace that call (in configure.ac) by a call to [DUNE_CHECK_ALL].  If you"
+        echo "    need the dune -> . symlink add [DUNE_SYMLINK] to your configure.ac."
         echo "    Press 'enter' to continue!"
         echo
-        read -u 7]
-  AC_REQUIRE([DUNE_SYMLINK])
+        read -u AS_ORIGINAL_STDIN_FD
+]
+)
+
+AC_DEFUN([DUNE_CHECK_ALL_M],[
+  AC_REQUIRE([DUNE_CHECK_ALL_WARNING])
+dnl  AC_REQUIRE([DUNE_SYMLINK])
   AC_REQUIRE([DUNE_CHECK_ALL])
   AC_REQUIRE([DUNE_AUTOBUILD_FLAGS])
 ])
