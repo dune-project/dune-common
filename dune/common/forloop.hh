@@ -7,6 +7,79 @@
 
 namespace Dune
 {
+
+  // GenericForLoop
+  // --------------
+
+  template< template< class, class > class Operation, template< int > class Value, int first, int last >
+  class GenericForLoop
+    : public Operation< Value< first >, GenericForLoop< Operation, Value, first+1, last > >
+  {
+    dune_static_assert( (first <= last), "GenericForLoop: first > last" );
+  };
+
+  template< template< class, class > class Operation, template< int > class Value, int last >
+  class GenericForLoop< Operation, Value, last, last >
+    : public Value< last >
+  {};
+
+
+
+  // ForLoopHelper
+  // -------------
+
+  namespace ForLoopHelper
+  {
+
+    template< class A, class B >
+    struct Apply
+    {
+      static void apply ()
+      {
+        A::apply();
+        B::apply();
+      }
+
+      template< class T1 >
+      static void apply ( T1 &p1 )
+      {
+        A::apply( p1 );
+        B::apply( p1 );
+      }
+
+      template< class T1, class T2 >
+      static void apply ( T1 &p1, T2 &p2 )
+      {
+        A::apply( p1, p2 );
+        B::apply( p1, p2 );
+      }
+
+      template< class T1, class T2, class T3 >
+      static void apply ( T1 &p1, T2 &p2, T3 &p3 )
+      {
+        A::apply( p1, p2, p3 );
+        B::apply( p1, p2, p3 );
+      }
+
+      template< class T1, class T2, class T3, class T4 >
+      static void apply ( T1 &p1, T2 &p2, T3 &p3, T4 &p4 )
+      {
+        A::apply( p1, p2, p3, p4 );
+        B::apply( p1, p2, p3, p4 );
+      }
+
+      template< class T1, class T2, class T3, class T4, class T5 >
+      static void apply ( T1 &p1, T2 &p2, T3 &p3, T4 &p4, T5 &p5 )
+      {
+        A::apply( p1, p2, p3, p4, p5 );
+        B::apply( p1, p2, p3, p4, p5 );
+      }
+    };
+
+  }
+
+
+
   /** \class ForLoop
    * @brief A static loop using TMP
    *
@@ -46,92 +119,12 @@ namespace Dune
    */
 
   template< template< int > class Operation, int first, int last >
-  struct ForLoop
+  class ForLoop
+    : public GenericForLoop< ForLoopHelper::Apply, Operation, first, last >
   {
-    static void apply ()
-    {
-      Operation< first >::apply();
-      ForLoop< Operation, first+1, last >::apply();
-    }
-
-    template< class T1 >
-    static void apply ( T1 &p1 )
-    {
-      Operation< first >::apply( p1 );
-      ForLoop< Operation, first+1, last >::apply( p1 );
-    }
-
-    template< class T1, class T2 >
-    static void apply ( T1 &p1, T2 &p2 )
-    {
-      Operation< first >::apply( p1, p2 );
-      ForLoop< Operation, first+1, last >::apply( p1, p2 );
-    }
-
-    template< class T1, class T2, class T3 >
-    static void apply ( T1 &p1, T2 &p2, T3 &p3 )
-    {
-      Operation< first >::apply( p1, p2, p3 );
-      ForLoop< Operation, first+1, last >::apply( p1, p2, p3 );
-    }
-
-    template< class T1, class T2, class T3, class T4 >
-    static void apply ( T1 &p1, T2 &p2, T3 &p3, T4 &p4 )
-    {
-      Operation< first >::apply( p1, p2, p3, p4 );
-      ForLoop< Operation, first+1, last >::apply( p1, p2, p3, p4 );
-    }
-
-    template< class T1, class T2, class T3, class T4, class T5 >
-    static void apply ( T1 &p1, T2 &p2, T3 &p3, T4 &p4, T5 &p5 )
-    {
-      Operation< first >::apply( p1, p2, p3, p4, p5 );
-      ForLoop< Operation, first+1, last >::apply( p1, p2, p3, p4, p5 );
-    }
-
-  private:
     dune_static_assert( (first <= last), "ForLoop: first > last" );
-  };
-
-  template< template< int > class Operation, int last >
-  struct ForLoop< Operation, last, last >
-  {
-    static void apply ()
-    {
-      Operation< last >::apply();
-    }
-
-    template< class T1 >
-    static void apply ( T1 &p1 )
-    {
-      Operation< last >::apply( p1 );
-    }
-
-    template< class T1, class T2 >
-    static void apply ( T1 &p1, T2 &p2 )
-    {
-      Operation< last >::apply( p1, p2 );
-    }
-
-    template< class T1, class T2, class T3 >
-    static void apply ( T1 &p1, T2 &p2, T3 &p3 )
-    {
-      Operation< last >::apply( p1, p2, p3 );
-    }
-
-    template< class T1, class T2, class T3, class T4 >
-    static void apply ( T1 &p1, T2 &p2, T3 &p3, T4 &p4 )
-    {
-      Operation< last >::apply( p1, p2, p3, p4 );
-    }
-
-    template< class T1, class T2, class T3, class T4, class T5 >
-    static void apply ( T1 &p1, T2 &p2, T3 &p3, T4 &p4, T5 &p5 )
-    {
-      Operation< last >::apply( p1, p2, p3, p4, p5 );
-    }
   };
 
 }
 
-#endif
+#endif // #ifndef DUNE_COMMON_FORLOOP_HH
