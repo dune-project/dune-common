@@ -214,7 +214,7 @@ namespace Dune
   template< class T >
   inline void SmallObjectPolyAllocator::destroy ( T *p )
   {
-    p.~T();
+    p->~T();
     SmallObjectPool::free( p );
   }
 
