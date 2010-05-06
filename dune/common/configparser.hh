@@ -7,9 +7,12 @@
 #include <istream>
 #include <map>
 #include <ostream>
+#include <typeinfo>
 #include <vector>
 #include <string>
 #include <iostream>
+
+#include <dune/common/fvector.hh>
 
 namespace Dune {
 
@@ -61,6 +64,11 @@ namespace Dune {
    */
   class ConfigParser
   {
+    // class providing a single static parse() function, used by the
+    // generic get() method
+    template<typename T>
+    struct Parser;
+
   public:
 
     typedef std::vector<std::string> KeyVector;
@@ -228,6 +236,24 @@ namespace Dune {
      */
     bool get(const std::string& key, bool defaultValue);
 
+
+    /** \brief get value converted to a certain type
+     *
+     * Returns value as type T for given key.
+     *
+     * \tparam T type of returned value.
+     * \param key key name
+     * \param defaultValue default if key does not exist
+     * \return value converted to T
+     */
+    template<typename T>
+    T get(const std::string& key, const T& defaultValue) {
+      if(hasKey(key))
+        return get<T>(key);
+      else
+        return defaultValue;
+    }
+
     /** \brief Get value
      *
      * \tparam T Type of the value
@@ -237,7 +263,19 @@ namespace Dune {
      * \return value as T
      */
     template <class T>
-    T get(const std::string& key);
+    T get(const std::string& key) {
+      if(not hasKey(key))
+        DUNE_THROW(RangeError, "Key '" << key << "' not found in "
+                   "parameter file!");
+      try {
+        return Parser<T>::parse((*this)[key]);
+      }
+      catch(const RangeError&) {
+        DUNE_THROW(RangeError, "Cannot parse value \"" <<
+                   (*this)[key] << "\" for key \"" << key << "\" "
+                   "as a " << typeid(T).name());
+      }
+    }
 
     /** \brief get value keys
      *
@@ -265,6 +303,30 @@ namespace Dune {
     static std::string ltrim(const std::string& s);
     static std::string rtrim(const std::string& s);
   };
+
+  template<typename T, int n>
+  struct ConfigParser::Parser<FieldVector<T, n> > {
+    static FieldVector<T, n>
+    parse(const std::string& str) {
+      FieldVector<T, n> val;
+      std::istringstream s(str);
+      for(int i = 0; i < n; ++i) {
+        s >> val[i];
+        if(!s)
+          DUNE_THROW(RangeError, "Cannot parse value \"" << str <<
+                     "\" as a FieldVector<" << typeid(T).name() <<
+                     ", " << n << ">");
+      }
+      T dummy;
+      s >> dummy;
+      // now extraction should have failed, and eof should be set
+      if(not s.fail() or not s.eof())
+        DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" "
+                   "as a FieldVector<double, " << n << ">");
+      return val;
+    }
+  };
+
 } // end namespace dune
 
 
