@@ -24,6 +24,13 @@ void ConfigParser::parseFile(std::string file)
   if (!in)
     DUNE_THROW(IOError, "Could not open configuration file " << file);
 
+  parseStream(in, "file '" + file + "'");
+}
+
+
+void ConfigParser::parseStream(std::istream& in,
+                               const std::string srcname)
+{
   string prefix;
   set<string> keysInFile;
   while(!in.eof())
@@ -76,7 +83,8 @@ void ConfigParser::parseFile(std::string file)
         }
 
         if (keysInFile.count(key) != 0)
-          DUNE_THROW(Exception, "Key '" << key << "' appears twice in file '" << file << "' !");
+          DUNE_THROW(Exception, "Key '" << key <<
+                     "' appears twice in " << srcname << " !");
         else
         {
           (*this)[key] = value;
@@ -87,7 +95,6 @@ void ConfigParser::parseFile(std::string file)
     }
   }
 
-  in.close();
   return;
 }
 
