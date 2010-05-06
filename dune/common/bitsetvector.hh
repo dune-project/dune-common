@@ -552,18 +552,6 @@ namespace Dune {
       return const_reference(*this, size()-1);
     }
 
-    //! Returns the total number of set bits
-    size_type nSetBits() const DUNE_DEPRECATED
-    {
-      return count();
-    }
-
-    //! Returns the number of set bits, while each block is masked with 1<<i
-    int nSetBits(int i) const DUNE_DEPRECATED
-    {
-      return countmasked(i);
-    }
-
     //! Returns the number of bits that are set.
     size_type count() const
     {
