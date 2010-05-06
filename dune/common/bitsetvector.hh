@@ -10,8 +10,8 @@
 #include <vector>
 #include <bitset>
 #include <iostream>
+#include <algorithm>
 
-#include <dune/common/deprecated.hh>
 #include <dune/common/genericiterator.hh>
 #include <dune/common/exceptions.hh>
 
@@ -555,10 +555,7 @@ namespace Dune {
     //! Returns the number of bits that are set.
     size_type count() const
     {
-      size_type n = 0;
-      for(size_type i=0; i<BlocklessBaseClass::size(); ++i)
-        n += BlocklessBaseClass::operator[](i);
-      return n;
+      return std::count(BlocklessBaseClass::begin(), BlocklessBaseClass::end(), true);
     }
 
     //! Returns the number of set bits, while each block is masked with 1<<i
