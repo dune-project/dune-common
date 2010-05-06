@@ -9,7 +9,10 @@ AC_DEFUN([DUNE_DEPRECATED_CPPFLAGS],
 [
   AH_VERBATIM([DEPRECATED_$1_USED],
 [#ifdef DEPRECATED_$1_USED
-#warning $3
+]dnl Note we have to use a quadrigraph in the following call to m4_text_wrap
+dnl since older versions of that macro are seriously broken when it comes to
+dnl the #-character
+m4_text_wrap([$3], [@%:@warning ])[
 #endif])
   AC_SUBST([$1], [$2" -D DEPRECATED_$1_USED"])
 ])
