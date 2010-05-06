@@ -3,7 +3,8 @@
 #include "configparser.hh"
 
 #include <cstdlib>
-
+#include <iostream>
+#include <ostream>
 #include <string>
 #include <sstream>
 #include <fstream>
@@ -127,19 +128,24 @@ void ConfigParser::report() const
 
 void ConfigParser::report(const string prefix) const
 {
+  reportStream(std::cout, prefix);
+}
+
+void ConfigParser::reportStream(ostream& stream, const string& prefix) const
+{
   typedef map<string, string>::const_iterator ValueIt;
   ValueIt vit = values.begin();
   ValueIt vend = values.end();
 
   for(; vit!=vend; ++vit)
-    cout << vit->first << " = \"" << vit->second << "\"" << endl;
+    stream << vit->first << " = \"" << vit->second << "\"" << endl;
 
   typedef map<string, ConfigParser>::const_iterator SubIt;
   SubIt sit = subs.begin();
   SubIt send = subs.end();
   for(; sit!=send; ++sit)
   {
-    cout << "[ " << prefix + sit->first << " ]" << endl;
+    stream << "[ " << prefix + sit->first << " ]" << endl;
     (sit->second).report(prefix + sit->first + ".");
   }
 }
