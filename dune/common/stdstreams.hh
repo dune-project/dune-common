@@ -34,7 +34,7 @@ namespace Dune {
 
 
 
-     The singleton instances of the available debug streams can befound in
+     The singleton instances of the available debug streams can be found in
      the \ref DebugOut "Standard Debug Streams" module
    */
 
