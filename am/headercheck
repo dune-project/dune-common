@@ -49,7 +49,7 @@ headercheck-am:
 	    || echo "#include <config.h>" > $$CCFILE; \
 	  echo "#include <$${HEADER}>" >> $$CCFILE; \
 	  echo "#include <$${HEADER}>" >> $$CCFILE; \
-	  echo "int main () {}" >> $$CCFILE; \
+	  echo "int main () { return 0; }" >> $$CCFILE; \
 	  make 	$$OFILE > $$LOGFILE 2>&1; \
 	  SUCCESS=$$?; \
 	  if ! (test $$SUCCESS -eq 0 && test -e $$OFILE); then \
