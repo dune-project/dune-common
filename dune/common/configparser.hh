@@ -328,6 +328,25 @@ namespace Dune {
     static std::string rtrim(const std::string& s);
   };
 
+  template<typename T>
+  struct ConfigParser::Parser {
+    static T parse(const std::string& str) {
+      T val;
+      std::istringstream s(str);
+      s >> val;
+      if(!s)
+        DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" "
+                   "as a " << typeid(T).name());
+      T dummy;
+      s >> dummy;
+      // now extraction should have failed, and eof should be set
+      if(not s.fail() or not s.eof())
+        DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" "
+                   "as a " << typeid(T).name());
+      return val;
+    }
+  };
+
   template<typename T, int n>
   struct ConfigParser::Parser<FieldVector<T, n> > {
     static FieldVector<T, n>
