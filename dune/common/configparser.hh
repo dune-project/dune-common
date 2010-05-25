@@ -82,12 +82,33 @@ namespace Dune {
      *
      * Parses C++ stream and build hierarchical config structure.
      *
+     * \param in        The stream to parse
+     * \param overwrite Whether to overwrite already existing values.
+     *                  If false, values in the stream will be ignored
+     *                  if the key is already present.
+     *
+     * \note This method is identical to parseStream(std::istream&,
+     *       const std::string&, bool) with the exception that that
+     *       method allows to give a custom name for the stream.
+     */
+    void parseStream(std::istream& in,
+                     bool overwrite);
+
+
+    /** \brief parse C++ stream
+     *
+     * Parses C++ stream and build hierarchical config structure.
+     *
      * \param in      The stream to parse
      * \param srcname Name of the configuration source for error
      *                messages, "stdin" or a filename.
+     * \param overwrite Whether to overwrite already existing values.
+     *                  If false, values in the stream will be ignored
+     *                  if the key is already present.
      */
     void parseStream(std::istream& in,
-                     const std::string srcname = "stream");
+                     const std::string srcname = "stream",
+                     bool overwrite = true);
 
 
     /** \brief parse file
@@ -95,8 +116,11 @@ namespace Dune {
      * Parses file with given name and build hierarchical config structure.
      *
      * \param file filename
+     * \param overwrite Whether to overwrite already existing values.
+     *                  If false, values in the stream will be ignored
+     *                  if the key is already present.
      */
-    void parseFile(std::string file);
+    void parseFile(std::string file, bool overwrite = true);
 
 
     /** \brief parse command line
