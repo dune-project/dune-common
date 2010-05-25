@@ -18,7 +18,7 @@ endif
 
 # add some more stuff to install and tarball
 DOCFILES = $(PAGES)
-EXTRA_DIST = $(PAGES)
+EXTRA_DIST = $(PAGES) Doxystyle
 
 include $(top_srcdir)/am/doxygen
 include $(top_srcdir)/am/global-rules
