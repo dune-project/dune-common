@@ -1,5 +1,10 @@
 # $Id$
 
+doxydir = $(pkgdatadir)/doc/doxygen
+
+doxy_DATA =					\
+	Doxystyle
+
 # setting like in dune-web
 BASEDIR=../..
 CURDIR=doc/doxygen
