@@ -15,6 +15,10 @@ int main ()
   try {
     Dune::ConfigParser parameterSet;
 
+    parameterSet["testDouble"] = "3.14";
+    parameterSet["testInt"]    = "42";
+    parameterSet["testString"] = "Hallo Welt!";
+
     double testDouble      = parameterSet.get<double>("testDouble");
     int testInt            = parameterSet.get<int>("testInt");
     std::string testString = parameterSet.get<std::string>("testString");
