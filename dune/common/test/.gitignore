@@ -43,6 +43,7 @@ testfassign3
 testfassign4
 smallobject
 conversiontest
+configparsertest
 nullptr-test
 blockbitfieldtest
 deprtuplestest
