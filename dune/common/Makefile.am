@@ -13,7 +13,7 @@ commoninclude_HEADERS = alignment.hh array.hh \
   enumset.hh exceptions.hh fixedarray.hh fmatrix.hh fmatrixev.hh \
   fvector.hh ftraits.hh genericiterator.hh \
   iteratorfacades.hh \
-  misc.hh poolallocator.hh finitestack.hh \
+  misc.hh mpitraits.hh poolallocator.hh finitestack.hh \
   sllist.hh shared_ptr.hh stdstreams.hh timer.hh tuples.hh \
   typetraits.hh precision.hh bigunsignedint.hh \
   gcd.hh lcm.hh configparser.hh propertymap.hh \
