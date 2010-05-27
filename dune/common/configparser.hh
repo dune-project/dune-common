@@ -3,14 +3,13 @@
 #ifndef DUNE_CONFIGPARSER_HH
 #define DUNE_CONFIGPARSER_HH
 
-
+#include <iostream>
 #include <istream>
 #include <map>
 #include <ostream>
+#include <string>
 #include <typeinfo>
 #include <vector>
-#include <string>
-#include <iostream>
 
 #include <dune/common/fvector.hh>
 
@@ -56,10 +55,10 @@ namespace Dune {
      fruit.stonefruit.cherry = red
      \endverbatim
    *
-   * All keys with a common 'prefix.' belong to the same substructure called 'prefix'.
-   * Leading and trailing spaces and tabs are removed from the values unless you use
-   * single or double quotes around them.
-   * Using single or double quotes you can also have multiline values.
+   * All keys with a common 'prefix.' belong to the same substructure called
+   * 'prefix'.  Leading and trailing spaces and tabs are removed from the
+   * values unless you use single or double quotes around them.  Using single
+   * or double quotes you can also have multiline values.
    *
    */
   class ConfigParser
@@ -289,21 +288,22 @@ namespace Dune {
     template <class T>
     T get(const std::string& key) {
       if(not hasKey(key))
-        DUNE_THROW(RangeError, "Key '" << key << "' not found in "
-                   "parameter file!");
+        DUNE_THROW(RangeError, "Key '" << key << "' not found in parameter "
+                   "file!");
       try {
         return Parser<T>::parse((*this)[key]);
       }
       catch(const RangeError&) {
         DUNE_THROW(RangeError, "Cannot parse value \"" <<
-                   (*this)[key] << "\" for key \"" << key << "\" "
-                   "as a " << typeid(T).name());
+                   (*this)[key] << "\" for key \"" << key << "\" as a " <<
+                   typeid(T).name());
       }
     }
 
     /** \brief get value keys
      *
-     * Returns a vector of all keys associated to (key,values) entries in order of appearance
+     * Returns a vector of all keys associated to (key,values) entries in
+     * order of appearance
      *
      * \return reference to entry vector
      */
@@ -312,7 +312,8 @@ namespace Dune {
 
     /** \brief get substructure keys
      *
-     * Returns a vector of all keys associated to (key,substructure) entries in order of appearance
+     * Returns a vector of all keys associated to (key,substructure) entries
+     * in order of appearance
      *
      * \return reference to entry vector
      */
@@ -335,14 +336,14 @@ namespace Dune {
       std::istringstream s(str);
       s >> val;
       if(!s)
-        DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" "
-                   "as a " << typeid(T).name());
+        DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" as a " <<
+                   typeid(T).name());
       T dummy;
       s >> dummy;
       // now extraction should have failed, and eof should be set
       if(not s.fail() or not s.eof())
-        DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" "
-                   "as a " << typeid(T).name());
+        DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" as a " <<
+                   typeid(T).name());
       return val;
     }
   };
@@ -356,22 +357,19 @@ namespace Dune {
       for(int i = 0; i < n; ++i) {
         s >> val[i];
         if(!s)
-          DUNE_THROW(RangeError, "Cannot parse value \"" << str <<
-                     "\" as a FieldVector<" << typeid(T).name() <<
-                     ", " << n << ">");
+          DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" as a "
+                     "FieldVector<" << typeid(T).name() << ", " << n << ">");
       }
       T dummy;
       s >> dummy;
       // now extraction should have failed, and eof should be set
       if(not s.fail() or not s.eof())
-        DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" "
-                   "as a FieldVector<double, " << n << ">");
+        DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\"  as a "
+                   "FieldVector<double, " << n << ">");
       return val;
     }
   };
 
-} // end namespace dune
+} // end namespace Dune
 
-
-
-#endif
+#endif // DUNE_CONFIGPARSER_HH
