@@ -157,6 +157,19 @@ namespace Dune {
     //! always a false value
     static const bool value = false;
   };
+
+  //! template which always yields a true value
+  /**
+   *  \tparam T Some type.  It sould be a type expression involving template
+   *            parameters of the class or function using AlwaysTrue.
+   *
+   *  \note This class exists mostly for consistency with AlwaysFalse.
+   */
+  template<typename T>
+  struct AlwaysTrue {
+    //! always a true value
+    static const bool value = true;
+  };
 } // namespace Dune
 
 /* @} */
