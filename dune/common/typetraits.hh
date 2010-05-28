@@ -369,6 +369,43 @@ namespace Dune
   {
     typedef T2 Type;
   };
+
+  ////////////////////////////////////////////////////////////////////////
+  //
+  // integral_constant (C++0x 20.7.3 "Helper classes")
+  //
+#if defined HAVE_TYPE_TRAITS
+  using std::integral_constant;
+  using std::true_type;
+  using std::false_type;
+#elif defined HAVE_TR1_TYPE_TRAITS
+  using std::tr1::integral_constant;
+  using std::tr1::true_type;
+  using std::tr1::false_type;
+#else
+  //! Generate a type for a given integral constant
+  /**
+   * \tparam T Type of the constant.
+   * \tparam v Value of the constant.
+   */
+  template <class T, T v>
+  struct integral_constant {
+    //! value this type was generated for
+    static const T value = v;
+    //! type of value
+    typedef T value_type;
+    //! type of this class itself
+    typedef integral_constant<T,v> type;
+    //! conversion to value_type/T
+    operator value_type() { return value; }
+  };
+
+  //! type for true
+  typedef integral_constant<bool, true> true_type;
+  //! type for false
+  typedef integral_constant<bool, false> false_type;
+#endif
+
   /** @} */
 }
 #endif
