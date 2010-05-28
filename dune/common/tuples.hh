@@ -1100,6 +1100,7 @@ namespace Dune {
     return first_;
   }
 
+  /** }@ */
 #endif
 }
 #endif
