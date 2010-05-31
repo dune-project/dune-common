@@ -7,6 +7,7 @@ noinst_LTLIBRARIES = libcommon.la
 
 libcommon_la_SOURCES =				\
 	configparser.cc				\
+	ios_state.cc				\
 	stdstreams.cc
 
 commonincludedir = $(includedir)/dune/common
@@ -40,6 +41,7 @@ commoninclude_HEADERS = 			\
 	geometrytype.hh				\
 	gmpfield.hh				\
 	interfaces.hh				\
+	ios_state.hh				\
 	iteratorfacades.hh			\
 	lcm.hh					\
 	lru.hh					\
