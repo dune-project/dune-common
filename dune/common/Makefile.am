@@ -5,25 +5,65 @@ SUBDIRS = . test exprtmpl
 # the standard debug streams are put into the libdune
 noinst_LTLIBRARIES = libcommon.la
 
-libcommon_la_SOURCES = stdstreams.cc configparser.cc
+libcommon_la_SOURCES =				\
+	configparser.cc				\
+	stdstreams.cc
 
 commonincludedir = $(includedir)/dune/common
-commoninclude_HEADERS = alignment.hh array.hh \
-  arraylist.hh bitsetvector.hh debugstream.hh deprecated.hh \
-  enumset.hh exceptions.hh fixedarray.hh fmatrix.hh fmatrixev.hh \
-  fvector.hh ftraits.hh genericiterator.hh \
-  iteratorfacades.hh \
-  misc.hh mpitraits.hh poolallocator.hh finitestack.hh \
-  sllist.hh shared_ptr.hh stdstreams.hh timer.hh tuples.hh \
-  typetraits.hh precision.hh bigunsignedint.hh \
-  gcd.hh lcm.hh configparser.hh propertymap.hh \
-  collectivecommunication.hh mpihelper.hh singleton.hh \
-  mpicollectivecommunication.hh geometrytype.hh utility.hh \
-  bartonnackmanifcheck.hh binaryfunctions.hh lru.hh fassign.hh \
-  static_assert.hh smallobject.hh version.hh \
-  float_cmp.cc float_cmp.hh nullptr.hh \
-  forloop.hh function.hh interfaces.hh \
-  gmpfield.hh mpiguard.hh polyallocator.hh
+commoninclude_HEADERS = 			\
+	alignment.hh				\
+	array.hh				\
+	arraylist.hh				\
+	bartonnackmanifcheck.hh			\
+	bigunsignedint.hh			\
+	binaryfunctions.hh			\
+	bitsetvector.hh				\
+	collectivecommunication.hh		\
+	configparser.hh				\
+	debugstream.hh				\
+	deprecated.hh				\
+	enumset.hh				\
+	exceptions.hh				\
+	fassign.hh				\
+	finitestack.hh				\
+	fixedarray.hh				\
+	float_cmp.cc				\
+	float_cmp.hh				\
+	fmatrix.hh				\
+	fmatrixev.hh				\
+	forloop.hh				\
+	ftraits.hh				\
+	function.hh				\
+	fvector.hh				\
+	gcd.hh					\
+	genericiterator.hh			\
+	geometrytype.hh				\
+	gmpfield.hh				\
+	interfaces.hh				\
+	iteratorfacades.hh			\
+	lcm.hh					\
+	lru.hh					\
+	misc.hh					\
+	mpicollectivecommunication.hh		\
+	mpiguard.hh				\
+	mpihelper.hh				\
+	mpitraits.hh				\
+	nullptr.hh				\
+	polyallocator.hh			\
+	poolallocator.hh			\
+	precision.hh				\
+	propertymap.hh				\
+	shared_ptr.hh				\
+	singleton.hh				\
+	sllist.hh				\
+	smallobject.hh				\
+	static_assert.hh			\
+	stdstreams.hh				\
+	timer.hh				\
+	tuples.hh				\
+	typetraits.hh				\
+	utility.hh				\
+	version.hh
 
 if EXPRESSIONTEMPLATES
 commoninclude_HEADERS += exprtmpl.hh exprtmpl/scalar.inc exprtmpl/exprexpr.inc
