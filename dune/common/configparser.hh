@@ -383,6 +383,30 @@ namespace Dune {
     }
   };
 
+  template<typename T, typename A>
+  struct ConfigParser::Parser<std::vector<T, A> > {
+    static std::vector<T, A>
+    parse(const std::string& str) {
+      std::vector<T, A> vec;
+      std::istringstream s(str);
+      while(true) {
+        T val;
+        s >> val;
+        if(s.fail()) {
+          if(s.eof())
+            // extraction failed because of EOF, that OK
+            break;
+          // otherwise, it failed because of something else
+          DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" as a "
+                     "std::vector<" << typeid(T).name() << ", " <<
+                     typeid(A).name() << ">");
+        }
+        vec.push_back(val);
+      }
+      return vec;
+    }
+  };
+
 } // end namespace Dune
 
 #endif // DUNE_CONFIGPARSER_HH
