@@ -348,6 +348,19 @@ namespace Dune {
     }
   };
 
+  // "How do I convert a string into a wstring in C++?"  "Why, that very simple
+  // son.  You just need a these hundred lines of code."
+  // Instead im gonna restrict myself to string with charT=char here
+  template<typename traits, typename Allocator>
+  struct ConfigParser::Parser<std::basic_string<char, traits, Allocator> > {
+    static std::basic_string<char, traits, Allocator>
+    parse(const std::string& str) {
+      std::string trimmed = ltrim(rtrim(str));
+      return std::basic_string<char, traits, Allocator>(trimmed.begin(),
+                                                        trimmed.end());
+    }
+  };
+
   template<typename T, int n>
   struct ConfigParser::Parser<FieldVector<T, n> > {
     static FieldVector<T, n>
