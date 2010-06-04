@@ -154,14 +154,12 @@ AC_DEFUN([DUNE_MODULE_ADD_SUMMARY_ENTRY],[
   m4_pushdef([_dune_name], [$1])
   m4_pushdef([_dune_module], [m4_translit(_dune_name, [-], [_])])
   m4_pushdef([_DUNE_MODULE], [m4_toupper(_dune_module)])
-  result="$with_[]_dune_module"
-  AS_IF([test -n "$_DUNE_MODULE[]_ROOT"],[
-    result="$result ($_DUNE_MODULE[]_ROOT)"
+  AS_IF([test -n "$_DUNE_MODULE[]_VERSION" -a "x$with_[]_dune_module" != "xno"],[
+    result="version $_DUNE_MODULE[]_VERSION"
+  ],[
+    result="$with_[]_dune_module"
   ])
-  AS_IF([test -n "$_DUNE_MODULE[]_VERSION"],[
-    result="$result version $_DUNE_MODULE[]_VERSION"
-  ])
-  DUNE_ADD_SUMMARY_MOD_ENTRY(_dune_name,[$result])
+  DUNE_ADD_SUMMARY_MOD_ENTRY(_dune_name,[$result],[$_DUNE_MODULE[]_ROOT])
 ])
 
 m4_define([_dune_sub_version],"`echo $1 | $AWK -F. -v FIELD=$2 '{ print int($FIELD) }'`")

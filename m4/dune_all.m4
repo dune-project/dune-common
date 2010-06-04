@@ -55,6 +55,9 @@ AC_DEFUN([DUNE_ADD_SUMMARY_ENTRY],[
   while test `echo "$txt" | tr -d '\n' | wc -c` -lt $indentlen; do txt="$txt."; done
   txt="$txt: $2"
   [DUNE_SUMMARY="$DUNE_SUMMARY echo '$txt';"]
+  fulltxt="$txt"
+  AS_IF([ test "x$3" != "x" ],[ fulltxt="$fulltxt  ($3)" ])
+  [DUNE_FULLSUMMARY="$DUNE_FULLSUMMARY echo '$fulltxt';"]
 ])
 
 AC_DEFUN([DUNE_ADD_SUMMARY_MOD_ENTRY],[
@@ -63,6 +66,9 @@ AC_DEFUN([DUNE_ADD_SUMMARY_MOD_ENTRY],[
   while test `echo $txt | tr -d '\n' | wc -c` -lt $indentlen; do txt=$txt.; done
   txt="$txt: $2"
   [DUNE_MODULES_SUMMARY="$DUNE_MODULES_SUMMARY echo '$txt';"]
+  fulltxt="$txt"
+  AS_IF([ test "x$3" != "x" ],[ fulltxt="$fulltxt  ($3)" ])
+  [DUNE_MODULES_FULLSUMMARY="$DUNE_MODULES_FULLSUMMARY echo '$fulltxt';"]
 ])
 
 AC_DEFUN([DUNE_SUMMARY_ALL],[
@@ -90,6 +96,19 @@ AC_DEFUN([DUNE_SUMMARY_ALL],[
   echo "See ./configure --help and config.log for reasons why a component wasn't found"
   echo
 
+  {
+    echo
+    echo "------------------------------------------------------------------------------"
+    echo "-                                  SUMMARY                                   -"
+    echo "------------------------------------------------------------------------------"
+    echo  
+    [(eval $DUNE_MODULES_FULLSUMMARY) | sort]
+    echo
+    [(eval $DUNE_FULLSUMMARY) | sort]
+    echo
+    echo "------------------------------------------------------------------------------"
+    echo
+  } >&AS_MESSAGE_LOG_FD
 ])
 
 AC_DEFUN([DUNE_CHECK_ALL_WARNING],
