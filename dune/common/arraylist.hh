@@ -709,7 +709,6 @@ namespace Dune
     // Deallocate memory not needed any more.
     for(size_t chunk=0; chunk<chunks; chunk++) {
       --posChunkStart;
-      assert(list_->chunks_[posChunkStart] && list_->chunks_[posChunkStart].use_count()==1);
       list_->chunks_[posChunkStart].reset();
     }
 
