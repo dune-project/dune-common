@@ -76,9 +76,13 @@ namespace Dune
     bigunsignedint<k>& operator++ ();
 
     //! divide
+    //! \warning This function is very slow and its usage should be
+    //! prevented if possible
     bigunsignedint<k> operator/ (const bigunsignedint<k>& x) const;
 
     //! modulo
+    //! \warning This function is very slow and its usage should be
+    //! prevented if possible
     bigunsignedint<k> operator% (const bigunsignedint<k>& x) const;
 
 
