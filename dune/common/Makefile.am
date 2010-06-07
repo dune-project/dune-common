@@ -8,6 +8,7 @@ noinst_LTLIBRARIES = libcommon.la
 libcommon_la_SOURCES =				\
 	configparser.cc				\
 	ios_state.cc				\
+	parametertree.cc                        \
 	stdstreams.cc
 
 commonincludedir = $(includedir)/dune/common
@@ -51,6 +52,7 @@ commoninclude_HEADERS = 			\
 	mpihelper.hh				\
 	mpitraits.hh				\
 	nullptr.hh				\
+	parametertree.hh                        \
 	polyallocator.hh			\
 	poolallocator.hh			\
 	precision.hh				\
