@@ -21,7 +21,7 @@ TESTPROGS = \
     lrutest \
     mpihelpertest \
     mpicollcomm \
-    mpiguard \
+    mpiguardtest \
     nullptr-test \
     polyallocator \
 	poolallocatortest \
@@ -121,10 +121,10 @@ mpicollcomm_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)
 mpicollcomm_LDADD = $(DUNEMPILIBS) $(LDADD)
 mpicollcomm_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
 
-mpiguard_SOURCES = mpiguard.cc
-mpiguard_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)
-mpiguard_LDADD = $(DUNEMPILIBS) $(LDADD)
-mpiguard_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
+mpiguardtest_SOURCES = mpiguardtest.cc
+mpiguardtest_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)
+mpiguardtest_LDADD = $(DUNEMPILIBS) $(LDADD)
+mpiguardtest_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
 
 singletontest_SOURCES = singletontest.cc
 

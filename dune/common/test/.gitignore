@@ -28,6 +28,7 @@ timing_xpr
 timing_old
 timing_flt
 bigunsignedinttest
+mpiguardtest
 mpihelpertest
 singletontest
 utilitytest
