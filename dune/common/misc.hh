@@ -152,7 +152,7 @@ namespace Dune {
    *
    * \note This is slow for containers which don't have random access iterators.
    *       In the case of containers with bidirectional iterators, this
-   *       slow-ness is unecessary.
+   *       slow-ness is unnecessary.
    */
   template<typename C>
   bool hasSuffix(const C& c, const char* suffix) {
