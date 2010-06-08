@@ -3,37 +3,44 @@
 
 TESTPROGS = \
     arraylisttest \
-	bigunsignedinttest \
+    bigunsignedinttest \
     bitsetvectortest \
     configparsertest \
     conversiontest \
     deprtuplestest \
-    gcdlcmtest \
     fassigntest \
-        testfassign1 testfassign2 testfassign3 testfassign4 \
-        testfassign_fail1 testfassign_fail2 testfassign_fail3 \
-        testfassign_fail4 testfassign_fail5 testfassign_fail6 \
+    float_cmp \
     fmatrixtest \
     fvectortest \
-    float_cmp \
-	iteratorfacadetest \
+    gcdlcmtest \
+    iteratorfacadetest \
     iteratorfacadetest2 \
     lrutest \
-    mpihelpertest \
     mpicollcomm \
     mpiguardtest \
+    mpihelpertest \
     nullptr-test \
     polyallocator \
-	poolallocatortest \
+    poolallocatortest \
     settest \
     shared_ptrtest \
     singletontest \
-	smallobject \
+    smallobject \
     static_assert_test \
     streamtest \
-    tuplestest \
     test-stack \
-	utilitytest
+    testfassign1 \
+    testfassign2 \
+    testfassign3 \
+    testfassign4 \
+    testfassign_fail1 \
+    testfassign_fail2 \
+    testfassign_fail3 \
+    testfassign_fail4 \
+    testfassign_fail5 \
+    testfassign_fail6 \
+    tuplestest \
+    utilitytest
 
 # which tests to run
 COMPILE_XFAIL=$(DUNE_COMMON_BIN)/xfail-compile-tests
