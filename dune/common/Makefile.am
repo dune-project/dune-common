@@ -9,6 +9,7 @@ libcommon_la_SOURCES =				\
 	configparser.cc				\
 	ios_state.cc				\
 	parametertree.cc                        \
+	path.cc					\
 	stdstreams.cc
 
 commonincludedir = $(includedir)/dune/common
@@ -53,6 +54,7 @@ commoninclude_HEADERS = 			\
 	mpitraits.hh				\
 	nullptr.hh				\
 	parametertree.hh                        \
+	path.hh					\
 	polyallocator.hh			\
 	poolallocator.hh			\
 	precision.hh				\
