@@ -20,6 +20,7 @@ TESTPROGS = \
     mpiguardtest \
     mpihelpertest \
     nullptr-test \
+    pathtest \
     polyallocator \
     poolallocatortest \
     settest \
@@ -69,6 +70,8 @@ check_PROGRAMS = $(TESTPROGS)
 noinst_HEADERS = dummyiterator.hh
 
 # define the programs
+pathtest_SOURCES = pathtest.cc
+
 smallobject_SOURCES = smallobject.cc
 
 bitsetvectortest_SOURCES = bitsetvectortest.cc
