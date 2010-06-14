@@ -13,23 +13,24 @@ namespace Dune
 {
 
 #ifndef DOXYGEN
-  namespace {
-    /*
-       Interface class for the communication needed by MPIGuard
-     */
-    struct GuardCommunicator
-    {
-      // cleanup
-      virtual ~GuardCommunicator() {};
-      // all the communication methods we need
-      virtual int rank() = 0;
-      virtual int size() = 0;
-      virtual int sum(int i) = 0;
-      // create a new GuardCommunicator pointer
-      template <class C>
-      static GuardCommunicator * create(const C & c);
-    };
 
+  /*
+     Interface class for the communication needed by MPIGuard
+   */
+  struct GuardCommunicator
+  {
+    // cleanup
+    virtual ~GuardCommunicator() {};
+    // all the communication methods we need
+    virtual int rank() = 0;
+    virtual int size() = 0;
+    virtual int sum(int i) = 0;
+    // create a new GuardCommunicator pointer
+    template <class C>
+    static GuardCommunicator * create(const C & c);
+  };
+
+  namespace {
     /*
        templated implementation of different communication classes
      */
@@ -62,12 +63,12 @@ namespace Dune
           CollectiveCommunication<MPI_Comm>(c)) {}
     };
 #endif
+  }   // anonymous namespace
 
-    template<class C>
-    GuardCommunicator * GuardCommunicator::create(const C & comm)
-    {
-      return new GenericGuardCommunicator<C>(comm);
-    }
+  template<class C>
+  GuardCommunicator * GuardCommunicator::create(const C & comm)
+  {
+    return new GenericGuardCommunicator<C>(comm);
   }
 #endif
 
