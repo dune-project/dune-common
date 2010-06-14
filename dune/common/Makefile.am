@@ -42,6 +42,7 @@ commoninclude_HEADERS = 			\
 	genericiterator.hh			\
 	geometrytype.hh				\
 	gmpfield.hh				\
+	indent.hh				\
 	interfaces.hh				\
 	ios_state.hh				\
 	iteratorfacades.hh			\
