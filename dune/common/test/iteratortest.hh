@@ -10,7 +10,7 @@
 
 /**
  * @brief Tests the capabilities of a forward iterator.
- * @param begin Iterator positioned at the stsrt.
+ * @param begin Iterator positioned at the start.
  * @param end Iterator positioned at the end.
  * @param opt Functor for doing whatever one wants.
  */
