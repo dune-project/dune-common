@@ -169,7 +169,7 @@ sort_modules() {
   export SORTEDMODULES=""
   # handle each modules passed as parameter
   for m in "$@"; do
-    # did we find a module file for this mopdule?
+    # did we find a module file for this module?
     if test "x$(eval echo \$HAVE_$m)" != "x"; then
       _sort_module $m
     else
@@ -295,7 +295,7 @@ _sort_module() {
     #initially remove leading space
     deps=`echo "$deps" | sed 's/^ *//'`
     while test -n "$deps"; do
-      #the end of the name is marked either by space, opening paren
+      #the end of the name is marked either by space, opening parenthesis,
       #or comma
       name="${deps%%[ (,]*}"
       #remove the name and adjacent whitespace
@@ -309,7 +309,7 @@ _sort_module() {
       *)    depver=
             ;;
       esac
-      #remove any leading whitespace or commas for te next iteration
+      #remove any leading whitespace or commas for the next iteration
       deps=`echo "$deps" | sed 's/^[, ]*//'`
       dep=$(fix_variable_name $name)
       if ! check_modname $dep; then 
@@ -321,7 +321,7 @@ _sort_module() {
         if test "$SKIPVERSIONCHECK" != "yes" && ! check_version "$ver" "$depver"; then
           echo "ERROR: version mismatch." >&2
           echo "       $modname requires $name $depver," >&2
-          echo "       but only $name = $ver available." >&2
+          echo "       but only $name = $ver is available." >&2
           exit 1
         fi
         _sort_module $dep
