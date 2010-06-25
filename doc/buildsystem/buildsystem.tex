@@ -85,7 +85,7 @@ Im Neuenheimer Feld 368, D-69120 Heidelberg, Germany}\\
 
 \section{Creating a new \dune project}\label{section::creating_new_dune_project}
 
-From a buildsystem point of view there is no difference between a \dune
+From a build system point of view there is no difference between a \dune
 application and a \dune module.\\
 
 \dune modules are packages that offer a certain functionality that can
@@ -146,7 +146,7 @@ modules). It can be done by calling
 \end{lstlisting}
 
 \emph{Note:} In case you are using the unstable version
-\dune you should be aware that the buildsystem may change,
+\dune you should be aware that the build system may change,
 just like the source code. Therefore it might be that
 \texttt{duneproject} is not up to date with the latest changes. \\
 
@@ -203,7 +203,7 @@ Hello World! This is dune-foo.
 This is a sequential program.
 \end{lstlisting}
 
-If you want your \dune module to be useable by other people your
+If you want your \dune module to be usable by other people your
 design should follow a certain structure. A good way to indicate that
 your module is set up like the other \dune modules is by naming it
 with the prefix \texttt{dune-}\xspace.  Since your module should be
@@ -515,7 +515,7 @@ Perhaps you're wondering why the above examples used
 \texttt{AM\_CPPFLAGS} instead of the normal \texttt{CPPFLAGS}? The
 reason for this is that the variables \texttt{CFLAGS},
 \texttt{CPPFLAGS}, \texttt{CXXFLAGS} etc. are considered {\em user
-  variables} which may be set on the commandline:
+  variables} which may be set on the command line:
 
 \begin{lstlisting}[language=make]
 make CXXFLAGS="-O2000"
@@ -534,8 +534,8 @@ overridden).
 
 Besides the three types of variables mentioned so far (user-, automake- and
 program-variables) there exists a fourth type by convention: variables of
-dependend libraries.  These variables have the form
-\texttt{\textit{LIBRARY}\_\textit{VAR}} and contain flags neccessary to build
+dependent libraries.  These variables have the form
+\texttt{\textit{LIBRARY}\_\textit{VAR}} and contain flags necessary to build
 programs or libraries which depend on that library.  They are usually included
 in \texttt{\textit{program}\_\textit{VAR}}, like this:
 \begin{lstlisting}[language=make]
@@ -747,14 +747,14 @@ $(target_LDFLAGS) $(LDFLAGS)
 \begin{lstlisting}[language=make]
 $(AM_LDFLAGS) $(LDFLAGS)
 \end{lstlisting}
-  is used.  These variables are inapropriate to pass any options or parameters
+  is used.  These variables are inappropriate to pass any options or parameters
   that specify libraries of object files, in particular \texttt{-L} or
   \texttt{-l} or the libtool options \texttt{-dlopen} and \texttt{-dlpreopen}.
   Use a variable from the {\em libraries to link to} set to do that.
   \begin{description}
   \item[\texttt{\textit{target}\_LDFLAGS}] Class: {\bf target-specific}.
     Target-specific C++ compiler flags.  If this variable exists, it overrides
-    \texttt{AM\_LDFLAGS}.  The existance of this variable does {\em not} cause
+    \texttt{AM\_LDFLAGS}.  The existence of this variable does {\em not} cause
     renaming of object files\footnote{automake manual, ``Why are object files
       sometimes renamed?''}.
   \item[\texttt{AM\_LDFLAGS}] Class: {\bf automake}.  This is the makefile
@@ -841,9 +841,9 @@ target_LIBADD =
   \texttt{DUNEMPILDFLAGS} and \texttt{DUNEMPILIBS}, and the deprecated
   variables \texttt{MPI\_CPPFLAGS} and \texttt{MPI\_LDFLAGS} (note there is no
   \texttt{MPI\_LIBS}).  Unfortunately with most MPI implementations it is
-  impossible to obtain the linker flags seperately from the libraries to link
+  impossible to obtain the linker flags separately from the libraries to link
   to.  Therefore, this macro stuffs everything into \texttt{DUNEMPILIBS},
-  which has the advantage that it works and the disavantage that users are
+  which has the advantage that it works and the disadvantage that users are
   unable to overwrite the linker flags.  If that is a problem users should set
   these variables themselves on the configure command line.
 
@@ -876,25 +876,25 @@ foo_LDADD = \
   %$\end{lstlisting}
   Note that there are no such variables for the current module -- these
   variables are used in the process of building the current module, so that
-  module is incomplete when detecting these variables.  Note alse that by
+  module is incomplete when detecting these variables.  Note also that by
   ``\dune module'' we mean a software package which uses the \dune
-  buildsystem, not one of the official dune modules.
-\item[Basic \dune] To use the basic functionality af all detected \dune
+  build system, not one of the official dune modules.
+\item[Basic \dune] To use the basic functionality of all detected \dune
   modules, the variables \texttt{DUNE\_CPPFLAGS}, \texttt{DUNE\_LDFLAGS} and
   \texttt{DUNE\_LIBS} may be used.  They collect the contents of all \dune
   module variables, possibly with duplicates removed.
 \item[Extended \dune] To use \dune with all functionality that requires
   external libraries, the variables \texttt{ALL\_PKG\_CPPFLAGS},
   \texttt{ALL\_PKG\_LDFLAGS} and \texttt{ALL\_PKG\_LIBS} may be used.  They
-  provide everything neccessary to build with any external library detected by
-  configure.  In the case of Alberta a choise must be made between 2D and 3D.
+  provide everything necessary to build with any external library detected by
+  configure.  In the case of Alberta a choice must be made between 2D and 3D.
   Here the \texttt{ALL\_PKG\_*} variables just follow the choice of the
   corresponding \texttt{ALBERTA\_*} variables.
 \end{description}
 
 \minisec{Conditional builds}
 
-Some parts of \dune only make sense if certain addon-packages were
+Some parts of \dune only make sense if certain add-on packages were
 found. autoconf therefore defines {\em conditionals} which automake can
 use:
 
@@ -951,7 +951,7 @@ configuration.
 
 Your \texttt{doxygen} documentation should be located in the
 subdirectory \texttt{doc/doxygen/}\xspace (see ``Coding Style'' in the
-setion ``Developing Dune'' on
+section ``Developing Dune'' on
 \texttt{\url{http://www.dune-project.org/}} for details). \em After
 running \duneproject the basic setup is already done\em.
 
@@ -966,9 +966,9 @@ information where header and source files are located in your
 project. Usually you will not have to adjust this file, it is already
 created by \duneproject. It only
 contains the very basic information. During the \texttt{dune-autogen}\xspace
-run the script \texttt{dunedoxynize}\xspace use the information contained in
-\texttt{Doxylocal}, merge them with the global \dune \texttt{doxygen}\xspace
-styles and write \texttt{Doxyfile.in}, which will be translated into a
+run the script \texttt{dunedoxynize}\xspace uses the information contained in
+\texttt{Doxylocal}, merges them with the global \dune \texttt{doxygen}\xspace
+styles and writes \texttt{Doxyfile.in}, which will be translated into a
 full \texttt{Doxyfile}\xspace during the \configure run. For details about
 the configuration of \texttt{doxygen}\xspace and about documenting your
 source code we refer to the \texttt{doxygen}\xspace web-site
@@ -1174,7 +1174,7 @@ The commands you are interested in right now are
 \begin{itemize}
 \item \texttt{autogen} runs \autogen for each module. A list of
   directories containing \dunemodule files and the parameters given on
-  the commandline are passed as parameters to \autogen.
+  the command line are passed as parameters to \autogen.
 \item \texttt{configure} runs \configure for each
   module. \texttt{--with-dune\textit{module}} parameters are created
   for a set of known \dune modules.
@@ -1294,7 +1294,7 @@ their values are separated by colon. Possible parameters are
 The command section lets you overload the default implementation
 provided by \dunecontrol. For each command \dunecontrol call the
 function \texttt{run\_\textit{command}}. The parameters from the
-commandline or the opts file are store in the variable
+command line or the opts file are store in the variable
 \texttt{\$CMD\_FLAGS}. If you just want to create additional parameters
 you can add these to \texttt{\$CMD\_FLAGS} and then call the default
 implementation of the command via
