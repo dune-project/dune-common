@@ -1,6 +1,6 @@
 # $Id$
 
-# Check for the right way to create the deprecated warning
+# Check for the right way to create the deprecation warning
 
 AC_DEFUN([DUNE_CHECKDEPRECATED],[
 	AC_MSG_CHECKING([for __attribute__((deprecated))])
@@ -22,5 +22,5 @@ AC_DEFUN([DUNE_CHECKDEPRECATED],[
         AC_LANG_POP([C++])
 
     AC_DEFINE_UNQUOTED(DUNE_DEPRECATED, $DUNE_DEPRECATED,
-                      [how to create a deprecated warning])
+                      [how to create a deprecation warning])
 ])
