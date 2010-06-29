@@ -506,6 +506,7 @@ export ONLY=""
 # parse commandline parameters
 while test $# -gt 0; do
     # get option
+    command=$1
     option=$1
 
     # get args
@@ -631,12 +632,12 @@ while test $# -gt 0; do
 done
 
 # we assume there should be a command...
-if test "x$1" = "x"; then
+if test "x$command" = "x"; then
   usage
   exit 1
 fi
 
-case "$1" in
+case "$command" in
   print)
     create_module_list
     eval "print_module_list ' ' $MODULES"
