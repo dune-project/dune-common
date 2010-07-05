@@ -64,7 +64,7 @@ parse_control() {
     exit 1
   fi
   # create and check variable name from module name
-  export module_inst=""
+  export module_inst="no"
   export module=$(fix_variable_name $name)
   # read dune.module file
   local deps="$(echo $($GREP "^[$BLANK]*Depends:" "$1" | cut -d ':' -f2))"
@@ -79,10 +79,7 @@ parse_control() {
   local path="$(canonicalpath "$1")"
   if test -f $path/../../../lib/dunecontrol/${name}/dune.module; then
 	  path=$(canonicalname "$path/../../../")
-      export module_inst="true"
-      export INST_${module}=yes
-  else
-      export INST_${module}=no
+      export module_inst="yes"
   fi
   if ! check_modname "$module"; then
     echo "ERROR: $CONTROL files $1 contains an invalid Module entry" >&2
@@ -90,12 +87,43 @@ parse_control() {
   fi
   # avoid multiple definition of the same module
   if test "x$(eval echo \$HAVE_$module)" != "x"; then
-    echo "ERROR: multiple definition of module $name" >&2
-    echo "previous defined in:" >&2
-    echo "  $(eval echo \$PATH_$module)/$CONTROL" >&2
-    echo "redefined in:" >&2
-    echo "  $path/$CONTROL" >&2
-    exit 1
+    case "$(eval echo \$INST_$module)$module_inst" in
+    # multiple local modules are an error
+    # multiple installed modules are an error
+    nono|yesyes)
+      echo "ERROR: multiple definition of module $name" >&2
+      echo "previous defined in:" >&2
+      if test "$(eval echo \$INST_$module)" = "yes"; then
+        echo "  $(eval echo \$PATH_$module)/lib/dunecontrol/${name}/$CONTROL" >&2
+      else
+        echo "  $(eval echo \$PATH_$module)/$CONTROL" >&2
+      fi
+      echo "redefined in:" >&2
+      if test "$module_inst" = "yes"; then
+        echo "  $path/lib/dunecontrol/${name}/$CONTROL" >&2
+      else
+        echo "  $path/$CONTROL" >&2
+      fi
+      exit 1
+    ;;
+    # installed modules are super seeded by locally built modules
+    noyes)
+      echo "WARNING: ignoring installed module file" >&2
+      echo "  $path/lib/dunecontrol/${name}/$CONTROL" >&2
+      echo "using previously found locally built module" >&2
+      echo "  $(eval echo \$PATH_$module)/$CONTROL" >&2
+	  export module_inst="no"
+      return
+    ;;
+    # local modules super seed installed modules
+    yesno)
+      echo "WARNING: not using installed module file" >&2
+      echo "  $(eval echo \$PATH_$module)/lib/dunecontrol/${name}/$CONTROL" >&2
+      echo "using locally built module" >&2
+      echo "  $path/$CONTROL" >&2
+      true # do nothing, ignore the previously found module
+    ;;
+    esac
   fi
   # set status variables
   export HAVE_${module}=yes
@@ -104,6 +132,7 @@ parse_control() {
   export NAME_${module}="$name"
   export MAIN_${module}="$main"
   export DEPS_${module}="$deps"
+  export INST_${module}="$module_inst"
   for name in $deps; do
     mod=$(fix_variable_name $name)
     export NAME_${mod}="$name"
@@ -148,9 +177,9 @@ find_modules() {
   if test -f "$1" && 
       test "$(basename $1)" = "$CONTROL"; then
       export module=""
-      export module_inst=""
+      export module_inst="no"
       parse_control "$1"
-      if test -n "$module_inst"; then
+      if test "$module_inst" = "yes"; then
         export INSTMODULES="$MODULES$module "
       else
         export MODULES="$MODULES$module "
