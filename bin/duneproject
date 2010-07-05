@@ -140,7 +140,7 @@ echo
 
 ################## FIND AVAILABLE MODULES ##################
 
-. $(canonicalpath $0)/dunemodules.inc
+. $(canonicalpath $0)/../lib/dunemodules.lib
 
 # create PKG_CONFIG_PATH for installed dune modules
 export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$(canonicalpath $0)/../lib/pkgconfig"

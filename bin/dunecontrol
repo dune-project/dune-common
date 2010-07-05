@@ -78,11 +78,11 @@ if test "x$DEBUG" = "xyes"; then
   set -v
 fi
 
-export COMMAND_DIR="`canonicalpath $0`"
+export PREFIX_DIR="`canonicalpath $0`/.."
 export RESUME_FILE="$HOME/.dune.resume"
 
 # Read the modules find part
-. "$COMMAND_DIR/dunemodules.inc"
+. "$PREFIX_DIR/lib/dunemodules.lib"
 
 # create PKG_CONFIG_PATH for installed dune modules
 export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:`canonicalpath $0`/../lib/pkgconfig"
@@ -345,7 +345,7 @@ run_default_autogen () {
           >&2
       echo "         dune-autogen is used instead." >&2
     fi
-    eval "$COMMAND_DIR/dune-autogen" "$MODULE_PATHS" "$PARAMS" || exit 1
+    eval "$PREFIX_DIR/bin/dune-autogen" "$MODULE_PATHS" "$PARAMS" || exit 1
   else
     echo Skipping dune-autogen
   fi
