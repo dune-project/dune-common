@@ -203,14 +203,15 @@ namespace Dune
   private:
     int rank_;
     int size_;
+    void prevent_warning(int){}
 
     //! \brief calls MPI_Init with argc and argv as parameters
     MPIHelper(int& argc, char**& argv)
     {
       rank_ = -1;
       size_ = -1;
-      //static int is_initialized = MPI_Init(&argc, &argv);
-      MPI_Init(&argc, &argv);
+      static int is_initialized = MPI_Init(&argc, &argv);
+      prevent_warning(is_initialized);
       MPI_Comm_rank(MPI_COMM_WORLD,&rank_);
       MPI_Comm_size(MPI_COMM_WORLD,&size_);
 
