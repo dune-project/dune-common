@@ -106,7 +106,7 @@ parse_control() {
       fi
       exit 1
     ;;
-    # installed modules are super seeded by locally built modules
+    # installed modules are superseded by locally built modules
     noyes)
       echo "WARNING: ignoring installed module file" >&2
       echo "  $path/lib/dunecontrol/${name}/$CONTROL" >&2
@@ -115,7 +115,7 @@ parse_control() {
 	  export module_inst="no"
       return
     ;;
-    # local modules super seed installed modules
+    # local modules supersede installed modules
     yesno)
       echo "WARNING: not using installed module file" >&2
       echo "  $(eval echo \$PATH_$module)/lib/dunecontrol/${name}/$CONTROL" >&2
