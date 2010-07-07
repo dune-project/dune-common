@@ -1,5 +1,7 @@
 # $Id: $
 
+EXTRA_DIST = dunemodules.lib
+
 #the dune-common library
 lib_LTLIBRARIES = libdunecommon.la
 

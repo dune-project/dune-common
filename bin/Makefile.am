@@ -3,7 +3,7 @@
 # put scripts into dist-tarball
 EXTRA_DIST = duneproject dunecontrol \
   dunedoxynize \
-  dunemodules.inc mpi-config dune-autogen \
+  mpi-config dune-autogen \
   xfail-compile-tests
 
 # ... and install some
