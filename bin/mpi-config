@@ -60,6 +60,11 @@ verbose=0
 usage()
 {
   cat <<EOF
+mpi-config is a tool to help you determine the compiler and linker flags that
+you need in order to build your code with MPI.  It is very similar to pkg-config,
+but doesn't rely on help from your MPI installation.  If/when MPI implementations
+start supporting pkg-config then mpi-config will become obsolete.
+  
 Usage: mpi-config [OPTIONS] [LIBRARIES]
 Options:
  [--mpicc[=COMPILER]]
