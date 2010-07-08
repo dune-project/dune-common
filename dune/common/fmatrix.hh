@@ -283,6 +283,21 @@ namespace Dune
       return *this;
     }
 
+    //! Binary matrix comparison
+    bool operator== (const FieldMatrix& y) const
+    {
+      for (size_type i=0; i<rows; i++)
+        if (p[i]!=y.p[i])
+          return false;
+      return true;
+    }
+    //! Binary vector incomparison
+    bool operator!= (const FieldMatrix& y) const
+    {
+      return !operator==(y);
+    }
+
+
     //===== linear maps
 
     //! y = A x
@@ -1088,6 +1103,17 @@ namespace Dune
     {
       a[ 0 ] += k * y.a[ 0 ];
       return *this;
+    }
+
+    //! Binary matrix comparison
+    bool operator== (const FieldMatrix& y) const
+    {
+      return a[0] == y.a[0];
+    }
+    //! Binary vector incomparison
+    bool operator!= (const FieldMatrix& y) const
+    {
+      return !operator==(y);
     }
 
     //===== linear maps
