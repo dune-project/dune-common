@@ -485,8 +485,8 @@ namespace Dune {
    */
   template <int N, class Tuple>
   struct AtType {
-    typename ElementType<Length<Tuple>::value - N - 1,
-        Tuple>::Type Type;
+    typedef typename tuple_element<Length<Tuple>::value - N - 1,
+        Tuple>::type Type;
   };
 
   /**
