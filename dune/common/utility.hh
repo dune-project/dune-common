@@ -3,6 +3,8 @@
 #ifndef DUNE_UTILITY_HH
 #define DUNE_UTILITY_HH
 
+#include <dune/common/static_assert.hh>
+
 #include "tuples.hh"
 
 namespace Dune {
@@ -25,122 +27,145 @@ namespace Dune {
    * in a class which you can only initialise in a later stage.
    */
   template <class Tuple>
-  class NullPointerInitialiser {};
-
-  namespace
-  {
-    /**
-     * @brief Helper class for initialising null pointers.
-     *
-     * First template parameter is the tuple.
-     * Second templates parameter is the size of the tuple.
-     */
-    template<class T, int size>
-    struct InitialiserHelper
-    {};
-
-    template<typename T1, typename T2, typename T3, typename T4, typename T5,
-        typename T6, typename T7, typename T8, typename T9>
-    struct InitialiserHelper<tuple<T1*,T2,T3,T4,T5,T6,T7,T8,T9>,1>
-    {
-      static inline tuple<T1*,T2,T3,T4,T5,T6,T7,T8,T9> apply()
-      {
-        return tuple<T1*,T2,T3,T4,T5,T6,T7,T8,T9>(0);
-      }
-    };
-
-    template<typename T1, typename T2, typename T3, typename T4, typename T5,
-        typename T6, typename T7, typename T8, typename T9>
-    struct InitialiserHelper<tuple<T1*,T2*,T3,T4,T5,T6,T7,T8,T9>,2>
-    {
-      static inline tuple<T1*,T2*,T3,T4,T5,T6,T7,T8,T9> apply()
-      {
-        return tuple<T1*,T2*,T3,T4,T5,T6,T7,T8,T9>(0,0);
-      }
-    };
-
-    template<typename T1, typename T2, typename T3, typename T4, typename T5,
-        typename T6, typename T7, typename T8, typename T9>
-    struct InitialiserHelper<tuple<T1*,T2*,T3*,T4,T5,T6,T7,T8,T9>,3>
-    {
-      static inline tuple<T1*,T2*,T3*,T4,T5,T6,T7,T8,T9> apply()
-      {
-        return tuple<T1*,T2*,T3*,T4,T5,T6,T7,T8,T9>(0,0,0);
-      }
-    };
-
-    template<typename T1, typename T2, typename T3, typename T4, typename T5,
-        typename T6, typename T7, typename T8, typename T9>
-    struct InitialiserHelper<tuple<T1*,T2*,T3*,T4*,T5,T6,T7,T8,T9>,4>
-    {
-      static inline tuple<T1*,T2*,T3*,T4*,T5,T6,T7,T8,T9> apply()
-      {
-        return tuple<T1*,T2*,T3*,T4*,T5,T6,T7,T8,T9>(0,0,0,0);
-      }
-    };
-
-    template<typename T1, typename T2, typename T3, typename T4, typename T5,
-        typename T6, typename T7, typename T8, typename T9>
-    struct InitialiserHelper<tuple<T1*,T2*,T3*,T4*,T5*,T6,T7,T8,T9>,5>
-    {
-      static inline tuple<T1*,T2*,T3*,T4*,T5*,T6,T7,T8,T9> apply()
-      {
-        return tuple<T1*,T2*,T3*,T4*,T5*,T6,T7,T8,T9>(0,0,0,0,0);
-      }
-    };
-
-    template<typename T1, typename T2, typename T3, typename T4, typename T5,
-        typename T6, typename T7, typename T8, typename T9>
-    struct InitialiserHelper<tuple<T1*,T2*,T3*,T4*,T5*,T6*,T7,T8,T9>,6>
-    {
-      static inline tuple<T1*,T2*,T3*,T4*,T5*,T6*,T7,T8,T9> apply()
-      {
-        return tuple<T1*,T2*,T3*,T4*,T5*,T6*,T7,T8,T9>(0,0,0,0,0,0);
-      }
-    };
-
-    template<typename T1, typename T2, typename T3, typename T4, typename T5,
-        typename T6, typename T7, typename T8, typename T9>
-    struct InitialiserHelper<tuple<T1*,T2*,T3*,T4*,T5*,T6*,T7*,T8,T9>,7>
-    {
-      static inline tuple<T1*,T2*,T3*,T4*,T5*,T6*,T7*,T8,T9> apply()
-      {
-        return tuple<T1*,T2*,T3*,T4*,T5*,T6*,T7*,T8,T9>(0,0,0,0,0,0,0);
-      }
-    };
-    template<typename T1, typename T2, typename T3, typename T4, typename T5,
-        typename T6, typename T7, typename T8, typename T9>
-    struct InitialiserHelper<tuple<T1*,T2*,T3*,T4*,T5*,T6*,T7*,T8*,T9>,8>
-    {
-      static inline tuple<T1*,T2*,T3*,T4*,T5*,T6*,T7*,T8*,T9> apply()
-      {
-        return tuple<T1*,T2*,T3*,T4*,T5*,T6*,T7*,T8*,T9>(0,0,0,0,0,0,0,0);
-      }
-    };
-
-    template<typename T1, typename T2, typename T3, typename T4, typename T5,
-        typename T6, typename T7, typename T8, typename T9>
-    struct InitialiserHelper<tuple<T1*,T2*,T3*,T4*,T5*,T6*,T7*,T8*,T9*>,9>
-    {
-      static inline tuple<T1*,T2*,T3*,T4*,T5*,T6*,T7*,T8*,T9*> apply()
-      {
-        return tuple<T1*,T2*,T3*,T4*,T5*,T6*,T7*,T8*,T9*>(0,0,0,0,0,0,0,0,0);
-      }
-    };
-  }
-
-  template<typename T1, typename T2, typename T3, typename T4, typename T5,
-      typename T6, typename T7, typename T8, typename T9>
-  class NullPointerInitialiser<tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> >
-  {
+  class NullPointerInitialiser {
+    dune_static_assert(AlwaysFalse<Tuple>::value, "Attempt to use the "
+                       "unspecialized version of NullPointerInitialiser.  "
+                       "NullPointerInitialiser needs to be specialized for "
+                       "each possible tuple size.  Naturally the number of "
+                       "pre-defined specializations is limited arbitrarily.  "
+                       "Maybe you need to raise this limit by defining some "
+                       "more specializations?  Also check that the tuple this "
+                       "is applied to really is a tuple of pointers only.");
   public:
-    typedef tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> ResultType;
+    //! export the type of the tuples
+    typedef Tuple ResultType;
+    //! generate a zero-initialized tuple
+    static ResultType apply();
+  };
 
-    static inline ResultType apply()
-    {
-      return InitialiserHelper<ResultType, tuple_size<ResultType>::value>::apply();
+#ifndef DOXYGEN
+  template<class Tuple>
+  struct NullPointerInitialiser<const Tuple>
+    : public NullPointerInitialiser<Tuple>
+  {
+    typedef const Tuple ResultType;
+  };
+
+  template<>
+  struct NullPointerInitialiser<tuple<> > {
+    typedef tuple<> ResultType;
+    static ResultType apply() {
+      return ResultType();
     }
   };
+
+  template<class T0>
+  struct NullPointerInitialiser<tuple<T0*> > {
+    typedef tuple<T0*> ResultType;
+    static ResultType apply() {
+      return ResultType(static_cast<T0*>(0));
+    }
+  };
+
+  template<class T0, class T1>
+  struct NullPointerInitialiser<tuple<T0*, T1*> > {
+    typedef tuple<T0*, T1*> ResultType;
+    static ResultType apply() {
+      return ResultType(static_cast<T0*>(0), static_cast<T1*>(0));
+    }
+  };
+
+  template<class T0, class T1, class T2>
+  struct NullPointerInitialiser<tuple<T0*, T1*, T2*> > {
+    typedef tuple<T0*, T1*, T2*> ResultType;
+    static ResultType apply() {
+      return ResultType(static_cast<T0*>(0), static_cast<T1*>(0),
+                        static_cast<T2*>(0));
+    }
+  };
+
+  template<class T0, class T1, class T2, class T3>
+  struct NullPointerInitialiser<tuple<T0*, T1*, T2*, T3*> > {
+    typedef tuple<T0*, T1*, T2*, T3*> ResultType;
+    static ResultType apply() {
+      return ResultType(static_cast<T0*>(0), static_cast<T1*>(0),
+                        static_cast<T2*>(0), static_cast<T3*>(0));
+    }
+  };
+
+  template<class T0, class T1, class T2, class T3, class T4>
+  struct NullPointerInitialiser<tuple<T0*, T1*, T2*, T3*, T4*> > {
+    typedef tuple<T0*, T1*, T2*, T3*, T4*> ResultType;
+    static ResultType apply() {
+      return ResultType(static_cast<T0*>(0), static_cast<T1*>(0),
+                        static_cast<T2*>(0), static_cast<T3*>(0),
+                        static_cast<T4*>(0));
+    }
+  };
+
+  template<class T0, class T1, class T2, class T3, class T4, class T5>
+  struct NullPointerInitialiser<tuple<T0*, T1*, T2*, T3*, T4*, T5*> > {
+    typedef tuple<T0*, T1*, T2*, T3*, T4*, T5*> ResultType;
+    static ResultType apply() {
+      return ResultType(static_cast<T0*>(0), static_cast<T1*>(0),
+                        static_cast<T2*>(0), static_cast<T3*>(0),
+                        static_cast<T4*>(0), static_cast<T5*>(0));
+    }
+  };
+
+  template<class T0, class T1, class T2, class T3, class T4, class T5,
+      class T6>
+  struct NullPointerInitialiser<tuple<T0*, T1*, T2*, T3*, T4*, T5*, T6*> > {
+    typedef tuple<T0*, T1*, T2*, T3*, T4*, T5*, T6*> ResultType;
+    static ResultType apply() {
+      return ResultType(static_cast<T0*>(0), static_cast<T1*>(0),
+                        static_cast<T2*>(0), static_cast<T3*>(0),
+                        static_cast<T4*>(0), static_cast<T5*>(0),
+                        static_cast<T6*>(0));
+    }
+  };
+
+  template<class T0, class T1, class T2, class T3, class T4, class T5,
+      class T6, class T7>
+  struct NullPointerInitialiser<tuple<T0*, T1*, T2*, T3*, T4*, T5*, T6*,
+          T7*> > {
+    typedef tuple<T0*, T1*, T2*, T3*, T4*, T5*, T6*, T7*> ResultType;
+    static ResultType apply() {
+      return ResultType(static_cast<T0*>(0), static_cast<T1*>(0),
+                        static_cast<T2*>(0), static_cast<T3*>(0),
+                        static_cast<T4*>(0), static_cast<T5*>(0),
+                        static_cast<T6*>(0), static_cast<T7*>(0));
+    }
+  };
+
+  template<class T0, class T1, class T2, class T3, class T4, class T5,
+      class T6, class T7, class T8>
+  struct NullPointerInitialiser<tuple<T0*, T1*, T2*, T3*, T4*, T5*, T6*,
+          T7*, T8*> > {
+    typedef tuple<T0*, T1*, T2*, T3*, T4*, T5*, T6*, T7*, T8*> ResultType;
+    static ResultType apply() {
+      return ResultType(static_cast<T0*>(0), static_cast<T1*>(0),
+                        static_cast<T2*>(0), static_cast<T3*>(0),
+                        static_cast<T4*>(0), static_cast<T5*>(0),
+                        static_cast<T6*>(0), static_cast<T7*>(0),
+                        static_cast<T8*>(0));
+    }
+  };
+
+  template<class T0, class T1, class T2, class T3, class T4, class T5,
+      class T6, class T7, class T8, class T9>
+  struct NullPointerInitialiser<tuple<T0*, T1*, T2*, T3*, T4*, T5*, T6*,
+          T7*, T8*, T9*> > {
+    typedef tuple<T0*, T1*, T2*, T3*, T4*, T5*, T6*, T7*, T8*, T9*> ResultType;
+    static ResultType apply() {
+      return ResultType(static_cast<T0*>(0), static_cast<T1*>(0),
+                        static_cast<T2*>(0), static_cast<T3*>(0),
+                        static_cast<T4*>(0), static_cast<T5*>(0),
+                        static_cast<T6*>(0), static_cast<T7*>(0),
+                        static_cast<T8*>(0), static_cast<T9*>(0));
+    }
+  };
+#endif // !defined(DOXYGEN)
 
   /**
    * @brief Deletes all objects pointed to in a tuple of pointers.
