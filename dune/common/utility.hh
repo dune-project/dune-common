@@ -168,55 +168,6 @@ namespace Dune {
 #endif // !defined(DOXYGEN)
 
   /**
-   * @brief Deletes all objects pointed to in a tuple of pointers.
-   *
-   * \warning Pointers cannot be set to NULL, so calling the Deletor twice
-   * or accessing elements of a deleted tuple leads to unforeseeable results!
-   */
-  template <class Tuple>
-  struct PointerPairDeletor {};
-
-  namespace
-  {
-
-    template<class T, int s>
-    struct PointerDeletor
-    {};
-
-    template<typename T1, typename T2, typename T3, typename T4, typename T5,
-        typename T6, typename T7, typename T8, typename T9, int s>
-    struct PointerDeletor<tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>,s>
-    {
-      static void apply(tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>& t)
-      {
-
-        PointerDeletor<tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>,s-1>::apply(t);
-        delete get<s-1>(t);
-      }
-    };
-    template<typename T1, typename T2, typename T3, typename T4, typename T5,
-        typename T6, typename T7, typename T8, typename T9>
-    struct PointerDeletor<tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>,0>
-    {
-      static void apply(tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>& t)
-      {}
-    };
-  }
-
-  template<typename T1, typename T2, typename T3, typename T4, typename T5,
-      typename T6, typename T7, typename T8, typename T9>
-  struct PointerPairDeletor<tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> >
-  {
-    static void apply(tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>& t)
-    {
-      PointerDeletor<tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>,
-          tuple_size<tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> >::value>
-      ::apply(t);
-    }
-
-  };
-
-  /**
    * @brief Helper template to calculate length of a tuple.
    */
   template <class Tuple>
@@ -506,6 +457,26 @@ namespace Dune {
     get(const Tuple& t)
     {
       return Dune::get<tuple_size<Tuple>::value - N - 1>(t);
+    }
+  };
+
+  /**
+   * @brief Deletes all objects pointed to in a tuple of pointers.
+   *
+   * \warning Pointers cannot be set to NULL, so calling the Deletor twice
+   * or accessing elements of a deleted tuple leads to unforeseeable results!
+   */
+  template <class Tuple>
+  class PointerPairDeletor
+  {
+    struct Deletor {
+      template<typename P> void visit(const P& p) { delete p; }
+    };
+
+  public:
+    static void apply(Tuple& t) {
+      static Deletor deletor;
+      ForEachValue<Tuple>(t).apply(deletor);
     }
   };
 
