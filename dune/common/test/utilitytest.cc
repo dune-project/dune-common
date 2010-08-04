@@ -5,11 +5,15 @@
 #include "config.h"
 #endif
 
+#include <dune/common/static_assert.hh>
 #include <dune/common/tuples.hh>
+#include <dune/common/typetraits.hh>
 #include <dune/common/utility.hh>
 #include <iostream>
 
-
+template<class T> struct AddPtr {
+  typedef typename Dune::remove_reference<T>::type* Type;
+};
 
 template<class T>
 struct Eval
@@ -62,7 +66,12 @@ int main(int argc, char** argv)
   long l = 4;
   char c = 's';
 
+  typedef Dune::tuple<int&,char&,long&,char&> RefTuple1;
   typedef Dune::tuple<int*,char*,long*,char*> PointerTuple1;
+  dune_static_assert((Dune::is_same<PointerTuple1,
+                          Dune::ForEachType<AddPtr, RefTuple1>::Type>::value),
+                     "RefTuple1 with added pointers should be the same as "
+                     "PointerTuple1, but it isn't!");
 
   PointerTuple1 pointers1(&i,&c,&l,&c);
 
