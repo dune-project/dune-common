@@ -170,6 +170,27 @@ namespace Dune
   };
 #endif
 
+#if defined HAVE_TYPE_TRAITS
+  using std::remove_reference;
+#elif defined HAVE_TR1_TYPE_TRAITS
+  using std::tr1::remove_reference;
+#else
+  //! Remove a reference from a type
+  /**
+   * If the template parameter \c T matches \c T1&, then the member typedef \c
+   * type is \c T1, otherwise it is \c T.
+   */
+  template<typename T> struct remove_reference {
+    //! T with references removed
+    typedef T type;
+  };
+#  ifndef DOXYGEN
+  template<typename T> struct remove_reference<T&> {
+    typedef T type;
+  };
+#  endif // ! defined(DOXYGEN)
+#endif
+
   /**
    * @brief Checks wether a type is convertible to another.
    *
