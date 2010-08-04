@@ -652,6 +652,369 @@ namespace Dune {
   }
 #endif // ! defined(DOXYGEN)
 
+  ////////////////////////////////////////////////////////////////////////
+  //
+  // transformTuple() related stuff
+  //
+
+  //! helper class to implement transformTuple()
+  /**
+   * \tparam TE TypeEvaluator class template.
+   * \tparam An Type of extra arguments to pass to \c TE<T>::apply().  \c void
+   *            means "no argument".  Only trailing arguments may be void.
+   *
+   * This class stores references to a number of arguments it receives in the
+   * constructor.  Later, its function call operator \c operator() may be
+   * called with a parameter \c t of type \c T.  \c operator() will then call
+   * the static method \c TE<T>::apply(t,args...), where \c args... is the
+   * sequence of arguments the object was constructed with.  \c operator()
+   * will convert the result to type \c TE<T>::Type and return it.
+   *
+   * \c TE should be an extended version of the \c TypeEvaluator class
+   * template parameter of ForEachType, for instance:
+   * \code
+     template <class T>
+     struct TypeEvaluator {
+     typedef T* Type;
+     static Type apply(T& t, void* a0) {
+     return t ? &t : static_cast<T*>(a0);
+     }
+     };
+   * \endcode
+   * This example is for a TransformTupleFunctor with one argument, i.e. \c
+   * A0!=void and all other \c An=void.  For the type transformation, it will
+   * transform a value of some type T into a pointer to T.  For the value
+   * transformation, it will take a reference to a value of type T and return
+   * the pointer to that value, unless the value evaluates to false in boolean
+   * context.  If the value evaluates to false, it will instead return the
+   * pointer from the extra argument.
+   */
+  template<template<class> class TE, class A0 = void, class A1 = void,
+      class A2 = void, class A3 = void, class A4 = void, class A5 = void,
+      class A6 = void, class A7 = void, class A8 = void, class A9 = void>
+  class TransformTupleFunctor {
+    A0& a0; A1& a1; A2& a2; A3& a3; A4& a4; A5& a5; A6& a6; A7& a7; A8& a8;
+    A9& a9;
+
+  public:
+    //! export the TypeEvaluator template class for genericTransformTuple()
+    template<class T> struct TypeEvaluator : public TE<T> {};
+
+    //! constructor
+    /**
+     * The actual number of arguments varies between specializations, the
+     * actual number of arguments here is equal to the number of non-\c void
+     * class template arguments \c An.
+     */
+    TransformTupleFunctor(A0& a0_, A1& a1_, A2& a2_, A3& a3_, A4& a4_, A5& a5_,
+                          A6& a6_, A7& a7_, A8& a8_, A9& a9_)
+      : a0(a0_), a1(a1_), a2(a2_), a3(a3_), a4(a4_), a5(a5_), a6(a6_), a7(a7_),
+        a8(a8_), a9(a9_)
+    { }
+
+    //! call \c TE<T>::apply(t,args...)
+    /**
+     * This calls the static apply method of the TypeEvaluator class
+     * template.
+     *
+     * \note There is no need to overload \c operator() with at \c const \c T&
+     * argument, since genericTransformTuple() will always use an lvalue
+     * argument.
+     */
+    template<class T>
+    typename TE<T>::Type operator()(T& t) const {
+      return TE<T>::apply(t, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
+    }
+  };
+
+  //! syntactic sugar for creation of TransformTupleFunctor objects
+  /**
+   * \code
+   *#include <dune/common/utility.hh>
+   * \endcode
+   * \tparam TE TypeEvaluator class template.
+   * \tparam An Type of extra arguments to pass to \c TE<T>::apply().  It
+   *            should not be necessary to specify these template parameters
+   *            explicitly since they can be deduced.
+   *
+   * \param an Arguments to save references to in the TransformTupleFunctor.
+   *
+   * There are overloads of this function (not documented seperately) for any
+   * number of arguments, up to an implementation-defined arbitrary limit.
+   * The number of arguments given determines the number of non-\c void
+   * template arguments in the type of the returned TransformTupleFunctor.
+   */
+  template<template<class> class TE, class A0, class A1, class A2, class A3,
+      class A4, class A5, class A6, class A7, class A8, class A9>
+  TransformTupleFunctor<TE, A0, A1, A2, A3, A4, A5, A6, A7, A8, A9>
+  makeTransformTupleFunctor(A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5,
+                            A6& a6, A7& a7, A8& a8, A9& a9) {
+    return TransformTupleFunctor<TE, A0, A1, A2, A3, A4, A5, A6, A7, A8, A9>
+             (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
+  }
+
+#ifndef DOXYGEN
+  // 0 argument
+  template<template<class> class TE>
+  struct TransformTupleFunctor<TE>
+  {
+    template<class T> struct TypeEvaluator : public TE<T> {};
+
+    template<class T>
+    typename TE<T>::Type operator()(T& t) const {
+      return TE<T>::apply(t);
+    }
+  };
+  template<template<class> class TE>
+  TransformTupleFunctor<TE>
+  makeTransformTupleFunctor() {
+    return TransformTupleFunctor<TE>
+             ();
+  }
+
+  // 1 argument
+  template<template<class> class TE, class A0>
+  class TransformTupleFunctor<TE, A0>
+  {
+    A0& a0;
+
+  public:
+    template<class T> struct TypeEvaluator : public TE<T> {};
+
+    TransformTupleFunctor(A0& a0_)
+      : a0(a0_)
+    { }
+
+    template<class T>
+    typename TE<T>::Type operator()(T& t) const {
+      return TE<T>::apply(t, a0);
+    }
+  };
+  template<template<class> class TE, class A0>
+  TransformTupleFunctor<TE, A0>
+  makeTransformTupleFunctor(A0& a0) {
+    return TransformTupleFunctor<TE, A0>
+             (a0);
+  }
+
+  // 2 argument
+  template<template<class> class TE, class A0, class A1>
+  class TransformTupleFunctor<TE, A0, A1>
+  {
+    A0& a0; A1& a1;
+
+  public:
+    template<class T> struct TypeEvaluator : public TE<T> {};
+
+    TransformTupleFunctor(A0& a0_, A1& a1_)
+      : a0(a0_), a1(a1_)
+    { }
+
+    template<class T>
+    typename TE<T>::Type operator()(T& t) const {
+      return TE<T>::apply(t, a0, a1);
+    }
+  };
+  template<template<class> class TE, class A0, class A1>
+  TransformTupleFunctor<TE, A0, A1>
+  makeTransformTupleFunctor(A0& a0, A1& a1) {
+    return TransformTupleFunctor<TE, A0, A1>
+             (a0, a1);
+  }
+
+  // 3 arguments
+  template<template<class> class TE, class A0, class A1, class A2>
+  class TransformTupleFunctor<TE, A0, A1, A2>
+  {
+    A0& a0; A1& a1; A2& a2;
+
+  public:
+    template<class T> struct TypeEvaluator : public TE<T> {};
+
+    TransformTupleFunctor(A0& a0_, A1& a1_, A2& a2_)
+      : a0(a0_), a1(a1_), a2(a2_)
+    { }
+
+    template<class T>
+    typename TE<T>::Type operator()(T& t) const {
+      return TE<T>::apply(t, a0, a1, a2);
+    }
+  };
+  template<template<class> class TE, class A0, class A1, class A2>
+  TransformTupleFunctor<TE, A0, A1, A2>
+  makeTransformTupleFunctor(A0& a0, A1& a1, A2& a2) {
+    return TransformTupleFunctor<TE, A0, A1, A2>
+             (a0, a1, a2);
+  }
+
+  // 4 arguments
+  template<template<class> class TE, class A0, class A1, class A2, class A3>
+  class TransformTupleFunctor<TE, A0, A1, A2, A3>
+  {
+    A0& a0; A1& a1; A2& a2; A3& a3;
+
+  public:
+    template<class T> struct TypeEvaluator : public TE<T> {};
+
+    TransformTupleFunctor(A0& a0_, A1& a1_, A2& a2_, A3& a3_)
+      : a0(a0_), a1(a1_), a2(a2_), a3(a3_)
+    { }
+
+    template<class T>
+    typename TE<T>::Type operator()(T& t) const {
+      return TE<T>::apply(t, a0, a1, a2, a3);
+    }
+  };
+  template<template<class> class TE, class A0, class A1, class A2, class A3>
+  TransformTupleFunctor<TE, A0, A1, A2, A3>
+  makeTransformTupleFunctor(A0& a0, A1& a1, A2& a2, A3& a3) {
+    return TransformTupleFunctor<TE, A0, A1, A2, A3>
+             (a0, a1, a2, a3);
+  }
+
+  // 5 arguments
+  template<template<class> class TE, class A0, class A1, class A2, class A3,
+      class A4>
+  class TransformTupleFunctor<TE, A0, A1, A2, A3, A4>
+  {
+    A0& a0; A1& a1; A2& a2; A3& a3; A4& a4;
+
+  public:
+    template<class T> struct TypeEvaluator : public TE<T> {};
+
+    TransformTupleFunctor(A0& a0_, A1& a1_, A2& a2_, A3& a3_, A4& a4_)
+      : a0(a0_), a1(a1_), a2(a2_), a3(a3_), a4(a4_)
+    { }
+
+    template<class T>
+    typename TE<T>::Type operator()(T& t) const {
+      return TE<T>::apply(t, a0, a1, a2, a3, a4);
+    }
+  };
+  template<template<class> class TE, class A0, class A1, class A2, class A3,
+      class A4>
+  TransformTupleFunctor<TE, A0, A1, A2, A3, A4>
+  makeTransformTupleFunctor(A0& a0, A1& a1, A2& a2, A3& a3, A4& a4) {
+    return TransformTupleFunctor<TE, A0, A1, A2, A3, A4>
+             (a0, a1, a2, a3, a4);
+  }
+
+  // 6 arguments
+  template<template<class> class TE, class A0, class A1, class A2, class A3,
+      class A4, class A5>
+  class TransformTupleFunctor<TE, A0, A1, A2, A3, A4, A5>
+  {
+    A0& a0; A1& a1; A2& a2; A3& a3; A4& a4; A5& a5;
+
+  public:
+    template<class T> struct TypeEvaluator : public TE<T> {};
+
+    TransformTupleFunctor(A0& a0_, A1& a1_, A2& a2_, A3& a3_, A4& a4_, A5& a5_)
+      : a0(a0_), a1(a1_), a2(a2_), a3(a3_), a4(a4_), a5(a5_)
+    { }
+
+    template<class T>
+    typename TE<T>::Type operator()(T& t) const {
+      return TE<T>::apply(t, a0, a1, a2, a3, a4, a5);
+    }
+  };
+  template<template<class> class TE, class A0, class A1, class A2, class A3,
+      class A4, class A5>
+  TransformTupleFunctor<TE, A0, A1, A2, A3, A4, A5>
+  makeTransformTupleFunctor(A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5) {
+    return TransformTupleFunctor<TE, A0, A1, A2, A3, A4, A5>
+             (a0, a1, a2, a3, a4, a5);
+  }
+
+  // 7 arguments
+  template<template<class> class TE, class A0, class A1, class A2, class A3,
+      class A4, class A5, class A6>
+  class TransformTupleFunctor<TE, A0, A1, A2, A3, A4, A5, A6>
+  {
+    A0& a0; A1& a1; A2& a2; A3& a3; A4& a4; A5& a5; A6& a6;
+
+  public:
+    template<class T> struct TypeEvaluator : public TE<T> {};
+
+    TransformTupleFunctor(A0& a0_, A1& a1_, A2& a2_, A3& a3_, A4& a4_, A5& a5_,
+                          A6& a6_)
+      : a0(a0_), a1(a1_), a2(a2_), a3(a3_), a4(a4_), a5(a5_), a6(a6_)
+    { }
+
+    template<class T>
+    typename TE<T>::Type operator()(T& t) const {
+      return TE<T>::apply(t, a0, a1, a2, a3, a4, a5, a6);
+    }
+  };
+  template<template<class> class TE, class A0, class A1, class A2, class A3,
+      class A4, class A5, class A6>
+  TransformTupleFunctor<TE, A0, A1, A2, A3, A4, A5, A6>
+  makeTransformTupleFunctor(A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5,
+                            A6& a6) {
+    return TransformTupleFunctor<TE, A0, A1, A2, A3, A4, A5, A6>
+             (a0, a1, a2, a3, a4, a5, a6);
+  }
+
+  // 8 arguments
+  template<template<class> class TE, class A0, class A1, class A2, class A3,
+      class A4, class A5, class A6, class A7>
+  class TransformTupleFunctor<TE, A0, A1, A2, A3, A4, A5, A6, A7>
+  {
+    A0& a0; A1& a1; A2& a2; A3& a3; A4& a4; A5& a5; A6& a6; A7& a7;
+
+  public:
+    template<class T> struct TypeEvaluator : public TE<T> {};
+
+    TransformTupleFunctor(A0& a0_, A1& a1_, A2& a2_, A3& a3_, A4& a4_, A5& a5_,
+                          A6& a6_, A7& a7_)
+      : a0(a0_), a1(a1_), a2(a2_), a3(a3_), a4(a4_), a5(a5_), a6(a6_), a7(a7_)
+    { }
+
+    template<class T>
+    typename TE<T>::Type operator()(T& t) const {
+      return TE<T>::apply(t, a0, a1, a2, a3, a4, a5, a6, a7);
+    }
+  };
+  template<template<class> class TE, class A0, class A1, class A2, class A3,
+      class A4, class A5, class A6, class A7>
+  TransformTupleFunctor<TE, A0, A1, A2, A3, A4, A5, A6, A7>
+  makeTransformTupleFunctor(A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5,
+                            A6& a6, A7& a7) {
+    return TransformTupleFunctor<TE, A0, A1, A2, A3, A4, A5, A6, A7>
+             (a0, a1, a2, a3, a4, a5, a6, a7);
+  }
+
+  // 9 arguments
+  template<template<class> class TE, class A0, class A1, class A2, class A3,
+      class A4, class A5, class A6, class A7, class A8>
+  class TransformTupleFunctor<TE, A0, A1, A2, A3, A4, A5, A6, A7, A8>
+  {
+    A0& a0; A1& a1; A2& a2; A3& a3; A4& a4; A5& a5; A6& a6; A7& a7; A8& a8;
+
+  public:
+    template<class T> struct TypeEvaluator : public TE<T> {};
+
+    TransformTupleFunctor(A0& a0_, A1& a1_, A2& a2_, A3& a3_, A4& a4_, A5& a5_,
+                          A6& a6_, A7& a7_, A8& a8_)
+      : a0(a0_), a1(a1_), a2(a2_), a3(a3_), a4(a4_), a5(a5_), a6(a6_), a7(a7_),
+        a8(a8_)
+    { }
+
+    template<class T>
+    typename TE<T>::Type operator()(T& t) const {
+      return TE<T>::apply(t, a0, a1, a2, a3, a4, a5, a6, a7, a8);
+    }
+  };
+  template<template<class> class TE, class A0, class A1, class A2, class A3,
+      class A4, class A5, class A6, class A7, class A8>
+  TransformTupleFunctor<TE, A0, A1, A2, A3, A4, A5, A6, A7, A8>
+  makeTransformTupleFunctor(A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5,
+                            A6& a6, A7& a7, A8& a8) {
+    return TransformTupleFunctor<TE, A0, A1, A2, A3, A4, A5, A6, A7, A8>
+             (a0, a1, a2, a3, a4, a5, a6, a7, a8);
+  }
+#endif // ! defined(DOXYGEN)
+
   namespace
   {
     template<int i, typename T1,typename F>
