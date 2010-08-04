@@ -13,6 +13,7 @@
 
 template<class T> struct AddPtr {
   typedef typename Dune::remove_reference<T>::type* Type;
+  static Type apply(T &t) { return &t; }
 };
 
 template<class T>
@@ -73,8 +74,14 @@ int main(int argc, char** argv)
                      "RefTuple1 with added pointers should be the same as "
                      "PointerTuple1, but it isn't!");
 
-  PointerTuple1 pointers1(&i,&c,&l,&c);
-
+  RefTuple1 refs(i, c, l, c);
+  PointerTuple1 pointers1(Dune::transformTuple<AddPtr>(refs));
+  if(&i != Dune::get<0>(pointers1) || &c != Dune::get<1>(pointers1) ||
+     &l != Dune::get<2>(pointers1) || &c != Dune::get<3>(pointers1)) {
+    std::cerr << "utilitytest: error: incorrect pointers in pointers1"
+              << std::endl;
+    ret = 1;
+  }
 
   if(static_cast<size_t>(Dune::Length<PointerTuple>::value) != static_cast<size_t>(Dune::tuple_size<PointerTuple>::value)) {
     std::cerr<<"Length and size do not match!"<<std::endl;
