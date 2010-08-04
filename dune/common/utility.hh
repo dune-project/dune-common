@@ -197,7 +197,7 @@ namespace Dune {
    * Here, MyEvaluator is a helper struct that extracts the correct type from
    * the storage types of the tuple defined by the tuple ATuple.
    *
-   * \sa genericTransformTuple().
+   * \sa genericTransformTuple(), or for a simpler version transformTuple().
    */
   template <template <class> class TypeEvaluator, class TupleType>
   class ForEachType {
@@ -1014,6 +1014,181 @@ namespace Dune {
              (a0, a1, a2, a3, a4, a5, a6, a7, a8);
   }
 #endif // ! defined(DOXYGEN)
+
+  //! transform a tuple's value according to a user-supplied policy
+  /**
+   * \code
+   *#include <dune/common/utility.hh>
+   * \endcode
+   * This function provides functionality similiar to genericTransformTuple(),
+   * although less general and closer in spirit to ForEachType.
+   *
+   * \tparam TypeEvaluator Used as the \c TE template argument to
+   *                       TransformTupleFunctor internally.
+   * \tparam Tuple         Type of the tuple to transform.
+   * \tparam An            Types of extra argument to call the transformation
+   *                       function with.
+   *
+   * \note The \c Tuple and \c An template arguments can be deduced from the
+   *       function arguments, so they can usually be omitted.
+   *
+   * \param orig Tuple value to be transformed.
+   * \param an   Extra argument values to provide to the transformation
+   *             function.
+   *
+   * This function is overloaded for any number of extra arguments, up to an
+   * implementation-defined arbitrary limit.  The overloads are not documented
+   * seperately.
+   *
+   * The \c TypeEvaluator class template should be suitable as the \c TE
+   * template argument for TransformTupleFunctor.  It has the following form
+   * (an extension of the \c TypeEvaluator template argument of ForEachType):
+   * \code
+     template <class T>
+     struct TypeEvaluator {
+     typedef UserDefined Type;
+
+     template<class A0, class A1, class A2, class A3, class A4, class A5,
+           class A6, class A7, class A8, class A9>
+     static Type apply(T& t, A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5,
+                    A6& a6, A7& a7, A8& a8, A9& a9);
+     };
+   * \endcode
+   * For any given element type \c T of the tuple, the TypeEvaluator template
+   * class should provide a member typedef \c Type which determines the type
+   * of the transformed value and a static function \c apply(), taking the
+   * value of the tuple element \c t and the extra arguments given to
+   * transformTuple().  The signature of \c apply() does not have to match the
+   * one given above exactly, as long as it can be called that way.
+   *
+   * \note Since transformTuple() takes non-const references to the extra
+   *       arguments, it will only bind to lvalue extra arguments, unless you
+   *       specify the corresconding template parameter as \c const \s
+   *       SomeType.  Specifically this meands that you cannot simply use
+   *       literals or function return values as extra arguments. Providing
+   *       overloads for all possible combinations of rvalue and lvalue extra
+   *       arguments would result in \f$2^{n+1}-1\f$ overloads where \f$n\f$
+   *       is the implementation defined limit in the number of extra
+   *       arguments.
+   */
+  template<template<class> class TypeEvaluator, class Tuple, class A0,
+      class A1, class A2, class A3, class A4, class A5, class A6,
+      class A7, class A8, class A9>
+  typename ForEachType<TypeEvaluator, Tuple>::Type
+  transformTuple(Tuple& orig, A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5,
+                 A6& a6, A7& a7, A8& a8, A9& a9) {
+    return genericTransformTuple
+             ( orig,
+             makeTransformTupleFunctor<TypeEvaluator>(a0, a1, a2, a3, a4, a5, a6,
+                                                      a7, a8, a9));
+  }
+
+#ifndef DOXYGEN
+  // 0 extra arguments
+  template<template<class> class TypeEvaluator, class Tuple>
+  typename ForEachType<TypeEvaluator, Tuple>::Type
+  transformTuple(Tuple& orig) {
+    return genericTransformTuple
+             ( orig,
+             makeTransformTupleFunctor<TypeEvaluator>());
+  }
+
+  // 1 extra argument
+  template<template<class> class TypeEvaluator, class Tuple, class A0>
+  typename ForEachType<TypeEvaluator, Tuple>::Type
+  transformTuple(Tuple& orig, A0& a0) {
+    return genericTransformTuple
+             ( orig,
+             makeTransformTupleFunctor<TypeEvaluator>(a0));
+  }
+
+  // 2 extra arguments
+  template<template<class> class TypeEvaluator, class Tuple, class A0,
+      class A1>
+  typename ForEachType<TypeEvaluator, Tuple>::Type
+  transformTuple(Tuple& orig, A0& a0, A1& a1) {
+    return genericTransformTuple
+             ( orig,
+             makeTransformTupleFunctor<TypeEvaluator>(a0, a1));
+  }
+
+  // 3 extra arguments
+  template<template<class> class TypeEvaluator, class Tuple, class A0,
+      class A1, class A2>
+  typename ForEachType<TypeEvaluator, Tuple>::Type
+  transformTuple(Tuple& orig, A0& a0, A1& a1, A2& a2) {
+    return genericTransformTuple
+             ( orig,
+             makeTransformTupleFunctor<TypeEvaluator>(a0, a1, a2));
+  }
+
+  // 4 extra arguments
+  template<template<class> class TypeEvaluator, class Tuple, class A0,
+      class A1, class A2, class A3>
+  typename ForEachType<TypeEvaluator, Tuple>::Type
+  transformTuple(Tuple& orig, A0& a0, A1& a1, A2& a2, A3& a3) {
+    return genericTransformTuple
+             ( orig,
+             makeTransformTupleFunctor<TypeEvaluator>(a0, a1, a2, a3));
+  }
+
+  // 5 extra arguments
+  template<template<class> class TypeEvaluator, class Tuple, class A0,
+      class A1, class A2, class A3, class A4>
+  typename ForEachType<TypeEvaluator, Tuple>::Type
+  transformTuple(Tuple& orig, A0& a0, A1& a1, A2& a2, A3& a3, A4& a4) {
+    return genericTransformTuple
+             ( orig,
+             makeTransformTupleFunctor<TypeEvaluator>(a0, a1, a2, a3, a4));
+  }
+
+  // 6 extra arguments
+  template<template<class> class TypeEvaluator, class Tuple, class A0,
+      class A1, class A2, class A3, class A4, class A5>
+  typename ForEachType<TypeEvaluator, Tuple>::Type
+  transformTuple(Tuple& orig, A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5) {
+    return genericTransformTuple
+             ( orig,
+             makeTransformTupleFunctor<TypeEvaluator>(a0, a1, a2, a3, a4, a5));
+  }
+
+  // 7 extra arguments
+  template<template<class> class TypeEvaluator, class Tuple, class A0,
+      class A1, class A2, class A3, class A4, class A5, class A6>
+  typename ForEachType<TypeEvaluator, Tuple>::Type
+  transformTuple(Tuple& orig, A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5,
+                 A6& a6) {
+    return genericTransformTuple
+             ( orig,
+             makeTransformTupleFunctor<TypeEvaluator>(a0, a1, a2, a3, a4, a5, a6));
+  }
+
+  // 8 extra arguments
+  template<template<class> class TypeEvaluator, class Tuple, class A0,
+      class A1, class A2, class A3, class A4, class A5, class A6,
+      class A7>
+  typename ForEachType<TypeEvaluator, Tuple>::Type
+  transformTuple(Tuple& orig, A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5,
+                 A6& a6, A7& a7) {
+    return genericTransformTuple
+             ( orig,
+             makeTransformTupleFunctor<TypeEvaluator>(a0, a1, a2, a3, a4, a5, a6,
+                                                      a7));
+  }
+
+  // 9 extra arguments
+  template<template<class> class TypeEvaluator, class Tuple, class A0,
+      class A1, class A2, class A3, class A4, class A5, class A6,
+      class A7, class A8>
+  typename ForEachType<TypeEvaluator, Tuple>::Type
+  transformTuple(Tuple& orig, A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5,
+                 A6& a6, A7& a7, A8& a8) {
+    return genericTransformTuple
+             ( orig,
+             makeTransformTupleFunctor<TypeEvaluator>(a0, a1, a2, a3, a4, a5, a6,
+                                                      a7, a8));
+  }
+#endif //! defined(DOXYGEN)
 
   namespace
   {
