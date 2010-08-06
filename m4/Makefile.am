@@ -8,7 +8,7 @@ ALLM4S = 					\
 	ax_boost_base.m4				\
 	ax_check_gl.m4				\
 	ax_lang_compiler_ms.m4			\
-	boost_fusion				\
+	boost_fusion.m4				\
 	dune.m4					\
 	dune_all.m4				\
 	dune_autobuild.m4			\
