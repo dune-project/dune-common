@@ -5,8 +5,10 @@ ALLM4S = 					\
 	acx_lapack.m4				\
 	acx_mpi.m4				\
 	acx_pthread.m4				\
+	ax_boost_base				\
 	ax_check_gl.m4				\
 	ax_lang_compiler_ms.m4			\
+	boost_fusion				\
 	dune.m4					\
 	dune_all.m4				\
 	dune_autobuild.m4			\
