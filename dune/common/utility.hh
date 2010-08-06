@@ -197,7 +197,8 @@ namespace Dune {
    * Here, MyEvaluator is a helper struct that extracts the correct type from
    * the storage types of the tuple defined by the tuple ATuple.
    *
-   * \sa genericTransformTuple(), or for a simpler version transformTuple().
+   * \sa AddRefTypeEvaluator, AddPtrTypeEvaluator, genericTransformTuple(),
+   *     and transformTuple().
    */
   template <template <class> class TypeEvaluator, class TupleType>
   class ForEachType {
@@ -1070,6 +1071,9 @@ namespace Dune {
    *       arguments would result in \f$2^{n+1}-1\f$ overloads where \f$n\f$
    *       is the implementation defined limit in the number of extra
    *       arguments.
+   *
+   * \sa genericTransforTuple(), ForEachType, AddRefTypeEvaluator, and
+   *     AddPtrTypeEvaluator.
    */
   template<template<class> class TypeEvaluator, class Tuple, class A0,
       class A1, class A2, class A3, class A4, class A5, class A6,
@@ -1189,6 +1193,33 @@ namespace Dune {
                                                       a7, a8));
   }
 #endif //! defined(DOXYGEN)
+
+  ////////////////////////////////////////////////////////////////////////
+  //
+  // Sample TypeEvaluators
+  //
+
+  //! \c TypeEvaluator to turn a type \T into a reference to \c T
+  /**
+   * This is suitable as the \c TypeEvaluator template parameter for
+   * ForEachType and transformTuple().
+   */
+  template<class T>
+  struct AddRefTypeEvaluator {
+    typedef T& Type;
+    static Type apply(T& t) { return t; }
+  };
+
+  //! \c TypeEvaluator to turn a type \c T into a pointer to \c T
+  /**
+   * This is suitable as the \c TypeEvaluator template parameter for
+   * ForEachType and transformTuple().
+   */
+  template<class T>
+  struct AddPtrTypeEvaluator {
+    typedef typename remove_reference<T>::type* Type;
+    static Type apply(T& t) { return &t; }
+  };
 
   namespace
   {

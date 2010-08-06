@@ -11,11 +11,6 @@
 #include <dune/common/utility.hh>
 #include <iostream>
 
-template<class T> struct AddPtr {
-  typedef typename Dune::remove_reference<T>::type* Type;
-  static Type apply(T &t) { return &t; }
-};
-
 template<class T>
 struct Eval
 {
@@ -70,12 +65,14 @@ int main(int argc, char** argv)
   typedef Dune::tuple<int&,char&,long&,char&> RefTuple1;
   typedef Dune::tuple<int*,char*,long*,char*> PointerTuple1;
   dune_static_assert((Dune::is_same<PointerTuple1,
-                          Dune::ForEachType<AddPtr, RefTuple1>::Type>::value),
+                          Dune::ForEachType<Dune::AddPtrTypeEvaluator,
+                              RefTuple1>::Type>::value),
                      "RefTuple1 with added pointers should be the same as "
                      "PointerTuple1, but it isn't!");
 
   RefTuple1 refs(i, c, l, c);
-  PointerTuple1 pointers1(Dune::transformTuple<AddPtr>(refs));
+  PointerTuple1 pointers1
+    (Dune::transformTuple<Dune::AddPtrTypeEvaluator>(refs));
   if(&i != Dune::get<0>(pointers1) || &c != Dune::get<1>(pointers1) ||
      &l != Dune::get<2>(pointers1) || &c != Dune::get<3>(pointers1)) {
     std::cerr << "utilitytest: error: incorrect pointers in pointers1"
