@@ -1083,7 +1083,7 @@ namespace Dune {
   template<template<class> class TypeEvaluator, class Tuple, class A0,
       class A1, class A2, class A3, class A4, class A5, class A6,
       class A7, class A8, class A9>
-  typename ForEachType<TypeEvaluator, Tuple>::Type
+  typename remove_const<typename ForEachType<TypeEvaluator, Tuple>::Type>::type
   transformTuple(Tuple& orig, A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5,
                  A6& a6, A7& a7, A8& a8, A9& a9) {
     return genericTransformTuple
@@ -1095,7 +1095,7 @@ namespace Dune {
 #ifndef DOXYGEN
   // 0 extra arguments
   template<template<class> class TypeEvaluator, class Tuple>
-  typename ForEachType<TypeEvaluator, Tuple>::Type
+  typename remove_const<typename ForEachType<TypeEvaluator, Tuple>::Type>::type
   transformTuple(Tuple& orig) {
     return genericTransformTuple
              ( orig,
@@ -1104,7 +1104,7 @@ namespace Dune {
 
   // 1 extra argument
   template<template<class> class TypeEvaluator, class Tuple, class A0>
-  typename ForEachType<TypeEvaluator, Tuple>::Type
+  typename remove_const<typename ForEachType<TypeEvaluator, Tuple>::Type>::type
   transformTuple(Tuple& orig, A0& a0) {
     return genericTransformTuple
              ( orig,
@@ -1114,7 +1114,7 @@ namespace Dune {
   // 2 extra arguments
   template<template<class> class TypeEvaluator, class Tuple, class A0,
       class A1>
-  typename ForEachType<TypeEvaluator, Tuple>::Type
+  typename remove_const<typename ForEachType<TypeEvaluator, Tuple>::Type>::type
   transformTuple(Tuple& orig, A0& a0, A1& a1) {
     return genericTransformTuple
              ( orig,
@@ -1124,7 +1124,7 @@ namespace Dune {
   // 3 extra arguments
   template<template<class> class TypeEvaluator, class Tuple, class A0,
       class A1, class A2>
-  typename ForEachType<TypeEvaluator, Tuple>::Type
+  typename remove_const<typename ForEachType<TypeEvaluator, Tuple>::Type>::type
   transformTuple(Tuple& orig, A0& a0, A1& a1, A2& a2) {
     return genericTransformTuple
              ( orig,
@@ -1134,7 +1134,7 @@ namespace Dune {
   // 4 extra arguments
   template<template<class> class TypeEvaluator, class Tuple, class A0,
       class A1, class A2, class A3>
-  typename ForEachType<TypeEvaluator, Tuple>::Type
+  typename remove_const<typename ForEachType<TypeEvaluator, Tuple>::Type>::type
   transformTuple(Tuple& orig, A0& a0, A1& a1, A2& a2, A3& a3) {
     return genericTransformTuple
              ( orig,
@@ -1144,7 +1144,7 @@ namespace Dune {
   // 5 extra arguments
   template<template<class> class TypeEvaluator, class Tuple, class A0,
       class A1, class A2, class A3, class A4>
-  typename ForEachType<TypeEvaluator, Tuple>::Type
+  typename remove_const<typename ForEachType<TypeEvaluator, Tuple>::Type>::type
   transformTuple(Tuple& orig, A0& a0, A1& a1, A2& a2, A3& a3, A4& a4) {
     return genericTransformTuple
              ( orig,
@@ -1154,7 +1154,7 @@ namespace Dune {
   // 6 extra arguments
   template<template<class> class TypeEvaluator, class Tuple, class A0,
       class A1, class A2, class A3, class A4, class A5>
-  typename ForEachType<TypeEvaluator, Tuple>::Type
+  typename remove_const<typename ForEachType<TypeEvaluator, Tuple>::Type>::type
   transformTuple(Tuple& orig, A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5) {
     return genericTransformTuple
              ( orig,
@@ -1164,7 +1164,7 @@ namespace Dune {
   // 7 extra arguments
   template<template<class> class TypeEvaluator, class Tuple, class A0,
       class A1, class A2, class A3, class A4, class A5, class A6>
-  typename ForEachType<TypeEvaluator, Tuple>::Type
+  typename remove_const<typename ForEachType<TypeEvaluator, Tuple>::Type>::type
   transformTuple(Tuple& orig, A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5,
                  A6& a6) {
     return genericTransformTuple
@@ -1176,7 +1176,7 @@ namespace Dune {
   template<template<class> class TypeEvaluator, class Tuple, class A0,
       class A1, class A2, class A3, class A4, class A5, class A6,
       class A7>
-  typename ForEachType<TypeEvaluator, Tuple>::Type
+  typename remove_const<typename ForEachType<TypeEvaluator, Tuple>::Type>::type
   transformTuple(Tuple& orig, A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5,
                  A6& a6, A7& a7) {
     return genericTransformTuple
@@ -1189,7 +1189,7 @@ namespace Dune {
   template<template<class> class TypeEvaluator, class Tuple, class A0,
       class A1, class A2, class A3, class A4, class A5, class A6,
       class A7, class A8>
-  typename ForEachType<TypeEvaluator, Tuple>::Type
+  typename remove_const<typename ForEachType<TypeEvaluator, Tuple>::Type>::type
   transformTuple(Tuple& orig, A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5,
                  A6& a6, A7& a7, A8& a8) {
     return genericTransformTuple
