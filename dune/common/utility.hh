@@ -202,7 +202,7 @@ namespace Dune {
    */
   template <template <class> class TypeEvaluator, class TupleType>
   class ForEachType {
-    dune_static_assert(AlwaysTrue<TupleType>::value, "Attempt to use the "
+    dune_static_assert(AlwaysFalse<TupleType>::value, "Attempt to use the "
                        "unspecialized version of ForEachType.  ForEachType "
                        "needs to be specialized for each possible tuple "
                        "size.  Naturally the number of pre-defined "
@@ -216,6 +216,11 @@ namespace Dune {
   };
 
 #ifndef DOXYGEN
+  template <template <class> class TE, class Tuple>
+  struct ForEachType<TE, const Tuple> {
+    typedef const typename ForEachType<TE, Tuple>::Type Type;
+  };
+
   template <template <class> class TE>
   struct ForEachType<TE, tuple<> > {
     typedef tuple<> Type;
