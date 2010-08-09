@@ -305,10 +305,10 @@ namespace Dune {
 
   //////////////////////////////////////////////////////////////////////
   //
-  // genericTranformTuple stuff
+  // genericTransformTuple stuff
   //
 
-  // genericTranformTuple() needs to be overloaded for each tuple size (we
+  // genericTransformTuple() needs to be overloaded for each tuple size (we
   // limit ourselves to tuple_size <= 10 here).  For a given tuple size it
   // needs to be overloaded for all combinations of const and non-const
   // argument references.  (On the one hand, we want to allow modifyable
@@ -320,7 +320,7 @@ namespace Dune {
   // function genericTransformTupleBackend(), which is overloaded for each
   // tuple size and for const and non-const tuple arguments; the functor
   // argument is always given as as (non-const) reference.  When
-  // genericTranformTupleBackend() is called, the type of the Functor template
+  // genericTransformTupleBackend() is called, the type of the Functor template
   // parameter is the deduced as either "SomeType" or "const SomeType",
   // depending on whether the function argument is a non-const or a const
   // lvalue of type "SomeType".  As explained above, this does not work for
