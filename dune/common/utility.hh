@@ -17,7 +17,7 @@ namespace Dune {
 
   /**
    * @file
-   * @brief Contain utility classes which can be used with tuples.
+   * @brief Contains utility classes which can be used with tuples.
    */
 
   /**
