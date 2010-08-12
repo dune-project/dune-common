@@ -77,7 +77,7 @@ namespace Dune
     /**
      * @brief The type of the mpi communicator.
      */
-    struct MPICommunicator {};
+    typedef No_Comm MPICommunicator;
 
     /**
      * @brief Get the default communicator.
