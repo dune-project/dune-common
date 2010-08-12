@@ -24,6 +24,8 @@ int main ()
 
     double testDouble      = parameterSet.get<double>("testDouble");
     int testInt            = parameterSet.get<int>("testInt");
+    ++testDouble;
+    ++testInt;
     std::string testString = parameterSet.get<std::string>("testString");
     typedef Dune::FieldVector<unsigned, 5> FVector;
     FVector testFVector    = parameterSet.get<FVector>("testVector");

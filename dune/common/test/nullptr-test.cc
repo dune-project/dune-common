@@ -13,6 +13,7 @@ void basic_tests()
   char* ch2 = 0;         // ch2 has the null pointer value
 #ifdef FAIL
   int n = nullptr;       // error
+  ++n;
 #endif
   int n2 = 0;            // n2 is zero
   if( ch == 0 ) ;        // evaluates to true
