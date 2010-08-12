@@ -140,7 +140,7 @@ if [ $# -eq 0 ] && ! [ -f "$DOXYDIR/Doxylocal" ]; then
   exit 0
 fi
 
-# quite if your module doesn't have any documentation
+# quit if your module doesn't have any documentation
 if ! [ -d "$OUTDIR" ]; then
   if [ $# -eq 0 ]; then
     exit 0
