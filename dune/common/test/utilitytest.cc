@@ -8,7 +8,7 @@
 #include <dune/common/static_assert.hh>
 #include <dune/common/tuples.hh>
 #include <dune/common/typetraits.hh>
-#include <dune/common/utility.hh>
+#include <dune/common/tupleutility.hh>
 #include <iostream>
 
 template<class T>
