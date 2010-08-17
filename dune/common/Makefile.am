@@ -68,8 +68,8 @@ commoninclude_HEADERS = 			\
 	stdstreams.hh				\
 	timer.hh				\
 	tuples.hh				\
-	typetraits.hh				\
-	utility.hh				\
+	tupleutility.hh                         \
+        typetraits.hh				\
 	version.hh
 
 if EXPRESSIONTEMPLATES
