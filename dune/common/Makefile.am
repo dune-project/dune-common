@@ -70,7 +70,8 @@ commoninclude_HEADERS = 			\
 	tuples.hh				\
 	tupleutility.hh                         \
         typetraits.hh				\
-	version.hh
+	utility.hh                              \
+        version.hh
 
 if EXPRESSIONTEMPLATES
 commoninclude_HEADERS += exprtmpl.hh exprtmpl/scalar.inc exprtmpl/exprexpr.inc
