@@ -29,7 +29,6 @@ commoninclude_HEADERS = 			\
 	exceptions.hh				\
 	fassign.hh				\
 	finitestack.hh				\
-	fixedarray.hh				\
 	float_cmp.cc				\
 	float_cmp.hh				\
 	fmatrix.hh				\
