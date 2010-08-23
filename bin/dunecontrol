@@ -779,7 +779,7 @@ EOF
     usage
   ;;
   *)
-    if test $1 == update; then export SKIPVERSIONCHECK=yes; fi
+    if test "$1" = "update"; then export SKIPVERSIONCHECK=yes; fi
     check_commands "$@"
     create_module_list
     NAMES=""
