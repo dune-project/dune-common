@@ -487,12 +487,6 @@ namespace Dune
   }
 
   template<class T, int N, class A>
-  size_t ArrayList<T,N,A>::capacity() const
-  {
-    return capacity_;
-  }
-
-  template<class T, int N, class A>
   void ArrayList<T,N,A>::push_back(const_reference entry)
   {
     size_t index=start_+size_;
