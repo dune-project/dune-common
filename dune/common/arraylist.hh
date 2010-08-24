@@ -171,12 +171,6 @@ namespace Dune
     inline size_type size() const;
 
     /**
-     * @brief Get the current capacity of the list.
-     * @return The capacity.
-     */
-    inline size_type capacity() const;
-
-    /**
      * @brief Purge the list.
      *
      * If there are empty chunks at the front all nonempty
@@ -217,7 +211,14 @@ namespace Dune
     /** @brief the data chunks of our list. */
     std::vector<shared_ptr<array<MemberType,chunkSize_> >,
         SmartPointerAllocator> chunks_;
-    /** @brief The current data capacity. */
+    /** @brief The current data capacity.
+     * This is the capacity that the list could have theoretically
+     * with this number of chunks. That is chunks * chunkSize.
+     * In practice some of the chunks at the beginning might be empty
+     * (i.e. null pointers in the first start_/chunkSize chunks)
+     * because of previous calls to eraseToHere.
+     * start_+size_<=capacity_ holds.
+     */
     size_type capacity_;
     /** @brief The current number of elements in our data structure. */
     size_type size_;
@@ -712,8 +713,9 @@ namespace Dune
       list_->chunks_[posChunkStart].reset();
     }
 
-    // As new entries only get append the capacity shrinks
-    list_->capacity_-=chunks*chunkSize_;
+    // Capacity stays the same as the chunks before us
+    // are still there. They null pointers.
+    assert(list_->start_+list_->size_<=list_->capacity_);
   }
 
   template<class T, int N, class A>
