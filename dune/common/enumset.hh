@@ -81,7 +81,7 @@ namespace Dune
      * @brief The type the set holds.
      */
     typedef TA Type;
-    static bool contains(const TA& item);
+    static bool contains(const Type& item);
   };
 
   /**
@@ -112,19 +112,19 @@ namespace Dune
   };
 
   template<typename TA>
-  inline bool EmptySet<TA>::contains(const TA& attribute)
+  inline bool EmptySet<TA>::contains(const Type& attribute)
   {
     return false;
   }
 
   template<typename TA>
-  inline bool AllSet<TA>::contains(const TA& attribute)
+  inline bool AllSet<TA>::contains(const Type& attribute)
   {
     return true;
   }
 
   template<typename TA,int i>
-  inline bool EnumItem<TA,i>::contains(const TA& item)
+  inline bool EnumItem<TA,i>::contains(const Type& item)
   {
     return item==i;
   }
@@ -136,7 +136,7 @@ namespace Dune
   }
 
   template<typename TA, int from, int to>
-  inline bool EnumRange<TA,from,to>::contains(const TA& item)
+  inline bool EnumRange<TA,from,to>::contains(const Type& item)
   {
     return from<=item && item<=to;
   }
