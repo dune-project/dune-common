@@ -3,6 +3,11 @@
 #ifndef DUNE_MPICOLLECTIVECOMMUNICATION_HH
 #define DUNE_MPICOLLECTIVECOMMUNICATION_HH
 
+/*!
+   \file
+   \ingroup ParallelCommunication
+ */
+
 #include <iostream>
 #include <complex>
 #include <algorithm>

@@ -18,6 +18,11 @@
 
  */
 
+/*!
+   \file
+   \ingroup ParallelCommunication
+ */
+
 namespace Dune
 {
 

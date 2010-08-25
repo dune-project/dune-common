@@ -1,6 +1,13 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 
+/**
+ * @file
+ * @brief Implements a MPIGuard which detects an error on a remote process
+ * @author Christian Engwer
+ * @ingroup ParallelCommunication
+ */
+
 #ifndef DUNE_COMMON_MPIGUARD_HH
 #define DUNE_COMMON_MPIGUARD_HH
 
