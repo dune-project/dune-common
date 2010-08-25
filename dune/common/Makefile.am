@@ -10,6 +10,7 @@ libcommon_la_SOURCES =				\
 	ios_state.cc				\
 	parametertree.cc                        \
 	path.cc					\
+	exceptions.cc				\
 	stdstreams.cc
 
 commonincludedir = $(includedir)/dune/common

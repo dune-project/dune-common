@@ -10,9 +10,9 @@
 
 namespace Dune {
 
-
   /*! \defgroup Exceptions Exception handling
      \ingroup Common
+     \{
 
      The Dune-exceptions are designed to allow a simple derivation of subclasses
      and to accept a text written in the '<<' syntax.
@@ -56,7 +56,7 @@ namespace Dune {
      }
      \endcode
 
-     See exceptions.hh for detailed info
+     \see exceptions.hh for detailed info
 
    */
 
@@ -68,8 +68,12 @@ namespace Dune {
 
    */
 
+  /* forward declarations */
+  struct Exception;
+  struct ExceptionHook;
 
-  /*! \brief Base class for Dune-Exceptions
+  /*! \class Exception
+     \brief Base class for Dune-Exceptions
 
      all Dune exceptions are derived from this class via trivial subclassing:
 
@@ -87,11 +91,105 @@ namespace Dune {
    */
   class Exception {
   public:
+    Exception ();
     void message(const std::string &message); //!< store string in internal message buffer
     const std::string& what() const;        //!< output internal message buffer
+    static void registerHook (ExceptionHook * hook); //!< add a functor which is called before a Dune::Exception is emitted (see Dune::ExceptionHook) \see Dune::ExceptionHook
+    static void clearHook ();                       //!< remove all hooks
   private:
     std::string _message;
+    static ExceptionHook * _hook;
   };
+
+  /*! \brief Base class to add a hook to the Dune::Exception
+
+     The user can add a functor which should be called before a Dune::Exception is emitted.
+
+
+     Example: attach a debugger to the process, if an exception is thrown
+     \code
+     struct ExceptionHookDebugger : public Dune::ExceptionHook
+     {
+      char * process_;
+      char * debugger_;
+      ExceptionHookDebugger (int argc, char ** argv, std::string debugger)
+      {
+          process_ = strdup(argv[0]);
+          debugger_ = strdup(debugger.c_str());
+      }
+      virtual void operator () ()
+      {
+          pid_t pid = getpid();
+          pid_t cpid;
+          cpid = fork();
+          if (cpid == 0) // child
+          {
+              char * argv[4];
+              argv[0] = debugger_;
+              argv[1] = process_;
+              argv[2] = new char[12];
+              snprintf(argv[2], 12, "%i", int(pid));
+              argv[3] = 0;
+              // execute debugger
+              std::cout << process_ << "\n";
+              std::cout << argv[0] << " "
+                        << argv[1] << " "
+                        << argv[2] << std::endl;
+              execv(argv[0], argv);
+          }
+          else // parent
+          {
+              // send application to sleep
+              kill(pid, SIGSTOP);
+          }
+      }
+     };
+     \endcode
+
+     This hook is registered via a static method of Dune::Exception:
+     \code
+     int main(int argc, char** argv) {
+      Dune::MPIHelper & mpihelper = Dune::MPIHelper::instance(argc,argv);
+      ExceptionHookDebugger debugger(argc, argv, "/usr/bin/ddd");
+      Dune::Exception::registerHook(& debugger);
+      try
+      {
+          ...
+      }
+      catch (std::string & s) {
+          std::cout << mpihelper.rank() << ": ERROR: " << s << std::endl;
+      }
+      catch (Dune::Exception & e) {
+          std::cout << mpihelper.rank() << ": DUNE ERROR: " << e.what() << std::endl;
+      }
+     }
+     \endcode
+
+   */
+  struct ExceptionHook
+  {
+    virtual void operator () () = 0;
+  };
+
+  /*
+     Implementation of Dune::Exception
+   */
+
+  inline Exception::Exception ()
+  {
+    // call the hook if necessary
+    if (_hook != 0) _hook->operator()();
+  }
+
+  inline void Exception::registerHook (ExceptionHook * hook)
+  {
+    _hook = hook;
+  }
+
+  inline void Exception::clearHook ()
+  {
+    _hook = 0;
+  }
 
   inline void Exception::message(const std::string &message)
   {
@@ -108,6 +206,7 @@ namespace Dune {
     return stream << e.what();
   }
 
+#ifndef DOXYGEN
   // the "format" the exception-type gets printed.  __FILE__ and
   // __LINE__ are standard C-defines, the GNU cpp-infofile claims that
   // C99 defines __func__ as well. __FUNCTION__ is a GNU-extension
@@ -116,6 +215,7 @@ namespace Dune {
 #else
 # define THROWSPEC(E) # E << ": "
 #endif
+#endif // DOXYGEN
 
   /*! Macro to throw an exception
 
@@ -137,6 +237,12 @@ namespace Dune {
      to the text. If DUNE_DEVEL_MODE is defined more detail about the
      function where the exception happened is included. This mode can be
      activated via the \c --enable-dunedevel switch of \c ./configure
+
+     \note
+     you can add a hook to be called before a Dune::Exception is emitted,
+     e.g. to add additional information to the exception,
+     or to invoke a debugger during parallel debugging. (see Dune::ExceptionHook)
+
    */
   // this is the magic: use the usual do { ... } while (0) trick, create
   // the full message via a string stream and throw the created object
@@ -201,16 +307,15 @@ namespace Dune {
   class OutOfMemoryError : public SystemError {};
 
   /*! \brief Default exception if a function was called while
-   * the object is not in a valid state for that function.
+     the object is not in a valid state for that function.
    */
   class InvalidStateException : public Exception {};
 
   /*! \brief Default exception if an error in the parallel
-   * communication of the programm occured
-   * \ingroup ParallelCommunication
+     communication of the programm occured
+     \ingroup ParallelCommunication
    */
   class ParallelError : public Exception {};
-
 
 } // end namespace
 
