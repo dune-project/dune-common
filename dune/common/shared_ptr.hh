@@ -60,6 +60,8 @@ namespace Dune
     /**
      * @brief Constructs a new smart pointer from a preallocated Object.
      *
+     * \param pointer Raw pointer to the shared data
+     *
      * note: the object must be allocated on the heap and after handing the pointer to
      * shared_ptr the ownership of the pointer is also handed to the shared_ptr.
      */
@@ -71,6 +73,7 @@ namespace Dune
      * \tparam Deleter This class must by copyconstructable, the copy constructor must not throw an exception
      * and it must implement void operator() (T*) const
      *
+     * \param pointer Raw pointer to the shared data
      * \param deleter A copy of this deleter is stored
      *
      * note: the object must be allocated on the heap and after handing the pointer to

@@ -739,11 +739,47 @@ namespace Dune {
    *#include <dune/common/utility.hh>
    * \endcode
    * \tparam TE TypeEvaluator class template.
-   * \tparam An Type of extra arguments to pass to \c TE<T>::apply().  It
+   * \tparam A0 Type of extra arguments to pass to \c TE<T>::apply().  It
+   *            should not be necessary to specify these template parameters
+   *            explicitly since they can be deduced.
+   * \tparam A1 Type of extra arguments to pass to \c TE<T>::apply().  It
+   *            should not be necessary to specify these template parameters
+   *            explicitly since they can be deduced.
+   * \tparam A2 Type of extra arguments to pass to \c TE<T>::apply().  It
+   *            should not be necessary to specify these template parameters
+   *            explicitly since they can be deduced.
+   * \tparam A3 Type of extra arguments to pass to \c TE<T>::apply().  It
+   *            should not be necessary to specify these template parameters
+   *            explicitly since they can be deduced.
+   * \tparam A4 Type of extra arguments to pass to \c TE<T>::apply().  It
+   *            should not be necessary to specify these template parameters
+   *            explicitly since they can be deduced.
+   * \tparam A5 Type of extra arguments to pass to \c TE<T>::apply().  It
+   *            should not be necessary to specify these template parameters
+   *            explicitly since they can be deduced.
+   * \tparam A6 Type of extra arguments to pass to \c TE<T>::apply().  It
+   *            should not be necessary to specify these template parameters
+   *            explicitly since they can be deduced.
+   * \tparam A7 Type of extra arguments to pass to \c TE<T>::apply().  It
+   *            should not be necessary to specify these template parameters
+   *            explicitly since they can be deduced.
+   * \tparam A8 Type of extra arguments to pass to \c TE<T>::apply().  It
+   *            should not be necessary to specify these template parameters
+   *            explicitly since they can be deduced.
+   * \tparam A9 Type of extra arguments to pass to \c TE<T>::apply().  It
    *            should not be necessary to specify these template parameters
    *            explicitly since they can be deduced.
    *
-   * \param an Arguments to save references to in the TransformTupleFunctor.
+   * \param a0 Arguments to save references to in the TransformTupleFunctor.
+   * \param a1 Arguments to save references to in the TransformTupleFunctor.
+   * \param a2 Arguments to save references to in the TransformTupleFunctor.
+   * \param a3 Arguments to save references to in the TransformTupleFunctor.
+   * \param a4 Arguments to save references to in the TransformTupleFunctor.
+   * \param a5 Arguments to save references to in the TransformTupleFunctor.
+   * \param a6 Arguments to save references to in the TransformTupleFunctor.
+   * \param a7 Arguments to save references to in the TransformTupleFunctor.
+   * \param a8 Arguments to save references to in the TransformTupleFunctor.
+   * \param a9 Arguments to save references to in the TransformTupleFunctor.
    *
    * There are overloads of this function (not documented seperately) for any
    * number of arguments, up to an implementation-defined arbitrary limit.
@@ -1032,14 +1068,50 @@ namespace Dune {
    * \tparam TypeEvaluator Used as the \c TE template argument to
    *                       TransformTupleFunctor internally.
    * \tparam Tuple         Type of the tuple to transform.
-   * \tparam An            Types of extra argument to call the transformation
+   * \tparam A0            Types of extra argument to call the transformation
+   *                       function with.
+   * \tparam A1            Types of extra argument to call the transformation
+   *                       function with.
+   * \tparam A2            Types of extra argument to call the transformation
+   *                       function with.
+   * \tparam A3            Types of extra argument to call the transformation
+   *                       function with.
+   * \tparam A4            Types of extra argument to call the transformation
+   *                       function with.
+   * \tparam A5            Types of extra argument to call the transformation
+   *                       function with.
+   * \tparam A6            Types of extra argument to call the transformation
+   *                       function with.
+   * \tparam A7            Types of extra argument to call the transformation
+   *                       function with.
+   * \tparam A8            Types of extra argument to call the transformation
+   *                       function with.
+   * \tparam A9            Types of extra argument to call the transformation
    *                       function with.
    *
    * \note The \c Tuple and \c An template arguments can be deduced from the
    *       function arguments, so they can usually be omitted.
    *
    * \param orig Tuple value to be transformed.
-   * \param an   Extra argument values to provide to the transformation
+   * \param a0   Extra argument values to provide to the transformation
+   *             function.
+   * \param a1   Extra argument values to provide to the transformation
+   *             function.
+   * \param a2   Extra argument values to provide to the transformation
+   *             function.
+   * \param a3   Extra argument values to provide to the transformation
+   *             function.
+   * \param a4   Extra argument values to provide to the transformation
+   *             function.
+   * \param a5   Extra argument values to provide to the transformation
+   *             function.
+   * \param a6   Extra argument values to provide to the transformation
+   *             function.
+   * \param a7   Extra argument values to provide to the transformation
+   *             function.
+   * \param a8   Extra argument values to provide to the transformation
+   *             function.
+   * \param a9   Extra argument values to provide to the transformation
    *             function.
    *
    * This function is overloaded for any number of extra arguments, up to an
@@ -1069,7 +1141,7 @@ namespace Dune {
    *
    * \note Since transformTuple() takes non-const references to the extra
    *       arguments, it will only bind to lvalue extra arguments, unless you
-   *       specify the corresconding template parameter as \c const \s
+   *       specify the corresconding template parameter as \c const \c
    *       SomeType.  Specifically this meands that you cannot simply use
    *       literals or function return values as extra arguments. Providing
    *       overloads for all possible combinations of rvalue and lvalue extra
@@ -1204,7 +1276,7 @@ namespace Dune {
   // Sample TypeEvaluators
   //
 
-  //! \c TypeEvaluator to turn a type \T into a reference to \c T
+  //! \c TypeEvaluator to turn a type \c T into a reference to \c T
   /**
    * This is suitable as the \c TypeEvaluator template parameter for
    * ForEachType and transformTuple().

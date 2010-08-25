@@ -564,7 +564,7 @@ namespace Dune
   }
 
   template<class T, std::size_t s>
-  inline void PoolAllocator<T,s>::deallocate(T* p, std::size_t n)
+  inline void PoolAllocator<T,s>::deallocate(pointer p, std::size_t n)
   {
     for(size_t i=0; i<n; i++)
       memoryPool_.free(p++);
@@ -577,7 +577,7 @@ namespace Dune
   }
 
   template<class T, std::size_t s>
-  inline void PoolAllocator<T,s>::destroy(T* p)
+  inline void PoolAllocator<T,s>::destroy(pointer p)
   {
     p->~T();
   }

@@ -564,7 +564,7 @@ namespace Dune
 {
 
   template<typename T, class A>
-  SLList<T,A>::Element::Element(const T& item, Element* next)
+  SLList<T,A>::Element::Element(const MemberType& item, Element* next)
     : next_(next), item_(item)
   {}
 
@@ -655,7 +655,7 @@ namespace Dune
   }
 
   template<typename T, class A>
-  inline void SLList<T,A>::push_back(const T& item)
+  inline void SLList<T,A>::push_back(const MemberType& item)
   {
     assert(size_>0 || tail_==&beforeHead_);
     tail_->next_ = allocator_.allocate(1, 0);
@@ -699,7 +699,7 @@ namespace Dune
   }
 
   template<typename T, class A>
-  inline void SLList<T,A>::push_front(const T& item)
+  inline void SLList<T,A>::push_front(const MemberType& item)
   {
     if(tail_ == &beforeHead_) {
       // list was empty
