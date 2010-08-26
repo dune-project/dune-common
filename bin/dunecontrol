@@ -453,6 +453,7 @@ usage () {
     echo "                     the one whose source tree we are standing in"
     echo "      --resume       resume a previous run (only consider the modules"
     echo "                     not built successfully on the previous run)"
+    echo "      --skipfirst    skip the first module (use with --resume)"
     echo "      --opts=FILE    load default options from FILE"
     echo "                     (see dune-common/doc/example.opts)"
     echo "      --builddir=NAME make out-of-source builds in a subdir NAME."
@@ -483,6 +484,9 @@ create_module_list() {
   if test "x$ONLY" != x; then
     export MODULES="$ONLY"
   fi
+  if test "x$SKIPFIRST" = "xyes" ; then
+    export MODULES=`echo $MODULES | cut '--delimiter= ' --fields=2-`
+  fi
 }
 
 # print the module list
@@ -502,6 +506,7 @@ trap onfailure EXIT
 export SEARCH_MODULES=""
 export MODULES=""
 export ONLY=""
+export SKIPFIRST=no
 
 # parse commandline parameters
 while test $# -gt 0; do
@@ -615,6 +620,9 @@ while test $# -gt 0; do
         echo "Error: No previous run to resume. ('$RESUME_FILE' is empty or does not exist)"
         exit 1
       fi
+    ;;
+    --skipfirst)
+      export SKIPFIRST=yes
     ;;
     --debug) true ;; # ignore this option, it is handled right at the beginning
     --*)
