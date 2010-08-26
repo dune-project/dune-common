@@ -79,7 +79,6 @@ if test "x$DEBUG" = "xyes"; then
 fi
 
 export PREFIX_DIR="`canonicalpath $0`/.."
-export RESUME_FILE="$HOME/.dune.resume"
 
 # Read the modules find part
 . "$PREFIX_DIR/lib/dunemodules.lib"
@@ -475,15 +474,36 @@ usage () {
 
 # create the module list
 create_module_list() {
+  export RESUME_FILE="$HOME/.dune.resume"
+  if test "x$DUNE_OPTS_FILE" != "x"; then
+    export RESUME_FILE="$(eval . $DUNE_OPTS_FILE; eval echo \$RESUME_FILE)"
+  fi
+
+  if test "x$RESUME_FLAG" = "xyes" ; then
+    if test -s $RESUME_FILE ; then
+      export MODULES=
+      RESUME="`cat $RESUME_FILE`"
+      for a in $RESUME ; do
+        export NAME_`fix_variable_name $a`="$a"
+        fix_and_assign MODULE "$a"
+        export SEARCH_MODULES="$SEARCH_MODULES $MODULE"
+        export ONLY="$ONLY $MODULE"
+      done
+    else
+      echo "Error: No previous run to resume. ('$RESUME_FILE' is empty or does not exist)"
+      exit 1
+    fi
+  fi
+
   find_modules_in_path
-  if test "x$SEARCH_MODULES" != "x"; then
+  if test "x$ONLY" != x; then
+    export MODULES="$ONLY"
+  elif test "x$SEARCH_MODULES" != "x"; then
     sort_modules $SEARCH_MODULES
   else
     sort_modules $MODULES
   fi
-  if test "x$ONLY" != x; then
-    export MODULES="$ONLY"
-  fi
+
   if test "x$SKIPFIRST" = "xyes" ; then
     export MODULES=`echo $MODULES | cut '--delimiter= ' --fields=2-`
   fi
@@ -506,6 +526,7 @@ trap onfailure EXIT
 export SEARCH_MODULES=""
 export MODULES=""
 export ONLY=""
+export RESUME_FLAG=no
 export SKIPFIRST=no
 
 # parse commandline parameters
@@ -608,18 +629,7 @@ while test $# -gt 0; do
       export HAVE_${module}=
     ;;
     --resume)
-      if test -s $RESUME_FILE ; then
-        RESUME="`cat $RESUME_FILE`"
-        for a in $RESUME ; do
-          export NAME_`fix_variable_name $a`="$a"
-          fix_and_assign MODULE "$a"
-          export SEARCH_MODULES="$SEARCH_MODULES $MODULE"
-          export ONLY="$ONLY $MODULE"
-        done
-      else
-        echo "Error: No previous run to resume. ('$RESUME_FILE' is empty or does not exist)"
-        exit 1
-      fi
+      export RESUME_FLAG="yes"
     ;;
     --skipfirst)
       export SKIPFIRST=yes
