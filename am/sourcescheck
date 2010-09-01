@@ -13,12 +13,12 @@ sourcescheck: sourcescheck-recursive
 sourcescheck-am:
 	@echo $(sourcescheck_LIST) | tr ' ' '\n' | \
 	 grep '\.[hcm][hc4]$$' | sort | uniq > header_CHECK.install
-	@ls | \
+	@ls $(srcdir) | \
 	 grep '\.[hcm][hc4]$$' | sort | uniq > header_CHECK.present
 	@RESULT=0; \
 	if diff header_CHECK.* | grep ^[\<\>] -q; then \
 		echo "==== WARNING ===="; \
-	    echo -n "Directory: "; pwd; \
+	    echo -n "Directory: $(srcdir)"; \
 		echo "Files present but not installed:"; \
 		diff -u header_CHECK.install header_CHECK.present | \
 		grep -v ^+++ | grep ^+; \
