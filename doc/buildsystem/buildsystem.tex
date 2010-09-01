@@ -918,14 +918,15 @@ make program, even those without a native {\em if} construct like GNU-make.
 
 An automake-generated Makefile does not only know the usual {\em all},
 {\em clean} and {\em install} targets but also
-\begin{itemize}
-\item {\bf tags} travel recursively through the directories and create
+\begin{description}
+\item [tags] travel recursively through the directories and create
   TAGS-files which can be used in many editors to quickly find where
   symbols/functions are defined (use emacs-format)
-\item {\bf ctags} the same as "tags" but uses the vi-format for the tags-files
-\item {\bf dist} create a distribution tarball
-\item {\bf distcheck} create a tarball and do a test-build if it really works
-\end{itemize}
+\item [ctags] the same as "tags" but uses the vi-format for the tags-files
+\item [dist] create a distribution tarball
+\item [check] run a set of regression tests
+\item [distcheck] create a tarball and do a test-build if it really works
+\end{description}
 
 \subsubsection{Building Documentation}
 \label{am_includes}
@@ -1006,6 +1007,34 @@ the web page. This conversion can be done using inkscape
 (\url{http://www.inkscape.org/}).
 \texttt{\$(top\_srcdir)/am/inkscape.am} offers the necessary rules.
 
+\subsubsection{Automatic testing}
+
+Dune offers several special \make targets, which help you find problems
+in you build system configuration, or in your code.
+
+\begin{description}
+\item[check] You can define lists of regression tests in your
+  \makefileam. These are run when you call \texttt{make check}.
+\item[distcheck] This target is already defined by automake. It
+  creates a tarball, unpacks it, tries to do an out-of-source build
+  and runs the regression tests against this build.
+\item[sourcescheck] This target tries to make sure that you don't
+  forget to install any important headers or source files.
+\item[headercheck] This target tries to make sure that your header
+  files can be parsed and are self contained.
+\end{description}
+
+\minisec{The check target}
+
+TODO\dots{}
+
+\minisec{The sourcescheck target}
+
+TODO\dots{}
+
+\minisec{The headercheck target}
+
+TODO\dots{}
 
 \subsection{configure.ac}
 \label{configure.ac}
