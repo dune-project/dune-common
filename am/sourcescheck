@@ -18,7 +18,7 @@ sourcescheck-am:
 	@RESULT=0; \
 	if diff header_CHECK.* | grep ^[\<\>] -q; then \
 		echo "==== WARNING ===="; \
-	    echo -n "Directory: $(srcdir)"; \
+	    echo "Directory: $(srcdir)"; \
 		echo "Files present but not installed:"; \
 		diff -u header_CHECK.install header_CHECK.present | \
 		grep -v ^+++ | grep ^+; \
