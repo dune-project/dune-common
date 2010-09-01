@@ -60,6 +60,7 @@ commoninclude_HEADERS = 			\
 	poolallocator.hh			\
 	precision.hh				\
 	propertymap.hh				\
+	reservedvector.hh			\
 	shared_ptr.hh				\
 	singleton.hh				\
 	sllist.hh				\
