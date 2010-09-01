@@ -13,7 +13,7 @@ sourcescheck: sourcescheck-recursive
 sourcescheck-am:
 	@echo $(sourcescheck_LIST) | tr ' ' '\n' | \
 	 grep '\.[hcm][hc4]$$' | sort | uniq > header_CHECK.install
-	@ls $(srcdir) | \
+	@(ls $(srcdir); echo $(sourcescheck_DUMMY)) | \
 	 grep '\.[hcm][hc4]$$' | sort | uniq > header_CHECK.present
 	@RESULT=0; \
 	if diff header_CHECK.* | grep ^[\<\>] -q; then \
