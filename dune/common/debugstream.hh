@@ -126,22 +126,6 @@ namespace Dune {
     static const bool value = (current >= threshold);
   };
 
-  /*!
-     \brief Test if debug level equals zero.
-
-     data component value is true if template parameter is non-zero
-
-     this template is used to implement the common_bits template
-   */
-  template <DebugLevel x>
-  struct notzero {
-    static const bool value = true;
-  };
-
-  template < >
-  struct notzero<0> {
-    static const bool value = false;
-  };
 
   /*! \brief activate if current and mask have common bits switched on.
 
@@ -151,7 +135,7 @@ namespace Dune {
    */
   template <DebugLevel current, DebugLevel mask>
   struct common_bits {
-    static const bool value = notzero<current & mask>::value;
+    enum {value = ((current & mask)!=0) };
   };
 
 
