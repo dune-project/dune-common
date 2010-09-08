@@ -26,7 +26,7 @@ namespace Dune {
    */
 
   /*! \file
-   * \brief This file implements a the dense vector interface, with an exchangable storage class
+   * \brief This file implements a the dense vector interface, with an exchangeable storage class
    */
 
   namespace fvmeta
@@ -109,7 +109,7 @@ namespace Dune {
 
   }
 
-  /*! \brief Generic Iterator class for dense vector and matrix implementations
+  /*! \brief Generic iterator class for dense vector and matrix implementations
 
      provides sequential access to DenseVector, FieldVector and FieldMatrix
    */
@@ -197,7 +197,7 @@ namespace Dune {
     DifferenceType position_;
   };
 
-  /** \brief Interface for a dense vector class of fields.
+  /** \brief Interface for a class of dense vectors over a given field.
    *
    * \tparam K the field type (use float, double, complex, etc)
    * \tparam S storage class (e.g. std::array<K,Size> or std::vector<K>)
