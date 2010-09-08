@@ -14,6 +14,7 @@ class FieldVectorMainTest
 {
 protected:
   FieldVectorMainTest() {
+    ct a = 1;
     FieldVector<ct,d> v(1);
     FieldVector<ct,d> w(2);
     FieldVector<ct,d> z(2);
@@ -27,13 +28,26 @@ protected:
     (w+v).infinity_norm();
     (w+v).infinity_norm_real();
 
+    // test op(vec,vec)
     z = v + w;
     z = v - w;
     FieldVector<ct,d> z2 = v + w;
+    w -= v;
+    w += v;
 
+    // test op(vec,scalar)
+    w +=a;
+    w -= a;
+    w *= a;
+    w /= a;
+
+    // test scalar product, axpy
+    a = v * w;
+    z = v.axpy(a,w);
+
+    // test comparison
     b = (w != v);
     b = (w == v);
-    w=v;
   }
 };
 
