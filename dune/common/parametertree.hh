@@ -65,6 +65,18 @@ namespace Dune {
     std::string& operator[] (const std::string& key);
 
 
+    /** \brief get value reference for key
+     *
+     * Returns reference to value for given key name.
+     * This creates the key, if not existent.
+     *
+     * \param key key name
+     * \return reference to corresponding value
+     * \throw Dune::RangeError if key is not found
+     */
+    const std::string& operator[] (const std::string& key) const;
+
+
     /** \brief print structure to std::cout
      */
     void report() const;
@@ -114,7 +126,7 @@ namespace Dune {
      * \param defaultValue default if key does not exist
      * \return value as string
      */
-    std::string get(const std::string& key, const std::string& defaultValue);
+    std::string get(const std::string& key, const std::string& defaultValue) const;
 
     /** \brief get value as string
      *
@@ -126,7 +138,7 @@ namespace Dune {
      * \param defaultValue default if key does not exist
      * \return value as string
      */
-    std::string get(const std::string& key, const char* defaultValue);
+    std::string get(const std::string& key, const char* defaultValue) const;
 
 
     /** \brief get value as int
@@ -137,7 +149,7 @@ namespace Dune {
      * \param defaultValue default if key does not exist
      * \return value as int
      */
-    int get(const std::string& key, int defaultValue);
+    int get(const std::string& key, int defaultValue) const;
 
 
     /** \brief get value as double
@@ -148,7 +160,7 @@ namespace Dune {
      * \param defaultValue default if key does not exist
      * \return value as double
      */
-    double get(const std::string& key, double defaultValue);
+    double get(const std::string& key, double defaultValue) const;
 
 
     /** \brief get value as bool
@@ -159,7 +171,7 @@ namespace Dune {
      * \param defaultValue default if key does not exist
      * \return value as bool, false if values = '0', true if value = '1'
      */
-    bool get(const std::string& key, bool defaultValue);
+    bool get(const std::string& key, bool defaultValue) const;
 
 
     /** \brief get value converted to a certain type
@@ -172,7 +184,7 @@ namespace Dune {
      * \return value converted to T
      */
     template<typename T>
-    T get(const std::string& key, const T& defaultValue) {
+    T get(const std::string& key, const T& defaultValue) const {
       if(hasKey(key))
         return get<T>(key);
       else
@@ -188,7 +200,7 @@ namespace Dune {
      * \return value as T
      */
     template <class T>
-    T get(const std::string& key) {
+    T get(const std::string& key) const {
       if(not hasKey(key))
         DUNE_THROW(RangeError, "Key '" << key << "' not found in parameter "
                    "file!");
