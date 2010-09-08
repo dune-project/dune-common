@@ -162,7 +162,7 @@ namespace Dune
 
     //===== iterator interface to rows of the matrix
     //! Iterator class for sequential access
-    typedef FieldIterator<FieldMatrix<K,rows,cols>,row_type> Iterator;
+    typedef DenseIterator<FieldMatrix<K,rows,cols>,row_type> Iterator;
     //! typedef for stl compliant access
     typedef Iterator iterator;
     //! rename the iterators for easier access
@@ -195,7 +195,7 @@ namespace Dune
     }
 
     //! Iterator class for sequential access
-    typedef FieldIterator<const FieldMatrix<K,rows,cols>,const row_type> ConstIterator;
+    typedef DenseIterator<const FieldMatrix<K,rows,cols>,const row_type> ConstIterator;
     //! typedef for stl compliant access
     typedef ConstIterator const_iterator;
     //! rename the iterators for easier access
@@ -988,7 +988,7 @@ namespace Dune
 
     //===== iterator interface to rows of the matrix
     //! Iterator class for sequential access
-    typedef FieldIterator<FieldMatrix<K,rows,cols>,row_type> Iterator;
+    typedef DenseIterator<FieldMatrix<K,rows,cols>,row_type> Iterator;
     //! typedef for stl compliant access
     typedef Iterator iterator;
     //! rename the iterators for easier access
@@ -1021,7 +1021,7 @@ namespace Dune
     }
 
     //! Iterator class for sequential access
-    typedef FieldIterator<const FieldMatrix<K,rows,cols>,const row_type> ConstIterator;
+    typedef DenseIterator<const FieldMatrix<K,rows,cols>,const row_type> ConstIterator;
     //! typedef for stl compliant access
     typedef ConstIterator const_iterator;
     //! rename the iterators for easier access

@@ -26,6 +26,7 @@ commoninclude_HEADERS = 			\
 	configparser.hh				\
 	debugstream.hh				\
 	deprecated.hh				\
+	densevector.hh				\
 	enumset.hh				\
 	exceptions.hh				\
 	fassign.hh				\
@@ -70,9 +71,9 @@ commoninclude_HEADERS = 			\
 	timer.hh				\
 	tuples.hh				\
 	tupleutility.hh                         \
-        typetraits.hh				\
+	typetraits.hh				\
 	utility.hh                              \
-        version.hh
+	version.hh
 
 if EXPRESSIONTEMPLATES
 commoninclude_HEADERS += exprtmpl.hh exprtmpl/scalar.inc exprtmpl/exprexpr.inc
