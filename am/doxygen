@@ -49,7 +49,7 @@ DOXYGEN_DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.png -o -name Doxyfile 
 # check dependency ourself to be robust
 $(DOXYGENTAG): FORCE Doxyfile $(DOXYGENHEADER) $(DOXYGENFOOTER)
 	set -e; \
-	if test ! -f "$(VPATH)/$(DOXYGENTAG)" && ( test ! -e $(DOXYGENTAG) \
+	if test ! -f "$(DOXYGENTAG)" && ( test ! -e $(DOXYGENTAG) \
 	  || test x"`find $(top_srcdir) \( $(DOXYGEN_DEPENDON) \) -a -cnewer $(DOXYGENTAG) -print`" != x ); then \
 	    echo Running doxygen. This may take a while... ; \
 	    $(DOXYGEN) Doxyfile > doxygen.log <&-; \
