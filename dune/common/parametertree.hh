@@ -36,7 +36,7 @@ namespace Dune {
 
     /** \brief test for key
      *
-     * Tests wether given key exists.
+     * Tests whether given key exists.
      *
      * \param key key name
      * \return true if key exists in structure, otherwise false
@@ -46,7 +46,7 @@ namespace Dune {
 
     /** \brief test for substructure
      *
-     * Tests wether given substructure exists.
+     * Tests whether given substructure exists.
      *
      * \param sub substructure name
      * \return true if substructure exists in structure, otherwise false
@@ -56,7 +56,7 @@ namespace Dune {
 
     /** \brief get value reference for key
      *
-     * Returns refference to value for given key name.
+     * Returns reference to value for given key name.
      * This creates the key, if not existent.
      *
      * \param key key name
