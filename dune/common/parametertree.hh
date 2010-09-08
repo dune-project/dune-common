@@ -60,7 +60,7 @@ namespace Dune {
      * This creates the key, if not existent.
      *
      * \param key key name
-     * \return reference to coresponding value
+     * \return reference to corresponding value
      */
     std::string& operator[] (const std::string& key);
 
