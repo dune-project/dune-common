@@ -9,7 +9,7 @@
 namespace Dune {
 
   /**
-     @addtoogroup DenseMatVec
+     @addtogroup DenseMatVec
      \brief Type Traits to retrieve the field and the real type of classes
 
      Type Traits to retrieve the field and the real type of classes
