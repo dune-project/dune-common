@@ -9,11 +9,8 @@
 #include <cstdlib>
 #include <complex>
 #include <cstring>
-#include <limits>
 
 #include "exceptions.hh"
-#include "genericiterator.hh"
-
 #include "array.hh"
 #include "densevector.hh"
 

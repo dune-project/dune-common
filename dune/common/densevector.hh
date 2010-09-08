@@ -3,6 +3,9 @@
 #ifndef DUNE_DENSEVECTOR_HH
 #define DUNE_DENSEVECTOR_HH
 
+#include <limits>
+
+#include "genericiterator.hh"
 #include "ftraits.hh"
 
 namespace Dune {
