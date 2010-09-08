@@ -48,6 +48,16 @@ protected:
     // test comparison
     b = (w != v);
     b = (w == v);
+
+    // test istream operator
+    std::stringstream s;
+    for (int i=0; i<d; i++)
+    {
+      s << i << " ";
+      v[i] = i;
+    }
+    s >> w;
+    assert(v == w);
   }
 };
 
