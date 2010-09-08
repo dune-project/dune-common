@@ -23,6 +23,14 @@ namespace Dune {
       @{
    */
 
+  /*! \file
+   * \brief This file implements a dense vector with a dynamic size.
+   */
+
+  /** \brief Construct a vector with a dynamic size.
+   *
+   * \tparam K is the field type (use float, double, complex, etc)
+   */
   template< class K >
   class DynamicVector : public DenseVector< std::vector<K> >
   {

@@ -26,8 +26,7 @@ namespace Dune {
     typedef const typename FieldTraits<K>::real_type real_type;
   };
 
-  /** @defgroup DenseMatVec Dense Matrix and Vector Template Library
-      @ingroup Common
+  /** @addtogroup DenseMatVec
       @{
    */
 
@@ -36,13 +35,10 @@ namespace Dune {
      representing a field and a compile-time given size.
    */
 
-  /** \brief Construct a vector space out of a tensor product of fields.
+  /** \brief vector space out of a tensor product of fields.
    *
-   *  K is the field type (use float, double, complex, etc) and SIZE
-   *  is the number of components.
-   *
-   *  It is generally assumed that K is a numerical type compatible with double
-   *  (E.g. norms are always computed in double precision).
+   * \tparam K    the field type (use float, double, complex, etc)
+   * \tparam SIZE number of components.
    */
   template< class K, int SIZE >
   class FieldVector : public DenseVector< Dune::array<K,SIZE> >

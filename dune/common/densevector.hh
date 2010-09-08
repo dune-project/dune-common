@@ -20,11 +20,13 @@ namespace Dune {
     typedef const typename FieldTraits<typename S::value_type>::real_type real_type;
   };
 
-  /** @addtogroup DenseMatVec
+  /** @defgroup DenseMatVec Dense Matrix and Vector Template Library
+      @ingroup Common
       @{
    */
 
-  /*! \todo doc me
+  /*! \file
+   * \brief This file implements a the dense vector interface, with an exchangable storage class
    */
 
   namespace fvmeta
@@ -107,7 +109,10 @@ namespace Dune {
 
   }
 
-  //! Iterator class for sequential access to DenseVector, FieldVector and FieldMatrix
+  /*! \brief Generic Iterator class for dense vector and matrix implementations
+
+     provides sequential access to DenseVector, FieldVector and FieldMatrix
+   */
   template<class C, class T>
   class DenseIterator :
     public Dune::RandomAccessIteratorFacade<DenseIterator<C,T>,T, T&, int>
@@ -192,14 +197,9 @@ namespace Dune {
     DifferenceType position_;
   };
 
-  /** \brief Construct a vector space out of a tensor product of fields.
+  /** \brief Interface for a dense vector class of fields.
    *
-   *  K is the field type (use float, double, complex, etc) and SIZE
-   *  is the number of components.
-   *
-   *  It is generally assumed that K is a numerical type compatible with double
-   *  (E.g. norms are always computed in double precision).
-   *
+   * \tparam K the field type (use float, double, complex, etc)
    * \tparam S storage class (e.g. std::array<K,Size> or std::vector<K>)
    */
   template<typename S>
