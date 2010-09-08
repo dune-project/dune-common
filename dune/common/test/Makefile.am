@@ -8,6 +8,7 @@ TESTPROGS = \
     configparsertest \
     conversiontest \
     deprtuplestest \
+    dynvectortest \
     fassigntest \
     float_cmp \
     fmatrixtest \
@@ -108,6 +109,8 @@ iteratorfacadetest_SOURCES = iteratorfacadetest.cc iteratorfacadetest.hh \
    iteratortest.hh
 
 iteratorfacadetest2_SOURCES = iteratorfacadetest2.cc
+
+dynvectortest_SOURCES = dynvectortest.cc
 
 fvectortest_SOURCES = fvectortest.cc
 

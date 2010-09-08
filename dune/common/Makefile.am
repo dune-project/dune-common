@@ -27,6 +27,7 @@ commoninclude_HEADERS = 			\
 	debugstream.hh				\
 	deprecated.hh				\
 	densevector.hh				\
+	dynvector.hh				\
 	enumset.hh				\
 	exceptions.hh				\
 	fassign.hh				\
