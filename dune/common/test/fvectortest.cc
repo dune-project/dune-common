@@ -16,6 +16,7 @@ protected:
   FieldVectorMainTest() {
     FieldVector<ct,d> v(1);
     FieldVector<ct,d> w(2);
+    FieldVector<ct,d> z(2);
     bool b;
 
     // Test whether the norm methods compile
@@ -25,6 +26,10 @@ protected:
     (w+v).one_norm_real();
     (w+v).infinity_norm();
     (w+v).infinity_norm_real();
+
+    z = v + w;
+    z = v - w;
+    FieldVector<ct,d> z2 = v + w;
 
     b = (w != v);
     b = (w == v);
