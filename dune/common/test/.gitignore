@@ -14,7 +14,7 @@ bitsetvectortest
 iteratorfacadetest
 sllisttest
 tuplestest
-settest
+enumsettest
 fmatrixtest
 polyallocator
 poolallocatortest

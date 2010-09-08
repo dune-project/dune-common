@@ -9,6 +9,7 @@ TESTPROGS = \
     conversiontest \
     deprtuplestest \
     dynvectortest \
+    enumsettest \
     fassigntest \
     float_cmp \
     fmatrixtest \
@@ -24,7 +25,6 @@ TESTPROGS = \
     pathtest \
     polyallocator \
     poolallocatortest \
-    settest \
     shared_ptrtest \
     singletontest \
     smallobject \
@@ -120,7 +120,7 @@ polyallocator_SOURCES = polyallocator.cc
 
 poolallocatortest_SOURCES = poolallocatortest.cc
 
-settest_SOURCES=settest.cc
+enumsettest_SOURCES=enumsettest.cc
 
 gcdlcmtest_SOURCES = gcdlcmtest.cc
 
