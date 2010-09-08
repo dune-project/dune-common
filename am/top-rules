@@ -24,3 +24,16 @@ distclean-libtool:
 
 top-clean:
 	rm -f dependencies.m4
+
+# link dune.css
+if DUNEWEB
+doc-local: css-local
+doc-clean: css-clean
+
+css-local: dune.css
+css-clean:
+	rm -f dune.css
+
+dune.css:
+	$(LN_S) $(DUNEWEBDIR)/dune.css
+endif
