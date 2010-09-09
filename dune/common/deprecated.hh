@@ -13,7 +13,7 @@
  * \endcode
  *
  * This is a preprocessor define which can be used to mark functions,
- * typedefs, enums and other stuff depretcated.  If something is marked
+ * typedefs, enums and other stuff deprecated.  If something is marked
  * deprecated, users are advised to migrate to the new interface, since it
  * will probably be removed in the next release of Dune.
  *
