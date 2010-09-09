@@ -3,6 +3,8 @@
 #ifndef DUNE_DEPRECATED_HH
 #define DUNE_DEPRECATED_HH
 
+#warning This file has been deprecated in dune-common 2.1.  There is no replacement, you may simply omit it.
+
 //! @addtogroup Common
 //! @{
 #if defined(DOXYGEN) or not defined(DUNE_DEPRECATED)
