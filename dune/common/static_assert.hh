@@ -3,44 +3,11 @@
 #ifndef DUNE_STATIC_ASSERT_HH
 #define DUNE_STATIC_ASSERT_HH
 
-#include "deprecated.hh"
-
 /**
  * @addtogroup Common
  *
  * @{
  */
-
-/**
-    \brief (DEPRECATED) Helper template so that compilation fails if condition is not true.
-
-    \deprecated Use dune_static_assert instead.
-
-    If the condition is true a static function yes is available, othewise the
-    only function available is no().
-
-    Example for compile time check whether two types are the same:
-    \code
-    IsTrue<is_same<int,int>::value>::yes(); //
-    IsTrue<is_same<bool,int>::value>::yes(); // false, will trigger a compile time error
-    \endcode
-
-    A test that trigger a compile time error if condition is true:
-    \code
-    IsTrue<condition>::no()
-    \endcode
- */
-template <bool condition>
-struct IsTrue
-{
-  static void no() DUNE_DEPRECATED {};
-};
-
-template <>
-struct IsTrue<true>
-{
-  static void yes() DUNE_DEPRECATED {};
-};
 
 #if not HAVE_STATIC_ASSERT
 // Taken from BOOST
@@ -132,7 +99,7 @@ namespace Dune {
      typedef void FrobnicateType;
      };
    *  \endcode
-   *  This will trigger dune_static_assert() as soon as the compiler read the
+   *  This will trigger dune_static_assert() as soon as the compiler reads the
    *  definition for the Traits template, since it knows that "false" can
    *  never become true, no matter what the template parameters of Traits are.
    *  As a workaround you can use AlwaysFalse: replace <tt>false</tt> by
