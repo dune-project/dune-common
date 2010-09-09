@@ -3,7 +3,10 @@
 #ifndef DUNE_FINITE_STACK_HH
 #define DUNE_FINITE_STACK_HH
 
+#include <stack>
+
 #include <dune/common/exceptions.hh>
+#include <dune/common/reservedvector.hh>
 
 namespace Dune {
 
@@ -27,69 +30,31 @@ namespace Dune {
      \param n Maximum number of stack entries
    */
   template<class T, int n>
-  class FiniteStack {
+  class FiniteStack
+    : public std::stack<T, Dune::ReservedVector<T,n> >
+  {
   public:
-
-    //! Returns true if the stack is empty
-    bool empty () const
-    {
-      return f==0;
-    }
 
     //! Returns true if the stack is full
     bool full () const
     {
-      return f>=n;
+      return this->size()>=n;
     }
 
-    //! Puts a new object onto the stack
-    void push (const T& t)
-    {
-#ifndef NDEBUG
-      if (full())
-        DUNE_THROW(Dune::RangeError,
-                   "trying to call push on a full FiniteStack");
-#endif
-      s[f++] = t;
-    }
-
-    //! Removes and returns the uppermost object from the stack
+    /** Removes and returns the uppermost object from the stack
+       \warning This differs from the semantics of std::stack, where pop() returns void
+     */
     T pop ()
     {
 #ifndef NDEBUG
-      if (empty())
-        DUNE_THROW(Dune::RangeError,
-                   "trying to call top on an empty FiniteStack");
+      if (this->empty())
+        DUNE_THROW(Dune::RangeError, "trying to call pop() on an empty FiniteStack");
 #endif
-      return s[--f];
+      T tmp = this->top();
+      this->std::stack<T,Dune::ReservedVector<T,n> >::pop();
+      return tmp;
     }
 
-    //! Returns the uppermost object on the stack
-    T top () const
-    {
-#ifndef NDEBUG
-      if (empty())
-        DUNE_THROW(Dune::RangeError,
-                   "trying to call pop on an empty FiniteStack");
-#endif
-      return s[f-1];
-    }
-
-    //! Dynamic stacksize
-    int size () const
-    {
-      return f;
-    }
-
-    //! Makes empty stack
-    FiniteStack ()
-    {
-      f = 0;
-    }
-
-  private:
-    T s[n];
-    int f;
   };
 
 }
