@@ -273,7 +273,7 @@ namespace Dune {
     /*! \brief explicit specialization so that enums can be printed
 
        Operators for built-in types follow special
-       rules (ง11.2.3) so that enums won't fit into the generic
+       rules (ยง11.2.3) so that enums won't fit into the generic
        method above. With an existing operator<< for int however
        the enum will be automatically casted.
      */

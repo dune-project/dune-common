@@ -12,8 +12,8 @@
 /*! @file
 
    @brief This file provides expression templates for the
-         «Dense Matrix and Vector Template Library» and for the
-         «Iterative Solvers Template Library».
+         Â«Dense Matrix and Vector Template LibraryÂ» and for the
+         Â«Iterative Solvers Template LibraryÂ».
    @verbatim
    $Id$
    @endverbatim
