@@ -1298,6 +1298,13 @@ namespace Dune {
     static Type apply(T& t) { return &t; }
   };
 
+  // Specialization, in case the type is already a reference
+  template<class T>
+  struct AddPtrTypeEvaluator<T&> {
+    typedef typename remove_reference<T>::type* Type;
+    static Type apply(T& t) { return &t; }
+  };
+
   namespace
   {
     template<int i, typename T1,typename F>
