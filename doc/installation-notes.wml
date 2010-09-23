@@ -93,7 +93,7 @@ using the <kbd>--only=module_name&gt;</kbd> switch.
 Runnning dunecontrol script
 <p>
 <pre>
-./dune-common/bin/dunecontrol --module=&lt;module_name&gt; all
+./dune-common/bin/dunecontrol --only=&lt;module_name&gt; all
 </pre>
 </p>
 where &lt;module_name&gt; is the name of that particular module given in the
