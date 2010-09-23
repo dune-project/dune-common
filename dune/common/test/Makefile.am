@@ -5,7 +5,6 @@ TESTPROGS = \
     arraylisttest \
     bigunsignedinttest \
     bitsetvectortest \
-    configparsertest \
     conversiontest \
     deprtuplestest \
     dynvectortest \
@@ -23,6 +22,7 @@ TESTPROGS = \
     mpihelpertest \
     nullptr-test \
     pathtest \
+    paramtreetest \
     polyallocator \
     poolallocatortest \
     shared_ptrtest \
@@ -72,6 +72,8 @@ noinst_HEADERS = dummyiterator.hh
 
 # define the programs
 pathtest_SOURCES = pathtest.cc
+
+paramtreetest_SOURCES = paramtreetest.cc
 
 smallobject_SOURCES = smallobject.cc
 
@@ -174,8 +176,6 @@ testfassign_fail6_SOURCES = testfassign.cc
 testfassign_fail6_CPPFLAGS = $(AM_CPPFLAGS) -D_N=2 -D_M=2 -D_VALUES="1, 2, nextRow, 2, 3, nextRow, 4, 5"
 
 conversiontest_SOURCES = conversiontest.cc
-
-configparsertest_SOURCES = configparsertest.cc
 
 sourcescheck_NOSOURCES = exprtmpl.cc timing.cc
 

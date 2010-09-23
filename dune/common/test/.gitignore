@@ -52,3 +52,8 @@ deprtuplestest
 fassigntest
 iteratorfacadetest2
 static_assert_test
+
+paramtreetest
+tags
+pathtest
+TAGS
