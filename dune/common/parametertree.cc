@@ -203,7 +203,7 @@ bool ParameterTree::get(const string& key, bool defaultValue) const
     return true;
 
   if (ret == "no" || ret == "false")
-    return true;
+    return false;
 
   return (atoi(ret.c_str()) !=0 );
 }
@@ -251,7 +251,7 @@ namespace Dune {
         return true;
 
       if (ret == "no" || ret == "false")
-        return true;
+        return false;
 
       return (std::atoi(ret.c_str()) !=0 );
     }
