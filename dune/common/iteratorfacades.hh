@@ -438,6 +438,8 @@ namespace Dune
      *
      * // Access the value referred to.
      * Reference dereference() const;
+     * // Access the value at some other location
+     * Reference elementAt(n) const;
      *
      * // Compare for equality with j
      * equals(i);
