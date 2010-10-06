@@ -74,7 +74,7 @@ namespace Dune {
   /** \brief Read a FieldVector from an input stream
    *  \relates FieldVector
    *
-   *  \note This operator is STL compilant, i.e., the content of v is only
+   *  \note This operator is STL compliant, i.e., the content of v is only
    *        changed if the read operation is successful.
    *
    *  \param[in]  in  std :: istream to read from
