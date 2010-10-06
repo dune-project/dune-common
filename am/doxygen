@@ -75,7 +75,7 @@ doxygen-html-install:
 	list=`echo $(DOXYGENHTMLFILES)`; \
 	cd "$$OLDPWD"; \
 	for p in $$list; do \
-	  $(instcmd) $$dir/html/$$p $(instdir); \
+	  if test -f "$$dir/html/$$p"; then $(instcmd) $$dir/html/$$p $(instdir); fi; \
 	done;
 
 ####
