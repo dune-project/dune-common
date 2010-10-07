@@ -11,7 +11,7 @@ AC_DEFUN([DUNE_BOOST_FUSION],
         export LDFLAGS
 
         AC_CACHE_CHECK(whether the Boost::FUSION library is available,
-                               dune_boost_fusion,
+                               dune_cv_boost_fusion,
                                [AC_LANG_PUSH([C++])
                                AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[ @%:@include <boost/fusion/container.hpp>
                                   ]],
