@@ -21,7 +21,7 @@ AC_DEFUN([DUNE_BOOST_FUSION],
                                    ]]),
                                dune_cv_boost_fusion=yes, dune_cv_boost_fusion=no)
                                AC_LANG_POP([C++])])
-         if test "x$dune_boost_filesystem" = "xyes"; then
+         if test "x$dune_cv_boost_fusion" = "xyes"; then
                AC_DEFINE(HAVE_BOOST_FUSION,,[define if the Boost::Fusion headers are available])
          fi
          CPPFLAGS="$CPPFLAGS_SAVED"
