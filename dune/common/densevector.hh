@@ -335,7 +335,7 @@ namespace Dune {
     //! return iterator to given element or end()
     ConstIterator find (size_type i) const
     {
-      return Iterator(*this,std::min(i,size()));
+      return ConstIterator(*this,std::min(i,size()));
     }
 
     //===== vector space arithmetic
