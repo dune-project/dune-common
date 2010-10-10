@@ -115,7 +115,7 @@ namespace Dune {
    */
   template<class C, class T>
   class DenseIterator :
-    public Dune::RandomAccessIteratorFacade<DenseIterator<C,T>,T, T&, int>
+    public Dune::RandomAccessIteratorFacade<DenseIterator<C,T>,T, T&, std::ptrdiff_t>
   {
     friend class DenseIterator<typename remove_const<C>::type, typename remove_const<T>::type >;
     friend class DenseIterator<const typename remove_const<C>::type, const typename remove_const<T>::type >;
@@ -127,12 +127,17 @@ namespace Dune {
      */
     typedef std::ptrdiff_t DifferenceType;
 
+    /**
+     * @brief The type to index the underlying container.
+     */
+    typedef typename C::size_type SizeType;
+
     // Constructors needed by the base iterators.
     DenseIterator()
-      : container_(0), position_(0)
+      : container_(0), position_()
     {}
 
-    DenseIterator(C& cont, DifferenceType pos)
+    DenseIterator(C& cont, SizeType pos)
       : container_(&cont), position_(pos)
     {}
 
@@ -174,27 +179,27 @@ namespace Dune {
       position_=position_+n;
     }
 
-    std::ptrdiff_t distanceTo(DenseIterator<const typename remove_const<C>::type,const typename remove_const<T>::type> other) const
+    DifferenceType distanceTo(DenseIterator<const typename remove_const<C>::type,const typename remove_const<T>::type> other) const
     {
       assert(other.container_==container_);
       return other.position_ - position_;
     }
 
-    std::ptrdiff_t distanceTo(DenseIterator<typename remove_const<C>::type, typename remove_const<T>::type> other) const
+    DifferenceType distanceTo(DenseIterator<typename remove_const<C>::type, typename remove_const<T>::type> other) const
     {
       assert(other.container_==container_);
       return other.position_ - position_;
     }
 
     //! return index
-    DifferenceType index () const
+    SizeType index () const
     {
       return this->position_;
     }
 
   private:
     C *container_;
-    DifferenceType position_;
+    SizeType position_;
   };
 
   /** \brief Interface for a class of dense vectors over a given field.
