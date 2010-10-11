@@ -27,8 +27,8 @@ namespace Dune {
   template<class T>
   struct FieldTraits<const T>
   {
-    typedef const typename FieldTraits<T>::field_type field_type;
-    typedef const typename FieldTraits<T>::real_type real_type;
+    typedef typename FieldTraits<T>::field_type field_type;
+    typedef typename FieldTraits<T>::real_type real_type;
   };
 
   template<class T>
