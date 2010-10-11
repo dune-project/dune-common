@@ -1230,7 +1230,7 @@ namespace Dune
       if (fvmeta::absreal(a[0][0])<FMatrixPrecision<>::absolute_limit())
         DUNE_THROW(FMatrixError,"matrix is singular");
 #endif
-      x.p = b.p/a[0];
+      x[0] = b[0]/a[0];
     }
 
     //! compute inverse
