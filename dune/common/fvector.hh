@@ -17,9 +17,9 @@
 namespace Dune {
 
   // forward declaration of template
-  template<class K, unsigned int SIZE> class FieldVector;
+  template<class K, int SIZE> class FieldVector;
 
-  template<class K, unsigned int SIZE>
+  template<class K, int SIZE>
   struct FieldTraits< FieldVector<K,SIZE> >
   {
     typedef typename FieldTraits<K>::field_type field_type;
@@ -40,7 +40,7 @@ namespace Dune {
    * \tparam K    the field type (use float, double, complex, etc)
    * \tparam SIZE number of components.
    */
-  template< class K, unsigned int SIZE >
+  template< class K, int SIZE >
   class FieldVector : public DenseVector< Dune::array<K,SIZE> >
   {
   public:
@@ -82,7 +82,7 @@ namespace Dune {
    *
    *  \returns the input stream (in)
    */
-  template<class K, unsigned int SIZE>
+  template<class K, int SIZE>
   inline std::istream &operator>> ( std::istream &in,
                                     FieldVector<K, SIZE> &v )
   {
@@ -93,9 +93,6 @@ namespace Dune {
       v = w;
     return in;
   }
-
-  // forward declarations
-  template<class K, int n, int m> class FieldMatrix;
 
 #ifndef DOXYGEN
   /** \brief Vectors containing only one component
