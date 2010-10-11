@@ -17,9 +17,9 @@
 namespace Dune {
 
   // forward declaration of template
-  template<class K, int SIZE> class FieldVector;
+  template<class K, unsigned int SIZE> class FieldVector;
 
-  template<class K, int SIZE>
+  template<class K, unsigned int SIZE>
   struct FieldTraits< FieldVector<K,SIZE> >
   {
     typedef typename FieldTraits<K>::field_type field_type;
@@ -40,7 +40,7 @@ namespace Dune {
    * \tparam K    the field type (use float, double, complex, etc)
    * \tparam SIZE number of components.
    */
-  template< class K, int SIZE >
+  template< class K, unsigned int SIZE >
   class FieldVector : public DenseVector< Dune::array<K,SIZE> >
   {
   public:
@@ -82,7 +82,7 @@ namespace Dune {
    *
    *  \returns the input stream (in)
    */
-  template<class K, int SIZE>
+  template<class K, unsigned int SIZE>
   inline std::istream &operator>> ( std::istream &in,
                                     FieldVector<K, SIZE> &v )
   {
@@ -100,29 +100,19 @@ namespace Dune {
 #ifndef DOXYGEN
   /** \brief Vectors containing only one component
    */
-  template< class K >
-  class FieldVector< K, 1 >  : public DenseVector< Dune::array<K,1> >
+  template<class K>
+  class FieldVector<K, 1>  : public DenseVector< Dune::array<K,1> >
   {
   public:
-    //===== type definitions and constants
-
-    //! export the type representing the field
-    typedef K field_type;
-
-    //! export the type representing the components
-    typedef K block_type;
-
-    //! The type for the index access and size operations.
-    typedef std::size_t size_type;
-
-    //! We are at the leaf of the block recursion
-    enum {blocklevel = 1};
-
     //! export size
-    enum {size = 1};
+    enum {
+      //! The size of this vector.
+      dimension = 1,
+      //! The size of this vector.
+      size = 1
+    };
 
-    //! export size
-    enum {dimension = 1};
+    typedef typename DenseVector< Dune::array<K,1> >::size_type size_type;
 
     //===== construction
 
@@ -157,6 +147,34 @@ namespace Dune {
     return a[0]-b[0];
   }
 
+  //! Binary compare, when using FieldVector<K,1> like K
+  template<class K>
+  inline bool operator> (const FieldVector<K,1>& a, const FieldVector<K,1>& b)
+  {
+    return a[0]>b[0];
+  }
+
+  //! Binary compare, when using FieldVector<K,1> like K
+  template<class K>
+  inline bool operator>= (const FieldVector<K,1>& a, const FieldVector<K,1>& b)
+  {
+    return a[0]>=b[0];
+  }
+
+  //! Binary compare, when using FieldVector<K,1> like K
+  template<class K>
+  inline bool operator< (const FieldVector<K,1>& a, const FieldVector<K,1>& b)
+  {
+    return a[0]<b[0];
+  }
+
+  //! Binary compare, when using FieldVector<K,1> like K
+  template<class K>
+  inline bool operator<= (const FieldVector<K,1>& a, const FieldVector<K,1>& b)
+  {
+    return a[0]<=b[0];
+  }
+
   //! Binary addition, when using FieldVector<K,1> like K
   template<class K>
   inline FieldVector<K,1> operator+ (const FieldVector<K,1>& a, const K b)
@@ -171,6 +189,35 @@ namespace Dune {
     return a[0]-b;
   }
 
+
+  //! Binary compare, when using FieldVector<K,1> like K
+  template<class K>
+  inline bool operator> (const FieldVector<K,1>& a, const K b)
+  {
+    return a[0]>b;
+  }
+
+  //! Binary compare, when using FieldVector<K,1> like K
+  template<class K>
+  inline bool operator>= (const FieldVector<K,1>& a, const K b)
+  {
+    return a[0]>=b;
+  }
+
+  //! Binary compare, when using FieldVector<K,1> like K
+  template<class K>
+  inline bool operator< (const FieldVector<K,1>& a, const K b)
+  {
+    return a[0]<b;
+  }
+
+  //! Binary compare, when using FieldVector<K,1> like K
+  template<class K>
+  inline bool operator<= (const FieldVector<K,1>& a, const K b)
+  {
+    return a[0]<=b;
+  }
+
   //! Binary addition, when using FieldVector<K,1> like K
   template<class K>
   inline FieldVector<K,1> operator+ (const K a, const FieldVector<K,1>& b)
@@ -183,6 +230,34 @@ namespace Dune {
   inline FieldVector<K,1> operator- (const K a, const FieldVector<K,1>& b)
   {
     return a-b[0];
+  }
+
+  //! Binary compare, when using FieldVector<K,1> like K
+  template<class K>
+  inline bool operator> (const K a, const FieldVector<K,1>& b)
+  {
+    return a>b[0];
+  }
+
+  //! Binary compare, when using FieldVector<K,1> like K
+  template<class K>
+  inline bool operator>= (const K a, const FieldVector<K,1>& b)
+  {
+    return a>=b[0];
+  }
+
+  //! Binary compare, when using FieldVector<K,1> like K
+  template<class K>
+  inline bool operator< (const K a, const FieldVector<K,1>& b)
+  {
+    return a<b[0];
+  }
+
+  //! Binary compare, when using FieldVector<K,1> like K
+  template<class K>
+  inline bool operator<= (const K a, const FieldVector<K,1>& b)
+  {
+    return a<=b[0];
   }
 #endif
 
