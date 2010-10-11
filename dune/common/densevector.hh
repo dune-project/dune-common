@@ -16,8 +16,8 @@ namespace Dune {
   template<class S>
   struct FieldTraits< DenseVector<S> >
   {
-    typedef const typename FieldTraits<typename S::value_type>::field_type field_type;
-    typedef const typename FieldTraits<typename S::value_type>::real_type real_type;
+    typedef typename FieldTraits<typename S::value_type>::field_type field_type;
+    typedef typename FieldTraits<typename S::value_type>::real_type real_type;
   };
 
   /** @defgroup DenseMatVec Dense Matrix and Vector Template Library
