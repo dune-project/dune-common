@@ -22,8 +22,8 @@ namespace Dune {
   template<class K, int SIZE>
   struct FieldTraits< FieldVector<K,SIZE> >
   {
-    typedef const typename FieldTraits<K>::field_type field_type;
-    typedef const typename FieldTraits<K>::real_type real_type;
+    typedef typename FieldTraits<K>::field_type field_type;
+    typedef typename FieldTraits<K>::real_type real_type;
   };
 
   /** @addtogroup DenseMatVec
@@ -101,12 +101,9 @@ namespace Dune {
   /** \brief Vectors containing only one component
    */
   template< class K >
-  class FieldVector< K, 1 >
+  class FieldVector< K, 1 >  : public DenseVector< Dune::array<K,1> >
   {
-    enum { n = 1 };
   public:
-    friend class FieldMatrix<K,1,1>;
-
     //===== type definitions and constants
 
     //! export the type representing the field
@@ -130,271 +127,62 @@ namespace Dune {
     //===== construction
 
     /** \brief Default constructor */
-    FieldVector ()
-    {       }
+    FieldVector () {}
 
     /** \brief Constructor with a given scalar */
-    FieldVector (const K& k)
-    {
-      p = k;
-    }
+    FieldVector (const K& k) { (*this)[0] = k; }
 
-    /** \brief Assignment from the base type */
-    FieldVector& operator= (const K& k)
-    {
-      p = k;
-      return *this;
-    }
-
-    //===== access to components
-
-    //! random access
-    K& operator[] (size_type i)
-    {
-#ifdef DUNE_ISTL_WITH_CHECKING
-      if (i != 0) DUNE_THROW(MathError,"index out of range");
-#endif
-      return p;
-    }
-
-    //! same for read only access
-    const K& operator[] (size_type i) const
-    {
-#ifdef DUNE_ISTL_WITH_CHECKING
-      if (i != 0) DUNE_THROW(MathError,"index out of range");
-#endif
-      return p;
-    }
-
-    //! Iterator class for sequential access
-    typedef DenseIterator<FieldVector<K,1>,K> Iterator;
-    //! typedef for stl compliant access
-    typedef Iterator iterator;
-
-    //! begin iterator
-    Iterator begin ()
-    {
-      return Iterator(*this,0);
-    }
-
-    //! end iterator
-    Iterator end ()
-    {
-      return Iterator(*this,n);
-    }
-
-    //! begin iterator
-    Iterator rbegin ()
-    {
-      return Iterator(*this,n-1);
-    }
-
-    //! end iterator
-    Iterator rend ()
-    {
-      return Iterator(*this,-1);
-    }
-
-    //! return iterator to given element or end()
-    Iterator find (size_type i)
-    {
-      if (i<n)
-        return Iterator(*this,i);
-      else
-        return Iterator(*this,n);
-    }
-
-    //! ConstIterator class for sequential access
-    typedef DenseIterator<const FieldVector<K,1>,const K> ConstIterator;
-    //! typedef for stl compliant access
-    typedef ConstIterator const_iterator;
-
-    //! begin ConstIterator
-    ConstIterator begin () const
-    {
-      return ConstIterator(*this,0);
-    }
-
-    //! end ConstIterator
-    ConstIterator end () const
-    {
-      return ConstIterator(*this,n);
-    }
-
-    //! begin ConstIterator
-    ConstIterator rbegin () const
-    {
-      return ConstIterator(*this,n-1);
-    }
-
-    //! end ConstIterator
-    ConstIterator rend () const
-    {
-      return ConstIterator(*this,-1);
-    }
-
-    //! return iterator to given element or end()
-    ConstIterator find (size_type i) const
-    {
-      if (i<n)
-        return ConstIterator(*this,i);
-      else
-        return ConstIterator(*this,n);
-    }
-    //===== vector space arithmetic
-
-    //! vector space add scalar to each comp
-    FieldVector& operator+= (const K& k)
-    {
-      p += k;
-      return *this;
-    }
-
-    //! vector space subtract scalar from each comp
-    FieldVector& operator-= (const K& k)
-    {
-      p -= k;
-      return *this;
-    }
-
-    //! vector space multiplication with scalar
-    FieldVector& operator*= (const K& k)
-    {
-      p *= k;
-      return *this;
-    }
-
-    //! vector space division by scalar
-    FieldVector& operator/= (const K& k)
-    {
-      p /= k;
-      return *this;
-    }
-
-    //! vector space axpy operation ( *this += a y )
-    FieldVector& axpy (const K& a, const FieldVector& y)
-    {
-      p += a*y.p;
-      return *this;
-    }
-
-    //! scalar product (x^T y)
-    inline K operator* ( const K & k ) const
-    {
-      return p * k;
-    }
-
-    //===== norms
-
-    //! one norm (sum over absolute values of entries)
-    typename FieldTraits<K>::real_type one_norm () const
-    {
-      return std::abs(p);
-    }
-
-    //! simplified one norm (uses Manhattan norm for complex values)
-    typename FieldTraits<K>::real_type one_norm_real () const
-    {
-      return fvmeta::absreal(p);
-    }
-
-    //! two norm sqrt(sum over squared values of entries)
-    typename FieldTraits<K>::real_type two_norm () const
-    {
-      return fvmeta::sqrt(fvmeta::abs2(p));
-    }
-
-    //! square of two norm (sum over squared values of entries), need for block recursion
-    typename FieldTraits<K>::real_type two_norm2 () const
-    {
-      return fvmeta::abs2(p);
-    }
-
-    //! infinity norm (maximum of absolute values of entries)
-    typename FieldTraits<K>::field_type infinity_norm () const
-    {
-      return std::abs(p);
-    }
-
-    //! simplified infinity norm (uses Manhattan norm for complex values)
-    typename FieldTraits<K>::real_type infinity_norm_real () const
-    {
-      return fvmeta::absreal(p);
-    }
-
-    //===== sizes
-
-    //! number of blocks in the vector (are of size 1 here)
-    size_type N () const
-    {
-      return 1;
-    }
-
-    //! dimension of the vector space (==1)
-    size_type dim () const
-    {
-      return 1;
-    }
+    using DenseVector< Dune::array<K,1> >::operator=;
 
     //===== conversion operator
 
     /** \brief Conversion operator */
-    operator K () {return p;}
+    operator K () { return (*this)[0]; }
 
     /** \brief Const conversion operator */
-    operator K () const {return p;}
-
-  private:
-    // the data
-    K p;
+    operator K () const { return (*this)[0]; }
   };
 
   //! Binary vector addition
   template<class K>
   inline FieldVector<K,1> operator+ (const FieldVector<K,1>& a, const FieldVector<K,1>& b)
   {
-    FieldVector<K,1> z = a;
-    return (z+=b);
+    return a[0]+b[0];
   }
 
   //! Binary vector subtraction
   template<class K>
   inline FieldVector<K,1> operator- (const FieldVector<K,1>& a, const FieldVector<K,1>& b)
   {
-    FieldVector<K,1> z = a;
-    return (z-=b);
+    return a[0]-b[0];
   }
 
   //! Binary addition, when using FieldVector<K,1> like K
   template<class K>
   inline FieldVector<K,1> operator+ (const FieldVector<K,1>& a, const K b)
   {
-    FieldVector<K,1> z = a;
-    return (z[0]+=b);
+    return a[0]+b;
   }
 
   //! Binary subtraction, when using FieldVector<K,1> like K
   template<class K>
   inline FieldVector<K,1> operator- (const FieldVector<K,1>& a, const K b)
   {
-    FieldVector<K,1> z = a;
-    return (z[0]-=b);
+    return a[0]-b;
   }
 
   //! Binary addition, when using FieldVector<K,1> like K
   template<class K>
   inline FieldVector<K,1> operator+ (const K a, const FieldVector<K,1>& b)
   {
-    FieldVector<K,1> z = a;
-    return (z[0]+=b);
+    return a+b[0];
   }
 
   //! Binary subtraction, when using FieldVector<K,1> like K
   template<class K>
   inline FieldVector<K,1> operator- (const K a, const FieldVector<K,1>& b)
   {
-    FieldVector<K,1> z = a;
-    return (z[0]-=b);
+    return a-b[0];
   }
 #endif
 
