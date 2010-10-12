@@ -27,30 +27,67 @@ namespace Dune {
    * \brief This file implements a dense vector with a dynamic size.
    */
 
+  template< class K > class DynamicVector;
+  template< class K >
+  struct DenseMatVecTraits< DynamicVector<K> >
+  {
+    typedef DynamicVector<K> derived_type;
+    typedef std::vector<K> container_type;
+    typedef K value_type;
+    typedef typename container_type::size_type size_type;
+  };
+
   /** \brief Construct a vector with a dynamic size.
    *
    * \tparam K is the field type (use float, double, complex, etc)
    */
   template< class K >
-  class DynamicVector : public DenseVector< std::vector<K> >
+  class DynamicVector : public DenseVector< DynamicVector<K> >
   {
+    std::vector<K> _data;
+
+    typedef DenseVector< DynamicVector<K> > Base;
   public:
-    typedef typename DenseVector< std::vector<K> >::size_type size_type;
+    typedef typename Base::size_type size_type;
+    typedef typename Base::value_type value_type;
 
     //! Constructor making uninitialized vector
     DynamicVector() {}
 
     //! Constructor making vector with identical coordinates
-    DynamicVector (size_type n, const K& t) :
-      DenseVector< std::vector<K> > (n,t)
+    explicit DynamicVector (size_type n, value_type c = value_type() ) :
+      _data(n,c)
     {}
 
     //! Constructor making vector with identical coordinates
-    DynamicVector (const DenseVector< std::vector<K> > & x) :
-      DenseVector< std::vector<K> > (x)
+    DynamicVector (const DynamicVector & x) :
+      _data(x._data)
     {}
 
-    using DenseVector< std::vector<K> >::operator=;
+    using Base::operator=;
+
+    //==== forward some methods of std::vector
+    /** \brief Number of elements for which memory has been allocated.
+
+        capacity() is always greater than or equal to size().
+     */
+    size_type capacity() const
+    {
+      return _data.capacity();
+    }
+    void resize (size_type n, value_type c = value_type() )
+    {
+      _data.resize(n,c);
+    }
+    void reserve (size_type n)
+    {
+      _data.reserve(n);
+    }
+
+    //==== make this thing a vector
+    size_type vec_size() const { return _data.size(); }
+    K & vec_access(size_type i) { return _data[i]; }
+    const K & vec_access(size_type i) const { return _data[i]; }
   };
 
   /** \brief Read a DynamicVector from an input stream

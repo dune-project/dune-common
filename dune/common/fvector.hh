@@ -16,16 +16,6 @@
 
 namespace Dune {
 
-  // forward declaration of template
-  template<class K, int SIZE> class FieldVector;
-
-  template<class K, int SIZE>
-  struct FieldTraits< FieldVector<K,SIZE> >
-  {
-    typedef typename FieldTraits<K>::field_type field_type;
-    typedef typename FieldTraits<K>::real_type real_type;
-  };
-
   /** @addtogroup DenseMatVec
       @{
    */
@@ -35,14 +25,27 @@ namespace Dune {
      representing a field and a compile-time given size.
    */
 
+  template< class K, int SIZE > class FieldVector;
+  template< class K, int SIZE >
+  struct DenseMatVecTraits< FieldVector<K,SIZE> >
+  {
+    typedef FieldVector<K,SIZE> derived_type;
+    typedef Dune::array<K,SIZE> container_type;
+    typedef K value_type;
+    typedef typename container_type::size_type size_type;
+  };
+
   /** \brief vector space out of a tensor product of fields.
    *
    * \tparam K    the field type (use float, double, complex, etc)
    * \tparam SIZE number of components.
    */
   template< class K, int SIZE >
-  class FieldVector : public DenseVector< Dune::array<K,SIZE> >
+  class FieldVector :
+    public DenseVector< FieldVector<K,SIZE> >
   {
+    Dune::array<K,SIZE> _data;
+    typedef DenseVector< FieldVector<K,SIZE> > Base;
   public:
     //! export size
     enum {
@@ -52,7 +55,8 @@ namespace Dune {
       size = SIZE
     };
 
-    typedef typename DenseVector< Dune::array<K,SIZE> >::size_type size_type;
+    typedef typename Base::size_type size_type;
+    typedef typename Base::value_type value_type;
 
     //! Constructor making uninitialized vector
     FieldVector() {}
@@ -60,15 +64,19 @@ namespace Dune {
     //! Constructor making vector with identical coordinates
     explicit FieldVector (const K& t)
     {
-      for (size_type i=0; i<SIZE; i++) (*this)[i] = t;
+      _data.fill(t);
     }
 
     //! Constructor making vector with identical coordinates
-    FieldVector (const DenseVector< Dune::array<K,SIZE> > & x) :
-      DenseVector< Dune::array<K,SIZE> > (x)
+    FieldVector (const FieldVector & x) : _data(x._data)
     {}
 
-    using DenseVector< Dune::array<K,SIZE> >::operator=;
+    using Base::operator=;
+
+    // make this thing a vector
+    size_type vec_size() const { return _data.size(); }
+    K & vec_access(size_type i) { return _data[i]; }
+    const K & vec_access(size_type i) const { return _data[i]; }
   };
 
   /** \brief Read a FieldVector from an input stream
@@ -95,11 +103,23 @@ namespace Dune {
   }
 
 #ifndef DOXYGEN
+  template< class K >
+  struct DenseMatVecTraits< FieldVector<K,1> >
+  {
+    typedef FieldVector<K,1> derived_type;
+    typedef K container_type;
+    typedef K value_type;
+    typedef size_t size_type;
+  };
+
   /** \brief Vectors containing only one component
    */
   template<class K>
-  class FieldVector<K, 1>  : public DenseVector< Dune::array<K,1> >
+  class FieldVector<K, 1> :
+    public DenseVector< FieldVector<K,1> >
   {
+    K _data;
+    typedef DenseVector< FieldVector<K,1> > Base;
   public:
     //! export size
     enum {
@@ -109,7 +129,8 @@ namespace Dune {
       size = 1
     };
 
-    typedef typename DenseVector< Dune::array<K,1> >::size_type size_type;
+    typedef typename Base::size_type size_type;
+    typedef typename Base::value_type value_type;
 
     //===== construction
 
@@ -119,7 +140,20 @@ namespace Dune {
     /** \brief Constructor with a given scalar */
     FieldVector (const K& k) { (*this)[0] = k; }
 
-    using DenseVector< Dune::array<K,1> >::operator=;
+    using Base::operator=;
+
+    //===== forward methods to container
+    size_type vec_size() const { return 1; }
+    K & vec_access(size_type i)
+    {
+      assert(i == 0);
+      return _data;
+    }
+    const K & vec_access(size_type i) const
+    {
+      assert(i == 0);
+      return _data;
+    }
 
     //===== conversion operator
 

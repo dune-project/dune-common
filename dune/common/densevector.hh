@@ -7,17 +7,18 @@
 
 #include "genericiterator.hh"
 #include "ftraits.hh"
+#include "matvectraits.hh"
 
 namespace Dune {
 
   // forward declaration of template
-  template<class S> class DenseVector;
+  template<typename V> class DenseVector;
 
-  template<class S>
-  struct FieldTraits< DenseVector<S> >
+  template<typename V>
+  struct FieldTraits< DenseVector<V> >
   {
-    typedef typename FieldTraits<typename S::value_type>::field_type field_type;
-    typedef typename FieldTraits<typename S::value_type>::real_type real_type;
+    typedef typename FieldTraits< typename DenseMatVecTraits<V>::value_type >::field_type field_type;
+    typedef typename FieldTraits< typename DenseMatVecTraits<V>::value_type >::real_type real_type;
   };
 
   /** @defgroup DenseMatVec Dense Matrix and Vector Template Library
@@ -204,25 +205,44 @@ namespace Dune {
 
   /** \brief Interface for a class of dense vectors over a given field.
    *
-   * \tparam K the field type (use float, double, complex, etc)
-   * \tparam S storage class (e.g. std::array<K,Size> or std::vector<K>)
+   * \tparam V implementation class of the vector
+   * \tparam T value type
+   * \tparam S size type
+   *
+   * V has to provide the following members:
+   * @code
+   * T &       _access (size_type);
+   * const T & _access (size_type) const;
+   * size_type _size   () const;
+   * @endcode
    */
-  template<typename S>
-  class DenseVector : S
+  template<typename V>
+  class DenseVector
   {
-    typedef typename S::value_type K;
+    typedef DenseMatVecTraits<V> Traits;
+    typedef typename Traits::value_type K;
+
+    // Curiously recuring template pattern
+    V & asImp() { return static_cast<V&>(*this); }
+    const V & asImp() const { return static_cast<const V&>(*this); }
 
   public:
     //===== type definitions and constants
 
+    //! type of derived vector class
+    typedef typename Traits::derived_type derived_type;
+
     //! export the type representing the field
-    typedef typename S::value_type field_type;
+    typedef typename Traits::value_type value_type;
+
+    //! export the type representing the field
+    typedef typename Traits::value_type field_type;
 
     //! export the type representing the components
-    typedef typename S::value_type block_type;
+    typedef typename Traits::value_type block_type;
 
     //! The type used for the index access and size operation
-    typedef typename S::size_type size_type;
+    typedef typename Traits::size_type size_type;
 
     //! We are at the leaf of the block recursion
     enum {
@@ -230,46 +250,36 @@ namespace Dune {
       blocklevel = 1
     };
 
-    // pull in methods from the storage class
-
-    //! random access
-    using S::operator[];
-
-    //! size method
-    using S::size;
-
-    //! Constructor making uninitialized vector
-    DenseVector() {}
-
-    //! Constructor making vector with identical values
-    DenseVector (size_type n, const K& t) : S(n,t) {}
-
     //===== assignment from scalar
     //! Assignment operator for scalar
-    DenseVector& operator= (const K& k)
+    derived_type& operator= (const K& k)
     {
       for (size_type i=0; i<size(); i++)
         (*this)[i] = k;
-      return *this;
-    }
-
-    //===== dynamic size related methods
-    //! Resize the vector. (only possible if S support resizing)
-    void resize(size_type size)
-    {
-      S::resize(size);
-    }
-
-    //! Get the capacity of the vector.
-    size_type capacity() const
-    {
-      return S::capacity();
+      return asImp();
     }
 
     //===== access to components
 
+    //! random access
+    value_type & operator[] (size_type i)
+    {
+      return asImp().vec_access(i);
+    }
+
+    const value_type & operator[] (size_type i) const
+    {
+      return asImp().vec_access(i);
+    }
+
+    //! size method
+    size_type size() const
+    {
+      return asImp().vec_size();
+    }
+
     //! Iterator class for sequential access
-    typedef DenseIterator<S,K> Iterator;
+    typedef DenseIterator<DenseVector,value_type> Iterator;
     //! typedef for stl compliant access
     typedef Iterator iterator;
 
@@ -304,7 +314,7 @@ namespace Dune {
     }
 
     //! ConstIterator class for sequential access
-    typedef DenseIterator<const S,const K> ConstIterator;
+    typedef DenseIterator<const DenseVector,const value_type> ConstIterator;
     //! typedef for stl compliant access
     typedef ConstIterator const_iterator;
 
@@ -341,67 +351,67 @@ namespace Dune {
     //===== vector space arithmetic
 
     //! vector space addition
-    DenseVector& operator+= (const DenseVector& y)
+    derived_type& operator+= (const DenseVector& y)
     {
       assert(y.size() == size());
       for (size_type i=0; i<size(); i++)
         (*this)[i] += y[i];
-      return *this;
+      return asImp();
     }
 
     //! vector space subtraction
-    DenseVector& operator-= (const DenseVector& y)
+    derived_type& operator-= (const DenseVector& y)
     {
       assert(y.size() == size());
       for (size_type i=0; i<size(); i++)
         (*this)[i] -= y[i];
-      return *this;
+      return asImp();
     }
 
     //! Binary vector addition
-    DenseVector operator+ (const DenseVector& b) const
+    derived_type operator+ (const DenseVector& b) const
     {
-      DenseVector z = *this;
+      derived_type z = asImp();
       return (z+=b);
     }
 
     //! Binary vector subtraction
-    DenseVector operator- (const DenseVector& b) const
+    derived_type operator- (const DenseVector& b) const
     {
-      DenseVector z = *this;
+      derived_type z = asImp();
       return (z-=b);
     }
 
     //! vector space add scalar to all comps
-    DenseVector& operator+= (const K& k)
+    derived_type& operator+= (const value_type& k)
     {
       for (size_type i=0; i<size(); i++)
         (*this)[i] += k;
-      return *this;
+      return asImp();
     }
 
     //! vector space subtract scalar from all comps
-    DenseVector& operator-= (const K& k)
+    derived_type& operator-= (const value_type& k)
     {
       for (size_type i=0; i<size(); i++)
         (*this)[i] -= k;
-      return *this;
+      return asImp();
     }
 
     //! vector space multiplication with scalar
-    DenseVector& operator*= (const K& k)
+    derived_type& operator*= (const K& k)
     {
       for (size_type i=0; i<size(); i++)
         (*this)[i] *= k;
-      return *this;
+      return asImp();
     }
 
     //! vector space division by scalar
-    DenseVector& operator/= (const K& k)
+    derived_type& operator/= (const K& k)
     {
       for (size_type i=0; i<size(); i++)
         (*this)[i] /= k;
-      return *this;
+      return asImp();
     }
 
     //! Binary vector comparison
@@ -423,21 +433,21 @@ namespace Dune {
 
 
     //! vector space axpy operation ( *this += a y )
-    DenseVector& axpy (const K& a, const DenseVector& y)
+    derived_type& axpy (const K& a, const DenseVector& y)
     {
       assert(y.size() == size());
       for (size_type i=0; i<size(); i++)
         (*this)[i] += a*y[i];
-      return *this;
+      return asImp();
     }
 
     //===== Euclidean scalar product
 
     //! scalar product (x^T y)
-    K operator* (const DenseVector& y) const
+    value_type operator* (const DenseVector& y) const
     {
       assert(y.size() == size());
-      K result = 0;
+      value_type result = 0;
       for (size_type i=0; i<size(); i++)
         result += (*this)[i]*y[i];
       return result;
@@ -513,7 +523,6 @@ namespace Dune {
       return size();
     }
 
-  private:
   };
 
   /** \brief Write a DenseVector to an output stream
@@ -524,10 +533,10 @@ namespace Dune {
    *
    *  \returns the output stream (s)
    */
-  template<typename S>
-  std::ostream& operator<< (std::ostream& s, const DenseVector<S>& v)
+  template<typename V>
+  std::ostream& operator<< (std::ostream& s, const DenseVector<V>& v)
   {
-    for (typename DenseVector<S>::size_type i=0; i<v.size(); i++)
+    for (typename DenseVector<V>::size_type i=0; i<v.size(); i++)
       s << ((i>0) ? " " : "") << v[i];
     return s;
   }
