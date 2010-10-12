@@ -18,6 +18,7 @@
 #include <algorithm>
 #endif
 
+#include "deprecated.hh"
 
 namespace Dune
 {
