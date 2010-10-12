@@ -75,8 +75,14 @@ namespace Dune
       return (*this);
     }
 
-    //! \brief Assign value to all entries
-    void assign(const T& t)
+    //! \brief Assign value to all entries (according to C++0x the fill method is to be prefered)
+    void assign(const T& t) DUNE_DEPRECATED
+    {
+      fill(t);
+    }
+
+    //! \brief Assign value to all entries (according to C++0x the fill method is to be prefered)
+    void fill(const T& t)
     {
       for (int i=0; i<N; i++) a[i]=t;
     }
