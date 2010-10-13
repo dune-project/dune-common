@@ -81,7 +81,7 @@ namespace Dune {
     using Base::operator=;
 
     // make this thing a vector
-    size_type vec_size() const { return _data.size(); }
+    size_type vec_size() const { return SIZE; }
     K & vec_access(size_type i) { return _data[i]; }
     const K & vec_access(size_type i) const { return _data[i]; }
   private:
