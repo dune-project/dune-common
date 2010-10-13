@@ -8,13 +8,30 @@
 #include <dune/common/typetraits.hh>
 #include <dune/common/static_assert.hh>
 #include <iostream>
+#include <complex>
+#include <typeinfo>
+
+#ifdef __GNUC__
+#include <cxxabi.h>
+#endif
 
 using Dune::FieldVector;
+using std::complex;
+
+template <class T>
+std::string className(T &t)
+{
+#ifdef __GNUC__
+  int status;
+  return abi::__cxa_demangle(typeid(t).name(),0,0,&status);
+#else
+  return typeid(t).name();
+#endif
+};
 
 template<class ft, class rt, int d>
-class FieldVectorMainTest
+struct FieldVectorMainTest
 {
-protected:
   FieldVectorMainTest() {
     ft a = 1;
     FieldVector<ft,d> v(1);
@@ -22,6 +39,8 @@ protected:
     FieldVector<ft,d> z(2);
     bool b;
     rt n;
+
+    std::cout << __func__ << "\t ( " << className(v) << " )" << std::endl;
 
     // test traits
     dune_static_assert(
@@ -80,32 +99,28 @@ protected:
   }
 };
 
-template<class ft, class rt, int d>
-class FieldVectorTest : public FieldVectorMainTest<ft,rt,d>
-{
-public:
-  FieldVectorTest() : FieldVectorMainTest<ft,rt,d>() {}
-};
 
-template<class ft, class rt>
-class FieldVectorTest<ft,rt,1>: public FieldVectorMainTest<ft,rt,1>
+template<class ft>
+struct ScalarOperatorTest
 {
-public:
-  FieldVectorTest() : FieldVectorMainTest<ft,rt,1>()
+  ScalarOperatorTest()
   {
     ft a = 1;
+    ft c = 2;
     FieldVector<ft,1> v(2);
     FieldVector<ft,1> w(2);
     bool b;
 
+    std::cout << __func__ << "\t ( " << className(v) << " )" << std::endl;
+
+    a = a * c;
+    a = a + c;
+    a = a / c;
+    a = a - c;
+
     v = a;
     v = w = v;
     a = v;
-
-    b = (v == a);
-    b = (v != a);
-    b = (a == v);
-    b = (a != v);
 
     a = v + a;
     a = v - a;
@@ -134,38 +149,95 @@ public:
     v *= a;
     v /= a;
 
-    b = (v<a);
-    b = (v<=a);
-    b = (v>=a);
-    b = (v>a);
+    b = (v == a);
+    b = (v != a);
+    b = (a == v);
+    b = (a != v);
 
-    b = (v<w);
-    b = (v<=w);
-    b = (v>=w);
-    b = (v>w);
+  }
+};
 
-    b = (a<w);
-    b = (a<=w);
-    b = (a>=w);
-    b = (a>w);
+// scalar ordering doesn't work for complex numbers
+template<class ft>
+struct ScalarOrderingTest
+{
+  ScalarOrderingTest()
+  {
+    ft a = 1;
+    ft c = 2;
+    FieldVector<ft,1> v(2);
+    FieldVector<ft,1> w(2);
+    bool b;
+
+    std::cout << __func__ << "\t ( " << className(v) << " )" << std::endl;
+
+    b = (a <  c);
+    b = (a <= c);
+    b = (a >= c);
+    b = (a >  c);
+
+    b = (v == a);
+    b = (v != a);
+    b = (a == v);
+    b = (a != v);
+
+    b = (v <  a);
+    b = (v <= a);
+    b = (v >= a);
+    b = (v >  a);
+
+    b = (v <  w);
+    b = (v <= w);
+    b = (v >= w);
+    b = (v >  w);
+
+    b = (a <  w);
+    b = (a <= w);
+    b = (a >= w);
+    b = (a >  w);
+  }
+};
+
+template<class ft, int d>
+struct FieldVectorTest
+{
+  FieldVectorTest()
+  {
+    // --- test complex and real valued vectors
+    FieldVectorMainTest<ft,ft,d>();
+    FieldVectorMainTest<complex<ft>,ft,d>();
+    // --- test next lower dimension
+    FieldVectorTest<ft,d-1>();
+  }
+};
+
+// specialization for 1d vector
+template<class ft>
+class FieldVectorTest<ft,1>
+{
+public:
+  FieldVectorTest()
+  {
+    // --- real valued
+    FieldVectorMainTest<ft,ft,1>();
+    ScalarOperatorTest<ft>();
+    ScalarOrderingTest<ft>();
+    // --- complex valued
+    FieldVectorMainTest<complex<ft>,ft,1>();
+    ScalarOperatorTest< complex<ft> >();
+    // ordering doesn't work for complex numbers
+
+    // --- test next lower dimension
+    FieldVectorMainTest<ft,ft,0>();
   }
 };
 
 int main()
 {
   try {
-    FieldVectorTest<int, int, 0>();
-    FieldVectorTest<int, int, 1>();
-    FieldVectorTest<int, int, 2>();
-    FieldVectorTest<int, int, 3>();
-    FieldVectorTest<float, float, 0>();
-    FieldVectorTest<float, float, 1>();
-    FieldVectorTest<float, float, 2>();
-    FieldVectorTest<float, float, 3>();
-    FieldVectorTest<double, double, 0>();
-    FieldVectorTest<double, double, 1>();
-    FieldVectorTest<double, double, 2>();
-    FieldVectorTest<double, double, 3>();
+    FieldVectorTest<int, 3>();
+    FieldVectorTest<float, 3>();
+    FieldVectorTest<double, 3>();
   } catch (Dune::Exception& e) {
     std::cerr << e << std::endl;
     return 1;
