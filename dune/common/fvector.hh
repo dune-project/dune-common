@@ -35,6 +35,13 @@ namespace Dune {
     typedef typename container_type::size_type size_type;
   };
 
+  template< class K, int SIZE >
+  struct FieldTraits< FieldVector<K,SIZE> >
+  {
+    typedef typename FieldTraits<K>::field_type field_type;
+    typedef typename FieldTraits<K>::real_type real_type;
+  };
+
   /** \brief vector space out of a tensor product of fields.
    *
    * \tparam K    the field type (use float, double, complex, etc)

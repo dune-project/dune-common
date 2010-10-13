@@ -37,6 +37,13 @@ namespace Dune {
     typedef typename container_type::size_type size_type;
   };
 
+  template< class K >
+  struct FieldTraits< DynamicVector<K> >
+  {
+    typedef typename FieldTraits<K>::field_type field_type;
+    typedef typename FieldTraits<K>::real_type real_type;
+  };
+
   /** \brief Construct a vector with a dynamic size.
    *
    * \tparam K is the field type (use float, double, complex, etc)
