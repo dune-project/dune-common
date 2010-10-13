@@ -220,7 +220,7 @@ namespace Dune {
   class DenseVector
   {
     typedef DenseMatVecTraits<V> Traits;
-    typedef typename Traits::value_type K;
+    // typedef typename Traits::value_type K;
 
     // Curiously recuring template pattern
     V & asImp() { return static_cast<V&>(*this); }
@@ -252,7 +252,7 @@ namespace Dune {
 
     //===== assignment from scalar
     //! Assignment operator for scalar
-    derived_type& operator= (const K& k)
+    derived_type& operator= (const value_type& k)
     {
       for (size_type i=0; i<size(); i++)
         (*this)[i] = k;
@@ -399,7 +399,7 @@ namespace Dune {
     }
 
     //! vector space multiplication with scalar
-    derived_type& operator*= (const K& k)
+    derived_type& operator*= (const value_type& k)
     {
       for (size_type i=0; i<size(); i++)
         (*this)[i] *= k;
@@ -407,7 +407,7 @@ namespace Dune {
     }
 
     //! vector space division by scalar
-    derived_type& operator/= (const K& k)
+    derived_type& operator/= (const value_type& k)
     {
       for (size_type i=0; i<size(); i++)
         (*this)[i] /= k;
@@ -433,7 +433,7 @@ namespace Dune {
 
 
     //! vector space axpy operation ( *this += a y )
-    derived_type& axpy (const K& a, const DenseVector& y)
+    derived_type& axpy (const value_type& a, const DenseVector& y)
     {
       assert(y.size() == size());
       for (size_type i=0; i<size(); i++)
@@ -456,8 +456,8 @@ namespace Dune {
     //===== norms
 
     //! one norm (sum over absolute values of entries)
-    typename FieldTraits<K>::real_type one_norm() const {
-      typename FieldTraits<K>::real_type result = 0;
+    typename FieldTraits<value_type>::real_type one_norm() const {
+      typename FieldTraits<value_type>::real_type result = 0;
       for (size_type i=0; i<size(); i++)
         result += std::abs((*this)[i]);
       return result;
@@ -465,45 +465,45 @@ namespace Dune {
 
 
     //! simplified one norm (uses Manhattan norm for complex values)
-    typename FieldTraits<K>::real_type one_norm_real () const
+    typename FieldTraits<value_type>::real_type one_norm_real () const
     {
-      typename FieldTraits<K>::real_type result = 0;
+      typename FieldTraits<value_type>::real_type result = 0;
       for (size_type i=0; i<size(); i++)
         result += fvmeta::absreal((*this)[i]);
       return result;
     }
 
     //! two norm sqrt(sum over squared values of entries)
-    typename FieldTraits<K>::real_type two_norm () const
+    typename FieldTraits<value_type>::real_type two_norm () const
     {
-      typename FieldTraits<K>::real_type result = 0;
+      typename FieldTraits<value_type>::real_type result = 0;
       for (size_type i=0; i<size(); i++)
         result += fvmeta::abs2((*this)[i]);
       return fvmeta::sqrt(result);
     }
 
     //! square of two norm (sum over squared values of entries), need for block recursion
-    typename FieldTraits<K>::real_type two_norm2 () const
+    typename FieldTraits<value_type>::real_type two_norm2 () const
     {
-      typename FieldTraits<K>::real_type result = 0;
+      typename FieldTraits<value_type>::real_type result = 0;
       for (size_type i=0; i<size(); i++)
         result += fvmeta::abs2((*this)[i]);
       return result;
     }
 
     //! infinity norm (maximum of absolute values of entries)
-    typename FieldTraits<K>::real_type infinity_norm () const
+    typename FieldTraits<value_type>::real_type infinity_norm () const
     {
-      typename FieldTraits<K>::real_type result = 0;
+      typename FieldTraits<value_type>::real_type result = 0;
       for (size_type i=0; i<size(); i++)
         result = std::max(result, std::abs((*this)[i]));
       return result;
     }
 
     //! simplified infinity norm (uses Manhattan norm for complex values)
-    typename FieldTraits<K>::real_type infinity_norm_real () const
+    typename FieldTraits<value_type>::real_type infinity_norm_real () const
     {
-      typename FieldTraits<K>::real_type result = 0;
+      typename FieldTraits<value_type>::real_type result = 0;
       for (size_type i=0; i<size(); i++)
         result = std::max(result, fvmeta::absreal((*this)[i]));
       return result;
