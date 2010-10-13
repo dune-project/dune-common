@@ -5,33 +5,52 @@
 #endif
 #include <dune/common/fvector.hh>
 #include <dune/common/exceptions.hh>
+#include <dune/common/typetraits.hh>
+#include <dune/common/static_assert.hh>
 #include <iostream>
 
 using Dune::FieldVector;
 
-template<class ct, int d>
+template<class ft, class rt, int d>
 class FieldVectorMainTest
 {
 protected:
   FieldVectorMainTest() {
-    ct a = 1;
-    FieldVector<ct,d> v(1);
-    FieldVector<ct,d> w(2);
-    FieldVector<ct,d> z(2);
+    ft a = 1;
+    FieldVector<ft,d> v(1);
+    FieldVector<ft,d> w(2);
+    FieldVector<ft,d> z(2);
     bool b;
+    rt n;
+
+    // test traits
+    dune_static_assert(
+      ( Dune::is_same< typename Dune::FieldTraits<
+                FieldVector<ft,d> >::field_type, ft >::value ),
+      "FieldTraits<FieldVector> yields wrong field_type"
+      );
+    dune_static_assert(
+      ( Dune::is_same< typename Dune::FieldTraits<ft>::real_type, rt >::value ),
+      "FieldTraits<field_type> yields wrong real_type"
+      );
+    dune_static_assert(
+      ( Dune::is_same< typename Dune::FieldTraits<
+                FieldVector<ft,d> >::real_type, rt >::value ),
+      "FieldTraits<FieldVector> yields wrong real_type"
+      );
 
     // Test whether the norm methods compile
-    (w+v).two_norm();
-    (w+v).two_norm2();
-    (w+v).one_norm();
-    (w+v).one_norm_real();
-    (w+v).infinity_norm();
-    (w+v).infinity_norm_real();
+    n = (w+v).two_norm();
+    n = (w+v).two_norm2();
+    n = (w+v).one_norm();
+    n = (w+v).one_norm_real();
+    n = (w+v).infinity_norm();
+    n = (w+v).infinity_norm_real();
 
     // test op(vec,vec)
     z = v + w;
     z = v - w;
-    FieldVector<ct,d> z2 = v + w;
+    FieldVector<ft,d> z2 = v + w;
     w -= v;
     w += v;
 
@@ -61,22 +80,22 @@ protected:
   }
 };
 
-template<class ct, int d>
-class FieldVectorTest : public FieldVectorMainTest<ct,d>
+template<class ft, class rt, int d>
+class FieldVectorTest : public FieldVectorMainTest<ft,rt,d>
 {
 public:
-  FieldVectorTest() : FieldVectorMainTest<ct,d>() {}
+  FieldVectorTest() : FieldVectorMainTest<ft,rt,d>() {}
 };
 
-template<class ct>
-class FieldVectorTest<ct,1>: public FieldVectorMainTest<ct,1>
+template<class ft, class rt>
+class FieldVectorTest<ft,rt,1>: public FieldVectorMainTest<ft,rt,1>
 {
 public:
-  FieldVectorTest() : FieldVectorMainTest<ct,1>()
+  FieldVectorTest() : FieldVectorMainTest<ft,rt,1>()
   {
-    ct a = 1;
-    FieldVector<ct,1> v(2);
-    FieldVector<ct,1> w(2);
+    ft a = 1;
+    FieldVector<ft,1> v(2);
+    FieldVector<ft,1> w(2);
     bool b;
 
     v = a;
@@ -135,18 +154,18 @@ public:
 int main()
 {
   try {
-    FieldVectorTest<int, 0>();
-    FieldVectorTest<int, 1>();
-    FieldVectorTest<int, 2>();
-    FieldVectorTest<int, 3>();
-    FieldVectorTest<float, 0>();
-    FieldVectorTest<float, 1>();
-    FieldVectorTest<float, 2>();
-    FieldVectorTest<float, 3>();
-    FieldVectorTest<double, 0>();
-    FieldVectorTest<double, 1>();
-    FieldVectorTest<double, 2>();
-    FieldVectorTest<double, 3>();
+    FieldVectorTest<int, int, 0>();
+    FieldVectorTest<int, int, 1>();
+    FieldVectorTest<int, int, 2>();
+    FieldVectorTest<int, int, 3>();
+    FieldVectorTest<float, float, 0>();
+    FieldVectorTest<float, float, 1>();
+    FieldVectorTest<float, float, 2>();
+    FieldVectorTest<float, float, 3>();
+    FieldVectorTest<double, double, 0>();
+    FieldVectorTest<double, double, 1>();
+    FieldVectorTest<double, double, 2>();
+    FieldVectorTest<double, double, 3>();
   } catch (Dune::Exception& e) {
     std::cerr << e << std::endl;
     return 1;
