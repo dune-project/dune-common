@@ -7,6 +7,7 @@ TESTPROGS = \
     bitsetvectortest \
     conversiontest \
     deprtuplestest \
+    dynmatrixtest \
     dynvectortest \
     enumsettest \
     fassigntest \
@@ -112,11 +113,13 @@ iteratorfacadetest_SOURCES = iteratorfacadetest.cc iteratorfacadetest.hh \
 
 iteratorfacadetest2_SOURCES = iteratorfacadetest2.cc
 
+dynmatrixtest_SOURCES = dynmatrixtest.cc
+
 dynvectortest_SOURCES = dynvectortest.cc
 
-fvectortest_SOURCES = fvectortest.cc
-
 fmatrixtest_SOURCES = fmatrixtest.cc
+
+fvectortest_SOURCES = fvectortest.cc
 
 polyallocator_SOURCES = polyallocator.cc
 
