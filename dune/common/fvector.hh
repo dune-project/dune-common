@@ -71,7 +71,7 @@ namespace Dune {
     //! Constructor making vector with identical coordinates
     explicit FieldVector (const K& t)
     {
-      _data.fill(t);
+      fill(t);
     }
 
     //! Constructor making vector with identical coordinates
@@ -84,6 +84,11 @@ namespace Dune {
     size_type vec_size() const { return _data.size(); }
     K & vec_access(size_type i) { return _data[i]; }
     const K & vec_access(size_type i) const { return _data[i]; }
+  private:
+    void fill(const K& t)
+    {
+      for (int i=0; i<SIZE; i++) _data[i]=t;
+    }
   };
 
   /** \brief Read a FieldVector from an input stream
