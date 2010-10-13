@@ -26,6 +26,7 @@ commoninclude_HEADERS = 			\
 	configparser.hh				\
 	debugstream.hh				\
 	deprecated.hh				\
+	densematrix.hh				\
 	densevector.hh				\
 	dynvector.hh				\
 	enumset.hh				\
