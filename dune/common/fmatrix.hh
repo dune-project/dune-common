@@ -219,7 +219,7 @@ namespace Dune
       _data[0] = k;
     }
     template<typename T>
-    explicit FieldMatrix(const T& t)
+    FieldMatrix(const T& t)
     {
       DenseMatrixAssigner<Conversion<T,K>::exists>::assign(*this, t);
     }
