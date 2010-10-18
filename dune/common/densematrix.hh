@@ -811,7 +811,7 @@ namespace Dune
       luDecomposition(A, elim);
 
       // backsolve
-      for(size_type i=rows()-1; i>=0; i--) {
+      for(int i=rows()-1; i>=0; i--) {
         for (size_type j=i+1; j<rows(); j++)
           rhs[i] -= A[i][j]*x[j];
         x[i] = rhs[i]/A[i][i];
