@@ -266,9 +266,37 @@ namespace Dune
       return _data;
     }
 
+    //! add scalar
+    FieldMatrix& operator+= (const K& k)
+    {
+      _data[0] += k;
+      return (*this);
+    }
+
+    //! subtract scalar
+    FieldMatrix& operator-= (const K& k)
+    {
+      _data[0] -= k;
+      return (*this);
+    }
+
+    //! multiplication with scalar
+    FieldMatrix& operator*= (const K& k)
+    {
+      _data[0] *= k;
+      return (*this);
+    }
+
+    //! division by scalar
+    FieldMatrix& operator/= (const K& k)
+    {
+      _data[0] /= k;
+      return (*this);
+    }
+
     //===== conversion operator
 
-    operator K () const {return _data[0];}
+    operator K () const { return _data[0]; }
 
   };
 
