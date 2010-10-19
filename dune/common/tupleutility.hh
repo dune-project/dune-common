@@ -1349,7 +1349,8 @@ namespace Dune {
    * Compile-time constructs that allows to process all elements in a tuple.
    * The exact operation performed on an element is defined by a function
    * object, which needs to implement a visit method which is applicable to
-   * all storage elements of a tuple.
+   * all storage elements of a tuple.  Each tuple element is visited once, and
+   * the iteration is done in ascending order.
    *
    * The following example implements a function object which counts the
    * elements in a tuple
