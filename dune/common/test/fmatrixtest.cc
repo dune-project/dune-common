@@ -8,6 +8,7 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
+#include <limits>
 
 #ifdef __GNUC__
 #include <cxxabi.h>
@@ -324,13 +325,13 @@ void test_matrix()
     FieldMatrix<K,n,n+1> AB = Aref.rightmultiplyany(B);
     for(size_type i=0; i<AB.N(); ++i)
       for(size_type j=0; j<AB.M(); ++j)
-        if (std::abs<double>(AB[i][j] - i*n*(n+1)/2) > 1e-10)
+        if (std::abs(AB[i][j] - K(i*n*(n+1)/2)) > 1e-10)
           DUNE_THROW(FMatrixError,"Rightmultiplyany test failed!");
 
     FieldMatrix<K,n,n+1> AB2 = A;
     AB2.rightmultiply(B);
     AB2 -= AB;
-    if (std::abs(AB2.infinity_norm() > 1e-10))
+    if (std::abs(AB2.infinity_norm()) > 1e-10)
       DUNE_THROW(FMatrixError,"Rightmultiply test failed!");
 
     FieldMatrix<K,n,n+1> AB3 = Bref.leftmultiplyany(A);
@@ -341,18 +342,18 @@ void test_matrix()
     FieldMatrix<K,n,n+1> CA = Aref.leftmultiplyany(C);
     for(size_type i=0; i<CA.N(); ++i)
       for(size_type j=0; j<CA.M(); ++j)
-        if (std::abs<double>(CA[i][j] - i*n*(n-1)/2) > 1e-10)
+        if (std::abs(CA[i][j] - K(i*n*(n-1)/2)) > 1e-10)
           DUNE_THROW(FMatrixError,"Leftmultiplyany test failed!");
 
     FieldMatrix<K,n,n+1> CA2 = A;
     CA2.leftmultiply(C);
     CA2 -= CA;
-    if (std::abs(CA2.infinity_norm() > 1e-10))
+    if (std::abs(CA2.infinity_norm()) > 1e-10)
       DUNE_THROW(FMatrixError,"Leftmultiply test failed!");
 
     FieldMatrix<K,n,n+1> CA3 = Cref.rightmultiplyany(A);
     CA3 -= CA;
-    if (std::abs(CA3.infinity_norm() > 1e-10))
+    if (std::abs(CA3.infinity_norm()) > 1e-10)
       DUNE_THROW(FMatrixError,"Rightmultiplyany test failed!");
   }
 }
