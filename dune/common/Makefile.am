@@ -28,6 +28,7 @@ commoninclude_HEADERS = 			\
 	deprecated.hh				\
 	densematrix.hh				\
 	densevector.hh				\
+	dynmatrix.hh				\
 	dynvector.hh				\
 	enumset.hh				\
 	exceptions.hh				\
