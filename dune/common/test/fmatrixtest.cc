@@ -274,8 +274,6 @@ void test_matrix()
   assert( A.infinity_norm() >= 0 );
   assert( A.infinity_norm_real() >= 0);
 
-  std::sort(v.begin(), v.end());
-
   // print matrix
   std::cout << A << std::endl;
   // print vector
