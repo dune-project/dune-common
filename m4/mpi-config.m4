@@ -24,6 +24,8 @@ mpi_getflags () {
   if test ${#} = 2 ; then
     retval=`echo $retval | sed -e "s/ ${2} / /"`
   fi
+  # remove optimization, warning, etc paramters
+  retval=`echo $retval | sed -e 's/-g//g' -e 's/-W[[a-z0-9]]\+//g' -e 's/-O[[0-9]]\+//g' -e 's/^ *//g'`
 }
 
 # removes regexp $2 from string $1
