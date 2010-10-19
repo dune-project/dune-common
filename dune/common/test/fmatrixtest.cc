@@ -9,7 +9,22 @@
 #include <algorithm>
 #include <vector>
 
+#ifdef __GNUC__
+#include <cxxabi.h>
+#endif
+
 using namespace Dune;
+
+template <class T>
+std::string className(T &t)
+{
+#ifdef __GNUC__
+  int status;
+  return abi::__cxa_demangle(typeid(t).name(),0,0,&status);
+#else
+  return typeid(t).name();
+#endif
+};
 
 template<typename T, std::size_t n>
 int test_invert_solve(T A_data[n*n], T inv_data[n*n],
@@ -370,11 +385,70 @@ int test_determinant()
   return 0;
 }
 
+template<class ft>
+struct ScalarOperatorTest
+{
+  ScalarOperatorTest()
+  {
+    ft a = 1;
+    ft c = 2;
+    FieldMatrix<ft,1,1> v(2);
+    FieldMatrix<ft,1,1> w(2);
+    bool b;
+
+    std::cout << __func__ << "\t ( " << className(v) << " )" << std::endl;
+
+    a = a * c;
+    a = a + c;
+    a = a / c;
+    a = a - c;
+
+    v = a;
+    v = w = v;
+    a = v;
+
+    a = v + a;
+    a = v - a;
+    a = v * a;
+    a = v / a;
+
+    v = v + a;
+    v = v - a;
+    v = v * a;
+    v = v / a;
+
+    a = a + v;
+    a = a - v;
+    a = a * v;
+    a = a / v;
+
+    v = a + v;
+    v = a - v;
+    v = a * v;
+    v = a / v;
+
+    v -= v;
+    v -= a;
+    v += v;
+    v += a;
+    v *= a;
+    v /= a;
+
+    b = (v == a);
+    b = (v != a);
+    b = (a == v);
+    b = (a != v);
+
+  }
+};
+
 int main()
 {
   try {
     test_matrix<float, 1, 1>();
+    ScalarOperatorTest<float>();
     test_matrix<double, 1, 1>();
+    ScalarOperatorTest<double>();
     test_matrix<int, 10, 5>();
     test_matrix<double, 5, 10>();
     test_determinant();
