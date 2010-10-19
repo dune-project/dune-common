@@ -17,6 +17,7 @@ sllisttest
 tuplestest
 enumsettest
 fmatrixtest
+dynmatrixtest
 polyallocator
 poolallocatortest
 *.gcda
