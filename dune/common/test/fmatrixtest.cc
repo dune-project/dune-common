@@ -8,7 +8,6 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
-#include <limits>
 
 #ifdef __GNUC__
 #include <cxxabi.h>
@@ -444,12 +443,18 @@ struct ScalarOperatorTest
 int main()
 {
   try {
+    // test 1 x 1 matrices
     test_matrix<float, 1, 1>();
     ScalarOperatorTest<float>();
     test_matrix<double, 1, 1>();
     ScalarOperatorTest<double>();
+    // test n x m matrices
     test_matrix<int, 10, 5>();
     test_matrix<double, 5, 10>();
+    // test complex matrices
+    test_matrix<std::complex<float>, 1, 1>();
+    test_matrix<std::complex<double>, 5, 10>();
+    // test high level methods
     test_determinant();
     Dune::FieldMatrix<double, 34, 34> A(1e-15);
     for (int i=0; i<34; i++) A[i][i] = 1;
