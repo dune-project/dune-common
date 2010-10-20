@@ -25,7 +25,9 @@ mpi_getflags () {
     retval=`echo $retval | sed -e "s/ ${2} / /"`
   fi
   # remove optimization, warning, etc paramters
-  retval=`echo $retval | sed -e 's/-g//g' -e 's/-W[[a-z0-9]]\+//g' -e 's/-O[[0-9]]\+//g' -e 's/^ *//g'`
+  retval=`echo " $retval " | sed -e 's/ -g / /g' -e 's/ -W[[a-z0-9]]\+ / /g' -e 's/ -O[[0-9]]\+ / /g'`
+  # strip leading and trailing spaces
+  retval=`echo "$retval" | sed 's/^ *//g;s/ *$//g'`
 }
 
 # removes regexp $2 from string $1
