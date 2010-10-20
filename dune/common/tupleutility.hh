@@ -1386,7 +1386,7 @@ namespace Dune {
     //! \brief Applies a function object to each storage element of the tuple.
     //! \param f Function object.
     template <class Functor>
-    void apply(Functor& f) {
+    void apply(Functor& f) const {
       Visitor<tuple_size<TupleType>::value,TupleType,Functor>::visit(f, tuple_);
     }
   private:
