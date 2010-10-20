@@ -3,14 +3,19 @@
 #ifndef DUNE_PARAMETERTREE_HH
 #define DUNE_PARAMETERTREE_HH
 
+#include <cstddef>
 #include <iostream>
 #include <istream>
+#include <iterator>
 #include <map>
 #include <ostream>
+#include <sstream>
 #include <string>
 #include <typeinfo>
 #include <vector>
 
+#include <dune/common/array.hh>
+#include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 
 namespace Dune {
@@ -241,6 +246,31 @@ namespace Dune {
     std::map<std::string, ParameterTree> subs;
     static std::string ltrim(const std::string& s);
     static std::string rtrim(const std::string& s);
+
+    // parse into a fixed-size range of iterators
+    template<class Iterator>
+    static void parseRange(const std::string &str,
+                           Iterator it, const Iterator &end)
+    {
+      typedef typename std::iterator_traits<Iterator>::value_type Value;
+      std::istringstream s(str);
+      std::size_t n = 0;
+      for(; it != end; ++it, ++n) {
+        s >> *it;
+        if(!s)
+          DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" as a "
+                     "range of items of type " << typeid(Value).name() << " "
+                     "(" << n << " items were extracted successfully)");
+      }
+      Value dummy;
+      s >> dummy;
+      // now extraction should have failed, and eof should be set
+      if(not s.fail() or not s.eof())
+        DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" as a "
+                   "range of " << n << " items of type "
+                                                       << typeid(Value).name() << " (more items than the range "
+                   "can hold)");
+    }
   };
 
   template<typename T>
@@ -280,19 +310,31 @@ namespace Dune {
     static FieldVector<T, n>
     parse(const std::string& str) {
       FieldVector<T, n> val;
-      std::istringstream s(str);
-      for(int i = 0; i < n; ++i) {
-        s >> val[i];
-        if(!s)
-          DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" as a "
-                     "FieldVector<" << typeid(T).name() << ", " << n << ">");
-      }
-      T dummy;
-      s >> dummy;
-      // now extraction should have failed, and eof should be set
-      if(not s.fail() or not s.eof())
-        DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\"  as a "
-                   "FieldVector<double, " << n << ">");
+      parseRange(str, val.begin(), val.end());
+      return val;
+    }
+  };
+
+  // Yes, there are two specializations for array.  This one is for the Dune
+  // implementation, which takes the size as an int.
+  template<typename T, int n>
+  struct ParameterTree::Parser<array<T, n> > {
+    static array<T, n>
+    parse(const std::string& str) {
+      array<T, n> val;
+      parseRange(str, val.begin(), val.end());
+      return val;
+    }
+  };
+
+  // Yes, there are two specializations for array.  This one is for the
+  // implementation from the standard, which takes the size as a size_t.
+  template<typename T, std::size_t n>
+  struct ParameterTree::Parser<array<T, n> > {
+    static array<T, n>
+    parse(const std::string& str) {
+      array<T, n> val;
+      parseRange(str, val.begin(), val.end());
       return val;
     }
   };
