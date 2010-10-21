@@ -71,6 +71,7 @@ namespace Dune
     //==== resize related methods
     void resize (size_type r, size_type c, value_type v = value_type() )
     {
+      _data.resize(0);
       _data.resize(r, row_type(c, v) );
     }
 
