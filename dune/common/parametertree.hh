@@ -315,20 +315,6 @@ namespace Dune {
     }
   };
 
-  // Yes, there are two specializations for array.  This one is for the Dune
-  // implementation, which takes the size as an int.
-  template<typename T, int n>
-  struct ParameterTree::Parser<array<T, n> > {
-    static array<T, n>
-    parse(const std::string& str) {
-      array<T, n> val;
-      parseRange(str, val.begin(), val.end());
-      return val;
-    }
-  };
-
-  // Yes, there are two specializations for array.  This one is for the
-  // implementation from the standard, which takes the size as a size_t.
   template<typename T, std::size_t n>
   struct ParameterTree::Parser<array<T, n> > {
     static array<T, n>

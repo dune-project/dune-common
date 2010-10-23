@@ -35,7 +35,7 @@ namespace Dune
    * if that is not available.
    *
    */
-  template<class T, int N>
+  template<class T, size_t N>
   class array {
   public:
 
@@ -72,7 +72,7 @@ namespace Dune
     //! Assign value to all entries
     array<T,N>& operator= (const T& t)
     {
-      for (int i=0; i<N; i++) a[i]=t;
+      for (size_type i=0; i<N; i++) a[i]=t;
       return (*this);
     }
 
@@ -85,7 +85,7 @@ namespace Dune
     //! \brief Assign value to all entries (according to C++0x the fill method is to be prefered)
     void fill(const T& t)
     {
-      for (int i=0; i<N; i++) a[i]=t;
+      for (size_type i=0; i<N; i++) a[i]=t;
     }
 
     //! Component access
@@ -128,36 +128,37 @@ namespace Dune
   // Comparison Operators (see [lib.container.requirements])
   // -------------------------------------------------------
 
-  template< class T, int N >
+  template< class T, size_t N >
   inline bool operator< ( const array< T, N > &a, const array< T, N > &b )
   {
     return std::lexicographical_compare( a.begin(), a.end(), b.begin(), b.end() );
   }
 
-  template< class T, int N >
+  template< class T, size_t N >
   inline bool operator> ( const array< T, N > &a, const array< T, N > &b )
   {
     return b < a;
   }
 
-  template< class T, int N >
+  template< class T, size_t N >
   inline bool operator<= ( const array< T, N > &a, const array< T, N > &b )
   {
     return !(a > b);
   }
 
-  template< class T, int N >
+  template< class T, size_t N >
   inline bool operator>= ( const array< T, N > &a, const array< T, N > &b )
   {
     return !(a < b);
   }
 #endif
+
   //! Output operator for array
-  template <class T, int N>
+  template < class T, size_t N >
   inline std::ostream& operator<< (std::ostream& s, const array<T,N>& e)
   {
     s << "[";
-    for (int i=0; i<N-1; i++) s << e[i] << ",";
+    for (size_t i=0; i<N-1; i++) s << e[i] << ",";
     s << e[N-1] << "]";
     return s;
   }
