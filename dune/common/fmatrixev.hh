@@ -12,6 +12,13 @@
 #include <dune/common/fmatrix.hh>
 
 #if HAVE_LAPACK
+
+// symetric matrices
+#define DSYEV_FORTRAN FC_FUNC (dsyev, DSYEV)
+
+// nonsymetric matrices
+#define DGEEV_FORTRAN FC_FUNC (dgeev, DGEEV)
+
 // dsyev declaration (in liblapack)
 extern "C" {
 
@@ -65,9 +72,10 @@ extern "C" {
    **                form did not converge to zero.
    **
    **/
-  extern void dsyev_(const char* jobz, const char* uplo, const long
-                     int* n, double* a, const long int* lda, double* w,
-                     double* work, const long int* lwork, long int* info);
+  extern void DSYEV_FORTRAN(const char* jobz, const char* uplo, const long
+                            int* n, double* a, const long int* lda, double* w,
+                            double* work, const long int* lwork, long int* info);
+
 } // end extern C
 #endif
 
@@ -80,7 +88,7 @@ namespace Dune {
 
   namespace FMatrixHelp {
 
-    /** \brief calculates the eigenvalues of a field matrix
+    /** \brief calculates the eigenvalues of a symetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
         \param[out] eigenvalues FieldVector that contains eigenvalues in
                     ascending order
@@ -92,7 +100,7 @@ namespace Dune {
       eigenvalues[0] = matrix[0][0];
     }
 
-    /** \brief calculates the eigenvalues of a field matrix
+    /** \brief calculates the eigenvalues of a symetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
         \param[out] eigenvalues FieldVector that contains eigenvalues in
                     ascending order
@@ -122,7 +130,8 @@ namespace Dune {
       eigenvalues[1] = p + q;
     }
 
-    /** \brief calculates the eigenvalues of a field matrix
+#if HAVE_LAPACK || defined DOXYGEN
+    /** \brief calculates the eigenvalues of a symetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
         \param[out] eigenvalues FieldVector that contains eigenvalues in
                     ascending order
@@ -133,7 +142,6 @@ namespace Dune {
     static void eigenValues(const FieldMatrix<K, dim, dim>& matrix,
                             FieldVector<K, dim>& eigenvalues)
     {
-#if HAVE_LAPACK
       {
         const long int N = dim ;
         const char jobz = 'n'; // only calculate eigenvalues
@@ -162,8 +170,8 @@ namespace Dune {
         long int info = 0;
 
         // call LAPACK dsyev
-        dsyev_(&jobz, &uplo, &N, &matrixVector[0], &N,
-               &eigenvalues[0], &workSpace[0], &w, &info);
+        DSYEV_FORTRAN(&jobz, &uplo, &N, &matrixVector[0], &N,
+                      &eigenvalues[0], &workSpace[0], &w, &info);
 
         if( info != 0 )
         {
@@ -171,10 +179,8 @@ namespace Dune {
           DUNE_THROW(InvalidStateException,"eigenValues: Eigenvalue calculation failed!");
         }
       }
-#else
-      DUNE_THROW(NotImplemented,"LAPACK is not available, therefore no eigenvalue calculation");
-#endif
     }
+#endif
 
   } // end namespace FMatrixHelp
 
