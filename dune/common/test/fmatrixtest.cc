@@ -476,6 +476,13 @@ void test_ev()
 
   // test results
   Dune::FieldVector<ft,8> ref;
+  /*
+     reference solution computed with octave 3.2
+
+     > format long e
+     > eig(rosser())
+
+   */
   ref <<=
     -1.02004901843000e+03,
   -4.14362871168386e-14,
