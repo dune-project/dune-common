@@ -118,6 +118,7 @@ dynmatrixtest_SOURCES = dynmatrixtest.cc
 dynvectortest_SOURCES = dynvectortest.cc
 
 fmatrixtest_SOURCES = fmatrixtest.cc
+fmatrixtest_LDADD = $(LAPACK_LIBS) $(LDADD)
 
 fvectortest_SOURCES = fvectortest.cc
 

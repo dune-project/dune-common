@@ -4,7 +4,8 @@
 #include "config.h"
 #endif
 #define DUNE_ISTL_WITH_CHECKING
-#include "../fmatrix.hh"
+#include <dune/common/fmatrix.hh>
+#include <dune/common/fassign.hh>
 #include <iostream>
 #include <algorithm>
 #include <vector>
@@ -440,6 +441,59 @@ struct ScalarOperatorTest
   }
 };
 
+template<typename ft>
+void test_ev()
+{
+  // rosser test matrix
+
+  /*
+     This matrix was a challenge for many matrix eigenvalue
+     algorithms. But the Francis QR algorithm, as perfected by
+     Wilkinson and implemented in EISPACK, has no trouble with it. The
+     matrix is 8-by-8 with integer elements. It has:
+
+   * A double eigenvalue
+   * Three nearly equal eigenvalues
+   * Dominant eigenvalues of opposite sign
+   * A zero eigenvalue
+   * A small, nonzero eigenvalue
+
+   */
+  Dune::FieldMatrix<ft,8,8> A;
+  A <<=
+    611, 196, -192, 407, -8, -52, -49, 29, Dune::nextRow,
+  196, 899, 113, -192, -71, -43, -8, -44, Dune::nextRow,
+  -192, 113, 899, 196, 61, 49, 8, 52, Dune::nextRow,
+  407, -192, 196, 611, 8, 44, 59, -23, Dune::nextRow,
+  -8, -71, 61, 8, 411, -599, 208, 208, Dune::nextRow,
+  -52, -43, 49, 44, -599, 411, 208, 208, Dune::nextRow,
+  -49, -8, 8, 59, 208, 208, 99, -911, Dune::nextRow,
+  29, -44, 52, -23, 208, 208, -911, 99;
+
+  // compute eigenvalues
+  Dune::FieldVector<ft,8> eig;
+  Dune::FMatrixHelp::eigenValues(A, eig);
+
+  // test results
+  Dune::FieldVector<ft,8> ref;
+  ref <<=
+    -1.02004901843000e+03,
+  -4.14362871168386e-14,
+  9.80486407214362e-02,
+  1.00000000000000e+03,
+  1.00000000000000e+03,
+  1.01990195135928e+03,
+  1.02000000000000e+03,
+  1.02004901843000e+03;
+
+  if( (ref - eig).two_norm() > 1e-10 )
+  {
+    DUNE_THROW(FMatrixError,"error computing eigenvalues");
+  }
+
+  std::cout << "Eigenvalues of Rosser matrix: " << eig << std::endl;
+}
+
 int main()
 {
   try {
@@ -454,6 +508,10 @@ int main()
     // test complex matrices
     test_matrix<std::complex<float>, 1, 1>();
     test_matrix<std::complex<double>, 5, 10>();
+#if HAVE_LAPACK
+    // test eigemvalue computation
+    test_ev<double>();
+#endif
     // test high level methods
     test_determinant();
     Dune::FieldMatrix<double, 34, 34> A(1e-15);
