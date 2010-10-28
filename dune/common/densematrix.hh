@@ -61,6 +61,7 @@ namespace Dune
 
   /**
      \brief you have to specialize this function for any type T that should be assignable to a DenseMatrix
+     \tparam M Type of the matrix implementation class implementing the dense matrix
    */
   template<typename M, typename T>
   void istl_assign_to_fmatrix(DenseMatrix<M>& f, const T& t)
