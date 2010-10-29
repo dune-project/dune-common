@@ -285,7 +285,7 @@ namespace Dune {
       Type&       i = get<2>(my_tuple);
      \endcode
    */
-  template<typename T1, typename T2 = Nil, typename T3 = Nil,
+  template<typename T1 = Nil, typename T2 = Nil, typename T3 = Nil,
       typename T4 = Nil, typename T5 = Nil,typename T6 = Nil,
       typename T7 = Nil, typename T8 = Nil, typename T9 = Nil>
   class tuple : public TupleToPairs<T1,T2,T3,T4,T5,T6,T7,T8,T9>::Type
