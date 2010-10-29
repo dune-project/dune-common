@@ -11,7 +11,8 @@ AC_DEFUN([GXX0X],[
     ac_save_CXX="$CXX"
     CXX="$CXX -std=c++0x"
     HAVE_CXX0X=no
-    AC_TRY_COMPILE([],[],[HAVE_CXX0X=yes],[])
+    AC_TRY_COMPILE([#include <iostream>
+#include <array>],[],[HAVE_CXX0X=yes],[])
     if test "x$HAVE_CXX0X" == "xyes" ; then
       CXXCPP="$CXXCPP -std=c++0x"
     else
