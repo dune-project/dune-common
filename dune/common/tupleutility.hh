@@ -153,19 +153,19 @@ namespace Dune {
     }
   };
 
-  template<class T0, class T1, class T2, class T3, class T4, class T5,
-      class T6, class T7, class T8, class T9>
-  struct NullPointerInitialiser<tuple<T0*, T1*, T2*, T3*, T4*, T5*, T6*,
-          T7*, T8*, T9*> > {
-    typedef tuple<T0*, T1*, T2*, T3*, T4*, T5*, T6*, T7*, T8*, T9*> ResultType;
-    static ResultType apply() {
-      return ResultType(static_cast<T0*>(0), static_cast<T1*>(0),
-                        static_cast<T2*>(0), static_cast<T3*>(0),
-                        static_cast<T4*>(0), static_cast<T5*>(0),
-                        static_cast<T6*>(0), static_cast<T7*>(0),
-                        static_cast<T8*>(0), static_cast<T9*>(0));
-    }
-  };
+  // template<class T0, class T1, class T2, class T3, class T4, class T5,
+  //          class T6, class T7, class T8, class T9>
+  // struct NullPointerInitialiser<tuple<T0*, T1*, T2*, T3*, T4*, T5*, T6*,
+  //                                     T7*, T8*, T9*> > {
+  //   typedef tuple<T0*, T1*, T2*, T3*, T4*, T5*, T6*, T7*, T8*, T9*> ResultType;
+  //   static ResultType apply() {
+  //     return ResultType(static_cast<T0*>(0), static_cast<T1*>(0),
+  //                       static_cast<T2*>(0), static_cast<T3*>(0),
+  //                       static_cast<T4*>(0), static_cast<T5*>(0),
+  //                       static_cast<T6*>(0), static_cast<T7*>(0),
+  //                       static_cast<T8*>(0), static_cast<T9*>(0));
+  //   }
+  // };
 #endif // !defined(DOXYGEN)
 
   /**
@@ -292,15 +292,15 @@ namespace Dune {
         typename TE<T8>::Type> Type;
   };
 
-  template <template <class> class TE, class T0, class T1, class T2, class T3,
-      class T4, class T5, class T6, class T7, class T8, class T9>
-  struct ForEachType<TE, tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> > {
-    typedef tuple<typename TE<T0>::Type, typename TE<T1>::Type,
-        typename TE<T2>::Type, typename TE<T3>::Type,
-        typename TE<T4>::Type, typename TE<T5>::Type,
-        typename TE<T6>::Type, typename TE<T7>::Type,
-        typename TE<T8>::Type, typename TE<T9>::Type> Type;
-  };
+  // template <template <class> class TE, class T0, class T1, class T2, class T3,
+  //           class T4, class T5, class T6, class T7, class T8, class T9>
+  // struct ForEachType<TE, tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> > {
+  //   typedef tuple<typename TE<T0>::Type, typename TE<T1>::Type,
+  //                 typename TE<T2>::Type, typename TE<T3>::Type,
+  //                 typename TE<T4>::Type, typename TE<T5>::Type,
+  //                 typename TE<T6>::Type, typename TE<T7>::Type,
+  //                 typename TE<T8>::Type, typename TE<T9>::Type> Type;
+  // };
 #endif // !defined(DOXYGEN)
 
   //////////////////////////////////////////////////////////////////////
@@ -566,31 +566,31 @@ namespace Dune {
              f(get<5>(t)), f(get<6>(t)), f(get<7>(t)), f(get<8>(t)));
   }
 
-  // 10-element tuple
-  template<class T0, class T1, class T2, class T3, class T4, class T5,
-      class T6, class T7, class T8, class T9, class Functor>
-  typename ForEachType<Functor::template TypeEvaluator,
-      tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> >::Type
-  genericTransformTupleBackend
-    (tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>& t, Functor& f)
-  {
-    return typename ForEachType<Functor::template TypeEvaluator,
-        tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> >::Type
-             (f(get<0>(t)), f(get<1>(t)), f(get<2>(t)), f(get<3>(t)), f(get<4>(t)),
-             f(get<5>(t)), f(get<6>(t)), f(get<7>(t)), f(get<8>(t)), f(get<9>(t)));
-  }
-  template<class T0, class T1, class T2, class T3, class T4, class T5,
-      class T6, class T7, class T8, class T9, class Functor>
-  typename ForEachType<Functor::template TypeEvaluator,
-      tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> >::Type
-  genericTransformTupleBackend
-    (const tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>& t, Functor& f)
-  {
-    return typename ForEachType<Functor::template TypeEvaluator,
-        tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> >::Type
-             (f(get<0>(t)), f(get<1>(t)), f(get<2>(t)), f(get<3>(t)), f(get<4>(t)),
-             f(get<5>(t)), f(get<6>(t)), f(get<7>(t)), f(get<8>(t)), f(get<9>(t)));
-  }
+  // // 10-element tuple
+  // template<class T0, class T1, class T2, class T3, class T4, class T5,
+  //          class T6, class T7, class T8, class T9, class Functor>
+  // typename ForEachType<Functor::template TypeEvaluator,
+  //                      tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> >::Type
+  // genericTransformTupleBackend
+  // (tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>& t, Functor& f)
+  // {
+  //   return typename ForEachType<Functor::template TypeEvaluator,
+  //     tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> >::Type
+  //     (f(get<0>(t)), f(get<1>(t)), f(get<2>(t)), f(get<3>(t)), f(get<4>(t)),
+  //      f(get<5>(t)), f(get<6>(t)), f(get<7>(t)), f(get<8>(t)), f(get<9>(t)));
+  // }
+  // template<class T0, class T1, class T2, class T3, class T4, class T5,
+  //          class T6, class T7, class T8, class T9, class Functor>
+  // typename ForEachType<Functor::template TypeEvaluator,
+  //                      tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> >::Type
+  // genericTransformTupleBackend
+  // (const tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>& t, Functor& f)
+  // {
+  //   return typename ForEachType<Functor::template TypeEvaluator,
+  //     tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> >::Type
+  //     (f(get<0>(t)), f(get<1>(t)), f(get<2>(t)), f(get<3>(t)), f(get<4>(t)),
+  //      f(get<5>(t)), f(get<6>(t)), f(get<7>(t)), f(get<8>(t)), f(get<9>(t)));
+  // }
 #endif // ! defined(DOXYGEN)
 
   //! transform a tuple object into another tuple object
