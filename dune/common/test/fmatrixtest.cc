@@ -239,6 +239,7 @@ void test_matrix()
     FieldVector<K,m> b(1);
 
     A.mv(b, res1);
+    res2 = FMatrixHelp :: mult( A, b );
     A.umv(b, res2);
 
     if( (res1 - res2).two_norm() > 1e-12 )
