@@ -69,7 +69,7 @@ namespace Dune {
    */
 
   /* forward declarations */
-  struct Exception;
+  class Exception;
   struct ExceptionHook;
 
   /*! \class Exception
