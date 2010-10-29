@@ -1079,16 +1079,16 @@ namespace Dune
 
     //! calculates ret = matrix * x
     template <typename MAT, typename V1, typename V2>
-    static inline void multAssign(const DenseMatrix<MAT> &matrix, const DenseVector<V2> & x, DenseVector<V2> & ret)
+    static inline void multAssign(const DenseMatrix<MAT> &matrix, const DenseVector<V1> & x, DenseVector<V2> & ret)
     {
       assert(x.size() == matrix.rows());
       assert(ret.size() == matrix.cols());
       typedef typename DenseMatrix<MAT>::size_type size_type;
 
-      for(size_type i=0; i<matrix.size(); ++i)
+      for(size_type i=0; i<matrix.rows(); ++i)
       {
         ret[i] = 0.0;
-        for(size_type j=0; j<matrix[i].size(); ++j)
+        for(size_type j=0; j<matrix.cols(); ++j)
         {
           ret[i] += matrix[i][j]*x[j];
         }
