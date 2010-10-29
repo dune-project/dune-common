@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstring>
+#include <cstdio>
 #include <iostream>
 #include <iomanip>
 #include <iterator>
