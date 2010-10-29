@@ -19,6 +19,7 @@ AC_DEFUN([DUNE_CHECK_ALL],[
   AC_REQUIRE([AC_PROG_CXX])
   AC_REQUIRE([AC_PROG_CXXCPP])
   AC_REQUIRE([AC_PROG_F77])
+  AC_REQUIRE([AC_PROG_FC])
   # don't build shared libs per default, this is way better for debugging...
   AC_REQUIRE([AC_DISABLE_SHARED])
   # we need libtool
