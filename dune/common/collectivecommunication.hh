@@ -213,7 +213,7 @@ namespace Dune
     void allreduce(Type* in, Type* out, int len) const
     {
       std::copy(in, in+len, out);
-      return 0;
+      return;
     }
 
   };
