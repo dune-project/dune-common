@@ -12,10 +12,11 @@
 #include <cassert>
 #include <new>
 
-template<std::size_t size, typename T>
-int testPool();
-
 //forward declarations.
+
+// we need to know the test function to declare it friend
+template<std::size_t size, typename T>
+struct testPoolMain;
 
 namespace Dune
 {
@@ -83,7 +84,8 @@ namespace Dune
   template<class T, std::size_t s>
   class Pool
   {
-    friend int ::testPool<s,T>();
+    // make the test function friend
+    friend struct ::testPoolMain<s,T>;
 
     //friend std::ostream& std::operator<<<>(std::ostream&,Pool<T,s>&);
     template< class, std::size_t > friend class PoolAllocator;
@@ -102,7 +104,6 @@ namespace Dune
     typedef T MemberType;
     enum
     {
-
       /**
        * @brief The size of a union of Reference and MemberType.
        */
