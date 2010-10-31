@@ -57,7 +57,8 @@ namespace Dune
   // A Macro for defining traits for the primitive data types
 #define ComposeMPITraits(p,m) \
   template<> \
-  struct Generic_MPI_Datatype<p>{ \
+  class Generic_MPI_Datatype<p>{ \
+  public: \
     static inline MPI_Datatype get(){ \
       return m; \
     } \
