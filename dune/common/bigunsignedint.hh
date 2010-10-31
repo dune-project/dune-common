@@ -16,11 +16,6 @@
  * @author Peter Bastian
  */
 
-namespace std
-{
-  template<class T> struct numeric_limits;
-}
-
 namespace Dune
 {
   /** @addtogroup Common
@@ -136,7 +131,7 @@ namespace Dune
     double todouble() const;
 
     friend class bigunsignedint<k/2>;
-    friend class std::numeric_limits<bigunsignedint<k> >;
+    friend struct std::numeric_limits< bigunsignedint<k> >;
 
   private:
     unsigned short digit[n];
@@ -553,7 +548,7 @@ namespace Dune
 namespace std
 {
   template<int k>
-  class numeric_limits<Dune::bigunsignedint<k> >
+  struct numeric_limits<Dune::bigunsignedint<k> >
   {
   public:
     static const bool is_specialized = true;
