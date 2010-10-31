@@ -447,7 +447,7 @@ namespace Dune {
     value_type operator* (const DenseVector& y) const
     {
       assert(y.size() == size());
-      value_type result = 0;
+      value_type result( 0 );
       for (size_type i=0; i<size(); i++)
         result += (*this)[i]*y[i];
       return result;
@@ -457,7 +457,7 @@ namespace Dune {
 
     //! one norm (sum over absolute values of entries)
     typename FieldTraits<value_type>::real_type one_norm() const {
-      typename FieldTraits<value_type>::real_type result = 0;
+      typename FieldTraits<value_type>::real_type result( 0 );
       for (size_type i=0; i<size(); i++)
         result += std::abs((*this)[i]);
       return result;
@@ -467,7 +467,7 @@ namespace Dune {
     //! simplified one norm (uses Manhattan norm for complex values)
     typename FieldTraits<value_type>::real_type one_norm_real () const
     {
-      typename FieldTraits<value_type>::real_type result = 0;
+      typename FieldTraits<value_type>::real_type result( 0 );
       for (size_type i=0; i<size(); i++)
         result += fvmeta::absreal((*this)[i]);
       return result;
@@ -476,7 +476,7 @@ namespace Dune {
     //! two norm sqrt(sum over squared values of entries)
     typename FieldTraits<value_type>::real_type two_norm () const
     {
-      typename FieldTraits<value_type>::real_type result = 0;
+      typename FieldTraits<value_type>::real_type result( 0 );
       for (size_type i=0; i<size(); i++)
         result += fvmeta::abs2((*this)[i]);
       return fvmeta::sqrt(result);
@@ -485,7 +485,7 @@ namespace Dune {
     //! square of two norm (sum over squared values of entries), need for block recursion
     typename FieldTraits<value_type>::real_type two_norm2 () const
     {
-      typename FieldTraits<value_type>::real_type result = 0;
+      typename FieldTraits<value_type>::real_type result( 0 );
       for (size_type i=0; i<size(); i++)
         result += fvmeta::abs2((*this)[i]);
       return result;
@@ -494,7 +494,7 @@ namespace Dune {
     //! infinity norm (maximum of absolute values of entries)
     typename FieldTraits<value_type>::real_type infinity_norm () const
     {
-      typename FieldTraits<value_type>::real_type result = 0;
+      typename FieldTraits<value_type>::real_type result( 0 );
       for (size_type i=0; i<size(); i++)
         result = std::max(result, std::abs((*this)[i]));
       return result;
@@ -503,7 +503,7 @@ namespace Dune {
     //! simplified infinity norm (uses Manhattan norm for complex values)
     typename FieldTraits<value_type>::real_type infinity_norm_real () const
     {
-      typename FieldTraits<value_type>::real_type result = 0;
+      typename FieldTraits<value_type>::real_type result( 0 );
       for (size_type i=0; i<size(); i++)
         result = std::max(result, fvmeta::absreal((*this)[i]));
       return result;
