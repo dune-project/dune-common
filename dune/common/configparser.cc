@@ -124,9 +124,7 @@ void ConfigParser::parseCmd(int argc, char* argv [])
     else
     {
       if (k.size())
-      {
         (*this)[k] = argv[i];
-      }
       k.clear();
     }
   }
@@ -136,30 +134,10 @@ void ConfigParser::parseCmd(int argc, char* argv [])
 
 ConfigParser& ConfigParser::sub(const string& key)
 {
-  string::size_type dot = key.find(".");
-
-  if (dot != string::npos)
-  {
-    ConfigParser& s = sub(key.substr(0,dot));
-    return s.sub(key.substr(dot+1));
-  }
-  else
-    // Cast is safe, because ConfigParser has the same memory layout as ParameterTree,
-    // and this method is temporary anyways.
-    return static_cast<ConfigParser&>(subs[key]);
+  return static_cast<ConfigParser&>(ParameterTree::sub(key));
 }
 
 const ConfigParser& ConfigParser::sub(const string& key) const
 {
-  string::size_type dot = key.find(".");
-
-  if (dot != string::npos)
-  {
-    const ConfigParser& s = sub(key.substr(0,dot));
-    return s.sub(key.substr(dot+1));
-  }
-  else
-    // Cast is safe, because ConfigParser has the same memory layout as ParameterTree,
-    // and this method is temporary anyways.
-    return static_cast<const ConfigParser&>(subs.find(key)->second);
+  return static_cast<const ConfigParser&>(ParameterTree::sub(key));
 }
