@@ -13,12 +13,18 @@ template<class P>
 void testparam(const P & p)
 {
   // try accessing key
-  p.template get<int>("x1");
-  p.template get<double>("x1");
-  p.template get<std::string>("x2");
+  std::cout << p.template get<int>("x1") << std::endl;
+  std::cout << p.template get<double>("x1") << std::endl;
+  std::cout << p.template get<std::string>("x2") << std::endl;
+  std::cout << p.template get<bool>("x3") << std::endl;
   // try accessing subtree
   p.sub("Foo");
   p.sub("Foo").template get<std::string>("peng");
+  // check hasSub and hasKey
+  assert(p.hasSub("Foo"));
+  assert(!p.hasSub("x1"));
+  assert(p.hasKey("x1"));
+  assert(!p.hasKey("Foo"));
   // try accessing inexistent key
   try {
     p.template get<int>("bar");
@@ -52,6 +58,7 @@ void testmodify(P parameterSet)
   parameterSet["testInt"]    = "42";
   parameterSet["testString"] = "Hallo Welt!";
   parameterSet["testVector"] = "2 3 5 7 11";
+  parameterSet.sub("Foo")["bar"] = "2";
 
   double testDouble      = parameterSet.template get<double>("testDouble");
   int testInt            = parameterSet.template get<int>("testInt");
@@ -70,6 +77,10 @@ void testmodify(P parameterSet)
       DUNE_THROW(Dune::Exception,
                  "testFVector[" << i << "]==" << testFVector[i] << " but "
                  "testSVector[" << i << "]==" << testSVector[i]);
+  if (parameterSet.template get<std::string>("Foo.bar") != "2")
+    DUNE_THROW(Dune::Exception, "Failed to write subtree entry");
+  if (parameterSet.sub("Foo").template get<std::string>("bar") != "2")
+    DUNE_THROW(Dune::Exception, "Failed to write subtree entry");
 }
 
 int main()
@@ -79,6 +90,7 @@ int main()
     std::stringstream s;
     s << "x1 = 1\n"
       << "x2 = hallo\n"
+      << "x3 = no\n"
       << "\n"
       << "[Foo]\n"
       << "peng = ligapokal\n";
