@@ -168,17 +168,6 @@ namespace Dune {
     double get(const std::string& key, double defaultValue) const;
 
 
-    /** \brief get value as bool
-     *
-     * Returns value for given key interpreted as bool.
-     *
-     * \param key key name
-     * \param defaultValue default if key does not exist
-     * \return value as bool, false if values = '0', true if value = '1'
-     */
-    bool get(const std::string& key, bool defaultValue) const;
-
-
     /** \brief get value converted to a certain type
      *
      * Returns value as type T for given key.
@@ -293,7 +282,7 @@ namespace Dune {
   };
 
   // "How do I convert a string into a wstring in C++?"  "Why, that very simple
-  // son.  You just need a these hundred lines of code."
+  // son. You just need a these hundred lines of code."
   // Instead im gonna restrict myself to string with charT=char here
   template<typename traits, typename Allocator>
   struct ParameterTree::Parser<std::basic_string<char, traits, Allocator> > {
@@ -302,6 +291,31 @@ namespace Dune {
       std::string trimmed = ltrim(rtrim(str));
       return std::basic_string<char, traits, Allocator>(trimmed.begin(),
                                                         trimmed.end());
+    }
+  };
+
+  template<>
+  struct ParameterTree::Parser< bool > {
+    struct ToLower {
+      int operator()(int c)
+      {
+        return std::tolower(c);
+      }
+    };
+
+    static bool
+    parse(const std::string& str) {
+      std::string ret = str;
+
+      std::transform(ret.begin(), ret.end(), ret.begin(), ToLower());
+
+      if (ret == "yes" || ret == "true")
+        return true;
+
+      if (ret == "no" || ret == "false")
+        return false;
+
+      return (Parser<int>::parse(ret) != 0);
     }
   };
 

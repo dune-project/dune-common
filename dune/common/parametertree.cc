@@ -13,16 +13,6 @@
 #include <dune/common/parametertree.hh>
 
 using namespace Dune;
-using namespace std;
-
-namespace {
-  struct ToLower {
-    int operator()(int c)
-    {
-      return std::tolower(c);
-    }
-  };
-}
 
 ParameterTree::ParameterTree()
 {}
@@ -32,37 +22,37 @@ void ParameterTree::report() const
   report("");
 }
 
-void ParameterTree::report(const string prefix) const
+void ParameterTree::report(const std::string prefix) const
 {
   reportStream(std::cout, prefix);
 }
 
-void ParameterTree::reportStream(ostream& stream, const string& prefix) const
+void ParameterTree::reportStream(std::ostream& stream, const std::string& prefix) const
 {
-  typedef map<string, string>::const_iterator ValueIt;
+  typedef std::map<std::string, std::string>::const_iterator ValueIt;
   ValueIt vit = values.begin();
   ValueIt vend = values.end();
 
   for(; vit!=vend; ++vit)
-    stream << vit->first << " = \"" << vit->second << "\"" << endl;
+    stream << vit->first << " = \"" << vit->second << "\"" << std::endl;
 
-  typedef map<string, ParameterTree>::const_iterator SubIt;
+  typedef std::map<std::string, ParameterTree>::const_iterator SubIt;
   SubIt sit = subs.begin();
   SubIt send = subs.end();
   for(; sit!=send; ++sit)
   {
-    stream << "[ " << prefix + sit->first << " ]" << endl;
+    stream << "[ " << prefix + sit->first << " ]" << std::endl;
     (sit->second).report(prefix + sit->first + ".");
   }
 }
 
-bool ParameterTree::hasKey(const string& key) const
+bool ParameterTree::hasKey(const std::string& key) const
 {
-  string::size_type dot = key.find(".");
+  std::string::size_type dot = key.find(".");
 
-  if (dot != string::npos)
+  if (dot != std::string::npos)
   {
-    string prefix = key.substr(0,dot);
+    std::string prefix = key.substr(0,dot);
     if (subs.count(prefix) == 0)
       return false;
 
@@ -73,13 +63,13 @@ bool ParameterTree::hasKey(const string& key) const
     return (values.count(key) != 0);
 }
 
-bool ParameterTree::hasSub(const string& key) const
+bool ParameterTree::hasSub(const std::string& key) const
 {
-  string::size_type dot = key.find(".");
+  std::string::size_type dot = key.find(".");
 
-  if (dot != string::npos)
+  if (dot != std::string::npos)
   {
-    string prefix = key.substr(0,dot);
+    std::string prefix = key.substr(0,dot);
     if (subs.count(prefix) == 0)
       return false;
 
@@ -90,40 +80,51 @@ bool ParameterTree::hasSub(const string& key) const
     return (subs.count(key) != 0);
 }
 
-ParameterTree& ParameterTree::sub(const string& key)
+ParameterTree& ParameterTree::sub(const std::string& key)
 {
-  string::size_type dot = key.find(".");
+  std::string::size_type dot = key.find(".");
 
-  if (dot != string::npos)
+  if (dot != std::string::npos)
   {
     ParameterTree& s = sub(key.substr(0,dot));
     return s.sub(key.substr(dot+1));
   }
   else
+  {
+    if (subs.count(key) == 0)
+      subKeys.push_back(key.substr(0,dot));
     return subs[key];
+  }
 }
 
-const ParameterTree& ParameterTree::sub(const string& key) const
+const ParameterTree& ParameterTree::sub(const std::string& key) const
 {
-  string::size_type dot = key.find(".");
+  std::string::size_type dot = key.find(".");
 
-  if (dot != string::npos)
+  if (dot != std::string::npos)
   {
     const ParameterTree& s = sub(key.substr(0,dot));
     return s.sub(key.substr(dot+1));
   }
   else
+  {
+    if (subs.count(key) == 0)
+      DUNE_THROW(Dune::RangeError, "Key '" << key << "' not found in ParameterTree");
     return subs.find(key)->second;
+  }
 }
 
-string& ParameterTree::operator[] (const string& key)
+std::string& ParameterTree::operator[] (const std::string& key)
 {
-  string::size_type dot = key.find(".");
+  std::string::size_type dot = key.find(".");
 
-  if (dot != string::npos)
+  if (dot != std::string::npos)
   {
     if (not (hasSub(key.substr(0,dot))))
+    {
+      subs[key.substr(0,dot)];
       subKeys.push_back(key.substr(0,dot));
+    }
     ParameterTree& s = sub(key.substr(0,dot));
     return s[key.substr(dot+1)];
   }
@@ -135,11 +136,11 @@ string& ParameterTree::operator[] (const string& key)
   }
 }
 
-const string& ParameterTree::operator[] (const string& key) const
+const std::string& ParameterTree::operator[] (const std::string& key) const
 {
-  string::size_type dot = key.find(".");
+  std::string::size_type dot = key.find(".");
 
-  if (dot != string::npos)
+  if (dot != std::string::npos)
   {
     if (not (hasSub(key.substr(0,dot))))
       DUNE_THROW(Dune::RangeError, "Key '" << key << "' not found in ParameterTree");
@@ -154,7 +155,7 @@ const string& ParameterTree::operator[] (const string& key) const
   }
 }
 
-string ParameterTree::get(const string& key, const string& defaultValue) const
+std::string ParameterTree::get(const std::string& key, const std::string& defaultValue) const
 {
   if (hasKey(key))
     return (*this)[key];
@@ -162,7 +163,7 @@ string ParameterTree::get(const string& key, const string& defaultValue) const
     return defaultValue;
 }
 
-string ParameterTree::get(const string& key, const char* defaultValue) const
+std::string ParameterTree::get(const std::string& key, const char* defaultValue) const
 {
   if (hasKey(key))
     return (*this)[key];
@@ -171,16 +172,16 @@ string ParameterTree::get(const string& key, const char* defaultValue) const
 }
 
 
-int ParameterTree::get(const string& key, int defaultValue) const
+int ParameterTree::get(const std::string& key, int defaultValue) const
 {
-  stringstream stream;
+  std::stringstream stream;
   stream << defaultValue;
-  string ret = get(key, stream.str());
+  std::string ret = get(key, stream.str());
 
   return atoi(ret.c_str());
 }
 
-double ParameterTree::get(const string& key, double defaultValue) const
+double ParameterTree::get(const std::string& key, double defaultValue) const
 {
   if(hasKey(key))
     return atof((*this)[key].c_str());
@@ -188,95 +189,22 @@ double ParameterTree::get(const string& key, double defaultValue) const
     return defaultValue;
 }
 
-bool ParameterTree::get(const string& key, bool defaultValue) const
-{
-  stringstream stream;
-  if (defaultValue)
-    stream << 1;
-  else
-    stream << 0;
-
-  string ret = get(key, stream.str());
-  std::transform(ret.begin(), ret.end(), ret.begin(), ToLower());
-
-  if (ret == "yes" || ret == "true")
-    return true;
-
-  if (ret == "no" || ret == "false")
-    return false;
-
-  return (atoi(ret.c_str()) !=0 );
-}
-
-// This namespace here is needed to make the code compile...
-namespace Dune {
-
-  template<>
-  string ParameterTree::get<string>(const string& key) const
-  {
-    if (hasKey(key))
-      return (*this)[key];
-
-    DUNE_THROW(RangeError, "Key '" << key << "' not found in parameter file!");
-  }
-
-  template<>
-  int ParameterTree::get<int>(const string& key) const
-  {
-    if (hasKey(key))
-      return std::atoi((*this)[key].c_str());
-
-    DUNE_THROW(RangeError, "Key '" << key << "' not found in parameter file!");
-  }
-
-  template<>
-  double ParameterTree::get<double>(const string& key) const
-  {
-    if (hasKey(key))
-      return std::atof((*this)[key].c_str());
-
-    DUNE_THROW(RangeError, "Key '" << key << "' not found in parameter file!");
-  }
-
-  template<>
-  bool ParameterTree::get<bool>(const string& key) const
-  {
-    if (hasKey(key))
-    {
-
-      string ret = (*this)[key];
-      std::transform(ret.begin(), ret.end(), ret.begin(), ToLower());
-
-      if (ret == "yes" || ret == "true")
-        return true;
-
-      if (ret == "no" || ret == "false")
-        return false;
-
-      return (std::atoi(ret.c_str()) !=0 );
-    }
-    DUNE_THROW(RangeError, "Key '" << key << "' not found in parameter file!");
-  }
-
-
-}  // end namespace Dune
-
-string ParameterTree::ltrim(const string& s)
+std::string ParameterTree::ltrim(const std::string& s)
 {
   std::size_t firstNonWS = s.find_first_not_of(" \t\n\r");
 
-  if (firstNonWS!=string::npos)
+  if (firstNonWS!=std::string::npos)
     return s.substr(firstNonWS);
-  return string();
+  return std::string();
 }
 
-string ParameterTree::rtrim(const string& s)
+std::string ParameterTree::rtrim(const std::string& s)
 {
   std::size_t lastNonWS = s.find_last_not_of(" \t\n\r");
 
-  if (lastNonWS!=string::npos)
+  if (lastNonWS!=std::string::npos)
     return s.substr(0, lastNonWS+1);
-  return string();
+  return std::string();
 }
 
 const ParameterTree::KeyVector& ParameterTree::getValueKeys() const
