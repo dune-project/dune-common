@@ -88,7 +88,7 @@ int main()
   try {
     // read config
     std::stringstream s;
-    s << "x1 = 1\n"
+    s << "x1 = 1 # comment\n"
       << "x2 = hallo\n"
       << "x3 = no\n"
       << "\n"
