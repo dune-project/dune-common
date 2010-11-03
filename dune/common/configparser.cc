@@ -58,6 +58,8 @@ void ConfigParser::parseStream(std::istream& in,
       }
       break;
     default :
+      string::size_type comment = line.find("#");
+      line = line.substr(0,comment);
       string::size_type mid = line.find("=");
       if (mid != string::npos)
       {
