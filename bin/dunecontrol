@@ -505,7 +505,7 @@ create_module_list() {
   fi
 
   if test "x$SKIPFIRST" = "xyes" ; then
-    export MODULES=`echo $MODULES | cut '--delimiter= ' --fields=2-`
+    export MODULES=`echo $MODULES " " | cut '--delimiter= ' --fields=2-`
   fi
 }
 
