@@ -5,6 +5,7 @@
 #include <iostream>
 #include <memory>
 
+#include <dune/common/poolallocator.hh>
 #include <dune/common/polyallocator.hh>
 
 // A test of the PolyAllocator as used in the GenericGeometries:
@@ -130,6 +131,16 @@ int main ( int argc, char **argv )
   {
     H< std::allocator< A > > h( k );
     h.test();
+  }
+
+  if( argc > 2 )
+  {
+    const int numLoops = atoi( argv[ 2 ] );
+    for( int i = 0; i < numLoops; ++i )
+    {
+      G< Dune::STLPolyAllocator< Dune::PoolAllocator< A, 4096 > > > g( k );
+      g.test();
+    }
   }
 
   return 0;
