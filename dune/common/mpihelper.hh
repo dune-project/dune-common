@@ -221,8 +221,6 @@ namespace Dune
       assert( !wasInitialized() );
       static int is_initialized = MPI_Init(&argc, &argv);
       prevent_warning(is_initialized);
-
-      MPI_Init(&argc, &argv);
       assert( wasInitialized() );
 
       MPI_Comm_rank(MPI_COMM_WORLD,&rank_);
