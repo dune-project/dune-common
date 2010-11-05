@@ -205,23 +205,19 @@ namespace Dune
     int size_;
     void prevent_warning(int){}
 
-    static bool wasInitialized ()
-    {
-      int wasInitialized = -1;
-      MPI_Initialized( &wasInitialized );
-      return bool( wasInitialized );
-    }
-
     //! \brief calls MPI_Init with argc and argv as parameters
     MPIHelper(int& argc, char**& argv)
     {
-      rank_ = -1;
-      size_ = -1;
+#if MPI_2
+      int wasInitialized = -1;
+      MPI_Initialized( &wasInitialized );
+      if(!wasInitialized) {
+        rank_ = -1;
+        size_ = -1;
 
-      assert( !wasInitialized() );
+#endif
       static int is_initialized = MPI_Init(&argc, &argv);
       prevent_warning(is_initialized);
-      assert( wasInitialized() );
 
       MPI_Comm_rank(MPI_COMM_WORLD,&rank_);
       MPI_Comm_size(MPI_COMM_WORLD,&size_);
@@ -230,12 +226,24 @@ namespace Dune
       assert( size_ >= 1 );
 
       dverb << "Called  MPI_Init on p=" << rank_ << "!" << std::endl;
+#if MPI_2
+    }
+#endif
     }
     //! \brief calls MPI_Finalize
     ~MPIHelper()
     {
+#ifdef MPI_2
+      int wasFinalized = -1;
+      MPI_Finalized( &wasFinalized );
+      if(!wasFinalized) {
+#endif
       MPI_Finalize();
       dverb << "Called MPI_Finalize on p=" << rank_ << "!" <<std::endl;
+#ifdef MPI_2
+    }
+
+#endif
     }
     MPIHelper(const MPIHelper&);
     MPIHelper& operator=(const MPIHelper);

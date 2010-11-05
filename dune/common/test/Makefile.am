@@ -21,6 +21,7 @@ TESTPROGS = \
     mpicollcomm \
     mpiguardtest \
     mpihelpertest \
+    mpihelpertest2 \
     nullptr-test \
     pathtest \
     paramtreetest \
@@ -134,6 +135,11 @@ mpihelpertest_SOURCES = mpihelpertest.cc
 mpihelpertest_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)
 mpihelpertest_LDADD = $(DUNEMPILIBS) $(LDADD)
 mpihelpertest_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
+
+mpihelpertest2_SOURCES = mpihelpertest.cc
+mpihelpertest2_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS) -DMPIHELPER_PREINITIALZE
+mpihelpertest2_LDADD = $(DUNEMPILIBS) $(LDADD)
+mpihelpertest2_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
 
 mpicollcomm_SOURCES = mpicollectivecommunication.cc
 mpicollcomm_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)
