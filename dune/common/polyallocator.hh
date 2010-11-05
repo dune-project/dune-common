@@ -4,6 +4,7 @@
 #define DUNE_POLYALLOCATOR_HH
 
 #include <cstdlib>
+#include <memory>
 
 namespace Dune
 {
