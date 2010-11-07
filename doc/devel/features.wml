@@ -72,9 +72,11 @@ and refers you to more detailed documentation.
     <br>
     <li> <b> Shape Functions </b>
       <ul>
-        <li> Lagrangian shape functions of up to second order </li>
+        <li> Lagrangian shape functions of arbitrary order </li>
         <li> Monomial shape functions of arbitrary order for Discontinous Galerkin methods </li>
-        <li> Orthonormal shape functions of up to eighth order </li>
+        <li> Orthonormal shape functions of arbitrary order </li>
+        <li> Raviart-Thomas shape functions of lowest order for cube and of arbitrary
+             order for simplex elements </li>
       </ul>
     </li>
     <br>
