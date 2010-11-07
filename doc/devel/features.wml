@@ -66,9 +66,9 @@ and refers you to more detailed documentation.
     <br>
     <li> <b> Shape Functions </b>
       <ul>
-        <li> Lagrangrian shape functions of up to second order </li>
+        <li> Lagrangian shape functions of up to second order </li>
         <li> Monomial shape functions of arbitrary order for Discontinous Galerkin methods </li>
-        <li> Orthonormal shape functions of up to eigth order </li>
+        <li> Orthonormal shape functions of up to eighth order </li>
       </ul>
     </li>
     <br>
