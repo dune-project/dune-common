@@ -222,7 +222,7 @@ namespace Dune {
     typedef DenseMatVecTraits<V> Traits;
     // typedef typename Traits::value_type K;
 
-    // Curiously recuring template pattern
+    // Curiously recurring template pattern
     V & asImp() { return static_cast<V&>(*this); }
     const V & asImp() const { return static_cast<const V&>(*this); }
 
