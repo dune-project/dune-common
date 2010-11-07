@@ -39,6 +39,10 @@ and refers you to more detailed documentation.
             A hexahedral, tetrahedral, and triangular grid with nonconforming refinement 
               including parallelization with dynamic load-balancing. 
           </li>
+          <li>
+            <a href="$(ROOT)/doc/doxygen/dune-grid-html/group___geo_grid.html">GeometryGrid</a>:
+            A metagrid exchanging the host grid's geometry
+          </li>
         </ul>
       </li>
     <br>
