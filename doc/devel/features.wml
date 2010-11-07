@@ -17,26 +17,28 @@ and refers you to more detailed documentation.
           Each is geared towards a different purpose.
         </p>
         <ul>
-          <li> <a href="$(ROOT)/doc/doxygen/dune-grid-html/classDune_1_1SGrid.html">SGrid:</a> 
+          <li> <a href="$(ROOT)/doc/doxygen/dune-grid-html/group___s_grid.html">SGrid:</a> 
             A structured grid in n space dimensions
           </li>
-          <li> <a href="$(ROOT)/doc/doxygen/dune-grid-html/classDune_1_1YaspGrid.html">YaspGrid:</a>
+          <li> <a href="$(ROOT)/doc/doxygen/dune-grid-html/group___yasp_grid.html">YaspGrid:</a>
             A structured parallel grid in n space dimensions
           </li>
-          <li> <a href="$(ROOT)/doc/doxygen/dune-grid-html/classDune_1_1UGGrid.html">UGGrid:</a>
+          <li> <a href="$(ROOT)/doc/doxygen/dune-grid-html/group___u_g_grid.html">UGGrid:</a>
             The grid manager of the UG toolbox
           </li>
-          <li> <a href="$(ROOT)/doc/doxygen/dune-grid-html/classDune_1_1AlbertaGrid.html">AlbertaGrid:</a>
+          <li> <a href="$(ROOT)/doc/doxygen/dune-grid-html/group___alberta_grid.html">AlbertaGrid:</a>
             The grid manager of the Alberta toolbox
           </li>
-          <li> <a href="$(ROOT)/doc/doxygen/dune-grid-html/classDune_1_1OneDGrid.html">OneDGrid:</a>
+          <li> <a href="$(ROOT)/doc/doxygen/dune-grid-html/group___one_d_grid.html">OneDGrid:</a>
             A sequential locally adaptive grid in one space dimension
           </li>
           <li> 
-            <a href="$(ROOT)/doc/doxygen/dune-grid-html/classDune_1_1ALUSimplexGrid.html">ALUSimplexGrid</a>,
-            <a href="$(ROOT)/doc/doxygen/dune-grid-html/classDune_1_1ALUCubeGrid.html">ALUCubeGrid</a>:
+            <a href="$(ROOT)/doc/doxygen/dune-grid-html/group___a_l_u_conform_grid.html">ALUConformGrid</a>:
+            <a href="$(ROOT)/doc/doxygen/dune-grid-html/group___a_l_u_cube_grid.html">ALUCubeGrid</a>:
+            <a href="$(ROOT)/doc/doxygen/dune-grid-html/group___a_l_u_simplex_grid.html">ALUSimplexGrid</a>,
             A hexahedral, tetrahedral, and triangular grid with nonconforming refinement 
-              including parallelization with dynamic load-balancing. </li>
+              including parallelization with dynamic load-balancing. 
+          </li>
         </ul>
       </li>
     <br>
