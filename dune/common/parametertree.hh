@@ -17,6 +17,7 @@
 #include <dune/common/array.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
+#include <dune/common/classname.hh>
 
 namespace Dune {
 
@@ -204,7 +205,7 @@ namespace Dune {
       catch(const RangeError&) {
         DUNE_THROW(RangeError, "Cannot parse value \"" <<
                    (*this)[key] << "\" for key \"" << key << "\" as a " <<
-                   typeid(T).name());
+                   className<T>());
       }
     }
 
@@ -248,7 +249,7 @@ namespace Dune {
         s >> *it;
         if(!s)
           DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" as a "
-                     "range of items of type " << typeid(Value).name() << " "
+                     "range of items of type " << className<Value>() << " "
                      "(" << n << " items were extracted successfully)");
       }
       Value dummy;
@@ -257,7 +258,7 @@ namespace Dune {
       if(not s.fail() or not s.eof())
         DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" as a "
                    "range of " << n << " items of type "
-                                                       << typeid(Value).name() << " (more items than the range "
+                                                       << className<Value>() << " (more items than the range "
                    "can hold)");
     }
   };
@@ -270,13 +271,13 @@ namespace Dune {
       s >> val;
       if(!s)
         DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" as a " <<
-                   typeid(T).name());
+                   className<T>());
       T dummy;
       s >> dummy;
       // now extraction should have failed, and eof should be set
       if(not s.fail() or not s.eof())
         DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" as a " <<
-                   typeid(T).name());
+                   className<T>());
       return val;
     }
   };
@@ -354,8 +355,8 @@ namespace Dune {
             break;
           // otherwise, it failed because of something else
           DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" as a "
-                     "std::vector<" << typeid(T).name() << ", " <<
-                     typeid(A).name() << ">");
+                     "std::vector<" << className<T>() << ", " <<
+                     className<A>() << ">");
         }
         vec.push_back(val);
       }
