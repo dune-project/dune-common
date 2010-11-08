@@ -6,26 +6,12 @@
 #define DUNE_ISTL_WITH_CHECKING
 #include <dune/common/fmatrix.hh>
 #include <dune/common/fassign.hh>
+#include <dune/common/classname.hh>
 #include <iostream>
 #include <algorithm>
 #include <vector>
 
-#ifdef __GNUC__
-#include <cxxabi.h>
-#endif
-
 using namespace Dune;
-
-template <class T>
-std::string className(T &t)
-{
-#ifdef __GNUC__
-  int status;
-  return abi::__cxa_demangle(typeid(t).name(),0,0,&status);
-#else
-  return typeid(t).name();
-#endif
-};
 
 template<typename T, std::size_t n>
 int test_invert_solve(T A_data[n*n], T inv_data[n*n],

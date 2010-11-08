@@ -7,27 +7,14 @@
 #include <dune/common/exceptions.hh>
 #include <dune/common/typetraits.hh>
 #include <dune/common/static_assert.hh>
+#include <dune/common/classname.hh>
 #include <iostream>
 #include <complex>
 #include <typeinfo>
 
-#ifdef __GNUC__
-#include <cxxabi.h>
-#endif
 
 using Dune::FieldVector;
 using std::complex;
-
-template <class T>
-std::string className(T &t)
-{
-#ifdef __GNUC__
-  int status;
-  return abi::__cxa_demangle(typeid(t).name(),0,0,&status);
-#else
-  return typeid(t).name();
-#endif
-};
 
 template<class ft, class rt, int d>
 struct FieldVectorMainTest
