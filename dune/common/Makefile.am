@@ -22,6 +22,7 @@ commoninclude_HEADERS = 			\
 	bigunsignedint.hh			\
 	binaryfunctions.hh			\
 	bitsetvector.hh				\
+	classname.hh				\
 	collectivecommunication.hh		\
 	configparser.hh				\
 	debugstream.hh				\
