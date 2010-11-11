@@ -8,6 +8,9 @@
  *        of a given object or type as a string
  */
 
+#include <string>
+#include <typeinfo>
+
 #ifdef __GNUC__
 #include <cxxabi.h>
 #endif
