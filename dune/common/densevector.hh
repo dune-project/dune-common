@@ -252,10 +252,10 @@ namespace Dune {
 
     //===== assignment from scalar
     //! Assignment operator for scalar
-    derived_type& operator= (const value_type& k)
+    inline derived_type& operator= (const value_type& k)
     {
       for (size_type i=0; i<size(); i++)
-        (*this)[i] = k;
+        asImp()[i] = k;
       return asImp();
     }
 
