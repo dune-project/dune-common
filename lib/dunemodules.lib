@@ -13,14 +13,6 @@ CONTROL="dune.module"
 ### check for environment variables
 ###
 
-if test -z $DUNE_CONTROL_PATH; then
-  DUNE_CONTROL_PATH=.
-  for i in /usr/local/lib/dunecontrol/ /usr/lib/dunecontrol/; do
-    if test -d $i; then 
-      DUNE_CONTROL_PATH=$DUNE_CONTROL_PATH:$i
-    fi
-  done
-fi
 if test -z $GREP; then
   GREP=grep
 fi
@@ -145,9 +137,29 @@ parse_control() {
 }
 
 #
+# try to setup the control path
+#
+setup_control_path() {
+  if test -z $DUNE_CONTROL_PATH; then
+    DUNE_CONTROL_PATH=.
+    for i in /usr/local/lib/dunecontrol/ /usr/lib/dunecontrol/; do
+      if test -d $i; then 
+        DUNE_CONTROL_PATH=$DUNE_CONTROL_PATH:$i
+      fi
+    done
+  fi
+  # try to read DUNE_CONTROL_PATH from OPTS file
+  if test -n "$DUNE_OPTS_FILE"; then
+    DUNE_CONTROL_PATH="$(. $DUNE_OPTS_FILE; eval echo $DUNE_CONTROL_PATH)"
+  fi
+  export DUNE_CONTROL_PATH
+}
+
+#
 # search for modules in each directory in DUNE_CONTROL_PATH
 #
 find_modules_in_path() {
+  setup_control_path
   if test -z "$FOUND_MODULES"; then
     # foreach dir in $@
     while read dir; do
@@ -161,7 +173,7 @@ EOFM
         find_modules $dir
 	  fi
     done <<EOF
-    $(echo $DUNE_CONTROL_PATH | tr ':' '\n') 
+    $(echo $DUNE_CONTROL_PATH | sed -e 's/:\+/:/g' | tr ':' '\n') 
 EOF
     export FOUND_MODULES="$MODULES$INSTMODULES"
   fi
