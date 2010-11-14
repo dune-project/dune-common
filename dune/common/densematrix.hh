@@ -324,7 +324,10 @@ namespace Dune
     void mtv ( const X &x, Y &y ) const
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
-      assert( &x != &y );
+      //assert( &x != &y );
+      //This assert did not work for me. Compile error:
+      //  comparison between distinct pointer types ‘const
+      //  Dune::FieldVector<double, 3>*’ and ‘Dune::FieldVector<double, 2>*’ lacks a cast
       if( x.N() != N() )
         DUNE_THROW( FMatrixError, "Index out of range." );
       if( y.N() != M() )
@@ -612,8 +615,8 @@ namespace Dune
     bool exists (size_type i, size_type j) const
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
-      if (i<0 || i>=n) DUNE_THROW(FMatrixError,"row index out of range");
-      if (j<0 || j>=m) DUNE_THROW(FMatrixError,"column index out of range");
+      if (i<0 || i>=rows()) DUNE_THROW(FMatrixError,"row index out of range");
+      if (j<0 || j>=cols()) DUNE_THROW(FMatrixError,"column index out of range");
 #endif
       return true;
     }
