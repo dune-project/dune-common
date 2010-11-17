@@ -110,7 +110,7 @@ namespace Dune
     //! greater than
     bool operator> (const bigunsignedint<k>& x) const;
 
-    //! greater or equalt
+    //! greater or equal
     bool operator>= (const bigunsignedint<k>& x) const;
 
     //! equal
