@@ -14,6 +14,7 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/precision.hh>
 #include <dune/common/static_assert.hh>
+#include <dune/common/classname.hh>
 
 namespace Dune
 {
@@ -66,7 +67,9 @@ namespace Dune
   template<typename M, typename T>
   void istl_assign_to_fmatrix(DenseMatrix<M>& f, const T& t)
   {
-    DUNE_THROW(NotImplemented, "You need to specialise this function for type T!");
+    DUNE_THROW(NotImplemented, "You need to specialise the method istl_assign_to_fmatrix(DenseMatrix<M>& f, const T& t) "
+               << "(with M being " << className<M>() << ") "
+               << "for T == " << className<T>() << "!");
   }
 
   namespace
