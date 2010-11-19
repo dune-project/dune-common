@@ -168,6 +168,7 @@ namespace Dune {
    */
   struct ExceptionHook
   {
+    virtual ~ExceptionHook() {}
     virtual void operator () () = 0;
   };
 
