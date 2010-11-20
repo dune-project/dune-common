@@ -354,6 +354,9 @@ run_default_configure () {
   PARAMS="$CMD_FLAGS"
   if test -x configure; then
     ACLOCAL_FLAGS="-I ."
+    if test -d "m4"; then
+      ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I m4"
+    fi
     MY_MODULES=
     # get dependencies & suggestions
     sort_modules $module
