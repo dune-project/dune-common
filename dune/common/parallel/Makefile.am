@@ -1,6 +1,6 @@
 # $Id$
 
-SUBDIRS =
+SUBDIRS = test
 
 parallelincludedir = $(includedir)/dune/common/parallel
 parallelinclude_HEADERS = communicator.hh     \
