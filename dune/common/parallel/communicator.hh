@@ -16,8 +16,8 @@
 
 namespace Dune
 {
-  /** @defgroup ISTL_Comm ISTL Communication
-   * @ingroup ISTL
+  /** @defgroup Common_Parallel Communication for distributed computing
+   * @ingroup Common
    * @brief Provides classes for syncing distributed indexed
    * data structures.
    *
@@ -79,7 +79,7 @@ namespace Dune
    * data dependant communicators can be setup using BufferedCommunicator or
    * DatatypeCommunicator.
    */
-  /** @addtogroup ISTL_Comm
+  /** @addtogroup Common_Parallel
    *
    * @{
    */

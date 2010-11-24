@@ -11,7 +11,7 @@
 
 namespace Dune
 {
-  /** @addtogroup ISTL_Comm
+  /** @addtogroup Common_Parallel
    *
    * @{
    */
@@ -193,7 +193,7 @@ namespace Dune
     std::size_t* indices_;
   };
 
-  /** @addtogroup ISTL_Comm
+  /** @addtogroup Common_Parallel
    *
    * @{
    */
