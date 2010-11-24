@@ -231,7 +231,7 @@ namespace Dune {
 
     /** \brief Return true if entity is a cube of any dimension */
     bool isCube() const {
-      return ! none_ && (topologyId_ | 1) == (unsigned int)((1<<dim_)-1);
+      return ! none_ && ((topologyId_ ^ ((1 << dim_)-1)) >> 1 == 0);
     }
 
     /** \brief Return true if entity is a singular of any dimension */
