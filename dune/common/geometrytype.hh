@@ -3,6 +3,8 @@
 #ifndef DUNE_GEOMETRY_TYPE_HH
 #define DUNE_GEOMETRY_TYPE_HH
 
+#include <cassert>
+
 /** \file
     \brief A unique label for each type of element that can occur in a grid
  */
