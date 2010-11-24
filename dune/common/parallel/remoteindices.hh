@@ -5,7 +5,7 @@
 #define DUNE_REMOTEINDICES_HH
 
 #include "indexset.hh"
-#include "istlexception.hh"
+#include <dune/common/exceptions.hh>
 #include "plocalindex.hh"
 #include <dune/common/poolallocator.hh>
 #include <dune/common/sllist.hh>
@@ -544,7 +544,7 @@ namespace Dune {
     friend class RemoteIndices;
 
   public:
-    class InvalidPosition : public ISTLError
+    class InvalidPosition : public RangeError
     {};
 
     enum {
@@ -1602,13 +1602,13 @@ namespace Dune {
           ++index;
 #ifdef DUNE_ISTL_WITH_CHECKING
           if(index == indexSet_.end())
-            DUNE_THROW(ISTLError, "No such global index in set!");
+            DUNE_THROW(InvalidPosition, "No such global index in set!");
 #endif
         }
 
 #ifdef DUNE_ISTL_WITH_CHECKING
         if(index->global() != *giter)
-          DUNE_THROW(ISTLError, "No such global index in set!");
+          DUNE_THROW(InvalidPosition, "No such global index in set!");
 #endif
         iter->localIndex_ = &(*index);
       }
