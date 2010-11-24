@@ -26,6 +26,7 @@ AC_CONFIG_FILES([Makefile
      dune/common/Makefile
      dune/common/test/Makefile
      dune/common/exprtmpl/Makefile
+     dune/common/parallel/Makefile
      doc/Makefile
      doc/devel/Makefile
      doc/layout/Makefile
