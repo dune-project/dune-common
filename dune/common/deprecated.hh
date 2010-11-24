@@ -25,12 +25,43 @@
  * Here are some examples how to mark different stuff deprecated:
  *  - Classes
  *    \code
-   class DUNE_DEPRECATED Class {};
-   class Class {} DUNE_DEPRECATED;
+   class DUNE_DEPRECATED Class {}; // 1)
+   class Class {} DUNE_DEPRECATED; // 2)
  *    \endcode
- *    This does not seem to work for template classes.  If the class template
- *    has some essential member, maybe you can get away by marking that as
- *    deprecated instead.
+ *    Both forms do not work properly with g++-4.1: no deprecation warning
+ *    will be given, although the code still compiles.  1) should be preferred
+ *    over 2) since 2) does not work with clang++-1.1 (again, no warning given
+ *    but code still compiles)
+ *  - Template classes
+ *    \code
+   template<class T>
+   class DUNE_DEPRECATED Class {}; // 1)
+   template<class T>
+   class Class {} DUNE_DEPRECATED; // 2)
+ *    \endcode
+ *    This works works with g++-4.3, g++-4.4 and g++-4.5 only, g++-4.1 and
+ *    clang++ compile the code without warning in both cases.  Furthermore,
+ *    the warning is only triggered when copying an object of that template
+ *    class, neither making a typedef nor simply creating such an object emit
+ *    the warning.  It is thus recommended that some essential class member be
+ *    marked deprecated as well, if possible.
+ *  - Member constants
+ *    \code
+   template<typename T> struct Class {
+   static const int c0 DUNE_DEPRECATED = 0;
+   static const int DUNE_DEPRECATED c1 = 1;
+   };
+ *    \endcode
+ *    Works with g++-4.1, g++-4.3, g++-4.4, g++-4.5.  No warning but clean
+ *    compile with clang++-1.1.
+ *  - Member enumerators
+ *    \code
+   template<typename T> struct Class {
+   enum enumeration { enumerator = 0 };
+   };
+ *    \endcode
+ *    No form of deprecation is known that does not trigger an error on most
+ *    compilers.
  *  - Member functions
  *    \code
    template<typename T> struct Class {
