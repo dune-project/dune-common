@@ -2,8 +2,8 @@
 // vi: set et ts=4 sw=2 sts=2:
 // $Id$
 
-#ifndef DUNE_ISTL_LOCALINDEX_HH
-#define DUNE_ISTL_LOCALINDEX_HH
+#ifndef DUNE_COMMON_LOCALINDEX_HH
+#define DUNE_COMMON_LOCALINDEX_HH
 
 #include <cstddef>
 
