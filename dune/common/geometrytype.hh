@@ -288,13 +288,14 @@ namespace Dune {
 
     /** \brief less-than operation for use with maps */
     bool operator < (const GeometryType& other) const {
-      if (none)
-        return false;
-      if (other.none)
-        return true;
-      return ( ( dim_ < other.dim_ )
-               || ( !( other.dim_ < dim_ )
-                    && ( topologyId_ < other.topologyId_ ) )
+      return ( ( none_ < other.none_ )
+               || ( !( other.none_ < none_ )
+                    && ( ( dim_ < other.dim_ )
+                         || ( !( other.dim_ < dim_ )
+                              && ( topologyId_ < other.topologyId_ )
+                              )
+                         )
+                    )
                );
     }
   };
