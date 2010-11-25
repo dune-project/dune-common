@@ -13,10 +13,12 @@
 #include <algorithm>
 #include <functional>
 
+#include "deprecated.hh"
 #include "exceptions.hh"
 #include "collectivecommunication.hh"
 #include "binaryfunctions.hh"
 #include "shared_ptr.hh"
+#include "mpitraits.hh"
 
 #if HAVE_MPI
 // MPI header
@@ -24,6 +26,7 @@
 
 namespace Dune
 {
+
   //=======================================================
   // use singleton pattern and template specialization to
   // generate MPI data types
@@ -35,7 +38,7 @@ namespace Dune
   class Generic_MPI_Datatype
   {
   public:
-    static MPI_Datatype get ()
+    static MPI_Datatype get()  DUNE_DEPRECATED
     {
       if (!type)
       {
@@ -59,7 +62,7 @@ namespace Dune
   template<> \
   class Generic_MPI_Datatype<p>{ \
   public: \
-    static inline MPI_Datatype get(){ \
+    static inline MPI_Datatype get() DUNE_DEPRECATED { \
       return m; \
     } \
   }
@@ -78,7 +81,6 @@ namespace Dune
   ComposeMPITraits(long double,MPI_LONG_DOUBLE);
 
 #undef ComposeMPITraits
-
 
   //=======================================================
   // use singleton pattern and template specialization to
@@ -295,15 +297,15 @@ namespace Dune
     template<typename T>
     int broadcast (T* inout, int len, int root) const
     {
-      return MPI_Bcast(inout,len,Generic_MPI_Datatype<T>::get(),root,communicator);
+      return MPI_Bcast(inout,len,MPITraits<T>::getType(),root,communicator);
     }
 
     //! @copydoc CollectiveCommunication::gather()
     template<typename T>
     int gather (T* in, T* out, int len, int root) const     // note out must have space for P*len elements
     {
-      return MPI_Gather(in,len,Generic_MPI_Datatype<T>::get(),
-                        out,len,Generic_MPI_Datatype<T>::get(),
+      return MPI_Gather(in,len,MPITraits<T>::getType(),
+                        out,len,MPITraits<T>::getType(),
                         root,communicator);
     }
 
@@ -325,7 +327,7 @@ namespace Dune
     template<typename BinaryFunction, typename Type>
     int allreduce(Type* in, Type* out, int len) const
     {
-      return MPI_Allreduce(in, out, len, Generic_MPI_Datatype<Type>::get(),
+      return MPI_Allreduce(in, out, len, MPITraits<Type>::getType(),
                            Generic_MPI_Op<Type, BinaryFunction>::get(),communicator);
     }
 

@@ -19,6 +19,8 @@ namespace Dune
    * @brief Traits classes for mapping types onto MPI_Datatype.
    * @author Markus Blatt
    */
+
+#if HAVE_MPI
   /**
    * @brief A traits class describing the mapping of types onto MPI_Datatypes.
    *
@@ -30,7 +32,25 @@ namespace Dune
    */
   template<typename T>
   struct MPITraits
-  {};
+  {
+  private:
+    MPITraits(){}
+    MPITraits(const MPITraits&){}
+    static MPI_Datatype datatype;
+    static MPI_Datatype vectortype;
+  public:
+    static inline MPI_Datatype getType()
+    {
+      if(datatype==MPI_DATATYPE_NULL) {
+        MPI_Type_contiguous(sizeof(T),MPI_BYTE,&datatype);
+        MPI_Type_commit(&datatype);
+      }
+      return datatype;
+    }
+
+  };
+  template<class T>
+  MPI_Datatype MPITraits<T>::datatype = MPI_DATATYPE_NULL;
 
 #ifndef DOXYGEN
 #if HAVE_MPI
@@ -169,7 +189,7 @@ namespace Dune
   MPI_Datatype MPITraits<std::pair<T1,T2> >::type=MPI_DATATYPE_NULL;
 #endif
 #endif
-
+#endif
   /** @} */
 }
 
