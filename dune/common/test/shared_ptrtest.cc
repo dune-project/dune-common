@@ -30,6 +30,10 @@ private:
   bool& deleted_;
 };
 
+class A {};
+class B : public A {};
+class C : A {};
+
 int main(){
   using namespace Dune;
   int ret=0;
@@ -153,6 +157,22 @@ int main(){
       std::cout << "Reference count is wrong! "<<__LINE__<<":"<<
       __FILE__<<std::endl;
       ret=1;
+    }
+
+    // test shared_ptr for stack allocation
+    {
+      int i = 10;
+      shared_ptr<int> pi = stackobject_to_shared_ptr(i);
+    }
+
+    // test shared_ptr for stack allocation with down cast
+    {
+      B b;
+      shared_ptr<A> pa = stackobject_to_shared_ptr<A>(b);
+#ifdef SHARED_PTR_COMPILE_FAIL
+      C c;
+      pa = stackobject_to_shared_ptr<A>(c);       // A is an inaccessible base of C
+#endif
     }
   }
   return (ret);
