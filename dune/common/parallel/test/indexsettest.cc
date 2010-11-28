@@ -1,10 +1,16 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 
+#if HAVE_CONFIG_H
 #include "config.h"
+#endif
+
+#include <cstdlib>
 #include <iostream>
-#include <cassert>
+#include <ostream>
+
 #include <dune/common/parallel/indexset.hh>
+#include <dune/common/parallel/localindex.hh>
 
 int testDeleteIndices()
 {
@@ -73,5 +79,5 @@ int testDeleteIndices()
 
 int main(int argc, char **argv)
 {
-  exit(testDeleteIndices());
+  std::exit(testDeleteIndices());
 }
