@@ -16,7 +16,10 @@
 #include <iterator>
 #include <sstream>
 #include <complex>
+
+#include <dune/common/deprecated.hh>
 #include "exceptions.hh"
+#include <dune/common/typetraits.hh>
 
 namespace Dune {
 
@@ -24,11 +27,61 @@ namespace Dune {
 
       This comes in handy if one tries to emulate member function specialization.
       The idea how to do it is presented in "Modern C++ Design" by Alexandrescu.
+
+      \deprecated This class is deprecated as of Dune 2.0+1 and will be removed
+                  in Dune 2.0+2.  Please use integral_constant from
+                  <dune/common/typetraits.hh> instead.
+
+      Migration path: The most common use of Int2Type is a replacement of the
+      disallowed partial specialization of functions: to select a particular
+      function from an overloaded set, give it a dummy argument of type
+      Int2Type.
+      \code
+     template<int N> void foo(const Int2Type<N>&, ...);
+     void foo(const Int2Type<0>&, ...); // "specialization" for N=0
+      \endcode
+      Since Int2Type<...> is now derived from integral_constant<int,...>, the
+      above can safely be replaced by
+      \code
+     template<int N> void foo(const integral_constant<int,N>&, ...);
+     void foo(const integral_constant<int,0>&, ...); // "specialization" for N=0
+      \endcode
+      Compatibility overloads with Int2Type instead of
+      integral_constant<int,...> are needed.  However, the call to such
+      functions cannot be migrated that easily:
+      \code
+     // works for declaration foo(const Int2Type<dim>&, ...)
+     // as well as foo(const integral_constant<int,dim>&, ...)
+     foo(Int2Type<dim>(), args);
+     // works for declaration foo(const integral_constant<int,dim>&, ...) only
+     foo(integral_constant<int,dim>(), args);
+      \endcode
+      So, before a call is migrated, the declaration of all functions that are
+      possibly called have to be migrated.
    */
   template <int N>
-  struct Int2Type {
-    enum { value = N };
+  struct DUNE_DEPRECATED Int2Type :
+    public integral_constant<int,N>
+  {
+    /** \brief Export template parameter
+     *
+     * \deprecated This member is deprecated to make warnings more likely since
+     *             deprecation of the class itself ins unreliable.
+     */
+    static const int DUNE_DEPRECATED value = N;
+
+    /** \brief Default constructor
+     *
+     * \deprecated This member is deprecated to make warnings more likely since
+     *             deprecation of the class itself is unreliable.
+     */
+    DUNE_DEPRECATED
+    Int2Type() { }
   };
+
+  // need definition here in case sombody passes "Int2Type<N>::value" as a
+  // function argument or similar (otherwise the linker will barf)
+  template <int N> const int Int2Type<N>::value;
 
   /** @addtogroup Common
 
