@@ -40,8 +40,6 @@ namespace Dune
   template<int k>
   class bigunsignedint {
   public:
-    typedef bigunsignedint real_type;
-    typedef bigunsignedint field_type;
 
     // unsigned short is 16 bits wide, n is the number of digits needed
     enum { bits=std::numeric_limits<unsigned short>::digits, n=k/bits+(k%bits!=0),
