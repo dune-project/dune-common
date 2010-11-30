@@ -87,7 +87,16 @@ namespace Dune {
       : topologyId_(topologyId), dim_(dim), none_(false)
     {}
 
-    /** \brief Constructor */
+    /** \brief Constructor from static TopologyType class
+     *
+     * Constructs the GeometryType object from a static topology representation.
+     *
+     * \tparam TopologyType A class providing public static unsigned int members
+     *                      TopologyType::dimension and TopologyType::id.
+     *                      You can e.g. use the Point, Prism and Pyramid structs from
+     *                      topologytypes.hh in dune-grid.
+     * \param t             Any object of type TopologyType. The object t itself is ignored.
+     */
     template<class TopologyType>
     GeometryType(TopologyType t)
       : topologyId_(TopologyType::id), dim_(TopologyType::dimension), none_(false)
