@@ -245,7 +245,7 @@ namespace Dune {
     }
 
     /** \brief Return the basic type of the type */
-    BasicType basicType() const {
+    BasicType basicType() const DUNE_DEPRECATED {
       if (isSimplex())
         return GeometryType::simplex;
       if (isCube())
