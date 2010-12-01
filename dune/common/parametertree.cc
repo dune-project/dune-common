@@ -207,6 +207,22 @@ std::string ParameterTree::rtrim(const std::string& s)
   return std::string();
 }
 
+std::vector<std::string> ParameterTree::split(const std::string & s) {
+  std::vector<std::string> substrings;
+  std::size_t front = 0, back = 0, size = 0;
+
+  while (front != std::string::npos)
+  {
+    // find beginning of substring
+    front = s.find_first_not_of(" \t\n\r", back);
+    back  = s.find_first_of(" \t\n\r", front);
+    size  = back - front;
+    if (size > 0)
+      substrings.push_back(s.substr(front, size));
+  }
+  return substrings;
+}
+
 const ParameterTree::KeyVector& ParameterTree::getValueKeys() const
 {
   return valueKeys;

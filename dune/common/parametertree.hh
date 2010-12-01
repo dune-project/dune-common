@@ -236,6 +236,7 @@ namespace Dune {
     std::map<std::string, ParameterTree> subs;
     static std::string ltrim(const std::string& s);
     static std::string rtrim(const std::string& s);
+    static std::vector<std::string> split(const std::string & s);
 
     // parse into a fixed-size range of iterators
     template<class Iterator>
@@ -344,20 +345,10 @@ namespace Dune {
   struct ParameterTree::Parser<std::vector<T, A> > {
     static std::vector<T, A>
     parse(const std::string& str) {
+      std::vector<std::string> sub = split(str);
       std::vector<T, A> vec;
-      std::istringstream s(str);
-      while(true) {
-        T val;
-        s >> val;
-        if(s.fail()) {
-          if(s.eof())
-            // extraction failed because of EOF, that OK
-            break;
-          // otherwise, it failed because of something else
-          DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" as a "
-                     "std::vector<" << className<T>() << ", " <<
-                     className<A>() << ">");
-        }
+      for (unsigned int i=0; i<sub.size(); ++i) {
+        T val = ParameterTree::Parser<T>::parse(sub[i]);
         vec.push_back(val);
       }
       return vec;
