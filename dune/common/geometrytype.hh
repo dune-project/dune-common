@@ -34,6 +34,13 @@ namespace Dune {
       none                   //!< Generic element in any nonnegative dimension
     };
 
+    /** \brief A few binary constants */
+    enum Binary {
+      b0001 = 1,
+      b0011 = 3,
+      b0101 = 5,
+      b0111 = 7
+    };
   private:
 
     /** \brief Topology Id element */
@@ -152,14 +159,14 @@ namespace Dune {
     void makePyramid() {
       none_  = false;
       dim_ = 3;
-      topologyId_ = 0b0011;
+      topologyId_ = b0011;
     }
 
     /** \brief Make a prism */
     void makePrism() {
       none_  = false;
       dim_ = 3;
-      topologyId_ = 0b0101;       // (1 << (dim_-1)) - 1;
+      topologyId_ = b0101;       // (1 << (dim_-1)) - 1;
     }
 
     /** \brief Make a hexahedron */
@@ -205,32 +212,32 @@ namespace Dune {
 
     /** \brief Return true if entity is a triangle */
     bool isTriangle() const {
-      return ! none_ && dim_==2 && (topologyId_ | 1) == 0b0001;
+      return ! none_ && dim_==2 && (topologyId_ | 1) == b0001;
     }
 
     /** \brief Return true if entity is a quadrilateral */
     bool isQuadrilateral() const {
-      return ! none_ && dim_==2 && (topologyId_ | 1) == 0b0011;
+      return ! none_ && dim_==2 && (topologyId_ | 1) == b0011;
     }
 
     /** \brief Return true if entity is a tetrahedron */
     bool isTetrahedron() const {
-      return ! none_ && dim_==3 && (topologyId_ | 1) == 0b0001;
+      return ! none_ && dim_==3 && (topologyId_ | 1) == b0001;
     }
 
     /** \brief Return true if entity is a pyramid */
     bool isPyramid() const {
-      return ! none_ && dim_==3 && (topologyId_ | 1) == 0b0011;
+      return ! none_ && dim_==3 && (topologyId_ | 1) == b0011;
     }
 
     /** \brief Return true if entity is a prism */
     bool isPrism() const {
-      return ! none_ && dim_==3 && (topologyId_ | 1) == 0b0101;
+      return ! none_ && dim_==3 && (topologyId_ | 1) == b0101;
     }
 
     /** \brief Return true if entity is a hexahedron */
     bool isHexahedron() const {
-      return ! none_ && dim_==3 && (topologyId_ | 1) == 0b0111;
+      return ! none_ && dim_==3 && (topologyId_ | 1) == b0111;
     }
 
     /** \brief Return true if entity is a simplex of any dimension */
