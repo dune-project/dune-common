@@ -44,6 +44,7 @@ TESTPROGS = \
     testfassign_fail5 \
     testfassign_fail6 \
     tuplestest \
+    tupleutilitytest \
     utilitytest
 
 # which tests to run
@@ -103,6 +104,8 @@ arraylisttest_SOURCES = arraylisttest.cc
 shared_ptrtest_SOURCES = shared_ptrtest.cc
 
 tuplestest_SOURCES = tuplestest.cc
+
+tupleutilitytest_SOURCES = tupleutilitytest.cc
 
 deprtuplestest_SOURCES = deprtuplestest.cc
 
