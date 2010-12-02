@@ -1520,20 +1520,14 @@ namespace Dune {
   }
 
   template<typename T, typename A>
-  inline typename std::map<int, std::pair<SLList<typename RemoteIndices<T,A>::RemoteIndex,
-              typename RemoteIndices<T,A>::Allocator >*,
-          SLList<typename RemoteIndices<T,A>::RemoteIndex,
-              typename RemoteIndices<T,A>::Allocator >*> >::const_iterator
+  inline typename RemoteIndices<T,A>::const_iterator
   RemoteIndices<T,A>::begin() const
   {
     return remoteIndices_.begin();
   }
 
   template<typename T, typename A>
-  inline typename std::map<int, std::pair<SLList<typename RemoteIndices<T,A>::RemoteIndex,
-              typename RemoteIndices<T,A>::Allocator >*,
-          SLList<typename RemoteIndices<T,A>::RemoteIndex,
-              typename RemoteIndices<T,A>::Allocator >*> >::const_iterator
+  inline typename RemoteIndices<T,A>::const_iterator
   RemoteIndices<T,A>::end() const
   {
     return remoteIndices_.end();
