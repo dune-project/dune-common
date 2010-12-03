@@ -15,6 +15,7 @@ bitsetvectortest
 iteratorfacadetest
 sllisttest
 tuplestest
+tupleutilitytest
 enumsettest
 fmatrixtest
 dynmatrixtest
