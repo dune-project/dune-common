@@ -112,29 +112,50 @@ namespace Dune
    *
    * It is possible to pass a subclass to the ForLoop
    * (since no specialization is needed).
+   *
    * Example of usage:
    * \code
-     template <class Foo>
-     struct A
+     template<class Tuple>
+     struct PrintTupleTypes
      {
      template <int i>
      struct Operation
      {
-     template <class T>
-     static void apply(const double &x,const T &t, T &ret)
+     template<class Stream>
+     static void apply(Stream &stream, const std::string &prefix)
      {
-      ret = "hallo" + t;
+      stream << prefix << i << ": "
+             << className<typename tuple_element<i, Tuple>::type>()
+             << std::endl;
      }
      };
-     void useForLoop()
+     template<class Stream>
+     static void print(Stream &stream, const std::string &prefix)
      {
-     std::string world;
-     ForLoop<Operation,1,10>::apply(1.,"hallo",world);
+     // cannot attach on-the-fly in the argument to ForLoop<..>::apply() since
+     // that would yield an rvalue
+     std::string extended_prefix = prefix+"  ";
+
+     stream << prefix << "tuple<" << std::endl;
+     ForLoop<Operation, 0, tuple_size<Tuple>::value-1>::
+      apply(stream, extended_prefix);
+     stream << prefix << ">" << std::endl;
      }
      };
    * \endcode
+   *
+   * \note Don't use any rvalues as the arguments to apply().
+   *
+   * Rvalues will bind to const-references, but not to references that are
+   * non-const.  Since we do want to support modifiable arguments to apply(),
+   * we have to use non-const references as arguments.  Supporting const
+   * references as well would lead to an insane number of overloads which all
+   * have to be written more-or-less by hand.
+   *
+   * Examples of rvalues are: literals (1.0, 0, "huhu"), the results of
+   * functions returning an object (std::make_pair(0, 1.0)) and temporary
+   * object constructions (std::string("hello"));
    */
-
   template< template< int > class Operation, int first, int last >
   class ForLoop
     : public GenericForLoop< ForLoopHelper::Apply, Operation, first, last >
