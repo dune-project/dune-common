@@ -105,7 +105,7 @@ namespace Dune {
      * \param t             Any object of type TopologyType. The object t itself is ignored.
      */
     template<class TopologyType>
-    GeometryType(TopologyType t)
+    explicit GeometryType(TopologyType t)
       : topologyId_(TopologyType::id), dim_(TopologyType::dimension), none_(false)
     {}
 
