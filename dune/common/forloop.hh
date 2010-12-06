@@ -91,6 +91,24 @@ namespace Dune
         A::apply( p1, p2, p3, p4, p5, p6, p7 );
         B::apply( p1, p2, p3, p4, p5, p6, p7 );
       }
+
+      template< class T1, class T2, class T3, class T4, class T5, class T6,
+          class T7, class T8 >
+      static void apply ( T1 &p1, T2 &p2, T3 &p3, T4 &p4, T5 &p5, T6 &p6,
+                          T7 &p7, T8 &p8 )
+      {
+        A::apply( p1, p2, p3, p4, p5, p6, p7, p8 );
+        B::apply( p1, p2, p3, p4, p5, p6, p7, p8 );
+      }
+
+      template< class T1, class T2, class T3, class T4, class T5, class T6,
+          class T7, class T8, class T9 >
+      static void apply ( T1 &p1, T2 &p2, T3 &p3, T4 &p4, T5 &p5, T6 &p6,
+                          T7 &p7, T8 &p8, T9 &p9 )
+      {
+        A::apply( p1, p2, p3, p4, p5, p6, p7, p8, p9 );
+        B::apply( p1, p2, p3, p4, p5, p6, p7, p8, p9 );
+      }
     };
 
   }
