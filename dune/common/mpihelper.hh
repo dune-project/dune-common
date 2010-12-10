@@ -211,13 +211,14 @@ namespace Dune
 #if MPI_2
       int wasInitialized = -1;
       MPI_Initialized( &wasInitialized );
-      if(!wasInitialized) {
+      if(!wasInitialized)
+#endif
+      {
         rank_ = -1;
         size_ = -1;
-
-#endif
-      static int is_initialized = MPI_Init(&argc, &argv);
-      prevent_warning(is_initialized);
+        static int is_initialized = MPI_Init(&argc, &argv);
+        prevent_warning(is_initialized);
+      }
 
       MPI_Comm_rank(MPI_COMM_WORLD,&rank_);
       MPI_Comm_size(MPI_COMM_WORLD,&size_);
@@ -226,9 +227,6 @@ namespace Dune
       assert( size_ >= 1 );
 
       dverb << "Called  MPI_Init on p=" << rank_ << "!" << std::endl;
-#if MPI_2
-    }
-#endif
     }
     //! \brief calls MPI_Finalize
     ~MPIHelper()
