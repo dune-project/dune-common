@@ -1784,7 +1784,7 @@ namespace Dune {
    * \tparam F Binary meta function
    * \tparam Tuple Apply reduce operation to this tuple
    * \tparam Seed Initial value for reduce operation
-   * \tparan N Reduce the first N tuple elements
+   * \tparam N Reduce the first N tuple elements
    */
   template<
       template <class, class> class F,
