@@ -35,7 +35,7 @@ namespace Dune {
 
     typedef std::vector<std::string> KeyVector;
 
-    /** \brief Create new ConfigParser
+    /** \brief Create new empty ParameterTree
      */
     ParameterTree();
 
