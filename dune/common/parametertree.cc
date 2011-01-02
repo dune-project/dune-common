@@ -17,17 +17,7 @@ using namespace Dune;
 ParameterTree::ParameterTree()
 {}
 
-void ParameterTree::report() const
-{
-  report("");
-}
-
-void ParameterTree::report(const std::string prefix) const
-{
-  reportStream(std::cout, prefix);
-}
-
-void ParameterTree::reportStream(std::ostream& stream, const std::string& prefix) const
+void ParameterTree::report(std::ostream& stream, const std::string& prefix) const
 {
   typedef std::map<std::string, std::string>::const_iterator ValueIt;
   ValueIt vit = values.begin();
@@ -42,7 +32,7 @@ void ParameterTree::reportStream(std::ostream& stream, const std::string& prefix
   for(; sit!=send; ++sit)
   {
     stream << "[ " << prefix + sit->first << " ]" << std::endl;
-    (sit->second).report(prefix + sit->first + ".");
+    (sit->second).report(stream, prefix + sit->first + ".");
   }
 }
 
