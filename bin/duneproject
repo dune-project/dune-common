@@ -303,7 +303,7 @@ echo "writing initial files:"
 
 # we need the module with _ instead of - to not confuse automake
 fix_and_assign CMODULE $MODULE
-NAME=`echo $PROJECT | sed -e 's/dune[_-]//' -e 's/-/_/'`
+NAME=`echo $PROJECT | sed -e 's/dune[_-]//' | tr '-' '_'`
 
 ################## CONFIGURE.AC ##################
 echo "- $PROJECT/configure.ac"
