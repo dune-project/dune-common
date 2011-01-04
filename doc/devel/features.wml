@@ -13,7 +13,7 @@ and refers you to more detailed documentation.
     <ul>
       <li> <b> Grid Implementation: </b>
         <p>
-          So far six grid implementations are available through the DUNE grid interface.
+          So far seven grid implementations are available through the DUNE grid interface.
           Each is geared towards a different purpose.
         </p>
         <ul>
