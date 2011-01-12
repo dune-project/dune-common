@@ -5,10 +5,13 @@ ALLM4S = 					\
 	acx_lapack.m4				\
 	acx_mpi.m4				\
 	acx_pthread.m4				\
-	ax_boost_base.m4				\
+	ax_boost_base.m4			\
 	ax_check_gl.m4				\
 	ax_lang_compiler_ms.m4			\
 	boost_fusion.m4				\
+	cxx0x_compiler.m4			\
+	cxx0x_nullptr.m4			\
+	cxx0x_static_assert.m4			\
 	dune.m4					\
 	dune_all.m4				\
 	dune_autobuild.m4			\
@@ -35,7 +38,6 @@ ALLM4S = 					\
 	pardiso.m4				\
 	parmetis.m4				\
 	shared_ptr.m4				\
-	static_assert.m4			\
 	superlu-dist.m4				\
 	superlu.m4				\
 	xdr.m4
