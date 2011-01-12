@@ -1,3 +1,5 @@
+# -*- tab-width: 8 -*-
+# vi: set et ts=8:
 # $Id$
 
 ALLM4S = 					\
