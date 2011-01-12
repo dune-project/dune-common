@@ -31,7 +31,7 @@ AC_DEFUN([VARIADIC_TEMPLATES_CHECK],[
     HAVE_VARIADIC_TEMPLATES=no
     AC_MSG_RESULT(no)])
   if test "x$HAVE_VARIADIC_TEMPLATES" = xyes; then
-    AC_DEFINE(HAVE_VARIADIC_TEMPLATES, 1, [Define to 1 if nullptr is supported])
+    AC_DEFINE(HAVE_VARIADIC_TEMPLATES, 1, [Define to 1 if variadic templates are supported])
   fi
   AC_LANG_POP
 ])
