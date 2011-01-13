@@ -43,7 +43,9 @@ TESTPROGS = \
     testfassign_fail4 \
     testfassign_fail5 \
     testfassign_fail6 \
-    tuplestest \
+    tuplestest_dune \
+    tuplestest_std \
+    tuplestest_tr1 \
     tupleutilitytest \
     utilitytest
 
@@ -103,7 +105,15 @@ arraylisttest_SOURCES = arraylisttest.cc
 
 shared_ptrtest_SOURCES = shared_ptrtest.cc
 
-tuplestest_SOURCES = tuplestest.cc
+tuplestest_dune_SOURCES = tuplestest.cc
+tuplestest_dune_CPPFLAGS = $(AM_CPPFLAGS)       \
+    -DDISABLE_TR1_TUPLE -DDISABLE_STD_TUPLE
+
+tuplestest_std_SOURCES = tuplestest.cc
+
+tuplestest_tr1_SOURCES = tuplestest.cc
+tuplestest_tr1_CPPFLAGS = $(AM_CPPFLAGS)        \
+    -DDISABLE_STD_TUPLE
 
 tupleutilitytest_SOURCES = tupleutilitytest.cc
 

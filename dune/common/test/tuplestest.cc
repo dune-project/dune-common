@@ -7,6 +7,14 @@
 #include "config.h"
 #endif
 
+#if defined(DISABLE_TR1_TUPLE) && defined(HAVE_TR1_TUPLE)
+#undef HAVE_TR1_TUPLE
+#endif
+
+#if defined(DISABLE_STD_TUPLE) && defined(HAVE_TUPLE)
+#undef HAVE_TUPLE
+#endif
+
 #include <dune/common/tuples.hh>
 #include <string>
 #include <iostream>
