@@ -20,12 +20,13 @@
 #undef HAVE_TUPLE
 #endif
 
-#include <dune/common/tuples.hh>
-#include <string>
-#include <iostream>
-#include <vector>
 #include <cassert>
 #include <cstdlib>
+#include <iostream>
+#include <string>
+#include <vector>
+
+#include <dune/common/tuples.hh>
 
 using namespace Dune;
 
