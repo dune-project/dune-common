@@ -59,6 +59,13 @@ int main(){
     std::cout << "=== checking shared_ptr type: " << className(foo)
               << std::endl;
 
+    // make sure default-constructed shared_ptr values can be copied
+    {
+      shared_ptr<int> bar(foo);
+      shared_ptr<int> baz;
+      baz = foo;
+    }
+
     // test cast-to-bool
     if (foo) {
       std::cout << "Default constructor doesn't create a NULL pointer!" << std::endl;
