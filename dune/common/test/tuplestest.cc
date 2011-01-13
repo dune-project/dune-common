@@ -130,6 +130,15 @@ int copyTest()
 
 int referenceTest()
 {
+  // make sure const tuples of references have assignable members, as long as
+  // the member references a non-const type
+  {
+    int n = 0;
+    const tuple<int&> t(n);
+    get<0>(t) = 777;
+    assert(n == 777);
+  }
+
   int k=5;
   int& kr(k);
   kr=20;
