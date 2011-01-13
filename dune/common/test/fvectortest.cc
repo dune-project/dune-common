@@ -76,6 +76,11 @@ struct FieldVectorMainTest
     b = (w != v);
     b = (w == v);
 
+    // assignment to vector of complex
+    FieldVector< std::complex<rt> ,d> cv = v;
+    cv = a;
+    const FieldVector< std::complex<rt> ,d> ccv = x;
+
     // test istream operator
     std::stringstream s;
     for (int i=0; i<d; i++)
