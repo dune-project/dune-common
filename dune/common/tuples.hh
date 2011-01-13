@@ -54,7 +54,7 @@ namespace Dune {
   template<class T>
   struct TupleAccessTraits<T&>
   {
-    typedef typename ConstantVolatileTraits<T>::ConstType& ConstType;
+    typedef T& ConstType;
     typedef T& NonConstType;
     typedef T& ParameterType;
   };
