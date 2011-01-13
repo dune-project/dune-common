@@ -23,9 +23,11 @@
 #include <cassert>
 #include <cstdlib>
 #include <iostream>
+#include <ostream>
 #include <string>
 #include <vector>
 
+#include <dune/common/classname.hh>
 #include <dune/common/tuples.hh>
 
 using namespace Dune;
@@ -273,6 +275,7 @@ int tuple_tr1_test()
 int main(int argc, char** argv)
 {
   tuple<float,int,double,char,std::string> tuple_;
+  std::cout << "=== testing tuple: " << className(tuple_) << std::endl;
 
   test(tuple_);
   test(static_cast<tuple<float,int,double,char,std::string>& >(tuple_));
