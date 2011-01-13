@@ -78,6 +78,15 @@ namespace Dune {
     FieldVector (const FieldVector & x) : _data(x._data)
     {}
 
+    //! Constructor making vector with identical coordinates
+    template<class C>
+    FieldVector (const DenseVector<C> & x)
+    {
+      assert(x.size() == SIZE);
+      for (size_type i = 0; i<SIZE; i++)
+        _data[i] = x[i];
+    }
+
     using Base::operator=;
 
     // make this thing a vector
@@ -150,6 +159,14 @@ namespace Dune {
 
     /** \brief Constructor with a given scalar */
     FieldVector (const K& k) : _data(k) {}
+
+    //! Constructor making vector with identical coordinates
+    template<class C>
+    FieldVector (const DenseVector<C> & x)
+    {
+      assert(x.size() == 1);
+      _data = x[0];
+    }
 
     //! Assignment operator for scalar
     inline FieldVector& operator= (const K& k)
