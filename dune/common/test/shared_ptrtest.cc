@@ -3,6 +3,11 @@
 
 // $Id$
 
+// make sure assert works even when not compiling for debugging
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
