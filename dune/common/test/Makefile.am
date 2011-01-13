@@ -27,7 +27,8 @@ TESTPROGS = \
     paramtreetest \
     polyallocator \
     poolallocatortest \
-    shared_ptrtest \
+    shared_ptrtest_config \
+    shared_ptrtest_dune \
     singletontest \
     smallobject \
     static_assert_test \
@@ -103,7 +104,11 @@ test_stack_SOURCES = test-stack.cc
 
 arraylisttest_SOURCES = arraylisttest.cc
 
-shared_ptrtest_SOURCES = shared_ptrtest.cc
+shared_ptrtest_config_SOURCES = shared_ptrtest.cc
+
+shared_ptrtest_dune_SOURCES = shared_ptrtest.cc
+shared_ptrtest_dune_CPPFLAGS = $(AM_CPPFLAGS)   \
+    -DDISABLE_CONFIGURED_SHARED_PTR
 
 tuplestest_dune_SOURCES = tuplestest.cc
 tuplestest_dune_CPPFLAGS = $(AM_CPPFLAGS)       \

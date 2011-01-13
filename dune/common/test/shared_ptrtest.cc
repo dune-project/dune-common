@@ -7,12 +7,18 @@
 #include "config.h"
 #endif
 
+#if defined(DISABLE_CONFIGURED_SHARED_PTR) && defined(SHARED_PTR_NAMESPACE)
+#undef SHARED_PTR_NAMESPACE
+#endif
+
+#include <dune/common/classname.hh>
 #include <dune/common/shared_ptr.hh>
 
 #include <cassert>
-#include <iostream>
-#include <vector>
 #include <cstdlib>
+#include <iostream>
+#include <ostream>
+#include <vector>
 
 template<class T>
 class Deleter
@@ -42,6 +48,11 @@ int main(){
   {
     // test default constructor
     shared_ptr<int> foo;
+
+    // print the type of the shared_ptr, so we know whether we are
+    // checking dune's shared_ptr or some std one
+    std::cout << "=== checking shared_ptr type: " << className(foo)
+              << std::endl;
 
     // test cast-to-bool
     if (foo) {
