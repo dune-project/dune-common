@@ -109,6 +109,45 @@ namespace Dune
         A::apply( p1, p2, p3, p4, p5, p6, p7, p8, p9 );
         B::apply( p1, p2, p3, p4, p5, p6, p7, p8, p9 );
       }
+
+      template< class T1, class T2, class T3, class T4, class T5, class T6,
+          class T7, class T8, class T9, class T10 >
+      static void apply ( T1 &p1, T2 &p2, T3 &p3, T4 &p4, T5 &p5, T6 &p6,
+                          T7 &p7, T8 &p8, T9 &p9, T10 &p10 )
+      {
+        A::apply( p1, p2, p3, p4, p5, p6, p7, p8, p9, p10 );
+        B::apply( p1, p2, p3, p4, p5, p6, p7, p8, p9, p10 );
+      }
+
+      template< class T1, class T2, class T3, class T4, class T5, class T6,
+          class T7, class T8, class T9, class T10, class T11 >
+      static void apply ( T1 &p1, T2 &p2, T3 &p3, T4 &p4, T5 &p5, T6 &p6,
+                          T7 &p7, T8 &p8, T9 &p9, T10 &p10, T11 &p11 )
+      {
+        A::apply( p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11 );
+        B::apply( p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11 );
+      }
+
+      template< class T1, class T2, class T3, class T4, class T5, class T6,
+          class T7, class T8, class T9, class T10, class T11, class T12 >
+      static void apply ( T1 &p1, T2 &p2, T3 &p3, T4 &p4, T5 &p5, T6 &p6,
+                          T7 &p7, T8 &p8, T9 &p9, T10 &p10, T11 &p11,
+                          T12 &p12 )
+      {
+        A::apply( p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12 );
+        B::apply( p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12 );
+      }
+
+      template< class T1, class T2, class T3, class T4, class T5, class T6,
+          class T7, class T8, class T9, class T10, class T11, class T12,
+          class T13>
+      static void apply ( T1 &p1, T2 &p2, T3 &p3, T4 &p4, T5 &p5, T6 &p6,
+                          T7 &p7, T8 &p8, T9 &p9, T10 &p10, T11 &p11,
+                          T12 &p12, T13 &p13 )
+      {
+        A::apply( p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13 );
+        B::apply( p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13 );
+      }
     };
 
   }
