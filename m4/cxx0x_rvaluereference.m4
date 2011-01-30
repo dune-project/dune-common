@@ -26,7 +26,7 @@ AC_DEFUN([RVALUE_REFERENCES_CHECK],[
     AC_MSG_RESULT(yes)], [
     HAVE_RVALUE_REFERENCES=no
     AC_MSG_RESULT(no)])
-  if test "x$HAVE_RVALUe_REFERENCES" = xyes; then
+  if test "x$HAVE_RVALUE_REFERENCES" = xyes; then
     AC_DEFINE(HAVE_RVALUE_REFERENCES, 1, [Define to 1 if rvalue references are supported])
   fi
   AC_LANG_POP
