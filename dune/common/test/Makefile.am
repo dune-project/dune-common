@@ -3,6 +3,7 @@
 
 TESTPROGS = \
     arraylisttest \
+    arraytest \
     bigunsignedinttest \
     bitsetvectortest \
     conversiontest \
@@ -103,6 +104,8 @@ sllisttest_SOURCES = sllisttest.cc
 test_stack_SOURCES = test-stack.cc
 
 arraylisttest_SOURCES = arraylisttest.cc
+
+arraytest_SOURCES = arraytest.cc
 
 shared_ptrtest_config_SOURCES = shared_ptrtest.cc
 
