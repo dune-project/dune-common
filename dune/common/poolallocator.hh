@@ -76,7 +76,7 @@ namespace Dune
    * size of a pointer memory is wasted.
    * @warning Due to aligned issues at the number of bytes of the
    * alignment prerequisite (< 4 bytes) are wasted. This effect
-   * becomes negligable for big sizes of chunkSize.
+   * becomes negligible for big sizes of chunkSize.
    *
    * \tparam T The type that is allocated by us.
    * \tparam s The size of a memory chunk in bytes.
