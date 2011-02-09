@@ -488,14 +488,6 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   AC_LANG_POP([C++])
 ])
 
-AC_DEFUN([DUNE_DEV_MODE],[
-  AC_ARG_ENABLE(dunedevel,
-    AS_HELP_STRING([--enable-dunedevel],[activate Dune-Developer-mode]))
-
-  AS_IF([test "x$enable_dunedevel" = "xyes"],
-    AC_DEFINE(DUNE_DEVEL_MODE, 1, [Activates developer output]))
-])
-
 AC_DEFUN([DUNE_SYMLINK],[
   AC_PROG_LN_S
   AC_MSG_WARN([Module is using the deprecated 'dune' symlink.])
