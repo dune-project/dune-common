@@ -1,8 +1,5 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef DUNE_COMMON_BACTONNACKMANIFCHECK_HH
-#define DUNE_COMMON_BACTONNACKMANIFCHECK_HH
-
 /** @file
    @author Robert Kloefkorn
    @brief Provides check for implementation of interface methods when using
@@ -14,6 +11,13 @@
 
 //- Dune includes
 #include <dune/common/exceptions.hh>
+
+#ifdef CHECK_INTERFACE_IMPLEMENTATION
+#undef CHECK_INTERFACE_IMPLEMENTATION
+#endif
+#ifdef CHECK_AND_CALL_INTERFACE_IMPLEMENTATION
+#undef CHECK_AND_CALL_INTERFACE_IMPLEMENTATION
+#endif
 
 #ifdef NDEBUG
 #define CHECK_INTERFACE_IMPLEMENTATION(dummy)
@@ -41,12 +45,10 @@
    otherwise. If NDEBUG is defined no
    checking is done and the method is just called.
  */
-#ifndef NDEBUG
+#ifdef NDEBUG
 #define CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(__interface_method_to_call__) \
   (__interface_method_to_call__)
 #else
 #define CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(__interface_method_to_call__) \
   CHECK_INTERFACE_IMPLEMENTATION(__interface_method_to_call__)
 #endif
-
-#endif // DUNE_COMMON_BACTONNACKMANIFCHECK_HH
