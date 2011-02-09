@@ -30,7 +30,6 @@ AC_CONFIG_FILES([Makefile
      dune/common/parallel/test/Makefile
      doc/Makefile
      doc/devel/Makefile
-     doc/layout/Makefile
      doc/doxygen/Makefile
      doc/doxygen/Doxyfile
      doc/buildsystem/Makefile
