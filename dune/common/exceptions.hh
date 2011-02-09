@@ -231,9 +231,7 @@ namespace Dune {
      \endcode
 
      DUNE_THROW automatically adds information about the exception thrown
-     to the text. If DUNE_DEVEL_MODE is defined more detail about the
-     function where the exception happened is included. This mode can be
-     activated via the \c --enable-dunedevel switch of \c ./configure
+     to the text.
 
      \note
      you can add a hook to be called before a Dune::Exception is emitted,
