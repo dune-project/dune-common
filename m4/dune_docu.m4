@@ -67,6 +67,9 @@ AC_DEFUN([DUNE_WEB],
   # disable dune-web in official tarball mode
   AS_IF([test "x$enable_officialtarballs" = "xyes"],[with_duneweb=""])
 
+  # disable dune-web if wml is missing
+  AS_IF([test "x$WML" = "xtrue"],[with_duneweb=""])
+
   AS_IF([test -n "$with_duneweb"],[
     AS_IF([test "x$with_duneweb" != "xno"],[
       # parameter is set. Check it
