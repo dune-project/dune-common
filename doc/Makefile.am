@@ -1,7 +1,7 @@
 # $Id$
 
 # also build these sub directories
-SUBDIRS = devel doxygen buildsystem
+SUBDIRS = doxygen buildsystem
 
 # only build html pages, if documentation is enabled
 if BUILD_DOCS
