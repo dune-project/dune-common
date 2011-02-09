@@ -211,11 +211,7 @@ namespace Dune {
   // the "format" the exception-type gets printed.  __FILE__ and
   // __LINE__ are standard C-defines, the GNU cpp-infofile claims that
   // C99 defines __func__ as well. __FUNCTION__ is a GNU-extension
-#ifdef DUNE_DEVEL_MODE
-# define THROWSPEC(E) # E << " [" << __func__ << ":" << __FILE__ << ":" << __LINE__ << "]: "
-#else
-# define THROWSPEC(E) # E << ": "
-#endif
+#define THROWSPEC(E) # E << " [" << __func__ << ":" << __FILE__ << ":" << __LINE__ << "]: "
 #endif // DOXYGEN
 
   /*! Macro to throw an exception
