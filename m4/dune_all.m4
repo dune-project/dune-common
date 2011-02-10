@@ -7,7 +7,6 @@
 
 # the entries are more or less copied from an "autoscan"-run in the
 # dune-directory
-
 AC_DEFUN([DUNE_CHECK_ALL],[
   # doxygen and latex take a lot of time...
   AC_REQUIRE([DUNE_DOCUMENTATION])
@@ -18,6 +17,7 @@ AC_DEFUN([DUNE_CHECK_ALL],[
   AC_REQUIRE([AC_PROG_CPP])
   AC_REQUIRE([AC_PROG_CXX])
   AC_REQUIRE([AC_PROG_CXXCPP])
+  AC_REQUIRE([DUNE_SYNC_FC_F77])
   AC_REQUIRE([AC_PROG_F77])
   AC_REQUIRE([AC_PROG_FC])
   # don't build shared libs per default, this is way better for debugging...
