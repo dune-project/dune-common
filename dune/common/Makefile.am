@@ -63,7 +63,6 @@ commoninclude_HEADERS = 			\
 	nullptr.hh				\
 	parametertree.hh                        \
 	path.hh					\
-	polyallocator.hh			\
 	poolallocator.hh			\
 	precision.hh				\
 	propertymap.hh				\
@@ -71,7 +70,6 @@ commoninclude_HEADERS = 			\
 	shared_ptr.hh				\
 	singleton.hh				\
 	sllist.hh				\
-	smallobject.hh				\
 	static_assert.hh			\
 	stdstreams.hh				\
 	timer.hh				\

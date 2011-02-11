@@ -26,12 +26,10 @@ TESTPROGS = \
     nullptr-test \
     pathtest \
     paramtreetest \
-    polyallocator \
     poolallocatortest \
     shared_ptrtest_config \
     shared_ptrtest_dune \
     singletontest \
-    smallobject \
     static_assert_test \
     streamtest \
     test-stack \
@@ -81,8 +79,6 @@ noinst_HEADERS = dummyiterator.hh
 pathtest_SOURCES = pathtest.cc
 
 paramtreetest_SOURCES = paramtreetest.cc
-
-smallobject_SOURCES = smallobject.cc
 
 bitsetvectortest_SOURCES = bitsetvectortest.cc
 
@@ -143,8 +139,6 @@ fmatrixtest_SOURCES = fmatrixtest.cc
 fmatrixtest_LDADD = $(LAPACK_LIBS) $(LDADD)
 
 fvectortest_SOURCES = fvectortest.cc
-
-polyallocator_SOURCES = polyallocator.cc
 
 poolallocatortest_SOURCES = poolallocatortest.cc
 
