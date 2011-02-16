@@ -25,7 +25,7 @@ TESTPROGS = \
     mpihelpertest2 \
     nullptr-test \
     pathtest \
-    paramtreetest \
+    parametertreetest \
     poolallocatortest \
     shared_ptrtest_config \
     shared_ptrtest_dune \
@@ -78,7 +78,7 @@ noinst_HEADERS = dummyiterator.hh
 # define the programs
 pathtest_SOURCES = pathtest.cc
 
-paramtreetest_SOURCES = paramtreetest.cc
+parametertreetest_SOURCES = parametertreetest.cc
 
 bitsetvectortest_SOURCES = bitsetvectortest.cc
 

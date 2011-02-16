@@ -55,7 +55,7 @@ fassigntest
 iteratorfacadetest2
 static_assert_test
 
-paramtreetest
+parametertreetest
 tags
 pathtest
 TAGS
