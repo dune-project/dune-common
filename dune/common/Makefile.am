@@ -9,6 +9,7 @@ libcommon_la_SOURCES =				\
 	configparser.cc				\
 	ios_state.cc				\
 	parametertree.cc                        \
+	parametertreeparser.cc			\
 	path.cc					\
 	exceptions.cc				\
 	stdstreams.cc
@@ -62,6 +63,7 @@ commoninclude_HEADERS = 			\
 	mpitraits.hh				\
 	nullptr.hh				\
 	parametertree.hh                        \
+	parametertreeparser.hh			\
 	path.hh					\
 	poolallocator.hh			\
 	precision.hh				\
