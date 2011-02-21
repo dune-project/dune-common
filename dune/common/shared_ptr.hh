@@ -14,6 +14,7 @@
 #endif
 #if defined HAVE_BOOST_SHARED_PTR_HPP
 # include <boost/shared_ptr.hpp>
+# include <boost/make_shared.hpp>
 #endif
 
 #include <dune/common/nullptr.hh>
@@ -297,6 +298,86 @@ namespace Dune
 
   /** @} */
 #endif  // #ifdef SHARED_PTR_NAMESPACE
+
+
+  // C++0x and Boost have a make_shared implementation, TR1 does not.
+  // Unfortunately, TR1 gets picked over Boost if present.
+#if HAVE_MEMORY || (HAVE_BOOST_SHARED_PTR_HPP && !HAVE_TR1_MEMORY)
+  using SHARED_PTR_NAMESPACE :: make_shared;
+#else
+
+  template<typename T>
+  shared_ptr<T> make_shared()
+  {
+    return shared_ptr<T>(new T());
+  }
+
+  template<typename T, typename Arg1>
+  shared_ptr<T> make_shared(const Arg1& arg1)
+  {
+    return shared_ptr<T>(new T(arg1));
+  }
+
+  template<typename T, typename Arg1, typename Arg2>
+  shared_ptr<T> make_shared(const Arg1& arg1, const Arg2& arg2)
+  {
+    return shared_ptr<T>(new T(arg1,arg2));
+  }
+
+  template<typename T, typename Arg1, typename Arg2, typename Arg3>
+  shared_ptr<T> make_shared(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3)
+  {
+    return shared_ptr<T>(new T(arg1,arg2,arg3));
+  }
+
+  template<typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4>
+  shared_ptr<T> make_shared(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, const Arg4& arg4)
+  {
+    return shared_ptr<T>(new T(arg1,arg2,arg3,arg4));
+  }
+
+  template<typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4,
+      typename Arg5>
+  shared_ptr<T> make_shared(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, const Arg4& arg4,
+                            const Arg5& arg5)
+  {
+    return shared_ptr<T>(new T(arg1,arg2,arg3,arg4,arg5));
+  }
+
+  template<typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4,
+      typename Arg5, typename Arg6>
+  shared_ptr<T> make_shared(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, const Arg4& arg4,
+                            const Arg5& arg5, const Arg6& arg6)
+  {
+    return shared_ptr<T>(new T(arg1,arg2,arg3,arg4,arg5,arg6));
+  }
+
+  template<typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4,
+      typename Arg5, typename Arg6, typename Arg7>
+  shared_ptr<T> make_shared(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, const Arg4& arg4,
+                            const Arg5& arg5, const Arg6& arg6, const Arg7& arg7)
+  {
+    return shared_ptr<T>(new T(arg1,arg2,arg3,arg4,arg5,arg6,arg7));
+  }
+
+  template<typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4,
+      typename Arg5, typename Arg6, typename Arg7, typename Arg8>
+  shared_ptr<T> make_shared(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, const Arg4& arg4,
+                            const Arg5& arg5, const Arg6& arg6, const Arg7& arg7, const Arg8& arg8)
+  {
+    return shared_ptr<T>(new T(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8));
+  }
+
+  template<typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4,
+      typename Arg5, typename Arg6, typename Arg7, typename Arg8, typename Arg9>
+  shared_ptr<T> make_shared(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, const Arg4& arg4,
+                            const Arg5& arg5, const Arg6& arg6, const Arg7& arg7, const Arg8& arg8,
+                            const Arg9& arg9)
+  {
+    return shared_ptr<T>(new T(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9));
+  }
+
+#endif // custom make_shared
 
   /**
      @brief implements the Deleter concept of shared_ptr without deleting anything
