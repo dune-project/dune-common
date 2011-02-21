@@ -37,10 +37,10 @@ AC_DEFUN([VARIADIC_CONSTRUCTOR_SFINAE_CHECK],[
         int i;
       };],
       [
-        assert( A<int>().i + 
-                A<int>(2).i + 
-                A<int>("foo",3.4).i + 
-                A<int>({2,5,6},'a',A<int>()).i == 0);
+        assert( A<int>().i +
+                A<int>(2).i +
+                A<int>("foo",3.4).i +
+                A<int>(8,'a',A<int>()).i == 0);
         return 0;
       ])],[
     HAVE_VARIADIC_CONSTRUCTOR_SFINAE=yes
