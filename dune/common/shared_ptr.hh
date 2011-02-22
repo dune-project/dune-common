@@ -14,7 +14,9 @@
 #endif
 #if defined HAVE_BOOST_SHARED_PTR_HPP
 # include <boost/shared_ptr.hpp>
+#if defined HAVE_BOOST_MAKE_SHARED_HPP
 # include <boost/make_shared.hpp>
+#endif
 #endif
 
 #include <dune/common/nullptr.hh>
@@ -302,7 +304,8 @@ namespace Dune
 
   // C++0x and Boost have a make_shared implementation, TR1 does not.
   // Unfortunately, TR1 gets picked over Boost if present.
-#if HAVE_MEMORY || (HAVE_BOOST_SHARED_PTR_HPP && !HAVE_TR1_MEMORY)
+  // Moreover, boost::make_shared() only exists for (remotely) recent versions of Boost.
+#if HAVE_MEMORY || (HAVE_BOOST_SHARED_PTR_HPP && HAVE_BOOST_MAKE_SHARED_HPP && !HAVE_TR1_MEMORY)
   using SHARED_PTR_NAMESPACE :: make_shared;
 #else
 

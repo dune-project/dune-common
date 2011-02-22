@@ -38,6 +38,7 @@ ALLM4S = 					\
 	immdx_lib_metis.m4			\
 	inkscape.m4				\
 	libtoolcompat.m4			\
+	make_shared.m4				\
 	mpi-config.m4				\
 	opengl.m4				\
 	pardiso.m4				\
