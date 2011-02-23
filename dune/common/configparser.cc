@@ -5,6 +5,8 @@
 #include "config.h"
 #endif
 
+#define SILENCE_CONFIGPARSER_HH_DEPRECATION
+
 #include "configparser.hh"
 
 #include <cstdlib>
