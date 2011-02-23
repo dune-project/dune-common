@@ -3,10 +3,12 @@
 #ifndef DUNE_CONFIGPARSER_HH
 #define DUNE_CONFIGPARSER_HH
 
+#ifndef SILENCE_CONFIGPARSER_HH_DEPRECATION
 #warning This file has been deprecated in dune-common 2.1, and will most likely\
   be removed in dune-common 2.2.  In its place, use parametertree.hh to keep\
   hierarchical string-based data, and parametertreeparser.hh to read such data\
   from files and streams.
+#endif // !SILENCE_CONFIGPARSER_HH_DEPRECATION
 
 #include <iostream>
 #include <istream>
