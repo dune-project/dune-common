@@ -10,12 +10,6 @@ BASEDIR=../..
 CURDIR=doc/doxygen
 PAGES =
 
-if BUILD_DOCS
-if WML
-  PAGES += bestpractice.html
-endif
-endif
-
 # add some more stuff to install and tarball
 DOCFILES = $(PAGES)
 EXTRA_DIST = $(PAGES) Doxystyle
