@@ -73,7 +73,7 @@ namespace Dune
     //! Assign value to all entries
     array<T,N>& operator= (const T& t)
     {
-      for (size_type i=0; i<N; i++) a[i]=t;
+      fill(t);
       return (*this);
     }
 
