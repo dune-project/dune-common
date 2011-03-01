@@ -1221,6 +1221,7 @@ namespace Dune {
 
     if(neighbourIds.size()==0)
     {
+      std::cout<<rank<<": Sending messages in a ring"<<std::endl;
       // send mesages in ring
       for(int proc=1; proc<procs; proc++) {
         // pointers to the current input and output buffers
@@ -1510,10 +1511,7 @@ namespace Dune {
   }
 
   template<typename T, typename A>
-  inline typename std::map<int, std::pair<SLList<typename RemoteIndices<T,A>::RemoteIndex,
-              typename RemoteIndices<T,A>::Allocator >*,
-          SLList<typename RemoteIndices<T,A>::RemoteIndex,
-              typename RemoteIndices<T,A>::Allocator >*> >::const_iterator
+  inline typename RemoteIndices<T,A>::const_iterator
   RemoteIndices<T,A>::find(int proc) const
   {
     return remoteIndices_.find(proc);
