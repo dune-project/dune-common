@@ -80,7 +80,7 @@ namespace Dune {
 
     //! Constructor making vector with identical coordinates
     template<class C>
-    FieldVector (const DenseVector<C> & x)
+    explicit FieldVector (const DenseVector<C> & x)
     {
       assert(x.size() == SIZE);
       for (size_type i = 0; i<SIZE; i++)
