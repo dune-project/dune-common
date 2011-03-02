@@ -336,7 +336,7 @@ namespace Dune
           return false;
       return true;
     }
-    //! Binary vector incomparison
+    //! Binary matrix incomparison
     bool operator!= (const DenseMatrix& y) const
     {
       return !operator==(y);
