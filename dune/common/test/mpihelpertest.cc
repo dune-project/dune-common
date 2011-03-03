@@ -6,11 +6,14 @@
 
 #include <dune/common/mpihelper.hh>
 #include <iostream>
+
 int main(int argc, char** argv)
 {
 
 #ifdef MPIHELPER_PREINITIALZE
+#if HAVE_MPI
   MPI_Init(&argc, &argv);
+#endif
 #endif
 
   typedef Dune::MPIHelper Helper;
@@ -29,7 +32,9 @@ int main(int argc, char** argv)
     comm= mpi.getCommunicator();
 
 #ifdef MPIHELPER_PREINITIALZE
+#if HAVE_MPI
     MPI_Finalize();
+#endif
 #endif
   }
   std::cout << "We are at the end!"<<std::endl;
