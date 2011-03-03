@@ -306,7 +306,9 @@ namespace Dune
   // Unfortunately, TR1 gets picked over Boost if present.
   // Moreover, boost::make_shared() only exists for (remotely) recent versions of Boost.
 #if HAVE_MAKE_SHARED
+#ifdef SHARED_PTR_NAMESPACE
   using SHARED_PTR_NAMESPACE :: make_shared;
+#endif
 #else
 
   template<typename T>
