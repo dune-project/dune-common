@@ -43,6 +43,7 @@ TESTPROGS = \
     testfassign_fail4 \
     testfassign_fail5 \
     testfassign_fail6 \
+    testfconstruct \
     tuplestest_dune \
     tuplestest_std \
     tuplestest_tr1 \
@@ -52,7 +53,7 @@ TESTPROGS = \
 # which tests to run
 COMPILE_XFAIL=$(DUNE_COMMON_BIN)/xfail-compile-tests
 
-COMPILE_XFAIL_TESTS = genericiterator_compile_fail nullptr-test-fail static_assert_test_fail
+COMPILE_XFAIL_TESTS = genericiterator_compile_fail nullptr-test-fail static_assert_test_fail testfconstruct_fail1 testfconstruct_fail2
 
 compile_XFAIL:
 	for i in $(COMPILE_XFAIL_TESTS); do \
@@ -199,6 +200,15 @@ testfassign_fail5_CPPFLAGS = $(AM_CPPFLAGS) -D_N=2 -D_M=2 -D_VALUES="1, 2"
 
 testfassign_fail6_SOURCES = testfassign.cc
 testfassign_fail6_CPPFLAGS = $(AM_CPPFLAGS) -D_N=2 -D_M=2 -D_VALUES="1, 2, nextRow, 2, 3, nextRow, 4, 5"
+
+testfconstruct_SOURCES = testfconstruct.cc
+testfconstruct_CPPFLAGS = $(AM_CPPFLAGS) -DFVSIZE=3
+
+testfconstruct_fail1_SOURCES = testfconstruct.cc
+testfconstruct_fail1_CPPFLAGS = $(AM_CPPFLAGS) -DFVSIZE=2
+
+testfconstruct_fail2_SOURCES = testfconstruct.cc
+testfconstruct_fail2_CPPFLAGS = $(AM_CPPFLAGS) -DFVSIZE=5
 
 conversiontest_SOURCES = conversiontest.cc
 
