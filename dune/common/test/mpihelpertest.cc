@@ -10,7 +10,7 @@
 int main(int argc, char** argv)
 {
 
-#ifdef MPIHELPER_PREINITIALZE
+#ifdef MPIHELPER_PREINITIALIZE
 #if HAVE_MPI
   MPI_Init(&argc, &argv);
 #endif
@@ -31,7 +31,7 @@ int main(int argc, char** argv)
     Helper::MPICommunicator comm= mpi.getCommunicator();
     comm= mpi.getCommunicator();
 
-#ifdef MPIHELPER_PREINITIALZE
+#ifdef MPIHELPER_PREINITIALIZE
 #if HAVE_MPI
     MPI_Finalize();
 #endif
