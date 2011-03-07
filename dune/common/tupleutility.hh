@@ -172,17 +172,6 @@ namespace Dune {
 #endif // !defined(DOXYGEN)
 
   /**
-   * @brief Helper template to calculate length of a tuple.
-   */
-  template <class Tuple>
-  struct Length
-  {
-    enum {
-      value=tuple_size<Tuple>::value
-    };
-  };
-
-  /**
    * @brief Helper template to clone the type definition of a tuple with the
    * storage types replaced by a user-defined rule.
    *
@@ -1443,7 +1432,7 @@ namespace Dune {
    */
   template <int N, class Tuple>
   struct AtType {
-    typedef typename tuple_element<Length<Tuple>::value - N - 1,
+    typedef typename tuple_element<tuple_size<Tuple>::value - N - 1,
         Tuple>::type Type;
   };
 
