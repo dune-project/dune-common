@@ -395,13 +395,17 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       AS_IF([test "x$HAVE_[]_DUNE_MODULE" = "x1"],[
 
         # save current LDFLAGS
-        ac_save_CXX="$CXX"
+	ac_save_CXX="$CXX"
+	# Use $CXX $DUNE_LDFLAGS as link command, as the latter might 
+	# contain the -static option to force static linkage
+	ac_cxx_ld=`echo $ac_save_CXX | sed "s/$CXX/$CXX $DUNE_LDFLAGS/"`
+
         HAVE_[]_DUNE_MODULE=0
 
         # define LTCXXLINK like it will be defined in the Makefile
-        CXX="./libtool --tag=CXX --mode=link $ac_save_CXX"
-
-        # use module LDFLAGS
+        CXX="./libtool --tag=CXX --mode=link $ac_cxx_ld "
+        
+	# use module LDFLAGS
         LDFLAGS="$ac_save_LDFLAGS $DUNE_LDFLAGS $DUNE_PKG_LDFLAGS $_dune_cm_LDFLAGS"
         LIBS="$_dune_cm_LIBS $DUNE_LIBS $LIBS"
 
