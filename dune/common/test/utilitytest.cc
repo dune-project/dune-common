@@ -80,7 +80,7 @@ int main(int argc, char** argv)
     ret = 1;
   }
 
-  if(static_cast<size_t>(Dune::Length<PointerTuple>::value) != static_cast<size_t>(Dune::tuple_size<PointerTuple>::value)) {
+  if(static_cast<size_t>(Dune::tuple_size<PointerTuple>::value) != static_cast<size_t>(Dune::tuple_size<PointerTuple>::value)) {
     std::cerr<<"Length and size do not match!"<<std::endl;
   }
 
