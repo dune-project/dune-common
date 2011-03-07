@@ -13,7 +13,6 @@
 #include "exceptions.hh"
 #include "array.hh"
 #include "densevector.hh"
-#include "static_assert.hh"
 
 namespace Dune {
 
@@ -88,14 +87,6 @@ namespace Dune {
         _data[i] = x[i];
     }
 
-    //! Constructor making vector with identical coordinates
-    template<class K1, int SIZE1>
-    explicit FieldVector (const FieldVector<K1,SIZE1> & x)
-    {
-      dune_static_assert(SIZE1 == SIZE, "FieldVector in constructor has wrong size");
-      for (size_type i = 0; i<SIZE; i++)
-        _data[i] = x[i];
-    }
     using Base::operator=;
 
     // make this thing a vector
