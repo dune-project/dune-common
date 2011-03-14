@@ -48,6 +48,7 @@ commoninclude_HEADERS = 			\
 	gcd.hh					\
 	genericiterator.hh			\
 	geometrytype.hh				\
+	geometrytypeindex.hh			\
 	gmpfield.hh				\
 	indent.hh				\
 	interfaces.hh				\
