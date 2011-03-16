@@ -1,6 +1,8 @@
 # $Id: $
+dunemodulelibdir=$(libdir)
 
 EXTRA_DIST = dunemodules.lib
+dunemodulelib_DATA = dunemodules.lib
 
 #the dune-common library
 lib_LTLIBRARIES = libdunecommon.la
