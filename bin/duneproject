@@ -150,7 +150,7 @@ find_modules_in_path
 
 # get the real module names
 MODULES=""
-for i in $FOUNDMODULES; do
+for i in $FOUND_MODULES; do
   mod=$(eval echo \$NAME_$i)
   MODULES="$MODULES$mod "
 done
