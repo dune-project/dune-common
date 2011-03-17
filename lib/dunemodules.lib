@@ -166,16 +166,19 @@ find_modules_in_path() {
       if test -d "$dir"; then
         while read m; do
           test -n "$m" && find_modules "$m"
+          TMPMODULES="$TMPMODULES$FM_MODULES$INSTMODULES"
         done <<EOFM
         $(find -H "$dir" -name $CONTROL | $GREP -v 'dune-[-_a-zA-Z]/dune-[-a-zA-Z_]*-[0-9]\{1,\}.[0-9]\{1,\}/')
 EOFM
 	  else
         find_modules $dir
+        TMPMODULES="$TMPMODULES$FM_MODULES$INSTMODULES"
 	  fi
     done <<EOF
     $(echo $DUNE_CONTROL_PATH | sed -e 's/:\+/:/g' | tr ':' '\n') 
 EOF
-    export FOUND_MODULES="$MODULES$INSTMODULES"
+    export FOUNDMODULES="$TMPMODULES"
+    export MODULES="$TMPMODULES"
   fi
 }
 
@@ -194,7 +197,7 @@ find_modules() {
       if test "$module_inst" = "yes"; then
         export INSTMODULES="$MODULES$module "
       else
-        export MODULES="$MODULES$module "
+        export FM_MODULES="$MODULES$module "
 	  fi
   else
       echo "ERROR: '$1' is no $CONTROL file" >&2
