@@ -148,6 +148,10 @@ export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$(canonicalpath $0)/../lib/pkgconfig"
 # search for modules, both installed and src modules
 find_modules_in_path
 
+# sort modules to remove duplicates
+sort_modules $FOUND_MODULES
+FOUND_MODULES=$MODULES
+
 # get the real module names
 MODULES=""
 for i in $FOUND_MODULES; do
