@@ -11,74 +11,6 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
 
-#if HAVE_LAPACK
-
-// symetric matrices
-#define DSYEV_FORTRAN FC_FUNC (dsyev, DSYEV)
-
-// nonsymetric matrices
-#define DGEEV_FORTRAN FC_FUNC (dgeev, DGEEV)
-
-// dsyev declaration (in liblapack)
-extern "C" {
-
-  /*
-   *
-   **  purpose
-   **  =======
-   **
-   **  xsyev computes all eigenvalues and, optionally, eigenvectors of a
-   **  BASE DATA TYPE symmetric matrix a.
-   **
-   **  arguments
-   **  =========
-   **
-   **  jobz    (input) char
-   **          = 'n':  compute eigenvalues only;
-   **          = 'v':  compute eigenvalues and eigenvectors.
-   **
-   **  uplo    (input) char
-   **          = 'u':  upper triangle of a is stored;
-   **          = 'l':  lower triangle of a is stored.
-   **
-   **  n       (input) long int
-   **          the order of the matrix a.  n >= 0.
-   **
-   **  a       (input/output) BASE DATA TYPE array, dimension (lda, n)
-   **          on entry, the symmetric matrix a.  if uplo = 'u', the
-   **          leading n-by-n upper triangular part of a contains the
-   **          upper triangular part of the matrix a.  if uplo = 'l',
-   **          the leading n-by-n lower triangular part of a contains
-   **          the lower triangular part of the matrix a.
-   **          on exit, if jobz = 'v', then if info = 0, a contains the
-   **          orthonormal eigenvectors of the matrix a.
-   **          if jobz = 'n', then on exit the lower triangle (if uplo='l')
-   **          or the upper triangle (if uplo='u') of a, including the
-   **          diagonal, is destroyed.
-   **
-   **  lda     (input) long int
-   **          the leading dimension of the array a.  lda >= max(1,n).
-   **
-   **  w       (output) BASE DATA TYPE array, dimension (n)
-   **          if info = 0, the eigenvalues in ascending order.
-   **
-   **
-   **
-   **  info    (output) long int
-   **          = 0:  successful exit
-   **          < 0:  if info = -i, the i-th argument had an illegal value
-   **          > 0:  if info = i, the algorithm failed to converge; i
-   **                off-diagonal elements of an intermediate tridiagonal
-   **                form did not converge to zero.
-   **
-   **/
-  extern void DSYEV_FORTRAN(const char* jobz, const char* uplo, const long
-                            int* n, double* a, const long int* lda, double* w,
-                            double* work, const long int* lwork, long int* info);
-
-} // end extern C
-#endif
-
 namespace Dune {
 
   /**
@@ -87,6 +19,12 @@ namespace Dune {
    */
 
   namespace FMatrixHelp {
+
+    // defined in fmatrixev.cc
+    extern void eigenValuesLapackCall(
+      const char* jobz, const char* uplo, const long
+      int* n, double* a, const long int* lda, double* w,
+      double* work, const long int* lwork, long int* info);
 
     /** \brief calculates the eigenvalues of a symetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
@@ -130,7 +68,6 @@ namespace Dune {
       eigenvalues[1] = p + q;
     }
 
-#if HAVE_LAPACK || defined DOXYGEN
     /** \brief calculates the eigenvalues of a symetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
         \param[out] eigenvalues FieldVector that contains eigenvalues in
@@ -169,9 +106,9 @@ namespace Dune {
         // return value information
         long int info = 0;
 
-        // call LAPACK dsyev
-        DSYEV_FORTRAN(&jobz, &uplo, &N, &matrixVector[0], &N,
-                      &eigenvalues[0], &workSpace[0], &w, &info);
+        // call LAPACK routine (see fmatrixev.cc)
+        eigenValuesLapackCall(&jobz, &uplo, &N, &matrixVector[0], &N,
+                              &eigenvalues[0], &workSpace[0], &w, &info);
 
         if( info != 0 )
         {
@@ -180,7 +117,6 @@ namespace Dune {
         }
       }
     }
-#endif
 
   } // end namespace FMatrixHelp
 
