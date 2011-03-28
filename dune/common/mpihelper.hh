@@ -17,7 +17,8 @@ namespace Dune
 {
   /**
    * @file
-   * @brief This file contains helpers for dealing with MPI.
+   * @brief Helpers for dealing with MPI.
+   *
    * @ingroup ParallelCommunication
    *
    * Basically there are two helpers available:

@@ -3,6 +3,10 @@
 #ifndef DUNE_LCM_HH
 #define DUNE_LCM_HH
 
+/** \file
+ * \brief Statically compute the least common multiple of two integers
+ */
+
 #include <dune/common/static_assert.hh>
 #include <dune/common/gcd.hh>
 

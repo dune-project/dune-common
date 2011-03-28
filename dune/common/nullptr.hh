@@ -3,6 +3,10 @@
 #ifndef DUNE_NULLPTR_HH
 #define DUNE_NULLPTR_HH
 
+/** \file
+ * \brief Fallback implementation of the nullptr object in C++0x
+ */
+
 #if ! HAVE_NULLPTR
 
 /**
