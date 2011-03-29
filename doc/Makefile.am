@@ -3,14 +3,6 @@
 # also build these sub directories
 SUBDIRS = doxygen buildsystem
 
-# only build html pages, if documentation is enabled
-if BUILD_DOCS
-# only build html when wml is available
-if WML
- PAGES = view-concept.html installation-notes.html installation-notes-bluegenep.html
-endif
-endif
-
 # setting like in dune-web
 CURDIR=doc
 # position of the web base directory,
