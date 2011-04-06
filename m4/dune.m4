@@ -398,7 +398,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
 	ac_save_CXX="$CXX"
 	# Use $CXX $DUNE_LDFLAGS as link command, as the latter might 
 	# contain the -static option to force static linkage
-	ac_cxx_ld=`echo $ac_save_CXX | sed "s/$CXX/$CXX $DUNE_LDFLAGS/"`
+	ac_cxx_ld=`echo $ac_save_CXX | sed -e "s@$CXX@$CXX $DUNE_LDFLAGS@"`
 
         HAVE_[]_DUNE_MODULE=0
 
