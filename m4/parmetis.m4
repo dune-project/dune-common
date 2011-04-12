@@ -23,15 +23,26 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 	    # get absolute path
 	    with_parmetis=`eval cd $withval 2>&1 && pwd`
 	    AC_MSG_RESULT(yes)
+          else
+            with_parmetis="no"
+	    AC_MSG_RESULT(no)
+      fi
 	else
 	    AC_MSG_RESULT(no)
 	fi
-      fi
 	],
     [
 	if test -n "$PARMETIS" ; then
-	    with_parmetis=$PARMETIS
+          if test -d "$PARMETIS" ; then
+	    # get absolute path
+	    with_parmetis=`eval cd $PARMETIS 2>&1 && pwd`
+            PARMETIS=""
 	    AC_MSG_RESULT(yes)
+          else
+            PARMETIS=""
+            with_parmetis=no
+	    AC_MSG_RESULT(no)
+          fi
 	else
 	    with_parmetis=/usr/
 	    include_path=include
