@@ -16,16 +16,17 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
   AC_ARG_WITH([parmetis],
     [AC_HELP_STRING([--with-parmetis],[user defined path to ParMETIS library])],
     [
-	if test -n "$PARMETIS" ; then
-	    AC_MSG_RESULT(yes)
-	    with_parmetis=$PARMETIS
-	elif test "$withval" != no ; then
+      # --with-parmetis supersedes $PARMETIS
+      PARMETIS=""
+      if test "$withval" != no ; then
+          if test -d "$withval" ; then
 	    # get absolute path
 	    with_parmetis=`eval cd $withval 2>&1 && pwd`
 	    AC_MSG_RESULT(yes)
 	else
 	    AC_MSG_RESULT(no)
 	fi
+      fi
 	],
     [
 	if test -n "$PARMETIS" ; then
