@@ -73,8 +73,13 @@ EXTRA_PROGRAMS = $(COMPILE_XFAIL_TESTS) sllisttest
 
 TESTS = $(TESTPROGS) $(COMPILE_XFAIL)
 
-XFAIL_TESTS = testfassign_fail1 testfassign_fail2 testfassign_fail3 \
-    testfassign_fail4 testfassign_fail5 testfassign_fail6
+XFAIL_TESTS = \
+    testfassign_fail1 \
+    testfassign_fail2 \
+    testfassign_fail3 \
+    testfassign_fail4 \
+    testfassign_fail5 \
+    testfassign_fail6
 
 # programs just to build when "make check" is used
 check_PROGRAMS = $(TESTPROGS)
