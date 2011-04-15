@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <iostream>
 #include <dune/common/lru.hh>
+#include <dune/common/mpihelper.hh>
 
 void lru_test()
 {
@@ -34,8 +35,10 @@ void lru_test()
   std::cout << "... passed\n";
 }
 
-int main ()
+int main (int argc, char** argv)
 {
+  Dune::MPIHelper::instance(argc,argv);
+
   lru_test();
 
   return 0;
