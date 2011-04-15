@@ -53,7 +53,12 @@ TESTPROGS = \
 # which tests to run
 COMPILE_XFAIL=$(DUNE_COMMON_BIN)/xfail-compile-tests
 
-COMPILE_XFAIL_TESTS = genericiterator_compile_fail nullptr-test-fail static_assert_test_fail testfconstruct_fail1 testfconstruct_fail2
+COMPILE_XFAIL_TESTS = \
+    genericiterator_compile_fail \
+    nullptr-test-fail \
+    static_assert_test_fail \
+    testfconstruct_fail1 \
+    testfconstruct_fail2
 
 compile_XFAIL:
 	for i in $(COMPILE_XFAIL_TESTS); do \
