@@ -1,8 +1,6 @@
 # $Id$
 
-if MPI
-  MPITESTS = indicestest indexsettest syncertest selectiontest
-endif
+MPITESTS = indicestest indexsettest syncertest selectiontest
 
 # which tests where program to build and run are equal
 NORMALTESTS =
@@ -14,39 +12,36 @@ TESTS = $(NORMALTESTS) $(MPITESTS)
 check_PROGRAMS = $(NORMALTESTS) $(MPITESTS)
 
 # define the programs
-
-if MPI
-  indicestest_SOURCES = indicestest.cc
-  indicestest_CPPFLAGS = $(AM_CPPFLAGS)		\
+indicestest_SOURCES = indicestest.cc
+indicestest_CPPFLAGS = $(AM_CPPFLAGS)		\
 	$(DUNEMPICPPFLAGS)
-  indicestest_LDFLAGS = $(AM_LDFLAGS)		\
+indicestest_LDFLAGS = $(AM_LDFLAGS)		\
 	$(DUNEMPILDFLAGS)
-  indicestest_LDADD =				\
+indicestest_LDADD =				\
 	$(DUNEMPILIBS)				\
 	$(LDADD)
 
-  selectiontest_SOURCES = selectiontest.cc
-  selectiontest_CPPFLAGS = $(AM_CPPFLAGS)	\
+selectiontest_SOURCES = selectiontest.cc
+selectiontest_CPPFLAGS = $(AM_CPPFLAGS)	\
 	$(DUNEMPICPPFLAGS)
-  selectiontest_LDFLAGS = $(AM_LDFLAGS)		\
+selectiontest_LDFLAGS = $(AM_LDFLAGS)		\
 	$(DUNEMPILDFLAGS)
-  selectiontest_LDADD =				\
+selectiontest_LDADD =				\
 	$(DUNEMPILIBS)				\
 	$(LDADD)
 
-  indexsettest_SOURCES = indexsettest.cc
+indexsettest_SOURCES = indexsettest.cc
 
-  syncertest_SOURCES = syncertest.cc
-  syncertest_CPPFLAGS = $(AM_CPPFLAGS)		\
+syncertest_SOURCES = syncertest.cc
+syncertest_CPPFLAGS = $(AM_CPPFLAGS)		\
 	$(DUNEMPICPPFLAGS)			\
 	$(DUNE_COMMON_CPPFLAGS)
-  syncertest_LDFLAGS = $(AM_LDFLAGS)		\
+syncertest_LDFLAGS = $(AM_LDFLAGS)		\
 	$(DUNEMPILDFLAGS)			\
 	$(DUNE_COMMON_LDFLAGS)
-  syncertest_LDADD =					\
+syncertest_LDADD =					\
 	$(DUNE_COMMON_LDFLAGS) $(DUNE_COMMON_LIBS)	\
 	$(DUNEMPILIBS)					\
 	$(LDADD)
-endif
 
 include $(top_srcdir)/am/global-rules

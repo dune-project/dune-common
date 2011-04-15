@@ -1,6 +1,9 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 #include "config.h"
+
+#if HAVE_MPI
+
 #include <dune/common/parallel/indicessyncer.hh>
 #include <dune/common/sllist.hh>
 #include <string>
@@ -340,8 +343,10 @@ void MPI_err_handler(MPI_Comm *comm, int *err_code, ...){
   delete[] err_string;
   throw MPIError(s, *err_code);
 }
+#endif // HAVE_MPI
 
 int main(int argc, char** argv){
+#if HAVE_MPI
   MPI_Init(&argc, &argv);
   MPI_Errhandler handler;
   MPI_Errhandler_create(MPI_err_handler, &handler);
@@ -355,4 +360,8 @@ int main(int argc, char** argv){
   if(!ret)
     MPI_Abort(MPI_COMM_WORLD, 1);
   MPI_Finalize();
+  return 0;
+#else
+  return 77;
+#endif
 }
