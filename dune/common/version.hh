@@ -23,7 +23,9 @@
   ( DUNE_VERSION_EQUAL(module,major,minor) && \
     (DUNE_VERSION_JOIN(module,REVISION) == revision))
 
-/** \brief True if 'module' has the version major.minor or newer */
+/** \brief True if 'module' has the version major.minor or newer
+   \deprecated The 'revision' argument, only here by error, will be removed in the next release!
+ */
 #define DUNE_VERSION_NEWER(module,major,minor,revision) \
   ((DUNE_VERSION_JOIN(module,MAJOR) > major) \
    || ((DUNE_VERSION_JOIN(module,MAJOR) == major) && (DUNE_VERSION_JOIN(module,MINOR) >= minor)))
