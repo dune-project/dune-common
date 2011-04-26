@@ -54,10 +54,15 @@ deprtuplestest
 fassigntest
 iteratorfacadetest2
 static_assert_test
-
 parametertreetest
 tags
 pathtest
 TAGS
 mpihelpertest2
 testfconstruct
+arraytest
+shared_ptrtest_config
+shared_ptrtest_dune
+tuplestest_dune
+tuplestest_std
+tuplestest_tr1
