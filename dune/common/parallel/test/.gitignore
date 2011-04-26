@@ -1,3 +1,7 @@
 Makefile.in
 Makefile
 .deps
+indexsettest
+indicestest
+selectiontest
+syncertest
