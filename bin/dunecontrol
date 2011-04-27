@@ -223,9 +223,10 @@ esac'
 }
 
 # list of all dunecontrol commands
-COMMANDS="update autogen configure make all exec status svn"
+COMMANDS="printdeps update autogen configure make all exec status svn"
 
 # help string for the commands
+printdeps_HELP="print recursive dependencies of a module"
 update_HELP="updated all modules from the repository"
 autogen_HELP="run the autogen.sh script for each module"
 configure_HELP="run configure for each module"
@@ -675,6 +676,51 @@ case "$command" in
       fi
     done
     echo export DUNE_CONTROL_PATH=$DUNE_CONTROL_PATH
+    ;;
+  printdeps)
+    find_modules_in_path
+    mainmod=`echo $SEARCH_MODULES`
+    name=`eval echo \\${NAME_$mainmod}`
+
+    # get dependencies
+    eval deps=\$DEPS_$module
+    #initially remove leading space
+    deps=`echo "$deps" | sed 's/^ *//'`
+    while test -n "$deps"; do
+      #the end of the name is marked either by space, opening paren
+      #or comma
+      depname="${deps%%[ (,]*}"
+      #remove the name and adjacent whitespace
+      deps=`echo "$deps" | sed 's/^[^ (,]* *//'`
+      #check whether there is a dependency version
+      case "$deps" in
+      '('*) deps="${deps#(}"
+            depver="${deps%%)*}"
+            deps="${deps#*)}"
+            ;;
+      *)    depver=
+            ;;
+      esac
+      #remove any leading whitespace or commas for te next iteration
+      deps=`echo "$deps" | sed 's/^[, ]*//'`
+
+      requires="$requires $depname $depver "
+    done
+    echo "dependencies for $name"
+
+    ### DEPENDENCIES
+    if test "x$SEARCH_MODULES" != "x"; then
+      MODULES=$SEARCH_MODULES
+    fi
+    sort_dependencies $MODULES
+    for mod in $MODULES; do
+      echo "  $mod (required)"
+    done
+    ### 
+    sort_suggestions $mainmod
+    for mod in $MODULES; do
+      echo "  $mod (suggested)"
+    done
     ;;
   m4create)
     find_modules_in_path
