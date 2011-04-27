@@ -14,13 +14,11 @@
 int main(int argc, char** argv)
 {
   typedef Dune::MPIHelper Helper;
-  typedef Helper::MPICommunicator MPIComm;
+  Helper& mpi = Helper::instance(argc, argv);
 
 #if HAVE_MPI
   {
-    Helper& mpi = Helper::instance(argc, argv);
-
-
+    typedef Helper::MPICommunicator MPIComm;
     Dune::CollectiveCommunication<MPIComm> comm(mpi.getCommunicator());
 
     enum { length = 5 };
@@ -52,6 +50,7 @@ int main(int argc, char** argv)
   std::cout << "We are at the end!"<<std::endl;
 #else
   std::cout << "WARNING: test Dune::CollectiveCommunication<MPI_Comm> disabled because MPI not available! " << std::endl;
+  return 77;
 #endif
   return 0;
 }
