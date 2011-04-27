@@ -142,11 +142,20 @@ parse_control() {
 setup_control_path() {
   if test -z $DUNE_CONTROL_PATH; then
     DUNE_CONTROL_PATH=.
-    for i in /usr/local/lib/dunecontrol/ /usr/lib/dunecontrol/; do
-      if test -d $i; then 
-        DUNE_CONTROL_PATH=$DUNE_CONTROL_PATH:$i
-      fi
-    done
+    # try pkg-config locations
+    if pkg-config dune-common; then
+      # try usual locations of installed modules
+      for i in /usr/local/lib/dunecontrol/ /usr/lib/dunecontrol/; do
+        if test -d $i; then 
+          DUNE_CONTROL_PATH=$DUNE_CONTROL_PATH:$i
+        fi
+      done
+      for i in `echo $PKG_CONFIG_PATH | tr ':' ' '`; do
+        if test -d "$i/../dunecontrol"; then 
+          DUNE_CONTROL_PATH=$DUNE_CONTROL_PATH:"$i/../dunecontrol"
+        fi
+      done
+    fi
   fi
   # try to read DUNE_CONTROL_PATH from OPTS file
   if test -n "$DUNE_OPTS_FILE"; then
@@ -378,6 +387,17 @@ _sort_module() {
           echo "       Maybe you need to adjust PKG_CONFIG_PATH!" >&2
           echo "       $name is required by $modname" >&2
           exit 1
+		else
+	      eval ver=$(pkg-config $name --modversion)
+          if test "$SKIPVERSIONCHECK" != "yes" && ! check_version "$ver" "$depver"; then
+            echo "ERROR: version mismatch." >&2
+            echo "       $modname requires $name $depver," >&2
+            echo "       but only $name = $ver is installed." >&2
+            exit 1
+          fi
+		  # update module list
+		  parse_control $(pkg-config $name --variable=prefix)/lib/dunecontrol/$name/dune.module
+		  _sort_module $dep
         fi
       fi
     done
