@@ -51,16 +51,19 @@ DOXYGEN_DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.png -o -name Doxyfile 
 # check dependency ourself to be robust
 $(DOXYGENTAG): FORCE Doxyfile $(DOXYGENHEADER) $(DOXYGENFOOTER)
 	set -e; \
-	if ! test -e "$(DOXYGENTAG)" || \
-	   test x"`find $(top_srcdir) \( $(DOXYGEN_DEPENDON) \) -a -cnewer $(DOXYGENTAG) -print`" != x; \
+	DTAG=$(DOXYGENTAG); \
+	if test -f $(srcdir)/$(DOXYGENTAG); then DTAG=$(srcdir)/$(DOXYGENTAG); fi; \
+	find $(top_srcdir) \( $(DOXYGEN_DEPENDON) \) -a -cnewer $$DTAG -print
+	if ! test -e "$$DTAG" || \
+	   test x"`find $(top_srcdir) \( $(DOXYGEN_DEPENDON) \) -a -cnewer $$DTAG -print`" != x; \
 	then \
 	    echo Running doxygen. This may take a while... ; \
 	    $(DOXYGEN) Doxyfile > doxygen.log <&-; \
-	    touch $(DOXYGENTAG) ; \
 	    if test "$$DOXYQUIET" != "1" && test -f doxyerr.log; \
 	      then cat doxyerr.log; fi; \
 	    if test -x "$(DUNEWEBDOXY)/update-doxygen.css"; \
 	      then $(DUNEWEBDOXY)/update-doxygen.css $(abs_builddir)/html; fi; \
+	    touch $(DOXYGENTAG) ; \
 	fi
 doc-doxygen: $(DOXYGENTAG) $(DOXYGENHEADER) $(DOXYGENFOOTER)
 else
