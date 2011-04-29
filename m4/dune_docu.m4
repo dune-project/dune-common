@@ -30,8 +30,6 @@ AC_DEFUN([DUNE_DOCUMENTATION],[
       AC_MSG_ERROR([dvipdf is missing. This program is required for official tarballs!])])
     AS_IF([test "x$DVIPS" = "xtrue"],[
       AC_MSG_ERROR([dvips is missing. This program is required for official tarballs!])])
-    AS_IF([test "x$WML" = "xtrue"],[
-      AC_MSG_ERROR([wml is missing. This program is required for official tarballs!])])
     AS_IF([test "x$DOT" = "xtrue"],[
       AC_MSG_ERROR([dot is missing. This program is required for official tarballs!])])
     AS_IF([test "x$PERL" = "xtrue"],[
