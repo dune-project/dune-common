@@ -28,14 +28,14 @@ endif # DUNEWEB
 
 ####
 # how to build doxygen documentation
+if DOXYGEN
+
 if BUILD_DOCS
   DOXYGENTAG = doxygen-tag
   # EXTRAINSTALL in the html subdirectory
   DOXYGENHTMLFILES = *.html *.css *.png *.gif
   DOXYGENINSTALL = $(DOXYGENHTMLFILES) ../doxygen.log ../doxyerr.log
 endif # BUILD_DOCS
-
-if DOXYGEN
 
 DUNEDOXYNIZE=@DUNE_COMMON_ROOT@/bin/dunedoxynize
 $(srcdir)/Doxyfile.in: FORCE
