@@ -57,6 +57,7 @@ commoninclude_HEADERS = 			\
 	iteratorfacades.hh			\
 	lcm.hh					\
 	lru.hh					\
+	math.hh					\
 	matvectraits.hh \
 	misc.hh					\
 	mpicollectivecommunication.hh		\
