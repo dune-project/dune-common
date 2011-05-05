@@ -13,14 +13,23 @@ namespace Dune
 
 
 
-  // MathematicalConstants for double
-  // --------------------------------
+  // StandardMathematicalConstants
+  // -----------------------------
 
-  template<>
-  struct MathematicalConstants< double >
+  template< class T >
+  struct StandardMathematicalConstants
   {
-    static double e () { return std::exp( 1.0 ); }
-    static double pi () { return std::acos( -1.0 ); }
+    static T e ()
+    {
+      static const T e = std::exp( T( 1 ) );
+      return e;
+    }
+
+    static T pi ()
+    {
+      static const T pi = std::acos( T( -1 ) );
+      return pi;
+    }
   };
 
 
@@ -30,10 +39,28 @@ namespace Dune
 
   template<>
   struct MathematicalConstants< float >
-  {
-    static float e () { return std::exp( 1.0f ); }
-    static float pi () { return std::acos( -1.0f ); }
-  };
+    : public StandardMathematicalConstants< float >
+  {};
+
+
+
+  // MathematicalConstants for double
+  // --------------------------------
+
+  template<>
+  struct MathematicalConstants< double >
+    : public StandardMathematicalConstants< double >
+  {};
+
+
+
+  // MathematicalConstants for long double
+  // -------------------------------------
+
+  template<>
+  struct MathematicalConstants< long double >
+    : public StandardMathematicalConstants< long double >
+  {};
 
 }
 
