@@ -8,14 +8,26 @@
 namespace Dune
 {
 
+  /**
+     \brief Provides commonly used mathematical constants.
+
+     a struct that is specilized for types repesenting real or complex
+     numbers. I provides commonly used mathematical constants with the
+     required accuary for the specified type.
+   */
   template< class Field >
   struct MathematicalConstants;
 
+  /**
+     \brief Standard implementation of MathematicalConstants.
 
+     This implementation will work with all build in floating point
+     types. It provides
 
-  // StandardMathematicalConstants
-  // -----------------------------
+   * e as std::exp(1.0)
+   * pi as std::acos(-1.0)
 
+   */
   template< class T >
   struct StandardMathematicalConstants
   {
@@ -33,7 +45,7 @@ namespace Dune
   };
 
 
-
+#ifndef DOXYGEN
   // MathematicalConstants for float
   // -------------------------------
 
@@ -61,6 +73,7 @@ namespace Dune
   struct MathematicalConstants< long double >
     : public StandardMathematicalConstants< long double >
   {};
+#endif // DOXYGEN
 
 }
 
