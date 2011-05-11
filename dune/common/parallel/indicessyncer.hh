@@ -1143,7 +1143,7 @@ namespace Dune
           }
 
         }else{
-          sourceAttributeList.push_back(std::make_pair(source,Attribute(attribute)));
+          sourceAttributeList.push_back(std::make_pair(process,Attribute(attribute)));
         }
       }
       assert(foundSelf);
