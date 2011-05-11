@@ -1221,8 +1221,8 @@ namespace Dune {
 
     if(neighbourIds.size()==0)
     {
-      std::cout<<rank<<": Sending messages in a ring"<<std::endl;
-      // send mesages in ring
+      Dune::dvverb<<rank<<": Sending messages in a ring"<<std::endl;
+      // send messages in ring
       for(int proc=1; proc<procs; proc++) {
         // pointers to the current input and output buffers
         char* p_out = buffer[1-(proc%2)];
