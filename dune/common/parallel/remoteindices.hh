@@ -10,6 +10,7 @@
 #include <dune/common/poolallocator.hh>
 #include <dune/common/sllist.hh>
 #include <dune/common/static_assert.hh>
+#include <dune/common/stdstreams.hh>
 #include <map>
 #include <set>
 #include <utility>
