@@ -523,13 +523,21 @@ namespace Dune
         // Search for the index in the set.
         assert(gIndex != global->second.end());
 
-        while(*index < *gIndex)
+        while(!(index->global() == gIndex->first
+                && index->local().attribute() == gIndex->second)) {
           ++index;
+          // this is only needed for ALU, where there may exist
+          // more entries with the same global index in the remote index set
+          // than in the index set
+          if (index->global() > gIndex->first) {
+            index=indexSet.begin();
+          }
+        }
 
         assert(index != indexSet.end() && *index == *gIndex);
 
         rIndex->localIndex_ = &(*index);
-
+        ++index;
         ++rIndex;
         ++gIndex;
       }
