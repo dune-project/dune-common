@@ -1100,6 +1100,29 @@ namespace Dune
     return indexSet_.seqNo();
   }
 
+  template<typename TG, typename TL, int N, typename TG1, typename TL1, int N1>
+  bool operator==(const ParallelIndexSet<TG,TL,N>& idxset,
+                  const ParallelIndexSet<TG1,TL1,N1>& idxset1)
+  {
+    if(idxset.size()!=idxset1.size())
+      return false;
+    typedef typename ParallelIndexSet<TG,TL,N>::const_iterator Iter;
+    typedef typename ParallelIndexSet<TG1,TL1,N1>::const_iterator Iter1;
+    Iter iter=idxset.begin();
+    for(Iter1 iter1=idxset1.begin(); iter1 != idxset1.end(); ++iter, ++iter1)
+      if(*iter1!=*iter)
+        return false;
+    return true;
+  }
+
+  template<typename TG, typename TL, int N, typename TG1, typename TL1, int N1>
+  bool operator!=(const ParallelIndexSet<TG,TL,N>& idxset,
+                  const ParallelIndexSet<TG1,TL1,N1>& idxset1)
+  {
+    return !(idxset==idxset1);
+  }
+
+
 #endif // DOXYGEN
 
 }
