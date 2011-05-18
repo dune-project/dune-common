@@ -118,6 +118,9 @@ namespace Dune {
     }
 
     /** \brief Constructor for vertices and segments */
+    // We need this constructor for "int" and "unsigned int",
+    // because otherwise GeometryType(int) would try to call the
+    // generic GeometryType(TopologyType) constructor
     explicit GeometryType(int dim)
       : topologyId_(0), dim_(dim), none_(false)
     {
