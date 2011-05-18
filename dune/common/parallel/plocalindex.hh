@@ -168,6 +168,25 @@ namespace Dune
 
   };
 
+  template<typename T>
+  bool operator==(const ParallelLocalIndex<T>& p1,
+                  const ParallelLocalIndex<T>& p2)
+  {
+    if(p1.local()!=p2.local())
+      return false;
+    if(p1.attribute()!=p2.attribute())
+      return false;
+    if(p1.isPublic()!=p2.isPublic())
+      return false;
+    return true;
+  }
+  template<typename T>
+  bool operator!=(const ParallelLocalIndex<T>& p1,
+                  const ParallelLocalIndex<T>& p2)
+  {
+    return !(p1==p2);
+  }
+
 
   template<typename T>
   struct LocalIndexComparator<ParallelLocalIndex<T> >

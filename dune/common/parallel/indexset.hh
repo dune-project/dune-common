@@ -1109,9 +1109,15 @@ namespace Dune
     typedef typename ParallelIndexSet<TG,TL,N>::const_iterator Iter;
     typedef typename ParallelIndexSet<TG1,TL1,N1>::const_iterator Iter1;
     Iter iter=idxset.begin();
-    for(Iter1 iter1=idxset1.begin(); iter1 != idxset1.end(); ++iter, ++iter1)
-      if(*iter1!=*iter)
+    for(Iter1 iter1=idxset1.begin(); iter1 != idxset1.end(); ++iter, ++iter1) {
+      if(iter1->global()!=iter->global())
         return false;
+      typedef typename ParallelIndexSet<TG,TL,N>::LocalIndex PI;
+      const PI& pi=iter->local(), pi1=iter1->local();
+
+      if(pi!=pi1)
+        return false;
+    }
     return true;
   }
 
