@@ -770,7 +770,7 @@ m4_define([DUNE_AC_INIT],[
   AM_INIT_AUTOMAKE([foreign 1.5 tar-pax])
   AC_SUBST([DUNE_MOD_VERSION], [$version])
   AC_SUBST([DUNE_MOD_NAME], [$name])
-  AC_SUBST([DUNE_MAINTAINER_NAME], [$maintainer])
+  AC_SUBST([DUNE_MAINTAINER_NAME], ["$maintainer"])
   DUNE_PARSE_MODULE_VERSION([$name], [$version])
   REQUIRES="$requires"
   AC_SUBST(REQUIRES, [$REQUIRES])
