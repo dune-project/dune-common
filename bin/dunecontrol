@@ -671,13 +671,22 @@ case "$command" in
     create_module_list
     DUNE_CONTROL_PATH=""
     for mod in $MODULES; do
-      if test x != x$DUNE_CONTROL_PATH; then
-        export DUNE_CONTROL_PATH="$DUNE_CONTROL_PATH:$(eval echo \$PATH_$mod/dune.module)"
+      path=$(eval echo \$PATH_$mod)
+      name=$(eval echo \$NAME_$mod)
+      if test -f $p/dune.module; then
+        export DUNE_CONTROL_PATH="$DUNE_CONTROL_PATH:$p/dune.module"
       else
-        export DUNE_CONTROL_PATH="$(eval echo \$PATH_$mod/dune.module)"
+        if test -f "$path/lib/dunecontrol/$name/dune.module"; then
+          export DUNE_CONTROL_PATH="$DUNE_CONTROL_PATH:$path/lib/dunecontrol/$name/dune.module"
+        else
+          echo "ERROR: while creating list of dune.module files"  >&2
+          echo "       couldn't find dune.module file for $name in $path" >&2
+          echo  >&2
+          exit 1
+        fi
       fi
     done
-    echo export DUNE_CONTROL_PATH=$DUNE_CONTROL_PATH
+    echo export DUNE_CONTROL_PATH=$(echo $DUNE_CONTROL_PATH | sed -e 's/^://')
     ;;
   printdeps)
     find_modules_in_path
