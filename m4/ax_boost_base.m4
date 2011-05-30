@@ -22,7 +22,10 @@
 #   And sets:
 #
 #     HAVE_BOOST
-#
+#        ENABLE_BOOST or undefined. Whether boost was found. The correct way to
+#        to check this is "#if HAVE_BOOST": This way boost featers will be disabled
+#        unless ${BOOST_CPPFLAGS} was given when compiling
+#        
 # LICENSE
 #
 #   Copyright (c) 2008 Thomas Porschberg <thomas@randspringer.de>
@@ -99,7 +102,7 @@ AC_ARG_WITH([boost-libdir],
     dnl or if you install boost with RPM
     if test "$ac_boost_path" != ""; then
         BOOST_LDFLAGS="-L$ac_boost_path/$libsubdir"
-        BOOST_CPPFLAGS="-I$ac_boost_path/include"
+        BOOST_CPPFLAGS="-I$ac_boost_path/include -DENABLE_BOOST"
     elif test "$cross_compiling" != yes; then
         for ac_boost_path_tmp in /usr /usr/local /opt /opt/local ; do
             if test -d "$ac_boost_path_tmp/include/boost" && test -r "$ac_boost_path_tmp/include/boost"; then
@@ -107,7 +110,7 @@ AC_ARG_WITH([boost-libdir],
                     if ls "$ac_boost_path_tmp/$libsubdir/libboost_"* >/dev/null 2>&1 ; then break; fi
                 done
                 BOOST_LDFLAGS="-L$ac_boost_path_tmp/$libsubdir"
-                BOOST_CPPFLAGS="-I$ac_boost_path_tmp/include"
+                BOOST_CPPFLAGS="-I$ac_boost_path_tmp/include -DENABLE_BOOST "
                 break;
             fi
         done
@@ -157,7 +160,7 @@ AC_ARG_WITH([boost-libdir],
                         _version=$_version_tmp
                     fi
                     VERSION_UNDERSCORE=`echo $_version | sed 's/\./_/'`
-                    BOOST_CPPFLAGS="-I$ac_boost_path/include/boost-$VERSION_UNDERSCORE"
+                    BOOST_CPPFLAGS="-I$ac_boost_path/include/boost-$VERSION_UNDERSCORE  -DENABLE_BOOST"
                 done
             fi
         else
@@ -176,7 +179,7 @@ AC_ARG_WITH([boost-libdir],
                 done
 
                 VERSION_UNDERSCORE=`echo $_version | sed 's/\./_/'`
-                BOOST_CPPFLAGS="-I$best_path/include/boost-$VERSION_UNDERSCORE"
+                BOOST_CPPFLAGS="-I$best_path/include/boost-$VERSION_UNDERSCORE  -DENABLE_BOOST"
                 if test "$ac_boost_lib_path" = ""; then
                     for libsubdir in $libsubdirs ; do
                         if ls "$best_path/$libsubdir/libboost_"* >/dev/null 2>&1 ; then break; fi
@@ -196,7 +199,7 @@ AC_ARG_WITH([boost-libdir],
                     V_CHECK=`expr $stage_version_shorten \>\= $_version`
                     if test "$V_CHECK" = "1" -a "$ac_boost_lib_path" = "" ; then
                         AC_MSG_NOTICE(We will use a staged boost library from $BOOST_ROOT)
-                        BOOST_CPPFLAGS="-I$BOOST_ROOT"
+                        BOOST_CPPFLAGS="-I$BOOST_ROOT -DENABLE_BOOST"
                         BOOST_LDFLAGS="-L$BOOST_ROOT/stage/$libsubdir"
                     fi
                 fi
@@ -236,7 +239,7 @@ AC_ARG_WITH([boost-libdir],
     else
         AC_SUBST(BOOST_CPPFLAGS)
         AC_SUBST(BOOST_LDFLAGS)
-        AC_DEFINE(HAVE_BOOST,,[define if the Boost library is available])
+        AC_DEFINE(HAVE_BOOST, [ENABLE_BOOST],[Define to ENABLE_BOOST if the Boost library is available])
         # execute ACTION-IF-FOUND (if present):
         ifelse([$2], , :, [$2])
     fi
