@@ -13,7 +13,9 @@ dnl  GCC 4.2: namespace: tr1::  #include <tr1/memory>
 dnl  GCC 4.2: namespace: boost::  #include <boost/shared_ptr.hpp>
 dnl
 dnl We define one of HAVE_HAVE_TR1_SHARED_PTR or HAVE_BOOST_SHARED_PTR
-dnl depending on location, and SHARED_PTR_NAMESPACE to be the namespace in
+dnl depending on location, SHARED_PTR_HEADER to be the header with enclosing
+dnl brackety braces in which shared_ptr is defined and SHARED_PTR_NAMESPACE to 
+dnl be the namespace in
 dnl which shared_ptr is defined.
 dnl 
 
@@ -30,15 +32,6 @@ dnl  AC_REQUIRE([PANDORA_CHECK_CXX_STANDARD])
       do
         AC_COMPILE_IFELSE(
           [AC_LANG_PROGRAM([[
-#if defined(HAVE_MEMORY)
-# include <memory>
-#endif
-#if defined(HAVE_TR1_MEMORY)
-# include <tr1/memory>
-#endif
-#if defined(HAVE_BOOST_SHARED_PTR_HPP)
-# include <boost/shared_ptr.hpp>
-#endif
 #include <string>
 
 using $namespace::shared_ptr;
@@ -48,8 +41,33 @@ shared_ptr<string> test_ptr(new string("test string"));
             ]])],
             [
               ac_cv_shared_ptr_namespace="${namespace}"
+              ac_cv_shared_ptr_header=missing
               break
-            ],[ac_cv_shared_ptr_namespace=missing])
+            ],[
+	      ac_cv_shared_ptr_namespace=missing
+              ac_cv_shared_ptr_header=missing
+            ])
+        for header in memory tr1/memory boost/shared_ptr.hpp; do
+          AC_COMPILE_IFELSE(
+            [AC_LANG_PROGRAM([[
+# include <$header>
+#include <string>
+
+using $namespace::shared_ptr;
+using namespace std;
+              ]],[[
+shared_ptr<string> test_ptr(new string("test string"));
+              ]])],
+              [
+                ac_cv_shared_ptr_namespace="${namespace}"
+                ac_cv_shared_ptr_header="<${header}>"
+                break
+              ],[
+                ac_cv_shared_ptr_namespace=missing
+                ac_cv_shared_ptr_header=missing
+              ])
+         done
+         if test "$ac_cv_shared_ptr_namespace" != "missing"; then break; fi
        done
   ])
   AS_IF([ test "x$ac_cv_shared_ptr_namespace" = xmissing ],
@@ -58,6 +76,14 @@ shared_ptr<string> test_ptr(new string("test string"));
       AC_DEFINE_UNQUOTED([SHARED_PTR_NAMESPACE],
                          ${ac_cv_shared_ptr_namespace},
                          [The namespace in which SHARED_PTR can be found])
+    ]
+  )
+  AS_IF([ test "x$ac_cv_shared_ptr_header" = xmissing ],
+    [], [
+      SHARED_PTR_HEADER=${ac_cv_shared_ptr_header}
+      AC_DEFINE_UNQUOTED([SHARED_PTR_HEADER],
+                         ${ac_cv_shared_ptr_header},
+                         [The header in which SHARED_PTR can be found])
     ]
   )
   AC_LANG_POP()

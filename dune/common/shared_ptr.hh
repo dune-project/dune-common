@@ -5,15 +5,10 @@
 #ifndef DUNE_SHARED_PTR_HH
 #define DUNE_SHARED_PTR_HH
 
-
-#if defined HAVE_MEMORY
-# include <memory>
-#endif
-#if defined HAVE_TR1_MEMORY
-# include <tr1/memory>
+#if defined SHARED_PTR_HEADER
+# include SHARED_PTR_HEADER
 #endif
 #if defined HAVE_BOOST_SHARED_PTR_HPP
-# include <boost/shared_ptr.hpp>
 #if defined HAVE_BOOST_MAKE_SHARED_HPP
 # include <boost/make_shared.hpp>
 #endif
