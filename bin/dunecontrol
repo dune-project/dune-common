@@ -102,8 +102,8 @@ onbuildfailure() {
 # $1 list of modules
 # $2-$* commands + parameters to execute
 #
-build_modules() {
-  local modules=$1
+build_module() {
+  local module=$1
   shift
   while test $# -gt 0; do
     # get command
@@ -134,29 +134,20 @@ build_modules() {
 
     # actually run the commands (we already know that these are valid commands)
     local runcommand=run_$command
-    for module in $modules ; do
-      echo $module
-    done > $RESUME_FILE
-    for module in $modules; do
-      local path=$(eval "echo \$PATH_${module}")
-      eval echo "--- calling $command for \$NAME_${module} ---"
-	  trap onbuildfailure EXIT
-      if ! (
-        set -e
-        cd "$path"
-        export module
-        eval_control $runcommand $path/$CONTROL
-      ); then eval echo "--- Failed to build \$NAME_${module} ---"; exit 1; fi
-	  trap onfailure EXIT
 
-      modules_togo=`cat $RESUME_FILE`
-      for module_togo in $modules_togo ; do
-        if test x$module_togo != x$module ; then
-          echo $module_togo
-        fi
-      done > $RESUME_FILE
-      eval echo "--- \$NAME_${module} done ---"
-    done
+    # build the modules
+    local path=$(eval "echo \$PATH_${module}")
+    eval echo "--- calling $command for \$NAME_${module} ---"
+	trap onbuildfailure EXIT
+    if ! (
+      set -e
+      cd "$path"
+      export module
+      eval_control $runcommand $path/$CONTROL
+    ); then eval echo "--- Failed to build \$NAME_${module} ---"; exit 1; fi
+	trap onfailure EXIT
+	
+    eval echo "--- \$NAME_${module} done ---"
   done
 }
 
@@ -869,7 +860,18 @@ EOF
       fi
     done
     echo "--- going to build $NAMES ---"
-      build_modules "$BUILDMODULES" "$@"
+    for mod in $MODULES; do
+      echo $mod
+    done > $RESUME_FILE
+    for mod in $MODULES; do
+      build_module "$mod" "$@"
+      modules_togo=`cat $RESUME_FILE`
+      for module_togo in $modules_togo ; do
+        if test x$module_togo != x$mod ; then
+          echo $module_togo
+        fi
+      done > $RESUME_FILE
+    done
     echo "--- done ---"
   ;;
 esac
