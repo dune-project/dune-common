@@ -13,15 +13,18 @@ hctest.o: hctest.cc
 	  $(DUNEMPICPPFLAGS) $(ALL_PKG_CPPFLAGS) -c -o $@ $<
 
 headercheck:
-	@if test x"$$HEADER" = "x"; then \
-          if test x"$$SILENT" = "x"; then \
-            SILENTSTR='SILENT=1' ; \
-          fi ; \
+	@if test "x$V" = "x"; then \
+      SILENTSTR='V=$(AM_DEFAULT_VERBOSITY)' ; \
+    fi; \
+    if test "x$SILENT" = "x1"; then \
+      SILENTSTR='V=0' ; \
+    fi; \
+    if test "x$SILENT" = "x0"; then \
+      SILENTSTR='V=1' ; \
+    fi; \
+    if test x"$$HEADER" = "x"; then \
 	  $(MAKE) $$SILENTSTR $(AM_MAKEFLAGS) headercheck-recursive; \
 	else \
-          if test x"$$SILENT" = "x"; then \
-            SILENTSTR='SILENT=0' ; \
-          fi ; \
 	  $(MAKE) $$SILENTSTR $(AM_MAKEFLAGS) headercheck-am; \
 	fi
 
@@ -34,7 +37,6 @@ headercheck-am:
 	  popd > /dev/null; \
 	fi; \
     test -z "$$NO_CONFIG_H" && NO_CONFIG_H=0; \
-    test -z "$$SILENT" && SILENT=1; \
 	test "$$list" != "$(headercheck_PATTERN)" || exit 0; \
 	for f in $$list; do \
 	echo "$(headercheck_IGNORE)" | tr ' ' '\n' | grep -q "$$f"; \
@@ -54,7 +56,7 @@ headercheck-am:
 	  SUCCESS=$$?; \
 	  if ! (test $$SUCCESS -eq 0 && test -e $$OFILE); then \
 	    echo "Error in $$HEADER"; \
-            test $$SILENT -ne 0 && echo "run with SILENT=0 to show details" || cat $$LOGFILE; \
+            test $V -ne 1 && echo "run with V=1 to show details" || cat $$LOGFILE; \
 	  fi; \
 	  rm -f $$OFILE; \
 	  rm -f $$CCFILE; \
