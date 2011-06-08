@@ -14,6 +14,7 @@ libcommon_la_SOURCES =				\
 	path.cc					\
 	exceptions.cc				\
 	stdstreams.cc
+libcommon_la_LIBADD = $(LAPACK_LIBS)
 
 commonincludedir = $(includedir)/dune/common
 commoninclude_HEADERS = 			\
