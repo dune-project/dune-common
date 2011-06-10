@@ -218,13 +218,16 @@ find_modules() {
 # sort $MODULES according to the dependencies
 #
 sort_modules() {
-  # reset list
+  # reset lists
   export SORTEDMODULES=""
+  export SORTEDMODULES_INFO=""
+  export SORTEDMODULES_DEPS=""
+  export SORTEDMODULES_SUGS=""
   # handle each modules passed as parameter
   for m in "$@"; do
     # did we find a module file for this module?
     if test "x$(eval echo \$HAVE_$m)" != "x"; then
-      _sort_module $m
+      _sort_module $m MAIN
     else
       echo "ERROR: could not find module $(eval echo \$NAME_$m)" >&2
       exit 1
@@ -243,34 +246,10 @@ sort_modules() {
 # don't include $MODULE itself
 #
 sort_dependencies() {
-  # reset list
-  export SORTEDMODULES=""
-  local deps=""
-  local name=""
-  local dep=""
-  local ver=""
-  local xdeps=""
-  # handle each modules passed as parameter
-  for m in "$@"; do
-    # did we find a module file for this mopdule?
-    if test "x$(eval echo \$HAVE_$m)" != "x"; then
-      eval deps=\$DEPS_$m
-      deps=`echo "$deps" | sed 's/,/ /g;s/([^)]*)/ /g'`
-      for name in $deps; do
-        dep=`fix_variable_name $name`
-        _sort_module $dep
-      done
-    else
-      eval echo ERROR: could not find module \$NAME_$m >&2
-      exit 1
-    fi
-  done
+  # get dependencies
+  sort_modules $1
   # save result
-  export MODULES="$SORTEDMODULES"
-  # clean up temporary variables
-  for m in $MODULES; do
-    export SORT_DONE_${m}=""
-  done
+  export MODULES="$SORTEDMODULES_DEPS"
 }
 
 #
@@ -278,46 +257,10 @@ sort_dependencies() {
 # don't include $MODULE itself
 #
 sort_suggestions() {
-  # get dependencies
-  sort_dependencies $@
-  export DEPENDENCIES="$SORTEDMODULES"
-  # reset list
-  export SORTEDMODULES=""
-  # handle each modules passed as parameter
-  for m in "$@"; do
-    # did we find a module file for this mopdule?
-    if test "x$(eval echo \$HAVE_$m)" != "x"; then
-	  if test "x$(eval echo \$SUGS_$m)" != "x" ; then
-        for name in $(eval echo \$SUGS_$m); do
-			dep=$(fix_variable_name $name)
-			if test "x$(eval echo \$HAVE_$dep)" != "x"; then
-				_sort_module $dep
-			fi
-        done
-      fi
-    else
-      echo "ERROR: could not find module $(eval echo \$NAME_$m)" >&2
-      exit 1
-    fi
-  done
+  # get suggestions
+  sort_modules $1
   # save result
-  local FOUND=no
-  export MODULES=""
-  for m in $SORTEDMODULES; do
-    FOUND=no
-    for d in $DEPENDENCIES; do
-      if test "x$m" = "x$d"; then
-        FOUND=yes
-      fi
-    done
-    if test "x$FOUND" = "xno"; then
-      export MODULES="$MODULES $m"
-    fi
-  done
-  # clean up temporary variables
-  for m in $MODULES; do
-    export SORT_DONE_${m}=""
-  done
+  export MODULES="$SORTEDMODULES_SUGS"
 }
 
 #
@@ -329,6 +272,8 @@ sort_suggestions() {
 #
 _sort_module() {
   local module="$1"
+  local mode="$2"
+  test -n "$mode"
   local modname=""
   eval modname=\$NAME_$module
   local deps=""
@@ -336,13 +281,12 @@ _sort_module() {
   local dep=""
   local ver=""
   local depver=""
-  local xdeps=""
   shift 1
   if ! check_modname $module; then 
     echo "ERROR: invalid module name $module" >&2
     exit 1
   fi
-  if test "x$(eval echo \$SORT_DONE_${module})" != "xyes"; then
+  if test "x$(eval echo \$SORT_${mode}_DONE_${module})" != "xyes"; then
     # resolve dependencies
     eval deps=\$DEPS_$module
     #initially remove leading space
@@ -365,7 +309,7 @@ _sort_module() {
       #remove any leading whitespace or commas for the next iteration
       deps=`echo "$deps" | sed 's/^[, ]*//'`
       dep=$(fix_variable_name $name)
-      if ! check_modname $dep; then 
+      if ! check_modname $dep; then
         echo "ERROR: invalid module name $name" >&2
         exit 1
       fi
@@ -377,7 +321,8 @@ _sort_module() {
           echo "       but only $name = $ver is available." >&2
           exit 1
         fi
-        _sort_module $dep
+        depmode=$(test $mode = SUGS && echo SUGS || echo DEPS)
+        _sort_module $dep $depmode
       else
         # perhaps this module is installed,
         # then it should be handled via pkg-config
@@ -409,12 +354,18 @@ _sort_module() {
         exit 1
       fi
       if test "x$(eval echo \$HAVE_$dep)" != "x"; then
-        _sort_module $dep
+        _sort_module $dep SUGS
       fi
     done
     # insert this module into the list
-    export SORT_DONE_${module}=yes
-    export SORTEDMODULES="$SORTEDMODULES $module"
+    if test x$(eval echo \$SORT_DONE_${module}) != xyes; then
+      # it is sufficient to check that the module hasn't been handled yet, 
+      # as dependencies are handled before suggestions
+      export SORT_DONE_${module}=yes
+      export SORTEDMODULES_${mode}="$(eval echo \$SORTEDMODULES_${mode}) $module"
+      export SORTEDMODULES="$SORTEDMODULES $module"
+      export SORTEDMODULES_INFO="$SORTEDMODULES_INFO $module[$mode]"
+    fi
   fi
 }
 

@@ -681,6 +681,10 @@ case "$command" in
     ;;
   printdeps)
     find_modules_in_path
+    if test "x$SEARCH_MODULES" == "x"; then
+      echo "ERROR: printdeps requires an explicit --module=... parameter"  >&2
+      exit 1
+    fi
     mainmod=`echo $SEARCH_MODULES`
     name=`eval echo \\${NAME_$mainmod}`
 
@@ -711,21 +715,20 @@ case "$command" in
     echo "dependencies for $name"
 
     ### DEPENDENCIES
-    if test "x$SEARCH_MODULES" != "x"; then
-      MODULES=$SEARCH_MODULES
-    fi
-    sort_dependencies $MODULES
-    for mod in $MODULES; do
+    sort_modules $mainmod
+    for mod in $SORTEDMODULES_DEPS; do
       echo "  $mod (required)"
     done
-    ### 
-    sort_suggestions $mainmod
-    for mod in $MODULES; do
+    for mod in $SORTEDMODULES_SUGS; do
       echo "  $mod (suggested)"
     done
     ;;
   m4create)
     find_modules_in_path
+    if test "x$SEARCH_MODULES" == "x"; then
+      echo "ERROR: m4create requires an explicit --module=... parameter"  >&2
+      exit 1
+    fi
     mainmod=`echo $SEARCH_MODULES`
     fname="dependencies.m4"
     name=`eval echo \\${NAME_$mainmod}`
@@ -792,12 +795,10 @@ EOF
 EOF
       fi
     done
+	### ANALYSE MODULE
+    sort_modules $mainmod
     ### DEPENDENCIES
-    if test "x$SEARCH_MODULES" != "x"; then
-      MODULES=$SEARCH_MODULES
-    fi
-    sort_dependencies $MODULES
-    for mod in $MODULES; do
+    for mod in $SORTEDMODULES_DEPS; do
       name=`eval echo \\$NAME_$mod`
       MOD=`echo $mod | tr [:lower:] [:upper:]`
       cat >> $fname <<EOF
@@ -812,8 +813,7 @@ EOF
 EOF
     done
     ### 
-    sort_suggestions $mainmod
-    for mod in $MODULES; do
+    for mod in $SORTEDMODULES_SUGS; do
       name=`eval echo \\$NAME_$mod`
       MOD=`echo $mod | tr [:lower:] [:upper:]`
       cat >> $fname <<EOF
