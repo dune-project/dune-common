@@ -664,8 +664,8 @@ case "$command" in
     for mod in $MODULES; do
       path=$(eval echo \$PATH_$mod)
       name=$(eval echo \$NAME_$mod)
-      if test -f $p/dune.module; then
-        export DUNE_CONTROL_PATH="$DUNE_CONTROL_PATH:$p/dune.module"
+      if test -f "$path/dune.module"; then
+        export DUNE_CONTROL_PATH="$DUNE_CONTROL_PATH:$path/dune.module"
       else
         if test -f "$path/lib/dunecontrol/$name/dune.module"; then
           export DUNE_CONTROL_PATH="$DUNE_CONTROL_PATH:$path/lib/dunecontrol/$name/dune.module"
