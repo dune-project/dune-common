@@ -23,6 +23,7 @@ ALLM4S = 					\
 	dune_check_lib.m4			\
 	dune_common.m4				\
 	dune_compiler.m4			\
+	dune_fortran.m4				\
 	dune_deprecated.m4			\
 	dune_deprecated_cppflags.m4		\
 	dune_docu.m4				\
