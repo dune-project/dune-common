@@ -1,4 +1,3 @@
-#! /bin/bash
 # $Id$
 # searches for Superlu_Dist headers and libs
 AC_DEFUN([_slu_dist_lib_path],
