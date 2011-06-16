@@ -41,8 +41,8 @@ template<int x> struct static_assert_test {};
     If CONDITION is not true, dune_static_assert fails.
 
     If the C++0x language feature static_assert is available, dune_static_assert
-    should break down static_assert. Otherwise dune_static_assert implements a
-    test that trigger a compile time error if condition is false.
+    forwards everything to static_assert. Otherwise dune_static_assert implements a
+    test that triggers a compile time error if the condition is false.
 
     Example:
 
