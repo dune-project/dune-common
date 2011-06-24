@@ -221,10 +221,12 @@ namespace Dune
   template<class T>
   inline shared_ptr<T>& shared_ptr<T>::operator=(const shared_ptr<T>& other)
   {
-    if (other.rep_) {
+    if (other.rep_)
       (other.rep_->count_)++;
-      if(rep_!=0 && --(rep_->count_)<=0) delete rep_;
-    }
+
+    if(rep_!=0 && --(rep_->count_)<=0)
+      delete rep_;
+
     rep_ = other.rep_;
     return *this;
   }
