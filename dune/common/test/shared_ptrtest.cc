@@ -184,6 +184,15 @@ int main(){
       ret=1;
     }
 
+    // test assignment from null ptr
+    // (should trigger FS 936, needs valgrind to check)
+    {
+      shared_ptr<int> foo = shared_ptr<int>(new int(42));
+      shared_ptr<int> bar;        //null ptr
+
+      foo = bar;        // should release memory held by foo
+    }
+
     // test shared_ptr for stack allocation
     {
       int i = 10;
