@@ -1362,17 +1362,17 @@ installed or not. As an example, we show in this section a \dune module with sug
 for the modules \texttt{dune-localfunctions} and \texttt{dune-pdelab}.
 A subdirectory \texttt{my\_pdelab\_application} should only be built if these optional modules
 are installed. We assume that your project is set up in the traditional
-\texttt{automake} fashion that there is a \texttt{Makefile.am} in every subdirectory.
+\texttt{automake} fashion, i.e. there is a \texttt{Makefile.am} in every subdirectory.
 
-Suppose your \texttt{dune.module} file has dependencies to \texttt{dune-localfunctions}
-and \texttt{Dune-PDELab} specified in the \texttt{Suggests} section:
+Suppose your \texttt{dune.module} file has dependencies on \texttt{dune-localfunctions}
+and \texttt{dune-pdelab} specified in the \texttt{Suggests} section:
 \begin{lstlisting}[language=make]
 # in the dune.module file
 Module:   my_application
 Depends:  dune-common dune-grid dune-istl
 Suggests: dune-localfunctions dune-pdelab
 \end{lstlisting}
-There are three steps to be taken now:
+There are three steps to take now:
 \begin{enumerate}
   \item Call \texttt{DUNE\_CHECK\_MODULES} from your local \texttt{\textit{MODULE}\_CHECK\_MODULE}
     macro to implicitly define an \texttt{AM\_CONDITIONAL}.
@@ -1384,10 +1384,10 @@ There are three steps to be taken now:
 \minisec{The automake conditional}
 If you call the macro \texttt{DUNE\_CHECK\_MODULES} during your build process, 
 an \texttt{AM\_CONDITIONAL} named \texttt{HAVE\_\textit{SUGGESTEDMODULE}} is defined where
-\texttt{\textit{SUGGESTEDMODULE}} is the name of the suggested module in upper case and
-any \texttt{-} replaced by \texttt{\_}. For example for \texttt{dune-pdelab}, the
+\texttt{\textit{SUGGESTEDMODULE}} is the name of the suggested module in upper case, and
+with any \texttt{-} replaced by \texttt{\_}. For example, for \texttt{dune-pdelab} the
 name would be \texttt{HAVE\_DUNE\_PDELAB}. \texttt{DUNE\_CHECK\_MODULES}
-is defined in \texttt{dune-common/m4/dune.m4}, and it is very well documented there.
+is defined in \texttt{dune-common/m4/dune.m4}, and it is documented there.
 You should not call \texttt{DUNE\_CHECK\_MODULES} directly but in your local
 \texttt{m4} file in your module where your module's checks are defined,
 see section \ref{m4files}. For instance, if your module is \texttt{dune-foo},
@@ -1400,23 +1400,23 @@ AC_DEFUN([DUNE_FOO_CHECK_MODULE],
 \end{lstlisting}
 This way, the requested \texttt{AM\_CONDITIONAL} is created implicitly.
 
-\minisec{The Makfile.am clause}
+\minisec{The Makefile.am clause}
 Having the \texttt{AM\_CONDITIONAL} named \texttt{HAVE\_DUNE\_PDELAB}
 defined, you can use it in any \texttt{Makefile.am} of your project
-to optionally build subdirectories or applications using dune-pdelab:
+to optionally build subdirectories or applications using \texttt{dune-pdelab}:
 \begin{lstlisting}[language=make]
-# build the directory my_pdelab_application if pdelab is installed
+# build the directory my_pdelab_application if dune-pdelab is installed
 SUBDIRS = appl1 appl2
 if HAVE_DUNE_PDELAB
   SUBDIRS += my_pdelab_application
 endif
 \end{lstlisting}
-Compare this \dune-specific conditional build to general conditional builds in section
-\ref{makefile.am}, \texttt{conditional builds}.
+Compare this \dune-specific conditional build to general conditional builds in 
+Section~\ref{makefile.am}.
 
 \minisec{The configure.ac entry}
 Additionally, you have to specify in your \texttt{configure.ac}
-(section \ref{configure.ac}) that the Makefile in the directory
+(section \ref{configure.ac}) that the makefile in the directory
 \texttt{my\_pdelab\_application} should be built:
 \begin{lstlisting}[language=make]
 AC_CONFIG_FILES([Makefile
@@ -1427,7 +1427,7 @@ AC_CONFIG_FILES([Makefile
 AC_OUTPUT
 \end{lstlisting}
 Now, your project is prepared to build the subdirectory
-\texttt{my\_pdelab\_application} only if \texttt{Dune-PDELab} is successfully
+\texttt{my\_pdelab\_application} if and only if \texttt{dune-pdelab} is successfully
 installed on your machine.
 
 \section{Further documentation}
