@@ -22,10 +22,7 @@
 #   And sets:
 #
 #     HAVE_BOOST
-#        ENABLE_BOOST or undefined. Whether boost was found. The correct way to
-#        to check this is "#if HAVE_BOOST": This way boost featers will be disabled
-#        unless ${BOOST_CPPFLAGS} was given when compiling
-#        
+#
 # LICENSE
 #
 #   Copyright (c) 2008 Thomas Porschberg <thomas@randspringer.de>
@@ -36,11 +33,11 @@
 #   and this notice are preserved. This file is offered as-is, without any
 #   warranty.
 
-#serial 17
+#serial 21
 
 AC_DEFUN([AX_BOOST_BASE],
 [
-  AC_ARG_WITH([boost],
+AC_ARG_WITH([boost],
   [AS_HELP_STRING([--with-boost@<:@=ARG@:>@],
     [use Boost library from a standard location (ARG=yes),
      from the specified location (ARG=<path>),
@@ -62,7 +59,7 @@ AC_DEFUN([AX_BOOST_BASE],
 
 AC_ARG_WITH([boost-libdir],
         AS_HELP_STRING([--with-boost-libdir=LIB_DIR],
-        [Force given directory for boost libraries. Note that this will overwrite library path detection, so use this parameter only if default library detection fails and you know exactly where your boost libraries are located.]),
+        [Force given directory for boost libraries. Note that this will override library path detection, so use this parameter only if default library detection fails and you know exactly where your boost libraries are located.]),
         [
         if test -d "$withval"
         then
@@ -72,9 +69,9 @@ AC_ARG_WITH([boost-libdir],
         fi
         ],
         [ac_boost_lib_path=""]
-  )
+)
 
-  if test "x$want_boost" = "xyes"; then
+if test "x$want_boost" = "xyes"; then
     boost_lib_version_req=ifelse([$1], ,1.20.0,$1)
     boost_lib_version_req_shorten=`expr $boost_lib_version_req : '\([[0-9]]*\.[[0-9]]*\)'`
     boost_lib_version_req_major=`expr $boost_lib_version_req : '\([[0-9]]*\)'`
@@ -87,13 +84,14 @@ AC_ARG_WITH([boost-libdir],
     AC_MSG_CHECKING(for boostlib >= $boost_lib_version_req)
     succeeded=no
 
-    dnl On x86_64 systems check for system libraries in both lib64 and lib.
+    dnl On 64-bit systems check for system libraries in both lib64 and lib.
     dnl The former is specified by FHS, but e.g. Debian does not adhere to
     dnl this (as it rises problems for generic multi-arch support).
     dnl The last entry in the list is chosen by default when no libraries
     dnl are found, e.g. when only header-only libraries are installed!
     libsubdirs="lib"
-    if test `uname -m` = x86_64; then
+    ax_arch=`uname -m`
+    if test $ax_arch = x86_64 -o $ax_arch = ppc64 -o $ax_arch = s390x -o $ax_arch = sparc64; then
         libsubdirs="lib64 lib lib64"
     fi
 
@@ -101,8 +99,13 @@ AC_ARG_WITH([boost-libdir],
     dnl this location ist chosen if boost libraries are installed with the --layout=system option
     dnl or if you install boost with RPM
     if test "$ac_boost_path" != ""; then
-        BOOST_LDFLAGS="-L$ac_boost_path/$libsubdir"
-        BOOST_CPPFLAGS="-I$ac_boost_path/include -DENABLE_BOOST"
+        BOOST_CPPFLAGS="-I$ac_boost_path/include"
+        for ac_boost_path_tmp in $libsubdirs; do
+                if test -d "$ac_boost_path"/"$ac_boost_path_tmp" ; then
+                        BOOST_LDFLAGS="-L$ac_boost_path/$ac_boost_path_tmp"
+                        break
+                fi
+        done
     elif test "$cross_compiling" != yes; then
         for ac_boost_path_tmp in /usr /usr/local /opt /opt/local ; do
             if test -d "$ac_boost_path_tmp/include/boost" && test -r "$ac_boost_path_tmp/include/boost"; then
@@ -110,7 +113,7 @@ AC_ARG_WITH([boost-libdir],
                     if ls "$ac_boost_path_tmp/$libsubdir/libboost_"* >/dev/null 2>&1 ; then break; fi
                 done
                 BOOST_LDFLAGS="-L$ac_boost_path_tmp/$libsubdir"
-                BOOST_CPPFLAGS="-I$ac_boost_path_tmp/include -DENABLE_BOOST "
+                BOOST_CPPFLAGS="-I$ac_boost_path_tmp/include"
                 break;
             fi
         done
@@ -130,22 +133,23 @@ AC_ARG_WITH([boost-libdir],
 
     AC_REQUIRE([AC_PROG_CXX])
     AC_LANG_PUSH(C++)
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-        @%:@include <boost/version.hpp>
-      ]], [[
-        #if BOOST_VERSION >= $WANT_BOOST_VERSION
-        // Everything is okay
-        #else
-        #  error Boost version is too old
-        #endif
-      ]])],[
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+    @%:@include <boost/version.hpp>
+    ]], [[
+    #if BOOST_VERSION >= $WANT_BOOST_VERSION
+    // Everything is okay
+    #else
+    #  error Boost version is too old
+    #endif
+    ]])],[
         AC_MSG_RESULT(yes)
-        succeeded=yes
-        found_system=yes
-      ],[])
+    succeeded=yes
+    found_system=yes
+        ],[
+        ])
     AC_LANG_POP([C++])
-    CPPFLAGS="$ax_boost_base_save_CPPFLAGS"
-    LDFLAGS="$ax_boost_base_save_LDFLAGS"
+
+
 
     dnl if we found no boost with system layout we search for boost libraries
     dnl built and installed without the --layout=system option or for a staged(not installed) version
@@ -160,7 +164,7 @@ AC_ARG_WITH([boost-libdir],
                         _version=$_version_tmp
                     fi
                     VERSION_UNDERSCORE=`echo $_version | sed 's/\./_/'`
-                    BOOST_CPPFLAGS="-I$ac_boost_path/include/boost-$VERSION_UNDERSCORE  -DENABLE_BOOST"
+                    BOOST_CPPFLAGS="-I$ac_boost_path/include/boost-$VERSION_UNDERSCORE"
                 done
             fi
         else
@@ -179,7 +183,7 @@ AC_ARG_WITH([boost-libdir],
                 done
 
                 VERSION_UNDERSCORE=`echo $_version | sed 's/\./_/'`
-                BOOST_CPPFLAGS="-I$best_path/include/boost-$VERSION_UNDERSCORE  -DENABLE_BOOST"
+                BOOST_CPPFLAGS="-I$best_path/include/boost-$VERSION_UNDERSCORE"
                 if test "$ac_boost_lib_path" = ""; then
                     for libsubdir in $libsubdirs ; do
                         if ls "$best_path/$libsubdir/libboost_"* >/dev/null 2>&1 ; then break; fi
@@ -199,7 +203,7 @@ AC_ARG_WITH([boost-libdir],
                     V_CHECK=`expr $stage_version_shorten \>\= $_version`
                     if test "$V_CHECK" = "1" -a "$ac_boost_lib_path" = "" ; then
                         AC_MSG_NOTICE(We will use a staged boost library from $BOOST_ROOT)
-                        BOOST_CPPFLAGS="-I$BOOST_ROOT -DENABLE_BOOST"
+                        BOOST_CPPFLAGS="-I$BOOST_ROOT"
                         BOOST_LDFLAGS="-L$BOOST_ROOT/stage/$libsubdir"
                     fi
                 fi
@@ -210,22 +214,21 @@ AC_ARG_WITH([boost-libdir],
         LDFLAGS="$ax_boost_base_save_LDFLAGS $BOOST_LDFLAGS"
 
         AC_LANG_PUSH(C++)
-        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-            @%:@include <boost/version.hpp>
-          ]], [[
-            #if BOOST_VERSION >= $WANT_BOOST_VERSION
-            // Everything is okay
-            #else
-            #  error Boost version is too old
-            #endif
-          ]])],[
+            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+        @%:@include <boost/version.hpp>
+        ]], [[
+        #if BOOST_VERSION >= $WANT_BOOST_VERSION
+        // Everything is okay
+        #else
+        #  error Boost version is too old
+        #endif
+        ]])],[
             AC_MSG_RESULT(yes)
-            succeeded=yes
-            found_system=yes
-          ],[])
+        succeeded=yes
+        found_system=yes
+            ],[
+            ])
         AC_LANG_POP([C++])
-        CPPFLAGS="$ax_boost_base_save_CPPFLAGS"
-        LDFLAGS="$ax_boost_base_save_LDFLAGS"
     fi
 
     if test "$succeeded" != "yes" ; then
@@ -239,9 +242,13 @@ AC_ARG_WITH([boost-libdir],
     else
         AC_SUBST(BOOST_CPPFLAGS)
         AC_SUBST(BOOST_LDFLAGS)
-        AC_DEFINE(HAVE_BOOST, [ENABLE_BOOST],[Define to ENABLE_BOOST if the Boost library is available])
+        AC_DEFINE(HAVE_BOOST,,[define if the Boost library is available])
         # execute ACTION-IF-FOUND (if present):
         ifelse([$2], , :, [$2])
     fi
-  fi
+
+    CPPFLAGS="$ax_boost_base_save_CPPFLAGS"
+    LDFLAGS="$ax_boost_base_save_LDFLAGS"
+fi
+
 ])
