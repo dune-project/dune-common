@@ -6,7 +6,6 @@ SUBDIRS = . test exprtmpl parallel
 noinst_LTLIBRARIES = libcommon.la
 
 libcommon_la_SOURCES =				\
-	configparser.cc				\
 	fmatrixev.cc \
 	ios_state.cc				\
 	parametertree.cc                        \
@@ -27,7 +26,6 @@ commoninclude_HEADERS = 			\
 	bitsetvector.hh				\
 	classname.hh				\
 	collectivecommunication.hh		\
-	configparser.hh				\
 	debugstream.hh				\
 	deprecated.hh				\
 	densematrix.hh				\

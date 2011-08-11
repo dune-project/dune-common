@@ -7,7 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include <dune/common/parametertree.hh>
-#include <dune/common/configparser.hh>
+#include <dune/common/parametertreeparser.hh>
 
 template<class P>
 void testparam(const P & p)
@@ -112,25 +112,19 @@ int main()
       << "\n"
       << "[Foo]\n"
       << "peng = ligapokal\n";
-    Dune::ConfigParser c;
-    c.parseStream(s);
-    // test modifying and reading as configparser
-    testmodify<Dune::ConfigParser>(c);
-    try {
-      c.get<int>("testInt");
-      DUNE_THROW(Dune::Exception, "unexpected shallow copy of ConfigParser");
-    }
-    catch (Dune::RangeError & r) {}
-    // test modifying and reading as parametertree
+
+    Dune::ParameterTree c;
+    Dune::ParameterTreeParser::readINITree(s, c);
+
+    // test modifying and reading
     testmodify<Dune::ParameterTree>(c);
     try {
       c.get<int>("testInt");
       DUNE_THROW(Dune::Exception, "unexpected shallow copy of ParameterTree");
     }
     catch (Dune::RangeError & r) {}
-    // test as configparser
-    testparam<Dune::ConfigParser>(c);
-    // test as parametertree
+
+    // more const tests
     testparam<Dune::ParameterTree>(c);
   }
   catch (Dune::Exception & e)
