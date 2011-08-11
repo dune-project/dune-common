@@ -15,6 +15,15 @@
 #include "densevector.hh"
 #include "static_assert.hh"
 
+#if ! DUNE_COMMON_FIELDVECTOR_SIZE_IS_METHOD
+#warning The FieldVector class exports is size by the enum member 'size'.\
+  This behavior is deprecated.  In the future, 'size' will be a method,\
+  which puts it in compliance with the stl conventions.  To enable the new behavior\
+  (and get rid of this warning), build your Dune with --enable-fieldvector-size-is-method.\
+  If you do need the vector size as an enum, use 'dimension'.
+#endif
+
+
 namespace Dune {
 
   /** @addtogroup DenseMatVec
@@ -58,9 +67,12 @@ namespace Dune {
     //! export size
     enum {
       //! The size of this vector.
-      dimension = SIZE,
+      dimension = SIZE
+#if ! DUNE_COMMON_FIELDVECTOR_SIZE_IS_METHOD
+      ,
       //! The size of this vector.
       size = SIZE
+#endif
     };
 
     typedef typename Base::size_type size_type;
@@ -154,9 +166,12 @@ namespace Dune {
     //! export size
     enum {
       //! The size of this vector.
-      dimension = 1,
+      dimension = 1
+#if ! DUNE_COMMON_FIELDVECTOR_SIZE_IS_METHOD
+      ,
       //! The size of this vector.
       size = 1
+#endif
     };
 
     typedef typename Base::size_type size_type;
