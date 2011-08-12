@@ -8,7 +8,7 @@
 # "make check-log" will build the whole package and run all tests. For
 # each test a log file under $(topsrc_dir)/check-log is created which
 # contains the name of the test and what kind of test it was (build,
-# lib, run, ...). If a test fails this is logged, but all otehr tests
+# lib, run, ...). If a test fails this is logged, but all other tests
 # are still run.
 #
 # make OPTIONS:
