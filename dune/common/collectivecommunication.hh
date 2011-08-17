@@ -181,6 +181,26 @@ namespace Dune
     }
 
     /**
+     * @brief Gathers data from all tasks and distribute it to all.
+     *
+     * The block of data sent from the  jth  process  is  received  by  every
+     *  process and placed in the jth block of the buffer recvbuf.
+     *
+     * @param[in] sbuf The buffer with the data to send. Has to be the same for
+     *                 each task.
+     * @param[in] count The number of elements to send by any process.
+     * @param[out] rbuf The receive buffer for the data. Has to be of size
+     *  notasks*count, with notasks being the number of tasks in the communicator.
+     */
+    template<typename T>
+    int allgather(T* sbuf, int count, T* rbuf) const
+    {
+      for(T* end=sbuf+count; sbuf < end; ++sbuf, ++rbuf)
+        *sbuf=*rbuf;
+      return 0;
+    }
+
+    /**
      * @brief Compute something over all processes
      * for each component of an array and return the result
      * in every process.

@@ -314,6 +314,15 @@ namespace Dune
       return communicator;
     }
 
+    //! @copydoc CollectiveCommunication::allgather()
+    template<typename T, typename T1>
+    int allgather(T* sbuf, int count, T1* rbuf) const
+    {
+      return MPI_Allgather(sbuf, count, MPITraits<T>::getType(),
+                           rbuf, count, MPITraits<T1>::getType(),
+                           communicator);
+    }
+
     template<typename BinaryFunction, typename Type>
     int allreduce(Type* inout, int len) const
     {
@@ -324,6 +333,7 @@ namespace Dune
       return ret;
     }
 
+    //! @copydoc CollectiveCommunication::allreduce()
     template<typename BinaryFunction, typename Type>
     int allreduce(Type* in, Type* out, int len) const
     {
