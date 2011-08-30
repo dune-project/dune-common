@@ -2,6 +2,9 @@
 // vi: set et ts=4 sw=2 sts=2:
 #ifndef DUNE_SINGLETON_HH
 #define DUNE_SINGLETON_HH
+
+#include <memory>
+
 /**
  * @file
  * @brief Usefull wrapper for creating singletons.
@@ -50,48 +53,8 @@ namespace Dune
   template<class T>
   class Singleton
   {
-  public:
-    /**
-     * @brief A simple smart pointer responsible for creation
-     * and deletion of the instance.
-     */
-    class InstancePointer
-    {
-    public:
-      /** @brief Construct a null pointer. */
-      InstancePointer() : pointer_(0)
-      {}
-      /** @brief Delete the instance we point to. */
-      ~InstancePointer()
-      {
-        if(pointer_ != 0)
-          delete pointer_;
-      }
-      /**
-       * @brief Get a pointer to the instance.
-       * @return The instance we store.
-       */
-      T* get()
-      {
-        return pointer_;
-      }
-      /**
-       * @brief Set the pointer.
-       * @param pointer A pointer to the instance.
-       */
-      void set(T* pointer)
-      {
-        if(pointer != 0) {
-          delete pointer_;
-          pointer_ = pointer;
-        }
-      }
-    private:
-      T* pointer_;
-    };
-  private:
     /** @brief Smartpointer to the instance. */
-    static InstancePointer instance_;
+    static std::auto_ptr<T> instance_;
   protected:
     /* @brief Private constructor. */
     Singleton(){}
@@ -108,13 +71,13 @@ namespace Dune
     static T& instance()
     {
       if(instance_.get() == 0)
-        instance_.set(new T());
-      return *instance_.get();
+        instance_ = std::auto_ptr<T>(new T());
+      return *instance_;
     }
   };
 
   template<class T>
-  typename Singleton<T>::InstancePointer Singleton<T>::instance_;
+  typename std::auto_ptr<T> Singleton<T>::instance_;
 
 } // namespace Dune
 
