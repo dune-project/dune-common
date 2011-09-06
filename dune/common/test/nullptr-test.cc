@@ -8,7 +8,7 @@
 
 void basic_tests()
 {
-  typedef nullptr_t NULLPTR_T;
+  typedef Dune::nullptr_t NULLPTR_T;
   char* ch = nullptr;    // ch has the null pointer value
   char* ch2 = 0;         // ch2 has the null pointer value
 #ifdef FAIL

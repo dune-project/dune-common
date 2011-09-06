@@ -28,7 +28,9 @@ private:
   void operator&() const;    // whose address can't be taken
 } nullptr = {};              // and whose name is nullptr
 
-typedef dune_nullptr_t nullptr_t;
+namespace Dune {
+  typedef dune_nullptr_t nullptr_t;
+}
 
 template<class T>
 bool operator == (T* t, dune_nullptr_t)
@@ -40,6 +42,14 @@ template<class T>
 bool operator == (dune_nullptr_t, T* t)
 {
   return (t == static_cast<T*>(nullptr));
+}
+
+#else
+
+#include <cstddef>
+
+namespace Dune {
+  using std::nullptr_t;
 }
 
 #endif // HAVE_NULLPTR
