@@ -52,6 +52,39 @@ namespace Dune {
     typedef typename FieldTraits<K>::real_type real_type;
   };
 
+  /**
+   * @brief TMP to check the size of a DenseVectors statically, if possible.
+   *
+   * If the implementation type of C is  a FieldVector, we statically check
+   * whether its dimension is SIZE.
+   * @tparam C The implementation of the other DenseVector
+   * @tparam SIZE The size we need assume.
+   */
+  template<typename C, int SIZE>
+  struct IsFieldVectorSizeCorrect
+  {
+    enum {
+      /**
+         *@param True if C is not of type FieldVector or its dimension
+       * is not equal SIZE.
+       */
+      value = true
+    };
+  };
+
+  template<typename T, int SIZE>
+  struct IsFieldVectorSizeCorrect<FieldVector<T,SIZE>,SIZE>
+  {
+    enum {value = true};
+  };
+
+  template<typename T, int SIZE, int SIZE1>
+  struct IsFieldVectorSizeCorrect<FieldVector<T,SIZE1>,SIZE>
+  {
+    enum {value = false};
+  };
+
+
   /** \brief vector space out of a tensor product of fields.
    *
    * \tparam K    the field type (use float, double, complex, etc)
@@ -95,6 +128,7 @@ namespace Dune {
     template<class C>
     FieldVector (const DenseVector<C> & x)
     {
+      dune_static_assert(((bool)IsFieldVectorSizeCorrect<C,SIZE>::value), "FieldVectors do not match in dimension!");
       assert(x.size() == SIZE);
       for (size_type i = 0; i<SIZE; i++)
         _data[i] = x[i];
@@ -188,6 +222,7 @@ namespace Dune {
     template<class C>
     FieldVector (const DenseVector<C> & x)
     {
+      dune_static_assert(((bool)IsFieldVectorSizeCorrect<C,1>::value), "FieldVectors do not match in dimension!");
       assert(x.size() == 1);
       _data = x[0];
     }

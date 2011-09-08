@@ -6,6 +6,7 @@ TESTPROGS = \
     arraytest \
     bigunsignedinttest \
     bitsetvectortest \
+    check_fvector_size \
     conversiontest \
     deprtuplestest \
     dynmatrixtest \
@@ -54,6 +55,8 @@ TESTPROGS = \
 COMPILE_XFAIL=$(DUNE_COMMON_BIN)/xfail-compile-tests
 
 COMPILE_XFAIL_TESTS = \
+    check_fvector_size_fail1 \
+    check_fvector_size_fail2 \
     genericiterator_compile_fail \
     nullptr-test-fail \
     static_assert_test_fail \
@@ -154,6 +157,14 @@ fmatrixtest_SOURCES = fmatrixtest.cc
 fmatrixtest_LDADD = $(LAPACK_LIBS) $(LDADD)
 
 fvectortest_SOURCES = fvectortest.cc
+
+check_fvector_size_fail1_SOURCES = check_fvector_size_fail.cc
+check_fvector_size_fail1_CPPFLAGS = -DDIM=1
+
+check_fvector_size_fail2_SOURCES = check_fvector_size_fail.cc
+check_fvector_size_fail2_CPPFLAGS = -DDIM=3
+
+check_fvector_size_SOURCES = check_fvector_size.cc
 
 poolallocatortest_SOURCES = poolallocatortest.cc
 

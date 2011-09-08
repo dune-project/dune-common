@@ -66,3 +66,4 @@ shared_ptrtest_dune
 tuplestest_dune
 tuplestest_std
 tuplestest_tr1
+check_fvector_size
