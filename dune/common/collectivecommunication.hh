@@ -168,15 +168,42 @@ namespace Dune
       return 0;
     }
 
-    /** @brief  Each process sends its in array of length len to the root process
-            (including the root itself). In the root process these arrays are stored in rank
-            order in the out array which must have size len * number of processes.
+    /** @brief  Gather arrays on root task.
+     *
+     * Each process sends its in array of length len to the root process
+     * (including the root itself). In the root process these arrays are stored in rank
+     * order in the out array which must have size len * number of processes.
+     * @param[in] in The send buffer with the data to send.
+     * @param[out] out The buffer to store the received data in. Might have length zero on non-root
+     *                  tasks.
+     * @param[in] len The number of elements to send on each task.
+     * @param[out] root The root task that gathers the data.
      */
     template<typename T>
     int gather (T* in, T* out, int len, int root) const     // note out must have same size as in
     {
       for (int i=0; i<len; i++)
         out[i] = in[i];
+      return 0;
+    }
+
+    /** @brief Scatter array from a root to all other task.
+     *
+     * The root process sends the elements with index from k*len to (k+1)*len-1 in its array to
+     * task k, which stores it at index 0 to len-1.
+     * @param[in] send The array to scatter. Might have length zero on non-root
+     *                  tasks.
+     * @param[out] recv The buffer to store the received data in. Upon completion of the
+     *                 method each task will have same data stored there as the one in
+     *                 send buffer of the root task before.
+     * @param[in] len The number of elements in the recv buffer.
+     * @param[out] root The root task that gathers the data.
+     */
+    template<typename T>
+    int scatter (T* send, T* recv, int len, int root) const // note out must have same size as in
+    {
+      for (int i=0; i<len; i++)
+        recv[i] = send[i];
       return 0;
     }
 

@@ -309,6 +309,15 @@ namespace Dune
                         root,communicator);
     }
 
+    //! @copydoc CollectiveCommunication::gather()
+    template<typename T>
+    int scatter (T* send, T* recv, int len, int root) const // note out must have space for P*len elements
+    {
+      return MPI_Scatter(send,len,MPITraits<T>::getType(),
+                         recv,len,MPITraits<T>::getType(),
+                         root,communicator);
+    }
+
     operator MPI_Comm () const
     {
       return communicator;
