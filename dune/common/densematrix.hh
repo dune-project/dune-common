@@ -350,7 +350,6 @@ namespace Dune
     void mv (const X& x, Y& y) const
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
-      assert(&x != &y);
       if (x.N()!=M()) DUNE_THROW(FMatrixError,"Index out of range");
       if (y.N()!=N()) DUNE_THROW(FMatrixError,"Index out of range");
 #endif
