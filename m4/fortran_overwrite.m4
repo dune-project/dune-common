@@ -23,13 +23,13 @@ AC_DEFUN([__AC_FC_NAME_MANGLING],
 [_AC_FORTRAN_ASSERT()dnl
 AC_CACHE_CHECK([for Fortran name-mangling scheme],
                ac_cv_[]_AC_LANG_ABBREV[]_mangling,
-[AC_COMPILE_IFELSE(
+[AC_COMPILE_IFELSE([AC_LANG_SOURCE(
 [      subroutine foobar()
       return
       end
       subroutine foo_bar()
       return
-      end],
+      end])],
 [mv conftest.$ac_objext cfortran_test.$ac_objext
 
   ac_save_LIBS=$LIBS
