@@ -13,12 +13,12 @@ AC_DEFUN([DUNE_BOOST_FUSION],
         AC_CACHE_CHECK(whether the Boost::FUSION library is available,
                                dune_cv_boost_fusion,
                                [AC_LANG_PUSH([C++])
-                               AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[ @%:@include <boost/fusion/container.hpp>
+                               AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[ @%:@include <boost/fusion/container.hpp>
                                   ]],
                                   [[
                                     boost::fusion::vector<int,char,double> v;
                                     return 0;
-                                   ]]),
+                                   ]])],
                                dune_cv_boost_fusion=yes, dune_cv_boost_fusion=no)
                                AC_LANG_POP([C++])])
          if test "x$dune_cv_boost_fusion" = "xyes"; then
