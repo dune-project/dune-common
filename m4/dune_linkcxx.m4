@@ -6,12 +6,12 @@ AC_DEFUN([DUNE_LINKCXX],[
 AC_LANG_PUSH([C++])
 
 AC_MSG_CHECKING([whether compiling C++ code works])
-AC_COMPILE_IFELSE(
+AC_COMPILE_IFELSE([
   AC_LANG_SOURCE(
     [ #include <iostream>
       int main (int argc, char** argv) { 
       std::cout << std::endl;
-      }]),
+      }])],
   [ AC_MSG_RESULT([yes]);
     AC_MSG_CHECKING([whether linking C++ objects works]);
 	# link from object file
