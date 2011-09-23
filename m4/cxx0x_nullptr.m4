@@ -3,7 +3,7 @@ AC_DEFUN([NULLPTR_CHECK],[
   AC_REQUIRE([GXX0X])
   AC_LANG_PUSH([C++])
   AC_MSG_CHECKING([whether nullptr is supported])
-  AC_TRY_COMPILE([],[typedef nullptr_t peng;
+  AC_TRY_COMPILE([],[
     char* ch = nullptr;
     ], [
     HAVE_NULLPTR=yes
