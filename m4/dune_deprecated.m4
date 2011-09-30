@@ -14,13 +14,17 @@ AC_DEFUN([DUNE_CHECKDEPRECATED],[
                     class t_peng { t_peng() {}; } DEP;
                     void foo() DEP;
                     void foo() {};],[],
-				   [DUNE_DEPRECATED="__attribute__((deprecated))"
-                    AC_MSG_RESULT(yes)],
-				   [DUNE_DEPRECATED=""
-                    AC_MSG_RESULT(no)])
+                                  [DUNE_DEPRECATED="__attribute__((deprecated))"
+                                   DUNE_DEPRECATED_MSG="__attribute__((deprecated(msg) ))"
+                     AC_MSG_RESULT(yes)],
+                                  [DUNE_DEPRECATED=""
+                                   DUNE_DEPRECATED_MSG=""
+                     AC_MSG_RESULT(no)])
 
-        AC_LANG_POP([C++])
-
+         AC_LANG_POP([C++])
+ 
     AC_DEFINE_UNQUOTED(DUNE_DEPRECATED, $DUNE_DEPRECATED,
                       [how to create a deprecation warning])
+    AC_DEFINE_UNQUOTED(DUNE_DEPRECATED_MSG(msg), $DUNE_DEPRECATED_MSG,
+                      [how to create a deprecation warning with an additional message])
 ])
