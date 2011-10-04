@@ -14,13 +14,32 @@ AC_DEFUN([DUNE_CHECKDEPRECATED],[
                     class t_peng { t_peng() {}; } DEP;
                     void foo() DEP;
                     void foo() {};],[],
-				   [DUNE_DEPRECATED="__attribute__((deprecated))"
+                                  [DUNE_DEPRECATED="__attribute__((deprecated))"
                     AC_MSG_RESULT(yes)],
-				   [DUNE_DEPRECATED=""
+                                  [DUNE_DEPRECATED=""
                     AC_MSG_RESULT(no)])
 
         AC_LANG_POP([C++])
 
+	AC_MSG_CHECKING([for __attribute__((deprecated("message")))])
+        AC_LANG_PUSH([C++])
+        AC_TRY_COMPILE([#define DEP __attribute__((deprecated("fireworks!")))
+                    class bar { bar() DEP; };
+                    class peng { } DEP;
+                    template <class T>
+                    class t_bar { t_bar() DEP; };
+                    template <class T>
+                    class t_peng { t_peng() {}; } DEP;
+                    void foo() DEP;
+                    void foo() {};],[],
+                                  [DUNE_DEPRECATED_MSG="__attribute__((deprecated(msg) ))"
+                     AC_MSG_RESULT(yes)],
+                                  [DUNE_DEPRECATED_MSG="$DUNE_DEPRECATED"
+                     AC_MSG_RESULT(no)])
+         AC_LANG_POP([C++])
+ 
     AC_DEFINE_UNQUOTED(DUNE_DEPRECATED, $DUNE_DEPRECATED,
                       [how to create a deprecation warning])
+    AC_DEFINE_UNQUOTED(DUNE_DEPRECATED_MSG(msg), $DUNE_DEPRECATED_MSG,
+                      [how to create a deprecation warning with an additional message])
 ])
