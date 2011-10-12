@@ -5,13 +5,16 @@ AC_DEFUN([_slu_dist_lib_path],
 	my_include_path=include/superludist
 	my_lib_path=lib
 	my_slu_found=yes
+	ls $1/$my_include_path/$2
 	if test ! -f "$1/$my_include_path/$2" ; then
 	    #Try to find headers under superlu
 	    my_include_path=include
-	    if test ! -f "$with_superlu/$my_include_path/$2" ; then
+	    ls $1/$my_include_path/$2
+	    if test ! -f "$with_superlu_dist/$my_include_path/$2" ; then
 		my_include_path=SRC
+		ls $1/$my_include_path/$2
 		my_lib_path=""
-		if test ! -f "$with_superlu/$my_include_path/$2"; then
+		if test ! -f "$with_superlu_dist/$my_include_path/$2"; then
 		    my_slu_found=no
 		fi
 	    fi
@@ -72,7 +75,7 @@ AC_DEFUN([DUNE_PATH_SUPERLU_DIST],[
 		# Search in default locations
 		    _slu_dist_search_default
 		])
-	
+	AC_MSG_RESULT([$with_superlu_dist/$my_include_path])
 	AC_ARG_WITH([super_lu_dist_lib],
 	    [AC_HELP_STRING([--with-superlu-dist-lib],[The name of the static SuperLUDist library to link to. By default the shared library with the name superlu-mpi is tried])],
 	    [
