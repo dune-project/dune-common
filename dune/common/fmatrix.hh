@@ -30,11 +30,18 @@ namespace Dune
    */
 
   template< class K, int ROWS, int COLS > class FieldMatrix;
+
   template< class K, int ROWS, int COLS >
   struct DenseMatVecTraits< FieldMatrix<K,ROWS,COLS> >
   {
     typedef FieldMatrix<K,ROWS,COLS> derived_type;
+
+    // each row is implemented by a field vector
     typedef FieldVector<K,COLS> row_type;
+
+    typedef row_type &row_reference;
+    typedef const row_type &const_row_reference;
+
     typedef Dune::array<row_type,ROWS> container_type;
     typedef K value_type;
     typedef typename container_type::size_type size_type;
@@ -72,6 +79,9 @@ namespace Dune
 
     typedef typename Base::size_type size_type;
     typedef typename Base::row_type row_type;
+
+    typedef typename Base::row_reference row_reference;
+    typedef typename Base::const_row_reference const_row_reference;
 
     //===== constructors
     /** \brief Default constructor
@@ -161,11 +171,15 @@ namespace Dune
     // make this thing a matrix
     size_type mat_rows() const { return ROWS; }
     size_type mat_cols() const { return COLS; }
-    row_type & mat_access(size_type i) {
+
+    row_reference mat_access ( size_type i )
+    {
       assert(i < ROWS);
       return _data[i];
     }
-    const row_type & mat_access(size_type i) const {
+
+    const_row_reference mat_access ( size_type i ) const
+    {
       assert(i < ROWS);
       return _data[i];
     }
@@ -194,8 +208,10 @@ namespace Dune
       blocklevel = 1
     };
 
-    //! Each row is implemented by a field vector
-    typedef FieldVector<K,1> row_type;
+    typedef typename Base::row_type row_type;
+
+    typedef typename Base::row_reference row_reference;
+    typedef typename Base::const_row_reference const_row_reference;
 
     //! export size
     enum {
@@ -257,11 +273,15 @@ namespace Dune
     // make this thing a matrix
     size_type mat_rows() const { return 1; }
     size_type mat_cols() const { return 1; }
-    row_type & mat_access(size_type i) {
+
+    row_reference mat_access ( size_type i )
+    {
       assert(i == 0);
       return _data;
     }
-    const row_type & mat_access(size_type i) const {
+
+    const_row_reference mat_access ( size_type i ) const
+    {
       assert(i == 0);
       return _data;
     }
