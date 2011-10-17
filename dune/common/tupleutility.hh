@@ -1486,13 +1486,13 @@ namespace Dune {
 
 
   /**
-   * @brief Finding the index of a certain in a tuple
+   * @brief Finding the index of a certain type in a tuple
    *
    * \tparam Tuple     The tuple type to search in.
    * \tparam Predicate Predicate which tells FirstPredicateIndex which types
    *                   in Tuple to accept.  This should be a class template
    *                   taking a single type template argument.  When
-   *                   instanciated, it should contain a static member
+   *                   instantiated, it should contain a static member
    *                   constant \c value which should be convertible to bool.
    *                   A type is accepted if \c value is \c true, otherwise it
    *                   is rejected and the next type is tried.  Look at IsType
