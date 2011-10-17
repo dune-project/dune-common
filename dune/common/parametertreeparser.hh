@@ -113,9 +113,12 @@ namespace Dune {
 
     //@}
 
-    /** \brief parse command line
+    /** \brief parse command line options and build hierarchical ParameterTree structure
      *
-     * Parses command line options and build hierarchical ParameterTree structure.
+     * The list of command line options is searched for pairs of the type <kbd>-key value</kbd>
+     * (note the hyphen in front of the key).
+     * For each such pair of options a key-value pair with the corresponding names
+     * is then created in the ParameterTree.
      *
      * \param argc arg count
      * \param argv arg values
