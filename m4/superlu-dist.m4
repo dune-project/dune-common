@@ -5,14 +5,11 @@ AC_DEFUN([_slu_dist_lib_path],
 	my_include_path=include/superludist
 	my_lib_path=lib
 	my_slu_found=yes
-	ls $1/$my_include_path/$2
 	if test ! -f "$1/$my_include_path/$2" ; then
 	    #Try to find headers under superlu
 	    my_include_path=include
-	    ls $1/$my_include_path/$2
 	    if test ! -f "$with_superlu_dist/$my_include_path/$2" ; then
 		my_include_path=SRC
-		ls $1/$my_include_path/$2
 		my_lib_path=""
 		if test ! -f "$with_superlu_dist/$my_include_path/$2"; then
 		    my_slu_found=no
