@@ -7,7 +7,7 @@
 .tex.dvi:
 	set -e; builddir=$$PWD; \
 	pushd $(srcdir); $(TEX) -output-directory=$$builddir </dev/null $*; popd; \
-	while grep Rerun $*.log > /dev/null ; do \
+	while grep 'Rerun to get' $*.log > /dev/null ; do \
 	  pushd $(srcdir); $(TEX) -output-directory=$$builddir </dev/null $*; popd; \
 	done; \
 	if grep '^\\bibdata{' *.aux > /dev/null \
@@ -15,7 +15,7 @@
 	then \
 	  BSTINPUTS=.:$(srcdir):${BSTINPUTS}: BIBINPUTS=.:$(srcdir):${BIBINPUTS}: $(BIBTEX) $* || exit $$?; \
 	  pushd $(srcdir); $(TEX) -output-directory=$$builddir </dev/null $*; popd; \
-	  while grep Rerun $*.log > /dev/null ; do \
+	  while grep 'Rerun to get' $*.log > /dev/null ; do \
 	    pushd $(srcdir); $(TEX) -output-directory=$$builddir </dev/null $*; popd; \
 	  done ; \
 	fi
