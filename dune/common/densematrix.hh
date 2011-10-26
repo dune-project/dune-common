@@ -47,7 +47,7 @@ namespace Dune
       typedef FieldVector<K,N> V;
       static typename V::size_type size(const V & v) { return N; }
     };
-  };
+  }
 
   /**
       @addtogroup DenseMatVec
