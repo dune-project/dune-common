@@ -32,7 +32,12 @@ namespace Dune
   struct DenseMatVecTraits< DynamicMatrix<K> >
   {
     typedef DynamicMatrix<K> derived_type;
+
     typedef DynamicVector<K> row_type;
+
+    typedef row_type &row_reference;
+    typedef const row_type &const_row_reference;
+
     typedef std::vector<K> container_type;
     typedef K value_type;
     typedef typename container_type::size_type size_type;

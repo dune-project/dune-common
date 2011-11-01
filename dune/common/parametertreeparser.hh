@@ -10,50 +10,8 @@
 
 namespace Dune {
 
-  /** \brief Parser for hierarchical configuration files
+  /** \brief Parsers to set up a ParameterTree from various input sources
    * \ingroup Common
-   *
-   * This class parses config files into a hierarchical structure.
-   * Config files should look like this
-   *
-     \verbatim
-   # this file configures fruit colors in fruitsalad
-
-
-   ##these are no fruit but could also appear in fruit salad
-     honeydewmelon = yellow
-     watermelon = green
-
-     fruit.tropicalfruit.orange = orange
-
-     [fruit]
-     strawberry = red
-     pomegranate = red
-
-     [fruit.pipfruit]
-     apple = green/red/yellow
-     pear = green
-
-     [fruit.stonefruit]
-     cherry = red
-     plum = purple
-
-     \endverbatim
-   *
-   *
-   * If a '[prefix]' statement appears all following entries use this prefix
-   * until the next '[prefix]' statement. Fruitsalads for example contain:
-     \verbatim
-     honeydewmelon = yellow
-     fruit.tropicalfruit.orange = orange
-     fruit.pipfruit.apple = green/red/yellow
-     fruit.stonefruit.cherry = red
-     \endverbatim
-   *
-   * All keys with a common 'prefix.' belong to the same substructure called
-   * 'prefix'.  Leading and trailing spaces and tabs are removed from the
-   * values unless you use single or double quotes around them.  Using single
-   * or double quotes you can also have multiline values.
    *
    */
   class ParameterTreeParser
@@ -64,6 +22,51 @@ namespace Dune {
 
 
   public:
+
+    /** @name Parsing methods for the INITTree file format
+     *
+     *  INITTree files should look like this
+     *  \verbatim
+     # this file configures fruit colors in fruitsalad
+
+
+     ##these are no fruit but could also appear in fruit salad
+       honeydewmelon = yellow
+       watermelon = green
+
+       fruit.tropicalfruit.orange = orange
+
+       [fruit]
+       strawberry = red
+       pomegranate = red
+
+       [fruit.pipfruit]
+       apple = green/red/yellow
+       pear = green
+
+       [fruit.stonefruit]
+       cherry = red
+       plum = purple
+
+       \endverbatim
+     *
+     *
+     * If a '[prefix]' statement appears all following entries use this prefix
+     * until the next '[prefix]' statement. Fruitsalads for example contain:
+       \verbatim
+       honeydewmelon = yellow
+       fruit.tropicalfruit.orange = orange
+       fruit.pipfruit.apple = green/red/yellow
+       fruit.stonefruit.cherry = red
+       \endverbatim
+     *
+     * All keys with a common 'prefix.' belong to the same substructure called
+     * 'prefix'.  Leading and trailing spaces and tabs are removed from the
+     * values unless you use single or double quotes around them.  Using single
+     * or double quotes you can also have multiline values.
+     */
+    //@{
+
     /** \brief parse C++ stream
      *
      * Parses C++ stream and build hierarchical config structure.
@@ -108,10 +111,14 @@ namespace Dune {
      */
     static void readINITree(std::string file, ParameterTree& pt, bool overwrite = true);
 
+    //@}
 
-    /** \brief parse command line
+    /** \brief parse command line options and build hierarchical ParameterTree structure
      *
-     * Parses command line options and build hierarchical ParameterTree structure.
+     * The list of command line options is searched for pairs of the type <kbd>-key value</kbd>
+     * (note the hyphen in front of the key).
+     * For each such pair of options a key-value pair with the corresponding names
+     * is then created in the ParameterTree.
      *
      * \param argc arg count
      * \param argv arg values

@@ -129,9 +129,9 @@ void test_blockblockvector()
 //                MyDepth<FieldMatrix<K,iN,iM>,Mat>::value-1>::type
 //     ParentBlockType;
 //   /* constructor */
-//   MatrixMulVector(const Mat & _A, const Vec & _v, int* _M,
+//   MatrixMulVector(const Mat & _A, const Vec & _v, int* _DUNE_TEST_M,
 //                   const ParentBlockType & _parent) :
-//     parent(_parent), M(_M), A(_A), v(_v )
+//     parent(_parent), M(_DUNE_TEST_M), A(_A), v(_v )
 //     {
 //       int parent_i = M[0];
 //       typename Mat::ConstColIterator it = A[parent_i].begin();
@@ -175,20 +175,20 @@ void test_matrix()
 
   LVB a(0);
   VB b(2);
-  MB _M(1);
-  _M[1][1] = 3;
+  MB _DUNE_TEST_M(1);
+  _DUNE_TEST_M[1][1] = 3;
 
   // a += M * b
-  _M.umv(b,a);
+  _DUNE_TEST_M.umv(b,a);
 
 #ifndef NOPRINT
-  printmatrix (std::cout, _M, "Matrix", "r");
+  printmatrix (std::cout, _DUNE_TEST_M, "Matrix", "r");
   printvector (std::cout, a, "Vector", "r");
 #endif
 
   // a = M * b
 #if 0
-  a = _M*b;
+  a = _DUNE_TEST_M*b;
 #endif
 
 #ifndef NOPRINT

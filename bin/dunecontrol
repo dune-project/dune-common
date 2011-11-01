@@ -471,25 +471,26 @@ usage () {
 
 # create the module list
 create_module_list() {
-  export RESUME_FILE="$HOME/.dune.resume"
-  if test "x$DUNE_OPTS_FILE" != "x"; then
+  # try to get the resume file name from the options
+  if test -z "$RESUME_FILE" && test -n "$DUNE_OPTS_FILE"; then
     export RESUME_FILE="$(eval . $DUNE_OPTS_FILE; eval echo \$RESUME_FILE)"
   fi
 
-  if test "x$RESUME_FLAG" = "xyes" ; then
-    if test -s $RESUME_FILE ; then
-      export MODULES=
-      RESUME="`cat $RESUME_FILE`"
-      for a in $RESUME ; do
+  if test "$RESUME_FLAG" = "yes" ; then
+    if ! test -s "$RESUME_FILE" ; then
+      echo "Error: No previous run to resume. Please make sure that the RESUME_FILE"
+      echo "       is the name of a writeable file (currently it is '$RESUME_FILE')"
+      exit 1
+    fi
+
+    export MODULES=
+    RESUME="`cat $RESUME_FILE`"
+    for a in $RESUME ; do
         export NAME_`fix_variable_name $a`="$a"
         fix_and_assign MODULE "$a"
         export SEARCH_MODULES="$SEARCH_MODULES $MODULE"
         export ONLY="$ONLY $MODULE"
-      done
-    else
-      echo "Error: No previous run to resume. ('$RESUME_FILE' is empty or does not exist)"
-      exit 1
-    fi
+    done
   fi
 
   find_modules_in_path
@@ -861,17 +862,25 @@ EOF
       fi
     done
     echo "--- going to build $NAMES ---"
-    for mod in $MODULES; do
-      echo $mod
-    done > $RESUME_FILE
+    if test -n "$RESUME_FILE"; then
+        # write all modules to the resume file
+        for mod in $MODULES ; do
+            echo "$mod"
+        done > "$RESUME_FILE"
+    fi
+
     for mod in $MODULES; do
       build_module "$mod" "$@"
-      modules_togo=`cat $RESUME_FILE`
-      for module_togo in $modules_togo ; do
-        if test x$module_togo != x$mod ; then
-          echo $module_togo
-        fi
-      done > $RESUME_FILE
+
+      if test -n "$RESUME_FILE"; then
+          # remove the current module from the resume file
+          modules_togo=`cat $RESUME_FILE`
+          for mod_togo in $modules_togo ; do
+              if test "$mod_togo" != "$mod" ; then
+                  echo "$mod_togo"
+              fi
+          done > "$RESUME_FILE"
+      fi
     done
     echo "--- done ---"
   ;;

@@ -43,10 +43,10 @@ int main ()
 {
   try
   {
-#ifdef _M
-    Dune::FieldMatrix<int,_N,_M> x;
+#ifdef _DUNE_TEST_M
+    Dune::FieldMatrix<int,_DUNE_TEST_N,_DUNE_TEST_M> x;
 #else
-    Dune::FieldVector<int,_N> x;
+    Dune::FieldVector<int,_DUNE_TEST_N> x;
 #endif
 
     x <<= _VALUES;
