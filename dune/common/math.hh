@@ -11,7 +11,7 @@ namespace Dune
   /**
      \brief Provides commonly used mathematical constants.
 
-     a struct that is specilized for types repesenting real or complex
+     a struct that is specialized for types repesenting real or complex
      numbers. I provides commonly used mathematical constants with the
      required accuary for the specified type.
    */
@@ -21,7 +21,7 @@ namespace Dune
   /**
      \brief Standard implementation of MathematicalConstants.
 
-     This implementation will work with all build in floating point
+     This implementation will work with all built-in floating point
      types. It provides
 
    * e as std::exp(1.0)
