@@ -1,8 +1,14 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 
-#ifndef DUNE_GEOMETRY_TYPE_HH
-#define DUNE_GEOMETRY_TYPE_HH
+#ifndef DISABLE_GEOMETRYTYPE_DEPRECATION_WARNING
+#warning #include <dune/common/geometrytype.hh> is deprecated. Use
+#warning #include <dune/geometry/type.hh> instead. You may need the new
+#warning Dune-Geometry core module.
+#endif // DISABLE_GEOMETRYTYPE_DEPRECATION_WARNING
+
+#ifndef DUNE_COMMON_GEOMETRYTYPE_HH
+#define DUNE_COMMON_GEOMETRYTYPE_HH
 
 #include <cassert>
 
@@ -378,4 +384,4 @@ namespace Dune {
   }
 }
 
-#endif
+#endif // DUNE_COMMON_GEOMETRYTYPE_HH
