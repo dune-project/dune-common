@@ -1,6 +1,15 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 
+#ifndef DISABLE_GEOMETRYTYPEINDEX_DEPRECATION_WARNING
+#warning #include <dune/common/geometrytypeindex.hh> is deprecated. Use
+#warning #include <dune/geometry/typeindex.hh> instead. You may need the new
+#warning Dune-Geometry core module.
+#warning NOTE: <dune/common/geometrytypeindex.hh> was never part of a release,
+#warning so this compatibility mechanism should be removed before the 2.2
+#warning release.
+#endif // DISABLE_GEOMETRYTYPEINDEX_DEPRECATION_WARNING
+
 #ifndef DUNE_COMMON_GEOMETRYTYPEINDEX_HH
 #define DUNE_COMMON_GEOMETRYTYPEINDEX_HH
 
@@ -11,7 +20,9 @@
 
 #include <cstddef>
 
+#define DISABLE_GEOMETRYTYPE_DEPRECATION_WARNING
 #include <dune/common/geometrytype.hh>
+#undef DISABLE_GEOMETRYTYPE_DEPRECATION_WARNING
 
 namespace Dune {
 
