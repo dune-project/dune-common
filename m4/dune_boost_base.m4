@@ -19,7 +19,7 @@
 #
 #     HAVE_BOOST
 #        ENABLE_BOOST or undefined. Whether boost was found. The correct way to
-#        to check this is "#if HAVE_BOOST": This way boost featers will be disabled
+#        to check this is "#if HAVE_BOOST": This way boost features will be disabled
 #        unless ${BOOST_CPPFLAGS} was given when compiling
 #serial 1
 AC_DEFUN([DUNE_BOOST_BASE],
