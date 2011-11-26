@@ -297,7 +297,8 @@ namespace Dune
     //===== vector space arithmetic
 
     //! vector space addition
-    DenseMatrix& operator+= (const DenseMatrix& y)
+    template <class Other>
+    DenseMatrix& operator+= (const DenseMatrix<Other>& y)
     {
       for (size_type i=0; i<rows(); i++)
         (*this)[i] += y[i];
@@ -305,7 +306,8 @@ namespace Dune
     }
 
     //! vector space subtraction
-    DenseMatrix& operator-= (const DenseMatrix& y)
+    template <class Other>
+    DenseMatrix& operator-= (const DenseMatrix<Other>& y)
     {
       for (size_type i=0; i<rows(); i++)
         (*this)[i] -= y[i];
@@ -329,7 +331,8 @@ namespace Dune
     }
 
     //! vector space axpy operation (*this += k y)
-    DenseMatrix &axpy (const field_type &k, const DenseMatrix &y )
+    template <class Other>
+    DenseMatrix &axpy (const field_type &k, const DenseMatrix<Other> &y )
     {
       for( size_type i = 0; i < rows(); ++i )
         (*this)[ i ].axpy( k, y[ i ] );
@@ -337,7 +340,8 @@ namespace Dune
     }
 
     //! Binary matrix comparison
-    bool operator== (const DenseMatrix& y) const
+    template <class Other>
+    bool operator== (const DenseMatrix<Other>& y) const
     {
       for (size_type i=0; i<rows(); i++)
         if ((*this)[i]!=y[i])
@@ -345,7 +349,8 @@ namespace Dune
       return true;
     }
     //! Binary matrix incomparison
-    bool operator!= (const DenseMatrix& y) const
+    template <class Other>
+    bool operator!= (const DenseMatrix<Other>& y) const
     {
       return !operator==(y);
     }

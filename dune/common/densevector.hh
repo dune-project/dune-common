@@ -393,7 +393,8 @@ namespace Dune {
     //===== vector space arithmetic
 
     //! vector space addition
-    derived_type& operator+= (const DenseVector& y)
+    template <class Other>
+    derived_type& operator+= (const DenseVector<Other>& y)
     {
       assert(y.size() == size());
       for (size_type i=0; i<size(); i++)
@@ -402,7 +403,8 @@ namespace Dune {
     }
 
     //! vector space subtraction
-    derived_type& operator-= (const DenseVector& y)
+    template <class Other>
+    derived_type& operator-= (const DenseVector<Other>& y)
     {
       assert(y.size() == size());
       for (size_type i=0; i<size(); i++)
@@ -411,14 +413,16 @@ namespace Dune {
     }
 
     //! Binary vector addition
-    derived_type operator+ (const DenseVector& b) const
+    template <class Other>
+    derived_type operator+ (const DenseVector<Other>& b) const
     {
       derived_type z = asImp();
       return (z+=b);
     }
 
     //! Binary vector subtraction
-    derived_type operator- (const DenseVector& b) const
+    template <class Other>
+    derived_type operator- (const DenseVector<Other>& b) const
     {
       derived_type z = asImp();
       return (z-=b);
@@ -457,7 +461,8 @@ namespace Dune {
     }
 
     //! Binary vector comparison
-    bool operator== (const DenseVector& y) const
+    template <class Other>
+    bool operator== (const DenseVector<Other>& y) const
     {
       assert(y.size() == size());
       for (size_type i=0; i<size(); i++)
@@ -468,14 +473,16 @@ namespace Dune {
     }
 
     //! Binary vector incomparison
-    bool operator!= (const DenseVector& y) const
+    template <class Other>
+    bool operator!= (const DenseVector<Other>& y) const
     {
       return !operator==(y);
     }
 
 
     //! vector space axpy operation ( *this += a y )
-    derived_type& axpy (const value_type& a, const DenseVector& y)
+    template <class Other>
+    derived_type& axpy (const value_type& a, const DenseVector<Other>& y)
     {
       assert(y.size() == size());
       for (size_type i=0; i<size(); i++)
@@ -486,7 +493,8 @@ namespace Dune {
     //===== Euclidean scalar product
 
     //! scalar product (x^T y)
-    value_type operator* (const DenseVector& y) const
+    template <class Other>
+    value_type operator* (const DenseVector<Other>& y) const
     {
       assert(y.size() == size());
       value_type result( 0 );
