@@ -18,6 +18,8 @@
 
 #include <dune/common/exceptions.hh>
 
+#include <dune/common/deprecated.hh>
+
 namespace Dune {
 
   /** \brief Unique label for each type of entities that can occur in DUNE grids

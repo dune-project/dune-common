@@ -16,6 +16,8 @@
 #include <dune/common/static_assert.hh>
 #include <dune/common/classname.hh>
 
+#include <dune/common/deprecated.hh>
+
 namespace Dune
 {
 

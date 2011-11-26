@@ -9,6 +9,8 @@
 #include "ftraits.hh"
 #include "matvectraits.hh"
 
+#include <dune/common/deprecated.hh>
+
 namespace Dune {
 
   // forward declaration of template
