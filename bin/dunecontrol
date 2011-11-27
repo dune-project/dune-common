@@ -455,7 +455,7 @@ usage () {
     echo "      --builddir=NAME make out-of-source builds in a subdir NAME."
     echo "                     This directory is created inside each module."
     echo "      --[COMMAND]-opts=opts   set options for COMMAND"
-    echo "                     (this is mainly useful for the all COMMAND)"
+    echo "                     (this is mainly useful for the 'all' COMMAND)"
     echo "COMMANDS:"
     echo "  Colon-separated list of commands. Available commands are:"
     printf "  \`help'\tguess what :-)\n"
