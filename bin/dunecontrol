@@ -314,9 +314,26 @@ run_default_update () {
     svn update
   elif test -d CVS; then
     cvs update -dP
+  elif test -d .git; then
+      if test -d ".git/svn" && test -n "`git svn find-rev HEAD`"; then
+          # If the current HEAD points to a SVN commit, update via git-svn
+          git svn rebase
+      else
+          # Update all remotes (if any)
+          git remote update
+
+          # merge all changes fast-forward style if possible
+          if ! git merge --ff-only FETCH_HEAD 2> /dev/null; then
+              echo "$module seems to be using git, and could not be"
+              echo "updated automatically. Please update it manually."
+              echo "(Usually, this is done via 'git svn rebase' for modules using"
+              echo "subversion or 'git merge' for modules which use git natively."
+              echo "Conflicts can be resolved using 'git mergetool'.)"
+          fi
+      fi
   else
     echo "WARNING: $module is not under a known version control system."
-    echo "         We support svn and cvs."
+    echo "         We support svn, git and cvs."
   fi
   if test "$DUNELINK" != 0 && ! test -d dune; then
     echo "WARNING: $module is using the deprecated dune symlink"
