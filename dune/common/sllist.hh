@@ -625,7 +625,7 @@ namespace Dune
   template<typename T, class A>
   bool SLList<T,A>::operator==(const SLList& other) const
   {
-    if(size!=other.size())
+    if(size()!=other.size())
       return false;
     for(const_iterator iter=begin(), oiter=other.begin();
         iter != end(); ++iter, ++oiter)
