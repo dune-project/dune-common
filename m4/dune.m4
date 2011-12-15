@@ -393,38 +393,35 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       AC_MSG_WARN([library check for _dune_name is disabled. DANGEROUS!])
     ],[
       AS_IF([test "x$HAVE_[]_DUNE_MODULE" = "x1"],[
-
         # save current LDFLAGS
-	ac_save_CXX="$CXX"
-	# Use $CXX $DUNE_LDFLAGS as link command, as the latter might 
-	# contain the -static option to force static linkage
-	ac_cxx_ld=`echo $ac_save_CXX | sed -e "s@$CXX@$CXX $DUNE_LDFLAGS@"`
+        ac_save_CXX="$CXX"
+        AC_CACHE_CHECK([for lib[]_dune_lib], dune_cv_lib[]_dune_lib, [
+          # Use $CXX $DUNE_LDFLAGS as link command, as the latter might 
+          # contain the -static option to force static linkage
+          ac_cxx_ld=`echo $ac_save_CXX | sed -e "s@$CXX@$CXX $DUNE_LDFLAGS@"`
 
-        HAVE_[]_DUNE_MODULE=0
+          # define LTCXXLINK like it will be defined in the Makefile
+          CXX="./libtool --tag=CXX --mode=link $ac_cxx_ld "
+          
+          # use module LDFLAGS
+          LDFLAGS="$ac_save_LDFLAGS $DUNE_LDFLAGS $DUNE_PKG_LDFLAGS $_dune_cm_LDFLAGS"
+          LIBS="$_dune_cm_LIBS $DUNE_LIBS $LIBS"
 
-        # define LTCXXLINK like it will be defined in the Makefile
-        CXX="./libtool --tag=CXX --mode=link $ac_cxx_ld "
-        
-	# use module LDFLAGS
-        LDFLAGS="$ac_save_LDFLAGS $DUNE_LDFLAGS $DUNE_PKG_LDFLAGS $_dune_cm_LDFLAGS"
-        LIBS="$_dune_cm_LIBS $DUNE_LIBS $LIBS"
+          AC_TRY_LINK(dnl
+            [#]include<dune/[]_dune_header>,
+            _dune_symbol,
+            dune_cv_lib[]_dune_lib=yes,
+            dune_cv_lib[]_dune_lib=no)
+        ])
 
-        AC_MSG_CHECKING([for lib[]_dune_lib])
-
-        AC_TRY_LINK(dnl
-          [#]include<dune/[]_dune_header>,
-          _dune_symbol,
-          [
-            AC_MSG_RESULT([yes])
-            HAVE_[]_DUNE_MODULE=1
+        AS_IF([test "x$dune_cv_lib[]_dune_lib" = "xyes"], [
+          HAVE_[]_DUNE_MODULE=1
           ],[
-            AC_MSG_RESULT([no])
-            HAVE_[]_DUNE_MODULE=0
-            AS_IF([test -n "$_DUNE_MODULE[]_ROOT"],[
-             AC_MSG_WARN([$with_[]_dune_module does not seem to contain a valid _dune_name (failed to link with lib[]_dune_lib[].la)])
-            ])
-          ]
-        )
+          HAVE_[]_DUNE_MODULE=0
+          AS_IF([test -n "$_DUNE_MODULE[]_ROOT"],[
+            AC_MSG_WARN([$with_[]_dune_module does not seem to contain a valid _dune_name (failed to link with lib[]_dune_lib[].la)])
+          ])
+        ])
       ])
 
       # reset variables

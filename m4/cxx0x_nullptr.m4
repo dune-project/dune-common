@@ -1,17 +1,16 @@
 AC_DEFUN([NULLPTR_CHECK],[
-  AC_REQUIRE([AC_PROG_CXX])
-  AC_REQUIRE([GXX0X])
-  AC_LANG_PUSH([C++])
-  AC_MSG_CHECKING([whether nullptr is supported])
-  AC_TRY_COMPILE([],[
-    char* ch = nullptr;
-    ], [
-    HAVE_NULLPTR=yes
-    AC_MSG_RESULT(yes)], [
-    HAVE_NULLPTR=no
-    AC_MSG_RESULT(no)])
-  if test "x$HAVE_NULLPTR" = xyes; then
+  AC_CACHE_CHECK([whether nullptr is supported], dune_cv_nullptr_support, [
+    AC_REQUIRE([AC_PROG_CXX])
+    AC_REQUIRE([GXX0X])
+    AC_LANG_PUSH([C++])
+    AC_TRY_COMPILE([],[
+      char* ch = nullptr;
+      ], 
+      dune_cv_nullptr_support=yes,
+      dune_cv_nullptr_support=no)
+    AC_LANG_POP
+  ])
+  if test "x$dune_cv_nullptr_support" = xyes; then
     AC_DEFINE(HAVE_NULLPTR, 1, [Define to 1 if nullptr is supported])
   fi
-  AC_LANG_POP
 ])
