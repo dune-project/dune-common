@@ -20,6 +20,7 @@ ALLM4S = 					\
 	dune.m4					\
 	dune_all.m4				\
 	dune_autobuild.m4			\
+	dune_boost_base.m4			\
 	dune_check_lib.m4			\
 	dune_common.m4				\
 	dune_compiler.m4			\
@@ -28,6 +29,7 @@ ALLM4S = 					\
 	dune_deprecated_cppflags.m4		\
 	dune_docu.m4				\
 	dune_exprtmpl.m4			\
+	dune_fieldvector_size_is_method.m4	\
 	dune_linkcxx.m4				\
 	dune_mpi.m4				\
 	dune_streams.m4				\
