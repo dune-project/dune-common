@@ -13,6 +13,7 @@
 #include <string>
 #include <typeinfo>
 #include <vector>
+#include <algorithm>
 
 #include <dune/common/array.hh>
 #include <dune/common/exceptions.hh>
