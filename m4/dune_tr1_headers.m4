@@ -10,13 +10,16 @@ AC_DEFUN([DUNE_TR1_HEADERS], [
     [enable_tr_headers=yes])
   AS_IF([test "x$enable_tr1_headers" != "xno"],
     [AC_CHECK_HEADERS([type_traits tr1/type_traits tuple tr1/tuple])
-     AC_COMPILE_IFELSE(
-        [AC_LANG_PROGRAM([[array]],
+     AC_CACHE_CHECK([whether <array> C++0x is supported], dune_cv_array_cplusplus0x, [
+       AC_COMPILE_IFELSE(
+         [AC_LANG_PROGRAM([[#include <array>]],
                [[std::array<int,2> a; a.fill(9);]])],
-		[HAVE_ARRAY=yes], [HAVE_ARRAY=no])
-     AS_IF([test "x$HAVE_ARRAY" != "xno"],
-       [AC_DEFINE([HAVE_ARRAY], 1, [Define to 1 if the <array> C++0x is available and support array::fill])])]
-  )
-
+         dune_cv_array_cplusplus0x=yes,
+         dune_cv_array_cplusplus0x=no)
+       ])
+     AS_IF([test "x$dune_cv_array_cplusplus0x" != "xno"],
+       [AC_DEFINE([HAVE_ARRAY], 1, [Define to 1 if the <array> C++0x is available and support array::fill])
+     ])
+  ])
   AC_LANG_POP([C++])
 ])

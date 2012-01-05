@@ -2,10 +2,13 @@ AC_DEFUN([MAKE_SHARED],[
   AC_REQUIRE([SHARED_PTR])
   AS_IF([test "$SHARED_PTR_NAMESPACE" = "boost"],[
     AC_CHECK_HEADER([boost/make_shared.hpp],
-                  [AC_DEFINE([HAVE_BOOST_MAKE_SHARED_HPP], [1],
-                        [Define to 1 if you have <boost/make_shared.hpp>.])])])
-  AC_MSG_CHECKING([whether SHARED_PTR_NAMESPACE ($SHARED_PTR_NAMESPACE) provides make_shared])
-  AC_LANG_PUSH([C++])
+      [AC_DEFINE([HAVE_BOOST_MAKE_SHARED_HPP], [1],
+      [Define to 1 if you have <boost/make_shared.hpp>.])
+    ])
+  ])
+  AC_CACHE_CHECK([whether SHARED_PTR_NAMESPACE ($SHARED_PTR_NAMESPACE) provides make_shared], 
+    dune_cv_make_shared, [
+    AC_LANG_PUSH([C++])
     AC_COMPILE_IFELSE(
       [AC_LANG_PROGRAM([[
 #if defined(HAVE_MEMORY)
@@ -22,13 +25,11 @@ AC_DEFUN([MAKE_SHARED],[
             ]],[[
 $SHARED_PTR_NAMESPACE::make_shared<int>(3);
             ]])],
-            [ AC_MSG_RESULT(yes)
-              have_make_shared=yes
-            ],[AC_MSG_RESULT(no)
-              have_make_shared=no
-            ])
-  AS_IF([test "$have_make_shared" = "yes"],[
+      dune_cv_make_shared=yes,
+      dune_cv_make_shared=no)
+    AC_LANG_POP
+  ])
+  AS_IF([test "$dune_cv_make_shared" = "yes"],[
     AC_DEFINE([HAVE_MAKE_SHARED], [1],
                         [Define to 1 if SHARED_PTR_NAMESPACE::make_shared is usable.])])
-  AC_LANG_POP
 ])
