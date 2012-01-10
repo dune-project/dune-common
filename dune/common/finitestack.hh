@@ -3,6 +3,9 @@
 #ifndef DUNE_FINITE_STACK_HH
 #define DUNE_FINITE_STACK_HH
 
+#warning This file is deprecated and will be removed after the release of dune-common-2.2.\
+  Please use std::stack<Dune::ReservedVector> instead of FiniteStack.
+
 #include <stack>
 
 #include <dune/common/exceptions.hh>
