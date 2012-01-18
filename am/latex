@@ -7,8 +7,10 @@
 .tex.dvi:
 	set -e; builddir=$$PWD; \
 	pushd $(srcdir); $(TEX) -output-directory=$$builddir </dev/null $*; popd; \
+        sed -i '/^Package: rerunfilecheck/d' $*.log
 	while grep Rerun $*.log > /dev/null ; do \
 	  pushd $(srcdir); $(TEX) -output-directory=$$builddir </dev/null $*; popd; \
+          sed -i '/^Package: rerunfilecheck/d' $*.log
 	done; \
 	if grep '^\\bibdata{' *.aux > /dev/null \
 	   && grep '^\\citation{' *.aux > /dev/null; \
@@ -17,6 +19,7 @@
 	  pushd $(srcdir); $(TEX) -output-directory=$$builddir </dev/null $*; popd; \
 	  while grep Rerun $*.log > /dev/null ; do \
 	    pushd $(srcdir); $(TEX) -output-directory=$$builddir </dev/null $*; popd; \
+            sed -i '/^Package: rerunfilecheck/d' $*.log
 	  done ; \
 	fi
 
