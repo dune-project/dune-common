@@ -159,10 +159,10 @@ fmatrixtest_LDADD = $(LAPACK_LIBS) $(LDADD)
 fvectortest_SOURCES = fvectortest.cc
 
 check_fvector_size_fail1_SOURCES = check_fvector_size_fail.cc
-check_fvector_size_fail1_CPPFLAGS = -DDIM=1
+check_fvector_size_fail1_CPPFLAGS = $(AM_CPPFLAGS) -DDIM=1
 
 check_fvector_size_fail2_SOURCES = check_fvector_size_fail.cc
-check_fvector_size_fail2_CPPFLAGS = -DDIM=3
+check_fvector_size_fail2_CPPFLAGS = $(AM_CPPFLAGS) -DDIM=3
 
 check_fvector_size_SOURCES = check_fvector_size.cc
 
