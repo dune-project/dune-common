@@ -347,7 +347,7 @@ namespace Dune
     int allreduce(Type* in, Type* out, int len) const
     {
       return MPI_Allreduce(in, out, len, MPITraits<Type>::getType(),
-                           Generic_MPI_Op<Type, BinaryFunction>::get(),communicator);
+                           (Generic_MPI_Op<Type, BinaryFunction>::get()),communicator);
     }
 
   private:
