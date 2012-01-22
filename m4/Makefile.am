@@ -34,7 +34,6 @@ ALLM4S = 					\
 	dune_mpi.m4				\
 	dune_streams.m4				\
 	dune_tr1_headers.m4			\
-	f5.m4					\
 	fortran_overwrite.m4			\
 	gmp.m4					\
 	hdf5.m4					\
