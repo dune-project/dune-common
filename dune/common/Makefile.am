@@ -80,6 +80,7 @@ commoninclude_HEADERS = 			\
 	tuples.hh				\
 	tupleutility.hh                         \
 	typetraits.hh				\
+	unused.hh				\
 	version.hh
 
 if EXPRESSIONTEMPLATES
