@@ -16,7 +16,7 @@
 #include "static_assert.hh"
 
 #if ! DUNE_COMMON_FIELDVECTOR_SIZE_IS_METHOD
-#warning The FieldVector class exports is size by the enum member 'size'.\
+#warning The FieldVector class exports its size by the enum member 'size'.\
   This behavior is deprecated.  In the future, 'size' will be a method,\
   which puts it in compliance with the stl conventions.  To enable the new behavior\
   (and get rid of this warning), build your Dune with --enable-fieldvector-size-is-method.\
