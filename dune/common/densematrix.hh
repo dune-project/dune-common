@@ -401,8 +401,10 @@ namespace Dune
     void umv (const X& x, Y& y) const
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
-      if (x.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
-      if (y.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
+      if (x.N()!=M())
+        DUNE_THROW(FMatrixError,"y += A x -- index out of range (sizes: x: " << x.N() << ", y: " << y.N() << ", A: " << this->N() << " x " << this->M() << ")" << std::endl);
+      if (y.N()!=N())
+        DUNE_THROW(FMatrixError,"y += A x -- index out of range (sizes: x: " << x.N() << ", y: " << y.N() << ", A: " << this->N() << " x " << this->M() << ")" << std::endl);
 #endif
       for (size_type i=0; i<rows(); i++)
         for (size_type j=0; j<cols(); j++)
