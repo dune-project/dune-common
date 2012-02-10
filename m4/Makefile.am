@@ -3,7 +3,6 @@
 # $Id$
 
 ALLM4S = 					\
-	acx_blas.m4				\
 	acx_lapack.m4				\
 	acx_mpi.m4				\
 	acx_pthread.m4				\
@@ -38,17 +37,12 @@ ALLM4S = 					\
 	fortran_overwrite.m4			\
 	gmp.m4					\
 	hdf5.m4					\
-	immdx_lib_metis.m4			\
 	inkscape.m4				\
 	libtoolcompat.m4			\
 	make_shared.m4				\
 	mpi-config.m4				\
 	opengl.m4				\
-	pardiso.m4				\
-	parmetis.m4				\
 	shared_ptr.m4				\
-	superlu-dist.m4				\
-	superlu.m4				\
 	xdr.m4
 
 aclocaldir = $(datadir)/aclocal
