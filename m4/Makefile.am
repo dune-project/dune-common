@@ -38,11 +38,13 @@ ALLM4S = 					\
 	fortran_overwrite.m4			\
 	gmp.m4					\
 	hdf5.m4					\
+	immdx_lib_metis.m4			\
 	inkscape.m4				\
 	libtoolcompat.m4			\
 	make_shared.m4				\
 	mpi-config.m4				\
 	opengl.m4				\
+	parmetis.m4				\
 	shared_ptr.m4				\
 	xdr.m4
 
