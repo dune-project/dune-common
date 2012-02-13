@@ -2,7 +2,7 @@ dnl -*- autoconf -*-
 # DUNE_CHECK_LIB_EXT(PATH, LIBRARY, FUNCTION, [ACTION-IF-FOUND],
 #                    [ACTION-IF-NOT-FOUND], [OTHER-LIBRARIES])
 #
-# Just like AC_CHECK_LIB, but in allow a library path to be specified.  The
+# Just like AC_CHECK_LIB, but it allows a library path to be specified.  The
 # default ACTION-IF-FOUND is extended to also add that library path to LIBS.
 #
 # PATH    Path to search for the library.  This should be something suitable
