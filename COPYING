@@ -24,6 +24,7 @@ Copyright holders:
 2008--2012    Martin Nolte
 2004--2005    Mario Ohlberger
 2008--2012    Elias Pipping
+2011          Dan Popovic
 2009          Atgeirr Rasmussen
 2003--2012    Oliver Sander
 2006--2011    Uli Sack
@@ -32,7 +33,6 @@ Copyright holders:
 2009--2011    Bård Skaflestad
 2011          Jonathan Youett
 
-2011          Dan (r6475)
 
 The DUNE library and headers are licensed under version 2 of the GNU
 General Public License (see below), with a special exception for
