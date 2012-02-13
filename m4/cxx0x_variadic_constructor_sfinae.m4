@@ -9,7 +9,7 @@ AC_DEFUN([VARIADIC_CONSTRUCTOR_SFINAE_CHECK],[
     AC_REQUIRE([GXX0X])
     AC_LANG_PUSH([C++])
     AC_RUN_IFELSE([
-      AC_LANG_PROGRAM([#include <cassert>
+      AC_LANG_PROGRAM([
         #include <functional>
 
         template<typename... U>
@@ -38,17 +38,13 @@ AC_DEFUN([VARIADIC_CONSTRUCTOR_SFINAE_CHECK],[
           int i;
         };],
         [
-          assert( A<int>().i +
-                  A<int>(2).i +
-                  A<int>("foo",3.4).i +
-                  A<int>(8,'a',A<int>()).i == 0);
-          return 0;
+          return (A<int>().i + A<int>(2).i + A<int>("foo",3.4).i + A<int>(8,'a',A<int>()).i == 0 ? 0 : 1);
         ])],
       dune_cv_variadic_constructor_sfinae_support=yes,
       dune_cv_variadic_constructor_sfinae_support=no)
     AC_LANG_POP
   ])
-  if test "x$dune_cv_variadic_constructor_sfinae_support" = xyes; then
+  AS_IF([test "x$dune_cv_variadic_constructor_sfinae_support" = xyes],[
     AC_DEFINE(HAVE_VARIADIC_CONSTRUCTOR_SFINAE, 1, [Define to 1 if SFINAE on variadic template constructors is fully supported])
-  fi
+  ])
 ])
