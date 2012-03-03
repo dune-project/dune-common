@@ -60,7 +60,14 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 	    fi
 	fi
 	])
-  
+  AC_ARG_WITH([libparmetis_name],
+    [AC_HELP_STRING([--with-parmetis-lib],  [name of the parmetis libraries (default is parmetis)])],
+    ,,
+    [with_parmetis_lib="parmetis"])
+AC_ARG_WITH([libmetis_name],
+    [AC_HELP_STRING([--with-metis-lib],  [name of the metis libraries (default is metis)])],
+    ,,
+    [with_parmetis_lib="metis"])
 
   # store old values
   ac_save_LDFLAGS="$LDFLAGS"
@@ -72,9 +79,9 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
           
       # defaultpath
       PARMETIS_LIB_PATH="$with_parmetis$lib_path"
-      PARMETIS_INCLUDE_PATH="$with_parmetis$lib_path"
+      PARMETIS_INCLUDE_PATH="$with_parmetis$include_path"
                   
-      PARMETIS_LIBS="-L$PARMETIS_LIB_PATH -lmetis $DUNEMPILIBS -lm"
+      PARMETIS_LIBS="-L$PARMETIS_LIB_PATH -l$with_metis_lib $DUNEMPILIBS -lm"
       PARMETIS_LDFLAGS="$DUNEMPILDFLAGS"
 
       # set variables so that tests can use them
@@ -97,9 +104,9 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
       LIBS="$DUNEMPILIBS -lm $LIBS"
       
       if test x$HAVE_PARMETIS = x1 ; then
-	  DUNE_CHECK_LIB_EXT([$PARMETIS_LIB_PATH], [metis], [metis_partgraphkway],
+	  DUNE_CHECK_LIB_EXT([$PARMETIS_LIB_PATH], [$with_metis_lib], [metis_partgraphkway],
               [
-		  PARMETIS_LIBS="-L$PARMETIS_LIB_PATH -lmetis $DUNEMPILIBS -lm"
+		  PARMETIS_LIBS="-L$PARMETIS_LIB_PATH -l$with_metis_lib $DUNEMPILIBS -lm"
 		  LIBS="$PARMETIS_LIBS $ac_save_LIBS"
               ],[
 		  HAVE_PARMETIS="0"
@@ -108,9 +115,9 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
       fi
 
       if test x$HAVE_PARMETIS = x1 ; then
-	  DUNE_CHECK_LIB_EXT([$PARMETIS_LIB_PATH], [parmetis], [parmetis_v3_partkway],
+	  DUNE_CHECK_LIB_EXT([$PARMETIS_LIB_PATH], [$with_parmetis_lib], [parmetis_v3_partkway],
               [
-		  PARMETIS_LIBS="-L$PARMETIS_LIB_PATH -lparmetis -lmetis $DUNEMPILIBS -lm"
+		  PARMETIS_LIBS="-L$PARMETIS_LIB_PATH -l$with_parmetis_lib"
               ],[
 		  HAVE_PARMETIS="0"
 		  AC_MSG_WARN(libparmetis not found!)
