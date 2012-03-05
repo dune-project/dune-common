@@ -22,6 +22,10 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
           if test -d "$withval" ; then
 	    # get absolute path
 	    with_parmetis=`eval cd $withval 2>&1 && pwd`
+            if test -f "$with_parmetis/include/parmetis.h" ; then
+              lib_path=lib
+              include_path=include
+            fi
 	    AC_MSG_RESULT(yes)
           else
             with_parmetis="no"
@@ -60,14 +64,12 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 	    fi
 	fi
 	])
-  AC_ARG_WITH([libparmetis_name],
+  AC_ARG_WITH([parmetis-lib],
     [AC_HELP_STRING([--with-parmetis-lib],  [name of the parmetis libraries (default is parmetis)])],
-    ,,
-    [with_parmetis_lib="parmetis"])
-AC_ARG_WITH([libmetis_name],
+    ,[with_parmetis_lib=parmetis])
+  AC_ARG_WITH([metis-lib],
     [AC_HELP_STRING([--with-metis-lib],  [name of the metis libraries (default is metis)])],
-    ,,
-    [with_parmetis_lib="metis"])
+    ,[with_metis_lib=metis])
 
   # store old values
   ac_save_LDFLAGS="$LDFLAGS"
@@ -79,7 +81,7 @@ AC_ARG_WITH([libmetis_name],
           
       # defaultpath
       PARMETIS_LIB_PATH="$with_parmetis$lib_path"
-      PARMETIS_INCLUDE_PATH="$with_parmetis$include_path"
+      PARMETIS_INCLUDE_PATH="$with_parmetis/$include_path"
                   
       PARMETIS_LIBS="-L$PARMETIS_LIB_PATH -l$with_metis_lib $DUNEMPILIBS -lm"
       PARMETIS_LDFLAGS="$DUNEMPILDFLAGS"
@@ -117,7 +119,7 @@ AC_ARG_WITH([libmetis_name],
       if test x$HAVE_PARMETIS = x1 ; then
 	  DUNE_CHECK_LIB_EXT([$PARMETIS_LIB_PATH], [$with_parmetis_lib], [parmetis_v3_partkway],
               [
-		  PARMETIS_LIBS="-L$PARMETIS_LIB_PATH -l$with_parmetis_lib"
+		  PARMETIS_LIBS="-L$PARMETIS_LIB_PATH -l$with_parmetis_lib $PARMETIS_LIBS"
               ],[
 		  HAVE_PARMETIS="0"
 		  AC_MSG_WARN(libparmetis not found!)
