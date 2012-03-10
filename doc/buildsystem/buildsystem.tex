@@ -84,7 +84,7 @@ Im Neuenheimer Feld 368, D-69120 Heidelberg, Germany}\\
 \section{Creating a new \dune project}\label{section::creating_new_dune_project}
 
 From a build system point of view there is no difference between a \dune
-application and a \dune module.\\
+application and a \dune module.
 
 \dune modules are packages that offer a certain functionality that can
 be used by \dune applications. Therefore \dune modules offer libraries
@@ -115,7 +115,7 @@ the bare minimum you have to provide in order to create a new project:
 
 This section tells you how to begin working with \dune without explaining any
 further details. For a closer look on \duneproject, see section
-\ref{section::creating_new_dune_project}.\\
+\ref{section::creating_new_dune_project}.
 
 Once you have downloaded all the \dune modules you are interested in, you probably
 wonder ``How do I start working with \dune?'' It is quite easy.
@@ -146,7 +146,7 @@ modules). It can be done by calling
 \emph{Note:} In case you are using the unstable version
 \dune you should be aware that the build system may change,
 just like the source code. Therefore it might be that
-\texttt{duneproject} is not up to date with the latest changes. \\
+\texttt{duneproject} is not up to date with the latest changes.
 
 After calling \duneproject, you have to provide a name for your project
 (without whitespace), e.g., \texttt{dune-foo}. 
@@ -242,8 +242,8 @@ After running
 make doc
 \end{lstlisting}
 in \texttt{dune-foo} you should now find a
-\texttt{html} \texttt{doxygen} documentation in
-\texttt{dune-foo/doc/doxygen/html/index.html}.\\
+\texttt{html} \texttt{doxygen} documentation which can be read by opening
+\texttt{dune-foo/doc/doxygen/html/index.html}.
 
 \section{Dune module guidelines}\label{section::dune_module_guidelines}
 \label{guidelines}
@@ -261,8 +261,8 @@ A \dune module should comply with the following rules:
   directory. You should at least provide the macros \texttt{\emph{MODULE}\_CHECKS}
   and \texttt{\emph{MODULE}\_CHECK\_MODULE}, in order to setup and
   find your module (see~\ref{m4files}).
-\item Header files that can be used by other \dune modules should be
-  accessible via \verb!#include <dune/foo/bar.hh>!. In order to work
+\item Header files should be accessible via \verb!#include <dune/foo/bar.hh>!,
+  otherwise they cannot be used by other \dune modules. In order to work
   with a freshly checkout version of your module you will usually need
   to create a local symbolic link \texttt{dune ->
     \textit{module-directory/}}. This link gets created by the
@@ -514,7 +514,7 @@ bye_CPPFLAGS = -DBYE
 \end{lstlisting}
 
 Perhaps you're wondering why the above examples used
-\texttt{AM\_CPPFLAGS} instead of the normal \texttt{CPPFLAGS}? The
+\texttt{AM\_CPPFLAGS} instead of normal \texttt{CPPFLAGS}? The
 reason for this is that the variables \texttt{CFLAGS},
 \texttt{CPPFLAGS}, \texttt{CXXFLAGS} etc. are considered {\em user
   variables} which may be set on the command line:
@@ -835,7 +835,7 @@ target_LIBADD =
 
 \begin{description}
 \item[MPI] The \texttt{DUNE\_MPI} macro sets the following variables with the
-  help of the macros \texttt{ACX\_MPI} and \texttt{MPI\_CONFIG}: For
+  help of the macros \texttt{MPI\_CONFIG} and \texttt{ACX\_MPI}: For
   compilation with the MPI compiler \texttt{MPICC} and \texttt{MPILIBS}.
   These are not used in \dune except that \texttt{MPICC} may be set on the
   configure command line to select which MPI installation to use.  For
@@ -1060,7 +1060,7 @@ We offer a set of macros that can be used in your \configureac:
   \texttt{dunecontrol m4create} and write a file
   \texttt{dependencies.m4}.
 \item \texttt{DUNE\_SYMLINK}
-  creates symlink \texttt{\$(top\_srcdir)/dune} $\rightarrow$
+  creates symlink \texttt{\$(top\_srcdir)/dune} $\!\rightarrow$
   \texttt{\$(top\_srcdir)}. The programming guidelines (\ref{guidelines})
   require that the include statements be like \texttt{\#include
     <dune/...>}. If your module has a directory structure
@@ -1078,7 +1078,7 @@ We offer a set of macros that can be used in your \configureac:
   \texttt{DUNE\_CHECK\_ALL}.
 \end{itemize}
 
-\texttt{DUNE\_CHECK\_ALL} defines certain
+\texttt{DUNE\_CHECK\_ALL} defines the following
 variables that can be used in the \configure script or in the
 \makefileam:
 
@@ -1172,9 +1172,9 @@ and \texttt{\emph{MODULE}\_CHECK\_MODULE} is called. Last
 \texttt{\emph{MODULE}\_CHECKS} is called for your module, in order to
 check all prerequisites for your module.
 
-What you just read implies that you have to provide the two macros
+When you have to provide the two macros
 \texttt{\emph{MODULE}\_CHECKS} and
-\texttt{\emph{MODULE}\_CHECK\_MODULE} for your module. These should be
+\texttt{\emph{MODULE}\_CHECK\_MODULE} for your module these should be
 written to a \texttt{m4/*.m4} file.
 
 Here follows an example for the module \texttt{dune-foo}:
@@ -1425,8 +1425,8 @@ AC_CONFIG_FILES([Makefile
 AC_OUTPUT
 \end{lstlisting}
 Now, your project is prepared to build the subdirectory
-\texttt{my\_pdelab\_application} if and only if \texttt{dune-pdelab} is successfully
-installed on your machine.
+\texttt{my\_pdelab\_application} if and only if your machine has a successfully
+installed \texttt{dune-pdelab}.
 
 \section{Further documentation}
 
