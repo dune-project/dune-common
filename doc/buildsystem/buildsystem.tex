@@ -1227,7 +1227,7 @@ The commands you are interested in right now are
   directories containing \dunemodule files and the parameters given on
   the command line are passed as parameters to \autogen.
 \item \texttt{configure} runs \configure for each
-  module. \texttt{--with-dune\textit{module}} parameters are created
+  module. \texttt{--with-dune-\textit{module}} parameters are created
   for a set of known \dune modules.
 \item \texttt{make} runs \make for each module.
 \item \texttt{all} runs \autogen, \configure and \make for each module.
@@ -1305,9 +1305,11 @@ implementation of a command called via \dunecontrol.
 \begin{lst}[File dune.module] \mbox{}
 \begin{lstlisting}
 # parameters for dune control
-Module: dune_grid
-Depends: dune_common
-Suggests: UG Alberta Alu3d
+Module: dune-grid
+Version: 2.2-svn
+Maintainer: dune@dune-project.org
+Depends: dune-common (>= 2.2) dune-geometry (>= 2.2)
+Extra-Suggests: UG Alberta Alu3d
 
 # overload the run_configure command
 run_configure () {
@@ -1331,15 +1333,22 @@ The parameter section will be parsed by \dunecontrol will effect
 i.e. the order in which the modules are built. The parameters and
 their values are separated by colon. Possible parameters are
 \begin{itemize}
-\item \texttt{Module} (\em required\em) is the name of the module. The
-  name is of the form \texttt{[a-zA-Z0-9\_]+}.
-\item \texttt{Depends} (\em required\em) takes a space separated list
+\item \texttt{Module} {\em (required)} is the name of the module. The
+  name is of the form \texttt{[a-zA-Z0-9\_-]+}.
+\item \texttt{Version} {\em (optional)} is the module's version.
+\item \texttt{Maintainer} {\em (optional)} is the email address of the 
+  module's maintainer.
+\item \texttt{Depends} {\em (required)} takes a space separated list
   of required modules. This module is not functional without these
-  other modules.
-\item \texttt{Suggests} (\em optional\em) takes a space separated list
+  other modules. Checks whether the demanded version of the required
+  modules is provided.
+\item \texttt{Suggests} {\em (optional)} takes a space separated list
   of optional modules. This module is functional without these
   other modules, but can offer further functionality if one or more of
   the suggested modules are found.
+\item \texttt{Extra-Suggests} {\em (optional)} takes a space separated 
+  list of optional external modules. These are only for users to mention
+  recommended suggestions.
 \end{itemize}
 
 The command section lets you overload the default implementation
