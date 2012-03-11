@@ -1333,23 +1333,19 @@ The parameter section will be parsed by \dunecontrol will effect
 i.e. the order in which the modules are built. The parameters and
 their values are separated by colon. Possible parameters are
 \begin{itemize}
-\item \texttt{Module} {\em (required)} is the name of the module. The
+\item \texttt{Module} (\em required\em) is the name of the module. The
   name is of the form \texttt{[a-zA-Z0-9\_-]+}.
-\item \texttt{Version} {\em (optional)} is the module's version.
-\item \texttt{Maintainer} {\em (optional)} is the email address of the 
+\item \texttt{Version} (\em optional\em) is the module's version.
+\item \texttt{Maintainer} (\em optional\em) is the email address of the 
   module's maintainer.
-\item \texttt{Depends} {\em (required)} takes a space separated list
+\item \texttt{Depends} (\em required\em) takes a space separated list
   of required modules. This module is not functional without these
   other modules. Checks whether the demanded version of the required
   modules is provided.
-\item \texttt{Suggests} {\em (optional)} takes a space separated list
+\item \texttt{Suggests} (\em optional\em) takes a space separated list
   of optional modules. This module is functional without these
   other modules, but can offer further functionality if one or more of
   the suggested modules are found.
-\item \texttt{Extra-Suggests} {\em (optional)} takes a space separated 
-  list of optional external modules which do not use \dunecontrol. These
-  are only for users to mention recommended suggestions and have 
-  informational meaning only.
 \end{itemize}
 
 The command section lets you overload the default implementation
