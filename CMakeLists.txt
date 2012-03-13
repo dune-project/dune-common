@@ -35,6 +35,7 @@ find_package(SharedPtr)
 
 # actually write the config.h file to disk
 configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 add_definitions(-DHAVE_CONFIG_H)
 
 # add subdirectories to execute CMakeLIsts.txt there
@@ -70,8 +71,11 @@ add_test(poolallocatortest		dune/common/test/poolallocatortest)
 add_test(shared_ptrtest			dune/common/test/shared_ptrtest)
 add_test(singletontest			dune/common/test/singletontest)
 add_test(sllisttest			dune/common/test/sllisttest)
-add_test(static_assert_test		dune/common/test/static_assert_test)
-add_test(static_assert_test_fail	dune/common/test/static_assert_test_fail)
+add_test(NAME static_assert_test
+  COMMAND ${CMAKE_COMMAND} --build . --target static_assert_test --config $<CONFIGURATION>)
+add_test(NAME static_assert_test_fail
+  COMMAND ${CMAKE_COMMAND} --build . --target static_assert_test_fail --config $<CONFIGURATION>)
+set_tests_properties(static_assert_test_fail PROPERTIES WILL_FAIL true)
 add_test(streamtest			dune/common/test/streamtest)
 add_test(testfassign2			dune/common/test/testfassign2)
 add_test(testfassign			dune/common/test/testfassign)
