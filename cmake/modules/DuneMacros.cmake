@@ -11,11 +11,11 @@ macro(dune_module_information MODULE_DIR)
   # remove false matches in version string
   string(REGEX MATCH "[^0-9]" NON_NUMBER_CHARACTER "${DUNE_VERSION_MINOR}")
   if(NON_NUMBER_CHARACTER)
-    set(DUNE_COMMON_VERSION_MINOR "0")
+    set(DUNE_VERSION_MINOR "0")
   endif(NON_NUMBER_CHARACTER)
   string(REGEX MATCH "[^0-9]" NON_NUMBER_CHARACTER "${DUNE_VERSION_REVISION}")
   if(NON_NUMBER_CHARACTER)
-    set(DUNE_COMMON_VERSION_REVISION "0")
+    set(DUNE_VERSION_REVISION "0")
   endif(NON_NUMBER_CHARACTER)
 
   # find strings for module name, maintainer

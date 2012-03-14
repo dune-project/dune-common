@@ -1,5 +1,17 @@
 #define DUNE_COMMON_FIELDVECTOR_SIZE_IS_METHOD 1
 
+/* Define to the version of dune-common */
+#define DUNE_COMMON_VERSION ${DUNE_COMMON_VERSION}
+
+/* Define to the major version of dune-common */
+#define DUNE_COMMON_VERSION_MAJOR ${DUNE_COMMON_VERSION_MAJOR}
+
+/* Define to the minor version of dune-common */
+#define DUNE_COMMON_VERSION_MINOR ${DUNE_COMMON_VERSION_MINOR}
+
+/* Define to the revision of dune-common */
+#define DUNE_COMMON_VERSION_REVISION ${DUNE_COMMON_VERSION_REVISION}
+
 #cmakedefine01 HAVE_MPI
 #cmakedefine01 HAVE_MALLOC_H
 #cmakedefine01 HAVE_BOOST
