@@ -1,7 +1,6 @@
 #define DUNE_COMMON_FIELDVECTOR_SIZE_IS_METHOD 1
 
-/* #cmake define01 HAVE_MPI */
-#define HAVE_MPI 0
+#cmakedefine01 HAVE_MPI
 #cmakedefine01 HAVE_MALLOC_H
 #cmakedefine01 HAVE_BOOST
 
