@@ -1,3 +1,5 @@
+/* config.h.  Generated from config.h.cmake by CMake.  */
+
 #define DUNE_COMMON_FIELDVECTOR_SIZE_IS_METHOD 1
 
 /* Define to the version of dune-common */
@@ -38,10 +40,19 @@
 /* Define to 1 if you have <boost/make_shared.hpp> */
 #cmakedefine01 HAVE_BOOST_MAKE_SHARED_HPP
 
+/* Define to 1 if nullptr is supported */
 #cmakedefine01 HAVE_NULLPTR
+
+/* Define to 1 if static_assert is supported */
 #cmakedefine01 HAVE_STATIC_ASSERT
+
+/* Define to 1 if variadic templates are supported */
 #cmakedefine01 HAVE_VARIADIC_TEMPLATES
+
+/* Define to 1 if SFINAE on variadic template constructors is fully supported */
 #cmakedefine01 HAVE_VARIADIC_CONSTRUCTOR_SFINAE
+
+/* Define to 1 if rvalue references are supported */
 #cmakedefine01 HAVE_RVALUE_REFERENCES
 
 /* Include allways usefull headers */
