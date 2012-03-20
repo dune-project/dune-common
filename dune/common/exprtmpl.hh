@@ -3,12 +3,6 @@
 #if ! defined DUNE_EXPRTMPL_HH && DUNE_EXPRESSIONTEMPLATES
 #define DUNE_EXPRTMPL_HH
 
-/*
-   This file is part of DUNE, a Distributed and Unified Numerics Environment
-   It is distributed under the terms of the GNU Lesser General Public License version 2.1
-   See COPYING at the top of the source tree for the full licence.
- */
-
 /*! @file
 
    @brief This file provides expression templates for the
