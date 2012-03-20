@@ -16,6 +16,9 @@ set(DUNE_COMMON_VERSION_MAJOR    "${DUNE_VERSION_MAJOR}")
 set(DUNE_COMMON_VERSION_MINOR    "${DUNE_VERSION_MINOR}")
 set(DUNE_COMMON_VERSION_REVISION "${DUNE_VERSION_REVISION}")
 
+include(DuneStreams)
+dune_set_minimal_debug_level()
+
 # include dune-common to include pathtest
 include_directories("${CMAKE_SOURCE_DIR}")
 link_directories("${CMAKE_SOURCE_DIR}")
