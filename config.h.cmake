@@ -49,6 +49,7 @@
 #cmakedefine HAVE_BOOST_SHARED_PTR_HPP 1
 
 /* Define if you have LAPACK library. */
+#cmakedefine HAVE_LAPACK 1
 
 /* Define to 1 if SHARED_PTR_NAMESPACE::make_shared is usable */
 #cmakedefine HAVE_MAKE_SHARED 1
@@ -88,3 +89,5 @@
 /* Include allways usefull headers */
 #include <dune/common/deprecated.hh>
 #include <dune/common/unused.hh>
+#include "FC.h"
+#define FC_FUNC FC_GLOBAL_
