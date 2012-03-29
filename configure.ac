@@ -16,6 +16,7 @@ DUNE_CHECK_ALL
 AC_SUBST([DUNE_COMMON_ROOT], '$(abs_top_srcdir)')
 AC_SUBST([DUNE_COMMON_BIN], '$(abs_top_srcdir)/bin/')
 AC_SUBST([AM_CPPFLAGS], '-I$(top_srcdir)')
+AC_SUBST([AM_LDFLAGS], '$(DUNE_LDFLAGS)')
 AC_SUBST([LDADD], '$(top_builddir)/lib/libdunecommon.la')
 
 # write output
