@@ -7,11 +7,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules")
 include(DuneMacros)
 dune_module_information(${CMAKE_SOURCE_DIR})
 
-set(ProjectName            "${DUNE_MODULE_NAME}")
-set(ProjectVersion         "${DUNE_VERSION_STRING}")
+set(ProjectName            "${DUNE_MOD_NAME}")
+set(ProjectVersion         "${DUNE_MOD_VERSION}")
 set(ProjectMaintainerEmail "${DUNE_MAINTAINER}")
 project(${ProjectName} C CXX Fortran)
-set(DUNE_COMMON_VERSION          "${DUNE_VERSION_STRING}")
+set(DUNE_COMMON_VERSION          "${DUNE_MOD_VERSION}")
 set(DUNE_COMMON_VERSION_MAJOR    "${DUNE_VERSION_MAJOR}")
 set(DUNE_COMMON_VERSION_MINOR    "${DUNE_VERSION_MINOR}")
 set(DUNE_COMMON_VERSION_REVISION "${DUNE_VERSION_REVISION}")
@@ -86,18 +86,26 @@ add_subdirectory("doc")
 
 
 set( CMAKE_FIND_LIBRARY_SUFFIXES ${_dune_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES})
+set( prefix ${CMAKE_INSTALL_PREFIX})
+set(exec_prefix "\${prefix}")
+set(libdir "\${exec_prefix}/lib")
+set(includedir "\${prefix}/include")
+set(PACKAGE_NAME ${DUNE_MOD_NAME})
+set(VERSION ${DUNE_MOD_VERSION})
+set(CC ${CMAKE_C_COMPILER})
+set(CXX ${CMAKE_CXX_COMPILER})
 
 configure_file(
-  ${PROJECT_SOURCE_DIR}/${DUNE_MODULE_NAME}.pc.cmake
-  ${PROJECT_BINARY_DIR}/${DUNE_MODULE_NAME}.pc
+  ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}.pc.in
+  ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}.pc
   @ONLY
 )
 
 #install dune.module file
-install(FILES dune.module DESTINATION lib/dunecontrol/${DUNE_MODULE_NAME})
+install(FILES dune.module DESTINATION lib/dunecontrol/${DUNE_MOD_NAME})
 # install pkgconfig file
 if(PKG_CONFIG_FOUND )
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${DUNE_MODULE_NAME}.pc
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${DUNE_MOD_NAME}.pc
     DESTINATION lib/pkgconfig)
 endif(PKG_CONFIG_FOUND)
 # set up CTest
