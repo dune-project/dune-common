@@ -36,9 +36,9 @@ endif()
 include(DuneStreams)
 dune_set_minimal_debug_level()
 
-# include dune-common to include pathtest
-include_directories("${CMAKE_SOURCE_DIR}")
-link_directories("${CMAKE_SOURCE_DIR}")
+# include dune-common and current directory to include pathtest
+include_directories("${CMAKE_SOURCE_DIR}" ".")
+link_directories("${CMAKE_SOURCE_DIR}/lib")
 
 # set required compiler flags for C++11 (former C++0x)
 find_package(CXX11Features)
@@ -51,6 +51,7 @@ check_include_file_cxx("memory" HAVE_MEMORY)
 set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -DHAVE_MEMORY=${HAVE_MEMORY}")
 
 # search for packages
+find_package(PkgConfig)
 find_package(MPI)
 if(MPI_FOUND)
 set(HAVE_MPI MPI_CXX_FOUND)
@@ -78,9 +79,27 @@ add_definitions(-DHAVE_CONFIG_H)
 
 # add subdirectories to execute CMakeLists.txt there
 add_subdirectory("dune")
+add_subdirectory("bin")
+add_subdirectory("m4")
+add_subdirectory("am")
+add_subdirectory("doc")
+
 
 set( CMAKE_FIND_LIBRARY_SUFFIXES ${_dune_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES})
 
+configure_file(
+  ${PROJECT_SOURCE_DIR}/${DUNE_MODULE_NAME}.pc.cmake
+  ${PROJECT_BINARY_DIR}/${DUNE_MODULE_NAME}.pc
+  @ONLY
+)
+
+#install dune.module file
+install(FILES dune.module DESTINATION lib/dunecontrol/${DUNE_MODULE_NAME})
+# install pkgconfig file
+if(PKG_CONFIG_FOUND )
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${DUNE_MODULE_NAME}.pc
+    DESTINATION lib/pkgconfig)
+endif(PKG_CONFIG_FOUND)
 # set up CTest
 enable_testing()
 include(CTest)
