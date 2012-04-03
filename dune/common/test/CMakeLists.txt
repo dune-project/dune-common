@@ -22,7 +22,9 @@ add_executable("enumsettest" enumsettest.cc)
 add_executable("fassigntest" fassigntest.cc)
 target_link_libraries("fassigntest" "dunecommon")
 
-add_executable("fmatrixtest" fmatrixtest.cc)
+# we provide an empty fortran file to force the linker
+# to link to the fortran libraries (needed for static linking)
+add_executable("fmatrixtest" fmatrixtest.cc dummy.f)
 target_link_libraries("fmatrixtest" "dunecommon" ${LAPACK_LIBRARIES})
 
 add_executable("fvectortest" fvectortest.cc)
