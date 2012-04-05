@@ -303,7 +303,7 @@ namespace Dune {
     //! instead.
     Iterator rbegin() DUNE_DEPRECATED_MSG("Use the new method beforeEnd instead")
     {
-      return beforeBegin();
+      return beforeEnd();
     }
 
     //! @returns an iterator that is positioned before
