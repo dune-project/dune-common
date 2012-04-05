@@ -172,7 +172,7 @@ void doTest() {
   testConstContainer(cbbf);
 
   // iterator interface
-  ConstReferenceOp<BBF> cop;
+  ConstReferenceOp<BBF> cop DUNE_UNUSED;
   assert(testIterator(bbf, cop) == 0);
   assert(testIterator(cbbf, cop) == 0);
 }

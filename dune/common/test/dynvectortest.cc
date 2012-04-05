@@ -15,7 +15,7 @@ void dynamicVectorTest(int d) {
   DynamicVector<ct> v(d,1);
   DynamicVector<ct> w(d,2);
   DynamicVector<ct> z(d,2);
-  bool b;
+  bool b DUNE_UNUSED;
 
   // Test whether the norm methods compile
   (w+v).two_norm();

@@ -21,9 +21,9 @@ void testparam(const P & p)
   std::vector<unsigned int>
   array1 = p.template get< std::vector<unsigned int> >("array");
   Dune::array<unsigned int, 8>
-  array2 = p.template get< Dune::array<unsigned int, 8> >("array");
+  array2 DUNE_UNUSED = p.template get< Dune::array<unsigned int, 8> >("array");
   Dune::FieldVector<unsigned int, 8>
-  array3 = p.template get< Dune::FieldVector<unsigned int, 8> >("array");
+  array3 DUNE_UNUSED = p.template get< Dune::FieldVector<unsigned int, 8> >("array");
   assert(array1.size() == 8);
   std::cout << "array =";
   for (unsigned int i=0; i<8; i++)

@@ -26,8 +26,8 @@ struct FieldVectorMainTest
     FieldVector<ft,d> z(2);
     const FieldVector<ft,d> x(z);
     a = x[0];
-    bool b;
-    rt n;
+    bool b DUNE_UNUSED;
+    rt n DUNE_UNUSED;
 
     std::cout << __func__ << "\t ( " << className(v) << " )" << std::endl;
 
@@ -58,7 +58,7 @@ struct FieldVectorMainTest
     // test op(vec,vec)
     z = v + w;
     z = v - w;
-    FieldVector<ft,d> z2 = v + w;
+    FieldVector<ft,d> z2 DUNE_UNUSED = v + w;
     w -= v;
     w += v;
 
@@ -79,7 +79,7 @@ struct FieldVectorMainTest
     // assignment to vector of complex
     FieldVector< std::complex<rt> ,d> cv = v;
     cv = a;
-    const FieldVector< std::complex<rt> ,d> ccv = x;
+    const FieldVector< std::complex<rt> ,d> ccv DUNE_UNUSED = x;
 
     // test istream operator
     std::stringstream s;
@@ -92,7 +92,7 @@ struct FieldVectorMainTest
     assert(v == w);
 
     // test container methods
-    typename FieldVector<ft,d>::size_type size = FieldVector<ft,d>::dimension;
+    typename FieldVector<ft,d>::size_type size DUNE_UNUSED = FieldVector<ft,d>::dimension;
 #if DUNE_COMMON_FIELDVECTOR_SIZE_IS_METHOD
     size = w.size();
 #endif
@@ -109,7 +109,7 @@ struct ScalarOperatorTest
     ft c = 2;
     FieldVector<ft,1> v(2);
     FieldVector<ft,1> w(2);
-    bool b;
+    bool b DUNE_UNUSED;
 
     std::cout << __func__ << "\t ( " << className(v) << " )" << std::endl;
 
@@ -172,7 +172,7 @@ struct ScalarOrderingTest
     ft c = 2;
     FieldVector<ft,1> v(2);
     FieldVector<ft,1> w(2);
-    bool b;
+    bool b DUNE_UNUSED;
 
     std::cout << __func__ << "\t ( " << className(v) << " )" << std::endl;
 

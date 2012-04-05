@@ -301,7 +301,7 @@ namespace Dune {
     //! it distinct from the STL version which returns
     //! a reverse iterator. Use the new method beforeEnd
     //! instead.
-    Iterator rbegin() DUNE_DEPRECATED
+    Iterator rbegin() DUNE_DEPRECATED_MSG("Use the new method beforeEnd instead")
     {
       return beforeBegin();
     }
@@ -317,7 +317,7 @@ namespace Dune {
     //! it distinct from the STL version which returns
     //! a reverse iterator. Use the new method beforeBegin
     //! instead.
-    Iterator rend () DUNE_DEPRECATED
+    Iterator rend () DUNE_DEPRECATED_MSG("Use the new method beforeBegin instead")
     {
       return beforeBegin();
     }
@@ -356,7 +356,7 @@ namespace Dune {
     //! it distinct from the STL version which returns
     //! a reverse iterator. Use the new method beforeEnd
     //! instead.
-    ConstIterator rbegin() const DUNE_DEPRECATED
+    ConstIterator rbegin() const DUNE_DEPRECATED_MSG("Use the new method beforeEnd instead")
     {
       return beforeEnd();
     }
@@ -372,7 +372,7 @@ namespace Dune {
     //! it distinct from the STL version which returns
     //! a reverse iterator. Use the new method beforeBegin
     //! instead.
-    ConstIterator rend () const DUNE_DEPRECATED
+    ConstIterator rend () const DUNE_DEPRECATED_MSG("Use the new method beforeBegin instead")
     {
       return beforeBegin();
     }

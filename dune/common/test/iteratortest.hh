@@ -227,7 +227,7 @@ int testIterator(Container& c, Opt& opt)
 {
   typename Container::iterator begin=c.begin(), end=c.end();
   typename Container::const_iterator cbegin(begin);
-  typename Container::const_iterator cbegin1=begin;
+  typename Container::const_iterator cbegin1 DUNE_UNUSED = begin;
   typename Container::const_iterator cend=c.end();
   int ret = 0;
 
