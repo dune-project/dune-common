@@ -77,6 +77,11 @@ configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 add_definitions(-DHAVE_CONFIG_H)
 
+# enable testing before adding the subdirectories.
+# Thus we can add the tests in the subdirectories
+# where they actually are.
+enable_testing()
+
 # add subdirectories to execute CMakeLists.txt there
 add_subdirectory("dune")
 add_subdirectory("bin")
@@ -84,7 +89,7 @@ add_subdirectory("m4")
 add_subdirectory("am")
 add_subdirectory("doc")
 
-
+# set some variables that are used in the pkg-config file
 set( CMAKE_FIND_LIBRARY_SUFFIXES ${_dune_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES})
 set( prefix ${CMAKE_INSTALL_PREFIX})
 set(exec_prefix "\${prefix}")
@@ -95,6 +100,7 @@ set(VERSION ${DUNE_MOD_VERSION})
 set(CC ${CMAKE_C_COMPILER})
 set(CXX ${CMAKE_CXX_COMPILER})
 
+#create pkg-config file
 configure_file(
   ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}.pc.in
   ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}.pc
@@ -108,8 +114,7 @@ if(PKG_CONFIG_FOUND )
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${DUNE_MOD_NAME}.pc
     DESTINATION lib/pkgconfig)
 endif(PKG_CONFIG_FOUND)
-# set up CTest
-enable_testing()
+
 include(CTest)
 # add tests from dune/common/test
 add_test(arraylisttest			dune/common/test/arraylisttest)
