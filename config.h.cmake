@@ -57,7 +57,9 @@
 /* Define to 1 if you have the <malloc.h> header file. */
 // Not used! #cmakedefine01 HAVE_MALLOC_H
 
-#cmakedefine01 HAVE_MPI
+#cmakedefine HAVE_MPI ENABLE_MPI
+/* Define to 1 if the MPI2 Standard is supported */
+#cmakedefine01 MPI_2
 #cmakedefine01 HAVE_BOOST
 
 

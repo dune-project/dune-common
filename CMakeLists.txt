@@ -16,8 +16,8 @@ set(DUNE_COMMON_VERSION_MAJOR    "${DUNE_VERSION_MAJOR}")
 set(DUNE_COMMON_VERSION_MINOR    "${DUNE_VERSION_MINOR}")
 set(DUNE_COMMON_VERSION_REVISION "${DUNE_VERSION_REVISION}")
 
-message("DUNE_USE_ONLY_STATIC_LIB ${DUNE_USE_ONLY_STATIC_LIB}")
-
+option("DUNE_USE_ONLY_STATIC_LIBS" "If set to ON, we will force static linkage everywhere")
+message("DUNE_USE_ONLY_STATIC_LIBS ${DUNE_USE_ONLY_STATIC_LIBS}")
 if(DUNE_USE_ONLY_STATIC_LIBS)
   # Use only static libraries.
   # We do this by overriding the library suffixes.
@@ -37,7 +37,7 @@ include(DuneStreams)
 dune_set_minimal_debug_level()
 
 # include dune-common and current directory to include pathtest
-include_directories("${CMAKE_SOURCE_DIR}" ".")
+include_directories("${CMAKE_SOURCE_DIR}")
 link_directories("${CMAKE_SOURCE_DIR}/lib")
 
 # set required compiler flags for C++11 (former C++0x)
@@ -52,13 +52,8 @@ set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -DHAVE_MEMORY=${HAVE_MEMORY}")
 
 # search for packages
 find_package(PkgConfig)
-find_package(MPI)
-if(MPI_FOUND)
-set(HAVE_MPI MPI_CXX_FOUND)
-add_definitions("${MPI_CXX_COMPILE_FLAGS}")
- #add_definitions("-DENABLE_MPI=1")
-include_directories(${MPI_CXX_INCLUDE_PATH})
-endif(MPI_FOUND)
+
+include(DUNEMPI)
 
 find_package(Boost)
 set(HAVE_BOOST BOOST_FOUND)
@@ -70,6 +65,7 @@ set(HAVE_LAPACK LAPACK_FOUND)
 
 # make calling fortran routines from C/C++ possible
 include(FortranCInterface)
+FortranCInterface_VERIFY(CXX)
 FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
 
 # actually write the config.h file to disk
