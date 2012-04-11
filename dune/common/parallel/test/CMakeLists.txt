@@ -1,7 +1,5 @@
 set(MPITESTPROGS indicestest indexsettest syncertest selectiontest)
 
-add_dependencies(build_tests ${MPITESTPROGS})
-
 # We do not want want to build the tests during make all,
 # but just build them on demand
 add_dependencies(build_tests ${MPITESTPROGS})
@@ -24,3 +22,10 @@ endif(MPI_FOUND)
 #if(MPI_FOUND)
 #  target_link_libraries(syncertest ${MPI_CXX_LIBRARIES})
 #endif(MPI_FOUND)
+
+add_test(indexsettest			indexsettest)
+add_test(selectiontest			selectiontest)
+if(MPI_CXX_FOUND)
+  add_test(indicestest			indicestest)
+  #add_test(syncertest			syncertest)
+endif(MPI_CXX_FOUND)
