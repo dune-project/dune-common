@@ -1,3 +1,10 @@
+set(MPITESTPROGS indicestest indexsettest syncertest selectiontest)
+
+add_dependencies(build_tests ${MPITESTPROGS})
+
+# We do not want want to build the tests during make all,
+# but just build them on demand
+add_dependencies(build_tests ${MPITESTPROGS})
 add_executable("indexsettest" indexsettest.cc)
 target_link_libraries("indexsettest" "dunecommon")
 
