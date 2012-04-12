@@ -7,6 +7,7 @@
 #include <iostream>
 #include <algorithm>
 #include <dune/common/typetraits.hh>
+#include <dune/common/unused.hh>
 
 /**
  * @brief Tests the capabilities of a forward iterator.
