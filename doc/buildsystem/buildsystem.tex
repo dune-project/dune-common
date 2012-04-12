@@ -1295,6 +1295,33 @@ environment variables.
 \item \texttt{GREP} tells \dunecontrol which command to invoke for 'grep'.
 \end{itemize}
 
+\minisec{opts file variables}
+Certain aspects of the build system can be specified via additional
+entries in the opts file:
+
+\begin{itemize}
+\item \texttt{DUNE\_CONTROL\_PATH} -- see \emph{environment variables}
+\item \texttt{RESUME\_FILE} -- see \emph{Resume build after error}
+  Section \ref{sec:timesaving}
+\item \texttt{BUILDDIR} configure the modules to use out-of-source
+  build. The binaries are built in subdirectories of each module,
+  named according to the \texttt{BUILDDIR} variable.
+\item \texttt{\textit{COMMAND}\,\_FLAGS}\\ the most important ones are:
+  \begin{itemize}
+  \item \texttt{AUTOGEN\_FLAGS} specifies options for the
+    \texttt{dune-autogen} script. This allows to set\\
+    \texttt{--acversion=VERSION} or \texttt{--amversion=VERSION} to
+    force usage of a specific\\ \texttt{autoconf\$VERSION} or 
+    \texttt{automake\$VERSION}.
+  \item \texttt{CONFIGURE\_FLAGS} specifies options you want to pass to
+    configure. For a list of possible parameters see
+    \texttt{./configure --help} (note that this command is only
+    available after running \texttt{dunecontrol autogen}).
+  \item \texttt{MAKE\_FLAGS} specifies options for the \texttt{make}
+    command, e.g. \texttt{-j4} to allow four concurrent build jobs.
+  \end{itemize}
+\end{itemize}
+
 \subsection{dune.module}\label{subsec::dune.module}
 
 The \dunemodule file is split into two parts. First we have the
@@ -1435,6 +1462,7 @@ Now, your project is prepared to build the subdirectory
 installed \texttt{dune-pdelab}.
 
 \subsection{Time savings using \dunecontrol}
+\label{sec:timesaving}
 
 \dunecontrol can help working with a growing stack of depending \dune modules and
 might save you time.
