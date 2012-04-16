@@ -4,6 +4,12 @@ cmake_minimum_required(VERSION 2.8)
 # make sure our own modules are found
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules")
 
+
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+set(CMAKE_C_FLAGS_DEBUG "-g -O0")
+set(CMAKE_CXX_FLAGS_RELEASE "-funroll-loops -O3")
+set(CMAKE_C_FLAGS_RELEASE "-funroll-loops -O3")
+
 include(DuneMacros)
 dune_module_information(${CMAKE_SOURCE_DIR})
 
@@ -16,7 +22,6 @@ set(DUNE_COMMON_VERSION_MAJOR    "${DUNE_VERSION_MAJOR}")
 set(DUNE_COMMON_VERSION_MINOR    "${DUNE_VERSION_MINOR}")
 set(DUNE_COMMON_VERSION_REVISION "${DUNE_VERSION_REVISION}")
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 
 option("DUNE_USE_ONLY_STATIC_LIBS" "If set to ON, we will force static linkage everywhere")
 message("DUNE_USE_ONLY_STATIC_LIBS ${DUNE_USE_ONLY_STATIC_LIBS}")
