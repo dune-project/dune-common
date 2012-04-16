@@ -78,7 +78,9 @@ add_definitions(-DHAVE_CONFIG_H)
 include(DUNEDoxygen)
 
 # Create custom target for building the documentation
-add_custom_target(doc)
+# and provide macros for installing the docs and force
+# building them before.
+include(DUNEDoc)
 
 # Create a custom target for building the tests.
 # Thus they will not be built by make all any more.

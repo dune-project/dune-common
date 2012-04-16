@@ -39,7 +39,7 @@ MACRO (add_doxygen_target)
     add_dependencies(doc doxygen_${DUNE_MOD_NAME})
 
     # Use a cmake call to install the doxygen documentation and create a target for it
-    set(install_doxygen_command ${CMAKE_COMMAND} -D CMAKE_CURRENT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR} -D DUNE_MOD_NAME=${DUNE_MOD_NAME} -P ${CMAKE_SOURCE_DIR}/cmake/scripts/InstallDoxygen.cmake)
+    set(install_doxygen_command ${CMAKE_COMMAND} -D FILE=${CMAKE_CURRENT_BINARY_DIR}/html -D DIR=${CMAKE_INSTALL_PREFIX}/share/doc/${DUNE_MOD_NAME}/doxygen -P ${CMAKE_SOURCE_DIR}/cmake/scripts/InstallFile.cmake)
     add_custom_target(doxygen_install_${DUNE_MOD_NAME}
       ${install_doxygen_command}
       COMMENT "Installing doxygen documentation"
