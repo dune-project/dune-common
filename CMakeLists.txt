@@ -75,6 +75,8 @@ configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 add_definitions(-DHAVE_CONFIG_H)
 
+include(DUNEDoxygen)
+
 # Create custom target for building the documentation
 add_custom_target(doc)
 

@@ -1,0 +1,2 @@
+file(INSTALL ${CMAKE_CURRENT_BINARY_DIR}/html
+	DESTINATION share/doc/${DUNE_MOD_NAME}/doxygen)
