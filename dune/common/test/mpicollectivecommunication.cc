@@ -39,7 +39,7 @@ int main(int argc, char** argv)
     }
 
     // result from above should be size of job
-    double sum = mpi.size();
+    double sum DUNE_UNUSED = mpi.size();
     for(int i=0; i<length; ++i)
     {
       assert( std::abs( values[i] - sum ) < 1e-8 );

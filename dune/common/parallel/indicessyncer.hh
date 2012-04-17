@@ -9,6 +9,7 @@
 #include <dune/common/stdstreams.hh>
 #include <dune/common/tuples.hh>
 #include <dune/common/sllist.hh>
+#include <dune/common/unused.hh>
 #include <cassert>
 #include <cmath>
 #include <limits>
@@ -515,7 +516,7 @@ namespace Dune
       RemoteIndexIterator riEnd  = remote->second.first->end();
       RemoteIndexIterator rIndex = remote->second.first->begin();
       GlobalIndexIterator gIndex = global->second.begin();
-      GlobalIndexIterator gEnd   = global->second.end();
+      GlobalIndexIterator gEnd DUNE_UNUSED = global->second.end();
       IndexIterator index  = indexSet.begin();
 
       assert(rIndex==riEnd || gIndex != global->second.end());
@@ -808,7 +809,7 @@ namespace Dune
     }
 
     // Exchange indices with each neighbour
-    const RemoteIterator rend = remoteIndices_.end();
+    const RemoteIterator rend DUNE_UNUSED = remoteIndices_.end();
 
     calculateMessageSizes();
 
@@ -925,11 +926,9 @@ namespace Dune
       for(Iterator iterators = iteratorsMap_.begin(); iteratorsEnd != iterators; ++iterators)
       {
         std::pair<GlobalIndex,Attribute> p;
-        bool old, valid=iterators->second.isNotAtEnd();
-        if(valid)
+        if (iterators->second.isNotAtEnd())
         {
-          p =iterators->second.globalIndexPair();
-          old=iterators->second.isOld();
+          p = iterators->second.globalIndexPair();
         }
 
         if(iterators->second.isNotAtEnd() && iterators->second.isOld()
@@ -1101,7 +1100,7 @@ namespace Dune
       // remote index list
       SLList<std::pair<int,Attribute> > sourceAttributeList;
       sourceAttributeList.push_back(std::make_pair(source,Attribute(sourceAttribute)));
-      bool foundSelf=false;
+      bool foundSelf DUNE_UNUSED = false;
       Attribute myAttribute=Attribute();
 
       // Unpack the remote indices
