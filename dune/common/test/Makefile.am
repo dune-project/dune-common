@@ -13,7 +13,6 @@ TESTPROGS = \
     dynvectortest \
     enumsettest \
     fassigntest \
-    float_cmp \
     fmatrixtest \
     fvectortest \
     gcdlcmtest \
@@ -45,6 +44,7 @@ TESTPROGS = \
     testfassign_fail5 \
     testfassign_fail6 \
     testfconstruct \
+    testfloatcmp \
     tuplestest_dune \
     tuplestest_std \
     tuplestest_tr1 \
@@ -239,7 +239,7 @@ conversiontest_SOURCES = conversiontest.cc
 
 sourcescheck_NOSOURCES = exprtmpl.cc timing.cc
 
-float_cmp_SOURCES = float_cmp.cc
+testfloatcmp_SOURCES = testfloatcmp.cc
 
 genericiterator_compile_fail_SOURCES = genericiterator_compile_fail.cc
 

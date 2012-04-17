@@ -10,7 +10,7 @@ lrutest
 test-stack
 arraylisttest
 shared_ptrtest
-float_cmp
+testfloatcmp
 bitsetvectortest
 iteratorfacadetest
 sllisttest
