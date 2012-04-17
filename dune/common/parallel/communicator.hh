@@ -9,7 +9,6 @@
 #include <dune/common/exceptions.hh>
 #include <dune/common/typetraits.hh>
 #include <dune/common/stdstreams.hh>
-#include <dune/common/unused.hh>
 
 #if HAVE_MPI
 // MPI header
@@ -1389,18 +1388,24 @@ namespace Dune
     typedef typename CommPolicy<Data>::IndexedType Type;
     Type *sendBuffer, *recvBuffer;
     size_t sendBufferSize;
-    size_t recvBufferSize DUNE_UNUSED;
+#ifndef NDEBUG
+    size_t recvBufferSize;
+#endif
 
     if(FORWARD) {
       sendBuffer = reinterpret_cast<Type*>(buffers_[0]);
       sendBufferSize = bufferSize_[0];
       recvBuffer = reinterpret_cast<Type*>(buffers_[1]);
+#ifndef NDEBUG
       recvBufferSize = bufferSize_[1];
+#endif
     }else{
       sendBuffer = reinterpret_cast<Type*>(buffers_[1]);
       sendBufferSize = bufferSize_[1];
       recvBuffer = reinterpret_cast<Type*>(buffers_[0]);
+#ifndef NDEBUG
       recvBufferSize = bufferSize_[0];
+#endif
     }
     typedef typename CommPolicy<Data>::IndexedTypeFlag Flag;
 
