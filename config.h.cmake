@@ -42,7 +42,7 @@
 /* Define if you have a BLAS library. */
 #cmakedefine HAVE_BLAS 1
 
-/* Define to 1 if you have <boost/make_shared.hpp> */
+/* Define to 1 if you have <boost/make_shared.hpp>, */
 #cmakedefine HAVE_BOOST_MAKE_SHARED_HPP 1
 
 /* Define to 1 if you have the <boost/shared_ptr.hpp> header file. */
@@ -63,19 +63,20 @@
 #cmakedefine HAVE_MPI ENABLE_MPI
 
 /* Define to 1 if nullptr is supported */
-#cmakedefine01 HAVE_NULLPTR
+#cmakedefine HAVE_NULLPTR
 
 /* Define to 1 if static_assert is supported */
-#cmakedefine01 HAVE_STATIC_ASSERT
+#cmakedefine HAVE_STATIC_ASSERT
 
 /* Define to 1 if the MPI2 Standard is supported */
-#cmakedefine01 MPI_2
+#cmakedefine MPI_2 1
 
-#cmakedefine01 HAVE_BOOST
+
+#cmakedefine HAVE_BOOST 1
 
 
 /* Define to 1 if you have the <memory> header file. */
-#cmakedefine01 HAVE_MEMORY
+#cmakedefine HAVE_MEMORY 1
 
 /* The namespace in which SHARED_PTR can be found */
 #cmakedefine SHARED_PTR_NAMESPACE ${SHARED_PTR_NAMESPACE}
@@ -84,13 +85,13 @@
 #cmakedefine SHARED_PTR_HEADER ${SHARED_PTR_HEADER}
 
 /* Define to 1 if variadic templates are supported */
-#cmakedefine01 HAVE_VARIADIC_TEMPLATES
+#cmakedefine HAVE_VARIADIC_TEMPLATES 1
 
 /* Define to 1 if SFINAE on variadic template constructors is fully supported */
-#cmakedefine01 HAVE_VARIADIC_CONSTRUCTOR_SFINAE
+#cmakedefine HAVE_VARIADIC_CONSTRUCTOR_SFINAE 1
 
 /* Define to 1 if rvalue references are supported */
-#cmakedefine01 HAVE_RVALUE_REFERENCES
+#cmakedefine HAVE_RVALUE_REFERENCES 1
 
 /* Include allways usefull headers */
 #include <dune/common/deprecated.hh>
