@@ -40,7 +40,7 @@
 #cmakedefine HAVE_ARRAY 1
 
 /* Define if you have a BLAS library. */
-// Still missing
+#cmakedefine HAVE_BLAS 1
 
 /* Define to 1 if you have <boost/make_shared.hpp> */
 #cmakedefine HAVE_BOOST_MAKE_SHARED_HPP 1
@@ -57,9 +57,20 @@
 /* Define to 1 if you have the <malloc.h> header file. */
 // Not used! #cmakedefine01 HAVE_MALLOC_H
 
+/* Define if you have the MPI library. This is only true if MPI was found by
+   configure _and_ if the application uses the DUNEMPICPPFLAGS (or the
+   deprecated MPI_CPPFLAGS) */
 #cmakedefine HAVE_MPI ENABLE_MPI
+
+/* Define to 1 if nullptr is supported */
+#cmakedefine01 HAVE_NULLPTR
+
+/* Define to 1 if static_assert is supported */
+#cmakedefine01 HAVE_STATIC_ASSERT
+
 /* Define to 1 if the MPI2 Standard is supported */
 #cmakedefine01 MPI_2
+
 #cmakedefine01 HAVE_BOOST
 
 
@@ -71,13 +82,6 @@
 
 /* The header in which SHARED_PTR can be found */
 #cmakedefine SHARED_PTR_HEADER ${SHARED_PTR_HEADER}
-
-
-/* Define to 1 if nullptr is supported */
-#cmakedefine01 HAVE_NULLPTR
-
-/* Define to 1 if static_assert is supported */
-#cmakedefine01 HAVE_STATIC_ASSERT
 
 /* Define to 1 if variadic templates are supported */
 #cmakedefine01 HAVE_VARIADIC_TEMPLATES
