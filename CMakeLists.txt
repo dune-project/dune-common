@@ -23,8 +23,14 @@ set(DUNE_COMMON_VERSION_MINOR    "${DUNE_VERSION_MINOR}")
 set(DUNE_COMMON_VERSION_REVISION "${DUNE_VERSION_REVISION}")
 
 
-option("DUNE_USE_ONLY_STATIC_LIBS" "If set to ON, we will force static linkage everywhere")
-message("DUNE_USE_ONLY_STATIC_LIBS ${DUNE_USE_ONLY_STATIC_LIBS}")
+option(DUNE_USE_ONLY_STATIC_LIBS "If set to ON, we will force static linkage everywhere" OFF)
+if(DUNE_USE_ONLY_STATIC_LIBS)
+  set(_default_enable_shared OFF)
+else(DUNE_USE_ONLY_STATIC_LIBS)
+  set(_default_enable_shared ON)
+endif(DUNE_USE_ONLY_STATIC_LIBS)
+option(BUILD_SHARED_LIBS "If set to ON, shared libs will be built" ${_default_enable_shared})
+
 if(DUNE_USE_ONLY_STATIC_LIBS)
   # Use only static libraries.
   # We do this by overriding the library suffixes.

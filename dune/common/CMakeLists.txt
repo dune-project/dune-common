@@ -10,8 +10,14 @@ add_library("dunecommon"
 	parametertreeparser.cc
 	path.cc
 	stdstreams.cc)
+install(TARGETS dunecommon  EXPORT dune-common-targets DESTINATION lib)
+install(EXPORT dune-common-targets
+  DESTINATION lib/cmake)
 # build the library in lib
-set_target_properties(dunecommon PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+set_target_properties(dunecommon PROPERTIES
+  ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+set_target_properties(dunecommon PROPERTIES
+  LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
 
 #install headers
 install(FILES
