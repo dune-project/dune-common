@@ -69,6 +69,7 @@ find_package(SharedPtr)
 # search for lapack
 find_package(LAPACK)
 set(HAVE_LAPACK LAPACK_FOUND)
+set(HAVE_BLAS BLAS_FOUND)
 
 # make calling fortran routines from C/C++ possible
 include(FortranCInterface)
