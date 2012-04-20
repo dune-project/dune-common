@@ -16,7 +16,7 @@ dune_module_information(${CMAKE_SOURCE_DIR})
 set(ProjectName            "${DUNE_MOD_NAME}")
 set(ProjectVersion         "${DUNE_MOD_VERSION}")
 set(ProjectMaintainerEmail "${DUNE_MAINTAINER}")
-project(${ProjectName} C CXX Fortran)
+project(${ProjectName} C CXX)# Fortran)
 set(DUNE_COMMON_VERSION          "${DUNE_MOD_VERSION}")
 set(DUNE_COMMON_VERSION_MAJOR    "${DUNE_VERSION_MAJOR}")
 set(DUNE_COMMON_VERSION_MINOR    "${DUNE_VERSION_MINOR}")
@@ -66,16 +66,24 @@ include(DUNEMPI)
 find_package(Boost)
 set(HAVE_BOOST BOOST_FOUND)
 find_package(SharedPtr)
+include(LanguageSupport)
+workaround_9220(Fortran Fortran_Works)
+if(Fortran_Works)
+  enable_language(Fortran OPTIONAL)
+  # search for lapack
+  find_package(LAPACK)
+  set(HAVE_LAPACK LAPACK_FOUND)
+  set(HAVE_BLAS BLAS_FOUND)
+  # make calling fortran routines from C/C++ possible
+  include(FortranCInterface)
+  FortranCInterface_VERIFY(CXX)
+  FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
+else(Fortran_Works)
+  set(HAVE_LAPACK Off)
+  set(HAVE_BLAS Off)
+  file(WRITE ${CMAKE_BINARY_DIR}/FC.h "")
+endif(Fortran_Works)
 
-# search for lapack
-find_package(LAPACK)
-set(HAVE_LAPACK LAPACK_FOUND)
-set(HAVE_BLAS BLAS_FOUND)
-
-# make calling fortran routines from C/C++ possible
-include(FortranCInterface)
-FortranCInterface_VERIFY(CXX)
-FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
 
 # actually write the config.h file to disk
 configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
