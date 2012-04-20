@@ -71,6 +71,18 @@
 /* Define to 1 if you have the <stdint.h> header file. */
 #cmakedefine HAVE_STDINT_H 1
 
+/* Define to 1 if you have the <tr1/tuple> header file. */
+#cmakedefine HAVE_TR1_TUPLE 1
+
+/* Define to 1 if you have the <tr1/type_traits> header file. */
+#cmakedefine HAVE_TR1_TYPE_TRAITS 1
+
+/* Define to 1 if you have the <tuple> header file. */
+#cmakedefine HAVE_TUPLE 1
+
+/* Define to 1 if you have the <type_traits> header file. */
+#cmakedefine HAVE_TYPE_TRAITS 1
+
 /* Define to 1 if the MPI2 Standard is supported */
 #cmakedefine MPI_2 1
 
