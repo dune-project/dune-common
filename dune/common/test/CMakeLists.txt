@@ -102,8 +102,7 @@ target_link_libraries("float_cmp" "dunecommon")
 # we provide an empty fortran file to force the linker
 # to link to the fortran libraries (needed for static linking)
 add_executable("fmatrixtest" fmatrixtest.cc dummy.f)
-target_link_libraries("fmatrixtest" "dunecommon" ${LAPACK_LIBRARIES})
-
+target_link_libraries("fmatrixtest" "dunecommon")
 add_executable("fvectortest" fvectortest.cc)
 add_executable("gcdlcmtest" gcdlcmtest.cc)
 add_executable("genericiterator_compile_fail" EXCLUDE_FROM_ALL genericiterator_compile_fail.cc)
