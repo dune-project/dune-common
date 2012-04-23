@@ -19,7 +19,7 @@ TESTPROGS = \
     iteratorfacadetest \
     iteratorfacadetest2 \
     lrutest \
-    mpicollcomm \
+    mpicollectivecommunication \
     mpiguardtest \
     mpihelpertest \
     mpihelpertest2 \
@@ -182,10 +182,10 @@ mpihelpertest2_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS) -DMPIHELPER_PREINITI
 mpihelpertest2_LDADD = $(DUNEMPILIBS) $(LDADD)
 mpihelpertest2_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
 
-mpicollcomm_SOURCES = mpicollectivecommunication.cc
-mpicollcomm_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)
-mpicollcomm_LDADD = $(DUNEMPILIBS) $(LDADD)
-mpicollcomm_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
+mpicollectivecommunication_SOURCES = mpicollectivecommunication.cc
+mpicollectivecommunication_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)
+mpicollectivecommunication_LDADD = $(DUNEMPILIBS) $(LDADD)
+mpicollectivecommunication_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
 
 mpiguardtest_SOURCES = mpiguardtest.cc
 mpiguardtest_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)

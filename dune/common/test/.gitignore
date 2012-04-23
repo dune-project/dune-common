@@ -5,7 +5,7 @@ Makefile.in
 semantic.cache
 dynvectortest
 fvectortest
-mpicollcomm
+mpicollectivecommunication
 lrutest
 test-stack
 arraylisttest
