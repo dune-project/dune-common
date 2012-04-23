@@ -6,7 +6,6 @@
 
 #include <iostream>
 
-#include <dune/common/deprecated.hh>
 #include "typetraits.hh"
 #include "static_assert.hh"
 
