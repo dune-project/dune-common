@@ -11,16 +11,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "-funroll-loops -O3")
 set(CMAKE_C_FLAGS_RELEASE "-funroll-loops -O3")
 
 include(DuneMacros)
-dune_module_information(${CMAKE_SOURCE_DIR})
 
-set(ProjectName            "${DUNE_MOD_NAME}")
-set(ProjectVersion         "${DUNE_MOD_VERSION}")
-set(ProjectMaintainerEmail "${DUNE_MAINTAINER}")
-project(${ProjectName} C CXX)# Fortran)
-set(DUNE_COMMON_VERSION          "${DUNE_MOD_VERSION}")
-set(DUNE_COMMON_VERSION_MAJOR    "${DUNE_VERSION_MAJOR}")
-set(DUNE_COMMON_VERSION_MINOR    "${DUNE_VERSION_MINOR}")
-set(DUNE_COMMON_VERSION_REVISION "${DUNE_VERSION_REVISION}")
+dune_project()
 
 
 option(DUNE_USE_ONLY_STATIC_LIBS "If set to ON, we will force static linkage everywhere" OFF)
@@ -64,18 +56,12 @@ check_include_file("stdint.h" HAVE_STDINT_H)
 check_include_file_cxx("memory" HAVE_MEMORY)
 set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -DHAVE_MEMORY=${HAVE_MEMORY}")
 
-# search for packages
-find_package(PkgConfig)
-
 include(DUNEMPI)
 
 find_package(Boost)
 set(HAVE_BOOST BOOST_FOUND)
 find_package(SharedPtr)
-include(LanguageSupport)
-workaround_9220(Fortran Fortran_Works)
 if(Fortran_Works)
-  enable_language(Fortran OPTIONAL)
   # search for lapack
   find_package(LAPACK)
   set(HAVE_LAPACK LAPACK_FOUND)
@@ -96,32 +82,16 @@ configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 add_definitions(-DHAVE_CONFIG_H)
 
-include(DUNEDoxygen)
-
 # Create custom target for building the documentation
 # and provide macros for installing the docs and force
 # building them before.
 include(DUNEDoc)
 
-# Create a custom target for building the tests.
-# Thus they will not be built by make all any more.
-# Actually I wanted this target to be a dependency
-# of make test but that is currently not possible.
-# See http://public.kitware.com/Bug/view.php?id=8438
-# This really sucks!
-# Therefore currently make build_tests has to be called
-# before make test.
-add_custom_target(build_tests DEPENDS ${TESTPROGS})
+# activate testing the DUNE way
+include(DuneTests)
 
-# mimic make check of the autotools
-add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} DEPENDS build_tests)
-
-# enable testing before adding the subdirectories.
-# Thus we can add the tests in the subdirectories
-# where they actually are.
-enable_testing()
-#add_custom_target(build_test)
-set_property(TEST APPEND PROPERTY DEPENDS build_tests)
+# activate pkg-config
+include(DunePkgConfig)
 
 # add subdirectories to execute CMakeLists.txt there
 add_subdirectory("dune")
@@ -132,23 +102,6 @@ add_subdirectory("doc")
 add_subdirectory("cmake/modules")
 add_subdirectory("cmake/scripts")
 
-# set some variables that are used in the pkg-config file
-set( CMAKE_FIND_LIBRARY_SUFFIXES ${_dune_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES})
-set( prefix ${CMAKE_INSTALL_PREFIX})
-set(exec_prefix "\${prefix}")
-set(libdir "\${exec_prefix}/lib")
-set(includedir "\${prefix}/include")
-set(PACKAGE_NAME ${DUNE_MOD_NAME})
-set(VERSION ${DUNE_MOD_VERSION})
-set(CC ${CMAKE_C_COMPILER})
-set(CXX ${CMAKE_CXX_COMPILER})
-
-#create pkg-config file
-configure_file(
-  ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}.pc.in
-  ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}.pc
-  @ONLY
-)
 
 #create cmake-config files
 configure_file(
@@ -161,17 +114,11 @@ configure_file(
 
 #install dune.module file
 install(FILES dune.module DESTINATION lib/dunecontrol/${DUNE_MOD_NAME})
-# install pkgconfig file
-if(PKG_CONFIG_FOUND )
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${DUNE_MOD_NAME}.pc
-    DESTINATION lib/pkgconfig)
-endif(PKG_CONFIG_FOUND)
 
 #install cmake-config files
 install(FILES ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-config.cmake
   ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-version.cmake
   DESTINATION lib/cmake)
 
-include(CTest)
 
 export(PACKAGE dune-common)
