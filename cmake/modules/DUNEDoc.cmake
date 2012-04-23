@@ -5,13 +5,15 @@
 #
 add_custom_target(doc)
 
+
 MACRO(create_doc_install filename targetdir)
   get_filename_component(targetfile ${filename} NAME)
-  set(install_command ${CMAKE_COMMAND} -D FILE=${filename} -D DIR=${CMAKE_INSTALL_PREFIX}/${targetdir} -P ${CMAKE_SOURCE_DIR}/cmake/scripts/InstallFile.cmake)
+  set(install_command ${CMAKE_COMMAND} -D FILES=${filename} -D DIR=${CMAKE_INSTALL_PREFIX}/${targetdir} -P ${CMAKE_SOURCE_DIR}/cmake/scripts/InstallFile.cmake)
   # create a custom target for the installation
   add_custom_target(install_${targetfile} ${install_command}
     COMMENT "Installing ${filename} to ${targetdir}"
     DEPENDS ${filename})
-  # When installing call cmake install with the above install target
-    install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" --build \"${CMAKE_BINARY_DIR}\" --target install_${targetfile} )")
+  # When installing, call cmake install with the above install target and add the file to install_manifest.txt
+  install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" --build \"${CMAKE_BINARY_DIR}\" --target install_${targetfile} )
+            LIST(APPEND CMAKE_INSTALL_MANIFEST_FILES ${CMAKE_INSTALL_PREFIX}/${targetdir}/${targetfile})")
 ENDMACRO(create_doc_install)
