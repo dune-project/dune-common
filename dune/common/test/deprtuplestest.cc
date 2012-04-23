@@ -14,18 +14,6 @@
 
 using namespace Dune;
 
-template<int i, int j>
-struct Same
-{
-  enum { value = false};
-};
-
-template<int i>
-struct Same<i,i>
-{
-  enum { value = true};
-};
-
 template<class T>
 void test(T& tuple)
 {
