@@ -19,7 +19,6 @@ tupleutilitytest
 enumsettest
 fmatrixtest
 dynmatrixtest
-polyallocator
 poolallocatortest
 *.gcda
 *.gcno
