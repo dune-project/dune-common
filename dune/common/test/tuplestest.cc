@@ -32,28 +32,16 @@
 
 using namespace Dune;
 
-template<int i, int j>
-struct Same
-{
-  enum { value = false};
-};
-
-template<int i>
-struct Same<i,i>
-{
-  enum { value = true};
-};
-
 template<class T>
 void test(T& tuple)
 {
-  float f;
+  float f DUNE_UNUSED;
   f = get<0>(tuple);
-  int i;
+  int i DUNE_UNUSED;
   i = get<1>(tuple);
-  double d;
+  double d DUNE_UNUSED;
   d = get<2>(tuple);
-  char c;
+  char c DUNE_UNUSED;
   c = get<3>(tuple);
   std::string s;
   s = get<4>(tuple);
@@ -261,7 +249,7 @@ int tuple_tr1_test()
 
 
   // get the second element
-  tuple_element<1,tuple<int,double> >::type d;
+  tuple_element<1,tuple<int,double> >::type d DUNE_UNUSED;
   d=get<1>(t);
 
   get<0>(t)=16;

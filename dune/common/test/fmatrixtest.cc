@@ -204,8 +204,8 @@ void test_matrix()
     (*it) *= 2;
   }
   // reverse iterator vector
-  it = v.rbegin();
-  end = v.rend();
+  it = v.beforeEnd();
+  end = v.beforeBegin();
   for (; it!=end; --it)
     (*it) /= 2;
   // find vector
@@ -380,7 +380,7 @@ struct ScalarOperatorTest
     ft c = 2;
     FieldMatrix<ft,1,1> v(2);
     FieldMatrix<ft,1,1> w(2);
-    bool b;
+    bool b DUNE_UNUSED;
 
     std::cout << __func__ << "\t ( " << className(v) << " )" << std::endl;
 

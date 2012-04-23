@@ -5,12 +5,12 @@ Makefile.in
 semantic.cache
 dynvectortest
 fvectortest
-mpicollcomm
+mpicollectivecommunication
 lrutest
 test-stack
 arraylisttest
 shared_ptrtest
-float_cmp
+testfloatcmp
 bitsetvectortest
 iteratorfacadetest
 sllisttest
@@ -19,7 +19,6 @@ tupleutilitytest
 enumsettest
 fmatrixtest
 dynmatrixtest
-polyallocator
 poolallocatortest
 *.gcda
 *.gcno

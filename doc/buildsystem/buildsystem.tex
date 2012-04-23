@@ -84,7 +84,7 @@ Im Neuenheimer Feld 368, D-69120 Heidelberg, Germany}\\
 \section{Creating a new \dune project}\label{section::creating_new_dune_project}
 
 From a build system point of view there is no difference between a \dune
-application and a \dune module.\\
+application and a \dune module.
 
 \dune modules are packages that offer a certain functionality that can
 be used by \dune applications. Therefore \dune modules offer libraries
@@ -115,7 +115,7 @@ the bare minimum you have to provide in order to create a new project:
 
 This section tells you how to begin working with \dune without explaining any
 further details. For a closer look on \duneproject, see section
-\ref{section::creating_new_dune_project}.\\
+\ref{section::creating_new_dune_project}.
 
 Once you have downloaded all the \dune modules you are interested in, you probably
 wonder ``How do I start working with \dune?'' It is quite easy.
@@ -146,7 +146,7 @@ modules). It can be done by calling
 \emph{Note:} In case you are using the unstable version
 \dune you should be aware that the build system may change,
 just like the source code. Therefore it might be that
-\texttt{duneproject} is not up to date with the latest changes. \\
+\texttt{duneproject} is not up to date with the latest changes.
 
 After calling \duneproject, you have to provide a name for your project
 (without whitespace), e.g., \texttt{dune-foo}. 
@@ -242,8 +242,8 @@ After running
 make doc
 \end{lstlisting}
 in \texttt{dune-foo} you should now find a
-\texttt{html} \texttt{doxygen} documentation in
-\texttt{dune-foo/doc/doxygen/html/index.html}.\\
+\texttt{html} \texttt{doxygen} documentation which can be read by opening
+\texttt{dune-foo/doc/doxygen/html/index.html}.
 
 \section{Dune module guidelines}\label{section::dune_module_guidelines}
 \label{guidelines}
@@ -261,8 +261,8 @@ A \dune module should comply with the following rules:
   directory. You should at least provide the macros \texttt{\emph{MODULE}\_CHECKS}
   and \texttt{\emph{MODULE}\_CHECK\_MODULE}, in order to setup and
   find your module (see~\ref{m4files}).
-\item Header files that can be used by other \dune modules should be
-  accessible via \verb!#include <dune/foo/bar.hh>!. In order to work
+\item Header files should be accessible via \verb!#include <dune/foo/bar.hh>!,
+  otherwise they cannot be used by other \dune modules. In order to work
   with a freshly checkout version of your module you will usually need
   to create a local symbolic link \texttt{dune ->
     \textit{module-directory/}}. This link gets created by the
@@ -514,7 +514,7 @@ bye_CPPFLAGS = -DBYE
 \end{lstlisting}
 
 Perhaps you're wondering why the above examples used
-\texttt{AM\_CPPFLAGS} instead of the normal \texttt{CPPFLAGS}? The
+\texttt{AM\_CPPFLAGS} instead of normal \texttt{CPPFLAGS}? The
 reason for this is that the variables \texttt{CFLAGS},
 \texttt{CPPFLAGS}, \texttt{CXXFLAGS} etc. are considered {\em user
   variables} which may be set on the command line:
@@ -835,7 +835,7 @@ target_LIBADD =
 
 \begin{description}
 \item[MPI] The \texttt{DUNE\_MPI} macro sets the following variables with the
-  help of the macros \texttt{ACX\_MPI} and \texttt{MPI\_CONFIG}: For
+  help of the macros \texttt{MPI\_CONFIG} and \texttt{ACX\_MPI}: For
   compilation with the MPI compiler \texttt{MPICC} and \texttt{MPILIBS}.
   These are not used in \dune except that \texttt{MPICC} may be set on the
   configure command line to select which MPI installation to use.  For
@@ -1060,7 +1060,7 @@ We offer a set of macros that can be used in your \configureac:
   \texttt{dunecontrol m4create} and write a file
   \texttt{dependencies.m4}.
 \item \texttt{DUNE\_SYMLINK}
-  creates symlink \texttt{\$(top\_srcdir)/dune} $\rightarrow$
+  creates symlink \texttt{\$(top\_srcdir)/dune} $\!\rightarrow$
   \texttt{\$(top\_srcdir)}. The programming guidelines (\ref{guidelines})
   require that the include statements be like \texttt{\#include
     <dune/...>}. If your module has a directory structure
@@ -1078,7 +1078,7 @@ We offer a set of macros that can be used in your \configureac:
   \texttt{DUNE\_CHECK\_ALL}.
 \end{itemize}
 
-\texttt{DUNE\_CHECK\_ALL} defines certain
+\texttt{DUNE\_CHECK\_ALL} defines the following
 variables that can be used in the \configure script or in the
 \makefileam:
 
@@ -1172,9 +1172,9 @@ and \texttt{\emph{MODULE}\_CHECK\_MODULE} is called. Last
 \texttt{\emph{MODULE}\_CHECKS} is called for your module, in order to
 check all prerequisites for your module.
 
-What you just read implies that you have to provide the two macros
+When you have to provide the two macros
 \texttt{\emph{MODULE}\_CHECKS} and
-\texttt{\emph{MODULE}\_CHECK\_MODULE} for your module. These should be
+\texttt{\emph{MODULE}\_CHECK\_MODULE} for your module these should be
 written to a \texttt{m4/*.m4} file.
 
 Here follows an example for the module \texttt{dune-foo}:
@@ -1227,7 +1227,7 @@ The commands you are interested in right now are
   directories containing \dunemodule files and the parameters given on
   the command line are passed as parameters to \autogen.
 \item \texttt{configure} runs \configure for each
-  module. \texttt{--with-dune\textit{module}} parameters are created
+  module. \texttt{--with-dune-\textit{module}} parameters are created
   for a set of known \dune modules.
 \item \texttt{make} runs \make for each module.
 \item \texttt{all} runs \autogen, \configure and \make for each module.
@@ -1295,6 +1295,33 @@ environment variables.
 \item \texttt{GREP} tells \dunecontrol which command to invoke for 'grep'.
 \end{itemize}
 
+\minisec{opts file variables}
+Certain aspects of the build system can be specified via additional
+entries in the opts file:
+
+\begin{itemize}
+\item \texttt{DUNE\_CONTROL\_PATH} -- see \emph{environment variables}
+\item \texttt{RESUME\_FILE} -- see \emph{Resume build after error}
+  Section \ref{sec:timesaving}
+\item \texttt{BUILDDIR} configure the modules to use out-of-source
+  build. The binaries are built in subdirectories of each module,
+  named according to the \texttt{BUILDDIR} variable.
+\item \texttt{\textit{COMMAND}\,\_FLAGS}\\ the most important ones are:
+  \begin{itemize}
+  \item \texttt{AUTOGEN\_FLAGS} specifies options for the
+    \texttt{dune-autogen} script. This allows to set\\
+    \texttt{--acversion=VERSION} or \texttt{--amversion=VERSION} to
+    force usage of a specific\\ \texttt{autoconf\$VERSION} or 
+    \texttt{automake\$VERSION}.
+  \item \texttt{CONFIGURE\_FLAGS} specifies options you want to pass to
+    configure. For a list of possible parameters see
+    \texttt{./configure --help} (note that this command is only
+    available after running \texttt{dunecontrol autogen}).
+  \item \texttt{MAKE\_FLAGS} specifies options for the \texttt{make}
+    command, e.g. \texttt{-j4} to allow four concurrent build jobs.
+  \end{itemize}
+\end{itemize}
+
 \subsection{dune.module}\label{subsec::dune.module}
 
 The \dunemodule file is split into two parts. First we have the
@@ -1305,9 +1332,11 @@ implementation of a command called via \dunecontrol.
 \begin{lst}[File dune.module] \mbox{}
 \begin{lstlisting}
 # parameters for dune control
-Module: dune_grid
-Depends: dune_common
-Suggests: UG Alberta Alu3d
+Module: dune-grid
+Version: 2.2-svn
+Maintainer: dune@dune-project.org
+Depends: dune-common (>= 2.2) dune-geometry (>= 2.2)
+Extra-Suggests: UG Alberta Alu3d
 
 # overload the run_configure command
 run_configure () {
@@ -1332,10 +1361,14 @@ i.e. the order in which the modules are built. The parameters and
 their values are separated by colon. Possible parameters are
 \begin{itemize}
 \item \texttt{Module} (\em required\em) is the name of the module. The
-  name is of the form \texttt{[a-zA-Z0-9\_]+}.
+  name is of the form \texttt{[a-zA-Z0-9\_-]+}.
+\item \texttt{Version} (\em optional\em) is the module's version.
+\item \texttt{Maintainer} (\em optional\em) is the email address of the 
+  module's maintainer.
 \item \texttt{Depends} (\em required\em) takes a space separated list
   of required modules. This module is not functional without these
-  other modules.
+  other modules. Checks whether the demanded version of the required
+  modules is provided.
 \item \texttt{Suggests} (\em optional\em) takes a space separated list
   of optional modules. This module is functional without these
   other modules, but can offer further functionality if one or more of
@@ -1425,8 +1458,70 @@ AC_CONFIG_FILES([Makefile
 AC_OUTPUT
 \end{lstlisting}
 Now, your project is prepared to build the subdirectory
-\texttt{my\_pdelab\_application} if and only if \texttt{dune-pdelab} is successfully
-installed on your machine.
+\texttt{my\_pdelab\_application} if and only if your machine has a successfully
+installed \texttt{dune-pdelab}.
+
+\subsection{Time savings using \dunecontrol}
+\label{sec:timesaving}
+
+\dunecontrol can help working with a growing stack of depending \dune modules and
+might save you time.
+
+\minisec{Narrow down \dune modules to apply actions to}
+Often you don't want to let \dunecontrol apply actions for every module but only 
+the one you are working on.
+
+With the flag \texttt{--only=dune-foo} in
+\begin{lstlisting}[language=make]
+./dune-common/bin/dunecontrol --module=dune-foo --opts=config.opts configure
+\end{lstlisting}
+only the module \texttt{dune-foo} will be configured by \dunecontrol.
+
+Using the flag \texttt{--current} below a module's root directory \dunecontrol 
+applies actions only for this module.
+
+To apply the actions to a module and all modules it depends on, set the flag 
+\texttt{--module=dune-foo}.
+
+\minisec{Updates from revision control systems}
+If modules are kept in a revision control system you need to stay up to
+date and download the newest versions for your modules. The command \texttt{update}
+as in
+\begin{lstlisting}[language=make]
+./dune-common/bin/dunecontrol update
+\end{lstlisting}
+makes \dunecontrol to update every module. Currently supported and automatically detected 
+revision control systems are the Concurrent Versions System (CVS), Apache 
+Subversion (SVN) and Git.
+
+\minisec{Execute commands for every module}
+The \dunecontrol command \texttt{exec} allows to execute commands in the root
+directory of every module. For example the 
+statement
+\begin{lstlisting}[language=make,showstringspaces=false]
+./dune-common/bin/dunecontrol exec "svn log -l10"
+\end{lstlisting}
+shows the last ten Subversion commit messages for all modules. If a module is 
+not under Subversion version control the command execution fails and \dunecontrol 
+stops.
+
+\minisec{Resume build after error}
+\dunecontrol stops whenever an error occurs. But you can resume from the module which
+failed. To enable this feature, you have to specify the path of a resume file in the 
+variable \texttt{RESUME\_FILE} of your options file and use the flag \texttt{--resume}.
+If \dunecontrol fails it saves the name of the failing module in the specified file.
+On the next run it recognizes the failed run and resumes from the failed module on.
+
+\dunecontrol skips the first module -- the one with the error in the last run -- after
+resuming if the flag \texttt{--skipfirst} is given together with \texttt{--resume}.
+
+\minisec{Use configure caching}
+\configure is run for every module thus many tests are unnecessarily run multiple times.
+You can use \autoconf's ability to cache test results. If you add 
+\texttt{--cache-file=/tmp/dune-config.cache} to the \texttt{CONFIUGURE\_FLAGS} of
+you options file the \configure  cache is created. Be aware that the file persists 
+between \dunecontrol runs. If you encounter any problems, you want to change the 
+configuration or to rerun all checks, the cache file should be removed manually.
 
 \section{Further documentation}
 

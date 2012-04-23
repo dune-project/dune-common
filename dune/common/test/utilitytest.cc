@@ -57,8 +57,6 @@ int main(int argc, char** argv)
   }
 
   int i = 3;
-  int *ii; ii = &i;
-  double d; d = 2;
   long l = 4;
   char c = 's';
 

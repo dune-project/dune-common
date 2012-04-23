@@ -13,7 +13,6 @@
 #include <algorithm>
 #include <functional>
 
-#include "deprecated.hh"
 #include "exceptions.hh"
 #include "collectivecommunication.hh"
 #include "binaryfunctions.hh"
@@ -26,61 +25,6 @@
 
 namespace Dune
 {
-
-  //=======================================================
-  // use singleton pattern and template specialization to
-  // generate MPI data types
-  //=======================================================
-
-  // any type is interpreted as contiguous piece of memory
-  // i.e. only value types are allowed !
-  template<typename T>
-  class Generic_MPI_Datatype
-  {
-  public:
-    static MPI_Datatype get()  DUNE_DEPRECATED
-    {
-      if (!type)
-      {
-        type = shared_ptr<MPI_Datatype>(new MPI_Datatype);
-        MPI_Type_contiguous(sizeof(T),MPI_BYTE,type.get());
-        MPI_Type_commit(type.get());
-      }
-      return *type;
-    }
-  private:
-    Generic_MPI_Datatype () {}
-    Generic_MPI_Datatype (const Generic_MPI_Datatype& ) {}
-    static shared_ptr<MPI_Datatype> type;
-  };
-
-  template<typename T>
-  shared_ptr<MPI_Datatype> Generic_MPI_Datatype<T>::type = shared_ptr<MPI_Datatype>(static_cast<MPI_Datatype*>(0));
-
-  // A Macro for defining traits for the primitive data types
-#define ComposeMPITraits(p,m) \
-  template<> \
-  class Generic_MPI_Datatype<p>{ \
-  public: \
-    static inline MPI_Datatype get() DUNE_DEPRECATED { \
-      return m; \
-    } \
-  }
-
-
-  ComposeMPITraits(char, MPI_CHAR);
-  ComposeMPITraits(unsigned char,MPI_UNSIGNED_CHAR);
-  ComposeMPITraits(short,MPI_SHORT);
-  ComposeMPITraits(unsigned short,MPI_UNSIGNED_SHORT);
-  ComposeMPITraits(int,MPI_INT);
-  ComposeMPITraits(unsigned int,MPI_UNSIGNED);
-  ComposeMPITraits(long,MPI_LONG);
-  ComposeMPITraits(unsigned long,MPI_UNSIGNED_LONG);
-  ComposeMPITraits(float,MPI_FLOAT);
-  ComposeMPITraits(double,MPI_DOUBLE);
-  ComposeMPITraits(long double,MPI_LONG_DOUBLE);
-
-#undef ComposeMPITraits
 
   //=======================================================
   // use singleton pattern and template specialization to

@@ -204,8 +204,8 @@ void test_matrix()
     (*it) *= 2;
   }
   // reverse iterator vector
-  it = v.rbegin();
-  end = v.rend();
+  it = v.beforeEnd();
+  end = v.beforeBegin();
   for (; it!=end; --it)
     (*it) /= 2;
   // find vector
@@ -299,20 +299,20 @@ void test_matrix()
     for(size_type i=0; i<A.N(); ++i)
       for(size_type j=0; j<A.M(); ++j)
         A[i][j] = i;
-    const DynamicMatrix<K>& Aref = A;
+    const DynamicMatrix<K>& Aref DUNE_UNUSED = A;
 
 
     DynamicMatrix<K> B(n+1,n+1);
     for(size_type i=0; i<B.N(); ++i)
       for(size_type j=0; j<B.M(); ++j)
         B[i][j] = i;
-    const DynamicMatrix<K>& Bref = B;
+    const DynamicMatrix<K>& Bref DUNE_UNUSED = B;
 
     DynamicMatrix<K> C(n,n);
     for(size_type i=0; i<C.N(); ++i)
       for(size_type j=0; j<C.M(); ++j)
         C[i][j] = i;
-    const DynamicMatrix<K>& Cref = C;
+    const DynamicMatrix<K>& Cref DUNE_UNUSED = C;
 
 #if 0
     DynamicMatrix<K> AB = Aref.rightmultiplyany(B);

@@ -14,7 +14,6 @@ set(TESTS
     dynvectortest
     enumsettest
     fassigntest
-    float_cmp
     fmatrixtest
     fvectortest
     gcdlcmtest
@@ -40,6 +39,7 @@ set(TESTS
     testfassign3
     testfassign4
     testfconstruct
+    testfloatcmp
     tuplestest_config
     tuplestest_dune
     tuplestest_tr1
@@ -96,8 +96,8 @@ add_executable("fassigntest" fassigntest.cc)
 target_link_libraries("fassigntest" "dunecommon")
 
 
-add_executable("float_cmp" float_cmp.cc)
-target_link_libraries("float_cmp" "dunecommon")
+add_executable("testfloatcmp" testfloatcmp.cc)
+target_link_libraries("testfloatcmp" "dunecommon")
 
 # we provide an empty fortran file to force the linker
 # to link to the fortran libraries (needed for static linking)

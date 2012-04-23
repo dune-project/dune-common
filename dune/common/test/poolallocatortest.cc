@@ -41,7 +41,7 @@ struct testPoolMain
     for(int chunk=0; chunk < 10; ++chunk) {
       //std::cout<< std::endl<<"Chunk "<<chunk<<" ";
       unsigned long element = reinterpret_cast<unsigned long>(pool.allocate());
-      void* celement = reinterpret_cast<void*>(element);
+      //void* celement = reinterpret_cast<void*>(element);
       //std::cout << element<<" "<< celement<<",  "<<std::endl;
 
       Chunk* currentChunk = pool.chunks_;
@@ -66,9 +66,8 @@ struct testPoolMain
       for(int i=1; i < elements; i++)
       {
         element = reinterpret_cast<unsigned long>(pool.allocate());
-        celement = reinterpret_cast<void*>(element);
-
-        //  std::cout << element<<" "<<celement<<",  "<<std::endl;
+        //celement = reinterpret_cast<void*>(element);
+        //std::cout << element<<" "<<celement<<",  "<<std::endl;
 
         if(element< reinterpret_cast<unsigned long>(currentChunk->chunk_)) {
           std::cerr <<" buffer underflow during first alloc: "<<reinterpret_cast<unsigned long>(currentChunk->chunk_)

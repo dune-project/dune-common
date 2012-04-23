@@ -39,7 +39,9 @@ int main(int argc, char** argv)
     }
 
     // result from above should be size of job
+#ifndef NDEBUG
     double sum = mpi.size();
+#endif
     for(int i=0; i<length; ++i)
     {
       assert( std::abs( values[i] - sum ) < 1e-8 );

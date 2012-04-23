@@ -13,14 +13,13 @@ TESTPROGS = \
     dynvectortest \
     enumsettest \
     fassigntest \
-    float_cmp \
     fmatrixtest \
     fvectortest \
     gcdlcmtest \
     iteratorfacadetest \
     iteratorfacadetest2 \
     lrutest \
-    mpicollcomm \
+    mpicollectivecommunication \
     mpiguardtest \
     mpihelpertest \
     mpihelpertest2 \
@@ -45,6 +44,7 @@ TESTPROGS = \
     testfassign_fail5 \
     testfassign_fail6 \
     testfconstruct \
+    testfloatcmp \
     tuplestest_dune \
     tuplestest_std \
     tuplestest_tr1 \
@@ -154,7 +154,7 @@ dynmatrixtest_SOURCES = dynmatrixtest.cc
 dynvectortest_SOURCES = dynvectortest.cc
 
 fmatrixtest_SOURCES = fmatrixtest.cc
-fmatrixtest_LDADD = $(LAPACK_LIBS) $(LDADD)
+fmatrixtest_LDADD = $(LAPACK_LIBS) $(LDADD) $(BLAS_LIBS) $(LIBS) $(FLIBS)
 
 fvectortest_SOURCES = fvectortest.cc
 
@@ -182,10 +182,10 @@ mpihelpertest2_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS) -DMPIHELPER_PREINITI
 mpihelpertest2_LDADD = $(DUNEMPILIBS) $(LDADD)
 mpihelpertest2_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
 
-mpicollcomm_SOURCES = mpicollectivecommunication.cc
-mpicollcomm_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)
-mpicollcomm_LDADD = $(DUNEMPILIBS) $(LDADD)
-mpicollcomm_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
+mpicollectivecommunication_SOURCES = mpicollectivecommunication.cc
+mpicollectivecommunication_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)
+mpicollectivecommunication_LDADD = $(DUNEMPILIBS) $(LDADD)
+mpicollectivecommunication_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
 
 mpiguardtest_SOURCES = mpiguardtest.cc
 mpiguardtest_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)
@@ -239,7 +239,7 @@ conversiontest_SOURCES = conversiontest.cc
 
 sourcescheck_NOSOURCES = exprtmpl.cc timing.cc
 
-float_cmp_SOURCES = float_cmp.cc
+testfloatcmp_SOURCES = testfloatcmp.cc
 
 genericiterator_compile_fail_SOURCES = genericiterator_compile_fail.cc
 

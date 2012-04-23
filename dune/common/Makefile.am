@@ -1,6 +1,6 @@
 # $Id$
 
-SUBDIRS = . test exprtmpl parallel
+SUBDIRS = . test parallel
 
 # the standard debug streams are put into the libdune
 noinst_LTLIBRARIES = libcommon.la
@@ -82,12 +82,5 @@ commoninclude_HEADERS = 			\
 	typetraits.hh				\
 	unused.hh				\
 	version.hh
-
-if EXPRESSIONTEMPLATES
-commoninclude_HEADERS += exprtmpl.hh exprtmpl/scalar.inc exprtmpl/exprexpr.inc
-libcommon_la_SOURCES += exprtmpl.cc
-else
-sourcescheck_NOSOURCES = exprtmpl.hh exprtmpl.cc
-endif
 
 include $(top_srcdir)/am/global-rules
