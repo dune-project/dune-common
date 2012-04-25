@@ -49,7 +49,6 @@ conversiontest
 configparsertest
 nullptr-test
 blockbitfieldtest
-deprtuplestest
 fassigntest
 iteratorfacadetest2
 static_assert_test

@@ -8,7 +8,6 @@ TESTPROGS = \
     bitsetvectortest \
     check_fvector_size \
     conversiontest \
-    deprtuplestest \
     dynmatrixtest \
     dynvectortest \
     enumsettest \
@@ -138,8 +137,6 @@ tuplestest_tr1_CPPFLAGS = $(AM_CPPFLAGS)        \
     -DDISABLE_STD_TUPLE
 
 tupleutilitytest_SOURCES = tupleutilitytest.cc
-
-deprtuplestest_SOURCES = deprtuplestest.cc
 
 streamtest_SOURCES = streamtest.cc
 

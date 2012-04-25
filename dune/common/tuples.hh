@@ -441,33 +441,16 @@ namespace Dune {
 
 #if defined HAVE_TUPLE || defined HAVE_TR1_TUPLE
 #ifdef HAVE_TUPLE
-  #define TUPLE_NS std
   using std::get;
 #elif defined HAVE_TR1_TUPLE
-  #define TUPLE_NS std::tr1
   using std::tr1::get;
 #endif
-
-  // for backwards compatibility
-  template<int i>
-  struct Element {
-    template<typename T1>
-    static typename TupleAccessTraits<typename tuple_element<i,T1>::type>::NonConstType get(T1& t)
-    {
-      return TUPLE_NS::get<i>(t);
-    }
-
-    template<typename T1>
-    static typename TupleAccessTraits<typename tuple_element<i,T1>::type>::ConstType get(const T1& t)
-    {
-      return TUPLE_NS::get<i>(t);
-    }
-  };
-  #undef TUPLE_NS
 
 #else
   /**
    * @brief Get the N-th element of a tuple.
+   *
+   * \warning This is an internal class.  Do no use it directly!
    */
   template<int N>
   struct Element
@@ -589,9 +572,6 @@ namespace Dune {
     enum { value=0};
   };
 #endif
-  template<typename T>
-  struct Size : public tuple_size<T>
-  {};
 
 
 #ifdef HAVE_TUPLE
