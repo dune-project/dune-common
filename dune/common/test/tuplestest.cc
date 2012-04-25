@@ -79,7 +79,7 @@ int iteratorTupleTest()
 
   assert(get<2>(tuple_) == v.end());
   assert(get<0>(tuple_) != v.end());
-  assert(get<1>(tuple_)!= Element<2>::get(tuple_));
+  assert(get<1>(tuple_) != get<2>(tuple_));
   return ret;
 }
 
