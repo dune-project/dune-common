@@ -60,6 +60,13 @@ macro(dune_module_information MODULE_DIR)
 endmacro(dune_module_information)
 
 macro(dune_project)
+
+  # Set the flags
+  set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+  set(CMAKE_C_FLAGS_DEBUG "-g -O0")
+  set(CMAKE_CXX_FLAGS_RELEASE "-funroll-loops -O3")
+  set(CMAKE_C_FLAGS_RELEASE "-funroll-loops -O3")
+
   dune_module_information(${CMAKE_SOURCE_DIR})
   set(ProjectName            "${DUNE_MOD_NAME}")
   set(ProjectVersion         "${DUNE_MOD_VERSION}")
@@ -70,4 +77,107 @@ macro(dune_project)
   if(Fortran_Works)
     enable_language(Fortran OPTIONAL)
   endif(Fortran_Works)
+
+  option(DUNE_USE_ONLY_STATIC_LIBS "If set to ON, we will force static linkage everywhere" OFF)
+  if(DUNE_USE_ONLY_STATIC_LIBS)
+    set(_default_enable_shared OFF)
+  else(DUNE_USE_ONLY_STATIC_LIBS)
+    set(_default_enable_shared ON)
+  endif(DUNE_USE_ONLY_STATIC_LIBS)
+  option(BUILD_SHARED_LIBS "If set to ON, shared libs will be built" ${_default_enable_shared})
+
+  if(DUNE_USE_ONLY_STATIC_LIBS)
+    # Use only static libraries.
+    # We do this by overriding the library suffixes.
+    set( BLA_STATIC 1)
+    set( _dune_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
+    if (WIN32)
+      set(CMAKE_FIND_LIBRARY_SUFFIXES .lib ${CMAKE_FIND_LIBRARY_SUFFIXES})
+    endif (WIN32)
+    if (APPLE)
+      set(CMAKE_FIND_LIBRARY_SUFFIXES .lib ${CMAKE_FIND_LIBRARY_SUFFIXES})
+    else (APPLE)
+      set(CMAKE_FIND_LIBRARY_SUFFIXES .a )
+    endif (APPLE)
+  endif()
+
+  # set required compiler flags for C++11 (former C++0x)
+  find_package(CXX11Features)
+
+  # search for headers
+  include(CheckIncludeFile)
+  include(CheckIncludeFileCXX)
+  check_include_file("malloc.h" HAVE_MALLOC_H)
+  check_include_file("stdint.h" HAVE_STDINT_H)
+  check_include_file_cxx("memory" HAVE_MEMORY)
+  set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -DHAVE_MEMORY=${HAVE_MEMORY}")
+
+  # set include path and link path for the current project.
+  include_directories("${CMAKE_SOURCE_DIR}")
+  link_directories("${CMAKE_SOURCE_DIR}/lib")
+  include_directories("${CMAKE_CURRENT_BINARY_DIR}")
+  add_definitions(-DHAVE_CONFIG_H)
+
+  # Search for MPI and set the relevant variables.
+  include(DUNEMPI)
+
+
+  # Make calling fortran routines from C/C++ possible
+  if(Fortran_Works)
+    include(FortranCInterface)
+    FortranCInterface_VERIFY(CXX)
+    # Write FC.h header containing information about
+    # how to call fortran routined.
+    # It will be included in config.h
+    FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
+  else(Fortran_Works)
+    # Write empty FC.h header
+    file(WRITE ${CMAKE_BINARY_DIR}/FC.h "")
+  endif(Fortran_Works)
+
+  # Create custom target for building the documentation
+  # and provide macros for installing the docs and force
+  # building them before.
+  include(DUNEDoc)
+
+  # activate testing the DUNE way
+  include(DuneTests)
+
+  # activate pkg-config
+  include(DunePkgConfig)
+
+  # Search for a cmake files containing tests and directives
+  # specific to this module
+  find_file(_mod_cmake DuneCommonMacros.cmake ${CMAKE_MODULE_PATH}
+    NO_DEFAULT_PATH)
+  if(_mod_cmake)
+    include(DuneCommonMacros)
+  endif(_mod_cmake)
 endmacro(dune_project MODULE_DIR)
+
+# macro that should be called at the end of the top level CMakeLists.txt.
+# Namely it creates  config.h and the cmake-config files,
+# some install directives and export th module.
+MACRO(finalize_dune_project)
+  # actually write the config.h file to disk
+  configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+
+  #create cmake-config files
+  configure_file(
+    ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}-config.cmake.in
+    ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-config.cmake @ONLY)
+
+  configure_file(
+    ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}-version.cmake.in
+    ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-version.cmake @ONLY)
+
+  #install dune.module file
+  install(FILES dune.module DESTINATION lib/dunecontrol/${DUNE_MOD_NAME})
+
+  #install cmake-config files
+  install(FILES ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-config.cmake
+    ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-version.cmake
+    DESTINATION lib/cmake)
+
+  export(PACKAGE ${DUNE_MOD_NAME})
+ENDMACRO(finalize_dune_project)
