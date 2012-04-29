@@ -19,4 +19,4 @@ MACRO(create_doc_install filename targetdir)
 ENDMACRO(create_doc_install)
 
 # Support building documentation with doxygen.
-include(DUNEDoxygen)
+include(DuneDoxygen)
