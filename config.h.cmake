@@ -1,5 +1,7 @@
 /* config.h.  Generated from config.h.cmake by CMake.  */
 
+/* begin dune-common */
+
 #ifdef DEPRECATED_MPI_CPPFLAGS_USED
 #warning The MPI_CPPFLAGS configure substitute is deprecated. Please change
 #warning your Makefile.am to use DUNEMPICPPFLAGS instead. Note that it is a
@@ -86,6 +88,8 @@
 /* Define to 1 if the MPI2 Standard is supported */
 #cmakedefine MPI_2 1
 
+/* begin private */
+
 /* Name of package */
 #define PACKAGE "dune-common"
 
@@ -107,6 +111,11 @@
 /* Define to the version of this package. */
 #define PACKAGE_VERSION "@DUNE_MOD_VERSION@"
 
+/* Version number of package */
+#define VERSION "@DUNE_MOD_VERSION@"
+
+/* end private */
+
 #cmakedefine HAVE_BOOST 1
 
 /* The header in which SHARED_PTR can be found */
@@ -114,9 +123,6 @@
 
 /* The namespace in which SHARED_PTR can be found */
 #cmakedefine SHARED_PTR_NAMESPACE ${SHARED_PTR_NAMESPACE}
-
-/* Version number of package */
-#define VERSION "@DUNE_MOD_VERSION@"
 
 /* Define to 1 if variadic templates are supported */
 #cmakedefine HAVE_VARIADIC_TEMPLATES 1
@@ -127,8 +133,10 @@
 /* Define to 1 if rvalue references are supported */
 #cmakedefine HAVE_RVALUE_REFERENCES 1
 
-/* Include allways usefull headers */
+/* Include always useful headers */
 #include <dune/common/deprecated.hh>
 #include <dune/common/unused.hh>
 #include "FC.h"
 #define FC_FUNC FC_GLOBAL_
+
+/* end dune-common */

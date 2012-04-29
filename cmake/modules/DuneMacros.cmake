@@ -1,3 +1,8 @@
+MACRO(dune_module_to_uppercase _upper _module)
+  string(TOUPPER "${_module}" ${_upper})
+  string(REPLACE "-" "_" ${_upper} "${${_upper}}")
+ENDMACRO(dune_module_to_uppercase _upper _module)
+
 # add dune-common version from dune.module to config.h
 macro(dune_module_information MODULE_DIR)
   file(READ "${MODULE_DIR}/dune.module" DUNE_MODULE)
@@ -8,7 +13,7 @@ macro(dune_module_information MODULE_DIR)
     message("${MODULE_DIR}/dune.module is missing a version." FATAL_ERROR)
   endif(NOT MODULE_LINE)
 
-  string(REGEX REPLACE ".*Version:[ ]*([^ \n]+).*" "\\1" MODULE_LINE "${DUNE_MODULE}")
+  string(REGEX REPLACE ".*Version:[ ]*([^ \n]+).*" "\\1" DUNE_MOD_VERSION "${MODULE_LINE}")
   string(REGEX REPLACE "([0-9]).*" "\\1" DUNE_VERSION_MAJOR "${DUNE_MOD_VERSION}")
   string(REGEX REPLACE "[0-9]*\\.([0-9]).*" "\\1" DUNE_VERSION_MINOR "${DUNE_MOD_VERSION}")
   string(REGEX REPLACE "[0-9]*\\.[0-9]*\\.([0-9]).*" "\\1" DUNE_VERSION_REVISION "${DUNE_MOD_VERSION}")
@@ -47,17 +52,44 @@ macro(dune_module_information MODULE_DIR)
 
   # extract dependencies if the line exists.
   if(MODULE_LINE)
-    string(REGEX REPLACE ".*Depends:[ ]*([^ \n]+).*" "\\1" DUNE_DEPENDS "${DUNE_MODULE}")
+    string(REGEX REPLACE ".*Depends:[ ]*([^ \n]+).*" "\\1" DUNE_DEPENDS "${MODULE_LINE}")
   endif(MODULE_LINE)
 
+  dune_module_to_uppercase(DUNE_MOD_NAME_UPPERCASE ${DUNE_MOD_NAME})
+  message("DUNE_MOD_NAME_UPPERCASE=${DUNE_MOD_NAME_UPPERCASE}")
   # set module version
-  set("${DUNE_MOD_NAME}_VERSION"          "${DUNE_MOD_VERSION}")
-  set("${DUNE_MOD_NAME}_VERSION_MAJOR"    "${DUNE_VERSION_MAJOR}")
-  set("${DUNE_MOD_NAME}_VERSION_MINOR"    "${DUNE_VERSION_MINOR}")
-  set("${DUNE_MOD_NAME}_VERSION_REVISION" "${DUNE_VERSION_REVISION}")
-
-  #foreach( module $DEPENDENCIES
+  set(${DUNE_MOD_NAME_UPPERCASE}_VERSION         "${DUNE_MOD_VERSION}")
+  set(${DUNE_MOD_NAME_UPPERCASE}_VERSION_MAJOR    "${DUNE_VERSION_MAJOR}")
+  set(${DUNE_MOD_NAME_UPPERCASE}_VERSION_MINOR    "${DUNE_VERSION_MINOR}")
+  set(${DUNE_MOD_NAME_UPPERCASE}_VERSION_REVISION "${DUNE_VERSION_REVISION}")
 endmacro(dune_module_information)
+
+MACRO(dune_create_dependency_tree)
+  # TODO Create full dependency tree from ${DEPENDENCIES}
+  set(DEPENDENCY_TREE ${DUNE_DEPENDS})
+ENDMACRO(dune_create_dependency_tree _immediates)
+
+macro(dune_module_to_macro _macro_name _dune_module)
+  set(${_macro_name} "")
+  set(_rest "${_dune_module}")
+  string(FIND "${_rest}" "-" _found)
+  while(_found GREATER -1)
+    string(REGEX REPLACE "([^-]*)-.*" "\\1" _first_part
+      "${_rest}")
+    string(REGEX REPLACE "[^-]*-(.*)" "\\1" _rest
+      "${_rest}")
+    string(SUBSTRING "${_first_part}" 0 1 _first_letter)
+    string(SUBSTRING "${_first_part}" 1 -1 _rest_first_part)
+    string(TOUPPER "${_first_letter}" _first_letter)
+    set(${_macro_name} "${${_macro_name}}${_first_letter}${_rest_first_part}")
+    string(FIND "${_rest}" "-" _found)
+  endwhile(_found GREATER -1)
+  string(LENGTH "${_rest}" _length)
+  string(SUBSTRING "${_rest}" 0 1 _first_letter)
+  string(SUBSTRING "${_rest}" 1 -1 _rest)
+  string(TOUPPER "${_first_letter}" _first_letter)
+  set(${_macro_name} "${${_macro_name}}${_first_letter}${_rest}")
+endmacro(dune_module_to_macro _macro_name _dune_module)
 
 macro(dune_project)
 
@@ -146,38 +178,122 @@ macro(dune_project)
   # activate pkg-config
   include(DunePkgConfig)
 
+  dune_create_dependency_tree()
+
+  message("DEPENDENCY_TREE=${DEPENDENCY_TREE}")
+  foreach(_mod ${DEPENDENCY_TREE})
+    # Search for a cmake files containing tests and directives
+    # specific to this module
+    dune_module_to_macro(_cmake_mod_name "${_mod}")
+    set(_macro "${_cmake_mod_name}Macros")
+    find_file(_mod_cmake ${_macro}.cmake ${CMAKE_MODULE_PATH}
+      NO_DEFAULT_PATH)
+    if(_mod_cmake)
+      include(${_mod_cmake})
+    endif(_mod_cmake)
+    # Find the module
+    find_package(${_cmake_mod_name})
+    # set includes
+    dune_module_to_uppercase(_upper_case "${_mod}")
+    message("${_upper_case}_INCLUDE_DIRS")
+    include_directories("${${_upper_case}_INCLUDE_DIRS}")
+  endforeach(_mod DEPENDENCY_TREE)
+
   # Search for a cmake files containing tests and directives
   # specific to this module
-  find_file(_mod_cmake DuneCommonMacros.cmake ${CMAKE_MODULE_PATH}
-    NO_DEFAULT_PATH)
+  dune_module_to_macro(_macro ${DUNE_MOD_NAME})
+  set(DUNE_MOD_NAME_CMAKE "${_macro}")
+  set(_macro "${_macro}Macros")
+  find_file(_mod_cmake ${_macro}.cmake ${CMAKE_MODULE_PATH}
+    ${CMAKE_SOURCE_DIR}/cmake/modules NO_DEFAULT_PATH)
+  message("_mod_cmake=${_mod_cmake}")
   if(_mod_cmake)
-    include(DuneCommonMacros)
+    include(${_mod_cmake})
+  else(_mod_cmake)
+    message("There are no tests for module ${DUNE_MOD_NAME}.")
   endif(_mod_cmake)
 endmacro(dune_project MODULE_DIR)
+
+MACRO(dune_regenerate_config_cmake)
+  set(CONFIG_H_CMAKE_FILE "${CMAKE_BINARY_DIR}/config.h.cmake")
+  if(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
+    file(READ ${CMAKE_SOURCE_DIR}/config.h.cmake _file)
+    message("read ${CMAKE_SOURCE_DIR}/config.h.cmake")
+    string(REGEX MATCH
+      "/[\\*/][ ]*begin[ ]+${DUNE_MOD_NAME}.*\\/[/\\*][ ]*end[ ]*${DUNE_MOD_NAME}[^\\*]*\\*/"
+      _tfile "${_file}")
+  endif(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
+  # overwrite file with new content
+  file(WRITE ${CONFIG_H_CMAKE_FILE} "/* config.h.  Generated from config.h.cmake by CMake.
+   It was generated from config.h.cmake which in turn is generated automatically
+   from the config.h.cmake files of modules this module depends on. */"
+   )
+
+ # add previous module specific section
+ file(APPEND ${CONFIG_H_CMAKE_FILE} "\n${_tfile}")
+ foreach(_dep  ${DEPENDENCY_TREE})
+   foreach(_mod_conf_file ${${_dep}_PREFIX}/config.h.cmake
+       ${${_dep}_PREFIX}/share/${_dep}/config.h.cmake)
+     message("_mod_conf_file=${_mod_conf_file}")
+     if(EXISTS ${_mod_conf_file})
+       file(READ "${_mod_conf_file}"  _file)
+       string(REGEX REPLACE
+	 ".*/\\*[ ]*begin[ ]+${_dep}[^\\*]*\\*/(.*)/[/\\*][ ]*end[ ]*${_dep}[^\\*]*\\*/" "\\1"
+	 _tfile "${_file}")
+       # strip the private section
+       string(REGEX REPLACE "(.*)/[\\*][ ]*begin private.*/[\\*][ ]*end[ ]*private[^\\*]\\*/(.*)" "\\1\\2" _file "${_tfile}")
+       file(APPEND ${CONFIG_H_CMAKE_FILE} "${_file}")
+     endif(EXISTS ${_mod_conf_file})
+   endforeach()
+ endforeach(_dep  DEPENDENCY_TREE)
+ENDMACRO(dune_regenerate_config_cmake)
 
 # macro that should be called at the end of the top level CMakeLists.txt.
 # Namely it creates  config.h and the cmake-config files,
 # some install directives and export th module.
 MACRO(finalize_dune_project)
-  # actually write the config.h file to disk
-  configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
   #create cmake-config files
   configure_file(
-    ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}-config.cmake.in
-    ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-config.cmake @ONLY)
+    ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME_CMAKE}Config.cmake.in
+    ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME_CMAKE}Config.cmake @ONLY)
 
   configure_file(
-    ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}-version.cmake.in
-    ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-version.cmake @ONLY)
+    ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME_CMAKE}Version.cmake.in
+    ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME_CMAKE}Version.cmake @ONLY)
 
   #install dune.module file
   install(FILES dune.module DESTINATION lib/dunecontrol/${DUNE_MOD_NAME})
 
   #install cmake-config files
-  install(FILES ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-config.cmake
-    ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-version.cmake
+  install(FILES ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME_CMAKE}Config.cmake
+    ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME_CMAKE}Version.cmake
     DESTINATION lib/cmake)
 
+  #install config.h
+  install(FILES config.h.cmake DESTINATION share/${DUNE_MOD_NAME})
   export(PACKAGE ${DUNE_MOD_NAME})
+
+  if("${ARGC}" EQUAL "1")
+    message("Adding custom target for config.h generation")
+    dune_regenerate_config_cmake()
+    # add a target to generate config.h.cmake
+    add_custom_target(OUTPUT config.h.cmake
+      COMMAND dune_regenerate_config_cmake()
+      DEPENDS stamp-regenerate-config-h)
+    # actually write the config.h file to disk
+    # using generated file
+    configure_file(${CMAKE_CURRENT_BINARY_DIR}/config.h.cmake
+      ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+  else("${ARGC}" EQUAL "1")
+    message("Not adding custom target for config.h generation")
+    # actually write the config.h file to disk
+    configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+  endif("${ARGC}" EQUAL "1")
 ENDMACRO(finalize_dune_project)
+
+MACRO(target_link_dune_default_libraries _target)
+  add_DUNE_MPI_flags(${_target})
+ENDMACRO(target_link_dune_default_libraries)
+
+

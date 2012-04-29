@@ -457,37 +457,30 @@ include \$(top_srcdir)/am/global-rules
 
 M_DELIM
 
-for i in $DEPENDENCIES; do
-    echo "find_packages($i)" >>$PROJECT/dependencies.cmake
-    echo "include_directories(\${$i_INCLUDE_DIRS})" >>$PROJECT/dependencies.cmake
-done
-echo "include_directories("${CMAKE_SOURCE_DIR}")"  >>$PROJECT/dependencies.cmake
-
+################## CMakeLists.txt ##################
 echo " - $PROJECT/CMakeLists.txt"
 cat> "$PROJECT/CMakeLists.txt" << M_DELIM
 cmake_minimum_required(VERSION 2.8)
 project($PROJECT CXX)
-include(dependencies.cmake)
 
 # for this tow work you will have to modify the CMAKE_MODULE_PATH
-#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/../dune-common/cmake/modules")
+#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules")
 
+#include the dune macros
 include(DuneMacros)
 
-include(DUNEDoc)
-
-#activate testing
-include(DuneTest)
-
-#activate pkg-config
-include(DunePkgConfig)
+# start a dune project with information from dune.module
+dune_project()
 
 add_subdirectory("src")
 add_subdirectory("m4")
 add_subdirectory("dune")
 add_subdirectory("doc")
 
+# finalize the dune project, e.g. generating config.h etc.
+finalize_dune_project(GENERATE_CONFIG_H_CMAKE)
 M_DELIM
+
 ################## STAMP-VC ##################
 echo "- $PROJECT/stamp-vc"
 echo 'A stamp file to signify that this directory comes from a version control system, not an unpacked tarball' > $PROJECT/stamp-vc
@@ -519,6 +512,16 @@ echo "    Description and URL are missing right now."
 ###############################################################
 
 mkdir "$PROJECT/src"
+
+################## src/CMakeLists.txt ##################
+
+echo "- $PROJECT/src/CMakeLists.txt"
+cat> "$PROJECT/src/CMakeLists.txt" << M_DELIM
+
+add_executable("${CMODULE}" ${CMODULE}.cc)
+target_link_dune_default_libraries("${CMODULE}")
+
+M_DELIM
 
 ################## src/MAKEFILE.AM ##################
 
@@ -614,6 +617,14 @@ EXTRA_DIST = \$(M4FILES)
 include \$(top_srcdir)/am/global-rules
 CC_DELIM
 
+
+echo "- $PROJECT/m4/CMakeLists.txt"
+cat> "$PROJECT/m4/CMakeLists.txt" << CC_DELIM
+
+install(PROGRAMS $MODULE.m4 DESTINATION share/aclocal)
+
+CC_DELIM
+
 ################## M4/PROJECT.M4 ####################
 M4_MODULE=`echo $MODULE | tr '[a-z-]' '[A-Z_]'`
 echo "- $PROJECT/m4/$MODULE.m4"
@@ -654,6 +665,12 @@ SUBDIRS = $NAME
 include \$(top_srcdir)/am/global-rules
 EOF
 
+echo "- $PROJECT/dune/CMakeLists.txt"
+cat> $PROJECT/dune/CMakeLists.txt <<EOF
+add_subdirectory($NAME)
+EOF
+
+
 ################## dune/$NAME/Makefile.am ##############
 echo "- $PROJECT/dune/$NAME/Makefile.am"
 cat> $PROJECT/dune/$NAME/Makefile.am <<EOF
@@ -661,6 +678,13 @@ ${NAME}includedir = \$(includedir)/dune/${NAME}
 ${NAME}include_HEADERS = ${NAME}.hh
 
 include \$(top_srcdir)/am/global-rules
+EOF
+
+echo "- $PROJECT/dune/$NAME/CMakeLists.txt"
+cat> $PROJECT/dune/$NAME/CMakeLists.txt <<EOF
+#install headers
+install(FILES ${NAME}.hh DESTINATION include/dune/$NAME)
+
 EOF
 
 ################## dune/$NAME/$NAME.hh #################
@@ -696,6 +720,12 @@ docdir=\$(datadir)/doc/${PROJECT}
 
 include \$(top_srcdir)/am/webstuff
 include \$(top_srcdir)/am/global-rules
+CC_DELIM
+
+
+echo "- $PROJECT/doc/CMakeLists.txt"
+cat> "$PROJECT/doc/CMakeLists.txt" << CC_DELIM
+add_subdirectory("doxygen")
 CC_DELIM
 
 ###############################################################
@@ -759,7 +789,89 @@ include \$(top_srcdir)/am/global-rules
 
 CC_DELIM
 
+
+echo "- $PROJECT/doc/doxygen/CMakeLists.txt"
+cat> "$PROJECT/doc/doxygen/CMakeLists.txt" << CC_DELIM
+# shortcut for creating the Doxyfile.in and Doxyfile
+add_doxygen_target()
+
+# install doxygen documentation
+install(FILES Doxystyle DESTINATION share/$NAME/doc/doxygen)
+CC_DELIM
+
+echo "- $PROJECT/config.h.cmake"
+cat> "$PROJECT/config.h.cmake" <<EOF
+/* begin $NAME
+   put the definitions for config.h specific to
+   your project here. Everything above will be
+   overwritten 
+*/
+
+/* begin private */
+/* Name of package */
+#define PACKAGE "@DUNE_MOD_NAME"
+
+/* Define to the address where bug reports for this package should be sent. */
+#define PACKAGE_BUGREPORT "@DUNE_MAINTAINER@"
+
+/* Define to the full name of this package. */
+#define PACKAGE_NAME "@DUNE_MOD_NAME@"
+
+/* Define to the full name and version of this package. */
+#define PACKAGE_STRING "@DUNE_MOD_NAME@ @DUNE_MOD_VERSION@"
+
+/* Define to the one symbol short name of this package. */
+#define PACKAGE_TARNAME "@DUNE_MOD_NAME@"
+
+/* Define to the home page for this package. */
+#define PACKAGE_URL "@DUNE_MOD_URL@"
+
+/* Define to the version of this package. */
+#define PACKAGE_VERSION "@DUNE_MOD_VERSION@"
+
+/* end private */
+
+/* end $NAME
+   Everything below here will be overwritten
+*/
+EOF
 ## done
+
+CMAKE_NAME=`echo $NAME | sed "s/^\\(\\w\\)/\\U\\1/
+s/[_-]\\(\\w\)/\\U\\1/g"`
+
+echo "- $PROJECT/$CMAKE_NAME""Config.cmake.in"
+cat> "$PROJECT/$CMAKE_NAME""Config.cmake.in" <<EOF
+#compute installation prefix relative to this file
+get_filename_component(_dir "\${CMAKE_CURRENT_LIST_FILE}" PATH)
+get_filename_component(_prefix "\${_dir}/../.." ABSOLUTE)
+
+#import the target
+#include("\${_prefix}/lib/cmake/@DUNE_MOD_NAME@-targets.cmake")
+
+#report other information
+set(@DUNE_MOD_NAME@_INCLUDE_DIRS "\${_prefix}/include")
+set(@DUNE_MOD_NAME@_CXX_FLAGS "@CMAKE_CXX_FLAGS@")
+set(@DUNE_MOD_NAME@_CXX_FLAGS_DEBUG "@CMAKE_CXX_FLAGS_DEBUG@")
+set(@DUNE_MOD_NAME@_CXX_FLAGS_MINSIZEREL "@CMAKE_CXX_FLAGS_MINSIZEREL@")
+set(@DUNE_MOD_NAME@_CXX_FLAGS_RELEASE "@CMAKE_CXX_FLAGS_RELEASE@")
+set(@DUNE_MOD_NAME@_CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@")
+EOF
+
+echo "- $PROJECT/$CMAKE_NAME""Version.cmake.in"
+cat> "$PROJECT/$CMAKE_NAME""Version.cmake.in" <<EOF
+set(PACKAGE_VERSION "@DUNE_MOD_VERSION@")
+
+if(NOT "\${PACKAGE_FIND_VERSION}" VERSION_GREATER "@DUNE_MOD_VERSION@")
+  set (PACKAGE_VERSION_COMPATIBLE 1) # compatible with older
+  if ("\${PACKAGE_FIND_VERSION}" VERSION_EQUAL "@DUNE_MOD_VERSION@")
+    set(PACKAGE_VERSION_EXACT 1) #exact match for this version
+  endif()
+endif()
+EOF
+echo "- $PROJECT/stamp-regenerate-config-h"
+touch $PROJECT/stamp-regenerate-config-h
+echo 
 echo "done."
 echo "------------------------------------------"
 echo "For further details read the Dune Buildsystem-Howto:"
