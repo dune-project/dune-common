@@ -64,8 +64,6 @@ dnl -*- autoconf -*-
 #   DUNEMPICPPFLAGS
 #   DUNEMPILDFLAGS
 #   DUNEMPILIBS
-#   MPI_CPPFLAGS (deprecated in favor of DUNEMPICPPFLAGS)
-#   MPI_LDFLAGS (deprecated in favor of DUNEMPILIBS and DUNEMPILDFLAGS)
 #   dune_MPI_VERSION
 #   with_mpi ("no" if MPI is missing, "yes" followed by some more details if
 #             MPI is present)
@@ -79,8 +77,6 @@ dnl -*- autoconf -*-
 #   DUNEMPICPPFLAGS
 #   DUNEMPILDFLAGS
 #   DUNEMPILIBS
-#   MPI_CPPFLAGS (deprecated in favor of DUNEMPICPPFLAGS)
-#   MPI_LDFLAGS (deprecated in favor of DUNEMPILIBS and DUNEMPILDFLAGS)
 #   MPI_VERSION (set from dune_MPI_VERSION)
 #
 # preprocessor defines
@@ -199,21 +195,14 @@ AC_DEFUN([DUNE_MPI],[
     
   # set flags
   AS_IF([test "x$with_mpi" != "xno"],[
-    MPI_LDFLAGS="$DUNEMPILDFLAGS $DUNEMPILIBS"
     AC_DEFINE(HAVE_MPI,ENABLE_MPI,[Define if you have the MPI library.
       This is only true if MPI was found by configure _and_ if the application
       uses the DUNEMPICPPFLAGS (or the deprecated MPI_CPPFLAGS)])
-  ],[
-    MPI_LDFLAGS=""
   ])
   AC_SUBST(DUNEMPICPPFLAGS)
   AC_SUBST(DUNEMPILDFLAGS)
   AC_SUBST(DUNEMPILIBS)
   AC_SUBST(MPI_VERSION, $dune_MPI_VERSION)
-
-  DUNE_DEPRECATED_CPPFLAGS(MPI_CPPFLAGS, "$DUNEMPICPPFLAGS",
-    [The MPI_CPPFLAGS configure substitute is deprecated.  Please change your Makefile.am to use DUNEMPICPPFLAGS instead.  Note that it is a good idea to change any occurance of MPI_LDFLAGS into DUNEMPILIBS and DUNEMPILDFLAGS as appropriate, since it is not possible to issue a deprecation warning in that case.])
-  AC_SUBST(MPI_LDFLAGS)
 
   DUNE_ADD_ALL_PKG([MPI], [\${DUNEMPICPPFLAGS}], [\${DUNEMPILDFLAGS}], [\${DUNEMPILIBS}])
 
