@@ -30,12 +30,12 @@ endif(MPI_FOUND)
 function(add_dune_mpi_flags _targets)
   if(MPI_FOUND)
     foreach(_target ${_targets})
-    target_link_libraries(${_target} ${MPI_DUNE_LIBRARIES})
-    # The definitions are a hack as we do not seem to know which MPI implementation was
-    # found.
-    SET_TARGET_PROPERTIES(${_target} PROPERTIES COMPILE_FLAGS ${MPI_DUNE_COMPILE_FLAGS}
-      "-DENABLE_MPI=1 -DMPICH_SKIP_MPICXX -DMPIPP_H")
-    SET_TARGET_PROPERTIES(${_target} PROPERTIES LINK_FLAGS ${MPI_DUNE_LINK_FLAGS} "")
+      target_link_libraries(${_target} ${MPI_DUNE_LIBRARIES})
+      # The definitions are a hack as we do not seem to know which MPI implementation was
+      # found.
+      SET_TARGET_PROPERTIES(${_target} PROPERTIES COMPILE_FLAGS
+	"${MPI_DUNE_COMPILE_FLAGS} -DENABLE_MPI=1 -DMPICH_SKIP_MPICXX -DMPIPP_H")
+      SET_TARGET_PROPERTIES(${_target} PROPERTIES LINK_FLAGS ${MPI_DUNE_LINK_FLAGS} "")
     endforeach(_target ${_targets})
   endif(MPI_FOUND)
 endfunction()
