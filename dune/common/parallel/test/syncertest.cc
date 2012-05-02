@@ -77,30 +77,30 @@ void deleteOverlapEntries(T& indices,
       for(iterator remote = iterators.begin(); remote != end; ++remote) {
 
         // Search for the index
-        while(Dune::Element<0>::get(remote->second) != Dune::Element<2>::get(remote->second)
-              && *(Dune::Element<1>::get(remote->second)) < *index) {
+        while(Dune::get<0>(remote->second) != Dune::get<2>(remote->second)
+              && *(Dune::get<1>(remote->second)) < *index) {
           // increment all iterators
-          ++(Dune::Element<0>::get(remote->second));
-          ++(Dune::Element<1>::get(remote->second));
-          if(Dune::Element<0>::get(remote->second)!=Dune::Element<2>::get(remote->second))
-            assert(Dune::Element<1>::get(remote->second)!=Dune::Element<3>::get(remote->second));
+          ++(Dune::get<0>(remote->second));
+          ++(Dune::get<1>(remote->second));
+          if(Dune::get<0>(remote->second)!=Dune::get<2>(remote->second))
+            assert(Dune::get<1>(remote->second)!=Dune::get<3>(remote->second));
         }
 
         // Delete the entry if present
-        if(Dune::Element<0>::get(remote->second) != Dune::Element<2>::get(remote->second)) {
-          assert(Dune::Element<1>::get(remote->second) != Dune::Element<3>::get(remote->second));
+        if(Dune::get<0>(remote->second) != Dune::get<2>(remote->second)) {
+          assert(Dune::get<1>(remote->second) != Dune::get<3>(remote->second));
 
-          if(*(Dune::Element<1>::get(remote->second)) == *index) {
+          if(*(Dune::get<1>(remote->second)) == *index) {
 
             std::cout<<rank<<": Deleting remote "<<
-            Dune::Element<1>::get(remote->second)->first<<", "<<
-            Dune::Element<1>::get(remote->second)->second<<" of process "
+            Dune::get<1>(remote->second)->first<<", "<<
+            Dune::get<1>(remote->second)->second<<" of process "
             << remote->first<<std::endl;
 
             // Delete entries
-            Dune::Element<0>::get(remote->second).remove();
-            Dune::Element<1>::get(remote->second).remove();
-            assert(Dune::Element<4>::get(remote->second)->size()==Dune::Element<5>::get(remote->second)->size());
+            Dune::get<0>(remote->second).remove();
+            Dune::get<1>(remote->second).remove();
+            assert(Dune::get<4>(remote->second)->size()==Dune::get<5>(remote->second)->size());
           }
         }
       }
