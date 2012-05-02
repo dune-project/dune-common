@@ -139,7 +139,7 @@ namespace Dune {
     template<class C>
     FieldVector (const DenseVector<C> & x, typename Dune::enable_if<IsFieldVectorSizeCorrect<C,SIZE>::value>::type* dummy=0 )
     {
-      dune_static_assert(((bool)IsFieldVectorSizeCorrect<C,SIZE>::value), "FieldVectors do not match in dimension!");
+      // do a run-time size check, for the case that x is not a FieldVector
       assert(x.size() == SIZE);
       for (size_type i = 0; i<SIZE; i++)
         _data[i] = x[i];
