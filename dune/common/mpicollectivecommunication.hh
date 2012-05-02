@@ -253,7 +253,7 @@ namespace Dune
                         root,communicator);
     }
 
-    //! @copydoc CollectiveCommunication::gather()
+    //! @copydoc CollectiveCommunication::scatter()
     template<typename T>
     int scatter (T* send, T* recv, int len, int root) const // note out must have space for P*len elements
     {
@@ -276,6 +276,7 @@ namespace Dune
                            communicator);
     }
 
+    //! @copydoc CollectiveCommunication::allreduce(Type* inout,int len) const
     template<typename BinaryFunction, typename Type>
     int allreduce(Type* inout, int len) const
     {
@@ -286,7 +287,7 @@ namespace Dune
       return ret;
     }
 
-    //! @copydoc CollectiveCommunication::allreduce()
+    //! @copydoc CollectiveCommunication::allreduce(Type* in,Type* out,int len) const
     template<typename BinaryFunction, typename Type>
     int allreduce(Type* in, Type* out, int len) const
     {

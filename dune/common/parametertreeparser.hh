@@ -72,6 +72,7 @@ namespace Dune {
      * Parses C++ stream and build hierarchical config structure.
      *
      * \param in        The stream to parse
+     * \param pt        The parameter tree to store the config structure.
      * \param overwrite Whether to overwrite already existing values.
      *                  If false, values in the stream will be ignored
      *                  if the key is already present.
@@ -89,6 +90,7 @@ namespace Dune {
      * Parses C++ stream and build hierarchical config structure.
      *
      * \param in      The stream to parse
+     * \param pt      The parameter tree to store the config structure.
      * \param srcname Name of the configuration source for error
      *                messages, "stdin" or a filename.
      * \param overwrite Whether to overwrite already existing values.
@@ -105,6 +107,7 @@ namespace Dune {
      * Parses file with given name and build hierarchical config structure.
      *
      * \param file filename
+     * \param pt   The parameter tree to store the config structure.
      * \param overwrite Whether to overwrite already existing values.
      *                  If false, values in the stream will be ignored
      *                  if the key is already present.
@@ -122,6 +125,7 @@ namespace Dune {
      *
      * \param argc arg count
      * \param argv arg values
+     * \param pt   The parameter tree to store the config structure.
      */
     static void readOptions(int argc, char* argv [], ParameterTree& pt);
 

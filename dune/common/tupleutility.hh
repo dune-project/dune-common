@@ -1766,9 +1766,9 @@ namespace Dune {
   /**
    * \brief Apply reduce with meta binary function to template
    *
-   * For a tuple<T0,T1,...,TN-1,TN,...> the exported result is
+   * For a tuple\<T0,T1,...,TN-1,TN,...\> the exported result is
    *
-   * F< ... F< F< F<Seed,T0>::type, T1>::type, T2>::type,  ... TN-1>::type
+   * F\< ... F\< F\< F\<Seed,T0\>\::type, T1\>\::type, T2\>\::type,  ... TN-1\>\::type
    *
    * \tparam F Binary meta function
    * \tparam Tuple Apply reduce operation to this tuple
