@@ -9,7 +9,6 @@
 #include "ftraits.hh"
 #include "matvectraits.hh"
 
-#include <dune/common/deprecated.hh>
 
 namespace Dune {
 
@@ -297,29 +296,11 @@ namespace Dune {
       return Iterator(*this,size());
     }
 
-    //! @deprecated This method was renamed to make
-    //! it distinct from the STL version which returns
-    //! a reverse iterator. Use the new method beforeEnd
-    //! instead.
-    Iterator rbegin() DUNE_DEPRECATED_MSG("Use the new method beforeEnd instead")
-    {
-      return beforeEnd();
-    }
-
     //! @returns an iterator that is positioned before
     //! the end iterator of the vector, i.e. at the last entry.
     Iterator beforeEnd ()
     {
       return Iterator(*this,size()-1);
-    }
-
-    //! @deprecated This method was renamed to make
-    //! it distinct from the STL version which returns
-    //! a reverse iterator. Use the new method beforeBegin
-    //! instead.
-    Iterator rend () DUNE_DEPRECATED_MSG("Use the new method beforeBegin instead")
-    {
-      return beforeBegin();
     }
 
     //! @returns an iterator that is positioned before
@@ -352,29 +333,11 @@ namespace Dune {
       return ConstIterator(*this,size());
     }
 
-    //! @deprecated This method was renamed to make
-    //! it distinct from the STL version which returns
-    //! a reverse iterator. Use the new method beforeEnd
-    //! instead.
-    ConstIterator rbegin() const DUNE_DEPRECATED_MSG("Use the new method beforeEnd instead")
-    {
-      return beforeEnd();
-    }
-
     //! @returns an iterator that is positioned before
     //! the end iterator of the vector. i.e. at the last element
     ConstIterator beforeEnd () const
     {
       return ConstIterator(*this,size()-1);
-    }
-
-    //! @deprecated This method was renamed to make
-    //! it distinct from the STL version which returns
-    //! a reverse iterator. Use the new method beforeBegin
-    //! instead.
-    ConstIterator rend () const DUNE_DEPRECATED_MSG("Use the new method beforeBegin instead")
-    {
-      return beforeBegin();
     }
 
     //! @returns an iterator that is positioned before

@@ -16,7 +16,6 @@
 #include <dune/common/static_assert.hh>
 #include <dune/common/classname.hh>
 
-#include <dune/common/deprecated.hh>
 
 namespace Dune
 {
@@ -195,29 +194,11 @@ namespace Dune
       return Iterator(*this,rows());
     }
 
-    //! @deprecated This method was renamed to make
-    //! it distinct from the STL version which returns
-    //! a reverse iterator. Use the new method beforeEnd
-    //! instead.
-    Iterator rbegin() DUNE_DEPRECATED
-    {
-      return beforeBegin();
-    }
-
     //! @returns an iterator that is positioned before
     //! the end iterator of the vector, i.e. at the last entry.
     Iterator beforeEnd ()
     {
       return Iterator(*this,rows()-1);
-    }
-
-    //! @deprecated This method was renamed to make
-    //! it distinct from the STL version which returns
-    //! a reverse iterator. Use the new method beforeBegin
-    //! instead.
-    Iterator rend () DUNE_DEPRECATED
-    {
-      return beforeBegin();
     }
 
     //! @returns an iterator that is positioned before
@@ -248,29 +229,11 @@ namespace Dune
       return ConstIterator(*this,rows());
     }
 
-    //! @deprecated This method was renamed to make
-    //! it distinct from the STL version which returns
-    //! a reverse iterator. Use the new method beforeEnd
-    //! instead.
-    ConstIterator rbegin() const DUNE_DEPRECATED
-    {
-      return beforeEnd();
-    }
-
     //! @returns an iterator that is positioned before
     //! the end iterator of the vector. i.e. at the last element
     ConstIterator beforeEnd () const
     {
       return ConstIterator(*this,rows()-1);
-    }
-
-    //! @deprecated This method was renamed to make
-    //! it distinct from the STL version which returns
-    //! a reverse iterator. Use the new method beforeBegin
-    //! instead.
-    ConstIterator rend () const DUNE_DEPRECATED
-    {
-      return beforeBegin();
     }
 
     //! @returns an iterator that is positioned before
