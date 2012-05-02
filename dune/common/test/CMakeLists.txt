@@ -65,7 +65,8 @@ set(TESTPROGS ${TESTS} ${FAILTESTS})
 
 # We do not want want to build the tests during make all,
 # but just build them on demand
-add_dependencies(build_tests ${TESTPROGS})
+add_directory_test_target(_test_target)
+add_dependencies(${_test_target} ${TESTPROGS})
 
 # Add the executables needed for the tests
 add_executable("arraylisttest" arraylisttest.cc)
