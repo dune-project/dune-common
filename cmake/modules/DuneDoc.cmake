@@ -21,6 +21,7 @@ if(NOT IMAGEMAGICK_CONVERT)
   set(LATEX_USABLE)
 endif(NOT IMAGEMAGICK_CONVERT)
 if(LATEX_USABLE)
+  set(LATEX_MANGLE_TARGET_NAMES "ON" CACHE INTERNAL "Mangel target names to allow multiple latex documents")
   include(UseLATEX)
 endif(LATEX_USABLE)
 
