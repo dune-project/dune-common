@@ -1,3 +1,29 @@
+FIND_PACKAGE(LATEX)
+FIND_PROGRAM(IMAGEMAGICK_CONVERT convert
+  DOC "The convert program that comes with ImageMagick (available at http://www.imagemagick.org)."
+  )
+set(LATEX_USABLE ON)
+if(NOT ${LATEX_COMPILER})
+  message(WARING " Need latex to create documentation!")
+  set(LATEX_USABLE)
+endif(NOT ${LATEX_COMPILER})
+if(NOT ${BIBTEX_COMPILER})
+  message(WARING " Need bibtex to create documentation!")
+  set(LATEX_USABLE)
+endif(NOT ${BIBTEX_COMPILER})
+if(NOT ${MAKEINDEX_COMPILER})
+  message(WARING " Need makeindex to create documentation!")
+  set(LATEX_USABLE)
+endif(NOT ${MAKEINDEX_COMPILER})
+if(NOT ${IMAGEMAGICK_CONVERT})
+  message(WARNING " Need imagemagick to create latex documentation!")
+  set(LATEX_USABLE)
+endif(NOT ${IMAGEMAGICK_CONVERT})
+if(LATEX_USABLE)
+  include(UseLATEX)
+endif(LATEX_USABLE)
+
+
 # Module that provides a custom target make doc at the top level
 # directory and utility macros for creating install directives
 # that make sure that the files to be installed are previously
