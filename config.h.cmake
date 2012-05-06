@@ -116,8 +116,6 @@
 
 /* end private */
 
-#cmakedefine HAVE_BOOST 1
-
 /* The header in which SHARED_PTR can be found */
 #cmakedefine SHARED_PTR_HEADER ${SHARED_PTR_HEADER}
 
