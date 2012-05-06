@@ -2,7 +2,6 @@
 find_package(PkgConfig)
 
 # set some variables that are used in the pkg-config file
-set( CMAKE_FIND_LIBRARY_SUFFIXES ${_dune_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES})
 set( prefix ${CMAKE_INSTALL_PREFIX})
 set(exec_prefix "\${prefix}")
 set(libdir "\${exec_prefix}/lib")
