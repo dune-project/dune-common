@@ -274,7 +274,7 @@ MACRO(finalize_dune_project)
   #install cmake-config files
   install(FILES ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME_CMAKE}Config.cmake
     ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME_CMAKE}Version.cmake
-    DESTINATION lib/cmake)
+    DESTINATION lib/cmake/${DUNE_MOD_NAME_CMAKE})
 
   #install config.h
   install(FILES config.h.cmake DESTINATION share/${DUNE_MOD_NAME})
