@@ -5,8 +5,6 @@
 include(DuneStreams)
 dune_set_minimal_debug_level()
 
-find_package(Boost)
-set(HAVE_BOOST ${BOOST_FOUND})
 find_package(SharedPtr)
 if(Fortran_Works)
   # search for lapack
