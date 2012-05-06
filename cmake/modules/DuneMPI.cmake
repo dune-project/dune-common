@@ -33,9 +33,13 @@ function(add_dune_mpi_flags _targets)
       target_link_libraries(${_target} ${MPI_DUNE_LIBRARIES})
       # The definitions are a hack as we do not seem to know which MPI implementation was
       # found.
+      GET_TARGET_PROPERTY(_props ${_target} COMPILE_FLAGS)
+      string(REPLACE "_props-NOTFOUND" "" _props "${_props}")
       SET_TARGET_PROPERTIES(${_target} PROPERTIES COMPILE_FLAGS
-	"${MPI_DUNE_COMPILE_FLAGS} -DENABLE_MPI=1 -DMPICH_SKIP_MPICXX -DMPIPP_H")
-      SET_TARGET_PROPERTIES(${_target} PROPERTIES LINK_FLAGS ${MPI_DUNE_LINK_FLAGS} "")
+	"${_props} ${MPI_DUNE_COMPILE_FLAGS} -DENABLE_MPI=1 -DMPICH_SKIP_MPICXX -DMPIPP_H")
+      GET_TARGET_PROPERTY(_props ${_target} LINK_FLAGS)
+      string(REPLACE "_props-NOTFOUND" "" _props "${_props}")
+      SET_TARGET_PROPERTIES(${_target} PROPERTIES LINK_FLAGS "${_props} ${MPI_DUNE_LINK_FLAGS}")
     endforeach(_target ${_targets})
   endif(MPI_FOUND)
 endfunction()
