@@ -32,7 +32,7 @@ MACRO (add_doxygen_target)
       set(SCRIPT_DIR ${CMAKE_SOURCE_DIR}/cmake/scripts)
       set(DOXYSTYLE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/Doxystyle)
     else("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-      set(SCRIPT_DIR ${DUNE_COMMON_SCRIPT_DIR})
+      set(SCRIPT_DIR ${DuneCommon_SCRIPT_DIR})
     endif("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
     prepare_doxyfile()
     # A custom command that exectutes doxygen

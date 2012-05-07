@@ -1,5 +1,6 @@
 MACRO(test_dep)
-  execute_process(COMMAND ${CMAKE_COMMAND} -D RELPATH=${CMAKE_SOURCE_DIR} -P ${CMAKE_SOURCE_DIR}/cmake/scripts/FindFiles.cmake
+  dune_common_script_dir(SCRIPT_DIR)
+  execute_process(COMMAND ${CMAKE_COMMAND} -D RELPATH=${CMAKE_SOURCE_DIR} -P ${SCRIPT_DIR}/FindFiles.cmake
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     RESULT_VARIABLE _res ERROR_VARIABLE _dirs)
 
@@ -17,5 +18,6 @@ ENDMACRO(get_directory_test_target _target _dir)
 MACRO(add_directory_test_target _target)
   get_directory_test_target(${_target} "${CMAKE_CURRENT_BINARY_DIR}")
   add_custom_target(${${_target}})
-  configure_file(${DUNE_COMMON_SCRIPT_DIR}/BuildTests.cmake.in BuildTests.cmake @ONLY)
+  dune_common_script_dir(SCRIPT_DIR)
+  configure_file(${SCRIPT_DIR}/BuildTests.cmake.in BuildTests.cmake @ONLY)
 ENDMACRO(add_directory_test_target)
