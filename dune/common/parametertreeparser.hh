@@ -23,9 +23,9 @@ namespace Dune {
 
   public:
 
-    /** @name Parsing methods for the INITTree file format
+    /** @name Parsing methods for the INITree file format
      *
-     *  INITTree files should look like this
+     *  INITree files should look like this
      *  \verbatim
      # this file configures fruit colors in fruitsalad
 
