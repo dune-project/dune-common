@@ -1,7 +1,10 @@
-MACRO(dune_module_to_uppercase _upper _module)
+# Converts a module name given by _module into an uppercase string
+# _upper where all dashes (-) are replaced by underscores (_)
+# Example: dune-common -> DUNE_COMMON
+macro(dune_module_to_uppercase _upper _module)
   string(TOUPPER "${_module}" ${_upper})
   string(REPLACE "-" "_" ${_upper} "${${_upper}}")
-ENDMACRO(dune_module_to_uppercase _upper _module)
+endmacro(dune_module_to_uppercase _upper _module)
 
 # add dune-common version from dune.module to config.h
 macro(dune_module_information MODULE_DIR)
@@ -64,11 +67,14 @@ macro(dune_module_information MODULE_DIR)
   set(${DUNE_MOD_NAME_UPPERCASE}_VERSION_REVISION "${DUNE_VERSION_REVISION}")
 endmacro(dune_module_information)
 
-MACRO(dune_create_dependency_tree)
+macro(dune_create_dependency_tree)
   # TODO Create full dependency tree from ${DEPENDENCIES}
   set(DEPENDENCY_TREE ${DUNE_DEPENDS})
-ENDMACRO(dune_create_dependency_tree _immediates)
+endmacro(dune_create_dependency_tree _immediates)
 
+# Converts a module name given by _dune_module into a string _macro_name
+# where all dashes (-) are removed and letters after a dash are capitalized
+# Example: dune-grid-howto -> DuneGridHowto
 macro(dune_module_to_macro _macro_name _dune_module)
   set(${_macro_name} "")
   set(_rest "${_dune_module}")
@@ -91,6 +97,10 @@ macro(dune_module_to_macro _macro_name _dune_module)
   set(${_macro_name} "${${_macro_name}}${_first_letter}${_rest}")
 endmacro(dune_module_to_macro _macro_name _dune_module)
 
+# macro that should be called near the begin of the top level CMakeLists.txt.
+# Namely it sets up the module, defines basic variables and manages
+# depedencies.
+# Don't forget to call finalize_dune_project afterwards.
 macro(dune_project)
 
   # Set the flags
@@ -103,7 +113,7 @@ macro(dune_project)
   set(ProjectName            "${DUNE_MOD_NAME}")
   set(ProjectVersion         "${DUNE_MOD_VERSION}")
   set(ProjectMaintainerEmail "${DUNE_MAINTAINER}")
-  project(${ProjectName} C CXX)# Fortran)
+  project(${ProjectName} C CXX)
   include(LanguageSupport)
   workaround_9220(Fortran Fortran_Works)
   if(Fortran_Works)
@@ -153,7 +163,6 @@ macro(dune_project)
 
   # Search for MPI and set the relevant variables.
   include(DuneMPI)
-
 
   # Make calling fortran routines from C/C++ possible
   if(Fortran_Works)
@@ -222,7 +231,7 @@ macro(dune_project)
   endif(_mod_cmake)
 endmacro(dune_project MODULE_DIR)
 
-MACRO(dune_regenerate_config_cmake)
+macro(dune_regenerate_config_cmake)
   set(CONFIG_H_CMAKE_FILE "${CMAKE_BINARY_DIR}/config.h.cmake")
   if(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
     file(READ ${CMAKE_SOURCE_DIR}/config.h.cmake _file)
@@ -243,7 +252,7 @@ MACRO(dune_regenerate_config_cmake)
    foreach(_mod_conf_file ${${_dep_macro}_PREFIX}/config.h.cmake
        ${${_dep_macro}_PREFIX}/share/${_dep}/config.h.cmake)
      if(EXISTS ${_mod_conf_file})
-       file(READ "${_mod_conf_file}"  _file)
+       file(READ "${_mod_conf_file}" _file)
        string(REGEX REPLACE
 	 ".*/\\*[ ]*begin[ ]+${_dep}[^\\*]*\\*/(.*)/[/\\*][ ]*end[ ]*${_dep}[^\\*]*\\*/" "\\1"
 	 _tfile "${_file}")
@@ -252,13 +261,13 @@ MACRO(dune_regenerate_config_cmake)
        file(APPEND ${CONFIG_H_CMAKE_FILE} "${_file}")
      endif(EXISTS ${_mod_conf_file})
    endforeach()
- endforeach(_dep  DEPENDENCY_TREE)
-ENDMACRO(dune_regenerate_config_cmake)
+ endforeach(_dep DEPENDENCY_TREE)
+endmacro(dune_regenerate_config_cmake)
 
 # macro that should be called at the end of the top level CMakeLists.txt.
-# Namely it creates  config.h and the cmake-config files,
-# some install directives and export th module.
-MACRO(finalize_dune_project)
+# Namely it creates config.h and the cmake-config files,
+# some install directives and exports the module.
+macro(finalize_dune_project)
 
   #create cmake-config files for build tree
   configure_file(
@@ -302,29 +311,30 @@ MACRO(finalize_dune_project)
     # actually write the config.h file to disk
     configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
   endif("${ARGC}" EQUAL "1")
-ENDMACRO(finalize_dune_project)
+endmacro(finalize_dune_project)
 
-MACRO(target_link_dune_default_libraries _target)
+macro(target_link_dune_default_libraries _target)
   message("libs ${DUNE_DEFAULT_LIBS}")
   foreach(_lib ${DUNE_DEFAULT_LIBS})
     message("lib=${_lib}")
     target_link_libraries(${_target} ${_lib})
   endforeach(_lib ${DUNE_DEFAULT_LIBS})
-ENDMACRO(target_link_dune_default_libraries)
+endmacro(target_link_dune_default_libraries)
 
-
-MACRO(dune_common_script_dir _script_dir)
+# Gets path to the common Dune CMake scripts
+macro(dune_common_script_dir _script_dir)
   if("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
     set(${_script_dir} ${CMAKE_SOURCE_DIR}/cmake/scripts)
   else("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
     set(${_script_dir} ${DuneCommon_SCRIPT_DIR})
   endif("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-ENDMACRO(dune_common_script_dir)
+endmacro(dune_common_script_dir)
 
-MACRO(dune_common_script_source_dir _script_dir)
+# Gets path to the common Dune CMake scripts source
+macro(dune_common_script_source_dir _script_dir)
   if("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
     set(${_script_dir} ${CMAKE_SOURCE_DIR}/cmake/scripts)
   else("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
     set(${_script_dir} ${DuneCommon_SCRIPT_SOURCE_DIR})
   endif("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-ENDMACRO(dune_common_script_source_dir)
+endmacro(dune_common_script_source_dir)
