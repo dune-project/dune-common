@@ -488,6 +488,15 @@ void test_ev()
   std::cout << "Eigenvalues of Rosser matrix: " << eig << std::endl;
 }
 
+template< class K, int n >
+void test_invert ()
+{
+  Dune::FieldMatrix< K, n, n > A( 1e-15 );
+  for( int i = 0; i < n; ++i )
+    A[ i ][ i ] = K( 1 );
+  A.invert();
+}
+
 int main()
 {
   try {
@@ -508,9 +517,8 @@ int main()
 #endif
     // test high level methods
     test_determinant();
-    Dune::FieldMatrix<double, 34, 34> A(1e-15);
-    for (int i=0; i<34; i++) A[i][i] = 1;
-    A.invert();
+    test_invert< float, 34 >();
+    test_invert< double, 34 >();
     return test_invert_solve();
   }
   catch (Dune::Exception & e)
