@@ -728,8 +728,8 @@ namespace Dune
   template<typename Func>
   inline void DenseMatrix<MAT>::luDecomposition(DenseMatrix<MAT>& A, Func func) const
   {
-    typedef typename FieldTraits< value_type >::real_type real_type;
-
+    typedef typename FieldTraits<value_type>::real_type
+    real_type;
     real_type norm = A.infinity_norm_real(); // for relative thresholds
     real_type pivthres = std::max( FMatrixPrecision< real_type >::absolute_limit(), norm * FMatrixPrecision< real_type >::pivoting_limit() );
     real_type singthres = std::max( FMatrixPrecision< real_type >::absolute_limit(), norm * FMatrixPrecision< real_type >::singular_limit() );
