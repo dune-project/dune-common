@@ -1,5 +1,7 @@
 AC_DEFUN([DUNE_COMMON_CHECKS],
 [
+  AC_DEFINE(DUNE_COMMON_FLAVOR_MN, 1, [This is Martin's personal development version of dune-common!])
+
   AC_REQUIRE([PKG_PROG_PKG_CONFIG])
 
   AC_REQUIRE([AC_PROG_CC])
