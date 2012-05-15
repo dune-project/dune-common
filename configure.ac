@@ -7,6 +7,8 @@ AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([dune/common/stdstreams.cc])
 AM_CONFIG_HEADER([config.h])
 
+AC_DEFINE(DUNE_COMMON_FLAVOR_MN, 1, [This is Martin's personal development version of dune-common!])
+
 # add configure flags needed to create log files for dune-autobuild
 DUNE_AUTOBUILD_FLAGS
 # check all dune dependecies and prerequisits
