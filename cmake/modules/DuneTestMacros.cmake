@@ -15,6 +15,15 @@ MACRO(get_directory_test_target _target _dir)
   string(REPLACE "/" "_" ${_target} "${_relative_dir}")
 ENDMACRO(get_directory_test_target _target _dir)
 
+#
+# - Create a custom target for building
+# the tests in the current directory.
+#
+# The target name will be the path of the
+# current directory relative to ${CMAKE_BINARY_DIR}
+# with all slashes replaced by underlines.
+# E.g. for dune/ist/test the target will be dune_istl_test.
+#
 MACRO(add_directory_test_target _target)
   get_directory_test_target(${_target} "${CMAKE_CURRENT_BINARY_DIR}")
   add_custom_target(${${_target}})

@@ -463,7 +463,7 @@ cat> "$PROJECT/CMakeLists.txt" << M_DELIM
 cmake_minimum_required(VERSION 2.8)
 project($PROJECT CXX)
 
-# for this tow work you will have to modify the CMAKE_MODULE_PATH
+# for this to work you will have to modify the CMAKE_MODULE_PATH
 #set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules")
 
 #include the dune macros
@@ -834,49 +834,46 @@ cat> "$PROJECT/config.h.cmake" <<EOF
 EOF
 ## done
 
-CMAKE_NAME=`echo $NAME | sed "s/^\\(\\w\\)/\\U\\1/
-s/[_-]\\(\\w\)/\\U\\1/g"`
-
-echo "- $PROJECT/$CMAKE_NAME""Config.cmake.in"
-cat> "$PROJECT/$CMAKE_NAME""Config.cmake.in" <<EOF
+echo "- $PROJECT/$PROJECT""-config.cmake.in"
+cat> "$PROJECT/$PROJECT""-config.cmake.in" <<EOF
 #import the target
-#include("@CMAKE_BINARY_DIR@/@DUNE_MOD_NAME_CMAKE@Targets.cmake")
+#include("@CMAKE_BINARY_DIR@/@DUNE_MOD_NAME@-targets.cmake")
 
 #report other information
-set(@DUNE_MOD_NAME_CMAKE@_PREFIX "@CMAKE_SOURCE_DIR@")
-set(@DUNE_MOD_NAME_CMAKE@_INCLUDE_DIRS "@CMAKE_SOURCE_DIR@")
-set(@DUNE_MOD_NAME_CMAKE@_CXX_FLAGS "@CMAKE_CXX_FLAGS@")
-set(@DUNE_MOD_NAME_CMAKE@_CXX_FLAGS_DEBUG "@CMAKE_CXX_FLAGS_DEBUG@")
-set(@DUNE_MOD_NAME_CMAKE@_CXX_FLAGS_MINSIZEREL "@CMAKE_CXX_FLAGS_MINSIZEREL@")
-set(@DUNE_MOD_NAME_CMAKE@_CXX_FLAGS_RELEASE "@CMAKE_CXX_FLAGS_RELEASE@")
-set(@DUNE_MOD_NAME_CMAKE@_CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@")
-set(@DUNE_MOD_NAME_CMAKE@_LIBRARIES "")
+set(@DUNE_MOD_NAME@_PREFIX "@CMAKE_SOURCE_DIR@")
+set(@DUNE_MOD_NAME@_INCLUDE_DIRS "@CMAKE_SOURCE_DIR@")
+set(@DUNE_MOD_NAME@_CXX_FLAGS "@CMAKE_CXX_FLAGS@")
+set(@DUNE_MOD_NAME@_CXX_FLAGS_DEBUG "@CMAKE_CXX_FLAGS_DEBUG@")
+set(@DUNE_MOD_NAME@_CXX_FLAGS_MINSIZEREL "@CMAKE_CXX_FLAGS_MINSIZEREL@")
+set(@DUNE_MOD_NAME@_CXX_FLAGS_RELEASE "@CMAKE_CXX_FLAGS_RELEASE@")
+set(@DUNE_MOD_NAME@_CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@")
+set(@DUNE_MOD_NAME@_LIBRARIES "")
 EOF
 
 mkdir "$PROJECT/cmake"
 mkdir "$PROJECT/cmake/modules"
 mkdir "$PROJECT/cmake/pkg"
 
-echo "- $PROJECT/cmake/pkg/$CMAKE_NAME""Config.cmake.in"
-cat> "$PROJECT/cmake/pkg/$CMAKE_NAME""Config.cmake.in" <<EOF
+echo "- $PROJECT/cmake/pkg/$PROJECT""-config.cmake.in"
+cat> "$PROJECT/cmake/pkg/$PROJECT""-config.cmake.in" <<EOF
 #compute installation prefix relative to this file
 get_filename_component(_dir "\${CMAKE_CURRENT_LIST_FILE}" PATH)
 get_filename_component(_prefix "\${_dir}/../../.." ABSOLUTE)
 
 #import the target
-#include("\${_prefix}/lib/cmake/@DUNE_MOD_NAME_CMAKE@Targets.cmake")
+#include("\${_prefix}/lib/cmake/@DUNE_MOD_NAME@-targets.cmake")
 
 #report other information
-set(@DUNE_MOD_NAME_CMAKE@_INCLUDE_DIRS "\${_prefix}/include")
-set(@DUNE_MOD_NAME_CMAKE@_CXX_FLAGS "@CMAKE_CXX_FLAGS@")
-set(@DUNE_MOD_NAME_CMAKE@_CXX_FLAGS_DEBUG "@CMAKE_CXX_FLAGS_DEBUG@")
-set(@DUNE_MOD_NAME_CMAKE@_CXX_FLAGS_MINSIZEREL "@CMAKE_CXX_FLAGS_MINSIZEREL@")
-set(@DUNE_MOD_NAME_CMAKE@_CXX_FLAGS_RELEASE "@CMAKE_CXX_FLAGS_RELEASE@")
-set(@DUNE_MOD_NAME_CMAKE@_CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@")
+set(@DUNE_MOD_NAME@_INCLUDE_DIRS "\${_prefix}/include")
+set(@DUNE_MOD_NAME@_CXX_FLAGS "@CMAKE_CXX_FLAGS@")
+set(@DUNE_MOD_NAME@_CXX_FLAGS_DEBUG "@CMAKE_CXX_FLAGS_DEBUG@")
+set(@DUNE_MOD_NAME@_CXX_FLAGS_MINSIZEREL "@CMAKE_CXX_FLAGS_MINSIZEREL@")
+set(@DUNE_MOD_NAME@_CXX_FLAGS_RELEASE "@CMAKE_CXX_FLAGS_RELEASE@")
+set(@DUNE_MOD_NAME@_CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@")
 EOF
 
-echo "- $PROJECT/$CMAKE_NAME""Version.cmake.in"
-cat> "$PROJECT/$CMAKE_NAME""Version.cmake.in" <<EOF
+echo "- $PROJECT/$PROJECT""-version.cmake.in"
+cat> "$PROJECT/$PROJECT""-version.cmake.in" <<EOF
 set(PACKAGE_VERSION "@DUNE_MOD_VERSION@")
 
 if(NOT "\${PACKAGE_FIND_VERSION}" VERSION_GREATER "@DUNE_MOD_VERSION@")

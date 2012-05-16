@@ -203,16 +203,16 @@ macro(dune_project)
       include(${_mod_cmake})
     endif(_mod_cmake)
     # Find the module
-    find_package(${_cmake_mod_name})
+    find_package(${_mod})
     # set includes
     dune_module_to_uppercase(_upper_case "${_mod}")
-    include_directories("${${_cmake_mod_name}_INCLUDE_DIRS}")
-    message(STATUS "Setting ${_cmake_mod_name}_LIBRARIES=${${_cmake_mod_name}_LIBRARIES}")
-    if(${_cmake_mod_name}_LIBRARIES)
-      foreach(_lib ${${_cmake_mod_name}_LIBRARIES})
+    include_directories("${${_mod}_INCLUDE_DIRS}")
+    message(STATUS "Setting ${_mod}_LIBRARIES=${${_mod}_LIBRARIES}")
+    if(${_mod}_LIBRARIES)
+      foreach(_lib ${${_mod}_LIBRARIES})
 	list(APPEND DUNE_DEFAULT_LIBS "${_lib}")
-      endforeach(_lib ${${_cmake_mod_name}_LIBRARIES})
-    endif(${_cmake_mod_name}_LIBRARIES)
+      endforeach(_lib ${${_mod}_LIBRARIES})
+    endif(${_mod}_LIBRARIES)
   endforeach(_mod DEPENDENCY_TREE)
 
   # Search for cmake files containing tests and directives
@@ -248,8 +248,7 @@ macro(dune_regenerate_config_cmake)
  # add previous module specific section
  file(APPEND ${CONFIG_H_CMAKE_FILE} "\n${_tfile}")
  foreach(_dep  ${DEPENDENCY_TREE})
-   dune_module_to_macro(_dep_macro ${_dep})
-   foreach(_mod_conf_file ${${_dep_macro}_PREFIX}/config.h.cmake
+   foreach(_mod_conf_file ${${_dep}_PREFIX}/config.h.cmake
        ${${_dep_macro}_PREFIX}/share/${_dep}/config.h.cmake)
      if(EXISTS ${_mod_conf_file})
        file(READ "${_mod_conf_file}" _file)
@@ -271,25 +270,25 @@ macro(finalize_dune_project)
 
   #create cmake-config files for build tree
   configure_file(
-    ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME_CMAKE}Config.cmake.in
-    ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME_CMAKE}Config.cmake @ONLY)
+    ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}-config.cmake.in
+    ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-config.cmake @ONLY)
 
   #create cmake-config files for installation tree
   configure_file(
-    ${PROJECT_SOURCE_DIR}/cmake/pkg/${DUNE_MOD_NAME_CMAKE}Config.cmake.in
-    ${PROJECT_BINARY_DIR}/cmake/pkg/${DUNE_MOD_NAME_CMAKE}Config.cmake @ONLY)
+    ${PROJECT_SOURCE_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake.in
+    ${PROJECT_BINARY_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake @ONLY)
 
   configure_file(
-    ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME_CMAKE}Version.cmake.in
-    ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME_CMAKE}Version.cmake @ONLY)
+    ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}-version.cmake.in
+    ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-version.cmake @ONLY)
 
   #install dune.module file
   install(FILES dune.module DESTINATION lib/dunecontrol/${DUNE_MOD_NAME})
 
   #install cmake-config files
-  install(FILES ${PROJECT_BINARY_DIR}/cmake/pkg/${DUNE_MOD_NAME_CMAKE}Config.cmake
-    ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME_CMAKE}Version.cmake
-    DESTINATION lib/cmake/${DUNE_MOD_NAME_CMAKE})
+  install(FILES ${PROJECT_BINARY_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake
+    ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-version.cmake
+    DESTINATION lib/cmake/${DUNE_MOD_NAME})
 
   #install config.h
   install(FILES config.h.cmake DESTINATION share/${DUNE_MOD_NAME})
@@ -311,6 +310,8 @@ macro(finalize_dune_project)
     # actually write the config.h file to disk
     configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
   endif("${ARGC}" EQUAL "1")
+
+  test_dep()
 endmacro(finalize_dune_project)
 
 macro(target_link_dune_default_libraries _target)
@@ -326,7 +327,7 @@ macro(dune_common_script_dir _script_dir)
   if("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
     set(${_script_dir} ${CMAKE_SOURCE_DIR}/cmake/scripts)
   else("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-    set(${_script_dir} ${DuneCommon_SCRIPT_DIR})
+    set(${_script_dir} ${dune-common_SCRIPT_DIR})
   endif("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
 endmacro(dune_common_script_dir)
 
@@ -335,6 +336,6 @@ macro(dune_common_script_source_dir _script_dir)
   if("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
     set(${_script_dir} ${CMAKE_SOURCE_DIR}/cmake/scripts)
   else("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-    set(${_script_dir} ${DuneCommon_SCRIPT_SOURCE_DIR})
+    set(${_script_dir} ${dune-ommon_SCRIPT_SOURCE_DIR})
   endif("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
 endmacro(dune_common_script_source_dir)
