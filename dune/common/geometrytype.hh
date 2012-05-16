@@ -14,6 +14,9 @@
 
 /** \file
     \brief A unique label for each type of element that can occur in a grid
+
+    \deprecated This header has been moved to \<dune/geometry/type.hh\>,
+    you may need the new Dune-Geometry core module.
  */
 
 #include <dune/common/exceptions.hh>
@@ -26,6 +29,9 @@ namespace Dune {
 
      This class has to be extended if a grid implementation with new entity types
      is added to DUNE.
+
+     \deprecated The location of this class has been moved to \<dune/geometry/type.hh\>,
+     you may need the new Dune-Geometry core module.
 
       \ingroup COGeometryType
    */

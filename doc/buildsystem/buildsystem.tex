@@ -1114,16 +1114,34 @@ available and which dimension has been selected (if applicable). This
 information can then be used at compile-time to include header files
 or code that depend on optional packages.
 
+As an example, the macro \lstinline!HAVE_ARRAY!\ can be used to compile
+code using C++11 arrays as in
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+#ifdef HAVE_ARRAY
+#include <array>
+std::array <int, 5> a = {1, 2, 3};
+#endif
+\end{lstlisting}
+
+In some cases the macro \lstinline!HAVE_<lib>!\ is set to 
+\lstinline!ENABLE_<lib>!. In this case \lstinline!ENABLE_<lib>! is 
+supposed to be either \texttt{false} or \texttt{true}. It might be
+undefined which is equivalent to \texttt{false}. Thus the correct usage 
+is \lstinline!#if HAVE_<lib>!\ instead of \lstinline!#ifdef HAVE_<lib>!.
+The macro \lstinline!ENABLE_<lib>!\ is not intended for the user. It 
+is a trick to move the final definition of \lstinline!HAVE_<lib>!\ 
+to the command line.
+
 As an example, the macro \lstinline!HAVE_UG!\ can be used to compile
 UG-specific code as in
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 #if HAVE_UG
-#include"dune/grid/uggrid.hh"
+#include <dune/grid/uggrid.hh>
 #endif
 \end{lstlisting}
 
 It is important that the file \lstinline!config.h! is the first
-include file in your application!
+included header in your application!
 
 
 

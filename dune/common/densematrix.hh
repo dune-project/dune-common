@@ -16,7 +16,6 @@
 #include <dune/common/static_assert.hh>
 #include <dune/common/classname.hh>
 
-#include <dune/common/deprecated.hh>
 
 namespace Dune
 {
@@ -195,29 +194,11 @@ namespace Dune
       return Iterator(*this,rows());
     }
 
-    //! @deprecated This method was renamed to make
-    //! it distinct from the STL version which returns
-    //! a reverse iterator. Use the new method beforeEnd
-    //! instead.
-    Iterator rbegin() DUNE_DEPRECATED
-    {
-      return beforeBegin();
-    }
-
     //! @returns an iterator that is positioned before
     //! the end iterator of the vector, i.e. at the last entry.
     Iterator beforeEnd ()
     {
       return Iterator(*this,rows()-1);
-    }
-
-    //! @deprecated This method was renamed to make
-    //! it distinct from the STL version which returns
-    //! a reverse iterator. Use the new method beforeBegin
-    //! instead.
-    Iterator rend () DUNE_DEPRECATED
-    {
-      return beforeBegin();
     }
 
     //! @returns an iterator that is positioned before
@@ -248,29 +229,11 @@ namespace Dune
       return ConstIterator(*this,rows());
     }
 
-    //! @deprecated This method was renamed to make
-    //! it distinct from the STL version which returns
-    //! a reverse iterator. Use the new method beforeEnd
-    //! instead.
-    ConstIterator rbegin() const DUNE_DEPRECATED
-    {
-      return beforeEnd();
-    }
-
     //! @returns an iterator that is positioned before
     //! the end iterator of the vector. i.e. at the last element
     ConstIterator beforeEnd () const
     {
       return ConstIterator(*this,rows()-1);
-    }
-
-    //! @deprecated This method was renamed to make
-    //! it distinct from the STL version which returns
-    //! a reverse iterator. Use the new method beforeBegin
-    //! instead.
-    ConstIterator rend () const DUNE_DEPRECATED
-    {
-      return beforeBegin();
     }
 
     //! @returns an iterator that is positioned before
@@ -766,12 +729,9 @@ namespace Dune
   {
     typedef typename FieldTraits<value_type>::real_type
     real_type;
-    typename FieldTraits<value_type>::real_type norm =
-      A.infinity_norm_real(); // for relative thresholds
-    typename FieldTraits<value_type>::real_type pivthres =
-      std::max(FMatrixPrecision<real_type>::absolute_limit(),norm*FMatrixPrecision<>::pivoting_limit());
-    typename FieldTraits<value_type>::real_type singthres =
-      std::max(FMatrixPrecision<real_type>::absolute_limit(),norm*FMatrixPrecision<>::singular_limit());
+    real_type norm = A.infinity_norm_real(); // for relative thresholds
+    real_type pivthres = std::max( FMatrixPrecision< real_type >::absolute_limit(), norm * FMatrixPrecision< real_type >::pivoting_limit() );
+    real_type singthres = std::max( FMatrixPrecision< real_type >::absolute_limit(), norm * FMatrixPrecision< real_type >::singular_limit() );
 
     // LU decomposition of A in A
     for (size_type i=0; i<rows(); i++)  // loop over all rows

@@ -10,6 +10,7 @@
 #include <complex>
 #include <cstring>
 
+#include "typetraits.hh"
 #include "exceptions.hh"
 #include "array.hh"
 #include "densevector.hh"
@@ -124,11 +125,21 @@ namespace Dune {
     FieldVector (const FieldVector & x) : _data(x._data)
     {}
 
-    //! Constructor making vector with identical coordinates
+    /**
+     * \brief Copy constructor from a second vector of possibly different type
+     *
+     * If the DenseVector type of the this constructor's argument
+     * is implemented by a FieldVector, it is statically checked
+     * if it has the correct size. If this is not the case
+     * the constructor is removed from the overload set using SFINAE.
+     *
+     * \param[in]  x  A DenseVector with correct size.
+     * \param[in]  dummy  A void* dummy argument needed by SFINAE.
+     */
     template<class C>
-    FieldVector (const DenseVector<C> & x)
+    FieldVector (const DenseVector<C> & x, typename Dune::enable_if<IsFieldVectorSizeCorrect<C,SIZE>::value>::type* dummy=0 )
     {
-      dune_static_assert(((bool)IsFieldVectorSizeCorrect<C,SIZE>::value), "FieldVectors do not match in dimension!");
+      // do a run-time size check, for the case that x is not a FieldVector
       assert(x.size() == SIZE);
       for (size_type i = 0; i<SIZE; i++)
         _data[i] = x[i];
