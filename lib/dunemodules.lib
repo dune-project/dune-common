@@ -69,7 +69,8 @@ parse_control() {
   # - source module: ${path}/dune.module
   #   and there is a file ${path}/${name}.pc.in
   local path="$(canonicalpath "$1")"
-  if test -f $path/../../../lib/dunecontrol/${name}/dune.module; then
+  if test ! -f $path/dune.module -a \
+     -f $path/../../../lib/dunecontrol/${name}/dune.module; then
 	  path=$(canonicalname "$path/../../../")
       export module_inst="yes"
   fi
