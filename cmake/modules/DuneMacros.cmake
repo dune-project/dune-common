@@ -123,10 +123,14 @@ macro(dune_project)
   option(DUNE_USE_ONLY_STATIC_LIBS "If set to ON, we will force static linkage everywhere" OFF)
   if(DUNE_USE_ONLY_STATIC_LIBS)
     set(_default_enable_shared OFF)
+    set(_default_enable_static ON)
   else(DUNE_USE_ONLY_STATIC_LIBS)
     set(_default_enable_shared ON)
+    set(_default_enable_static OFF)
   endif(DUNE_USE_ONLY_STATIC_LIBS)
   option(BUILD_SHARED_LIBS "If set to ON, shared libs will be built" ${_default_enable_shared})
+  option(DUNE_BUILD_BOTH_LIBS "If set to ON, shared and static libs will be built"
+    ${_default_enable_static})
 
   if(DUNE_USE_ONLY_STATIC_LIBS)
     # Use only static libraries.
@@ -339,3 +343,62 @@ macro(dune_common_script_source_dir _script_dir)
     set(${_script_dir} ${dune-ommon_SCRIPT_SOURCE_DIR})
   endif("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
 endmacro(dune_common_script_source_dir)
+
+# Creates shared and static libraries with the same basename.
+# dune_add_lib(basename)
+# Basename is the basename of the library.
+# On Unix this creates lib<basename>.so and lib<basename>.a.
+# The libraries will be built in ${PROJECT_BINARY_DIR}/lib
+# and exported for usage in other modules.
+macro(dune_add_library basename)
+  #create lib
+  add_library(${basename} ${ARGN})
+
+  # Build library in ${PROJECT_BINARY_DIR}/lib
+  set_target_properties(${basename} PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
+    ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+
+  set(_created_libs ${basename})
+
+
+  if(DUNE_BUILD_BOTH_LIBS)
+    if(BUILD_SHARED_LIBS)
+      #create static lib
+      add_library(${basename}-static STATIC ${ARGN})
+      # make sure both libs have the same name.
+      set_target_properties(${basename}-static PROPERTIES
+	OUTPUT_NAME ${basename}
+	ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+      list(APPEND _created_libs ${basename}-static)
+    else(BUILD_SHARED_LIBS)
+      #create shared libs
+      add_library(${basename}-shared SHARED ${ARGN})
+      set_target_properties(${basename}-shared PROPERTIES
+	OUTPUT_NAME ${basename}
+	LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+      list(APPEND _created_libs ${basename}-shared)
+    endif(BUILD_SHARED_LIBS)
+  endif(DUNE_BUILD_BOTH_LIBS)
+
+  # install targets to use the libraries in other modules.
+  install(TARGETS ${_created_libs}
+    EXPORT ${DUNE_MOD_NAME}-targets DESTINATION lib)
+  install(EXPORT ${DUNE_MOD_NAME}-targets
+    DESTINATION lib/cmake)
+
+  # export libraries for use in build tree
+  export(TARGETS ${_created_libs}
+    FILE ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-targets.cmake)
+endmacro(dune_add_library basename sources)
+
+macro(dune_target_link_libraries basename libraries)
+  target_link_libraries(${basename} ${libraries})
+  if(DUNE_BUILD_BOTH_LIBS)
+    if(BUILD_SHARED_LIBS)
+      target_link_libraries(${basename}-static ${libraries})
+    else(BUILD_SHARED_LIBS)
+      target_link_libraries(${basename}-shared ${libraries})
+    endif(BUILD_SHARED_LIBS)
+  endif(DUNE_BUILD_BOTH_LIBS)
+endmacro(dune_target_link_libraries basename libraries)
