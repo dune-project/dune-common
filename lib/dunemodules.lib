@@ -69,11 +69,9 @@ parse_control() {
   # - source module: ${path}/dune.module
   #   and there is a file ${path}/${name}.pc.in
   local path="$(canonicalpath "$1")"
-  if test -f $path/$CONTROL -a \
-      -f $path/../../../lib/dunecontrol/${name}/$CONTROL; then
+  if test -f $path/../../pkgconfig/${name}.pc; then
 	  path=$(canonicalname "$path/../../../")
       export module_inst="yes"
-      export CONTROL_${module}=lib/dunecontrol/${name}/$CONTROL
   fi
   if ! check_modname "$module"; then
     echo "ERROR: $CONTROL files $1 contains an invalid Module entry" >&2
