@@ -79,10 +79,10 @@ parse_control() {
   #   and there is a file ${path}/${name}.pc.in
   local path="$(canonicalpath "$1")"
   if pkg-config $name; then
-    local module_prefix=$(canonicalname "$path/../../../")
-    local inst_prefix="$(pkg-config --variable=prefix $name)"
-    if test x"$module_prefix" = x"$inst_prefix"; then
-	  path="$module_prefix"
+    local prefix="$(pkg-config --variable=prefix $name)"
+    local pkgpath=$(canonicalname "$prefix/lib/dunecontrol/${name}")
+    if test x"$pkgpath" = x"$path"; then
+	  path="$prefix"
       export module_inst="yes"
     fi
   fi
