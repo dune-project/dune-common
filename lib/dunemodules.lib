@@ -155,8 +155,8 @@ setup_control_path() {
     if pkg-config dune-common; then
       # try usual locations of installed modules
       for i in /usr/local/lib/dunecontrol/ /usr/lib/dunecontrol/; do
-        if test -d $i; then 
-          DUNE_CONTROL_PATH=$DUNE_CONTROL_PATH:$i
+        if test -d $i; then
+          DUNE_CONTROL_PATH=$DUNE_CONTROL_PATH:"$i"
         fi
       done
       for i in `echo $PKG_CONFIG_PATH | tr ':' ' '`; do
@@ -170,6 +170,17 @@ setup_control_path() {
   if test -n "$DUNE_OPTS_FILE"; then
     DUNE_CONTROL_PATH="$(. $DUNE_OPTS_FILE; eval echo $DUNE_CONTROL_PATH)"
   fi
+  # canonicalize path
+  local TMP="$(canonicalname .)"
+  # foreach dir in $@
+  while read dir; do
+    TMP=$TMP:"$(canonicalname $dir)"
+  done <<EOF
+    $(echo $DUNE_CONTROL_PATH | sed -e 's/:\+/:/g' | tr ':' '\n')
+EOF
+  # sort+uniq path
+  DUNE_CONTROL_PATH="$(echo $TMP | tr ':' '\n' | sort -u | tr '\n' ':')"
+  # safe result
   export DUNE_CONTROL_PATH
 }
 
