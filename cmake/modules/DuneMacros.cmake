@@ -13,7 +13,7 @@ macro(dune_module_information MODULE_DIR)
   # find version string
   string(REGEX MATCH "Version:[ ]*[^ \n]+" MODULE_LINE "${DUNE_MODULE}")
   if(NOT MODULE_LINE)
-    message("${MODULE_DIR}/dune.module is missing a version." FATAL_ERROR)
+    message(FATAL_ERROR "${MODULE_DIR}/dune.module is missing a version.")
   endif(NOT MODULE_LINE)
 
   string(REGEX REPLACE ".*Version:[ ]*([^ \n]+).*" "\\1" DUNE_MOD_VERSION "${MODULE_LINE}")
@@ -35,7 +35,7 @@ macro(dune_module_information MODULE_DIR)
   # 1. Check for line starting with Module
   string(REGEX MATCH "Module:[ ]*[^ \n]+" MODULE_LINE "${DUNE_MODULE}")
   if(NOT MODULE_LINE)
-    message("${MODULE_DIR}/dune.module is missing a module name." FATAL_ERROR)
+    message(FATAL_ERROR "${MODULE_DIR}/dune.module is missing a module name.")
   endif(NOT MODULE_LINE)
 
   # extract Module name
@@ -44,7 +44,7 @@ macro(dune_module_information MODULE_DIR)
   # 2. Check for line starting with Maintainer
   string(REGEX MATCH "Maintainer:[ ]*[^ \n]+" MODULE_LINE "${DUNE_MODULE}")
   if(NOT MODULE_LINE)
-    message("${MODULE_DIR}/dune.module is missing a maintainer." FATAL_ERROR)
+    message(FATAL_ERROR "${MODULE_DIR}/dune.module is missing a maintainer.")
   endif(NOT MODULE_LINE)
 
   # extract Maintainer
@@ -102,7 +102,6 @@ endmacro(dune_module_to_macro _macro_name _dune_module)
 # depedencies.
 # Don't forget to call finalize_dune_project afterwards.
 macro(dune_project)
-
   # Set the flags
   set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
   set(CMAKE_C_FLAGS_DEBUG "-g -O0")
@@ -242,6 +241,7 @@ macro(dune_project)
   endif(_mod_cmake)
 endmacro(dune_project MODULE_DIR)
 
+# create a new config.h file and overwrite the existing one
 macro(dune_regenerate_config_cmake)
   set(CONFIG_H_CMAKE_FILE "${CMAKE_BINARY_DIR}/config.h.cmake")
   if(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
