@@ -1,3 +1,6 @@
+# set up project
+project("dune-common" C CXX)
+
 # general stuff
 cmake_minimum_required(VERSION 2.8)
 
