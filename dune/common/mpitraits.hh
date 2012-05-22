@@ -145,7 +145,7 @@ namespace Dune
 }
 namespace std
 {
-  template<typename T1,typename T2> class pair;
+  template<typename T1,typename T2> struct pair;
 }
 
 namespace Dune

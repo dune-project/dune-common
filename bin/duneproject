@@ -79,6 +79,11 @@ modulesexist(){
 	  fi
       done
       if [ "$found" = "0" ]; then
+          # Module not found in list, try pkg-config
+          pkg-config $module &> /dev/null
+          found=$?
+      fi
+      if [ "$found" = "0" ]; then
 	  echo "ERROR:">&2
 	  echo "Module with name $dep was not found" >&2
 	  echo "Did you forget to specify it's location" >&2

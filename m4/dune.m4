@@ -306,6 +306,12 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   # is a directory set?
   AS_IF([test -z "$with_[]_dune_module"],[
     #
+    # initialize variables for lib
+    #
+    _DUNE_MODULE[]_LIBDIR=""
+    _dune_cm_LDFLAGS=""
+    _dune_cm_LIBS=""
+    #
     # search module $1 via pkg-config
     #
     with_[]_dune_module="global installation"
@@ -318,12 +324,8 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       _dune_cm_CPPFLAGS="`$PKG_CONFIG --cflags _dune_name`" 2>/dev/null
       _DUNE_MODULE[]_ROOT="`$PKG_CONFIG --variable=prefix _dune_name`" 2>/dev/null 
       _DUNE_MODULE[]_VERSION="`$PKG_CONFIG --modversion _dune_name`" 2>/dev/null
-      _dune_cm_LDFLAGS=""
-      ifelse(_dune_symbol,,
-        [_DUNE_MODULE[]_LIBDIR=""
-         _dune_cm_LIBS=""],
-        [_DUNE_MODULE[]_LIBDIR=`$PKG_CONFIG --variable=libdir _dune_name 2>/dev/null`
-         _dune_cm_LIBS="-L$_DUNE_MODULE[]_LIBDIR -l[]_dune_lib"])
+      _DUNE_MODULE[]_LIBDIR=`$PKG_CONFIG --variable=libdir _dune_name 2>/dev/null`
+      _dune_cm_LIBS=`$PKG_CONFIG --libs _dune_name 2>/dev/null`
       HAVE_[]_DUNE_MODULE=1
       AC_MSG_RESULT([global installation in $_DUNE_MODULE[]_ROOT])
     ],[
@@ -337,6 +339,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
     AS_IF([test -d "$with_[]_dune_module"],[
       # expand tilde / other stuff
       _DUNE_MODULE[]_ROOT=`cd $with_[]_dune_module && pwd`
+      _DUNE_MODULE[]_LIBDIR="$_DUNE_MODULE[]_ROOT/lib"
 
       # expand search path (otherwise empty CPPFLAGS)
       AS_IF([test -d "$_DUNE_MODULE[]_ROOT/include/dune"],[
@@ -344,6 +347,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
         _dune_cm_CPPFLAGS="-I$_DUNE_MODULE[]_ROOT/include"
         _DUNE_MODULE[]_BUILDDIR=_DUNE_MODULE[]_ROOT
         _DUNE_MODULE[]_VERSION="`PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$_DUNE_MODULE[]_ROOT/lib/pkgconfig $PKG_CONFIG --modversion _dune_name`" 2>/dev/null
+		_dune_cm_LIBS="-L$_DUNE_MODULE[]_LIBDIR -l[]_dune_lib"
       ],[
         _DUNE_MODULE[]_SRCDIR=$_DUNE_MODULE[]_ROOT
         # extract src and build path from Makefile, if found
@@ -352,13 +356,9 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
 		])
         _dune_cm_CPPFLAGS="-I$_DUNE_MODULE[]_SRCDIR"
         _DUNE_MODULE[]_VERSION="`grep Version $_DUNE_MODULE[]_SRCDIR/dune.module | sed -e 's/^Version: *//'`" 2>/dev/null
+        # local modules is linked directly via the .la file
+		_dune_cm_LIBS="$_DUNE_MODULE[]_LIBDIR[]/lib[]_dune_lib[].la"
       ])
-      _dune_cm_LDFLAGS=""
-      ifelse(_dune_symbol,,
-        [_DUNE_MODULE[]_LIBDIR=""
-         _dune_cm_LIBS=""],
-        [_DUNE_MODULE[]_LIBDIR="$_DUNE_MODULE[]_ROOT/lib"
-         _dune_cm_LIBS="-L$_DUNE_MODULE[]_LIBDIR -l[]_dune_lib"])
       # set expanded module path
       with_[]_dune_module="$_DUNE_MODULE[]_ROOT"
       HAVE_[]_DUNE_MODULE=1
@@ -387,6 +387,9 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   ## check for lib (if lib name was provided)
   ##
   ifelse(_dune_symbol,,
+    # clear libs flags and inform the user
+    _DUNE_MODULE[]_LIBDIR=""
+    _dune_cm_LIBS=""
     AC_MSG_NOTICE([_dune_name does not provide libs]),
 
     AS_IF([test "x$enable_dunelibcheck" = "xno"],[
@@ -439,7 +442,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
     # set variables for our modules
     AC_SUBST(_DUNE_MODULE[]_CPPFLAGS, "$_DUNE_MODULE[]_CPPFLAGS")
     AC_SUBST(_DUNE_MODULE[]_LDFLAGS, "$_DUNE_MODULE[]_LDFLAGS")
-    AC_SUBST(_DUNE_MODULE[]_LIBS, "$_DUNE_MODULE[]_LIBS")
+    AC_SUBST(_DUNE_MODULE[]_LIBS, "$_dune_cm_LIBS")
     AC_SUBST(_DUNE_MODULE[]_ROOT, "$_DUNE_MODULE[]_ROOT")
     ifelse(m4_defn([_dune_symbol]),,
       [],
