@@ -10,7 +10,9 @@ dune_add_library("dunecommon"
   parametertreeparser.cc
   path.cc
   stdstreams.cc)
-dune_target_link_libraries("dunecommon" ${LAPACK_LIBRARIES})
+if(${LAPACK_LIBRARIES})
+  dune_target_link_libraries("dunecommon" ${LAPACK_LIBRARIES})
+endif(${LAPACK_LIBRARIES})
 
 #install headers
 install(FILES
