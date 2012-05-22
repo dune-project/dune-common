@@ -58,25 +58,33 @@ parse_control() {
   # create and check variable name from module name
   export module_inst="no"
   export module=$(fix_variable_name $name)
+  if ! check_modname "$module"; then
+    echo "ERROR: $CONTROL files $1 contains an invalid Module entry" >&2
+    exit 1
+  fi
   # read dune.module file
   local deps="$(echo $($GREP "^[$BLANK]*Depends:" "$1" | cut -d ':' -f2))"
   local sugs="$(echo $($GREP "^[$BLANK]*Suggests:" "$1" | cut -d ':' -f2))"
   local vers="$(echo $($GREP "^[$BLANK]*Version:" "$1" | cut -d ':' -f2))"
   local main="$(echo $($GREP "^[$BLANK]*Maintainer:" "$1" | cut -d ':' -f2))"
-  # guess the path of the dune module:
+  # check whether the module is installed.
+  # - installed modules can be found via pkg-config
+  # - pkg-config --var=prefix should be the same as $path
+  #
+  # the path contains a different sub structure
+  # for installed and source modules
   # - installed module: ${path}/lib/dunecontrol/${name}/dune.module
   #   and there is a file ${path}/lib/pkgconfig/${name}.pc
   # - source module: ${path}/dune.module
   #   and there is a file ${path}/${name}.pc.in
   local path="$(canonicalpath "$1")"
-  if test -f $path/../../pkgconfig/${name}.pc -o\
-     -f $path/../../x86_64-linux-gnu/pkgconfig/${name}.pc; then
-	  path=$(canonicalname "$path/../../../")
+  if pkg-config $name; then
+    local module_prefix=$(canonicalname "$path/../../../")
+    local inst_prefix="$(pkg-config --variable=prefix $name)"
+    if test x"$module_prefix" = x"$inst_prefix"; then
+	  path="$module_prefix"
       export module_inst="yes"
-  fi
-  if ! check_modname "$module"; then
-    echo "ERROR: $CONTROL files $1 contains an invalid Module entry" >&2
-    exit 1
+    fi
   fi
   # avoid multiple definition of the same module
   if test "x$(eval echo \$HAVE_$module)" != "x"; then
