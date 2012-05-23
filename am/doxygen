@@ -28,13 +28,15 @@ endif # DUNEWEB
 
 ####
 # how to build doxygen documentation
-if DOXYGEN
 
+# EXTRAINSTALL in the html subdirectory
+DOXYGENHTMLFILES = *.html *.css *.png *.gif
+DOXYGENINSTALL = $(DOXYGENHTMLFILES) ../doxygen.log ../doxyerr.log
+
+if DOXYGEN
 if BUILD_DOCS
+  # disable dependency tracking when working without doxygen/documentation
   DOXYGENTAG = doxygen-tag
-  # EXTRAINSTALL in the html subdirectory
-  DOXYGENHTMLFILES = *.html *.css *.png *.gif
-  DOXYGENINSTALL = $(DOXYGENHTMLFILES) ../doxygen.log ../doxyerr.log
 endif # BUILD_DOCS
 
 DUNEDOXYNIZE=@DUNE_COMMON_ROOT@/bin/dunedoxynize
@@ -96,7 +98,6 @@ endif # BUILD_DOCS
 
 ####
 # how to install doxygen
-if BUILD_DOCS
 
 install-doxygen: $(DOXYGENTAG)
 	set -e; $(mkinstalldirs) $(DESTDIR)/$(doxygendir); \
@@ -109,8 +110,6 @@ uninstall-doxygen:
 # add doxygen to documentation-installation
 install-documentation-local: install-doxygen
 uninstall-documentation-local: uninstall-doxygen
-
-endif # BUILD_DOCS
 
 ####
 # howto install doxygen in the web page
