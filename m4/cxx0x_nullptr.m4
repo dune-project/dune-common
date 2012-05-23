@@ -5,6 +5,7 @@ AC_DEFUN([NULLPTR_CHECK],[
     AC_LANG_PUSH([C++])
     AC_TRY_COMPILE([],[
       char* ch = nullptr;
+      if(ch!=nullptr) { ; }
       ], 
       dune_cv_nullptr_support=yes,
       dune_cv_nullptr_support=no)
