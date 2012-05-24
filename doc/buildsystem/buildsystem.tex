@@ -1541,6 +1541,20 @@ you options file the \configure  cache is created. Be aware that the file persis
 between \dunecontrol runs. If you encounter any problems, you want to change the 
 configuration or to rerun all checks, the cache file should be removed manually.
 
+\minisec{Faster module search}
+If the environment variable \texttt{DUNE\_CONTROL\_PATH} is not set, \dunecontrol 
+recursively searches for \dune modules below the working directory. The search can be
+avoided by including the paths to the \texttt{dune.module} files of all modules in 
+\texttt{DUNE\_CONTROL\_PATH}.
+
+Let us assume all \dune modules are in one directory, which is the working directory 
+for \dunecontrol, too. By adding the the line
+\begin{lstlisting}[language=make,showstringspaces=false]
+DUNE_CONTROL_PATH="`ls */dune.module | tr '\n' ':'`"
+\end{lstlisting}
+to your opts file, no search will be performed despite the faster, non-recursive 
+\texttt{ls} command.
+
 \section{Further documentation}
 
 \minisec{automake \& Makefile.am}
