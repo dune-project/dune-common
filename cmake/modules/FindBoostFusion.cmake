@@ -1,3 +1,10 @@
+#
+# Module that checks whether boost::fusion is available and usable.
+#
+# Sets the follwing variable:
+#
+# HAVE_BOOST_FUSION True if boost::fusion is available.
+#
 include(DuneBoost)
 
 message(STATUS "Checking whether the Boost::FUSION library is available")

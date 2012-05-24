@@ -1,3 +1,7 @@
+# Module configures the DUNE debug streams.
+# A default debug level can be specified with
+# MINIMAL_DEBUG_LEVEL
+#
 macro(dune_set_minimal_debug_level)
 set(MINIMAL_DEBUG_LEVEL ON CACHE STRING "set the MINIMAL_DEBUG_LEVEL. Standard debug streams with level below MINIMAL_DEBUG_LEVEL will collapse to doing nothing if output is requested. (default=warn)")
 set_property(CACHE MINIMAL_DEBUG_LEVEL PROPERTY STRINGS

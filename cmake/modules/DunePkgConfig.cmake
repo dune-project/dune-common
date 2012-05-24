@@ -1,4 +1,8 @@
-# search for packages
+# searches for pkg-config, creates the
+# file <module-name>.pc from <module-name>.pc.in,
+# and adds installation directives.
+#
+
 find_package(PkgConfig)
 
 # set some variables that are used in the pkg-config file

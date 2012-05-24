@@ -1,3 +1,24 @@
+# Module provides macros that allow for on demand test building.
+# In DUNE tests are not built by make all but by make test.
+#
+# Provides the following macros:
+#
+# test_dep()
+#
+# Finds all directories called test and creates a dependency for
+# testing that calls builds the tests for this directory.
+#
+#
+# add_directory_test_target(_target)
+#
+# Creates a custom target for building
+# the tests in the current directory.
+#
+# The target name will be the path of the
+# current directory relative to ${CMAKE_BINARY_DIR}
+# with all slashes replaced by underlines.
+# E.g. for dune/istl/test the target will be dune_istl_test.
+#
 macro(test_dep)
   dune_common_script_dir(SCRIPT_DIR)
   execute_process(COMMAND ${CMAKE_COMMAND} -D RELPATH=${CMAKE_SOURCE_DIR} -P ${SCRIPT_DIR}/FindFiles.cmake

@@ -1,3 +1,15 @@
+# Module for building documentation using doxygen.
+#
+# provides the following macros:
+#
+# add_doxgen_target
+#
+# This macro creates a target for building (doxygen_${DUNE_MOD_NAME}) and installing
+# (doxygen_install_${DUNE_MOD_NAME}) the generated doxygen documentation.
+# The documentation is built during the top-level make doc call. We have added a dependency
+# that make sure it is built before running make install.
+#
+#
 FIND_PACKAGE(Doxygen)
 
 #
