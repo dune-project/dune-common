@@ -1,4 +1,18 @@
-# find supported C++11 (former C++0x) features
+#
+# Module that checks for supported C++11 (former C++0x) features.
+#
+# Sets the follwing variable:
+#
+# HAVE_NULLPTR                     True if nullptr is available
+# HAVE_ARRAY                       True if header <array> and fill() are available
+# HAVE_ATTRIBUTE_ALWAYS_INLINE     True if attribute always inline is supported
+# HAS_ATTRIBUTE_UNUSED             True if attribute unused is supported
+# HAS_ATTRIBUTE_DEPRECATED         True if attribute deprecated is supported
+# HAS_ATTRIBUTE_DEPRECATED_MSG     True if attribute deprecated("msg") is supported
+# HAVE_STATIC_ASSERT               True if static_assert is available
+# HAVE_VARIADIC_TEMPLATES          True if variadic templates are supprt
+# HAVE_VARIADIC_CONSTRUCTOR_SFINAE True if variadic constructor sfinae is supported
+# HAVE_RVALUE_REFERENCES           True if rvalue references are supported
 
 # test for C++11 flags
 include(TestCXXAcceptsFlag)
@@ -14,6 +28,7 @@ if(CXX_FLAG_CXX11)
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -std=c++11 ")
   set(CXX_STD0X_FLAGS "-std=c++11")
 else()
+  # try to use compiler flag -std=c++0x for older compilers
   CHECK_CXX_ACCEPTS_FLAG("-std=c++0x" CXX_FLAG_CXX0X)
   if(CXX_FLAG_CXX0X)
     set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++0x" )
