@@ -143,7 +143,7 @@ build_module() {
       set -e
       cd "$path"
       export module
-      eval_control $runcommand $path/$CONTROL
+      eval_control $runcommand $path/$(eval eval echo \$CONTROL_$module)
     ); then eval echo "--- Failed to build \$NAME_${module} ---"; exit 1; fi
 	trap onfailure EXIT
 	
@@ -886,7 +886,7 @@ EOF
         done > "$RESUME_FILE"
     fi
 
-    for mod in $MODULES; do
+    for mod in $BUILDMODULES; do
       build_module "$mod" "$@"
 
       if test -n "$RESUME_FILE"; then
