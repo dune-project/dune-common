@@ -58,24 +58,33 @@ parse_control() {
   # create and check variable name from module name
   export module_inst="no"
   export module=$(fix_variable_name $name)
+  if ! check_modname "$module"; then
+    echo "ERROR: $CONTROL files $1 contains an invalid Module entry" >&2
+    exit 1
+  fi
   # read dune.module file
   local deps="$(echo $($GREP "^[$BLANK]*Depends:" "$1" | cut -d ':' -f2))"
   local sugs="$(echo $($GREP "^[$BLANK]*Suggests:" "$1" | cut -d ':' -f2))"
   local vers="$(echo $($GREP "^[$BLANK]*Version:" "$1" | cut -d ':' -f2))"
   local main="$(echo $($GREP "^[$BLANK]*Maintainer:" "$1" | cut -d ':' -f2))"
-  # guess the path of the dune module:
+  # check whether the module is installed.
+  # - installed modules can be found via pkg-config
+  # - pkg-config --var=prefix should be the same as $path
+  #
+  # the path contains a different sub structure
+  # for installed and source modules
   # - installed module: ${path}/lib/dunecontrol/${name}/dune.module
   #   and there is a file ${path}/lib/pkgconfig/${name}.pc
   # - source module: ${path}/dune.module
   #   and there is a file ${path}/${name}.pc.in
   local path="$(canonicalpath "$1")"
-  if test -f $path/../../pkgconfig/${name}.pc; then
-	  path=$(canonicalname "$path/../../../")
+  if pkg-config $name; then
+    local prefix="$(pkg-config --variable=prefix $name)"
+    local pkgpath=$(canonicalname "$prefix/lib/dunecontrol/${name}")
+    if test x"$pkgpath" = x"$path"; then
+	  path="$prefix"
       export module_inst="yes"
-  fi
-  if ! check_modname "$module"; then
-    echo "ERROR: $CONTROL files $1 contains an invalid Module entry" >&2
-    exit 1
+    fi
   fi
   # avoid multiple definition of the same module
   if test "x$(eval echo \$HAVE_$module)" != "x"; then
@@ -146,8 +155,8 @@ setup_control_path() {
     if pkg-config dune-common; then
       # try usual locations of installed modules
       for i in /usr/local/lib/dunecontrol/ /usr/lib/dunecontrol/; do
-        if test -d $i; then 
-          DUNE_CONTROL_PATH=$DUNE_CONTROL_PATH:$i
+        if test -d $i; then
+          DUNE_CONTROL_PATH=$DUNE_CONTROL_PATH:"$i"
         fi
       done
       for i in `echo $PKG_CONFIG_PATH | tr ':' ' '`; do
@@ -161,6 +170,17 @@ setup_control_path() {
   if test -n "$DUNE_OPTS_FILE"; then
     DUNE_CONTROL_PATH="$(. $DUNE_OPTS_FILE; eval echo $DUNE_CONTROL_PATH)"
   fi
+  # canonicalize path
+  local TMP=""
+  # foreach dir in $@
+  while read dir; do
+    TMP=$TMP:"$(canonicalname $dir)"
+  done <<EOF
+    $(echo $DUNE_CONTROL_PATH | sed -e 's/:\+/:/g' | tr ':' '\n')
+EOF
+  # sort+uniq path
+  DUNE_CONTROL_PATH="$(echo $TMP | tr ':' '\n' | sort -u | tr '\n' ':' | sed -e 's/^://' -e 's/:$//')"
+  # safe result
   export DUNE_CONTROL_PATH
 }
 
