@@ -96,7 +96,7 @@ endif(ParMETIS_FOUND)
 if(ParMETIS_FOUND)
   message(STATUS "ParMETIS library was found")
 else(ParMETIS_FOUND)
-    message(STATUS "No ParMETIS available")
+  message(STATUS "No ParMETIS available")
 endif(ParMETIS_FOUND)
 #restore old values
 
@@ -104,6 +104,7 @@ set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES_SAVE})
 set(CMAKE_REQUIRED_FLAGS    ${CMAKE_REQUIRED_FLAGS_SAVE})
 set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES_SAVE})
 
+# adds ParMETIS flags to the targets
 function(add_dune_parmetis_flags _targets)
   if(ParMETIS_FOUND)
     foreach(_target ${_targets})
@@ -111,7 +112,7 @@ function(add_dune_parmetis_flags _targets)
       GET_TARGET_PROPERTY(_props ${_target} COMPILE_FLAGS)
       string(REPLACE "_props-NOTFOUND" "" _props "${_props}")
       SET_TARGET_PROPERTIES(${_target} PROPERTIES COMPILE_FLAGS
-	"${_props} ${PARMETIS_COMPILE_FLAGS} -DENABLE_PARMETS=1")
+        "${_props} ${PARMETIS_COMPILE_FLAGS} -DENABLE_PARMETS=1")
     endforeach(_target ${_targets})
     add_dune_mpi_flags(${_targets})
   endif(ParMETIS_FOUND)
