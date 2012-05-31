@@ -5,7 +5,7 @@
 
 /** @file
    @author Robert Kloefkorn
-   @brief Provides a Interfaces for detection of specific behavior
+   @brief Provides interfaces for detection of specific behavior
  */
 
 namespace Dune {

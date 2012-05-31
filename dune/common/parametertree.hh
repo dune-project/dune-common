@@ -3,6 +3,10 @@
 #ifndef DUNE_PARAMETERTREE_HH
 #define DUNE_PARAMETERTREE_HH
 
+/** \file
+ * \brief A hierarchical structure of string parameters
+ */
+
 #include <cstddef>
 #include <iostream>
 #include <istream>

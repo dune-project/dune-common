@@ -4,15 +4,19 @@
 #ifndef DUNE_FTRAITS_HH
 #define DUNE_FTRAITS_HH
 
+/** \file
+ * \brief Type traits to determine the type of reals (when working with complex numbers)
+ */
+
 #include <complex>
 
 namespace Dune {
 
   /**
      @addtogroup DenseMatVec
-     \brief Type Traits to retrieve the field and the real type of classes
+     \brief Type traits to retrieve the field and the real type of classes
 
-     Type Traits to retrieve the field and the real type of classes
+     Type traits to retrieve the field and the real type of classes
      e.g. that of FieldVector or FieldMatrix
    */
   template<class T>

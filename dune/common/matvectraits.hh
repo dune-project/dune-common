@@ -4,6 +4,10 @@
 #ifndef DUNE_MATVECTRAITS_HH
 #define DUNE_MATVECTRAITS_HH
 
+/** \file
+ * \brief Documentation of the traits classes you need to write for each implementation of DenseVector or DenseMatrix
+ */
+
 namespace Dune {
 
   /**
