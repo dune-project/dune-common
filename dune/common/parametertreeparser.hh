@@ -3,6 +3,10 @@
 #ifndef DUNE_PARAMETER_PARSER_HH
 #define DUNE_PARAMETER_PARSER_HH
 
+/** \file
+ * \brief Various parser methods to get data into a ParameterTree object
+ */
+
 #include <istream>
 #include <string>
 

@@ -28,7 +28,7 @@ namespace Dune {
    */
   /**
    * @file
-   * @brief Classes discribing a distributed indexset.
+   * @brief Classes describing a distributed indexset
    * @author Markus Blatt
    */
 

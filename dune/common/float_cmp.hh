@@ -3,6 +3,10 @@
 #ifndef DUNE_COMMON_FLOAT_CMP_HH
 #define DUNE_COMMON_FLOAT_CMP_HH
 
+/** \file
+ * \brief Various ways to compare floating-point numbers
+ */
+
 /**
    @addtogroup FloatCmp FloatCmp
    @ingroup Common

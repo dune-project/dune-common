@@ -22,7 +22,7 @@ namespace Dune {
    */
   /**
    * @file
-   * @brief Contains classes that implement tuples.
+   * @brief Fallback implementation of the std::tuple class
    *
    * This a refined implementation of the approach defined in
    * in the article &quot;Tuples and multiple return values

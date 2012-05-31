@@ -70,7 +70,7 @@ namespace Dune {
 
   /**
    * @file
-   * @brief This file implements a generic iterator class for writing stl conformant iterators.
+   * @brief Implements a generic iterator class for writing stl conformant iterators.
    *
    * Using this generic iterator writing iterators for containers
    * that implement operator[] is only a matter of seconds.

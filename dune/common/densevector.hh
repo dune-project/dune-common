@@ -28,7 +28,7 @@ namespace Dune {
    */
 
   /*! \file
-   * \brief This file implements a the dense vector interface, with an exchangeable storage class
+   * \brief Implements the dense vector interface, with an exchangeable storage class
    */
 
   namespace fvmeta

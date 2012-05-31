@@ -5,7 +5,7 @@
 #define DUNE_ARRAY_HH
 
 /** \file
-    \brief implementation of the stl array class (a static array)
+    \brief Fallback implementation of the std::array class (a static array)
  */
 
 #include <iostream>

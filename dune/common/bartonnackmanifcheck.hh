@@ -3,7 +3,8 @@
 /** @file
    @author Robert Kloefkorn
    @brief Provides check for implementation of interface methods when using
-   static polymorphism, i.e. Barton-Nackman trick.
+   static polymorphism, i.e. the Barton-Nackman trick.
+
    Use by invoking CHECK_INTERFACE_IMPLEMENTATION(asImp().methodToCheck())
    and for template methods double (
    CHECK_INTERFACE_IMPLEMENTATION((asImp().template methodToCheck<param> ())).
