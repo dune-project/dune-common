@@ -25,7 +25,7 @@ namespace Dune
 
   /*! \file
 
-     \brief  This file implements a matrix constructed from a given type
+     \brief  Implements a matrix constructed from a given type
      representing a field and compile-time given number of rows and columns.
    */
 

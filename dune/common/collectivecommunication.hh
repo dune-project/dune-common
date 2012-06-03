@@ -13,13 +13,15 @@
    \ingroup Common
 
    Dune offers an abstraction to the basic methods of parallel
-   communication. It allows to switch parallel features on and of,
+   communication. It allows to switch parallel features on and off,
    without changing the code.
 
  */
 
 /*!
    \file
+   \brief An abstraction to the basic methods of parallel communication,
+     following the message-passing paradigm.
    \ingroup ParallelCommunication
  */
 
@@ -34,7 +36,7 @@ namespace Dune
 
      CollectiveCommunication offers an abstraction to the basic methods
      of parallel communication, following the message-passing
-     paradigm. It allows to switch parallel features on and of, without
+     paradigm. It allows to switch parallel features on and off, without
      changing the code. Currently only MPI and sequential code are
      supported.
 

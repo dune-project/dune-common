@@ -32,7 +32,7 @@ namespace Dune {
    */
 
   /*! \file
-   * \brief This file implements a vector constructed from a given type
+   * \brief Implements a vector constructed from a given type
      representing a field and a compile-time given size.
    */
 

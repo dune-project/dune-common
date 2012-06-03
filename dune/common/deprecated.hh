@@ -3,6 +3,11 @@
 #ifndef DUNE_DEPRECATED_HH
 #define DUNE_DEPRECATED_HH
 
+/** \file
+ * \brief Definition of the DUNE_DEPRECATED macro for the case that config.h
+ *      is not available
+ */
+
 //! @addtogroup Common
 //! @{
 #if defined(DOXYGEN) || !defined(HAS_ATTRIBUTE_DEPRECATED)

@@ -7,9 +7,9 @@
 
 /**
  * @file
- * @brief Usefull wrapper for creating singletons.
+ * @brief Useful wrapper for creating singletons.
  *
- * Inspirated by the article
+ * Inspired by the article
  * <a href="http://www.codeguru.com/cpp/cpp/cpp_mfc/singletons/article.php/c755/">CodeGuru: A Leak-Free Singleton class</a>
  */
 namespace Dune
@@ -20,8 +20,7 @@ namespace Dune
    * The class represented by the template parameter T must
    * have a parameterless constructor.
    *
-   * Class T can be publically
-   * derived from Singleton<T>:
+   * Class T can be publicly derived from Singleton<T>:
    *
    * \code
    * #include<dune/common/singleton.hh>

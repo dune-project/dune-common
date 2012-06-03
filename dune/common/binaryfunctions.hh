@@ -3,6 +3,10 @@
 #ifndef DUNE_BINARYFUNCTIONS_HH
 #define DUNE_BINARYFUNCTIONS_HH
 
+/** \file
+ * \brief Various helper classes derived from from std::binary_function for
+ *    stl-style functional programming
+ */
 #include <functional>
 #include <algorithm>
 

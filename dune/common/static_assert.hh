@@ -3,6 +3,10 @@
 #ifndef DUNE_STATIC_ASSERT_HH
 #define DUNE_STATIC_ASSERT_HH
 
+/** \file
+ * \brief Fallback implementation of the C++0x static_assert feature
+ */
+
 /**
  * @addtogroup Common
  *

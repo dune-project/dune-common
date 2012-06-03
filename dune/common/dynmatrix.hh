@@ -23,7 +23,7 @@ namespace Dune
    */
 
   /*! \file
-   *  \brief This file implements a dense vector with a dynamic size.
+   *  \brief This file implements a dense matrix with dynamic numbers of rows and columns.
    */
 
   template< class K > class DynamicMatrix;
