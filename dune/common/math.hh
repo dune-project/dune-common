@@ -3,6 +3,10 @@
 #ifndef DUNE_MATH_HH
 #define DUNE_MATH_HH
 
+/** \file
+ * \brief Some useful basic math stuff
+ */
+
 #include <cmath>
 
 namespace Dune

@@ -3,6 +3,10 @@
 #ifndef DUNE_GMPFIELD_HH
 #define DUNE_GMPFIELD_HH
 
+/** \file
+ * \brief Wrapper for the GNU multiprecision (GMP) library
+ */
+
 #include <iostream>
 
 #if HAVE_GMP

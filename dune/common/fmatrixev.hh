@@ -3,6 +3,10 @@
 #ifndef DUNE_FMATRIXEIGENVALUES_HH
 #define DUNE_FMATRIXEIGENVALUES_HH
 
+/** \file
+ * \brief Eigenvalue computations for the FieldMatrix class
+ */
+
 #include <iostream>
 #include <cmath>
 #include <cassert>

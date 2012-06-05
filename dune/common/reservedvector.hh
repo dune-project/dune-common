@@ -3,6 +3,10 @@
 #ifndef RESERVEDVECTOR_HH
 #define RESERVEDVECTOR_HH
 
+/** \file
+ * \brief An stl-compliant random-access container which stores everything on the stack
+ */
+
 #include <iostream>
 #include <dune/common/genericiterator.hh>
 

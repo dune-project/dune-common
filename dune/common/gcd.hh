@@ -12,8 +12,7 @@ namespace Dune
    */
   /**
    * @file
-   * This file provides template constructs for calculation the
-   * greatest common divisor.
+   * \brief Statically compute the greatest common divisor of two integers
    */
 
 #ifndef DOXYGEN

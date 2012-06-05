@@ -22,6 +22,8 @@ namespace Dune
 
   /**
    * @file
+   * \brief Implements a random-access container that can efficiently change size (similar to std::deque)
+   *
    * This file implements the class ArrayList which behaves like
    * dynamically growing array together with
    * the class ArrayListIterator which is random access iterator as needed

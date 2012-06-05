@@ -4,6 +4,10 @@
 #ifndef DUNE_COMMON_POOLALLOCATOR_HH
 #define DUNE_COMMON_POOLALLOCATOR_HH
 
+/** \file
+ * \brief An stl-compliant pool allocator
+ */
+
 #include "alignment.hh"
 #include "static_assert.hh"
 #include "lcm.hh"

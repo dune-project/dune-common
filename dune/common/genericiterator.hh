@@ -13,10 +13,10 @@ namespace Dune {
      \ingroup IteratorFacades
 
      \brief Generic Iterator class for writing stl conformant iterators
-     for any Container class with operator[]
+     for any container class with operator[]
 
      Using this template class you can create an iterator and a const_iterator
-     for any Container class.
+     for any container class.
 
      Imagine you have SimpleContainer and would like to have an iterator.
      All you have to do is provide operator[], begin() and end()
@@ -70,16 +70,16 @@ namespace Dune {
 
   /**
    * @file
-   * @brief This file implements a generic iterator classes for writing stl conformant iterators.
+   * @brief Implements a generic iterator class for writing stl conformant iterators.
    *
-   * With using this generic iterator writing iterators for containers
-   * with operator[] is only a matter of seconds
+   * Using this generic iterator writing iterators for containers
+   * that implement operator[] is only a matter of seconds.
    */
 
   /**
-     \brief get the 'const' version of a reference to amutable object
+     \brief Get the 'const' version of a reference to a mutable object
 
-     given a reference R=T& const_reference<R>::type gives you the typedef for const T&
+     Given a reference R=T& const_reference<R>::type gives you the typedef for const T&
    */
   template<class R>
   struct const_reference
@@ -140,7 +140,7 @@ namespace Dune {
    */
 
   /**
-   * @brief Generic class for stl conformant iterators for container classes with operator[].
+   * @brief Generic class for stl-conforming iterators for container classes with operator[].
    *
    * If template parameter C has a const qualifier we are a const iterator, otherwise we
    * are a mutable iterator.
@@ -161,7 +161,7 @@ namespace Dune {
     /**
      * @brief The type of container we are an iterator for.
      *
-     * The container type must provide a operator[] method.
+     * The container type must provide an operator[] method.
      *
      * If C has a const qualifier we are a const iterator, otherwise we
      * are a mutable iterator.
@@ -171,7 +171,7 @@ namespace Dune {
     /**
      * @brief The value type of the iterator.
      *
-     * This is the return type of the iterator returned when derefencing.
+     * This is the return type when dereferencing the iterator.
      */
     typedef T Value;
 
@@ -185,15 +185,15 @@ namespace Dune {
      */
     typedef R Reference;
 
-    // Constructors needed by the base iterators.
+    // Constructors needed by the base iterators
     GenericIterator() : container_(0), position_(0)
     {}
 
     /**
-     * @brief Constructor.
-     * @param cont Reference to the container we are an iterator for.
-     * @param pos The postion the Iterator will be positioned to.
-     * (e. g. 0 for an iterator return by Container::begin() or
+     * @brief Constructor
+     * @param cont Reference to the container we are an iterator for
+     * @param pos The postion the iterator will be positioned to
+     * (e.g. 0 for an iterator returned by Container::begin() or
      * the sizeof the container for an iterator returned by Container::end()
      */
     GenericIterator(Container& cont, DifferenceType pos)
@@ -201,11 +201,11 @@ namespace Dune {
     {}
 
     /**
-     * @brief Copy constructor.
+     * @brief Copy constructor
      *
      * This is somehow hard to understand, therefore play with the cases:
-     * 1. if we are mutable this is the only valid copy constructor, as the arguments is a mutable iterator
-     * 2. if we are a const iterator the argument is a mutable iterator => This is the needed conversion to initialize a const iterator form a mutable one.
+     * 1. if we are mutable this is the only valid copy constructor, as the argument is a mutable iterator
+     * 2. if we are a const iterator the argument is a mutable iterator => This is the needed conversion to initialize a const iterator from a mutable one.
      */
     GenericIterator(const MutableIterator& other) : container_(other.container_), position_(other.position_)
     {}
@@ -216,7 +216,7 @@ namespace Dune {
      * @warning Calling this method results in a compiler error, if this is a mutable iterator.
      *
      * This is somehow hard to understand, therefore play with the cases:
-     * 1. if we are mutable the arguments is a const iterator and therefore calling this method is mistake in the users code and results in a (probably not understandable compiler error
+     * 1. if we are mutable the arguments is a const iterator and therefore calling this method is mistake in the user's code and results in a (probably not understandable) compiler error
      * 2. If we are a const iterator this is the default copy constructor as the argument is a const iterator too.
      */
     GenericIterator(const ConstIterator& other) : container_(other.container_), position_(other.position_)

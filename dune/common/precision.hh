@@ -3,6 +3,10 @@
 #ifndef DUNE_PRECISION_HH
 #define DUNE_PRECISION_HH
 
+/** \file
+ * \brief Various precision settings for calculations with FieldMatrix and FieldVector
+ */
+
 #include <stdlib.h>
 
 namespace Dune {

@@ -80,7 +80,7 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
   if test x"$with_mpi" != x"no" && test x"$with_parmetis" != x"no" ; then
           
       # defaultpath
-      PARMETIS_LIB_PATH="$with_parmetis$lib_path"
+      PARMETIS_LIB_PATH="$with_parmetis/$lib_path"
       PARMETIS_INCLUDE_PATH="$with_parmetis/$include_path"
                   
       PARMETIS_LIBS="-L$PARMETIS_LIB_PATH -l$with_metis_lib $DUNEMPILIBS -lm"

@@ -39,6 +39,7 @@ namespace Dune {
    */
 
   /*! \file
+      \brief Standard Dune debug streams
 
      The standard debug streams are compiled into libdune to exist
      globally. This file declares the stream types and the global debug

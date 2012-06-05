@@ -1,8 +1,8 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 // $Id$
-#ifndef DUNE__SLLIST_HH
-#define DUNE__SLLIST_HH
+#ifndef DUNE_SLLIST_HH
+#define DUNE_SLLIST_HH
 
 #include <memory>
 #include <cassert>
@@ -18,7 +18,7 @@ namespace Dune
    */
   /**
    * @file
-   * \brief This file implements a single linked list together with
+   * \brief Implements a singly linked list together with
    * the necessary iterators.
    * @author Markus Blatt
    */

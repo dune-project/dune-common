@@ -5,6 +5,10 @@
 #ifndef DUNE_DEBUGSTREAM_HH
 #define DUNE_DEBUGSTREAM_HH
 
+/** \file
+ * \brief Defines several output streams for messages of different importance
+ */
+
 #include <iostream>
 #include <stack>
 
