@@ -8,6 +8,8 @@
 #include "mpi.h"
 #endif
 
+#include <utility>
+
 namespace Dune
 {
   /** @addtogroup ParallelCommunication
@@ -142,10 +144,6 @@ namespace Dune
       return datatype;
     }
   };
-}
-namespace std
-{
-  template<typename T1,typename T2> struct pair;
 }
 
 namespace Dune
