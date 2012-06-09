@@ -142,7 +142,8 @@ EXPAND_ONLY_PREDEF     = YES
 PREDEFINED             = DOXYGEN \
                          HAVE_MPI:=1 \
                          _DEBUG_ALLOCATOR_H:=1 \
-                         "DUNE_DEPRECATED:=/** \deprecated */"
+                         "DUNE_DEPRECATED:=/** \deprecated */" \
+                         "DUNE_DEPRECATED_MSG(A):=/** \deprecated A */"
 
 @DOT_TRUE@HAVE_DOT               = YES
 
