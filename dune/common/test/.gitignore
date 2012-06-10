@@ -7,7 +7,6 @@ dynvectortest
 fvectortest
 mpicollectivecommunication
 lrutest
-test-stack
 arraylisttest
 shared_ptrtest
 testfloatcmp
@@ -44,7 +43,6 @@ testfassign1
 testfassign2
 testfassign3
 testfassign4
-smallobject
 conversiontest
 nullptr-test
 blockbitfieldtest

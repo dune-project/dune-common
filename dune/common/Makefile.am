@@ -36,7 +36,6 @@ commoninclude_HEADERS = 			\
 	enumset.hh				\
 	exceptions.hh				\
 	fassign.hh				\
-	finitestack.hh				\
 	float_cmp.cc				\
 	float_cmp.hh				\
 	fmatrix.hh				\
