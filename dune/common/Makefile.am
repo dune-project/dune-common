@@ -46,8 +46,6 @@ commoninclude_HEADERS = 			\
 	fvector.hh				\
 	gcd.hh					\
 	genericiterator.hh			\
-	geometrytype.hh				\
-	geometrytypeindex.hh			\
 	gmpfield.hh				\
 	indent.hh				\
 	interfaces.hh				\
