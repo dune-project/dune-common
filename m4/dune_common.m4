@@ -31,11 +31,6 @@ AC_DEFUN([DUNE_COMMON_CHECKS],
   AC_REQUIRE([DUNE_MPI])
   AC_REQUIRE([DUNE_TR1_HEADERS])
 
-  dnl Create the flag --enable-fieldvector-size-is-method
-  dnl This is to orchestrate the transition from the constant member FieldVector::size
-  dnl to the method FieldVector::size()
-  AC_REQUIRE([DUNE_FIELDVECTOR_SIZE_IS_METHOD])
-
   dnl check for programs
   AC_REQUIRE([AC_PROG_CC])
   # add -Wall if the compiler is gcc
