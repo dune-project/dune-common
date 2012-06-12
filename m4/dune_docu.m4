@@ -1,9 +1,5 @@
-# searches for documentation 
-AC_DEFUN([DUNE_DOCUMENTATION],[
-
-  AC_REQUIRE([DUNE_OFFICIAL_TARBALLS])
-  AC_REQUIRE([DUNE_WEB])
-  # check for auxiliary tools so that it's not fatal if they're missing
+# check for auxiliary tools so that it's not fatal if they're missing
+AC_DEFUN([DUNE_DOC_PROGS],[
   AC_CHECK_PROGS([DOXYGEN], [doxygen], [true])
   AM_CONDITIONAL([DOXYGEN], [test "x$DOXYGEN" != xtrue])
   AC_CHECK_PROGS([TEX], [latex], [true])
@@ -17,6 +13,14 @@ AC_DEFUN([DUNE_DOCUMENTATION],[
   AC_CHECK_PROGS([PERL], [perl], [true])
   AC_REQUIRE([DUNE_INKSCAPE])
   AC_CHECK_PROGS([CONVERT], [convert], [true])
+])
+
+# searches for documentation 
+AC_DEFUN([DUNE_DOCUMENTATION],[
+
+  AC_REQUIRE([DUNE_OFFICIAL_TARBALLS])
+  AC_REQUIRE([DUNE_DOC_PROGS])
+  AC_REQUIRE([DUNE_WEB])
 
   # official tarballs require all documentation programs
   AS_IF([test "x$enable_officialtarballs" = "xyes"],[
@@ -57,16 +61,27 @@ AC_DEFUN([DUNE_DOCUMENTATION],[
 AC_DEFUN([DUNE_WEB],
 [
   AC_REQUIRE([DUNE_OFFICIAL_TARBALLS])
+  AC_REQUIRE([DUNE_DOC_PROGS])
 
   # special variable to include the documentation into the website
   AC_ARG_WITH(duneweb,
     AS_HELP_STRING([--with-duneweb=PATH],[Only needed for website-generation, path to checked out version of dune-web]))
 
   # disable dune-web in official tarball mode
-  AS_IF([test "x$enable_officialtarballs" = "xyes"],[with_duneweb=""])
+  AS_IF([test "x$enable_officialtarballs" = "xyes"],[
+    AC_MSG_WARN([ignoring dune-web... official tarballs enabled])
+    with_duneweb=""
+  ])
 
-  # disable dune-web if wml is missing
-  AS_IF([test "x$WML" = "xtrue"],[with_duneweb=""])
+  # disable dune-web if wml or doxygen is missing
+  AS_IF([test "x$WML" = "xtrue"],[
+    AC_MSG_WARN([ignoring dune-web... wml missing])
+    with_duneweb=""
+  ])
+  AS_IF([test "x$DOXYGEN" = "xtrue"],[
+    AC_MSG_WARN([ignoring dune-web... doxygen missing])
+    with_duneweb=""
+  ])
 
   AS_IF([test -n "$with_duneweb"],[
     AS_IF([test "x$with_duneweb" != "xno"],[
