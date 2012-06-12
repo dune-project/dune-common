@@ -67,23 +67,24 @@ AC_DEFUN([DUNE_WEB],
   AC_ARG_WITH(duneweb,
     AS_HELP_STRING([--with-duneweb=PATH],[Only needed for website-generation, path to checked out version of dune-web]))
 
-  # disable dune-web in official tarball mode
-  AS_IF([test "x$enable_officialtarballs" = "xyes"],[
-    AC_MSG_WARN([ignoring dune-web... official tarballs enabled])
-    with_duneweb=""
-  ])
-
-  # disable dune-web if wml or doxygen is missing
-  AS_IF([test "x$WML" = "xtrue"],[
-    AC_MSG_WARN([ignoring dune-web... wml missing])
-    with_duneweb=""
-  ])
-  AS_IF([test "x$DOXYGEN" = "xtrue"],[
-    AC_MSG_WARN([ignoring dune-web... doxygen missing])
-    with_duneweb=""
-  ])
-
   AS_IF([test -n "$with_duneweb"],[
+
+    # disable dune-web in official tarball mode
+    AS_IF([test "x$enable_officialtarballs" = "xyes"],[
+      AC_MSG_WARN([ignoring dune-web... official tarballs enabled])
+      with_duneweb="no"
+    ])
+   
+    # disable dune-web if wml or doxygen is missing
+    AS_IF([test "x$WML" = "xtrue"],[
+      AC_MSG_WARN([ignoring dune-web... wml missing])
+      with_duneweb="no"
+    ])
+    AS_IF([test "x$DOXYGEN" = "xtrue"],[
+      AC_MSG_WARN([ignoring dune-web... doxygen missing])
+      with_duneweb="no"
+    ])
+
     AS_IF([test "x$with_duneweb" != "xno"],[
       # parameter is set. Check it
       AC_MSG_CHECKING([whether passed Dune-Web ($with_duneweb) directory appears correct])
