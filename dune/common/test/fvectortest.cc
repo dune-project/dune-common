@@ -92,8 +92,8 @@ struct FieldVectorMainTest
     assert(v == w);
 
     // test container methods
-    typename FieldVector<ft,d>::size_type size DUNE_UNUSED = FieldVector<ft,d>::dimension;
-    size = w.size();
+    typename FieldVector<ft,d>::size_type size = FieldVector<ft,d>::dimension;
+    assert(size == w.size());
   }
 };
 
