@@ -31,7 +31,6 @@ TESTPROGS = \
     singletontest \
     static_assert_test \
     streamtest \
-    test-stack \
     testfassign1 \
     testfassign2 \
     testfassign3 \
@@ -113,8 +112,6 @@ bigunsignedinttest_SOURCES=bigunsignedinttest.cc
 lrutest_SOURCES = lrutest.cc
 
 sllisttest_SOURCES = sllisttest.cc
-
-test_stack_SOURCES = test-stack.cc
 
 arraylisttest_SOURCES = arraylisttest.cc
 

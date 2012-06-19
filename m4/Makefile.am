@@ -28,7 +28,6 @@ ALLM4S = 					\
 	dune_deprecated.m4			\
 	dune_deprecated_cppflags.m4		\
 	dune_docu.m4				\
-	dune_fieldvector_size_is_method.m4	\
 	dune_linkcxx.m4				\
 	dune_mpi.m4				\
 	dune_streams.m4				\
