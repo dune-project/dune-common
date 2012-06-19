@@ -35,7 +35,6 @@ install(FILES
         enumset.hh
         exceptions.hh
         fassign.hh
-        finitestack.hh
         float_cmp.cc
         float_cmp.hh
         fmatrix.hh
@@ -46,8 +45,6 @@ install(FILES
         fvector.hh
         gcd.hh
         genericiterator.hh
-        geometrytype.hh
-        geometrytypeindex.hh
         gmpfield.hh
         indent.hh
         interfaces.hh
