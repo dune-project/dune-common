@@ -15,7 +15,12 @@
 #
 # dune_project()
 #
-#  macro that should be called near the begin of the top level CMakeLists.txt.
+#  macro that should be called near the beginning of the top level
+# CMakeLists.txt. Please make sure to call
+#
+# project(dune-module-name)
+#
+# at the very beginning of that file.
 # Namely it sets up the module, defines basic variables and manages
 # depedencies.
 # Don't forget to call finalize_dune_project afterwards.
@@ -126,6 +131,8 @@ macro(dune_module_information MODULE_DIR)
   if(MODULE_LINE)
     string(REGEX REPLACE ".*Depends:[ ]*([^ \n]+).*" "\\1" DUNE_DEPENDS "${MODULE_LINE}")
   endif(MODULE_LINE)
+
+  string(REGEX REPLACE ".*Suggests:[ ]*([^ \n]+).*" "\\1" DUNE_SUGGESTS "${MODULE_LINE}")
 
   dune_module_to_uppercase(DUNE_MOD_NAME_UPPERCASE ${DUNE_MOD_NAME})
 

@@ -386,9 +386,9 @@ namespace Dune
      @relates shared_ptr
 
      If you allocate an object on the stack, but want to pass it to a class or function as a shared_ptr,
-     you can use this deleter to avoid accidential deletion of the stack-allocated object.
+     you can use this deleter to avoid accidental deletion of the stack-allocated object.
 
-     For convinience we provide two free functions to create a shared_ptr from a stack-allocated object
+     For convenience we provide two free functions to create a shared_ptr from a stack-allocated object
      (\see stackobject_to_shared_ptr):
 
      1) Convert a stack-allocated object to a shared_ptr:
