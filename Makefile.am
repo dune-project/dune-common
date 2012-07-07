@@ -4,7 +4,7 @@
 EXTRA_DIST=dune.module
 
 # don't follow the full GNU-standard
-# need automake 1.9 or newer
+# we need automake 1.9 or newer
 AUTOMAKE_OPTIONS = foreign 1.9
 
 SUBDIRS = dune lib doc bin m4 am
