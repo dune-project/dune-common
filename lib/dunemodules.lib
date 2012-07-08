@@ -45,10 +45,13 @@ BLANK="$space$tab"
 #
 parse_control() {
   # check file existence
-  if ! test -f "$1"; then
-    echo "ERROR: could not read file $1" >&2
+  if test ! -f "$1" -o "$(basename $1)" != "$CONTROL"; then
+    echo "ERROR: '$1' is no $CONTROL file" >&2
     exit 1
   fi
+  # reset information handling
+  local module=""
+  local module_inst="no"
   # read parameters from control file
   local name="$(echo $($GREP Module: "$1" | cut -d ':' -f2))"
   if test "x$name" = "x"; then
@@ -56,8 +59,7 @@ parse_control() {
     exit 1
   fi
   # create and check variable name from module name
-  export module_inst="no"
-  export module=$(fix_variable_name $name)
+  module=$(fix_variable_name $name)
   if ! check_modname "$module"; then
     echo "ERROR: $CONTROL files $1 contains an invalid Module entry" >&2
     exit 1
@@ -83,7 +85,7 @@ parse_control() {
     local pkgpath=$(canonicalname "$prefix/lib/dunecontrol/${name}")
     if test x"$pkgpath" = x"$path"; then
 	  path="$prefix"
-      export module_inst="yes"
+      module_inst="yes"
     fi
   fi
   # avoid multiple definition of the same module
@@ -113,7 +115,7 @@ parse_control() {
       echo "  $path/lib/dunecontrol/${name}/$CONTROL" >&2
       echo "using previously found locally built module" >&2
       echo "  $(eval echo \$PATH_$module)/$CONTROL" >&2
-	  export module_inst="no"
+	  module_inst="no"
       return
     ;;
     # local modules supersede installed modules
@@ -143,6 +145,12 @@ parse_control() {
     mod=$(fix_variable_name $name)
     export NAME_${mod}="$name"
   done
+  # update list of modules
+  if test "$module_inst" = "yes"; then
+    export INSTMODULES="$MODULES$module "
+  else
+    export LOCALMODULES="$MODULES$module "
+  fi
 }
 
 #
@@ -194,43 +202,20 @@ find_modules_in_path() {
     while read dir; do
       if test -d "$dir"; then
         while read m; do
-          test -n "$m" && find_modules "$m"
-          TMPMODULES="$TMPMODULES$FM_MODULES$INSTMODULES"
+          test -n "$m" && parse_control "$m"
+          TMPMODULES="$TMPMODULES$LOCALMODULES$INSTMODULES"
         done <<EOFM
         $(find -H "$dir" -name $CONTROL | $GREP -v 'dune-[-_a-zA-Z]/dune-[-a-zA-Z_]*-[0-9]\{1,\}.[0-9]\{1,\}/')
 EOFM
 	  else
-        find_modules $dir
-        TMPMODULES="$TMPMODULES$FM_MODULES$INSTMODULES"
+        parse_control "$dir"
+        TMPMODULES="$TMPMODULES$LOCALMODULES$INSTMODULES"
 	  fi
     done <<EOF
     $(echo $DUNE_CONTROL_PATH | sed -e 's/:\+/:/g' | tr ':' '\n') 
 EOF
     export FOUND_MODULES="$TMPMODULES"
     export MODULES="$TMPMODULES"
-  fi
-}
-
-#
-# search a directory recursively for $CONTROL files
-#
-# paramters:
-# $1 directory to search for modules
-#
-find_modules() {
-  if test -f "$1" && 
-      test "$(basename $1)" = "$CONTROL"; then
-      export module=""
-      export module_inst="no"
-      parse_control "$1"
-      if test "$module_inst" = "yes"; then
-        export INSTMODULES="$MODULES$module "
-      else
-        export FM_MODULES="$MODULES$module "
-	  fi
-  else
-      echo "ERROR: '$1' is no $CONTROL file" >&2
-      false
   fi
 }
 
@@ -259,28 +244,6 @@ sort_modules() {
   for m in $MODULES; do
     export SORT_DONE_${m}=""
   done
-}
-
-#
-# sort $MODULES's dependencies according to the dependencies
-# don't include $MODULE itself
-#
-sort_dependencies() {
-  # get dependencies
-  sort_modules $1
-  # save result
-  export MODULES="$SORTEDMODULES_DEPS"
-}
-
-#
-# sort $MODULES's dependencies according to the dependencies
-# don't include $MODULE itself
-#
-sort_suggestions() {
-  # get suggestions
-  sort_modules $1
-  # save result
-  export MODULES="$SORTEDMODULES_SUGS"
 }
 
 #
@@ -419,11 +382,10 @@ eval_control() {
 }
 
 #
-# fix a value such that it is suitable for a variable name and assign it
+# fix a value such that it is suitable for a variable name
 #
 # parameters:
-# $1 name of variable
-# $2 value
+# $1 value
 #
 fix_variable_name() {
   # The replacement sequence has to be extended explicitly to the length of
@@ -431,6 +393,13 @@ fix_variable_name() {
   echo -n "$@" | tr '[:punct:]' '[_*]'
 }
 
+#
+# fix a value such that it is suitable for a variable name and assign it
+#
+# parameters:
+# $1 name of variable
+# $2 value
+#
 fix_and_assign() {
   local name="$1"
   if ! check_modname $name; then
@@ -442,6 +411,7 @@ fix_and_assign() {
 
 #
 # make sure the module name fits the naming convention
+# (we try to assign the name and report upon failure)
 #
 # parameters:
 # $1 module name
