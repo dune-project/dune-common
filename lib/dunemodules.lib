@@ -43,7 +43,7 @@ BLANK="$space$tab"
 # paramters:
 # $1 file to read
 #
-PARSER_TRIM="awk '{gsub(/^ +| +$/,\"\");printf(\"%s\", \$0);}'"
+PARSER_TRIM="awk '{gsub(/^[[:space:]]+| +$/,\"\");printf(\"%s\", \$0);}'"
 parse_control() {
   # check file existence
   if test ! -f "$1" -o "$(basename $1)" != "$CONTROL"; then
