@@ -341,9 +341,9 @@ _sort_module() {
   if test "x$(eval echo \$SORT_DONE_$module)" != "xyes"; then
     # resolve dependencies
     depmode=$(test $mode = SUGS && echo SUGS || echo DEPS)
-    _check_deps $module $mode $depmode
+    _check_deps $module DEPS $depmode # it might happen that the DEPS are actually SUGS
     # resolve suggestions
-    _check_deps $module $mode SUGS
+    _check_deps $module SUGS SUGS
     # insert this module into the list
     export SORTEDMODULES_$mode="$(eval echo \$SORTEDMODULES_$mode) $module"
     if test $mode = DEPS; then
