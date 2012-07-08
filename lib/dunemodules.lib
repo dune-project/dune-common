@@ -51,8 +51,8 @@ parse_control() {
     exit 1
   fi
   # reset information handling
-  local module=""
-  local module_inst="no"
+  module=""
+  module_inst="no"
   # read parameters from control file
   local name="$($GREP Module: "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
   if test "x$name" = "x"; then
@@ -91,6 +91,10 @@ parse_control() {
   fi
   # avoid multiple definition of the same module
   if eval test "x\$HAVE_$module" != "x"; then
+    # make sure we don't stumble over the same module twice
+    if eval test \$PATH_$module = $path; then
+      return
+    fi
     local old_mod_inst
     eval old_mod_inst=\$INST_$module
     case "$old_mod_inst$module_inst" in
