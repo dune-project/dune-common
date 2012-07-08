@@ -274,7 +274,7 @@ _sort_module() {
     # resolve dependencies
     eval deps=\$DEPS_$module
     #initially remove leading space
-    deps=`echo "$deps" | sed 's/^ *//'`
+    deps=`echo ${deps//^[, ]}`
     while test -n "$deps"; do
       #the end of the name is marked either by space, opening parenthesis,
       #or comma
@@ -291,7 +291,7 @@ _sort_module() {
             ;;
       esac
       #remove any leading whitespace or commas for the next iteration
-      deps=`echo "$deps" | sed 's/^[, ]*//'`
+      deps=`echo ${deps//^[, ]}`
       dep=$(fix_variable_name $name)
       if ! check_modname $dep; then
         echo "ERROR: invalid module name $name" >&2
