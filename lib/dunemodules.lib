@@ -83,7 +83,7 @@ parse_control() {
   local path="$(canonicalpath "$1")"
   if pkg-config $name; then
     local prefix="$(pkg-config --variable=prefix $name)"
-    local pkgpath=$(canonicalname "$prefix/lib/dunecontrol/${name}")
+    local pkgpath=$(canonicalname "$prefix/lib/dunecontrol/$name")
     if test x"$pkgpath" = x"$path"; then
 	  path="$prefix"
       module_inst="yes"
@@ -100,13 +100,13 @@ parse_control() {
       echo "ERROR: multiple definition of module $name" >&2
       echo "previous defined in:" >&2
       if test "$(eval echo \$INST_$module)" = "yes"; then
-        echo "  $(eval echo \$PATH_$module)/lib/dunecontrol/${name}/$CONTROL" >&2
+        echo "  $(eval echo \$PATH_$module)/lib/dunecontrol/$name/$CONTROL" >&2
       else
         echo "  $(eval echo \$PATH_$module)/$CONTROL" >&2
       fi
       echo "redefined in:" >&2
       if test "$module_inst" = "yes"; then
-        echo "  $path/lib/dunecontrol/${name}/$CONTROL" >&2
+        echo "  $path/lib/dunecontrol/$name/$CONTROL" >&2
       else
         echo "  $path/$CONTROL" >&2
       fi
@@ -115,7 +115,7 @@ parse_control() {
     # installed modules are superseded by locally built modules
     noyes)
       echo "WARNING: ignoring installed module file" >&2
-      echo "  $path/lib/dunecontrol/${name}/$CONTROL" >&2
+      echo "  $path/lib/dunecontrol/$name/$CONTROL" >&2
       echo "using previously found locally built module" >&2
       echo "  $(eval echo \$PATH_$module)/$CONTROL" >&2
 	  module_inst="no"
@@ -124,7 +124,7 @@ parse_control() {
     # local modules supersede installed modules
     yesno)
       echo "WARNING: not using installed module file" >&2
-      echo "  $(eval echo \$PATH_$module)/lib/dunecontrol/${name}/$CONTROL" >&2
+      echo "  $(eval echo \$PATH_$module)/lib/dunecontrol/$name/$CONTROL" >&2
       echo "using locally built module" >&2
       echo "  $path/$CONTROL" >&2
       true # do nothing, ignore the previously found module
@@ -132,21 +132,21 @@ parse_control() {
     esac
   fi
   # set status variables
-  export HAVE_${module}=yes
-  export PATH_${module}="$path"
-  export VERS_${module}="$vers"
-  export NAME_${module}="$name"
-  export MAIN_${module}="$main"
-  export DEPS_${module}="$deps"
-  export INST_${module}="$module_inst"
+  export HAVE_$module=yes
+  export PATH_$module="$path"
+  export VERS_$module="$vers"
+  export NAME_$module="$name"
+  export MAIN_$module="$main"
+  export DEPS_$module="$deps"
+  export INST_$module="$module_inst"
   for name in $deps; do
     mod=$(fix_variable_name $name)
-    export NAME_${mod}="$name"
+    export NAME_$mod="$name"
   done
-  export SUGS_${module}="$sugs"
+  export SUGS_$module="$sugs"
   for name in $sugs; do
     mod=$(fix_variable_name $name)
-    export NAME_${mod}="$name"
+    export NAME_$mod="$name"
   done
   # update list of modules
   if test "$module_inst" = "yes"; then
@@ -243,7 +243,7 @@ sort_modules() {
   export MODULES="$SORTEDMODULES"
   # clean up temporary variables
   for m in $MODULES; do
-    export SORT_DONE_${m}=""
+    export SORT_DONE_$m=""
   done
 }
 
@@ -270,7 +270,7 @@ _sort_module() {
     echo "ERROR: invalid module name $module" >&2
     exit 1
   fi
-  if test "x$(eval echo \$SORT_DONE_${module})" != "xyes"; then
+  if test "x$(eval echo \$SORT_DONE_$module)" != "xyes"; then
     # resolve dependencies
     eval deps=\$DEPS_$module
     #initially remove leading space
@@ -342,11 +342,11 @@ _sort_module() {
       fi
     done
     # insert this module into the list
-    export SORTEDMODULES_${mode}="$(eval echo \$SORTEDMODULES_${mode}) $module"
+    export SORTEDMODULES_$mode="$(eval echo \$SORTEDMODULES_$mode) $module"
     if test $mode = DEPS; then
       # it is sufficient to check that the module hasn't been handled yet, 
       # as dependencies are handled before suggestions
-	  export SORT_DONE_${module}=yes
+	  export SORT_DONE_$module=yes
       export SORTEDMODULES="$SORTEDMODULES $module"
       export SORTEDMODULES_INFO="$SORTEDMODULES_INFO $module[$mode]"
     fi
