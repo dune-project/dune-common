@@ -233,7 +233,7 @@ sort_modules() {
   for m in "$@"; do
     # did we find a module file for this module?
     if test "x$(eval echo \$HAVE_$m)" != "x"; then
-      _sort_module $m MAIN
+      _sort_module $m DEPS
     else
       echo "ERROR: could not find module $(eval echo \$NAME_$m)" >&2
       exit 1
@@ -270,7 +270,7 @@ _sort_module() {
     echo "ERROR: invalid module name $module" >&2
     exit 1
   fi
-  if test "x$(eval echo \$SORT_${mode}_DONE_${module})" != "xyes"; then
+  if test "x$(eval echo \$SORT_DONE_${module})" != "xyes"; then
     # resolve dependencies
     eval deps=\$DEPS_$module
     #initially remove leading space
@@ -342,11 +342,11 @@ _sort_module() {
       fi
     done
     # insert this module into the list
-    if test x$(eval echo \$SORT_DONE_${module}) != xyes; then
+    export SORTEDMODULES_${mode}="$(eval echo \$SORTEDMODULES_${mode}) $module"
+    if test $mode = DEPS; then
       # it is sufficient to check that the module hasn't been handled yet, 
       # as dependencies are handled before suggestions
-      export SORT_DONE_${module}=yes
-      export SORTEDMODULES_${mode}="$(eval echo \$SORTEDMODULES_${mode}) $module"
+	  export SORT_DONE_${module}=yes
       export SORTEDMODULES="$SORTEDMODULES $module"
       export SORTEDMODULES_INFO="$SORTEDMODULES_INFO $module[$mode]"
     fi
