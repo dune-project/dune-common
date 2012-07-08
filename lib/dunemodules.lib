@@ -43,6 +43,7 @@ BLANK="$space$tab"
 # paramters:
 # $1 file to read
 #
+PARSER_TRIM="awk '{gsub(/^ +| +$/,\"\");printf(\"%s\", \$0);}'"
 parse_control() {
   # check file existence
   if test ! -f "$1" -o "$(basename $1)" != "$CONTROL"; then
@@ -53,7 +54,7 @@ parse_control() {
   local module=""
   local module_inst="no"
   # read parameters from control file
-  local name="$(echo $($GREP Module: "$1" | cut -d ':' -f2))"
+  local name="$($GREP Module: "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
   if test "x$name" = "x"; then
     echo "ERROR: $CONTROL files $1 does not contain a Module entry" >&2
     exit 1
@@ -65,10 +66,10 @@ parse_control() {
     exit 1
   fi
   # read dune.module file
-  local deps="$(echo $($GREP "^[$BLANK]*Depends:" "$1" | cut -d ':' -f2))"
-  local sugs="$(echo $($GREP "^[$BLANK]*Suggests:" "$1" | cut -d ':' -f2))"
-  local vers="$(echo $($GREP "^[$BLANK]*Version:" "$1" | cut -d ':' -f2))"
-  local main="$(echo $($GREP "^[$BLANK]*Maintainer:" "$1" | cut -d ':' -f2))"
+  local deps="$($GREP "^[$BLANK]*Depends:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
+  local sugs="$($GREP "^[$BLANK]*Suggests:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
+  local vers="$($GREP "^[$BLANK]*Version:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
+  local main="$($GREP "^[$BLANK]*Maintainer:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
   # check whether the module is installed.
   # - installed modules can be found via pkg-config
   # - pkg-config --var=prefix should be the same as $path
@@ -89,8 +90,10 @@ parse_control() {
     fi
   fi
   # avoid multiple definition of the same module
-  if test "x$(eval echo \$HAVE_$module)" != "x"; then
-    case "$(eval echo \$INST_$module)$module_inst" in
+  if eval test "x\$HAVE_$module" != "x"; then
+    local old_mod_inst
+    eval old_mod_inst=\$INST_$module
+    case "$old_mod_inst$module_inst" in
     # multiple local modules are an error
     # multiple installed modules are an error
     nono|yesyes)
@@ -147,9 +150,9 @@ parse_control() {
   done
   # update list of modules
   if test "$module_inst" = "yes"; then
-    export INSTMODULES="$MODULES$module "
+    export INSTMODULES="$INSTMODULES$module "
   else
-    export LOCALMODULES="$MODULES$module "
+    export LOCALMODULES="$LOCALMODULES$module "
   fi
 }
 
@@ -203,19 +206,17 @@ find_modules_in_path() {
       if test -d "$dir"; then
         while read m; do
           test -n "$m" && parse_control "$m"
-          TMPMODULES="$TMPMODULES$LOCALMODULES$INSTMODULES"
         done <<EOFM
         $(find -H "$dir" -name $CONTROL | $GREP -v 'dune-[-_a-zA-Z]/dune-[-a-zA-Z_]*-[0-9]\{1,\}.[0-9]\{1,\}/')
 EOFM
 	  else
         parse_control "$dir"
-        TMPMODULES="$TMPMODULES$LOCALMODULES$INSTMODULES"
 	  fi
     done <<EOF
     $(echo $DUNE_CONTROL_PATH | sed -e 's/:\+/:/g' | tr ':' '\n') 
 EOF
-    export FOUND_MODULES="$TMPMODULES"
-    export MODULES="$TMPMODULES"
+    export MODULES="$LOCALMODULES$INSTMODULES"
+    export FOUND_MODULES="$MODULES"
   fi
 }
 
