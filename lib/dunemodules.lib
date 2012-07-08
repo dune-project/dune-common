@@ -417,13 +417,8 @@ fix_and_assign() {
 # $1 module name
 #
 check_modname() {
-  if sh -c "$ID=huhu" > /dev/null 2>&1; then
-    return 1
-  fi
-#  if ! echo "$1" | $GREP '^[a-zA-Z0-9_]\{1,\}$' >/dev/null; then
-#    return 1
-#  fi
-  return 0
+  # magic pattern match, see http://www.linuxmisc.com/9-unix-questions/67d307ca51f16ed4.htm
+  [ -n "${1##*[!A-Za-z0-9_]*}" ] && [ -n "${1##[!A-Za-z_]*}" ]
 }
 
 #
