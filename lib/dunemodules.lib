@@ -247,6 +247,70 @@ sort_modules() {
   done
 }
 
+_check_deps()
+{
+  local module="$1"
+  local mode="$2"
+  local depmode="$3"
+  eval deps=\$${mode}_$module
+  #initially remove leading space
+  deps=`echo ${deps//^[, ]}`
+  while test -n "$deps"; do
+    #the end of the name is marked either by space, opening parenthesis,
+    #or comma
+    name="${deps%%[ (,]*}"
+    #remove the name and adjacent whitespace
+    deps=`echo "$deps" | sed 's/^[^ (,]* *//'`
+    #check whether there is a dependency version
+    case "$deps" in
+    '('*) deps="${deps#(}"
+          depver="${deps%%)*}"
+          deps="${deps#*)}"
+          ;;
+    *)    depver=
+          ;;
+    esac
+    #remove any leading whitespace or commas for the next iteration
+    deps=`echo ${deps//^[, ]}`
+    dep=$(fix_variable_name $name)
+    if ! check_modname $dep; then
+      echo "ERROR: invalid module name $name" >&2
+      exit 1
+    fi
+    if test "x$(eval echo \$HAVE_$dep)" != "x"; then
+      eval ver=\$VERS_$dep
+      if test "$SKIPVERSIONCHECK" != "yes" && ! check_version "$ver" "$depver"; then
+        echo "ERROR: version mismatch." >&2
+        echo "       $modname requires $name $depver," >&2
+        echo "       but only $name = $ver is available." >&2
+        exit 1
+      fi
+      _sort_module $dep $depmode
+    else
+      # perhaps this module is installed,
+      # then it should be handled via pkg-config
+      if ! pkg-config $name; then
+        echo "ERROR: could not find module $name," >&2
+        echo "       module is also unknown to pkg-config." >&2
+        echo "       Maybe you need to adjust PKG_CONFIG_PATH!" >&2
+        echo "       $name is required by $modname" >&2
+        exit 1
+      else
+        eval ver=$(pkg-config $name --modversion)
+        if test "$SKIPVERSIONCHECK" != "yes" && ! check_version "$ver" "$depver"; then
+          echo "ERROR: version mismatch." >&2
+          echo "       $modname requires $name $depver," >&2
+          echo "       but only $name = $ver is installed." >&2
+          exit 1
+        fi
+        # update module list
+        parse_control $(pkg-config $name --variable=prefix)/lib/dunecontrol/$name/dune.module
+        _sort_module $dep $depmode
+      fi
+    fi
+  done
+}
+
 #
 # recursive part of sort_modules
 # evaluate dependencies of one module
@@ -272,81 +336,16 @@ _sort_module() {
   fi
   if test "x$(eval echo \$SORT_DONE_$module)" != "xyes"; then
     # resolve dependencies
-    eval deps=\$DEPS_$module
-    #initially remove leading space
-    deps=`echo ${deps//^[, ]}`
-    while test -n "$deps"; do
-      #the end of the name is marked either by space, opening parenthesis,
-      #or comma
-      name="${deps%%[ (,]*}"
-      #remove the name and adjacent whitespace
-      deps=`echo "$deps" | sed 's/^[^ (,]* *//'`
-      #check whether there is a dependency version
-      case "$deps" in
-      '('*) deps="${deps#(}"
-            depver="${deps%%)*}"
-            deps="${deps#*)}"
-            ;;
-      *)    depver=
-            ;;
-      esac
-      #remove any leading whitespace or commas for the next iteration
-      deps=`echo ${deps//^[, ]}`
-      dep=$(fix_variable_name $name)
-      if ! check_modname $dep; then
-        echo "ERROR: invalid module name $name" >&2
-        exit 1
-      fi
-      if test "x$(eval echo \$HAVE_$dep)" != "x"; then
-	    eval ver=\$VERS_$dep
-        if test "$SKIPVERSIONCHECK" != "yes" && ! check_version "$ver" "$depver"; then
-          echo "ERROR: version mismatch." >&2
-          echo "       $modname requires $name $depver," >&2
-          echo "       but only $name = $ver is available." >&2
-          exit 1
-        fi
-        depmode=$(test $mode = SUGS && echo SUGS || echo DEPS)
-        _sort_module $dep $depmode
-      else
-        # perhaps this module is installed,
-        # then it should be handled via pkg-config
-        if ! pkg-config $name; then
-          echo "ERROR: could not find module $name," >&2
-          echo "       module is also unknown to pkg-config." >&2
-          echo "       Maybe you need to adjust PKG_CONFIG_PATH!" >&2
-          echo "       $name is required by $modname" >&2
-          exit 1
-		else
-	      eval ver=$(pkg-config $name --modversion)
-          if test "$SKIPVERSIONCHECK" != "yes" && ! check_version "$ver" "$depver"; then
-            echo "ERROR: version mismatch." >&2
-            echo "       $modname requires $name $depver," >&2
-            echo "       but only $name = $ver is installed." >&2
-            exit 1
-          fi
-		  # update module list
-		  parse_control $(pkg-config $name --variable=prefix)/lib/dunecontrol/$name/dune.module
-		  _sort_module $dep
-        fi
-      fi
-    done
+    depmode=$(test $mode = SUGS && echo SUGS || echo DEPS)
+    _check_deps $module $mode $depmode
     # resolve suggestions
-    for name in $(eval "echo \$SUGS_$module"); do
-	  dep=$(fix_variable_name $name)
-      if ! check_modname $dep; then
-        echo "ERROR: invalid module name $name" >&2
-        exit 1
-      fi
-      if test "x$(eval echo \$HAVE_$dep)" != "x"; then
-        _sort_module $dep SUGS
-      fi
-    done
+    _check_deps $module $mode SUGS
     # insert this module into the list
     export SORTEDMODULES_$mode="$(eval echo \$SORTEDMODULES_$mode) $module"
     if test $mode = DEPS; then
       # it is sufficient to check that the module hasn't been handled yet, 
       # as dependencies are handled before suggestions
-	  export SORT_DONE_$module=yes
+      export SORT_DONE_$module=yes
       export SORTEDMODULES="$SORTEDMODULES $module"
       export SORTEDMODULES_INFO="$SORTEDMODULES_INFO $module[$mode]"
     fi
