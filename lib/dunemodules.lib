@@ -249,7 +249,8 @@ sort_modules() {
   export MODULES="$SORTEDMODULES"
   # clean up temporary variables
   for m in $MODULES; do
-    export SORT_DONE_$m=""
+    export SORT_DEPS_DONE_$m=""
+    export SORT_SUGS_DONE_$m=""
   done
 }
 
