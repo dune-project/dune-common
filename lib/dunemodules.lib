@@ -239,7 +239,7 @@ sort_modules() {
   for m in "$@"; do
     # did we find a module file for this module?
     if test "x$(eval echo \$HAVE_$m)" != "x"; then
-      _sort_module $m DEPS
+      _sort_module $m MAIN
     else
       echo "ERROR: could not find module $(eval echo \$NAME_$m)" >&2
       exit 1
@@ -251,6 +251,7 @@ sort_modules() {
   for m in $MODULES; do
     export SORT_DEPS_DONE_$m=""
     export SORT_SUGS_DONE_$m=""
+    export SORT_MAIN_DONE_$m=""
   done
 }
 
@@ -350,7 +351,7 @@ _sort_module() {
     # insert this module into the list
     export SORTEDMODULES_$mode="$(eval echo \$SORTEDMODULES_$mode) $module"
     export SORT_${mode}_DONE_$module=yes
-    if test $mode = DEPS; then
+    if test $mode = DEPS -o $mode = MAIN; then
       # it is sufficient to check that the module hasn't been handled yet, 
       # as dependencies are handled before suggestions
       export SORTEDMODULES="$SORTEDMODULES $module"
