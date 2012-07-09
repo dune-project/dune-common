@@ -773,12 +773,14 @@ case "$command" in
       sugs=`echo "$sugs" | sed 's/^[, ]*//'`
 
       suggests="$suggests $sugsname"
+      suggestsall="$suggests $sugsname $sugsver "
     done
     # ensure a version number
     if test "x$version" = "x"; then version="0.0"; fi
     echo "writing $fname"
     echo "    for $name $version $maintainer"
     echo "        requires $requires"
+    echo "        suggests $suggestsall"
       AC_MACRO_DIR="."
       test ! -d m4 || AC_MACRO_DIR=m4
     cat > $fname <<EOF
@@ -801,6 +803,7 @@ AC_DEFUN([DUNE_CHECK_MOD_DEPENDENCIES], [
 EOF
     ### initialize AM_CONDITIONAL for suggestions that were not found
     for name in $suggests; do
+echo suggests unavailable $mod
       mod=$(fix_variable_name $name)
       MOD=`echo $mod | tr [:lower:] [:upper:]`
       if test "x$(eval echo \$HAVE_$mod)" = "x"; then
