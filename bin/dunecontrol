@@ -726,7 +726,7 @@ case "$command" in
     version=`eval echo \\${VERS_$mainmod}`
     maintainer=`eval echo \\${MAIN_$mainmod}`
     # get dependencies
-    eval deps=\$DEPS_$module
+    eval deps=\$DEPS_$mainmod
     #initially remove leading space
     deps=`echo "$deps" | sed 's/^ *//'`
     while test -n "$deps"; do
