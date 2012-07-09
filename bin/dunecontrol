@@ -641,7 +641,6 @@ while test $# -gt 0; do
       fix_and_assign MODULE "$module"
       export SEARCH_MODULES="$SEARCH_MODULES $MODULE"
       export ONLY="$ONLY $MODULE"
-      export HAVE_${module}=
     ;;
     --resume)
       export RESUME_FLAG="yes"
