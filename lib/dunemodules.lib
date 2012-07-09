@@ -338,7 +338,7 @@ _sort_module() {
     echo "ERROR: invalid module name $module" >&2
     exit 1
   fi
-  if test "x$(eval echo \$SORT_DONE_$module)" != "xyes"; then
+  if test "x$(eval echo \$SORT_$mode_DONE_$module)" != "xyes"; then
     # resolve dependencies
     depmode=$(test $mode = SUGS && echo SUGS || echo DEPS)
     _check_deps $module DEPS $depmode # it might happen that the DEPS are actually SUGS
@@ -346,10 +346,10 @@ _sort_module() {
     _check_deps $module SUGS SUGS
     # insert this module into the list
     export SORTEDMODULES_$mode="$(eval echo \$SORTEDMODULES_$mode) $module"
+    export SORT_$mode_DONE_$module=yes
     if test $mode = DEPS; then
       # it is sufficient to check that the module hasn't been handled yet, 
       # as dependencies are handled before suggestions
-      export SORT_DONE_$module=yes
       export SORTEDMODULES="$SORTEDMODULES $module"
       export SORTEDMODULES_INFO="$SORTEDMODULES_INFO $module[$mode]"
     fi
