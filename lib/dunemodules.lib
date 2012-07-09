@@ -221,6 +221,8 @@ EOFM
 EOF
     export MODULES="$LOCALMODULES$INSTMODULES"
     export FOUND_MODULES="$MODULES"
+  else
+    export MODULES="$FOUND_MODULES"
   fi
 }
 
