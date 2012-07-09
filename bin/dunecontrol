@@ -721,7 +721,8 @@ case "$command" in
       exit 1
     fi
     mainmod=`echo $SEARCH_MODULES`
-    fname="dependencies.m4"
+    eval mainmodpath=\$PATH_$mainmod
+    fname="$mainmodpath/dependencies.m4"
     name=`eval echo \\${NAME_$mainmod}`
     version=`eval echo \\${VERS_$mainmod}`
     maintainer=`eval echo \\${MAIN_$mainmod}`
