@@ -705,33 +705,7 @@ case "$command" in
     fi
     mainmod=`echo $SEARCH_MODULES`
     name=`eval echo \\${NAME_$mainmod}`
-
-    # get dependencies
-    eval deps=\$DEPS_$module
-    #initially remove leading space
-    deps=`echo "$deps" | sed 's/^ *//'`
-    while test -n "$deps"; do
-      #the end of the name is marked either by space, opening paren
-      #or comma
-      depname="${deps%%[ (,]*}"
-      #remove the name and adjacent whitespace
-      deps=`echo "$deps" | sed 's/^[^ (,]* *//'`
-      #check whether there is a dependency version
-      case "$deps" in
-      '('*) deps="${deps#(}"
-            depver="${deps%%)*}"
-            deps="${deps#*)}"
-            ;;
-      *)    depver=
-            ;;
-      esac
-      #remove any leading whitespace or commas for te next iteration
-      deps=`echo "$deps" | sed 's/^[, ]*//'`
-
-      requires="$requires $depname $depver "
-    done
     echo "dependencies for $name"
-
     ### DEPENDENCIES
     sort_modules $mainmod
     for mod in $SORTEDMODULES_DEPS; do
