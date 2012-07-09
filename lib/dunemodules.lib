@@ -92,7 +92,7 @@ parse_control() {
   # avoid multiple definition of the same module
   if eval test "x\$HAVE_$module" != "x"; then
     # make sure we don't stumble over the same module twice
-    if eval test \$PATH_$module = $path; then
+    if eval test "\$PATH_$module" = "$path"; then
       return
     fi
     local old_mod_inst
