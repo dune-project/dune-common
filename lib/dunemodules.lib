@@ -232,6 +232,7 @@ EOF
 sort_modules() {
   # reset lists
   export SORTEDMODULES=""
+  export REVERSEMODULES=""
   export SORTEDMODULES_INFO=""
   export SORTEDMODULES_DEPS=""
   export SORTEDMODULES_SUGS=""
@@ -375,6 +376,7 @@ _sort_module() {
       # it is sufficient to check that the module hasn't been handled yet, 
       # as dependencies are handled before suggestions
       export SORTEDMODULES="$SORTEDMODULES $module"
+      export REVERSEMODULES="$module $REVERSEMODULES"
       export SORTEDMODULES_INFO="$SORTEDMODULES_INFO $module[$mode]"
     fi
   fi

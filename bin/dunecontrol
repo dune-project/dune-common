@@ -519,6 +519,10 @@ create_module_list() {
     sort_modules $MODULES
   fi
 
+  if test "x$REVERSE_FLAG" = "xyes"; then
+    export MODULES="$REVERSEMODULES"
+  fi
+
   if test "x$SKIPFIRST" = "xyes" ; then
     export MODULES=`echo $MODULES " " | cut '--delimiter= ' --fields=2-`
   fi
@@ -542,6 +546,7 @@ export SEARCH_MODULES=""
 export MODULES=""
 export ONLY=""
 export RESUME_FLAG=no
+export REVERSE_FLAG=no
 export SKIPFIRST=no
 
 # parse commandline parameters
@@ -644,6 +649,9 @@ while test $# -gt 0; do
     ;;
     --resume)
       export RESUME_FLAG="yes"
+    ;;
+    --reverse)
+      export REVERSE_FLAG="yes"
     ;;
     --skipfirst)
       export SKIPFIRST=yes
