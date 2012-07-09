@@ -749,6 +749,30 @@ case "$command" in
 
       requires="$requires $depname $depver "
     done
+    # get suggestions
+    eval sugs=\$SUGS_$mainmod
+    #initially remove leading space
+    sugs=`echo "$sugs" | sed 's/^ *//'`
+    while test -n "$sugs"; do
+      #the end of the name is marked either by space, opening paren
+      #or comma
+      sugsname="${sugs%%[ (,]*}"
+      #remove the name and adjacent whitespace
+      sugs=`echo "$sugs" | sed 's/^[^ (,]* *//'`
+      #check whether there is a dependency version
+      case "$sugs" in
+      '('*) sugs="${sugs#(}"
+            depver="${sugs%%)*}"
+            sugs="${sugs#*)}"
+            ;;
+      *)    sugver=
+            ;;
+      esac
+      #remove any leading whitespace or commas for te next iteration
+      sugs=`echo "$sugs" | sed 's/^[, ]*//'`
+
+      suggests="$suggests $sugsname"
+    done
     # ensure a version number
     if test "x$version" = "x"; then version="0.0"; fi
     echo "writing $fname"
@@ -775,7 +799,7 @@ m4_define([DUNE_AC_INIT],[
 AC_DEFUN([DUNE_CHECK_MOD_DEPENDENCIES], [
 EOF
     ### initialize AM_CONDITIONAL for suggestions that were not found
-    for name in $(eval echo \$SUGS_$mainmod); do
+    for name in $suggests; do
       mod=$(fix_variable_name $name)
       MOD=`echo $mod | tr [:lower:] [:upper:]`
       if test "x$(eval echo \$HAVE_$mod)" = "x"; then
