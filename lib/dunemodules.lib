@@ -303,6 +303,7 @@ _check_deps()
         if test "x$mode" = "xDEPS"; then
           exit 1
         else
+          echo "Skipping $name!" >&2
           return 0;
         fi
       fi
@@ -318,6 +319,7 @@ _check_deps()
         if test "x$mode" = "xDEPS"; then
           exit 1
         else
+          echo "Skipping $name!" >&2
           return 0;
         fi
       else
@@ -329,6 +331,7 @@ _check_deps()
           if test "x$mode" = "xDEPS"; then
             exit 1
           else
+            echo "Skipping $name!" >&2
             return 0;
           fi
         fi
