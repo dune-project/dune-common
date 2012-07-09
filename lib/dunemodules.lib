@@ -60,7 +60,7 @@ parse_control() {
     exit 1
   fi
   # create and check variable name from module name
-  module=$(fix_variable_name $name)
+  export module=$(fix_variable_name $name)
   if ! check_modname "$module"; then
     echo "ERROR: $CONTROL files $1 contains an invalid Module entry" >&2
     exit 1
