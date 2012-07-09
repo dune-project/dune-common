@@ -304,7 +304,7 @@ _check_deps()
           exit 1
         else
           echo "Skipping $name!" >&2
-          return 0;
+          continue
         fi
       fi
       _sort_module $dep $depmode
@@ -320,7 +320,7 @@ _check_deps()
           exit 1
         else
           echo "Skipping $name!" >&2
-          return 0;
+          continue
         fi
       else
         eval ver=$(pkg-config $name --modversion)
@@ -332,7 +332,7 @@ _check_deps()
             exit 1
           else
             echo "Skipping $name!" >&2
-            return 0;
+            continue
           fi
         fi
         # update module list
