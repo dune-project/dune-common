@@ -263,6 +263,7 @@ sort_modules() {
   export SORTEDMODULES_MAIN
   # clean up temporary variables
   for m in $MODULES; do
+    export MODE_$m=""
     export SORT_DONE_$m=""
     export SORT_DEPS_DONE_$m=""
     export SORT_SUGS_DONE_$m=""
@@ -394,7 +395,9 @@ _sort_module() {
     # resolve suggestions
     _check_deps $module SUGS SUGS
     # remember mode of the module
-    export MODE_$module=$mode
+    if eval test "x\$MODE_$module" = xSUGS -o  "x\$MODE_$module" = x; then
+      export MODE_$module=$mode
+    fi
     # topological list of the module and its dependencies/suggestions
     if eval test "x\$SORT_DONE_$module" != "xyes"; then
       export SORT_DONE_$module=yes
