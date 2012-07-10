@@ -477,6 +477,7 @@ usage () {
     echo "  Colon-separated list of commands. Available commands are:"
     printf "  \`help'\tguess what :-)\n"
     printf "  \`print'\tprint the list of modules sorted after their dependencies\n"
+    printf "  \`info'\tsame as \`print\', but including whether it is a dependency or suggestion\n"
     for i in $COMMANDS; do
       printf "  \`$i'\t$(eval echo \$${i}_HELP)\n"
     done
@@ -683,6 +684,10 @@ case "$command" in
     eval "print_module_list ' ' $MODULES"
     echo >&2
     ;;
+  info)
+    create_module_list
+    echo $SORTEDMODULES_INFO
+  ;;
   export)
     create_module_list
     DUNE_CONTROL_PATH=""
