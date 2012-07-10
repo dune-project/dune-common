@@ -811,7 +811,6 @@ AC_DEFUN([DUNE_CHECK_MOD_DEPENDENCIES], [
 EOF
     ### initialize AM_CONDITIONAL for suggestions that were not found
     for name in $suggests; do
-echo suggests unavailable $mod
       mod=$(fix_variable_name $name)
       MOD=`echo $mod | tr [:lower:] [:upper:]`
       if test "x$(eval echo \$HAVE_$mod)" = "x"; then
