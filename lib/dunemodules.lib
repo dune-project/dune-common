@@ -362,6 +362,11 @@ _check_deps()
 #
 # paramters:
 # $1 name of the modules
+# $2 parser mode:
+#    DEPS: search for dependencies
+#    SUSG: search for suggestions (DEPS of SUGS are handled as SUGS)
+#    MAIN: primary invocation of a DEPS search, 
+#          MAIN modules are not added to the list of DEPS/SUGS
 #
 _sort_module() {
   local module="$1"
