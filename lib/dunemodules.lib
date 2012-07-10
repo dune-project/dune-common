@@ -103,7 +103,7 @@ parse_control() {
     nono|yesyes)
       echo "ERROR: multiple definition of module $name" >&2
       echo "previous defined in:" >&2
-      if test "$(eval echo \$INST_$module)" = "yes"; then
+      if eval test x\$INST_$module = "xyes"; then
         echo "  $(eval echo \$PATH_$module)/lib/dunecontrol/$name/$CONTROL" >&2
       else
         echo "  $(eval echo \$PATH_$module)/$CONTROL" >&2
@@ -307,7 +307,7 @@ _check_deps()
       echo "ERROR: invalid module name $name" >&2
       exit 1
     fi
-    if test "x$(eval echo \$HAVE_$dep)" != "x"; then
+    if eval test x\$HAVE_$dep != "x"; then
       eval ver=\$VERS_$dep
       if test "$SKIPVERSIONCHECK" != "yes" && ! check_version "$ver" "$depver"; then
         echo "$report: version mismatch." >&2
