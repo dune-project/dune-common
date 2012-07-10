@@ -58,6 +58,12 @@ headercheck-am:
 	    echo "Error in $$HEADER"; \
             test $V -ne 1 && echo "run with V=1 to show details" || cat $$LOGFILE; \
 	  fi; \
+	  warnings=`grep 'warning' $$LOGFILE`; \
+	  FOUNDWARNINGS=$$?; \
+	  if ( test $$FOUNDWARNINGS -eq 0 && test -e $$OFILE ); then \
+	    echo "Warnings in $$HEADER"; \
+	    test $V -ne 1 && echo "run with V=1 to show details" || cat $$LOGFILE; \
+	  fi; \
 	  rm -f $$OFILE; \
 	  rm -f $$CCFILE; \
 	  rm -f $$LOGFILE; \
