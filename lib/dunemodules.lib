@@ -385,12 +385,11 @@ _sort_module() {
     echo "ERROR: invalid module name $module" >&2
     exit 1
   fi
-  mainmode=$(test $mode = MAIN && echo DEPS || echo $mode)
-  if eval test "x\$SORT_${mainmode}_DONE_$module" != "xyes"; then
+  depmode=$(test $mode = SUGS && echo SUGS || echo DEPS)
+  if eval test "x\$SORT_${depmode}_DONE_$module" != "xyes"; then
     # stop any recursion
-    export SORT_${mainmode}_DONE_$module=yes
+    export SORT_${depmode}_DONE_$module=yes
     # resolve dependencies
-    depmode=$(test $mode = SUGS && echo SUGS || echo DEPS)
     _check_deps $module DEPS $depmode # it might happen that the DEPS are actually SUGS
     # resolve suggestions
     _check_deps $module SUGS SUGS
