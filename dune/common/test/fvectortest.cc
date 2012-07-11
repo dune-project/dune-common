@@ -70,6 +70,7 @@ struct FieldVectorMainTest
 
     // test scalar product, axpy
     a = v * w;
+    a = v.dot(w);
     z = v.axpy(a,w);
 
     // test comparison
@@ -201,6 +202,76 @@ struct ScalarOrderingTest
   }
 };
 
+// scalar ordering doesn't work for complex numbers
+template <class rt, int d>
+struct DotProductTest
+{
+  DotProductTest() {
+    typedef std::complex<rt> ct;
+    const rt myEps(1e-6);
+
+    dune_static_assert(
+      ( Dune::is_same< typename Dune::FieldTraits<rt>::real_type, rt>::value ),
+      "DotProductTest requires real data type as template parameter!"
+      );
+
+    const ct I(0.,1.); // imaginary unit
+    const FieldVector<rt,d> one(1.); // vector filled with 1
+    const FieldVector<ct,d> iVec(ct(0.,1.)); // vector filled with I
+
+    std::cout << __func__ << "\t \t ( " << Dune::className(one) << " and " << Dune::className(iVec) << ")" << std::endl;
+
+    const bool isRealOne = Dune::is_same<typename Dune::FieldTraits<rt>::field_type,typename Dune::FieldTraits<rt>::real_type>::value;
+    const bool isRealIVec = Dune::is_same<typename Dune::FieldTraits<ct>::field_type,typename Dune::FieldTraits<ct>::real_type> ::value;
+    dune_static_assert(isRealOne,"1-vector expected to be real");
+    dune_static_assert(!isRealIVec,"i-vector expected to be complex");
+
+    ct result = ct();
+    ct length = ct(d);
+
+
+    // one^H*one should equal d
+    result = dot(one,one);
+    assert(std::abs(result-length)<= myEps);
+    result = one.dot(one);
+    assert(std::abs(result-length)<= myEps);
+
+
+    // iVec^H*iVec should equal d
+    result = dot(iVec,iVec);
+    assert(std::abs(result-length)<= myEps);
+    result = iVec.dot(iVec);
+    assert(std::abs(result-length)<= myEps);
+
+
+    // test that we do conjugate first argument
+    result = dot(one,iVec);
+    assert(std::abs(result-length*I)<= myEps);
+    result = dot(one,iVec);
+    assert(std::abs(result-length*I)<= myEps);
+
+
+    // test that we do not conjugate second argument
+    result = dot(iVec,one);
+    assert(std::abs(result+length*I)<= myEps);
+    result = iVec.dot(one);
+    assert(std::abs(result+length*I)<= myEps);
+
+
+    // test that dotT does not conjugate at all
+    result = dotT(one,one) + one*one;
+    assert(std::abs(result-ct(2)*length)<= myEps);
+    result = dotT(iVec,iVec) + iVec*iVec;
+    assert(std::abs(result+ct(2)*length)<= myEps);
+    result = dotT(one,iVec) + one*iVec;
+    assert(std::abs(result-ct(2)*length*I)<= myEps);
+    result = dotT(iVec,one) + iVec*one;
+    assert(std::abs(result-ct(2)*length*I)<= myEps);
+
+  }
+
+};
+
 template<class ft, int d>
 struct FieldVectorTest
 {
@@ -209,6 +280,7 @@ struct FieldVectorTest
     // --- test complex and real valued vectors
     FieldVectorMainTest<ft,ft,d>();
     FieldVectorMainTest<complex<ft>,ft,d>();
+    DotProductTest<ft,d>();
     // --- test next lower dimension
     FieldVectorTest<ft,d-1>();
   }
@@ -225,6 +297,7 @@ public:
     FieldVectorMainTest<ft,ft,1>();
     ScalarOperatorTest<ft>();
     ScalarOrderingTest<ft>();
+    DotProductTest<ft,1>();
     // --- complex valued
     FieldVectorMainTest<complex<ft>,ft,1>();
     ScalarOperatorTest< complex<ft> >();
