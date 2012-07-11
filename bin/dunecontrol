@@ -776,7 +776,7 @@ case "$command" in
       #check whether there is a dependency version
       case "$sugs" in
       '('*) sugs="${sugs#(}"
-            depver="${sugs%%)*}"
+            sugsver="${sugs%%)*}"
             sugs="${sugs#*)}"
             ;;
       *)    sugver=
@@ -786,7 +786,7 @@ case "$command" in
       sugs=`echo "$sugs" | sed 's/^[, ]*//'`
 
       suggests="$suggests $sugsname"
-      suggestsall="$suggests $sugsname $sugsver "
+      suggestsall="$suggestsall $sugsname $sugsver "
     done
     # ensure a version number
     if test "x$version" = "x"; then version="0.0"; fi
