@@ -31,6 +31,7 @@ commoninclude_HEADERS = 			\
 	densematrix.hh				\
 	densevector.hh				\
 	documentation.hh			\
+	dotproduct.hh				\
 	dynmatrix.hh				\
 	dynvector.hh				\
 	enumset.hh				\
@@ -66,6 +67,7 @@ commoninclude_HEADERS = 			\
 	path.hh					\
 	poolallocator.hh			\
 	precision.hh				\
+	promotiontraits.hh			\
 	propertymap.hh				\
 	reservedvector.hh			\
 	shared_ptr.hh				\
