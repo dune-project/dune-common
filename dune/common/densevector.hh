@@ -8,7 +8,8 @@
 #include "genericiterator.hh"
 #include "ftraits.hh"
 #include "matvectraits.hh"
-
+#include "promotiontraits.hh"
+#include "dotproduct.hh"
 
 namespace Dune {
 
@@ -453,16 +454,39 @@ namespace Dune {
       return asImp();
     }
 
-    //===== Euclidean scalar product
-
-    //! scalar product (x^T y)
-    template <class Other>
-    value_type operator* (const DenseVector<Other>& y) const
-    {
+    /**
+     * \brief indefinite vector dot product \f$\left (x^T \cdot y \right)\f$ which corresponds to Petsc's VecTDot
+     *
+     * http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecTDot.html
+     * @param y other vector
+     * @return
+     */
+    template<class Other>
+    typename PromotionTraits<field_type,typename DenseVector<Other>::field_type>::PromotedType operator* (const DenseVector<Other>& y) const {
+      typedef typename PromotionTraits<field_type, typename DenseVector<Other>::field_type>::PromotedType PromotedType;
+      PromotedType result = PromotedType();
       assert(y.size() == size());
-      value_type result( 0 );
-      for (size_type i=0; i<size(); i++)
-        result += (*this)[i]*y[i];
+      for (size_type i=0; i<size(); i++) {
+        result += PromotedType((*this)[i]*y[i]);
+      }
+      return result;
+    }
+
+    /**
+     * @brief vector dot product \f$\left (x^H \cdot y \right)\f$ which corresponds to Petsc's VecDot
+     *
+     * http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecDot.html
+     * @param y other vector
+     * @return
+     */
+    template<class Other>
+    typename PromotionTraits<field_type,typename DenseVector<Other>::field_type>::PromotedType dot(const DenseVector<Other>& y) const {
+      typedef typename PromotionTraits<field_type, typename DenseVector<Other>::field_type>::PromotedType PromotedType;
+      PromotedType result = PromotedType();
+      assert(y.size() == size());
+      for (size_type i=0; i<size(); i++) {
+        result += Dune::dot((*this)[i],y[i]);
+      }
       return result;
     }
 
