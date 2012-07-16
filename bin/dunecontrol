@@ -477,6 +477,7 @@ usage () {
     echo "  Colon-separated list of commands. Available commands are:"
     printf "  \`help'\tguess what :-)\n"
     printf "  \`print'\tprint the list of modules sorted after their dependencies\n"
+    printf "  \`info'\tsame as \`print\', but including whether it is a dependency or suggestion\n"
     for i in $COMMANDS; do
       printf "  \`$i'\t$(eval echo \$${i}_HELP)\n"
     done
@@ -519,6 +520,10 @@ create_module_list() {
     sort_modules $MODULES
   fi
 
+  if test "x$REVERSE_FLAG" = "xyes"; then
+    export MODULES="$REVERSEMODULES"
+  fi
+
   if test "x$SKIPFIRST" = "xyes" ; then
     export MODULES=`echo $MODULES " " | cut '--delimiter= ' --fields=2-`
   fi
@@ -542,6 +547,7 @@ export SEARCH_MODULES=""
 export MODULES=""
 export ONLY=""
 export RESUME_FLAG=no
+export REVERSE_FLAG=no
 export SKIPFIRST=no
 
 # parse commandline parameters
@@ -641,10 +647,12 @@ while test $# -gt 0; do
       fix_and_assign MODULE "$module"
       export SEARCH_MODULES="$SEARCH_MODULES $MODULE"
       export ONLY="$ONLY $MODULE"
-      export HAVE_${module}=
     ;;
     --resume)
       export RESUME_FLAG="yes"
+    ;;
+    --reverse)
+      export REVERSE_FLAG="yes"
     ;;
     --skipfirst)
       export SKIPFIRST=yes
@@ -676,6 +684,10 @@ case "$command" in
     eval "print_module_list ' ' $MODULES"
     echo >&2
     ;;
+  info)
+    create_module_list
+    echo $SORTEDMODULES_INFO
+  ;;
   export)
     create_module_list
     DUNE_CONTROL_PATH=""
@@ -705,33 +717,7 @@ case "$command" in
     fi
     mainmod=`echo $SEARCH_MODULES`
     name=`eval echo \\${NAME_$mainmod}`
-
-    # get dependencies
-    eval deps=\$DEPS_$module
-    #initially remove leading space
-    deps=`echo "$deps" | sed 's/^ *//'`
-    while test -n "$deps"; do
-      #the end of the name is marked either by space, opening paren
-      #or comma
-      depname="${deps%%[ (,]*}"
-      #remove the name and adjacent whitespace
-      deps=`echo "$deps" | sed 's/^[^ (,]* *//'`
-      #check whether there is a dependency version
-      case "$deps" in
-      '('*) deps="${deps#(}"
-            depver="${deps%%)*}"
-            deps="${deps#*)}"
-            ;;
-      *)    depver=
-            ;;
-      esac
-      #remove any leading whitespace or commas for te next iteration
-      deps=`echo "$deps" | sed 's/^[, ]*//'`
-
-      requires="$requires $depname $depver "
-    done
     echo "dependencies for $name"
-
     ### DEPENDENCIES
     sort_modules $mainmod
     for mod in $SORTEDMODULES_DEPS; do
@@ -748,12 +734,13 @@ case "$command" in
       exit 1
     fi
     mainmod=`echo $SEARCH_MODULES`
-    fname="dependencies.m4"
+    eval mainmodpath=\$PATH_$mainmod
+    fname="$mainmodpath/dependencies.m4"
     name=`eval echo \\${NAME_$mainmod}`
     version=`eval echo \\${VERS_$mainmod}`
     maintainer=`eval echo \\${MAIN_$mainmod}`
     # get dependencies
-    eval deps=\$DEPS_$module
+    eval deps=\$DEPS_$mainmod
     #initially remove leading space
     deps=`echo "$deps" | sed 's/^ *//'`
     while test -n "$deps"; do
@@ -776,11 +763,37 @@ case "$command" in
 
       requires="$requires $depname $depver "
     done
+    # get suggestions
+    eval sugs=\$SUGS_$mainmod
+    #initially remove leading space
+    sugs=`echo "$sugs" | sed 's/^ *//'`
+    while test -n "$sugs"; do
+      #the end of the name is marked either by space, opening paren
+      #or comma
+      sugsname="${sugs%%[ (,]*}"
+      #remove the name and adjacent whitespace
+      sugs=`echo "$sugs" | sed 's/^[^ (,]* *//'`
+      #check whether there is a dependency version
+      case "$sugs" in
+      '('*) sugs="${sugs#(}"
+            sugsver="${sugs%%)*}"
+            sugs="${sugs#*)}"
+            ;;
+      *)    sugver=
+            ;;
+      esac
+      #remove any leading whitespace or commas for te next iteration
+      sugs=`echo "$sugs" | sed 's/^[, ]*//'`
+
+      suggests="$suggests $sugsname"
+      suggestsall="$suggestsall $sugsname $sugsver "
+    done
     # ensure a version number
     if test "x$version" = "x"; then version="0.0"; fi
     echo "writing $fname"
     echo "    for $name $version $maintainer"
     echo "        requires $requires"
+    echo "        suggests $suggestsall"
       AC_MACRO_DIR="."
       test ! -d m4 || AC_MACRO_DIR=m4
     cat > $fname <<EOF
@@ -802,7 +815,7 @@ m4_define([DUNE_AC_INIT],[
 AC_DEFUN([DUNE_CHECK_MOD_DEPENDENCIES], [
 EOF
     ### initialize AM_CONDITIONAL for suggestions that were not found
-    for name in $(eval echo \$SUGS_$mainmod); do
+    for name in $suggests; do
       mod=$(fix_variable_name $name)
       MOD=`echo $mod | tr [:lower:] [:upper:]`
       if test "x$(eval echo \$HAVE_$mod)" = "x"; then

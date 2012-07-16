@@ -30,6 +30,7 @@ install(FILES
         densematrix.hh
         densevector.hh
         documentation.hh
+	dotproduct.hh
         dynmatrix.hh
         dynvector.hh
         enumset.hh
@@ -66,6 +67,7 @@ install(FILES
         poolallocator.hh
         precision.hh
         propertymap.hh
+	promotiontraits.hh
         reservedvector.hh
         shared_ptr.hh
         singleton.hh

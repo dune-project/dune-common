@@ -128,7 +128,7 @@ if test "x$want_boost" = "xyes"; then
     ax_boost_base_save_CPPFLAGS="$CPPFLAGS"
     CPPFLAGS="$ax_boost_base_save_CPPFLAGS $BOOST_CPPFLAGS"
 
-    ax_boost_base_save_LDFLAGS_SAVED="$LDFLAGS"
+    ax_boost_base_save_LDFLAGS="$LDFLAGS"
     LDFLAGS="$ax_boost_base_save_LDFLAGS $BOOST_LDFLAGS"
 
     AC_REQUIRE([AC_PROG_CXX])
