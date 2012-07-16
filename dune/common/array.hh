@@ -1,6 +1,5 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-
 #ifndef DUNE_ARRAY_HH
 #define DUNE_ARRAY_HH
 
@@ -15,45 +14,46 @@
 // Include system implementation of array class if present
 #ifdef HAVE_ARRAY
 #include <array>
-#else
+#else // #ifdef HAVE_ARRAY
 #include <algorithm>
-#endif
+#endif // #else // #ifdef HAVE_ARRAY
 
 #include "deprecated.hh"
 
 namespace Dune
 {
+
   /** @addtogroup Common
 
      @{
    */
 
 #ifdef HAVE_ARRAY
+
   using std::array;
-#else
+
+#else // #ifdef HAVE_ARRAY
 
   /** \brief Simple fixed size array class.  This replaces std::array,
    * if that is not available.
-   *
    */
-  template<class T, size_t N>
-  class array {
-  public:
-
+  template< class T, std::size_t N >
+  struct array
+  {
     //! Remember the storage type
     typedef T value_type;
 
     /** \brief Reference to an object */
-    typedef value_type&                             reference;
+    typedef value_type                                &reference;
 
     /** \brief Const reference to an object */
-    typedef const value_type&                       const_reference;
+    typedef const value_type                          &const_reference;
 
     /** \brief Iterator type */
-    typedef value_type*                             iterator;
+    typedef value_type                                *iterator;
 
     /** \brief Const iterator type */
-    typedef const value_type*                       const_iterator;
+    typedef const value_type                          *const_iterator;
 
     /** \brief Type used for array indices */
     typedef std::size_t size_type;
@@ -62,13 +62,16 @@ namespace Dune
     typedef std::ptrdiff_t difference_type;
 
     /** \brief Reverse iterator type */
-    typedef std::reverse_iterator<iterator>         reverse_iterator;
+    typedef std::reverse_iterator<iterator>           reverse_iterator;
 
     /** \brief Const reverse iterator type */
     typedef std::reverse_iterator<const_iterator>   const_reverse_iterator;
 
     /** \brief Return array size */
-    size_type size() const {return N;}
+    size_type size () const { return N; }
+
+    /** \brief Determine, whether the container is empty */
+    bool empty () const { return (N == 0); }
 
     //! Assign value to all entries
     array<T,N>& operator= (const T& t)
@@ -78,15 +81,10 @@ namespace Dune
     }
 
     //! \brief Assign value to all entries (according to C++0x the fill method is to be prefered)
-    void assign(const T& t) DUNE_DEPRECATED
+    void fill ( const T &t )
     {
-      fill(t);
-    }
-
-    //! \brief Assign value to all entries (according to C++0x the fill method is to be prefered)
-    void fill(const T& t)
-    {
-      for (size_type i=0; i<N; i++) a[i]=t;
+      for( size_type i = 0; i < size(); ++i )
+        a[ i ] = t;
     }
 
     //! Component access
@@ -129,44 +127,51 @@ namespace Dune
   // Comparison Operators (see [lib.container.requirements])
   // -------------------------------------------------------
 
-  template< class T, size_t N >
+  template< class T, std::size_t N >
   inline bool operator< ( const array< T, N > &a, const array< T, N > &b )
   {
     return std::lexicographical_compare( a.begin(), a.end(), b.begin(), b.end() );
   }
 
-  template< class T, size_t N >
+  template< class T, std::size_t N >
   inline bool operator> ( const array< T, N > &a, const array< T, N > &b )
   {
     return b < a;
   }
 
-  template< class T, size_t N >
+  template< class T, std::size_t N >
   inline bool operator<= ( const array< T, N > &a, const array< T, N > &b )
   {
     return !(a > b);
   }
 
-  template< class T, size_t N >
+  template< class T, std::size_t N >
   inline bool operator>= ( const array< T, N > &a, const array< T, N > &b )
   {
     return !(a < b);
   }
-#endif
 
-  //! Output operator for array
-  template < class T, size_t N >
-  inline std::ostream& operator<< (std::ostream& s, const array<T,N>& e)
+#endif // #else // #ifdef HAVE_ARRAY
+
+  /** \brief output operator for array
+   *
+   *  \note This operator is Dune-specific and not part of any C++-standard.
+   */
+  template< class T, std::size_t N >
+  inline std::ostream &operator<< ( std::ostream &s, const array< T, N > &e )
   {
-    if (N == 0)
-    {
-      s << "[]";
-      return s;
-    }
+    typedef typename array< T, N >::size_type size_type;
 
-    s << "[";
-    for (size_t i=0; i<N-1; i++) s << e[i] << ",";
-    s << e[N-1] << "]";
+    if( !e.empty() )
+    {
+      s << "[" << e[ size_type( 0 ) ];
+      for( size_type i = 1; i < e.size(); ++i )
+        s << "," << e[ i ];
+      s << "]";
+    }
+    else
+      s << "[]";
+
     return s;
   }
 
@@ -235,14 +240,13 @@ namespace Dune
     array<T, 9> result = { t0, t1, t2, t3, t4, t5, t6, t7, t8 };
     return result;
   }
-#endif // !DOXYGEN
+#endif // #ifndef DOXYGEN
 
-  //! create an initialize an array
-  /**
-   * \note There are overloads for this method which take fewer arguments
-   *       (minimum 1).  The current maximum of 10 arguments is arbitrary and
-   *       can be raised on demand.
-   * \note This method is Dune-specific and not part of any C++-standard.
+  /** \brief create and initialize an array
+   *  \note There are overloads for this method which take fewer arguments
+   *        (minimum 1).  The current maximum of 10 arguments is arbitrary and
+   *        can be raised on demand.
+   *  \note This function is Dune-specific and not part of any C++-standard.
    */
   template<class T>
   array<T, 10> make_array(const T &t0, const T &t1, const T &t2, const T &t3,
@@ -255,6 +259,6 @@ namespace Dune
 
   /** @} */
 
-} // end namespace Dune
+} // namespace Dune
 
-#endif
+#endif // #ifndef DUNE_ARRAY_HH
