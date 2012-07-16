@@ -158,6 +158,12 @@ namespace Dune
   template < class T, size_t N >
   inline std::ostream& operator<< (std::ostream& s, const array<T,N>& e)
   {
+    if (N == 0)
+    {
+      s << "[]";
+      return s;
+    }
+
     s << "[";
     for (size_t i=0; i<N-1; i++) s << e[i] << ",";
     s << e[N-1] << "]";
