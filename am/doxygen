@@ -93,9 +93,6 @@ doxygen-dist-install: $(DOXYGENTAG)
 
 dist-hook: doxygen-dist-install
 
-endif # DOXYGEN
-endif # BUILD_DOCS
-
 ####
 # how to install doxygen
 
@@ -110,6 +107,9 @@ uninstall-doxygen:
 # add doxygen to documentation-installation
 install-documentation-local: install-doxygen
 uninstall-documentation-local: uninstall-doxygen
+
+endif # DOXYGEN
+endif # BUILD_DOCS
 
 ####
 # howto install doxygen in the web page
