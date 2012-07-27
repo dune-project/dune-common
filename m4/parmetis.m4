@@ -36,6 +36,7 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 	fi
 	],
     [
+    echo with_parmetis1=$withparmetis PARMETIS=$PARMETIS
 	if test -n "$PARMETIS" ; then
           if test -d "$PARMETIS" ; then
 	    # get absolute path
@@ -71,18 +72,19 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
     [AC_HELP_STRING([--with-metis-lib],  [name of the metis libraries (default is metis)])],
     ,[with_metis_lib=metis])
 
+  echo with_parmetis=$with_parmetis
   # store old values
   ac_save_LDFLAGS="$LDFLAGS"
   ac_save_CPPFLAGS="$CPPFLAGS"
   ac_save_LIBS="$LIBS"
+     
+  # call IMDX_LIB_METIS directly and not via AC_REQUIRE
+  # because AC_REQUIRE support not allow parameters
+  # without any parameters a missing METIS would halt configure
+  IMMDX_LIB_METIS(,[true])
   
   ## do nothing if --without-parmetis is used
   if test x"$with_mpi" != x"no" && test x"$with_parmetis" != x"no" ; then
-     
-      # call IMDX_LIB_METIS directly and not via AC_REQUIRE
-      # because AC_REQUIRE support not allow parameters
-      # without any parameters a missing METIS would halt configure
-      IMMDX_LIB_METIS(,[true])
 
       # defaultpath
       PARMETIS_LIB_PATH="$with_parmetis/$lib_path"
