@@ -464,7 +464,7 @@ namespace Dune {
     template<class Other>
     typename PromotionTraits<field_type,typename DenseVector<Other>::field_type>::PromotedType operator* (const DenseVector<Other>& y) const {
       typedef typename PromotionTraits<field_type, typename DenseVector<Other>::field_type>::PromotedType PromotedType;
-      PromotedType result = PromotedType();
+      PromotedType result(0);
       assert(y.size() == size());
       for (size_type i=0; i<size(); i++) {
         result += PromotedType((*this)[i]*y[i]);
@@ -482,7 +482,7 @@ namespace Dune {
     template<class Other>
     typename PromotionTraits<field_type,typename DenseVector<Other>::field_type>::PromotedType dot(const DenseVector<Other>& y) const {
       typedef typename PromotionTraits<field_type, typename DenseVector<Other>::field_type>::PromotedType PromotedType;
-      PromotedType result = PromotedType();
+      PromotedType result(0);
       assert(y.size() == size());
       for (size_type i=0; i<size(); i++) {
         result += Dune::dot((*this)[i],y[i]);
