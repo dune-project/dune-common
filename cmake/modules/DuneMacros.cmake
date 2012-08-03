@@ -37,9 +37,10 @@
 #
 # dune_regenerate_config_cmake()
 #
-# Create a new config.h.cmake file in ${CMAKE_CURRENT_BINARY_DIR) that consists
-# of entries from ${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake and includes non-private
-# entries from the files config.h.cmake files of all dependent modules.
+# Creates a new config.h.cmake file in ${CMAKE_CURRENT_BINARY_DIR) that
+# consists of entries from ${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake
+# and includes non-private entries from the files config.h.cmake files
+# of all dependent modules.
 # Finally config.h is created from config.h.cmake.
 #
 #
@@ -329,7 +330,7 @@ macro(dune_regenerate_config_cmake)
  file(APPEND ${CONFIG_H_CMAKE_FILE} "\n${_tfile}")
  foreach(_dep  ${DEPENDENCY_TREE})
    foreach(_mod_conf_file ${${_dep}_PREFIX}/config.h.cmake
-       ${${_dep_macro}_PREFIX}/share/${_dep}/config.h.cmake)
+       ${${_dep}_PREFIX}/share/${_dep}/config.h.cmake)
      if(EXISTS ${_mod_conf_file})
        file(READ "${_mod_conf_file}" _file)
        string(REGEX REPLACE
