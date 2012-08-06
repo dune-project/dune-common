@@ -21,7 +21,7 @@ endif
 # how to build html files
 if WML
 .wml.html:
-	$(WMLCMD) -I $(abs_srcdir) $(abs_builddir)/$< -o $(abs_builddir)/$@
+	$(WMLCMD) -I $(abs_srcdir) $< -o $(abs_builddir)/$@
 endif
 
 ####

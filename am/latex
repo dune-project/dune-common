@@ -5,6 +5,7 @@
 
 # rerun TEX if log-file suggests that
 .tex.dvi:
+	export TEXINPUTS=.:$(abs_builddir):${TEXINPUTS}:; \
 	set -e; builddir=$$PWD; \
 	pushd $(srcdir); $(TEX) -output-directory=$$builddir </dev/null $*; popd; \
 	while grep 'Rerun to get' $*.log > /dev/null ; do \
@@ -21,10 +22,16 @@
 	fi
 
 .dvi.pdf:
-	TEXINPUTS=.:$(srcdir):${TEXINPUTS}: $(DVIPDF) $*
+	export TEXINPUTS=.:$(abs_builddir):${TEXINPUTS}:; \
+	pushd $(srcdir); \
+	    $(DVIPDF) $(abs_builddir)/$*.dvi $(abs_builddir)/$*.pdf; \
+	popd
 
 .dvi.ps:
-	TEXINPUTS=.:$(srcdir):${TEXINPUTS}: $(DVIPS) $* -o
+	export TEXINPUTS=.:$(abs_builddir):${TEXINPUTS}:; \
+	pushd $(srcdir); \
+	    $(DVIPS) $(abs_builddir)/$*.dvi -o $(abs_builddir)/$*.ps; \
+	popd
 
 TEXCLEANFILES = *.aux *.bbl *.blg *.log *.out *.toc *.dvi
 clean-local: latex-clean
