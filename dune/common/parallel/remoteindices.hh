@@ -8,7 +8,7 @@
 #include <dune/common/exceptions.hh>
 #include "plocalindex.hh"
 #include <dune/common/poolallocator.hh>
-#include <dune/common/sllist.hh>
+#include <dune/common/container/sllist.hh>
 #include <dune/common/static_assert.hh>
 #include <dune/common/stdstreams.hh>
 #include <map>
@@ -21,7 +21,9 @@
 #include <dune/common/mpitraits.hh>
 #include "mpi.h"
 
-namespace Dune {
+namespace Dune
+{
+
   /** @addtogroup Common_Parallel
    *
    * @{

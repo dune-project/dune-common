@@ -5,7 +5,7 @@
 #define DUNE_INDEXSET_HH
 
 #include <algorithm>
-#include <dune/common/arraylist.hh>
+#include <dune/common/container/arraylist.hh>
 #include <dune/common/exceptions.hh>
 #include <iostream>
 

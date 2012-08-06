@@ -12,7 +12,7 @@
 
 #include "typetraits.hh"
 #include "exceptions.hh"
-#include "array.hh"
+#include <dune/common/container/array.hh>
 #include "densevector.hh"
 #include "static_assert.hh"
 

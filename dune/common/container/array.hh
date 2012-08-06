@@ -18,8 +18,6 @@
 #include <algorithm>
 #endif // #else // #ifdef HAVE_ARRAY
 
-#include "deprecated.hh"
-
 namespace Dune
 {
 

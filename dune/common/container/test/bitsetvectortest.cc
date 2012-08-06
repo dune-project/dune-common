@@ -4,7 +4,8 @@
 #include "config.h"
 #endif
 
-#include <dune/common/bitsetvector.hh>
+#include <dune/common/container/bitsetvector.hh>
+
 #if defined(__GNUC__) && ! defined(__clang__)
 #include <ext/malloc_allocator.h>
 #endif

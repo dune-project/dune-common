@@ -7,12 +7,9 @@ dynvectortest
 fvectortest
 mpicollectivecommunication
 lrutest
-arraylisttest
 shared_ptrtest
 testfloatcmp
-bitsetvectortest
 iteratorfacadetest
-sllisttest
 tuplestest
 tupleutilitytest
 enumsettest
@@ -55,7 +52,6 @@ pathtest
 TAGS
 mpihelpertest2
 testfconstruct
-arraytest
 shared_ptrtest_config
 shared_ptrtest_dune
 tuplestest_dune

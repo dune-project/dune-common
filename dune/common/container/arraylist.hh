@@ -1,18 +1,18 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-// $Id$
-
 #ifndef DUNE_ARRAYLIST_HH
 #define DUNE_ARRAYLIST_HH
 
 #include <cassert>
 #include <vector>
-#include "shared_ptr.hh"
-#include "array.hh"
-#include "iteratorfacades.hh"
+
+#include <dune/common/container/array.hh>
+#include <dune/common/shared_ptr.hh>
+#include <dune/common/iteratorfacades.hh>
 
 namespace Dune
 {
+
   // forward declaration
   template<class T, int N, class A>
   class ArrayListIterator;
@@ -733,5 +733,7 @@ namespace Dune
 
 
   /** @} */
-}
-#endif
+
+} // namespace Dune
+
+#endif // #ifndef DUNE_ARRAYLIST_HH

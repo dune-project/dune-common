@@ -5,7 +5,7 @@
 #include "config.h"
 #endif
 
-#include <dune/common/arraylist.hh>
+#include <dune/common/container/arraylist.hh>
 #include <dune/common/test/iteratortest.hh>
 #include <iostream>
 #include <cstdlib>

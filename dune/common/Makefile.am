@@ -1,6 +1,6 @@
 # $Id$
 
-SUBDIRS = . test parallel
+SUBDIRS = . container test parallel
 
 # the standard debug streams are put into the libdune
 noinst_LTLIBRARIES = libcommon.la
@@ -18,12 +18,9 @@ libcommon_la_LIBADD = $(LAPACK_LIBS)
 commonincludedir = $(includedir)/dune/common
 commoninclude_HEADERS = 			\
 	alignment.hh				\
-	array.hh				\
-	arraylist.hh				\
 	bartonnackmanifcheck.hh			\
 	bigunsignedint.hh			\
 	binaryfunctions.hh			\
-	bitsetvector.hh				\
 	classname.hh				\
 	collectivecommunication.hh		\
 	debugstream.hh				\
@@ -72,7 +69,6 @@ commoninclude_HEADERS = 			\
 	reservedvector.hh			\
 	shared_ptr.hh				\
 	singleton.hh				\
-	sllist.hh				\
 	static_assert.hh			\
 	stdstreams.hh				\
 	timer.hh				\

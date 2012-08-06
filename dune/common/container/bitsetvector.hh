@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef DUNE_BLOCK_BITFIELD_HH
-#define DUNE_BLOCK_BITFIELD_HH
+#ifndef DUNE_BLOCK_BITSETVECTOR_HH
+#define DUNE_BLOCK_BITSETVECTOR_HH
 
 /** \file
     \brief Efficient implementation of a dynamic array of static arrays of booleans
@@ -15,7 +15,8 @@
 #include <dune/common/genericiterator.hh>
 #include <dune/common/exceptions.hh>
 
-namespace Dune {
+namespace Dune
+{
 
   template <int block_size, class Alloc> class BitSetVector;
   template <int block_size, class Alloc> class BitSetVectorReference;
@@ -599,6 +600,6 @@ namespace Dune {
     friend class BitSetVectorConstReference<block_size,Allocator>;
   };
 
-}  // namespace Dune
+} // namespace Dune
 
-#endif
+#endif // #ifndef DUNE_BLOCK_BITSETVECTOR_HH

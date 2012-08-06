@@ -1,24 +1,25 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-// $Id$
 #ifndef DUNE_INDICESSYNCER_HH
 #define DUNE_INDICESSYNCER_HH
 
-#include "indexset.hh"
-#include "remoteindices.hh"
-#include <dune/common/stdstreams.hh>
-#include <dune/common/tuples.hh>
-#include <dune/common/sllist.hh>
+#include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <limits>
-#include <algorithm>
 #include <functional>
+#include <limits>
 #include <map>
+
+#include <dune/common/container/sllist.hh>
+#include <dune/common/parallel/indexset.hh>
+#include <dune/common/parallel/remoteindices.hh>
+#include <dune/common/stdstreams.hh>
+#include <dune/common/tuples.hh>
 
 #if HAVE_MPI
 namespace Dune
 {
+
   /** @addtogroup Common_Parallel
    *
    * @{
@@ -1225,7 +1226,9 @@ namespace Dune
     }
     return ret;
   }
-}
 
-#endif
-#endif
+} // namespace Dune
+
+#endif // #if HAVE_MPI
+
+#endif // #ifndef DUNE_INDICESSYNCER_HH

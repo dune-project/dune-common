@@ -1,0 +1,11 @@
+arraytest
+arraylisttest
+bitsetvectortest
+sllisttest
+
+Makefile
+Makefile.in
+
+*.swp
+
+.deps

@@ -4,10 +4,11 @@
 
 #if HAVE_MPI
 
-#include <dune/common/parallel/indicessyncer.hh>
-#include <dune/common/sllist.hh>
 #include <string>
 #include <iostream>
+
+#include <dune/common/container/sllist.hh>
+#include <dune/common/parallel/indicessyncer.hh>
 
 enum GridFlags {
   owner, overlap, border

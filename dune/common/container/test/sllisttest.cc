@@ -6,7 +6,7 @@
 
 #warning sllist is known to fail with some optimization flags (FS493)
 
-#include <dune/common/sllist.hh>
+#include <dune/common/container/sllist.hh>
 #include <dune/common/test/iteratortest.hh>
 #include <dune/common/poolallocator.hh>
 #include <iostream>

@@ -2,10 +2,7 @@
 # $Id$
 
 TESTPROGS = \
-    arraylisttest \
-    arraytest \
     bigunsignedinttest \
-    bitsetvectortest \
     check_fvector_size \
     conversiontest \
     dynmatrixtest \
@@ -70,7 +67,7 @@ compile_XFAIL:
 	  fi; \
 	done
 
-EXTRA_PROGRAMS = $(COMPILE_XFAIL_TESTS) sllisttest
+EXTRA_PROGRAMS = $(COMPILE_XFAIL_TESTS)
 
 TESTS = $(TESTPROGS) $(COMPILE_XFAIL)
 
@@ -96,8 +93,6 @@ pathtest_SOURCES = pathtest.cc
 
 parametertreetest_SOURCES = parametertreetest.cc
 
-bitsetvectortest_SOURCES = bitsetvectortest.cc
-
 nullptr_test_SOURCES = nullptr-test.cc nullptr-test2.cc
 nullptr_test_fail_SOURCES = nullptr-test.cc
 nullptr_test_fail_CPPFLAGS = $(AM_CPPFLAGS) -DFAIL
@@ -110,12 +105,6 @@ fassigntest_SOURCES = fassigntest.cc
 bigunsignedinttest_SOURCES=bigunsignedinttest.cc
 
 lrutest_SOURCES = lrutest.cc
-
-sllisttest_SOURCES = sllisttest.cc
-
-arraylisttest_SOURCES = arraylisttest.cc
-
-arraytest_SOURCES = arraytest.cc
 
 shared_ptrtest_config_SOURCES = shared_ptrtest.cc
 
