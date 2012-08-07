@@ -2,6 +2,7 @@ arraytest
 arraylisttest
 bitsetvectortest
 sllisttest
+staticarraytest
 
 Makefile
 Makefile.in
