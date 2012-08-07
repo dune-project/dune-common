@@ -1,5 +1,5 @@
 # -*- tab-width: 8; indent-tabs-mode: nil -*-
-TESTPROGS = arraytest  arraylisttest  bitsetvectortest  sllisttest  staticarraytest
+TESTPROGS = arraytest  arraylisttest  bitsetvectortest  dynamicarraytest  sllisttest
 
 # programs to run when "make check" is used
 TESTS = $(TESTPROGS)
@@ -13,8 +13,8 @@ arraylisttest_SOURCES = arraylisttest.cc
 
 bitsetvectortest_SOURCES = bitsetvectortest.cc
 
-sllisttest_SOURCES = sllisttest.cc
+dynamicarraytest_SOURCES = dynamicarraytest.cc
 
-staticarraytest_SOURCES = staticarraytest.cc
+sllisttest_SOURCES = sllisttest.cc
 
 include $(top_srcdir)/am/global-rules
