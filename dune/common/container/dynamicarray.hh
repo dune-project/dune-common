@@ -4,6 +4,7 @@
 #define DUNE_DYNAMICARRAY_HH
 
 #include <cassert>
+#include <cmath>
 #include <memory>
 
 #include <dune/common/exceptions.hh>
@@ -101,6 +102,80 @@ namespace Dune
     {
       return std::make_pair( current_size, desired_size );
     }
+  };
+
+
+
+  // AdaptiveCapacityManager
+  // -----------------------
+
+  template< class sz_t = std::size_t >
+  class AdaptiveCapacityManager
+  {
+    typedef AdaptiveCapacityManager< sz_t > This;
+
+  public:
+    typedef sz_t size_type;
+
+    template< class _sz_t >
+    struct rebind { typedef AdaptiveCapacityManager< _sz_t > other; };
+
+    AdaptiveCapacityManager ( const double factor = 1.125 )
+      : capacity_( 0 ), factor_( factor )
+    {
+      assert( factor_ >= 1.0 );
+    }
+
+    template< class _sz_t >
+    AdaptiveCapacityManager ( const AdaptiveCapacityManager< _sz_t > &other )
+      : capacity_( 0 ), factor_( other.factor_ )
+    {}
+
+    AdaptiveCapacityManager ( const This &other )
+      : capacity_( 0 ), factor_( other.factor_ )
+    {}
+
+    template< class _sz_t >
+    const This &operator= ( const AdaptiveCapacityManager< _sz_t > &other )
+    {
+      capacity_ = 0;
+      factor_ = other.factor_;
+      return *this;
+    }
+
+    const This &operator= ( const This &other )
+    {
+      capacity_ = 0;
+      factor_ = other.factor_;
+      return *this;
+    }
+
+    size_type capacity ( size_type current_size ) const { return capacity_; }
+
+    std::pair< size_type, size_type >
+    reserve ( size_type current_size, size_type desired_capacity )
+    {
+      const size_type current_capacity = capacity_;
+      if( capacity_ < desired_capacity )
+        capacity_  = (size_type) std::ceil( factor_ * desired_capacity );
+      return std::make_pair( current_capacity, capacity_ );
+    }
+
+    std::pair< size_type, size_type >
+    resize ( size_type current_size, size_type desired_size )
+    {
+      const size_type overEstimate = (size_type) std::ceil( factor_ * desired_size );
+      if( (desired_size <= capacity_) && (overEstimate >= capacity_) )
+        return std::make_pair( capacity_, capacity_ );
+
+      const size_type current_capacity = capacity_;
+      capacity_ = overEstimate;
+      return std::make_pair( current_capacity, capacity_ );
+    }
+
+  private:
+    size_type capacity_;
+    double factor_;
   };
 
 

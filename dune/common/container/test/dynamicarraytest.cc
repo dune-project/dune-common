@@ -15,6 +15,9 @@ int main ( int argc, char **argv )
   std::cout << "sizeof( Dune::DynamicArray< int, Dune::StaticCapacityManager<> > ) = "
             << sizeof( Dune::DynamicArray< int, Dune::StaticCapacityManager<> > ) << std::endl;
 
+  std::cout << "sizeof( Dune::DynamicArray< int, Dune::AdaptiveCapacityManager<> > ) = "
+            << sizeof( Dune::DynamicArray< int, Dune::AdaptiveCapacityManager<> > ) << std::endl;
+
   Dune::DynamicArray< int > a( 4 );
   for( int i = 0; i < 4; ++i )
     a[ i ] = i+20;
@@ -22,6 +25,10 @@ int main ( int argc, char **argv )
   Dune::DynamicArray< int, Dune::StaticCapacityManager<> > b( 4 );
   for( int i = 0; i < 4; ++i )
     b[ i ] = a[ i ] + 20;
+
+  Dune::DynamicArray< int, Dune::AdaptiveCapacityManager<> > c( 4 );
+  for( int i = 0; i < 4; ++i )
+    c[ i ] = b[ i ] + 20;
 
   return 0;
 }
