@@ -235,6 +235,7 @@ macro(dune_project)
   set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -DHAVE_MEMORY=${HAVE_MEMORY}")
 
   # set include path and link path for the current project.
+  include_directories("${CMAKE_BINARY_DIR}")
   include_directories("${CMAKE_SOURCE_DIR}")
   link_directories("${CMAKE_SOURCE_DIR}/lib")
   include_directories("${CMAKE_CURRENT_BINARY_DIR}")
