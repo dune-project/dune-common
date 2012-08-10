@@ -278,10 +278,12 @@ _check_deps()
   local report="ERROR"
   local requires="requires"
   local required="required"
+  local dependency="dependency"
   if test "x$mode" = "xSUGS"; then
     report="WARNING"
     requires="suggests"
     required="suggested"
+    dependency="suggestion"
   fi
   eval deps=\$${mode}_$module
   #initially remove leading space
@@ -305,7 +307,7 @@ _check_deps()
     deps=`echo ${deps//^[, ]}`
     dep=$(fix_variable_name $name)
     if ! check_modname $dep; then
-      echo "ERROR: invalid module name $name" >&2
+      echo "ERROR: invalid module name $name ($dependency of $module)" >&2
       exit 1
     fi
     if eval test x\$HAVE_$dep != "x"; then
