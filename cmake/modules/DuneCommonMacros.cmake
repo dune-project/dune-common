@@ -21,3 +21,5 @@ else(Fortran_Works)
   file(WRITE ${CMAKE_BINARY_DIR}/FC.h "")
 endif(Fortran_Works)
 
+find_package(GMP)
+find_package(Inkscape)

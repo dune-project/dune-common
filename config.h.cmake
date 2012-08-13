@@ -64,6 +64,10 @@
    deprecated MPI_CPPFLAGS) */
 #cmakedefine HAVE_MPI ENABLE_MPI
 
+/* Define if you have the GNU GMP library. The value should be ENABLE_GMP
+   to facilitate activating and deactivating GMP using compile flags. */
+#cmakedefine HAVE_GMP ENABLE_GMP
+
 /* Define to 1 if nullptr is supported */
 #cmakedefine HAVE_NULLPTR 1
 
