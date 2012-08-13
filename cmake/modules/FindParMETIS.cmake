@@ -32,7 +32,7 @@ foreach(_dir ${ParMETIS_DIR})
   list(APPEND _ParMETIS_INCLUDE_DIRS ${ParMETIS_DIR} ${ParMETIS_DIR}/include)
 endforeach(_dir ${ParMETIS_DIR})
 
-find_path(ParMETIS_INCLUDE_DIRS parmetis.h PATHS${_ParMETIS_INCLUDE_DIRS} NO_DEFAULT_PATH)
+find_path(ParMETIS_INCLUDE_DIRS parmetis.h PATHS ${_ParMETIS_INCLUDE_DIRS} NO_DEFAULT_PATH)
 
 if(NOT ParMETIS_INCLUDE_DIRS)
   find_path(ParMETIS_INCLUDE_DIRS parmetis.h)
