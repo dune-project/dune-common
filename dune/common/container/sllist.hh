@@ -63,14 +63,10 @@ namespace Dune
      */
     typedef typename A::template rebind<Element>::other Allocator;
 
-    /**
-     * @brief The mutable iterator of the list.
-     */
+    /** \brief The mutable iterator of the list */
     typedef SLListIterator<T,A> iterator;
 
-    /**
-     * @brief The mutable iterator of the list.
-     */
+    /** \brief type of constant iterator of the list */
     typedef SLListConstIterator<T,A> const_iterator;
 
     /**
