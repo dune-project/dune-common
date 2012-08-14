@@ -69,6 +69,7 @@ commoninclude_HEADERS = 			\
 	reservedvector.hh			\
 	shared_ptr.hh				\
 	singleton.hh				\
+	smallobject.hh				\
 	static_assert.hh			\
 	stdstreams.hh				\
 	timer.hh				\
