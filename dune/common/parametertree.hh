@@ -38,6 +38,8 @@ namespace Dune {
 
   public:
 
+    /** \brief storage for key lists
+     */
     typedef std::vector<std::string> KeyVector;
 
     /** \brief Create new empty ParameterTree
