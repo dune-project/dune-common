@@ -1,4 +1,4 @@
-
+if(NOT @DUNE_MOD_NAME@_FOUND)
 #import the target
 include("@CMAKE_BINARY_DIR@/@DUNE_MOD_NAME@-targets.cmake")
 
@@ -13,3 +13,4 @@ set(@DUNE_MOD_NAME@_CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@")
 set(@DUNE_MOD_NAME@_LIBRARIES "dunecommon")
 set(@DUNE_MOD_NAME@_SCRIPT_DIR "@CMAKE_SOURCE_DIR@/cmake/scripts")
 set(DOXYSTYLE_FILE "@CMAKE_SOURCE_DIR@/doc/doxygen/Doxystyle")
+endif(NOT @DUNE_MOD_NAME@_FOUND)
