@@ -465,7 +465,7 @@ M_DELIM
 ################## CMakeLists.txt ##################
 echo " - $PROJECT/CMakeLists.txt"
 cat> "$PROJECT/CMakeLists.txt" << M_DELIM
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.8)
 project($PROJECT CXX)
 
 # for this to work you will have to modify the CMAKE_MODULE_PATH
@@ -841,6 +841,7 @@ EOF
 
 echo "- $PROJECT/$PROJECT""-config.cmake.in"
 cat> "$PROJECT/$PROJECT""-config.cmake.in" <<EOF
+if(NOT @DUNE_MOD_NAME@_FOUND)
 #import the target
 #include("@CMAKE_BINARY_DIR@/@DUNE_MOD_NAME@-targets.cmake")
 
@@ -853,6 +854,7 @@ set(@DUNE_MOD_NAME@_CXX_FLAGS_MINSIZEREL "@CMAKE_CXX_FLAGS_MINSIZEREL@")
 set(@DUNE_MOD_NAME@_CXX_FLAGS_RELEASE "@CMAKE_CXX_FLAGS_RELEASE@")
 set(@DUNE_MOD_NAME@_CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@")
 set(@DUNE_MOD_NAME@_LIBRARIES "")
+endif(NOT @DUNE_MOD_NAME@_FOUND)
 EOF
 
 mkdir "$PROJECT/cmake"
@@ -861,6 +863,7 @@ mkdir "$PROJECT/cmake/pkg"
 
 echo "- $PROJECT/cmake/pkg/$PROJECT""-config.cmake.in"
 cat> "$PROJECT/cmake/pkg/$PROJECT""-config.cmake.in" <<EOF
+if(NOT @DUNE_MOD_NAME@_FOUND)
 #compute installation prefix relative to this file
 get_filename_component(_dir "\${CMAKE_CURRENT_LIST_FILE}" PATH)
 get_filename_component(_prefix "\${_dir}/../../.." ABSOLUTE)
@@ -875,6 +878,7 @@ set(@DUNE_MOD_NAME@_CXX_FLAGS_DEBUG "@CMAKE_CXX_FLAGS_DEBUG@")
 set(@DUNE_MOD_NAME@_CXX_FLAGS_MINSIZEREL "@CMAKE_CXX_FLAGS_MINSIZEREL@")
 set(@DUNE_MOD_NAME@_CXX_FLAGS_RELEASE "@CMAKE_CXX_FLAGS_RELEASE@")
 set(@DUNE_MOD_NAME@_CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@")
+endif(NOT @DUNE_MOD_NAME@_FOUND)
 EOF
 
 echo "- $PROJECT/$PROJECT""-version.cmake.in"

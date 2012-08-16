@@ -1,3 +1,4 @@
+if(NOT @DUNE_MOD_NAME@_FOUND)
 #compute installation prefix relative to this file
 get_filename_component(_dir "${CMAKE_CURRENT_LIST_FILE}" PATH)
 get_filename_component(_prefix "${_dir}/../../.." ABSOLUTE)
@@ -17,3 +18,4 @@ set(@DUNE_MOD_NAME@_LIBRARIES "dunecommon")
 set(@DUNE_MOD_NAME@_SCRIPT_DIR "${_prefix}/share/cmake/scripts")
 set(@DUNE_MOD_NAME@_SCRIPT_SOURCE_DIR "${_prefix}/share/cmake/scripts")
 set(DOXYSTYLE_FILE "${_prefix}/share/dune-common/doc/doxygen/Doxystyle")
+endif(NOT @DUNE_MOD_NAME@_FOUND)
