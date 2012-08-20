@@ -48,7 +48,6 @@ endif(MPI_FOUND)
 # adds MPI flags to the targets
 function(add_dune_mpi_flags)
   cmake_parse_arguments(ADD_MPI "SOURCE_ONLY" "" "" ${ARGN})
-  message("ADD_MPI_UNPARSED_ARGUMENTS=${ADD_MPI_UNPARSED_ARGUMENTS}")
   if(ADD_MPI_SOURCE_ONLY)
     set(_prefix SOURCE)
   else()
