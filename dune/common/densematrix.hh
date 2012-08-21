@@ -525,7 +525,7 @@ namespace Dune
       ConstIterator it = begin();
       typename remove_const< typename FieldTraits<value_type>::real_type >::type max = it->one_norm_real();
       for (it = it + 1; it != end(); ++it)
-        max = std::max(max, it->one_norm());
+        max = std::max(max, it->one_norm_real());
 
       return max;
     }
