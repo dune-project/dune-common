@@ -238,7 +238,10 @@ namespace Dune {
     typedef typename Traits::value_type value_type;
 
     //! export the type representing the field
-    typedef typename Traits::value_type field_type;
+    typedef typename FieldTraits< value_type >::field_type field_type;
+
+    //! export the type representing the real numbers
+    typedef typename FieldTraits< value_type >::real_type real_type;
 
     //! export the type representing the components
     typedef typename Traits::value_type block_type;
@@ -493,67 +496,62 @@ namespace Dune {
     //===== norms
 
     //! one norm (sum over absolute values of entries)
-    typename FieldTraits<value_type>::real_type one_norm() const {
-      typename FieldTraits<value_type>::real_type result( 0 );
-      for (size_type i=0; i<size(); i++)
-        result += std::abs((*this)[i]);
+    real_type one_norm () const
+    {
+      real_type result( 0 );
+      for( size_type i = 0; i < size(); ++i )
+        result += std::abs( (*this)[i] );
       return result;
     }
 
 
     //! simplified one norm (uses Manhattan norm for complex values)
-    typename FieldTraits<value_type>::real_type one_norm_real () const
+    real_type one_norm_real () const
     {
-      typename FieldTraits<value_type>::real_type result( 0 );
-      for (size_type i=0; i<size(); i++)
-        result += fvmeta::absreal((*this)[i]);
+      real_type result( 0 );
+      for( size_type i = 0; i < size(); ++i )
+        result += fvmeta::absreal( (*this)[i] );
+      return result;
+    }
+
+    //! square of two norm (sum over squared values of entries), need for block recursion
+    real_type two_norm2 () const
+    {
+      real_type result( 0 );
+      for( size_type i = 0; i < size(); ++i )
+        result += fvmeta::abs2( (*this)[i] );
       return result;
     }
 
     //! two norm sqrt(sum over squared values of entries)
-    typename FieldTraits<value_type>::real_type two_norm () const
-    {
-      typename FieldTraits<value_type>::real_type result( 0 );
-      for (size_type i=0; i<size(); i++)
-        result += fvmeta::abs2((*this)[i]);
-      return fvmeta::sqrt(result);
-    }
+    real_type two_norm () const { return fvmeta::sqrt( two_norm2() ); }
 
-    //! square of two norm (sum over squared values of entries), need for block recursion
-    typename FieldTraits<value_type>::real_type two_norm2 () const
+    //! infinity norm (maximum of absolute values of entries)
+    real_type infinity_norm () const
     {
-      typename FieldTraits<value_type>::real_type result( 0 );
-      for (size_type i=0; i<size(); i++)
-        result += fvmeta::abs2((*this)[i]);
+      real_type result( 0 );
+      if( size() > 0 )
+      {
+        ConstIterator it = begin();
+        result = std::abs( *it );
+        for( ++it; it != end(); ++it )
+          result = std::max( result, std::abs( *it ) );
+      }
       return result;
     }
 
-    //! infinity norm (maximum of absolute values of entries)
-    typename FieldTraits<value_type>::real_type infinity_norm () const
-    {
-      if (size() == 0)
-        return 0.0;
-
-      ConstIterator it = begin();
-      typename FieldTraits<value_type>::real_type max = std::abs(*it);
-      for (it = it + 1; it != end(); ++it)
-        max = std::max(max, std::abs(*it));
-
-      return max;
-    }
-
     //! simplified infinity norm (uses Manhattan norm for complex values)
-    typename FieldTraits<value_type>::real_type infinity_norm_real () const
+    real_type infinity_norm_real () const
     {
-      if (size() == 0)
-        return 0.0;
-
-      ConstIterator it = begin();
-      typename FieldTraits<value_type>::real_type max = fvmeta::absreal(*it);
-      for (it = it + 1; it != end(); ++it)
-        max = std::max(max, fvmeta::absreal(*it));
-
-      return max;
+      real_type result( 0 );
+      if( size() > 0 )
+      {
+        ConstIterator it = begin();
+        result = std::abs( *it );
+        for( ++it; it != end(); ++it )
+          result = std::max( result, fvmeta::absreal( *it ) );
+      }
+      return result;
     }
 
     //===== sizes
