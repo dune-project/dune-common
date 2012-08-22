@@ -70,6 +70,7 @@ commoninclude_HEADERS = 			\
 	shared_ptr.hh				\
 	singleton.hh				\
 	smallobject.hh				\
+	smartptr.hh				\
 	static_assert.hh			\
 	stdstreams.hh				\
 	timer.hh				\
