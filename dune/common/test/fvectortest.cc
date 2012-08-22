@@ -309,12 +309,48 @@ public:
   }
 };
 
+// Make sure that a vector with only NaN entries has norm NaN.
+// Prior to r6914, the infinity_norm would be zero; see also FS #1147.
+void
+test_nan()
+{
+  double mynan = 0.0/0.0;
+
+  Dune::FieldVector<double, 2> v2(mynan);
+  assert(std::isnan(v2.infinity_norm()));
+  assert(std::isnan(v2.one_norm()));
+  assert(std::isnan(v2.two_norm()));
+  assert(std::isnan(v2.two_norm2()));
+
+  Dune::FieldVector<double, 0> v0(mynan);
+  assert(0.0 == v0.infinity_norm());
+  assert(0.0 == v0.one_norm());
+  assert(0.0 == v0.two_norm());
+  assert(0.0 == v0.two_norm2());
+}
+
+void
+test_infinity_norms()
+{
+  std::complex<double> threefour(3.0, -4.0);
+  std::complex<double> eightsix(8.0, -6.0);
+
+  Dune::FieldVector<std::complex<double>, 2> v;
+  v[0] = threefour;
+  v[1] = eightsix;
+  assert(std::abs(v.infinity_norm()     -10.0) < 1e-10); // max(5,10)
+  assert(std::abs(v.infinity_norm_real()-14.0) < 1e-10); // max(7,14)
+}
+
 int main()
 {
   try {
     FieldVectorTest<int, 3>();
     FieldVectorTest<float, 3>();
     FieldVectorTest<double, 3>();
+
+    test_nan();
+    test_infinity_norms();
   } catch (Dune::Exception& e) {
     std::cerr << e << std::endl;
     return 1;

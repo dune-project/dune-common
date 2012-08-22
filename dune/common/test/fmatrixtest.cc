@@ -498,9 +498,50 @@ void test_invert ()
   A.invert();
 }
 
+// Make sure that a matrix with only NaN entries has norm NaN.
+// Prior to r6819, the infinity_norm would be zero; see also FS #1147.
+void
+test_nan()
+{
+  double mynan = 0.0/0.0;
+
+  Dune::FieldMatrix<double, 2, 2> m2(mynan);
+  assert(std::isnan(m2.infinity_norm()));
+  assert(std::isnan(m2.frobenius_norm()));
+  assert(std::isnan(m2.frobenius_norm2()));
+
+  Dune::FieldMatrix<double, 0, 2> m02(mynan);
+  assert(0.0 == m02.infinity_norm());
+  assert(0.0 == m02.frobenius_norm());
+  assert(0.0 == m02.frobenius_norm2());
+
+  Dune::FieldMatrix<double, 2, 0> m20(mynan);
+  assert(0.0 == m20.infinity_norm());
+  assert(0.0 == m20.frobenius_norm());
+  assert(0.0 == m20.frobenius_norm2());
+}
+
+// The computation of infinity_norm_real() was flawed from r6819 on
+// until r6915.
+void
+test_infinity_norms()
+{
+  std::complex<double> threefour(3.0, -4.0);
+  std::complex<double> eightsix(8.0, -6.0);
+
+  Dune::FieldMatrix<std::complex<double>, 2, 2> m;
+  m[0] = threefour;
+  m[1] = eightsix;
+  assert(std::abs(m.infinity_norm()     -20.0) < 1e-10); // max(5+5, 10+10)
+  assert(std::abs(m.infinity_norm_real()-28.0) < 1e-10); // max(7+7, 14+14)
+}
+
 int main()
 {
   try {
+    test_nan();
+    test_infinity_norms();
+
     // test 1 x 1 matrices
     test_matrix<float, 1, 1>();
     ScalarOperatorTest<float>();
