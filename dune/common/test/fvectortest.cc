@@ -17,6 +17,13 @@
 using Dune::FieldVector;
 using std::complex;
 
+
+template< class rt > struct Epsilon;
+
+template<> struct Epsilon< int > { static int value () { return 0; } };
+template<> struct Epsilon< float > { static float value () { return 1e-6f; } };
+template<> struct Epsilon< double > { static double value () { return 1e-12; } };
+
 template<class ft, class rt, int d>
 struct FieldVectorMainTest
 {
@@ -85,10 +92,10 @@ struct FieldVectorMainTest
 
     // test istream operator
     std::stringstream s;
-    for (int i=0; i<d; i++)
+    for( int i = 0; i < d; ++i )
     {
       s << i << " ";
-      v[i] = i;
+      v[i] = rt( i );
     }
     s >> w;
     assert(v == w);
@@ -209,7 +216,7 @@ struct DotProductTest
 {
   DotProductTest() {
     typedef std::complex<rt> ct;
-    const rt myEps(1e-6);
+    const rt myEps = Epsilon< rt >::value();
 
     dune_static_assert(
       ( Dune::is_same< typename Dune::FieldTraits<rt>::real_type, rt>::value ),
