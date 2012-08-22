@@ -10,6 +10,8 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
+#include <cassert>
+#include <complex>
 
 using namespace Dune;
 

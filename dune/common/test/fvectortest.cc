@@ -11,6 +11,7 @@
 #include <iostream>
 #include <complex>
 #include <typeinfo>
+#include <cassert>
 
 
 using Dune::FieldVector;
