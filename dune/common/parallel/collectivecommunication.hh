@@ -3,11 +3,11 @@
 #ifndef DUNE_COLLECTIVECOMMUNICATION_HH
 #define DUNE_COLLECTIVECOMMUNICATION_HH
 
-#include <iostream>
-#include <complex>
 #include <algorithm>
+#include <complex>
+#include <iostream>
 
-#include "exceptions.hh"
+#include <dune/common/exceptions.hh>
 
 /*! \defgroup ParallelCommunication Parallel Communication
    \ingroup Common

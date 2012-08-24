@@ -1,6 +1,7 @@
 # $Id$
 
-MPITESTS = indicestest indexsettest syncertest selectiontest
+MPITESTS = mpicollectivecommunication mpiguardtest mpihelpertest mpihelpertest2 \
+           indicestest indexsettest syncertest selectiontest
 
 # which tests where program to build and run are equal
 NORMALTESTS =
@@ -12,6 +13,27 @@ TESTS = $(NORMALTESTS) $(MPITESTS)
 check_PROGRAMS = $(NORMALTESTS) $(MPITESTS)
 
 # define the programs
+#
+mpihelpertest_SOURCES = mpihelpertest.cc
+mpihelpertest_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)
+mpihelpertest_LDADD = $(DUNEMPILIBS) $(LDADD)
+mpihelpertest_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
+
+mpihelpertest2_SOURCES = mpihelpertest.cc
+mpihelpertest2_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS) -DMPIHELPER_PREINITIALIZE
+mpihelpertest2_LDADD = $(DUNEMPILIBS) $(LDADD)
+mpihelpertest2_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
+
+mpicollectivecommunication_SOURCES = mpicollectivecommunication.cc
+mpicollectivecommunication_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)
+mpicollectivecommunication_LDADD = $(DUNEMPILIBS) $(LDADD)
+mpicollectivecommunication_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
+
+mpiguardtest_SOURCES = mpiguardtest.cc
+mpiguardtest_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)
+mpiguardtest_LDADD = $(DUNEMPILIBS) $(LDADD)
+mpiguardtest_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
+
 indicestest_SOURCES = indicestest.cc
 indicestest_CPPFLAGS = $(AM_CPPFLAGS)		\
 	$(DUNEMPICPPFLAGS)

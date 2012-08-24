@@ -13,11 +13,11 @@
 #include <algorithm>
 #include <functional>
 
-#include "exceptions.hh"
-#include "collectivecommunication.hh"
-#include "binaryfunctions.hh"
-#include "shared_ptr.hh"
-#include "mpitraits.hh"
+#include <dune/common/exceptions.hh>
+#include <dune/common/binaryfunctions.hh>
+#include <dune/common/parallel/collectivecommunication.hh>
+#include <dune/common/parallel/mpitraits.hh>
+#include <dune/common/shared_ptr.hh>
 
 #if HAVE_MPI
 // MPI header
@@ -300,7 +300,9 @@ namespace Dune
     int me;
     int procs;
   };
-} // namespace dune
 
-#endif
-#endif
+} // namespace Dune
+
+#endif // #if HAVE_MPI
+
+#endif // #ifndef DUNE_MPICOLLECTIVECOMMUNICATION_HH

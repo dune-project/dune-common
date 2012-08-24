@@ -11,10 +11,10 @@
 #ifndef DUNE_COMMON_MPIGUARD_HH
 #define DUNE_COMMON_MPIGUARD_HH
 
-#include <dune/common/mpihelper.hh>
-#include <dune/common/collectivecommunication.hh>
-#include <dune/common/mpicollectivecommunication.hh>
 #include <dune/common/exceptions.hh>
+#include <dune/common/parallel/collectivecommunication.hh>
+#include <dune/common/parallel/mpihelper.hh>
+#include <dune/common/parallel/mpicollectivecommunication.hh>
 
 namespace Dune
 {
@@ -209,6 +209,6 @@ namespace Dune
     }
   };
 
-}
+} // namespace Dune
 
 #endif // DUNE_COMMON_MPIGUARD_HH

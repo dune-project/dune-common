@@ -22,7 +22,6 @@ commoninclude_HEADERS = 			\
 	bigunsignedint.hh			\
 	binaryfunctions.hh			\
 	classname.hh				\
-	collectivecommunication.hh		\
 	debugstream.hh				\
 	deprecated.hh				\
 	densematrix.hh				\
@@ -54,10 +53,6 @@ commoninclude_HEADERS = 			\
 	math.hh					\
 	matvectraits.hh \
 	misc.hh					\
-	mpicollectivecommunication.hh		\
-	mpiguard.hh				\
-	mpihelper.hh				\
-	mpitraits.hh				\
 	nullptr.hh				\
 	parametertree.hh                        \
 	parametertreeparser.hh			\

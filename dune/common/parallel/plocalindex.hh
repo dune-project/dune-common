@@ -5,11 +5,11 @@
 #ifndef DUNE_PLOCALINDEX_HH
 #define DUNE_PLOCALINDEX_HH
 
-#include "localindex.hh"
-#include "indexset.hh"
 #include <iostream>
 
-#include <dune/common/mpitraits.hh>
+#include <dune/common/parallel/indexset.hh>
+#include <dune/common/parallel/localindex.hh>
+#include <dune/common/parallel/mpitraits.hh>
 
 namespace Dune
 {
@@ -315,4 +315,4 @@ namespace Dune
   /** @} */
 } // namespace Dune
 
-#endif
+#endif // #ifndef DUNE_PLOCALINDEX_HH

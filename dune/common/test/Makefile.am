@@ -15,10 +15,6 @@ TESTPROGS = \
     iteratorfacadetest \
     iteratorfacadetest2 \
     lrutest \
-    mpicollectivecommunication \
-    mpiguardtest \
-    mpihelpertest \
-    mpihelpertest2 \
     nullptr-test \
     pathtest \
     parametertreetest \
@@ -154,26 +150,6 @@ poolallocatortest_SOURCES = poolallocatortest.cc
 enumsettest_SOURCES=enumsettest.cc
 
 gcdlcmtest_SOURCES = gcdlcmtest.cc
-
-mpihelpertest_SOURCES = mpihelpertest.cc
-mpihelpertest_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)
-mpihelpertest_LDADD = $(DUNEMPILIBS) $(LDADD)
-mpihelpertest_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
-
-mpihelpertest2_SOURCES = mpihelpertest.cc
-mpihelpertest2_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS) -DMPIHELPER_PREINITIALIZE
-mpihelpertest2_LDADD = $(DUNEMPILIBS) $(LDADD)
-mpihelpertest2_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
-
-mpicollectivecommunication_SOURCES = mpicollectivecommunication.cc
-mpicollectivecommunication_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)
-mpicollectivecommunication_LDADD = $(DUNEMPILIBS) $(LDADD)
-mpicollectivecommunication_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
-
-mpiguardtest_SOURCES = mpiguardtest.cc
-mpiguardtest_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)
-mpiguardtest_LDADD = $(DUNEMPILIBS) $(LDADD)
-mpiguardtest_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
 
 singletontest_SOURCES = singletontest.cc
 

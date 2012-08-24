@@ -5,13 +5,15 @@
 #define DUNE_MPIHELPER
 
 #include <cassert>
-#include "collectivecommunication.hh"
+
+#include <dune/common/parallel/collectivecommunication.hh>
+#include <dune/common/parallel/mpicollectivecommunication.hh>
+
 #if HAVE_MPI
 #include "mpi.h"
-#include "mpicollectivecommunication.hh"
-#endif
+#endif // #if HAVE_MPI
 
-#include "stdstreams.hh"
+#include <dune/common/stdstreams.hh>
 
 namespace Dune
 {
@@ -286,5 +288,6 @@ namespace Dune
 
 #endif
 
-} // end namespace Dune
-#endif
+} // namespace Dune
+
+#endif // #ifndef DUNE_MPIHELPER

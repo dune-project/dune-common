@@ -4,21 +4,23 @@
 #ifndef DUNE_REMOTEINDICES_HH
 #define DUNE_REMOTEINDICES_HH
 
-#include "indexset.hh"
-#include <dune/common/exceptions.hh>
-#include "plocalindex.hh"
-#include <dune/common/poolallocator.hh>
-#include <dune/common/container/sllist.hh>
-#include <dune/common/static_assert.hh>
-#include <dune/common/stdstreams.hh>
+#include <algorithm>
+#include <iostream>
+#include <iterator>
 #include <map>
 #include <set>
 #include <utility>
-#include <iostream>
-#include <algorithm>
-#include <iterator>
+
+#include <dune/common/exceptions.hh>
+#include <dune/common/container/sllist.hh>
+#include <dune/common/parallel/indexset.hh>
+#include <dune/common/parallel/mpitraits.hh>
+#include <dune/common/parallel/plocalindex.hh>
+#include <dune/common/poolallocator.hh>
+#include <dune/common/static_assert.hh>
+#include <dune/common/stdstreams.hh>
+
 #if HAVE_MPI
-#include <dune/common/mpitraits.hh>
 #include "mpi.h"
 
 namespace Dune
@@ -1890,8 +1892,11 @@ namespace Dune
     }
     return os;
   }
-  /** @} */
-}
 
-#endif
-#endif
+  /** @} */
+
+} // namespace Dune
+
+#endif // #if HAVE_MPI
+
+#endif // #ifndef DUNE_REMOTEINDICES_HH

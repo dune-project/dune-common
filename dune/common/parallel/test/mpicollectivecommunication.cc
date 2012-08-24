@@ -4,13 +4,11 @@
 #include "config.h"
 #endif
 
-#include <dune/common/mpihelper.hh>
-
-#if HAVE_MPI
-#include <dune/common/mpicollectivecommunication.hh>
-#endif
-
 #include <iostream>
+
+#include <dune/common/parallel/mpihelper.hh>
+#include <dune/common/parallel/mpicollectivecommunication.hh>
+
 int main(int argc, char** argv)
 {
   typedef Dune::MPIHelper Helper;
