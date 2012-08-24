@@ -1,7 +1,13 @@
-Makefile.in
 Makefile
-.deps
+Makefile.in
+
+mpicollectivecommunication
+mpiguardtest
+mpihelpertest
+mpihelpertest2
 indexsettest
 indicestest
 selectiontest
 syncertest
+
+.deps
