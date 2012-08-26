@@ -295,6 +295,23 @@ namespace Dune
                            (Generic_MPI_Op<Type, BinaryFunction>::get()),communicator);
     }
 
+    /** \copydoc CollectiveCommunication::scan(T *in,T *out,int len) const */
+    template< class BinaryFunction, class T >
+    int scan ( T *in, T *out, int len ) const
+    {
+      return MPI_Scan( in, out, len, MPITraits< T >::getType(),
+                       (Generic_MPI_Op< T, BinaryFunction >::get()), communicator );
+    }
+
+    /** \copydoc CollectiveCommunication::partialSum(T &in) const */
+    template< class T >
+    T partialSum ( T &in ) const
+    {
+      T out;
+      scan< std::plus< T > >( &in, &out, 1 );
+      return out;
+    }
+
   private:
     MPI_Comm communicator;
     int me;

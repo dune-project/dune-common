@@ -252,20 +252,51 @@ namespace Dune
      * in every process.
      *
      * The template parameter BinaryFunction is the type of
-     * the binary function to use for the computation
+     * the binary function to use for the computation.
      *
      * @param in The array to compute on.
      * @param out The array to store the results in.
      * @param len The number of components in the array
      */
     template<typename BinaryFunction, typename Type>
-    void allreduce(Type* in, Type* out, int len) const
+    int allreduce(Type* in, Type* out, int len) const
     {
       std::copy(in, in+len, out);
-      return;
+      return 0;
     }
 
-  };
-}
+    /** \brief perform a partial reduction of processes 0, ..., rank
+     *
+     *  The template parameter BinaryFunction gives the type of the reduction.
+     *
+     *  Note: scan and allreduce are very similar. The only difference is that
+     *        scan only returns the reduction of the arguments over processes
+     *        0, ..., rank instead of over all processes.
+     *
+     *  \param[in]   in   array of input arguments
+     *  \param[out]  out  array to store the output in
+     *  \param[in]   len  number of elements in each array
+     */
+    template< class BinaryFunction, class T >
+    int scan ( T *in, T *out, int len ) const
+    {
+      std::copy( in, in+len, out );
+      return 0;
+    }
 
-#endif
+    /** \brief compute the sum of the argument over processes 0, ..., rank
+     *
+     *  Note: This function assumes that type T has an operator+
+     *
+     * \param[in]  in  argument for this process
+     */
+    template< class T >
+    T partialSum ( T &in ) const
+    {
+      return in;
+    }
+  };
+
+} // namespace Dune
+
+#endif // #ifndef DUNE_COLLECTIVECOMMUNICATION_HH
