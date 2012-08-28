@@ -399,10 +399,10 @@ run_default_configure () {
         PARAMS="$PARAMS \"--with-$name=$path\""
       fi
       if test -d "$path/cmake/modules/"; then
-	  CMAKE_MODULE_PATH="$CMAKE_MODULE_PATH:$path/cmake/modules/"
+	  CMAKE_MODULE_PATH="$CMAKE_MODULE_PATH;$path/cmake/modules/"
       fi
       if test -d "$path/share/$name/cmake/modules/"; then
-	  CMAKE_MODULE_PATH="$CMAKE_MODULE_PATH:$path/share/$name/cmake/modules/"
+	  CMAKE_MODULE_PATH="$CMAKE_MODULE_PATH;$path/share/$name/cmake/modules/"
       fi
       echo name="$name"
       if test "x$USE_CMAKE" = "xyes"; then
@@ -413,7 +413,7 @@ run_default_configure () {
       fi
     done
 
-    CMAKE_MODULE_PATH=`echo $CMAKE_MODULE_PATH| sed "s/^://"`
+    CMAKE_MODULE_PATH=`echo $CMAKE_MODULE_PATH| sed "s/^;//"`
     echo "CMAKE_MODULE_PATH=$CMAKE_MODULE_PATH"
     echo "CMAKE_PARAMS=$CMAKE_PARAMS"
 
@@ -427,8 +427,8 @@ run_default_configure () {
       SRCDIR="$PWD"
       cd "$BUILDDIR"
       echo `pwd`
-      echo "cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=$CMAKE_MODULE_PATH $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR"
-      eval cmake "-DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=$CMAKE_MODULE_PATH $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR"
+      echo "cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR"
+      eval cmake "-DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR"
     else
       echo ./configure "$PARAMS"
       # create build directory of requested
