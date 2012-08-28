@@ -21,7 +21,6 @@ TESTPROGS = \
     poolallocatortest \
     shared_ptrtest_config \
     shared_ptrtest_dune \
-    singletontest \
     static_assert_test \
     streamtest \
     testfassign1 \
@@ -150,8 +149,6 @@ poolallocatortest_SOURCES = poolallocatortest.cc
 enumsettest_SOURCES=enumsettest.cc
 
 gcdlcmtest_SOURCES = gcdlcmtest.cc
-
-singletontest_SOURCES = singletontest.cc
 
 utilitytest_SOURCES = utilitytest.cc
 

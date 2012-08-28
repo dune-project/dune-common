@@ -25,7 +25,6 @@ timing_xpr
 timing_old
 timing_flt
 bigunsignedinttest
-singletontest
 utilitytest
 testfassign_fail1
 testfassign_fail2
