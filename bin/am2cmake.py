@@ -155,27 +155,39 @@ class target_flags:
         else:
             comment_lines(tokens)
 
-def parse_dir(stri,loc,tokens):
-    #import pdb;    pdb.set_trace()
-    #print "parse_dir"
-    #print tokens
-    tokens[0][1]=''.join(tokens[0][1:])
-    #print range(2, len(tokens[0]))
-    if len(tokens[0]) >=2:
-        for i in range(2, len(tokens[0])):
-            tokens[0].pop()
+class dir_parser:
+    def __init__(self):
+        self.has_doxygen=False
+    def parse_dir(self,stri,loc,tokens):
+        #import pdb;    pdb.set_trace()
+        #print "parse_dir"
+        #print tokens
+        tokens[0][1]=''.join(tokens[0][1:])
+        if tokens[0][1].find('doxygen')>-1:
+            self.has_doxygen=True
+        #print range(2, len(tokens[0]))
+        if len(tokens[0]) >=2:
+            for i in range(2, len(tokens[0])):
+                tokens[0].pop()
     #print tokens
     #print "str="+stri+" |"
     #print "loc="+str(loc)+" |"
     #print tokens[0][1]
     #for i in range(0,len(tokens[0])):
-    tokens[0][1]=re.sub(r'\$\{([a-z]+dir)\}(\S*)\)', (lambda m: "${"+repl_gnudir(m.group(1))+"}"+m.group(2)+')'), tokens[0][1])
+    
+            tokens[0][1]=re.sub(r'\$\{([a-z]+dir)\}(\S*)\)', (lambda m: "${"+repl_gnudir(m.group(1))+"}"+m.group(2)+')'), tokens[0][1])
     #print tokens[0][1]
-    tokens[0][1]=tokens[0][1].replace('${CMAKE_INSTALL_DATADIR}/doc',
-                                      '${CMAKE_INSTALL_DOCDIR}')
-    tokens[0][1]=tokens[0][1].replace('${CMAKE_INSTALL_DATAROOTDIR}/doc',
-                                      '${CMAKE_INSTALL_DOCDIR}')
+            tokens[0][1]=tokens[0][1].replace('${CMAKE_INSTALL_DATADIR}/doc',
+                                                  '${CMAKE_INSTALL_DOCDIR}')
+            tokens[0][1]=tokens[0][1].replace('${CMAKE_INSTALL_DATAROOTDIR}/doc',
+                                                  '${CMAKE_INSTALL_DOCDIR}')
     #print tokens
+
+    def process(self):
+        if self.has_doxygen:
+            return '\n\n# Create and install doxygen documentation\nadd_doxygen_target()\n'
+        else:
+            return ''
 
 def parse_include(tokens):
     tokens[0][0]='# include not needed for CMake\n# '+tokens[0][0]
@@ -310,7 +322,8 @@ def am_2_cmake_string(amstring):
     dir_name = Regex("[a-z0-9_-]+dir")#Word(srange("[a-z0-9_-]"))
     dirAssign=Group(dir_name+Suppress(opt_ws)+ equals + opt_ws + Optional(value))
     dirAssign.setParseAction(parse_assign)
-    dirAssign.addParseAction(parse_dir)
+    dirParser = dir_parser()
+    dirAssign.addParseAction(dirParser.parse_dir)
     #dirAssign.setDebug()
 
     lowercase_name_= Regex("[a-z0-9_-]+_")
@@ -427,6 +440,7 @@ def am_2_cmake_string(amstring):
     s+=tests.process()
     s+=fail_tests.process()
     s+=compile_fail_tests.process()
+    s+=dirParser.process()
     if tests.found or compile_fail_tests.found:
         s+=''.join(['\n\n# We do not want want to build the tests during make all\n',
                     '# but just build them on demand\n',
@@ -778,11 +792,13 @@ def am_2_cmake(amfile, cmakefile, module_root=False):
         dune_module_path = os.path.join(dirname, 'dune.module')
         module_file = open(dune_module_path, 'r')
         lines = module_file.readlines()
-        m=re.match('.*Module:[ \t]*(\S+)[ \t]*\n.*', ''.join(lines))
+        print ''.join(lines)
+        m=re.search(r'.*Module:[ \t]*(\S+)[ \t]*[\n]?.*', ''.join(lines))
         if not m:
             raise Exception("Could not find module name in dune.module file.")
         module_file.close()
         module_name=m.group(1)
+        print 'Module name is %s'% module_name
         output.write(init_cmake_module(module_name))
         create_cmake_dirs_and_file(dirname, module_name)
     input = open(amfile, 'r')
