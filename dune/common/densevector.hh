@@ -531,19 +531,29 @@ namespace Dune {
     //! infinity norm (maximum of absolute values of entries)
     typename FieldTraits<value_type>::real_type infinity_norm () const
     {
-      typename FieldTraits<value_type>::real_type result( 0 );
-      for (size_type i=0; i<size(); i++)
-        result = std::max(result, std::abs((*this)[i]));
-      return result;
+      if (size() == 0)
+        return 0.0;
+
+      ConstIterator it = begin();
+      typename FieldTraits<value_type>::real_type max = std::abs(*it);
+      for (it = it + 1; it != end(); ++it)
+        max = std::max(max, std::abs(*it));
+
+      return max;
     }
 
     //! simplified infinity norm (uses Manhattan norm for complex values)
     typename FieldTraits<value_type>::real_type infinity_norm_real () const
     {
-      typename FieldTraits<value_type>::real_type result( 0 );
-      for (size_type i=0; i<size(); i++)
-        result = std::max(result, fvmeta::absreal((*this)[i]));
-      return result;
+      if (size() == 0)
+        return 0.0;
+
+      ConstIterator it = begin();
+      typename FieldTraits<value_type>::real_type max = fvmeta::absreal(*it);
+      for (it = it + 1; it != end(); ++it)
+        max = std::max(max, fvmeta::absreal(*it));
+
+      return max;
     }
 
     //===== sizes
