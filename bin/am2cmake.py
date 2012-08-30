@@ -117,7 +117,9 @@ class installer:
                 var=""+i+'_'+self.name
             else:
                 var=self.name
-            if not self.name.startswith('noinst'):
+            if not (var.strip().startswith('noinst_') 
+                    or var.strip().startswith('check_') 
+                    or var.strip().startswith('dist_noinst_')):
                 s= s+"\ninstall("+self.install_prefix+" \"${"+var+"}\" DESTINATION ${"+install_dir+"})"
         return s
 
