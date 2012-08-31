@@ -61,6 +61,8 @@ AC_DEFUN([DUNE_COMMON_CHECKS],
   AC_REQUIRE([AC_TYPE_SIZE_T])
   AC_REQUIRE([AC_STRUCT_TM])
 
+  dnl check for library functions
+
   AC_LANG_PUSH([C++])
   AC_CHECK_LIB([m], [pow])
   AC_CHECK_FUNCS([sqrt strchr])
