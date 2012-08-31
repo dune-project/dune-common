@@ -60,9 +60,6 @@ AC_DEFUN([DUNE_COMMON_CHECKS],
   AC_REQUIRE([AC_STRUCT_TM])
 
   dnl check for library functions
-  AC_REQUIRE([AC_FUNC_MALLOC])
-  #  doesn't work, but we don't need it currently
-  #  AC_REQUIRE([AC_FUNC_REALLOC])
 
   AC_LANG_PUSH([C++])
   AC_CHECK_LIB([m], [pow])
