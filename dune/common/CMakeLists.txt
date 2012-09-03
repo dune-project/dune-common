@@ -2,6 +2,12 @@ add_subdirectory("parallel")
 add_subdirectory("test" EXCLUDE_FROM_ALL)
 
 #build the library dunecommon
+if(LAPACK_FOUND)
+  set(_additional_libs ${LAPACK_LIBRARIES})
+elseif(BLAS_FOUND)
+  set(_additional_libs ${BLAS_LIBRARIES})
+endif(LAPACK_FOUND)
+
 dune_add_library("dunecommon"
   exceptions.cc
   fmatrixev.cc
@@ -9,13 +15,8 @@ dune_add_library("dunecommon"
   parametertree.cc
   parametertreeparser.cc
   path.cc
-  stdstreams.cc)
-if(LAPACK_FOUND)
-  message("LAPACKLIBRARIES=${LAPACK_LIBRARIES}")
-  dune_target_link_libraries("dunecommon" ${LAPACK_LIBRARIES})
-elseif(BLAS_FOUND)
-  dune_target_link_libraries("dunecommon" ${BLAS_LIBRARIES})
-endif(LAPACK_FOUND)
+  stdstreams.cc
+  ADD_LIBS "${_additional_libs}")
 
 #install headers
 install(FILES
