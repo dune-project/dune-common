@@ -313,7 +313,7 @@ echo "writing initial files:"
 # we need the module with _ instead of - to not confuse automake
 fix_and_assign CMODULE $MODULE
 NAME=`echo $PROJECT | sed -e 's/dune[_-]//' | tr '-' '_'`
-
+UNAME=`echo $PROJECT | tr '-' '_' | sed 's/\(.*\)/\U\1/'`
 ################## CONFIGURE.AC ##################
 echo "- $PROJECT/configure.ac"
 cat > "$PROJECT/configure.ac" <<C_DELIM
@@ -465,11 +465,11 @@ M_DELIM
 ################## CMakeLists.txt ##################
 echo " - $PROJECT/CMakeLists.txt"
 cat> "$PROJECT/CMakeLists.txt" << M_DELIM
-cmake_minimum_required(VERSION 2.8.8)
+cmake_minimum_required(VERSION 2.8.9)
 project($PROJECT CXX)
 
 # for this to work you will have to modify the CMAKE_MODULE_PATH
-#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules")
+set(CMAKE_MODULE_PATH \${CMAKE_MODULE_PATH} "\${CMAKE_SOURCE_DIR}/cmake/modules")
 
 #include the dune macros
 include(DuneMacros)
@@ -832,6 +832,18 @@ cat> "$PROJECT/config.h.cmake" <<EOF
 #define PACKAGE_VERSION "@DUNE_MOD_VERSION@"
 
 /* end private */
+
+/* Define to the version of $PROJECT */
+#define ${UNAME}_VERSION "@${UNAME}_VERSION@"
+
+/* Define to the major version of $PROJECT */
+#define ${UNAME}_VERSION_MAJOR @${UNAME}_VERSION_MAJOR@
+
+/* Define to the minor version of $PROJECT */
+#define ${UNAME}_VERSION_MINOR @${UNAME}_VERSION_MINOR@
+
+/* Define to the revision of $PROJECT */
+#define ${UNAME}_VERSION_REVISION @${UNAME}_VERSION_REVISION@
 
 /* end $NAME
    Everything below here will be overwritten
