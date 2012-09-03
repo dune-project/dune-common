@@ -15,6 +15,7 @@ set(VERSION ${DUNE_MOD_VERSION})
 set(CC ${CMAKE_C_COMPILER})
 set(CXX "${CMAKE_CXX_COMPILER} ${CXX_STD0X_FLAGS}")
 
+set(REQUIRES ${DUNE_DEPENDS})
 #create pkg-config file
 configure_file(
   ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}.pc.in
