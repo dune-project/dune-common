@@ -718,8 +718,8 @@ while test $# -gt 0; do
 done
 
 if test "x$USE_CMAKE" = "xyes" && test -z "$DUNE_BUILDDIR"; then
-  echo "No build directory provided. Defaulting to the sub directory cmake-build"
-  export DUNE_BUILDDIR=cmake-build
+  echo "No build directory provided. Defaulting to the sub directory build-cmake"
+  export DUNE_BUILDDIR=build-cmake
 fi
 echo "USE_CMAKE=$USE_CMAKE DUNE_BUILDDIR=$DUNE_BUILDDIR"
 # we assume there should be a command...
