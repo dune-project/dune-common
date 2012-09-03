@@ -185,7 +185,7 @@ endmacro(dune_module_information)
 
 macro(dune_process_dependency_leafs modules versions is_required next_level_deps
     next_level_sugs)
-  message("dune_process_dependency_leafs ${modules} ${versions} ${is_required} ${next_level_deps} ${next_level_sugs}")
+  message("dune_process_dependency_leafs modules=${modules}| versions=${versions} is_required=${is_required}| ${next_level_deps} ${next_level_sugs}")
   # modules is not a real variable, make it one
   set(mmodules ${modules})
   list(LENGTH mmodules mlength)
@@ -196,12 +196,12 @@ macro(dune_process_dependency_leafs modules versions is_required next_level_deps
       find_package(${_mod} ${REQUIRED})
       set(${_mod}_SEARCHED ON)
       message("${_mod}_SEARCHED=${${_mod}_SEARCHED}")
-      if(is_required)
+      if(NOT "${is_required}" STREQUAL "")
 	set(${_mod}_REQUIRED ON)
 	set(${next_level_deps} ${${_mod}_DEPENDS} ${${next_level_deps}})
-      else(is_required)
+      else(NOT "${is_required}" STREQUAL "")
 	set(${next_level_sugs} ${${_mod}_DEPENDS} ${${next_level_sugs}})
-      endif(is_required)
+      endif(NOT "${is_required}" STREQUAL "")
       set(${next_level_sugs} ${${_mod}_SUGGESTS} ${${next_level_sugs}})
     endforeach(i RANGE 0 ${length})
   endif(mlength GREATER 0)
@@ -279,7 +279,7 @@ macro(dune_create_dependency_tree)
     endforeach(_mod ${SUGGESTS_MODULE})
     message("global_depends=${global_depends}")
     message("global_suggests=${global_suggests}")
-    message("DEPENS_MODULE=${DEPENDS_MODULE} DEPENDS_VERSION=${DEPENDS_VERSIONS}
+    message("DEPENDS_MODULE=${DEPENDS_MODULE} DEPENDS_VERSION=${DEPENDS_VERSIONS}
       SUGGESTS_MODULE=${SUGGESTS_MODULE} SUGGESTS_VERSION=${SUGGESTS_VERSIONS}")
     dune_create_dependency_leafs("${DEPENDS_MODULE}" "${DEPENDS_VERSIONS}"
       "${SUGGESTS_MODULE}" "${SUGGESTS_VERSIONS}" global_depends
@@ -673,15 +673,21 @@ macro(dune_add_library basename)
   endif(DUNE_BUILD_BOTH_LIBS)
 
   if(NOT DUNE_LIB_NO_EXPORT)
-  # install targets to use the libraries in other modules.
-  install(TARGETS ${_created_libs}
-    EXPORT ${DUNE_MOD_NAME}-targets DESTINATION lib)
-  install(EXPORT ${DUNE_MOD_NAME}-targets
-    DESTINATION lib/cmake)
+    if(NOT _MODULE_EXPORT_USED)
+      set(_MODULE_EXPORT_USED ON)
+      set(_append "")
+    else(NOT _MODULE_EXPORT_USED)
+      set(_append APPEND)
+    endif(NOT _MODULE_EXPORT_USED)
+    # install targets to use the libraries in other modules.
+    install(TARGETS ${_created_libs}
+      EXPORT ${DUNE_MOD_NAME}-targets DESTINATION lib)
+    install(EXPORT ${DUNE_MOD_NAME}-targets
+      DESTINATION lib/cmake)
 
-  # export libraries for use in build tree
-  export(TARGETS ${_created_libs}
-    FILE ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-targets.cmake)
+    # export libraries for use in build tree
+    export(TARGETS ${_created_libs} ${_append}
+      FILE ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-targets.cmake)
   endif(NOT DUNE_LIB_NO_EXPORT)
 endmacro(dune_add_library basename sources)
 
