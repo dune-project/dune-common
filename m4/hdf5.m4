@@ -84,7 +84,7 @@ AC_DEFUN([DUNE_PATH_HDF5],[
    [HAVE_HDF5=1],
    [HAVE_HDF5=0])
 	
- # Just fotr the configure check, -L has to go into LIBS in the end
+ # Just for the configure check.  In the end, -L has to go into LIBS.
  LDFLAGS="$LDFLAGS $_dune_hdf5_libpath"
  # test for lib
  if test x$HAVE_HDF5 = x1 ; then
