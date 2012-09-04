@@ -58,7 +58,9 @@ AS_VAR_SET([$1], ["$_dune_va_tmp"$2])])
 # LIBS The libraries to add.
 #
 # All arguments allow shell substitutions.  Each argument should be suitable
-# for use inside shell double quotes.
+# for use inside shell double quotes.  The flags given as argument here should
+# not include the flags of dependend libraries that already call
+# DUNE_ADD_ALL_PKG themselves; e.g. HDF5 should not add the DUNEMPI* flags.
 #
 # configure/shell variables:
 #   ALL_PKG_CPPFLAGS

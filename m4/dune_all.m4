@@ -32,7 +32,7 @@ dnl do not use LT_INIT since we want to be compatible with libtool 1.5
   AC_REQUIRE([DUNE_CHECK_MOD_DEPENDENCIES])
 
   # convenience-variables if every found package should be used
-  AC_SUBST([ALL_PKG_LIBS], "$ALL_PKG_LIBS $DUNE_PKG_LIBS $LIBS")
+  AC_SUBST([ALL_PKG_LIBS], "$DUNE_PKG_LIBS $ALL_PKG_LIBS $LIBS")
   AC_SUBST([ALL_PKG_LDFLAGS], "$LDFLAGS $DUNE_PKG_LDFLAGS $ALL_PKG_LDFLAGS")
   AC_SUBST([ALL_PKG_CPPFLAGS], "$CPPFLAGS $DUNE_PKG_CPPFLAGS $ALL_PKG_CPPFLAGS")
   
