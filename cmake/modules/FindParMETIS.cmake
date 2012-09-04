@@ -28,16 +28,16 @@
 #
 include(DuneMPI)
 
+# add subdirectory include to search directories
 foreach(_dir ${ParMETIS_DIR})
   list(APPEND _ParMETIS_INCLUDE_DIRS ${ParMETIS_DIR} ${ParMETIS_DIR}/include)
 endforeach(_dir ${ParMETIS_DIR})
 
-find_path(ParMETIS_INCLUDE_DIRS parmetis.h PATHS ${_ParMETIS_INCLUDE_DIRS} NO_DEFAULT_PATH)
-
-if(NOT ParMETIS_INCLUDE_DIRS)
-  find_path(ParMETIS_INCLUDE_DIRS parmetis.h)
-endif(NOT ParMETIS_INCLUDE_DIRS)
-
+# search for file parmetis.h
+find_path(ParMETIS_INCLUDE_DIRS parmetis.h
+          PATHS ${_ParMETIS_INCLUDE_DIRS}
+          DOC "path for file parmetis.h"
+          NO_DEFAULT_PATH)
 
 set(METIS_LIB_NAME metis CACHE STRING "Name of the METIS library (default: metis).")
 set(PARMETIS_LIB_NAME parmetis CACHE STRING "Name of the ParMETIS library (default: parmetis).")
@@ -49,7 +49,7 @@ set(CMAKE_REQUIRED_INCLUDES_SAVE ${CMAKE_REQUIRED_INCLUDES})
 set(CMAKE_REQUIRED_FLAGS_SAVE    ${CMAKE_REQUIRED_FLAGS})
 set(CMAKE_REQUIRED_LIBRARIES_SAVE ${CMAKE_REQUIRED_LIBRARIES})
 
-set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${MPI_DUNE_INCLUDE_PATH})
+set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${MPI_DUNE_INCLUDE_PATH} ${ParMETIS_INCLUDE_DIRS})
 set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${MPI_DUNE_COMPILE_FLAGS}")
 
 if(ParMETIS_INCLUDE_DIRS)
@@ -90,16 +90,20 @@ if(ParMETIS_FOUND)
     set(ParMETIS_LIBRARIES "" CACHE FILEPATH "ParMETIS libraries needed for linking")
     set(ParMETIS_LINK_FLAGS "" CACHE STRING "ParMETIS link flags")
   endif(ParMETIS_FOUND)
-
 endif(ParMETIS_FOUND)
 
-if(ParMETIS_FOUND)
-  message(STATUS "ParMETIS library was found")
-else(ParMETIS_FOUND)
-  message(STATUS "No ParMETIS available")
-endif(ParMETIS_FOUND)
+# behave like a CMake module is supposed to behave
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(
+  "ParMetis"
+  DEFAULT_MSG
+  ParMETIS_INCLUDE_DIRS
+  ParMETIS_LIBRARY
+)
+
+mark_as_advanced(ParMETIS_INCLUDE_DIRS ParMETIS_LIBRARIES ParMETIS_LINK_FLAGS)
+
 #restore old values
-
 set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES_SAVE})
 set(CMAKE_REQUIRED_FLAGS    ${CMAKE_REQUIRED_FLAGS_SAVE})
 set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES_SAVE})
