@@ -405,12 +405,20 @@ run_default_configure () {
       if test -d "$path/cmake/modules/"; then
 	  CMAKE_MODULE_PATH="$CMAKE_MODULE_PATH;$path/cmake/modules/"
       fi
-      if test -d "$path/share/$name/cmake/modules/"; then
-	  CMAKE_MODULE_PATH="$CMAKE_MODULE_PATH;$path/share/$name/cmake/modules/"
+      if test -d "$path/share/cmake/modules/"; then
+          CMAKE_MODULE_PATH="$CMAKE_MODULE_PATH;$path/share/cmake/modules/"
       fi
       echo name="$name"
       if test "x$USE_CMAKE" = "xyes"; then
-	  CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$path/$BUILDDIR\""
+          if test -d "$path/$BUILDDIR"; then
+	      CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$path/$BUILDDIR\""
+          else
+              if test -d "$path/lib/cmake/$name"; then
+                  CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$path/lib/cmake/$name\""
+              else
+                  CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$path\""
+              fi
+          fi
       else
 	  echo "Only out of source builds are supported when using CMake" >&2
 	  exit 1
