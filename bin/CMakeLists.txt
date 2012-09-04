@@ -1,4 +1,5 @@
 install(PROGRAMS
+        am2cmake.py
 	dunedoxynize
 	duneproject
 	dunecontrol
