@@ -38,12 +38,11 @@ namespace Dune {
     /**
      *  @brief Marker class for next row
      *
-     *  overload operator <<= for FiledMatrix assignment
+     *  overload operator <<= for FieldMatrix assignment
      */
     struct NextRow {
       explicit NextRow (int) {};
     } nextRow(0);
-
   } // end empty namespace
 
   /**
@@ -149,22 +148,22 @@ namespace Dune {
   }
 
   /**
-   *  @brief fvector assignment operator
+   *  @brief fmatrix assignment operator
    *
-   *  overload operator <<= for fvector assignment from Dune::Zero
+   *  overload operator <<= for fmatrix assignment from Dune::Zero
    *
-   *  after including fassing.hh you can easily assign data to a FieldVector
+   *  after including fassing.hh you can easily assign data to a FieldMatrix
    *  using
    *
    *  @code
-   *  FieldVector<double, 4> x; x <<= 1.0, 4.0, 10.0, 11.0;
+   *  FieldMatrix<double, 2,2> x; x <<= 1.0, 4.0, nextRow, 10.0, 11.0;
    *  @endcode
    *
-   *  The operator checks that the whole vector is initalized.
-   *  In case you know that all following entries will be zero padded, you can use
+   *  The operator checks that the whole matrix is initalized.
+   *  In case you know that all following entries of a row will be zero padded, you can use
    *
    *  @code
-   *  FieldVector<double, 40> x; x <<= 1.0, 4.0, 10.0, 11.0, zero;
+   *  FieldMatrix<double, 4, 4> x; x <<= 1.0, zero, nextRow, 10.0, 11.0;
    *  @endcode
    *
    */
@@ -176,22 +175,27 @@ namespace Dune {
     int c;
     int r;
     bool temporary;
+    bool thrown;
+
     void end_row()
     {
-      if (!temporary && c!=m)
+      if (!temporary && c!=m && !thrown) {
+        thrown=true;
         DUNE_THROW(MathError, "Trying to assign " << c <<
                    " entries to a FieldMatrix row of size " << m);
+      }
       c=0;
     }
   public:
     /*! @brief Copy Constructor */
-    fmatrix_assigner(fmatrix_assigner & a) : A(a.A), c(a.c), r(a.r), temporary(false)
+    fmatrix_assigner(fmatrix_assigner & a) : A(a.A), c(a.c), r(a.r), temporary(false), thrown(a.thrown)
     {}
     /*! @brief Constructor from matrix and temporary flag
        \param _A matrix which should be initialized
        \param t bool indicating, that this is a temporary object (see ~fmatrix_assigner)
      */
-    fmatrix_assigner(FieldMatrix<T,n,m> & _A, bool t) : A(_A), c(0), r(0), temporary(t)
+    fmatrix_assigner(FieldMatrix<T,n,m> & _A, bool t) : A(_A), c(0), r(0), temporary(t),
+                                                        thrown(false)
     {};
     /*! @brief Destructor
        checks for complete initialization of the matrix.
@@ -200,13 +204,21 @@ namespace Dune {
     ~fmatrix_assigner()
     {
       end_row();
-      if (!temporary && r!=n-1)
+      if (!temporary && r!=n-1 && !thrown) {
+        thrown=true;
         DUNE_THROW(MathError, "Trying to assign " << r <<
                    " rows to a FieldMatrix of size " << n << " x " << m);
+      }
     }
     /*! @brief append data to this matrix */
     fmatrix_assigner & append (const T & t)
     {
+      // Check whether we have passed the last row
+      if(r>=m) {
+        thrown=true;
+        DUNE_THROW(MathError, "Trying to assign more than " << m <<
+                   " rows to a FieldMatrix of size " << n << " x " << m);
+      }
       A[r][c++] = t;
       return *this;
     }
@@ -217,7 +229,7 @@ namespace Dune {
       while (c!=m) A[r][c++] = 0;
       return *this;
     }
-    /*! @brief append zeros to this matrix
+    /*! @brief move to next row of the matrix
      */
     fmatrix_assigner & append (NextRow nr)
     {
@@ -243,7 +255,8 @@ namespace Dune {
     }
     /*! @brief append zeros to this matrix
        the overloaded comma operator is used to stop the assign of values
-       to the matrix, all remaining entries are assigned 0.
+       to the current row, it will be checked whether all entries have been
+       assigned values.
      */
     fmatrix_assigner & operator , (NextRow nr)
     {
@@ -264,7 +277,7 @@ namespace Dune {
   }
 
   /**
-   *  @brief fFileMatrix assignment operator
+   *  @brief FieldMatrix assignment operator
    *
    *  overload operator <<= for FieldMatrix row assignment from Dune::Zero
    */
