@@ -12,6 +12,11 @@
 #   HDF5_CPPFLAGS
 #   HDF5_LDFLAGS
 #   HDF5_LIBS
+#   direct_HDF5_CPPFLAGS
+#   direct_HDF5_LDFLAGS
+#   direct_HDF5_LIBS
+#     same as above, but without variable indirections (e.g. the contents of
+#     DUNEMPICPPFLAGS instead of '${DUNEMPICPPFLAGS}')
 #   HDF5_PARALLEL
 #     1 or undef
 #   HAVE_HDF5
@@ -65,17 +70,26 @@ AC_DEFUN([DUNE_PATH_HDF5],[
 
  CPPFLAGS="$CPPFLAGS $_dune_hdf5_incpath"
 
+ direct_HDF5_CPPFLAGS="$_dune_hdf5_incpath"
+ nodep_HDF5_CPPFLAGS="$_dune_hdf5_incpath"
  HDF5_CPPFLAGS="$_dune_hdf5_incpath"
+ direct_HDF5_LDFLAGS=""
+ nodep_HDF5_LDFLAGS=""
  HDF5_LDFLAGS=""
+ direct_HDF5_LIBS=""
+ nodep_HDF5_LIBS=""
  HDF5_LIBS=""
  HDF5_PARALLEL=0
  # test if we are parallel
  AC_CHECK_DECL(H5_HAVE_PARALLEL, [dnl
 	CPPFLAGS="$CPPFLAGS $DUNEMPICPPFLAGS"
+	direct_HDF5_CPPFLAGS="$HDF5_CPPFLAGS $DUNEMPICPPFLAGS"
 	HDF5_CPPFLAGS="$HDF5_CPPFLAGS \${DUNEMPICPPFLAGS}"
 	LDFLAGS="$LDFLAGS $DUNEMPILDFLAGS"
+	direct_HDF5_LDFLAGS="$HDF5_LDFLAGS $DUNEMPILDFLAGS"
 	HDF5_LDFLAGS="$HDF5_LDFLAGS \${DUNEMPILDFLAGS}"
 	LIBS="$DUNEMPILIBS $LIBS"
+	direct_HDF5_LIBS="$DUNEMPILIBS $HDF5_LIBS"
 	HDF5_LIBS="\${DUNEMPILIBS} $HDF5_LIBS"
 	HDF5_PARALLEL=1],[],[#include"H5pubconf.h"])
 
@@ -84,12 +98,16 @@ AC_DEFUN([DUNE_PATH_HDF5],[
    [HAVE_HDF5=1],
    [HAVE_HDF5=0])
 	
- # Just fotr the configure check, -L has to go into LIBS in the end
+ # Just for the configure check.  In the end, -L has to go into LIBS.
  LDFLAGS="$LDFLAGS $_dune_hdf5_libpath"
  # test for lib
  if test x$HAVE_HDF5 = x1 ; then
    AC_CHECK_LIB([hdf5], [H5open],
-     [HDF5_LIBS="$_dune_hdf5_libpath -lhdf5 $with_hdf5_libs $HDF5_LIBS"],
+     [
+       direct_HDF5_LIBS="$_dune_hdf5_libpath -lhdf5 $with_hdf5_libs $direct_HDF5_LIBS"
+       nodep_HDF5_LIBS="$_dune_hdf5_libpath -lhdf5 $with_hdf5_libs $nodep_HDF5_LIBS"
+       HDF5_LIBS="$_dune_hdf5_libpath -lhdf5 $with_hdf5_libs $HDF5_LIBS"
+     ],
      [HAVE_HDF5=0], ["$with_hdf5_libs"])
  fi
 
@@ -107,8 +125,14 @@ AC_DEFUN([DUNE_PATH_HDF5],[
    fi
  else
    # clear variables
+   direct_HDF5_CPPFLAGS=
+   nodep_HDF5_CPPFLAGS=
    HDF5_CPPFLAGS=
+   direct_HDF5_LDFLAGS=
+   nodep_HDF5_LDFLAGS=
    HDF5_LDFLAGS=
+   direct_HDF5_LIBS=
+   nodep_HDF5_LIBS=
    HDF5_LIBS=
    HDF5_PARALLEL=0
  fi
@@ -121,8 +145,8 @@ AC_DEFUN([DUNE_PATH_HDF5],[
  AM_CONDITIONAL(HDF5, test x$HAVE_HDF5 = x1)
 
  # add to global list
- DUNE_ADD_ALL_PKG([HDF5], [\${HDF5_CPPFLAGS}],
-                  [\${HDF5_LDFLAGS}], [\${HDF5_LIBS}])    
+ DUNE_ADD_ALL_PKG([HDF5], [$nodep_HDF5_CPPFLAGS],
+                  [$nodep_HDF5_LDFLAGS], [$nodep_HDF5_LIBS])
 
  # reset values					    
  LIBS="$ac_save_LIBS"
