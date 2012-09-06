@@ -419,9 +419,6 @@ run_default_configure () {
                   CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$path\""
               fi
           fi
-      else
-	  echo "Only out of source builds are supported when using CMake" >&2
-	  exit 1
       fi
     done
 
