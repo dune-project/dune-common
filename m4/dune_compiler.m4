@@ -8,7 +8,7 @@ AC_ARG_ENABLE(compilercheck,
                  [disable check for supported compilers]),
   [compilercheck=$enableval], [compilercheck=yes])
 
-SUPPORTED_COMPILER="gcc (>= 3.4.1) or icc (>= 7.0)"
+SUPPORTED_COMPILER="gcc (>= 4.1), should work with recent versions of icc and clang (>= 3.0)"
 
 AC_REQUIRE([AC_PROG_CXX])
 cat >conftest.cc <<_ACEOF
@@ -19,13 +19,16 @@ cat >conftest.cc <<_ACEOF
     #define CXX_SUPPORTED "icc %2.2f", 1.0*__ICC/100
   #endif
 #endif
-#if defined __GNUC__ && ! defined CXX_SUPPORTED
-  #if __GNUC__ > 3 || \
-     (__GNUC__ == 3 && (__GNUC_MINOR__ > 4 || \
-        (__GNUC_MINOR__ == 4 && \
-         __GNUC_PATCHLEVEL__ >= 1)))
+#if defined __clang__ && ! defined CXX_SUPPORTED
+  #if __clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >= 0)
     #define CXX_SUPPORTED \
-	   "gcc %i.%i.%i", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__
+      "clang %i.%i.%i", __clang_major__, __clang_minor__, __clang_patchlevel__
+  #endif
+#endif
+#if defined __GNUC__ && ! defined CXX_SUPPORTED
+  #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 1)
+    #define CXX_SUPPORTED \
+      "gcc %i.%i.%i", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__
   #endif
 #endif
 #ifndef CXX_SUPPORTED
@@ -51,5 +54,5 @@ AS_IF([test "x$compilercheck" = "xno"],
   ])
 
 AS_IF([test -z "$COMPILER_NAME"],[
-	COMPILER_NAME="unknown compiler"])
+  COMPILER_NAME="unknown compiler"])
 ])
