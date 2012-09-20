@@ -10,5 +10,5 @@ install(PROGRAMS
   sourcescheck
   top-rules
   webstuff
-  DESTINATION share/dune-common/am
+  DESTINATION ${CMAKE_INSTALL_DATADIR}/am
 )
