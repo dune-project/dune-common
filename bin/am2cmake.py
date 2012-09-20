@@ -781,7 +781,7 @@ def create_cmake_dirs_and_file(dirname, module_name):
         all_cmake_files.extend(fnmatch.filter(filenames,'*.cmake')[:])
     lines=['set(modules \n  ', '\n  '.join(all_cmake_files), '\n)\n']
     output=open(os.path.join(dirs['modules'], 'CMakeLists.txt'), 'w')
-    lines.extend(['install(FILES "${modules}" DESTINATION ${CMAKE_INSTALL_PREFIX}/share/cmake/modules)\n'])
+    lines.extend(['install(FILES "${modules}" DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules)\n'])
     output.write(''.join(lines))
     output.close()
     output=open(os.path.join(dirname, module_name+'-version.cmake.in'), 'w')
