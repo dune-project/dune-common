@@ -273,7 +273,7 @@ def repl_tabs(tokens):
 
 def am_2_cmake_string(amstring):    
     ParserElement.setDefaultWhitespaceChars("")
-    word = Word(alphanums+"*.-_=<>&!;,/")
+    word = Word(alphanums+"*:.-_=<>&!;,/")
     ws=Word(' ')
     opt_ws=Optional(ws)
     varopen = Literal("$(")#.replaceWith("${")
@@ -302,7 +302,7 @@ def am_2_cmake_string(amstring):
     ifexpression = restOfLine + NL
     ifexpression.setParseAction(rename_var)
     ifbody = Group(lines)
-    endif = Literal('endif')
+    endif = Literal('endif')+restOfLine.suppress()
     elsestatement = Forward()
     elsestatement << (opt_ws+ Literal('else').setResultsName('elsestart') + NL + Group (lines))
     #endif.setDebug()
