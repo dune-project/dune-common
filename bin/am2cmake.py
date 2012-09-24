@@ -127,28 +127,28 @@ class target_flags:
     def __init__(self, suffix):
         self.suffix=suffix
         self.known_flags = {
-            'ALBERTA_CPPFLAGS': ['add_dune_alberta_flags',''],
-            'AM_CPPFLAGS': ['target_link_libraries', '${DUNE_LIBS}'],
-            'ALUGRID_CPPFLAGS': ['add_dune_alugrid_flags',''],
-            'UG_CPPFLAGS':  ['add_dune_ug_flags', ''],
-            'SUPERLU_CPPFLAGS': ['add_dune_superlu_flags', ''],
-            'DUNEMPICPPFLAGS': ['add_dune_mpi_flags', ''],
-            'AMIRAMESH_CPPFLAGS': ['add_dune_amiramesh_flags',''],
-            'BOOST_CPPFLAGS': ['add_dune_boost_flags',''],
-            'GMP_CPPFLAGS': ['add_dune_gmp_flags',''],
-            'GRAPE_CPPFLAGS': ['add_dune_grape_flags',''],
-            'PARMETIS_CPPFLAGS': ['add_dune_parmetis_flags',''],
-            'PETSC_CPPFLAGS': ['add_dune_petsc_flags',''],
-            'PSURFACE_CPPFLAGS': ['add_dune_psurface_flags','']
+            'ALBERTA_': ['add_dune_alberta_flags',''],
+            'AM_': ['target_link_libraries', '${DUNE_LIBS}'],
+            'ALUGRID_': ['add_dune_alugrid_flags',''],
+            'UG_':  ['add_dune_ug_flags', ''],
+            'SUPERLU_': ['add_dune_superlu_flags', ''],
+            'DUNEMPI': ['add_dune_mpi_flags', ''],
+            'AMIRAMESH_': ['add_dune_amiramesh_flags',''],
+            'BOOST_': ['add_dune_boost_flags',''],
+            'GMP_': ['add_dune_gmp_flags',''],
+            'GRAPE_': ['add_dune_grape_flags',''],
+            'PARMETIS_': ['add_dune_parmetis_flags',''],
+            'PETSC_': ['add_dune_petsc_flags',''],
+            'PSURFACE_': ['add_dune_psurface_flags','']
             }
         for i in range(1,9):
             self.known_flags.update({
-                    'ALBERTA'+str(i)+'D_CPPFLAG' : ['add_dune_alberta_flags', ''+'GRIDDIM '+str(i)]})
+                    'ALBERTA'+str(i)+'D_' : ['add_dune_alberta_flags', ''+'GRIDDIM '+str(i)]})
     def parse(self, stri,loc,tokens):
         #print 'target_flags'
         #print self.suffix
         #print tokens
-        if (self.suffix == 'CPPFLAGS'):
+        if (self.suffix == 'CPPFLAGS' or self.suffix=='CXXFLAGS'):
             line=''.join(tokens[0])
             s=''
             for key, value in self.known_flags.items():
@@ -337,6 +337,11 @@ def am_2_cmake_string(amstring):
     cppflags=target_flags('CPPFLAGS')
     cppflagsAssign.addParseAction(cppflags.parse)
 
+    cxxflagsAssign = Group(lowercase_name_+'CXXFLAGS' + Suppress(opt_ws)+ equals + opt_ws + Optional(value))
+    cxxflags=target_flags('CXXFLAGS')
+    cxxflagsAssign.addParseAction(parse_assign)
+    cxxflagsAssign.addParseAction(cxxflags.parse)
+
     ldflagsAssign = Group(lowercase_name_+'LDFLAGS' + Suppress(opt_ws)+ equals + opt_ws + Optional(value))
     ldflagsAssign.addParseAction(parse_assign)
     ldflags=target_flags('LDFLAGS')
@@ -430,7 +435,7 @@ def am_2_cmake_string(amstring):
     easy_rule.setParseAction(comment_lines)
     #easy_rule.setDebug()
 
-    lines << ZeroOrMore(opt_ws+(dependency_rule+NL|easy_rule|(sourcesAssign|dataAssign|check_programsAssign|programsAssign|librariesAssign|scriptsAssign|headersAssign|subdirsAssign|compile_fail_testsAssign|fail_testsAssign|testsAssign|dirAssign|cppflagsAssign|ldaddAssign|ldflagsAssign|libsAssign|varAddAssign|docsAssign|varAssign|comment|ifstatement|includeLine|Empty())+NL))
+    lines << ZeroOrMore(opt_ws+(dependency_rule+NL|easy_rule|(sourcesAssign|dataAssign|check_programsAssign|programsAssign|librariesAssign|scriptsAssign|headersAssign|subdirsAssign|compile_fail_testsAssign|fail_testsAssign|testsAssign|dirAssign|cppflagsAssign|cxxflagsAssign|ldaddAssign|ldflagsAssign|libsAssign|varAddAssign|docsAssign|varAssign|comment|ifstatement|includeLine|Empty())+NL))
 
     s= ''.join(lines.parseString(amstring)._asStringList())
     #print s
@@ -698,7 +703,7 @@ str2=''.join(['TESTS = lagrangeshapefunctiontest \\\n', '\tmonomshapefunctiontes
 
 def init_cmake_module(module_name):
     return''.join(['# set up project\n',
-                  'project("'+module_name+'" C CXX)\n\n',
+                  'project("'+module_name+'" C CXX)\n\n#circumvent not building docs\nset(BUILD_DOCS 1)\n\n',
                   '# general stuff\n',
                   'cmake_minimum_required(VERSION 2.8.8)\n\n',
                   '# make sure our own modules are found\n',
