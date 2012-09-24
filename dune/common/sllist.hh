@@ -68,7 +68,7 @@ namespace Dune
     typedef SLListIterator<T,A> iterator;
 
     /**
-     * @brief The mutable iterator of the list.
+     * @brief The constant iterator of the list.
      */
     typedef SLListConstIterator<T,A> const_iterator;
 

@@ -9,6 +9,7 @@
 # HAS_ATTRIBUTE_UNUSED             True if attribute unused is supported
 # HAS_ATTRIBUTE_DEPRECATED         True if attribute deprecated is supported
 # HAS_ATTRIBUTE_DEPRECATED_MSG     True if attribute deprecated("msg") is supported
+# HAVE_INTEGRAL_CONSTANT           True if compiler supports integral_constant
 # HAVE_STATIC_ASSERT               True if static_assert is available
 # HAVE_VARIADIC_TEMPLATES          True if variadic templates are supprt
 # HAVE_VARIADIC_CONSTRUCTOR_SFINAE True if variadic constructor sfinae is supported
@@ -65,6 +66,17 @@ CHECK_CXX_SOURCE_COMPILES("
       return 0;
     }
 " HAVE_ARRAY
+)
+
+# Check whether if std::integral_constant< T, v > is supported and casts into T
+CHECK_CXX_SOURCE_COMPILES("
+    #include <type_traits>
+    void f( int ){}
+
+    int main(void){
+      f( std::integral_constant< int, 42 >() );
+    }
+" HAVE_INTEGRAL_CONSTANT
 )
 
 # __attribute__((always_inline))

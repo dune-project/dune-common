@@ -83,6 +83,11 @@
 /* Define to 1 if you have the <tr1/type_traits> header file. */
 #cmakedefine HAVE_TR1_TYPE_TRAITS 1
 
+/* Define to 1 if std::integral_constant< T, v > is supported
+ * and casts into T
+ */
+#cmakedefine HAVE_INTEGRAL_CONSTANT 1
+
 /* Define to 1 if you have the <tuple> header file. */
 #cmakedefine HAVE_TUPLE 1
 

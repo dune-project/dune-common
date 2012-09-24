@@ -395,15 +395,11 @@ namespace Dune
   //
   // integral_constant (C++0x 20.7.3 "Helper classes")
   //
-#if defined HAVE_TYPE_TRAITS
+#if HAVE_INTEGRAL_CONSTANT
   using std::integral_constant;
   using std::true_type;
   using std::false_type;
-#elif defined HAVE_TR1_TYPE_TRAITS
-  using std::tr1::integral_constant;
-  using std::tr1::true_type;
-  using std::tr1::false_type;
-#else
+#else // #if HAVE_INTEGRAL_CONSTANT
   //! Generate a type for a given integral constant
   /**
    * \tparam T Type of the constant.
@@ -425,7 +421,7 @@ namespace Dune
   typedef integral_constant<bool, true> true_type;
   //! type for false
   typedef integral_constant<bool, false> false_type;
-#endif
+#endif // #else // #if HAVE_INTEGRAL_CONSTANT
 
   /** @} */
 }
