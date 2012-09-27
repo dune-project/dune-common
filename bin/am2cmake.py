@@ -120,7 +120,7 @@ class installer:
             if not (var.strip().startswith('noinst_') 
                     or var.strip().startswith('check_') 
                     or var.strip().startswith('dist_noinst_')):
-                s= s+"\ninstall("+self.install_prefix+" \"${"+var+"}\" DESTINATION ${"+install_dir+"})"
+                s= s+"\ninstall("+self.install_prefix+" ${"+var+"} DESTINATION ${"+install_dir+"})"
         return s
 
 class target_flags:
@@ -458,7 +458,7 @@ def am_2_cmake_string(amstring):
     if docs_present.found:
         s=s+''.join(['\n# Install documentation',
                      '\n# We assume that ${DOCFILES} and ${DOCFILES_EXTRA} are targets\n',
-                     'install(TARGETS \"${DOCFILES}\" ${DOCFILES_EXTRA} DESTINATION ${docdir})\n'])
+                     'install(TARGETS ${DOCFILES} ${DOCFILES_EXTRA} DESTINATION ${docdir})\n'])
 
     return s
 
