@@ -8,6 +8,7 @@ TESTPROGS = \
     bitsetvectortest \
     check_fvector_size \
     conversiontest \
+    diagonalmatrixtest \
     dynmatrixtest \
     dynvectortest \
     enumsettest \
@@ -97,6 +98,8 @@ pathtest_SOURCES = pathtest.cc
 parametertreetest_SOURCES = parametertreetest.cc
 
 bitsetvectortest_SOURCES = bitsetvectortest.cc
+
+diagonalmatrixtest_SOURCES = diagonalmatrixtest.cc
 
 nullptr_test_SOURCES = nullptr-test.cc nullptr-test2.cc
 nullptr_test_fail_SOURCES = nullptr-test.cc

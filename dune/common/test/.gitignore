@@ -3,6 +3,7 @@ Makefile.in
 .deps
 .libs
 semantic.cache
+diagonalmatrixtest
 dynvectortest
 fvectortest
 mpicollectivecommunication
