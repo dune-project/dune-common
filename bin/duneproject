@@ -465,11 +465,13 @@ M_DELIM
 ################## CMakeLists.txt ##################
 echo " - $PROJECT/CMakeLists.txt"
 cat> "$PROJECT/CMakeLists.txt" << M_DELIM
-cmake_minimum_required(VERSION 2.8.9)
+cmake_minimum_required(VERSION 2.8)
 project($PROJECT CXX)
 
-# for this to work you will have to modify the CMAKE_MODULE_PATH
-set(CMAKE_MODULE_PATH \${CMAKE_MODULE_PATH} "\${CMAKE_SOURCE_DIR}/cmake/modules")
+#find dune-common and set the module path
+find_package(dune-common)
+list(APPEND CMAKE_MODULE_PATH ${dune-common_MODULE_PATH}
+  "${CMAKE_SOURCE_DIR}/cmake/modules")
 
 #include the dune macros
 include(DuneMacros)
@@ -865,7 +867,10 @@ set(@DUNE_MOD_NAME@_CXX_FLAGS_DEBUG "@CMAKE_CXX_FLAGS_DEBUG@")
 set(@DUNE_MOD_NAME@_CXX_FLAGS_MINSIZEREL "@CMAKE_CXX_FLAGS_MINSIZEREL@")
 set(@DUNE_MOD_NAME@_CXX_FLAGS_RELEASE "@CMAKE_CXX_FLAGS_RELEASE@")
 set(@DUNE_MOD_NAME@_CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@")
-set(@DUNE_MOD_NAME@_LIBRARIES "")
+set(@DUNE_MOD_NAME@_LIBRARIES "") # list exported libraries here
+set(@DUNE_MOD_NAME@_DEPENDS "@DUNE_DEPENDS@")
+set(@DUNE_MOD_NAME@_SUGGESTS "@DUNE_SUGGESTS@")
+endif(NOT @DUNE_MOD_NAME@_FOUND)
 endif(NOT @DUNE_MOD_NAME@_FOUND)
 EOF
 
@@ -890,6 +895,10 @@ set(@DUNE_MOD_NAME@_CXX_FLAGS_DEBUG "@CMAKE_CXX_FLAGS_DEBUG@")
 set(@DUNE_MOD_NAME@_CXX_FLAGS_MINSIZEREL "@CMAKE_CXX_FLAGS_MINSIZEREL@")
 set(@DUNE_MOD_NAME@_CXX_FLAGS_RELEASE "@CMAKE_CXX_FLAGS_RELEASE@")
 set(@DUNE_MOD_NAME@_CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@")
+set(@DUNE_MOD_NAME@_MODULE_PATH "@DUNE_INSTALL_MODULEDIR@")
+set(@DUNE_MOD_NAME@_LIBRARIES "") # list libraries
+set(@DUNE_MOD_NAME@_DEPENDS "@DUNE_DEPENDS@")
+set(@DUNE_MOD_NAME@_SUGGESTS "@DUNE_SUGGESTS@")
 endif(NOT @DUNE_MOD_NAME@_FOUND)
 EOF
 
