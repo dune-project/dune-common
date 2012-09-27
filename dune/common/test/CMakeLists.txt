@@ -6,6 +6,7 @@ set(TESTS
     bitsetvectortest
     check_fvector_size
     conversiontest
+    diagonalmatrixtest
     dynmatrixtest
     dynvectortest
     enumsettest
@@ -85,6 +86,9 @@ add_executable("dynmatrixtest" dynmatrixtest.cc)
 target_link_libraries("dynmatrixtest" "dunecommon")
 
 add_executable("dynvectortest" dynvectortest.cc)
+
+add_executable("diagonalmatrixtest" diagonalmatrixtest.cc)
+
 add_executable("enumsettest" enumsettest.cc)
 
 add_executable("fassigntest" fassigntest.cc)
