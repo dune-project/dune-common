@@ -30,6 +30,7 @@ commoninclude_HEADERS = 			\
 	deprecated.hh				\
 	densematrix.hh				\
 	densevector.hh				\
+        diagonalmatrix.hh                       \
 	documentation.hh			\
 	dotproduct.hh				\
 	dynmatrix.hh				\
