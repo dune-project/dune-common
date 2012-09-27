@@ -706,8 +706,10 @@ def init_cmake_module(module_name):
                   'project("'+module_name+'" C CXX)\n\n#circumvent not building docs\nset(BUILD_DOCS 1)\n\n',
                   '# general stuff\n',
                   'cmake_minimum_required(VERSION 2.8.8)\n\n',
-                  '# make sure our own modules are found\n',
-                  'set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules")\n\n',
+                  '#find dune-common and set the module path\n',
+                  'find_package(dune-common)'
+                  'list(APPEND CMAKE_MODULE_PATH ${dune-common_MODULE_PATH}\n'
+                  '     "${CMAKE_SOURCE_DIR}/cmake/modules")# make sure our own modules are found\n\n',
                   '#include the dune macros\n'
                   'include(DuneMacros)\n\n',
                   '# start a dune project with information from dune.module\n',
