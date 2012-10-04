@@ -50,7 +50,7 @@ namespace Dune {
      * \param x Argument for function evaluation.
      * \param y Result of function evaluation.
      */
-    void evaluate(Domain x, Range y) const;
+    void evaluate(const typename Traits::DomainType& x, typename Traits::RangeType& y) const;
   }; // end of Function class
 
 
@@ -67,6 +67,8 @@ namespace Dune {
     public Function<const DomainType&, RangeType&>
   {
   public:
+    typedef typename Function<const DomainType&, RangeType&>::Traits Traits;
+
     virtual ~VirtualFunction() {}
     /**
      * \brief Function evaluation.
@@ -74,7 +76,7 @@ namespace Dune {
      * \param x Argument for function evaluation.
      * \param y Result of function evaluation.
      */
-    virtual void evaluate(const DomainType& x, RangeType& y) const = 0;
+    virtual void evaluate(const typename Traits::DomainType& x, typename Traits::RangeType& y) const = 0;
   }; // end of VirtualFunction class
 
   /** @} end documentation */
