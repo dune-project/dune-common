@@ -5,11 +5,15 @@
 
 #include <exception>
 #include <typeinfo>
-#include <malloc.h>
 #include <sys/mman.h>
 #include <vector>
 #include <iostream>
 #include <cstring>
+#include <cstdlib>
+#include <malloc.h>
+#include <new>
+
+#include "mallocallocator.hh"
 
 namespace Dune
 {
@@ -47,7 +51,8 @@ namespace Dune
         bool not_free;
       };
 
-      typedef std::vector<AllocationInfo> AllocationList;
+      typedef MallocAllocator<AllocationInfo> Alloc;
+      typedef std::vector<AllocationInfo, Alloc> AllocationList;
       AllocationList allocation_list;
 
     private:
@@ -151,7 +156,7 @@ namespace Dune
             memprotect(it->page_ptr,
                        (it->pages) * page_size,
                        PROT_READ | PROT_WRITE);
-            free(it->page_ptr);
+            std::free(it->page_ptr);
             // remove chunk info
             allocation_list.erase(it);
 #endif
@@ -169,7 +174,7 @@ namespace Dune
   template<class T>
   class DebugAllocator;
 
-  // specialize for void:
+  // specialize for void
   template <>
   class DebugAllocator<void> {
   public:
