@@ -9,7 +9,6 @@
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
-#include <malloc.h>
 #include <new>
 #if HAVE_SYS_MMAN_H and HAVE_MPROTECT
 #include <sys/mman.h>
