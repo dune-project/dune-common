@@ -13,6 +13,8 @@
 #include <new>
 #if HAVE_SYS_MMAN_H and HAVE_MPROTECT
 #include <sys/mman.h>
+#else
+enum DummyProtFlags { PROT_NONE, PROT_WRITE, PROT_READ };
 #endif
 
 #include "mallocallocator.hh"
