@@ -6,6 +6,7 @@ SUBDIRS = . test parallel
 noinst_LTLIBRARIES = libcommon.la
 
 libcommon_la_SOURCES =				\
+	debug_allocator.cc			\
 	fmatrixev.cc \
 	ios_state.cc				\
 	parametertree.cc                        \
@@ -26,11 +27,12 @@ commoninclude_HEADERS = 			\
 	bitsetvector.hh				\
 	classname.hh				\
 	collectivecommunication.hh		\
+	debug_allocator.hh			\
 	debugstream.hh				\
 	deprecated.hh				\
 	densematrix.hh				\
 	densevector.hh				\
-        diagonalmatrix.hh                       \
+	diagonalmatrix.hh                       \
 	documentation.hh			\
 	dotproduct.hh				\
 	dynmatrix.hh				\
