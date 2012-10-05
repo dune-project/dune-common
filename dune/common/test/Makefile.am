@@ -217,7 +217,7 @@ testdebugallocator_fail3_SOURCES = testdebugallocator.cc
 testdebugallocator_fail3_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE3
 
 testdebugallocator_fail4_SOURCES = testdebugallocator.cc
-testdebugallocator_fail4_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE4
+testdebugallocator_fail4_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE4 -DDEBUG_ALLOCATOR_KEEP=1
 
 testdebugallocator_fail5_SOURCES = testdebugallocator.cc
 testdebugallocator_fail5_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE5
