@@ -18,6 +18,7 @@ class A
 public:
   A() { std::cout << "INIT A\n"; }
   int x;
+  void foo() {};
 };
 
 void basic_tests ()
@@ -68,12 +69,14 @@ void new_delete_tests()
 
   std::cout << "alloc A[2]\n";
   A * z = new A[2];
+  z->foo();
   delete[] z;
   z = 0;
 
   std::cout << "alloc (buf) A[3]\n";
   char * buf = (char*)malloc(128);
   A * z2 = new (buf) A[3];
+  z2->foo();
   free(buf);
   z2 = 0;
 }

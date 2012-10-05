@@ -10,12 +10,22 @@
 #include <unistd.h>
 #include <cstdlib>
 
-const Dune::DebugMemory::AllocationManager::difference_type Dune::DebugMemory::AllocationManager::page_size = getpagesize();
-
-void Dune::DebugMemory::AllocationManager::allocation_error(const char* msg)
+namespace Dune
 {
-  std::cerr << "Abort - Memory Corruption: " << msg << std::endl;
-  std::abort();
-}
+  namespace DebugMemory
+  {
+    // system constant for page size
+    const AllocationManager::difference_type AllocationManager::page_size = getpagesize();
 
-Dune::DebugMemory::AllocationManager Dune::DebugMemory::alloc_man;
+    // implement member functions
+    void AllocationManager::allocation_error(const char* msg)
+    {
+      std::cerr << "Abort - Memory Corruption: " << msg << std::endl;
+      std::abort();
+    }
+
+    // global instance of AllocationManager
+    AllocationManager alloc_man;
+
+  }   // end namespace DebugMemory
+} // end namespace Dune

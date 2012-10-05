@@ -259,17 +259,12 @@ namespace Dune
 void * operator new(size_t size) throw(std::bad_alloc)
 {
   // try to allocate size bytes
-  void *p = malloc(size);
+  void *p = Dune::DebugMemory::alloc_man.allocate<char>(size);
 #if DEBUG_NEW_DELETE > 2
   std::cout << "NEW " << size
             << " -> " << p
             << std::endl;
 #endif
-  if (0 == p)
-  {
-    // report no memory
-    throw std::bad_alloc();
-  }
   return p;
 }
 
@@ -278,12 +273,7 @@ void operator delete(void * p) throw()
 #if DEBUG_NEW_DELETE > 2
   std::cout << "FREE " << p << std::endl;
 #endif
-  // if (0 == p)
-  // {
-  //     // report no memory
-  //     throw std::bad_alloc;
-  // }
-  free(p);
+  Dune::DebugMemory::alloc_man.deallocate<char>(static_cast<char*>(p));
 }
 #endif // DEBUG_NEW_DELETE
 
