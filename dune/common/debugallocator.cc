@@ -4,7 +4,7 @@
 #include "config.h"
 #endif
 
-#include "debug_allocator.hh"
+#include "debugallocator.hh"
 
 #include <iostream>
 #include <unistd.h>

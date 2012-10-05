@@ -32,12 +32,12 @@ TESTPROGS = \
     singletontest \
     static_assert_test \
     streamtest \
-    test_debug_alloc \
-    test_debug_alloc_fail1 \
-    test_debug_alloc_fail2 \
-    test_debug_alloc_fail3 \
-    test_debug_alloc_fail4 \
-    test_debug_alloc_fail5 \
+    testdebugallocator \
+    testdebugallocator_fail1 \
+    testdebugallocator_fail2 \
+    testdebugallocator_fail3 \
+    testdebugallocator_fail4 \
+    testdebugallocator_fail5 \
     testfassign1 \
     testfassign2 \
     testfassign3 \
@@ -82,11 +82,11 @@ EXTRA_PROGRAMS = $(COMPILE_XFAIL_TESTS) sllisttest
 TESTS = $(TESTPROGS) $(COMPILE_XFAIL)
 
 XFAIL_TESTS = \
-    test_debug_alloc_fail1 \
-    test_debug_alloc_fail2 \
-    test_debug_alloc_fail3 \
-    test_debug_alloc_fail4 \
-    test_debug_alloc_fail5 \
+    testdebugallocator_fail1 \
+    testdebugallocator_fail2 \
+    testdebugallocator_fail3 \
+    testdebugallocator_fail4 \
+    testdebugallocator_fail5 \
     testfassign_fail1 \
     testfassign_fail2 \
     testfassign_fail3 \
@@ -204,23 +204,23 @@ singletontest_SOURCES = singletontest.cc
 
 utilitytest_SOURCES = utilitytest.cc
 
-test_debug_alloc_SOURCES = test-debug-alloc.cc
-test_debug_alloc_CPPFLAGS = $(AM_CPPFLAGS)
+testdebugallocator_SOURCES = testdebugallocator.cc
+testdebugallocator_CPPFLAGS = $(AM_CPPFLAGS)
 
-test_debug_alloc_fail1_SOURCES = test-debug-alloc.cc
-test_debug_alloc_fail1_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE1
+testdebugallocator_fail1_SOURCES = testdebugallocator.cc
+testdebugallocator_fail1_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE1
 
-test_debug_alloc_fail2_SOURCES = test-debug-alloc.cc
-test_debug_alloc_fail2_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE2
+testdebugallocator_fail2_SOURCES = testdebugallocator.cc
+testdebugallocator_fail2_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE2
 
-test_debug_alloc_fail3_SOURCES = test-debug-alloc.cc
-test_debug_alloc_fail3_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE3
+testdebugallocator_fail3_SOURCES = testdebugallocator.cc
+testdebugallocator_fail3_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE3
 
-test_debug_alloc_fail4_SOURCES = test-debug-alloc.cc
-test_debug_alloc_fail4_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE4
+testdebugallocator_fail4_SOURCES = testdebugallocator.cc
+testdebugallocator_fail4_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE4
 
-test_debug_alloc_fail5_SOURCES = test-debug-alloc.cc
-test_debug_alloc_fail5_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE5
+testdebugallocator_fail5_SOURCES = testdebugallocator.cc
+testdebugallocator_fail5_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE5
 
 testfassign1_SOURCES = testfassign.cc testfassign2.cc
 testfassign1_CPPFLAGS = $(AM_CPPFLAGS) -D_DUNE_TEST_N=3 -D_VALUES="1,2,3"
