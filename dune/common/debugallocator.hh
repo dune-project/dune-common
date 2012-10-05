@@ -21,6 +21,8 @@ enum DummyProtFlags { PROT_NONE, PROT_WRITE, PROT_READ };
 
 namespace Dune
 {
+
+#ifndef DOXYGEN // hide implementation details from doxygen
   namespace DebugMemory
   {
 
@@ -177,7 +179,8 @@ namespace Dune
 #undef ALLOCATION_ASSERT
 
     extern AllocationManager alloc_man;
-  }
+  }   // end namespace DebugMemory
+#endif // DOXYGEN
 
   template<class T>
   class DebugAllocator;
@@ -196,6 +199,24 @@ namespace Dune
   };
 
   // actual implementation
+  /**
+     @ingroup Allocators
+     @brief Allocators implementation which performs different kind of memory checks
+
+     We check:
+     - access past the end
+     - only free memory which was allocated with this allocator
+     - list allocated memory chunks still in use upon destruction of the allocator
+
+     When defining DEBUG_ALLOCATOR_KEEP to 1, we also check
+     - double free
+     - access after free
+
+     When defining DEBUG_NEW_DELETE >= 1, we
+     - overload new/delte
+     - use the Debug memory management for new/delete
+     - DEBUG_NEW_DELETE > 2 gives extensive debug output
+   */
   template <class T>
   class DebugAllocator {
   public:
