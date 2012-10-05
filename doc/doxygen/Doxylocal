@@ -3,5 +3,6 @@ INPUT                 += @srcdir@/mainpage \
                          @srcdir@/modules \
                          @top_srcdir@/dune/common/modules \
                          @top_srcdir@/dune/common
-EXCLUDE               += @top_srcdir@/dune/common/test
+EXCLUDE               += @top_srcdir@/dune/common/test \
+                         @top_srcdir@/dune/common/debugallocator.cc
 
