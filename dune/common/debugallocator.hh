@@ -107,8 +107,8 @@ namespace Dune
         ai.pages = (ai.capacity) / page_size + 2;
         ai.not_free = true;
         size_type overlap = ai.capacity % page_size;
-        ai.page_ptr = memalign(page_size, ai.pages * page_size);
-        if (0 == ai.page_ptr)
+        int result = posix_memalign(&(ai.page_ptr), page_size, ai.pages * page_size);
+        if (0 != result)
         {
           throw std::bad_alloc();
         }
