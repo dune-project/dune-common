@@ -4,7 +4,7 @@
 #include "config.h"
 #endif
 
-#define DEBUG_ALLOCATOR_KEEP 1
+// #define DEBUG_ALLOCATOR_KEEP 1
 // #define DEBUG_NEW_DELETE 3
 
 #include <dune/common/debug_allocator.hh>

@@ -9,6 +9,7 @@
 #include <sys/mman.h>
 #include <vector>
 #include <iostream>
+#include <cstring>
 
 namespace Dune
 {
@@ -49,6 +50,28 @@ namespace Dune
       typedef std::vector<AllocationInfo> AllocationList;
       AllocationList allocation_list;
 
+    private:
+      void memprotect(void* from, difference_type len, int prot)
+      {
+        int result = mprotect(from, len, prot);
+        if (result == -1)
+        {
+
+          std::cerr << "ERROR: (" << result << ": " << strerror(result) << ")" << std::endl;
+          std::cerr << " Failed to ";
+          if (prot == PROT_NONE)
+            std::cerr << "protect ";
+          else
+            std::cerr << "unprotect ";
+          std::cerr << "memory range: "
+                    << from << ", "
+                    << static_cast<void*>(
+            static_cast<char*>(from) + len)
+                    << std::endl;
+          abort();
+        }
+      }
+
     public:
 
       ~AllocationManager ()
@@ -78,17 +101,17 @@ namespace Dune
         ai.capacity = n * sizeof(T);
         ai.pages = (ai.capacity) / page_size + 2;
         ai.not_free = true;
-        size_type skip = ai.capacity % page_size;
+        size_type overlap = ai.capacity % page_size;
         ai.page_ptr = memalign(page_size, ai.pages * page_size);
         if (0 == ai.page_ptr)
         {
           throw std::bad_alloc();
         }
-        ai.ptr = static_cast<char*>(ai.page_ptr) + page_size - skip;
+        ai.ptr = static_cast<char*>(ai.page_ptr) + page_size - overlap;
         // write protect memory behind the actual data
-        mprotect(static_cast<char*>(ai.page_ptr) + (ai.pages-1) * page_size,
-                 page_size,
-                 PROT_NONE);
+        memprotect(static_cast<char*>(ai.page_ptr) + (ai.pages-1) * page_size,
+                   page_size,
+                   PROT_NONE);
         // remember the chunk
         allocation_list.push_back(ai);
         // return the ptr
@@ -120,10 +143,14 @@ namespace Dune
             it->not_free = false;
 #if DEBUG_ALLOCATOR_KEEP
             // write protect old memory
-            mprotect(it->page_ptr,
-                     it->pages * page_size,
-                     PROT_NONE);
+            memprotect(it->page_ptr,
+                       (it->pages) * page_size,
+                       PROT_NONE);
 #else
+            // unprotect old memory
+            memprotect(it->page_ptr,
+                       (it->pages) * page_size,
+                       PROT_READ | PROT_WRITE);
             free(it->page_ptr);
             // remove chunk info
             allocation_list.erase(it);
