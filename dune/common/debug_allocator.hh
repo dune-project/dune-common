@@ -280,6 +280,7 @@ void operator delete(void * p) throw()
 #endif
   Dune::DebugMemory::alloc_man.deallocate<char>(static_cast<char*>(p));
 }
+
 #endif // DEBUG_NEW_DELETE
 
 #endif // DUNE_DEBUG_ALLOCATOR_HH

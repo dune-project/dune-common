@@ -79,6 +79,12 @@ void new_delete_tests()
   z2->foo();
   free(buf);
   z2 = 0;
+
+  std::cout << "alloc A[4]\n";
+  A * z4 = ::new A[4];
+  z4->foo();
+  ::delete[] z4;
+  z4 = 0;
 }
 
 int main(int argc, char** argv)
