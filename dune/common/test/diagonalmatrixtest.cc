@@ -47,7 +47,7 @@ void test_matrix()
   std::cout << f << std::endl;
 
   // assign to FieldMatrix
-  FieldMatrix<K,n,n> AFM = FieldMatrix<K,n,n>(A);
+  DUNE_UNUSED FieldMatrix<K,n,n> AFM = FieldMatrix<K,n,n>(A);
 }
 
 int main()
