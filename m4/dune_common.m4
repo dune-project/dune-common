@@ -14,8 +14,8 @@ AC_DEFUN([DUNE_COMMON_CHECKS],
   AC_REQUIRE([AC_PROG_AWK])
   AC_REQUIRE([ACX_LAPACK])
   AC_REQUIRE([AC_FC_WRAPPERS])
-  # defined $(mkdir_p), which is required during install
-  AC_REQUIRE([AM_PROG_MKDIR_P])
+  # defined $(MKDIR_P), which is required during install
+  AC_REQUIRE([AC_PROG_MKDIR_P])
 
   AC_REQUIRE([DUNE_CHECK_COMPILER])
   AC_REQUIRE([GXX0X])
