@@ -70,6 +70,7 @@ commoninclude_HEADERS = 			\
 	parametertreeparser.hh			\
 	path.hh					\
 	poolallocator.hh			\
+	power.hh				\
 	precision.hh				\
 	promotiontraits.hh			\
 	propertymap.hh				\
