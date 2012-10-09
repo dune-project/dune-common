@@ -30,6 +30,61 @@ namespace Dune {
     enum { power = 1 };
   };
 
+
+   #ifndef DOXYGEN
+  template <int p, bool odd = p%2>
+  struct PowerImp {};
+#endif
+
+  /** \brief Compute power for a run-time mantissa and a compile-time integer exponent
+   *
+   * Does some magic to create efficient code.  Not benchmarked AFAIK.
+   *
+   * \tparam p The exponent
+   */
+  template <int p>
+  struct Power
+  {
+    template <typename T>
+    static T eval(const T & a)
+    {
+      return PowerImp<p>::eval(a);
+    }
+  };
+
+#ifndef DOXYGEN
+  template <int p>
+  struct PowerImp<p,false>
+  {
+    template <typename T>
+    static T eval(const T & a)
+    {
+      T t = Power<p/2>::eval(a);
+      return t*t;
+    }
+  };
+
+  template <int p>
+  struct PowerImp<p,true>
+  {
+    template <typename T>
+    static T eval(const T & a)
+    {
+      return a*Power<p-1>::eval(a);;
+    }
+  };
+
+  template <>
+  struct PowerImp<1,true>
+  {
+    template <typename T>
+    static T eval(const T & a)
+    {
+      return a;
+    }
+  };
+#endif
+
 }
 
 #endif
