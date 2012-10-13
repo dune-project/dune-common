@@ -16,15 +16,15 @@ namespace Dune {
 
   //! Calculates m^p at compile time
   template <int m, int p>
-  struct Power_m_p
+  struct StaticPower
   {
     /** \brief power stores m^p */
-    enum { power = (m * Power_m_p<m,p-1>::power ) };
+    enum { power = (m * StaticPower<m,p-1>::power ) };
   };
 
   //! end of recursion via specialization
   template <int m>
-  struct Power_m_p< m , 0>
+  struct StaticPower< m , 0>
   {
     /** \brief m^0 = 1 */
     enum { power = 1 };
