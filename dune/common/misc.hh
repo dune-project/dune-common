@@ -67,7 +67,7 @@ namespace Dune {
 
   //! Calculates m^p at compile time
   template <int m, int p>
-  struct Power_m_p
+  struct DUNE_DEPRECATED_MSG ("Use class StaticPower from file power.hh instead")Power_m_p
   {
     // power stores m^p
     enum { power = (m * Power_m_p<m,p-1>::power ) };
@@ -75,7 +75,7 @@ namespace Dune {
 
   //! end of recursion via specialization
   template <int m>
-  struct Power_m_p< m , 0>
+  struct DUNE_DEPRECATED_MSG ("Use class StaticPower from file power.hh instead")Power_m_p< m , 0>
   {
     // m^0 = 1
     enum { power = 1 };
