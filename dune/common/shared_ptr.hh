@@ -112,6 +112,11 @@ namespace Dune
       return rep_==0 ? 0 : rep_->rep_;
     }
 
+    /** \brief Checks if shared_ptr manages an object, i.e. whether get() != 0. */
+    explicit operator bool() const {
+      return rep_ != 0 && rep_->rep_ != 0;
+    }
+
     /** \brief Swap content of this shared_ptr and another */
     inline void swap(shared_ptr& other);
 

@@ -128,6 +128,11 @@ int main(){
     shared_ptr<double> bar(new double(43.0));
     assert(bar);
 
+    // test constructor from nullptr
+    shared_ptr<double> bar_null(nullptr);
+    assert(!bar_null);
+    assert(!bar_null.get());
+
     // test reset()
     bar.reset();
     assert(!bar);
