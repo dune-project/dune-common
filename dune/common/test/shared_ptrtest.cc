@@ -14,6 +14,7 @@
 
 #if defined(DISABLE_CONFIGURED_SHARED_PTR) && defined(SHARED_PTR_NAMESPACE)
 #undef SHARED_PTR_NAMESPACE
+#undef HAVE_MAKE_SHARED
 #endif
 
 #include <dune/common/classname.hh>
@@ -47,12 +48,22 @@ class A {};
 class B : public A {};
 class C : A {};
 
+
+Dune::shared_ptr<A> test_make_shared()
+{
+  return Dune::make_shared<B>();
+}
+
+
 int main(){
   using namespace Dune;
   int ret=0;
   {
     // test default constructor
     shared_ptr<int> foo;
+
+    // test conversion in make_shared
+    shared_ptr<A> a=test_make_shared();
 
     // print the type of the shared_ptr, so we know whether we are
     // checking dune's shared_ptr or some std one

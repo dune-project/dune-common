@@ -43,6 +43,8 @@ namespace Dune
   template<class T>
   class shared_ptr
   {
+    template<class T1> friend class shared_ptr;
+
   public:
     /**
      * @brief The data type we are a pointer for.
@@ -64,7 +66,8 @@ namespace Dune
      * note: the object must be allocated on the heap and after handing the pointer to
      * shared_ptr the ownership of the pointer is also handed to the shared_ptr.
      */
-    inline shared_ptr(T * pointer);
+    template<class T1>
+    inline shared_ptr(T1 * pointer);
 
     /**
      * @brief Constructs a new smart pointer from a preallocated Object.
@@ -78,14 +81,15 @@ namespace Dune
      * note: the object must be allocated on the heap and after handing the pointer to
      * shared_ptr the ownership of the pointer is also handed to the shared_ptr.
      */
-    template<class Deleter>
-    inline shared_ptr(T * pointer, Deleter deleter);
+    template<class T1, class Deleter>
+    inline shared_ptr(T1 * pointer, Deleter deleter);
 
     /**
      * @brief Copy constructor.
      * @param pointer The object to copy.
      */
-    inline shared_ptr(const shared_ptr<T>& pointer);
+    template<class T1>
+    inline shared_ptr(const shared_ptr<T1>& pointer);
 
     /**
      * @brief Destructor.
@@ -93,7 +97,8 @@ namespace Dune
     inline ~shared_ptr();
 
     /** \brief Assignment operator */
-    inline shared_ptr& operator=(const shared_ptr<T>& pointer);
+    template<class T1>
+    inline shared_ptr& operator=(const shared_ptr<T1>& pointer);
 
     /** \brief Dereference as object */
     inline element_type& operator*();
@@ -121,11 +126,12 @@ namespace Dune
     inline void reset();
 
     /** \brief Detach shared pointer and set it anew for the given pointer */
-    inline void reset(T* pointer);
+    template<class T1>
+    inline void reset(T1* pointer);
 
     //** \brief Same as shared_ptr(pointer,deleter).swap(*this)
-    template<class Deleter>
-    inline void reset(T* pointer, Deleter deleter);
+    template<class T1, class Deleter>
+    inline void reset(T1* pointer, Deleter deleter);
 
     /** \brief The number of shared_ptrs pointing to the object we point to */
     int use_count() const;
@@ -134,14 +140,27 @@ namespace Dune
     /** @brief The object we reference. */
     class PointerRep
     {
-      friend class shared_ptr<element_type>;
+      template<class T1>
+      friend class shared_ptr;
     protected:
       /** @brief The number of references. */
       int count_;
       /** @brief The representative. */
       element_type * rep_;
       /** @brief Constructor from existing Pointer. */
-      PointerRep(element_type * p) : count_(1), rep_(p) {}
+      template<class T1>
+      PointerRep(T1 * p) : count_(1), rep_(p) {}
+      /** @brief Copy constructor with type conversion. */
+      template<class T1>
+      PointerRep(const typename shared_ptr<T1>::PointerRep& rep)
+        : count_(rep.count_), rep_(rep.rep_) {}
+
+      template<class T1>
+      operator typename shared_ptr<T1>::PointerRep()
+      {
+        return shared_ptr<T1>::PointerRep(*this);
+      }
+
       /** @brief Destructor, deletes element_type* rep_. */
       virtual ~PointerRep() {};
     };
@@ -151,14 +170,17 @@ namespace Dune
     class PointerRepImpl :
       public PointerRep
     {
-      friend class shared_ptr<element_type>;
-
+      template<class T1>
+      friend class shared_ptr;
       /** @brief Constructor from existing Pointer with custom deleter. */
       PointerRepImpl(element_type * p, const Deleter& deleter) :
         PointerRep(p),
         deleter_(deleter)
       {}
-
+      /** @brief Copy constructor with type conversion. */
+      template<class T1>
+      PointerRepImpl(const typename shared_ptr<T1>::PointerRepImpl& rep)
+        : PointerRep(rep), deleter_(rep.deleter_) {}
       /** @brief Destructor, deletes element_type* rep_ using deleter. */
       ~PointerRepImpl()
       { deleter_(this->rep_); }
@@ -191,14 +213,15 @@ namespace Dune
   };
 
   template<class T>
-  inline shared_ptr<T>::shared_ptr(T * p)
+  template<class T1>
+  inline shared_ptr<T>::shared_ptr(T1 * p)
   {
     rep_ = new PointerRepImpl<DefaultDeleter>(p, DefaultDeleter());
   }
 
   template<class T>
-  template<class Deleter>
-  inline shared_ptr<T>::shared_ptr(T * p, Deleter deleter)
+  template<class T1, class Deleter>
+  inline shared_ptr<T>::shared_ptr(T1 * p, Deleter deleter)
   {
     rep_ = new PointerRepImpl<Deleter>(p, deleter);
   }
@@ -210,14 +233,18 @@ namespace Dune
   }
 
   template<class T>
-  inline shared_ptr<T>::shared_ptr(const shared_ptr<T>& other) : rep_(other.rep_)
+  template<class T1>
+  inline shared_ptr<T>::shared_ptr(const shared_ptr<T1>& other) : rep_()
   {
+    rep_->count_=other.rep_->count_;
+    rep_->rep_=other.rep_->rep_;
     if (rep_)
       ++(rep_->count_);
   }
 
   template<class T>
-  inline shared_ptr<T>& shared_ptr<T>::operator=(const shared_ptr<T>& other)
+  template<class T1>
+  inline shared_ptr<T>& shared_ptr<T>::operator=(const shared_ptr<T1>& other)
   {
     if (other.rep_)
       (other.rep_->count_)++;
@@ -283,14 +310,15 @@ namespace Dune
   }
 
   template<class T>
-  inline void shared_ptr<T>::reset(T* pointer)
+  template<class T1>
+  inline void shared_ptr<T>::reset(T1* pointer)
   {
     shared_ptr<T>(pointer).swap(*this);
   }
 
   template<class T>
-  template<class Deleter>
-  inline void shared_ptr<T>::reset(T* pointer, Deleter deleter)
+  template<class T1, class Deleter>
+  inline void shared_ptr<T>::reset(T1* pointer, Deleter deleter)
   {
     shared_ptr<T>(pointer, deleter).swap(*this);
   }
