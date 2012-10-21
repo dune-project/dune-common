@@ -58,6 +58,8 @@ namespace Dune
      */
     inline shared_ptr();
 
+    inline shared_ptr(nullptr_t null);
+
     /**
      * @brief Constructs a new smart pointer from a preallocated Object.
      *
@@ -68,6 +70,7 @@ namespace Dune
      */
     template<class T1>
     inline shared_ptr(T1 * pointer);
+
 
     /**
      * @brief Constructs a new smart pointer from a preallocated Object.
@@ -90,6 +93,12 @@ namespace Dune
      */
     template<class T1>
     inline shared_ptr(const shared_ptr<T1>& pointer);
+
+    /**
+     * @brief Copy constructor.
+     * @param pointer The object to copy.
+     */
+    inline shared_ptr(const shared_ptr& pointer);
 
     /**
      * @brief Destructor.
@@ -160,14 +169,11 @@ namespace Dune
       PointerRep(const typename shared_ptr<T1>::PointerRep& rep)
         : count_(rep.count_), rep_(rep.rep_) {}
 
-      template<class T1>
-      operator typename shared_ptr<T1>::PointerRep()
-      {
-        return shared_ptr<T1>::PointerRep(*this);
-      }
-
       /** @brief Destructor, deletes element_type* rep_. */
       virtual ~PointerRep() {};
+    private:
+      template<class T1>
+      PointerRep(T1 * p, int count) : count_(count), rep_(p) {}
     };
 
     /** @brief Adds call to deleter to PointerRep. */
@@ -225,6 +231,12 @@ namespace Dune
   }
 
   template<class T>
+  inline shared_ptr<T>::shared_ptr(nullptr_t n)
+  {
+    rep_ = new PointerRepImpl<DefaultDeleter>(n, DefaultDeleter());
+  }
+
+  template<class T>
   template<class T1, class Deleter>
   inline shared_ptr<T>::shared_ptr(T1 * p, Deleter deleter)
   {
@@ -239,10 +251,14 @@ namespace Dune
 
   template<class T>
   template<class T1>
-  inline shared_ptr<T>::shared_ptr(const shared_ptr<T1>& other) : rep_()
+  inline shared_ptr<T>::shared_ptr(const shared_ptr<T1>& other) : rep_(new PointerRep(other.rep_->rep_, other.rep_->count_))
   {
-    rep_->count_=other.rep_->count_;
-    rep_->rep_=other.rep_->rep_;
+    //Due to type conversion we have constructed a new RepPointer, no need to increment count.
+  }
+
+  template<class T>
+  inline shared_ptr<T>::shared_ptr(const shared_ptr& other) : rep_(other.rep_)
+  {
     if (rep_)
       ++(rep_->count_);
   }
