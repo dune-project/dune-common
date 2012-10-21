@@ -33,6 +33,26 @@ namespace Dune
    *
    * @{
    */
+
+  /** @brief The object we reference. */
+  class SharedCount
+  {
+    template<class T1>
+    friend class shared_ptr;
+  protected:
+    /** @brief The number of references. */
+    int count_;
+    /** @brief Constructor from existing Pointer. */
+    SharedCount() : count_(1) {}
+    /** @brief Copy constructor with type conversion. */
+    template<class T1>
+    SharedCount(const SharedCount& rep)
+      : count_(rep.count_) {}
+
+    /** @brief Destructor, deletes element_type* rep_. */
+    virtual ~SharedCount() {};
+
+  };
   /**
    * @brief A reference counting smart pointer.
    *
@@ -123,12 +143,12 @@ namespace Dune
 
     /** \brief Access to the raw pointer, if you really want it */
     element_type* get() const {
-      return rep_==0 ? 0 : rep_->rep_;
+      return rep_;
     }
 
     /** \brief Checks if shared_ptr manages an object, i.e. whether get() != 0. */
     operator bool() const {
-      return rep_ != 0 && rep_->rep_ != 0;
+      return count_->count_ != 0 && rep_ != nullptr;
     }
 
     /** \brief Swap content of this shared_ptr and another */
@@ -151,53 +171,30 @@ namespace Dune
     int use_count() const;
 
   private:
-    /** @brief The object we reference. */
-    class PointerRep
-    {
-      template<class T1>
-      friend class shared_ptr;
-    protected:
-      /** @brief The number of references. */
-      int count_;
-      /** @brief The representative. */
-      element_type * rep_;
-      /** @brief Constructor from existing Pointer. */
-      template<class T1>
-      PointerRep(T1 * p) : count_(1), rep_(p) {}
-      /** @brief Copy constructor with type conversion. */
-      template<class T1>
-      PointerRep(const typename shared_ptr<T1>::PointerRep& rep)
-        : count_(rep.count_), rep_(rep.rep_) {}
 
-      /** @brief Destructor, deletes element_type* rep_. */
-      virtual ~PointerRep() {};
-    private:
-      template<class T1>
-      PointerRep(T1 * p, int count) : count_(count), rep_(p) {}
-    };
-
-    /** @brief Adds call to deleter to PointerRep. */
+    /** @brief Adds call to deleter to SharedCount. */
     template<class Deleter>
-    class PointerRepImpl :
-      public PointerRep
+    class SharedCountImpl :
+      public SharedCount
     {
       template<class T1>
       friend class shared_ptr;
       /** @brief Constructor from existing Pointer with custom deleter. */
-      PointerRepImpl(element_type * p, const Deleter& deleter) :
-        PointerRep(p),
+      SharedCountImpl(T* elem,const Deleter& deleter) :
+        SharedCount(),
+        rep_(elem),
         deleter_(deleter)
       {}
       /** @brief Copy constructor with type conversion. */
-      template<class T1>
-      PointerRepImpl(const typename shared_ptr<T1>::PointerRepImpl& rep)
-        : PointerRep(rep), deleter_(rep.deleter_) {}
+      SharedCountImpl(const SharedCountImpl& rep)
+        : SharedCount(rep), deleter_(rep.deleter_) {}
       /** @brief Destructor, deletes element_type* rep_ using deleter. */
-      ~PointerRepImpl()
-      { deleter_(this->rep_); }
+      ~SharedCountImpl()
+      { deleter_(rep_); }
 
       // store a copy of the deleter
       Deleter deleter_;
+      T* rep_;
     };
 
     /** \brief A default deleter that just calls delete */
@@ -208,16 +205,17 @@ namespace Dune
     };
 
 
-    PointerRep *rep_;
+    SharedCount *count_;
+    T *rep_;
 
     // Needed for the implicit conversion to "bool"
-    typedef T* shared_ptr::PointerRep::*__unspecified_bool_type;
+    typedef T* SharedCount::*__unspecified_bool_type;
 
   public:
     /** \brief Implicit conversion to "bool" */
     operator __unspecified_bool_type() const     // never throws
     {
-      return rep_ == 0 ? 0 : &shared_ptr::PointerRep::rep_;
+      return rep_ == 0 ? 0 : &shared_ptr::SharedCount::rep_;
     }
 
 
@@ -227,101 +225,115 @@ namespace Dune
   template<class T1>
   inline shared_ptr<T>::shared_ptr(T1 * p)
   {
-    rep_ = new PointerRepImpl<DefaultDeleter>(p, DefaultDeleter());
+    rep_ = p;
+    count_ = new SharedCountImpl<DefaultDeleter>(p, DefaultDeleter());
   }
 
   template<class T>
   inline shared_ptr<T>::shared_ptr(nullptr_t n)
   {
-    rep_ = new PointerRepImpl<DefaultDeleter>(n, DefaultDeleter());
+    rep_   = n;
+    count_ = new SharedCountImpl<DefaultDeleter>(rep_, DefaultDeleter());
+    count_->count_=0;
   }
 
   template<class T>
   template<class T1, class Deleter>
   inline shared_ptr<T>::shared_ptr(T1 * p, Deleter deleter)
   {
-    rep_ = new PointerRepImpl<Deleter>(p, deleter);
+    rep_ = p;
+    count_ = new SharedCountImpl<Deleter>(p, deleter);
   }
 
   template<class T>
   inline shared_ptr<T>::shared_ptr()
   {
     rep_ = nullptr;
+    count_ = new SharedCountImpl<DefaultDeleter>(rep_, DefaultDeleter());
+    count_->count_=0;
   }
 
   template<class T>
   template<class T1>
-  inline shared_ptr<T>::shared_ptr(const shared_ptr<T1>& other) : rep_(new PointerRep(other.rep_->rep_, other.rep_->count_))
+  inline shared_ptr<T>::shared_ptr(const shared_ptr<T1>& other)
+    : rep_(other.rep_), count_(other.count_)
   {
-    //Due to type conversion we have constructed a new RepPointer, no need to increment count.
+    if (rep_)
+      ++(count_->count_);
   }
 
   template<class T>
-  inline shared_ptr<T>::shared_ptr(const shared_ptr& other) : rep_(other.rep_)
+  inline shared_ptr<T>::shared_ptr(const shared_ptr& other)
+    : rep_(other.rep_), count_(other.count_)
   {
     if (rep_)
-      ++(rep_->count_);
+      ++(count_->count_);
   }
 
   template<class T>
   template<class T1>
   inline shared_ptr<T>& shared_ptr<T>::operator=(const shared_ptr<T1>& other)
   {
-    if (other.rep_)
-      (other.rep_->count_)++;
+    if (other.count_)
+      (other.count_->count_)++;
 
-    if(rep_!=0 && --(rep_->count_)<=0)
-      delete rep_;
+    if(rep_!=0 && --(count_->count_)<=0) {
+      delete count_;
+    }
 
     rep_ = other.rep_;
+    count_ = other.count_;
     return *this;
   }
 
   template<class T>
   inline shared_ptr<T>::~shared_ptr()
   {
-    if(rep_!=0 && --(rep_->count_)==0) {
-      delete rep_;
-      rep_=0;
+    if(rep_!=nullptr && --(count_->count_)==0) {
+      delete count_;
+      rep_=nullptr;
     }
   }
 
   template<class T>
   inline T& shared_ptr<T>::operator*()
   {
-    return *(rep_->rep_);
+    return *(rep_);
   }
 
   template<class T>
   inline T *shared_ptr<T>::operator->()
   {
-    return rep_->rep_;
+    return rep_;
   }
 
   template<class T>
   inline const T& shared_ptr<T>::operator*() const
   {
-    return *(rep_->rep_);
+    return *(rep_);
   }
 
   template<class T>
   inline const T *shared_ptr<T>::operator->() const
   {
-    return rep_->rep_;
+    return rep_;
   }
 
   template<class T>
   inline int shared_ptr<T>::use_count() const
   {
-    return rep_->count_;
+    return count_->count_;
   }
 
   template<class T>
   inline void shared_ptr<T>::swap(shared_ptr<T>& other)
   {
-    PointerRep* dummy = rep_;
+    SharedCount* dummy = count_;
+    count_=other.count_;
+    other.count_ = dummy;
+    T* tdummy=rep_;
     rep_ = other.rep_;
-    other.rep_ = dummy;
+    other.rep_ = tdummy;
   }
 
   template<class T>
