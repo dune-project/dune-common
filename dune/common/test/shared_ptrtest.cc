@@ -65,6 +65,23 @@ int main(){
     // test conversion in make_shared
     shared_ptr<A> a=test_make_shared();
 
+    {
+      shared_ptr<B> b(new B);
+      a=b;
+
+      if(b.use_count()!=2) {
+        std::cout << "Reference count is wrong! "<<__LINE__<<":"<<
+        __FILE__<<std::endl;
+        ret=1;
+      }
+
+      if(a.use_count()!=2) {
+        std::cout << "Reference count is wrong! "<<__LINE__<<":"<<
+        __FILE__<<std::endl;
+        ret=1;
+      }
+
+    }
     // print the type of the shared_ptr, so we know whether we are
     // checking dune's shared_ptr or some std one
     std::cout << "=== checking shared_ptr type: " << className(foo)
