@@ -209,15 +209,14 @@ namespace Dune
     T *rep_;
 
     // Needed for the implicit conversion to "bool"
-    typedef T* SharedCount::*__unspecified_bool_type;
+    typedef T* *__unspecified_bool_type;
 
   public:
     /** \brief Implicit conversion to "bool" */
     operator __unspecified_bool_type() const     // never throws
     {
-      return rep_ == 0 ? 0 : &shared_ptr::SharedCount::rep_;
+      return rep_ == 0 ? 0 : &shared_ptr::rep_;
     }
-
 
   };
 
@@ -232,7 +231,7 @@ namespace Dune
   template<class T>
   inline shared_ptr<T>::shared_ptr(nullptr_t n)
   {
-    rep_   = n;
+    rep_   = 0;
     count_ = new SharedCountImpl<DefaultDeleter>(rep_, DefaultDeleter());
     count_->count_=0;
   }
@@ -248,7 +247,7 @@ namespace Dune
   template<class T>
   inline shared_ptr<T>::shared_ptr()
   {
-    rep_ = nullptr;
+    rep_ = 0;
     count_ = new SharedCountImpl<DefaultDeleter>(rep_, DefaultDeleter());
     count_->count_=0;
   }
