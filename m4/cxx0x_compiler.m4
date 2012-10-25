@@ -9,7 +9,7 @@ AC_DEFUN([GXX0X],[
     AC_REQUIRE([AC_PROG_CXX])
     AC_ARG_ENABLE(gxx0xcheck,
       AC_HELP_STRING([--disable-gxx0xcheck],
-        [try flag -std=c++11 to enable C++11 features [[default=yes]]]),
+        [Skip test whether compiler supports flag -std=c++11 and -std=cxx0x to enable C++11 features (with this option C++11 features will not be activated)]),
         [gxx0xcheck=$enableval],
         [gxx0xcheck=yes])
     if test "x$GXX" = xyes && test "x$gxx0xcheck" = xyes; then
@@ -33,11 +33,6 @@ AC_DEFUN([GXX0X],[
     # try flag -std=c++0x instead
     AC_CACHE_CHECK([whether $CXX accepts -std=c++0x], dune_cv_gplusplus_accepts_cplusplus0x, [
       AC_REQUIRE([AC_PROG_CXX])
-      AC_ARG_ENABLE(gxx0xcheck,
-        AC_HELP_STRING([--disable-gxx0xcheck],
-          [try flag -std=c++0x to enable C++11 features [[default=yes]]]),
-          [gxx0xcheck=$enableval],
-          [gxx0xcheck=yes])
       if test "x$GXX" = xyes && test "x$gxx0xcheck" = xyes; then
         AC_LANG_PUSH([C++])
         CXX="$CXX -std=c++0x"
