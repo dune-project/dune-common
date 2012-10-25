@@ -9,7 +9,7 @@ AC_DEFUN([GXX0X],[
     AC_REQUIRE([AC_PROG_CXX])
     AC_ARG_ENABLE(gxx0xcheck,
       AC_HELP_STRING([--disable-gxx0xcheck],
-        [Skip test whether compiler supports flag -std=c++11 and -std=cxx0x to enable C++11 features (with this option C++11 features will not be activated)]),
+        [Skip test whether compiler supports flag -std=c++11 and -std=c++0x to enable C++11 features (with this option C++11 features will not be activated)]),
         [gxx0xcheck=$enableval],
         [gxx0xcheck=yes])
     if test "x$GXX" = xyes && test "x$gxx0xcheck" = xyes; then
