@@ -129,6 +129,9 @@ namespace Dune
     template<class T1>
     inline shared_ptr& operator=(const shared_ptr<T1>& pointer);
 
+    /** \brief Assignment operator */
+    inline shared_ptr& operator=(const shared_ptr& pointer);
+
     /** \brief Dereference as object */
     inline element_type& operator*();
 
@@ -148,7 +151,7 @@ namespace Dune
 
     /** \brief Checks if shared_ptr manages an object, i.e. whether get() != 0. */
     operator bool() const {
-      return count_->count_ != 0 && rep_ != nullptr;
+      return count_ != 0 && rep_ != 0;
     }
 
     /** \brief Swap content of this shared_ptr and another */
@@ -171,7 +174,9 @@ namespace Dune
     int use_count() const;
 
   private:
-
+    /** \brief Assignment operator */
+    template<class T1>
+    inline shared_ptr& assign(const shared_ptr<T1>& pointer);
     /** @brief Adds call to deleter to SharedCount. */
     template<class Deleter>
     class SharedCountImpl :
@@ -232,8 +237,7 @@ namespace Dune
   inline shared_ptr<T>::shared_ptr(nullptr_t n)
   {
     rep_   = 0;
-    count_ = new SharedCountImpl<DefaultDeleter>(rep_, DefaultDeleter());
-    count_->count_=0;
+    count_ = 0;
   }
 
   template<class T>
@@ -248,8 +252,7 @@ namespace Dune
   inline shared_ptr<T>::shared_ptr()
   {
     rep_ = 0;
-    count_ = new SharedCountImpl<DefaultDeleter>(rep_, DefaultDeleter());
-    count_->count_=0;
+    count_=0;
   }
 
   template<class T>
@@ -273,6 +276,19 @@ namespace Dune
   template<class T1>
   inline shared_ptr<T>& shared_ptr<T>::operator=(const shared_ptr<T1>& other)
   {
+    return assign(other);
+  }
+
+  template<class T>
+  inline shared_ptr<T>& shared_ptr<T>::operator=(const shared_ptr& other)
+  {
+    return assign(other);
+  }
+
+  template<class T>
+  template<class T1>
+  inline shared_ptr<T>& shared_ptr<T>::assign(const shared_ptr<T1>& other)
+  {
     if (other.count_)
       (other.count_->count_)++;
 
@@ -288,9 +304,9 @@ namespace Dune
   template<class T>
   inline shared_ptr<T>::~shared_ptr()
   {
-    if(rep_!=nullptr && --(count_->count_)==0) {
+    if(rep_!=0 && --(count_->count_)==0) {
       delete count_;
-      rep_=nullptr;
+      rep_=0;
     }
   }
 
