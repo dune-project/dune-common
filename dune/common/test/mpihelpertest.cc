@@ -4,7 +4,7 @@
 #include "config.h"
 #endif
 
-#include <dune/common/mpihelper.hh>
+#include <dune/common/parallel/mpihelper.hh>
 #include <iostream>
 
 int main(int argc, char** argv)

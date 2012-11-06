@@ -7,9 +7,9 @@
 
 #include "localindex.hh"
 #include "indexset.hh"
-#include <iostream>
+#include "mpitraits.hh"
 
-#include <dune/common/mpitraits.hh>
+#include <iostream>
 
 namespace Dune
 {
