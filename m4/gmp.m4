@@ -75,6 +75,12 @@ AC_DEFUN([DUNE_CHECK_PATH_GMP],[
       HAVE_GMP=no
       AC_MSG_WARN(libgmp not found)])
   ])
+  
+  AS_IF([test $HAVE_GMP = yes],[
+    DUNE_CHECK_LIB_EXT([$1/lib], gmpxx,[__gmpz_abs],[],[
+      HAVE_GMP=no
+      AC_MSG_WARN(libgmpxx not found)])
+  ])
 
   CPPFLAGS="$ac_save_CPPFLAGS"
   LIBS="$ac_save_LIBS"
