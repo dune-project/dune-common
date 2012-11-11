@@ -30,15 +30,29 @@ AC_DEFUN([DUNE_PATH_GMP],[
   AS_IF([test x"$with_gmp" = x"no"], [
     AC_MSG_NOTICE([skipping check for GMP])
   ], [
-    AS_IF([test x"$with_gmp" = x || test x"$with_gmp" = xyes], [
-      for d in /usr /usr/local; do
-        AC_MSG_NOTICE([searching for GMP in $d...])
-        DUNE_CHECK_PATH_GMP($d)
-        AS_IF([test $HAVE_GMP = yes],[break])
-      done],[
-      DUNE_CHECK_PATH_GMP($with_gmp)
+    AC_CACHE_CHECK([for GMP], dune_cv_gmp_path, [
+      dune_cv_gmp_path=no
+      AS_IF([test x"$with_gmp" = x || test x"$with_gmp" = xyes], [
+        for d in /usr /usr/local; do
+          AC_MSG_NOTICE([searching for GMP in $d...])
+          DUNE_CHECK_PATH_GMP($d)
+          AS_IF([test $HAVE_GMP = yes],[
+            dune_cv_gmp_path=$d
+            break
+          ])
+        done],[
+        DUNE_CHECK_PATH_GMP($with_gmp)
+        AS_IF([test $HAVE_GMP = yes],[
+          dune_cv_gmp_path=$with_gmp
+        ])
+      ])
     ])
 
+    if test "x$dune_cv_gmp_path" != xno; then
+      HAVE_GMP=yes
+      GMP_CPPFLAGS="-I$dune_cv_gmp_path/include -DENABLE_GMP=1"
+      GMP_LIBS="-L$dune_cv_gmp_path/lib -lgmpxx -lgmp"
+    fi
   ])
 
   AS_IF([test $HAVE_GMP = yes],[
