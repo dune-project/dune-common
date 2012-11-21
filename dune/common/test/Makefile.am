@@ -11,6 +11,7 @@ TESTPROGS = \
     diagonalmatrixtest \
     dynmatrixtest \
     dynvectortest \
+    eigenvaluestest \
     enumsettest \
     fassigntest \
     fmatrixtest \
@@ -160,6 +161,9 @@ iteratorfacadetest2_SOURCES = iteratorfacadetest2.cc
 dynmatrixtest_SOURCES = dynmatrixtest.cc
 
 dynvectortest_SOURCES = dynvectortest.cc
+
+eigenvaluestest_SOURCES = eigenvaluestest.cc
+eigenvaluestest_LDADD = $(LAPACK_LIBS) $(LDADD) $(BLAS_LIBS) $(LIBS) $(FLIBS)
 
 fmatrixtest_SOURCES = fmatrixtest.cc
 fmatrixtest_LDADD = $(LAPACK_LIBS) $(LDADD) $(BLAS_LIBS) $(LIBS) $(FLIBS)

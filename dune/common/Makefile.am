@@ -8,6 +8,7 @@ noinst_LTLIBRARIES = libcommon.la
 libcommon_la_SOURCES =				\
 	debugallocator.cc			\
 	fmatrixev.cc \
+	dynmatrixev.cc                           \
 	ios_state.cc				\
 	parametertree.cc                        \
 	parametertreeparser.cc			\
