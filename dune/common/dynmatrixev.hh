@@ -16,6 +16,13 @@ namespace Dune {
       const long int* ldvl, double* vr, const long int* ldvr, double* work,
       const long int* lwork, const long int* info);
 
+    /** \brief calculates the eigenvalues of a symetric field matrix
+        \param[in]  matrix matrix eigenvalues are calculated for
+        \param[out] eigenvalues FieldVector that contains eigenvalues in
+                    ascending order
+
+        \note LAPACK::dgeev is used to calculate the eigen values
+     */
     template <typename K, class C>
     static void eigenValuesNonSym(const DynamicMatrix<K>& matrix,
                                   DynamicVector<C>& eigenValues)

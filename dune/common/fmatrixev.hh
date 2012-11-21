@@ -127,7 +127,13 @@ namespace Dune {
         }
       }
     }
+    /** \brief calculates the eigenvalues of a symetric field matrix
+        \param[in]  matrix matrix eigenvalues are calculated for
+        \param[out] eigenvalues FieldVector that contains eigenvalues in
+                    ascending order
 
+        \note LAPACK::dgeev is used to calculate the eigen values
+     */
     template <int dim, typename K, class C>
     static void eigenValuesNonSym(const FieldMatrix<K, dim, dim>& matrix,
                                   FieldVector<C, dim>& eigenValues)
