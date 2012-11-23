@@ -143,9 +143,6 @@ namespace Dune {
         const char jobvl = 'n';
         const char jobvr = 'n';
 
-        // length of matrix vector
-        const long int w = N * N ;
-
         // matrix to put into dgeev
         double matrixVector[dim * dim];
 

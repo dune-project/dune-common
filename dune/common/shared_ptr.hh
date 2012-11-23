@@ -187,8 +187,8 @@ namespace Dune
       /** @brief Constructor from existing Pointer with custom deleter. */
       SharedCountImpl(T* elem,const Deleter& deleter) :
         SharedCount(),
-        rep_(elem),
-        deleter_(deleter)
+        deleter_(deleter),
+        rep_(elem)
       {}
       /** @brief Copy constructor with type conversion. */
       SharedCountImpl(const SharedCountImpl& rep)
@@ -258,7 +258,7 @@ namespace Dune
   template<class T>
   template<class T1>
   inline shared_ptr<T>::shared_ptr(const shared_ptr<T1>& other)
-    : rep_(other.rep_), count_(other.count_)
+    : count_(other.count_), rep_(other.rep_)
   {
     if (rep_)
       ++(count_->count_);
@@ -266,7 +266,7 @@ namespace Dune
 
   template<class T>
   inline shared_ptr<T>::shared_ptr(const shared_ptr& other)
-    : rep_(other.rep_), count_(other.count_)
+    : count_(other.count_), rep_(other.rep_)
   {
     if (rep_)
       ++(count_->count_);

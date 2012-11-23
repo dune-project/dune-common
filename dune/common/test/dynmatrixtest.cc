@@ -3,7 +3,10 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+// Activate checking
+#ifndef DUNE_ISTL_WITH_CHECKING
 #define DUNE_ISTL_WITH_CHECKING
+#endif
 #include <dune/common/dynmatrix.hh>
 #include <dune/common/dynvector.hh>
 #include <dune/common/fvector.hh>
