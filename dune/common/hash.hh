@@ -11,6 +11,23 @@
 #include <tr1/functional>
 #endif
 
+#if HAVE_BOOST
+
+#include <boost/version.hpp>
+
+// Boost 1.34.0 seems to be the first usable version of boost::functional::hash
+#if BOOST_VERSION >= 103400
+#define HAVE_BOOST_HASH 1
+
+// only pull in boost if really necessary
+#if !HAVE_STD_HASH && !HAVE_TR1_HASH
+
+#include <boost/functional/hash.hpp>
+
+#endif // !HAVE_STD_HASH && !HAVE_TR1_HASH
+#endif // BOOST_VERSION >= 103400
+#endif // HAVE_BOOST
+
 /**
  * \file
  * \brief Support for calculating hash values of objects.
@@ -37,7 +54,7 @@ namespace Dune {
    * boost::hash, so it is possible to use Dune::hash in associative containers from
    * those libraries.
    *
-   * The current implementation piggybacks on top of C++11 or TR1, in that order.
+   * The current implementation piggybacks on top of C++11, TR1 or Boost, in that order.
    * As there is no local fallback implementation, hashing will not work without at least
    * one of those dependencies installed.
    */
@@ -270,7 +287,31 @@ namespace Dune {
 #endif // HAVE_STD_HASH || HAVE_TR1_HASH
 
 
+
+// ********************************************************************************
+// Boost support
+// ********************************************************************************
+
+#if !HAVE_DUNE_HASH && HAVE_BOOST_HASH
+// We haven't found a hash implementation yet and Boost is available
+
+// Announce that we provide Dune::hash
+#define HAVE_DUNE_HASH 1
+
+// import boost::hash into Dune namespace
+namespace Dune {
+
+  using boost::hash;
+
+}
+
+// We no not need to register our types with boost::hash, as its extension
+// mechanism will automatically pick up the global hash_value() functions.
+
+#endif // !HAVE_DUNE_HASH && HAVE_BOOST_HASH
+
 #endif // DOXYGEN
+
 
 
 // ********************************************************************************

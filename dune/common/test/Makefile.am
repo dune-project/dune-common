@@ -123,6 +123,7 @@ static_assert_test_fail_SOURCES = static_assert_test_fail.cc
 fassigntest_SOURCES = fassigntest.cc
 
 bigunsignedinttest_SOURCES=bigunsignedinttest.cc
+bigunsignedinttest_CPPFLAGS = $(AM_CPPFLAGS) $(BOOST_CPPFLAGS)
 
 lrutest_SOURCES = lrutest.cc
 
