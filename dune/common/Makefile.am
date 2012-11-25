@@ -52,6 +52,7 @@ commoninclude_HEADERS = 			\
 	gcd.hh					\
 	genericiterator.hh			\
 	gmpfield.hh				\
+	hash.hh					\
 	indent.hh				\
 	interfaces.hh				\
 	ios_state.hh				\
