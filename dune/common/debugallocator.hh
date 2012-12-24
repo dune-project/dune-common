@@ -277,7 +277,7 @@ namespace Dune
     template<typename ... _Args>
     void construct(pointer p, _Args&&... __args)
     {
-      ::new((void *)p)_Tp(std::forward<_Args>(__args) ...);
+      ::new((void *)p)T(std::forward<_Args>(__args) ...);
     }
 #endif
     //! destroy an object of type T (i.e. call the Destructor)
