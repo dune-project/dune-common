@@ -37,6 +37,26 @@ AC_DEFUN([DUNE_TR1_HEADERS], [
      AS_IF([test "x$dune_cv_integral_constant_cplusplus11" != "xno"],[
        AC_DEFINE([HAVE_INTEGRAL_CONSTANT], 1, [Define to 1 if std::integral_constant< T, v > is supported and casts into T])
      ])
+     AC_CACHE_CHECK([whether std::hash from C++11 is supported], dune_cv_hash_cplusplus11, [
+       AC_COMPILE_IFELSE(
+         [AC_LANG_PROGRAM([[#include <functional>]],
+               [[std::hash<int> hasher; hasher(42);]])],
+         dune_cv_hash_cplusplus11=yes,
+         dune_cv_hash_cplusplus11=no)
+       ])
+     AS_IF([test "x$dune_cv_hash_cplusplus11" != "xno"],
+       [AC_DEFINE([HAVE_STD_HASH], 1, [Define to 1 if the std::hash template from C++11 is available])
+     ])
+     AC_CACHE_CHECK([whether std::tr1::hash from TR1 is supported], dune_cv_hash_cplusplustr1, [
+       AC_COMPILE_IFELSE(
+         [AC_LANG_PROGRAM([[#include <tr1/functional>]],
+               [[std::tr1::hash<int> hasher; hasher(42);]])],
+         dune_cv_hash_cplusplustr1=yes,
+         dune_cv_hash_cplusplustr1=no)
+       ])
+     AS_IF([test "x$dune_cv_hash_cplusplustr1" != "xno"],
+       [AC_DEFINE([HAVE_TR1_HASH], 1, [Define to 1 if the std::tr1::hash template from TR1 is available])
+     ])
   ])
   AC_LANG_POP([C++])
 ])

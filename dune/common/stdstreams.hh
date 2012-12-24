@@ -2,10 +2,13 @@
 // vi: set et ts=4 sw=2 sts=2:
 // $Id$
 
-/*
+/**
+   \file
+   \brief Standard Dune debug streams
 
-   Declaration of standard Dune-library streams
-
+   The standard debug streams are compiled into libdune to exist
+   globally. This file declares the stream types and the global debug
+   level.
  */
 
 #ifndef DUNE_COMMON_STDSTREAMS_HH
@@ -15,39 +18,32 @@
 
 namespace Dune {
 
-  /*!
-     \addtogroup DebugOut
-     @{
+  /**
+      \addtogroup DebugOut
+      @{
 
-     standard debug streams with level below MINIMAL_DEBUG_LEVEL will
-     collapse to doing nothing if output is requested.
+      standard debug streams with level below MINIMAL_DEBUG_LEVEL will
+      collapse to doing nothing if output is requested.
 
-     MINIMAL_DEBUG_LEVEL is set to DUNE_MINIMAL_DEBUG_LEVEL, wich is
-     defined in config.h and can be changed by the configure option
-     @code --with-minimal-debug-level=[grave|warn|info|verb|vverb] @endcode
+      MINIMAL_DEBUG_LEVEL is set to DUNE_MINIMAL_DEBUG_LEVEL, wich is
+      defined in config.h and can be changed by the configure option
+      @code --with-minimal-debug-level=[grave|warn|info|verb|vverb] @endcode
 
-     For a Dune-Release this should be set to at least 4 so that only
-     important messages are active. Dune-developers may adapt this
-     setting to their debugging needs locally
+      For a Dune-Release this should be set to at least 4 so that only
+      important messages are active. Dune-developers may adapt this
+      setting to their debugging needs locally
 
-     Keep in mind that libdune has to be recompiled if this value is changed!
+      Keep in mind that libdune has to be recompiled if this value is changed!
 
 
 
-     The singleton instances of the available debug streams can be found in
-     the \ref DebugOut "Standard Debug Streams" module
+      The singleton instances of the available debug streams can be found in
+      the \ref DebugOut "Standard Debug Streams" module
+
+      @}
    */
 
-  /*! \file
-      \brief Standard Dune debug streams
-
-     The standard debug streams are compiled into libdune to exist
-     globally. This file declares the stream types and the global debug
-     level.
-
-   */
-  /*! @} */
-  /*!
+  /**
      \defgroup StdStreams Standard Debug Streams
      \ingroup DebugOut
      @{
@@ -61,19 +57,19 @@ namespace Dune {
    */
 
   /**
-   * @brief The default minimum debug level.
-   *
-   * If the  level of a stream is bigger than this value
-   * it will be activated.
+      @brief The default minimum debug level.
+
+      If the  level of a stream is bigger than this value
+      it will be activated.
    */
-  #ifndef DUNE_MINIMAL_DEBUG_LEVEL
-  #define DUNE_MINIMAL_DEBUG_LEVEL 4
-  #endif
+#ifndef DUNE_MINIMAL_DEBUG_LEVEL
+#define DUNE_MINIMAL_DEBUG_LEVEL 4
+#endif
   static const DebugLevel MINIMAL_DEBUG_LEVEL = DUNE_MINIMAL_DEBUG_LEVEL;
 
   /**
-   * @brief The level of the very verbose debug stream.
-   * @see dvverb
+      @brief The level of the very verbose debug stream.
+      @see dvverb
    */
   static const DebugLevel VERY_VERBOSE_DEBUG_LEVEL = 1;
 
@@ -83,23 +79,23 @@ namespace Dune {
    */
   typedef DebugStream<VERY_VERBOSE_DEBUG_LEVEL, MINIMAL_DEBUG_LEVEL> DVVerbType;
 
-  /*!
-     \brief stream for very verbose output.
+  /**
+      \brief stream for very verbose output.
 
-     \code
+      \code
      #include <dune/common/stdstreams.hh>
-     \endcode
+      \endcode
 
-     Information on the lowest
-     level. This is expected to report insane amounts of
-     information. Use of the activation-flag to only generate output
-     near the problem is recommended.
+      Information on the lowest
+      level. This is expected to report insane amounts of
+      information. Use of the activation-flag to only generate output
+      near the problem is recommended.
    */
   extern DVVerbType dvverb;
 
   /**
-   * @brief The level of the verbose debug stream.
-   * @see dvverb
+      @brief The level of the verbose debug stream.
+      @see dvverb
    */
   static const DebugLevel VERBOSE_DEBUG_LEVEL = 2;
 
@@ -110,17 +106,17 @@ namespace Dune {
   typedef DebugStream<VERBOSE_DEBUG_LEVEL, MINIMAL_DEBUG_LEVEL> DVerbType;
 
   /**
-   * @brief Singleton of verbose debug stream.
-   *
-   * \code
-   *#include <dune/common/stdstreams.hh>
-   * \endcode
+     @brief Singleton of verbose debug stream.
+
+     \code
+     #include <dune/common/stdstreams.hh>
+     \endcode
    */
   extern DVerbType dverb;
 
   /**
-   * @brief The level of the informative debug stream.
-   * @see dinfo
+      @brief The level of the informative debug stream.
+      @see dinfo
    */
   static const DebugLevel INFO_DEBUG_LEVEL = 3;
 
@@ -143,8 +139,8 @@ namespace Dune {
   extern DInfoType dinfo;
 
   /**
-   * @brief The level of the debug stream for warnings.
-   * @see dwarn
+      @brief The level of the debug stream for warnings.
+      @see dwarn
    */
   static const DebugLevel WARN_DEBUG_LEVEL = 4;
 
@@ -155,17 +151,17 @@ namespace Dune {
   typedef DebugStream<WARN_DEBUG_LEVEL, MINIMAL_DEBUG_LEVEL> DWarnType;
 
   /**
-   * @brief Stream for warnings indicating problems.
-   *
-   * \code
-   *#include <dune/common/stdstreams.hh>
-   * \endcode
+     @brief Stream for warnings indicating problems.
+
+     \code
+     #include <dune/common/stdstreams.hh>
+     \endcode
    */
   extern DWarnType dwarn;
 
   /**
-   * @brief The level of the debug stream for fatal errors.
-   * @see dgrave
+      @brief The level of the debug stream for fatal errors.
+      @see dgrave
    */
   static const DebugLevel GRAVE_DEBUG_LEVEL = 5;
 
@@ -173,18 +169,18 @@ namespace Dune {
   typedef DebugStream<GRAVE_DEBUG_LEVEL, MINIMAL_DEBUG_LEVEL> DGraveType;
 
   /**
-   * @brief Stream for warnings indicating fatal errors.
-   *
-   * \code
-   *#include <dune/common/stdstreams.hh>
-   * \endcode
+     @brief Stream for warnings indicating fatal errors.
+
+     \code
+     #include <dune/common/stdstreams.hh>
+     \endcode
    */
   extern DGraveType dgrave;
 
   /** @brief The type of the stream used for error messages. */
   typedef DebugStream<1> DErrType;
 
-  /*!
+  /**
      @brief Stream for error messages.
 
      \code
@@ -197,7 +193,7 @@ namespace Dune {
    */
   extern DErrType derr;
 
-  //! }@
+  /** }@ */
 }
 
 #endif

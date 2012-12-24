@@ -44,6 +44,9 @@
 /* Define if you have a BLAS library. */
 #cmakedefine HAVE_BLAS 1
 
+/* Define to ENABLE_BOOST if the Boost library is available */
+#cmakedefine HAVE_BOOST ENABLE_BOOST
+
 /* Define to 1 if you have <boost/make_shared.hpp>. */
 #cmakedefine HAVE_BOOST_MAKE_SHARED_HPP 1
 
@@ -68,6 +71,9 @@
    to facilitate activating and deactivating GMP using compile flags. */
 #cmakedefine HAVE_GMP ENABLE_GMP
 
+/* Define to 1 if you have the symbol mprotect. */
+#cmakedefine HAVE_MPROTECT 1
+
 /* Define to 1 if nullptr is supported */
 #cmakedefine HAVE_NULLPTR 1
 
@@ -76,6 +82,12 @@
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #cmakedefine HAVE_STDINT_H 1
+
+/* Define to 1 if you have <sys/mman.h>. */
+#cmakedefine HAVE_SYS_MMAN_H 1
+
+/* Define to 1 if the std::tr1::hash template from TR1 is available. */
+#cmakedefine HAVE_TR1_HASH 1
 
 /* Define to 1 if you have the <tr1/tuple> header file. */
 #cmakedefine HAVE_TR1_TUPLE 1
@@ -87,6 +99,9 @@
  * and casts into T
  */
 #cmakedefine HAVE_INTEGRAL_CONSTANT 1
+
+/* Define to 1 if the std::hash template from C++11 is available. */
+#cmakedefine HAVE_STD_HASH 1
 
 /* Define to 1 if you have the <tuple> header file. */
 #cmakedefine HAVE_TUPLE 1

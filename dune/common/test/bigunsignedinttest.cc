@@ -8,6 +8,10 @@
 #include <limits>
 #include <iostream>
 
+#if HAVE_BOOST_HASH
+#include <boost/functional/hash.hpp>
+#endif
+
 int main()
 {
 
@@ -63,6 +67,37 @@ int main()
     b=a;
     a=a*b*b;
     std::cout<<a.todouble()<<std::endl;
+
+#if HAVE_DUNE_HASH
+
+    {
+      Dune::hash<Dune::bigunsignedint<100> > hasher;
+      std::cout << "Dune::hash:     " << hasher(a) << std::endl;
+    }
+
+#if HAVE_STD_HASH
+    {
+      std::hash<Dune::bigunsignedint<100> > hasher;
+      std::cout << "std::hash:      " << hasher(a) << std::endl;
+    }
+#endif
+
+#if HAVE_TR1_HASH
+    {
+      std::tr1::hash<Dune::bigunsignedint<100> > hasher;
+      std::cout << "std::tr1::hash: " << hasher(a) << std::endl;
+    }
+#endif
+
+#if HAVE_BOOST_HASH
+    {
+      boost::hash<Dune::bigunsignedint<100> > hasher;
+      std::cout << "boost::hash:    " << hasher(a) << std::endl;
+    }
+#endif
+
+#endif // HAVE_DUNE_HASH
+
   }
   catch(Dune::MathError e) {
     std::cout<<e<<std::endl;

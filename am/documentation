@@ -51,7 +51,7 @@ doc-clean-documentation:
 
 install-documentation: $(DOCFILES) install-documentation-local
 	@$(NORMAL_INSTALL)
-	test -z "$(docdir)" || $(mkdir_p) "$(DESTDIR)$(docdir)"
+	test -z "$(docdir)" || $(MKDIR_P) "$(DESTDIR)$(docdir)"
 	@list='$(DOCFILES) $(DOCFILES_EXTRA)'; test -n "$(docdir)" || list=; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \

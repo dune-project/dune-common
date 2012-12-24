@@ -15,6 +15,8 @@
 # HAVE_VARIADIC_CONSTRUCTOR_SFINAE True if variadic constructor sfinae is supported
 # HAVE_RVALUE_REFERENCES           True if rvalue references are supported
 
+include(CMakePushCheckState)
+
 # test for C++11 flags
 include(TestCXXAcceptsFlag)
 
@@ -265,3 +267,27 @@ foreach(_HEADER tuple tr1/tuple type_traits tr1/type_traits)
   string(TOUPPER ${_HEADER_VAR} _HEADER_VAR )
   check_include_file_cxx(${_HEADER} "HAVE_${_HEADER_VAR}")
 endforeach(_HEADER tuple tr1/tuple tr1/type_traits)
+
+# Check for hash support
+check_include_file_cxx("functional" "HAVE_FUNCTIONAL")
+if(NOT HAVE_FUNCTIONAL)
+  check_include_file_cxx("tr1/functional" "HAVE_TR1_FUNCTIONAL")
+  if(HAVE_TR1_FUNCTIONAL)
+    set(_functional_header "tr1/functional")
+    set(_hash_type "std::tr1::hash")
+    set(_hash_variable "HAVE_TR1_HASH")
+  endif(HAVE_TR1_FUNCTIONAL)
+else()
+  set(_functional_header "functional")
+  set(_hash_type "std::hash")
+  set(_hash_variable "HAVE_STD_HASH")
+endif(NOT HAVE_FUNCTIONAL)
+
+if(_functional_header)
+  message(STATUS ${CMAKE_REQUIRED_DEFINTIONS})
+  check_cxx_source_compiles("
+#include <${_functional_header}>
+int main(void){
+  ${_hash_type}<int> hasher; hasher(42);
+}" ${_hash_variable})
+endif(_functional_header)

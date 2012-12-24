@@ -3,7 +3,10 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+// Activate checking
+#ifndef DUNE_ISTL_WITH_CHECKING
 #define DUNE_ISTL_WITH_CHECKING
+#endif
 #include <dune/common/dynmatrix.hh>
 #include <dune/common/dynvector.hh>
 #include <dune/common/fvector.hh>
@@ -155,9 +158,9 @@ void test_mult(DynamicMatrix<K>& A,
   A.mmv(v,f);
   A.mmtv(f,v);
   A.mmhv(f,v);
-  A.usmv(0.5,v,f);
-  A.usmtv(0.5,f,v);
-  A.usmhv(0.5,f,v);
+  A.usmv((K)0.5,v,f);
+  A.usmtv((K)0.5,f,v);
+  A.usmhv((K)0.5,f,v);
 }
 
 

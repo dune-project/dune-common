@@ -13,6 +13,7 @@ set(modules DuneBoost.cmake
   FindGMP.cmake
   FindInkscape.cmake
   FindMETIS.cmake
+  FindMProtect.cmake
   FindParMETIS.cmake
   FindSharedPtr.cmake
   LanguageSupport.cmake

@@ -41,6 +41,7 @@ ALLM4S = 					\
 	libtoolcompat.m4			\
 	make_shared.m4				\
 	mpi-config.m4				\
+	mprotect.m4				\
 	opengl.m4				\
 	parmetis.m4				\
 	shared_ptr.m4				\

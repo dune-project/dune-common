@@ -9,6 +9,8 @@ elseif(BLAS_FOUND)
 endif(LAPACK_FOUND)
 
 dune_add_library("dunecommon"
+  debugallocator.cc
+  dynmatrixev.cc
   exceptions.cc
   fmatrixev.cc
   ios_state.cc
@@ -29,6 +31,7 @@ install(FILES
         bitsetvector.hh
         classname.hh
         collectivecommunication.hh
+        debugallocator.hh
         debugstream.hh
         deprecated.hh
         densematrix.hh
@@ -37,6 +40,7 @@ install(FILES
         documentation.hh
 	dotproduct.hh
         dynmatrix.hh
+	dynmatrixev.hh
         dynvector.hh
         enumset.hh
         exceptions.hh
@@ -52,12 +56,14 @@ install(FILES
         gcd.hh
         genericiterator.hh
         gmpfield.hh
+        hash.hh
         indent.hh
         interfaces.hh
         ios_state.hh
         iteratorfacades.hh
         lcm.hh
         lru.hh
+        mallocallocator.hh
         math.hh
         matvectraits.hh
         misc.hh
@@ -70,6 +76,7 @@ install(FILES
         parametertreeparser.hh
         path.hh
         poolallocator.hh
+        power.hh
         precision.hh
         propertymap.hh
 	promotiontraits.hh

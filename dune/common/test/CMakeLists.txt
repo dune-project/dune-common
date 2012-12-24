@@ -9,6 +9,7 @@ set(TESTS
     diagonalmatrixtest
     dynmatrixtest
     dynvectortest
+    eigenvaluestest
     enumsettest
     fassigntest
     fmatrixtest
@@ -44,6 +45,11 @@ set(TESTS
 
 #test that should build but fail to run successfully
 set(FAILTESTS
+    testdebugallocator_fail1
+    testdebugallocator_fail2
+    testdebugallocator_fail3
+    testdebugallocator_fail4
+    testdebugallocator_fail5
     testfassign_fail1
     testfassign_fail2
     testfassign_fail3
@@ -73,6 +79,7 @@ add_executable("arraytest" arraytest.cc)
 
 add_executable("bigunsignedinttest" bigunsignedinttest.cc)
 target_link_libraries("bigunsignedinttest" "dunecommon")
+add_dune_boost_flags("bigunsignedinttest")
 
 add_executable("bitsetvectortest" bitsetvectortest.cc)
 add_executable("check_fvector_size" check_fvector_size.cc)
@@ -86,6 +93,9 @@ add_executable("dynmatrixtest" dynmatrixtest.cc)
 target_link_libraries("dynmatrixtest" "dunecommon")
 
 add_executable("dynvectortest" dynvectortest.cc)
+
+add_executable("eigenvaluestest" eigenvaluestest.cc)
+target_link_libraries(eigenvaluestest dunecommon ${LAPACK_LIBRARIES})
 
 add_executable("diagonalmatrixtest" diagonalmatrixtest.cc)
 
@@ -161,6 +171,25 @@ target_link_libraries(testfassign3 "dunecommon")
 add_executable("testfassign4" testfassign.cc)
 set_target_properties(testfassign4 PROPERTIES COMPILE_FLAGS "-D_DUNE_TEST_N=2 -D_DUNE_TEST_M=3 -D_VALUES=\"1, zero, nextRow, 2, 3, 4\"")
 target_link_libraries(testfassign4 "dunecommon")
+
+add_executable("testdebugallocator" testdebugallocator.cc)
+target_link_libraries(testdebugallocator dunecommon)
+add_executable("testdebugallocator_fail1" testdebugallocator.cc)
+target_link_libraries(testdebugallocator_fail1 dunecommon)
+set_target_properties(testdebugallocator_fail1 PROPERTIES COMPILE_DEFINITIONS "FAILURE1")
+add_executable("testdebugallocator_fail2" testdebugallocator.cc)
+target_link_libraries(testdebugallocator_fail2 dunecommon)
+set_target_properties(testdebugallocator_fail2 PROPERTIES COMPILE_DEFINITIONS "FAILURE2")
+add_executable("testdebugallocator_fail3" testdebugallocator.cc)
+target_link_libraries(testdebugallocator_fail3 dunecommon)
+set_target_properties(testdebugallocator_fail3 PROPERTIES COMPILE_DEFINITIONS "FAILURE3")
+add_executable("testdebugallocator_fail4" testdebugallocator.cc)
+target_link_libraries(testdebugallocator_fail4 dunecommon)
+set_target_properties(testdebugallocator_fail4 PROPERTIES COMPILE_DEFINITIONS "FAILURE4;DEBUG_ALLOCATOR_KEEP=1")
+add_executable("testdebugallocator_fail5" testdebugallocator.cc)
+target_link_libraries(testdebugallocator_fail5 dunecommon)
+set_target_properties(testdebugallocator_fail5 PROPERTIES COMPILE_DEFINITIONS "FAILURE5")
+
 add_executable("testfassign_fail1" testfassign.cc)
 set_target_properties(testfassign_fail1 PROPERTIES COMPILE_FLAGS "-D_DUNE_TEST_N=3 -D_VALUES=\"1,2\"")
 target_link_libraries(testfassign_fail1 "dunecommon")

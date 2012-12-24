@@ -36,6 +36,7 @@ install(PROGRAMS
         inkscape.m4
         libtoolcompat.m4
         make_shared.m4
+        mprotect.m4
         mpi-config.m4
         opengl.m4
         parmetis.m4

@@ -5,8 +5,8 @@
 #define DUNE_REMOTEINDICES_HH
 
 #include "indexset.hh"
-#include <dune/common/exceptions.hh>
 #include "plocalindex.hh"
+#include <dune/common/exceptions.hh>
 #include <dune/common/poolallocator.hh>
 #include <dune/common/sllist.hh>
 #include <dune/common/static_assert.hh>
@@ -18,8 +18,8 @@
 #include <algorithm>
 #include <iterator>
 #if HAVE_MPI
-#include <dune/common/mpitraits.hh>
-#include "mpi.h"
+#include "mpitraits.hh"
+#include <mpi.h>
 
 namespace Dune {
   /** @addtogroup Common_Parallel
@@ -1599,7 +1599,7 @@ namespace Dune {
         while(index->global()<*giter) {
           ++index;
 #ifdef DUNE_ISTL_WITH_CHECKING
-          if(index == indexSet_.end())
+          if(index == indexSet_->end())
             DUNE_THROW(InvalidPosition, "No such global index in set!");
 #endif
         }

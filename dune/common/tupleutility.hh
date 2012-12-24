@@ -178,14 +178,14 @@ namespace Dune {
    * Suppose all storage types A_i in a tuple define a type A_i::B. You can
    * build up a pair consisting of the types defined by A_i::B in the following
    * way:
-     \code
-     template <class A>
-     struct MyEvaluator {
-     typedef typename A::B Type;
-     };
-
-     typedef ForEachType<MyEvaluator, ATuple>::Type BTuple;
-     \endcode
+   * \code
+   * template <class A>
+   * struct MyEvaluator {
+   *   typedef typename A::B Type;
+   * };
+   *
+   * typedef ForEachType<MyEvaluator, ATuple>::Type BTuple;
+   * \endcode
    * Here, MyEvaluator is a helper struct that extracts the correct type from
    * the storage types of the tuple defined by the tuple ATuple.
    *
@@ -588,7 +588,7 @@ namespace Dune {
   //! transform a tuple object into another tuple object
   /**
    * \code
-   *#include <dune/common/utility.hh>
+   * #include <dune/common/utility.hh>
    * \endcode
    * This function does for the value of a tuple what ForEachType does for the
    * type of a tuple: it transforms the value using a user-provided policy
@@ -599,23 +599,23 @@ namespace Dune {
    *
    * The functor should have the following form:
    * \code
-     struct Functor {
-     template<class> struct TypeEvaluator {
-     typedef user-defined Type;
-     };
-
-     template<class T>
-     typename TypeEvaluator<T>::Type operator()(T& val);
-
-     template<class T>
-     typename TypeEvaluator<T>::Type operator()(T& val) const;
-
-     template<class T>
-     typename TypeEvaluator<T>::Type operator()(const T& val);
-
-     template<class T>
-     typename TypeEvaluator<T>::Type operator()(const T& val) const;
-     };
+   * struct Functor {
+   *   template<class> struct TypeEvaluator {
+   *     typedef user-defined Type;
+   *   };
+   *
+   *   template<class T>
+   *   typename TypeEvaluator<T>::Type operator()(T& val);
+   *
+   *   template<class T>
+   *   typename TypeEvaluator<T>::Type operator()(T& val) const;
+   *
+   *   template<class T>
+   *   typename TypeEvaluator<T>::Type operator()(const T& val);
+   *
+   *   template<class T>
+   *   typename TypeEvaluator<T>::Type operator()(const T& val) const;
+   * };
    * \endcode
    * The member class template \c TypeEvaluator should be a class template
    * suitable as the \c TypeEvaluator template parameter for ForEachType.  The
@@ -671,13 +671,13 @@ namespace Dune {
    * \c TE should be an extended version of the \c TypeEvaluator class
    * template parameter of ForEachType, for instance:
    * \code
-     template <class T>
-     struct TypeEvaluator {
-     typedef T* Type;
-     static Type apply(T& t, void* a0) {
-     return t ? &t : static_cast<T*>(a0);
-     }
-     };
+   * template <class T>
+   * struct TypeEvaluator {
+   *   typedef T* Type;
+   *   static Type apply(T& t, void* a0) {
+   *     return t ? &t : static_cast<T*>(a0);
+   *   }
+   * };
    * \endcode
    * This example is for a TransformTupleFunctor with one argument, i.e. \c
    * A0!=void and all other \c An=void.  For the type transformation, it will
@@ -728,7 +728,7 @@ namespace Dune {
   //! syntactic sugar for creation of TransformTupleFunctor objects
   /**
    * \code
-   *#include <dune/common/utility.hh>
+   * #include <dune/common/utility.hh>
    * \endcode
    * \tparam TE TypeEvaluator class template.
    * \tparam A0 Type of extra arguments to pass to \c TE<T>::apply().  It
@@ -1052,7 +1052,7 @@ namespace Dune {
   //! transform a tuple's value according to a user-supplied policy
   /**
    * \code
-   *#include <dune/common/utility.hh>
+   * #include <dune/common/utility.hh>
    * \endcode
    * This function provides functionality similiar to genericTransformTuple(),
    * although less general and closer in spirit to ForEachType.
@@ -1114,15 +1114,15 @@ namespace Dune {
    * template argument for TransformTupleFunctor.  It has the following form
    * (an extension of the \c TypeEvaluator template argument of ForEachType):
    * \code
-     template <class T>
-     struct TypeEvaluator {
-     typedef UserDefined Type;
-
-     template<class A0, class A1, class A2, class A3, class A4, class A5,
-           class A6, class A7, class A8, class A9>
-     static Type apply(T& t, A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5,
-                    A6& a6, A7& a7, A8& a8, A9& a9);
-     };
+   * template <class T>
+   * struct TypeEvaluator {
+   *   typedef UserDefined Type;
+   *
+   *   template<class A0, class A1, class A2, class A3, class A4, class A5,
+   *            class A6, class A7, class A8, class A9>
+   *   static Type apply(T& t, A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5,
+   *                     A6& a6, A7& a7, A8& a8, A9& a9);
+   * };
    * \endcode
    * For any given element type \c T of the tuple, the TypeEvaluator template
    * class should provide a member typedef \c Type which determines the type
@@ -1346,27 +1346,27 @@ namespace Dune {
    *
    * The following example implements a function object which counts the
    * elements in a tuple
-     \code
-     template <class T>
-     struct Counter {
-     Counter() : result_(0) {}
-
-     template <class T>
-     void visit(T& elem) { ++result_; }
-
-     int result_;
-     };
-     \endcode
+   * \code
+   * template <class T>
+   * struct Counter {
+   * Counter() : result_(0) {}
+   *
+   * template <class T>
+   * void visit(T& elem) { ++result_; }
+   *
+   * int result_;
+   * };
+   * \endcode
    * The number of elements in the tuple are stored in the member variable
    * result_. The Counter can be used as follows, assuming a tuple t of type
    * MyTuple is given:
-     \code
-     Counter c;
-     ForEachValue<MyTuple> forEach(t);
-
-     forEach.apply(c);
-     std::cout << "Number of elements is: " << c.result_ << std::endl;
-     \endcode
+   * \code
+   * Counter c;
+   * ForEachValue<MyTuple> forEach(t);
+   *
+   * forEach.apply(c);
+   * std::cout << "Number of elements is: " << c.result_ << std::endl;
+   * \endcode
    */
   template <class TupleType>
   class ForEachValue {
@@ -1575,13 +1575,13 @@ namespace Dune {
    *
    * With variadic templates the generic specialization would be:
    *
-     \code
-     template<class... TupleArgs, class T>
-     struct PushBackTuple<typename Dune::tuple<TupleArgs...>, T>
-     {
-     typedef typename Dune::tuple<TupleArgs..., T> type;
-     };
-     \endcode
+   * \code
+   * template<class... TupleArgs, class T>
+   * struct PushBackTuple<typename Dune::tuple<TupleArgs...>, T>
+   * {
+   *   typedef typename Dune::tuple<TupleArgs..., T> type;
+   * };
+   * \endcode
    *
    */
   template< class Tuple, class T>
@@ -1673,13 +1673,13 @@ namespace Dune {
    *
    * With variadic templates the generic specialization would be:
    *
-     \code
-     template<class... TupleArgs, class T>
-     struct PushFrontTuple<typename Dune::tuple<TupleArgs...>, T>
-     {
-     typedef typename Dune::tuple<T, TupleArgs...> type;
-     };
-     \endcode
+   * \code
+   * template<class... TupleArgs, class T>
+   * struct PushFrontTuple<typename Dune::tuple<TupleArgs...>, T>
+   * {
+   *   typedef typename Dune::tuple<T, TupleArgs...> type;
+   * };
+   * \endcode
    *
    */
   template< class Tuple, class T>

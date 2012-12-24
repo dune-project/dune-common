@@ -63,3 +63,10 @@ tuplestest_dune
 tuplestest_std
 tuplestest_tr1
 check_fvector_size
+testdebugallocator
+testdebugallocator_fail1
+testdebugallocator_fail2
+testdebugallocator_fail3
+testdebugallocator_fail4
+testdebugallocator_fail5
+eigenvaluestest

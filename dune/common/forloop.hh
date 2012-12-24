@@ -13,6 +13,7 @@
 namespace Dune
 {
 
+#ifndef DOXYGEN
   // GenericForLoop
   // --------------
 
@@ -27,8 +28,6 @@ namespace Dune
   class GenericForLoop< Operation, Value, last, last >
     : public Value< last >
   {};
-
-
 
   // ForLoopHelper
   // -------------
@@ -154,8 +153,9 @@ namespace Dune
       }
     };
 
-  }
+  } // end namespace ForLoopHelper
 
+#endif
 
 
   /** \class ForLoop
@@ -176,33 +176,33 @@ namespace Dune
    *
    * Example of usage:
    * \code
-     template<class Tuple>
-     struct PrintTupleTypes
-     {
-     template <int i>
-     struct Operation
-     {
-     template<class Stream>
-     static void apply(Stream &stream, const std::string &prefix)
-     {
-      stream << prefix << i << ": "
-             << className<typename tuple_element<i, Tuple>::type>()
-             << std::endl;
-     }
-     };
-     template<class Stream>
-     static void print(Stream &stream, const std::string &prefix)
-     {
-     // cannot attach on-the-fly in the argument to ForLoop<..>::apply() since
-     // that would yield an rvalue
-     std::string extended_prefix = prefix+"  ";
-
-     stream << prefix << "tuple<" << std::endl;
-     ForLoop<Operation, 0, tuple_size<Tuple>::value-1>::
-      apply(stream, extended_prefix);
-     stream << prefix << ">" << std::endl;
-     }
-     };
+   * template<class Tuple>
+   * struct PrintTupleTypes
+   * {
+   *   template <int i>
+   *   struct Operation
+   *   {
+   *     template<class Stream>
+   *     static void apply(Stream &stream, const std::string &prefix)
+   *     {
+   *       stream << prefix << i << ": "
+   *              << className<typename tuple_element<i, Tuple>::type>()
+   *              << std::endl;
+   *     }
+   *   };
+   *   template<class Stream>
+   *   static void print(Stream &stream, const std::string &prefix)
+   *   {
+   *     // cannot attach on-the-fly in the argument to ForLoop<..>::apply() since
+   *     // that would yield an rvalue
+   *     std::string extended_prefix = prefix+"  ";
+   *
+   *     stream << prefix << "tuple<" << std::endl;
+   *     ForLoop<Operation, 0, tuple_size<Tuple>::value-1>::
+   *       apply(stream, extended_prefix);
+   *     stream << prefix << ">" << std::endl;
+   *   }
+   * };
    * \endcode
    *
    * \note Don't use any rvalues as the arguments to apply().

@@ -6,14 +6,16 @@ SUBDIRS = . test parallel
 noinst_LTLIBRARIES = libcommon.la
 
 libcommon_la_SOURCES =				\
+	debugallocator.cc			\
 	fmatrixev.cc \
+	dynmatrixev.cc                           \
 	ios_state.cc				\
 	parametertree.cc                        \
 	parametertreeparser.cc			\
 	path.cc					\
 	exceptions.cc				\
 	stdstreams.cc
-libcommon_la_LIBADD = $(LAPACK_LIBS)
+libcommon_la_LIBADD = $(LAPACK_LIBS) $(BLAS_LIBS) $(LIBS) $(FLIBS)
 
 commonincludedir = $(includedir)/dune/common
 commoninclude_HEADERS = 			\
@@ -26,11 +28,12 @@ commoninclude_HEADERS = 			\
 	bitsetvector.hh				\
 	classname.hh				\
 	collectivecommunication.hh		\
+	debugallocator.hh			\
 	debugstream.hh				\
 	deprecated.hh				\
 	densematrix.hh				\
 	densevector.hh				\
-        diagonalmatrix.hh                       \
+	diagonalmatrix.hh                       \
 	documentation.hh			\
 	dotproduct.hh				\
 	dynmatrix.hh				\
@@ -49,12 +52,14 @@ commoninclude_HEADERS = 			\
 	gcd.hh					\
 	genericiterator.hh			\
 	gmpfield.hh				\
+	hash.hh					\
 	indent.hh				\
 	interfaces.hh				\
 	ios_state.hh				\
 	iteratorfacades.hh			\
 	lcm.hh					\
 	lru.hh					\
+	mallocallocator.hh					\
 	math.hh					\
 	matvectraits.hh \
 	misc.hh					\
@@ -67,6 +72,7 @@ commoninclude_HEADERS = 			\
 	parametertreeparser.hh			\
 	path.hh					\
 	poolallocator.hh			\
+	power.hh				\
 	precision.hh				\
 	promotiontraits.hh			\
 	propertymap.hh				\

@@ -23,3 +23,5 @@ endif(Fortran_Works)
 
 find_package(GMP)
 find_package(Inkscape)
+include(FindMProtect)
+include(DuneBoost)

@@ -34,12 +34,12 @@ AC_CONFIG_FILES([Makefile
      doc/buildsystem/Makefile
      m4/Makefile
      am/Makefile
-     bin/check-log-store
      dune-common.pc])
-AC_OUTPUT
-
 # make scripts executable
-chmod +x bin/check-log-store
+AC_CONFIG_FILES([
+     bin/check-log-store],[
+     chmod +x bin/check-log-store])
+AC_OUTPUT
 
 # print results
 DUNE_SUMMARY_ALL

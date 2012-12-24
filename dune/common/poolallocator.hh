@@ -62,7 +62,7 @@ namespace Dune
    * @author Markus Blatt
    */
   /**
-   * @addtogroup Common
+   * @addtogroup Allocators
    *
    * @{
    */

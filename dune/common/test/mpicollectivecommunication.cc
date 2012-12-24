@@ -4,10 +4,10 @@
 #include "config.h"
 #endif
 
-#include <dune/common/mpihelper.hh>
+#include <dune/common/parallel/mpihelper.hh>
 
 #if HAVE_MPI
-#include <dune/common/mpicollectivecommunication.hh>
+#include <dune/common/parallel/mpicollectivecommunication.hh>
 #endif
 
 #include <iostream>

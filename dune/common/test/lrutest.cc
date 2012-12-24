@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <iostream>
 #include <dune/common/lru.hh>
-#include <dune/common/mpihelper.hh>
+#include <dune/common/parallel/mpihelper.hh>
 
 void lru_test()
 {

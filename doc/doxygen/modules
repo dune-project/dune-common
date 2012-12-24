@@ -1,3 +1,9 @@
 /**
   @defgroup Common Common (foundation classes)
 */
+
+/**
+  @defgroup Allocators Allocators
+  @brief Implementations of the STL allocator concept
+  @ingroup Common
+*/

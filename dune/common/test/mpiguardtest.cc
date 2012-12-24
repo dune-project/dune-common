@@ -2,8 +2,8 @@
 // vi: set et ts=4 sw=2 sts=2:
 #include <config.h>
 
-#include <dune/common/mpihelper.hh>
-#include <dune/common/mpiguard.hh>
+#include <dune/common/parallel/mpihelper.hh>
+#include <dune/common/parallel/mpiguard.hh>
 
 int main(int argc, char** argv)
 {
