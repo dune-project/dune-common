@@ -95,7 +95,10 @@ target_link_libraries("dynmatrixtest" "dunecommon")
 add_executable("dynvectortest" dynvectortest.cc)
 
 add_executable("eigenvaluestest" eigenvaluestest.cc)
-target_link_libraries(eigenvaluestest dunecommon ${LAPACK_LIBRARIES})
+target_link_libraries(eigenvaluestest dunecommon)
+if(LAPACK_FOUND)
+  target_link_libraries(eigenvaluestest ${LAPACK_LIBRARIES})
+endif(LAPACK_FOUND)
 
 add_executable("diagonalmatrixtest" diagonalmatrixtest.cc)
 

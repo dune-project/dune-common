@@ -16,6 +16,7 @@
 # HAVE_RVALUE_REFERENCES           True if rvalue references are supported
 
 include(CMakePushCheckState)
+cmake_push_check_state()
 
 # test for C++11 flags
 include(TestCXXAcceptsFlag)
@@ -29,7 +30,7 @@ if(CXX_FLAG_CXX11)
   set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} -std=c++11 ")
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++11 ")
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -std=c++11 ")
-  set(CXX_STD0X_FLAGS "-std=c++11")
+  set(CXX_STD11_FLAGS "-std=c++11")
 else()
   # try to use compiler flag -std=c++0x for older compilers
   CHECK_CXX_ACCEPTS_FLAG("-std=c++0x" CXX_FLAG_CXX0X)
@@ -40,7 +41,7 @@ else()
     set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} -std=c++0x ")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++0x ")
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -std=c++0x ")
-  set(CXX_STD0X_FLAGS "-std=c++0x")
+  set(CXX_STD11_FLAGS "-std=c++0x")
   endif(CXX_FLAG_CXX0X)
 endif(CXX_FLAG_CXX11)
 
@@ -284,10 +285,11 @@ else()
 endif(NOT HAVE_FUNCTIONAL)
 
 if(_functional_header)
-  message(STATUS ${CMAKE_REQUIRED_DEFINTIONS})
   check_cxx_source_compiles("
 #include <${_functional_header}>
 int main(void){
   ${_hash_type}<int> hasher; hasher(42);
 }" ${_hash_variable})
 endif(_functional_header)
+
+cmake_pop_check_state()
