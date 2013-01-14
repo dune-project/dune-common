@@ -15,7 +15,7 @@ namespace Dune {
   /**
    * @file
    * @author Jö Fahlke <jorrit@jorrit.de>
-   * @brief Utilites for handling filesystem paths
+   * @brief Utilities for handling filesystem paths
    */
 
   //! concatenate two paths
