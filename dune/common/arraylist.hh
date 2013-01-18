@@ -560,9 +560,6 @@ namespace Dune
       // Number of chunks with entries in it;
       size_t chunks = ((start_%chunkSize_ + size_)/chunkSize_ );
 
-      typedef typename std::vector<shared_ptr<array<MemberType,
-                  chunkSize_> > >::iterator iterator;
-
       // Copy chunks to the left.
       std::copy(chunks_.begin()+distance,
                 chunks_.begin()+(distance+chunks), chunks_.begin());
