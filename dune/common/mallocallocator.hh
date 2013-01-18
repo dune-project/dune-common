@@ -83,7 +83,7 @@ namespace Dune
       ::new((void *)p)T(std::forward<_Args>(__args) ...);
     }
 #endif
-    //! destroy an object of type T (i.e. call the Destructor)
+    //! destroy an object of type T (i.e. call the destructor)
     void destroy(pointer p)
     {
       p->~T();
