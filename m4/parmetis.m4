@@ -36,6 +36,7 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 	fi
 	],
     [
+    echo with_parmetis1=$withparmetis PARMETIS=$PARMETIS
 	if test -n "$PARMETIS" ; then
           if test -d "$PARMETIS" ; then
 	    # get absolute path
@@ -71,14 +72,20 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
     [AC_HELP_STRING([--with-metis-lib],  [name of the metis libraries (default is metis)])],
     ,[with_metis_lib=metis])
 
+  echo with_parmetis=$with_parmetis
   # store old values
   ac_save_LDFLAGS="$LDFLAGS"
   ac_save_CPPFLAGS="$CPPFLAGS"
   ac_save_LIBS="$LIBS"
+     
+  # call IMDX_LIB_METIS directly and not via AC_REQUIRE
+  # because AC_REQUIRE support not allow parameters
+  # without any parameters a missing METIS would halt configure
+  IMMDX_LIB_METIS(,[true])
   
   ## do nothing if --without-parmetis is used
   if test x"$with_mpi" != x"no" && test x"$with_parmetis" != x"no" ; then
-          
+
       # defaultpath
       PARMETIS_LIB_PATH="$with_parmetis/$lib_path"
       PARMETIS_INCLUDE_PATH="$with_parmetis/$include_path"
@@ -87,11 +94,11 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
       PARMETIS_LDFLAGS="$DUNEMPILDFLAGS"
 
       # set variables so that tests can use them
-      CPPFLAGS="$CPPFLAGS -I$PARMETIS_INCLUDE_PATH $DUNEMPICPPFLAGS"
+      CPPFLAGS="$CPPFLAGS -I$PARMETIS_INCLUDE_PATH $METIS_INCLUDE $DUNEMPICPPFLAGS"
 
       # check for central header
       AC_CHECK_HEADER([parmetis.h],[
-	      PARMETIS_CPPFLAGS="-I$PARMETIS_INCLUDE_PATH"
+	      PARMETIS_CPPFLAGS="-I$PARMETIS_INCLUDE_PATH $METIS_INCLUDE"
 	      HAVE_PARMETIS="1"],[
 	      HAVE_PARMETIS="0"
 	      AC_MSG_WARN([parmetis.h not found in $PARMETIS_INCLUDE_PATH with $CPPFLAGS])]
@@ -108,7 +115,7 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
       if test x$HAVE_PARMETIS = x1 ; then
 	  DUNE_CHECK_LIB_EXT([$PARMETIS_LIB_PATH], [$with_metis_lib], [metis_partgraphkway],
               [
-		  PARMETIS_LIBS="-L$PARMETIS_LIB_PATH -l$with_metis_lib $DUNEMPILIBS -lm"
+		  PARMETIS_LIBS="-L$PARMETIS_LIB_PATH -l$with_metis_lib $METIS_LDFLAGS $DUNEMPILIBS -lm"
 		  LIBS="$PARMETIS_LIBS $ac_save_LIBS"
               ],[
 		  HAVE_PARMETIS="0"

@@ -41,7 +41,7 @@ namespace Dune
   template<typename T, class A=std::allocator<T> >
   class SLList
   {
-    class Element;
+    struct Element;
     friend class SLListIterator<T,A>;
     friend class SLListConstIterator<T,A>;
 
@@ -68,7 +68,7 @@ namespace Dune
     typedef SLListIterator<T,A> iterator;
 
     /**
-     * @brief The mutable iterator of the list.
+     * @brief The constant iterator of the list.
      */
     typedef SLListConstIterator<T,A> const_iterator;
 

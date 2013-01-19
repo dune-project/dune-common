@@ -204,6 +204,8 @@ AC_DEFUN([DUNE_MPI],[
   AC_SUBST(DUNEMPILIBS)
   AC_SUBST(MPI_VERSION, $dune_MPI_VERSION)
 
+  # NOTE: If you intent to copy-n-paste this line, try to avoid including any
+  # flags of dependent libraries that call DUNE_ADD_ALL_PKG themselves.
   DUNE_ADD_ALL_PKG([MPI], [\${DUNEMPICPPFLAGS}], [\${DUNEMPILDFLAGS}], [\${DUNEMPILIBS}])
 
   AM_CONDITIONAL(MPI, [test "x$with_mpi" != "xno"])

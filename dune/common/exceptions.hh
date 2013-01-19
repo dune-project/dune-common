@@ -92,7 +92,7 @@ namespace Dune {
   class Exception {
   public:
     Exception ();
-    void message(const std::string &message); //!< store string in internal message buffer
+    void message(const std::string &msg); //!< store string in internal message buffer
     const std::string& what() const;        //!< output internal message buffer
     static void registerHook (ExceptionHook * hook); //!< add a functor which is called before a Dune::Exception is emitted (see Dune::ExceptionHook) \see Dune::ExceptionHook
     static void clearHook ();                       //!< remove all hooks
@@ -192,9 +192,9 @@ namespace Dune {
     _hook = 0;
   }
 
-  inline void Exception::message(const std::string &message)
+  inline void Exception::message(const std::string & msg)
   {
-    _message = message;
+    _message = msg;
   }
 
   inline const std::string& Exception::what() const
