@@ -262,11 +262,7 @@ A \dune module should comply with the following rules:
   and \texttt{\emph{MODULE}\_CHECK\_MODULE}, in order to setup and
   find your module (see~\ref{m4files}).
 \item Header files should be accessible via \verb!#include <dune/foo/bar.hh>!,
-  otherwise they cannot be used by other \dune modules. In order to work
-  with a freshly checkout version of your module you will usually need
-  to create a local symbolic link \texttt{dune ->
-    \textit{module-directory/}}. This link gets created by the
-  \texttt{DUNE\_SYMLINK} command in your \configureac. When running
+  otherwise they cannot be used by other \dune modules.   When running
   \texttt{make install} all header files should be installed into
   \texttt{\textit{prefix}/include/dune/}.
 \end{itemize}
@@ -1059,16 +1055,6 @@ We offer a set of macros that can be used in your \configureac:
   In order to make the dependencies known to \configure \autogen calls
   \texttt{dunecontrol m4create} and write a file
   \texttt{dependencies.m4}.
-\item \texttt{DUNE\_SYMLINK}
-  creates symlink \texttt{\$(top\_srcdir)/dune} $\!\rightarrow$
-  \texttt{\$(top\_srcdir)}. The programming guidelines (\ref{guidelines})
-  require that the include statements be like \texttt{\#include
-    <dune/...>}. If your module has a directory structure
-  \texttt{\topsrc/foo}, you will need such a link. However, you are
-  encouraged to store the files directly in a directory structure
-  \texttt{\topsrc/dune/foo} in order to avoid any inconvenience when
-  copying the files. This will also eliminate the necessity for
-  \texttt{DUNE\_SYMLINK}.
 \item \texttt{DUNE\_AUTOBUILD\_FLAGS}
   adds configure flags needed to create log files for
   \texttt{dune-autobuild}. If you want to add your module to the
