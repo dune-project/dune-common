@@ -36,7 +36,7 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 	fi
 	],
     [
-    echo with_parmetis1=$withparmetis PARMETIS=$PARMETIS
+    #echo with_parmetis1=$withparmetis PARMETIS=$PARMETIS
 	if test -n "$PARMETIS" ; then
           if test -d "$PARMETIS" ; then
 	    # get absolute path
@@ -72,7 +72,7 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
     [AC_HELP_STRING([--with-metis-lib],  [name of the metis libraries (default is metis)])],
     ,[with_metis_lib=metis])
 
-  echo with_parmetis=$with_parmetis
+  #echo with_parmetis=$with_parmetis
   # store old values
   ac_save_LDFLAGS="$LDFLAGS"
   ac_save_CPPFLAGS="$CPPFLAGS"

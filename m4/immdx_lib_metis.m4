@@ -89,7 +89,7 @@ AC_DEFUN([IMMDX_LIB_METIS], [
 
 			AC_CHECK_HEADER(metis.h, [metis_h=yes],
 				[metis_h=no], [/* check */])
-			echo x$metis_h
+			#echo x$metis_h
 
 			AC_LANG_RESTORE
 
