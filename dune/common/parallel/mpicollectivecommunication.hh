@@ -5,6 +5,9 @@
 
 /*!
    \file
+   \brief Implements an utility class that provides
+   MPI's collective communication methods.
+
    \ingroup ParallelCommunication
  */
 
