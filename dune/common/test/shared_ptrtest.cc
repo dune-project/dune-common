@@ -158,8 +158,8 @@ int main(){
 
     // test constructor from nullptr
 #if defined(SHARED_PTR_HEADER) && !defined(HAVE_NULLPTR)
-        #error Construction of shared_ptr from a nullptr will not work as compiler
-        #error does not support the latter.
+        #warning Construction of shared_ptr from a nullptr will not work as compiler
+        #warning does not support the latter.
     shared_ptr<double> bar_null=shared_ptr<double>();
 #else
     shared_ptr<double> bar_null(nullptr);
