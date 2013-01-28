@@ -2,7 +2,13 @@
 // vi: set et ts=4 sw=2 sts=2:
 #ifndef DUNE_COLLECTIVECOMMUNICATION_HH
 #define DUNE_COLLECTIVECOMMUNICATION_HH
+/*!
+   \file
+   \brief Implements an utility class that provides
+   collective communication methods for sequential programs.
 
+   \ingroup ParallelCommunication
+ */
 #include <iostream>
 #include <complex>
 #include <algorithm>
