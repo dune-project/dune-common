@@ -41,6 +41,11 @@ namespace Dune {
 
      The class is basically a wrapper for the libc-function getrusage()
 
+     \warning In a multi-threading situation, this class does NOT return wall-time!
+     Instead, the run time for all threads will be added up.
+     For example, if you have four threads running in parallel taking one second each,
+     then the Timer class will return an elapsed time of four seconds.
+
    */
   class Timer
   {
