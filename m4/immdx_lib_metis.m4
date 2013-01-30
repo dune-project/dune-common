@@ -48,13 +48,16 @@ AC_DEFUN([IMMDX_LIB_METIS], [
 			else
 				with_metis=/usr
 				if test ! -f "$with_metis/include/metis.h" ; then
-					with_metis=/usr/local
-					if test ! -f "$with_metis/include/metis.h" ; then
-						with_metis=""
-						AC_MSG_RESULT(failed)
-					else
-						AC_MSG_RESULT(yes)
-					fi
+          if test ! -f "$with_metis/include/metis/metis.h" ; then 
+            with_metis=/usr/local
+            if test ! -f "$with_metis/include/metis.h" ; then
+              with_metis=""
+              AC_MSG_RESULT(failed)
+            else
+              AC_MSG_RESULT(yes)
+            fi
+          fi  
+					AC_MSG_RESULT(yes)
 				else
 					AC_MSG_RESULT(yes)
 				fi
@@ -70,6 +73,11 @@ AC_DEFUN([IMMDX_LIB_METIS], [
 			if test -f "$with_metis/include/metis.h"; then
 				lib_path="/lib"
 				include_path="/include"
+			fi
+
+			if test -f "$with_metis/include/metis/metis.h"; then
+				lib_path="/lib"
+				include_path="/include/metis"
 			fi
 
 			if test -f "$with_metis/Lib/metis.h"; then
