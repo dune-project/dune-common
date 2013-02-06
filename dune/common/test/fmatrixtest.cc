@@ -572,7 +572,7 @@ void test_interface()
   typedef CheckMatrixInterface::UseFieldVector< K, rows, cols > Traits;
   typedef Dune::FieldMatrix< K, rows, cols > FMatrix;
 
-  FMatrix m;
+  FMatrix m( 1 );
   checkMatrixInterface< FMatrix >( m );
   checkMatrixInterface< FMatrix, Traits >( m );
 }

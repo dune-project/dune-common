@@ -164,7 +164,7 @@ namespace CheckMatrixInterface
 
     static void checkSolve ( const Matrix &matrix )
     {
-      typename Traits::domain_type x;
+      typename Traits::domain_type x = Traits::domain( matrix );
       const typename Traits::range_type b = Traits::range( matrix );
       matrix.solve( x, b );
     }
@@ -267,16 +267,16 @@ namespace CheckMatrixInterface
       typename Traits::value_type alpha( 1 );
 
       matrix.mv( domain, range );
-      matrix.mtv( domain, range );
+      matrix.mtv( range, domain );
       matrix.umv( domain, range );
-      matrix.umtv( domain, range );
-      matrix.umhv( domain, range );
+      matrix.umtv( range, domain );
+      matrix.umhv( range, domain );
       matrix.mmv( domain, range );
-      matrix.mmtv( domain, range );
-      matrix.mmhv( domain, range );
+      matrix.mmtv( range, domain );
+      matrix.mmhv( range, domain );
       matrix.usmv( alpha, domain, range );
-      matrix.usmtv( alpha, domain, range );
-      matrix.usmhv( alpha, domain, range );
+      matrix.usmtv( alpha, range, domain );
+      matrix.usmhv( alpha, range, domain );
     }
 
     // check iterator methods
