@@ -102,7 +102,7 @@ noinst_HEADERS = dummyiterator.hh
 
 # Install some test headers, because they get used by tests in other modules
 testincludedir = $(includedir)/dune/common/test
-testinclude_HEADERS = iteratortest.hh
+testinclude_HEADERS = checkmatrixinterface.hh iteratortest.hh
 
 # define the programs
 pathtest_SOURCES = pathtest.cc
