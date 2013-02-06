@@ -50,7 +50,8 @@ namespace Dune {
     //===== type definitions and constants
 
     //! export the type representing the field
-    typedef K field_type;
+    typedef K value_type;
+    typedef value_type field_type;
 
     //! export the type representing the components
     typedef K block_type;
@@ -67,8 +68,10 @@ namespace Dune {
     //! Each row is implemented by a field vector
     typedef DiagonalRowVector<K,n> row_type;
     typedef row_type reference;
+    typedef row_type row_reference;
     typedef DiagonalRowVectorConst<K,n> const_row_type;
     typedef const_row_type const_reference;
+    typedef const_row_type const_row_reference;
 
     //! export size
     enum {
@@ -78,7 +81,12 @@ namespace Dune {
       cols = n
     };
 
+    //==== size
 
+    size_type size () const
+    {
+      return rows;
+    }
 
     //===== constructors
 
