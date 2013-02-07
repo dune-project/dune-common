@@ -29,6 +29,8 @@ AC_CONFIG_FILES([Makefile
      dune/common/parallel/Makefile
      dune/common/parallel/test/Makefile
      doc/Makefile
+     doc/comm/Makefile
+     doc/comm/figures/Makefile
      doc/doxygen/Makefile
      doc/doxygen/Doxyfile
      doc/buildsystem/Makefile
