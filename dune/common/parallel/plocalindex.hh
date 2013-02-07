@@ -214,14 +214,14 @@ namespace Dune
 #endif
 
   template<class T>
-  ParallelLocalIndex<T>::ParallelLocalIndex(const T& attribute, bool isPublic)
+  ParallelLocalIndex<T>::ParallelLocalIndex(const Attribute& attribute, bool isPublic)
     : localIndex_(0), attribute_(static_cast<char>(attribute)),
       public_(static_cast<char>(isPublic)), state_(static_cast<char>(VALID))
   {}
 
 
   template<class T>
-  ParallelLocalIndex<T>::ParallelLocalIndex(size_t local, const T& attribute, bool isPublic)
+  ParallelLocalIndex<T>::ParallelLocalIndex(size_t local, const Attribute& attribute, bool isPublic)
     : localIndex_(local), attribute_(static_cast<char>(attribute)),
       public_(static_cast<char>(isPublic)), state_(static_cast<char>(VALID))
   {}

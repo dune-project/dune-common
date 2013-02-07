@@ -45,7 +45,6 @@ namespace Dune
     /** @brief Constructor from existing Pointer. */
     SharedCount() : count_(1) {}
     /** @brief Copy constructor with type conversion. */
-    template<class T1>
     SharedCount(const SharedCount& rep)
       : count_(rep.count_) {}
 
