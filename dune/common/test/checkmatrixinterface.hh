@@ -4,6 +4,7 @@
 #define DUNE_COMMON_CHECK_MATRIX_INTERFACE_HH
 
 #include <algorithm>
+#include <limits>
 
 #include <dune/common/dynvector.hh>
 #include <dune/common/exceptions.hh>
@@ -16,6 +17,19 @@
  * @brief This file provides an interface check for dense matrices.
  * @author Christoph Gersbacher
  */
+
+
+namespace Dune
+{
+
+  // External forward declarations for namespace Dune
+  // ------------------------------------------------
+
+  template< class, int, int > class FieldMatrix;
+  template< class, int > class DiagonalMatrix;
+
+} // namespace Dune
+
 
 
 namespace CheckMatrixInterface
@@ -45,19 +59,57 @@ namespace CheckMatrixInterface
 
 
 
-    // isRegular
-    // ---------
+    // isSquare
+    // --------
 
     template< class Matrix >
-    struct isRegular
+    struct isSquare
     {
       static const bool v = false;
     };
 
     template< class Matrix >
-    struct isRegular< const Matrix >
+    struct isSquare< const Matrix >
     {
-      static const bool v = isRegular< Matrix >::v;
+      static const bool v = isSquare< Matrix >::v;
+    };
+
+
+
+    // Template specializations for Dune::FieldMatrix
+    // ----------------------------------------------
+
+    template< class K, int r, int c >
+    struct hasStaticSizes< Dune::FieldMatrix< K, r, c > >
+    {
+      static const bool v = true;
+      static const int rows = r;
+      static const int cols = c;
+    };
+
+    template< class K, int rows, int cols >
+    struct isSquare< Dune::FieldMatrix< K, rows, cols > >
+    {
+      static const bool v = ( rows == cols );
+    };
+
+
+
+    // Template specializations for Dune::DiagonalMatrix
+    // -------------------------------------------------
+
+    template< class K, int n >
+    struct hasStaticSizes< Dune::DiagonalMatrix<K,n> >
+    {
+      static const bool v = true;
+      static const int rows = n;
+      static const int cols = n;
+    };
+
+    template< class K, int n >
+    struct isSquare< Dune::DiagonalMatrix<K,n> >
+    {
+      static const bool v = true;
     };
 
   } // namespace Capabilities
@@ -138,38 +190,47 @@ namespace CheckMatrixInterface
 
 
 
-  // CheckIfRegularMatrix
-  // --------------------
+  // CheckIfSquareMatrix
+  // -------------------
 
-  template< class Matrix, class Traits, bool isRegular = Capabilities::isRegular< Matrix >::v >
-  struct CheckIfRegularMatrix;
+  template< class Matrix, class Traits, bool isSquare = Capabilities::isSquare< Matrix >::v >
+  struct CheckIfSquareMatrix;
 
   template< class Matrix, class Traits >
-  struct CheckIfRegularMatrix< Matrix, Traits, false >
+  struct CheckIfSquareMatrix< Matrix, Traits, false >
   {
-    static void checkDeterminant ( const Matrix &matrix ) {}
-    static void checkSolve ( const Matrix &matrix ) {}
-    static void checkInvert ( Matrix &matrix ) {}
+    static void apply ( const Matrix &matrix ) {}
+
+    static void apply ( Matrix &matrix ) {}
   };
 
   template< class Matrix, class Traits >
-  struct CheckIfRegularMatrix< Matrix, Traits, true >
+  struct CheckIfSquareMatrix< Matrix, Traits, true >
   {
     typedef typename Matrix::value_type value_type;
 
-    static void checkDeterminant ( const Matrix &matrix )
+    static value_type tolerance ()
     {
-      DUNE_UNUSED value_type determinant = matrix.determinant();
+      return value_type( 16 ) * std::numeric_limits< value_type >::epsilon();
     }
 
-    static void checkSolve ( const Matrix &matrix )
+    static void apply ( const Matrix &matrix )
     {
-      typename Traits::domain_type x = Traits::domain( matrix );
-      const typename Traits::range_type b = Traits::range( matrix );
-      matrix.solve( x, b );
+      const value_type determinant = matrix.determinant();
+      if( determinant > tolerance() )
+      {
+        typename Traits::domain_type x = Traits::domain( matrix );
+        const typename Traits::range_type b = Traits::range( matrix );
+        matrix.solve( x, b );
+      }
     }
 
-    static void checkInvert ( Matrix &matrix ) { matrix.invert(); }
+    static void apply ( Matrix &matrix )
+    {
+      apply( const_cast< const Matrix & >( matrix ) );
+      if( matrix.determinant() > tolerance() )
+        matrix.invert();
+    }
   };
 
 
@@ -187,26 +248,18 @@ namespace CheckMatrixInterface
     typedef typename Matrix::field_type field_type;
     typedef typename Matrix::block_type block_type;
 
-    typedef typename Matrix::row_type row_type;
-    typedef typename Matrix::row_reference row_reference;
     typedef typename Matrix::const_row_reference const_row_reference;
 
     typedef typename Matrix::ConstIterator ConstIterator;
 
     static void apply ( const Matrix &matrix )
     {
-      checkSizes ( matrix );
       checkDataAccess ( matrix );
-      checkNorms ( matrix );
-      checkLinearAlgebra ( matrix );
       checkIterators ( matrix );
-
-      CheckIfRegularMatrix< Matrix, Traits >::checkDeterminant( matrix );
-      CheckIfRegularMatrix< Matrix, Traits >::checkSolve( matrix );
-
-      // TODO: check solve for regular matrices
-      // void invert() const;
-      // void solve ( range_type, range_type );
+      checkLinearAlgebra ( matrix );
+      checkNorms ( matrix );
+      checkSizes ( matrix );
+      CheckIfSquareMatrix< Matrix, Traits >::apply( matrix );
 
       // TODO: check comparison
       // bool operator == ( const Matrix &other );
@@ -305,10 +358,10 @@ namespace CheckMatrixInterface
 
     static void apply ( Matrix &matrix )
     {
-      checkAssignment( matrix );
       checkIterators( matrix );
+      checkAssignment( matrix );
 
-      CheckIfRegularMatrix< Matrix, Traits >::checkDeterminant( matrix );
+      CheckIfSquareMatrix< Matrix, Traits >::apply( matrix );
 
       // TODO: check scalar/matrix and matrix/matrix operations
       // Matrix &operator+= ( const Matrix &other );
@@ -357,6 +410,7 @@ namespace CheckMatrixInterface
 } // namespace CheckMatrixInterface
 
 
+
 namespace Dune
 {
 
@@ -364,16 +418,16 @@ namespace Dune
   // --------------------
 
   template< class Matrix, class Traits  = CheckMatrixInterface::UseDynamicVector< Matrix > >
-  void checkMatrixInterface ( Matrix &matrix )
-  {
-    CheckMatrixInterface::CheckConstMatrix< Matrix, Traits >::apply( matrix );
-    CheckMatrixInterface::CheckNonConstMatrix< Matrix, Traits >::apply( matrix );
-  }
-
-  template< class Matrix, class Traits  = CheckMatrixInterface::UseDynamicVector< Matrix > >
   void checkMatrixInterface ( const Matrix &matrix )
   {
     CheckMatrixInterface::CheckConstMatrix< Matrix, Traits >::apply( matrix );
+  }
+
+  template< class Matrix, class Traits  = CheckMatrixInterface::UseDynamicVector< Matrix > >
+  void checkMatrixInterface ( Matrix &matrix )
+  {
+    checkMatrixInterface( const_cast< const Matrix & >( matrix ) );
+    CheckMatrixInterface::CheckNonConstMatrix< Matrix, Traits >::apply( matrix );
   }
 
 } // namespace Dune

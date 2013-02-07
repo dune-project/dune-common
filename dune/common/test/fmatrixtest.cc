@@ -20,30 +20,6 @@
 
 using namespace Dune;
 
-namespace CheckMatrixInterface
-{
-
-  namespace Capabilities
-  {
-    template< class K, int r, int c >
-    struct hasStaticSizes< Dune::FieldMatrix< K, r, c > >
-    {
-      static const bool v = true;
-      static const int rows = r;
-      static const int cols = c;
-    };
-
-    template< class K, int rows, int cols >
-    struct isRegular< Dune::FieldMatrix< K, rows, cols > >
-    {
-      static const bool v = ( rows == cols );
-    };
-
-  } // namespace Capabilities
-
-} // namespace CheckMatrixInterface
-
-
 template<typename T, std::size_t n>
 int test_invert_solve(T A_data[n*n], T inv_data[n*n],
                       T x_data[n], T b_data[n])

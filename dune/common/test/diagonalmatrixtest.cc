@@ -14,32 +14,6 @@
 
 using namespace Dune;
 
-
-namespace CheckMatrixInterface
-{
-
-  namespace Capabilities
-  {
-    template< class K, int n >
-    struct hasStaticSizes< Dune::DiagonalMatrix<K,n> >
-    {
-      static const bool v = true;
-      static const int rows = n;
-      static const int cols = n;
-    };
-
-    template< class K, int n >
-    struct isRegular< Dune::DiagonalMatrix<K,n> >
-    {
-      static const bool v = true;
-    };
-
-  } // namespace Capabilities
-
-} // namespace CheckMatrixInterface
-
-
-
 template<class K, int n>
 void test_matrix()
 {
