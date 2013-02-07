@@ -1,7 +1,7 @@
 # $Id$
 
 # also build these sub directories
-SUBDIRS = doxygen buildsystem
+SUBDIRS = doxygen buildsystem comm
 
 # setting like in dune-web
 CURDIR=doc
