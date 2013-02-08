@@ -10,8 +10,9 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/exceptions.hh>
 
-using namespace Dune;
+#include "checkmatrixinterface.hh"
 
+using namespace Dune;
 
 template<class K, int n>
 void test_matrix()
@@ -50,12 +51,26 @@ void test_matrix()
   DUNE_UNUSED FieldMatrix<K,n,n> AFM = FieldMatrix<K,n,n>(A);
 }
 
+template<class K, int n>
+void test_interface()
+{
+  typedef CheckMatrixInterface::UseFieldVector<K,n,n> Traits;
+  typedef Dune::DiagonalMatrix<K,n> DiagonalMatrix;
+
+  const DiagonalMatrix A(1);
+  checkMatrixInterface< DiagonalMatrix >( A );
+  checkMatrixInterface< DiagonalMatrix, Traits >( A );
+}
+
 int main()
 {
   try {
     test_matrix<float, 1>();
+    test_interface<float, 1>();
     test_matrix<double, 1>();
+    test_interface<double, 1>();
     test_matrix<double, 5>();
+    test_interface<double, 5>();
   }
   catch (Dune::Exception & e)
   {

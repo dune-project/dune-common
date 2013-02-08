@@ -112,24 +112,6 @@ AC_DEFUN([DUNE_SUMMARY_ALL],[
   } >&AS_MESSAGE_LOG_FD
 ])
 
-AC_DEFUN([DUNE_CHECK_ALL_WARNING],
-        [echo
-        echo "    The build system of your module has called the deprecated method [DUNE_CHECK_ALL_M]."
-        echo "    Please replace that call (in configure.ac) by a call to [DUNE_CHECK_ALL].  If you"
-        echo "    need the dune -> . symlink add [DUNE_SYMLINK] to your configure.ac."
-        echo "    Press 'enter' to continue!"
-        echo
-        read -u AS_ORIGINAL_STDIN_FD
-]
-)
-
-AC_DEFUN([DUNE_CHECK_ALL_M],[
-  AC_REQUIRE([DUNE_CHECK_ALL_WARNING])
-dnl  AC_REQUIRE([DUNE_SYMLINK])
-  AC_REQUIRE([DUNE_CHECK_ALL])
-  AC_REQUIRE([DUNE_AUTOBUILD_FLAGS])
-])
-
 AC_DEFUN([DUNE_OFFICIAL_TARBALLS],[
   AC_ARG_ENABLE(officialtarballs,
     AS_HELP_STRING([--enable-officialtarballs],[enforce configuration necessary for official tarballs]))

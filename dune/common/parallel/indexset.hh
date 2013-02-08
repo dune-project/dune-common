@@ -74,7 +74,7 @@ namespace Dune
   bool operator >=(const IndexPair<TG,TL>&, const TG&);
 
   template<typename T>
-  class MPITraits;
+  struct MPITraits;
 
   /**
    * @brief A pair consisting of a global and local index.
@@ -95,7 +95,7 @@ namespace Dune
     friend bool operator> <>(const IndexPair<TG,TL>&, const TG &);
     friend bool operator<=<>(const IndexPair<TG,TL>&, const TG &);
     friend bool operator>=<>(const IndexPair<TG,TL>&, const TG &);
-    friend class MPITraits<IndexPair<TG,TL> >;
+    friend struct MPITraits<IndexPair<TG,TL> >;
 
   public:
     /**

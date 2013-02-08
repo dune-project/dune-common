@@ -14,6 +14,8 @@
 #include <algorithm>
 #include <vector>
 
+#include "checkmatrixinterface.hh"
+
 using namespace Dune;
 
 template<typename T, std::size_t n>
@@ -386,14 +388,17 @@ int test_determinant()
 int main()
 {
   try {
+    Dune::DynamicMatrix<double> A( 5, 5 );
+    checkMatrixInterface( A );
+
     test_matrix<float, 1, 1>();
     test_matrix<double, 1, 1>();
     test_matrix<int, 10, 5>();
     test_matrix<double, 5, 10>();
     test_determinant();
-    Dune::DynamicMatrix<double> A(34, 34, 1e-15);
-    for (int i=0; i<34; i++) A[i][i] = 1;
-    A.invert();
+    Dune::DynamicMatrix<double> B(34, 34, 1e-15);
+    for (int i=0; i<34; i++) B[i][i] = 1;
+    B.invert();
     return test_invert_solve();
   }
   catch (Dune::Exception & e)

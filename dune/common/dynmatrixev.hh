@@ -5,6 +5,14 @@
 
 #include "dynmatrix.hh"
 
+/*!
+   \file
+   \brief utility functions to compute eigenvalues for
+   dense matrices.
+   \addtogroup DenseMatVec
+    @{
+ */
+
 namespace Dune {
 
   namespace DynamicMatrixHelp {
@@ -73,5 +81,5 @@ namespace Dune {
   }
 
 }
-
+/** @} */
 #endif

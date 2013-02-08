@@ -16,6 +16,8 @@
 #include <cassert>
 #include <complex>
 
+#include "checkmatrixinterface.hh"
+
 using namespace Dune;
 
 template<typename T, std::size_t n>
@@ -539,6 +541,18 @@ test_infinity_norms()
   assert(std::abs(m.infinity_norm_real()-28.0) < 1e-10); // max(7+7, 14+14)
 }
 
+
+template< class K, int rows, int cols >
+void test_interface()
+{
+  typedef CheckMatrixInterface::UseFieldVector< K, rows, cols > Traits;
+  typedef Dune::FieldMatrix< K, rows, cols > FMatrix;
+
+  FMatrix m( 1 );
+  checkMatrixInterface< FMatrix >( m );
+  checkMatrixInterface< FMatrix, Traits >( m );
+}
+
 int main()
 {
   try {
@@ -546,13 +560,16 @@ int main()
     test_infinity_norms();
 
     // test 1 x 1 matrices
+    test_interface<float, 1, 1>();
     test_matrix<float, 1, 1>();
     ScalarOperatorTest<float>();
     test_matrix<double, 1, 1>();
     ScalarOperatorTest<double>();
     // test n x m matrices
+    test_interface<int, 10, 5>();
     test_matrix<int, 10, 5>();
     test_matrix<double, 5, 10>();
+    test_interface<double, 5, 10>();
     // test complex matrices
     test_matrix<std::complex<float>, 1, 1>();
     test_matrix<std::complex<double>, 5, 10>();

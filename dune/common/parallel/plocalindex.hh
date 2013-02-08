@@ -48,7 +48,7 @@ namespace Dune
   {
 #if HAVE_MPI
     // friend declaration needed for MPITraits
-    friend class MPITraits<ParallelLocalIndex<T> >;
+    friend struct MPITraits<ParallelLocalIndex<T> >;
 #endif
     friend std::ostream& operator<<<>(std::ostream& os, const ParallelLocalIndex<T>& index);
 

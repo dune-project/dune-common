@@ -16,7 +16,7 @@ namespace Dune
   /**
    * @file
    * @brief Provides classes for selecting
-   * indices base on attribute flags.
+   * indices based on attribute flags.
    * @author Markus Blatt
    */
 
@@ -170,14 +170,14 @@ namespace Dune
   };
 
   /**
-   * @brief An cached selection of indices.
+   * @brief A cached selection of indices.
    */
   template<typename TS, typename TG, typename TL, int N>
   class Selection
   {
   public:
     /**
-     * @brief The type of the Set of attributes.
+     * @brief The type of the set of attributes.
      *
      * It has to provide a static method
      * \code bool contains(AttributeType a); \endcode

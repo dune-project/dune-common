@@ -21,14 +21,14 @@ int main(int argc, char** argv)
   {
     Helper& mpi = Helper::instance(argc, argv);
 
-    Helper::MPICommunicator comm = mpi.getCommunicator();
+    Helper::MPICommunicator comm DUNE_UNUSED = mpi.getCommunicator();
     comm= mpi.getCommunicator();
   }
 
   {
     Helper& mpi = Helper::instance(argc, argv);
 
-    Helper::MPICommunicator comm= mpi.getCommunicator();
+    Helper::MPICommunicator comm DUNE_UNUSED = mpi.getCommunicator();
     comm= mpi.getCommunicator();
 
 #ifdef MPIHELPER_PREINITIALIZE

@@ -356,6 +356,7 @@ run_default_autogen () {
     local M4_PATH=""
     if test -f configure.ac && \
        ( test -d .svn || test -d .git || test -d CVS || test -f stamp-vc ); then
+      sort_modules $FOUND_MODULES
       for m in $FOUND_MODULES; do
         path=$(eval "echo \$PATH_$m")
         MODULE_PATHS="$MODULE_PATHS$path "

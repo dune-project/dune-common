@@ -5,7 +5,7 @@
 DUNE_AC_INIT # gets module version from dune.module file
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([dune/common/stdstreams.cc])
-AM_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADERS([config.h])
 
 # add configure flags needed to create log files for dune-autobuild
 DUNE_AUTOBUILD_FLAGS
@@ -29,6 +29,8 @@ AC_CONFIG_FILES([Makefile
      dune/common/parallel/Makefile
      dune/common/parallel/test/Makefile
      doc/Makefile
+     doc/comm/Makefile
+     doc/comm/figures/Makefile
      doc/doxygen/Makefile
      doc/doxygen/Doxyfile
      doc/buildsystem/Makefile
