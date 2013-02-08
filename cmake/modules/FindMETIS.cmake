@@ -36,11 +36,11 @@ endfunction(add_dune_metis_flags _targets)
 # search metis header
 find_path(METIS_INCLUDE_DIR metis.h
   PATHS ${METIS_DIR}
-  PATH_SUFFIXES metis include Lib
+  PATH_SUFFIXES metis include include/metis Lib
   NO_DEFAULT_PATH
   DOC "Include directory of metis")
 find_path(METIS_INCLUDE_DIR metis.h
-  PATH_SUFFIXES metis inclue Lib)
+  PATH_SUFFIXES metis include include/metis Lib)
 
 set(METIS_LIBRARY METIS_LIBRARY-NOTFOUND CACHE FILEPATH "Full path of the METIS library")
 
