@@ -1,7 +1,7 @@
 # $Id$
 
 # we need the module file to be able to build via dunecontrol
-EXTRA_DIST=dune.module
+EXTRA_DIST= CMakeLists.txtdune.module
 
 # don't follow the full GNU-standard
 # we need automake 1.9 or newer

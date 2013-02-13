@@ -50,6 +50,6 @@ ALLM4S = 					\
 aclocaldir = $(datadir)/aclocal
 aclocal_DATA = $(ALLM4S)
 
-EXTRA_DIST = $(ALLM4S)
+EXTRA_DIST = CMakeLists.txt $(ALLM4S)
 
 include $(top_srcdir)/am/global-rules
