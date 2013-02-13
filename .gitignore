@@ -18,3 +18,4 @@ dune-common-?.?
 ltmain.sh
 .libs
 dependencies.m4
+dune.css
