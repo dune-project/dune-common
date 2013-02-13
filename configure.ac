@@ -23,6 +23,10 @@ AC_SUBST([LDADD], '$(top_builddir)/lib/libdunecommon.la')
 AC_CONFIG_FILES([Makefile
      lib/Makefile
      bin/Makefile
+     cmake/Makefile
+     cmake/modules/Makefile
+     cmake/scripts/Makefile
+     cmake/pkg/Makefile
      dune/Makefile
      dune/common/Makefile
      dune/common/test/Makefile
