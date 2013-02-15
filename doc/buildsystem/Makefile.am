@@ -8,7 +8,7 @@ BASEDIR=../..
 docdir=$(datadir)/doc/dune-common/buildsystem
 if BUILD_DOCS
   DOCFILES=buildsystem.pdf
-  EXTRA_DIST= CMakeLists.txt$(DOCFILES)
+  EXTRA_DIST= CMakeLists.txt $(DOCFILES)
   EXTRAINSTALL=$(DOCFILES)
 endif
 
