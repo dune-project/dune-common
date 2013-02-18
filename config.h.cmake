@@ -53,6 +53,9 @@
 /* Define to 1 if you have the <boost/shared_ptr.hpp> header file. */
 #cmakedefine HAVE_BOOST_SHARED_PTR_HPP 1
 
+/* does the compiler support abi::__cxa_demangle */
+#cmakedefine HAVE_CXA_DEMANGLE 1
+
 /* Define if you have LAPACK library. */
 #cmakedefine HAVE_LAPACK 1
 

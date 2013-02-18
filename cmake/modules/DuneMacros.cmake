@@ -409,6 +409,8 @@ macro(dune_project)
   # set required compiler flags for C++11 (former C++0x)
   find_package(CXX11Features)
 
+  include(DuneCxaDemangle)
+
   # search for headers
   include(CheckIncludeFile)
   include(CheckIncludeFileCXX)

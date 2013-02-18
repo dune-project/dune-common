@@ -1,5 +1,6 @@
 MODULES = DuneBoost.cmake \
   DuneCommonMacros.cmake  \
+  DuneCxaDemangle.cmake   \
   DuneDoc.cmake           \
   DuneDoxygen.cmake       \
   DuneMacros.cmake        \

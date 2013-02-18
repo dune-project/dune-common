@@ -12,9 +12,9 @@
 #include <string>
 #include <typeinfo>
 
-#if defined(__GNUC__) && ! defined(__clang__)
+#if HAVE_CXA_DEMANGLE
 #include <cxxabi.h>
-#endif // #ifdef __GNUC__
+#endif // #if HAVE_CXA_DEMANGLE
 
 namespace Dune {
 
@@ -23,7 +23,7 @@ namespace Dune {
   std::string className ( T &t )
   {
     std::string className = typeid( t ).name();
-#if defined(__GNUC__) && ! defined(__clang__)
+#if HAVE_CXA_DEMANGLE
     int status;
     char *demangled = abi::__cxa_demangle( className.c_str(), 0, 0, &status );
     if( demangled )
@@ -31,7 +31,7 @@ namespace Dune {
       className = demangled;
       std::free( demangled );
     }
-#endif // #ifdef __GNUC__
+#endif // #if HAVE_CXA_DEMANGLE
     return className;
   }
 
@@ -40,7 +40,7 @@ namespace Dune {
   std::string className ()
   {
     std::string className = typeid( T ).name();
-#if defined(__GNUC__) && ! defined(__clang__)
+#if HAVE_CXA_DEMANGLE
     int status;
     char *demangled = abi::__cxa_demangle( className.c_str(), 0, 0, &status );
     if( demangled )
@@ -48,7 +48,7 @@ namespace Dune {
       className = demangled;
       std::free( demangled );
     }
-#endif // #ifdef __GNUC__
+#endif // #if HAVE_CXA_DEMANGLE
     return className;
   }
 
