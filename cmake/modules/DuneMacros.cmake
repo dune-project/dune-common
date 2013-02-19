@@ -310,6 +310,7 @@ macro(dune_project)
   else(_mod_cmake)
     message(STATUS "There are no tests for module ${DUNE_MOD_NAME}.")
   endif(_mod_cmake)
+  include(GNUInstallDirs)
 endmacro(dune_project MODULE_DIR)
 
 # create a new config.h file and overwrite the existing one
