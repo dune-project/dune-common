@@ -12,17 +12,22 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules")
 # include dune-common to include pathtest
 include_directories("${CMAKE_SOURCE_DIR}")
 
+# set required compiler flags for C++11 (former C++0x)
+find_package(CXX11Features)
+
 # search for headers
 include(CheckIncludeFile)
 include(CheckIncludeFileCXX)
 check_include_file("malloc.h" HAVE_MALLOC_H)
 check_include_file_cxx("memory" HAVE_MEMORY)
+set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -DHAVE_MEMORY=${HAVE_MEMORY}")
 
 # search for packages
 find_package(MPI)
-set(HAVE_MPI MPI_FOUND)
+set(HAVE_MPI MPI_CXX_FOUND)
 find_package(Boost)
 set(HAVE_BOOST BOOST_FOUND)
+find_package(SharedPtr)
 
 # actually write the config.h file to disk
 configure_file(dune-common-config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/dune-common-config.h)
