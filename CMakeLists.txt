@@ -2,7 +2,7 @@
 project("dune-common" C CXX)
 
 # general stuff
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.6)
 message("CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}|")
 # make sure our own modules are found
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules")
