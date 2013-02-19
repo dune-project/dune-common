@@ -841,7 +841,7 @@ echo "- $PROJECT/$CMAKE_NAME""Config.cmake.in"
 cat> "$PROJECT/$CMAKE_NAME""Config.cmake.in" <<EOF
 #compute installation prefix relative to this file
 get_filename_component(_dir "\${CMAKE_CURRENT_LIST_FILE}" PATH)
-get_filename_component(_prefix "\${_dir}/../.." ABSOLUTE)
+get_filename_component(_prefix "\${_dir}/../../.." ABSOLUTE)
 
 #import the target
 #include("\${_prefix}/lib/cmake/@DUNE_MOD_NAME@-targets.cmake")
