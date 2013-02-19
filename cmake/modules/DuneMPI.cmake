@@ -27,7 +27,7 @@ if(MPI_FOUND)
 endif(MPI_FOUND)
 
 # A macro that adds the MPI flags for the compilation
-function(add_DUNE_MPI_flags _target)
+function(add_dune_mpi_flags _target)
   if(MPI_FOUND)
     target_link_libraries(${_target} ${MPI_DUNE_LIBRARIES})
     # The definitions are a hack as we do not seem to know which MPI implementation was

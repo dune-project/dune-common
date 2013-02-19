@@ -151,7 +151,7 @@ macro(dune_project)
   add_definitions(-DHAVE_CONFIG_H)
 
   # Search for MPI and set the relevant variables.
-  include(DUNEMPI)
+  include(DuneMPI)
 
 
   # Make calling fortran routines from C/C++ possible
@@ -170,7 +170,7 @@ macro(dune_project)
   # Create custom target for building the documentation
   # and provide macros for installing the docs and force
   # building them before.
-  include(DUNEDoc)
+  include(DuneDoc)
 
   # activate testing the DUNE way
   include(DuneTests)
