@@ -16,6 +16,8 @@ set(DUNE_COMMON_VERSION_MAJOR    "${DUNE_VERSION_MAJOR}")
 set(DUNE_COMMON_VERSION_MINOR    "${DUNE_VERSION_MINOR}")
 set(DUNE_COMMON_VERSION_REVISION "${DUNE_VERSION_REVISION}")
 
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+
 option("DUNE_USE_ONLY_STATIC_LIBS" "If set to ON, we will force static linkage everywhere")
 message("DUNE_USE_ONLY_STATIC_LIBS ${DUNE_USE_ONLY_STATIC_LIBS}")
 if(DUNE_USE_ONLY_STATIC_LIBS)
@@ -72,6 +74,9 @@ FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
 configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 add_definitions(-DHAVE_CONFIG_H)
+
+# Create custom target for building the documentation
+add_custom_target(doc)
 
 # Create a custom target for building the tests.
 # Thus they will not be built by make all any more.
