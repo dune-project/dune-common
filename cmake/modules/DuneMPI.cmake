@@ -10,7 +10,7 @@ if(MPI_FOUND)
     "Include path used by DUNE when compiling MPI programs")
   # There seems to be no target specific include path, use the global one.
   include_directories(${MPI_DUNE_INCLUDE_PATH})
-  set(MPI_DUNE_LINK_FLAGS ${MPI_C_LINK_FLAG} CACHE STRING
+  set(MPI_DUNE_LINK_FLAGS ${MPI_C_LINK_FLAGS} CACHE STRING
     "Link flags used by DUNE when compiling MPI programs")
   set(MPI_DUNE_LIBRARIES ${CMAKE_THREAD_LIBS_INIT} ${MPI_C_LIBRARIES} CACHE STRING
     "Libraries used by DUNE when linking MPI programs")
