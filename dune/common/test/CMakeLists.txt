@@ -6,7 +6,6 @@ set(TESTS
     bitsetvectortest
     check_fvector_size
     conversiontest
-    deprtuplestest
     dynmatrixtest
     dynvectortest
     enumsettest
@@ -82,7 +81,6 @@ set_target_properties(check_fvector_size_fail1 PROPERTIES COMPILE_FLAGS "-DDIM=1
 add_executable("check_fvector_size_fail2" EXCLUDE_FROM_ALL check_fvector_size_fail.cc)
 set_target_properties(check_fvector_size_fail2 PROPERTIES COMPILE_FLAGS "-DDIM=3")
 add_executable("conversiontest" conversiontest.cc)
-add_executable("deprtuplestest" deprtuplestest.cc)
 
 add_executable("dynmatrixtest" dynmatrixtest.cc)
 target_link_libraries("dynmatrixtest" "dunecommon")
