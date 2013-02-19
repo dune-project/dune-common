@@ -10,7 +10,7 @@ dune_module_information(${CMAKE_SOURCE_DIR})
 set(ProjectName            "${DUNE_MODULE_NAME}")
 set(ProjectVersion         "${DUNE_VERSION_STRING}")
 set(ProjectMaintainerEmail "${DUNE_MAINTAINER}")
-project(${ProjectName} C CXX)
+project(${ProjectName} C CXX Fortran)
 set(DUNE_COMMON_VERSION          "${DUNE_VERSION_STRING}")
 set(DUNE_COMMON_VERSION_MAJOR    "${DUNE_VERSION_MAJOR}")
 set(DUNE_COMMON_VERSION_MINOR    "${DUNE_VERSION_MINOR}")
@@ -45,6 +45,14 @@ endif(MPI_FOUND)
 find_package(Boost)
 set(HAVE_BOOST BOOST_FOUND)
 find_package(SharedPtr)
+
+# search for lapack
+find_package(LAPACK)
+set(HAVE_LAPACK LAPACK_FOUND)
+
+# make calling fortran routines from C/C++ possible
+include(FortranCInterface)
+FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
 
 # actually write the config.h file to disk
 configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)

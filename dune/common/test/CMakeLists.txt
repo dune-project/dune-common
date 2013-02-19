@@ -23,7 +23,7 @@ add_executable("fassigntest" fassigntest.cc)
 target_link_libraries("fassigntest" "dunecommon")
 
 add_executable("fmatrixtest" fmatrixtest.cc)
-target_link_libraries("fmatrixtest" "dunecommon")
+target_link_libraries("fmatrixtest" "dunecommon" ${LAPACK_LIBRARIES})
 
 add_executable("fvectortest" fvectortest.cc)
 add_executable("gcdlcmtest" gcdlcmtest.cc)
