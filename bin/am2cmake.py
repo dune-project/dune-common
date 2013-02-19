@@ -127,11 +127,12 @@ class target_flags:
     def __init__(self, suffix):
         self.suffix=suffix
         self.known_flags = {
-            'ALGRID_CPPFLAGS': ['add_dune_alugrid_flags',''],
+            'ALBERTA_CPPFLAGS': ['add_dune_alberta_flags',''],
+            'ALUGRID_CPPFLAGS': ['add_dune_alugrid_flags',''],
             'UG_CPPFLAGS':  ['add_dune_ug_flags', ''],
             'SUPERLU_CPPFLAGS': ['add_dune_superlu_flags', ''],
             'DUNEMPICPPFLAGS': ['add_dune_mpi_flags', ''],
-            'AMIRAMESH_CPPFLAGS': ['add_dune_amira_flags',''],
+            'AMIRAMESH_CPPFLAGS': ['add_dune_amiramesh_flags',''],
             'BOOST_CPPFLAGS': ['add_dune_boost_flags',''],
             'GMP_CPPFLAGS': ['add_dune_gmp_flags',''],
             'GRAPE_CPPFLAGS': ['add_dune_grape_flags',''],
