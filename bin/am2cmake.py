@@ -833,7 +833,14 @@ def am_2_cmake_dir(directory):
             print ''.join(['Converting ', amfile, ' -> ', cmfile])
             print is_module_root
             am_2_cmake(amfile, cmfile, is_module_root)
-        
+    
+    # Add doxygen target
+    doxygendir=os.path.join(directory, 'doc', 'doxygen')
+    if os.path.isdir(doxygendir) and os.path.exists(os.path.join(doxygendir, 'Doxylocal')):
+        output=open(os.path.join(doxygendir, 'CMakeLists.txt'),'a')
+        output.write('\n'.join(['# Create Doxyfile.in and Doxyfile, and doxygen documentation',
+'add_doxygen_target()']))
+        output.close()
 
 def main():
     usage = "usage: am2cmake "
