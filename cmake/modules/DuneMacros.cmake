@@ -195,6 +195,14 @@ macro(dune_project)
     # set includes
     dune_module_to_uppercase(_upper_case "${_mod}")
     include_directories("${${_upper_case}_INCLUDE_DIRS}")
+    message("${_upper_case}_LIBS=${${_upper_case}_LIBS}")
+    if(${_upper_case}_LIBS)
+      foreach(_lib ${${_upper_case}_LIBS})
+	message("_lib=${_lib}")
+	list(APPEND DUNE_DEFAULT_LIBS "${_lib}")
+      endforeach(_lib ${${_upper_case}_LIBS})
+      message("DUNE_DEFAULT_LIBS=${DUNE_DEFAULT_LIBS}")
+    endif(${_upper_case}_LIBS)
   endforeach(_mod DEPENDENCY_TREE)
 
   # Search for a cmake files containing tests and directives
@@ -290,7 +298,11 @@ MACRO(finalize_dune_project)
 ENDMACRO(finalize_dune_project)
 
 MACRO(target_link_dune_default_libraries _target)
-  add_DUNE_MPI_flags(${_target})
+  message("libs ${DUNE_DEFAULT_LIBS}")
+  foreach(_lib ${DUNE_DEFAULT_LIBS})
+    message("lib=${_lib}")
+    target_link_libraries(${_target} ${_lib})
+  endforeach(_lib ${DUNE_DEFAULT_LIBS})
 ENDMACRO(target_link_dune_default_libraries)
 
 
