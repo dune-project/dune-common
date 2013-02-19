@@ -28,16 +28,17 @@
 #
 include(DuneMPI)
 
-# add subdirectory include to search directories
-foreach(_dir ${ParMETIS_DIR})
-  list(APPEND _ParMETIS_INCLUDE_DIRS ${ParMETIS_DIR} ${ParMETIS_DIR}/include)
-endforeach(_dir ${ParMETIS_DIR})
-
 # search for file parmetis.h
 find_path(ParMETIS_INCLUDE_DIRS parmetis.h
-          PATHS ${_ParMETIS_INCLUDE_DIRS}
+          PATHS ${PARMETIS_DIR}
+          PATH_SUFFIXES include parmetis
           DOC "path for file parmetis.h"
           NO_DEFAULT_PATH)
+
+# Search in default paths (omitted because of precedence above.
+find_path(ParMETIS_INCLUDE_DIRS parmetis.h
+          PATH_SUFFIXES include parmetis
+          DOC "path for file parmetis.h")
 
 set(METIS_LIB_NAME metis CACHE STRING "Name of the METIS library (default: metis).")
 set(PARMETIS_LIB_NAME parmetis CACHE STRING "Name of the ParMETIS library (default: parmetis).")
@@ -60,21 +61,11 @@ if(ParMETIS_FOUND)
   set(ParMETIS_INCLUDE_PATH ${CMAKE_REQUIRED_INCLUDES})
   set(ParMETIS_COMPILE_FLAGS "${CMAKE_REQUIRED_FLAGS} -DENABLE_PARMETIS=1")
 
-  foreach(_dir ${ParMETIS_DIR})
-    list(APPEND _ParMETIS_LIB_DIRS ${ParMETIS_DIR} ${ParMETIS_DIR}/lib)
-  endforeach(_dir ${ParMETIS_DIR})
+  find_library(METIS_LIBRARY metis PATHS ${ParMETIS_DIR} PATH_SUFFIXES lib NO_DEFAULT_PATH)
+  find_library(METIS_LIBRARY metis)
 
-  find_library(METIS_LIBRARY metis PATHS ${_ParMETIS_LIB_DIRS} NO_DEFAULT_PATH)
-
-  if(NOT METIS_LIBRARY)
-    find_library(METIS_LIBRARY metis)
-  endif(NOT METIS_LIBRARY)
-
-  find_library(ParMETIS_LIBRARY parmetis PATHS ${_ParMETIS_LIB_DIRS} NO_DEFAULT_PATH)
-
-  if(NOT ParMETIS_LIBRARY)
-    find_library(ParMETIS_LIBRARY parmetis)
-  endif(NOT ParMETIS_LIBRARY)
+  find_library(ParMETIS_LIBRARY parmetis PATHS ${ParMETIS_DIR} PATH_SUFFIXES lib NO_DEFAULT_PATH)
+  find_library(ParMETIS_LIBRARY parmetis)
 
   if(ParMETIS_LIBRARY)
     list(APPEND CMAKE_REQUIRED_LIBRARIES ${ParMETIS_LIBRARY} ${METIS_LIBRARY} ${MPI_DUNE_LIBRARIES})
