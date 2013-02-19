@@ -20,11 +20,11 @@ set(TESTPROGS
     iteratorfacadetest
     iteratorfacadetest2
     lrutest
-    mpicollcomm
+    mpicollectivecommunication
     mpiguardtest
     mpihelpertest
     mpihelpertest2
-    nullptr-test
+    nullptr_test
     pathtest
     parametertreetest
     poolallocatortest
@@ -33,7 +33,7 @@ set(TESTPROGS
     singletontest
     static_assert_test
     streamtest
-    test-stack
+    test_stack
     testfassign1
     testfassign2
     testfassign3
@@ -45,6 +45,7 @@ set(TESTPROGS
     testfassign_fail5
     testfassign_fail6
     testfconstruct
+    tuplestest_config
     tuplestest_dune
     tuplestest_std
     tuplestest_tr1
