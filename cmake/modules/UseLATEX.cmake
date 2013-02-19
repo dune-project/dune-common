@@ -1128,7 +1128,7 @@ MACRO(ADD_LATEX_TARGETS)
             ${CMAKE_COMMAND} -E chdir ${output_dir}
             ${PS2PDF_CONVERTER} ${PS2PDF_CONVERTER_FLAGS} ${LATEX_TARGET}.ps ${LATEX_TARGET}.pdf
             )
-	  ADD_DEPENDENCIES(${LATEX_FATHER_TARGET} ${safepdf_target)
+	  ADD_DEPENDENCIES(${LATEX_FATHER_TARGET} ${safepdf_target})
 	ELSE (LATEX_FATHER_TARGET)
 	  ADD_CUSTOM_TARGET(${safepdf_target} ALL
             ${CMAKE_COMMAND} -E chdir ${output_dir}
