@@ -16,6 +16,23 @@ set(DUNE_COMMON_VERSION_MAJOR    "${DUNE_VERSION_MAJOR}")
 set(DUNE_COMMON_VERSION_MINOR    "${DUNE_VERSION_MINOR}")
 set(DUNE_COMMON_VERSION_REVISION "${DUNE_VERSION_REVISION}")
 
+message("DUNE_USE_ONLY_STATIC_LIB ${DUNE_USE_ONLY_STATIC_LIB}")
+
+if(DUNE_USE_ONLY_STATIC_LIBS)
+  # Use only static libraries.
+  # We do this by overriding the library suffixes.
+  set( BLA_STATIC 1)
+  set( _dune_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
+  if (WIN32)
+    set(CMAKE_FIND_LIBRARY_SUFFIXES .lib ${CMAKE_FIND_LIBRARY_SUFFIXES})
+  endif (WIN32)
+  if (APPLE)
+    set(CMAKE_FIND_LIBRARY_SUFFIXES .lib ${CMAKE_FIND_LIBRARY_SUFFIXES})
+  else (APPLE)
+    set(CMAKE_FIND_LIBRARY_SUFFIXES .a )
+  endif (APPLE)
+endif()
+
 include(DuneStreams)
 dune_set_minimal_debug_level()
 
@@ -61,6 +78,8 @@ add_definitions(-DHAVE_CONFIG_H)
 
 # add subdirectories to execute CMakeLists.txt there
 add_subdirectory("dune")
+
+set( CMAKE_FIND_LIBRARY_SUFFIXES ${_dune_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES})
 
 # set up CTest
 enable_testing()
