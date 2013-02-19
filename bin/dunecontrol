@@ -221,7 +221,7 @@ esac'
 }
 
 # list of all dunecontrol commands
-COMMANDS="printdeps update autogen configure make all exec status svn"
+COMMANDS="printdeps update autogen configure make all exec bexec status svn"
 
 # help string for the commands
 printdeps_HELP="print recursive dependencies of a module"
@@ -230,7 +230,8 @@ autogen_HELP="run the autogen.sh script for each module. Does nothing, if CMake 
 configure_HELP="run configure or cmake for each module"
 make_HELP="run make for each module"
 all_HELP="\trun 'autogen', 'configure' and 'make' command for each module"
-exec_HELP="execute an arbitrary command in each module directory"
+exec_HELP="execute an arbitrary command in each module source directory"
+bexec_HELP="execute an arbitrary command in each module build directory"
 status_HELP="show vc status for all modules"
 svn_HELP="\trun svn command for each svn managed module"
 
@@ -249,6 +250,8 @@ done
 #
 
 run_default_exec () { bash -c "eval $CMD_FLAGS"; }
+
+run_default_bexec () { bash -c "cd "$BUILDDIR" && eval $CMD_FLAGS"; }
 
 run_default_status () {
   local verbose=0
