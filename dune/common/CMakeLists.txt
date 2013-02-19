@@ -2,28 +2,15 @@ add_subdirectory("parallel")
 add_subdirectory("test" EXCLUDE_FROM_ALL)
 
 #build the library dunecommon
-add_library("dunecommon"
-	exceptions.cc
-	fmatrixev.cc
-	ios_state.cc
-	parametertree.cc
-	parametertreeparser.cc
-	path.cc
-	stdstreams.cc)
-target_link_libraries("dunecommon" ${LAPACK_LIBRARIES})
-
-install(TARGETS dunecommon  EXPORT dune-common-targets DESTINATION lib)
-install(EXPORT dune-common-targets
-  DESTINATION lib/cmake)
-
-#Make targets available in build tree
-export(TARGETS dunecommon  FILE ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-targets.cmake)
-
-# build the library in lib
-set_target_properties(dunecommon PROPERTIES
-  ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
-set_target_properties(dunecommon PROPERTIES
-  LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+dune_add_library("dunecommon"
+  exceptions.cc
+  fmatrixev.cc
+  ios_state.cc
+  parametertree.cc
+  parametertreeparser.cc
+  path.cc
+  stdstreams.cc)
+dune_target_link_libraries("dunecommon" ${LAPACK_LIBRARIES})
 
 #install headers
 install(FILES
