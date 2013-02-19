@@ -50,7 +50,7 @@ MACRO (add_doxygen_target)
     file(GLOB doxygenfiles GLOB ${CMAKE_CURRENT_BINARY_DIR}/html/*.html ${CMAKE_CURRENT_BINARY_DIR}/html/*.png ${CMAKE_CURRENT_BINARY_DIR}/html/*.css ${CMAKE_CURRENT_BINARY_DIR}/html/*.gif)
 
     set(doxygenfiles "${CMAKE_CURRENT_BINARY_DIR}/doxygen.log;${CMAKE_CURRENT_BINARY_DIR}/doxyerr.log;${doxygenfiles}")
-    set(install_doxygen_command ${CMAKE_COMMAND} -D FILES="${doxygenfiles}" -D DIR=${CMAKE_INSTALL_PREFIX}/share/doc/${DUNE_MOD_NAME}/doxygen  -P ${CMAKE_SOURCE_DIR}/cmake/scripts/InstallFile.cmake)
+    set(install_doxygen_command ${CMAKE_COMMAND} -D FILES="${doxygenfiles}" -D DIR=${CMAKE_INSTALL_PREFIX}/share/doc/${DUNE_MOD_NAME}/doxygen  -P ${SCRIPT_DIR}/InstallFile.cmake)
     add_custom_target(doxygen_install_${DUNE_MOD_NAME}
       ${install_doxygen_command}
       COMMENT "Installing doxygen documentation"
