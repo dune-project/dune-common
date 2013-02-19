@@ -734,7 +734,7 @@ def create_cmake_dirs_and_file(dirname, module_name):
     output.write(text)
     output.close()
     lines=['if(NOT @DUNE_MOD_NAME@_FOUND)\n',
-           #compute installation prefix relative to this file
+           '#compute installation prefix relative to this file',
            'get_filename_component(_dir "${CMAKE_CURRENT_LIST_FILE}" PATH)\n',
            'get_filename_component(_prefix "${_dir}/../../.." ABSOLUTE)\n',
            '\n',
@@ -763,8 +763,11 @@ def create_cmake_dirs_and_file(dirname, module_name):
     l.extend([lines[5], 
               'if(EXISTS "@CMAKE_BINARY_DIR@/@DUNE_MOD_NAME@-targets.cmake")\n'
               '  include("@CMAKE_BINARY_DIR@/@DUNE_MOD_NAME@-targets.cmake")\n',
-              'endif(EXISTS "@CMAKE_BINARY_DIR@/@DUNE_MOD_NAME@-targets.cmake")\n\n'])
-    l.extend(lines[10:])
+              'endif(EXISTS "@CMAKE_BINARY_DIR@/@DUNE_MOD_NAME@-targets.cmake")\n\n',
+              '#report other information',
+              'set(@DUNE_MOD_NAME@_PREFIX "@CMAKE_SOURCE_DIR@")',
+              'set(@DUNE_MOD_NAME@_INCLUDE_DIRS "@CMAKE_SOURCE_DIR@")'])
+    l.extend(lines[13:])
     output=open(os.path.join(dirname, module_name+'-config.cmake.in'), 'w')
     output.write(''.join(l))
     output.close()
