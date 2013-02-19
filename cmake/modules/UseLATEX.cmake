@@ -814,7 +814,6 @@ MACRO(PARSE_ADD_LATEX_ARGUMENTS command)
     ${ARGN}
     )
 
-  message("FATHER_TARGET ${LATEX_FATHER_TARGET}")
   # The first argument is the target latex file.
   IF (LATEX_DEFAULT_ARGS)
     LATEX_CAR(LATEX_MAIN_INPUT ${LATEX_DEFAULT_ARGS})

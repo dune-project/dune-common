@@ -45,7 +45,7 @@
 #
 #
 # dune_add_library(<basename> [NO_EXPORT] [ADD_LIBS <lib1> [<lib2> ...]]
-#   SOURCES <source1> [<source2> ...] [COMPILE_FLGS <flags>])
+#   [OBJECT] SOURCES <source1> [<source2> ...] [COMPILE_FLAGS <flags>])
 #
 # Creates shared and static libraries with the same basename.
 # <basename> is the basename of the library.
@@ -56,6 +56,11 @@
 # If the option NO_EXPORT is omitted the library is exported
 # for usage in other modules.
 #
+# Object libraries can now be created with dune_add_library(<target>
+#  OBJECT <sources>). It will create a GLOBAL property
+#  _DUNE_TARGET_OBJECTS:<target>_ that records the full path to the
+#  source files. Theses can later be referenced by providing
+#  _DUNE_TARGET_OBJECTS:<target>_ as one of the sources to dune_add_library
 #
 # finalize_dune_project()
 #
@@ -163,7 +168,7 @@ macro(dune_module_information MODULE_DIR)
       set(${_mod}_REQUIRED REQUIRED)
     endforeach(_mod ${DUNE_DEPENDS})
     convert_deps_to_list(DUNE_DEPENDS)
-    message("Dependencies: ${DEPENDS_MODULE} (versions: ${DEPENDS_VERSIONS}) DUNE_DEPENDS=${DUNE_DEPENDS}")
+    message(STATUS "Dependencies: ${DEPENDS_MODULE} (versions: ${DEPENDS_VERSIONS}) DUNE_DEPENDS=${DUNE_DEPENDS}")
   endif(DUNE_DEPENDS)
 
   # 4. Check for line starting with Suggests
@@ -171,7 +176,7 @@ macro(dune_module_information MODULE_DIR)
   if(DUNE_SUGGESTS)
     split_module_version(${DUNE_SUGGESTS} SUGGESTS_MODULE SUGGESTS_VERSION)
     convert_deps_to_list(DUNE_SUGGESTS)
-    message("Suggestions: ${SUGGESTS_MODULE} (versions: ${SUGGESTS_VERSIONS}) DUNE_SUGGESTS=${DUNE_SUGGESTS}")
+    message(STATUS "Suggestions: ${SUGGESTS_MODULE} (versions: ${SUGGESTS_VERSIONS}) DUNE_SUGGESTS=${DUNE_SUGGESTS}")
   endif(DUNE_SUGGESTS)
 
   dune_module_to_uppercase(DUNE_MOD_NAME_UPPERCASE ${DUNE_MOD_NAME})
@@ -185,7 +190,6 @@ endmacro(dune_module_information)
 
 macro(dune_process_dependency_leafs modules versions is_required next_level_deps
     next_level_sugs)
-  message("dune_process_dependency_leafs modules=${modules}| versions=${versions} is_required=${is_required}| ${next_level_deps} ${next_level_sugs}")
   # modules is not a real variable, make it one
   set(mmodules ${modules})
   list(LENGTH mmodules mlength)
@@ -207,16 +211,12 @@ macro(dune_process_dependency_leafs modules versions is_required next_level_deps
 endmacro(dune_process_dependency_leafs)
 
 function(remove_processed_modules modules versions is_required)
-  message("remove_processed_modules \"${${modules}}\" \"${${versions}}\"")
   list(LENGTH ${modules} mlength)
   if(mlength GREATER 0)
     math(EXPR length "${mlength}-1")
     foreach(i RANGE ${length} 0 -1)
       list(GET ${modules} ${i} _mod)
-      message("${_mod}_SEARCHED=${${_mod}_SEARCHED}")
       if(${_mod}_SEARCHED)
-	message("will remove ${i}")
-	message("removing ${i}")
 	list(REMOVE_AT ${modules} ${i})
 	list(REMOVE_AT ${versions} ${i})
 	if(is_required AND NOT ${_mod}_REQUIRED AND NOT ${_mod}_FOUND)
@@ -225,17 +225,12 @@ function(remove_processed_modules modules versions is_required)
       endif(${_mod}_SEARCHED)
     endforeach(i RANGE 0 ${length})
   endif(mlength GREATER 0)
-  message("end remove_processed_modules \"${${modules}}\" \"${${versions}}\"")
   set(${modules} ${${modules}} PARENT_SCOPE)
   set(${versions} ${${versions}} PARENT_SCOPE)
 endfunction(remove_processed_modules modules versions is_required)
 
 macro(dune_create_dependency_leafs depends depends_versions suggests suggests_versions
     global_depends global_suggests)
-  message("dune_create_dependency_leafs depends=${depends} versions=${depends_versions}")
-  message("suggests=${suggests} versions=${suggests_versions}")
-  message("${global_depends}=${${global_depends}}")
-  message("${global_suggests}=${${global_suggests}}")
   set(deps "")
   set(sugs "")
   #Process dependencies
@@ -252,12 +247,8 @@ macro(dune_create_dependency_leafs depends depends_versions suggests suggests_ve
   split_module_version("${sugs}" next_mod_suggests next_suggests_versions)
   #remove_processed_modules(next_mod_suggests next_suggests_versions "")
   set(${global_suggests} "${${global_suggests}}" ${next_mod_suggests})
-  message("${global_depends}=${${global_depends}}")
-  message("${global_suggests}=${${global_suggests}}")
   # Move to next level
   if(next_mod_suggests OR next_mod_depends)
-    message("deps=${deps} sugs=${sugs}")
-    message("Going to next level deps=${next_mod_depends} sugs=${next_mod_suggests}")
     dune_create_dependency_leafs("${next_mod_depends}" "${next_depends_versions}"
       "${next_mod_suggests}" "${next_suggests_versions}" global_depends global_suggests)
   endif(next_mod_suggests OR next_mod_depends)
@@ -276,22 +267,14 @@ macro(dune_create_dependency_tree)
       find_package(${_mod})
       set(${_mod}_REQUIRED ON)
     endforeach(_mod ${SUGGESTS_MODULE})
-    message("global_depends=${global_depends}")
-    message("global_suggests=${global_suggests}")
-    message("DEPENDS_MODULE=${DEPENDS_MODULE} DEPENDS_VERSION=${DEPENDS_VERSIONS}
-      SUGGESTS_MODULE=${SUGGESTS_MODULE} SUGGESTS_VERSION=${SUGGESTS_VERSIONS}")
     dune_create_dependency_leafs("${DEPENDS_MODULE}" "${DEPENDS_VERSIONS}"
       "${SUGGESTS_MODULE}" "${SUGGESTS_VERSIONS}" global_depends
       global_suggests)
-    message("global_depends=${global_depends}")
-    message("global_suggests=${global_suggests}")
     set(ALL_DEPENDENCIES "${global_depends}" "${global_suggests}")
-    message("ALL_DEPENDENCIES=${ALL_DEPENDENCIES}")
   endif(DEPENDS_MODULE OR SUGGESTS_MODULE)
   # reverse ALL_DEPENDENCIES
   list(REVERSE ALL_DEPENDENCIES)
   list(REMOVE_DUPLICATES ALL_DEPENDENCIES)
-  message("ALL_DEPENDENCIES=${ALL_DEPENDENCIES}")
 endmacro(dune_create_dependency_tree _immediates)
 
 # Converts a module name given by _dune_module into a string _macro_name
@@ -321,10 +304,8 @@ endmacro(dune_module_to_macro _macro_name _dune_module)
 
 macro(dune_process_dependency_tree DEPENDS DVERSIONS SUGGESTS SVERSIONS)
   foreach(_mod ${ALL_DEPENDENCIES})
-    message(STATUS "mod=${_mod} ${_mod}_PROCESSED=${${_mod}_PROCESSED}|")
     if(NOT ${_mod}_PROCESSED)
       # module not processed yet
-      message(STATUS "Processing dependency ${_mod}")
       set(${_mod}_PROCESSED ${_mod})
       # Search for a cmake files containing tests and directives
       # specific to this module
@@ -541,9 +522,8 @@ macro(finalize_dune_project)
       #"find_package(${_mod})\n")#include(${_macro}Macros)\n")
     endforeach(i RANGE 0 ${mlength})
   endif(mlength GREATER 0)
-  message(STATUS "${DUNE_MOD_NAME_CMAKE}_FOUND=${${DUNE_MOD_NAME_CMAKE}_FOUND}|")
+
   if(${DUNE_MOD_NAME_CMAKE}_FOUND)
-     message(STATUS "appending")
     # This module hast its own tests.
     # Execute them during find_package
     #file(APPEND ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-config.cmake
@@ -613,81 +593,133 @@ macro(dune_common_script_source_dir _script_dir)
   endif("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
 endmacro(dune_common_script_source_dir)
 
+function(dune_expand_object_libraries _SOURCES_var _ADD_LIBS_var _COMPILE_FLAGS_var)
+  set(_new_SOURCES "")
+  set(_new_ADD_LIBS "")
+  set(_new_COMPILE_FLAGS "")
+  set(_regex "_DUNE_TARGET_OBJECTS:([a-zA-Z0-9_-]+)_")
+  foreach(_source ${${_SOURCES_var}})
+    string(REGEX MATCH ${_regex} _matched "${_source}")
+    if(_matched)
+      string(REGEX REPLACE "${_regex}" "\\1" _basename  "${_source}")
+      foreach(var _SOURCES _ADD_LIBS _COMPILE_FLAGS)
+	get_property(_prop GLOBAL PROPERTY DUNE_LIB_${_basename}${var})
+	list(APPEND _new${var} "${_prop}")
+      endforeach(var _SOURCES _ADD_LIBS _COMPILE_FLAGS)
+    else(_matched)
+      list(APPEND _new_SOURCES "${_source}")
+    endif(_matched)
+  endforeach(_source ${${_SOURCES_var}})
+
+  foreach(var _SOURCES _ADD_LIBS _COMPILE_FLAGS)
+    set(${${var}_var} "${_new${var}}" PARENT_SCOPE)
+  endforeach(var _SOURCES _ADD_LIBS _COMPILE_FLAGS)
+endfunction(dune_expand_object_libraries)
+
 # Creates shared and static libraries with the same basename.
 # More docu can be found at the top of this file.
 macro(dune_add_library basename)
   include(CMakeParseArguments)
-  cmake_parse_arguments(DUNE_LIB "NO_EXPORT" "COMPILE_FLAGS"
+  cmake_parse_arguments(DUNE_LIB "NO_EXPORT;OBJECT" "COMPILE_FLAGS"
     "ADD_LIBS;SOURCES" ${ARGN})
-  #create lib
-  add_library(${basename} ${DUNE_SOURCES} ${DUNE_LIB_UNPARSED_ARGUMENTS})
-  # link with specified libraries.
-  if(DUNE_LIB_ADD_LIBS)
-    dune_target_link_libraries(${basename} ${DUNE_LIB_ADD_LIBS})
-  endif(DUNE_LIB_ADD_LIBS)
-  if(DUNE_LIB_COMPILE_FLAGS)
-    setproperty(${basename} APPEND_STRING COMPILE_FLAGS
-      "${DUNE_LIB_COMPILE_FLAGS}")
-  endif(DUNE_LIB_COMPILE_FLAGS)
-  # Build library in ${PROJECT_BINARY_DIR}/lib
-  set_target_properties(${basename} PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
-    ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+  if(DUNE_LIB_OBJECT)
+    if(DUNE_LIB_${basename}_SOURCES)
+      message(FATAL_ERROR "There is already a library with the name ${basename}, "
+	"but only one is allowed!")
+    else(DUNE_LIB_${basename}_SOURCES)
+      foreach(source ${DUNE_LIB_UNPARSED_ARGUMENTS})
+	list(APPEND full_path_sources ${CMAKE_CURRENT_SOURCE_DIR}/${source})
+      endforeach(source ${DUNE_LIB_UNPARSED_ARGUMENTS})
+      # register sources, libs and flags for building the library later
+      define_property(GLOBAL PROPERTY DUNE_LIB_${basename}_SOURCES
+	BRIEF_DOCS "Convenience property with sources for library ${basename}. DO NOT EDIT!"
+	FULL_DOCS "Convenience property with sources for library ${basename}. DO NOT EDIT!")
+      set_property(GLOBAL PROPERTY DUNE_LIB_${basename}_SOURCES
+	"${full_path_sources}")
+      define_property(GLOBAL PROPERTY DUNE_LIB_${basename}_ADD_LIBS
+	BRIEF_DOCS "Convenience property with libraries for library ${basename}. DO NOT EDIT!"
+	FULL_DOCS "Convenience property with libraries for library ${basename}. DO NOT EDIT!")
+      set_property(GLOBAL PROPERTY DUNE_LIB_${basename}_ADD_LIBS
+	"${DUNE_LIB_ADD_LIBS}")
+      define_property(GLOBAL PROPERTY DUNE_LIB_${basename}_COMPILE_FLAGS
+	BRIEF_DOCS "Convenience property with compile flags for library ${basename}. DO NOT EDIT!"
+	FULL_DOCS "Convenience property with compile flags for library ${basename}. DO NOT EDIT!")
+      set_property(GLOBAL PROPERTY DUNE_LIB_${basename}_COMPILE_FLAGS
+	"${DUNE_LIB_COMPILE_FLAGS}")
+    endif(DUNE_LIB_${basename}_SOURCES)
+  else(DUNE_LIB_OBJECT)
+    list(APPEND DUNE_LIB_SOURCES ${DUNE_LIB_UNPARSED_ARGUMENTS})
+    dune_expand_object_libraries(DUNE_LIB_SOURCES DUNE_LIB_ADD_LIBS DUNE_LIB_COMPILE_FLAGS)
+    #create lib
+    add_library(${basename} ${DUNE_LIB_SOURCES})
+    # link with specified libraries.
+    if(DUNE_LIB_ADD_LIBS)
+      dune_target_link_libraries(${basename} ${DUNE_LIB_ADD_LIBS})
+    endif(DUNE_LIB_ADD_LIBS)
+    if(DUNE_LIB_COMPILE_FLAGS)
+      setproperty(${basename} APPEND_STRING COMPILE_FLAGS
+	"${DUNE_LIB_COMPILE_FLAGS}")
+    endif(DUNE_LIB_COMPILE_FLAGS)
+    # Build library in ${PROJECT_BINARY_DIR}/lib
+    set_target_properties(${basename} PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
+      ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
 
-  set(_created_libs ${basename})
+    set(_created_libs ${basename})
 
-  if(DUNE_BUILD_BOTH_LIBS)
-    if(BUILD_SHARED_LIBS)
-      #create static lib
-      add_library(${basename}-static STATIC ${ARGN})
-      # make sure both libs have the same name.
-      set_target_properties(${basename}-static PROPERTIES
-        OUTPUT_NAME ${basename}
-        ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
-      list(APPEND _created_libs ${basename}-static)
-      # link with specified libraries.
-      if(DUNE_LIB_ADD_LIBS)
-	dune_target_link_libraries(${basename}-static ${DUNE_LIB_ADD_LIBS})
-      endif(DUNE_LIB_ADD_LIBS)
-      if(DUNE_LIB_COMPILE_FLAGS)
-	setproperty(${basename}-static APPEND_STRING COMPILE_FLAGS
-	  "${DUNE_LIB_COMPILE_FLAGS}")
-      endif(DUNE_LIB_COMPILE_FLAGS)
-    else(BUILD_SHARED_LIBS)
-      #create shared libs
-      add_library(${basename}-shared SHARED ${ARGN})
-      set_target_properties(${basename}-shared PROPERTIES
-        OUTPUT_NAME ${basename}
-        LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
-      # link with specified libraries.
-      if(DUNE_LIB_ADD_LIBS)
-	dune_target_link_libraries(${basename}-shared ${DUNE_LIB_ADD_LIBS})
-      endif(DUNE_LIB_ADD_LIBS)
-      if(DUNE_LIB_COMPILE_FLAGS)
-	setproperty(${basename}-shared APPEND_STRING COMPILE_FLAGS
-	  "${DUNE_LIB_COMPILE_FLAGS}")
-      endif(DUNE_LIB_COMPILE_FLAGS)
-      list(APPEND _created_libs ${basename}-shared)
-    endif(BUILD_SHARED_LIBS)
-  endif(DUNE_BUILD_BOTH_LIBS)
+    if(DUNE_BUILD_BOTH_LIBS)
+      if(BUILD_SHARED_LIBS)
+	#create static lib
+	add_library(${basename}-static STATIC ${DUNE_LIB_SOURCES})
+	# make sure both libs have the same name.
+	set_target_properties(${basename}-static PROPERTIES
+          OUTPUT_NAME ${basename}
+          ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+	list(APPEND _created_libs ${basename}-static)
+	# link with specified libraries.
+	if(DUNE_LIB_ADD_LIBS)
+	  dune_target_link_libraries(${basename}-static ${DUNE_LIB_ADD_LIBS})
+	endif(DUNE_LIB_ADD_LIBS)
+	if(DUNE_LIB_COMPILE_FLAGS)
+	  setproperty(${basename}-static APPEND_STRING COMPILE_FLAGS
+	    "${DUNE_LIB_COMPILE_FLAGS}")
+	endif(DUNE_LIB_COMPILE_FLAGS)
+      else(BUILD_SHARED_LIBS)
+	#create shared libs
+	add_library(${basename}-shared SHARED  ${DUNE_LIB_SOURCES})
+	set_target_properties(${basename}-shared PROPERTIES
+          OUTPUT_NAME ${basename}
+          LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+	# link with specified libraries.
+	if(DUNE_LIB_ADD_LIBS)
+	  dune_target_link_libraries(${basename}-shared ${DUNE_LIB_ADD_LIBS})
+	endif(DUNE_LIB_ADD_LIBS)
+	if(DUNE_LIB_COMPILE_FLAGS)
+	  setproperty(${basename}-shared APPEND_STRING COMPILE_FLAGS
+	    "${DUNE_LIB_COMPILE_FLAGS}")
+	endif(DUNE_LIB_COMPILE_FLAGS)
+	list(APPEND _created_libs ${basename}-shared)
+      endif(BUILD_SHARED_LIBS)
+    endif(DUNE_BUILD_BOTH_LIBS)
 
-  if(NOT DUNE_LIB_NO_EXPORT)
-    if(NOT _MODULE_EXPORT_USED)
-      set(_MODULE_EXPORT_USED ON)
-      set(_append "")
-    else(NOT _MODULE_EXPORT_USED)
-      set(_append APPEND)
-    endif(NOT _MODULE_EXPORT_USED)
-    # install targets to use the libraries in other modules.
-    install(TARGETS ${_created_libs}
-      EXPORT ${DUNE_MOD_NAME}-targets DESTINATION lib)
-    install(EXPORT ${DUNE_MOD_NAME}-targets
-      DESTINATION lib/cmake)
+    if(NOT DUNE_LIB_NO_EXPORT)
+      if(NOT _MODULE_EXPORT_USED)
+	set(_MODULE_EXPORT_USED ON)
+	set(_append "")
+      else(NOT _MODULE_EXPORT_USED)
+	set(_append APPEND)
+      endif(NOT _MODULE_EXPORT_USED)
+      # install targets to use the libraries in other modules.
+      install(TARGETS ${_created_libs}
+	EXPORT ${DUNE_MOD_NAME}-targets DESTINATION lib)
+      install(EXPORT ${DUNE_MOD_NAME}-targets
+	DESTINATION lib/cmake)
 
-    # export libraries for use in build tree
-    export(TARGETS ${_created_libs} ${_append}
-      FILE ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-targets.cmake)
-  endif(NOT DUNE_LIB_NO_EXPORT)
+      # export libraries for use in build tree
+      export(TARGETS ${_created_libs} ${_append}
+	FILE ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-targets.cmake)
+    endif(NOT DUNE_LIB_NO_EXPORT)
+  endif(DUNE_LIB_OBJECT)
 endmacro(dune_add_library basename sources)
 
 macro(replace_properties_for_one)
@@ -701,7 +733,6 @@ macro(replace_properties_for_one)
       list(APPEND replacement ${repl})
     endforeach(i RANGE 0 ${hlength})
     list(REMOVE_DUPLICATES replacement)
-    message(STATUS "properties not yet set. Setting ${replacement} ...")
     set_property(${option_command} ${_target} ${REPLACE_APPEND}
       ${REPLACE_APPEND_STRING} PROPERTY ${REPLACE_PROPERTY} ${replacement})
   else(NOT properties)
@@ -729,7 +760,6 @@ macro(replace_properties_for_one)
       PROPERTY ${REPLACE_PROPERTY} ${new_props})
   endif(NOT properties)
   get_property(properties ${option_command} ${_target} PROPERTY ${REPLACE_PROPERTY})
-  message(STATUS "new properties are ${properties}")
 endmacro(replace_properties_for_one)
 
 function(dune_target_link_libraries basename libraries)
