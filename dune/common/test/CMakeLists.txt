@@ -1,3 +1,6 @@
+# Install some test headers, because they get used by tests in other modules
+install(FILES iteratortest.hh DESTINATION include/dune/common/test)
+
 add_executable("arraylisttest" arraylisttest.cc)
 add_executable("arraytest" arraytest.cc)
 
