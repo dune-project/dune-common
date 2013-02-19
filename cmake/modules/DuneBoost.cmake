@@ -1,3 +1,9 @@
+# Searches for boost and provides the following function:
+#
+# add_dune_boost_flags(targets)
+#
+# Adds boost compiler flags and libraries, and activates
+# Boost for the specified targets.
 find_package(Boost)
 
 function(add_dune_boost_flags _targets)

@@ -1,3 +1,11 @@
+# Module checks for shared_ptr support.
+#
+# Sets the following variables:
+#
+# HAVE_BOOST_MAKE_SHARED_HPP: True if boost/make_shared.hpp is found
+# SHARED_PTR_NAMESPACE: Namespace of shared_ptr (e.g. std)
+# SHARED_PTR_HEADER: The name of header file supplying shared_ptr
+#
 # check if make_shared works
 macro(CHECK_MAKE_SHARED)
   include(CheckIncludeFileCXX)

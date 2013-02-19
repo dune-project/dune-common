@@ -2,6 +2,9 @@
 # for the module dune-common and have to be executed by
 # all dependent modules
 #
+# Specifically it configure the DUNE debug streams and
+# tests whether std::shared_ptr, LAPACK and BLAS are available.
+#
 include(DuneStreams)
 dune_set_minimal_debug_level()
 

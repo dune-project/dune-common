@@ -1,3 +1,31 @@
+# Module that checks whether ParMETIS is available.
+#
+# Accepts the following variables:
+#
+# ParMETIS_DIR: Prefix where ParMETIS is installed.
+# METIS_LIB_NAME: Name of the METIS library (default: metis).
+# PARMETIS_LIB_NAME: Name of the ParMETIS library (default: parmetis).
+# METIS_LIBRARY: Full path of the METIS library.
+# ParMETIS_LIBRARY: Full path of the ParMETIS library
+
+# Sets the following variables:
+#
+# METIS_LIBRARY: Full path of the METIS library.
+# ParMETIS_LIBRARY: Full path of the ParMETIS library.
+# ParMETIS_FOUND: True if ParMETIS was found.
+# ParMETIS_LIBRARIES: List of all libraries needed for linking with ParMETIS,
+#
+# Provides the following macros:
+#
+# find_package(ParMETIS)
+#
+# Searches for ParMETIS (See above)
+#
+#
+# add_dune_parmetis_flags(TARGETS)
+#
+# Adds the necessary flags to comile and link TARGETS with ParMETIS support.
+#
 include(DuneMPI)
 
 foreach(_dir ${ParMETIS_DIR})
@@ -76,7 +104,7 @@ set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES_SAVE})
 set(CMAKE_REQUIRED_FLAGS    ${CMAKE_REQUIRED_FLAGS_SAVE})
 set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES_SAVE})
 
-function(add_parmetis_flags _targets)
+function(add_dune_parmetis_flags _targets)
   if(ParMETIS_FOUND)
     foreach(_target ${_targets})
       target_link_libraries(${_target} ${ParMETIS_LIBRARY} ${METIS_LIBRARY})

@@ -1,3 +1,22 @@
+# Searches for MPI and thread support and sets the following
+# DUNE specific flags:
+#
+# MPI_DUNE_COMPILE_FLAGS Compiler flags for MPI applications.
+# MPI_DUNE_INCLUDE_PATH Include path for MPI applications.
+# MPI_DUNE_LINK_FLAGS Linker flags for MPI applications.
+# MPI_DUNE_LIBRARIES Libraries for MPI applications.
+#
+# The DUNE way to compile MPI applications is to use the CXX
+# compiler with MPI flags usually used for C. CXX bindings
+# are deactivated to prevent ABI problems.
+#
+# The following function is defined:
+#
+# add_dune_mpi_flags(targets)
+#
+# Adds the above flags and libraries to the specified targets.
+#
+
 find_package(MPI)
 find_package(Threads)
 
@@ -11,7 +30,7 @@ if(MPI_FOUND)
   # There seems to be no target specific include path, use the global one.
   include_directories(${MPI_DUNE_INCLUDE_PATH})
   set(MPI_DUNE_LINK_FLAGS ${MPI_C_LINK_FLAGS} CACHE STRING
-    "Link flags used by DUNE when compiling MPI programs")
+    "Linker flags used by DUNE when compiling MPI programs")
   set(MPI_DUNE_LIBRARIES ${CMAKE_THREAD_LIBS_INIT} ${MPI_C_LIBRARIES} CACHE STRING
     "Libraries used by DUNE when linking MPI programs")
 
@@ -26,7 +45,6 @@ if(MPI_FOUND)
   cmake_pop_check_state()
 endif(MPI_FOUND)
 
-# A macro that adds the MPI flags for the compilation
 function(add_dune_mpi_flags _targets)
   if(MPI_FOUND)
     foreach(_target ${_targets})

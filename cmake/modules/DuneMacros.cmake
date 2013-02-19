@@ -1,3 +1,70 @@
+# Core DUNE module for CMake.
+#
+# Provides the following macros:
+#
+# dune_module_to_upper_case
+#
+# Converts a module name given by _module into an uppercase string
+# _upper where all dashes (-) are replaced by underscores (_)
+# Example: dune-common -> DUNE_COMMON
+#
+# dune_module_information(MODULE_DIR)
+#
+# Parse ${MODULE_DIR}/dune.module and provide that information.
+#
+#
+# dune_project()
+#
+#  macro that should be called near the begin of the top level CMakeLists.txt.
+# Namely it sets up the module, defines basic variables and manages
+# depedencies.
+# Don't forget to call finalize_dune_project afterwards.
+#
+#
+# dune_create_dependency_tree()
+#
+# Creates the dependency tree of the module.
+#
+# dune_module_to_macro(_macro_name, _dune_module)
+#
+# Converts a module name given by _dune_module into a string _macro_name
+# where all dashes (-) are removed and letters after a dash are capitalized
+# Example: dune-grid-howto -> DuneGridHowto
+#
+# _macro_name: variable where the name will be stored.
+# _dune_module: the name of the dune module.
+#
+#
+# dune_regenerate_config_cmake()
+#
+# Create a new config.h.cmake file in ${CMAKE_CURRENT_BINARY_DIR) that consists
+# of entries from ${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake and includes non-private
+# entries from the files config.h.cmake files of all dependent modules.
+# Finally config.h is created from config.h.cmake.
+#
+#
+# dune_add_library(BASENAME)
+#
+# Creates shared and static libraries with the same basename.
+# BASENAME is the basename of the library.
+# On Unix this creates lib<BASENAME>.so and lib<BASENAME>.a.
+# The libraries will be built in ${PROJECT_BINARY_DIR}/lib
+# and exported for usage in other modules.
+#
+#
+# finalize_dune_project()
+#
+# macro that should be called at the end of the top level CMakeLists.txt.
+# Namely it creates config.h and the cmake-config files,
+# some install directives and exports the module.
+#
+#
+# dune_target_link_libraries(BASENAME, LIBRARIES)
+#
+# Link libraries to the static and shared version of
+# library BASENAME
+#
+
 enable_language(C) # Enable C to skip CXX bindings for some tests.
 
 # Converts a module name given by _module into an uppercase string

@@ -1,3 +1,21 @@
+#
+# Module that provides a custom target make doc at the top level
+# directory and utility macros for creating install directives
+# that make sure that the files to be installed are previously
+# generated even if make doc was not called.
+#
+# All documentation (Latex, Doxygen) will be generated during
+# make doc.
+# It provides the following macros:
+#
+# create_doc_install(FILENAME  TARGETDIR [DEPENDENCY])
+#
+# creates a target for installing the file FILENAME
+# to the directory TARGETDIR.
+# If DEPENDENCY is specified, this is a dependency for
+# the installation. Otherwise FILENAME becomes the dependency
+#
+
 FIND_PACKAGE(LATEX)
 FIND_PROGRAM(IMAGEMAGICK_CONVERT convert
   DOC "The convert program that comes with ImageMagick (available at http://www.imagemagick.org)."
@@ -26,11 +44,6 @@ if(LATEX_USABLE)
 endif(LATEX_USABLE)
 
 
-# Module that provides a custom target make doc at the top level
-# directory and utility macros for creating install directives
-# that make sure that the files to be installed are previously
-# generated even if make doc was not called.
-#
 add_custom_target(doc)
 
 
