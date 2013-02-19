@@ -712,7 +712,7 @@ def finalize_cmake_module(module_name):
     upper_name =re.sub('-(\S)', lambda m: m.group(1).capitalize(),
                        module_name.capitalize())
     name_wo_dasch=module_name.replace('-', '')
-    lines = ['\nadd_subdirectory(cmake/modules)',
+    lines = ['\nadd_subdirectory(cmake/modules)\n',
              '# finalize the dune project, e.g. generating config.h etc.\n'
              'finalize_dune_project(GENERATE_CONFIG_H_CMAKE)\n']
     return ''.join(lines)
@@ -737,7 +737,7 @@ def create_cmake_dirs_and_file(dirname, module_name):
     output.write(text)
     output.close()
     lines=['if(NOT @DUNE_MOD_NAME@_FOUND)\n',
-           '#compute installation prefix relative to this file',
+           '#compute installation prefix relative to this file\n',
            'get_filename_component(_dir "${CMAKE_CURRENT_LIST_FILE}" PATH)\n',
            'get_filename_component(_prefix "${_dir}/../../.." ABSOLUTE)\n',
            '\n',
