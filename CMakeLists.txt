@@ -19,9 +19,6 @@ set(DUNE_COMMON_VERSION_REVISION "${DUNE_VERSION_REVISION}")
 # include dune-common to include pathtest
 include_directories("${CMAKE_SOURCE_DIR}")
 link_directories("${CMAKE_SOURCE_DIR}")
-# set(RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib")
-# set(ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib")
-# set(LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib")
 
 # set required compiler flags for C++11 (former C++0x)
 find_package(CXX11Features)
@@ -51,7 +48,7 @@ configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 add_definitions(-DHAVE_CONFIG_H)
 
-# add subdirectories to execute CMakeLIsts.txt there
+# add subdirectories to execute CMakeLists.txt there
 add_subdirectory("dune")
 
 # set up CTest

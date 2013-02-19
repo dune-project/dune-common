@@ -9,3 +9,4 @@ add_library("dunecommon"
 	parametertreeparser.cc
 	path.cc
 	stdstreams.cc)
+set_target_properties(dunecommon PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
