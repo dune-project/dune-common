@@ -9,6 +9,7 @@
 #
 
 include(CheckIncludeFileCXX)
+include(CheckCXXSymbolExists)
 
 set(GMP_SEARCH_PATH CACHE FILEPATH "User defined list of directories to search for the GNU GMP library")
 
