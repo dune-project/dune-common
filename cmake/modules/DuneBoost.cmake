@@ -1,8 +1,5 @@
 find_package(Boost)
 
-message("Boost_LIBRARIES=${Boost_LIBRARIES}")
-message("Boost_INCLUDE_DIRS=${Boost_INCLUDE_DIRS}")
-
 function(add_dune_boost_flags _targets)
   if(Boost_FOUND)
     include_directories("${Boost_INCLUDE_DIRS}")
