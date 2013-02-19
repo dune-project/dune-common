@@ -9,7 +9,7 @@ set(includedir "\${prefix}/include")
 set(PACKAGE_NAME ${DUNE_MOD_NAME})
 set(VERSION ${DUNE_MOD_VERSION})
 set(CC ${CMAKE_C_COMPILER})
-set(CXX ${CMAKE_CXX_COMPILER})
+set(CXX "${CMAKE_CXX_COMPILER} ${CXX_STD0X_FLAGS}")
 
 #create pkg-config file
 configure_file(
