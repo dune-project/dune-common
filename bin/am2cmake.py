@@ -752,8 +752,8 @@ def create_cmake_dirs_and_file(dirname, module_name):
            'set(@DUNE_MOD_NAME@_CXX_FLAGS_RELEASE "@CMAKE_CXX_FLAGS_RELEASE@")\n',
            'set(@DUNE_MOD_NAME@_CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@")\n',
            'set(@DUNE_MOD_NAME@_LIBRARIES "@LIBRARIES@")\n',
-           'set(@DUNE_MOD_NAME@_DEPENDS "@DUNE_DEPENDS@")'
-           'set(@DUNE_MOD_NAME@_SUGGESTS "@DUNE_SUGGESTS@")'
+           'set(@DUNE_MOD_NAME@_DEPENDS "@DUNE_DEPENDS@")\n'
+           'set(@DUNE_MOD_NAME@_SUGGESTS "@DUNE_SUGGESTS@")\n'
            'endif(NOT @DUNE_MOD_NAME@_FOUND)\n']
     text = ''.join(lines)
     output=open(os.path.join(dirs['pkg'], module_name+'-config.cmake.in'), 'w')
@@ -764,9 +764,9 @@ def create_cmake_dirs_and_file(dirname, module_name):
               'if(EXISTS "@CMAKE_BINARY_DIR@/@DUNE_MOD_NAME@-targets.cmake")\n'
               '  include("@CMAKE_BINARY_DIR@/@DUNE_MOD_NAME@-targets.cmake")\n',
               'endif(EXISTS "@CMAKE_BINARY_DIR@/@DUNE_MOD_NAME@-targets.cmake")\n\n',
-              '#report other information',
-              'set(@DUNE_MOD_NAME@_PREFIX "@CMAKE_SOURCE_DIR@")',
-              'set(@DUNE_MOD_NAME@_INCLUDE_DIRS "@CMAKE_SOURCE_DIR@")'])
+              '#report other information\n',
+              'set(@DUNE_MOD_NAME@_PREFIX "@CMAKE_SOURCE_DIR@")\n',
+              'set(@DUNE_MOD_NAME@_INCLUDE_DIRS "@CMAKE_SOURCE_DIR@")\n'])
     l.extend(lines[13:])
     output=open(os.path.join(dirname, module_name+'-config.cmake.in'), 'w')
     output.write(''.join(l))
