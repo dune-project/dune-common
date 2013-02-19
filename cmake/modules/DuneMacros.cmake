@@ -44,13 +44,17 @@
 # Finally config.h is created from config.h.cmake.
 #
 #
-# dune_add_library(BASENAME)
+# dune_add_library(<basename> [NO_EXPORT] [ADD_LIBS <lib1> [<lib2> ...]]
+#   SOURCES <source1> [<source2> ...] [COMPILE_FLGS <flags>])
 #
 # Creates shared and static libraries with the same basename.
-# BASENAME is the basename of the library.
-# On Unix this creates lib<BASENAME>.so and lib<BASENAME>.a.
-# The libraries will be built in ${PROJECT_BINARY_DIR}/lib
-# and exported for usage in other modules.
+# <basename> is the basename of the library.
+# On Unix this creates lib<basename>.so and lib<BASENAME>.a.
+# Libraries that should be incorporate into this libary can
+# be specified with the ADD_LIBS option.
+# The libraries will be built in ${PROJECT_BINARY_DIR}/lib.
+# If the option NO_EXPORT is omitted the library is exported
+# for usage in other modules.
 #
 #
 # finalize_dune_project()
@@ -76,12 +80,42 @@ macro(dune_module_to_uppercase _upper _module)
   string(REPLACE "-" "_" ${_upper} "${${_upper}}")
 endmacro(dune_module_to_uppercase _upper _module)
 
+macro(extract_line HEADER  OUTPUT FILE_CONTENT)
+  set(REGEX "${HEADER}[ ]*[^\n]+")
+  string(REGEX MATCH ${REGEX} OUTPUT1 "${FILE_CONTENT}")
+  if(OUTPUT1)
+    set(REGEX "^[ ]*${HEADER}[ ]*(.+)[ ]*$")
+    string(REGEX REPLACE ${REGEX} "\\1" ${OUTPUT} "${OUTPUT1}")
+  else(OUTPUT1)
+    set(OUTPUT OUTPUT-NOTFOUND)
+  endif(OUTPUT1)
+endmacro(extract_line)
+
+macro(split_module_version STRING MODULES VERSIONS)
+  set(REGEX "[a-zA-Z-]+[ ]*(\\([ ]*([^ ]+)?[ ]*[^ ]+[ ]*\\))?")
+  #set(REGEX "dune")
+  string(REGEX MATCHALL ${REGEX}  matches ${STRING})
+  foreach(i ${matches})
+    string(REGEX REPLACE "^([a-zA-Z-]+).*$" "\\1" mod ${i})
+    string(REGEX MATCH "\\([ ]*(([^ ]+)?[ ]*[^ ]+)[ ]*\\)" have_version
+      ${i})
+    if(have_version)
+      string(REGEX REPLACE "^[a-zA-Z-]+[ ]*\\([ ]*(([^ ]+)?[ ]*[^ ]+)[ ]*\\)$" "\\1"
+	version ${i})
+      else(have_version)
+	set(version 0.0)
+      endif(have_version)
+    list(APPEND ${MODULES} ${mod})
+    list(APPEND ${VERSIONS} ${mod})
+  endforeach(i ${matches})
+endmacro(split_module_version)
+
 # add dune-common version from dune.module to config.h
 macro(dune_module_information MODULE_DIR)
   file(READ "${MODULE_DIR}/dune.module" DUNE_MODULE)
 
   # find version string
-  string(REGEX MATCH "Version:[ ]*[^ \n]+" MODULE_LINE "${DUNE_MODULE}")
+  extract_line("Version:" MODULE_LINE "${DUNE_MODULE}")
   if(NOT MODULE_LINE)
     message(FATAL_ERROR "${MODULE_DIR}/dune.module is missing a version.")
   endif(NOT MODULE_LINE)
@@ -103,30 +137,31 @@ macro(dune_module_information MODULE_DIR)
 
   # find strings for module name, maintainer
   # 1. Check for line starting with Module
-  string(REGEX MATCH "Module:[ ]*[^ \n]+" MODULE_LINE "${DUNE_MODULE}")
-  if(NOT MODULE_LINE)
+  extract_line("Module:" DUNE_MOD_NAME "${DUNE_MODULE}")
+  if(NOT DUNE_MOD_NAME)
     message(FATAL_ERROR "${MODULE_DIR}/dune.module is missing a module name.")
-  endif(NOT MODULE_LINE)
-
-  # extract Module name
-  string(REGEX REPLACE ".*Module:[ ]*([^ \n]+).*" "\\1" DUNE_MOD_NAME "${MODULE_LINE}")
+  endif(NOT DUNE_MOD_NAME)
 
   # 2. Check for line starting with Maintainer
-  string(REGEX MATCH "Maintainer:[ ]*[^ \n]+" MODULE_LINE "${DUNE_MODULE}")
-  if(NOT MODULE_LINE)
+  extract_line("Maintainer:" DUNE_MAINTAINER "${DUNE_MODULE}")
+  if(NOT DUNE_MAINTAINER)
     message(FATAL_ERROR "${MODULE_DIR}/dune.module is missing a maintainer.")
-  endif(NOT MODULE_LINE)
-
-  # extract Maintainer
-  string(REGEX REPLACE ".*Maintainer:[ ]*([^ \n]+).*" "\\1" DUNE_MAINTAINER "${MODULE_LINE}")
+  endif(NOT DUNE_MAINTAINER)
 
   # 3. Check for line starting with Depends
-  string(REGEX MATCH "Depends:[ ]*[^ \n]+" MODULE_LINE "${DUNE_MODULE}")
+  extract_line("Depends:" DUNE_DEPENDS "${DUNE_MODULE}")
+  if(DUNE_DEPENDS)
+  split_module_version(${DUNE_DEPENDS} DEPENDS_MODULE DEPENDS_VERSIONS)
+  endif(DUNE_DEPENDS)
 
-  # extract dependencies if the line exists.
-  if(MODULE_LINE)
-    string(REGEX REPLACE ".*Depends:[ ]*([^ \n]+).*" "\\1" DUNE_DEPENDS "${MODULE_LINE}")
-  endif(MODULE_LINE)
+  # 4. Check for line starting with Depends
+  extract_line("Suggest:" DUNE_SUGGESTS "${DUNE_MODULE}")
+  if(DUNE_SUGGESTS)
+  split_module_version(${DUNE_SUGGESTS} SUGGESTS_MODULE SUGGESTS_VERSION)
+  endif(DUNE_SUGGESTS)
+
+  message(STATUS "DEPENDENCIES: ${DEPENDS_MODULE} ${DEPENDS_VERSION}")
+  message(STATUS "DUGGESTIONS: ${SUGGESTS_MODULE} ${SUGGESTS_VERSION}")
 
   dune_module_to_uppercase(DUNE_MOD_NAME_UPPERCASE ${DUNE_MOD_NAME})
 
@@ -166,6 +201,47 @@ macro(dune_module_to_macro _macro_name _dune_module)
   string(TOUPPER "${_first_letter}" _first_letter)
   set(${_macro_name} "${${_macro_name}}${_first_letter}${_rest}")
 endmacro(dune_module_to_macro _macro_name _dune_module)
+
+macro(dune_process_dependency_tree DEPENDS DVERSIONS SUGGESTS SVERSIONS)
+  message(STATUS "Depends=${DEPENDS}")
+  message(STATUS "dune-geometry_PROCESSED=${dune-geometry_PROCESSED}")
+  foreach(_mod ${DEPENDS})
+    message(STATUS "mod=${_mod} ${_mod}_PROCESSED=${${_mod}_PROCESSED}|")
+    if(NOT ${_mod}_PROCESSED)
+      # module not processed yet
+      message(STATUS "Processing dependency ${_mod}")
+      set(${_mod}_PROCESSED ${_mod})
+      message(STATUS "${dune-geometry_PROCESSED}")
+      list(INSERT DEPENDENCY_TREE 0 ${_mod})
+      # Search for a cmake files containing tests and directives
+      # specific to this module
+      #dune_module_to_macro(_cmake_mod_name "${_mod}")
+      #set(_macro "${_cmake_mod_name}Macros")
+      #set(_mod_cmake _mod_cmake-NOTFOUND) # Prevent false positives due to caching
+      #find_file(_mod_cmake ${_macro}.cmake ${CMAKE_MODULE_PATH}
+#	NO_DEFAULT_PATH)
+#      if(_mod_cmake)
+#	message(STATUS "Performing tests specific to ${_mod} from file ${_mod_cmake}.")
+	#include(${_mod_cmake})
+#      endif(_mod_cmake)
+      # Find the module
+      find_package(${_mod})
+      # set includes
+      message(STATUS "Setting ${_mod}_INCLUDE_DIRS=${${_mod}_INCLUDE_DIRS}")
+      dune_module_to_uppercase(_upper_case "${_mod}")
+      include_directories("${${_mod}_INCLUDE_DIRS}")
+      message(STATUS "Setting ${_mod}_LIBRARIES=${${_mod}_LIBRARIES}")
+      if(${_mod}_LIBRARIES)
+	foreach(_lib ${${_mod}_LIBRARIES})
+          list(INSERT DUNE_DEFAULT_LIBS 0 "${_lib}")
+          list(INSERT DUNE_LIBS 0 "${_lib}")
+	endforeach(_lib ${${_mod}_LIBRARIES})
+      endif(${_mod}_LIBRARIES)
+      message(STATUS "Dependencies for ${_mod}: ${${_mod}_DEPENDENCIES}")
+    #dune_process_dependency_tree(${${_mod}_DEPENDENCIES})
+    endif(NOT ${_mod}_PROCESSED)
+  endforeach(_mod DEPENDENCIES)
+endmacro(dune_process_dependency_tree)
 
 # macro that should be called near the begin of the top level CMakeLists.txt.
 # Namely it sets up the module, defines basic variables and manages
@@ -269,33 +345,11 @@ macro(dune_project)
   # activate pkg-config
   include(DunePkgConfig)
 
-  dune_create_dependency_tree()
+  dune_process_dependency_tree("${DEPENDS_MODULE}" "${DEPENDS_VERSION}"
+    "${SUGGESTS_MODULE}" "${SUGGESTS_VERSION}")
 
-  foreach(_mod ${DEPENDENCY_TREE})
-    # Search for a cmake files containing tests and directives
-    # specific to this module
-    dune_module_to_macro(_cmake_mod_name "${_mod}")
-    set(_macro "${_cmake_mod_name}Macros")
-    set(_mod_cmake _mod_cmake-NOTFOUND) # Prevent false positives due to caching
-    find_file(_mod_cmake ${_macro}.cmake ${CMAKE_MODULE_PATH}
-      NO_DEFAULT_PATH)
-    if(_mod_cmake)
-      message(STATUS "Performing tests specific to ${DUNE_MOD_NAME} from file ${_mod_cmake}.")
-      include(${_mod_cmake})
-    endif(_mod_cmake)
-    # Find the module
-    find_package(${_mod})
-    # set includes
-    dune_module_to_uppercase(_upper_case "${_mod}")
-    include_directories("${${_mod}_INCLUDE_DIRS}")
-    message(STATUS "Setting ${_mod}_LIBRARIES=${${_mod}_LIBRARIES}")
-    if(${_mod}_LIBRARIES)
-      foreach(_lib ${${_mod}_LIBRARIES})
-        list(APPEND DUNE_DEFAULT_LIBS "${_lib}")
-      endforeach(_lib ${${_mod}_LIBRARIES})
-    endif(${_mod}_LIBRARIES)
-  endforeach(_mod DEPENDENCY_TREE)
-
+  message(STATUS "DEPENDENCY_TREE=${DEPENDENCY_TREE}")
+  message("DUNE_LIBS=${DUNE_LIBS}")
   # Search for cmake files containing tests and directives
   # specific to this module
   dune_module_to_macro(_macro ${DUNE_MOD_NAME})
@@ -305,6 +359,7 @@ macro(dune_project)
   find_file(_mod_cmake ${_macro}.cmake ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake/modules NO_DEFAULT_PATH)
   if(_mod_cmake)
+    set(${DUNE_MOD_NAME_CMAKE}_FOUND FOUND)
     message(STATUS " Performing tests specific to ${DUNE_MOD_NAME} from file ${_mod_cmake}.")
     include(${_mod_cmake})
   else(_mod_cmake)
@@ -320,7 +375,7 @@ macro(dune_regenerate_config_cmake)
     file(READ ${CMAKE_SOURCE_DIR}/config.h.cmake _file)
     string(REGEX MATCH
       "/[\\*/][ ]*begin[ ]+${DUNE_MOD_NAME}.*\\/[/\\*][ ]*end[ ]*${DUNE_MOD_NAME}[^\\*]*\\*/"
-      _tfile "${_file}")
+      _myfile "${_file}")
   endif(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
   # overwrite file with new content
   file(WRITE ${CONFIG_H_CMAKE_FILE} "/* config.h.  Generated from config.h.cmake by CMake.
@@ -329,7 +384,6 @@ macro(dune_regenerate_config_cmake)
    )
 
  # add previous module specific section
- file(APPEND ${CONFIG_H_CMAKE_FILE} "\n${_tfile}")
  foreach(_dep  ${DEPENDENCY_TREE})
    foreach(_mod_conf_file ${${_dep}_PREFIX}/config.h.cmake
        ${${_dep}_PREFIX}/share/${_dep}/config.h.cmake)
@@ -344,6 +398,7 @@ macro(dune_regenerate_config_cmake)
      endif(EXISTS ${_mod_conf_file})
    endforeach()
  endforeach(_dep DEPENDENCY_TREE)
+ file(APPEND ${CONFIG_H_CMAKE_FILE} "\n${_myfile}")
 endmacro(dune_regenerate_config_cmake)
 
 # macro that should be called at the end of the top level CMakeLists.txt.
@@ -359,7 +414,36 @@ macro(finalize_dune_project)
   configure_file(
     ${PROJECT_SOURCE_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake.in
     ${PROJECT_BINARY_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake @ONLY)
-
+  message(DEPENDS_MODULE=${DEPENDS_MODULE})
+  list(LENGTH DEPENDS_MODULE mlength)
+  #if(mlength GREATER 0)
+    math(EXPR len2 "${mlength}-1")
+  #else(mlength GREATER 0)
+  #endif(mlength GREATER 0)
+  message(mlength=${mlength})
+  message(length=${len2})
+  if(mlength GREATER 0)
+    foreach(i RANGE 0 ${len2})
+      message("i=${i}")
+      list(GET DEPENDS_MODULE ${i} _mod)
+      dune_module_to_macro(_macro ${_mod})
+      list(GET DEPENDS_VERSION ${i} _ver)
+      file(APPEND ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-config.cmake
+	"find_package(${_mod})\n")#include(${_macro}Macros)\n")
+      file(APPEND ${PROJECT_BINARY_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake
+	"find_package(${_mod})\n")#include(${_macro}Macros)\n")
+    endforeach(i RANGE 0 ${mlength})
+  endif(mlength GREATER 0)
+  message(STATUS "${DUNE_MOD_NAME_CMAKE}_FOUND=${${DUNE_MOD_NAME_CMAKE}_FOUND}|")
+  if(${DUNE_MOD_NAME_CMAKE}_FOUND)
+     message(STATUS "appending")
+    # This module hast its own tests.
+    # Execute them during find_package
+    file(APPEND ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-config.cmake
+      "include(${DUNE_MOD_NAME_CMAKE}Macros)\n")
+    file(APPEND ${PROJECT_BINARY_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake
+      "\ninclude(${DUNE_MOD_NAME_CMAKE}Macros)\n")
+  endif(${DUNE_MOD_NAME_CMAKE}_FOUND)
   configure_file(
     ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}-version.cmake.in
     ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-version.cmake @ONLY)
@@ -373,7 +457,9 @@ macro(finalize_dune_project)
     DESTINATION lib/cmake/${DUNE_MOD_NAME})
 
   #install config.h
+  if(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
   install(FILES config.h.cmake DESTINATION share/${DUNE_MOD_NAME})
+  endif(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
   export(PACKAGE ${DUNE_MOD_NAME})
 
   if("${ARGC}" EQUAL "1")
@@ -423,15 +509,22 @@ macro(dune_common_script_source_dir _script_dir)
 endmacro(dune_common_script_source_dir)
 
 # Creates shared and static libraries with the same basename.
-# dune_add_lib(basename)
-# Basename is the basename of the library.
-# On Unix this creates lib<basename>.so and lib<basename>.a.
-# The libraries will be built in ${PROJECT_BINARY_DIR}/lib
-# and exported for usage in other modules.
+# More docu can be found at the top of this file.
 macro(dune_add_library basename)
+  include(CMakeParseArguments)
+  cmake_parse_arguments(DUNE_LIB "NO_EXPORT" "COMPILE_FLAGS"
+    "ADD_LIBS;SOURCES" ${ARGN})
   #create lib
-  add_library(${basename} ${ARGN})
-
+  message("add_library(${basename} ${DUNE_SOURCES} ${DUNE_LIB_UNPARSED_ARGUMENTS})")
+  add_library(${basename} ${DUNE_SOURCES} ${DUNE_LIB_UNPARSED_ARGUMENTS})
+  # link with specified libraries.
+  if(DUNE_LIB_ADD_LIBS)
+    dune_target_link_libraries(${basename} ${DUNE_LIB_ADD_LIBS})
+  endif(DUNE_LIB_ADD_LIBS)
+  if(DUNE_LIB_COMPILE_FLAGS)
+    setproperty(${basename} APPEND_STRING COMPILE_FLAGS
+      "${DUNE_LIB_COMPILE_FLAGS}")
+  endif(DUNE_LIB_COMPILE_FLAGS)
   # Build library in ${PROJECT_BINARY_DIR}/lib
   set_target_properties(${basename} PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
@@ -448,16 +541,33 @@ macro(dune_add_library basename)
         OUTPUT_NAME ${basename}
         ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
       list(APPEND _created_libs ${basename}-static)
+      # link with specified libraries.
+      if(DUNE_LIB_ADD_LIBS)
+	dune_target_link_libraries(${basename}-static ${DUNE_LIB_ADD_LIBS})
+      endif(DUNE_LIB_ADD_LIBS)
+      if(DUNE_LIB_COMPILE_FLAGS)
+	setproperty(${basename}-static APPEND_STRING COMPILE_FLAGS
+	  "${DUNE_LIB_COMPILE_FLAGS}")
+      endif(DUNE_LIB_COMPILE_FLAGS)
     else(BUILD_SHARED_LIBS)
       #create shared libs
       add_library(${basename}-shared SHARED ${ARGN})
       set_target_properties(${basename}-shared PROPERTIES
         OUTPUT_NAME ${basename}
         LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+      # link with specified libraries.
+      if(DUNE_LIB_ADD_LIBS)
+	dune_target_link_libraries(${basename}-shared ${DUNE_LIB_ADD_LIBS})
+      endif(DUNE_LIB_ADD_LIBS)
+      if(DUNE_LIB_COMPILE_FLAGS)
+	setproperty(${basename}-shared APPEND_STRING COMPILE_FLAGS
+	  "${DUNE_LIB_COMPILE_FLAGS}")
+      endif(DUNE_LIB_COMPILE_FLAGS)
       list(APPEND _created_libs ${basename}-shared)
     endif(BUILD_SHARED_LIBS)
   endif(DUNE_BUILD_BOTH_LIBS)
 
+  if(NOT DUNE_LIB_NO_EXPORT)
   # install targets to use the libraries in other modules.
   install(TARGETS ${_created_libs}
     EXPORT ${DUNE_MOD_NAME}-targets DESTINATION lib)
@@ -467,6 +577,7 @@ macro(dune_add_library basename)
   # export libraries for use in build tree
   export(TARGETS ${_created_libs}
     FILE ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-targets.cmake)
+  endif(NOT DUNE_LIB_NO_EXPORT)
 endmacro(dune_add_library basename sources)
 
 macro(dune_target_link_libraries basename libraries)
@@ -479,3 +590,78 @@ macro(dune_target_link_libraries basename libraries)
     endif(BUILD_SHARED_LIBS)
   endif(DUNE_BUILD_BOTH_LIBS)
 endmacro(dune_target_link_libraries basename libraries)
+
+macro(replace_current_dir_properties)
+  include(CMakeParseArguments)
+  #cmake_parse_arguments(REPLACE "GLOBAL;"
+  #  "" "TARGET;SOURCE;TEST;CACHE;PROPERTY" ${ARGN})
+  cmake_parse_arguments(REPLACE ""
+    "PROPERTY" "TARGET;SOURCE;TEST;CACHE" ${ARGN})
+  set(REPLACE_DIRECTORY TRUE)
+  list(LENGTH REPLACE_UNPARSED_ARGUMENTS length)
+#  if(NOT (REPLACE_GLOBAL AND REPLACE_TARGET AND
+#	REPLACE_SOURCE AND REPLACE
+  math(EXPR mlength "${length} % 2 ")
+  math(EXPR hlength "${length} / 2 - 1")
+
+  if(NOT ${mlength} EQUAL 0)
+    message(ERROR "You need to specify pairs consisting of a regular expression and a replacement string.")
+  endif(NOT ${mlength} EQUAL 0)
+
+  #setup options
+  if(REPLACE_GLOBAL)
+    set(option_command GLOBAL)
+  elseif(REPLACE_DIRECTORY)
+    set(option_command DIRECTORY)
+  elseif(REPLACE_TARGET)
+    set(option_command TARGET)
+    set(option_arg ${REPLACE_TARGET})
+  elseif(REPLACE_SOURCE)
+    set(option_comand SOURCE)
+    set(option_arg ${REPLACE_SOURCE})
+  elseif(REPLACE_TEST)
+    set(option_command TEST)
+    set(option_arg${REPLACE_TEST})
+  elseif(REPLACE_CACHE)
+    set(option_command CACHE)
+    set(option_arg ${REPLACE_CACHE})
+  else()
+    message(ERROR "One of GLOBAL, DIRECTORY, TARGET, SOURCE, TEST, or CACHE"
+      " has to be present")
+  endif()
+
+
+  get_property(properties ${option_command} ${option_arg} PROPERTY ${REPLACE_PROPERTY})
+
+  if(NOT properties)
+    # property not set. set it directly
+    message(STATUS "properties not yet set. Setting...")
+    set_property(${option_command} ${option_arg} ${REPLACE_APPEND}
+      ${REPLACE_APPEND_STRING} PROPERTY ${REPLACE_PROPERY} ${replacement})
+    return()
+  endif(NOT properties)
+  message(STATUS "old properties are ${properties}")
+  foreach(prop ${properties})
+    set(matched FALSE)
+    foreach(i RANGE 0 ${hlength})
+      math(EXPR regexi "2 * ${i}")
+      math(EXPR repli  "${regexi} +1")
+      list(GET REPLACE_UNPARSED_ARGUMENTS ${regexi} regex)
+      list(GET REPLACE_UNPARSED_ARGUMENTS ${repli} replacement)
+      string(REGEX MATCH ${regex} match ${prop})
+
+      if(match)
+	list(APPEND new_props ${replacement})
+	set(matched TRUE)
+      endif(match)
+    endforeach(i RANGE 0 ${hlength})
+
+    if(NOT matched)
+      list(APPEND new_props ${prop})
+    endif(NOT matched)
+  endforeach(prop ${properties})
+  set_property(${option_command} ${option_arg}
+    PROPERTY ${REPLACE_PROPERTY} ${new_props})
+  get_property(properties ${option_command} ${option_arg} PROPERTY ${REPLACE_PROPERTY})
+  message(STATUS "new properties are ${properties}")
+endmacro(replace_current_dir_properties)
