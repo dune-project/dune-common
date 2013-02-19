@@ -94,21 +94,28 @@ endmacro(extract_line)
 macro(split_module_version STRING MODULES VERSIONS)
   set(REGEX "[a-zA-Z-]+[ ]*(\\([ ]*([^ ]+)?[ ]*[^ ]+[ ]*\\))?")
   #set(REGEX "dune")
-  string(REGEX MATCHALL ${REGEX}  matches ${STRING})
+  string(REGEX MATCHALL "${REGEX}"  matches "${STRING}")
+  set(${MODULES} "")
+  set(${VERSION} "")
   foreach(i ${matches})
     string(REGEX REPLACE "^([a-zA-Z-]+).*$" "\\1" mod ${i})
     string(REGEX MATCH "\\([ ]*(([^ ]+)?[ ]*[^ ]+)[ ]*\\)" have_version
       ${i})
     if(have_version)
-      string(REGEX REPLACE "^[a-zA-Z-]+[ ]*\\([ ]*(([^ ]+)?[ ]*[^ ]+)[ ]*\\)$" "\\1"
-	version ${i})
+      string(REGEX REPLACE "^\\([ ]*([^ ]*[ ]*[^ ]+)[ ]*\\)$" "\\1"
+	version ${have_version})
       else(have_version)
-	set(version 0.0)
+	set(version >=0.0)
       endif(have_version)
     list(APPEND ${MODULES} ${mod})
-    list(APPEND ${VERSIONS} ${mod})
-  endforeach(i ${matches})
+    list(APPEND ${VERSIONS} ${version})
+  endforeach(i "${matches}")
 endmacro(split_module_version)
+
+function(convert_deps_to_list var)
+  string(REGEX REPLACE "([a-zA-Z\\)]) ([a-zA-Z])" "\\1;\\2" ${var} ${${var}})
+  set(${var} ${${var}} PARENT_SCOPE)
+endfunction(convert_deps_to_list var)
 
 # add dune-common version from dune.module to config.h
 macro(dune_module_information MODULE_DIR)
@@ -151,13 +158,20 @@ macro(dune_module_information MODULE_DIR)
   # 3. Check for line starting with Depends
   extract_line("Depends:" DUNE_DEPENDS "${DUNE_MODULE}")
   if(DUNE_DEPENDS)
-  split_module_version(${DUNE_DEPENDS} DEPENDS_MODULE DEPENDS_VERSIONS)
+    split_module_version(${DUNE_DEPENDS} DEPENDS_MODULE DEPENDS_VERSIONS)
+    foreach(_mod ${DUNE_DEPENDS})
+      set(${_mod}_REQUIRED REQUIRED)
+    endforeach(_mod ${DUNE_DEPENDS})
+    convert_deps_to_list(DUNE_DEPENDS)
+    message("Dependencies: ${DEPENDS_MODULE} (versions: ${DEPENDS_VERSIONS}) DUNE_DEPENDS=${DUNE_DEPENDS}")
   endif(DUNE_DEPENDS)
 
-  # 4. Check for line starting with Depends
-  extract_line("Suggest:" DUNE_SUGGESTS "${DUNE_MODULE}")
+  # 4. Check for line starting with Suggests
+  extract_line("Suggests:" DUNE_SUGGESTS "${DUNE_MODULE}")
   if(DUNE_SUGGESTS)
-  split_module_version(${DUNE_SUGGESTS} SUGGESTS_MODULE SUGGESTS_VERSION)
+    split_module_version(${DUNE_SUGGESTS} SUGGESTS_MODULE SUGGESTS_VERSION)
+    convert_deps_to_list(DUNE_SUGGESTS)
+    message("Suggestions: ${SUGGESTS_MODULE} (versions: ${SUGGESTS_VERSIONS}) DUNE_SUGGESTS=${DUNE_SUGGESTS}")
   endif(DUNE_SUGGESTS)
 
   dune_module_to_uppercase(DUNE_MOD_NAME_UPPERCASE ${DUNE_MOD_NAME})
@@ -169,9 +183,116 @@ macro(dune_module_information MODULE_DIR)
   set(${DUNE_MOD_NAME_UPPERCASE}_VERSION_REVISION "${DUNE_VERSION_REVISION}")
 endmacro(dune_module_information)
 
+macro(dune_process_dependency_leafs modules versions is_required next_level_deps
+    next_level_sugs)
+  message("dune_process_dependency_leafs ${modules} ${versions} ${is_required} ${next_level_deps} ${next_level_sugs}")
+  # modules is not a real variable, make it one
+  set(mmodules ${modules})
+  list(LENGTH mmodules mlength)
+  if(mlength GREATER 0)
+    math(EXPR length "${mlength}-1")
+    foreach(i RANGE 0 ${length})
+      list(GET mmodules ${i} _mod)
+      find_package(${_mod} ${REQUIRED})
+      set(${_mod}_SEARCHED ON)
+      message("${_mod}_SEARCHED=${${_mod}_SEARCHED}")
+      if(is_required)
+	set(${_mod}_REQUIRED ON)
+	set(${next_level_deps} ${${_mod}_DEPENDS} ${${next_level_deps}})
+      else(is_required)
+	set(${next_level_sugs} ${${_mod}_DEPENDS} ${${next_level_sugs}})
+      endif(is_required)
+      set(${next_level_sugs} ${${_mod}_SUGGESTS} ${${next_level_sugs}})
+    endforeach(i RANGE 0 ${length})
+  endif(mlength GREATER 0)
+endmacro(dune_process_dependency_leafs)
+
+function(remove_processed_modules modules versions is_required)
+  message("remove_processed_modules \"${${modules}}\" \"${${versions}}\"")
+  list(LENGTH ${modules} mlength)
+  if(mlength GREATER 0)
+    math(EXPR length "${mlength}-1")
+    foreach(i RANGE ${length} 0 -1)
+      list(GET ${modules} ${i} _mod)
+      message("${_mod}_SEARCHED=${${_mod}_SEARCHED}")
+      if(${_mod}_SEARCHED)
+	message("will remove ${i}")
+	message("removing ${i}")
+	list(REMOVE_AT ${modules} ${i})
+	list(REMOVE_AT ${versions} ${i})
+	if(is_required AND NOT ${_mod}_REQUIRED AND NOT ${_mod}_FOUND)
+	  message(FATAL_ERROR "Required module ${_mod} not found!")
+	endif(is_required AND NOT ${_mod}_REQUIRED AND NOT ${_mod}_FOUND)
+      endif(${_mod}_SEARCHED)
+    endforeach(i RANGE 0 ${length})
+  endif(mlength GREATER 0)
+  message("end remove_processed_modules \"${${modules}}\" \"${${versions}}\"")
+  set(${modules} ${${modules}} PARENT_SCOPE)
+  set(${versions} ${${versions}} PARENT_SCOPE)
+endfunction(remove_processed_modules modules versions is_required)
+
+macro(dune_create_dependency_leafs depends depends_versions suggests suggests_versions
+    global_depends global_suggests)
+  message("dune_create_dependency_leafs depends=${depends} versions=${depends_versions}")
+  message("suggests=${suggests} versions=${suggests_versions}")
+  message("${global_depends}=${${global_depends}}")
+  message("${global_suggests}=${${global_suggests}}")
+  set(deps "")
+  set(sugs "")
+  #Process dependencies
+  if(NOT "${depends}" STREQUAL "")
+    dune_process_dependency_leafs("${depends}" "${depends_versions}" REQUIRED deps sugs)
+  endif(NOT "${depends}" STREQUAL "")
+  # Process suggestions
+  if(NOT "${suggests}" STREQUAL "")
+    dune_process_dependency_leafs("${suggests}" "${suggests_versions}" "" deps sugs)
+  endif(NOT "${suggests}" STREQUAL "")
+  split_module_version("${deps}" next_mod_depends next_depends_versions)
+  #remove_processed_modules(next_mod_depends next_depends_versions REQUIRED)
+  set(${global_depends} "${${global_depends}}" ${next_mod_depends})
+  split_module_version("${sugs}" next_mod_suggests next_suggests_versions)
+  #remove_processed_modules(next_mod_suggests next_suggests_versions "")
+  set(${global_suggests} "${${global_suggests}}" ${next_mod_suggests})
+  message("${global_depends}=${${global_depends}}")
+  message("${global_suggests}=${${global_suggests}}")
+  # Move to next level
+  if(next_mod_suggests OR next_mod_depends)
+    message("deps=${deps} sugs=${sugs}")
+    message("Going to next level deps=${next_mod_depends} sugs=${next_mod_suggests}")
+    dune_create_dependency_leafs("${next_mod_depends}" "${next_depends_versions}"
+      "${next_mod_suggests}" "${next_suggests_versions}" global_depends global_suggests)
+  endif(next_mod_suggests OR next_mod_depends)
+endmacro(dune_create_dependency_leafs)
+
 macro(dune_create_dependency_tree)
-  # TODO Create full dependency tree from ${DEPENDENCIES}
-  set(DEPENDENCY_TREE ${DUNE_DEPENDS})
+  set(ALL_DEPENDENCIES "")
+  if(DEPENDS_MODULE OR SUGGESTS_MODULE)
+    set(global_depends ${DEPENDS_MODULE})
+    set(global_suggests ${SUGGESTS_MODULE})
+    foreach(_mod ${DEPENDS_MODULE})
+      find_package(${_mod} REQUIRED)
+      set(${_mod}_REQUIRED ON)
+    endforeach(_mod ${DEPENDS_MODULE})
+    foreach(_mod ${SUGGESTS_MODULE})
+      find_package(${_mod})
+      set(${_mod}_REQUIRED ON)
+    endforeach(_mod ${SUGGESTS_MODULE})
+    message("global_depends=${global_depends}")
+    message("global_suggests=${global_suggests}")
+    message("DEPENS_MODULE=${DEPENDS_MODULE} DEPENDS_VERSION=${DEPENDS_VERSIONS}
+      SUGGESTS_MODULE=${SUGGESTS_MODULE} SUGGESTS_VERSION=${SUGGESTS_VERSIONS}")
+    dune_create_dependency_leafs("${DEPENDS_MODULE}" "${DEPENDS_VERSIONS}"
+      "${SUGGESTS_MODULE}" "${SUGGESTS_VERSIONS}" global_depends
+      global_suggests)
+    message("global_depends=${global_depends}")
+    message("global_suggests=${global_suggests}")
+    set(ALL_DEPENDENCIES "${global_depends}" "${global_suggests}")
+    message("ALL_DEPENDENCIES=${ALL_DEPENDENCIES}")
+  endif(DEPENDS_MODULE OR SUGGESTS_MODULE)
+  # reverse ALL_DEPENDENCIES
+  list(REVERSE ALL_DEPENDENCIES)
+  list(REMOVE_DUPLICATES ALL_DEPENDENCIES)
+  message("ALL_DEPENDENCIES=${ALL_DEPENDENCIES}")
 endmacro(dune_create_dependency_tree _immediates)
 
 # Converts a module name given by _dune_module into a string _macro_name
@@ -200,28 +321,25 @@ macro(dune_module_to_macro _macro_name _dune_module)
 endmacro(dune_module_to_macro _macro_name _dune_module)
 
 macro(dune_process_dependency_tree DEPENDS DVERSIONS SUGGESTS SVERSIONS)
-  message(STATUS "dune-geometry_PROCESSED=${dune-geometry_PROCESSED}")
-  foreach(_mod ${DEPENDS})
+  foreach(_mod ${ALL_DEPENDENCIES})
     message(STATUS "mod=${_mod} ${_mod}_PROCESSED=${${_mod}_PROCESSED}|")
     if(NOT ${_mod}_PROCESSED)
       # module not processed yet
       message(STATUS "Processing dependency ${_mod}")
       set(${_mod}_PROCESSED ${_mod})
-      message(STATUS "${dune-geometry_PROCESSED}")
-      list(INSERT DEPENDENCY_TREE 0 ${_mod})
       # Search for a cmake files containing tests and directives
       # specific to this module
-      #dune_module_to_macro(_cmake_mod_name "${_mod}")
-      #set(_macro "${_cmake_mod_name}Macros")
-      #set(_mod_cmake _mod_cmake-NOTFOUND) # Prevent false positives due to caching
-      #find_file(_mod_cmake ${_macro}.cmake ${CMAKE_MODULE_PATH}
-#	NO_DEFAULT_PATH)
-#      if(_mod_cmake)
-#	message(STATUS "Performing tests specific to ${_mod} from file ${_mod_cmake}.")
-	#include(${_mod_cmake})
-#      endif(_mod_cmake)
+      dune_module_to_macro(_cmake_mod_name "${_mod}")
+      set(_macro "${_cmake_mod_name}Macros")
+      set(_mod_cmake _mod_cmake-NOTFOUND) # Prevent false positives due to caching
+      find_file(_mod_cmake ${_macro}.cmake ${CMAKE_MODULE_PATH}
+	NO_DEFAULT_PATH)
+      if(_mod_cmake)
+	message(STATUS "Performing tests specific to ${_mod} from file ${_mod_cmake}.")
+	include(${_mod_cmake})
+      endif(_mod_cmake)
       # Find the module
-      find_package(${_mod})
+      #find_package(${_mod})
       # set includes
       message(STATUS "Setting ${_mod}_INCLUDE_DIRS=${${_mod}_INCLUDE_DIRS}")
       dune_module_to_uppercase(_upper_case "${_mod}")
@@ -234,7 +352,6 @@ macro(dune_process_dependency_tree DEPENDS DVERSIONS SUGGESTS SVERSIONS)
 	endforeach(_lib ${${_mod}_LIBRARIES})
       endif(${_mod}_LIBRARIES)
       message(STATUS "Dependencies for ${_mod}: ${${_mod}_DEPENDENCIES}")
-    #dune_process_dependency_tree(${${_mod}_DEPENDENCIES})
     endif(NOT ${_mod}_PROCESSED)
   endforeach(_mod DEPENDENCIES)
 endmacro(dune_process_dependency_tree)
@@ -255,6 +372,8 @@ macro(dune_project)
   set(ProjectName            "${DUNE_MOD_NAME}")
   set(ProjectVersion         "${DUNE_MOD_VERSION}")
   set(ProjectMaintainerEmail "${DUNE_MAINTAINER}")
+
+  dune_create_dependency_tree()
 
   # assert the project names matches
   if(NOT (ProjectName STREQUAL CMAKE_PROJECT_NAME))
@@ -344,7 +463,6 @@ macro(dune_project)
   dune_process_dependency_tree("${DEPENDS_MODULE}" "${DEPENDS_VERSION}"
     "${SUGGESTS_MODULE}" "${SUGGESTS_VERSION}")
 
-  message(STATUS "DEPENDENCY_TREE=${DEPENDENCY_TREE}")
   # Search for cmake files containing tests and directives
   # specific to this module
   dune_module_to_macro(_macro ${DUNE_MOD_NAME})
@@ -379,7 +497,7 @@ macro(dune_regenerate_config_cmake)
    )
 
  # add previous module specific section
- foreach(_dep  ${DEPENDENCY_TREE})
+ foreach(_dep  ${ALL_DEPENDENCIES})
    foreach(_mod_conf_file ${${_dep}_PREFIX}/config.h.cmake
        ${${_dep}_PREFIX}/share/${_dep}/config.h.cmake)
      if(EXISTS ${_mod_conf_file})
@@ -392,7 +510,7 @@ macro(dune_regenerate_config_cmake)
        file(APPEND ${CONFIG_H_CMAKE_FILE} "${_file}")
      endif(EXISTS ${_mod_conf_file})
    endforeach()
- endforeach(_dep DEPENDENCY_TREE)
+ endforeach(_dep ${ALL_DEPENDENCIES})
  file(APPEND ${CONFIG_H_CMAKE_FILE} "\n${_myfile}")
 endmacro(dune_regenerate_config_cmake)
 
@@ -416,10 +534,10 @@ macro(finalize_dune_project)
       list(GET DEPENDS_MODULE ${i} _mod)
       dune_module_to_macro(_macro ${_mod})
       list(GET DEPENDS_VERSION ${i} _ver)
-      file(APPEND ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-config.cmake
-	"find_package(${_mod})\n")#include(${_macro}Macros)\n")
-      file(APPEND ${PROJECT_BINARY_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake
-	"find_package(${_mod})\n")#include(${_macro}Macros)\n")
+      #file(APPEND ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-config.cmake
+      #"find_package(${_mod})\n")#include(${_macro}Macros)\n")
+      #file(APPEND ${PROJECT_BINARY_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake
+      #"find_package(${_mod})\n")#include(${_macro}Macros)\n")
     endforeach(i RANGE 0 ${mlength})
   endif(mlength GREATER 0)
   message(STATUS "${DUNE_MOD_NAME_CMAKE}_FOUND=${${DUNE_MOD_NAME_CMAKE}_FOUND}|")
@@ -427,10 +545,10 @@ macro(finalize_dune_project)
      message(STATUS "appending")
     # This module hast its own tests.
     # Execute them during find_package
-    file(APPEND ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-config.cmake
-      "include(${DUNE_MOD_NAME_CMAKE}Macros)\n")
-    file(APPEND ${PROJECT_BINARY_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake
-      "\ninclude(${DUNE_MOD_NAME_CMAKE}Macros)\n")
+    #file(APPEND ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-config.cmake
+    #  "include(${DUNE_MOD_NAME_CMAKE}Macros)\n")
+    #file(APPEND ${PROJECT_BINARY_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake
+    #  "\ninclude(${DUNE_MOD_NAME_CMAKE}Macros)\n")
   endif(${DUNE_MOD_NAME_CMAKE}_FOUND)
   configure_file(
     ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}-version.cmake.in
