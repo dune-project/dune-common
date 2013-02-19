@@ -109,11 +109,18 @@ macro(dune_project)
   set(CMAKE_CXX_FLAGS_RELEASE "-funroll-loops -O3")
   set(CMAKE_C_FLAGS_RELEASE "-funroll-loops -O3")
 
+  # extract information from dune.module
   dune_module_information(${CMAKE_SOURCE_DIR})
   set(ProjectName            "${DUNE_MOD_NAME}")
   set(ProjectVersion         "${DUNE_MOD_VERSION}")
   set(ProjectMaintainerEmail "${DUNE_MAINTAINER}")
-  project(${ProjectName} C CXX)
+
+  # assert the project names matches
+  if(NOT (ProjectName STREQUAL CMAKE_PROJECT_NAME))
+    message(FATAL_ERROR "Module name from dune.module does not match the name given in CMakeLists.txt.")
+  endif(NOT (ProjectName STREQUAL CMAKE_PROJECT_NAME))
+
+  # optional Fortran support
   include(LanguageSupport)
   workaround_9220(Fortran Fortran_Works)
   if(Fortran_Works)
