@@ -457,6 +457,37 @@ include \$(top_srcdir)/am/global-rules
 
 M_DELIM
 
+for i in $DEPENDENCIES; do
+    echo "find_packages($i)" >>$PROJECT/dependencies.cmake
+    echo "include_directories(\${$i_INCLUDE_DIRS})" >>$PROJECT/dependencies.cmake
+done
+echo "include_directories("${CMAKE_SOURCE_DIR}")"  >>$PROJECT/dependencies.cmake
+
+echo " - $PROJECT/CMakeLists.txt"
+cat> "$PROJECT/CMakeLists.txt" << M_DELIM
+cmake_minimum_required(VERSION 2.8)
+project($PROJECT CXX)
+include(dependencies.cmake)
+
+# for this tow work you will have to modify the CMAKE_MODULE_PATH
+#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/../dune-common/cmake/modules")
+
+include(DuneMacros)
+
+include(DUNEDoc)
+
+#activate testing
+include(DuneTest)
+
+#activate pkg-config
+include(DunePkgConfig)
+
+add_subdirectory("src")
+add_subdirectory("m4")
+add_subdirectory("dune")
+add_subdirectory("doc")
+
+M_DELIM
 ################## STAMP-VC ##################
 echo "- $PROJECT/stamp-vc"
 echo 'A stamp file to signify that this directory comes from a version control system, not an unpacked tarball' > $PROJECT/stamp-vc

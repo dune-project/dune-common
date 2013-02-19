@@ -1,0 +1,26 @@
+# search for packages
+find_package(PkgConfig)
+
+# set some variables that are used in the pkg-config file
+set( CMAKE_FIND_LIBRARY_SUFFIXES ${_dune_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES})
+set( prefix ${CMAKE_INSTALL_PREFIX})
+set(exec_prefix "\${prefix}")
+set(libdir "\${exec_prefix}/lib")
+set(includedir "\${prefix}/include")
+set(PACKAGE_NAME ${DUNE_MOD_NAME})
+set(VERSION ${DUNE_MOD_VERSION})
+set(CC ${CMAKE_C_COMPILER})
+set(CXX ${CMAKE_CXX_COMPILER})
+
+#create pkg-config file
+configure_file(
+  ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}.pc.in
+  ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}.pc
+  @ONLY
+)
+
+# install pkgconfig file
+if(PKG_CONFIG_FOUND )
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${DUNE_MOD_NAME}.pc
+    DESTINATION lib/pkgconfig)
+endif(PKG_CONFIG_FOUND)

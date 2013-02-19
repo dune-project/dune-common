@@ -17,3 +17,6 @@ MACRO(create_doc_install filename targetdir)
   install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" --build \"${CMAKE_BINARY_DIR}\" --target install_${targetfile} )
             LIST(APPEND CMAKE_INSTALL_MANIFEST_FILES ${CMAKE_INSTALL_PREFIX}/${targetdir}/${targetfile})")
 ENDMACRO(create_doc_install)
+
+# Support building documentation with doxygen.
+include(DUNEDoxygen)
