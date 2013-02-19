@@ -9,7 +9,7 @@
 #
 
 # adds GMP flags to the targets
-function(dune_add_gmp_flags _targets)
+function(add_dune_gmp_flags _targets)
   if(GMP_FOUND)
     foreach(_target ${_targets})
       target_link_libraries(${_target} ${GMP_LIBRARIES})
@@ -23,7 +23,7 @@ function(dune_add_gmp_flags _targets)
       endforeach(_path ${GMP_INCLUDE_DIRS})
     endforeach(_target ${_targets})
   endif(GMP_FOUND)
-endfunction(dune_add_gmp_flags)
+endfunction(add_dune_gmp_flags)
 
 # search for location of header gmpxx.h", only at positions given by the user
 find_path(GMP_INCLUDE_DIR
