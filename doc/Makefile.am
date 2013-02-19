@@ -15,7 +15,7 @@ docdir=$(datadir)/doc/dune-common
 DOCFILES = $(PAGES)
 DOCFILES_EXTRA = example.opts
 
-EXTRA_DIST = $(PAGES) example.opts
+EXTRA_DIST = CMakeLists.txt $(PAGES) example.opts
 
 # include rules for wml -> html transformation
 include $(top_srcdir)/am/webstuff
