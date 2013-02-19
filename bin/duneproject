@@ -839,6 +839,26 @@ s/[_-]\\(\\w\)/\\U\\1/g"`
 
 echo "- $PROJECT/$CMAKE_NAME""Config.cmake.in"
 cat> "$PROJECT/$CMAKE_NAME""Config.cmake.in" <<EOF
+#import the target
+#include("@CMAKE_BINARY_DIR@/@DUNE_MOD_NAME_CMAKE@Targets.cmake")
+
+#report other information
+set(@DUNE_MOD_NAME_CMAKE@_PREFIX "@CMAKE_SOURCE_DIR@")
+set(@DUNE_MOD_NAME_CMAKE@_INCLUDE_DIRS "@CMAKE_SOURCE_DIR@")
+set(@DUNE_MOD_NAME_CMAKE@_CXX_FLAGS "@CMAKE_CXX_FLAGS@")
+set(@DUNE_MOD_NAME_CMAKE@_CXX_FLAGS_DEBUG "@CMAKE_CXX_FLAGS_DEBUG@")
+set(@DUNE_MOD_NAME_CMAKE@_CXX_FLAGS_MINSIZEREL "@CMAKE_CXX_FLAGS_MINSIZEREL@")
+set(@DUNE_MOD_NAME_CMAKE@_CXX_FLAGS_RELEASE "@CMAKE_CXX_FLAGS_RELEASE@")
+set(@DUNE_MOD_NAME_CMAKE@_CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@")
+set(@DUNE_MOD_NAME_CMAKE@_LIBRARIES "")
+EOF
+
+mkdir "$PROJECT/cmake"
+mkdir "$PROJECT/cmake/modules"
+mkdir "$PROJECT/cmake/pkg"
+
+echo "- $PROJECT/cmake/pkg/$CMAKE_NAME""Config.cmake.in"
+cat> "$PROJECT/cmake/pkg/$CMAKE_NAME""Config.cmake.in" <<EOF
 #compute installation prefix relative to this file
 get_filename_component(_dir "\${CMAKE_CURRENT_LIST_FILE}" PATH)
 get_filename_component(_prefix "\${_dir}/../../.." ABSOLUTE)

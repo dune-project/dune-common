@@ -260,10 +260,15 @@ ENDMACRO(dune_regenerate_config_cmake)
 # some install directives and export th module.
 MACRO(finalize_dune_project)
 
-  #create cmake-config files
+  #create cmake-config files for build tree
   configure_file(
     ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME_CMAKE}Config.cmake.in
     ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME_CMAKE}Config.cmake @ONLY)
+
+  #create cmake-config files for installation tree
+  configure_file(
+    ${PROJECT_SOURCE_DIR}/cmake/pkg/${DUNE_MOD_NAME_CMAKE}Config.cmake.in
+    ${PROJECT_BINARY_DIR}/cmake/pkg/${DUNE_MOD_NAME_CMAKE}Config.cmake @ONLY)
 
   configure_file(
     ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME_CMAKE}Version.cmake.in
@@ -273,7 +278,7 @@ MACRO(finalize_dune_project)
   install(FILES dune.module DESTINATION lib/dunecontrol/${DUNE_MOD_NAME})
 
   #install cmake-config files
-  install(FILES ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME_CMAKE}Config.cmake
+  install(FILES ${PROJECT_BINARY_DIR}/cmake/pkg/${DUNE_MOD_NAME_CMAKE}Config.cmake
     ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME_CMAKE}Version.cmake
     DESTINATION lib/cmake/${DUNE_MOD_NAME_CMAKE})
 
@@ -315,3 +320,11 @@ MACRO(dune_common_script_dir _script_dir)
     set(${_script_dir} ${DuneCommon_SCRIPT_DIR})
   endif("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
 ENDMACRO(dune_common_script_dir)
+
+MACRO(dune_common_script_source_dir _script_dir)
+  if("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
+    set(${_script_dir} ${CMAKE_SOURCE_DIR}/cmake/scripts)
+  else("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
+    set(${_script_dir} ${DuneCommon_SCRIPT_SOURCE_DIR})
+  endif("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
+ENDMACRO(dune_common_script_source_dir)
