@@ -1,0 +1,2 @@
+file(INSTALL ${FILE}
+	DESTINATION ${DIR})
