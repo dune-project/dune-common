@@ -17,6 +17,7 @@ include(DuneMacros)
 dune_project()
 
 # add subdirectories to execute CMakeLists.txt there
+add_subdirectory("lib")
 add_subdirectory("dune")
 add_subdirectory("bin")
 add_subdirectory("m4")
