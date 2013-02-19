@@ -1,6 +1,61 @@
 # Install some test headers, because they get used by tests in other modules
 install(FILES iteratortest.hh DESTINATION include/dune/common/test)
 
+set(TESTPROGS
+    arraylisttest
+    arraytest
+    bigunsignedinttest
+    bitsetvectortest
+    check_fvector_size
+    conversiontest
+    deprtuplestest
+    dynmatrixtest
+    dynvectortest
+    enumsettest
+    fassigntest
+    float_cmp
+    fmatrixtest
+    fvectortest
+    gcdlcmtest
+    iteratorfacadetest
+    iteratorfacadetest2
+    lrutest
+    mpicollcomm
+    mpiguardtest
+    mpihelpertest
+    mpihelpertest2
+    nullptr-test
+    pathtest
+    parametertreetest
+    poolallocatortest
+    shared_ptrtest_config
+    shared_ptrtest_dune
+    singletontest
+    static_assert_test
+    streamtest
+    test-stack
+    testfassign1
+    testfassign2
+    testfassign3
+    testfassign4
+    testfassign_fail1
+    testfassign_fail2
+    testfassign_fail3
+    testfassign_fail4
+    testfassign_fail5
+    testfassign_fail6
+    testfconstruct
+    tuplestest_dune
+    tuplestest_std
+    tuplestest_tr1
+    tupleutilitytest
+    utilitytest)
+
+# We do not want want to build the tests during make all,
+# but just build them on demand
+add_dependencies(build_tests ${TESTPROGS})
+
+# Add the executables needed for the tests
 add_executable("arraylisttest" arraylisttest.cc)
 add_executable("arraytest" arraytest.cc)
 
@@ -130,3 +185,90 @@ add_executable("tuplestest_tr1" tuplestest.cc)
 set_target_properties(tuplestest_tr1 PROPERTIES COMPILE_FLAGS "-DDISABLE_STD_TUPLE")
 add_executable("tupleutilitytest" tupleutilitytest.cc)
 add_executable("utilitytest" utilitytest.cc)
+
+# Add the tests to be executed
+add_test(arraylisttest                  arraylisttest)
+add_test(arraytest                      arraytest)
+add_test(bigunsignedinttest             bigunsignedinttest)
+add_test(bitsetvectortest               bitsetvectortest)
+add_test(check_fvector_size             check_fvector_size)
+add_test(conversiontest                 conversiontest)
+add_test(deprtuplestest                 deprtuplestest)
+add_test(dynmatrixtest                  dynmatrixtest)
+add_test(dynvectortest                  dynvectortest)
+add_test(enumsettest                    enumsettest)
+add_test(fmatrixtest                    fmatrixtest)
+add_test(fvectortest                    fvectortest)
+add_test(gcdlcmtest                     gcdlcmtest)
+add_test(iteratorfacadetest             iteratorfacadetest)
+add_test(iteratorfacadetest2            iteratorfacadetest2)
+add_test(lrutest                        lrutest)
+if(MPI_CXX_FOUND)
+  add_test(mpicollectivecommunication    mpicollectivecommunication)
+endif(MPI_CXX_FOUND)
+add_test(mpiguardtest                   mpiguardtest)
+add_test(mpihelpertest                  mpihelpertest)
+add_test(mpihelpertest2                 mpihelpertest2)
+add_test(nullptr_test                   nullptr_test)
+add_test(parametertreetest              parametertreetest)
+add_test(pathtest                       pathtest)
+add_test(poolallocatortest              poolallocatortest)
+add_test(shared_ptrtest_config          shared_ptrtest_config)
+add_test(shared_ptrtest_dune            shared_ptrtest_dune)
+add_test(singletontest                  singletontest)
+add_test(streamtest                     streamtest)
+add_test(testfassign1                   testfassign1)
+add_test(testfassign2                   testfassign2)
+add_test(testfassign3                   testfassign3)
+add_test(testfassign4                   testfassign4)
+add_test(test_stack                     test_stack)
+add_test(tuplestest_config              tuplestest_config)
+add_test(tuplestest_dune                tuplestest_dune)
+add_test(tuplestest_tr1                 tuplestest_tr1)
+add_test(tupleutilitytest               tupleutilitytest)
+add_test(utilitytest                    utilitytest)
+# failing tests
+add_test(testfassign_fail1              testfassign_fail1)
+add_test(testfassign_fail2              testfassign_fail2)
+add_test(testfassign_fail3              testfassign_fail3)
+add_test(testfassign_fail4              testfassign_fail4)
+add_test(testfassign_fail5              testfassign_fail5)
+add_test(testfassign_fail6              testfassign_fail6)
+set_tests_properties(
+  testfassign_fail1
+  testfassign_fail2
+  testfassign_fail3
+  testfassign_fail4
+  testfassign_fail5
+  testfassign_fail6
+  PROPERTIES WILL_FAIL true)
+# compile test
+add_test(NAME static_assert_test
+  COMMAND ${CMAKE_COMMAND} --build . --target static_assert_test --config $<CONFIGURATION>)
+add_test(NAME testfconstruct
+  COMMAND ${CMAKE_COMMAND} --build . --target testfconstruct --config $<CONFIGURATION>)
+# failing compile tests
+add_test(NAME genericiterator_compile_fail
+  COMMAND ${CMAKE_COMMAND} --build . --target genericiterator_compile_fail --config $<CONFIGURATION>)
+add_test(NAME check_fvector_size_fail1
+  COMMAND ${CMAKE_COMMAND} --build . --target check_fvector_size_fail1 --config $<CONFIGURATION>)
+add_test(NAME check_fvector_size_fail2
+  COMMAND ${CMAKE_COMMAND} --build . --target check_fvector_size_fail2 --config $<CONFIGURATION>)
+add_test(NAME nullptr_test_fail
+  COMMAND ${CMAKE_COMMAND} --build . --target nullptr_test_fail --config $<CONFIGURATION>)
+add_test(NAME static_assert_test_fail
+  COMMAND ${CMAKE_COMMAND} --build . --target static_assert_test_fail --config $<CONFIGURATION>)
+add_test(NAME testfconstruct_fail1
+  COMMAND ${CMAKE_COMMAND} --build . --target testfconstruct_fail1 --config $<CONFIGURATION>)
+add_test(NAME testfconstruct_fail2
+  COMMAND ${CMAKE_COMMAND} --build . --target testfconstruct_fail2 --config $<CONFIGURATION>)
+set_tests_properties(
+  genericiterator_compile_fail
+  check_fvector_size_fail1
+  check_fvector_size_fail2
+  nullptr_test_fail
+  static_assert_test_fail
+  testfconstruct_fail1
+  testfconstruct_fail2
+  PROPERTIES WILL_FAIL true)
+
