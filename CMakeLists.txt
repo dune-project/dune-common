@@ -148,6 +148,15 @@ configure_file(
   @ONLY
 )
 
+#create cmake-config files
+configure_file(
+  ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}-config.cmake.in
+  ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-config.cmake @ONLY)
+
+configure_file(
+  ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}-version.cmake.in
+  ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-version.cmake @ONLY)
+
 #install dune.module file
 install(FILES dune.module DESTINATION lib/dunecontrol/${DUNE_MOD_NAME})
 # install pkgconfig file
@@ -155,6 +164,11 @@ if(PKG_CONFIG_FOUND )
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${DUNE_MOD_NAME}.pc
     DESTINATION lib/pkgconfig)
 endif(PKG_CONFIG_FOUND)
+
+#install cmake-config files
+install(FILES ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-config.cmake
+  ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-version.cmake
+  DESTINATION lib/cmake)
 
 include(CTest)
 
