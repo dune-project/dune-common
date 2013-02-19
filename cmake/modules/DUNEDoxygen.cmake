@@ -19,22 +19,33 @@ MACRO (prepare_doxyfile)
   add_custom_target(Doxyfile DEPENDS Doxyfile.in Doxyfile)
 ENDMACRO (prepare_doxyfile)
 
+#
+# add_doxgen_target
+#
+# This macro creates a target for building (doxygen_${DUNE_MOD_NAME}) and installing
+# (doxygen_install_${DUNE_MOD_NAME}) the generated doxygen documentation.
+# The documentation is built during the top-level make doc call. We have added a dependency
+# that make sure it is built before running make install.
 MACRO (add_doxygen_target)
   if(DOXYGEN_FOUND)
     prepare_doxyfile()
+    # A custom command that exectutes doxygen
     add_custom_command(OUTPUT html COMMAND
       ${DOXYGEN_EXECUTABLE} Doxyfile
       COMMENT "Running doxygen documentation" DEPENDS Doxyfile)
+    # Create a target for building the doxygen documentation of a module,
+    # that is run during make doc.
     add_custom_target(doxygen_${DUNE_MOD_NAME} DEPENDS html)
     add_dependencies(doc doxygen_${DUNE_MOD_NAME})
-    #message(${doxgen_files})
+
+    # Use a cmake call to install the doxygen documentation and create a target for it
     set(install_doxygen_command ${CMAKE_COMMAND} -D CMAKE_CURRENT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR} -D DUNE_MOD_NAME=${DUNE_MOD_NAME} -P ${CMAKE_SOURCE_DIR}/cmake/scripts/InstallDoxygen.cmake)
     add_custom_target(doxygen_install_${DUNE_MOD_NAME}
       ${install_doxygen_command}
       COMMENT "Installing doxygen documentation"
       DEPENDS doxygen_${DUNE_MOD_NAME})
-    add_dependencies(doxygen_install doxygen_install_${DUNE_MOD_NAME})
-    # When installing call make install manually
-    install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" --build \"${CMAKE_BINARY_DIR}\" --target doxygen_install )")
+
+    # When installing call cmake install with the above install target
+    install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" --build \"${CMAKE_BINARY_DIR}\" --target doxygen_install_${DUNE_MOD_NAME} )")
   endif(DOXYGEN_FOUND)
 ENDMACRO (add_doxygen_target)
