@@ -151,7 +151,7 @@ macro(dune_project)
     else (APPLE)
       set(CMAKE_FIND_LIBRARY_SUFFIXES .a )
     endif (APPLE)
-  endif()
+  endif(DUNE_USE_ONLY_STATIC_LIBS)
 
   # set required compiler flags for C++11 (former C++0x)
   find_package(CXX11Features)
@@ -220,7 +220,7 @@ macro(dune_project)
     message(STATUS "Setting ${_mod}_LIBRARIES=${${_mod}_LIBRARIES}")
     if(${_mod}_LIBRARIES)
       foreach(_lib ${${_mod}_LIBRARIES})
-	list(APPEND DUNE_DEFAULT_LIBS "${_lib}")
+        list(APPEND DUNE_DEFAULT_LIBS "${_lib}")
       endforeach(_lib ${${_mod}_LIBRARIES})
     endif(${_mod}_LIBRARIES)
   endforeach(_mod DEPENDENCY_TREE)
@@ -264,8 +264,8 @@ macro(dune_regenerate_config_cmake)
      if(EXISTS ${_mod_conf_file})
        file(READ "${_mod_conf_file}" _file)
        string(REGEX REPLACE
-	 ".*/\\*[ ]*begin[ ]+${_dep}[^\\*]*\\*/(.*)/[/\\*][ ]*end[ ]*${_dep}[^\\*]*\\*/" "\\1"
-	 _tfile "${_file}")
+         ".*/\\*[ ]*begin[ ]+${_dep}[^\\*]*\\*/(.*)/[/\\*][ ]*end[ ]*${_dep}[^\\*]*\\*/" "\\1"
+         _tfile "${_file}")
        # strip the private section
        string(REGEX REPLACE "(.*)/[\\*][ ]*begin private.*/[\\*][ ]*end[ ]*private[^\\*]\\*/(.*)" "\\1\\2" _file "${_tfile}")
        file(APPEND ${CONFIG_H_CMAKE_FILE} "${_file}")
@@ -278,7 +278,6 @@ endmacro(dune_regenerate_config_cmake)
 # Namely it creates config.h and the cmake-config files,
 # some install directives and exports the module.
 macro(finalize_dune_project)
-
   #create cmake-config files for build tree
   configure_file(
     ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}-config.cmake.in
@@ -368,22 +367,21 @@ macro(dune_add_library basename)
 
   set(_created_libs ${basename})
 
-
   if(DUNE_BUILD_BOTH_LIBS)
     if(BUILD_SHARED_LIBS)
       #create static lib
       add_library(${basename}-static STATIC ${ARGN})
       # make sure both libs have the same name.
       set_target_properties(${basename}-static PROPERTIES
-	OUTPUT_NAME ${basename}
-	ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+        OUTPUT_NAME ${basename}
+        ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
       list(APPEND _created_libs ${basename}-static)
     else(BUILD_SHARED_LIBS)
       #create shared libs
       add_library(${basename}-shared SHARED ${ARGN})
       set_target_properties(${basename}-shared PROPERTIES
-	OUTPUT_NAME ${basename}
-	LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+        OUTPUT_NAME ${basename}
+        LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
       list(APPEND _created_libs ${basename}-shared)
     endif(BUILD_SHARED_LIBS)
   endif(DUNE_BUILD_BOTH_LIBS)
