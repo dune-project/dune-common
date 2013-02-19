@@ -1,4 +1,4 @@
-# This cmake file holds test and directives that are executed
+# This cmake file holds tests and directives that are executed
 # for the module dune-common and have to be executed by
 # all dependent modules
 #
