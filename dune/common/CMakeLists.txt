@@ -33,6 +33,7 @@ install(FILES
         deprecated.hh
         densematrix.hh
         densevector.hh
+	diagonalmatrix.hh
         documentation.hh
         dynmatrix.hh
         dynvector.hh
