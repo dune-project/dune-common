@@ -1,1 +1,1 @@
-install(FILES dunemodules.lib DESTINATION lib)
+install(FILES dunemodules.lib DESTINATION ${CMAKE_INSTALL_LIBDIR})

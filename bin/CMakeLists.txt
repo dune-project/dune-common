@@ -5,4 +5,4 @@ install(PROGRAMS
 	dunecontrol
 	mpi-config
 	dune-autogen
-	DESTINATION bin)
+	DESTINATION ${CMAKE_INSTALL_BINDIR})

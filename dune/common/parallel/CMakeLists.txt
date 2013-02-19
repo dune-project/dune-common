@@ -10,5 +10,5 @@ install(FILES
         plocalindex.hh
         remoteindices.hh
         selection.hh
-	DESTINATION include/dune/common/parallel)
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common/parallel)
 
