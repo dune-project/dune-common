@@ -35,17 +35,20 @@ add_custom_target(doc)
 
 
 MACRO(create_doc_install filename targetdir)
-  if("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-    set(SCRIPT_DIR ${CMAKE_SOURCE_DIR}/cmake/scripts)
-  else("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-    set(SCRIPT_DIR ${DUNE_COMMON_SCRIPT_DIR})
-  endif("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
+  dune_common_script_dir(SCRIPT_DIR)
   get_filename_component(targetfile ${filename} NAME)
   set(install_command ${CMAKE_COMMAND} -D FILES=${filename} -D DIR=${CMAKE_INSTALL_PREFIX}/${targetdir} -P ${SCRIPT_DIR}/InstallFile.cmake)
   # create a custom target for the installation
+  message("cdi ${filename}, ${ARGC}, ${ARGV2} ")
+  if("${ARGC}" EQUAL "3")
+    set(_depends ${ARGV2})
+    message("_depends=${_depends}")
+  else("${ARGC}" EQUAL "3")
+    set(_depends  ${filename})
+  endif("${ARGC}" EQUAL "3")
   add_custom_target(install_${targetfile} ${install_command}
     COMMENT "Installing ${filename} to ${targetdir}"
-    DEPENDS ${filename})
+    DEPENDS ${_depends})
   # When installing, call cmake install with the above install target and add the file to install_manifest.txt
   install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" --build \"${CMAKE_BINARY_DIR}\" --target install_${targetfile} )
             LIST(APPEND CMAKE_INSTALL_MANIFEST_FILES ${CMAKE_INSTALL_PREFIX}/${targetdir}/${targetfile})")

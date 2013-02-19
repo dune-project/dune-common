@@ -197,13 +197,13 @@ macro(dune_project)
     find_package(${_cmake_mod_name})
     # set includes
     dune_module_to_uppercase(_upper_case "${_mod}")
-    include_directories("${${_upper_case}_INCLUDE_DIRS}")
-    message(STATUS "Setting ${_upper_case}_LIBS=${${_upper_case}_LIBS}")
-    if(${_upper_case}_LIBS)
-      foreach(_lib ${${_upper_case}_LIBS})
+    include_directories("${${_cmake_mod_name}_INCLUDE_DIRS}")
+    message(STATUS "Setting ${_cmake_mod_name}_LIBRARIES=${${_cmake_mod_name}_LIBRARIES}")
+    if(${_cmake_mod_name}_LIBRARIES)
+      foreach(_lib ${${_cmake_mod_name}_LIBRARIES})
 	list(APPEND DUNE_DEFAULT_LIBS "${_lib}")
-      endforeach(_lib ${${_upper_case}_LIBS})
-    endif(${_upper_case}_LIBS)
+      endforeach(_lib ${${_cmake_mod_name}_LIBRARIES})
+    endif(${_cmake_mod_name}_LIBRARIES)
   endforeach(_mod DEPENDENCY_TREE)
 
   # Search for cmake files containing tests and directives
@@ -239,9 +239,9 @@ MACRO(dune_regenerate_config_cmake)
  # add previous module specific section
  file(APPEND ${CONFIG_H_CMAKE_FILE} "\n${_tfile}")
  foreach(_dep  ${DEPENDENCY_TREE})
-   dune_module_to_uppercase(_dep_upper ${_dep})
-   foreach(_mod_conf_file ${${_dep_upper}_PREFIX}/config.h.cmake
-       ${${_dep_upper}_PREFIX}/share/${_dep}/config.h.cmake)
+   dune_module_to_macro(_dep_macro ${_dep})
+   foreach(_mod_conf_file ${${_dep_macro}_PREFIX}/config.h.cmake
+       ${${_dep_macro}_PREFIX}/share/${_dep}/config.h.cmake)
      if(EXISTS ${_mod_conf_file})
        file(READ "${_mod_conf_file}"  _file)
        string(REGEX REPLACE
@@ -308,3 +308,10 @@ MACRO(target_link_dune_default_libraries _target)
 ENDMACRO(target_link_dune_default_libraries)
 
 
+MACRO(dune_common_script_dir _script_dir)
+  if("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
+    set(${_script_dir} ${CMAKE_SOURCE_DIR}/cmake/scripts)
+  else("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
+    set(${_script_dir} ${DuneCommon_SCRIPT_DIR})
+  endif("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
+ENDMACRO(dune_common_script_dir)
