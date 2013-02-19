@@ -11,7 +11,7 @@ dune_add_library("dunecommon"
   path.cc
   stdstreams.cc)
 if(LAPACK_FOUND)
-  print("LAPACKLIBRARIES=${LAPACK_LIBRARIES}")
+  message("LAPACKLIBRARIES=${LAPACK_LIBRARIES}")
   dune_target_link_libraries("dunecommon" ${LAPACK_LIBRARIES})
 elseif(BLAS_FOUND)
   dune_target_link_libraries("dunecommon" ${BLAS_LIBRARIES})
