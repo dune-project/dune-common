@@ -350,7 +350,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
         _DUNE_MODULE[]_SRCDIR=$_DUNE_MODULE[]_ROOT
         echo "testing $_DUNE_MODULE[]_ROOT/CMakeCache.txt"
         # extract src and build path from Makefile or CMakeCache.txt, if found
-	    AS_IF([test -f $_DUNE_MODULE[]_ROOT/CMakeCache.txt],[
+        AS_IF([test -f $_DUNE_MODULE[]_ROOT/CMakeCache.txt],[
           _DUNE_MODULE[]_SRCDIR="`sed -ne '/^[]_dune_name[]_SOURCE_DIR:STATIC=/{s/^[]_dune_name[]_SOURCE_DIR:STATIC=//; p;}' $_DUNE_MODULE[]_ROOT/CMakeCache.txt`"
           echo srcdir=$_DUNE_MODULE[]_SRCDIR
                 ],[test -f $_DUNE_MODULE[]_ROOT/Makefile],[
