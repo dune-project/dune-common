@@ -705,9 +705,9 @@ def init_cmake_module(module_name):
     return''.join(['# set up project\n',
                   'project("'+module_name+'" C CXX)\n\n#circumvent not building docs\nset(BUILD_DOCS 1)\n\n',
                   '# general stuff\n',
-                  'cmake_minimum_required(VERSION 2.8.8)\n\n',
+                  'cmake_minimum_required(VERSION 2.8)\n\n',
                   '#find dune-common and set the module path\n',
-                  'find_package(dune-common)'
+                  'find_package(dune-common)\n'
                   'list(APPEND CMAKE_MODULE_PATH ${dune-common_MODULE_PATH}\n'
                   '     "${CMAKE_SOURCE_DIR}/cmake/modules")# make sure our own modules are found\n\n',
                   '#include the dune macros\n'
@@ -761,9 +761,10 @@ def create_cmake_dirs_and_file(dirname, module_name):
            'set(@DUNE_MOD_NAME@_CXX_FLAGS_MINSIZEREL "@CMAKE_CXX_FLAGS_MINSIZEREL@")\n',
            'set(@DUNE_MOD_NAME@_CXX_FLAGS_RELEASE "@CMAKE_CXX_FLAGS_RELEASE@")\n',
            'set(@DUNE_MOD_NAME@_CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@")\n',
-           'set(@DUNE_MOD_NAME@_LIBRARIES "@LIBRARIES@")\n',
-           'set(@DUNE_MOD_NAME@_DEPENDS "@DUNE_DEPENDS@")\n'
-           'set(@DUNE_MOD_NAME@_SUGGESTS "@DUNE_SUGGESTS@")\n'
+           'set(@DUNE_MOD_NAME@_LIBRARIES "")\n',
+           'set(@DUNE_MOD_NAME@_DEPENDS "@DUNE_DEPENDS@")\n',
+           'set(@DUNE_MOD_NAME@_SUGGESTS "@DUNE_SUGGESTS@")\n',
+           'set(@DUNE_MOD_NAME@_MODULE_PATH "@DUNE_INSTALL_MODULEDIR@")\n',
            'endif(NOT @DUNE_MOD_NAME@_FOUND)\n']
     text = ''.join(lines)
     output=open(os.path.join(dirs['pkg'], module_name+'-config.cmake.in'), 'w')
@@ -778,6 +779,7 @@ def create_cmake_dirs_and_file(dirname, module_name):
               'set(@DUNE_MOD_NAME@_PREFIX "@CMAKE_SOURCE_DIR@")\n',
               'set(@DUNE_MOD_NAME@_INCLUDE_DIRS "@CMAKE_SOURCE_DIR@")\n'])
     l.extend(lines[13:])
+    l[-2]='set(@DUNE_MOD_NAME@_MODULE_PATH "@CMAKE_SOURCE_DIR@/cmake/modules")\n'
     output=open(os.path.join(dirname, module_name+'-config.cmake.in'), 'w')
     output.write(''.join(l))
     output.close()
