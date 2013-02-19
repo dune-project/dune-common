@@ -1,7 +1,7 @@
 # $Id$
 
 # we need the module file to be able to build via dunecontrol
-EXTRA_DIST= CMakeLists.txt dune.module
+EXTRA_DIST= CMakeLists.txt dune.module dune-common-config.cmake.in  dune-common-version.cmake.in
 
 # don't follow the full GNU-standard
 # need automake >= 1.5
@@ -14,3 +14,7 @@ DISTCHECK_CONFIGURE_FLAGS = CXX="$(CXX)" CC="$(CC)" --enable-parallel=@ENABLE_PA
 
 include $(top_srcdir)/am/global-rules
 include $(top_srcdir)/am/top-rules
+
+# Distribute and install config.h.cmake
+configdir = $(datadir)/dune-common
+dist_config_DATA = config.h.cmake
