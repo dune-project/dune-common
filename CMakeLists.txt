@@ -129,6 +129,8 @@ add_subdirectory("bin")
 add_subdirectory("m4")
 add_subdirectory("am")
 add_subdirectory("doc")
+add_subdirectory("cmake/modules")
+add_subdirectory("cmake/scripts")
 
 # set some variables that are used in the pkg-config file
 set( CMAKE_FIND_LIBRARY_SUFFIXES ${_dune_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES})
@@ -172,3 +174,4 @@ install(FILES ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-config.cmake
 
 include(CTest)
 
+export(PACKAGE dune-common)
