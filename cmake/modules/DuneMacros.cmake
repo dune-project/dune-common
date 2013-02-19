@@ -56,7 +56,7 @@ macro(dune_module_information MODULE_DIR)
   endif(MODULE_LINE)
 
   dune_module_to_uppercase(DUNE_MOD_NAME_UPPERCASE ${DUNE_MOD_NAME})
-  message("DUNE_MOD_NAME_UPPERCASE=${DUNE_MOD_NAME_UPPERCASE}")
+
   # set module version
   set(${DUNE_MOD_NAME_UPPERCASE}_VERSION         "${DUNE_MOD_VERSION}")
   set(${DUNE_MOD_NAME_UPPERCASE}_VERSION_MAJOR    "${DUNE_VERSION_MAJOR}")
@@ -180,7 +180,6 @@ macro(dune_project)
 
   dune_create_dependency_tree()
 
-  message("DEPENDENCY_TREE=${DEPENDENCY_TREE}")
   foreach(_mod ${DEPENDENCY_TREE})
     # Search for a cmake files containing tests and directives
     # specific to this module
@@ -195,7 +194,6 @@ macro(dune_project)
     find_package(${_cmake_mod_name})
     # set includes
     dune_module_to_uppercase(_upper_case "${_mod}")
-    message("${_upper_case}_INCLUDE_DIRS")
     include_directories("${${_upper_case}_INCLUDE_DIRS}")
   endforeach(_mod DEPENDENCY_TREE)
 
@@ -206,7 +204,7 @@ macro(dune_project)
   set(_macro "${_macro}Macros")
   find_file(_mod_cmake ${_macro}.cmake ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake/modules NO_DEFAULT_PATH)
-  message("_mod_cmake=${_mod_cmake}")
+
   if(_mod_cmake)
     include(${_mod_cmake})
   else(_mod_cmake)
@@ -218,7 +216,6 @@ MACRO(dune_regenerate_config_cmake)
   set(CONFIG_H_CMAKE_FILE "${CMAKE_BINARY_DIR}/config.h.cmake")
   if(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
     file(READ ${CMAKE_SOURCE_DIR}/config.h.cmake _file)
-    message("read ${CMAKE_SOURCE_DIR}/config.h.cmake")
     string(REGEX MATCH
       "/[\\*/][ ]*begin[ ]+${DUNE_MOD_NAME}.*\\/[/\\*][ ]*end[ ]*${DUNE_MOD_NAME}[^\\*]*\\*/"
       _tfile "${_file}")
@@ -232,9 +229,9 @@ MACRO(dune_regenerate_config_cmake)
  # add previous module specific section
  file(APPEND ${CONFIG_H_CMAKE_FILE} "\n${_tfile}")
  foreach(_dep  ${DEPENDENCY_TREE})
-   foreach(_mod_conf_file ${${_dep}_PREFIX}/config.h.cmake
-       ${${_dep}_PREFIX}/share/${_dep}/config.h.cmake)
-     message("_mod_conf_file=${_mod_conf_file}")
+   dune_module_to_uppercase(_dep_upper ${_dep})
+   foreach(_mod_conf_file ${${_dep_upper}_PREFIX}/config.h.cmake
+       ${${_dep_upper}_PREFIX}/share/${_dep}/config.h.cmake)
      if(EXISTS ${_mod_conf_file})
        file(READ "${_mod_conf_file}"  _file)
        string(REGEX REPLACE
