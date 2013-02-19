@@ -22,7 +22,7 @@ class rem_proc:
     def process_SUBDIRS(self):
         return ''.join([self.foreach_begin(),
                         "  if(${i} STREQUAL \"test\")\n",
-                        "    set(opt \"EXCLUDE_FROM_ALL)\"\n",
+                        "    set(opt EXCLUDE_FROM_ALL)\n",
                         "  endif(${i} STREQUAL \"test\")\n",
                         "  add_subdirectory(${i} ${opt})\n"+self.foreach_end()])
         
