@@ -1,0 +1,10 @@
+#For now we just support appending Doxyfile and Doxylocal
+message("Generating Doxyfile.in")
+FILE(READ ${DOXYSTYLE} file_contents)
+FILE(WRITE Doxyfile.in ${file_contents})
+FILE(READ ${DOXYLOCAL} file_contents)
+FILE(APPEND Doxyfile.in ${file_contents})
+message("Generating Doxyfile")
+FILE(READ Doxyfile.in file_contents)
+STRING(CONFIGURE ${file_contents} output})
+FILE(WRITE Doxyfile ${output})
