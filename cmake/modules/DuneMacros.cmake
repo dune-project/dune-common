@@ -2,10 +2,10 @@
 #
 # Provides the following macros:
 #
-# dune_module_to_upper_case
+# dune_module_to_uppercase(upper_name module_name)
 #
-# Converts a module name given by _module into an uppercase string
-# _upper where all dashes (-) are replaced by underscores (_)
+# Converts a module name given by module_name into an uppercase string
+# upper_name where all dashes (-) are replaced by underscores (_)
 # Example: dune-common -> DUNE_COMMON
 #
 # dune_module_information(MODULE_DIR)
@@ -499,8 +499,16 @@ macro(dune_regenerate_config_cmake)
    from the config.h.cmake files of modules this module depends on. */"
    )
 
+ foreach(_dep ${DUNE_MOD_NAME} ${ALL_DEPENDENCIES})
+   dune_module_to_uppercase(upper ${_dep})
+   set(HAVE_${upper} ${${_dep}_FOUND})
+   file(APPEND ${CONFIG_H_CMAKE_FILE}
+     "\n\n/* Define to 1 if you have module ${_dep} available */
+#cmakedefine01 HAVE_${upper}\n")
+ endforeach(_dep ${DUNE_MOD_NAME} ${ALL_DEPENDENCIES})
+
  # add previous module specific section
- foreach(_dep  ${ALL_DEPENDENCIES})
+ foreach(_dep ${ALL_DEPENDENCIES})
    foreach(_mod_conf_file ${${_dep}_PREFIX}/config.h.cmake
        ${${_dep}_PREFIX}/share/${_dep}/config.h.cmake)
      if(EXISTS ${_mod_conf_file})
