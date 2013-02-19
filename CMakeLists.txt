@@ -11,6 +11,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules")
 
 # include dune-common to include pathtest
 include_directories("${CMAKE_SOURCE_DIR}")
+link_directories("${CMAKE_SOURCE_DIR}")
+# set(RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib")
+# set(ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib")
+# set(LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib")
 
 # set required compiler flags for C++11 (former C++0x)
 find_package(CXX11Features)
@@ -30,7 +34,8 @@ set(HAVE_BOOST BOOST_FOUND)
 find_package(SharedPtr)
 
 # actually write the config.h file to disk
-configure_file(dune-common-config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/dune-common-config.h)
+configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+add_definitions(-DHAVE_CONFIG_H)
 
 # add subdirectories to execute CMakeLIsts.txt there
 add_subdirectory("dune")
