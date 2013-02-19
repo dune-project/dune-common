@@ -26,7 +26,6 @@ add_subdirectory("doc")
 add_subdirectory("cmake/modules")
 add_subdirectory("cmake/scripts")
 
-export(TARGETS dunecommon FILE DuneCommonTargets.cmake)
 # finalize the dune project, e.g. generating config.h etc.
 finalize_dune_project()
 include(CPack)
