@@ -60,25 +60,22 @@ MACRO (add_doxygen_target)
 
     # Use a cmake call to install the doxygen documentation and create a
     # target for it
-    file(GLOB doxygenfiles
-      GLOB ${CMAKE_CURRENT_BINARY_DIR}/html/*.html
-      ${CMAKE_CURRENT_BINARY_DIR}/html/*.png
-      ${CMAKE_CURRENT_BINARY_DIR}/html/*.css
-      ${CMAKE_CURRENT_BINARY_DIR}/html/*.gif)
-    set(doxygenfiles "${CMAKE_CURRENT_BINARY_DIR}/doxygen.log;${CMAKE_CURRENT_BINARY_DIR}/doxyerr.log;${doxygenfiles}")
-    set(install_doxygen_command ${CMAKE_COMMAND} -D FILES="${doxygenfiles}" -D DIR=${CMAKE_INSTALL_PREFIX}/share/doc/${DUNE_MOD_NAME}/doxygen  -P ${SCRIPT_DIR}/InstallFile.cmake)
-    add_custom_target(doxygen_install_${DUNE_MOD_NAME}
-      ${install_doxygen_command}
-      COMMENT "Installing doxygen documentation"
-      DEPENDS doxygen_${DUNE_MOD_NAME})
     include(GNUInstallDirs)
     # When installing call cmake install with the above install target
     install(CODE
-      "foreach(_file ${doxygenfiles})
+      "execute_process(COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target doxygen_${DUNE_MOD_NAME}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+      file(GLOB doxygenfiles
+        GLOB ${CMAKE_CURRENT_BINARY_DIR}/html/*.html
+        ${CMAKE_CURRENT_BINARY_DIR}/html/*.png
+        ${CMAKE_CURRENT_BINARY_DIR}/html/*.css
+        ${CMAKE_CURRENT_BINARY_DIR}/html/*.gif)
+      set(doxygenfiles \"${CMAKE_CURRENT_BINARY_DIR}/doxygen.log;${CMAKE_CURRENT_BINARY_DIR}/doxyerr.log;\${doxygenfiles}\")
+      foreach(_file \${doxygenfiles})
          get_filename_component(_basename \${_file} NAME)
          LIST(APPEND CMAKE_INSTALL_MANIFEST_FILES ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen/\${_basename})
        endforeach(_file in \${doxygenfiles})
-       file(INSTALL ${doxygenfiles} DESTINATION ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen)
+       file(INSTALL \${doxygenfiles} DESTINATION ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen)
        message(STATUS \"Installed doxyen into ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen\")")
   endif(DOXYGEN_FOUND)
 ENDMACRO (add_doxygen_target)
