@@ -118,7 +118,7 @@ class installer:
             else:
                 var=self.name
             if not self.name.startswith('noinst'):
-                s= s+"\ninstall("+self.install_prefix+" ${"+var+"} DESTINATION ${"+install_dir+"})"
+                s= s+"\ninstall("+self.install_prefix+" \"${"+var+"}\" DESTINATION ${"+install_dir+"})"
         return s
 
 class target_flags:
@@ -449,7 +449,7 @@ def am_2_cmake_string(amstring):
     if docs_present.found:
         s=s+''.join(['\n# Install documentation',
                      '\n# We assume that ${DOCFILES} and ${DOCFILES_EXTRA} are targets\n',
-                     'install(TARGETS ${DOCFILES} ${DOCFILES_EXTRA} DESTINATION ${docdir})\n'])
+                     'install(TARGETS \"${DOCFILES}\" ${DOCFILES_EXTRA} DESTINATION ${docdir})\n'])
 
     return s
 
@@ -708,7 +708,7 @@ def finalize_cmake_module(module_name):
     upper_name =re.sub('-(\S)', lambda m: m.group(1).capitalize(),
                        module_name.capitalize())
     name_wo_dasch=module_name.replace('-', '')
-    lines = ['\nmessage(AUTHOR_WARNING "TODO: Maybe uncomment export line"\n',
+    lines = ['\nmessage(AUTHOR_WARNING "TODO: Maybe uncomment export line")\n',
              '#export(TARGETS '+name_wo_dasch+' FILE '+upper_name+'Targets.cmake)\n',
              '# finalize the dune project, e.g. generating config.h etc.\n'
              'finalize_dune_project(GENERATE_CONFIG_H_CMAKE)\n']
@@ -770,7 +770,7 @@ def create_cmake_dirs_and_file(dirname, module_name):
     output.close()
     output=open(os.path.join(dirs['modules'], 'CMakeLists.txt'), 'w')
     lines=['file(GLOB modules *.cmake)\n'
-           'install(FILES ${modules} DESTINATION ${CMAKE_INSTALL_PREFIX}/share/cmake/modules)\n']
+           'install(FILES "${modules}" DESTINATION ${CMAKE_INSTALL_PREFIX}/share/cmake/modules)\n']
     output.write(''.join(lines))
     output.close()
     output=open(os.path.join(dirname, module_name+'-version.cmake.in'), 'w')
