@@ -1,7 +1,8 @@
 # Install some test headers, because they get used by tests in other modules
 install(FILES iteratortest.hh DESTINATION include/dune/common/test)
 
-set(TESTPROGS
+# tests that should build and run successfully
+set(TESTS
     arraylisttest
     arraytest
     bigunsignedinttest
@@ -38,19 +39,32 @@ set(TESTPROGS
     testfassign2
     testfassign3
     testfassign4
+    testfconstruct
+    tuplestest_config
+    tuplestest_dune
+    tuplestest_tr1
+    tupleutilitytest
+    utilitytest)
+
+#test that should build but fail to run successfully
+set(FAILTESTS
     testfassign_fail1
     testfassign_fail2
     testfassign_fail3
     testfassign_fail4
     testfassign_fail5
-    testfassign_fail6
-    testfconstruct
-    tuplestest_config
-    tuplestest_dune
-    tuplestest_std
-    tuplestest_tr1
-    tupleutilitytest
-    utilitytest)
+    testfassign_fail6)
+
+set(COMPILEFAILTESTS
+    check_fvector_size_fail1
+    check_fvector_size_fail2
+    genericiterator_compile_fail
+    nullptr-test-fail
+    static_assert_test_fail
+    testfconstruct_fail1
+    testfconstruct_fail2)
+
+set(TESTPROGS ${TESTS} ${FAILTESTS})
 
 # We do not want want to build the tests during make all,
 # but just build them on demand
@@ -80,6 +94,10 @@ add_executable("enumsettest" enumsettest.cc)
 
 add_executable("fassigntest" fassigntest.cc)
 target_link_libraries("fassigntest" "dunecommon")
+
+
+add_executable("float_cmp" float_cmp.cc)
+target_link_libraries("float_cmp" "dunecommon")
 
 # we provide an empty fortran file to force the linker
 # to link to the fortran libraries (needed for static linking)
@@ -184,86 +202,22 @@ add_executable("tupleutilitytest" tupleutilitytest.cc)
 add_executable("utilitytest" utilitytest.cc)
 
 # Add the tests to be executed
-add_test(arraylisttest                  arraylisttest)
-add_test(arraytest                      arraytest)
-add_test(bigunsignedinttest             bigunsignedinttest)
-add_test(bitsetvectortest               bitsetvectortest)
-add_test(check_fvector_size             check_fvector_size)
-add_test(conversiontest                 conversiontest)
-add_test(deprtuplestest                 deprtuplestest)
-add_test(dynmatrixtest                  dynmatrixtest)
-add_test(dynvectortest                  dynvectortest)
-add_test(enumsettest                    enumsettest)
-add_test(fmatrixtest                    fmatrixtest)
-add_test(fvectortest                    fvectortest)
-add_test(gcdlcmtest                     gcdlcmtest)
-add_test(iteratorfacadetest             iteratorfacadetest)
-add_test(iteratorfacadetest2            iteratorfacadetest2)
-add_test(lrutest                        lrutest)
-add_test(mpicollectivecommunication    mpicollectivecommunication)
-add_test(mpiguardtest                   mpiguardtest)
-add_test(mpihelpertest                  mpihelpertest)
-add_test(mpihelpertest2                 mpihelpertest2)
-add_test(nullptr_test                   nullptr_test)
-add_test(parametertreetest              parametertreetest)
-add_test(pathtest                       pathtest)
-add_test(poolallocatortest              poolallocatortest)
-add_test(shared_ptrtest_config          shared_ptrtest_config)
-add_test(shared_ptrtest_dune            shared_ptrtest_dune)
-add_test(singletontest                  singletontest)
-add_test(streamtest                     streamtest)
-add_test(testfassign1                   testfassign1)
-add_test(testfassign2                   testfassign2)
-add_test(testfassign3                   testfassign3)
-add_test(testfassign4                   testfassign4)
-add_test(test_stack                     test_stack)
-add_test(tuplestest_config              tuplestest_config)
-add_test(tuplestest_dune                tuplestest_dune)
-add_test(tuplestest_tr1                 tuplestest_tr1)
-add_test(tupleutilitytest               tupleutilitytest)
-add_test(utilitytest                    utilitytest)
-# failing tests
-add_test(testfassign_fail1              testfassign_fail1)
-add_test(testfassign_fail2              testfassign_fail2)
-add_test(testfassign_fail3              testfassign_fail3)
-add_test(testfassign_fail4              testfassign_fail4)
-add_test(testfassign_fail5              testfassign_fail5)
-add_test(testfassign_fail6              testfassign_fail6)
+foreach(_TEST ${TESTPROGS})
+  add_test(${_TEST} ${_TEST})
+endforeach(_TEST)
+
+#Set properties for failing tests
 set_tests_properties(
-  testfassign_fail1
-  testfassign_fail2
-  testfassign_fail3
-  testfassign_fail4
-  testfassign_fail5
-  testfassign_fail6
+  ${FAILTESTS}
   PROPERTIES WILL_FAIL true)
-# compile test
-add_test(NAME static_assert_test
-  COMMAND ${CMAKE_COMMAND} --build . --target static_assert_test --config $<CONFIGURATION>)
-add_test(NAME testfconstruct
-  COMMAND ${CMAKE_COMMAND} --build . --target testfconstruct --config $<CONFIGURATION>)
-# failing compile tests
-add_test(NAME genericiterator_compile_fail
-  COMMAND ${CMAKE_COMMAND} --build . --target genericiterator_compile_fail --config $<CONFIGURATION>)
-add_test(NAME check_fvector_size_fail1
-  COMMAND ${CMAKE_COMMAND} --build . --target check_fvector_size_fail1 --config $<CONFIGURATION>)
-add_test(NAME check_fvector_size_fail2
-  COMMAND ${CMAKE_COMMAND} --build . --target check_fvector_size_fail2 --config $<CONFIGURATION>)
-add_test(NAME nullptr_test_fail
-  COMMAND ${CMAKE_COMMAND} --build . --target nullptr_test_fail --config $<CONFIGURATION>)
-add_test(NAME static_assert_test_fail
-  COMMAND ${CMAKE_COMMAND} --build . --target static_assert_test_fail --config $<CONFIGURATION>)
-add_test(NAME testfconstruct_fail1
-  COMMAND ${CMAKE_COMMAND} --build . --target testfconstruct_fail1 --config $<CONFIGURATION>)
-add_test(NAME testfconstruct_fail2
-  COMMAND ${CMAKE_COMMAND} --build . --target testfconstruct_fail2 --config $<CONFIGURATION>)
+
+# compile tests that should fail
+foreach(_TEST ${COMPILEFAILTESTS})
+  add_test(NAME ${_TEST}
+  COMMAND ${CMAKE_COMMAND} --build . --target ${_TEST} --config $<CONFIGURATION>)
+endforeach(_TEST)
 set_tests_properties(
-  genericiterator_compile_fail
-  check_fvector_size_fail1
-  check_fvector_size_fail2
-  nullptr_test_fail
-  static_assert_test_fail
-  testfconstruct_fail1
-  testfconstruct_fail2
+  ${COMPILEFAILTESTS}
   PROPERTIES WILL_FAIL true)
+
 
