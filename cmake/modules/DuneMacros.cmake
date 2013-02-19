@@ -198,6 +198,9 @@ macro(dune_process_dependency_leafs modules versions is_required next_level_deps
     foreach(i RANGE 0 ${length})
       list(GET mmodules ${i} _mod)
       find_package(${_mod} ${REQUIRED})
+      if(${_mod}_MODULE_PATH)
+	list(APPEND CMAKE_MODULE_PATH ${${_mod}_MODULE_PATH})
+      endif(${_mod}_MODULE_PATH)
       set(${_mod}_SEARCHED ON)
       if(NOT "${is_required}" STREQUAL "")
 	set(${_mod}_REQUIRED ON)
@@ -261,10 +264,16 @@ macro(dune_create_dependency_tree)
     set(global_suggests ${SUGGESTS_MODULE})
     foreach(_mod ${DEPENDS_MODULE})
       find_package(${_mod} REQUIRED)
+      if(${_mod}_MODULE_PATH)
+	list(APPEND CMAKE_MODULE_PATH ${${_mod}_MODULE_PATH})
+      endif(${_mod}_MODULE_PATH)
       set(${_mod}_REQUIRED ON)
     endforeach(_mod ${DEPENDS_MODULE})
     foreach(_mod ${SUGGESTS_MODULE})
       find_package(${_mod})
+      if(${_mod}_MODULE_PATH)
+	list(APPEND CMAKE_MODULE_PATH ${${_mod}_MODULE_PATH})
+      endif(${_mod}_MODULE_PATH)
       set(${_mod}_REQUIRED ON)
     endforeach(_mod ${SUGGESTS_MODULE})
     dune_create_dependency_leafs("${DEPENDS_MODULE}" "${DEPENDS_VERSIONS}"
@@ -275,6 +284,7 @@ macro(dune_create_dependency_tree)
   # reverse ALL_DEPENDENCIES
   list(REVERSE ALL_DEPENDENCIES)
   list(REMOVE_DUPLICATES ALL_DEPENDENCIES)
+  list(REMOVE_DUPLICATES CMAKE_MODULE_PATH)
 endmacro(dune_create_dependency_tree _immediates)
 
 # Converts a module name given by _dune_module into a string _macro_name
@@ -461,6 +471,15 @@ macro(dune_project)
     message(STATUS "There are no tests for module ${DUNE_MOD_NAME}.")
   endif(_mod_cmake)
   include(GNUInstallDirs)
+  # Set variable where the cmake modules will be installed.
+  # Thus the user can override it and for example install
+  # directly into the CMake installation. This has to be an
+  # absolute path. Default: ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules
+  if(NOT DEFINED DUNE_INSTALL_MODULEDIR)
+    set(DUNE_INSTALL_MODULEDIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules
+      CACHE PATH
+      "Installation directory for CMake modules. Be careful when overriding this as the modules might not be found any more. Might be set to ${CMAKE_ROOT}/Modules or better \${CMAKE_ROOT}/Modules to make the modules available to all CMake runs. This has to be an absolute path. Default: \${CMAKE_INSTALL_PREFIX}/\${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules")
+  endif()
 endmacro(dune_project MODULE_DIR)
 
 # create a new config.h file and overwrite the existing one

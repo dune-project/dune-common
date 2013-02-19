@@ -1,2 +1,20 @@
-file(GLOB modules *.cmake)
-install(FILES ${modules} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules)
+set(modules DuneBoost.cmake
+  DuneCommonMacros.cmake
+  DuneDoc.cmake
+  DuneDoxygen.cmake
+  DuneMacros.cmake
+  DuneMPI.cmake
+  DunePkgConfig.cmake
+  DuneStreams.cmake
+  DuneTestMacros.cmake
+  DuneTests.cmake
+  FindBoostFusion.cmake
+  FindCXX11Features.cmake
+  FindGMP.cmake
+  FindInkscape.cmake
+  FindMETIS.cmake
+  FindParMETIS.cmake
+  FindSharedPtr.cmake
+  LanguageSupport.cmake
+  UseLATEX.cmake)
+install(FILES ${modules} DESTINATION ${DUNE_INSTALL_MODULEDIR})

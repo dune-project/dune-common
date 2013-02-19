@@ -405,13 +405,6 @@ run_default_configure () {
       else
         PARAMS="$PARAMS \"--with-$name=$path\""
       fi
-      if test -d "$path/cmake/modules/"; then
-	  CMAKE_MODULE_PATH="$CMAKE_MODULE_PATH;$path/cmake/modules/"
-      fi
-      if test -d "$path/share/cmake/modules/"; then
-          CMAKE_MODULE_PATH="$CMAKE_MODULE_PATH;$path/share/cmake/modules/"
-      fi
-      echo name="$name"
       if test "x$USE_CMAKE" = "xyes"; then
           if test -d "$path/$BUILDDIR"; then
 	      CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$path/$BUILDDIR\""
@@ -424,10 +417,6 @@ run_default_configure () {
           fi
       fi
     done
-
-    CMAKE_MODULE_PATH=`echo $CMAKE_MODULE_PATH| sed "s/^;//"`
-    echo "CMAKE_MODULE_PATH=$CMAKE_MODULE_PATH"
-    echo "CMAKE_PARAMS=$CMAKE_PARAMS"
 
     if test "x$HAVE_duneweb" == "xyes"; then
       PARAMS="$PARAMS \"--with-duneweb=$PATH_duneweb\""
