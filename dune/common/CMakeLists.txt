@@ -89,3 +89,7 @@ install(FILES
 	unused.hh
 	version.hh
 DESTINATION include/dune/common)
+
+# Install some test headers, because they get used by tests in other modules
+# We do this here as test will not be considered for make install
+install(FILES test/iteratortest.hh DESTINATION include/dune/common/test)

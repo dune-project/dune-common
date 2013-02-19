@@ -1,6 +1,3 @@
-# Install some test headers, because they get used by tests in other modules
-install(FILES iteratortest.hh DESTINATION include/dune/common/test)
-
 # tests that should build and run successfully
 set(TESTS
     arraylisttest
