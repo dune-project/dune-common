@@ -71,14 +71,14 @@ MACRO (add_doxygen_target)
       ${install_doxygen_command}
       COMMENT "Installing doxygen documentation"
       DEPENDS doxygen_${DUNE_MOD_NAME})
-
+    include(GNUInstallDirs)
     # When installing call cmake install with the above install target
     install(CODE
-      "include(GNUInstallDirs)
-       foreach(_file ${doxygenfiles})
+      "foreach(_file ${doxygenfiles})
          get_filename_component(_basename \${_file} NAME)
-         LIST(APPEND CMAKE_INSTALL_MANIFEST_FILES \${CMAKE_INSTALL_DOCDIR}/doxygen/\${_basename})
+         LIST(APPEND CMAKE_INSTALL_MANIFEST_FILES ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen/\${_basename})
        endforeach(_file in \${doxygenfiles})
-       file(INSTALL ${doxygenfiles} DESTINATION \${CMAKE_INSTALL_DOCDIR}/doxygen)")
+       file(INSTALL ${doxygenfiles} DESTINATION ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen)
+       message(STATUS \"Installed doxyen into ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen\")")
   endif(DOXYGEN_FOUND)
 ENDMACRO (add_doxygen_target)
