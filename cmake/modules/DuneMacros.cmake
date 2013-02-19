@@ -341,9 +341,11 @@ macro(dune_process_dependency_tree DEPENDS DVERSIONS SUGGESTS SVERSIONS)
       # Find the module
       #find_package(${_mod})
       # set includes
-      message(STATUS "Setting ${_mod}_INCLUDE_DIRS=${${_mod}_INCLUDE_DIRS}")
       dune_module_to_uppercase(_upper_case "${_mod}")
-      include_directories("${${_mod}_INCLUDE_DIRS}")
+      if(${_mod}_INCLUDE_DIRS)
+	message(STATUS "Setting ${_mod}_INCLUDE_DIRS=${${_mod}_INCLUDE_DIRS}")
+	include_directories("${${_mod}_INCLUDE_DIRS}")
+      endif(${_mod}_INCLUDE_DIRS)
       message(STATUS "Setting ${_mod}_LIBRARIES=${${_mod}_LIBRARIES}")
       if(${_mod}_LIBRARIES)
 	foreach(_lib ${${_mod}_LIBRARIES})
