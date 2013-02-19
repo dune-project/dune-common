@@ -186,9 +186,11 @@ macro(dune_project)
     # specific to this module
     dune_module_to_macro(_cmake_mod_name "${_mod}")
     set(_macro "${_cmake_mod_name}Macros")
+    set(_mod_cmake _mod_cmake-NOTFOUND) # Prevent false positives due to caching
     find_file(_mod_cmake ${_macro}.cmake ${CMAKE_MODULE_PATH}
       NO_DEFAULT_PATH)
     if(_mod_cmake)
+      message(STATUS "Performing tests specific to ${DUNE_MOD_NAME} from file ${_mod_cmake}.")
       include(${_mod_cmake})
     endif(_mod_cmake)
     # Find the module
@@ -196,28 +198,27 @@ macro(dune_project)
     # set includes
     dune_module_to_uppercase(_upper_case "${_mod}")
     include_directories("${${_upper_case}_INCLUDE_DIRS}")
-    message("${_upper_case}_LIBS=${${_upper_case}_LIBS}")
+    message(STATUS "Setting ${_upper_case}_LIBS=${${_upper_case}_LIBS}")
     if(${_upper_case}_LIBS)
       foreach(_lib ${${_upper_case}_LIBS})
-	message("_lib=${_lib}")
 	list(APPEND DUNE_DEFAULT_LIBS "${_lib}")
       endforeach(_lib ${${_upper_case}_LIBS})
-      message("DUNE_DEFAULT_LIBS=${DUNE_DEFAULT_LIBS}")
     endif(${_upper_case}_LIBS)
   endforeach(_mod DEPENDENCY_TREE)
 
-  # Search for a cmake files containing tests and directives
+  # Search for cmake files containing tests and directives
   # specific to this module
   dune_module_to_macro(_macro ${DUNE_MOD_NAME})
   set(DUNE_MOD_NAME_CMAKE "${_macro}")
   set(_macro "${_macro}Macros")
+  set(_mod_cmake _mod_cmake-NOTFOUND)  # Prevent false positives due to caching
   find_file(_mod_cmake ${_macro}.cmake ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake/modules NO_DEFAULT_PATH)
-
   if(_mod_cmake)
+    message(STATUS " Performing tests specific to ${DUNE_MOD_NAME} from file ${_mod_cmake}.")
     include(${_mod_cmake})
   else(_mod_cmake)
-    message("There are no tests for module ${DUNE_MOD_NAME}.")
+    message(STATUS "There are no tests for module ${DUNE_MOD_NAME}.")
   endif(_mod_cmake)
 endmacro(dune_project MODULE_DIR)
 
