@@ -3,10 +3,10 @@ macro(dune_module_information MODULE_DIR)
   file(READ "${MODULE_DIR}/dune.module" DUNE_MODULE)
 
   # find version string
-  string(REGEX REPLACE ".*Version:[ ]*([^ \n]+).*" "\\1" DUNE_VERSION_STRING "${DUNE_MODULE}")
-  string(REGEX REPLACE "([0-9]).*" "\\1" DUNE_VERSION_MAJOR "${DUNE_VERSION_STRING}")
-  string(REGEX REPLACE "[0-9]*\\.([0-9]).*" "\\1" DUNE_VERSION_MINOR "${DUNE_VERSION_STRING}")
-  string(REGEX REPLACE "[0-9]*\\.[0-9]*\\.([0-9]).*" "\\1" DUNE_VERSION_REVISION "${DUNE_VERSION_STRING}")
+  string(REGEX REPLACE ".*Version:[ ]*([^ \n]+).*" "\\1" DUNE_MOD_VERSION "${DUNE_MODULE}")
+  string(REGEX REPLACE "([0-9]).*" "\\1" DUNE_VERSION_MAJOR "${DUNE_MOD_VERSION}")
+  string(REGEX REPLACE "[0-9]*\\.([0-9]).*" "\\1" DUNE_VERSION_MINOR "${DUNE_MOD_VERSION}")
+  string(REGEX REPLACE "[0-9]*\\.[0-9]*\\.([0-9]).*" "\\1" DUNE_VERSION_REVISION "${DUNE_MOD_VERSION}")
 
   # remove false matches in version string
   string(REGEX MATCH "[^0-9]" NON_NUMBER_CHARACTER "${DUNE_VERSION_MINOR}")
@@ -19,6 +19,6 @@ macro(dune_module_information MODULE_DIR)
   endif(NON_NUMBER_CHARACTER)
 
   # find strings for module name, maintainer
-  string(REGEX REPLACE ".*Module:[ ]*([^ \n]+).*" "\\1" DUNE_MODULE_NAME "${DUNE_MODULE}")
+  string(REGEX REPLACE ".*Module:[ ]*([^ \n]+).*" "\\1" DUNE_MOD_NAME "${DUNE_MODULE}")
   string(REGEX REPLACE ".*Maintainer:[ ]*([^ \n]+).*" "\\1" DUNE_MAINTAINER "${DUNE_MODULE}")
 endmacro(dune_module_information)
