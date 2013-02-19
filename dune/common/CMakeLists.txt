@@ -12,8 +12,8 @@ add_library("dunecommon"
 	stdstreams.cc)
 target_link_libraries("dunecommon" ${LAPACK_LIBRARIES})
 
-install(TARGETS dunecommon  EXPORT dune-common-targets DESTINATION lib)
-install(EXPORT dune-common-targets
+install(TARGETS dunecommon  EXPORT DuneCommonTargets DESTINATION lib)
+install(EXPORT DuneCommonTargets
   DESTINATION lib/cmake)
 # build the library in lib
 set_target_properties(dunecommon PROPERTIES

@@ -1,0 +1,15 @@
+#compute installation prefix relative to this file
+get_filename_component(_dir "${CMAKE_CURRENT_LIST_FILE}" PATH)
+get_filename_component(_prefix "${_dir}/../.." ABSOLUTE)
+
+#import the target
+include("${_prefix}/lib/cmake/@DUNE_MOD_NAME_CMAKE@Targets.cmake")
+
+#report other information
+set(@DUNE_MOD_NAME_UPPERCASE@_PREFIX "${_prefix}")
+set(@DUNE_MOD_NAME_UPPERCASE@_INCLUDE_DIRS "${_prefix}/include")
+set(@DUNE_MOD_NAME_UPPERCASE@_CXX_FLAGS "@CMAKE_CXX_FLAGS@")
+set(@DUNE_MOD_NAME_UPPERCASE@_CXX_FLAGS_DEBUG "@CMAKE_CXX_FLAGS_DEBUG@")
+set(@DUNE_MOD_NAME_UPPERCASE@_CXX_FLAGS_MINSIZEREL "@CMAKE_CXX_FLAGS_MINSIZEREL@")
+set(@DUNE_MOD_NAME_UPPERCASE@_CXX_FLAGS_RELEASE "@CMAKE_CXX_FLAGS_RELEASE@")
+set(@DUNE_MOD_NAME_UPPERCASE@_CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@")
