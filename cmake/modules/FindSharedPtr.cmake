@@ -6,6 +6,8 @@ macro(CHECK_MAKE_SHARED)
     CHECK_INCLUDE_FILE_CXX("boost/make_shared.hpp" HAVE_BOOST_MAKE_SHARED_HPP)
   endif(SHARED_PTR_NAMESPACE EQUAL "boost")
 
+  CHECK_INCLUDE_FILE_CXX("boost/shared_ptr.hpp" HAVE_BOOST_SHARED_PTR_HPP)
+
   CHECK_CXX_SOURCE_COMPILES("
     #if defined(HAVE_MEMORY)
     # include <memory>
