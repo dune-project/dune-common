@@ -424,10 +424,10 @@ run_default_configure () {
     if test "x$LOCAL_USE_CMAKE" = "xyes"; then
       test -d "$BUILDDIR" || mkdir "$BUILDDIR"
       SRCDIR="$PWD"
-      pushd "$BUILDDIR"
-      echo "cmake -DCMAKE_MODULE_PATH=$CMAKE_MODULE_PATH $CMAKE_PARAMS $SRCDIR"
-      eval cmake "-DCMAKE_MODULE_PATH=$CMAKE_MODULE_PATH $CMAKE_PARAMS $SRCDIR"
-      popd
+      cd "$BUILDDIR"
+      echo `pwd`
+      echo "cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=$CMAKE_MODULE_PATH $CMAKE_PARAMS $SRCDIR"
+      eval cmake "-DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=$CMAKE_MODULE_PATH $CMAKE_PARAMS $SRCDIR"
     else
       echo ./configure "$PARAMS"
       # create build directory of requested
