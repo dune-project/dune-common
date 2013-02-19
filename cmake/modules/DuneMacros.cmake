@@ -1,3 +1,5 @@
+enable_language(C) # Enable C to skip CXX bindings for some tests.
+
 # Converts a module name given by _module into an uppercase string
 # _upper where all dashes (-) are replaced by underscores (_)
 # Example: dune-common -> DUNE_COMMON
