@@ -30,7 +30,6 @@ set(TESTS
     singletontest
     static_assert_test
     streamtest
-    test_stack
     testfassign1
     testfassign2
     testfassign3
@@ -186,8 +185,6 @@ target_link_libraries(testfconstruct_fail1 "dunecommon")
 add_executable("testfconstruct_fail2" EXCLUDE_FROM_ALL testfconstruct.cc)
 set_target_properties(testfconstruct_fail2 PROPERTIES COMPILE_FLAGS "-DFVSIZE=5")
 target_link_libraries(testfconstruct_fail2 "dunecommon")
-add_executable("test_stack" test-stack.cc)
-target_link_libraries("test_stack" "dunecommon")
 add_executable("tuplestest_config" tuplestest.cc)
 add_executable("tuplestest_dune" tuplestest.cc)
 set_target_properties(tuplestest_dune PROPERTIES COMPILE_FLAGS "-DDISABLE_TR1_TUPLE -DDISABLE_STD_TUPLE")
