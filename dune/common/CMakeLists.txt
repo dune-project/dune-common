@@ -10,6 +10,8 @@ add_library("dunecommon"
 	parametertreeparser.cc
 	path.cc
 	stdstreams.cc)
+target_link_libraries("dunecommon" ${LAPACK_LIBRARIES})
+
 install(TARGETS dunecommon  EXPORT dune-common-targets DESTINATION lib)
 install(EXPORT dune-common-targets
   DESTINATION lib/cmake)
