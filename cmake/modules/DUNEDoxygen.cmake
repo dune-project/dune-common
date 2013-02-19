@@ -31,8 +31,10 @@ MACRO (add_doxygen_target)
     prepare_doxyfile()
     # A custom command that exectutes doxygen
     add_custom_command(OUTPUT html COMMAND
-      ${DOXYGEN_EXECUTABLE} Doxyfile
-      COMMENT "Running doxygen documentation" DEPENDS Doxyfile)
+      #${DOXYGEN_EXECUTABLE} Doxyfile
+      ${CMAKE_COMMAND} -D DOXYGEN_EXECUTABLE=${DOXYGEN_EXECUTABLE} -P ${CMAKE_SOURCE_DIR}/cmake/scripts/RunDoxygen.cmake
+      COMMENT "Running doxygen documentation. This may take a while"
+      DEPENDS Doxyfile)
     # Create a target for building the doxygen documentation of a module,
     # that is run during make doc.
     add_custom_target(doxygen_${DUNE_MOD_NAME} DEPENDS html)
@@ -41,7 +43,7 @@ MACRO (add_doxygen_target)
     # Use a cmake call to install the doxygen documentation and create a target for it
     file(GLOB doxygenfiles GLOB ${CMAKE_CURRENT_BINARY_DIR}/html/*.html ${CMAKE_CURRENT_BINARY_DIR}/html/*.png ${CMAKE_CURRENT_BINARY_DIR}/html/*.css ${CMAKE_CURRENT_BINARY_DIR}/html/*.gif)
 
-    set(doxygenfiles "${CMAKE_CURRENT_BINARY_DIR}/doxyerr.log;${doxygenfiles}")
+    set(doxygenfiles "${CMAKE_CURRENT_BINARY_DIR}/doxygen.log;${CMAKE_CURRENT_BINARY_DIR}/doxyerr.log;${doxygenfiles}")
     set(install_doxygen_command ${CMAKE_COMMAND} -D FILES="${doxygenfiles}" -D DIR=${CMAKE_INSTALL_PREFIX}/share/doc/${DUNE_MOD_NAME}/doxygen  -P ${CMAKE_SOURCE_DIR}/cmake/scripts/InstallFile.cmake)
     add_custom_target(doxygen_install_${DUNE_MOD_NAME}
       ${install_doxygen_command}
