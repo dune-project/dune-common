@@ -59,9 +59,9 @@ function(inkscape_generate_eps_from_svg)
       COMMAND ${INKSCAPE} --export-dpi=${INKSCAPE_DPI} -e ${input} ${CMAKE_CURRENT_SOURCE_DIR}/${svginput}
       COMMENT "Generating ${INKSCAPE_OUTPUT_DIR}/${svginput} from ${CMAKE_CURRENT_SOURCE_DIR}/${input}")
     add_custom_command(OUTPUT ${_pic}
-      COMMAND ${CONVERT} ${INKSCAPE_INPUT_DIR}/${input} EPS:${_pic}
+      COMMAND ${CONVERT} ${INKSCAPE_OUTPUT_DIR}/${input} EPS:${_pic}
       DEPENDS ${input}
-      COMMENT "Converting ${INKSCAPE_INPUT_DIR}/${input} to ${INKSCAPE_OUTPUT_DIR}/${_pic}"
+      COMMENT "Converting ${INKSCAPE_OUTPUT_DIR}/${input} to ${INKSCAPE_OUTPUT_DIR}/${_pic}"
       WORKING_DIRECTORY  ${INKSCAPE_OUTPUT_DIR})
   endforeach(_pic ${INKSCAPE_UNPARSED_ARGUMENTS})
 endfunction(inkscape_generate_eps_from_svg)
