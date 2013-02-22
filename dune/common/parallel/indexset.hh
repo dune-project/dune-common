@@ -313,7 +313,10 @@ namespace Dune
      * @brief Get the state the index set is in.
      * @return The state of the index set.
      */
-    inline const ParallelIndexSetState& state();
+    inline const ParallelIndexSetState& state()
+    {
+      return state_;
+    }
 
     /**
      * @brief Indicate that the index set is to be resized.
