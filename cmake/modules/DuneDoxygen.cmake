@@ -47,16 +47,24 @@ MACRO (add_doxygen_target)
       set(DOXYSTYLE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/Doxystyle)
     endif("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
     message(STATUS "Using scripts from ${SCRIPT_DIR} for creating doxygen stuff.")
-    prepare_doxyfile()
-    # A custom command that exectutes doxygen
-    add_custom_command(OUTPUT html COMMAND
-      ${CMAKE_COMMAND} -D DOXYGEN_EXECUTABLE=${DOXYGEN_EXECUTABLE} -P ${SCRIPT_DIR}/RunDoxygen.cmake
-      COMMENT "Running doxygen documentation. This may take a while"
-      DEPENDS Doxyfile)
-    # Create a target for building the doxygen documentation of a module,
-    # that is run during make doc.
-    add_custom_target(doxygen_${DUNE_MOD_NAME} DEPENDS html)
-    add_dependencies(doc doxygen_${DUNE_MOD_NAME})
+    set(_src_file _src_file-NOTFOUND)
+    find_file(_src_file index.html ${CMAKE_CURRENT_SOURCE_DIR}/html)
+    if(_src_file)
+      set(_src_dir ${CMAKE_CURRENT_SOURCE_DIR}/html)
+      add_custom_target(doxygen_${DUNE_MOD_NAME})
+    else(_src_file)
+      prepare_doxyfile()
+      # A custom command that exectutes doxygen
+      add_custom_command(OUTPUT html COMMAND
+	${CMAKE_COMMAND} -D DOXYGEN_EXECUTABLE=${DOXYGEN_EXECUTABLE} -P ${SCRIPT_DIR}/RunDoxygen.cmake
+	COMMENT "Running doxygen documentation. This may take a while"
+	DEPENDS Doxyfile)
+      # Create a target for building the doxygen documentation of a module,
+      # that is run during make doc.
+      add_custom_target(doxygen_${DUNE_MOD_NAME} DEPENDS html)
+      add_dependencies(doc doxygen_${DUNE_MOD_NAME})
+      set(_src_dir ${CMAKE_CURRENT_BINARY_DIR})
+    endif(_src_file)
 
     # Use a cmake call to install the doxygen documentation and create a
     # target for it
@@ -66,11 +74,11 @@ MACRO (add_doxygen_target)
       "execute_process(COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target doxygen_${DUNE_MOD_NAME}
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
       file(GLOB doxygenfiles
-        GLOB ${CMAKE_CURRENT_BINARY_DIR}/html/*.html
-        ${CMAKE_CURRENT_BINARY_DIR}/html/*.png
-        ${CMAKE_CURRENT_BINARY_DIR}/html/*.css
-        ${CMAKE_CURRENT_BINARY_DIR}/html/*.gif)
-      set(doxygenfiles \"${CMAKE_CURRENT_BINARY_DIR}/doxygen.log;${CMAKE_CURRENT_BINARY_DIR}/doxyerr.log;\${doxygenfiles}\")
+        GLOB ${_src_dir}/html/*.html
+        ${_src_dir}/html/*.png
+        ${_src_dir}/html/*.css
+        ${_src_dir}/html/*.gif)
+      set(doxygenfiles \"\${doxygenfiles}\")
       foreach(_file \${doxygenfiles})
          get_filename_component(_basename \${_file} NAME)
          LIST(APPEND CMAKE_INSTALL_MANIFEST_FILES ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen/\${_basename})
