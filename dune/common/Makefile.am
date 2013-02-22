@@ -38,6 +38,7 @@ commoninclude_HEADERS = 			\
 	dotproduct.hh				\
 	dynmatrix.hh				\
 	dynvector.hh				\
+        dynmatrixev.hh                          \
 	enumset.hh				\
 	exceptions.hh				\
 	fassign.hh				\
