@@ -5,7 +5,8 @@
 AC_DEFUN([DUNE_CHECKDEPRECATED],[
     AC_CACHE_CHECK([for __attribute__((deprecated))], dune_cv_attribute_deprecated, [
         AC_LANG_PUSH([C++])
-        AC_TRY_COMPILE([#define DEP __attribute__((deprecated))
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+                    #define DEP __attribute__((deprecated))
                     class bar { bar() DEP; };
                     class peng { } DEP;
                     template <class T>
@@ -13,7 +14,9 @@ AC_DEFUN([DUNE_CHECKDEPRECATED],[
                     template <class T>
                     class t_peng { t_peng() {}; } DEP;
                     void foo() DEP;
-                    void foo() {};],[],
+                    void foo() {};
+                  ]],
+                  [])],
              dune_cv_attribute_deprecated="yes",
              dune_cv_attribute_deprecated="no")
         AC_LANG_POP([C++])
@@ -22,7 +25,8 @@ AC_DEFUN([DUNE_CHECKDEPRECATED],[
     AC_CACHE_CHECK([for __attribute__((deprecated("message")))], 
         dune_cv_attribute_deprecated_message, [
         AC_LANG_PUSH([C++])
-        AC_TRY_COMPILE([#define DEP __attribute__((deprecated("fireworks!")))
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+                    #define DEP __attribute__((deprecated("fireworks!")))
                     class bar { bar() DEP; };
                     class peng { } DEP;
                     template <class T>
@@ -30,7 +34,9 @@ AC_DEFUN([DUNE_CHECKDEPRECATED],[
                     template <class T>
                     class t_peng { t_peng() {}; } DEP;
                     void foo() DEP;
-                    void foo() {};],[],
+                    void foo() {};
+                  ]],
+                  [])],
             dune_cv_attribute_deprecated_message="yes",
             dune_cv_attribute_deprecated_message="no")
         AC_LANG_POP([C++])
