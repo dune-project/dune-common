@@ -6,9 +6,8 @@ AC_DEFUN([DUNE_CHECKUNUSED],[
         AC_TRY_COMPILE([#define UNUSED __attribute__((unused))],
                        [void f(int a UNUSED, int UNUSED)
                         {
-                          int b UNUSED;
+                          int UNUSED b;
                         }],
-                        [],
                         dune_cv_attribute_unused="yes",
                         dune_cv_attribute_unused="no")
         AC_LANG_POP([C++])
