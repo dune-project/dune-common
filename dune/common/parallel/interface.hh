@@ -360,7 +360,6 @@ namespace Dune
     // Allocate the memory for the data type construction.
     typedef R RemoteIndices;
     typedef typename RemoteIndices::RemoteIndexMap::const_iterator const_iterator;
-    typedef typename RemoteIndices::ParallelIndexSet::const_iterator LocalIterator;
 
     const const_iterator end=remoteIndices.end();
 
