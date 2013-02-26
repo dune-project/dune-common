@@ -3,17 +3,18 @@
 AC_DEFUN([DUNE_CHECK_CXA_DEMANGLE],[
     AC_CACHE_CHECK([for abi::__cxa_demangle], dune_cv_cxa_demangle, [
         AC_LANG_PUSH([C++])
-        AC_TRY_COMPILE([
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
     #include <cxxabi.h>
-],
-[
+            ]],
+            [[
     int foobar = 0;
     const char *foo = typeid(foobar).name();
     int status;
     char *demangled = abi::__cxa_demangle( foo, 0, 0, &status );
-],
-                        dune_cv_cxa_demangle="yes",
-                        dune_cv_cxa_demangle="no")
+            ]]
+          )],
+          dune_cv_cxa_demangle="yes",
+          dune_cv_cxa_demangle="no")
         AC_LANG_POP([C++])
     ])
 

@@ -74,20 +74,30 @@ if test x = x"$MPILIBS"; then
 	AC_CHECK_LIB(mpich, MPI_Init, [MPILIBS="-lmpich"])
 fi
 
-dnl We have to use AC_TRY_COMPILE and not AC_CHECK_HEADER because the
+dnl We have to use AC_COMPILE_IFELSE and not AC_CHECK_HEADER because the
 dnl latter uses $CPP, not $CC (which may be mpicc).
 AC_LANG_CASE([C], [if test x != x"$MPILIBS"; then
 	AC_MSG_CHECKING([for mpi.h])
 	export LAMMPICC="$acx_mpi_save_CC"
-	AC_TRY_COMPILE([#include <mpi.h>],[],[AC_MSG_RESULT(yes)], [MPILIBS=""
-		AC_MSG_RESULT(no)])
+	AC_COMPILE_IFELSE([
+		AC_LANG_PROGRAM([[
+			#include <mpi.h>
+		]], [])],
+		AC_MSG_RESULT(yes),
+		[MPILIBS=""
+			AC_MSG_RESULT(no)])
 	unset LAMMPICC
 fi],
 [C++], [if test x != x"$MPILIBS"; then
 	AC_MSG_CHECKING([for mpi.h])
 	export LAMMPICXX="$acx_mpi_save_CXX"
-	AC_TRY_COMPILE([#include <mpi.h>],[],[AC_MSG_RESULT(yes)], [MPILIBS=""
-		AC_MSG_RESULT(no)])
+	AC_COMPILE_IFELSE([
+		AC_LANG_PROGRAM([[
+			#include <mpi.h>
+		]], [])],
+		AC_MSG_RESULT(yes),
+		[MPILIBS=""
+			AC_MSG_RESULT(no)])
 	unset LAMMPICXX
 fi])
 
