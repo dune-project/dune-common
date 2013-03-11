@@ -82,11 +82,19 @@ MACRO(dune_add_latex_document tex_file)
   string(REGEX REPLACE "(.+).tex" "\\1.pdf" file ${tex_file})
   string(REGEX REPLACE "/" "_" "${CMAKE_CURRENT_SOURCE_DIR}/${file}" filevar ${file})
   set(filevar "filevar-NOTFOUND")
-  find_file(filevar ${file} ${CMAKE_CURRENT_SOURCE_DIR})
-  if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR} OR NOT filevar)
+  find_file(filevar ${tex_file} ${CMAKE_CURRENT_SOURCE_DIR})
+  message(filevar=${filevar} tex_file=${tex_file} CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR})
+  if(filevar)
     # add rule to create latex document
-    dune_add_latex_document(tex_file ${ARGN})
-  endif(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR} OR NOT filevar)
+    add_latex_document(${tex_file} ${ARGN})
+  else(filevar)
+    # Check for the pdf file
+    set(pdffilevar "pdffilevar-NOTFOUND")
+    find_file(pdffilevar ${file} ${CMAKE_CURRENT_SOURCE_DIR})
+    if(NOT pdffilevar)
+      message(SEND_ERROR "No tex source ${filevar} and no generated ${pdffilevar} found!")
+    endif(NOT pdffilevar)
+  endif(filevar)
 ENDMACRO(dune_add_latex_document tex_file)
 
 # Support building documentation with doxygen.
