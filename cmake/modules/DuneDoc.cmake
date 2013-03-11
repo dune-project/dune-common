@@ -15,6 +15,7 @@
 # If DEPENDENCY is specified, this is a dependency for
 # the installation. Otherwise FILENAME becomes the dependency
 #
+# dune_add_latex_document()
 
 FIND_PACKAGE(LATEX)
 FIND_PROGRAM(IMAGEMAGICK_CONVERT convert
@@ -50,7 +51,14 @@ add_custom_target(doc)
 MACRO(create_doc_install filename targetdir)
   dune_common_script_dir(SCRIPT_DIR)
   get_filename_component(targetfile ${filename} NAME)
-  set(install_command ${CMAKE_COMMAND} -D FILES=${filename} -D DIR=${CMAKE_INSTALL_PREFIX}/${targetdir} -P ${SCRIPT_DIR}/InstallFile.cmake)
+  # The doc file might be in CMAKE_CURRENT_<SOURCE|BINARY>_DIR
+  # Depending on whether this is a tarball or not
+  set(_src_file _src_file-NOTFOUND)
+  find_file(_src_file ${targetfile} ${CMAKE_CURRENT_SOURCE_DIR})
+  if(NOT _src_file)
+    set(_src_file ${filename})
+  endif(NOT _src_file)
+  set(install_command ${CMAKE_COMMAND} -D FILES=${_src_file} -D DIR=${CMAKE_INSTALL_PREFIX}/${targetdir} -P ${SCRIPT_DIR}/InstallFile.cmake)
   # create a custom target for the installation
   if("${ARGC}" EQUAL "3")
     set(_depends ${ARGV2})
@@ -64,6 +72,21 @@ MACRO(create_doc_install filename targetdir)
   install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" --build \"${CMAKE_BINARY_DIR}\" --target install_${targetfile} )
             LIST(APPEND CMAKE_INSTALL_MANIFEST_FILES ${CMAKE_INSTALL_PREFIX}/${targetdir}/${targetfile})")
 ENDMACRO(create_doc_install)
+
+
+MACRO(dune_add_latex_document tex_file)
+  # We assume that we always generate a PDF file.
+  # If the corresponding pdf file already exists in the source tree
+  # we do not add a rule to build it.
+  string(REGEX REPLACE "(.+).tex" "\\1.pdf" file ${tex_file})
+  string(REGEX REPLACE "/" "_" "${CMAKE_CURRENT_SOURCE_DIR}/${file}" filevar ${file})
+  set(filevar "filevar-NOTFOUND")
+  find_file(filevar ${file} ${CMAKE_CURRENT_SOURCE_DIR})
+  if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR} OR NOT filevar)
+    # add rule to create latex document
+    dune_add_latex_document(tex_file ${ARGN})
+  endif(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR} OR NOT filevar)
+ENDMACRO(dune_add_latex_document tex_file)
 
 # Support building documentation with doxygen.
 include(DuneDoxygen)
