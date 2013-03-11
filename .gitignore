@@ -8,7 +8,6 @@ config.h
 config.lt   
 config.sub
 configure
-configure
 aclocal.m4
 autom4te.cache
 depcomp

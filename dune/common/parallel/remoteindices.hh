@@ -293,7 +293,6 @@ namespace Dune {
     template<typename C>
     void setNeighbours(const C& neighbours)
     {
-      typedef typename C::const_iterator Iter;
       neighbourIds.clear();
       neighbourIds.insert(neighbours.begin(), neighbours.end());
 
@@ -1715,7 +1714,6 @@ namespace Dune {
   CollectiveIterator<T,A>::CollectiveIterator(const RemoteIndexMap& pmap, bool send)
   {
     typedef typename RemoteIndexMap::const_iterator const_iterator;
-    typedef typename RemoteIndexMap::iterator iterator;
 
     const const_iterator end=pmap.end();
     for(const_iterator process=pmap.begin(); process != end; ++process) {
