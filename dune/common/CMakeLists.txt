@@ -49,6 +49,8 @@ install(FILES
         function.hh
         fvector.hh
         gcd.hh
+	geometrytype.hh
+	geometrytypeindex.hh
         genericiterator.hh
         gmpfield.hh
         indent.hh
