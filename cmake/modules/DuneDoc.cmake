@@ -85,8 +85,12 @@ MACRO(dune_add_latex_document tex_file)
   find_file(filevar ${tex_file} ${CMAKE_CURRENT_SOURCE_DIR})
   message(filevar=${filevar} tex_file=${tex_file} CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR})
   if(filevar)
-    # add rule to create latex document
-    add_latex_document(${tex_file} ${ARGN})
+    if(LATEX_USABLE)
+      # add rule to create latex document
+      add_latex_document(${tex_file} ${ARGN})
+    else(LATEX_USABLE)
+      message(WARNING "Not adding rule to create ${file} as LaTEX is not usable!")
+    endif(LATEX_USABLE)
   else(filevar)
     # Check for the pdf file
     set(pdffilevar "pdffilevar-NOTFOUND")
