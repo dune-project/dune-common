@@ -8,6 +8,7 @@ MPIPROGRAMS = indexset poosc08 poosc08_test
 check_PROGRAMS = $(MPIPROGRAMS)
 # list of tests to run (indicestest is special case)
 TESTS = $(MPIPROGRAMS)
+EXTRA_DIST = CMakeLists.txt
 
 if BUILD_DOCS
   DOCFILES = communication.pdf
