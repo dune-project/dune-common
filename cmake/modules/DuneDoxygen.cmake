@@ -7,7 +7,7 @@
 # This macro creates a target for building (doxygen_${DUNE_MOD_NAME}) and installing
 # (doxygen_install_${DUNE_MOD_NAME}) the generated doxygen documentation.
 # The documentation is built during the top-level make doc call. We have added a dependency
-# that make sure it is built before running make install.
+# that makes sure it is built before running make install.
 #
 #
 FIND_PACKAGE(Doxygen)
@@ -41,18 +41,18 @@ ENDMACRO (prepare_doxyfile)
 # The documentation is built during the top-level make doc call. We have added a dependency
 # that make sure it is built before running make install.
 MACRO (add_doxygen_target)
-  if(DOXYGEN_FOUND)
-    dune_common_script_dir(SCRIPT_DIR)
-    if("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-      set(DOXYSTYLE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/Doxystyle)
-    endif("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-    message(STATUS "Using scripts from ${SCRIPT_DIR} for creating doxygen stuff.")
-    set(_src_file _src_file-NOTFOUND)
-    find_file(_src_file index.html ${CMAKE_CURRENT_SOURCE_DIR}/html)
-    if(_src_file)
-      set(_src_dir ${CMAKE_CURRENT_SOURCE_DIR}/html)
-      add_custom_target(doxygen_${DUNE_MOD_NAME})
-    else(_src_file)
+  dune_common_script_dir(SCRIPT_DIR)
+  if("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
+    set(DOXYSTYLE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/Doxystyle)
+  endif("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
+  message(STATUS "Using scripts from ${SCRIPT_DIR} for creating doxygen stuff.")
+  set(_src_file _src_file-NOTFOUND)
+  find_file(_src_file index.html ${CMAKE_CURRENT_SOURCE_DIR}/html)
+  if(_src_file)
+    set(_src_dir ${CMAKE_CURRENT_SOURCE_DIR})
+    add_custom_target(doxygen_${DUNE_MOD_NAME})
+  else(_src_file)
+    if(DOXYGEN_FOUND)
       prepare_doxyfile()
       # A custom command that exectutes doxygen
       add_custom_command(OUTPUT html COMMAND
@@ -63,15 +63,16 @@ MACRO (add_doxygen_target)
       # that is run during make doc.
       add_custom_target(doxygen_${DUNE_MOD_NAME} DEPENDS html)
       add_dependencies(doc doxygen_${DUNE_MOD_NAME})
-      set(_src_dir ${CMAKE_CURRENT_BINARY_DIR})
-    endif(_src_file)
+    endif(DOXYGEN_FOUND)
+    set(_src_dir ${CMAKE_CURRENT_BINARY_DIR})
+  endif(_src_file)
 
-    # Use a cmake call to install the doxygen documentation and create a
-    # target for it
-    include(GNUInstallDirs)
-    # When installing call cmake install with the above install target
-    install(CODE
-      "execute_process(COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target doxygen_${DUNE_MOD_NAME}
+  # Use a cmake call to install the doxygen documentation and create a
+  # target for it
+  include(GNUInstallDirs)
+  # When installing call cmake install with the above install target
+  install(CODE
+    "execute_process(COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target doxygen_${DUNE_MOD_NAME}
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
       file(GLOB doxygenfiles
         GLOB ${_src_dir}/html/*.html
@@ -84,6 +85,6 @@ MACRO (add_doxygen_target)
          LIST(APPEND CMAKE_INSTALL_MANIFEST_FILES ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen/\${_basename})
        endforeach(_file in \${doxygenfiles})
        file(INSTALL \${doxygenfiles} DESTINATION ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen)
-       message(STATUS \"Installed doxyen into ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen\")")
-  endif(DOXYGEN_FOUND)
+       message(STATUS \"Installed doxygen into ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen\")")
+
 ENDMACRO (add_doxygen_target)
