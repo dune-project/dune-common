@@ -186,12 +186,12 @@ namespace Dune
       /** @brief Constructor from existing Pointer with custom deleter. */
       SharedCountImpl(T* elem,const Deleter& deleter) :
         SharedCount(),
-        rep_(elem),
-        deleter_(deleter)
+        deleter_(deleter),
+        rep_(elem)
       {}
       /** @brief Copy constructor with type conversion. */
       SharedCountImpl(const SharedCountImpl& rep)
-        : SharedCount(rep), deleter_(rep.deleter_) {}
+        : SharedCount(rep), deleter_(rep.deleter_), rep_(rep.rep_) {}
       /** @brief Destructor, deletes element_type* rep_ using deleter. */
       ~SharedCountImpl()
       { deleter_(rep_); }
