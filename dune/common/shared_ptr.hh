@@ -257,7 +257,7 @@ namespace Dune
   template<class T>
   template<class T1>
   inline shared_ptr<T>::shared_ptr(const shared_ptr<T1>& other)
-    : rep_(other.rep_), count_(other.count_)
+    : count_(other.count_), rep_(other.rep_)
   {
     if (rep_)
       ++(count_->count_);
@@ -265,7 +265,7 @@ namespace Dune
 
   template<class T>
   inline shared_ptr<T>::shared_ptr(const shared_ptr& other)
-    : rep_(other.rep_), count_(other.count_)
+    : count_(other.count_), rep_(other.rep_)
   {
     if (rep_)
       ++(count_->count_);
