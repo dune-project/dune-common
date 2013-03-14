@@ -45,7 +45,7 @@
 #cmakedefine HAVE_BLAS 1
 
 /* Define to ENABLE_BOOST if the Boost library is available */
-#cmakedefine HAVE_BOOST ENABLE_BOOST
+#cmakedefine HAVE_DUNE_BOOST ENABLE_BOOST
 
 /* Define to 1 if you have <boost/make_shared.hpp>. */
 #cmakedefine HAVE_BOOST_MAKE_SHARED_HPP 1

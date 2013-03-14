@@ -24,3 +24,5 @@ dune-common-?.?
 ltmain.sh
 .libs
 dependencies.m4
+config.guess
+config.h.in
