@@ -57,7 +57,10 @@ fi
 if test "x$LAPACK_LIBS" != x; then
         save_LIBS="$LIBS"; LIBS="$LAPACK_LIBS $BLAS_LIBS $LIBS $FLIBS"
         AC_MSG_CHECKING([for $cheev in $LAPACK_LIBS])
-        AC_TRY_LINK_FUNC($cheev, [acx_lapack_ok=yes], [LAPACK_LIBS=""])
+        AC_LINK_IFELSE(
+                [AC_LANG_CALL([], $cheev)],
+                [acx_lapack_ok=yes],
+                [LAPACK_LIBS=""])
         AC_MSG_RESULT($acx_lapack_ok)
         LIBS="$save_LIBS"
         if test acx_lapack_ok = no; then

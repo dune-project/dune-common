@@ -225,8 +225,9 @@ AC_DEFUN([DUNE_PARSE_MODULE_VERSION],[
 #        empty or missing, it is assumed that the module does not provide a
 #        library.  The value must be known when autoconf runs, so shell
 #        variables in the value are not permissible.  This value is actually
-#        handed to AC_TRY_LINK unchanged as the FUNCTION-BODY argument, so it
-#        may contain more complex stuff than a simple symbol.
+#        handed to AC_LINK_IFELSE/AC_LANG_PROGRAM unchanged as the
+#        FUNCTION-BODY argument, so it may contain more complex stuff than a
+#        simple symbol.
 #
 #        The name of the library is assumed to be the same as the module name,
 #        with any occurance of "-" removed.  The path of the library is
@@ -412,11 +413,12 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
           LDFLAGS="$ac_save_LDFLAGS $DUNE_LDFLAGS $DUNE_PKG_LDFLAGS $_dune_cm_LDFLAGS"
           LIBS="$_dune_cm_LIBS $DUNE_LIBS $LIBS"
 
-          AC_TRY_LINK(dnl
-            [#]include<dune/[]_dune_header>,
-            _dune_symbol,
-            dune_cv_lib[]_dune_lib=yes,
-            dune_cv_lib[]_dune_lib=no)
+          AC_LINK_IFELSE(
+            [AC_LANG_PROGRAM(
+              [#]include<dune/[]_dune_header>,
+              _dune_symbol)],
+            [dune_cv_lib[]_dune_lib=yes],
+            [dune_cv_lib[]_dune_lib=no])
         ])
 
         AS_IF([test "x$dune_cv_lib[]_dune_lib" = "xyes"], [
