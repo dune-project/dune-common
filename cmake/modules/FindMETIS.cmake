@@ -1,6 +1,6 @@
 # Accepts the following variables:
 #
-# METIS_DIR: Prefix where ParMETIS is installed.
+# METIS_ROOT: Prefix where ParMETIS is installed.
 # METIS_LIB_NAME: Name of the METIS library (default: metis).
 # METIS_LIBRARY: Full path of the METIS library.
 
@@ -35,7 +35,7 @@ endfunction(add_dune_metis_flags _targets)
 
 # search metis header
 find_path(METIS_INCLUDE_DIR metis.h
-  PATHS ${METIS_DIR}
+  PATHS ${METIS_ROOT}
   PATH_SUFFIXES metis include include/metis Lib
   NO_DEFAULT_PATH
   DOC "Include directory of metis")
@@ -56,7 +56,7 @@ if(NOT METIS_LIB_NAME)
 endif(NOT METIS_LIB_NAME)
 
 find_library(METIS_LIBRARY ${METIS_LIB_NAME}
-  PATHS ${METIS_DIR}
+  PATHS ${METIS_ROOT}
   PATH_SUFFIXES lib
   NO_DEFAULT_PATH)
 find_library(METIS_LIBRARY ${METIS_LIB_NAME}
