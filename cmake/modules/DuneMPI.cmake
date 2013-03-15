@@ -1,5 +1,5 @@
 # Searches for MPI and thread support and sets the following
-# DUNE specific flags:
+# DUNE specific flags if USE_MPI is set to true:
 #
 # MPI_DUNE_COMPILE_FLAGS Compiler flags for MPI applications.
 # MPI_DUNE_INCLUDE_PATH Include path for MPI applications.
@@ -16,7 +16,9 @@
 #
 # Adds the above flags and libraries to the specified targets.
 #
-
+if (NOT USE_MPI)
+  set (CMAKE_DISABLE_FIND_PACKAGE_MPI TRUE)
+endif (NOT USE_MPI)
 find_package(MPI)
 find_package(Threads)
 
