@@ -113,11 +113,13 @@ AS_VAR_POPDEF([_dune_aap_TAG])dnl
 AC_DEFUN([DUNE_ADD_MODULE_DEPS],
 [# Add module specific flags and libs
 AS_VAR_PUSHDEF([_dune_amd_CPPFLAGS], [AS_TR_CPP([$1])_DEPS_CPPFLAGS])dnl
-DUNE_VAR_APPEND([_dune_amd_CPPFLAGS], [" $3"])
+DUNE_VAR_COPY([_dune_amd_tmp], [_dune_amd_CPPFLAGS])
+AS_VAR_SET([_dune_amd_CPPFLAGS], ["$3 "$_dune_amd_tmp])
 AS_VAR_POPDEF([_dune_amd_CPPFLAGS])dnl
 
 AS_VAR_PUSHDEF([_dune_amd_LDFLAGS], [AS_TR_CPP([$1])_DEPS_LDFLAGS])dnl
-DUNE_VAR_APPEND([_dune_amd_LDFLAGS], [" $4"])
+DUNE_VAR_COPY([_dune_amd_tmp], [_dune_amd_LDFLAGS])
+AS_VAR_SET([_dune_amd_LDFLAGS], ["$4 "$_dune_amd_tmp])
 AS_VAR_POPDEF([_dune_amd_LDFLAGS])dnl
 
 AS_VAR_PUSHDEF([_dune_amd_LIBS], [AS_TR_CPP([$1])_DEPS_LIBS])dnl
@@ -126,14 +128,13 @@ AS_VAR_SET([_dune_amd_LIBS], ["$5 "$_dune_amd_tmp])
 AS_VAR_POPDEF([_dune_amd_LIBS])dnl
 
 # add flags and libs to the ALL_PKG_* family
-DUNE_ADD_ALL_PKG([$2], [$3], [$4], [$5])
+DUNE_ADD_ALL_PKG([$2], [\${_DUNE_MODULE[]_CPPFLAGS}], [\${_DUNE_MODULE[]_LDFLAGS}], [\${_DUNE_MODULE[]_LIBS}])
 
 # add flags and libs to the DUNE_* family
 AS_VAR_PUSHDEF([_dune_amd_TAG], [_dune_amd_tag_$2])dnl
 AS_VAR_SET_IF([_dune_amd_TAG], ,
 [DUNE_VAR_APPEND([DUNE_CPPFLAGS], [" $3"])
 DUNE_VAR_APPEND([DUNE_LDFLAGS], [" $4"])
-DUNE_LIBS="$5 $DUNE_LIBS"
 
 # add flags to the deprecated DUNE_PKG_* family as well
 DUNE_VAR_APPEND([DUNE_PKG_CPPFLAGS], [" $3"])
@@ -324,7 +325,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       AC_MSG_ERROR([pkg-config is required for using installed modules])
     ])
     AS_IF(AC_RUN_LOG([$PKG_CONFIG --exists --print-errors "$1"]),[
-      _dune_cm_CPPFLAGS="`$PKG_CONFIG --cflags _dune_name`" 2>/dev/null
+      _dune_cm_CPPFLAGS="`$PKG_CONFIG --cflags _dune_name` -I./" 2>/dev/null
       _DUNE_MODULE[]_ROOT="`$PKG_CONFIG --variable=prefix _dune_name`" 2>/dev/null 
       _DUNE_MODULE[]_VERSION="`$PKG_CONFIG --modversion _dune_name`" 2>/dev/null
       _DUNE_MODULE[]_LIBDIR=`$PKG_CONFIG --variable=libdir _dune_name 2>/dev/null`
@@ -373,7 +374,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
     ])
   ])
 
-  CPPFLAGS="$ac_save_CPPFLAGS $DUNE_CPPFLAGS $_dune_cm_CPPFLAGS"
+  CPPFLAGS="$ac_save_CPPFLAGS $DUNE_CPPFLAGS_TMP $DUNE_PKG_CPPFLAGS $_dune_cm_CPPFLAGS"
   ##  
   ## check for an arbitrary header
   ##
@@ -404,14 +405,14 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
         AC_CACHE_CHECK([for lib[]_dune_lib], dune_cv_lib[]_dune_lib, [
           # Use $CXX $DUNE_LDFLAGS as link command, as the latter might 
           # contain the -static option to force static linkage
-          ac_cxx_ld=`echo $ac_save_CXX | sed -e "s@$CXX@$CXX $DUNE_LDFLAGS@"`
+          ac_cxx_ld=`echo $ac_save_CXX | sed -e "s@$CXX@$CXX $DUNE_LDFLAGS_TMP@"`
 
           # define LTCXXLINK like it will be defined in the Makefile
           CXX="./libtool --tag=CXX --mode=link $ac_cxx_ld "
           
           # use module LDFLAGS
-          LDFLAGS="$ac_save_LDFLAGS $DUNE_LDFLAGS $DUNE_PKG_LDFLAGS $_dune_cm_LDFLAGS"
-          LIBS="$_dune_cm_LIBS $DUNE_LIBS $LIBS"
+          LDFLAGS="$ac_save_LDFLAGS $DUNE_LDFLAGS_TMP $DUNE_PKG_LDFLAGS $_dune_cm_LDFLAGS"
+          LIBS="$_dune_cm_LIBS $DUNE_LIBS_TMP $LIBS"
 
           AC_LINK_IFELSE(
             [AC_LANG_PROGRAM(
@@ -444,8 +445,8 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
         [$_dune_cm_CPPFLAGS], [$_dune_cm_LDFLAGS], [$_dune_cm_LIBS])
 
     # set variables for our modules
-    AC_SUBST(_DUNE_MODULE[]_CPPFLAGS, "$_DUNE_MODULE[]_CPPFLAGS")
-    AC_SUBST(_DUNE_MODULE[]_LDFLAGS, "$_DUNE_MODULE[]_LDFLAGS")
+    AC_SUBST(_DUNE_MODULE[]_CPPFLAGS, "$_dune_cm_CPPFLAGS")
+    AC_SUBST(_DUNE_MODULE[]_LDFLAGS, "$_dune_cm_LDFLAGS")
     AC_SUBST(_DUNE_MODULE[]_LIBS, "$_dune_cm_LIBS")
     AC_SUBST(_DUNE_MODULE[]_ROOT, "$_DUNE_MODULE[]_ROOT")
     ifelse(m4_defn([_dune_symbol]),,
@@ -459,8 +460,14 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
     # set DUNE_* variables
     # This should actually be unneccesary, but I'm keeping it in here for now
     # for backward compatibility
-    DUNE_LDFLAGS="$DUNE_LDFLAGS $_DUNE_MODULE[]_LDFLAGS"
-    DUNE_LIBS="$_DUNE_MODULE[]_LIBS $DUNE_LIBS"
+    DUNE_CPPFLAGS="$DUNE_CPPFLAGS \${_DUNE_MODULE[]_CPPFLAGS}"
+    DUNE_LDFLAGS="$DUNE_LDFLAGS \${_DUNE_MODULE[]_LDFLAGS}"
+    DUNE_LIBS="\${_DUNE_MODULE[]_LIBS} $DUNE_LIBS"
+
+    # the TMP version is used during the checks 
+    DUNE_CPPFLAGS_TMP="$DUNE_CPPFLAGS_TMP $_DUNE_MODULE[]_CPPFLAGS"
+    DUNE_LDFLAGS_TMP="$DUNE_LDFLAGS_TMP $_DUNE_MODULE[]_LDFLAGS"
+    DUNE_LIBS_TMP="$_DUNE_MODULE[]_LIBS $DUNE_LIBS_TMP"
     
     # add to global list
     # only add my flags other flags are added by other packages 
