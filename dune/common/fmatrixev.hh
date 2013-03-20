@@ -129,7 +129,7 @@ namespace Dune {
     }
     /** \brief calculates the eigenvalues of a symetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
-        \param[out] eigenvalues FieldVector that contains eigenvalues in
+        \param[out] eigenValues FieldVector that contains eigenvalues in
                     ascending order
 
         \note LAPACK::dgeev is used to calculate the eigen values
