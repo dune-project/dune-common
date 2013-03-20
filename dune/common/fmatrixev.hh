@@ -36,7 +36,7 @@ namespace Dune {
       const long int* ldvl, double* vr, const long int* ldvr, double* work,
       const long int* lwork, const long int* info);
 
-    /** \brief calculates the eigenvalues of a symetric field matrix
+    /** \brief calculates the eigenvalues of a symmetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
         \param[out] eigenvalues FieldVector that contains eigenvalues in
                     ascending order
@@ -48,7 +48,7 @@ namespace Dune {
       eigenvalues[0] = matrix[0][0];
     }
 
-    /** \brief calculates the eigenvalues of a symetric field matrix
+    /** \brief calculates the eigenvalues of a symmetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
         \param[out] eigenvalues FieldVector that contains eigenvalues in
                     ascending order
@@ -78,12 +78,12 @@ namespace Dune {
       eigenvalues[1] = p + q;
     }
 
-    /** \brief calculates the eigenvalues of a symetric field matrix
+    /** \brief calculates the eigenvalues of a symmetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
         \param[out] eigenvalues FieldVector that contains eigenvalues in
                     ascending order
 
-        \note LAPACK::dsyev is used to calculate the eigen values
+        \note LAPACK::dsyev is used to calculate the eigenvalues
      */
     template <int dim, typename K>
     static void eigenValues(const FieldMatrix<K, dim, dim>& matrix,
@@ -127,7 +127,7 @@ namespace Dune {
         }
       }
     }
-    /** \brief calculates the eigenvalues of a symetric field matrix
+    /** \brief calculates the eigenvalues of a symmetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
         \param[out] eigenValues FieldVector that contains eigenvalues in
                     ascending order

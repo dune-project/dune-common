@@ -24,7 +24,7 @@ namespace Dune {
       const long int* ldvl, double* vr, const long int* ldvr, double* work,
       const long int* lwork, const long int* info);
 
-    /** \brief calculates the eigenvalues of a symetric field matrix
+    /** \brief calculates the eigenvalues of a symmetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
         \param[out] eigenValues FieldVector that contains eigenvalues in
                     ascending order
