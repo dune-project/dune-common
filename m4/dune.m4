@@ -403,6 +403,9 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
         # save current LDFLAGS
         ac_save_CXX="$CXX"
         AC_CACHE_CHECK([for lib[]_dune_lib], dune_cv_lib[]_dune_lib, [
+          if test "x$DUNE_LDFLAGS_TMP" = "x"; then
+            DUNE_LDFLAGS_TMP="$DUNE_LDFLAGS"
+          fi
           # Use $CXX $DUNE_LDFLAGS as link command, as the latter might 
           # contain the -static option to force static linkage
           ac_cxx_ld=`echo $ac_save_CXX | sed -e "s@$CXX@$CXX $DUNE_LDFLAGS_TMP@"`
@@ -411,7 +414,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
           CXX="./libtool --tag=CXX --mode=link $ac_cxx_ld "
           
           # use module LDFLAGS
-          LDFLAGS="$ac_save_LDFLAGS $DUNE_LDFLAGS_TMP $DUNE_PKG_LDFLAGS $_dune_cm_LDFLAGS"
+          LDFLAGS="$ac_save_LDFLAGS $DUNE_PKG_LDFLAGS $_dune_cm_LDFLAGS"
           LIBS="$_dune_cm_LIBS $DUNE_LIBS_TMP $LIBS"
 
           AC_LINK_IFELSE(
