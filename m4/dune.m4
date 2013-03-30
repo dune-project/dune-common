@@ -301,6 +301,20 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   CPPFLAGS=""
   LIBS=""
 
+  # if DUNE_LDFLAGS have a pre-assigned value (e.g. -all-static), 
+  # also store it in DUNE_LDFLAGS_TMP to be consistent with DUNE_LDFLAGS
+  # the same holds for the other TMP variables, this is only to be done 
+  # if these TMP variables are empty to avoid double apprearance  
+  if test "x$DUNE_LDFLAGS_TMP" = "x"; then
+    DUNE_LDFLAGS_TMP="$DUNE_LDFLAGS"
+  fi
+  if test "x$DUNE_CPPFLAGS_TMP" = "x"; then
+    DUNE_CPPFLAGS_TMP="$DUNE_CPPFLAGS"
+  fi
+  if test "x$DUNE_LIBS_TMP" = "x"; then
+    DUNE_LIBS_TMP="$DUNE_LIBS"
+  fi
+
   ##
   ## Where is the module $1?
   ##
@@ -403,10 +417,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
         # save current LDFLAGS
         ac_save_CXX="$CXX"
         AC_CACHE_CHECK([for lib[]_dune_lib], dune_cv_lib[]_dune_lib, [
-          if test "x$DUNE_LDFLAGS_TMP" = "x"; then
-            DUNE_LDFLAGS_TMP="$DUNE_LDFLAGS"
-          fi
-          # Use $CXX $DUNE_LDFLAGS as link command, as the latter might 
+          # Use $CXX $DUNE_LDFLAGS_TMP as link command, as the latter might 
           # contain the -static option to force static linkage
           ac_cxx_ld=`echo $ac_save_CXX | sed -e "s@$CXX@$CXX $DUNE_LDFLAGS_TMP@"`
 
