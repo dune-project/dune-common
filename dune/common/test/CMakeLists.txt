@@ -101,6 +101,7 @@ if(LAPACK_FOUND)
 endif(LAPACK_FOUND)
 
 add_executable("diagonalmatrixtest" diagonalmatrixtest.cc)
+target_link_libraries("diagonalmatrixtest" "dunecommon")
 
 add_executable("enumsettest" enumsettest.cc)
 
