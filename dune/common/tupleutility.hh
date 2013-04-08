@@ -625,7 +625,7 @@ namespace Dune {
    * There are overloaded definitions of genericTransformTuple() wich take
    * constant tuple and functor arguments so rvalues are permissible as
    * arguments here.  These overloaded definitions are not documented
-   * seperately.
+   * separately.
    */
   template<class Tuple, class Functor>
   typename ForEachType<Functor::template TypeEvaluator, Tuple>::Type
@@ -773,7 +773,7 @@ namespace Dune {
    * \param a8 Arguments to save references to in the TransformTupleFunctor.
    * \param a9 Arguments to save references to in the TransformTupleFunctor.
    *
-   * There are overloads of this function (not documented seperately) for any
+   * There are overloads of this function (not documented separately) for any
    * number of arguments, up to an implementation-defined arbitrary limit.
    * The number of arguments given determines the number of non-\c void
    * template arguments in the type of the returned TransformTupleFunctor.
@@ -1108,7 +1108,7 @@ namespace Dune {
    *
    * This function is overloaded for any number of extra arguments, up to an
    * implementation-defined arbitrary limit.  The overloads are not documented
-   * seperately.
+   * separately.
    *
    * The \c TypeEvaluator class template should be suitable as the \c TE
    * template argument for TransformTupleFunctor.  It has the following form

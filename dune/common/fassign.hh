@@ -107,7 +107,7 @@ namespace Dune {
       return *this;
     }
     /*! @brief append data to this vector
-       the overloaded comma operator is used to assign a comma seperated list
+       the overloaded comma operator is used to assign a comma separated list
        of values to the vector
      */
     fvector_assigner & operator , (const T & t)
@@ -128,7 +128,7 @@ namespace Dune {
    *  @brief fvector assignment operator
    *
    *  overload operator <<= for fvector assignment
-   *  from comma seperated list of values
+   *  from comma separated list of values
    */
   template <class T, class K, int s>
   fvector_assigner<T,s> operator <<= (FieldVector<T,s> & v, const K & t)
@@ -238,7 +238,7 @@ namespace Dune {
       return *this;
     }
     /*! @brief append data to this matrix
-       the overloaded comma operator is used to assign a comma seperated list
+       the overloaded comma operator is used to assign a comma separated list
        of values to the matrix
      */
     fmatrix_assigner & operator , (const T & t)
@@ -268,7 +268,7 @@ namespace Dune {
    *  @brief FieldMatrix assignment operator
    *
    *  overload operator <<= for FieldMatrix assignment
-   *  from comma seperated list of values
+   *  from comma separated list of values
    */
   template <class T, class K, int n, int m>
   fmatrix_assigner<T,n,m> operator <<= (FieldMatrix<T,n,m> & v, const K & t)

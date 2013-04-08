@@ -17,7 +17,7 @@
 #
 #   And sets:
 #
-#     HAVE_BOOST
+#     HAVE_DUNE_BOOST
 #        ENABLE_BOOST or undefined. Whether boost was found. The correct way to
 #        to check this is "#if HAVE_BOOST": This way boost features will be disabled
 #        unless ${BOOST_CPPFLAGS} was given when compiling
@@ -25,7 +25,7 @@
 AC_DEFUN([DUNE_BOOST_BASE],
 [
 AX_BOOST_BASE([$1],[
-  AC_DEFINE(HAVE_BOOST, [ENABLE_BOOST],[Define to ENABLE_BOOST if the Boost library is available])
+  AC_DEFINE(HAVE_DUNE_BOOST, [ENABLE_BOOST],[Define to ENABLE_BOOST if the Boost library is available])
   BOOST_CPPFLAGS="$BOOST_CPPFLAGS -DENABLE_BOOST"
   AC_SUBST(BOOST_CPPFLAGS)
   # execute ACTION-IF-FOUND (if present):

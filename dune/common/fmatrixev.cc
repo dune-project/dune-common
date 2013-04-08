@@ -15,10 +15,10 @@
 
 #if HAVE_LAPACK
 
-// symetric matrices
+// symmetric matrices
 #define DSYEV_FORTRAN FC_FUNC (dsyev, DSYEV)
 
-// nonsymetric matrices
+// nonsymmetric matrices
 #define DGEEV_FORTRAN FC_FUNC (dgeev, DGEEV)
 
 // dsyev declaration (in liblapack)

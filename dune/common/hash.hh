@@ -11,7 +11,7 @@
 #include <tr1/functional>
 #endif
 
-#if HAVE_BOOST
+#if HAVE_DUNE_BOOST
 
 #include <boost/version.hpp>
 
@@ -26,7 +26,7 @@
 
 #endif // !HAVE_STD_HASH && !HAVE_TR1_HASH
 #endif // BOOST_VERSION >= 103400
-#endif // HAVE_BOOST
+#endif // HAVE_DUNE_BOOST
 
 /**
  * \file
