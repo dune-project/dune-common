@@ -1,6 +1,6 @@
 # $Id$
 
-EXTRA_DIST = inkscape.am webstuff global-rules sourcescheck \
+EXTRA_DIST = CMakeLists.txt inkscape.am webstuff global-rules sourcescheck \
         no-check-without-lib latex checklog doxygen top-rules \
         headercheck documentation
 

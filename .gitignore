@@ -1,6 +1,13 @@
 Makefile
 Makefile.in
-config.*
+config.guess  
+config.h.in   
+config.log  
+config.status
+config.h      
+config.lt   
+config.sub
+configure
 configure
 aclocal.m4
 autom4te.cache
@@ -19,3 +26,8 @@ ltmain.sh
 .libs
 dependencies.m4
 dune.css
+config.h.in
+config.h
+config.log
+config.guess
+

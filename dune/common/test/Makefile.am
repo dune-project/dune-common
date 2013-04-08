@@ -275,3 +275,5 @@ testfloatcmp_SOURCES = testfloatcmp.cc
 genericiterator_compile_fail_SOURCES = genericiterator_compile_fail.cc
 
 include $(top_srcdir)/am/global-rules
+
+EXTRA_DIST = CMakeLists.txt dummy.f

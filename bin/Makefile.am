@@ -1,7 +1,7 @@
 # $Id$
 
 # put scripts into dist-tarball
-EXTRA_DIST = duneproject dunecontrol \
+EXTRA_DIST = am2cmake.py CMakeLists.txt duneproject dunecontrol \
   dunedoxynize \
   mpi-config dune-autogen \
   xfail-compile-tests

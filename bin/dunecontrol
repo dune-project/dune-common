@@ -165,7 +165,12 @@ load_opts() {
   local CMD_FLAGS_FROM_FILE=""
   BUILDDIR=$DUNE_BUILDDIR
   if test "x$DUNE_OPTS_FILE" != "x"; then
-    BUILDDIR="$(eval BUILDDIR=""; . $DUNE_OPTS_FILE; eval echo \$BUILDDIR)"
+    # use build dir from opts file if set
+    OPTS_FILE_BUILDDIR="$(eval BUILDDIR=""; . $DUNE_OPTS_FILE; eval echo \$BUILDDIR)"
+    if test -n "$OPTS_FILE_BUILDDIR"; then
+      BUILDDIR="$OPTS_FILE_BUILDDIR"
+    fi
+    CMAKE_FLAGS="$(. $DUNE_OPTS_FILE; eval echo \$CMAKE_FLAGS)"
     CMD_FLAGS_FROM_FILE="$(eval ${COMMAND}_FLAGS=""; . $DUNE_OPTS_FILE; eval echo \$${COMMAND}_FLAGS)"
   fi
   if test -n "$CMD_FLAGS_FROM_FILE"; then
@@ -216,16 +221,17 @@ esac'
 }
 
 # list of all dunecontrol commands
-COMMANDS="printdeps update autogen configure make all exec status svn"
+COMMANDS="printdeps update autogen configure make all exec bexec status svn"
 
 # help string for the commands
 printdeps_HELP="print recursive dependencies of a module"
 update_HELP="updated all modules from the repository"
-autogen_HELP="run the autogen.sh script for each module"
-configure_HELP="run configure for each module"
+autogen_HELP="run the autogen.sh script for each module. Does nothing, if CMake is activated"
+configure_HELP="run configure or cmake for each module"
 make_HELP="run make for each module"
 all_HELP="\trun 'autogen', 'configure' and 'make' command for each module"
-exec_HELP="execute an arbitrary command in each module directory"
+exec_HELP="execute an arbitrary command in each module source directory"
+bexec_HELP="execute an arbitrary command in each module build directory"
 status_HELP="show vc status for all modules"
 svn_HELP="\trun svn command for each svn managed module"
 
@@ -244,6 +250,8 @@ done
 #
 
 run_default_exec () { bash -c "eval $CMD_FLAGS"; }
+
+run_default_bexec () { bash -c "cd "$BUILDDIR" && eval $CMD_FLAGS"; }
 
 run_default_status () {
   local verbose=0
@@ -342,29 +350,39 @@ run_default_update () {
 }
 
 run_default_autogen () {
-  PARAMS="$CMD_FLAGS"
-  local M4_PATH=""
-  if test -f configure.ac && \
-     ( test -d .svn || test -d .git || test -d CVS || test -f stamp-vc ); then
-    sort_modules $FOUND_MODULES
-    for m in $MODULES; do
-      path=$(eval "echo \$PATH_$m")
-      MODULE_PATHS="$MODULE_PATHS$path "
-    done
-    if test -f autogen.sh; then
-      eval echo "WARNING: \$NAME_$module contains obsolete autogen.sh," \
-          >&2
-      echo "         dune-autogen is used instead." >&2
+  if test "x$USE_CMAKE" != "xyes" || test  ! -e $(eval "echo \$PATH_$module")/CMakeLists.txt ; then
+    PARAMS="$CMD_FLAGS"
+    local M4_PATH=""
+    if test -f configure.ac && \
+       ( test -d .svn || test -d .git || test -d CVS || test -f stamp-vc ); then
+      sort_modules $FOUND_MODULES
+      for m in $FOUND_MODULES; do
+        path=$(eval "echo \$PATH_$m")
+        MODULE_PATHS="$MODULE_PATHS$path "
+      done
+      if test -f autogen.sh; then
+        eval echo "WARNING: \$NAME_$module contains obsolete autogen.sh," \
+            >&2
+        echo "         dune-autogen is used instead." >&2
+      fi
+      eval "$PREFIX_DIR/bin/dune-autogen" "$MODULE_PATHS" "$PARAMS" || exit 1
+    else
+      echo Skipping dune-autogen
     fi
-    eval "$PREFIX_DIR/bin/dune-autogen" "$MODULE_PATHS" "$PARAMS" || exit 1
-  else
-    echo Skipping dune-autogen
+  else 
+    echo Skipping dune-autogen because of CMake
   fi
 }
 
 run_default_configure () {
   PARAMS="$CMD_FLAGS"
-  if test -x configure; then
+  if test "x$USE_CMAKE" = "xyes" && test -e $(eval "echo \$PATH_$module")/CMakeLists.txt; then
+    LOCAL_USE_CMAKE=yes
+  else 
+    LOCAL_USE_CMAKE=no
+  fi
+  echo "LOCAL_USE_CMAKE=$LOCAL_USE_CMAKE $(eval "echo \$PATH_$module")/CMakeLists.txt"
+  if test -x configure || test "x$LOCAL_USE_CMAKE" = "xyes" ; then
     ACLOCAL_FLAGS="-I ."
     if test -d "m4"; then
       ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I m4"
@@ -387,20 +405,42 @@ run_default_configure () {
       else
         PARAMS="$PARAMS \"--with-$name=$path\""
       fi
+      if test "x$USE_CMAKE" = "xyes"; then
+          if test -d "$path/$BUILDDIR"; then
+	      CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$path/$BUILDDIR\""
+          else
+              if test -d "$path/lib/cmake/$name"; then
+                  CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$path/lib/cmake/$name\""
+              else
+                  CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$path\""
+              fi
+          fi
+      fi
     done
+
     if test "x$HAVE_duneweb" == "xyes"; then
       PARAMS="$PARAMS \"--with-duneweb=$PATH_duneweb\""
     fi
     PARAMS="$PARAMS ACLOCAL_AMFLAGS=\"$ACLOCAL_FLAGS\""
-    echo ./configure "$PARAMS"
-    # create build directory of requested
-    if test -n "$BUILDDIR"; then
+
+    if test "x$LOCAL_USE_CMAKE" = "xyes"; then
       test -d "$BUILDDIR" || mkdir "$BUILDDIR"
       SRCDIR="$PWD"
       cd "$BUILDDIR"
-      eval "$SRCDIR/configure" "$PARAMS" || exit 1
+      echo `pwd`
+      echo "cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR"
+      eval cmake "-DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR"
     else
-      eval ./configure "$PARAMS" || exit 1
+      echo ./configure "$PARAMS"
+      # create build directory of requested
+      if test -n "$BUILDDIR"; then
+        test -d "$BUILDDIR" || mkdir "$BUILDDIR"
+        SRCDIR="$PWD"
+        cd "$BUILDDIR"
+        eval "$SRCDIR/configure" "$PARAMS" || exit 1
+      else
+        eval ./configure "$PARAMS" || exit 1
+      fi
     fi
   else
     if test -f configure.in || test -f configure.ac; then
@@ -457,21 +497,22 @@ usage () {
     echo "  Dependencies are controlled by the $CONTROL files."
     echo ""
     echo "OPTIONS:"
-    echo "  -h, --help         show this help"
-    echo "      --debug        enable debug output of this script"
-    echo "      --module=mod   only apply the actions on module mod"
-    echo "                     and all modules it depends on"
-    echo "      --only=mod     only apply the actions on module mod"
-    echo "                     and not the modules it depends on"
-    echo "      --current      only apply the actions on the current module,"
-    echo "                     the one whose source tree we are standing in"
-    echo "      --resume       resume a previous run (only consider the modules"
-    echo "                     not built successfully on the previous run)"
-    echo "      --skipfirst    skip the first module (use with --resume)"
-    echo "      --opts=FILE    load default options from FILE"
-    echo "                     (see dune-common/doc/example.opts)"
+    echo "  -h, --help          show this help"
+    echo "      --debug         enable debug output of this script"
+    echo "      --use-cmake     use cmake instead autotools of cmake for building"
+    echo "      --module=mod    only apply the actions on module mod"
+    echo "                      and all modules it depends on"
+    echo "      --only=mod      only apply the actions on module mod"
+    echo "                      and not the modules it depends on"
+    echo "      --current       only apply the actions on the current module,"
+    echo "                      the one whose source tree we are standing in"
+    echo "      --resume        resume a previous run (only consider the modules"
+    echo "                      not built successfully on the previous run)"
+    echo "      --skipfirst     skip the first module (use with --resume)"
+    echo "      --opts=FILE     load default options from FILE"
+    echo "                      (see dune-common/doc/example.opts)"
     echo "      --builddir=NAME make out-of-source builds in a subdir NAME."
-    echo "                     This directory is created inside each module."
+    echo "                      This directory is created inside each module."
     echo "      --[COMMAND]-opts=opts   set options for COMMAND"
     echo "                     (this is mainly useful for the 'all' COMMAND)"
     echo "COMMANDS:"
@@ -550,6 +591,7 @@ export ONLY=""
 export RESUME_FLAG=no
 export REVERSE_FLAG=no
 export SKIPFIRST=no
+export USE_CMAKE=no
 
 # parse commandline parameters
 while test $# -gt 0; do
@@ -658,6 +700,9 @@ while test $# -gt 0; do
     --skipfirst)
       export SKIPFIRST=yes
     ;;
+    --use-cmake)
+      export USE_CMAKE=yes
+    ;;
     --debug) true ;; # ignore this option, it is handled right at the beginning
     --*)
       usage
@@ -673,6 +718,11 @@ while test $# -gt 0; do
     shift
 done
 
+if test "x$USE_CMAKE" = "xyes" && test -z "$DUNE_BUILDDIR"; then
+  echo "No build directory provided. Defaulting to the sub directory build-cmake"
+  export DUNE_BUILDDIR=build-cmake
+fi
+echo "USE_CMAKE=$USE_CMAKE DUNE_BUILDDIR=$DUNE_BUILDDIR"
 # we assume there should be a command...
 if test "x$command" = "x"; then
   usage
