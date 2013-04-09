@@ -5,7 +5,7 @@
 # Adds boost compiler flags and libraries, and activates
 # Boost for the specified targets.
 find_package(Boost)
-set(HAVE_BOOST ${Boost_FOUND})
+set(HAVE_DUNE_BOOST ${Boost_FOUND})
 
 function(add_dune_boost_flags _targets)
   if(Boost_FOUND)
