@@ -13,6 +13,7 @@ AC_DEFUN([DUNE_DOC_PROGS],[
   AC_CHECK_PROGS([PERL], [perl], [true])
   AC_REQUIRE([DUNE_INKSCAPE])
   AC_CHECK_PROGS([CONVERT], [convert], [true])
+  AM_CONDITIONAL([CONVERT], [test "x$CONVERT" != xtrue])
 ])
 
 # searches for documentation 
