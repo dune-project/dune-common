@@ -7,7 +7,7 @@ AC_DEFUN([DUNE_TR1_HEADERS], [
       [Prevents checking for  tr1 headers like tuple, array, etc. 
        This might be needed for broken compilers like xlc on Blue Gene])],
     [],
-    [enable_tr_headers=yes])
+    [enable_tr1_headers=yes])
   AS_IF([test "x$enable_tr1_headers" != "xno"],
     [AC_CHECK_HEADERS([type_traits tr1/type_traits tuple tr1/tuple])
      AC_CACHE_CHECK([whether <array> C++0x is supported], dune_cv_array_cplusplus0x, [
