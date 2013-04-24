@@ -18,4 +18,9 @@ dune_common_options_am2cmake()
 {
     default_am2cmake_options $CMAKE_PACKAGES
 
+    # Check for --enable-parallel and otherwise deactivate MPI
+    echo $PARAMS | grep \\-\\-enable-parallel
+    if test "$?" -eq 0 ; then
+	CMAKE_PARAMS="$CMAKE_PARAMS -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE"
+    fi
 }
