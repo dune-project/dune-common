@@ -499,7 +499,7 @@ usage () {
     echo "OPTIONS:"
     echo "  -h, --help          show this help"
     echo "      --debug         enable debug output of this script"
-    echo "      --use-cmake     use cmake instead autotools of cmake for building"
+    echo "      --use-cmake     use cmake instead autotools for building"
     echo "      --module=mod    only apply the actions on module mod"
     echo "                      and all modules it depends on"
     echo "      --only=mod      only apply the actions on module mod"
