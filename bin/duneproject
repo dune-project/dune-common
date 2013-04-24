@@ -8,7 +8,7 @@
 # * Check module names entered as dependencies.
 
 set -e
-
+set -x
 canonicalname(){
 	if test $# -ne 1; then
 		echo Usage: canonicalname path >&2
