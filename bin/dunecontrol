@@ -415,6 +415,11 @@ run_default_configure () {
                   CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$path\""
               fi
           fi
+	  #
+	  # Translate the configure PARMS to cmake
+	  export PARAMS
+	  export CMAKE_PARAMS
+	  module_translate_options_am2cmake $m $path/lib
       fi
     done
 
@@ -428,6 +433,10 @@ run_default_configure () {
       SRCDIR="$PWD"
       cd "$BUILDDIR"
       echo `pwd`
+      # Translate the configure PARMS to cmake
+      export PARAMS
+      export CMAKE_PARAMS
+      module_translate_options_am2cmake $m $path/lib
       echo "cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR"
       eval cmake "-DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR"
     else

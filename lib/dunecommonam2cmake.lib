@@ -1,0 +1,21 @@
+# -*-sh-*-
+
+##########################################
+###
+### Function for converting configure options
+### to CMake options for dune-common
+###
+##########################################
+
+# CMake Packages are case sensitive
+# This is a list of packages whose names converted
+# to lower case are used for configures
+# --with-<package> or without-<package> options
+#
+CMAKE_PACKAGES="Boost Inkscape GMP LAPACK"
+
+dune_common_options_am2cmake()
+{
+    default_am2cmake_options $CMAKE_PACKAGES
+
+}

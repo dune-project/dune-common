@@ -1,8 +1,8 @@
 # $Id: $
 dunemodulelibdir=$(libdir)
 
-EXTRA_DIST = CMakeLists.txt dunemodules.lib
-dunemodulelib_DATA = dunemodules.lib
+EXTRA_DIST = CMakeLists.txt dunemodules.lib dunecommonam2cmake.lib
+dunemodulelib_DATA = dunemodules.lib dunecommonam2cmake.lib
 
 #the dune-common library
 lib_LTLIBRARIES = libdunecommon.la
