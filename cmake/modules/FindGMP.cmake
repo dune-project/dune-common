@@ -2,7 +2,7 @@
 # dirs and
 #
 # Variables used by this module which you may want to set:
-# GMP_PREFIX Path list to search for GMP
+# GMP_ROOT Path list to search for GMP
 #
 # Sets the following variables:
 # GMP_FOUND True if the GMP library was found.
@@ -28,7 +28,7 @@ endfunction(add_dune_gmp_flags)
 # search for location of header gmpxx.h", only at positions given by the user
 find_path(GMP_INCLUDE_DIR
   NAMES "gmpxx.h"
-  PATHS ${GMP_PREFIX}
+  PATHS ${GMP_PREFIX} ${GMP_ROOT}
   PATH_SUFFIXES include
   NO_DEFAULT_PATH)
 # try default paths now
@@ -44,7 +44,7 @@ check_include_file_cxx("gmpxx.h" GMP_FOUND)
 
 # look for library gmp, only at positions given by the user
 find_library(GMP_LIB gmp
-  PATHS ${GMP_PREFIX}
+  PATHS ${GMP_PREFIX} ${GMP_ROOT}
   PATH_SUFFIXES lib lib64
   NO_DEFAULT_PATH
   DOC "GNU GMP library")
@@ -53,7 +53,7 @@ find_library(GMP_LIB gmp)
 
 # look for library gmpxx, only at positions given by the user
 find_library(GMPXX_LIB gmpxx
-  PATHS ${GMP_PREFIX}
+  PATHS ${GMP_PREFIX} ${GMP_ROOT}
   PATH_SUFFIXES lib lib64
   NO_DEFAULT_PATH
   DOC "GNU GMPXX library")
