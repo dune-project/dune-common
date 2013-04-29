@@ -7,20 +7,38 @@
 ###
 ##########################################
 
-# CMake Packages are case sensitive
-# This is a list of packages whose names converted
-# to lower case are used for configures
-# --with-<package> or without-<package> options
-#
-CMAKE_PACKAGES="Boost Inkscape GMP LAPACK"
 
 dune_common_options_am2cmake()
 {
+    # CMake Packages are case sensitive
+    # This is a list of packages whose names converted
+    # to lower case are used for configures
+    # --with-<package> or without-<package> options
+    #
+    CMAKE_PACKAGES="Boost Inkscape GMP LAPACK"
+
     default_am2cmake_options $CMAKE_PACKAGES
 
     # Check for --enable-parallel and otherwise deactivate MPI
     echo $PARAMS | grep \\-\\-enable-parallel
     if test "$?" -eq 0 ; then
 	CMAKE_PARAMS="$CMAKE_PARAMS -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE"
+    fi
+    # Check for --disable-gxx0xcheck
+    echo $PARAMS | grep \\-\\-disable-gxx0xcheck
+    if test "$?" -eq 0 ; then
+        CMAKE_PARAMS="$CMAKE_PARAMS -DDISABLE_GXX0XCHECK:Bool=TRUE"
+    fi
+
+    # Check for --disable-gxx0xcheck
+    echo $PARAMS | grep \\-\\-disable-tr1-headers
+    if test "$?" -eq 0 ; then
+        CMAKE_PARAMS="$CMAKE_PARAMS -DDISABLE_TR1_HEADERS:Bool=TRUE"
+    fi
+
+    # Check for --with-minimal-debug-level
+    local arg=`echo $PARAMS| sed "s/.*--with-minimal-debug-level=\(\S*\).*/\1/"`
+    if test "x$arg" != "x$PARAMS"; then
+        CMAKE_PARAMS="$CMAKE_PARAMS -DMINIMAL_DEBUG_LEVEL:String=$arg"
     fi
 }
