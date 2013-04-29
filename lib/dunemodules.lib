@@ -585,9 +585,9 @@ check_version() {
 # the  <CMAKE_PACKAGE_ALL_UPPERCASE>_ROOT variable
 default_am2cmake_options(){
     while test "$#" -gt 0; do
-        package=$1
-        lowercase=${1,,}
-        uppercase=${1^^}
+        local package=$1
+        local lowercase=${1,,}
+        local uppercase=${1^^}
         shift
         if eval test \$"$lowercase"_processed ; then
             continue
@@ -600,7 +600,8 @@ default_am2cmake_options(){
             continue
         fi
         # process --with-$lowercase=<arg>
-        arg=`echo $PARAMS| sed "s/.*--with-$lowercase=\(\S*\).*/\1/"`
+        local arg=`echo $PARAMS| sed "s/.*--with-$lowercase=\(\S*\).*/\1/"`
+        local arg=`eval echo $arg` # expand tilde to prevent problems
         if test "x$arg" = "xno"; then
             CMAKE_PARAMS="$CMAKE_PARAMS -DCMAKE_DISABLE_FIND_PACKAGE_$package=TRUE"
             continue
@@ -612,18 +613,42 @@ default_am2cmake_options(){
     export CMAKE_PARAMS
 }
 
+
+# Default translation routine for libraries.
+# Arguments are the CMake package names.
+# Searches for --with-<package>lib=<library>
+# in the configure options and translates them
+# to -D<PACKAGE>_LIBRARY=<library>
+default_am2cmake_libraries(){
+    while test "$#" -gt 0; do
+        lib=$1
+        lowercase=${1,,}
+        uppercase=${1^^}
+        shift
+	if eval test \$"$lowercase"-lib_processed; then
+	    continue
+	fi
+	export "$lowercase"-lib_processed=1
+	term="s/.*--with-""$lowercase""-lib=\(\S*\).*/\1/"
+	arg=`echo $PARAMS | sed "$term"`
+	if test "x$arg" != "x" && test "x$PARAMS" != "x$arg"; then
+	    CMAKE_PARAMS="$CMAKE_PARAMS -D$uppercase""_LIBRARY=$arg"
+	fi
+    done
+}
+
 module_translate_options_am2cmake()
 {
-    module=$1 # the module name
-    path=$2 # where the sh libs reside
+    local module=$1 # the module name
+    local path=$2 # where the sh libs reside
 
     # Check whether the module provides a lib named
     # <module-without-dashes>autotools2cmake.lib
-    module_undashed=`echo $module | sed "s/[-_]//g"`
-    libfile="$path/$module_undashed""am2cmake.lib"
+    local module_undashed=`echo $module | sed "s/[-_]//g"`
+    local libfile="$path/$module_undashed""am2cmake.lib"
     if test -e "$libfile"; then
         . $libfile
-        module_underline=`echo $module | sed "s/-/_/g"`
+        local module_underline=`echo $module | sed "s/-/_/g"`
         eval "$module_underline"_options_am2cmake
     else
         echo "$libfile for converting options does not exist"
