@@ -18,9 +18,9 @@ AC_DEFUN([VARIADIC_TEMPLATES_CHECK],[
         }
 
         template<typename T1, typename... T>
-        int add_ints(T1 t1, T... t)
+        int add_ints(T1 t1, T&&... t)
         {
-          return t1 + add_ints(t...);
+          return t1 + add_ints(std::forward<T>(t)...);
         }], 
         [
           assert( 5 == add_ints(9,3,-5,-2) );

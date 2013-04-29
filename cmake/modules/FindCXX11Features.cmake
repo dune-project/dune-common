@@ -61,7 +61,10 @@ CHECK_CXX_SOURCE_COMPILES("
     }
 "  HAVE_NULLPTR
 )
+include(CheckIncludeFile)
+include(CheckIncludeFileCXX)
 
+if(NOT DISABLE_TR1_HEADERS)
 # array and fill
 CHECK_CXX_SOURCE_COMPILES("
     #include <array>
@@ -75,6 +78,36 @@ CHECK_CXX_SOURCE_COMPILES("
 " HAVE_ARRAY
 )
 
+# Search for some tr1 headers
+foreach(_HEADER tuple tr1/tuple type_traits tr1/type_traits)
+  string(REPLACE "/" "_" _HEADER_VAR ${_HEADER})
+  string(TOUPPER ${_HEADER_VAR} _HEADER_VAR )
+  check_include_file_cxx(${_HEADER} "HAVE_${_HEADER_VAR}")
+endforeach(_HEADER tuple tr1/tuple tr1/type_traits)
+
+# Check for hash support
+check_include_file_cxx("functional" "HAVE_FUNCTIONAL")
+if(NOT HAVE_FUNCTIONAL)
+  check_include_file_cxx("tr1/functional" "HAVE_TR1_FUNCTIONAL")
+  if(HAVE_TR1_FUNCTIONAL)
+    set(_functional_header "tr1/functional")
+    set(_hash_type "std::tr1::hash")
+    set(_hash_variable "HAVE_TR1_HASH")
+  endif(HAVE_TR1_FUNCTIONAL)
+else()
+  set(_functional_header "functional")
+  set(_hash_type "std::hash")
+  set(_hash_variable "HAVE_STD_HASH")
+endif(NOT HAVE_FUNCTIONAL)
+
+if(_functional_header)
+  check_cxx_source_compiles("
+#include <${_functional_header}>
+int main(void){
+  ${_hash_type}<int> hasher; hasher(42);
+}" ${_hash_variable})
+endif(_functional_header)
+
 # Check whether if std::integral_constant< T, v > is supported and casts into T
 CHECK_CXX_SOURCE_COMPILES("
     #include <type_traits>
@@ -85,6 +118,8 @@ CHECK_CXX_SOURCE_COMPILES("
     }
 " HAVE_INTEGRAL_CONSTANT
 )
+
+endif(NOT DISABLE_TR1_HEADERS)
 
 # __attribute__((always_inline))
 CHECK_CXX_SOURCE_COMPILES("
@@ -194,9 +229,9 @@ CHECK_CXX_SOURCE_COMPILES("
    }
 
    template<typename T1, typename... T>
-   int add_ints(T1 t1, T... t)
+   int add_ints(T1 t1, T&&... t)
    {
-     return t1 + add_ints(t...);
+     return t1 + add_ints(std::forward<T>(t)...);
    }
 
    int main(void)
@@ -264,36 +299,4 @@ CHECK_CXX_SOURCE_COMPILES("
   }
 " HAVE_RVALUE_REFERENCES
 )
-include(CheckIncludeFile)
-include(CheckIncludeFileCXX)
-# Search for some tr1 headers
-foreach(_HEADER tuple tr1/tuple type_traits tr1/type_traits)
-  string(REPLACE "/" "_" _HEADER_VAR ${_HEADER})
-  string(TOUPPER ${_HEADER_VAR} _HEADER_VAR )
-  check_include_file_cxx(${_HEADER} "HAVE_${_HEADER_VAR}")
-endforeach(_HEADER tuple tr1/tuple tr1/type_traits)
-
-# Check for hash support
-check_include_file_cxx("functional" "HAVE_FUNCTIONAL")
-if(NOT HAVE_FUNCTIONAL)
-  check_include_file_cxx("tr1/functional" "HAVE_TR1_FUNCTIONAL")
-  if(HAVE_TR1_FUNCTIONAL)
-    set(_functional_header "tr1/functional")
-    set(_hash_type "std::tr1::hash")
-    set(_hash_variable "HAVE_TR1_HASH")
-  endif(HAVE_TR1_FUNCTIONAL)
-else()
-  set(_functional_header "functional")
-  set(_hash_type "std::hash")
-  set(_hash_variable "HAVE_STD_HASH")
-endif(NOT HAVE_FUNCTIONAL)
-
-if(_functional_header)
-  check_cxx_source_compiles("
-#include <${_functional_header}>
-int main(void){
-  ${_hash_type}<int> hasher; hasher(42);
-}" ${_hash_variable})
-endif(_functional_header)
-
 cmake_pop_check_state()
