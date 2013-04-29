@@ -2,7 +2,7 @@
 #
 # Accepts the following variables:
 #
-# PARMETIS_DIR: Prefix where ParMETIS is installed.
+# PARMETIS_ROOT: Prefix where ParMETIS is installed.
 # METIS_LIB_NAME: Name of the METIS library (default: metis).
 # PARMETIS_LIB_NAME: Name of the ParMETIS library (default: parmetis).
 # METIS_LIBRARY: Full path of the METIS library.
@@ -46,7 +46,7 @@ include(DuneMPI)
 
 # search for header parmetis.h
 find_path(PARMETIS_INCLUDE_DIR parmetis.h
-          PATHS ${PARMETIS_DIR}
+          PATHS ${PARMETIS_DIR} ${PARMETIS_ROOT}
           PATH_SUFFIXES include parmetis
           NO_DEFAULT_PATH
           DOC "Include directory of ParMETIS")
@@ -76,14 +76,14 @@ if(PARMETIS_FOUND)
 
   # search METIS library
   find_library(METIS_LIBRARY metis
-               PATHS ${PARMETIS_DIR}
+               PATHS ${PARMETIS_DIR} ${PARMETIS_ROOT}
                PATH_SUFFIXES lib
                NO_DEFAULT_PATH)
   find_library(METIS_LIBRARY metis)
 
   # search ParMETIS library
   find_library(PARMETIS_LIBRARY parmetis
-               PATHS ${PARMETIS_DIR}
+               PATHS ${PARMETIS_DIR} ${PARMETIS_ROOT}
                PATH_SUFFIXES lib
                NO_DEFAULT_PATH)
   find_library(PARMETIS_LIBRARY parmetis)
@@ -92,7 +92,7 @@ if(PARMETIS_FOUND)
   if(PARMETIS_LIBRARY)
     list(APPEND CMAKE_REQUIRED_LIBRARIES ${PARMETIS_LIBRARY} ${METIS_LIBRARY} ${MPI_DUNE_LIBRARIES})
     include(CheckSymbolExists)
-    check_symbol_exists(parmetis_v3_partkway parmetis.h PARMETIS_FOUND)
+    check_function_exists(parmetis_v3_partkway HAVE_PARMETIS)
   endif(PARMETIS_LIBRARY)
 endif(PARMETIS_FOUND)
 
@@ -103,7 +103,7 @@ find_package_handle_standard_args(
   DEFAULT_MSG
   PARMETIS_INCLUDE_DIR
   PARMETIS_LIBRARY
-  PARMETIS_FOUND
+  HAVE_PARMETIS
 )
 
 mark_as_advanced(PARMETIS_INCLUDE_DIR METIS_LIBRARY PARMETIS_LIBRARY METIS_LIB_NAME PARMETIS_LIB_NAME)
