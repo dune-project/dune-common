@@ -391,8 +391,16 @@ run_default_configure () {
     # get dependencies & suggestions
     sort_modules $module
     for m in $MODULES; do
-      if test x$module = x$m; then continue; fi # skip myself
       path=$(eval "echo \$PATH_$m")
+      if test "x$LOCAL_USE_CMAKE" = "xyes"; then
+          #
+          # Translate the configure PARMS to cmake
+          export PARAMS
+          export CMAKE_PARAMS
+          echo module_translate_options_am2cmake $m $path/lib
+          module_translate_options_am2cmake $m $path/lib
+      fi
+      if test x$module = x$m; then continue; fi # skip myself
       name=$(eval "echo \$NAME_$m")
       if test -d "$path/m4"; then
           ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $path/m4"
@@ -405,7 +413,7 @@ run_default_configure () {
       else
         PARAMS="$PARAMS \"--with-$name=$path\""
       fi
-      if test "x$USE_CMAKE" = "xyes"; then
+      if test "x$LOCAL_USE_CMAKE" = "xyes"; then
           if test -d "$path/$BUILDDIR"; then
 	      CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$path/$BUILDDIR\""
           else
@@ -415,11 +423,6 @@ run_default_configure () {
                   CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$path\""
               fi
           fi
-	  #
-	  # Translate the configure PARMS to cmake
-	  export PARAMS
-	  export CMAKE_PARAMS
-	  module_translate_options_am2cmake $m $path/lib
       fi
     done
 
@@ -433,10 +436,6 @@ run_default_configure () {
       SRCDIR="$PWD"
       cd "$BUILDDIR"
       echo `pwd`
-      # Translate the configure PARMS to cmake
-      export PARAMS
-      export CMAKE_PARAMS
-      module_translate_options_am2cmake $m $path/lib
       echo "cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR"
       eval cmake "-DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR"
     else
