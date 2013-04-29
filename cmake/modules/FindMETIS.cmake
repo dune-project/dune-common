@@ -1,6 +1,6 @@
 # Accepts the following variables:
 #
-# METIS_DIR: Prefix where ParMETIS is installed.
+# METIS_ROOT: Prefix where METIS is installed.
 # METIS_LIB_NAME: Name of the METIS library (default: metis).
 # METIS_LIBRARY: Full path of the METIS library.
 
@@ -35,12 +35,12 @@ endfunction(add_dune_metis_flags _targets)
 
 # search metis header
 find_path(METIS_INCLUDE_DIR metis.h
-  PATHS ${METIS_DIR}
-  PATH_SUFFIXES metis include include/metis Lib
+  PATHS ${METIS_DIR} ${METIS_ROOT}
+  PATH_SUFFIXES metis include include/metis Lib METISLib
   NO_DEFAULT_PATH
   DOC "Include directory of metis")
 find_path(METIS_INCLUDE_DIR metis.h
-  PATH_SUFFIXES metis include include/metis Lib)
+  PATH_SUFFIXES metis include include/metis Lib METISLib)
 
 set(METIS_LIBRARY METIS_LIBRARY-NOTFOUND CACHE FILEPATH "Full path of the METIS library")
 
@@ -56,12 +56,20 @@ if(NOT METIS_LIB_NAME)
 endif(NOT METIS_LIB_NAME)
 
 find_library(METIS_LIBRARY ${METIS_LIB_NAME}
-  PATHS ${METIS_DIR}
+  PATHS ${METIS_DIR} ${METIS_ROOT}
   PATH_SUFFIXES lib
   NO_DEFAULT_PATH)
 find_library(METIS_LIBRARY ${METIS_LIB_NAME}
   PATH_SUFFIXES lib
 )
+
+# check metis library
+if(METIS_LIBRARY)
+  list(APPEND CMAKE_REQUIRED_LIBRARIES ${METIS_LIBRARIY})
+  set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ${METIS_LIBRARY})
+  include(CheckSymbolExists)
+  check_function_exists(METIS_PartMeshDual HAVE_METIS_PARTMESH_DUAL)
+endif(METIS_LIBRARY)
 
 # behave like a CMake module is supposed to behave
 include(FindPackageHandleStandardArgs)
@@ -70,15 +78,9 @@ find_package_handle_standard_args(
   DEFAULT_MSG
   METIS_INCLUDE_DIR
   METIS_LIBRARY
+  HAVE_METIS_PARTMESH_DUAL
 )
 
-# check metis library
-if(METIS_LIBRARY)
-  list(APPEND CMAKE_REQUIRED_LIBRARIES ${METIS_LIBRARIY})
-  set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ${METIS_LIBRARY})
-  include(CheckSymbolExists)
-  check_symbol_exists(METIS_PartMeshDual metis.h METIS_FOUND)
-endif(METIS_LIBRARY)
 cmake_pop_check_state()
 
 mark_as_advanced(METIS_INCLUDE_DIR METIS_LIBRARIES METIS_LIB_NAME)
