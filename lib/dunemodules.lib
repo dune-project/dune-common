@@ -586,8 +586,8 @@ check_version() {
 default_am2cmake_options(){
     while test "$#" -gt 0; do
         local package=$1
-        local lowercase=${1,,}
-        local uppercase=${1^^}
+        local lowercase=`tr 'A-Z' 'a-z' <<< $1`
+        local uppercase=`tr 'a-z' 'A-Z' <<< $1`
         shift
         if eval test \$"$lowercase"_processed ; then
             continue
@@ -622,8 +622,8 @@ default_am2cmake_options(){
 default_am2cmake_libraries(){
     while test "$#" -gt 0; do
         lib=$1
-        lowercase=${1,,}
-        uppercase=${1^^}
+        local lowercase=`tr 'A-Z' 'a-z' <<< $1`
+        local uppercase=`tr 'a-z' 'A-Z' <<< $1`
         shift
 	if eval test \$"$lowercase"-lib_processed; then
 	    continue
