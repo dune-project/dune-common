@@ -18,6 +18,7 @@
 #include <typeinfo>
 #include <vector>
 #include <algorithm>
+#include <cctype>
 
 #include <dune/common/array.hh>
 #include <dune/common/exceptions.hh>
