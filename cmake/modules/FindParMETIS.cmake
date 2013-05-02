@@ -18,33 +18,7 @@
 # Provides the following macros:
 #
 # find_package(ParMETIS)
-#
-# Searches for ParMETIS (See above)
-#
-#
-# add_dune_parmetis_flags(TARGETS)
-#
-# Adds the necessary flags to comile and link TARGETS with ParMETIS support.
-#
 
-# adds ParMETIS flags to the targets
-function(add_dune_parmetis_flags _targets)
-  if(PARMETIS_FOUND)
-    foreach(_target ${_targets})
-      target_link_libraries(${_target} ${PARMETIS_LIBRARY} ${METIS_LIBRARY})
-      GET_TARGET_PROPERTY(_props ${_target} COMPILE_FLAGS)
-      string(REPLACE "_props-NOTFOUND" "" _props "${_props}")
-      SET_TARGET_PROPERTIES(${_target} PROPERTIES COMPILE_FLAGS
-        "${_props} ${PARMETIS_COMPILE_FLAGS} -DENABLE_PARMETS=1")
-    endforeach(_target ${_targets})
-    add_dune_mpi_flags(${_targets})
-  endif(PARMETIS_FOUND)
-endfunction(add_dune_parmetis_flags)
-
-
-include(DuneMPI)
-
-# search for header parmetis.h
 find_path(PARMETIS_INCLUDE_DIR parmetis.h
           PATHS ${PARMETIS_DIR} ${PARMETIS_ROOT}
           PATH_SUFFIXES include parmetis
@@ -91,7 +65,7 @@ if(PARMETIS_FOUND)
   # check ParMETIS library
   if(PARMETIS_LIBRARY)
     list(APPEND CMAKE_REQUIRED_LIBRARIES ${PARMETIS_LIBRARY} ${METIS_LIBRARY} ${MPI_DUNE_LIBRARIES})
-    include(CheckSymbolExists)
+    include(CheckFunctionExists)
     check_function_exists(parmetis_v3_partkway HAVE_PARMETIS)
   endif(PARMETIS_LIBRARY)
 endif(PARMETIS_FOUND)

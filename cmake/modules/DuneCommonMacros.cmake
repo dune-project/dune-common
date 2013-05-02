@@ -22,6 +22,8 @@ else(Fortran_Works)
 endif(Fortran_Works)
 
 find_package(GMP)
+include(AddGMPFlags)
 find_package(Inkscape)
+include(UseInkscape)
 include(FindMProtect)
 include(DuneBoost)

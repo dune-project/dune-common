@@ -15,23 +15,7 @@
 # find_package(METIS)
 #
 # Searches for METIS (See above)
-#
-#
-# add_dune_metis_flags(TARGETS)
-#
-# Adds the necessary flags to comile and link TARGETS with ParMETIS support.
-#
 
-# function to add the metis flags to a target
-function(add_dune_metis_flags _targets)
-  if(METIS_FOUND)
-    foreach(_target ${_targets})
-      target_link_libraries(${_target} ${METIS_LIBRARY})
-    endforeach(_target ${_targets})
-    set_property(TARGET ${_targets} APPEND PROPERTIES
-      COMPILE_DIRECTORIES ${METIS_INCLUDE_DIR})
-  endif(METIS_FOUND)
-endfunction(add_dune_metis_flags _targets)
 
 # search metis header
 find_path(METIS_INCLUDE_DIR metis.h
