@@ -314,6 +314,11 @@ run_default_status () {
 }
 
 run_default_vcsetup() {
+  # load user options
+  if [ -n "$CMD_FLAGS" ]; then
+    eval "$CMD_FLAGS"
+  fi
+
   if [ -d .git ]; then
     # Read Whitespace-Hook setting from dune.module file
     local SETUPGITHOOK="$($GREP -i "^[$BLANK]*Whitespace-Hook:" dune.module | cut -d ':' -f2 | eval $PARSER_TRIM | tr '[:upper:]' '[:lower:]')"
@@ -354,6 +359,24 @@ run_default_vcsetup() {
       done
       echo "done"
     fi
+
+    # Apply user supplied configuration settings
+    if [ -n "$GIT_CONFIG_FILE" ]; then
+      if [ -f "$GIT_CONFIG_FILE" ]; then
+        echo -n "--> Setting custom Git configuration entries from '$GIT_CONFIG_FILE'... "
+        cat "$GIT_CONFIG_FILE" | while read; do
+          # Filter out comments
+          COMMENT="$(echo $REPLY | $GREP '^#')"
+          if [ ! "x$COMMENT" = "x$REPLY" ]; then
+            git config $REPLY
+          fi
+        done
+        echo "done"
+      else
+        echo "WARNING: custom Git config file '$GIT_CONFIG_FILE' not found!"
+      fi
+    fi
+
   fi
 
   # Run custom setup scripts
