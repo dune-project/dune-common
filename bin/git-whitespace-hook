@@ -1,0 +1,128 @@
+#!/bin/sh
+# dune-git-whitespace-hook
+# DO NOT TOUCH THE PRECEDING LINE
+# It is used by dunecontrol to enable automatic updates of the whitespace hook
+
+# DUNE pre-commit hook to enforce whitespace policy
+# This hook prevents adding lines with trailing whitespace and or tab characters
+# in line indentation for certain files (see the TRAILING_WHITESPACE_DEFAULT and
+# TAB_IN_INDENT_DEFAULT variables below for the default sets of files that will
+# be checked).
+# You can tell the hook which files should be inspected by setting the Git
+# configuration variables "hooks.whitespace.trailing" and "hooks.whitespace.tabinindent".
+# Those variables should contain valid Perl regular expressions. The names of modified
+# files will be matched against those regexes.
+
+# git-diff-index needs a valid commit to compare to
+if git-rev-parse --verify HEAD 2>/dev/null
+then
+	against=HEAD
+else
+	# Initial commit: diff against an empty tree object
+	against=4b825dc642cb6eb9a060e54bf8d69288fbee4904
+fi
+
+
+# By default, we disallow trailing whitespace for the following files, but the check for C/C++ sources
+# happens in the tab-in-indent check to avoid confusing users with duplicate error messages
+TRAILING_WHITESPACE_DEFAULT='.*(Makefile.am|configure.ac|dune.module|README|README.SVN|COPYING|INSTALL|TODO|\.cmake|CMakeLists.txt|\.pc\.in)$'
+
+# By default, we disallow tabs in indents and trailing whitespace in C/C++ source files
+TAB_IN_INDENT_DEFAULT='\.(cpp|hpp|cc|hh|c|h)$'
+
+# Get user preferences
+TRAILING_WHITESPACE_FILES=$(git config hooks.whitespace.trailing)
+
+# Set default regex for disallowing trailing whitespace if the user did not set anything.
+# We need to check the return value of git-config to distinguish the case
+# when the user set an empty value
+if [ $? -ne 0 ];
+then
+  TRAILING_WHITESPACE_FILES="$TRAILING_WHITESPACE_DEFAULT"
+fi
+
+
+TAB_IN_INDENT_FILES=$(git config hooks.whitespace.tabinindent)
+
+# Set default regex for disallowing tabs if the user did not set anything.
+# We need to check the return value of git-config to distinguish the case
+# when the user set an empty value
+if [ $? -ne 0 ];
+then
+  TAB_IN_INDENT_FILES="$TAB_IN_INDENT_DEFAULT"
+fi
+
+
+# Unfortunately, we have to mess directly with the repository config file,
+# as git won't honor a custom config file specified by GIT_CONFIG
+
+# backup repository-local user setting for core.whitespace
+USER_WHITESPACE=$(git config --local --get core.whitespace)
+if [ $? -ne 0 ];
+then
+  USER_HAS_CUSTOM_WHITESPACE=0
+else
+  USER_HAS_CUSTOM_WHITESPACE=1
+fi
+
+fail=0
+done=0
+
+restore_config()
+{
+  if [ $done -ne 1 ];
+  then
+    echo "Error while executing whitespace checking pre-commit hook!" 1>&2
+    echo "There might still be whitespace errors in your commit!" 1>&2
+  fi
+
+  if [ $USER_HAS_CUSTOM_WHITESPACE -eq 1 ];
+  then
+    git config --replace-all core.whitespace "$USER_WHITESPACE"
+  else
+    git config --unset core.whitespace
+  fi
+
+  # be nice and let the commit go through if something went wrong along the
+  # way and we did not record a failure
+  exit $fail
+}
+
+trap restore_config EXIT
+
+# set custom value
+git config --replace-all core.whitespace trailing-space
+
+if [ -z "$TRAILING_WHITESPACE_FILES" ];
+then
+  git diff-index --check --cached $against --
+  result=$?
+else
+  git diff-index --cached --name-only $against | perl -ne "print if /$TRAILING_WHITESPACE_FILES/" | xargs git diff-index --check --cached $against --
+  result=$?
+fi
+
+if [ $result -ne 0 ];
+then
+  fail=1
+fi
+
+git config --replace-all core.whitespace trailing-space,tab-in-indent
+
+if [ -z "$TAB_IN_INDENT_FILES" ];
+then
+  git diff-index --check --cached $against --
+  result=$?
+else
+  git diff-index --cached --name-only $against | perl -ne "print if /$TAB_IN_INDENT_FILES/" | xargs git diff-index --check --cached $against --
+  result=$?
+fi
+
+if [ $result -ne 0 ];
+then
+  fail=1
+fi
+
+done=1
+
+# trap will call the cleanup code
