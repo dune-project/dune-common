@@ -528,7 +528,7 @@ run_default_make () {
 }
 
 run_default_all () {
-  for cmd in autogen configure make; do
+  for cmd in vcsetup autogen configure make; do
     eval echo "--- calling $cmd for \$NAME_${module} ---"
     load_opts $cmd
     run_$cmd
