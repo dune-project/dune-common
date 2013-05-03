@@ -221,10 +221,11 @@ esac'
 }
 
 # list of all dunecontrol commands
-COMMANDS="printdeps update autogen configure make all exec bexec status svn"
+COMMANDS="printdeps vcsetup update autogen configure make all exec bexec status svn"
 
 # help string for the commands
 printdeps_HELP="print recursive dependencies of a module"
+vcsetup_HELP="setup version control repository (Git etc.) or working copy (SVN)"
 update_HELP="updated all modules from the repository"
 autogen_HELP="run the autogen.sh script for each module. Does nothing, if CMake is activated"
 configure_HELP="run configure or cmake for each module"
@@ -310,6 +311,62 @@ run_default_status () {
     text="$text, $count collisions"
   fi
   echo -e "$color[$text]$reset $name"
+}
+
+run_default_vcsetup() {
+  if [ -d .git ]; then
+    # Read Whitespace-Hook setting from dune.module file
+    local SETUPGITHOOK="$($GREP -i "^[$BLANK]*Whitespace-Hook:" dune.module | cut -d ':' -f2 | eval $PARSER_TRIM | tr '[:upper:]' '[:lower:]')"
+
+    if [ "x$SETUPGITHOOK" = "xyes" ]; then
+      # we have to install the Git whitespace hook
+      if [ ! -e .git/hooks/pre-commit ]; then
+        # there is no hook yet, we can safely install ours
+        echo "--> Installing Git pre-commit hook to enforce whitespace policy"
+        cp -p $PREFIX_DIR/bin/git-whitespace-hook .git/hooks/pre-commit
+      else
+        # there is already a hook, check whether it is our whitespace hook
+        local HOOKTAG="$(head -n 2 .git/hooks/pre-commit | tail -n 1)"
+        if [ "x$HOOKTAG" = "x# dune-git-whitespace-hook" ]; then
+          if [ $PREFIX_DIR/bin/git-whitespace-hook -nt .git/hooks/pre-commit ]; then
+            echo "--> Updating Git pre-commit hook with newer version"
+            cp -p $PREFIX_DIR/bin/git-whitespace-hook .git/hooks/pre-commit
+          fi
+        else
+          echo "WARNING: Existing pre-commit hook found!"
+          echo "WARNING: Skipping installation of DUNE whitespace hook!"
+          echo "WARNING: If you want to contribute patches to DUNE, you should make sure to call the whitespace hook"
+          echo "WARNING: (dune-common/bin/git-whitespace-hook) from you custom pre-commit hook, otherwise your commits"
+          echo "WARNING: might contain trailing whitespace and will not apply cleanly to the official repositories!"
+        fi
+      fi
+    fi
+
+    # Apply git configuration settings
+    if [ -f .vcsetup/config ]; then
+      echo -n "--> Setting Git configuration entries... "
+      cat .vcsetup/config | while read; do
+        # Filter out comments
+        COMMENT="$(echo $REPLY | $GREP '^#')"
+        if [ ! "x$COMMENT" = "x$REPLY" ]; then
+          git config $REPLY
+        fi
+      done
+      echo "done"
+    fi
+  fi
+
+  # Run custom setup scripts
+  if [ -d .git -o -d .svn -o -d CVS -o -f stamp-vc ]; then
+    if [ -d .vcsetup/run.d ]; then
+      for SCRIPT in .vcsetup/run.d/* ; do
+        if [ -x "$SCRIPT" ]; then
+          echo "--> Running $SCRIPT"
+          "$SCRIPT"
+        fi
+      done
+    fi
+  fi
 }
 
 run_default_update () {
