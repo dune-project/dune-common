@@ -229,9 +229,9 @@ CHECK_CXX_SOURCE_COMPILES("
    }
 
    template<typename T1, typename... T>
-   int add_ints(T1 t1, T&&... t)
+   int add_ints(T1 t1, T... t)
    {
-     return t1 + add_ints(std::forward<T>(t)...);
+     return t1 + add_ints(t...);
    }
 
    int main(void)
