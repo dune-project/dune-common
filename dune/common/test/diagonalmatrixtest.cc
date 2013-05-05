@@ -51,6 +51,9 @@ void test_matrix()
 
   // assign to FieldMatrix
   DUNE_UNUSED FieldMatrix<K,n,n> AFM = FieldMatrix<K,n,n>(A);
+  DUNE_UNUSED FieldMatrix<K,n,n> AFM2 = A;
+  DUNE_UNUSED FieldMatrix<K,n,n> AFM3;
+  AFM3 = A;
 }
 
 template<class K, int n>
