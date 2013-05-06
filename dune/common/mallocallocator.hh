@@ -6,6 +6,7 @@
 #include <exception>
 #include <cstdlib>
 #include <new>
+#include <utility>
 
 /**
  * @file
