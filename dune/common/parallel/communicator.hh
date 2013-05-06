@@ -50,7 +50,7 @@ namespace Dune
    * discretisation methods there might be the need to reorder the indices
    * after adding and/or deleting some of the discretisation
    * points. Therefore this index does not have to be persistent. Further
-   **on  we will call this index <em>local index</em>.
+   * on we will call this index <em>local index</em>.
    *
    * For the communication phases of our algorithms these locally stored
    * entries must also be addressable by a global identifier to be able to
@@ -688,7 +688,7 @@ namespace Dune
         /**
          * @brief The communication mode
          *
-         **True if this was a forward commuication.
+         * True if this was a forward communication.
          */
         forward=send
       };
@@ -723,7 +723,7 @@ namespace Dune
         /**
          * @brief The communication mode
          *
-         **True if this was a forward commuication.
+         * True if this was a forward communication.
          */
         forward=send
       };
@@ -765,7 +765,7 @@ namespace Dune
         /**
          * @brief The communication mode
          *
-         **True if this was a forward commuication.
+         * True if this was a forward communication.
          */
         forward=send
       };
@@ -799,7 +799,7 @@ namespace Dune
         /**
          * @brief The communication mode
          *
-         **True if this was a forward commuication.
+         * True if this was a forward communication.
          */
         forward=send
       };
