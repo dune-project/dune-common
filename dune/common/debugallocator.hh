@@ -25,6 +25,8 @@ namespace Dune
   namespace DebugMemory
   {
 
+    extern const std::ptrdiff_t page_size;
+
     struct AllocationManager
     {
       typedef std::size_t size_type;
@@ -32,7 +34,6 @@ namespace Dune
       typedef void* pointer;
 
     protected:
-      static const difference_type page_size;
       static void allocation_error(const char* msg);
 
       struct AllocationInfo;
