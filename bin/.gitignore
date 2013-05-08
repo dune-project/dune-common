@@ -1,7 +1,7 @@
 Makefile
 Makefile.in
-.deps
 semantic.cache
 check-log-store
-
 *.swp
+xfail-compile-tests.log
+xfail-compile-tests.trs

@@ -26,6 +26,7 @@ ltmain.sh
 .libs/
 .deps/
 *.la
+*.o
 *.lo
 test-driver
 dependencies.m4
