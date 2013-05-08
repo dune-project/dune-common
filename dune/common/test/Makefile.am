@@ -237,7 +237,7 @@ testfassign3_SOURCES = testfassign.cc
 testfassign3_CPPFLAGS = $(AM_CPPFLAGS) -D_DUNE_TEST_N=3 -D_VALUES="zero"
 
 testfassign4_SOURCES = testfassign.cc
-testfassign4_CPPFLAGS = $(AM_CPPFLAGS) -D_DUNE_TEST_N=2 -D_DUNE_TEST_M=3 -D_VALUES="1, zero, nextRow, 2, 3, 4"
+testfassign4_CPPFLAGS = $(AM_CPPFLAGS) -D_DUNE_TEST_N=2 -D_DUNE_TEST_M=3 -D_VALUES="1,zero,nextRow,2,3,4"
 
 testfassign_fail1_SOURCES = testfassign.cc
 testfassign_fail1_CPPFLAGS = $(AM_CPPFLAGS) -D_DUNE_TEST_N=3 -D_VALUES="1,2"
@@ -246,16 +246,16 @@ testfassign_fail2_SOURCES = testfassign.cc
 testfassign_fail2_CPPFLAGS = $(AM_CPPFLAGS) -D_DUNE_TEST_N=3 -D_VALUES="1,2,3,4"
 
 testfassign_fail3_SOURCES = testfassign.cc
-testfassign_fail3_CPPFLAGS = $(AM_CPPFLAGS) -D_DUNE_TEST_N=2 -D_DUNE_TEST_M=2 -D_VALUES="1, nextRow, 2, 3"
+testfassign_fail3_CPPFLAGS = $(AM_CPPFLAGS) -D_DUNE_TEST_N=2 -D_DUNE_TEST_M=2 -D_VALUES="1,nextRow,2,3"
 
 testfassign_fail4_SOURCES = testfassign.cc
-testfassign_fail4_CPPFLAGS = $(AM_CPPFLAGS) -D_DUNE_TEST_N=2 -D_DUNE_TEST_M=2 -D_VALUES="1, 2, 3, nextRow, 2, 3"
+testfassign_fail4_CPPFLAGS = $(AM_CPPFLAGS) -D_DUNE_TEST_N=2 -D_DUNE_TEST_M=2 -D_VALUES="1,2,3,nextRow,2,3"
 
 testfassign_fail5_SOURCES = testfassign.cc
-testfassign_fail5_CPPFLAGS = $(AM_CPPFLAGS) -D_DUNE_TEST_N=2 -D_DUNE_TEST_M=2 -D_VALUES="1, 2"
+testfassign_fail5_CPPFLAGS = $(AM_CPPFLAGS) -D_DUNE_TEST_N=2 -D_DUNE_TEST_M=2 -D_VALUES="1,2"
 
 testfassign_fail6_SOURCES = testfassign.cc
-testfassign_fail6_CPPFLAGS = $(AM_CPPFLAGS) -D_DUNE_TEST_N=2 -D_DUNE_TEST_M=2 -D_VALUES="1, 2, nextRow, 2, 3, nextRow, 4, 5"
+testfassign_fail6_CPPFLAGS = $(AM_CPPFLAGS) -D_DUNE_TEST_N=2 -D_DUNE_TEST_M=2 -D_VALUES="1,2,nextRow,2,3,nextRow,4,5"
 
 testfconstruct_SOURCES = testfconstruct.cc
 testfconstruct_CPPFLAGS = $(AM_CPPFLAGS) -DFVSIZE=3
