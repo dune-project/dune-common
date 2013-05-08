@@ -53,7 +53,6 @@ $(DOXYGENTAG): FORCE Doxyfile $(DOXYGENHEADER) $(DOXYGENFOOTER)
 	set -e; \
 	DTAG=$(DOXYGENTAG); \
 	if test -f $(srcdir)/$(DOXYGENTAG); then DTAG=$(srcdir)/$(DOXYGENTAG); fi; \
-	find $(top_srcdir) \( $(DOXYGEN_DEPENDON) \) -a -cnewer $$DTAG -print
 	if ! test -e "$$DTAG" || \
 	   test x"`find $(top_srcdir) \( $(DOXYGEN_DEPENDON) \) -a -cnewer $$DTAG -print`" != x; \
 	then \
