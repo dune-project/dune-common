@@ -24,6 +24,7 @@ dune-common-*.tar.gz
 dune-common-?.?
 ltmain.sh
 .libs
+.deps
 dependencies.m4
 dune.css
 config.h.in
