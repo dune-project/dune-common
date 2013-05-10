@@ -536,7 +536,7 @@ run_default_configure () {
       cd "$BUILDDIR"
       echo `pwd`
       echo "cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR"
-      eval cmake "-DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR"
+      eval cmake "-DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR" || exit 1
     else
       echo ./configure "$PARAMS"
       # create build directory of requested
