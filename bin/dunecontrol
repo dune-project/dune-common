@@ -252,7 +252,13 @@ done
 
 run_default_exec () { bash -c "eval $CMD_FLAGS"; }
 
-run_default_bexec () { bash -c "cd "$BUILDDIR" && eval $CMD_FLAGS"; }
+run_default_bexec () {
+  if test -d "$BUILDDIR"; then
+    bash -c "cd \"$BUILDDIR\" && eval $CMD_FLAGS";
+  else
+    eval echo "Build directory \\\"$BUILDDIR\\\" not found, skipping bexec for \$NAME_${module}"
+  fi
+}
 
 run_default_status () {
   local verbose=0
