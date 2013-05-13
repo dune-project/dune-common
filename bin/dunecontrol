@@ -831,9 +831,13 @@ while test $# -gt 0; do
     shift
 done
 
-if test "x$USE_CMAKE" = "xyes" && test -z "$DUNE_BUILDDIR"; then
-  echo "No build directory provided. Defaulting to the sub directory build-cmake"
-  export DUNE_BUILDDIR=build-cmake
+if test "x$USE_CMAKE" = "xyes"; then
+  # load general options. DUNE_BUILDDIR might be overwritten in the opts file
+  load_opts NONE
+  if test -z "$DUNE_BUILDDIR"; then
+    echo "No build directory provided. Defaulting to the sub directory build-cmake"
+    export DUNE_BUILDDIR=build-cmake
+  fi
 fi
 echo "USE_CMAKE=$USE_CMAKE DUNE_BUILDDIR=$DUNE_BUILDDIR"
 # we assume there should be a command...
