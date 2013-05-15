@@ -45,7 +45,7 @@ canonicalname(){
             fdir="`canonicalname \"$fdir\"`"
             echo "$fdir/$fname"
         fi
-        # if this is a directory, then create an absolute 
+        # if this is a directory, then create an absolute
         # directory name and we are done
         if test -d "$file"; then
             (cd "$file"; pwd)
@@ -126,7 +126,7 @@ build_module() {
       # disable usage of opts file
       if test "x$DUNE_OPTS_FILE" != "x"; then
         echo "WARNING: commandline parameters will overwrite setting in opts file \"$DUNE_OPTS_FILE\""
-      fi 
+      fi
     fi
 
     # skip command delimiter
@@ -146,7 +146,7 @@ build_module() {
       eval_control $runcommand $path/$CONTROL
     ); then eval echo "--- Failed to build \$NAME_${module} ---"; exit 1; fi
 	trap onfailure EXIT
-	
+
     eval echo "--- \$NAME_${module} done ---"
   done
 }
@@ -246,7 +246,7 @@ for command in $COMMANDS; do
 done
 
 #
-# default implementations for commands... 
+# default implementations for commands...
 # these can be overwritten in the $CONTROL files
 #
 
@@ -486,7 +486,7 @@ run_default_autogen () {
     else
       echo Skipping dune-autogen
     fi
-  else 
+  else
     echo Skipping dune-autogen because of CMake
   fi
 }
@@ -495,7 +495,7 @@ run_default_configure () {
   PARAMS="$CMD_FLAGS"
   if test "x$USE_CMAKE" = "xyes" && test -e $(eval "echo \$PATH_$module")/CMakeLists.txt; then
     LOCAL_USE_CMAKE=yes
-  else 
+  else
     LOCAL_USE_CMAKE=no
   fi
   echo "LOCAL_USE_CMAKE=$LOCAL_USE_CMAKE $(eval "echo \$PATH_$module")/CMakeLists.txt"
@@ -759,11 +759,11 @@ while test $# -gt 0; do
         exit 1
       fi
     ;;
-    -h|--help) 
+    -h|--help)
       command=help
       break
     ;;
-    -p|--print) 
+    -p|--print)
       command=print
       break
     ;;
@@ -1023,7 +1023,7 @@ EOF
   fi
 EOF
     done
-    ### 
+    ###
     for mod in $SORTEDMODULES_SUGS; do
       name=`eval echo \\$NAME_$mod`
       MOD=`echo $mod | tr [:lower:] [:upper:]`
