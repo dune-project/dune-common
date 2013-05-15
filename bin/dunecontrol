@@ -325,7 +325,8 @@ run_default_vcsetup() {
     eval "$CMD_FLAGS"
   fi
 
-  if [ -d .git ]; then
+  # Check for both a file and a directory to cope with Git submodules
+  if [ -d .git -o -f .git ] ; then
 
     # Read Whitespace-Hook setting from dune.module file
     local SETUPGITHOOK="$($GREP -i "^[$BLANK]*Whitespace-Hook:" dune.module | cut -d ':' -f2 | eval $PARSER_TRIM | tr '[:upper:]' '[:lower:]')"
@@ -333,33 +334,44 @@ run_default_vcsetup() {
     if [ "x$SETUPGITHOOK" = "xyes" ]; then
       # we have to install the Git whitespace hook
 
+      # The current Git repository might be a submodule, so we have to start by
+      # determining the location of the commit hook
+
+      if [ -f .git ] ; then
+        # submodule -> .git contains a pointer to the repository
+        GITHOOKPATH="$(sed 's/gitdir: //' < .git)/hooks/pre-commit"
+      else
+        # standard case, .git is the repository
+        GITHOOKPATH=.git/hooks/pre-commit
+      fi
+
       if [ -n "$DISABLEWHITESPACEHOOK" ] ; then
         # the user doesn't want the Git whitespace hook - deinstall it if necessary and warn the user
         echo "WARNING: The current module wants to install the DUNE whitespace hook, but you have disabled the hook in your options!"
         echo "WARNING: You will have to make sure that your commits don't introduce any trailing whitespace or indentation with tabs!"
         echo "WARNING: Otherwise, your commits might be rejected when trying to push them to an official repository!"
 
-        if [ -e .git/hooks/pre-commit ]; then
+        if [ -e "$GITHOOKPATH" ]; then
           # there is a pre-commit hook, check whether it is our whitespace hook
-          local HOOKTAG="$(head -n 2 .git/hooks/pre-commit | tail -n 1)"
+          local HOOKTAG="$(eval head -n 2 \"$GITHOOKPATH\" | tail -n 1)"
           if [ "x$HOOKTAG" = "x# dune-git-whitespace-hook" ]; then
             echo "--> Removing DUNE whitespace hook as requested by the user"
-            rm .git/hooks/pre-commit
+            rm "$GITHOOKPATH"
           fi
         fi
       else
         # standard handling of Git whitespace hook
-        if [ ! -e .git/hooks/pre-commit ]; then
+        if [ ! -e "$GITHOOKPATH" ]; then
           # there is no hook yet, we can safely install ours
           echo "--> Installing Git pre-commit hook to enforce whitespace policy"
-          cp -p $PREFIX_DIR/bin/git-whitespace-hook .git/hooks/pre-commit
+          cp -p $PREFIX_DIR/bin/git-whitespace-hook "$GITHOOKPATH"
         else
           # there is already a hook, check whether it is our whitespace hook
-          local HOOKTAG="$(head -n 2 .git/hooks/pre-commit | tail -n 1)"
+          local HOOKTAG="$(eval head -n 2 \"$GITHOOKPATH\" | tail -n 1)"
           if [ "x$HOOKTAG" = "x# dune-git-whitespace-hook" ]; then
-            if [ $PREFIX_DIR/bin/git-whitespace-hook -nt .git/hooks/pre-commit ]; then
+            if [ $PREFIX_DIR/bin/git-whitespace-hook -nt "$GITHOOKPATH" ]; then
               echo "--> Updating Git pre-commit hook with newer version"
-              cp -p $PREFIX_DIR/bin/git-whitespace-hook .git/hooks/pre-commit
+              cp -p $PREFIX_DIR/bin/git-whitespace-hook "$GITHOOKPATH"
             fi
           else
             echo "WARNING: Existing pre-commit hook found!"
@@ -405,7 +417,7 @@ run_default_vcsetup() {
   fi
 
   # Run custom setup scripts
-  if [ -d .git -o -d .svn -o -d CVS -o -f stamp-vc ]; then
+  if [ -d .git -o -f .git -o -d .svn -o -d CVS -o -f stamp-vc ]; then
     if [ -d .vcsetup/run.d ]; then
       for SCRIPT in .vcsetup/run.d/* ; do
         if [ -x "$SCRIPT" ]; then
