@@ -10,10 +10,6 @@
 #warning deprecation warning in that case.
 #endif
 
-/* If this is set, the member 'size' of FieldVector is a method rather than an
-   enum */
-#define DUNE_COMMON_FIELDVECTOR_SIZE_IS_METHOD 1
-
 /* Define to the version of dune-common */
 #define DUNE_COMMON_VERSION "${DUNE_COMMON_VERSION}"
 
