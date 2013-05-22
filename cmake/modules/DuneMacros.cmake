@@ -182,7 +182,7 @@ macro(dune_module_information MODULE_DIR)
   dune_module_to_uppercase(DUNE_MOD_NAME_UPPERCASE ${DUNE_MOD_NAME})
 
   # set module version
-  set(${DUNE_MOD_NAME_UPPERCASE}_VERSION         "${DUNE_MOD_VERSION}")
+  set(${DUNE_MOD_NAME_UPPERCASE}_VERSION          "${DUNE_MOD_VERSION}")
   set(${DUNE_MOD_NAME_UPPERCASE}_VERSION_MAJOR    "${DUNE_VERSION_MAJOR}")
   set(${DUNE_MOD_NAME_UPPERCASE}_VERSION_MINOR    "${DUNE_VERSION_MINOR}")
   set(${DUNE_MOD_NAME_UPPERCASE}_VERSION_REVISION "${DUNE_VERSION_REVISION}")
@@ -322,7 +322,9 @@ macro(dune_process_dependency_tree DEPENDS DVERSIONS SUGGESTS SVERSIONS)
       dune_module_to_macro(_cmake_mod_name "${_mod}")
       set(_macro "${_cmake_mod_name}Macros")
       set(_mod_cmake _mod_cmake-NOTFOUND) # Prevent false positives due to caching
-      find_file(_mod_cmake ${_macro}.cmake ${CMAKE_MODULE_PATH}
+      find_file(_mod_cmake
+        ${_macro}.cmake
+        ${CMAKE_MODULE_PATH}
         NO_DEFAULT_PATH)
       if(_mod_cmake)
         message(STATUS "Performing tests specific to ${_mod} from file ${_mod_cmake}.")
@@ -353,12 +355,6 @@ endmacro(dune_process_dependency_tree)
 # depedencies.
 # Don't forget to call finalize_dune_project afterwards.
 macro(dune_project)
-  # Set the flags
-  set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
-  set(CMAKE_C_FLAGS_DEBUG "-g -O0")
-  set(CMAKE_CXX_FLAGS_RELEASE "-funroll-loops -O3")
-  set(CMAKE_C_FLAGS_RELEASE "-funroll-loops -O3")
-
   # extract information from dune.module
   dune_module_information(${CMAKE_SOURCE_DIR})
   set(ProjectName            "${DUNE_MOD_NAME}")
@@ -463,8 +459,11 @@ macro(dune_project)
   set(DUNE_MOD_NAME_CMAKE "${_macro}")
   set(_macro "${_macro}Macros")
   set(_mod_cmake _mod_cmake-NOTFOUND)  # Prevent false positives due to caching
-  find_file(_mod_cmake ${_macro}.cmake ${CMAKE_MODULE_PATH}
-    ${CMAKE_SOURCE_DIR}/cmake/modules NO_DEFAULT_PATH)
+  find_file(_mod_cmake
+    ${_macro}.cmake
+    ${CMAKE_MODULE_PATH}
+    ${CMAKE_SOURCE_DIR}/cmake/modules
+    NO_DEFAULT_PATH)
   if(_mod_cmake)
     set(${DUNE_MOD_NAME_CMAKE}_FOUND FOUND)
     message(STATUS " Performing tests specific to ${DUNE_MOD_NAME} from file ${_mod_cmake}.")
@@ -481,8 +480,8 @@ macro(dune_project)
     set(DUNE_INSTALL_MODULEDIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules
       CACHE PATH
       "Installation directory for CMake modules. Be careful when overriding this as the modules might not be found any more. Might be set to ${CMAKE_ROOT}/Modules or better \${CMAKE_ROOT}/Modules to make the modules available to all CMake runs. This has to be an absolute path. Default: \${CMAKE_INSTALL_PREFIX}/\${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules")
-  endif()
-endmacro(dune_project MODULE_DIR)
+  endif(NOT DEFINED DUNE_INSTALL_MODULEDIR)
+endmacro(dune_project)
 
 # create a new config.h file and overwrite the existing one
 macro(dune_regenerate_config_cmake)
