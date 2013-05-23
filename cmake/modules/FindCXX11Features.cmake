@@ -121,17 +121,6 @@ CHECK_CXX_SOURCE_COMPILES("
 
 endif(NOT DISABLE_TR1_HEADERS)
 
-# __attribute__((always_inline))
-CHECK_CXX_SOURCE_COMPILES("
-   void __attribute__((always_inline)) foo(void) {}
-   int main(void)
-   {
-     foo();
-     return 0;
-   };
-"  HAVE_ATTRIBUTE_ALWAYS_INLINE
-)
-
 # __attribute__((unused))
 CHECK_CXX_SOURCE_COMPILES("
    int main(void)
