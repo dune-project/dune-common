@@ -8,9 +8,10 @@
 # upper_name where all dashes (-) are replaced by underscores (_)
 # Example: dune-common -> DUNE_COMMON
 #
-# dune_module_information(MODULE_DIR)
+# dune_module_information(MODULE_DIR [QUIET])
 #
 # Parse ${MODULE_DIR}/dune.module and provide that information.
+# If the second argument is QUIET no status message is printed.
 #
 #
 # dune_project()
@@ -123,6 +124,7 @@ function(convert_deps_to_list var)
 endfunction(convert_deps_to_list var)
 
 # add dune-common version from dune.module to config.h
+# optional second argument is verbosity
 macro(dune_module_information MODULE_DIR)
   file(READ "${MODULE_DIR}/dune.module" DUNE_MODULE)
 
@@ -168,7 +170,9 @@ macro(dune_module_information MODULE_DIR)
       set(${_mod}_REQUIRED REQUIRED)
     endforeach(_mod ${DUNE_DEPENDS})
     convert_deps_to_list(DUNE_DEPENDS)
-    message(STATUS "Dependencies: ${DEPENDS_MODULE} (versions: ${DEPENDS_VERSIONS}) DUNE_DEPENDS=${DUNE_DEPENDS}")
+    if(NOT ("${ARGV1}" STREQUAL QUIET))
+      message(STATUS "Dependencies: ${DEPENDS_MODULE} (versions: ${DEPENDS_VERSIONS}) DUNE_DEPENDS=${DUNE_DEPENDS}")
+    endif(NOT ("${ARGV1}" STREQUAL QUIET))
   endif(DUNE_DEPENDS)
 
   # 4. Check for line starting with Suggests
@@ -176,7 +180,9 @@ macro(dune_module_information MODULE_DIR)
   if(DUNE_SUGGESTS)
     split_module_version(${DUNE_SUGGESTS} SUGGESTS_MODULE SUGGESTS_VERSION)
     convert_deps_to_list(DUNE_SUGGESTS)
-    message(STATUS "Suggestions: ${SUGGESTS_MODULE} (versions: ${SUGGESTS_VERSIONS}) DUNE_SUGGESTS=${DUNE_SUGGESTS}")
+    if(NOT ("${ARGV1}" STREQUAL QUIET))
+      message(STATUS "Suggestions: ${SUGGESTS_MODULE} (versions: ${SUGGESTS_VERSIONS}) DUNE_SUGGESTS=${DUNE_SUGGESTS}")
+    endif(NOT ("${ARGV1}" STREQUAL QUIET))
   endif(DUNE_SUGGESTS)
 
   dune_module_to_uppercase(DUNE_MOD_NAME_UPPERCASE ${DUNE_MOD_NAME})
@@ -523,7 +529,17 @@ macro(dune_regenerate_config_cmake)
        file(APPEND ${CONFIG_H_CMAKE_FILE} "${_file}")
      endif(EXISTS ${_mod_conf_file})
    endforeach()
+   # parse other modules dune.module file to generate variables for config.h
+   foreach(_dune_module_file ${${_dep}_PREFIX}/dune.module
+       ${${_dep}_PREFIX}/share/${_dep}/dune.module)
+     if(EXISTS ${_dune_module_file})
+       get_filename_component(_dune_module_file_path ${_dune_module_file} PATH)
+       dune_module_information(${_dune_module_file_path} QUIET)
+     endif(EXISTS ${_dune_module_file})
+   endforeach()
  endforeach(_dep ${ALL_DEPENDENCIES})
+ # parse again dune.module file of current module to set PACKAGE_* variables
+ dune_module_information(${CMAKE_SOURCE_DIR} QUIET)
  file(APPEND ${CONFIG_H_CMAKE_FILE} "\n${_myfile}")
 endmacro(dune_regenerate_config_cmake)
 
