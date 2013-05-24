@@ -238,7 +238,7 @@ def rename_var(tokens):
         'GMP': 'GMP_FOUND',
         'GRAPE': 'GRAPE_FOUND',
         'INKSCAPE': 'INKSCAPE_FOUND',
-        'MPI': 'MPI_FOUND',
+        'MPI': 'MPI_CXX_FOUND',
         'PARDISO': 'PARDISO_FOUND',
         'PETSC': 'PETSC_FOUND',
         'PSURFACE': 'PSURFACE_FOUND',
