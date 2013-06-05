@@ -305,7 +305,7 @@ run_default_status () {
   if test "$is_git" ; then
     changed=$(git status --porcelain | grep -E "^ *M|^ *A|^ *D|^ *R|^ *C" | wc -l)
     collisions=$(git status --porcelain | grep -E "^ *U"| wc -l)
-    pending=$(git status | grep -E "^\# Your branch is ahead of " | wc -l)
+    pending=$(git status | grep -E "^\# Your branch is ahead |^\# Your branch is behind " | wc -l)
   fi
   color=$green
   text="no changes"
