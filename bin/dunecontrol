@@ -235,7 +235,7 @@ exec_HELP="execute an arbitrary command in each module source directory"
 bexec_HELP="execute an arbitrary command in each module build directory"
 status_HELP="show vc status for all modules"
 svn_HELP="\trun svn command for each svn managed module"
-git_HELP="\trun git command for each svn managed module"
+git_HELP="\trun git command for each git managed module"
 
 #
 # setup command proxies
