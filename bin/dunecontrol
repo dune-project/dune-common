@@ -221,7 +221,7 @@ esac'
 }
 
 # list of all dunecontrol commands
-COMMANDS="printdeps vcsetup update autogen configure make all exec bexec status svn"
+COMMANDS="printdeps vcsetup update autogen configure make all exec bexec status svn git"
 
 # help string for the commands
 printdeps_HELP="print recursive dependencies of a module"
@@ -235,6 +235,7 @@ exec_HELP="execute an arbitrary command in each module source directory"
 bexec_HELP="execute an arbitrary command in each module build directory"
 status_HELP="show vc status for all modules"
 svn_HELP="\trun svn command for each svn managed module"
+git_HELP="\trun git command for each svn managed module"
 
 #
 # setup command proxies
@@ -263,6 +264,17 @@ run_default_bexec () {
 run_default_status () {
   local verbose=0
   local update=""
+  local is_git=""
+  local is_svn=""
+  name="$(eval echo \$NAME_$module)"
+
+  if test -d .git; then is_git=1; fi
+  if test -d .svn; then is_svn=1; fi
+  if test ! "$is_svn" -a ! "$is_git" ; then
+    echo "module $name not under known version control"
+    return
+  fi
+
   for i in $CMD_FLAGS; do
     if eval test "x$i" = "x-v"; then verbose=1; fi
     if eval test "x$i" = "x-vv"; then verbose=2; fi
@@ -277,16 +289,24 @@ run_default_status () {
   fi
 
   if test $verbose -eq 1; then
-    svn status $update | grep -E "^M|^A|^D|^C|^U"
+    test "$is_svn" && svn status $update | grep -E "^M|^A|^D|^C|^U"
+    test "$is_git" && git status -uno
   elif test $verbose -eq 2; then
-    svn status $update
+    test "$is_svn" && svn status $update
+    test "$is_git" && git status
   fi
 
-  name="$(eval echo \$NAME_$module)"
-  changed=$(svn status | grep -E "^M|^A|^D" | wc -l)
-  collisions=$(svn status | grep -E "^C"| wc -l)
-  pending=$(svn status $update | grep -E "^...... \* " | wc -l)
 
+  if test "$is_svn" ; then
+    changed=$(svn status | grep -E "^M|^A|^D" | wc -l)
+    collisions=$(svn status | grep -E "^C"| wc -l)
+    pending=$(svn status $update | grep -E "^...... \* " | wc -l)
+  fi
+  if test "$is_git" ; then
+    changed=$(git status --porcelain | grep -E "^ *M|^ *A|^ *D|^ *R|^ *C" | wc -l)
+    collisions=$(git status --porcelain | grep -E "^ *U"| wc -l)
+    pending=$(git status | grep -E "^\# Your branch is ahead of " | wc -l)
+  fi
   color=$green
   text="no changes"
   if [ $changed -eq 0 ]; then
@@ -599,6 +619,13 @@ run_default_svn () {
   if test -d .svn; then
     PARAMS="$CMD_FLAGS"
     eval svn "$PARAMS"
+  fi
+}
+
+run_default_git () {
+  if test -d .git; then
+    PARAMS="$CMD_FLAGS"
+    eval git "$PARAMS"
   fi
 }
 
