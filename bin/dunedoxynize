@@ -10,9 +10,9 @@ DOXYDIR="doc/doxygen/"
 
 find_doxystyle()
 {
-  for i in `dirname $0`/../doc/doxygen/Doxystyle `dirname $0`/../share/dune-common/doc/doxygen/Doxystyle; do
+  for i in "`dirname "$0"`/../doc/doxygen/Doxystyle" "`dirname "$0"`/../share/dune-common/doc/doxygen/Doxystyle"; do
     if [ -f "$i" ]; then
-      export DOXYSTYLE=$i
+      export DOXYSTYLE="$i"
       return 0
     fi
   done
@@ -92,7 +92,7 @@ generate_doxyout()
 {
   echo "Generating $DOXYOUT from "
   echo "    global style"
-  cat $DOXYSTYLE > $DOXYOUT
+  cat "$DOXYSTYLE" > "$DOXYOUT"
   while [ -n "$1" ]; do
     for DOXY in Doxylocal Doxyfile.in Doxyfile; do
 	  if [ "$1/$DOXYDIR/$DOXY" -ef "$DOXYOUT" ]; then continue; fi

@@ -27,13 +27,13 @@ rm -f dune-all.m4
 rm -f $name.m4
 
 # add current dir to PATH
-PATH=`dirname $0`:$PATH
+PATH=`dirname "$0"`:$PATH
 
 # guess libtool prefix
 if test -n "$LIBTOOLIZE"; then
-    LIBTOOL_prefix=`dirname \`dirname $LIBTOOLIZE\``
+    LIBTOOL_prefix=`dirname "\`dirname "$LIBTOOLIZE"\`"`
     PATH=$LIBTOOL_prefix:$PATH
-    ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $LIBTOOL_prefix/share/aclocal"
+    ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I \"$LIBTOOL_prefix/share/aclocal\""
 fi
 
 for OPT in "$@"; do
@@ -61,7 +61,7 @@ for OPT in "$@"; do
 	-h|--help) usage ; exit 0 ;;
 	*)
             if test -d "$OPT/m4"; then
-              ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $OPT/m4"
+              ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I \"$OPT/m4\""
             fi
             if test -f "$OPT/dune-common.pc.in" ; then
 #            if test \( -d "$OPT/am" \) -a ! \( -h "$OPT/am" \) ; then
@@ -121,14 +121,14 @@ dunecontrol --only=$name m4create
 echo "--> aclocal..."
 rm -f aclocal.m4
 rm -rf autom4te.cache
-aclocal$AMVERSION -I . $ACLOCAL_FLAGS
+eval aclocal$AMVERSION "-I . $ACLOCAL_FLAGS"
 
 # create a link to the dune-common am directory
 if [ "$name" != "dune-common" ]; then
-  if [ -n "$am_dir" ] && [ -d $am_dir ]; then
+  if [ -n "$am_dir" ] && [ -d "$am_dir" ]; then
     echo "--> linking dune-common/am..."
     rm -f am
-    ln -s $am_dir am
+    ln -s "$am_dir" am
   else
     echo
     echo "Error: Could not find dune-common/am!"
