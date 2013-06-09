@@ -51,7 +51,7 @@ canonicalpath(){
      echo Usage: canonicalpath path >&2
      return 1
   fi
-  dirname $(canonicalname "$1")
+  dirname "$(canonicalname "$1")"
 }
 
 pkg_config_dependencies(){
@@ -145,10 +145,10 @@ echo
 
 ################## FIND AVAILABLE MODULES ##################
 
-. $(canonicalpath $0)/../lib/dunemodules.lib
+. "$(canonicalpath $0)/../lib/dunemodules.lib"
 
 # create PKG_CONFIG_PATH for installed dune modules
-export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$(canonicalpath $0)/../lib/pkgconfig"
+export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:\"$(canonicalpath $0)/../lib/pkgconfig\""
 
 # search for modules, both installed and src modules
 find_modules_in_path
