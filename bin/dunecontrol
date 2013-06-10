@@ -1128,6 +1128,17 @@ EOF
     usage
   ;;
   *)
+    set +e
+    if test "x$USE_CMAKE" = "xno"; then
+      echo "$PREFIX_DIR" |grep "[ 	]" >/dev/null
+     if test "$?" -eq "0"; then
+        echo "ERROR: The prefix directory path ($PREFIX_DIR) contains spaces. This is not"
+        echo "       supported when using autotools."
+        echo "       Either rename the path or activate CMake with --use-cmake switch."
+        exit 1
+      fi
+    fi
+    set -e
     if test "$1" = "update"; then export SKIPVERSIONCHECK=yes; fi
     check_commands "$@"
     create_module_list
