@@ -570,11 +570,10 @@ run_default_configure () {
     if test "x$LOCAL_USE_CMAKE" = "xyes"; then
       # we have to export the compiler and compiler flags
       # such that they are honored by cmake.
-      trimmed=`echo $PARAMS|sed "s/^\s*\(.*\)\s*$/\1/"`
       flags="CXX CC CXXFLAGS CFLAGS CPPFLAGS LDFLAGS F77 FFLAGS FLIBS FC FCFLAGS FCLIBS LIBS"
       for i in  $flags; do
-        cflags=`echo $trimmed | sed "s/.*\($i=\"[^\"]*\"\|$i='[^']*'\|$i=[^\s^ ]*\).*/\1/"`
-        if test "$cflags" != "$trimmed"; then
+        cflags=`echo "$PARAMS" | sed "s/.*\($i=\"[^\"]*\"\|$i='[^']*'\|$i=[^\s^ ]*\).*/\1/"`
+        if test "$cflags" != "$PARAMS"; then
             PREPARAMS="$PREPARAMS $cflags"
         fi
       done

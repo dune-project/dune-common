@@ -37,13 +37,13 @@ dune_common_options_am2cmake()
     fi
 
     # Check for --with-minimal-debug-level
-    local arg=`echo $PARAMS| sed "s/.*--with-minimal-debug-level=\(\S*\).*/\1/"`
+    local arg=`echo "$PARAMS"| sed "s/.*--with-minimal-debug-level=\(\S*\).*/\1/"`
     if test "x$arg" != "x$PARAMS"; then
         CMAKE_PARAMS="$CMAKE_PARAMS -DMINIMAL_DEBUG_LEVEL:String=$arg"
     fi
 
     #Check for --prefix
-    local arg=`echo $PARAMS| sed "s/.*--prefix=\(\S*\).*/\1/"`
+    local arg=`echo "$PARAMS"| sed "s/.*--prefix=\(\S*\).*/\1/"`
     if test "x$arg" != "x$PARAMS"; then
         CMAKE_PARAMS="$CMAKE_PARAMS -DCMAKE_INSTALL_PREFIX=$arg"
     fi
