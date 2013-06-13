@@ -566,15 +566,15 @@ run_default_configure () {
     if test "x$HAVE_duneweb" == "xyes"; then
       PARAMS="$PARAMS \"--with-duneweb=$PATH_duneweb\""
     fi
-    PARAMS="$PARAMS ACLOCAL_AMFLAGS=\"$ACLOCAL_FLAGS\""
 
     if test "x$LOCAL_USE_CMAKE" = "xyes"; then
       # we have to export the compiler and compiler flags
       # such that they are honored by cmake.
+      trimmed=`echo $PARAMS|sed "s/^\s*\(.*\)\s*$/\1/"`
       flags="CXX CC CXXFLAGS CFLAGS CPPFLAGS LDFLAGS F77 FFLAGS FLIBS FC FCFLAGS FCLIBS LIBS"
       for i in  $flags; do
-        cflags=`echo $PARAMS | sed "s/.*\($i=\"[^\"]*\"\|$i='[^']*'\|$i=[^\s^ ]*\).*/\1/"`
-        if test "$cflags" != "$PARAMS"; then
+        cflags=`echo $trimmed | sed "s/.*\($i=\"[^\"]*\"\|$i='[^']*'\|$i=[^\s^ ]*\).*/\1/"`
+        if test "$cflags" != "$trimmed"; then
             PREPARAMS="$PREPARAMS $cflags"
         fi
       done
@@ -585,6 +585,7 @@ run_default_configure () {
       echo "$PREPARAMS cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR"
       eval $PREPARAMS cmake "-DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR" || exit 1
     else
+      PARAMS="$PARAMS ACLOCAL_AMFLAGS=\"$ACLOCAL_FLAGS\""
       echo ./configure "$PARAMS"
       # create build directory of requested
       if test -n "$BUILDDIR"; then
