@@ -65,11 +65,46 @@ else
   USER_HAS_CUSTOM_WHITESPACE=1
 fi
 
+# Figure out how to call xargs to make sure it won't invoke its argument with
+# an empty argument list. BSD xargs will not do that by default, while GNU xargs
+# needs -r to do the same. So we start by checking whether xargs does the right
+# thing without options. Now there could be other obscure versions of xargs out
+# there (on clusters etc.) that behave in yet another way, so we try with -r as
+# well. If that fails, we throw a big error message at the user.
+
+# In the following line, xargs should not call false, so the return value should be 0.
+echo "" | xargs false
+
+if [ $? -ne 0 ]; then
+  # Let's try with -r
+  echo "" | xargs -r false
+  if [ $? -ne 0 ]; then
+    # Houston, we have a problem
+    if [ -z "$DUNE_WHITESPACE_IGNORE_XARGS" ]; then
+      echo "You seem to be lacking a version of xargs that is compatible to either BSD or GNU!" 1>&2
+      echo "Please file a bug report at http://dune-project.org about this issue with your exact operating system type and version!" 1>&2
+      echo "You can still use this hook by setting the environment variable DUNE_WHITESPACE_IGNORE_XARGS to 1, but please be aware" 1>&2
+      echo "that the hook might create false positives." 1>&2
+      echo "==============================================================" 1>&2
+      echo "Aborting the commit..." 1>&2
+      exit 99
+    else
+      SILENTXARGS=xargs
+    fi
+  else
+    SILENTXARGS="xargs -r"
+  fi
+else
+  SILENTXARGS=xargs
+fi
+
+
 fail=0
 done=0
 
-restore_config()
+do_cleanup()
 {
+
   if [ $done -ne 1 ];
   then
     echo "Error while executing whitespace checking pre-commit hook!" 1>&2
@@ -88,7 +123,7 @@ restore_config()
   exit $fail
 }
 
-trap restore_config EXIT
+trap do_cleanup EXIT
 
 # set custom value
 git config --replace-all core.whitespace trailing-space
@@ -98,7 +133,7 @@ then
   git diff-index --check --cached $against --
   result=$?
 else
-  git diff-index --cached --name-only $against | perl -ne "print if /$TRAILING_WHITESPACE_FILES/" | xargs git diff-index --check --cached $against --
+  git diff-index --cached --name-only $against | perl -ne "print if /$TRAILING_WHITESPACE_FILES/" | $SILENTXARGS git diff-index --check --cached $against --
   result=$?
 fi
 
@@ -114,7 +149,7 @@ then
   git diff-index --check --cached $against --
   result=$?
 else
-  git diff-index --cached --name-only $against | perl -ne "print if /$TAB_IN_INDENT_FILES/" | xargs git diff-index --check --cached $against --
+  git diff-index --cached --name-only $against | perl -ne "print if /$TAB_IN_INDENT_FILES/" | $SILENTXARGS git diff-index --check --cached $against --
   result=$?
 fi
 
