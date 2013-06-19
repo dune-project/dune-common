@@ -14,7 +14,7 @@
 # files will be matched against those regexes.
 
 # git-diff-index needs a valid commit to compare to
-if git-rev-parse --verify HEAD 2>/dev/null
+if git rev-parse --verify HEAD >/dev/null 2>&1
 then
 	against=HEAD
 else
