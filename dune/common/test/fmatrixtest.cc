@@ -581,6 +581,7 @@ int main()
     test_determinant();
     test_invert< float, 34 >();
     test_invert< double, 34 >();
+    test_invert< std::complex< long double >, 2 >();
     return test_invert_solve();
   }
   catch (Dune::Exception & e)
