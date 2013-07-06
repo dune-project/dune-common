@@ -98,11 +98,11 @@ XFAIL_TESTS = \
 # programs just to build when "make check" is used
 check_PROGRAMS = $(TESTPROGS)
 
-noinst_HEADERS = dummyiterator.hh
+noinst_HEADERS = dummyiterator.hh iteratorfacadetest.hh
 
 # Install some test headers, because they get used by tests in other modules
 testincludedir = $(includedir)/dune/common/test
-testinclude_HEADERS = checkmatrixinterface.hh iteratortest.hh iteratorfacadetest.hh dummyiterator.hh
+testinclude_HEADERS = checkmatrixinterface.hh iteratortest.hh
 
 # define the programs
 pathtest_SOURCES = pathtest.cc
