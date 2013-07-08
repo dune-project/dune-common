@@ -491,11 +491,12 @@ macro(dune_project)
   # Thus the user can override it and for example install
   # directly into the CMake installation. This has to be an
   # absolute path. Default: ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules
-  if(NOT DEFINED DUNE_INSTALL_MODULEDIR)
-    set(DUNE_INSTALL_MODULEDIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules
+  if(NOT DUNE_INSTALL_MODULEDIR)
+    set(DUNE_INSTALL_MODULEDIR ""
       CACHE PATH
-      "Installation directory for CMake modules. Be careful when overriding this as the modules might not be found any more. Might be set to ${CMAKE_ROOT}/Modules or better \${CMAKE_ROOT}/Modules to make the modules available to all CMake runs. This has to be an absolute path. Default: \${CMAKE_INSTALL_PREFIX}/\${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules")
-  endif(NOT DEFINED DUNE_INSTALL_MODULEDIR)
+      "Installation directory for CMake modules. Default is \${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules when not set explicitely")
+    set(DUNE_INSTALL_MODULEDIR ${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules)
+  endif(NOT DUNE_INSTALL_MODULEDIR)
 endmacro(dune_project)
 
 # create a new config.h file and overwrite the existing one
