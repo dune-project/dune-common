@@ -145,7 +145,8 @@ namespace Dune {
     /**
      * @brief Insert a value into the container
      *
-     * Stores value under key and marks it as most recent.
+     * Stores value under key and marks it as most recent. If this key
+     * is already present, the associated data is replaced.
      *
      * @param key   associated with data
      * @param data  to store
@@ -180,7 +181,10 @@ namespace Dune {
     {
       /* query _index for iterator */
       iterator it = _index[key];
-      /* update _data
+      if (it == _index.end())
+        DUNE_THROW(Dune::RangeError,
+          "Failed to touch key " << key << ", it is not in the lru container");
+       /* update _data
          move it to the front
        */
       _data.splice(_data.begin(), _data, it);
@@ -188,7 +192,7 @@ namespace Dune {
     }
 
     /**
-     *
+     * @brief retief number of entries in the container
      */
     size_type size() const
     {
@@ -196,7 +200,9 @@ namespace Dune {
     }
 
     /**
-     *
+     * @brief ensure a maximum size of the container
+     * If new_size is smaller than size the oldest elements are
+     * dropped. Otherwise nothing happens.
      */
     void resize(size_type new_size)
     {
