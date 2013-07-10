@@ -249,8 +249,9 @@ namespace Dune
     }
 
     //! @copydoc CollectiveCommunication::gather()
+    //! @note out must have space for P*len elements
     template<typename T>
-    int gather (T* in, T* out, int len, int root) const     // note out must have space for P*len elements
+    int gather (T* in, T* out, int len, int root) const
     {
       return MPI_Gather(in,len,MPITraits<T>::getType(),
                         out,len,MPITraits<T>::getType(),
@@ -258,8 +259,9 @@ namespace Dune
     }
 
     //! @copydoc CollectiveCommunication::scatter()
+    //! @note out must have space for P*len elements
     template<typename T>
-    int scatter (T* send, T* recv, int len, int root) const // note out must have space for P*len elements
+    int scatter (T* send, T* recv, int len, int root) const
     {
       return MPI_Scatter(send,len,MPITraits<T>::getType(),
                          recv,len,MPITraits<T>::getType(),
