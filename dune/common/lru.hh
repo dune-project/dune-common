@@ -7,6 +7,8 @@
 #include <utility>
 #include <map>
 
+#include <dune/common/exceptions.hh>
+
 /** @file
     @author Christian Engwer
     @brief LRU Cache Container, using an STL like interface
