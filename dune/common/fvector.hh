@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <complex>
 #include <cstring>
+#include <utility>
 
 #include "typetraits.hh"
 #include "exceptions.hh"
@@ -98,8 +99,22 @@ namespace Dune {
     typedef typename Base::size_type size_type;
     typedef typename Base::value_type value_type;
 
-    //! Constructor making uninitialized vector
-    FieldVector() {}
+    //! Constructor making default-initialized vector
+    FieldVector()
+    // Use C++11 unified initialization if available - tends to generate
+    // fastest code
+#if HAVE_INITIALIZER_LIST
+      : _data{}
+    {}
+#else
+    {
+      // fall back to library approach - this gives faster code than array placement
+      // new. Apart from that, placement new may create problems if K is a complex
+      // type. In that case, the default constructor of the _data elements has already
+      // been called and may have allocated memory.
+      std::fill(_data.begin(),_data.end(),K());
+    }
+#endif
 
     //! Constructor making vector with identical coordinates
     explicit FieldVector (const K& t)
@@ -205,7 +220,9 @@ namespace Dune {
     //===== construction
 
     /** \brief Default constructor */
-    FieldVector () {}
+    FieldVector ()
+      : _data()
+    {}
 
     /** \brief Constructor with a given scalar */
     FieldVector (const K& k) : _data(k) {}
