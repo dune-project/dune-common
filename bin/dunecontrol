@@ -409,9 +409,12 @@ run_default_vcsetup() {
       echo -n "--> Setting Git configuration entries... "
       cat .vcsetup/config | while read; do
         # Filter out comments
-        COMMENT="$(echo $REPLY | $GREP '^#')"
+        local COMMENT="$(echo $REPLY | $GREP '^#')"
         if [ ! "x$COMMENT" = "x$REPLY" ]; then
-          git config $REPLY
+          # parse line into an array first to catch obvious syntax errors
+          # like 'option value; rm -rf /'
+          eval local GIT_OPTS=($REPLY)
+          git config "${GIT_ARGS[@]}"
         fi
       done
       echo "done"
@@ -423,9 +426,12 @@ run_default_vcsetup() {
         echo -n "--> Setting custom Git configuration entries from '$GIT_CONFIG_FILE'... "
         cat "$GIT_CONFIG_FILE" | while read; do
           # Filter out comments
-          COMMENT="$(echo $REPLY | $GREP '^#')"
+          local COMMENT="$(echo $REPLY | $GREP '^#')"
           if [ ! "x$COMMENT" = "x$REPLY" ]; then
-            git config $REPLY
+            # parse line into an array first to catch obvious syntax errors
+            # like 'option value; rm -rf /'
+            eval local GIT_OPTS=($REPLY)
+            git config "${GIT_ARGS[@]}"
           fi
         done
         echo "done"
