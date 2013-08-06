@@ -33,3 +33,4 @@ dependencies.m4
 dune.css
 build-cmake/
 *~
+/compile
