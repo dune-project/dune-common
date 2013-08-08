@@ -15,7 +15,18 @@ set(VERSION ${DUNE_MOD_VERSION})
 set(CC ${CMAKE_C_COMPILER})
 set(CXX "${CMAKE_CXX_COMPILER} ${CXX_STD11_FLAGS}")
 
-set(REQUIRES ${DUNE_DEPENDS})
+if(DUNE_DEPENDS)
+  foreach(_DUNE_DEPEND ${DUNE_DEPENDS})
+    string(REGEX REPLACE "\\(" "" REQF1 ${_DUNE_DEPEND})
+    string(REGEX REPLACE "\\)" "" LR ${REQF1})
+    if(REQUIRES)
+      set(REQUIRES "${REQUIRES} ${LR}")
+    else()
+      set(REQUIRES ${LR})
+    endif(REQUIRES)
+  endforeach(_DUNE_DEPEND ${DUNE_DEPENDS})
+endif(DUNE_DEPENDS)
+
 #create pkg-config file
 configure_file(
   ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}.pc.in
@@ -24,7 +35,7 @@ configure_file(
 )
 
 # install pkgconfig file
-if(PKG_CONFIG_FOUND )
+if(PKG_CONFIG_FOUND)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${DUNE_MOD_NAME}.pc
     DESTINATION lib/pkgconfig)
 endif(PKG_CONFIG_FOUND)
