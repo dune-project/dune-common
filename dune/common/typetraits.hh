@@ -372,6 +372,8 @@ namespace Dune
    * otherwise T2 will be selected.
    * The selected type id accessible through the typedef
    * Type.
+   *
+   * \deprecated Will be removed after dune-common-2.3, use 'conditional' instead.
    */
   template<bool first, class T1, class T2>
   struct SelectType
@@ -382,13 +384,41 @@ namespace Dune
      * if first is true this will be type T1 and
      * otherwise T2
      */
-    typedef T1 Type;
-  };
+    typedef T1 Type DUNE_DEPRECATED_MSG("Use Dune::conversion::type instead");
+  } DUNE_DEPRECATED;
 
   template<class T1, class T2>
   struct SelectType<false,T1,T2>
   {
-    typedef T2 Type;
+    typedef T2 Type DUNE_DEPRECATED_MSG("Use Dune::conversion::type instead");
+  };
+
+   /**
+   * @brief Select a type based on a condition.
+   *
+   * If template parameter first is true T1 is selected
+   * otherwise T2 will be selected.
+   * The selected type is accessible through the typedef
+   * type.
+   *
+   * \note This is a reimplementation of the C++11 stl feature of the same name.
+   */
+  template<bool first, class T1, class T2>
+  struct conditional
+  {
+    /**
+     * @brief The selected type
+     *
+     * if first is true this will be type T1 and
+     * T2 otherwise
+     */
+    typedef T1 type;
+  };
+
+  template<class T1, class T2>
+  struct conditional<false,T1,T2>
+  {
+    typedef T2 type;
   };
 
   ////////////////////////////////////////////////////////////////////////
