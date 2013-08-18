@@ -370,7 +370,7 @@ namespace Dune
    *
    * If template parameter first is true T1 is selected
    * otherwise T2 will be selected.
-   * The selected type id accessible through the typedef
+   * The selected type is accessible through the typedef
    * Type.
    *
    * \deprecated Will be removed after dune-common-2.3, use 'conditional' instead.
