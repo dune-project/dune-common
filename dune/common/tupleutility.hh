@@ -1511,10 +1511,10 @@ namespace Dune {
   template<class Tuple, template<class> class Predicate, std::size_t start = 0,
       std::size_t size = tuple_size<Tuple>::value>
   class FirstPredicateIndex :
-    public SelectType<Predicate<typename tuple_element<start,
+    public conditional<Predicate<typename tuple_element<start,
                 Tuple>::type>::value,
         integral_constant<std::size_t, start>,
-        FirstPredicateIndex<Tuple, Predicate, start+1> >::Type
+        FirstPredicateIndex<Tuple, Predicate, start+1> >::type
   {
     dune_static_assert(tuple_size<Tuple>::value == size, "The \"size\" "
                        "template parameter of FirstPredicateIndex is an "
