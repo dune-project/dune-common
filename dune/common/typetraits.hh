@@ -384,13 +384,13 @@ namespace Dune
      * if first is true this will be type T1 and
      * otherwise T2
      */
-    typedef T1 Type DUNE_DEPRECATED_MSG("Use Dune::conversion::type instead");
+    typedef T1 Type DUNE_DEPRECATED_MSG("Use Dune::conditional::type instead");
   } DUNE_DEPRECATED;
 
   template<class T1, class T2>
   struct SelectType<false,T1,T2>
   {
-    typedef T2 Type DUNE_DEPRECATED_MSG("Use Dune::conversion::type instead");
+    typedef T2 Type DUNE_DEPRECATED_MSG("Use Dune::conditional::type instead");
   };
 
    /**
