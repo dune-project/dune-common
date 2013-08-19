@@ -1133,8 +1133,8 @@ namespace Dune {
    *
    * \note Since transformTuple() takes non-const references to the extra
    *       arguments, it will only bind to lvalue extra arguments, unless you
-   *       specify the corresconding template parameter as \c const \c
-   *       SomeType.  Specifically this meands that you cannot simply use
+   *       specify the corresponding template parameter as \c const \c
+   *       SomeType.  Specifically this means that you cannot simply use
    *       literals or function return values as extra arguments. Providing
    *       overloads for all possible combinations of rvalue and lvalue extra
    *       arguments would result in \f$2^{n+1}-1\f$ overloads where \f$n\f$
