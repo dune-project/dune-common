@@ -14,6 +14,7 @@
 # HAVE_VARIADIC_TEMPLATES          True if variadic templates are supprt
 # HAVE_VARIADIC_CONSTRUCTOR_SFINAE True if variadic constructor sfinae is supported
 # HAVE_RVALUE_REFERENCES           True if rvalue references are supported
+# HAVE_STD_THREAD                  True if std::thread is supported
 
 include(CMakePushCheckState)
 cmake_push_check_state()
@@ -309,6 +310,23 @@ CHECK_CXX_SOURCE_COMPILES("
     return 0;
   }
 " HAVE_INITIALIZER_LIST
+)
+
+# std::thread
+CHECK_CXX_SOURCE_COMPILES("
+  #include <thread>
+
+  void f()
+  {
+    // do nothing
+  }
+
+  int main()
+  {
+    std::thread t(f);
+    t.join();
+  }
+" HAVE_STD_THREAD
 )
 
 cmake_pop_check_state()
