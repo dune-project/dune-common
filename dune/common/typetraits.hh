@@ -9,6 +9,8 @@
 #include <tr1/type_traits>
 #endif
 
+#include <dune/common/deprecated.hh>
+
 namespace Dune
 {
 
