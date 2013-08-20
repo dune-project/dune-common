@@ -489,8 +489,11 @@ macro(dune_project)
   include(GNUInstallDirs)
   # Set variable where the cmake modules will be installed.
   # Thus the user can override it and for example install
-  # directly into the CMake installation. This has to be an
-  # absolute path. Default: ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules
+  # directly into the CMake installation. We use a cache variable
+  # that is overridden by a local variable of the same name if
+  # the user does not explicitely set a value for it. Thus the value
+  # will automatically change if the user changes CMAKE_INSTALL_DATAROOTDIR
+  # or CMAKE_INSTALL_PREFIX
   if(NOT DUNE_INSTALL_MODULEDIR)
     set(DUNE_INSTALL_MODULEDIR ""
       CACHE PATH
