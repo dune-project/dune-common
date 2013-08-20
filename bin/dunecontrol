@@ -165,10 +165,13 @@ load_opts() {
   local CMD_FLAGS_FROM_FILE=""
   BUILDDIR=$DUNE_BUILDDIR
   if test "x$DUNE_OPTS_FILE" != "x"; then
-    # use build dir from opts file if set
-    OPTS_FILE_BUILDDIR="$(eval BUILDDIR=""; . $DUNE_OPTS_FILE; eval echo \$BUILDDIR)"
-    if test -n "$OPTS_FILE_BUILDDIR"; then
-      BUILDDIR="$OPTS_FILE_BUILDDIR"
+    if test -z "$BUILDDIR"; then
+      # no builddir set yet, use build dir from opts file if set
+      # Note: if --use-buiddir is used BUILDDIR will be set already
+      OPTS_FILE_BUILDDIR="$(eval BUILDDIR=""; . $DUNE_OPTS_FILE; eval echo \$BUILDDIR)"
+      if test -n "$OPTS_FILE_BUILDDIR"; then
+        BUILDDIR="$OPTS_FILE_BUILDDIR"
+      fi
     fi
     CMAKE_FLAGS="$(. $DUNE_OPTS_FILE; eval echo \$CMAKE_FLAGS)"
     CMD_FLAGS_FROM_FILE="$(eval ${COMMAND}_FLAGS=""; . $DUNE_OPTS_FILE; eval echo \$${COMMAND}_FLAGS)"
@@ -882,12 +885,12 @@ done
 if test "x$USE_CMAKE" = "xyes"; then
   # load general options. DUNE_BUILDDIR might be overwritten in the opts file
   load_opts NONE
-  if test -z "$DUNE_BUILDDIR"; then
+  if test -z "$BUILDDIR"; then
     echo "No build directory provided. Defaulting to the sub directory build-cmake"
-    export DUNE_BUILDDIR=build-cmake
+    export BUILDDIR=build-cmake
   fi
 fi
-echo "USE_CMAKE=$USE_CMAKE DUNE_BUILDDIR=$DUNE_BUILDDIR"
+
 # we assume there should be a command...
 if test "x$command" = "x"; then
   usage
