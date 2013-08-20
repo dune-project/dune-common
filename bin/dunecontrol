@@ -521,7 +521,7 @@ run_default_configure () {
   else
     LOCAL_USE_CMAKE=no
   fi
-  echo "LOCAL_USE_CMAKE=$LOCAL_USE_CMAKE $(eval "echo \$PATH_$module")/CMakeLists.txt"
+
   if test -x configure || test "x$LOCAL_USE_CMAKE" = "xyes" ; then
     ACLOCAL_FLAGS="-I ."
     if test -d "m4"; then
@@ -537,7 +537,6 @@ run_default_configure () {
           # Translate the configure PARMS to cmake
           export PARAMS
           export CMAKE_PARAMS
-          echo module_translate_options_am2cmake $m $path/lib
           module_translate_options_am2cmake $m $path/lib
       fi
       if test x$module = x$m; then continue; fi # skip myself
@@ -583,7 +582,6 @@ run_default_configure () {
       test -d "$BUILDDIR" || mkdir "$BUILDDIR"
       SRCDIR="$PWD"
       cd "$BUILDDIR"
-      echo `pwd`
       echo "$PREPARAMS cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR"
       eval $PREPARAMS cmake "-DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR" || exit 1
     else

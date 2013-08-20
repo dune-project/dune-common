@@ -20,18 +20,18 @@ dune_common_options_am2cmake()
     default_am2cmake_options $CMAKE_PACKAGES
 
     # Check for --enable-parallel and otherwise deactivate MPI
-    echo $PARAMS | grep \\-\\-enable-parallel
+    echo $PARAMS | grep \\-\\-enable-parallel > /dev/null
     if test "$?" -ne 0 ; then
 	CMAKE_PARAMS="$CMAKE_PARAMS -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE"
     fi
     # Check for --disable-gxx0xcheck
-    echo $PARAMS | grep \\-\\-disable-gxx0xcheck
+    echo $PARAMS | grep \\-\\-disable-gxx0xcheck > /dev/null
     if test "$?" -eq 0 ; then
         CMAKE_PARAMS="$CMAKE_PARAMS -DDISABLE_GXX0XCHECK:Bool=TRUE"
     fi
 
     # Check for --disable-gxx0xcheck
-    echo $PARAMS | grep \\-\\-disable-tr1-headers
+    echo $PARAMS | grep \\-\\-disable-tr1-headers > /dev/null
     if test "$?" -eq 0 ; then
         CMAKE_PARAMS="$CMAKE_PARAMS -DDISABLE_TR1_HEADERS:Bool=TRUE"
     fi
