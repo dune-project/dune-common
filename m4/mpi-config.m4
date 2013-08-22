@@ -5,6 +5,12 @@ mpi_trybuild () {
   return 0
 }
 
+mpi_trybuild_run () {
+  mpi_trybuild "-o conftest ${1}" || return 1
+  ./conftest 2>&1 || return 1
+  return 0
+}
+
 mpi_preprocess () {
   $MPICC -E -c ${1} 2> /dev/null
 }
@@ -177,7 +183,29 @@ _EOF
 
     AC_MSG_RESULT([yes])
     rm -f conftest*
-    return 0    
+    return 0
+  fi
+
+  rm -f conftest*
+  AC_MSG_RESULT([no])
+  return 1
+}
+
+test_mpich3 () {
+  AC_MSG_CHECKING([for mpich 3.x])
+  cat >conftest.c <<_EOF
+#include <mpi.h>
+#include <stdio.h>
+int main() { printf ("%s\n", MPICH_VERSION); return 0; }
+_EOF
+
+  if (mpi_trybuild_run "conftest.c" | grep -q "^3\.") ; then
+    dune_MPI_VERSION="MPICH2"
+    mpi_getmpich2flags
+
+    AC_MSG_RESULT([yes])
+    rm -f conftest*
+    return 0
   fi
 
   rm -f conftest*
@@ -316,6 +344,7 @@ get_mpiparameters() {
   test_mvapich && return
   test_mvapich2 && return
   test_mpich2 && return
+  test_mpich3 && return
   test_ibmmpi && return
   test_intelmpi && return
    
