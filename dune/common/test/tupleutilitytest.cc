@@ -99,7 +99,7 @@ struct DivisorAccumulator
 
   typedef typename Data::second_type OldTuple;
   typedef typename Dune::PushBackTuple<OldTuple, PotentialDivisor>::type ExtendedTuple;
-  typedef typename Dune::SelectType<isDivisor, ExtendedTuple, OldTuple>::Type NewTuple;
+  typedef typename Dune::conditional<isDivisor, ExtendedTuple, OldTuple>::type NewTuple;
 
   typedef typename std::pair<typename Data::first_type, NewTuple> type;
 };
@@ -123,7 +123,7 @@ struct PrimeAccumulator
 {
   enum {isPrime = (Divisors<N::value>::value==2)};
 
-  typedef typename Dune::SelectType<isPrime, typename Dune::PushBackTuple<Data, N>::type, Data>::Type type;
+  typedef typename Dune::conditional<isPrime, typename Dune::PushBackTuple<Data, N>::type, Data>::type type;
 };
 
 // Construct list primes

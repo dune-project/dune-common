@@ -1,14 +1,14 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 //==============================================================================
-//!
-//! \file shapefunctions.hpp
 //!
 //! \date Nov 9 2011
 //!
 //! \author Arne Morten Kvarving / SINTEF
-//!
-//! \brief Classes for shape functions. Loosely based on code in dune-grid-howto
 //!
 //==============================================================================
 

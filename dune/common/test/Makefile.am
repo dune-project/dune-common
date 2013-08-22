@@ -268,7 +268,7 @@ testfconstruct_fail2_CPPFLAGS = $(AM_CPPFLAGS) -DFVSIZE=5
 
 conversiontest_SOURCES = conversiontest.cc
 
-sourcescheck_NOSOURCES = exprtmpl.cc timing.cc
+sourcescheck_NOSOURCES = timing.cc
 
 testfloatcmp_SOURCES = testfloatcmp.cc
 

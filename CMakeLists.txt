@@ -3,10 +3,10 @@ project("dune-common" C CXX)
 
 # general stuff
 cmake_minimum_required(VERSION 2.8.6)
-message("CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}|")
+
 # make sure our own modules are found
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/modules")
-message("CMAKE_MODULE_PATH=${CMAKE_MODULE_PATH}")
+
 # set the script dir for the macros.
 set(DUNE_COMMON_SCRIPT_DIR "${PROJECT_SOURCE_DIR}/cmake/scripts")
 
