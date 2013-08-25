@@ -47,6 +47,7 @@ ALLM4S = 					\
 	opengl.m4				\
 	parmetis.m4				\
 	shared_ptr.m4				\
+	tbb.m4					\
 	xdr.m4
 
 aclocaldir = $(datadir)/aclocal
