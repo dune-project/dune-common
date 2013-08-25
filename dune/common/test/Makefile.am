@@ -57,6 +57,12 @@ TESTPROGS = \
     tupleutilitytest \
     utilitytest
 
+
+# only run this test if TBB is availabe
+if TBB
+  TESTPROGS+=tbbruntest
+endif
+
 # which tests to run
 COMPILE_XFAIL=$(DUNE_COMMON_BIN)/xfail-compile-tests
 
@@ -208,6 +214,13 @@ mpiguardtest_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
 singletontest_SOURCES = singletontest.cc
 
 utilitytest_SOURCES = utilitytest.cc
+
+if TBB
+  tbbruntest_SOURCES = tbbruntest.cc
+  tbbruntest_CPPFLAGS = $(AM_CPPFLAGS) $(TBB_CPPFLAGS)
+  tbbruntest_LDADD = $(TBB_LIBS) $(LDADD)
+  tbbruntest_LDFLAGS = $(AM_LDFLAGS) $(TBB_LDFLAGS)
+endif
 
 testdebugallocator_SOURCES = testdebugallocator.cc
 testdebugallocator_CPPFLAGS = $(AM_CPPFLAGS)
