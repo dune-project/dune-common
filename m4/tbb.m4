@@ -19,7 +19,7 @@ AC_DEFUN([DUNE_PATH_TBB],[
       AS_CASE(["$enableval"],
         [yes], [tbb_allocator="yes"],
         [no ], [tbb_allocator="no" ],
-               [AC_MSG_ERROR(["invalid value 'enableval' for --enable-tbb-allocator, must be 'yes' or 'no'"])
+               [AC_MSG_ERROR(["invalid value '$enableval' for --enable-tbb-allocator, must be 'yes' or 'no'"])
         ])
     ],
     [
@@ -32,7 +32,7 @@ AC_DEFUN([DUNE_PATH_TBB],[
       AS_CASE(["$enableval"],
         [yes], [tbb_rpath="yes"],
         [no ], [tbb_rpath="no" ],
-               [AC_MSG_ERROR(["invalid value 'enableval' for --enable-tbb-rpath, must be 'yes' or 'no'"])
+               [AC_MSG_ERROR(["invalid value '$enableval' for --enable-tbb-rpath, must be 'yes' or 'no'"])
         ])
     ],
     [
