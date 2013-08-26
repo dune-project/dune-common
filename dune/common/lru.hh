@@ -182,15 +182,15 @@ namespace Dune {
     reference touch (const key_type & key)
     {
       /* query _index for iterator */
-      iterator it = _index[key];
+      map_iterator it = _index.find(key);
       if (it == _index.end())
         DUNE_THROW(Dune::RangeError,
           "Failed to touch key " << key << ", it is not in the lru container");
        /* update _data
          move it to the front
        */
-      _data.splice(_data.begin(), _data, it);
-      return it->second;
+      _data.splice(_data.begin(), _data, it->second);
+      return it->second->second;
     }
 
     /**
