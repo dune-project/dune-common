@@ -39,7 +39,7 @@ namespace Dune {
   /**
       @brief LRU Cache Container
 
-      Implementatation of an LRU (least recently used) cache
+      Implementation of an LRU (least recently used) cache
       container. This implementation follows the approach presented in
       http://aim.adc.rmit.edu.au/phd/sgreuter/papers/graphite2003.pdf
    */
@@ -175,7 +175,7 @@ namespace Dune {
     }
 
     /**
-     * @brief mark data associateed with key as most recent
+     * @brief mark data associated with key as most recent
      *
      * @return reference of stored data
      */
@@ -194,7 +194,7 @@ namespace Dune {
     }
 
     /**
-     * @brief retief number of entries in the container
+     * @brief Retrieve number of entries in the container
      */
     size_type size() const
     {
@@ -203,6 +203,7 @@ namespace Dune {
 
     /**
      * @brief ensure a maximum size of the container
+     *
      * If new_size is smaller than size the oldest elements are
      * dropped. Otherwise nothing happens.
      */
