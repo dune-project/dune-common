@@ -208,7 +208,7 @@ AC_DEFUN([DUNE_PATH_TBB],[
                           #else
                             tbb::parallel_for(0,10,add(x));
                           #endif
-                            return std::accumulate(x,x+10,0) == (9*10)/2;
+                            return !(std::accumulate(x,x+10,0) == (9*10)/2);
                         ]])],
         [
           with_tbb="yes"
