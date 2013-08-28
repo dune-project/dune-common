@@ -1,4 +1,5 @@
 add_subdirectory("parallel")
+add_subdirectory("tbb")
 add_subdirectory("test" EXCLUDE_FROM_ALL)
 
 #build the library dunecommon
