@@ -226,8 +226,12 @@ AC_DEFUN([DUNE_PATH_TBB],[
     [
       HAVE_TBB=1
 
-      # turn on pthread when using TBB to make sure library function calls are reentrant
-      TBB_CPPFLAGS="$TBB_CPPFLAGS -pthread -DENABLE_TBB"
+      # turn on pthread globally when using TBB to make sure library function calls are reentrant
+      THREADING_CPPFLAGS="-pthread"
+      THREADING_LDFLAGS="-pthread"
+
+      TBB_CPPFLAGS="$TBB_CPPFLAGS -DENABLE_TBB"
+
       AC_SUBST(TBB_CPPFLAGS,$TBB_CPPFLAGS)
       AC_SUBST(TBB_LDFLAGS,$TBB_LDFLAGS)
       AC_SUBST(TBB_LIBS,$TBB_LIBS)
@@ -286,8 +290,8 @@ AC_DEFUN([DUNE_PATH_TBB],[
     ])
 
   # restore compiler variables
-  LDFLAGS="$ac_save_LDFLAGS"
-  CPPFLAGS="$ac_save_CPPFLAGS"
+  LDFLAGS="$ac_save_LDFLAGS $THREADING_LDFLAGS"
+  CPPFLAGS="$ac_save_CPPFLAGS $THREADING_CPPFLAGS"
   LIBS="$ac_save_LIBS"
 
   AC_LANG_POP
