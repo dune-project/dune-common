@@ -1,15 +1,15 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 
-#ifndef DUNE_COMMON_TBB_RANGE_HH
-#define DUNE_COMMON_TBB_RANGE_HH
+#ifndef DUNE_COMMON_THREADS_RANGE_HH
+#define DUNE_COMMON_THREADS_RANGE_HH
 
 #include <cstddef>
 
 #include <tbb/blocked_range.h>
 
 namespace Dune {
-  namespace tbb {
+  namespace Threads {
 
     /**
      *  \addtogroup tbb Threading Building Blocks extensions
@@ -152,4 +152,4 @@ namespace Dune {
   } // namespace tbb
 } // namespace Dune
 
-#endif // DUNE_COMMON_TBB_RANGE_HH
+#endif // DUNE_COMMON_THREADS_RANGE_HH
