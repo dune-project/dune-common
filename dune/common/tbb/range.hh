@@ -6,6 +6,8 @@
 
 #include <cstddef>
 
+#include <tbb/blocked_range.h>
+
 namespace Dune {
   namespace tbb {
 
