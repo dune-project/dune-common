@@ -630,7 +630,7 @@ default_am2cmake_libraries(){
 	fi
 	export "$lowercase"-lib_processed=1
 	term="s/.*--with-""$lowercase""-lib=\(\S*\).*/\1/"
-	arg=`echo $PARAMS | sed "$term"`
+        arg=`echo "$PARAMS" | sed "$term"`
 	if test "x$arg" != "x" && test "x$PARAMS" != "x$arg"; then
 	    CMAKE_PARAMS="$CMAKE_PARAMS -D$uppercase""_LIBRARY=$arg"
 	fi

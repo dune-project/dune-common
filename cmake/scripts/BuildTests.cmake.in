@@ -1,9 +1,6 @@
 MACRO(get_directory_test_target _target _dir)
-  message("$_dir")
   string(REPLACE "@CMAKE_BINARY_DIR@" "" _relative_dir "${_dir}")
-  message("$_relative_dir")
   string(REPLACE "/" "_" ${_target} "${_relative_dir}")
-  message("target=${${_target}}")
 ENDMACRO(get_directory_test_target _target _dir)
 
 get_directory_test_target(_build_test_target "@CMAKE_CURRENT_BINARY_DIR@")

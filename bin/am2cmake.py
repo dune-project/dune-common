@@ -238,7 +238,7 @@ def rename_var(tokens):
         'GMP': 'GMP_FOUND',
         'GRAPE': 'GRAPE_FOUND',
         'INKSCAPE': 'INKSCAPE_FOUND',
-        'MPI': 'MPI_FOUND',
+        'MPI': 'MPI_CXX_FOUND',
         'PARDISO': 'PARDISO_FOUND',
         'PETSC': 'PETSC_FOUND',
         'PSURFACE': 'PSURFACE_FOUND',
@@ -824,7 +824,7 @@ def am_2_cmake(amfile, cmakefile, module_root=False):
     input = open(amfile, 'r')
     lines = input.readlines()
     str = ''.join(lines)
-    output.write(am_2_cmake_string(str))
+    output.write(re.sub('\s+\n', '\n', am_2_cmake_string(str)))
     input.close()
     if module_root:
         output.write(finalize_cmake_module(module_name))

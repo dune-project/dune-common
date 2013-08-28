@@ -7,6 +7,8 @@
 #include <utility>
 #include <map>
 
+#include <dune/common/exceptions.hh>
+
 /** @file
     @author Christian Engwer
     @brief LRU Cache Container, using an STL like interface
@@ -37,7 +39,7 @@ namespace Dune {
   /**
       @brief LRU Cache Container
 
-      Implementatation of an LRU (least recently used) cache
+      Implementation of an LRU (least recently used) cache
       container. This implementation follows the approach presented in
       http://aim.adc.rmit.edu.au/phd/sgreuter/papers/graphite2003.pdf
    */
@@ -145,7 +147,8 @@ namespace Dune {
     /**
      * @brief Insert a value into the container
      *
-     * Stores value under key and marks it as most recent.
+     * Stores value under key and marks it as most recent. If this key
+     * is already present, the associated data is replaced.
      *
      * @param key   associated with data
      * @param data  to store
@@ -172,23 +175,26 @@ namespace Dune {
     }
 
     /**
-     * @brief mark data associateed with key as most recent
+     * @brief mark data associated with key as most recent
      *
      * @return reference of stored data
      */
     reference touch (const key_type & key)
     {
       /* query _index for iterator */
-      iterator it = _index[key];
-      /* update _data
+      map_iterator it = _index.find(key);
+      if (it == _index.end())
+        DUNE_THROW(Dune::RangeError,
+          "Failed to touch key " << key << ", it is not in the lru container");
+       /* update _data
          move it to the front
        */
-      _data.splice(_data.begin(), _data, it);
-      return it->second;
+      _data.splice(_data.begin(), _data, it->second);
+      return it->second->second;
     }
 
     /**
-     *
+     * @brief Retrieve number of entries in the container
      */
     size_type size() const
     {
@@ -196,7 +202,10 @@ namespace Dune {
     }
 
     /**
+     * @brief ensure a maximum size of the container
      *
+     * If new_size is smaller than size the oldest elements are
+     * dropped. Otherwise nothing happens.
      */
     void resize(size_type new_size)
     {

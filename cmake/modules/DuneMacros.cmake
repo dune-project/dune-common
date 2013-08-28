@@ -8,9 +8,10 @@
 # upper_name where all dashes (-) are replaced by underscores (_)
 # Example: dune-common -> DUNE_COMMON
 #
-# dune_module_information(MODULE_DIR)
+# dune_module_information(MODULE_DIR [QUIET])
 #
 # Parse ${MODULE_DIR}/dune.module and provide that information.
+# If the second argument is QUIET no status message is printed.
 #
 #
 # dune_project()
@@ -85,6 +86,15 @@ macro(dune_module_to_uppercase _upper _module)
   string(REPLACE "-" "_" ${_upper} "${${_upper}}")
 endmacro(dune_module_to_uppercase _upper _module)
 
+macro(find_dune_package module)
+  if(NOT (${module}_DIR OR ${module}_ROOT OR
+      "${CMAKE_PREFIX_PATH}" MATCHES ".*${module}.*"))
+    string(REPLACE  ${ProjectName} ${module} ${module}_DIR
+      ${PROJECT_BINARY_DIR})
+  endif()
+  find_package(${ARGV} NO_CMAKE_PACKAGE_REGISTRY)
+endmacro(find_dune_package module)
+
 macro(extract_line HEADER  OUTPUT FILE_CONTENT)
   set(REGEX "${HEADER}[ ]*[^\n]+")
   string(REGEX MATCH ${REGEX} OUTPUT1 "${FILE_CONTENT}")
@@ -101,16 +111,16 @@ macro(split_module_version STRING MODULES VERSIONS)
   #set(REGEX "dune")
   string(REGEX MATCHALL "${REGEX}"  matches "${STRING}")
   set(${MODULES} "")
-  set(${VERSION} "")
+  set(${VERSIONS} "")
   foreach(i ${matches})
     string(REGEX REPLACE "^([a-zA-Z-]+).*$" "\\1" mod ${i})
     string(REGEX MATCH "\\([ ]*(([^ ]+)?[ ]*[^ ]+)[ ]*\\)" have_version
       ${i})
     if(have_version)
       string(REGEX REPLACE "^\\([ ]*([^ ]*[ ]*[^ ]+)[ ]*\\)$" "\\1"
-	version ${have_version})
+        version ${have_version})
       else(have_version)
-	set(version >=0.0)
+        set(version >=0.0)
       endif(have_version)
     list(APPEND ${MODULES} ${mod})
     list(APPEND ${VERSIONS} ${version})
@@ -123,6 +133,7 @@ function(convert_deps_to_list var)
 endfunction(convert_deps_to_list var)
 
 # add dune-common version from dune.module to config.h
+# optional second argument is verbosity
 macro(dune_module_information MODULE_DIR)
   file(READ "${MODULE_DIR}/dune.module" DUNE_MODULE)
 
@@ -168,7 +179,9 @@ macro(dune_module_information MODULE_DIR)
       set(${_mod}_REQUIRED REQUIRED)
     endforeach(_mod ${DUNE_DEPENDS})
     convert_deps_to_list(DUNE_DEPENDS)
-    message(STATUS "Dependencies: ${DEPENDS_MODULE} (versions: ${DEPENDS_VERSIONS}) DUNE_DEPENDS=${DUNE_DEPENDS}")
+    if(NOT ("${ARGV1}" STREQUAL QUIET))
+      message(STATUS "Dependencies: ${DEPENDS_MODULE} (versions: ${DEPENDS_VERSIONS}) DUNE_DEPENDS=${DUNE_DEPENDS}")
+    endif(NOT ("${ARGV1}" STREQUAL QUIET))
   endif(DUNE_DEPENDS)
 
   # 4. Check for line starting with Suggests
@@ -176,13 +189,15 @@ macro(dune_module_information MODULE_DIR)
   if(DUNE_SUGGESTS)
     split_module_version(${DUNE_SUGGESTS} SUGGESTS_MODULE SUGGESTS_VERSION)
     convert_deps_to_list(DUNE_SUGGESTS)
-    message(STATUS "Suggestions: ${SUGGESTS_MODULE} (versions: ${SUGGESTS_VERSIONS}) DUNE_SUGGESTS=${DUNE_SUGGESTS}")
+    if(NOT ("${ARGV1}" STREQUAL QUIET))
+      message(STATUS "Suggestions: ${SUGGESTS_MODULE} (versions: ${SUGGESTS_VERSIONS}) DUNE_SUGGESTS=${DUNE_SUGGESTS}")
+    endif(NOT ("${ARGV1}" STREQUAL QUIET))
   endif(DUNE_SUGGESTS)
 
   dune_module_to_uppercase(DUNE_MOD_NAME_UPPERCASE ${DUNE_MOD_NAME})
 
   # set module version
-  set(${DUNE_MOD_NAME_UPPERCASE}_VERSION         "${DUNE_MOD_VERSION}")
+  set(${DUNE_MOD_NAME_UPPERCASE}_VERSION          "${DUNE_MOD_VERSION}")
   set(${DUNE_MOD_NAME_UPPERCASE}_VERSION_MAJOR    "${DUNE_VERSION_MAJOR}")
   set(${DUNE_MOD_NAME_UPPERCASE}_VERSION_MINOR    "${DUNE_VERSION_MINOR}")
   set(${DUNE_MOD_NAME_UPPERCASE}_VERSION_REVISION "${DUNE_VERSION_REVISION}")
@@ -197,16 +212,16 @@ macro(dune_process_dependency_leafs modules versions is_required next_level_deps
     math(EXPR length "${mlength}-1")
     foreach(i RANGE 0 ${length})
       list(GET mmodules ${i} _mod)
-      find_package(${_mod} ${REQUIRED})
+      find_dune_package(${_mod} ${REQUIRED})
       if(${_mod}_MODULE_PATH)
-	list(APPEND CMAKE_MODULE_PATH ${${_mod}_MODULE_PATH})
+        list(APPEND CMAKE_MODULE_PATH ${${_mod}_MODULE_PATH})
       endif(${_mod}_MODULE_PATH)
       set(${_mod}_SEARCHED ON)
       if(NOT "${is_required}" STREQUAL "")
-	set(${_mod}_REQUIRED ON)
-	set(${next_level_deps} ${${_mod}_DEPENDS} ${${next_level_deps}})
+        set(${_mod}_REQUIRED ON)
+        set(${next_level_deps} ${${_mod}_DEPENDS} ${${next_level_deps}})
       else(NOT "${is_required}" STREQUAL "")
-	set(${next_level_sugs} ${${_mod}_DEPENDS} ${${next_level_sugs}})
+        set(${next_level_sugs} ${${_mod}_DEPENDS} ${${next_level_sugs}})
       endif(NOT "${is_required}" STREQUAL "")
       set(${next_level_sugs} ${${_mod}_SUGGESTS} ${${next_level_sugs}})
     endforeach(i RANGE 0 ${length})
@@ -220,11 +235,11 @@ function(remove_processed_modules modules versions is_required)
     foreach(i RANGE ${length} 0 -1)
       list(GET ${modules} ${i} _mod)
       if(${_mod}_SEARCHED)
-	list(REMOVE_AT ${modules} ${i})
-	list(REMOVE_AT ${versions} ${i})
-	if(is_required AND NOT ${_mod}_REQUIRED AND NOT ${_mod}_FOUND)
-	  message(FATAL_ERROR "Required module ${_mod} not found!")
-	endif(is_required AND NOT ${_mod}_REQUIRED AND NOT ${_mod}_FOUND)
+        list(REMOVE_AT ${modules} ${i})
+        list(REMOVE_AT ${versions} ${i})
+        if(is_required AND NOT ${_mod}_REQUIRED AND NOT ${_mod}_FOUND)
+          message(FATAL_ERROR "Required module ${_mod} not found!")
+        endif(is_required AND NOT ${_mod}_REQUIRED AND NOT ${_mod}_FOUND)
       endif(${_mod}_SEARCHED)
     endforeach(i RANGE 0 ${length})
   endif(mlength GREATER 0)
@@ -263,16 +278,16 @@ macro(dune_create_dependency_tree)
     set(global_depends ${DEPENDS_MODULE})
     set(global_suggests ${SUGGESTS_MODULE})
     foreach(_mod ${DEPENDS_MODULE})
-      find_package(${_mod} REQUIRED)
+      find_dune_package(${_mod} REQUIRED)
       if(${_mod}_MODULE_PATH)
-	list(APPEND CMAKE_MODULE_PATH ${${_mod}_MODULE_PATH})
+        list(APPEND CMAKE_MODULE_PATH ${${_mod}_MODULE_PATH})
       endif(${_mod}_MODULE_PATH)
       set(${_mod}_REQUIRED ON)
     endforeach(_mod ${DEPENDS_MODULE})
     foreach(_mod ${SUGGESTS_MODULE})
-      find_package(${_mod})
+      find_dune_package(${_mod})
       if(${_mod}_MODULE_PATH)
-	list(APPEND CMAKE_MODULE_PATH ${${_mod}_MODULE_PATH})
+        list(APPEND CMAKE_MODULE_PATH ${${_mod}_MODULE_PATH})
       endif(${_mod}_MODULE_PATH)
       set(${_mod}_REQUIRED ON)
     endforeach(_mod ${SUGGESTS_MODULE})
@@ -322,26 +337,28 @@ macro(dune_process_dependency_tree DEPENDS DVERSIONS SUGGESTS SVERSIONS)
       dune_module_to_macro(_cmake_mod_name "${_mod}")
       set(_macro "${_cmake_mod_name}Macros")
       set(_mod_cmake _mod_cmake-NOTFOUND) # Prevent false positives due to caching
-      find_file(_mod_cmake ${_macro}.cmake ${CMAKE_MODULE_PATH}
-	NO_DEFAULT_PATH)
+      find_file(_mod_cmake
+        ${_macro}.cmake
+        ${CMAKE_MODULE_PATH}
+        NO_DEFAULT_PATH)
       if(_mod_cmake)
-	message(STATUS "Performing tests specific to ${_mod} from file ${_mod_cmake}.")
-	include(${_mod_cmake})
+        message(STATUS "Performing tests specific to ${_mod} from file ${_mod_cmake}.")
+        include(${_mod_cmake})
       endif(_mod_cmake)
       # Find the module
       #find_package(${_mod})
       # set includes
       dune_module_to_uppercase(_upper_case "${_mod}")
       if(${_mod}_INCLUDE_DIRS)
-	message(STATUS "Setting ${_mod}_INCLUDE_DIRS=${${_mod}_INCLUDE_DIRS}")
-	include_directories("${${_mod}_INCLUDE_DIRS}")
+        message(STATUS "Setting ${_mod}_INCLUDE_DIRS=${${_mod}_INCLUDE_DIRS}")
+        include_directories("${${_mod}_INCLUDE_DIRS}")
       endif(${_mod}_INCLUDE_DIRS)
       if(${_mod}_LIBRARIES)
         message(STATUS "Setting ${_mod}_LIBRARIES=${${_mod}_LIBRARIES}")
-	foreach(_lib ${${_mod}_LIBRARIES})
+        foreach(_lib ${${_mod}_LIBRARIES})
           list(INSERT DUNE_DEFAULT_LIBS 0 "${_lib}")
           list(INSERT DUNE_LIBS 0 "${_lib}")
-	endforeach(_lib ${${_mod}_LIBRARIES})
+        endforeach(_lib ${${_mod}_LIBRARIES})
       endif(${_mod}_LIBRARIES)
       message(STATUS "Dependencies for ${_mod}: ${${_mod}_DEPENDENCIES}")
     endif(NOT ${_mod}_PROCESSED)
@@ -353,12 +370,6 @@ endmacro(dune_process_dependency_tree)
 # depedencies.
 # Don't forget to call finalize_dune_project afterwards.
 macro(dune_project)
-  # Set the flags
-  set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
-  set(CMAKE_C_FLAGS_DEBUG "-g -O0")
-  set(CMAKE_CXX_FLAGS_RELEASE "-funroll-loops -O3")
-  set(CMAKE_C_FLAGS_RELEASE "-funroll-loops -O3")
-
   # extract information from dune.module
   dune_module_information(${CMAKE_SOURCE_DIR})
   set(ProjectName            "${DUNE_MOD_NAME}")
@@ -408,6 +419,7 @@ macro(dune_project)
 
   # set required compiler flags for C++11 (former C++0x)
   find_package(CXX11Features)
+  find_package(CXX11Conditional)
 
   include(DuneCxaDemangle)
 
@@ -463,8 +475,11 @@ macro(dune_project)
   set(DUNE_MOD_NAME_CMAKE "${_macro}")
   set(_macro "${_macro}Macros")
   set(_mod_cmake _mod_cmake-NOTFOUND)  # Prevent false positives due to caching
-  find_file(_mod_cmake ${_macro}.cmake ${CMAKE_MODULE_PATH}
-    ${CMAKE_SOURCE_DIR}/cmake/modules NO_DEFAULT_PATH)
+  find_file(_mod_cmake
+    ${_macro}.cmake
+    ${CMAKE_MODULE_PATH}
+    ${CMAKE_SOURCE_DIR}/cmake/modules
+    NO_DEFAULT_PATH)
   if(_mod_cmake)
     set(${DUNE_MOD_NAME_CMAKE}_FOUND FOUND)
     message(STATUS " Performing tests specific to ${DUNE_MOD_NAME} from file ${_mod_cmake}.")
@@ -475,14 +490,18 @@ macro(dune_project)
   include(GNUInstallDirs)
   # Set variable where the cmake modules will be installed.
   # Thus the user can override it and for example install
-  # directly into the CMake installation. This has to be an
-  # absolute path. Default: ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules
-  if(NOT DEFINED DUNE_INSTALL_MODULEDIR)
-    set(DUNE_INSTALL_MODULEDIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules
+  # directly into the CMake installation. We use a cache variable
+  # that is overridden by a local variable of the same name if
+  # the user does not explicitely set a value for it. Thus the value
+  # will automatically change if the user changes CMAKE_INSTALL_DATAROOTDIR
+  # or CMAKE_INSTALL_PREFIX
+  if(NOT DUNE_INSTALL_MODULEDIR)
+    set(DUNE_INSTALL_MODULEDIR ""
       CACHE PATH
-      "Installation directory for CMake modules. Be careful when overriding this as the modules might not be found any more. Might be set to ${CMAKE_ROOT}/Modules or better \${CMAKE_ROOT}/Modules to make the modules available to all CMake runs. This has to be an absolute path. Default: \${CMAKE_INSTALL_PREFIX}/\${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules")
-  endif()
-endmacro(dune_project MODULE_DIR)
+      "Installation directory for CMake modules. Default is \${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules when not set explicitely")
+    set(DUNE_INSTALL_MODULEDIR ${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules)
+  endif(NOT DUNE_INSTALL_MODULEDIR)
+endmacro(dune_project)
 
 # create a new config.h file and overwrite the existing one
 macro(dune_regenerate_config_cmake)
@@ -524,7 +543,17 @@ macro(dune_regenerate_config_cmake)
        file(APPEND ${CONFIG_H_CMAKE_FILE} "${_file}")
      endif(EXISTS ${_mod_conf_file})
    endforeach()
+   # parse other modules dune.module file to generate variables for config.h
+   foreach(_dune_module_file ${${_dep}_PREFIX}/dune.module
+       ${${_dep}_PREFIX}/share/${_dep}/dune.module)
+     if(EXISTS ${_dune_module_file})
+       get_filename_component(_dune_module_file_path ${_dune_module_file} PATH)
+       dune_module_information(${_dune_module_file_path} QUIET)
+     endif(EXISTS ${_dune_module_file})
+   endforeach()
  endforeach(_dep ${ALL_DEPENDENCIES})
+ # parse again dune.module file of current module to set PACKAGE_* variables
+ dune_module_information(${CMAKE_SOURCE_DIR} QUIET)
  file(APPEND ${CONFIG_H_CMAKE_FILE} "\n${_myfile}")
 endmacro(dune_regenerate_config_cmake)
 
@@ -579,7 +608,6 @@ macro(finalize_dune_project)
   if(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
   install(FILES config.h.cmake DESTINATION share/${DUNE_MOD_NAME})
   endif(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
-  export(PACKAGE ${DUNE_MOD_NAME})
 
   if("${ARGC}" EQUAL "1")
     message(STATUS "Adding custom target for config.h generation")
@@ -635,8 +663,8 @@ function(dune_expand_object_libraries _SOURCES_var _ADD_LIBS_var _COMPILE_FLAGS_
     if(_matched)
       string(REGEX REPLACE "${_regex}" "\\1" _basename  "${_source}")
       foreach(var _SOURCES _ADD_LIBS _COMPILE_FLAGS)
-	get_property(_prop GLOBAL PROPERTY DUNE_LIB_${_basename}${var})
-	list(APPEND _new${var} "${_prop}")
+        get_property(_prop GLOBAL PROPERTY DUNE_LIB_${_basename}${var})
+        list(APPEND _new${var} "${_prop}")
       endforeach(var _SOURCES _ADD_LIBS _COMPILE_FLAGS)
     else(_matched)
       list(APPEND _new_SOURCES "${_source}")
@@ -657,27 +685,27 @@ macro(dune_add_library basename)
   if(DUNE_LIB_OBJECT)
     if(DUNE_LIB_${basename}_SOURCES)
       message(FATAL_ERROR "There is already a library with the name ${basename}, "
-	"but only one is allowed!")
+        "but only one is allowed!")
     else(DUNE_LIB_${basename}_SOURCES)
       foreach(source ${DUNE_LIB_UNPARSED_ARGUMENTS})
-	list(APPEND full_path_sources ${CMAKE_CURRENT_SOURCE_DIR}/${source})
+        list(APPEND full_path_sources ${CMAKE_CURRENT_SOURCE_DIR}/${source})
       endforeach(source ${DUNE_LIB_UNPARSED_ARGUMENTS})
       # register sources, libs and flags for building the library later
       define_property(GLOBAL PROPERTY DUNE_LIB_${basename}_SOURCES
-	BRIEF_DOCS "Convenience property with sources for library ${basename}. DO NOT EDIT!"
-	FULL_DOCS "Convenience property with sources for library ${basename}. DO NOT EDIT!")
+        BRIEF_DOCS "Convenience property with sources for library ${basename}. DO NOT EDIT!"
+        FULL_DOCS "Convenience property with sources for library ${basename}. DO NOT EDIT!")
       set_property(GLOBAL PROPERTY DUNE_LIB_${basename}_SOURCES
-	"${full_path_sources}")
+        "${full_path_sources}")
       define_property(GLOBAL PROPERTY DUNE_LIB_${basename}_ADD_LIBS
-	BRIEF_DOCS "Convenience property with libraries for library ${basename}. DO NOT EDIT!"
-	FULL_DOCS "Convenience property with libraries for library ${basename}. DO NOT EDIT!")
+        BRIEF_DOCS "Convenience property with libraries for library ${basename}. DO NOT EDIT!"
+        FULL_DOCS "Convenience property with libraries for library ${basename}. DO NOT EDIT!")
       set_property(GLOBAL PROPERTY DUNE_LIB_${basename}_ADD_LIBS
-	"${DUNE_LIB_ADD_LIBS}")
+        "${DUNE_LIB_ADD_LIBS}")
       define_property(GLOBAL PROPERTY DUNE_LIB_${basename}_COMPILE_FLAGS
-	BRIEF_DOCS "Convenience property with compile flags for library ${basename}. DO NOT EDIT!"
-	FULL_DOCS "Convenience property with compile flags for library ${basename}. DO NOT EDIT!")
+        BRIEF_DOCS "Convenience property with compile flags for library ${basename}. DO NOT EDIT!"
+        FULL_DOCS "Convenience property with compile flags for library ${basename}. DO NOT EDIT!")
       set_property(GLOBAL PROPERTY DUNE_LIB_${basename}_COMPILE_FLAGS
-	"${DUNE_LIB_COMPILE_FLAGS}")
+        "${DUNE_LIB_COMPILE_FLAGS}")
     endif(DUNE_LIB_${basename}_SOURCES)
   else(DUNE_LIB_OBJECT)
     list(APPEND DUNE_LIB_SOURCES ${DUNE_LIB_UNPARSED_ARGUMENTS})
@@ -690,7 +718,7 @@ macro(dune_add_library basename)
     endif(DUNE_LIB_ADD_LIBS)
     if(DUNE_LIB_COMPILE_FLAGS)
       setproperty(${basename} APPEND_STRING COMPILE_FLAGS
-	"${DUNE_LIB_COMPILE_FLAGS}")
+        "${DUNE_LIB_COMPILE_FLAGS}")
     endif(DUNE_LIB_COMPILE_FLAGS)
     # Build library in ${PROJECT_BINARY_DIR}/lib
     set_target_properties(${basename} PROPERTIES
@@ -701,55 +729,55 @@ macro(dune_add_library basename)
 
     if(DUNE_BUILD_BOTH_LIBS)
       if(BUILD_SHARED_LIBS)
-	#create static lib
-	add_library(${basename}-static STATIC ${DUNE_LIB_SOURCES})
-	# make sure both libs have the same name.
-	set_target_properties(${basename}-static PROPERTIES
+        #create static lib
+        add_library(${basename}-static STATIC ${DUNE_LIB_SOURCES})
+        # make sure both libs have the same name.
+        set_target_properties(${basename}-static PROPERTIES
           OUTPUT_NAME ${basename}
           ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
-	list(APPEND _created_libs ${basename}-static)
-	# link with specified libraries.
-	if(DUNE_LIB_ADD_LIBS)
-	  dune_target_link_libraries(${basename}-static ${DUNE_LIB_ADD_LIBS})
-	endif(DUNE_LIB_ADD_LIBS)
-	if(DUNE_LIB_COMPILE_FLAGS)
-	  setproperty(${basename}-static APPEND_STRING COMPILE_FLAGS
-	    "${DUNE_LIB_COMPILE_FLAGS}")
-	endif(DUNE_LIB_COMPILE_FLAGS)
+        list(APPEND _created_libs ${basename}-static)
+        # link with specified libraries.
+        if(DUNE_LIB_ADD_LIBS)
+          dune_target_link_libraries(${basename}-static ${DUNE_LIB_ADD_LIBS})
+        endif(DUNE_LIB_ADD_LIBS)
+        if(DUNE_LIB_COMPILE_FLAGS)
+          setproperty(${basename}-static APPEND_STRING COMPILE_FLAGS
+            "${DUNE_LIB_COMPILE_FLAGS}")
+        endif(DUNE_LIB_COMPILE_FLAGS)
       else(BUILD_SHARED_LIBS)
-	#create shared libs
-	add_library(${basename}-shared SHARED  ${DUNE_LIB_SOURCES})
-	set_target_properties(${basename}-shared PROPERTIES
+        #create shared libs
+        add_library(${basename}-shared SHARED  ${DUNE_LIB_SOURCES})
+        set_target_properties(${basename}-shared PROPERTIES
           OUTPUT_NAME ${basename}
           LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
-	# link with specified libraries.
-	if(DUNE_LIB_ADD_LIBS)
-	  dune_target_link_libraries(${basename}-shared ${DUNE_LIB_ADD_LIBS})
-	endif(DUNE_LIB_ADD_LIBS)
-	if(DUNE_LIB_COMPILE_FLAGS)
-	  setproperty(${basename}-shared APPEND_STRING COMPILE_FLAGS
-	    "${DUNE_LIB_COMPILE_FLAGS}")
-	endif(DUNE_LIB_COMPILE_FLAGS)
-	list(APPEND _created_libs ${basename}-shared)
+        # link with specified libraries.
+        if(DUNE_LIB_ADD_LIBS)
+          dune_target_link_libraries(${basename}-shared ${DUNE_LIB_ADD_LIBS})
+        endif(DUNE_LIB_ADD_LIBS)
+        if(DUNE_LIB_COMPILE_FLAGS)
+          setproperty(${basename}-shared APPEND_STRING COMPILE_FLAGS
+            "${DUNE_LIB_COMPILE_FLAGS}")
+        endif(DUNE_LIB_COMPILE_FLAGS)
+        list(APPEND _created_libs ${basename}-shared)
       endif(BUILD_SHARED_LIBS)
     endif(DUNE_BUILD_BOTH_LIBS)
 
     if(NOT DUNE_LIB_NO_EXPORT)
       if(NOT _MODULE_EXPORT_USED)
-	set(_MODULE_EXPORT_USED ON)
-	set(_append "")
+        set(_MODULE_EXPORT_USED ON)
+        set(_append "")
       else(NOT _MODULE_EXPORT_USED)
-	set(_append APPEND)
+        set(_append APPEND)
       endif(NOT _MODULE_EXPORT_USED)
       # install targets to use the libraries in other modules.
       install(TARGETS ${_created_libs}
-	EXPORT ${DUNE_MOD_NAME}-targets DESTINATION lib)
+        EXPORT ${DUNE_MOD_NAME}-targets DESTINATION lib)
       install(EXPORT ${DUNE_MOD_NAME}-targets
-	DESTINATION lib/cmake)
+        DESTINATION lib/cmake)
 
       # export libraries for use in build tree
       export(TARGETS ${_created_libs} ${_append}
-	FILE ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-targets.cmake)
+        FILE ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-targets.cmake)
     endif(NOT DUNE_LIB_NO_EXPORT)
   endif(DUNE_LIB_OBJECT)
 endmacro(dune_add_library basename sources)
@@ -771,20 +799,20 @@ macro(replace_properties_for_one)
     foreach(prop ${properties})
       set(matched FALSE)
       foreach(i RANGE 0 ${hlength})
-	math(EXPR regexi "2 * ${i}")
-	math(EXPR repli  "${regexi} +1")
-	list(GET REPLACE_UNPARSED_ARGUMENTS ${regexi} regex)
-	list(GET REPLACE_UNPARSED_ARGUMENTS ${repli} replacement)
-	string(REGEX MATCH ${regex} match ${prop})
+        math(EXPR regexi "2 * ${i}")
+        math(EXPR repli  "${regexi} +1")
+        list(GET REPLACE_UNPARSED_ARGUMENTS ${regexi} regex)
+        list(GET REPLACE_UNPARSED_ARGUMENTS ${repli} replacement)
+        string(REGEX MATCH ${regex} match ${prop})
 
-	if(match)
-	  list(APPEND new_props ${replacement})
-	  set(matched TRUE)
-	endif(match)
+        if(match)
+          list(APPEND new_props ${replacement})
+          set(matched TRUE)
+        endif(match)
       endforeach(i RANGE 0 ${hlength})
 
       if(NOT matched)
-	list(APPEND new_props ${prop})
+        list(APPEND new_props ${prop})
       endif(NOT matched)
     endforeach(prop ${properties})
     list(REMOVE_DUPLICATES new_props)
@@ -859,7 +887,7 @@ function(replace_properties)
 
   list(LENGTH REPLACE_UNPARSED_ARGUMENTS length)
 #  if(NOT (REPLACE_GLOBAL AND REPLACE_TARGET AND
-#	REPLACE_SOURCE AND REPLACE
+#        REPLACE_SOURCE AND REPLACE
   math(EXPR mlength "${length} % 2 ")
   math(EXPR hlength "${length} / 2 - 1")
 

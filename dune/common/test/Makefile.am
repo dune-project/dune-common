@@ -98,7 +98,7 @@ XFAIL_TESTS = \
 # programs just to build when "make check" is used
 check_PROGRAMS = $(TESTPROGS)
 
-noinst_HEADERS = dummyiterator.hh
+noinst_HEADERS = dummyiterator.hh iteratorfacadetest.hh
 
 # Install some test headers, because they get used by tests in other modules
 testincludedir = $(includedir)/dune/common/test
@@ -268,7 +268,7 @@ testfconstruct_fail2_CPPFLAGS = $(AM_CPPFLAGS) -DFVSIZE=5
 
 conversiontest_SOURCES = conversiontest.cc
 
-sourcescheck_NOSOURCES = exprtmpl.cc timing.cc
+sourcescheck_NOSOURCES = timing.cc
 
 testfloatcmp_SOURCES = testfloatcmp.cc
 

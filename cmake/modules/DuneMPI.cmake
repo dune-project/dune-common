@@ -20,7 +20,7 @@
 find_package(MPI)
 find_package(Threads)
 
-if(MPI_FOUND)
+if(MPI_CXX_FOUND)
   set(HAVE_MPI MPI_CXX_FOUND)
   # We do not support the CXX bindings of MPI
   set(MPI_DUNE_COMPILE_FLAGS ${MPI_C_COMPILE_FLAGS} CACHE STRING
@@ -43,7 +43,7 @@ if(MPI_FOUND)
   set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES};${MPI_DUNE_INCLUDE_PATH})
   check_function_exists(MPI_Finalized MPI_2)
   cmake_pop_check_state()
-endif(MPI_FOUND)
+endif(MPI_CXX_FOUND)
 
 # adds MPI flags to the targets
 function(add_dune_mpi_flags)
@@ -53,7 +53,7 @@ function(add_dune_mpi_flags)
   else()
     set(_prefix TARGET)
   endif()
-  if(MPI_FOUND)
+  if(MPI_CXX_FOUND)
     set_property(${_prefix} ${ADD_MPI_UNPARSED_ARGUMENTS} APPEND PROPERTY COMPILE_FLAGS ${MPI_DUNE_COMPILE_FLAGS})
     set_property(${_prefix} ${ADD_MPI_UNPARSED_ARGUMENTS} APPEND PROPERTY COMPILE_DEFINITIONS ENABLE_MPI=1
       MPICH_SKIP_MPICXX MPIPP_H)
@@ -63,5 +63,5 @@ function(add_dune_mpi_flags)
       target_link_libraries(${target} ${MPI_DUNE_LIBRARIES})
     endforeach(target ${ADD_MPI_UNPARSED_ARGUMENTS})
     endif(NOT (ADD_MPI_SOURCE_ONLY OR ADD_MPI_OBJECT))
-  endif(MPI_FOUND)
+  endif(MPI_CXX_FOUND)
 endfunction(add_dune_mpi_flags)

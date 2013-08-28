@@ -10,6 +10,7 @@ set(modules DuneBoost.cmake
   DuneTestMacros.cmake
   DuneTests.cmake
   FindBoostFusion.cmake
+  FindCXX11Conditional.cmake
   FindCXX11Features.cmake
   FindGMP.cmake
   FindInkscape.cmake

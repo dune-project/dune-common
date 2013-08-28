@@ -438,8 +438,8 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
 
           AC_LINK_IFELSE(
             [AC_LANG_PROGRAM(
-              [#]include<dune/[]_dune_header>,
-              _dune_symbol)],
+              [[#]include<dune/[]_dune_header>],
+              [[_dune_symbol]])],
             [dune_cv_lib[]_dune_lib=yes],
             [dune_cv_lib[]_dune_lib=no])
         ])

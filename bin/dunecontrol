@@ -45,7 +45,7 @@ canonicalname(){
             fdir="`canonicalname \"$fdir\"`"
             echo "$fdir/$fname"
         fi
-        # if this is a directory, then create an absolute 
+        # if this is a directory, then create an absolute
         # directory name and we are done
         if test -d "$file"; then
             (cd "$file"; pwd)
@@ -126,7 +126,7 @@ build_module() {
       # disable usage of opts file
       if test "x$DUNE_OPTS_FILE" != "x"; then
         echo "WARNING: commandline parameters will overwrite setting in opts file \"$DUNE_OPTS_FILE\""
-      fi 
+      fi
     fi
 
     # skip command delimiter
@@ -146,7 +146,7 @@ build_module() {
       eval_control $runcommand $path/$CONTROL
     ); then eval echo "--- Failed to build \$NAME_${module} ---"; exit 1; fi
 	trap onfailure EXIT
-	
+
     eval echo "--- \$NAME_${module} done ---"
   done
 }
@@ -165,10 +165,13 @@ load_opts() {
   local CMD_FLAGS_FROM_FILE=""
   BUILDDIR=$DUNE_BUILDDIR
   if test "x$DUNE_OPTS_FILE" != "x"; then
-    # use build dir from opts file if set
-    OPTS_FILE_BUILDDIR="$(eval BUILDDIR=""; . $DUNE_OPTS_FILE; eval echo \$BUILDDIR)"
-    if test -n "$OPTS_FILE_BUILDDIR"; then
-      BUILDDIR="$OPTS_FILE_BUILDDIR"
+    if test -z "$BUILDDIR"; then
+      # no builddir set yet, use build dir from opts file if set
+      # Note: if --use-buiddir is used BUILDDIR will be set already
+      OPTS_FILE_BUILDDIR="$(eval BUILDDIR=""; . $DUNE_OPTS_FILE; eval echo \$BUILDDIR)"
+      if test -n "$OPTS_FILE_BUILDDIR"; then
+        BUILDDIR="$OPTS_FILE_BUILDDIR"
+      fi
     fi
     CMAKE_FLAGS="$(. $DUNE_OPTS_FILE; eval echo \$CMAKE_FLAGS)"
     CMD_FLAGS_FROM_FILE="$(eval ${COMMAND}_FLAGS=""; . $DUNE_OPTS_FILE; eval echo \$${COMMAND}_FLAGS)"
@@ -221,7 +224,7 @@ esac'
 }
 
 # list of all dunecontrol commands
-COMMANDS="printdeps vcsetup update autogen configure make all exec bexec status svn"
+COMMANDS="printdeps vcsetup update autogen configure make all exec bexec status svn git"
 
 # help string for the commands
 printdeps_HELP="print recursive dependencies of a module"
@@ -235,6 +238,7 @@ exec_HELP="execute an arbitrary command in each module source directory"
 bexec_HELP="execute an arbitrary command in each module build directory"
 status_HELP="show vc status for all modules"
 svn_HELP="\trun svn command for each svn managed module"
+git_HELP="\trun git command for each git managed module"
 
 #
 # setup command proxies
@@ -246,7 +250,7 @@ for command in $COMMANDS; do
 done
 
 #
-# default implementations for commands... 
+# default implementations for commands...
 # these can be overwritten in the $CONTROL files
 #
 
@@ -263,6 +267,17 @@ run_default_bexec () {
 run_default_status () {
   local verbose=0
   local update=""
+  local is_git=""
+  local is_svn=""
+  name="$(eval echo \$NAME_$module)"
+
+  if test -d .git; then is_git=1; fi
+  if test -d .svn; then is_svn=1; fi
+  if test ! "$is_svn" -a ! "$is_git" ; then
+    echo "module $name not under known version control"
+    return
+  fi
+
   for i in $CMD_FLAGS; do
     if eval test "x$i" = "x-v"; then verbose=1; fi
     if eval test "x$i" = "x-vv"; then verbose=2; fi
@@ -277,16 +292,24 @@ run_default_status () {
   fi
 
   if test $verbose -eq 1; then
-    svn status $update | grep -E "^M|^A|^D|^C|^U"
+    test "$is_svn" && svn status $update | grep -E "^M|^A|^D|^C|^U"
+    test "$is_git" && git status -uno
   elif test $verbose -eq 2; then
-    svn status $update
+    test "$is_svn" && svn status $update
+    test "$is_git" && git status
   fi
 
-  name="$(eval echo \$NAME_$module)"
-  changed=$(svn status | grep -E "^M|^A|^D" | wc -l)
-  collisions=$(svn status | grep -E "^C"| wc -l)
-  pending=$(svn status $update | grep -E "^...... \* " | wc -l)
 
+  if test "$is_svn" ; then
+    changed=$(svn status | grep -E "^M|^A|^D" | wc -l)
+    collisions=$(svn status | grep -E "^C"| wc -l)
+    pending=$(svn status $update | grep -E "^...... \* " | wc -l)
+  fi
+  if test "$is_git" ; then
+    changed=$(git status --porcelain | grep -E "^ *M|^ *A|^ *D|^ *R|^ *C" | wc -l)
+    collisions=$(git status --porcelain | grep -E "^ *U"| wc -l)
+    pending=$(git status | grep -E "^\# Your branch is ahead |^\# Your branch is behind " | wc -l)
+  fi
   color=$green
   text="no changes"
   if [ $changed -eq 0 ]; then
@@ -325,7 +348,8 @@ run_default_vcsetup() {
     eval "$CMD_FLAGS"
   fi
 
-  if [ -d .git ]; then
+  # Check for both a file and a directory to cope with Git submodules
+  if [ -d .git -o -f .git ] ; then
 
     # Read Whitespace-Hook setting from dune.module file
     local SETUPGITHOOK="$($GREP -i "^[$BLANK]*Whitespace-Hook:" dune.module | cut -d ':' -f2 | eval $PARSER_TRIM | tr '[:upper:]' '[:lower:]')"
@@ -333,33 +357,44 @@ run_default_vcsetup() {
     if [ "x$SETUPGITHOOK" = "xyes" ]; then
       # we have to install the Git whitespace hook
 
+      # The current Git repository might be a submodule, so we have to start by
+      # determining the location of the commit hook
+
+      if [ -f .git ] ; then
+        # submodule -> .git contains a pointer to the repository
+        GITHOOKPATH="$(sed 's/gitdir: //' < .git)/hooks/pre-commit"
+      else
+        # standard case, .git is the repository
+        GITHOOKPATH=.git/hooks/pre-commit
+      fi
+
       if [ -n "$DISABLEWHITESPACEHOOK" ] ; then
         # the user doesn't want the Git whitespace hook - deinstall it if necessary and warn the user
         echo "WARNING: The current module wants to install the DUNE whitespace hook, but you have disabled the hook in your options!"
         echo "WARNING: You will have to make sure that your commits don't introduce any trailing whitespace or indentation with tabs!"
         echo "WARNING: Otherwise, your commits might be rejected when trying to push them to an official repository!"
 
-        if [ -e .git/hooks/pre-commit ]; then
+        if [ -e "$GITHOOKPATH" ]; then
           # there is a pre-commit hook, check whether it is our whitespace hook
-          local HOOKTAG="$(head -n 2 .git/hooks/pre-commit | tail -n 1)"
+          local HOOKTAG="$(eval head -n 2 \"$GITHOOKPATH\" | tail -n 1)"
           if [ "x$HOOKTAG" = "x# dune-git-whitespace-hook" ]; then
             echo "--> Removing DUNE whitespace hook as requested by the user"
-            rm .git/hooks/pre-commit
+            rm "$GITHOOKPATH"
           fi
         fi
       else
         # standard handling of Git whitespace hook
-        if [ ! -e .git/hooks/pre-commit ]; then
+        if [ ! -e "$GITHOOKPATH" ]; then
           # there is no hook yet, we can safely install ours
           echo "--> Installing Git pre-commit hook to enforce whitespace policy"
-          cp -p $PREFIX_DIR/bin/git-whitespace-hook .git/hooks/pre-commit
+          cp -p "$PREFIX_DIR/bin/git-whitespace-hook" "$GITHOOKPATH"
         else
           # there is already a hook, check whether it is our whitespace hook
-          local HOOKTAG="$(head -n 2 .git/hooks/pre-commit | tail -n 1)"
+          local HOOKTAG="$(eval head -n 2 \"$GITHOOKPATH\" | tail -n 1)"
           if [ "x$HOOKTAG" = "x# dune-git-whitespace-hook" ]; then
-            if [ $PREFIX_DIR/bin/git-whitespace-hook -nt .git/hooks/pre-commit ]; then
+            if [ "$PREFIX_DIR/bin/git-whitespace-hook" -nt "$GITHOOKPATH" ]; then
               echo "--> Updating Git pre-commit hook with newer version"
-              cp -p $PREFIX_DIR/bin/git-whitespace-hook .git/hooks/pre-commit
+              cp -p "$PREFIX_DIR/bin/git-whitespace-hook" "$GITHOOKPATH"
             fi
           else
             echo "WARNING: Existing pre-commit hook found!"
@@ -411,7 +446,7 @@ run_default_vcsetup() {
   fi
 
   # Run custom setup scripts
-  if [ -d .git -o -d .svn -o -d CVS -o -f stamp-vc ]; then
+  if [ -d .git -o -f .git -o -d .svn -o -d CVS -o -f stamp-vc ]; then
     if [ -d .vcsetup/run.d ]; then
       for SCRIPT in .vcsetup/run.d/* ; do
         if [ -x "$SCRIPT" ]; then
@@ -480,7 +515,7 @@ run_default_autogen () {
     else
       echo Skipping dune-autogen
     fi
-  else 
+  else
     echo Skipping dune-autogen because of CMake
   fi
 }
@@ -489,10 +524,10 @@ run_default_configure () {
   PARAMS="$CMD_FLAGS"
   if test "x$USE_CMAKE" = "xyes" && test -e $(eval "echo \$PATH_$module")/CMakeLists.txt; then
     LOCAL_USE_CMAKE=yes
-  else 
+  else
     LOCAL_USE_CMAKE=no
   fi
-  echo "LOCAL_USE_CMAKE=$LOCAL_USE_CMAKE $(eval "echo \$PATH_$module")/CMakeLists.txt"
+
   if test -x configure || test "x$LOCAL_USE_CMAKE" = "xyes" ; then
     ACLOCAL_FLAGS="-I ."
     if test -d "m4"; then
@@ -508,7 +543,6 @@ run_default_configure () {
           # Translate the configure PARMS to cmake
           export PARAMS
           export CMAKE_PARAMS
-          echo module_translate_options_am2cmake $m $path/lib
           module_translate_options_am2cmake $m $path/lib
       fi
       if test x$module = x$m; then continue; fi # skip myself
@@ -540,16 +574,24 @@ run_default_configure () {
     if test "x$HAVE_duneweb" == "xyes"; then
       PARAMS="$PARAMS \"--with-duneweb=$PATH_duneweb\""
     fi
-    PARAMS="$PARAMS ACLOCAL_AMFLAGS=\"$ACLOCAL_FLAGS\""
 
     if test "x$LOCAL_USE_CMAKE" = "xyes"; then
+      # we have to export the compiler and compiler flags
+      # such that they are honored by cmake.
+      flags="CXX CC CXXFLAGS CFLAGS CPPFLAGS LDFLAGS F77 FFLAGS FLIBS FC FCFLAGS FCLIBS LIBS"
+      for i in  $flags; do
+        cflags=`echo "$PARAMS" | sed "s/.*\($i=\"[^\"]*\"\|$i='[^']*'\|$i=[^\s^ ]*\).*/\1/"`
+        if test "$cflags" != "$PARAMS"; then
+            PREPARAMS="$PREPARAMS $cflags"
+        fi
+      done
       test -d "$BUILDDIR" || mkdir "$BUILDDIR"
       SRCDIR="$PWD"
       cd "$BUILDDIR"
-      echo `pwd`
-      echo "cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR"
-      eval cmake "-DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR" || exit 1
+      echo "$PREPARAMS cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR"
+      eval $PREPARAMS cmake "-DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR" || exit 1
     else
+      PARAMS="$PARAMS ACLOCAL_AMFLAGS=\"$ACLOCAL_FLAGS\""
       echo ./configure "$PARAMS"
       # create build directory of requested
       if test -n "$BUILDDIR"; then
@@ -593,6 +635,13 @@ run_default_svn () {
   if test -d .svn; then
     PARAMS="$CMD_FLAGS"
     eval svn "$PARAMS"
+  fi
+}
+
+run_default_git () {
+  if test -d .git; then
+    PARAMS="$CMD_FLAGS"
+    eval git "$PARAMS"
   fi
 }
 
@@ -753,11 +802,11 @@ while test $# -gt 0; do
         exit 1
       fi
     ;;
-    -h|--help) 
+    -h|--help)
       command=help
       break
     ;;
-    -p|--print) 
+    -p|--print)
       command=print
       break
     ;;
@@ -840,12 +889,12 @@ done
 if test "x$USE_CMAKE" = "xyes"; then
   # load general options. DUNE_BUILDDIR might be overwritten in the opts file
   load_opts NONE
-  if test -z "$DUNE_BUILDDIR"; then
+  if test -z "$BUILDDIR"; then
     echo "No build directory provided. Defaulting to the sub directory build-cmake"
-    export DUNE_BUILDDIR=build-cmake
+    export BUILDDIR=build-cmake
   fi
 fi
-echo "USE_CMAKE=$USE_CMAKE DUNE_BUILDDIR=$DUNE_BUILDDIR"
+
 # we assume there should be a command...
 if test "x$command" = "x"; then
   usage
@@ -1017,7 +1066,7 @@ EOF
   fi
 EOF
     done
-    ### 
+    ###
     for mod in $SORTEDMODULES_SUGS; do
       name=`eval echo \\$NAME_$mod`
       MOD=`echo $mod | tr [:lower:] [:upper:]`
