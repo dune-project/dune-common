@@ -67,6 +67,12 @@ AC_DEFUN([DUNE_COMMON_CHECKS],
   AC_REQUIRE([AC_TYPE_SIZE_T])
   AC_REQUIRE([AC_STRUCT_TM])
 
+  AC_CHECK_ALIGNOF(double)
+  AC_CHECK_ALIGNOF(float)
+  AC_CHECK_ALIGNOF(size_t)
+  AC_CHECK_ALIGNOF(uint64_t)
+  AC_CHECK_ALIGNOF(uint32_t)
+
   dnl check for library functions
 
   AC_LANG_PUSH([C++])
