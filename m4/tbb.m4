@@ -5,6 +5,7 @@ dnl vi: set et ts=8 sw=2 sts=2:
 AC_DEFUN([DUNE_PATH_TBB],[
   AC_MSG_NOTICE([checking for Threading Building Blocks library...])
   AC_REQUIRE([AC_PROG_CXX])
+  AC_REQUIRE([AC_PROG_EGREP])
   AC_REQUIRE([GXX0X])
   AC_REQUIRE([LAMBDA_EXPR_CHECK])
   AC_LANG_PUSH([C++])
@@ -220,6 +221,24 @@ AC_DEFUN([DUNE_PATH_TBB],[
         ])
     ])
 
+  AS_IF([ test "x$with_tbb" = "xyes" ],
+    [
+      # get alignment of cache_aligned_allocator so we can export it as a constant
+
+      # FIXME: Handle the case where the sources arent't available (maybe fallback
+      #        to runtime test?)
+
+      AC_MSG_CHECKING([for alignment size of tbb::cache_aligned_allocator])
+
+      AS_IF([ test ! -f "$tbb_root_dir/src/tbb/cache_aligned_allocator.cpp" ],
+        [ AC_MSG_WARN([file "$tbb_root_dir/src/tbb/cache_aligned_allocator.cpp" not found]) ])
+
+      alignment_size_line=$($EGREP ['^static.*NFS_LineSize.*[0-9]+.*;'] "$tbb_root_dir/src/tbb/cache_aligned_allocator.cpp")
+      alignment_size=$(echo "$alignment_size_line" | sed ['s/.*[^[:digit:]]\([1-9][[:digit:]]*\)[^[:digit:]].*/\1/'])
+
+      AC_MSG_RESULT([$alignment_size])
+    ])
+
   # tests are done, set up output
 
   AS_IF([ test "x$with_tbb" = "xyes" ],
@@ -240,6 +259,9 @@ AC_DEFUN([DUNE_PATH_TBB],[
       AC_DEFINE(HAVE_TBB,ENABLE_TBB,[Define if you have the Threading Building Blocks library.
                                      This is only true if the library was found _and_ if the
                                      application uses the TBB_CPPFLAGS])
+
+      # tbb::cache_aligned_allocator alignment
+      AC_DEFINE_UNQUOTED(TBB_CACHE_ALIGNED_ALLOCATOR_ALIGNMENT,[$alignment_size],[The alignment size of tbb::cache_aligned_allocator.])
 
       # additional preprocessor macro for allocator
       AS_IF([ test "x$tbb_allocator" = "xyes" ],
