@@ -38,6 +38,9 @@ namespace Dune {
       //! Iterator type returned from begin() and end().
       typedef V const_iterator;
 
+      //! Block iterator type returned from begin_block() and end_block().
+      typedef size_type block_iterator;
+
     private:
 
       // This method performs the actual range splitting, assigning the left part to the
@@ -47,10 +50,31 @@ namespace Dune {
       // subrange is guaranteed to be a multiple of the block size.
       static const_iterator do_split(fixed_block_size_range& r)
       {
-        size_type middle_block = r.size() / (2ul * r._block_size);
+        size_type middle_block = r.block_count() >> 1;;
         V middle = r._begin + middle_block * r._block_size;
         r._end = middle;
         return middle;
+      }
+
+      // This method performs the range splitting for the blocks, assigning the left part to the
+      // existing range r. It returns the splitting point element to be used as the lower bound
+      // in the constructor of the new range. As the algorithm preserves the block structure of
+      // the range, the two subranges will usually not be of equal size. The size of the left
+      // subrange is guaranteed to be a multiple of the block size.
+      static const_iterator do_block_split(fixed_block_size_range& r)
+      {
+        size_type middle_block = r._begin_block + (r.block_count() >> 1);
+        r._end_block = middle_block;
+        return middle_block;
+      }
+
+      static block_iterator calculate_end_block(V begin, V end, size_type block_size)
+      {
+        if (!(begin < end))
+          return 0;
+        block_iterator e = (end - begin) / block_size;
+        block_iterator remainder = (end - begin) % block_size;
+        return e + (remainder > 0);
       }
 
     public:
@@ -65,6 +89,8 @@ namespace Dune {
       fixed_block_size_range(V begin, V end, size_type block_size = 1, size_type grain_size = 1)
         : _end(end)
         , _begin(begin)
+        , _end_block(calculate_end_block(begin,end,block_size))
+        , _begin_block(0)
         , _block_size(block_size)
         , _grain_size(std::max(block_size,grain_size))
       {}
@@ -73,6 +99,8 @@ namespace Dune {
       fixed_block_size_range(fixed_block_size_range& r, tbb::split)
         : _end(r._end)
         , _begin(do_split(r))
+        , _end_block(r._end_block)
+        , _begin_block(do_block_split(r))
         , _block_size(r._block_size)
         , _grain_size(r._grain_size)
       {}
@@ -87,6 +115,18 @@ namespace Dune {
       const_iterator end() const
       {
         return _end;
+      }
+
+      //! Returns the lower bound of the block indices spanned by the range.
+      const_iterator begin_block() const
+      {
+        return _begin_block;
+      }
+
+      //! Returns the upper bound of the block indices spanned by the range.
+      const_iterator end_block() const
+      {
+        return _end_block;
       }
 
       //! Returns the grain size of the range.
@@ -113,6 +153,12 @@ namespace Dune {
       size_type size() const
       {
         return _end - _begin;
+      }
+
+      //! Returns the number of blocks spanned by the range.
+      size_type block_count() const
+      {
+        return _end_block - _begin_block;
       }
 
       //! Returns whether the range is empty.
@@ -142,6 +188,8 @@ namespace Dune {
 
       const_iterator _end;
       const_iterator _begin;
+      block_iterator _end_block;
+      block_iterator _begin_block;
       const size_type _block_size;
       const size_type _grain_size;
 
