@@ -1,5 +1,6 @@
 add_subdirectory("parallel")
 add_subdirectory("threads")
+add_subdirectory("kernel")
 add_subdirectory("test" EXCLUDE_FROM_ALL)
 
 #build the library dunecommon
@@ -19,6 +20,7 @@ dune_add_library("dunecommon"
   parametertreeparser.cc
   path.cc
   stdstreams.cc
+  _DUNE_TARGET_OBJECTS:kernel_
   ADD_LIBS "${_additional_libs}")
 
 #install headers
