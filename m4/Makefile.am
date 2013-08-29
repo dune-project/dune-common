@@ -18,6 +18,7 @@ ALLM4S = 					\
 	cxx0x_variadic.m4			\
 	cxx0x_variadic_constructor_sfinae.m4    \
 	cxx11_initializer_list.m4		\
+	cxx11_lambda_expr.m4			\
 	dune.m4					\
 	dune_all.m4				\
 	dune_autobuild.m4			\
@@ -47,6 +48,7 @@ ALLM4S = 					\
 	opengl.m4				\
 	parmetis.m4				\
 	shared_ptr.m4				\
+	tbb.m4					\
 	xdr.m4
 
 aclocaldir = $(datadir)/aclocal

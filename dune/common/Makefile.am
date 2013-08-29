@@ -1,14 +1,14 @@
 # $Id$
 
-SUBDIRS = . test parallel
+SUBDIRS = . test parallel threads
 
 # the standard debug streams are put into the libdune
 noinst_LTLIBRARIES = libcommon.la
 
 libcommon_la_SOURCES =				\
 	debugallocator.cc			\
-	fmatrixev.cc \
-	dynmatrixev.cc                           \
+	fmatrixev.cc                            \
+	dynmatrixev.cc                          \
 	ios_state.cc				\
 	parametertree.cc                        \
 	parametertreeparser.cc			\
@@ -60,9 +60,9 @@ commoninclude_HEADERS = 			\
 	iteratorfacades.hh			\
 	lcm.hh					\
 	lru.hh					\
-	mallocallocator.hh					\
+	mallocallocator.hh			\
 	math.hh					\
-	matvectraits.hh \
+	matvectraits.hh                         \
 	misc.hh					\
 	mpicollectivecommunication.hh		\
 	mpiguard.hh				\

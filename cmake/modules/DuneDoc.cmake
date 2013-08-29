@@ -83,7 +83,6 @@ MACRO(dune_add_latex_document tex_file)
   string(REGEX REPLACE "/" "_" "${CMAKE_CURRENT_SOURCE_DIR}/${file}" filevar ${file})
   set(filevar "filevar-NOTFOUND")
   find_file(filevar ${tex_file} ${CMAKE_CURRENT_SOURCE_DIR})
-  message(filevar=${filevar} tex_file=${tex_file} CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR})
   if(filevar)
     if(LATEX_USABLE)
       # add rule to create latex document

@@ -57,6 +57,12 @@ TESTPROGS = \
     tupleutilitytest \
     utilitytest
 
+
+# only run this test if TBB is availabe
+if TBB
+  TESTPROGS+=tbbruntest
+endif
+
 # which tests to run
 COMPILE_XFAIL=$(DUNE_COMMON_BIN)/xfail-compile-tests
 
@@ -209,6 +215,13 @@ singletontest_SOURCES = singletontest.cc
 
 utilitytest_SOURCES = utilitytest.cc
 
+if TBB
+  tbbruntest_SOURCES = tbbruntest.cc
+  tbbruntest_CPPFLAGS = $(AM_CPPFLAGS) $(TBB_CPPFLAGS)
+  tbbruntest_LDADD = $(TBB_LIBS) $(LDADD)
+  tbbruntest_LDFLAGS = $(AM_LDFLAGS) $(TBB_LDFLAGS)
+endif
+
 testdebugallocator_SOURCES = testdebugallocator.cc
 testdebugallocator_CPPFLAGS = $(AM_CPPFLAGS)
 
@@ -268,7 +281,7 @@ testfconstruct_fail2_CPPFLAGS = $(AM_CPPFLAGS) -DFVSIZE=5
 
 conversiontest_SOURCES = conversiontest.cc
 
-sourcescheck_NOSOURCES = exprtmpl.cc timing.cc
+sourcescheck_NOSOURCES = timing.cc
 
 testfloatcmp_SOURCES = testfloatcmp.cc
 

@@ -29,6 +29,7 @@ AC_CONFIG_FILES([Makefile
      cmake/pkg/Makefile
      dune/Makefile
      dune/common/Makefile
+     dune/common/threads/Makefile
      dune/common/test/Makefile
      dune/common/parallel/Makefile
      dune/common/parallel/test/Makefile
