@@ -6,7 +6,6 @@ dune_add_library(kernel
 
 #install headers
 install(FILES
-  allocator.hh
   instantiation.hh
   utility.hh
   vec.hh

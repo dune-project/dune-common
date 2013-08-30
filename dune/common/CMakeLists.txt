@@ -1,6 +1,7 @@
 add_subdirectory("parallel")
 add_subdirectory("threads")
 add_subdirectory("kernel")
+add_subdirectory("memory")
 add_subdirectory("test" EXCLUDE_FROM_ALL)
 
 #build the library dunecommon

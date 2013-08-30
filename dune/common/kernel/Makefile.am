@@ -13,7 +13,6 @@ libkernel_la_LIBADD =				\
 
 kernelincludedir = $(includedir)/dune/common/kernel
 kernelinclude_HEADERS =				\
-  allocator.hh					\
   instantiation.hh				\
   utility.hh					\
   vec.hh

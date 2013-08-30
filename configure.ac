@@ -31,6 +31,7 @@ AC_CONFIG_FILES([Makefile
      dune/common/Makefile
      dune/common/kernel/Makefile
      dune/common/kernel/vec/Makefile
+     dune/common/memory/Makefile
      dune/common/threads/Makefile
      dune/common/test/Makefile
      dune/common/parallel/Makefile
