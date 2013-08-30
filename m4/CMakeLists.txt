@@ -14,6 +14,7 @@ install(PROGRAMS
         cxx0x_variadic.m4
         cxx0x_variadic_constructor_sfinae.m4
         cxx11_alignof.m4
+        cxx11_conditional.m4
         cxx11_initializer_list.m4
         cxx11_lambda_expr.m4
         dune.m4
