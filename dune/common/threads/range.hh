@@ -50,7 +50,7 @@ namespace Dune {
       // subrange is guaranteed to be a multiple of the block size.
       static const_iterator do_split(fixed_block_size_range& r)
       {
-        size_type middle_block = r.block_count() >> 1;;
+        size_type middle_block = r.block_count() >> 1;
         V middle = r._begin + middle_block * r._block_size;
         r._end = middle;
         return middle;
