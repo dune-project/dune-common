@@ -1572,17 +1572,6 @@ namespace Dune {
    *
    * \tparam Tuple The tuple type to extend
    * \tparam T     The type to be appended to the tuple
-   *
-   * With variadic templates the generic specialization would be:
-   *
-   * \code
-   * template<class... TupleArgs, class T>
-   * struct PushBackTuple<typename Dune::tuple<TupleArgs...>, T>
-   * {
-   *   typedef typename Dune::tuple<TupleArgs..., T> type;
-   * };
-   * \endcode
-   *
    */
   template< class Tuple, class T>
   struct PushBackTuple
@@ -1607,6 +1596,13 @@ namespace Dune {
 
 #ifndef DOXYGEN
 
+#if HAVE_VARIADIC_TEMPLATES
+  template<class... TupleArgs, class T>
+  struct PushBackTuple<typename Dune::tuple<TupleArgs...>, T>
+  {
+    typedef typename Dune::tuple<TupleArgs..., T> type;
+  };
+#else
   template<class T>
   struct PushBackTuple< Dune::tuple<>, T>
   {
@@ -1660,6 +1656,7 @@ namespace Dune {
   {
     typedef typename Dune::tuple<T1, T2, T3, T4, T5, T6, T7, T8, T> type;
   };
+#endif  // HAVE_VARIADIC_TEMPLATES
 
 #endif
 
@@ -1670,17 +1667,6 @@ namespace Dune {
    *
    * \tparam Tuple The tuple type to extend
    * \tparam T     The type to be prepended to the tuple
-   *
-   * With variadic templates the generic specialization would be:
-   *
-   * \code
-   * template<class... TupleArgs, class T>
-   * struct PushFrontTuple<typename Dune::tuple<TupleArgs...>, T>
-   * {
-   *   typedef typename Dune::tuple<T, TupleArgs...> type;
-   * };
-   * \endcode
-   *
    */
   template< class Tuple, class T>
   struct PushFrontTuple
@@ -1705,6 +1691,13 @@ namespace Dune {
 
 #ifndef DOXYGEN
 
+#if HAVE_VARIADIC_TEMPLATES
+  template<class... TupleArgs, class T>
+  struct PushFrontTuple<typename Dune::tuple<TupleArgs...>, T>
+  {
+    typedef typename Dune::tuple<T, TupleArgs...> type;
+  };
+#else
   template<class T>
   struct PushFrontTuple< Dune::tuple<>, T>
   {
@@ -1758,6 +1751,7 @@ namespace Dune {
   {
     typedef typename Dune::tuple<T, T1, T2, T3, T4, T5, T6, T7, T8> type;
   };
+#endif //  HAVE_VARIADIC_TEMPLATES
 
 #endif
 

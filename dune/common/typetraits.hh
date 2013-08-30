@@ -395,6 +395,8 @@ namespace Dune
     typedef T2 Type DUNE_DEPRECATED_MSG("Use Dune::conditional::type instead");
   };
 
+#if DOXYGEN || !HAVE_STD_CONDITIONAL
+
    /**
    * @brief Select a type based on a condition.
    *
@@ -403,7 +405,8 @@ namespace Dune
    * The selected type is accessible through the typedef
    * type.
    *
-   * \note This is a reimplementation of the C++11 stl feature of the same name.
+   * \note If available, this uses C++11 std::conditional, otherwise it provides
+   *       a reimplementation.
    */
   template<bool first, class T1, class T2>
   struct conditional
@@ -422,6 +425,13 @@ namespace Dune
   {
     typedef T2 type;
   };
+
+#else // DOXYGEN || !HAVE_STD_CONDITONAL
+
+  // pull in default implementation
+  using std::conditional;
+
+#endif // DOXYGEN || !HAVE_STD_CONDITONAL
 
   ////////////////////////////////////////////////////////////////////////
   //

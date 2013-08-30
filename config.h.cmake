@@ -108,6 +108,9 @@
 /* Define to 1 if you have the <type_traits> header file. */
 #cmakedefine HAVE_TYPE_TRAITS 1
 
+/* Define to 1 if you have the <type_traits> header file. */
+#cmakedefine HAVE_STD_CONDITIONAL 1
+
 /* Define to 1 if the MPI2 Standard is supported */
 #cmakedefine MPI_2 1
 
