@@ -163,17 +163,21 @@ load_opts() {
   local COMMAND=$(echo $command | tr '[:lower:]' '[:upper:]')
   CMD_FLAGS="$(eval echo \$${COMMAND}_FLAGS)"
   local CMD_FLAGS_FROM_FILE=""
-  BUILDDIR=$DUNE_BUILDDIR
   if test "x$DUNE_OPTS_FILE" != "x"; then
-    if test -z "$BUILDDIR"; then
-      # no builddir set yet, use build dir from opts file if set
-      # Note: if --use-buiddir is used BUILDDIR will be set already
-      OPTS_FILE_BUILDDIR="$(eval BUILDDIR=""; . $DUNE_OPTS_FILE; eval echo \$BUILDDIR)"
-      if test -n "$OPTS_FILE_BUILDDIR"; then
-        BUILDDIR="$OPTS_FILE_BUILDDIR"
+    if test "$command" = "NONE"; then
+      BUILDDIR=$DUNE_BUILDDIR
+      if test -z "$BUILDDIR"; then
+        # no builddir set yet, use build dir from opts file if set
+        # Note: if --use-buiddir is used BUILDDIR will be set already
+        OPTS_FILE_BUILDDIR="$(eval BUILDDIR=""; . $DUNE_OPTS_FILE; eval echo \$BUILDDIR)"
+        if test -n "$OPTS_FILE_BUILDDIR"; then
+          BUILDDIR="$OPTS_FILE_BUILDDIR"
+        fi
       fi
     fi
-    CMAKE_FLAGS="$(. $DUNE_OPTS_FILE; eval echo \$CMAKE_FLAGS)"
+    if test "$command" = "configure"; then
+      CMAKE_FLAGS="$(. $DUNE_OPTS_FILE; eval echo \$CMAKE_FLAGS)"
+    fi
     CMD_FLAGS_FROM_FILE="$(eval ${COMMAND}_FLAGS=""; . $DUNE_OPTS_FILE; eval echo \$${COMMAND}_FLAGS)"
   fi
   if test -n "$CMD_FLAGS_FROM_FILE"; then
@@ -182,6 +186,14 @@ load_opts() {
   elif test -n "$CMD_FLAGS"; then
     echo "----- using default flags \$${COMMAND}_FLAGS from environment -----"
   fi
+  
+if test "x$USE_CMAKE" = "xyes"; then
+  if test -z "$BUILDDIR"; then
+    echo "No build directory provided. Defaulting to the sub directory build-cmake"
+    export BUILDDIR=build-cmake
+  fi
+fi
+
 }
 
 ###############################################
@@ -585,6 +597,7 @@ run_default_configure () {
             PREPARAMS="$PREPARAMS $cflags"
         fi
       done
+      # create build directory if requested
       test -d "$BUILDDIR" || mkdir "$BUILDDIR"
       SRCDIR="$PWD"
       cd "$BUILDDIR"
@@ -593,7 +606,7 @@ run_default_configure () {
     else
       PARAMS="$PARAMS ACLOCAL_AMFLAGS=\"$ACLOCAL_FLAGS\""
       echo ./configure "$PARAMS"
-      # create build directory of requested
+      # create build directory if requested
       if test -n "$BUILDDIR"; then
         test -d "$BUILDDIR" || mkdir "$BUILDDIR"
         SRCDIR="$PWD"
@@ -885,15 +898,6 @@ while test $# -gt 0; do
 
     shift
 done
-
-if test "x$USE_CMAKE" = "xyes"; then
-  # load general options. DUNE_BUILDDIR might be overwritten in the opts file
-  load_opts NONE
-  if test -z "$BUILDDIR"; then
-    echo "No build directory provided. Defaulting to the sub directory build-cmake"
-    export BUILDDIR=build-cmake
-  fi
-fi
 
 # we assume there should be a command...
 if test "x$command" = "x"; then
