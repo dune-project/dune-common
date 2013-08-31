@@ -426,12 +426,12 @@ namespace Dune
     typedef T2 type;
   };
 
-#else // DOXYGEN || !HAVE_STD_CONDITONAL
+#else // DOXYGEN || !HAVE_STD_CONDITIONAL
 
   // pull in default implementation
   using std::conditional;
 
-#endif // DOXYGEN || !HAVE_STD_CONDITONAL
+#endif // DOXYGEN || !HAVE_STD_CONDITIONAL
 
   ////////////////////////////////////////////////////////////////////////
   //
