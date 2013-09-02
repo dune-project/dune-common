@@ -70,5 +70,6 @@ testdebugallocator_fail3
 testdebugallocator_fail4
 testdebugallocator_fail5
 eigenvaluestest
+typetraitstest
 *.log
 *.trs

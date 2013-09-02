@@ -55,6 +55,7 @@ TESTPROGS = \
     tuplestest_std \
     tuplestest_tr1 \
     tupleutilitytest \
+    typetraitstest \
     utilitytest
 
 # which tests to run
@@ -206,6 +207,8 @@ mpiguardtest_LDADD = $(DUNEMPILIBS) $(LDADD)
 mpiguardtest_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
 
 singletontest_SOURCES = singletontest.cc
+
+typetraitstest_SOURCES = typetraitstest.cc
 
 utilitytest_SOURCES = utilitytest.cc
 
