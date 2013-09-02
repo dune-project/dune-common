@@ -428,7 +428,7 @@ run_default_vcsetup() {
         if [ ! "x$COMMENT" = "x$REPLY" ]; then
           # parse line into an array first to catch obvious syntax errors
           # like 'option value; rm -rf /'
-          eval local GIT_OPTS=($REPLY)
+          eval local GIT_ARGS=($REPLY)
           git config "${GIT_ARGS[@]}"
         fi
       done
@@ -445,7 +445,7 @@ run_default_vcsetup() {
           if [ ! "x$COMMENT" = "x$REPLY" ]; then
             # parse line into an array first to catch obvious syntax errors
             # like 'option value; rm -rf /'
-            eval local GIT_OPTS=($REPLY)
+            eval local GIT_ARGS=($REPLY)
             git config "${GIT_ARGS[@]}"
           fi
         done
