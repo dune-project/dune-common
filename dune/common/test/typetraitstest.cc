@@ -39,5 +39,34 @@ int main() {
   assert( (Dune::is_same<int, Dune::TypeTraits<int>::ReferredType>::value) );
   assert( (Dune::is_same<int, Dune::TypeTraits<int&>::ReferredType>::value) );
 
+  // Test is_pointer
+  assert( not Dune::is_pointer<int>::value );
+  assert(     Dune::is_pointer<int*>::value );
+  assert(     Dune::is_pointer<int**>::value );
+  assert(     Dune::is_pointer<int(*)(int)>::value );
+
+  // Test is_reference
+  assert( not Dune::is_lvalue_reference<int>::value );
+  assert(     Dune::is_lvalue_reference<int&>::value );
+#if HAVE_RVALUE_REFERENCES
+  assert( not Dune::is_lvalue_reference<int&&>::value );
+#endif
+
+  // Test remove_pointer
+  // Note: when the argument T is not a pointer, TypeTraits::PointeeType returns Dune::Empty,
+  // while Dune::remove_pointer (as std::remove_pointer), returns T itself
+  assert( (Dune::is_same<int,       Dune::remove_pointer<int>::type>::value) );
+  assert( (Dune::is_same<int,       Dune::remove_pointer<int*>::type>::value) );
+  assert( (Dune::is_same<int*,      Dune::remove_pointer<int**>::type>::value) );
+  assert( (Dune::is_same<const int, Dune::remove_pointer<const int*>::type>::value) );
+  assert( (Dune::is_same<int,       Dune::remove_pointer<int* const>::type>::value) );
+
+  // Test remove_reference
+  assert( (Dune::is_same<int, Dune::remove_reference<int>::type>::value) );
+  assert( (Dune::is_same<int, Dune::remove_reference<int&>::type>::value) );
+#if HAVE_RVALUE_REFERENCES
+  assert( (Dune::is_same<int, Dune::remove_reference<int&&>::type>::value) );
+#endif
+
   return 0;
 }
