@@ -69,10 +69,10 @@ namespace Dune
 
   public:
     enum { isPointer = PointerTraits<T>::result };
-    typedef typename PointerTraits<T>::PointeeType PointeeType;
+    typedef typename PointerTraits<T>::PointeeType PointeeType DUNE_DEPRECATED_MSG("Use remove_pointer instead!");
 
     enum { isReference = ReferenceTraits<T>::result };
-    typedef typename ReferenceTraits<T>::ReferredType ReferredType;
+    typedef typename ReferenceTraits<T>::ReferredType ReferredType DUNE_DEPRECATED_MSG("Use remove_reference instead!");
   };
 
   /**
