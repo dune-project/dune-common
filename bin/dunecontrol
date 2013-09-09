@@ -176,7 +176,7 @@ load_opts() {
         fi
       fi
       if test -z "$USE_CMAKE"; then
-        # no USE_CMAKE set yet, use build dir from opts file if set
+        # no USE_CMAKE set yet, use USE_CMAKE from opts file if set
         # Note: if --use-cmake is used USE_CMAKE will be set already
         OPTS_FILE_USE_CMAKE="$(eval USE_CMAKE=""; . $DUNE_OPTS_FILE; eval echo \$USE_CMAKE)"
         if test -n "$OPTS_FILE_USE_CMAKE"; then
