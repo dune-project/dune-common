@@ -3,6 +3,7 @@ noinst_LTLIBRARIES = libvec.la
 
 libvec_la_SOURCES =				\
   add.cc					\
+  assign_scalar.cc				\
   axpy.cc					\
   dot.cc					\
   infinity_norm.cc				\
@@ -15,6 +16,7 @@ libvec_la_SOURCES =				\
 vecincludedir = $(includedir)/dune/common/kernel/vec
 vecinclude_HEADERS =				\
   add.hh					\
+  assign_scalar.hh				\
   axpy.hh					\
   dot.hh					\
   infinity_norm.hh				\

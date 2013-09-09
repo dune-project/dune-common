@@ -5,6 +5,7 @@
 #define DUNE_COMMON_KERNEL_VEC_HH
 
 #include <dune/common/kernel/vec/add.hh>
+#include <dune/common/kernel/vec/assign_scalar.hh>
 #include <dune/common/kernel/vec/axpy.hh>
 #include <dune/common/kernel/vec/dot.hh>
 #include <dune/common/kernel/vec/infinity_norm.hh>
