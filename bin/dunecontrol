@@ -163,9 +163,9 @@ load_opts() {
   local COMMAND=$(echo $command | tr '[:lower:]' '[:upper:]')
   CMD_FLAGS="$(eval echo \$${COMMAND}_FLAGS)"
   local CMD_FLAGS_FROM_FILE=""
-  if test "x$DUNE_OPTS_FILE" != "x"; then
-    if test "$command" = "NONE"; then
-      BUILDDIR=$DUNE_BUILDDIR
+  if test "$command" = "NONE"; then
+    BUILDDIR=$DUNE_BUILDDIR
+    if test "x$DUNE_OPTS_FILE" != "x"; then
       if test -z "$BUILDDIR"; then
         # no builddir set yet, use build dir from opts file if set
         # Note: if --use-buiddir is used BUILDDIR will be set already
@@ -175,6 +175,8 @@ load_opts() {
         fi
       fi
     fi
+  fi
+  if test "x$DUNE_OPTS_FILE" != "x"; then
     if test "$command" = "configure"; then
       CMAKE_FLAGS="$(. $DUNE_OPTS_FILE; eval echo \$CMAKE_FLAGS)"
     fi
