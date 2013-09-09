@@ -32,6 +32,12 @@ namespace Dune
   /**
    * @brief General type traits class to check whether type is reference or
    * pointer type
+   *
+   * \deprecated This class will be replaced by alternatives found in the C++11 stl.
+   *   - Use is_pointer<T>::value instead of TypeTraits<T>::isPointer
+   *   - Use is_lvalue_reference<T>::value instead of TypeTraits<T>::isReference
+   *   - Use remove_pointer<T>::type instead of TypeTraits<T>::PointeeType
+   *   - Use remove_reference<T>::type instead of TypeTraits<T>::ReferredType
    */
   template <typename T>
   class TypeTraits
@@ -63,10 +69,10 @@ namespace Dune
 
   public:
     enum { isPointer = PointerTraits<T>::result };
-    typedef typename PointerTraits<T>::PointeeType PointeeType;
+    typedef typename PointerTraits<T>::PointeeType PointeeType DUNE_DEPRECATED_MSG("Use remove_pointer instead!");
 
     enum { isReference = ReferenceTraits<T>::result };
-    typedef typename ReferenceTraits<T>::ReferredType ReferredType;
+    typedef typename ReferenceTraits<T>::ReferredType ReferredType DUNE_DEPRECATED_MSG("Use remove_reference instead!");
   };
 
   /**
@@ -426,12 +432,12 @@ namespace Dune
     typedef T2 type;
   };
 
-#else // DOXYGEN || !HAVE_STD_CONDITONAL
+#else // DOXYGEN || !HAVE_STD_CONDITIONAL
 
   // pull in default implementation
   using std::conditional;
 
-#endif // DOXYGEN || !HAVE_STD_CONDITONAL
+#endif // DOXYGEN || !HAVE_STD_CONDITIONAL
 
   ////////////////////////////////////////////////////////////////////////
   //
@@ -464,6 +470,53 @@ namespace Dune
   //! type for false
   typedef integral_constant<bool, false> false_type;
 #endif // #else // #if HAVE_INTEGRAL_CONSTANT
+
+  template<typename>
+  struct __is_pointer_helper
+  : public false_type { };
+
+  template<typename T>
+  struct __is_pointer_helper<T*>
+  : public true_type { };
+
+  /// is_pointer
+  template<typename T>
+  struct is_pointer
+  : public integral_constant<bool, (__is_pointer_helper<T>::value)>
+    { };
+
+  // Helper class for is_lvalue_reference
+  template<typename>
+  struct __is_lvalue_reference_helper
+  : public false_type { };
+
+  template<typename T>
+  struct __is_lvalue_reference_helper<T&>
+  : public true_type { };
+
+  /** \brief Determine whether a type is a lvalue reference type */
+  template<typename T>
+  struct is_lvalue_reference
+  : public integral_constant<bool, (__is_lvalue_reference_helper<T>::value)>
+    { };
+
+  template<typename _Tp>
+    struct __remove_pointer_helper
+    { typedef _Tp     type; };
+
+  template<typename _Tp>
+    struct __remove_pointer_helper<_Tp*>
+    { typedef _Tp     type; };
+
+  /** \brief Return the type a pointer type points to
+   *
+   * \note When the argument T is not a pointer, TypeTraits::PointeeType returns Dune::Empty,
+   * while Dune::remove_pointer (as std::remove_pointer), returns T itself.
+   */
+  template<typename _Tp>
+    struct remove_pointer
+    : public __remove_pointer_helper<typename remove_const<_Tp>::type >
+    { };
 
   /** @} */
 }
