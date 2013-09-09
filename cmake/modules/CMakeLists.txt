@@ -1,4 +1,8 @@
-set(modules DuneBoost.cmake
+set(modules
+  AddGMPFlags.cmake
+  AddMETISFlags.cmake
+  AddParMETISFlags.cmake
+  DuneBoost.cmake
   DuneCommonMacros.cmake
   DuneCxaDemangle.cmake
   DuneDoc.cmake
@@ -19,5 +23,6 @@ set(modules DuneBoost.cmake
   FindParMETIS.cmake
   FindSharedPtr.cmake
   LanguageSupport.cmake
+  UseInkscape.cmake
   UseLATEX.cmake)
 install(FILES ${modules} DESTINATION ${DUNE_INSTALL_MODULEDIR})
