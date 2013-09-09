@@ -165,6 +165,7 @@ load_opts() {
   local CMD_FLAGS_FROM_FILE=""
   if test "$command" = "NONE"; then
     BUILDDIR=$DUNE_BUILDDIR
+    USE_CMAKE=$DUNE_USE_CMAKE
     if test "x$DUNE_OPTS_FILE" != "x"; then
       if test -z "$BUILDDIR"; then
         # no builddir set yet, use build dir from opts file if set
@@ -174,6 +175,15 @@ load_opts() {
           BUILDDIR="$OPTS_FILE_BUILDDIR"
         fi
       fi
+      if test -z "$USE_CMAKE"; then
+        # no USE_CMAKE set yet, use build dir from opts file if set
+        # Note: if --use-cmake is used USE_CMAKE will be set already
+        OPTS_FILE_USE_CMAKE="$(eval USE_CMAKE=""; . $DUNE_OPTS_FILE; eval echo \$USE_CMAKE)"
+        if test -n "$OPTS_FILE_USE_CMAKE"; then
+          USE_CMAKE="$OPTS_FILE_USE_CMAKE"
+        fi
+      fi
+
     fi
   fi
   if test "x$DUNE_OPTS_FILE" != "x"; then
@@ -773,7 +783,6 @@ export ONLY=""
 export RESUME_FLAG=no
 export REVERSE_FLAG=no
 export SKIPFIRST=no
-export USE_CMAKE=no
 
 # parse commandline parameters
 while test $# -gt 0; do
@@ -883,7 +892,7 @@ while test $# -gt 0; do
       export SKIPFIRST=yes
     ;;
     --use-cmake)
-      export USE_CMAKE=yes
+      export DUNE_USE_CMAKE=yes
     ;;
     --debug) true ;; # ignore this option, it is handled right at the beginning
     --*)
