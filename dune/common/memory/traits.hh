@@ -10,12 +10,40 @@
 namespace Dune {
   namespace Memory {
 
-    template<typename A1, typename A2>
+    namespace impl {
+
+      template<typename... A>
+      struct allocators_are_interoperable;
+
+      template<typename A>
+      struct allocators_are_interoperable<A>
+        : public true_type
+      {};
+
+      template<typename A1, typename A2, typename... A>
+      struct allocators_are_interoperable<A1,A2,A...>
+      {
+
+        static const bool tail_is_interoperable =
+          allocators_are_interoperable<A2,A...>::value;
+
+        static const bool head_is_interoperable = is_same<
+          typename A1::template rebind<void>::other,
+          typename A2::template rebind<void>::other
+          >::value;
+
+        static const bool value = head_is_interoperable && tail_is_interoperable;
+
+      };
+
+    } // namespace impl
+
+    // repackage into integral_constant
+    template<typename... A>
     struct allocators_are_interoperable
       : public integral_constant<bool,
-                                 is_same<
-                                   typename A1::template rebind<void>::other,
-                                   typename A2::template rebind<void>::other
+                                 impl::allocators_are_interoperable<
+                                   A...
                                    >::value
                                  >
     {};
