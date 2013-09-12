@@ -22,7 +22,7 @@ namespace Dune {
 #if defined HAVE_ALIGNOF
 
     template<typename T>
-    struct alignment
+    struct align_of
       : public integral_constant<std::size_t,alignof(T)>
     {};
 
@@ -30,27 +30,27 @@ namespace Dune {
 
     // we have no idea, so let's be conservative
     template<typename T>
-    struct alignment
+    struct align_of
       : public integral_constant<std::size_t,1>
     {};
 
     template<>
-    struct alignment<std::size_t>
+    struct align_of<std::size_t>
       : public integral_constant<std::size_t,ALIGNOF_SIZE_T>
     {};
 
     template<>
-    struct alignment<std::uint32_t>
+    struct align_of<std::uint32_t>
       : public integral_constant<std::size_t,ALIGNOF_UINT32_T>
     {};
 
     template<>
-    struct alignment<double>
+    struct align_of<double>
       : public integral_constant<std::size_t,ALIGNOF_DOUBLE>
     {};
 
     template<>
-    struct alignment<float>
+    struct align_of<float>
       : public integral_constant<std::size_t,ALIGNOF_FLOAT>
     {};
 

@@ -35,7 +35,7 @@ namespace Dune {
 
       static const size_type block_size = bs;
 
-      static const size_type alignment = alignment<T>::value;
+      static const size_type alignment = align_of<T>::value;
 
       static const size_type alignment_for_block_size = Dune::Gcd<
         alignment,
@@ -106,7 +106,7 @@ namespace Dune {
 
       static const size_type block_size = bs;
 
-      static const size_type alignment = alignment<T>::value;
+      static const size_type alignment = align_of<T>::value;
 
       static const size_type alignment_for_block_size = Dune::Gcd<
         alignment,
