@@ -57,6 +57,7 @@ commoninclude_HEADERS = 			\
 	indent.hh				\
 	interfaces.hh				\
 	ios_state.hh				\
+	iteratoradapters.hh			\
 	iteratorfacades.hh			\
 	lcm.hh					\
 	lru.hh					\
