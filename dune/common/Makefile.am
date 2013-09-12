@@ -1,6 +1,6 @@
 # $Id$
 
-SUBDIRS = . test parallel threads kernel memory
+SUBDIRS = test parallel threads kernel memory
 
 # the standard debug streams are put into the libdune
 noinst_LTLIBRARIES = libcommon.la
