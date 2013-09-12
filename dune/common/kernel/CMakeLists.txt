@@ -1,3 +1,4 @@
+add_subdirectory("ell")
 add_subdirectory("vec")
 
 dune_add_library(kernel
@@ -6,6 +7,7 @@ dune_add_library(kernel
 
 #install headers
 install(FILES
+  ell.hh
   instantiation.hh
   utility.hh
   vec.hh
