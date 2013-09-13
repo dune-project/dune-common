@@ -361,6 +361,11 @@ macro(dune_process_dependency_tree DEPENDS DVERSIONS SUGGESTS SVERSIONS)
         endforeach(_lib ${${_mod}_LIBRARIES})
       endif(${_mod}_LIBRARIES)
       message(STATUS "Dependencies for ${_mod}: ${${_mod}_DEPENDENCIES}")
+
+      #update ALL_PKG_FLAGS
+      foreach(dir ${${_mod}_INCLUDE_DIRS})
+        set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-I${dir}")
+      endforeach()
     endif(NOT ${_mod}_PROCESSED)
   endforeach(_mod DEPENDENCIES)
 endmacro(dune_process_dependency_tree)
@@ -501,6 +506,10 @@ macro(dune_project)
       "Installation directory for CMake modules. Default is \${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules when not set explicitely")
     set(DUNE_INSTALL_MODULEDIR ${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules)
   endif(NOT DUNE_INSTALL_MODULEDIR)
+
+  # set up make headercheck
+  include(Headercheck)
+  setup_headercheck()
 endmacro(dune_project)
 
 # create a new config.h file and overwrite the existing one
@@ -561,6 +570,9 @@ endmacro(dune_regenerate_config_cmake)
 # Namely it creates config.h and the cmake-config files,
 # some install directives and exports the module.
 macro(finalize_dune_project)
+  #configure all headerchecks
+  finalize_headercheck()
+
   #create cmake-config files for build tree
   configure_file(
     ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}-config.cmake.in
@@ -627,6 +639,9 @@ macro(finalize_dune_project)
   endif("${ARGC}" EQUAL "1")
 
   test_dep()
+
+  include(FeatureSummary)
+  feature_summary(WHAT ALL)
 endmacro(finalize_dune_project)
 
 macro(target_link_dune_default_libraries _target)
@@ -909,3 +924,16 @@ and a replacement string. ${REPLACE_UNPARSED_ARGUMENTS}")
     replace_properties_for_one()
   endif(_length EQUAL 0)
 endfunction(replace_properties)
+
+macro(add_dune_all_flags targets)
+  get_property(flags GLOBAL PROPERTY ALL_PKG_FLAGS)
+  set(FLAGSTR "")
+  foreach(flag ${flags})
+    set(FLAGSTR "${FLAGSTR}\ ${flag}")
+  endforeach()
+  foreach(target ${targets})
+    set_property(TARGET ${target}
+          APPEND_STRING
+          PROPERTY COMPILE_FLAGS ${FLAGSTR})
+  endforeach()
+endmacro(add_dune_all_flags targets)

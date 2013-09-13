@@ -82,3 +82,11 @@ endif(GMP_FOUND)
 
 # set HAVE_GMP for config.h
 set(HAVE_GMP GMP_FOUND)
+
+#add all GMP related flags to ALL_PKG_FLAGS, this must happen regardless of a target using add_dune_gmp_flags
+if(HAVE_GMP)
+  set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-DENABLE_GMP=1")
+  foreach(dir ${GMP_INCLUDE_DIR})
+    set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-I${dir}")
+  endforeach()
+endif()
