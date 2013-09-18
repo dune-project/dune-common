@@ -183,7 +183,17 @@ load_opts() {
           USE_CMAKE="$OPTS_FILE_USE_CMAKE"
         fi
       fi
-
+      if test -n "$USE_CMAKE" && test -z "$CMAKE"; then
+	# We use cmake for building, but CMAKE is not yet set.
+	# Check the opts file for it
+        OPTS_FILE_CMAKE="$(eval CMAKE=""; . $DUNE_OPTS_FILE; eval echo \$CMAKE)"
+        if test -n "$OPTS_FILE_CMAKE"; then
+          CMAKE="$OPTS_FILE_CMAKE"
+	else
+	  # fall back to system cmake
+          CMAKE=cmake
+        fi
+      fi
     fi
   fi
   if test "x$DUNE_OPTS_FILE" != "x"; then
@@ -612,8 +622,8 @@ run_default_configure () {
       test -d "$BUILDDIR" || mkdir "$BUILDDIR"
       SRCDIR="$PWD"
       cd "$BUILDDIR"
-      echo "$PREPARAMS cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR"
-      eval $PREPARAMS cmake "-DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR" || exit 1
+      echo "$PREPARAMS $CMAKE -DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR"
+      eval $PREPARAMS $CMAKE "-DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR" || exit 1
     else
       PARAMS="$PARAMS ACLOCAL_AMFLAGS=\"$ACLOCAL_FLAGS\""
       echo ./configure "$PARAMS"
