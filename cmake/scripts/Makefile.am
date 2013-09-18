@@ -1,5 +1,6 @@
 MODULES = BuildTests.cmake.in \
   CreateDoxyFile.cmake        \
+  FinalizeHeadercheck.cmake   \
   FindFiles.cmake             \
   InstallFile.cmake           \
   RunDoxygen.cmake
