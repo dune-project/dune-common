@@ -13,6 +13,7 @@ set(modules
   DuneStreams.cmake
   DuneTestMacros.cmake
   DuneTests.cmake
+  FinalizeHeadercheck.cmake
   FindBoostFusion.cmake
   FindCXX11Conditional.cmake
   FindCXX11Features.cmake
@@ -22,6 +23,7 @@ set(modules
   FindMProtect.cmake
   FindParMETIS.cmake
   FindSharedPtr.cmake
+  Headercheck.cmake
   LanguageSupport.cmake
   UseInkscape.cmake
   UseLATEX.cmake)

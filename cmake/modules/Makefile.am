@@ -9,6 +9,7 @@ MODULES = DuneBoost.cmake \
   DuneStreams.cmake       \
   DuneTestMacros.cmake    \
   DuneTests.cmake         \
+  FinalizeHeadercheck.cmake \
   FindBoostFusion.cmake   \
   FindCXX11Conditional.cmake \
   FindCXX11Features.cmake \
@@ -18,6 +19,7 @@ MODULES = DuneBoost.cmake \
   FindMProtect.cmake      \
   FindParMETIS.cmake      \
   FindSharedPtr.cmake     \
+  Headercheck.cmake       \
   LanguageSupport.cmake   \
   UseLATEX.cmake
 
