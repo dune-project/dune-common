@@ -13,7 +13,6 @@ set(modules
   DuneStreams.cmake
   DuneTestMacros.cmake
   DuneTests.cmake
-  FinalizeHeadercheck.cmake
   FindBoostFusion.cmake
   FindCXX11Conditional.cmake
   FindCXX11Features.cmake
