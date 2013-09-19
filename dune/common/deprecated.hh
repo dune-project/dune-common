@@ -71,14 +71,15 @@
  *    \code
    template<typename T> struct Class {
    void frob() DUNE_DEPRECATED {}
-   };
+   }; // 1)
    template<typename T> struct Class {
    void DUNE_DEPRECATED frob() {}
-   };
+   }; // 2)
    template<typename T> struct Class {
    DUNE_DEPRECATED void frob() {}
-   };
+   }; // 3)
  *    \endcode
+ *    With g++ only 2) emits a warning for templated member functions.
  */
 #define DUNE_DEPRECATED
 #else // defined(HAS_ATTRIBUTE_DEPRECATED)
@@ -154,15 +155,16 @@
  *  - Member functions
  *    \code
    template<typename T> struct Class {
-   void frob() DUNE_DEPRECATED_MSG("frogs() are beautiful from now on") {}
-   };
+   void frob() DUNE_DEPRECATED_MSG("use frog") {}
+   }; // 1)
    template<typename T> struct Class {
-   void DUNE_DEPRECATED_MSG("frogs() are beautiful from now on") frob() {}
-   };
+   void DUNE_DEPRECATED_MSG("use frog") frob() {}
+   }; // 2)
    template<typename T> struct Class {
-   DUNE_DEPRECATED_MSG("frogs() are beautiful from now on") void frob() {}
-   };
+   DUNE_DEPRECATED_MSG("use frog") void frob() {}
+   }; // 3)
  *    \endcode
+ *    With g++ only 2) emits a warning for templated member functions.
  */
 #define DUNE_DEPRECATED_MSG(text) DUNE_DEPRECATED
 #else // defined(HAS_ATTRIBUTE_DEPRECATED_MSG)
