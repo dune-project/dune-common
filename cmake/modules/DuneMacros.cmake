@@ -554,7 +554,7 @@ macro(dune_regenerate_config_cmake)
    endforeach()
    # parse other modules dune.module file to generate variables for config.h
    foreach(_dune_module_file ${${_dep}_PREFIX}/dune.module
-       ${${_dep}_PREFIX}/share/${_dep}/dune.module)
+       ${${_dep}_PREFIX}/lib/dunecontrol/${_dep}/dune.module)
      if(EXISTS ${_dune_module_file})
        get_filename_component(_dune_module_file_path ${_dune_module_file} PATH)
        dune_module_information(${_dune_module_file_path} QUIET)
