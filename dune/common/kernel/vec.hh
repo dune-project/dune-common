@@ -13,6 +13,7 @@
 #include <dune/common/kernel/vec/one_norm.hh>
 #include <dune/common/kernel/vec/scale.hh>
 #include <dune/common/kernel/vec/shift.hh>
+#include <dune/common/kernel/vec/subtract.hh>
 #include <dune/common/kernel/vec/two_norm2.hh>
 
 #endif // DUNE_COMMON_KERNEL_VEC_HH
