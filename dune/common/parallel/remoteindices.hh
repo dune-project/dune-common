@@ -1495,15 +1495,14 @@ namespace Dune {
     if(found == remoteIndices_.end())
     {
       if(source_ != target_)
-        remoteIndices_.insert(std::make_pair(process,
+        found = remoteIndices_.insert(found, std::make_pair(process,
                                              std::make_pair(new RemoteIndexList(),
                                                             new RemoteIndexList())));
       else{
         RemoteIndexList* rlist = new RemoteIndexList();
-        remoteIndices_.insert(std::make_pair(process,
+        found = remoteIndices_.insert(found,
+                                      std::make_pair(process,
                                              std::make_pair(rlist, rlist)));
-
-        found = remoteIndices_.find(process);
       }
     }
 
