@@ -62,6 +62,9 @@ namespace Dune {
    * \endcode
    */
   template<class T>
+  T SQR (T t) DUNE_DEPRECATED_MSG("Use method sqr from math.hh instead");
+
+  template<class T>
   T SQR (T t)
   {
     return t*t;
