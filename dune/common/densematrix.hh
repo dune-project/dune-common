@@ -14,6 +14,7 @@
 #include <dune/common/precision.hh>
 #include <dune/common/static_assert.hh>
 #include <dune/common/classname.hh>
+#include <dune/common/math.hh>
 
 
 namespace Dune
