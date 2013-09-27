@@ -79,6 +79,25 @@ namespace Dune
   {};
 #endif // DOXYGEN
 
+
+  //! Calculates the factorial of m at compile time
+  template <int m>
+  struct Factorial
+  {
+    //! factorial stores m!
+    enum { factorial = m * Factorial<m-1>::factorial };
+  };
+
+  //! end of recursion of factorial via specialization
+  template <>
+  struct Factorial<0>
+  {
+    // 0! = 1
+    enum { factorial = 1 };
+  };
+
+
+
 }
 
 #endif // #ifndef DUNE_MATH_HH

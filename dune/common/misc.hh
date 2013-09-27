@@ -21,6 +21,7 @@
 #include "exceptions.hh"
 #include <dune/common/typetraits.hh>
 #include <dune/common/stringutility.hh>
+#include <dune/common/math.hh>
 
 namespace Dune {
 
@@ -80,22 +81,6 @@ namespace Dune {
   {
     // m^0 = 1
     enum { power = 1 };
-  };
-
-  //! Calculates the factorial of m at compile time
-  template <int m>
-  struct Factorial
-  {
-    //! factorial stores m!
-    enum { factorial = m * Factorial<m-1>::factorial };
-  };
-
-  //! end of recursion of factorial via specialization
-  template <>
-  struct Factorial<0>
-  {
-    // 0! = 1
-    enum { factorial = 1 };
   };
 
   //********************************************************************
