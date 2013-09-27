@@ -3,6 +3,9 @@
 #ifndef MISC_HH
 #define MISC_HH
 
+#warning This file is deprecated.  Its contents have moved to stringutility.hh and math.hh, \
+         or will disappear completely.
+
 /** \file
     \brief Miscellaneous helper stuff
  */
