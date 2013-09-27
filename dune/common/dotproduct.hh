@@ -35,6 +35,7 @@ namespace Dune {
   /** @brief computes the dot product for fundamental data types according to Petsc's VectDot function: dot(a,b) := std::conj(a)*b
    *
    * @see http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecDot.html#VecDot
+   * @param a
    * @param b
    * @return conj(a)*b
    */

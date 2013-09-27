@@ -18,6 +18,7 @@ MODULES = DuneBoost.cmake \
   FindMProtect.cmake      \
   FindParMETIS.cmake      \
   FindSharedPtr.cmake     \
+  Headercheck.cmake       \
   LanguageSupport.cmake   \
   UseLATEX.cmake
 

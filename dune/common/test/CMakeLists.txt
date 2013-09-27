@@ -122,6 +122,7 @@ add_executable("genericiterator_compile_fail" EXCLUDE_FROM_ALL genericiterator_c
 add_executable("iteratorfacadetest2" iteratorfacadetest2.cc)
 add_executable("iteratorfacadetest" iteratorfacadetest.cc)
 add_executable("lrutest" lrutest.cc)
+target_link_libraries("lrutest" "dunecommon")
 add_executable("mpiguardtest" mpiguardtest.cc)
 target_link_libraries("mpiguardtest" "dunecommon")
 add_DUNE_MPI_flags(mpiguardtest)

@@ -85,3 +85,10 @@ else(METIS_FOUND)
     "Include directory: ${METIS_INCLUDE_DIRS}\n"
     "Library directory: ${METIS_LIBRARIES}\n\n")
 endif(METIS_FOUND)
+
+#add all metis related flags to ALL_PKG_FLAGS, this must happen regardless of a target using add_dune_metis_flags
+if(METIS_FOUND)
+  foreach(dir ${METIS_INCLUDE_DIRS})
+    set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-I${dir}")
+  endforeach()
+endif()
