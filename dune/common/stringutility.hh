@@ -7,6 +7,10 @@
     \brief Miscellaneous helper stuff
  */
 
+#include <cstddef>
+#include <cstring>
+#include <algorithm>
+
 namespace Dune {
 
    /** @addtogroup Common

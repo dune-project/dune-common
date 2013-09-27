@@ -8,6 +8,7 @@
  */
 
 #include <cmath>
+#include <complex>
 
 namespace Dune
 {
