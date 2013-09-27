@@ -96,7 +96,29 @@ namespace Dune
     enum { factorial = 1 };
   };
 
+  //! compute conjugate complex of x
+  // conjugate complex does nothing for non-complex types
+  template<class K>
+  inline K conjugateComplex (const K& x)
+  {
+    return x;
+  }
 
+#ifndef DOXYGEN
+  // specialization for complex
+  template<class K>
+  inline std::complex<K> conjugateComplex (const std::complex<K>& c)
+  {
+    return std::complex<K>(c.real(),-c.imag());
+  }
+#endif
+
+  //! Return the sign of the value
+  template <class T>
+  int sign(const T& val)
+  {
+    return (val < 0 ? -1 : 1);
+  }
 
 }
 
