@@ -20,6 +20,7 @@
 #include <dune/common/deprecated.hh>
 #include "exceptions.hh"
 #include <dune/common/typetraits.hh>
+#include <dune/common/stringutility.hh>
 
 namespace Dune {
 
@@ -123,40 +124,6 @@ namespace Dune {
   }
 
 
-  //********************************************************************
-  //
-  //  check whether a given container has a prefix/suffix
-  //
-  //********************************************************************
-
-  //! check whether a character container has a given prefix
-  /**
-   * The container must support the the begin() and size() methods.
-   */
-  template<typename C>
-  bool hasPrefix(const C& c, const char* prefix) {
-    std::size_t len = std::strlen(prefix);
-    return c.size() >= len &&
-           std::equal(prefix, prefix+len, c.begin());
-  }
-
-  //! check whether a character container has a given suffix
-  /**
-   * The container must support the the begin() and size() methods and the
-   * const_iterator member type.
-   *
-   * \note This is slow for containers which don't have random access iterators.
-   *       In the case of containers with bidirectional iterators, this
-   *       slow-ness is unnecessary.
-   */
-  template<typename C>
-  bool hasSuffix(const C& c, const char* suffix) {
-    std::size_t len = std::strlen(suffix);
-    if(c.size() < len) return false;
-    typename C::const_iterator it = c.begin();
-    std::advance(it, c.size() - len);
-    return std::equal(suffix, suffix+len, it);
-  }
   /** @} */
 
 }

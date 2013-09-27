@@ -83,6 +83,7 @@ commoninclude_HEADERS = 			\
 	sllist.hh				\
 	static_assert.hh			\
 	stdstreams.hh				\
+	stringutility.hh			\
 	timer.hh				\
 	tuples.hh				\
 	tupleutility.hh                         \
