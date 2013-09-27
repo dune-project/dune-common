@@ -163,14 +163,33 @@ load_opts() {
   local COMMAND=$(echo $command | tr '[:lower:]' '[:upper:]')
   CMD_FLAGS="$(eval echo \$${COMMAND}_FLAGS)"
   local CMD_FLAGS_FROM_FILE=""
-  BUILDDIR=$DUNE_BUILDDIR
-  if test "x$DUNE_OPTS_FILE" != "x"; then
-    # use build dir from opts file if set
-    OPTS_FILE_BUILDDIR="$(eval BUILDDIR=""; . $DUNE_OPTS_FILE; eval echo \$BUILDDIR)"
-    if test -n "$OPTS_FILE_BUILDDIR"; then
-      BUILDDIR="$OPTS_FILE_BUILDDIR"
+  if test "$command" = "NONE"; then
+    BUILDDIR=$DUNE_BUILDDIR
+    USE_CMAKE=$DUNE_USE_CMAKE
+    if test "x$DUNE_OPTS_FILE" != "x"; then
+      if test -z "$BUILDDIR"; then
+        # no builddir set yet, use build dir from opts file if set
+        # Note: if --use-buiddir is used BUILDDIR will be set already
+        OPTS_FILE_BUILDDIR="$(eval BUILDDIR=""; . $DUNE_OPTS_FILE; eval echo \$BUILDDIR)"
+        if test -n "$OPTS_FILE_BUILDDIR"; then
+          BUILDDIR="$OPTS_FILE_BUILDDIR"
+        fi
+      fi
+      if test -z "$USE_CMAKE"; then
+        # no USE_CMAKE set yet, use USE_CMAKE from opts file if set
+        # Note: if --use-cmake is used USE_CMAKE will be set already
+        OPTS_FILE_USE_CMAKE="$(eval USE_CMAKE=""; . $DUNE_OPTS_FILE; eval echo \$USE_CMAKE)"
+        if test -n "$OPTS_FILE_USE_CMAKE"; then
+          USE_CMAKE="$OPTS_FILE_USE_CMAKE"
+        fi
+      fi
+
     fi
-    CMAKE_FLAGS="$(. $DUNE_OPTS_FILE; eval echo \$CMAKE_FLAGS)"
+  fi
+  if test "x$DUNE_OPTS_FILE" != "x"; then
+    if test "$command" = "configure"; then
+      CMAKE_FLAGS="$(. $DUNE_OPTS_FILE; eval echo \$CMAKE_FLAGS)"
+    fi
     CMD_FLAGS_FROM_FILE="$(eval ${COMMAND}_FLAGS=""; . $DUNE_OPTS_FILE; eval echo \$${COMMAND}_FLAGS)"
   fi
   if test -n "$CMD_FLAGS_FROM_FILE"; then
@@ -178,6 +197,13 @@ load_opts() {
     CMD_FLAGS=$CMD_FLAGS_FROM_FILE
   elif test -n "$CMD_FLAGS"; then
     echo "----- using default flags \$${COMMAND}_FLAGS from environment -----"
+  fi
+  
+  if test "x$USE_CMAKE" = "xyes"; then
+    if test -z "$BUILDDIR"; then
+      echo "No build directory provided. Defaulting to the sub directory build-cmake"
+      export BUILDDIR=build-cmake
+    fi
   fi
 }
 
@@ -409,9 +435,12 @@ run_default_vcsetup() {
       echo -n "--> Setting Git configuration entries... "
       cat .vcsetup/config | while read; do
         # Filter out comments
-        COMMENT="$(echo $REPLY | $GREP '^#')"
+        local COMMENT="$(echo $REPLY | $GREP '^#')"
         if [ ! "x$COMMENT" = "x$REPLY" ]; then
-          git config $REPLY
+          # parse line into an array first to catch obvious syntax errors
+          # like 'option value; rm -rf /'
+          eval local GIT_ARGS=($REPLY)
+          git config "${GIT_ARGS[@]}"
         fi
       done
       echo "done"
@@ -423,9 +452,12 @@ run_default_vcsetup() {
         echo -n "--> Setting custom Git configuration entries from '$GIT_CONFIG_FILE'... "
         cat "$GIT_CONFIG_FILE" | while read; do
           # Filter out comments
-          COMMENT="$(echo $REPLY | $GREP '^#')"
+          local COMMENT="$(echo $REPLY | $GREP '^#')"
           if [ ! "x$COMMENT" = "x$REPLY" ]; then
-            git config $REPLY
+            # parse line into an array first to catch obvious syntax errors
+            # like 'option value; rm -rf /'
+            eval local GIT_ARGS=($REPLY)
+            git config "${GIT_ARGS[@]}"
           fi
         done
         echo "done"
@@ -518,7 +550,7 @@ run_default_configure () {
   else
     LOCAL_USE_CMAKE=no
   fi
-  echo "LOCAL_USE_CMAKE=$LOCAL_USE_CMAKE $(eval "echo \$PATH_$module")/CMakeLists.txt"
+
   if test -x configure || test "x$LOCAL_USE_CMAKE" = "xyes" ; then
     ACLOCAL_FLAGS="-I ."
     if test -d "m4"; then
@@ -534,7 +566,6 @@ run_default_configure () {
           # Translate the configure PARMS to cmake
           export PARAMS
           export CMAKE_PARAMS
-          echo module_translate_options_am2cmake $m $path/lib
           module_translate_options_am2cmake $m $path/lib
       fi
       if test x$module = x$m; then continue; fi # skip myself
@@ -577,16 +608,16 @@ run_default_configure () {
             PREPARAMS="$PREPARAMS $cflags"
         fi
       done
+      # create build directory if requested
       test -d "$BUILDDIR" || mkdir "$BUILDDIR"
       SRCDIR="$PWD"
       cd "$BUILDDIR"
-      echo `pwd`
       echo "$PREPARAMS cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR"
       eval $PREPARAMS cmake "-DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR" || exit 1
     else
       PARAMS="$PARAMS ACLOCAL_AMFLAGS=\"$ACLOCAL_FLAGS\""
       echo ./configure "$PARAMS"
-      # create build directory of requested
+      # create build directory if requested
       if test -n "$BUILDDIR"; then
         test -d "$BUILDDIR" || mkdir "$BUILDDIR"
         SRCDIR="$PWD"
@@ -752,7 +783,6 @@ export ONLY=""
 export RESUME_FLAG=no
 export REVERSE_FLAG=no
 export SKIPFIRST=no
-export USE_CMAKE=no
 
 # parse commandline parameters
 while test $# -gt 0; do
@@ -862,7 +892,7 @@ while test $# -gt 0; do
       export SKIPFIRST=yes
     ;;
     --use-cmake)
-      export USE_CMAKE=yes
+      export DUNE_USE_CMAKE=yes
     ;;
     --debug) true ;; # ignore this option, it is handled right at the beginning
     --*)
@@ -879,15 +909,6 @@ while test $# -gt 0; do
     shift
 done
 
-if test "x$USE_CMAKE" = "xyes"; then
-  # load general options. DUNE_BUILDDIR might be overwritten in the opts file
-  load_opts NONE
-  if test -z "$DUNE_BUILDDIR"; then
-    echo "No build directory provided. Defaulting to the sub directory build-cmake"
-    export DUNE_BUILDDIR=build-cmake
-  fi
-fi
-echo "USE_CMAKE=$USE_CMAKE DUNE_BUILDDIR=$DUNE_BUILDDIR"
 # we assume there should be a command...
 if test "x$command" = "x"; then
   usage

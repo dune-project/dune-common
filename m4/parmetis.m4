@@ -148,13 +148,12 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 		  This is only true if MPI was found by configure 
 		  _and_ if the application uses the PARMETIS_CPPFLAGS])
 	  AC_MSG_RESULT(ok)
-	  
-    # add to global list
-	  DUNE_PKG_LIBS="$PARMETIS_LIBS $DUNE_PKG_LIBS"
-	  DUNE_PKG_LDFLAGS="$DUNE_PKG_LDFLAGS $PARMETIS_LDFLAGS"
-	  DUNE_PKG_CPPFLAGS="$DUNE_PKG_CPPFLAGS $PARMETIS_CPPFLAGS"
-	  
-    # re-set variable correctly
+
+          # add to global list
+          DUNE_ADD_ALL_PKG([PARMETIS], [\${PARMETIS_CPPFLAGS}],
+                           [\${PARMETIS_LDFLAGS}], [\${PARMETIS_LIBS}])
+
+          # re-set variable correctly
 	  with_parmetis="yes"
       else
 	  with_parmetis="no"

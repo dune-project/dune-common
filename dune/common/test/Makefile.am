@@ -55,6 +55,7 @@ TESTPROGS = \
     tuplestest_std \
     tuplestest_tr1 \
     tupleutilitytest \
+    typetraitstest \
     utilitytest
 
 # which tests to run
@@ -104,72 +105,15 @@ noinst_HEADERS = dummyiterator.hh iteratorfacadetest.hh
 testincludedir = $(includedir)/dune/common/test
 testinclude_HEADERS = checkmatrixinterface.hh iteratortest.hh
 
-# define the programs
-pathtest_SOURCES = pathtest.cc
-
-parametertreetest_SOURCES = parametertreetest.cc
-
-bitsetvectortest_SOURCES = bitsetvectortest.cc
-
-diagonalmatrixtest_SOURCES = diagonalmatrixtest.cc
-
-nullptr_test_SOURCES = nullptr-test.cc nullptr-test2.cc
-nullptr_test_fail_SOURCES = nullptr-test.cc
-nullptr_test_fail_CPPFLAGS = $(AM_CPPFLAGS) -DFAIL
-
-static_assert_test_SOURCES = static_assert_test.cc
-static_assert_test_fail_SOURCES = static_assert_test_fail.cc
-
-fassigntest_SOURCES = fassigntest.cc
-
-bigunsignedinttest_SOURCES=bigunsignedinttest.cc
-bigunsignedinttest_CPPFLAGS = $(AM_CPPFLAGS) $(BOOST_CPPFLAGS)
-
-lrutest_SOURCES = lrutest.cc
-
-sllisttest_SOURCES = sllisttest.cc
-
+# define the programs (in alphabetical order)
 arraylisttest_SOURCES = arraylisttest.cc
 
 arraytest_SOURCES = arraytest.cc
 
-shared_ptrtest_config_SOURCES = shared_ptrtest.cc
+bigunsignedinttest_SOURCES=bigunsignedinttest.cc
+bigunsignedinttest_CPPFLAGS = $(AM_CPPFLAGS) $(BOOST_CPPFLAGS)
 
-shared_ptrtest_dune_SOURCES = shared_ptrtest.cc
-shared_ptrtest_dune_CPPFLAGS = $(AM_CPPFLAGS)   \
-    -DDISABLE_CONFIGURED_SHARED_PTR
-
-tuplestest_dune_SOURCES = tuplestest.cc
-tuplestest_dune_CPPFLAGS = $(AM_CPPFLAGS)       \
-    -DDISABLE_TR1_TUPLE -DDISABLE_STD_TUPLE
-
-tuplestest_std_SOURCES = tuplestest.cc
-
-tuplestest_tr1_SOURCES = tuplestest.cc
-tuplestest_tr1_CPPFLAGS = $(AM_CPPFLAGS)        \
-    -DDISABLE_STD_TUPLE
-
-tupleutilitytest_SOURCES = tupleutilitytest.cc
-
-streamtest_SOURCES = streamtest.cc
-
-# mention headers so that they are distributed too
-iteratorfacadetest_SOURCES = iteratorfacadetest.cc iteratorfacadetest.hh \
-   iteratortest.hh
-
-iteratorfacadetest2_SOURCES = iteratorfacadetest2.cc
-
-dynmatrixtest_SOURCES = dynmatrixtest.cc
-
-dynvectortest_SOURCES = dynvectortest.cc
-
-eigenvaluestest_SOURCES = eigenvaluestest.cc
-eigenvaluestest_LDADD = $(LAPACK_LIBS) $(LDADD) $(BLAS_LIBS) $(LIBS) $(FLIBS)
-
-fmatrixtest_SOURCES = fmatrixtest.cc
-fmatrixtest_LDADD = $(LAPACK_LIBS) $(LDADD) $(BLAS_LIBS) $(LIBS) $(FLIBS)
-
-fvectortest_SOURCES = fvectortest.cc
+bitsetvectortest_SOURCES = bitsetvectortest.cc
 
 check_fvector_size_fail1_SOURCES = check_fvector_size_fail.cc
 check_fvector_size_fail1_CPPFLAGS = $(AM_CPPFLAGS) -DDIM=1
@@ -179,21 +123,37 @@ check_fvector_size_fail2_CPPFLAGS = $(AM_CPPFLAGS) -DDIM=3
 
 check_fvector_size_SOURCES = check_fvector_size.cc
 
-poolallocatortest_SOURCES = poolallocatortest.cc
+conversiontest_SOURCES = conversiontest.cc
 
-enumsettest_SOURCES=enumsettest.cc
+diagonalmatrixtest_SOURCES = diagonalmatrixtest.cc
+
+dynmatrixtest_SOURCES = dynmatrixtest.cc
+
+dynvectortest_SOURCES = dynvectortest.cc
+
+eigenvaluestest_SOURCES = eigenvaluestest.cc
+eigenvaluestest_LDADD = $(LAPACK_LIBS) $(LDADD) $(BLAS_LIBS) $(LIBS) $(FLIBS)
+
+enumsettest_SOURCES = enumsettest.cc
+
+fassigntest_SOURCES = fassigntest.cc
+
+fmatrixtest_SOURCES = fmatrixtest.cc
+fmatrixtest_LDADD = $(LAPACK_LIBS) $(LDADD) $(BLAS_LIBS) $(LIBS) $(FLIBS)
+
+fvectortest_SOURCES = fvectortest.cc
 
 gcdlcmtest_SOURCES = gcdlcmtest.cc
 
-mpihelpertest_SOURCES = mpihelpertest.cc
-mpihelpertest_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)
-mpihelpertest_LDADD = $(DUNEMPILIBS) $(LDADD)
-mpihelpertest_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
+genericiterator_compile_fail_SOURCES = genericiterator_compile_fail.cc
 
-mpihelpertest2_SOURCES = mpihelpertest.cc
-mpihelpertest2_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS) -DMPIHELPER_PREINITIALIZE
-mpihelpertest2_LDADD = $(DUNEMPILIBS) $(LDADD)
-mpihelpertest2_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
+# mention headers so that they are distributed too
+iteratorfacadetest_SOURCES = iteratorfacadetest.cc iteratorfacadetest.hh \
+   iteratortest.hh
+
+iteratorfacadetest2_SOURCES = iteratorfacadetest2.cc
+
+lrutest_SOURCES = lrutest.cc
 
 mpicollectivecommunication_SOURCES = mpicollectivecommunication.cc
 mpicollectivecommunication_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)
@@ -205,9 +165,42 @@ mpiguardtest_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)
 mpiguardtest_LDADD = $(DUNEMPILIBS) $(LDADD)
 mpiguardtest_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
 
+mpihelpertest_SOURCES = mpihelpertest.cc
+mpihelpertest_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS)
+mpihelpertest_LDADD = $(DUNEMPILIBS) $(LDADD)
+mpihelpertest_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
+
+mpihelpertest2_SOURCES = mpihelpertest.cc
+mpihelpertest2_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS) -DMPIHELPER_PREINITIALIZE
+mpihelpertest2_LDADD = $(DUNEMPILIBS) $(LDADD)
+mpihelpertest2_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
+
+nullptr_test_SOURCES = nullptr-test.cc nullptr-test2.cc
+nullptr_test_fail_SOURCES = nullptr-test.cc
+nullptr_test_fail_CPPFLAGS = $(AM_CPPFLAGS) -DFAIL
+
+parametertreetest_SOURCES = parametertreetest.cc
+
+pathtest_SOURCES = pathtest.cc
+
+poolallocatortest_SOURCES = poolallocatortest.cc
+
+shared_ptrtest_config_SOURCES = shared_ptrtest.cc
+
+shared_ptrtest_dune_SOURCES = shared_ptrtest.cc
+shared_ptrtest_dune_CPPFLAGS = $(AM_CPPFLAGS)   \
+    -DDISABLE_CONFIGURED_SHARED_PTR
+
 singletontest_SOURCES = singletontest.cc
 
-utilitytest_SOURCES = utilitytest.cc
+sllisttest_SOURCES = sllisttest.cc
+
+sourcescheck_NOSOURCES = timing.cc
+
+static_assert_test_SOURCES = static_assert_test.cc
+static_assert_test_fail_SOURCES = static_assert_test_fail.cc
+
+streamtest_SOURCES = streamtest.cc
 
 testdebugallocator_SOURCES = testdebugallocator.cc
 testdebugallocator_CPPFLAGS = $(AM_CPPFLAGS)
@@ -266,13 +259,25 @@ testfconstruct_fail1_CPPFLAGS = $(AM_CPPFLAGS) -DFVSIZE=2
 testfconstruct_fail2_SOURCES = testfconstruct.cc
 testfconstruct_fail2_CPPFLAGS = $(AM_CPPFLAGS) -DFVSIZE=5
 
-conversiontest_SOURCES = conversiontest.cc
-
-sourcescheck_NOSOURCES = exprtmpl.cc timing.cc
-
 testfloatcmp_SOURCES = testfloatcmp.cc
 
-genericiterator_compile_fail_SOURCES = genericiterator_compile_fail.cc
+tuplestest_dune_SOURCES = tuplestest.cc
+tuplestest_dune_CPPFLAGS = $(AM_CPPFLAGS)       \
+    -DDISABLE_TR1_TUPLE -DDISABLE_STD_TUPLE
+
+tuplestest_std_SOURCES = tuplestest.cc
+
+tuplestest_tr1_SOURCES = tuplestest.cc
+tuplestest_tr1_CPPFLAGS = $(AM_CPPFLAGS)        \
+    -DDISABLE_STD_TUPLE
+
+tupleutilitytest_SOURCES = tupleutilitytest.cc
+
+typetraitstest_SOURCES = typetraitstest.cc
+
+utilitytest_SOURCES = utilitytest.cc
+
+
 
 include $(top_srcdir)/am/global-rules
 
