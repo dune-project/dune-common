@@ -24,7 +24,7 @@ include(TestCXXAcceptsFlag)
 
 if(NOT DISABLE_GXX0XCHECK)
   # try to use compiler flag -std=c++11
-  CHECK_CXX_ACCEPTS_FLAG("-std=c++11" CXX_FLAG_CXX11)
+  check_cxx_accepts_flag("-std=c++11" CXX_FLAG_CXX11)
 endif(NOT DISABLE_GXX0XCHECK)
 
 if(CXX_FLAG_CXX11)
@@ -38,7 +38,7 @@ if(CXX_FLAG_CXX11)
 else()
   if(NOT DISABLE_GXX0XCHECK)
     # try to use compiler flag -std=c++0x for older compilers
-    CHECK_CXX_ACCEPTS_FLAG("-std=c++0x" CXX_FLAG_CXX0X)
+    check_cxx_accepts_flag("-std=c++0x" CXX_FLAG_CXX0X)
   endif(NOT DISABLE_GXX0XCHECK)
   if(CXX_FLAG_CXX0X)
     set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++0x" )
@@ -54,7 +54,7 @@ endif(CXX_FLAG_CXX11)
 include(CheckCXXSourceCompiles)
 
 # nullptr
-CHECK_CXX_SOURCE_COMPILES("
+check_cxx_source_compiles("
     int main(void)
     {
       char* ch = nullptr;
@@ -67,7 +67,7 @@ include(CheckIncludeFileCXX)
 
 if(NOT DISABLE_TR1_HEADERS)
 # array and fill
-CHECK_CXX_SOURCE_COMPILES("
+check_cxx_source_compiles("
     #include <array>
 
     int main(void)
@@ -103,14 +103,15 @@ endif(NOT HAVE_FUNCTIONAL)
 
 if(_functional_header)
   check_cxx_source_compiles("
-#include <${_functional_header}>
-int main(void){
-  ${_hash_type}<int> hasher; hasher(42);
-}" ${_hash_variable})
+  #include <${_functional_header}>
+  int main(void){
+    ${_hash_type}<int> hasher; hasher(42);
+  }
+" ${_hash_variable})
 endif(_functional_header)
 
 # Check whether if std::integral_constant< T, v > is supported and casts into T
-CHECK_CXX_SOURCE_COMPILES("
+check_cxx_source_compiles("
     #include <type_traits>
     void f( int ){}
 
@@ -123,7 +124,7 @@ CHECK_CXX_SOURCE_COMPILES("
 endif(NOT DISABLE_TR1_HEADERS)
 
 # __attribute__((unused))
-CHECK_CXX_SOURCE_COMPILES("
+check_cxx_source_compiles("
    int main(void)
    {
      int __attribute__((unused)) foo;
@@ -133,7 +134,7 @@ CHECK_CXX_SOURCE_COMPILES("
 )
 
 # __attribute__((deprecated))
-CHECK_CXX_SOURCE_COMPILES("
+check_cxx_source_compiles("
 #define DEP __attribute__((deprecated))
    class bar
    {
@@ -165,7 +166,7 @@ CHECK_CXX_SOURCE_COMPILES("
 )
 
 # __attribute__((deprecated("msg")))
-CHECK_CXX_SOURCE_COMPILES("
+check_cxx_source_compiles("
 #define DEP __attribute__((deprecated(\"message\")))
    class bar {
      bar() DEP;
@@ -197,7 +198,7 @@ CHECK_CXX_SOURCE_COMPILES("
 )
 
 # static assert
-CHECK_CXX_SOURCE_COMPILES("
+check_cxx_source_compiles("
    int main(void)
    {
      static_assert(true,\"MSG\");
@@ -207,7 +208,7 @@ CHECK_CXX_SOURCE_COMPILES("
 )
 
 # variadic template support
-CHECK_CXX_SOURCE_COMPILES("
+check_cxx_source_compiles("
    #include <cassert>
 
    template<typename... T>
@@ -233,7 +234,7 @@ CHECK_CXX_SOURCE_COMPILES("
 )
 
 # SFINAE on variadic template constructors within template classes
-CHECK_CXX_SOURCE_COMPILES("
+check_cxx_source_compiles("
   #include <functional>
 
   template<typename... U>
@@ -269,7 +270,7 @@ CHECK_CXX_SOURCE_COMPILES("
 )
 
 # rvalue references
-CHECK_CXX_SOURCE_COMPILES("
+check_cxx_source_compiles("
   #include <cassert>
   #include <utility>
   int foo(int&& x) { return 1; }
