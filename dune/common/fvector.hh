@@ -11,6 +11,8 @@
 #include <cstring>
 #include <utility>
 
+#include <dune/common/cxx11.hh>
+
 #include "typetraits.hh"
 #include "exceptions.hh"
 #include "array.hh"
@@ -156,8 +158,10 @@ namespace Dune {
     }
     using Base::operator=;
 
+    DUNE_CONSTEXPR size_type size () const { return vec_size(); }
+
     // make this thing a vector
-    size_type vec_size() const { return SIZE; }
+    DUNE_CONSTEXPR size_type vec_size () const { return SIZE; }
     K & vec_access(size_type i) { return _data[i]; }
     const K & vec_access(size_type i) const { return _data[i]; }
   private:
@@ -243,8 +247,10 @@ namespace Dune {
       return *this;
     }
 
+    DUNE_CONSTEXPR size_type size () const { return vec_size(); }
+
     //===== forward methods to container
-    size_type vec_size() const { return 1; }
+    DUNE_CONSTEXPR size_type vec_size () const { return 1; }
     K & vec_access(size_type i)
     {
       assert(i == 0);

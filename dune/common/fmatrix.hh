@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <iostream>
 
+#include <dune/common/cxx11.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/densematrix.hh>
@@ -168,8 +169,8 @@ namespace Dune
     }
 
     // make this thing a matrix
-    size_type mat_rows() const { return ROWS; }
-    size_type mat_cols() const { return COLS; }
+    DUNE_CONSTEXPR size_type mat_rows() const { return ROWS; }
+    DUNE_CONSTEXPR size_type mat_cols() const { return COLS; }
 
     row_reference mat_access ( size_type i )
     {
@@ -270,8 +271,8 @@ namespace Dune
     }
 
     // make this thing a matrix
-    size_type mat_rows() const { return 1; }
-    size_type mat_cols() const { return 1; }
+    DUNE_CONSTEXPR size_type mat_rows() const { return 1; }
+    DUNE_CONSTEXPR size_type mat_cols() const { return 1; }
 
     row_reference mat_access ( size_type i )
     {

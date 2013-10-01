@@ -28,6 +28,7 @@ commoninclude_HEADERS = 			\
 	bitsetvector.hh				\
 	classname.hh				\
 	collectivecommunication.hh		\
+	cxx11.hh				\
 	debugallocator.hh			\
 	debugstream.hh				\
 	deprecated.hh				\
