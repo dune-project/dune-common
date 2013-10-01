@@ -639,6 +639,8 @@ macro(finalize_dune_project)
 
   test_dep()
 
+  include(CPack)
+
   include(FeatureSummary)
   feature_summary(WHAT ALL)
 endmacro(finalize_dune_project)

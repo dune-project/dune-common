@@ -8,7 +8,6 @@
 #include <cstddef>
 #include <iostream>
 
-#include <dune/common/misc.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/dynvector.hh>
 #include <dune/common/densematrix.hh>

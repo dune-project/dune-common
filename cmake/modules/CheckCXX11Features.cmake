@@ -15,6 +15,7 @@
 # HAVE_VARIADIC_CONSTRUCTOR_SFINAE True if variadic constructor sfinae is supported
 # HAVE_RVALUE_REFERENCES           True if rvalue references are supported
 # HAVE_STD_CONDITIONAL             True if std::conditional is supported
+# HAVE_INITIALIZER_LIST            True if initializer list is supported
 
 include(CMakePushCheckState)
 cmake_push_check_state()
@@ -299,6 +300,28 @@ check_cxx_source_compiles("
       return std::conditional<true,std::integral_constant<int,0>,void>::type::value;
   }
 " HAVE_STD_CONDITIONAL
+)
+
+# initializer list
+check_cxx_source_compiles("
+  #include <initializer_list>
+  #include <vector>
+
+  struct A
+  {
+    A(std::initializer_list<int> il)
+      : vec(il)
+    {}
+
+    std::vector<int> vec;
+  };
+
+  int main(void)
+  {
+    A a{1,3,4,5};
+    return 0;
+  }
+" HAVE_INITIALIZER_LIST
 )
 
 cmake_pop_check_state()

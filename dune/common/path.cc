@@ -10,7 +10,7 @@
 #include <string>
 
 #include <dune/common/exceptions.hh>
-#include <dune/common/misc.hh>
+#include <dune/common/stringutility.hh>
 #include <dune/common/path.hh>
 
 namespace Dune {

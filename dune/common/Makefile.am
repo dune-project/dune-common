@@ -28,6 +28,7 @@ commoninclude_HEADERS = 			\
 	bitsetvector.hh				\
 	classname.hh				\
 	collectivecommunication.hh		\
+	cxx11.hh				\
 	debugallocator.hh			\
 	debugstream.hh				\
 	deprecated.hh				\
@@ -83,6 +84,7 @@ commoninclude_HEADERS = 			\
 	sllist.hh				\
 	static_assert.hh			\
 	stdstreams.hh				\
+	stringutility.hh			\
 	timer.hh				\
 	tuples.hh				\
 	tupleutility.hh                         \
