@@ -423,8 +423,7 @@ macro(dune_project)
   endif(DUNE_USE_ONLY_STATIC_LIBS)
 
   # set required compiler flags for C++11 (former C++0x)
-  find_package(CXX11Features)
-  find_package(CXX11Conditional)
+  include(CheckCXX11Features)
 
   include(DuneCxaDemangle)
 

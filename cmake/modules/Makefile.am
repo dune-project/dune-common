@@ -1,4 +1,7 @@
-MODULES = DuneBoost.cmake \
+MODULES = \
+  CheckCXX11Features.cmake \
+  CheckSharedPtr.cmake     \
+  DuneBoost.cmake \
   DuneCommonMacros.cmake  \
   DuneCxaDemangle.cmake   \
   DuneDoc.cmake           \
@@ -10,14 +13,11 @@ MODULES = DuneBoost.cmake \
   DuneTestMacros.cmake    \
   DuneTests.cmake         \
   FindBoostFusion.cmake   \
-  FindCXX11Conditional.cmake \
-  FindCXX11Features.cmake \
   FindGMP.cmake           \
   FindInkscape.cmake      \
   FindMETIS.cmake         \
   FindMProtect.cmake      \
   FindParMETIS.cmake      \
-  FindSharedPtr.cmake     \
   Headercheck.cmake       \
   LanguageSupport.cmake   \
   UseLATEX.cmake

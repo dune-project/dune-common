@@ -14,6 +14,7 @@
 # HAVE_VARIADIC_TEMPLATES          True if variadic templates are supprt
 # HAVE_VARIADIC_CONSTRUCTOR_SFINAE True if variadic constructor sfinae is supported
 # HAVE_RVALUE_REFERENCES           True if rvalue references are supported
+# HAVE_STD_CONDITIONAL             True if std::conditional is supported
 
 include(CMakePushCheckState)
 cmake_push_check_state()
@@ -288,4 +289,15 @@ CHECK_CXX_SOURCE_COMPILES("
   }
 " HAVE_RVALUE_REFERENCES
 )
+
+# std::conditional
+check_cxx_source_compiles("
+  #include <type_traits>
+
+  int main(void){
+      return std::conditional<true,std::integral_constant<int,0>,void>::type::value;
+  }
+" HAVE_STD_CONDITIONAL
+)
+
 cmake_pop_check_state()

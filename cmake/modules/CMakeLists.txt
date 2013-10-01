@@ -2,6 +2,8 @@ set(modules
   AddGMPFlags.cmake
   AddMETISFlags.cmake
   AddParMETISFlags.cmake
+  CheckCXX11Features.cmake
+  CheckSharedPtr.cmake
   DuneBoost.cmake
   DuneCommonMacros.cmake
   DuneCxaDemangle.cmake
@@ -14,14 +16,11 @@ set(modules
   DuneTestMacros.cmake
   DuneTests.cmake
   FindBoostFusion.cmake
-  FindCXX11Conditional.cmake
-  FindCXX11Features.cmake
   FindGMP.cmake
   FindInkscape.cmake
   FindMETIS.cmake
   FindMProtect.cmake
   FindParMETIS.cmake
-  FindSharedPtr.cmake
   Headercheck.cmake
   LanguageSupport.cmake
   UseInkscape.cmake
