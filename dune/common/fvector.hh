@@ -11,7 +11,7 @@
 #include <cstring>
 #include <utility>
 
-#include <dune/common/cxx11.hh>
+#include <dune/common/std/constexpr.hh>
 
 #include "typetraits.hh"
 #include "exceptions.hh"

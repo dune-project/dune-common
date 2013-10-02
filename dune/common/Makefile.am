@@ -1,6 +1,6 @@
 # $Id$
 
-SUBDIRS = . test parallel
+SUBDIRS = . test parallel std
 
 # the standard debug streams are put into the libdune
 noinst_LTLIBRARIES = libcommon.la
@@ -28,7 +28,6 @@ commoninclude_HEADERS = 			\
 	bitsetvector.hh				\
 	classname.hh				\
 	collectivecommunication.hh		\
-	cxx11.hh				\
 	debugallocator.hh			\
 	debugstream.hh				\
 	deprecated.hh				\

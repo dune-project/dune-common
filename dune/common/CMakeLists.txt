@@ -1,4 +1,5 @@
 add_subdirectory("parallel")
+add_subdirectory("std")
 add_subdirectory("test" EXCLUDE_FROM_ALL)
 
 #build the library dunecommon
@@ -31,7 +32,6 @@ install(FILES
         bitsetvector.hh
         classname.hh
         collectivecommunication.hh
-        cxx11.hh
         debugallocator.hh
         debugstream.hh
         deprecated.hh

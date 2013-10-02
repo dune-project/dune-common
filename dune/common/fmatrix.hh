@@ -8,12 +8,12 @@
 #include <cstddef>
 #include <iostream>
 
-#include <dune/common/cxx11.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/densematrix.hh>
 #include <dune/common/precision.hh>
 #include <dune/common/static_assert.hh>
+#include <dune/common/std/constexpr.hh>
 
 namespace Dune
 {
