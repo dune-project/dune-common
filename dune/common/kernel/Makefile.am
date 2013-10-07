@@ -1,4 +1,5 @@
 SUBDIRS =					\
+  bell						\
   ell						\
   vec
 
@@ -10,11 +11,13 @@ libkernel_la_SOURCES =
 nodist_EXTRA_libkernel_la_SOURCES = dummy.cc
 sourcescheck_DUMMY = dummy.cc
 libkernel_la_LIBADD =				\
+  bell/libbell.la				\
   ell/libell.la					\
   vec/libvec.la
 
 kernelincludedir = $(includedir)/dune/common/kernel
 kernelinclude_HEADERS =				\
+  bell.hh					\
   ell.hh					\
   instantiation.hh				\
   utility.hh					\
