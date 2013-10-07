@@ -1,4 +1,5 @@
 add_subdirectory("bell")
+add_subdirectory("blockdiagonal")
 add_subdirectory("ell")
 add_subdirectory("vec")
 
@@ -9,6 +10,7 @@ dune_add_library(kernel
 #install headers
 install(FILES
   bell.hh
+  blockdiagonal.hh
   ell.hh
   instantiation.hh
   utility.hh
