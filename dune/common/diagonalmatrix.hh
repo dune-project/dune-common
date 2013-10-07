@@ -7,17 +7,19 @@
    \brief  This file implements a quadratic diagonal matrix of fixed size.
  */
 
+#include <cassert>
 #include <cmath>
-#include <cstddef>
 #include <complex>
+#include <cstddef>
 #include <iostream>
 #include <memory>
+
+#include <dune/common/densematrix.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/fvector.hh>
-#include <dune/common/typetraits.hh>
 #include <dune/common/genericiterator.hh>
-
+#include <dune/common/typetraits.hh>
 
 
 namespace Dune {
@@ -562,13 +564,6 @@ namespace Dune {
       (*this)[0][0] = scalar;
     }
 
-    //! Constructor initializing the whole matrix with a scalar from convertible type
-    template<typename T>
-    DiagonalMatrix(const T& t)
-    {
-      DenseMatrixAssigner<Conversion<T,K>::exists>::assign(*this, t);
-    }
-
     //! Get const reference to diagonal entry
     const K& diagonal(size_type) const
     {
@@ -1071,6 +1066,8 @@ namespace Dune {
   template<class M, class K, int n>
   void istl_assign_to_fmatrix(DenseMatrix<M>& fm, const DiagonalMatrix<K,n>& s)
   {
+    assert( fm.rows() == n );
+    assert( fm.cols() == n );
     fm = K();
     for(int i=0; i<n; ++i)
       fm[i][i] = s.diagonal()[i];
