@@ -9,6 +9,7 @@
 #include <dune/common/kernel/vec/axpy.hh>
 #include <dune/common/kernel/vec/dot.hh>
 #include <dune/common/kernel/vec/infinity_norm.hh>
+#include <dune/common/kernel/vec/maskeddot.hh>
 #include <dune/common/kernel/vec/mul.hh>
 #include <dune/common/kernel/vec/one_norm.hh>
 #include <dune/common/kernel/vec/scale.hh>

@@ -6,6 +6,7 @@ install(FILES
   axpy.hh
   dot.hh
   infinity_norm.hh
+  maskeddot.hh
   mul.hh
   one_norm.hh
   scale.hh
