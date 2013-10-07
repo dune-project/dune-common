@@ -90,15 +90,15 @@ namespace Dune
 
     /** \brief Constructor initializing the whole matrix with a scalar
      */
-    explicit FieldMatrix (const K& k)
+    explicit FieldMatrix ( typename Base::field_type value )
     {
-      for (size_type i=0; i<rows; i++) _data[i] = k;
+      _data.fill( row_type( value ) );
     }
 
-    template<typename T>
-    explicit FieldMatrix (const T& t)
+    template< class Other >
+    FieldMatrix ( const Other &other )
     {
-      DenseMatrixAssigner<Conversion<T,K>::exists>::assign(*this, t);
+      DenseMatrixAssigner< FieldMatrix< K, ROWS, COLS >, Other >::apply( *this, other );
     }
 
     //===== assignment
@@ -234,10 +234,11 @@ namespace Dune
     {
       _data[0] = k;
     }
-    template<typename T>
-    FieldMatrix(const T& t)
+
+    template< class Other >
+    FieldMatrix ( const Other &other )
     {
-      DenseMatrixAssigner<Conversion<T,K>::exists>::assign(*this, t);
+      DenseMatrixAssigner< FieldMatrix< K, 1, 1 >, Other >::apply( *this, other );
     }
 
     //===== solve

@@ -62,41 +62,104 @@ namespace Dune
    */
 
   /**
-     \brief you have to specialize this function for any type T that should be assignable to a DenseMatrix
-     \tparam M Type of the matrix implementation class implementing the dense matrix
+     \brief you have to specialize this structure for any type that should be assignable to a DenseMatrix
+     \tparam DenseMatrix Some type implementing the dense matrix interface
+     \tparam RHS Right hand side type
    */
-  template<typename M, typename T>
-  void istl_assign_to_fmatrix(DenseMatrix<M>& f, const T& t)
-  {
-    DUNE_THROW(NotImplemented, "You need to specialise the method istl_assign_to_fmatrix(DenseMatrix<M>& f, const T& t) "
-               << "(with M being " << className<M>() << ") "
-               << "for T == " << className<T>() << "!");
-  }
+  template< class DenseMatrix, class RHS >
+  struct DenseMatrixAssigner;
 
+
+
+#ifndef DOXYGEN
   namespace
   {
-    template<bool b>
-    struct DenseMatrixAssigner
-    {
-      template<typename M, typename T>
-      static void assign(DenseMatrix<M>& fm, const T& t)
-      {
-        istl_assign_to_fmatrix(fm, t);
-      }
+    template< class DenseMatrix, class RHS,
+              bool primitive = Conversion< RHS, typename DenseMatrix::field_type >::exists >
+    struct DenseMatrixAssignerImplementation;
 
+    template< class DenseMatrix, class RHS >
+    struct DenseMatrixAssignerImplementation< DenseMatrix, RHS, true >
+    {
+      static void apply ( DenseMatrix &denseMatrix, const RHS &rhs )
+      {
+        typedef typename DenseMatrix::field_type field_type;
+        typedef typename DenseMatrix::size_type size_type;
+
+        const field_type value = static_cast< field_type >( rhs );
+
+        const std::size_t size = denseMatrix.size();
+        for( std::size_t i = 0; i < size; ++i )
+          denseMatrix[ i ] = value;
+      }
     };
 
-
-    template<>
-    struct DenseMatrixAssigner<true>
+    template< class DenseMatrix, class RHS >
+    class DenseMatrixAssignerImplementation< DenseMatrix, RHS, false >
     {
-      template<typename M, typename T>
-      static void assign(DenseMatrix<M>& fm, const T& t)
+      template< class M, class T>
+      struct have_istl_assign_to_fmatrix
       {
-        fm = static_cast<const typename DenseMatVecTraits<M>::value_type>(t);
+        struct yes { char dummy[ 1 ]; };
+        struct no  { char dummy[ 2 ]; };
+
+        template< class C>
+        static C &get_ref();
+
+        template< class C>
+        static yes test( decltype( istl_assign_to_fmatrix( get_ref< M >(), get_ref< C >() ) ) * );
+        template< class C >
+        static no test(...);
+
+      public:
+         static const bool v = sizeof( test< const T >( 0 ) ) == sizeof( yes );
+      };
+
+      template< class M, class T, bool = have_istl_assign_to_fmatrix< M, T >::v >
+      struct DefaultImplementation;
+
+      // forward to istl_assign_to_fmatrix()
+      template< class M, class T >
+      struct DefaultImplementation< M, T, true >
+      {
+        static void apply ( M &m, const T &t )
+        {
+          istl_assign_to_fmatrix( m, t );
+        }
+      };
+
+      // static_cast
+      template< class M, class T >
+      struct DefaultImplementation< M, T, false >
+      {
+        static void apply ( M &m, const T &t )
+        {
+          static_assert( Conversion< T, typename DenseMatrix::field_type >::exists, "No specialization found" );
+          m = static_cast< const M & >( t );
+        }
+      };
+
+    public:
+      static void apply ( DenseMatrix &denseMatrix, const RHS &rhs )
+      {
+        DefaultImplementation< DenseMatrix, RHS >::apply( denseMatrix, rhs );
       }
     };
   }
+
+
+
+  template< class DenseMatrix, class RHS >
+  struct DenseMatrixAssigner
+  {
+    static void apply ( DenseMatrix &denseMatrix, const RHS &rhs )
+    {
+      DenseMatrixAssignerImplementation< DenseMatrix, RHS >::apply( denseMatrix, rhs );
+    }
+  };
+#endif // #ifndef DOXYGEN
+
+
 
   /** @brief Error thrown if operations of a FieldMatrix fail. */
   class FMatrixError : public Exception {};
@@ -243,20 +306,15 @@ namespace Dune
       return ConstIterator(*this,-1);
     }
 
-    //===== assignment from scalar
-    DenseMatrix& operator= (const field_type& f)
+    //===== assignment
+
+    template< class RHS >
+    DenseMatrix &operator= ( const RHS &rhs )
     {
-      for (size_type i=0; i<rows(); i++)
-        (*this)[i] = f;
+      DenseMatrixAssigner< MAT, RHS >::apply( asImp(), rhs );
       return *this;
     }
 
-    template<typename T>
-    DenseMatrix& operator= (const T& t)
-    {
-      DenseMatrixAssigner<Conversion<T,field_type>::exists>::assign(*this, t);
-      return *this;
-    }
     //===== vector space arithmetic
 
     //! vector space addition
