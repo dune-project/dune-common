@@ -11,9 +11,10 @@ libbell_la_SOURCES =				\
 
 bellincludedir = $(includedir)/dune/common/kernel/bell
 bellinclude_HEADERS =				\
-  lusolve.hh					\
   mmv.hh					\
   mv.hh						\
+  preconditioners/jacobinolupivot.hh		\
+  preconditioners/sornolupivot.hh		\
   umv.hh					\
   usmv.hh
 
