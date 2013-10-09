@@ -4,7 +4,9 @@ macro(setup_headercheck)
   #glob for headers
   file(GLOB_RECURSE src_headers "src/*.hh")
   file(GLOB_RECURSE dune_headers "dune/*.hh")
-  set_property(GLOBAL PROPERTY headercheck_list ${src_headers} ${dune_headers})
+  # strip hidden files
+  string(REGEX REPLACE "[^;]*/\\.[^;]*\\.hh;?" "" headers "${dune_headers};${src_headers}")
+  set_property(GLOBAL PROPERTY headercheck_list ${headers})
 
   #define headercheck target
   dune_common_script_dir(SCRIPT_DIR)
