@@ -90,11 +90,6 @@ namespace Dune
 
     /** \brief Constructor initializing the whole matrix with a scalar
      */
-    explicit FieldMatrix ( typename Base::field_type value )
-    {
-      _data.fill( row_type( value ) );
-    }
-
     template< class Other >
     FieldMatrix ( const Other &other )
     {
