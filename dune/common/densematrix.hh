@@ -61,6 +61,8 @@ namespace Dune
      representing a field and a compile-time given number of rows and columns.
    */
 
+
+
   /**
      \brief you have to specialize this structure for any type that should be assignable to a DenseMatrix
      \tparam DenseMatrix Some type implementing the dense matrix interface
@@ -68,6 +70,16 @@ namespace Dune
    */
   template< class DenseMatrix, class RHS >
   struct DenseMatrixAssigner;
+
+
+
+  template< class DenseMatrix, class K, int N, int M >
+  void istl_assign_to_fmatrix ( DenseMatrix &denseMatrix, const K (&values)[ M ][ N ] )
+  {
+    for( int i = 0; i < N; ++i )
+      for( int j = 0; j < M; ++j )
+        denseMatrix[ i ][ j ] = values[ i ][ j ];
+  }
 
 
 
@@ -134,7 +146,7 @@ namespace Dune
       {
         static void apply ( M &m, const T &t )
         {
-          static_assert( Conversion< T, typename DenseMatrix::field_type >::exists, "No specialization found" );
+          static_assert( Conversion< T, M >::exists, "No specialization found" );
           m = static_cast< const M & >( t );
         }
       };
