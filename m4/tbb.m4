@@ -104,9 +104,9 @@ AC_DEFUN([DUNE_PATH_TBB],[
           ])
           # setup include and library paths from tbbvars.sh
           AS_CASE([$tbb_host_arch],
-          [""], [ # hope for the best
-            tbb_lib_dir="$(dirname "$tbbvars")"
-            tbb_root_dir="$(source "$tbbvars" >/dev/null 2>&1; echo $TBBROOT)"
+          [""], [
+            tbb_lib_dir=
+            tbb_root_dir=
           ],
           [k1om], [
             tbb_lib_dir=$(
@@ -134,8 +134,12 @@ AC_DEFUN([DUNE_PATH_TBB],[
               echo "$TBBROOT"
             )
           ])
-          AS_IF([ test ! -d "$tbb_root_dir" ],
-            [
+          AS_IF(
+            [ test -z "$tbb_host_arch" ], [
+              AC_MSG_RESULT([failed])
+              AC_MSG_NOTICE([I don't know how to invoke $tbbvars for host=$host])
+            ],
+            [ test ! -d "$tbb_root_dir" ], [
               # tbbvars.sh contained bogus information, abort
               AC_MSG_RESULT([failed])
               AC_MSG_WARN([invalid TBB installation root directory "$tbb_root_dir"])
