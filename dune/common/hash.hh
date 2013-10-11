@@ -340,17 +340,26 @@ namespace Dune {
   inline void hash_combine(std::size_t& seed, const T& arg)
   {
     Dune::hash<T> hasher;
-    // The following line is taken from the proposal in the C++ working group defect list at
-    // http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2005/n1756.pdf, p. 57f.
-    // A rationale for the algorithm can be found there and at
+    // The following algorithm for combining two 64-bit hash values is inspired by a similar
+    // function in CityHash (http://cityhash.googlecode.com/svn-history/r2/trunk/src/city.h),
+    // which is in turn based on ideas from the MurmurHash library. The basic idea is easy to
+    // grasp, though: New information is XORed into the existing hash multiple times at different
+    // places (using shift operations), and the resulting pattern is spread over the complete
+    // range of available bits via multiplication with a "magic" constant. The constants used
+    // below (47 and  0x9ddfea08eb382d69ULL) are taken from the CityHash implementation.
     //
-    // http://stackoverflow.com/questions/4948780/magic-numbers-in-boosthash-combine
-    // http://burtleburtle.net/bob/hash/doobs.html
-    //
-    // The latter two include the magic constant 0x9e37779b9, which is not part of the
-    // standard committee proposal. That constant is used to improve the distance between
-    // combined hash values if the individual hash values have very few nonzero bits.
-    seed ^= hasher(arg) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    // We opted not to use the mixing algorithm proposed in the C++ working group defect list at
+    // http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2005/n1756.pdf, p. 57f. because it
+    // has very bad hash distribution properties if you apply it to lists of very small numbers,
+    // an application that is frequent in PDELab's ordering framework.
+    const std::size_t kMul = 0x9ddfea08eb382d69ULL;
+    std::size_t h = hasher(arg);
+    std::size_t a = (seed ^ h) * kMul;
+    a ^= (a >> 47);
+    std::size_t b = (h ^ a) * kMul;
+    b ^= (b >> 47);
+    b *= kMul;
+    seed = b;
   }
 
   //! Hashes all elements in the range [first,last) and returns the combined hash.

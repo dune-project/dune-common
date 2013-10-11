@@ -419,6 +419,7 @@ macro(dune_project)
 
   # set required compiler flags for C++11 (former C++0x)
   find_package(CXX11Features)
+  find_package(CXX11Conditional)
 
   include(DuneCxaDemangle)
 
@@ -435,7 +436,7 @@ macro(dune_project)
   include_directories("${CMAKE_SOURCE_DIR}")
   link_directories("${CMAKE_SOURCE_DIR}/lib")
   include_directories("${CMAKE_CURRENT_BINARY_DIR}")
-  include_directories("/\${CMAKE_CURRENT_SOURCE_DIR}")
+  include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
   add_definitions(-DHAVE_CONFIG_H)
 
   # Search for MPI and set the relevant variables.
