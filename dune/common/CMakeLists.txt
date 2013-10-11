@@ -94,6 +94,7 @@ install(FILES
         typetraits.hh
         unused.hh
         version.hh
+        visibility.hh
 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common)
 
 # Install some test headers, because they get used by tests in other modules
