@@ -12,6 +12,7 @@
 #endif
 
 #include <dune/common/stdstreams.hh>
+#include <dune/common/visibility.hh>
 
 namespace Dune
 {
@@ -86,7 +87,7 @@ namespace Dune
      *
      *  \returns a fake communicator
      */
-    static MPICommunicator getCommunicator ()
+    DUNE_EXPORT static MPICommunicator getCommunicator ()
     {
       static MPICommunicator comm;
       return comm;
@@ -126,7 +127,7 @@ namespace Dune
      * @param argc The number of arguments provided to main.
      * @param argv The arguments provided to main.
      */
-    static FakeMPIHelper& instance(int argc, char** argv)
+    DUNE_EXPORT static FakeMPIHelper& instance(int argc, char** argv)
     {
       // create singleton instance
       static FakeMPIHelper singleton;
@@ -213,7 +214,7 @@ namespace Dune
      * @param argc The number of arguments provided to main.
      * @param argv The arguments provided to main.
      */
-    static MPIHelper& instance(int& argc, char**& argv)
+    DUNE_EXPORT static MPIHelper& instance(int& argc, char**& argv)
     {
       // create singleton instance
       static MPIHelper singleton (argc, argv);
