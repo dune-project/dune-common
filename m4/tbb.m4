@@ -281,13 +281,28 @@ AC_DEFUN([DUNE_PATH_TBB],[
 
       AC_MSG_CHECKING([for alignment size of tbb::cache_aligned_allocator])
 
-      AS_IF([ test ! -f "$tbb_root_dir/src/tbb/cache_aligned_allocator.cpp" ],
-        [ AC_MSG_WARN([file "$tbb_root_dir/src/tbb/cache_aligned_allocator.cpp" not found]) ])
+      AS_IF([ test -f "$tbb_root_dir/src/tbb/cache_aligned_allocator.cpp" ],
+        [
+          alignment_size_line=$($EGREP ['^static.*NFS_LineSize.*[0-9]+.*;'] "$tbb_root_dir/src/tbb/cache_aligned_allocator.cpp")
+          alignment_size=$(echo "$alignment_size_line" | sed ['s/.*[^[:digit:]]\([1-9][[:digit:]]*\)[^[:digit:]].*/\1/'])
 
-      alignment_size_line=$($EGREP ['^static.*NFS_LineSize.*[0-9]+.*;'] "$tbb_root_dir/src/tbb/cache_aligned_allocator.cpp")
-      alignment_size=$(echo "$alignment_size_line" | sed ['s/.*[^[:digit:]]\([1-9][[:digit:]]*\)[^[:digit:]].*/\1/'])
+        ])
+
+      AS_IF([ test -z $alignment_size ],
+        [
+          tbb_warn_alignment=yes
+          alignment_size=128
+        ],
+        [
+          tbb_warn_alignment=no
+        ])
 
       AC_MSG_RESULT([$alignment_size])
+
+      AS_IF([ test "x$tbb_warn_alignment" = "xyes" ],
+        [
+          AC_MSG_WARN([Could not determine actual aligment of tbb::cache_aligned_allocator, falling back to default])
+        ])
     ])
 
   # tests are done, set up output
