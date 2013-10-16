@@ -34,3 +34,5 @@ dune.css
 build-cmake/
 *~
 /compile
+/confdefs.h
+/conftest*

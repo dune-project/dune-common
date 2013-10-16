@@ -6,7 +6,7 @@ AC_DEFUN([INITIALIZER_LIST_CHECK],[
     AC_REQUIRE([AC_PROG_CXX])
     AC_REQUIRE([GXX0X])
     AC_LANG_PUSH([C++])
-    AC_RUN_IFELSE([
+    AC_LINK_IFELSE([
       AC_LANG_PROGRAM([
 
         #include <initializer_list>

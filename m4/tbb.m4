@@ -5,6 +5,8 @@ dnl vi: set et ts=8 sw=2 sts=2:
 AC_DEFUN([DUNE_PATH_TBB],[
   AC_MSG_NOTICE([checking for Threading Building Blocks library...])
   AC_REQUIRE([AC_PROG_CXX])
+  AC_REQUIRE([AC_CANONICAL_HOST])
+  AC_REQUIRE([ACX_PTHREAD])
   AC_REQUIRE([AC_PROG_EGREP])
   AC_REQUIRE([GXX0X])
   AC_REQUIRE([LAMBDA_EXPR_CHECK])
@@ -87,11 +89,58 @@ AC_DEFUN([DUNE_PATH_TBB],[
           with_tbb="no"
         ],
         [
+          # determine architecture for tbbvars
+          AS_CASE([-$host-],
+          [*-k1om-*], [
+            tbb_host_arch=k1om
+          ],
+          [*-i?86-*|*-ia32-*], [
+            tbb_host_arch=ia32
+          ],
+          [*-x86_64-*], [
+            tbb_host_arch=intel64
+          ],
+          [
+            tbb_host_arch=
+          ])
           # setup include and library paths from tbbvars.sh
-          tbb_lib_dir="$(dirname "$tbbvars")"
-          tbb_root_dir="$(source "$tbbvars"; echo $TBBROOT)"
-          AS_IF([ test ! -d "$tbb_root_dir" ],
-            [
+          AS_CASE([$tbb_host_arch],
+          [""], [
+            tbb_lib_dir=
+            tbb_root_dir=
+          ],
+          [k1om], [
+            tbb_lib_dir=$(
+              MIC_LD_LIBRARY_PATH=
+              set -- intel64
+              source "$tbbvars" >/dev/null 2>&1
+              echo "$MIC_LD_LIBRARY_PATH"
+            )
+            tbb_root_dir=$(
+              set -- intel64
+              source "$tbbvars" >/dev/null 2>&1
+              echo "$TBBROOT"
+            )
+          ],
+          [
+            tbb_lib_dir=$(
+              LD_LIBRARY_PATH=
+              set -- "$tbb_host_arch"
+              source "$tbbvars" >/dev/null 2>&1
+              echo "$LD_LIBRARY_PATH"
+            )
+            tbb_root_dir=$(
+              set -- "$tbb_host_arch"
+              source "$tbbvars" >/dev/null 2>&1
+              echo "$TBBROOT"
+            )
+          ])
+          AS_IF(
+            [ test -z "$tbb_host_arch" ], [
+              AC_MSG_RESULT([failed])
+              AC_MSG_NOTICE([I don't know how to invoke $tbbvars for host=$host])
+            ],
+            [ test ! -d "$tbb_root_dir" ], [
               # tbbvars.sh contained bogus information, abort
               AC_MSG_RESULT([failed])
               AC_MSG_WARN([invalid TBB installation root directory "$tbb_root_dir"])
@@ -101,8 +150,9 @@ AC_DEFUN([DUNE_PATH_TBB],[
               # convert paths to absolute paths
               tbb_lib_dir="$(cd -- "$tbb_lib_dir" ; echo $PWD)"
               tbb_root_dir="$(cd -- "$tbb_root_dir" ; echo $PWD)"
-              TBB_CPPFLAGS="-I$tbb_root_dir/include"
+              TBB_CPPFLAGS="-I$tbb_root_dir/include ${PTHREAD_CFLAGS}"
               TBB_LDFLAGS="-L$tbb_lib_dir"
+              TBB_LIBS=$PTHREAD_LIBS
               AC_MSG_RESULT([from "$tbbvars"])
               AC_MSG_NOTICE([  TBB include directory "$tbb_root_dir/include"])
               AC_MSG_NOTICE([  TBB library directory "$tbb_lib_dir"])
@@ -133,6 +183,7 @@ AC_DEFUN([DUNE_PATH_TBB],[
     [
       # try to find a valid library
       LDFLAGS="$LDFLAGS $TBB_LDFLAGS"
+      LIBS="$TBB_LIBS $LIBS"
       AC_SEARCH_LIBS([TBB_runtime_interface_version],[tbb tbb_debug tbb_preview tbb_preview_debug])
       AS_IF([ test "x$ac_cv_search_TBB_runtime_interface_version" = "xno" ],
         [ with_tbb="no" ])
@@ -163,7 +214,7 @@ AC_DEFUN([DUNE_PATH_TBB],[
           tbb_is_preview="no"
         ])
 
-      TBB_LIBS="$tbb_lib"
+      TBB_LIBS="$tbb_lib $TBB_LIBS"
 
       AS_IF([ test "x$tbb_allocator" = "xyes" ],
         [
@@ -174,7 +225,7 @@ AC_DEFUN([DUNE_PATH_TBB],[
             [ TBB_LIBS="$TBB_LIBS -ltbbmalloc" ])
         ])
 
-      LIBS="$TBB_LIBS $LIBS"
+      LIBS="$TBB_LIBS $ac_save_LIBS"
 
       # perform final test to check whether everything really works
       AC_MSG_CHECKING([for working TBB])
@@ -230,13 +281,28 @@ AC_DEFUN([DUNE_PATH_TBB],[
 
       AC_MSG_CHECKING([for alignment size of tbb::cache_aligned_allocator])
 
-      AS_IF([ test ! -f "$tbb_root_dir/src/tbb/cache_aligned_allocator.cpp" ],
-        [ AC_MSG_WARN([file "$tbb_root_dir/src/tbb/cache_aligned_allocator.cpp" not found]) ])
+      AS_IF([ test -f "$tbb_root_dir/src/tbb/cache_aligned_allocator.cpp" ],
+        [
+          alignment_size_line=$($EGREP ['^static.*NFS_LineSize.*[0-9]+.*;'] "$tbb_root_dir/src/tbb/cache_aligned_allocator.cpp")
+          alignment_size=$(echo "$alignment_size_line" | sed ['s/.*[^[:digit:]]\([1-9][[:digit:]]*\)[^[:digit:]].*/\1/'])
 
-      alignment_size_line=$($EGREP ['^static.*NFS_LineSize.*[0-9]+.*;'] "$tbb_root_dir/src/tbb/cache_aligned_allocator.cpp")
-      alignment_size=$(echo "$alignment_size_line" | sed ['s/.*[^[:digit:]]\([1-9][[:digit:]]*\)[^[:digit:]].*/\1/'])
+        ])
+
+      AS_IF([ test -z $alignment_size ],
+        [
+          tbb_warn_alignment=yes
+          alignment_size=128
+        ],
+        [
+          tbb_warn_alignment=no
+        ])
 
       AC_MSG_RESULT([$alignment_size])
+
+      AS_IF([ test "x$tbb_warn_alignment" = "xyes" ],
+        [
+          AC_MSG_WARN([Could not determine actual aligment of tbb::cache_aligned_allocator, falling back to default])
+        ])
     ])
 
   # tests are done, set up output
@@ -244,10 +310,6 @@ AC_DEFUN([DUNE_PATH_TBB],[
   AS_IF([ test "x$with_tbb" = "xyes" ],
     [
       HAVE_TBB=1
-
-      # turn on pthread globally when using TBB to make sure library function calls are reentrant
-      THREADING_CPPFLAGS="-pthread"
-      THREADING_LDFLAGS="-pthread"
 
       TBB_CPPFLAGS="$TBB_CPPFLAGS -DENABLE_TBB"
 
@@ -312,8 +374,8 @@ AC_DEFUN([DUNE_PATH_TBB],[
     ])
 
   # restore compiler variables
-  LDFLAGS="$ac_save_LDFLAGS $THREADING_LDFLAGS"
-  CPPFLAGS="$ac_save_CPPFLAGS $THREADING_CPPFLAGS"
+  LDFLAGS="$ac_save_LDFLAGS"
+  CPPFLAGS="$ac_save_CPPFLAGS"
   LIBS="$ac_save_LIBS"
 
   AC_LANG_POP
