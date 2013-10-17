@@ -146,7 +146,7 @@ namespace Dune
       {
         static void apply ( M &m, const T &t )
         {
-          static_assert( Conversion< T, M >::exists, "No specialization found" );
+          dune_static_assert( (Conversion< const T, const M >::exists), "No template specialization of DenseMatrixAssigner found" );
           m = static_cast< const M & >( t );
         }
       };
