@@ -143,6 +143,9 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
           # re-set variable correctly
 	  with_parmetis="yes"
       else
+          AC_SUBST(PARMETIS_LIBS, "")
+          AC_SUBST(PARMETIS_LDFLAGS, "")
+          AC_SUBST(PARMETIS_CPPFLAGS, "")
 	  with_parmetis="no"
 	  AC_MSG_RESULT(failed)
       fi
