@@ -2,6 +2,7 @@ set(modules
   AddGMPFlags.cmake
   AddMETISFlags.cmake
   AddParMETISFlags.cmake
+  AddUMFPackFlags.cmake
   CheckCXX11Features.cmake
   CheckSharedPtr.cmake
   DuneBoost.cmake
@@ -21,6 +22,7 @@ set(modules
   FindMETIS.cmake
   FindMProtect.cmake
   FindParMETIS.cmake
+  FindUMFPack.cmake
   Headercheck.cmake
   LanguageSupport.cmake
   UseInkscape.cmake

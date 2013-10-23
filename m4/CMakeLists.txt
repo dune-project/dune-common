@@ -43,6 +43,7 @@ install(PROGRAMS
         opengl.m4
         parmetis.m4
         shared_ptr.m4
+        umfpack.m4
         xdr.m4
 	DESTINATION share/aclocal
 )

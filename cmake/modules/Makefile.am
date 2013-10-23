@@ -1,6 +1,7 @@
 MODULES = \
   CheckCXX11Features.cmake \
   CheckSharedPtr.cmake     \
+  AddUMFPackFlags.cmake    \
   DuneBoost.cmake \
   DuneCommonMacros.cmake  \
   DuneCxaDemangle.cmake   \
@@ -18,6 +19,7 @@ MODULES = \
   FindMETIS.cmake         \
   FindMProtect.cmake      \
   FindParMETIS.cmake      \
+  FindUMFPack.cmake       \
   Headercheck.cmake       \
   LanguageSupport.cmake   \
   UseLATEX.cmake
