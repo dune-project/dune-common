@@ -49,7 +49,7 @@ macro(finalize_headercheck)
   foreach(header ${headerlist})
     #do some name conversion
     string(REGEX REPLACE ".*/([^/]*)" "\\1" simple ${header})
-    string(REGEX REPLACE "${PROJECT_SOURCE_DIR}/(.*)" "\\1" rel ${header})
+    string(REPLACE ${PROJECT_SOURCE_DIR} "" rel ${header})
     string(REGEX REPLACE "(.*)/[^/]*" "\\1" relpath ${rel})
     string(REGEX REPLACE "/" "_" targname ${rel})
 
