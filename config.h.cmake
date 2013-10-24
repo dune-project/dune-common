@@ -157,6 +157,9 @@
 /* Define to 1 if rvalue references are supported */
 #cmakedefine HAVE_RVALUE_REFERENCES 1
 
+/* Define to 1 if initializer list is supported */
+#cmakedefine HAVE_INITIALIZER_LIST 1
+
 /* Include always useful headers */
 #include <dune/common/deprecated.hh>
 #include <dune/common/unused.hh>

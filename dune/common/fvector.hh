@@ -9,6 +9,9 @@
 #include <cstdlib>
 #include <complex>
 #include <cstring>
+#include <utility>
+
+#include <dune/common/std/constexpr.hh>
 
 #include "typetraits.hh"
 #include "exceptions.hh"
@@ -98,8 +101,22 @@ namespace Dune {
     typedef typename Base::size_type size_type;
     typedef typename Base::value_type value_type;
 
-    //! Constructor making uninitialized vector
-    FieldVector() {}
+    //! Constructor making default-initialized vector
+    FieldVector()
+    // Use C++11 unified initialization if available - tends to generate
+    // fastest code
+#if HAVE_INITIALIZER_LIST
+      : _data{}
+    {}
+#else
+    {
+      // fall back to library approach - this gives faster code than array placement
+      // new. Apart from that, placement new may create problems if K is a complex
+      // type. In that case, the default constructor of the _data elements has already
+      // been called and may have allocated memory.
+      std::fill(_data.begin(),_data.end(),K());
+    }
+#endif
 
     //! Constructor making vector with identical coordinates
     explicit FieldVector (const K& t)
@@ -141,8 +158,10 @@ namespace Dune {
     }
     using Base::operator=;
 
+    DUNE_CONSTEXPR size_type size () const { return vec_size(); }
+
     // make this thing a vector
-    size_type vec_size() const { return SIZE; }
+    DUNE_CONSTEXPR size_type vec_size () const { return SIZE; }
     K & vec_access(size_type i) { return _data[i]; }
     const K & vec_access(size_type i) const { return _data[i]; }
   private:
@@ -205,7 +224,9 @@ namespace Dune {
     //===== construction
 
     /** \brief Default constructor */
-    FieldVector () {}
+    FieldVector ()
+      : _data()
+    {}
 
     /** \brief Constructor with a given scalar */
     FieldVector (const K& k) : _data(k) {}
@@ -226,8 +247,10 @@ namespace Dune {
       return *this;
     }
 
+    DUNE_CONSTEXPR size_type size () const { return vec_size(); }
+
     //===== forward methods to container
-    size_type vec_size() const { return 1; }
+    DUNE_CONSTEXPR size_type vec_size () const { return 1; }
     K & vec_access(size_type i)
     {
       assert(i == 0);

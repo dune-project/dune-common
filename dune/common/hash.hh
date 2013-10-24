@@ -3,6 +3,8 @@
 #ifndef DUNE_COMMON_HASH_HH
 #define DUNE_COMMON_HASH_HH
 
+#include <dune/common/typetraits.hh>
+
 #if HAVE_STD_HASH
 #include <functional>
 #endif
@@ -329,6 +331,90 @@ namespace Dune {
   // that implementation uses boost::hash internally, while we want to use Dune::hash. They
   // are also considered for inclusion in TR2 (then based on std::hash, of course).
 
+#ifndef DOXYGEN
+
+  // helper struct for providing different hash combining algorithms dependent on
+  // the size of size_t.
+  // hash_combiner has to be specialized for the size (in bytes) of std::size_t.
+  // Specialized versions should provide a method
+  //
+  // template <typename T>
+  // void operator()(std::size_t& seed, const T& arg) const;
+  //
+  // that will be called by the interface function hash_combine() described further below.
+  //
+  // There is no default implementation!
+  template<int sizeof_size_t>
+  struct hash_combiner;
+
+
+  // hash combining for 64-bit platforms.
+  template<>
+  struct hash_combiner<8>
+  {
+
+    template<typename T>
+    void operator()(std::size_t& seed, const T& arg) const
+    {
+      // The following algorithm for combining two 64-bit hash values is inspired by a similar
+      // function in CityHash (http://cityhash.googlecode.com/svn-history/r2/trunk/src/city.h),
+      // which is in turn based on ideas from the MurmurHash library. The basic idea is easy to
+      // grasp, though: New information is XORed into the existing hash multiple times at different
+      // places (using shift operations), and the resulting pattern is spread over the complete
+      // range of available bits via multiplication with a "magic" constant. The constants used
+      // below (47 and  0x9ddfea08eb382d69ULL) are taken from the CityHash implementation.
+      //
+      // We opted not to use the mixing algorithm proposed in the C++ working group defect list at
+      // http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2005/n1756.pdf, p. 57f. because it
+      // has very bad hash distribution properties if you apply it to lists of very small numbers,
+      // an application that is frequent in PDELab's ordering framework.
+
+      Dune::hash<T> hasher;
+      const std::size_t kMul = 0x9ddfea08eb382d69ULL;
+      std::size_t h = hasher(arg);
+      std::size_t a = (seed ^ h) * kMul;
+      a ^= (a >> 47);
+      std::size_t b = (h ^ a) * kMul;
+      b ^= (b >> 47);
+      b *= kMul;
+      seed = b;
+    }
+
+  };
+
+
+  // hash combining for 32-bit platforms.
+  template<>
+  struct hash_combiner<4>
+  {
+
+    template<typename T>
+    void operator()(std::size_t& seed, const T& arg) const
+    {
+      // The default algorithm above requires a 64-bit std::size_t. The following algorithm is a
+      // 32-bit compatible fallback, again inspired by CityHash and MurmurHash
+      // (http://cityhash.googlecode.com/svn-history/r2/trunk/src/city.cc).
+      // It uses 32-bit constants and relies on rotation instead of multiplication to spread the
+      // mixed bits as that is apparently more efficient on IA-32. The constants used below are again
+      // taken from CityHash, in particular from the file referenced above.
+
+      Dune::hash<T> hasher;
+      const std::size_t c1 = 0xcc9e2d51;
+      const std::size_t c2 = 0x1b873593;
+      const std::size_t c3 = 0xe6546b64;
+      std::size_t h = hasher(arg);
+      std::size_t a = seed * c1;
+      a = (a >> 17) | (a << (32 - 17));
+      a *= c2;
+      h ^= a;
+      h = (h >> 19) | (h << (32 - 19));
+      seed = h * 5 + c3;
+    }
+
+  };
+
+#endif // DOXYGEN
+
   //! Calculates the hash value of arg and combines it in-place with seed.
   /**
    * \note This function is only available if the macro `HAVE_DUNE_HASH` is defined.
@@ -339,27 +425,7 @@ namespace Dune {
   template<typename T>
   inline void hash_combine(std::size_t& seed, const T& arg)
   {
-    Dune::hash<T> hasher;
-    // The following algorithm for combining two 64-bit hash values is inspired by a similar
-    // function in CityHash (http://cityhash.googlecode.com/svn-history/r2/trunk/src/city.h),
-    // which is in turn based on ideas from the MurmurHash library. The basic idea is easy to
-    // grasp, though: New information is XORed into the existing hash multiple times at different
-    // places (using shift operations), and the resulting pattern is spread over the complete
-    // range of available bits via multiplication with a "magic" constant. The constants used
-    // below (47 and  0x9ddfea08eb382d69ULL) are taken from the CityHash implementation.
-    //
-    // We opted not to use the mixing algorithm proposed in the C++ working group defect list at
-    // http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2005/n1756.pdf, p. 57f. because it
-    // has very bad hash distribution properties if you apply it to lists of very small numbers,
-    // an application that is frequent in PDELab's ordering framework.
-    const std::size_t kMul = 0x9ddfea08eb382d69ULL;
-    std::size_t h = hasher(arg);
-    std::size_t a = (seed ^ h) * kMul;
-    a ^= (a >> 47);
-    std::size_t b = (h ^ a) * kMul;
-    b ^= (b >> 47);
-    b *= kMul;
-    seed = b;
+    hash_combiner<sizeof(std::size_t)>()(seed,arg);
   }
 
   //! Hashes all elements in the range [first,last) and returns the combined hash.

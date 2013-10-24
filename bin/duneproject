@@ -339,6 +339,8 @@ LIBS="\$DUNE_LIBS"
 AC_CONFIG_FILES([
   Makefile
   src/Makefile
+  cmake/Makefile
+  cmake/pkg/Makefile
   doc/Makefile
   doc/doxygen/Makefile
   doc/doxygen/Doxyfile
@@ -441,9 +443,13 @@ cat> "$PROJECT/Makefile.am" << M_DELIM
 # \$Id$
 
 # we need the module file to be able to build via dunecontrol
-EXTRA_DIST=dune.module
+EXTRA_DIST = dune.module \\
+  CMakeLists.txt \\
+  config.h.cmake \\
+  $PROJECT-config.cmake.in \\
+  $PROJECT-version.cmake.in
 
-SUBDIRS = src m4 dune doc
+SUBDIRS = src m4 dune doc cmake
 
 if BUILD_DOCS
 # TODO: set up documentation tree automatically
@@ -520,6 +526,80 @@ CC_DELIM
 echo "    Please remember to update your $PROJECT/$MODULE.pc.in,"
 echo "    Description and URL are missing right now."
 
+################# config.h.cmake #####################
+
+echo "- $PROJECT/config.h.cmake"
+cat> "$PROJECT/config.h.cmake" <<EOF
+/* begin $NAME
+   put the definitions for config.h specific to
+   your project here. Everything above will be
+   overwritten
+*/
+
+/* begin private */
+/* Name of package */
+#define PACKAGE "@DUNE_MOD_NAME"
+
+/* Define to the address where bug reports for this package should be sent. */
+#define PACKAGE_BUGREPORT "@DUNE_MAINTAINER@"
+
+/* Define to the full name of this package. */
+#define PACKAGE_NAME "@DUNE_MOD_NAME@"
+
+/* Define to the full name and version of this package. */
+#define PACKAGE_STRING "@DUNE_MOD_NAME@ @DUNE_MOD_VERSION@"
+
+/* Define to the one symbol short name of this package. */
+#define PACKAGE_TARNAME "@DUNE_MOD_NAME@"
+
+/* Define to the home page for this package. */
+#define PACKAGE_URL "@DUNE_MOD_URL@"
+
+/* Define to the version of this package. */
+#define PACKAGE_VERSION "@DUNE_MOD_VERSION@"
+
+/* end private */
+
+/* Define to the version of $PROJECT */
+#define ${UNAME}_VERSION "@${UNAME}_VERSION@"
+
+/* Define to the major version of $PROJECT */
+#define ${UNAME}_VERSION_MAJOR @${UNAME}_VERSION_MAJOR@
+
+/* Define to the minor version of $PROJECT */
+#define ${UNAME}_VERSION_MINOR @${UNAME}_VERSION_MINOR@
+
+/* Define to the revision of $PROJECT */
+#define ${UNAME}_VERSION_REVISION @${UNAME}_VERSION_REVISION@
+
+/* end $NAME
+   Everything below here will be overwritten
+*/
+EOF
+## done
+
+################# $PROJECT-config.cmake.in #####################
+
+echo "- $PROJECT/$PROJECT""-config.cmake.in"
+cat> "$PROJECT/$PROJECT""-config.cmake.in" <<EOF
+if(NOT @DUNE_MOD_NAME@_FOUND)
+#import the target
+#include("@CMAKE_BINARY_DIR@/@DUNE_MOD_NAME@-targets.cmake")
+
+#report other information
+set(@DUNE_MOD_NAME@_PREFIX "@CMAKE_SOURCE_DIR@")
+set(@DUNE_MOD_NAME@_INCLUDE_DIRS "@CMAKE_SOURCE_DIR@")
+set(@DUNE_MOD_NAME@_CXX_FLAGS "@CMAKE_CXX_FLAGS@")
+set(@DUNE_MOD_NAME@_CXX_FLAGS_DEBUG "@CMAKE_CXX_FLAGS_DEBUG@")
+set(@DUNE_MOD_NAME@_CXX_FLAGS_MINSIZEREL "@CMAKE_CXX_FLAGS_MINSIZEREL@")
+set(@DUNE_MOD_NAME@_CXX_FLAGS_RELEASE "@CMAKE_CXX_FLAGS_RELEASE@")
+set(@DUNE_MOD_NAME@_CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@")
+set(@DUNE_MOD_NAME@_LIBRARIES "") # list exported libraries here
+set(@DUNE_MOD_NAME@_DEPENDS "@DUNE_DEPENDS@")
+set(@DUNE_MOD_NAME@_SUGGESTS "@DUNE_SUGGESTS@")
+endif(NOT @DUNE_MOD_NAME@_FOUND)
+EOF
+
 ###############################################################
 ################## The source subdirectory ####################
 ###############################################################
@@ -580,6 +660,8 @@ AUTOMAKE_OPTIONS = foreign 1.5
 # pass most important options when "make distcheck" is used
 DISTCHECK_CONFIGURE_FLAGS = $DISTCHECK_CONFIGURE_FLAGS CXX="\$(CXX)" CC="\$(CC)"
 
+EXTRA_DIST = CMakeLists.txt
+
 include \$(top_srcdir)/am/global-rules
 
 M_DELIM
@@ -625,7 +707,7 @@ M4FILES = $MODULE.m4
 aclocaldir = \$(datadir)/aclocal
 aclocal_DATA = \$(M4FILES)
 
-EXTRA_DIST = \$(M4FILES)
+EXTRA_DIST = \$(M4FILES) CMakeLists.txt
 
 include \$(top_srcdir)/am/global-rules
 CC_DELIM
@@ -675,6 +757,8 @@ echo "- $PROJECT/dune/Makefile.am"
 cat> $PROJECT/dune/Makefile.am <<EOF
 SUBDIRS = $NAME
 
+EXTRA_DIST = CMakeLists.txt
+
 include \$(top_srcdir)/am/global-rules
 EOF
 
@@ -689,6 +773,8 @@ echo "- $PROJECT/dune/$NAME/Makefile.am"
 cat> $PROJECT/dune/$NAME/Makefile.am <<EOF
 ${NAME}includedir = \$(includedir)/dune/${NAME}
 ${NAME}include_HEADERS = ${NAME}.hh
+
+EXTRA_DIST = CMakeLists.txt
 
 include \$(top_srcdir)/am/global-rules
 EOF
@@ -730,6 +816,8 @@ BASEDIR = ..
 PAGES=
 
 docdir=\$(datadir)/doc/${PROJECT}
+
+EXTRA_DIST = CMakeLists.txt
 
 include \$(top_srcdir)/am/webstuff
 include \$(top_srcdir)/am/global-rules
@@ -797,11 +885,14 @@ cat> "$PROJECT/doc/doxygen/Makefile.am" << CC_DELIM
 BASEDIR=../..
 CURDIR=doc/doxygen
 
+EXTRA_DIST = CMakeLists.txt
+
 include \$(top_srcdir)/am/doxygen
 include \$(top_srcdir)/am/global-rules
 
 CC_DELIM
 
+################# doc/doxygen/CMakeLists.txt #####################
 
 echo "- $PROJECT/doc/doxygen/CMakeLists.txt"
 cat> "$PROJECT/doc/doxygen/CMakeLists.txt" << CC_DELIM
@@ -809,80 +900,32 @@ cat> "$PROJECT/doc/doxygen/CMakeLists.txt" << CC_DELIM
 add_doxygen_target()
 CC_DELIM
 
-echo "- $PROJECT/config.h.cmake"
-cat> "$PROJECT/config.h.cmake" <<EOF
-/* begin $NAME
-   put the definitions for config.h specific to
-   your project here. Everything above will be
-   overwritten 
-*/
-
-/* begin private */
-/* Name of package */
-#define PACKAGE "@DUNE_MOD_NAME"
-
-/* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT "@DUNE_MAINTAINER@"
-
-/* Define to the full name of this package. */
-#define PACKAGE_NAME "@DUNE_MOD_NAME@"
-
-/* Define to the full name and version of this package. */
-#define PACKAGE_STRING "@DUNE_MOD_NAME@ @DUNE_MOD_VERSION@"
-
-/* Define to the one symbol short name of this package. */
-#define PACKAGE_TARNAME "@DUNE_MOD_NAME@"
-
-/* Define to the home page for this package. */
-#define PACKAGE_URL "@DUNE_MOD_URL@"
-
-/* Define to the version of this package. */
-#define PACKAGE_VERSION "@DUNE_MOD_VERSION@"
-
-/* end private */
-
-/* Define to the version of $PROJECT */
-#define ${UNAME}_VERSION "@${UNAME}_VERSION@"
-
-/* Define to the major version of $PROJECT */
-#define ${UNAME}_VERSION_MAJOR @${UNAME}_VERSION_MAJOR@
-
-/* Define to the minor version of $PROJECT */
-#define ${UNAME}_VERSION_MINOR @${UNAME}_VERSION_MINOR@
-
-/* Define to the revision of $PROJECT */
-#define ${UNAME}_VERSION_REVISION @${UNAME}_VERSION_REVISION@
-
-/* end $NAME
-   Everything below here will be overwritten
-*/
-EOF
-## done
-
-echo "- $PROJECT/$PROJECT""-config.cmake.in"
-cat> "$PROJECT/$PROJECT""-config.cmake.in" <<EOF
-if(NOT @DUNE_MOD_NAME@_FOUND)
-#import the target
-#include("@CMAKE_BINARY_DIR@/@DUNE_MOD_NAME@-targets.cmake")
-
-#report other information
-set(@DUNE_MOD_NAME@_PREFIX "@CMAKE_SOURCE_DIR@")
-set(@DUNE_MOD_NAME@_INCLUDE_DIRS "@CMAKE_SOURCE_DIR@")
-set(@DUNE_MOD_NAME@_CXX_FLAGS "@CMAKE_CXX_FLAGS@")
-set(@DUNE_MOD_NAME@_CXX_FLAGS_DEBUG "@CMAKE_CXX_FLAGS_DEBUG@")
-set(@DUNE_MOD_NAME@_CXX_FLAGS_MINSIZEREL "@CMAKE_CXX_FLAGS_MINSIZEREL@")
-set(@DUNE_MOD_NAME@_CXX_FLAGS_RELEASE "@CMAKE_CXX_FLAGS_RELEASE@")
-set(@DUNE_MOD_NAME@_CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@")
-set(@DUNE_MOD_NAME@_LIBRARIES "") # list exported libraries here
-set(@DUNE_MOD_NAME@_DEPENDS "@DUNE_DEPENDS@")
-set(@DUNE_MOD_NAME@_SUGGESTS "@DUNE_SUGGESTS@")
-endif(NOT @DUNE_MOD_NAME@_FOUND)
-endif(NOT @DUNE_MOD_NAME@_FOUND)
-EOF
+#########################################################
+############### The cmake subdirectory ##################
+#########################################################
 
 mkdir "$PROJECT/cmake"
-mkdir "$PROJECT/cmake/modules"
 mkdir "$PROJECT/cmake/pkg"
+
+################# cmake/Makefile.am #####################
+
+echo "- $PROJECT/cmake/Makefile.am"
+cat> "$PROJECT/cmake/Makefile.am" <<EOF
+SUBDIRS = pkg
+
+include \$(top_srcdir)/am/global-rules
+EOF
+
+################# cmake/pkg/Makefile.am #####################
+
+echo "- $PROJECT/cmake/pkg/Makefile.am"
+cat> "$PROJECT/cmake/pkg/Makefile.am" <<EOF
+EXTRA_DIST = $PROJECT-config.cmake.in
+
+include \$(top_srcdir)/am/global-rules
+EOF
+
+################# cmake/pkg/$PROJECT-config.cmake.in #####################
 
 echo "- $PROJECT/cmake/pkg/$PROJECT""-config.cmake.in"
 cat> "$PROJECT/cmake/pkg/$PROJECT""-config.cmake.in" <<EOF
@@ -908,6 +951,8 @@ set(@DUNE_MOD_NAME@_SUGGESTS "@DUNE_SUGGESTS@")
 endif(NOT @DUNE_MOD_NAME@_FOUND)
 EOF
 
+################# $PROJECT-version.cmake.in #####################
+
 echo "- $PROJECT/$PROJECT""-version.cmake.in"
 cat> "$PROJECT/$PROJECT""-version.cmake.in" <<EOF
 set(PACKAGE_VERSION "@DUNE_MOD_VERSION@")
@@ -919,6 +964,9 @@ if(NOT "\${PACKAGE_FIND_VERSION}" VERSION_GREATER "@DUNE_MOD_VERSION@")
   endif()
 endif()
 EOF
+
+################# stamp-regenerate-config-h #####################
+
 echo "- $PROJECT/stamp-regenerate-config-h"
 touch $PROJECT/stamp-regenerate-config-h
 echo 

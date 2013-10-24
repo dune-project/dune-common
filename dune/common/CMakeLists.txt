@@ -1,4 +1,5 @@
 add_subdirectory("parallel")
+add_subdirectory("std")
 add_subdirectory("test" EXCLUDE_FROM_ALL)
 
 #build the library dunecommon
@@ -86,12 +87,14 @@ install(FILES
         sllist.hh
         static_assert.hh
         stdstreams.hh
+        stringutility.hh
         timer.hh
         tuples.hh
         tupleutility.hh
         typetraits.hh
         unused.hh
         version.hh
+        visibility.hh
 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common)
 
 # Install some test headers, because they get used by tests in other modules
