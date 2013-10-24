@@ -135,7 +135,7 @@ AC_DEFUN([DUNE_MPI],[
     ac_save_LIBS="$LIBS"
     ac_save_LDFLAGS="$LDFLAGS"
     ac_save_CPPFLAGS="$CPPFLAGS"
-    
+
     # looks weird but as the -l... are contained in the MPI_LDFLAGS these
     # parameters have to be last on the commandline: with LIBS this is true
     LIBS="$DUNEMPILIBS $LIBS"
@@ -147,8 +147,8 @@ AC_DEFUN([DUNE_MPI],[
     AC_COMPILE_IFELSE(
       [AC_LANG_SOURCE(
         [ #include <mpi.h>
-          int main (int argc, char** argv) { 
-          MPI_Init(&argc, &argv); 
+          int main (int argc, char** argv) {
+          MPI_Init(&argc, &argv);
           MPI_Finalize(); }])],
         [ AC_MSG_RESULT([yes]) ],
         [ AC_MSG_RESULT([no])
@@ -158,14 +158,14 @@ AC_DEFUN([DUNE_MPI],[
     )
 
     AS_IF([test "x$mpiruntest" != "xyes"],[
-      AC_MSG_WARN([Disabled test whether running with $dune_MPI_VERSION works.])    
+      AC_MSG_WARN([Disabled test whether running with $dune_MPI_VERSION works.])
     ],[
       AC_MSG_CHECKING([whether running with $dune_MPI_VERSION works])
       AC_RUN_IFELSE(
         [AC_LANG_SOURCE(
           [ #include <mpi.h>
-            int main (int argc, char** argv) { 
-            MPI_Init(&argc, &argv); 
+            int main (int argc, char** argv) {
+            MPI_Init(&argc, &argv);
             MPI_Finalize(); }])],
           [ AC_MSG_RESULT([yes]) ],
           [ AC_MSG_RESULT([no])
@@ -192,7 +192,7 @@ AC_DEFUN([DUNE_MPI],[
     LIBS="$ac_save_LIBS"
     CPPFLAGS="$ac_save_CPPFLAGS"
   ])
-    
+
   # set flags
   AS_IF([test "x$with_mpi" != "xno"],[
     AC_DEFINE(HAVE_MPI,ENABLE_MPI,[Define if you have the MPI library.
