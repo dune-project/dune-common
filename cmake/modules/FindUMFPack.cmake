@@ -29,7 +29,7 @@ find_library(AMD_LIBRARY
 )
 
 if(NOT AMD_LIBRARY)
-  message(WARNING "UMFPack requires AMD which was not found, skipping the test.")
+  message(WARNING "UMFPack requires AMD (approximate minimum degree ordering) which was not found, skipping the test.")
   return()
 endif()
 
@@ -59,6 +59,7 @@ find_library(UMFPACK_LIBRARY
   PATH_SUFFIXES "lib" "lib32" "lib64" "UMFPACK" "UMFPACK/Lib"
 )
 
+# behave like a CMake module is supposed to behave
 if(UMFPACK_INCLUDE_DIR)
   set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${UMFPACK_INCLUDE_DIR} ${AMD_INCLUDE_DIR})
 endif()
@@ -82,9 +83,11 @@ find_package_handle_standard_args(
 
 mark_as_advanced(UMFPACK_INCLUDE_DIR UMFPACK_LIBRARY)
 
+# if both headers and library are found, store results
 if(UMFPACK_FOUND)
   set(UMFPACK_INCLUDE_DIRS ${UMFPACK_INCLUDE_DIR})
   set(UMFPACK_LIBRARIES ${UMFPACK_LIBRARY})
+  # log result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
     "Determining location of UMFPack succeded:\n"
     "Include directory: ${UMFPACK_INCLUDE_DIRS}\n"
@@ -92,8 +95,9 @@ if(UMFPACK_FOUND)
   set(UMFPACK_DUNE_COMPILE_FLAGS "-I${UMFPACK_INCLUDE_DIRS}"
     CACHE STRING "Compile Flags used by DUNE when compiling with UMFPack programs")
   set(UMFPACK_DUNE_LIBRARIES ${UMFPACK_LIBRARIES} ${BLAS_LIBRARIES} ${AMD_LIBRARY}
-    CACHE STRING "LIbraries used by DUNE when linking UMFPack programs")
+    CACHE STRING "Libraries used by DUNE when linking UMFPack programs")
 else(UMFPACK_FOUND)
+  # log errornous result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKES_FILES_DIRECTORY}/CMakeError.log
     "Determing location of UMFPack failed:\n"
     "Include directory: ${UMFPACK_INCLUDE_DIRS}\n"
