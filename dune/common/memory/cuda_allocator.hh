@@ -46,7 +46,7 @@ namespace Dune {
     void copy(DT_ * dst, const DT_ * src, size_t count);
 
     template <typename DT_>
-    void set(DT_ * dst, const DT_ & val);
+    void set(DT_ * dst, const DT_ & val, size_t count = 1);
 
     template <typename DT_>
     DT_ get(DT_ * src);

@@ -33,7 +33,7 @@ namespace Dune
     DT_ * division_scalar(DT_ * r, const DT_* x, DT_ y, const unsigned long size);
 
     template <typename DT_>
-    DT_ * axpy(DT_ * r, const DT_* x, DT_ a, const DT_ * y, const unsigned long size);
+    DT_ * axpy(DT_ * r, const DT_* y, DT_ a, const DT_ * x, const unsigned long size);
 
     template <typename DT_>
     DT_ dot(const DT_ * x, const DT_ * y, const unsigned long size);

@@ -34,7 +34,7 @@ include $(top_srcdir)/am/global-rules
 
 EXTRA_DIST = CMakeLists.txt
 
-LINK = $CC -o $@ -lcudart -L/sfw/cuda/5.5/lib64 -lcublas
+LINK = $(CC) -o $@ -lcudart -L/sfw/cuda/5.5/lib64 -lcublas
 lib_LIBRARIES = libvec_cuda.a
 libvec_cuda_a_SOURCES = cuda_kernels.cu
 

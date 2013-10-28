@@ -209,23 +209,23 @@ namespace Dune
 
     //-------------- axpy ---------------
     template <typename DT_>
-    __global__ void device_axpy(DT_ * r, const DT_ * x, DT_ a, const DT_ * y, const unsigned long count)
+    __global__ void device_axpy(DT_ * r, const DT_ * y, DT_ a, const DT_ * x, const unsigned long count)
     {
       unsigned long idx = threadIdx.x + blockDim.x * blockIdx.x;
       if (idx >= count)
         return;
-      r[idx] = x[idx] * a + y[idx];
+      r[idx] = (x[idx] * a) + y[idx];
     }
 
     template <typename DT_>
-    DT_ * axpy(DT_ * r, const DT_* x, DT_ a, const DT_ * y, const unsigned long size)
+    DT_ * axpy(DT_ * r, const DT_* y, DT_ a, const DT_ * x, const unsigned long size)
     {
       unsigned long blocksize(128);
       dim3 grid;
       dim3 block;
       block.x = blocksize;
       grid.x = (unsigned)ceil((size)/(double)(block.x));
-      device_axpy<<<grid, block>>>(r, x, a, y, size);
+      device_axpy<<<grid, block>>>(r, y, a, x, size);
       return r;
     }
 

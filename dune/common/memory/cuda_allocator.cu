@@ -46,9 +46,10 @@ void Dune::Cuda::copy(DT_ * dst, const DT_ * src, size_t count)
 }
 
 template <typename DT_>
-void Dune::Cuda::set(DT_ * dst, const DT_ & val)
+void Dune::Cuda::set(DT_ * dst, const DT_ & val, size_t count)
 {
-  cudaMemcpy(dst, &val, sizeof(DT_), cudaMemcpyHostToDevice);
+  for (size_t i(0) ; i < count ; ++i)
+    cudaMemcpy(dst + i, &val, sizeof(DT_), cudaMemcpyHostToDevice);
 }
 
 template <typename DT_>
@@ -65,7 +66,7 @@ template void Dune::Cuda::download(float *, const float *, size_t);
 template void Dune::Cuda::download(double *, const double *, size_t);
 template void Dune::Cuda::copy(float *, const float *, size_t);
 template void Dune::Cuda::copy(double *, const double *, size_t);
-template void Dune::Cuda::set(float *, const float &);
-template void Dune::Cuda::set(double *, const double &);
+template void Dune::Cuda::set(float *, const float &, size_t);
+template void Dune::Cuda::set(double *, const double &, size_t);
 template float Dune::Cuda::get(float *);
 template double Dune::Cuda::get(double *);
