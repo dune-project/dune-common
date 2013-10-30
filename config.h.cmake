@@ -160,6 +160,9 @@
 /* Define to 1 if initializer list is supported */
 #cmakedefine HAVE_INITIALIZER_LIST 1
 
+/* Define to if the UMFPack library is available */
+#cmakedefine HAVE_UMFPACK ENABLE_UMFPACK
+
 /* Include always useful headers */
 #include <dune/common/deprecated.hh>
 #include <dune/common/unused.hh>
