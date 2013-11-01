@@ -50,8 +50,15 @@ void Dune::Cuda::copy(DT_ * dst, const DT_ * src, size_t count)
 template <typename DT_>
 void Dune::Cuda::set(DT_ * dst, const DT_ & val, size_t count)
 {
-  for (size_t i(0) ; i < count ; ++i)
-    cudaMemcpy(dst + i, &val, sizeof(DT_), cudaMemcpyHostToDevice);
+  if (val == 0)
+  {
+    cudaMemset(dst, 0, sizeof(DT_) * count);
+  }
+  else
+  {
+    for (size_t i(0) ; i < count ; ++i)
+      cudaMemcpy(dst + i, &val, sizeof(DT_), cudaMemcpyHostToDevice);
+  }
 }
 
 template <typename DT_>
