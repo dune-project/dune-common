@@ -87,7 +87,7 @@ namespace Dune {
                         // do mmv operation off-diagonal
                         rhs[i] -= mat_data[(offset + j) * kernel_block_size + i] * (kernel_offset + block * kernel_block_size + i != mat_col[offset*kernel_block_size + kernel_block_size*j+i]) * v_old[mat_col[offset*kernel_block_size + kernel_block_size*j+i]];
                         // save diagonal value
-                        diag[i] += (kernel_offset + block * kernel_block_size + i != mat_col[offset*kernel_block_size + kernel_block_size*j+i]) * v_old[mat_col[offset*kernel_block_size + kernel_block_size*j+i]];
+                        diag[i] += (kernel_offset + block * kernel_block_size + i == mat_col[offset*kernel_block_size + kernel_block_size*j+i]) * mat_data[(offset + j) * kernel_block_size + i];
                       }
                   }
 
