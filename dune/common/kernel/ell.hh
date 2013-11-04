@@ -4,6 +4,10 @@
 #ifndef DUNE_COMMON_KERNEL_ELL_HH
 #define DUNE_COMMON_KERNEL_ELL_HH
 
+#include <dune/common/kernel/ell/mmv.hh>
+#include <dune/common/kernel/ell/mv.hh>
+#include <dune/common/kernel/ell/preconditioners/jacobi.hh>
 #include <dune/common/kernel/ell/umv.hh>
+#include <dune/common/kernel/ell/usmv.hh>
 
 #endif // DUNE_COMMON_KERNEL_ELL_HH
