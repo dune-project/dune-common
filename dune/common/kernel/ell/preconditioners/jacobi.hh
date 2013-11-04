@@ -34,6 +34,7 @@ namespace Dune {
                       T1* DUNE_RESTRICT rhs,
                       size_type n,
                       size_type kernel_offset,
+                      size_type size,
                       const T1 relaxation_factor) DUNE_NOINLINE;
 
           template<typename T1,
@@ -52,6 +53,7 @@ namespace Dune {
                       T1* DUNE_RESTRICT rhs,
                       size_type n,
                       size_type kernel_offset,
+                      size_type size,
                       const T1 relaxation_factor)
           {
             DUNE_ASSUME_ALIGNED(v_new,T1,alignment);
@@ -71,9 +73,9 @@ namespace Dune {
                 for (int i = 0; i < kernel_block_size; ++i)
                   rhs[i] = d[block*kernel_block_size + i];
 
-                // clear out diagonal
+                // clear out diagonal, but set padded diagonals to 1 to avoid division by zero
                 for (int i = 0; i < kernel_block_size; ++i)
-                  diag[i] = 0.0;
+                  diag[i] = kernel_offset + block * kernel_block_size + i < size ? 0.0 : 1.0;
 
                 // calculate rhs = d - (L+U) * v_old
                 for (int j = 0; j < cols; ++j)
@@ -115,6 +117,7 @@ namespace Dune {
             T1* DUNE_RESTRICT rhs,                                      \
             I n,                                                        \
             I kernel_offset,                                            \
+            I size,                                                     \
             T1 relaxation_factor                                        \
             );
 
