@@ -95,7 +95,7 @@ namespace Dune {
                 // now solve D * v_new = rhs
 
                 for (int i = 0; i < kernel_block_size; ++i)
-                  v_new[i] = rhs[i] / diag[i];
+                  v_new[block*kernel_block_size + i] = rhs[i] / diag[i];
 
                 offset += cols;
               }
