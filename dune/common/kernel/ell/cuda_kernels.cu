@@ -9,7 +9,7 @@ namespace Dune
   {
     //-------------- mv ---------------
     template <typename DT_>
-    __global__ void device_mv(DT_ * y, const DT_ * x, const DT_ * data, const unsigned long * cs, const unsigned long * col,
+    __global__ void device_mv(const DT_ * x, DT_ * y, const DT_ * data, const unsigned long * cs, const unsigned long * col,
         const unsigned long rows, const unsigned long rows_per_chunk,
         const unsigned long chunks, const unsigned long allocated_size)
     {
@@ -29,7 +29,7 @@ namespace Dune
     }
 
     template <typename DT_>
-    void mv(DT_ * y, const DT_ * x, const DT_ * data, const unsigned long * cs, const unsigned long * col,
+    void mv(const DT_ * x, DT_ * y, const DT_ * data, const unsigned long * cs, const unsigned long * col,
         const unsigned long rows, const unsigned long rows_per_chunk,
         const unsigned long chunks, const unsigned long allocated_size)
     {
@@ -38,19 +38,19 @@ namespace Dune
       dim3 block;
       block.x = blocksize;
       grid.x = (unsigned)ceil((rows)/(double)(block.x));
-      device_mv<<<grid, block>>>(y, x, data, cs, col, rows, rows_per_chunk, chunks, allocated_size);
+      device_mv<<<grid, block>>>(x, y, data, cs, col, rows, rows_per_chunk, chunks, allocated_size);
     }
 
-    template void mv(float*, const float*, const float*, const unsigned long*, const unsigned long*,
+    template void mv(const float*, float*, const float*, const unsigned long*, const unsigned long*,
       const unsigned long, const unsigned long,
       const unsigned long, const unsigned long);
-    template void mv(double*, const double*, const double*, const unsigned long*, const unsigned long*,
+    template void mv(const double*, double*, const double*, const unsigned long*, const unsigned long*,
       const unsigned long, const unsigned long,
       const unsigned long, const unsigned long);
 
     //-------------- umv ---------------
     template <typename DT_>
-    __global__ void device_umv(DT_ * y, const DT_ * x, const DT_ * data, const unsigned long * cs, const unsigned long * col,
+    __global__ void device_umv(const DT_ * x, DT_ * y, const DT_ * data, const unsigned long * cs, const unsigned long * col,
         const unsigned long rows, const unsigned long rows_per_chunk,
         const unsigned long chunks, const unsigned long allocated_size)
     {
@@ -70,7 +70,7 @@ namespace Dune
     }
 
     template <typename DT_>
-    void umv(DT_ * y, const DT_ * x, const DT_ * data, const unsigned long * cs, const unsigned long * col,
+    void umv(const DT_ * x, DT_ * y, const DT_ * data, const unsigned long * cs, const unsigned long * col,
         const unsigned long rows, const unsigned long rows_per_chunk,
         const unsigned long chunks, const unsigned long allocated_size)
     {
@@ -79,19 +79,19 @@ namespace Dune
       dim3 block;
       block.x = blocksize;
       grid.x = (unsigned)ceil((rows)/(double)(block.x));
-      device_umv<<<grid, block>>>(y, x, data, cs, col, rows, rows_per_chunk, chunks, allocated_size);
+      device_umv<<<grid, block>>>(x, y, data, cs, col, rows, rows_per_chunk, chunks, allocated_size);
     }
 
-    template void umv(float*, const float*, const float*, const unsigned long*, const unsigned long*,
+    template void umv(const float*, float*, const float*, const unsigned long*, const unsigned long*,
       const unsigned long, const unsigned long,
       const unsigned long, const unsigned long);
-    template void umv(double*, const double*, const double*, const unsigned long*, const unsigned long*,
+    template void umv(const double*, double*, const double*, const unsigned long*, const unsigned long*,
       const unsigned long, const unsigned long,
       const unsigned long, const unsigned long);
 
     //-------------- mmv ---------------
     template <typename DT_>
-    __global__ void device_mmv(DT_ * y, const DT_ * x, const DT_ * data, const unsigned long * cs, const unsigned long * col,
+    __global__ void device_mmv(const DT_ * x, DT_ * y, const DT_ * data, const unsigned long * cs, const unsigned long * col,
         const unsigned long rows, const unsigned long rows_per_chunk,
         const unsigned long chunks, const unsigned long allocated_size)
     {
@@ -111,7 +111,7 @@ namespace Dune
     }
 
     template <typename DT_>
-    void mmv(DT_ * y, const DT_ * x, const DT_ * data, const unsigned long * cs, const unsigned long * col,
+    void mmv(const DT_ * x, DT_ * y, const DT_ * data, const unsigned long * cs, const unsigned long * col,
         const unsigned long rows, const unsigned long rows_per_chunk,
         const unsigned long chunks, const unsigned long allocated_size)
     {
@@ -120,19 +120,19 @@ namespace Dune
       dim3 block;
       block.x = blocksize;
       grid.x = (unsigned)ceil((rows)/(double)(block.x));
-      device_mmv<<<grid, block>>>(y, x, data, cs, col, rows, rows_per_chunk, chunks, allocated_size);
+      device_mmv<<<grid, block>>>(x, y, data, cs, col, rows, rows_per_chunk, chunks, allocated_size);
     }
 
-    template void mmv(float*, const float*, const float*, const unsigned long*, const unsigned long*,
+    template void mmv(const float*, float*, const float*, const unsigned long*, const unsigned long*,
       const unsigned long, const unsigned long,
       const unsigned long, const unsigned long);
-    template void mmv(double*, const double*, const double*, const unsigned long*, const unsigned long*,
+    template void mmv(const double*, double*, const double*, const unsigned long*, const unsigned long*,
       const unsigned long, const unsigned long,
       const unsigned long, const unsigned long);
 
     //-------------- usmv ---------------
     template <typename DT_>
-    __global__ void device_usmv(DT_ alpha, DT_ * y, const DT_ * x, const DT_ * data, const unsigned long * cs, const unsigned long * col,
+    __global__ void device_usmv(DT_ alpha, const DT_ * x, DT_ * y, const DT_ * data, const unsigned long * cs, const unsigned long * col,
         const unsigned long rows, const unsigned long rows_per_chunk,
         const unsigned long chunks, const unsigned long allocated_size)
     {
@@ -152,7 +152,7 @@ namespace Dune
     }
 
     template <typename DT_>
-    void usmv(DT_ alpha, DT_ * y, const DT_ * x, const DT_ * data, const unsigned long * cs, const unsigned long * col,
+    void usmv(DT_ alpha, const DT_ * x, DT_ * y, const DT_ * data, const unsigned long * cs, const unsigned long * col,
         const unsigned long rows, const unsigned long rows_per_chunk,
         const unsigned long chunks, const unsigned long allocated_size)
     {
@@ -161,13 +161,13 @@ namespace Dune
       dim3 block;
       block.x = blocksize;
       grid.x = (unsigned)ceil((rows)/(double)(block.x));
-      device_usmv<<<grid, block>>>(alpha, y, x, data, cs, col, rows, rows_per_chunk, chunks, allocated_size);
+      device_usmv<<<grid, block>>>(alpha, x, y, data, cs, col, rows, rows_per_chunk, chunks, allocated_size);
     }
 
-    template void usmv(float, float*, const float*, const float*, const unsigned long*, const unsigned long*,
+    template void usmv(float, const float*, float*, const float*, const unsigned long*, const unsigned long*,
       const unsigned long, const unsigned long,
       const unsigned long, const unsigned long);
-    template void usmv(double, double*, const double*, const double*, const unsigned long*, const unsigned long*,
+    template void usmv(double, const double*, double*, const double*, const unsigned long*, const unsigned long*,
       const unsigned long, const unsigned long,
       const unsigned long, const unsigned long);
   }

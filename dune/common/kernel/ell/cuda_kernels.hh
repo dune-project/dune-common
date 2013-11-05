@@ -9,22 +9,22 @@ namespace Dune
   namespace Cuda
   {
     template <typename DT_>
-    void mv(DT_ * y, const DT_ * x, const DT_ * data, const unsigned long * cs, const unsigned long * col,
+    void mv(const DT_ * x, DT_ * y, const DT_ * data, const unsigned long * cs, const unsigned long * col,
         const unsigned long rows, const unsigned long rows_per_chunk,
         const unsigned long chunks, const unsigned long allocated_size);
 
     template <typename DT_>
-    void umv(DT_ * y, const DT_ * x, const DT_ * data, const unsigned long * cs, const unsigned long * col,
+    void umv(const DT_ * x, DT_ * y, const DT_ * data, const unsigned long * cs, const unsigned long * col,
         const unsigned long rows, const unsigned long rows_per_chunk,
         const unsigned long chunks, const unsigned long allocated_size);
 
     template <typename DT_>
-    void mmv(DT_ * y, const DT_ * x, const DT_ * data, const unsigned long * cs, const unsigned long * col,
+    void mmv(const DT_ * y, DT_ * y, const DT_ * data, const unsigned long * cs, const unsigned long * col,
         const unsigned long rows, const unsigned long rows_per_chunk,
         const unsigned long chunks, const unsigned long allocated_size);
 
     template <typename DT_>
-    void usmv(DT_ alpha, DT_ * y, const DT_ * x, const DT_ * data, const unsigned long * cs, const unsigned long * col,
+    void usmv(DT_ alpha, const DT_ * x, DT_ * y, const DT_ * data, const unsigned long * cs, const unsigned long * col,
         const unsigned long rows, const unsigned long rows_per_chunk,
         const unsigned long chunks, const unsigned long allocated_size);
   }
