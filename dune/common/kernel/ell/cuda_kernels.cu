@@ -147,8 +147,8 @@ namespace Dune
       const unsigned long chunk_end( (chunk == chunks - 1) ? allocated_size : cs[chunk+1]);
 
       for (unsigned long pcol(cs[chunk] + local_row) ; pcol < chunk_end ; pcol += rows_per_chunk)
-          r += x[col[pcol]] * data[pcol];
-      y[row] = r * alpha;
+          r += alpha * (x[col[pcol]] * data[pcol]);
+      y[row] = r;
     }
 
     template <typename DT_>
