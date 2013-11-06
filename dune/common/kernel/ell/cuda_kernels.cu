@@ -170,5 +170,58 @@ namespace Dune
     template void usmv(double, const double*, double*, const double*, const unsigned long*, const unsigned long*,
       const unsigned long, const unsigned long,
       const unsigned long, const unsigned long);
+
+    //-------------- sequential_jacobi ---------------
+    template <typename DT_>
+    __global__ void device_sequential_jacobi(const DT_ * v, const DT_ * d, DT_ * v_new, const DT_ * data, const unsigned long * cs, const unsigned long * col,
+        const unsigned long rows, const unsigned long rows_per_chunk,
+        const unsigned long chunks, const unsigned long allocated_size)
+    {
+      const unsigned long idx = threadIdx.x + blockDim.x * blockIdx.x;
+      const unsigned long row = idx;
+      if (row >= rows)
+        return;
+
+      DT_ rhs(d[row]);
+      DT_ diag(DT_(1));
+      const unsigned long chunk(row / rows_per_chunk);
+      const unsigned long local_row(row % rows_per_chunk);
+      const unsigned long chunk_end( (chunk == chunks - 1) ? allocated_size : cs[chunk+1]);
+
+      for (unsigned long pcol(cs[chunk] + local_row) ; pcol < chunk_end ; pcol += rows_per_chunk)
+      {
+        if (row == col[pcol])
+        {
+          diag = data[pcol];
+        }
+        else
+        {
+          rhs -= v[col[pcol]] * data[pcol];
+        }
+      }
+      diag = (diag == DT_(0)) ? DT_(1) : diag;
+      v_new[row] = rhs / diag;
+    }
+
+    template <typename DT_>
+    void sequential_jacobi(const DT_ * v, const DT_ * d, DT_ * v_new,
+        const DT_ * data, const unsigned long * cs, const unsigned long * col,
+        const unsigned long rows, const unsigned long rows_per_chunk,
+        const unsigned long chunks, const unsigned long allocated_size)
+    {
+      unsigned long blocksize(128);
+      dim3 grid;
+      dim3 block;
+      block.x = blocksize;
+      grid.x = (unsigned)ceil((rows)/(double)(block.x));
+      device_sequential_jacobi<<<grid, block>>>(v, d, v_new, data, cs, col, rows, rows_per_chunk, chunks, allocated_size);
+    }
+
+    template void sequential_jacobi(const float*, const float*, float*, const float*, const unsigned long*, const unsigned long*,
+      const unsigned long, const unsigned long,
+      const unsigned long, const unsigned long);
+    template void sequential_jacobi(const double*, const double*, double*, const double*, const unsigned long*, const unsigned long*,
+      const unsigned long, const unsigned long,
+      const unsigned long, const unsigned long);
   }
 }
