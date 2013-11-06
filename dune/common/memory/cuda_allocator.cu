@@ -50,7 +50,7 @@ void Dune::Cuda::copy(DT_ * dst, const DT_ * src, size_t count)
 template <typename DT_>
 void Dune::Cuda::set(DT_ * dst, const DT_ & val, size_t count)
 {
-  if (val == 0)
+  if (val == DT_(0))
   {
     cudaMemset(dst, 0, sizeof(DT_) * count);
   }
