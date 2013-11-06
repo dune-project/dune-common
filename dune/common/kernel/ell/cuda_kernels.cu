@@ -21,7 +21,7 @@ namespace Dune
       DT_ r(0);
       const unsigned long chunk(row / rows_per_chunk);
       const unsigned long local_row(row % rows_per_chunk);
-      const unsigned long chunk_end( (chunk == chunks - 1) ? allocated_size : cs[chunk+1]);
+      const unsigned long chunk_end(cs[chunk+1]);
 
       for (unsigned long pcol(cs[chunk] + local_row) ; pcol < chunk_end ; pcol += rows_per_chunk)
           r += x[col[pcol]] * data[pcol];
@@ -62,7 +62,7 @@ namespace Dune
       DT_ r(y[row]);
       const unsigned long chunk(row / rows_per_chunk);
       const unsigned long local_row(row % rows_per_chunk);
-      const unsigned long chunk_end( (chunk == chunks - 1) ? allocated_size : cs[chunk+1]);
+      const unsigned long chunk_end(cs[chunk+1]);
 
       for (unsigned long pcol(cs[chunk] + local_row) ; pcol < chunk_end ; pcol += rows_per_chunk)
           r += x[col[pcol]] * data[pcol];
@@ -103,7 +103,7 @@ namespace Dune
       DT_ r(y[row]);
       const unsigned long chunk(row / rows_per_chunk);
       const unsigned long local_row(row % rows_per_chunk);
-      const unsigned long chunk_end( (chunk == chunks - 1) ? allocated_size : cs[chunk+1]);
+      const unsigned long chunk_end(cs[chunk+1]);
 
       for (unsigned long pcol(cs[chunk] + local_row) ; pcol < chunk_end ; pcol += rows_per_chunk)
           r -= x[col[pcol]] * data[pcol];
@@ -144,7 +144,7 @@ namespace Dune
       DT_ r(y[row]);
       const unsigned long chunk(row / rows_per_chunk);
       const unsigned long local_row(row % rows_per_chunk);
-      const unsigned long chunk_end( (chunk == chunks - 1) ? allocated_size : cs[chunk+1]);
+      const unsigned long chunk_end(cs[chunk+1]);
 
       for (unsigned long pcol(cs[chunk] + local_row) ; pcol < chunk_end ; pcol += rows_per_chunk)
           r += alpha * (x[col[pcol]] * data[pcol]);
@@ -186,7 +186,7 @@ namespace Dune
       DT_ diag(DT_(1));
       const unsigned long chunk(row / rows_per_chunk);
       const unsigned long local_row(row % rows_per_chunk);
-      const unsigned long chunk_end( (chunk == chunks - 1) ? allocated_size : cs[chunk+1]);
+      const unsigned long chunk_end(cs[chunk+1]);
 
       for (unsigned long pcol(cs[chunk] + local_row) ; pcol < chunk_end ; pcol += rows_per_chunk)
       {
