@@ -9,31 +9,31 @@ namespace Dune
   namespace Cuda
   {
     template <typename DT_>
-    DT_ * sum(DT_ * r, const DT_* x, const DT_ * y, const unsigned long size);
+    DT_ * sum(DT_ * r, const DT_* x, const DT_ * y, const unsigned long size, const unsigned long blocksize);
 
     template <typename DT_>
-    DT_ * difference(DT_ * r, const DT_* x, const DT_ * y, const unsigned long size);
+    DT_ * difference(DT_ * r, const DT_* x, const DT_ * y, const unsigned long size, const unsigned long blocksize);
 
     template <typename DT_>
-    DT_ * element_product(DT_ * r, const DT_* x, const DT_ * y, const unsigned long size);
+    DT_ * element_product(DT_ * r, const DT_* x, const DT_ * y, const unsigned long size, const unsigned long blocksize);
 
     template <typename DT_>
-    DT_ * element_division(DT_ * r, const DT_* x, const DT_ * y, const unsigned long size);
+    DT_ * element_division(DT_ * r, const DT_* x, const DT_ * y, const unsigned long size, const unsigned long blocksize);
 
     template <typename DT_>
-    DT_ * sum_scalar(DT_ * r, const DT_* x, DT_ y, const unsigned long size);
+    DT_ * sum_scalar(DT_ * r, const DT_* x, DT_ y, const unsigned long size, const unsigned long blocksize);
 
     template <typename DT_>
-    DT_ * difference_scalar(DT_ * r, const DT_* x, DT_ y, const unsigned long size);
+    DT_ * difference_scalar(DT_ * r, const DT_* x, DT_ y, const unsigned long size, const unsigned long blocksize);
 
     template <typename DT_>
-    DT_ * product_scalar(DT_ * r, const DT_* x, DT_ y, const unsigned long size);
+    DT_ * product_scalar(DT_ * r, const DT_* x, DT_ y, const unsigned long size, const unsigned long blocksize);
 
     template <typename DT_>
-    DT_ * division_scalar(DT_ * r, const DT_* x, DT_ y, const unsigned long size);
+    DT_ * division_scalar(DT_ * r, const DT_* x, DT_ y, const unsigned long size, const unsigned long blocksize);
 
     template <typename DT_>
-    DT_ * axpy(DT_ * r, const DT_* y, DT_ a, const DT_ * x, const unsigned long size);
+    DT_ * axpy(DT_ * r, const DT_* y, DT_ a, const DT_ * x, const unsigned long size, const unsigned long blocksize);
 
     template <typename DT_>
     DT_ dot(const DT_ * x, const DT_ * y, const unsigned long size);

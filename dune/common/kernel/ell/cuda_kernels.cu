@@ -31,9 +31,8 @@ namespace Dune
     template <typename DT_>
     void mv(const DT_ * x, DT_ * y, const DT_ * data, const unsigned long * cs, const unsigned long * col,
         const unsigned long rows, const unsigned long rows_per_chunk,
-        const unsigned long chunks, const unsigned long allocated_size)
+        const unsigned long chunks, const unsigned long allocated_size, const unsigned long blocksize)
     {
-      unsigned long blocksize(128);
       dim3 grid;
       dim3 block;
       block.x = blocksize;
@@ -43,10 +42,10 @@ namespace Dune
 
     template void mv(const float*, float*, const float*, const unsigned long*, const unsigned long*,
       const unsigned long, const unsigned long,
-      const unsigned long, const unsigned long);
+      const unsigned long, const unsigned long, const unsigned long);
     template void mv(const double*, double*, const double*, const unsigned long*, const unsigned long*,
       const unsigned long, const unsigned long,
-      const unsigned long, const unsigned long);
+      const unsigned long, const unsigned long, const unsigned long);
 
     //-------------- umv ---------------
     template <typename DT_>
@@ -72,9 +71,8 @@ namespace Dune
     template <typename DT_>
     void umv(const DT_ * x, DT_ * y, const DT_ * data, const unsigned long * cs, const unsigned long * col,
         const unsigned long rows, const unsigned long rows_per_chunk,
-        const unsigned long chunks, const unsigned long allocated_size)
+        const unsigned long chunks, const unsigned long allocated_size, const unsigned long blocksize)
     {
-      unsigned long blocksize(128);
       dim3 grid;
       dim3 block;
       block.x = blocksize;
@@ -84,10 +82,10 @@ namespace Dune
 
     template void umv(const float*, float*, const float*, const unsigned long*, const unsigned long*,
       const unsigned long, const unsigned long,
-      const unsigned long, const unsigned long);
+      const unsigned long, const unsigned long, const unsigned long);
     template void umv(const double*, double*, const double*, const unsigned long*, const unsigned long*,
       const unsigned long, const unsigned long,
-      const unsigned long, const unsigned long);
+      const unsigned long, const unsigned long, const unsigned long);
 
     //-------------- mmv ---------------
     template <typename DT_>
@@ -113,9 +111,8 @@ namespace Dune
     template <typename DT_>
     void mmv(const DT_ * x, DT_ * y, const DT_ * data, const unsigned long * cs, const unsigned long * col,
         const unsigned long rows, const unsigned long rows_per_chunk,
-        const unsigned long chunks, const unsigned long allocated_size)
+        const unsigned long chunks, const unsigned long allocated_size, const unsigned long blocksize)
     {
-      unsigned long blocksize(128);
       dim3 grid;
       dim3 block;
       block.x = blocksize;
@@ -125,10 +122,10 @@ namespace Dune
 
     template void mmv(const float*, float*, const float*, const unsigned long*, const unsigned long*,
       const unsigned long, const unsigned long,
-      const unsigned long, const unsigned long);
+      const unsigned long, const unsigned long, const unsigned long);
     template void mmv(const double*, double*, const double*, const unsigned long*, const unsigned long*,
       const unsigned long, const unsigned long,
-      const unsigned long, const unsigned long);
+      const unsigned long, const unsigned long, const unsigned long);
 
     //-------------- usmv ---------------
     template <typename DT_>
@@ -154,9 +151,8 @@ namespace Dune
     template <typename DT_>
     void usmv(DT_ alpha, const DT_ * x, DT_ * y, const DT_ * data, const unsigned long * cs, const unsigned long * col,
         const unsigned long rows, const unsigned long rows_per_chunk,
-        const unsigned long chunks, const unsigned long allocated_size)
+        const unsigned long chunks, const unsigned long allocated_size, const unsigned long blocksize)
     {
-      unsigned long blocksize(128);
       dim3 grid;
       dim3 block;
       block.x = blocksize;
@@ -166,10 +162,10 @@ namespace Dune
 
     template void usmv(float, const float*, float*, const float*, const unsigned long*, const unsigned long*,
       const unsigned long, const unsigned long,
-      const unsigned long, const unsigned long);
+      const unsigned long, const unsigned long, const unsigned long);
     template void usmv(double, const double*, double*, const double*, const unsigned long*, const unsigned long*,
       const unsigned long, const unsigned long,
-      const unsigned long, const unsigned long);
+      const unsigned long, const unsigned long, const unsigned long);
 
     //-------------- sequential_jacobi ---------------
     template <typename DT_>
@@ -207,9 +203,8 @@ namespace Dune
     void sequential_jacobi(const DT_ * v, const DT_ * d, DT_ * v_new,
         const DT_ * data, const unsigned long * cs, const unsigned long * col,
         const unsigned long rows, const unsigned long rows_per_chunk,
-        const unsigned long chunks, const unsigned long allocated_size)
+        const unsigned long chunks, const unsigned long allocated_size, const unsigned long blocksize)
     {
-      unsigned long blocksize(128);
       dim3 grid;
       dim3 block;
       block.x = blocksize;
@@ -219,9 +214,9 @@ namespace Dune
 
     template void sequential_jacobi(const float*, const float*, float*, const float*, const unsigned long*, const unsigned long*,
       const unsigned long, const unsigned long,
-      const unsigned long, const unsigned long);
+      const unsigned long, const unsigned long, const unsigned long);
     template void sequential_jacobi(const double*, const double*, double*, const double*, const unsigned long*, const unsigned long*,
       const unsigned long, const unsigned long,
-      const unsigned long, const unsigned long);
+      const unsigned long, const unsigned long, const unsigned long);
   }
 }

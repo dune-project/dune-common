@@ -18,9 +18,8 @@ namespace Dune
     }
 
     template <typename DT_>
-    DT_ * sum(DT_ * r, const DT_* x, const DT_ * y, const unsigned long size)
+    DT_ * sum(DT_ * r, const DT_* x, const DT_ * y, const unsigned long size, const unsigned long blocksize)
     {
-      unsigned long blocksize(128);
       dim3 grid;
       dim3 block;
       block.x = blocksize;
@@ -29,8 +28,8 @@ namespace Dune
       return r;
     }
 
-    template float* sum(float*, const float*, const float*, unsigned long);
-    template double* sum(double*, const double*, const double*, unsigned long);
+    template float* sum(float*, const float*, const float*, const unsigned long, const unsigned long);
+    template double* sum(double*, const double*, const double*, const unsigned long, const unsigned long);
 
     //-------------- difference ---------------
     template <typename DT_>
@@ -43,9 +42,8 @@ namespace Dune
     }
 
     template <typename DT_>
-    DT_ * difference(DT_ * r, const DT_* x, const DT_ * y, const unsigned long size)
+    DT_ * difference(DT_ * r, const DT_* x, const DT_ * y, const unsigned long size, const unsigned long blocksize)
     {
-      unsigned long blocksize(128);
       dim3 grid;
       dim3 block;
       block.x = blocksize;
@@ -54,8 +52,8 @@ namespace Dune
       return r;
     }
 
-    template float* difference(float*, const float*, const float*, unsigned long);
-    template double* difference(double*, const double*, const double*, unsigned long);
+    template float* difference(float*, const float*, const float*, const unsigned long, const unsigned long);
+    template double* difference(double*, const double*, const double*, const unsigned long, const unsigned long);
 
     //-------------- element_product ---------------
     template <typename DT_>
@@ -68,9 +66,8 @@ namespace Dune
     }
 
     template <typename DT_>
-    DT_ * element_product(DT_ * r, const DT_* x, const DT_ * y, const unsigned long size)
+    DT_ * element_product(DT_ * r, const DT_* x, const DT_ * y, const unsigned long size, const unsigned long blocksize)
     {
-      unsigned long blocksize(128);
       dim3 grid;
       dim3 block;
       block.x = blocksize;
@@ -79,8 +76,8 @@ namespace Dune
       return r;
     }
 
-    template float* element_product(float*, const float*, const float*, unsigned long);
-    template double* element_product(double*, const double*, const double*, unsigned long);
+    template float* element_product(float*, const float*, const float*, const unsigned long, const unsigned long);
+    template double* element_product(double*, const double*, const double*, const unsigned long, const unsigned long);
 
     //-------------- element_division ---------------
     template <typename DT_>
@@ -93,9 +90,8 @@ namespace Dune
     }
 
     template <typename DT_>
-    DT_ * element_division(DT_ * r, const DT_* x, const DT_ * y, const unsigned long size)
+    DT_ * element_division(DT_ * r, const DT_* x, const DT_ * y, const unsigned long size, const unsigned long blocksize)
     {
-      unsigned long blocksize(128);
       dim3 grid;
       dim3 block;
       block.x = blocksize;
@@ -104,8 +100,8 @@ namespace Dune
       return r;
     }
 
-    template float* element_division(float*, const float*, const float*, unsigned long);
-    template double* element_division(double*, const double*, const double*, unsigned long);
+    template float* element_division(float*, const float*, const float*, const unsigned long, const unsigned long);
+    template double* element_division(double*, const double*, const double*, const unsigned long, const unsigned long);
 
     //-------------- sum_scalar ---------------
     template <typename DT_>
@@ -118,9 +114,8 @@ namespace Dune
     }
 
     template <typename DT_>
-    DT_ * sum_scalar(DT_ * r, const DT_* x, DT_ y, const unsigned long size)
+    DT_ * sum_scalar(DT_ * r, const DT_* x, DT_ y, const unsigned long size, const unsigned long blocksize)
     {
-      unsigned long blocksize(128);
       dim3 grid;
       dim3 block;
       block.x = blocksize;
@@ -129,8 +124,8 @@ namespace Dune
       return r;
     }
 
-    template float* sum_scalar(float*, const float*, float, unsigned long);
-    template double* sum_scalar(double*, const double*, double, unsigned long);
+    template float* sum_scalar(float*, const float*, float, const unsigned long, const unsigned long);
+    template double* sum_scalar(double*, const double*, double, const unsigned long, const unsigned long);
 
     //-------------- difference_scalar ---------------
     template <typename DT_>
@@ -143,9 +138,8 @@ namespace Dune
     }
 
     template <typename DT_>
-    DT_ * difference_scalar(DT_ * r, const DT_* x, DT_ y, const unsigned long size)
+    DT_ * difference_scalar(DT_ * r, const DT_* x, DT_ y, const unsigned long size, const unsigned long blocksize)
     {
-      unsigned long blocksize(128);
       dim3 grid;
       dim3 block;
       block.x = blocksize;
@@ -154,8 +148,8 @@ namespace Dune
       return r;
     }
 
-    template float* difference_scalar(float*, const float*, float, unsigned long);
-    template double* difference_scalar(double*, const double*, double, unsigned long);
+    template float* difference_scalar(float*, const float*, float, const unsigned long, const unsigned long);
+    template double* difference_scalar(double*, const double*, double, const unsigned long, const unsigned long);
 
     //-------------- product_scalar ---------------
     template <typename DT_>
@@ -168,9 +162,8 @@ namespace Dune
     }
 
     template <typename DT_>
-    DT_ * product_scalar(DT_ * r, const DT_* x, DT_ y, const unsigned long size)
+    DT_ * product_scalar(DT_ * r, const DT_* x, DT_ y, const unsigned long size, const unsigned long blocksize)
     {
-      unsigned long blocksize(128);
       dim3 grid;
       dim3 block;
       block.x = blocksize;
@@ -179,8 +172,8 @@ namespace Dune
       return r;
     }
 
-    template float* product_scalar(float*, const float*, float, unsigned long);
-    template double* product_scalar(double*, const double*, double, unsigned long);
+    template float* product_scalar(float*, const float*, float, const unsigned long, const unsigned long);
+    template double* product_scalar(double*, const double*, double, const unsigned long, const unsigned long);
 
     //-------------- division_scalar ---------------
     template <typename DT_>
@@ -193,9 +186,8 @@ namespace Dune
     }
 
     template <typename DT_>
-    DT_ * division_scalar(DT_ * r, const DT_* x, DT_ y, const unsigned long size)
+    DT_ * division_scalar(DT_ * r, const DT_* x, DT_ y, const unsigned long size, const unsigned long blocksize)
     {
-      unsigned long blocksize(128);
       dim3 grid;
       dim3 block;
       block.x = blocksize;
@@ -204,8 +196,8 @@ namespace Dune
       return r;
     }
 
-    template float* division_scalar(float*, const float*, float, unsigned long);
-    template double* division_scalar(double*, const double*, double, unsigned long);
+    template float* division_scalar(float*, const float*, float, const unsigned long, const unsigned long);
+    template double* division_scalar(double*, const double*, double, const unsigned long, const unsigned long);
 
     //-------------- axpy ---------------
     template <typename DT_>
@@ -218,9 +210,8 @@ namespace Dune
     }
 
     template <typename DT_>
-    DT_ * axpy(DT_ * r, const DT_* y, DT_ a, const DT_ * x, const unsigned long size)
+    DT_ * axpy(DT_ * r, const DT_* y, DT_ a, const DT_ * x, const unsigned long size, const unsigned long blocksize)
     {
-      unsigned long blocksize(128);
       dim3 grid;
       dim3 block;
       block.x = blocksize;
@@ -229,8 +220,8 @@ namespace Dune
       return r;
     }
 
-    template float* axpy(float*, const float*, float, const float*, unsigned long);
-    template double* axpy(double*, const double*, double, const double*, unsigned long);
+    template float* axpy(float*, const float*, float, const float*, const unsigned long, const unsigned long);
+    template double* axpy(double*, const double*, double, const double*, const unsigned long, const unsigned long);
 
     //-------------- dot ---------------
     float device_dot(const float * x, const float * y, const unsigned long size)
