@@ -1,5 +1,6 @@
 #include <cuda.h>
 #include <dune/common/memory/cuda_allocator.hh>
+#include <dune/common/exceptions.hh>
 
 using namespace Dune;
 using namespace Dune::Memory;
@@ -11,7 +12,7 @@ typename std::allocator<DT_>::pointer CudaAllocator<DT_>::allocate(size_t n, typ
   void * r;
   cudaError_t status = cudaMalloc(&r, n * sizeof(DT_));
   if (status != cudaSuccess)
-    throw new std::bad_alloc;
+    DUNE_THROW(OutOfMemoryError,"cudaMalloc could not allocate " << n * sizeof(DT_) << " bytes!");
 
   return (DT_*)r;
 }
