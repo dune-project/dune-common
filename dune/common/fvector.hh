@@ -240,6 +240,11 @@ namespace Dune {
       _data = x[0];
     }
 
+    //! copy constructor
+    FieldVector ( const FieldVector &other )
+      : _data( other._data )
+    {}
+
     //! Assignment operator for scalar
     inline FieldVector& operator= (const K& k)
     {
