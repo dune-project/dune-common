@@ -12,6 +12,7 @@
  * For the DUNE core modules you need to use the following module names:
  *  - DUNE_COMMON for dune-common
  *  - DUNE_GRID for dune-grid
+ *  - DUNE_GEOMETRY for dune-geometry
  *  - DUNE_ISTL for dune-istl
  *  - DUNE_LOCALFUNCTIONS for dune-localfunctions
  *
@@ -30,6 +31,7 @@
  * For the DUNE core modules you need to use the following module names:
  *  - DUNE_COMMON for dune-common
  *  - DUNE_GRID for dune-grid
+ *  - DUNE_GEOMETRY for dune-geometry
  *  - DUNE_ISTL for dune-istl
  *  - DUNE_LOCALFUNCTIONS for dune-localfunctions
  *
@@ -47,6 +49,7 @@
  * For the DUNE core modules you need to use the following module names:
  *  - DUNE_COMMON for dune-common
  *  - DUNE_GRID for dune-grid
+ *  - DUNE_GEOMETRY for dune-geometry
  *  - DUNE_ISTL for dune-istl
  *  - DUNE_LOCALFUNCTIONS for dune-localfunctions
  *
@@ -64,6 +67,7 @@
  * For the DUNE core modules you need to use the following module names:
  *  - DUNE_COMMON for dune-common
  *  - DUNE_GRID for dune-grid
+ *  - DUNE_GEOMETRY for dune-geometry
  *  - DUNE_ISTL for dune-istl
  *  - DUNE_LOCALFUNCTIONS for dune-localfunctions
  *
@@ -81,6 +85,7 @@
  * For the DUNE core modules you need to use the following module names:
  *  - DUNE_COMMON for dune-common
  *  - DUNE_GRID for dune-grid
+ *  - DUNE_GEOMETRY for dune-geometry
  *  - DUNE_ISTL for dune-istl
  *  - DUNE_LOCALFUNCTIONS for dune-localfunctions
  *
@@ -100,6 +105,7 @@
  * For the DUNE core modules you need to use the following module names:
  *  - DUNE_COMMON for dune-common
  *  - DUNE_GRID for dune-grid
+ *  - DUNE_GEOMETRY for dune-geometry
  *  - DUNE_ISTL for dune-istl
  *  - DUNE_LOCALFUNCTIONS for dune-localfunctions
  *
@@ -116,6 +122,7 @@
  * For the DUNE core modules you need to use the following module names:
  *  - DUNE_COMMON for dune-common
  *  - DUNE_GRID for dune-grid
+ *  - DUNE_GEOMETRY for dune-geometry
  *  - DUNE_ISTL for dune-istl
  *  - DUNE_LOCALFUNCTIONS for dune-localfunctions
  *
