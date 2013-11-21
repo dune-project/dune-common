@@ -764,7 +764,7 @@ def create_cmake_dirs_and_file(dirname, module_name):
            'set(@DUNE_MOD_NAME@_LIBRARIES "")\n',
            'set(@DUNE_MOD_NAME@_DEPENDS "@DUNE_DEPENDS@")\n',
            'set(@DUNE_MOD_NAME@_SUGGESTS "@DUNE_SUGGESTS@")\n',
-           'set(@DUNE_MOD_NAME@_MODULE_PATH "@DUNE_INSTALL_MODULEDIR@")\n',
+           'set(@DUNE_MOD_NAME@_MODULE_PATH "\${_prefix}/@DUNE_INSTALL_MODULEDIR@")\n',
            'endif(NOT @DUNE_MOD_NAME@_FOUND)\n']
     text = ''.join(lines)
     output=open(os.path.join(dirs['pkg'], module_name+'-config.cmake.in'), 'w')
