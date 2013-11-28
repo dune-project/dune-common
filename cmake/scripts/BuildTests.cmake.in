@@ -4,6 +4,5 @@ MACRO(get_directory_test_target _target _dir)
 ENDMACRO(get_directory_test_target _target _dir)
 
 get_directory_test_target(_build_test_target "@CMAKE_CURRENT_BINARY_DIR@")
-message("binary_dir=@CMAKE_CURRENT_BINARY_DIR@")
 execute_process(COMMAND @CMAKE_COMMAND@ --build @CMAKE_BINARY_DIR@ 
   --target ${_build_test_target})
