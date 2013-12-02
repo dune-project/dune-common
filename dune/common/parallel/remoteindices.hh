@@ -693,7 +693,6 @@ namespace Dune {
 
     typedef SLList<GlobalIndex,Allocator> GlobalList;
     typedef typename GlobalList::ModifyIterator GlobalModifyIterator;
-    RemoteIndices<ParallelIndexSet>* remoteIndices_;
     RemoteIndexList* rList_;
     const ParallelIndexSet* indexSet_;
     GlobalList* glist_;
