@@ -23,6 +23,8 @@ dune_common_options_am2cmake()
     echo $PARAMS | grep \\-\\-enable-parallel > /dev/null
     if test "$?" -ne 0 ; then
 	CMAKE_PARAMS="$CMAKE_PARAMS -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE"
+    else
+        CMAKE_PARAMS="$CMAKE_PARAMS -DUSE_MPI=ON"
     fi
     # Check for --disable-gxx0xcheck
     echo $PARAMS | grep \\-\\-disable-gxx0xcheck > /dev/null
