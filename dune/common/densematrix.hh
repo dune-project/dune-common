@@ -88,15 +88,15 @@ namespace Dune
   {
     template< class DenseMatrix, class RHS,
               bool primitive = Conversion< RHS, typename DenseMatrix::field_type >::exists >
-    struct DenseMatrixAssignerImplementation;
+    class DenseMatrixAssignerImplementation;
 
     template< class DenseMatrix, class RHS >
-    struct DenseMatrixAssignerImplementation< DenseMatrix, RHS, true >
+    class DenseMatrixAssignerImplementation< DenseMatrix, RHS, true >
     {
+    public:
       static void apply ( DenseMatrix &denseMatrix, const RHS &rhs )
       {
         typedef typename DenseMatrix::field_type field_type;
-        typedef typename DenseMatrix::size_type size_type;
 
         const field_type value = static_cast< field_type >( rhs );
 
