@@ -688,7 +688,7 @@ namespace Dune {
     typedef typename GlobalList::ModifyIterator GlobalModifyIterator;
     RemoteIndexList* rList_;
     const ParallelIndexSet* indexSet_;
-    GlobalList* glist_;
+    GlobalList glist_;
     ModifyIterator iter_;
     GlobalModifyIterator giter_;
     ConstIterator end_;
