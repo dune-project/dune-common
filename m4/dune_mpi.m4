@@ -157,6 +157,28 @@ AC_DEFUN([DUNE_MPI],[
           with_mpi=no]
     )
 
+    AC_MSG_CHECKING([whether MPI is recent enough (MPI-2.1)])
+    # check MPI version and issue a deprecation warning if MPI is older than 2.1
+    # TODO: Replace with error after 2.3 release
+    AC_LANG_PUSH([C++])
+    AC_COMPILE_IFELSE(
+      [AC_LANG_SOURCE(
+        [ #include <mpi.h>
+          #if !((MPI_VERSION > 2) || (MPI_VERSION == 2 && MPI_SUBVERSION >= 1))
+          fail with a horribe compilation error due to old MPI version
+          #endif
+          int main (int argc, char** argv) {
+          MPI_Init(&argc, &argv);
+          MPI_Finalize(); }])],
+        [ AC_MSG_RESULT([yes]) ],
+        [ AC_MSG_RESULT([no])
+          AC_MSG_WARN([You are using a very old version of MPI that
+          is not compatible with the MPI-2.1 standard. Support for your
+          version of MPI is deprecated and will be removed after the next
+          release!])
+          mpi_deprecated=yes]
+    )
+
     AS_IF([test "x$mpiruntest" != "xyes"],[
       AC_MSG_WARN([Disabled test whether running with $dune_MPI_VERSION works.])
     ],[
@@ -210,7 +232,11 @@ AC_DEFUN([DUNE_MPI],[
 
   AM_CONDITIONAL(MPI, [test "x$with_mpi" != "xno"])
 
-  DUNE_ADD_SUMMARY_ENTRY([MPI],[$with_mpi])
+  AS_IF([test "x$mpi_deprecated" == "xyes"],[
+    DUNE_ADD_SUMMARY_ENTRY([MPI],[$with_mpi (deprecated MPI version)])
+    ],[
+    DUNE_ADD_SUMMARY_ENTRY([MPI],[$with_mpi])
+    ])
 
   AC_LANG_POP
 ])
