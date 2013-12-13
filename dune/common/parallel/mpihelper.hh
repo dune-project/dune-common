@@ -129,6 +129,7 @@ namespace Dune
      */
     DUNE_EXPORT static FakeMPIHelper& instance(int argc, char** argv)
     {
+      (void)argc; (void)argv;
       // create singleton instance
       static FakeMPIHelper singleton;
       return singleton;
