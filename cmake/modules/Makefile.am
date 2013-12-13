@@ -1,7 +1,10 @@
 MODULES = \
+  AddGMPFlags.cmake        \
+  AddMETISFlags.cmake      \
+  AddParMETISFlags.cmake   \
+  AddUMFPackFlags.cmake    \
   CheckCXX11Features.cmake \
   CheckSharedPtr.cmake     \
-  AddUMFPackFlags.cmake    \
   DuneBoost.cmake \
   DuneCommonMacros.cmake  \
   DuneCxaDemangle.cmake   \
@@ -22,6 +25,7 @@ MODULES = \
   FindUMFPack.cmake       \
   Headercheck.cmake       \
   LanguageSupport.cmake   \
+  UseInkscape.cmake       \
   UseLATEX.cmake
 
 modulesdir = $(datadir)/cmake/modules

@@ -4,6 +4,8 @@ SUBDIRS = figures
 
 MPIPROGRAMS = indexset poosc08 poosc08_test
 
+EXTRA_DIST = CMakeLists.txt
+
 # programs just to build when "make check" is used
 check_PROGRAMS = $(MPIPROGRAMS)
 # list of tests to run (indicestest is special case)
@@ -11,7 +13,7 @@ TESTS = $(MPIPROGRAMS)
 
 if BUILD_DOCS
   DOCFILES = communication.pdf
-  EXTRA_DIST = $(DOCFILES)
+  EXTRA_DIST += $(DOCFILES)
   EXTRAINSTALL = $(DOCFILES)
 endif
 
