@@ -95,7 +95,7 @@ public:
    * @brief Get the size of the buffer.
    * @return The number of elements the buffer can hold.
    */
-  std::size_t size()
+  std::size_t size() const
   {
     return size_;
   }
@@ -480,11 +480,6 @@ public:
   void gather(B& buf, int  i)
   {
     buf.write(data_.size(i));
-  }
-  template<class B>
-  void scatter(B& buf, std::size_t i, std::size_t n)
-  {
-    buf.read(&(trackers_[index_].size()));
   }
   void setReceivingIndex(std::size_t i)
   {
