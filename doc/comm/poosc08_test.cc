@@ -43,7 +43,7 @@ struct CopyData {
 
 
 template<class T>
-void doCalculations(T& t){}
+void doCalculations(T&){}
 
 #if HAVE_MPI
 void test()

@@ -1232,7 +1232,7 @@ namespace Dune
 
   template<class Data>
   inline int BufferedCommunicator::MessageSizeCalculator<Data,SizeOne>::operator()
-    (const Data& data, const InterfaceInformation& info) const
+    (const Data&, const InterfaceInformation& info) const
   {
     return operator()(info);
   }
@@ -1285,7 +1285,7 @@ namespace Dune
 
 
   template<class Data, class GatherScatter, bool FORWARD>
-  inline void BufferedCommunicator::MessageGatherer<Data,GatherScatter,FORWARD,SizeOne>::operator()(const InterfaceMap& interfaces, const Data& data, Type* buffer, size_t bufferSize) const
+  inline void BufferedCommunicator::MessageGatherer<Data,GatherScatter,FORWARD,SizeOne>::operator()(const InterfaceMap& interfaces, const Data& data, Type* buffer, size_t) const
   {
     typedef typename InterfaceMap::const_iterator
     const_iterator;

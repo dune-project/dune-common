@@ -65,6 +65,7 @@ namespace Dune
     //! deallocate n objects of type T at address p
     void deallocate(pointer p, size_type n)
     {
+      (void)n;
       std::free(p);
     }
 
