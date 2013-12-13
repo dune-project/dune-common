@@ -17,7 +17,6 @@ DOCFILES_EXTRA = example.opts
 
 EXTRA_DIST = CMakeLists.txt $(PAGES) example.opts
 
-man_MANS = dunecontrol.1
 dist_man_MANS = dunecontrol.1
 
 # include rules for wml -> html transformation
