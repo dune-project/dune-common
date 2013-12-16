@@ -262,7 +262,6 @@ namespace Dune
   {
     array<T,n> r;
     r.fill(t);
-    std::cout << "test" << std::endl;
 #if HAVE_RVALUE_REFERENCES
     return std::move(r);
 #else
