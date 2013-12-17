@@ -40,6 +40,7 @@ struct MyDataHandle
     }
     std::size_t size(int i)
     {
+        DUNE_UNUSED_PARAMETER(i);
         return 3;
     }
 };

@@ -9,6 +9,7 @@
 #include <vector>
 #include <map>
 #include <functional>
+#include <dune/common/unused.hh>
 #include "interface.hh"
 #include "mpitraits.hh"
 
@@ -474,6 +475,7 @@ public:
   }
   std::size_t size(std::size_t i)
   {
+    DUNE_UNUSED_PARAMETER(i);
     return 1;
   }
   template<class B>

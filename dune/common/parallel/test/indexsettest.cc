@@ -77,7 +77,7 @@ int testDeleteIndices()
   return ret;
 }
 
-int main(int argc, char **argv)
+int main(int, char **)
 {
   std::exit(testDeleteIndices());
 }

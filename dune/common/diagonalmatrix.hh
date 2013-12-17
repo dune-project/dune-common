@@ -20,6 +20,7 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/genericiterator.hh>
 #include <dune/common/typetraits.hh>
+#include <dune/common/unused.hh>
 
 
 namespace Dune {
@@ -696,6 +697,8 @@ namespace Dune {
 #ifdef DUNE_FMatrix_WITH_CHECKING
       if (i!=row_)
         DUNE_THROW(FMatrixError,"index is not contained in pattern");
+#else
+      DUNE_UNUSED_PARAMETER(i);
 #endif
       return *p_;
     }

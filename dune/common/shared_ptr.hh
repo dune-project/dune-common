@@ -233,7 +233,7 @@ namespace Dune
   }
 
   template<class T>
-  inline shared_ptr<T>::shared_ptr(nullptr_t n)
+  inline shared_ptr<T>::shared_ptr(nullptr_t)
   {
     rep_   = 0;
     count_ = 0;
@@ -487,7 +487,7 @@ namespace Dune
   template<class T>
   struct null_deleter
   {
-    void operator() (T* p) const {}
+    void operator() (T*) const {}
   };
 
   /**

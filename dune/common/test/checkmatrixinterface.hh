@@ -152,13 +152,13 @@ namespace CheckMatrixInterface
     typedef Dune::FieldVector< K, rows > range_type;
 
     template< class Matrix >
-    static domain_type domain ( const Matrix &matrix, value_type v = value_type() )
+    static domain_type domain ( const Matrix &, value_type v = value_type() )
     {
       return domain_type( v );
     }
 
     template< class Matrix >
-    static range_type range ( const Matrix &matrix, value_type v = value_type() )
+    static range_type range ( const Matrix &, value_type v = value_type() )
     {
       return range_type( v );
     }
@@ -199,9 +199,9 @@ namespace CheckMatrixInterface
   template< class Matrix, class Traits >
   struct CheckIfSquareMatrix< Matrix, Traits, false >
   {
-    static void apply ( const Matrix &matrix ) {}
+    static void apply ( const Matrix &) {}
 
-    static void apply ( Matrix &matrix ) {}
+    static void apply ( Matrix &) {}
   };
 
   template< class Matrix, class Traits >

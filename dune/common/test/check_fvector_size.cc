@@ -3,7 +3,7 @@
 #include <config.h>
 #include <dune/common/dynvector.hh>
 
-int main(int argc, char * argv[])
+int main(int, char **)
 {
 
   Dune::DynamicVector<double> one(1);
