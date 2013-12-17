@@ -284,7 +284,7 @@ public:
   }
   /**
    * @brief Creates a communicator with the default maximum buffer size.
-   * @param interface The communication interface.
+   * @param inf The communication interface.
    */
   VariableSizeCommunicator(const Interface& inf)
   : maxBufferSize_(32768), interface_(&inf.interfaces())
@@ -306,7 +306,7 @@ public:
   }
   /**
    * @brief Creates a communicator with the default maximum buffer size.
-   * @param interface The communication interface.
+   * @param inf The communication interface.
    */
   VariableSizeCommunicator(const Interface& inf)
   : maxBufferSize_(DUNE_PARALLEL_MAX_COMMUNICATION_BUFFER_SIZE),
@@ -317,6 +317,8 @@ public:
 #endif
   /**
   * @brief Creates a communicator with a specific maximum buffer size.
+  * @param comm The MPI communicator to use.
+  * @param inf The communication interface.
   * @param max_buffer_size The maximum buffer size allowed.
   */
   VariableSizeCommunicator(MPI_Comm comm, const InterfaceMap& inf, std::size_t max_buffer_size)
@@ -327,6 +329,7 @@ public:
 
   /**
   * @brief Creates a communicator with a specific maximum buffer size.
+  * @param inf The communication interface.
   * @param max_buffer_size The maximum buffer size allowed.
   */
   VariableSizeCommunicator(const Interface& inf, std::size_t max_buffer_size)
