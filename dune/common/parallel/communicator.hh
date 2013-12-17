@@ -898,6 +898,8 @@ namespace Dune
   template<class V>
   inline int CommPolicy<V>::getSize(const V& v, int index)
   {
+    DUNE_UNUSED_PARAMETER(v);
+    DUNE_UNUSED_PARAMETER(index);
     return 1;
   }
 

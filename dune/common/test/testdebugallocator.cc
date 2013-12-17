@@ -87,7 +87,7 @@ void new_delete_tests()
   z4 = 0;
 }
 
-int main(int argc, char** argv)
+int main(int, char**)
 {
   basic_tests();
   allocator_tests();

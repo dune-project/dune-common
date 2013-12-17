@@ -201,7 +201,7 @@ template<bool>
 struct TestSorting
 {
   template<class Container, typename IteratorTag>
-  static void testSorting(Container& c, IteratorTag tag)
+  static void testSorting(Container&, IteratorTag)
   {}
   template<class Container>
   static void testSorting(Container& c, std::random_access_iterator_tag)
@@ -253,7 +253,7 @@ int testIterator(Container& c, Opt& opt)
 }
 
 template<class Iter, class Opt>
-void testAssignment(Iter begin, Iter end, Opt& opt)
+void testAssignment(Iter begin, Iter end, Opt&)
 {
   //std::cout << "Assignment: ";
   for(; begin!=end; begin++)
