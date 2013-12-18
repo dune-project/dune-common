@@ -7,6 +7,6 @@ EXTRA_DIST = am2cmake.py CMakeLists.txt duneproject dunecontrol \
   xfail-compile-tests
 
 # ... and install some
-bin_SCRIPTS = dunedoxynize duneproject dunecontrol mpi-config dune-autogen
+bin_SCRIPTS = am2cmake.py dunedoxynize duneproject dunecontrol mpi-config dune-autogen
 
 include $(top_srcdir)/am/global-rules
