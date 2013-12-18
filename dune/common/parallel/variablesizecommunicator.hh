@@ -13,6 +13,18 @@
 #include "interface.hh"
 #include "mpitraits.hh"
 
+/**
+ * @addtogroup Common_Parallel
+ *
+ * @{
+ */
+/**
+ * @file
+ * @brief A communicator that only needs to know the number of elements per
+ * index at the sender side.
+ * @author Markus Blatt
+ * @}
+ */
 namespace Dune
 {
 
@@ -253,6 +265,11 @@ private:
 } // end unnamed namespace
 
 /**
+ * @addtogroup Common_Parallel
+ *
+ * @{
+ */
+/**
  * @brief A buffered communicator where the amount of data sent does not have to be known a priori.
  *
  * In contrast to BufferedCommunicator the amount of data is determined by the container
@@ -355,8 +372,10 @@ public:
    * // get the number of data items for an entry with index i
    * std::size_t size(std::size_t i);
    * // gather the data at index i
-   * void gather(MessageBuffer buf, std::size_t  i);
+   * template<class MessageBuffer>
+   * void gather(MessageBuffer& buf, std::size_t  i);
    * // scatter the n data items to index i
+   * template<class MessageBuffer>
    * void scatter(MessageBuffer& buf, std::size_t i, std::size_t n);
    * \endcode
    * @param handle A handle responsible for describing the data, gathering, and scattering it.
@@ -378,8 +397,10 @@ public:
    * // get the number of data items for an entry with index i
    * std::size_t size(std::size_t i);
    * // gather the data at index i
-   * void gather(MessageBuffer buf, std::size_t  i);
+   * template<class MessageBuffer>
+   * void gather(MessageBuffer& buf, std::size_t  i);
    * // scatter the n data items to index i
+   * template<class MessageBuffer>
    * void scatter(MessageBuffer& buf, std::size_t i, std::size_t n);
    * \endcode
    * @param handle A handle responsible for describing the data, gathering, and scattering it.
@@ -457,6 +478,7 @@ private:
   MPI_Comm communicator_;
 };
 
+/** @} */
 namespace
 {
 /**
