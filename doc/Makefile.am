@@ -11,7 +11,6 @@ BASEDIR=..
 EXTRAINSTALL=example.opts
 
 # install the html pages
-docdir=$(datadir)/doc/dune-common
 DOCFILES = $(PAGES)
 DOCFILES_EXTRA = example.opts
 
