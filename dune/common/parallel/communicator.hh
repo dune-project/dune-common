@@ -16,8 +16,8 @@
 
 namespace Dune
 {
-  /** @defgroup Common_Parallel Communication for distributed computing
-   * @ingroup Common
+  /** @defgroup Common_Parallel Parallel Computing based on Indexsets
+   * @ingroup ParallelCommunication
    * @brief Provides classes for syncing distributed indexed
    * data structures.
    *
@@ -75,9 +75,13 @@ namespace Dune
    *
    * Based on the information about the distributed index sets,  data
    * independent interfaces between different sets of the index sets
-   * can be setup using the class Interface.  For the actual communication it
-   * data dependant communicators can be setup using BufferedCommunicator or
-   * DatatypeCommunicator.
+   * can be setup using the class Interface.  For the actual communication
+   * data dependant communicators can be setup using BufferedCommunicator,
+   * DatatypeCommunicator VariableSizeCommunicator based on the interface
+   * information. In contrast to the former
+   * the latter is independant of the class Interface can work on a map
+   * from process number to a pair of index lists describing which local indices
+   * are send and received from that processs, respectively.
    */
   /** @addtogroup Common_Parallel
    *
