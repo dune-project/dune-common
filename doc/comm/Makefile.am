@@ -18,11 +18,11 @@ if BUILD_DOCS
 endif
 
 # setting like in dune-web
-CURDIR=doc/istl/comm
+CURDIR=doc/comm
 BASEDIR=../../..
 
 # install the docs
-docdir=$(datadir)/doc/dune-istl/comm
+docdir=$(datadir)/doc/dune-common/comm
 
 include $(top_srcdir)/am/latex
 include $(top_srcdir)/am/webstuff
