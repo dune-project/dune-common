@@ -54,7 +54,7 @@ $(DOXYGENTAG): FORCE Doxyfile $(DOXYGENHEADER) $(DOXYGENFOOTER)
 	DTAG=$(DOXYGENTAG); \
 	if test -f $(srcdir)/$(DOXYGENTAG); then DTAG=$(srcdir)/$(DOXYGENTAG); fi; \
 	if ! test -e "$$DTAG" || \
-	   test x"`find $(top_srcdir) \( $(DOXYGEN_DEPENDON) \) -a -cnewer $$DTAG -print`" != x; \
+	   test x"`find $(top_srcdir) \( $(DOXYGEN_DEPENDON) \) -a -cnewer $$DTAG -print | grep -v cmake/modules`" != x; \
 	then \
 	    echo Running doxygen. This may take a while... ; \
 	    $(DOXYGEN) Doxyfile > doxygen.log <&-; \
