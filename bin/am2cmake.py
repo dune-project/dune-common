@@ -24,7 +24,8 @@ class rem_proc:
                         "  if(${i} STREQUAL \"test\")\n",
                         "    set(opt EXCLUDE_FROM_ALL)\n",
                         "  endif(${i} STREQUAL \"test\")\n",
-                        "  add_subdirectory(${i} ${opt})\n"+self.foreach_end()])
+                        "  add_subdirectory(${i} ${opt})\n",
+                        "  unset(opt)\n"+self.foreach_end()])
         
     def process(self):
         s=""
