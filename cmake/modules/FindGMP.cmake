@@ -46,7 +46,7 @@ find_library(GMPXX_LIB gmpxx)
 # check if library works
 if(GMP_LIB AND GMPXX_LIB)
   include(CheckSymbolExists)
-  check_symbol_exists(__gmpz_abs ${GMP_LIB} GMPXX_LIB_WORKS)
+  check_library_exists(${GMP_LIB} __gmpz_abs "" GMPXX_LIB_WORKS)
 endif(GMP_LIB AND GMPXX_LIB)
 cmake_pop_check_state()
 
