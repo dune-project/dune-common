@@ -21,7 +21,7 @@ find_package(MPI)
 find_package(Threads)
 
 if(MPI_CXX_FOUND)
-  set(HAVE_MPI MPI_CXX_FOUND)
+  set(HAVE_MPI ${MPI_CXX_FOUND})
   # We do not support the CXX bindings of MPI
   set(MPI_DUNE_COMPILE_FLAGS ${MPI_C_COMPILE_FLAGS} CACHE STRING
     "Compile flags used by DUNE when compiling MPI programs")

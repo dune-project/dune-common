@@ -92,7 +92,7 @@ else(UMFPACK_FOUND)
 endif(UMFPACK_FOUND)
 
 #set HAVE_UMFPACK for config.h
-set(HAVE_UMFPACK UMFPACK_FOUND)
+set(HAVE_UMFPACK ${UMFPACK_FOUND})
 
 #add all umfpack related flags to ALL_PKG_FLAGS, this must happen regardless of a target using add_dune_umfpack_flags
 if(UMFPACK_FOUND)
