@@ -23,6 +23,7 @@ install(PROGRAMS
         dune_check_lib.m4
         dune_common.m4
         dune_compiler.m4
+        dune_cxa_demangle.m4
         dune_fortran.m4
         dune_deprecated.m4
         dune_deprecated_cppflags.m4
