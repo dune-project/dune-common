@@ -212,7 +212,7 @@ macro(dune_process_dependency_leafs modules versions is_required next_level_deps
     math(EXPR length "${mlength}-1")
     foreach(i RANGE 0 ${length})
       list(GET mmodules ${i} _mod)
-      find_dune_package(${_mod} ${REQUIRED})
+      find_dune_package(${_mod} ${is_required})
       if(${_mod}_MODULE_PATH)
         list(APPEND CMAKE_MODULE_PATH ${${_mod}_MODULE_PATH})
       endif(${_mod}_MODULE_PATH)
