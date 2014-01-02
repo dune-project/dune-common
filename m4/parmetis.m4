@@ -48,8 +48,8 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
 
     AC_MSG_RESULT(yes)
   else
-    if test -n "$PARMETIS" ; then
-      AC_MSG_ERROR(no)
+    if test -n "$PARMETIS" && test "$PARMETIS" != "no" ; then
+      AC_MSG_ERROR(ParMETIS was part of the configure call but could not be found in $PARMETIS)
     else
       AC_MSG_RESULT(no)
     fi
