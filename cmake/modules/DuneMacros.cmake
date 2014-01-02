@@ -214,7 +214,7 @@ macro(dune_process_dependency_leafs modules versions is_required next_level_deps
     math(EXPR length "${mlength}-1")
     foreach(i RANGE 0 ${length})
       list(GET mmodules ${i} _mod)
-      find_dune_package(${_mod} ${REQUIRED})
+      find_dune_package(${_mod} ${is_required})
       set(${_mod}_SEARCHED ON)
       if(NOT "${is_required}" STREQUAL "")
         set(${_mod}_REQUIRED ON)
