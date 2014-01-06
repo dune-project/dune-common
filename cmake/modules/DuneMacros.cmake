@@ -402,6 +402,9 @@ macro(dune_project)
   set(ProjectVersion         "${DUNE_MOD_VERSION}")
   set(ProjectMaintainerEmail "${DUNE_MAINTAINER}")
 
+  define_property(GLOBAL PROPERTY DUNE_MODULE_LIBRARIES
+        BRIEF_DOCS "List of libraries of the module. DO NOT EDIT!"
+        FULL_DOCS "List of libraries of the module. Used to generate CMake's package configuration files. DO NOT EDIT!")
   dune_create_dependency_tree()
 
   # assert the project names matches
@@ -593,15 +596,70 @@ macro(finalize_dune_project)
   #configure all headerchecks
   finalize_headercheck()
 
+  #create cmake-config files for installation tree
+  include(CMakePackageConfigHelpers)
+  include(GNUInstallDirs)
+  set(DOXYSTYLE_DIR ${CMAKE_INSTALL_DATAROOTDIR}/dune-common/doc/doxygen/)
+  set(SCRIPT_DIR ${CMAKE_INSTALL_DATAROOTDIR}/cmake/scripts)
+
+  if(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake.in)
+    # Generate a standard cmake package configuration file
+    file(WRITE ${PROJECT_BINARY_DIR}/CMakeFiles/${DUNE_MOD_NAME}-config.cmake.in
+"if(NOT @DUNE_MOD_NAME@_FOUND)
+@PACKAGE_INIT@
+
+#report other information
+set_and_check(@DUNE_MOD_NAME@_PREFIX \"\${PACKAGE_PREFIX_DIR}\")
+set_and_check(@DUNE_MOD_NAME@_INCLUDE_DIRS \"@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@\")
+set(@DUNE_MOD_NAME@_CXX_FLAGS \"@CMAKE_CXX_FLAGS@\")
+set(@DUNE_MOD_NAME@_CXX_FLAGS_DEBUG \"@CMAKE_CXX_FLAGS_DEBUG@\")
+set(@DUNE_MOD_NAME@_CXX_FLAGS_MINSIZEREL \"@CMAKE_CXX_FLAGS_MINSIZEREL@\")
+set(@DUNE_MOD_NAME@_CXX_FLAGS_RELEASE \"@CMAKE_CXX_FLAGS_RELEASE@\")
+set(@DUNE_MOD_NAME@_CXX_FLAGS_RELWITHDEBINFO \"@CMAKE_CXX_FLAGS_RELWITHDEBINFO@\")
+set(@DUNE_MOD_NAME@_DEPENDS \"@DUNE_DEPENDS@\")
+set(@DUNE_MOD_NAME@_SUGGESTS \"@DUNE_SUGGESTS@\")
+set(@DUNE_MOD_NAME@_MODULE_PATH \"@PACKAGE_DUNE_INSTALL_MODULEDIR@\")
+set(@DUNE_MOD_NAME@_LIBRARIES \"@DUNE_MODULE_LIBRARIES@\")
+#import the target
+if(@DUNE_MOD_NAME@_LIBRARIES)
+  get_filename_component(_dir \"\${CMAKE_CURRENT_LIST_FILE}\" PATH)
+  include(\"\${_dir}/@DUNE_MOD_NAME@-targets.cmake\")
+endif(@DUNE_MOD_NAME@_LIBRARIES)
+endif(NOT @DUNE_MOD_NAME@_FOUND)")
+      set(CONFIG_SOURCE_FILE ${PROJECT_BINARY_DIR}/CMakeFiles/${DUNE_MOD_NAME}-config.cmake.in)
+  else(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake.in)
+    set(CONFIG_SOURCE_FILE ${PROJECT_SOURCE_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake.in)
+  endif(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake.in)
+  get_property(DUNE_MODULE_LIBRARIES GLOBAL PROPERTY DUNE_MODULE_LIBRARIES)
+  configure_package_config_file(${CONFIG_SOURCE_FILE}
+    ${PROJECT_BINARY_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake
+    INSTALL_DESTINATION  lib/cmake/${DUNE_MOD_NAME}
+    PATH_VARS CMAKE_INSTALL_DATAROOTDIR DUNE_INSTALL_MODULEDIR CMAKE_INSTALL_INCLUDEDIR
+    DOXYSTYLE_DIR SCRIPT_DIR)
+
+
   #create cmake-config files for build tree
+  set(PACKAGE_CMAKE_INSTALL_INCLUDEDIR ${PROJECT_SOURCE_DIR})
+  set(PACKAGE_CMAKE_INSTALL_DATAROOTDIR ${PROJECT_BINARY_DIR})
+  set(PACKAGE_DOXYSTYLE_DIR ${PROJECT_SOURCE_DIR}/doc/doxygen)
+  set(PACKAGE_SCRIPT_DIR ${PROJECT_SOURCE_DIR}/cmake/scripts)
+  set(PACKAGE_DUNE_INSTALL_MODULEDIR ${PROJECT_SOURCE_DIR}/cmake/modules)
+  set(PACKAGE_PREFIX_DIR ${PROJECT_BINARY_DIR})
+  set(PACKAGE_INIT "# Set prefix to source dir
+set(PACKAGE_PREFIX_DIR ${PROJECT_SOURCE_DIR})
+macro(set_and_check _var _file)
+  set(\${_var} \"\${_file}\")
+  if(NOT EXISTS \"\${_file}\")
+    message(FATAL_ERROR \"File or directory \${_file} referenced by variable \${_var} does not exist !\")
+  endif()
+endmacro()")
   configure_file(
-    ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}-config.cmake.in
+    ${CONFIG_SOURCE_FILE}
     ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-config.cmake @ONLY)
 
-  #create cmake-config files for installation tree
-  configure_file(
-    ${PROJECT_SOURCE_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake.in
-    ${PROJECT_BINARY_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake @ONLY)
+  #configure_file(
+  #  ${PROJECT_SOURCE_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake.in
+  #  ${PROJECT_BINARY_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake @ONLY)
   list(LENGTH DEPENDS_MODULE mlength)
   math(EXPR len2 "${mlength}-1")
   if(mlength GREATER 0)
@@ -624,8 +682,23 @@ macro(finalize_dune_project)
     #file(APPEND ${PROJECT_BINARY_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake
     #  "\ninclude(${DUNE_MOD_NAME_CMAKE}Macros)\n")
   endif(${DUNE_MOD_NAME_CMAKE}_FOUND)
+  if(NOT EXISTS ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}-version.cmake.in)
+    file(WRITE ${PROJECT_BINARY_DIR}/CMakeFiles/${DUNE_MOD_NAME}-version.cmake.in
+"set(PACKAGE_VERSION \"@DUNE_MOD_VERSION@\")
+
+if(NOT \"\${PACKAGE_FIND_VERSION}\" VERSION_GREATER \"@DUNE_MOD_VERSION@\")
+  set (PACKAGE_VERSION_COMPATIBLE 1) # compatible with older
+  if (\"\${PACKAGE_FIND_VERSION}\" VERSION_EQUAL \"@DUNE_MOD_VERSION@\")
+    set(PACKAGE_VERSION_EXACT 1) #exact match for this version
+  endif()
+endif()
+")
+    set(CONFIG_VERSION_FILE ${PROJECT_BINARY_DIR}/CMakeFiles/${DUNE_MOD_NAME}-version.cmake.in)
+  else(NOT EXISTS ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}-version.cmake.in)
+    set(CONFIG_VERSION_FILE ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}-version.cmake.in)
+  endif(NOT EXISTS ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}-version.cmake.in)
   configure_file(
-    ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}-version.cmake.in
+    ${CONFIG_VERSION_FILE}
     ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-version.cmake @ONLY)
 
   #install dune.module file
@@ -749,6 +822,8 @@ macro(dune_add_library basename)
     dune_expand_object_libraries(DUNE_LIB_SOURCES DUNE_LIB_ADD_LIBS DUNE_LIB_COMPILE_FLAGS)
     #create lib
     add_library(${basename} ${DUNE_LIB_SOURCES})
+    get_property(_prop GLOBAL PROPERTY DUNE_MODULE_LIBRARIES)
+    set_property(GLOBAL PROPERTY DUNE_MODULE_LIBRARIES ${_prop} ${basename})
     # link with specified libraries.
     if(DUNE_LIB_ADD_LIBS)
       dune_target_link_libraries(${basename} ${DUNE_LIB_ADD_LIBS})
@@ -810,7 +885,7 @@ macro(dune_add_library basename)
       install(TARGETS ${_created_libs}
         EXPORT ${DUNE_MOD_NAME}-targets DESTINATION lib)
       install(EXPORT ${DUNE_MOD_NAME}-targets
-        DESTINATION lib/cmake)
+        DESTINATION lib/cmake/${DUNE_MOD_NAME})
 
       # export libraries for use in build tree
       export(TARGETS ${_created_libs} ${_append}

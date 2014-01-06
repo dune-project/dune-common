@@ -730,8 +730,7 @@ def create_cmake_dirs_and_file(dirname, module_name):
                        module_name.capitalize())
     print 'module_name %s' % module_name
     print 'upper_name %s' % upper_name
-    dirs={'modules': os.path.join(dirname, 'cmake', 'modules'),
-          'pkg': os.path.join(dirname, 'cmake', 'pkg')}
+    dirs={'modules': os.path.join(dirname, 'cmake', 'modules')}
     cdirs=[]
     for dir in dirs.values():
         try:
@@ -744,46 +743,6 @@ def create_cmake_dirs_and_file(dirname, module_name):
     output=open(os.path.join(dirs['modules'], upper_name+'Macros.cmake'), 'w')
     output.write(text)
     output.close()
-    lines=['if(NOT @DUNE_MOD_NAME@_FOUND)\n',
-           '#compute installation prefix relative to this file\n',
-           'get_filename_component(_dir "${CMAKE_CURRENT_LIST_FILE}" PATH)\n',
-           'get_filename_component(_prefix "${_dir}/../../.." ABSOLUTE)\n',
-           '\n',
-           '#import the target\n',
-           'if(EXISTS "${_prefix}/lib/cmake/@DUNE_MOD_NAME@-targets.cmake")\n',
-           '  include("${_prefix}/lib/cmake/@DUNE_MOD_NAME@-targets.cmake")\n',
-           'endif(EXISTS "${_prefix}/lib/cmake/@DUNE_MOD_NAME@-targets.cmake")\n',
-           '\n',
-           '#report other information\n',
-           'set(@DUNE_MOD_NAME@_PREFIX "${_prefix}")\n',
-           'set(@DUNE_MOD_NAME@_INCLUDE_DIRS "${_prefix}/include")\n',
-           'set(@DUNE_MOD_NAME@_CXX_FLAGS "@CMAKE_CXX_FLAGS@")\n',
-           'set(@DUNE_MOD_NAME@_CXX_FLAGS_DEBUG "@CMAKE_CXX_FLAGS_DEBUG@")\n',
-           'set(@DUNE_MOD_NAME@_CXX_FLAGS_MINSIZEREL "@CMAKE_CXX_FLAGS_MINSIZEREL@")\n',
-           'set(@DUNE_MOD_NAME@_CXX_FLAGS_RELEASE "@CMAKE_CXX_FLAGS_RELEASE@")\n',
-           'set(@DUNE_MOD_NAME@_CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@")\n',
-           'set(@DUNE_MOD_NAME@_LIBRARIES "")\n',
-           'set(@DUNE_MOD_NAME@_DEPENDS "@DUNE_DEPENDS@")\n',
-           'set(@DUNE_MOD_NAME@_SUGGESTS "@DUNE_SUGGESTS@")\n',
-           'set(@DUNE_MOD_NAME@_MODULE_PATH "\${_prefix}/@DUNE_INSTALL_MODULEDIR@")\n',
-           'endif(NOT @DUNE_MOD_NAME@_FOUND)\n']
-    text = ''.join(lines)
-    output=open(os.path.join(dirs['pkg'], module_name+'-config.cmake.in'), 'w')
-    output.write(text)
-    output.close()
-    l=[lines[0]]
-    l.extend([lines[5], 
-              'if(EXISTS "@CMAKE_BINARY_DIR@/@DUNE_MOD_NAME@-targets.cmake")\n'
-              '  include("@CMAKE_BINARY_DIR@/@DUNE_MOD_NAME@-targets.cmake")\n',
-              'endif(EXISTS "@CMAKE_BINARY_DIR@/@DUNE_MOD_NAME@-targets.cmake")\n\n',
-              '#report other information\n',
-              'set(@DUNE_MOD_NAME@_PREFIX "@CMAKE_SOURCE_DIR@")\n',
-              'set(@DUNE_MOD_NAME@_INCLUDE_DIRS "@CMAKE_SOURCE_DIR@")\n'])
-    l.extend(lines[13:])
-    l[-2]='set(@DUNE_MOD_NAME@_MODULE_PATH "@CMAKE_SOURCE_DIR@/cmake/modules")\n'
-    output=open(os.path.join(dirname, module_name+'-config.cmake.in'), 'w')
-    output.write(''.join(l))
-    output.close()
     # CMakeLists.txt in module directory
     # list files *.cmake
     all_cmake_files=[]
@@ -792,16 +751,6 @@ def create_cmake_dirs_and_file(dirname, module_name):
     lines=['set(modules \n  ', '\n  '.join(all_cmake_files), '\n)\n']
     output=open(os.path.join(dirs['modules'], 'CMakeLists.txt'), 'w')
     lines.extend(['install(FILES "${modules}" DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules)\n'])
-    output.write(''.join(lines))
-    output.close()
-    output=open(os.path.join(dirname, module_name+'-version.cmake.in'), 'w')
-    lines=['set(PACKAGE_VERSION "@DUNE_MOD_VERSION@")\n\n',
-           'if(NOT "${PACKAGE_FIND_VERSION}" VERSION_GREATER "@DUNE_MOD_VERSION@")\n',
-           '  set (PACKAGE_VERSION_COMPATIBLE 1) # compatible with older\n',
-           '  if ("${PACKAGE_FIND_VERSION}" VERSION_EQUAL "@DUNE_MOD_VERSION@")\n'
-           '    set(PACKAGE_VERSION_EXACT 1) #exact match for this version\n',
-           '  endif()\n',
-           'endif()\n']
     output.write(''.join(lines))
     output.close()
 
