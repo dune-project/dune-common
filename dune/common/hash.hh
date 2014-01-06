@@ -4,6 +4,7 @@
 #define DUNE_COMMON_HASH_HH
 
 #include <dune/common/typetraits.hh>
+#include <dune/common/static_assert.hh>
 
 #if HAVE_STD_HASH
 #include <functional>
@@ -338,10 +339,12 @@ namespace Dune {
   // hash_combiner has to be specialized for the size (in bytes) of std::size_t.
   // Specialized versions should provide a method
   //
-  // template <typename T>
-  // void operator()(std::size_t& seed, const T& arg) const;
+  // template <typename typeof_size_t, typename T>
+  // void operator()(typeof_size_t& seed, const T& arg) const;
   //
   // that will be called by the interface function hash_combine() described further below.
+  // The redundant template parameter typeof_size_t is needed to avoid warnings for the
+  // unused 64-bit specialization on 32-bit systems.
   //
   // There is no default implementation!
   template<int sizeof_size_t>
@@ -353,9 +356,11 @@ namespace Dune {
   struct hash_combiner<8>
   {
 
-    template<typename T>
-    void operator()(std::size_t& seed, const T& arg) const
+    template<typename typeof_size_t, typename T>
+    void operator()(typeof_size_t& seed, const T& arg) const
     {
+      dune_static_assert(sizeof(typeof_size_t)==8, "hash_combiner::operator() instantiated with nonmatching type and size");
+
       // The following algorithm for combining two 64-bit hash values is inspired by a similar
       // function in CityHash (http://cityhash.googlecode.com/svn-history/r2/trunk/src/city.h),
       // which is in turn based on ideas from the MurmurHash library. The basic idea is easy to
@@ -370,11 +375,11 @@ namespace Dune {
       // an application that is frequent in PDELab's ordering framework.
 
       Dune::hash<T> hasher;
-      const std::size_t kMul = 0x9ddfea08eb382d69ULL;
-      std::size_t h = hasher(arg);
-      std::size_t a = (seed ^ h) * kMul;
+      const typeof_size_t kMul = 0x9ddfea08eb382d69ULL;
+      typeof_size_t h = hasher(arg);
+      typeof_size_t a = (seed ^ h) * kMul;
       a ^= (a >> 47);
-      std::size_t b = (h ^ a) * kMul;
+      typeof_size_t b = (h ^ a) * kMul;
       b ^= (b >> 47);
       b *= kMul;
       seed = b;
@@ -388,9 +393,11 @@ namespace Dune {
   struct hash_combiner<4>
   {
 
-    template<typename T>
-    void operator()(std::size_t& seed, const T& arg) const
+    template<typename typeof_size_t, typename T>
+    void operator()(typeof_size_t& seed, const T& arg) const
     {
+      dune_static_assert(sizeof(typeof_size_t)==4, "hash_combiner::operator() instantiated with nonmatching type and size");
+
       // The default algorithm above requires a 64-bit std::size_t. The following algorithm is a
       // 32-bit compatible fallback, again inspired by CityHash and MurmurHash
       // (http://cityhash.googlecode.com/svn-history/r2/trunk/src/city.cc).
@@ -399,11 +406,11 @@ namespace Dune {
       // taken from CityHash, in particular from the file referenced above.
 
       Dune::hash<T> hasher;
-      const std::size_t c1 = 0xcc9e2d51;
-      const std::size_t c2 = 0x1b873593;
-      const std::size_t c3 = 0xe6546b64;
-      std::size_t h = hasher(arg);
-      std::size_t a = seed * c1;
+      const typeof_size_t c1 = 0xcc9e2d51;
+      const typeof_size_t c2 = 0x1b873593;
+      const typeof_size_t c3 = 0xe6546b64;
+      typeof_size_t h = hasher(arg);
+      typeof_size_t a = seed * c1;
       a = (a >> 17) | (a << (32 - 17));
       a *= c2;
       h ^= a;
