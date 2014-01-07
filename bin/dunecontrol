@@ -207,6 +207,10 @@ load_opts() {
   fi
 }
 
+space=" "
+tab="	"
+BLANK="$space$tab"
+
 # Uses the current compiler to extract information about the
 # multiarch triplets and sets the export variable MULTIARCH_LIBDIR
 # according to it.
@@ -218,11 +222,11 @@ extract_multiarch(){
   fi
   if test "x$USE_CMAKE" = "xyes"; then
     load_opts "cmake"
-    my_cxx_compiler=`echo $CMAKE_FLAGS | sed "s/.*\(-DCMAKE_CXX_COMPILER[:FILEPATH]*=\"[^\"]*\"\|$i='[^']*'\|$i=[^\s^ ]*\).*/\1/"`
+    my_cxx_compiler=`echo $CMAKE_FLAGS | grep CXX | sed "s/.*CXX=[\"']\?\([^[$BLANK]^'^\"]*\)[\"']\?.*/\1/"`
   fi
   if test "x$my_cxx_compiler" == "x"; then
     load_opts "configure"
-    my_cxx_compiler=`echo $CONFIGURE_FLAGS | sed "s/.*\(CXX=\"[^\"]*\"\|$i='[^']*'\|$i=[^\s^ ]*\).*/\1/"`
+    my_cxx_compiler=`echo $CONFIGURE_FLAGS | grep CXX| sed "s/.*CXX=[\"']\?\([^[$BLANK]^'^\"]*\)[\"']\?.*/\1/"`
   fi
   if test "x$my_cxx_compiler" == "x"; then
     set +e
