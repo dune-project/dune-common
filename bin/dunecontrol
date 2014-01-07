@@ -241,7 +241,11 @@ extract_multiarch(){
     fi
   fi
   set -e
-  export MULTIARCH_LIBDIR="lib/$($my_cxx_compiler --print-multiarch)"
+  multiarch=$($my_cxx_compiler --print-multiarch 2>/dev/null)
+  if test $? -gt 0; then
+    multiarch=$($my_cxx_compiler -v 2>&1| $GREP target | sed "s/.*target=\([a-z0-9_-]\+\)/\1/")
+  fi
+  export MULTIARCH_LIBDIR="lib/$multiarch"
 }
 
 export PREFIX_DIR="`canonicalpath "$0"`/.."
