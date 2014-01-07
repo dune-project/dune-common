@@ -28,7 +28,7 @@ MODULES = \
   UseInkscape.cmake       \
   UseLATEX.cmake
 
-modulesdir = $(datadir)/cmake/modules
+modulesdir = $(datadir)/dune/cmake/modules
 dist_modules_DATA = ${MODULES}
 
 include $(top_srcdir)/am/global-rules

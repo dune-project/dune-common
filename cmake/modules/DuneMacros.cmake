@@ -526,7 +526,7 @@ macro(dune_project)
   if(NOT DUNE_INSTALL_MODULEDIR)
     set(DUNE_INSTALL_MODULEDIR ""
       CACHE PATH
-      "Installation directory for CMake modules. Default is \${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules when not set explicitely")
+      "Installation directory for CMake modules. Default is \${CMAKE_INSTALL_DATAROOTDIR}/dune/cmake/modules when not set explicitely")
     set(DUNE_INSTALL_MODULEDIR ${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules)
   endif(NOT DUNE_INSTALL_MODULEDIR)
 
@@ -600,7 +600,7 @@ macro(finalize_dune_project)
   include(CMakePackageConfigHelpers)
   include(GNUInstallDirs)
   set(DOXYSTYLE_DIR ${CMAKE_INSTALL_DATAROOTDIR}/dune-common/doc/doxygen/)
-  set(SCRIPT_DIR ${CMAKE_INSTALL_DATAROOTDIR}/cmake/scripts)
+  set(SCRIPT_DIR ${CMAKE_INSTALL_DATAROOTDIR}/dune/cmake/scripts)
 
   if(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake.in)
     # Generate a standard cmake package configuration file
