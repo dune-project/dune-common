@@ -581,12 +581,11 @@ run_default_configure () {
       fi
       if test x$module = x$m; then continue; fi # skip myself
       name=$(eval "echo \$NAME_$m")
-      if test -d "$path/m4"; then
-          ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $path/m4"
-      fi
-      if test -d "$path/share/aclocal"; then
-          ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $path/share/aclocal"
-      fi
+      for dir in $path/m4 $path/share/dune/aclocal $path/share/aclocal; do
+        if test -d "$dir"; then
+            ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $dir"
+        fi
+      done
       if test -d "$path/$BUILDDIR"; then
         PARAMS="$PARAMS \"--with-$name=$path/$BUILDDIR\""
       else

@@ -52,7 +52,7 @@ ALLM4S = 					\
         umfpack.m4                              \
 	xdr.m4
 
-aclocaldir = $(datadir)/aclocal
+aclocaldir = $(datadir)/dune/aclocal
 aclocal_DATA = $(ALLM4S)
 
 EXTRA_DIST = CMakeLists.txt $(ALLM4S)

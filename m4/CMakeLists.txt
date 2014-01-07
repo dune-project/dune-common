@@ -47,5 +47,5 @@ install(PROGRAMS
         shared_ptr.m4
         umfpack.m4
         xdr.m4
-	DESTINATION share/aclocal
+	DESTINATION share/dune/aclocal
 )
