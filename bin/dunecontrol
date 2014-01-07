@@ -211,6 +211,9 @@ space=" "
 tab="	"
 BLANK="$space$tab"
 
+if test -z $GREP; then
+  GREP=grep
+fi
 # Uses the current compiler to extract information about the
 # multiarch triplets and sets the export variable MULTIARCH_LIBDIR
 # according to it.
@@ -222,11 +225,11 @@ extract_multiarch(){
   fi
   if test "x$USE_CMAKE" = "xyes"; then
     load_opts "cmake"
-    my_cxx_compiler=`echo $CMAKE_FLAGS | grep CXX | sed "s/.*CXX=[\"']\?\([^[$BLANK]^'^\"]*\)[\"']\?.*/\1/"`
+    my_cxx_compiler=`echo $CMAKE_FLAGS | $GREP CXX | sed "s/.*CXX=[\"']\?\([^[$BLANK]^'^\"]*\)[\"']\?.*/\1/"`
   fi
   if test "x$my_cxx_compiler" == "x"; then
     load_opts "configure"
-    my_cxx_compiler=`echo $CONFIGURE_FLAGS | grep CXX| sed "s/.*CXX=[\"']\?\([^[$BLANK]^'^\"]*\)[\"']\?.*/\1/"`
+    my_cxx_compiler=`echo $CONFIGURE_FLAGS | $GREP CXX| sed "s/.*CXX=[\"']\?\([^[$BLANK]^'^\"]*\)[\"']\?.*/\1/"`
   fi
   if test "x$my_cxx_compiler" == "x"; then
     set +e
@@ -367,7 +370,7 @@ run_default_status () {
   fi
 
   if test $verbose -eq 1; then
-    test "$is_svn" && svn status $update | grep -E "^M|^A|^D|^C|^U"
+    test "$is_svn" && svn status $update | $GREP -E "^M|^A|^D|^C|^U"
     test "$is_git" && git status -uno
   elif test $verbose -eq 2; then
     test "$is_svn" && svn status $update
@@ -376,14 +379,14 @@ run_default_status () {
 
 
   if test "$is_svn" ; then
-    changed=$(svn status | grep -E "^M|^A|^D" | wc -l)
-    collisions=$(svn status | grep -E "^C"| wc -l)
-    pending=$(svn status $update | grep -E "^...... \* " | wc -l)
+    changed=$(svn status | $GREP -E "^M|^A|^D" | wc -l)
+    collisions=$(svn status | $GREP -E "^C"| wc -l)
+    pending=$(svn status $update | $GREP -E "^...... \* " | wc -l)
   fi
   if test "$is_git" ; then
-    changed=$(git status --porcelain | grep -E "^ *M|^ *A|^ *D|^ *R|^ *C" | wc -l)
-    collisions=$(git status --porcelain | grep -E "^ *U"| wc -l)
-    pending=$(git status | grep -E "^\# Your branch is ahead |^\# Your branch is behind " | wc -l)
+    changed=$(git status --porcelain | $GREP -E "^ *M|^ *A|^ *D|^ *R|^ *C" | wc -l)
+    collisions=$(git status --porcelain | $GREP -E "^ *U"| wc -l)
+    pending=$(git status | $GREP -E "^\# Your branch is ahead |^\# Your branch is behind " | wc -l)
   fi
   color=$green
   text="no changes"
@@ -1180,7 +1183,7 @@ EOF
   *)
     set +e
     if test "x$USE_CMAKE" = "xno"; then
-      echo "$PREFIX_DIR" |grep "[ 	]" >/dev/null
+      echo "$PREFIX_DIR" |$GREP "[ 	]" >/dev/null
      if test "$?" -eq "0"; then
         echo "ERROR: The prefix directory path ($PREFIX_DIR) contains spaces. This is not"
         echo "       supported when using autotools."
