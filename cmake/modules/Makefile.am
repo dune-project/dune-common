@@ -6,7 +6,7 @@ MODULES = \
   CheckCXX11Features.cmake \
   CheckSharedPtr.cmake     \
   DuneBoost.cmake \
-  DuneCmakePackageConfigHelpers.cmake \
+  DuneCMakePackageConfigHelpers.cmake \
   DuneCommonMacros.cmake  \
   DuneCxaDemangle.cmake   \
   DuneDoc.cmake           \
