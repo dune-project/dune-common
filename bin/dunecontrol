@@ -78,17 +78,6 @@ if test "x$DEBUG" = "xyes"; then
   set -v
 fi
 
-export PREFIX_DIR="`canonicalpath "$0"`/.."
-
-# create PKG_CONFIG_PATH for installed dune modules
-if test -d "$PREFIX_DIR/lib/pkgconfig"; then
-  export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$PREFIX_DIR/lib/pkgconfig"
-fi
-
-# Read the modules find part
-. "$PREFIX_DIR/lib/dunemodules.lib"
-
-###############################################
 
 onbuildfailure() {
   echo "Terminating $(basename "$0") due to previous errors!" >&2
@@ -217,6 +206,54 @@ load_opts() {
     fi
   fi
 }
+
+# Uses the current compiler to extract information about the
+# multiarch triplets and sets the export variable MULTIARCH_LIBDIR
+# according to it.
+# If not compiler is specified then cc or gcc is used.
+extract_multiarch(){
+  local my_cxx_compiler
+  if test "x$MULTIARCH_LIBDIR" != "x"; then
+    return
+  fi
+  if test "x$USE_CMAKE" = "xyes"; then
+    load_opts "cmake"
+    my_cxx_compiler=`echo $CMAKE_FLAGS | sed "s/.*\(-DCMAKE_CXX_COMPILER[:FILEPATH]*=\"[^\"]*\"\|$i='[^']*'\|$i=[^\s^ ]*\).*/\1/"`
+  fi
+  if test "x$my_cxx_compiler" == "x"; then
+    load_opts "configure"
+    my_cxx_compiler=`echo $CONFIGURE_FLAGS | sed "s/.*\(CXX=\"[^\"]*\"\|$i='[^']*'\|$i=[^\s^ ]*\).*/\1/"`
+  fi
+  if test "x$my_cxx_compiler" == "x"; then
+    set +e
+    $(which cc &>/dev/null)
+    if test $? -eq "0"; then
+      my_cxx_compiler=cc
+    else
+      my_cxx_compiler=gcc
+    fi
+  fi
+  set -e
+  export MULTIARCH_LIBDIR="lib/$($my_cxx_compiler --print-multiarch)"
+}
+
+export PREFIX_DIR="`canonicalpath "$0"`/.."
+
+extract_multiarch
+
+# create PKG_CONFIG_PATH for installed dune modules
+for i in $MULTIARCH_LIBDIR lib64 lib32 lib; do
+  if test -d "$PREFIX_DIR/$i/pkgconfig"; then
+    export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$PREFIX_DIR/$i/pkgconfig"
+    break;
+  fi
+done
+
+# Read the modules find part
+. "$PREFIX_DIR/lib/dunemodules.lib"
+
+###############################################
+
 
 ###############################################
 ###
@@ -555,6 +592,7 @@ run_default_autogen () {
 }
 
 run_default_configure () {
+  extract_multiarch
   PARAMS="$CMD_FLAGS"
   if test "x$USE_CMAKE" = "xyes" && test -e "$(eval "echo \$PATH_$module")/CMakeLists.txt"; then
     LOCAL_USE_CMAKE=yes
@@ -595,11 +633,14 @@ run_default_configure () {
           if test -d "$path/$BUILDDIR"; then
 	      CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$path/$BUILDDIR\""
           else
-              if test -d "$path/lib/cmake/$name"; then
-                  CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$path/lib/cmake/$name\""
-              else
-                  CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$path\""
-              fi
+	      TMP_PARAMS="\"-D""$name""_DIR=$path\""
+	      for i in $MULTIARCH_LIBDIR lib lib64 lib32; do
+		  if test -d "$path/$i/cmake/$name"; then
+                      TMP_PARAMS="\"-D""$name""_DIR=$path/$i/cmake/$name\""
+		      break;
+		  fi
+	      done
+	      CMAKE_PARAMS="$CMAKE_PARAMS $TMP_PARAMS"
           fi
       fi
     done
