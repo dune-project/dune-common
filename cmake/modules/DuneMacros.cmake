@@ -527,7 +527,7 @@ macro(dune_project)
     set(DUNE_INSTALL_MODULEDIR ""
       CACHE PATH
       "Installation directory for CMake modules. Default is \${CMAKE_INSTALL_DATAROOTDIR}/dune/cmake/modules when not set explicitely")
-    set(DUNE_INSTALL_MODULEDIR ${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules)
+    set(DUNE_INSTALL_MODULEDIR ${CMAKE_INSTALL_DATAROOTDIR}/dune/cmake/modules)
   endif(NOT DUNE_INSTALL_MODULEDIR)
 
   # set up make headercheck
