@@ -139,7 +139,7 @@ endfunction(convert_deps_to_list var)
 macro(dune_module_information MODULE_DIR)
   file(READ "${MODULE_DIR}/dune.module" DUNE_MODULE)
 
-  # find version string
+  # find version strings
   extract_line("Version:" MODULE_LINE "${DUNE_MODULE}")
   if(NOT MODULE_LINE)
     message(FATAL_ERROR "${MODULE_DIR}/dune.module is missing a version.")
@@ -529,7 +529,12 @@ macro(dune_project)
       "Installation directory for CMake modules. Default is \${CMAKE_INSTALL_DATAROOTDIR}/dune/cmake/modules when not set explicitely")
     set(DUNE_INSTALL_MODULEDIR ${CMAKE_INSTALL_DATAROOTDIR}/dune/cmake/modules)
   endif(NOT DUNE_INSTALL_MODULEDIR)
-
+  if(NOT DUNE_INSTALL_NONOBJECTLIBDIR)
+    set(DUNE_INSTALL_NONOBJECTLIBDIR ""
+      CACHE PATH
+      "Installation directory for libraries that are not architecture dependent. Default is lib when not set explicitely")
+    set(DUNE_INSTALL_NONOBJECTLIBDIR lib)
+  endif(NOT DUNE_INSTALL_NONOBJECTLIBDIR)
   # set up make headercheck
   include(Headercheck)
   setup_headercheck()
@@ -631,9 +636,22 @@ endif(NOT @DUNE_MOD_NAME@_FOUND)")
     set(CONFIG_SOURCE_FILE ${PROJECT_SOURCE_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake.in)
   endif(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake.in)
   get_property(DUNE_MODULE_LIBRARIES GLOBAL PROPERTY DUNE_MODULE_LIBRARIES)
+
+  # compute under which libdir the package configuration files are to be installed.
+  # If the module installs an object library we use CMAKE_INSTALL_LIBDIR
+  # to capture the multiarch triplet of Debian/Ubuntu.
+  # Otherwise we fall back to DUNE_INSTALL_NONOBJECTLIB which is lib
+  # if not set otherwise.
+  get_property(DUNE_MODULE_LIBRARIES GLOBAL PROPERTY DUNE_MODULE_LIBRARIES)
+  if(DUNE_MODULE_LIBRARIES)
+    set(DUNE_INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR})
+  else(DUNE_MODULE_LIBRARIES)
+    set(DUNE_INSTALL_LIBDIR ${DUNE_INSTALL_NONOBJECTLIBDIR})
+  endif(DUNE_MODULE_LIBRARIES)
+
   configure_package_config_file(${CONFIG_SOURCE_FILE}
     ${PROJECT_BINARY_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake
-    INSTALL_DESTINATION  lib/cmake/${DUNE_MOD_NAME}
+    INSTALL_DESTINATION  ${DUNE_INSTALL_LIBDIR}/cmake/${DUNE_MOD_NAME}
     PATH_VARS CMAKE_INSTALL_DATAROOTDIR DUNE_INSTALL_MODULEDIR CMAKE_INSTALL_INCLUDEDIR
     DOXYSTYLE_DIR SCRIPT_DIR)
 
@@ -702,17 +720,20 @@ endif()
     ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-version.cmake @ONLY)
 
   #install dune.module file
-  install(FILES dune.module DESTINATION lib/dunecontrol/${DUNE_MOD_NAME})
+  install(FILES dune.module DESTINATION ${DUNE_INSTALL_NONOBJECTLIBDIR}/dunecontrol/${DUNE_MOD_NAME})
 
-  #install cmake-config files
+  # install cmake-config files
   install(FILES ${PROJECT_BINARY_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake
     ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-version.cmake
-    DESTINATION lib/cmake/${DUNE_MOD_NAME})
+    DESTINATION ${DUNE_INSTALL_LIBDIR}/cmake/${DUNE_MOD_NAME})
 
   #install config.h
   if(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
   install(FILES config.h.cmake DESTINATION share/${DUNE_MOD_NAME})
   endif(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
+
+  #install pkg-config files
+  create_and_install_pkconfig(${DUNE_INSTALL_LIBDIR})
 
   if("${ARGC}" EQUAL "1")
     message(STATUS "Adding custom target for config.h generation")
@@ -883,9 +904,9 @@ macro(dune_add_library basename)
       endif(NOT _MODULE_EXPORT_USED)
       # install targets to use the libraries in other modules.
       install(TARGETS ${_created_libs}
-        EXPORT ${DUNE_MOD_NAME}-targets DESTINATION lib)
+        EXPORT ${DUNE_MOD_NAME}-targets DESTINATION ${CMAKE_INSTALL_LIBDIR})
       install(EXPORT ${DUNE_MOD_NAME}-targets
-        DESTINATION lib/cmake/${DUNE_MOD_NAME})
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${DUNE_MOD_NAME})
 
       # export libraries for use in build tree
       export(TARGETS ${_created_libs} ${_append}
