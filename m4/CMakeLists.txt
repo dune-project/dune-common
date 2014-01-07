@@ -47,5 +47,5 @@ install(PROGRAMS
         shared_ptr.m4
         umfpack.m4
         xdr.m4
-	DESTINATION share/dune/aclocal
+	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/dune/aclocal
 )
