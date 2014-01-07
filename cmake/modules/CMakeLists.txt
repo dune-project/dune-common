@@ -6,6 +6,7 @@ set(modules
   CheckCXX11Features.cmake
   CheckSharedPtr.cmake
   DuneBoost.cmake
+  DuneCmakePackageConfigHelpers.cmake
   DuneCommonMacros.cmake
   DuneCxaDemangle.cmake
   DuneDoc.cmake
