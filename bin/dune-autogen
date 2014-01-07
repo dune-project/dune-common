@@ -68,6 +68,9 @@ for OPT in "$@"; do
               echo "Found am directory $OPT/am"
               am_dir="$OPT/am"
             fi
+            if test -d "$OPT/share/dune/aclocal"; then
+              ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $OPT/share/dune/aclocal"
+            fi
             if test -d "$OPT/share/aclocal"; then
               ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $OPT/share/aclocal"
             fi
