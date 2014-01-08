@@ -67,10 +67,10 @@ parse_control() {
     exit 1
   fi
   # read dune.module file
-  local deps="$($GREP "[$NOBLANK]*Depends:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
-  local sugs="$($GREP "[$NOBLANK]*Suggests:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
-  local vers="$($GREP "[$NOBLANK]*Version:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
-  local main="$($GREP "[$NOBLANK]*Maintainer:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
+  local deps="$($GREP "^[BLANK]*Depends:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
+  local sugs="$($GREP "^[BLANK]*Suggests:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
+  local vers="$($GREP "^[BLANK]*Version:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
+  local main="$($GREP "^[BLANK]*Maintainer:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
   # check whether the module is installed.
   # - installed modules can be found via pkg-config
   # - pkg-config --var=prefix should be the same as $path
