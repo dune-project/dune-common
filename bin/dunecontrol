@@ -150,7 +150,7 @@ build_module() {
 load_opts() {
   local command=$1
   local COMMAND=$(echo $command | tr '[:lower:]' '[:upper:]')
-  CMD_FLAGS="$(eval echo \$${COMMAND}_FLAGS)"
+  CMD_FLAGS=$(eval echo \$${COMMAND}_FLAGS)
   local CMD_FLAGS_FROM_FILE=""
   if test "$command" = "NONE"; then
     BUILDDIR=$DUNE_BUILDDIR
@@ -210,6 +210,7 @@ load_opts() {
 space=" "
 tab="	"
 BLANK="$space$tab"
+NOBLANK="^$space^$tab"
 
 if test -z $GREP; then
   GREP=grep
@@ -225,11 +226,11 @@ extract_multiarch(){
   fi
   if test "x$USE_CMAKE" = "xyes"; then
     load_opts "cmake"
-    my_cxx_compiler=`echo $CMAKE_FLAGS | $GREP CXX | sed "s/.*CXX=[\"']\?\([^[$BLANK]^'^\"]*\)[\"']\?.*/\1/"`
+    my_cxx_compiler=`echo $CMAKE_FLAGS | $GREP CXX | sed "s/.*CXX=[\"']\?\([$NOBLANK^'^\"]*\)[\"']\?.*/\1/"`
   fi
   if test "x$my_cxx_compiler" == "x"; then
     load_opts "configure"
-    my_cxx_compiler=`echo $CONFIGURE_FLAGS | $GREP CXX| sed "s/.*CXX=[\"']\?\([^[$BLANK]^'^\"]*\)[\"']\?.*/\1/"`
+    my_cxx_compiler=`echo $CONFIGURE_FLAGS | $GREP CXX| sed "s/.*CXX=[\"']\?\([$NOBLANK^'^\"]*\)[\"']\?.*/\1/"`
   fi
   if test "x$my_cxx_compiler" == "x"; then
     set +e
@@ -434,7 +435,7 @@ run_default_vcsetup() {
   if [ -d .git -o -f .git ] ; then
 
     # Read Whitespace-Hook setting from dune.module file
-    local SETUPGITHOOK="$($GREP -i "^[$BLANK]*Whitespace-Hook:" dune.module | cut -d ':' -f2 | eval $PARSER_TRIM | tr '[:upper:]' '[:lower:]')"
+    local SETUPGITHOOK="$($GREP -i "[$NOBLANK]*Whitespace-Hook:" dune.module | cut -d ':' -f2 | eval $PARSER_TRIM | tr '[:upper:]' '[:lower:]')"
 
     if [ "x$SETUPGITHOOK" = "xyes" ]; then
       # we have to install the Git whitespace hook
@@ -665,7 +666,7 @@ run_default_configure () {
       # such that they are honored by cmake.
       flags="CXX CC CXXFLAGS CFLAGS CPPFLAGS LDFLAGS F77 FFLAGS FLIBS FC FCFLAGS FCLIBS LIBS"
       for i in  $flags; do
-        cflags=`echo "$PARAMS" | $GREP $i= | sed "s/.*\($i=\"[^\"]*\"\|$i='[^']*'\|$i=[^[$BLANK]^ ]*\).*/\1/"`
+        cflags=`echo "$PARAMS" | $GREP $i= | sed "s/.*\($i=\"[^\"]\+\"\|$i='[^']\+'\|$i=[$NOBLANK]\+\).*/\1/"`
         if test -n "$cflags" ; then
             PREPARAMS="$PREPARAMS $cflags"
         fi
