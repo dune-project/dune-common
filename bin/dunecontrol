@@ -435,7 +435,7 @@ run_default_vcsetup() {
   if [ -d .git -o -f .git ] ; then
 
     # Read Whitespace-Hook setting from dune.module file
-    local SETUPGITHOOK="$($GREP -i "[$NOBLANK]*Whitespace-Hook:" dune.module | cut -d ':' -f2 | eval $PARSER_TRIM | tr '[:upper:]' '[:lower:]')"
+    local SETUPGITHOOK="$($GREP -i "^[$BLANK]*Whitespace-Hook:" dune.module | cut -d ':' -f2 | eval $PARSER_TRIM | tr '[:upper:]' '[:lower:]')"
 
     if [ "x$SETUPGITHOOK" = "xyes" ]; then
       # we have to install the Git whitespace hook
