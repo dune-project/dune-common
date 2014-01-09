@@ -1,4 +1,4 @@
-set(MPITESTPROGS indicestest indexsettest syncertest selectiontest)
+set(MPITESTPROGS indicestest indexsettest syncertest selectiontest variablesizecommunicatortest)
 
 add_directory_test_target(_test_target)
 # We do not want want to build the tests during make all,
@@ -21,7 +21,12 @@ add_executable("syncertest" syncertest.cc)
 target_link_libraries("syncertest" "dunecommon")
 add_dune_mpi_flags(syncertest)
 
+add_executable("variablesizecommunicatortest" variablesizecommunicatortest.cc)
+target_link_libraries("variablesizecommunicatortest" "dunecommon")
+add_dune_mpi_flags(variablesizecommunicatortest)
+
 add_test(indexsettest			indexsettest)
 add_test(selectiontest			selectiontest)
 add_test(indicestest			indicestest)
 add_test(syncertest			syncertest)
+add_test(variablesizecommunicatortest   variablesizecommunicatortest)

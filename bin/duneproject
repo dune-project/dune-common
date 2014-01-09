@@ -445,9 +445,7 @@ cat> "$PROJECT/Makefile.am" << M_DELIM
 # we need the module file to be able to build via dunecontrol
 EXTRA_DIST = dune.module \\
   CMakeLists.txt \\
-  config.h.cmake \\
-  $PROJECT-config.cmake.in \\
-  $PROJECT-version.cmake.in
+  config.h.cmake
 
 SUBDIRS = src m4 dune doc cmake
 
@@ -481,9 +479,9 @@ if(NOT (dune-common_DIR OR dune-common_ROOT OR
 endif()
 
 #find dune-common and set the module path
-find_package(dune-common)
-list(APPEND CMAKE_MODULE_PATH \${dune-common_MODULE_PATH}
-  "\${PROJECT_SOURCE_DIR}/cmake/modules")
+find_package(dune-common REQUIRED)
+list(APPEND CMAKE_MODULE_PATH "\${PROJECT_SOURCE_DIR}/cmake/modules"
+  \${dune-common_MODULE_PATH})
 
 #include the dune macros
 include(DuneMacros)
@@ -577,28 +575,6 @@ cat> "$PROJECT/config.h.cmake" <<EOF
 */
 EOF
 ## done
-
-################# $PROJECT-config.cmake.in #####################
-
-echo "- $PROJECT/$PROJECT""-config.cmake.in"
-cat> "$PROJECT/$PROJECT""-config.cmake.in" <<EOF
-if(NOT @DUNE_MOD_NAME@_FOUND)
-#import the target
-#include("@CMAKE_BINARY_DIR@/@DUNE_MOD_NAME@-targets.cmake")
-
-#report other information
-set(@DUNE_MOD_NAME@_PREFIX "@CMAKE_SOURCE_DIR@")
-set(@DUNE_MOD_NAME@_INCLUDE_DIRS "@CMAKE_SOURCE_DIR@")
-set(@DUNE_MOD_NAME@_CXX_FLAGS "@CMAKE_CXX_FLAGS@")
-set(@DUNE_MOD_NAME@_CXX_FLAGS_DEBUG "@CMAKE_CXX_FLAGS_DEBUG@")
-set(@DUNE_MOD_NAME@_CXX_FLAGS_MINSIZEREL "@CMAKE_CXX_FLAGS_MINSIZEREL@")
-set(@DUNE_MOD_NAME@_CXX_FLAGS_RELEASE "@CMAKE_CXX_FLAGS_RELEASE@")
-set(@DUNE_MOD_NAME@_CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@")
-set(@DUNE_MOD_NAME@_LIBRARIES "") # list exported libraries here
-set(@DUNE_MOD_NAME@_DEPENDS "@DUNE_DEPENDS@")
-set(@DUNE_MOD_NAME@_SUGGESTS "@DUNE_SUGGESTS@")
-endif(NOT @DUNE_MOD_NAME@_FOUND)
-EOF
 
 ###############################################################
 ################## The source subdirectory ####################
@@ -704,7 +680,7 @@ echo "- $PROJECT/m4/Makefile.am"
 cat> "$PROJECT/m4/Makefile.am" << CC_DELIM
 M4FILES = $MODULE.m4
 
-aclocaldir = \$(datadir)/aclocal
+aclocaldir = \$(datadir)/dune/aclocal
 aclocal_DATA = \$(M4FILES)
 
 EXTRA_DIST = \$(M4FILES) CMakeLists.txt
@@ -716,7 +692,7 @@ CC_DELIM
 echo "- $PROJECT/m4/CMakeLists.txt"
 cat> "$PROJECT/m4/CMakeLists.txt" << CC_DELIM
 
-install(PROGRAMS $MODULE.m4 DESTINATION share/aclocal)
+install(PROGRAMS $MODULE.m4 DESTINATION share/dune/aclocal)
 
 CC_DELIM
 
@@ -905,7 +881,6 @@ CC_DELIM
 #########################################################
 
 mkdir "$PROJECT/cmake"
-mkdir "$PROJECT/cmake/pkg"
 
 ################# cmake/Makefile.am #####################
 
@@ -914,55 +889,6 @@ cat> "$PROJECT/cmake/Makefile.am" <<EOF
 SUBDIRS = pkg
 
 include \$(top_srcdir)/am/global-rules
-EOF
-
-################# cmake/pkg/Makefile.am #####################
-
-echo "- $PROJECT/cmake/pkg/Makefile.am"
-cat> "$PROJECT/cmake/pkg/Makefile.am" <<EOF
-EXTRA_DIST = $PROJECT-config.cmake.in
-
-include \$(top_srcdir)/am/global-rules
-EOF
-
-################# cmake/pkg/$PROJECT-config.cmake.in #####################
-
-echo "- $PROJECT/cmake/pkg/$PROJECT""-config.cmake.in"
-cat> "$PROJECT/cmake/pkg/$PROJECT""-config.cmake.in" <<EOF
-if(NOT @DUNE_MOD_NAME@_FOUND)
-#compute installation prefix relative to this file
-get_filename_component(_dir "\${CMAKE_CURRENT_LIST_FILE}" PATH)
-get_filename_component(_prefix "\${_dir}/../../.." ABSOLUTE)
-
-#import the target
-#include("\${_prefix}/lib/cmake/@DUNE_MOD_NAME@-targets.cmake")
-
-#report other information
-set(@DUNE_MOD_NAME@_INCLUDE_DIRS "\${_prefix}/include")
-set(@DUNE_MOD_NAME@_CXX_FLAGS "@CMAKE_CXX_FLAGS@")
-set(@DUNE_MOD_NAME@_CXX_FLAGS_DEBUG "@CMAKE_CXX_FLAGS_DEBUG@")
-set(@DUNE_MOD_NAME@_CXX_FLAGS_MINSIZEREL "@CMAKE_CXX_FLAGS_MINSIZEREL@")
-set(@DUNE_MOD_NAME@_CXX_FLAGS_RELEASE "@CMAKE_CXX_FLAGS_RELEASE@")
-set(@DUNE_MOD_NAME@_CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@")
-set(@DUNE_MOD_NAME@_MODULE_PATH "\${_prefix}/@DUNE_INSTALL_MODULEDIR@")
-set(@DUNE_MOD_NAME@_LIBRARIES "") # list libraries
-set(@DUNE_MOD_NAME@_DEPENDS "@DUNE_DEPENDS@")
-set(@DUNE_MOD_NAME@_SUGGESTS "@DUNE_SUGGESTS@")
-endif(NOT @DUNE_MOD_NAME@_FOUND)
-EOF
-
-################# $PROJECT-version.cmake.in #####################
-
-echo "- $PROJECT/$PROJECT""-version.cmake.in"
-cat> "$PROJECT/$PROJECT""-version.cmake.in" <<EOF
-set(PACKAGE_VERSION "@DUNE_MOD_VERSION@")
-
-if(NOT "\${PACKAGE_FIND_VERSION}" VERSION_GREATER "@DUNE_MOD_VERSION@")
-  set (PACKAGE_VERSION_COMPATIBLE 1) # compatible with older
-  if ("\${PACKAGE_FIND_VERSION}" VERSION_EQUAL "@DUNE_MOD_VERSION@")
-    set(PACKAGE_VERSION_EXACT 1) #exact match for this version
-  endif()
-endif()
 EOF
 
 ################# stamp-regenerate-config-h #####################

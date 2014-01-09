@@ -64,7 +64,8 @@ macro(finalize_headercheck)
     add_dependencies(headercheck headercheck_${targname})
 
     #add PKG_ALL_FLAGS and the directory where the header is located
-    set_property(TARGET headercheck_${targname} APPEND_STRING PROPERTY COMPILE_FLAGS "-DHEADERCHECK -I${PROJECT_SOURCE_DIR}/${relpath} -I${CMAKE_BINARY_DIR}")
+    set_property(TARGET headercheck_${targname}
+      APPEND_STRING PROPERTY COMPILE_FLAGS "-DHEADERCHECK -I${PROJECT_SOURCE_DIR}${relpath} -I${CMAKE_BINARY_DIR}")
     set_property(TARGET headercheck_${targname} PROPERTY ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/headercheck/${relpath}")
     add_dune_all_flags(headercheck_${targname})
     unset(headercheck_${targname}_LIB_DEPENDS CACHE)

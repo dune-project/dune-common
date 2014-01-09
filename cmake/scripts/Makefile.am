@@ -5,7 +5,7 @@ MODULES = BuildTests.cmake.in \
   InstallFile.cmake           \
   RunDoxygen.cmake
 
-modulesdir = $(datadir)/cmake/scripts
+modulesdir = $(datadir)/dune/cmake/scripts
 dist_modules_DATA = ${MODULES}
 
 include $(top_srcdir)/am/global-rules

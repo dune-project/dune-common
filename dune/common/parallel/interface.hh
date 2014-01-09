@@ -208,9 +208,11 @@ namespace Dune
   {
 
   public:
-    typedef InterfaceInformation Information;
-
-    typedef std::map<int,std::pair<Information,Information> > InformationMap;
+    /**
+     * @brief The type of the map form process number to InterfaceInformation for
+     * sending and receiving to and from it.
+     */
+    typedef std::map<int,std::pair<InterfaceInformation,InterfaceInformation> > InformationMap;
 
     /**
      * @brief Builds the interface.

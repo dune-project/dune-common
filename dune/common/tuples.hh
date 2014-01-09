@@ -8,6 +8,7 @@
 
 #include "typetraits.hh"
 #include "static_assert.hh"
+#include "unused.hh"
 
 #ifdef HAVE_TUPLE
 #include <tuple>
@@ -613,6 +614,7 @@ namespace Dune {
     template<class T>
     static std::ostream& put(std::ostream& os, const T& t, const char* delim=", ")
     {
+      DUNE_UNUSED_PARAMETER(delim);
       return os<<Dune::get<0>(t);
     }
 

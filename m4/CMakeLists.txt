@@ -13,6 +13,7 @@ install(PROGRAMS
         cxx0x_static_assert.m4
         cxx0x_variadic.m4
         cxx0x_variadic_constructor_sfinae.m4
+        cxx11_constexpr.m4
         cxx11_initializer_list.m4
         cxx11_conditional.m4
         dune.m4
@@ -22,6 +23,7 @@ install(PROGRAMS
         dune_check_lib.m4
         dune_common.m4
         dune_compiler.m4
+        dune_cxa_demangle.m4
         dune_fortran.m4
         dune_deprecated.m4
         dune_deprecated_cppflags.m4
@@ -45,5 +47,5 @@ install(PROGRAMS
         shared_ptr.m4
         umfpack.m4
         xdr.m4
-	DESTINATION share/aclocal
+	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/dune/aclocal
 )

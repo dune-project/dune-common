@@ -18,6 +18,7 @@
 #include "array.hh"
 #include "densevector.hh"
 #include "static_assert.hh"
+#include "unused.hh"
 
 namespace Dune {
 
@@ -142,6 +143,7 @@ namespace Dune {
     template<class C>
     FieldVector (const DenseVector<C> & x, typename Dune::enable_if<IsFieldVectorSizeCorrect<C,SIZE>::value>::type* dummy=0 )
     {
+      DUNE_UNUSED_PARAMETER(dummy);
       // do a run-time size check, for the case that x is not a FieldVector
       assert(x.size() == SIZE);
       for (size_type i = 0; i<SIZE; i++)

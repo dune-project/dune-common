@@ -15,6 +15,7 @@
 #include <dune/common/static_assert.hh>
 #include <dune/common/classname.hh>
 #include <dune/common/math.hh>
+#include <dune/common/unused.hh>
 
 
 namespace Dune
@@ -719,6 +720,9 @@ namespace Dune
 #ifdef DUNE_FMatrix_WITH_CHECKING
       if (i<0 || i>=rows()) DUNE_THROW(FMatrixError,"row index out of range");
       if (j<0 || j>=cols()) DUNE_THROW(FMatrixError,"column index out of range");
+#else
+      DUNE_UNUSED_PARAMETER(i);
+      DUNE_UNUSED_PARAMETER(j);
 #endif
       return true;
     }
@@ -733,7 +737,7 @@ namespace Dune
       void swap(int i, int j);
 
       template<typename T>
-      void operator()(const T&, int k, int i)
+      void operator()(const T&, int, int)
       {}
 
       std::vector<size_type> & pivot_;
@@ -756,10 +760,10 @@ namespace Dune
       ElimDet(field_type& sign) : sign_(sign)
       { sign_ = 1; }
 
-      void swap(int i, int j)
+      void swap(int, int)
       { sign_ *= -1; }
 
-      void operator()(const field_type&, int k, int i)
+      void operator()(const field_type&, int, int)
       {}
 
       field_type& sign_;

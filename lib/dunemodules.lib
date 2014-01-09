@@ -36,6 +36,7 @@ vtab=""
 # embedded newline.  Instead one can often get away with using $BLANK
 SPACE="$space$formfeed$newline$cr$tab$vtab"
 BLANK="$space$tab"
+NOBLANK="^$space^$tab"
 
 #
 # read paramters from a $CONTROL file
@@ -66,10 +67,10 @@ parse_control() {
     exit 1
   fi
   # read dune.module file
-  local deps="$($GREP "^[$BLANK]*Depends:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
-  local sugs="$($GREP "^[$BLANK]*Suggests:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
-  local vers="$($GREP "^[$BLANK]*Version:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
-  local main="$($GREP "^[$BLANK]*Maintainer:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
+  local deps="$($GREP "^[BLANK]*Depends:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
+  local sugs="$($GREP "^[BLANK]*Suggests:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
+  local vers="$($GREP "^[BLANK]*Version:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
+  local main="$($GREP "^[BLANK]*Maintainer:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
   # check whether the module is installed.
   # - installed modules can be found via pkg-config
   # - pkg-config --var=prefix should be the same as $path
@@ -600,7 +601,7 @@ default_am2cmake_options(){
             continue
         fi
         # process --with-$lowercase=<arg>
-        local arg=`echo $PARAMS| sed "s/.*--with-$lowercase=\(\S*\).*/\1/"`
+        local arg=`echo $PARAMS| sed "s/.*--with-$lowercase=\([$NOBLANK]*\).*/\1/"`
         local arg=`eval echo $arg` # expand tilde to prevent problems
         if test "x$arg" = "xno"; then
             CMAKE_PARAMS="$CMAKE_PARAMS -DCMAKE_DISABLE_FIND_PACKAGE_$package=TRUE"
@@ -629,9 +630,9 @@ default_am2cmake_libraries(){
 	    continue
 	fi
 	export "$lowercase"-lib_processed=1
-	term="s/.*--with-""$lowercase""-lib=\(\S*\).*/\1/"
-        arg=`echo "$PARAMS" | sed "$term"`
-	if test "x$arg" != "x" && test "x$PARAMS" != "x$arg"; then
+	term="s/.*--with-""$lowercase""-lib=\([$NOBLANK]*\).*/\1/"
+        arg=`echo "$PARAMS" | grep \\-\\-with-$lowercase | sed "$term"`
+	if test "x$arg" != "x"; then
 	    CMAKE_PARAMS="$CMAKE_PARAMS -D$uppercase""_LIBRARY=$arg"
 	fi
     done

@@ -8,7 +8,7 @@
 
 using namespace Dune;
 
-int main(int argc, char** argv) try
+int main(int, char**) try
 {
   Dune::FieldVector<double,3> pos;
 

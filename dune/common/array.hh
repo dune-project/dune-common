@@ -253,6 +253,22 @@ namespace Dune
     return result;
   }
 
+  //! Create an array and fill it with copies of the provided value.
+  /**
+   * \note This method is Dune-specific and not part of any C++ standard.
+   */
+  template<typename T, std::size_t n>
+  array<T,n> fill_array(const T& t)
+  {
+    array<T,n> r;
+    r.fill(t);
+#if HAVE_RVALUE_REFERENCES
+    return std::move(r);
+#else
+    return r;
+#endif
+  }
+
   /** @} */
 
 } // end namespace Dune

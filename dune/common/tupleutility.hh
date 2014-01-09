@@ -1312,7 +1312,7 @@ namespace Dune {
     template<typename T1,typename F>
     struct Visitor<0,T1,F>
     {
-      static inline void visit(F& func, T1& t1)
+      static inline void visit(F&, T1&)
       {}
     };
 
@@ -1329,7 +1329,7 @@ namespace Dune {
     template<typename T1, typename T2, typename F>
     struct PairVisitor<0,T1,T2,F>
     {
-      static inline void visit(F& func, T1& t1, T2& t2)
+      static inline void visit(F&, T1&, T2&)
       {}
     };
   }

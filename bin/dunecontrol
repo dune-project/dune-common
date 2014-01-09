@@ -78,17 +78,6 @@ if test "x$DEBUG" = "xyes"; then
   set -v
 fi
 
-export PREFIX_DIR="`canonicalpath "$0"`/.."
-
-# create PKG_CONFIG_PATH for installed dune modules
-if test -d "$PREFIX_DIR/lib/pkgconfig"; then
-  export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$PREFIX_DIR/lib/pkgconfig"
-fi
-
-# Read the modules find part
-. "$PREFIX_DIR/lib/dunemodules.lib"
-
-###############################################
 
 onbuildfailure() {
   echo "Terminating $(basename "$0") due to previous errors!" >&2
@@ -161,7 +150,7 @@ build_module() {
 load_opts() {
   local command=$1
   local COMMAND=$(echo $command | tr '[:lower:]' '[:upper:]')
-  CMD_FLAGS="$(eval echo \$${COMMAND}_FLAGS)"
+  CMD_FLAGS=$(eval echo \$${COMMAND}_FLAGS)
   local CMD_FLAGS_FROM_FILE=""
   if test "$command" = "NONE"; then
     BUILDDIR=$DUNE_BUILDDIR
@@ -217,6 +206,65 @@ load_opts() {
     fi
   fi
 }
+
+space=" "
+tab="	"
+BLANK="$space$tab"
+NOBLANK="^$space^$tab"
+
+if test -z $GREP; then
+  GREP=grep
+fi
+# Uses the current compiler to extract information about the
+# multiarch triplets and sets the export variable MULTIARCH_LIBDIR
+# according to it.
+# If not compiler is specified then cc or gcc is used.
+extract_multiarch(){
+  local my_cxx_compiler
+  if test "x$MULTIARCH_LIBDIR" != "x"; then
+    return
+  fi
+  if test "x$USE_CMAKE" = "xyes"; then
+    load_opts "cmake"
+    my_cxx_compiler=`echo $CMAKE_FLAGS | $GREP CXX | sed "s/.*CXX=[\"']\?\([$NOBLANK^'^\"]*\)[\"']\?.*/\1/"`
+  fi
+  if test "x$my_cxx_compiler" == "x"; then
+    load_opts "configure"
+    my_cxx_compiler=`echo $CONFIGURE_FLAGS | $GREP CXX| sed "s/.*CXX=[\"']\?\([$NOBLANK^'^\"]*\)[\"']\?.*/\1/"`
+  fi
+  if test "x$my_cxx_compiler" == "x"; then
+    set +e #error in the multiarch detection should not be fatal.
+    $(which cc &>/dev/null)
+    if test $? -eq "0"; then
+      my_cxx_compiler=cc
+    else
+      my_cxx_compiler=gcc
+    fi
+  fi
+  multiarch=$($my_cxx_compiler --print-multiarch 2>/dev/null)
+  if test $? -gt 0; then
+    multiarch=$($my_cxx_compiler -v 2>&1| $GREP target | sed "s/.*target=\([a-z0-9_-]\+\)/\1/")
+  fi
+  set -e # set to old value.
+  export MULTIARCH_LIBDIR="lib/$multiarch"
+}
+
+export PREFIX_DIR="`canonicalpath "$0"`/.."
+
+extract_multiarch
+
+# create PKG_CONFIG_PATH for installed dune modules
+for i in $MULTIARCH_LIBDIR lib64 lib32 lib; do
+  if test -d "$PREFIX_DIR/$i/pkgconfig"; then
+    export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$PREFIX_DIR/$i/pkgconfig"
+  fi
+done
+
+# Read the modules find part
+. "$PREFIX_DIR/lib/dunemodules.lib"
+
+###############################################
+
 
 ###############################################
 ###
@@ -326,7 +374,7 @@ run_default_status () {
   fi
 
   if test $verbose -eq 1; then
-    test "$is_svn" && svn status $update | grep -E "^M|^A|^D|^C|^U"
+    test "$is_svn" && svn status $update | $GREP -E "^M|^A|^D|^C|^U"
     test "$is_git" && git status -uno
   elif test $verbose -eq 2; then
     test "$is_svn" && svn status $update
@@ -335,14 +383,14 @@ run_default_status () {
 
 
   if test "$is_svn" ; then
-    changed=$(svn status | grep -E "^M|^A|^D" | wc -l)
-    collisions=$(svn status | grep -E "^C"| wc -l)
-    pending=$(svn status $update | grep -E "^...... \* " | wc -l)
+    changed=$(svn status | $GREP -E "^M|^A|^D" | wc -l)
+    collisions=$(svn status | $GREP -E "^C"| wc -l)
+    pending=$(svn status $update | $GREP -E "^...... \* " | wc -l)
   fi
   if test "$is_git" ; then
-    changed=$(git status --porcelain | grep -E "^ *M|^ *A|^ *D|^ *R|^ *C" | wc -l)
-    collisions=$(git status --porcelain | grep -E "^ *U"| wc -l)
-    pending=$(git status | grep -E "^\# Your branch is ahead |^\# Your branch is behind " | wc -l)
+    changed=$(git status --porcelain | $GREP -E "^ *M|^ *A|^ *D|^ *R|^ *C" | wc -l)
+    collisions=$(git status --porcelain | $GREP -E "^ *U"| wc -l)
+    pending=$(git status | $GREP -E "^\# Your branch is ahead |^\# Your branch is behind " | wc -l)
   fi
   color=$green
   text="no changes"
@@ -535,8 +583,8 @@ run_default_autogen () {
     local M4_PATH=""
     if test -f configure.ac && \
        ( test -d .svn || test -d .git || test -d CVS || test -f stamp-vc ); then
-      sort_modules $FOUND_MODULES
-      for m in $FOUND_MODULES; do
+      sort_modules $MODULES
+      for m in $MODULES; do
         path="$(eval "echo \$PATH_$m")"
         MODULE_PATHS="$MODULE_PATHS\"$path\" "
       done
@@ -555,6 +603,7 @@ run_default_autogen () {
 }
 
 run_default_configure () {
+  extract_multiarch
   PARAMS="$CMD_FLAGS"
   if test "x$USE_CMAKE" = "xyes" && test -e "$(eval "echo \$PATH_$module")/CMakeLists.txt"; then
     LOCAL_USE_CMAKE=yes
@@ -581,12 +630,11 @@ run_default_configure () {
       fi
       if test x$module = x$m; then continue; fi # skip myself
       name=$(eval "echo \$NAME_$m")
-      if test -d "$path/m4"; then
-          ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $path/m4"
-      fi
-      if test -d "$path/share/aclocal"; then
-          ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $path/share/aclocal"
-      fi
+      for dir in $path/m4 $path/share/dune/aclocal $path/share/aclocal; do
+        if test -d "$dir"; then
+            ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $dir"
+        fi
+      done
       if test -d "$path/$BUILDDIR"; then
         PARAMS="$PARAMS \"--with-$name=$path/$BUILDDIR\""
       else
@@ -596,11 +644,14 @@ run_default_configure () {
           if test -d "$path/$BUILDDIR"; then
 	      CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$path/$BUILDDIR\""
           else
-              if test -d "$path/lib/cmake/$name"; then
-                  CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$path/lib/cmake/$name\""
-              else
-                  CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$path\""
-              fi
+	      TMP_PARAMS="\"-D""$name""_DIR=$path\""
+	      for i in $MULTIARCH_LIBDIR lib lib64 lib32; do
+		  if test -d "$path/$i/cmake/$name"; then
+                      TMP_PARAMS="\"-D""$name""_DIR=$path/$i/cmake/$name\""
+		      break;
+		  fi
+	      done
+	      CMAKE_PARAMS="$CMAKE_PARAMS $TMP_PARAMS"
           fi
       fi
     done
@@ -614,8 +665,8 @@ run_default_configure () {
       # such that they are honored by cmake.
       flags="CXX CC CXXFLAGS CFLAGS CPPFLAGS LDFLAGS F77 FFLAGS FLIBS FC FCFLAGS FCLIBS LIBS"
       for i in  $flags; do
-        cflags=`echo "$PARAMS" | sed "s/.*\($i=\"[^\"]*\"\|$i='[^']*'\|$i=[^\s^ ]*\).*/\1/"`
-        if test "$cflags" != "$PARAMS"; then
+        cflags=`echo "$PARAMS" | $GREP $i= | sed "s/.*\($i=\"[^\"]\+\"\|$i='[^']\+'\|$i=[$NOBLANK]\+\).*/\1/"`
+        if test -n "$cflags" ; then
             PREPARAMS="$PREPARAMS $cflags"
         fi
       done
@@ -1136,7 +1187,7 @@ EOF
   *)
     set +e
     if test "x$USE_CMAKE" = "xno"; then
-      echo "$PREFIX_DIR" |grep "[ 	]" >/dev/null
+      echo "$PREFIX_DIR" |$GREP "[ 	]" >/dev/null
      if test "$?" -eq "0"; then
         echo "ERROR: The prefix directory path ($PREFIX_DIR) contains spaces. This is not"
         echo "       supported when using autotools."

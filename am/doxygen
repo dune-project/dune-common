@@ -47,14 +47,14 @@ $(srcdir)/Doxyfile.in: FORCE
 
 # build doxygen when 'make doc' is called
 # what files does the doxygen-generated stuff depend on (find-syntax)
-DOXYGEN_DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.png -o -name Doxyfile -o -name modules
+DOXYGEN_DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.png -o -name modules
 # check dependency ourself to be robust
 $(DOXYGENTAG): FORCE Doxyfile $(DOXYGENHEADER) $(DOXYGENFOOTER)
 	set -e; \
 	DTAG=$(DOXYGENTAG); \
 	if test -f $(srcdir)/$(DOXYGENTAG); then DTAG=$(srcdir)/$(DOXYGENTAG); fi; \
 	if ! test -e "$$DTAG" || \
-	   test x"`find $(top_srcdir) \( $(DOXYGEN_DEPENDON) \) -a -cnewer $$DTAG -print`" != x; \
+	   test x"`find $(top_srcdir) \( $(DOXYGEN_DEPENDON) \) -a -newer $$DTAG -print | grep -v cmake/modules`" != x; \
 	then \
 	    echo Running doxygen. This may take a while... ; \
 	    $(DOXYGEN) Doxyfile > doxygen.log <&-; \
