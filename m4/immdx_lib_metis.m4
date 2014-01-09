@@ -130,4 +130,5 @@ AC_DEFUN([IMMDX_LIB_METIS], [
 		],[$1])
 			:
 		fi
+    DUNE_ADD_SUMMARY_ENTRY([METIS],[$with_metis])
 	])dnl IMMDX_LIB_METIS
