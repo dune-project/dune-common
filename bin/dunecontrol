@@ -257,7 +257,6 @@ extract_multiarch
 for i in $MULTIARCH_LIBDIR lib64 lib32 lib; do
   if test -d "$PREFIX_DIR/$i/pkgconfig"; then
     export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$PREFIX_DIR/$i/pkgconfig"
-    break;
   fi
 done
 
