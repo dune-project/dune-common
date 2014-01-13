@@ -1,5 +1,6 @@
 install(PROGRAMS
   checklog
+  cmake-pkg-config
   documentation
   doxygen
   global-rules
