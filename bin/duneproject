@@ -464,6 +464,10 @@ DISTCHECK_CONFIGURE_FLAGS = $DISTCHECK_CONFIGURE_FLAGS CXX="\$(CXX)" CC="\$(CC)"
 include \$(top_srcdir)/am/top-rules
 include \$(top_srcdir)/am/global-rules
 
+# Generate package configuration files for finding
+# installed modules with CMake
+include $(top_srcdir)/am/cmake-pkg-config
+
 M_DELIM
 
 ################## CMakeLists.txt ##################
