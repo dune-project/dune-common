@@ -161,6 +161,38 @@ parse_control() {
   fi
 }
 
+# Uses the current compiler to extract information about the
+# multiarch triplets and sets the export variable MULTIARCH_LIBDIR
+# according to it.
+# If not compiler is specified then cc or gcc is used.
+extract_multiarch_pkg_config_path(){
+  local my_cxx_compiler
+  if test "x$MULTIARCH_LIBDIR" != "x"; then
+    return
+  fi
+  set +e #error in the multiarch detection should not be fatal.
+  $(which cc &>/dev/null)
+  if test $? -eq "0"; then
+      my_cxx_compiler=cc
+  else
+      my_cxx_compiler=gcc
+  fi
+  multiarch=$($my_cxx_compiler --print-multiarch 2>/dev/null)
+  if test $? -gt 0; then
+    multiarch=$($my_cxx_compiler -v 2>&1| $GREP target | sed "s/.*target=\([a-z0-9_-]\+\)/\1/")
+  fi
+  set -e # set to old value.
+  export MULTIARCH_LIBDIR="lib/$multiarch"
+
+  # create PKG_CONFIG_PATH for installed dune modules
+  for i in $MULTIARCH_LIBDIR lib64 lib32 lib; do
+    if test -d "$PREFIX_DIR/$i/pkgconfig"; then
+      export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$PREFIX_DIR/$i/pkgconfig"
+    fi
+  done
+}
+
+
 #
 # try to setup the control path
 #
@@ -180,6 +212,8 @@ setup_control_path() {
           DUNE_CONTROL_PATH=$DUNE_CONTROL_PATH:"$i/../dunecontrol"
         fi
       done
+    else
+       DUNE_CONTROL_PATH=$DUNE_CONTROL_PATH:$(pkg-config dune-common --variable=prefix)/lib/dunecontrol
     fi
   fi
   # try to read DUNE_CONTROL_PATH from OPTS file

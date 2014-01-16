@@ -147,8 +147,9 @@ echo
 
 . "$(canonicalpath $0)/../lib/dunemodules.lib"
 
-# create PKG_CONFIG_PATH for installed dune modules
-export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:\"$(canonicalpath $0)/../lib/pkgconfig\""
+export PREFIX_DIR="`canonicalpath "$0"`/.."
+
+extract_multiarch_pkg_config_path
 
 # search for modules, both installed and src modules
 find_modules_in_path
@@ -340,7 +341,7 @@ AC_CONFIG_FILES([
   Makefile
   src/Makefile
   cmake/Makefile
-  cmake/pkg/Makefile
+  cmake/modules/Makefile
   doc/Makefile
   doc/doxygen/Makefile
   doc/doxygen/Doxyfile
@@ -466,7 +467,7 @@ include \$(top_srcdir)/am/global-rules
 
 # Generate package configuration files for finding
 # installed modules with CMake
-include $(top_srcdir)/am/cmake-pkg-config
+include \$(top_srcdir)/am/cmake-pkg-config
 
 M_DELIM
 
@@ -497,6 +498,7 @@ add_subdirectory("src")
 add_subdirectory("m4")
 add_subdirectory("dune")
 add_subdirectory("doc")
+add_subdirectory("cmake/modules")
 
 # finalize the dune project, e.g. generating config.h etc.
 finalize_dune_project(GENERATE_CONFIG_H_CMAKE)
@@ -696,7 +698,7 @@ CC_DELIM
 echo "- $PROJECT/m4/CMakeLists.txt"
 cat> "$PROJECT/m4/CMakeLists.txt" << CC_DELIM
 
-install(PROGRAMS $MODULE.m4 DESTINATION share/dune/aclocal)
+install(PROGRAMS $MODULE.m4 DESTINATION \${CMAKE_INSTALL_DATAROOTDIR}/dune/aclocal)
 
 CC_DELIM
 
@@ -880,7 +882,7 @@ cat> "$PROJECT/doc/doxygen/CMakeLists.txt" << CC_DELIM
 add_doxygen_target()
 CC_DELIM
 
-#########################################################
+
 ############### The cmake subdirectory ##################
 #########################################################
 
@@ -890,10 +892,50 @@ mkdir "$PROJECT/cmake"
 
 echo "- $PROJECT/cmake/Makefile.am"
 cat> "$PROJECT/cmake/Makefile.am" <<EOF
-SUBDIRS = pkg
+SUBDIRS = modules
 
 include \$(top_srcdir)/am/global-rules
 EOF
+
+############### The cmake subdirectory ##################
+#########################################################
+
+mkdir "$PROJECT/cmake/modules"
+
+################# cmake/modules/Makefile.am #####################
+macroname=""
+for i in $(echo $PROJECT| sed 's/-/ /g'); do
+  firstchar=$(echo $i | sed 's/\(.\).*/\1/')
+  macroname=$macroname$(echo $firstchar | tr '[a-z]' '[A-Z]')$(echo $i | sed 's/.\(.*\)/\1/')
+done
+macroname="$macroname""Macros.cmake"
+
+echo "- $PROJECT/cmake/modules/Makefile.am"
+cat> "$PROJECT/cmake/modules/Makefile.am" <<EOF
+MODULES = $macroname
+modulesdir = $(datadir)/dune/cmake/modules
+dist_modules_DATA = \${MODULES}
+
+include \$(top_srcdir)/am/global-rules
+EXTRA_DIST = CMakeLists.txt
+EOF
+
+################# cmake/modules/Makefile.am #####################
+
+echo "- $PROJECT/cmake/modules/CMakeLists.txt"
+cat> "$PROJECT/cmake/modules/CMakeLists.txt" <<EOF
+set(modules "$macroname")
+
+install(FILES \${modules} DESTINATION \${DUNE_INSTALL_MODULEDIR})
+EOF
+
+################# cmake/modules/$macroname #####################
+
+echo "- $PROJECT/cmake/modules/$macroname"
+cat> "$PROJECT/cmake/modules/$macroname" <<EOF
+# File for module specific CMake tests.
+EOF
+
 
 ################# stamp-regenerate-config-h #####################
 
