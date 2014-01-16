@@ -186,9 +186,9 @@ macro(dune_module_information MODULE_DIR)
 
   # find version strings
   extract_line("Version:" MODULE_LINE "${DUNE_MODULE}")
-  if(NOT MODULE_LINE)
+  if(NOT MODULE_LINE MATCHES ".+")
     message(FATAL_ERROR "${MODULE_DIR}/dune.module is missing a version.")
-  endif(NOT MODULE_LINE)
+  endif(NOT MODULE_LINE MATCHES ".+")
 
   string(REGEX REPLACE ".*Version:[ ]*([^ \n]+).*" "\\1" DUNE_MOD_VERSION "${MODULE_LINE}")
   string(REGEX REPLACE "([0-9]).*" "\\1" DUNE_VERSION_MAJOR "${DUNE_MOD_VERSION}")
