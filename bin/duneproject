@@ -913,7 +913,7 @@ macroname="$macroname""Macros.cmake"
 echo "- $PROJECT/cmake/modules/Makefile.am"
 cat> "$PROJECT/cmake/modules/Makefile.am" <<EOF
 MODULES = $macroname
-modulesdir = $(datadir)/dune/cmake/modules
+modulesdir = \$(datadir)/dune/cmake/modules
 dist_modules_DATA = \${MODULES}
 
 include \$(top_srcdir)/am/global-rules
