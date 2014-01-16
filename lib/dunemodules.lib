@@ -123,7 +123,7 @@ parse_control() {
     ;;
     # local modules supersede installed modules
     yesno)
-      superseeded_modules="$superseeded_modules $path"
+      superseded_modules="$superseded_modules $path"
       true # do nothing, ignore the previously found module
     ;;
     esac
