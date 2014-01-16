@@ -119,19 +119,11 @@ parse_control() {
     ;;
     # installed modules are superseded by locally built modules
     noyes)
-      echo "WARNING: ignoring installed module file" >&2
-      echo "  $path/lib/dunecontrol/$name/$CONTROL" >&2
-      echo "using previously found locally built module" >&2
-      echo "  $(eval echo \$PATH_$module)/$CONTROL" >&2
-	  module_inst="no"
       return
     ;;
     # local modules supersede installed modules
     yesno)
-      echo "WARNING: not using installed module file" >&2
-      echo "  $(eval echo \$PATH_$module)/lib/dunecontrol/$name/$CONTROL" >&2
-      echo "using locally built module" >&2
-      echo "  $path/$CONTROL" >&2
+      superseeded_modules="$superseeded_modules $path"
       true # do nothing, ignore the previously found module
     ;;
     esac
