@@ -823,6 +823,15 @@ create_module_list() {
   if test "x$SKIPFIRST" = "xyes" ; then
     export MODULES=`echo $MODULES " " | cut '--delimiter= ' --fields=2-`
   fi
+  # warn about superseeded modules:
+  if test -n "$superseeded_modules"; then
+    # sort moules list and make it unique.
+    superseeded_modules=$(echo $superseeded_modules | tr ' ' '\n'| sort -u)
+    echo >&2
+    echo "The following local modules do superseed the corresponding installed ones:"  >&2
+    echo "$superseeded_modules"  >&2
+    echo  >&2
+  fi
 }
 
 # print the module list
