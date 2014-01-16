@@ -1,13 +1,13 @@
 install-exec-local:
 	echo "set($(PACKAGE)_PREFIX \"$(prefix)\")" > $(PACKAGE)-config.tmp; \
 	echo "set($(PACKAGE)_INCLUDE_DIRS \"$(includedir)\")" >> $(PACKAGE)-config.tmp; \
-        if test -d $(top_srcdir)/dune/cmake/scripts; then \
+        if test -d $(top_srcdir)/cmake/scripts; then \
 	  echo "set($(PACKAGE)_SCRIPT_DIR \"$(datadir)/dune/cmake/scripts\")" >> $(PACKAGE)-config.tmp; \
 	fi; \
 	if test "$(PACKAGE)" = "dune-common"; then \
 	  echo "set(DOXYSTYLE_FILE \"$(docdir)/doxygen/Doxystyle\")" >> $(PACKAGE)-config.tmp; \
 	fi; \
-        if test -d $(top_srcdir)/dune/cmake/modules; then \
+        if test -d $(top_srcdir)/cmake/modules; then \
 	  echo "set($(PACKAGE)_MODULE_PATH \"$(datadir)/dune/cmake/modules\")" >> $(PACKAGE)-config.tmp; \
 	fi; \
 	echo "#set($(PACKAGE)_FAKE_CMAKE_PKGCONFIG TRUE)">> $(PACKAGE)-config.tmp; \
