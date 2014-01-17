@@ -851,7 +851,7 @@ namespace Dune
     /**
      * @brief Type of the map of information about the messages to send.
      *
-     * The key is the process number to communicate with and the key is
+     * The key is the process number to communicate with and the value is
      * the pair of information about sending and receiving messages.
      */
     typedef std::map<int,std::pair<MessageInformation,MessageInformation> >
