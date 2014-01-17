@@ -32,9 +32,9 @@ if test x$UMFPACKYES = x1 ; then
   # is --with-umfpack=bla used?
   if test "x$with_umfpack" != x ; then
     UMFPACKROOT=`cd $with_umfpack && pwd`
-	  if ! test -d $UMFPACKROOT;  then
+    if ! test -d $UMFPACKROOT;  then
       AC_MSG_WARN([UMFPACK directory $with_umfpack does not exist])
-  	fi
+    fi
 
     if test "x$UMFPACKROOT" = x; then
       # use some default value...
@@ -44,14 +44,14 @@ if test x$UMFPACKYES = x1 ; then
     UMFAMD_LIB_PATH="$UMFPACKROOT/AMD/Lib"
     UMFPACK_LIB_PATH="$UMFPACKROOT/UMFPACK/Lib"
     UMFPACK_INCLUDE_PATH="$UMFPACKROOT/UMFPACK/Include"
-  else 
-    if test "x$with_umfpack_includedir" != x ; then 
+  else
+    if test "x$with_umfpack_includedir" != x ; then
       UMFPACK_INCLUDE_PATH=`cd $with_umfpack_includedir && pwd`
       if ! test -d $UMFPACK_INCLUDE_PATH;  then
         AC_MSG_WARN([UMFPACK directory $with_umfpack_includedir does not exist])
       fi
     fi
-    if test "x$with_umfpack_libdir" != x ; then 
+    if test "x$with_umfpack_libdir" != x ; then
       UMFPACK_LIB_PATH=`cd $with_umfpack_libdir && pwd`
       if ! test -d $UMFPACK_LIB_PATH;  then
         AC_MSG_WARN([UMFPACK directory $with_umfpack_libdir does not exist])
@@ -69,33 +69,33 @@ if test x$UMFPACKYES = x1 ; then
 
   # check for header
   AC_LANG_PUSH([C])
-  AC_CHECK_HEADERS([umfpack.h], 
-     [UMFPACK_CPPFLAGS="$UMFPACK_INC_FLAG"
-    HAVE_UMFPACK="1"],
+  AC_CHECK_HEADERS([umfpack.h],
+    [UMFPACK_CPPFLAGS="$UMFPACK_INC_FLAG"
+      HAVE_UMFPACK="1"],
     AC_MSG_WARN([umfpack.h not found in $UMFPACK_INCLUDE_PATH]))
-   
+
   CPPFLAGS="$REM_CPPFLAGS"
   REM_CPPFLAGS=
 
   REM_LDFLAGS=$LDFLAGS
 
-  # if header is found...
+  # check for umfpack lib
   if test x$HAVE_UMFPACK = x1 ; then
     AC_CHECK_LIB(umfpack,[main],
-    [UMFPACK_LIBS="-lumfpack"
-           UMFPACK_LDFLAGS="-L$UMFPACK_LIB_PATH"],
-	  [HAVE_UMFPACK="0"
-	  AC_MSG_WARN(libumfpack not found!)])
+      [UMFPACK_LIBS="-lumfpack"
+        UMFPACK_LDFLAGS="-L$UMFPACK_LIB_PATH"],
+      [HAVE_UMFPACK="0"
+        AC_MSG_WARN(libumfpack not found!)])
   fi
 
-  # if lib is found...
+  # check for amd lib
   if test x$HAVE_UMFPACK = x1 ; then
     AC_CHECK_LIB(amd,[main],
-    [UMFPACK_LIBS="$UMFPACK_LIBS -lamd"
-           UMFPACK_LDFLAGS="$UMFPACK_LDFLAGS -L$UMFAMD_LIB_PATH"
-           LIBS="$LIBS $UMFPACK_LIBS"],
-	  [HAVE_UMFPACK="0"
-	  AC_MSG_WARN(libamd not found!)])
+      [UMFPACK_LIBS="$UMFPACK_LIBS -lamd"
+        UMFPACK_LDFLAGS="$UMFPACK_LDFLAGS -L$UMFAMD_LIB_PATH"
+        LIBS="$LIBS $UMFPACK_LIBS"],
+      [HAVE_UMFPACK="0"
+        AC_MSG_WARN(libamd not found!)])
   fi
 
   LDFLAGS=$REM_LDFLAGS
@@ -110,7 +110,7 @@ if test x$HAVE_UMFPACK = x1 ; then
   AC_SUBST(UMFPACK_LDFLAGS, $UMFPACK_LDFLAGS)
   AC_SUBST(UMFPACK_CPPFLAGS, $UMFPACK_CPPFLAGS)
   AC_DEFINE(HAVE_UMFPACK, ENABLE_UMFPACK,
-    [This is only true if umfpack-library was found by configure 
+    [This is only true if umfpack-library was found by configure
      _and_ if the application uses the UMFPACK_CPPFLAGS])
 
   # add to global list
@@ -128,7 +128,7 @@ else
   # set variable for summary
   with_umfpack="no"
 fi
-  
+
 # also tell automake
 AM_CONDITIONAL(UMFPACK, test x$HAVE_UMFPACK = x1)
 
