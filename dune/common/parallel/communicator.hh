@@ -1160,7 +1160,8 @@ namespace Dune
         interfacePair != end; ++interfacePair) {
       int noSend = MessageSizeCalculator<Data,Flag>() (interfacePair->second.first);
       int noRecv = MessageSizeCalculator<Data,Flag>() (interfacePair->second.second);
-      messageInformation_.insert(std::make_pair(interfacePair->first,
+      if (noSend + noRecv > 0)
+        messageInformation_.insert(std::make_pair(interfacePair->first,
                                                 std::make_pair(MessageInformation(bufferSize_[0],
                                                                                   noSend*sizeof(typename CommPolicy<Data>::IndexedType)),
                                                                MessageInformation(bufferSize_[1],
@@ -1195,8 +1196,8 @@ namespace Dune
         interfacePair != end; ++interfacePair) {
       int noSend = MessageSizeCalculator<Data,Flag>() (source, interfacePair->second.first);
       int noRecv = MessageSizeCalculator<Data,Flag>() (dest, interfacePair->second.second);
-
-      messageInformation_.insert(std::make_pair(interfacePair->first,
+      if (noSend + noRecv > 0)
+        messageInformation_.insert(std::make_pair(interfacePair->first,
                                                 std::make_pair(MessageInformation(bufferSize_[0],
                                                                                   noSend*sizeof(typename CommPolicy<Data>::IndexedType)),
                                                                MessageInformation(bufferSize_[1],
