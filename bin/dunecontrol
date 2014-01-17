@@ -638,7 +638,9 @@ run_default_configure () {
       if test -d "$path/$BUILDDIR"; then
         PARAMS="$PARAMS \"--with-$name=$path/$BUILDDIR\""
       else
-        PARAMS="$PARAMS \"--with-$name=$path\""
+        if test x$module_inst != xyes; then
+          PARAMS="$PARAMS \"--with-$name=$path\""
+        fi
       fi
       if test "x$LOCAL_USE_CMAKE" = "xyes"; then
           if test -d "$path/$BUILDDIR"; then
