@@ -472,7 +472,7 @@ include \$(top_srcdir)/am/cmake-pkg-config
 M_DELIM
 
 ################## CMakeLists.txt ##################
-echo " - $PROJECT/CMakeLists.txt"
+echo "- $PROJECT/CMakeLists.txt"
 cat> "$PROJECT/CMakeLists.txt" << M_DELIM
 cmake_minimum_required(VERSION 2.8.6)
 project($PROJECT CXX)
