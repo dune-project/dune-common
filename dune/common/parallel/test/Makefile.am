@@ -1,6 +1,10 @@
 # $Id$
 
-MPITESTS = indicestest indexsettest syncertest selectiontest
+MPITESTS = indicestest                            \
+           indexsettest                           \
+           syncertest                             \
+           selectiontest                          \
+           variablesizecommunicatortest
 
 # which tests where program to build and run are equal
 NORMALTESTS =
@@ -42,6 +46,19 @@ syncertest_LDFLAGS = $(AM_LDFLAGS)		\
 syncertest_LDADD =					\
 	$(DUNE_COMMON_LDFLAGS) $(DUNE_COMMON_LIBS)	\
 	$(DUNEMPILIBS)					\
+	$(LDADD)
+
+
+variablesizecommunicatortest_SOURCES = variablesizecommunicatortest.cc
+variablesizecommunicatortest_CPPFLAGS = $(AM_CPPFLAGS)		       \
+	$(DUNEMPICPPFLAGS)			                       \
+	$(DUNE_COMMON_CPPFLAGS)
+variablesizecommunicatortest_LDFLAGS = $(AM_LDFLAGS)		       \
+	$(DUNEMPILDFLAGS)			                       \
+	$(DUNE_COMMON_LDFLAGS)
+variablesizecommunicatortest_LDADD =                                   \
+	$(DUNE_COMMON_LDFLAGS) $(DUNE_COMMON_LIBS)                     \
+	$(DUNEMPILIBS)                                                 \
 	$(LDADD)
 
 include $(top_srcdir)/am/global-rules

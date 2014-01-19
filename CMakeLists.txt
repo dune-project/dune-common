@@ -28,4 +28,3 @@ add_subdirectory("cmake/scripts")
 
 # finalize the dune project, e.g. generating config.h etc.
 finalize_dune_project()
-include(CPack)

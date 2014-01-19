@@ -58,7 +58,7 @@ canonicalpath(){
      echo Usage: canonicalpath path >&2
      return 1
   fi
-  dirname `canonicalname "$1"`
+  dirname "`canonicalname "$1"`"
 }
 
 checkdebug () {
@@ -78,7 +78,7 @@ if test "x$DEBUG" = "xyes"; then
   set -v
 fi
 
-export PREFIX_DIR="`canonicalpath $0`/.."
+export PREFIX_DIR="`canonicalpath "$0"`/.."
 
 # create PKG_CONFIG_PATH for installed dune modules
 if test -d "$PREFIX_DIR/lib/pkgconfig"; then
@@ -91,7 +91,7 @@ fi
 ###############################################
 
 onbuildfailure() {
-  echo "Terminating $(basename $0) due to previous errors!" >&2
+  echo "Terminating $(basename "$0") due to previous errors!" >&2
   exit 1
 }
 
@@ -136,14 +136,14 @@ build_module() {
     local runcommand=run_$command
 
     # build the modules
-    local path=$(eval "echo \$PATH_${module}")
+    local path="$(eval "echo \$PATH_${module}")"
     eval echo "--- calling $command for \$NAME_${module} ---"
 	trap onbuildfailure EXIT
     if ! (
       set -e
       cd "$path"
       export module
-      eval_control $runcommand $path/$CONTROL
+      eval_control $runcommand "$path/$CONTROL"
     ); then eval echo "--- Failed to build \$NAME_${module} ---"; exit 1; fi
 	trap onfailure EXIT
 
@@ -183,8 +183,19 @@ load_opts() {
           USE_CMAKE="$OPTS_FILE_USE_CMAKE"
         fi
       fi
-
+      if test -n "$USE_CMAKE" && test -z "$CMAKE"; then
+	# We use cmake for building, but CMAKE is not yet set.
+	# Check the opts file for it
+        OPTS_FILE_CMAKE="$(eval CMAKE=""; . $DUNE_OPTS_FILE; eval echo \$CMAKE)"
+        if test -n "$OPTS_FILE_CMAKE"; then
+          CMAKE="$OPTS_FILE_CMAKE"
+        fi
+      fi
     fi
+  fi
+  if test -n "$USE_CMAKE" && test -z "$CMAKE"; then
+       # fall back to system cmake
+          CMAKE=cmake
   fi
   if test "x$DUNE_OPTS_FILE" != "x"; then
     if test "$command" = "configure"; then
@@ -519,22 +530,22 @@ run_default_update () {
 }
 
 run_default_autogen () {
-  if test "x$USE_CMAKE" != "xyes" || test  ! -e $(eval "echo \$PATH_$module")/CMakeLists.txt ; then
+  if test "x$USE_CMAKE" != "xyes" || test  ! -e "$(eval "echo \$PATH_$module")/CMakeLists.txt" ; then
     PARAMS="$CMD_FLAGS"
     local M4_PATH=""
     if test -f configure.ac && \
        ( test -d .svn || test -d .git || test -d CVS || test -f stamp-vc ); then
-      sort_modules $FOUND_MODULES
-      for m in $FOUND_MODULES; do
-        path=$(eval "echo \$PATH_$m")
-        MODULE_PATHS="$MODULE_PATHS$path "
+      sort_modules $MODULES
+      for m in $MODULES; do
+        path="$(eval "echo \$PATH_$m")"
+        MODULE_PATHS="$MODULE_PATHS\"$path\" "
       done
       if test -f autogen.sh; then
         eval echo "WARNING: \$NAME_$module contains obsolete autogen.sh," \
             >&2
         echo "         dune-autogen is used instead." >&2
       fi
-      eval "$PREFIX_DIR/bin/dune-autogen" "$MODULE_PATHS" "$PARAMS" || exit 1
+      eval "\"$PREFIX_DIR/bin/dune-autogen\"" "$MODULE_PATHS" "$PARAMS" || exit 1
     else
       echo Skipping dune-autogen
     fi
@@ -545,7 +556,7 @@ run_default_autogen () {
 
 run_default_configure () {
   PARAMS="$CMD_FLAGS"
-  if test "x$USE_CMAKE" = "xyes" && test -e $(eval "echo \$PATH_$module")/CMakeLists.txt; then
+  if test "x$USE_CMAKE" = "xyes" && test -e "$(eval "echo \$PATH_$module")/CMakeLists.txt"; then
     LOCAL_USE_CMAKE=yes
   else
     LOCAL_USE_CMAKE=no
@@ -560,7 +571,7 @@ run_default_configure () {
     # get dependencies & suggestions
     sort_modules $module
     for m in $MODULES; do
-      path=$(eval "echo \$PATH_$m")
+      path="$(eval "echo \$PATH_$m")"
       if test "x$LOCAL_USE_CMAKE" = "xyes"; then
           #
           # Translate the configure PARMS to cmake
@@ -570,12 +581,11 @@ run_default_configure () {
       fi
       if test x$module = x$m; then continue; fi # skip myself
       name=$(eval "echo \$NAME_$m")
-      if test -d "$path/m4"; then
-          ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $path/m4"
-      fi
-      if test -d "$path/share/aclocal"; then
-          ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $path/share/aclocal"
-      fi
+      for dir in $path/m4 $path/share/dune/aclocal $path/share/aclocal; do
+        if test -d "$dir"; then
+            ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $dir"
+        fi
+      done
       if test -d "$path/$BUILDDIR"; then
         PARAMS="$PARAMS \"--with-$name=$path/$BUILDDIR\""
       else
@@ -612,8 +622,8 @@ run_default_configure () {
       test -d "$BUILDDIR" || mkdir "$BUILDDIR"
       SRCDIR="$PWD"
       cd "$BUILDDIR"
-      echo "$PREPARAMS cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR"
-      eval $PREPARAMS cmake "-DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS $SRCDIR" || exit 1
+      echo "$PREPARAMS $CMAKE -DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\""
+      eval $PREPARAMS $CMAKE "-DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\"" || exit 1
     else
       PARAMS="$PARAMS ACLOCAL_AMFLAGS=\"$ACLOCAL_FLAGS\""
       echo ./configure "$PARAMS"
@@ -675,13 +685,13 @@ run_default_git () {
 ###
 
 onfailure() {
-  echo "Execution of $(basename $0) terminated due to errors!" >&2
+  echo "Execution of $(basename "$0") terminated due to errors!" >&2
   exit 1
 }
 
 usage () {
   (
-    echo "Usage: $(basename $0) [OPTIONS] COMMANDS [COMMAND-OPTIONS]"
+    echo "Usage: $(basename "$0") [OPTIONS] COMMANDS [COMMAND-OPTIONS]"
     echo ""
     echo "  Execute COMMANDS for all Dune modules found. All entries in the"
     echo "  DUNE_CONTROL_PATH variable are scanned recursively for Dune modules."
@@ -736,7 +746,7 @@ create_module_list() {
     fi
 
     export MODULES=
-    RESUME="`cat $RESUME_FILE`"
+    RESUME="`cat "$RESUME_FILE"`"
     for a in $RESUME ; do
         export NAME_`fix_variable_name $a`="$a"
         fix_and_assign MODULE "$a"
@@ -783,6 +793,9 @@ export ONLY=""
 export RESUME_FLAG=no
 export REVERSE_FLAG=no
 export SKIPFIRST=no
+
+# read environment variable USE_CMAKE
+export DUNE_USE_CMAKE="$(echo $USE_CMAKE)"
 
 # parse commandline parameters
 while test $# -gt 0; do
@@ -891,8 +904,11 @@ while test $# -gt 0; do
     --skipfirst)
       export SKIPFIRST=yes
     ;;
-    --use-cmake)
+    --use-cmake|--cmake)
       export DUNE_USE_CMAKE=yes
+    ;;
+    --no-cmake)
+      export DUNE_USE_CMAKE=no
     ;;
     --debug) true ;; # ignore this option, it is handled right at the beginning
     --*)
@@ -929,7 +945,7 @@ case "$command" in
     create_module_list
     DUNE_CONTROL_PATH=""
     for mod in $MODULES; do
-      path=$(eval echo \$PATH_$mod)
+      path="$(eval echo \$PATH_$mod)"
       name=$(eval echo \$NAME_$mod)
       if test -f "$path/dune.module"; then
         export DUNE_CONTROL_PATH="$DUNE_CONTROL_PATH:$path/dune.module"
@@ -971,7 +987,7 @@ case "$command" in
       exit 1
     fi
     mainmod=`echo $SEARCH_MODULES`
-    eval mainmodpath=\$PATH_$mainmod
+    eval mainmodpath="\$PATH_$mainmod"
     fname="$mainmodpath/dependencies.m4"
     name=`eval echo \\${NAME_$mainmod}`
     version=`eval echo \\${VERS_$mainmod}`
@@ -1033,12 +1049,12 @@ case "$command" in
     echo "        suggests $suggestsall"
       AC_MACRO_DIR="."
       test ! -d m4 || AC_MACRO_DIR=m4
-    cat > $fname <<EOF
+    cat > "$fname" <<EOF
 # dependencies.m4 generated by dunecontrol
 
 m4_define([DUNE_AC_INIT],[
   AC_INIT([$name], [$version], [$maintainer])
-  AM_INIT_AUTOMAKE([foreign 1.5 tar-pax])
+  AM_INIT_AUTOMAKE([foreign 1.9 tar-pax])
   m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([no])])
   AC_SUBST([DUNE_MOD_VERSION], [$version])
   AC_SUBST([DUNE_MOD_NAME], [$name])
@@ -1056,7 +1072,7 @@ EOF
       mod=$(fix_variable_name $name)
       MOD=`echo $mod | tr [:lower:] [:upper:]`
       if test "x$(eval echo \$HAVE_$mod)" = "x"; then
-        cat >> $fname <<EOF
+        cat >> "$fname" <<EOF
   ### add a conditional check for $name,
   # just in case the module is not available at autogen time
   AM_CONDITIONAL([HAVE_${MOD}], false)
@@ -1069,7 +1085,7 @@ EOF
     for mod in $SORTEDMODULES_DEPS; do
       name=`eval echo \\$NAME_$mod`
       MOD=`echo $mod | tr [:lower:] [:upper:]`
-      cat >> $fname <<EOF
+      cat >> "$fname" <<EOF
   ### check dependency $name
   # invoke checks required by this module
   AC_REQUIRE([${MOD}_CHECKS])
@@ -1084,7 +1100,7 @@ EOF
     for mod in $SORTEDMODULES_SUGS; do
       name=`eval echo \\$NAME_$mod`
       MOD=`echo $mod | tr [:lower:] [:upper:]`
-      cat >> $fname <<EOF
+      cat >> "$fname" <<EOF
   ### check suggestion $name
   # invoke checks required by this module
   AC_REQUIRE([${MOD}_CHECKS])
@@ -1101,12 +1117,12 @@ EOF
       mod=$mainmod
       name=`eval echo \\$NAME_$mod`
       MOD=`echo $mod | tr [:lower:] [:upper:]`
-      cat >> $fname <<EOF
+      cat >> "$fname" <<EOF
   ### invoke checks for $name
   AC_REQUIRE([${MOD}_CHECKS])
 EOF
     fi
-    cat >> $fname <<EOF
+    cat >> "$fname" <<EOF
 ])
 EOF
   ;;
@@ -1117,6 +1133,17 @@ EOF
     usage
   ;;
   *)
+    set +e
+    if test "x$USE_CMAKE" = "xno"; then
+      echo "$PREFIX_DIR" |grep "[ 	]" >/dev/null
+     if test "$?" -eq "0"; then
+        echo "ERROR: The prefix directory path ($PREFIX_DIR) contains spaces. This is not"
+        echo "       supported when using autotools."
+        echo "       Either rename the path or activate CMake with --use-cmake switch."
+        exit 1
+      fi
+    fi
+    set -e
     if test "$1" = "update"; then export SKIPVERSIONCHECK=yes; fi
     check_commands "$@"
     create_module_list
@@ -1141,7 +1168,7 @@ EOF
 
       if test -n "$RESUME_FILE"; then
           # remove the current module from the resume file
-          modules_togo=`cat $RESUME_FILE`
+          modules_togo=`cat "$RESUME_FILE"`
           for mod_togo in $modules_togo ; do
               if test "$mod_togo" != "$mod" ; then
                   echo "$mod_togo"

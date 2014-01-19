@@ -1,3 +1,5 @@
+// -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
+// vi: set et ts=4 sw=2 sts=2:
 #ifndef DUNE_COMMON_VISIBILITY_HH
 #define DUNE_COMMON_VISIBILITY_HH
 
@@ -26,9 +28,12 @@
 #else // DOXYGEN
 
 #if __GNUC__ >= 4
+// GCC and Clang both define __GNUC__ to 4 and they both support the visibility
+// attribute
 #define DUNE_EXPORT __attribute__((visibility("default")))
 #define DUNE_PRIVATE __attribute__((visibility("hidden")))
 #else
+// We don't know about the active compiler, so just turn the visibility macros to no-ops.
 #define DUNE_EXPORT
 #define DUNE_PRIVATE
 #endif

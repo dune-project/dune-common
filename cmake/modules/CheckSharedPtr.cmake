@@ -7,16 +7,16 @@
 # SHARED_PTR_HEADER: The name of header file supplying shared_ptr
 #
 # check if make_shared works
-macro(CHECK_MAKE_SHARED)
+macro(check_make_shared)
   include(CheckIncludeFileCXX)
 
   if(SHARED_PTR_NAMESPACE EQUAL "boost")
-    CHECK_INCLUDE_FILE_CXX("boost/make_shared.hpp" HAVE_BOOST_MAKE_SHARED_HPP)
+    check_include_file_cxx("boost/make_shared.hpp" HAVE_BOOST_MAKE_SHARED_HPP)
   endif(SHARED_PTR_NAMESPACE EQUAL "boost")
 
-  CHECK_INCLUDE_FILE_CXX("boost/shared_ptr.hpp" HAVE_BOOST_SHARED_PTR_HPP)
+  check_include_file_cxx("boost/shared_ptr.hpp" HAVE_BOOST_SHARED_PTR_HPP)
 
-  CHECK_CXX_SOURCE_COMPILES("
+  check_cxx_source_compiles("
     #if defined(HAVE_MEMORY)
     # include <memory>
     #endif
@@ -34,14 +34,14 @@ macro(CHECK_MAKE_SHARED)
        return 0;
     }
     " HAVE_MAKE_SHARED)
-endmacro(CHECK_MAKE_SHARED)
+endmacro(check_make_shared)
 
 # check location of shared_ptr header file and the necessary namespace
 include(CheckCXXSourceCompiles)
 
 # search namespace
 foreach(SHARED_PTR_NAMESPACE_ "std" "tr1" "std::tr1" "boost")
-  CHECK_CXX_SOURCE_COMPILES("
+  check_cxx_source_compiles("
     #include <memory>
     #include <string>
 
@@ -58,7 +58,7 @@ foreach(SHARED_PTR_NAMESPACE_ "std" "tr1" "std::tr1" "boost")
   if(SHARED_PTR_NAMESPACE_FOUND)
     #search header name
     foreach(SHARED_PTR_HEADER_ "<memory>" "<tr1/memory>" "<boost/shared_ptr.hpp>")
-      CHECK_CXX_SOURCE_COMPILES("
+      check_cxx_source_compiles("
         # include ${SHARED_PTR_HEADER_}
         #include <string>
 
@@ -76,7 +76,7 @@ foreach(SHARED_PTR_NAMESPACE_ "std" "tr1" "std::tr1" "boost")
         # save result
         set(SHARED_PTR_NAMESPACE ${SHARED_PTR_NAMESPACE_})
         set(SHARED_PTR_HEADER ${SHARED_PTR_HEADER_})
-        CHECK_MAKE_SHARED()
+        check_make_shared()
         return()
       endif(SHARED_PTR_HEADER_FOUND)
     endforeach(SHARED_PTR_HEADER_)

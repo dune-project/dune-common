@@ -14,4 +14,6 @@
 #define DUNE_UNUSED __attribute__((unused))
 #endif
 
+/// A macro to mark intentional unused function parameters with.
+#define DUNE_UNUSED_PARAMETER(parm) static_cast<void>(parm)
 #endif

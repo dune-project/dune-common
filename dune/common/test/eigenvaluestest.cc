@@ -15,6 +15,7 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/dynmatrixev.hh>
 
+#include <algorithm>
 #include <complex>
 
 

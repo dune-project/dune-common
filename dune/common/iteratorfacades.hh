@@ -154,10 +154,13 @@ namespace Dune
      * Reference dereference() const;
      *
      * // Compare for equality with iterator j
-     * equals(i);
+     * bool equals(j);
      *
      * // position the iterator at the next element.
      * void increment()
+     *
+     * // check for equality with other iterator
+     * bool equals(other)
      * \endcode
      *
      * For an elaborate explanation see the
@@ -442,7 +445,7 @@ namespace Dune
      * Reference elementAt(n) const;
      *
      * // Compare for equality with j
-     * equals(i);
+     * bool equals(j);
      *
      * // position the iterator at the next element.
      * void increment()

@@ -1,7 +1,7 @@
 #! /bin/bash
-# $Id$
 # Process this file with autoconf to produce a configure script.
 
+AC_PREREQ([2.62])
 DUNE_AC_INIT # gets module version from dune.module file
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([dune/common/stdstreams.cc])
@@ -33,6 +33,7 @@ AC_CONFIG_FILES([Makefile
      dune/common/test/Makefile
      dune/common/parallel/Makefile
      dune/common/parallel/test/Makefile
+     dune/common/std/Makefile
      doc/Makefile
      doc/comm/Makefile
      doc/comm/figures/Makefile

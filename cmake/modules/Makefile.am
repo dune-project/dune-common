@@ -1,4 +1,11 @@
-MODULES = DuneBoost.cmake \
+MODULES = \
+  AddGMPFlags.cmake        \
+  AddMETISFlags.cmake      \
+  AddParMETISFlags.cmake   \
+  AddUMFPackFlags.cmake    \
+  CheckCXX11Features.cmake \
+  CheckSharedPtr.cmake     \
+  DuneBoost.cmake \
   DuneCommonMacros.cmake  \
   DuneCxaDemangle.cmake   \
   DuneDoc.cmake           \
@@ -10,18 +17,18 @@ MODULES = DuneBoost.cmake \
   DuneTestMacros.cmake    \
   DuneTests.cmake         \
   FindBoostFusion.cmake   \
-  FindCXX11Conditional.cmake \
-  FindCXX11Features.cmake \
   FindGMP.cmake           \
   FindInkscape.cmake      \
   FindMETIS.cmake         \
   FindMProtect.cmake      \
   FindParMETIS.cmake      \
-  FindSharedPtr.cmake     \
+  FindUMFPack.cmake       \
+  Headercheck.cmake       \
   LanguageSupport.cmake   \
+  UseInkscape.cmake       \
   UseLATEX.cmake
 
-modulesdir = $(datadir)/cmake/modules
+modulesdir = $(datadir)/dune/cmake/modules
 dist_modules_DATA = ${MODULES}
 
 include $(top_srcdir)/am/global-rules

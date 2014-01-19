@@ -1,6 +1,6 @@
 # $Id$
 
-SUBDIRS = . test parallel threads
+SUBDIRS = test parallel std threads
 
 # the standard debug streams are put into the libdune
 noinst_LTLIBRARIES = libcommon.la
@@ -54,6 +54,7 @@ commoninclude_HEADERS = 			\
 	genericiterator.hh			\
 	gmpfield.hh				\
 	hash.hh					\
+	identitymatrix.hh                       \
 	indent.hh				\
 	interfaces.hh				\
 	ios_state.hh				\
@@ -84,12 +85,14 @@ commoninclude_HEADERS = 			\
 	sllist.hh				\
 	static_assert.hh			\
 	stdstreams.hh				\
+	stringutility.hh			\
 	timer.hh				\
 	tuples.hh				\
 	tupleutility.hh                         \
 	typetraits.hh				\
 	unused.hh				\
-	version.hh
+	version.hh				\
+        visibility.hh
 
 include $(top_srcdir)/am/global-rules
 

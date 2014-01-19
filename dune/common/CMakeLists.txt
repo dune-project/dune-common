@@ -1,5 +1,6 @@
 add_subdirectory("parallel")
 add_subdirectory("threads")
+add_subdirectory("std")
 add_subdirectory("test" EXCLUDE_FROM_ALL)
 
 #build the library dunecommon
@@ -58,6 +59,7 @@ install(FILES
         genericiterator.hh
         gmpfield.hh
         hash.hh
+        identitymatrix.hh
         indent.hh
         interfaces.hh
         ios_state.hh
@@ -88,14 +90,18 @@ install(FILES
         sllist.hh
         static_assert.hh
         stdstreams.hh
+        stringutility.hh
         timer.hh
         tuples.hh
         tupleutility.hh
         typetraits.hh
         unused.hh
         version.hh
+        visibility.hh
 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common)
 
 # Install some test headers, because they get used by tests in other modules
 # We do this here as test will not be considered for make install
-install(FILES test/iteratortest.hh DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common/test)
+install(FILES test/iteratortest.hh
+  test/checkmatrixinterface.hh
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common/test)

@@ -3,6 +3,7 @@
 #ifndef DUNE_DEBUG_ALLOCATOR_HH
 #define DUNE_DEBUG_ALLOCATOR_HH
 
+#include <dune/common/unused.hh>
 #include <exception>
 #include <typeinfo>
 #include <vector>
@@ -252,6 +253,7 @@ namespace Dune
     pointer allocate(size_type n,
                      DebugAllocator<void>::const_pointer hint = 0)
     {
+      DUNE_UNUSED_PARAMETER(hint);
       return DebugMemory::alloc_man.allocate<T>(n);
     }
 

@@ -16,7 +16,8 @@ parallelinclude_HEADERS = \
     mpitraits.hh        \
     plocalindex.hh      \
     remoteindices.hh    \
-    selection.hh
+    selection.hh        \
+    variablesizecommunicator.hh
 
 include $(top_srcdir)/am/global-rules
 

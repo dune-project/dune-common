@@ -48,7 +48,7 @@ AC_DEFUN([IMMDX_LIB_METIS], [
 			else
 				with_metis=/usr
 				if test ! -f "$with_metis/include/metis.h" ; then
-          if test ! -f "$with_metis/include/metis/metis.h" ; then 
+          if test ! -f "$with_metis/include/metis/metis.h" ; then
             with_metis=/usr/local
             if test ! -f "$with_metis/include/metis.h" ; then
               with_metis=""
@@ -56,7 +56,7 @@ AC_DEFUN([IMMDX_LIB_METIS], [
             else
               AC_MSG_RESULT(yes)
             fi
-          fi  
+          fi
 					AC_MSG_RESULT(yes)
 				else
 					AC_MSG_RESULT(yes)
@@ -91,9 +91,9 @@ AC_DEFUN([IMMDX_LIB_METIS], [
 			AC_LANG_SAVE
 			AC_LANG_C
 
-			AC_CHECK_LIB(metis, METIS_PartMeshDual,
+			AC_CHECK_LIB(metis, METIS_PartGraphKway,
 				[metis_lib=yes], [metis_lib=no], [-lm])
-			
+
 
 			AC_CHECK_HEADER(metis.h, [metis_h=yes],
 				[metis_h=no], [/* check */])
@@ -117,7 +117,7 @@ AC_DEFUN([IMMDX_LIB_METIS], [
 		#
 		#
 		#
-		
+
 		# tell automake
 		AM_CONDITIONAL(METIS, test x$METIS_LIB = x1)
 		if test x = x"$METIS_LIB" ; then

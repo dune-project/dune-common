@@ -8,7 +8,7 @@
 include(DuneStreams)
 dune_set_minimal_debug_level()
 
-find_package(SharedPtr)
+include(CheckSharedPtr)
 if(Fortran_Works)
   # search for lapack
   find_package(LAPACK)

@@ -23,7 +23,7 @@ include(CMakePushCheckState)
 cmake_push_check_state()
 set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${GMP_INCLUDE_DIR})
 include(CheckIncludeFileCXX)
-check_include_file_cxx("gmpxx.h" GMP_FOUND)
+check_include_file_cxx("gmpxx.h" GMP_HEADER_WORKS)
 
 # look for library gmp, only at positions given by the user
 find_library(GMP_LIB gmp
@@ -44,10 +44,9 @@ find_library(GMPXX_LIB gmpxx
 find_library(GMPXX_LIB gmpxx)
 
 # check if library works
-set(GMP_FOUND "GMP_FOUND-NOTFOUND")
 if(GMP_LIB AND GMPXX_LIB)
   include(CheckSymbolExists)
-  check_symbol_exists(__gmpz_abs ${GMP_LIB} GMP_FOUND)
+  check_library_exists(${GMP_LIB} __gmpz_abs "" GMPXX_LIB_WORKS)
 endif(GMP_LIB AND GMPXX_LIB)
 cmake_pop_check_state()
 
@@ -56,7 +55,7 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
   "GMP"
   DEFAULT_MSG
-  GMP_INCLUDE_DIR GMP_LIB GMPXX_LIB GMP_FOUND
+  GMP_INCLUDE_DIR GMP_LIB GMPXX_LIB GMP_HEADER_WORKS GMPXX_LIB_WORKS
 )
 
 mark_as_advanced(GMP_LIB GMPXX_LIB GMP_INCLUDE_DIR)
@@ -81,4 +80,12 @@ else(GMP_FOUND)
 endif(GMP_FOUND)
 
 # set HAVE_GMP for config.h
-set(HAVE_GMP GMP_FOUND)
+set(HAVE_GMP ${GMP_FOUND})
+
+#add all GMP related flags to ALL_PKG_FLAGS, this must happen regardless of a target using add_dune_gmp_flags
+if(HAVE_GMP)
+  set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-DENABLE_GMP=1")
+  foreach(dir ${GMP_INCLUDE_DIR})
+    set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-I${dir}")
+  endforeach()
+endif()

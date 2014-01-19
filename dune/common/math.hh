@@ -8,6 +8,7 @@
  */
 
 #include <cmath>
+#include <complex>
 
 namespace Dune
 {
@@ -78,6 +79,47 @@ namespace Dune
     : public StandardMathematicalConstants< long double >
   {};
 #endif // DOXYGEN
+
+
+  //! Calculates the factorial of m at compile time
+  template <int m>
+  struct Factorial
+  {
+    //! factorial stores m!
+    enum { factorial = m * Factorial<m-1>::factorial };
+  };
+
+  //! end of recursion of factorial via specialization
+  template <>
+  struct Factorial<0>
+  {
+    // 0! = 1
+    enum { factorial = 1 };
+  };
+
+  //! compute conjugate complex of x
+  // conjugate complex does nothing for non-complex types
+  template<class K>
+  inline K conjugateComplex (const K& x)
+  {
+    return x;
+  }
+
+#ifndef DOXYGEN
+  // specialization for complex
+  template<class K>
+  inline std::complex<K> conjugateComplex (const std::complex<K>& c)
+  {
+    return std::complex<K>(c.real(),-c.imag());
+  }
+#endif
+
+  //! Return the sign of the value
+  template <class T>
+  int sign(const T& val)
+  {
+    return (val < 0 ? -1 : 1);
+  }
 
 }
 
