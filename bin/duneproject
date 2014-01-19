@@ -220,7 +220,7 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
     read -p "3) Project/Module version? " VERSION
   done
   while [ -z "$MAINTAINER" ]; do
-    read -p "4) Maintainers email address? " MAINTAINER
+    read -p "4) Maintainer's email address? " MAINTAINER
   done
 
   echo
