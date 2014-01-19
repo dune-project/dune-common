@@ -11,11 +11,14 @@
 #include <cstring>
 #include <utility>
 
+#include <dune/common/std/constexpr.hh>
+
 #include "typetraits.hh"
 #include "exceptions.hh"
 #include "array.hh"
 #include "densevector.hh"
 #include "static_assert.hh"
+#include "unused.hh"
 
 namespace Dune {
 
@@ -140,6 +143,7 @@ namespace Dune {
     template<class C>
     FieldVector (const DenseVector<C> & x, typename Dune::enable_if<IsFieldVectorSizeCorrect<C,SIZE>::value>::type* dummy=0 )
     {
+      DUNE_UNUSED_PARAMETER(dummy);
       // do a run-time size check, for the case that x is not a FieldVector
       assert(x.size() == SIZE);
       for (size_type i = 0; i<SIZE; i++)
@@ -156,8 +160,10 @@ namespace Dune {
     }
     using Base::operator=;
 
+    DUNE_CONSTEXPR size_type size () const { return vec_size(); }
+
     // make this thing a vector
-    size_type vec_size() const { return SIZE; }
+    DUNE_CONSTEXPR size_type vec_size () const { return SIZE; }
     K & vec_access(size_type i) { return _data[i]; }
     const K & vec_access(size_type i) const { return _data[i]; }
   private:
@@ -236,6 +242,11 @@ namespace Dune {
       _data = x[0];
     }
 
+    //! copy constructor
+    FieldVector ( const FieldVector &other )
+      : _data( other._data )
+    {}
+
     //! Assignment operator for scalar
     inline FieldVector& operator= (const K& k)
     {
@@ -243,8 +254,10 @@ namespace Dune {
       return *this;
     }
 
+    DUNE_CONSTEXPR size_type size () const { return vec_size(); }
+
     //===== forward methods to container
-    size_type vec_size() const { return 1; }
+    DUNE_CONSTEXPR size_type vec_size () const { return 1; }
     K & vec_access(size_type i)
     {
       assert(i == 0);

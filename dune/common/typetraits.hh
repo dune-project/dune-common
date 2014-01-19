@@ -215,7 +215,7 @@ namespace Dune
     struct Big {char dummy[2];};
     static Small test(To);
     static Big test(...);
-    static typename TypeTraits< From >::ReferredType &makeFrom ();
+    static typename remove_reference< From >::type &makeFrom ();
 
   public:
     enum {
@@ -281,8 +281,8 @@ namespace Dune
   template <class Base, class Derived>
   class IsBaseOf
   {
-    typedef typename ConstantVolatileTraits< typename TypeTraits< Base >::ReferredType >::UnqualifiedType RawBase;
-    typedef typename ConstantVolatileTraits< typename TypeTraits< Derived >::ReferredType >::UnqualifiedType RawDerived;
+    typedef typename ConstantVolatileTraits< typename remove_reference< Base >::type >::UnqualifiedType RawBase;
+    typedef typename ConstantVolatileTraits< typename remove_reference< Derived >::type >::UnqualifiedType RawDerived;
     typedef char Small;
     struct Big {char dummy[2];};
     static Small test(RawBase*);

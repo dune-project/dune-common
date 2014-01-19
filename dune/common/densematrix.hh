@@ -9,12 +9,13 @@
 #include <iostream>
 #include <vector>
 
-#include <dune/common/misc.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/precision.hh>
 #include <dune/common/static_assert.hh>
 #include <dune/common/classname.hh>
+#include <dune/common/math.hh>
+#include <dune/common/unused.hh>
 
 
 namespace Dune
@@ -61,42 +62,117 @@ namespace Dune
      representing a field and a compile-time given number of rows and columns.
    */
 
+
+
   /**
-     \brief you have to specialize this function for any type T that should be assignable to a DenseMatrix
-     \tparam M Type of the matrix implementation class implementing the dense matrix
+     \brief you have to specialize this structure for any type that should be assignable to a DenseMatrix
+     \tparam DenseMatrix Some type implementing the dense matrix interface
+     \tparam RHS Right hand side type
    */
-  template<typename M, typename T>
-  void istl_assign_to_fmatrix(DenseMatrix<M>& f, const T& t)
+  template< class DenseMatrix, class RHS >
+  struct DenseMatrixAssigner;
+
+
+
+  template< class DenseMatrix, class K, int N, int M >
+  void istl_assign_to_fmatrix ( DenseMatrix &denseMatrix, const K (&values)[ M ][ N ] )
   {
-    DUNE_THROW(NotImplemented, "You need to specialise the method istl_assign_to_fmatrix(DenseMatrix<M>& f, const T& t) "
-               << "(with M being " << className<M>() << ") "
-               << "for T == " << className<T>() << "!");
+    for( int i = 0; i < N; ++i )
+      for( int j = 0; j < M; ++j )
+        denseMatrix[ i ][ j ] = values[ i ][ j ];
   }
 
+
+
+#ifndef DOXYGEN
   namespace
   {
-    template<bool b>
-    struct DenseMatrixAssigner
-    {
-      template<typename M, typename T>
-      static void assign(DenseMatrix<M>& fm, const T& t)
-      {
-        istl_assign_to_fmatrix(fm, t);
-      }
+    template< class DenseMatrix, class RHS,
+              bool primitive = Conversion< RHS, typename DenseMatrix::field_type >::exists >
+    class DenseMatrixAssignerImplementation;
 
+    template< class DenseMatrix, class RHS >
+    class DenseMatrixAssignerImplementation< DenseMatrix, RHS, true >
+    {
+    public:
+      static void apply ( DenseMatrix &denseMatrix, const RHS &rhs )
+      {
+        typedef typename DenseMatrix::field_type field_type;
+
+        const field_type value = static_cast< field_type >( rhs );
+
+        const std::size_t size = denseMatrix.size();
+        for( std::size_t i = 0; i < size; ++i )
+          denseMatrix[ i ] = value;
+      }
     };
 
-
-    template<>
-    struct DenseMatrixAssigner<true>
+    template< class DenseMatrix, class RHS >
+    class DenseMatrixAssignerImplementation< DenseMatrix, RHS, false >
     {
-      template<typename M, typename T>
-      static void assign(DenseMatrix<M>& fm, const T& t)
+      template< class M, class T>
+      struct have_istl_assign_to_fmatrix
       {
-        fm = static_cast<const typename DenseMatVecTraits<M>::value_type>(t);
+        struct yes { char dummy[ 1 ]; };
+        struct no  { char dummy[ 2 ]; };
+
+        template< class C>
+        static C &get_ref();
+
+        template< class C>
+        static yes test( decltype( istl_assign_to_fmatrix( get_ref< M >(), get_ref< C >() ) ) * );
+        template< class C >
+        static no test(...);
+
+      public:
+         static const bool v = sizeof( test< const T >( 0 ) ) == sizeof( yes );
+      };
+
+      template< class M, class T, bool = have_istl_assign_to_fmatrix< M, T >::v >
+      struct DefaultImplementation;
+
+      // forward to istl_assign_to_fmatrix()
+      template< class M, class T >
+      struct DefaultImplementation< M, T, true >
+      {
+        static void apply ( M &m, const T &t )
+        {
+          istl_assign_to_fmatrix( m, t );
+        }
+      };
+
+      // static_cast
+      template< class M, class T >
+      struct DefaultImplementation< M, T, false >
+      {
+        static void apply ( M &m, const T &t )
+        {
+          dune_static_assert( (Conversion< const T, const M >::exists), "No template specialization of DenseMatrixAssigner found" );
+          m = static_cast< const M & >( t );
+        }
+      };
+
+    public:
+      static void apply ( DenseMatrix &denseMatrix, const RHS &rhs )
+      {
+        DefaultImplementation< DenseMatrix, RHS >::apply( denseMatrix, rhs );
       }
     };
   }
+
+
+
+  template< class DenseMatrix, class RHS >
+  struct DenseMatrixAssigner
+  {
+    static void apply ( DenseMatrix &denseMatrix, const RHS &rhs )
+    {
+      DenseMatrixAssignerImplementation< DenseMatrix, RHS >::apply( denseMatrix, rhs );
+    }
+  };
+#endif // #ifndef DOXYGEN
+
+
 
   /** @brief Error thrown if operations of a FieldMatrix fail. */
   class FMatrixError : public Exception {};
@@ -243,20 +319,15 @@ namespace Dune
       return ConstIterator(*this,-1);
     }
 
-    //===== assignment from scalar
-    DenseMatrix& operator= (const field_type& f)
+    //===== assignment
+
+    template< class RHS >
+    DenseMatrix &operator= ( const RHS &rhs )
     {
-      for (size_type i=0; i<rows(); i++)
-        (*this)[i] = f;
+      DenseMatrixAssigner< MAT, RHS >::apply( asImp(), rhs );
       return *this;
     }
 
-    template<typename T>
-    DenseMatrix& operator= (const T& t)
-    {
-      DenseMatrixAssigner<Conversion<T,field_type>::exists>::assign(*this, t);
-      return *this;
-    }
     //===== vector space arithmetic
 
     //! vector space addition
@@ -649,6 +720,9 @@ namespace Dune
 #ifdef DUNE_FMatrix_WITH_CHECKING
       if (i<0 || i>=rows()) DUNE_THROW(FMatrixError,"row index out of range");
       if (j<0 || j>=cols()) DUNE_THROW(FMatrixError,"column index out of range");
+#else
+      DUNE_UNUSED_PARAMETER(i);
+      DUNE_UNUSED_PARAMETER(j);
 #endif
       return true;
     }
@@ -663,7 +737,7 @@ namespace Dune
       void swap(int i, int j);
 
       template<typename T>
-      void operator()(const T&, int k, int i)
+      void operator()(const T&, int, int)
       {}
 
       std::vector<size_type> & pivot_;
@@ -686,10 +760,10 @@ namespace Dune
       ElimDet(field_type& sign) : sign_(sign)
       { sign_ = 1; }
 
-      void swap(int i, int j)
+      void swap(int, int)
       { sign_ *= -1; }
 
-      void operator()(const field_type&, int k, int i)
+      void operator()(const field_type&, int, int)
       {}
 
       field_type& sign_;

@@ -192,9 +192,9 @@ namespace Dune {
     /**
      * @brief Constructor
      * @param cont Reference to the container we are an iterator for
-     * @param pos The postion the iterator will be positioned to
+     * @param pos The position the iterator will be positioned to
      * (e.g. 0 for an iterator returned by Container::begin() or
-     * the sizeof the container for an iterator returned by Container::end()
+     * the size of the container for an iterator returned by Container::end()
      */
     GenericIterator(Container& cont, DifferenceType pos)
       : container_(&cont), position_(pos)

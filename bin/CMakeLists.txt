@@ -3,6 +3,7 @@ install(PROGRAMS
 	dunedoxynize
 	duneproject
 	dunecontrol
+	git-whitespace-hook
 	mpi-config
 	dune-autogen
 	DESTINATION ${CMAKE_INSTALL_BINDIR})

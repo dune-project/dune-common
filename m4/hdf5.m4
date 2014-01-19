@@ -20,7 +20,7 @@
 #   HDF5_PARALLEL
 #     1 or undef
 #   HAVE_HDF5
-#     0 ot 1
+#     0 or 1
 #
 # substitutions:
 #   HDF5_CPPFLAGS

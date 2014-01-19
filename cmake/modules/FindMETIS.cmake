@@ -52,7 +52,7 @@ if(METIS_LIBRARY)
   list(APPEND CMAKE_REQUIRED_LIBRARIES ${METIS_LIBRARIY})
   set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ${METIS_LIBRARY})
   include(CheckSymbolExists)
-  check_function_exists(METIS_PartMeshDual HAVE_METIS_PARTMESH_DUAL)
+  check_function_exists(METIS_PartGraphKway HAVE_METIS_PARTGRAPHKWAY)
 endif(METIS_LIBRARY)
 
 # behave like a CMake module is supposed to behave
@@ -62,7 +62,7 @@ find_package_handle_standard_args(
   DEFAULT_MSG
   METIS_INCLUDE_DIR
   METIS_LIBRARY
-  HAVE_METIS_PARTMESH_DUAL
+  HAVE_METIS_PARTGRAPHKWAY
 )
 
 cmake_pop_check_state()
@@ -85,3 +85,10 @@ else(METIS_FOUND)
     "Include directory: ${METIS_INCLUDE_DIRS}\n"
     "Library directory: ${METIS_LIBRARIES}\n\n")
 endif(METIS_FOUND)
+
+#add all metis related flags to ALL_PKG_FLAGS, this must happen regardless of a target using add_dune_metis_flags
+if(METIS_FOUND)
+  foreach(dir ${METIS_INCLUDE_DIRS})
+    set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-I${dir}")
+  endforeach()
+endif()

@@ -119,7 +119,7 @@ int testPool()
   return ret;
 }
 
-int main(int argc, char **argv)
+int main(int, char **)
 {
   int ret=0;
 

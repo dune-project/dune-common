@@ -16,8 +16,8 @@
 
 namespace Dune
 {
-  /** @defgroup Common_Parallel Communication for distributed computing
-   * @ingroup Common
+  /** @defgroup Common_Parallel Parallel Computing based on Indexsets
+   * @ingroup ParallelCommunication
    * @brief Provides classes for syncing distributed indexed
    * data structures.
    *
@@ -75,9 +75,13 @@ namespace Dune
    *
    * Based on the information about the distributed index sets,  data
    * independent interfaces between different sets of the index sets
-   * can be setup using the class Interface.  For the actual communication it
-   * data dependant communicators can be setup using BufferedCommunicator or
-   * DatatypeCommunicator.
+   * can be setup using the class Interface.  For the actual communication
+   * data dependant communicators can be setup using BufferedCommunicator,
+   * DatatypeCommunicator VariableSizeCommunicator based on the interface
+   * information. In contrast to the former
+   * the latter is independant of the class Interface can work on a map
+   * from process number to a pair of index lists describing which local indices
+   * are send and received from that processs, respectively.
    */
   /** @addtogroup Common_Parallel
    *
@@ -898,6 +902,8 @@ namespace Dune
   template<class V>
   inline int CommPolicy<V>::getSize(const V& v, int index)
   {
+    DUNE_UNUSED_PARAMETER(v);
+    DUNE_UNUSED_PARAMETER(index);
     return 1;
   }
 
@@ -1232,7 +1238,7 @@ namespace Dune
 
   template<class Data>
   inline int BufferedCommunicator::MessageSizeCalculator<Data,SizeOne>::operator()
-    (const Data& data, const InterfaceInformation& info) const
+    (const Data&, const InterfaceInformation& info) const
   {
     return operator()(info);
   }
@@ -1285,7 +1291,7 @@ namespace Dune
 
 
   template<class Data, class GatherScatter, bool FORWARD>
-  inline void BufferedCommunicator::MessageGatherer<Data,GatherScatter,FORWARD,SizeOne>::operator()(const InterfaceMap& interfaces, const Data& data, Type* buffer, size_t bufferSize) const
+  inline void BufferedCommunicator::MessageGatherer<Data,GatherScatter,FORWARD,SizeOne>::operator()(const InterfaceMap& interfaces, const Data& data, Type* buffer, size_t) const
   {
     typedef typename InterfaceMap::const_iterator
     const_iterator;
