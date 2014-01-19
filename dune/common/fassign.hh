@@ -5,6 +5,7 @@
 
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
+#include <dune/common/unused.hh>
 
 namespace Dune {
 
@@ -103,6 +104,7 @@ namespace Dune {
      */
     fvector_assigner & append (Zero z)
     {
+      DUNE_UNUSED_PARAMETER(z);
       while (c!=s) v[c++] = 0;
       return *this;
     }
@@ -226,6 +228,7 @@ namespace Dune {
      */
     fmatrix_assigner & append (Zero z)
     {
+      DUNE_UNUSED_PARAMETER(z);
       while (c!=m) A[r][c++] = 0;
       return *this;
     }
@@ -233,6 +236,7 @@ namespace Dune {
      */
     fmatrix_assigner & append (NextRow nr)
     {
+      DUNE_UNUSED_PARAMETER(nr);
       end_row();
       r++;
       return *this;

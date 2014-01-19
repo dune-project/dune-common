@@ -21,15 +21,15 @@ struct Counter {
   Counter() : result_(0) {}
 
   template <class T1>
-  void visit(T1 elem) { ++result_; }
+  void visit(T1) { ++result_; }
 
   template <class T1, class T2>
-  void visit(T1 elem, T2 elem1) { ++(++result_); }
+  void visit(T1, T2) { ++(++result_); }
   int result_;
 };
 
 
-int main(int argc, char** argv)
+int main(int, char**)
 {
 
   typedef Dune::tuple<int*,double*,long*,char*> PointerTuple;

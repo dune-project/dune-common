@@ -4,9 +4,9 @@ Preparing the SVN-sources
 Additional to the software mentioned in README you'll need the
 following programs installed on your system:
 
-  automake >= 1.5
+  automake >= 1.9
 
-  autoconf >= 2.50
+  autoconf >= 2.52
 
   libtool
 
@@ -22,7 +22,4 @@ Important!  If you don't want to develop Dune itself you won't need to
 provide external components! The Dune-library and -headers are
 independent of other libraries, instead the applications can choose
 which parts to use.
-
-$Id$
-
 

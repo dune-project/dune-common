@@ -356,7 +356,7 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
     #
     AS_IF([test -d "$with_[]_dune_module"],[
       # expand tilde / other stuff
-      _DUNE_MODULE[]_ROOT=`cd $with_[]_dune_module && pwd`
+      _DUNE_MODULE[]_ROOT=`cd "$with_[]_dune_module" && pwd`
       _DUNE_MODULE[]_LIBDIR="$_DUNE_MODULE[]_ROOT/lib"
 
       # expand search path (otherwise empty CPPFLAGS)
@@ -370,14 +370,14 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
         _DUNE_MODULE[]_SRCDIR=$_DUNE_MODULE[]_ROOT
         echo "testing $_DUNE_MODULE[]_ROOT/CMakeCache.txt"
         # extract src and build path from Makefile or CMakeCache.txt, if found
-        AS_IF([test -f $_DUNE_MODULE[]_ROOT/CMakeCache.txt],[
-          _DUNE_MODULE[]_SRCDIR="`sed -ne '/^[]_dune_name[]_SOURCE_DIR:STATIC=/{s/^[]_dune_name[]_SOURCE_DIR:STATIC=//; p;}' $_DUNE_MODULE[]_ROOT/CMakeCache.txt`"
+        AS_IF([test -f "$_DUNE_MODULE[]_ROOT/CMakeCache.txt"],[
+          _DUNE_MODULE[]_SRCDIR="`sed -ne '/^[]_dune_name[]_SOURCE_DIR:STATIC=/{s/^[]_dune_name[]_SOURCE_DIR:STATIC=//; p;}' "$_DUNE_MODULE[]_ROOT/CMakeCache.txt"`"
           echo srcdir=$_DUNE_MODULE[]_SRCDIR
-                ],[test -f $_DUNE_MODULE[]_ROOT/Makefile],[
-          _DUNE_MODULE[]_SRCDIR="`sed -ne '/^abs_top_srcdir = /{s/^abs_top_srcdir = //; p;}' $_DUNE_MODULE[]_ROOT/Makefile`"
+                ],[test -f "$_DUNE_MODULE[]_ROOT/Makefile"],[
+          _DUNE_MODULE[]_SRCDIR="`sed -ne '/^abs_top_srcdir = /{s/^abs_top_srcdir = //; p;}' "$_DUNE_MODULE[]_ROOT/Makefile"`"
 		])
         _dune_cm_CPPFLAGS="-I$_DUNE_MODULE[]_SRCDIR"
-        _DUNE_MODULE[]_VERSION="`grep Version $_DUNE_MODULE[]_SRCDIR/dune.module | sed -e 's/^Version: *//'`" 2>/dev/null
+        _DUNE_MODULE[]_VERSION="`grep Version "$_DUNE_MODULE[]_SRCDIR/dune.module" | sed -e 's/^Version: *//'`" 2>/dev/null
         AS_IF([test -f "$_DUNE_MODULE[]_LIBDIR[]/lib[]_dune_lib[].la"], [
           # local modules is linked directly via the .la file
           _dune_cm_LIBS="$_DUNE_MODULE[]_LIBDIR[]/lib[]_dune_lib[].la"],[

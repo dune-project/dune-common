@@ -173,25 +173,25 @@ namespace Dune
 #ifndef DOXYGEN
   template<class T>
   array<T, 1> make_array(const T &t0) {
-    array<T, 1> result = { t0 };
+    array<T, 1> result = { {t0} };
     return result;
   }
 
   template<class T>
   array<T, 2> make_array(const T &t0, const T &t1) {
-    array<T, 2> result = { t0, t1 };
+    array<T, 2> result = { {t0, t1} };
     return result;
   }
 
   template<class T>
   array<T, 3> make_array(const T &t0, const T &t1, const T &t2) {
-    array<T, 3> result = { t0, t1, t2 };
+    array<T, 3> result = { {t0, t1, t2} };
     return result;
   }
 
   template<class T>
   array<T, 4> make_array(const T &t0, const T &t1, const T &t2, const T &t3) {
-    array<T, 4> result = { t0, t1, t2, t3 };
+    array<T, 4> result = { {t0, t1, t2, t3} };
     return result;
   }
 
@@ -199,7 +199,7 @@ namespace Dune
   array<T, 5> make_array(const T &t0, const T &t1, const T &t2, const T &t3,
                          const T &t4)
   {
-    array<T, 5> result = { t0, t1, t2, t3, t4 };
+    array<T, 5> result = { {t0, t1, t2, t3, t4} };
     return result;
   }
 
@@ -207,7 +207,7 @@ namespace Dune
   array<T, 6> make_array(const T &t0, const T &t1, const T &t2, const T &t3,
                          const T &t4, const T &t5)
   {
-    array<T, 6> result = { t0, t1, t2, t3, t4, t5 };
+    array<T, 6> result = { {t0, t1, t2, t3, t4, t5} };
     return result;
   }
 
@@ -215,7 +215,7 @@ namespace Dune
   array<T, 7> make_array(const T &t0, const T &t1, const T &t2, const T &t3,
                          const T &t4, const T &t5, const T &t6)
   {
-    array<T, 7> result = { t0, t1, t2, t3, t4, t5, t6 };
+    array<T, 7> result = { {t0, t1, t2, t3, t4, t5, t6} };
     return result;
   }
 
@@ -223,7 +223,7 @@ namespace Dune
   array<T, 8> make_array(const T &t0, const T &t1, const T &t2, const T &t3,
                          const T &t4, const T &t5, const T &t6, const T &t7)
   {
-    array<T, 8> result = { t0, t1, t2, t3, t4, t5, t6, t7 };
+    array<T, 8> result = { {t0, t1, t2, t3, t4, t5, t6, t7} };
     return result;
   }
 
@@ -232,7 +232,7 @@ namespace Dune
                          const T &t4, const T &t5, const T &t6, const T &t7,
                          const T &t8)
   {
-    array<T, 9> result = { t0, t1, t2, t3, t4, t5, t6, t7, t8 };
+    array<T, 9> result = { {t0, t1, t2, t3, t4, t5, t6, t7, t8} };
     return result;
   }
 #endif // !DOXYGEN
@@ -251,6 +251,22 @@ namespace Dune
   {
     array<T, 10> result = { t0, t1, t2, t3, t4, t5, t6, t7, t8, t9 };
     return result;
+  }
+
+  //! Create an array and fill it with copies of the provided value.
+  /**
+   * \note This method is Dune-specific and not part of any C++ standard.
+   */
+  template<typename T, std::size_t n>
+  array<T,n> fill_array(const T& t)
+  {
+    array<T,n> r;
+    r.fill(t);
+#if HAVE_RVALUE_REFERENCES
+    return std::move(r);
+#else
+    return r;
+#endif
   }
 
   /** @} */

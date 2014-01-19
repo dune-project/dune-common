@@ -8,12 +8,12 @@
 #include <cstddef>
 #include <iostream>
 
-#include <dune/common/misc.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/densematrix.hh>
 #include <dune/common/precision.hh>
 #include <dune/common/static_assert.hh>
+#include <dune/common/std/constexpr.hh>
 
 namespace Dune
 {
@@ -90,15 +90,10 @@ namespace Dune
 
     /** \brief Constructor initializing the whole matrix with a scalar
      */
-    explicit FieldMatrix (const K& k)
+    template< class Other >
+    FieldMatrix ( const Other &other )
     {
-      for (size_type i=0; i<rows; i++) _data[i] = k;
-    }
-
-    template<typename T>
-    explicit FieldMatrix (const T& t)
-    {
-      DenseMatrixAssigner<Conversion<T,K>::exists>::assign(*this, t);
+      DenseMatrixAssigner< FieldMatrix< K, ROWS, COLS >, Other >::apply( *this, other );
     }
 
     //===== assignment
@@ -169,8 +164,8 @@ namespace Dune
     }
 
     // make this thing a matrix
-    size_type mat_rows() const { return ROWS; }
-    size_type mat_cols() const { return COLS; }
+    DUNE_CONSTEXPR size_type mat_rows() const { return ROWS; }
+    DUNE_CONSTEXPR size_type mat_cols() const { return COLS; }
 
     row_reference mat_access ( size_type i )
     {
@@ -234,10 +229,11 @@ namespace Dune
     {
       _data[0] = k;
     }
-    template<typename T>
-    FieldMatrix(const T& t)
+
+    template< class Other >
+    FieldMatrix ( const Other &other )
     {
-      DenseMatrixAssigner<Conversion<T,K>::exists>::assign(*this, t);
+      DenseMatrixAssigner< FieldMatrix< K, 1, 1 >, Other >::apply( *this, other );
     }
 
     //===== solve
@@ -271,8 +267,8 @@ namespace Dune
     }
 
     // make this thing a matrix
-    size_type mat_rows() const { return 1; }
-    size_type mat_cols() const { return 1; }
+    DUNE_CONSTEXPR size_type mat_rows() const { return 1; }
+    DUNE_CONSTEXPR size_type mat_cols() const { return 1; }
 
     row_reference mat_access ( size_type i )
     {

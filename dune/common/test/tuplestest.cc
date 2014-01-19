@@ -260,7 +260,7 @@ int tuple_tr1_test()
 }
 
 
-int main(int argc, char** argv)
+int main(int, char**)
 {
   tuple<float,int,double,char,std::string> tuple_;
   std::cout << "=== testing tuple: " << className(tuple_) << std::endl;

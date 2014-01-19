@@ -228,6 +228,13 @@ namespace Dune {
     V & asImp() { return static_cast<V&>(*this); }
     const V & asImp() const { return static_cast<const V&>(*this); }
 
+    // prohibit copying
+    DenseVector ( const DenseVector & );
+
+  protected:
+    // construction allowed to derived classes only
+    DenseVector () {}
+
   public:
     //===== type definitions and constants
 

@@ -21,7 +21,7 @@ find_package(MPI)
 find_package(Threads)
 
 if(MPI_CXX_FOUND)
-  set(HAVE_MPI MPI_CXX_FOUND)
+  set(HAVE_MPI ${MPI_CXX_FOUND})
   # We do not support the CXX bindings of MPI
   set(MPI_DUNE_COMPILE_FLAGS ${MPI_C_COMPILE_FLAGS} CACHE STRING
     "Compile flags used by DUNE when compiling MPI programs")
@@ -34,15 +34,42 @@ if(MPI_CXX_FOUND)
   set(MPI_DUNE_LIBRARIES ${CMAKE_THREAD_LIBS_INIT} ${MPI_C_LIBRARIES} CACHE STRING
     "Libraries used by DUNE when linking MPI programs")
 
+  set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-DENABLE_MPI=1 -DMPICH_SKIP_MPICXX -DMPIPP_H")
+  foreach(dir ${MPI_DUNE_INCLUDE_PATH})
+    set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-I${dir}")
+  endforeach()
+
   # Check whether the MPI-2 standard is supported
   include(CMakePushCheckState)
   include(CheckFunctionExists)
+  include(CheckCXXSourceCompiles)
   cmake_push_check_state()
   set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES};${MPI_DUNE_LIBRARIES})
   set(CMAKE_REQUIRED_DEFINITIONS ${CMAKE_REQUIRED_DEFINITIONS} "-DENABLE_MPI=1 -DMPICH_SKIP_MPICXX -DMPIPP_H")
   set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES};${MPI_DUNE_INCLUDE_PATH})
   check_function_exists(MPI_Finalized MPI_2)
+
+  # proper version check
+  check_cxx_source_compiles("
+    #include <mpi.h>
+
+    #if !((MPI_VERSION > 2) || (MPI_VERSION == 2 && MPI_SUBVERSION >= 1))
+    fail with a horribe compilation error due to old MPI version
+    #endif
+
+    int main(int argc, char** argv)
+    {
+      MPI_Init(&argc,&argv);
+      MPI_Finalize();
+    }
+" MPI_VERSION_SUPPORTED)
+
   cmake_pop_check_state()
+
+  # TODO: Turn into an error after 2.3 release
+  if(NOT MPI_VERSION_SUPPORTED)
+    MESSAGE(WARNING "Support for your MPI implementation is DEPRECATED and will be removed after the next release. Please upgrade to an MPI-2.1 compliant version.")
+  endif()
 endif(MPI_CXX_FOUND)
 
 # adds MPI flags to the targets

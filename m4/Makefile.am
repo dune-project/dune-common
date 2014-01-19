@@ -21,6 +21,7 @@ ALLM4S = 					\
 	cxx11_conditional.m4			\
 	cxx11_initializer_list.m4		\
 	cxx11_lambda_expr.m4			\
+	cxx11_constexpr.m4			\
 	dune.m4					\
 	dune_all.m4				\
 	dune_autobuild.m4			\
@@ -28,6 +29,7 @@ ALLM4S = 					\
 	dune_check_lib.m4			\
 	dune_common.m4				\
 	dune_compiler.m4			\
+	dune_cxa_demangle.m4			\
 	dune_fortran.m4				\
 	dune_deprecated.m4			\
 	dune_deprecated_cppflags.m4		\
@@ -51,9 +53,10 @@ ALLM4S = 					\
 	parmetis.m4				\
 	shared_ptr.m4				\
 	tbb.m4					\
+    umfpack.m4                              \
 	xdr.m4
 
-aclocaldir = $(datadir)/aclocal
+aclocaldir = $(datadir)/dune/aclocal
 aclocal_DATA = $(ALLM4S)
 
 EXTRA_DIST = CMakeLists.txt $(ALLM4S)

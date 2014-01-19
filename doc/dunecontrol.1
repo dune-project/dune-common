@@ -1,0 +1,173 @@
+.\" First parameter, NAME, should be all caps
+.\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
+.\" other parameters are allowed: see man(7), man(1)
+.TH DUNECONTROL 1 "November 26, 2013"
+.\" Please adjust this date whenever revising the manpage.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.SH NAME
+dunecontrol \- Control program for the Dune build system
+.SH SYNOPSIS
+.B dunecontrol
+[\fIOPTIONS\fP] \fICOMMANDS\fP [\fICOMMAND-OPTIONS\fP]
+.SH DESCRIPTION
+.B dunecontrol
+is the control program for the build system of the Dune libraries.
+
+The Dune libraries form a set of modules.  Each can be built independently using either
+the AutoTools or cmake.  Additionally, though, there are dependencies between modules,
+which are expected to form a directed acyclic graph.  These dependencies are set in a
+file called
+.B dune.module
+contained in the main directory of a Dune module.
+
+The
+.B dunecontrol
+program helps to build sets of inter-dependent modules.  It allows to construct
+the entire dependency graph and obtain information about it.  Then it allows to give various build-related
+commands for all modules.  These are executed in the order mandated by the dependency graph.
+
+.SH COMMANDS
+Colon-separated list of commands. Available commands are:
+.HP
+.B help
+.IP
+Shows a help message and exits
+.HP
+.B print
+.IP
+Print the list of modules sorted after their dependencies
+.HP
+.B info
+.IP
+Same as `print', but including whether it is a dependency or suggestion
+.HP
+.B printdeps
+.IP
+Print recursive dependencies of a module
+.HP
+.B vcsetup
+.IP
+Setup version control repository (Git etc.) or working copy (SVN)
+.HP
+.B update
+.IP
+Update all modules from the repository
+.HP
+.B autogen
+.IP
+Run the autogen.sh script for each module. Does nothing, if CMake is activated
+.HP
+.B configure
+.IP
+Run configure or cmake for each module
+.HP
+.B make
+.IP
+Run make for each module
+.HP
+.B all
+.IP
+Run the 'autogen', 'configure' and 'make' commands for each module
+.HP
+.B exec
+.IP
+Execute an arbitrary command in each module source directory
+.HP
+.B bexec
+.IP
+Execute an arbitrary command in each module build directory
+.HP
+.B status
+.IP
+Show version control status for all modules
+.HP
+.B svn
+.IP
+Run svn command for each svn managed module
+.HP
+.B git
+.IP
+Run git command for each git managed module
+.HP
+.B export
+.IP
+Run eval `dunecontrol export` to save the list of dune.module files to the DUNE_CONTROL_PATH variable
+.SH OPTIONS
+.HP
+\fB\-h\fP, \fB\-\-help\fP
+.IP
+Show this help
+.HP
+\fB--debug\fP
+.IP
+Run with debuggin output enabled
+.HP
+\fB--use-cmake\fP
+.IP
+Use cmake instead of the AutoTools for building individual modules
+.HP
+\fB--module=\fP\fImod\fP
+.IP
+Only apply the actions on module
+.I mod
+and all modules it depends on
+.HP
+\fB--only=\fP\fImod\fP
+.IP
+Only apply the actions on module
+.I mod
+, but not the modules it depends on
+.HP
+\fB--current\fP
+.IP
+Only apply the actions on the current module, the one whose source tree we are in
+.HP
+\fB--resume\fP
+.IP
+Resume a previous run (only consider the modules not built successfully on the previous run)
+.HP
+\fB--skipfirst\fP
+.IP
+Skip the first module (use with --resume)
+.HP
+\fB--opts=\fP\fIfile\fP
+.IP
+Load default options from \fIfile\fP (see dune-common/doc/example.opts)
+.HP
+\fB--builddir=\fP\fIname\fP
+.IP
+Make out-of-source builds in a subdir \fIname\fP. This directory is created inside each module.
+.HP
+\fB--[COMMAND]-opts=\fP\fIopts\fP
+.IP
+Set options for COMMAND (this is mainly useful for the 'all' COMMAND)
+
+
+.SH ENVIRONMENT VARIABLES
+.B dunecontrol
+looks for Dune modules in all directories given in the
+.B DUNE_CONTROL_PATH
+variable, and additionally recursively in all subdirectories of those directories.
+The default for the case that DUNE_CONTROL_PATH is empty is the current directory,
+plus a system-wide installation in /usr.
+
+.SH AUTHOR
+Dune was written by the Dune team (www.dune-project.org/people).
+.PP
+This manual page was written by Oliver Sander.
+
+.SH COPYRIGHT
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.  This file is offered as-is,
+without any warranty.
