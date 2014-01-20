@@ -1438,7 +1438,7 @@ namespace Dune
                     MPI_BYTE, info->first, commTag_, communicator_,
                     recvRequests+i);
         else
-          # Nothing to receive -> set request to inactive
+          // Nothing to receive -> set request to inactive
           recvRequests[i]=MPI_REQUEST_NULL;
       }else{
         assert(info->second.first.start_*sizeof(typename CommPolicy<Data>::IndexedType)+info->second.first.size_ <= recvBufferSize );
@@ -1448,7 +1448,7 @@ namespace Dune
                     MPI_BYTE, info->first, commTag_, communicator_,
                     recvRequests+i);
         else
-          # Nothing to receive -> set request to inactive
+          // Nothing to receive -> set request to inactive
           recvRequests[i]=MPI_REQUEST_NULL;
       }
     }
@@ -1465,7 +1465,7 @@ namespace Dune
                      MPI_BYTE, info->first, commTag_, communicator_,
                      sendRequests+i);
         else
-          # Nothing to send -> set request to inactive
+          // Nothing to send -> set request to inactive
           sendRequests[i]=MPI_REQUEST_NULL;
       }else{
         assert(info->second.second.start_*sizeof(typename CommPolicy<Data>::IndexedType)+info->second.second.size_ <= sendBufferSize );
@@ -1475,7 +1475,7 @@ namespace Dune
                      MPI_BYTE, info->first, commTag_, communicator_,
                      sendRequests+i);
         else
-          # Nothing to send -> set request to inactive
+          // Nothing to send -> set request to inactive
           sendRequests[i]=MPI_REQUEST_NULL;
       }
 
