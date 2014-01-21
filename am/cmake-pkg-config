@@ -11,16 +11,16 @@ install-exec-local:
 	  echo "set($(PACKAGE)_MODULE_PATH \"$(datadir)/dune/cmake/modules\")" >> $(PACKAGE)-config.tmp; \
 	fi; \
 	echo "#set($(PACKAGE)_FAKE_CMAKE_PKGCONFIG TRUE)">> $(PACKAGE)-config.tmp; \
-	lib="lib"`echo $(PACKAGE) | $(SED) 's/-//g'`; \
+	lib=`echo $(PACKAGE) | $(SED) 's/-//g'`; \
 	for suffix in .a .so; do \
-	  if test -f $(DESTDIR)$(libdir)/$$lib$$suffix; then \
+	  if test -f $(DESTDIR)$(libdir)/lib$$lib$$suffix; then \
 	    echo "set($(PACKAGE)_LIBRARIES \"$$lib\")">> $(PACKAGE)-config.tmp; \
 	    if test "$$suffix" = ".a"; then \
 	      static="STATIC"; \
 	    fi; \
 	    echo "add_library($$lib $$static IMPORTED)" >> $(PACKAGE)-config.tmp; \
 	    echo "set_property(TARGET $$lib APPEND PROPERTY IMPORTED_CONFIGURATIONS NOCONFIG)" >> $(PACKAGE)-config.tmp; \
-	    echo "set_target_properties($$lib PROPERTIES IMPORTED_LINK_INTERFACE_LANGUAGES_NOCONFIG \"CXX\" IMPORTED_LOCATION_NOCONFIG $(libdir)/$$lib$$suffix)"  >> $(PACKAGE)-config.tmp; \
+	    echo "set_target_properties($$lib PROPERTIES IMPORTED_LINK_INTERFACE_LANGUAGES_NOCONFIG \"CXX\" IMPORTED_LOCATION_NOCONFIG $(libdir)/lib$$lib$$suffix)"  >> $(PACKAGE)-config.tmp; \
 	    break; \
 	  fi; \
 	done; \
