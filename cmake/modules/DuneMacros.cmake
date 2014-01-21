@@ -97,7 +97,7 @@ macro(find_dune_package module)
   endif(NOT ${module}_FOUND)
   if(NOT ${module}_FOUND OR ${module}_FAKE_CMAKE_PKGCONFIG)
     message(STATUS "No full CMake package configuration support available."
-      " Falling back to pkg-cconfig.")
+      " Falling back to pkg-config.")
     unset(${module}_FOUND)
     # use pkg-config
     find_package(PkgConfig REQUIRED)
