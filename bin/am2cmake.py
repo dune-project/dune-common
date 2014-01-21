@@ -721,7 +721,7 @@ def finalize_cmake_module(module_name):
                        module_name.capitalize())
     name_wo_dasch=module_name.replace('-', '')
     lines = ['\nadd_subdirectory(cmake/modules)\n',
-             '# finalize the dune project, e.g. generating config.h etc.\n'
+             '# finalize the dune project, e.g., generate config.h etc.\n'
              'finalize_dune_project(GENERATE_CONFIG_H_CMAKE)\n']
     return ''.join(lines)
 
