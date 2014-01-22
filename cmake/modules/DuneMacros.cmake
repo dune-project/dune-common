@@ -347,6 +347,10 @@ macro(dune_create_dependency_tree)
   endif(DEPENDS_MODULE OR SUGGESTS_MODULE)
   set(_my_path "")
   if(ALL_DEPENDENCIES)
+    # Reverse the order of the modules and remove duplicates
+    # At end of this clause we have have a list modules
+    # where for each entry all dependencies are before the
+    # module in the list.
     set(NEW_ALL_DEPS "")
     list(LENGTH ALL_DEPENDENCIES length)
     if(length GREATER 0)
@@ -363,8 +367,8 @@ macro(dune_create_dependency_tree)
 	    set(${_mod}_cmake_path_processed 1)
 	    if(${_mod}_MODULE_PATH)
 	      list(INSERT _my_path 0 ${${_mod}_MODULE_PATH})
-	      list(APPEND NEW_ALL_DEPS ${_mod})
 	    endif(${_mod}_MODULE_PATH)
+	    list(APPEND NEW_ALL_DEPS ${_mod})
 	  endif(NOT ${_mod}_cmake_path_processed)
 	endforeach(i RANGE ${length} 0 -1)
       endif(length GREATER 0)
