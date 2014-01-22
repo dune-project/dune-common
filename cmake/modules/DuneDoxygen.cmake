@@ -4,8 +4,8 @@
 #
 # add_doxgen_target
 #
-# This macro creates a target for building (doxygen_${DUNE_MOD_NAME}) and installing
-# (doxygen_install_${DUNE_MOD_NAME}) the generated doxygen documentation.
+# This macro creates a target for building (doxygen_${ProjectName}) and installing
+# (doxygen_install_${ProjectName}) the generated doxygen documentation.
 # The documentation is built during the top-level make doc call. We have added a dependency
 # that makes sure it is built before running make install.
 #
@@ -27,7 +27,7 @@ add_custom_target(doxygen_install)
 # Doxyfile[.in] files needed to doxygen.
 MACRO (prepare_doxyfile)
   message(STATUS "using ${DOXYSTYLE_FILE} to create doxystyle file")
-  set(make_doxyfile_command ${CMAKE_COMMAND} -D DOT_TRUE=${DOT_TRUE} -D DUNEWEB_TRUE=\# -D DUNE_MOD_NAME=${DUNE_MOD_NAME} -D DUNE_MOD_VERSION=${DUNE_MOD_VERSION} -D DOXYSTYLE=${DOXYSTYLE_FILE}  -D DOXYLOCAL=${CMAKE_CURRENT_SOURCE_DIR}/Doxylocal -D abs_top_srcdir=${CMAKE_SOURCE_DIR} -D srcdir=${CMAKE_CURRENT_SOURCE_DIR} -D top_srcdir=${CMAKE_SOURCE_DIR} -P ${SCRIPT_DIR}/CreateDoxyFile.cmake)
+  set(make_doxyfile_command ${CMAKE_COMMAND} -D DOT_TRUE=${DOT_TRUE} -D DUNEWEB_TRUE=\# -D ProjectName=${ProjectName} -D DUNE_MOD_VERSION=${DUNE_MOD_VERSION} -D DOXYSTYLE=${DOXYSTYLE_FILE}  -D DOXYLOCAL=${CMAKE_CURRENT_SOURCE_DIR}/Doxylocal -D abs_top_srcdir=${CMAKE_SOURCE_DIR} -D srcdir=${CMAKE_CURRENT_SOURCE_DIR} -D top_srcdir=${CMAKE_SOURCE_DIR} -P ${SCRIPT_DIR}/CreateDoxyFile.cmake)
   add_custom_command (OUTPUT Doxyfile.in Doxyfile
     COMMAND ${make_doxyfile_command} COMMENT "Creating Doxyfile.in")
   add_custom_target(Doxyfile DEPENDS Doxyfile.in Doxyfile)
@@ -36,8 +36,8 @@ ENDMACRO (prepare_doxyfile)
 #
 # add_doxgen_target
 #
-# This macro creates a target for building (doxygen_${DUNE_MOD_NAME}) and installing
-# (doxygen_install_${DUNE_MOD_NAME}) the generated doxygen documentation.
+# This macro creates a target for building (doxygen_${ProjectName}) and installing
+# (doxygen_install_${ProjectName}) the generated doxygen documentation.
 # The documentation is built during the top-level make doc call. We have added a dependency
 # that make sure it is built before running make install.
 MACRO (add_doxygen_target)
@@ -50,7 +50,7 @@ MACRO (add_doxygen_target)
   find_file(_src_file index.html ${CMAKE_CURRENT_SOURCE_DIR}/html)
   if(_src_file)
     set(_src_dir ${CMAKE_CURRENT_SOURCE_DIR})
-    add_custom_target(doxygen_${DUNE_MOD_NAME})
+    add_custom_target(doxygen_${ProjectName})
   else(_src_file)
     if(DOXYGEN_FOUND)
       prepare_doxyfile()
@@ -61,8 +61,8 @@ MACRO (add_doxygen_target)
 	DEPENDS Doxyfile)
       # Create a target for building the doxygen documentation of a module,
       # that is run during make doc.
-      add_custom_target(doxygen_${DUNE_MOD_NAME} DEPENDS html)
-      add_dependencies(doc doxygen_${DUNE_MOD_NAME})
+      add_custom_target(doxygen_${ProjectName} DEPENDS html)
+      add_dependencies(doc doxygen_${ProjectName})
     endif(DOXYGEN_FOUND)
     set(_src_dir ${CMAKE_CURRENT_BINARY_DIR})
   endif(_src_file)
@@ -72,7 +72,7 @@ MACRO (add_doxygen_target)
   include(GNUInstallDirs)
   # When installing call cmake install with the above install target
   install(CODE
-    "execute_process(COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target doxygen_${DUNE_MOD_NAME}
+    "execute_process(COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target doxygen_${ProjectName}
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
       file(GLOB doxygenfiles
         GLOB ${_src_dir}/html/*.html

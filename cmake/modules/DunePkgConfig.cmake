@@ -12,8 +12,8 @@ function(create_and_install_pkconfig installlibdir)
   set(exec_prefix "\${prefix}")
   set(libdir "\${exec_prefix}/${installlibdir}")
   set(includedir "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}")
-  set(PACKAGE_NAME ${DUNE_MOD_NAME})
-  set(VERSION ${DUNE_MOD_VERSION})
+  set(PACKAGE_NAME ${ProjectName})
+  set(VERSION ${ProjectVersion})
   set(CC ${CMAKE_C_COMPILER})
   set(CXX "${CMAKE_CXX_COMPILER} ${CXX_STD11_FLAGS}")
 
@@ -31,13 +31,13 @@ function(create_and_install_pkconfig installlibdir)
 
   #create pkg-config file
   configure_file(
-    ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}.pc.in
-    ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}.pc
+    ${PROJECT_SOURCE_DIR}/${ProjectName}.pc.in
+    ${PROJECT_BINARY_DIR}/${ProjectName}.pc
     @ONLY
     )
 
   # install pkgconfig file
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${DUNE_MOD_NAME}.pc
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${ProjectName}.pc
     DESTINATION ${installlibdir}/pkgconfig)
 
 endfunction(create_and_install_pkconfig)
