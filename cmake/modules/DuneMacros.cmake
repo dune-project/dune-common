@@ -416,7 +416,7 @@ macro(dune_module_to_macro _macro_name _dune_module)
 endmacro(dune_module_to_macro _macro_name _dune_module)
 
 macro(dune_process_dependency_tree DEPENDS DVERSIONS SUGGESTS SVERSIONS)
-  foreach(_mod ${ALL_DEPENDENCIES})
+  foreach(_mod ${ALL_DEPENDENCIES} ${ProjectName})
     if(NOT ${_mod}_PROCESSED)
       # module not processed yet
       set(${_mod}_PROCESSED ${_mod})
