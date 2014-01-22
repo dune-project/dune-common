@@ -140,6 +140,22 @@ macro(find_dune_package module)
     endif(NOT ${module}_MODULE_PATH)
     unset(${module}_FAKE_CMAKE_PKGCONFIG)
   endif(NOT ${module}_FOUND OR ${module}_FAKE_CMAKE_PKGCONFIG)
+  if(${module}_FOUND)
+    # parse other module's dune.module file to generate variables for config.h
+    unset(${module}_dune_module)
+    foreach(_dune_module_file ${${module}_PREFIX}/dune.module
+	${${module}_PREFIX}/lib/dunecontrol/${module}/dune.module)
+      if(EXISTS ${_dune_module_file})
+	get_filename_component(_dune_module_file_path ${_dune_module_file} PATH)
+	dune_module_information(${_dune_module_file_path})# QUIET)
+	set(${module}_dune_module 1)
+      endif(EXISTS ${_dune_module_file})
+    endforeach()
+    if(NOT ${module}_dune_module)
+      message(FATAL_ERROR "Could not find dune.module file for module ${module} "
+	"in ${${module}_PREFIX},  ${${module}_PREFIX}/lib/dunecontrol/${module}/")
+    endif(NOT ${module}_dune_module)
+  endif(${module}_FOUND)
 endmacro(find_dune_package module)
 
 macro(extract_line HEADER  OUTPUT FILE_CONTENT)
@@ -219,27 +235,27 @@ macro(dune_module_information MODULE_DIR)
   endif(NOT DUNE_MAINTAINER)
 
   # 3. Check for line starting with Depends
-  extract_line("Depends:" DUNE_DEPENDS "${DUNE_MODULE}")
-  if(DUNE_DEPENDS)
-    split_module_version(${DUNE_DEPENDS} DEPENDS_MODULE DEPENDS_VERSIONS)
-    foreach(_mod ${DUNE_DEPENDS})
+  extract_line("Depends:" ${DUNE_MOD_NAME}_DEPENDS "${DUNE_MODULE}")
+  if(${DUNE_MOD_NAME}_DEPENDS)
+    split_module_version(${${DUNE_MOD_NAME}_DEPENDS} DEPENDS_MODULE DEPENDS_VERSIONS)
+    foreach(_mod ${${DUNE_MOD_NAME}_DEPENDS})
       set(${_mod}_REQUIRED REQUIRED)
-    endforeach(_mod ${DUNE_DEPENDS})
-    convert_deps_to_list(DUNE_DEPENDS)
+    endforeach(_mod ${${DUNE_MOD_NAME}_DEPENDS})
+    convert_deps_to_list(${DUNE_MOD_NAME}_DEPENDS)
     if(NOT ("${ARGV1}" STREQUAL QUIET))
-      message(STATUS "Dependencies: ${DEPENDS_MODULE} (versions: ${DEPENDS_VERSIONS}) DUNE_DEPENDS=${DUNE_DEPENDS}")
+      message(STATUS "Dependencies: ${DEPENDS_MODULE} (versions: ${DEPENDS_VERSIONS}) ${DUNE_MOD_NAME}_DEPENDS=${${DUNE_MOD_NAME}_DEPENDS}")
     endif(NOT ("${ARGV1}" STREQUAL QUIET))
-  endif(DUNE_DEPENDS)
+  endif(${DUNE_MOD_NAME}_DEPENDS)
 
   # 4. Check for line starting with Suggests
-  extract_line("Suggests:" DUNE_SUGGESTS "${DUNE_MODULE}")
-  if(DUNE_SUGGESTS)
-    split_module_version(${DUNE_SUGGESTS} SUGGESTS_MODULE SUGGESTS_VERSION)
-    convert_deps_to_list(DUNE_SUGGESTS)
+  extract_line("Suggests:" ${DUNE_MOD_NAME}_SUGGESTS "${DUNE_MODULE}")
+  if(${DUNE_MOD_NAME}_SUGGESTS)
+    split_module_version(${${DUNE_MOD_NAME}_SUGGESTS} SUGGESTS_MODULE SUGGESTS_VERSION)
+    convert_deps_to_list(${DUNE_MOD_NAME}_SUGGESTS)
     if(NOT ("${ARGV1}" STREQUAL QUIET))
-      message(STATUS "Suggestions: ${SUGGESTS_MODULE} (versions: ${SUGGESTS_VERSIONS}) DUNE_SUGGESTS=${DUNE_SUGGESTS}")
+      message(STATUS "Suggestions: ${SUGGESTS_MODULE} (versions: ${SUGGESTS_VERSIONS}) ${DUNE_MOD_NAME}_SUGGESTS=${${DUNE_MOD_NAME}_SUGGESTS}")
     endif(NOT ("${ARGV1}" STREQUAL QUIET))
-  endif(DUNE_SUGGESTS)
+  endif(${DUNE_MOD_NAME}_SUGGESTS)
 
   dune_module_to_uppercase(DUNE_MOD_NAME_UPPERCASE ${DUNE_MOD_NAME})
 
@@ -593,7 +609,7 @@ macro(dune_regenerate_config_cmake)
   if(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
     file(READ ${CMAKE_SOURCE_DIR}/config.h.cmake _file)
     string(REGEX MATCH
-      "/[\\*/][ ]*begin[ ]+${DUNE_MOD_NAME}.*\\/[/\\*][ ]*end[ ]*${DUNE_MOD_NAME}[^\\*]*\\*/"
+      "/[\\*/][ ]*begin[ ]+${ProjectName}.*\\/[/\\*][ ]*end[ ]*${ProjectName}[^\\*]*\\*/"
       _myfile "${_file}")
   endif(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
   # overwrite file with new content
@@ -603,15 +619,14 @@ macro(dune_regenerate_config_cmake)
    )
 
  # define that we found this module
- set(${DUNE_MOD_NAME}_FOUND 1)
-
- foreach(_dep ${DUNE_MOD_NAME} ${ALL_DEPENDENCIES})
+ set(${ProjectName}_FOUND 1)
+ foreach(_dep ${ProjectName} ${ALL_DEPENDENCIES})
    dune_module_to_uppercase(upper ${_dep})
    set(HAVE_${upper} ${${_dep}_FOUND})
    file(APPEND ${CONFIG_H_CMAKE_FILE}
      "\n\n/* Define to 1 if you have module ${_dep} available */
 #cmakedefine01 HAVE_${upper}\n")
- endforeach(_dep ${DUNE_MOD_NAME} ${ALL_DEPENDENCIES})
+ endforeach(_dep ${ProjectName} ${ALL_DEPENDENCIES})
 
  # add previous module specific section
  foreach(_dep ${ALL_DEPENDENCIES})
@@ -626,14 +641,6 @@ macro(dune_regenerate_config_cmake)
        string(REGEX REPLACE "(.*)/[\\*][ ]*begin private.*/[\\*][ ]*end[ ]*private[^\\*]\\*/(.*)" "\\1\\2" _file "${_tfile}")
        file(APPEND ${CONFIG_H_CMAKE_FILE} "${_file}")
      endif(EXISTS ${_mod_conf_file})
-   endforeach()
-   # parse other modules dune.module file to generate variables for config.h
-   foreach(_dune_module_file ${${_dep}_PREFIX}/dune.module
-       ${${_dep}_PREFIX}/lib/dunecontrol/${_dep}/dune.module)
-     if(EXISTS ${_dune_module_file})
-       get_filename_component(_dune_module_file_path ${_dune_module_file} PATH)
-       dune_module_information(${_dune_module_file_path} QUIET)
-     endif(EXISTS ${_dune_module_file})
    endforeach()
  endforeach(_dep ${ALL_DEPENDENCIES})
  # parse again dune.module file of current module to set PACKAGE_* variables
@@ -654,34 +661,34 @@ macro(finalize_dune_project)
   set(DOXYSTYLE_DIR ${CMAKE_INSTALL_DATAROOTDIR}/dune-common/doc/doxygen/)
   set(SCRIPT_DIR ${CMAKE_INSTALL_DATAROOTDIR}/dune/cmake/scripts)
 
-  if(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake.in)
+  if(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
     # Generate a standard cmake package configuration file
-    file(WRITE ${PROJECT_BINARY_DIR}/CMakeFiles/${DUNE_MOD_NAME}-config.cmake.in
-"if(NOT @DUNE_MOD_NAME@_FOUND)
+    file(WRITE ${PROJECT_BINARY_DIR}/CMakeFiles/${ProjectName}-config.cmake.in
+"if(NOT @ProjectName@_FOUND)
 @PACKAGE_INIT@
 
 #report other information
-set_and_check(@DUNE_MOD_NAME@_PREFIX \"\${PACKAGE_PREFIX_DIR}\")
-set_and_check(@DUNE_MOD_NAME@_INCLUDE_DIRS \"@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@\")
-set(@DUNE_MOD_NAME@_CXX_FLAGS \"@CMAKE_CXX_FLAGS@\")
-set(@DUNE_MOD_NAME@_CXX_FLAGS_DEBUG \"@CMAKE_CXX_FLAGS_DEBUG@\")
-set(@DUNE_MOD_NAME@_CXX_FLAGS_MINSIZEREL \"@CMAKE_CXX_FLAGS_MINSIZEREL@\")
-set(@DUNE_MOD_NAME@_CXX_FLAGS_RELEASE \"@CMAKE_CXX_FLAGS_RELEASE@\")
-set(@DUNE_MOD_NAME@_CXX_FLAGS_RELWITHDEBINFO \"@CMAKE_CXX_FLAGS_RELWITHDEBINFO@\")
-set(@DUNE_MOD_NAME@_DEPENDS \"@DUNE_DEPENDS@\")
-set(@DUNE_MOD_NAME@_SUGGESTS \"@DUNE_SUGGESTS@\")
-set(@DUNE_MOD_NAME@_MODULE_PATH \"@PACKAGE_DUNE_INSTALL_MODULEDIR@\")
-set(@DUNE_MOD_NAME@_LIBRARIES \"@DUNE_MODULE_LIBRARIES@\")
+set_and_check(@ProjectName@_PREFIX \"\${PACKAGE_PREFIX_DIR}\")
+set_and_check(@ProjectName@_INCLUDE_DIRS \"@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@\")
+set(@ProjectName@_CXX_FLAGS \"@CMAKE_CXX_FLAGS@\")
+set(@ProjectName@_CXX_FLAGS_DEBUG \"@CMAKE_CXX_FLAGS_DEBUG@\")
+set(@ProjectName@_CXX_FLAGS_MINSIZEREL \"@CMAKE_CXX_FLAGS_MINSIZEREL@\")
+set(@ProjectName@_CXX_FLAGS_RELEASE \"@CMAKE_CXX_FLAGS_RELEASE@\")
+set(@ProjectName@_CXX_FLAGS_RELWITHDEBINFO \"@CMAKE_CXX_FLAGS_RELWITHDEBINFO@\")
+set(@ProjectName@_DEPENDS \"@@ProjectName@_DEPENDS@\")
+set(@ProjectName@_SUGGESTS \"@@ProjectName@_SUGGESTS@\")
+set(@ProjectName@_MODULE_PATH \"@PACKAGE_DUNE_INSTALL_MODULEDIR@\")
+set(@ProjectName@_LIBRARIES \"@DUNE_MODULE_LIBRARIES@\")
 #import the target
-if(@DUNE_MOD_NAME@_LIBRARIES)
+if(@ProjectName@_LIBRARIES)
   get_filename_component(_dir \"\${CMAKE_CURRENT_LIST_FILE}\" PATH)
-  include(\"\${_dir}/@DUNE_MOD_NAME@-targets.cmake\")
-endif(@DUNE_MOD_NAME@_LIBRARIES)
-endif(NOT @DUNE_MOD_NAME@_FOUND)")
-      set(CONFIG_SOURCE_FILE ${PROJECT_BINARY_DIR}/CMakeFiles/${DUNE_MOD_NAME}-config.cmake.in)
-  else(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake.in)
-    set(CONFIG_SOURCE_FILE ${PROJECT_SOURCE_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake.in)
-  endif(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake.in)
+  include(\"\${_dir}/@ProjectName@-targets.cmake\")
+endif(@ProjectName@_LIBRARIES)
+endif(NOT @ProjectName@_FOUND)")
+      set(CONFIG_SOURCE_FILE ${PROJECT_BINARY_DIR}/CMakeFiles/${ProjectName}-config.cmake.in)
+  else(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
+    set(CONFIG_SOURCE_FILE ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
+  endif(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
   get_property(DUNE_MODULE_LIBRARIES GLOBAL PROPERTY DUNE_MODULE_LIBRARIES)
 
   # compute under which libdir the package configuration files are to be installed.
@@ -697,8 +704,8 @@ endif(NOT @DUNE_MOD_NAME@_FOUND)")
   endif(DUNE_MODULE_LIBRARIES)
 
   configure_package_config_file(${CONFIG_SOURCE_FILE}
-    ${PROJECT_BINARY_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake
-    INSTALL_DESTINATION  ${DUNE_INSTALL_LIBDIR}/cmake/${DUNE_MOD_NAME}
+    ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake
+    INSTALL_DESTINATION  ${DUNE_INSTALL_LIBDIR}/cmake/${ProjectName}
     PATH_VARS CMAKE_INSTALL_DATAROOTDIR DUNE_INSTALL_MODULEDIR CMAKE_INSTALL_INCLUDEDIR
     DOXYSTYLE_DIR SCRIPT_DIR)
 
@@ -720,11 +727,11 @@ macro(set_and_check _var _file)
 endmacro()")
   configure_file(
     ${CONFIG_SOURCE_FILE}
-    ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-config.cmake @ONLY)
+    ${PROJECT_BINARY_DIR}/${ProjectName}-config.cmake @ONLY)
 
   #configure_file(
-  #  ${PROJECT_SOURCE_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake.in
-  #  ${PROJECT_BINARY_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake @ONLY)
+  #  ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in
+  #  ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake @ONLY)
   list(LENGTH DEPENDS_MODULE mlength)
   math(EXPR len2 "${mlength}-1")
   if(mlength GREATER 0)
@@ -732,23 +739,23 @@ endmacro()")
       list(GET DEPENDS_MODULE ${i} _mod)
       dune_module_to_macro(_macro ${_mod})
       list(GET DEPENDS_VERSION ${i} _ver)
-      #file(APPEND ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-config.cmake
+      #file(APPEND ${PROJECT_BINARY_DIR}/${ProjectName}-config.cmake
       #"find_package(${_mod})\n")#include(${_macro}Macros)\n")
-      #file(APPEND ${PROJECT_BINARY_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake
+      #file(APPEND ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake
       #"find_package(${_mod})\n")#include(${_macro}Macros)\n")
     endforeach(i RANGE 0 ${mlength})
   endif(mlength GREATER 0)
 
-  if(${DUNE_MOD_NAME_CMAKE}_FOUND)
+  if(${ProjectName_CMAKE}_FOUND)
     # This module hast its own tests.
     # Execute them during find_package
-    #file(APPEND ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-config.cmake
-    #  "include(${DUNE_MOD_NAME_CMAKE}Macros)\n")
-    #file(APPEND ${PROJECT_BINARY_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake
-    #  "\ninclude(${DUNE_MOD_NAME_CMAKE}Macros)\n")
-  endif(${DUNE_MOD_NAME_CMAKE}_FOUND)
-  if(NOT EXISTS ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}-version.cmake.in)
-    file(WRITE ${PROJECT_BINARY_DIR}/CMakeFiles/${DUNE_MOD_NAME}-version.cmake.in
+    #file(APPEND ${PROJECT_BINARY_DIR}/${ProjectName}-config.cmake
+    #  "include(${ProjectName_CMAKE}Macros)\n")
+    #file(APPEND ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake
+    #  "\ninclude(${ProjectName_CMAKE}Macros)\n")
+  endif(${ProjectName_CMAKE}_FOUND)
+  if(NOT EXISTS ${PROJECT_SOURCE_DIR}/${ProjectName}-version.cmake.in)
+    file(WRITE ${PROJECT_BINARY_DIR}/CMakeFiles/${ProjectName}-version.cmake.in
 "set(PACKAGE_VERSION \"@DUNE_MOD_VERSION@\")
 
 if(NOT \"\${PACKAGE_FIND_VERSION}\" VERSION_GREATER \"@DUNE_MOD_VERSION@\")
@@ -758,25 +765,25 @@ if(NOT \"\${PACKAGE_FIND_VERSION}\" VERSION_GREATER \"@DUNE_MOD_VERSION@\")
   endif()
 endif()
 ")
-    set(CONFIG_VERSION_FILE ${PROJECT_BINARY_DIR}/CMakeFiles/${DUNE_MOD_NAME}-version.cmake.in)
-  else(NOT EXISTS ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}-version.cmake.in)
-    set(CONFIG_VERSION_FILE ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}-version.cmake.in)
-  endif(NOT EXISTS ${PROJECT_SOURCE_DIR}/${DUNE_MOD_NAME}-version.cmake.in)
+    set(CONFIG_VERSION_FILE ${PROJECT_BINARY_DIR}/CMakeFiles/${ProjectName}-version.cmake.in)
+  else(NOT EXISTS ${PROJECT_SOURCE_DIR}/${ProjectName}-version.cmake.in)
+    set(CONFIG_VERSION_FILE ${PROJECT_SOURCE_DIR}/${ProjectName}-version.cmake.in)
+  endif(NOT EXISTS ${PROJECT_SOURCE_DIR}/${ProjectName}-version.cmake.in)
   configure_file(
     ${CONFIG_VERSION_FILE}
-    ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-version.cmake @ONLY)
+    ${PROJECT_BINARY_DIR}/${ProjectName}-version.cmake @ONLY)
 
   #install dune.module file
-  install(FILES dune.module DESTINATION ${DUNE_INSTALL_NONOBJECTLIBDIR}/dunecontrol/${DUNE_MOD_NAME})
+  install(FILES dune.module DESTINATION ${DUNE_INSTALL_NONOBJECTLIBDIR}/dunecontrol/${ProjectName})
 
   # install cmake-config files
-  install(FILES ${PROJECT_BINARY_DIR}/cmake/pkg/${DUNE_MOD_NAME}-config.cmake
-    ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-version.cmake
-    DESTINATION ${DUNE_INSTALL_LIBDIR}/cmake/${DUNE_MOD_NAME})
+  install(FILES ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake
+    ${PROJECT_BINARY_DIR}/${ProjectName}-version.cmake
+    DESTINATION ${DUNE_INSTALL_LIBDIR}/cmake/${ProjectName})
 
   #install config.h
   if(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
-  install(FILES config.h.cmake DESTINATION share/${DUNE_MOD_NAME})
+  install(FILES config.h.cmake DESTINATION share/${ProjectName})
   endif(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
 
   #install pkg-config files
@@ -951,13 +958,13 @@ macro(dune_add_library basename)
       endif(NOT _MODULE_EXPORT_USED)
       # install targets to use the libraries in other modules.
       install(TARGETS ${_created_libs}
-        EXPORT ${DUNE_MOD_NAME}-targets DESTINATION ${CMAKE_INSTALL_LIBDIR})
-      install(EXPORT ${DUNE_MOD_NAME}-targets
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${DUNE_MOD_NAME})
+        EXPORT ${ProjectName}-targets DESTINATION ${CMAKE_INSTALL_LIBDIR})
+      install(EXPORT ${ProjectName}-targets
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${ProjectName})
 
       # export libraries for use in build tree
       export(TARGETS ${_created_libs} ${_append}
-        FILE ${PROJECT_BINARY_DIR}/${DUNE_MOD_NAME}-targets.cmake)
+        FILE ${PROJECT_BINARY_DIR}/${ProjectName}-targets.cmake)
     endif(NOT DUNE_LIB_NO_EXPORT)
   endif(DUNE_LIB_OBJECT)
 endmacro(dune_add_library basename sources)
