@@ -102,7 +102,8 @@ macro(find_dune_package module)
     # use pkg-config
     find_package(PkgConfig REQUIRED)
     pkg_check_modules (${module} ${module})
-    if(NOT ${module}_FOUND)
+    # error out if required module is not found
+    if((NOT ${module}_FOUND) AND (${ARGV} MATCHES ".*REQUIRED"))
       message(FATAL_ERROR "Could not find module ${module}.")
     endif()
     # compute the path to the libraries
