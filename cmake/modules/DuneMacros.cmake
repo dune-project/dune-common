@@ -105,14 +105,14 @@ macro(find_dune_package module)
     extract_major_minor_version("${DUNE_FIND_VERSION_NUMBER}" DUNE_FIND_VERSION)
     set(DUNE_FIND_VERSION_STRING "${DUNE_FIND_VERSION_MAJOR}.${DUNE_FIND_VERSION_MINOR}.${DUNE_FIND_VERSION_REVISION}")
       endif(DUNE_FIND_VERSION MATCHES "(>=|=|<=).*")
-  if(NOT DUNE_${module}_FOUND)
+  if(NOT ${module}_FOUND)
     if(NOT (${module}_DIR OR ${module}_ROOT OR
        "${CMAKE_PREFIX_PATH}" MATCHES ".*${module}.*"))
       string(REPLACE  ${ProjectName} ${module} ${module}_DIR
         ${PROJECT_BINARY_DIR})
     endif()
     find_package(${module} ${DUNE_FIND_VERSION_STRING} NO_CMAKE_PACKAGE_REGISTRY)
-  endif(NOT DUNE_${module}_FOUND)
+  endif(NOT ${module}_FOUND)
   if(NOT ${module}_FOUND)
     message(STATUS "No full CMake package configuration support available."
       " Falling back to pkg-config.")
