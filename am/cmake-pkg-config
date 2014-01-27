@@ -38,6 +38,6 @@ install-exec-local:
         echo "  endif()" >> $(PACKAGE)-config-version.tmp; \
    	echo "endif()" >> $(PACKAGE)-config-version.tmp; \
 	$(INSTALL_DATA) $(PACKAGE)-config-version.tmp $(DESTDIR)$(libdir)/cmake/$(PACKAGE)/$(PACKAGE)-config-version.cmake; \
-        rm $(PACKAGE)-config-version.cmake
+        rm $(PACKAGE)-config-version.tmp
 
 	
