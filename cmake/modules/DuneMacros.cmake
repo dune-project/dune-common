@@ -78,6 +78,8 @@
 
 enable_language(C) # Enable C to skip CXX bindings for some tests.
 
+include(FeatureSummary)
+
 # Converts a module name given by _module into an uppercase string
 # _upper where all dashes (-) are replaced by underscores (_)
 # Example: dune-common -> DUNE_COMMON
@@ -87,25 +89,43 @@ macro(dune_module_to_uppercase _upper _module)
 endmacro(dune_module_to_uppercase _upper _module)
 
 macro(find_dune_package module)
-  if(NOT ${module}_FOUND)
+  include(CMakeParseArguments)
+  cmake_parse_arguments(DUNE_FIND "REQUIRED" "VERSION" "" ${ARGN})
+  if(DUNE_FIND_REQUIRED)
+    set(required REQUIRED)
+    set_package_properties(${module} PROPERTIES TYPE REQUIRED)
+  else(DUNE_FIND_REQUIRED)
+    unset(required)
+    set_package_properties(${module} PROPERTIES TYPE RECOMMENDED)
+  endif(DUNE_FIND_REQUIRED)
+  if(DUNE_FIND_VERSION MATCHES "(>=|=|<=).*")
+    string(REGEX REPLACE "(>=|=|<=)(.*)" "\\1" DUNE_FIND_VERSION_OP ${DUNE_FIND_VERSION})
+    string(REGEX REPLACE "(>=|=|<=)(.*)" "\\2" DUNE_FIND_VERSION_NUMBER ${DUNE_FIND_VERSION})
+    string(STRIP ${DUNE_FIND_VERSION_NUMBER} DUNE_FIND_VERSION_NUMBER)
+    extract_major_minor_version("${DUNE_FIND_VERSION_NUMBER}" DUNE_FIND_VERSION)
+    set(DUNE_FIND_VERSION_STRING "${DUNE_FIND_VERSION_MAJOR}.${DUNE_FIND_VERSION_MINOR}.${DUNE_FIND_VERSION_REVISION}")
+      endif(DUNE_FIND_VERSION MATCHES "(>=|=|<=).*")
+  if(NOT DUNE_${module}_FOUND)
     if(NOT (${module}_DIR OR ${module}_ROOT OR
        "${CMAKE_PREFIX_PATH}" MATCHES ".*${module}.*"))
       string(REPLACE  ${ProjectName} ${module} ${module}_DIR
         ${PROJECT_BINARY_DIR})
     endif()
-    find_package(${ARGV} NO_CMAKE_PACKAGE_REGISTRY)
-  endif(NOT ${module}_FOUND)
-  if(NOT ${module}_FOUND OR ${module}_FAKE_CMAKE_PKGCONFIG)
+    find_package(${module} ${DUNE_FIND_VERSION_STRING} NO_CMAKE_PACKAGE_REGISTRY)
+  endif(NOT DUNE_${module}_FOUND)
+  if(NOT ${module}_FOUND)
     message(STATUS "No full CMake package configuration support available."
-      " Falling back to pkg-cconfig.")
-    unset(${module}_FOUND)
+      " Falling back to pkg-config.")
     # use pkg-config
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules (${module} ${module})
-    # error out if required module is not found
-    if((NOT ${module}_FOUND) AND (${ARGV} MATCHES ".*REQUIRED"))
-      message(FATAL_ERROR "Could not find module ${module}.")
-    endif()
+    find_package(PkgConfig)
+    if(NOT PKG_CONFIG_FOUND AND required)
+      message(FATAL_ERROR "Could not find module ${module}. We tried to use"
+	"pkg-config but could not find it. ")
+    endif(NOT PKG_CONFIG_FOUND AND required)
+        pkg_check_modules (${module} ${required} ${module}${DUNE_FIND_VERSION})
+    set(${module}_FAKE_CMAKE_PKGCONFIG TRUE)
+  endif(NOT ${module}_FOUND)
+  if(${module}_FAKE_CMAKE_PKGCONFIG)
     # compute the path to the libraries
     if(${module}_LIBRARIES)
       unset(_module_lib)
@@ -140,7 +160,7 @@ macro(find_dune_package module)
       endif(${module}_INCLUDE_DIRS)
     endif(NOT ${module}_MODULE_PATH)
     unset(${module}_FAKE_CMAKE_PKGCONFIG)
-  endif(NOT ${module}_FOUND OR ${module}_FAKE_CMAKE_PKGCONFIG)
+  endif(${module}_FAKE_CMAKE_PKGCONFIG)
   if(${module}_FOUND)
     # parse other module's dune.module file to generate variables for config.h
     unset(${module}_dune_module)
@@ -150,13 +170,38 @@ macro(find_dune_package module)
         get_filename_component(_dune_module_file_path ${_dune_module_file} PATH)
         dune_module_information(${_dune_module_file_path})# QUIET)
         set(${module}_dune_module 1)
+	set(DUNE_FIND_MOD_VERSION_STRING "${DUNE_VERSION_MAJOR}.${DUNE_VERSION_MINOR}.${DUNE_VERSION_REVISION}")
+		        unset(module_version_wrong)
+	if(DUNE_FIND_VERSION_OP MATCHES "=" AND
+	    NOT (DUNE_FIND_MOD_VERSION_STRING VERSION_EQUAL DUNE_FIND_VERSION_STRING))
+	  set(module_version_wrong 1)
+	endif()
+	if(DUNE_FIND_VERSION_OP MATCHES ">=" AND
+	    NOT (DUNE_FIND_MOD_VERSION_STRING VERSION_EQUAL DUNE_FIND_VERSION_STRING OR
+	      DUNE_FIND_MOD_VERSION_STRING VERSION_GREATER DUNE_FIND_VERSION_STRING))
+	  set(module_version_wrong 1)
+	endif()
+	if(DUNE_FIND_VERSION_OP MATCHES "<=" AND
+	    NOT (DUNE_FIND_MOD_VERSION_STRING VERSION_EQUAL DUNE_FIND_VERSION_STRING OR
+	      DUNE_FIND_MOD_VERSION_STRING VERSION_LESS DUNE_FIND_VERSION_STRING))
+	  set(module_version_wrong 1)
+	endif()
       endif(EXISTS ${_dune_module_file})
     endforeach()
     if(NOT ${module}_dune_module)
       message(FATAL_ERROR "Could not find dune.module file for module ${module} "
         "in ${${module}_PREFIX},  ${${module}_PREFIX}/lib/dunecontrol/${module}/")
     endif(NOT ${module}_dune_module)
+    if(module_version_wrong)
+      message(FATAL_ERROR "Could not find requested version of module ${module}.
+Requested version was ${DUNE_FIND_VERSION}, found version is ${DUNE_FIND_MOD_VERSION_STRING}")
+    endif()
+  else(${module}_FOUND)
+    if(required)
+      message(FATAL_ERROR "Could not find required module ${module}.")
+    endif(required)
   endif(${module}_FOUND)
+  set(DUNE_${module}_FOUND ${${module}_FOUND})
 endmacro(find_dune_package module)
 
 macro(extract_line HEADER  OUTPUT FILE_CONTENT)
@@ -196,6 +241,30 @@ function(convert_deps_to_list var)
   set(${var} ${${var}} PARENT_SCOPE)
 endfunction(convert_deps_to_list var)
 
+#
+# extracts major, minor, and revision from version string
+#
+function(extract_major_minor_version version_string varname)
+    string(REGEX REPLACE "([0-9]+).*" "\\1" ${varname}_MAJOR "${version_string}")
+  string(REGEX REPLACE "[0-9]+\\.([0-9]+).*" "\\1" ${varname}_MINOR "${version_string}")
+  string(REGEX REPLACE "[0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" ${varname}_REVISION "${version_string}")
+  set(${varname}_MAJOR "${${varname}_MAJOR}" PARENT_SCOPE) # make variable accessible in parent scope
+
+  # remove false matches in version string and export to parent scop
+  string(REGEX MATCH "[^0-9]" NON_NUMBER_CHARACTER "${${varname}_MINOR}")
+  if(NON_NUMBER_CHARACTER)
+    set(${varname}_MINOR "0" PARENT_SCOPE)
+  else(NON_NUMBER_CHARACTER)
+    set(${varname}_MINOR ${${varname}_MINOR} PARENT_SCOPE)
+  endif(NON_NUMBER_CHARACTER)
+  string(REGEX MATCH "[^0-9]" NON_NUMBER_CHARACTER "${${varname}_REVISION}")
+  if(NON_NUMBER_CHARACTER)
+    set(${varname}_REVISION "0"  PARENT_SCOPE)
+  else(NON_NUMBER_CHARACTER)
+    set(${varname}_REVISION ${${varname}_REVISION} PARENT_SCOPE)
+  endif(NON_NUMBER_CHARACTER)
+endfunction(extract_major_minor_version version_string varname)
+
 # add dune-common version from dune.module to config.h
 # optional second argument is verbosity
 macro(dune_module_information MODULE_DIR)
@@ -208,19 +277,7 @@ macro(dune_module_information MODULE_DIR)
   endif(NOT MODULE_LINE MATCHES ".+")
 
   string(REGEX REPLACE ".*Version:[ ]*([^ \n]+).*" "\\1" DUNE_MOD_VERSION "${MODULE_LINE}")
-  string(REGEX REPLACE "([0-9]).*" "\\1" DUNE_VERSION_MAJOR "${DUNE_MOD_VERSION}")
-  string(REGEX REPLACE "[0-9]*\\.([0-9]).*" "\\1" DUNE_VERSION_MINOR "${DUNE_MOD_VERSION}")
-  string(REGEX REPLACE "[0-9]*\\.[0-9]*\\.([0-9]).*" "\\1" DUNE_VERSION_REVISION "${DUNE_MOD_VERSION}")
-
-  # remove false matches in version string
-  string(REGEX MATCH "[^0-9]" NON_NUMBER_CHARACTER "${DUNE_VERSION_MINOR}")
-  if(NON_NUMBER_CHARACTER)
-    set(DUNE_VERSION_MINOR "0")
-  endif(NON_NUMBER_CHARACTER)
-  string(REGEX MATCH "[^0-9]" NON_NUMBER_CHARACTER "${DUNE_VERSION_REVISION}")
-  if(NON_NUMBER_CHARACTER)
-    set(DUNE_VERSION_REVISION "0")
-  endif(NON_NUMBER_CHARACTER)
+  extract_major_minor_version("${DUNE_MOD_VERSION}" DUNE_VERSION)
 
   # find strings for module name, maintainer
   # 1. Check for line starting with Module
@@ -269,14 +326,16 @@ endmacro(dune_module_information)
 
 macro(dune_process_dependency_leafs modules versions is_required next_level_deps
     next_level_sugs)
-  # modules is not a real variable, make it one
+  # modules, and versions are not real variables, make them one
   set(mmodules ${modules})
+  set(mversions ${versions})
   list(LENGTH mmodules mlength)
   if(mlength GREATER 0)
     math(EXPR length "${mlength}-1")
     foreach(i RANGE 0 ${length})
       list(GET mmodules ${i} _mod)
-      find_dune_package(${_mod} ${is_required})
+      list(GET mversions ${i} _ver)
+      find_dune_package(${_mod} ${is_required} VERSION "${_ver}")
       set(${_mod}_SEARCHED ON)
       if(NOT "${is_required}" STREQUAL "")
         set(${_mod}_REQUIRED ON)
@@ -468,6 +527,9 @@ macro(dune_project)
   dune_module_information(${CMAKE_SOURCE_DIR})
   set(ProjectName            "${DUNE_MOD_NAME}")
   set(ProjectVersion         "${DUNE_MOD_VERSION}")
+  set(ProjectVersionString   "${DUNE_VERSION_MAJOR}.${DUNE_VERSION_MINOR}.${DUNE_VERSION_REVISION}")
+  set(ProjectVersionMajor    "${DUNE_VERSION_MAJOR}")
+  set(ProjectVersionMinor    "${DUNE_VERSION_MINOR}")
   set(ProjectMaintainerEmail "${DUNE_MAINTAINER}")
 
   define_property(GLOBAL PROPERTY DUNE_MODULE_LIBRARIES
@@ -759,24 +821,25 @@ endmacro()")
     #file(APPEND ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake
     #  "\ninclude(${ProjectName_CMAKE}Macros)\n")
   endif(${ProjectName_CMAKE}_FOUND)
-  if(NOT EXISTS ${PROJECT_SOURCE_DIR}/${ProjectName}-version.cmake.in)
-    file(WRITE ${PROJECT_BINARY_DIR}/CMakeFiles/${ProjectName}-version.cmake.in
-"set(PACKAGE_VERSION \"@DUNE_MOD_VERSION@\")
+  if(NOT EXISTS ${PROJECT_SOURCE_DIR}/${ProjectName}-config-version.cmake.in)
+    file(WRITE ${PROJECT_BINARY_DIR}/CMakeFiles/${ProjectName}-config-version.cmake.in
+"set(PACKAGE_VERSION \"@ProjectVersionString@\")
 
-if(NOT \"\${PACKAGE_FIND_VERSION}\" VERSION_GREATER \"@DUNE_MOD_VERSION@\")
-  set (PACKAGE_VERSION_COMPATIBLE 1) # compatible with older
-  if (\"\${PACKAGE_FIND_VERSION}\" VERSION_EQUAL \"@DUNE_MOD_VERSION@\")
+if(\"\${PACKAGE_FIND_VERSION_MAJOR}\" EQUAL \"@ProjectVersionMajor@\" AND
+     \"\${PACKAGE_FIND_VERSION_MINOR}\" EQUAL \"@ProjectVersionMinor@\")
+  set (PACKAGE_VERSION_COMPATIBLE 1) # compatible with newer
+  if (\"\${PACKAGE_FIND_VERSION}\" VERSION_EQUAL \"@ProjectVersionString@\")
     set(PACKAGE_VERSION_EXACT 1) #exact match for this version
   endif()
 endif()
 ")
-    set(CONFIG_VERSION_FILE ${PROJECT_BINARY_DIR}/CMakeFiles/${ProjectName}-version.cmake.in)
-  else(NOT EXISTS ${PROJECT_SOURCE_DIR}/${ProjectName}-version.cmake.in)
-    set(CONFIG_VERSION_FILE ${PROJECT_SOURCE_DIR}/${ProjectName}-version.cmake.in)
-  endif(NOT EXISTS ${PROJECT_SOURCE_DIR}/${ProjectName}-version.cmake.in)
+    set(CONFIG_VERSION_FILE ${PROJECT_BINARY_DIR}/CMakeFiles/${ProjectName}-config-version.cmake.in)
+  else(NOT EXISTS ${PROJECT_SOURCE_DIR}/${ProjectName}-config-version.cmake.in)
+    set(CONFIG_VERSION_FILE ${PROJECT_SOURCE_DIR}/${ProjectName}-config-version.cmake.in)
+  endif(NOT EXISTS ${PROJECT_SOURCE_DIR}/${ProjectName}-config-version.cmake.in)
   configure_file(
     ${CONFIG_VERSION_FILE}
-    ${PROJECT_BINARY_DIR}/${ProjectName}-version.cmake @ONLY)
+    ${PROJECT_BINARY_DIR}/${ProjectName}-config-version.cmake @ONLY)
 
   #install dune.module file
   install(FILES dune.module DESTINATION ${DUNE_INSTALL_NONOBJECTLIBDIR}/dunecontrol/${ProjectName})
@@ -815,7 +878,6 @@ endif()
 
   include(CPack)
 
-  include(FeatureSummary)
   feature_summary(WHAT ALL)
 endmacro(finalize_dune_project)
 
