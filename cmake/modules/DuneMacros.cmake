@@ -229,7 +229,7 @@ macro(split_module_version STRING MODULES VERSIONS)
       string(REGEX REPLACE "^\\([ ]*([^ ]*[ ]*[^ ]+)[ ]*\\)$" "\\1"
         version ${have_version})
       else(have_version)
-        set(version >=0.0)
+        set(version "")
       endif(have_version)
     list(APPEND ${MODULES} ${mod})
     list(APPEND ${VERSIONS} ${version})
