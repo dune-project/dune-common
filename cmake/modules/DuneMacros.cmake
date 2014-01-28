@@ -846,7 +846,7 @@ endif()
 
   # install cmake-config files
   install(FILES ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake
-    ${PROJECT_BINARY_DIR}/${ProjectName}-version.cmake
+    ${PROJECT_BINARY_DIR}/${ProjectName}-config-version.cmake
     DESTINATION ${DUNE_INSTALL_LIBDIR}/cmake/${ProjectName})
 
   #install config.h
