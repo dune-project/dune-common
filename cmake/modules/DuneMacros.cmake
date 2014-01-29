@@ -493,9 +493,6 @@ macro(dune_process_dependency_tree DEPENDS DVERSIONS SUGGESTS SVERSIONS)
         message(STATUS "Performing tests specific to ${_mod} from file ${_mod_cmake}.")
         include(${_mod_cmake})
       endif(_mod_cmake)
-      # Find the module
-      #find_package(${_mod})
-      # set includes
       dune_module_to_uppercase(_upper_case "${_mod}")
       if(${_mod}_INCLUDE_DIRS)
         message(STATUS "Setting ${_mod}_INCLUDE_DIRS=${${_mod}_INCLUDE_DIRS}")
@@ -626,24 +623,6 @@ macro(dune_project)
   dune_process_dependency_tree("${DEPENDS_MODULE}" "${DEPENDS_VERSION}"
     "${SUGGESTS_MODULE}" "${SUGGESTS_VERSION}")
 
-  # Search for cmake files containing tests and directives
-  # specific to this module
-  dune_module_to_macro(_macro ${DUNE_MOD_NAME})
-  set(DUNE_MOD_NAME_CMAKE "${_macro}")
-  set(_macro "${_macro}Macros")
-  set(_mod_cmake _mod_cmake-NOTFOUND)  # Prevent false positives due to caching
-  find_file(_mod_cmake
-    ${_macro}.cmake
-    ${CMAKE_MODULE_PATH}
-    ${CMAKE_SOURCE_DIR}/cmake/modules
-    NO_DEFAULT_PATH)
-  if(_mod_cmake)
-    set(${DUNE_MOD_NAME_CMAKE}_FOUND FOUND)
-    message(STATUS " Performing tests specific to ${DUNE_MOD_NAME} from file ${_mod_cmake}.")
-    include(${_mod_cmake})
-  else(_mod_cmake)
-    message(STATUS "There are no tests for module ${DUNE_MOD_NAME}.")
-  endif(_mod_cmake)
   include(GNUInstallDirs)
   # Set variable where the cmake modules will be installed.
   # Thus the user can override it and for example install
@@ -795,31 +774,6 @@ endmacro()")
     ${CONFIG_SOURCE_FILE}
     ${PROJECT_BINARY_DIR}/${ProjectName}-config.cmake @ONLY)
 
-  #configure_file(
-  #  ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in
-  #  ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake @ONLY)
-  list(LENGTH DEPENDS_MODULE mlength)
-  math(EXPR len2 "${mlength}-1")
-  if(mlength GREATER 0)
-    foreach(i RANGE 0 ${len2})
-      list(GET DEPENDS_MODULE ${i} _mod)
-      dune_module_to_macro(_macro ${_mod})
-      list(GET DEPENDS_VERSION ${i} _ver)
-      #file(APPEND ${PROJECT_BINARY_DIR}/${ProjectName}-config.cmake
-      #"find_package(${_mod})\n")#include(${_macro}Macros)\n")
-      #file(APPEND ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake
-      #"find_package(${_mod})\n")#include(${_macro}Macros)\n")
-    endforeach(i RANGE 0 ${mlength})
-  endif(mlength GREATER 0)
-
-  if(${ProjectName_CMAKE}_FOUND)
-    # This module hast its own tests.
-    # Execute them during find_package
-    #file(APPEND ${PROJECT_BINARY_DIR}/${ProjectName}-config.cmake
-    #  "include(${ProjectName_CMAKE}Macros)\n")
-    #file(APPEND ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake
-    #  "\ninclude(${ProjectName_CMAKE}Macros)\n")
-  endif(${ProjectName_CMAKE}_FOUND)
   if(NOT EXISTS ${PROJECT_SOURCE_DIR}/${ProjectName}-config-version.cmake.in)
     file(WRITE ${PROJECT_BINARY_DIR}/CMakeFiles/${ProjectName}-config-version.cmake.in
 "set(PACKAGE_VERSION \"@ProjectVersionString@\")
