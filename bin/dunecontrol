@@ -210,7 +210,6 @@ load_opts() {
 space=" "
 tab="	"
 BLANK="$space$tab"
-NOBLANK="^$space$tab"
 
 if test -z "$GREP"; then
   GREP=grep
