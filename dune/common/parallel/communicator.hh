@@ -851,7 +851,7 @@ namespace Dune
     /**
      * @brief Type of the map of information about the messages to send.
      *
-     * The key is the process number to communicate with and the key is
+     * The key is the process number to communicate with and the value is
      * the pair of information about sending and receiving messages.
      */
     typedef std::map<int,std::pair<MessageInformation,MessageInformation> >
@@ -1160,7 +1160,8 @@ namespace Dune
         interfacePair != end; ++interfacePair) {
       int noSend = MessageSizeCalculator<Data,Flag>() (interfacePair->second.first);
       int noRecv = MessageSizeCalculator<Data,Flag>() (interfacePair->second.second);
-      messageInformation_.insert(std::make_pair(interfacePair->first,
+      if (noSend + noRecv > 0)
+        messageInformation_.insert(std::make_pair(interfacePair->first,
                                                 std::make_pair(MessageInformation(bufferSize_[0],
                                                                                   noSend*sizeof(typename CommPolicy<Data>::IndexedType)),
                                                                MessageInformation(bufferSize_[1],
@@ -1195,8 +1196,8 @@ namespace Dune
         interfacePair != end; ++interfacePair) {
       int noSend = MessageSizeCalculator<Data,Flag>() (source, interfacePair->second.first);
       int noRecv = MessageSizeCalculator<Data,Flag>() (dest, interfacePair->second.second);
-
-      messageInformation_.insert(std::make_pair(interfacePair->first,
+      if (noSend + noRecv > 0)
+        messageInformation_.insert(std::make_pair(interfacePair->first,
                                                 std::make_pair(MessageInformation(bufferSize_[0],
                                                                                   noSend*sizeof(typename CommPolicy<Data>::IndexedType)),
                                                                MessageInformation(bufferSize_[1],
@@ -1291,8 +1292,9 @@ namespace Dune
 
 
   template<class Data, class GatherScatter, bool FORWARD>
-  inline void BufferedCommunicator::MessageGatherer<Data,GatherScatter,FORWARD,SizeOne>::operator()(const InterfaceMap& interfaces, const Data& data, Type* buffer, size_t) const
+  inline void BufferedCommunicator::MessageGatherer<Data,GatherScatter,FORWARD,SizeOne>::operator()(const InterfaceMap& interfaces, const Data& data, Type* buffer, size_t bufferSize) const
   {
+    DUNE_UNUSED_PARAMETER(bufferSize);
     typedef typename InterfaceMap::const_iterator
     const_iterator;
     const const_iterator end = interfaces.end();

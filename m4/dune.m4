@@ -195,6 +195,9 @@ AC_DEFUN([DUNE_PARSE_MODULE_VERSION],[
   AC_SUBST(_DUNE_MODULE[]_VERSION_MAJOR,_dune_sub_version(_dune_version,1))
   AC_SUBST(_DUNE_MODULE[]_VERSION_MINOR,_dune_sub_version(_dune_version,2))
   AC_SUBST(_DUNE_MODULE[]_VERSION_REVISION,_dune_sub_version(_dune_version,3))
+  AC_SUBST(DUNE_MOD_VERSION_MAJOR,_dune_sub_version(_dune_version,1))
+  AC_SUBST(DUNE_MOD_VERSION_MINOR,_dune_sub_version(_dune_version,2))
+  AC_SUBST(DUNE_MOD_VERSION_REVISION,_dune_sub_version(_dune_version,3))
 
   AC_DEFINE_UNQUOTED(_DUNE_MODULE[]_VERSION, "_dune_version", [Define to the version of] _dune_name)
   AC_DEFINE_UNQUOTED(_DUNE_MODULE[]_VERSION_MAJOR, $_DUNE_MODULE[]_VERSION_MAJOR, [Define to the major version of] _dune_name)

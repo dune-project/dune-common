@@ -36,6 +36,7 @@ vtab=""
 # embedded newline.  Instead one can often get away with using $BLANK
 SPACE="$space$formfeed$newline$cr$tab$vtab"
 BLANK="$space$tab"
+NOBLANK="^$space$tab"
 
 #
 # read paramters from a $CONTROL file
@@ -66,10 +67,10 @@ parse_control() {
     exit 1
   fi
   # read dune.module file
-  local deps="$($GREP "^[$BLANK]*Depends:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
-  local sugs="$($GREP "^[$BLANK]*Suggests:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
-  local vers="$($GREP "^[$BLANK]*Version:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
-  local main="$($GREP "^[$BLANK]*Maintainer:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
+  local deps="$($GREP "^[BLANK]*Depends:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
+  local sugs="$($GREP "^[BLANK]*Suggests:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
+  local vers="$($GREP "^[BLANK]*Version:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
+  local main="$($GREP "^[BLANK]*Maintainer:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
   # check whether the module is installed.
   # - installed modules can be found via pkg-config
   # - pkg-config --var=prefix should be the same as $path
@@ -118,19 +119,11 @@ parse_control() {
     ;;
     # installed modules are superseded by locally built modules
     noyes)
-      echo "WARNING: ignoring installed module file" >&2
-      echo "  $path/lib/dunecontrol/$name/$CONTROL" >&2
-      echo "using previously found locally built module" >&2
-      echo "  $(eval echo \$PATH_$module)/$CONTROL" >&2
-	  module_inst="no"
       return
     ;;
     # local modules supersede installed modules
     yesno)
-      echo "WARNING: not using installed module file" >&2
-      echo "  $(eval echo \$PATH_$module)/lib/dunecontrol/$name/$CONTROL" >&2
-      echo "using locally built module" >&2
-      echo "  $path/$CONTROL" >&2
+      superseded_modules="$superseded_modules $path"
       true # do nothing, ignore the previously found module
     ;;
     esac
@@ -160,6 +153,38 @@ parse_control() {
   fi
 }
 
+# Uses the current compiler to extract information about the
+# multiarch triplets and sets the export variable MULTIARCH_LIBDIR
+# according to it.
+# If not compiler is specified then cc or gcc is used.
+extract_multiarch_pkg_config_path(){
+  local my_cxx_compiler
+  if test "x$MULTIARCH_LIBDIR" != "x"; then
+    return
+  fi
+  set +e #error in the multiarch detection should not be fatal.
+  $(which cc &>/dev/null)
+  if test $? -eq "0"; then
+      my_cxx_compiler=cc
+  else
+      my_cxx_compiler=gcc
+  fi
+  multiarch=$($my_cxx_compiler --print-multiarch 2>/dev/null)
+  if test $? -gt 0; then
+    multiarch=$($my_cxx_compiler -v 2>&1| $GREP target | sed "s/.*target=\([a-z0-9_-]*\)/\1/")
+  fi
+  set -e # set to old value.
+  export MULTIARCH_LIBDIR="lib/$multiarch"
+
+  # create PKG_CONFIG_PATH for installed dune modules
+  for i in $MULTIARCH_LIBDIR lib64 lib32 lib; do
+    if test -d "$PREFIX_DIR/$i/pkgconfig"; then
+      export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$PREFIX_DIR/$i/pkgconfig"
+    fi
+  done
+}
+
+
 #
 # try to setup the control path
 #
@@ -179,6 +204,8 @@ setup_control_path() {
           DUNE_CONTROL_PATH=$DUNE_CONTROL_PATH:"$i/../dunecontrol"
         fi
       done
+    else
+       DUNE_CONTROL_PATH=$DUNE_CONTROL_PATH:$(pkg-config dune-common --variable=prefix)/lib/dunecontrol
     fi
   fi
   # try to read DUNE_CONTROL_PATH from OPTS file
@@ -600,7 +627,7 @@ default_am2cmake_options(){
             continue
         fi
         # process --with-$lowercase=<arg>
-        local arg=`echo $PARAMS| sed "s/.*--with-$lowercase=\(\S*\).*/\1/"`
+        local arg=`echo $PARAMS| sed "s/.*--with-$lowercase=\([$NOBLANK]*\).*/\1/"`
         local arg=`eval echo $arg` # expand tilde to prevent problems
         if test "x$arg" = "xno"; then
             CMAKE_PARAMS="$CMAKE_PARAMS -DCMAKE_DISABLE_FIND_PACKAGE_$package=TRUE"
@@ -629,9 +656,9 @@ default_am2cmake_libraries(){
 	    continue
 	fi
 	export "$lowercase"-lib_processed=1
-	term="s/.*--with-""$lowercase""-lib=\(\S*\).*/\1/"
-        arg=`echo "$PARAMS" | sed "$term"`
-	if test "x$arg" != "x" && test "x$PARAMS" != "x$arg"; then
+	term="s/.*--with-""$lowercase""-lib=\([$NOBLANK]*\).*/\1/"
+        arg=`echo "$PARAMS" | grep \\-\\-with-$lowercase | sed "$term"`
+	if test "x$arg" != "x"; then
 	    CMAKE_PARAMS="$CMAKE_PARAMS -D$uppercase""_LIBRARY=$arg"
 	fi
     done

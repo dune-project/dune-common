@@ -28,6 +28,7 @@ ltmain.sh
 *.la
 *.o
 *.lo
+compile
 test-driver
 dependencies.m4
 dune.css
