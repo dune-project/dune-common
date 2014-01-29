@@ -229,7 +229,9 @@ macro(split_module_version STRING MODULES VERSIONS)
       string(REGEX REPLACE "^\\([ ]*([^ ]*[ ]*[^ ]+)[ ]*\\)$" "\\1"
         version ${have_version})
       else(have_version)
-        set(version "") # Mark as no version requested.
+        set(version " ") # Mark as no version requested.
+	# Having a space is mandatory as we will append it to a list
+	# and an empty string will not be treated as entry we append to it.
       endif(have_version)
     list(APPEND ${MODULES} ${mod})
     list(APPEND ${VERSIONS} ${version})
@@ -330,6 +332,10 @@ macro(dune_process_dependency_leafs modules versions is_required next_level_deps
   set(mmodules ${modules})
   set(mversions ${versions})
   list(LENGTH mmodules mlength)
+  list(LENGTH mversions vlength)
+  if(NOT mlength EQUAL vlength)
+    message(FATAL_ERROR "List of modules and versions do not have the same length!")
+  endif(NOT mlength EQUAL vlength)
   if(mlength GREATER 0)
     math(EXPR length "${mlength}-1")
     foreach(i RANGE 0 ${length})
