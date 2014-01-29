@@ -229,12 +229,11 @@ extract_multiarch(){
   fi
   if test "x$USE_CMAKE" = "xyes"; then
     load_opts "cmake"
-    my_cxx_compiler=`echo $CMAKE_FLAGS | $GREP CXX | $SED "s/.*CXX=[\"']\?\([$BLANK'\"]*\)[\"']\?.*/\1/"`
   fi
   if test "x$my_cxx_compiler" == "x"; then
     load_opts "configure"
-    my_cxx_compiler=`echo $CONFIGURE_FLAGS | $GREP CXX| $SED "s/.*CXX=[\"']\?\([^$BLANK'\"]*\)[\"']\?.*/\1/"`
   fi
+  my_cxx_compiler=`echo $CMD_FLAGS | $GREP CXX | $SED "s/.*CXX=[\"']\{0,1\}\([^$BLANK'\"]*\)[\"']\{0,1\}.*/\1/"`
   if test "x$my_cxx_compiler" == "x"; then
     set +e #error in the multiarch detection should not be fatal.
     $(which cc &>/dev/null)
@@ -253,15 +252,6 @@ extract_multiarch(){
 }
 
 export PREFIX_DIR="`canonicalpath "$0"`/.."
-
-extract_multiarch
-
-# create PKG_CONFIG_PATH for installed dune modules
-for i in $MULTIARCH_LIBDIR lib64 lib32 lib; do
-  if test -d "$PREFIX_DIR/$i/pkgconfig"; then
-    export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$PREFIX_DIR/$i/pkgconfig"
-  fi
-done
 
 # Read the modules find part
 . "$PREFIX_DIR/lib/dunemodules.lib"
@@ -994,6 +984,15 @@ while test $# -gt 0; do
     esac
 
     shift
+done
+
+extract_multiarch
+
+# create PKG_CONFIG_PATH for installed dune modules
+for i in $MULTIARCH_LIBDIR lib64 lib32 lib; do
+  if test -d "$PREFIX_DIR/$i/pkgconfig"; then
+    export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$PREFIX_DIR/$i/pkgconfig"
+  fi
 done
 
 # we assume there should be a command...
