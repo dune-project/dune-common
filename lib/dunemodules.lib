@@ -36,7 +36,7 @@ vtab=""
 # embedded newline.  Instead one can often get away with using $BLANK
 SPACE="$space$formfeed$newline$cr$tab$vtab"
 BLANK="$space$tab"
-NOBLANK="^$space^$tab"
+NOBLANK="^$space$tab"
 
 #
 # read paramters from a $CONTROL file
