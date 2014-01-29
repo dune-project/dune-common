@@ -36,7 +36,7 @@ vtab=""
 # embedded newline.  Instead one can often get away with using $BLANK
 SPACE="$space$formfeed$newline$cr$tab$vtab"
 BLANK="$space$tab"
-NOBLANK="^$space^$tab"
+NOBLANK="^$space$tab"
 
 #
 # read paramters from a $CONTROL file
@@ -171,7 +171,7 @@ extract_multiarch_pkg_config_path(){
   fi
   multiarch=$($my_cxx_compiler --print-multiarch 2>/dev/null)
   if test $? -gt 0; then
-    multiarch=$($my_cxx_compiler -v 2>&1| $GREP target | sed "s/.*target=\([a-z0-9_-]\+\)/\1/")
+    multiarch=$($my_cxx_compiler -v 2>&1| $GREP target | sed "s/.*target=\([a-z0-9_-]*\)/\1/")
   fi
   set -e # set to old value.
   export MULTIARCH_LIBDIR="lib/$multiarch"
