@@ -229,7 +229,7 @@ macro(split_module_version STRING MODULES VERSIONS)
       string(REGEX REPLACE "^\\([ ]*([^ ]*[ ]*[^ ]+)[ ]*\\)$" "\\1"
         version ${have_version})
       else(have_version)
-        set(version "")
+        set(version "") # Mark as no version requested.
       endif(have_version)
     list(APPEND ${MODULES} ${mod})
     list(APPEND ${VERSIONS} ${version})
@@ -295,23 +295,23 @@ macro(dune_module_information MODULE_DIR)
   # 3. Check for line starting with Depends
   extract_line("Depends:" ${DUNE_MOD_NAME}_DEPENDS "${DUNE_MODULE}")
   if(${DUNE_MOD_NAME}_DEPENDS)
-    split_module_version(${${DUNE_MOD_NAME}_DEPENDS} DEPENDS_MODULE DEPENDS_VERSIONS)
+    split_module_version(${${DUNE_MOD_NAME}_DEPENDS} ${DUNE_MOD_NAME}_DEPENDS_MODULE ${DUNE_MOD_NAME}_DEPENDS_VERSIONS)
     foreach(_mod ${${DUNE_MOD_NAME}_DEPENDS})
       set(${_mod}_REQUIRED REQUIRED)
     endforeach(_mod ${${DUNE_MOD_NAME}_DEPENDS})
     convert_deps_to_list(${DUNE_MOD_NAME}_DEPENDS)
     if(NOT ("${ARGV1}" STREQUAL QUIET))
-      message(STATUS "Dependencies: ${DEPENDS_MODULE} (versions: ${DEPENDS_VERSIONS}) ${DUNE_MOD_NAME}_DEPENDS=${${DUNE_MOD_NAME}_DEPENDS}")
+      message(STATUS "Dependencies for ${DUNE_MOD_NAME}: ${${DUNE_MOD_NAME}_DEPENDS}")
     endif(NOT ("${ARGV1}" STREQUAL QUIET))
   endif(${DUNE_MOD_NAME}_DEPENDS)
 
   # 4. Check for line starting with Suggests
   extract_line("Suggests:" ${DUNE_MOD_NAME}_SUGGESTS "${DUNE_MODULE}")
   if(${DUNE_MOD_NAME}_SUGGESTS)
-    split_module_version(${${DUNE_MOD_NAME}_SUGGESTS} SUGGESTS_MODULE SUGGESTS_VERSION)
+    split_module_version(${${DUNE_MOD_NAME}_SUGGESTS} ${DUNE_MOD_NAME}_SUGGESTS_MODULE ${DUNE_MOD_NAME}_SUGGESTS_VERSION)
     convert_deps_to_list(${DUNE_MOD_NAME}_SUGGESTS)
     if(NOT ("${ARGV1}" STREQUAL QUIET))
-      message(STATUS "Suggestions: ${SUGGESTS_MODULE} (versions: ${SUGGESTS_VERSIONS}) ${DUNE_MOD_NAME}_SUGGESTS=${${DUNE_MOD_NAME}_SUGGESTS}")
+      message(STATUS "Suggestions for ${DUNE_MOD_NAME}: ${${DUNE_MOD_NAME}_SUGGESTS}")
     endif(NOT ("${ARGV1}" STREQUAL QUIET))
   endif(${DUNE_MOD_NAME}_SUGGESTS)
 
@@ -400,11 +400,11 @@ macro(dune_create_dependency_tree)
   endif(${dune-common_MODULE_PATH})
   list(FIND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules start)
   set(ALL_DEPENDENCIES "")
-  if(DEPENDS_MODULE OR SUGGESTS_MODULE)
-    set(ALL_DEPENDENCIES ${DEPENDS_MODULE} ${SUGGESTS_MODULE})
-    dune_create_dependency_leafs("${DEPENDS_MODULE}" "${DEPENDS_VERSIONS}"
-      "${SUGGESTS_MODULE}" "${SUGGESTS_VERSIONS}")
-  endif(DEPENDS_MODULE OR SUGGESTS_MODULE)
+  if(${ProjectName}_DEPENDS_MODULE OR ${ProjectName}_SUGGESTS_MODULE)
+    set(ALL_DEPENDENCIES ${${ProjectName}_DEPENDS_MODULE} ${${ProjectName}_SUGGESTS_MODULE})
+    dune_create_dependency_leafs("${${ProjectName}_DEPENDS_MODULE}" "${${ProjectName}_DEPENDS_VERSIONS}"
+      "${${ProjectName}_SUGGESTS_MODULE}" "${${ProjectName}_SUGGESTS_VERSIONS}")
+  endif(${ProjectName}_DEPENDS_MODULE OR ${ProjectName}_SUGGESTS_MODULE)
   set(_my_path "")
   if(ALL_DEPENDENCIES)
     # Reverse the order of the modules and remove duplicates
@@ -419,8 +419,8 @@ macro(dune_create_dependency_tree)
       set(${_mod}_cmake_path_processed 1)
       set(_my_path ${${_mod}_MODULE_PATH})
       list(APPEND NEW_ALL_DEPS ${_mod})
-      math(EXPR length "${length}-1")
       if(length GREATER 0)
+        math(EXPR length "${length}-1")
         foreach(i RANGE ${length} 0 -1)
           list(GET ALL_DEPENDENCIES ${i} _mod)
           if(NOT ${_mod}_cmake_path_processed)
@@ -475,7 +475,7 @@ macro(dune_module_to_macro _macro_name _dune_module)
   set(${_macro_name} "${${_macro_name}}${_first_letter}${_rest}")
 endmacro(dune_module_to_macro _macro_name _dune_module)
 
-macro(dune_process_dependency_tree DEPENDS DVERSIONS SUGGESTS SVERSIONS)
+macro(dune_process_dependency_macros)
   foreach(_mod ${ALL_DEPENDENCIES} ${ProjectName})
     if(NOT ${_mod}_PROCESSED)
       # module not processed yet
@@ -505,7 +505,6 @@ macro(dune_process_dependency_tree DEPENDS DVERSIONS SUGGESTS SVERSIONS)
           list(INSERT DUNE_LIBS 0 "${_lib}")
         endforeach(_lib ${${_mod}_LIBRARIES})
       endif(${_mod}_LIBRARIES)
-      message(STATUS "Dependencies for ${_mod}: ${${_mod}_DEPENDENCIES}")
 
       #update ALL_PKG_FLAGS
       foreach(dir ${${_mod}_INCLUDE_DIRS})
@@ -513,7 +512,7 @@ macro(dune_process_dependency_tree DEPENDS DVERSIONS SUGGESTS SVERSIONS)
       endforeach()
     endif(NOT ${_mod}_PROCESSED)
   endforeach(_mod DEPENDENCIES)
-endmacro(dune_process_dependency_tree)
+endmacro(dune_process_dependency_macros)
 
 # macro that should be called near the begin of the top level CMakeLists.txt.
 # Namely it sets up the module, defines basic variables and manages
@@ -620,8 +619,8 @@ macro(dune_project)
   # activate pkg-config
   include(DunePkgConfig)
 
-  dune_process_dependency_tree("${DEPENDS_MODULE}" "${DEPENDS_VERSION}"
-    "${SUGGESTS_MODULE}" "${SUGGESTS_VERSION}")
+  # Process the macros provided by the dependencies and ourself
+  dune_process_dependency_macros()
 
   include(GNUInstallDirs)
   # Set variable where the cmake modules will be installed.
