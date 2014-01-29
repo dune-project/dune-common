@@ -2,7 +2,7 @@
 
 am_DATA = inkscape.am webstuff global-rules sourcescheck \
         no-check-without-lib latex checklog doxygen top-rules \
-        headercheck documentation
+        headercheck documentation cmake-pkg-config
 
 # Not all file names seem to be treated equal by _DATA.
 # inkscape.am no-check-without-lib have to be listed in

@@ -199,7 +199,7 @@ namespace Dune
     template<typename T>
     int prod (T* inout, int len) const
     {
-      return allreduce<std::plus<T> >(inout,len);
+      return allreduce<std::multiplies<T> >(inout,len);
     }
 
     //! @copydoc CollectiveCommunication::min

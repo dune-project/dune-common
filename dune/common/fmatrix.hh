@@ -99,24 +99,6 @@ namespace Dune
     //===== assignment
     using Base::operator=;
 
-    // To be removed!
-#if 0
-    //! Multiplies M from the left to this matrix
-    FieldMatrix& leftmultiply (const FieldMatrix<K,rows,rows>& M)
-    {
-      FieldMatrix<K,rows,cols> C(*this);
-
-      for (size_type i=0; i<rows; i++)
-        for (size_type j=0; j<cols; j++) {
-          (*this)[i][j] = 0;
-          for (size_type k=0; k<rows; k++)
-            (*this)[i][j] += M[i][k]*C[k][j];
-        }
-
-      return *this;
-    }
-#endif
-
     //! Multiplies M from the left to this matrix, this matrix is not modified
     template<int l>
     FieldMatrix<K,l,cols> leftmultiplyany (const FieldMatrix<K,l,rows>& M) const
@@ -465,25 +447,7 @@ namespace Dune
         }
     }
 
-#if 0
-    //! calculates ret = matrix * x
-    template <typename K, int rows, int cols>
-    static inline void multAssign(const FieldMatrix<K,rows,cols> &matrix, const FieldVector<K,cols> & x, FieldVector<K,rows> & ret)
-    {
-      typedef typename FieldMatrix<K,rows,cols>::size_type size_type;
-
-      for(size_type i=0; i<rows; ++i)
-      {
-        ret[i] = 0.0;
-        for(size_type j=0; j<cols; ++j)
-        {
-          ret[i] += matrix[i][j]*x[j];
-        }
-      }
-    }
-#else
     using Dune::DenseMatrixHelp::multAssign;
-#endif
 
     //! calculates ret = matrix^T * x
     template <typename K, int rows, int cols>
