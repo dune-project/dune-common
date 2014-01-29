@@ -721,7 +721,7 @@ def finalize_cmake_module(module_name):
                        module_name.capitalize())
     name_wo_dasch=module_name.replace('-', '')
     lines = ['\nadd_subdirectory(cmake/modules)\n',
-             '# finalize the dune project, e.g. generating config.h etc.\n'
+             '# finalize the dune project, e.g., generate config.h etc.\n'
              'finalize_dune_project(GENERATE_CONFIG_H_CMAKE)\n']
     return ''.join(lines)
 
@@ -800,6 +800,12 @@ def am_2_cmake_dir(directory):
         output.write('\n'.join(['# Create Doxyfile.in and Doxyfile, and doxygen documentation',
 'add_doxygen_target()']))
         output.close()
+    # Add directives to create CMake packe configuration files with autotools
+    output=open("Makefile.am'", "a")
+    output.write('\n'.join(['', '# Generate package configuration files for finding',
+                            '# installed modules with CMake',
+                            'include $(top_srcdir)/am/cmake-pkg-config\n']))
+    output.close()
 
 def main():
     usage = "usage: am2cmake "
