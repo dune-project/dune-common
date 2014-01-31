@@ -120,7 +120,7 @@ macro(find_dune_package module)
     find_package(PkgConfig)
     if(NOT PKG_CONFIG_FOUND AND required)
       message(FATAL_ERROR "Could not find module ${module}. We tried to use"
-	"pkg-config but could not find it. ")
+        "pkg-config but could not find it. ")
     endif(NOT PKG_CONFIG_FOUND AND required)
         pkg_check_modules (${module} ${required} ${module}${DUNE_FIND_VERSION})
     set(${module}_FAKE_CMAKE_PKGCONFIG TRUE)
@@ -193,8 +193,8 @@ macro(find_dune_package module)
         "in ${${module}_PREFIX},  ${${module}_PREFIX}/lib/dunecontrol/${module}/")
     endif(NOT ${module}_dune_module)
     if(module_version_wrong)
-      message(FATAL_ERROR "Could not find requested version of module ${module}.
-Requested version was ${DUNE_FIND_VERSION}, found version is ${DUNE_FIND_MOD_VERSION_STRING}")
+      message(FATAL_ERROR "Could not find requested version of module ${module}. "
+        "Requested version was ${DUNE_FIND_VERSION}, found version is ${DUNE_FIND_MOD_VERSION_STRING}")
     endif()
   else(${module}_FOUND)
     if(required)
@@ -230,8 +230,8 @@ macro(split_module_version STRING MODULES VERSIONS)
         version ${have_version})
       else(have_version)
         set(version " ") # Mark as no version requested.
-	# Having a space is mandatory as we will append it to a list
-	# and an empty string will not be treated as entry we append to it.
+        # Having a space is mandatory as we will append it to a list
+        # and an empty string will not be treated as entry we append to it.
       endif(have_version)
     list(APPEND ${MODULES} ${mod})
     list(APPEND ${VERSIONS} ${version})
