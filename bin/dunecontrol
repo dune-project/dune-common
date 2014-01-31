@@ -222,6 +222,7 @@ fi
 # according to it.
 # If not compiler is specified then cc or gcc is used.
 extract_multiarch(){
+  set +e #error in the multiarch detection should not be fatal.
   local my_cxx_compiler
   if test "x$MULTIARCH_LIBDIR" != "x"; then
     return
@@ -234,7 +235,6 @@ extract_multiarch(){
   fi
   my_cxx_compiler=`echo $CMD_FLAGS | $GREP CXX | $SED "s/.*CXX=[\"']\{0,1\}\([^$BLANK'\"]*\)[\"']\{0,1\}.*/\1/"`
   if test "x$my_cxx_compiler" == "x"; then
-    set +e #error in the multiarch detection should not be fatal.
     $(which cc &>/dev/null)
     if test $? -eq "0"; then
       my_cxx_compiler=cc
