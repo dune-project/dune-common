@@ -111,7 +111,7 @@ macro(find_dune_package module)
       string(REPLACE  ${ProjectName} ${module} ${module}_DIR
         ${PROJECT_BINARY_DIR})
     endif()
-    find_package(${module} ${DUNE_FIND_VERSION_STRING} NO_CMAKE_PACKAGE_REGISTRY)
+    find_package(${module} NO_CMAKE_PACKAGE_REGISTRY)
   endif(NOT ${module}_FOUND)
   if(NOT ${module}_FOUND)
     message(STATUS "No full CMake package configuration support available."
@@ -170,22 +170,23 @@ macro(find_dune_package module)
         get_filename_component(_dune_module_file_path ${_dune_module_file} PATH)
         dune_module_information(${_dune_module_file_path})# QUIET)
         set(${module}_dune_module 1)
-	set(DUNE_FIND_MOD_VERSION_STRING "${DUNE_VERSION_MAJOR}.${DUNE_VERSION_MINOR}.${DUNE_VERSION_REVISION}")
-		        unset(module_version_wrong)
-	if(DUNE_FIND_VERSION_OP MATCHES "=" AND
-	    NOT (DUNE_FIND_MOD_VERSION_STRING VERSION_EQUAL DUNE_FIND_VERSION_STRING))
-	  set(module_version_wrong 1)
-	endif()
-	if(DUNE_FIND_VERSION_OP MATCHES ">=" AND
-	    NOT (DUNE_FIND_MOD_VERSION_STRING VERSION_EQUAL DUNE_FIND_VERSION_STRING OR
-	      DUNE_FIND_MOD_VERSION_STRING VERSION_GREATER DUNE_FIND_VERSION_STRING))
-	  set(module_version_wrong 1)
-	endif()
-	if(DUNE_FIND_VERSION_OP MATCHES "<=" AND
-	    NOT (DUNE_FIND_MOD_VERSION_STRING VERSION_EQUAL DUNE_FIND_VERSION_STRING OR
-	      DUNE_FIND_MOD_VERSION_STRING VERSION_LESS DUNE_FIND_VERSION_STRING))
-	  set(module_version_wrong 1)
-	endif()
+        set(DUNE_FIND_MOD_VERSION_STRING "${DUNE_VERSION_MAJOR}.${DUNE_VERSION_MINOR}.${DUNE_VERSION_REVISION}")
+        # check whether dependency mathes version requirement
+        unset(module_version_wrong)
+        if(DUNE_FIND_VERSION_OP MATCHES ">=")
+          if(NOT (DUNE_FIND_MOD_VERSION_STRING VERSION_EQUAL DUNE_FIND_VERSION_STRING OR
+                  DUNE_FIND_MOD_VERSION_STRING VERSION_GREATER DUNE_FIND_VERSION_STRING))
+            set(module_version_wrong 1)
+          endif()
+        elseif(DUNE_FIND_VERSION_OP MATCHES "<=")
+          if(NOT (DUNE_FIND_MOD_VERSION_STRING VERSION_EQUAL DUNE_FIND_VERSION_STRING OR
+                  DUNE_FIND_MOD_VERSION_STRING VERSION_LESS DUNE_FIND_VERSION_STRING))
+            set(module_version_wrong 1)
+          endif()
+        elseif(DUNE_FIND_VERSION_OP MATCHES "=" AND
+           NOT (DUNE_FIND_MOD_VERSION_STRING VERSION_EQUAL DUNE_FIND_VERSION_STRING))
+          set(module_version_wrong 1)
+        endif()
       endif(EXISTS ${_dune_module_file})
     endforeach()
     if(NOT ${module}_dune_module)
