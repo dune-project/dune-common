@@ -84,6 +84,9 @@ namespace Dune
           abort();
         }
 #else
+        DUNE_UNUSED_PARAMETER(from);
+        DUNE_UNUSED_PARAMETER(len);
+        DUNE_UNUSED_PARAMETER(prot);
         std::cerr << "WARNING: memory protection not available" << std::endl;
 #endif
       }
