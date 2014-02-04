@@ -104,14 +104,16 @@ macro(find_dune_package module)
     string(STRIP ${DUNE_FIND_VERSION_NUMBER} DUNE_FIND_VERSION_NUMBER)
     extract_major_minor_version("${DUNE_FIND_VERSION_NUMBER}" DUNE_FIND_VERSION)
     set(DUNE_FIND_VERSION_STRING "${DUNE_FIND_VERSION_MAJOR}.${DUNE_FIND_VERSION_MINOR}.${DUNE_FIND_VERSION_REVISION}")
-      endif(DUNE_FIND_VERSION MATCHES "(>=|=|<=).*")
+  else()
+    set(DUNE_FIND_VERSION_STRING "0.0.0")
+  endif(DUNE_FIND_VERSION MATCHES "(>=|=|<=).*")
   if(NOT ${module}_FOUND)
     if(NOT (${module}_DIR OR ${module}_ROOT OR
        "${CMAKE_PREFIX_PATH}" MATCHES ".*${module}.*"))
       string(REPLACE  ${ProjectName} ${module} ${module}_DIR
         ${PROJECT_BINARY_DIR})
     endif()
-    find_package(${module} ${DUNE_FIND_VERSION_STRING} NO_CMAKE_PACKAGE_REGISTRY)
+    find_package(${module} NO_CMAKE_PACKAGE_REGISTRY)
   endif(NOT ${module}_FOUND)
   if(NOT ${module}_FOUND)
     message(STATUS "No full CMake package configuration support available."
@@ -120,7 +122,7 @@ macro(find_dune_package module)
     find_package(PkgConfig)
     if(NOT PKG_CONFIG_FOUND AND required)
       message(FATAL_ERROR "Could not find module ${module}. We tried to use"
-	"pkg-config but could not find it. ")
+        "pkg-config but could not find it. ")
     endif(NOT PKG_CONFIG_FOUND AND required)
         pkg_check_modules (${module} ${required} ${module}${DUNE_FIND_VERSION})
     set(${module}_FAKE_CMAKE_PKGCONFIG TRUE)
@@ -170,22 +172,23 @@ macro(find_dune_package module)
         get_filename_component(_dune_module_file_path ${_dune_module_file} PATH)
         dune_module_information(${_dune_module_file_path})# QUIET)
         set(${module}_dune_module 1)
-	set(DUNE_FIND_MOD_VERSION_STRING "${DUNE_VERSION_MAJOR}.${DUNE_VERSION_MINOR}.${DUNE_VERSION_REVISION}")
-		        unset(module_version_wrong)
-	if(DUNE_FIND_VERSION_OP MATCHES "=" AND
-	    NOT (DUNE_FIND_MOD_VERSION_STRING VERSION_EQUAL DUNE_FIND_VERSION_STRING))
-	  set(module_version_wrong 1)
-	endif()
-	if(DUNE_FIND_VERSION_OP MATCHES ">=" AND
-	    NOT (DUNE_FIND_MOD_VERSION_STRING VERSION_EQUAL DUNE_FIND_VERSION_STRING OR
-	      DUNE_FIND_MOD_VERSION_STRING VERSION_GREATER DUNE_FIND_VERSION_STRING))
-	  set(module_version_wrong 1)
-	endif()
-	if(DUNE_FIND_VERSION_OP MATCHES "<=" AND
-	    NOT (DUNE_FIND_MOD_VERSION_STRING VERSION_EQUAL DUNE_FIND_VERSION_STRING OR
-	      DUNE_FIND_MOD_VERSION_STRING VERSION_LESS DUNE_FIND_VERSION_STRING))
-	  set(module_version_wrong 1)
-	endif()
+        set(DUNE_FIND_MOD_VERSION_STRING "${DUNE_VERSION_MAJOR}.${DUNE_VERSION_MINOR}.${DUNE_VERSION_REVISION}")
+        # check whether dependency mathes version requirement
+        unset(module_version_wrong)
+        if(DUNE_FIND_VERSION_OP MATCHES ">=")
+          if(NOT (DUNE_FIND_MOD_VERSION_STRING VERSION_EQUAL DUNE_FIND_VERSION_STRING OR
+                  DUNE_FIND_MOD_VERSION_STRING VERSION_GREATER DUNE_FIND_VERSION_STRING))
+            set(module_version_wrong 1)
+          endif()
+        elseif(DUNE_FIND_VERSION_OP MATCHES "<=")
+          if(NOT (DUNE_FIND_MOD_VERSION_STRING VERSION_EQUAL DUNE_FIND_VERSION_STRING OR
+                  DUNE_FIND_MOD_VERSION_STRING VERSION_LESS DUNE_FIND_VERSION_STRING))
+            set(module_version_wrong 1)
+          endif()
+        elseif(DUNE_FIND_VERSION_OP MATCHES "=" AND
+           NOT (DUNE_FIND_MOD_VERSION_STRING VERSION_EQUAL DUNE_FIND_VERSION_STRING))
+          set(module_version_wrong 1)
+        endif()
       endif(EXISTS ${_dune_module_file})
     endforeach()
     if(NOT ${module}_dune_module)
@@ -193,8 +196,8 @@ macro(find_dune_package module)
         "in ${${module}_PREFIX},  ${${module}_PREFIX}/lib/dunecontrol/${module}/")
     endif(NOT ${module}_dune_module)
     if(module_version_wrong)
-      message(FATAL_ERROR "Could not find requested version of module ${module}.
-Requested version was ${DUNE_FIND_VERSION}, found version is ${DUNE_FIND_MOD_VERSION_STRING}")
+      message(FATAL_ERROR "Could not find requested version of module ${module}. "
+        "Requested version was ${DUNE_FIND_VERSION}, found version is ${DUNE_FIND_MOD_VERSION_STRING}")
     endif()
   else(${module}_FOUND)
     if(required)
@@ -229,7 +232,9 @@ macro(split_module_version STRING MODULES VERSIONS)
       string(REGEX REPLACE "^\\([ ]*([^ ]*[ ]*[^ ]+)[ ]*\\)$" "\\1"
         version ${have_version})
       else(have_version)
-        set(version "")
+        set(version " ") # Mark as no version requested.
+        # Having a space is mandatory as we will append it to a list
+        # and an empty string will not be treated as entry we append to it.
       endif(have_version)
     list(APPEND ${MODULES} ${mod})
     list(APPEND ${VERSIONS} ${version})
@@ -295,23 +300,23 @@ macro(dune_module_information MODULE_DIR)
   # 3. Check for line starting with Depends
   extract_line("Depends:" ${DUNE_MOD_NAME}_DEPENDS "${DUNE_MODULE}")
   if(${DUNE_MOD_NAME}_DEPENDS)
-    split_module_version(${${DUNE_MOD_NAME}_DEPENDS} DEPENDS_MODULE DEPENDS_VERSIONS)
+    split_module_version(${${DUNE_MOD_NAME}_DEPENDS} ${DUNE_MOD_NAME}_DEPENDS_MODULE ${DUNE_MOD_NAME}_DEPENDS_VERSION)
     foreach(_mod ${${DUNE_MOD_NAME}_DEPENDS})
       set(${_mod}_REQUIRED REQUIRED)
     endforeach(_mod ${${DUNE_MOD_NAME}_DEPENDS})
     convert_deps_to_list(${DUNE_MOD_NAME}_DEPENDS)
     if(NOT ("${ARGV1}" STREQUAL QUIET))
-      message(STATUS "Dependencies: ${DEPENDS_MODULE} (versions: ${DEPENDS_VERSIONS}) ${DUNE_MOD_NAME}_DEPENDS=${${DUNE_MOD_NAME}_DEPENDS}")
+      message(STATUS "Dependencies for ${DUNE_MOD_NAME}: ${${DUNE_MOD_NAME}_DEPENDS}")
     endif(NOT ("${ARGV1}" STREQUAL QUIET))
   endif(${DUNE_MOD_NAME}_DEPENDS)
 
   # 4. Check for line starting with Suggests
   extract_line("Suggests:" ${DUNE_MOD_NAME}_SUGGESTS "${DUNE_MODULE}")
   if(${DUNE_MOD_NAME}_SUGGESTS)
-    split_module_version(${${DUNE_MOD_NAME}_SUGGESTS} SUGGESTS_MODULE SUGGESTS_VERSION)
+    split_module_version(${${DUNE_MOD_NAME}_SUGGESTS} ${DUNE_MOD_NAME}_SUGGESTS_MODULE ${DUNE_MOD_NAME}_SUGGESTS_VERSION)
     convert_deps_to_list(${DUNE_MOD_NAME}_SUGGESTS)
     if(NOT ("${ARGV1}" STREQUAL QUIET))
-      message(STATUS "Suggestions: ${SUGGESTS_MODULE} (versions: ${SUGGESTS_VERSIONS}) ${DUNE_MOD_NAME}_SUGGESTS=${${DUNE_MOD_NAME}_SUGGESTS}")
+      message(STATUS "Suggestions for ${DUNE_MOD_NAME}: ${${DUNE_MOD_NAME}_SUGGESTS}")
     endif(NOT ("${ARGV1}" STREQUAL QUIET))
   endif(${DUNE_MOD_NAME}_SUGGESTS)
 
@@ -330,6 +335,12 @@ macro(dune_process_dependency_leafs modules versions is_required next_level_deps
   set(mmodules ${modules})
   set(mversions ${versions})
   list(LENGTH mmodules mlength)
+  list(LENGTH mversions vlength)
+  if(NOT mlength EQUAL vlength)
+    message(STATUS "mmodules=${mmodules} modules=${modules}")
+    message(STATUS "mversions=${mversions} versions=${mversions}")
+    message(FATAL_ERROR "List of modules and versions do not have the same length!")
+  endif(NOT mlength EQUAL vlength)
   if(mlength GREATER 0)
     math(EXPR length "${mlength}-1")
     foreach(i RANGE 0 ${length})
@@ -400,11 +411,11 @@ macro(dune_create_dependency_tree)
   endif(${dune-common_MODULE_PATH})
   list(FIND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules start)
   set(ALL_DEPENDENCIES "")
-  if(DEPENDS_MODULE OR SUGGESTS_MODULE)
-    set(ALL_DEPENDENCIES ${DEPENDS_MODULE} ${SUGGESTS_MODULE})
-    dune_create_dependency_leafs("${DEPENDS_MODULE}" "${DEPENDS_VERSIONS}"
-      "${SUGGESTS_MODULE}" "${SUGGESTS_VERSIONS}")
-  endif(DEPENDS_MODULE OR SUGGESTS_MODULE)
+  if(${ProjectName}_DEPENDS_MODULE OR ${ProjectName}_SUGGESTS_MODULE)
+    set(ALL_DEPENDENCIES ${${ProjectName}_DEPENDS_MODULE} ${${ProjectName}_SUGGESTS_MODULE})
+    dune_create_dependency_leafs("${${ProjectName}_DEPENDS_MODULE}" "${${ProjectName}_DEPENDS_VERSION}"
+      "${${ProjectName}_SUGGESTS_MODULE}" "${${ProjectName}_SUGGESTS_VERSION}")
+  endif(${ProjectName}_DEPENDS_MODULE OR ${ProjectName}_SUGGESTS_MODULE)
   set(_my_path "")
   if(ALL_DEPENDENCIES)
     # Reverse the order of the modules and remove duplicates
@@ -419,8 +430,8 @@ macro(dune_create_dependency_tree)
       set(${_mod}_cmake_path_processed 1)
       set(_my_path ${${_mod}_MODULE_PATH})
       list(APPEND NEW_ALL_DEPS ${_mod})
-      math(EXPR length "${length}-1")
       if(length GREATER 0)
+        math(EXPR length "${length}-1")
         foreach(i RANGE ${length} 0 -1)
           list(GET ALL_DEPENDENCIES ${i} _mod)
           if(NOT ${_mod}_cmake_path_processed)
@@ -475,7 +486,7 @@ macro(dune_module_to_macro _macro_name _dune_module)
   set(${_macro_name} "${${_macro_name}}${_first_letter}${_rest}")
 endmacro(dune_module_to_macro _macro_name _dune_module)
 
-macro(dune_process_dependency_tree DEPENDS DVERSIONS SUGGESTS SVERSIONS)
+macro(dune_process_dependency_macros)
   foreach(_mod ${ALL_DEPENDENCIES} ${ProjectName})
     if(NOT ${_mod}_PROCESSED)
       # module not processed yet
@@ -493,9 +504,6 @@ macro(dune_process_dependency_tree DEPENDS DVERSIONS SUGGESTS SVERSIONS)
         message(STATUS "Performing tests specific to ${_mod} from file ${_mod_cmake}.")
         include(${_mod_cmake})
       endif(_mod_cmake)
-      # Find the module
-      #find_package(${_mod})
-      # set includes
       dune_module_to_uppercase(_upper_case "${_mod}")
       if(${_mod}_INCLUDE_DIRS)
         message(STATUS "Setting ${_mod}_INCLUDE_DIRS=${${_mod}_INCLUDE_DIRS}")
@@ -508,7 +516,6 @@ macro(dune_process_dependency_tree DEPENDS DVERSIONS SUGGESTS SVERSIONS)
           list(INSERT DUNE_LIBS 0 "${_lib}")
         endforeach(_lib ${${_mod}_LIBRARIES})
       endif(${_mod}_LIBRARIES)
-      message(STATUS "Dependencies for ${_mod}: ${${_mod}_DEPENDENCIES}")
 
       #update ALL_PKG_FLAGS
       foreach(dir ${${_mod}_INCLUDE_DIRS})
@@ -516,7 +523,7 @@ macro(dune_process_dependency_tree DEPENDS DVERSIONS SUGGESTS SVERSIONS)
       endforeach()
     endif(NOT ${_mod}_PROCESSED)
   endforeach(_mod DEPENDENCIES)
-endmacro(dune_process_dependency_tree)
+endmacro(dune_process_dependency_macros)
 
 # macro that should be called near the begin of the top level CMakeLists.txt.
 # Namely it sets up the module, defines basic variables and manages
@@ -623,27 +630,9 @@ macro(dune_project)
   # activate pkg-config
   include(DunePkgConfig)
 
-  dune_process_dependency_tree("${DEPENDS_MODULE}" "${DEPENDS_VERSION}"
-    "${SUGGESTS_MODULE}" "${SUGGESTS_VERSION}")
+  # Process the macros provided by the dependencies and ourself
+  dune_process_dependency_macros()
 
-  # Search for cmake files containing tests and directives
-  # specific to this module
-  dune_module_to_macro(_macro ${DUNE_MOD_NAME})
-  set(DUNE_MOD_NAME_CMAKE "${_macro}")
-  set(_macro "${_macro}Macros")
-  set(_mod_cmake _mod_cmake-NOTFOUND)  # Prevent false positives due to caching
-  find_file(_mod_cmake
-    ${_macro}.cmake
-    ${CMAKE_MODULE_PATH}
-    ${CMAKE_SOURCE_DIR}/cmake/modules
-    NO_DEFAULT_PATH)
-  if(_mod_cmake)
-    set(${DUNE_MOD_NAME_CMAKE}_FOUND FOUND)
-    message(STATUS " Performing tests specific to ${DUNE_MOD_NAME} from file ${_mod_cmake}.")
-    include(${_mod_cmake})
-  else(_mod_cmake)
-    message(STATUS "There are no tests for module ${DUNE_MOD_NAME}.")
-  endif(_mod_cmake)
   include(GNUInstallDirs)
   # Set variable where the cmake modules will be installed.
   # Thus the user can override it and for example install
@@ -795,31 +784,6 @@ endmacro()")
     ${CONFIG_SOURCE_FILE}
     ${PROJECT_BINARY_DIR}/${ProjectName}-config.cmake @ONLY)
 
-  #configure_file(
-  #  ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in
-  #  ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake @ONLY)
-  list(LENGTH DEPENDS_MODULE mlength)
-  math(EXPR len2 "${mlength}-1")
-  if(mlength GREATER 0)
-    foreach(i RANGE 0 ${len2})
-      list(GET DEPENDS_MODULE ${i} _mod)
-      dune_module_to_macro(_macro ${_mod})
-      list(GET DEPENDS_VERSION ${i} _ver)
-      #file(APPEND ${PROJECT_BINARY_DIR}/${ProjectName}-config.cmake
-      #"find_package(${_mod})\n")#include(${_macro}Macros)\n")
-      #file(APPEND ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake
-      #"find_package(${_mod})\n")#include(${_macro}Macros)\n")
-    endforeach(i RANGE 0 ${mlength})
-  endif(mlength GREATER 0)
-
-  if(${ProjectName_CMAKE}_FOUND)
-    # This module hast its own tests.
-    # Execute them during find_package
-    #file(APPEND ${PROJECT_BINARY_DIR}/${ProjectName}-config.cmake
-    #  "include(${ProjectName_CMAKE}Macros)\n")
-    #file(APPEND ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake
-    #  "\ninclude(${ProjectName_CMAKE}Macros)\n")
-  endif(${ProjectName_CMAKE}_FOUND)
   if(NOT EXISTS ${PROJECT_SOURCE_DIR}/${ProjectName}-config-version.cmake.in)
     file(WRITE ${PROJECT_BINARY_DIR}/CMakeFiles/${ProjectName}-config-version.cmake.in
 "set(PACKAGE_VERSION \"@ProjectVersionString@\")
