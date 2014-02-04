@@ -368,7 +368,7 @@ namespace Dune
     /**
      * @brief The underlying memory pool.
      */
-    static PoolType memoryPool_;
+    PoolType memoryPool_;
   };
 
   // specialization for void
@@ -550,9 +550,6 @@ namespace Dune
     //++allocated_;
     return p;
   }
-
-  template<class T, std::size_t s>
-  typename PoolAllocator<T,s>::PoolType PoolAllocator<T,s>::memoryPool_;
 
   template<class T, std::size_t s>
   inline PoolAllocator<T,s>::PoolAllocator()
