@@ -558,13 +558,13 @@ macro(dune_project)
 
   option(DUNE_USE_ONLY_STATIC_LIBS "If set to ON, we will force static linkage everywhere" OFF)
   if(DUNE_USE_ONLY_STATIC_LIBS)
-    set(_default_enable_shared OFF)
-    set(_default_enable_static ON)
-  else(DUNE_USE_ONLY_STATIC_LIBS)
-    set(_default_enable_shared ON)
-    set(_default_enable_static OFF)
+    if(BUILD_SHARED_LIBS)
+      message(FATAL_ERROR "Your requesting to use only static libraries "
+	"(DUNE_USE_ONLY_STATIC_LIBS==True) while at same time requesting to "
+	"build shared libraries (BUILD_SHARED_LIBS==True). This is a "
+	"contradiction!")
+    endif(BUILD_SHARED_LIBS)
   endif(DUNE_USE_ONLY_STATIC_LIBS)
-  option(BUILD_SHARED_LIBS "If set to ON, shared libs will be built" ${_default_enable_shared})
   option(DUNE_BUILD_BOTH_LIBS "If set to ON, shared and static libs will be built"
     ${_default_enable_static})
 
