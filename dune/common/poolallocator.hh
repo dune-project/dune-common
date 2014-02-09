@@ -406,30 +406,16 @@ namespace Dune
   }
 
   template<typename T, std::size_t t1, std::size_t t2>
-  bool operator==(const PoolAllocator<T,t1>&, const PoolAllocator<T,t2>&)
+  bool operator==(const PoolAllocator<T,t1>& p1, const PoolAllocator<T,t2>& p2)
   {
-    return Pool<T,t1>::chunkSize == Pool<T,t2>::chunkSize;
+    return &p1==&p2;
   }
 
 
   template<typename T, std::size_t t1, std::size_t t2>
-  bool operator!=(const PoolAllocator<T,t1>&, const PoolAllocator<T,t2>&)
+  bool operator!=(const PoolAllocator<T,t1>& p1, const PoolAllocator<T,t2>& p2)
   {
-    return Pool<T,t1>::chunkSize != Pool<T,t2>::chunkSize;
-  }
-
-
-  template<typename T, std::size_t t1, std::size_t t2>
-  bool operator==(const PoolAllocator<T,t1>&, const PoolAllocator<void,t2>&)
-  {
-    return false;
-  }
-
-
-  template<typename T, std::size_t t1, std::size_t t2>
-  bool operator!=(const PoolAllocator<T,t1>&, const PoolAllocator<void,t2>&)
-  {
-    return true;
+    return &p1 != &p2;
   }
 
   template<typename T, std::size_t t1, std::size_t t2>
@@ -444,16 +430,17 @@ namespace Dune
   {
     return true;
   }
+
   template<std::size_t t1, std::size_t t2>
-  bool operator==(const PoolAllocator<void,t1>&, const PoolAllocator<void,t2>&)
+  bool operator==(const PoolAllocator<void,t1>& p1, const PoolAllocator<void,t2>& p2)
   {
-    return true;
+    return &p1==&p2;
   }
 
   template<std::size_t t1, std::size_t t2>
-  bool operator!=(const PoolAllocator<void,t1>&, const PoolAllocator<void,t2>&)
+  bool operator!=(const PoolAllocator<void,t1>& p1, const PoolAllocator<void,t2>& p2)
   {
-    return false;
+    return &p1!=&p2;
   }
 
   template<class T, std::size_t S>
