@@ -633,7 +633,7 @@ run_default_configure () {
       if test -d "$path/$BUILDDIR"; then
         PARAMS="$PARAMS \"--with-$name=$path/$BUILDDIR\""
       else
-        if test x$(eval echo \$INST_$mod) != xyes; then
+        if test x$(eval echo \$INST_$m) != xyes; then
           PARAMS="$PARAMS \"--with-$name=$path\""
         fi
       fi
