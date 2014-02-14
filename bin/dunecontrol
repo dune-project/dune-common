@@ -664,7 +664,7 @@ run_default_configure () {
         fi
       done
       # create build directory if requested
-      test -d "$BUILDDIR" || mkdir "$BUILDDIR"
+      test -d "$BUILDDIR" || mkdir -p "$BUILDDIR"
       SRCDIR="$PWD"
       cd "$BUILDDIR"
       echo "$PREPARAMS $CMAKE -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\""
@@ -674,7 +674,7 @@ run_default_configure () {
       echo ./configure "$PARAMS"
       # create build directory if requested
       if test -n "$BUILDDIR"; then
-        test -d "$BUILDDIR" || mkdir "$BUILDDIR"
+        test -d "$BUILDDIR" || mkdir -p "$BUILDDIR"
         SRCDIR="$PWD"
         cd "$BUILDDIR"
         eval "$SRCDIR/configure" "$PARAMS" || exit 1
