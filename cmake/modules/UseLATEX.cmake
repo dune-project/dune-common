@@ -1005,11 +1005,11 @@ MACRO(ADD_LATEX_TARGETS)
       ENDFOREACH (multibib_auxfile ${LATEX_MULTIBIB_NEWCITES})
     ELSE (LATEX_MULTIBIB_NEWCITES)
       SET(make_dvi_command ${make_dvi_command}
-	COMMAND ${CMAKE_COMMAND} -E chdir ${output_dir}
-	${BIBTEX_COMPILER} ${BIBTEX_COMPILER_FLAGS} ${LATEX_TARGET})
+        COMMAND ${CMAKE_COMMAND} -E chdir ${output_dir}
+        ${BIBTEX_COMPILER} ${BIBTEX_COMPILER_FLAGS} ${LATEX_TARGET})
       SET(make_pdf_command ${make_pdf_command}
-	COMMAND ${CMAKE_COMMAND} -E chdir ${output_dir}
-	${BIBTEX_COMPILER} ${BIBTEX_COMPILER_FLAGS} ${LATEX_TARGET})
+        COMMAND ${CMAKE_COMMAND} -E chdir ${output_dir}
+        ${BIBTEX_COMPILER} ${BIBTEX_COMPILER_FLAGS} ${LATEX_TARGET})
     ENDIF (LATEX_MULTIBIB_NEWCITES)
 
     FOREACH (bibfile ${LATEX_BIBFILES})
@@ -1081,11 +1081,11 @@ MACRO(ADD_LATEX_TARGETS)
   ELSE (LATEX_DEFAULT_PDF OR LATEX_DEFAULT_SAFEPDF)
     IF (LATEX_FATHER_TARGET)
       ADD_CUSTOM_TARGET(${dvi_target}
-	DEPENDS ${output_dir}/${LATEX_TARGET}.dvi)
+        DEPENDS ${output_dir}/${LATEX_TARGET}.dvi)
       ADD_DEPENDENCIES(${LATEX_FATHER_TARGET} ${dvi_target})
     ELSE (LATEX_FATHER_TARGET)
       ADD_CUSTOM_TARGET(${dvi_target} ALL
-	DEPENDS ${output_dir}/${LATEX_TARGET}.dvi)
+        DEPENDS ${output_dir}/${LATEX_TARGET}.dvi)
     ENDIF (LATEX_FATHER_TARGET)
   ENDIF (LATEX_DEFAULT_PDF OR LATEX_DEFAULT_SAFEPDF)
 
@@ -1097,12 +1097,12 @@ MACRO(ADD_LATEX_TARGETS)
       )
     IF (LATEX_DEFAULT_PDF)
       IF (LATEX_FATHER_TARGET)
-	ADD_CUSTOM_TARGET(${pdf_target}
+        ADD_CUSTOM_TARGET(${pdf_target}
           DEPENDS ${output_dir}/${LATEX_TARGET}.pdf)
-	ADD_DEPENDENCIES(${LATEX_FATHER_TARGET} ${pdf_target})
+        ADD_DEPENDENCIES(${LATEX_FATHER_TARGET} ${pdf_target})
       ELSE (LATEX_FATHER_TARGET)
-	ADD_CUSTOM_TARGET(${pdf_target} ALL
-	  DEPENDS ${output_dir}/${LATEX_TARGET}.pdf)
+        ADD_CUSTOM_TARGET(${pdf_target} ALL
+          DEPENDS ${output_dir}/${LATEX_TARGET}.pdf)
       ENDIF (LATEX_FATHER_TARGET)
     ELSE (LATEX_DEFAULT_PDF)
       ADD_CUSTOM_TARGET(${pdf_target}
@@ -1122,18 +1122,18 @@ MACRO(ADD_LATEX_TARGETS)
       # cannot properly do the dependencies for both.  When selecting safepdf,
       # simply force a recompile every time.
       IF (LATEX_DEFAULT_SAFEPDF)
-	IF (LATEX_FATHER_TARGET)
+        IF (LATEX_FATHER_TARGET)
           ADD_CUSTOM_TARGET(${safepdf_target}
             ${CMAKE_COMMAND} -E chdir ${output_dir}
             ${PS2PDF_CONVERTER} ${PS2PDF_CONVERTER_FLAGS} ${LATEX_TARGET}.ps ${LATEX_TARGET}.pdf
             )
-	  ADD_DEPENDENCIES(${LATEX_FATHER_TARGET} ${safepdf_target})
-	ELSE (LATEX_FATHER_TARGET)
-	  ADD_CUSTOM_TARGET(${safepdf_target} ALL
+          ADD_DEPENDENCIES(${LATEX_FATHER_TARGET} ${safepdf_target})
+        ELSE (LATEX_FATHER_TARGET)
+          ADD_CUSTOM_TARGET(${safepdf_target} ALL
             ${CMAKE_COMMAND} -E chdir ${output_dir}
             ${PS2PDF_CONVERTER} ${PS2PDF_CONVERTER_FLAGS} ${LATEX_TARGET}.ps ${LATEX_TARGET}.pdf
             )
-	ENDIF (LATEX_FATHER_TARGET)
+        ENDIF (LATEX_FATHER_TARGET)
       ELSE (LATEX_DEFAULT_SAFEPDF)
         ADD_CUSTOM_TARGET(${safepdf_target}
           ${CMAKE_COMMAND} -E chdir ${output_dir}

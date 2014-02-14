@@ -560,9 +560,9 @@ macro(dune_project)
   if(DUNE_USE_ONLY_STATIC_LIBS)
     if(BUILD_SHARED_LIBS)
       message(FATAL_ERROR "Your requesting to use only static libraries "
-	"(DUNE_USE_ONLY_STATIC_LIBS==True) while at same time requesting to "
-	"build shared libraries (BUILD_SHARED_LIBS==True). This is a "
-	"contradiction!")
+        "(DUNE_USE_ONLY_STATIC_LIBS==True) while at same time requesting to "
+        "build shared libraries (BUILD_SHARED_LIBS==True). This is a "
+        "contradiction!")
     endif(BUILD_SHARED_LIBS)
   endif(DUNE_USE_ONLY_STATIC_LIBS)
   option(DUNE_BUILD_BOTH_LIBS "If set to ON, shared and static libs will be built"
