@@ -31,17 +31,16 @@ install(FILES
         binaryfunctions.hh
         bitsetvector.hh
         classname.hh
-        collectivecommunication.hh
         debugallocator.hh
         debugstream.hh
         deprecated.hh
         densematrix.hh
         densevector.hh
-	diagonalmatrix.hh
+        diagonalmatrix.hh
         documentation.hh
-	dotproduct.hh
+        dotproduct.hh
         dynmatrix.hh
-	dynmatrixev.hh
+        dynmatrixev.hh
         dynvector.hh
         enumset.hh
         exceptions.hh
@@ -68,11 +67,6 @@ install(FILES
         mallocallocator.hh
         math.hh
         matvectraits.hh
-        misc.hh
-        mpicollectivecommunication.hh
-        mpiguard.hh
-        mpihelper.hh
-        mpitraits.hh
         nullptr.hh
         parametertree.hh
         parametertreeparser.hh
@@ -81,7 +75,7 @@ install(FILES
         power.hh
         precision.hh
         propertymap.hh
-	promotiontraits.hh
+        promotiontraits.hh
         reservedvector.hh
         shared_ptr.hh
         singleton.hh

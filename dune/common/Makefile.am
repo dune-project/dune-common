@@ -27,7 +27,6 @@ commoninclude_HEADERS = 			\
 	binaryfunctions.hh			\
 	bitsetvector.hh				\
 	classname.hh				\
-	collectivecommunication.hh		\
 	debugallocator.hh			\
 	debugstream.hh				\
 	deprecated.hh				\
@@ -64,11 +63,6 @@ commoninclude_HEADERS = 			\
 	mallocallocator.hh			\
 	math.hh					\
 	matvectraits.hh                         \
-	misc.hh					\
-	mpicollectivecommunication.hh		\
-	mpiguard.hh				\
-	mpihelper.hh				\
-	mpitraits.hh				\
 	nullptr.hh				\
 	parametertree.hh                        \
 	parametertreeparser.hh			\
