@@ -373,34 +373,6 @@ namespace Dune
   };
 #endif
 
-  /**
-   * @brief Select a type based on a condition.
-   *
-   * If template parameter first is true T1 is selected
-   * otherwise T2 will be selected.
-   * The selected type is accessible through the typedef
-   * Type.
-   *
-   * \deprecated Will be removed after dune-common-2.3, use 'conditional' instead.
-   */
-  template<bool first, class T1, class T2>
-  struct SelectType
-  {
-    /**
-     * @brief The selected type.
-     *
-     * if first is true this will be type T1 and
-     * otherwise T2
-     */
-    typedef T1 Type DUNE_DEPRECATED_MSG("Use Dune::conditional::type instead");
-  } DUNE_DEPRECATED;
-
-  template<class T1, class T2>
-  struct SelectType<false,T1,T2>
-  {
-    typedef T2 Type DUNE_DEPRECATED_MSG("Use Dune::conditional::type instead");
-  };
-
 #if DOXYGEN || !HAVE_STD_CONDITIONAL
 
    /**
