@@ -5,7 +5,7 @@ install-exec-local:
 	  echo "set($(PACKAGE)_SCRIPT_DIR \"$(datadir)/dune/cmake/scripts\")" >> $(PACKAGE)-config.tmp; \
 	fi; \
 	if test "$(PACKAGE)" = "dune-common"; then \
-	  echo "set(DOXYSTYLE_FILE \"$(docdir)/doxygen/Doxystyle\")" >> $(PACKAGE)-config.tmp; \
+	  echo "set(DOXYSTYLE_FILE \"$(datadir)/dune-common/doc/doxygen/Doxystyle\")" >> $(PACKAGE)-config.tmp; \
 	fi; \
         if test -d $(top_srcdir)/cmake/modules; then \
 	  echo "set($(PACKAGE)_MODULE_PATH \"$(datadir)/dune/cmake/modules\")" >> $(PACKAGE)-config.tmp; \
