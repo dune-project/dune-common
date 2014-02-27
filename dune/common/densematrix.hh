@@ -580,9 +580,9 @@ namespace Dune
         return 0.0;
 
       ConstIterator it = begin();
-      typename remove_const< typename FieldTraits<value_type>::real_type >::type max = it->one_norm();
+      typename remove_const< typename FieldTraits<value_type>::real_type >::type max = (*it).one_norm();
       for (it = it + 1; it != end(); ++it)
-        max = std::max(max, it->one_norm());
+        max = std::max(max, (*it).one_norm());
 
       return max;
     }
@@ -594,9 +594,9 @@ namespace Dune
         return 0.0;
 
       ConstIterator it = begin();
-      typename remove_const< typename FieldTraits<value_type>::real_type >::type max = it->one_norm_real();
+      typename remove_const< typename FieldTraits<value_type>::real_type >::type max = (*it).one_norm_real();
       for (it = it + 1; it != end(); ++it)
-        max = std::max(max, it->one_norm_real());
+        max = std::max(max, (*it).one_norm_real());
 
       return max;
     }
