@@ -250,7 +250,7 @@ namespace Dune
 
     //===== iterator interface to rows of the matrix
     //! Iterator class for sequential access
-    typedef DenseIterator<DenseMatrix,row_type> Iterator;
+    typedef DenseIterator<DenseMatrix,row_type,row_reference> Iterator;
     //! typedef for stl compliant access
     typedef Iterator iterator;
     //! rename the iterators for easier access
@@ -285,7 +285,7 @@ namespace Dune
     }
 
     //! Iterator class for sequential access
-    typedef DenseIterator<const DenseMatrix,const row_type> ConstIterator;
+    typedef DenseIterator<const DenseMatrix,const row_type,const_row_reference> ConstIterator;
     //! typedef for stl compliant access
     typedef ConstIterator const_iterator;
     //! rename the iterators for easier access

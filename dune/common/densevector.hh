@@ -116,13 +116,15 @@ namespace Dune {
 
      provides sequential access to DenseVector, FieldVector and FieldMatrix
    */
-  template<class C, class T>
+  template<class C, class T, class R =T&>
   class DenseIterator :
-    public Dune::RandomAccessIteratorFacade<DenseIterator<C,T>,T, T&, std::ptrdiff_t>
+    public Dune::RandomAccessIteratorFacade<DenseIterator<C,T,R>,T, R, std::ptrdiff_t>
   {
-    friend class DenseIterator<typename remove_const<C>::type, typename remove_const<T>::type >;
-    friend class DenseIterator<const typename remove_const<C>::type, const typename remove_const<T>::type >;
+    friend class DenseIterator<typename remove_const<C>::type, typename remove_const<T>::type, typename mutable_reference<R>::type >;
+    friend class DenseIterator<const typename remove_const<C>::type, const typename remove_const<T>::type, typename const_reference<R>::type >;
 
+    typedef DenseIterator<typename remove_const<C>::type, typename remove_const<T>::type, typename mutable_reference<R>::type > MutableIterator;
+    typedef DenseIterator<const typename remove_const<C>::type, const typename remove_const<T>::type, typename const_reference<R>::type > ConstIterator;
   public:
 
     /**
@@ -144,23 +146,27 @@ namespace Dune {
       : container_(&cont), position_(pos)
     {}
 
-    DenseIterator(const DenseIterator<typename remove_const<C>::type, typename remove_const<T>::type >& other)
+    DenseIterator(const MutableIterator & other)
+      : container_(other.container_), position_(other.position_)
+    {}
+
+    DenseIterator(const ConstIterator & other)
       : container_(other.container_), position_(other.position_)
     {}
 
     // Methods needed by the forward iterator
-    bool equals(const DenseIterator<typename remove_const<C>::type,typename remove_const<T>::type>& other) const
+    bool equals(const MutableIterator &other) const
     {
       return position_ == other.position_ && container_ == other.container_;
     }
 
 
-    bool equals(const DenseIterator<const typename remove_const<C>::type,const typename remove_const<T>::type>& other) const
+    bool equals(const ConstIterator & other) const
     {
       return position_ == other.position_ && container_ == other.container_;
     }
 
-    T& dereference() const {
+    R dereference() const {
       return container_->operator[](position_);
     }
 
@@ -174,7 +180,7 @@ namespace Dune {
     }
 
     // Additional function needed by RandomAccessIterator
-    T& elementAt(DifferenceType i) const {
+    R elementAt(DifferenceType i) const {
       return container_->operator[](position_+i);
     }
 
