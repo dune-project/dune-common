@@ -71,6 +71,17 @@ namespace Dune {
       _data(x._data)
     {}
 
+    //! Constructor making vector with identical coordinates
+    template<class X>
+    DynamicVector (const DenseVector< X > & x) :
+      _data( )
+    {
+      const size_type n = x.size();
+      _data.reserve(n);
+      for( size_type i =0; i<n ;++i)
+        _data.push_back( x[ i ] );
+    }
+
     using Base::operator=;
 
     //==== forward some methods of std::vector
