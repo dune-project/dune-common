@@ -98,12 +98,7 @@ namespace Dune
       static void apply ( DenseMatrix &denseMatrix, const RHS &rhs )
       {
         typedef typename DenseMatrix::field_type field_type;
-
-        const field_type value = static_cast< field_type >( rhs );
-
-        const std::size_t size = denseMatrix.size();
-        for( std::size_t i = 0; i < size; ++i )
-          denseMatrix[ i ] = value;
+        std::fill( denseMatrix.begin(), denseMatrix.end(), static_cast< field_type >( rhs ) );
       }
     };
 
