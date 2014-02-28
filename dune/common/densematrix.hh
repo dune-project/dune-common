@@ -251,7 +251,7 @@ namespace Dune
     //! rename the iterators for easier access
     typedef Iterator RowIterator;
     //! rename the iterators for easier access
-    typedef typename row_type::Iterator ColIterator;
+    typedef typename remove_reference<row_reference>::type::Iterator ColIterator;
 
     //! begin iterator
     Iterator begin ()
@@ -286,7 +286,7 @@ namespace Dune
     //! rename the iterators for easier access
     typedef ConstIterator ConstRowIterator;
     //! rename the iterators for easier access
-    typedef typename row_type::ConstIterator ConstColIterator;
+    typedef typename remove_reference<const_row_reference>::type::ConstIterator ConstColIterator;
 
     //! begin iterator
     ConstIterator begin () const
