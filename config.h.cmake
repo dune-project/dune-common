@@ -34,7 +34,7 @@
 /* does the compiler support __attribute__((unused))? */
 #cmakedefine HAS_ATTRIBUTE_UNUSED 1
 
-/* Define to 1 if the <array> C++11 is available and support array::fill */
+/* Define to 1 if the header <array> from C++11 is available and supports array::fill */
 #cmakedefine HAVE_ARRAY 1
 
 /* Define if you have a BLAS library. */
