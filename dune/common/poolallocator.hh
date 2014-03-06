@@ -16,11 +16,12 @@
 #include <cassert>
 #include <new>
 
-//forward declarations.
-
+#ifndef DOXYGEN
+// forward declarations.
 // we need to know the test function to declare it friend
 template<std::size_t size, typename T>
 struct testPoolMain;
+#endif
 
 namespace Dune
 {
