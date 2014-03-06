@@ -16,7 +16,13 @@
 
 namespace Dune {
 
+  /** \brief report parser error while reading ParameterTree */
   class ParameterTreeParserError : public RangeError {};
+  /** \brief exception thrown if the user wants to see help string
+
+      this exception is only thrown if the command line parameters
+      contain an option --help or -h
+   */
   class HelpRequest : public Exception {};
 
   /** \brief Parsers to set up a ParameterTree from various input sources
