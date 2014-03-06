@@ -117,7 +117,7 @@ void Dune::ParameterTreeParser::readINITree(std::istream& in,
         }
 
         if (keysInFile.count(key) != 0)
-          DUNE_THROW(Exception, "Key '" << key <<
+          DUNE_THROW(ParameterTreeParserError, "Key '" << key <<
                      "' appears twice in " << srcname << " !");
         else
         {
