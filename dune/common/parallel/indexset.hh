@@ -202,7 +202,7 @@ namespace Dune
   /**
    * @brief Exception indicating that the index set is not in the expected state.
    */
-  class InvalidIndexSetState : public Exception {};
+  class InvalidIndexSetState : public InvalidStateException {};
 
   // Forward declaration
   template<class I> class GlobalLookupIndexSet;
