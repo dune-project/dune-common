@@ -170,7 +170,7 @@ namespace Dune
 
 
   /** @brief Error thrown if operations of a FieldMatrix fail. */
-  class FMatrixError : public Exception {};
+  class FMatrixError : public MathError {};
 
   /**
       @brief A dense n x m matrix.
