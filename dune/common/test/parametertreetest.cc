@@ -13,10 +13,10 @@ template<class P>
 void testparam(const P & p)
 {
   // try accessing key
-  std::cout << p.template get<int>("x1") << std::endl;
-  std::cout << p.template get<double>("x1") << std::endl;
-  std::cout << p.template get<std::string>("x2") << std::endl;
-  std::cout << p.template get<bool>("x3") << std::endl;
+  assert(p.template get<int>("x1") == 1);
+  assert(p.template get<double>("x1") == 1.0);
+  assert(p.template get<std::string>("x2") == "hallo");
+  assert(p.template get<bool>("x3") == false);
   // try reading array like structures
   std::vector<unsigned int>
   array1 = p.template get< std::vector<unsigned int> >("array");
@@ -27,15 +27,12 @@ void testparam(const P & p)
   array3 = p.template get< Dune::FieldVector<unsigned int, 8> >("array");
 #endif
   assert(array1.size() == 8);
-  std::cout << "array =";
   for (unsigned int i=0; i<8; i++)
   {
     assert(array1[i] == i+1);
     assert(array2[i] == i+1);
     assert(array3[i] == i+1);
-    std::cout << "\t" << array1[i];
   }
-  std::cout << std::endl;
   // try accessing subtree
   p.sub("Foo");
   p.sub("Foo").template get<std::string>("peng");
