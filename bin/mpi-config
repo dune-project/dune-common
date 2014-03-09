@@ -39,7 +39,7 @@ findm4dir() {
     return
   fi
   # installed
-  M4DIR="$BINDIR/../share/aclocal"
+  M4DIR="$BINDIR/../share/dune/aclocal"
   if test -f "$M4DIR/mpi-config.m4"; then
     echo "$M4DIR"
     return
