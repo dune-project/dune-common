@@ -30,9 +30,7 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
   # check for parmtirs include path
   for p in "$PARMETIS" $PARMETIS_DEFAULT; do
     for i in $INCLUDE_DEFAULT; do
-#      AC_MSG_NOTICE( ... checking for $p/$i )
       if test -f $p/$i/parmetis.h ; then
-#        AC_MSG_NOTICE( ... found $p/$i/parmetis.h )
         with_parmetis="$p"
         include_path="$i"
         lib_path=lib
@@ -45,13 +43,9 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
     # defaultpath
     PARMETIS_LIB_PATH="$with_parmetis/$lib_path"
     PARMETIS_INCLUDE_PATH="$with_parmetis/$include_path"
-
-    AC_MSG_RESULT(yes)
   else
     if test -n "$PARMETIS" && test "$PARMETIS" != "no" ; then
       AC_MSG_ERROR(ParMETIS was part of the configure call but could not be found in $PARMETIS)
-    else
-      AC_MSG_RESULT(no)
     fi
   fi
 
