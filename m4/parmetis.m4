@@ -63,9 +63,9 @@ AC_DEFUN([DUNE_PATH_PARMETIS],[
   ac_save_CPPFLAGS="$CPPFLAGS"
   ac_save_LIBS="$LIBS"
 
-  # call IMDX_LIB_METIS directly and not via AC_REQUIRE
-  # because AC_REQUIRE support not allow parameters
-  # without any parameters a missing METIS would halt configure
+  # Call IMDX_LIB_METIS directly and not via AC_REQUIRE
+  # because AC_REQUIRE does not allow parameters.
+  # Without any parameters a missing METIS would halt configure
   IMMDX_LIB_METIS(,[true])
 
   ## do nothing if --without-parmetis is used

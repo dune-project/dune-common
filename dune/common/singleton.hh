@@ -53,7 +53,7 @@ namespace Dune
   class Singleton
   {
     /** @brief Smartpointer to the instance. */
-    static std::auto_ptr<T> instance_;
+    static std::unique_ptr<T> instance_;
   protected:
     /* @brief Private constructor. */
     Singleton(){}
@@ -70,13 +70,13 @@ namespace Dune
     static T& instance()
     {
       if(instance_.get() == 0)
-        instance_ = std::auto_ptr<T>(new T());
+        instance_ = std::unique_ptr<T>(new T());
       return *instance_;
     }
   };
 
   template<class T>
-  typename std::auto_ptr<T> Singleton<T>::instance_;
+  typename std::unique_ptr<T> Singleton<T>::instance_;
 
 } // namespace Dune
 

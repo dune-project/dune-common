@@ -13,10 +13,10 @@ template<class P>
 void testparam(const P & p)
 {
   // try accessing key
-  std::cout << p.template get<int>("x1") << std::endl;
-  std::cout << p.template get<double>("x1") << std::endl;
-  std::cout << p.template get<std::string>("x2") << std::endl;
-  std::cout << p.template get<bool>("x3") << std::endl;
+  assert(p.template get<int>("x1") == 1);
+  assert(p.template get<double>("x1") == 1.0);
+  assert(p.template get<std::string>("x2") == "hallo");
+  assert(p.template get<bool>("x3") == false);
   // try reading array like structures
   std::vector<unsigned int>
   array1 = p.template get< std::vector<unsigned int> >("array");
@@ -27,15 +27,12 @@ void testparam(const P & p)
   array3 = p.template get< Dune::FieldVector<unsigned int, 8> >("array");
 #endif
   assert(array1.size() == 8);
-  std::cout << "array =";
   for (unsigned int i=0; i<8; i++)
   {
     assert(array1[i] == i+1);
     assert(array2[i] == i+1);
     assert(array3[i] == i+1);
-    std::cout << "\t" << array1[i];
   }
-  std::cout << std::endl;
   // try accessing subtree
   p.sub("Foo");
   p.sub("Foo").template get<std::string>("peng");
@@ -102,6 +99,90 @@ void testmodify(P parameterSet)
     DUNE_THROW(Dune::Exception, "Failed to write subtree entry");
 }
 
+void testOptionsParserResults(std::vector<std::string> args,
+  const std::vector<std::string> & keywords,
+  unsigned int required,
+  bool allow_more,
+  bool overwrite,
+  std::string foo, std::string bar,
+  const std::string referr = "")
+{
+  Dune::ParameterTree pt;
+  try {
+    char * argv[10];
+    for (std::size_t i = 0; i < args.size(); ++i)
+      argv[i] = &args[i][0];
+    Dune::ParameterTreeParser::readNamedOptions(args.size(), argv, pt, keywords, required, allow_more, overwrite);
+    assert(referr == "");
+  }
+  catch (const Dune::ParameterTreeParserError & e)
+  {
+    std::string err = e.what();
+    std::size_t offset = err.find("]: ");
+    err = err.substr(offset + 3, err.find('\n') - offset - 3);
+    assert(referr == err);
+  }
+  if (foo != "" && foo != pt.get<std::string>("foo"))
+    DUNE_THROW(Dune::Exception, "Options parser failed... foo = "
+      << pt.get<std::string>("foo") << " != " << foo);
+  if (bar != "" && bar != pt.get<std::string>("bar"))
+    DUNE_THROW(Dune::Exception, "Options parser failed... bar = "
+      << pt.get<std::string>("bar") << " != " << bar);
+}
+
+void testOptionsParser()
+{
+  std::vector<std::string> keywords = { "foo", "bar" };
+  // check normal behaviour
+  {
+    std::vector<std::string> args = { "progname", "--bar=ligapokal", "peng", "--bar=ligapokal", "--argh=other"};
+    testOptionsParserResults(args,keywords,keywords.size(),true,true,"peng","ligapokal",
+      "" /* no error */ );
+  }
+  // bail out on overwrite
+  {
+    std::vector<std::string> args = { "progname", "--bar=ligapokal", "peng", "--bar=ligapokal", "--argh=other"};
+    testOptionsParserResults(args,keywords,keywords.size(),true,false,"peng","ligapokal",
+      "parameter bar already specified");
+  }
+  // bail out on unknown options
+  {
+    std::vector<std::string> args = { "progname", "--bar=ligapokal", "peng", "--bar=ligapokal", "--argh=other"};
+    testOptionsParserResults(args,keywords,keywords.size(),false,true,"peng","ligapokal",
+      "unknown parameter argh");
+  }
+  // bail out on missing parameter
+  {
+    std::vector<std::string> args = { "progname", "--bar=ligapokal"};
+    testOptionsParserResults(args,keywords,keywords.size(),true,true,"","ligapokal",
+      "missing parameter(s) ...  foo");
+  }
+  // check optional parameter
+  {
+    std::vector<std::string> args = { "progname", "--foo=peng"};
+    testOptionsParserResults(args,keywords,1,true,true,"peng","",
+      "" /* no error */);
+  }
+  // check optional parameter, but bail out on missing parameter
+  {
+    std::vector<std::string> args = { "progname", "--bar=ligapokal"};
+    testOptionsParserResults(args,keywords,1,true,true,"","ligapokal",
+      "missing parameter(s) ...  foo");
+  }
+  // bail out on too many parameters
+  {
+    std::vector<std::string> args = { "progname", "peng", "ligapokal", "hurz"};
+    testOptionsParserResults(args,keywords,keywords.size(),true,true,"peng","ligapokal",
+      "superfluous unnamed parameter");
+  }
+  // bail out on missing value
+  {
+    std::vector<std::string> args = { "progname", "--foo=peng", "--bar=ligapokal", "--hurz"};
+    testOptionsParserResults(args,keywords,keywords.size(),true,true,"peng","ligapokal",
+      "value missing for parameter --hurz");
+  }
+}
+
 int main()
 {
   try {
@@ -128,11 +209,14 @@ int main()
 
     // more const tests
     testparam<Dune::ParameterTree>(c);
+
+    // check the command line parser
+    testOptionsParser();
   }
   catch (Dune::Exception & e)
   {
     std::cout << e << std::endl;
     return 1;
   }
-  return (0);
+  return 0;
 }

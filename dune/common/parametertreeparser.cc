@@ -14,8 +14,8 @@
 #include <sstream>
 #include <fstream>
 #include <set>
-
-#include <dune/common/exceptions.hh>
+#include <map>
+#include <algorithm>
 
 std::string Dune::ParameterTreeParser::ltrim(const std::string& s)
 {
@@ -117,7 +117,7 @@ void Dune::ParameterTreeParser::readINITree(std::istream& in,
         }
 
         if (keysInFile.count(key) != 0)
-          DUNE_THROW(Exception, "Key '" << key <<
+          DUNE_THROW(ParameterTreeParserError, "Key '" << key <<
                      "' appears twice in " << srcname << " !");
         else
         {
@@ -131,7 +131,6 @@ void Dune::ParameterTreeParser::readINITree(std::istream& in,
   }
 
 }
-
 
 void Dune::ParameterTreeParser::readOptions(int argc, char* argv [],
                                             ParameterTree& pt)
@@ -157,4 +156,93 @@ void Dune::ParameterTreeParser::readOptions(int argc, char* argv [],
 
   }
 
+}
+
+void Dune::ParameterTreeParser::readNamedOptions(int argc, char* argv[],
+                                                 ParameterTree& pt,
+                                                 std::vector<std::string> keywords,
+                                                 unsigned int required,
+                                                 bool allow_more,
+                                                 bool overwrite,
+                                                 std::vector<std::string> help)
+{
+  std::string helpstr = generateHelpString(argv[0], keywords, required, help);
+  std::vector<bool> done(keywords.size(),false);
+  std::size_t current = 0;
+
+  for (std::size_t i=1; i<std::size_t(argc); i++)
+  {
+    std::string opt = argv[i];
+    // check for help
+    if (opt == "-h" || opt == "--help")
+      DUNE_THROW(HelpRequest, helpstr);
+    // is this a named parameter?
+    if (opt.substr(0,2) == "--")
+    {
+      size_t pos = opt.find('=',2);
+      if (pos == std::string::npos)
+        DUNE_THROW(ParameterTreeParserError,
+          "value missing for parameter " << opt << "\n" << helpstr);
+      std::string key = opt.substr(2,pos-2);
+      std::string value = opt.substr(pos+1,opt.size()-pos-1);
+      auto it = std::find(keywords.begin(), keywords.end(), key);
+      // is this param in the keywords?
+      if (!allow_more && it == keywords.end())
+          DUNE_THROW(ParameterTreeParserError,
+            "unknown parameter " << key << "\n" << helpstr);
+      // do we overwrite an existing entry?
+      if (!overwrite && pt[key] != "")
+        DUNE_THROW(ParameterTreeParserError,
+          "parameter " << key << " already specified" << "\n" << helpstr);
+      pt[key] = value;
+      done[std::distance(keywords.begin(),it)] = true; // mark key as stored
+    }
+    else {
+      // map to the next keyword in the list
+      while(current < done.size() && done[current]) ++current;
+      // are there keywords left?
+      if (current >= done.size())
+        DUNE_THROW(ParameterTreeParserError,
+          "superfluous unnamed parameter" << "\n" << helpstr);
+      // do we overwrite an existing entry?
+      if (!overwrite && pt[keywords[current]] != "")
+        DUNE_THROW(ParameterTreeParserError,
+          "parameter " << keywords[current] << " already specified" << "\n" << helpstr);
+      pt[keywords[current]] = opt;
+      done[current] = true; // mark key as stored
+    }
+  }
+  // check that we receive all required keywords
+  std::string missing = "";
+  for (unsigned int i=0; i<keywords.size(); i++)
+    if ((i < required) && ! done[i]) // is this param required?
+      missing += std::string(" ") + keywords[i];
+  if (missing.size())
+    DUNE_THROW(ParameterTreeParserError,
+      "missing parameter(s) ... " << missing << "\n" << helpstr);
+}
+
+std::string Dune::ParameterTreeParser::generateHelpString(
+  std::string progname, std::vector<std::string> keywords, unsigned int required, std::vector<std::string> help)
+{
+  static const char braces[] = "<>[]";
+  std::string helpstr = "";
+  helpstr = helpstr + "Usage: " + progname;
+  for (std::size_t i=0; i<keywords.size(); i++)
+  {
+    bool req = (i < required);
+    helpstr = helpstr +
+      " " + braces[req*2] +
+      keywords[i] +braces[req*2+1];
+  }
+  helpstr = helpstr + "\n"
+    "Options:\n"
+    "-h / --help: this help\n";
+  for (std::size_t i=0; i<std::min(keywords.size(),help.size()); i++)
+  {
+    if (help[i] != "")
+      helpstr = helpstr + "-" +
+        keywords[i] + ":\t" + help[i] + "\n";
+  }
+  return helpstr;
 }

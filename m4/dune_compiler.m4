@@ -8,25 +8,25 @@ AC_ARG_ENABLE(compilercheck,
                  [disable check for supported compilers]),
   [compilercheck=$enableval], [compilercheck=yes])
 
-SUPPORTED_COMPILER="gcc (>= 4.1), should work with recent versions of icc and clang (>= 3.0)"
+SUPPORTED_COMPILER="gcc (>= 4.4), should work with recent versions of icc (>= 13) and clang (>= 3.2)"
 
 AC_REQUIRE([AC_PROG_CXX])
 cat >conftest.cc <<_ACEOF
 #include <cstdio>
 
 #if defined __ICC && ! defined CXX_SUPPORTED
-  #if __ICC >= 700
+  #if __ICC >= 1300
     #define CXX_SUPPORTED "icc %2.2f", 1.0*__ICC/100
   #endif
 #endif
 #if defined __clang__ && ! defined CXX_SUPPORTED
-  #if __clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >= 0)
+  #if __clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >= 2)
     #define CXX_SUPPORTED \
       "clang %i.%i.%i", __clang_major__, __clang_minor__, __clang_patchlevel__
   #endif
 #endif
 #if defined __GNUC__ && ! defined CXX_SUPPORTED
-  #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 1)
+  #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)
     #define CXX_SUPPORTED \
       "gcc %i.%i.%i", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__
   #endif

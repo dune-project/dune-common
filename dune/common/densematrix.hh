@@ -98,12 +98,7 @@ namespace Dune
       static void apply ( DenseMatrix &denseMatrix, const RHS &rhs )
       {
         typedef typename DenseMatrix::field_type field_type;
-
-        const field_type value = static_cast< field_type >( rhs );
-
-        const std::size_t size = denseMatrix.size();
-        for( std::size_t i = 0; i < size; ++i )
-          denseMatrix[ i ] = value;
+        std::fill( denseMatrix.begin(), denseMatrix.end(), static_cast< field_type >( rhs ) );
       }
     };
 
@@ -175,7 +170,7 @@ namespace Dune
 
 
   /** @brief Error thrown if operations of a FieldMatrix fail. */
-  class FMatrixError : public Exception {};
+  class FMatrixError : public MathError {};
 
   /**
       @brief A dense n x m matrix.
@@ -250,13 +245,13 @@ namespace Dune
 
     //===== iterator interface to rows of the matrix
     //! Iterator class for sequential access
-    typedef DenseIterator<DenseMatrix,row_type> Iterator;
+    typedef DenseIterator<DenseMatrix,row_type,row_reference> Iterator;
     //! typedef for stl compliant access
     typedef Iterator iterator;
     //! rename the iterators for easier access
     typedef Iterator RowIterator;
     //! rename the iterators for easier access
-    typedef typename row_type::Iterator ColIterator;
+    typedef typename remove_reference<row_reference>::type::Iterator ColIterator;
 
     //! begin iterator
     Iterator begin ()
@@ -285,13 +280,13 @@ namespace Dune
     }
 
     //! Iterator class for sequential access
-    typedef DenseIterator<const DenseMatrix,const row_type> ConstIterator;
+    typedef DenseIterator<const DenseMatrix,const row_type,const_row_reference> ConstIterator;
     //! typedef for stl compliant access
     typedef ConstIterator const_iterator;
     //! rename the iterators for easier access
     typedef ConstIterator ConstRowIterator;
     //! rename the iterators for easier access
-    typedef typename row_type::ConstIterator ConstColIterator;
+    typedef typename remove_reference<const_row_reference>::type::ConstIterator ConstColIterator;
 
     //! begin iterator
     ConstIterator begin () const
@@ -580,9 +575,9 @@ namespace Dune
         return 0.0;
 
       ConstIterator it = begin();
-      typename remove_const< typename FieldTraits<value_type>::real_type >::type max = it->one_norm();
+      typename remove_const< typename FieldTraits<value_type>::real_type >::type max = (*it).one_norm();
       for (it = it + 1; it != end(); ++it)
-        max = std::max(max, it->one_norm());
+        max = std::max(max, (*it).one_norm());
 
       return max;
     }
@@ -594,9 +589,9 @@ namespace Dune
         return 0.0;
 
       ConstIterator it = begin();
-      typename remove_const< typename FieldTraits<value_type>::real_type >::type max = it->one_norm_real();
+      typename remove_const< typename FieldTraits<value_type>::real_type >::type max = (*it).one_norm_real();
       for (it = it + 1; it != end(); ++it)
-        max = std::max(max, it->one_norm_real());
+        max = std::max(max, (*it).one_norm_real());
 
       return max;
     }

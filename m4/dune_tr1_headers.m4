@@ -18,7 +18,7 @@ AC_DEFUN([DUNE_TR1_HEADERS], [
          dune_cv_array_cplusplus0x=no)
        ])
      AS_IF([test "x$dune_cv_array_cplusplus0x" != "xno"],
-       [AC_DEFINE([HAVE_ARRAY], 1, [Define to 1 if the <array> C++0x is available and support array::fill])
+       [AC_DEFINE([HAVE_ARRAY], 1, [Define to 1 if the header <array> from C++0x is available and supports array::fill])
      ])
      AC_CACHE_CHECK([whether integral_constant conforming to C++11 is supported], dune_cv_integral_constant_cplusplus11, [
        AC_COMPILE_IFELSE([

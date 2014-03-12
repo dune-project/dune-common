@@ -9,10 +9,21 @@
 
 #include <istream>
 #include <string>
+#include <vector>
 
 #include <dune/common/parametertree.hh>
+#include <dune/common/exceptions.hh>
 
 namespace Dune {
+
+  /** \brief report parser error while reading ParameterTree */
+  class ParameterTreeParserError : public RangeError {};
+  /** \brief exception thrown if the user wants to see help string
+
+      this exception is only thrown if the command line parameters
+      contain an option --help or -h
+   */
+  class HelpRequest : public Exception {};
 
   /** \brief Parsers to set up a ParameterTree from various input sources
    * \ingroup Common
@@ -75,7 +86,7 @@ namespace Dune {
      * Parses C++ stream and build hierarchical config structure.
      *
      * \param in        The stream to parse
-     * \param pt        The parameter tree to store the config structure.
+     * \param[out] pt        The parameter tree to store the config structure.
      * \param overwrite Whether to overwrite already existing values.
      *                  If false, values in the stream will be ignored
      *                  if the key is already present.
@@ -93,7 +104,7 @@ namespace Dune {
      * Parses C++ stream and build hierarchical config structure.
      *
      * \param in      The stream to parse
-     * \param pt      The parameter tree to store the config structure.
+     * \param[out] pt      The parameter tree to store the config structure.
      * \param srcname Name of the configuration source for error
      *                messages, "stdin" or a filename.
      * \param overwrite Whether to overwrite already existing values.
@@ -110,7 +121,7 @@ namespace Dune {
      * Parses file with given name and build hierarchical config structure.
      *
      * \param file filename
-     * \param pt   The parameter tree to store the config structure.
+     * \param[out] pt   The parameter tree to store the config structure.
      * \param overwrite Whether to overwrite already existing values.
      *                  If false, values in the stream will be ignored
      *                  if the key is already present.
@@ -128,10 +139,37 @@ namespace Dune {
      *
      * \param argc arg count
      * \param argv arg values
-     * \param pt   The parameter tree to store the config structure.
+     * \param[out] pt   The parameter tree to store the config structure.
      */
     static void readOptions(int argc, char* argv [], ParameterTree& pt);
 
+    /**
+     * \brief read [named] command line options and build hierarchical ParameterTree structure
+     *
+     * Similar to pythons named options we expect the parameters in the
+     * ordering induced by keywords, but allow the user to pass named options
+     * in the form of --key=value. Optionally the user can pass an additional
+     * vector with help strings.
+     *
+     * \param argc arg count
+     * \param argv arg values
+     * \param[out] pt   The parameter tree to store the config structure.
+     * \param keywords vector with keywords names
+     * \param required number of required options (the first n keywords are required, default is all are required)
+     * \param allow_more allow more options than these listed in keywords (default = true)
+     * \param overwrite  allow to overwrite existing options (default = true)
+     * \param help vector containing help strings
+    */
+    static void readNamedOptions(int argc, char* argv[],
+      ParameterTree& pt,
+      std::vector<std::string> keywords,
+      unsigned int required = std::numeric_limits<unsigned int>::max(),
+      bool allow_more = true,
+      bool overwrite = true,
+      std::vector<std::string> help = std::vector<std::string>());
+
+  private:
+    static std::string generateHelpString(std::string progname, std::vector<std::string> keywords, unsigned int required, std::vector<std::string> help);
   };
 
 } // end namespace Dune

@@ -536,11 +536,6 @@ run_default_vcsetup() {
 }
 
 run_default_update () {
-  DUNELINK=0
-  if test -L dune; then
-    rm dune
-    DUNELINK=1
-  fi
   if test -d .svn; then
     svn update
   elif test -d CVS; then
@@ -565,10 +560,6 @@ run_default_update () {
   else
     echo "WARNING: $module is not under a known version control system."
     echo "         We support svn, git and cvs."
-  fi
-  if test "$DUNELINK" != 0 && ! test -d dune; then
-    echo "WARNING: $module is using the deprecated dune symlink"
-    ln -s . dune
   fi
 }
 
@@ -673,7 +664,7 @@ run_default_configure () {
         fi
       done
       # create build directory if requested
-      test -d "$BUILDDIR" || mkdir "$BUILDDIR"
+      test -d "$BUILDDIR" || mkdir -p "$BUILDDIR"
       SRCDIR="$PWD"
       cd "$BUILDDIR"
       echo "$PREPARAMS $CMAKE -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\""
@@ -683,7 +674,7 @@ run_default_configure () {
       echo ./configure "$PARAMS"
       # create build directory if requested
       if test -n "$BUILDDIR"; then
-        test -d "$BUILDDIR" || mkdir "$BUILDDIR"
+        test -d "$BUILDDIR" || mkdir -p "$BUILDDIR"
         SRCDIR="$PWD"
         cd "$BUILDDIR"
         eval "$SRCDIR/configure" "$PARAMS" || exit 1
