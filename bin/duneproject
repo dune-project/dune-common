@@ -524,8 +524,8 @@ Version: @VERSION@
 Description: $MODULE module
 URL: http://dune-project.org/
 Requires: ${DEPENDENCIES}
-Libs: -L${libdir}
-Cflags: -I${includedir}
+Libs: -L\${libdir}
+Cflags: -I\${includedir}
 CC_DELIM
 echo "    Please remember to update your $PROJECT/$MODULE.pc.in,"
 echo "    Description and URL are missing right now."
