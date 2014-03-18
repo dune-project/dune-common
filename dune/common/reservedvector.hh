@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef RESERVEDVECTOR_HH
-#define RESERVEDVECTOR_HH
+#ifndef DUNE_COMMON_RESERVEDVECTOR_HH
+#define DUNE_COMMON_RESERVEDVECTOR_HH
 
 /** \file
  * \brief An stl-compliant random-access container which stores everything on the stack
@@ -202,4 +202,4 @@ namespace Dune
 
 #undef CHECKSIZE
 
-#endif // RESERVEDVECTOR_HH
+#endif // DUNE_COMMON_RESERVEDVECTOR_HH
