@@ -41,6 +41,8 @@ AC_CONFIG_FILES([Makefile
      doc/buildsystem/Makefile
      m4/Makefile
      am/Makefile
+     share/Makefile
+     share/bash-completion/Makefile
      dune-common.pc])
 # make scripts executable
 AC_CONFIG_FILES([
