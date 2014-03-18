@@ -342,6 +342,15 @@ test_infinity_norms()
   assert(std::abs(v.infinity_norm_real()-14.0) < 1e-10); // max(7,14)
 }
 
+void
+test_initialisation()
+{
+  Dune::FieldVector<int, 2> const b = { 1, 2 };
+
+  assert(b[0] == 1);
+  assert(b[1] == 2);
+}
+
 int main()
 {
   try {
@@ -351,6 +360,7 @@ int main()
 
     test_nan();
     test_infinity_norms();
+    test_initialisation();
   } catch (Dune::Exception& e) {
     std::cerr << e << std::endl;
     return 1;

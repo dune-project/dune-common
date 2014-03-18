@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstddef>
 #include <iostream>
+#include <initializer_list>
 
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
@@ -94,6 +95,15 @@ namespace Dune
     FieldMatrix ( const Other &other )
     {
       DenseMatrixAssigner< FieldMatrix< K, ROWS, COLS >, Other >::apply( *this, other );
+    }
+
+    FieldMatrix (std::initializer_list<std::initializer_list<K> > const &ll)
+    {
+      assert(ll.size() == rows);
+      size_t i = 0;
+      for (typename std::initializer_list<std::initializer_list<K> >::
+             const_iterator lit = ll.begin(); lit != ll.end(); ++lit)
+        _data[i++] = *lit;
     }
 
     //===== assignment

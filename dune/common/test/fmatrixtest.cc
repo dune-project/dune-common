@@ -553,11 +553,24 @@ void test_interface()
   checkMatrixInterface< FMatrix, Traits >( m );
 }
 
+void test_initialisation()
+{
+  Dune::FieldMatrix<int, 2, 2> const A = {
+    { 1, 2 },
+    { 3, 4 }
+  };
+  assert(A[0][0] == 1);
+  assert(A[0][1] == 2);
+  assert(A[1][0] == 3);
+  assert(A[1][1] == 4);
+}
+
 int main()
 {
   try {
     test_nan();
     test_infinity_norms();
+    test_initialisation();
 
     // test 1 x 1 matrices
     test_interface<float, 1, 1>();

@@ -10,6 +10,7 @@
 #include <complex>
 #include <cstring>
 #include <utility>
+#include<initializer_list>
 
 #include <dune/common/std/constexpr.hh>
 
@@ -128,6 +129,15 @@ namespace Dune {
     //! Constructor making vector with identical coordinates
     FieldVector (const FieldVector & x) : _data(x._data)
     {}
+
+    FieldVector (std::initializer_list<K> const &l)
+    {
+      assert(l.size() == dimension);
+      size_t i = 0;
+      for (typename std::initializer_list<K>::const_iterator it = l.begin();
+           it != l.end(); ++it)
+        _data[i++] = *it;
+    }
 
     /**
      * \brief Copy constructor from a second vector of possibly different type
