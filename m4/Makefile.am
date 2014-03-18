@@ -28,6 +28,7 @@ ALLM4S = 					\
 	dune_common.m4				\
 	dune_compiler.m4			\
 	dune_cxa_demangle.m4			\
+	dune_final.m4				\
 	dune_fortran.m4				\
 	dune_deprecated.m4			\
 	dune_deprecated_cppflags.m4		\
