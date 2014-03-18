@@ -7,7 +7,7 @@ EXTRA_DIST= CMakeLists.txt dune.module
 # we need automake 1.9 or newer
 AUTOMAKE_OPTIONS = foreign 1.9
 
-SUBDIRS = cmake dune lib doc bin m4 am
+SUBDIRS = cmake dune lib share doc bin m4 am
 
 # use configured compiler for "make distcheck"
 DISTCHECK_CONFIGURE_FLAGS = CXX="$(CXX)" CC="$(CC)" --enable-parallel=@ENABLE_PARALLEL@ MPICC="$(MPICC)"
