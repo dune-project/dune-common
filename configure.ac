@@ -43,6 +43,7 @@ AC_CONFIG_FILES([Makefile
      am/Makefile
      share/Makefile
      share/bash-completion/Makefile
+     share/bash-completion/completions/Makefile
      dune-common.pc])
 # make scripts executable
 AC_CONFIG_FILES([
