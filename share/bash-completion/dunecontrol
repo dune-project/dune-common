@@ -10,7 +10,7 @@ _dunecontrol_complete ()
   if test "x$DUNE_MODULES" != x; then
 	MODULES=$DUNE_MODULES
   fi
- 
+
   # get cimpletion information
   local cur prev words cword split
   _init_completion -s || return
@@ -62,7 +62,7 @@ _dunecontrol_complete ()
 
   # if we already have a command, we either pass an options to the command,
   # or we add a colon for the next command
-  if test x$have_command = x1; then 
+  if test x$have_command = x1; then
 	COMPREPLY=( $(compgen -W " -- : " -- $cur ) )
     return 0;
   fi
@@ -80,12 +80,4 @@ _dunecontrol_complete ()
 
   # don't append space to options --foo=...
   [[ $COMPREPLY == *= ]] && compopt -o nospace
-}
-
-
-_dune_complete_init () {
-  # complete -F _duneproject_complete duneproject
-  complete -F _dunecontrol_complete dunecontrol
-}
-
-_dune_complete_init
+} && complete -F _dunecontrol_complete dunecontrol
