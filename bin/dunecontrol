@@ -684,7 +684,7 @@ run_default_configure () {
       # create build directory if requested
       test -d "$ABS_BUILDDIR" || mkdir -p "$ABS_BUILDDIR"
       SRCDIR="$PWD"
-      cd "$pwd; ABS_BUILDDIR"
+      cd "$ABS_BUILDDIR"
       echo "$PREPARAMS $CMAKE -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\""
       eval $PREPARAMS $CMAKE "-DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\"" || exit 1
     else
