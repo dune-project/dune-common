@@ -1,6 +1,7 @@
 stdincludedir = $(includedir)/dune/common/std
 stdinclude_HEADERS = 				\
-	constexpr.hh
+  constexpr.hh \
+  final.hh
 
 EXTRA_DIST = CMakeLists.txt
 
