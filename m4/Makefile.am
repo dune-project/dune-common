@@ -1,6 +1,5 @@
 # -*- tab-width: 8 -*-
 # vi: set ts=8:
-# $Id$
 
 ALLM4S = 					\
 	acx_blas.m4				\
@@ -20,6 +19,7 @@ ALLM4S = 					\
 	cxx11_initializer_list.m4		\
 	cxx11_conditional.m4			\
 	cxx11_constexpr.m4			\
+	cxx11_final.m4				\
 	dune.m4					\
 	dune_all.m4				\
 	dune_autobuild.m4			\
@@ -28,7 +28,6 @@ ALLM4S = 					\
 	dune_common.m4				\
 	dune_compiler.m4			\
 	dune_cxa_demangle.m4			\
-	dune_final.m4				\
 	dune_fortran.m4				\
 	dune_deprecated.m4			\
 	dune_deprecated_cppflags.m4		\

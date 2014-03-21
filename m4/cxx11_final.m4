@@ -1,7 +1,7 @@
 # Check if the 'final' keyword is supported
 
 AC_DEFUN([DUNE_CHECKFINAL],[
-    AC_CACHE_CHECK([for keyword 'final'], dune_cv_keyword_final, [
+    AC_CACHE_CHECK([for C++11 keyword 'final'], dune_cv_keyword_final, [
         AC_LANG_PUSH([C++])
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
                         struct Foo
