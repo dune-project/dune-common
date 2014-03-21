@@ -324,4 +324,22 @@ check_cxx_source_compiles("
 " HAVE_INITIALIZER_LIST
 )
 
+# constexpr
+check_cxx_source_compiles("
+  constexpr int foo()
+  { return 0; }
+
+  template<int v>
+  struct A
+  {
+    static const int value = v;
+  };
+
+  int main(void)
+  {
+    return A<foo()>::value;
+  }
+" HAVE_CONSTEXPR
+)
+
 cmake_pop_check_state()
