@@ -163,6 +163,9 @@
 /* Define to 1 if C++11 constexpr is supported */
 #cmakedefine HAVE_CONSTEXPR 1
 
+/* does the compiler support the keyword 'final'? */
+#cmakedefine HAVE_KEYWORD_FINAL 1
+
 /* Define to if the UMFPack library is available */
 #cmakedefine HAVE_UMFPACK ENABLE_UMFPACK
 

@@ -342,4 +342,18 @@ check_cxx_source_compiles("
 " HAVE_CONSTEXPR
 )
 
+# keyword final
+check_cxx_source_compiles("
+  struct Foo
+  {
+    virtual void foo() final;
+  };
+
+  int main(void)
+  {
+    return 0;
+  }
+" HAVE_KEYWORD_FINAL
+)
+
 cmake_pop_check_state()
