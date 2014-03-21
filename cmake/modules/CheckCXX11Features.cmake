@@ -157,7 +157,7 @@ check_cxx_source_compiles("
 
    void foo() DEP;
 
-   void foo() {};
+   void foo() {}
 
    int main(void)
    {
@@ -189,7 +189,7 @@ check_cxx_source_compiles("
 
    void foo() DEP;
 
-   void foo() {};
+   void foo() {}
 
    int main(void)
    {

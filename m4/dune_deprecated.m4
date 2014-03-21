@@ -14,7 +14,7 @@ AC_DEFUN([DUNE_CHECKDEPRECATED],[
                     template <class T>
                     class t_peng { t_peng() {}; } DEP;
                     void foo() DEP;
-                    void foo() {};
+                    void foo() {}
                   ]],
                   [])],
              dune_cv_attribute_deprecated="yes",
@@ -34,7 +34,7 @@ AC_DEFUN([DUNE_CHECKDEPRECATED],[
                     template <class T>
                     class t_peng { t_peng() {}; } DEP;
                     void foo() DEP;
-                    void foo() {};
+                    void foo() {}
                   ]],
                   [])],
             dune_cv_attribute_deprecated_message="yes",
