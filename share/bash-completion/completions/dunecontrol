@@ -11,11 +11,11 @@ _dunecontrol_complete ()
 	MODULES=$DUNE_MODULES
   fi
 
-  # get cimpletion information
+  # get completion information
   local cur prev words cword split
   _init_completion -s || return
 
-  # check wether we already have seen a command
+  # check wether we have already seen a command
   local have_command=0
   for i in `seq $COMP_CWORD`; do
     case ${COMP_WORDS[i]} in
@@ -60,7 +60,7 @@ _dunecontrol_complete ()
 #		  ;;
   esac
 
-  # if we already have a command, we either pass an options to the command,
+  # if we already have a command, we either pass an option to the command,
   # or we add a colon for the next command
   if test x$have_command = x1; then
 	COMPREPLY=( $(compgen -W " -- : " -- $cur ) )
