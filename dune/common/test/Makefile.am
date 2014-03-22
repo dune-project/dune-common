@@ -29,7 +29,6 @@ TESTPROGS = \
     parametertreetest \
     poolallocatortest \
     shared_ptrtest_config \
-    shared_ptrtest_dune \
     singletontest \
     static_assert_test \
     streamtest \
@@ -186,10 +185,6 @@ pathtest_SOURCES = pathtest.cc
 poolallocatortest_SOURCES = poolallocatortest.cc
 
 shared_ptrtest_config_SOURCES = shared_ptrtest.cc
-
-shared_ptrtest_dune_SOURCES = shared_ptrtest.cc
-shared_ptrtest_dune_CPPFLAGS = $(AM_CPPFLAGS)   \
-    -DDISABLE_CONFIGURED_SHARED_PTR
 
 singletontest_SOURCES = singletontest.cc
 

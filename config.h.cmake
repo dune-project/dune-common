@@ -40,20 +40,11 @@
 /* Define to ENABLE_BOOST if the Boost library is available */
 #cmakedefine HAVE_DUNE_BOOST ENABLE_BOOST
 
-/* Define to 1 if you have <boost/make_shared.hpp>. */
-#cmakedefine HAVE_BOOST_MAKE_SHARED_HPP 1
-
-/* Define to 1 if you have the <boost/shared_ptr.hpp> header file. */
-#cmakedefine HAVE_BOOST_SHARED_PTR_HPP 1
-
 /* does the compiler support abi::__cxa_demangle */
 #cmakedefine HAVE_CXA_DEMANGLE 1
 
 /* Define if you have LAPACK library. */
 #cmakedefine HAVE_LAPACK 1
-
-/* Define to 1 if SHARED_PTR_NAMESPACE::make_shared is usable. */
-#cmakedefine HAVE_MAKE_SHARED 1
 
 /* Define to 1 if you have the <malloc.h> header file. */
 // Not used! #cmakedefine01 HAVE_MALLOC_H
@@ -132,12 +123,6 @@
 #define VERSION "@DUNE_MOD_VERSION@"
 
 /* end private */
-
-/* The header in which SHARED_PTR can be found */
-#cmakedefine SHARED_PTR_HEADER ${SHARED_PTR_HEADER}
-
-/* The namespace in which SHARED_PTR can be found */
-#cmakedefine SHARED_PTR_NAMESPACE ${SHARED_PTR_NAMESPACE}
 
 /* Define to 1 if variadic templates are supported */
 #cmakedefine HAVE_VARIADIC_TEMPLATES 1

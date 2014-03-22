@@ -27,7 +27,6 @@ set(TESTS
     parametertreetest
     poolallocatortest
     shared_ptrtest_config
-    shared_ptrtest_dune
     singletontest
     static_assert_test
     streamtest
@@ -154,8 +153,6 @@ target_link_libraries("pathtest" "dunecommon")
 
 add_executable("poolallocatortest" poolallocatortest.cc)
 add_executable("shared_ptrtest_config" shared_ptrtest.cc)
-add_executable("shared_ptrtest_dune" shared_ptrtest.cc)
-set_target_properties(shared_ptrtest_dune PROPERTIES COMPILE_FLAGS "-DDISABLE_CONFIGURED_SHARED_PTR")
 add_executable("singletontest" singletontest.cc)
 add_executable("sllisttest" EXCLUDE_FROM_ALL sllisttest.cc)
 add_executable("static_assert_test" EXCLUDE_FROM_ALL static_assert_test.cc)

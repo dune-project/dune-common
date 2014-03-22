@@ -37,12 +37,10 @@ install(PROGRAMS
         immdx_lib_metis.m4
         inkscape.m4
         libtoolcompat.m4
-        make_shared.m4
         mprotect.m4
         mpi-config.m4
         opengl.m4
         parmetis.m4
-        shared_ptr.m4
         umfpack.m4
         xdr.m4
         DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/dune/aclocal
