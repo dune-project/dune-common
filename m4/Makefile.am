@@ -11,7 +11,6 @@ ALLM4S = 					\
 	ax_lang_compiler_ms.m4			\
 	boost_fusion.m4				\
 	cxx0x_compiler.m4			\
-	cxx0x_rvaluereference.m4		\
 	cxx0x_nullptr.m4			\
 	cxx11_constexpr.m4			\
 	cxx11_final.m4				\

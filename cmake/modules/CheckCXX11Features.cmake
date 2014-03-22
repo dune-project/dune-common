@@ -9,7 +9,6 @@
 # HAS_ATTRIBUTE_DEPRECATED         True if attribute deprecated is supported
 # HAS_ATTRIBUTE_DEPRECATED_MSG     True if attribute deprecated("msg") is supported
 # HAVE_INTEGRAL_CONSTANT           True if compiler supports integral_constant
-# HAVE_RVALUE_REFERENCES           True if rvalue references are supported
 # HAVE_CONSTEXPR                   True if constexpr is supported
 # HAVE_KEYWORD_FINAL               True if final is supported.
 
@@ -179,28 +178,6 @@ check_cxx_source_compiles("
      return 0;
    };
 "  HAS_ATTRIBUTE_DEPRECATED_MSG
-)
-
-# rvalue references
-check_cxx_source_compiles("
-  #include <cassert>
-  #include <utility>
-  int foo(int&& x) { return 1; }
-  int foo(const int& x) { return -1; }
-
-  template<typename T>
-  int forward(T&& x)
-  {
-    return foo(std::forward<T>(x));
-  }
-
-  int main(void)
-  {
-    int i = 0;
-    assert( forward(i) + forward(int(2)) == 0);
-    return 0;
-  }
-" HAVE_RVALUE_REFERENCES
 )
 
 # constexpr

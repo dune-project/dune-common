@@ -129,11 +129,7 @@ namespace Dune
   {
     array<T,n> r;
     r.fill(t);
-#if HAVE_RVALUE_REFERENCES
     return std::move(r);
-#else
-    return r;
-#endif
   }
 
   /** @} */
