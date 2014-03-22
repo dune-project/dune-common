@@ -10,7 +10,6 @@ install(PROGRAMS
         cxx0x_compiler.m4
         cxx0x_rvaluereference.m4
         cxx0x_nullptr.m4
-        cxx0x_static_assert.m4
         cxx0x_variadic.m4
         cxx0x_variadic_constructor_sfinae.m4
         cxx11_constexpr.m4

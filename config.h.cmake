@@ -76,9 +76,6 @@
 /* Define to 1 if nullptr is supported */
 #cmakedefine HAVE_NULLPTR 1
 
-/* Define to 1 if static_assert is supported */
-#cmakedefine HAVE_STATIC_ASSERT 1
-
 /* Define to 1 if you have the <stdint.h> header file. */
 #cmakedefine HAVE_STDINT_H 1
 

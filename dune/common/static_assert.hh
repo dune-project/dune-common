@@ -3,6 +3,8 @@
 #ifndef DUNE_STATIC_ASSERT_HH
 #define DUNE_STATIC_ASSERT_HH
 
+#warning This header and the macro dune_static_assert are deprecated, use static_assert instead.
+
 /** \file
  * \brief Fallback implementation of the C++0x static_assert feature
  */
@@ -12,27 +14,6 @@
  *
  * @{
  */
-
-#if not HAVE_STATIC_ASSERT
-// Taken from BOOST
-//
-// Helper macro CPPMAGIC_JOIN:
-// The following piece of macro magic joins the two
-// arguments together, even when one of the arguments is
-// itself a macro (see 16.3.1 in C++ standard).  The key
-// is that macro expansion of macro arguments does not
-// occur in CPPMAGIC_DO_JOIN2 but does in CPPMAGIC_DO_JOIN.
-//
-#define CPPMAGIC_JOIN( X, Y ) CPPMAGIC_DO_JOIN( X, Y )
-#define CPPMAGIC_DO_JOIN( X, Y ) CPPMAGIC_DO_JOIN2(X,Y)
-#define CPPMAGIC_DO_JOIN2( X, Y ) X ## Y
-
-template <bool x> struct static_assert_failure;
-
-template <> struct static_assert_failure<true> { };
-
-template<int x> struct static_assert_test {};
-#endif
 
 /**
     \brief Helper template so that compilation fails if condition is not true.
@@ -70,17 +51,11 @@ template<int x> struct static_assert_test {};
     This is because dune_static_assert is a preprocessor macro</li>
     </ol>
 
+    \deprecated Use static_assert from C++11 instead.
  */
 
-#if HAVE_STATIC_ASSERT
 #define dune_static_assert(COND,MSG) \
   static_assert(COND,MSG)
-#else
-#define dune_static_assert(COND,MSG) \
-  typedef static_assert_test<                         \
-    sizeof(static_assert_failure< (bool)( COND )>)\
-    > CPPMAGIC_JOIN (dune_static_assert_typedef_, __LINE__)
-#endif
 
 namespace Dune {
   /**

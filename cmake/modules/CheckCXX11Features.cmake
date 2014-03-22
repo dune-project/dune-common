@@ -1,7 +1,7 @@
 #
 # Module that checks for supported C++11 (former C++0x) features.
 #
-# Sets the follwing variable:
+# Sets the follwing variables:
 #
 # HAVE_NULLPTR                     True if nullptr is available
 # HAVE_ARRAY                       True if header <array> and fill() are available
@@ -10,12 +10,13 @@
 # HAS_ATTRIBUTE_DEPRECATED         True if attribute deprecated is supported
 # HAS_ATTRIBUTE_DEPRECATED_MSG     True if attribute deprecated("msg") is supported
 # HAVE_INTEGRAL_CONSTANT           True if compiler supports integral_constant
-# HAVE_STATIC_ASSERT               True if static_assert is available
 # HAVE_VARIADIC_TEMPLATES          True if variadic templates are supprt
 # HAVE_VARIADIC_CONSTRUCTOR_SFINAE True if variadic constructor sfinae is supported
 # HAVE_RVALUE_REFERENCES           True if rvalue references are supported
 # HAVE_STD_CONDITIONAL             True if std::conditional is supported
 # HAVE_INITIALIZER_LIST            True if initializer list is supported
+# HAVE_CONSTEXPR                   True if constexpr is supported
+# HAVE_KEYWORD_FINAL               True if final is supported.
 
 include(CMakePushCheckState)
 cmake_push_check_state()
@@ -196,16 +197,6 @@ check_cxx_source_compiles("
      return 0;
    };
 "  HAS_ATTRIBUTE_DEPRECATED_MSG
-)
-
-# static assert
-check_cxx_source_compiles("
-   int main(void)
-   {
-     static_assert(true,\"MSG\");
-     return 0;
-   }
-"  HAVE_STATIC_ASSERT
 )
 
 # variadic template support
