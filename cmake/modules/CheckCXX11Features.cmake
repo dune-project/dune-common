@@ -4,7 +4,6 @@
 # Sets the follwing variables:
 #
 # HAVE_NULLPTR                     True if nullptr is available
-# HAVE_ARRAY                       True if header <array> and fill() are available
 # HAVE_ATTRIBUTE_ALWAYS_INLINE     True if attribute always inline is supported
 # HAS_ATTRIBUTE_UNUSED             True if attribute unused is supported
 # HAS_ATTRIBUTE_DEPRECATED         True if attribute deprecated is supported
@@ -66,19 +65,6 @@ include(CheckIncludeFile)
 include(CheckIncludeFileCXX)
 
 if(NOT DISABLE_TR1_HEADERS)
-# array and fill
-check_cxx_source_compiles("
-    #include <array>
-
-    int main(void)
-    {
-      std::array<int,2> a;
-      a.fill(9);
-      return 0;
-    }
-" HAVE_ARRAY
-)
-
 # Search for some tr1 headers
 foreach(_HEADER tuple tr1/tuple type_traits tr1/type_traits)
   string(REPLACE "/" "_" _HEADER_VAR ${_HEADER})
