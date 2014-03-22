@@ -124,12 +124,6 @@
 
 /* end private */
 
-/* Define to 1 if variadic templates are supported */
-#cmakedefine HAVE_VARIADIC_TEMPLATES 1
-
-/* Define to 1 if SFINAE on variadic template constructors is fully supported */
-#cmakedefine HAVE_VARIADIC_CONSTRUCTOR_SFINAE 1
-
 /* Define to 1 if rvalue references are supported */
 #cmakedefine HAVE_RVALUE_REFERENCES 1
 

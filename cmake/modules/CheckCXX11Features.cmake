@@ -9,8 +9,6 @@
 # HAS_ATTRIBUTE_DEPRECATED         True if attribute deprecated is supported
 # HAS_ATTRIBUTE_DEPRECATED_MSG     True if attribute deprecated("msg") is supported
 # HAVE_INTEGRAL_CONSTANT           True if compiler supports integral_constant
-# HAVE_VARIADIC_TEMPLATES          True if variadic templates are supprt
-# HAVE_VARIADIC_CONSTRUCTOR_SFINAE True if variadic constructor sfinae is supported
 # HAVE_RVALUE_REFERENCES           True if rvalue references are supported
 # HAVE_CONSTEXPR                   True if constexpr is supported
 # HAVE_KEYWORD_FINAL               True if final is supported.
@@ -181,68 +179,6 @@ check_cxx_source_compiles("
      return 0;
    };
 "  HAS_ATTRIBUTE_DEPRECATED_MSG
-)
-
-# variadic template support
-check_cxx_source_compiles("
-   #include <cassert>
-
-   template<typename... T>
-   int addints(T... x);
-
-   int add_ints()
-   {
-     return 0;
-   }
-
-   template<typename T1, typename... T>
-   int add_ints(T1 t1, T... t)
-   {
-     return t1 + add_ints(t...);
-   }
-
-   int main(void)
-   {
-     assert( 5 == add_ints(9,3,-5,-2) );
-     return 0;
-   }
-" HAVE_VARIADIC_TEMPLATES
-)
-
-# SFINAE on variadic template constructors within template classes
-check_cxx_source_compiles("
-  #include <functional>
-
-  template<typename... U>
-  struct A
-  {
-    template<typename... T,
-             typename = typename std::enable_if<(sizeof...(T) < 2)>::type
-            >
-    A(T... t)
-    : i(1)
-    {}
-
-    template<typename... T,
-             typename = typename std::enable_if<(sizeof...(T) >= 2)>::type,
-             typename = void
-            >
-    A(T... t)
-    : i(-1)
-    {}
-
-    A()
-    : i(1)
-    {}
-
-    int i;
-  };
-
-  int main(void)
-  {
-    return (A<int>().i + A<int>(2).i + A<int>(\"foo\",3.4).i + A<int>(8,'a',A<int>()).i == 0 ? 0 : 1);
-  }
-" HAVE_VARIADIC_CONSTRUCTOR_SFINAE
 )
 
 # rvalue references

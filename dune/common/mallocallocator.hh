@@ -82,9 +82,8 @@ namespace Dune
     {
       ::new((void*)p)T(val);
     }
-#if ( HAVE_VARIADIC_TEMPLATES && HAVE_RVALUE_REFERENCES ) || DOXYGEN
+#if HAVE_RVALUE_REFERENCES || DOXYGEN
     //! construct an object of type T from variadic parameters
-    //! \note works only with newer C++ compilers
     template<typename ... _Args>
     void construct(pointer p, _Args&&... __args)
     {
