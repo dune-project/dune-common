@@ -10,7 +10,7 @@
 #include <complex>
 #include <cstring>
 #include <utility>
-#include<initializer_list>
+#include <initializer_list>
 
 #include <dune/common/std/constexpr.hh>
 
@@ -18,7 +18,6 @@
 #include "exceptions.hh"
 #include "array.hh"
 #include "densevector.hh"
-#include "static_assert.hh"
 #include "unused.hh"
 
 namespace Dune {
@@ -152,7 +151,7 @@ namespace Dune {
     template<class K1, int SIZE1>
     explicit FieldVector (const FieldVector<K1,SIZE1> & x)
     {
-      dune_static_assert(SIZE1 == SIZE, "FieldVector in constructor has wrong size");
+      static_assert(SIZE1 == SIZE, "FieldVector in constructor has wrong size");
       for (size_type i = 0; i<SIZE; i++)
         _data[i] = x[i];
     }
@@ -235,7 +234,7 @@ namespace Dune {
     template<class C>
     FieldVector (const DenseVector<C> & x)
     {
-      dune_static_assert(((bool)IsFieldVectorSizeCorrect<C,1>::value), "FieldVectors do not match in dimension!");
+      static_assert(((bool)IsFieldVectorSizeCorrect<C,1>::value), "FieldVectors do not match in dimension!");
       assert(x.size() == 1);
       _data = x[0];
     }

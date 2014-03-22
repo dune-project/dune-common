@@ -30,7 +30,6 @@ TESTPROGS = \
     poolallocatortest \
     shared_ptrtest_config \
     singletontest \
-    static_assert_test \
     streamtest \
     testdebugallocator \
     testdebugallocator_fail1 \
@@ -65,7 +64,6 @@ COMPILE_XFAIL_TESTS = \
     check_fvector_size_fail2 \
     genericiterator_compile_fail \
     nullptr-test-fail \
-    static_assert_test_fail \
     testfconstruct_fail1 \
     testfconstruct_fail2
 
@@ -191,9 +189,6 @@ singletontest_SOURCES = singletontest.cc
 sllisttest_SOURCES = sllisttest.cc
 
 sourcescheck_NOSOURCES = timing.cc
-
-static_assert_test_SOURCES = static_assert_test.cc
-static_assert_test_fail_SOURCES = static_assert_test_fail.cc
 
 streamtest_SOURCES = streamtest.cc
 

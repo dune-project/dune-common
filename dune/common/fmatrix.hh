@@ -13,7 +13,6 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/densematrix.hh>
 #include <dune/common/precision.hh>
-#include <dune/common/static_assert.hh>
 #include <dune/common/std/constexpr.hh>
 
 namespace Dune

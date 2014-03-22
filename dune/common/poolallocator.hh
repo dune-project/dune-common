@@ -9,7 +9,6 @@
  */
 
 #include "alignment.hh"
-#include "static_assert.hh"
 #include "lcm.hh"
 #include <typeinfo>
 #include <iostream>
@@ -448,14 +447,14 @@ namespace Dune
   inline Pool<T,S>::Pool()
     : head_(0), chunks_(0) //, allocated_(0)
   {
-    dune_static_assert(sizeof(T)<=unionSize, "Library Error: type T is too big");
-    dune_static_assert(sizeof(Reference)<=unionSize, "Library Error: type of referene is too big");
-    dune_static_assert(unionSize<=alignedSize, "Library Error: alignedSize too small");
-    dune_static_assert(sizeof(T)<=chunkSize, "Library Error: chunkSize must be able to hold at least one value");
-    dune_static_assert(sizeof(Reference)<=chunkSize, "Library Error: chunkSize must be able to hold at least one reference");
-    dune_static_assert((chunkSize - (alignment - 1)) % alignment == 0, "Library Error: compiler cannot calculate!");
-    dune_static_assert(elements>=1, "Library Error: we need to hold at least one element!");
-    dune_static_assert(elements*alignedSize<=chunkSize, "Library Error: aligned elements must fit into chuck!");
+    static_assert(sizeof(T)<=unionSize, "Library Error: type T is too big");
+    static_assert(sizeof(Reference)<=unionSize, "Library Error: type of referene is too big");
+    static_assert(unionSize<=alignedSize, "Library Error: alignedSize too small");
+    static_assert(sizeof(T)<=chunkSize, "Library Error: chunkSize must be able to hold at least one value");
+    static_assert(sizeof(Reference)<=chunkSize, "Library Error: chunkSize must be able to hold at least one reference");
+    static_assert((chunkSize - (alignment - 1)) % alignment == 0, "Library Error: compiler cannot calculate!");
+    static_assert(elements>=1, "Library Error: we need to hold at least one element!");
+    static_assert(elements*alignedSize<=chunkSize, "Library Error: aligned elements must fit into chuck!");
     /*    std::cout<<"s= "<<S<<" : T: "<<sizeof(T)<<" Reference: "<<sizeof(Reference)<<" union: "<<unionSize<<" alignment: "<<alignment<<
           "aligned: "<<alignedSize<<" chunk: "<< chunkSize<<" elements: "<<elements<<std::endl;*/
   }

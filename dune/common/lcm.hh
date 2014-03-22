@@ -7,7 +7,6 @@
  * \brief Statically compute the least common multiple of two integers
  */
 
-#include <dune/common/static_assert.hh>
 #include <dune/common/gcd.hh>
 
 namespace Dune
@@ -31,8 +30,8 @@ namespace Dune
   {
     static void conceptCheck()
     {
-      dune_static_assert(0<m, "m must be positive!");
-      dune_static_assert(0<n, "n must be positive!");
+      static_assert(0<m, "m must be positive!");
+      static_assert(0<n, "n must be positive!");
     }
     /**
      * @brief The least common multiple of the template parameters

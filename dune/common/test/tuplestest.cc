@@ -62,7 +62,7 @@ int iteratorTupleTest()
 
 
   Tuple tuple_(v.begin(), v.begin(), v.end());
-  dune_static_assert(tuple_size<Tuple>::value==3, "The tuple size should be 3!");;
+  static_assert(tuple_size<Tuple>::value==3, "The tuple size should be 3!");;
 
   int ret=0;
 

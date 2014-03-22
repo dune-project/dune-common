@@ -32,7 +32,7 @@ namespace Dune {
    */
   template <class Tuple>
   class NullPointerInitialiser {
-    dune_static_assert(AlwaysFalse<Tuple>::value, "Attempt to use the "
+    static_assert(AlwaysFalse<Tuple>::value, "Attempt to use the "
                        "unspecialized version of NullPointerInitialiser.  "
                        "NullPointerInitialiser needs to be specialized for "
                        "each possible tuple size.  Naturally the number of "
@@ -194,7 +194,7 @@ namespace Dune {
    */
   template <template <class> class TypeEvaluator, class TupleType>
   class ForEachType {
-    dune_static_assert(AlwaysFalse<TupleType>::value, "Attempt to use the "
+    static_assert(AlwaysFalse<TupleType>::value, "Attempt to use the "
                        "unspecialized version of ForEachType.  ForEachType "
                        "needs to be specialized for each possible tuple "
                        "size.  Naturally the number of pre-defined "
@@ -1516,7 +1516,7 @@ namespace Dune {
         integral_constant<std::size_t, start>,
         FirstPredicateIndex<Tuple, Predicate, start+1> >::type
   {
-    dune_static_assert(tuple_size<Tuple>::value == size, "The \"size\" "
+    static_assert(tuple_size<Tuple>::value == size, "The \"size\" "
                        "template parameter of FirstPredicateIndex is an "
                        "implementation detail and should never be set "
                        "explicitly!");
@@ -1526,7 +1526,7 @@ namespace Dune {
   template<class Tuple, template<class> class Predicate, std::size_t size>
   class FirstPredicateIndex<Tuple, Predicate, size, size>
   {
-    dune_static_assert(AlwaysFalse<Tuple>::value, "None of the tuple element "
+    static_assert(AlwaysFalse<Tuple>::value, "None of the tuple element "
                        "types matches the predicate!");
   };
 #endif // !DOXYGEN
@@ -1576,7 +1576,7 @@ namespace Dune {
   template< class Tuple, class T>
   struct PushBackTuple
   {
-    dune_static_assert(AlwaysFalse<Tuple>::value, "Attempt to use the "
+    static_assert(AlwaysFalse<Tuple>::value, "Attempt to use the "
                        "unspecialized version of PushBackTuple.  "
                        "PushBackTuple needs to be specialized for "
                        "each possible tuple size.  Naturally the number of "
@@ -1671,7 +1671,7 @@ namespace Dune {
   template< class Tuple, class T>
   struct PushFrontTuple
   {
-    dune_static_assert(AlwaysFalse<Tuple>::value, "Attempt to use the "
+    static_assert(AlwaysFalse<Tuple>::value, "Attempt to use the "
                        "unspecialized version of PushFrontTuple.  "
                        "PushFrontTuple needs to be specialized for "
                        "each possible tuple size.  Naturally the number of "

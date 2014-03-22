@@ -28,7 +28,6 @@ set(TESTS
     poolallocatortest
     shared_ptrtest_config
     singletontest
-    static_assert_test
     streamtest
     testfassign1
     testfassign2
@@ -61,7 +60,6 @@ set(COMPILEFAILTESTS
     check_fvector_size_fail2
     genericiterator_compile_fail
     nullptr-test-fail
-    static_assert_test_fail
     testfconstruct_fail1
     testfconstruct_fail2)
 
@@ -155,8 +153,6 @@ add_executable("poolallocatortest" poolallocatortest.cc)
 add_executable("shared_ptrtest_config" shared_ptrtest.cc)
 add_executable("singletontest" singletontest.cc)
 add_executable("sllisttest" EXCLUDE_FROM_ALL sllisttest.cc)
-add_executable("static_assert_test" EXCLUDE_FROM_ALL static_assert_test.cc)
-add_executable("static_assert_test_fail" EXCLUDE_FROM_ALL static_assert_test_fail.cc)
 
 add_executable("streamtest" streamtest.cc)
 target_link_libraries("streamtest" "dunecommon")

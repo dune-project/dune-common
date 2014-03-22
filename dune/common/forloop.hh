@@ -8,8 +8,6 @@
  * \brief A static for loop for template meta-programming
  */
 
-#include <dune/common/static_assert.hh>
-
 namespace Dune
 {
 
@@ -21,7 +19,7 @@ namespace Dune
   class GenericForLoop
     : public Operation< Value< first >, GenericForLoop< Operation, Value, first+1, last > >
   {
-    dune_static_assert( (first <= last), "GenericForLoop: first > last" );
+    static_assert( (first <= last), "GenericForLoop: first > last" );
   };
 
   template< template< class, class > class Operation, template< int > class Value, int last >
@@ -221,7 +219,7 @@ namespace Dune
   class ForLoop
     : public GenericForLoop< ForLoopHelper::Apply, Operation, first, last >
   {
-    dune_static_assert( (first <= last), "ForLoop: first > last" );
+    static_assert( (first <= last), "ForLoop: first > last" );
   };
 
 }
