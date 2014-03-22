@@ -105,20 +105,8 @@ namespace Dune {
 
     //! Constructor making default-initialized vector
     FieldVector()
-    // Use C++11 unified initialization if available - tends to generate
-    // fastest code
-#if HAVE_INITIALIZER_LIST
       : _data{}
     {}
-#else
-    {
-      // fall back to library approach - this gives faster code than array placement
-      // new. Apart from that, placement new may create problems if K is a complex
-      // type. In that case, the default constructor of the _data elements has already
-      // been called and may have allocated memory.
-      std::fill(_data.begin(),_data.end(),K());
-    }
-#endif
 
     //! Constructor making vector with identical coordinates
     explicit FieldVector (const K& t)
