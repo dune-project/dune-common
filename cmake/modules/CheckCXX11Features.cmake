@@ -13,7 +13,6 @@
 # HAVE_VARIADIC_TEMPLATES          True if variadic templates are supprt
 # HAVE_VARIADIC_CONSTRUCTOR_SFINAE True if variadic constructor sfinae is supported
 # HAVE_RVALUE_REFERENCES           True if rvalue references are supported
-# HAVE_STD_CONDITIONAL             True if std::conditional is supported
 # HAVE_CONSTEXPR                   True if constexpr is supported
 # HAVE_KEYWORD_FINAL               True if final is supported.
 
@@ -280,16 +279,6 @@ check_cxx_source_compiles("
     return 0;
   }
 " HAVE_RVALUE_REFERENCES
-)
-
-# std::conditional
-check_cxx_source_compiles("
-  #include <type_traits>
-
-  int main(void){
-      return std::conditional<true,std::integral_constant<int,0>,void>::type::value;
-  }
-" HAVE_STD_CONDITIONAL
 )
 
 # constexpr

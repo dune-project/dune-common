@@ -373,43 +373,8 @@ namespace Dune
   };
 #endif
 
-#if DOXYGEN || !HAVE_STD_CONDITIONAL
-
-   /**
-   * @brief Select a type based on a condition.
-   *
-   * If template parameter first is true T1 is selected
-   * otherwise T2 will be selected.
-   * The selected type is accessible through the typedef
-   * type.
-   *
-   * \note If available, this uses C++11 std::conditional, otherwise it provides
-   *       a reimplementation.
-   */
-  template<bool first, class T1, class T2>
-  struct conditional
-  {
-    /**
-     * @brief The selected type
-     *
-     * if first is true this will be type T1 and
-     * T2 otherwise
-     */
-    typedef T1 type;
-  };
-
-  template<class T1, class T2>
-  struct conditional<false,T1,T2>
-  {
-    typedef T2 type;
-  };
-
-#else // DOXYGEN || !HAVE_STD_CONDITIONAL
-
   // pull in default implementation
   using std::conditional;
-
-#endif // DOXYGEN || !HAVE_STD_CONDITIONAL
 
   ////////////////////////////////////////////////////////////////////////
   //
