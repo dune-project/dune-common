@@ -9,7 +9,7 @@ AC_DEFUN([DUNE_TR1_HEADERS], [
     [],
     [enable_tr1_headers=yes])
   AS_IF([test "x$enable_tr1_headers" != "xno"],
-    [AC_CHECK_HEADERS([type_traits tr1/type_traits tuple tr1/tuple])
+    [AC_CHECK_HEADERS([type_traits tr1/type_traits])
      AC_CACHE_CHECK([whether integral_constant conforming to C++11 is supported], dune_cv_integral_constant_cplusplus11, [
        AC_COMPILE_IFELSE([
          AC_LANG_PROGRAM([

@@ -36,8 +36,6 @@ set(TESTS
     testfconstruct
     testfloatcmp
     tuplestest_config
-    tuplestest_dune
-    tuplestest_tr1
     tupleutilitytest
     utilitytest)
 
@@ -217,10 +215,6 @@ add_executable("testfconstruct_fail2" EXCLUDE_FROM_ALL testfconstruct.cc)
 set_target_properties(testfconstruct_fail2 PROPERTIES COMPILE_FLAGS "-DFVSIZE=5")
 target_link_libraries(testfconstruct_fail2 "dunecommon")
 add_executable("tuplestest_config" tuplestest.cc)
-add_executable("tuplestest_dune" tuplestest.cc)
-set_target_properties(tuplestest_dune PROPERTIES COMPILE_FLAGS "-DDISABLE_TR1_TUPLE -DDISABLE_STD_TUPLE")
-add_executable("tuplestest_tr1" tuplestest.cc)
-set_target_properties(tuplestest_tr1 PROPERTIES COMPILE_FLAGS "-DDISABLE_STD_TUPLE")
 add_executable("tupleutilitytest" tupleutilitytest.cc)
 add_executable("utilitytest" utilitytest.cc)
 

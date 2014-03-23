@@ -73,9 +73,6 @@
 /* Define to 1 if the std::tr1::hash template from TR1 is available. */
 #cmakedefine HAVE_TR1_HASH 1
 
-/* Define to 1 if you have the <tr1/tuple> header file. */
-#cmakedefine HAVE_TR1_TUPLE 1
-
 /* Define to 1 if you have the <tr1/type_traits> header file. */
 #cmakedefine HAVE_TR1_TYPE_TRAITS 1
 
@@ -86,9 +83,6 @@
 
 /* Define to 1 if the std::hash template from C++11 is available. */
 #cmakedefine HAVE_STD_HASH 1
-
-/* Define to 1 if you have the <tuple> header file. */
-#cmakedefine HAVE_TUPLE 1
 
 /* Define to 1 if you have the <type_traits> header file. */
 #cmakedefine HAVE_TYPE_TRAITS 1

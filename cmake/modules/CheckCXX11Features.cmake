@@ -63,11 +63,11 @@ include(CheckIncludeFileCXX)
 
 if(NOT DISABLE_TR1_HEADERS)
 # Search for some tr1 headers
-foreach(_HEADER tuple tr1/tuple type_traits tr1/type_traits)
+foreach(_HEADER type_traits tr1/type_traits)
   string(REPLACE "/" "_" _HEADER_VAR ${_HEADER})
   string(TOUPPER ${_HEADER_VAR} _HEADER_VAR )
   check_include_file_cxx(${_HEADER} "HAVE_${_HEADER_VAR}")
-endforeach(_HEADER tuple tr1/tuple tr1/type_traits)
+endforeach()
 
 # Check for hash support
 check_include_file_cxx("functional" "HAVE_FUNCTIONAL")

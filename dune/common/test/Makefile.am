@@ -49,9 +49,7 @@ TESTPROGS = \
     testfassign_fail6 \
     testfconstruct \
     testfloatcmp \
-    tuplestest_dune \
     tuplestest_std \
-    tuplestest_tr1 \
     tupleutilitytest \
     typetraitstest \
     utilitytest
@@ -251,15 +249,7 @@ testfconstruct_fail2_CPPFLAGS = $(AM_CPPFLAGS) -DFVSIZE=5
 
 testfloatcmp_SOURCES = testfloatcmp.cc
 
-tuplestest_dune_SOURCES = tuplestest.cc
-tuplestest_dune_CPPFLAGS = $(AM_CPPFLAGS)       \
-    -DDISABLE_TR1_TUPLE -DDISABLE_STD_TUPLE
-
 tuplestest_std_SOURCES = tuplestest.cc
-
-tuplestest_tr1_SOURCES = tuplestest.cc
-tuplestest_tr1_CPPFLAGS = $(AM_CPPFLAGS)        \
-    -DDISABLE_STD_TUPLE
 
 tupleutilitytest_SOURCES = tupleutilitytest.cc
 
