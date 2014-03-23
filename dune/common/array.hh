@@ -8,8 +8,8 @@
     \brief Fallback implementation of the std::array class (a static array)
  */
 
-// Include system implementation of array class if present
 #include <array>
+#include <iostream>
 
 namespace Dune
 {

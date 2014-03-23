@@ -4,7 +4,6 @@
 # Sets the follwing variables:
 #
 # HAVE_NULLPTR                     True if nullptr is available
-# HAVE_ATTRIBUTE_ALWAYS_INLINE     True if attribute always inline is supported
 # HAS_ATTRIBUTE_UNUSED             True if attribute unused is supported
 # HAS_ATTRIBUTE_DEPRECATED         True if attribute deprecated is supported
 # HAS_ATTRIBUTE_DEPRECATED_MSG     True if attribute deprecated("msg") is supported
