@@ -52,7 +52,7 @@ headercheck-am:
 	  echo "#include <$${HEADER}>" >> $$CCFILE; \
 	  echo "#include <$${HEADER}>" >> $$CCFILE; \
 	  echo "int main () { return 0; }" >> $$CCFILE; \
-	  make 	$$OFILE > $$LOGFILE 2>&1; \
+	  $(MAKE) $$OFILE > $$LOGFILE 2>&1; \
 	  SUCCESS=$$?; \
 	  if ! (test $$SUCCESS -eq 0 && test -e $$OFILE); then \
 	    echo "Error in $$HEADER"; \
