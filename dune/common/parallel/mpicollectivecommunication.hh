@@ -258,6 +258,15 @@ namespace Dune
                         root,communicator);
     }
 
+    //! @copydoc CollectiveCommunication::gatherv()
+    template<typename T>
+    int gatherv (T* in, int sendlen, T* out, int* recvlen, int* displ, int root) const
+    {
+      return MPI_Gatherv(in,sendlen,MPITraits<T>::getType(),
+                         out,recvlen,displ,MPITraits<T>::getType(),
+                         root,communicator);
+    }
+
     //! @copydoc CollectiveCommunication::scatter()
     //! @note out must have space for P*len elements
     template<typename T>
@@ -267,6 +276,16 @@ namespace Dune
                          recv,len,MPITraits<T>::getType(),
                          root,communicator);
     }
+
+    //! @copydoc CollectiveCommunication::scatterv()
+    template<typename T>
+    int scatterv (T* send, int* sendlen, int* displ, T* recv, int recvlen, int root) const
+    {
+      return MPI_Scatterv(send,sendlen,displ,MPITraits<T>::getType(),
+                          recv,recvlen,MPITraits<T>::getType(),
+                          root,communicator);
+    }
+
 
     operator MPI_Comm () const
     {
@@ -280,6 +299,15 @@ namespace Dune
       return MPI_Allgather(sbuf, count, MPITraits<T>::getType(),
                            rbuf, count, MPITraits<T1>::getType(),
                            communicator);
+    }
+
+    //! @copydoc CollectiveCommunication::allgatherv()
+    template<typename T>
+    int allgatherv (T* in, int sendlen, T* out, int* recvlen, int* displ) const
+    {
+      return MPI_Allgatherv(in,sendlen,MPITraits<T>::getType(),
+                            out,recvlen,displ,MPITraits<T>::getType(),
+                            communicator);
     }
 
     //! @copydoc CollectiveCommunication::allreduce(Type* inout,int len) const

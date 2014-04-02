@@ -198,6 +198,32 @@ namespace Dune
       return 0;
     }
 
+    /** @brief  Gather arrays of variable size on root task.
+     *
+     * Each process sends its in array of length sendlen to the root process
+     * (including the root itself). In the root process these arrays are stored in rank
+     * order in the out array.
+     * @param[in] in The send buffer with the data to be sent
+     * @param[in] sendlen The number of elements to send on each task
+     * @param[out] out The buffer to store the received data in. May have length zero on non-root
+     *                 tasks.
+     * @param[in] recvlen An array with size equal to the number of processes containing the number
+     *                    of elements to receive from process i at position i, i.e. the number that
+     *                    is passed as sendlen argument to this function in process i.
+     *                    May have length zero on non-root tasks.
+     * @param[in] displ An array with size equal to the number of processes. Data received from
+     *                  process i will be written starting at out+displ[i] on the root process.
+     *                  May have length zero on non-root tasks.
+     * @param[out] root The root task that gathers the data.
+     */
+    template<typename T>
+    int gatherv (T* in, int sendlen, T* out, int* recvlen, int* displ, int root) const
+    {
+      for (int i=*displ; i<sendlen; i++)
+        out[i] = in[i];
+      return 0;
+    }
+
     /** @brief Scatter array from a root to all other task.
      *
      * The root process sends the elements with index from k*len to (k+1)*len-1 in its array to
@@ -214,6 +240,31 @@ namespace Dune
     int scatter (T* send, T* recv, int len, int root) const // note out must have same size as in
     {
       for (int i=0; i<len; i++)
+        recv[i] = send[i];
+      return 0;
+    }
+
+    /** @brief Scatter arrays of variable length from a root to all other tasks.
+     *
+     * The root process sends the elements with index from send+displ[k] to send+displ[k]-1 in
+     * its array to task k, which stores it at index 0 to recvlen-1.
+     * @param[in] send The array to scatter. May have length zero on non-root
+     *                  tasks.
+     * @param[in] sendlen An array with size equal to the number of processes containing the number
+     *                    of elements to scatter to process i at position i, i.e. the number that
+     *                    is passed as recvlen argument to this function in process i.
+     * @param[in] displ An array with size equal to the number of processes. Data scattered to
+     *                  process i will be read starting at send+displ[i] on root the process.
+     * @param[out] recv The buffer to store the received data in. Upon completion of the
+     *                  method each task will have the same data stored there as the one in
+     *                  send buffer of the root task before.
+     * @param[in] recvlen The number of elements in the recv buffer.
+     * @param[out] root The root task that gathers the data.
+     */
+    template<typename T>
+    int scatterv (T* send, int* sendlen, int* displ, T* recv, int recvlen, int root) const
+    {
+      for (int i=*displ; i<*sendlen; i++)
         recv[i] = send[i];
       return 0;
     }
@@ -235,6 +286,29 @@ namespace Dune
     {
       for(T* end=sbuf+count; sbuf < end; ++sbuf, ++rbuf)
         *sbuf=*rbuf;
+      return 0;
+    }
+
+    /**
+     * @brief Gathers data of variable length from all tasks and distribute it to all.
+     *
+     * The block of data sent from the jth process is received by every
+     *  process and placed in the jth block of the buffer out.
+     *
+     * @param[in] in The send buffer with the data to send.
+     * @param[in] sendlen The number of elements to send on each task.
+     * @param[out] out The buffer to store the received data in.
+     * @param[in] recvlen An array with size equal to the number of processes containing the number
+     *                    of elements to recieve from process i at position i, i.e. the number that
+     *                    is passed as sendlen argument to this function in process i.
+     * @param[in] displ An array with size equal to the number of processes. Data recieved from
+     *                  process i will be written starting at out+displ[i].
+     */
+    template<typename T>
+    int allgatherv (T* in, int sendlen, T* out, int* recvlen, int* displ) const
+    {
+      for (int i=*displ; i<sendlen; i++)
+        out[i] = in[i];
       return 0;
     }
 
