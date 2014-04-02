@@ -20,6 +20,4 @@ AC_DEFUN([DUNE_CHECKUNUSED],[
       [AC_DEFINE_UNQUOTED(HAS_ATTRIBUTE_UNUSED,
                           1,
                           [does the compiler support __attribute__((unused))?])],)
-
-    AH_BOTTOM([#include <dune/common/unused.hh>])
 ])

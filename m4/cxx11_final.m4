@@ -19,6 +19,4 @@ AC_DEFUN([DUNE_CHECKFINAL],[
       [AC_DEFINE_UNQUOTED(HAVE_KEYWORD_FINAL,
                           1,
                           [does the compiler support the keyword 'final'?])],)
-
-    AH_BOTTOM([#include <dune/common/std/final.hh>])
 ])

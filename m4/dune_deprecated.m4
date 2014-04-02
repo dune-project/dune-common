@@ -22,7 +22,7 @@ AC_DEFUN([DUNE_CHECKDEPRECATED],[
         AC_LANG_POP([C++])
     ])
 
-    AC_CACHE_CHECK([for __attribute__((deprecated("message")))], 
+    AC_CACHE_CHECK([for __attribute__((deprecated("message")))],
         dune_cv_attribute_deprecated_message, [
         AC_LANG_PUSH([C++])
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
@@ -41,7 +41,7 @@ AC_DEFUN([DUNE_CHECKDEPRECATED],[
             dune_cv_attribute_deprecated_message="no")
         AC_LANG_POP([C++])
     ])
- 
+
     if test "$dune_cv_attribute_deprecated" = "yes"; then
         AC_DEFINE_UNQUOTED(HAS_ATTRIBUTE_DEPRECATED, 1,
                           [does the compiler support __attribute__((deprecated))?])
@@ -51,6 +51,4 @@ AC_DEFUN([DUNE_CHECKDEPRECATED],[
         AC_DEFINE_UNQUOTED(HAS_ATTRIBUTE_DEPRECATED_MSG, 1,
                           [does the compiler support __attribute__((deprecated("message"))?])
     fi
-
-    AH_BOTTOM([#include <dune/common/deprecated.hh>])
 ])
