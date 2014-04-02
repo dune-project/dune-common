@@ -30,7 +30,6 @@ ALLM4S = 					\
 	dune_cxa_demangle.m4			\
 	dune_fortran.m4				\
 	dune_deprecated.m4			\
-	dune_deprecated_cppflags.m4		\
 	dune_docu.m4				\
 	dune_linkcxx.m4				\
 	dune_mpi.m4				\

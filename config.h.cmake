@@ -2,14 +2,6 @@
 
 /* begin dune-common */
 
-#ifdef DEPRECATED_MPI_CPPFLAGS_USED
-#warning The MPI_CPPFLAGS configure substitute is deprecated. Please change
-#warning your Makefile.am to use DUNEMPICPPFLAGS instead. Note that it is a
-#warning good idea to change any occurance of MPI_LDFLAGS into DUNEMPILIBS and
-#warning DUNEMPILDFLAGS as appropriate, since it is not possible to issue a
-#warning deprecation warning in that case.
-#endif
-
 /* Define to the version of dune-common */
 #define DUNE_COMMON_VERSION "${DUNE_COMMON_VERSION}"
 
