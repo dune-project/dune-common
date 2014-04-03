@@ -1100,12 +1100,13 @@ available and which dimension has been selected (if applicable). This
 information can then be used at compile-time to include header files
 or code that depend on optional packages.
 
-As an example, the macro \lstinline!HAVE_ARRAY!\ can be used to compile
-code using C++11 arrays as in
+As an example, the macro \lstinline!HAVE_GMP!\ can be used to compile
+code using the GNU Multiple Precision Arithmetic Library (GMP) as in
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
-#ifdef HAVE_ARRAY
-#include <array>
-std::array <int, 5> a = {1, 2, 3};
+#ifdef HAVE_GMP
+#include <gmp.h>
+mpz_t d;
+mpz_init_set_str(d, "14159265", 10);
 #endif
 \end{lstlisting}
 

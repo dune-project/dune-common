@@ -26,29 +26,17 @@
 /* does the compiler support __attribute__((unused))? */
 #cmakedefine HAS_ATTRIBUTE_UNUSED 1
 
-/* Define to 1 if the header <array> from C++11 is available and supports array::fill */
-#cmakedefine HAVE_ARRAY 1
-
 /* Define if you have a BLAS library. */
 #cmakedefine HAVE_BLAS 1
 
 /* Define to ENABLE_BOOST if the Boost library is available */
 #cmakedefine HAVE_DUNE_BOOST ENABLE_BOOST
 
-/* Define to 1 if you have <boost/make_shared.hpp>. */
-#cmakedefine HAVE_BOOST_MAKE_SHARED_HPP 1
-
-/* Define to 1 if you have the <boost/shared_ptr.hpp> header file. */
-#cmakedefine HAVE_BOOST_SHARED_PTR_HPP 1
-
 /* does the compiler support abi::__cxa_demangle */
 #cmakedefine HAVE_CXA_DEMANGLE 1
 
 /* Define if you have LAPACK library. */
 #cmakedefine HAVE_LAPACK 1
-
-/* Define to 1 if SHARED_PTR_NAMESPACE::make_shared is usable. */
-#cmakedefine HAVE_MAKE_SHARED 1
 
 /* Define to 1 if you have the <malloc.h> header file. */
 // Not used! #cmakedefine01 HAVE_MALLOC_H
@@ -68,9 +56,6 @@
 /* Define to 1 if nullptr is supported */
 #cmakedefine HAVE_NULLPTR 1
 
-/* Define to 1 if static_assert is supported */
-#cmakedefine HAVE_STATIC_ASSERT 1
-
 /* Define to 1 if you have the <stdint.h> header file. */
 #cmakedefine HAVE_STDINT_H 1
 
@@ -79,9 +64,6 @@
 
 /* Define to 1 if the std::tr1::hash template from TR1 is available. */
 #cmakedefine HAVE_TR1_HASH 1
-
-/* Define to 1 if you have the <tr1/tuple> header file. */
-#cmakedefine HAVE_TR1_TUPLE 1
 
 /* Define to 1 if you have the <tr1/type_traits> header file. */
 #cmakedefine HAVE_TR1_TYPE_TRAITS 1
@@ -94,14 +76,8 @@
 /* Define to 1 if the std::hash template from C++11 is available. */
 #cmakedefine HAVE_STD_HASH 1
 
-/* Define to 1 if you have the <tuple> header file. */
-#cmakedefine HAVE_TUPLE 1
-
 /* Define to 1 if you have the <type_traits> header file. */
 #cmakedefine HAVE_TYPE_TRAITS 1
-
-/* Define to 1 if you have the <type_traits> header file. */
-#cmakedefine HAVE_STD_CONDITIONAL 1
 
 /* Define to 1 if the MPI2 Standard is supported */
 #cmakedefine MPI_2 1
@@ -133,24 +109,6 @@
 #define VERSION "@DUNE_MOD_VERSION@"
 
 /* end private */
-
-/* The header in which SHARED_PTR can be found */
-#cmakedefine SHARED_PTR_HEADER ${SHARED_PTR_HEADER}
-
-/* The namespace in which SHARED_PTR can be found */
-#cmakedefine SHARED_PTR_NAMESPACE ${SHARED_PTR_NAMESPACE}
-
-/* Define to 1 if variadic templates are supported */
-#cmakedefine HAVE_VARIADIC_TEMPLATES 1
-
-/* Define to 1 if SFINAE on variadic template constructors is fully supported */
-#cmakedefine HAVE_VARIADIC_CONSTRUCTOR_SFINAE 1
-
-/* Define to 1 if rvalue references are supported */
-#cmakedefine HAVE_RVALUE_REFERENCES 1
-
-/* Define to 1 if initializer list is supported */
-#cmakedefine HAVE_INITIALIZER_LIST 1
 
 /* Define to 1 if C++11 constexpr is supported */
 #cmakedefine HAVE_CONSTEXPR 1

@@ -32,7 +32,7 @@ namespace Dune {
    */
   template <class Tuple>
   class NullPointerInitialiser {
-    dune_static_assert(AlwaysFalse<Tuple>::value, "Attempt to use the "
+    static_assert(AlwaysFalse<Tuple>::value, "Attempt to use the "
                        "unspecialized version of NullPointerInitialiser.  "
                        "NullPointerInitialiser needs to be specialized for "
                        "each possible tuple size.  Naturally the number of "
@@ -194,7 +194,7 @@ namespace Dune {
    */
   template <template <class> class TypeEvaluator, class TupleType>
   class ForEachType {
-    dune_static_assert(AlwaysFalse<TupleType>::value, "Attempt to use the "
+    static_assert(AlwaysFalse<TupleType>::value, "Attempt to use the "
                        "unspecialized version of ForEachType.  ForEachType "
                        "needs to be specialized for each possible tuple "
                        "size.  Naturally the number of pre-defined "
@@ -1516,7 +1516,7 @@ namespace Dune {
         integral_constant<std::size_t, start>,
         FirstPredicateIndex<Tuple, Predicate, start+1> >::type
   {
-    dune_static_assert(tuple_size<Tuple>::value == size, "The \"size\" "
+    static_assert(tuple_size<Tuple>::value == size, "The \"size\" "
                        "template parameter of FirstPredicateIndex is an "
                        "implementation detail and should never be set "
                        "explicitly!");
@@ -1526,7 +1526,7 @@ namespace Dune {
   template<class Tuple, template<class> class Predicate, std::size_t size>
   class FirstPredicateIndex<Tuple, Predicate, size, size>
   {
-    dune_static_assert(AlwaysFalse<Tuple>::value, "None of the tuple element "
+    static_assert(AlwaysFalse<Tuple>::value, "None of the tuple element "
                        "types matches the predicate!");
   };
 #endif // !DOXYGEN
@@ -1576,7 +1576,7 @@ namespace Dune {
   template< class Tuple, class T>
   struct PushBackTuple
   {
-    dune_static_assert(AlwaysFalse<Tuple>::value, "Attempt to use the "
+    static_assert(AlwaysFalse<Tuple>::value, "Attempt to use the "
                        "unspecialized version of PushBackTuple.  "
                        "PushBackTuple needs to be specialized for "
                        "each possible tuple size.  Naturally the number of "
@@ -1596,67 +1596,11 @@ namespace Dune {
 
 #ifndef DOXYGEN
 
-#if HAVE_VARIADIC_TEMPLATES
   template<class... TupleArgs, class T>
   struct PushBackTuple<typename Dune::tuple<TupleArgs...>, T>
   {
     typedef typename Dune::tuple<TupleArgs..., T> type;
   };
-#else
-  template<class T>
-  struct PushBackTuple< Dune::tuple<>, T>
-  {
-    typedef typename Dune::tuple<T> type;
-  };
-
-  template< class T1, class T>
-  struct PushBackTuple< Dune::tuple<T1>, T>
-  {
-    typedef typename Dune::tuple<T1, T> type;
-  };
-
-  template< class T1, class T2, class T>
-  struct PushBackTuple< Dune::tuple<T1, T2>, T>
-  {
-    typedef typename Dune::tuple<T1, T2, T> type;
-  };
-
-  template< class T1, class T2, class T3, class T>
-  struct PushBackTuple< Dune::tuple<T1, T2, T3>, T>
-  {
-    typedef typename Dune::tuple<T1, T2, T3, T> type;
-  };
-
-  template< class T1, class T2, class T3, class T4, class T>
-  struct PushBackTuple< Dune::tuple<T1, T2, T3, T4>, T>
-  {
-    typedef typename Dune::tuple<T1, T2, T3, T4, T> type;
-  };
-
-  template< class T1, class T2, class T3, class T4, class T5, class T>
-  struct PushBackTuple< Dune::tuple<T1, T2, T3, T4, T5>, T>
-  {
-    typedef typename Dune::tuple<T1, T2, T3, T4, T5, T> type;
-  };
-
-  template< class T1, class T2, class T3, class T4, class T5, class T6, class T>
-  struct PushBackTuple< Dune::tuple<T1, T2, T3, T4, T5, T6>, T>
-  {
-    typedef typename Dune::tuple<T1, T2, T3, T4, T5, T6, T> type;
-  };
-
-  template< class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T>
-  struct PushBackTuple< Dune::tuple<T1, T2, T3, T4, T5, T6, T7>, T>
-  {
-    typedef typename Dune::tuple<T1, T2, T3, T4, T5, T6, T7, T> type;
-  };
-
-  template< class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8, class T>
-  struct PushBackTuple< Dune::tuple<T1, T2, T3, T4, T5, T6, T7, T8>, T>
-  {
-    typedef typename Dune::tuple<T1, T2, T3, T4, T5, T6, T7, T8, T> type;
-  };
-#endif  // HAVE_VARIADIC_TEMPLATES
 
 #endif
 
@@ -1671,7 +1615,7 @@ namespace Dune {
   template< class Tuple, class T>
   struct PushFrontTuple
   {
-    dune_static_assert(AlwaysFalse<Tuple>::value, "Attempt to use the "
+    static_assert(AlwaysFalse<Tuple>::value, "Attempt to use the "
                        "unspecialized version of PushFrontTuple.  "
                        "PushFrontTuple needs to be specialized for "
                        "each possible tuple size.  Naturally the number of "
@@ -1691,67 +1635,11 @@ namespace Dune {
 
 #ifndef DOXYGEN
 
-#if HAVE_VARIADIC_TEMPLATES
   template<class... TupleArgs, class T>
   struct PushFrontTuple<typename Dune::tuple<TupleArgs...>, T>
   {
     typedef typename Dune::tuple<T, TupleArgs...> type;
   };
-#else
-  template<class T>
-  struct PushFrontTuple< Dune::tuple<>, T>
-  {
-    typedef typename Dune::tuple<T> type;
-  };
-
-  template< class T1, class T>
-  struct PushFrontTuple< Dune::tuple<T1>, T>
-  {
-    typedef typename Dune::tuple<T, T1> type;
-  };
-
-  template< class T1, class T2, class T>
-  struct PushFrontTuple< Dune::tuple<T1, T2>, T>
-  {
-    typedef typename Dune::tuple<T, T1, T2> type;
-  };
-
-  template< class T1, class T2, class T3, class T>
-  struct PushFrontTuple< Dune::tuple<T1, T2, T3>, T>
-  {
-    typedef typename Dune::tuple<T, T1, T2, T3> type;
-  };
-
-  template< class T1, class T2, class T3, class T4, class T>
-  struct PushFrontTuple< Dune::tuple<T1, T2, T3, T4>, T>
-  {
-    typedef typename Dune::tuple<T, T1, T2, T3, T4> type;
-  };
-
-  template< class T1, class T2, class T3, class T4, class T5, class T>
-  struct PushFrontTuple< Dune::tuple<T1, T2, T3, T4, T5>, T>
-  {
-    typedef typename Dune::tuple<T, T1, T2, T3, T4, T5> type;
-  };
-
-  template< class T1, class T2, class T3, class T4, class T5, class T6, class T>
-  struct PushFrontTuple< Dune::tuple<T1, T2, T3, T4, T5, T6>, T>
-  {
-    typedef typename Dune::tuple<T, T1, T2, T3, T4, T5, T6> type;
-  };
-
-  template< class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T>
-  struct PushFrontTuple< Dune::tuple<T1, T2, T3, T4, T5, T6, T7>, T>
-  {
-    typedef typename Dune::tuple<T, T1, T2, T3, T4, T5, T6, T7> type;
-  };
-
-  template< class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8, class T>
-  struct PushFrontTuple< Dune::tuple<T1, T2, T3, T4, T5, T6, T7, T8>, T>
-  {
-    typedef typename Dune::tuple<T, T1, T2, T3, T4, T5, T6, T7, T8> type;
-  };
-#endif //  HAVE_VARIADIC_TEMPLATES
 
 #endif
 

@@ -29,9 +29,7 @@ TESTPROGS = \
     parametertreetest \
     poolallocatortest \
     shared_ptrtest_config \
-    shared_ptrtest_dune \
     singletontest \
-    static_assert_test \
     streamtest \
     testdebugallocator \
     testdebugallocator_fail1 \
@@ -51,9 +49,7 @@ TESTPROGS = \
     testfassign_fail6 \
     testfconstruct \
     testfloatcmp \
-    tuplestest_dune \
     tuplestest_std \
-    tuplestest_tr1 \
     tupleutilitytest \
     typetraitstest \
     utilitytest
@@ -66,7 +62,6 @@ COMPILE_XFAIL_TESTS = \
     check_fvector_size_fail2 \
     genericiterator_compile_fail \
     nullptr-test-fail \
-    static_assert_test_fail \
     testfconstruct_fail1 \
     testfconstruct_fail2
 
@@ -187,18 +182,11 @@ poolallocatortest_SOURCES = poolallocatortest.cc
 
 shared_ptrtest_config_SOURCES = shared_ptrtest.cc
 
-shared_ptrtest_dune_SOURCES = shared_ptrtest.cc
-shared_ptrtest_dune_CPPFLAGS = $(AM_CPPFLAGS)   \
-    -DDISABLE_CONFIGURED_SHARED_PTR
-
 singletontest_SOURCES = singletontest.cc
 
 sllisttest_SOURCES = sllisttest.cc
 
 sourcescheck_NOSOURCES = timing.cc
-
-static_assert_test_SOURCES = static_assert_test.cc
-static_assert_test_fail_SOURCES = static_assert_test_fail.cc
 
 streamtest_SOURCES = streamtest.cc
 
@@ -261,15 +249,7 @@ testfconstruct_fail2_CPPFLAGS = $(AM_CPPFLAGS) -DFVSIZE=5
 
 testfloatcmp_SOURCES = testfloatcmp.cc
 
-tuplestest_dune_SOURCES = tuplestest.cc
-tuplestest_dune_CPPFLAGS = $(AM_CPPFLAGS)       \
-    -DDISABLE_TR1_TUPLE -DDISABLE_STD_TUPLE
-
 tuplestest_std_SOURCES = tuplestest.cc
-
-tuplestest_tr1_SOURCES = tuplestest.cc
-tuplestest_tr1_CPPFLAGS = $(AM_CPPFLAGS)        \
-    -DDISABLE_STD_TUPLE
 
 tupleutilitytest_SOURCES = tupleutilitytest.cc
 

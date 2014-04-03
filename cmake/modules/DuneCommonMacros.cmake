@@ -3,12 +3,11 @@
 # all dependent modules
 #
 # Specifically it configure the DUNE debug streams and
-# tests whether std::shared_ptr, LAPACK and BLAS are available.
+# tests whether LAPACK and BLAS are available.
 #
 include(DuneStreams)
 dune_set_minimal_debug_level()
 
-include(CheckSharedPtr)
 if(Fortran_Works)
   # search for lapack
   find_package(LAPACK)

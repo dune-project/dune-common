@@ -1,21 +1,15 @@
 #
 # Module that checks for supported C++11 (former C++0x) features.
 #
-# Sets the follwing variable:
+# Sets the follwing variables:
 #
 # HAVE_NULLPTR                     True if nullptr is available
-# HAVE_ARRAY                       True if header <array> and fill() are available
-# HAVE_ATTRIBUTE_ALWAYS_INLINE     True if attribute always inline is supported
 # HAS_ATTRIBUTE_UNUSED             True if attribute unused is supported
 # HAS_ATTRIBUTE_DEPRECATED         True if attribute deprecated is supported
 # HAS_ATTRIBUTE_DEPRECATED_MSG     True if attribute deprecated("msg") is supported
 # HAVE_INTEGRAL_CONSTANT           True if compiler supports integral_constant
-# HAVE_STATIC_ASSERT               True if static_assert is available
-# HAVE_VARIADIC_TEMPLATES          True if variadic templates are supprt
-# HAVE_VARIADIC_CONSTRUCTOR_SFINAE True if variadic constructor sfinae is supported
-# HAVE_RVALUE_REFERENCES           True if rvalue references are supported
-# HAVE_STD_CONDITIONAL             True if std::conditional is supported
-# HAVE_INITIALIZER_LIST            True if initializer list is supported
+# HAVE_CONSTEXPR                   True if constexpr is supported
+# HAVE_KEYWORD_FINAL               True if final is supported.
 
 include(CMakePushCheckState)
 cmake_push_check_state()
@@ -67,25 +61,12 @@ include(CheckIncludeFile)
 include(CheckIncludeFileCXX)
 
 if(NOT DISABLE_TR1_HEADERS)
-# array and fill
-check_cxx_source_compiles("
-    #include <array>
-
-    int main(void)
-    {
-      std::array<int,2> a;
-      a.fill(9);
-      return 0;
-    }
-" HAVE_ARRAY
-)
-
 # Search for some tr1 headers
-foreach(_HEADER tuple tr1/tuple type_traits tr1/type_traits)
+foreach(_HEADER type_traits tr1/type_traits)
   string(REPLACE "/" "_" _HEADER_VAR ${_HEADER})
   string(TOUPPER ${_HEADER_VAR} _HEADER_VAR )
   check_include_file_cxx(${_HEADER} "HAVE_${_HEADER_VAR}")
-endforeach(_HEADER tuple tr1/tuple tr1/type_traits)
+endforeach()
 
 # Check for hash support
 check_include_file_cxx("functional" "HAVE_FUNCTIONAL")
@@ -196,132 +177,6 @@ check_cxx_source_compiles("
      return 0;
    };
 "  HAS_ATTRIBUTE_DEPRECATED_MSG
-)
-
-# static assert
-check_cxx_source_compiles("
-   int main(void)
-   {
-     static_assert(true,\"MSG\");
-     return 0;
-   }
-"  HAVE_STATIC_ASSERT
-)
-
-# variadic template support
-check_cxx_source_compiles("
-   #include <cassert>
-
-   template<typename... T>
-   int addints(T... x);
-
-   int add_ints()
-   {
-     return 0;
-   }
-
-   template<typename T1, typename... T>
-   int add_ints(T1 t1, T... t)
-   {
-     return t1 + add_ints(t...);
-   }
-
-   int main(void)
-   {
-     assert( 5 == add_ints(9,3,-5,-2) );
-     return 0;
-   }
-" HAVE_VARIADIC_TEMPLATES
-)
-
-# SFINAE on variadic template constructors within template classes
-check_cxx_source_compiles("
-  #include <functional>
-
-  template<typename... U>
-  struct A
-  {
-    template<typename... T,
-             typename = typename std::enable_if<(sizeof...(T) < 2)>::type
-            >
-    A(T... t)
-    : i(1)
-    {}
-
-    template<typename... T,
-             typename = typename std::enable_if<(sizeof...(T) >= 2)>::type,
-             typename = void
-            >
-    A(T... t)
-    : i(-1)
-    {}
-
-    A()
-    : i(1)
-    {}
-
-    int i;
-  };
-
-  int main(void)
-  {
-    return (A<int>().i + A<int>(2).i + A<int>(\"foo\",3.4).i + A<int>(8,'a',A<int>()).i == 0 ? 0 : 1);
-  }
-" HAVE_VARIADIC_CONSTRUCTOR_SFINAE
-)
-
-# rvalue references
-check_cxx_source_compiles("
-  #include <cassert>
-  #include <utility>
-  int foo(int&& x) { return 1; }
-  int foo(const int& x) { return -1; }
-
-  template<typename T>
-  int forward(T&& x)
-  {
-    return foo(std::forward<T>(x));
-  }
-
-  int main(void)
-  {
-    int i = 0;
-    assert( forward(i) + forward(int(2)) == 0);
-    return 0;
-  }
-" HAVE_RVALUE_REFERENCES
-)
-
-# std::conditional
-check_cxx_source_compiles("
-  #include <type_traits>
-
-  int main(void){
-      return std::conditional<true,std::integral_constant<int,0>,void>::type::value;
-  }
-" HAVE_STD_CONDITIONAL
-)
-
-# initializer list
-check_cxx_source_compiles("
-  #include <initializer_list>
-  #include <vector>
-
-  struct A
-  {
-    A(std::initializer_list<int> il)
-      : vec(il)
-    {}
-
-    std::vector<int> vec;
-  };
-
-  int main(void)
-  {
-    A a{1,3,4,5};
-    return 0;
-  }
-" HAVE_INITIALIZER_LIST
 )
 
 # constexpr

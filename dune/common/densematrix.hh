@@ -12,7 +12,6 @@
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/precision.hh>
-#include <dune/common/static_assert.hh>
 #include <dune/common/classname.hh>
 #include <dune/common/math.hh>
 #include <dune/common/unused.hh>
@@ -142,7 +141,7 @@ namespace Dune
       {
         static void apply ( M &m, const T &t )
         {
-          dune_static_assert( (Conversion< const T, const M >::exists), "No template specialization of DenseMatrixAssigner found" );
+          static_assert( (Conversion< const T, const M >::exists), "No template specialization of DenseMatrixAssigner found" );
           m = static_cast< const M & >( t );
         }
       };

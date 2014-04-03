@@ -11,7 +11,6 @@
 #include <dune/common/exceptions.hh>
 #include <dune/common/dynvector.hh>
 #include <dune/common/densematrix.hh>
-#include <dune/common/static_assert.hh>
 
 namespace Dune
 {

@@ -6,7 +6,6 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/typetraits.hh>
-#include <dune/common/static_assert.hh>
 #include <dune/common/classname.hh>
 #include <iostream>
 #include <complex>
@@ -33,16 +32,16 @@ struct FieldVectorMainTest
     std::cout << __func__ << "\t ( " << className(v) << " )" << std::endl;
 
     // test traits
-    dune_static_assert(
+    static_assert(
       ( Dune::is_same< typename Dune::FieldTraits<
                 FieldVector<ft,d> >::field_type, ft >::value ),
       "FieldTraits<FieldVector> yields wrong field_type"
       );
-    dune_static_assert(
+    static_assert(
       ( Dune::is_same< typename Dune::FieldTraits<ft>::real_type, rt >::value ),
       "FieldTraits<field_type> yields wrong real_type"
       );
-    dune_static_assert(
+    static_assert(
       ( Dune::is_same< typename Dune::FieldTraits<
                 FieldVector<ft,d> >::real_type, rt >::value ),
       "FieldTraits<FieldVector> yields wrong real_type"
@@ -211,7 +210,7 @@ struct DotProductTest
     typedef std::complex<rt> ct;
     const rt myEps(1e-6);
 
-    dune_static_assert(
+    static_assert(
       ( Dune::is_same< typename Dune::FieldTraits<rt>::real_type, rt>::value ),
       "DotProductTest requires real data type as template parameter!"
       );
@@ -224,8 +223,8 @@ struct DotProductTest
 
     const bool isRealOne = Dune::is_same<typename Dune::FieldTraits<rt>::field_type,typename Dune::FieldTraits<rt>::real_type>::value;
     const bool isRealIVec = Dune::is_same<typename Dune::FieldTraits<ct>::field_type,typename Dune::FieldTraits<ct>::real_type> ::value;
-    dune_static_assert(isRealOne,"1-vector expected to be real");
-    dune_static_assert(!isRealIVec,"i-vector expected to be complex");
+    static_assert(isRealOne,"1-vector expected to be real");
+    static_assert(!isRealIVec,"i-vector expected to be complex");
 
     ct result = ct();
     ct length = ct(d);
