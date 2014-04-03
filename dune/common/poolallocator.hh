@@ -300,12 +300,25 @@ namespace Dune
     inline PoolAllocator();
 
     /**
-     * @brief Coopy Constructor.
+     * @brief Copy Constructor that does not copy the memory pool.
      */
     template<typename U, std::size_t u>
     inline PoolAllocator(const PoolAllocator<U,u>&)
-    {}
+    {
+      // we allow copying but never copy the pool
+      // to have a clear ownership of allocated pointers.
+    }
 
+    /// \brief Copy constructor that does not copy the memory pool.
+    PoolAllocator(const PoolAllocator&)
+    {
+      // we allow copying but never copy the pool
+      // to have a clear ownership of allocated pointers.
+      // For this behaviour we have to implement
+      // the copy constructor, because the default
+      // one would copy the pool and deallocation
+      // of it would break.
+    }
     /**
      * @brief Allocates objects.
      * @param n The number of objects to allocate. Has to be one!
@@ -384,11 +397,6 @@ namespace Dune
     {
       typedef PoolAllocator<U,s> other;
     };
-
-    template<typename T, std::size_t t>
-    PoolAllocator(const PoolAllocator<T,t>&)
-    {}
-
   };
 
 
