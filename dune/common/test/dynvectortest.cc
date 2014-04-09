@@ -3,9 +3,12 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+
+#include <iostream>
+
 #include <dune/common/dynvector.hh>
 #include <dune/common/exceptions.hh>
-#include <iostream>
+#include <dune/common/unused.hh>
 
 using Dune::DynamicVector;
 
