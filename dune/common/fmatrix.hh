@@ -315,7 +315,7 @@ namespace Dune
 
     //===== conversion operator
 
-    operator K () const { return _data[0]; }
+    operator const K& () const { return _data[0]; }
 
   };
 
