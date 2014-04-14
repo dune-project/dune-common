@@ -269,10 +269,10 @@ namespace Dune {
     //===== conversion operator
 
     /** \brief Conversion operator */
-    operator K () { return _data; }
+    operator K& () { return _data; }
 
     /** \brief Const conversion operator */
-    operator K () const { return _data; }
+    operator const K& () const { return _data; }
   };
 
   /* ----- FV / FV ----- */
