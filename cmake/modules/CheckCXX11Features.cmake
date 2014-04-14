@@ -17,10 +17,10 @@ cmake_push_check_state()
 # test for C++11 flags
 include(TestCXXAcceptsFlag)
 
-if(NOT DISABLE_GXX0XCHECK)
+if(NOT DISABLE_CXX11CHECK)
   # try to use compiler flag -std=c++11
   check_cxx_accepts_flag("-std=c++11" CXX_FLAG_CXX11)
-endif(NOT DISABLE_GXX0XCHECK)
+endif(NOT DISABLE_CXX11CHECK)
 
 if(CXX_FLAG_CXX11)
   set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++11")
@@ -31,10 +31,13 @@ if(CXX_FLAG_CXX11)
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -std=c++11 ")
   set(CXX_STD11_FLAGS "-std=c++11")
 else()
-  if(NOT DISABLE_GXX0XCHECK)
+  if(NOT DISABLE_CXX11CHECK)
     # try to use compiler flag -std=c++0x for older compilers
     check_cxx_accepts_flag("-std=c++0x" CXX_FLAG_CXX0X)
-  endif(NOT DISABLE_GXX0XCHECK)
+    if(NOT CXX_FLAG_CXX0X)
+      MESSAGE(FATAL_ERROR "Your compiler does not seem to support C++11. If it does, please add any required flags to your CXXFLAGS and run dunecontrol with --disable-cxx11check")
+    endif(NOT CXX_FLAG_CXX0X)
+  endif(NOT DISABLE_CXX11CHECK)
   if(CXX_FLAG_CXX0X)
     set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++0x" )
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x ")

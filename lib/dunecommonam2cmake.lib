@@ -28,10 +28,10 @@ dune_common_options_am2cmake()
     else
         CMAKE_PARAMS="$CMAKE_PARAMS -DUSE_MPI=ON"
     fi
-    # Check for --disable-gxx0xcheck
-    echo $PARAMS | grep \\-\\-disable-gxx0xcheck > /dev/null
+    # Check for --disable-cxx11check
+    echo $PARAMS | grep \\-\\-disable-cxx11check > /dev/null
     if test "$?" -eq 0 ; then
-        CMAKE_PARAMS="$CMAKE_PARAMS -DDISABLE_GXX0XCHECK:BOOL=TRUE"
+        CMAKE_PARAMS="$CMAKE_PARAMS -DDISABLE_CXX11CHECK:BOOL=TRUE"
     fi
 
     # Check for --disable-gxx0xcheck

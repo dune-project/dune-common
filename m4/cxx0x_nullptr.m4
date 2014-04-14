@@ -1,7 +1,7 @@
 AC_DEFUN([NULLPTR_CHECK],[
   AC_CACHE_CHECK([whether nullptr is supported], dune_cv_nullptr_support, [
     AC_REQUIRE([AC_PROG_CXX])
-    AC_REQUIRE([GXX0X])
+    AC_REQUIRE([CXX11])
     AC_LANG_PUSH([C++])
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
       [],[[
