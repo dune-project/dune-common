@@ -4,7 +4,6 @@ set(modules
   AddParMETISFlags.cmake
   AddUMFPackFlags.cmake
   CheckCXX11Features.cmake
-  CheckSharedPtr.cmake
   DuneBoost.cmake
   DuneCMakePackageConfigHelpers.cmake
   DuneCommonMacros.cmake
