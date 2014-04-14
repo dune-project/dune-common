@@ -26,6 +26,13 @@
 /* does the compiler support __attribute__((unused))? */
 #cmakedefine HAS_ATTRIBUTE_UNUSED 1
 
+/* old feature support macros which were tested until 2.3, keep around for one more release */
+/* As these are now always supported due to the new compiler requirements, they are directly */
+/* defined without an explicit test. */
+#define HAVE_VARIADIC_TEMPLATES  1
+#define HAVE_VARIADIC_CONSTRUCTOR_SFINAE 1
+#define HAVE_RVALUE_REFERENCES 1
+
 /* Define if you have a BLAS library. */
 #cmakedefine HAVE_BLAS 1
 
