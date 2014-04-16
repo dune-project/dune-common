@@ -26,7 +26,8 @@ struct FieldVectorMainTest
     FieldVector<ft,d> w(2);
     FieldVector<ft,d> z(2);
     const FieldVector<ft,d> x(z);
-    a = x[0];
+    if (x.size()>0)
+      a = x[0];
     bool b DUNE_UNUSED;
     rt n DUNE_UNUSED;
 
