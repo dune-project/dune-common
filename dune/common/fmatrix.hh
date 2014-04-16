@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstddef>
 #include <iostream>
+#include <algorithm>
 #include <initializer_list>
 
 #include <dune/common/exceptions.hh>
@@ -100,21 +101,19 @@ namespace Dune
      */
     FieldMatrix (std::initializer_list<std::initializer_list<K> > const &ll)
     {
-      assert(ll.size() == rows);
-      size_t i = 0;
-      for (typename std::initializer_list<std::initializer_list<K> >::
-             const_iterator lit = ll.begin(); lit != ll.end(); ++lit)
-        _data[i++] = *lit;
+      assert(ll.size() == rows); // Actually, this is not needed any more!
+      std::copy_n(ll.begin(), std::min(static_cast<std::size_t>(ROWS),
+                                       ll.size()),
+                 _data.begin());
     }
 
     /** \brief Constructor initializing the matrix from a list of vector
      */
     FieldMatrix(std::initializer_list<Dune::FieldVector<K, cols> > const &l) {
-      assert(l.size() == rows);
-      size_t i = 0;
-      for (typename std::initializer_list<Dune::FieldVector<K, cols> >::
-             const_iterator lit = l.begin(); lit != l.end(); ++lit)
-        _data[i++] = *lit;
+      assert(l.size() == rows); // Actually, this is not needed any more!
+      std::copy_n(l.begin(), std::min(static_cast<std::size_t>(ROWS),
+                                      l.size()),
+                 _data.begin());
     }
 
     //===== assignment

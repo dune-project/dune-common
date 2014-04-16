@@ -11,6 +11,7 @@
 #include <cstring>
 #include <utility>
 #include <initializer_list>
+#include <algorithm>
 
 #include <dune/common/std/constexpr.hh>
 
@@ -119,11 +120,10 @@ namespace Dune {
 
     FieldVector (std::initializer_list<K> const &l)
     {
-      assert(l.size() == dimension);
-      size_t i = 0;
-      for (typename std::initializer_list<K>::const_iterator it = l.begin();
-           it != l.end(); ++it)
-        _data[i++] = *it;
+      assert(l.size() == dimension);// Actually, this is not needed any more!
+      std::copy_n(l.begin(), std::min(static_cast<std::size_t>(dimension),
+                                      l.size()),
+                 _data.begin());
     }
 
     /**
@@ -142,9 +142,8 @@ namespace Dune {
     {
       DUNE_UNUSED_PARAMETER(dummy);
       // do a run-time size check, for the case that x is not a FieldVector
-      assert(x.size() == SIZE);
-      for (size_type i = 0; i<SIZE; i++)
-        _data[i] = x[i];
+      assert(x.size() == SIZE); // Actually this is not needed any more!
+      std::copy_n(x.begin(), std::min(static_cast<std::size_t>(SIZE),x.size()), _data.begin());
     }
 
     //! Constructor making vector with identical coordinates
