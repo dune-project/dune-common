@@ -100,13 +100,14 @@ struct FieldVectorMainTest
 };
 
 
-template<class ft>
+template<class ft, class testft=ft>
 struct ScalarOperatorTest
 {
   ScalarOperatorTest()
   {
-    ft a = 1;
-    ft c = 2;
+    // testft has to initializable with an int
+    testft a = 1;
+    testft c = 2;
     FieldVector<ft,1> v(2);
     FieldVector<ft,1> w(2);
     bool b DUNE_UNUSED;
@@ -304,6 +305,8 @@ public:
     ScalarOperatorTest< complex<ft> >();
     // ordering doesn't work for complex numbers
 
+    // --- test with an integer
+    ScalarOperatorTest< ft, int >();
     // --- test next lower dimension
     FieldVectorMainTest<ft,ft,0>();
   }
