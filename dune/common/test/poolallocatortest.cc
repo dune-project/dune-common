@@ -129,8 +129,10 @@ int testPoolAllocator()
   try
   {
     pool2.deallocate(d,1);
+#ifndef NDEBUG
     ++ret;
-    std::cerr<<"ERROR: allocation should not work with copied allocators."<<std::endl;
+    std::cerr<<"ERROR: deallocation should not work with copied allocators."<<std::endl;
+#endif
   }
   catch(std::bad_alloc)
   {}
