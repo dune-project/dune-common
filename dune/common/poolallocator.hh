@@ -526,6 +526,18 @@ namespace Dune
   inline void Pool<T,S>::free(void* b)
   {
     if(b) {
+#ifndef NDEBUG
+      Chunk* current=chunks_;
+      while(current) {
+        std::cout<<"b: "<<b<<" start: "<<&current->chunk_<<" end:"<<(&current->chunk_)+chunkSize<<std::endl;
+        if(static_cast<void*>(&current->chunk_)<=b &&
+           static_cast<void*>((&current->chunk_)+chunkSize)>b)
+          break;
+        current=current->next_;
+      }
+      if(!current)
+        throw std::bad_alloc();
+#endif
       Reference* freed = static_cast<Reference*>(b);
       freed->next_ = head_;
       head_ = freed;
