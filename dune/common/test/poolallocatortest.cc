@@ -93,7 +93,7 @@ struct testPoolMain
 
 
     for(int i=0; i < elements*10; ++i)
-      pool.free(reinterpret_cast<T*>(oelements+i));
+      pool.free(reinterpret_cast<void*>(oelements[i]));
     delete[] oelements;
 
     return ret;
