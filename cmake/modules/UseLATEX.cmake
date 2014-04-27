@@ -13,6 +13,7 @@
 # The following function is defined:
 #
 # ADD_LATEX_DOCUMENT(<tex_file>
+#                    [FATHER_TARGET <father_target>]
 #                    [BIBFILES <bib_files>]
 #                    [INPUTS <input_tex_files>]
 #                    [IMAGE_DIRS] <image_directories>
@@ -54,10 +55,13 @@
 #                       target, it does not delete other input files, such as
 #                       converted images, to save time on the rebuild.
 #
-#       The dvi target is added to the ALL.  That is, it will be the target
-#       built by default.  If the DEFAULT_PDF argument is given, then the
-#       pdf target will be the default instead of dvi.  Likewise,
-#       DEFAULT_SAFEPDF sets the default target to safepdf.  If NO_DEFAULT
+#       If FATHER_TARGET is omitted, the dvi target is added to the ALL.
+#       That is, it will be the target built by default.  If the DEFAULT_PDF
+#       argument is given, then the pdf target will be the default instead of
+#       dvi. Likewise, DEFAULT_SAFEPDF sets the default target to safepdf.
+#       If FATHER_TARGET is set, the files will be a dependency of
+#       FATHER_TARGET. By setting FATHER_TARGET to doc, the files will be build
+#       during make doc.  If NO_DEFAULT
 #       is specified, then no target will be added to ALL, which is
 #       convenient when including LaTeX documentation with something else.
 #
@@ -975,7 +979,7 @@ ENDFUNCTION(LATEX_USAGE command message)
 FUNCTION(PARSE_ADD_LATEX_ARGUMENTS command)
   LATEX_PARSE_ARGUMENTS(
     LATEX
-    "BIBFILES;MULTIBIB_NEWCITES;INPUTS;IMAGE_DIRS;IMAGES;CONFIGURE;DEPENDS"
+    "BIBFILES;FATHER_TARGET;MULTIBIB_NEWCITES;INPUTS;IMAGE_DIRS;IMAGES;CONFIGURE;DEPENDS"
     "USE_INDEX;USE_GLOSSARY;USE_GLOSSARIES;USE_NOMENCL;DEFAULT_PDF;DEFAULT_SAFEPDF;DEFAULT_PS;NO_DEFAULT;MANGLE_TARGET_NAMES"
     ${ARGN}
     )
@@ -1248,8 +1252,14 @@ FUNCTION(ADD_LATEX_TARGETS_INTERNAL)
     ADD_CUSTOM_TARGET(${dvi_target}
       DEPENDS ${output_dir}/${LATEX_TARGET}.dvi)
   ELSE (LATEX_NO_DEFAULT OR LATEX_DEFAULT_PDF OR LATEX_DEFAULT_SAFEPDF OR DEFAULT_PS)
-    ADD_CUSTOM_TARGET(${dvi_target} ALL
-      DEPENDS ${output_dir}/${LATEX_TARGET}.dvi)
+    IF (LATEX_FATHER_TARGET)
+      ADD_CUSTOM_TARGET(${dvi_target}
+        DEPENDS ${output_dir}/${LATEX_TARGET}.dvi)
+      ADD_DEPENDENCIES(${LATEX_FATHER_TARGET} ${dvi_target})
+    ELSE (LATEX_FATHER_TARGET)
+      ADD_CUSTOM_TARGET(${dvi_target} ALL
+        DEPENDS ${output_dir}/${LATEX_TARGET}.dvi)
+    ENDIF (LATEX_FATHER_TARGET)
   ENDIF (LATEX_NO_DEFAULT OR LATEX_DEFAULT_PDF OR LATEX_DEFAULT_SAFEPDF OR DEFAULT_PS)
 
   # Add commands and targets for building pdf outputs (with pdflatex).
@@ -1259,8 +1269,14 @@ FUNCTION(ADD_LATEX_TARGETS_INTERNAL)
       DEPENDS ${make_pdf_depends}
       )
     IF (LATEX_DEFAULT_PDF)
-      ADD_CUSTOM_TARGET(${pdf_target} ALL
-        DEPENDS ${output_dir}/${LATEX_TARGET}.pdf)
+      IF (LATEX_FATHER_TARGET)
+        ADD_CUSTOM_TARGET(${pdf_target}
+          DEPENDS ${output_dir}/${LATEX_TARGET}.pdf)
+        ADD_DEPENDENCIES(${LATEX_FATHER_TARGET} ${pdf_target})
+      ELSE (LATEX_FATHER_TARGET)
+        ADD_CUSTOM_TARGET(${pdf_target} ALL
+          DEPENDS ${output_dir}/${LATEX_TARGET}.pdf)
+      ENDIF (LATEX_FATHER_TARGET)
     ELSE (LATEX_DEFAULT_PDF)
       ADD_CUSTOM_TARGET(${pdf_target}
         DEPENDS ${output_dir}/${LATEX_TARGET}.pdf)
@@ -1284,10 +1300,18 @@ FUNCTION(ADD_LATEX_TARGETS_INTERNAL)
       # cannot properly do the dependencies for both.  When selecting safepdf,
       # simply force a recompile every time.
       IF (LATEX_DEFAULT_SAFEPDF)
-        ADD_CUSTOM_TARGET(${safepdf_target} ALL
-          ${CMAKE_COMMAND} -E chdir ${output_dir}
-          ${PS2PDF_CONVERTER} ${PS2PDF_CONVERTER_FLAGS} ${LATEX_TARGET}.ps ${LATEX_TARGET}.pdf
-          )
+        IF (LATEX_FATHER_TARGET)
+          ADD_CUSTOM_TARGET(${safepdf_target}
+            ${CMAKE_COMMAND} -E chdir ${output_dir}
+            ${PS2PDF_CONVERTER} ${PS2PDF_CONVERTER_FLAGS} ${LATEX_TARGET}.ps ${LATEX_TARGET}.pdf
+            )
+          ADD_DEPENDENCIES(${LATEX_FATHER_TARGET} ${safepdf_target})
+        ELSE (LATEX_FATHER_TARGET)
+          ADD_CUSTOM_TARGET(${safepdf_target} ALL
+            ${CMAKE_COMMAND} -E chdir ${output_dir}
+            ${PS2PDF_CONVERTER} ${PS2PDF_CONVERTER_FLAGS} ${LATEX_TARGET}.ps ${LATEX_TARGET}.pdf
+            )
+        ENDIF (LATEX_FATHER_TARGET)
       ELSE (LATEX_DEFAULT_SAFEPDF)
         ADD_CUSTOM_TARGET(${safepdf_target}
           ${CMAKE_COMMAND} -E chdir ${output_dir}
