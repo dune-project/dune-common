@@ -86,7 +86,7 @@ MACRO(dune_add_latex_document tex_file)
   if(filevar)
     if(LATEX_USABLE)
       # add rule to create latex document
-      add_latex_document(${tex_file} ${ARGN})
+      add_latex_document(${tex_file} ${ARGN} MANGLE_TARGET_NAMES)
     else(LATEX_USABLE)
       message(WARNING "Not adding rule to create ${file} as LaTEX is not usable!")
     endif(LATEX_USABLE)
