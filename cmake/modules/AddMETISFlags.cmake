@@ -12,6 +12,6 @@ function(add_dune_metis_flags _targets)
       target_link_libraries(${_target} ${METIS_LIBRARY})
     endforeach(_target ${_targets})
     set_property(TARGET ${_targets} APPEND PROPERTY
-      COMPILE_DIRECTORIES ${METIS_INCLUDE_DIR})
+      INCLUDE_DIRECTORIES "${METIS_INCLUDE_DIRS}")
   endif(METIS_FOUND)
 endfunction(add_dune_metis_flags _targets)
