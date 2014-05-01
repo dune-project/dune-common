@@ -127,8 +127,6 @@
 #cmakedefine HAVE_UMFPACK ENABLE_UMFPACK
 
 /* Include always useful headers */
-#include <dune/common/deprecated.hh>
-#include <dune/common/unused.hh>
 #include "FC.h"
 #define FC_FUNC FC_GLOBAL_
 
