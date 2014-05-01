@@ -16,6 +16,9 @@ CONTROL="dune.module"
 if test -z $GREP; then
   GREP=grep
 fi
+if test -z "$SED"; then
+  SED=sed
+fi
 # SunOS [e]grep does not seem to comprehend character classes.  Set up
 # some variables to spell them out
 UPPER=ABCDEFGHIJKLMNOPQRSTUVWXYZ
