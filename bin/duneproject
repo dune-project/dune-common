@@ -192,6 +192,9 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
       if test x$DELETE = xy -o x$DELETE = xY; then
         PROJECT=""
       fi
+    elif echo "$PROJECT" | grep -q "\."; then
+      echo "The Name contains a dot (.) which is not allowed."
+      PROJECT=""
     fi
   done
   MODULE="$PROJECT"
