@@ -455,6 +455,65 @@ namespace Dune
     : public __remove_pointer_helper<typename remove_const<_Tp>::type >
     { };
 
+  /**
+     \brief template which always yields a false value
+     \tparam T Some type.  It sould be a type expression involving template
+               parameters of the class or function using AlwaysFalse.
+
+     Suppose you have a template class.  You want to document the required
+     members of this class in the non-specialized template, but you know that
+     actually instantiating the non-specialized template is an error.  You
+     can try something like this:
+     \code
+     template<typename T>
+     struct Traits {
+       static_assert(false,
+                          "Instanciating this non-specialized template is an "
+                          "error.  You should use one of the specializations "
+                          "instead.");
+       //! The type used to frobnicate T
+       typedef void FrobnicateType;
+     };
+     \endcode
+     This will trigger static_assert() as soon as the compiler reads the
+     definition for the Traits template, since it knows that "false" can
+     never become true, no matter what the template parameters of Traits are.
+     As a workaround you can use AlwaysFalse: replace <tt>false</tt> by
+     <tt>AlwaysFalse<T>::value</tt>, like this:
+     \code
+     template<typename T>
+     struct Traits {
+       static_assert(AlwaysFalse<T>::value,
+                          "Instanciating this non-specialized template is an "
+                          "error.  You should use one of the specializations "
+                          "instead.");
+       //! The type used to frobnicate T
+       typedef void FrobnicateType;
+     };
+     \endcode
+     Since there might be an specialization of AlwaysFalse for template
+     parameter T, the compiler cannot trigger static_assert() until the
+     type of T is known, that is, until Traits<T> is instantiated.
+   */
+  template<typename T>
+  struct AlwaysFalse {
+    //! always a false value
+    static const bool value = false;
+  };
+
+  /**
+     \brief template which always yields a true value
+     \tparam T Some type.  It sould be a type expression involving template
+               parameters of the class or function using AlwaysTrue.
+
+     \note This class exists mostly for consistency with AlwaysFalse.
+   */
+  template<typename T>
+  struct AlwaysTrue {
+    //! always a true value
+    static const bool value = true;
+  };
+
   /** @} */
 }
 #endif
