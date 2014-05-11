@@ -35,7 +35,6 @@ ALLM4S = 					\
 	hdf5.m4					\
 	immdx_lib_metis.m4			\
 	inkscape.m4				\
-	libtoolcompat.m4			\
 	mpi-config.m4				\
 	mprotect.m4				\
 	opengl.m4				\
