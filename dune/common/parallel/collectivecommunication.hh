@@ -234,7 +234,7 @@ namespace Dune
     int allgather(T* sbuf, int count, T* rbuf) const
     {
       for(T* end=sbuf+count; sbuf < end; ++sbuf, ++rbuf)
-        *sbuf=*rbuf;
+        *rbuf=*sbuf;
       return 0;
     }
 
