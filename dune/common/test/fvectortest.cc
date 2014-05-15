@@ -32,6 +32,12 @@ struct FieldVectorMainTest
 
     std::cout << __func__ << "\t ( " << className(v) << " )" << std::endl;
 
+    // test exported types
+    static_assert(
+      Dune::is_same<ft,typename FieldVector<ft,d>::value_type>::value,
+      "FieldVector::value_type is not the correct type"
+    );
+
     // test traits
     static_assert(
       ( Dune::is_same< typename Dune::FieldTraits<
