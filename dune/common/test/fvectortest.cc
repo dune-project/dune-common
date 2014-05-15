@@ -154,12 +154,12 @@ struct ScalarOperatorTest
     v = a / v;
 
     v -= v;
-    v -= a;
+    v -= (ft)a;
     v += v;
-    v += a;
-    v *= a;
+    v += (ft)a;
+    v *= (ft)a;
     a += (ft)1; // make sure a!=0
-    v /= a;
+    v /= (ft)a;
 
     b = (v == a);
     b = (v != a);
