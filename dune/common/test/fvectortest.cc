@@ -366,6 +366,8 @@ int main()
     FieldVectorTest<int, 3>();
     FieldVectorTest<float, 3>();
     FieldVectorTest<double, 3>();
+    FieldVectorTest<int, 1>();
+    FieldVectorTest<double, 1>();
 
     test_nan();
     test_infinity_norms();

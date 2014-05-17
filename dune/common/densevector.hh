@@ -4,6 +4,7 @@
 #define DUNE_DENSEVECTOR_HH
 
 #include <limits>
+#include <type_traits>
 
 #include "genericiterator.hh"
 #include "ftraits.hh"
@@ -406,32 +407,56 @@ namespace Dune {
     }
 
     //! vector space add scalar to all comps
-    derived_type& operator+= (const value_type& k)
+    template <typename ValueType>
+    typename std::enable_if<
+      std::is_convertible<ValueType, value_type>::value,
+      derived_type
+    >::type&
+    operator+= (const ValueType& kk)
     {
+      const value_type& k = kk;
       for (size_type i=0; i<size(); i++)
         (*this)[i] += k;
       return asImp();
     }
 
     //! vector space subtract scalar from all comps
-    derived_type& operator-= (const value_type& k)
+    template <typename ValueType>
+    typename std::enable_if<
+      std::is_convertible<ValueType, value_type>::value,
+      derived_type
+    >::type&
+    operator-= (const ValueType& kk)
     {
+      const value_type& k = kk;
       for (size_type i=0; i<size(); i++)
         (*this)[i] -= k;
       return asImp();
     }
 
     //! vector space multiplication with scalar
-    derived_type& operator*= (const value_type& k)
+    template <typename ValueType>
+    typename std::enable_if<
+      std::is_convertible<ValueType, value_type>::value,
+      derived_type
+    >::type&
+    operator*= (const ValueType& kk)
     {
+      const value_type& k = kk;
       for (size_type i=0; i<size(); i++)
         (*this)[i] *= k;
       return asImp();
     }
 
     //! vector space division by scalar
-    derived_type& operator/= (const value_type& k)
+    template <typename ValueType>
+    typename std::enable_if<
+      std::is_convertible<ValueType, value_type>::value,
+      derived_type
+    >::type&
+    operator/= (const ValueType& kk)
     {
+      const value_type& k = kk;
       for (size_type i=0; i<size(); i++)
         (*this)[i] /= k;
       return asImp();
