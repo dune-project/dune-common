@@ -406,7 +406,15 @@ namespace Dune {
       return (z-=b);
     }
 
-    //! vector space add scalar to all comps
+    //! \brief vector space add scalar to all comps
+    /**
+       we use enable_if to avoid an ambiguity, if the
+       function parameter can be converted to value_type implicitly.
+       (see FS#1457)
+
+       The function is only enabled, if the parameter is directly
+       convertible to value_type.
+     */
     template <typename ValueType>
     typename std::enable_if<
       std::is_convertible<ValueType, value_type>::value,
@@ -420,7 +428,15 @@ namespace Dune {
       return asImp();
     }
 
-    //! vector space subtract scalar from all comps
+    //! \brief vector space subtract scalar from all comps
+    /**
+       we use enable_if to avoid an ambiguity, if the
+       function parameter can be converted to value_type implicitly.
+       (see FS#1457)
+
+       The function is only enabled, if the parameter is directly
+       convertible to value_type.
+     */
     template <typename ValueType>
     typename std::enable_if<
       std::is_convertible<ValueType, value_type>::value,
@@ -434,7 +450,15 @@ namespace Dune {
       return asImp();
     }
 
-    //! vector space multiplication with scalar
+    //! \brief vector space multiplication with scalar
+    /**
+       we use enable_if to avoid an ambiguity, if the
+       function parameter can be converted to value_type implicitly.
+       (see FS#1457)
+
+       The function is only enabled, if the parameter is directly
+       convertible to value_type.
+     */
     template <typename ValueType>
     typename std::enable_if<
       std::is_convertible<ValueType, value_type>::value,
@@ -448,7 +472,15 @@ namespace Dune {
       return asImp();
     }
 
-    //! vector space division by scalar
+    //! \brief vector space division by scalar
+    /**
+       we use enable_if to avoid an ambiguity, if the
+       function parameter can be converted to value_type implicitly.
+       (see FS#1457)
+
+       The function is only enabled, if the parameter is directly
+       convertible to value_type.
+     */
     template <typename ValueType>
     typename std::enable_if<
       std::is_convertible<ValueType, value_type>::value,
