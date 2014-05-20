@@ -210,13 +210,25 @@ struct ScalarOrderingTest
   }
 };
 
+template<typename T>
+struct Epsilon
+{
+  static T value() { return T(1e-6); }
+};
+
+template<>
+struct Epsilon<int>
+{
+  static int value() { return 0; }
+};
+
 // scalar ordering doesn't work for complex numbers
 template <class rt, int d>
 struct DotProductTest
 {
   DotProductTest() {
     typedef std::complex<rt> ct;
-    const rt myEps(1e-6);
+    const rt myEps = Epsilon<rt>::value();
 
     static_assert(
       ( Dune::is_same< typename Dune::FieldTraits<rt>::real_type, rt>::value ),
