@@ -10,6 +10,7 @@ ALLM4S = 					\
 	ax_check_gl.m4				\
 	ax_lang_compiler_ms.m4			\
 	boost_fusion.m4				\
+	cuda.m4					\
 	cxx11_compiler.m4			\
 	cxx0x_nullptr.m4			\
 	cxx11_alignof.m4			\
