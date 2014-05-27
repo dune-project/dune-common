@@ -25,6 +25,7 @@ libcommon_la_LIBADD =				\
 commonincludedir = $(includedir)/dune/common
 commoninclude_HEADERS = 			\
 	alignment.hh				\
+	archive.hh				\
 	array.hh				\
 	arraylist.hh				\
 	bartonnackmanifcheck.hh			\

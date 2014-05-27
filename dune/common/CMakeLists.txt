@@ -28,6 +28,7 @@ dune_add_library("dunecommon"
 #install headers
 install(FILES
         alignment.hh
+        archive.hh
         array.hh
         arraylist.hh
         bartonnackmanifcheck.hh
