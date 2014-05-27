@@ -1,6 +1,6 @@
 # $Id$
 
-SUBDIRS = test parallel std threads
+SUBDIRS = test parallel std threads kernel memory
 
 # the standard debug streams are put into the libdune
 noinst_LTLIBRARIES = libcommon.la
@@ -15,11 +15,17 @@ libcommon_la_SOURCES =				\
 	path.cc					\
 	exceptions.cc				\
 	stdstreams.cc
-libcommon_la_LIBADD = $(LAPACK_LIBS) $(BLAS_LIBS) $(LIBS) $(FLIBS)
+libcommon_la_LIBADD =				\
+  kernel/libkernel.la				\
+  $(LAPACK_LIBS)				\
+  $(BLAS_LIBS)					\
+  $(LIBS)					\
+  $(FLIBS)
 
 commonincludedir = $(includedir)/dune/common
 commoninclude_HEADERS = 			\
 	alignment.hh				\
+	archive.hh				\
 	array.hh				\
 	arraylist.hh				\
 	bartonnackmanifcheck.hh			\

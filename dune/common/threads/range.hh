@@ -50,8 +50,8 @@ namespace Dune {
       // subrange is guaranteed to be a multiple of the block size.
       static const_iterator do_split(fixed_block_size_range& r)
       {
-        size_type middle_block = r.block_count() >> 1;;
-        V middle = r._begin + middle_block * r._block_size;
+        size_type middle_chunk = (r.block_count() / r._chunk_size) >> 1;
+        V middle = r._begin + middle_chunk * r._block_size * r._chunk_size;
         r._end = middle;
         return middle;
       }
@@ -63,7 +63,8 @@ namespace Dune {
       // subrange is guaranteed to be a multiple of the block size.
       static const_iterator do_block_split(fixed_block_size_range& r)
       {
-        size_type middle_block = r._begin_block + (r.block_count() >> 1);
+        size_type middle_chunk = r._begin_block / r._chunk_size + ((r.block_count() / r._chunk_size) >> 1);
+        size_type middle_block = middle_chunk * r._chunk_size;
         r._end_block = middle_block;
         return middle_block;
       }
@@ -84,15 +85,17 @@ namespace Dune {
        * \param begin      the lower bound of the range.
        * \param end        the upper bound of the range.
        * \param block_size the block size of the range.
-       * \param grain_size the grain size of the range. Will automatically be raised to be >= block_size.
+       * \param grain_size the grain size of the range. Will automatically be raised to be >= block_size * chunk_size.
+       * \param chunk_size the minimum chunk size that the range will be chopped into, measured in blocks.
        */
-      fixed_block_size_range(V begin, V end, size_type block_size = 1, size_type grain_size = 1)
+      fixed_block_size_range(V begin, V end, size_type block_size = 1, size_type grain_size = 1, size_type chunk_size = 1)
         : _end(end)
         , _begin(begin)
         , _end_block(calculate_end_block(begin,end,block_size))
         , _begin_block(0)
         , _block_size(block_size)
-        , _grain_size(std::max(block_size,grain_size))
+        , _grain_size(std::max(block_size * chunk_size,grain_size))
+        , _chunk_size(chunk_size)
       {}
 
       //! Constructs a new fixed_block_size_range by splitting the existing range r.
@@ -103,6 +106,7 @@ namespace Dune {
         , _begin_block(do_block_split(r))
         , _block_size(r._block_size)
         , _grain_size(r._grain_size)
+        , _chunk_size(r._chunk_size)
       {}
 
       //! Returns the lower bound of the range.
@@ -192,6 +196,7 @@ namespace Dune {
       block_iterator _begin_block;
       const size_type _block_size;
       const size_type _grain_size;
+      const size_type _chunk_size;
 
     };
 

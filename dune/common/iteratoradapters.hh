@@ -87,7 +87,7 @@ namespace Dune {
 
     difference_type distanceTo(const StridedIterator& other) const
     {
-      return (_it - other._it) / stride;
+      return (other._it - _it) / stride;
     }
 
     It _it;

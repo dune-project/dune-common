@@ -28,6 +28,12 @@ AC_CONFIG_FILES([Makefile
      cmake/pkg/Makefile
      dune/Makefile
      dune/common/Makefile
+     dune/common/kernel/Makefile
+     dune/common/kernel/bell/Makefile
+     dune/common/kernel/blockdiagonal/Makefile
+     dune/common/kernel/ell/Makefile
+     dune/common/kernel/vec/Makefile
+     dune/common/memory/Makefile
      dune/common/threads/Makefile
      dune/common/test/Makefile
      dune/common/parallel/Makefile
