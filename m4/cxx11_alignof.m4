@@ -4,7 +4,7 @@
 AC_DEFUN([ALIGNOF_CHECK],[
   AC_CACHE_CHECK([for C++11 alignof], dune_cv_cxx11_alignof, [
     AC_REQUIRE([AC_PROG_CXX])
-    AC_REQUIRE([GXX0X])
+    AC_REQUIRE([CXX11])
     AC_LANG_PUSH([C++])
     AC_COMPILE_IFELSE([
       AC_LANG_PROGRAM([[

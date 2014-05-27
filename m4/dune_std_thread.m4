@@ -9,7 +9,7 @@
 # virtualization layer that result in confusing bugs.
 
 AC_DEFUN([DUNE_STD_THREAD],[
-  AC_REQUIRE([GXX0X])
+  AC_REQUIRE([CXX11])
   AC_CACHE_CHECK([whether std::thread is declared], [dune_cv_std_thread_declared], [
     AC_LANG_PUSH([C++])
     AC_COMPILE_IFELSE(
