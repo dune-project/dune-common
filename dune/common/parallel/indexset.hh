@@ -202,7 +202,7 @@ namespace Dune
   /**
    * @brief Exception indicating that the index set is not in the expected state.
    */
-  class InvalidIndexSetState : public Exception {};
+  class InvalidIndexSetState : public InvalidStateException {};
 
   // Forward declaration
   template<class I> class GlobalLookupIndexSet;
@@ -412,7 +412,7 @@ namespace Dune
     /**
      * @brief Find the index pair with a specific global id.
      *
-     * This starts a binary search for the entry and therefor has complexity
+     * This starts a binary search for the entry and therefore has complexity
      * N log(N).
      * @param global The globally unique id of the pair.
      * @return The pair of indices for the id.
@@ -450,7 +450,7 @@ namespace Dune
      *
      * After this function returns the indices are
      * consecutively numbered beginning from 0. Let
-     * $(g_i,l_i)$, $(g_j,l_j)$ be two arbituary index
+     * $(g_i,l_i)$, $(g_j,l_j)$ be two arbitrary index
      * pairs with $g_i<g_j$ then after renumbering
      * $l_i<l_j$ will hold.
      */

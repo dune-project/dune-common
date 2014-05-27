@@ -125,6 +125,10 @@ AC_DEFUN([IMMDX_LIB_METIS], [
 			ifelse([$2],,[AC_MSG_WARN(Failed to find valid METIS library)],[$2])
 			:
 		else
+      # add to global list
+      DUNE_ADD_ALL_PKG([METIS], [\${METIS_INCLUDE}],
+                       [\${METIS_LDFLAGS}], [\${METIS_LIB}])
+
 			with_metis=yes
 			ifelse([$1],,[AC_DEFINE(HAVE_METIS,1,[Define if you have METIS library])
 		],[$1])

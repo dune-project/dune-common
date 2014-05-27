@@ -73,6 +73,7 @@ mark_as_advanced(METIS_INCLUDE_DIR METIS_LIBRARIES METIS_LIB_NAME)
 if(METIS_FOUND)
   set(METIS_INCLUDE_DIRS ${METIS_INCLUDE_DIR})
   set(METIS_LIBRARIES ${METIS_LIBRARY})
+  set(HAVE_METIS ${METIS_FOUND})
   # log result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
     "Determing location of METIS succeded:\n"

@@ -132,6 +132,7 @@ build_module() {
       set -e
       cd "$path"
       export module
+	  export ABS_BUILDDIR=$(abs_builddir $module $BUILDDIR)
       eval_control $runcommand "$path/$CONTROL"
     ); then eval echo "--- Failed to build \$NAME_${module} ---"; exit 1; fi
 	trap onfailure EXIT
@@ -173,8 +174,8 @@ load_opts() {
         fi
       fi
       if test -n "$USE_CMAKE" && test -z "$CMAKE"; then
-	# We use cmake for building, but CMAKE is not yet set.
-	# Check the opts file for it
+        # We use cmake for building, but CMAKE is not yet set.
+        # Check the opts file for it
         OPTS_FILE_CMAKE="$(eval CMAKE=""; . $DUNE_OPTS_FILE; eval echo \$CMAKE)"
         if test -n "$OPTS_FILE_CMAKE"; then
           CMAKE="$OPTS_FILE_CMAKE"
@@ -198,13 +199,29 @@ load_opts() {
   elif test -n "$CMD_FLAGS"; then
     echo "----- using default flags \$${COMMAND}_FLAGS from environment -----"
   fi
-  
+
   if test "x$USE_CMAKE" = "xyes"; then
     if test -z "$BUILDDIR"; then
       echo "No build directory provided. Defaulting to the sub directory build-cmake"
       export BUILDDIR=build-cmake
     fi
   fi
+}
+
+abs_builddir()
+{
+  local m=$1
+  local builddir=$2
+  local name="$(eval echo \$NAME_$m)"
+  local path="$(eval echo \$PATH_$m)"
+  case $BUILDDIR in
+	  /*)
+		  echo $builddir/$name
+		  ;;
+	  *)
+		  echo $path/$builddir
+		  ;;
+  esac
 }
 
 space=" "
@@ -244,7 +261,10 @@ extract_multiarch(){
   fi
   multiarch=$($my_cxx_compiler --print-multiarch 2>/dev/null)
   if test $? -gt 0; then
-    multiarch=$($my_cxx_compiler -v 2>&1| $GREP target | $SED "s/.*target=\([a-z0-9_-]*\)/\1/")
+    for i in "target=" "Target:"; do
+      multiarch=$($my_cxx_compiler -v 2>&1| $GREP "$i" | $SED "s/.*$i[$BLANK]*\([a-z0-9_-]*\)/\1/" | $SED "s/-[a-z]*-linux-gnu/-linux-gnu/")
+     if test -n "$multiarch"; then break; fi
+   done
   fi
   set -e # set to old value.
   export MULTIARCH_LIBDIR="lib/$multiarch"
@@ -331,10 +351,10 @@ done
 run_default_exec () { bash -c "eval $CMD_FLAGS"; }
 
 run_default_bexec () {
-  if test -d "$BUILDDIR"; then
-    bash -c "cd \"$BUILDDIR\" && eval $CMD_FLAGS";
+  if test -d "$ABS_BUILDDIR"; then
+    bash -c "cd \"$ABS_BUILDDIR\" && eval $CMD_FLAGS";
   else
-    eval echo "Build directory \\\"$BUILDDIR\\\" not found, skipping bexec for \$NAME_${module}"
+    eval echo "Build directory \\\"$ABS_BUILDDIR\\\" not found, skipping bexec for \$NAME_${module}"
   fi
 }
 
@@ -533,11 +553,6 @@ run_default_vcsetup() {
 }
 
 run_default_update () {
-  DUNELINK=0
-  if test -L dune; then
-    rm dune
-    DUNELINK=1
-  fi
   if test -d .svn; then
     svn update
   elif test -d CVS; then
@@ -562,10 +577,6 @@ run_default_update () {
   else
     echo "WARNING: $module is not under a known version control system."
     echo "         We support svn, git and cvs."
-  fi
-  if test "$DUNELINK" != 0 && ! test -d dune; then
-    echo "WARNING: $module is using the deprecated dune symlink"
-    ln -s . dune
   fi
 }
 
@@ -627,16 +638,17 @@ run_default_configure () {
             ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $dir"
         fi
       done
-      if test -d "$path/$BUILDDIR"; then
-        PARAMS="$PARAMS \"--with-$name=$path/$BUILDDIR\""
+	  local m_ABS_BUILDDIR=$(abs_builddir $m $BUILDDIR)
+      if test -d "$m_ABS_BUILDDIR"; then
+        PARAMS="$PARAMS \"--with-$name=$m_ABS_BUILDDIR\""
       else
-        if test x$module_inst != xyes; then
+        if test x$(eval echo \$INST_$m) != xyes; then
           PARAMS="$PARAMS \"--with-$name=$path\""
         fi
       fi
       if test "x$LOCAL_USE_CMAKE" = "xyes"; then
-          if test -d "$path/$BUILDDIR"; then
-	      CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$path/$BUILDDIR\""
+          if test -d "$m_ABS_BUILDDIR"; then
+	      CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$m_ABS_BUILDDIR\""
           else
 	      TMP_PARAMS="\"-D""$name""_DIR=$path\""
 	      for i in $MULTIARCH_LIBDIR lib lib64 lib32; do
@@ -670,19 +682,19 @@ run_default_configure () {
         fi
       done
       # create build directory if requested
-      test -d "$BUILDDIR" || mkdir "$BUILDDIR"
+      test -d "$ABS_BUILDDIR" || mkdir -p "$ABS_BUILDDIR"
       SRCDIR="$PWD"
-      cd "$BUILDDIR"
+      cd "$ABS_BUILDDIR"
       echo "$PREPARAMS $CMAKE -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\""
       eval $PREPARAMS $CMAKE "-DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\"" || exit 1
     else
       PARAMS="$PARAMS ACLOCAL_AMFLAGS=\"$ACLOCAL_FLAGS\""
       echo ./configure "$PARAMS"
       # create build directory if requested
-      if test -n "$BUILDDIR"; then
-        test -d "$BUILDDIR" || mkdir "$BUILDDIR"
+      if test -n "$ABS_BUILDDIR"; then
+        test -d "$ABS_BUILDDIR" || mkdir -p "$ABS_BUILDDIR"
         SRCDIR="$PWD"
-        cd "$BUILDDIR"
+        cd "$ABS_BUILDDIR"
         eval "$SRCDIR/configure" "$PARAMS" || exit 1
       else
         eval ./configure "$PARAMS" || exit 1
@@ -702,7 +714,7 @@ run_default_configure () {
 }
 
 run_default_make () {
-  test ! -d "$BUILDDIR" || cd "$BUILDDIR"
+  test ! -d "$ABS_BUILDDIR" || cd "$ABS_BUILDDIR"
   PARAMS="$CMD_FLAGS"
   echo make "$PARAMS"
   eval $MAKE "$PARAMS"

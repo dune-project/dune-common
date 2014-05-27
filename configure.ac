@@ -1,9 +1,8 @@
-#! /bin/bash
+# -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.62])
 DUNE_AC_INIT # gets module version from dune.module file
-AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([dune/common/stdstreams.cc])
 AC_CONFIG_HEADERS([config.h])
 
@@ -42,6 +41,9 @@ AC_CONFIG_FILES([Makefile
      doc/buildsystem/Makefile
      m4/Makefile
      am/Makefile
+     share/Makefile
+     share/bash-completion/Makefile
+     share/bash-completion/completions/Makefile
      dune-common.pc])
 # make scripts executable
 AC_CONFIG_FILES([

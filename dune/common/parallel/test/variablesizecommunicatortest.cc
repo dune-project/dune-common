@@ -1,8 +1,14 @@
-#include"config.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include<iostream>
 #if HAVE_MPI
 #include<mpi.h>
 #endif
+
+#include <dune/common/unused.hh>
+
 struct MyDataHandle
 {
     MyDataHandle(int r)

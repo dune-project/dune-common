@@ -10,6 +10,8 @@
 #include <complex>
 #include <cstring>
 #include <utility>
+#include <initializer_list>
+#include <algorithm>
 
 #include <dune/common/std/constexpr.hh>
 
@@ -17,7 +19,6 @@
 #include "exceptions.hh"
 #include "array.hh"
 #include "densevector.hh"
-#include "static_assert.hh"
 #include "unused.hh"
 
 namespace Dune {
@@ -104,20 +105,8 @@ namespace Dune {
 
     //! Constructor making default-initialized vector
     FieldVector()
-    // Use C++11 unified initialization if available - tends to generate
-    // fastest code
-#if HAVE_INITIALIZER_LIST
       : _data{}
     {}
-#else
-    {
-      // fall back to library approach - this gives faster code than array placement
-      // new. Apart from that, placement new may create problems if K is a complex
-      // type. In that case, the default constructor of the _data elements has already
-      // been called and may have allocated memory.
-      std::fill(_data.begin(),_data.end(),K());
-    }
-#endif
 
     //! Constructor making vector with identical coordinates
     explicit FieldVector (const K& t)
@@ -128,6 +117,14 @@ namespace Dune {
     //! Constructor making vector with identical coordinates
     FieldVector (const FieldVector & x) : _data(x._data)
     {}
+
+    FieldVector (std::initializer_list<K> const &l)
+    {
+      assert(l.size() == dimension);// Actually, this is not needed any more!
+      std::copy_n(l.begin(), std::min(static_cast<std::size_t>(dimension),
+                                      l.size()),
+                 _data.begin());
+    }
 
     /**
      * \brief Copy constructor from a second vector of possibly different type
@@ -145,16 +142,15 @@ namespace Dune {
     {
       DUNE_UNUSED_PARAMETER(dummy);
       // do a run-time size check, for the case that x is not a FieldVector
-      assert(x.size() == SIZE);
-      for (size_type i = 0; i<SIZE; i++)
-        _data[i] = x[i];
+      assert(x.size() == SIZE); // Actually this is not needed any more!
+      std::copy_n(x.begin(), std::min(static_cast<std::size_t>(SIZE),x.size()), _data.begin());
     }
 
     //! Constructor making vector with identical coordinates
     template<class K1, int SIZE1>
     explicit FieldVector (const FieldVector<K1,SIZE1> & x)
     {
-      dune_static_assert(SIZE1 == SIZE, "FieldVector in constructor has wrong size");
+      static_assert(SIZE1 == SIZE, "FieldVector in constructor has wrong size");
       for (size_type i = 0; i<SIZE; i++)
         _data[i] = x[i];
     }
@@ -237,7 +233,7 @@ namespace Dune {
     template<class C>
     FieldVector (const DenseVector<C> & x)
     {
-      dune_static_assert(((bool)IsFieldVectorSizeCorrect<C,1>::value), "FieldVectors do not match in dimension!");
+      static_assert(((bool)IsFieldVectorSizeCorrect<C,1>::value), "FieldVectors do not match in dimension!");
       assert(x.size() == 1);
       _data = x[0];
     }
@@ -272,10 +268,10 @@ namespace Dune {
     //===== conversion operator
 
     /** \brief Conversion operator */
-    operator K () { return _data; }
+    operator K& () { return _data; }
 
     /** \brief Const conversion operator */
-    operator K () const { return _data; }
+    operator const K& () const { return _data; }
   };
 
   /* ----- FV / FV ----- */

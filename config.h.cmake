@@ -2,14 +2,6 @@
 
 /* begin dune-common */
 
-#ifdef DEPRECATED_MPI_CPPFLAGS_USED
-#warning The MPI_CPPFLAGS configure substitute is deprecated. Please change
-#warning your Makefile.am to use DUNEMPICPPFLAGS instead. Note that it is a
-#warning good idea to change any occurance of MPI_LDFLAGS into DUNEMPILIBS and
-#warning DUNEMPILDFLAGS as appropriate, since it is not possible to issue a
-#warning deprecation warning in that case.
-#endif
-
 /* Define to the version of dune-common */
 #define DUNE_COMMON_VERSION "${DUNE_COMMON_VERSION}"
 
@@ -34,8 +26,12 @@
 /* does the compiler support __attribute__((unused))? */
 #cmakedefine HAS_ATTRIBUTE_UNUSED 1
 
-/* Define to 1 if the <array> C++11 is available and support array::fill */
-#cmakedefine HAVE_ARRAY 1
+/* old feature support macros which were tested until 2.3, keep around for one more release */
+/* As these are now always supported due to the new compiler requirements, they are directly */
+/* defined without an explicit test. */
+#define HAVE_VARIADIC_TEMPLATES  1
+#define HAVE_VARIADIC_CONSTRUCTOR_SFINAE 1
+#define HAVE_RVALUE_REFERENCES 1
 
 /* Define if you have a BLAS library. */
 #cmakedefine HAVE_BLAS 1
@@ -43,20 +39,11 @@
 /* Define to ENABLE_BOOST if the Boost library is available */
 #cmakedefine HAVE_DUNE_BOOST ENABLE_BOOST
 
-/* Define to 1 if you have <boost/make_shared.hpp>. */
-#cmakedefine HAVE_BOOST_MAKE_SHARED_HPP 1
-
-/* Define to 1 if you have the <boost/shared_ptr.hpp> header file. */
-#cmakedefine HAVE_BOOST_SHARED_PTR_HPP 1
-
 /* does the compiler support abi::__cxa_demangle */
 #cmakedefine HAVE_CXA_DEMANGLE 1
 
 /* Define if you have LAPACK library. */
 #cmakedefine HAVE_LAPACK 1
-
-/* Define to 1 if SHARED_PTR_NAMESPACE::make_shared is usable. */
-#cmakedefine HAVE_MAKE_SHARED 1
 
 /* Define to 1 if you have the <malloc.h> header file. */
 // Not used! #cmakedefine01 HAVE_MALLOC_H
@@ -76,9 +63,6 @@
 /* Define to 1 if nullptr is supported */
 #cmakedefine HAVE_NULLPTR 1
 
-/* Define to 1 if static_assert is supported */
-#cmakedefine HAVE_STATIC_ASSERT 1
-
 /* Define to 1 if you have the <stdint.h> header file. */
 #cmakedefine HAVE_STDINT_H 1
 
@@ -87,9 +71,6 @@
 
 /* Define to 1 if the std::tr1::hash template from TR1 is available. */
 #cmakedefine HAVE_TR1_HASH 1
-
-/* Define to 1 if you have the <tr1/tuple> header file. */
-#cmakedefine HAVE_TR1_TUPLE 1
 
 /* Define to 1 if you have the <tr1/type_traits> header file. */
 #cmakedefine HAVE_TR1_TYPE_TRAITS 1
@@ -102,14 +83,8 @@
 /* Define to 1 if the std::hash template from C++11 is available. */
 #cmakedefine HAVE_STD_HASH 1
 
-/* Define to 1 if you have the <tuple> header file. */
-#cmakedefine HAVE_TUPLE 1
-
 /* Define to 1 if you have the <type_traits> header file. */
 #cmakedefine HAVE_TYPE_TRAITS 1
-
-/* Define to 1 if you have the <type_traits> header file. */
-#cmakedefine HAVE_STD_CONDITIONAL 1
 
 /* Define to 1 if the MPI2 Standard is supported */
 #cmakedefine MPI_2 1
@@ -142,30 +117,16 @@
 
 /* end private */
 
-/* The header in which SHARED_PTR can be found */
-#cmakedefine SHARED_PTR_HEADER ${SHARED_PTR_HEADER}
+/* Define to 1 if C++11 constexpr is supported */
+#cmakedefine HAVE_CONSTEXPR 1
 
-/* The namespace in which SHARED_PTR can be found */
-#cmakedefine SHARED_PTR_NAMESPACE ${SHARED_PTR_NAMESPACE}
-
-/* Define to 1 if variadic templates are supported */
-#cmakedefine HAVE_VARIADIC_TEMPLATES 1
-
-/* Define to 1 if SFINAE on variadic template constructors is fully supported */
-#cmakedefine HAVE_VARIADIC_CONSTRUCTOR_SFINAE 1
-
-/* Define to 1 if rvalue references are supported */
-#cmakedefine HAVE_RVALUE_REFERENCES 1
-
-/* Define to 1 if initializer list is supported */
-#cmakedefine HAVE_INITIALIZER_LIST 1
+/* does the compiler support the keyword 'final'? */
+#cmakedefine HAVE_KEYWORD_FINAL 1
 
 /* Define to if the UMFPack library is available */
 #cmakedefine HAVE_UMFPACK ENABLE_UMFPACK
 
 /* Include always useful headers */
-#include <dune/common/deprecated.hh>
-#include <dune/common/unused.hh>
 #include "FC.h"
 #define FC_FUNC FC_GLOBAL_
 

@@ -7,7 +7,6 @@
 
 #include <cstddef>
 
-#include <dune/common/static_assert.hh>
 #include <dune/common/tuples.hh>
 #include <dune/common/tupleutility.hh>
 
@@ -16,15 +15,12 @@
 // check FirstTypeIndex
 //
 typedef Dune::tuple<int, unsigned, double> MyTuple;
-dune_static_assert((Dune::FirstTypeIndex<MyTuple, int>::value == 0),
-                   "FirstTypeIndex finds the wrong index for double in "
-                   "MyTuple!");
-dune_static_assert((Dune::FirstTypeIndex<MyTuple, unsigned>::value == 1),
-                   "FirstTypeIndex finds the wrong index for double in "
-                   "MyTuple!");
-dune_static_assert((Dune::FirstTypeIndex<MyTuple, double>::value == 2),
-                   "FirstTypeIndex finds the wrong index for double in "
-                   "MyTuple!");
+static_assert((Dune::FirstTypeIndex<MyTuple, int>::value == 0),
+              "FirstTypeIndex finds the wrong index for double in MyTuple!");
+static_assert((Dune::FirstTypeIndex<MyTuple, unsigned>::value == 1),
+              "FirstTypeIndex finds the wrong index for double in MyTuple!");
+static_assert((Dune::FirstTypeIndex<MyTuple, double>::value == 2),
+              "FirstTypeIndex finds the wrong index for double in MyTuple!");
 
 
 
@@ -33,8 +29,8 @@ dune_static_assert((Dune::FirstTypeIndex<MyTuple, double>::value == 2),
 // check PushBackTuple
 typedef Dune::PushBackTuple<MyTuple, char>::type MyTupleAppended1;
 typedef Dune::tuple<int, unsigned, double, char> MyTupleAppended2;
-dune_static_assert((Dune::is_same<MyTupleAppended1, MyTupleAppended2>::value),
-                   "PushBackTuple failed!");
+static_assert((Dune::is_same<MyTupleAppended1, MyTupleAppended2>::value),
+              "PushBackTuple failed!");
 
 
 
@@ -43,8 +39,8 @@ dune_static_assert((Dune::is_same<MyTupleAppended1, MyTupleAppended2>::value),
 // check PushFrontTuple
 typedef Dune::PushFrontTuple<MyTuple, char>::type MyTuplePrepended1;
 typedef Dune::tuple<char, int, unsigned, double> MyTuplePrepended2;
-dune_static_assert((Dune::is_same<MyTuplePrepended1, MyTuplePrepended2>::value),
-                   "PushFrontTuple failed!");
+static_assert((Dune::is_same<MyTuplePrepended1, MyTuplePrepended2>::value),
+              "PushFrontTuple failed!");
 
 
 
@@ -53,8 +49,8 @@ dune_static_assert((Dune::is_same<MyTuplePrepended1, MyTuplePrepended2>::value),
 // check JoinTuples
 typedef Dune::JoinTuples<MyTuple, MyTuple>::type MyTupleMyTuple1;
 typedef Dune::tuple<int, unsigned, double, int, unsigned, double> MyTupleMyTuple2;
-dune_static_assert((Dune::is_same<MyTupleMyTuple1, MyTupleMyTuple2>::value),
-                   "JoinTuples failed!");
+static_assert((Dune::is_same<MyTupleMyTuple1, MyTupleMyTuple2>::value),
+              "JoinTuples failed!");
 
 
 
@@ -65,8 +61,8 @@ typedef Dune::tuple<char, float> MyTuple2;
 typedef Dune::tuple<MyTuple, MyTuple2> MyTupleTuple;
 typedef Dune::FlattenTuple<MyTupleTuple>::type MyTupleTupleFlat1;
 typedef Dune::tuple<int, unsigned, double, char, float> MyTupleTupleFlat2;
-dune_static_assert((Dune::is_same<MyTupleTupleFlat1, MyTupleTupleFlat2>::value),
-                   "FlattenTuples failed!");
+static_assert((Dune::is_same<MyTupleTupleFlat1, MyTupleTupleFlat2>::value),
+              "FlattenTuples failed!");
 
 
 
@@ -143,8 +139,8 @@ typedef Dune::tuple<
     Dune::integral_constant<int, 3>,
     Dune::integral_constant<int, 5>,
     Dune::integral_constant<int, 7> > Primes2;
-dune_static_assert((Dune::is_same<Primes1, Primes2>::value),
-                   "ReduceTuple failed in primes-tmp!");
+static_assert((Dune::is_same<Primes1, Primes2>::value),
+              "ReduceTuple failed in primes-tmp!");
 
 
 int main() {}

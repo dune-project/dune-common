@@ -19,8 +19,8 @@ namespace Dune {
    * // Traits class that determines some property for some other type T
    * template<class T>
    * class SomeTraits {
-   *   dune_static_assert(AlwaysFalse<T>::value,
-   *                      "Sorry, SomeTraits must be specialized for all types");
+   *   static_assert(Std::to_false_type<T>::value,
+   *                 "Sorry, SomeTraits must be specialized for all types");
    * public:
    *   // The type of some property of T
    *   typedef ImplementationDefined type;

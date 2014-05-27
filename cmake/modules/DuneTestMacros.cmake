@@ -21,7 +21,8 @@
 #
 macro(test_dep)
   dune_common_script_dir(SCRIPT_DIR)
-  execute_process(COMMAND ${CMAKE_COMMAND} -D RELPATH=${CMAKE_SOURCE_DIR} -P ${SCRIPT_DIR}/FindFiles.cmake
+  get_filename_component(RELPATH "${CMAKE_SOURCE_DIR}"  REALPATH)
+  execute_process(COMMAND ${CMAKE_COMMAND} -D RELPATH=${RELPATH} -P ${SCRIPT_DIR}/FindFiles.cmake
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     RESULT_VARIABLE _res ERROR_VARIABLE _dirs)
 

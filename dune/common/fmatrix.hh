@@ -7,12 +7,13 @@
 #include <cmath>
 #include <cstddef>
 #include <iostream>
+#include <algorithm>
+#include <initializer_list>
 
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/densematrix.hh>
 #include <dune/common/precision.hh>
-#include <dune/common/static_assert.hh>
 #include <dune/common/std/constexpr.hh>
 
 namespace Dune
@@ -94,6 +95,25 @@ namespace Dune
     FieldMatrix ( const Other &other )
     {
       DenseMatrixAssigner< FieldMatrix< K, ROWS, COLS >, Other >::apply( *this, other );
+    }
+
+    /** \brief Constructor initializing the matrix from a list of lists of scalars
+     */
+    FieldMatrix (std::initializer_list<std::initializer_list<K> > const &ll)
+    {
+      assert(ll.size() == rows); // Actually, this is not needed any more!
+      std::copy_n(ll.begin(), std::min(static_cast<std::size_t>(ROWS),
+                                       ll.size()),
+                 _data.begin());
+    }
+
+    /** \brief Constructor initializing the matrix from a list of vector
+     */
+    FieldMatrix(std::initializer_list<Dune::FieldVector<K, cols> > const &l) {
+      assert(l.size() == rows); // Actually, this is not needed any more!
+      std::copy_n(l.begin(), std::min(static_cast<std::size_t>(ROWS),
+                                      l.size()),
+                 _data.begin());
     }
 
     //===== assignment
@@ -294,7 +314,7 @@ namespace Dune
 
     //===== conversion operator
 
-    operator K () const { return _data[0]; }
+    operator const K& () const { return _data[0]; }
 
   };
 

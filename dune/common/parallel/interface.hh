@@ -33,7 +33,7 @@ namespace Dune
   class InterfaceBuilder
   {
   public:
-    class RemotexIndicesStateError : public Exception
+    class RemoteIndicesStateError : public InvalidStateException
     {};
 
     virtual ~InterfaceBuilder()
@@ -358,7 +358,7 @@ namespace Dune
   {
 
     if(!remoteIndices.isSynced())
-      DUNE_THROW(RemotexIndicesStateError,"RemoteIndices is not in sync with the index set. Call RemoteIndices::rebuild first!");
+      DUNE_THROW(RemoteIndicesStateError,"RemoteIndices is not in sync with the index set. Call RemoteIndices::rebuild first!");
     // Allocate the memory for the data type construction.
     typedef R RemoteIndices;
     typedef typename RemoteIndices::RemoteIndexMap::const_iterator const_iterator;

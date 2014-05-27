@@ -1,0 +1,83 @@
+# -*- shell-script -*-
+# bash completion for dunecontrol
+
+_dunecontrol_complete ()
+{
+  local COMMANDS="printdeps vcsetup update autogen configure make all exec bexec status svn git"
+  local COMMAND_OPTS="$(for i in printdeps vcsetup update autogen configure make all exec bexec status svn git; do echo --$i-opts; done)"
+  # per default we offer the list of all core modules and the advertised discretization modules
+  local MODULES="dune-common dune-grid dune-grid-howto dune-istl dune-geometry dune-localfunctions dune-pdelab dune-fem dune-fufem"
+  if test "x$DUNE_MODULES" != x; then
+	MODULES=$DUNE_MODULES
+  fi
+
+  # get completion information
+  local cur prev words cword split
+  _init_completion -s || return
+
+  # check wether we have already seen a command
+  local have_command=0
+  for i in `seq $COMP_CWORD`; do
+    case ${COMP_WORDS[i]} in
+    printdeps|vcsetup|update|autogen|configure|make|all|exec|bexec|status|svn|git)
+			have_command=1
+			;;
+	esac
+  done
+
+  # some options influence the next completion step
+  case $prev in
+	 :)
+		  COMPREPLY=( $(compgen -W "
+               $COMMANDS
+               " -- $cur) )
+		  return 0
+		  ;;
+     -h|--help)
+		  return 0
+		  ;;
+     --module)
+		  COMPREPLY=( $(compgen -W " $MODULES " -- $cur ) )
+		  compopt -o nospace
+		  return 0
+		  ;;
+	 --only)
+		  COMPREPLY=( $(compgen -W " $MODULES " -- $cur ) )
+		  compopt -o nospace
+		  return 0
+		  ;;
+	 --opts)
+          compopt -o filenames
+		  COMPREPLY=( $( compgen -f -- "$cur" ) \
+			  $( compgen -d -- "$cur" ) )
+		  return 0
+		  ;;
+#	 git)
+#		  exec __git_func_wrap __git_main
+#          compopt -D
+#		  COMPREPLY=( $( compgen -W ":" -- $cur ) )
+#		  return 0
+#		  ;;
+  esac
+
+  # if we already have a command, we either pass an option to the command,
+  # or we add a colon for the next command
+  if test x$have_command = x1; then
+	COMPREPLY=( $(compgen -W " -- : " -- $cur ) )
+    return 0;
+  fi
+
+  # the usual dunecontrol options
+  COMPREPLY=( $(compgen -W "
+     -h --help --use-cmake --current --resume --skipfirst
+     --module= --only=
+     --opts=
+     --builddir=
+     $COMMANDS
+     $COMMAND_OPTS
+     " -- $cur)
+  )
+
+  # don't append space to options --foo=...
+  [[ $COMPREPLY == *= ]] && compopt -o nospace
+} && complete -F _dunecontrol_complete dunecontrol

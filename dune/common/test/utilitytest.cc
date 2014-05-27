@@ -5,7 +5,6 @@
 #include "config.h"
 #endif
 
-#include <dune/common/static_assert.hh>
 #include <dune/common/tuples.hh>
 #include <dune/common/typetraits.hh>
 #include <dune/common/tupleutility.hh>
@@ -62,7 +61,7 @@ int main(int, char**)
 
   typedef Dune::tuple<int&,char&,long&,char&> RefTuple1;
   typedef Dune::tuple<int*,char*,long*,char*> PointerTuple1;
-  dune_static_assert((Dune::is_same<PointerTuple1,
+  static_assert((Dune::is_same<PointerTuple1,
                           Dune::ForEachType<Dune::AddPtrTypeEvaluator,
                               RefTuple1>::Type>::value),
                      "RefTuple1 with added pointers should be the same as "

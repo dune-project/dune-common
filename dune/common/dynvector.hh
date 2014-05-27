@@ -27,49 +27,75 @@ namespace Dune {
    * \brief This file implements a dense vector with a dynamic size.
    */
 
-  template< class K > class DynamicVector;
-  template< class K >
-  struct DenseMatVecTraits< DynamicVector<K> >
+  template< class K, class Allocator > class DynamicVector;
+  template< class K, class Allocator >
+  struct DenseMatVecTraits< DynamicVector< K, Allocator > >
   {
-    typedef DynamicVector<K> derived_type;
-    typedef std::vector<K> container_type;
+    typedef DynamicVector< K, Allocator > derived_type;
+    typedef std::vector< K, Allocator > container_type;
     typedef K value_type;
     typedef typename container_type::size_type size_type;
   };
 
-  template< class K >
-  struct FieldTraits< DynamicVector<K> >
+  template< class K, class Allocator >
+  struct FieldTraits< DynamicVector< K, Allocator > >
   {
-    typedef typename FieldTraits<K>::field_type field_type;
-    typedef typename FieldTraits<K>::real_type real_type;
+    typedef typename FieldTraits< K >::field_type field_type;
+    typedef typename FieldTraits< K >::real_type real_type;
   };
 
   /** \brief Construct a vector with a dynamic size.
    *
    * \tparam K is the field type (use float, double, complex, etc)
+   * \tparam Allocator type of allocator object used to define the storage allocation model,
+   *                default Allocator = std::allocator< K >.
    */
-  template< class K >
-  class DynamicVector : public DenseVector< DynamicVector<K> >
+  template< class K, class Allocator = std::allocator< K > >
+  class DynamicVector : public DenseVector< DynamicVector< K, Allocator > >
   {
-    std::vector<K> _data;
+    std::vector< K, Allocator > _data;
 
-    typedef DenseVector< DynamicVector<K> > Base;
+    typedef DenseVector< DynamicVector< K, Allocator > > Base;
   public:
     typedef typename Base::size_type size_type;
     typedef typename Base::value_type value_type;
 
-    //! Constructor making uninitialized vector
-    DynamicVector() {}
+    typedef Allocator allocator_type;
 
-    //! Constructor making vector with identical coordinates
-    explicit DynamicVector (size_type n, value_type c = value_type() ) :
-      _data(n,c)
+    //! Constructor making uninitialized vector
+    explicit DynamicVector(const allocator_type &a = allocator_type() ) :
+      _data( a )
+    {}
+
+    explicit DynamicVector(size_type n, const allocator_type &a = allocator_type() ) :
+      _data( n, value_type(), a )
     {}
 
     //! Constructor making vector with identical coordinates
-    DynamicVector (const DynamicVector & x) :
+    DynamicVector( size_type n, value_type c, const allocator_type &a = allocator_type() ) :
+      _data( n, c, a )
+    {}
+
+    //! Constructor making vector with identical coordinates
+    DynamicVector(const DynamicVector & x) :
       _data(x._data)
     {}
+
+    template< class T >
+    DynamicVector(const DynamicVector< T, Allocator > & x) :
+      _data(x.begin(), x.end(), x.get_allocator())
+    {}
+
+    //! Copy constructor from another DenseVector
+    template< class X >
+    DynamicVector(const DenseVector< X > & x, const allocator_type &a = allocator_type() ) :
+      _data(a)
+    {
+      const size_type n = x.size();
+      _data.reserve(n);
+      for( size_type i =0; i<n ;++i)
+        _data.push_back( x[ i ] );
+    }
 
     using Base::operator=;
 
@@ -108,12 +134,12 @@ namespace Dune {
    *
    *  \returns the input stream (in)
    */
-  template<class K>
+  template< class K, class Allocator >
   inline std::istream &operator>> ( std::istream &in,
-                                    DynamicVector<K> &v )
+                                    DynamicVector< K, Allocator > &v )
   {
-    DynamicVector<K> w(v);
-    for( typename DynamicVector<K>::size_type i = 0; i < w.size(); ++i )
+    DynamicVector< K, Allocator > w(v);
+    for( typename DynamicVector< K, Allocator >::size_type i = 0; i < w.size(); ++i )
       in >> w[ i ];
     if(in)
       v = w;

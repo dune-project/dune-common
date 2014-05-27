@@ -16,5 +16,5 @@ install(FILES
         remoteindices.hh
         selection.hh
         variablesizecommunicator.hh
-	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common/parallel)
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common/parallel)
 

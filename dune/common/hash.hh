@@ -4,7 +4,6 @@
 #define DUNE_COMMON_HASH_HH
 
 #include <dune/common/typetraits.hh>
-#include <dune/common/static_assert.hh>
 
 #if HAVE_STD_HASH
 #include <functional>
@@ -359,7 +358,7 @@ namespace Dune {
     template<typename typeof_size_t, typename T>
     void operator()(typeof_size_t& seed, const T& arg) const
     {
-      dune_static_assert(sizeof(typeof_size_t)==8, "hash_combiner::operator() instantiated with nonmatching type and size");
+      static_assert(sizeof(typeof_size_t)==8, "hash_combiner::operator() instantiated with nonmatching type and size");
 
       // The following algorithm for combining two 64-bit hash values is inspired by a similar
       // function in CityHash (http://cityhash.googlecode.com/svn-history/r2/trunk/src/city.h),
@@ -396,7 +395,7 @@ namespace Dune {
     template<typename typeof_size_t, typename T>
     void operator()(typeof_size_t& seed, const T& arg) const
     {
-      dune_static_assert(sizeof(typeof_size_t)==4, "hash_combiner::operator() instantiated with nonmatching type and size");
+      static_assert(sizeof(typeof_size_t)==4, "hash_combiner::operator() instantiated with nonmatching type and size");
 
       // The default algorithm above requires a 64-bit std::size_t. The following algorithm is a
       // 32-bit compatible fallback, again inspired by CityHash and MurmurHash

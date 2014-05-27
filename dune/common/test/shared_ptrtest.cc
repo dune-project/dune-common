@@ -12,11 +12,6 @@
 #include "config.h"
 #endif
 
-#if defined(DISABLE_CONFIGURED_SHARED_PTR) && defined(SHARED_PTR_NAMESPACE)
-#undef SHARED_PTR_NAMESPACE
-#undef HAVE_MAKE_SHARED
-#endif
-
 #include <dune/common/classname.hh>
 #include <dune/common/shared_ptr.hh>
 
@@ -157,9 +152,9 @@ int main(){
     assert(bar);
 
     // test constructor from nullptr
-#if defined(SHARED_PTR_HEADER) && !defined(HAVE_NULLPTR)
-        #error Construction of shared_ptr from a nullptr will not work as compiler
-        #error does not support the latter.
+#ifndef HAVE_NULLPTR
+        #warning Construction of shared_ptr from a nullptr will not work as compiler
+        #warning does not support the latter.
     shared_ptr<double> bar_null=shared_ptr<double>();
 #else
     shared_ptr<double> bar_null(nullptr);

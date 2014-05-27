@@ -4,11 +4,12 @@
 #define DUNE_TIMER_HH
 
 #ifndef TIMER_USE_STD_CLOCK
-// headers for getrusage(2)
-#include <sys/resource.h>
-#endif
-
+// headers for std::chrono
+#include <chrono>
+#else
+// headers for std::clock
 #include <ctime>
+#endif
 
 // headers for stderror(3)
 #include <cstring>
@@ -140,21 +141,17 @@ namespace Dune {
 #else
     void rawReset() throw (TimerError)
     {
-      rusage ru;
-      if (getrusage(RUSAGE_SELF, &ru))
-        DUNE_THROW(TimerError, strerror(errno));
-      cstart = ru.ru_utime;
+      cstart = std::chrono::high_resolution_clock::now();
     }
 
     double rawElapsed () const throw (TimerError)
     {
-      rusage ru;
-      if (getrusage(RUSAGE_SELF, &ru))
-        DUNE_THROW(TimerError, strerror(errno));
-      return 1.0 * (ru.ru_utime.tv_sec - cstart.tv_sec) + (ru.ru_utime.tv_usec - cstart.tv_usec) / (1000.0 * 1000.0);
+      std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double> >(now - cstart);
+      return time_span.count();
     }
 
-    struct timeval cstart;
+    std::chrono::high_resolution_clock::time_point cstart;
 #endif
   }; // end class Timer
 

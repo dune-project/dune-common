@@ -4,6 +4,7 @@
 #define DUNE_ENUMSET_HH
 
 #include <iostream>
+#include <dune/common/unused.hh>
 
 namespace Dune
 {
@@ -114,12 +115,14 @@ namespace Dune
   template<typename TA>
   inline bool EmptySet<TA>::contains(const Type& attribute)
   {
+    DUNE_UNUSED_PARAMETER(attribute);
     return false;
   }
 
   template<typename TA>
   inline bool AllSet<TA>::contains(const Type& attribute)
   {
+    DUNE_UNUSED_PARAMETER(attribute);
     return true;
   }
 

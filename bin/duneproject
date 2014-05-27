@@ -133,7 +133,7 @@ make_unique(){
       fi
   fi
 }
-       
+
 echo
 echo == Dune project/module generator ==
 echo
@@ -192,6 +192,9 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
       if test x$DELETE = xy -o x$DELETE = xY; then
         PROJECT=""
       fi
+    elif echo "$PROJECT" | grep -q "\."; then
+      echo "The Name contains a dot (.) which is not allowed."
+      PROJECT=""
     fi
   done
   MODULE="$PROJECT"
@@ -267,7 +270,7 @@ cat > "$PROJECT/dune.module" <<C_DELIM
 Module: $MODULE
 Version: $VERSION
 Maintainer: $MAINTAINER
-#depending on 
+#depending on
 Depends: $DEPENDENCIES
 C_DELIM
 
@@ -311,9 +314,13 @@ done
 echo "------------------------------------------"
 echo "writing initial files:"
 
-# we need the module with _ instead of - to not confuse automake
+# complete module name with _ instead of - to not confuse automake
 fix_and_assign CMODULE $MODULE
-NAME=`echo $PROJECT | sed -e 's/dune[_-]//' | tr '-' '_'`
+# module name without suffix "dune-"
+NAME=`echo $PROJECT | sed -e 's/dune[_-]//'`
+# $NAME with _ instead of - to not confuse automake
+NAME_=`echo $NAME | tr '-' '_'`
+# module name in uppercase with _ instead of -
 UNAME=`echo $PROJECT | tr '-' '_' | sed 's/\(.*\)/\U\1/'`
 ################## CONFIGURE.AC ##################
 echo "- $PROJECT/configure.ac"
@@ -322,10 +329,8 @@ cat > "$PROJECT/configure.ac" <<C_DELIM
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.62])
 DUNE_AC_INIT # gets module version from dune.module file
-AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/$CMODULE.cc])
 AC_CONFIG_HEADERS([config.h])
-
 
 # we need no more than the standard DE-stuff
 # this module depends on $DEPENDENCIES
@@ -423,7 +428,7 @@ More info
 See
 
      dunecontrol --help
-   
+
 for further options.
 
 
@@ -524,8 +529,8 @@ Version: @VERSION@
 Description: $MODULE module
 URL: http://dune-project.org/
 Requires: ${DEPENDENCIES}
-Libs: -L${libdir}
-Cflags: -I${includedir}
+Libs: -L\${libdir}
+Cflags: -I\${includedir}
 CC_DELIM
 echo "    Please remember to update your $PROJECT/$MODULE.pc.in,"
 echo "    Description and URL are missing right now."
@@ -753,8 +758,8 @@ EOF
 ################## dune/$NAME/Makefile.am ##############
 echo "- $PROJECT/dune/$NAME/Makefile.am"
 cat> $PROJECT/dune/$NAME/Makefile.am <<EOF
-${NAME}includedir = \$(includedir)/dune/${NAME}
-${NAME}include_HEADERS = ${NAME}.hh
+${NAME_}includedir = \$(includedir)/dune/${NAME}
+${NAME_}include_HEADERS = ${NAME}.hh
 
 EXTRA_DIST = CMakeLists.txt
 
@@ -771,12 +776,12 @@ EOF
 ################## dune/$NAME/$NAME.hh #################
 echo "- $PROJECT/dune/$NAME/$NAME.hh"
 cat> $PROJECT/dune/$NAME/$NAME.hh <<EOF
-#ifndef DUNE_$NAME.hh
-#define DUNE_$NAME.hh
+#ifndef $UNAME.hh
+#define $UNAME.hh
 
 // add your classes here
 
-#endif // DUNE_$NAME.hh
+#endif // $UNAME.hh
 EOF
 
 

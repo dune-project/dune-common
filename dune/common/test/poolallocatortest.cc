@@ -93,7 +93,7 @@ struct testPoolMain
 
 
     for(int i=0; i < elements*10; ++i)
-      pool.free(reinterpret_cast<T*>(oelements+i));
+      pool.free(reinterpret_cast<void*>(oelements[i]));
     delete[] oelements;
 
     return ret;
@@ -119,6 +119,30 @@ int testPool()
   return ret;
 }
 
+int testPoolAllocator()
+{
+  int ret=0;
+  PoolAllocator<double,10> pool;
+  double *d=pool.allocate(1);
+  PoolAllocator<float,5> pool1=pool;
+  PoolAllocator<double,10> pool2=pool;
+  try
+  {
+    pool2.deallocate(d,1);
+#ifndef NDEBUG
+    ++ret;
+    std::cerr<<"ERROR: deallocation should not work with copied allocators."<<std::endl;
+#endif
+  }
+  catch(std::bad_alloc)
+  {}
+  pool1.allocate(1);
+  double *d1=pool2.allocate(1);
+  pool.deallocate(d,1);
+  pool2.deallocate(d1,1);
+  pool2.allocate(1);
+  return ret;
+}
 int main(int, char **)
 {
   int ret=0;
@@ -131,6 +155,7 @@ int main(int, char **)
 
   ret += testPool<Dune::FieldMatrix<double,10,10> >();
 
+  ret+=testPoolAllocator();
 
   std::cout<<AlignmentOf<UnAligned>::value<<" "<<sizeof(UnAligned)<<std::endl;
 

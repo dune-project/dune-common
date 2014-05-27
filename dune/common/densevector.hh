@@ -4,6 +4,7 @@
 #define DUNE_DENSEVECTOR_HH
 
 #include <limits>
+#include <type_traits>
 
 #include "genericiterator.hh"
 #include "ftraits.hh"
@@ -116,13 +117,15 @@ namespace Dune {
 
      provides sequential access to DenseVector, FieldVector and FieldMatrix
    */
-  template<class C, class T>
+  template<class C, class T, class R =T&>
   class DenseIterator :
-    public Dune::RandomAccessIteratorFacade<DenseIterator<C,T>,T, T&, std::ptrdiff_t>
+    public Dune::RandomAccessIteratorFacade<DenseIterator<C,T,R>,T, R, std::ptrdiff_t>
   {
-    friend class DenseIterator<typename remove_const<C>::type, typename remove_const<T>::type >;
-    friend class DenseIterator<const typename remove_const<C>::type, const typename remove_const<T>::type >;
+    friend class DenseIterator<typename remove_const<C>::type, typename remove_const<T>::type, typename mutable_reference<R>::type >;
+    friend class DenseIterator<const typename remove_const<C>::type, const typename remove_const<T>::type, typename const_reference<R>::type >;
 
+    typedef DenseIterator<typename remove_const<C>::type, typename remove_const<T>::type, typename mutable_reference<R>::type > MutableIterator;
+    typedef DenseIterator<const typename remove_const<C>::type, const typename remove_const<T>::type, typename const_reference<R>::type > ConstIterator;
   public:
 
     /**
@@ -144,23 +147,27 @@ namespace Dune {
       : container_(&cont), position_(pos)
     {}
 
-    DenseIterator(const DenseIterator<typename remove_const<C>::type, typename remove_const<T>::type >& other)
+    DenseIterator(const MutableIterator & other)
+      : container_(other.container_), position_(other.position_)
+    {}
+
+    DenseIterator(const ConstIterator & other)
       : container_(other.container_), position_(other.position_)
     {}
 
     // Methods needed by the forward iterator
-    bool equals(const DenseIterator<typename remove_const<C>::type,typename remove_const<T>::type>& other) const
+    bool equals(const MutableIterator &other) const
     {
       return position_ == other.position_ && container_ == other.container_;
     }
 
 
-    bool equals(const DenseIterator<const typename remove_const<C>::type,const typename remove_const<T>::type>& other) const
+    bool equals(const ConstIterator & other) const
     {
       return position_ == other.position_ && container_ == other.container_;
     }
 
-    T& dereference() const {
+    R dereference() const {
       return container_->operator[](position_);
     }
 
@@ -174,7 +181,7 @@ namespace Dune {
     }
 
     // Additional function needed by RandomAccessIterator
-    T& elementAt(DifferenceType i) const {
+    R elementAt(DifferenceType i) const {
       return container_->operator[](position_+i);
     }
 
@@ -399,33 +406,89 @@ namespace Dune {
       return (z-=b);
     }
 
-    //! vector space add scalar to all comps
-    derived_type& operator+= (const value_type& k)
+    //! \brief vector space add scalar to all comps
+    /**
+       we use enable_if to avoid an ambiguity, if the
+       function parameter can be converted to value_type implicitly.
+       (see FS#1457)
+
+       The function is only enabled, if the parameter is directly
+       convertible to value_type.
+     */
+    template <typename ValueType>
+    typename std::enable_if<
+      std::is_convertible<ValueType, value_type>::value,
+      derived_type
+    >::type&
+    operator+= (const ValueType& kk)
     {
+      const value_type& k = kk;
       for (size_type i=0; i<size(); i++)
         (*this)[i] += k;
       return asImp();
     }
 
-    //! vector space subtract scalar from all comps
-    derived_type& operator-= (const value_type& k)
+    //! \brief vector space subtract scalar from all comps
+    /**
+       we use enable_if to avoid an ambiguity, if the
+       function parameter can be converted to value_type implicitly.
+       (see FS#1457)
+
+       The function is only enabled, if the parameter is directly
+       convertible to value_type.
+     */
+    template <typename ValueType>
+    typename std::enable_if<
+      std::is_convertible<ValueType, value_type>::value,
+      derived_type
+    >::type&
+    operator-= (const ValueType& kk)
     {
+      const value_type& k = kk;
       for (size_type i=0; i<size(); i++)
         (*this)[i] -= k;
       return asImp();
     }
 
-    //! vector space multiplication with scalar
-    derived_type& operator*= (const value_type& k)
+    //! \brief vector space multiplication with scalar
+    /**
+       we use enable_if to avoid an ambiguity, if the
+       function parameter can be converted to value_type implicitly.
+       (see FS#1457)
+
+       The function is only enabled, if the parameter is directly
+       convertible to value_type.
+     */
+    template <typename ValueType>
+    typename std::enable_if<
+      std::is_convertible<ValueType, value_type>::value,
+      derived_type
+    >::type&
+    operator*= (const ValueType& kk)
     {
+      const value_type& k = kk;
       for (size_type i=0; i<size(); i++)
         (*this)[i] *= k;
       return asImp();
     }
 
-    //! vector space division by scalar
-    derived_type& operator/= (const value_type& k)
+    //! \brief vector space division by scalar
+    /**
+       we use enable_if to avoid an ambiguity, if the
+       function parameter can be converted to value_type implicitly.
+       (see FS#1457)
+
+       The function is only enabled, if the parameter is directly
+       convertible to value_type.
+     */
+    template <typename ValueType>
+    typename std::enable_if<
+      std::is_convertible<ValueType, value_type>::value,
+      derived_type
+    >::type&
+    operator/= (const ValueType& kk)
     {
+      const value_type& k = kk;
       for (size_type i=0; i<size(); i++)
         (*this)[i] /= k;
       return asImp();

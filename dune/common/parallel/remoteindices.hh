@@ -9,7 +9,6 @@
 #include <dune/common/exceptions.hh>
 #include <dune/common/poolallocator.hh>
 #include <dune/common/sllist.hh>
-#include <dune/common/static_assert.hh>
 #include <dune/common/stdstreams.hh>
 #include <map>
 #include <set>
@@ -1606,9 +1605,9 @@ namespace Dune {
   template<typename T, typename A, bool mode>
   inline void RemoteIndexListModifier<T,A,mode>::insert(const RemoteIndex& index) throw(InvalidPosition)
   {
-    dune_static_assert(!mode,"Not allowed if the mode indicates that new indices"
-                       "might be added to the underlying index set. Use "
-                       "insert(const RemoteIndex&, const GlobalIndex&) instead");
+    static_assert(!mode,"Not allowed if the mode indicates that new indices"
+                        "might be added to the underlying index set. Use "
+                        "insert(const RemoteIndex&, const GlobalIndex&) instead");
 
 #ifdef DUNE_ISTL_WITH_CHECKING
     if(!first_ && index.localIndexPair().global()<last_)
@@ -1629,7 +1628,7 @@ namespace Dune {
   template<typename T, typename A, bool mode>
   inline void RemoteIndexListModifier<T,A,mode>::insert(const RemoteIndex& index, const GlobalIndex& global) throw(InvalidPosition)
   {
-    dune_static_assert(mode,"Not allowed if the mode indicates that no new indices"
+    static_assert(mode,"Not allowed if the mode indicates that no new indices"
                        "might be added to the underlying index set. Use "
                        "insert(const RemoteIndex&) instead");
 #ifdef DUNE_ISTL_WITH_CHECKING

@@ -6,7 +6,6 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/typetraits.hh>
-#include <dune/common/static_assert.hh>
 #include <dune/common/classname.hh>
 #include <iostream>
 #include <complex>
@@ -26,23 +25,30 @@ struct FieldVectorMainTest
     FieldVector<ft,d> w(2);
     FieldVector<ft,d> z(2);
     const FieldVector<ft,d> x(z);
-    a = x[0];
+    if (x.size()>0)
+      a = x[0];
     bool b DUNE_UNUSED;
     rt n DUNE_UNUSED;
 
     std::cout << __func__ << "\t ( " << className(v) << " )" << std::endl;
 
+    // test exported types
+    static_assert(
+      Dune::is_same<ft,typename FieldVector<ft,d>::value_type>::value,
+      "FieldVector::value_type is not the correct type"
+    );
+
     // test traits
-    dune_static_assert(
+    static_assert(
       ( Dune::is_same< typename Dune::FieldTraits<
                 FieldVector<ft,d> >::field_type, ft >::value ),
       "FieldTraits<FieldVector> yields wrong field_type"
       );
-    dune_static_assert(
+    static_assert(
       ( Dune::is_same< typename Dune::FieldTraits<ft>::real_type, rt >::value ),
       "FieldTraits<field_type> yields wrong real_type"
       );
-    dune_static_assert(
+    static_assert(
       ( Dune::is_same< typename Dune::FieldTraits<
                 FieldVector<ft,d> >::real_type, rt >::value ),
       "FieldTraits<FieldVector> yields wrong real_type"
@@ -100,13 +106,14 @@ struct FieldVectorMainTest
 };
 
 
-template<class ft>
+template<class ft, class testft=ft>
 struct ScalarOperatorTest
 {
   ScalarOperatorTest()
   {
-    ft a = 1;
-    ft c = 2;
+    // testft has to initializable with an int
+    testft a = 1;
+    testft c = 2;
     FieldVector<ft,1> v(2);
     FieldVector<ft,1> w(2);
     bool b DUNE_UNUSED;
@@ -125,25 +132,25 @@ struct ScalarOperatorTest
     a = v + a;
     a = v - a;
     a = v * a;
-    a += (ft)1; // make sure a!=0
+    a += 1; // make sure a!=0
     a = v / a;
 
     v = v + a;
     v = v - a;
     v = v * a;
-    a += (ft)1; // make sure a!=0
+    a += 1; // make sure a!=0
     v = v / a;
 
     a = a + v;
     a = a - v;
     a = a * v;
-    v += (ft)1; // make sure v!=0
+    v += 1; // make sure v!=0
     a = a / v;
 
     v = a + v;
     v = a - v;
     v = a * v;
-    v += (ft)1; // make sure v!=0
+    v += 1; // make sure v!=0
     v = a / v;
 
     v -= v;
@@ -151,7 +158,7 @@ struct ScalarOperatorTest
     v += v;
     v += a;
     v *= a;
-    a += (ft)1; // make sure a!=0
+    a += 1; // make sure a!=0
     v /= a;
 
     b = (v == a);
@@ -203,15 +210,27 @@ struct ScalarOrderingTest
   }
 };
 
+template<typename T>
+struct Epsilon
+{
+  static T value() { return T(1e-6); }
+};
+
+template<>
+struct Epsilon<int>
+{
+  static int value() { return 0; }
+};
+
 // scalar ordering doesn't work for complex numbers
 template <class rt, int d>
 struct DotProductTest
 {
   DotProductTest() {
     typedef std::complex<rt> ct;
-    const rt myEps(1e-6);
+    const rt myEps = Epsilon<rt>::value();
 
-    dune_static_assert(
+    static_assert(
       ( Dune::is_same< typename Dune::FieldTraits<rt>::real_type, rt>::value ),
       "DotProductTest requires real data type as template parameter!"
       );
@@ -224,8 +243,8 @@ struct DotProductTest
 
     const bool isRealOne = Dune::is_same<typename Dune::FieldTraits<rt>::field_type,typename Dune::FieldTraits<rt>::real_type>::value;
     const bool isRealIVec = Dune::is_same<typename Dune::FieldTraits<ct>::field_type,typename Dune::FieldTraits<ct>::real_type> ::value;
-    dune_static_assert(isRealOne,"1-vector expected to be real");
-    dune_static_assert(!isRealIVec,"i-vector expected to be complex");
+    static_assert(isRealOne,"1-vector expected to be real");
+    static_assert(!isRealIVec,"i-vector expected to be complex");
 
     ct result = ct();
     ct length = ct(d);
@@ -304,6 +323,8 @@ public:
     ScalarOperatorTest< complex<ft> >();
     // ordering doesn't work for complex numbers
 
+    // --- test with an integer
+    ScalarOperatorTest< ft, int >();
     // --- test next lower dimension
     FieldVectorMainTest<ft,ft,0>();
   }
@@ -342,15 +363,27 @@ test_infinity_norms()
   assert(std::abs(v.infinity_norm_real()-14.0) < 1e-10); // max(7,14)
 }
 
+void
+test_initialisation()
+{
+  Dune::FieldVector<int, 2> const b = { 1, 2 };
+
+  assert(b[0] == 1);
+  assert(b[1] == 2);
+}
+
 int main()
 {
   try {
     FieldVectorTest<int, 3>();
     FieldVectorTest<float, 3>();
     FieldVectorTest<double, 3>();
+    FieldVectorTest<int, 1>();
+    FieldVectorTest<double, 1>();
 
     test_nan();
     test_infinity_norms();
+    test_initialisation();
   } catch (Dune::Exception& e) {
     std::cerr << e << std::endl;
     return 1;
