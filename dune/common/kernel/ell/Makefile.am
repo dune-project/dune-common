@@ -21,6 +21,8 @@ include $(top_srcdir)/am/global-rules
 
 EXTRA_DIST = CMakeLists.txt
 
+if CUDA
+
 LINK = $(CC) -o $@ -lcudart -L/sfw/cuda/5.5/lib64 -lcublas
 lib_LIBRARIES = libell_cuda.a
 libell_cuda_a_SOURCES = cuda_kernels.cu
@@ -30,3 +32,5 @@ NVCCFLAGS = $(DUNE_CPPFLAGS)-g -v --ptxas-options=-v -O3 -I$(top_srcdir) $(DEFS)
 
 .cu.o:
 		$(NVCC) $(NVCCFLAGS)  -c -o $@ $<
+
+endif
