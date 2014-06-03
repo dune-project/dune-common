@@ -539,8 +539,12 @@ namespace Dune
       freed->next_ = head_;
       head_ = freed;
       //--allocated_;
-    }else
+    }
+    else
+    {
       std::cerr<< "Tried to free null pointer! "<<b<<std::endl;
+      throw std::bad_alloc();
+    }
   }
 
   template<class T, std::size_t S>
