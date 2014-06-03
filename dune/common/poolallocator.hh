@@ -463,8 +463,6 @@ namespace Dune
     static_assert((chunkSize - (alignment - 1)) % alignment == 0, "Library Error: compiler cannot calculate!");
     static_assert(elements>=1, "Library Error: we need to hold at least one element!");
     static_assert(elements*alignedSize<=chunkSize, "Library Error: aligned elements must fit into chuck!");
-    /*    std::cout<<"s= "<<S<<" : T: "<<sizeof(T)<<" Reference: "<<sizeof(Reference)<<" union: "<<unionSize<<" alignment: "<<alignment<<
-          "aligned: "<<alignedSize<<" chunk: "<< chunkSize<<" elements: "<<elements<<std::endl;*/
   }
 
   template<class T, std::size_t S>
@@ -529,7 +527,6 @@ namespace Dune
 #ifndef NDEBUG
       Chunk* current=chunks_;
       while(current) {
-        std::cout<<"b: "<<b<<" start: "<<&current->chunk_<<" end:"<<(&current->chunk_)+chunkSize<<std::endl;
         if(static_cast<void*>(&current->chunk_)<=b &&
            static_cast<void*>((&current->chunk_)+chunkSize)>b)
           break;
