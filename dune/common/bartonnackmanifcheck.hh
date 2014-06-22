@@ -3,11 +3,20 @@
 /** @file
    @author Robert Kloefkorn
    @brief Provides check for implementation of interface methods when using
-   static polymorphism, i.e. the Barton-Nackman trick.
+   static polymorphism, i.e. the Barton-Nackman trick. This is purely for
+   debugging purposes. To check the correct implementation of interface methods
+   (and pick up possible infinite loops) NDEBUG must be undefined and
+   DUNE_INTERFACECHECK has to be defined.
 
    Use by invoking CHECK_INTERFACE_IMPLEMENTATION(asImp().methodToCheck())
-   and for template methods double (
-   CHECK_INTERFACE_IMPLEMENTATION((asImp().template methodToCheck<param> ())).
+   and for
+   template methods double (CHECK_INTERFACE_IMPLEMENTATION((asImp().template methodToCheck<param> ())).
+   If either NDEBUG is defined or
+   DUNE_INTERFACECHECK is undefined the CHECK_INTERFACE_IMPLEMENTATION macro is empty.
+
+   Note: adding the interface check to a method will cause the implementation of the
+   method to be called twice, so before use make sure
+   that this will not cause problems e.g. if internal counters are updated.
  **/
 
 //- Dune includes
@@ -20,7 +29,7 @@
 #undef CHECK_AND_CALL_INTERFACE_IMPLEMENTATION
 #endif
 
-#ifdef NDEBUG
+#if defined NDEBUG || !defined DUNE_INTERFACECHECK
 #define CHECK_INTERFACE_IMPLEMENTATION(dummy)
 #else
 #define CHECK_INTERFACE_IMPLEMENTATION(__interface_method_to_call__) \
@@ -46,7 +55,7 @@
    otherwise. If NDEBUG is defined no
    checking is done and the method is just called.
  */
-#ifdef NDEBUG
+#if defined NDEBUG || !defined DUNE_INTERFACECHECK
 #define CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(__interface_method_to_call__) \
   (__interface_method_to_call__)
 #else
