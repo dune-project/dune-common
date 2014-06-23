@@ -396,7 +396,7 @@ namespace Dune
 #endif
       for (size_type i=0; i<rows(); ++i)
       {
-        y[i] = 0;
+        y[i] = value_type(0);
         for (size_type j=0; j<cols(); j++)
           y[i] += (*this)[i][j] * x[j];
       }
@@ -418,7 +418,7 @@ namespace Dune
 #endif
       for( size_type i = 0; i < cols(); ++i )
       {
-        y[ i ] = 0;
+        y[ i ] = value_type(0);
         for( size_type j = 0; j < rows(); ++j )
           y[ i ] += (*this)[ j ][ i ] * x[ j ];
       }
