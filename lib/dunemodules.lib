@@ -211,7 +211,13 @@ setup_control_path() {
         fi
       done
     else
-       DUNE_CONTROL_PATH=$DUNE_CONTROL_PATH:$(pkg-config dune-common --variable=prefix)/lib/dunecontrol
+      NEW_DUNE_CONTROL_DIR=$(pkg-config dune-common --variable=prefix)/lib/dunecontrol
+      # There might be old version of DUNE lying around, that do not contain
+      # lib/dunecontrol, yet. To prevent failur at a later stage of dunecontrol
+      # we check that the directory really exists.
+      if test -d "$NEW_DUNE_CONTROL_DIR"; then
+        DUNE_CONTROL_PATH=$DUNE_CONTROL_PATH:$NEW_DUNE_CONTROL_DIR
+      fi
     fi
   fi
   # try to read DUNE_CONTROL_PATH from OPTS file
