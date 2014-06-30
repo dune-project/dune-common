@@ -10,6 +10,7 @@
 #include <complex>
 #include <cstring>
 #include <limits>
+#include <utility>
 
 #include "exceptions.hh"
 #include "genericiterator.hh"
@@ -81,6 +82,11 @@ namespace Dune {
       _data(x._data)
     {}
 
+    //! Move constructor
+    DynamicVector(DynamicVector && x) :
+      _data(std::move(x._data))
+    {}
+
     template< class T >
     DynamicVector(const DynamicVector< T, Allocator > & x) :
       _data(x.begin(), x.end(), x.get_allocator())
@@ -98,6 +104,20 @@ namespace Dune {
     }
 
     using Base::operator=;
+
+    //! Copy assignment operator
+    DynamicVector &operator=(const DynamicVector &other)
+    {
+      _data = other._data;
+      return *this;
+    }
+
+    //! Move assignment operator
+    DynamicVector &operator=(DynamicVector &&other)
+    {
+      _data = std::move(other._data);
+      return *this;
+    }
 
     //==== forward some methods of std::vector
     /** \brief Number of elements for which memory has been allocated.
@@ -142,7 +162,7 @@ namespace Dune {
     for( typename DynamicVector< K, Allocator >::size_type i = 0; i < w.size(); ++i )
       in >> w[ i ];
     if(in)
-      v = w;
+      v = std::move(w);
     return in;
   }
 
