@@ -5,7 +5,6 @@
 #define DUNE_COMMON_MEMORY_TRAITS_HH
 
 #include <dune/common/typetraits.hh>
-#include <dune/common/static_assert.hh>
 
 namespace Dune {
   namespace Memory {
@@ -61,7 +60,7 @@ namespace Dune {
     struct block_size_log2<i,0>
       : public integral_constant<std::size_t,0>
     {
-      dune_static_assert(i == 1, "Unsupported block size! Has to be a power of two up to an implementation-defined maximum.");
+      static_assert(i == 1, "Unsupported block size! Has to be a power of two up to an implementation-defined maximum.");
     };
 
   } // namespace Memory

@@ -19,7 +19,7 @@ namespace Dune {
                                         >
   {
 
-    dune_static_assert(
+    static_assert(
       (is_base_of<std::random_access_iterator_tag,typename std::iterator_traits<It>::iterator_category>::value),
       "StridedIterator can only wrap random access iterators."
       );
