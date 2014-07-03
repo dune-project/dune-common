@@ -539,7 +539,7 @@ echo "    Description and URL are missing right now."
 
 echo "- $PROJECT/config.h.cmake"
 cat> "$PROJECT/config.h.cmake" <<EOF
-/* begin $NAME
+/* begin $PROJECT
    put the definitions for config.h specific to
    your project here. Everything above will be
    overwritten
@@ -581,7 +581,7 @@ cat> "$PROJECT/config.h.cmake" <<EOF
 /* Define to the revision of $PROJECT */
 #define ${UNAME}_VERSION_REVISION @${UNAME}_VERSION_REVISION@
 
-/* end $NAME
+/* end $PROJECT
    Everything below here will be overwritten
 */
 EOF
