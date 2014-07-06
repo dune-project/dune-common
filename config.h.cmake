@@ -30,6 +30,7 @@
 /* As these are now always supported due to the new compiler requirements, they are directly */
 /* defined without an explicit test. */
 #define HAVE_INTEGRAL_CONSTANT 1
+#define HAVE_DUNE_HASH 1
 #define HAVE_STD_HASH 1
 #define HAVE_TYPE_TRAITS 1
 #define HAVE_VARIADIC_TEMPLATES  1
