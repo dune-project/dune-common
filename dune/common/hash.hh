@@ -3,32 +3,9 @@
 #ifndef DUNE_COMMON_HASH_HH
 #define DUNE_COMMON_HASH_HH
 
-#include <dune/common/typetraits.hh>
-
-#if HAVE_STD_HASH
 #include <functional>
-#endif
 
-#if HAVE_TR1_HASH
-#include <tr1/functional>
-#endif
-
-#if HAVE_DUNE_BOOST
-
-#include <boost/version.hpp>
-
-// Boost 1.34.0 seems to be the first usable version of boost::functional::hash
-#if BOOST_VERSION >= 103400
-#define HAVE_BOOST_HASH 1
-
-// only pull in boost if really necessary
-#if !HAVE_STD_HASH && !HAVE_TR1_HASH
-
-#include <boost/functional/hash.hpp>
-
-#endif // !HAVE_STD_HASH && !HAVE_TR1_HASH
-#endif // BOOST_VERSION >= 103400
-#endif // HAVE_DUNE_BOOST
+#include <dune/common/typetraits.hh>
 
 /**
  * \file
@@ -55,10 +32,6 @@ namespace Dune {
    * The interface outlined below is compatible with std::hash, std::tr1::hash and
    * boost::hash, so it is possible to use Dune::hash in associative containers from
    * those libraries.
-   *
-   * The current implementation piggybacks on top of C++11, TR1 or Boost, in that order.
-   * As there is no local fallback implementation, hashing will not work without at least
-   * one of those dependencies installed.
    */
   template<typename T>
   struct hash
@@ -149,12 +122,6 @@ namespace Dune {
 // C++11 support
 // ********************************************************************************
 
-#if HAVE_STD_HASH
-// We have std::hash from C++11
-
-// Announce that we provide Dune::hash
-#define HAVE_DUNE_HASH 1
-
 // import std::hash into Dune namespace
 namespace Dune {
 
@@ -179,70 +146,6 @@ namespace Dune {
                                                  \
   }                                                \
 
-#else // HAVE_STD_HASH
-
-// We do not support std::hash, so don't do anything here.
-#define DUNE_DEFINE_STD_HASH(template_args,type)
-
-#endif // HAVE_STD_HASH
-
-
-
-// ********************************************************************************
-// TR1 support
-// ********************************************************************************
-
-#if HAVE_TR1_HASH
-// We have std::tr1::hash from TR1
-
-#ifndef HAVE_DUNE_HASH
-// std::hash wasn't found, so use std::tr1::hash
-
-// Announce that we provide Dune::hash
-#define HAVE_DUNE_HASH 1
-
-// import std::tr1::hash into Dune namespace
-namespace Dune {
-
-  using std::tr1::hash;
-
-}
-
-#endif // HAVE_DUNE_HASH
-
-// Macro for defining a std::tr1::hash specialization for type.
-// This should not be called directly. Call DUNE_DEFINE_HASH
-// instead.
-#define DUNE_DEFINE_TR1_HASH(template_args,type) \
-  namespace std {                                  \
-    namespace tr1 {                                  \
-                                                 \
-      template<template_args>                          \
-      struct hash<type>                                \
-      {                                                \
-        std::size_t operator()(const type& arg) const  \
-        {                                              \
-          return hash_value(arg);                      \
-        }                                              \
-      };                                               \
-                                                 \
-    }                                                \
-  }                                                \
-
-#else // HAVE_TR1_HASH
-
-// We do not support std::tr1::hash, so don't do anything here.
-#define DUNE_DEFINE_TR1_HASH(template_args,type)
-
-#endif // HAVE_TR1_HASH
-
-
-
-// ********************************************************************************
-// common macros for both C++11 and TR1 support
-// ********************************************************************************
-
-#if HAVE_STD_HASH || HAVE_TR1_HASH
 
 // Wrapper macro for template arguments.
 // This is required because the template arguments can contain commas,
@@ -267,50 +170,7 @@ namespace Dune {
 // Define specializations for all discovered hash implementations.
 #define DUNE_DEFINE_HASH(template_args,type)                                                  \
   DUNE_DEFINE_STD_HASH(DUNE_HASH_EXPAND_VA_ARGS template_args, DUNE_HASH_EXPAND_VA_ARGS type) \
-  DUNE_DEFINE_TR1_HASH(DUNE_HASH_EXPAND_VA_ARGS template_args,DUNE_HASH_EXPAND_VA_ARGS type)  \
 
-
-#else // HAVE_STD_HASH || HAVE_TR1_HASH
-
-
-// Fallback implementation that doesn't do anything.
-#define DUNE_DEFINE_HASH(template_args,type)
-
-// Consider DUNE_HASH_TEMPLATE_ARGS as an argument-less macro and
-// replace it with an empty token.
-// This will leave its arguments in parentheses, causing them
-// to be considered as a single argument to DUNE_DEFINE_HASH, which
-// will ignore them anyway.
-#define DUNE_HASH_TEMPLATE_ARGS
-
-// Replace DUNE_HASH_TYPE with an empty token. See above for rationale.
-#define DUNE_HASH_TYPE
-
-#endif // HAVE_STD_HASH || HAVE_TR1_HASH
-
-
-
-// ********************************************************************************
-// Boost support
-// ********************************************************************************
-
-#if !HAVE_DUNE_HASH && HAVE_BOOST_HASH
-// We haven't found a hash implementation yet and Boost is available
-
-// Announce that we provide Dune::hash
-#define HAVE_DUNE_HASH 1
-
-// import boost::hash into Dune namespace
-namespace Dune {
-
-  using boost::hash;
-
-}
-
-// We no not need to register our types with boost::hash, as its extension
-// mechanism will automatically pick up the global hash_value() functions.
-
-#endif // !HAVE_DUNE_HASH && HAVE_BOOST_HASH
 
 #endif // DOXYGEN
 
@@ -319,8 +179,6 @@ namespace Dune {
 // ********************************************************************************
 // Some utility functions for combining hashes of member variables.
 // ********************************************************************************
-
-#if HAVE_DUNE_HASH || defined(DOXYGEN)
 
 namespace Dune {
 
@@ -474,7 +332,5 @@ namespace Dune {
   }
 
 } // end namespace Dune
-
-#endif // HAVE_DUNE_HASH || defined(DOXYGEN)
 
 #endif // DUNE_COMMON_HASH_HH
