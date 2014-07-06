@@ -29,6 +29,9 @@
 /* old feature support macros which were tested until 2.3, keep around for one more release */
 /* As these are now always supported due to the new compiler requirements, they are directly */
 /* defined without an explicit test. */
+#define HAVE_INTEGRAL_CONSTANT 1
+#define HAVE_STD_HASH 1
+#define HAVE_TYPE_TRAITS 1
 #define HAVE_VARIADIC_TEMPLATES  1
 #define HAVE_VARIADIC_CONSTRUCTOR_SFINAE 1
 #define HAVE_RVALUE_REFERENCES 1
@@ -68,23 +71,6 @@
 
 /* Define to 1 if you have <sys/mman.h>. */
 #cmakedefine HAVE_SYS_MMAN_H 1
-
-/* Define to 1 if the std::tr1::hash template from TR1 is available. */
-#cmakedefine HAVE_TR1_HASH 1
-
-/* Define to 1 if you have the <tr1/type_traits> header file. */
-#cmakedefine HAVE_TR1_TYPE_TRAITS 1
-
-/* Define to 1 if std::integral_constant< T, v > is supported
- * and casts into T
- */
-#cmakedefine HAVE_INTEGRAL_CONSTANT 1
-
-/* Define to 1 if the std::hash template from C++11 is available. */
-#cmakedefine HAVE_STD_HASH 1
-
-/* Define to 1 if you have the <type_traits> header file. */
-#cmakedefine HAVE_TYPE_TRAITS 1
 
 /* Define to 1 if the MPI2 Standard is supported */
 #cmakedefine MPI_2 1
