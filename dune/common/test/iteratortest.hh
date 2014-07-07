@@ -10,25 +10,70 @@
 #include <dune/common/unused.hh>
 
 /**
- * @brief Tests the capabilities of a forward iterator.
- * @param begin Iterator positioned at the start.
- * @param end Iterator positioned at the end.
- * @param opt Functor for doing whatever one wants.
+ * @brief Test whether the class Iter implements the interface of an STL forward iterator
+ *
+ * @param begin Iterator positioned at the start
+ * @param end Iterator positioned at the end
+ * @param opt Functor for doing whatever one wants
+ *
+ * \todo Test whether begin-> works.  (I don't know how)
  */
 template<class Iter, class Opt>
 int testForwardIterator(Iter begin, Iter end, Opt& opt)
 {
-  //std::cout<< "forward: ";
-  Iter tmp=begin, tmp1(begin);
+  // Return status
   int ret=0;
-  if(tmp!=begin || tmp1!=begin || tmp!=tmp1) {
+
+  // Test whether iterator is default-constructible
+  // This object will go out of scope at the end of this method, and hence
+  // it will also test whether the object is destructible.
+  Iter defaultConstructedIterator;
+
+  // Test whether iterator is copy-constructible
+  Iter tmp1(begin);
+
+  // Test whether iterator is copy-assignable
+  Iter tmp=begin;
+
+  // Test for inequality
+  if (tmp!=begin || tmp1!=begin || tmp!=tmp1) {
     std::cerr<<" Copying iterator failed "<<__FILE__<<":"<<__LINE__<<std::endl;
     ret=1;
   }
 
+  // Test for equality
+  if (not (tmp==begin && tmp1==begin && tmp==tmp1)) {
+    std::cerr<<" Copying iterator failed "<<__FILE__<<":"<<__LINE__<<std::endl;
+    ret=1;
+  }
+
+  // Test whether pre-increment works
   for(; begin!=end; ++begin)
+    // Test rvalue dereferencing
     opt(*begin);
-  //std::cout<< " OK "<<std::endl;
+
+  // Test whether post-increment works
+  for(; begin!=end; begin++)
+    opt(*begin);
+
+  // Test whether std::iterator_traits is properly specialized
+  // The is_same<A,A> construction allows to test whether the type A exists at all,
+  // without assuming anything further about A.
+  static_assert(std::is_same<typename std::iterator_traits<Iter>::difference_type, typename std::iterator_traits<Iter>::difference_type>::value,
+                "std::iterator_traits::difference_type is not defined!");
+  static_assert(std::is_same<typename std::iterator_traits<Iter>::value_type,      typename std::iterator_traits<Iter>::value_type>::value,
+                "std::iterator_traits::value_type is not defined!");
+  static_assert(std::is_same<typename std::iterator_traits<Iter>::pointer,         typename std::iterator_traits<Iter>::pointer>::value,
+                "std::iterator_traits::pointer is not defined!");
+  static_assert(std::is_same<typename std::iterator_traits<Iter>::reference,       typename std::iterator_traits<Iter>::reference>::value,
+                "std::iterator_traits::reference is not defined!");
+
+  // Make sure the iterator_category is properly set
+  static_assert(std::is_same<typename std::iterator_traits<Iter>::iterator_category, std::forward_iterator_tag>::value
+                or std::is_same<typename std::iterator_traits<Iter>::iterator_category, std::bidirectional_iterator_tag>::value
+                or std::is_same<typename std::iterator_traits<Iter>::iterator_category, std::random_access_iterator_tag>::value,
+                "std::iterator_traits::iterator_category is not properly defined!");
+
   return ret;
 }
 
