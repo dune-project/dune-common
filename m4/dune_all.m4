@@ -49,6 +49,7 @@ dnl do not use LT_INIT since we want to be compatible with libtool 1.5
   AC_SUBST(am_dir, $DUNE_COMMON_ROOT/am)
 ])
 
+# DUNE_ADD_SUMMARY_ENTRY(TEXT, STATUS, [FULLSUMMARY])
 AC_DEFUN([DUNE_ADD_SUMMARY_ENTRY],[
   indentlen=24
   txt="$1"

@@ -79,6 +79,13 @@ AC_DEFUN([DUNE_COMMON_CHECKS],
   AC_REQUIRE([DUNE_PATH_TBB])
   AC_REQUIRE([DUNE_PATH_GMP])
   AC_REQUIRE([DUNE_PATH_CUDA])
+
+  AS_CASE(["$tbb_summary "],
+    ["yes "*], [],
+    [AC_MSG_FAILURE([Could not find a working version of Threading Building Blocks, which is required by EXADUNE dune-common.])]
+  )
+  DUNE_ADD_MODULE_DEPS([dune-common], [TBB],
+                       [${TBB_CPPFLAGS}], [${TBB_LDFLAGS}], [${TBB_LIBS}])
 ])
 
 AC_DEFUN([DUNE_COMMON_CHECK_MODULE],
