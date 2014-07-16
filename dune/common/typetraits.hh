@@ -3,11 +3,7 @@
 #ifndef DUNE_TYPETRAITS_HH
 #define DUNE_TYPETRAITS_HH
 
-#if defined HAVE_TYPE_TRAITS
 #include <type_traits>
-#elif defined HAVE_TR1_TYPE_TRAITS
-#include <tr1/type_traits>
-#endif
 
 #include <dune/common/deprecated.hh>
 
@@ -163,41 +159,8 @@ namespace Dune
     typedef volatile typename ConstantVolatileTraits<T>::UnqualifiedType Type;
   };
 
-#if defined HAVE_TYPE_TRAITS
   using std::remove_const;
-#elif defined HAVE_TR1_TYPE_TRAITS
-  using std::tr1::remove_const;
-#else
-  /**
-   * @brief Removes a const qualifier while preserving others.
-   */
-  template<typename T>
-  struct remove_const
-  {
-    typedef typename RemoveConstHelper<T, IsVolatile<T>::value>::Type type;
-  };
-#endif
-
-#if defined HAVE_TYPE_TRAITS
   using std::remove_reference;
-#elif defined HAVE_TR1_TYPE_TRAITS
-  using std::tr1::remove_reference;
-#else
-  //! Remove a reference from a type
-  /**
-   * If the template parameter \c T matches \c T1&, then the member typedef \c
-   * type is \c T1, otherwise it is \c T.
-   */
-  template<typename T> struct remove_reference {
-    //! T with references removed
-    typedef T type;
-  };
-#  ifndef DOXYGEN
-  template<typename T> struct remove_reference<T&> {
-    typedef T type;
-  };
-#  endif // ! defined(DOXYGEN)
-#endif
 
   /**
    * @brief Checks wether a type is convertible to another.
@@ -315,26 +278,7 @@ namespace Dune
     };
   };
 
-#ifdef HAVE_TYPE_TRAITS
   using std::enable_if;
-#else
-  /**
-   * @brief Enable typedef if condition is met.
-   *
-   * Replacement implementation for compilers without this in the stl.
-   * Depending on the value of b the type T is provided as typedef type.
-   */
-  template<bool b, typename T=void>
-  struct enable_if
-  {
-    typedef T type;
-  };
-
-  template<typename T>
-  struct enable_if<false,T>
-  {};
-#endif
-
 
   /**
    * @brief Enable typedef if two types are interoperable.
@@ -346,67 +290,13 @@ namespace Dune
     : public enable_if<IsInteroperable<T1,T2>::value, Type>
   {};
 
-#if defined HAVE_TYPE_TRAITS
-  using std::is_same;
-#elif defined HAVE_TR1_TYPE_TRAITS
-  using std::tr1::is_same;
-#else
-  /**
-   * @brief Compile time test for testing whether
-   * two types are the same.
-   */
-  template<typename T1, typename T2>
-  struct is_same
-  {
-    //! Whether T1 is the same type as T2.
-    enum {
-      /* @brief Whether T1 is the same type as T2. */
-      value=false
-    };
-  };
-
-
-  template<typename T>
-  struct is_same<T,T>
-  {
-    enum { value=true};
-  };
-#endif
-
   // pull in default implementation
+  using std::is_same;
   using std::conditional;
-
-  ////////////////////////////////////////////////////////////////////////
-  //
-  // integral_constant (C++0x 20.7.3 "Helper classes")
-  //
-#if HAVE_INTEGRAL_CONSTANT
   using std::integral_constant;
   using std::true_type;
   using std::false_type;
-#else // #if HAVE_INTEGRAL_CONSTANT
-  //! Generate a type for a given integral constant
-  /**
-   * \tparam T Type of the constant.
-   * \tparam v Value of the constant.
-   */
-  template <class T, T v>
-  struct integral_constant {
-    //! value this type was generated for
-    static const T value = v;
-    //! type of value
-    typedef T value_type;
-    //! type of this class itself
-    typedef integral_constant<T,v> type;
-    //! conversion to value_type/T
-    operator value_type() { return value; }
-  };
 
-  //! type for true
-  typedef integral_constant<bool, true> true_type;
-  //! type for false
-  typedef integral_constant<bool, false> false_type;
-#endif // #else // #if HAVE_INTEGRAL_CONSTANT
 
   template<typename>
   struct __is_pointer_helper
