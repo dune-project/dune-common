@@ -117,4 +117,19 @@
 #include "FC.h"
 #define FC_FUNC FC_GLOBAL_
 
+/* The normal alignment of `double', in bytes. */
+#define ALIGNOF_DOUBLE ${ALIGNOF_DOUBLE}
+
+/* The normal alignment of `float', in bytes. */
+#define ALIGNOF_FLOAT ${ALIGNOF_FLOAT}
+
+/* The normal alignment of `size_t', in bytes. */
+#define ALIGNOF_SIZE_T ${ALIGNOF_SIZE_T}
+
+/* The normal alignment of `uint32_t', in bytes. */
+#define ALIGNOF_UINT32_T ${ALIGNOF_UINT32_T}
+
+/* The normal alignment of `uint64_t', in bytes. */
+#define ALIGNOF_UINT64_T ${ALIGNOF_UINT64_T}
+
 /* end dune-common */
