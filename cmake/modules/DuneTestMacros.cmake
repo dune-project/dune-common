@@ -28,7 +28,11 @@ macro(test_dep)
 
   foreach(_dir ${_dirs})
     string(REGEX REPLACE "([^ \t\n]+)[ \n\t]*$" "\\1" _dir ${_dir})
-    set_property(DIRECTORY ${_dir} PROPERTY TEST_INCLUDE_FILE ${CMAKE_BINARY_DIR}/${_dir}/BuildTests.cmake)
+    if(IS_DIRECTORY ${_dir})
+      set_property(DIRECTORY ${_dir} PROPERTY TEST_INCLUDE_FILE ${CMAKE_BINARY_DIR}/${_dir}/BuildTests.cmake)
+    else(IS_DIRECTORY ${_dir})
+      message(WARNING "Could not set property TEST_INCLUDE_FILE on missing directory ${_dir}")
+    endif(IS_DIRECTORY ${_dir})
   endforeach(_dir ${_dirs})
 endmacro(test_dep)
 
