@@ -4,6 +4,9 @@ add_subdirectory("ell")
 add_subdirectory("vec")
 
 dune_add_library(kernel
+  _DUNE_TARGET_OBJECTS:bell_
+  _DUNE_TARGET_OBJECTS:blockdiagonal_
+  _DUNE_TARGET_OBJECTS:ell_
   _DUNE_TARGET_OBJECTS:vec_
   )
 

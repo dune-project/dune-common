@@ -16,7 +16,7 @@ install(FILES
 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common/kernel/vec)
 
 set(noinst_LTLIBRARIES libkernel.la)
-dune_add_library(kernel OBJECT
+dune_add_library(vec OBJECT
   add.cc
   assign_scalar.cc
   axpy.cc
