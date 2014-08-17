@@ -70,6 +70,8 @@ void Dune::ParameterTreeParser::readINITree(std::istream& in,
     std::string line;
     getline(in, line);
     line = ltrim(line);
+    if (line.size() == 0)
+      continue;
     switch (line[0]) {
     case '#' :
       break;
