@@ -16,16 +16,24 @@ void basic_tests()
   ++n;
 #endif
   int n2 = 0;            // n2 is zero
-  if( ch == 0 ) ;        // evaluates to true
-  if( ch == nullptr ) ;  // evaluates to true
-  if( nullptr == ch ) ;  // evaluates to true
-  if( ch ) ;             // evaluates to false
-  if( n2 == 0 ) ;        // evaluates to true
+  if( ch == 0 )          // evaluates to true
+    ;
+  if( ch == nullptr )    // evaluates to true
+    ;
+  if( nullptr == ch )    // evaluates to true
+    ;
+  if( ch )               // evaluates to false
+    ;
+  if( n2 == 0 )          // evaluates to true
+    ;
   ch = ch2;
 #ifdef FAIL
-  if( n2 == nullptr ) ;  // error
-  if( nullptr ) ;        // error, no conversion to bool
-  if( nullptr == 0 ) ;   // error
+  if( n2 == nullptr )    // error
+    ;
+  if( nullptr )          // error, no conversion to bool
+    ;
+  if( nullptr == 0 )     // error
+    ;
   // arithmetic
   nullptr = 0;           // error, nullptr is not an lvalue
   nullptr + 2;           // error
