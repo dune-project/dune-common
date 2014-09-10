@@ -5,6 +5,8 @@
 
 #include <memory>
 
+#include <dune/common/visibility.hh>
+
 /**
  * @file
  * @brief Useful wrapper for creating singletons.
