@@ -9,6 +9,7 @@
 # HAS_ATTRIBUTE_DEPRECATED_MSG     True if attribute deprecated("msg") is supported
 # HAVE_CONSTEXPR                   True if constexpr is supported
 # HAVE_KEYWORD_FINAL               True if final is supported.
+# HAVE_NOEXCEPT_SPECIFIER          True if nonexcept specifier is supported.
 
 include(CMakePushCheckState)
 cmake_push_check_state()
@@ -164,6 +165,24 @@ check_cxx_source_compiles("
     return 0;
   }
 " HAVE_KEYWORD_FINAL
+)
+
+# nonexcept specifier
+check_cxx_source_compiles("
+  void func1() noexcept {}
+
+  void func2() noexcept(true) {}
+
+  template <class T>
+  void func3() noexcept(noexcept(T())) {}
+
+  int main(void)
+  {
+    func1();
+    func2();
+    func3<int>();
+  }
+" HAVE_NOEXCEPT_SPECIFIER
 )
 
 cmake_pop_check_state()
