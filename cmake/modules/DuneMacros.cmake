@@ -656,6 +656,14 @@ macro(dune_project)
   # set up make headercheck
   include(Headercheck)
   setup_headercheck()
+
+  # check whether the user wants to append compile flags upon calling make
+  if(ALLOW_EXTRA_CXXFLAGS AND (${CMAKE_GENERATOR} MATCHES ".*Unix Makefiles.*"))
+    file(WRITE ${CMAKE_BINARY_DIR}/compiler.sh
+         "#!/bin/bash\nif [ -n \"$VERBOSE\" ] ; then\necho 1>&2 \"Additional flags: \$EXTRA_CXXFLAGS\"\nfi\nexec ${CMAKE_CXX_COMPILER} \"\$@\" \$EXTRA_CXXFLAGS")
+    exec_program(chmod ARGS "+x ${CMAKE_BINARY_DIR}/compiler.sh")
+    set(CMAKE_CXX_COMPILER ${CMAKE_BINARY_DIR}/compiler.sh)
+  endif()
 endmacro(dune_project)
 
 # create a new config.h file and overwrite the existing one
