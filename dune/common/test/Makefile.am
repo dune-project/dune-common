@@ -17,6 +17,7 @@ TESTPROGS = \
     fmatrixtest \
     fvectortest \
     gcdlcmtest \
+    integersequence \
     iteratorfacadetest \
     iteratorfacadetest2 \
     lrutest \
@@ -141,6 +142,9 @@ fvectortest_SOURCES = fvectortest.cc
 gcdlcmtest_SOURCES = gcdlcmtest.cc
 
 genericiterator_compile_fail_SOURCES = genericiterator_compile_fail.cc
+
+integersequence_SOURCES = integersequence.cc
+integersequence_CPPFLAGS = $(AM_CPPFLAGS)
 
 # mention headers so that they are distributed too
 iteratorfacadetest_SOURCES = iteratorfacadetest.cc iteratorfacadetest.hh \

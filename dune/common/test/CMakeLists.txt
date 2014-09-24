@@ -15,6 +15,7 @@ set(TESTS
     fmatrixtest
     fvectortest
     gcdlcmtest
+    integersequence
     iteratorfacadetest
     iteratorfacadetest2
     lrutest
@@ -114,6 +115,7 @@ target_link_libraries("fmatrixtest" "dunecommon")
 add_executable("fvectortest" fvectortest.cc)
 add_executable("gcdlcmtest" gcdlcmtest.cc)
 add_executable("genericiterator_compile_fail" EXCLUDE_FROM_ALL genericiterator_compile_fail.cc)
+add_executable("integersequence" integersequence.cc)
 add_executable("iteratorfacadetest2" iteratorfacadetest2.cc)
 add_executable("iteratorfacadetest" iteratorfacadetest.cc)
 add_executable("lrutest" lrutest.cc)

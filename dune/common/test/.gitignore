@@ -27,6 +27,7 @@ fassigntest
 fmatrixtest
 fvectortest
 gcdlcmtest
+integersequence
 iteratorfacadetest
 iteratorfacadetest2
 lrutest
