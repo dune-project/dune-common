@@ -3,6 +3,7 @@ stdinclude_HEADERS = 				\
   constexpr.hh \
   final.hh \
   noexcept.hh \
+  memory.hh \
   type_traits.hh \
   utility.hh
 
