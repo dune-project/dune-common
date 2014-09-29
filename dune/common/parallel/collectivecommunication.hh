@@ -13,6 +13,7 @@
 #include <complex>
 #include <algorithm>
 
+#include <dune/common/binaryfunctions.hh>
 #include <dune/common/exceptions.hh>
 
 /*! \defgroup ParallelCommunication Parallel Communication
