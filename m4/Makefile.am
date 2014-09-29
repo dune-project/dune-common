@@ -14,6 +14,7 @@ ALLM4S = 					\
 	cxx0x_nullptr.m4			\
 	cxx11_constexpr.m4			\
 	cxx11_final.m4				\
+	cxx11_range_based_for.m4		\
 	dune.m4					\
 	dune_all.m4				\
 	dune_autobuild.m4			\

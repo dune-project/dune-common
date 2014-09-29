@@ -9,6 +9,7 @@
 # HAS_ATTRIBUTE_DEPRECATED_MSG     True if attribute deprecated("msg") is supported
 # HAVE_CONSTEXPR                   True if constexpr is supported
 # HAVE_KEYWORD_FINAL               True if final is supported.
+# HAVE_RANGE_BASED_FOR             True if range-based for is supported and working.
 
 include(CMakePushCheckState)
 cmake_push_check_state()
@@ -164,6 +165,17 @@ check_cxx_source_compiles("
     return 0;
   }
 " HAVE_KEYWORD_FINAL
+)
+
+# range-based for
+check_cxx_source_compiles("
+  int main(void)
+  {
+    int arr[3];
+    for(int &val : arr)
+      val = 0;
+  }
+" HAVE_RANGE_BASED_FOR
 )
 
 cmake_pop_check_state()

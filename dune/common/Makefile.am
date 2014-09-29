@@ -58,6 +58,7 @@ commoninclude_HEADERS = 			\
 	interfaces.hh				\
 	ios_state.hh				\
 	iteratorfacades.hh			\
+	iteratorrange.hh			\
 	lcm.hh					\
 	lru.hh					\
 	mallocallocator.hh			\
