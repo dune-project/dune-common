@@ -57,7 +57,6 @@ namespace Dune
 
   /**
      @brief Convert a stack-allocated object to a shared_ptr:
-     @relates shared_ptr
      @code
           int i = 10;
           shared_ptr<int> pi = stackobject_to_shared_ptr(i);
@@ -71,7 +70,6 @@ namespace Dune
 
   /**
      @brief Convert a stack object to a shared_ptr of a base class
-     @relates shared_ptr
      @code
           class A {};
           class B : public A {};

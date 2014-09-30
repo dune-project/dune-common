@@ -50,9 +50,7 @@ namespace Dune
     // index_sequence
     // --------------
 
-    /** \fn index_sequence
-     *
-     *  \brief a function similar to std::index_sequence to be introduced in
+    /** \brief a function similar to std::index_sequence to be introduced in
      *         C++14
      *
      *  \tparam  ...Ints  a non-type parameter pack
