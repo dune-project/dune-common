@@ -91,10 +91,11 @@ template<class Iter, class Opt>
 int testBidirectionalIterator(Iter begin, Iter end, Opt opt)
 {
   testForwardIterator(begin, end, opt);
-  Iter tbegin=--begin;
-  Iter tend=--end;
-  for(; tbegin!=tend; --tend)
-    opt(*tend);
+  for(Iter it = end; it != begin; )
+  {
+    --it;
+    opt(*it);
+  }
 
   typename Iter::difference_type size = std::distance(begin, end);
   srand(300);
@@ -105,8 +106,8 @@ int testBidirectionalIterator(Iter begin, Iter end, Opt opt)
   {
     int index = static_cast<int>(size*(rand()/(RAND_MAX+1.0)));
     int backwards=size-index;
-    tbegin=begin;
-    tend=end;
+    Iter tbegin = begin;
+    Iter tend = end;
     for(int j=0; j < index; j++) ++tbegin;
     for(int j=0; j < backwards; j++) --tend;
 
