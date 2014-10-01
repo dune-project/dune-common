@@ -419,7 +419,7 @@ namespace Dune
       void add(int proc, int local)
       {
         IndexedTypeInformation& info=information_[proc];
-        assert(info.elements<info.size);
+        assert((info.elements)<info.size);
         MPI_Address( const_cast<void*>(CommPolicy<V>::getAddress(data_, local)),
                      info.displ+info.elements);
         info.length[info.elements]=CommPolicy<V>::getSize(data_, local);
