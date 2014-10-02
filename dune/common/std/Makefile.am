@@ -2,6 +2,7 @@ stdincludedir = $(includedir)/dune/common/std
 stdinclude_HEADERS = 				\
   constexpr.hh \
   final.hh \
+  noexcept.hh \
   type_traits.hh \
   utility.hh
 

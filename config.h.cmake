@@ -107,6 +107,9 @@
 /* Define to 1 if C++11 constexpr is supported */
 #cmakedefine HAVE_CONSTEXPR 1
 
+/* Define to 1 if C++11 nonexcept specifier is supported */
+#cmakedefine HAVE_NOEXCEPT_SPECIFIER 1
+
 /* does the compiler support the keyword 'final'? */
 #cmakedefine HAVE_KEYWORD_FINAL 1
 

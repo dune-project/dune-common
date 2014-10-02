@@ -10,6 +10,7 @@
 # HAVE_CONSTEXPR                   True if constexpr is supported
 # HAVE_KEYWORD_FINAL               True if final is supported.
 # HAVE_RANGE_BASED_FOR             True if range-based for is supported and working.
+# HAVE_NOEXCEPT_SPECIFIER          True if nonexcept specifier is supported.
 
 include(CMakePushCheckState)
 cmake_push_check_state()
@@ -176,6 +177,24 @@ check_cxx_source_compiles("
       val = 0;
   }
 " HAVE_RANGE_BASED_FOR
+)
+
+# nonexcept specifier
+check_cxx_source_compiles("
+  void func1() noexcept {}
+
+  void func2() noexcept(true) {}
+
+  template <class T>
+  void func3() noexcept(noexcept(T())) {}
+
+  int main(void)
+  {
+    func1();
+    func2();
+    func3<int>();
+  }
+" HAVE_NOEXCEPT_SPECIFIER
 )
 
 cmake_pop_check_state()
