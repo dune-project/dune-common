@@ -107,6 +107,9 @@
 /* Define to 1 if C++11 constexpr is supported */
 #cmakedefine HAVE_CONSTEXPR 1
 
+/* Define to 1 if C++11 range-based for is supported */
+#cmakedefine HAVE_RANGE_BASED_FOR 1
+
 /* Define to 1 if C++11 nonexcept specifier is supported */
 #cmakedefine HAVE_NOEXCEPT_SPECIFIER 1
 
