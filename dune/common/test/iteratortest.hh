@@ -91,10 +91,21 @@ template<class Iter, class Opt>
 int testBidirectionalIterator(Iter begin, Iter end, Opt opt)
 {
   testForwardIterator(begin, end, opt);
-  for(Iter it = end; it != begin; )
+  for(Iter pre = end, post = end; pre != begin; )
   {
-    --it;
-    opt(*it);
+    if(pre != post--)
+    {
+      std::cerr << "Postdecrement did not return the old iterator"
+                << std::endl;
+      return 1;
+    }
+    if(--pre != post)
+    {
+      std::cerr << "Predecrement did not return the new iterator"
+                << std::endl;
+      return 1;
+    }
+    opt(*pre);
   }
 
   typename Iter::difference_type size = std::distance(begin, end);
