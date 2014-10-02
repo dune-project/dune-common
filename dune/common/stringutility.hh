@@ -17,6 +17,7 @@
 #include <new>
 
 #include <dune/common/exceptions.hh>
+#include <dune/common/std/memory.hh>
 
 
 namespace Dune {
@@ -90,8 +91,7 @@ namespace Dune {
 
     std::unique_ptr<char[]> dynamicBuffer;
     try {
-       dynamicBuffer = std::unique_ptr<char[]>(new char[dynamicBufferSize]());
-//      dynamicBuffer = Dune::Std::make_unique<char[]>(dynamicBufferSize);
+      dynamicBuffer = Dune::Std::make_unique<char[]>(dynamicBufferSize);
     }
     catch (const std::bad_alloc&) {
       DUNE_THROW(Dune::Exception,"Could allocate large enough dynamic buffer in formatString.");
