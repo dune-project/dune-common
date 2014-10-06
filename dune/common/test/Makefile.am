@@ -36,7 +36,6 @@ TESTPROGS = \
     testdebugallocator_fail3 \
     testdebugallocator_fail4 \
     testdebugallocator_fail5 \
-    testfconstruct \
     testfloatcmp \
     tuplestest_std \
     tupleutilitytest \
@@ -50,9 +49,7 @@ COMPILE_XFAIL_TESTS = \
     check_fvector_size_fail1 \
     check_fvector_size_fail2 \
     genericiterator_compile_fail \
-    nullptr-test-fail \
-    testfconstruct_fail1 \
-    testfconstruct_fail2
+    nullptr-test-fail
 
 compile_XFAIL:
 	for i in $(COMPILE_XFAIL_TESTS); do \
@@ -191,15 +188,6 @@ testdebugallocator_fail4_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE4 -DDEBUG_ALLOCATOR_
 
 testdebugallocator_fail5_SOURCES = testdebugallocator.cc
 testdebugallocator_fail5_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE5
-
-testfconstruct_SOURCES = testfconstruct.cc
-testfconstruct_CPPFLAGS = $(AM_CPPFLAGS) -DFVSIZE=3
-
-testfconstruct_fail1_SOURCES = testfconstruct.cc
-testfconstruct_fail1_CPPFLAGS = $(AM_CPPFLAGS) -DFVSIZE=2
-
-testfconstruct_fail2_SOURCES = testfconstruct.cc
-testfconstruct_fail2_CPPFLAGS = $(AM_CPPFLAGS) -DFVSIZE=5
 
 testfloatcmp_SOURCES = testfloatcmp.cc
 

@@ -29,7 +29,6 @@ set(TESTS
     shared_ptrtest_config
     singletontest
     streamtest
-    testfconstruct
     testfloatcmp
     tuplestest_config
     tupleutilitytest
@@ -48,9 +47,7 @@ set(COMPILEFAILTESTS
     check_fvector_size_fail1
     check_fvector_size_fail2
     genericiterator_compile_fail
-    nullptr-test-fail
-    testfconstruct_fail1
-    testfconstruct_fail2)
+    nullptr-test-fail)
 
 set(TESTPROGS ${TESTS} ${FAILTESTS})
 
@@ -161,15 +158,6 @@ add_executable("testdebugallocator_fail5" testdebugallocator.cc)
 target_link_libraries(testdebugallocator_fail5 dunecommon)
 set_target_properties(testdebugallocator_fail5 PROPERTIES COMPILE_DEFINITIONS "FAILURE5;EXPECTED_SIGNAL=SIGSEGV")
 
-add_executable("testfconstruct" EXCLUDE_FROM_ALL testfconstruct.cc)
-set_target_properties(testfconstruct PROPERTIES COMPILE_FLAGS "-DFVSIZE=3")
-target_link_libraries(testfconstruct "dunecommon")
-add_executable("testfconstruct_fail1" EXCLUDE_FROM_ALL testfconstruct.cc)
-set_target_properties(testfconstruct_fail1 PROPERTIES COMPILE_FLAGS "-DFVSIZE=2")
-target_link_libraries(testfconstruct_fail1 "dunecommon")
-add_executable("testfconstruct_fail2" EXCLUDE_FROM_ALL testfconstruct.cc)
-set_target_properties(testfconstruct_fail2 PROPERTIES COMPILE_FLAGS "-DFVSIZE=5")
-target_link_libraries(testfconstruct_fail2 "dunecommon")
 add_executable("tuplestest_config" tuplestest.cc)
 add_executable("tupleutilitytest" tupleutilitytest.cc)
 add_executable("utilitytest" utilitytest.cc)
