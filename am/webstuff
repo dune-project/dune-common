@@ -1,5 +1,4 @@
 # -*- makefile -*-
-# $Id$
 
 ## rules to create HTML-pages from wml-files with additional magic to
 ## possibly use the layout of the Dune-homepage

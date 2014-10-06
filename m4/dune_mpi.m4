@@ -1,5 +1,4 @@
 dnl -*- autoconf -*-
-# $Id$
 
 # wrapper for the autoconf-archive check. Note: compiling MPI-stuff sucks!
 

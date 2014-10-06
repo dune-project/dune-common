@@ -1,5 +1,4 @@
 # -*- Makefile -*-
-# $Id: global-rules 5267 2008-09-10 10:45:42Z christi $
 
 maintainer-clean-local: doc-clean-am
 

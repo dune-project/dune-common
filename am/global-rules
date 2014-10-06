@@ -1,6 +1,4 @@
 # -*- Makefile -*-
-# $Id$
-
 #
 # this file should be included into any Makefile.am so that we can
 # easily introduce new global rules. DO NOT OVERUSE!

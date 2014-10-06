@@ -1,5 +1,3 @@
-# $Id: dune_deprecated.m4 1114 2004-11-17 14:00:06Z christi $
-
 # Set the minimal verbosity level. All stream with a level below will
 # get removed by the optimizer.
 

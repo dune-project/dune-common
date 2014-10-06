@@ -1,5 +1,3 @@
-# $Id$
-
 # Check for inkscape and define automake conditional
 
 AC_DEFUN([DUNE_INKSCAPE],[

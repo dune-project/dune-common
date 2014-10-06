@@ -1,6 +1,5 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-// $Id: smartpointer.hh 5504 2009-04-08 13:35:31Z christi $
 
 #ifndef DUNE_SHARED_PTR_HH
 #define DUNE_SHARED_PTR_HH

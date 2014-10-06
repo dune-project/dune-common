@@ -1,5 +1,3 @@
-# $Id$
-
 # also build these sub directories
 SUBDIRS = doxygen buildsystem comm
 

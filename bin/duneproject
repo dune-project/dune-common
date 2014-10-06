@@ -434,8 +434,6 @@ for further options.
 
 The full build-system is described in the dune-common/doc/buildsystem (SVN version) or under share/doc/dune-common/buildsystem if you installed DUNE!
 
-\$Id$
-
 R_DELIM
 
 ################## MAKEFILE.AM ##################
@@ -446,8 +444,6 @@ for name in $DEPENDENCIES; do
 done
 echo "- $PROJECT/Makefile.am"
 cat> "$PROJECT/Makefile.am" << M_DELIM
-# \$Id$
-
 # we need the module file to be able to build via dunecontrol
 EXTRA_DIST = dune.module \\
   CMakeLists.txt \\

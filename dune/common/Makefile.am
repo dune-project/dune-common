@@ -1,5 +1,3 @@
-# $Id$
-
 SUBDIRS = . test parallel std
 
 # the standard debug streams are put into the libdune
