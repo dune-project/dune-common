@@ -3,6 +3,9 @@
 #ifndef DUNE_ASSIGN_HH
 #define DUNE_ASSIGN_HH
 
+#warning The header <dune/common/fassign.hh> is deprecated and will be removed after the\
+         release of dune-common-2.4. Please use C++11 initializer lists instead.
+
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/unused.hh>
