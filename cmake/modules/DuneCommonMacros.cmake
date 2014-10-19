@@ -27,6 +27,7 @@ include(AddGMPFlags)
 find_package(Inkscape)
 include(UseInkscape)
 include(FindMProtect)
+include(DuneTBB)
 
 # try to find the Vc library
 find_package(Vc)
