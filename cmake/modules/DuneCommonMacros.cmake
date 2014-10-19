@@ -26,6 +26,7 @@ find_package(Inkscape)
 include(UseInkscape)
 include(FindMProtect)
 include(DuneBoost)
+include(DuneTBB)
 
 # actual defines are in dune-common/config.h.cmake
 # could problably use cmake's configure file mechanism,

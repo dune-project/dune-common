@@ -76,6 +76,8 @@
 /* Define to 1 if the MPI2 Standard is supported */
 #cmakedefine MPI_2 1
 
+#define HAVE_TBB ${HAVE_TBB}
+
 /* begin private */
 
 /* Name of package */

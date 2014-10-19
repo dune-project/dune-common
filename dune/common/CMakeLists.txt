@@ -25,6 +25,7 @@ dune_add_library("dunecommon"
   _DUNE_TARGET_OBJECTS:kernel_
   ADD_LIBS "${_additional_libs}")
 
+add_dune_tbb_flags(dunecommon)
 #install headers
 install(FILES
         alignment.hh
