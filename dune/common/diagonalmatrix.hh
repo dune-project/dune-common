@@ -7,10 +7,12 @@
    \brief  This file implements a quadratic diagonal matrix of fixed size.
  */
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <complex>
 #include <cstddef>
+#include <initializer_list>
 #include <iostream>
 #include <memory>
 
@@ -106,6 +108,13 @@ namespace Dune {
       : diag_(diag)
     {}
 
+    DiagonalMatrix (std::initializer_list<K> const &l)
+    {
+      assert(l.size() == rows);// Actually, this is not needed any more!
+      std::copy_n(l.begin(), std::min(static_cast<std::size_t>(rows),
+                                      l.size()),
+                 diag_.begin());
+    }
 
     /** \brief Assignment from a scalar */
     DiagonalMatrix& operator= (const K& k)
