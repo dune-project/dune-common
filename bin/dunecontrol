@@ -11,6 +11,10 @@ if test -z "$MAKE"; then
   MAKE=make
 fi
 
+if test -z "$CMAKE"; then
+  CMAKE=cmake
+fi
+
 ###############################################
 ###
 ### read lib
@@ -177,19 +181,7 @@ load_opts() {
           USE_CMAKE="yes"
         fi
       fi
-      if test -n "$USE_CMAKE" && test -z "$CMAKE"; then
-        # We use cmake for building, but CMAKE is not yet set.
-        # Check the opts file for it
-        OPTS_FILE_CMAKE="$(eval CMAKE=""; . $DUNE_OPTS_FILE; eval echo \$CMAKE)"
-        if test -n "$OPTS_FILE_CMAKE"; then
-          CMAKE="$OPTS_FILE_CMAKE"
-        fi
-      fi
     fi
-  fi
-  if test -n "$USE_CMAKE" && test -z "$CMAKE"; then
-       # fall back to system cmake
-          CMAKE=cmake
   fi
   if test "x$DUNE_OPTS_FILE" != "x"; then
     if test "$command" = "configure"; then
