@@ -196,7 +196,7 @@ load_opts() {
     echo "----- using default flags \$${COMMAND}_FLAGS from environment -----"
   fi
 
-  if test "x$USE_CMAKE" = "xyes"; then
+  if test "x$USE_CMAKE" != "xno"; then
     if test -z "$BUILDDIR"; then
       echo "No build directory provided. Defaulting to the sub directory build-cmake"
       export BUILDDIR=build-cmake
