@@ -110,7 +110,6 @@ namespace Dune {
 
     DiagonalMatrix (std::initializer_list<K> const &l)
     {
-      assert(l.size() == rows);// Actually, this is not needed any more!
       std::copy_n(l.begin(), std::min(static_cast<std::size_t>(rows),
                                       l.size()),
                  diag_.begin());
