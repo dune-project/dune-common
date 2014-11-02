@@ -38,7 +38,7 @@ canonicalname(){
 			fdir="`canonicalname \"$fdir\"`"
 			echo "$fdir/$fname"
 		fi
-        # if this is a directory, then create an absolute 
+        # if this is a directory, then create an absolute
         # directory name and we are done
 		if test -d "$file"; then
 			(cd "$file"; pwd)
@@ -378,23 +378,23 @@ following programs installed on your system:
 Getting started
 ---------------
 
-If these preliminaries are met, you should run 
+If these preliminaries are met, you should run
 
   dunecontrol all
 
-which will find all installed dune modules as well as all dune modules 
-(not installed) which sources reside in a subdirectory of the current 
+which will find all installed dune modules as well as all dune modules
+(not installed) which sources reside in a subdirectory of the current
 directory. Note that if dune is not installed properly you will either
-have to add the directory where the dunecontrol script resides (probably 
+have to add the directory where the dunecontrol script resides (probably
 ./dune-common/bin) to your path or specify the relative path of the script.
 
-On your project and all uninstalled DUNE source modules found the script 
-will then calls the GNU autoconf/automake to create a ./configure-script 
+On your project and all uninstalled DUNE source modules found the script
+will then calls the GNU autoconf/automake to create a ./configure-script
 and the Makefiles. Afterwards that configure script will be called and the
 modules will be build using make all
 
-Most probably you'll have to provide additional information to dunecontrol 
-(e. g. compilers, configure options) and/or make options. 
+Most probably you'll have to provide additional information to dunecontrol
+(e. g. compilers, configure options) and/or make options.
 
 The most convenient way is to use options files in this case. The files
 defining three variables:
@@ -419,7 +419,7 @@ To get a full list of available configure flags just run
 
   dunecontrol configure --help
 
-after running at least 
+after running at least
   dunecontrol autogen
 
 More info
@@ -653,7 +653,7 @@ M_DELIM
 echo "- $PROJECT/src/$CMODULE.cc"
 cat> "$PROJECT/src/$CMODULE.cc" << CC_DELIM
 #ifdef HAVE_CONFIG_H
-# include "config.h"     
+# include "config.h"
 #endif
 #include <iostream>
 #include <dune/common/parallel/mpihelper.hh> // An initializer of MPI
@@ -942,7 +942,7 @@ EOF
 
 echo "- $PROJECT/stamp-regenerate-config-h"
 touch $PROJECT/stamp-regenerate-config-h
-echo 
+echo
 echo "done."
 echo "------------------------------------------"
 echo "For further details read the Dune Buildsystem-Howto:"
