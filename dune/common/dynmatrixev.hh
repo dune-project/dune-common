@@ -73,6 +73,8 @@ namespace Dune {
           std::cerr << "For matrix " << matrix << " eigenvalue calculation failed! " << std::endl;
           DUNE_THROW(InvalidStateException,"eigenValues: Eigenvalue calculation failed!");
         }
+
+        eigenValues.resize(N);
         for (int i=0; i<N; ++i)
           eigenValues[i] = std::complex<double>(eigenR[i], eigenI[i]);
       }
