@@ -78,6 +78,64 @@ namespace Dune {
       eigenvalues[1] = p + q;
     }
 
+    /** \brief Calculates the eigenvalues of a symmetric 3x3 field matrix
+        \param[in]  matrix matrix eigenvalues are calculated for
+        \param[out] eigenvalues Eigenvalues in ascending order
+
+        \note If the input matrix is not symmetric the behavior of this method is undefined.
+
+        This implementation was adapted from the pseudo-code (Python?) implementation found on
+        http://en.wikipedia.org/wiki/Eigenvalue_algorithm  (retrieved lated August 2014).
+        Wikipedia claims to have taken it from
+        Smith, Oliver K. (April 1961), Eigenvalues of a symmetric 3 × 3 matrix., Communications of the ACM 4 (4): 168, doi:10.1145/355578.366316
+     */
+    template <typename K>
+    static void eigenValues(const FieldMatrix<K, 3, 3>& matrix,
+                            FieldVector<K, 3>& eigenvalues)
+    {
+      K p1 = matrix[0][1]*matrix[0][1] + matrix[0][2]*matrix[0][2] + matrix[1][2]*matrix[1][2];
+
+      if (p1 <= 1e-8)
+      {
+        // A is diagonal.
+        eigenvalues[0] = matrix[0][0];
+        eigenvalues[1] = matrix[1][1];
+        eigenvalues[2] = matrix[2][2];
+      }
+      else
+      {
+        // q = trace(A)/3
+        K q = 0;
+        for (int i=0; i<3; i++)
+          q += matrix[i][i]/3.0;
+
+        K p2 = (matrix[0][0] - q)*(matrix[0][0] - q) + (matrix[1][1] - q)*(matrix[1][1] - q) + (matrix[2][2] - q)*(matrix[2][2] - q) + 2 * p1;
+        K p = std::sqrt(p2 / 6);
+        // B = (1 / p) * (A - q * I);       // I is the identity matrix
+        FieldMatrix<K,3,3> B;
+        for (int i=0; i<3; i++)
+          for (int j=0; j<3; j++)
+            B[i][j] = (1/p) * (matrix[i][j] - q*(i==j));
+
+        K r = B.determinant() / 2.0;
+
+        // In exact arithmetic for a symmetric matrix  -1 <= r <= 1
+        // but computation error can leave it slightly outside this range.
+        K phi;
+        if (r <= -1)
+          phi = M_PI / 3.0;
+        else if (r >= 1)
+          phi = 0;
+        else
+          phi = std::acos(r) / 3;
+
+        // the eigenvalues satisfy eig[2] <= eig[1] <= eig[0]
+        eigenvalues[2] = q + 2 * p * cos(phi);
+        eigenvalues[0] = q + 2 * p * cos(phi + (2*M_PI/3));
+        eigenvalues[1] = 3 * q - eigenvalues[0] - eigenvalues[2];     // since trace(matrix) = eig1 + eig2 + eig3
+      }
+    }
+
     /** \brief calculates the eigenvalues of a symmetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
         \param[out] eigenvalues FieldVector that contains eigenvalues in
