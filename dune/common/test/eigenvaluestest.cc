@@ -7,6 +7,7 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/dynmatrixev.hh>
+#include <dune/common/fmatrixev.hh>
 
 #include <algorithm>
 #include <complex>
@@ -90,10 +91,46 @@ void testRosserMatrix()
   std::cout << "Eigenvalues of Rosser matrix: " << eigenComplex << std::endl;
 }
 
+template <class field_type>
+void testSymmetricFieldMatrix()
+{
+  int numberOfTestMatrices = 10;
+
+  for (int i=0; i<numberOfTestMatrices; i++)
+  {
+    // Construct pseudo-random symmetric test matrix
+    FieldMatrix<field_type,3,3> testMatrix;
+    for (int j=0; j<3; j++)
+      for (int k=j; k<3; k++)
+        testMatrix[j][k] = testMatrix[k][j] = ((int)(M_PI*j*k*i))%100;
+
+    FieldVector<field_type,3> eigenValues;
+    FMatrixHelp::eigenValues(testMatrix, eigenValues);
+
+    // Make sure the compute numbers really are the eigenvalues
+    for (int j=0; j<3; j++)
+    {
+      FieldMatrix<field_type,3,3> copy = testMatrix;
+      for (int k=0; k<3; k++)
+        copy[k][k] -= eigenValues[j];
+
+      if (std::fabs(copy.determinant()) > 1e-8)
+        DUNE_THROW(MathError, "Value computed by FMatrixHelp::eigenValues is not an eigenvalue");
+    }
+
+    // Make sure the eigenvalues are in ascending order
+    for (int j=0; j<3-1; j++)
+      if (eigenValues[j] > eigenValues[j+1] + 1e-10)
+        DUNE_THROW(MathError, "Values computed by FMatrixHelp::eigenValues are not in ascending order");
+  }
+}
 
 int main() try
 {
   testRosserMatrix<double>();
+
+  testSymmetricFieldMatrix<double>();
+
   return 0;
 } catch (Exception exception)
 {
