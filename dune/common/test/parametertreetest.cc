@@ -9,6 +9,7 @@
 #include <ostream>
 #include <sstream>
 
+#include <dune/common/exceptions.hh>
 #include <dune/common/parametertree.hh>
 #include <dune/common/parametertreeparser.hh>
 
@@ -22,6 +23,23 @@
                 << #expr << ") failed" << std::endl;                \
       std::abort();                                                 \
     }                                                               \
+  } while(false)
+
+// Check that the given expression throws the given exception
+#define check_throw(expr, except)                               \
+  do {                                                          \
+    try {                                                       \
+      expr;                                                     \
+      std::cerr << __FILE__ << ":" << __LINE__ << ": " << #expr \
+                << " should throw " << #except << std::endl;    \
+      std::abort();                                             \
+    }                                                           \
+    catch(except) {}                                            \
+    catch(...) {                                                \
+      std::cerr << __FILE__ << ":" << __LINE__ << ": " << #expr \
+                << " should throw " << #except << std::endl;    \
+      std::abort();                                             \
+    }                                                           \
   } while(false)
 
 template<class P>
@@ -198,6 +216,20 @@ void testOptionsParser()
   }
 }
 
+void testFS1527()
+{
+  { // Check that junk at the end is not accepted (int)
+    Dune::ParameterTree ptree;
+    check_throw(ptree["setting"] = "0.5"; ptree.get("setting", 0),
+                Dune::RangeError);
+  }
+  { // Check that junk at the end is not accepted (double)
+    Dune::ParameterTree ptree;
+    check_throw(ptree["setting"] = "0.5 junk"; ptree.get("setting", 0.0),
+                Dune::RangeError);
+  }
+}
+
 int main()
 {
   try {
@@ -227,6 +259,9 @@ int main()
 
     // check the command line parser
     testOptionsParser();
+
+    // check for specific bugs
+    testFS1527();
   }
   catch (Dune::Exception & e)
   {
