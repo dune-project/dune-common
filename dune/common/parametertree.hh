@@ -11,6 +11,7 @@
 #include <iostream>
 #include <istream>
 #include <iterator>
+#include <locale>
 #include <map>
 #include <ostream>
 #include <sstream>
@@ -18,7 +19,6 @@
 #include <typeinfo>
 #include <vector>
 #include <algorithm>
-#include <cctype>
 
 #include <dune/common/array.hh>
 #include <dune/common/exceptions.hh>
@@ -241,6 +241,8 @@ namespace Dune {
     static T parse(const std::string& str) {
       T val;
       std::istringstream s(str);
+      // make sure we are in locale "C"
+      s.imbue(std::locale::classic());
       s >> val;
       if(!s)
         DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" as a " <<
@@ -271,9 +273,9 @@ namespace Dune {
   template<>
   struct ParameterTree::Parser< bool > {
     struct ToLower {
-      int operator()(int c)
+      char operator()(char c)
       {
-        return std::tolower(c);
+        return std::tolower(c, std::locale::classic());
       }
     };
 
