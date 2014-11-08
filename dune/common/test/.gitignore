@@ -31,6 +31,7 @@
 /mpihelpertest
 /mpihelpertest2
 /nullptr-test
+/parametertreelocaletest
 /parametertreetest
 /pathtest
 /poolallocatortest

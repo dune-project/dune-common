@@ -25,6 +25,7 @@ TESTPROGS = \
     mpihelpertest2 \
     nullptr-test \
     pathtest \
+    parametertreelocaletest \
     parametertreetest \
     poolallocatortest \
     shared_ptrtest_config \
@@ -155,6 +156,7 @@ nullptr_test_SOURCES = nullptr-test.cc nullptr-test2.cc
 nullptr_test_fail_SOURCES = nullptr-test.cc
 nullptr_test_fail_CPPFLAGS = $(AM_CPPFLAGS) -DFAIL
 
+parametertreelocaletest_SOURCES = parametertreelocaletest.cc
 parametertreetest_SOURCES = parametertreetest.cc
 
 pathtest_SOURCES = pathtest.cc

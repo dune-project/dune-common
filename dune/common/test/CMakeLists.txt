@@ -24,6 +24,7 @@ set(TESTS
     mpihelpertest2
     nullptr_test
     pathtest
+    parametertreelocaletest
     parametertreetest
     poolallocatortest
     shared_ptrtest_config
@@ -125,6 +126,9 @@ target_link_libraries(nullptr_test "dunecommon")
 add_executable("nullptr_test_fail" EXCLUDE_FROM_ALL nullptr-test.cc)
 target_link_libraries(nullptr_test_fail "dunecommon")
 set_target_properties(nullptr_test_fail PROPERTIES COMPILE_FLAGS "-DFAIL")
+
+add_executable("parametertreelocaletest" parametertreelocaletest.cc)
+target_link_libraries("parametertreelocaletest" "dunecommon")
 
 add_executable("parametertreetest" parametertreetest.cc)
 target_link_libraries("parametertreetest" "dunecommon")
