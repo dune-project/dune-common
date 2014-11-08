@@ -1,7 +1,1 @@
-libdunecommon.la
-
-Makefile.in
-Makefile
-
-.deps
-.libs
+/libdunecommon.la
