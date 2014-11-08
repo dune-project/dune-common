@@ -17,6 +17,8 @@
 #include <map>
 #include <algorithm>
 
+#include <dune/common/exceptions.hh>
+
 std::string Dune::ParameterTreeParser::ltrim(const std::string& s)
 {
   std::size_t firstNonWS = s.find_first_not_of(" \t\n\r");
@@ -137,27 +139,17 @@ void Dune::ParameterTreeParser::readINITree(std::istream& in,
 void Dune::ParameterTreeParser::readOptions(int argc, char* argv [],
                                             ParameterTree& pt)
 {
-  std::string v = "";
-  std::string k = "";
-
   for(int i=1; i<argc; i++)
   {
-    std::string s(argv[i]);
-
     if ((argv[i][0]=='-') && (argv[i][1]!='\000'))
     {
-      k = argv[i]+1;
-      continue;
+      if(argv[i+1] == NULL)
+        DUNE_THROW(RangeError, "last option on command line (" << argv[i]
+                   << ") does not have an argument");
+      pt[argv[i]+1] = argv[i+1];
+      ++i; // skip over option argument
     }
-    else
-    {
-      if (k.size())
-        pt[k] = argv[i];
-      k.clear();
-    }
-
   }
-
 }
 
 void Dune::ParameterTreeParser::readNamedOptions(int argc, char* argv[],
