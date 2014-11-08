@@ -141,28 +141,6 @@ namespace Dune {
     std::string get(const std::string& key, const char* defaultValue) const;
 
 
-    /** \brief get value as int
-     *
-     * Returns value for given key interpreted as int.
-     *
-     * \param key key name
-     * \param defaultValue default if key does not exist
-     * \return value as int
-     */
-    int get(const std::string& key, int defaultValue) const;
-
-
-    /** \brief get value as double
-     *
-     * Returns value for given key interpreted as double.
-     *
-     * \param key key name
-     * \param defaultValue default if key does not exist
-     * \return value as double
-     */
-    double get(const std::string& key, double defaultValue) const;
-
-
     /** \brief get value converted to a certain type
      *
      * Returns value as type T for given key.
