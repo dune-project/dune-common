@@ -6,6 +6,12 @@ set -e
 ###
 ### check for environment variables
 ###
+if test -z "$GREP"; then
+  GREP=grep
+fi
+if test -z "$SED"; then
+  SED=sed
+fi
 
 if test -z "$MAKE"; then
   MAKE=make
@@ -14,6 +20,10 @@ fi
 if test -z "$CMAKE"; then
   CMAKE=cmake
 fi
+
+space=" "
+tab="	"
+BLANK="$space$tab"
 
 ###############################################
 ###
@@ -220,16 +230,6 @@ abs_builddir()
   esac
 }
 
-space=" "
-tab="	"
-BLANK="$space$tab"
-
-if test -z "$GREP"; then
-  GREP=grep
-fi
-if test -z "$SED"; then
-  SED=sed
-fi
 # Uses the current compiler to extract information about the
 # multiarch triplets and sets the export variable MULTIARCH_LIBDIR
 # according to it.
