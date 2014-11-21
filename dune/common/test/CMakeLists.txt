@@ -63,7 +63,6 @@ add_executable("arraytest" arraytest.cc)
 
 add_executable("bigunsignedinttest" bigunsignedinttest.cc)
 target_link_libraries("bigunsignedinttest" "dunecommon")
-add_dune_boost_flags("bigunsignedinttest")
 
 add_executable("bitsetvectortest" bitsetvectortest.cc)
 add_executable("check_fvector_size" check_fvector_size.cc)

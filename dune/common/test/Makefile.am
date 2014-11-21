@@ -87,7 +87,7 @@ arraylisttest_SOURCES = arraylisttest.cc
 arraytest_SOURCES = arraytest.cc
 
 bigunsignedinttest_SOURCES=bigunsignedinttest.cc
-bigunsignedinttest_CPPFLAGS = $(AM_CPPFLAGS) $(BOOST_CPPFLAGS)
+bigunsignedinttest_CPPFLAGS = $(AM_CPPFLAGS)
 
 bitsetvectortest_SOURCES = bitsetvectortest.cc
 
