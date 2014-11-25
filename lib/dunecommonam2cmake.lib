@@ -34,12 +34,6 @@ dune_common_options_am2cmake()
         CMAKE_PARAMS="$CMAKE_PARAMS -DDISABLE_CXX11CHECK:BOOL=TRUE"
     fi
 
-    # Check for --disable-gxx0xcheck
-    echo $PARAMS | grep \\-\\-disable-tr1-headers > /dev/null
-    if test "$?" -eq 0 ; then
-        CMAKE_PARAMS="$CMAKE_PARAMS -DDISABLE_TR1_HEADERS:BOOL=TRUE"
-    fi
-
     # Check for --with-minimal-debug-level
     local arg=`echo "$PARAMS"| grep \\\\--with-minimal-debug-level= | sed "s/.*--with-minimal-debug-level=\([^$BLANK]*\).*/\1/"`
     if test "x$arg" != "x"; then
