@@ -91,7 +91,7 @@ void new_delete_tests()
 int main(int, char**)
 {
 #if EXPECTED_SIGNAL
-  auto handler = std::signal(EXPECTED_SIGNAL, std::_Exit);
+  std::signal(EXPECTED_SIGNAL, std::_Exit);
 #endif
 
   basic_tests();

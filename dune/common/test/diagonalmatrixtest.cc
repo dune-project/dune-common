@@ -4,13 +4,14 @@
 #include "config.h"
 #endif
 
-#include <dune/common/diagonalmatrix.hh>
 
 #include <iostream>
 #include <algorithm>
 
-#include <dune/common/fvector.hh>
 #include <dune/common/exceptions.hh>
+#include <dune/common/fvector.hh>
+#include <dune/common/diagonalmatrix.hh>
+#include <dune/common/unused.hh>
 
 #include "checkmatrixinterface.hh"
 
@@ -19,7 +20,7 @@ using namespace Dune;
 template<class K, int n>
 void test_matrix()
 {
-  typedef typename DiagonalMatrix<K,n>::size_type size_type;
+  typedef typename DiagonalMatrix<K,n>::size_type size_type DUNE_UNUSED;
 
   DiagonalMatrix<K,n> A(1);
   FieldVector<K,n> f;
