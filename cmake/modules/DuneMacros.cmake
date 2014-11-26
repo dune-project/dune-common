@@ -723,6 +723,10 @@ macro(finalize_dune_project)
   include(GNUInstallDirs)
   set(DOXYSTYLE_DIR ${CMAKE_INSTALL_DATAROOTDIR}/dune-common/doc/doxygen/)
   set(SCRIPT_DIR ${CMAKE_INSTALL_DATAROOTDIR}/dune/cmake/scripts)
+  # Set the location where the doc sources are installed.
+  # Needed by custom package configuration
+  # file section of dune-grid.
+  set(DUNE_MODULE_SRC_DOCDIR "\${@ProjectName@_PREFIX}/${CMAKE_INSTALL_DOCDIR}")
 
   if(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
     # Generate a standard cmake package configuration file
@@ -742,6 +746,10 @@ set(@ProjectName@_DEPENDS \"@@ProjectName@_DEPENDS@\")
 set(@ProjectName@_SUGGESTS \"@@ProjectName@_SUGGESTS@\")
 set(@ProjectName@_MODULE_PATH \"@PACKAGE_DUNE_INSTALL_MODULEDIR@\")
 set(@ProjectName@_LIBRARIES \"@DUNE_MODULE_LIBRARIES@\")
+
+# Lines that are set by the CMake buildsystem via the variable DUNE_CUSTOM_PKG_CONFIG_SECTION
+${DUNE_CUSTOM_PKG_CONFIG_SECTION}
+
 #import the target
 if(@ProjectName@_LIBRARIES)
   get_filename_component(_dir \"\${CMAKE_CURRENT_LIST_FILE}\" PATH)
@@ -765,6 +773,10 @@ endif(NOT @ProjectName@_FOUND)")
   else(DUNE_MODULE_LIBRARIES)
     set(DUNE_INSTALL_LIBDIR ${DUNE_INSTALL_NONOBJECTLIBDIR})
   endif(DUNE_MODULE_LIBRARIES)
+
+  # Set the location of the doc file source. Needed by custom package configuration
+  # file section of dune-grid.
+  set(DUNE_MODULE_SRC_DOCDIR "${PROJECT_SOURCE_DIR}/doc")
 
   configure_package_config_file(${CONFIG_SOURCE_FILE}
     ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake
