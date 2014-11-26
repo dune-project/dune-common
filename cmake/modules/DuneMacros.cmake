@@ -113,7 +113,7 @@ macro(find_dune_package module)
       string(REPLACE  ${ProjectName} ${module} ${module}_DIR
         ${PROJECT_BINARY_DIR})
     endif()
-    find_package(${module} NO_CMAKE_PACKAGE_REGISTRY)
+    find_package(${module} QUIET NO_CMAKE_PACKAGE_REGISTRY)
   endif(NOT ${module}_FOUND)
   if(NOT ${module}_FOUND)
     message(STATUS "No full CMake package configuration support available."
