@@ -8,13 +8,16 @@
 #include <cstdint>
 #include <dune/common/typetraits.hh>
 
-
-#if defined __clang__
+#if defined __INTEL_COMPILER
+// this is messy as hell, but we typically feed a template argument to alignment, and ICC doesn't like that
+#define DUNE_ASSUME_ALIGNED(x,T,alignment) __assume_aligned(x,64)
+#elif defined __clang__
 #define DUNE_ASSUME_ALIGNED(x,T,alignment)
-#else
+#elif defined __GNUC__
 #define DUNE_ASSUME_ALIGNED(x,T,alignment) x = static_cast<T*>(__builtin_assume_aligned(x,alignment))
+#else
+#define DUNE_ASSUME_ALIGNED(x,T,alignment)
 #endif
-
 
 namespace Dune {
   namespace Memory {
