@@ -59,7 +59,7 @@ namespace Dune {
               // zero out existing values
               for (int ii = 0; ii < block_height; ++ii)
                 for (int i = 0; i < kernel_block_size; ++i)
-                  y[block*kernel_block_size*block_height + ii + i*block_height] = 0;
+                  y[block*kernel_block_size*block_height + ii + i*block_height] = 0.0;
 
               for (int j = 0; j < cols; ++j)
                 for (int ii = 0; ii < block_height; ++ii)
