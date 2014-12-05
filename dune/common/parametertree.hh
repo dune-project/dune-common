@@ -19,6 +19,7 @@
 #include <typeinfo>
 #include <vector>
 #include <algorithm>
+#include <bitset>
 
 #include <dune/common/array.hh>
 #include <dune/common/exceptions.hh>
@@ -311,6 +312,21 @@ namespace Dune {
     parse(const std::string& str) {
       array<T, n> val;
       parseRange(str, val.begin(), val.end());
+      return val;
+    }
+  };
+
+  template<std::size_t n>
+  struct ParameterTree::Parser<std::bitset<n> > {
+    static std::bitset<n>
+    parse(const std::string& str) {
+      std::bitset<n> val;
+      std::vector<std::string> sub = split(str);
+      if (sub.size() != n)
+        DUNE_THROW(RangeError, "cannot parse bitset because of unmatching sizes");
+      for (std::size_t i=0; i<n; ++i) {
+        val[i] = ParameterTree::Parser<bool>::parse(sub[i]);
+      }
       return val;
     }
   };
