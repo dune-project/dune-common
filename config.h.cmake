@@ -119,6 +119,11 @@
 /* Define to if the UMFPack library is available */
 #cmakedefine HAVE_UMFPACK ENABLE_UMFPACK
 
+/* Define to ENABLE_PARMETIS if you have the Parmetis library.
+   This is only true if MPI was found
+   by configure _and_ if the application uses the PARMETIS_CPPFLAGS */
+#cmakedefine HAVE_PARMETIS ENABLE_PARMETIS
+
 /* Include always useful headers */
 #include "FC.h"
 #define FC_FUNC FC_GLOBAL_
