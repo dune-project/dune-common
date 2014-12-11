@@ -726,36 +726,36 @@ macro(finalize_dune_project)
   # Set the location where the doc sources are installed.
   # Needed by custom package configuration
   # file section of dune-grid.
-  set(DUNE_MODULE_SRC_DOCDIR "\${@ProjectName@_PREFIX}/${CMAKE_INSTALL_DOCDIR}")
+  set(DUNE_MODULE_SRC_DOCDIR "\${${ProjectName}_PREFIX}/${CMAKE_INSTALL_DOCDIR}")
 
   if(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
     # Generate a standard cmake package configuration file
     file(WRITE ${PROJECT_BINARY_DIR}/CMakeFiles/${ProjectName}-config.cmake.in
-"if(NOT @ProjectName@_FOUND)
+"if(NOT ${ProjectName}_FOUND)
 @PACKAGE_INIT@
 
 #report other information
-set_and_check(@ProjectName@_PREFIX \"\${PACKAGE_PREFIX_DIR}\")
-set_and_check(@ProjectName@_INCLUDE_DIRS \"@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@\")
-set(@ProjectName@_CXX_FLAGS \"@CMAKE_CXX_FLAGS@\")
-set(@ProjectName@_CXX_FLAGS_DEBUG \"@CMAKE_CXX_FLAGS_DEBUG@\")
-set(@ProjectName@_CXX_FLAGS_MINSIZEREL \"@CMAKE_CXX_FLAGS_MINSIZEREL@\")
-set(@ProjectName@_CXX_FLAGS_RELEASE \"@CMAKE_CXX_FLAGS_RELEASE@\")
-set(@ProjectName@_CXX_FLAGS_RELWITHDEBINFO \"@CMAKE_CXX_FLAGS_RELWITHDEBINFO@\")
-set(@ProjectName@_DEPENDS \"@@ProjectName@_DEPENDS@\")
-set(@ProjectName@_SUGGESTS \"@@ProjectName@_SUGGESTS@\")
-set(@ProjectName@_MODULE_PATH \"@PACKAGE_DUNE_INSTALL_MODULEDIR@\")
-set(@ProjectName@_LIBRARIES \"@DUNE_MODULE_LIBRARIES@\")
+set_and_check(${ProjectName}_PREFIX \"\${PACKAGE_PREFIX_DIR}\")
+set_and_check(${ProjectName}_INCLUDE_DIRS \"@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@\")
+set(${ProjectName}_CXX_FLAGS \"${CMAKE_CXX_FLAGS}\")
+set(${ProjectName}_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG}\")
+set(${ProjectName}_CXX_FLAGS_MINSIZEREL \"${CMAKE_CXX_FLAGS_MINSIZEREL}\")
+set(${ProjectName}_CXX_FLAGS_RELEASE \"${CMAKE_CXX_FLAGS_RELEASE}\")
+set(${ProjectName}_CXX_FLAGS_RELWITHDEBINFO \"${CMAKE_CXX_FLAGS_RELWITHDEBINFO}\")
+set(${ProjectName}_DEPENDS \"@${ProjectName}_DEPENDS@\")
+set(${ProjectName}_SUGGESTS \"@${ProjectName}_SUGGESTS@\")
+set(${ProjectName}_MODULE_PATH \"@PACKAGE_DUNE_INSTALL_MODULEDIR@\")
+set(${ProjectName}_LIBRARIES \"@DUNE_MODULE_LIBRARIES@\")
 
 # Lines that are set by the CMake buildsystem via the variable DUNE_CUSTOM_PKG_CONFIG_SECTION
 ${DUNE_CUSTOM_PKG_CONFIG_SECTION}
 
 #import the target
-if(@ProjectName@_LIBRARIES)
+if(${ProjectName}_LIBRARIES)
   get_filename_component(_dir \"\${CMAKE_CURRENT_LIST_FILE}\" PATH)
-  include(\"\${_dir}/@ProjectName@-targets.cmake\")
-endif(@ProjectName@_LIBRARIES)
-endif(NOT @ProjectName@_FOUND)")
+  include(\"\${_dir}/${ProjectName}-targets.cmake\")
+endif(${ProjectName}_LIBRARIES)
+endif(NOT ${ProjectName}_FOUND)")
       set(CONFIG_SOURCE_FILE ${PROJECT_BINARY_DIR}/CMakeFiles/${ProjectName}-config.cmake.in)
   else(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
     set(CONFIG_SOURCE_FILE ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
@@ -806,12 +806,12 @@ endmacro()")
 
   if(NOT EXISTS ${PROJECT_SOURCE_DIR}/${ProjectName}-config-version.cmake.in)
     file(WRITE ${PROJECT_BINARY_DIR}/CMakeFiles/${ProjectName}-config-version.cmake.in
-"set(PACKAGE_VERSION \"@ProjectVersionString@\")
+"set(PACKAGE_VERSION \"${ProjectVersionString}\")
 
-if(\"\${PACKAGE_FIND_VERSION_MAJOR}\" EQUAL \"@ProjectVersionMajor@\" AND
-     \"\${PACKAGE_FIND_VERSION_MINOR}\" EQUAL \"@ProjectVersionMinor@\")
+if(\"\${PACKAGE_FIND_VERSION_MAJOR}\" EQUAL \"${ProjectVersionMajor}\" AND
+     \"\${PACKAGE_FIND_VERSION_MINOR}\" EQUAL \"${ProjectVersionMinor}\")
   set (PACKAGE_VERSION_COMPATIBLE 1) # compatible with newer
-  if (\"\${PACKAGE_FIND_VERSION}\" VERSION_EQUAL \"@ProjectVersionString@\")
+  if (\"\${PACKAGE_FIND_VERSION}\" VERSION_EQUAL \"${ProjectVersionString}\")
     set(PACKAGE_VERSION_EXACT 1) #exact match for this version
   endif()
 endif()
