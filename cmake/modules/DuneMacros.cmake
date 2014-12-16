@@ -1157,5 +1157,7 @@ macro(add_dune_all_flags targets)
     set_property(TARGET ${target}
           APPEND_STRING
           PROPERTY COMPILE_FLAGS ${FLAGSTR})
+    get_property(libs GLOBAL PROPERTY ALL_PKG_LIBS)
+    target_link_libraries(${target} ${DUNE_LIBS} ${libs})
   endforeach()
 endmacro(add_dune_all_flags targets)
