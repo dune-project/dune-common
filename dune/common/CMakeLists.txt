@@ -19,6 +19,7 @@ dune_add_library("dunecommon"
   parametertreeparser.cc
   path.cc
   stdstreams.cc
+  stdthread.cc
   ADD_LIBS "${_additional_libs}")
 
 #install headers
@@ -83,6 +84,7 @@ install(FILES
         sllist.hh
         static_assert.hh
         stdstreams.hh
+        stdthread.hh
         stringutility.hh
         timer.hh
         tuples.hh
