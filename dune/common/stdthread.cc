@@ -30,15 +30,20 @@ namespace Dune
                 << msg << std::endl;
     }
 
-  } // anonymous namespace
+    void setBool(bool *v)
+    {
+      *v = true;
+    }
 
+  } // anonymous namespace
 
   void doAssertCallOnce(const char *file, int line, const char *function)
   {
     std::once_flag once;
     bool works = false;
     try {
-      std::call_once(once, [&]{ works = true; });
+      // pass address to works since call_once passes by value
+      std::call_once(once, setBool, &works);
     }
     catch(...) {
       printCallOnceError(file, line, function,
