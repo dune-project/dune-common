@@ -230,6 +230,21 @@ void testFS1527()
   }
 }
 
+// check that negative values can be given on the command line
+void testFS1523()
+{
+  static char arg0[] = "progname";
+  static char arg1[] = "-setting";
+  static char arg2[] = "-1";
+  static char *argv[] = { arg0, arg1, arg2, NULL };
+  int argc = sizeof argv / sizeof (char *) - 1;
+
+  Dune::ParameterTree ptree;
+  Dune::ParameterTreeParser::readOptions(argc, argv, ptree);
+
+  check_assert(ptree.get<int>("setting") == -1);
+}
+
 int main()
 {
   try {
@@ -262,6 +277,7 @@ int main()
 
     // check for specific bugs
     testFS1527();
+    testFS1523();
   }
   catch (Dune::Exception & e)
   {
