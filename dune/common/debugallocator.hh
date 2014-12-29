@@ -11,7 +11,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <new>
-#if HAVE_SYS_MMAN_H and HAVE_MPROTECT
+#if HAVE_SYS_MMAN_H && HAVE_MPROTECT
 #include <sys/mman.h>
 #else
 enum DummyProtFlags { PROT_NONE, PROT_WRITE, PROT_READ };
@@ -65,7 +65,7 @@ namespace Dune
     private:
       void memprotect(void* from, difference_type len, int prot)
       {
-#if HAVE_SYS_MMAN_H and HAVE_MPROTECT
+#if HAVE_SYS_MMAN_H && HAVE_MPROTECT
         int result = mprotect(from, len, prot);
         if (result == -1)
         {
