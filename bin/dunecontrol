@@ -676,11 +676,11 @@ run_default_configure () {
       # such that they are honored by cmake.
       flags="CXX CC CXXFLAGS CFLAGS CPPFLAGS LDFLAGS F77 FFLAGS FLIBS FC FCFLAGS FCLIBS LIBS"
       for i in  $flags; do
-        cflags=`echo "$PARAMS" | $GREP $i= | $SED -e "s/.*\($i=\"[^\"]*\"\).*/\1/" -e "s/.*\($i='[^']*'\).*/\1/"`
+        cflags=`echo "$PARAMS" | $GREP $i= | $SED -e "s/.*[$BLANK^]\($i=\"[^\"]*\"\).*/\1/" -e "s/.*[$BLANK^]\($i='[^']*'\).*/\1/"`
         if test -n "$cflags" && test "$PARAMS" != "$cflags" ; then
             PREPARAMS="$PREPARAMS $cflags"
           else
-           cflags=`echo "$PARAMS" | $GREP $i= | $SED -e "s/.*\($i=[^$BLANK]*\).*/\1/"`
+           cflags=`echo "$PARAMS" | $GREP $i= | $SED -e "s/.*[$BLANK^]\($i=[^$BLANK]*\).*/\1/"`
            if test -n "$cflags" && test "$PARAMS" != "$cflags" ; then
             PREPARAMS="$PREPARAMS $cflags"
            fi
