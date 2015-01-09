@@ -676,11 +676,11 @@ run_default_configure () {
       # such that they are honored by cmake.
       flags="CXX CC CXXFLAGS CFLAGS CPPFLAGS LDFLAGS F77 FFLAGS FLIBS FC FCFLAGS FCLIBS LIBS"
       for i in  $flags; do
-        cflags=`echo "$PARAMS" | $GREP $i= | $SED -e "s/.*[$BLANK^]\($i=\"[^\"]*\"\).*/\1/" -e "s/.*[$BLANK^]\($i='[^']*'\).*/\1/"`
+        cflags=`echo "$PARAMS" | $GREP $i= | $SED -e "s/^\($i=\"[^\"]*\"\).*/\1/" -e "s/.*[$BLANK]\($i=\"[^\"]*\"\).*/\1/" -e "s/^\($i='[^']*'\).*/\1/" -e "s/.*[$BLANK]\($i='[^']*'\).*/\1/"`
         if test -n "$cflags" && test "$PARAMS" != "$cflags" ; then
             PREPARAMS="$PREPARAMS $cflags"
           else
-           cflags=`echo "$PARAMS" | $GREP $i= | $SED -e "s/.*[$BLANK^]\($i=[^$BLANK]*\).*/\1/"`
+           cflags=`echo "$PARAMS" | $GREP $i= | $SED -e "s/^\($i=[^$BLANK]*\).*/\1/" -e "s/.*[$BLANK]\($i=[^$BLANK]*\).*/\1/"`
            if test -n "$cflags" && test "$PARAMS" != "$cflags" ; then
             PREPARAMS="$PREPARAMS $cflags"
            fi
@@ -689,11 +689,11 @@ run_default_configure () {
       # MPI flags are special. find_package(MPI) does not honor MPICC, MPICXX
       # Therefore we translate them to CMake variables and add them to CMAKE_FLAGS. Fortran is omitted.
       for i in CC CXX; do
-        comp=`echo "$PARAMS" | $GREP MPI$i= | $SED -e "s/.*[$BLANK^]MPI$i=\(\"[^\"]*\"\).*/\1/" -e "s/.*[$BLANK^]MPI$i=\('[^']*'\).*/\1/"`
+        comp=`echo "$PARAMS" | $GREP MPI$i= | $SED -e "s/^\($i=\"[^\"]*\"\).*/\1/" -e "s/.*[$BLANK]\($i=\"[^\"]*\"\).*/\1/" -e "s/^\($i='[^']*'\).*/\1/" -e "s/.*[$BLANK]\($i='[^']*'\).*/\1/"`
         if test -n "$comp" && test "$PARAMS" != "$comp" ; then
           CMAKE_FLAGS="-DMPI_$(echo $i| $SED 's/^CC$/C/')""_COMPILER:FILEPATH=`which $comp` $CMAKE_FLAGS"
           else
-            comp=`echo "$PARAMS" | $GREP MPI$i= | $SED -e "s/.*[$BLANK^]MPI$i=\([^$BLANK]*\).*/\1/"`
+            comp=`echo "$PARAMS" | $GREP MPI$i= | $SED -e "s/^MPI$i=\([^$BLANK]*\).*/\1/" -e "s/.*[$BLANK]MPI$i=\([^$BLANK]*\).*/\1/"`
             if test -n "$comp" && test "$PARAMS" != "$comp" ; then
               CMAKE_FLAGS="-DMPI_$(echo $i| $SED 's/^CC$/C/')""_COMPILER:FILEPATH=`which $comp` $CMAKE_FLAGS"
             fi
