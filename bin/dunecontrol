@@ -686,6 +686,19 @@ run_default_configure () {
            fi
         fi
       done
+      # MPI flags are special. find_package(MPI) does not honor MPICC, MPICXX
+      # Therefore we translate them to CMake variables and add them to CMAKE_FLAGS. Fortran is omitted.
+      for i in CC CXX; do
+        comp=`echo "$PARAMS" | $GREP MPI$i= | $SED -e "s/.*[$BLANK^]MPI$i=\(\"[^\"]*\"\).*/\1/" -e "s/.*[$BLANK^]MPI$i=\('[^']*'\).*/\1/"`
+        if test -n "$comp" && test "$PARAMS" != "$comp" ; then
+          CMAKE_FLAGS="-DMPI_$(echo $i| $SED 's/^CC$/C/')""_COMPILER:FILEPATH=`which $comp` $CMAKE_FLAGS"
+          else
+            comp=`echo "$PARAMS" | $GREP MPI$i= | $SED -e "s/.*[$BLANK^]MPI$i=\([^$BLANK]*\).*/\1/"`
+            if test -n "$comp" && test "$PARAMS" != "$comp" ; then
+              CMAKE_FLAGS="-DMPI_$(echo $i| $SED 's/^CC$/C/')""_COMPILER:FILEPATH=`which $comp` $CMAKE_FLAGS"
+            fi
+        fi
+      done
       # create build directory if requested
       test -d "$ABS_BUILDDIR" || mkdir -p "$ABS_BUILDDIR"
       SRCDIR="$PWD"
