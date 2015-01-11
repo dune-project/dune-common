@@ -30,3 +30,10 @@ add_test(selectiontest selectiontest)
 add_test(indicestest indicestest)
 add_test(syncertest syncertest)
 add_test(variablesizecommunicatortest variablesizecommunicatortest)
+
+# treat tests returning code 77 as skipped
+set_tests_properties(
+  indicestest
+  syncertest
+  variablesizecommunicatortest
+  PROPERTIES SKIP_RETURN_CODE 77)
