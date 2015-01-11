@@ -79,9 +79,7 @@ add_executable("dynvectortest" dynvectortest.cc)
 
 add_executable("eigenvaluestest" eigenvaluestest.cc)
 target_link_libraries(eigenvaluestest dunecommon)
-if(LAPACK_FOUND)
-  target_link_libraries(eigenvaluestest ${LAPACK_LIBRARIES})
-endif(LAPACK_FOUND)
+target_link_libraries(eigenvaluestest ${LAPACK_LIBRARIES})
 
 add_executable("diagonalmatrixtest" diagonalmatrixtest.cc)
 target_link_libraries("diagonalmatrixtest" "dunecommon")
@@ -172,6 +170,7 @@ endforeach(_TEST)
 
 # treat tests returning code 77 as skipped
 set_tests_properties(
+  eigenvaluestest
   mpicollectivecommunication
   PROPERTIES SKIP_RETURN_CODE 77)
 
