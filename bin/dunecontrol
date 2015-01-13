@@ -735,8 +735,13 @@ run_default_make () {
   test ! -d "$ABS_BUILDDIR" || cd "$ABS_BUILDDIR"
   PARAMS="$CMD_FLAGS"
   echo "build directory: $BUILDDIR"
-  echo make "$PARAMS"
-  eval $MAKE "$PARAMS"
+  if test "$LOCAL_USE_CMAKE" = "no"; then
+    echo make "$PARAMS"
+    eval $MAKE "$PARAMS"
+  else
+    echo $CMAKE --build . "$PARAMS"
+    eval $CMAKE --build . "$PARAMS"
+  fi
 }
 
 run_default_all () {
