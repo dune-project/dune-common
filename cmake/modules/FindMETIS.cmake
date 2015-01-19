@@ -49,9 +49,9 @@ find_library(METIS_LIBRARY ${METIS_LIB_NAME}
 
 # check metis library
 if(METIS_LIBRARY)
-  list(APPEND CMAKE_REQUIRED_LIBRARIES ${METIS_LIBRARIY})
+  list(APPEND CMAKE_REQUIRED_LIBRARIES ${METIS_LIBRARY})
   set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ${METIS_LIBRARY})
-  include(CheckSymbolExists)
+  include(CheckFunctionExists)
   check_function_exists(METIS_PartGraphKway HAVE_METIS_PARTGRAPHKWAY)
 endif(METIS_LIBRARY)
 
