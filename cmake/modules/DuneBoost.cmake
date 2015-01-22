@@ -14,9 +14,9 @@ set(HAVE_DUNE_BOOST ${Boost_FOUND})
 
 #add all boost realted flags to ALL_PKG_FLAGS, this must happen regardless of a target using add_dune_boost_flags
 if(HAVE_DUNE_BOOST)
-  set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-DENABLE_BOOST=1")
+  set_property(GLOBAL APPEND PROPERTY ALL_PKG_DEFS "ENABLE_BOOST=1")
   foreach(dir ${Boost_INCLUDE_DIRS})
-    set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-I${dir}")
+    set_property(GLOBAL APPEND PROPERTY ALL_PKG_INCS "${dir}")
   endforeach()
 endif()
 

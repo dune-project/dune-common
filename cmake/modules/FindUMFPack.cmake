@@ -96,9 +96,7 @@ set(HAVE_UMFPACK ${UMFPACK_FOUND})
 
 #add all umfpack related flags to ALL_PKG_FLAGS, this must happen regardless of a target using add_dune_umfpack_flags
 if(UMFPACK_FOUND)
-  set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "${UMFPACK_DUNE_COMPILE_FLAGS}")
-  foreach(dir "${UMFPACK_INCLUDE_DIRS}")
-    set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-I${dir}")
-  endforeach()
+  set_property(GLOBAL APPEND PROPERTY ALL_PKG_INCS "${UMFPACK_INCLUDE_DIRS}")
   set_property(GLOBAL APPEND PROPERTY ALL_PKG_LIBS "${UMFPACK_LIBRARIES}")
+  set_property(GLOBAL APPEND PROPERTY ALL_PKG_DEFS "ENABLE_UMFPACK=1")
 endif()

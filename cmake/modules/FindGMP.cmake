@@ -84,9 +84,7 @@ set(HAVE_GMP ${GMP_FOUND})
 
 #add all GMP related flags to ALL_PKG_FLAGS, this must happen regardless of a target using add_dune_gmp_flags
 if(HAVE_GMP)
-  set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-DENABLE_GMP=1")
-  foreach(dir ${GMP_INCLUDE_DIR})
-    set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-I${dir}")
-  endforeach()
+  set_property(GLOBAL APPEND PROPERTY ALL_PKG_DEFS "ENABLE_GMP=1")
+  set_property(GLOBAL APPEND PROPERTY ALL_PKG_INCS "${GMP_INCLUDE_DIR}")
   set_property(GLOBAL APPEND PROPERTY ALL_PKG_LIBS "${GMP_LIB}" "${GMPXX_LIB}")
 endif()
