@@ -59,7 +59,7 @@ namespace Dune {
     template<class T>
     struct DefaultEpsilon<T, absolute> {
       static typename EpsilonType<T>::Type value()
-      { return std::max(std::numeric_limits<typename EpsilonType<T>::Type>::epsilon(), 1e-6); }
+      { return std::max(std::numeric_limits<typename EpsilonType<T>::Type>::epsilon(), T(1e-6)); }
     };
 
     namespace Detail {
