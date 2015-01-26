@@ -79,9 +79,7 @@ add_executable("dynvectortest" dynvectortest.cc)
 
 add_executable("eigenvaluestest" eigenvaluestest.cc)
 target_link_libraries(eigenvaluestest dunecommon)
-if(LAPACK_FOUND)
-  target_link_libraries(eigenvaluestest ${LAPACK_LIBRARIES})
-endif(LAPACK_FOUND)
+target_link_libraries(eigenvaluestest ${LAPACK_LIBRARIES})
 
 add_executable("diagonalmatrixtest" diagonalmatrixtest.cc)
 target_link_libraries("diagonalmatrixtest" "dunecommon")
@@ -170,7 +168,13 @@ foreach(_TEST ${TESTPROGS})
   add_test(${_TEST} ${_TEST})
 endforeach(_TEST)
 
-#Set properties for failing tests
+# treat tests returning code 77 as skipped
+set_tests_properties(
+  eigenvaluestest
+  mpicollectivecommunication
+  PROPERTIES SKIP_RETURN_CODE 77)
+
+# set properties for failing tests
 set_tests_properties(
   ${FAILTESTS}
   PROPERTIES WILL_FAIL true)
@@ -183,5 +187,3 @@ endforeach(_TEST)
 set_tests_properties(
   ${COMPILEFAILTESTS}
   PROPERTIES WILL_FAIL true)
-
-

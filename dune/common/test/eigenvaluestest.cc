@@ -14,6 +14,7 @@
 
 using namespace Dune;
 
+#if HAVE_LAPACK
 /** \brief Test the eigenvalue code with the Rosser test matrix
 
    This matrix was a challenge for many matrix eigenvalue
@@ -124,14 +125,20 @@ void testSymmetricFieldMatrix()
         DUNE_THROW(MathError, "Values computed by FMatrixHelp::eigenValues are not in ascending order");
   }
 }
+#endif // HAVE_LAPACK
 
 int main() try
 {
+#if HAVE_LAPACK
   testRosserMatrix<double>();
 
   testSymmetricFieldMatrix<double>();
 
   return 0;
+#else
+  std::cout << "WARNING: eigenvaluetest needs LAPACK, test disabled" << std::endl;
+  return 77;
+#endif // HAVE_LAPACK
 } catch (Exception exception)
 {
   std::cerr << exception << std::endl;
