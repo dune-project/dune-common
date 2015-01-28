@@ -1186,3 +1186,22 @@ macro(dune_symlink_to_source_tree)
     endforeach()
   endif()
 endmacro(dune_symlink_to_source_tree)
+
+# add symlinks to the build tree, which point to files in the source tree.
+# Foreach file given in "files", a symlink of that name is created in the
+# corresponding build directory. Use for ini files, grid files etc. A warning
+# is issued on Windows systems.
+macro(dune_symlink_to_source_files files)
+  # check for Windwos to issue a warning
+  if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    if(NOT DEFINED DUNE_WINDOWS_SYMLINK_WARNING)
+      message(WARNING "Your module wanted to create symlinks, but you cannot do that on your platform.")
+      set(DUNE_WINDOWS_SYMLINK_WARNING)
+    endif()
+  else()
+    # create symlinks for all given files
+    foreach(f ${files})
+      execute_process(COMMAND ${CMAKE_COMMAND} "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/${f}" "${CMAKE_CURRENT_BINARY_DIR}/${f}")
+    endforeach()
+  endif()
+endmacro(dune_symlink_to_source_files files)
