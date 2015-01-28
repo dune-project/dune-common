@@ -1161,3 +1161,28 @@ macro(add_dune_all_flags targets)
     target_link_libraries(${target} ${DUNE_LIBS} ${libs})
   endforeach()
 endmacro(add_dune_all_flags targets)
+
+# add a symlink called src_dir to all directories in the build tree.
+# That symlink points to the corresponding directory in the source tree.
+# Call the macro from the toplevel CMakeLists.txt file of your project.
+# You can also call it from some other directory, creating only symlinks
+# in that directory and all directories below. A warning is issued on
+# Windows systems.
+macro(dune_symlink_to_source_tree)
+  # check for Windows to issue a warning
+  if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    if(NOT DEFINED DUNE_WINDOWS_SYMLINK_WARNING)
+      message(WARNING "Your module wanted to create symlinks, but you cannot do that on your platform.")
+      set(DUNE_WINDOWS_SYMLINK_WARNING)
+    endif()
+  else()
+    # get a list of all files in the current source directory and below.
+    file(GLOB_RECURSE files RELATIVE ${CMAKE_SOURCE_DIR} "*")
+
+    # iterate over all files, extract the directory name and write a symlink in the corresponding build directory
+    foreach(f ${files})
+      get_filename_component(dir ${f} DIRECTORY)
+      execute_process(COMMAND ${CMAKE_COMMAND} "-E" "create_symlink" "${CMAKE_SOURCE_DIR}/${dir}" "${CMAKE_BINARY_DIR}/${dir}/src_dir")
+    endforeach()
+  endif()
+endmacro(dune_symlink_to_source_tree)
