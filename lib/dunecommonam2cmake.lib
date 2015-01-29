@@ -17,7 +17,7 @@ dune_common_options_am2cmake()
     # to lower case are used for configures
     # --with-<package> or without-<package> options
     #
-    CMAKE_PACKAGES="Boost Inkscape GMP LAPACK"
+    CMAKE_PACKAGES="Boost Inkscape GMP LAPACK UMFPack"
 
     default_am2cmake_options $CMAKE_PACKAGES
 
