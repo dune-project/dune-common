@@ -1162,6 +1162,42 @@ macro(add_dune_all_flags targets)
   endforeach()
 endmacro(add_dune_all_flags targets)
 
+# This macro adds a file-copy command.
+# The file_name is the name of a file that exists
+# in the source tree. This file will be copied
+# to the build tree when executing this command.
+# Notice that this does not create a top-level
+# target. In order to do this you have to additionally
+# call add_custom_target(...) with dependency
+# on the file.
+macro(dune_add_copy_command file_name)
+    add_custom_command(
+        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${file_name}"
+        COMMAND    ${CMAKE_COMMAND}
+        ARGS       -E copy "${CMAKE_CURRENT_SOURCE_DIR}/${file_name}" "${file_name}"
+        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${file_name}"
+        )
+endmacro(dune_add_copy_command file_name)
+
+# This macro adds a file-copy target under given target_name.
+# The file_name is the name of a file that exists
+# in the source tree. This file will be copied
+# to the build tree.
+macro(dune_add_copy_target target_name file_name)
+    dune_add_copy_command(${file_name})
+    add_custom_target("${target_name}" ALL DEPENDS "${file_name}")
+endmacro(dune_fufem_add_copy_target target_name file_name)
+
+# This macro adds a copy-dependecy to a target
+# The file_name is the name of a file that exists
+# in the source tree. This file will be copied
+# to the build tree.
+macro(dune_add_copy_dependency target file_name)
+    message(STATUS "Adding copy-to-build-dir dependency for ${file_name} to target ${target}")
+    dune_add_copy_target("${target}_copy_${file_name}" "${file_name}")
+    add_dependencies(${target} "${target}_copy_${file_name}")
+endmacro(dune_add_copy_dependency)
+
 # add a symlink called src_dir to all directories in the build tree.
 # That symlink points to the corresponding directory in the source tree.
 # Call the macro from the toplevel CMakeLists.txt file of your project.
