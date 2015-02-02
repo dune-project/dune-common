@@ -47,10 +47,14 @@ find_library(METIS_LIBRARY ${METIS_LIB_NAME}
   PATH_SUFFIXES lib
 )
 
+# we need to check whether we need to link m, copy the lazy solution from FindBLAS and FindLAPACK here.
+if(NOT WIN32)
+  list(APPEND METIS_LIBRARY "-lm")
+endif()
+
 # check metis library
 if(METIS_LIBRARY)
   list(APPEND CMAKE_REQUIRED_LIBRARIES ${METIS_LIBRARY})
-  set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ${METIS_LIBRARY})
   include(CheckFunctionExists)
   check_function_exists(METIS_PartGraphKway HAVE_METIS_PARTGRAPHKWAY)
 endif(METIS_LIBRARY)
