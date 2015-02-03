@@ -48,7 +48,7 @@ find_library(METIS_LIBRARY ${METIS_LIB_NAME}
 )
 
 # we need to check whether we need to link m, copy the lazy solution from FindBLAS and FindLAPACK here.
-if(NOT WIN32)
+if(METIS_LIBRARY AND NOT WIN32)
   list(APPEND METIS_LIBRARY "-lm")
 endif()
 
