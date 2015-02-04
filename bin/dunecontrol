@@ -349,6 +349,21 @@ for command in $COMMANDS; do
 done
 
 #
+# Check whether we should use cmake for this particular value
+# and set LOCAL_USE_CMAKE accordingly.
+# We use cmake if USE_CMAKE is not set to no and the module has
+# CMake build infrastructure, i.e. a toplevel CMakeLists.txt
+#
+create_local_use_cmake() {
+  if test "x$USE_CMAKE" != "xno" && test -e "$(eval "echo \$PATH_$module")/CMakeLists.txt"; then
+    LOCAL_USE_CMAKE=yes
+  else
+    LOCAL_USE_CMAKE=no
+  fi
+}
+
+
+#
 # default implementations for commands...
 # these can be overwritten in the $CONTROL files
 #
