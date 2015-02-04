@@ -601,7 +601,8 @@ run_default_update () {
 }
 
 run_default_autogen () {
-  if test "x$USE_CMAKE" = "xno" || test  ! -e "$(eval "echo \$PATH_$module")/CMakeLists.txt" ; then
+  create_local_use_cmake
+  if test "x$LOCAL_USE_CMAKE" = "xno"; then
     PARAMS="$CMD_FLAGS"
     local M4_PATH=""
     if test -f configure.ac && \
@@ -628,11 +629,7 @@ run_default_autogen () {
 run_default_configure () {
   extract_multiarch
   PARAMS="$CMD_FLAGS"
-  if test "x$USE_CMAKE" != "xno" && test -e "$(eval "echo \$PATH_$module")/CMakeLists.txt"; then
-    LOCAL_USE_CMAKE=yes
-  else
-    LOCAL_USE_CMAKE=no
-  fi
+  create_local_use_cmake
 
   if test -x configure || test "x$LOCAL_USE_CMAKE" = "xyes" ; then
     ACLOCAL_FLAGS="-I ."
