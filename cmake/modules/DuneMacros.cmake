@@ -1193,7 +1193,7 @@ endmacro(dune_add_copy_command file_name)
 macro(dune_add_copy_target target_name file_name)
     dune_add_copy_command(${file_name})
     add_custom_target("${target_name}" ALL DEPENDS "${file_name}")
-endmacro(dune_fufem_add_copy_target target_name file_name)
+endmacro(dune_add_copy_target target_name file_name)
 
 # This macro adds a copy-dependecy to a target
 # The file_name is the name of a file that exists
