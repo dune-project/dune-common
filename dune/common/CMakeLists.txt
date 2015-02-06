@@ -77,6 +77,7 @@ install(FILES
         precision.hh
         propertymap.hh
         promotiontraits.hh
+        proxymemberaccess.hh
         reservedvector.hh
         shared_ptr.hh
         singleton.hh

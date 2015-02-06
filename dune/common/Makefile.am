@@ -71,6 +71,7 @@ commoninclude_HEADERS = 			\
 	precision.hh				\
 	promotiontraits.hh			\
 	propertymap.hh				\
+        proxymemberaccess.hh                    \
 	reservedvector.hh			\
 	shared_ptr.hh				\
 	singleton.hh				\
