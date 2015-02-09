@@ -4,6 +4,8 @@
 #ifndef DUNE_COMMON_FORLOOP_HH
 #define DUNE_COMMON_FORLOOP_HH
 
+#include <utility>
+
 /** \file
  * \brief A static for loop for template meta-programming
  */
