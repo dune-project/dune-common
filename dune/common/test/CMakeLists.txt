@@ -4,6 +4,7 @@ set(TESTS
     arraytest
     bigunsignedinttest
     bitsetvectortest
+    calloncetest
     check_fvector_size
     conversiontest
     diagonalmatrixtest
@@ -65,6 +66,8 @@ add_executable("bigunsignedinttest" bigunsignedinttest.cc)
 target_link_libraries("bigunsignedinttest" "dunecommon")
 
 add_executable("bitsetvectortest" bitsetvectortest.cc)
+add_executable("calloncetest" calloncetest.cc)
+target_link_libraries("calloncetest" "dunecommon")
 add_executable("check_fvector_size" check_fvector_size.cc)
 add_executable("check_fvector_size_fail1" EXCLUDE_FROM_ALL check_fvector_size_fail.cc)
 set_target_properties(check_fvector_size_fail1 PROPERTIES COMPILE_FLAGS "-DDIM=1")

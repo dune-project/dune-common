@@ -33,6 +33,13 @@ AC_DEFUN([DUNE_COMMON_CHECKS],
   AC_REQUIRE([DUNE_MPI])
   AC_REQUIRE([DUNE_SYS_MPROTECT])
 
+  AC_REQUIRE([DUNE_STDTHREAD])
+  AS_IF([test "x$DUNE_STDTHREAD_WORKS" = xno], [
+    AC_MSG_ERROR([dune-common needs working threading support])
+  ])
+  DUNE_ADD_MODULE_DEPS([dune-common], [STDTHREAD], [${STDTHREAD_CPPFLAGS}],
+                       [${STDTHREAD_LDFLAGS}], [${STDTHREAD_LIBS}])
+  
   dnl check for programs
   AC_REQUIRE([AC_PROG_CC])
   # add -Wall if the compiler is gcc
