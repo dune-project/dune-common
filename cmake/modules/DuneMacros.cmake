@@ -79,6 +79,7 @@
 enable_language(C) # Enable C to skip CXX bindings for some tests.
 
 include(FeatureSummary)
+include(DuneEnableAllPackages)
 
 # Converts a module name given by _module into an uppercase string
 # _upper where all dashes (-) are replaced by underscores (_)
@@ -1155,15 +1156,3 @@ macro(add_dune_all_flags targets)
     target_link_libraries(${target} ${DUNE_LIBS} ${libs})
   endforeach()
 endmacro(add_dune_all_flags targets)
-
-# set includes, libraries and compile definitions for the entire project recursively
-macro(dune_enable_all_packages)
-  get_property(all_incs GLOBAL PROPERTY ALL_PKG_INCS)
-  include_directories(${all_incs})
-  get_property(all_libs GLOBAL PROPERTY ALL_PKG_LIBS)
-  link_libraries(${DUNE_LIBS} ${all_libs})
-  get_property(all_defs GLOBAL PROPERTY ALL_PKG_DEFS)
-  foreach(def ${all_defs})
-    add_definitions("-D${def}")
-  endforeach(def in ${all_defs})
-endmacro(dune_enable_all_packages)
