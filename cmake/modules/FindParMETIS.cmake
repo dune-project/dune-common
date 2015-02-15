@@ -98,9 +98,9 @@ if(PARMETIS_FOUND)
     "Library directory: ${PARMETIS_LIBRARIES}\n\n")
 endif(PARMETIS_FOUND)
 
-#add all parmetis related flags to ALL_PKG_FLAGS, this must happen regardless of a target using add_dune_parmetis_flags
+# register all ParMETIS related flags
 if(PARMETIS_FOUND)
-  set_property(GLOBAL APPEND PROPERTY ALL_PKG_INCS "${PARMETIS_INCLUDE_DIRS}")
-  set_property(GLOBAL APPEND PROPERTY ALL_PKG_LIBS "${PARMETIS_LIBRARIES}")
-  set_property(GLOBAL APPEND PROPERTY ALL_PKG_DEFS "ENABLE_PARMETIS=1")
+  dune_register_package_flags(COMPILE_DEFINTIONS "ENABLE_PARMETIS=1"
+                              LIBRARIES "${PARMETIS_LIBRARIES}"
+                              INCLUDE_DIRECTORIES "${PARMETIS_INCLUDE_DIRS}")
 endif()

@@ -82,9 +82,9 @@ endif(GMP_FOUND)
 # set HAVE_GMP for config.h
 set(HAVE_GMP ${GMP_FOUND})
 
-#add all GMP related flags to ALL_PKG_FLAGS, this must happen regardless of a target using add_dune_gmp_flags
+# register all GMP related flags
 if(HAVE_GMP)
-  set_property(GLOBAL APPEND PROPERTY ALL_PKG_DEFS "ENABLE_GMP=1")
-  set_property(GLOBAL APPEND PROPERTY ALL_PKG_INCS "${GMP_INCLUDE_DIR}")
-  set_property(GLOBAL APPEND PROPERTY ALL_PKG_LIBS "${GMP_LIB}" "${GMPXX_LIB}")
+  dune_register_package_flags(COMPILE_DEFINITIONS "ENABLE_GMP=1"
+                              LIBRARIES "${GMP_LIB};${GMPXX_LIB}"
+                              INCLUDE_DIRS "${GMP_INCLUDE_DIR}")
 endif()

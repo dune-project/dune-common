@@ -518,8 +518,8 @@ macro(dune_process_dependency_macros)
         endforeach(_lib ${${_mod}_LIBRARIES})
       endif(${_mod}_LIBRARIES)
 
-      #update ALL_PKG_INCS
-      set_property(GLOBAL APPEND PROPERTY ALL_PKG_INCS "${${_mod}_INCLUDE_DIRS}")
+      # register dune module
+      dune_register_package_flags(INCLUDE_DIRS "${${_mod}_INCLUDE_DIRS}")
     endif(NOT ${_mod}_PROCESSED)
   endforeach(_mod DEPENDENCIES)
 endmacro(dune_process_dependency_macros)

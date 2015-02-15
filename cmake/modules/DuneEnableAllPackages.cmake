@@ -15,6 +15,20 @@
 # Adds all flags and all libraries to all executables that are added in the directory
 # from where this macro is called and from all its subdirectories (recursively).
 # Typically, a user would add the call to this macro to his top level CMakeLists.txt
+#
+# dune_register_package_flags(COMPILE_DEFINITIONS flags
+#                             INCLUDE_DIRS includes
+#                             LIBRARIES libs
+#                            [PREPEND]
+#                            )
+#
+# To implement above feature, the compile flags, include paths and link flags of all
+# found packages must be registered with this macro. This macro is only necessary for people
+# that do link against additional libraries which are not supported by the dune core modules.
+# Call this at the end of every find module. If you are using an external find module which
+# you cannot alter, call it after the call find_package().
+# The PREPEND parameter prepends the given flags to the global list instead of appending.
+# Only use it, if you know what you are doing.
 
 macro(dune_enable_all_packages)
   get_property(all_incs GLOBAL PROPERTY ALL_PKG_INCS)
@@ -26,3 +40,22 @@ macro(dune_enable_all_packages)
     add_definitions("-D${def}")
   endforeach(def in ${all_defs})
 endmacro(dune_enable_all_packages)
+
+function(dune_register_package_flags)
+  include(CMakeParseArguments)
+  set(OPTIONS PREPEND)
+  set(SINGLEARGS COMPILE_DEINITIONSS INCLUDE_DIRS LIBRARIES)
+  cmake_parse_arguments(REGISTRY "${OPTIONS}" "${SINGLEARGS}" "" ${ARGN})
+  if(REG_PREPEND)
+    get_property(GLOBAL PROPERTY ALL_PKG_INCS all_incs)
+    get_property(GLOBAL PROPERTY ALL_PKG_LIBS all_libs)
+    get_property(GLOBAL PROPERTY ALL_PKG_DEFS all_defs)
+    set_property(GLOBAL PROPERTY ALL_PKG_INCS "${REGISTRY_INCLUDE_DIRS}" "${all_incs}")
+    set_property(GLOBAL PROPERTY ALL_PKG_LIBS "${REGISTRY_LIBRARIES}" "${all_libs}")
+    set_property(GLOBAL PROPERTY ALL_PKG_DEFS "${REGISTRY_COMPILE_DEFINITIONS}" "${all_defs}")
+  else()
+    set_property(GLOBAL APPEND PROPERTY ALL_PKG_INCS "${REGISTRY_INCLUDE_DIRS}")
+    set_property(GLOBAL APPEND PROPERTY ALL_PKG_LIBS "${REGISTRY_LIBRARIES}")
+    set_property(GLOBAL APPEND PROPERTY ALL_PKG_DEFS "${REGISTRY_COMPILE_DEFINITIONS}")
+  endif()
+endfunction(dune_register_package_flags)
