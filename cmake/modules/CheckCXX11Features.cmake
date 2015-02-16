@@ -197,6 +197,8 @@ check_cxx_source_compiles("
 " HAVE_NOEXCEPT_SPECIFIER
 )
 
+cmake_pop_check_state()
+
 # find the threading library
 find_package(Threads)
 set(STDTHREAD_LINK_FLAGS "${CMAKE_THREAD_LIBS_INIT}"
@@ -273,5 +275,3 @@ if(NOT STDTHREAD_WORKS)
     "STDTHREAD_LINK_FLAGS.  If you think this test is wrong, set the cache "
     "variable STDTHREAD_WORKS.")
 endif(NOT STDTHREAD_WORKS)
-
-cmake_pop_check_state()
