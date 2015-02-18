@@ -316,7 +316,7 @@ echo "writing initial files:"
 
 # complete module name with _ instead of - to not confuse automake
 fix_and_assign CMODULE $MODULE
-# module name without suffix "dune-"
+# module name without prefix "dune-"
 NAME=`echo $PROJECT | sed -e 's/dune[_-]//'`
 # $NAME with _ instead of - to not confuse automake
 NAME_=`echo $NAME | tr '-' '_'`
@@ -406,11 +406,11 @@ MAKE_FLAGS       flags passed to make
 An example options file might look like this:
 
 #use this options to autogen, configure and make if no other options are given
-AUTOGEN_FLAGS="--ac=2.50 --ac=1.8" #Forces automake 2,50 and autoconf 1.8
+AUTOGEN_FLAGS="--ac=2.50 --am=1.8" #Forces autoconf 2.50 and automake 1.8
 CONFIGURE_FLAGS="CXX=g++-3.4 --prefix=/install/path" #force g++-3.4 as compiler
 MAKE_FLAGS=install #Per default run make install instead of simply make
 
-If you save this information into example.opts you can path the opts file to
+If you save this information into example.opts you can pass the opts file to
 dunecontrol via the --opts option, e. g.
 
   dunecontrol --opts=example.opts all
@@ -432,7 +432,7 @@ See
 for further options.
 
 
-The full build-system is described in the dune-common/doc/buildsystem (SVN version) or under share/doc/dune-common/buildsystem if you installed DUNE!
+The full build-system is described in the dune-common/doc/buildsystem (Git version) or under share/doc/dune-common/buildsystem if you installed DUNE!
 
 R_DELIM
 
@@ -659,7 +659,7 @@ cat> "$PROJECT/src/$CMODULE.cc" << CC_DELIM
 int main(int argc, char** argv)
 {
   try{
-    //Maybe initialize Mpi
+    // Maybe initialize MPI
     Dune::MPIHelper& helper = Dune::MPIHelper::instance(argc, argv);
     std::cout << "Hello World! This is ${PROJECT}." << std::endl;
     if(Dune::MPIHelper::isFake)
@@ -693,6 +693,7 @@ include \$(top_srcdir)/am/global-rules
 CC_DELIM
 
 
+################## M4/CMakeLists.txt ##############
 echo "- $PROJECT/m4/CMakeLists.txt"
 cat> "$PROJECT/m4/CMakeLists.txt" << CC_DELIM
 
@@ -742,6 +743,7 @@ EXTRA_DIST = CMakeLists.txt
 include \$(top_srcdir)/am/global-rules
 EOF
 
+################## dune/CMakeLists.txt #################
 echo "- $PROJECT/dune/CMakeLists.txt"
 cat> $PROJECT/dune/CMakeLists.txt <<EOF
 add_subdirectory($NAME)
@@ -759,6 +761,7 @@ EXTRA_DIST = CMakeLists.txt
 include \$(top_srcdir)/am/global-rules
 EOF
 
+################## dune/$NAME/CMakeLists.txt ###########
 echo "- $PROJECT/dune/$NAME/CMakeLists.txt"
 cat> $PROJECT/dune/$NAME/CMakeLists.txt <<EOF
 #install headers
@@ -769,17 +772,17 @@ EOF
 ################## dune/$NAME/$NAME.hh #################
 echo "- $PROJECT/dune/$NAME/$NAME.hh"
 cat> $PROJECT/dune/$NAME/$NAME.hh <<EOF
-#ifndef $UNAME.hh
-#define $UNAME.hh
+#ifndef $UNAME_HH
+#define $UNAME_HH
 
 // add your classes here
 
-#endif // $UNAME.hh
+#endif // $UNAME_HH
 EOF
 
 
 ###############################################################
-################## The doc subdirectory ####################
+################## The doc subdirectory #######################
 ###############################################################
 
 mkdir "$PROJECT/doc"
@@ -803,7 +806,7 @@ include \$(top_srcdir)/am/webstuff
 include \$(top_srcdir)/am/global-rules
 CC_DELIM
 
-
+################## doc/CMakeLists.txt #################
 echo "- $PROJECT/doc/CMakeLists.txt"
 cat> "$PROJECT/doc/CMakeLists.txt" << CC_DELIM
 add_subdirectory("doxygen")
@@ -834,7 +837,7 @@ cat> $PROJECT/doc/doxygen/Doxylocal << CC_DELIM
 
 INPUT                 += @top_srcdir@/dune/
 # see e.g. dune-grid for the examples of mainpage and modules
-# INPUT                 += @srcdir@/mainpage \
+# INPUT                 += @srcdir@/mainpage \\
 #                          @srcdir@/modules
 
 # The EXCLUDE tag can be used to specify files and/or directories that should
@@ -881,6 +884,7 @@ add_doxygen_target()
 CC_DELIM
 
 
+#########################################################
 ############### The cmake subdirectory ##################
 #########################################################
 
@@ -895,7 +899,8 @@ SUBDIRS = modules
 include \$(top_srcdir)/am/global-rules
 EOF
 
-############### The cmake subdirectory ##################
+#########################################################
+############### The cmake/modules subdirectory ##########
 #########################################################
 
 mkdir "$PROJECT/cmake/modules"
