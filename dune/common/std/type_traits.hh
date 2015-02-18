@@ -3,6 +3,9 @@
 
 #include <type_traits>
 
+namespace Dune
+{
+
 namespace Std
 {
 
@@ -72,5 +75,7 @@ namespace Std
   struct to_true_type : public std::true_type {};
 
 } // namespace Std
+
+} // namespace Dune
 
 #endif // #ifndef DUNE_COMMON_STD_TYPE_TRAITS_HH

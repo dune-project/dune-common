@@ -1,14 +1,9 @@
 # Stuff from the build system
-Makefile
-Makefile.in
-.deps
-.libs
-*.gcda
-*.gcno
-*.log
-*.trs
-gmon.out
-semantic.cache
+/*.gcda
+/*.gcno
+/*.log
+/*.trs
+/gmon.out
 
 # The test binaries (in alphabetical order)
 arraylisttest

@@ -5,6 +5,8 @@
 
 #include <memory>
 
+#include <dune/common/visibility.hh>
+
 /**
  * @file
  * @brief Useful wrapper for creating singletons.
@@ -52,8 +54,6 @@ namespace Dune
   template<class T>
   class Singleton
   {
-    /** @brief Smartpointer to the instance. */
-    static std::unique_ptr<T> instance_;
   protected:
     /* @brief Private constructor. */
     Singleton(){}
@@ -67,16 +67,15 @@ namespace Dune
      * @brief Get the instance of the singleton.
      * @return The instance of the singleton.
      */
-    static T& instance()
+    DUNE_EXPORT static T& instance()
     {
+      /* Smartpointer to the instance. */
+      static std::unique_ptr<T> instance_;
       if(instance_.get() == 0)
         instance_ = std::unique_ptr<T>(new T());
       return *instance_;
     }
   };
-
-  template<class T>
-  typename std::unique_ptr<T> Singleton<T>::instance_;
 
 } // namespace Dune
 

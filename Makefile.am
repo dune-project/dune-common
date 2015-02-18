@@ -1,5 +1,3 @@
-# $Id$
-
 # we need the module file to be able to build via dunecontrol
 EXTRA_DIST= CMakeLists.txt dune.module
 

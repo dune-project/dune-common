@@ -4,19 +4,52 @@
 #include "config.h"
 #endif
 
+#include <cstdlib>
 #include <iostream>
+#include <ostream>
 #include <sstream>
+
+#include <dune/common/exceptions.hh>
 #include <dune/common/parametertree.hh>
 #include <dune/common/parametertreeparser.hh>
+
+// This assert macro does not depend on the value of NDEBUG
+#define check_assert(expr)                                          \
+  do                                                                \
+  {                                                                 \
+    if(!(expr))                                                     \
+    {                                                               \
+      std::cerr << __FILE__ << ":" << __LINE__ << ": check_assert(" \
+                << #expr << ") failed" << std::endl;                \
+      std::abort();                                                 \
+    }                                                               \
+  } while(false)
+
+// Check that the given expression throws the given exception
+#define check_throw(expr, except)                               \
+  do {                                                          \
+    try {                                                       \
+      expr;                                                     \
+      std::cerr << __FILE__ << ":" << __LINE__ << ": " << #expr \
+                << " should throw " << #except << std::endl;    \
+      std::abort();                                             \
+    }                                                           \
+    catch(except) {}                                            \
+    catch(...) {                                                \
+      std::cerr << __FILE__ << ":" << __LINE__ << ": " << #expr \
+                << " should throw " << #except << std::endl;    \
+      std::abort();                                             \
+    }                                                           \
+  } while(false)
 
 template<class P>
 void testparam(const P & p)
 {
   // try accessing key
-  assert(p.template get<int>("x1") == 1);
-  assert(p.template get<double>("x1") == 1.0);
-  assert(p.template get<std::string>("x2") == "hallo");
-  assert(p.template get<bool>("x3") == false);
+  check_assert(p.template get<int>("x1") == 1);
+  check_assert(p.template get<double>("x1") == 1.0);
+  check_assert(p.template get<std::string>("x2") == "hallo");
+  check_assert(p.template get<bool>("x3") == false);
   // try reading array like structures
   std::vector<unsigned int>
   array1 = p.template get< std::vector<unsigned int> >("array");
@@ -26,21 +59,21 @@ void testparam(const P & p)
   Dune::FieldVector<unsigned int, 8>
   array3 = p.template get< Dune::FieldVector<unsigned int, 8> >("array");
 #endif
-  assert(array1.size() == 8);
+  check_assert(array1.size() == 8);
   for (unsigned int i=0; i<8; i++)
   {
-    assert(array1[i] == i+1);
-    assert(array2[i] == i+1);
-    assert(array3[i] == i+1);
+    check_assert(array1[i] == i+1);
+    check_assert(array2[i] == i+1);
+    check_assert(array3[i] == i+1);
   }
   // try accessing subtree
   p.sub("Foo");
   p.sub("Foo").template get<std::string>("peng");
   // check hasSub and hasKey
-  assert(p.hasSub("Foo"));
-  assert(!p.hasSub("x1"));
-  assert(p.hasKey("x1"));
-  assert(!p.hasKey("Foo"));
+  check_assert(p.hasSub("Foo"));
+  check_assert(!p.hasSub("x1"));
+  check_assert(p.hasKey("x1"));
+  check_assert(!p.hasKey("Foo"));
   // try accessing inexistent key
   try {
     p.template get<int>("bar");
@@ -113,14 +146,14 @@ void testOptionsParserResults(std::vector<std::string> args,
     for (std::size_t i = 0; i < args.size(); ++i)
       argv[i] = &args[i][0];
     Dune::ParameterTreeParser::readNamedOptions(args.size(), argv, pt, keywords, required, allow_more, overwrite);
-    assert(referr == "");
+    check_assert(referr == "");
   }
   catch (const Dune::ParameterTreeParserError & e)
   {
     std::string err = e.what();
     std::size_t offset = err.find("]: ");
     err = err.substr(offset + 3, err.find('\n') - offset - 3);
-    assert(referr == err);
+    check_assert(referr == err);
   }
   if (foo != "" && foo != pt.get<std::string>("foo"))
     DUNE_THROW(Dune::Exception, "Options parser failed... foo = "
@@ -183,6 +216,35 @@ void testOptionsParser()
   }
 }
 
+void testFS1527()
+{
+  { // Check that junk at the end is not accepted (int)
+    Dune::ParameterTree ptree;
+    check_throw(ptree["setting"] = "0.5"; ptree.get("setting", 0),
+                Dune::RangeError);
+  }
+  { // Check that junk at the end is not accepted (double)
+    Dune::ParameterTree ptree;
+    check_throw(ptree["setting"] = "0.5 junk"; ptree.get("setting", 0.0),
+                Dune::RangeError);
+  }
+}
+
+// check that negative values can be given on the command line
+void testFS1523()
+{
+  static char arg0[] = "progname";
+  static char arg1[] = "-setting";
+  static char arg2[] = "-1";
+  static char *argv[] = { arg0, arg1, arg2, NULL };
+  int argc = sizeof argv / sizeof (char *) - 1;
+
+  Dune::ParameterTree ptree;
+  Dune::ParameterTreeParser::readOptions(argc, argv, ptree);
+
+  check_assert(ptree.get<int>("setting") == -1);
+}
+
 int main()
 {
   try {
@@ -212,6 +274,10 @@ int main()
 
     // check the command line parser
     testOptionsParser();
+
+    // check for specific bugs
+    testFS1527();
+    testFS1523();
   }
   catch (Dune::Exception & e)
   {

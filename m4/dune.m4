@@ -1,5 +1,4 @@
 dnl -*- autoconf -*-
-# $Id$
 # checks for dune-headers and everything they need
 
 # TODO

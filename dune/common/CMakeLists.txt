@@ -23,6 +23,7 @@ dune_add_library("dunecommon"
   path.cc
   stdstreams.cc
   _DUNE_TARGET_OBJECTS:kernel_
+  stdthread.cc
   ADD_LIBS "${_additional_libs}")
 
 add_dune_tbb_flags(dunecommon)
@@ -69,6 +70,7 @@ install(FILES
         ios_state.hh
         iteratoradapters.hh
         iteratorfacades.hh
+        iteratorrange.hh
         lcm.hh
         lru.hh
         mallocallocator.hh
@@ -83,12 +85,14 @@ install(FILES
         precision.hh
         propertymap.hh
         promotiontraits.hh
+        proxymemberaccess.hh
         reservedvector.hh
         shared_ptr.hh
         singleton.hh
         sllist.hh
         static_assert.hh
         stdstreams.hh
+        stdthread.hh
         stringutility.hh
         timer.hh
         tuples.hh

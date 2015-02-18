@@ -13,6 +13,7 @@
 #include <complex>
 #include <algorithm>
 
+#include <dune/common/binaryfunctions.hh>
 #include <dune/common/exceptions.hh>
 
 /*! \defgroup ParallelCommunication Parallel Communication
@@ -188,7 +189,7 @@ namespace Dune
      * @param[out] out The buffer to store the received data in. Might have length zero on non-root
      *                  tasks.
      * @param[in] len The number of elements to send on each task.
-     * @param[out] root The root task that gathers the data.
+     * @param[in] root The root task that gathers the data.
      */
     template<typename T>
     int gather (T* in, T* out, int len, int root) const     // note out must have same size as in
@@ -211,10 +212,10 @@ namespace Dune
      *                    of elements to receive from process i at position i, i.e. the number that
      *                    is passed as sendlen argument to this function in process i.
      *                    May have length zero on non-root tasks.
-     * @param[in] displ An array with size equal to the number of processes. Data received from
+     * @param[out] displ An array with size equal to the number of processes. Data received from
      *                  process i will be written starting at out+displ[i] on the root process.
      *                  May have length zero on non-root tasks.
-     * @param[out] root The root task that gathers the data.
+     * @param[in] root The root task that gathers the data.
      */
     template<typename T>
     int gatherv (T* in, int sendlen, T* out, int* recvlen, int* displ, int root) const
@@ -234,7 +235,7 @@ namespace Dune
      *                 method each task will have same data stored there as the one in
      *                 send buffer of the root task before.
      * @param[in] len The number of elements in the recv buffer.
-     * @param[out] root The root task that gathers the data.
+     * @param[in] root The root task that gathers the data.
      */
     template<typename T>
     int scatter (T* send, T* recv, int len, int root) const // note out must have same size as in
@@ -259,7 +260,7 @@ namespace Dune
      *                  method each task will have the same data stored there as the one in
      *                  send buffer of the root task before.
      * @param[in] recvlen The number of elements in the recv buffer.
-     * @param[out] root The root task that gathers the data.
+     * @param[in] root The root task that gathers the data.
      */
     template<typename T>
     int scatterv (T* send, int* sendlen, int* displ, T* recv, int recvlen, int root) const

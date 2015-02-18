@@ -20,8 +20,8 @@
 find_package(MPI)
 find_package(Threads)
 
-if(MPI_CXX_FOUND)
-  set(HAVE_MPI ${MPI_CXX_FOUND})
+if(MPI_C_FOUND)
+  set(HAVE_MPI ${MPI_C_FOUND})
   # We do not support the CXX bindings of MPI
   set(MPI_DUNE_COMPILE_FLAGS ${MPI_C_COMPILE_FLAGS} CACHE STRING
     "Compile flags used by DUNE when compiling MPI programs")
@@ -66,11 +66,10 @@ if(MPI_CXX_FOUND)
 
   cmake_pop_check_state()
 
-  # TODO: Turn into an error after 2.3 release
   if(NOT MPI_VERSION_SUPPORTED)
-    MESSAGE(WARNING "Support for your MPI implementation is DEPRECATED and will be removed after the next release. Please upgrade to an MPI-2.1 compliant version.")
+    message(FATAL_ERROR "Your MPI implementation is too old. Please upgrade to an MPI-2.1 compliant version.")
   endif()
-endif(MPI_CXX_FOUND)
+endif(MPI_C_FOUND)
 
 # adds MPI flags to the targets
 function(add_dune_mpi_flags)
@@ -80,7 +79,7 @@ function(add_dune_mpi_flags)
   else()
     set(_prefix TARGET)
   endif()
-  if(MPI_CXX_FOUND)
+  if(MPI_C_FOUND)
     set_property(${_prefix} ${ADD_MPI_UNPARSED_ARGUMENTS} APPEND PROPERTY COMPILE_FLAGS ${MPI_DUNE_COMPILE_FLAGS})
     set_property(${_prefix} ${ADD_MPI_UNPARSED_ARGUMENTS} APPEND PROPERTY COMPILE_DEFINITIONS ENABLE_MPI=1
       MPICH_SKIP_MPICXX MPIPP_H)
@@ -90,5 +89,5 @@ function(add_dune_mpi_flags)
       target_link_libraries(${target} ${MPI_DUNE_LIBRARIES})
     endforeach(target ${ADD_MPI_UNPARSED_ARGUMENTS})
     endif(NOT (ADD_MPI_SOURCE_ONLY OR ADD_MPI_OBJECT))
-  endif(MPI_CXX_FOUND)
+  endif(MPI_C_FOUND)
 endfunction(add_dune_mpi_flags)

@@ -1,6 +1,5 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-// $Id$
 
 #ifndef DUNE_ITERATORTEST_HH
 #define DUNE_ITERATORTEST_HH
@@ -91,10 +90,22 @@ template<class Iter, class Opt>
 int testBidirectionalIterator(Iter begin, Iter end, Opt opt)
 {
   testForwardIterator(begin, end, opt);
-  Iter tbegin=--begin;
-  Iter tend=--end;
-  for(; tbegin!=tend; --tend)
-    opt(*tend);
+  for(Iter pre = end, post = end; pre != begin; )
+  {
+    if(pre != post--)
+    {
+      std::cerr << "Postdecrement did not return the old iterator"
+                << std::endl;
+      return 1;
+    }
+    if(--pre != post)
+    {
+      std::cerr << "Predecrement did not return the new iterator"
+                << std::endl;
+      return 1;
+    }
+    opt(*pre);
+  }
 
   typename Iter::difference_type size = std::distance(begin, end);
   srand(300);
@@ -105,8 +116,8 @@ int testBidirectionalIterator(Iter begin, Iter end, Opt opt)
   {
     int index = static_cast<int>(size*(rand()/(RAND_MAX+1.0)));
     int backwards=size-index;
-    tbegin=begin;
-    tend=end;
+    Iter tbegin = begin;
+    Iter tend = end;
     for(int j=0; j < index; j++) ++tbegin;
     for(int j=0; j < backwards; j++) --tend;
 
@@ -171,7 +182,7 @@ int testRandomAccessIterator(Iter begin, Iter end, Opt opt){
     if(test != rand)
     {
       std::cerr << "i+=n should have the same result as applying the"
-                << "increment ooperator n times!"<< std::cerr;
+                << "increment ooperator n times!"<< std::endl;
       ret++;
     }
 
@@ -190,7 +201,7 @@ int testRandomAccessIterator(Iter begin, Iter end, Opt opt){
     if(test != rand)
     {
       std::cerr << "i+=n should have the same result as applying the"
-                << "increment ooperator n times!"<< std::cerr;
+                << "increment ooperator n times!"<< std::endl;
       ret++;
     }
   }

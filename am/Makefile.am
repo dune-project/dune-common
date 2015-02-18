@@ -1,5 +1,3 @@
-# $Id$
-
 am_DATA = inkscape.am webstuff global-rules sourcescheck \
         no-check-without-lib latex checklog doxygen top-rules \
         headercheck documentation cmake-pkg-config

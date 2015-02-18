@@ -1,5 +1,4 @@
 ## -*- autoconf -*-
-# $Id$
 # searches for HDF5-stuff
 
 # DUNE_PATH_HDF5()

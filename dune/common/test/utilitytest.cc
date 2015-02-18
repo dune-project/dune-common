@@ -100,7 +100,7 @@ int main(int, char**)
 
   PointerTuple1 p(new int(), new char(), new long(), new char());
 
-  typedef Dune::ForEachType<Eval,PointerTuple1>::Type ConvertedType;
+  typedef Dune::ForEachType<Eval,PointerTuple1>::Type ConvertedType DUNE_UNUSED;
   Dune::PointerPairDeletor<PointerTuple1>::apply(p);
 
   return ret;

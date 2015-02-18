@@ -1,5 +1,4 @@
 # -*- Makefile -*-
-# $Id$
 
 # many tests need parts of libdune. Telling the tests to use
 # previously build partial libs is possible but difficult to maintain:

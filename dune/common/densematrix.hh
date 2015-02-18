@@ -1,6 +1,5 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-// $Id: fmatrix.hh 6128 2010-09-08 13:50:00Z christi $
 #ifndef DUNE_DENSEMATRIX_HH
 #define DUNE_DENSEMATRIX_HH
 

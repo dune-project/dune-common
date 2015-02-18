@@ -116,7 +116,7 @@ namespace Dune
                           const T &t4, const T &t5, const T &t6, const T &t7,
                           const T &t8, const T &t9)
   {
-    array<T, 10> result = { t0, t1, t2, t3, t4, t5, t6, t7, t8, t9 };
+    array<T, 10> result = { {t0, t1, t2, t3, t4, t5, t6, t7, t8, t9} };
     return result;
   }
 

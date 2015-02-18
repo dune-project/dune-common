@@ -10,6 +10,7 @@
 #include <dune/common/debugallocator.hh>
 
 #include <iostream>
+#include <csignal>
 #include <cstdlib>
 #include <vector>
 
@@ -89,6 +90,10 @@ void new_delete_tests()
 
 int main(int, char**)
 {
+#if EXPECTED_SIGNAL
+  std::signal(EXPECTED_SIGNAL, std::_Exit);
+#endif
+
   basic_tests();
   allocator_tests();
   new_delete_tests();

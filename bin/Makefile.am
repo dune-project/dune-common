@@ -1,5 +1,3 @@
-# $Id$
-
 # put scripts into dist-tarball
 EXTRA_DIST = am2cmake.py CMakeLists.txt duneproject dunecontrol \
   dunedoxynize \

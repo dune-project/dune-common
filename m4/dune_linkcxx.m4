@@ -1,4 +1,3 @@
-# $Id$
 # tries to link c++ objects
 
 AC_DEFUN([DUNE_LINKCXX],[

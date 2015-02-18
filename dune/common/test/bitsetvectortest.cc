@@ -4,7 +4,9 @@
 #include "config.h"
 #endif
 
+#include <dune/common/unused.hh>
 #include <dune/common/bitsetvector.hh>
+
 #if defined(__GNUC__) && ! defined(__clang__)
 #include <ext/malloc_allocator.h>
 #endif
@@ -18,7 +20,7 @@ struct ConstReferenceOp
   typedef typename BBF::const_reference const_reference;
 
   void operator()(const_reference t){
-    bitset x = t[0];
+    DUNE_UNUSED bitset x = t[0];
   }
 };
 

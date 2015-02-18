@@ -1,4 +1,3 @@
-# $Id$
 # check for supported compilers
 
 AC_DEFUN([DUNE_CHECK_COMPILER],[

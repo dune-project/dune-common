@@ -1,6 +1,5 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-// $Id: smartpointer.hh 5504 2009-04-08 13:35:31Z christi $
 
 #ifndef DUNE_SHARED_PTR_HH
 #define DUNE_SHARED_PTR_HH
@@ -56,12 +55,22 @@ namespace Dune
   };
 
   /**
-     @brief Convert a stack-allocated object to a shared_ptr:
-     @relates shared_ptr
+     @brief Create a shared_ptr for a stack-allocated object
+     @relatesalso null_deleter
+     @code
+          #include <dune/common/shared_ptr.hh>
+     @endcode
+
+     Usage:
      @code
           int i = 10;
           shared_ptr<int> pi = stackobject_to_shared_ptr(i);
      @endcode
+     The @c shared_ptr points to the object on the stack, but its deleter is
+     set to an instance of @c null_deleter so that nothing happens when the @c
+     shared_ptr is destroyed.
+
+     @sa shared_ptr, null_deleter
    */
   template<typename T>
   inline shared_ptr<T> stackobject_to_shared_ptr(T & t)
@@ -70,8 +79,13 @@ namespace Dune
   }
 
   /**
-     @brief Convert a stack object to a shared_ptr of a base class
-     @relates shared_ptr
+     @brief Create a shared_ptr to a base class for a stack-allocated object
+     @relatesalso null_deleter
+     @code
+          #include <dune/common/shared_ptr.hh>
+     @endcode
+
+     Usage:
      @code
           class A {};
           class B : public A {};
@@ -81,6 +95,11 @@ namespace Dune
           B b;
           shared_ptr<A> pa = stackobject_to_shared_ptr<A>(b);
      @endcode
+     The @c shared_ptr points to the object on the stack, but its deleter is
+     set to an instance of @c null_deleter so that nothing happens when the @c
+     shared_ptr is destroyed.
+
+     @sa shared_ptr, null_deleter
    */
   template<typename T, typename T2>
   inline shared_ptr<T2> stackobject_to_shared_ptr(T & t)
