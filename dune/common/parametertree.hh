@@ -202,11 +202,12 @@ namespace Dune {
     const KeyVector& getSubKeys() const;
 
   protected:
-    KeyVector valueKeys;
-    KeyVector subKeys;
+    KeyVector valueKeys_;
+    KeyVector subKeys_;
 
-    std::map<std::string, std::string> values;
-    std::map<std::string, ParameterTree> subs;
+    std::map<std::string, std::string> values_;
+    std::map<std::string, ParameterTree> subs_;
+
     static std::string ltrim(const std::string& s);
     static std::string rtrim(const std::string& s);
     static std::vector<std::string> split(const std::string & s);
