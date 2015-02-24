@@ -202,6 +202,8 @@ namespace Dune {
     const KeyVector& getSubKeys() const;
 
   protected:
+    std::string prefix_;
+
     KeyVector valueKeys_;
     KeyVector subKeys_;
 

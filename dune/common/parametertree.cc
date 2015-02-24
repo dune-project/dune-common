@@ -36,8 +36,8 @@ void ParameterTree::report(std::ostream& stream, const std::string& prefix) cons
   SubIt send = subs_.end();
   for(; sit!=send; ++sit)
   {
-    stream << "[ " << prefix + sit->first << " ]" << std::endl;
-    (sit->second).report(stream, prefix + sit->first + ".");
+    stream << "[ " << prefix + prefix_ + sit->first << " ]" << std::endl;
+    (sit->second).report(stream, prefix);
   }
 }
 
@@ -88,6 +88,7 @@ ParameterTree& ParameterTree::sub(const std::string& key)
   {
     if (subs_.count(key) == 0)
       subKeys_.push_back(key.substr(0,dot));
+    subs_[key].prefix_ = prefix_ + key + ".";
     return subs_[key];
   }
 }
@@ -104,7 +105,7 @@ const ParameterTree& ParameterTree::sub(const std::string& key) const
   else
   {
     if (subs_.count(key) == 0)
-      DUNE_THROW(Dune::RangeError, "SubTree '" << key << "' not found in ParameterTree");
+      DUNE_THROW(Dune::RangeError, "SubTree '" << key << "' not found in ParameterTree (prefix " + prefix_ + ")");
     return subs_.find(key)->second;
   }
 }
@@ -143,7 +144,7 @@ const std::string& ParameterTree::operator[] (const std::string& key) const
   else
   {
     if (not (hasKey(key)))
-      DUNE_THROW(Dune::RangeError, "Key '" << key << "' not found in ParameterTree");
+      DUNE_THROW(Dune::RangeError, "Key '" << key << "' not found in ParameterTree (prefix " + prefix_ + ")");
     return values_.find(key)->second;
   }
 }
