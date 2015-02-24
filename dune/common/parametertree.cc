@@ -105,7 +105,8 @@ const ParameterTree& ParameterTree::sub(const std::string& key) const
   else
   {
     if (subs_.count(key) == 0)
-      DUNE_THROW(Dune::RangeError, "SubTree '" << key << "' not found in ParameterTree (prefix " + prefix_ + ")");
+      DUNE_THROW(Dune::RangeError, "SubTree '" << key
+        << "' not found in ParameterTree (prefix " + prefix_ + ")");
     return subs_.find(key)->second;
   }
 }
@@ -144,7 +145,8 @@ const std::string& ParameterTree::operator[] (const std::string& key) const
   else
   {
     if (not (hasKey(key)))
-      DUNE_THROW(Dune::RangeError, "Key '" << key << "' not found in ParameterTree (prefix " + prefix_ + ")");
+      DUNE_THROW(Dune::RangeError, "Key '" << key
+        << "' not found in ParameterTree (prefix " + prefix_ + ")");
     return values_.find(key)->second;
   }
 }
