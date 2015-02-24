@@ -124,6 +124,9 @@
    by configure _and_ if the application uses the PARMETIS_CPPFLAGS */
 #cmakedefine HAVE_PARMETIS ENABLE_PARMETIS
 
+/* Define to 1 if PT-Scotch is available */
+#cmakedefine HAVE_PTSCOTCH 1
+
 /* Include always useful headers */
 #include "FC.h"
 #define FC_FUNC FC_GLOBAL_
