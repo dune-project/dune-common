@@ -752,8 +752,8 @@ run_default_make () {
     echo make "$PARAMS"
     eval $MAKE "$PARAMS"
   else
-    echo $CMAKE --build . "$PARAMS"
-    eval $CMAKE --build . "$PARAMS"
+    echo make "$PARAMS"
+    eval $MAKE "$PARAMS"
   fi
 }
 
