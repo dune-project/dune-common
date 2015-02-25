@@ -10,11 +10,12 @@
 #
 # This module provides the following macros:
 #
-# dune_enable_all_packages()
+# dune_enable_all_packages([VERBOSE])
 #
 # Adds all flags and all libraries to all executables that are added in the directory
 # from where this macro is called and from all its subdirectories (recursively).
 # Typically, a user would add the call to this macro to his top level CMakeLists.txt
+# With the VERBOSE option being set, the list of flags is printed during configure.
 #
 # dune_register_package_flags(COMPILE_DEFINITIONS flags
 #                             INCLUDE_DIRS includes
@@ -31,21 +32,37 @@
 # Only use it, if you know what you are doing.
 
 macro(dune_enable_all_packages)
+  include(CMakeParseArguments)
+  cmake_parse_arguments(ENABLE_ALL_PACKAGES VERBOSE "" "" ${ARGN})
+
   get_property(all_incs GLOBAL PROPERTY ALL_PKG_INCS)
   include_directories(${all_incs})
+  if(ENABLE_ALL_PACKAGES_VERBOSE)
+    message("Include directories for this project: ${all_incs}")
+  endif(ENABLE_ALL_PACKAGES_VERBOSE)
+
   get_property(all_libs GLOBAL PROPERTY ALL_PKG_LIBS)
   link_libraries(${DUNE_LIBS} ${all_libs})
+  if(ENABLE_ALL_PACKAGES_VERBOSE)
+    message("Libraries for this project: ${all_libs}")
+  endif(ENABLE_ALL_PACKAGES_VERBOSE)
+
   get_property(all_defs GLOBAL PROPERTY ALL_PKG_DEFS)
   foreach(def ${all_defs})
     add_definitions("-D${def}")
   endforeach(def in ${all_defs})
+  if(ENABLE_ALL_PACKAGES_VERBOSE)
+    message("Compile definitions for this project: ${all_libs}")
+  endif(ENABLE_ALL_PACKAGES_VERBOSE)
 endmacro(dune_enable_all_packages)
 
 function(dune_register_package_flags)
   include(CMakeParseArguments)
   set(OPTIONS PREPEND)
-  set(SINGLEARGS COMPILE_DEINITIONSS INCLUDE_DIRS LIBRARIES)
-  cmake_parse_arguments(REGISTRY "${OPTIONS}" "${SINGLEARGS}" "" ${ARGN})
+  set(SINGLEARGS)
+  set(MULTIARGS COMPILE_DEFINITIONS INCLUDE_DIRS LIBRARIES)
+  cmake_parse_arguments(REGISTRY "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
+
   if(REG_PREPEND)
     get_property(GLOBAL PROPERTY ALL_PKG_INCS all_incs)
     get_property(GLOBAL PROPERTY ALL_PKG_LIBS all_libs)
