@@ -63,6 +63,10 @@ function(dune_register_package_flags)
   set(MULTIARGS COMPILE_DEFINITIONS INCLUDE_DIRS LIBRARIES)
   cmake_parse_arguments(REGISTRY "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
 
+  if(REGISTRY_UNPARSED_ARGUMENTS)
+    message(WARNING "Unrecognized arguments for dune_register_package_flags!")
+  endif()
+
   if(REG_PREPEND)
     get_property(GLOBAL PROPERTY ALL_PKG_INCS all_incs)
     get_property(GLOBAL PROPERTY ALL_PKG_LIBS all_libs)
