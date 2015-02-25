@@ -803,12 +803,15 @@ usage () {
     echo "      --debug         enable debug output of this script"
     echo "      --use-cmake     use CMake instead of autotools for building"
     echo "      --no-cmake      use autotools instead of CMake for building"
-    echo "      --module=mod    only apply the actions on module mod"
+    echo "      --module=mod    apply the actions on module mod"
     echo "                      and all modules it depends on"
     echo "      --only=mod      only apply the actions on module mod"
     echo "                      and not the modules it depends on"
     echo "      --current       only apply the actions on the current module,"
-    echo "                      the one whose source tree we are standing in"
+    echo "                      i.e. the one whose source tree we are standing in,"
+    echo "                      and not the modules it depends on"
+    echo "      --current-dep   apply the actions on the current module,"
+    echo "                      and all modules it depends on"
     echo "      --resume        resume a previous run (only consider the modules"
     echo "                      not built successfully on the previous run)"
     echo "      --skipfirst     skip the first module (use with --resume)"
@@ -1006,6 +1009,18 @@ while test $# -gt 0; do
       fix_and_assign MODULE "$module"
       export SEARCH_MODULES="$SEARCH_MODULES $MODULE"
       export ONLY="$ONLY $MODULE"
+    ;;
+    --current-dep)
+      while ! test -f $CONTROL; do
+        cd ..
+        if test "$OLDPWD" = "$PWD"; then
+          echo "You are not inside the source tree of a DUNE module." >&2
+          exit -1
+        fi
+      done;
+      parse_control $PWD/$CONTROL
+      fix_and_assign MODULE "$module"
+      export SEARCH_MODULES="$SEARCH_MODULES $MODULE"
     ;;
     --resume)
       export RESUME_FLAG="yes"
