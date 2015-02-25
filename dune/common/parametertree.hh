@@ -175,10 +175,11 @@ namespace Dune {
       try {
         return Parser<T>::parse((*this)[key]);
       }
-      catch(const RangeError&) {
+      catch(const RangeError& e) {
+        // rethrow the error and add more information
         DUNE_THROW(RangeError, "Cannot parse value \"" << (*this)[key]
-          << "\" for key \"" << prefix_ << "." << key
-          << "\" as a " << className<T>());
+          << "\" for key \"" << prefix_ << "." << key << "\""
+          << e.what());
       }
     }
 
@@ -225,18 +226,16 @@ namespace Dune {
       for(; it != end; ++it, ++n) {
         s >> *it;
         if(!s)
-          DUNE_THROW(RangeError, "Cannot parse value \"" << str
-            << "\" for key \"" << prefix_ << "." << key
-            << "\" as a range of items of type " << className<Value>()
+          DUNE_THROW(RangeError, "as a range of items of type "
+            << className<Value>()
             << " (" << n << " items were extracted successfully)");
       }
       Value dummy;
       s >> dummy;
       // now extraction should have failed, and eof should be set
       if(not s.fail() or not s.eof())
-        DUNE_THROW(RangeError, "Cannot parse value \"" << str
-          << "\" for key \"" << prefix_ << "." << key
-          << "\" as a range of " << n << " items of type "
+        DUNE_THROW(RangeError, "as a range of "
+          << n << " items of type "
           << className<Value>() << " (more items than the range can hold)");
     }
   };
@@ -250,16 +249,12 @@ namespace Dune {
       s.imbue(std::locale::classic());
       s >> val;
       if(!s)
-        DUNE_THROW(RangeError, "Cannot parse value \"" << str
-          << (*this)[key] << "\" for key \"" << prefix_ << "." << key
-          << "\" as a " << className<T>());
+        DUNE_THROW(RangeError, " as a " << className<T>());
       T dummy;
       s >> dummy;
       // now extraction should have failed, and eof should be set
       if(not s.fail() or not s.eof())
-        DUNE_THROW(RangeError, "Cannot parse value \"" << str
-          << (*this)[key] << "\" for key \"" << prefix_ << "." << key
-          << "\" as a " << className<T>());
+        DUNE_THROW(RangeError, " as a " << className<T>());
       return val;
     }
   };
@@ -329,9 +324,8 @@ namespace Dune {
       std::bitset<n> val;
       std::vector<std::string> sub = split(str);
       if (sub.size() != n)
-        DUNE_THROW(RangeError, "Cannot parse value \"" << str
-          << (*this)[key] << "\" for key \"" << prefix_ << "." << key
-          << "\" as a bitset because of unmatching sizes");
+        DUNE_THROW(RangeError, "as a bitset<" << n << "> "
+          << "because of unmatching size " << sub.size());
       for (std::size_t i=0; i<n; ++i) {
         val[i] = ParameterTree::Parser<bool>::parse(sub[i]);
       }
