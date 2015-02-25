@@ -752,8 +752,12 @@ run_default_make () {
     echo make "$PARAMS"
     eval $MAKE "$PARAMS"
   else
-    echo make "$PARAMS"
-    eval $MAKE "$PARAMS"
+	# prepend '--' to separate cmake and make parameters
+	if ! $(echo "$PARAMS" | grep -q -- '--'); then
+	  PARAMS="-- $PARAMS"
+    fi
+    echo $CMAKE --build . "$PARAMS"
+    eval $CMAKE --build . "$PARAMS"
   fi
 }
 
