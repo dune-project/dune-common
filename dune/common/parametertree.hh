@@ -172,7 +172,14 @@ namespace Dune {
       if(not hasKey(key))
         DUNE_THROW(Dune::RangeError, "Key '" << key
           << "' not found in ParameterTree (prefix " + prefix_ + ")");
-      return Parser<T>::parse((*this)[key]);
+      try {
+        return Parser<T>::parse((*this)[key]);
+      }
+      catch(const RangeError&) {
+        DUNE_THROW(RangeError, "Cannot parse value \"" << (*this)[key]
+          << "\" for key \"" << prefix_ << "." << key
+          << "\" as a " << className<T>());
+      }
     }
 
     /** \brief get value keys
