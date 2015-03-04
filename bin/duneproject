@@ -603,8 +603,8 @@ mkdir "$PROJECT/src"
 echo "- $PROJECT/src/CMakeLists.txt"
 cat> "$PROJECT/src/CMakeLists.txt" << M_DELIM
 
-add_executable("${CMODULE}" ${MODULE}.cc)
-target_link_dune_default_libraries("${CMODULE}")
+add_executable("${MODULE}" ${MODULE}.cc)
+target_link_dune_default_libraries("${MODULE}")
 
 M_DELIM
 
@@ -615,7 +615,7 @@ cat> "$PROJECT/src/Makefile.am" << M_DELIM
 
 SUBDIRS =
 
-noinst_PROGRAMS = ${CMODULE}
+noinst_PROGRAMS = ${MODULE}
 
 ${CMODULE}_SOURCES = $MODULE.cc
 
