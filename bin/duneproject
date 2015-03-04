@@ -781,12 +781,12 @@ EOF
 ################## dune/$NAME/$NAME.hh #################
 echo "- $PROJECT/dune/$NAME/$NAME.hh"
 cat> $PROJECT/dune/$NAME/$NAME.hh <<EOF
-#ifndef $UNAME_HH
-#define $UNAME_HH
+#ifndef ${UNAME}_HH
+#define ${UNAME}_HH
 
 // add your classes here
 
-#endif // $UNAME_HH
+#endif // ${UNAME}_HH
 EOF
 
 
