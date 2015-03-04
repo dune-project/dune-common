@@ -1,6 +1,14 @@
 # $Id$
 
-SUBDIRS = . test parallel std threads kernel memory
+# deal with kernel/ before ./ sind libcommon.la needs kernel/libkernel.la
+SUBDIRS =					\
+	kernel					\
+	.					\
+	memory					\
+	parallel				\
+	std					\
+	test
+	threads
 
 # the standard debug streams are put into the libdune
 noinst_LTLIBRARIES = libcommon.la
