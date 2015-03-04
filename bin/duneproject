@@ -329,7 +329,7 @@ cat > "$PROJECT/configure.ac" <<C_DELIM
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.62])
 DUNE_AC_INIT # gets module version from dune.module file
-AC_CONFIG_SRCDIR([src/$CMODULE.cc])
+AC_CONFIG_SRCDIR([src/$MODULE.cc])
 AC_CONFIG_HEADERS([config.h])
 
 # we need no more than the standard DE-stuff
@@ -603,7 +603,7 @@ mkdir "$PROJECT/src"
 echo "- $PROJECT/src/CMakeLists.txt"
 cat> "$PROJECT/src/CMakeLists.txt" << M_DELIM
 
-add_executable("${CMODULE}" ${CMODULE}.cc)
+add_executable("${CMODULE}" ${MODULE}.cc)
 target_link_dune_default_libraries("${CMODULE}")
 
 M_DELIM
@@ -617,7 +617,7 @@ SUBDIRS =
 
 noinst_PROGRAMS = ${CMODULE}
 
-${CMODULE}_SOURCES = $CMODULE.cc
+${CMODULE}_SOURCES = $MODULE.cc
 
 ${CMODULE}_CPPFLAGS = \$(AM_CPPFLAGS) \\
 	\$(DUNEMPICPPFLAGS) \\
@@ -656,8 +656,8 @@ include \$(top_srcdir)/am/global-rules
 M_DELIM
 
 ################## PROJECT.CC ##################
-echo "- $PROJECT/src/$CMODULE.cc"
-cat> "$PROJECT/src/$CMODULE.cc" << CC_DELIM
+echo "- $PROJECT/src/$MODULE.cc"
+cat> "$PROJECT/src/$MODULE.cc" << CC_DELIM
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
