@@ -1,8 +1,5 @@
-Makefile.in
-Makefile
-.deps
-indexsettest
-indicestest
-selectiontest
-syncertest
-variablesizecommunicatortest
+/indexsettest
+/indicestest
+/selectiontest
+/syncertest
+/variablesizecommunicatortest

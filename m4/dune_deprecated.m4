@@ -1,5 +1,3 @@
-# $Id$
-
 # Check for the right way to create the deprecation warning
 
 AC_DEFUN([DUNE_CHECKDEPRECATED],[

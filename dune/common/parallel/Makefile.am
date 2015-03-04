@@ -1,5 +1,3 @@
-# $Id$
-
 SUBDIRS = test
 
 parallelincludedir = $(includedir)/dune/common/parallel

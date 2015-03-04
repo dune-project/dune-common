@@ -23,16 +23,17 @@ function(workaround_9220 language language_works)
   #message("DEBUG: language = ${language}")
   set(text
     "project(test NONE)
-cmake_minimum_required(VERSION 2.6.0)
-enable_language(${language} OPTIONAL)
-"
-    )
+    cmake_minimum_required(VERSION 2.8.0)
+    set (CMAKE_Fortran_FLAGS \"${CMAKE_Fortran_FLAGS}\")
+    set (CMAKE_EXE_LINKER_FLAGS \"${CMAKE_EXE_LINKER_FLAGS}\")
+    enable_language(${language} OPTIONAL)
+  ")
   file(REMOVE_RECURSE ${CMAKE_BINARY_DIR}/language_tests/${language})
   file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/language_tests/${language})
   file(WRITE ${CMAKE_BINARY_DIR}/language_tests/${language}/CMakeLists.txt
     ${text})
   execute_process(
-    COMMAND ${CMAKE_COMMAND} .
+    COMMAND ${CMAKE_COMMAND} . -G "${CMAKE_GENERATOR}"
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/language_tests/${language}
     RESULT_VARIABLE return_code
     OUTPUT_QUIET

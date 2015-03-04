@@ -1,5 +1,4 @@
 #!/bin/bash
-# $Id: autogen.sh 5054 2008-01-08 15:06:55Z christi $
 
 # barf on errors
 set -e

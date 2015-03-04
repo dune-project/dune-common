@@ -11,6 +11,7 @@
 #include <iostream>
 #include <istream>
 #include <iterator>
+#include <locale>
 #include <map>
 #include <ostream>
 #include <sstream>
@@ -18,7 +19,7 @@
 #include <typeinfo>
 #include <vector>
 #include <algorithm>
-#include <cctype>
+#include <bitset>
 
 #include <dune/common/array.hh>
 #include <dune/common/exceptions.hh>
@@ -141,28 +142,6 @@ namespace Dune {
     std::string get(const std::string& key, const char* defaultValue) const;
 
 
-    /** \brief get value as int
-     *
-     * Returns value for given key interpreted as int.
-     *
-     * \param key key name
-     * \param defaultValue default if key does not exist
-     * \return value as int
-     */
-    int get(const std::string& key, int defaultValue) const;
-
-
-    /** \brief get value as double
-     *
-     * Returns value for given key interpreted as double.
-     *
-     * \param key key name
-     * \param defaultValue default if key does not exist
-     * \return value as double
-     */
-    double get(const std::string& key, double defaultValue) const;
-
-
     /** \brief get value converted to a certain type
      *
      * Returns value as type T for given key.
@@ -263,6 +242,8 @@ namespace Dune {
     static T parse(const std::string& str) {
       T val;
       std::istringstream s(str);
+      // make sure we are in locale "C"
+      s.imbue(std::locale::classic());
       s >> val;
       if(!s)
         DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" as a " <<
@@ -293,9 +274,9 @@ namespace Dune {
   template<>
   struct ParameterTree::Parser< bool > {
     struct ToLower {
-      int operator()(int c)
+      char operator()(char c)
       {
-        return std::tolower(c);
+        return std::tolower(c, std::locale::classic());
       }
     };
 
@@ -331,6 +312,21 @@ namespace Dune {
     parse(const std::string& str) {
       array<T, n> val;
       parseRange(str, val.begin(), val.end());
+      return val;
+    }
+  };
+
+  template<std::size_t n>
+  struct ParameterTree::Parser<std::bitset<n> > {
+    static std::bitset<n>
+    parse(const std::string& str) {
+      std::bitset<n> val;
+      std::vector<std::string> sub = split(str);
+      if (sub.size() != n)
+        DUNE_THROW(RangeError, "cannot parse bitset because of unmatching sizes");
+      for (std::size_t i=0; i<n; ++i) {
+        val[i] = ParameterTree::Parser<bool>::parse(sub[i]);
+      }
       return val;
     }
   };

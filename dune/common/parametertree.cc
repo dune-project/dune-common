@@ -166,24 +166,6 @@ std::string ParameterTree::get(const std::string& key, const char* defaultValue)
     return defaultValue;
 }
 
-
-int ParameterTree::get(const std::string& key, int defaultValue) const
-{
-  std::stringstream stream;
-  stream << defaultValue;
-  std::string ret = get(key, stream.str());
-
-  return atoi(ret.c_str());
-}
-
-double ParameterTree::get(const std::string& key, double defaultValue) const
-{
-  if(hasKey(key))
-    return atof((*this)[key].c_str());
-  else
-    return defaultValue;
-}
-
 std::string ParameterTree::ltrim(const std::string& s)
 {
   std::size_t firstNonWS = s.find_first_not_of(" \t\n\r");

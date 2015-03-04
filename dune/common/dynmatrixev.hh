@@ -3,6 +3,10 @@
 #ifndef DUNE_DYNMATRIXEIGENVALUES_HH
 #define DUNE_DYNMATRIXEIGENVALUES_HH
 
+#include <memory>
+
+#include <dune/common/std/memory.hh>
+
 #include "dynmatrix.hh"
 
 /*!
@@ -42,7 +46,7 @@ namespace Dune {
 
 
         // matrix to put into dgeev
-        double matrixVector[N * N];
+        std::unique_ptr<double[]> matrixVector = Std::make_unique<double[]>(N*N);
 
         // copy matrix
         int row = 0;
@@ -55,9 +59,9 @@ namespace Dune {
         }
 
         // working memory
-        double eigenR[N];
-        double eigenI[N];
-        double work[3*N];
+        std::unique_ptr<double[]> eigenR = Std::make_unique<double[]>(N);
+        std::unique_ptr<double[]> eigenI = Std::make_unique<double[]>(N);
+        std::unique_ptr<double[]> work = Std::make_unique<double[]>(3*N);
 
         // return value information
         long int info = 0;
@@ -73,6 +77,8 @@ namespace Dune {
           std::cerr << "For matrix " << matrix << " eigenvalue calculation failed! " << std::endl;
           DUNE_THROW(InvalidStateException,"eigenValues: Eigenvalue calculation failed!");
         }
+
+        eigenValues.resize(N);
         for (int i=0; i<N; ++i)
           eigenValues[i] = std::complex<double>(eigenR[i], eigenI[i]);
       }

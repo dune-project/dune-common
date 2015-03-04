@@ -24,6 +24,14 @@ void f(const Dune::array<T, n> &a) {
 int main() {
   // check that make_array works
   f(Dune::make_array(1, 2));
+  f(Dune::make_array(1, 2, 3));
+  f(Dune::make_array(1, 2, 3, 4));
+  f(Dune::make_array(1, 2, 3, 4, 5));
+  f(Dune::make_array(1, 2, 3, 4, 5, 6));
+  f(Dune::make_array(1, 2, 3, 4, 5, 6, 7));
+  f(Dune::make_array(1, 2, 3, 4, 5, 6, 7, 8));
+  f(Dune::make_array(1, 2, 3, 4, 5, 6, 7, 8, 9));
+  f(Dune::make_array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
 
   Dune::FieldVector<double, 2> x(0);
   f(Dune::make_array(x, x));

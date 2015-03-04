@@ -1,5 +1,3 @@
-# $Id$
-
 doxydir = $(pkgdatadir)/doc/doxygen
 
 dist_doxy_DATA =					\

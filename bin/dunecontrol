@@ -6,10 +6,26 @@ set -e
 ###
 ### check for environment variables
 ###
+if test -z "$GREP"; then
+  GREP=grep
+fi
+if test -z "$SED"; then
+  SED=sed
+fi
 
 if test -z "$MAKE"; then
   MAKE=make
 fi
+
+system_default_cmake="no"
+if test -z "$CMAKE"; then
+  CMAKE=cmake
+  system_default_cmake="yes"
+fi
+
+space=" "
+tab="	"
+BLANK="$space$tab"
 
 ###############################################
 ###
@@ -172,8 +188,12 @@ load_opts() {
         if test -n "$OPTS_FILE_USE_CMAKE"; then
           USE_CMAKE="$OPTS_FILE_USE_CMAKE"
         fi
+        # if still no USE_CMAKE is set, default to true
+        if test -z "$USE_CMAKE"; then
+          USE_CMAKE="yes"
+        fi
       fi
-      if test -n "$USE_CMAKE" && test -z "$CMAKE"; then
+      if test -n "$USE_CMAKE" && test "$system_default_cmake" = "yes"; then
         # We use cmake for building, but CMAKE is not yet set.
         # Check the opts file for it
         OPTS_FILE_CMAKE="$(eval CMAKE=""; . $DUNE_OPTS_FILE; eval echo \$CMAKE)"
@@ -182,10 +202,6 @@ load_opts() {
         fi
       fi
     fi
-  fi
-  if test -n "$USE_CMAKE" && test -z "$CMAKE"; then
-       # fall back to system cmake
-          CMAKE=cmake
   fi
   if test "x$DUNE_OPTS_FILE" != "x"; then
     if test "$command" = "configure"; then
@@ -200,9 +216,8 @@ load_opts() {
     echo "----- using default flags \$${COMMAND}_FLAGS from environment -----"
   fi
 
-  if test "x$USE_CMAKE" = "xyes"; then
+  if test "x$USE_CMAKE" != "xno"; then
     if test -z "$BUILDDIR"; then
-      echo "No build directory provided. Defaulting to the sub directory build-cmake"
       export BUILDDIR=build-cmake
     fi
   fi
@@ -224,16 +239,6 @@ abs_builddir()
   esac
 }
 
-space=" "
-tab="	"
-BLANK="$space$tab"
-
-if test -z "$GREP"; then
-  GREP=grep
-fi
-if test -z "$SED"; then
-  SED=sed
-fi
 # Uses the current compiler to extract information about the
 # multiarch triplets and sets the export variable MULTIARCH_LIBDIR
 # according to it.
@@ -342,6 +347,21 @@ git_HELP="\trun git command for each git managed module"
 for command in $COMMANDS; do
   eval "run_$command () { run_default_$command; }"
 done
+
+#
+# Check whether we should use cmake for this particular value
+# and set LOCAL_USE_CMAKE accordingly.
+# We use cmake if USE_CMAKE is not set to no and the module has
+# CMake build infrastructure, i.e. a toplevel CMakeLists.txt
+#
+create_local_use_cmake() {
+  if test "x$USE_CMAKE" != "xno" && test -e "$(eval "echo \$PATH_$module")/CMakeLists.txt"; then
+    LOCAL_USE_CMAKE=yes
+  else
+    LOCAL_USE_CMAKE=no
+  fi
+}
+
 
 #
 # default implementations for commands...
@@ -581,7 +601,8 @@ run_default_update () {
 }
 
 run_default_autogen () {
-  if test "x$USE_CMAKE" != "xyes" || test  ! -e "$(eval "echo \$PATH_$module")/CMakeLists.txt" ; then
+  create_local_use_cmake
+  if test "x$LOCAL_USE_CMAKE" = "xno"; then
     PARAMS="$CMD_FLAGS"
     local M4_PATH=""
     if test -f configure.ac && \
@@ -608,11 +629,7 @@ run_default_autogen () {
 run_default_configure () {
   extract_multiarch
   PARAMS="$CMD_FLAGS"
-  if test "x$USE_CMAKE" = "xyes" && test -e "$(eval "echo \$PATH_$module")/CMakeLists.txt"; then
-    LOCAL_USE_CMAKE=yes
-  else
-    LOCAL_USE_CMAKE=no
-  fi
+  create_local_use_cmake
 
   if test -x configure || test "x$LOCAL_USE_CMAKE" = "xyes" ; then
     ACLOCAL_FLAGS="-I ."
@@ -671,14 +688,27 @@ run_default_configure () {
       # such that they are honored by cmake.
       flags="CXX CC CXXFLAGS CFLAGS CPPFLAGS LDFLAGS F77 FFLAGS FLIBS FC FCFLAGS FCLIBS LIBS"
       for i in  $flags; do
-        cflags=`echo "$PARAMS" | $GREP $i= | $SED -e "s/.*\($i=\"[^\"]*\"\).*/\1/" -e "s/.*\($i='[^']*'\).*/\1/"`
+        cflags=`echo "$PARAMS" | $GREP $i= | $SED -e "s/^\($i=\"[^\"]*\"\).*/\1/" -e "s/.*[$BLANK]\($i=\"[^\"]*\"\).*/\1/" -e "s/^\($i='[^']*'\).*/\1/" -e "s/.*[$BLANK]\($i='[^']*'\).*/\1/"`
         if test -n "$cflags" && test "$PARAMS" != "$cflags" ; then
             PREPARAMS="$PREPARAMS $cflags"
           else
-           cflags=`echo "$PARAMS" | $GREP $i= | $SED -e "s/.*\($i=[^$BLANK]*\).*/\1/"`
+           cflags=`echo "$PARAMS" | $GREP $i= | $SED -e "s/^\($i=[^$BLANK]*\).*/\1/" -e "s/.*[$BLANK]\($i=[^$BLANK]*\).*/\1/"`
            if test -n "$cflags" && test "$PARAMS" != "$cflags" ; then
             PREPARAMS="$PREPARAMS $cflags"
            fi
+        fi
+      done
+      # MPI flags are special. find_package(MPI) does not honor MPICC, MPICXX
+      # Therefore we translate them to CMake variables and add them to CMAKE_FLAGS. Fortran is omitted.
+      for i in CC CXX; do
+        comp=`echo "$PARAMS" | $GREP MPI$i= | $SED -e "s/^\($i=\"[^\"]*\"\).*/\1/" -e "s/.*[$BLANK]\($i=\"[^\"]*\"\).*/\1/" -e "s/^\($i='[^']*'\).*/\1/" -e "s/.*[$BLANK]\($i='[^']*'\).*/\1/"`
+        if test -n "$comp" && test "$PARAMS" != "$comp" ; then
+          CMAKE_FLAGS="-DMPI_$(echo $i| $SED 's/^CC$/C/')""_COMPILER:FILEPATH=`which $comp` $CMAKE_FLAGS"
+          else
+            comp=`echo "$PARAMS" | $GREP MPI$i= | $SED -e "s/^MPI$i=\([^$BLANK]*\).*/\1/" -e "s/.*[$BLANK]MPI$i=\([^$BLANK]*\).*/\1/"`
+            if test -n "$comp" && test "$PARAMS" != "$comp" ; then
+              CMAKE_FLAGS="-DMPI_$(echo $i| $SED 's/^CC$/C/')""_COMPILER:FILEPATH=`which $comp` $CMAKE_FLAGS"
+            fi
         fi
       done
       # create build directory if requested
@@ -716,8 +746,15 @@ run_default_configure () {
 run_default_make () {
   test ! -d "$ABS_BUILDDIR" || cd "$ABS_BUILDDIR"
   PARAMS="$CMD_FLAGS"
-  echo make "$PARAMS"
-  eval $MAKE "$PARAMS"
+  echo "build directory: $BUILDDIR"
+  create_local_use_cmake
+  if test "$LOCAL_USE_CMAKE" = "no"; then
+    echo make "$PARAMS"
+    eval $MAKE "$PARAMS"
+  else
+    echo $CMAKE --build . "$PARAMS"
+    eval $CMAKE --build . "$PARAMS"
+  fi
 }
 
 run_default_all () {
@@ -764,7 +801,8 @@ usage () {
     echo "OPTIONS:"
     echo "  -h, --help          show this help"
     echo "      --debug         enable debug output of this script"
-    echo "      --use-cmake     use cmake instead autotools for building"
+    echo "      --use-cmake     use CMake instead of autotools for building"
+    echo "      --no-cmake      use autotools instead of CMake for building"
     echo "      --module=mod    only apply the actions on module mod"
     echo "                      and all modules it depends on"
     echo "      --only=mod      only apply the actions on module mod"
@@ -778,6 +816,8 @@ usage () {
     echo "                      (see dune-common/doc/example.opts)"
     echo "      --builddir=NAME make out-of-source builds in a subdir NAME."
     echo "                      This directory is created inside each module."
+    echo "                      If NAME is an absolute path, the build directory "
+    echo "                      is set to NAME/module-name for each module."
     echo "      --[COMMAND]-opts=opts   set options for COMMAND"
     echo "                     (this is mainly useful for the 'all' COMMAND)"
     echo "COMMANDS:"

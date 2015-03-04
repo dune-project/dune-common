@@ -1,6 +1,5 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-// $Id: fvector.hh 6105 2010-08-25 16:06:36Z christi $
 #ifndef DUNE_DYNVECTOR_HH
 #define DUNE_DYNVECTOR_HH
 

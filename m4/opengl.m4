@@ -1,5 +1,4 @@
 ## -*- autoconf -*-
-# $Id$
 # searches for OpenGL-stuff
 
 # DUNE_PATH_OPENGL()

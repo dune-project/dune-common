@@ -1,6 +1,5 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-// $Id: mpitraits.hh 1083 2009-09-28 17:13:20Z mblatt $
 #ifndef DUNE_MPITRAITS_HH
 #define DUNE_MPITRAITS_HH
 

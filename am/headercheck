@@ -1,5 +1,4 @@
 # -*- Makefile -*-
-# $Id: sourcescheck 5183 2008-04-27 17:37:08Z christi $
 
 headercheck_PATTERN = *.hh
 

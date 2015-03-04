@@ -7,10 +7,12 @@
    \brief  This file implements a quadratic diagonal matrix of fixed size.
  */
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <complex>
 #include <cstddef>
+#include <initializer_list>
 #include <iostream>
 #include <memory>
 
@@ -106,6 +108,20 @@ namespace Dune {
       : diag_(diag)
     {}
 
+    /** \brief Construct diagonal matrix from an initializer list
+     *
+     * The elements of the list are copied into the diagonal elements of the matrix.
+     * If the initializer list is shorter than the matrix diagonal (which has n elements),
+     * the remaining matrix diagonal elements are left uninitialized.  If the initializer
+     * list is longer, than only the first n elements will be copied into the matrix
+     * diagonal.
+     */
+    DiagonalMatrix (std::initializer_list<K> const &l)
+    {
+      std::copy_n(l.begin(), std::min(static_cast<std::size_t>(rows),
+                                      l.size()),
+                 diag_.begin());
+    }
 
     /** \brief Assignment from a scalar */
     DiagonalMatrix& operator= (const K& k)

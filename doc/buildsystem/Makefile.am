@@ -1,5 +1,3 @@
-# $Id: Makefile.am 4499 2006-04-13 14:56:35Z christi $
-
 # setting like in dune-web
 CURDIR=doc/buildsystem
 BASEDIR=../..

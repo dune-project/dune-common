@@ -1,6 +1,5 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-// $Id: buildindexset.hh 1565 2012-04-30 22:04:34Z mblatt $
 #ifndef BUILDINDEXSET_HH
 #define BUILDINDEXSET_HH
 

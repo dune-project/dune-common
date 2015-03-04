@@ -94,10 +94,10 @@ macro(find_dune_package module)
   if(DUNE_FIND_REQUIRED)
     set(required REQUIRED)
     set_package_properties(${module} PROPERTIES TYPE REQUIRED)
-  else(DUNE_FIND_REQUIRED)
+  else()
     unset(required)
-    set_package_properties(${module} PROPERTIES TYPE RECOMMENDED)
-  endif(DUNE_FIND_REQUIRED)
+    set_package_properties(${module} PROPERTIES TYPE OPTIONAL)
+  endif()
   if(DUNE_FIND_VERSION MATCHES "(>=|=|<=).*")
     string(REGEX REPLACE "(>=|=|<=)(.*)" "\\1" DUNE_FIND_VERSION_OP ${DUNE_FIND_VERSION})
     string(REGEX REPLACE "(>=|=|<=)(.*)" "\\2" DUNE_FIND_VERSION_NUMBER ${DUNE_FIND_VERSION})
@@ -530,6 +530,13 @@ endmacro(dune_process_dependency_macros)
 # depedencies.
 # Don't forget to call finalize_dune_project afterwards.
 macro(dune_project)
+  # check whether a compiler name instead of compiler path is given, this causes serious problems with older cmake versions.
+  # Unfortunately those errors only surface on a second run, when the build directory already exists. The compiler
+  # variable is then (for obscure reasons) expanded to ${CMAKE_BINARY_DIR}/...
+  if((${CMAKE_CXX_COMPILER} MATCHES "${CMAKE_BINARY_DIR}.*") AND (${CMAKE_VERSION} VERSION_LESS "3.0"))
+    message(FATAL_ERROR "You need to specify an absolute path to your compiler instead of just the compiler name. cmake >= 3.0 fixes this issue.")
+  endif()
+
   # extract information from dune.module
   dune_module_information(${CMAKE_SOURCE_DIR})
   set(ProjectName            "${DUNE_MOD_NAME}")
@@ -656,6 +663,14 @@ macro(dune_project)
   # set up make headercheck
   include(Headercheck)
   setup_headercheck()
+
+  # check whether the user wants to append compile flags upon calling make
+  if(ALLOW_EXTRA_CXXFLAGS AND (${CMAKE_GENERATOR} MATCHES ".*Unix Makefiles.*"))
+    file(WRITE ${CMAKE_BINARY_DIR}/compiler.sh
+         "#!/bin/bash\nif [ -n \"$VERBOSE\" ] ; then\necho 1>&2 \"Additional flags: \$EXTRA_CXXFLAGS\"\nfi\nexec ${CMAKE_CXX_COMPILER} \"\$@\" \$EXTRA_CXXFLAGS")
+    exec_program(chmod ARGS "+x ${CMAKE_BINARY_DIR}/compiler.sh")
+    set(CMAKE_CXX_COMPILER ${CMAKE_BINARY_DIR}/compiler.sh)
+  endif()
 endmacro(dune_project)
 
 # create a new config.h file and overwrite the existing one
@@ -715,31 +730,39 @@ macro(finalize_dune_project)
   include(GNUInstallDirs)
   set(DOXYSTYLE_DIR ${CMAKE_INSTALL_DATAROOTDIR}/dune-common/doc/doxygen/)
   set(SCRIPT_DIR ${CMAKE_INSTALL_DATAROOTDIR}/dune/cmake/scripts)
+  # Set the location where the doc sources are installed.
+  # Needed by custom package configuration
+  # file section of dune-grid.
+  set(DUNE_MODULE_SRC_DOCDIR "\${${ProjectName}_PREFIX}/${CMAKE_INSTALL_DOCDIR}")
 
   if(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
     # Generate a standard cmake package configuration file
     file(WRITE ${PROJECT_BINARY_DIR}/CMakeFiles/${ProjectName}-config.cmake.in
-"if(NOT @ProjectName@_FOUND)
+"if(NOT ${ProjectName}_FOUND)
 @PACKAGE_INIT@
 
 #report other information
-set_and_check(@ProjectName@_PREFIX \"\${PACKAGE_PREFIX_DIR}\")
-set_and_check(@ProjectName@_INCLUDE_DIRS \"@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@\")
-set(@ProjectName@_CXX_FLAGS \"@CMAKE_CXX_FLAGS@\")
-set(@ProjectName@_CXX_FLAGS_DEBUG \"@CMAKE_CXX_FLAGS_DEBUG@\")
-set(@ProjectName@_CXX_FLAGS_MINSIZEREL \"@CMAKE_CXX_FLAGS_MINSIZEREL@\")
-set(@ProjectName@_CXX_FLAGS_RELEASE \"@CMAKE_CXX_FLAGS_RELEASE@\")
-set(@ProjectName@_CXX_FLAGS_RELWITHDEBINFO \"@CMAKE_CXX_FLAGS_RELWITHDEBINFO@\")
-set(@ProjectName@_DEPENDS \"@@ProjectName@_DEPENDS@\")
-set(@ProjectName@_SUGGESTS \"@@ProjectName@_SUGGESTS@\")
-set(@ProjectName@_MODULE_PATH \"@PACKAGE_DUNE_INSTALL_MODULEDIR@\")
-set(@ProjectName@_LIBRARIES \"@DUNE_MODULE_LIBRARIES@\")
+set_and_check(${ProjectName}_PREFIX \"\${PACKAGE_PREFIX_DIR}\")
+set_and_check(${ProjectName}_INCLUDE_DIRS \"@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@\")
+set(${ProjectName}_CXX_FLAGS \"${CMAKE_CXX_FLAGS}\")
+set(${ProjectName}_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG}\")
+set(${ProjectName}_CXX_FLAGS_MINSIZEREL \"${CMAKE_CXX_FLAGS_MINSIZEREL}\")
+set(${ProjectName}_CXX_FLAGS_RELEASE \"${CMAKE_CXX_FLAGS_RELEASE}\")
+set(${ProjectName}_CXX_FLAGS_RELWITHDEBINFO \"${CMAKE_CXX_FLAGS_RELWITHDEBINFO}\")
+set(${ProjectName}_DEPENDS \"@${ProjectName}_DEPENDS@\")
+set(${ProjectName}_SUGGESTS \"@${ProjectName}_SUGGESTS@\")
+set(${ProjectName}_MODULE_PATH \"@PACKAGE_DUNE_INSTALL_MODULEDIR@\")
+set(${ProjectName}_LIBRARIES \"@DUNE_MODULE_LIBRARIES@\")
+
+# Lines that are set by the CMake buildsystem via the variable DUNE_CUSTOM_PKG_CONFIG_SECTION
+${DUNE_CUSTOM_PKG_CONFIG_SECTION}
+
 #import the target
-if(@ProjectName@_LIBRARIES)
+if(${ProjectName}_LIBRARIES)
   get_filename_component(_dir \"\${CMAKE_CURRENT_LIST_FILE}\" PATH)
-  include(\"\${_dir}/@ProjectName@-targets.cmake\")
-endif(@ProjectName@_LIBRARIES)
-endif(NOT @ProjectName@_FOUND)")
+  include(\"\${_dir}/${ProjectName}-targets.cmake\")
+endif(${ProjectName}_LIBRARIES)
+endif(NOT ${ProjectName}_FOUND)")
       set(CONFIG_SOURCE_FILE ${PROJECT_BINARY_DIR}/CMakeFiles/${ProjectName}-config.cmake.in)
   else(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
     set(CONFIG_SOURCE_FILE ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
@@ -757,6 +780,10 @@ endif(NOT @ProjectName@_FOUND)")
   else(DUNE_MODULE_LIBRARIES)
     set(DUNE_INSTALL_LIBDIR ${DUNE_INSTALL_NONOBJECTLIBDIR})
   endif(DUNE_MODULE_LIBRARIES)
+
+  # Set the location of the doc file source. Needed by custom package configuration
+  # file section of dune-grid.
+  set(DUNE_MODULE_SRC_DOCDIR "${PROJECT_SOURCE_DIR}/doc")
 
   configure_package_config_file(${CONFIG_SOURCE_FILE}
     ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake
@@ -786,12 +813,12 @@ endmacro()")
 
   if(NOT EXISTS ${PROJECT_SOURCE_DIR}/${ProjectName}-config-version.cmake.in)
     file(WRITE ${PROJECT_BINARY_DIR}/CMakeFiles/${ProjectName}-config-version.cmake.in
-"set(PACKAGE_VERSION \"@ProjectVersionString@\")
+"set(PACKAGE_VERSION \"${ProjectVersionString}\")
 
-if(\"\${PACKAGE_FIND_VERSION_MAJOR}\" EQUAL \"@ProjectVersionMajor@\" AND
-     \"\${PACKAGE_FIND_VERSION_MINOR}\" EQUAL \"@ProjectVersionMinor@\")
+if(\"\${PACKAGE_FIND_VERSION_MAJOR}\" EQUAL \"${ProjectVersionMajor}\" AND
+     \"\${PACKAGE_FIND_VERSION_MINOR}\" EQUAL \"${ProjectVersionMinor}\")
   set (PACKAGE_VERSION_COMPATIBLE 1) # compatible with newer
-  if (\"\${PACKAGE_FIND_VERSION}\" VERSION_EQUAL \"@ProjectVersionString@\")
+  if (\"\${PACKAGE_FIND_VERSION}\" VERSION_EQUAL \"${ProjectVersionString}\")
     set(PACKAGE_VERSION_EXACT 1) #exact match for this version
   endif()
 endif()
@@ -1137,5 +1164,89 @@ macro(add_dune_all_flags targets)
     set_property(TARGET ${target}
           APPEND_STRING
           PROPERTY COMPILE_FLAGS ${FLAGSTR})
+    get_property(libs GLOBAL PROPERTY ALL_PKG_LIBS)
+    target_link_libraries(${target} ${DUNE_LIBS} ${libs})
   endforeach()
 endmacro(add_dune_all_flags targets)
+
+# This macro adds a file-copy command.
+# The file_name is the name of a file that exists
+# in the source tree. This file will be copied
+# to the build tree when executing this command.
+# Notice that this does not create a top-level
+# target. In order to do this you have to additionally
+# call add_custom_target(...) with dependency
+# on the file.
+macro(dune_add_copy_command file_name)
+    add_custom_command(
+        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${file_name}"
+        COMMAND    ${CMAKE_COMMAND}
+        ARGS       -E copy "${CMAKE_CURRENT_SOURCE_DIR}/${file_name}" "${file_name}"
+        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${file_name}"
+        )
+endmacro(dune_add_copy_command file_name)
+
+# This macro adds a file-copy target under given target_name.
+# The file_name is the name of a file that exists
+# in the source tree. This file will be copied
+# to the build tree.
+macro(dune_add_copy_target target_name file_name)
+    dune_add_copy_command(${file_name})
+    add_custom_target("${target_name}" ALL DEPENDS "${file_name}")
+endmacro(dune_add_copy_target target_name file_name)
+
+# This macro adds a copy-dependecy to a target
+# The file_name is the name of a file that exists
+# in the source tree. This file will be copied
+# to the build tree.
+macro(dune_add_copy_dependency target file_name)
+    message(STATUS "Adding copy-to-build-dir dependency for ${file_name} to target ${target}")
+    dune_add_copy_target("${target}_copy_${file_name}" "${file_name}")
+    add_dependencies(${target} "${target}_copy_${file_name}")
+endmacro(dune_add_copy_dependency)
+
+# add a symlink called src_dir to all directories in the build tree.
+# That symlink points to the corresponding directory in the source tree.
+# Call the macro from the toplevel CMakeLists.txt file of your project.
+# You can also call it from some other directory, creating only symlinks
+# in that directory and all directories below. A warning is issued on
+# Windows systems.
+macro(dune_symlink_to_source_tree)
+  # check for Windows to issue a warning
+  if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    if(NOT DEFINED DUNE_WINDOWS_SYMLINK_WARNING)
+      message(WARNING "Your module wanted to create symlinks, but you cannot do that on your platform.")
+      set(DUNE_WINDOWS_SYMLINK_WARNING)
+    endif()
+  else()
+    # get a list of all files in the current source directory and below.
+    file(GLOB_RECURSE files RELATIVE ${CMAKE_SOURCE_DIR} "*")
+
+    # iterate over all files, extract the directory name and write a symlink in the corresponding build directory
+    foreach(f ${files})
+      get_filename_component(dir ${f} DIRECTORY)
+      execute_process(COMMAND ${CMAKE_COMMAND} "-E" "create_symlink" "${CMAKE_SOURCE_DIR}/${dir}" "${CMAKE_BINARY_DIR}/${dir}/src_dir")
+    endforeach()
+  endif()
+endmacro(dune_symlink_to_source_tree)
+
+# add symlinks to the build tree, which point to files in the source tree.
+# Foreach file given in "files", a symlink of that name is created in the
+# corresponding build directory. Use for ini files, grid files etc. A warning
+# is issued on Windows systems.
+macro(dune_symlink_to_source_files files)
+  # create symlinks for all given files
+  foreach(f ${files})
+    # check for Windows to issue a warning
+    if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+      if(NOT DEFINED DUNE_WINDOWS_SYMLINK_WARNING)
+        message(WARNING "Your module wanted to create symlinks, but you cannot do that on your platform.")
+        set(DUNE_WINDOWS_SYMLINK_WARNING)
+      endif()
+      dune_add_copy_command(${f})
+    else()
+      # create symlink
+      execute_process(COMMAND ${CMAKE_COMMAND} "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/${f}" "${CMAKE_CURRENT_BINARY_DIR}/${f}")
+    endif()
+  endforeach()
+endmacro(dune_symlink_to_source_files files)

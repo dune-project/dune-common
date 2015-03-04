@@ -10,6 +10,15 @@
 #include <cstddef>
 #include <cstring>
 #include <algorithm>
+#include <cassert>
+#include <cstdio>
+#include <memory>
+#include <string>
+#include <new>
+
+#include <dune/common/exceptions.hh>
+#include <dune/common/std/memory.hh>
+
 
 namespace Dune {
 
@@ -48,6 +57,56 @@ namespace Dune {
     return std::equal(suffix, suffix+len, it);
   }
 
+  /**
+   * \brief Format values according to printf format string
+   *
+   * \param s The format string to be used
+   * \param args The valued to be formated
+   *
+   * This is a wrapper to std::snprintf that provides
+   * overflow save printf functionality. For up to 1000
+   * characters a static buffer is used. If this is not sufficient
+   * a dynamic buffer of appropriate size is allocated.
+   */
+  template<class... T>
+  static std::string formatString(const std::string& s, const T&... args)
+  {
+    static const int bufferSize=1000;
+    static char buffer[bufferSize];
+
+    // try to format with static buffer
+    int r = std::snprintf(buffer, bufferSize, s.c_str(), args...);
+
+    // negative return values correspond to errors
+    if (r<0)
+      DUNE_THROW(Dune::Exception,"Could not convert format string using given arguments.");
+
+    // if buffer was large enough return result as string
+    if (r<bufferSize)
+      return std::string(buffer);
+
+    // if buffer was to small allocate a larger buffer using
+    // the predicted size hint (+1 for the terminating 0-byte).
+    int dynamicBufferSize = r+1;
+
+    std::unique_ptr<char[]> dynamicBuffer;
+    try {
+      dynamicBuffer = Dune::Std::make_unique<char[]>(dynamicBufferSize);
+    }
+    catch (const std::bad_alloc&) {
+      DUNE_THROW(Dune::Exception,"Could allocate large enough dynamic buffer in formatString.");
+    }
+
+    // convert and check for errors again
+    r = std::snprintf(dynamicBuffer.get(), dynamicBufferSize, s.c_str(), args...);
+    if (r<0)
+      DUNE_THROW(Dune::Exception,"Could not convert format string using given arguments.");
+
+    // the new buffer should always be large enough
+    assert(r<dynamicBufferSize);
+
+    return std::string(dynamicBuffer.get());
+  }
   /** @} */
 
 }

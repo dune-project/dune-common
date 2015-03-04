@@ -1,6 +1,14 @@
 # $Id$
 
-SUBDIRS = test parallel std threads kernel memory
+# deal with kernel/ before ./ sind libcommon.la needs kernel/libkernel.la
+SUBDIRS =					\
+	kernel					\
+	.					\
+	memory					\
+	parallel				\
+	std					\
+	test
+	threads
 
 # the standard debug streams are put into the libdune
 noinst_LTLIBRARIES = libcommon.la
@@ -14,7 +22,8 @@ libcommon_la_SOURCES =				\
 	parametertreeparser.cc			\
 	path.cc					\
 	exceptions.cc				\
-	stdstreams.cc
+	stdstreams.cc				\
+	stdthread.cc
 libcommon_la_LIBADD =				\
   kernel/libkernel.la				\
   $(LAPACK_LIBS)				\
@@ -65,6 +74,7 @@ commoninclude_HEADERS = 			\
 	ios_state.hh				\
 	iteratoradapters.hh			\
 	iteratorfacades.hh			\
+	iteratorrange.hh			\
 	lcm.hh					\
 	lru.hh					\
 	mallocallocator.hh			\
@@ -79,12 +89,14 @@ commoninclude_HEADERS = 			\
 	precision.hh				\
 	promotiontraits.hh			\
 	propertymap.hh				\
+        proxymemberaccess.hh                    \
 	reservedvector.hh			\
 	shared_ptr.hh				\
 	singleton.hh				\
 	sllist.hh				\
 	static_assert.hh			\
 	stdstreams.hh				\
+	stdthread.hh				\
 	stringutility.hh			\
 	timer.hh				\
 	tuples.hh				\

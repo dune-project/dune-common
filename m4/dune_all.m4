@@ -1,5 +1,4 @@
 ## -*- autoconf -*-
-# $Id$
 
 # this meta-check calls everything needed for Dune to work and all
 # possible components. Applications should use this so that

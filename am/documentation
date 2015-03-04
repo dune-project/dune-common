@@ -1,11 +1,10 @@
 # -*- Makefile -*-
-# $Id: global-rules 5267 2008-09-10 10:45:42Z christi $
 
 maintainer-clean-local: doc-clean-am
 
 ###
 # build doc / web-install recursively
-doc-clean-am: clean-am doc-clean-documentation doc-clean-local
+doc-clean-am: doc-clean-documentation doc-clean-local
 doc-am: doc-all-documentation doc-local
 web-install-am: web-install-local
 

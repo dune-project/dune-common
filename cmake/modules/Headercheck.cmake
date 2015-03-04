@@ -2,10 +2,9 @@
 # in the module and a global target depending on all checks
 macro(setup_headercheck)
   #glob for headers
-  file(GLOB_RECURSE src_headers "src/*.hh")
-  file(GLOB_RECURSE dune_headers "dune/*.hh")
+  file(GLOB_RECURSE all_headers "*.hh")
   # strip hidden files
-  string(REGEX REPLACE "[^;]*/\\.[^;]*\\.hh;?" "" headers "${dune_headers};${src_headers}")
+  string(REGEX REPLACE "[^;]*/\\.[^;]*\\.hh;?" "" headers "${all_headers}")
   set_property(GLOBAL PROPERTY headercheck_list ${headers})
 
   #define headercheck target

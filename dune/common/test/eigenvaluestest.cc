@@ -4,257 +4,143 @@
 #include "config.h"
 #endif
 
-//==============================================================================
-//!
-//! \date Nov 9 2011
-//!
-//! \author Arne Morten Kvarving / SINTEF
-//!
-//==============================================================================
-
 #include <dune/common/fvector.hh>
+#include <dune/common/fmatrix.hh>
 #include <dune/common/dynmatrixev.hh>
+#include <dune/common/fmatrixev.hh>
 
 #include <algorithm>
 #include <complex>
 
+using namespace Dune;
 
-//! \brief Represents a cardinal function on a line
-template<class ctype, class rtype>
-class LagrangeCardinalFunction
+#if HAVE_LAPACK
+/** \brief Test the eigenvalue code with the Rosser test matrix
+
+   This matrix was a challenge for many matrix eigenvalue
+   algorithms. But the Francis QR algorithm, as perfected by
+   Wilkinson and implemented in EISPACK, has no trouble with it. The
+   matrix is 8-by-8 with integer elements. It has:
+
+ * A double eigenvalue
+ * Three nearly equal eigenvalues
+ * Dominant eigenvalues of opposite sign
+ * A zero eigenvalue
+ * A small, nonzero eigenvalue
+
+*/
+template<typename ft>
+void testRosserMatrix()
 {
-public:
-  //! \brief Empty default constructor
-  LagrangeCardinalFunction() {}
+  // Hack: I want this matrix to be a DynamicMatrix, but currently I cannot
+  // initialize such a matrix from initializer lists.  Therefore I take the
+  // detour over a FieldMatrix.
+  FieldMatrix<ft,8,8> AField = {
+    { 611, 196, -192, 407, -8, -52, -49, 29 },
+    { 196, 899, 113, -192, -71, -43, -8, -44 },
+    { -192, 113, 899, 196, 61, 49, 8, 52 },
+    { 407, -192, 196, 611, 8, 44, 59, -23 },
+    { -8, -71, 61, 8, 411, -599, 208, 208 },
+    { -52, -43, 49, 44, -599, 411, 208, 208 },
+    { -49, -8, 8, 59, 208, 208, 99, -911 },
+    { 29, -44, 52, -23, 208, 208, -911, 99}
+  };
 
-  //! \brief Construct a cardinal function with the given nodes
-  //! \param[in] nodes_ The nodes
-  //! \param[in] i The node this function is associated with
-  LagrangeCardinalFunction(const std::vector<rtype>& nodes_,
-                           size_t i)
-    : nodes(nodes_), node(i) {}
+  DynamicMatrix<ft> A(8,8);
+  for (int i=0; i<8; i++)
+    for (int j=0; j<8; j++)
+      A[i][j] = AField[i][j];
 
-  //! \brief Evaluate the shape function
-  //! \param[in] local The local coordinates
-  rtype evaluateFunction(const ctype& local) const
+  // compute eigenvalues
+  DynamicVector<std::complex<ft> > eigenComplex;
+  DynamicMatrixHelp::eigenValuesNonSym(A, eigenComplex);
+
+  // test results
+  /*
+     reference solution computed with octave 3.2
+
+     > format long e
+     > eig(rosser())
+
+   */
+  std::vector<ft> reference = {
+          -1.02004901843000e+03,
+          -4.14362871168386e-14,
+           9.80486407214362e-02,
+           1.00000000000000e+03,
+           1.00000000000000e+03,
+           1.01990195135928e+03,
+           1.02000000000000e+03,
+           1.02004901843000e+03
+  };
+
+  std::vector<ft> eigenRealParts(8);
+  for (int i=0; i<8; i++)
+    eigenRealParts[i] = std::real(eigenComplex[i]);
+
+  std::sort(eigenRealParts.begin(), eigenRealParts.end());
+
+  for (int i=0; i<8; i++)
   {
-    rtype result = 1;
-    for (size_t i=0; i < nodes.size(); ++i) {
-      if (i != node)
-        result *= (local-nodes[i])/(nodes[node]-nodes[i]);
-    }
+    if (std::fabs(std::imag(eigenComplex[i])) > 1e-10)
+      DUNE_THROW(MathError, "Symmetric matrix has complex eigenvalue");
 
-    return result;
+    if( std::fabs(reference[i] - eigenRealParts[i]) > 1e-10 )
+      DUNE_THROW(MathError,"error computing eigenvalues");
   }
 
-  //! \brief Evaluate the derivative of the cardinal function
-  //! \param[in] local The local coordinates
-  rtype evaluateGradient(const ctype& local) const
-  {
-    rtype result = 0;
-    for (size_t i=0; i < nodes.size(); ++i) {
-      rtype f = 1;
-      for (int j=0; j < nodes.size(); ++j) {
-        if (i != j && j != node)
-          f *= (local-nodes[j])/(nodes[node]-nodes[j]);
-      }
-      result += f/(nodes[node]-nodes[i]);
-    }
+  std::cout << "Eigenvalues of Rosser matrix: " << eigenComplex << std::endl;
+}
 
-    return result;
-  }
-
-private:
-  //! \brief The nodes
-  std::vector<rtype> nodes;
-
-  size_t node;
-};
-
-//! \brief Represents a tensor-product of 1D functions
-template<class rtype, class ctype, class ftype, int dim>
-class TensorProductFunction
+template <class field_type>
+void testSymmetricFieldMatrix()
 {
-public:
-  //! \brief The dimension of the function
-  enum { dimension = dim };
+  int numberOfTestMatrices = 10;
 
-  //! \brief Empty default constructor
-  TensorProductFunction() {}
-
-  //! \brief Construct a tensor-product function
-  //! \param[in] funcs_ The functions
-  TensorProductFunction(const Dune::FieldVector<ftype, dim>& funcs_)
-    : funcs(funcs_) {}
-
-  //! \brief Evaluate the function
-  //! \param[in] local The local coordinates
-  rtype evaluateFunction(const Dune::FieldVector<ctype,dim>& local) const
+  for (int i=0; i<numberOfTestMatrices; i++)
   {
-    rtype result = 1;
-    for (int i=0; i < dim; ++i)
-      result *= funcs[i].evaluateFunction(local[i]);
+    // Construct pseudo-random symmetric test matrix
+    FieldMatrix<field_type,3,3> testMatrix;
+    for (int j=0; j<3; j++)
+      for (int k=j; k<3; k++)
+        testMatrix[j][k] = testMatrix[k][j] = ((int)(M_PI*j*k*i))%100;
 
-    return result;
+    FieldVector<field_type,3> eigenValues;
+    FMatrixHelp::eigenValues(testMatrix, eigenValues);
+
+    // Make sure the compute numbers really are the eigenvalues
+    for (int j=0; j<3; j++)
+    {
+      FieldMatrix<field_type,3,3> copy = testMatrix;
+      for (int k=0; k<3; k++)
+        copy[k][k] -= eigenValues[j];
+
+      if (std::fabs(copy.determinant()) > 1e-8)
+        DUNE_THROW(MathError, "Value computed by FMatrixHelp::eigenValues is not an eigenvalue");
+    }
+
+    // Make sure the eigenvalues are in ascending order
+    for (int j=0; j<3-1; j++)
+      if (eigenValues[j] > eigenValues[j+1] + 1e-10)
+        DUNE_THROW(MathError, "Values computed by FMatrixHelp::eigenValues are not in ascending order");
   }
+}
+#endif // HAVE_LAPACK
 
-  Dune::FieldVector<rtype, dim>
-  evaluateGradient(const Dune::FieldVector<ctype,dim>& local) const
-  {
-    Dune::FieldVector<rtype, dim> result;
-    for (int i=0; i < dim; ++i)
-      result[i] = funcs[i].evaluateGradient(local[i]);
-  }
-private:
-  Dune::FieldVector<ftype, dim> funcs;
-};
-
-template<int dim>
-class PNShapeFunctionSet
+int main() try
 {
-public:
-  typedef LagrangeCardinalFunction<double, double> CardinalFunction;
+#if HAVE_LAPACK
+  testRosserMatrix<double>();
 
-  typedef TensorProductFunction<double, double, CardinalFunction, dim>
-  ShapeFunction;
+  testSymmetricFieldMatrix<double>();
 
-  PNShapeFunctionSet(int n1, int n2, int n3=0)
-  {
-    int dims[3] = {n1, n2, n3};
-    cfuncs.resize(dim);
-    for (int i=0; i < dim; ++i) {
-      std::vector<double> grid;
-      grid = gaussLobattoLegendreGrid(dims[i]);
-      for (int j=0; j<dims[i]; ++j)
-        cfuncs[i].push_back(CardinalFunction(grid,j));
-    }
-    int l=0;
-    Dune::FieldVector<CardinalFunction,dim> fs;
-    if (dim == 3) {
-      f.resize(n1*n2*n3);
-      for (int k=0; k < n3; ++k) {
-        for (int j=0; j < n2; ++j)
-          for (int i=0; i< n1; ++i) {
-            fs[0] = cfuncs[0][i];
-            fs[1] = cfuncs[1][j];
-            fs[2] = cfuncs[2][k];
-            f[l++] = ShapeFunction(fs);
-          }
-      }
-    } else {
-      f.resize(n1*n2);
-      for (int j=0; j < n2; ++j) {
-        for (int i=0; i< n1; ++i) {
-          fs[0] = cfuncs[0][i];
-          fs[1] = cfuncs[1][j];
-          f[l++] = ShapeFunction(fs);
-        }
-      }
-    }
-  }
-
-  //! \brief Obtain a given shape function
-  //! \param[in] i The requested shape function
-  const ShapeFunction& operator[](int i) const
-  {
-    return f[i];
-  }
-
-  int size()
-  {
-    return f.size();
-  }
-protected:
-  std::vector< std::vector<CardinalFunction> > cfuncs;
-  std::vector<ShapeFunction> f;
-
-  double legendre(double x, int n)
-  {
-    std::vector<double> Ln;
-    Ln.resize(n+1);
-    Ln[0] = 1.f;
-    Ln[1] = x;
-    if( n > 1 ) {
-      for( int i=1; i<n; i++ )
-        Ln[i+1] = (2*i+1.0)/(i+1.0)*x*Ln[i]-i/(i+1.0)*Ln[i-1];
-    }
-
-    return Ln[n];
-  }
-
-  double legendreDerivative(double x, int n)
-  {
-    std::vector<double> Ln;
-    Ln.resize(n+1);
-
-    Ln[0] = 1.0; Ln[1] = x;
-
-    if( (x == 1.0) || (x == -1.0) )
-      return( pow(x,n-1)*n*(n+1.0)/2.0 );
-    else {
-      for( int i=1; i<n; i++ )
-        Ln[i+1] = (2.0*i+1.0)/(i+1.0)*x*Ln[i]-(double)i/(i+1.0)*Ln[i-1];
-      return( (double)n/(1.0-x*x)*Ln[n-1]-n*x/(1-x*x)*Ln[n] );
-    }
-  }
-
-
-  std::vector<double> gaussLegendreGrid(int n)
-  {
-    Dune::DynamicMatrix<double> A(n,n,0.0);
-
-    A[0][1] = 1.f;
-    for (int i=1; i<n-1; ++i) {
-      A[i][i-1] = (double)i/(2.0*(i+1.0)-1.0);
-      A[i][i+1] = (double)(i+1.0)/(2*(i+1.0)-1.0);
-    }
-    A[n-1][n-2] = (n-1.0)/(2.0*n-1.0);
-
-    Dune::DynamicVector<std::complex<double> > eigenValues(n);
-    Dune::DynamicMatrixHelp::eigenValuesNonSym(A, eigenValues);
-
-    std::vector<double> result(n);
-    for (int i=0; i < n; ++i)
-      result[i] = std::real(eigenValues[i]);
-    std::sort(result.begin(),result.begin()+n);
-
-    return result;
-  }
-
-  std::vector<double> gaussLobattoLegendreGrid(int n)
-  {
-    assert(n > 1);
-    const double tolerance = 1.e-15;
-
-    std::vector<double> result(n);
-    result[0] = 0.0;
-    result[n-1] = 1.0;
-    if (n == 3)
-      result[1] = 0.5;
-
-    if (n < 4)
-      return result;
-
-    std::vector<double> glgrid = gaussLegendreGrid(n-1);
-    for (int i=1; i<n-1; ++i) {
-      result[i] = (glgrid[i-1]+glgrid[i])/2.0;
-      double old = 0.0;
-      while (std::abs(old-result[i]) > tolerance) {
-        old = result[i];
-        double L = legendre(old, n-1);
-        double Ld = legendreDerivative(old, n-1);
-        result[i] += (1.0-old*old)*Ld/((n-1.0)*n*L);
-      }
-      result[i] = (result[i]+1.0)/2.0;
-    }
-
-    return result;
-  }
-};
-
-int main()
-{
-  // Not really a test but better than nothing.
-  PNShapeFunctionSet<2> lbasis(2, 3);
   return 0;
+#else
+  std::cout << "WARNING: eigenvaluetest needs LAPACK, test disabled" << std::endl;
+  return 77;
+#endif // HAVE_LAPACK
+} catch (Exception exception)
+{
+  std::cerr << exception << std::endl;
+  return 1;
 }

@@ -1,5 +1,3 @@
-# $Id: Makefile.am 1681 2012-08-31 11:30:17Z gruenich $
-
 SUBDIRS = figures
 
 MPIPROGRAMS = indexset poosc08 poosc08_test

@@ -1,5 +1,3 @@
-# $Id$
-
 completions_DATA = dunecontrol
 
 # Not all file names seem to be treated equal by _DATA.

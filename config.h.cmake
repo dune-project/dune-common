@@ -109,11 +109,22 @@
 /* Define to 1 if C++11 constexpr is supported */
 #cmakedefine HAVE_CONSTEXPR 1
 
+/* Define to 1 if C++11 range-based for is supported */
+#cmakedefine HAVE_RANGE_BASED_FOR 1
+
+/* Define to 1 if C++11 nonexcept specifier is supported */
+#cmakedefine HAVE_NOEXCEPT_SPECIFIER 1
+
 /* does the compiler support the keyword 'final'? */
 #cmakedefine HAVE_KEYWORD_FINAL 1
 
 /* Define to if the UMFPack library is available */
 #cmakedefine HAVE_UMFPACK ENABLE_UMFPACK
+
+/* Define to ENABLE_PARMETIS if you have the Parmetis library.
+   This is only true if MPI was found
+   by configure _and_ if the application uses the PARMETIS_CPPFLAGS */
+#cmakedefine HAVE_PARMETIS ENABLE_PARMETIS
 
 /* Include always useful headers */
 #include "FC.h"

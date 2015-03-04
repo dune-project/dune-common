@@ -1,6 +1,5 @@
 dnl -*- mode: autoconf; tab-width: 8; indent-tabs-mode: nil; -*-
 dnl vi: set et ts=8 sw=2 sts=2:
-# $Id$
 # searches for ParMetis headers and libs
 
 AC_DEFUN([DUNE_PATH_PARMETIS],[

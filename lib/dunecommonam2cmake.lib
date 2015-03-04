@@ -17,27 +17,26 @@ dune_common_options_am2cmake()
     # to lower case are used for configures
     # --with-<package> or without-<package> options
     #
-    CMAKE_PACKAGES="Boost Inkscape GMP LAPACK"
+    CMAKE_PACKAGES="Boost Inkscape GMP LAPACK UMFPack"
 
     default_am2cmake_options $CMAKE_PACKAGES
 
-    # Check for --enable-parallel and otherwise deactivate MPI
+    # Check for --enable-parallel and activate MPI
     echo $PARAMS | grep \\-\\-enable-parallel > /dev/null
-    if test "$?" -ne 0 ; then
-	CMAKE_PARAMS="$CMAKE_PARAMS -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE"
-    else
-        CMAKE_PARAMS="$CMAKE_PARAMS -DUSE_MPI=ON"
+    if test "$?" -eq 0 ; then
+	      CMAKE_PARAMS="$CMAKE_PARAMS -DUSE_MPI=ON"
     fi
+
+    # Check for --disable-parallel and deactivate MPI if given
+    echo $PARAMS | grep \\-\\-disable-parallel > /dev/null
+    if test "$?" -eq 0 ; then
+        CMAKE_PARAMS="$CMAKE_PARAMS -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE"
+    fi
+
     # Check for --disable-cxx11check
     echo $PARAMS | grep \\-\\-disable-cxx11check > /dev/null
     if test "$?" -eq 0 ; then
         CMAKE_PARAMS="$CMAKE_PARAMS -DDISABLE_CXX11CHECK:BOOL=TRUE"
-    fi
-
-    # Check for --disable-gxx0xcheck
-    echo $PARAMS | grep \\-\\-disable-tr1-headers > /dev/null
-    if test "$?" -eq 0 ; then
-        CMAKE_PARAMS="$CMAKE_PARAMS -DDISABLE_TR1_HEADERS:BOOL=TRUE"
     fi
 
     # Check for --with-minimal-debug-level
