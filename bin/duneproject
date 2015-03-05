@@ -442,7 +442,6 @@ for further options.
 
 
 The full build-system is described in the dune-common/doc/buildsystem (Git version) or under share/doc/dune-common/buildsystem if you installed DUNE!
-
 R_DELIM
 
 ################## MAKEFILE.AM ##################
@@ -478,7 +477,6 @@ include \$(top_srcdir)/am/global-rules
 # Generate package configuration files for finding
 # installed modules with CMake
 include \$(top_srcdir)/am/cmake-pkg-config
-
 M_DELIM
 
 ################## CMakeLists.txt ##################
@@ -602,17 +600,14 @@ mkdir "$PROJECT/src"
 
 echo "- $PROJECT/src/CMakeLists.txt"
 cat> "$PROJECT/src/CMakeLists.txt" << M_DELIM
-
 add_executable("${MODULE}" ${MODULE}.cc)
 target_link_dune_default_libraries("${MODULE}")
-
 M_DELIM
 
 ################## src/MAKEFILE.AM ##################
 
 echo "- $PROJECT/src/Makefile.am"
 cat> "$PROJECT/src/Makefile.am" << M_DELIM
-
 SUBDIRS =
 
 noinst_PROGRAMS = ${MODULE}
@@ -652,7 +647,6 @@ DISTCHECK_CONFIGURE_FLAGS = $DISTCHECK_CONFIGURE_FLAGS CXX="\$(CXX)" CC="\$(CC)"
 EXTRA_DIST = CMakeLists.txt
 
 include \$(top_srcdir)/am/global-rules
-
 M_DELIM
 
 ################## PROJECT.CC ##################
@@ -705,9 +699,7 @@ CC_DELIM
 ################## M4/CMakeLists.txt ##############
 echo "- $PROJECT/m4/CMakeLists.txt"
 cat> "$PROJECT/m4/CMakeLists.txt" << CC_DELIM
-
 install(PROGRAMS $MODULE.m4 DESTINATION \${CMAKE_INSTALL_DATAROOTDIR}/dune/aclocal)
-
 CC_DELIM
 
 ################## M4/PROJECT.M4 ####################
@@ -775,7 +767,6 @@ echo "- $PROJECT/dune/$NAME/CMakeLists.txt"
 cat> $PROJECT/dune/$NAME/CMakeLists.txt <<EOF
 #install headers
 install(FILES ${NAME}.hh DESTINATION include/dune/$NAME)
-
 EOF
 
 ################## dune/$NAME/$NAME.hh #################
@@ -799,7 +790,6 @@ mkdir "$PROJECT/doc"
 ################## doc/Makefile.am ####################
 echo "- $PROJECT/doc/Makefile.am"
 cat> "$PROJECT/doc/Makefile.am" << CC_DELIM
-
 SUBDIRS = doxygen
 CURDIR = doc
 BASEDIR = ..
@@ -866,14 +856,12 @@ INPUT                 += @top_srcdir@/dune/
 # the \image command).
 
 # IMAGE_PATH            += @top_srcdir@/dune/$NAME/pics
-
 CC_DELIM
 
 ################# doc/doxygen/Makefile.am #####################
 
 echo "- $PROJECT/doc/doxygen/Makefile.am"
 cat> "$PROJECT/doc/doxygen/Makefile.am" << CC_DELIM
-
 BASEDIR=../..
 CURDIR=doc/doxygen
 
@@ -881,7 +869,6 @@ EXTRA_DIST = CMakeLists.txt
 
 include \$(top_srcdir)/am/doxygen
 include \$(top_srcdir)/am/global-rules
-
 CC_DELIM
 
 ################# doc/doxygen/CMakeLists.txt #####################
