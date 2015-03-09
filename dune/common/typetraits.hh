@@ -404,6 +404,23 @@ namespace Dune
     static const bool value = true;
   };
 
+  namespace {
+
+    template<typename T, typename I, decltype(std::declval<T>()[std::declval<I>()],0) = 0>
+    auto _is_indexable(T*) -> std::true_type;
+
+    template<typename T, typename I>
+    auto _is_indexable(void*) -> std::false_type;
+
+  }
+
+  //! Type trait to determine whether an instance of T has an operator[](I), i.e. whether
+  //! it can be indexed with an index of type I.
+  template<typename T, typename I = std::size_t>
+  struct is_indexable
+    : public decltype(_is_indexable<T,I>(std::declval<T*>()))
+  {};
+
   /** @} */
 }
 #endif
