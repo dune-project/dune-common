@@ -59,7 +59,7 @@ MACRO (add_doxygen_target)
       add_custom_command(OUTPUT html COMMAND
         ${CMAKE_COMMAND} -D DOXYGEN_EXECUTABLE=${DOXYGEN_EXECUTABLE} -P ${SCRIPT_DIR}/RunDoxygen.cmake
         COMMENT "Running doxygen documentation. This may take a while"
-        DEPENDS Doxyfile)
+        DEPENDS Doxyfile.in)
       # Create a target for building the doxygen documentation of a module,
       # that is run during make doc.
       add_custom_target(doxygen_${ProjectName} DEPENDS html)
