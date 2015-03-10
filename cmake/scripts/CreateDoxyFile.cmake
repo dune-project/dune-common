@@ -7,7 +7,7 @@ FILE(APPEND Doxyfile.in ${file_contents})
 
 # configure_file does not work as it insists an existing input file, which in our
 # needs to be generated first.
-# Therfore we read the Doxyfile.in and replace the variables using STRING(CONFIGURE)
+# Therefore we read the Doxyfile.in and replace the variables using STRING(CONFIGURE)
 # and the write the file.
 FILE(READ Doxyfile.in file_contents)
 STRING(CONFIGURE ${file_contents} output)
