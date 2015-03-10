@@ -113,6 +113,9 @@
 /* Define to 1 if C++11 nonexcept specifier is supported */
 #cmakedefine HAVE_NOEXCEPT_SPECIFIER 1
 
+/* Define to 1 if C++11 std::declval() is supported */
+#cmakedefine HAVE_STD_DECLVAL 1
+
 /* does the compiler support the keyword 'final'? */
 #cmakedefine HAVE_KEYWORD_FINAL 1
 

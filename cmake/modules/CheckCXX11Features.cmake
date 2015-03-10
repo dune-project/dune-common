@@ -197,6 +197,26 @@ check_cxx_source_compiles("
 " HAVE_NOEXCEPT_SPECIFIER
 )
 
+# std::declval()
+check_cxx_source_compiles("
+  #include <utility>
+
+  template<typename T>
+  struct check;
+
+  template<>
+  struct check<int&&>
+  {
+    int pass() { return 0; }
+  };
+
+  int main(void)
+  {
+    return check<decltype(std::declval<int>())>().pass();
+  }
+" HAVE_STD_DECLVAL
+  )
+
 cmake_pop_check_state()
 
 # find the threading library
