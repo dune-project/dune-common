@@ -116,6 +116,9 @@
 /* Define to 1 if C++11 std::declval() is supported */
 #cmakedefine HAVE_STD_DECLVAL 1
 
+/* Define to 1 if the compiler properly supports testing for operator[] */
+#cmakedefine HAVE_IS_INDEXABLE_SUPPORT 1
+
 /* does the compiler support the keyword 'final'? */
 #cmakedefine HAVE_KEYWORD_FINAL 1
 
