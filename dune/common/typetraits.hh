@@ -406,7 +406,7 @@ namespace Dune
 
   namespace {
 
-    template<typename T, typename I, decltype(std::declval<T>()[std::declval<I>()],0) = 0>
+    template<typename T, typename I, decltype(*(static_cast<T*>(nullptr))[*(static_cast<T*>(nullptr))],0) = 0>
     auto _is_indexable(T*) -> std::true_type;
 
     template<typename T, typename I>
@@ -418,7 +418,7 @@ namespace Dune
   //! it can be indexed with an index of type I.
   template<typename T, typename I = std::size_t>
   struct is_indexable
-    : public decltype(_is_indexable<T,I>(std::declval<T*>()))
+    : public decltype(_is_indexable<T,I>(static_cast<T*>(nullptr)))
   {};
 
   /** @} */
