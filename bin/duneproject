@@ -393,7 +393,7 @@ have to add the directory where the dunecontrol script resides (probably
 ./dune-common/bin) to your path or specify the relative path of the script.
 
 On your project and all uninstalled DUNE source modules found the script
-will then calls the GNU autoconf/automake to create a ./configure-script
+will then call the GNU autoconf/automake to create a ./configure-script
 and the Makefiles. Afterwards that configure script will be called and the
 modules will be build using make all
 
@@ -401,7 +401,7 @@ Most probably you'll have to provide additional information to dunecontrol
 (e. g. compilers, configure options) and/or make options.
 
 The most convenient way is to use options files in this case. The files
-defining four variables:
+define four variables:
 
 CMAKE_FLAGS      flags passed to cmake
 AUTOGEN_FLAGS    flags passed to autogen
