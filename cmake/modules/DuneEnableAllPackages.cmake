@@ -52,7 +52,7 @@ macro(dune_enable_all_packages)
     add_definitions("-D${def}")
   endforeach(def in ${all_defs})
   if(ENABLE_ALL_PACKAGES_VERBOSE)
-    message("Compile definitions for this project: ${all_libs}")
+    message("Compile definitions for this project: ${all_defs}")
   endif(ENABLE_ALL_PACKAGES_VERBOSE)
 endmacro(dune_enable_all_packages)
 
