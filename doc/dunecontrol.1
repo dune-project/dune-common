@@ -122,7 +122,7 @@ Use the AutoTools instead of cmake for building individual modules
 .HP
 \fB--module=\fP\fImod\fP
 .IP
-Only apply the actions on module
+Apply the actions on module
 .I mod
 and all modules it depends on
 .HP
@@ -135,6 +135,10 @@ Only apply the actions on module
 \fB--current\fP
 .IP
 Only apply the actions on the current module, the one whose source tree we are in
+.HP
+\fB--current-dep\fP
+.IP
+Apply the actions on the current module, and all modules it depends on
 .HP
 \fB--resume\fP
 .IP
