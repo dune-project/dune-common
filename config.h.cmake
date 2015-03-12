@@ -77,6 +77,7 @@
 #cmakedefine MPI_2 1
 
 #define HAVE_TBB ${HAVE_TBB}
+#define TBB_CACHE_ALIGNED_ALLOCATOR_ALIGNMENT @TBB_CACHE_ALIGNED_ALLOCATOR_ALIGNMENT@
 
 /* begin private */
 
