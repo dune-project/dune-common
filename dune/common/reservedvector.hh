@@ -7,6 +7,7 @@
  * \brief An stl-compliant random-access container which stores everything on the stack
  */
 
+#include <algorithm>
 #include <iostream>
 #include <dune/common/genericiterator.hh>
 #include <initializer_list>
