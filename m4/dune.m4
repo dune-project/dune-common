@@ -383,8 +383,8 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
         AS_IF([test -f "$_DUNE_MODULE[]_LIBDIR[]/lib[]_dune_lib[].la"], [
           # local modules is linked directly via the .la file
           _dune_cm_LIBS="$_DUNE_MODULE[]_LIBDIR[]/lib[]_dune_lib[].la"],[
-          # No libtool file. This indicates a module build with CMake. Fall back to direct linking
-          _dune_cm_LIBS="-L$_DUNE_MODULE[]_LIBDIR[]/ -l[]_dune_lib[]"
+          # No libtool file. This indicates a module build with CMake. Use the .a file
+          _dune_cm_LIBS="$_DUNE_MODULE[]_LIBDIR[]/lib[]_dune_lib[].a"
         ])
       ])
       # set expanded module path
