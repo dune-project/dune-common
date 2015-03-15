@@ -98,13 +98,13 @@ void Dune::ParameterTreeParser::readINITree(std::istream& in,
         if (value.length()>0)
         {
           // handle quoted strings
-          if ((value[0]=='\'')or (value[0]=='"'))
+          if ((value[0]=='\'') || (value[0]=='"'))
           {
             char quote = value[0];
             value=value.substr(1);
             while (*(rtrim(value).rbegin())!=quote)
             {
-              if (not in.eof())
+              if (! in.eof())
               {
                 std::string l;
                 getline(in, l);

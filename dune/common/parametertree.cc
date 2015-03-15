@@ -117,7 +117,7 @@ std::string& ParameterTree::operator[] (const std::string& key)
 
   if (dot != std::string::npos)
   {
-    if (not (hasSub(key.substr(0,dot))))
+    if (! hasSub(key.substr(0,dot)))
     {
       subs_[key.substr(0,dot)];
       subKeys_.push_back(key.substr(0,dot));
@@ -127,7 +127,7 @@ std::string& ParameterTree::operator[] (const std::string& key)
   }
   else
   {
-    if (not (hasKey(key)))
+    if (! hasKey(key))
       valueKeys_.push_back(key);
     return values_[key];
   }
@@ -144,7 +144,7 @@ const std::string& ParameterTree::operator[] (const std::string& key) const
   }
   else
   {
-    if (not (hasKey(key)))
+    if (! hasKey(key))
       DUNE_THROW(Dune::RangeError, "Key '" << key
         << "' not found in ParameterTree (prefix " + prefix_ + ")");
     return values_.find(key)->second;
