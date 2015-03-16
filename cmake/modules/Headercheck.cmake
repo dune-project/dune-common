@@ -7,6 +7,8 @@ macro(setup_headercheck)
     # strip hidden files
     string(REGEX REPLACE "[^;]*/\\.[^;]*\\.hh;?" "" headers "${all_headers}")
     set_property(GLOBAL PROPERTY headercheck_list ${headers})
+  else()
+    set_property(GLOBAL PROPERTY headercheck_list "")
   endif()
 
   #define headercheck target
