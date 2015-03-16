@@ -1,15 +1,11 @@
 # sets up a global property with the names of all header files
 # in the module and a global target depending on all checks
 macro(setup_headercheck)
-  if(ENABLE_HEADERCHECK)
-    #glob for headers
-    file(GLOB_RECURSE all_headers "*.hh")
-    # strip hidden files
-    string(REGEX REPLACE "[^;]*/\\.[^;]*\\.hh;?" "" headers "${all_headers}")
-    set_property(GLOBAL PROPERTY headercheck_list ${headers})
-  else()
-    set_property(GLOBAL PROPERTY headercheck_list "")
-  endif()
+  #glob for headers
+  file(GLOB_RECURSE all_headers "*.hh")
+  # strip hidden files
+  string(REGEX REPLACE "[^;]*/\\.[^;]*\\.hh;?" "" headers "${all_headers}")
+  set_property(GLOBAL PROPERTY headercheck_list ${headers})
 
   #define headercheck target
   dune_common_script_dir(SCRIPT_DIR)
