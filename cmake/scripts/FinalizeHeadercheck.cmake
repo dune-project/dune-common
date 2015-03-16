@@ -1,5 +1,9 @@
 # this is script is called at the end of all header checks
-message("Headerchecks finished! Rerun CMake if a new file has not been checked!")
+if(ENABLE_HEADERCHECK)
+  message("Headerchecks finished! Rerun CMake if a new file has not been checked!")
+else()
+  message("The headercheck feature is currently disabled. You can enable it by adding ENABLE_HEADERCHECK=1 to your cmake flags.")
+endif()
 
 #message("Running make clean on headercheck targets...")
 #this cleans the build directory from pollution through headerchecks but prevents caching... :/
