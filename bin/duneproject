@@ -766,7 +766,7 @@ EOF
 echo "- $PROJECT/dune/$NAME/CMakeLists.txt"
 cat> $PROJECT/dune/$NAME/CMakeLists.txt <<EOF
 #install headers
-install(FILES ${NAME}.hh DESTINATION include/dune/$NAME)
+install(FILES ${NAME}.hh DESTINATION \${CMAKE_INSTALL_INCLUDEDIR}/dune/$NAME)
 EOF
 
 ################## dune/$NAME/$NAME.hh #################
