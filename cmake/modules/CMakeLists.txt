@@ -15,6 +15,7 @@ set(modules
   DuneMPI.cmake
   DunePkgConfig.cmake
   DuneStreams.cmake
+  DuneSymlinkOrCopy.cmake
   DuneTestMacros.cmake
   DuneTests.cmake
   FindBoostFusion.cmake
