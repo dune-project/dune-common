@@ -1,5 +1,4 @@
 #For now we just support appending Doxyfile and Doxylocal
-message(STATUS "Generating Doxyfile.in")
 FILE(READ ${DOXYSTYLE} file_contents)
 FILE(WRITE Doxyfile.in ${file_contents})
 FILE(READ ${DOXYLOCAL} file_contents)
