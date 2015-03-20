@@ -597,14 +597,6 @@ macro(dune_project)
 
   include(DuneCxaDemangle)
 
-  # search for headers
-  include(CheckIncludeFile)
-  include(CheckIncludeFileCXX)
-  check_include_file("malloc.h" HAVE_MALLOC_H)
-  check_include_file("stdint.h" HAVE_STDINT_H)
-  check_include_file_cxx("memory" HAVE_MEMORY)
-  set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -DHAVE_MEMORY=${HAVE_MEMORY}")
-
   # set include path and link path for the current project.
   include_directories("${CMAKE_BINARY_DIR}")
   include_directories("${CMAKE_SOURCE_DIR}")
