@@ -36,7 +36,7 @@
 # in that directory and all directories below. A warning is issued on
 # Windows systems.
 #
-#  dune_symlink_to_source_file(files)
+#  dune_symlink_to_source_files(files)
 #
 # add symlinks to the build tree, which point to files in the source tree.
 # Foreach file given in "files", a symlink of that name is created in the
