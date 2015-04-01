@@ -669,6 +669,10 @@ macro(dune_project)
     exec_program(chmod ARGS "+x ${CMAKE_BINARY_DIR}/compiler.sh")
     set(CMAKE_CXX_COMPILER ${CMAKE_BINARY_DIR}/compiler.sh)
   endif()
+
+  if(DUNE_SYMLINK_TO_SOURCE_TREE)
+    dune_symlink_to_source_tree()
+  endif()
 endmacro(dune_project)
 
 # create a new config.h file and overwrite the existing one
