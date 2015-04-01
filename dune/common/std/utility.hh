@@ -4,8 +4,10 @@
 #include <cstddef>
 
 #include <type_traits>
+#include <utility>
 
 #include <dune/common/std/constexpr.hh>
+#include <dune/common/std/noexcept.hh>
 
 namespace Dune
 {
@@ -115,7 +117,7 @@ namespace Dune
      *  \tparam  N  requested size of index sequence
      */
     template< std::size_t N >
-    static inline typename make_index_sequence_impl< N >::type make_index_sequence ()
+    static DUNE_CONSTEXPR inline typename make_index_sequence_impl< N >::type make_index_sequence ()
     {
       return typename make_index_sequence_impl< N >::type();
     }
@@ -134,7 +136,7 @@ namespace Dune
      *  \tparam  N  requested size of integer sequence
      */
     template< class T, T N >
-    static inline typename make_index_sequence_impl< N >::type::template rebind< T >::type
+    static DUNE_CONSTEXPR inline typename make_index_sequence_impl< N >::type::template rebind< T >::type
     make_integer_sequence ()
     {
       return typename make_index_sequence_impl< N >::type::template rebind< T >::type();
@@ -153,11 +155,23 @@ namespace Dune
      *  \tparam  ...T  a type parameter pack
      */
     template< class... T >
-    static inline typename make_index_sequence_impl< sizeof...( T ) >::type
+    static DUNE_CONSTEXPR inline typename make_index_sequence_impl< sizeof...( T ) >::type
     index_sequence_for ()
     {
       return typename make_index_sequence_impl< sizeof...( T ) >::type();
     }
+
+#if HAVE_STD_DECLVAL
+
+    using std::declval;
+
+#else
+
+    template <class T>
+    typename std::add_rvalue_reference<T>::type declval() DUNE_NOEXCEPT;
+
+#endif
+
 
   } // namespace Std
 

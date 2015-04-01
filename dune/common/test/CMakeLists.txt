@@ -4,6 +4,7 @@ set(TESTS
     arraytest
     bigunsignedinttest
     bitsetvectortest
+    calloncetest
     check_fvector_size
     conversiontest
     diagonalmatrixtest
@@ -65,6 +66,8 @@ add_executable("bigunsignedinttest" bigunsignedinttest.cc)
 target_link_libraries("bigunsignedinttest" "dunecommon")
 
 add_executable("bitsetvectortest" bitsetvectortest.cc)
+add_executable("calloncetest" calloncetest.cc)
+target_link_libraries("calloncetest" "dunecommon")
 add_executable("check_fvector_size" check_fvector_size.cc)
 add_executable("check_fvector_size_fail1" EXCLUDE_FROM_ALL check_fvector_size_fail.cc)
 set_target_properties(check_fvector_size_fail1 PROPERTIES COMPILE_FLAGS "-DDIM=1")
@@ -79,9 +82,7 @@ add_executable("dynvectortest" dynvectortest.cc)
 
 add_executable("eigenvaluestest" eigenvaluestest.cc)
 target_link_libraries(eigenvaluestest dunecommon)
-if(LAPACK_FOUND)
-  target_link_libraries(eigenvaluestest ${LAPACK_LIBRARIES})
-endif(LAPACK_FOUND)
+target_link_libraries(eigenvaluestest ${LAPACK_LIBRARIES})
 
 add_executable("diagonalmatrixtest" diagonalmatrixtest.cc)
 target_link_libraries("diagonalmatrixtest" "dunecommon")
@@ -170,7 +171,13 @@ foreach(_TEST ${TESTPROGS})
   add_test(${_TEST} ${_TEST})
 endforeach(_TEST)
 
-#Set properties for failing tests
+# treat tests returning code 77 as skipped
+set_tests_properties(
+  eigenvaluestest
+  mpicollectivecommunication
+  PROPERTIES SKIP_RETURN_CODE 77)
+
+# set properties for failing tests
 set_tests_properties(
   ${FAILTESTS}
   PROPERTIES WILL_FAIL true)
@@ -183,5 +190,3 @@ endforeach(_TEST)
 set_tests_properties(
   ${COMPILEFAILTESTS}
   PROPERTIES WILL_FAIL true)
-
-

@@ -5,6 +5,7 @@ TESTPROGS = \
     arraytest \
     bigunsignedinttest \
     bitsetvectortest \
+    calloncetest \
     check_fvector_size \
     conversiontest \
     diagonalmatrixtest \
@@ -90,6 +91,8 @@ bigunsignedinttest_SOURCES=bigunsignedinttest.cc
 bigunsignedinttest_CPPFLAGS = $(AM_CPPFLAGS)
 
 bitsetvectortest_SOURCES = bitsetvectortest.cc
+
+calloncetest_SOURCES = calloncetest.cc
 
 check_fvector_size_fail1_SOURCES = check_fvector_size_fail.cc
 check_fvector_size_fail1_CPPFLAGS = $(AM_CPPFLAGS) -DDIM=1

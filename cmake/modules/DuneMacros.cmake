@@ -81,6 +81,8 @@ enable_language(C) # Enable C to skip CXX bindings for some tests.
 include(FeatureSummary)
 include(DuneEnableAllPackages)
 
+include(DuneSymlinkOrCopy)
+
 # Converts a module name given by _module into an uppercase string
 # _upper where all dashes (-) are replaced by underscores (_)
 # Example: dune-common -> DUNE_COMMON
@@ -95,10 +97,10 @@ macro(find_dune_package module)
   if(DUNE_FIND_REQUIRED)
     set(required REQUIRED)
     set_package_properties(${module} PROPERTIES TYPE REQUIRED)
-  else(DUNE_FIND_REQUIRED)
+  else()
     unset(required)
-    set_package_properties(${module} PROPERTIES TYPE RECOMMENDED)
-  endif(DUNE_FIND_REQUIRED)
+    set_package_properties(${module} PROPERTIES TYPE OPTIONAL)
+  endif()
   if(DUNE_FIND_VERSION MATCHES "(>=|=|<=).*")
     string(REGEX REPLACE "(>=|=|<=)(.*)" "\\1" DUNE_FIND_VERSION_OP ${DUNE_FIND_VERSION})
     string(REGEX REPLACE "(>=|=|<=)(.*)" "\\2" DUNE_FIND_VERSION_NUMBER ${DUNE_FIND_VERSION})
@@ -114,7 +116,7 @@ macro(find_dune_package module)
       string(REPLACE  ${ProjectName} ${module} ${module}_DIR
         ${PROJECT_BINARY_DIR})
     endif()
-    find_package(${module} QUIET NO_CMAKE_PACKAGE_REGISTRY)
+    find_package(${module} NO_CMAKE_PACKAGE_REGISTRY)
   endif(NOT ${module}_FOUND)
   if(NOT ${module}_FOUND)
     message(STATUS "No full CMake package configuration support available."
@@ -328,6 +330,11 @@ macro(dune_module_information MODULE_DIR)
   set(${DUNE_MOD_NAME_UPPERCASE}_VERSION_MAJOR    "${DUNE_VERSION_MAJOR}")
   set(${DUNE_MOD_NAME_UPPERCASE}_VERSION_MINOR    "${DUNE_VERSION_MINOR}")
   set(${DUNE_MOD_NAME_UPPERCASE}_VERSION_REVISION "${DUNE_VERSION_REVISION}")
+
+  # configure CPack
+  set(CPACK_PACKAGE_NAME "${DUNE_MOD_NAME}")
+  set(CPACK_PACKAGE_VERSION "${DUNE_VERSION_MAJOR}.${DUNE_VERSION_MINOR}.${DUNE_VERSION_REVISION}")
+  set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}")
 endmacro(dune_module_information)
 
 macro(dune_process_dependency_leafs modules versions is_required next_level_deps
@@ -529,6 +536,13 @@ endmacro(dune_process_dependency_macros)
 # depedencies.
 # Don't forget to call finalize_dune_project afterwards.
 macro(dune_project)
+  # check whether a compiler name instead of compiler path is given, this causes serious problems with older cmake versions.
+  # Unfortunately those errors only surface on a second run, when the build directory already exists. The compiler
+  # variable is then (for obscure reasons) expanded to ${CMAKE_BINARY_DIR}/...
+  if((${CMAKE_CXX_COMPILER} MATCHES "${CMAKE_BINARY_DIR}.*") AND (${CMAKE_VERSION} VERSION_LESS "3.0"))
+    message(FATAL_ERROR "You need to specify an absolute path to your compiler instead of just the compiler name. cmake >= 3.0 fixes this issue.")
+  endif()
+
   # extract information from dune.module
   dune_module_information(${CMAKE_SOURCE_DIR})
   set(ProjectName            "${DUNE_MOD_NAME}")
@@ -586,14 +600,6 @@ macro(dune_project)
   include(CheckCXX11Features)
 
   include(DuneCxaDemangle)
-
-  # search for headers
-  include(CheckIncludeFile)
-  include(CheckIncludeFileCXX)
-  check_include_file("malloc.h" HAVE_MALLOC_H)
-  check_include_file("stdint.h" HAVE_STDINT_H)
-  check_include_file_cxx("memory" HAVE_MEMORY)
-  set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -DHAVE_MEMORY=${HAVE_MEMORY}")
 
   # set include path and link path for the current project.
   include_directories("${CMAKE_BINARY_DIR}")
@@ -953,7 +959,7 @@ macro(dune_add_library basename)
       dune_target_link_libraries(${basename} ${DUNE_LIB_ADD_LIBS})
     endif(DUNE_LIB_ADD_LIBS)
     if(DUNE_LIB_COMPILE_FLAGS)
-      setproperty(${basename} APPEND_STRING COMPILE_FLAGS
+      set_property(${basename} APPEND_STRING COMPILE_FLAGS
         "${DUNE_LIB_COMPILE_FLAGS}")
     endif(DUNE_LIB_COMPILE_FLAGS)
     # Build library in ${PROJECT_BINARY_DIR}/lib
@@ -977,7 +983,7 @@ macro(dune_add_library basename)
           dune_target_link_libraries(${basename}-static ${DUNE_LIB_ADD_LIBS})
         endif(DUNE_LIB_ADD_LIBS)
         if(DUNE_LIB_COMPILE_FLAGS)
-          setproperty(${basename}-static APPEND_STRING COMPILE_FLAGS
+          set_property(${basename}-static APPEND_STRING COMPILE_FLAGS
             "${DUNE_LIB_COMPILE_FLAGS}")
         endif(DUNE_LIB_COMPILE_FLAGS)
       else(BUILD_SHARED_LIBS)
@@ -991,7 +997,7 @@ macro(dune_add_library basename)
           dune_target_link_libraries(${basename}-shared ${DUNE_LIB_ADD_LIBS})
         endif(DUNE_LIB_ADD_LIBS)
         if(DUNE_LIB_COMPILE_FLAGS)
-          setproperty(${basename}-shared APPEND_STRING COMPILE_FLAGS
+          set_property(${basename}-shared APPEND_STRING COMPILE_FLAGS
             "${DUNE_LIB_COMPILE_FLAGS}")
         endif(DUNE_LIB_COMPILE_FLAGS)
         list(APPEND _created_libs ${basename}-shared)

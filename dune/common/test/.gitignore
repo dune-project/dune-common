@@ -11,6 +11,7 @@
 /bigunsignedinttest
 /bitsetvectortest
 /blockbitfieldtest
+/calloncetest
 /check_fvector_size
 /conversiontest
 /diagonalmatrixtest

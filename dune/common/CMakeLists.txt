@@ -19,6 +19,7 @@ dune_add_library("dunecommon"
   parametertreeparser.cc
   path.cc
   stdstreams.cc
+  stdthread.cc
   ADD_LIBS "${_additional_libs}")
 
 #install headers
@@ -77,12 +78,14 @@ install(FILES
         precision.hh
         propertymap.hh
         promotiontraits.hh
+        proxymemberaccess.hh
         reservedvector.hh
         shared_ptr.hh
         singleton.hh
         sllist.hh
         static_assert.hh
         stdstreams.hh
+        stdthread.hh
         stringutility.hh
         timer.hh
         tuples.hh

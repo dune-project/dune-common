@@ -2,6 +2,7 @@ MODULES = \
   AddGMPFlags.cmake        \
   AddMETISFlags.cmake      \
   AddParMETISFlags.cmake   \
+  AddPTScotchFlags.cmake   \
   AddUMFPackFlags.cmake    \
   CheckCXX11Features.cmake \
   DuneBoost.cmake \
@@ -14,6 +15,7 @@ MODULES = \
   DuneMPI.cmake           \
   DunePkgConfig.cmake     \
   DuneStreams.cmake       \
+  DuneSymlinkOrCopy.cmake \
   DuneTestMacros.cmake    \
   DuneTests.cmake         \
   FindBoostFusion.cmake   \
@@ -22,6 +24,7 @@ MODULES = \
   FindMETIS.cmake         \
   FindMProtect.cmake      \
   FindParMETIS.cmake      \
+  FindPTScotch.cmake      \
   FindUMFPack.cmake       \
   Headercheck.cmake       \
   LanguageSupport.cmake   \

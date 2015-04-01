@@ -66,9 +66,8 @@ if(MPI_C_FOUND)
 
   cmake_pop_check_state()
 
-  # TODO: Turn into an error after 2.3 release
   if(NOT MPI_VERSION_SUPPORTED)
-    MESSAGE(WARNING "Support for your MPI implementation is DEPRECATED and will be removed after the next release. Please upgrade to an MPI-2.1 compliant version.")
+    message(FATAL_ERROR "Your MPI implementation is too old. Please upgrade to an MPI-2.1 compliant version.")
   endif()
 endif(MPI_C_FOUND)
 

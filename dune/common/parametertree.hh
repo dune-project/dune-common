@@ -170,15 +170,16 @@ namespace Dune {
     template <class T>
     T get(const std::string& key) const {
       if(not hasKey(key))
-        DUNE_THROW(RangeError, "Key '" << key << "' not found in parameter "
-                   "file!");
+        DUNE_THROW(Dune::RangeError, "Key '" << key
+          << "' not found in ParameterTree (prefix " + prefix_ + ")");
       try {
         return Parser<T>::parse((*this)[key]);
       }
-      catch(const RangeError&) {
-        DUNE_THROW(RangeError, "Cannot parse value \"" <<
-                   (*this)[key] << "\" for key \"" << key << "\" as a " <<
-                   className<T>());
+      catch(const RangeError& e) {
+        // rethrow the error and add more information
+        DUNE_THROW(RangeError, "Cannot parse value \"" << (*this)[key]
+          << "\" for key \"" << prefix_ << "." << key << "\""
+          << e.what());
       }
     }
 
@@ -202,11 +203,14 @@ namespace Dune {
     const KeyVector& getSubKeys() const;
 
   protected:
-    KeyVector valueKeys;
-    KeyVector subKeys;
+    std::string prefix_;
 
-    std::map<std::string, std::string> values;
-    std::map<std::string, ParameterTree> subs;
+    KeyVector valueKeys_;
+    KeyVector subKeys_;
+
+    std::map<std::string, std::string> values_;
+    std::map<std::string, ParameterTree> subs_;
+
     static std::string ltrim(const std::string& s);
     static std::string rtrim(const std::string& s);
     static std::vector<std::string> split(const std::string & s);
@@ -222,18 +226,17 @@ namespace Dune {
       for(; it != end; ++it, ++n) {
         s >> *it;
         if(!s)
-          DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" as a "
-                     "range of items of type " << className<Value>() << " "
-                     "(" << n << " items were extracted successfully)");
+          DUNE_THROW(RangeError, "as a range of items of type "
+            << className<Value>()
+            << " (" << n << " items were extracted successfully)");
       }
       Value dummy;
       s >> dummy;
       // now extraction should have failed, and eof should be set
       if(not s.fail() or not s.eof())
-        DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" as a "
-                   "range of " << n << " items of type "
-                                                       << className<Value>() << " (more items than the range "
-                   "can hold)");
+        DUNE_THROW(RangeError, "as a range of "
+          << n << " items of type "
+          << className<Value>() << " (more items than the range can hold)");
     }
   };
 
@@ -246,14 +249,12 @@ namespace Dune {
       s.imbue(std::locale::classic());
       s >> val;
       if(!s)
-        DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" as a " <<
-                   className<T>());
+        DUNE_THROW(RangeError, " as a " << className<T>());
       T dummy;
       s >> dummy;
       // now extraction should have failed, and eof should be set
-      if(not s.fail() or not s.eof())
-        DUNE_THROW(RangeError, "Cannot parse value \"" << str << "\" as a " <<
-                   className<T>());
+      if ((! s.fail()) || (! s.eof()))
+        DUNE_THROW(RangeError, " as a " << className<T>());
       return val;
     }
   };
@@ -323,7 +324,8 @@ namespace Dune {
       std::bitset<n> val;
       std::vector<std::string> sub = split(str);
       if (sub.size() != n)
-        DUNE_THROW(RangeError, "cannot parse bitset because of unmatching sizes");
+        DUNE_THROW(RangeError, "as a bitset<" << n << "> "
+          << "because of unmatching size " << sub.size());
       for (std::size_t i=0; i<n; ++i) {
         val[i] = ParameterTree::Parser<bool>::parse(sub[i]);
       }

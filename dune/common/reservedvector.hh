@@ -7,8 +7,10 @@
  * \brief An stl-compliant random-access container which stores everything on the stack
  */
 
+#include <algorithm>
 #include <iostream>
 #include <dune/common/genericiterator.hh>
+#include <initializer_list>
 
 #ifdef CHECK_RESERVEDVECTOR
 #define CHECKSIZE(X) assert(X)
@@ -62,6 +64,13 @@ namespace Dune
 
     //! Constructor
     ReservedVector() : sz(0) {}
+
+    ReservedVector(std::initializer_list<T> const &l)
+    {
+      assert(l.size() <= n);// Actually, this is not needed any more!
+      sz = l.size();
+      std::copy_n(l.begin(), sz, data);
+    }
 
     /** @} */
 

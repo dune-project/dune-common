@@ -4,6 +4,8 @@
 #ifndef DUNE_COMMON_FORLOOP_HH
 #define DUNE_COMMON_FORLOOP_HH
 
+#include <utility>
+
 /** \file
  * \brief A static for loop for template meta-programming
  */
@@ -36,119 +38,14 @@ namespace Dune
     template< class A, class B >
     struct Apply
     {
-      static void apply ()
+
+      template< typename... Params >
+      static void apply ( Params&&... params )
       {
-        A::apply();
-        B::apply();
+        A::apply( std::forward<Params>(params)... );
+        B::apply( std::forward<Params>(params)... );
       }
 
-      template< class T1 >
-      static void apply ( T1 &p1 )
-      {
-        A::apply( p1 );
-        B::apply( p1 );
-      }
-
-      template< class T1, class T2 >
-      static void apply ( T1 &p1, T2 &p2 )
-      {
-        A::apply( p1, p2 );
-        B::apply( p1, p2 );
-      }
-
-      template< class T1, class T2, class T3 >
-      static void apply ( T1 &p1, T2 &p2, T3 &p3 )
-      {
-        A::apply( p1, p2, p3 );
-        B::apply( p1, p2, p3 );
-      }
-
-      template< class T1, class T2, class T3, class T4 >
-      static void apply ( T1 &p1, T2 &p2, T3 &p3, T4 &p4 )
-      {
-        A::apply( p1, p2, p3, p4 );
-        B::apply( p1, p2, p3, p4 );
-      }
-
-      template< class T1, class T2, class T3, class T4, class T5 >
-      static void apply ( T1 &p1, T2 &p2, T3 &p3, T4 &p4, T5 &p5 )
-      {
-        A::apply( p1, p2, p3, p4, p5 );
-        B::apply( p1, p2, p3, p4, p5 );
-      }
-
-      template< class T1, class T2, class T3, class T4, class T5, class T6 >
-      static void apply ( T1 &p1, T2 &p2, T3 &p3, T4 &p4, T5 &p5, T6 &p6 )
-      {
-        A::apply( p1, p2, p3, p4, p5, p6 );
-        B::apply( p1, p2, p3, p4, p5, p6 );
-      }
-
-      template< class T1, class T2, class T3, class T4, class T5, class T6,
-          class T7 >
-      static void apply ( T1 &p1, T2 &p2, T3 &p3, T4 &p4, T5 &p5, T6 &p6,
-                          T7 &p7 )
-      {
-        A::apply( p1, p2, p3, p4, p5, p6, p7 );
-        B::apply( p1, p2, p3, p4, p5, p6, p7 );
-      }
-
-      template< class T1, class T2, class T3, class T4, class T5, class T6,
-          class T7, class T8 >
-      static void apply ( T1 &p1, T2 &p2, T3 &p3, T4 &p4, T5 &p5, T6 &p6,
-                          T7 &p7, T8 &p8 )
-      {
-        A::apply( p1, p2, p3, p4, p5, p6, p7, p8 );
-        B::apply( p1, p2, p3, p4, p5, p6, p7, p8 );
-      }
-
-      template< class T1, class T2, class T3, class T4, class T5, class T6,
-          class T7, class T8, class T9 >
-      static void apply ( T1 &p1, T2 &p2, T3 &p3, T4 &p4, T5 &p5, T6 &p6,
-                          T7 &p7, T8 &p8, T9 &p9 )
-      {
-        A::apply( p1, p2, p3, p4, p5, p6, p7, p8, p9 );
-        B::apply( p1, p2, p3, p4, p5, p6, p7, p8, p9 );
-      }
-
-      template< class T1, class T2, class T3, class T4, class T5, class T6,
-          class T7, class T8, class T9, class T10 >
-      static void apply ( T1 &p1, T2 &p2, T3 &p3, T4 &p4, T5 &p5, T6 &p6,
-                          T7 &p7, T8 &p8, T9 &p9, T10 &p10 )
-      {
-        A::apply( p1, p2, p3, p4, p5, p6, p7, p8, p9, p10 );
-        B::apply( p1, p2, p3, p4, p5, p6, p7, p8, p9, p10 );
-      }
-
-      template< class T1, class T2, class T3, class T4, class T5, class T6,
-          class T7, class T8, class T9, class T10, class T11 >
-      static void apply ( T1 &p1, T2 &p2, T3 &p3, T4 &p4, T5 &p5, T6 &p6,
-                          T7 &p7, T8 &p8, T9 &p9, T10 &p10, T11 &p11 )
-      {
-        A::apply( p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11 );
-        B::apply( p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11 );
-      }
-
-      template< class T1, class T2, class T3, class T4, class T5, class T6,
-          class T7, class T8, class T9, class T10, class T11, class T12 >
-      static void apply ( T1 &p1, T2 &p2, T3 &p3, T4 &p4, T5 &p5, T6 &p6,
-                          T7 &p7, T8 &p8, T9 &p9, T10 &p10, T11 &p11,
-                          T12 &p12 )
-      {
-        A::apply( p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12 );
-        B::apply( p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12 );
-      }
-
-      template< class T1, class T2, class T3, class T4, class T5, class T6,
-          class T7, class T8, class T9, class T10, class T11, class T12,
-          class T13>
-      static void apply ( T1 &p1, T2 &p2, T3 &p3, T4 &p4, T5 &p5, T6 &p6,
-                          T7 &p7, T8 &p8, T9 &p9, T10 &p10, T11 &p11,
-                          T12 &p12, T13 &p13 )
-      {
-        A::apply( p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13 );
-        B::apply( p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13 );
-      }
     };
 
   } // end namespace ForLoopHelper
@@ -166,8 +63,7 @@ namespace Dune
    * A specialization for class template class Operation for i=first
    * or i=last is not required. The class Operation must provide a
    * static void function apply(...). Arguments (as references)
-   * can be passed through the ForLoop to this function
-   * (up to 5 at the moment).
+   * can be passed through the ForLoop to this function.
    *
    * It is possible to pass a subclass to the ForLoop
    * (since no specialization is needed).
@@ -203,17 +99,10 @@ namespace Dune
    * };
    * \endcode
    *
-   * \note Don't use any rvalues as the arguments to apply().
+   * \note Since Dune 2.4, ForLoop uses variadic templates and perfect forwarding and
+   *       thus supports arbitrary numbers of arguments to apply(), which can be any
+   *       combination of lvalues and rvalues.
    *
-   * Rvalues will bind to const-references, but not to references that are
-   * non-const.  Since we do want to support modifiable arguments to apply(),
-   * we have to use non-const references as arguments.  Supporting const
-   * references as well would lead to an insane number of overloads which all
-   * have to be written more-or-less by hand.
-   *
-   * Examples of rvalues are: literals (1.0, 0, "huhu"), the results of
-   * functions returning an object (std::make_pair(0, 1.0)) and temporary
-   * object constructions (std::string("hello"));
    */
   template< template< int > class Operation, int first, int last >
   class ForLoop

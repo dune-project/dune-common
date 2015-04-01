@@ -99,7 +99,8 @@ AC_DEFUN([DUNE_MPI],[
   # enable/disable parallel features
   AC_ARG_ENABLE(parallel,
     AS_HELP_STRING([--enable-parallel],
-      [Enable the parallel features of Dune. If enabled
+      [Enable the parallel features of Dune, which is enabled by default.
+       Use --disable-parallel to disable parallel features.
        configure will try to determine your MPI automatically. You can
        overwrite this setting by specifying the MPICC variable]))
   AC_SUBST(ENABLE_PARALLEL, "$enable_parallel")
@@ -112,7 +113,7 @@ AC_DEFUN([DUNE_MPI],[
   with_mpi="no"
 
   ## do nothing if --disable-parallel is used
-  AS_IF([test "x$enable_parallel" = "xyes"],[
+  AS_IF([test "x$enable_parallel" != "xno"],[
     ACX_MPI([
       MPICOMP="$MPICC"
 
@@ -157,8 +158,7 @@ AC_DEFUN([DUNE_MPI],[
     )
 
     AC_MSG_CHECKING([whether MPI is recent enough (MPI-2.1)])
-    # check MPI version and issue a deprecation warning if MPI is older than 2.1
-    # TODO: Replace with error after 2.3 release
+    # check MPI version and issue an error if MPI is older than 2.1
     AC_LANG_PUSH([C++])
     AC_COMPILE_IFELSE(
       [AC_LANG_SOURCE(
@@ -171,10 +171,8 @@ AC_DEFUN([DUNE_MPI],[
           MPI_Finalize(); }])],
         [ AC_MSG_RESULT([yes]) ],
         [ AC_MSG_RESULT([no])
-          AC_MSG_WARN([You are using a very old version of MPI that
-          is not compatible with the MPI-2.1 standard. Support for your
-          version of MPI is deprecated and will be removed after the next
-          release!])
+          AC_MSG_ERROR([Your MPI implementation is too old. Please upgrade
+            to an MPI-2.1 compliant version.])
           mpi_deprecated=yes]
     )
 
