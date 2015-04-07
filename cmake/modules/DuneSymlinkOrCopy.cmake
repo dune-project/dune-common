@@ -72,14 +72,14 @@ macro(dune_symlink_to_source_tree)
     endif()
   else()
     # get a list of all files in the current source directory and below.
-    file(GLOB_RECURSE files RELATIVE ${CMAKE_SOURCE_DIR} ".*CMakeLists.txt")
+    file(GLOB_RECURSE files RELATIVE ${CMAKE_SOURCE_DIR} "*CMakeLists.txt")
 
     # iterate over all files, extract the directory name and write a symlink in the corresponding build directory
-    foreach(f ${files} "./")
+    foreach(f ${files})
       get_filename_component(dir ${f} DIRECTORY)
-      if(NOT dir MATCHES "${CMAKE_BINARY_DIR}/*")
+      if(NOT "${CMAKE_SOURCE_DIR}/${dir}" MATCHES "${CMAKE_BINARY_DIR}/*")
         execute_process(COMMAND ${CMAKE_COMMAND} "-E" "create_symlink" "${CMAKE_SOURCE_DIR}/${dir}" "${CMAKE_BINARY_DIR}/${dir}/src_dir")
-      endif(NOT dir MATCHES "${CMAKE_BINARY_DIR}/*")
+      endif(NOT "${CMAKE_SOURCE_DIR}/${dir}" MATCHES "${CMAKE_BINARY_DIR}/*")
     endforeach()
   endif()
 endmacro(dune_symlink_to_source_tree)
