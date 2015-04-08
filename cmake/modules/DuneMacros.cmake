@@ -552,6 +552,7 @@ macro(dune_project)
   set(ProjectVersionString   "${DUNE_VERSION_MAJOR}.${DUNE_VERSION_MINOR}.${DUNE_VERSION_REVISION}")
   set(ProjectVersionMajor    "${DUNE_VERSION_MAJOR}")
   set(ProjectVersionMinor    "${DUNE_VERSION_MINOR}")
+  set(ProjectVersionRevision "${DUNE_VERSION_REVISION}")
   set(ProjectMaintainerEmail "${DUNE_MAINTAINER}")
 
   define_property(GLOBAL PROPERTY DUNE_MODULE_LIBRARIES
