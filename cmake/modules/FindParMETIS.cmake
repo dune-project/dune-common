@@ -100,7 +100,7 @@ endif(PARMETIS_FOUND)
 
 # register all ParMETIS related flags
 if(PARMETIS_FOUND)
-  dune_register_package_flags(COMPILE_DEFINTIONS "ENABLE_PARMETIS=1"
+  dune_register_package_flags(COMPILE_DEFINITIONS "ENABLE_PARMETIS=1"
                               LIBRARIES "${PARMETIS_LIBRARIES}"
-                              INCLUDE_DIRECTORIES "${PARMETIS_INCLUDE_DIRS}")
+                              INCLUDE_DIRS "${PARMETIS_INCLUDE_DIRS}")
 endif()
