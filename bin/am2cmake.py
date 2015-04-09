@@ -562,7 +562,7 @@ def am_2_cmake_dir(directory):
 'add_doxygen_target()']))
         output.close()
     # Add directives to create CMake packe configuration files with autotools
-    output=open("Makefile.am'", "a")
+    output=open("Makefile.am", "a")
     output.write('\n'.join(['', '# Generate package configuration files for finding',
                             '# installed modules with CMake',
                             'include $(top_srcdir)/am/cmake-pkg-config\n']))
