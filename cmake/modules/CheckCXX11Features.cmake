@@ -269,7 +269,12 @@ check_cxx_source_compiles("
 cmake_pop_check_state()
 
 # find the threading library
-find_package(Threads)
+# Use a copy FindThreads from CMake 3.1 due to its support of pthread
+if(${CMAKE_VERSION} VERSION_LESS "3.1")
+  find_package(ThreadsCMake31)
+else()
+  find_package(Threads)
+endif()
 set(STDTHREAD_LINK_FLAGS "${CMAKE_THREAD_LIBS_INIT}"
     CACHE STRING "Linker flags needed to get working C++11 threads support")
 
