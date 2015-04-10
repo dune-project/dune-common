@@ -270,6 +270,9 @@ cmake_pop_check_state()
 
 # find the threading library
 # Use a copy FindThreads from CMake 3.1 due to its support of pthread
+if(NOT DEFINED THREADS_PREFER_PTHREAD_FLAG)
+  set(THREADS_PREFER_PTHREAD_FLAG 1)
+endif()
 if(${CMAKE_VERSION} VERSION_LESS "3.1")
   find_package(ThreadsCMake31)
 else()
