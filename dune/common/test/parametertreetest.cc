@@ -53,12 +53,10 @@ void testparam(const P & p)
   // try reading array like structures
   std::vector<unsigned int>
   array1 = p.template get< std::vector<unsigned int> >("array");
-#ifndef NDEBUG
   Dune::array<unsigned int, 8>
   array2 = p.template get< Dune::array<unsigned int, 8> >("array");
   Dune::FieldVector<unsigned int, 8>
   array3 = p.template get< Dune::FieldVector<unsigned int, 8> >("array");
-#endif
   check_assert(array1.size() == 8);
   for (unsigned int i=0; i<8; i++)
   {
