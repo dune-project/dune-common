@@ -169,8 +169,10 @@ macro(find_dune_package module)
   if(${module}_FOUND)
     # parse other module's dune.module file to generate variables for config.h
     unset(${module}_dune_module)
-    foreach(_dune_module_file ${${module}_PREFIX}/dune.module
-        ${${module}_PREFIX}/lib/dunecontrol/${module}/dune.module)
+    foreach(_dune_module_file
+        ${${module}_PREFIX}/dune.module
+        ${${module}_PREFIX}/lib/dunecontrol/${module}/dune.module
+        ${${module}_PREFIX}/lib64/dunecontrol/${module}/dune.module)
       if(EXISTS ${_dune_module_file})
         get_filename_component(_dune_module_file_path ${_dune_module_file} PATH)
         dune_module_information(${_dune_module_file_path})# QUIET)
