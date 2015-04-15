@@ -196,6 +196,19 @@ macro(dune_library_add_sources lib)
     message(FATAL_ERROR "dune_library_add_sources() requires CMake 3.1+")
   endif()
 
+  if (NOT (DEFINED DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES))
+    message(FATAL_ERROR "You must call dune_enable_all_packages with the MODULE_LIBRARIES option before calling dune_library_add_sources")
+  endif()
+
+  # This looks weird, but seems to be the most practical way to check for list membership,
+  # as list(FIND ...) does not work reliably in a macro...
+  if (NOT (";${DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES};" MATCHES ";${lib};"))
+    message(FATAL_ERROR
+"Attempt to add sources to library ${lib}, which has not been defined in dune_enable_all_packages.
+List of libraries defined in dune_enable_all_packages: ${DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES}")
+  endif()
+  unset(lib_defined)
+
   include(CMakeParseArguments)
   cmake_parse_arguments(DUNE_LIBRARY_ADD_SOURCES "" "" "SOURCES" ${ARGN})
 
