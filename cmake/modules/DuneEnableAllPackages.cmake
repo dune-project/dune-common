@@ -89,39 +89,39 @@ macro(dune_enable_all_packages)
   set(OPTIONS APPEND VERBOSE)
   set(SINGLEARGS)
   set(MULTIARGS COMPILE_DEFINITIONS INCLUDE_DIRS MODULE_LIBRARIES)
-  cmake_parse_arguments(ENABLE_ALL_PACKAGES "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
+  cmake_parse_arguments(DUNE_ENABLE_ALL_PACKAGES "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
 
-  if(ENABLE_ALL_PACKAGES_UNPARSED_ARGUMENTS)
+  if(DUNE_ENABLE_ALL_PACKAGES_UNPARSED_ARGUMENTS)
     message(WARNING "Unrecognized arguments for dune_enable_all_packages!")
   endif()
 
   # handle additional include dirs specified in dune_enable_all_packages
-  if(ENABLE_ALL_PACKAGES_INCLUDE_DIRS)
-    if(ENABLE_ALL_PACKAGES_APPEND)
-      set_property(GLOBAL APPEND PROPERTY ALL_PKG_INCS "${ENABLE_ALL_PACKAGES_INCLUDE_DIRS}")
-    else(ENABLE_ALL_PACKAGES_APPEND)
+  if(DUNE_ENABLE_ALL_PACKAGES_INCLUDE_DIRS)
+    if(DUNE_ENABLE_ALL_PACKAGES_APPEND)
+      set_property(GLOBAL APPEND PROPERTY ALL_PKG_INCS "${DUNE_ENABLE_ALL_PACKAGES_INCLUDE_DIRS}")
+    else(DUNE_ENABLE_ALL_PACKAGES_APPEND)
       get_property(all_incs GLOBAL PROPERTY ALL_PKG_INCS)
-      set_property(GLOBAL PROPERTY ALL_PKG_INCS "${ENABLE_ALL_PACKAGES_INCLUDE_DIRS}" "${all_incs}")
-    endif(ENABLE_ALL_PACKAGES_APPEND)
-  endif(ENABLE_ALL_PACKAGES_INCLUDE_DIRS)
+      set_property(GLOBAL PROPERTY ALL_PKG_INCS "${DUNE_ENABLE_ALL_PACKAGES_INCLUDE_DIRS}" "${all_incs}")
+    endif(DUNE_ENABLE_ALL_PACKAGES_APPEND)
+  endif(DUNE_ENABLE_ALL_PACKAGES_INCLUDE_DIRS)
 
   # add include dirs to all targets in module
   get_property(all_incs GLOBAL PROPERTY ALL_PKG_INCS)
   include_directories(${all_incs})
   # verbose output of include dirs
-  if(ENABLE_ALL_PACKAGES_VERBOSE)
+  if(DUNE_ENABLE_ALL_PACKAGES_VERBOSE)
     message("Include directories for this project: ${all_incs}")
-  endif(ENABLE_ALL_PACKAGES_VERBOSE)
+  endif(DUNE_ENABLE_ALL_PACKAGES_VERBOSE)
 
   # handle additional compile definitions specified in dune_enable_all_packages
-  if(ENABLE_ALL_PACKAGES_COMPILE_DEFINITIONS)
-    if(ENABLE_ALL_PACKAGES_COMPILE_DEFINITIONS)
-      set_property(GLOBAL APPEND PROPERTY ALL_PKG_DEFS "${ENABLE_ALL_PACKAGES_COMPILE_DEFINITIONS}")
-    else(ENABLE_ALL_PACKAGES_APPEND)
+  if(DUNE_ENABLE_ALL_PACKAGES_COMPILE_DEFINITIONS)
+    if(DUNE_ENABLE_ALL_PACKAGES_COMPILE_DEFINITIONS)
+      set_property(GLOBAL APPEND PROPERTY ALL_PKG_DEFS "${DUNE_ENABLE_ALL_PACKAGES_COMPILE_DEFINITIONS}")
+    else(DUNE_ENABLE_ALL_PACKAGES_APPEND)
       get_property(all_defs GLOBAL PROPERTY ALL_PKG_DEFS)
-      set_property(GLOBAL PROPERTY ALL_PKG_DEFS "${ENABLE_ALL_PACKAGES_COMPILE_DEFINITIONS}" "${all_defs}")
-    endif(ENABLE_ALL_PACKAGES_APPEND)
-  endif(ENABLE_ALL_PACKAGES_COMPILE_DEFINITIONS)
+      set_property(GLOBAL PROPERTY ALL_PKG_DEFS "${DUNE_ENABLE_ALL_PACKAGES_COMPILE_DEFINITIONS}" "${all_defs}")
+    endif(DUNE_ENABLE_ALL_PACKAGES_APPEND)
+  endif(DUNE_ENABLE_ALL_PACKAGES_COMPILE_DEFINITIONS)
 
   # add compile definitions to all targets in module
   get_property(all_defs GLOBAL PROPERTY ALL_PKG_DEFS)
@@ -129,9 +129,9 @@ macro(dune_enable_all_packages)
     add_definitions("-D${def}")
   endforeach(def in ${all_defs})
   # verbose output of compile definitions
-  if(ENABLE_ALL_PACKAGES_VERBOSE)
+  if(DUNE_ENABLE_ALL_PACKAGES_VERBOSE)
     message("Compile definitions for this project: ${all_defs}")
-  endif(ENABLE_ALL_PACKAGES_VERBOSE)
+  endif(DUNE_ENABLE_ALL_PACKAGES_VERBOSE)
 
   # handle libraries
   # this is a little tricky because the libraries defined within the current module require special
@@ -153,7 +153,7 @@ macro(dune_enable_all_packages)
   # link_libraries(). The user can then add the real source files by calling dune_library_add_sources()
   # throughout the module.
 
-  if(ENABLE_ALL_PACKAGES_MODULE_LIBRARIES)
+  if(DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES)
 
     # This only works for CMAKE 3.1+ because target_sources() - which we use to add sources to the
     # libraries after creating them - was added in that version
@@ -170,20 +170,20 @@ Update the cmake_minimum_required() call in your main CMakeLists.txt file to get
     file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
     # figure out the location of the stub source template
     dune_common_script_dir(script_dir)
-    foreach(module_lib ${ENABLE_ALL_PACKAGES_MODULE_LIBRARIES})
+    foreach(module_lib ${DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES})
       # create the stub source file in the output directory...
       configure_file("${script_dir}/module_library.cc.in" "${PROJECT_BINARY_DIR}/lib/lib${module_lib}_stub.cc")
       # ...and create the library...
       dune_add_library(${module_lib} SOURCES "${PROJECT_BINARY_DIR}/lib/lib${module_lib}_stub.cc")
       # ...and add it to all future targets in the module
       link_libraries(${module_lib})
-    endforeach(module_lib ${ENABLE_ALL_PACKAGES_MODULE_LIBRARIES})
-  endif(ENABLE_ALL_PACKAGES_MODULE_LIBRARIES)
+    endforeach(module_lib ${DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES})
+  endif(DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES)
 
-  if(ENABLE_ALL_PACKAGES_VERBOSE)
+  if(DUNE_ENABLE_ALL_PACKAGES_VERBOSE)
     get_property(all_libs GLOBAL PROPERTY ALL_PKG_LIBS)
     message("Libraries for this project: ${all_libs}")
-  endif(ENABLE_ALL_PACKAGES_VERBOSE)
+  endif(DUNE_ENABLE_ALL_PACKAGES_VERBOSE)
 
 endmacro(dune_enable_all_packages)
 
@@ -197,13 +197,13 @@ macro(dune_library_add_sources lib)
   endif()
 
   include(CMakeParseArguments)
-  cmake_parse_arguments(DUNE_LIB "" "" "SOURCES" ${ARGN})
+  cmake_parse_arguments(DUNE_LIBRARY_ADD_SOURCES "" "" "SOURCES" ${ARGN})
 
-  if(DUNE_LIB_UNPARSED_ARGUMENTS)
+  if(DUNE_LIBRARY_ADD_SOURCES_UNPARSED_ARGUMENTS)
     message(WARNING "Unrecognized arguments for dune_library_add_sources!")
   endif()
 
-  foreach(source ${DUNE_LIB_SOURCES})
+  foreach(source ${DUNE_LIBRARY_ADD_SOURCES_SOURCES})
     target_sources(${lib} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${source})
   endforeach()
 endmacro()
