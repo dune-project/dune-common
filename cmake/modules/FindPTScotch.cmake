@@ -75,7 +75,7 @@ if(PTSCOTCH_FOUND)
     "Library directory: ${PTSCOTCH_LIBRARIES}\n\n")
 
   dune_register_package_flags(LIBRARIES "${PTSCOTCH_LIBRARIES}"
-                              INCLUDE_DIRECTORIES "${PTSCOTCH_INCLUDE_DIRS}")
+                              INCLUDE_DIRS "${PTSCOTCH_INCLUDE_DIRS}")
 endif(PTSCOTCH_FOUND)
 
 mark_as_advanced(PTSCOTCH_INCLUDE_DIR PTSCOTCH_LIBRARIES HAVE_PTSCOTCH)
