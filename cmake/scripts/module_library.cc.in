@@ -1,0 +1,11 @@
+#include <string>
+
+std::size_t ${module_lib}_version()
+{
+  return ${ProjectVersionMajor} * 10000 + ${ProjectVersionMinor} * 100 + ${ProjectVersionRevision};
+}
+
+std::string ${module_lib}_version_string()
+{
+  return "${ProjectVersion}";
+}

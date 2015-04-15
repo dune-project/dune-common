@@ -225,6 +225,9 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
   while [ -z "$MAINTAINER" ]; do
     read -p "4) Maintainer's email address? " MAINTAINER
   done
+  while [ "$ENABLE_ALL" != "y" -a "$ENABLE_ALL" != "Y" ]; do
+    read -p "5) Enable all found packages? (WE strongly recommend yes, unless you know exactly what you are doing) [y/N]" ENABLE_ALL
+  done
 
   echo
   echo "creating Project \"$PROJECT\", version $VERSION "
@@ -238,6 +241,7 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
     DEPENDENCIES=""
     VERSION=""
     MAINTAINER=""
+    ENABLE_ALL=""
   fi
 done
 
@@ -501,7 +505,13 @@ include(DuneMacros)
 
 # start a dune project with information from dune.module
 dune_project()
-
+M_DELIM
+if test ! -z "$ENABLE_ALL"; then
+cat>> "$PROJECT/CMakeLists.txt" << M_DELIM
+dune_enable_all_packages()
+M_DELIM
+fi
+cat>> "$PROJECT/CMakeLists.txt" << M_DELIM
 add_subdirectory("src")
 add_subdirectory("m4")
 add_subdirectory("dune")

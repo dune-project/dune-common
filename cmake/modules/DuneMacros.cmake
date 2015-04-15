@@ -79,6 +79,7 @@
 enable_language(C) # Enable C to skip CXX bindings for some tests.
 
 include(FeatureSummary)
+include(DuneEnableAllPackages)
 
 include(DuneSymlinkOrCopy)
 
@@ -525,10 +526,8 @@ macro(dune_process_dependency_macros)
         endforeach(_lib ${${_mod}_LIBRARIES})
       endif(${_mod}_LIBRARIES)
 
-      #update ALL_PKG_FLAGS
-      foreach(dir ${${_mod}_INCLUDE_DIRS})
-        set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-I${dir}")
-      endforeach()
+      # register dune module
+      dune_register_package_flags(INCLUDE_DIRS "${${_mod}_INCLUDE_DIRS}")
     endif(NOT ${_mod}_PROCESSED)
   endforeach(_mod DEPENDENCIES)
 endmacro(dune_process_dependency_macros)
@@ -1163,16 +1162,12 @@ and a replacement string. ${REPLACE_UNPARSED_ARGUMENTS}")
 endfunction(replace_properties)
 
 macro(add_dune_all_flags targets)
-  get_property(flags GLOBAL PROPERTY ALL_PKG_FLAGS)
-  set(FLAGSTR "")
-  foreach(flag ${flags})
-    set(FLAGSTR "${FLAGSTR}\ ${flag}")
-  endforeach()
+  get_property(incs GLOBAL PROPERTY ALL_PKG_INCS)
+  get_property(defs GLOBAL PROPERTY ALL_PKG_DEFS)
+  get_property(libs GLOBAL PROPERTY ALL_PKG_LIBS)
   foreach(target ${targets})
-    set_property(TARGET ${target}
-          APPEND_STRING
-          PROPERTY COMPILE_FLAGS ${FLAGSTR})
-    get_property(libs GLOBAL PROPERTY ALL_PKG_LIBS)
+    set_property(TARGET ${target} APPEND PROPERTY INCLUDE_DIRECTORIES ${incs})
+    set_property(TARGET ${target} APPEND PROPERTY COMPILE_DEFINITIONS ${defs})
     target_link_libraries(${target} ${DUNE_LIBS} ${libs})
   endforeach()
 endmacro(add_dune_all_flags targets)

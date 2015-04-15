@@ -12,12 +12,11 @@
 find_package(Boost)
 set(HAVE_DUNE_BOOST ${Boost_FOUND})
 
-#add all boost realted flags to ALL_PKG_FLAGS, this must happen regardless of a target using add_dune_boost_flags
+# register all boost related flags
+# TODO What about boost libraries? Do we even rely on such?
 if(HAVE_DUNE_BOOST)
-  set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-DENABLE_BOOST=1")
-  foreach(dir ${Boost_INCLUDE_DIRS})
-    set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-I${dir}")
-  endforeach()
+  dune_register_package_flags(COMPILE_DEFINITIONS "ENABLE_BOOST=1"
+                              INCLUDE_DIRS "${Boost_INCLUDE_DIRS}")
 endif()
 
 function(add_dune_boost_flags _targets)

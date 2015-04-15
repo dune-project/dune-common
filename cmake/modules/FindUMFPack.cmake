@@ -94,11 +94,9 @@ endif(UMFPACK_FOUND)
 #set HAVE_UMFPACK for config.h
 set(HAVE_UMFPACK ${UMFPACK_FOUND})
 
-#add all umfpack related flags to ALL_PKG_FLAGS, this must happen regardless of a target using add_dune_umfpack_flags
+# register all umfpack related flags
 if(UMFPACK_FOUND)
-  set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "${UMFPACK_DUNE_COMPILE_FLAGS}")
-  foreach(dir "${UMFPACK_INCLUDE_DIRS}")
-    set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-I${dir}")
-  endforeach()
-  set_property(GLOBAL APPEND PROPERTY ALL_PKG_LIBS "${UMFPACK_LIBRARIES}")
+  dune_register_package_flags(COMPILE_DEFINITIONS "ENABLE_UMFPACK=1"
+                            LIBRARIES "${UMFPACK_LIBRARIES}"
+                            INCLUDE_DIRS "${UMFPACK_INCLUDE_DIRS}")
 endif()
