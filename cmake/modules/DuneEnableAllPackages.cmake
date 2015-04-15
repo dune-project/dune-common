@@ -194,11 +194,6 @@ macro(dune_library_add_sources lib)
   # libraries after creating them - was added in that version
   if (CMAKE_VERSION VERSION_LESS 3.1.0)
     message(FATAL_ERROR "dune_library_add_sources() requires CMake 3.1+")
-  elseif(CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS 3.1.0)
-    message(WARNING
-"You are using dune_enable_all_packages() with the MODULE_LIBRARIES feature.
-This requires at least CMake 3.1, but your Dune module only requires ${CMAKE_MINIMUM_REQUIRED_VERSION}.
-Update the cmake_minimum_required() call in your main CMakeLists.txt file to get rid of this warning.")
   endif()
 
   include(CMakeParseArguments)
