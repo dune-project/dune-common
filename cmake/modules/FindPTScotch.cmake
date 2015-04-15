@@ -74,10 +74,8 @@ if(PTSCOTCH_FOUND)
     "Include directory: ${PTSCOTCH_INCLUDE_DIRS}\n"
     "Library directory: ${PTSCOTCH_LIBRARIES}\n\n")
 
-  foreach(dir ${PTSCOCTH_INCLUDE_DIRS})
-    set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-I${dir}")
-  endforeach()
-  set_property(GLOBAL APPEND PROPERTY ALL_PKG_LIBS "${PTSCOTCH_LIBRARIES}")
+  dune_register_package_flags(LIBRARIES "${PTSCOTCH_LIBRARIES}"
+                              INCLUDE_DIRECTORIES "${PTSCOTCH_INCLUDE_DIRS}")
 endif(PTSCOTCH_FOUND)
 
 mark_as_advanced(PTSCOTCH_INCLUDE_DIR PTSCOTCH_LIBRARIES HAVE_PTSCOTCH)
