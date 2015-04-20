@@ -4,10 +4,10 @@
 #
 # PTSCOTCH_ROOT:   Prefix where PT-Scotch is installed.
 # PTSCOTCH_SUFFIX: Scotch might be compiled using different
-#                  integer sizes (int32, int32, long). When
+#                  integer sizes (int32, int64, long). When
 #                  this is is set the headers and libaries
 #                  are search under the suffix
-#                  include/scotch-${PTSCOTCH_SUFFIX, and
+#                  include/scotch-${PTSCOTCH_SUFFIX}, and
 #                  lib/scotch-${PTSCOTCH_SUFFIX}, respectively.
 # Sets the following variables:
 # PTSCOTCH_INCLUDE_DIRS: All include directories needed to compile PT-Scotch programs.
@@ -21,7 +21,7 @@
 include(DuneMPI)
 macro(_search_pt_lib libvar libname doc)
   find_library(${libvar} ${libname}
-    PATHS${PTSCOTCH_ROOT} PATH_SUFFIXES ${PATH_SUFFIXES}
+    PATHS ${PTSCOTCH_ROOT} PATH_SUFFIXES ${PATH_SUFFIXES}
     NO_DEFAULT_PATH
     DOC "${doc}")
   find_library(${libvar} ${libname})
