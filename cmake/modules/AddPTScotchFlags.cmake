@@ -2,7 +2,7 @@
 #
 # Provides the following functions:
 #
-# add_dune_parmetis_flags(target1 target2 ...)
+# add_dune_ptscotch_flags(target1 target2 ...)
 #
 # Adds the necessary flags to compile and link the targets with PT-Scotch support.
 #
