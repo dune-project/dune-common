@@ -31,6 +31,7 @@ ALLM4S = 					\
 	dune_docu.m4				\
 	dune_linkcxx.m4				\
 	dune_mpi.m4				\
+	dune_stdthread.m4			\
 	dune_streams.m4				\
 	dune_unused.m4			        \
 	fortran_overwrite.m4			\
