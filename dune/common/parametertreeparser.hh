@@ -93,7 +93,7 @@ namespace Dune {
      *
      * \note This method is identical to parseStream(std::istream&,
      *       const std::string&, bool) with the exception that that
-     *       method allows to give a custom name for the stream.
+     *       method allows one to give a custom name for the stream.
      */
     static void readINITree(std::istream& in, ParameterTree& pt,
                             bool overwrite);

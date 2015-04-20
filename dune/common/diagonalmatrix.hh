@@ -964,7 +964,7 @@ namespace Dune {
    * size_t realIndex(position) - get index in sparse container for position in underlying container
    *
    * Notice that the iterator stores a ContainerWrapper.
-   * This allows to use proxy classes as underlying container
+   * This allows one to use proxy classes as underlying container
    * and as returned reference type.
    *
    * \tparam CW The container wrapper class

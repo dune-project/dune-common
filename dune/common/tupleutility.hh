@@ -1338,7 +1338,7 @@ namespace Dune {
    * @brief Helper template which implements iteration over all storage
    * elements in a tuple.
    *
-   * Compile-time constructs that allows to process all elements in a tuple.
+   * Compile-time constructs that allows one to process all elements in a tuple.
    * The exact operation performed on an element is defined by a function
    * object, which needs to implement a visit method which is applicable to
    * all storage elements of a tuple.  Each tuple element is visited once, and
