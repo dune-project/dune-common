@@ -56,7 +56,7 @@ int testForwardIterator(Iter begin, Iter end, Opt& opt)
     opt(*begin);
 
   // Test whether std::iterator_traits is properly specialized
-  // The is_same<A,A> construction allows to test whether the type A exists at all,
+  // The is_same<A,A> construction allows one to test whether the type A exists at all,
   // without assuming anything further about A.
   static_assert(std::is_same<typename std::iterator_traits<Iter>::difference_type, typename std::iterator_traits<Iter>::difference_type>::value,
                 "std::iterator_traits::difference_type is not defined!");

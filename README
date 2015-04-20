@@ -5,7 +5,7 @@ DUNE, the Distributed and Unified Numerics Environment is a modular toolbox
 for solving partial differential equations with grid-based methods.
 
 The main intention is to create slim interfaces allowing an efficient use of
-legacy and/or new libraries. Using C++ techniques DUNE allows to use very
+legacy and/or new libraries. Using C++ techniques DUNE allows one to use very
 different implementation of the same concept (i.e. grid, solver, ...) under
 a common interface with a very low overhead.
 
