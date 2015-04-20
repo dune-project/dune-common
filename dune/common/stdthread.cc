@@ -49,7 +49,7 @@ namespace Dune
       printCallOnceError(file, line, function,
 "std::call_once() throws an exception.  This suggests that the program was\n"
 "linked without a threading library.  Common ways to link to a threading\n"
-"libary is to specify one of the following during linking: -pthread, \n"
+"library is to specify one of the following during linking: -pthread, \n"
 "-lpthread, or -pthreads.  The build-system should have tried various of\n"
 "these options, but unfortunately that is only a guess and we cannot verify\n"
 "that we found a working configuration until runtime.\n"

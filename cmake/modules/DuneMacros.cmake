@@ -51,7 +51,7 @@
 # Creates shared and static libraries with the same basename.
 # <basename> is the basename of the library.
 # On Unix this creates lib<basename>.so and lib<BASENAME>.a.
-# Libraries that should be incorporate into this libary can
+# Libraries that should be incorporate into this library can
 # be specified with the ADD_LIBS option.
 # The libraries will be built in ${PROJECT_BINARY_DIR}/lib.
 # If the option NO_EXPORT is omitted the library is exported
