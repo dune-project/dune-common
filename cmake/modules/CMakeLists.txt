@@ -11,6 +11,7 @@ set(modules
   DuneCxaDemangle.cmake
   DuneDoc.cmake
   DuneDoxygen.cmake
+  DuneEnableAllPackages.cmake
   DuneMacros.cmake
   DuneMPI.cmake
   DunePkgConfig.cmake
@@ -25,9 +26,13 @@ set(modules
   FindMProtect.cmake
   FindParMETIS.cmake
   FindPTScotch.cmake
+  FindThreadsCMake31.cmake
   FindUMFPack.cmake
   Headercheck.cmake
   LanguageSupport.cmake
   UseInkscape.cmake
   UseLATEX.cmake)
-install(FILES ${modules} DESTINATION ${DUNE_INSTALL_MODULEDIR})
+set(test_programs CheckForPthreads.c)
+install(FILES ${modules}
+              ${test_programs}
+        DESTINATION ${DUNE_INSTALL_MODULEDIR})
