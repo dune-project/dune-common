@@ -11,6 +11,7 @@ MODULES = \
   DuneCxaDemangle.cmake   \
   DuneDoc.cmake           \
   DuneDoxygen.cmake       \
+  DuneEnableAllPackages.cmake \
   DuneMacros.cmake        \
   DuneMPI.cmake           \
   DunePkgConfig.cmake     \
@@ -25,14 +26,17 @@ MODULES = \
   FindMProtect.cmake      \
   FindParMETIS.cmake      \
   FindPTScotch.cmake      \
+  FindThreadsCMake31.cmake \
   FindUMFPack.cmake       \
   Headercheck.cmake       \
   LanguageSupport.cmake   \
   UseInkscape.cmake       \
   UseLATEX.cmake
 
+TESTPROGRAMS = CheckForPthreads.c
+
 modulesdir = $(datadir)/dune/cmake/modules
-dist_modules_DATA = ${MODULES}
+dist_modules_DATA = ${MODULES} ${TESTPROGRAMS}
 
 include $(top_srcdir)/am/global-rules
 EXTRA_DIST = CMakeLists.txt
