@@ -26,7 +26,6 @@ install(PROGRAMS
         dune_docu.m4
         dune_linkcxx.m4
         dune_mpi.m4
-        dune_std_thread.m4
         dune_stdthread.m4
         dune_streams.m4
         dune_unused.m4
