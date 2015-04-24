@@ -967,7 +967,7 @@ macro(dune_add_library basename)
     set_property(GLOBAL PROPERTY DUNE_MODULE_LIBRARIES ${_prop} ${basename})
     # link with specified libraries.
     if(DUNE_LIB_ADD_LIBS)
-      dune_target_link_libraries(${basename} ${DUNE_LIB_ADD_LIBS})
+      dune_target_link_libraries(${basename} "${DUNE_LIB_ADD_LIBS}")
     endif(DUNE_LIB_ADD_LIBS)
     if(DUNE_LIB_COMPILE_FLAGS)
       set_property(${basename} APPEND_STRING COMPILE_FLAGS
@@ -991,7 +991,7 @@ macro(dune_add_library basename)
         list(APPEND _created_libs ${basename}-static)
         # link with specified libraries.
         if(DUNE_LIB_ADD_LIBS)
-          dune_target_link_libraries(${basename}-static ${DUNE_LIB_ADD_LIBS})
+          dune_target_link_libraries(${basename}-static "${DUNE_LIB_ADD_LIBS}")
         endif(DUNE_LIB_ADD_LIBS)
         if(DUNE_LIB_COMPILE_FLAGS)
           set_property(${basename}-static APPEND_STRING COMPILE_FLAGS
@@ -1005,7 +1005,7 @@ macro(dune_add_library basename)
           LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
         # link with specified libraries.
         if(DUNE_LIB_ADD_LIBS)
-          dune_target_link_libraries(${basename}-shared ${DUNE_LIB_ADD_LIBS})
+          dune_target_link_libraries(${basename}-shared "${DUNE_LIB_ADD_LIBS}")
         endif(DUNE_LIB_ADD_LIBS)
         if(DUNE_LIB_COMPILE_FLAGS)
           set_property(${basename}-shared APPEND_STRING COMPILE_FLAGS
