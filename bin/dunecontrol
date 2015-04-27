@@ -716,7 +716,7 @@ run_default_configure () {
       SRCDIR="$PWD"
       cd "$ABS_BUILDDIR"
       # check for libtool libs, which might break modules depending on this module
-      test -n "`find -name \*.la`" && \
+      test -n "`find . -name \*.la`" && \
           echo "Error: your build directory $ABS_BUILDDIR contains libtool built libraries, please cleanup" && \
           exit 1
       echo "$PREPARAMS $CMAKE -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\""
