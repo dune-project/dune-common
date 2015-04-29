@@ -24,7 +24,7 @@ namespace Dune {
    * \param p    The path to concatenate onto base.
    *
    * If p is an absolute path, return p.  Otherwise return the
-   * string-concatenation of base and path, possibly with a '/' inbetween, if
+   * string-concatenation of base and path, possibly with a '/' in between, if
    * necessary.
    *
    * Some examples:
