@@ -14,6 +14,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <ostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -249,6 +250,30 @@ int tuple_tr1_test()
   return ret;
 }
 
+int inputTest()
+{
+  typedef std::tuple<int, int, int> Tuple;
+  const std::string data = "1, 2, 3";
+  const Tuple expected{1, 2, 3};
+
+  std::istringstream in(data);
+  Tuple t;
+  in >> t;
+
+  return t == expected ? 0 : 1;
+}
+
+int outputTest()
+{
+  typedef std::tuple<int, int, int> Tuple;
+  const Tuple t{1, 2, 3};
+  const std::string expected = "1, 2, 3";
+
+  std::ostringstream out;
+  out << t;
+
+  return out.str() == expected ? 0 : 1;
+}
 
 int main(int, char**)
 {
@@ -259,6 +284,6 @@ int main(int, char**)
   test(static_cast<tuple<float,int,double,char,std::string>& >(tuple_));
   test(static_cast<const tuple<float,int,double,char,std::string>&>(tuple_));
   return (copyTest()+iteratorTupleTest()+referenceTest()+lessTest()
-          +pointerTest()+constPointerTest()+tuple_tr1_test());
+          +pointerTest()+constPointerTest()+tuple_tr1_test()+inputTest()+outputTest());
 
 }
