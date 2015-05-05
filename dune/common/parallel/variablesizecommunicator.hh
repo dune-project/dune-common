@@ -1145,6 +1145,11 @@ template<class Allocator>
 template<bool FORWARD, class DataHandle>
 void VariableSizeCommunicator<Allocator>::communicate(DataHandle& handle)
 {
+  if( interface_->size() == 0)
+    // Simply return as otherwise we will index an empty container
+    // either for MPI_Wait_all or MPI_Test_some.
+    return;
+
   if(handle.fixedsize())
     communicateFixedSize<FORWARD>(handle);
   else
