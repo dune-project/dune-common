@@ -85,9 +85,10 @@ namespace Dune {
         \note If the input matrix is not symmetric the behavior of this method is undefined.
 
         This implementation was adapted from the pseudo-code (Python?) implementation found on
-        http://en.wikipedia.org/wiki/Eigenvalue_algorithm  (retrieved lated August 2014).
+        http://en.wikipedia.org/wiki/Eigenvalue_algorithm  (retrieved late August 2014).
         Wikipedia claims to have taken it from
-        Smith, Oliver K. (April 1961), Eigenvalues of a symmetric 3 × 3 matrix., Communications of the ACM 4 (4): 168, doi:10.1145/355578.366316
+          Smith, Oliver K. (April 1961), Eigenvalues of a symmetric 3 × 3 matrix.,
+          Communications of the ACM 4 (4): 168, doi:10.1145/355578.366316
      */
     template <typename K>
     static void eigenValues(const FieldMatrix<K, 3, 3>& matrix,
