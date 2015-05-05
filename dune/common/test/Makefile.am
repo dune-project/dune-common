@@ -39,7 +39,7 @@ TESTPROGS = \
     testdebugallocator_fail4 \
     testdebugallocator_fail5 \
     testfloatcmp \
-    tuplestest_std \
+    tuplestest \
     tupleutilitytest \
     typetraitstest \
     utilitytest
@@ -196,7 +196,7 @@ testdebugallocator_fail5_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE5
 
 testfloatcmp_SOURCES = testfloatcmp.cc
 
-tuplestest_std_SOURCES = tuplestest.cc
+tuplestest_SOURCES = tuplestest.cc
 
 tupleutilitytest_SOURCES = tupleutilitytest.cc
 
