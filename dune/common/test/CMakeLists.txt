@@ -31,6 +31,7 @@ set(TESTS
     shared_ptrtest_config
     singletontest
     streamtest
+    stringutilitytest
     testfloatcmp
     tuplestest
     tupleutilitytest
@@ -143,6 +144,9 @@ add_executable("sllisttest" EXCLUDE_FROM_ALL sllisttest.cc)
 
 add_executable("streamtest" streamtest.cc)
 target_link_libraries("streamtest" "dunecommon")
+
+add_executable("stringutilitytest" stringutilitytest.cc)
+target_link_libraries("stringutilitytest" "dunecommon")
 
 add_executable("testdebugallocator" testdebugallocator.cc)
 target_link_libraries(testdebugallocator dunecommon)

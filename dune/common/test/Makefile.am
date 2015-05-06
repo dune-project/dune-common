@@ -32,6 +32,7 @@ TESTPROGS = \
     shared_ptrtest_config \
     singletontest \
     streamtest \
+    stringutilitytest \
     testdebugallocator \
     testdebugallocator_fail1 \
     testdebugallocator_fail2 \
@@ -175,6 +176,8 @@ sllisttest_SOURCES = sllisttest.cc
 sourcescheck_NOSOURCES = timing.cc
 
 streamtest_SOURCES = streamtest.cc
+
+stringutilitytest_SOURCES = stringutilitytest.cc
 
 testdebugallocator_SOURCES = testdebugallocator.cc
 testdebugallocator_CPPFLAGS = $(AM_CPPFLAGS)
