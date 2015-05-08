@@ -90,11 +90,11 @@ namespace Dune
     //! bitwise or
     bigunsignedint<k> operator| (const bigunsignedint<k>& x) const;
 
-    //! bitwise komplement
+    //! bitwise complement
     bigunsignedint<k> operator~ () const;
 
 
-    //! left shift1/
+    //! left shift
     bigunsignedint<k> operator<< (int i) const;
 
     //! right shift
