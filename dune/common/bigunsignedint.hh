@@ -8,6 +8,7 @@
 #include <limits>
 #include <cstdint>
 #include <cstdlib>
+#include <type_traits>
 #include <dune/common/exceptions.hh>
 #include <dune/common/hash.hh>
 
@@ -51,7 +52,8 @@ namespace Dune
     bigunsignedint ();
 
     //! Construct from signed int
-    bigunsignedint (int x);
+    template<typename Signed>
+    bigunsignedint (Signed x, typename std::enable_if<std::is_integral<Signed>::value && std::is_signed<Signed>::value>::type* = nullptr);
 
     //! Construct from unsigned int
     bigunsignedint (std::uintmax_t x);
@@ -157,7 +159,8 @@ namespace Dune
   }
 
   template<int k>
-  bigunsignedint<k>::bigunsignedint (int y)
+  template<typename Signed>
+  bigunsignedint<k>::bigunsignedint (Signed y, typename std::enable_if<std::is_integral<Signed>::value && std::is_signed<Signed>::value>::type*)
   {
     std::uintmax_t x = std::abs(y);
     assign(x);
