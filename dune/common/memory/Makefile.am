@@ -17,7 +17,7 @@ lib_LIBRARIES = libcuda_memory.a
 libcuda_memory_a_SOURCES = cuda_allocator.cu
 
 NVCC = nvcc
-NVCCFLAGS = $(DUNE_CPPFLAGS)-g -v --ptxas-options=-v -O3 -I$(top_srcdir) $(DEFS) -use_fast_math -arch sm_13
+NVCCFLAGS = -g -v --ptxas-options=-v -O3 -I$(top_srcdir) $(DEFS) -use_fast_math -arch sm_13
 
 .cu.o:
 		$(NVCC) $(NVCCFLAGS)  -c -o $@ $<

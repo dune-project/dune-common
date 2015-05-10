@@ -41,7 +41,7 @@ lib_LIBRARIES = libvec_cuda.a
 libvec_cuda_a_SOURCES = cuda_kernels.cu
 
 NVCC = nvcc
-NVCCFLAGS = $(DUNE_CPPFLAGS)-g -v --ptxas-options=-v -O3 -I$(top_srcdir) $(DEFS) -use_fast_math -arch sm_21
+NVCCFLAGS = -g -v --ptxas-options=-v -O3 -I$(top_srcdir) $(DEFS) -use_fast_math -arch sm_21
 
 .cu.o:
 		$(NVCC) $(NVCCFLAGS)  -c -o $@ $<
