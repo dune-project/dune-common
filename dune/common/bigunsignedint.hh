@@ -268,10 +268,13 @@ namespace Dune
     {
       std::int_fast32_t diff = static_cast<std::int_fast32_t>(digit[i]) - static_cast<std::int_fast32_t>(x.digit[i]) - overflow;
       if (diff>=0)
+      {
         result.digit[i] = static_cast<std::uint16_t>(diff);
+        overflow = 0;
+      }
       else
       {
-        result.digit[i] = static_cast<std::uint16_t>(diff+bitmask);
+        result.digit[i] = static_cast<std::uint16_t>(diff+bitmask+1);
         overflow = 1;
       }
     }
