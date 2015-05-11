@@ -30,6 +30,33 @@ namespace Dune
   struct MPITraits;
 #endif
 
+  namespace {
+
+    // numeric_limits_helper provides std::numeric_limits access to the internals
+    // of bigunsignedint. Previously, the correct specialization of std::numeric_limits
+    // was a friend of bigunsignedint, but that creates problems on recent versions
+    // of clang with the alternative libc++ library, because that library declares the
+    // base template of std::numeric_limits as a class and clang subsequently complains
+    // if the friend declaration uses 'struct'. Unfortunately, libstdc++ uses a struct,
+    // making it impossible to keep clang happy for both standard libraries.
+    // So we move the access helper functionality into a custom struct and simply let
+    // the numeric_limits specialization inherit from the helper.
+
+    template<typename T>
+    struct numeric_limits_helper
+    {
+
+    protected:
+
+      static std::uint16_t& digit(T& big_unsigned_int, std::size_t i)
+      {
+        return big_unsigned_int.digit[i];
+      }
+
+    };
+
+  }
+
   /**
    * @brief Portable very large unsigned integers
    *
@@ -134,7 +161,7 @@ namespace Dune
     double todouble() const;
 
     friend class bigunsignedint<k/2>;
-    friend struct std::numeric_limits< bigunsignedint<k> >;
+    friend struct numeric_limits_helper< bigunsignedint<k> >;
 
     inline friend std::size_t hash_value(const bigunsignedint& arg)
     {
@@ -560,6 +587,7 @@ namespace std
 {
   template<int k>
   struct numeric_limits<Dune::bigunsignedint<k> >
+    : private Dune::numeric_limits_helper<Dune::bigunsignedint<k> > // for access to internal state of bigunsignedint
   {
   public:
     static const bool is_specialized = true;
@@ -573,7 +601,9 @@ namespace std
     {
       Dune::bigunsignedint<k> max_;
       for(std::size_t i=0; i < Dune::bigunsignedint<k>::n; ++i)
-        max_.digit[i]=std::numeric_limits<std::uint16_t>::max();
+        // access internal state via the helper base class
+        Dune::numeric_limits_helper<Dune::bigunsignedint<k> >::
+          digit(max_,i)=std::numeric_limits<std::uint16_t>::max();
       return max_;
     }
 
