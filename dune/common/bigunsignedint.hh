@@ -342,11 +342,9 @@ namespace Dune
   {
     // better slow than nothing
     bigunsignedint<k> temp(*this);
-    bigunsignedint<k> result(0);
 
     while (temp>=x)
     {
-      ++result;
       temp = temp-x;
     }
 
