@@ -132,20 +132,23 @@ namespace Dune {
 // Macro for defining a std::hash specialization for type.
 // This should not be called directly. Call DUNE_DEFINE_HASH
 // instead.
-#define DUNE_DEFINE_STD_HASH(template_args,type) \
-  namespace std {                                  \
-                                                 \
+#define DUNE_DEFINE_STD_HASH(template_args,type)     \
+  namespace std {                                    \
+                                                     \
     template<template_args>                          \
     struct hash<type>                                \
     {                                                \
+                                                     \
+      typedef type argument_type;                    \
+      typedef std::size_t result_type;               \
+                                                     \
       std::size_t operator()(const type& arg) const  \
       {                                              \
         return hash_value(arg);                      \
       }                                              \
     };                                               \
-                                                 \
-  }                                                \
-
+                                                     \
+  }                                                  \
 
 // Wrapper macro for template arguments.
 // This is required because the template arguments can contain commas,
