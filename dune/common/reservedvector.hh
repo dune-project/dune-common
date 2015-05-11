@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <cstddef>
 #include <dune/common/genericiterator.hh>
 #include <initializer_list>
 
