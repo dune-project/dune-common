@@ -9,6 +9,7 @@
 #include <vector>
 #include <iostream>
 #include <cstring>
+#include <cstdint>
 #include <cstdlib>
 #include <new>
 #if HAVE_SYS_MMAN_H && HAVE_MPROTECT
@@ -143,7 +144,7 @@ namespace Dune
         // compute page address
         void* page_ptr =
           static_cast<void*>(
-            (char*)(ptr) - ((difference_type)(ptr) % page_size));
+            (char*)(ptr) - ((std::uintptr_t)(ptr) % page_size));
         // search list
         AllocationList::iterator it;
         unsigned int i = 0;
