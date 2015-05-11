@@ -6,7 +6,9 @@
 
 #include <iostream>
 #include <limits>
+#include <cstdint>
 #include <cstdlib>
+#include <type_traits>
 #include <dune/common/exceptions.hh>
 #include <dune/common/hash.hh>
 
@@ -42,7 +44,7 @@ namespace Dune
   public:
 
     // unsigned short is 16 bits wide, n is the number of digits needed
-    enum { bits=std::numeric_limits<unsigned short>::digits, n=k/bits+(k%bits!=0),
+    enum { bits=std::numeric_limits<std::uint16_t>::digits, n=k/bits+(k%bits!=0),
            hexdigits=4, bitmask=0xFFFF, compbitmask=0xFFFF0000,
            overflowmask=0x1 };
 
@@ -50,10 +52,11 @@ namespace Dune
     bigunsignedint ();
 
     //! Construct from signed int
-    bigunsignedint (int x);
+    template<typename Signed>
+    bigunsignedint (Signed x, typename std::enable_if<std::is_integral<Signed>::value && std::is_signed<Signed>::value>::type* = nullptr);
 
     //! Construct from unsigned int
-    bigunsignedint (std::size_t x);
+    bigunsignedint (std::uintmax_t x);
 
     //! Print number in hex notation
     void print (std::ostream& s) const ;
@@ -122,7 +125,7 @@ namespace Dune
 
     //! export to other types
     //	operator unsigned int () const;
-    unsigned int touint() const;
+    std::uint_least32_t touint() const;
     /**
      * @brief Convert to a double.
      *
@@ -139,11 +142,11 @@ namespace Dune
     }
 
   private:
-    unsigned short digit[n];
+    std::uint16_t digit[n];
 #if HAVE_MPI
     friend struct MPITraits<bigunsignedint<k> >;
 #endif
-    inline void assign(std::size_t x);
+    inline void assign(std::uintmax_t x);
 
 
   } ;
@@ -156,22 +159,24 @@ namespace Dune
   }
 
   template<int k>
-  bigunsignedint<k>::bigunsignedint (int y)
+  template<typename Signed>
+  bigunsignedint<k>::bigunsignedint (Signed y, typename std::enable_if<std::is_integral<Signed>::value && std::is_signed<Signed>::value>::type*)
   {
-    std::size_t x = std::abs(y);
-    assign(x);
+    if (y < 0)
+      DUNE_THROW(Dune::Exception, "Trying to construct a Dune::bigunsignedint from a negative integer: " << y);
+    assign(y);
   }
 
   template<int k>
-  bigunsignedint<k>::bigunsignedint (std::size_t x)
+  bigunsignedint<k>::bigunsignedint (std::uintmax_t x)
   {
     assign(x);
   }
   template<int k>
-  void bigunsignedint<k>::assign(std::size_t x)
+  void bigunsignedint<k>::assign(std::uintmax_t x)
   {
-    int no=std::min(static_cast<int>(n),
-                    static_cast<int>(std::numeric_limits<std::size_t>::digits/bits));
+    static const int no=std::min(static_cast<int>(n),
+                                 static_cast<int>(std::numeric_limits<std::uintmax_t>::digits/bits));
 
     for(int i=0; i<no; ++i) {
       digit[i] = (x&bitmask);
@@ -182,7 +187,7 @@ namespace Dune
 
   // export
   template<int k>
-  inline unsigned int bigunsignedint<k>::touint () const
+  inline std::uint_least32_t bigunsignedint<k>::touint () const
   {
     return (digit[1]<<bits)+digit[0];
   }
@@ -242,11 +247,11 @@ namespace Dune
   inline bigunsignedint<k> bigunsignedint<k>::operator+ (const bigunsignedint<k>& x) const
   {
     bigunsignedint<k> result;
-    int overflow=0;
+    std::uint_fast32_t overflow=0;
 
     for (unsigned int i=0; i<n; i++)
     {
-      int sum = ((int)digit[i]) + ((int)x.digit[i]) + overflow;
+      std::uint_fast32_t sum = static_cast<std::uint_fast32_t>(digit[i]) + static_cast<std::uint_fast32_t>(x.digit[i]) + overflow;
       result.digit[i] = sum&bitmask;
       overflow = (sum>>bits)&overflowmask;
     }
@@ -257,16 +262,19 @@ namespace Dune
   inline bigunsignedint<k> bigunsignedint<k>::operator- (const bigunsignedint<k>& x) const
   {
     bigunsignedint<k> result;
-    int overflow=0;
+    std::int_fast32_t overflow=0;
 
     for (unsigned int i=0; i<n; i++)
     {
-      int diff = ((int)digit[i]) - (((int)x.digit[i]) + overflow);
+      std::int_fast32_t diff = static_cast<std::int_fast32_t>(digit[i]) - static_cast<std::int_fast32_t>(x.digit[i]) - overflow;
       if (diff>=0)
-        result.digit[i] = (unsigned short) diff;
+      {
+        result.digit[i] = static_cast<std::uint16_t>(diff);
+        overflow = 0;
+      }
       else
       {
-        result.digit[i] = (unsigned short) (diff+bitmask);
+        result.digit[i] = static_cast<std::uint16_t>(diff+bitmask+1);
         overflow = 1;
       }
     }
@@ -281,11 +289,11 @@ namespace Dune
     for (unsigned int m=0; m<n; m++)     // digit in right factor
     {
       bigunsignedint<2*k> singleproduct(0);
-      unsigned int overflow(0);
+      std::uint_fast32_t overflow(0);
       for (unsigned int i=0; i<n; i++)
       {
-        unsigned int digitproduct = ((unsigned int)digit[i])*((unsigned int)x.digit[m])+overflow;
-        singleproduct.digit[i+m] = (unsigned short) (digitproduct&bitmask);
+        std::uint_fast32_t digitproduct = static_cast<std::uint_fast32_t>(digit[i])*static_cast<std::uint_fast32_t>(x.digit[m])+overflow;
+        singleproduct.digit[i+m] = static_cast<std::uint16_t>(digitproduct&bitmask);
         overflow = (digitproduct>>bits)&bitmask;
       }
       finalproduct = finalproduct+singleproduct;
@@ -299,11 +307,11 @@ namespace Dune
   template <int k>
   inline bigunsignedint<k>& bigunsignedint<k>::operator++ ()
   {
-    int overflow=1;
+    std::uint_fast32_t overflow=1;
 
     for (unsigned int i=0; i<n; i++)
     {
-      int sum = ((int)digit[i]) + overflow;
+      std::uint_fast32_t sum = static_cast<std::uint_fast32_t>(digit[i]) + overflow;
       digit[i] = sum&bitmask;
       overflow = (sum>>bits)&overflowmask;
     }
@@ -334,11 +342,9 @@ namespace Dune
   {
     // better slow than nothing
     bigunsignedint<k> temp(*this);
-    bigunsignedint<k> result(0);
 
     while (temp>=x)
     {
-      ++result;
       temp = temp-x;
     }
 
@@ -398,7 +404,7 @@ namespace Dune
     {
       unsigned int temp = result.digit[i];
       temp = temp<<j;
-      result.digit[i] = (unsigned short) (temp&bitmask);
+      result.digit[i] = static_cast<std::uint16_t>(temp&bitmask);
       temp = temp>>bits;
       if (i+1<(int)n)
         result.digit[i+1] = result.digit[i+1]|temp;
@@ -421,9 +427,9 @@ namespace Dune
     j=shift%bits;
     for (unsigned int i=0; i<n; i++)
     {
-      unsigned int temp = result.digit[i];
+      std::uint_fast32_t temp = result.digit[i];
       temp = temp<<(bits-j);
-      result.digit[i] = (unsigned short) ((temp&compbitmask)>>bits);
+      result.digit[i] = static_cast<std::uint16_t>((temp&compbitmask)>>bits);
       if (i>0)
         result.digit[i-1] = result.digit[i-1] | (temp&bitmask);
     }
@@ -477,70 +483,70 @@ namespace Dune
 
 
   template <int k>
-  inline bigunsignedint<k> operator+ (const bigunsignedint<k>& x, std::size_t y)
+  inline bigunsignedint<k> operator+ (const bigunsignedint<k>& x, std::uintmax_t y)
   {
     bigunsignedint<k> temp(y);
     return x+temp;
   }
 
   template <int k>
-  inline bigunsignedint<k> operator- (const bigunsignedint<k>& x, std::size_t y)
+  inline bigunsignedint<k> operator- (const bigunsignedint<k>& x, std::uintmax_t y)
   {
     bigunsignedint<k> temp(y);
     return x-temp;
   }
 
   template <int k>
-  inline bigunsignedint<k> operator* (const bigunsignedint<k>& x, std::size_t y)
+  inline bigunsignedint<k> operator* (const bigunsignedint<k>& x, std::uintmax_t y)
   {
     bigunsignedint<k> temp(y);
     return x*temp;
   }
 
   template <int k>
-  inline bigunsignedint<k> operator/ (const bigunsignedint<k>& x, std::size_t y)
+  inline bigunsignedint<k> operator/ (const bigunsignedint<k>& x, std::uintmax_t y)
   {
     bigunsignedint<k> temp(y);
     return x/temp;
   }
 
   template <int k>
-  inline bigunsignedint<k> operator% (const bigunsignedint<k>& x, std::size_t y)
+  inline bigunsignedint<k> operator% (const bigunsignedint<k>& x, std::uintmax_t y)
   {
     bigunsignedint<k> temp(y);
     return x%temp;
   }
 
   template <int k>
-  inline bigunsignedint<k> operator+ (std::size_t x, const bigunsignedint<k>& y)
+  inline bigunsignedint<k> operator+ (std::uintmax_t x, const bigunsignedint<k>& y)
   {
     bigunsignedint<k> temp(x);
     return temp+y;
   }
 
   template <int k>
-  inline bigunsignedint<k> operator- (std::size_t x, const bigunsignedint<k>& y)
+  inline bigunsignedint<k> operator- (std::uintmax_t x, const bigunsignedint<k>& y)
   {
     bigunsignedint<k> temp(x);
     return temp-y;
   }
 
   template <int k>
-  inline bigunsignedint<k> operator* (std::size_t x, const bigunsignedint<k>& y)
+  inline bigunsignedint<k> operator* (std::uintmax_t x, const bigunsignedint<k>& y)
   {
     bigunsignedint<k> temp(x);
     return temp*y;
   }
 
   template <int k>
-  inline bigunsignedint<k> operator/ (std::size_t x, const bigunsignedint<k>& y)
+  inline bigunsignedint<k> operator/ (std::uintmax_t x, const bigunsignedint<k>& y)
   {
     bigunsignedint<k> temp(x);
     return temp/y;
   }
 
   template <int k>
-  inline bigunsignedint<k> operator% (std::size_t x, const bigunsignedint<k>& y)
+  inline bigunsignedint<k> operator% (std::uintmax_t x, const bigunsignedint<k>& y)
   {
     bigunsignedint<k> temp(x);
     return temp%y;
@@ -567,7 +573,7 @@ namespace std
     {
       Dune::bigunsignedint<k> max_;
       for(std::size_t i=0; i < Dune::bigunsignedint<k>::n; ++i)
-        max_.digit[i]=std::numeric_limits<unsigned short>::max();
+        max_.digit[i]=std::numeric_limits<std::uint16_t>::max();
       return max_;
     }
 
