@@ -162,8 +162,9 @@ namespace Dune
   template<typename Signed>
   bigunsignedint<k>::bigunsignedint (Signed y, typename std::enable_if<std::is_integral<Signed>::value && std::is_signed<Signed>::value>::type*)
   {
-    std::uintmax_t x = std::abs(y);
-    assign(x);
+    if (y < 0)
+      DUNE_THROW(Dune::Exception, "Trying to construct a Dune::bigunsignedint from a negative integer: " << y);
+    assign(y);
   }
 
   template<int k>
