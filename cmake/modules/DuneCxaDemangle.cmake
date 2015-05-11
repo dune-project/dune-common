@@ -8,7 +8,8 @@
 # perform tests
 include(CheckCXXSourceCompiles)
 
-CHECK_CXX_SOURCE_COMPILES("#include <cxxabi.h>
+CHECK_CXX_SOURCE_COMPILES("#include <typeinfo>
+#include <cxxabi.h>
 int main(void){
     int foobar = 0;
     const char *foo = typeid(foobar).name();

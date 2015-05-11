@@ -4,6 +4,7 @@ AC_DEFUN([DUNE_CHECK_CXA_DEMANGLE],[
     AC_CACHE_CHECK([for abi::__cxa_demangle], dune_cv_cxa_demangle, [
         AC_LANG_PUSH([C++])
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+    #include <typeinfo>
     #include <cxxabi.h>
             ]],
             [[
