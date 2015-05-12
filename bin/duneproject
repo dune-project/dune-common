@@ -225,7 +225,7 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
   while [ -z "$MAINTAINER" ]; do
     read -p "4) Maintainer's email address? " MAINTAINER
   done
-  while [ "$ENABLE_ALL" != "y" -a "$ENABLE_ALL" != "N" ]; do
+  while [ "$ENABLE_ALL" != "y" -a "$ENABLE_ALL" != "Y" -a "$ENABLE_ALL" != "n" -a "$ENABLE_ALL" != "N" ]; do
     read -p "5) Enable all available packages? (Choose 'y' if you don't understand the question.) [y/N]" ENABLE_ALL
   done
 
