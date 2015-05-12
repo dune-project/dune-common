@@ -556,6 +556,14 @@ macro(dune_project)
   set(ProjectVersionRevision "${DUNE_VERSION_REVISION}")
   set(ProjectMaintainerEmail "${DUNE_MAINTAINER}")
 
+  # check whether this module has been explicitly disabled through the cmake flags.
+  # If so, stop the build. This is necessary because dunecontrol does not parse
+  # the given CMake flags for a disabled Dune modules.
+  if(CMAKE_DISABLE_FIND_PACKAGE_${ProjectName})
+    message("Module ${ProjectName} has been explicitly disabled through the cmake flags. Skipping build.")
+    return()
+  endif()
+
   define_property(GLOBAL PROPERTY DUNE_MODULE_LIBRARIES
         BRIEF_DOCS "List of libraries of the module. DO NOT EDIT!"
         FULL_DOCS "List of libraries of the module. Used to generate CMake's package configuration files. DO NOT EDIT!")
