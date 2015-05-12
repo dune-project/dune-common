@@ -80,7 +80,7 @@ namespace Dune
 
     //! Construct from signed int
     template<typename Signed>
-    bigunsignedint (Signed x, typename std::enable_if<std::is_integral<Signed>::value && std::is_signed<Signed>::value>::type* = nullptr);
+    bigunsignedint (Signed x, typename std::enable_if<std::is_integral<Signed>::value && std::is_signed<Signed>::value>::type* = 0);
 
     //! Construct from unsigned int
     bigunsignedint (std::uintmax_t x);
