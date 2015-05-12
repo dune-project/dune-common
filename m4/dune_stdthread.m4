@@ -4,12 +4,13 @@
 
 AC_DEFUN([DUNE_STDTHREAD],[
   AC_REQUIRE([ACX_PTHREAD])
+  AC_REQUIRE([DUNE_NO_AS_NEEDED])
   AC_CACHE_CHECK([libraries needed for std::thread],
     [dune_cv_stdthread_libs],
     [dune_cv_stdthread_libs=$PTHREAD_LIBS])
   AC_CACHE_CHECK([linker flags needed for std::thread],
     [dune_cv_stdthread_ldflags],
-    [dune_cv_stdthread_ldflags=$PTHREAD_CFLAGS])
+    [dune_cv_stdthread_ldflags="$NO_AS_NEEDED $PTHREAD_CFLAGS"])
   AC_CACHE_CHECK([compiler flags needed for std::thread],
     [dune_cv_stdthread_cppflags],
     [dune_cv_stdthread_cppflags=$PTHREAD_CFLAGS])
@@ -57,4 +58,14 @@ AC_DEFUN([DUNE_STDTHREAD_TESTPROG], [dnl
       std::thread t(f);
       t.join();
     ]])dnl
+])
+
+AC_DEFUN([DUNE_NO_AS_NEEDED], [dnl
+  AC_CACHE_CHECK([whether the linker needs -Wl,-no-as-needed],
+    [dune_cv_no_as_needed],
+    [AS_IF([test -f /etc/dpkg/origins/ubuntu], [dune_cv_no_as_needed="yes (Ubuntu)"],
+                                               [dune_cv_no_as_needed="no"])])
+  AS_CASE([$dune_cv_no_as_needed],
+    [yes|"yes "*], [NO_AS_NEEDED=-Wl,-no-as-needed],
+                   [NO_AS_NEEDED=])
 ])
