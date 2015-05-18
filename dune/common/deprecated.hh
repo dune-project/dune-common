@@ -109,7 +109,7 @@
  *  - Classes
  *    \code
    class DUNE_DEPRECATED_MSG("In the future, please use 'Glass'") Class {}; // 1)
-   class Class {} DUNE_DEPRECATED("In the future, please use 'Glass'"); // 2)
+   class Class {} DUNE_DEPRECATED_MSG("In the future, please use 'Glass'"); // 2)
  *    \endcode
  *    For both forms, deprecation warnings and the additional hint "In
  *    the future, please use 'Glass'" will be printed on compilers

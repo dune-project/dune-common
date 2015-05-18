@@ -34,10 +34,10 @@ if(MPI_C_FOUND)
   set(MPI_DUNE_LIBRARIES ${CMAKE_THREAD_LIBS_INIT} ${MPI_C_LIBRARIES} CACHE STRING
     "Libraries used by DUNE when linking MPI programs")
 
-  set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-DENABLE_MPI=1 -DMPICH_SKIP_MPICXX -DMPIPP_H")
-  foreach(dir ${MPI_DUNE_INCLUDE_PATH})
-    set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-I${dir}")
-  endforeach()
+  # TODO check on where to position this exactly, doesnt look completely thought through
+  dune_register_package_flags(COMPILE_DEFINITIONS "ENABLE_MPI=1;MPICH_SKIP_MPICXX;MPIPP_H"
+                              INCLUDE_DIRS "${MPI_DUNE_INCLUDE_PATH}"
+                              LIBRARIES "${MPI_DUNE_LIBRARIES}")
 
   # Check whether the MPI-2 standard is supported
   include(CMakePushCheckState)

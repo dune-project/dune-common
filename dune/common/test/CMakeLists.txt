@@ -31,8 +31,9 @@ set(TESTS
     shared_ptrtest_config
     singletontest
     streamtest
+    stringutilitytest
     testfloatcmp
-    tuplestest_config
+    tuplestest
     tupleutilitytest
     utilitytest)
 
@@ -144,6 +145,9 @@ add_executable("sllisttest" EXCLUDE_FROM_ALL sllisttest.cc)
 add_executable("streamtest" streamtest.cc)
 target_link_libraries("streamtest" "dunecommon")
 
+add_executable("stringutilitytest" stringutilitytest.cc)
+target_link_libraries("stringutilitytest" "dunecommon")
+
 add_executable("testdebugallocator" testdebugallocator.cc)
 target_link_libraries(testdebugallocator dunecommon)
 add_executable("testdebugallocator_fail1" testdebugallocator.cc)
@@ -162,7 +166,7 @@ add_executable("testdebugallocator_fail5" testdebugallocator.cc)
 target_link_libraries(testdebugallocator_fail5 dunecommon)
 set_target_properties(testdebugallocator_fail5 PROPERTIES COMPILE_DEFINITIONS "FAILURE5;EXPECTED_SIGNAL=SIGSEGV")
 
-add_executable("tuplestest_config" tuplestest.cc)
+add_executable("tuplestest" tuplestest.cc)
 add_executable("tupleutilitytest" tupleutilitytest.cc)
 add_executable("utilitytest" utilitytest.cc)
 

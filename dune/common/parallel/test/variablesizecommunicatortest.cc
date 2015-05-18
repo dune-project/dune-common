@@ -125,6 +125,12 @@ int main(int argc, char** argv)
     }
     else
     {
+        // We also want to check the case where the interface is empty on some
+        // processes. Therefore we artificially lower the numer of processes
+        // if it is larger than two. Thus the last rank will not send anything
+        // and we check for deadlocks.
+        if(procs>2)
+            --procs;
         int N=100000;
         int num_per_proc=N/procs;
         int start, end;
@@ -142,7 +148,7 @@ int main(int argc, char** argv)
             assert(N==end);
         typedef Dune::VariableSizeCommunicator<>::InterfaceMap Interface;
         Interface inf;
-        if(rank)
+        if(rank && rank<procs) // rank==procs might hold and produce a deadlock otherwise!
         {
             Dune::InterfaceInformation send, recv;
             send.reserve(2);
@@ -165,6 +171,9 @@ int main(int argc, char** argv)
             recv.add(end);
             inf[rank+1]=std::make_pair(send, recv);
         }
+        if(rank==procs)
+            std::cout<<" rank "<<rank<<" has empty interface "<<inf.size()<<std::endl;
+
         Dune::VariableSizeCommunicator<> comm(MPI_COMM_WORLD, inf, 6);
         MyDataHandle handle(rank);
         comm.forward(handle);

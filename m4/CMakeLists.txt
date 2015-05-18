@@ -9,10 +9,12 @@ install(PROGRAMS
         boost_fusion.m4
         cuda.m4
         cxx11_compiler.m4
+        cxx11_is_indexable_support.m4
         cxx0x_nullptr.m4
         cxx11_constexpr.m4
         cxx11_final.m4
         cxx11_range_based_for.m4
+        cxx11_std_declval.m4
         dune.m4
         dune_all.m4
         dune_autobuild.m4

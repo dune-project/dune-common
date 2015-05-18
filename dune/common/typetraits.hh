@@ -6,6 +6,7 @@
 #include <type_traits>
 
 #include <dune/common/deprecated.hh>
+#include <dune/common/std/utility.hh>
 
 namespace Dune
 {
@@ -403,6 +404,123 @@ namespace Dune
     //! always a true value
     static const bool value = true;
   };
+
+
+#if defined(DOXYGEN) or HAVE_IS_INDEXABLE_SUPPORT
+
+#ifndef DOXYGEN
+
+  namespace detail {
+
+    template<typename T, typename I, typename = int>
+    struct _is_indexable
+      : public std::false_type
+    {};
+
+    template<typename T, typename I>
+    struct _is_indexable<T,I,typename std::enable_if<(sizeof(Std::declval<T>()[Std::declval<I>()]) > 0),int>::type>
+      : public std::true_type
+    {};
+
+  }
+
+#endif // DOXYGEN
+
+  //! Type trait to determine whether an instance of T has an operator[](I), i.e. whether
+  //! it can be indexed with an index of type I.
+  /**
+   * \warning Not all compilers support testing for arbitrary index types. In particular, there
+   *          are problems with GCC 4.4 and 4.5.
+   */
+  template<typename T, typename I = std::size_t>
+  struct is_indexable
+    : public detail::_is_indexable<T,I>
+  {};
+
+
+#else // defined(DOXYGEN) or HAVE_IS_INDEXABLE_SUPPORT
+
+
+  // okay, here follows a mess of compiler bug workarounds...
+  // GCC 4.4 dies if we try to subscript a simple type like int and
+  // both GCC 4.4 and 4.5 don't like using arbitrary types as subscripts
+  // for macros.
+  // So we make sure to only ever attempt the SFINAE for operator[] for
+  // class types, and to make sure the compiler doesn't become overly eager
+  // we have to do some lazy evaluation tricks with nested templates and
+  // stuff.
+  // Let's get rid of GCC 4.4 ASAP!
+
+
+  namespace detail {
+
+    // simple wrapper template to support the lazy evaluation required
+    // in _is_indexable
+    template<typename T>
+    struct _lazy
+    {
+      template<typename U>
+      struct evaluate
+      {
+        typedef T type;
+      };
+    };
+
+    // default version, gets picked if SFINAE fails
+    template<typename T, typename = int>
+    struct _is_indexable
+      : public std::false_type
+    {};
+
+    // version for types supporting the subscript operation
+    template<typename T>
+    struct _is_indexable<T,decltype(Std::declval<T>()[0],0)>
+      : public std::true_type
+    {};
+
+    // helper struct for delaying the evaluation until we are sure
+    // that T is a class (i.e. until we are outside std::conditional
+    // below)
+    struct _check_for_index_operator
+    {
+
+      template<typename T>
+      struct evaluate
+        : public _is_indexable<T>
+      {};
+
+    };
+
+  }
+
+  // The rationale here is as follows:
+  // 1) If we have an array, we assume we can index into it. That isn't
+  //    true if I isn't an integral type, but that's why we have the static assertion
+  //    in the body - we could of course try and check whether I is integral, but I
+  //    can't be arsed and want to provide a motivation to switch to a newer compiler...
+  // 2) If we have a class, we use SFINAE to check for operator[]
+  // 3) Otherwise, we assume that T does not support indexing
+  //
+  // In order to make sure that the compiler doesn't accidentally try the SFINAE evaluation
+  // on an array or a scalar, we have to resort to lazy evaluation.
+  template<typename T, typename I = std::size_t>
+  struct is_indexable
+    : public std::conditional<
+               std::is_array<T>::value,
+               detail::_lazy<std::true_type>,
+               typename std::conditional<
+                 std::is_class<T>::value,
+                 detail::_check_for_index_operator,
+                 detail::_lazy<std::false_type>
+                 >::type
+               >::type::template evaluate<T>::type
+  {
+    static_assert(std::is_same<I,std::size_t>::value,"Your compiler is broken and does not support checking for arbitrary index types");
+  };
+
+
+#endif // defined(DOXYGEN) or HAVE_IS_INDEXABLE_SUPPORT
+
 
   /** @} */
 }

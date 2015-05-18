@@ -72,7 +72,7 @@ namespace Dune {
   static std::string formatString(const std::string& s, const T&... args)
   {
     static const int bufferSize=1000;
-    static char buffer[bufferSize];
+    char buffer[bufferSize];
 
     // try to format with static buffer
     int r = std::snprintf(buffer, bufferSize, s.c_str(), args...);

@@ -51,7 +51,7 @@
 # Creates shared and static libraries with the same basename.
 # <basename> is the basename of the library.
 # On Unix this creates lib<basename>.so and lib<BASENAME>.a.
-# Libraries that should be incorporate into this libary can
+# Libraries that should be incorporate into this library can
 # be specified with the ADD_LIBS option.
 # The libraries will be built in ${PROJECT_BINARY_DIR}/lib.
 # If the option NO_EXPORT is omitted the library is exported
@@ -79,6 +79,9 @@
 enable_language(C) # Enable C to skip CXX bindings for some tests.
 
 include(FeatureSummary)
+include(DuneEnableAllPackages)
+
+include(DuneSymlinkOrCopy)
 
 # Converts a module name given by _module into an uppercase string
 # _upper where all dashes (-) are replaced by underscores (_)
@@ -166,8 +169,10 @@ macro(find_dune_package module)
   if(${module}_FOUND)
     # parse other module's dune.module file to generate variables for config.h
     unset(${module}_dune_module)
-    foreach(_dune_module_file ${${module}_PREFIX}/dune.module
-        ${${module}_PREFIX}/lib/dunecontrol/${module}/dune.module)
+    foreach(_dune_module_file
+        ${${module}_PREFIX}/dune.module
+        ${${module}_PREFIX}/lib/dunecontrol/${module}/dune.module
+        ${${module}_PREFIX}/lib64/dunecontrol/${module}/dune.module)
       if(EXISTS ${_dune_module_file})
         get_filename_component(_dune_module_file_path ${_dune_module_file} PATH)
         dune_module_information(${_dune_module_file_path})# QUIET)
@@ -327,6 +332,12 @@ macro(dune_module_information MODULE_DIR)
   set(${DUNE_MOD_NAME_UPPERCASE}_VERSION_MAJOR    "${DUNE_VERSION_MAJOR}")
   set(${DUNE_MOD_NAME_UPPERCASE}_VERSION_MINOR    "${DUNE_VERSION_MINOR}")
   set(${DUNE_MOD_NAME_UPPERCASE}_VERSION_REVISION "${DUNE_VERSION_REVISION}")
+
+  # configure CPack
+  set(CPACK_PACKAGE_NAME "${DUNE_MOD_NAME}")
+  set(CPACK_PACKAGE_VERSION "${DUNE_VERSION_MAJOR}.${DUNE_VERSION_MINOR}.${DUNE_VERSION_REVISION}")
+  set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}")
+  set(CPACK_SOURCE_IGNORE_FILES "${CMAKE_BINARY_DIR}" "\\\\.svn" "\\\\.git" ".*/*\\\\.gitignore")
 endmacro(dune_module_information)
 
 macro(dune_process_dependency_leafs modules versions is_required next_level_deps
@@ -517,10 +528,8 @@ macro(dune_process_dependency_macros)
         endforeach(_lib ${${_mod}_LIBRARIES})
       endif(${_mod}_LIBRARIES)
 
-      #update ALL_PKG_FLAGS
-      foreach(dir ${${_mod}_INCLUDE_DIRS})
-        set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-I${dir}")
-      endforeach()
+      # register dune module
+      dune_register_package_flags(INCLUDE_DIRS "${${_mod}_INCLUDE_DIRS}")
     endif(NOT ${_mod}_PROCESSED)
   endforeach(_mod DEPENDENCIES)
 endmacro(dune_process_dependency_macros)
@@ -544,6 +553,7 @@ macro(dune_project)
   set(ProjectVersionString   "${DUNE_VERSION_MAJOR}.${DUNE_VERSION_MINOR}.${DUNE_VERSION_REVISION}")
   set(ProjectVersionMajor    "${DUNE_VERSION_MAJOR}")
   set(ProjectVersionMinor    "${DUNE_VERSION_MINOR}")
+  set(ProjectVersionRevision "${DUNE_VERSION_REVISION}")
   set(ProjectMaintainerEmail "${DUNE_MAINTAINER}")
 
   define_property(GLOBAL PROPERTY DUNE_MODULE_LIBRARIES
@@ -561,6 +571,9 @@ macro(dune_project)
   workaround_9220(Fortran Fortran_Works)
   if(Fortran_Works)
     enable_language(Fortran OPTIONAL)
+    if(NOT CMAKE_Fortran_COMPILER)
+      set(Fortran_Works OFF)
+    endif()
   endif(Fortran_Works)
 
   option(DUNE_USE_ONLY_STATIC_LIBS "If set to ON, we will force static linkage everywhere" OFF)
@@ -594,14 +607,6 @@ macro(dune_project)
   include(CheckCXX11Features)
 
   include(DuneCxaDemangle)
-
-  # search for headers
-  include(CheckIncludeFile)
-  include(CheckIncludeFileCXX)
-  check_include_file("malloc.h" HAVE_MALLOC_H)
-  check_include_file("stdint.h" HAVE_STDINT_H)
-  check_include_file_cxx("memory" HAVE_MEMORY)
-  set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -DHAVE_MEMORY=${HAVE_MEMORY}")
 
   # set include path and link path for the current project.
   include_directories("${CMAKE_BINARY_DIR}")
@@ -722,6 +727,10 @@ endmacro(dune_regenerate_config_cmake)
 # Namely it creates config.h and the cmake-config files,
 # some install directives and exports the module.
 macro(finalize_dune_project)
+  if(DUNE_SYMLINK_TO_SOURCE_TREE)
+    dune_symlink_to_source_tree()
+  endif()
+
   #configure all headerchecks
   finalize_headercheck()
 
@@ -958,10 +967,10 @@ macro(dune_add_library basename)
     set_property(GLOBAL PROPERTY DUNE_MODULE_LIBRARIES ${_prop} ${basename})
     # link with specified libraries.
     if(DUNE_LIB_ADD_LIBS)
-      dune_target_link_libraries(${basename} ${DUNE_LIB_ADD_LIBS})
+      dune_target_link_libraries(${basename} "${DUNE_LIB_ADD_LIBS}")
     endif(DUNE_LIB_ADD_LIBS)
     if(DUNE_LIB_COMPILE_FLAGS)
-      setproperty(${basename} APPEND_STRING COMPILE_FLAGS
+      set_property(${basename} APPEND_STRING COMPILE_FLAGS
         "${DUNE_LIB_COMPILE_FLAGS}")
     endif(DUNE_LIB_COMPILE_FLAGS)
     # Build library in ${PROJECT_BINARY_DIR}/lib
@@ -982,10 +991,10 @@ macro(dune_add_library basename)
         list(APPEND _created_libs ${basename}-static)
         # link with specified libraries.
         if(DUNE_LIB_ADD_LIBS)
-          dune_target_link_libraries(${basename}-static ${DUNE_LIB_ADD_LIBS})
+          dune_target_link_libraries(${basename}-static "${DUNE_LIB_ADD_LIBS}")
         endif(DUNE_LIB_ADD_LIBS)
         if(DUNE_LIB_COMPILE_FLAGS)
-          setproperty(${basename}-static APPEND_STRING COMPILE_FLAGS
+          set_property(${basename}-static APPEND_STRING COMPILE_FLAGS
             "${DUNE_LIB_COMPILE_FLAGS}")
         endif(DUNE_LIB_COMPILE_FLAGS)
       else(BUILD_SHARED_LIBS)
@@ -996,10 +1005,10 @@ macro(dune_add_library basename)
           LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
         # link with specified libraries.
         if(DUNE_LIB_ADD_LIBS)
-          dune_target_link_libraries(${basename}-shared ${DUNE_LIB_ADD_LIBS})
+          dune_target_link_libraries(${basename}-shared "${DUNE_LIB_ADD_LIBS}")
         endif(DUNE_LIB_ADD_LIBS)
         if(DUNE_LIB_COMPILE_FLAGS)
-          setproperty(${basename}-shared APPEND_STRING COMPILE_FLAGS
+          set_property(${basename}-shared APPEND_STRING COMPILE_FLAGS
             "${DUNE_LIB_COMPILE_FLAGS}")
         endif(DUNE_LIB_COMPILE_FLAGS)
         list(APPEND _created_libs ${basename}-shared)
@@ -1155,98 +1164,12 @@ and a replacement string. ${REPLACE_UNPARSED_ARGUMENTS}")
 endfunction(replace_properties)
 
 macro(add_dune_all_flags targets)
-  get_property(flags GLOBAL PROPERTY ALL_PKG_FLAGS)
-  set(FLAGSTR "")
-  foreach(flag ${flags})
-    set(FLAGSTR "${FLAGSTR}\ ${flag}")
-  endforeach()
+  get_property(incs GLOBAL PROPERTY ALL_PKG_INCS)
+  get_property(defs GLOBAL PROPERTY ALL_PKG_DEFS)
+  get_property(libs GLOBAL PROPERTY ALL_PKG_LIBS)
   foreach(target ${targets})
-    set_property(TARGET ${target}
-          APPEND_STRING
-          PROPERTY COMPILE_FLAGS ${FLAGSTR})
-    get_property(libs GLOBAL PROPERTY ALL_PKG_LIBS)
+    set_property(TARGET ${target} APPEND PROPERTY INCLUDE_DIRECTORIES ${incs})
+    set_property(TARGET ${target} APPEND PROPERTY COMPILE_DEFINITIONS ${defs})
     target_link_libraries(${target} ${DUNE_LIBS} ${libs})
   endforeach()
 endmacro(add_dune_all_flags targets)
-
-# This macro adds a file-copy command.
-# The file_name is the name of a file that exists
-# in the source tree. This file will be copied
-# to the build tree when executing this command.
-# Notice that this does not create a top-level
-# target. In order to do this you have to additionally
-# call add_custom_target(...) with dependency
-# on the file.
-macro(dune_add_copy_command file_name)
-    add_custom_command(
-        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${file_name}"
-        COMMAND    ${CMAKE_COMMAND}
-        ARGS       -E copy "${CMAKE_CURRENT_SOURCE_DIR}/${file_name}" "${file_name}"
-        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${file_name}"
-        )
-endmacro(dune_add_copy_command file_name)
-
-# This macro adds a file-copy target under given target_name.
-# The file_name is the name of a file that exists
-# in the source tree. This file will be copied
-# to the build tree.
-macro(dune_add_copy_target target_name file_name)
-    dune_add_copy_command(${file_name})
-    add_custom_target("${target_name}" ALL DEPENDS "${file_name}")
-endmacro(dune_add_copy_target target_name file_name)
-
-# This macro adds a copy-dependecy to a target
-# The file_name is the name of a file that exists
-# in the source tree. This file will be copied
-# to the build tree.
-macro(dune_add_copy_dependency target file_name)
-    message(STATUS "Adding copy-to-build-dir dependency for ${file_name} to target ${target}")
-    dune_add_copy_target("${target}_copy_${file_name}" "${file_name}")
-    add_dependencies(${target} "${target}_copy_${file_name}")
-endmacro(dune_add_copy_dependency)
-
-# add a symlink called src_dir to all directories in the build tree.
-# That symlink points to the corresponding directory in the source tree.
-# Call the macro from the toplevel CMakeLists.txt file of your project.
-# You can also call it from some other directory, creating only symlinks
-# in that directory and all directories below. A warning is issued on
-# Windows systems.
-macro(dune_symlink_to_source_tree)
-  # check for Windows to issue a warning
-  if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-    if(NOT DEFINED DUNE_WINDOWS_SYMLINK_WARNING)
-      message(WARNING "Your module wanted to create symlinks, but you cannot do that on your platform.")
-      set(DUNE_WINDOWS_SYMLINK_WARNING)
-    endif()
-  else()
-    # get a list of all files in the current source directory and below.
-    file(GLOB_RECURSE files RELATIVE ${CMAKE_SOURCE_DIR} "*")
-
-    # iterate over all files, extract the directory name and write a symlink in the corresponding build directory
-    foreach(f ${files})
-      get_filename_component(dir ${f} DIRECTORY)
-      execute_process(COMMAND ${CMAKE_COMMAND} "-E" "create_symlink" "${CMAKE_SOURCE_DIR}/${dir}" "${CMAKE_BINARY_DIR}/${dir}/src_dir")
-    endforeach()
-  endif()
-endmacro(dune_symlink_to_source_tree)
-
-# add symlinks to the build tree, which point to files in the source tree.
-# Foreach file given in "files", a symlink of that name is created in the
-# corresponding build directory. Use for ini files, grid files etc. A warning
-# is issued on Windows systems.
-macro(dune_symlink_to_source_files files)
-  # create symlinks for all given files
-  foreach(f ${files})
-    # check for Windows to issue a warning
-    if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-      if(NOT DEFINED DUNE_WINDOWS_SYMLINK_WARNING)
-        message(WARNING "Your module wanted to create symlinks, but you cannot do that on your platform.")
-        set(DUNE_WINDOWS_SYMLINK_WARNING)
-      endif()
-      dune_add_copy_command(${f})
-    else()
-      # create symlink
-      execute_process(COMMAND ${CMAKE_COMMAND} "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/${f}" "${CMAKE_CURRENT_BINARY_DIR}/${f}")
-    endif()
-  endforeach()
-endmacro(dune_symlink_to_source_files files)

@@ -2,6 +2,7 @@ MODULES = \
   AddGMPFlags.cmake        \
   AddMETISFlags.cmake      \
   AddParMETISFlags.cmake   \
+  AddPTScotchFlags.cmake   \
   AddUMFPackFlags.cmake    \
   CheckCXX11Features.cmake \
   DuneBoost.cmake \
@@ -10,10 +11,12 @@ MODULES = \
   DuneCxaDemangle.cmake   \
   DuneDoc.cmake           \
   DuneDoxygen.cmake       \
+  DuneEnableAllPackages.cmake \
   DuneMacros.cmake        \
   DuneMPI.cmake           \
   DunePkgConfig.cmake     \
   DuneStreams.cmake       \
+  DuneSymlinkOrCopy.cmake \
   DuneTestMacros.cmake    \
   DuneTests.cmake         \
   FindBoostFusion.cmake   \
@@ -22,14 +25,18 @@ MODULES = \
   FindMETIS.cmake         \
   FindMProtect.cmake      \
   FindParMETIS.cmake      \
+  FindPTScotch.cmake      \
+  FindThreadsCMake31.cmake \
   FindUMFPack.cmake       \
   Headercheck.cmake       \
   LanguageSupport.cmake   \
   UseInkscape.cmake       \
   UseLATEX.cmake
 
+TESTPROGRAMS = CheckForPthreads.c
+
 modulesdir = $(datadir)/dune/cmake/modules
-dist_modules_DATA = ${MODULES}
+dist_modules_DATA = ${MODULES} ${TESTPROGRAMS}
 
 include $(top_srcdir)/am/global-rules
 EXTRA_DIST = CMakeLists.txt

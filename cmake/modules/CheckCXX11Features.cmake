@@ -197,12 +197,97 @@ check_cxx_source_compiles("
 " HAVE_NOEXCEPT_SPECIFIER
 )
 
+# std::declval()
+check_cxx_source_compiles("
+  #include <utility>
+
+  template<typename T>
+  struct check;
+
+  template<>
+  struct check<int&&>
+  {
+    int pass() { return 0; }
+  };
+
+  int main(void)
+  {
+    return check<decltype(std::declval<int>())>().pass();
+  }
+" HAVE_STD_DECLVAL
+  )
+
+# full support for is_indexable (checking whether a type supports operator[])
+check_cxx_source_compiles("
+  #include <utility>
+  #include <type_traits>
+  #include <array>
+
+  template <class T>
+  typename std::add_rvalue_reference<T>::type declval();
+
+  namespace detail {
+
+    template<typename T, typename I, typename = int>
+    struct _is_indexable
+      : public std::false_type
+    {};
+
+    template<typename T, typename I>
+    struct _is_indexable<T,I,typename std::enable_if<(sizeof(declval<T>()[declval<I>()]) > 0),int>::type>
+      : public std::true_type
+    {};
+
+  }
+
+  template<typename T, typename I = std::size_t>
+  struct is_indexable
+    : public detail::_is_indexable<T,I>
+  {};
+
+  struct foo_type {};
+
+  int main()
+  {
+    double x;
+    std::array<double,4> y;
+    double z[5];
+    foo_type f;
+
+    static_assert(not is_indexable<decltype(x)>::value,\"scalar type\");
+    static_assert(is_indexable<decltype(y)>::value,\"indexable class\");
+    static_assert(is_indexable<decltype(z)>::value,\"array\");
+    static_assert(not is_indexable<decltype(f)>::value,\"not indexable class\");
+    static_assert(not is_indexable<decltype(y),foo_type>::value,\"custom index type\");
+
+    return 0;
+  }
+" HAVE_IS_INDEXABLE_SUPPORT
+  )
+
+
 cmake_pop_check_state()
 
 # find the threading library
-find_package(Threads)
-set(STDTHREAD_LINK_FLAGS "${CMAKE_THREAD_LIBS_INIT}"
-    CACHE STRING "Linker flags needed to get working C++11 threads support")
+# Use a copy FindThreads from CMake 3.1 due to its support of pthread
+if(NOT DEFINED THREADS_PREFER_PTHREAD_FLAG)
+  set(THREADS_PREFER_PTHREAD_FLAG 1)
+endif()
+if(${CMAKE_VERSION} VERSION_LESS "3.1")
+  find_package(ThreadsCMake31)
+else()
+  find_package(Threads)
+endif()
+
+# see whether threading needs -no-as-needed
+if(EXISTS /etc/dpkg/origins/ubuntu)
+  set(NO_AS_NEEDED "-Wl,-no-as-needed")
+else(EXISTS /etc/dpkg/origins/ubuntu)
+  set(NO_AS_NEEDED "")
+endif(EXISTS /etc/dpkg/origins/ubuntu)
+
+set(STDTHREAD_LINK_FLAGS "${NO_AS_NEEDED} ${CMAKE_THREAD_LIBS_INIT}"
+    CACHE STRING "Linker flags needed to get working C++11 threads support.  On Ubuntu it may be necessary to include -Wl,-no-as-needed (see FS#1650).")
 
 # set linker flags
 #
@@ -219,9 +304,9 @@ if(NOT STDTHREAD_LINK_FLAGS STREQUAL "")
   string(REPLACE ";" ";CMAKE_EXE_LINKER_FLAGS_" vars "${vars}")
   string(TOUPPER "${vars}" vars)
   foreach(var ${vars})
-    if(NOT ${var} STREQUAL "")
+    if(NOT var STREQUAL "")
       set(${var} "${${var}} ${STDTHREAD_LINK_FLAGS}")
-    endif(NOT ${var} STREQUAL "")
+    endif()
   endforeach(var ${vars})
 endif(NOT STDTHREAD_LINK_FLAGS STREQUAL "")
 

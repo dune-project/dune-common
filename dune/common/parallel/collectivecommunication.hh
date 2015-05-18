@@ -22,7 +22,7 @@
    \brief Abstractions for paralle computing
 
    Dune offers an abstraction to the basic methods of parallel
-   communication. It allows to switch parallel features on and off,
+   communication. It allows one to switch parallel features on and off,
    without changing the code. This is done using either CollectiveCommunication
    or MPICollectiveCommunication.
 
@@ -46,7 +46,7 @@ namespace Dune
 
      CollectiveCommunication offers an abstraction to the basic methods
      of parallel communication, following the message-passing
-     paradigm. It allows to switch parallel features on and off, without
+     paradigm. It allows one to switch parallel features on and off, without
      changing the code. Currently only MPI and sequential code are
      supported.
 

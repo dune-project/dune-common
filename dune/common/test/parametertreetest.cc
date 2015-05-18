@@ -53,12 +53,10 @@ void testparam(const P & p)
   // try reading array like structures
   std::vector<unsigned int>
   array1 = p.template get< std::vector<unsigned int> >("array");
-#ifndef NDEBUG
   Dune::array<unsigned int, 8>
   array2 = p.template get< Dune::array<unsigned int, 8> >("array");
   Dune::FieldVector<unsigned int, 8>
   array3 = p.template get< Dune::FieldVector<unsigned int, 8> >("array");
-#endif
   check_assert(array1.size() == 8);
   for (unsigned int i=0; i<8; i++)
   {
@@ -245,6 +243,35 @@ void testFS1523()
   check_assert(ptree.get<int>("setting") == -1);
 }
 
+void check_recursiveTreeCompare(const Dune::ParameterTree & p1,
+  const Dune::ParameterTree & p2)
+{
+  check_assert(p1.getValueKeys() == p2.getValueKeys());
+  check_assert(p1.getSubKeys() == p2.getSubKeys());
+  typedef Dune::ParameterTree::KeyVector::const_iterator Iterator;
+  for (Iterator it = p1.getValueKeys().begin();
+       it != p1.getValueKeys().end(); ++it)
+    check_assert(p1[*it] == p2[*it]);
+  for (Iterator it = p1.getSubKeys().begin();
+       it != p1.getSubKeys().end(); ++it)
+    check_recursiveTreeCompare(p1.sub(*it), p2.sub(*it));
+}
+
+// test report method and read back in
+void testReport()
+{
+  std::stringstream s;
+  s << "foo.i = 1 \n foo.bar.peng = hurz";
+  Dune::ParameterTree ptree;
+  Dune::ParameterTreeParser::readINITree(s, ptree);
+
+  std::stringstream s2;
+  ptree.report(s2);
+  Dune::ParameterTree ptree2;
+  Dune::ParameterTreeParser::readINITree(s2, ptree2);
+  check_recursiveTreeCompare(ptree, ptree2);
+}
+
 int main()
 {
   try {
@@ -274,6 +301,9 @@ int main()
 
     // check the command line parser
     testOptionsParser();
+
+    // check report
+    testReport();
 
     // check for specific bugs
     testFS1527();

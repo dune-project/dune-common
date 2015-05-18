@@ -225,6 +225,9 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
   while [ -z "$MAINTAINER" ]; do
     read -p "4) Maintainer's email address? " MAINTAINER
   done
+  while [ "$ENABLE_ALL" != "y" -a "$ENABLE_ALL" != "Y" -a "$ENABLE_ALL" != "n" -a "$ENABLE_ALL" != "N" ]; do
+    read -p "5) Enable all available packages? (Choose 'y' if you don't understand the question.) [y/N]" ENABLE_ALL
+  done
 
   echo
   echo "creating Project \"$PROJECT\", version $VERSION "
@@ -238,6 +241,7 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
     DEPENDENCIES=""
     VERSION=""
     MAINTAINER=""
+    ENABLE_ALL=""
   fi
 done
 
@@ -245,7 +249,7 @@ echo
 echo "A sample code $MODULE.cc is generated in the \"$PROJECT\" directory."
 echo "Look at the README and dune.module files there."
 echo "Now you can run the dunecontrol script which will setup the new module."
-echo "Sometimes you may have to tweak configure.ac a bit."
+echo "Sometimes you may have to tweak configure.ac and CMakeLists.txt a bit."
 
 if test -d $PROJECT; then
   echo WARNING:
@@ -316,7 +320,7 @@ echo "writing initial files:"
 
 # complete module name with _ instead of - to not confuse automake
 fix_and_assign CMODULE $MODULE
-# module name without suffix "dune-"
+# module name without prefix "dune-"
 NAME=`echo $PROJECT | sed -e 's/dune[_-]//'`
 # $NAME with _ instead of - to not confuse automake
 NAME_=`echo $NAME | tr '-' '_'`
@@ -329,7 +333,7 @@ cat > "$PROJECT/configure.ac" <<C_DELIM
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.62])
 DUNE_AC_INIT # gets module version from dune.module file
-AC_CONFIG_SRCDIR([src/$CMODULE.cc])
+AC_CONFIG_SRCDIR([src/$MODULE.cc])
 AC_CONFIG_HEADERS([config.h])
 
 # we need no more than the standard DE-stuff
@@ -369,6 +373,10 @@ Preparing the Sources
 Additional to the software mentioned in README you'll need the
 following programs installed on your system:
 
+  cmake >= 2.8.6
+
+or if you use the old autoconf build system:
+
   automake >= 1.9
 
   autoconf >= 2.62
@@ -389,7 +397,7 @@ have to add the directory where the dunecontrol script resides (probably
 ./dune-common/bin) to your path or specify the relative path of the script.
 
 On your project and all uninstalled DUNE source modules found the script
-will then calls the GNU autoconf/automake to create a ./configure-script
+will then call the GNU autoconf/automake to create a ./configure-script
 and the Makefiles. Afterwards that configure script will be called and the
 modules will be build using make all
 
@@ -397,8 +405,9 @@ Most probably you'll have to provide additional information to dunecontrol
 (e. g. compilers, configure options) and/or make options.
 
 The most convenient way is to use options files in this case. The files
-defining three variables:
+define four variables:
 
+CMAKE_FLAGS      flags passed to cmake
 AUTOGEN_FLAGS    flags passed to autogen
 CONFIGURE_FLAGS  flags passed to configure
 MAKE_FLAGS       flags passed to make
@@ -406,11 +415,15 @@ MAKE_FLAGS       flags passed to make
 An example options file might look like this:
 
 #use this options to autogen, configure and make if no other options are given
-AUTOGEN_FLAGS="--ac=2.50 --ac=1.8" #Forces automake 2,50 and autoconf 1.8
-CONFIGURE_FLAGS="CXX=g++-3.4 --prefix=/install/path" #force g++-3.4 as compiler
+CMAKE_FLAGS=" \\
+-DCMAKE_CXX_COMPILER=g++-4.9 \\
+-DCMAKE_CXX_FLAGS='-Wall -pedantic' \\
+-DCMAKE_INSTALL_PREFIX=/install/path" #Force g++-4.9 and set compiler flags
+AUTOGEN_FLAGS="--ac=2.50 --am=1.8" #Forces autoconf 2.50 and automake 1.8
+CONFIGURE_FLAGS="CXX=g++-4.9 --prefix=/install/path" #Force g++-4.9 as compiler
 MAKE_FLAGS=install #Per default run make install instead of simply make
 
-If you save this information into example.opts you can path the opts file to
+If you save this information into example.opts you can pass the opts file to
 dunecontrol via the --opts option, e. g.
 
   dunecontrol --opts=example.opts all
@@ -432,8 +445,7 @@ See
 for further options.
 
 
-The full build-system is described in the dune-common/doc/buildsystem (SVN version) or under share/doc/dune-common/buildsystem if you installed DUNE!
-
+The full build-system is described in the dune-common/doc/buildsystem (Git version) or under share/doc/dune-common/buildsystem if you installed DUNE!
 R_DELIM
 
 ################## MAKEFILE.AM ##################
@@ -469,7 +481,6 @@ include \$(top_srcdir)/am/global-rules
 # Generate package configuration files for finding
 # installed modules with CMake
 include \$(top_srcdir)/am/cmake-pkg-config
-
 M_DELIM
 
 ################## CMakeLists.txt ##################
@@ -494,7 +505,13 @@ include(DuneMacros)
 
 # start a dune project with information from dune.module
 dune_project()
-
+M_DELIM
+if test ! -z "$ENABLE_ALL"; then
+cat>> "$PROJECT/CMakeLists.txt" << M_DELIM
+dune_enable_all_packages()
+M_DELIM
+fi
+cat>> "$PROJECT/CMakeLists.txt" << M_DELIM
 add_subdirectory("src")
 add_subdirectory("m4")
 add_subdirectory("dune")
@@ -543,7 +560,7 @@ cat> "$PROJECT/config.h.cmake" <<EOF
 
 /* begin private */
 /* Name of package */
-#define PACKAGE "@DUNE_MOD_NAME"
+#define PACKAGE "@DUNE_MOD_NAME@"
 
 /* Define to the address where bug reports for this package should be sent. */
 #define PACKAGE_BUGREPORT "@DUNE_MAINTAINER@"
@@ -593,22 +610,19 @@ mkdir "$PROJECT/src"
 
 echo "- $PROJECT/src/CMakeLists.txt"
 cat> "$PROJECT/src/CMakeLists.txt" << M_DELIM
-
-add_executable("${CMODULE}" ${CMODULE}.cc)
-target_link_dune_default_libraries("${CMODULE}")
-
+add_executable("${MODULE}" ${MODULE}.cc)
+target_link_dune_default_libraries("${MODULE}")
 M_DELIM
 
 ################## src/MAKEFILE.AM ##################
 
 echo "- $PROJECT/src/Makefile.am"
 cat> "$PROJECT/src/Makefile.am" << M_DELIM
-
 SUBDIRS =
 
-noinst_PROGRAMS = ${CMODULE}
+noinst_PROGRAMS = ${MODULE}
 
-${CMODULE}_SOURCES = $CMODULE.cc
+${CMODULE}_SOURCES = $MODULE.cc
 
 ${CMODULE}_CPPFLAGS = \$(AM_CPPFLAGS) \\
 	\$(DUNEMPICPPFLAGS) \\
@@ -643,12 +657,11 @@ DISTCHECK_CONFIGURE_FLAGS = $DISTCHECK_CONFIGURE_FLAGS CXX="\$(CXX)" CC="\$(CC)"
 EXTRA_DIST = CMakeLists.txt
 
 include \$(top_srcdir)/am/global-rules
-
 M_DELIM
 
 ################## PROJECT.CC ##################
-echo "- $PROJECT/src/$CMODULE.cc"
-cat> "$PROJECT/src/$CMODULE.cc" << CC_DELIM
+echo "- $PROJECT/src/$MODULE.cc"
+cat> "$PROJECT/src/$MODULE.cc" << CC_DELIM
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
@@ -659,7 +672,7 @@ cat> "$PROJECT/src/$CMODULE.cc" << CC_DELIM
 int main(int argc, char** argv)
 {
   try{
-    //Maybe initialize Mpi
+    // Maybe initialize MPI
     Dune::MPIHelper& helper = Dune::MPIHelper::instance(argc, argv);
     std::cout << "Hello World! This is ${PROJECT}." << std::endl;
     if(Dune::MPIHelper::isFake)
@@ -693,11 +706,10 @@ include \$(top_srcdir)/am/global-rules
 CC_DELIM
 
 
+################## M4/CMakeLists.txt ##############
 echo "- $PROJECT/m4/CMakeLists.txt"
 cat> "$PROJECT/m4/CMakeLists.txt" << CC_DELIM
-
 install(PROGRAMS $MODULE.m4 DESTINATION \${CMAKE_INSTALL_DATAROOTDIR}/dune/aclocal)
-
 CC_DELIM
 
 ################## M4/PROJECT.M4 ####################
@@ -742,6 +754,7 @@ EXTRA_DIST = CMakeLists.txt
 include \$(top_srcdir)/am/global-rules
 EOF
 
+################## dune/CMakeLists.txt #################
 echo "- $PROJECT/dune/CMakeLists.txt"
 cat> $PROJECT/dune/CMakeLists.txt <<EOF
 add_subdirectory($NAME)
@@ -759,27 +772,27 @@ EXTRA_DIST = CMakeLists.txt
 include \$(top_srcdir)/am/global-rules
 EOF
 
+################## dune/$NAME/CMakeLists.txt ###########
 echo "- $PROJECT/dune/$NAME/CMakeLists.txt"
 cat> $PROJECT/dune/$NAME/CMakeLists.txt <<EOF
 #install headers
-install(FILES ${NAME}.hh DESTINATION include/dune/$NAME)
-
+install(FILES ${NAME}.hh DESTINATION \${CMAKE_INSTALL_INCLUDEDIR}/dune/$NAME)
 EOF
 
 ################## dune/$NAME/$NAME.hh #################
 echo "- $PROJECT/dune/$NAME/$NAME.hh"
 cat> $PROJECT/dune/$NAME/$NAME.hh <<EOF
-#ifndef $UNAME.hh
-#define $UNAME.hh
+#ifndef ${UNAME}_HH
+#define ${UNAME}_HH
 
 // add your classes here
 
-#endif // $UNAME.hh
+#endif // ${UNAME}_HH
 EOF
 
 
 ###############################################################
-################## The doc subdirectory ####################
+################## The doc subdirectory #######################
 ###############################################################
 
 mkdir "$PROJECT/doc"
@@ -787,7 +800,6 @@ mkdir "$PROJECT/doc"
 ################## doc/Makefile.am ####################
 echo "- $PROJECT/doc/Makefile.am"
 cat> "$PROJECT/doc/Makefile.am" << CC_DELIM
-
 SUBDIRS = doxygen
 CURDIR = doc
 BASEDIR = ..
@@ -803,7 +815,7 @@ include \$(top_srcdir)/am/webstuff
 include \$(top_srcdir)/am/global-rules
 CC_DELIM
 
-
+################## doc/CMakeLists.txt #################
 echo "- $PROJECT/doc/CMakeLists.txt"
 cat> "$PROJECT/doc/CMakeLists.txt" << CC_DELIM
 add_subdirectory("doxygen")
@@ -834,7 +846,7 @@ cat> $PROJECT/doc/doxygen/Doxylocal << CC_DELIM
 
 INPUT                 += @top_srcdir@/dune/
 # see e.g. dune-grid for the examples of mainpage and modules
-# INPUT                 += @srcdir@/mainpage \
+# INPUT                 += @srcdir@/mainpage \\
 #                          @srcdir@/modules
 
 # The EXCLUDE tag can be used to specify files and/or directories that should
@@ -854,14 +866,12 @@ INPUT                 += @top_srcdir@/dune/
 # the \image command).
 
 # IMAGE_PATH            += @top_srcdir@/dune/$NAME/pics
-
 CC_DELIM
 
 ################# doc/doxygen/Makefile.am #####################
 
 echo "- $PROJECT/doc/doxygen/Makefile.am"
 cat> "$PROJECT/doc/doxygen/Makefile.am" << CC_DELIM
-
 BASEDIR=../..
 CURDIR=doc/doxygen
 
@@ -869,7 +879,6 @@ EXTRA_DIST = CMakeLists.txt
 
 include \$(top_srcdir)/am/doxygen
 include \$(top_srcdir)/am/global-rules
-
 CC_DELIM
 
 ################# doc/doxygen/CMakeLists.txt #####################
@@ -881,6 +890,7 @@ add_doxygen_target()
 CC_DELIM
 
 
+#########################################################
 ############### The cmake subdirectory ##################
 #########################################################
 
@@ -895,7 +905,8 @@ SUBDIRS = modules
 include \$(top_srcdir)/am/global-rules
 EOF
 
-############### The cmake subdirectory ##################
+#########################################################
+############### The cmake/modules subdirectory ##########
 #########################################################
 
 mkdir "$PROJECT/cmake/modules"

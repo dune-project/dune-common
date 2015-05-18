@@ -4,6 +4,7 @@
 # Sets the following variables
 # HAVE_SYS_MMAN_H
 # HAVE_MPROTECT
+include(CheckIncludeFile)
 check_include_file("sys/mman.h" HAVE_SYS_MMAN_H)
 include(CheckCSourceCompiles)
 check_c_source_compiles("

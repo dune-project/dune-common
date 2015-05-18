@@ -116,6 +116,12 @@
 /* Define to 1 if C++11 nonexcept specifier is supported */
 #cmakedefine HAVE_NOEXCEPT_SPECIFIER 1
 
+/* Define to 1 if C++11 std::declval() is supported */
+#cmakedefine HAVE_STD_DECLVAL 1
+
+/* Define to 1 if the compiler properly supports testing for operator[] */
+#cmakedefine HAVE_IS_INDEXABLE_SUPPORT 1
+
 /* does the compiler support the keyword 'final'? */
 #cmakedefine HAVE_KEYWORD_FINAL 1
 
@@ -126,6 +132,9 @@
    This is only true if MPI was found
    by configure _and_ if the application uses the PARMETIS_CPPFLAGS */
 #cmakedefine HAVE_PARMETIS ENABLE_PARMETIS
+
+/* Define to 1 if PT-Scotch is available */
+#cmakedefine HAVE_PTSCOTCH 1
 
 /* Include always useful headers */
 #include "FC.h"

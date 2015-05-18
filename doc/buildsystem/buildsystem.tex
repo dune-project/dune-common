@@ -34,9 +34,9 @@
 \newcommand{\makefileam}{\texttt{Makefile.am}\xspace}
 \newcommand{\dunecommon}{\texttt{dune-common}\xspace}
 \newcommand{\duneistl}{\texttt{dune-istl}\xspace}
+\newcommand{\dunegeometry}{\texttt{dune-geometry}\xspace}
 \newcommand{\dunegrid}{\texttt{dune-grid}\xspace}
 \newcommand{\dunegridhowto}{\texttt{dune-grid-howto}\xspace}
-\newcommand{\dunegriddevhowto}{\texttt{dune-grid-dev-howto}\xspace}
 \newcommand{\dunecontrol}{\texttt{dunecontrol}\xspace}
 \newcommand{\duneproject}{\texttt{duneproject}\xspace}
 \newcommand{\dunemodule}{\texttt{dune.module}\xspace}
@@ -271,10 +271,10 @@ A \dune module should comply with the following rules:
 \dune consists of several independent modules:
 \begin{itemize}
 \item \dunecommon
+\item \dunegeometry
 \item \dunegrid
 \item \duneistl
 \item \dunegridhowto
-\item \dunegriddevhowto
 \end{itemize}
 
 Single modules can depend on other modules and so the \dune modules
@@ -1316,7 +1316,7 @@ entries in the opts file:
 \item \texttt{\textit{COMMAND}\,\_FLAGS}\\ the most important ones are:
   \begin{itemize}
   \item \texttt{AUTOGEN\_FLAGS} specifies options for the
-    \texttt{dune-autogen} script. This allows to set\\
+    \texttt{dune-autogen} script. This allows one to set\\
     \texttt{--acversion=VERSION} or \texttt{--amversion=VERSION} to
     force usage of a specific\\ \texttt{autoconf\$VERSION} or 
     \texttt{automake\$VERSION}.
@@ -1502,7 +1502,7 @@ revision control systems are the Concurrent Versions System (CVS), Apache
 Subversion (SVN) and Git.
 
 \minisec{Execute commands for every module}
-The \dunecontrol command \texttt{exec} allows to execute commands in the root
+The \dunecontrol command \texttt{exec} allows one to execute commands in the root
 directory of every module. For example the 
 statement
 \begin{lstlisting}[language=make,showstringspaces=false]

@@ -332,7 +332,7 @@ update_HELP="updated all modules from the repository"
 autogen_HELP="run the autogen.sh script for each module. Does nothing, if CMake is activated"
 configure_HELP="run configure or cmake for each module"
 make_HELP="run make for each module"
-all_HELP="\trun 'autogen', 'configure' and 'make' command for each module"
+all_HELP="\trun 'vcsetup', 'autogen', 'configure' and 'make' command for each module"
 exec_HELP="execute an arbitrary command in each module source directory"
 bexec_HELP="execute an arbitrary command in each module build directory"
 status_HELP="show vc status for all modules"
@@ -715,6 +715,10 @@ run_default_configure () {
       test -d "$ABS_BUILDDIR" || mkdir -p "$ABS_BUILDDIR"
       SRCDIR="$PWD"
       cd "$ABS_BUILDDIR"
+      # check for libtool libs, which might break modules depending on this module
+      test -n "`find . -name \*.la`" && \
+          echo "Error: your build directory $ABS_BUILDDIR contains libtool built libraries, please cleanup" && \
+          exit 1
       echo "$PREPARAMS $CMAKE -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\""
       eval $PREPARAMS $CMAKE "-DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\"" || exit 1
     else
@@ -752,6 +756,10 @@ run_default_make () {
     echo make "$PARAMS"
     eval $MAKE "$PARAMS"
   else
+	# prepend '--' to separate cmake and make parameters
+	if ! $(echo "$PARAMS" | grep -q -- '--'); then
+	  PARAMS="-- $PARAMS"
+    fi
     echo $CMAKE --build . "$PARAMS"
     eval $CMAKE --build . "$PARAMS"
   fi
@@ -803,12 +811,15 @@ usage () {
     echo "      --debug         enable debug output of this script"
     echo "      --use-cmake     use CMake instead of autotools for building"
     echo "      --no-cmake      use autotools instead of CMake for building"
-    echo "      --module=mod    only apply the actions on module mod"
+    echo "      --module=mod    apply the actions on module mod"
     echo "                      and all modules it depends on"
     echo "      --only=mod      only apply the actions on module mod"
     echo "                      and not the modules it depends on"
     echo "      --current       only apply the actions on the current module,"
-    echo "                      the one whose source tree we are standing in"
+    echo "                      i.e. the one whose source tree we are standing in,"
+    echo "                      and not the modules it depends on"
+    echo "      --current-dep   apply the actions on the current module,"
+    echo "                      and all modules it depends on"
     echo "      --resume        resume a previous run (only consider the modules"
     echo "                      not built successfully on the previous run)"
     echo "      --skipfirst     skip the first module (use with --resume)"
@@ -1006,6 +1017,18 @@ while test $# -gt 0; do
       fix_and_assign MODULE "$module"
       export SEARCH_MODULES="$SEARCH_MODULES $MODULE"
       export ONLY="$ONLY $MODULE"
+    ;;
+    --current-dep)
+      while ! test -f $CONTROL; do
+        cd ..
+        if test "$OLDPWD" = "$PWD"; then
+          echo "You are not inside the source tree of a DUNE module." >&2
+          exit -1
+        fi
+      done;
+      parse_control $PWD/$CONTROL
+      fix_and_assign MODULE "$module"
+      export SEARCH_MODULES="$SEARCH_MODULES $MODULE"
     ;;
     --resume)
       export RESUME_FLAG="yes"
