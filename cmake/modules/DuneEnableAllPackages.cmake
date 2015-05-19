@@ -130,7 +130,7 @@ function(dune_enable_all_packages)
 
   # handle additional compile definitions specified in dune_enable_all_packages
   if(DUNE_ENABLE_ALL_PACKAGES_COMPILE_DEFINITIONS)
-    if(DUNE_ENABLE_ALL_PACKAGES_COMPILE_DEFINITIONS)
+    if(DUNE_ENABLE_ALL_PACKAGES_APPEND)
       set_property(GLOBAL APPEND PROPERTY ALL_PKG_DEFS "${DUNE_ENABLE_ALL_PACKAGES_COMPILE_DEFINITIONS}")
     else(DUNE_ENABLE_ALL_PACKAGES_APPEND)
       get_property(all_defs GLOBAL PROPERTY ALL_PKG_DEFS)
