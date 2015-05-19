@@ -12,6 +12,7 @@
 #
 # dune_enable_all_packages(INCLUDE_DIRS [include_dirs]
 #                          COMPILE_DEFINITIONS [compile_definitions]
+#                          COMPILE_OPTIONS [compile_options]
 #                          MODULE_LIBRARIES [libraries]
 #                          [VERBOSE] [APPEND]
 #                          )
@@ -51,6 +52,7 @@
 #
 #
 # dune_register_package_flags(COMPILE_DEFINITIONS [flags]
+#                             COMPILE_OPTIONS [options]
 #                             INCLUDE_DIRS {includes]
 #                             LIBRARIES [libs]
 #                             [APPEND]
@@ -77,7 +79,7 @@ function(dune_register_package_flags)
   include(CMakeParseArguments)
   set(OPTIONS APPEND)
   set(SINGLEARGS)
-  set(MULTIARGS COMPILE_DEFINITIONS INCLUDE_DIRS LIBRARIES)
+  set(MULTIARGS COMPILE_DEFINITIONS COMPILE_OPTIONS INCLUDE_DIRS LIBRARIES)
   cmake_parse_arguments(REGISTRY "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
 
   if(REGISTRY_UNPARSED_ARGUMENTS)
@@ -88,13 +90,16 @@ function(dune_register_package_flags)
     set_property(GLOBAL APPEND PROPERTY ALL_PKG_INCS "${REGISTRY_INCLUDE_DIRS}")
     set_property(GLOBAL APPEND PROPERTY ALL_PKG_LIBS "${REGISTRY_LIBRARIES}")
     set_property(GLOBAL APPEND PROPERTY ALL_PKG_DEFS "${REGISTRY_COMPILE_DEFINITIONS}")
+    set_property(GLOBAL APPEND PROPERTY ALL_PKG_OPTS "${REGISTRY_COMPILE_OPTIONS}")
   else(REGISTRY_APPEND)
     get_property(all_incs GLOBAL PROPERTY ALL_PKG_INCS)
     get_property(all_libs GLOBAL PROPERTY ALL_PKG_LIBS)
     get_property(all_defs GLOBAL PROPERTY ALL_PKG_DEFS)
+    get_property(all_defs GLOBAL PROPERTY ALL_PKG_OPTS)
     set_property(GLOBAL PROPERTY ALL_PKG_INCS "${REGISTRY_INCLUDE_DIRS}" "${all_incs}")
     set_property(GLOBAL PROPERTY ALL_PKG_LIBS "${REGISTRY_LIBRARIES}" "${all_libs}")
     set_property(GLOBAL PROPERTY ALL_PKG_DEFS "${REGISTRY_COMPILE_DEFINITIONS}" "${all_defs}")
+    set_property(GLOBAL PROPERTY ALL_PKG_OPTS "${REGISTRY_COMPILE_OPTIONS}" "${all_opts}")
   endif(REGISTRY_APPEND)
 endfunction(dune_register_package_flags)
 
@@ -140,12 +145,28 @@ function(dune_enable_all_packages)
 
   # add compile definitions to all targets in module
   get_property(all_defs GLOBAL PROPERTY ALL_PKG_DEFS)
-  foreach(def ${all_defs})
-    add_definitions("-D${def}")
-  endforeach(def in ${all_defs})
+  add_definitions(${all_defs})
   # verbose output of compile definitions
   if(DUNE_ENABLE_ALL_PACKAGES_VERBOSE)
     message("Compile definitions for this project: ${all_defs}")
+  endif(DUNE_ENABLE_ALL_PACKAGES_VERBOSE)
+
+  # handle additional compile options specified in dune_enable_all_packages
+  if(DUNE_ENABLE_ALL_PACKAGES_COMPILE_OPTIONS)
+    if(DUNE_ENABLE_ALL_PACKAGES_APPEND)
+      set_property(GLOBAL APPEND PROPERTY ALL_PKG_OPTS "${DUNE_ENABLE_ALL_PACKAGES_COMPILE_OPTIONS}")
+    else(DUNE_ENABLE_ALL_PACKAGES_APPEND)
+      get_property(all_opts GLOBAL PROPERTY ALL_PKG_OPTS)
+      set_property(GLOBAL PROPERTY ALL_PKG_OPTS "${DUNE_ENABLE_ALL_PACKAGES_COMPILE_OPTIONS}" "${all_opts}")
+    endif(DUNE_ENABLE_ALL_PACKAGES_APPEND)
+  endif(DUNE_ENABLE_ALL_PACKAGES_COMPILE_OPTIONS)
+
+  # add compile options to all targets in module
+  get_property(all_opts GLOBAL PROPERTY ALL_PKG_OPTS)
+  add_compile_options(${all_opts})
+  # verbose output of compile definitions
+  if(DUNE_ENABLE_ALL_PACKAGES_VERBOSE)
+    message("Compile options for this project: ${all_opts}")
   endif(DUNE_ENABLE_ALL_PACKAGES_VERBOSE)
 
   # handle libraries
@@ -211,6 +232,9 @@ function(dune_target_enable_all_packages)
 
     get_property(all_defs GLOBAL PROPERTY ALL_PKG_DEFS)
     target_compile_definitions(${_target} PUBLIC ${all_defs})
+
+    get_property(all_opts GLOBAL PROPERTY ALL_PKG_OPTS)
+    target_compile_options(${_target} PUBLIC ${all_opts})
 
     get_property(all_libs GLOBAL PROPERTY ALL_PKG_LIBS)
     target_link_libraries(${_target} PUBLIC ${DUNE_LIBS} ${all_libs})
