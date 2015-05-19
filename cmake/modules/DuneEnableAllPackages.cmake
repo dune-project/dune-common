@@ -209,7 +209,6 @@ function(dune_library_add_sources lib)
 "Attempt to add sources to library ${lib}, which has not been defined in dune_enable_all_packages.
 List of libraries defined in dune_enable_all_packages: ${DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES}")
   endif()
-  unset(lib_defined)
 
   include(CMakeParseArguments)
   cmake_parse_arguments(DUNE_LIBRARY_ADD_SOURCES "" "" "SOURCES" ${ARGN})
