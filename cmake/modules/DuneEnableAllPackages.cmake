@@ -1,11 +1,11 @@
 # This module provides the macros necessary for a simplified CMake build system
 #
-# The dune build system relies on the user to choose and add the compile and link flags
+# The DUNE build system relies on the user to choose and add the compile and link flags
 # necessary to build an executable. While this offers full control to the user, it
 # is an error-prone procedure.
 #
-# Alternatively, users may use this modules macros to simply add the compile flags for all
-# found external modules to all executables in a module. Likewise, all found libraries are
+# Alternatively, users may use the macros in this module to simply add the compile flags for all
+# found external modules to all executables in a DUNE module. Likewise, all found libraries are
 # linked to all targets.
 #
 # This module provides the following macros:
@@ -34,28 +34,30 @@
 #          version is older than 3.1.
 #
 # For a description of the APPEND option, see the documentation of dune_register_package_flags().
-# With the VERBOSE option being set, the list of flags is printed during configure.
+# With the VERBOSE option set, the list of flags is printed during configure.
 #
-# dune_register_package_flags(COMPILE_DEFINITIONS flags
-#                             INCLUDE_DIRS includes
-#                             LIBRARIES libs
-#                            [APPEND]
-#                            )
 #
-# To implement above feature, the compile flags, include paths and link flags of all
-# found packages must be registered with this macro. This macro is only necessary for people
-# that do link against additional libraries which are not supported by the dune core modules.
-# Call this at the end of every find module. If you are using an external find module which
-# you cannot alter, call it after the call find_package().
-# The APPEND parameter appends the given flags to the global list instead of prepending.
-# Only use it, if you know what you are doing.
+# dune_register_package_flags(COMPILE_DEFINITIONS [flags]
+#                             INCLUDE_DIRS {includes]
+#                             LIBRARIES [libs]
+#                             [APPEND]
+#                             )
+#
+# To correctly implement the automatic handling of external libraries, the compile flags, include paths and link
+# flags of all found packages must be registered with this function. This macro is only necessary for people that
+# want to write their own FindFooBar CMake modules to link against additional libraries which are not supported by
+# the DUNE core modules. Call this function at the end of every find module. If you are using an external FindFoo
+# module which you cannot alter, call it after the call to find_package(foo).
+# The APPEND parameter appends the given flags to the global list instead of prepending. Only use it, if you know
+# what you are doing.
+#
 #
 # dune_library_add_sources(module_library
 #                          SOURCES [sources]
 #                         )
 #
-# Adds the source files listed in [sources] to the module library module_library created by an earlier
-# call to dune_enable_all_packages.
+# Adds the source files listed in [sources] to the DUNE module library module_library created by an earlier
+# call to dune_enable_all_packages() in the current DUNE module.
 #
 
 function(dune_register_package_flags)
