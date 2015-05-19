@@ -60,7 +60,33 @@ check_cxx_source_compiles("
       return 0;
     }
 "  HAVE_NULLPTR
-)
+  )
+
+if(HAVE_NULLPTR)
+  check_cxx_source_compiles("
+    #include <cstddef>
+
+    int main(void)
+    {
+      std::nullptr_t npt = nullptr;
+      return 0;
+    }
+"  HAVE_NULLPTR_T
+    )
+  if (NOT HAVE_NULLPTR_T)
+    if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel")
+      message(FATAL_ERROR "Your compiler supports the 'nullptr' keyword, but not the type std::nullptr_t.
+You are using an Intel compiler, where this error is typically caused by an outdated underlying system GCC.
+Check if 'gcc --version' gives you at least GCC 4.6, otherwise please install a newer GCC and point your Intel compiler at it using the '-gcc-name' or '-gxx-name' options (see 'man icc' for further details)."
+        )
+    else()
+      message(FATAL_ERROR "Your compiler supports the 'nullptr' keyword, but not the type std::nullptr_t.
+THIS SHOULD NOT HAPPEN FOR YOUR COMPILER!
+Please submit a bug at https://dune-project.org/flyspray/"
+        )
+    endif()
+  endif()
+endif()
 
 # __attribute__((unused))
 check_cxx_source_compiles("

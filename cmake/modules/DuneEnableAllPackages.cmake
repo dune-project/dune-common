@@ -1,17 +1,18 @@
 # This module provides the macros necessary for a simplified CMake build system
 #
-# The dune build system relies on the user to choose and add the compile and link flags
+# The DUNE build system relies on the user to choose and add the compile and link flags
 # necessary to build an executable. While this offers full control to the user, it
 # is an error-prone procedure.
 #
-# Alternatively, users may use this modules macros to simply add the compile flags for all
-# found external modules to all executables in a module. Likewise, all found libraries are
+# Alternatively, users may use the macros in this module to simply add the compile flags for all
+# found external modules to all executables in a DUNE module. Likewise, all found libraries are
 # linked to all targets.
 #
 # This module provides the following macros:
 #
 # dune_enable_all_packages(INCLUDE_DIRS [include_dirs]
 #                          COMPILE_DEFINITIONS [compile_definitions]
+#                          COMPILE_OPTIONS [compile_options]
 #                          MODULE_LIBRARIES [libraries]
 #                          [VERBOSE] [APPEND]
 #                          )
@@ -32,37 +33,53 @@
 # Warning: The library feature requires CMake 3.1+. If you use the feature with older versions, CMake
 #          will emit a fatal error. Moreover, it will issue a warning if the cmake_minimum_required()
 #          version is older than 3.1.
+# Note:    If you want to use dune_enable_all_packages() with an older version of CMake and your DUNE mdule
+#          creates its own library, you have to manually create the library in the top-level CMakeLists.txt
+#          file using dune_add_library() (with all sources listed within that call), use
+#          dune_target_enable_all_packages() to add all packages to the library and finally list that library
+#          under LIBRARIES in the call to dune_register_package_flags(). See dune-pdelab for an example of
+#          how to do this correctly.
 #
 # For a description of the APPEND option, see the documentation of dune_register_package_flags().
-# With the VERBOSE option being set, the list of flags is printed during configure.
+# With the VERBOSE option set, the list of flags is printed during configure.
 #
-# dune_register_package_flags(COMPILE_DEFINITIONS flags
-#                             INCLUDE_DIRS includes
-#                             LIBRARIES libs
-#                            [APPEND]
-#                            )
 #
-# To implement above feature, the compile flags, include paths and link flags of all
-# found packages must be registered with this macro. This macro is only necessary for people
-# that do link against additional libraries which are not supported by the dune core modules.
-# Call this at the end of every find module. If you are using an external find module which
-# you cannot alter, call it after the call find_package().
-# The APPEND parameter appends the given flags to the global list instead of prepending.
-# Only use it, if you know what you are doing.
+# dune_target_enable_all_packages(TARGETS [target] ...)
+#
+# Adds all currently registered package flags (see dune_register_package_flags()) to the given targets.
+# This macro is mainly intended to help write DUNE modules that want to use dune_enable_all_packages() and
+# define their own libraries, but need to be compatible with CMake < 3.1.
+#
+#
+# dune_register_package_flags(COMPILE_DEFINITIONS [flags]
+#                             COMPILE_OPTIONS [options]
+#                             INCLUDE_DIRS {includes]
+#                             LIBRARIES [libs]
+#                             [APPEND]
+#                             )
+#
+# To correctly implement the automatic handling of external libraries, the compile flags, include paths and link
+# flags of all found packages must be registered with this function. This macro is only necessary for people that
+# want to write their own FindFooBar CMake modules to link against additional libraries which are not supported by
+# the DUNE core modules. Call this function at the end of every find module. If you are using an external FindFoo
+# module which you cannot alter, call it after the call to find_package(foo).
+# The APPEND parameter appends the given flags to the global list instead of prepending. Only use it, if you know
+# what you are doing.
+#
 #
 # dune_library_add_sources(module_library
 #                          SOURCES [sources]
 #                         )
 #
-# Adds the source files listed in [sources] to the module library module_library created by an earlier
-# call to dune_enable_all_packages.
+# Adds the source files listed in [sources] to the DUNE module library module_library created by an earlier
+# call to dune_enable_all_packages() in the current DUNE module.
 #
 
 function(dune_register_package_flags)
   include(CMakeParseArguments)
   set(OPTIONS APPEND)
   set(SINGLEARGS)
-  set(MULTIARGS COMPILE_DEFINITIONS INCLUDE_DIRS LIBRARIES)
+  set(MULTIARGS COMPILE_DEFINITIONS COMPILE_OPTIONS INCLUDE_DIRS LIBRARIES)
   cmake_parse_arguments(REGISTRY "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
 
   if(REGISTRY_UNPARSED_ARGUMENTS)
@@ -73,18 +90,21 @@ function(dune_register_package_flags)
     set_property(GLOBAL APPEND PROPERTY ALL_PKG_INCS "${REGISTRY_INCLUDE_DIRS}")
     set_property(GLOBAL APPEND PROPERTY ALL_PKG_LIBS "${REGISTRY_LIBRARIES}")
     set_property(GLOBAL APPEND PROPERTY ALL_PKG_DEFS "${REGISTRY_COMPILE_DEFINITIONS}")
+    set_property(GLOBAL APPEND PROPERTY ALL_PKG_OPTS "${REGISTRY_COMPILE_OPTIONS}")
   else(REGISTRY_APPEND)
     get_property(all_incs GLOBAL PROPERTY ALL_PKG_INCS)
     get_property(all_libs GLOBAL PROPERTY ALL_PKG_LIBS)
     get_property(all_defs GLOBAL PROPERTY ALL_PKG_DEFS)
+    get_property(all_defs GLOBAL PROPERTY ALL_PKG_OPTS)
     set_property(GLOBAL PROPERTY ALL_PKG_INCS "${REGISTRY_INCLUDE_DIRS}" "${all_incs}")
     set_property(GLOBAL PROPERTY ALL_PKG_LIBS "${REGISTRY_LIBRARIES}" "${all_libs}")
     set_property(GLOBAL PROPERTY ALL_PKG_DEFS "${REGISTRY_COMPILE_DEFINITIONS}" "${all_defs}")
+    set_property(GLOBAL PROPERTY ALL_PKG_OPTS "${REGISTRY_COMPILE_OPTIONS}" "${all_opts}")
   endif(REGISTRY_APPEND)
 endfunction(dune_register_package_flags)
 
 
-macro(dune_enable_all_packages)
+function(dune_enable_all_packages)
   include(CMakeParseArguments)
   set(OPTIONS APPEND VERBOSE)
   set(SINGLEARGS)
@@ -115,7 +135,7 @@ macro(dune_enable_all_packages)
 
   # handle additional compile definitions specified in dune_enable_all_packages
   if(DUNE_ENABLE_ALL_PACKAGES_COMPILE_DEFINITIONS)
-    if(DUNE_ENABLE_ALL_PACKAGES_COMPILE_DEFINITIONS)
+    if(DUNE_ENABLE_ALL_PACKAGES_APPEND)
       set_property(GLOBAL APPEND PROPERTY ALL_PKG_DEFS "${DUNE_ENABLE_ALL_PACKAGES_COMPILE_DEFINITIONS}")
     else(DUNE_ENABLE_ALL_PACKAGES_APPEND)
       get_property(all_defs GLOBAL PROPERTY ALL_PKG_DEFS)
@@ -125,12 +145,28 @@ macro(dune_enable_all_packages)
 
   # add compile definitions to all targets in module
   get_property(all_defs GLOBAL PROPERTY ALL_PKG_DEFS)
-  foreach(def ${all_defs})
-    add_definitions("-D${def}")
-  endforeach(def in ${all_defs})
+  add_definitions(${all_defs})
   # verbose output of compile definitions
   if(DUNE_ENABLE_ALL_PACKAGES_VERBOSE)
     message("Compile definitions for this project: ${all_defs}")
+  endif(DUNE_ENABLE_ALL_PACKAGES_VERBOSE)
+
+  # handle additional compile options specified in dune_enable_all_packages
+  if(DUNE_ENABLE_ALL_PACKAGES_COMPILE_OPTIONS)
+    if(DUNE_ENABLE_ALL_PACKAGES_APPEND)
+      set_property(GLOBAL APPEND PROPERTY ALL_PKG_OPTS "${DUNE_ENABLE_ALL_PACKAGES_COMPILE_OPTIONS}")
+    else(DUNE_ENABLE_ALL_PACKAGES_APPEND)
+      get_property(all_opts GLOBAL PROPERTY ALL_PKG_OPTS)
+      set_property(GLOBAL PROPERTY ALL_PKG_OPTS "${DUNE_ENABLE_ALL_PACKAGES_COMPILE_OPTIONS}" "${all_opts}")
+    endif(DUNE_ENABLE_ALL_PACKAGES_APPEND)
+  endif(DUNE_ENABLE_ALL_PACKAGES_COMPILE_OPTIONS)
+
+  # add compile options to all targets in module
+  get_property(all_opts GLOBAL PROPERTY ALL_PKG_OPTS)
+  add_compile_options(${all_opts})
+  # verbose output of compile definitions
+  if(DUNE_ENABLE_ALL_PACKAGES_VERBOSE)
+    message("Compile options for this project: ${all_opts}")
   endif(DUNE_ENABLE_ALL_PACKAGES_VERBOSE)
 
   # handle libraries
@@ -185,10 +221,29 @@ Update the cmake_minimum_required() call in your main CMakeLists.txt file to get
     message("Libraries for this project: ${all_libs}")
   endif(DUNE_ENABLE_ALL_PACKAGES_VERBOSE)
 
-endmacro(dune_enable_all_packages)
+endfunction(dune_enable_all_packages)
 
 
-macro(dune_library_add_sources lib)
+function(dune_target_enable_all_packages)
+  foreach(_target ${ARGN})
+
+    get_property(all_incs GLOBAL PROPERTY ALL_PKG_INCS)
+    target_include_directories(${_target} PUBLIC ${all_incs})
+
+    get_property(all_defs GLOBAL PROPERTY ALL_PKG_DEFS)
+    target_compile_definitions(${_target} PUBLIC ${all_defs})
+
+    get_property(all_opts GLOBAL PROPERTY ALL_PKG_OPTS)
+    target_compile_options(${_target} PUBLIC ${all_opts})
+
+    get_property(all_libs GLOBAL PROPERTY ALL_PKG_LIBS)
+    target_link_libraries(${_target} PUBLIC ${DUNE_LIBS} ${all_libs})
+
+  endforeach()
+endfunction(dune_target_enable_all_packages)
+
+
+function(dune_library_add_sources lib)
 
   # This only works for CMAKE 3.1+ because target_sources() - which we use to add sources to the
   # libraries after creating them - was added in that version
@@ -207,7 +262,6 @@ macro(dune_library_add_sources lib)
 "Attempt to add sources to library ${lib}, which has not been defined in dune_enable_all_packages.
 List of libraries defined in dune_enable_all_packages: ${DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES}")
   endif()
-  unset(lib_defined)
 
   include(CMakeParseArguments)
   cmake_parse_arguments(DUNE_LIBRARY_ADD_SOURCES "" "" "SOURCES" ${ARGN})
@@ -219,4 +273,4 @@ List of libraries defined in dune_enable_all_packages: ${DUNE_ENABLE_ALL_PACKAGE
   foreach(source ${DUNE_LIBRARY_ADD_SOURCES_SOURCES})
     target_sources(${lib} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${source})
   endforeach()
-endmacro()
+endfunction()
