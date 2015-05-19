@@ -32,9 +32,22 @@
 # Warning: The library feature requires CMake 3.1+. If you use the feature with older versions, CMake
 #          will emit a fatal error. Moreover, it will issue a warning if the cmake_minimum_required()
 #          version is older than 3.1.
+# Note:    If you want to use dune_enable_all_packages() with an older version of CMake and your DUNE mdule
+#          creates its own library, you have to manually create the library in the top-level CMakeLists.txt
+#          file using dune_add_library() (with all sources listed within that call), use
+#          dune_target_enable_all_packages() to add all packages to the library and finally list that library
+#          under LIBRARIES in the call to dune_register_package_flags(). See dune-pdelab for an example of
+#          how to do this correctly.
 #
 # For a description of the APPEND option, see the documentation of dune_register_package_flags().
 # With the VERBOSE option set, the list of flags is printed during configure.
+#
+#
+# dune_target_enable_all_packages(TARGETS [target] ...)
+#
+# Adds all currently registered package flags (see dune_register_package_flags()) to the given targets.
+# This macro is mainly intended to help write DUNE modules that want to use dune_enable_all_packages() and
+# define their own libraries, but need to be compatible with CMake < 3.1.
 #
 #
 # dune_register_package_flags(COMPILE_DEFINITIONS [flags]
@@ -188,6 +201,22 @@ Update the cmake_minimum_required() call in your main CMakeLists.txt file to get
   endif(DUNE_ENABLE_ALL_PACKAGES_VERBOSE)
 
 endfunction(dune_enable_all_packages)
+
+
+function(dune_target_enable_all_packages)
+  foreach(_target ${ARGN})
+
+    get_property(all_incs GLOBAL PROPERTY ALL_PKG_INCS)
+    target_include_directories(${_target} PUBLIC ${all_incs})
+
+    get_property(all_defs GLOBAL PROPERTY ALL_PKG_DEFS)
+    target_compile_definitions(${_target} PUBLIC ${all_defs})
+
+    get_property(all_libs GLOBAL PROPERTY ALL_PKG_LIBS)
+    target_link_libraries(${_target} PUBLIC ${DUNE_LIBS} ${all_libs})
+
+  endforeach()
+endfunction(dune_target_enable_all_packages)
 
 
 function(dune_library_add_sources lib)
