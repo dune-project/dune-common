@@ -86,7 +86,7 @@ function(dune_register_package_flags)
 endfunction(dune_register_package_flags)
 
 
-macro(dune_enable_all_packages)
+function(dune_enable_all_packages)
   include(CMakeParseArguments)
   set(OPTIONS APPEND VERBOSE)
   set(SINGLEARGS)
@@ -187,10 +187,10 @@ Update the cmake_minimum_required() call in your main CMakeLists.txt file to get
     message("Libraries for this project: ${all_libs}")
   endif(DUNE_ENABLE_ALL_PACKAGES_VERBOSE)
 
-endmacro(dune_enable_all_packages)
+endfunction(dune_enable_all_packages)
 
 
-macro(dune_library_add_sources lib)
+function(dune_library_add_sources lib)
 
   # This only works for CMAKE 3.1+ because target_sources() - which we use to add sources to the
   # libraries after creating them - was added in that version
@@ -221,4 +221,4 @@ List of libraries defined in dune_enable_all_packages: ${DUNE_ENABLE_ALL_PACKAGE
   foreach(source ${DUNE_LIBRARY_ADD_SOURCES_SOURCES})
     target_sources(${lib} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${source})
   endforeach()
-endmacro()
+endfunction()
