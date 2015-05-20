@@ -145,7 +145,14 @@ function(dune_enable_all_packages)
 
   # add compile definitions to all targets in module
   get_property(all_defs GLOBAL PROPERTY ALL_PKG_DEFS)
-  add_definitions(${all_defs})
+  # We have to do this in a loop because add_definitions() is kind of broken: even though it is supposed
+  # to be *the* function for adding compile definitions, it does not prepend "-D" (as opposed to
+  # target_compile_definitions(), which does). Well, whatever...
+  foreach(_definition ${all_defs})
+    if(_definition)
+      add_definitions("-D${_definition}")
+    endif()
+  endforeach()
   # verbose output of compile definitions
   if(DUNE_ENABLE_ALL_PACKAGES_VERBOSE)
     message("Compile definitions for this project: ${all_defs}")
