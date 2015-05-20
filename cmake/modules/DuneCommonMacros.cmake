@@ -27,7 +27,8 @@ include(AddGMPFlags)
 find_package(Inkscape)
 include(UseInkscape)
 include(FindMProtect)
-include(DuneTBB)
+
+find_package(TBB OPTIONAL_COMPONENTS cpf allocator)
 
 # try to find the Vc library
 find_package(Vc)

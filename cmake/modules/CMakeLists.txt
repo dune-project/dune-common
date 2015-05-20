@@ -34,8 +34,6 @@ install(FILES
   FindMProtect.cmake
   FindParMETIS.cmake
   FindPTScotch.cmake
-  FindSphinx.cmake
-  FindSuiteSparse.cmake
   FindThreadsCMake31.cmake
   FindUMFPack.cmake
   Headercheck.cmake
