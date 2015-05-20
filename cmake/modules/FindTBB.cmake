@@ -1,283 +1,412 @@
 # Locate Intel Threading Building Blocks include paths and libraries
-# FindTBB.cmake can be found at https://code.google.com/p/findtbb/
-# Written by Hannes Hofmann <hannes.hofmann _at_ informatik.uni-erlangen.de>
-# Improvements by Gino van den Bergen <gino _at_ dtecta.com>,
-#   Florian Uhlig <F.Uhlig _at_ gsi.de>,
-#   Jiri Marsik <jiri.marsik89 _at_ gmail.com>
-
-# The MIT License
 #
-# Copyright (c) 2011 Hannes Hofmann
+# TBB is a little special because there are three different ways to provide it:
+# - It can be installed using a package manager and just be available on the system include
+#   and library paths.
+# - It can be compiled from source. The package doesn't really provide an installation script
+#   for this, but expects you to source an environment file called tbbvars.sh that updates the
+#   required variables like CPATH etc.
+# - TBB is shipped as part of the Intel compilers. This bundled version can be enabled by adding
+#   -tbb to the compiler flags.
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
+# This module can find all three types of installations. They are looked for in the following
+# order of preference: tbbvars.sh file (for a custom installation), system paths and finally
+# the built-in version if an Intel compiler is present.
 #
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
+# Note: If you provide a tbbvars.sh script (via the CMake variable TBB_VARS_SH), this module will
+#       not find any libraries installed in the system path! This is on purpose to avoid
+#       accidental fallbacks.
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
-
-# GvdB: This module uses the environment variable TBB_ARCH_PLATFORM which defines architecture and compiler.
-#   e.g. "ia32/vc8" or "em64t/cc4.1.0_libc2.4_kernel2.6.16.21"
-#   TBB_ARCH_PLATFORM is set by the build script tbbvars[.bat|.sh|.csh], which can be found
-#   in the TBB installation directory (TBB_INSTALL_DIR).
+# If the option TBB_DEBUG is set to ON, the module will look for the debug version of TBB. Note that
+# this does not work for the built-in library of the Intel Compiler due to linking problems. You can
+# however provide the module with the tbbvars.sh from that built-in installation (usually in the
+# subdirectory tbb/ of the Intel compiler root path), which will fix that problem.
 #
-# GvdB: Mac OS X distribution places libraries directly in lib directory.
+# Variables used by this module which you may want to set:
 #
-# For backwards compatibility, you may explicitely set the CMake variables TBB_ARCHITECTURE and TBB_COMPILER.
-# TBB_ARCHITECTURE [ ia32 | em64t | itanium ]
-#   which architecture to use
-# TBB_COMPILER e.g. vc9 or cc3.2.3_libc2.3.2_kernel2.4.21 or cc4.0.1_os10.4.9
-#   which compiler to use (detected automatically on Windows)
+# TBB_VARS_SH       Path to the tbbvars.sh script
+# TBB_INCLUDE_DIR   Path to the include directory with the TBB headers
+# TBB_LIBRARY_DIR   Path to the library directory with the TBB libraries
+# TBB_DEBUG         Option that turns on TBB debugging
+#
+#
+# This module supports additional components of TBB that can be listed in the find_package() call:
 
-# This module respects
-# TBB_INSTALL_DIR or $ENV{TBB21_INSTALL_DIR} or $ENV{TBB_INSTALL_DIR}
+# cpf               Use comunity preview edition (links to libtbb_preview instead of libtbb). cpf
+#                   is not available for the built-in version of the Intel Compiler, but see the note
+#                   on debug mode above for a fix.
+# allocator         Use TBB's scalable allocator (links to libtbbmalloc).
+#
+#
+# This module sets the following variables:
+#
+# TBB_FOUND                       True if TBB was found and is usable
+# TBB_cpf_FOUND                   True if community preview edition was found and is usable
+# TBB_allocator_FOUND             True if scalable allocator library was found and is usable
+# TBB_INCLUDE_DIRS                Path to the TBB include dirs. This variable is empty if the
+#                                 internal TBB version of an Intel compiler is in use
+# TBB_LIBRARIES                   List of the TBB libraries that a target must be linked to
+# TBB_COMPILE_DEFINITIONS         Required compile definitions to use TBB
+# TBB_COMPILE_OPTIONS             Required compile options to use TBB
+# TBB_INTEL_COMPILER_INTERNAL_TBB True if internal TBB version of Intel compiler is in use
+#
+#
+# In addition, TBB is automatically registered with the dune_enable_all_packages() facility. If you
+# don't want to use that feature, the module also provides the following function:
+#
+# add_dune_tbb_flags(target [target]...)  Adds all flags required to use TBB to the listed targets
+#
 
-# This module defines
-# TBB_INCLUDE_DIRS, where to find task_scheduler_init.h, etc.
-# TBB_LIBRARY_DIRS, where to find libtbb, libtbbmalloc
-# TBB_DEBUG_LIBRARY_DIRS, where to find libtbb_debug, libtbbmalloc_debug
-# TBB_INSTALL_DIR, the base TBB install directory
-# TBB_LIBRARIES, the libraries to link against to use TBB.
-# TBB_DEBUG_LIBRARIES, the libraries to link against to use TBB with debug symbols.
-# TBB_FOUND, If false, don't try to use TBB.
-# TBB_INTERFACE_VERSION, as defined in tbb/tbb_stddef.h
+option(
+  TBB_DEBUG
+  "Turn on TBB debugging (modifies compiler flags and links against debug version of libraries)"
+  )
 
+# source for our little test program. We have to compile this multiple times, so
+# store it in a variable for DRY and better readability
+set(tbb_compile_source "
+#include <tbb/tbb.h>
+#include <numeric>
 
-if (WIN32)
-    # has em64t/vc8 em64t/vc9
-    # has ia32/vc7.1 ia32/vc8 ia32/vc9
-    set(_TBB_DEFAULT_INSTALL_DIR "C:/Program Files/Intel/TBB" "C:/Program Files (x86)/Intel/TBB")
-    set(_TBB_LIB_NAME "tbb")
-    set(_TBB_LIB_MALLOC_NAME "${_TBB_LIB_NAME}malloc")
-    set(_TBB_LIB_DEBUG_NAME "${_TBB_LIB_NAME}_debug")
-    set(_TBB_LIB_MALLOC_DEBUG_NAME "${_TBB_LIB_MALLOC_NAME}_debug")
-    if (MSVC71)
-        set (_TBB_COMPILER "vc7.1")
-    endif(MSVC71)
-    if (MSVC80)
-        set(_TBB_COMPILER "vc8")
-    endif(MSVC80)
-    if (MSVC90)
-        set(_TBB_COMPILER "vc9")
-    endif(MSVC90)
-    if(MSVC10)
-        set(_TBB_COMPILER "vc10")
-    endif(MSVC10)
-    # Todo: add other Windows compilers such as ICL.
-    set(_TBB_ARCHITECTURE ${TBB_ARCHITECTURE})
-endif (WIN32)
-
-if (UNIX)
-    if (APPLE)
-        # MAC
-        set(_TBB_DEFAULT_INSTALL_DIR "/Library/Frameworks/Intel_TBB.framework/Versions")
-        # libs: libtbb.dylib, libtbbmalloc.dylib, *_debug
-        set(_TBB_LIB_NAME "tbb")
-        set(_TBB_LIB_MALLOC_NAME "${_TBB_LIB_NAME}malloc")
-        set(_TBB_LIB_DEBUG_NAME "${_TBB_LIB_NAME}_debug")
-        set(_TBB_LIB_MALLOC_DEBUG_NAME "${_TBB_LIB_MALLOC_NAME}_debug")
-        # default flavor on apple: ia32/cc4.0.1_os10.4.9
-        # Jiri: There is no reason to presume there is only one flavor and
-        #       that user's setting of variables should be ignored.
-        if(NOT TBB_COMPILER)
-            set(_TBB_COMPILER "cc4.0.1_os10.4.9")
-        elseif (NOT TBB_COMPILER)
-            set(_TBB_COMPILER ${TBB_COMPILER})
-        endif(NOT TBB_COMPILER)
-        if(NOT TBB_ARCHITECTURE)
-            set(_TBB_ARCHITECTURE "ia32")
-        elseif(NOT TBB_ARCHITECTURE)
-            set(_TBB_ARCHITECTURE ${TBB_ARCHITECTURE})
-        endif(NOT TBB_ARCHITECTURE)
-    else (APPLE)
-        # LINUX
-        set(_TBB_DEFAULT_INSTALL_DIR "/opt/intel/tbb" "/usr/local/include" "/usr/include")
-        set(_TBB_LIB_NAME "tbb")
-        set(_TBB_LIB_MALLOC_NAME "${_TBB_LIB_NAME}malloc")
-        set(_TBB_LIB_DEBUG_NAME "${_TBB_LIB_NAME}_debug")
-        set(_TBB_LIB_MALLOC_DEBUG_NAME "${_TBB_LIB_MALLOC_NAME}_debug")
-        # has em64t/cc3.2.3_libc2.3.2_kernel2.4.21 em64t/cc3.3.3_libc2.3.3_kernel2.6.5 em64t/cc3.4.3_libc2.3.4_kernel2.6.9 em64t/cc4.1.0_libc2.4_kernel2.6.16.21
-        # has ia32/*
-        # has itanium/*
-        set(_TBB_COMPILER ${TBB_COMPILER})
-        set(_TBB_ARCHITECTURE ${TBB_ARCHITECTURE})
-    endif (APPLE)
-endif (UNIX)
-
-if (CMAKE_SYSTEM MATCHES "SunOS.*")
-# SUN
-# not yet supported
-# has em64t/cc3.4.3_kernel5.10
-# has ia32/*
-endif (CMAKE_SYSTEM MATCHES "SunOS.*")
+int main()
+{
+  int x[10] = {0};
+  tbb::parallel_for(0,10,[&](int i){ x[i] = i; });
+  return !(std::accumulate(x,x+10,0) == (9*10)/2);
+}
+")
 
 
-#-- Clear the public variables
-set (TBB_FOUND "NO")
+# Function to parse a tbbvars.sh file and extract include and library paths.
+# This function relies on the bash shell to source the tbbvars.sh file
+function(parse_tbb_vars_sh)
+  message(STATUS "Taking TBB location from ${TBB_VARS_SH}")
+  find_package(UnixCommands)
+  set(tbb_vars_works FALSE)
+  execute_process(
+    COMMAND ${BASH} -c ". ${TBB_VARS_SH} > /dev/null"
+    RESULT_VARIABLE shell_result
+    OUTPUT_VARIABLE shell_out
+    )
+  if (${shell_result} EQUAL 0)
+    set(tbb_vars_opt "")
+    set(tbb_vars_works TRUE)
+  else()
+    # try script from binary Linux installs that requires an 'intel64' argument
+    execute_process(
+      COMMAND ${BASH} -c ". ${TBB_VARS_SH} intel64 >/dev/null"
+      RESULT_VARIABLE shell_result
+      OUTPUT_VARIABLE shell_out
+      )
+    if (${shell_result} EQUAL 0)
+      set(tbb_vars_opt "intel64")
+      set(tbb_vars_works TRUE)
+    endif()
+  endif()
+  if(tbb_vars_works)
+    execute_process(
+      COMMAND ${BASH} -c "unset CPATH ; . ${TBB_VARS_SH} ${tbb_vars_opt} >/dev/null && echo -n $CPATH"
+      RESULT_VARIABLE shell_result
+      OUTPUT_VARIABLE shell_out
+      )
+    find_path(
+      TBB_INCLUDE_DIR
+      NAMES tbb/task_scheduler_init.h
+      PATHS ${shell_out}
+      DOC "Path to TBB include directory"
+      NO_DEFAULT_PATH
+      )
+    execute_process(
+      COMMAND ${BASH} -c "unset LIBRARY_PATH ; . ${TBB_VARS_SH} ${tbb_vars_opt} >/dev/null && echo -n $LIBRARY_PATH"
+      RESULT_VARIABLE shell_result
+      OUTPUT_VARIABLE shell_out
+      )
+    set(
+      TBB_LIBRARY_DIR ${shell_out}
+      CACHE PATH "Path to TBB library directory"
+      )
+  else()
+    message(WARNING "Could not parse tbbvars.sh file at {TBB_VARS_SH}")
+  endif()
+endfunction()
 
 
-#-- Find TBB install dir and set ${_TBB_INSTALL_DIR} and cached ${TBB_INSTALL_DIR}
-# first: use CMake variable TBB_INSTALL_DIR
-if (TBB_INSTALL_DIR)
-    set (_TBB_INSTALL_DIR ${TBB_INSTALL_DIR})
-endif (TBB_INSTALL_DIR)
-# second: use environment variable
-if (NOT _TBB_INSTALL_DIR)
-    if (NOT "$ENV{TBB_INSTALL_DIR}" STREQUAL "")
-        set (_TBB_INSTALL_DIR $ENV{TBB_INSTALL_DIR})
-    endif (NOT "$ENV{TBB_INSTALL_DIR}" STREQUAL "")
-    # Intel recommends setting TBB21_INSTALL_DIR
-    if (NOT "$ENV{TBB21_INSTALL_DIR}" STREQUAL "")
-        set (_TBB_INSTALL_DIR $ENV{TBB21_INSTALL_DIR})
-    endif (NOT "$ENV{TBB21_INSTALL_DIR}" STREQUAL "")
-    if (NOT "$ENV{TBB22_INSTALL_DIR}" STREQUAL "")
-        set (_TBB_INSTALL_DIR $ENV{TBB22_INSTALL_DIR})
-    endif (NOT "$ENV{TBB22_INSTALL_DIR}" STREQUAL "")
-    if (NOT "$ENV{TBB30_INSTALL_DIR}" STREQUAL "")
-        set (_TBB_INSTALL_DIR $ENV{TBB30_INSTALL_DIR})
-    endif (NOT "$ENV{TBB30_INSTALL_DIR}" STREQUAL "")
-endif (NOT _TBB_INSTALL_DIR)
-# third: try to find path automatically
-if (NOT _TBB_INSTALL_DIR)
-    if (_TBB_DEFAULT_INSTALL_DIR)
-        set (_TBB_INSTALL_DIR ${_TBB_DEFAULT_INSTALL_DIR})
-    endif (_TBB_DEFAULT_INSTALL_DIR)
-endif (NOT _TBB_INSTALL_DIR)
-# sanity check
-if (NOT _TBB_INSTALL_DIR)
-    message ("ERROR: Unable to find Intel TBB install directory. ${_TBB_INSTALL_DIR}")
-else (NOT _TBB_INSTALL_DIR)
-# finally: set the cached CMake variable TBB_INSTALL_DIR
-if (NOT TBB_INSTALL_DIR)
-    set (TBB_INSTALL_DIR ${_TBB_INSTALL_DIR} CACHE PATH "Intel TBB install directory")
-    mark_as_advanced(TBB_INSTALL_DIR)
-endif (NOT TBB_INSTALL_DIR)
+# Check whether the user gave us an existing tbbvars.sh file
+find_file(
+  TBB_VARS_SH
+  tbbvars.sh
+  DOC "Path to tbbvars.sh script"
+  NO_DEFAULT_PATH
+  )
 
 
-#-- A macro to rewrite the paths of the library. This is necessary, because
-#   find_library() always found the em64t/vc9 version of the TBB libs
-macro(TBB_CORRECT_LIB_DIR var_name)
-#    if (NOT "${_TBB_ARCHITECTURE}" STREQUAL "em64t")
-        string(REPLACE em64t "${_TBB_ARCHITECTURE}" ${var_name} ${${var_name}})
-#    endif (NOT "${_TBB_ARCHITECTURE}" STREQUAL "em64t")
-    string(REPLACE ia32 "${_TBB_ARCHITECTURE}" ${var_name} ${${var_name}})
-    string(REPLACE vc7.1 "${_TBB_COMPILER}" ${var_name} ${${var_name}})
-    string(REPLACE vc8 "${_TBB_COMPILER}" ${var_name} ${${var_name}})
-    string(REPLACE vc9 "${_TBB_COMPILER}" ${var_name} ${${var_name}})
-    string(REPLACE vc10 "${_TBB_COMPILER}" ${var_name} ${${var_name}})
-endmacro(TBB_CORRECT_LIB_DIR var_content)
-
-
-#-- Look for include directory and set ${TBB_INCLUDE_DIR}
-set (TBB_INC_SEARCH_DIR ${_TBB_INSTALL_DIR}/include)
-# Jiri: tbbvars now sets the CPATH environment variable to the directory
-#       containing the headers.
-find_path(TBB_INCLUDE_DIR
+if (TBB_VARS_SH)
+  parse_tbb_vars_sh()
+else()
+  # Try to find TBB in standard include paths
+  find_path(
+    TBB_INCLUDE_DIR
     tbb/task_scheduler_init.h
-    PATHS ${TBB_INC_SEARCH_DIR} ENV CPATH
-)
-mark_as_advanced(TBB_INCLUDE_DIR)
+    PATHS ENV CPATH
+    DOC "Path to TBB include directory"
+    )
+  # Try to find some version of the TBB library in standard library paths
+  find_path(
+    TBB_LIBRARY_DIR
+    "${CMAKE_SHARED_LIBRARY_PREFIX}tbb_preview${CMAKE_SHARED_LIBRARY_SUFFIX}"
+    "${CMAKE_SHARED_LIBRARY_PREFIX}tbb${CMAKE_SHARED_LIBRARY_SUFFIX}"
+    "${CMAKE_SHARED_LIBRARY_PREFIX}tbb_preview_debug${CMAKE_SHARED_LIBRARY_SUFFIX}"
+    "${CMAKE_SHARED_LIBRARY_PREFIX}tbb_debug${CMAKE_SHARED_LIBRARY_SUFFIX}"
+    PATHS ENV LIBRARY_PATH
+    DOC "Path to TBB library directory"
+    )
+  message(STATUS "Library dir: ${TBB_LIBRARY_DIR}")
+endif()
 
 
-#-- Look for libraries
-# GvdB: $ENV{TBB_ARCH_PLATFORM} is set by the build script tbbvars[.bat|.sh|.csh]
-if (NOT $ENV{TBB_ARCH_PLATFORM} STREQUAL "")
-    set (_TBB_LIBRARY_DIR
-         ${_TBB_INSTALL_DIR}/lib/$ENV{TBB_ARCH_PLATFORM}
-         ${_TBB_INSTALL_DIR}/$ENV{TBB_ARCH_PLATFORM}/lib
-        )
-endif (NOT $ENV{TBB_ARCH_PLATFORM} STREQUAL "")
-# Jiri: This block isn't mutually exclusive with the previous one
-#       (hence no else), instead I test if the user really specified
-#       the variables in question.
-if ((NOT ${TBB_ARCHITECTURE} STREQUAL "") AND (NOT ${TBB_COMPILER} STREQUAL ""))
-    # HH: deprecated
-    message(STATUS "[Warning] FindTBB.cmake: The use of TBB_ARCHITECTURE and TBB_COMPILER is deprecated and may not be supported in future versions. Please set \$ENV{TBB_ARCH_PLATFORM} (using tbbvars.[bat|csh|sh]).")
-    # Jiri: It doesn't hurt to look in more places, so I store the hints from
-    #       ENV{TBB_ARCH_PLATFORM} and the TBB_ARCHITECTURE and TBB_COMPILER
-    #       variables and search them both.
-    set (_TBB_LIBRARY_DIR "${_TBB_INSTALL_DIR}/${_TBB_ARCHITECTURE}/${_TBB_COMPILER}/lib" ${_TBB_LIBRARY_DIR})
-endif ((NOT ${TBB_ARCHITECTURE} STREQUAL "") AND (NOT ${TBB_COMPILER} STREQUAL ""))
+# helper function to invoke find_library() correctly
+# If we are using tbbvars.sh, we exclude system-default library search paths,
+# otherwise we leave them in
+function(find_tbb_library)
+  include(CMakeParseArguments)
+  set(OPTIONS)
+  set(SINGLEARGS VAR NAME DOC)
+  set(MULTIARGS)
+  cmake_parse_arguments(LIB "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
 
-# GvdB: Mac OS X distribution places libraries directly in lib directory.
-list(APPEND _TBB_LIBRARY_DIR ${_TBB_INSTALL_DIR}/lib)
-
-# Jiri: No reason not to check the default paths. From recent versions,
-#       tbbvars has started exporting the LIBRARY_PATH and LD_LIBRARY_PATH
-#       variables, which now point to the directories of the lib files.
-#       It all makes more sense to use the ${_TBB_LIBRARY_DIR} as a HINTS
-#       argument instead of the implicit PATHS as it isn't hard-coded
-#       but computed by system introspection. Searching the LIBRARY_PATH
-#       and LD_LIBRARY_PATH environment variables is now even more important
-#       that tbbvars doesn't export TBB_ARCH_PLATFORM and it facilitates
-#       the use of TBB built from sources.
-find_library(TBB_LIBRARY ${_TBB_LIB_NAME} HINTS ${_TBB_LIBRARY_DIR}
-        PATHS ENV LIBRARY_PATH ENV LD_LIBRARY_PATH)
-find_library(TBB_MALLOC_LIBRARY ${_TBB_LIB_MALLOC_NAME} HINTS ${_TBB_LIBRARY_DIR}
-        PATHS ENV LIBRARY_PATH ENV LD_LIBRARY_PATH)
-
-#Extract path from TBB_LIBRARY name
-get_filename_component(TBB_LIBRARY_DIR ${TBB_LIBRARY} PATH)
-
-#TBB_CORRECT_LIB_DIR(TBB_LIBRARY)
-#TBB_CORRECT_LIB_DIR(TBB_MALLOC_LIBRARY)
-mark_as_advanced(TBB_LIBRARY TBB_MALLOC_LIBRARY)
-
-#-- Look for debug libraries
-# Jiri: Changed the same way as for the release libraries.
-find_library(TBB_LIBRARY_DEBUG ${_TBB_LIB_DEBUG_NAME} HINTS ${_TBB_LIBRARY_DIR}
-        PATHS ENV LIBRARY_PATH ENV LD_LIBRARY_PATH)
-find_library(TBB_MALLOC_LIBRARY_DEBUG ${_TBB_LIB_MALLOC_DEBUG_NAME} HINTS ${_TBB_LIBRARY_DIR}
-        PATHS ENV LIBRARY_PATH ENV LD_LIBRARY_PATH)
-
-# Jiri: Self-built TBB stores the debug libraries in a separate directory.
-#       Extract path from TBB_LIBRARY_DEBUG name
-get_filename_component(TBB_LIBRARY_DEBUG_DIR ${TBB_LIBRARY_DEBUG} PATH)
-
-#TBB_CORRECT_LIB_DIR(TBB_LIBRARY_DEBUG)
-#TBB_CORRECT_LIB_DIR(TBB_MALLOC_LIBRARY_DEBUG)
-mark_as_advanced(TBB_LIBRARY_DEBUG TBB_MALLOC_LIBRARY_DEBUG)
+  if(TBB_VARS_SH)
+    find_library(
+      ${LIB_VAR}
+      ${LIB_NAME}
+      PATHS ${TBB_LIBRARY_DIR}
+      DOC "${LIB_DOC}"
+      NO_DEFAULT_PATH
+      )
+  else()
+    find_library(
+      ${LIB_VAR}
+      ${LIB_NAME}
+      PATHS ${TBB_LIBRARY_DIR}
+      DOC "${LIB_DOC}"
+      )
+  endif()
+endfunction()
 
 
-if (TBB_INCLUDE_DIR)
-    if (TBB_LIBRARY)
-        set (TBB_FOUND "YES")
-        set (TBB_LIBRARIES ${TBB_LIBRARY} ${TBB_MALLOC_LIBRARY} ${TBB_LIBRARIES})
-        set (TBB_DEBUG_LIBRARIES ${TBB_LIBRARY_DEBUG} ${TBB_MALLOC_LIBRARY_DEBUG} ${TBB_DEBUG_LIBRARIES})
-        set (TBB_INCLUDE_DIRS ${TBB_INCLUDE_DIR} CACHE PATH "TBB include directory" FORCE)
-        set (TBB_LIBRARY_DIRS ${TBB_LIBRARY_DIR} CACHE PATH "TBB library directory" FORCE)
-        # Jiri: Self-built TBB stores the debug libraries in a separate directory.
-        set (TBB_DEBUG_LIBRARY_DIRS ${TBB_LIBRARY_DEBUG_DIR} CACHE PATH "TBB debug library directory" FORCE)
-        mark_as_advanced(TBB_INCLUDE_DIRS TBB_LIBRARY_DIRS TBB_DEBUG_LIBRARY_DIRS TBB_LIBRARIES TBB_DEBUG_LIBRARIES)
-        message(STATUS "Found Intel TBB")
-    endif (TBB_LIBRARY)
-endif (TBB_INCLUDE_DIR)
+# we always want to use TBB in C++11 mode
+set(TBB_COMPILE_DEFINITIONS _TBB_CPP0X)
 
-if (NOT TBB_FOUND)
-    message("ERROR: Intel TBB NOT found!")
-    message(STATUS "Looked for Threading Building Blocks in ${_TBB_INSTALL_DIR}")
-    # do only throw fatal, if this pkg is REQUIRED
-    if (TBB_FIND_REQUIRED)
-        message(FATAL_ERROR "Could NOT find TBB library.")
-    endif (TBB_FIND_REQUIRED)
-endif (NOT TBB_FOUND)
 
-endif (NOT _TBB_INSTALL_DIR)
+if(TBB_DEBUG)
+  message(STATUS "Linking against debug version of TBB")
+  set(tbb_debug_suffix "_debug")
+  # TBB requires this additional compile definition when used in debug mode
+  list(APPEND TBB_COMPILE_DEFINITIONS TBB_USE_DEBUG)
+else()
+  set(tbb_debug_suffix "")
+endif()
 
+# start looking for components
+# We first look for component libraries, because the "special component" cpf
+# actually replaces the standard libtbb
+
+set(TBB_cpf_FOUND FALSE)
+set(TBB_allocator_FOUND FALSE)
+
+foreach(component ${TBB_FIND_COMPONENTS})
+
+  if(component STREQUAL "cpf")
+    find_tbb_library(
+      VAR TBB_LIBTBB_PREVIEW
+      NAME "tbb_preview${tbb_debug_suffix}"
+      DOC "Path to TBB community preview library"
+      )
+    if(TBB_LIBTBB_PREVIEW)
+      list(APPEND TBB_LIBRARIES ${TBB_LIBTBB_PREVIEW})
+      list(APPEND TBB_COMPILE_DEFINITIONS TBB_PREVIEW_LOCAL_OBSERVER=1)
+      set(TBB_cpf_FOUND TRUE)
+    endif()
+
+  elseif(component STREQUAL "allocator")
+    find_tbb_library(
+      VAR TBB_LIBTBBMALLOC
+      NAME "tbbmalloc${tbb_debug_suffix}"
+      DOC "Path to TBB malloc library"
+      )
+    if(TBB_LIBTBBMALLOC)
+      list(APPEND TBB_LIBRARIES ${TBB_LIBTBBMALLOC})
+      set(TBB_allocator_FOUND TRUE)
+    endif()
+
+  else()
+    message(FATAL_ERROR "Unknown TBB component: ${component}")
+  endif()
+endforeach()
+
+
+# If we could not find libtbb_preview, look for plain libtbb instead
+if(NOT TBB_cpf_FOUND)
+  find_tbb_library(
+    VAR TBB_LIBTBB
+    NAME "tbb${tbb_debug_suffix}"
+    DOC "Path to TBB library"
+    )
+  if(TBB_LIBTBB)
+    list(APPEND TBB_LIBRARIES ${TBB_LIBTBB})
+  endif()
+else()
+  # This avoids special-casing later on
+  set(
+    TBB_LIBTBB ${TBB_LIBTBB_PREVIEW}
+    CACHE FILEPATH "Path to TBB library"
+    )
+endif()
+
+# Don't show these to the user, they are just confusing
+mark_as_advanced(
+  TBB_LIBTBB_PREVIEW
+  TBB_LIBTBB
+  TBB_LIBTBBMALLOC
+  )
+
+include(CheckCXXSourceCompiles)
+include(CMakePushCheckState)
+
+# make sure this variable always exists; it is only used if we pick the internal
+# TBB implementation from an Intel Compiler
+set(TBB_COMPILE_OPTIONS "")
+set(TBB_INTEL_COMPILER_INTERNAL_TBB OFF)
+
+# We didn't manage to find TBB yet, so try if we can fall back to the one shipped
+# as part of Intel's compiler
+if ((NOT TBB_LIBTBB) AND("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel"))
+
+  # This while doesn't work in debug mode because -tbb always injects -ltbb into the linker flags, and that clashes
+  # with -ltbb_debug
+  if(NOT TBB_DEBUG)
+    message(STATUS "Could not find TBB in normal places, trying to fall back to internal version of Intel Compiler")
+
+    # We'll just compile a program with -tbb and see whether that works
+    cmake_push_check_state(RESET)
+    set(CMAKE_REQUIRED_FLAGS -tbb)
+    foreach(_definition ${TBB_COMPILE_DEFINITIONS})
+      list(APPEND CMAKE_REQUIRED_DEFINITIONS "-D${_definition}")
+    endforeach()
+    set(CMAKE_REQUIRED_QUIET ON)
+    check_cxx_source_compiles(
+      "${tbb_compile_source}"
+      TBB_INTEL_COMPILER_INTERNAL_TBB
+      )
+
+    if(TBB_INTEL_COMPILER_INTERNAL_TBB)
+      # yeah, success
+      set(TBB_COMPILE_OPTIONS -tbb)
+
+      # now check components
+      foreach(component ${TBB_FIND_COMPONENTS})
+
+        # again, this doesn't work because of the default -ltbb injected by -tbb
+        if(component STREQUAL "cpf")
+          message(STATUS "Cannot link to community preview version when using compiler-internal version of TBB. Please specify the tbbvars.sh script in TBB_VARS_SH")
+
+        elseif(component STREQUAL "allocator")
+          # we'll check for this by trying to link against the library
+          set(CMAKE_REQUIRED_LIBRARIES tbbmalloc)
+          check_cxx_source_compiles(
+            "${tbb_compile_source}"
+            TBB_INTEL_COMPILER_INTERNAL_TBBMALLOC
+            )
+          if(TBB_INTEL_COMPILER_INTERNAL_TBBMALLOC)
+            list(APPEND TBB_LIBRARIES tbbmalloc)
+            set(TBB_allocator_FOUND TRUE)
+          endif()
+        else()
+          message(FATAL_ERROR "Unknown TBB component: ${component}")
+        endif()
+      endforeach()
+
+      # clean up check state
+      cmake_pop_check_state()
+    endif()
+
+  else()
+    message(STATUS "Could not find TBB in normal places, and don't know how to fall back to internal version of Intel Compiler for debug version.
+You can either turn of the TBB_DEBUG option or point the TBB_VARS_SH variable at the tbbvars.sh script shipped with your compiler.")
+  endif()
+endif()
+
+# make sure everything works
+cmake_push_check_state(RESET)
+set(CMAKE_REQUIRED_INCLUDES ${TBB_INCLUDE_DIR})
+foreach(_definition ${TBB_COMPILE_DEFINITIONS})
+  list(APPEND CMAKE_REQUIRED_DEFINITIONS "-D${_definition}")
+endforeach()
+set(CMAKE_REQUIRED_FLAGS ${TBB_COMPILE_OPTIONS})
+set(CMAKE_REQUIRED_LIBRARIES ${TBB_LIBRARIES})
+check_cxx_source_compiles(
+  "${tbb_compile_source}"
+  TBB_COMPILE_TEST
+  )
+cmake_pop_check_state()
+
+# we don't want to leak any helper variables
+unset(tbb_compile_source)
+
+# provide standard find_package() interface
+include(FindPackageHandleStandardArgs)
+
+if(TBB_INTEL_COMPILER_INTERNAL_TBB)
+  set(TBB_INCLUDE_DIRS "")
+  set(TBB_LIBRARIES "")
+
+  find_package_handle_standard_args(
+    TBB
+    REQUIRED_VARS TBB_COMPILE_OPTIONS TBB_COMPILE_TEST
+    HANDLE_COMPONENTS
+    )
+else()
+
+  set(TBB_INCLUDE_DIRS ${TBB_INCLUDE_DIR})
+
+  find_package_handle_standard_args(
+    TBB
+    REQUIRED_VARS TBB_INCLUDE_DIRS TBB_LIBRARIES TBB_COMPILE_TEST
+    HANDLE_COMPONENTS
+    )
+
+endif()
+
+# set variable for config.h
+set(HAVE_TBB ${TBB_FOUND})
+
+# perform DUNE-specific setup tasks
 if (TBB_FOUND)
-    set(TBB_INTERFACE_VERSION 0)
-    FILE(READ "${TBB_INCLUDE_DIRS}/tbb/tbb_stddef.h" _TBB_VERSION_CONTENTS)
-    STRING(REGEX REPLACE ".*#define TBB_INTERFACE_VERSION ([0-9]+).*" "\\1" TBB_INTERFACE_VERSION "${_TBB_VERSION_CONTENTS}")
-    set(TBB_INTERFACE_VERSION "${TBB_INTERFACE_VERSION}")
-endif (TBB_FOUND)
+  set(TBB_CACHE_ALIGNED_ALLOCATOR_ALIGNMENT 128)
+  message(STATUS "defaulting TBB_CACHE_ALIGNED_ALLOCATOR_ALIGNMENT to 128")
+  dune_register_package_flags(
+    COMPILE_DEFINITIONS ENABLE_TBB=1 ${TBB_COMPILE_DEFINITIONS}
+    COMPILE_OPTIONS ${TBB_COMPILE_OPTIONS}
+    INCLUDE_DIRS ${TBB_INCLUDE_DIRS}
+    LIBRARIES ${TBB_LIBRARIES}
+    )
+endif()
+
+
+# function for adding TBB flags to a list of targets
+function(add_dune_tbb_flags _targets)
+  foreach(_target ${_targets})
+    target_compile_definitions(${_target} PUBLIC ENABLE_TBB=1)
+    if(TBB_COMPILE_DEFINITIONS)
+      target_compile_definitions(${_target} PUBLIC ${TBB_COMPILE_DEFINITIONS})
+    endif()
+    if(TBB_COMPILE_OPTIONS)
+      target_compile_options(${_target} PUBLIC ${TBB_COMPILE_OPTIONS})
+    endif()
+    if(TBB_INCLUDE_DIRS)
+      target_include_directories(${_target} PUBLIC ${TBB_INCLUDE_DIRS})
+    endif()
+    if(TBB_LIBRARIES)
+      target_link_libraries(${_target} ${TBB_LIBRARIES})
+    endif()
+  endforeach(_target)
+endfunction(add_dune_tbb_flags)

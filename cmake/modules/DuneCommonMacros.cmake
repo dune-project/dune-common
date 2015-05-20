@@ -29,7 +29,8 @@ find_package(Inkscape)
 include(UseInkscape)
 include(FindMProtect)
 include(DuneBoost)
-include(DuneTBB)
+
+find_package(TBB OPTIONAL_COMPONENTS cpf allocator)
 
 # actual defines are in dune-common/config.h.cmake
 # could problably use cmake's configure file mechanism,

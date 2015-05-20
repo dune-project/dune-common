@@ -26,6 +26,7 @@ set(modules
   FindMProtect.cmake
   FindParMETIS.cmake
   FindPTScotch.cmake
+  FindTBB.cmake
   FindThreadsCMake31.cmake
   FindUMFPack.cmake
   Headercheck.cmake
