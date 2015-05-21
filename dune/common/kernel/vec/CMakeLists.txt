@@ -15,8 +15,9 @@ install(FILES
   two_norm2.hh
 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common/kernel/vec)
 
-set(noinst_LTLIBRARIES libkernel.la)
-dune_add_library(vec OBJECT
+dune_library_add_sources(
+  dunecommon
+  SOURCES
   add.cc
   assign_scalar.cc
   axpy.cc

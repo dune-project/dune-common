@@ -5,12 +5,15 @@ install(FILES
   mv.hh
   umv.hh
   usmv.hh
+  preconditioners/jacobi.hh
 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common/kernel/ell)
 
-set(noinst_LTLIBRARIES libell.la)
-dune_add_library(ell OBJECT
+dune_library_add_sources(
+  dunecommon
+  SOURCES
   mmv.cc
   mv.cc
   umv.cc
   usmv.cc
+  preconditioners/jacobi.cc
   )

@@ -8,8 +8,9 @@ install(FILES
   lusolvepartialpivot.hh
 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common/kernel/blockdiagonal)
 
-set(noinst_LTLIBRARIES libblockdiagonal.la)
-dune_add_library(bell OBJECT
+dune_library_add_sources(
+  dunecommon
+  SOURCES
   extractbelldiagonal.cc
   ludecompositionnopivot.cc
   ludecompositionpartialpivot.cc

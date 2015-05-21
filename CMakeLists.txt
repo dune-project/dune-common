@@ -2,7 +2,7 @@
 project("dune-common" C CXX)
 
 # general stuff
-cmake_minimum_required(VERSION 2.8.6)
+cmake_minimum_required(VERSION 3.1.0)
 
 # make sure our own modules are found
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/modules")
@@ -15,6 +15,10 @@ include(DuneMacros)
 
 # start a dune project with information from dune.module
 dune_project()
+
+dune_enable_all_packages(
+  MODULE_LIBRARIES dunecommon
+  )
 
 # add subdirectories to execute CMakeLists.txt there
 add_subdirectory("lib")

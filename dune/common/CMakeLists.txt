@@ -12,7 +12,9 @@ elseif(BLAS_FOUND)
   set(_additional_libs ${BLAS_LIBRARIES})
 endif(LAPACK_FOUND)
 
-dune_add_library("dunecommon"
+dune_library_add_sources(
+  dunecommon
+  SOURCES
   debugallocator.cc
   dynmatrixev.cc
   exceptions.cc
@@ -22,11 +24,9 @@ dune_add_library("dunecommon"
   parametertreeparser.cc
   path.cc
   stdstreams.cc
-  _DUNE_TARGET_OBJECTS:kernel_
   stdthread.cc
-  ADD_LIBS "${_additional_libs}")
+  )
 
-add_dune_tbb_flags(dunecommon)
 #install headers
 install(FILES
         alignment.hh

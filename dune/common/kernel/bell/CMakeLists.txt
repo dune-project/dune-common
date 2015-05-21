@@ -9,8 +9,9 @@ install(FILES
   usmv.hh
 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common/kernel/bell)
 
-set(noinst_LTLIBRARIES libbell.la)
-dune_add_library(bell OBJECT
+dune_library_add_sources(
+  dunecommon
+  SOURCES
   mmv.cc
   mv.cc
   preconditioners/jacobinolupivot.cc
