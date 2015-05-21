@@ -76,8 +76,11 @@
 /* Define to 1 if the MPI2 Standard is supported */
 #cmakedefine MPI_2 1
 
-#define HAVE_TBB ${HAVE_TBB}
-#define TBB_CACHE_ALIGNED_ALLOCATOR_ALIGNMENT @TBB_CACHE_ALIGNED_ALLOCATOR_ALIGNMENT@
+/* Define to ENABLE_TBB if TBB was found */
+#cmakedefine HAVE_TBB ENABLE_TBB
+
+/* Define to the guaranteed alignment of the TBB allocator if TBB was found */
+#cmakedefine TBB_CACHE_ALIGNED_ALLOCATOR_ALIGNMENT @TBB_CACHE_ALIGNED_ALLOCATOR_ALIGNMENT@
 
 /* begin private */
 
