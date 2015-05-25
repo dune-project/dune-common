@@ -2,13 +2,13 @@
    documentation within the dune-common module. It works like this:
 
    @defgroup commands appear only in this file here which is
-   parsed before the other files (because it is mentioned first 
+   parsed before the other files (because it is mentioned first
    in the Doxyfile).
 
    Only @addtogroup is used in the code documentation.
 */
 
   /**
-	 @defgroup COGeometryType GeometryType
-	 @ingroup Common
+   * @defgroup COGeometryType GeometryType
+   * @ingroup Common
   */

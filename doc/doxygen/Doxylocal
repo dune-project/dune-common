@@ -1,7 +1,7 @@
 # Where to search and which files to use
-INPUT                 += @srcdir@/mainpage \
-                         @srcdir@/modules \
-                         @top_srcdir@/dune/common/modules \
+INPUT                 += @srcdir@/mainpage.txt \
+                         @srcdir@/modules.txt \
+                         @top_srcdir@/dune/common/modules.txt \
                          @top_srcdir@/dune/common
 EXCLUDE               += @top_srcdir@/dune/common/test \
                          @top_srcdir@/dune/common/debugallocator.cc
