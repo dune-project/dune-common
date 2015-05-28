@@ -307,12 +307,12 @@ endif()
 
 # see whether threading needs -no-as-needed
 if(EXISTS /etc/dpkg/origins/ubuntu)
-  set(NO_AS_NEEDED "-Wl,-no-as-needed")
+  set(NO_AS_NEEDED "-Wl,-no-as-needed ")
 else(EXISTS /etc/dpkg/origins/ubuntu)
   set(NO_AS_NEEDED "")
 endif(EXISTS /etc/dpkg/origins/ubuntu)
 
-set(STDTHREAD_LINK_FLAGS "${NO_AS_NEEDED} ${CMAKE_THREAD_LIBS_INIT}"
+set(STDTHREAD_LINK_FLAGS "${NO_AS_NEEDED}${CMAKE_THREAD_LIBS_INIT}"
     CACHE STRING "Linker flags needed to get working C++11 threads support.  On Ubuntu it may be necessary to include -Wl,-no-as-needed (see FS#1650).")
 
 # set linker flags
