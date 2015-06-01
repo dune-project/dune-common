@@ -7,7 +7,7 @@
 #
 include(DuneBoost)
 
-if(BOOST_FOUND)
+if(HAVE_DUNE_BOOST)
   message(STATUS "Checking whether the Boost::FUSION library is available.")
   check_cxx_source_compiles("
 \#include <boost/fusion/container.hpp>
@@ -18,6 +18,6 @@ int main(){
   if(HAVE_BOOST_FUSION)
     message(STATUS "Boost::FUSION is available")
   endif(HAVE_BOOST_FUSION)
-else(BOOST_FOUND)
+else()
   message(STATUS "Skipping check for Boost::FUSION as Boost is not available.")
-endif(BOOST_FOUND)
+endif()
