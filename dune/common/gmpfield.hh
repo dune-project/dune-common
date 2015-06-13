@@ -53,95 +53,13 @@ namespace Dune
       : Base( v,precision )
     {}
 
-    /*
-       GMPField &operator=(const GMPField &other)
-       {
-       Base(*this) = Base(other);
-       return *this;
-       }
-     */
-
     // type conversion operators
     operator double () const
     {
       return this->get_d();
     }
 
-    operator float () const
-    {
-      return this->get_d();
-    }
   };
-
-
-
-  template< unsigned int precision >
-  inline GMPField< precision >
-  operator+ ( const GMPField< precision > &a, const GMPField< precision > &b )
-  {
-    typedef mpf_class F;
-    return ((const F &)a + (const F &)b);
-  }
-
-  template< unsigned int precision >
-  inline GMPField< precision >
-  operator- ( const GMPField< precision > &a, const GMPField< precision > &b )
-  {
-    typedef mpf_class F;
-    return ((const F &)a - (const F &)b);
-  }
-
-  template< unsigned int precision >
-  inline GMPField< precision >
-  operator- ( const GMPField< precision > &a )
-  {
-    typedef mpf_class F;
-    return -((const F &)a);
-  }
-
-  template< unsigned int precision >
-  inline GMPField< precision >
-  operator* ( const GMPField< precision > &a, const GMPField< precision > &b )
-  {
-    typedef mpf_class F;
-    return ((const F &)a * (const F &)b);
-  }
-
-  template< unsigned int precision >
-  inline GMPField< precision >
-  operator/ ( const GMPField< precision > &a, const GMPField< precision > &b )
-  {
-    typedef mpf_class F;
-    return ((const F &)a / (const F &)b);
-  }
-
-
-
-  template< unsigned int precision >
-  inline std::ostream &
-  operator<< ( std::ostream &out, const GMPField< precision > &value )
-  {
-    return out << static_cast<const mpf_class&>(value);
-  }
-
-}
-
-namespace std
-{
-
-  template< unsigned int precision >
-  inline Dune::GMPField< precision >
-  sqrt ( const Dune::GMPField< precision > &a )
-  {
-    return Dune::GMPField< precision >(sqrt(static_cast<const mpf_class&>(a)));
-  }
-
-  template< unsigned int precision >
-  inline Dune::GMPField< precision >
-  abs ( const Dune::GMPField< precision > &a )
-  {
-    return Dune::GMPField< precision >( abs( static_cast< const mpf_class & >( a ) ) );
-  }
 
 }
 
