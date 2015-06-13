@@ -7,6 +7,7 @@
 #include <dune/common/exceptions.hh>
 #include <dune/common/typetraits.hh>
 #include <dune/common/classname.hh>
+#include <dune/common/gmpfield.hh>
 #include <iostream>
 #include <complex>
 #include <typeinfo>
@@ -380,6 +381,17 @@ int main()
     FieldVectorTest<double, 3>();
     FieldVectorTest<int, 1>();
     FieldVectorTest<double, 1>();
+#if HAVE_GMP
+    // we skip the complex test and the int test, as these will be very hard to implement with GMPField
+    typedef Dune::GMPField<128u> ft;
+    FieldVectorMainTest<ft,ft,3>();
+    FieldVectorMainTest<ft,ft,2>();
+    FieldVectorMainTest<ft,ft,1>();
+    FieldVectorMainTest<ft,ft,0>();
+    ScalarOperatorTest<ft>();
+    ScalarOrderingTest<ft>();
+    DotProductTest<ft,3>();
+#endif // HAVE_GMP
 
     test_nan();
     test_infinity_norms();
