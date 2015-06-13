@@ -17,6 +17,8 @@
 #include "typetraits.hh"
 #include "exceptions.hh"
 #include "array.hh"
+
+#include "ftraits.hh"
 #include "densevector.hh"
 #include "unused.hh"
 
