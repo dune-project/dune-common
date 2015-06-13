@@ -8,6 +8,7 @@
  */
 
 #include <iostream>
+#include <string>
 
 #if HAVE_GMP
 
@@ -23,11 +24,31 @@ namespace Dune
     typedef mpf_class Base;
 
   public:
+    /** default constructor, iitialize to zero */
     GMPField ()
       : Base(0,precision)
     {}
 
-    template< class T >
+    /** \brief initialize from a string
+        \note this is the only reliable way to initialize with higher values
+     */
+    GMPField ( const char* str )
+      : Base(str,precision)
+    {}
+
+    /** \brief initialize from a string
+        \note this is the only reliable way to initialize with higher values
+     */
+    GMPField ( const std::string& str )
+      : Base(str,precision)
+    {}
+
+    /** \brief initialize from a compatible scalar type
+     */
+    template< class T,
+              typename EnableIf = typename std::enable_if<
+                std::is_convertible<T, mpf_class>::value>::type
+              >
     GMPField ( const T &v )
       : Base( v,precision )
     {}
