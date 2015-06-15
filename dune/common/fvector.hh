@@ -17,6 +17,8 @@
 #include "typetraits.hh"
 #include "exceptions.hh"
 #include "array.hh"
+
+#include "ftraits.hh"
 #include "densevector.hh"
 #include "unused.hh"
 
@@ -226,7 +228,14 @@ namespace Dune {
     {}
 
     /** \brief Constructor with a given scalar */
-    FieldVector (const K& k) : _data(k) {}
+    template<typename T,
+             typename EnableIf = typename std::enable_if<
+               std::is_convertible<T, K>::value &&
+               ! std::is_same<K, DenseVector<typename FieldTraits<T>::field_type>
+                              >::value
+               >::type
+             >
+    FieldVector (const T& k) : _data(k) {}
 
     //! Constructor making vector with identical coordinates
     template<class C>
@@ -243,7 +252,14 @@ namespace Dune {
     {}
 
     //! Assignment operator for scalar
-    inline FieldVector& operator= (const K& k)
+    template<typename T,
+             typename EnableIf = typename std::enable_if<
+               std::is_convertible<T, K>::value &&
+               ! std::is_same<K, DenseVector<typename FieldTraits<T>::field_type>
+                              >::value
+               >::type
+             >
+    inline FieldVector& operator= (const T& k)
     {
       _data = k;
       return *this;
