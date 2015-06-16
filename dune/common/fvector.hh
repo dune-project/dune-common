@@ -290,7 +290,35 @@ namespace Dune {
   };
 
   /* ----- FV / FV ----- */
-  /* not necessary as these operations are already covered via the cast operator */
+  /* mostly not necessary as these operations are already covered via the cast operator */
+
+  //! Binary compare, when using FieldVector<K,1> like K
+  template<class K>
+  inline bool operator> (const FieldVector<K,1>& a, const FieldVector<K,1>& b)
+  {
+    return a[0]>b[0];
+  }
+
+  //! Binary compare, when using FieldVector<K,1> like K
+  template<class K>
+  inline bool operator>= (const FieldVector<K,1>& a, const FieldVector<K,1>& b)
+  {
+    return a[0]>=b[0];
+  }
+
+  //! Binary compare, when using FieldVector<K,1> like K
+  template<class K>
+  inline bool operator< (const FieldVector<K,1>& a, const FieldVector<K,1>& b)
+  {
+    return a[0]<b[0];
+  }
+
+  //! Binary compare, when using FieldVector<K,1> like K
+  template<class K>
+  inline bool operator<= (const FieldVector<K,1>& a, const FieldVector<K,1>& b)
+  {
+    return a[0]<=b[0];
+  }
 
   /* ----- FV / scalar ----- */
 
