@@ -180,6 +180,7 @@ endforeach(_TEST)
 set_tests_properties(
   eigenvaluestest
   mpicollectivecommunication
+  parametertreelocaletest
   PROPERTIES SKIP_RETURN_CODE 77)
 
 # set properties for failing tests
