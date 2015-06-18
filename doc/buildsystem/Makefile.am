@@ -5,7 +5,7 @@ BASEDIR=../..
 # install the html pages
 docdir=$(datadir)/doc/dune-common/buildsystem
 if BUILD_DOCS
-  DOCFILES=buildsystem.pdf
+  DOCFILES=buildsystem.pdf cmakefaq.pdf
   EXTRA_DIST= CMakeLists.txt $(DOCFILES)
   EXTRAINSTALL=$(DOCFILES)
 endif
