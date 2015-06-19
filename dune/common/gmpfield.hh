@@ -24,20 +24,20 @@ namespace Dune
     typedef mpf_class Base;
 
   public:
-    /** default constructor, iitialize to zero */
+    /** default constructor, initialize to zero */
     GMPField ()
       : Base(0,precision)
     {}
 
     /** \brief initialize from a string
-        \note this is the only reliable way to initialize with higher values
+        \note this is the only reliable way to initialize with higher precision values
      */
     GMPField ( const char* str )
       : Base(str,precision)
     {}
 
     /** \brief initialize from a string
-        \note this is the only reliable way to initialize with higher values
+        \note this is the only reliable way to initialize with higher precision values
      */
     GMPField ( const std::string& str )
       : Base(str,precision)
