@@ -373,7 +373,7 @@ namespace Dune
     /**
      * @brief Find the index pair with a specific global id.
      *
-     * This starts a binary search for the entry and therefor has complexity
+     * This starts a binary search for the entry and therefore has complexity
      * N log(N).
      * @param global The globally unique id of the pair.
      * @return The pair of indices for the id.
@@ -386,7 +386,7 @@ namespace Dune
     /**
      * @brief Find the index pair with a specific global id.
      *
-     * This starts a binary search for the entry and therefor has complexity
+     * This starts a binary search for the entry and therefore has complexity
      * N log(N).
      * @param global The globally unique id of the pair.
      * @return The pair of indices for the id.
@@ -550,7 +550,7 @@ namespace Dune
     /**
      * @brief Find the index pair with a specific global id.
      *
-     * This starts a binary search for the entry and therefor has complexity
+     * This starts a binary search for the entry and therefore has complexity
      * N log(N). This method is forwarded to the underlying index set.
      * @param global The globally unique id of the pair.
      * @return The pair of indices for the id.
