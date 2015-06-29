@@ -213,9 +213,9 @@ macro(find_dune_package module)
   set(DUNE_${module}_FOUND ${${module}_FOUND})
 endmacro(find_dune_package module)
 
-macro(extract_line HEADER  OUTPUT FILE_CONTENT)
-  set(REGEX "${HEADER}[ ]*[^\n]+")
-  string(REGEX MATCH ${REGEX} OUTPUT1 "${FILE_CONTENT}")
+macro(extract_line HEADER  OUTPUT FILE_NAME)
+  set(REGEX "^${HEADER}[ ]*[^\\n]+")
+  file(STRINGS "${FILE_NAME}" OUTPUT1 REGEX "${REGEX}")
   if(OUTPUT1)
     set(REGEX "^[ ]*${HEADER}[ ]*(.+)[ ]*$")
     string(REGEX REPLACE ${REGEX} "\\1" ${OUTPUT} "${OUTPUT1}")
@@ -279,10 +279,8 @@ endfunction(extract_major_minor_version version_string varname)
 # add dune-common version from dune.module to config.h
 # optional second argument is verbosity
 macro(dune_module_information MODULE_DIR)
-  file(READ "${MODULE_DIR}/dune.module" DUNE_MODULE)
-
   # find version strings
-  extract_line("Version:" MODULE_LINE "${DUNE_MODULE}")
+  extract_line("Version:" MODULE_LINE "${MODULE_DIR}/dune.module")
   if(NOT MODULE_LINE MATCHES ".+")
     message(FATAL_ERROR "${MODULE_DIR}/dune.module is missing a version.")
   endif(NOT MODULE_LINE MATCHES ".+")
@@ -292,19 +290,19 @@ macro(dune_module_information MODULE_DIR)
 
   # find strings for module name, maintainer
   # 1. Check for line starting with Module
-  extract_line("Module:" DUNE_MOD_NAME "${DUNE_MODULE}")
+  extract_line("Module:" DUNE_MOD_NAME "${MODULE_DIR}/dune.module")
   if(NOT DUNE_MOD_NAME)
     message(FATAL_ERROR "${MODULE_DIR}/dune.module is missing a module name.")
   endif(NOT DUNE_MOD_NAME)
 
   # 2. Check for line starting with Maintainer
-  extract_line("Maintainer:" DUNE_MAINTAINER "${DUNE_MODULE}")
+  extract_line("Maintainer:" DUNE_MAINTAINER "${MODULE_DIR}/dune.module")
   if(NOT DUNE_MAINTAINER)
     message(FATAL_ERROR "${MODULE_DIR}/dune.module is missing a maintainer.")
   endif(NOT DUNE_MAINTAINER)
 
   # 3. Check for line starting with Depends
-  extract_line("Depends:" ${DUNE_MOD_NAME}_DEPENDS "${DUNE_MODULE}")
+  extract_line("Depends:" ${DUNE_MOD_NAME}_DEPENDS "${MODULE_DIR}/dune.module")
   if(${DUNE_MOD_NAME}_DEPENDS)
     split_module_version(${${DUNE_MOD_NAME}_DEPENDS} ${DUNE_MOD_NAME}_DEPENDS_MODULE ${DUNE_MOD_NAME}_DEPENDS_VERSION)
     foreach(_mod ${${DUNE_MOD_NAME}_DEPENDS})
@@ -317,7 +315,7 @@ macro(dune_module_information MODULE_DIR)
   endif(${DUNE_MOD_NAME}_DEPENDS)
 
   # 4. Check for line starting with Suggests
-  extract_line("Suggests:" ${DUNE_MOD_NAME}_SUGGESTS "${DUNE_MODULE}")
+  extract_line("Suggests:" ${DUNE_MOD_NAME}_SUGGESTS "${MODULE_DIR}/dune.module")
   if(${DUNE_MOD_NAME}_SUGGESTS)
     split_module_version(${${DUNE_MOD_NAME}_SUGGESTS} ${DUNE_MOD_NAME}_SUGGESTS_MODULE ${DUNE_MOD_NAME}_SUGGESTS_VERSION)
     convert_deps_to_list(${DUNE_MOD_NAME}_SUGGESTS)
