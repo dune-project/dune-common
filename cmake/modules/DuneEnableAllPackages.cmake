@@ -1,14 +1,14 @@
-# This module provides the macros necessary for a simplified CMake build system
+# This module provides the functions necessary for a simplified CMake build system
 #
 # The DUNE build system relies on the user to choose and add the compile and link flags
 # necessary to build an executable. While this offers full control to the user, it
 # is an error-prone procedure.
 #
-# Alternatively, users may use the macros in this module to simply add the compile flags for all
+# Alternatively, users may use the functions in this module to simply add the compile flags for all
 # found external modules to all executables in a DUNE module. Likewise, all found libraries are
 # linked to all targets.
 #
-# This module provides the following macros:
+# This module provides the following functions:
 #
 # dune_enable_all_packages(INCLUDE_DIRS [include_dirs]
 #                          COMPILE_DEFINITIONS [compile_definitions]
@@ -18,8 +18,8 @@
 #                          )
 #
 # Adds all flags and all libraries to all executables that are subsequently added in the directory
-# from where this macro is called and from all its subdirectories (recursively).
-# If used, this macro MUST be called in the top level CMakeLists.txt BEFORE adding any subdirectories!
+# from where this function is called and from all its subdirectories (recursively).
+# If used, this function MUST be called in the top level CMakeLists.txt BEFORE adding any subdirectories!
 # You can optionally add additional include dirs and compile definitions that will also be applied to
 # all targets in the module.
 # Finally, if your module contains libraries as well as programs and if the programs should automatically
@@ -50,7 +50,7 @@
 # dune_target_enable_all_packages(TARGETS [target] ...)
 #
 # Adds all currently registered package flags (see dune_register_package_flags()) to the given targets.
-# This macro is mainly intended to help write DUNE modules that want to use dune_enable_all_packages() and
+# This function is mainly intended to help write DUNE modules that want to use dune_enable_all_packages() and
 # define their own libraries, but need to be compatible with CMake < 3.1.
 #
 # Note:    Just like dune_enable_all_packages(), this function requires CMake 2.8.12+.
@@ -64,7 +64,7 @@
 #                             )
 #
 # To correctly implement the automatic handling of external libraries, the compile flags, include paths and link
-# flags of all found packages must be registered with this function. This macro is only necessary for people that
+# flags of all found packages must be registered with this function. This function is only necessary for people that
 # want to write their own FindFooBar CMake modules to link against additional libraries which are not supported by
 # the DUNE core modules. Call this function at the end of every find module. If you are using an external FindFoo
 # module which you cannot alter, call it after the call to find_package(foo).
