@@ -374,7 +374,7 @@ namespace Dune
      * @brief Find the index pair with a specific global id.
      *
      * This starts a binary search for the entry and therefore has complexity
-     * N log(N).
+     * log(N).
      * @param global The globally unique id of the pair.
      * @return The pair of indices for the id.
      * @warning If the global index is not in the set a wrong or even a
@@ -387,7 +387,7 @@ namespace Dune
      * @brief Find the index pair with a specific global id.
      *
      * This starts a binary search for the entry and therefore has complexity
-     * N log(N).
+     * log(N).
      * @param global The globally unique id of the pair.
      * @return The pair of indices for the id.
      * @exception RangeError Thrown if the global id is not known.
@@ -398,8 +398,8 @@ namespace Dune
     /**
      * @brief Find the index pair with a specific global id.
      *
-     * This starts a binary search for the entry and therefor has complexity
-     * N log(N).
+     * This starts a binary search for the entry and therefore has complexity
+     * log(N).
      * @param global The globally unique id of the pair.
      * @return The pair of indices for the id.
      * @warning If the global index is not in the set a wrong or even a
@@ -412,7 +412,7 @@ namespace Dune
      * @brief Find the index pair with a specific global id.
      *
      * This starts a binary search for the entry and therefore has complexity
-     * N log(N).
+     * log(N).
      * @param global The globally unique id of the pair.
      * @return The pair of indices for the id.
      * @exception RangeError Thrown if the global id is not known.
@@ -551,7 +551,7 @@ namespace Dune
      * @brief Find the index pair with a specific global id.
      *
      * This starts a binary search for the entry and therefore has complexity
-     * N log(N). This method is forwarded to the underlying index set.
+     * log(N). This method is forwarded to the underlying index set.
      * @param global The globally unique id of the pair.
      * @return The pair of indices for the id.
      * @exception RangeError Thrown if the global id is not known.
