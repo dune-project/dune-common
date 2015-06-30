@@ -181,10 +181,15 @@ PROJECT="$1"
 DEPENDENCIES="$2"
 VERSION="$3"
 MAINTAINER="$4"
+ENABLE_ALL="$5"
 
 ################## READ OPTIONS ##################
 
 while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
+
+  # Track minimum CMake version
+  CMAKE_MINIMUM_REQUIRED=2.8.6
+
   while [ -z $PROJECT ]; do
     read -p "1) Name of your new Project? (e.g.: dune-grid): " PROJECT
     if echo "$MODULES" | grep -q ^$PROJECT$; then
@@ -226,13 +231,29 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
     read -p "4) Maintainer's email address? " MAINTAINER
   done
   while [ "$ENABLE_ALL" != "y" -a "$ENABLE_ALL" != "Y" -a "$ENABLE_ALL" != "n" -a "$ENABLE_ALL" != "N" ]; do
-    read -p "5) Enable all available packages? (Choose 'y' if you don't understand the question.) [y/N]" ENABLE_ALL
+    echo "5) Enable all available packages? (Choose 'y' if you don't understand the question, but see warning below.)"
+    read -p "   WARNING: If you enable this option, your module will require at least CMake 2.8.12 to build. You can check your version with 'cmake --version' [y/N]" ENABLE_ALL
   done
+
+  # canonicalize contents of ENABLE_ALL
+  ENABLE_ALL=$(tr '[:upper:]' '[:lower:]' <<< "$ENABLE_ALL")
+
+  # set newer CMake minimum version if ENABLE_ALL is true
+  if [ 'y' == "$ENABLE_ALL" ] ; then
+    CMAKE_MINIMUM_REQUIRED=2.8.12
+  fi
 
   echo
   echo "creating Project \"$PROJECT\", version $VERSION "
   echo "which depends on \"$DEPENDENCIES\""
   echo "with maintainer \"$MAINTAINER\""
+  if [ "y" == "$ENABLE_ALL" ] ; then
+    echo "and new, automatic external package handling based on dune_enable_all_packages()."
+  else
+    echo "and old external package handling (you need to manually add external dependencies to each target in CMakeLists.txt)."
+  fi
+  echo "Minimum required CMake version for building this project: ${CMAKE_MINIMUM_REQUIRED}"
+  echo
   read -p "Are these informations correct? [y/N] " DATACORRECT
 
   # reset data if necessary
@@ -243,7 +264,10 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
     MAINTAINER=""
     ENABLE_ALL=""
   fi
-done
+
+  done
+
+
 
 echo
 echo "A sample code $MODULE.cc is generated in the \"$PROJECT\" directory."
@@ -373,7 +397,7 @@ Preparing the Sources
 Additional to the software mentioned in README you'll need the
 following programs installed on your system:
 
-  cmake >= 2.8.6
+  cmake >= ${CMAKE_MINIMUM_REQUIRED}
 
 or if you use the old autoconf build system:
 
@@ -486,7 +510,7 @@ M_DELIM
 ################## CMakeLists.txt ##################
 echo "- $PROJECT/CMakeLists.txt"
 cat> "$PROJECT/CMakeLists.txt" << M_DELIM
-cmake_minimum_required(VERSION 2.8.6)
+cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED})
 project($PROJECT CXX)
 
 if(NOT (dune-common_DIR OR dune-common_ROOT OR
@@ -506,7 +530,7 @@ include(DuneMacros)
 # start a dune project with information from dune.module
 dune_project()
 M_DELIM
-if test ! -z "$ENABLE_ALL"; then
+if [ 'y' == "$ENABLE_ALL" ] ; then
 cat>> "$PROJECT/CMakeLists.txt" << M_DELIM
 dune_enable_all_packages()
 M_DELIM
