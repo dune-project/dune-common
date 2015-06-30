@@ -269,6 +269,10 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
 
 
 
+# canonicalize contents of ENABLE_ALL
+ENABLE_ALL=$(tr '[:upper:]' '[:lower:]' <<< "$ENABLE_ALL")
+
+
 echo
 echo "A sample code $MODULE.cc is generated in the \"$PROJECT\" directory."
 echo "Look at the README and dune.module files there."
