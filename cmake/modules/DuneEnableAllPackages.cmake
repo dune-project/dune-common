@@ -30,6 +30,9 @@
 # versions handle linking (in particular CMP022 and CMP038). You can later add source files to the library
 # anywhere in the source tree by calling dune_library_add_sources().
 #
+# Warning: dune_enable_all_packages()  requires CMake 2.8.12+. If you call this function with an older version
+#          of CMake, the build will fail with a fatal error. DO NOT enable this feature if your module needs
+#          to compile on machines with an older version of CMake.
 # Warning: The library feature requires CMake 3.1+. If you use the feature with older versions, CMake
 #          will emit a fatal error. Moreover, it will issue a warning if the cmake_minimum_required()
 #          version is older than 3.1.
@@ -49,6 +52,8 @@
 # Adds all currently registered package flags (see dune_register_package_flags()) to the given targets.
 # This macro is mainly intended to help write DUNE modules that want to use dune_enable_all_packages() and
 # define their own libraries, but need to be compatible with CMake < 3.1.
+#
+# Note:    Just like dune_enable_all_packages(), this function requires CMake 2.8.12+.
 #
 #
 # dune_register_package_flags(COMPILE_DEFINITIONS [flags]
