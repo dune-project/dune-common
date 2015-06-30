@@ -183,12 +183,13 @@ VERSION="$3"
 MAINTAINER="$4"
 ENABLE_ALL="$5"
 
-# Track minimum CMake version
-CMAKE_MINIMUM_REQUIRED=2.8.6
-
 ################## READ OPTIONS ##################
 
 while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
+
+  # Track minimum CMake version
+  CMAKE_MINIMUM_REQUIRED=2.8.6
+
   while [ -z $PROJECT ]; do
     read -p "1) Name of your new Project? (e.g.: dune-grid): " PROJECT
     if echo "$MODULES" | grep -q ^$PROJECT$; then
@@ -234,10 +235,25 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
     read -p "   WARNING: If you enable this option, your module will require at least CMake 2.8.12 to build. You can check your version with 'cmake --version' [y/N]" ENABLE_ALL
   done
 
+  # canonicalize contents of ENABLE_ALL
+  ENABLE_ALL=$(tr '[:upper:]' '[:lower:]' <<< "$ENABLE_ALL")
+
+  # set newer CMake minimum version if ENABLE_ALL is true
+  if [ 'y' == "$ENABLE_ALL" ] ; then
+    CMAKE_MINIMUM_REQUIRED=2.8.12
+  fi
+
   echo
   echo "creating Project \"$PROJECT\", version $VERSION "
   echo "which depends on \"$DEPENDENCIES\""
   echo "with maintainer \"$MAINTAINER\""
+  if [ "y" == "$ENABLE_ALL" ] ; then
+    echo "and new, automatic external package handling based on dune_enable_all_packages()."
+  else
+    echo "and old external package handling (you need to manually add external dependencies to each target in CMakeLists.txt)."
+  fi
+  echo "Minimum required CMake version for building this project: ${CMAKE_MINIMUM_REQUIRED}"
+  echo
   read -p "Are these informations correct? [y/N] " DATACORRECT
 
   # reset data if necessary
@@ -249,15 +265,8 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
     ENABLE_ALL=""
   fi
 
-done
+  done
 
-# canonicalize contents of ENABLE_ALL
-ENABLE_ALL=$(tr '[:upper:]' '[:lower:]' <<< "$ENABLE_ALL")
-
-# set newer CMake minimum version if ENABLE_ALL is true
-if [ 'y' == "$ENABLE_ALL" ] ; then
-  CMAKE_MINIMUM_REQUIRED=2.8.12
-fi
 
 
 echo
