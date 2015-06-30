@@ -245,6 +245,10 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
   fi
 done
 
+# canonicalize contents of ENABLE_ALL
+ENABLE_ALL=$(tr '[:upper:]' '[:lower:]' <<< "$ENABLE_ALL")
+
+
 echo
 echo "A sample code $MODULE.cc is generated in the \"$PROJECT\" directory."
 echo "Look at the README and dune.module files there."
@@ -506,7 +510,7 @@ include(DuneMacros)
 # start a dune project with information from dune.module
 dune_project()
 M_DELIM
-if test ! -z "$ENABLE_ALL"; then
+if [ 'y' == "$ENABLE_ALL" ] ; then
 cat>> "$PROJECT/CMakeLists.txt" << M_DELIM
 dune_enable_all_packages()
 M_DELIM
