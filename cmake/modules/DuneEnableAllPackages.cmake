@@ -105,6 +105,16 @@ endfunction(dune_register_package_flags)
 
 
 function(dune_enable_all_packages)
+
+  if (CMAKE_VERSION VERSION_LESS 2.8.12)
+    message(FATAL_ERROR "dune_enable_all_packages() needs CMake 2.8.12+")
+  elseif(CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS 2.8.12)
+    message(WARNING
+"You are using dune_enable_all_packages().
+This requires at least CMake 2.8.12, but your Dune module only requires ${CMAKE_MINIMUM_REQUIRED_VERSION}.
+Update the cmake_minimum_required() call in your main CMakeLists.txt file to get rid of this warning.")
+  endif()
+
   include(CMakeParseArguments)
   set(OPTIONS APPEND VERBOSE)
   set(SINGLEARGS)
