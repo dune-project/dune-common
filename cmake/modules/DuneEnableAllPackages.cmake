@@ -245,7 +245,7 @@ function(dune_target_enable_all_packages)
   elseif(CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS 2.8.12)
     message(WARNING
 "You are using dune_target_enable_all_packages().
-This requires at least CMake 2.9.12, but your Dune module only requires ${CMAKE_MINIMUM_REQUIRED_VERSION}.
+This requires at least CMake 2.8.12, but your Dune module only requires ${CMAKE_MINIMUM_REQUIRED_VERSION}.
 Update the cmake_minimum_required() call in your main CMakeLists.txt file to get rid of this warning.")
   endif()
 
