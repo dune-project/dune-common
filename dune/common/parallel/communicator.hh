@@ -443,7 +443,7 @@ namespace Dune
    * @brief A communicator that uses buffers to gather and scatter
    * the data to be send or received.
    *
-   * Before the data is sent it it copied to a consecutive buffer and
+   * Before the data is sent it is copied to a consecutive buffer and
    * then that buffer is sent.
    * The data is received in another buffer and then copied to the actual
    * position.
