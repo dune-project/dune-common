@@ -21,7 +21,7 @@ FIND_PACKAGE(LATEX)
 FIND_PROGRAM(IMAGEMAGICK_CONVERT convert
   DOC "The convert program that comes with ImageMagick (available at http://www.imagemagick.org)."
   )
-set(LATEX_USABLE "ON")
+option(LATEX_USABLE "ON")
 
 if(NOT LATEX_COMPILER)
   message(WARNING " Need latex to create documentation!")
