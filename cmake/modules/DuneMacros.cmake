@@ -80,6 +80,7 @@ enable_language(C) # Enable C to skip CXX bindings for some tests.
 
 include(FeatureSummary)
 include(DuneEnableAllPackages)
+include(OverloadCompilerFlags)
 
 include(DuneSymlinkOrCopy)
 
@@ -544,6 +545,9 @@ macro(dune_project)
     message(FATAL_ERROR "You need to specify an absolute path to your compiler instead of just the compiler name. cmake >= 3.0 fixes this issue.")
   endif()
 
+  # check if CXX flag overloading has been enabled (see OverloadCompilerFlags.cmake)
+  initialize_compiler_script()
+
   # extract information from dune.module
   dune_module_information(${CMAKE_SOURCE_DIR})
   set(ProjectName            "${DUNE_MOD_NAME}")
@@ -675,13 +679,6 @@ macro(dune_project)
   include(Headercheck)
   setup_headercheck()
 
-  # check whether the user wants to append compile flags upon calling make
-  if(ALLOW_EXTRA_CXXFLAGS AND (${CMAKE_GENERATOR} MATCHES ".*Unix Makefiles.*"))
-    file(WRITE ${CMAKE_BINARY_DIR}/compiler.sh
-         "#!/bin/bash\nif [ -n \"$VERBOSE\" ] ; then\necho 1>&2 \"Additional flags: \$EXTRA_CXXFLAGS\"\nfi\nexec ${CMAKE_CXX_COMPILER} \"\$@\" \$EXTRA_CXXFLAGS")
-    exec_program(chmod ARGS "+x ${CMAKE_BINARY_DIR}/compiler.sh")
-    set(CMAKE_CXX_COMPILER ${CMAKE_BINARY_DIR}/compiler.sh)
-  endif()
 endmacro(dune_project)
 
 # create a new config.h file and overwrite the existing one
@@ -884,6 +881,10 @@ endif()
   include(CPack)
 
   feature_summary(WHAT ALL)
+
+  # check if CXX flag overloading has been enabled
+  # and write compiler script (see OverloadCompilerFlags.cmake)
+  finalize_compiler_script()
 endmacro(finalize_dune_project)
 
 macro(target_link_dune_default_libraries _target)
