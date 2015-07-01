@@ -76,6 +76,9 @@
 # library BASENAME
 #
 
+# Make CMake use rpath on OS X
+cmake_policy(SET CMP0042 NEW)
+
 enable_language(C) # Enable C to skip CXX bindings for some tests.
 
 include(FeatureSummary)
