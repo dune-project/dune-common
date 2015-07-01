@@ -77,7 +77,10 @@
 #
 
 # Make CMake use rpath on OS X
-cmake_policy(SET CMP0042 NEW)
+if(POLICY CMP0042)
+  # this policy only needed for CMake older then 2.8.12
+  cmake_policy(SET CMP0042 NEW)
+endif()
 
 enable_language(C) # Enable C to skip CXX bindings for some tests.
 
