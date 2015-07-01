@@ -10,6 +10,7 @@
 #
 #   make CXXFLAGS="your flags" GRIDTYPE="grid type"
 #
+#   GRIDTYPE can be anything defined in config.h via the dune_define_gridtype macro from dune-grid.
 #   Furthermore any CPP variable of the form -DVAR=VALUE can be overloaded on the command line.
 #
 #   Note: If you don't know what this is or what it's good for, don't use it.
