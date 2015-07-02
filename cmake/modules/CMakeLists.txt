@@ -30,6 +30,7 @@ set(modules
   FindUMFPack.cmake
   Headercheck.cmake
   LanguageSupport.cmake
+  OverloadCompilerFlags.cmake
   UseInkscape.cmake
   UseLATEX.cmake)
 set(test_programs CheckForPthreads.c)
