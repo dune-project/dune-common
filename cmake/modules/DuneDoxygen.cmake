@@ -12,6 +12,8 @@
 #
 FIND_PACKAGE(Doxygen)
 
+include (CMakeParseArguments)
+
 #
 # Set DOT_TRUE for the Doxyfile generation.
 #
@@ -42,7 +44,28 @@ ENDMACRO (prepare_doxyfile)
 # (doxygen_install_${ProjectName}) the generated doxygen documentation.
 # The documentation is built during the top-level make doc call. We have added a dependency
 # that make sure it is built before running make install.
+#
+# the macro takes the following optional parameters:
+# TARGET [name]  : overwrite the target appendix, default is the module name
+# DEPENDS [list] : add a list of further dependencies for doxygen.
+#                  This list might include mainpage.txt
+# OUTPUT [name]  : change the name of the output target; necessary if you don't generate html.
 MACRO (add_doxygen_target)
+  set(options )
+  set(oneValueArgs TARGET OUTPUT)
+  set(multiValueArgs DEPENDS)
+  cmake_parse_arguments(DOXYGEN "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+  # default target name is the module name
+  if(NOT DOXYGEN_TARGET)
+    set(DOXYGEN_TARGET ${ProjectName})
+  endif(NOT DOXYGEN_TARGET)
+
+  # default output is html
+  if(NOT DOXYGEN_OUTPUT)
+    set(DOXYGEN_OUTPUT html)
+  endif(NOT DOXYGEN_OUTPUT)
+
   dune_common_script_dir(SCRIPT_DIR)
   if("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
     set(DOXYSTYLE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/Doxystyle)
@@ -52,15 +75,15 @@ MACRO (add_doxygen_target)
   if(DOXYGEN_FOUND)
     prepare_doxyfile()
     # A custom command that executes doxygen
-    add_custom_command(OUTPUT html
+    add_custom_command(OUTPUT ${DOXYGEN_OUTPUT}
       COMMAND ${CMAKE_COMMAND} -D DOXYGEN_EXECUTABLE=${DOXYGEN_EXECUTABLE} -P ${SCRIPT_DIR}/RunDoxygen.cmake
       COMMENT "Running doxygen documentation. This may take a while"
-      DEPENDS Doxyfile.in)
+      DEPENDS Doxyfile.in ${DOXYGEN_DEPENDS})
     # Create a target for building the doxygen documentation of a module,
     # that is run during make doc
-    add_custom_target(doxygen_${ProjectName}
-      DEPENDS html)
-    add_dependencies(doc doxygen_${ProjectName})
+    add_custom_target(doxygen_${DOXYGEN_TARGET}
+      DEPENDS ${DOXYGEN_OUTPUT})
+    add_dependencies(doc doxygen_${DOXYGEN_TARGET})
   endif(DOXYGEN_FOUND)
 
   # Use a cmake call to install the doxygen documentation and create a
