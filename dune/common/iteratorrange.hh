@@ -23,10 +23,20 @@ namespace Dune {
     //! The iterator belonging to this range.
     typedef Iterator iterator;
 
+    //! The iterator belonging to this range.
+    /**
+     * This typedef is here mainly for compatibility reasons.
+     */
+    typedef Iterator const_iterator;
+
     //! Constructs an iterator range on [begin,end).
     IteratorRange(const Iterator& begin, const Iterator& end)
       : _begin(begin)
       , _end(end)
+    {}
+
+    //! Default constructor, relies on iterators being default-constructible.
+    IteratorRange()
     {}
 
     //! Returns an iterator pointing to the begin of the range.
@@ -43,8 +53,8 @@ namespace Dune {
 
   private:
 
-    const Iterator _begin;
-    const Iterator _end;
+    Iterator _begin;
+    Iterator _end;
 
   };
 
