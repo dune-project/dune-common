@@ -294,6 +294,28 @@ showing the output of failed tests.
 Although this is not the CMake-ish way, \lstinline!make test! also builds the tests before executing them.
 This behavior will change in the near future.
 
+\section{Where can I get a list of all configuration options?}
+\label{listconfigurations}
+There are two ways. Either use \lstinline!ccmake! which is a graphical user interface and shows
+you all variables and their values after a configure run. You can edit these values, too. Or
+add \lstinline!-LH! to the CMake call, then CMake will print all variables and their values
+after configuration.
+
+There is nothing comparable to Autotools' \lstinline!configure --help!.
+
+\section{Can I disable an external dependency?}
+\label{disabledependency}
+To disable an external dependency \lstinline!Foo!, add
+\begin{lstlisting}
+ -DCMAKE_DISABLE_FIND_PACKAGE_Foo=TRUE
+\end{lstlisting}
+to your opts file. The name of the dependency is case sensitive but there is no canonical naming
+scheme; it can be \lstinline!FOO!, \lstinline!Foo!, or even something else. See the output of configure
+to get the right name.
+
+Make sure to not use cached configure results by deleting the cache file or the build directory, cf.
+\ref{troubleshoot}.
+
 \section{How do I switch between parallel and sequential builds?}
 \label{parallel}
 Dune builds with CMake are parallel if and only if MPI is found. To have a sequential build despite an installed MPI library, you have to explicitly disable the corresponding find module by setting
@@ -308,7 +330,12 @@ The headercheck feature has been disabled by default. You can enable it by setti
 
 \section{How do I troubleshoot?}
 \label{troubleshoot}
-CMake caches aggressively which makes it bad at recognizing changed configurations. So, whenever
+CMake caches aggressively which makes it bad at recognizing changed configurations.
+
+To trigger a fresh run of configure, you can delete the \lstinline!CMakeCache.txt! file from
+the build directory and maybe save some compilation time afterward.
+
+Whenever
 you experience any problems, your first step should be to delete all build directories. Nice trick:
 \begin{lstlisting}
  dunecontrol exec rm -rf build-cmake
