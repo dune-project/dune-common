@@ -417,9 +417,9 @@ macro(dune_create_dependency_leafs depends depends_versions suggests suggests_ve
 endmacro(dune_create_dependency_leafs)
 
 macro(dune_create_dependency_tree)
-  if(${dune-common_MODULE_PATH})
-    list(REMOVE_ITEM CMAKE_MODULE_PATH ${dune-common_MODULE_PATH})
-  endif(${dune-common_MODULE_PATH})
+  if(dune-common_MODULE_PATH)
+    list(REMOVE_ITEM CMAKE_MODULE_PATH "${dune-common_MODULE_PATH}")
+  endif(dune-common_MODULE_PATH)
   list(FIND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules start)
   set(ALL_DEPENDENCIES "")
   if(${ProjectName}_DEPENDS_MODULE OR ${ProjectName}_SUGGESTS_MODULE)
