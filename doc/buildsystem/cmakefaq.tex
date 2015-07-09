@@ -1,7 +1,8 @@
-\documentclass[a4paper,10pt]{scrartcl}
+\documentclass[a4paper,10pt,DIV9,headings=small]{scrartcl}
 \usepackage{listings}
 \usepackage{hyperref}
 \usepackage[utf8]{inputenc}
+\usepackage{xspace}
 
 \lstset{language=c++, basicstyle=\normalfont\ttfamily\scriptsize,
   keywordstyle=\color{black}\bfseries, tabsize=4,
@@ -12,14 +13,29 @@
 \setlength{\parindent}{0pt}
 \renewcommand{\indent}{\hspace*{\tindent}}
 
+\newcommand{\cmakelists}{\lstinline!CMakeLists.txt!\xspace}
+\newcommand{\dune}{\lstinline!DUNE!\xspace}
+\newcommand{\dunecommon}{\lstinline!dune-common!\xspace}
+\newcommand{\duneistl}{\lstinline!dune-istl!\xspace}
+\newcommand{\dunegeometry}{\lstinline!dune-geometry!\xspace}
+\newcommand{\dunegrid}{\lstinline!dune-grid!\xspace}
+\newcommand{\dunegridhowto}{\lstinline!dune-grid-howto!\xspace}
+\newcommand{\dunecontrol}{\lstinline!dunecontrol!\xspace}
+\newcommand{\duneproject}{\lstinline!duneproject!\xspace}
+\newcommand{\dunemodule}{\lstinline!dune.module!\xspace}
+
 
 \title{Building Dune with CMake - Frequently Asked Questions}
-\author{Dominic Kempf$^\ast$}
+\author{Dominic Kempf$^\ast$ and Christoph Grüninger$^\spadesuit$}
 \publishers{%
 \vspace{10mm}
-{\normalsize $^\ast$Interdisziplin\"ares Zentrum f\"ur Wissenschaftliches Rechnen,
+\normalsize{$^\ast$Interdisziplin\"ares Zentrum f\"ur Wissenschaftliches Rechnen,
 Universit\"at Heidelberg,\\
-Im Neuenheimer Feld 368, D-69120 Heidelberg, Germany}\\
+Im Neuenheimer Feld 368, D-69120 Heidelberg, Germany}
+\\
+\normalsize{$^\spadesuit$Institut für Wasser- und Umweltsystemmodellierung,
+Universität Stuttgart,\\
+Pfaffenwaldring 61, D-70569 Stuttgart, Germany}
 }
 
 
@@ -41,29 +57,41 @@ CMake...
   \item is controlled by ONE rather simple language
  \end{itemize}
 
-Dune got support for CMake in version 2.3 alongside the old autotools build system. It got the default in the 2.4 release. After that release, the autotools build system will be removed from the master branch. \\
+Dune got support for CMake in version 2.3 alongside the old Autotools build system. It got the default in the
+2.4 release. After that release, the Autotools build system will be removed from the master branch.
 
 You can install cmake through your favorite package manager or downloading source code from www.cmake.org. The minimum required version to build Dune with CMake is 2.8.6.
 
 \section{How do I use Dune with CMake?}
 
-As with the autotools, the build process is controlled by the script \lstinline!dunecontrol!, located in \lstinline!dune-common/bin!. There is a compatibility layer that will translate all the configure flags from your opts file into the corresponding cmake flags. While this is a great tool to determine how to do the transition, you should in the long run switch to a cmake only approach. \\
+As with the Autotools, the build process is controlled by the script \dunecontrol, located in \lstinline!dune-common/bin!.
+There is a compatibility layer that will translate all the configure flags from your opts file into the corresponding
+CMake flags. While this is a great tool to determine how to do the transition, in the long run you should switch to
+a CMake-only approach.
 
-\lstinline!dunecontrol! will pickup the variable \lstinline!CMAKE_FLAGS! from your opts file and use it as command line options for any calls to cmake. There, you can define variables for the configure process with cmakes \lstinline!-D! option (just as with the C preprocessor). \\
+\dunecontrol will pickup the variable \lstinline!CMAKE_FLAGS! from your opts file and use it as command line options for
+any call to CMake. There, you can define variables for the configure process with CMakes \lstinline!-D! option; just as
+with the C pre-processor.
 
 The most important part of the configure flags is to tell the build system where to look for external libraries. You can either use the variable \lstinline!CMAKE_PREFIX_PATH! for that or set the variable given in the documentation of the corresponding find module (see below for details).
 
 \section{What files in a dune module belong to the CMake build system?}
 \label{files}
-Every directory in a project contains a file called \lstinline!CMakeLists.txt!, which is written in the CMake language. You can think of these as a distributed configure script. Upon configure, the top-level \lstinline!CMakeLists.txt! is executed. Whenever an \lstinline!add_subdirectory! command is encountered, the \lstinline!CMakeLists.txt! of that subdirectory is executed. The top-level \lstinline!CMakeLists.txt! is special, because it sets up the entire Dune module correctly. You should not delete the auto-generated parts of it. \\
+Every directory in a project contains a file called \cmakelists, which is written in the CMake language.
+You can think of these as a distributed configure script. Upon configure, the top-level \cmakelists is executed.
+Whenever an \lstinline!add_subdirectory! command is encountered, the \cmakelists of that sub-directory is executed.
+The top-level \cmakelists is special, because it sets up the entire Dune module correctly. You should not delete the
+auto-generated parts of it.
 
 Additionally, a Dune module can export some cmake modules. A cmake module is a file that contains one or more build system macros meant for downstream use. If a module provides modules, they can be found in the subfolder \lstinline!cmake/modules!. The module
 \begin{lstlisting}
  dune-foo/cmake/modules/DuneFooMacros.cmake
 \end{lstlisting}
-is special: Its contents are always executed when configuring the module \lstinline!dune-foo! or any other Dune module, that requires or suggests the module \lstinline!dune-foo!. This is the perfect place to put your checks for external packages (see section~\ref{external} below). \\
+is special: Its contents are always executed when configuring the module \lstinline!dune-foo! or any other Dune module, that
+requires or suggests the module \lstinline!dune-foo!. This is the perfect place to put your checks for external packages,
+see section~\ref{external} below.
 
-The file \lstinline!config.h.cmake! defines a template for the section of \lstinline!config.h!, that is generated by the module. \\
+The file \lstinline!config.h.cmake! defines a template for the section of \lstinline!config.h!, that is generated by the module.
 
 The file \lstinline!stamp-regenerate-config-h! also belongs to the CMake build system. You can trigger regeneration of \lstinline!config.h! by touching it.
 
@@ -117,16 +145,26 @@ Manually linking libraries can be done through the \lstinline!target_link_librar
 \section{How do I link against external libraries, that are not checked for by Dune?}
 \label{external}
 
-While there might be many solutions that make your application work, there is but one clean solution to this: You have to provide a find module for the package. A find module is a cmake module that follows a specific naming scheme: For an external package called \lstinline!SomePackage! it is called \lstinline!FindSomePackage.cmake!\footnote{Note that CMake treats package names case sensitive.} CMake will search its module include paths for such module if it encounters a \lstinline!find_package(SomePackage)! line. A good read to get started writing a find module is \href{http://www.cmake.org/Wiki/CMake:How_To_Find_Libraries}{this}. \\
+While there might be many solutions that make your application work, there is only one clean solution to this: You have
+to provide a find module for the package. A find module is a CMake module that follows a specific naming scheme: For
+an external package called \lstinline!SomePackage! it is called \lstinline!FindSomePackage.cmake!. Note that CMake
+treats package names case sensitive. If CMake encounters a \lstinline!find_package(SomePackage)! line, it searches
+its module include paths for this find module. A good read to get started writing a find module is
+\href{http://www.cmake.org/Wiki/CMake:How_To_Find_Libraries}{\emph{How to find Libraries}} in the CMake wiki.
 
-Depending on how common your external package is, you may not even need to do so. You can have a look at the list of find modules shipped by cmake\footnote{In many linux distributions you find it in \lstinline!/usr/share/cmake-<version>/modules!} or simply google for the module name and profit from some other open source project's work. \\
+Depending on how common your external package is, you may not even need to write the find module on your own.
+You can have a look at the list of find modules shipped by CMake \footnote{Linux distributions may put them at
+\lstinline!/usr/share/cmake-<version>/modules! or \lstinline!/usr/share/cmake/modules!} or simply search the
+internet for the module name and profit from other open-source project's work.
 
 It is considered good style to also provide a macro \lstinline!add_dune_somepackage_flags(targets)!.
 
 \section{What is an out-of-source build?}
 \label{outofsource}
 
-An out-of-source build does leave the version-controlled source tree untouched and puts all files that are generated by the build process into a different directory - the build directory. The build directory does mirror your source tree's structure as seen in the following figure: \\
+An out-of-source build does leave the version-controlled source tree untouched and puts all files that are
+generated by the build process into a different directory -- the build directory. The build directory does mirror
+your source tree's structure as seen in the following figure:
 \begin{center}
 \begin{tabular}{lcr}
 \begin{minipage}{.4\textwidth}
@@ -154,9 +192,12 @@ build-dune-foo/
 \end{minipage}
 \end{tabular}
 \end{center}
-Using the \lstinline!Unix Makefiles! generator, your Makefiles while be generated into the build tree, so that is where you have to call \lstinline!make!. There are multiple advantages with this approach, such as a clear separation between version controlled and generated files and you can have multiple out-of-source builds with different configurations at the same time. \\
+Using the \lstinline!Unix Makefiles! generator, your Makefiles are generated in the build tree, so that is where you
+have to call \lstinline!make!. There are multiple advantages with this approach, such as a clear separation between
+version controlled and generated files and you can have multiple out-of-source builds with different configurations
+at the same time.
 
-Out-of-source builds are the default with CMake. In-source builds are strongly discouraged. \\
+Out-of-source builds are the default with CMake. In-source builds are strongly discouraged.
 
 By default, a subfolder \verb!build-cmake! is generated within each dune module and is used as a build directory. You can customize this folder through the \verb!--builddir! option of \verb!dunecontrol!. Give an absolute path to the \verb!--builddir! option, you will get something like this:
 
@@ -181,7 +222,10 @@ Dune offers a simplified build system, where all flags are added to all targets 
                           [VERBOSE] [APPEND]
                          )
 \end{lstlisting}
-This will modify all targets in the directory of the \lstinline!CMakeLists.txt!, where you put this, and also in all subdirectories. The compile flags for all found external packages are added to those targets and the target is linked against all found external libraries. The \lstinline!VERBOSE! option will prompt those flags uppon configure. This is especially useful for application modules.\\
+This will modify all targets in the directory of the \cmakelists, where you put this, and also in all
+sub-directories. The compile flags for all found external packages are added to those targets and the target is
+linked against all found external libraries. The \lstinline!VERBOSE! option will prompt those flags upon
+configure. This is especially useful for application modules.
 
 To use this while using custom external packages, you have to register your flags. Check the module
 \begin{lstlisting}
@@ -199,7 +243,9 @@ In general, there are multiple ways to do this:
  \item Setting the environment variables \verb!CC!, \verb!CXX! etc.
 \end{itemize}
 
-The first option is the recommended way to do it. Whenever you change your compiler, you should delete all build directories. For some cmake versions, there is a known cmake bug, that requires you to give an absolute path to your compiler, but Dune will issue a warning, if you violate that. \\
+The first option is the recommended way. Whenever you change your compiler, you should delete all build
+directories. For some CMake versions, there is a known CMake bug, that requires you to give an absolute path
+to your compiler, but Dune will issue a warning, if you violate that.
 
 You can modify your default compiler flags in a similar manner. Just set the variables \lstinline!CMAKE_{C,CXX}_FLAGS! in your opts file. Note, that you can also define build type specific flags wit \lstinline!CMAKE_{C,CXX}_FLAGS_{DEBUG,RELEASE}! You can then switch the build type with \lstinline!CMAKE_BUILD_TYPE={Release,Debug}!
 
@@ -209,7 +255,7 @@ Such files are under version control, but they are needed in the build directory
 \begin{lstlisting}
  dune-common/cmake/modules/DuneSymlinkOrCopy.cmake
 \end{lstlisting}
-delivers macros for that purpose. \\
+delivers macros for that purpose.
 
 The simplest way to solve the problem is to add  \verb!-DDUNE_SYMLINK_TO_SOURCE_TREE=1! to your opts file. This will execute \lstinline!dune_symlink_to_source_tree()! to your top-level \lstinline!CMakeLists.txt!. This will add a symlink \lstinline!src_dir! to all subdirectories of the build directory, which points to the corresponding directory of the source tree. This will only work on platforms that support symlinking. For other (more portable) solutions, check the documentation of above module.
 
@@ -231,7 +277,10 @@ Note this only works with generators, that are based on Makefiles.
 
 \section{How do I run the test suite from cmake?}
 \label{tests}
-The built-in target to run the tests is called test (instead of autotools \lstinline!check! ). It is a mere wrapper around CMakes own test program \lstinline!ctest!. You can check \lstinline!ctest --help! for a lot of useful options, such as choosing the set of tests to be run by matching regular expressions. \\
+The built-in target to run the tests is called \lstinline!test! instead of Autotools \lstinline!check!.
+It is a mere wrapper around CMakes own test program \lstinline!ctest!. You can check \lstinline!ctest --help!
+for a lot of useful options, such as choosing the set of tests to be run by matching regular expressions or
+showing the output of failed tests.
 
 Although this is not the cmakeish way, \lstinline!make test! also builds the tests before executing them. This behaviour will be changed in the near future.
 
@@ -253,7 +302,7 @@ CMake is exceptionally bad at recognizing changing configurations. So, whenever 
 \begin{lstlisting}
  dunecontrol exec rm -rf build-cmake
 \end{lstlisting}
-This will remove all build directories from all dune modules. \\
+This will remove all build directories from all dune modules.
 
 Later on you can get an error log from the file \lstinline!CMakeError.log! in the \lstinline!CMakeFiles! subdirectory of your build directory. This is what you should send to the mailing list alongside the description of your setup and efforts to help us help you.
 
@@ -270,9 +319,9 @@ The CMake manual is available on the command line:
   \item \verb!cmake --help-module <module>!
  \end{itemize}
   \vspace{.5 cm}
- To get help on which variables are picked up by cmake, there is a cmake wiki page collecting them. \\
+ To get help on which variables are picked up by CMake, there is a CMake wiki page collecting them.
 
- Of course, there is also google, StackOverflow and the CMake Mailing list (archive). \\
+ Of course, there is also Google, StackOverflow and the CMake Mailing list (archive).
 
  For problems specific to the Dune build system, ask on our mailing lists.
 \end{document}
