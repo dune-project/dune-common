@@ -247,7 +247,10 @@ The first option is the recommended way. Whenever you change your compiler, you 
 directories. For some CMake versions, there is a known CMake bug, that requires you to give an absolute path
 to your compiler, but Dune will issue a warning, if you violate that.
 
-You can modify your default compiler flags in a similar manner. Just set the variables \lstinline!CMAKE_{C,CXX}_FLAGS! in your opts file. Note, that you can also define build type specific flags wit \lstinline!CMAKE_{C,CXX}_FLAGS_{DEBUG,RELEASE}! You can then switch the build type with \lstinline!CMAKE_BUILD_TYPE={Release,Debug}!
+You can modify your default compiler flags by setting the variables
+\lstinline!CMAKE_{C,CXX}_FLAGS! in your opts file. Note, you can define build-type specific
+flags with \lstinline!CMAKE_{C,CXX}_FLAGS_{DEBUG,RELEASE}!. You can switch the build type
+with \lstinline!CMAKE_BUILD_TYPE={Release,Debug}!.
 
 \section{How should I handle ini and grid files in an out-of-source-build setup?}
 \label{inifiles}
@@ -269,22 +272,29 @@ Note that the generator name has to match character by character, including case
 
 \section{I usually modify my CXXFLAGS upon calling make. How can I do this in CMake?}
 \label{cxxflags}
-This somehow violates the CMake philosophy and there is no clean solution on how to enable it. The cmakeish solution would be to have one out of source build for each configuration you want to build. We have nevertheless implemented one such inferior solution. It can be enable by setting \lstinline!ALLOW_EXTRA_CXXFLAGS=1! in your opts file. You can then type:
+This violates the CMake philosophy and there is no clean solution to achieve it. The CMake-ish solution would be
+to have for each configuration one out-of-source build. We have nevertheless implemented a workaround. It can be enable
+by setting \lstinline!ALLOW_CXXFLAGS_OVERWRITE=ON! in your opts file. You can then type:
 \begin{lstlisting}
- EXTRA_CXXFLAGS="someflags" make sometarget
+ make CXXFLAGS="<your flags>" <target>
 \end{lstlisting}
-Note this only works with generators, that are based on Makefiles.
+Furthermore any C pre-processor variable of the form \lstinline!-DVAR=<value>! can be overloaded on the command line
+and the grid type can be set via \lstinline!GRIDTYPE="<grid type>"!.
 
-\section{How do I run the test suite from cmake?}
+Note this only works with generators that are based on Makefiles and several Unix tools like bash must be
+available.
+
+\section{How do I run the test suite from CMake?}
 \label{tests}
-The built-in target to run the tests is called \lstinline!test! instead of Autotools \lstinline!check!.
-It is a mere wrapper around CMakes own test program \lstinline!ctest!. You can check \lstinline!ctest --help!
+The built-in target to run the tests is called \lstinline!test! instead of Autotools' \lstinline!check!.
+It is a mere wrapper around CMake's own testing tool CTest. You can check \lstinline!ctest --help!
 for a lot of useful options, such as choosing the set of tests to be run by matching regular expressions or
 showing the output of failed tests.
 
-Although this is not the cmakeish way, \lstinline!make test! also builds the tests before executing them. This behaviour will be changed in the near future.
+Although this is not the CMake-ish way, \lstinline!make test! also builds the tests before executing them.
+This behavior will change in the near future.
 
-\section{How do I switch between parallel and sequential builds in cmake?}
+\section{How do I switch between parallel and sequential builds?}
 \label{parallel}
 Dune builds with CMake are parallel if and only if MPI is found. To have a sequential build despite an installed MPI library, you have to explicitly disable the corresponding find module by setting
 \begin{lstlisting}
@@ -298,13 +308,16 @@ The headercheck feature has been disabled by default. You can enable it by setti
 
 \section{How do I troubleshoot?}
 \label{troubleshoot}
-CMake is exceptionally bad at recognizing changing configurations. So, whenever you experience any problems, your first step should be to delete all build directories. Nice trick:
+CMake caches aggressively which makes it bad at recognizing changed configurations. So, whenever
+you experience any problems, your first step should be to delete all build directories. Nice trick:
 \begin{lstlisting}
  dunecontrol exec rm -rf build-cmake
 \end{lstlisting}
-This will remove all build directories from all dune modules.
+This will remove all build directories from all DUNE modules.
 
-Later on you can get an error log from the file \lstinline!CMakeError.log! in the \lstinline!CMakeFiles! subdirectory of your build directory. This is what you should send to the mailing list alongside the description of your setup and efforts to help us help you.
+Later on you can get an error log from the file \lstinline!CMakeError.log! in the \lstinline!CMakeFiles!
+sub-directory of your build directory. This is what you should send to the mailing list alongside the
+description of your setup and efforts to help us help you.
 
 \section{Where can I get help?}
 \label{help}
@@ -318,10 +331,8 @@ The CMake manual is available on the command line:
   \item \verb!cmake --help-module-list!
   \item \verb!cmake --help-module <module>!
  \end{itemize}
-  \vspace{.5 cm}
- To get help on which variables are picked up by CMake, there is a CMake wiki page collecting them.
 
- Of course, there is also Google, StackOverflow and the CMake Mailing list (archive).
-
- For problems specific to the Dune build system, ask on our mailing lists.
+To get help on which variables are picked up by CMake, there is a CMake wiki page collecting them.
+Of course, there is also Google, StackOverflow and the CMake Mailing list (archive).
+For problems specific to DUNE's build system, ask on our mailing lists.
 \end{document}
