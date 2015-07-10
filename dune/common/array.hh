@@ -58,7 +58,7 @@ namespace Dune
   {
     std::array<T,n> r;
     r.fill(t);
-    return std::move(r);
+    return r;
   }
 
   /** @} */
