@@ -38,11 +38,11 @@
 #
 # dune_regenerate_config_cmake()
 #
-# Creates a new config.h.cmake file in ${CMAKE_CURRENT_BINARY_DIR) that
+# Creates a new config_collected.h.cmake file in ${CMAKE_CURRENT_BINARY_DIR) that
 # consists of entries from ${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake
-# and includes non-private entries from the files config.h.cmake files
+# and includes non-private entries from the files config_collected.h.cmake files
 # of all dependent modules.
-# Finally config.h is created from config.h.cmake.
+# Finally config.h is created from config_collected.h.cmake.
 #
 #
 # dune_add_library(<basename> [NO_EXPORT] [ADD_LIBS <lib1> [<lib2> ...]]
@@ -691,7 +691,7 @@ endmacro(dune_project)
 
 # create a new config.h file and overwrite the existing one
 macro(dune_regenerate_config_cmake)
-  set(CONFIG_H_CMAKE_FILE "${CMAKE_BINARY_DIR}/config.h.cmake")
+  set(CONFIG_H_CMAKE_FILE "${CMAKE_BINARY_DIR}/config_collected.h.cmake")
   if(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
     file(READ ${CMAKE_SOURCE_DIR}/config.h.cmake _file)
     string(REGEX MATCH
@@ -699,8 +699,8 @@ macro(dune_regenerate_config_cmake)
       _myfile "${_file}")
   endif(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
   # overwrite file with new content
-  file(WRITE ${CONFIG_H_CMAKE_FILE} "/* config.h.  Generated from config.h.cmake by CMake.
-   It was generated from config.h.cmake which in turn is generated automatically
+  file(WRITE ${CONFIG_H_CMAKE_FILE} "/* config.h.  Generated from config_collected.h.cmake by CMake.
+   It was generated from config_collected.h.cmake which in turn is generated automatically
    from the config.h.cmake files of modules this module depends on. */"
    )
 
@@ -871,12 +871,12 @@ endif()
     message(STATUS "Adding custom target for config.h generation")
     dune_regenerate_config_cmake()
     # add a target to generate config.h.cmake
-    add_custom_target(OUTPUT config.h.cmake
+    add_custom_target(OUTPUT config_collected.h.cmake
       COMMAND dune_regenerate_config_cmake()
       DEPENDS stamp-regenerate-config-h)
     # actually write the config.h file to disk
     # using generated file
-    configure_file(${CMAKE_CURRENT_BINARY_DIR}/config.h.cmake
+    configure_file(${CMAKE_CURRENT_BINARY_DIR}/config_collected.h.cmake
       ${CMAKE_CURRENT_BINARY_DIR}/config.h)
   else("${ARGC}" EQUAL "1")
     message(STATUS "Not adding custom target for config.h generation")
