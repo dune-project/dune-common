@@ -42,7 +42,7 @@ namespace Dune
     typedef row_type &row_reference;
     typedef const row_type &const_row_reference;
 
-    typedef Dune::array<row_type,ROWS> container_type;
+    typedef std::array<row_type,ROWS> container_type;
     typedef K value_type;
     typedef typename container_type::size_type size_type;
   };
@@ -65,7 +65,7 @@ namespace Dune
   template<class K, int ROWS, int COLS>
   class FieldMatrix : public DenseMatrix< FieldMatrix<K,ROWS,COLS> >
   {
-    Dune::array< FieldVector<K,COLS>, ROWS > _data;
+    std::array< FieldVector<K,COLS>, ROWS > _data;
     typedef DenseMatrix< FieldMatrix<K,ROWS,COLS> > Base;
   public:
 

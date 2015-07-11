@@ -38,7 +38,7 @@ namespace Dune {
   struct DenseMatVecTraits< FieldVector<K,SIZE> >
   {
     typedef FieldVector<K,SIZE> derived_type;
-    typedef Dune::array<K,SIZE> container_type;
+    typedef std::array<K,SIZE> container_type;
     typedef K value_type;
     typedef typename container_type::size_type size_type;
   };
@@ -92,7 +92,7 @@ namespace Dune {
   class FieldVector :
     public DenseVector< FieldVector<K,SIZE> >
   {
-    Dune::array<K,SIZE> _data;
+    std::array<K,SIZE> _data;
     typedef DenseVector< FieldVector<K,SIZE> > Base;
   public:
     //! export size

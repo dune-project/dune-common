@@ -194,13 +194,13 @@ namespace Dune
     /**
      * @brief The allocators for the smart pointer.
      */
-    typedef typename A::template rebind<shared_ptr<array<MemberType,chunkSize_> > >::other
+    typedef typename A::template rebind<shared_ptr<std::array<MemberType,chunkSize_> > >::other
     SmartPointerAllocator;
 
     /**
      * @brief The allocator for the fixed array.
      */
-    typedef typename A::template rebind<array<MemberType,chunkSize_> >::other
+    typedef typename A::template rebind<std::array<MemberType,chunkSize_> >::other
     ArrayAllocator;
 
     /**
@@ -210,7 +210,7 @@ namespace Dune
     friend class ConstArrayListIterator<T,N,A>;
 
     /** @brief the data chunks of our list. */
-    std::vector<shared_ptr<array<MemberType,chunkSize_> >,
+    std::vector<shared_ptr<std::array<MemberType,chunkSize_> >,
         SmartPointerAllocator> chunks_;
     /** @brief The current data capacity.
      * This is the capacity that the list could have theoretically
@@ -493,7 +493,7 @@ namespace Dune
     size_t index=start_+size_;
     if(index==capacity_)
     {
-      chunks_.push_back(shared_ptr<array<MemberType,chunkSize_> >(new array<MemberType,chunkSize_>()));
+      chunks_.push_back(shared_ptr<std::array<MemberType,chunkSize_> >(new std::array<MemberType,chunkSize_>()));
       capacity_ += chunkSize_;
     }
     elementAt(index)=entry;

@@ -308,10 +308,10 @@ namespace Dune {
   };
 
   template<typename T, std::size_t n>
-  struct ParameterTree::Parser<array<T, n> > {
-    static array<T, n>
+  struct ParameterTree::Parser<std::array<T, n> > {
+    static std::array<T, n>
     parse(const std::string& str) {
-      array<T, n> val;
+      std::array<T, n> val;
       parseRange(str, val.begin(), val.end());
       return val;
     }
