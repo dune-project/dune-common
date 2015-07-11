@@ -6,8 +6,8 @@
 
 #include <cassert>
 #include <vector>
+#include <array>
 #include "shared_ptr.hh"
-#include "array.hh"
 #include "iteratorfacades.hh"
 
 namespace Dune
@@ -40,7 +40,7 @@ namespace Dune
    *
    * Internally the data is organised in a list of arrays of fixed size.
    * Whenever the capacity of the array list is not sufficient a new
-   * Dune::array is allocated. In contrast to
+   * std::array is allocated. In contrast to
    * std::vector this approach prevents data copying. On the outside
    * we provide the same interface as the stl random access containers.
    *
@@ -493,7 +493,7 @@ namespace Dune
     size_t index=start_+size_;
     if(index==capacity_)
     {
-      chunks_.push_back(shared_ptr<std::array<MemberType,chunkSize_> >(new std::array<MemberType,chunkSize_>()));
+      chunks_.push_back(std::make_shared<std::array<MemberType,chunkSize_> >());
       capacity_ += chunkSize_;
     }
     elementAt(index)=entry;
