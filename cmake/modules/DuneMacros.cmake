@@ -882,7 +882,9 @@ endif()
     configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
   endif("${ARGC}" EQUAL "1")
 
-  test_dep()
+  if(NOT DUNE_DISABLE_TEST_MAGIC)
+    test_dep()
+  endif()
 
   include(CPack)
 
