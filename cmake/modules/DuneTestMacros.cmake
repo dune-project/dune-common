@@ -47,7 +47,7 @@ endmacro(get_directory_test_target _target _dir)
 # E.g. for dune/istl/test the target will be dune_istl_test.
 #
 macro(add_directory_test_target _target)
-  if(NOT DUNE_DISABLE_TEST_MAGIC)
+  if(DUNE_TEST_MAGIC)
     get_directory_test_target(${_target} "${CMAKE_CURRENT_BINARY_DIR}")
     add_custom_target(${${_target}})
     dune_common_script_dir(SCRIPT_DIR)
