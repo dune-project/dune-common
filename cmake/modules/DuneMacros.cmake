@@ -654,6 +654,8 @@ macro(dune_project)
 
   # activate testing the DUNE way
   include(DuneTests)
+  # enable this way of testing by default
+  set(DUNE_TEST_MAGIC ON)
 
   # activate pkg-config
   include(DunePkgConfig)
@@ -882,7 +884,8 @@ endif()
     configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
   endif("${ARGC}" EQUAL "1")
 
-  if(NOT DUNE_DISABLE_TEST_MAGIC)
+  # add dependiencies to target "test"
+  if(DUNE_TEST_MAGIC)
     test_dep()
   endif()
 
