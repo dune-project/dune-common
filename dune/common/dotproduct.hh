@@ -13,7 +13,7 @@ namespace Dune {
    * @brief  Provides the functions dot(a,b) := \f$a^H \cdot b \f$ and dotT(a,b) := \f$a^T \cdot b \f$
    *
    * The provided dot products dot,dotT are used to compute (indefinite) dot products for fundamental types as well as DUNE vector types, such as DenseVector, FieldVector, ISTLVector.
-   * Note that the definition of dot(a,b) conjugates the first argument. This agrees with the behvaior of Matlab and Petsc, but noch with BLAS.
+   * Note that the definition of dot(a,b) conjugates the first argument. This agrees with the behaviour of Matlab and Petsc, but not with BLAS.
    * @author Jö Fahlke, Matthias Wohlmuth
    */
 
