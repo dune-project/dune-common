@@ -72,7 +72,7 @@ target_link_libraries("dynmatrixtest" "dunecommon")
 
 add_executable("dynvectortest" dynvectortest.cc)
 
-if(${HAVE_LAPACK})
+if(${LAPACK_FOUND})
   add_executable(eigenvaluestest eigenvaluestest.cc)
   target_link_libraries(eigenvaluestest dunecommon)
   target_link_libraries(eigenvaluestest ${LAPACK_LIBRARIES})
@@ -179,7 +179,7 @@ set_tests_properties(
   mpicollectivecommunication
   parametertreelocaletest
   PROPERTIES SKIP_RETURN_CODE 77)
-if(${HAVE_LAPACK})
+if(${LAPACK_FOUND})
   set_tests_properties(eigenvaluestest
     PROPERTIES SKIP_RETURN_CODE 77)
 endif()
