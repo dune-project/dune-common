@@ -41,7 +41,7 @@ namespace Dune {
 
   /** \brief Check whether a character container has a given suffix
    *
-   * The container must support the the begin() and size() methods and the
+   * The container must support the begin() and size() methods and the
    * const_iterator member type.
    *
    * \note This is slow for containers which don't have random access iterators.

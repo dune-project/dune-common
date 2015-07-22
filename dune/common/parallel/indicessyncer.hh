@@ -1015,7 +1015,7 @@ namespace Dune
 
     if(iterators.isAtEnd() || iterators.globalIndexPair() != globalPair) {
       // The entry is not yet known
-      // Insert in the the list and do not change the first iterator.
+      // Insert in the list and do not change the first iterator.
       iterators.insert(RemoteIndex(Attribute(attribute)),globalPair);
       return;
     }
@@ -1033,7 +1033,7 @@ namespace Dune
 
     if(!indexIsThere)
       // The entry is not yet known
-      // Insert in the the list and do not change the first iterator.
+      // Insert in the list and do not change the first iterator.
       iterators.insert(RemoteIndex(Attribute(attribute)),globalPair);
   }
 

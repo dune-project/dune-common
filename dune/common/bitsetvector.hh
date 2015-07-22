@@ -578,7 +578,7 @@ namespace Dune {
 
   private:
 
-    // get a prepresentation as value_type
+    //! Get a representation as value_type
     value_type getRepr(int i) const
     {
       value_type bits;

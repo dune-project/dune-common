@@ -79,7 +79,7 @@ AS_VAR_POPDEF([_dune_aap_TAG])dnl
 # DUNE_ADD_MODULE_DEPS (MODULE, TAG, [CPPFLAGS], [LDFLAGS], [LIBS])
 #
 # Add the flags and libs of an external library to the modules flags
-# and libs and to the the DUNE_* and ALL_PKG_* families of global flags and
+# and libs and to the DUNE_* and ALL_PKG_* families of global flags and
 # libs.
 #
 # MODULE The name to the DUNE module to add the flags for.  It should be

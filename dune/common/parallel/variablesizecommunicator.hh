@@ -425,7 +425,7 @@ private:
   template<bool forward,class DataHandle>
   void communicate(DataHandle& handle);
   /**
-   * @brief Initialize the the trackers along the interface for the communication.
+   * @brief Initialize the trackers along the interface for the communication.
    * @tparam FORWARD If true we send in the forward direction.
    * @tparam DataHandle DataHandle The type of the data handle.
    * @param handle The handle describing the data and responsible for gather
