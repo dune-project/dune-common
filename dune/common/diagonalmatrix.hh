@@ -1012,6 +1012,7 @@ namespace Dune {
     {
       containerWrapper_ = other.containerWrapper_;
       position_ = other.position_;
+      return *this;
     }
 
     // This operator is needed since we can not get the address of the
