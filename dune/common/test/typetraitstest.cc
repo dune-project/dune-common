@@ -26,19 +26,6 @@ int main() {
   assert(     Dune::TypeTraits<int&>::isReference );
   assert( not Dune::TypeTraits<int&&>::isReference );
 
-#ifndef DISABLE_DEPRECATED_METHOD_CHECKS
-  // Test TypeTraits::PointeeType
-  assert( (Dune::is_same<Dune::Empty, Dune::TypeTraits<int>::PointeeType>::value) );
-  assert( (Dune::is_same<int,         Dune::TypeTraits<int*>::PointeeType>::value) );
-  assert( (Dune::is_same<int*,        Dune::TypeTraits<int**>::PointeeType>::value) );
-  assert( (Dune::is_same<const int,   Dune::TypeTraits<const int*>::PointeeType>::value) );
-  assert( (Dune::is_same<Dune::Empty, Dune::TypeTraits<int* const>::PointeeType>::value) );
-
-  // Test TypeTraits::ReferredType
-  assert( (Dune::is_same<int, Dune::TypeTraits<int>::ReferredType>::value) );
-  assert( (Dune::is_same<int, Dune::TypeTraits<int&>::ReferredType>::value) );
-#endif // DISABLE_DEPRECATED_METHOD_CHECKS
-
   // Test is_pointer
   assert( not Dune::is_pointer<int>::value );
   assert(     Dune::is_pointer<int*>::value );
