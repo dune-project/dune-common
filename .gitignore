@@ -1,13 +1,15 @@
 # Stuff to ignore recursively
 *.la
 *.lo
+*.log
 *.o
+*.trs
 *~
 .deps/
 .libs/
 Makefile
 Makefile.in
-semantic.cache
+TAGS
 
 # Stuff to ignore in this directory only
 /aclocal.m4
