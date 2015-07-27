@@ -41,6 +41,7 @@ if test x$UMFPACKYES = x1 ; then
       UMFPACKROOT="/usr/local/umfpack"
     fi
 
+    UMFCHOL_LIB_PATH="$UMFPACKROOT/CHOLMOD/Lib"
     UMFAMD_LIB_PATH="$UMFPACKROOT/AMD/Lib"
     UMFPACK_LIB_PATH="$UMFPACKROOT/UMFPACK/Lib"
     UMFPACK_INCLUDE_PATH="$UMFPACKROOT/UMFPACK/Include"
@@ -58,12 +59,13 @@ if test x$UMFPACKYES = x1 ; then
       fi
     fi
     UMFAMD_LIB_PATH=$UMFPACK_LIB_PATH
+    UMFCHOL_LIB_PATH=$UMFPACK_LIB_PATH
   fi
 
   # set variables so that tests can use them
   REM_CPPFLAGS=$CPPFLAGS
 
-  LDFLAGS="$LDFLAGS -L$UMFPACK_LIB_PATH -L$UMFAMD_LIB_PATH"
+  LDFLAGS="$LDFLAGS -L$UMFPACK_LIB_PATH -L$UMFAMD_LIB_PATH -L$UMFCHOL_LIB_PATH" 
   UMFPACK_INC_FLAG="-I$UMFPACK_INCLUDE_PATH -I$UMFPACKROOT/UFconfig -I$UMFPACKROOT/AMD/Include -I$UMFPACKROOT/SuiteSparse_config -DENABLE_UMFPACK=1"
   CPPFLAGS="$CPPFLAGS $UMFPACK_INC_FLAG $MPI_CPPFLAGS"
 
@@ -97,6 +99,25 @@ if test x$UMFPACKYES = x1 ; then
       [HAVE_UMFPACK="0"
         AC_MSG_WARN(libamd not found!)])
   fi
+
+  # check for cholmod lib
+  if test x$HAVE_UMFPACK = x1 ; then
+    AC_CHECK_LIB(cholmod,[main],
+      [UMFPACK_LIBS="$UMFPACK_LIBS -lcholmod"
+        UMFPACK_LDFLAGS="$UMFPACK_LDFLAGS -L$UMFCHOL_LIB_PATH"
+        LIBS="$LIBS $UMFPACK_LIBS"],
+      [AC_MSG_WARN(libcholmod not found!)])
+  fi
+
+  # check for suitesparseconfig lib
+  if test x$HAVE_UMFPACK = x1 ; then
+    AC_CHECK_LIB(suitesparseconfig,[main],
+      [UMFPACK_LIBS="$UMFPACK_LIBS -lsuitesparseconfig"
+        UMFPACK_LDFLAGS="$UMFPACK_LDFLAGS"
+        LIBS="$LIBS"],
+      [AC_MSG_WARN(libsuitesparseconfig not found!)])
+  fi
+    
 
   LDFLAGS=$REM_LDFLAGS
   AC_LANG_POP
