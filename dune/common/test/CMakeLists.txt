@@ -34,6 +34,7 @@ set(TESTS
     testfloatcmp
     tuplestest
     tupleutilitytest
+    typetraitstest
     utilitytest)
 
 #test that should build but fail to run successfully
@@ -164,6 +165,7 @@ set_target_properties(testdebugallocator_fail5 PROPERTIES COMPILE_DEFINITIONS "F
 
 add_executable("tuplestest" tuplestest.cc)
 add_executable("tupleutilitytest" tupleutilitytest.cc)
+add_executable("typetraitstest" typetraitstest.cc)
 add_executable("utilitytest" utilitytest.cc)
 
 set(TESTPROGS ${TESTS} ${FAILTESTS})
