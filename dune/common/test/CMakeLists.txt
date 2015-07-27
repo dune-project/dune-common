@@ -6,6 +6,7 @@ set(TESTS
     bitsetvectortest
     calloncetest
     check_fvector_size
+    classnametest
     conversiontest
     diagonalmatrixtest
     dynmatrixtest
@@ -68,6 +69,7 @@ add_executable("check_fvector_size_fail1" EXCLUDE_FROM_ALL check_fvector_size_fa
 set_target_properties(check_fvector_size_fail1 PROPERTIES COMPILE_FLAGS "-DDIM=1")
 add_executable("check_fvector_size_fail2" EXCLUDE_FROM_ALL check_fvector_size_fail.cc)
 set_target_properties(check_fvector_size_fail2 PROPERTIES COMPILE_FLAGS "-DDIM=3")
+add_executable("classnametest" classnametest.cc)
 add_executable("conversiontest" conversiontest.cc)
 
 add_executable("dynmatrixtest" dynmatrixtest.cc)
