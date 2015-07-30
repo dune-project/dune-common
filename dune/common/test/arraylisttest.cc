@@ -187,7 +187,7 @@ int main(){
 
   if(0!=testRandomAccess()) {
     ret++;
-    cerr<< "Ransom Access failed!"<<endl;
+    cerr<< "Random Access failed!"<<endl;
   }
 
   if(0!=testSorting()) {
