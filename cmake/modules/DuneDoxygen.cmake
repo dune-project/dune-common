@@ -79,7 +79,7 @@ MACRO (add_doxygen_target)
       foreach(_file \${doxygenfiles})
          get_filename_component(_basename \${_file} NAME)
          LIST(APPEND CMAKE_INSTALL_MANIFEST_FILES ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen/\${_basename})
-       endforeach(_file in \${doxygenfiles})
+       endforeach()
        file(INSTALL \${doxygenfiles} DESTINATION ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen)
        message(STATUS \"Installed doxygen into ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen\")")
 

@@ -781,12 +781,12 @@ ${DUNE_CUSTOM_PKG_CONFIG_SECTION}
 if(${ProjectName}_LIBRARIES)
   get_filename_component(_dir \"\${CMAKE_CURRENT_LIST_FILE}\" PATH)
   include(\"\${_dir}/${ProjectName}-targets.cmake\")
-endif(${ProjectName}_LIBRARIES)
-endif(NOT ${ProjectName}_FOUND)")
+endif()
+endif()")
       set(CONFIG_SOURCE_FILE ${PROJECT_BINARY_DIR}/CMakeFiles/${ProjectName}-config.cmake.in)
-  else(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
+  else()
     set(CONFIG_SOURCE_FILE ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
-  endif(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
+  endif()
   get_property(DUNE_MODULE_LIBRARIES GLOBAL PROPERTY DUNE_MODULE_LIBRARIES)
 
   # compute under which libdir the package configuration files are to be installed.
@@ -797,9 +797,9 @@ endif(NOT ${ProjectName}_FOUND)")
   get_property(DUNE_MODULE_LIBRARIES GLOBAL PROPERTY DUNE_MODULE_LIBRARIES)
   if(DUNE_MODULE_LIBRARIES)
     set(DUNE_INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR})
-  else(DUNE_MODULE_LIBRARIES)
+  else()
     set(DUNE_INSTALL_LIBDIR ${DUNE_INSTALL_NONOBJECTLIBDIR})
-  endif(DUNE_MODULE_LIBRARIES)
+  endif()
 
   # Set the location of the doc file source. Needed by custom package configuration
   # file section of dune-grid.
