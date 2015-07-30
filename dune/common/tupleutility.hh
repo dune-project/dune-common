@@ -1054,7 +1054,7 @@ namespace Dune {
    * \code
    * #include <dune/common/utility.hh>
    * \endcode
-   * This function provides functionality similiar to genericTransformTuple(),
+   * This function provides functionality similar to genericTransformTuple(),
    * although less general and closer in spirit to ForEachType.
    *
    * \tparam TypeEvaluator Used as the \c TE template argument to
