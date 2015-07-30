@@ -119,6 +119,7 @@ namespace Dune {
     FieldVector (const FieldVector & x) : _data(x._data)
     {}
 
+    /** \brief Construct from a std::initializer_list */
     FieldVector (std::initializer_list<K> const &l)
     {
       assert(l.size() == dimension);// Actually, this is not needed any more!
