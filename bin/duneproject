@@ -3,8 +3,6 @@
 #
 # TODO:
 #
-# * In case of an installed Dune, it should not be necessary to pass the
-#   dune-common dir to autogen.sh.
 # * Check module names entered as dependencies.
 
 set -e
@@ -273,7 +271,7 @@ echo
 echo "A sample code $MODULE.cc is generated in the \"$PROJECT\" directory."
 echo "Look at the README and dune.module files there."
 echo "Now you can run the dunecontrol script which will setup the new module."
-echo "Sometimes you may have to tweak configure.ac and CMakeLists.txt a bit."
+echo "Sometimes you may have to tweak CMakeLists.txt a bit."
 
 if test -d $PROJECT; then
   echo WARNING:
@@ -301,8 +299,6 @@ Maintainer: $MAINTAINER
 #depending on
 Depends: $DEPENDENCIES
 C_DELIM
-
-################## CONFIGURE.AC ##################
 
 ## Create the parameters passed to DUNE_CHECK_ALL
 
@@ -350,43 +346,6 @@ NAME=`echo $PROJECT | sed -e 's/dune[_-]//'`
 NAME_=`echo $NAME | tr '-' '_'`
 # module name in uppercase with _ instead of -
 UNAME=`echo $PROJECT | tr '-' '_' | sed 's/\(.*\)/\U\1/'`
-################## CONFIGURE.AC ##################
-echo "- $PROJECT/configure.ac"
-cat > "$PROJECT/configure.ac" <<C_DELIM
-# -*- Autoconf -*-
-# Process this file with autoconf to produce a configure script.
-AC_PREREQ([2.62])
-DUNE_AC_INIT # gets module version from dune.module file
-AC_CONFIG_SRCDIR([src/$MODULE.cc])
-AC_CONFIG_HEADERS([config.h])
-
-# we need no more than the standard DE-stuff
-# this module depends on $DEPENDENCIES
-# this implies checking for $CHECK
-DUNE_CHECK_ALL
-
-# implicitly set the Dune-flags everywhere
-AC_SUBST(AM_CPPFLAGS, \$DUNE_CPPFLAGS)
-AC_SUBST(AM_LDFLAGS, \$DUNE_LDFLAGS)
-LIBS="\$DUNE_LIBS"
-
-AC_CONFIG_FILES([
-  Makefile
-  src/Makefile
-  cmake/Makefile
-  cmake/modules/Makefile
-  doc/Makefile
-  doc/doxygen/Makefile
-  doc/doxygen/Doxyfile
-  dune/Makefile
-  dune/$NAME/Makefile
-  m4/Makefile
-  $MODULE.pc
-])
-AC_OUTPUT
-# finally print the summary information
-DUNE_SUMMARY_ALL
-C_DELIM
 
 ################## README ##################
 echo "- $PROJECT/README"
@@ -398,14 +357,6 @@ Additional to the software mentioned in README you'll need the
 following programs installed on your system:
 
   cmake >= ${CMAKE_MINIMUM_REQUIRED}
-
-or if you use the old autoconf build system:
-
-  automake >= 1.9
-
-  autoconf >= 2.62
-
-  libtool
 
 Getting started
 ---------------
@@ -420,20 +371,13 @@ directory. Note that if dune is not installed properly you will either
 have to add the directory where the dunecontrol script resides (probably
 ./dune-common/bin) to your path or specify the relative path of the script.
 
-On your project and all uninstalled DUNE source modules found the script
-will then call the GNU autoconf/automake to create a ./configure-script
-and the Makefiles. Afterwards that configure script will be called and the
-modules will be build using make all
-
 Most probably you'll have to provide additional information to dunecontrol
 (e. g. compilers, configure options) and/or make options.
 
 The most convenient way is to use options files in this case. The files
 define four variables:
 
-CMAKE_FLAGS      flags passed to cmake
-AUTOGEN_FLAGS    flags passed to autogen
-CONFIGURE_FLAGS  flags passed to configure
+CMAKE_FLAGS      flags passed to cmake (durin configure)
 MAKE_FLAGS       flags passed to make
 
 An example options file might look like this:
@@ -443,21 +387,12 @@ CMAKE_FLAGS=" \\
 -DCMAKE_CXX_COMPILER=g++-4.9 \\
 -DCMAKE_CXX_FLAGS='-Wall -pedantic' \\
 -DCMAKE_INSTALL_PREFIX=/install/path" #Force g++-4.9 and set compiler flags
-AUTOGEN_FLAGS="--ac=2.50 --am=1.8" #Forces autoconf 2.50 and automake 1.8
-CONFIGURE_FLAGS="CXX=g++-4.9 --prefix=/install/path" #Force g++-4.9 as compiler
 MAKE_FLAGS=install #Per default run make install instead of simply make
 
 If you save this information into example.opts you can pass the opts file to
 dunecontrol via the --opts option, e. g.
 
   dunecontrol --opts=example.opts all
-
-To get a full list of available configure flags just run
-
-  dunecontrol configure --help
-
-after running at least
-  dunecontrol autogen
 
 More info
 ---------
@@ -471,41 +406,6 @@ for further options.
 
 The full build-system is described in the dune-common/doc/buildsystem (Git version) or under share/doc/dune-common/buildsystem if you installed DUNE!
 R_DELIM
-
-################## MAKEFILE.AM ##################
-DISTCHECK_CONFIGURE_FLAGS=
-for name in $DEPENDENCIES; do
-  capital=`echo $name | tr '[a-z-]' '[A-Z_]'`
-  DISTCHECK_CONFIGURE_FLAGS=$DISTCHECK_CONFIGURE_FLAGS"--with-${name}=\$(${capital}_ROOT) "
-done
-echo "- $PROJECT/Makefile.am"
-cat> "$PROJECT/Makefile.am" << M_DELIM
-# we need the module file to be able to build via dunecontrol
-EXTRA_DIST = dune.module \\
-  CMakeLists.txt \\
-  config.h.cmake
-
-SUBDIRS = src m4 dune doc cmake
-
-if BUILD_DOCS
-# TODO: set up documentation tree automatically
-#SUBDIRS += doc
-endif
-
-# don't follow the full GNU-standard
-# we need automake 1.9 or newer
-AUTOMAKE_OPTIONS = foreign 1.9
-
-# pass most important options when "make distcheck" is used
-DISTCHECK_CONFIGURE_FLAGS = $DISTCHECK_CONFIGURE_FLAGS CXX="\$(CXX)" CC="\$(CC)"
-
-include \$(top_srcdir)/am/top-rules
-include \$(top_srcdir)/am/global-rules
-
-# Generate package configuration files for finding
-# installed modules with CMake
-include \$(top_srcdir)/am/cmake-pkg-config
-M_DELIM
 
 ################## CMakeLists.txt ##################
 echo "- $PROJECT/CMakeLists.txt"
@@ -537,7 +437,6 @@ M_DELIM
 fi
 cat>> "$PROJECT/CMakeLists.txt" << M_DELIM
 add_subdirectory("src")
-add_subdirectory("m4")
 add_subdirectory("dune")
 add_subdirectory("doc")
 add_subdirectory("cmake/modules")
@@ -638,51 +537,6 @@ add_executable("${MODULE}" ${MODULE}.cc)
 target_link_dune_default_libraries("${MODULE}")
 M_DELIM
 
-################## src/MAKEFILE.AM ##################
-
-echo "- $PROJECT/src/Makefile.am"
-cat> "$PROJECT/src/Makefile.am" << M_DELIM
-SUBDIRS =
-
-noinst_PROGRAMS = ${MODULE}
-
-${CMODULE}_SOURCES = $MODULE.cc
-
-${CMODULE}_CPPFLAGS = \$(AM_CPPFLAGS) \\
-	\$(DUNEMPICPPFLAGS) \\
-	\$(UG_CPPFLAGS) \\
-	\$(ALBERTA_CPPFLAGS) \\
-	\$(ALUGRID_CPPFLAGS)
-# The libraries have to be given in reverse order (most basic libraries
-# last).  Also, due to some misunderstanding, a lot of libraries include the
-# -L option in LDFLAGS instead of LIBS -- so we have to include the LDFLAGS
-# here as well.
-${CMODULE}_LDADD = \\
-	\$(DUNE_LDFLAGS) \$(DUNE_LIBS) \\
-	\$(ALUGRID_LDFLAGS) \$(ALUGRID_LIBS) \\
-	\$(ALBERTA_LDFLAGS) \$(ALBERTA_LIBS) \\
-	\$(UG_LDFLAGS) \$(UG_LIBS) \\
-	\$(DUNEMPILIBS)	\\
-	\$(LDADD)
-${CMODULE}_LDFLAGS = \$(AM_LDFLAGS) \\
-	\$(DUNEMPILDFLAGS) \\
-	\$(UG_LDFLAGS) \\
-	\$(ALBERTA_LDFLAGS) \\
-	\$(ALUGRID_LDFLAGS) \\
-	\$(DUNE_LDFLAGS)
-
-# don't follow the full GNU-standard
-# we need automake 1.9
-AUTOMAKE_OPTIONS = foreign 1.9
-
-# pass most important options when "make distcheck" is used
-DISTCHECK_CONFIGURE_FLAGS = $DISTCHECK_CONFIGURE_FLAGS CXX="\$(CXX)" CC="\$(CC)"
-
-EXTRA_DIST = CMakeLists.txt
-
-include \$(top_srcdir)/am/global-rules
-M_DELIM
-
 ################## PROJECT.CC ##################
 echo "- $PROJECT/src/$MODULE.cc"
 cat> "$PROJECT/src/$MODULE.cc" << CC_DELIM
@@ -715,51 +569,6 @@ int main(int argc, char** argv)
 }
 CC_DELIM
 
-################## M4/MAKEFILE ####################
-mkdir "$PROJECT/m4"
-echo "- $PROJECT/m4/Makefile.am"
-cat> "$PROJECT/m4/Makefile.am" << CC_DELIM
-M4FILES = $MODULE.m4
-
-aclocaldir = \$(datadir)/dune/aclocal
-aclocal_DATA = \$(M4FILES)
-
-EXTRA_DIST = \$(M4FILES) CMakeLists.txt
-
-include \$(top_srcdir)/am/global-rules
-CC_DELIM
-
-
-################## M4/CMakeLists.txt ##############
-echo "- $PROJECT/m4/CMakeLists.txt"
-cat> "$PROJECT/m4/CMakeLists.txt" << CC_DELIM
-install(PROGRAMS $MODULE.m4 DESTINATION \${CMAKE_INSTALL_DATAROOTDIR}/dune/aclocal)
-CC_DELIM
-
-################## M4/PROJECT.M4 ####################
-M4_MODULE=`echo $MODULE | tr '[a-z-]' '[A-Z_]'`
-echo "- $PROJECT/m4/$MODULE.m4"
-cat> "$PROJECT/m4/$MODULE.m4" << CC_DELIM
-dnl -*- autoconf -*-
-# Macros needed to find $MODULE and dependent libraries.  They are called by
-# the macros in \${top_src_dir}/dependencies.m4, which is generated by
-# "dunecontrol autogen"
-
-# Additional checks needed to build $MODULE
-# This macro should be invoked by every module which depends on $MODULE, as
-# well as by $MODULE itself
-AC_DEFUN([${M4_MODULE}_CHECKS])
-
-# Additional checks needed to find $MODULE
-# This macro should be invoked by every module which depends on $MODULE, but
-# not by $MODULE itself
-AC_DEFUN([${M4_MODULE}_CHECK_MODULE],
-[
-  DUNE_CHECK_MODULES([$MODULE],[$NAME/$NAME.hh])
-])
-CC_DELIM
-
-
 ################################################################
 ################## The headers subdirectory ####################
 ################################################################
@@ -768,32 +577,10 @@ echo "- $PROJECT/dune/$NAME"
 mkdir "$PROJECT/dune"
 mkdir "$PROJECT/dune/$NAME"
 
-################## dune/Makefile.am ####################
-echo "- $PROJECT/dune/Makefile.am"
-cat> $PROJECT/dune/Makefile.am <<EOF
-SUBDIRS = $NAME
-
-EXTRA_DIST = CMakeLists.txt
-
-include \$(top_srcdir)/am/global-rules
-EOF
-
 ################## dune/CMakeLists.txt #################
 echo "- $PROJECT/dune/CMakeLists.txt"
 cat> $PROJECT/dune/CMakeLists.txt <<EOF
 add_subdirectory($NAME)
-EOF
-
-
-################## dune/$NAME/Makefile.am ##############
-echo "- $PROJECT/dune/$NAME/Makefile.am"
-cat> $PROJECT/dune/$NAME/Makefile.am <<EOF
-${NAME_}includedir = \$(includedir)/dune/${NAME}
-${NAME_}include_HEADERS = ${NAME}.hh
-
-EXTRA_DIST = CMakeLists.txt
-
-include \$(top_srcdir)/am/global-rules
 EOF
 
 ################## dune/$NAME/CMakeLists.txt ###########
@@ -821,24 +608,6 @@ EOF
 
 mkdir "$PROJECT/doc"
 
-################## doc/Makefile.am ####################
-echo "- $PROJECT/doc/Makefile.am"
-cat> "$PROJECT/doc/Makefile.am" << CC_DELIM
-SUBDIRS = doxygen
-CURDIR = doc
-BASEDIR = ..
-
-# add list of html files to generate from wml
-PAGES=
-
-docdir=\$(datadir)/doc/${PROJECT}
-
-EXTRA_DIST = CMakeLists.txt
-
-include \$(top_srcdir)/am/webstuff
-include \$(top_srcdir)/am/global-rules
-CC_DELIM
-
 ################## doc/CMakeLists.txt #################
 echo "- $PROJECT/doc/CMakeLists.txt"
 cat> "$PROJECT/doc/CMakeLists.txt" << CC_DELIM
@@ -850,7 +619,6 @@ CC_DELIM
 ###############################################################
 
 mkdir "$PROJECT/doc/doxygen"
-
 
 #################### basic Doxylocal ##########################
 
@@ -892,19 +660,6 @@ INPUT                 += @top_srcdir@/dune/
 # IMAGE_PATH            += @top_srcdir@/dune/$NAME/pics
 CC_DELIM
 
-################# doc/doxygen/Makefile.am #####################
-
-echo "- $PROJECT/doc/doxygen/Makefile.am"
-cat> "$PROJECT/doc/doxygen/Makefile.am" << CC_DELIM
-BASEDIR=../..
-CURDIR=doc/doxygen
-
-EXTRA_DIST = CMakeLists.txt
-
-include \$(top_srcdir)/am/doxygen
-include \$(top_srcdir)/am/global-rules
-CC_DELIM
-
 ################# doc/doxygen/CMakeLists.txt #####################
 
 echo "- $PROJECT/doc/doxygen/CMakeLists.txt"
@@ -913,21 +668,11 @@ cat> "$PROJECT/doc/doxygen/CMakeLists.txt" << CC_DELIM
 add_doxygen_target()
 CC_DELIM
 
-
 #########################################################
 ############### The cmake subdirectory ##################
 #########################################################
 
 mkdir "$PROJECT/cmake"
-
-################# cmake/Makefile.am #####################
-
-echo "- $PROJECT/cmake/Makefile.am"
-cat> "$PROJECT/cmake/Makefile.am" <<EOF
-SUBDIRS = modules
-
-include \$(top_srcdir)/am/global-rules
-EOF
 
 #########################################################
 ############### The cmake/modules subdirectory ##########
@@ -935,25 +680,7 @@ EOF
 
 mkdir "$PROJECT/cmake/modules"
 
-################# cmake/modules/Makefile.am #####################
-macroname=""
-for i in $(echo $PROJECT| sed 's/-/ /g'); do
-  firstchar=$(echo $i | sed 's/\(.\).*/\1/')
-  macroname=$macroname$(echo $firstchar | tr '[a-z]' '[A-Z]')$(echo $i | sed 's/.\(.*\)/\1/')
-done
-macroname="$macroname""Macros.cmake"
-
-echo "- $PROJECT/cmake/modules/Makefile.am"
-cat> "$PROJECT/cmake/modules/Makefile.am" <<EOF
-MODULES = $macroname
-modulesdir = \$(datadir)/dune/cmake/modules
-dist_modules_DATA = \${MODULES}
-
-include \$(top_srcdir)/am/global-rules
-EXTRA_DIST = CMakeLists.txt
-EOF
-
-################# cmake/modules/Makefile.am #####################
+################# cmake/modules/CMakeLists.txt #####################
 
 echo "- $PROJECT/cmake/modules/CMakeLists.txt"
 cat> "$PROJECT/cmake/modules/CMakeLists.txt" <<EOF
@@ -970,13 +697,10 @@ cat> "$PROJECT/cmake/modules/$macroname" <<EOF
 EOF
 
 
-################# stamp-regenerate-config-h #####################
+#################           done           #####################
 
-echo "- $PROJECT/stamp-regenerate-config-h"
-touch $PROJECT/stamp-regenerate-config-h
 echo
 echo "done."
 echo "------------------------------------------"
 echo "For further details read the Dune Buildsystem-Howto:"
 echo "http://www.dune-project.org/doc/buildsystem/buildsystem.pdf"
-
