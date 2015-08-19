@@ -161,9 +161,10 @@ void test_mult(FieldMatrix<K, n, m>& A,
   A.mmv(v,f);
   A.mmtv(f,v);
   A.mmhv(f,v);
-  A.usmv(0.5,v,f);
-  A.usmtv(0.5,f,v);
-  A.usmhv(0.5,f,v);
+  K scalar = (K)(0.5);
+  A.usmv(scalar,v,f);
+  A.usmtv(scalar,f,v);
+  A.usmhv(scalar,f,v);
 }
 
 
