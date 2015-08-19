@@ -326,7 +326,7 @@ void test_matrix()
 
     FieldMatrix<K,n,n+1> AB3 = Bref.leftmultiplyany(A);
     AB3 -= AB;
-    if (std::abs(AB3.infinity_norm() > 1e-10))
+    if (std::abs(AB3.infinity_norm()) > 1e-10)
       DUNE_THROW(FMatrixError,"Leftmultiplyany test failed!");
 
     FieldMatrix<K,n,n+1> CA = Aref.leftmultiplyany(C);
