@@ -223,6 +223,13 @@ load_opts() {
   fi
 }
 
+module_la_libname()
+{
+    local m=$1
+    local name="$(eval echo \$NAME_$m)"
+    echo "lib$(echo $name | sed 's/-//g').la"
+}
+
 abs_builddir()
 {
   local m=$1
@@ -716,8 +723,13 @@ run_default_configure () {
       SRCDIR="$PWD"
       cd "$ABS_BUILDDIR"
       # check for libtool libs, which might break modules depending on this module
-      test -n "`find . -name \*.la`" && \
-          echo "Error: your build directory $ABS_BUILDDIR contains libtool built libraries, please cleanup" && \
+      libname=$(module_la_libname $module)
+      found_libs=$(find dune -name \*.la) # find intermediate libtool libs
+      if test -e lib; then
+        found_libs="$found_libs"$(find lib -name $libname) #find primary lib
+      fi
+      test -n "$found_libs" && \
+          echo "ERROR: your build directory $ABS_BUILDDIR contains libtool built libraries $found_libs, please cleanup" && \
           exit 1
       echo "$PREPARAMS $CMAKE -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\""
       eval $PREPARAMS $CMAKE "-DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\"" || exit 1
