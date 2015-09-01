@@ -23,7 +23,7 @@ auto array_to_tuple ( const std::array< T, N > &array )
   return array_to_tuple_impl( array, Dune::Std::make_index_sequence< N >() );
 }
 
-int main ( int argc, char **argv )
+int main ( int, char** )
 {
   using Dune::operator<<;
   std::array< int, 4 > array{{ 1, 2, 3, 4 }};

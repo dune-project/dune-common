@@ -273,12 +273,14 @@ namespace Dune
 
     row_reference mat_access ( size_type i )
     {
+      DUNE_UNUSED_PARAMETER(i);
       assert(i == 0);
       return _data;
     }
 
     const_row_reference mat_access ( size_type i ) const
     {
+      DUNE_UNUSED_PARAMETER(i);
       assert(i == 0);
       return _data;
     }

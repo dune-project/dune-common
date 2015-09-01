@@ -229,7 +229,7 @@ struct DotProductTest
 {
   DotProductTest() {
     typedef std::complex<rt> ct;
-    const rt myEps = Epsilon<rt>::value();
+    DUNE_UNUSED const rt myEps = Epsilon<rt>::value();
 
     static_assert(
       ( Dune::is_same< typename Dune::FieldTraits<rt>::real_type, rt>::value ),
@@ -367,7 +367,7 @@ test_infinity_norms()
 void
 test_initialisation()
 {
-  Dune::FieldVector<int, 2> const b = { 1, 2 };
+  DUNE_UNUSED Dune::FieldVector<int, 2> const b = { 1, 2 };
 
   assert(b[0] == 1);
   assert(b[1] == 2);
