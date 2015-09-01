@@ -554,10 +554,11 @@ void test_interface()
 
 void test_initialisation()
 {
-  Dune::FieldMatrix<int, 2, 2> const A = {
+  DUNE_UNUSED Dune::FieldMatrix<int, 2, 2> const A = {
     { 1, 2 },
     { 3, 4 }
   };
+
   assert(A[0][0] == 1);
   assert(A[0][1] == 2);
   assert(A[1][0] == 3);

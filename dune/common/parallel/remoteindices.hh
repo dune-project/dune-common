@@ -1013,6 +1013,7 @@ namespace Dune {
                                               int bufferSize,
                                               int *position, int n)
   {
+    DUNE_UNUSED_PARAMETER(n);
     // fill with own indices
     typedef typename ParallelIndexSet::const_iterator const_iterator;
     typedef IndexPair<GlobalIndex,LocalIndex> PairType;

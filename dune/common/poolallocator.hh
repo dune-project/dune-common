@@ -564,7 +564,7 @@ namespace Dune
 
   template<class T, std::size_t s>
   inline typename PoolAllocator<T,s>::pointer
-  PoolAllocator<T,s>::allocate(std::size_t n, const_pointer hint)
+  PoolAllocator<T,s>::allocate(std::size_t n, const_pointer)
   {
     if(n==1)
       return static_cast<T*>(memoryPool_.allocate());
