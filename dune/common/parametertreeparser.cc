@@ -189,7 +189,8 @@ void Dune::ParameterTreeParser::readNamedOptions(int argc, char* argv[],
         DUNE_THROW(ParameterTreeParserError,
           "parameter " << key << " already specified" << "\n" << helpstr);
       pt[key] = value;
-      done[std::distance(keywords.begin(),it)] = true; // mark key as stored
+      if(it != keywords.end())
+        done[std::distance(keywords.begin(),it)] = true; // mark key as stored
     }
     else {
       // map to the next keyword in the list
