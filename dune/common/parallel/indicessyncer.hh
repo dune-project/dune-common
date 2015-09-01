@@ -459,8 +459,7 @@ namespace Dune
    */
   template<typename T, typename A, typename A1>
   void storeGlobalIndicesOfRemoteIndices(std::map<int,SLList<std::pair<typename T::GlobalIndex, typename T::LocalIndex::Attribute>,A> >& globalMap,
-                                         const RemoteIndices<T,A1>& remoteIndices,
-                                         const T& indexSet)
+                                         const RemoteIndices<T,A1>& remoteIndices)
   {
     typedef typename RemoteIndices<T,A1>::const_iterator RemoteIterator;
 
