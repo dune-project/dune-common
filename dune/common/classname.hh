@@ -46,7 +46,7 @@ namespace Dune {
 
   /** \brief Provide the demangled class name of a given object as a string */
   template <class T>
-  std::string className ( T& t )
+  std::string className ( T& )
   {
     return className<T>();
   }
