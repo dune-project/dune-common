@@ -51,6 +51,15 @@ namespace Dune
 
     // index_sequence
     // --------------
+    // While this is similar to std::index_sequence, there is one
+    // major problem with the present implementation. Our index_sequence
+    // is only derived from integer_sequence but not equal to one.
+    // As a consequence template specializations that are common
+    // in nontrivial use cases will fail unless we take special
+    // care about index_sequence. The correct implementation is
+    // a template alias. We should switch to the correct implementation
+    // (i.e. a template alias) as soon as we allow this c++11 feature
+    // in dune-common.
 
     /** \brief a function similar to std::index_sequence to be introduced in
      *         C++14
