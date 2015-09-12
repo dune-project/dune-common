@@ -680,6 +680,13 @@ mkdir "$PROJECT/cmake"
 
 mkdir "$PROJECT/cmake/modules"
 
+macroname=""
+for i in $(echo $PROJECT| sed 's/-/ /g'); do
+  firstchar=$(echo $i | sed 's/\(.\).*/\1/')
+  macroname=$macroname$(echo $firstchar | tr '[a-z]' '[A-Z]')$(echo $i | sed 's/.\(.*\)/\1/')
+done
+macroname="$macroname""Macros.cmake"
+
 ################# cmake/modules/CMakeLists.txt #####################
 
 echo "- $PROJECT/cmake/modules/CMakeLists.txt"
