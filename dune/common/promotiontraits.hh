@@ -3,14 +3,13 @@
 #ifndef DUNE_PROMOTIONTRAITS_HH
 #define DUNE_PROMOTIONTRAITS_HH
 
-#include <complex>
+#include <utility>
 
 namespace Dune {
   /**
    * @file
-   * @brief  Provides some promotion traits
+   * @brief  Compute type of the result of an arithmetic operation involving two different number types.
    *
-   * For example, the promotion traits are used for the implementation of dot products @see <dune/common/dotproduct.hh>
    * @author Matthias Wohlmuth
    */
 
@@ -19,42 +18,19 @@ namespace Dune {
    * @{
    */
 
-  /**
-  ** \brief Class for type promotions. For example, the promotion traits are used for the implementation of dot products @see <dune/common/dotproduct.hh>
-  **  \private basic template:
+  /** \brief Compute type of the result of an arithmetic operation involving two different number types.
   */
   template <typename T1, typename T2>
-  struct PromotionTraits { };
+  struct PromotionTraits
+  {
+    typedef decltype(std::declval<T1>()+std::declval<T2>()) PromotedType;
+  };
 
-#ifndef DOXYGEN
-  // class for type promotion; // the same types are the same:
+  // Specialization for the case of two equal types
+  // One should think that the generic template should handle this case as well.
+  // However, the fvectortest.cc unit test fails without it if ENABLE_GMP is set.
   template <typename T1>
   struct PromotionTraits<T1,T1> { typedef T1 PromotedType; };
-
-  // promote to complex type
-  template <typename T1>
-  struct PromotionTraits<std::complex<T1>,T1> { typedef std::complex<T1> PromotedType; };
-
-  // \private promote to complex type
-  template <typename T1>
-  struct PromotionTraits<T1,std::complex<T1> > { typedef std::complex<T1> PromotedType; };
-
-  // a few specializations for some common cases
-  template<> struct PromotionTraits<std::complex<double>,std::complex<double> >   { typedef std::complex<double> PromotedType; };
-  template<> struct PromotionTraits<std::complex<double>,double>   { typedef std::complex<double> PromotedType; };
-  template<> struct PromotionTraits<double,std::complex<double> >   { typedef std::complex<double> PromotedType; };
-  template<> struct PromotionTraits<double,double>   { typedef double PromotedType; };
-
-  template<> struct PromotionTraits<std::complex<float>,float>   { typedef std::complex<float> PromotedType; };
-  template<> struct PromotionTraits<float,std::complex<float> >   { typedef std::complex<float> PromotedType; };
-  template<> struct PromotionTraits<std::complex<float>,std::complex<float> >   { typedef std::complex<float> PromotedType; };
-  template<> struct PromotionTraits<float,float>   { typedef float PromotedType; };
-
-  template<> struct PromotionTraits<std::complex<int>,int>   { typedef std::complex<int> PromotedType; };
-  template<> struct PromotionTraits<int,std::complex<int> >   { typedef std::complex<int> PromotedType; };
-  template<> struct PromotionTraits<std::complex<int>,std::complex<int> >   { typedef std::complex<int> PromotedType; };
-  template<> struct PromotionTraits<int,int>   { typedef int PromotedType; };
-#endif // DOXYGEN
 
   /** @} */
 } // end namespace
