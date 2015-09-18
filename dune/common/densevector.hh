@@ -244,7 +244,7 @@ namespace Dune {
 
   protected:
     // construction allowed to derived classes only
-    DenseVector () {}
+    DUNE_CONSTEXPR DenseVector () {}
 
   public:
     //===== type definitions and constants

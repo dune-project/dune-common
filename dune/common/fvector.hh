@@ -105,7 +105,7 @@ namespace Dune {
     typedef typename Base::value_type value_type;
 
     //! Constructor making default-initialized vector
-    FieldVector()
+    DUNE_CONSTEXPR FieldVector()
       : _data{}
     {}
 
