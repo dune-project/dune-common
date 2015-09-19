@@ -5,7 +5,6 @@
 
 #include "ftraits.hh"
 #include "typetraits.hh"
-#include "promotiontraits.hh"
 
 namespace Dune {
   /**
@@ -40,8 +39,9 @@ namespace Dune {
    * @return conj(a)*b
    */
   template<class A, class B>
-  inline typename enable_if<!IsVector<A>::value && !is_same<typename FieldTraits<A>::field_type,typename FieldTraits<A>::real_type> ::value,  typename PromotionTraits<A,B>::PromotedType>::type
-  dot(const A & a, const B & b) {
+  auto
+  dot(const A & a, const B & b) -> typename enable_if<!IsVector<A>::value && !is_same<typename FieldTraits<A>::field_type,typename FieldTraits<A>::real_type> ::value, decltype(conj(a)*b)>::type
+  {
     return conj(a)*b;
   }
 
@@ -56,8 +56,9 @@ namespace Dune {
    */
   // fundamental type with A being a real type
   template<class A, class B>
-  inline typename enable_if<!IsVector<A>::value && is_same<typename FieldTraits<A>::field_type,typename FieldTraits<A>::real_type>::value,  typename PromotionTraits<A,B>::PromotedType>::type
-  dot(const A & a, const B & b) {
+  auto
+  dot(const A & a, const B & b) -> typename enable_if<!IsVector<A>::value && is_same<typename FieldTraits<A>::field_type,typename FieldTraits<A>::real_type>::value, decltype(a*b)>::type
+  {
     return a*b;
   }
 
@@ -70,11 +71,10 @@ namespace Dune {
    * @param b
    * @return dot(a,b)
    */
-  // vectors
   template<typename A, typename B>
-  //  inline typename enable_if<IsVector<A>::value, typename PromotionTraits<typename FieldTraits<A>::field_type, typename FieldTraits<B>::field_type >::PromotedType>::type
-  inline typename enable_if<IsVector<A>::value, typename PromotionTraits<typename A::field_type, typename B::field_type >::PromotedType>::type
-  dot(const A & a, const B & b) {
+  auto
+  dot(const A & a, const B & b) -> typename enable_if<IsVector<A>::value, decltype(a.dot(b))>::type
+  {
     return a.dot(b);
   }
   /** @} */
@@ -87,21 +87,9 @@ namespace Dune {
    * @return a*b
    */
   template<class A, class B>
-  inline typename enable_if<!IsVector<A>::value && !is_same<typename FieldTraits<A>::field_type,typename FieldTraits<A>::real_type> ::value,  typename PromotionTraits<A,B>::PromotedType>::type
-  dotT(const A & a, const B & b) {
-    return a*b;
-  }
-
-  /**
-   * @brief Computes an indefinite vector dot product for various dune vector types according to Petsc's VectTDot function: dotT(a,b) := a*b
-   * @see http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecTDot.html#VecTDot
-   * @param a
-   * @param b
-   * @return a*b
-   */
-  template<class A, class B>
-  inline typename enable_if<IsVector<A>::value, typename PromotionTraits<typename A::field_type, typename B::field_type >::PromotedType>::type
-  dotT(const A & a, const B & b) {
+  auto
+  dotT(const A & a, const B & b) -> decltype(a*b)
+  {
     return a*b;
   }
 
