@@ -224,7 +224,7 @@ namespace Dune {
     //===== construction
 
     /** \brief Default constructor */
-    FieldVector ()
+    DUNE_CONSTEXPR FieldVector ()
       : _data()
     {}
 
