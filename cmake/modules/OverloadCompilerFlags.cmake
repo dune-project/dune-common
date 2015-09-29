@@ -17,12 +17,6 @@
 #
 option(ALLOW_CXXFLAGS_OVERWRITE OFF)
 
-# check whether the user wants to append compile flags upon calling make
-if(ALLOW_EXTRA_CXXFLAGS AND (${CMAKE_GENERATOR} MATCHES ".*Unix Makefiles.*"))
-  message("ALLOW_EXTRA_CXXFLAGS is deprecated, please use -DALLOW_CXXFLAGS_OVERWRITE=ON")
-  set(ALLOW_CXXFLAGS_OVERWRITE ON)
-endif()
-
 macro(find_extended_unix_commands)
   include(FindUnixCommands)
   find_program (GREP_PROGRAM grep)
