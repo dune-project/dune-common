@@ -619,8 +619,8 @@ macro(dune_project)
     endif (APPLE)
   endif(DUNE_USE_ONLY_STATIC_LIBS)
 
-  # set required compiler flags for C++11 (former C++0x)
-  include(CheckCXX11Features)
+  # check for C++ features, set compiler flags for C++14 or C++11 mode
+  include(CheckCXXFeatures)
 
   include(DuneCxaDemangle)
 
