@@ -24,9 +24,21 @@ if(NOT DISABLE_CXX_VERSION_CHECK)
   # try to use compiler flag -std=c++14
   include(TestCXXAcceptsFlag)
   check_cxx_accepts_flag("-std=c++14" CXX_FLAG_CXX14)
+
+  include(CheckCXXSourceCompiles)
+  cmake_push_check_state()
+  set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++14")
+  check_cxx_source_compiles("
+      #include <memory>
+
+      int main() {
+        std::make_unique<int>();
+      }
+    " CXX_LIB_SUPPORTS_CXX14)
+  cmake_pop_check_state()
 endif()
 
-if(CXX_FLAG_CXX14)
+if(CXX_FLAG_CXX14 AND CXX_LIB_SUPPORTS_CXX14)
   set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++14")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 ")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -std=c++14 ")
@@ -38,8 +50,20 @@ else()
   if(NOT DISABLE_CXX_VERSION_CHECK)
     # try to use compiler flag -std=c++1y for older compilers
     check_cxx_accepts_flag("-std=c++1y" CXX_FLAG_CXX1Y)
+
+    include(CheckCXXSourceCompiles)
+    cmake_push_check_state()
+    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++1y")
+    check_cxx_source_compiles("
+        #include <memory>
+
+        int main() {
+          std::make_unique<int>();
+        }
+      " CXX_LIB_SUPPORTS_CXX1Y)
+    cmake_pop_check_state()
   endif()
-  if(CXX_FLAG_CXX1Y)
+  if(CXX_FLAG_CXX1Y AND CXX_LIB_SUPPORTS_CXX1Y)
     set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++1y" )
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y ")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -std=c++1y ")
@@ -51,7 +75,9 @@ else()
 endif()
 
 # test for C++11 flags
-if(NOT (DISABLE_CXX_VERSION_CHECK OR CXX_FLAG_CXX14 OR CXX_FLAG_CXX1Y))
+if(NOT DISABLE_CXX_VERSION_CHECK
+   AND NOT ((CXX_FLAG_CXX14 AND CXX_LIB_SUPPORTS_CXX14)
+            OR (CXX_FLAG_CXX1Y AND CXX_LIB_SUPPORTS_CXX1Y)))
   # try to use compiler flag -std=c++11
   check_cxx_accepts_flag("-std=c++11" CXX_FLAG_CXX11)
 
@@ -405,3 +431,5 @@ if(NOT STDTHREAD_WORKS)
     "STDTHREAD_LINK_FLAGS.  If you think this test is wrong, set the cache "
     "variable STDTHREAD_WORKS.")
 endif(NOT STDTHREAD_WORKS)
+
+cmake_pop_check_state()
