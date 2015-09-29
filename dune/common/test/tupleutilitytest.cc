@@ -14,7 +14,7 @@
 //
 // check FirstTypeIndex
 //
-typedef Dune::tuple<int, unsigned, double> MyTuple;
+typedef std::tuple<int, unsigned, double> MyTuple;
 static_assert((Dune::FirstTypeIndex<MyTuple, int>::value == 0),
               "FirstTypeIndex finds the wrong index for double in MyTuple!");
 static_assert((Dune::FirstTypeIndex<MyTuple, unsigned>::value == 1),
@@ -28,8 +28,8 @@ static_assert((Dune::FirstTypeIndex<MyTuple, double>::value == 2),
 //
 // check PushBackTuple
 typedef Dune::PushBackTuple<MyTuple, char>::type MyTupleAppended1;
-typedef Dune::tuple<int, unsigned, double, char> MyTupleAppended2;
-static_assert((Dune::is_same<MyTupleAppended1, MyTupleAppended2>::value),
+typedef std::tuple<int, unsigned, double, char> MyTupleAppended2;
+static_assert((std::is_same<MyTupleAppended1, MyTupleAppended2>::value),
               "PushBackTuple failed!");
 
 
@@ -38,8 +38,8 @@ static_assert((Dune::is_same<MyTupleAppended1, MyTupleAppended2>::value),
 //
 // check PushFrontTuple
 typedef Dune::PushFrontTuple<MyTuple, char>::type MyTuplePrepended1;
-typedef Dune::tuple<char, int, unsigned, double> MyTuplePrepended2;
-static_assert((Dune::is_same<MyTuplePrepended1, MyTuplePrepended2>::value),
+typedef std::tuple<char, int, unsigned, double> MyTuplePrepended2;
+static_assert((std::is_same<MyTuplePrepended1, MyTuplePrepended2>::value),
               "PushFrontTuple failed!");
 
 
@@ -48,8 +48,8 @@ static_assert((Dune::is_same<MyTuplePrepended1, MyTuplePrepended2>::value),
 //
 // check JoinTuples
 typedef Dune::JoinTuples<MyTuple, MyTuple>::type MyTupleMyTuple1;
-typedef Dune::tuple<int, unsigned, double, int, unsigned, double> MyTupleMyTuple2;
-static_assert((Dune::is_same<MyTupleMyTuple1, MyTupleMyTuple2>::value),
+typedef std::tuple<int, unsigned, double, int, unsigned, double> MyTupleMyTuple2;
+static_assert((std::is_same<MyTupleMyTuple1, MyTupleMyTuple2>::value),
               "JoinTuples failed!");
 
 
@@ -57,10 +57,10 @@ static_assert((Dune::is_same<MyTupleMyTuple1, MyTupleMyTuple2>::value),
 //////////////////////////////////////////////////////////////////////
 //
 // check FlattenTuple
-typedef Dune::tuple<char, float> MyTuple2;
-typedef Dune::tuple<MyTuple, MyTuple2> MyTupleTuple;
+typedef std::tuple<char, float> MyTuple2;
+typedef std::tuple<MyTuple, MyTuple2> MyTupleTuple;
 typedef Dune::FlattenTuple<MyTupleTuple>::type MyTupleTupleFlat1;
-typedef Dune::tuple<int, unsigned, double, char, float> MyTupleTupleFlat2;
+typedef std::tuple<int, unsigned, double, char, float> MyTupleTupleFlat2;
 static_assert((Dune::is_same<MyTupleTupleFlat1, MyTupleTupleFlat2>::value),
               "FlattenTuples failed!");
 
@@ -76,7 +76,7 @@ struct Range
 {
   typedef typename Dune::PushBackTuple<
       typename Range<start, end-1>::type,
-      typename Dune::integral_constant<int,end-1>
+      typename std::integral_constant<int,end-1>
       >::type type;
 };
 
@@ -95,7 +95,7 @@ struct DivisorAccumulator
 
   typedef typename Data::second_type OldTuple;
   typedef typename Dune::PushBackTuple<OldTuple, PotentialDivisor>::type ExtendedTuple;
-  typedef typename Dune::conditional<isDivisor, ExtendedTuple, OldTuple>::type NewTuple;
+  typedef typename std::conditional<isDivisor, ExtendedTuple, OldTuple>::type NewTuple;
 
   typedef typename std::pair<typename Data::first_type, NewTuple> type;
 };
@@ -107,10 +107,10 @@ struct Divisors
   typedef typename Dune::ReduceTuple<
       DivisorAccumulator,
       typename Range<1,X+1>::type,
-      typename std::pair<typename Dune::integral_constant<int, X>, typename Dune::tuple<> >
+      typename std::pair<typename std::integral_constant<int, X>, typename std::tuple<> >
       >::type::second_type type;
 
-  enum {value = Dune::tuple_size<type>::value};
+  enum {value = std::tuple_size<type>::value};
 };
 
 // An accumulator to build up a list of primes up to a fixed integer
@@ -119,7 +119,7 @@ struct PrimeAccumulator
 {
   enum {isPrime = (Divisors<N::value>::value==2)};
 
-  typedef typename Dune::conditional<isPrime, typename Dune::PushBackTuple<Data, N>::type, Data>::type type;
+  typedef typename std::conditional<isPrime, typename Dune::PushBackTuple<Data, N>::type, Data>::type type;
 };
 
 // Construct list primes
@@ -134,12 +134,12 @@ struct Primes
 };
 
 typedef Primes<9>::type Primes1;
-typedef Dune::tuple<
-    Dune::integral_constant<int, 2>,
-    Dune::integral_constant<int, 3>,
-    Dune::integral_constant<int, 5>,
-    Dune::integral_constant<int, 7> > Primes2;
-static_assert((Dune::is_same<Primes1, Primes2>::value),
+typedef std::tuple<
+    std::integral_constant<int, 2>,
+    std::integral_constant<int, 3>,
+    std::integral_constant<int, 5>,
+    std::integral_constant<int, 7> > Primes2;
+static_assert((std::is_same<Primes1, Primes2>::value),
               "ReduceTuple failed in primes-tmp!");
 
 
