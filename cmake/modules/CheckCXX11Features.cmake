@@ -1,5 +1,5 @@
 #
-# Module that checks for supported C++11 (former C++0x) features.
+# Module that checks for supported C++14, C++11 and non-standard features.
 #
 # Sets the follwing variables:
 #
@@ -11,44 +11,63 @@
 # HAVE_KEYWORD_FINAL               True if final is supported.
 # HAVE_RANGE_BASED_FOR             True if range-based for is supported and working.
 # HAVE_NOEXCEPT_SPECIFIER          True if nonexcept specifier is supported.
+#
+# Input variables:
+#
+# DISABLE_CXX_VERSION_CHECK        Disable checking for std=c++11 (c++14, c++1y)
 
 include(CMakePushCheckState)
 cmake_push_check_state()
 
-# test for C++11 flags
-include(TestCXXAcceptsFlag)
+# test for C++14 flags
+if(NOT DISABLE_CXX_VERSION_CHECK)
+  # try to use compiler flag -std=c++14
+  include(TestCXXAcceptsFlag)
+  check_cxx_accepts_flag("-std=c++14" CXX_FLAG_CXX14)
+endif()
 
-if(NOT DISABLE_CXX11CHECK)
+if(CXX_FLAG_CXX14)
+  set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++14")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 ")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -std=c++14 ")
+  set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} -std=c++14 ")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++14 ")
+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -std=c++14 ")
+  set(CXX_STD14_FLAGS "-std=c++14")
+else()
+  if(NOT DISABLE_CXX_VERSION_CHECK)
+    # try to use compiler flag -std=c++1y for older compilers
+    check_cxx_accepts_flag("-std=c++1y" CXX_FLAG_CXX1Y)
+  endif()
+  if(CXX_FLAG_CXX1Y)
+    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++1y" )
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y ")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -std=c++1y ")
+    set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} -std=c++1y ")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++1y ")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -std=c++1y ")
+  set(CXX_STD14_FLAGS "-std=c++1y")
+  endif()
+endif()
+
+# test for C++11 flags
+if(NOT (DISABLE_CXX_VERSION_CHECK OR CXX_FLAG_CXX14 OR CXX_FLAG_CXX1Y))
   # try to use compiler flag -std=c++11
   check_cxx_accepts_flag("-std=c++11" CXX_FLAG_CXX11)
-endif(NOT DISABLE_CXX11CHECK)
 
-if(CXX_FLAG_CXX11)
-  set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++11")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -std=c++11 ")
-  set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} -std=c++11 ")
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++11 ")
-  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -std=c++11 ")
-  set(CXX_STD11_FLAGS "-std=c++11")
-else()
-  if(NOT DISABLE_CXX11CHECK)
-    # try to use compiler flag -std=c++0x for older compilers
-    check_cxx_accepts_flag("-std=c++0x" CXX_FLAG_CXX0X)
-    if(NOT CXX_FLAG_CXX0X)
-      MESSAGE(FATAL_ERROR "Your compiler does not seem to support C++11. If it does, please add any required flags to your CXXFLAGS and run dunecontrol with --disable-cxx11check")
-    endif(NOT CXX_FLAG_CXX0X)
-  endif(NOT DISABLE_CXX11CHECK)
-  if(CXX_FLAG_CXX0X)
-    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++0x" )
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x ")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -std=c++0x ")
-    set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} -std=c++0x ")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++0x ")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -std=c++0x ")
-  set(CXX_STD11_FLAGS "-std=c++0x")
-  endif(CXX_FLAG_CXX0X)
-endif(CXX_FLAG_CXX11)
+  if(CXX_FLAG_CXX11)
+    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -std=c++11 ")
+    set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} -std=c++11 ")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++11 ")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -std=c++11 ")
+    set(CXX_STD11_FLAGS "-std=c++11")
+  else()
+    message(FATAL_ERROR "Your compiler does not seem to support C++11. If it does, please add any required flags to your CMAKE_CXX_FLAGS or set DISABLE_CXX_VERSION_CHECK.")
+  endif()
+endif()
+
 # perform tests
 include(CheckCXXSourceCompiles)
 
