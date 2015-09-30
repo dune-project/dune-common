@@ -1,10 +1,11 @@
-set(modules
+install(FILES
   AddGMPFlags.cmake
   AddMETISFlags.cmake
   AddParMETISFlags.cmake
   AddPTScotchFlags.cmake
   AddUMFPackFlags.cmake
   CheckCXXFeatures.cmake
+  CheckForPthreads.c
   DuneBoost.cmake
   DuneCMakePackageConfigHelpers.cmake
   DuneCommonMacros.cmake
@@ -32,8 +33,5 @@ set(modules
   LanguageSupport.cmake
   OverloadCompilerFlags.cmake
   UseInkscape.cmake
-  UseLATEX.cmake)
-set(test_programs CheckForPthreads.c)
-install(FILES ${modules}
-              ${test_programs}
-        DESTINATION ${DUNE_INSTALL_MODULEDIR})
+  UseLATEX.cmake
+  DESTINATION ${DUNE_INSTALL_MODULEDIR})
