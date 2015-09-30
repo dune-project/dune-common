@@ -182,13 +182,13 @@ namespace Dune
     }
 
     //! Returns current capacity (allocated memory) of the vector.
-    static size_type capacity()
+    static DUNE_CONSTEXPR size_type capacity()
     {
       return n;
     }
 
     //! Returns the maximum length of the vector.
-    static size_type max_size()
+    static DUNE_CONSTEXPR size_type max_size()
     {
       return n;
     }
