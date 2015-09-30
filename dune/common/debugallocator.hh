@@ -295,7 +295,7 @@ namespace Dune
 }
 
 #ifdef DEBUG_NEW_DELETE
-void * operator new(size_t size) throw(std::bad_alloc)
+void * operator new(size_t size)
 {
   // try to allocate size bytes
   void *p = Dune::DebugMemory::alloc_man.allocate<char>(size);
