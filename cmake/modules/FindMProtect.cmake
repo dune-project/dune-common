@@ -1,9 +1,13 @@
+# .. cmake_module::
 #
-# Module that detects mproctect support
+#    Module that detects mprotect support
 #
-# Sets the following variables
-# HAVE_SYS_MMAN_H
-# HAVE_MPROTECT
+#    Sets the following variables:
+#
+#    * :code:`HAVE_SYS_MMAN_H`
+#    * :code:`HAVE_MPROTECT`
+#
+
 include(CheckIncludeFile)
 check_include_file("sys/mman.h" HAVE_SYS_MMAN_H)
 include(CheckCSourceCompiles)

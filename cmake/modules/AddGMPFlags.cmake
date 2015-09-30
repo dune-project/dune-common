@@ -1,6 +1,16 @@
-# add_dune_gmp_flags(target1 target2 ...)
-# Function that adds GMP flags to the specified targets
+# Defines the functions to use GMP
 #
+# .. cmake_function:: add_dune_gmp_flags
+#
+#    .. cmake_param:: targets
+#       :positional:
+#       :single:
+#       :required:
+#
+#       A list of targets to use GMP with.
+#
+
+
 function(add_dune_gmp_flags _targets)
   if(GMP_FOUND)
     foreach(_target ${_targets})

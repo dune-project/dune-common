@@ -5,16 +5,24 @@
 #   initialize_compiler_script() : needs to be called before further flags are added to CMAKE_CXX_FLAGS
 #   finalize_compiler_script()   : needs to be called at the end of the cmake macros, e.g. in finalize_dune_project
 #
-#   By default this feature is disabled. Use -DALLOW_CXXFLAGS_OVERWRITE=ON to activate.
-#   Then the following is possible:
+# Those two macro calls are hooked into dune_project/finalize_dune_project.
 #
-#   make CXXFLAGS="your flags" GRIDTYPE="grid type"
+# .. cmake_variable:: ALLOW_CXXFLAGS_OVERWRITE
 #
-#   GRIDTYPE can be anything defined in config.h via the dune_define_gridtype macro from dune-grid.
-#   Furthermore any CPP variable of the form -DVAR=VALUE can be overloaded on the command line.
+#    Setting this option will allow you to overload preprocessor definitions from
+#    the command line, as it was possible naturally with the autotools build system.
+#    This feature only works with a :code:`Unix Makefiles` based generator. You can
+#    use it as:
 #
-#   Note: If you don't know what this is or what it's good for, don't use it.
+#    :code:`make CXXFLAGS="your flags" GRIDTYPE="grid type"`
 #
+#    :code:`GRIDTYPE` can be anything defined in :code:`config.h` via the :ref:`dune_define_gridtype` macro from dune-grid.
+#    Furthermore any CPP variable of the form :code:`-DVAR=VALUE` can be overloaded on the command line.
+#
+#    .. note::
+#       If you don't know what this is or what it's good for, don't use it.
+#
+
 option(ALLOW_CXXFLAGS_OVERWRITE OFF)
 
 macro(find_extended_unix_commands)

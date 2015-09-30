@@ -1,16 +1,15 @@
-# Module that checks for inkscape
+# .. cmake_module::
 #
-# Sets the following variables
+#    Module that checks for inkscape
 #
-# INSCAPE: Path to inkscape to generate .png's form .svg's
+#    Sets the following variables
 #
-# Provides the following functions:
+#    :code:`INKSCAPE_FOUND`
+#       Whether inkscape was found
 #
-# inkscape_generate_png_from_svg([OUTPUT_DIR <output_dir>] <pngfile1.png> [<pngfile2.png> ....])
+#    :code:`INKSCAPE`
+#       Path to inkscape to generate .png's form .svg's
 #
-# Generates pngfile1, ... from svg input files pngfile1.svg, ....
-# The output directory can be specified with the option OUTPUT_DIR. If it is omitted
-# the files will be generated in CMAKE_CURRENT_BINARY_DIR.
 
 find_program(INKSCAPE inkscape DOC "Path to inkscape to generate png files from svg files")
 find_program(CONVERT convert DOC "Path to convert program")

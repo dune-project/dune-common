@@ -15,6 +15,7 @@ set(modules
   DuneMacros.cmake
   DuneMPI.cmake
   DunePkgConfig.cmake
+  DuneSphinxCMakeDoc.cmake
   DuneStreams.cmake
   DuneSymlinkOrCopy.cmake
   DuneTestMacros.cmake
@@ -26,6 +27,7 @@ set(modules
   FindMProtect.cmake
   FindParMETIS.cmake
   FindPTScotch.cmake
+  FindSphinx.cmake
   FindThreadsCMake31.cmake
   FindUMFPack.cmake
   Headercheck.cmake

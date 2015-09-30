@@ -1,20 +1,45 @@
+# .. cmake_module::
 #
-# Module that checks for supported C++14, C++11 and non-standard features.
+#    Module that checks for supported C++14, C++11 and non-standard features.
 #
-# Sets the follwing variables:
+#    The behaviour of this module can be modified by the following variable:
 #
-# HAVE_NULLPTR                     True if nullptr is available
-# HAS_ATTRIBUTE_UNUSED             True if attribute unused is supported
-# HAS_ATTRIBUTE_DEPRECATED         True if attribute deprecated is supported
-# HAS_ATTRIBUTE_DEPRECATED_MSG     True if attribute deprecated("msg") is supported
-# HAVE_CONSTEXPR                   True if constexpr is supported
-# HAVE_KEYWORD_FINAL               True if final is supported.
-# HAVE_RANGE_BASED_FOR             True if range-based for is supported and working.
-# HAVE_NOEXCEPT_SPECIFIER          True if nonexcept specifier is supported.
+#    :ref:`DISABLE_CXX_VERSION_CHECK`
+#       Disable checking for std=c++11 (c++14, c++1y)
 #
-# Input variables:
+#    This module internally sets the following variables, which are then
+#    exported into the config.h of the current dune module.
 #
-# DISABLE_CXX_VERSION_CHECK        Disable checking for std=c++11 (c++14, c++1y)
+#    :code:`HAVE_NULLPTR`
+#       True if nullptr is available
+#
+#    :code:`HAS_ATTRIBUTE_UNUSED`
+#       True if attribute unused is supported
+#
+#    :code:`HAS_ATTRIBUTE_DEPRECATED`
+#       True if attribute deprecated is supported
+#
+#    :code:`HAS_ATTRIBUTE_DEPRECATED_MSG`
+#       True if attribute deprecated("msg") is supported
+#
+#    :code:`HAVE_CONSTEXPR1`
+#       True if constexpr is supported
+#
+#    :code:`HAVE_KEYWORD_FINAL`
+#       True if final is supported.
+#
+#    :code:`HAVE_RANGE_BASED_FOR`
+#       True if range-based for is supported and working.
+#
+#    :code:`HAVE_NOEXCEPT_SPECIFIER`
+#       True if nonexcept specifier is supported.
+#
+# .. cmake_variable:: DISABLE_CXX_VERSION_CHECK
+#
+#    You may set this variable to TRUE to disable checking for
+#    std=c++11 (c++14, c++1y). For more details, check :ref:`CheckCXXFeatures`.
+#
+
 
 include(CMakePushCheckState)
 cmake_push_check_state()

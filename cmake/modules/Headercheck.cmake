@@ -1,3 +1,11 @@
+# .. cmake_variable:: ENABLE_HEADERCHECK
+#
+#    Set this variable to TRUE if you want to use the CMake
+#    reimplementation of the old autotools feaure :code:`make headercheck`.
+#    There has been a couple of issues with this implementation in
+#    the past, so it was deactivated by default.
+#
+
 # sets up a global property with the names of all header files
 # in the module and a global target depending on all checks
 macro(setup_headercheck)

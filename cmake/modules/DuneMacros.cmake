@@ -1,6 +1,71 @@
 # Core DUNE module for CMake.
 #
-# Provides the following macros:
+# Documentation of the public API defined in this module:
+#
+# .. cmake_function:: dune_project
+#
+#    Initialize a Dune module. This function needs to be run from every
+#    top-level CMakeLists.txt file. It sets up the module, defines basic
+#    variables and manages depedencies. Don't forget to call
+#    :ref:`finalize_dune_project` afterwards.
+#
+# .. cmake_function:: finalize_dune_project
+#
+#    Finalize a Dune module. This function needs to be run at the end of
+#    every top-level CMakeLists.txt file.
+#
+# .. cmake_function:: dune_add_library
+#
+#    .. cmake_brief::
+#
+#       Add a library to a Dune module!
+#
+#    .. cmake_param:: basename
+#       :single:
+#       :required:
+#       :positional:
+#
+#       The basename for the library. On Unix this created :code:`lib<basename>.so`
+#       and :code:`lib<basename>.a`
+#
+#    .. cmake_param:: NO_EXPORT
+#       :option:
+#
+#       If omitted the library is exported for usage in other modules.
+#
+#    .. cmake_param:: ADD_LIBS
+#       :multi:
+#
+#       A list of libraries that should be incorporated into this library.
+#
+#    .. cmake_param:: OBJECT
+#       :option:
+#
+#       .. note::
+#          This feature will very likely vanish in Dune 3.0
+#
+#    .. cmake_param:: SOURCES
+#       :multi:
+#       :required:
+#
+#       The source files from which to build the library.
+#
+#    .. cmake_param:: COMPILE_FLAGS
+#       :multi:
+#
+#       Any additional compile flags fpr building the library.
+#
+# .. cmake_function:: dune_target_link_libraries
+#
+#    .. cmake_param:: BASENAME
+#
+#    .. cmake_param:: LIBRARIES
+#
+#    Link libraries to the static and shared version of
+#    library BASENAME
+#
+#
+# Documentation of internal macros in this module:
 #
 # dune_module_to_uppercase(upper_name module_name)
 #
@@ -12,15 +77,6 @@
 #
 # Parse ${MODULE_DIR}/dune.module and provide that information.
 # If the second argument is QUIET no status message is printed.
-#
-#
-# dune_project()
-#
-#  macro that should be called near the begin of the top level CMakeLists.txt.
-# Namely it sets up the module, defines basic variables and manages
-# depedencies.
-# Don't forget to call finalize_dune_project afterwards.
-#
 #
 # dune_create_dependency_tree()
 #
@@ -35,7 +91,6 @@
 # _macro_name: variable where the name will be stored.
 # _dune_module: the name of the dune module.
 #
-#
 # dune_regenerate_config_cmake()
 #
 # Creates a new config_collected.h.cmake file in ${CMAKE_CURRENT_BINARY_DIR) that
@@ -43,37 +98,6 @@
 # and includes non-private entries from the files config_collected.h.cmake files
 # of all dependent modules.
 # Finally config.h is created from config_collected.h.cmake.
-#
-#
-# dune_add_library(<basename> [NO_EXPORT] [ADD_LIBS <lib1> [<lib2> ...]]
-#   [OBJECT] SOURCES <source1> [<source2> ...] [COMPILE_FLAGS <flags>])
-#
-# Creates shared and static libraries with the same basename.
-# <basename> is the basename of the library.
-# On Unix this creates lib<basename>.so and lib<BASENAME>.a.
-# Libraries that should be incorporate into this library can
-# be specified with the ADD_LIBS option.
-# The libraries will be built in ${PROJECT_BINARY_DIR}/lib.
-# If the option NO_EXPORT is omitted the library is exported
-# for usage in other modules.
-#
-# Object libraries can now be created with dune_add_library(<target>
-#  OBJECT <sources>). It will create a GLOBAL property
-#  _DUNE_TARGET_OBJECTS:<target>_ that records the full path to the
-#  source files. Theses can later be referenced by providing
-#  _DUNE_TARGET_OBJECTS:<target>_ as one of the sources to dune_add_library
-#
-# finalize_dune_project()
-#
-# macro that should be called at the end of the top level CMakeLists.txt.
-# Namely it creates config.h and the cmake-config files,
-# some install directives and exports the module.
-#
-#
-# dune_target_link_libraries(BASENAME, LIBRARIES)
-#
-# Link libraries to the static and shared version of
-# library BASENAME
 #
 
 # Make CMake use rpath on OS X

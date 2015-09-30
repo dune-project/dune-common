@@ -10,12 +10,16 @@
 # compiler with MPI flags usually used for C. CXX bindings
 # are deactivated to prevent ABI problems.
 #
-# The following function is defined:
+# .. cmake_function:: add_dune_mpi_flags
 #
-# add_dune_mpi_flags(targets)
+#    .. cmake_param:: targets
+#       :single:
+#       :required:
+#       :positional:
 #
-# Adds the above flags and libraries to the specified targets.
+#       The target list to add the MPI flags to.
 #
+
 
 find_package(MPI)
 find_package(Threads)

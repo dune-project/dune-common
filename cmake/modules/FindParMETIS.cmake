@@ -1,23 +1,55 @@
-# Module that checks whether ParMETIS is available.
+# .. cmake_module::
 #
-# Accepts the following variables:
+#    Module that checks whether ParMETIS is available.
 #
-# PARMETIS_ROOT: Prefix where ParMETIS is installed.
-# METIS_LIB_NAME: Name of the METIS library (default: metis).
-# PARMETIS_LIB_NAME: Name of the ParMETIS library (default: parmetis).
-# METIS_LIBRARY: Full path of the METIS library.
-# PARMETIS_LIBRARY: Full path of the ParMETIS library
+#    You may set the following variables to configure this modules behaviour:
+#
+#    :ref:`PARMETIS_ROOT`
+#       Prefix where ParMETIS is installed.
+#
+#    :ref:`METIS_LIB_NAME`
+#       Name of the METIS library (default: metis).
+#
+#    :ref:`PARMETIS_LIB_NAME`
+#       Name of the ParMETIS library (default: parmetis).
+#
+#    :ref:`METIS_LIBRARY`
+#       Full path of the METIS library.
+#
+#    :ref:`PARMETIS_LIBRARY`
+#       Full path of the ParMETIS library
+#
+#    Sets the following variables:
+#
+#    :code:`PARMETIS_FOUND`
+#       True if ParMETIS was found.
+#
+#    :code:`METIS_LIBRARY`
+#       Full path of the METIS library.
+#
+#    :code:`PARMETIS_LIBRARY`
+#       Full path of the ParMETIS library.
+#
+#    :code:`PARMETIS_LIBRARIES`
+#       List of all libraries needed for linking with ParMETIS,
+#
+# .. cmake_variable:: PARMETIS_ROOT
+#
+#    You may set this variable to have :ref:`FindParMETIS` look
+#    for the ParMETIS library and includes in the given path
+#    before inspecting default system paths.
+#
+# .. cmake_variable:: PARMETIS_LIB_NAME
+#
+#    You may set this variable to specify the name of the ParMETIS
+#    library that :ref:`FindParMETIS` looks for.
+#
+# .. cmake_variable:: PARMETIS_LIBRARY
+#
+#    You may set this variable to specify the full path to the ParMETIS
+#    library, that should be used by :ref:`FindParMETIS`.
+#
 
-# Sets the following variables:
-#
-# METIS_LIBRARY: Full path of the METIS library.
-# PARMETIS_LIBRARY: Full path of the ParMETIS library.
-# PARMETIS_FOUND: True if ParMETIS was found.
-# PARMETIS_LIBRARIES: List of all libraries needed for linking with ParMETIS,
-#
-# Provides the following macros:
-#
-# find_package(ParMETIS)
 
 find_path(PARMETIS_INCLUDE_DIR parmetis.h
           PATHS ${PARMETIS_DIR} ${PARMETIS_ROOT}

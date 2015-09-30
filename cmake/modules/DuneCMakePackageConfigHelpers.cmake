@@ -1,3 +1,7 @@
+# .. cmake_module::
+#
+#    .. note::
+#       This module should be removed soon, as it provides fallbacks for pre 2.8.8
 #
 # A poor mans version of CMakePackageConfigHelpers.cmake for as a substitute
 # for old Cmake versions.
