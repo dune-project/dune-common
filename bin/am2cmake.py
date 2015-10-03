@@ -135,7 +135,6 @@ class target_flags:
             'SUPERLU_': ['add_dune_superlu_flags', ''],
             'DUNEMPI': ['add_dune_mpi_flags', ''],
             'AMIRAMESH_': ['add_dune_amiramesh_flags',''],
-            'BOOST_': ['add_dune_boost_flags',''],
             'GMP_': ['add_dune_gmp_flags',''],
             'GRAPE_': ['add_dune_grape_flags',''],
             'PARMETIS_': ['add_dune_parmetis_flags',''],

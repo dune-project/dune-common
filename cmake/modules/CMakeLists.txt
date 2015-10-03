@@ -6,7 +6,6 @@ install(FILES
   AddUMFPackFlags.cmake
   CheckCXXFeatures.cmake
   CheckForPthreads.c
-  DuneBoost.cmake
   DuneCMakePackageConfigHelpers.cmake
   DuneCommonMacros.cmake
   DuneCxaDemangle.cmake
@@ -20,7 +19,6 @@ install(FILES
   DuneSymlinkOrCopy.cmake
   DuneTestMacros.cmake
   DuneTests.cmake
-  FindBoostFusion.cmake
   FindGMP.cmake
   FindInkscape.cmake
   FindMETIS.cmake
