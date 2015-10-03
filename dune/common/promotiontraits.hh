@@ -28,7 +28,7 @@ namespace Dune {
 
   // Specialization for the case of two equal types
   // One should think that the generic template should handle this case as well.
-  // However, the fvectortest.cc unit test fails without it if ENABLE_GMP is set.
+  // However, the fvectortest.cc unit test fails without it if gmp is used.
   template <typename T1>
   struct PromotionTraits<T1,T1> { typedef T1 PromotedType; };
 
