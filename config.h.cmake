@@ -107,8 +107,8 @@
 /* does the compiler support the keyword 'final'? */
 #cmakedefine HAVE_KEYWORD_FINAL 1
 
-/* Define to if the UMFPack library is available */
-#cmakedefine HAVE_UMFPACK ENABLE_UMFPACK
+/* Define to 1 if the UMFPack library is available */
+#cmakedefine HAVE_UMFPACK 1
 
 /* Define to ENABLE_PARMETIS if you have the Parmetis library.
    This is only true if MPI was found

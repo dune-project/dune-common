@@ -1,4 +1,5 @@
-# module providing convenience mehtods for compiling bianries with UMFPack support
+# module providing convenience methods for compiling
+# binaries with UMFPack support
 #
 # Provides the following functions:
 #
@@ -12,7 +13,7 @@ function(add_dune_umfpack_flags _targets)
       get_target_property(_props ${_target} COMPILE_FLAGS)
       string(REPLACE "_props-NOTFOUND" "" _props "${_props}")
       set_target_properties(${_target} PROPERTIES COMPILE_FLAGS
-        "${_props} ${UMFPACK_DUNE_COMPILE_FLAGS} -DENABLE_UMFPACK")
+        "${_props} ${UMFPACK_DUNE_COMPILE_FLAGS}")
     endforeach(_target ${_targets})
   endif(UMFPACK_FOUND)
 endfunction(add_dune_umfpack_flags)

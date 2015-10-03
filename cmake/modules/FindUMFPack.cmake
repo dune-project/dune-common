@@ -96,7 +96,7 @@ set(HAVE_UMFPACK ${UMFPACK_FOUND})
 
 # register all umfpack related flags
 if(UMFPACK_FOUND)
-  dune_register_package_flags(COMPILE_DEFINITIONS "ENABLE_UMFPACK=1"
-                            LIBRARIES "${UMFPACK_LIBRARIES}"
-                            INCLUDE_DIRS "${UMFPACK_INCLUDE_DIRS}")
+  dune_register_package_flags(
+    LIBRARIES "${UMFPACK_LIBRARIES}"
+    INCLUDE_DIRS "${UMFPACK_INCLUDE_DIRS}")
 endif()
