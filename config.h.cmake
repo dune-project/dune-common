@@ -125,6 +125,9 @@
 /* Define to if the UMFPack library is available */
 #cmakedefine HAVE_UMFPACK ENABLE_UMFPACK
 
+/* Define to 1 if the SuiteSparse library is available */
+#cmakedefine HAVE_SUITESPARSE 1
+
 /* Define to ENABLE_PARMETIS if you have the Parmetis library.
    This is only true if MPI was found
    by configure _and_ if the application uses the PARMETIS_CPPFLAGS */
