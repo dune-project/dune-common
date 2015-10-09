@@ -3,6 +3,7 @@ install(FILES
   AddMETISFlags.cmake
   AddParMETISFlags.cmake
   AddPTScotchFlags.cmake
+  AddSuiteSparseFlags.cmake
   AddUMFPackFlags.cmake
   CheckCXXFeatures.cmake
   CheckForPthreads.c
@@ -27,6 +28,7 @@ install(FILES
   FindParMETIS.cmake
   FindPTScotch.cmake
   FindSphinx.cmake
+  FindSuiteSparse.cmake
   FindThreadsCMake31.cmake
   FindUMFPack.cmake
   Headercheck.cmake
