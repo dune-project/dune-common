@@ -6,15 +6,6 @@
 #
 #       Generate the documentation that you are just browsing!!!
 #
-#    .. cmake_param:: PATHS
-#       :multi:
-#
-#       The set of paths to look for CMake modules. Defaults
-#       to the cmake/modules subdirectory of the current module.
-#       Note, that all modules must be rst-documented following
-#       the criteria defined in :ref:`DuneSphinxCMakeDoc` in order
-#       to successfully generate documentation.
-#
 #    .. cmake_param:: BUILDTYPE
 #       :multi:
 #
@@ -22,17 +13,6 @@
 #       The list of available build types:
 #
 #       * `html`
-#
-#    .. cmake_param:: EXCLUDE
-#       :multi:
-#
-#       Exclude the given macros from the documentation.
-#
-#    .. cmake_param:: NO_DEFAULT_PATHS
-#       :option:
-#
-#       If set, the cmake/modules subdirectory will not be searched
-#       for CMake macros to generate documentation.
 #
 #    Generate a documentation for the CMake API. A set of cmake
 #    modules defined by the parameters and all functions and macros
@@ -67,9 +47,9 @@ function(dune_cmake_sphinx_doc)
   endif()
 
   # Parse Arguments
-  set(OPTION NO_DEFAULT_PATHS)
+  set(OPTION)
   set(SINGLE)
-  set(MULTI PATHS EXCLUDE BUILDTYPE)
+  set(MULTI BUILDTYPE)
   include(CMakeParseArguments)
   cmake_parse_arguments(SPHINX_CMAKE "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
   if(SPHINX_CMAKE_UNPARSED_ARGUMENTS)
@@ -81,21 +61,32 @@ function(dune_cmake_sphinx_doc)
     set(SPHINX_CMAKE_BUILDTYPE html)
   endif()
 
-  # Add default paths to the path variable
-  if(NOT SPHINX_CMAKE_NO_DEFAULT_PATHS)
-    set(SPHINX_CMAKE_PATHS ${SPHINX_CMAKE_PATHS} ${CMAKE_SOURCE_DIR}/cmake/modules)
-  endif()
-
-  # Write the conf.py, which sets up Sphinx into the build
+  # Write the conf.py, which sets up Sphinx into the build directory
   set(DUNE_SPHINX_EXT_PATH)
   dune_common_script_dir(DUNE_SPHINX_EXT_PATH)
   configure_file(${DUNE_SPHINX_EXT_PATH}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR}/conf.py)
 
-  # Generate the list of modules by looking through the given paths
-  # for files matching *.cmake
+  # Write the index.rst and the contents.rst files from templates
+  set(CMAKE_DOC_DEPENDENCIES "")
+  set(${CMAKE_PROJECT_NAME}_PREFIX ${CMAKE_SOURCE_DIR})
+  foreach(dep ${ALL_DEPENDENCIES} ${CMAKE_PROJECT_NAME})
+    # Check whether the module dep has specified some build system docs.
+    if(EXISTS ${${dep}_PREFIX}/doc/buildsystem/${dep}.rst)
+      # add it to index.rst then.
+      set(CMAKE_DOC_DEPENDENCIES "${CMAKE_DOC_DEPENDENCIES}   ${dep}\n")
+      # ... and copy the rst file to the current build.
+      configure_file(${${dep}_PREFIX}/doc/buildsystem/${dep}.rst ${CMAKE_CURRENT_BINARY_DIR}/${dep}.rst)
+    endif()
+  endforeach()
+  configure_file(${DUNE_SPHINX_EXT_PATH}/index.rst.in ${CMAKE_CURRENT_BINARY_DIR}/index.rst)
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/contents.rst "")
+
+  # Generate the list of modules by looking through the module paths
+  # of all dependencies for files matching *.cmake
   set(SPHINX_DOC_MODULE_LIST)
-  foreach(path ${SPHINX_CMAKE_PATHS})
-    file(GLOB modules "${path}/*.cmake")
+  set(${CMAKE_PROJECT_NAME}_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
+  foreach(dep ${ALL_DEPENDENCIES} ${CMAKE_PROJECT_NAME})
+    file(GLOB modules "${${dep}_MODULE_PATH}/*.cmake")
     set(SPHINX_DOC_MODULE_LIST ${SPHINX_DOC_MODULE_LIST} ${modules})
   endforeach()
 
@@ -109,7 +100,9 @@ function(dune_cmake_sphinx_doc)
                        COMMAND ${PYTHON_EXECUTABLE} ${DUNE_SPHINX_EXT_PATH}/extract_cmake_data.py
                          --module=${module}
                          --builddir=${CMAKE_CURRENT_BINARY_DIR}
-                       DEPENDS ${module})
+                       DEPENDS ${module}
+                       COMMENT "Extracting CMake API documentation from ${modname}"
+                      )
     set(DOC_DEPENDENCIES ${DOC_DEPENDENCIES} ${CMAKE_CURRENT_BINARY_DIR}/modules/${modname})
   endforeach()
 

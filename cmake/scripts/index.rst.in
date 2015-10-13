@@ -1,4 +1,4 @@
-.. title:: dune-python CMake reference
+.. title:: @CMAKE_PROJECT_NAME@ CMake reference
 
 .. role:: cmake(code)
    :language: cmake
@@ -8,10 +8,10 @@ Introduction
 .. toctree::
    :maxdepth: 1
 
-   intro
+@CMAKE_DOC_DEPENDENCIES@
 
 Input Variable reference
-==================
+========================
 .. toctree::
    :maxdepth: 1
    :glob:
