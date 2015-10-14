@@ -27,7 +27,6 @@ struct Counter {
   int result_;
 };
 
-
 int main(int, char**)
 {
 
@@ -59,6 +58,7 @@ int main(int, char**)
   long l = 4;
   char c = 's';
 
+  typedef std::tuple<int,char,long,char> Tuple1;
   typedef std::tuple<int&,char&,long&,char&> RefTuple1;
   typedef std::tuple<int*,char*,long*,char*> PointerTuple1;
   static_assert((std::is_same<PointerTuple1,
@@ -67,7 +67,9 @@ int main(int, char**)
                      "RefTuple1 with added pointers should be the same as "
                      "PointerTuple1, but it isn't!");
 
+  Tuple1 t1(i,c,l,c);
   RefTuple1 refs(i, c, l, c);
+  DUNE_UNUSED RefTuple1 refs2(Dune::transformTuple<Dune::AddRefTypeEvaluator>(t1));
   PointerTuple1 pointers1
     (Dune::transformTuple<Dune::AddPtrTypeEvaluator>(refs));
   if(&i != std::get<0>(pointers1) || &c != std::get<1>(pointers1) ||

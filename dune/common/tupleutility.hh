@@ -79,10 +79,10 @@ namespace Dune {
 
 #ifndef DOXYGEN
   template<class Tuple, class Functor, std::size_t... I>
-  inline auto genericTransformTupleBackendImpl(Tuple& t, Functor& f, const Std::index_sequence<I...>& ) ->
-    decltype(std::make_tuple(f(std::get<I>(t))...)) const
+  inline auto genericTransformTupleBackendImpl(Tuple& t, Functor& f, const Std::index_sequence<I...>& )
+    -> std::tuple<decltype(f(std::get<I>(t)))...>
   {
-    return std::make_tuple(f(std::get<I>(t))...);
+    return std::tuple<decltype(f(std::get<I>(t)))...>(f(std::get<I>(t))...);
   }
 
   template<class... Args, class Functor>
