@@ -8,7 +8,7 @@
 #    :ref:`METIS_ROOT`
 #       Prefix, where METIS is installed
 #
-#    :ref:`METIS_LIBNAME`
+#    :ref:`METIS_LIB_NAME`
 #       Name of the METIS library (default: metis)
 #
 #    :ref:`METIS_LIBRARY`
@@ -31,7 +31,7 @@
 #   for the METIS library and includes in the given path
 #   before inspecting default system paths.
 #
-# .. cmake_variable:: METIS_LIBNAME
+# .. cmake_variable:: METIS_LIB_NAME
 #
 #   You may set this variable to specify the name of the METIS
 #   library that :ref:`FindMETIS` looks for.

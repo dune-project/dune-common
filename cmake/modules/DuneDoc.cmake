@@ -36,9 +36,9 @@
 #
 # .. cmake_function:: create_doc_install
 #
-#    .. todo::
+#    TODO doc me
+#    What are use cases for this function?
 #
-#       Evaluate use cases for this function.
 
 FIND_PACKAGE(LATEX)
 FIND_PROGRAM(IMAGEMAGICK_CONVERT convert

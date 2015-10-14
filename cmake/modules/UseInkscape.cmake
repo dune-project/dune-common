@@ -20,9 +20,7 @@
 #
 #       dpi value for the generated image (default: 90)
 #
-#    .. todo::
-#
-#       Switch to named arguments!
+#    TODO Switch to named arguments!
 #
 
 include(CMakeParseArguments)

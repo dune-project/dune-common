@@ -35,11 +35,11 @@
 #
 #       If your module contains libraries as well as programs and if the programs should automatically
 #       link to those libraries, you *MUST* list these libraries in :code:`MODULE_LIBRARIES`. Those libraries will be
-#       automatically created by :ref:`dune_enable_all_packages` (which internally calls :ref:`dune_add_library()`) and placed
+#       automatically created by :ref:`dune_enable_all_packages` (which internally calls :ref:`dune_add_library`) and placed
 #       in the lib/ directory. The order of the libraries matters: if one library depends on another one, it must
 #       be listed after its dependency. This special handling of the libraries is due to the way newer CMake
 #       versions handle linking (in particular CMP022 and CMP038). You can later add source files to the library
-#       anywhere in the source tree by calling :ref:`dune_library_add_sources()`.
+#       anywhere in the source tree by calling :ref:`dune_library_add_sources`.
 #
 #       .. warning::
 #          The library feature requires CMake 3.1+. If you use the feature with older versions, CMake

@@ -25,12 +25,12 @@
 # .. cmake_variable:: CMAKE_THREAD_PREFER_PTHREAD
 #
 #    For systems with multiple thread libraries, caller can set this
-#    variable to prefer pthread. Modifies the behaviour of :ref:`FindThreadsCMake31.cmake`.
+#    variable to prefer pthread. Modifies the behaviour of :ref:`FindThreadsCMake31`.
 #
 # .. cmake_variable:: THREADS_PREFER_PTHREAD_FLAG
 #
 #    If the use of the -pthread compiler and linker flag is prefered then the
-#    caller can set this variable. Modifies the behaviour of :ref:`FindThreadsCMake31.cmake`.
+#    caller can set this variable. Modifies the behaviour of :ref:`FindThreadsCMake31`.
 #
 
 #=============================================================================

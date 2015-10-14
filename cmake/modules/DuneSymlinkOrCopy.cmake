@@ -35,8 +35,7 @@
 #       :single:
 #       :required:
 #
-#    .. todo::
-#       DOC ME!
+#    TODO DOC ME!
 #
 # .. cmake_function:: dune_add_copy_target
 #
@@ -50,8 +49,7 @@
 #       :single:
 #       :required:
 #
-#    .. todo::
-#       DOC ME!
+#    TODO DOC ME!
 #
 # .. cmake_function:: dune_add_copy_dependency
 #
@@ -65,8 +63,7 @@
 #       :single:
 #       :required:
 #
-#    .. todo::
-#       DOC ME!
+#    TODO DOC ME!
 #
 # .. cmake_function:: dune_symlink_to_source_tree
 #

@@ -29,6 +29,21 @@
 #    :code:`PTSCOTCH_FOUND`
 #       True if PT-Scotch was found.
 #
+# .. cmake_variable:: PTSCOTCH_ROOT
+#
+#   You may set this variable to have :ref:`FindPTScotch` look
+#   for the PTScotch package in the given path before inspecting
+#   system paths.
+#
+# .. cmake_variable:: PTSCOTCH_SUFFIX
+#
+#   PTScotch might be compiled using different
+#   integer sizes (int32, int64, long). When
+#   this is is set the headers and libaries
+#   are search under the suffix
+#   :code:`include/scotch-${PTSCOTCH_SUFFIX}`, and
+#   :code:`lib/scotch-${PTSCOTCH_SUFFIX}`, respectively.
+#
 
 include(DuneMPI)
 macro(_search_pt_lib libvar libname doc)
