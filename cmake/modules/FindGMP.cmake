@@ -64,6 +64,7 @@ mark_as_advanced(GMP_LIB GMPXX_LIB GMP_INCLUDE_DIR)
 if(GMP_FOUND)
   set(GMP_INCLUDE_DIRS ${GMP_INCLUDE_DIR})
   set(GMP_LIBRARIES ${GMP_LIB} ${GMPXX_LIB})
+  set(GMP_COMPILE_FLAGS "-DENABLE_GMP=1")
   # log result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
     "Determing location of GMP succeded:\n"
@@ -83,6 +84,7 @@ set(HAVE_GMP ${GMP_FOUND})
 
 # register all GMP related flags
 if(HAVE_GMP)
-  dune_register_package_flags(LIBRARIES "${GMP_LIB};${GMPXX_LIB}"
+  dune_register_package_flags(COMPILE_DEFINITIONS "ENABLE_GMP=1"
+                              LIBRARIES "${GMP_LIB};${GMPXX_LIB}"
                               INCLUDE_DIRS "${GMP_INCLUDE_DIR}")
 endif()

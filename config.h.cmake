@@ -43,8 +43,9 @@
    deprecated MPI_CPPFLAGS) */
 #cmakedefine HAVE_MPI ENABLE_MPI
 
-/* Define to 1 if you have the GNU GMP library. */
-#cmakedefine HAVE_GMP 1
+/* Define if you have the GNU GMP library. The value should be ENABLE_GMP
+   to facilitate activating and deactivating GMP using compile flags. */
+#cmakedefine HAVE_GMP ENABLE_GMP
 
 /* Define to 1 if you have the symbol mprotect. */
 #cmakedefine HAVE_MPROTECT 1
@@ -107,8 +108,8 @@
 /* does the compiler support the keyword 'final'? */
 #cmakedefine HAVE_KEYWORD_FINAL 1
 
-/* Define to 1 if the UMFPack library is available */
-#cmakedefine HAVE_UMFPACK 1
+/* Define to if the UMFPack library is available */
+#cmakedefine HAVE_UMFPACK ENABLE_UMFPACK
 
 /* Define to ENABLE_PARMETIS if you have the Parmetis library.
    This is only true if MPI was found
