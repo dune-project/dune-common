@@ -5,6 +5,7 @@ set(modules
   AddPTScotchFlags.cmake
   AddUMFPackFlags.cmake
   CheckCXXFeatures.cmake
+  CMakeBuiltinFunctionsDocumentation.cmake
   DuneBoost.cmake
   DuneCMakePackageConfigHelpers.cmake
   DuneCommonMacros.cmake
