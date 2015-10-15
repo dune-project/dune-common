@@ -7,7 +7,7 @@ CMake...
 
 - is an open source buildsystem tool developed at KITware.
 - offers a one-tool-solution to all building tasks, like configuring, building, linking, testing and packaging.
-- is a build system generator: It supports a set of backends called ``generators''
+- is a build system generator: It supports a set of backends called *generators*
 - is portable
 - is controlled by ONE rather simple language
 
@@ -19,6 +19,7 @@ You can install cmake through your favorite package manager or downloading sourc
 The minimum required version to build Dune with CMake is 2.8.6.
 
 .. _howtouse:
+
 How do I use Dune with CMake?
 =============================
 
@@ -65,7 +66,7 @@ How do I port an existing module?
 
 There is multiple approaches to this:
 
-- First, check :ref:`enable` and decide whether such simple approach is sufficient for your project.
+- First, check :ref:`simplified` and decide whether such simple approach is sufficient for your project.
 - There is the python script :code:`dune-common/bin/am2cmake.py`, which automatically generates :code:`CMakeLists.txt`'s
   from its :code:`Makefile.am` counterparts. While this works fine, for many modules the resulting files look very
   autotoolish and are often too complicated.
@@ -163,8 +164,6 @@ your source tree's structure as seen in the following. Assume the following sour
      src/
        CMakeLists.txt
 
-::
-
 The generated build directory will have the following structure, where the directory :code:`build-cmake`
 is a subdirectory of the source directory:
 
@@ -177,8 +176,6 @@ is a subdirectory of the source directory:
         Makefile
     src/
       Makefile
-
-::
 
 Using the :code:`Unix Makefiles` generator, your Makefiles are generated in the build tree, so that is where you
 have to call :code:`make`. There are multiple advantages with this approach, such as a clear separation between
@@ -198,8 +195,6 @@ the :code:`--builddir` option, you will get something like this:
       Makefile
     dune-foo/
       Makefile
-
-::
 
 So, instead of one build directory in every dune module, you will be able to collect all build directories in one
 directory. This makes it much easier to have multiple build directories and to remove build directories.
@@ -337,7 +332,7 @@ Why is it not possible anymore to do make headercheck?
 ======================================================
 
 The headercheck feature has been disabled by default. You can enable it by setting the CMake variable :ref:`ENABLE_HEADERCHECK`
- through your opts file. This step has been necessary, because of the large amount of additional file the headercheck adds to the
+through your opts file. This step has been necessary, because of the large amount of additional file the headercheck adds to the
 build directory. A better implementation has not been found yet, because it simply does not fit the CMake philosophy.
 
 .. _troubleshoot:

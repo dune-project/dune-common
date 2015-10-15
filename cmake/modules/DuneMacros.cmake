@@ -65,6 +65,17 @@
 #    library BASENAME
 #
 #
+# .. cmake_function:: add_dune_all_flags
+#
+#    .. cmake_param:: targets
+#       :single:
+#       :required:
+#       :positional:
+#
+#       The targets to add the flags of all external libraries to.
+#
+#    This function is superseded by :ref:`dune_target_enable_all_packages`.
+#
 # Documentation of internal macros in this module:
 #
 # dune_module_to_uppercase(upper_name module_name)
