@@ -10,6 +10,8 @@ Introduction
 
 @CMAKE_DOC_DEPENDENCIES@
 
+.. _variableref:
+
 Input Variable reference
 ========================
 .. toctree::
@@ -18,6 +20,8 @@ Input Variable reference
 
    variables/*
 
+.. _commandref:
+
 Command reference
 =================
 .. toctree::
@@ -25,6 +29,8 @@ Command reference
    :glob:
 
    commands/*
+
+.. _moduleref:
 
 Module reference
 ================

@@ -33,7 +33,7 @@ any call to CMake. There, you can define variables for the configure process wit
 with the C pre-processor.
 
 The most important part of the configure flags is to tell the build system where to look for external libraries.
-You can browse the :ref:`input variables` section of this documentation for a list of variables that are picked up
+You can browse the :ref:`variableref` section of this documentation for a list of variables that are picked up
 by the Dune CMake build system.
 
 .. _whatfiles:
@@ -297,7 +297,7 @@ showing the output of failed tests.
 Although this is not the CMake-ish way, :code:`make test` also builds the tests before executing them.
 This behavior will change in the near future.
 
-.. disable:
+.. _disable:
 
 Can I disable an external dependency?
 =====================================
@@ -324,7 +324,7 @@ installed MPI library, you have to explicitly disable the corresponding find mod
 .. code-block:
    -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE
 
-in the :ref:`CMAKE_FLAGS` of your opts file, as described in section :ref:`disable`.
+in the :code:`CMAKE_FLAGS` of your opts file, as described in section :ref:`disable`.
 
 .. _headercheck:
 
