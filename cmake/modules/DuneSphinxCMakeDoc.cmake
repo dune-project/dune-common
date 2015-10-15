@@ -70,12 +70,22 @@ function(dune_cmake_sphinx_doc)
   set(CMAKE_DOC_DEPENDENCIES "")
   set(${CMAKE_PROJECT_NAME}_PREFIX ${CMAKE_SOURCE_DIR})
   foreach(dep ${ALL_DEPENDENCIES} ${CMAKE_PROJECT_NAME})
-    # Check whether the module dep has specified some build system docs.
+    # Look for a build system documentation exported by the module dep
+    set(RSTFILE "")
+    # check in the correct path for non-installed modules
     if(EXISTS ${${dep}_PREFIX}/doc/buildsystem/${dep}.rst)
+      set(RSTFILE ${${dep}_PREFIX}/doc/buildsystem/${dep}.rst)
+    endif()
+    # now check for the correct path taking into account installed ones
+    if(EXISTS ${${dep}_PREFIX}/share/doc/${dep}/${dep}.rst)
+      set(RSTFILE ${${dep}_PREFIX}/share/doc/${dep}/${dep}.rst)
+    endif()
+    # Now process the file, if we have found one
+    if(RSTFILE)
       # add it to index.rst then.
       set(CMAKE_DOC_DEPENDENCIES "${CMAKE_DOC_DEPENDENCIES}   ${dep}\n")
       # ... and copy the rst file to the current build.
-      configure_file(${${dep}_PREFIX}/doc/buildsystem/${dep}.rst ${CMAKE_CURRENT_BINARY_DIR}/${dep}.rst)
+      configure_file(${RSTFILE} ${CMAKE_CURRENT_BINARY_DIR}/${dep}.rst)
     endif()
   endforeach()
   configure_file(${DUNE_SPHINX_EXT_PATH}/index.rst.in ${CMAKE_CURRENT_BINARY_DIR}/index.rst)

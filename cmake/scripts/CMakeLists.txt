@@ -1,8 +1,10 @@
 set(modules
+  conf.py.in
   CreateDoxyFile.cmake
   extract_cmake_data.py
   FinalizeHeadercheck.cmake
   FindFiles.cmake
+  index.rst.in
   InstallFile.cmake
   RunDoxygen.cmake
   sphinx_cmake_dune.py)
