@@ -227,7 +227,7 @@ How do I change my compiler and compiler flags?
 
 In general, there are multiple ways to do this:
 
-* Setting the CMake variables :ref:`CMAKE_C_COMPILER` and :ref:`CMAKE_CXX_COMPILER` resp. from the opts file
+* Setting the CMake variables :ref:`CMAKE_<LANG>_COMPILER` (with :code:`LANG` being :code:`C` or :code:`CXX`) from the opts file
 * Setting those variables within the project with the :code:`set` command
 * Setting the environment variables :code:`CC`, :code:`CXX` etc.
 
@@ -236,7 +236,7 @@ directories. For some CMake versions, there is a known CMake bug, that requires 
 to your compiler, but Dune will issue a warning, if you violate that.
 
 You can modify your default compiler flags by setting the variables
-:ref:`CMAKE_C_FLAGS` and :ref:`CMAKE_CXX_FLAGS` in your opts file.
+:ref:`CMAKE_<LANG>_FLAGS` in your opts file (again with :code:`LANG` being :code:`C` or :code:`CXX`).
 
 .. _symlink:
 
