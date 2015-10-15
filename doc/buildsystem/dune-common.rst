@@ -276,6 +276,7 @@ to have for each configuration one out-of-source build. We have nevertheless imp
 by setting the variable :ref:`ALLOW_CXXFLAGS_OVERWRITE` in your opts file. You can then type:
 
 .. code-block: bash
+
    make CXXFLAGS="<your flags>" <target>
 
 Furthermore any C pre-processor variable of the form :code:`-DVAR=<value>` can be overloaded on the command line
@@ -304,7 +305,8 @@ Can I disable an external dependency?
 
 To disable an external dependency :code:`Foo`, add
 
-.. code-block:
+::
+
    -DCMAKE_DISABLE_FIND_PACKAGE_Foo=TRUE
 
 to your opts file. The name of the dependency is case sensitive but there is no canonical naming
@@ -321,7 +323,8 @@ How do I switch between parallel and sequential builds?
 Dune builds with CMake are parallel if and only if MPI is found. To have a sequential build despite an
 installed MPI library, you have to explicitly disable the corresponding find module by setting
 
-.. code-block:
+::
+
    -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE
 
 in the :code:`CMAKE_FLAGS` of your opts file, as described in section :ref:`disable`.
@@ -346,7 +349,8 @@ the build directory and maybe save some compilation time afterward.
 
 Whenever you experience any problems, your first step should be to delete all build directories. Nice trick:
 
-.. code-block: bash
+::
+
    dunecontrol exec rm -rf build-cmake
 
 This will remove all build directories from all DUNE modules.

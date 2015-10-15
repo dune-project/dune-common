@@ -20,7 +20,7 @@
 #    This is a cmake builtin command.
 #    For detailed information, check the cmake documentation:
 #
-#    .. code-block: bash
+#    ::
 #
 #       cmake --help-command add_subdirectory
 #
@@ -31,7 +31,7 @@
 #    This is a cmake builtin command.
 #    For detailed information, check the cmake documentation:
 #
-#    .. code-block: bash
+#    ::
 #
 #       cmake --help-command install
 #
@@ -42,7 +42,7 @@
 #    This is a cmake builtin command.
 #    For detailed information, check the cmake documentation:
 #
-#    .. code-block: bash
+#    ::
 #
 #       cmake --help-command add_executable
 #
@@ -53,7 +53,7 @@
 #    This is a cmake builtin command.
 #    For detailed information, check the cmake documentation:
 #
-#    .. code-block: bash
+#    ::
 #
 #       cmake --help-command add_test
 #
@@ -65,7 +65,7 @@
 #    This is a cmake builtin variable.
 #    For detailed information, check the cmake documentation:
 #
-#    .. code-block: bash
+#    ::
 #
 #       cmake --help-variable CMAKE_\<LANG\>_COMPILER
 #
@@ -77,7 +77,7 @@
 #    This is a cmake builtin variable.
 #    For detailed information, check the cmake documentation:
 #
-#    .. code-block: bash
+#    ::
 #
 #       cmake --help-variable CMAKE_\<LANG\>_FLAGS
 #
@@ -88,7 +88,7 @@
 #    This is a cmake builtin command.
 #    For detailed information, check the cmake documentation:
 #
-#    .. code-block: bash
+#    ::
 #
 #       cmake --help-command find_package
 #
