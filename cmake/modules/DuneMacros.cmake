@@ -121,8 +121,8 @@ enable_language(C) # Enable C to skip CXX bindings for some tests.
 
 include(FeatureSummary)
 include(DuneEnableAllPackages)
+include(DuneTestMacros)
 include(OverloadCompilerFlags)
-
 include(DuneSymlinkOrCopy)
 
 # Converts a module name given by _module into an uppercase string
@@ -687,11 +687,6 @@ macro(dune_project)
   # building them before.
   include(DuneDoc)
 
-  # activate testing the DUNE way
-  include(DuneTests)
-  # enable this way of testing by default
-  set(DUNE_TEST_MAGIC ON)
-
   # activate pkg-config
   include(DunePkgConfig)
 
@@ -918,11 +913,6 @@ endif()
     # actually write the config.h file to disk
     configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
   endif("${ARGC}" EQUAL "1")
-
-  # add dependiencies to target "test"
-  if(DUNE_TEST_MAGIC)
-    test_dep()
-  endif()
 
   include(CPack)
 

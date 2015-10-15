@@ -1,10 +1,5 @@
 set(MPITESTPROGS indicestest indexsettest syncertest selectiontest variablesizecommunicatortest)
 
-add_directory_test_target(_test_target)
-# We do not want want to build the tests during make all,
-# but just build them on demand
-add_dependencies(${_test_target} ${MPITESTPROGS})
-
 add_executable("indexsettest" indexsettest.cc)
 target_link_libraries("indexsettest" "dunecommon" ${CMAKE_THREAD_LIBS_INIT} ${})
 
