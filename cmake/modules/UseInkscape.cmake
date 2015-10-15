@@ -1,12 +1,27 @@
 # Module that provides convertion routines using inkscape
 #
-# Provides the following functions:
+# .. cmake_function:: inkscape_generate_png_from_svg
 #
-# inkscape_generate_png_from_svg([OUTPUT_DIR <output_dir>] <pngfile1.png> [<pngfile2.png> ....])
+#    .. cmake_param:: OUTPUT_DIR
+#       :single:
 #
-# Generates pngfile1, ... from svg input files pngfile1.svg, ....
-# The output directory can be specified with the option OUTPUT_DIR. If it is omitted
-# the files will be generated in CMAKE_CURRENT_BINARY_DIR.
+#       The output directory for the generated png files.
+#       Defaults to the current build directory.
+#
+#    .. cmake_param:: pngfiles
+#       :single:
+#       :positional:
+#       :required:
+#
+#       The files that should be converted.
+#
+#    .. cmake_param:: DPI
+#       :single:
+#
+#       dpi value for the generated image (default: 90)
+#
+#    TODO Switch to named arguments!
+#
 
 include(CMakeParseArguments)
 

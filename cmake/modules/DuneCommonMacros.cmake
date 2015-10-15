@@ -1,10 +1,8 @@
-# This cmake file holds tests and directives that are executed
-# for the module dune-common and have to be executed by
-# all dependent modules
+# .. cmake_module::
 #
-# Specifically it configure the DUNE debug streams and
-# tests whether LAPACK and BLAS are available.
+#    This modules content is executed whenever a module required or suggests dune-common!
 #
+
 include(DuneStreams)
 dune_set_minimal_debug_level()
 

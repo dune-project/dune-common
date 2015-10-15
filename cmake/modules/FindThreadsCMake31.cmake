@@ -1,45 +1,38 @@
-#.rst:
-# FindThreads
-# -----------
+# .. cmake_module::
 #
-# This module determines the thread library of the system.
+#    This module determines the thread library of the system.
 #
-# This file is a modified copy from CMake 3.1. Do not edit this
-# file. Remove this file once we rely on at least CMake 3.1.
+#    This file is a modified copy from CMake 3.1. Do not edit this
+#    file. Remove this file once we rely on at least CMake 3.1.
 #
-# The following variables are set
+#    The following variables are set
 #
-# ::
+#    :code:`CMAKE_THREAD_LIBS_INIT`
+#       the thread library
 #
-#   CMAKE_THREAD_LIBS_INIT     - the thread library
-#   CMAKE_USE_SPROC_INIT       - are we using sproc?
-#   CMAKE_USE_WIN32_THREADS_INIT - using WIN32 threads?
-#   CMAKE_USE_PTHREADS_INIT    - are we using pthreads
-#   CMAKE_HP_PTHREADS_INIT     - are we using hp pthreads
+#    :code:`CMAKE_USE_SPROC_INIT`
+#       are we using sproc?
 #
-# The following import target is created
+#    :code:`CMAKE_USE_WIN32_THREADS_INIT`
+#       using WIN32 threads?
 #
-# ::
+#    :code:`CMAKE_USE_PTHREADS_INIT`
+#       are we using pthreads
 #
-#   Threads::Threads
+#    :code:`CMAKE_HP_PTHREADS_INIT`
+#       are we using hp pthreads
 #
-# For systems with multiple thread libraries, caller can set
+# .. cmake_variable:: CMAKE_THREAD_PREFER_PTHREAD
 #
-# ::
+#    For systems with multiple thread libraries, caller can set this
+#    variable to prefer pthread. Modifies the behaviour of :ref:`FindThreadsCMake31`.
 #
-#   CMAKE_THREAD_PREFER_PTHREAD
+# .. cmake_variable:: THREADS_PREFER_PTHREAD_FLAG
 #
-# If the use of the -pthread compiler and linker flag is prefered then the
-# caller can set
+#    If the use of the -pthread compiler and linker flag is prefered then the
+#    caller can set this variable. Modifies the behaviour of :ref:`FindThreadsCMake31`.
 #
-# ::
-#
-#   THREADS_PREFER_PTHREAD_FLAG
-#
-# Please note that the compiler flag can only be used with the imported
-# target. Use of both the imported target as well as this switch is highly
-# recommended for new code.
-#
+
 #=============================================================================
 # CMake - Cross Platform Makefile Generator
 # Copyright 2000-2015 Kitware, Inc.

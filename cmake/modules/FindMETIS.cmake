@@ -1,21 +1,46 @@
-# Accepts the following variables:
+# .. cmake_module::
 #
-# METIS_ROOT: Prefix where METIS is installed.
-# METIS_LIB_NAME: Name of the METIS library (default: metis).
-# METIS_LIBRARY: Full path of the METIS library.
-
-# Sets the following variables:
+#    Find the METIS library
 #
-# METIS_LIBRARY: Full path of the METIS library.
-# METIS_FOUND: True if ParMETIS was found.
-# METIS_LIBRARIES: List of all libraries needed for linking with METIS,
+#    You may set the following variables to modify the
+#    behaviour of this module:
 #
-# Provides the following macros:
+#    :ref:`METIS_ROOT`
+#       Prefix, where METIS is installed
 #
-# find_package(METIS)
+#    :ref:`METIS_LIB_NAME`
+#       Name of the METIS library (default: metis)
 #
-# Searches for METIS (See above)
-
+#    :ref:`METIS_LIBRARY`
+#       Full path to the METIS library
+#
+#    Sets the following variables:
+#
+#    :code:`METIS_FOUND`
+#       True if the METIS library was found.
+#
+#    :code:`METIS_LIBRARY`
+#       Full path to the METIS library
+#
+#    :code:`METIS_LIBRARIES`
+#       List of libraries needed for linking with METIS
+#
+# .. cmake_variable:: METIS_ROOT
+#
+#   You may set this variable to have :ref:`FindMETIS` look
+#   for the METIS library and includes in the given path
+#   before inspecting default system paths.
+#
+# .. cmake_variable:: METIS_LIB_NAME
+#
+#   You may set this variable to specify the name of the METIS
+#   library that :ref:`FindMETIS` looks for.
+#
+# .. cmake_variable:: METIS_LIBRARY
+#
+#   You may set this variable to specify the full path to the METIS
+#   library, that should be used by :ref:`FindMETIS`.
+#
 
 # search metis header
 find_path(METIS_INCLUDE_DIR metis.h

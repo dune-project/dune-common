@@ -27,21 +27,79 @@
 # in the source tree. This file will be copied
 # to the build tree.
 #
-#   dune_symlink_to_source_tree([NAME name])
 #
-# add a symlink called NAME to all directories in the build tree (defaults to src_dir).
-# That symlink points to the corresponding directory in the source tree.
-# Call the macro from the toplevel CMakeLists.txt file of your project.
-# You can also call it from some other directory, creating only symlinks
-# in that directory and all directories below. A warning is issued on
-# Windows systems.
+# .. cmake_function:: dune_add_copy_command
 #
-#   dune_symlink_to_source_files(FILES files)
+#    .. cmake_param:: filename
+#       :positional:
+#       :single:
+#       :required:
 #
-# add symlinks to the build tree, which point to files in the source tree.
-# Foreach file given in "files", a symlink of that name is created in the
-# corresponding build directory. Use for ini files, grid files etc. A warning
-# is issued on Windows systems.
+#    TODO DOC ME!
+#
+# .. cmake_function:: dune_add_copy_target
+#
+#    .. cmake_param:: target_name
+#       :positional:
+#       :single:
+#       :required:
+#
+#    .. cmake_param:: filename
+#       :positional:
+#       :single:
+#       :required:
+#
+#    TODO DOC ME!
+#
+# .. cmake_function:: dune_add_copy_dependency
+#
+#    .. cmake_param:: target
+#       :positional:
+#       :single:
+#       :required:
+#
+#    .. cmake_param:: filename
+#       :positional:
+#       :single:
+#       :required:
+#
+#    TODO DOC ME!
+#
+# .. cmake_function:: dune_symlink_to_source_tree
+#
+#    .. cmake_param:: NAME
+#       :single:
+#
+#       The name of the symlink, defaults to :code:`src_dir`.
+#
+#    This function will place a symlink into every subdirectory
+#    of the build tree, that allows to jump to the corresponding
+#    source directory. Call this from your top-level :code:`CMakeLists.txt`
+#    to enable it for a given module. To enable it for all modules,
+#    set the variable :ref:`DUNE_SYMLINK_TO_SOURCE_TREE` instead.
+#    If used on Windows systems, a warning is issued.
+#
+# .. cmake_variable:: DUNE_SYMLINK_TO_SOURCE_TREE
+#
+#    If this variable is set to TRUE, the functionality of
+#    :ref:`dune_symlink_to_source_tree` is enabled in all modules.
+#    This will place symlinks to the corresponding source directory
+#    in every subdirectory of the build directory.
+#
+# .. cmake_function:: dune_symlink_to_source_files
+#
+#    .. cmake_param:: FILES
+#       :multi:
+#       :required:
+#
+#       The list of files to symlink.
+#
+#    Create symlinks in the current build directory, which
+#    point to files in the source directory. This is usually
+#    used for grid and ini files and the like. On Windows systems,
+#    a warning is issued and copying is used as a fallback to
+#    symlinking.
+#
 
 macro(dune_add_copy_command file_name)
     add_custom_command(

@@ -5,6 +5,7 @@
 *.o
 *.trs
 *~
+*.pyc
 .deps/
 .libs/
 Makefile

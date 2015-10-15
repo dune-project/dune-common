@@ -1,83 +1,157 @@
-# This module provides the functions necessary for a simplified CMake build system
+# Implementation of a simplified CMake build system.
 #
-# The DUNE build system relies on the user to choose and add the compile and link flags
-# necessary to build an executable. While this offers full control to the user, it
-# is an error-prone procedure.
+# .. cmake_function:: dune_enable_all_packages
 #
-# Alternatively, users may use the functions in this module to simply add the compile flags for all
-# found external modules to all executables in a DUNE module. Likewise, all found libraries are
-# linked to all targets.
+#    .. cmake_brief::
 #
-# This module provides the following functions:
+#       Previously, the DUNE build system relied on the user to choose and add the compile and link flags
+#       necessary to build an executable. While this offers full control to the user, it
+#       is an error-prone procedure.
 #
-# dune_enable_all_packages(INCLUDE_DIRS [include_dirs]
-#                          COMPILE_DEFINITIONS [compile_definitions]
-#                          COMPILE_OPTIONS [compile_options]
-#                          MODULE_LIBRARIES [libraries]
-#                          [VERBOSE] [APPEND]
-#                          )
+#       Alternatively, users may use this function to simply add the compile flags for all
+#       found external modules to all executables in a DUNE module. Likewise, all found libraries are
+#       linked to all targets.
 #
-# Adds all flags and all libraries to all executables that are subsequently added in the directory
-# from where this function is called and from all its subdirectories (recursively).
-# If used, this function MUST be called in the top level CMakeLists.txt BEFORE adding any subdirectories!
-# You can optionally add additional include dirs and compile definitions that will also be applied to
-# all targets in the module.
-# Finally, if your module contains libraries as well as programs and if the programs should automatically
-# link to those libraries, you MUST list these libraries in MODULE_LIBRARIES. Those libraries will be
-# automatically created by dune_enable_all_packages (which internally calls dune_add_library()) and placed
-# in the lib/ directory. The order of the libraries matters: if one library depends on another one, it must
-# be listed after its dependency. This special handling of the libraries is due to the way newer CMake
-# versions handle linking (in particular CMP022 and CMP038). You can later add source files to the library
-# anywhere in the source tree by calling dune_library_add_sources().
+#    .. cmake_param:: INCLUDE_DIRS
+#       :multi:
 #
-# Warning: dune_enable_all_packages()  requires CMake 2.8.12+. If you call this function with an older version
-#          of CMake, the build will fail with a fatal error. DO NOT enable this feature if your module needs
-#          to compile on machines with an older version of CMake.
-# Warning: The library feature requires CMake 3.1+. If you use the feature with older versions, CMake
-#          will emit a fatal error. Moreover, it will issue a warning if the cmake_minimum_required()
+#       A list of include directories, that should be added to all targets.
+#       In a standard Dune module, it is not necessary to specify anything.
+#
+#    .. cmake_param:: COMPILE_DEFINITIONS
+#       :multi:
+#
+#       A list of compile definitions, that should be added to all targets.
+#       In a standard Dune module, it is not necessary to specify anything.
+#
+#    .. cmake_param:: COMPILE_OPTIONS
+#       :multi:
+#
+#       A list of non-definition compile options, that should be added to all targets.
+#       In a standard Dune module, it is not necessary to specify anything.
+#
+#    .. cmake_param:: MODULE_LIBRARIES
+#       :multi:
+#
+#       If your module contains libraries as well as programs and if the programs should automatically
+#       link to those libraries, you *MUST* list these libraries in :code:`MODULE_LIBRARIES`. Those libraries will be
+#       automatically created by :ref:`dune_enable_all_packages` (which internally calls :ref:`dune_add_library`) and placed
+#       in the lib/ directory. The order of the libraries matters: if one library depends on another one, it must
+#       be listed after its dependency. This special handling of the libraries is due to the way newer CMake
+#       versions handle linking (in particular CMP022 and CMP038). You can later add source files to the library
+#       anywhere in the source tree by calling :ref:`dune_library_add_sources`.
+#
+#       .. warning::
+#          The library feature requires CMake 3.1+. If you use the feature with older versions, CMake
+#          will emit a fatal error. Moreover, it will issue a warning if the :code:`cmake_minimum_required`
 #          version is older than 3.1.
-# Note:    If you want to use dune_enable_all_packages() with an older version of CMake and your DUNE mdule
-#          creates its own library, you have to manually create the library in the top-level CMakeLists.txt
-#          file using dune_add_library() (with all sources listed within that call), use
-#          dune_target_enable_all_packages() to add all packages to the library and finally list that library
-#          under LIBRARIES in the call to dune_register_package_flags(). See dune-pdelab for an example of
-#          how to do this correctly.
 #
-# For a description of the APPEND option, see the documentation of dune_register_package_flags().
-# With the VERBOSE option set, the list of flags is printed during configure.
+#    .. cmake_param:: VERBOSE
+#       :option:
 #
+#       If this option is set, the set of compile flags, linked libraries and include directories
+#       that is in use for all targets in the module is printed upon configuration.
 #
-# dune_target_enable_all_packages(TARGETS [target] ...)
+#    .. cmake_param:: APPEND
+#       :option:
 #
-# Adds all currently registered package flags (see dune_register_package_flags()) to the given targets.
-# This function is mainly intended to help write DUNE modules that want to use dune_enable_all_packages() and
-# define their own libraries, but need to be compatible with CMake < 3.1.
+#       If this option is set, the definitions, flags and directories specified in this function are
+#       appended to the global collection of flags instead of being prepended. Only use it, if you know
+#       what you are doing.
 #
-# Note:    Just like dune_enable_all_packages(), this function requires CMake 2.8.12+.
+#    Adds all flags and all libraries to all executables that are subsequently added in the directory
+#    from where this function is called and from all its subdirectories (recursively).
+#    If used, this function *MUST* be called in the top level CMakeLists.txt BEFORE adding any subdirectories!
+#    You can optionally add additional include dirs and compile definitions that will also be applied to
+#    all targets in the module.
 #
+#    .. warning::
+#       :ref:`dune_enable_all_packages` requires CMake 2.8.12+. If you call this function with an older version
+#       of CMake, the build will fail with a fatal error. DO NOT enable this feature if your module needs
+#       to compile on machines with an older version of CMake.
 #
-# dune_register_package_flags(COMPILE_DEFINITIONS [flags]
-#                             COMPILE_OPTIONS [options]
-#                             INCLUDE_DIRS {includes]
-#                             LIBRARIES [libs]
-#                             [APPEND]
-#                             )
+#    .. note::
+#       If you want to use :code:`dune_enable_all_packages` with an older version of CMake and your DUNE module
+#       creates its own library, you have to manually create the library in the top-level CMakeLists.txt
+#       file using :ref:`dune_add_library` (with all sources listed within that call), use
+#       :ref:`dune_target_enable_all_packages` to add all packages to the library and finally list that library
+#       under :code:`LIBRARIES` in the call to :ref:`dune_register_package_flags`. See dune-pdelab for an example of
+#       how to do this correctly.
 #
-# To correctly implement the automatic handling of external libraries, the compile flags, include paths and link
-# flags of all found packages must be registered with this function. This function is only necessary for people that
-# want to write their own FindFooBar CMake modules to link against additional libraries which are not supported by
-# the DUNE core modules. Call this function at the end of every find module. If you are using an external FindFoo
-# module which you cannot alter, call it after the call to find_package(foo).
-# The APPEND parameter appends the given flags to the global list instead of prepending. Only use it, if you know
-# what you are doing.
+#    While :ref:`dune_enable_all_packages` defines the user interface for this feature, developers might
+#    also be interested in the following related functions:
 #
+#    * :ref:`dune_target_enable_all_packages`
+#    * :ref:`dune_register_package_flags`
+#    * :ref:`dune_library_add_sources`
 #
-# dune_library_add_sources(module_library
-#                          SOURCES [sources]
-#                         )
+# .. cmake_function:: dune_target_enable_all_packages
 #
-# Adds the source files listed in [sources] to the DUNE module library module_library created by an earlier
-# call to dune_enable_all_packages() in the current DUNE module.
+#    .. cmake_param:: TARGETS
+#       :multi:
+#
+#       A list of targets to add all flags etc. too.
+#
+#    Adds all currently registered package flags (see :ref:`dune_register_package_flags`) to the given targets.
+#    This function is mainly intended to help write DUNE modules that want to use :ref:`dune_enable_all_packages` and
+#    define their own libraries, but need to be compatible with CMake < 3.1
+#
+#    .. note::
+#       Just like :ref:`dune_enable_all_packages`, this function requires CMake 2.8.12+.
+#
+# .. cmake_function:: dune_register_package_flags
+#
+#    .. cmake_param:: INCLUDE_DIRS
+#       :multi:
+#
+#       The list of include directories needed by the external package.
+#
+#    .. cmake_param:: COMPILE_DEFINITIONS
+#       :multi:
+#
+#       The list of compile definitions needed by the external package.
+#
+#    .. cmake_param:: COMPILE_OPTIONS
+#       :multi:
+#
+#       The list of compile options needed by the external package.
+#
+#    .. cmake_param:: LIBRARIES
+#       :multi:
+#
+#       The list of libraries that the external package should link to.
+#       The order of the input is preserved in the output.
+#
+#    .. cmake_param:: APPEND
+#       :option:
+#
+#       If this option is set, the definitions, flags and directories specified in this function are
+#       appended to the global collection of flags instead of being prepended. Only use it, if you know
+#       what you are doing.
+#
+#    To correctly implement the automatic handling of external libraries, the compile flags, include paths and link
+#    flags of all found packages must be registered with this function. This function is only necessary for people that
+#    want to write their own :code:`FindFooBar` CMake modules to link against additional libraries which are not supported by
+#    the DUNE core modules. Call this function at the end of every find module. If you are using an external FindFoo
+#    module which you cannot alter, call it after the call to :code:`find_package(foo)`.
+#
+# .. cmake_function:: dune_library_add_sources
+#
+#    .. cmake_param:: module_library
+#       :single:
+#       :positional:
+#
+#       The name of the module library target.
+#
+#    .. cmake_param: SOURCES
+#       :multi:
+#       :required:
+#
+#       The source files to add to the DUNE module library :code:`module_library`.
+#       That library must have been created by an earlier call to :ref:`dune_enable_all_packages`
+#       in the current DUNE module.
+#
+#    Register sources for module exported library.
 #
 
 function(dune_register_package_flags)

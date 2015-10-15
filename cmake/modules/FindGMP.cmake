@@ -1,12 +1,25 @@
-# Module that checks for the GNU MP Bignum (GMP) library, include
-# dirs and
+# .. cmake_module::
 #
-# Variables used by this module which you may want to set:
-# GMP_ROOT Path list to search for GMP
+#    Find the GNU MP Bignum (GMP) library
 #
-# Sets the following variables:
-# GMP_FOUND True if the GMP library was found.
+#    You may set the following variables to modify the
+#    behaviour of this module:
 #
+#    :ref:`GMP_ROOT`
+#       Path list to search for GMP
+#
+#    Sets the following variables:
+#
+#    :code:`GMP_FOUND`
+#       True if the GMP library was found.
+#
+# .. cmake_variable:: GMP_ROOT
+#
+#   You may set this variable to have :ref:`FindGMP` look
+#   for the gmp package in the given path before inspecting
+#   system paths.
+#
+
 
 # search for location of header gmpxx.h", only at positions given by the user
 find_path(GMP_INCLUDE_DIR

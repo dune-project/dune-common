@@ -15,7 +15,30 @@
 # If DEPENDENCY is specified, this is a dependency for
 # the installation. Otherwise FILENAME becomes the dependency
 #
-# dune_add_latex_document()
+# .. cmake_function:: dune_add_latex_document
+#
+#    .. cmake_brief::
+#
+#       build a pdf document through the dune buildsystem.
+#
+#    .. cmake_param:: texfile
+#       :single:
+#       :required:
+#       :positional:
+#
+#       The texfile to compile into a pdf.
+#
+#    .. note::
+#
+#       This function will be rewritten for Dune 3.0 as it currently
+#       shadows all options provided by the base implementation
+#       :code:`add_latex_document`.
+#
+# .. cmake_function:: create_doc_install
+#
+#    TODO doc me
+#    What are use cases for this function?
+#
 
 FIND_PACKAGE(LATEX)
 FIND_PROGRAM(IMAGEMAGICK_CONVERT convert
@@ -46,6 +69,9 @@ endif(LATEX_USABLE)
 
 
 add_custom_target(doc)
+
+# add the Sphinx-generated build system documentation
+include(DuneSphinxCMakeDoc)
 
 
 MACRO(create_doc_install filename targetdir)

@@ -6,6 +6,7 @@ install(FILES
   AddUMFPackFlags.cmake
   CheckCXXFeatures.cmake
   CheckForPthreads.c
+  CMakeBuiltinFunctionsDocumentation.cmake
   DuneCMakePackageConfigHelpers.cmake
   DuneCommonMacros.cmake
   DuneCxaDemangle.cmake
@@ -15,6 +16,7 @@ install(FILES
   DuneMacros.cmake
   DuneMPI.cmake
   DunePkgConfig.cmake
+  DuneSphinxCMakeDoc.cmake
   DuneStreams.cmake
   DuneSymlinkOrCopy.cmake
   DuneTestMacros.cmake
@@ -25,6 +27,7 @@ install(FILES
   FindMProtect.cmake
   FindParMETIS.cmake
   FindPTScotch.cmake
+  FindSphinx.cmake
   FindThreadsCMake31.cmake
   FindUMFPack.cmake
   Headercheck.cmake

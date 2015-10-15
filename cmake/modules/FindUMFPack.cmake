@@ -1,13 +1,29 @@
-# Module that checks whether UMFPack is available.
+# .. cmake_module::
 #
-# Variables used by this module which you may want to set:
-# UMFPACK_ROOT   Path list to search for UMFPack
+#    Find the UMFPack library
 #
-# Sets the following variables
+#    You may set the following variables to modify the
+#    behaviour of this module:
 #
-# UMFPACK_FOUND          True if UMFPack was found and usable
-# UMFPACK_INCLUDE_DIRS   Path to the UMFPack include dirs
-# UMFPACK_LIBRARIES      Name of the UMFPack libraries
+#    :ref:`UMFPACK_ROOT`
+#       Path list to search for UMFPack.
+#
+#    Sets the following variables:
+#
+#    :code:`UMFPACK_FOUND`
+#       True if the GMP library was found.
+#
+#    :code:`UMFPACK_INCLUDE_DIRS`
+#       List of include directories with the UMFPack headers
+#
+#    :code:`UMFPACK_LIBRARIES`
+#       List of libraries to link with UMFPack.
+#
+# .. cmake_variable:: UMFPACK_ROOT
+#
+#   You may set this variable to have :ref:`FindUMFPack` look
+#   for the UMFPack package in the given path before inspecting
+#   system paths.
 #
 
 find_package(BLAS QUIET REQUIRED)

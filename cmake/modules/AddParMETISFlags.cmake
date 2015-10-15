@@ -1,11 +1,16 @@
-# Module providing convenience functions for using ParMETIS
+# Defines the functions to use ParMETIS
 #
-# Provides the following functions:
+# .. cmake_function:: add_dune_parmetis_flags
 #
-# add_dune_parmetis_flags(target1 target2 ...)
+#    .. cmake_param:: targets
+#       :positional:
+#       :single:
+#       :required:
 #
-# Adds the necessary flags to compile and link the targets with ParMETIS support.
+#       A list of targets to use ParMETIS with.
 #
+
+
 function(add_dune_parmetis_flags _targets)
   if(PARMETIS_FOUND)
     foreach(_target ${_targets})

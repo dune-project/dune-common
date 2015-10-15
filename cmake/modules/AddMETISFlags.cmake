@@ -1,11 +1,16 @@
-# Module providing convenience functions for using METIS
+# Defines the functions to use METIS
 #
-# Provides the following functions:
+# .. cmake_function:: add_dune_metis_flags
 #
-# add_dune_metis_flags(target1 target2 ...)
+#    .. cmake_param:: targets
+#       :positional:
+#       :single:
+#       :required:
 #
-# Adds the necessary flags to compile and link the targets with ParMETIS support.
+#       A list of targets to use METIS with.
 #
+
+
 function(add_dune_metis_flags _targets)
   if(METIS_FOUND)
     foreach(_target ${_targets})
