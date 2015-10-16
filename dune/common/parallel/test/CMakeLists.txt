@@ -1,34 +1,13 @@
-set(MPITESTPROGS indicestest indexsettest syncertest selectiontest variablesizecommunicatortest)
+dune_add_test(SOURCES indexsettest.cc)
 
-add_executable("indexsettest" indexsettest.cc)
-target_link_libraries("indexsettest" "dunecommon" ${CMAKE_THREAD_LIBS_INIT} ${})
+dune_add_test(SOURCES indicestest.cc
+              LINK_LIBRARIES dunecommon
+              SKIP_ON_77)
 
-include(DuneMPI)
-add_executable("indicestest" indicestest.cc)
-target_link_libraries("indicestest" "dunecommon")
-add_dune_mpi_flags(indicestest)
+dune_add_test(SOURCES selectiontest.cc)
 
-add_executable("selectiontest" selectiontest.cc)
-target_link_libraries("selectiontest" "dunecommon")
-add_dune_mpi_flags(selectiontest)
+dune_add_test(SOURCES syncertest.cc
+              SKIP_ON_77)
 
-add_executable("syncertest" syncertest.cc)
-target_link_libraries("syncertest" "dunecommon")
-add_dune_mpi_flags(syncertest)
-
-add_executable("variablesizecommunicatortest" variablesizecommunicatortest.cc)
-target_link_libraries("variablesizecommunicatortest" "dunecommon")
-add_dune_mpi_flags(variablesizecommunicatortest)
-
-add_test(indexsettest indexsettest)
-add_test(selectiontest selectiontest)
-add_test(indicestest indicestest)
-add_test(syncertest syncertest)
-add_test(variablesizecommunicatortest variablesizecommunicatortest)
-
-# treat tests returning code 77 as skipped
-set_tests_properties(
-  indicestest
-  syncertest
-  variablesizecommunicatortest
-  PROPERTIES SKIP_RETURN_CODE 77)
+dune_add_test(SOURCES variablesizecommunicatortest.cc
+              SKIP_ON_77)
