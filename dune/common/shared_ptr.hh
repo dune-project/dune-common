@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include <dune/common/nullptr.hh>
 #include <dune/common/typetraits.hh>
 /**
  * @file
