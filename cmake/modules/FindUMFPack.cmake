@@ -35,7 +35,6 @@ if( SUITESPARSE_FOUND )
   set( UMFPACK_LIBRARY ${SUITESPARSE_LIBRARY} )
 endif()
 
-
 # behave like a CMake module is supposed to behave
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
@@ -49,9 +48,8 @@ mark_as_advanced(UMFPACK_INCLUDE_DIR UMFPACK_LIBRARY)
 
 # if both headers and library are found, store results
 if(UMFPACK_FOUND)
-  set(UMFPACK_INCLUDE_DIRS ${UMFPACK_INCLUDE_DIR})
-  foreach( dir ${UMFPACK_INCLUDE_DIRS} )
-    list( APPEND UMFPACK_INCLUDE_FLAGS "-I${dir}/" )
+  foreach( dir ${UMFPACK_INCLUDE_DIR} )
+    list( APPEND UMFPACK_INCLUDE_FLAGS "-I${dir}/ " )
   endforeach()
   set(UMFPACK_LIBRARIES ${UMFPACK_LIBRARY})
   # log result
@@ -59,7 +57,7 @@ if(UMFPACK_FOUND)
     "Determining location of UMFPack succeded:\n"
     "Include directory: ${UMFPACK_INCLUDE_DIRS}\n"
     "Library directory: ${UMFPACK_LIBRARIES}\n\n")
-  set(UMFPACK_DUNE_COMPILE_FLAGS "${UMFPACK_INLCUDE_FLAGS}"
+  set(UMFPACK_DUNE_COMPILE_FLAGS "${UMFPACK_INCLUDE_FLAGS}"
     CACHE STRING "Compile Flags used by DUNE when compiling with UMFPack programs")
   set(UMFPACK_DUNE_LIBRARIES ${UMFPACK_LIBRARIES} ${BLAS_LIBRARIES} ${AMD_LIBRARY}
     CACHE STRING "Libraries used by DUNE when linking UMFPack programs")
