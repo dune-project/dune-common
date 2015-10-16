@@ -10,9 +10,6 @@
 #    This module internally sets the following variables, which are then
 #    exported into the config.h of the current dune module.
 #
-#    :code:`HAVE_NULLPTR`
-#       True if nullptr is available
-#
 #    :code:`HAS_ATTRIBUTE_UNUSED`
 #       True if attribute unused is supported
 #
@@ -21,18 +18,6 @@
 #
 #    :code:`HAS_ATTRIBUTE_DEPRECATED_MSG`
 #       True if attribute deprecated("msg") is supported
-#
-#    :code:`HAVE_CONSTEXPR1`
-#       True if constexpr is supported
-#
-#    :code:`HAVE_KEYWORD_FINAL`
-#       True if final is supported.
-#
-#    :code:`HAVE_RANGE_BASED_FOR`
-#       True if range-based for is supported and working.
-#
-#    :code:`HAVE_NOEXCEPT_SPECIFIER`
-#       True if nonexcept specifier is supported.
 #
 # .. cmake_variable:: DISABLE_CXX_VERSION_CHECK
 #
@@ -122,42 +107,6 @@ endif()
 # perform tests
 include(CheckCXXSourceCompiles)
 
-# nullptr
-check_cxx_source_compiles("
-    int main(void)
-    {
-      char* ch = nullptr;
-      return 0;
-    }
-"  HAVE_NULLPTR
-  )
-
-if(HAVE_NULLPTR)
-  check_cxx_source_compiles("
-    #include <cstddef>
-
-    int main(void)
-    {
-      std::nullptr_t npt = nullptr;
-      return 0;
-    }
-"  HAVE_NULLPTR_T
-    )
-  if (NOT HAVE_NULLPTR_T)
-    if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel")
-      message(FATAL_ERROR "Your compiler supports the 'nullptr' keyword, but not the type std::nullptr_t.
-You are using an Intel compiler, where this error is typically caused by an outdated underlying system GCC.
-Check if 'gcc --version' gives you at least GCC 4.6, otherwise please install a newer GCC and point your Intel compiler at it using the '-gcc-name' or '-gxx-name' options (see 'man icc' for further details)."
-        )
-    else()
-      message(FATAL_ERROR "Your compiler supports the 'nullptr' keyword, but not the type std::nullptr_t.
-THIS SHOULD NOT HAPPEN FOR YOUR COMPILER!
-Please submit a bug at https://dune-project.org/flyspray/"
-        )
-    endif()
-  endif()
-endif()
-
 # __attribute__((unused))
 check_cxx_source_compiles("
    int main(void)
@@ -231,87 +180,6 @@ check_cxx_source_compiles("
    };
 "  HAS_ATTRIBUTE_DEPRECATED_MSG
 )
-
-# constexpr
-check_cxx_source_compiles("
-  constexpr int foo()
-  { return 0; }
-
-  template<int v>
-  struct A
-  {
-    static const int value = v;
-  };
-
-  int main(void)
-  {
-    return A<foo()>::value;
-  }
-" HAVE_CONSTEXPR
-)
-
-# keyword final
-check_cxx_source_compiles("
-  struct Foo
-  {
-    virtual void foo() final;
-  };
-
-  int main(void)
-  {
-    return 0;
-  }
-" HAVE_KEYWORD_FINAL
-)
-
-# range-based for
-check_cxx_source_compiles("
-  int main(void)
-  {
-    int arr[3];
-    for(int &val : arr)
-      val = 0;
-  }
-" HAVE_RANGE_BASED_FOR
-)
-
-# nonexcept specifier
-check_cxx_source_compiles("
-  void func1() noexcept {}
-
-  void func2() noexcept(true) {}
-
-  template <class T>
-  void func3() noexcept(noexcept(T())) {}
-
-  int main(void)
-  {
-    func1();
-    func2();
-    func3<int>();
-  }
-" HAVE_NOEXCEPT_SPECIFIER
-)
-
-# std::declval()
-check_cxx_source_compiles("
-  #include <utility>
-
-  template<typename T>
-  struct check;
-
-  template<>
-  struct check<int&&>
-  {
-    int pass() { return 0; }
-  };
-
-  int main(void)
-  {
-    return check<decltype(std::declval<int>())>().pass();
-  }
-" HAVE_STD_DECLVAL
-  )
 
 # full support for is_indexable (checking whether a type supports operator[])
 check_cxx_source_compiles("

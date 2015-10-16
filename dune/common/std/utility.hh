@@ -170,17 +170,7 @@ namespace Dune
       return typename make_index_sequence_impl< sizeof...( T ) >::type();
     }
 
-#if HAVE_STD_DECLVAL
-
     using std::declval;
-
-#else
-
-    template <class T>
-    typename std::add_rvalue_reference<T>::type declval() DUNE_NOEXCEPT;
-
-#endif
-
 
   } // namespace Std
 
