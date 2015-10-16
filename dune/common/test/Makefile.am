@@ -25,7 +25,6 @@ TESTPROGS = \
     mpiguardtest \
     mpihelpertest \
     mpihelpertest2 \
-    nullptr-test \
     pathtest \
     parametertreelocaletest \
     parametertreetest \
@@ -53,8 +52,7 @@ COMPILE_XFAIL=$(DUNE_COMMON_BIN)/xfail-compile-tests
 COMPILE_XFAIL_TESTS = \
     check_fvector_size_fail1 \
     check_fvector_size_fail2 \
-    genericiterator_compile_fail \
-    nullptr-test-fail
+    genericiterator_compile_fail
 
 compile_XFAIL:
 	for i in $(COMPILE_XFAIL_TESTS); do \
@@ -159,10 +157,6 @@ mpihelpertest2_SOURCES = mpihelpertest.cc
 mpihelpertest2_CPPFLAGS = $(AM_CPPFLAGS) $(DUNEMPICPPFLAGS) -DMPIHELPER_PREINITIALIZE
 mpihelpertest2_LDADD = $(DUNEMPILIBS) $(LDADD)
 mpihelpertest2_LDFLAGS = $(AM_LDFLAGS) $(DUNEMPILDFLAGS)
-
-nullptr_test_SOURCES = nullptr-test.cc nullptr-test2.cc
-nullptr_test_fail_SOURCES = nullptr-test.cc
-nullptr_test_fail_CPPFLAGS = $(AM_CPPFLAGS) -DFAIL
 
 parametertreelocaletest_SOURCES = parametertreelocaletest.cc
 parametertreetest_SOURCES = parametertreetest.cc

@@ -23,7 +23,6 @@ set(TESTS
     mpiguardtest
     mpihelpertest
     mpihelpertest2
-    nullptr_test
     pathtest
     parametertreelocaletest
     parametertreetest
@@ -52,7 +51,7 @@ set(COMPILEFAILTESTS
     check_fvector_size_fail1
     check_fvector_size_fail2
     genericiterator_compile_fail
-    nullptr-test-fail)
+    )
 
 # Add the executables needed for the tests
 add_executable("arraylisttest" arraylisttest.cc)
@@ -121,12 +120,6 @@ add_executable("mpihelpertest2" mpihelpertest.cc)
 target_link_libraries(mpihelpertest2 "dunecommon")
 add_DUNE_MPI_flags(mpihelpertest2)
 set_target_properties(mpihelpertest2 PROPERTIES COMPILE_FLAGS "-DMPIHELPER_PREINITIALIZE")
-
-add_executable("nullptr_test" nullptr-test.cc nullptr-test2.cc)
-target_link_libraries(nullptr_test "dunecommon")
-add_executable("nullptr_test_fail" EXCLUDE_FROM_ALL nullptr-test.cc)
-target_link_libraries(nullptr_test_fail "dunecommon")
-set_target_properties(nullptr_test_fail PROPERTIES COMPILE_FLAGS "-DFAIL")
 
 add_executable("parametertreelocaletest" parametertreelocaletest.cc)
 target_link_libraries("parametertreelocaletest" "dunecommon")
