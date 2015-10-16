@@ -13,7 +13,7 @@ function(add_dune_suitesparse_flags _targets)
       get_target_property(_props ${_target} COMPILE_FLAGS)
       string(REPLACE "_props-NOTFOUND" "" _props "${_props}")
       set_target_properties(${_target} PROPERTIES COMPILE_FLAGS
-        "${_props} ${SUITESPARSE_DUNE_COMPILE_FLAGS}")
+        "${_props} ${SUITESPARSE_DUNE_COMPILE_FLAGS} -DENABLE_SUITESPARSE=1")
     endforeach(_target ${_targets})
   endif(SUITESPARSE_FOUND)
 endfunction(add_dune_suitesparse_flags)
