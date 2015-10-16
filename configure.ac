@@ -37,7 +37,6 @@ AC_CONFIG_FILES([Makefile
      doc/comm/figures/Makefile
      doc/doxygen/Makefile
      doc/doxygen/Doxyfile
-     doc/buildsystem/Makefile
      m4/Makefile
      am/Makefile
      share/Makefile
