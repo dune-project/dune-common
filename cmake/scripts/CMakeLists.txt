@@ -8,5 +8,5 @@ install(FILES
   index.rst.in
   InstallFile.cmake
   RunDoxygen.cmake
-  sphinx_cmake_dune.py)
+  sphinx_cmake_dune.py
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/dune/cmake/scripts)
