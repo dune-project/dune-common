@@ -115,13 +115,11 @@ endforeach()
 
 # resolve inter-modular dependencies
 
-# CHOLMOD requires AMD, COLAMD; CAMD and CCOLAMD is optional
-if( CHOLMOD_LIBRARY )
-  if( NOT AMD_LIBRARY )
-    if( NOT COLAMD_LIBRARY )
-      message(WARNING "CHOLMOD requires AMD and COLAMD which was not found, skipping the test.")
-      return()
-    endif()
+# CHOLMOD requires AMD, COLAMD; CAMD and CCOLAMD are optional
+if(CHOLMOD_LIBRARY)
+  if(NOT (AMD_LIBRARY AND COLAMD_LIBRARY))
+    message(WARNING "CHOLMOD requires AMD and COLAMD which were not found, skipping the test.")
+    return()
   endif()
 
   list( APPEND CHOLMOD_LIBRARY ${AMD_LIBRARY} ${COLAMD_LIBRARY} )
