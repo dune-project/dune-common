@@ -12,7 +12,7 @@
 #
 # Sets the following result variables:
 #
-# SUITESPARSE_FOUND               Whether SuiteSparse was found and usable in the desired setting
+# SuiteSparse_FOUND               Whether SuiteSparse was found and usable in the desired setting
 # SUITESPARSE_INCLUDE_DIRS        Path to the SuiteSparse include dirs
 # SUITESPARSE_LIBRARIES           Name of the SuiteSparse libraries
 # SUITESPARSE_<COMPONENT>_FOUND   Whether <COMPONENT> was found as part of SuiteSparse
@@ -151,6 +151,8 @@ set(SUITESPARSE_FOUND TRUE)
 foreach(modname ${SUITESPARSE_COMPONENTS})
   dune_module_to_uppercase(MODNAME ${modname})
   set(SUITESPARSE_${MODNAME}_FOUND TRUE)
+  # variable used for component handling
+  set(SuiteSparse_${modname}_FOUND TRUE)
   if(${MODNAME}_LIBRARY AND ${MODNAME}_INCLUDE_DIR)
     list(APPEND SUITESPARSE_INCLUDE_DIR "${${MODNAME}_INCLUDE_DIR}")
     list(APPEND SUITESPARSE_LIBRARY "${${MODNAME}_LIBRARY}")
@@ -161,6 +163,7 @@ foreach(modname ${SUITESPARSE_COMPONENTS})
   set(HAVE_SUITESPARSE_${MODNAME} 1)
   mark_as_advanced(HAVE_SUITESPARSE_${MODNAME})
   mark_as_advanced(SUITESPARSE_${MODNAME}_FOUND)
+  mark_as_advanced(SuiteSparse_${modname}_FOUND)
 endforeach()
 
 list(APPEND SUITESPARSE_LIBRARY ${SUITESPARSE_CONFIG_LIB})
@@ -181,15 +184,16 @@ endif()
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
   "SuiteSparse"
-  DEFAULT_MSG
+  REQUIRED_VARS
   SUITESPARSE_INCLUDE_DIR
   SUITESPARSE_LIBRARY
+  HANDLE_COMPONENTS
 )
 
 mark_as_advanced(SUITESPARSE_INCLUDE_DIR SUITESPARSE_LIBRARY)
 
 # if both headers and library are found, store results
-if(SUITESPARSE_FOUND)
+if(SuiteSparse_FOUND)
   set(SUITESPARSE_LIBRARIES ${SUITESPARSE_LIBRARY})
   set(SUITESPARSE_INCLUDE_DIRS ${SUITESPARSE_INCLUDE_DIR})
   # log result
@@ -214,10 +218,10 @@ else()
 endif()
 
 #set HAVE_SUITESPARSE for config.h
-set(HAVE_SUITESPARSE ${SUITESPARSE_FOUND})
+set(HAVE_SUITESPARSE ${SuiteSparse_FOUND})
 
 # register all SuiteSparse related flags
-if(SUITESPARSE_FOUND)
+if(SuiteSparse_FOUND)
   dune_register_package_flags(
     COMPILE_DEFINITIONS "ENABLE_SUITESPARSE=1"
     LIBRARIES "${SUITESPARSE_LIBRARIES}"
