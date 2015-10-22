@@ -74,6 +74,11 @@
 #
 #       The test will be marked as skipped in ctest if it returned 77.
 #
+#    .. cmake_param:: CMD_ARGS
+#       :multi:
+#
+#       Command line arguments that should be passed to this test.
+#
 #    This function defines the Dune way of adding a test to the testing suite.
 #    You may either add the executable yourself through :ref:`add_executable`
 #    and pass it to the :code:`TARGET` option, or you may rely on :ref:`dune_add_test`
@@ -97,7 +102,7 @@ function(dune_add_test)
   include(CMakeParseArguments)
   set(OPTIONS EXPECT_COMPILE_FAIL EXPECT_FAIL SKIP_ON_77)
   set(SINGLEARGS NAME TARGET)
-  set(MULTIARGS SOURCES COMPILE_DEFINITIONS COMPILE_FLAGS LINK_LIBRARIES)
+  set(MULTIARGS SOURCES COMPILE_DEFINITIONS COMPILE_FLAGS LINK_LIBRARIES CMD_ARGS)
   cmake_parse_arguments(ADDTEST "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
 
   # Check whether the parser produced any errors
@@ -159,7 +164,7 @@ function(dune_add_test)
 
   # Now add the actual test
   _add_test(NAME ${ADDTEST_NAME}
-            COMMAND ${TESTCOMMAND}
+            COMMAND ${TESTCOMMAND} ${ADDTEST_CMD_ARGS}
            )
 
   # Process the EXPECT_FAIL option
