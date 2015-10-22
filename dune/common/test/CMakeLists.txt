@@ -40,7 +40,8 @@ dune_add_test(NAME fmatrixtest
               SOURCES fmatrixtest.cc dummy.f
               LINK_LIBRARIES dunecommon)
 
-dune_add_test(SOURCES fvectortest.cc)
+dune_add_test(SOURCES fvectortest.cc
+              LINK_LIBRARIES dunecommon)
 
 dune_add_test(SOURCES genericiterator_compile_fail.cc
               EXPECT_COMPILE_FAIL)
@@ -63,11 +64,14 @@ dune_add_test(SOURCES mpicollectivecommunication.cc
 dune_add_test(SOURCES mpiguardtest.cc
               LINK_LIBRARIES dunecommon)
 
-dune_add_test(SOURCES mpihelpertest.cc)
+dune_add_test(SOURCES mpihelpertest.cc
+              LINK_LIBRARIES dunecommon)
 
 dune_add_test(NAME mpihelpertest2
               SOURCES mpihelpertest.cc
-              COMPILE_DEFINITIONS MPIHELPER_PREINITIALIZE)
+              COMPILE_DEFINITIONS MPIHELPER_PREINITIALIZE
+              LINK_LIBRARIES dunecommon
+              )
 
 dune_add_test(NAME nullptr-test
               SOURCES nullptr-test.cc nullptr-test2.cc)
