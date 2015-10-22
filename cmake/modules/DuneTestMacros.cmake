@@ -79,6 +79,16 @@
 #
 #       Command line arguments that should be passed to this test.
 #
+#    .. cmake_param:: MPI_RANKS
+#       :multi:
+#
+#       The numbers of cores that this tests should be executed with.
+#       Note, that one test (in the ctest sense) is created for each number
+#       given here. Any number exceeding the user-specified processor maximum
+#       :ref:`DUNE_MAX_TEST_CORESS` will be ignored. Tests with a
+#       processor number :code:`n` higher than one will have the suffix
+#       :code:`-mpi-n` appended to their name.
+#
 #    This function defines the Dune way of adding a test to the testing suite.
 #    You may either add the executable yourself through :ref:`add_executable`
 #    and pass it to the :code:`TARGET` option, or you may rely on :ref:`dune_add_test`
@@ -90,6 +100,11 @@
 #    (before the call to :code:`include(DuneMacros)`) to suppress the error that is thrown if
 #    :code:`add_test` is used. You should only do that if you have proper reason to do so.
 #
+# .. cmake_variable:: DUNE_MAX_TEST_CORES
+#
+#    You may set this variable to give an upperbound to the number of processors, that
+#    a single test may use. Defaults to 2, when MPI is found and to 1 otherwise.
+#
 
 # enable the testing suite on the CMake side.
 enable_testing()
@@ -98,11 +113,16 @@ include(CTest)
 # Introduce a target that triggers the building of all tests
 add_custom_target(build_tests)
 
+# Set the default on the variable DUNE_MAX_TEST_CORES
+if(NOT DUNE_MAX_TEST_CORES)
+  set(DUNE_MAX_TEST_CORES 2)
+endif()
+
 function(dune_add_test)
   include(CMakeParseArguments)
   set(OPTIONS EXPECT_COMPILE_FAIL EXPECT_FAIL SKIP_ON_77)
   set(SINGLEARGS NAME TARGET)
-  set(MULTIARGS SOURCES COMPILE_DEFINITIONS COMPILE_FLAGS LINK_LIBRARIES CMD_ARGS)
+  set(MULTIARGS SOURCES COMPILE_DEFINITIONS COMPILE_FLAGS LINK_LIBRARIES CMD_ARGS MPI_RANKS)
   cmake_parse_arguments(ADDTEST "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
 
   # Check whether the parser produced any errors
@@ -133,6 +153,19 @@ function(dune_add_test)
       get_filename_component(ADDTEST_NAME ${ADDTEST_SOURCES} NAME_WE)
     endif()
   endif()
+  if(NOT ADDTEST_MPI_RANKS)
+    set(ADDTEST_MPI_RANKS 1)
+  endif()
+  foreach(num ${ADDTEST_MPI_RANKS})
+    if(NOT "${num}" MATCHES "[1-9][0-9]*")
+      message(FATAL_ERROR "${num} was given to the MPI_RANKS arugment of dune_add_test, but it does not seem like a correct processor number")
+    endif()
+  endforeach()
+
+  # Discard all parallel tests if MPI was not found
+  if(NOT MPI_FOUND)
+    set(DUNE_MAX_TEST_CORES 1)
+  endif()
 
   # Add the executable if it is not already present
   if(ADDTEST_SOURCES)
@@ -162,19 +195,32 @@ function(dune_add_test)
     set(TESTCOMMAND ${CMAKE_COMMAND} --build . --target ${TESTCOMMAND} --config $<CONFIGURATION>)
   endif()
 
-  # Now add the actual test
-  _add_test(NAME ${ADDTEST_NAME}
-            COMMAND ${TESTCOMMAND} ${ADDTEST_CMD_ARGS}
-           )
+  # Add one test for each specified processor number
+  foreach(procnum ${ADDTEST_MPI_RANKS})
+    if(NOT "${procnum}" GREATER "${DUNE_MAX_TEST_CORES}")
+      if(NOT ${procnum} STREQUAL "1")
+        set(ACTUAL_TESTCOMMAND ${MPIEXEC} ${MPIEXEC_PREFLAGS} ${MPIEXEC_NUMPROC_FLAG} ${procnum} ${TESTCOMMAND} ${MPIEXEC_POSTFLAGS})
+        set(ACTUAL_NAME "${ADDTEST_NAME}-mpi-${procnum}")
+      else()
+        set(ACTUAL_TESTCOMMAND ${TESTCOMMAND})
+        set(ACTUAL_NAME ${ADDTEST_NAME})
+      endif()
 
-  # Process the EXPECT_FAIL option
-  if(ADDTEST_EXPECT_COMPILE_FAIL OR ADDTEST_EXPECT_FAIL)
-    set_tests_properties(${ADDTEST_NAME} PROPERTIES WILL_FAIL true)
-  endif()
-  # Process the SKIP_ON_77 option
-  if(ADDTEST_SKIP_ON_77)
-    set_tests_properties(${ADDTEST_NAME} PROPERTIES SKIP_RETURN_CODE 77)
-  endif()
+      # Now add the actual test
+      _add_test(NAME ${ACTUAL_NAME}
+                COMMAND ${ACTUAL_TESTCOMMAND} ${ADDTEST_CMD_ARGS}
+               )
+
+      # Process the EXPECT_FAIL option
+      if(ADDTEST_EXPECT_COMPILE_FAIL OR ADDTEST_EXPECT_FAIL)
+        set_tests_properties(${ACTUAL_NAME} PROPERTIES WILL_FAIL true)
+      endif()
+      # Process the SKIP_ON_77 option
+      if(ADDTEST_SKIP_ON_77)
+        set_tests_properties(${ACTUAL_NAME} PROPERTIES SKIP_RETURN_CODE 77)
+      endif()
+    endif()
+  endforeach()
 endfunction()
 
 macro(add_directory_test_target)
