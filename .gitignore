@@ -15,7 +15,7 @@ TAGS
 # Stuff to ignore in this directory only
 /aclocal.m4
 /autom4te.cache/
-/build-cmake/
+/build-*/
 /compile
 /config.guess
 /config.h
