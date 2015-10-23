@@ -216,6 +216,8 @@ function(dune_add_test)
                 COMMAND ${ACTUAL_TESTCOMMAND} ${ADDTEST_CMD_ARGS}
                )
 
+      # Define the number of processors (ctest will coordinate this with the -j option)
+      set_tests_properties(${ACTUAL_NAME} PROPERTIES PROCESSORS ${procnum})
       # Process the EXPECT_FAIL option
       if(ADDTEST_EXPECT_COMPILE_FAIL OR ADDTEST_EXPECT_FAIL)
         set_tests_properties(${ACTUAL_NAME} PROPERTIES WILL_FAIL true)
