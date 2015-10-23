@@ -73,15 +73,6 @@ dune_add_test(NAME mpihelpertest2
               LINK_LIBRARIES dunecommon
               )
 
-dune_add_test(NAME nullptr-test
-              SOURCES nullptr-test.cc nullptr-test2.cc)
-
-dune_add_test(NAME nullptr_test_fail
-              SOURCES nullptr-test.cc
-              COMPILE_DEFINITIONS FAIL
-              LINK_LIBRARIES dunecommon
-              EXPECT_COMPILE_FAIL)
-
 dune_add_test(SOURCES parametertreelocaletest.cc
               LINK_LIBRARIES dunecommon
               SKIP_ON_77)
