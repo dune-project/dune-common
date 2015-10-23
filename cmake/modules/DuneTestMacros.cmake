@@ -38,6 +38,7 @@
 #
 #    .. cmake_param:: COMPILE_DEFINITIONS
 #       :multi:
+#       :argname: def
 #
 #       A set of compile definitions to add to the target.
 #       Only definitions beyond the application of :ref:`add_dune_all_flags`
@@ -46,6 +47,7 @@
 #
 #    .. cmake_param:: COMPILE_FLAGS
 #       :multi:
+#       :argname: flag
 #
 #       A set of non-definition compile flags to add to the target.
 #       Only flags beyond the application of :ref:`add_dune_all_flags`
@@ -54,6 +56,7 @@
 #
 #    .. cmake_param:: LINK_LIBRARIES
 #       :multi:
+#       :argname: lib
 #
 #       A list of libraries to link the target to.
 #       Only libraries beyond the application of :ref:`add_dune_all_flags`
@@ -76,16 +79,18 @@
 #
 #    .. cmake_param:: CMD_ARGS
 #       :multi:
+#       :argname: arg
 #
 #       Command line arguments that should be passed to this test.
 #
 #    .. cmake_param:: MPI_RANKS
 #       :multi:
+#       :argname: ranks
 #
 #       The numbers of cores that this tests should be executed with.
 #       Note, that one test (in the ctest sense) is created for each number
 #       given here. Any number exceeding the user-specified processor maximum
-#       :ref:`DUNE_MAX_TEST_CORESS` will be ignored. Tests with a
+#       :ref:`DUNE_MAX_TEST_CORES` will be ignored. Tests with a
 #       processor number :code:`n` higher than one will have the suffix
 #       :code:`-mpi-n` appended to their name.
 #
