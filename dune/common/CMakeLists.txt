@@ -1,6 +1,6 @@
 add_subdirectory("parallel")
 add_subdirectory("std")
-add_subdirectory("test" EXCLUDE_FROM_ALL)
+add_subdirectory("test")
 
 #build the library dunecommon
 if(LAPACK_FOUND)
