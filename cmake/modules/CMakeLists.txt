@@ -20,7 +20,6 @@ install(FILES
   DuneStreams.cmake
   DuneSymlinkOrCopy.cmake
   DuneTestMacros.cmake
-  DuneTests.cmake
   FindGMP.cmake
   FindInkscape.cmake
   FindMETIS.cmake
