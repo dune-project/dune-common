@@ -1,4 +1,4 @@
-MODULES = BuildTests.cmake.in \
+MODULES = \
   CreateDoxyFile.cmake        \
   FinalizeHeadercheck.cmake   \
   FindFiles.cmake             \
