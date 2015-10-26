@@ -14,6 +14,30 @@
 #
 #       * `html`
 #
+#    .. cmake_param:: SPHINX_CONF
+#       :single:
+#       :argname: conf
+#
+#       A template for a conf file to be passed to :code:`sphinx-build`.
+#       The real configuration file will be generated through CMakes
+#       :code:`configure_file` mechanism. A reasonable default file is
+#       provided by dune-common. Only use this if you want to create
+#       custom documentation.
+#
+#    .. cmake_param:: RST_SOURCES
+#       :multi:
+#       :argname: src
+#
+#       A list of rst sources, that should be configured into the build tree
+#       (using :code:`configure_file`). If omitted, this defaults to
+#       :code:`index.rst` and :code:`contents.rst` with suitable content.
+#       Only use this if you want to create custom documentation.
+#
+#    .. cmake_param:: MODULE_ONLY
+#       :option:
+#
+#       Only document CMake functionality from the current Dune module.
+#
 #    Generate a documentation for the CMake API. A set of cmake
 #    modules defined by the parameters and all functions and macros
 #    there in are automatically generated. The top level directory
@@ -47,9 +71,9 @@ function(dune_cmake_sphinx_doc)
   endif()
 
   # Parse Arguments
-  set(OPTION)
-  set(SINGLE)
-  set(MULTI BUILDTYPE)
+  set(OPTION MODULE_ONLY)
+  set(SINGLE SPHINX_CONF)
+  set(MULTI BUILDTYPE RST_SOURCES)
   include(CMakeParseArguments)
   cmake_parse_arguments(SPHINX_CMAKE "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
   if(SPHINX_CMAKE_UNPARSED_ARGUMENTS)
@@ -61,15 +85,34 @@ function(dune_cmake_sphinx_doc)
     set(SPHINX_CMAKE_BUILDTYPE html)
   endif()
 
-  # Write the conf.py, which sets up Sphinx into the build directory
+  # Extract the script directory from dune-common
   set(DUNE_SPHINX_EXT_PATH)
   dune_common_script_dir(DUNE_SPHINX_EXT_PATH)
-  configure_file(${DUNE_SPHINX_EXT_PATH}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR}/conf.py)
 
-  # Write the index.rst and the contents.rst files from templates
+  # Find the configuration file template.
+  if(NOT SPHINX_CMAKE_SPHINX_CONF)
+    set(SPHINX_CMAKE_SPHINX_CONF ${DUNE_SPHINX_EXT_PATH}/conf.py.in)
+  endif()
+
+  # Apply defaults to the rst sources that are not module dependent.
+  if(NOT SPHINX_CMAKE_RST_SOURCES)
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/contents.rst "")
+    set(SPHINX_CMAKE_RST_SOURCES ${DUNE_SPHINX_EXT_PATH}/index.rst.in ${CMAKE_CURRENT_BINARY_DIR}/contents.rst)
+  endif()
+
+  # Write the conf.py, which sets up Sphinx into the build directory
+  configure_file(${SPHINX_CMAKE_SPHINX_CONF} ${CMAKE_CURRENT_BINARY_DIR}/conf.py)
+
+  # Check whether we need to look through all dependencies
+  set(DOC_CMAKE_MODULES)
+  if(NOT SPHINX_CMAKE_MODULE_ONLY)
+    set(DOC_CMAKE_MODULES ${ALL_DEPENDENCIES})
+  endif()
+
+  # Now treat the module dependent rst sources.
   set(CMAKE_DOC_DEPENDENCIES "")
   set(${CMAKE_PROJECT_NAME}_PREFIX ${CMAKE_SOURCE_DIR})
-  foreach(dep ${ALL_DEPENDENCIES} ${CMAKE_PROJECT_NAME})
+  foreach(dep ${DOC_CMAKE_MODULES} ${CMAKE_PROJECT_NAME})
     # Look for a build system documentation exported by the module dep
     set(RSTFILE "")
     # check in the correct path for non-installed modules
@@ -88,14 +131,18 @@ function(dune_cmake_sphinx_doc)
       configure_file(${RSTFILE} ${CMAKE_CURRENT_BINARY_DIR}/${dep}.rst)
     endif()
   endforeach()
-  configure_file(${DUNE_SPHINX_EXT_PATH}/index.rst.in ${CMAKE_CURRENT_BINARY_DIR}/index.rst)
-  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/contents.rst "")
+
+  # Write the non-module dependent rst source files from templates
+  foreach(rstin ${SPHINX_CMAKE_RST_SOURCES})
+    get_filename_component(rst ${rstin} NAME_WE)
+    configure_file(${rstin} ${CMAKE_CURRENT_BINARY_DIR}/${rst}.rst)
+  endforeach()
 
   # Generate the list of modules by looking through the module paths
   # of all dependencies for files matching *.cmake
   set(SPHINX_DOC_MODULE_LIST)
   set(${CMAKE_PROJECT_NAME}_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
-  foreach(dep ${ALL_DEPENDENCIES} ${CMAKE_PROJECT_NAME})
+  foreach(dep ${DOC_CMAKE_MODULES} ${CMAKE_PROJECT_NAME})
     file(GLOB modules "${${dep}_MODULE_PATH}/*.cmake")
     set(SPHINX_DOC_MODULE_LIST ${SPHINX_DOC_MODULE_LIST} ${modules})
   endforeach()
@@ -114,16 +161,6 @@ function(dune_cmake_sphinx_doc)
                        COMMENT "Extracting CMake API documentation from ${modname}"
                       )
     set(DOC_DEPENDENCIES ${DOC_DEPENDENCIES} ${CMAKE_CURRENT_BINARY_DIR}/modules/${modname})
-  endforeach()
-
-  # copy the rst files that are fixed to the build directory during configure
-  file(GLOB rstfiles "${CMAKE_CURRENT_SOURCE_DIR}/*.rst")
-  foreach(rst ${rstfiles})
-    get_filename_component(rstname ${rst} NAME)
-    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${rstname}
-                       COMMAND ${CMAKE_COMMAND} -E copy ${rst} ${CMAKE_CURRENT_BINARY_DIR}
-                       DEPENDS ${rst})
-    set(DOC_DEPENDENCIES ${DOC_DEPENDENCIES} ${CMAKE_CURRENT_BINARY_DIR}/${rstname})
   endforeach()
 
   # Call Sphinx once for each requested build type
