@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <initializer_list>
 
+#include <dune/common/boundschecking.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/densematrix.hh>
@@ -174,13 +175,13 @@ namespace Dune
 
     row_reference mat_access ( size_type i )
     {
-      assert(i < ROWS);
+      DUNE_ASSERT_BOUNDS(i < ROWS);
       return _data[i];
     }
 
     const_row_reference mat_access ( size_type i ) const
     {
-      assert(i < ROWS);
+      DUNE_ASSERT_BOUNDS(i < ROWS);
       return _data[i];
     }
   };
@@ -278,14 +279,14 @@ namespace Dune
     row_reference mat_access ( size_type i )
     {
       DUNE_UNUSED_PARAMETER(i);
-      assert(i == 0);
+      DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }
 
     const_row_reference mat_access ( size_type i ) const
     {
       DUNE_UNUSED_PARAMETER(i);
-      assert(i == 0);
+      DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }
 
