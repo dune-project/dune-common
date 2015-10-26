@@ -110,7 +110,7 @@
 #    You may set this variable to give an upperbound to the number of processors, that
 #    a single test may use. Defaults to 2, when MPI is found and to 1 otherwise.
 #
-# .. cmake_variables:: DUNE_BUILD_TESTS_ON_MAKE_ALL
+# .. cmake_variable:: DUNE_BUILD_TESTS_ON_MAKE_ALL
 #
 #    You may set this variable through your opts file or on a per module level (in the toplevel
 #    :code:`CMakeLists.txt` before :code:`include(DuneMacros)`) to have the Dune build system
