@@ -1,5 +1,4 @@
 install(FILES
-  ${CMAKE_CURRENT_SOURCE_DIR}/BuildTests.cmake.in
   conf.py.in
   CreateDoxyFile.cmake
   extract_cmake_data.py
