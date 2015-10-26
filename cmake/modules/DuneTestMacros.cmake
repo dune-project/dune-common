@@ -110,6 +110,13 @@
 #    You may set this variable to give an upperbound to the number of processors, that
 #    a single test may use. Defaults to 2, when MPI is found and to 1 otherwise.
 #
+# .. cmake_variables:: DUNE_BUILD_TESTS_ON_MAKE_ALL
+#
+#    You may set this variable through your opts file or on a per module level (in the toplevel
+#    :code:`CMakeLists.txt` before :code:`include(DuneMacros)`) to have the Dune build system
+#    build all tests during `make all`. Note, that this may take quite some time for some modules.
+#    If not in use, you have to build tests through the target :code:`build_tests`.
+#
 
 # enable the testing suite on the CMake side.
 enable_testing()
@@ -185,7 +192,11 @@ function(dune_add_test)
   endif()
 
   # Make sure to exclude the target from all, even when it is user-provided
-  set_property(TARGET ${ADDTEST_TARGET} PROPERTY EXCLUDE_FROM_ALL 1)
+  if(DUNE_BUILD_TESTS_ON_MAKE_ALL)
+    set_property(TARGET ${ADDTEST_TARGET} PROPERTY EXCLUDE_FROM_ALL 0)
+  else()
+    set_property(TARGET ${ADDTEST_TARGET} PROPERTY EXCLUDE_FROM_ALL 1)
+  endif()
 
   # Have the given target depend on build_tests in order to trigger the build correctly
   if(NOT ADDTEST_EXPECT_COMPILE_FAIL)
