@@ -21,6 +21,7 @@
 #include "ftraits.hh"
 #include "densevector.hh"
 #include "unused.hh"
+#include "boundschecking.hh"
 
 namespace Dune {
 
@@ -162,8 +163,14 @@ namespace Dune {
 
     // make this thing a vector
     DUNE_CONSTEXPR size_type vec_size () const { return SIZE; }
-    K & vec_access(size_type i) { return _data[i]; }
-    const K & vec_access(size_type i) const { return _data[i]; }
+    K & vec_access(size_type i) {
+      DUNE_ASSERT_BOUNDS(i < SIZE);
+      return _data[i];
+    }
+    const K & vec_access(size_type i) const {
+      DUNE_ASSERT_BOUNDS(i < SIZE);
+      return _data[i];
+    }
   private:
     void fill(const K& t)
     {
@@ -272,14 +279,18 @@ namespace Dune {
     DUNE_CONSTEXPR size_type vec_size () const { return 1; }
     K & vec_access(size_type i)
     {
+      DUNE_ASSERT_BOUNDS(i == 0);
+#ifndef DUNE_CHECK_BOUNDS
       DUNE_UNUSED_PARAMETER(i);
-      assert(i == 0);
+#endif
       return _data;
     }
     const K & vec_access(size_type i) const
     {
+      DUNE_ASSERT_BOUNDS(i == 0);
+#ifndef DUNE_CHECK_BOUNDS
       DUNE_UNUSED_PARAMETER(i);
-      assert(i == 0);
+#endif
       return _data;
     }
 

@@ -11,6 +11,7 @@
 #include "matvectraits.hh"
 #include "promotiontraits.hh"
 #include "dotproduct.hh"
+#include "boundschecking.hh"
 
 namespace Dune {
 
@@ -378,7 +379,7 @@ namespace Dune {
     template <class Other>
     derived_type& operator+= (const DenseVector<Other>& y)
     {
-      assert(y.size() == size());
+      DUNE_ASSERT_BOUNDS(y.size() == size());
       for (size_type i=0; i<size(); i++)
         (*this)[i] += y[i];
       return asImp();
@@ -388,7 +389,7 @@ namespace Dune {
     template <class Other>
     derived_type& operator-= (const DenseVector<Other>& y)
     {
-      assert(y.size() == size());
+      DUNE_ASSERT_BOUNDS(y.size() == size());
       for (size_type i=0; i<size(); i++)
         (*this)[i] -= y[i];
       return asImp();
@@ -502,7 +503,7 @@ namespace Dune {
     template <class Other>
     bool operator== (const DenseVector<Other>& y) const
     {
-      assert(y.size() == size());
+      DUNE_ASSERT_BOUNDS(y.size() == size());
       for (size_type i=0; i<size(); i++)
         if ((*this)[i]!=y[i])
           return false;
@@ -522,7 +523,7 @@ namespace Dune {
     template <class Other>
     derived_type& axpy (const value_type& a, const DenseVector<Other>& y)
     {
-      assert(y.size() == size());
+      DUNE_ASSERT_BOUNDS(y.size() == size());
       for (size_type i=0; i<size(); i++)
         (*this)[i] += a*y[i];
       return asImp();
