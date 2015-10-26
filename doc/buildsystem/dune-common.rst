@@ -1,3 +1,7 @@
+===========
+dune-common
+===========
+
 .. _whatis:
 
 What is CMake anyway?
