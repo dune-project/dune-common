@@ -99,7 +99,7 @@
 #    and pass it to the :code:`TARGET` option, or you may rely on :ref:`dune_add_test`
 #    to do so.
 #
-# .. cmake_variable:: REENABLE_ADD_TEST
+# .. cmake_variable:: DUNE_REENABLE_ADD_TEST
 #
 #    You may set this variable to True either through your opts file or in your module
 #    (before the call to :code:`include(DuneMacros)`) to suppress the error that is thrown if
@@ -235,8 +235,8 @@ macro(add_directory_test_target)
 endmacro()
 
 macro(add_test)
-  if(NOT REENABLE_ADD_TEST)
-    message(SEND_ERROR "Please dune_add_test instead of add_test! If you need add_test in a downstream project, set the variable REENABLE_ADD_TEST to True in that project to suppress this error.")
+  if(NOT DUNE_REENABLE_ADD_TEST)
+    message(SEND_ERROR "Please dune_add_test instead of add_test! If you need add_test in a downstream project, set the variable DUNE_REENABLE_ADD_TEST to True in that project to suppress this error.")
   else()
     _add_test(${ARGN})
   endif()
