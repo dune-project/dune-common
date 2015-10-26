@@ -83,7 +83,7 @@ language:
 
 - :ref:`add_subdirectory` for recursively adding subdirectories
 - :ref:`add_executable` to add some exectuable programs
-- :ref:`add_test` to register tests to the test suite.
+- :ref:`dune_add_test` to register tests to the test suite.
 - :ref:`install` to mark files for installation.
 
 For futher commands, browse this documentation.
@@ -299,8 +299,8 @@ It is a mere wrapper around CMake's own testing tool CTest. You can check :code:
 for a lot of useful options, such as choosing the set of tests to be run by matching regular expressions or
 showing the output of failed tests.
 
-Although this is not the CMake-ish way, :code:`make test` also builds the tests before executing them.
-This behavior will change in the near future.
+The Dune test suite also defines tests that run in parallel. You may set an upperbound to the number
+of cores in use for a single test by setting :ref:`DUNE_MAX_TEST_CORES`.
 
 .. _disable:
 

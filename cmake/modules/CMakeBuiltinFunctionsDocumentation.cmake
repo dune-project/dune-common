@@ -46,17 +46,6 @@
 #
 #       cmake --help-command add_executable
 #
-# .. cmake_function:: add_test
-#
-#    Adds a test to the testing suite.
-#
-#    This is a cmake builtin command.
-#    For detailed information, check the cmake documentation:
-#
-#    ::
-#
-#       cmake --help-command add_test
-#
 # .. cmake_variable:: CMAKE_<LANG>_COMPILER
 #
 #    Set the compiler for the language LANG.
