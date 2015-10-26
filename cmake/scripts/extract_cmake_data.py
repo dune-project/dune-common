@@ -9,6 +9,7 @@
     This is used by dune-common to generate the build system documentation.
     Users do not want to use this!!!
 """
+from __future__ import print_function
 
 import argparse
 import os
@@ -51,7 +52,11 @@ def read_module(args=get_args()):
                 cmdpath = os.path.join(args['builddir'], 'commands')
                 if not os.path.exists(cmdpath):
                     os.makedirs(cmdpath)
-                cmd = re.findall(r'# .. cmake_function:: (.*)', l)[0]
+                try:
+                    cmd = re.findall(r'# .. cmake_function:: (.*)', l)[0]
+                except IndexError as e:
+                    print("CMake doc syntax error in {}: cannot parse function on line {}".format(args['module'], l))
+                    raise e
                 cmdfile = os.path.join(cmdpath, cmd + ".rst")
 #                 if not listHeader:
 #                     mod.write("\nThis module defines the following functions or macros:\n\n")
@@ -68,7 +73,11 @@ def read_module(args=get_args()):
                 varpath = os.path.join(args['builddir'], 'variables')
                 if not os.path.exists(varpath):
                     os.makedirs(varpath)
-                var = re.findall(r'# .. cmake_variable:: (.*)', l)[0]
+                try:
+                    var = re.findall(r'# .. cmake_variable:: (.*)', l)[0]
+                except IndexError as e:
+                    print("CMake doc syntax error in {}: cannot parse variable on line".format(args['module'], l))
+                    raise e
                 varfile = os.path.join(varpath, var + ".rst")
                 o = open(varfile, 'w')
                 o.write(".. _" + var + ":\n\n")
