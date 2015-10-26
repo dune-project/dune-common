@@ -8,6 +8,7 @@
 #include <iostream>
 #include <vector>
 
+#include <dune/common/boundschecking.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/precision.hh>
@@ -327,6 +328,7 @@ namespace Dune
     template <class Other>
     DenseMatrix& operator+= (const DenseMatrix<Other>& y)
     {
+      DUNE_ASSERT_BOUNDS(rows() == y.rows());
       for (size_type i=0; i<rows(); i++)
         (*this)[i] += y[i];
       return *this;
@@ -336,6 +338,7 @@ namespace Dune
     template <class Other>
     DenseMatrix& operator-= (const DenseMatrix<Other>& y)
     {
+      DUNE_ASSERT_BOUNDS(rows() == y.rows());
       for (size_type i=0; i<rows(); i++)
         (*this)[i] -= y[i];
       return *this;
@@ -361,6 +364,7 @@ namespace Dune
     template <class Other>
     DenseMatrix &axpy (const field_type &k, const DenseMatrix<Other> &y )
     {
+      DUNE_ASSERT_BOUNDS(rows() == y.rows());
       for( size_type i = 0; i < rows(); ++i )
         (*this)[ i ].axpy( k, y[ i ] );
       return *this;
@@ -370,6 +374,7 @@ namespace Dune
     template <class Other>
     bool operator== (const DenseMatrix<Other>& y) const
     {
+      DUNE_ASSERT_BOUNDS(rows() == y.rows());
       for (size_type i=0; i<rows(); i++)
         if ((*this)[i]!=y[i])
           return false;
@@ -389,10 +394,8 @@ namespace Dune
     template<class X, class Y>
     void mv (const X& x, Y& y) const
     {
-#ifdef DUNE_FMatrix_WITH_CHECKING
-      if (x.N()!=M()) DUNE_THROW(FMatrixError,"Index out of range");
-      if (y.N()!=N()) DUNE_THROW(FMatrixError,"Index out of range");
-#endif
+      DUNE_ASSERT_BOUNDS(x.N() == M());
+      DUNE_ASSERT_BOUNDS(y.N() == N());
       for (size_type i=0; i<rows(); ++i)
       {
         y[i] = value_type(0);
@@ -405,16 +408,8 @@ namespace Dune
     template< class X, class Y >
     void mtv ( const X &x, Y &y ) const
     {
-#ifdef DUNE_FMatrix_WITH_CHECKING
-      //assert( &x != &y );
-      //This assert did not work for me. Compile error:
-      //  comparison between distinct pointer types ‘const
-      //  Dune::FieldVector<double, 3>*’ and ‘Dune::FieldVector<double, 2>*’ lacks a cast
-      if( x.N() != N() )
-        DUNE_THROW( FMatrixError, "Index out of range." );
-      if( y.N() != M() )
-        DUNE_THROW( FMatrixError, "Index out of range." );
-#endif
+      DUNE_ASSERT_BOUNDS(x.N() == N());
+      DUNE_ASSERT_BOUNDS(y.N() == M());
       for( size_type i = 0; i < cols(); ++i )
       {
         y[ i ] = value_type(0);
@@ -427,12 +422,8 @@ namespace Dune
     template<class X, class Y>
     void umv (const X& x, Y& y) const
     {
-#ifdef DUNE_FMatrix_WITH_CHECKING
-      if (x.N()!=M())
-        DUNE_THROW(FMatrixError,"y += A x -- index out of range (sizes: x: " << x.N() << ", y: " << y.N() << ", A: " << this->N() << " x " << this->M() << ")" << std::endl);
-      if (y.N()!=N())
-        DUNE_THROW(FMatrixError,"y += A x -- index out of range (sizes: x: " << x.N() << ", y: " << y.N() << ", A: " << this->N() << " x " << this->M() << ")" << std::endl);
-#endif
+      DUNE_ASSERT_BOUNDS(x.N() == M());
+      DUNE_ASSERT_BOUNDS(y.N() == N());
       for (size_type i=0; i<rows(); i++)
         for (size_type j=0; j<cols(); j++)
           y[i] += (*this)[i][j] * x[j];
@@ -442,11 +433,8 @@ namespace Dune
     template<class X, class Y>
     void umtv (const X& x, Y& y) const
     {
-#ifdef DUNE_FMatrix_WITH_CHECKING
-      if (x.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
-      if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
-#endif
-
+      DUNE_ASSERT_BOUNDS(x.N() == N());
+      DUNE_ASSERT_BOUNDS(y.N() == M());
       for (size_type i=0; i<rows(); i++)
         for (size_type j=0; j<cols(); j++)
           y[j] += (*this)[i][j]*x[i];
@@ -456,11 +444,8 @@ namespace Dune
     template<class X, class Y>
     void umhv (const X& x, Y& y) const
     {
-#ifdef DUNE_FMatrix_WITH_CHECKING
-      if (x.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
-      if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
-#endif
-
+      DUNE_ASSERT_BOUNDS(x.N() == N());
+      DUNE_ASSERT_BOUNDS(y.N() == M());
       for (size_type i=0; i<rows(); i++)
         for (size_type j=0; j<cols(); j++)
           y[j] += conjugateComplex((*this)[i][j])*x[i];
@@ -470,10 +455,8 @@ namespace Dune
     template<class X, class Y>
     void mmv (const X& x, Y& y) const
     {
-#ifdef DUNE_FMatrix_WITH_CHECKING
-      if (x.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
-      if (y.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
-#endif
+      DUNE_ASSERT_BOUNDS(x.N() == M());
+      DUNE_ASSERT_BOUNDS(y.N() == N());
       for (size_type i=0; i<rows(); i++)
         for (size_type j=0; j<cols(); j++)
           y[i] -= (*this)[i][j] * x[j];
@@ -483,11 +466,8 @@ namespace Dune
     template<class X, class Y>
     void mmtv (const X& x, Y& y) const
     {
-#ifdef DUNE_FMatrix_WITH_CHECKING
-      if (x.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
-      if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
-#endif
-
+      DUNE_ASSERT_BOUNDS(x.N() == N());
+      DUNE_ASSERT_BOUNDS(y.N() == M());
       for (size_type i=0; i<rows(); i++)
         for (size_type j=0; j<cols(); j++)
           y[j] -= (*this)[i][j]*x[i];
@@ -497,11 +477,8 @@ namespace Dune
     template<class X, class Y>
     void mmhv (const X& x, Y& y) const
     {
-#ifdef DUNE_FMatrix_WITH_CHECKING
-      if (x.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
-      if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
-#endif
-
+      DUNE_ASSERT_BOUNDS(x.N() == N());
+      DUNE_ASSERT_BOUNDS(y.N() == M());
       for (size_type i=0; i<rows(); i++)
         for (size_type j=0; j<cols(); j++)
           y[j] -= conjugateComplex((*this)[i][j])*x[i];
@@ -511,10 +488,8 @@ namespace Dune
     template<class X, class Y>
     void usmv (const field_type& alpha, const X& x, Y& y) const
     {
-#ifdef DUNE_FMatrix_WITH_CHECKING
-      if (x.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
-      if (y.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
-#endif
+      DUNE_ASSERT_BOUNDS(x.N() == M());
+      DUNE_ASSERT_BOUNDS(y.N() == N());
       for (size_type i=0; i<rows(); i++)
         for (size_type j=0; j<cols(); j++)
           y[i] += alpha * (*this)[i][j] * x[j];
@@ -524,11 +499,8 @@ namespace Dune
     template<class X, class Y>
     void usmtv (const field_type& alpha, const X& x, Y& y) const
     {
-#ifdef DUNE_FMatrix_WITH_CHECKING
-      if (x.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
-      if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
-#endif
-
+      DUNE_ASSERT_BOUNDS(x.N() == N());
+      DUNE_ASSERT_BOUNDS(y.N() == M());
       for (size_type i=0; i<rows(); i++)
         for (size_type j=0; j<cols(); j++)
           y[j] += alpha*(*this)[i][j]*x[i];
@@ -538,11 +510,8 @@ namespace Dune
     template<class X, class Y>
     void usmhv (const field_type& alpha, const X& x, Y& y) const
     {
-#ifdef DUNE_FMatrix_WITH_CHECKING
-      if (x.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
-      if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
-#endif
-
+      DUNE_ASSERT_BOUNDS(x.N() == N());
+      DUNE_ASSERT_BOUNDS(y.N() == M());
       for (size_type i=0; i<rows(); i++)
         for (size_type j=0; j<cols(); j++)
           y[j] += alpha*conjugateComplex((*this)[i][j])*x[i];
@@ -654,7 +623,8 @@ namespace Dune
     template<typename M2>
     MAT& leftmultiply (const DenseMatrix<M2>& M)
     {
-      assert(M.rows() == M.cols() && M.rows() == rows());
+      DUNE_ASSERT_BOUNDS(M.rows() == M.cols());
+      DUNE_ASSERT_BOUNDS(M.rows() == rows());
       MAT C(asImp());
 
       for (size_type i=0; i<rows(); i++)
@@ -671,7 +641,8 @@ namespace Dune
     template<typename M2>
     MAT& rightmultiply (const DenseMatrix<M2>& M)
     {
-      assert(M.rows() == M.cols() && M.cols() == cols());
+      DUNE_ASSERT_BOUNDS(M.rows() == M.cols());
+      DUNE_ASSERT_BOUNDS(M.cols() == cols());
       MAT C(asImp());
 
       for (size_type i=0; i<rows(); i++)
@@ -748,13 +719,10 @@ namespace Dune
     //! return true when (i,j) is in pattern
     bool exists (size_type i, size_type j) const
     {
-#ifdef DUNE_FMatrix_WITH_CHECKING
-      if (i<0 || i>=rows()) DUNE_THROW(FMatrixError,"row index out of range");
-      if (j<0 || j>=cols()) DUNE_THROW(FMatrixError,"column index out of range");
-#else
       DUNE_UNUSED_PARAMETER(i);
       DUNE_UNUSED_PARAMETER(j);
-#endif
+      DUNE_ASSERT_BOUNDS(i >= 0 && i < rows());
+      DUNE_ASSERT_BOUNDS(j >= 0 && j < cols());
       return true;
     }
 
@@ -1220,8 +1188,8 @@ namespace Dune
     template <typename MAT, typename V1, typename V2>
     static inline void multAssign(const DenseMatrix<MAT> &matrix, const DenseVector<V1> & x, DenseVector<V2> & ret)
     {
-      assert(x.size() == matrix.cols());
-      assert(ret.size() == matrix.rows());
+      DUNE_ASSERT_BOUNDS(x.size() == matrix.cols());
+      DUNE_ASSERT_BOUNDS(ret.size() == matrix.rows());
       typedef typename DenseMatrix<MAT>::size_type size_type;
 
       for(size_type i=0; i<matrix.rows(); ++i)
