@@ -174,36 +174,6 @@ namespace Dune {
     virtual void operator () () = 0;
   };
 
-  /*
-     Implementation of Dune::Exception
-   */
-
-  inline Exception::Exception ()
-  {
-    // call the hook if necessary
-    if (_hook != 0) _hook->operator()();
-  }
-
-  inline void Exception::registerHook (ExceptionHook * hook)
-  {
-    _hook = hook;
-  }
-
-  inline void Exception::clearHook ()
-  {
-    _hook = 0;
-  }
-
-  inline void Exception::message(const std::string & msg)
-  {
-    _message = msg;
-  }
-
-  const char* Exception::what() const noexcept
-  {
-    return _message.data();
-  }
-
   inline std::ostream& operator<<(std::ostream &stream, const Exception &e)
   {
     return stream << e.what();
