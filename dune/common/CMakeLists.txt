@@ -83,7 +83,6 @@ install(FILES
         shared_ptr.hh
         singleton.hh
         sllist.hh
-        static_assert.hh
         stdstreams.hh
         stdthread.hh
         stringutility.hh
