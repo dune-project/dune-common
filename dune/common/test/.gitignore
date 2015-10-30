@@ -12,7 +12,6 @@
 /dynvectortest
 /eigenvaluestest
 /enumsettest
-/fassigntest
 /fmatrixtest
 /fvectortest
 /gcdlcmtest
@@ -43,16 +42,6 @@
 /testdebugallocator_fail3
 /testdebugallocator_fail4
 /testdebugallocator_fail5
-/testfassign1
-/testfassign2
-/testfassign3
-/testfassign4
-/testfassign_fail1
-/testfassign_fail2
-/testfassign_fail3
-/testfassign_fail4
-/testfassign_fail5
-/testfassign_fail6
 /testfconstruct
 /testfloatcmp
 /timing_flt
