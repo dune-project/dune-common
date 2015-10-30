@@ -105,6 +105,15 @@
 #       this in combination with the MPI_RANKS parameter, the call to mpi will still be
 #       wrapped around the given commands.
 #
+#    .. cmake_param:: COMPILE_ONLY
+#       :option:
+#
+#       Set if the given test should only be compiled during :code:`make build_tests`,
+#       but not run during :code:`make test`. This is useful if you compile the same
+#       executable twice, but with different compile flags, where you want to assue that
+#       it compiles with both sets of flags, but you already know they will produce the
+#       same result.
+#
 #    This function defines the Dune way of adding a test to the testing suite.
 #    You may either add the executable yourself through :ref:`add_executable`
 #    and pass it to the :code:`TARGET` option, or you may rely on :ref:`dune_add_test`
@@ -143,7 +152,7 @@ endif()
 
 function(dune_add_test)
   include(CMakeParseArguments)
-  set(OPTIONS EXPECT_COMPILE_FAIL EXPECT_FAIL SKIP_ON_77)
+  set(OPTIONS EXPECT_COMPILE_FAIL EXPECT_FAIL SKIP_ON_77 COMPILE_ONLY)
   set(SINGLEARGS NAME TARGET)
   set(MULTIARGS SOURCES COMPILE_DEFINITIONS COMPILE_FLAGS LINK_LIBRARIES CMD_ARGS MPI_RANKS COMMAND)
   cmake_parse_arguments(ADDTEST "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
@@ -224,7 +233,7 @@ function(dune_add_test)
 
   # Add one test for each specified processor number
   foreach(procnum ${ADDTEST_MPI_RANKS})
-    if(NOT "${procnum}" GREATER "${DUNE_MAX_TEST_CORES}")
+    if((NOT "${procnum}" GREATER "${DUNE_MAX_TEST_CORES}") AND (NOT ADDTEST_COMPILE_ONLY))
       if(NOT ${procnum} STREQUAL "1")
         set(ACTUAL_TESTCOMMAND ${MPIEXEC} ${MPIEXEC_PREFLAGS} ${MPIEXEC_NUMPROC_FLAG} ${procnum} ${ADDTEST_COMMAND} ${MPIEXEC_POSTFLAGS})
         set(ACTUAL_NAME "${ADDTEST_NAME}-mpi-${procnum}")
