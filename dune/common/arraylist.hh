@@ -1,13 +1,13 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 
-#ifndef DUNE_ARRAYLIST_HH
-#define DUNE_ARRAYLIST_HH
+#ifndef DUNE_COMMON_ARRAYLIST_HH
+#define DUNE_COMMON_ARRAYLIST_HH
 
-#include <cassert>
-#include <vector>
 #include <array>
-#include "shared_ptr.hh"
+#include <cassert>
+#include <memory>
+#include <vector>
 #include "iteratorfacades.hh"
 
 namespace Dune
@@ -194,7 +194,7 @@ namespace Dune
     /**
      * @brief The allocators for the smart pointer.
      */
-    typedef typename A::template rebind<shared_ptr<std::array<MemberType,chunkSize_> > >::other
+    typedef typename A::template rebind<std::shared_ptr<std::array<MemberType,chunkSize_> > >::other
     SmartPointerAllocator;
 
     /**
@@ -210,7 +210,7 @@ namespace Dune
     friend class ConstArrayListIterator<T,N,A>;
 
     /** @brief the data chunks of our list. */
-    std::vector<shared_ptr<std::array<MemberType,chunkSize_> >,
+    std::vector<std::shared_ptr<std::array<MemberType,chunkSize_> >,
         SmartPointerAllocator> chunks_;
     /** @brief The current data capacity.
      * This is the capacity that the list could have theoretically
