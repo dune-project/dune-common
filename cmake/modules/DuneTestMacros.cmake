@@ -94,6 +94,17 @@
 #       processor number :code:`n` higher than one will have the suffix
 #       :code:`-mpi-n` appended to their name.
 #
+#    .. cmake_param:: COMMAND
+#       :multi:
+#       :argname: cmd
+#
+#       You may specify the COMMAND option to give the exact command line to be
+#       executed when running the test. This defaults to the name of the executable
+#       added by dune_add_test for this test. Note, that if you specify both CMD_ARGS
+#       and COMMAND, the given CMD_ARGS will be put behind your COMMAND. If you use
+#       this in combination with the MPI_RANKS parameter, the call to mpi will still be
+#       wrapped around the given commands.
+#
 #    This function defines the Dune way of adding a test to the testing suite.
 #    You may either add the executable yourself through :ref:`add_executable`
 #    and pass it to the :code:`TARGET` option, or you may rely on :ref:`dune_add_test`
@@ -134,7 +145,7 @@ function(dune_add_test)
   include(CMakeParseArguments)
   set(OPTIONS EXPECT_COMPILE_FAIL EXPECT_FAIL SKIP_ON_77)
   set(SINGLEARGS NAME TARGET)
-  set(MULTIARGS SOURCES COMPILE_DEFINITIONS COMPILE_FLAGS LINK_LIBRARIES CMD_ARGS MPI_RANKS)
+  set(MULTIARGS SOURCES COMPILE_DEFINITIONS COMPILE_FLAGS LINK_LIBRARIES CMD_ARGS MPI_RANKS COMMAND)
   cmake_parse_arguments(ADDTEST "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
 
   # Check whether the parser produced any errors
@@ -164,6 +175,9 @@ function(dune_add_test)
       # strip file extension
       get_filename_component(ADDTEST_NAME ${ADDTEST_SOURCES} NAME_WE)
     endif()
+  endif()
+  if(NOT ADDTEST_COMMAND)
+    set(ADDTEST_COMMAND ${ADDTEST_TARGET})
   endif()
   if(NOT ADDTEST_MPI_RANKS)
     set(ADDTEST_MPI_RANKS 1)
@@ -203,22 +217,19 @@ function(dune_add_test)
     add_dependencies(build_tests ${ADDTEST_TARGET})
   endif()
 
-  # By default, the target itself is sufficient as a testing command.
-  set(TESTCOMMAND ${ADDTEST_TARGET})
-
   # Process the EXPECT_COMPILE_FAIL option
   if(ADDTEST_EXPECT_COMPILE_FAIL)
-    set(TESTCOMMAND ${CMAKE_COMMAND} --build . --target ${TESTCOMMAND} --config $<CONFIGURATION>)
+    set(ADDTEST_COMMAND ${CMAKE_COMMAND} --build . --target ${ADDTEST_TARGET} --config $<CONFIGURATION>)
   endif()
 
   # Add one test for each specified processor number
   foreach(procnum ${ADDTEST_MPI_RANKS})
     if(NOT "${procnum}" GREATER "${DUNE_MAX_TEST_CORES}")
       if(NOT ${procnum} STREQUAL "1")
-        set(ACTUAL_TESTCOMMAND ${MPIEXEC} ${MPIEXEC_PREFLAGS} ${MPIEXEC_NUMPROC_FLAG} ${procnum} ${TESTCOMMAND} ${MPIEXEC_POSTFLAGS})
+        set(ACTUAL_TESTCOMMAND ${MPIEXEC} ${MPIEXEC_PREFLAGS} ${MPIEXEC_NUMPROC_FLAG} ${procnum} ${ADDTEST_COMMAND} ${MPIEXEC_POSTFLAGS})
         set(ACTUAL_NAME "${ADDTEST_NAME}-mpi-${procnum}")
       else()
-        set(ACTUAL_TESTCOMMAND ${TESTCOMMAND})
+        set(ACTUAL_TESTCOMMAND ${ADDTEST_COMMAND})
         set(ACTUAL_NAME ${ADDTEST_NAME})
       endif()
 
