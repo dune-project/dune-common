@@ -73,6 +73,10 @@ dune_add_test(NAME mpihelpertest2
               LINK_LIBRARIES dunecommon
               )
 
+dune_add_test(SOURCES parameterizedobjecttest.cc
+              LINK_LIBRARIES dunecommon
+              )
+
 dune_add_test(SOURCES parametertreelocaletest.cc
               LINK_LIBRARIES dunecommon
               SKIP_ON_77)
