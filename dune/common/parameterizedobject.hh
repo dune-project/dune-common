@@ -84,11 +84,15 @@ struct ParameterizedObjectDefaultTag {};
  * It allows the construction of objects adhering to a certain interface that
  * might be constructed quite differently for one another.
  *
+ * The Signature parameter defined the "virtual" constructor signature
+ * in the form of Interface(Args...), where Interface is the type of
+ * the (abstract) interface class and Args... is the set of
+ * constrcutor parameters.
+ *
  * Each type constructed by this factory is identified by a different key. This class
  * allows for easy registration of type with new keys.
  *
- * @tparam Interface The type that describes the interface of the objects.
- * @tparam Param The type of the parameter class used for constructing the objects [DEFAULT: Dune::ParameterTree].
+ * @tparam Signature Signature of the "virtual" constructor call in the form for Interface(Args...). For default constructors onecan omit the ()-brackets.
  * @tparam Tag A class tag which allows to have different factories for the same interface [DEFAULT: ParameterizedObjectDefaultTag].
  * @tparam KeyT The type of the objects that are used as keys in the lookup [DEFAULT: std::string].
  */
