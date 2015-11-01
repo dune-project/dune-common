@@ -25,7 +25,7 @@ struct ParameterizedObjectDefaultTag {};
             /** @brief The type of the shared pointer to the interface. */
             typedef Dune::shared_ptr<Interface> Type;
             /** @brief The type of the function that creates the object. */
-            typedef Type (*Creator)(const Args& ... );
+            typedef Type (*Creator)(Args ... );
 
             /**
              * @brief Creates an object identified by a key from a parameter object.
@@ -34,7 +34,7 @@ struct ParameterizedObjectDefaultTag {};
              * @return a shared_pointer to created object.
              */
             static
-            Type create(Key const& key, const Args & ... args) {
+            Type create(Key const& key, Args ... args) {
                 typename Registry::const_iterator i = registry().find(key);
                 if (i == registry().end()) {
                     DUNE_THROW(Dune::InvalidStateException,
@@ -62,7 +62,7 @@ struct ParameterizedObjectDefaultTag {};
 
             template<class Impl>
             static
-            Type create_func(const Args & ... args) {
+            Type create_func(Args ... args) {
                 return Dune::make_shared<Impl>(args...);
             }
 
@@ -100,7 +100,7 @@ template<typename Signature,
          typename Tag=ParameterizedObjectDefaultTag,
          typename KeyT=std::string>
 class ParameterizedObjectFactory :
-        public Impl::ParameterizedObjectFactoryBase<Signature,Tag,KeyT,ParameterTree> {};
+        public Impl::ParameterizedObjectFactoryBase<Signature,Tag,KeyT,const ParameterTree &> {};
 
 template<typename Interface,
          typename Tag,
