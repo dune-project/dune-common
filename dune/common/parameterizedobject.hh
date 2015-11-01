@@ -3,7 +3,7 @@
 #ifndef PARAMETERIZED_OBJECT_HH
 #define PARAMETERIZED_OBJECT_HH
 
-#include <dune/common/shared_ptr.hh>
+#include <dune/common/std/memory.hh>
 #include <dune/common/parametertree.hh>
 
 namespace Dune {
@@ -23,7 +23,7 @@ struct ParameterizedObjectDefaultTag {};
             /** @brief The typ of the keys. */
             typedef KeyT Key;
             /** @brief The type of the shared pointer to the interface. */
-            typedef Dune::shared_ptr<Interface> Type;
+            typedef std::unique_ptr<Interface> Type;
             /** @brief The type of the function that creates the object. */
             typedef Type (*Creator)(Args ... );
 
@@ -63,7 +63,7 @@ struct ParameterizedObjectDefaultTag {};
             template<class Impl>
             static
             Type create_func(Args ... args) {
-                return Dune::make_shared<Impl>(args...);
+                return Dune::Std::make_unique<Impl>(args...);
             }
 
             typedef std::map<Key, Creator> Registry;
