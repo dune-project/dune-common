@@ -44,15 +44,15 @@ int main()
     CheckInstance(FactoryA, Ai, 0);
     CheckInstance(FactoryA, Bi, 1);
 
-    // default parameter
+    // default constructor
     using FactoryAd = Dune::ParameterizedObjectFactory<InterfaceA>;
-    FactoryAd::define<Ad>("Ad");
-    FactoryAd::define<Bd>("Bd");
+    FactoryAd::define<Ax>("Ax");
+    FactoryAd::define<Bx>("Bx");
     Dune::ParameterTree param;
-    CheckInstance(FactoryAd, Ad, param);
-    CheckInstance(FactoryAd, Bd, param);
+    CheckInstance(FactoryAd, Ax);
+    CheckInstance(FactoryAd, Bx);
 
-    // no parameter
+    // explicitly request the default constructor
     using FactoryAx = Dune::ParameterizedObjectFactory<InterfaceA()>;
     FactoryAx::define<Ax>("Ax");
     FactoryAx::define<Bx>("Bx");

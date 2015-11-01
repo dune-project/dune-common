@@ -100,7 +100,7 @@ template<typename Signature,
          typename Tag=ParameterizedObjectDefaultTag,
          typename KeyT=std::string>
 class ParameterizedObjectFactory :
-        public Impl::ParameterizedObjectFactoryBase<Signature,Tag,KeyT,const ParameterTree &> {};
+        public Impl::ParameterizedObjectFactoryBase<Signature,Tag,KeyT> {};
 
 template<typename Interface,
          typename Tag,
