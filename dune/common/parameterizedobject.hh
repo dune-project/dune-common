@@ -22,7 +22,7 @@ struct ParameterizedObjectDefaultTag {};
         public:
             /** @brief The typ of the keys. */
             typedef KeyT Key;
-            /** @brief The type of the shared pointer to the interface. */
+            /** @brief The type of the pointer to the interface. */
             typedef std::unique_ptr<Interface> Type;
             /** @brief The type of the function that creates the object. */
             typedef Type (*Creator)(Args ... );
@@ -47,7 +47,7 @@ struct ParameterizedObjectDefaultTag {};
             /**
              * @brief Registers a new type with a key.
              *
-             * After registration objects of this type can be cnstructed with the
+             * After registration objects of this type can be constructed with the
              * specified key using the creat function.
              * @tparam Impl The type. It must implement and subclass Interface.
              */
