@@ -92,12 +92,18 @@ struct ParameterizedObjectDefaultTag {};
  * @tparam Tag A class tag which allows to have different factories for the same interface [DEFAULT: ParameterizedObjectDefaultTag].
  * @tparam KeyT The type of the objects that are used as keys in the lookup [DEFAULT: std::string].
  */
-template<class Interface,
-         class Param=Dune::ParameterTree,
-         class Tag=ParameterizedObjectDefaultTag,
-         class KeyT=std::string>
+template<typename Signature,
+         typename Tag=ParameterizedObjectDefaultTag,
+         typename KeyT=std::string>
 class ParameterizedObjectFactory :
-        public Impl::ParameterizedObjectFactoryBase<Interface,Tag,KeyT,Param> {};
+        public Impl::ParameterizedObjectFactoryBase<Signature,Tag,KeyT,ParameterTree> {};
+
+template<typename Interface,
+         typename Tag,
+         typename KeyT,
+         typename... Args>
+class ParameterizedObjectFactory<Interface(Args...), Tag, KeyT> :
+        public Impl::ParameterizedObjectFactoryBase<Interface,Tag,KeyT,Args...> {};
 
 
 } // end namespace Dune
