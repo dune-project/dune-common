@@ -35,17 +35,17 @@ can be applied in five minutes using two or three commands, chances are a
 developer will much more easily find the time to do so. Git is really popular,
 so there are tons of tutorials all over the web. Here are some pointers:
 
-* [This](http://try.github.io/) is a very quick, hands-down introduction
+* http://try.github.io/ is a very quick, hands-down introduction
   to Git that allows you to try out Git directly in your browser.
   Requires a GitHub account to continue at some point, though.
-* [This](http://git-scm.com/book) is a very well-written and detailed resource
+* http://git-scm.com/book is a very well-written and detailed resource
   for all things Git. Chapter 2 is a great introduction to Git that also explains
   a little bit how Git works, which really helps to reduce the number of
   *WTF just happened?* moments. ;-)
-* [This](http://eagain.net/articles/git-for-computer-scientists/) is a short and
+* http://eagain.net/articles/git-for-computer-scientists/ is a short and
   sweet explanation of what Git does at a fundamental level - just the thing for
   scientists! ;-)
-* [This](http://git-scm.com/doc/ext) is a collection of both introductory and
+* http://git-scm.com/doc/ext is a collection of both introductory and
   more in-depth Git resources.
 
 Whatever you do, make sure to set your Git identity so that the commits tell us who authored them!
