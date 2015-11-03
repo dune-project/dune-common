@@ -324,7 +324,7 @@ printdeps_HELP="print recursive dependencies of a module"
 vcsetup_HELP="setup version control repository (Git etc.) or working copy (SVN)"
 update_HELP="updated all modules from the repository"
 configure_HELP="run configure or cmake for each module"
-make_HELP="run make for each module"
+make_HELP="build each module"
 all_HELP="\trun 'vcsetup', 'autogen', 'configure' and 'make' command for each module"
 exec_HELP="execute an arbitrary command in each module source directory"
 bexec_HELP="execute an arbitrary command in each module build directory"
@@ -731,8 +731,6 @@ usage () {
     echo "OPTIONS:"
     echo "  -h, --help          show this help"
     echo "      --debug         enable debug output of this script"
-    echo "      --use-cmake     use CMake instead of autotools for building"
-    echo "      --no-cmake      use autotools instead of CMake for building"
     echo "      --module=mod    apply the actions on module mod"
     echo "                      and all modules it depends on"
     echo "      --only=mod      only apply the actions on module mod"
@@ -957,12 +955,6 @@ while test $# -gt 0; do
     ;;
     --skipfirst)
       export SKIPFIRST=yes
-    ;;
-    --use-cmake|--cmake)
-      export DUNE_USE_CMAKE=yes
-    ;;
-    --no-cmake)
-      export DUNE_USE_CMAKE=no
     ;;
     --debug) true ;; # ignore this option, it is handled right at the beginning
     --*)
