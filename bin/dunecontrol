@@ -323,7 +323,6 @@ COMMANDSTOSKIPVERSIONCHECK="update status svn git exec bexec"
 printdeps_HELP="print recursive dependencies of a module"
 vcsetup_HELP="setup version control repository (Git etc.) or working copy (SVN)"
 update_HELP="updated all modules from the repository"
-autogen_HELP="run the autogen.sh script for each module. Does nothing, if CMake is activated"
 configure_HELP="run configure or cmake for each module"
 make_HELP="run make for each module"
 all_HELP="\trun 'vcsetup', 'autogen', 'configure' and 'make' command for each module"
@@ -579,9 +578,6 @@ run_default_update () {
   fi
 }
 
-run_default_autogen () {
-}
-
 run_default_configure () {
   extract_multiarch
   PARAMS="$CMD_FLAGS"
@@ -692,7 +688,7 @@ run_default_make () {
 }
 
 run_default_all () {
-  for cmd in vcsetup autogen configure make; do
+  for cmd in vcsetup configure make; do
     eval echo "--- calling $cmd for \$NAME_${module} ---"
     load_opts $cmd
     run_$cmd
