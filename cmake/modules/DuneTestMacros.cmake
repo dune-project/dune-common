@@ -92,7 +92,8 @@
 #       given here. Any number exceeding the user-specified processor maximum
 #       :ref:`DUNE_MAX_TEST_CORES` will be ignored. Tests with a
 #       processor number :code:`n` higher than one will have the suffix
-#       :code:`-mpi-n` appended to their name.
+#       :code:`-mpi-n` appended to their name. You need to specify the
+#       TIMEOUT option when specifying the MPI_RANKS option.
 #
 #    .. cmake_param:: COMMAND
 #       :multi:
@@ -113,6 +114,13 @@
 #       executable twice, but with different compile flags, where you want to assue that
 #       it compiles with both sets of flags, but you already know they will produce the
 #       same result.
+#
+#    .. cmake_param:: TIMEOUT
+#       :single:
+#
+#       If set, the test will time out after the given number of seconds. This supersedes
+#       any timeout setting in ctest (see `cmake --help-property TIMEOUT`). If you
+#       specify the MPI_RANKS option, you need to specify a TIMEOUT.
 #
 #    This function defines the Dune way of adding a test to the testing suite.
 #    You may either add the executable yourself through :ref:`add_executable`
@@ -153,7 +161,7 @@ endif()
 function(dune_add_test)
   include(CMakeParseArguments)
   set(OPTIONS EXPECT_COMPILE_FAIL EXPECT_FAIL SKIP_ON_77 COMPILE_ONLY)
-  set(SINGLEARGS NAME TARGET)
+  set(SINGLEARGS NAME TARGET TIMEOUT)
   set(MULTIARGS SOURCES COMPILE_DEFINITIONS COMPILE_FLAGS LINK_LIBRARIES CMD_ARGS MPI_RANKS COMMAND)
   cmake_parse_arguments(ADDTEST "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
 
@@ -190,6 +198,12 @@ function(dune_add_test)
   endif()
   if(NOT ADDTEST_MPI_RANKS)
     set(ADDTEST_MPI_RANKS 1)
+  endif()
+  if(ADDTEST_MPI_RANKS AND (NOT ADDTEST_TIMEOUT))
+    message(FATAL_ERROR "dune_add_test: You need to specify the TIMEOUT parameter if using the MPI_RANKS parameter.")
+  endif()
+  if(NOT ADDTEST_TIMEOUT)
+    set(ADDTEST_TIMEOUT 300)
   endif()
   foreach(num ${ADDTEST_MPI_RANKS})
     if(NOT "${num}" MATCHES "[1-9][0-9]*")
@@ -249,6 +263,8 @@ function(dune_add_test)
 
       # Define the number of processors (ctest will coordinate this with the -j option)
       set_tests_properties(${ACTUAL_NAME} PROPERTIES PROCESSORS ${procnum})
+      # Apply the timeout (which was defaulted to 5 minutes if not specified)
+      set_tests_properties(${ACTUAL_NAME} PROPERTIES TIMEOUT ${ADDTEST_TIMEOUT})
       # Process the EXPECT_FAIL option
       if(ADDTEST_EXPECT_COMPILE_FAIL OR ADDTEST_EXPECT_FAIL)
         set_tests_properties(${ACTUAL_NAME} PROPERTIES WILL_FAIL true)
