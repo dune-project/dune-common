@@ -594,7 +594,6 @@ run_default_configure () {
       # Translate the configure PARMS to cmake
       export PARAMS
       export CMAKE_PARAMS
-      module_translate_options_am2cmake $m $path/lib
 
       if test x$module = x$m; then continue; fi # skip myself
       name=$(eval "echo \$NAME_$m")
