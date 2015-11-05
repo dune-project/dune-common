@@ -7,6 +7,7 @@
 #include <dune/common/exceptions.hh>
 #include <dune/common/typetraits.hh>
 #include <dune/common/classname.hh>
+#include <dune/common/gmpfield.hh>
 #include <iostream>
 #include <complex>
 #include <typeinfo>
@@ -228,7 +229,7 @@ struct DotProductTest
 {
   DotProductTest() {
     typedef std::complex<rt> ct;
-    const rt myEps = Epsilon<rt>::value();
+    DUNE_UNUSED const rt myEps = Epsilon<rt>::value();
 
     static_assert(
       ( Dune::is_same< typename Dune::FieldTraits<rt>::real_type, rt>::value ),
@@ -366,7 +367,7 @@ test_infinity_norms()
 void
 test_initialisation()
 {
-  Dune::FieldVector<int, 2> const b = { 1, 2 };
+  DUNE_UNUSED Dune::FieldVector<int, 2> const b = { 1, 2 };
 
   assert(b[0] == 1);
   assert(b[1] == 2);
@@ -380,6 +381,17 @@ int main()
     FieldVectorTest<double, 3>();
     FieldVectorTest<int, 1>();
     FieldVectorTest<double, 1>();
+#if HAVE_GMP
+    // we skip the complex test and the int test, as these will be very hard to implement with GMPField
+    typedef Dune::GMPField<128u> ft;
+    FieldVectorMainTest<ft,ft,3>();
+    FieldVectorMainTest<ft,ft,2>();
+    FieldVectorMainTest<ft,ft,1>();
+    FieldVectorMainTest<ft,ft,0>();
+    ScalarOperatorTest<ft>();
+    ScalarOrderingTest<ft>();
+    DotProductTest<ft,3>();
+#endif // HAVE_GMP
 
     test_nan();
     test_infinity_norms();

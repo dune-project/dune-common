@@ -853,6 +853,7 @@ namespace Dune {
     //! random access
     K& operator[] (size_type i)
     {
+      DUNE_UNUSED_PARAMETER(i);
 #ifdef DUNE_FMatrix_WITH_CHECKING
       if (i!=row_)
         DUNE_THROW(FMatrixError,"index is contained in pattern");

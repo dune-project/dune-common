@@ -161,9 +161,10 @@ void test_mult(FieldMatrix<K, n, m>& A,
   A.mmv(v,f);
   A.mmtv(f,v);
   A.mmhv(f,v);
-  A.usmv(0.5,v,f);
-  A.usmtv(0.5,f,v);
-  A.usmhv(0.5,f,v);
+  K scalar = (K)(0.5);
+  A.usmv(scalar,v,f);
+  A.usmtv(scalar,f,v);
+  A.usmhv(scalar,f,v);
 }
 
 
@@ -326,7 +327,7 @@ void test_matrix()
 
     FieldMatrix<K,n,n+1> AB3 = Bref.leftmultiplyany(A);
     AB3 -= AB;
-    if (std::abs(AB3.infinity_norm() > 1e-10))
+    if (std::abs(AB3.infinity_norm()) > 1e-10)
       DUNE_THROW(FMatrixError,"Leftmultiplyany test failed!");
 
     FieldMatrix<K,n,n+1> CA = Aref.leftmultiplyany(C);
@@ -553,10 +554,11 @@ void test_interface()
 
 void test_initialisation()
 {
-  Dune::FieldMatrix<int, 2, 2> const A = {
+  DUNE_UNUSED Dune::FieldMatrix<int, 2, 2> const A = {
     { 1, 2 },
     { 3, 4 }
   };
+
   assert(A[0][0] == 1);
   assert(A[0][1] == 2);
   assert(A[1][0] == 3);

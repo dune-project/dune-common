@@ -25,6 +25,8 @@ dune_common_options_am2cmake()
     echo $PARAMS | grep \\-\\-disable-parallel > /dev/null
     if test "$?" -eq 0 ; then
         CMAKE_PARAMS="$CMAKE_PARAMS -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE"
+    else
+        CMAKE_PARAMS="$CMAKE_PARAMS -DCMAKE_DISABLE_FIND_PACKAGE_MPI=FALSE"
     fi
 
     # Check for --disable-cxx11check

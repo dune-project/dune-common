@@ -1,14 +1,14 @@
-# This module provides the macros necessary for a simplified CMake build system
+# This module provides the functions necessary for a simplified CMake build system
 #
 # The DUNE build system relies on the user to choose and add the compile and link flags
 # necessary to build an executable. While this offers full control to the user, it
 # is an error-prone procedure.
 #
-# Alternatively, users may use the macros in this module to simply add the compile flags for all
+# Alternatively, users may use the functions in this module to simply add the compile flags for all
 # found external modules to all executables in a DUNE module. Likewise, all found libraries are
 # linked to all targets.
 #
-# This module provides the following macros:
+# This module provides the following functions:
 #
 # dune_enable_all_packages(INCLUDE_DIRS [include_dirs]
 #                          COMPILE_DEFINITIONS [compile_definitions]
@@ -18,8 +18,8 @@
 #                          )
 #
 # Adds all flags and all libraries to all executables that are subsequently added in the directory
-# from where this macro is called and from all its subdirectories (recursively).
-# If used, this macro MUST be called in the top level CMakeLists.txt BEFORE adding any subdirectories!
+# from where this function is called and from all its subdirectories (recursively).
+# If used, this function MUST be called in the top level CMakeLists.txt BEFORE adding any subdirectories!
 # You can optionally add additional include dirs and compile definitions that will also be applied to
 # all targets in the module.
 # Finally, if your module contains libraries as well as programs and if the programs should automatically
@@ -30,6 +30,9 @@
 # versions handle linking (in particular CMP022 and CMP038). You can later add source files to the library
 # anywhere in the source tree by calling dune_library_add_sources().
 #
+# Warning: dune_enable_all_packages()  requires CMake 2.8.12+. If you call this function with an older version
+#          of CMake, the build will fail with a fatal error. DO NOT enable this feature if your module needs
+#          to compile on machines with an older version of CMake.
 # Warning: The library feature requires CMake 3.1+. If you use the feature with older versions, CMake
 #          will emit a fatal error. Moreover, it will issue a warning if the cmake_minimum_required()
 #          version is older than 3.1.
@@ -47,8 +50,10 @@
 # dune_target_enable_all_packages(TARGETS [target] ...)
 #
 # Adds all currently registered package flags (see dune_register_package_flags()) to the given targets.
-# This macro is mainly intended to help write DUNE modules that want to use dune_enable_all_packages() and
+# This function is mainly intended to help write DUNE modules that want to use dune_enable_all_packages() and
 # define their own libraries, but need to be compatible with CMake < 3.1.
+#
+# Note:    Just like dune_enable_all_packages(), this function requires CMake 2.8.12+.
 #
 #
 # dune_register_package_flags(COMPILE_DEFINITIONS [flags]
@@ -59,7 +64,7 @@
 #                             )
 #
 # To correctly implement the automatic handling of external libraries, the compile flags, include paths and link
-# flags of all found packages must be registered with this function. This macro is only necessary for people that
+# flags of all found packages must be registered with this function. This function is only necessary for people that
 # want to write their own FindFooBar CMake modules to link against additional libraries which are not supported by
 # the DUNE core modules. Call this function at the end of every find module. If you are using an external FindFoo
 # module which you cannot alter, call it after the call to find_package(foo).
@@ -105,6 +110,16 @@ endfunction(dune_register_package_flags)
 
 
 function(dune_enable_all_packages)
+
+  if (CMAKE_VERSION VERSION_LESS 2.8.12)
+    message(FATAL_ERROR "dune_enable_all_packages() needs CMake 2.8.12+")
+  elseif(CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS 2.8.12)
+    message(WARNING
+"You are using dune_enable_all_packages().
+This requires at least CMake 2.8.12, but your Dune module only requires ${CMAKE_MINIMUM_REQUIRED_VERSION}.
+Update the cmake_minimum_required() call in your main CMakeLists.txt file to get rid of this warning.")
+  endif()
+
   include(CMakeParseArguments)
   set(OPTIONS APPEND VERBOSE)
   set(SINGLEARGS)
@@ -240,6 +255,15 @@ endfunction(dune_enable_all_packages)
 
 
 function(dune_target_enable_all_packages)
+  if (CMAKE_VERSION VERSION_LESS 2.8.12)
+    message(FATAL_ERROR "dune_target_enable_all_packages() needs CMake 2.8.12+")
+  elseif(CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS 2.8.12)
+    message(WARNING
+"You are using dune_target_enable_all_packages().
+This requires at least CMake 2.8.12, but your Dune module only requires ${CMAKE_MINIMUM_REQUIRED_VERSION}.
+Update the cmake_minimum_required() call in your main CMakeLists.txt file to get rid of this warning.")
+  endif()
+
   foreach(_target ${ARGN})
 
     get_property(all_incs GLOBAL PROPERTY ALL_PKG_INCS)

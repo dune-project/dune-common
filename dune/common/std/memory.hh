@@ -74,7 +74,7 @@ namespace Dune
      *  This is deleted, since, according to the standard this should not
      *  participate in overload resolution
      *
-     *  \param  n Size of array to allocate
+     *  \param args Dummy arguments
      */
     template<typename T, typename ...Args>
     typename MakeUniqueHelper<T>::KnownBoundArrayUniquePtr

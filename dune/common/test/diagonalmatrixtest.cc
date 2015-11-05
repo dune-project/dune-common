@@ -70,7 +70,7 @@ void test_interface()
 
 void test_initialisation()
 {
-  Dune::DiagonalMatrix<int, 2> const b = { 1, 2 };
+  DUNE_UNUSED Dune::DiagonalMatrix<int, 2> const b = { 1, 2 };
 
   assert(b.diagonal(0) == 1);
   assert(b.diagonal(1) == 2);

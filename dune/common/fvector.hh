@@ -17,6 +17,8 @@
 #include "typetraits.hh"
 #include "exceptions.hh"
 #include "array.hh"
+
+#include "ftraits.hh"
 #include "densevector.hh"
 #include "unused.hh"
 
@@ -226,7 +228,14 @@ namespace Dune {
     {}
 
     /** \brief Constructor with a given scalar */
-    FieldVector (const K& k) : _data(k) {}
+    template<typename T,
+             typename EnableIf = typename std::enable_if<
+               std::is_convertible<T, K>::value &&
+               ! std::is_same<K, DenseVector<typename FieldTraits<T>::field_type>
+                              >::value
+               >::type
+             >
+    FieldVector (const T& k) : _data(k) {}
 
     //! Constructor making vector with identical coordinates
     template<class C>
@@ -243,7 +252,14 @@ namespace Dune {
     {}
 
     //! Assignment operator for scalar
-    inline FieldVector& operator= (const K& k)
+    template<typename T,
+             typename EnableIf = typename std::enable_if<
+               std::is_convertible<T, K>::value &&
+               ! std::is_same<K, DenseVector<typename FieldTraits<T>::field_type>
+                              >::value
+               >::type
+             >
+    inline FieldVector& operator= (const T& k)
     {
       _data = k;
       return *this;
@@ -255,11 +271,13 @@ namespace Dune {
     DUNE_CONSTEXPR size_type vec_size () const { return 1; }
     K & vec_access(size_type i)
     {
+      DUNE_UNUSED_PARAMETER(i);
       assert(i == 0);
       return _data;
     }
     const K & vec_access(size_type i) const
     {
+      DUNE_UNUSED_PARAMETER(i);
       assert(i == 0);
       return _data;
     }
@@ -274,7 +292,35 @@ namespace Dune {
   };
 
   /* ----- FV / FV ----- */
-  /* not necessary as these operations are already covered via the cast operator */
+  /* mostly not necessary as these operations are already covered via the cast operator */
+
+  //! Binary compare, when using FieldVector<K,1> like K
+  template<class K>
+  inline bool operator> (const FieldVector<K,1>& a, const FieldVector<K,1>& b)
+  {
+    return a[0]>b[0];
+  }
+
+  //! Binary compare, when using FieldVector<K,1> like K
+  template<class K>
+  inline bool operator>= (const FieldVector<K,1>& a, const FieldVector<K,1>& b)
+  {
+    return a[0]>=b[0];
+  }
+
+  //! Binary compare, when using FieldVector<K,1> like K
+  template<class K>
+  inline bool operator< (const FieldVector<K,1>& a, const FieldVector<K,1>& b)
+  {
+    return a[0]<b[0];
+  }
+
+  //! Binary compare, when using FieldVector<K,1> like K
+  template<class K>
+  inline bool operator<= (const FieldVector<K,1>& a, const FieldVector<K,1>& b)
+  {
+    return a[0]<=b[0];
+  }
 
   /* ----- FV / scalar ----- */
 

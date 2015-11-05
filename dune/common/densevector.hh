@@ -42,7 +42,8 @@ namespace Dune {
     template<class K>
     inline typename FieldTraits<K>::real_type absreal (const K& k)
     {
-      return std::abs(k);
+      using std::abs;
+      return abs(k);
     }
 
     /**
@@ -52,7 +53,8 @@ namespace Dune {
     template<class K>
     inline typename FieldTraits<K>::real_type absreal (const std::complex<K>& c)
     {
-      return std::abs(c.real()) + std::abs(c.imag());
+      using std::abs;
+      return abs(c.real()) + abs(c.imag());
     }
 
     /**
@@ -84,7 +86,8 @@ namespace Dune {
     {
       static inline typename FieldTraits<K>::real_type sqrt (const K& k)
       {
-        return std::sqrt(k);
+        using std::sqrt;
+        return sqrt(k);
       }
     };
 
@@ -97,7 +100,8 @@ namespace Dune {
     {
       static inline typename FieldTraits<K>::real_type sqrt (const K& k)
       {
-        return typename FieldTraits<K>::real_type(std::sqrt(double(k)));
+        using std::sqrt;
+        return typename FieldTraits<K>::real_type(sqrt(double(k)));
       }
     };
 
@@ -564,9 +568,10 @@ namespace Dune {
 
     //! one norm (sum over absolute values of entries)
     typename FieldTraits<value_type>::real_type one_norm() const {
+      using std::abs;
       typename FieldTraits<value_type>::real_type result( 0 );
       for (size_type i=0; i<size(); i++)
-        result += std::abs((*this)[i]);
+        result += abs((*this)[i]);
       return result;
     }
 
@@ -601,29 +606,35 @@ namespace Dune {
     //! infinity norm (maximum of absolute values of entries)
     typename FieldTraits<value_type>::real_type infinity_norm () const
     {
+      using std::abs;
+      using std::max;
+      typedef typename FieldTraits<value_type>::real_type real_type;
+
       if (size() == 0)
         return 0.0;
 
       ConstIterator it = begin();
-      typename FieldTraits<value_type>::real_type max = std::abs(*it);
+      real_type max_val = abs(*it);
       for (it = it + 1; it != end(); ++it)
-        max = std::max(max, std::abs(*it));
+        max_val = max(max_val, real_type(abs(*it)));
 
-      return max;
+      return max_val;
     }
 
     //! simplified infinity norm (uses Manhattan norm for complex values)
     typename FieldTraits<value_type>::real_type infinity_norm_real () const
     {
+      using std::max;
+
       if (size() == 0)
         return 0.0;
 
       ConstIterator it = begin();
-      typename FieldTraits<value_type>::real_type max = fvmeta::absreal(*it);
+      typename FieldTraits<value_type>::real_type max_val = fvmeta::absreal(*it);
       for (it = it + 1; it != end(); ++it)
-        max = std::max(max, fvmeta::absreal(*it));
+        max_val = max(max_val, fvmeta::absreal(*it));
 
-      return max;
+      return max_val;
     }
 
     //===== sizes

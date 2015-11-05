@@ -76,10 +76,17 @@
 # library BASENAME
 #
 
+# Make CMake use rpath on OS X
+if(POLICY CMP0042)
+  # this policy only needed for CMake older then 2.8.12
+  cmake_policy(SET CMP0042 NEW)
+endif()
+
 enable_language(C) # Enable C to skip CXX bindings for some tests.
 
 include(FeatureSummary)
 include(DuneEnableAllPackages)
+include(OverloadCompilerFlags)
 
 include(DuneSymlinkOrCopy)
 
@@ -212,9 +219,9 @@ macro(find_dune_package module)
   set(DUNE_${module}_FOUND ${${module}_FOUND})
 endmacro(find_dune_package module)
 
-macro(extract_line HEADER  OUTPUT FILE_CONTENT)
-  set(REGEX "${HEADER}[ ]*[^\n]+")
-  string(REGEX MATCH ${REGEX} OUTPUT1 "${FILE_CONTENT}")
+macro(extract_line HEADER  OUTPUT FILE_NAME)
+  set(REGEX "^${HEADER}[ ]*[^\\n]+")
+  file(STRINGS "${FILE_NAME}" OUTPUT1 REGEX "${REGEX}")
   if(OUTPUT1)
     set(REGEX "^[ ]*${HEADER}[ ]*(.+)[ ]*$")
     string(REGEX REPLACE ${REGEX} "\\1" ${OUTPUT} "${OUTPUT1}")
@@ -278,10 +285,8 @@ endfunction(extract_major_minor_version version_string varname)
 # add dune-common version from dune.module to config.h
 # optional second argument is verbosity
 macro(dune_module_information MODULE_DIR)
-  file(READ "${MODULE_DIR}/dune.module" DUNE_MODULE)
-
   # find version strings
-  extract_line("Version:" MODULE_LINE "${DUNE_MODULE}")
+  extract_line("Version:" MODULE_LINE "${MODULE_DIR}/dune.module")
   if(NOT MODULE_LINE MATCHES ".+")
     message(FATAL_ERROR "${MODULE_DIR}/dune.module is missing a version.")
   endif(NOT MODULE_LINE MATCHES ".+")
@@ -291,19 +296,19 @@ macro(dune_module_information MODULE_DIR)
 
   # find strings for module name, maintainer
   # 1. Check for line starting with Module
-  extract_line("Module:" DUNE_MOD_NAME "${DUNE_MODULE}")
+  extract_line("Module:" DUNE_MOD_NAME "${MODULE_DIR}/dune.module")
   if(NOT DUNE_MOD_NAME)
     message(FATAL_ERROR "${MODULE_DIR}/dune.module is missing a module name.")
   endif(NOT DUNE_MOD_NAME)
 
   # 2. Check for line starting with Maintainer
-  extract_line("Maintainer:" DUNE_MAINTAINER "${DUNE_MODULE}")
+  extract_line("Maintainer:" DUNE_MAINTAINER "${MODULE_DIR}/dune.module")
   if(NOT DUNE_MAINTAINER)
     message(FATAL_ERROR "${MODULE_DIR}/dune.module is missing a maintainer.")
   endif(NOT DUNE_MAINTAINER)
 
   # 3. Check for line starting with Depends
-  extract_line("Depends:" ${DUNE_MOD_NAME}_DEPENDS "${DUNE_MODULE}")
+  extract_line("Depends:" ${DUNE_MOD_NAME}_DEPENDS "${MODULE_DIR}/dune.module")
   if(${DUNE_MOD_NAME}_DEPENDS)
     split_module_version(${${DUNE_MOD_NAME}_DEPENDS} ${DUNE_MOD_NAME}_DEPENDS_MODULE ${DUNE_MOD_NAME}_DEPENDS_VERSION)
     foreach(_mod ${${DUNE_MOD_NAME}_DEPENDS})
@@ -316,7 +321,7 @@ macro(dune_module_information MODULE_DIR)
   endif(${DUNE_MOD_NAME}_DEPENDS)
 
   # 4. Check for line starting with Suggests
-  extract_line("Suggests:" ${DUNE_MOD_NAME}_SUGGESTS "${DUNE_MODULE}")
+  extract_line("Suggests:" ${DUNE_MOD_NAME}_SUGGESTS "${MODULE_DIR}/dune.module")
   if(${DUNE_MOD_NAME}_SUGGESTS)
     split_module_version(${${DUNE_MOD_NAME}_SUGGESTS} ${DUNE_MOD_NAME}_SUGGESTS_MODULE ${DUNE_MOD_NAME}_SUGGESTS_VERSION)
     convert_deps_to_list(${DUNE_MOD_NAME}_SUGGESTS)
@@ -417,9 +422,9 @@ macro(dune_create_dependency_leafs depends depends_versions suggests suggests_ve
 endmacro(dune_create_dependency_leafs)
 
 macro(dune_create_dependency_tree)
-  if(${dune-common_MODULE_PATH})
-    list(REMOVE_ITEM CMAKE_MODULE_PATH ${dune-common_MODULE_PATH})
-  endif(${dune-common_MODULE_PATH})
+  if(dune-common_MODULE_PATH)
+    list(REMOVE_ITEM CMAKE_MODULE_PATH "${dune-common_MODULE_PATH}")
+  endif(dune-common_MODULE_PATH)
   list(FIND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules start)
   set(ALL_DEPENDENCIES "")
   if(${ProjectName}_DEPENDS_MODULE OR ${ProjectName}_SUGGESTS_MODULE)
@@ -546,6 +551,9 @@ macro(dune_project)
     message(FATAL_ERROR "You need to specify an absolute path to your compiler instead of just the compiler name. cmake >= 3.0 fixes this issue.")
   endif()
 
+  # check if CXX flag overloading has been enabled (see OverloadCompilerFlags.cmake)
+  initialize_compiler_script()
+
   # extract information from dune.module
   dune_module_information(${CMAKE_SOURCE_DIR})
   set(ProjectName            "${DUNE_MOD_NAME}")
@@ -555,6 +563,14 @@ macro(dune_project)
   set(ProjectVersionMinor    "${DUNE_VERSION_MINOR}")
   set(ProjectVersionRevision "${DUNE_VERSION_REVISION}")
   set(ProjectMaintainerEmail "${DUNE_MAINTAINER}")
+
+  # check whether this module has been explicitly disabled through the cmake flags.
+  # If so, stop the build. This is necessary because dunecontrol does not parse
+  # the given CMake flags for a disabled Dune modules.
+  if(CMAKE_DISABLE_FIND_PACKAGE_${ProjectName})
+    message("Module ${ProjectName} has been explicitly disabled through the cmake flags. Skipping build.")
+    return()
+  endif()
 
   define_property(GLOBAL PROPERTY DUNE_MODULE_LIBRARIES
         BRIEF_DOCS "List of libraries of the module. DO NOT EDIT!"
@@ -638,6 +654,8 @@ macro(dune_project)
 
   # activate testing the DUNE way
   include(DuneTests)
+  # enable this way of testing by default
+  set(DUNE_TEST_MAGIC ON)
 
   # activate pkg-config
   include(DunePkgConfig)
@@ -669,13 +687,6 @@ macro(dune_project)
   include(Headercheck)
   setup_headercheck()
 
-  # check whether the user wants to append compile flags upon calling make
-  if(ALLOW_EXTRA_CXXFLAGS AND (${CMAKE_GENERATOR} MATCHES ".*Unix Makefiles.*"))
-    file(WRITE ${CMAKE_BINARY_DIR}/compiler.sh
-         "#!/bin/bash\nif [ -n \"$VERBOSE\" ] ; then\necho 1>&2 \"Additional flags: \$EXTRA_CXXFLAGS\"\nfi\nexec ${CMAKE_CXX_COMPILER} \"\$@\" \$EXTRA_CXXFLAGS")
-    exec_program(chmod ARGS "+x ${CMAKE_BINARY_DIR}/compiler.sh")
-    set(CMAKE_CXX_COMPILER ${CMAKE_BINARY_DIR}/compiler.sh)
-  endif()
 endmacro(dune_project)
 
 # create a new config.h file and overwrite the existing one
@@ -873,11 +884,18 @@ endif()
     configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
   endif("${ARGC}" EQUAL "1")
 
-  test_dep()
+  # add dependiencies to target "test"
+  if(DUNE_TEST_MAGIC)
+    test_dep()
+  endif()
 
   include(CPack)
 
   feature_summary(WHAT ALL)
+
+  # check if CXX flag overloading has been enabled
+  # and write compiler script (see OverloadCompilerFlags.cmake)
+  finalize_compiler_script()
 endmacro(finalize_dune_project)
 
 macro(target_link_dune_default_libraries _target)

@@ -1013,6 +1013,7 @@ namespace Dune {
                                               int bufferSize,
                                               int *position, int n)
   {
+    DUNE_UNUSED_PARAMETER(n);
     // fill with own indices
     typedef typename ParallelIndexSet::const_iterator const_iterator;
     typedef IndexPair<GlobalIndex,LocalIndex> PairType;
@@ -1317,7 +1318,7 @@ namespace Dune {
     if(remoteEntries==0)
       return;
 
-    PairType index(-1);
+    PairType index(1);
     MPI_Unpack(p_in, bufferSize, position, &index, 1,
                type, comm_);
     GlobalIndex oldGlobal=index.global();

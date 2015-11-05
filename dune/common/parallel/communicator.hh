@@ -443,7 +443,7 @@ namespace Dune
    * @brief A communicator that uses buffers to gather and scatter
    * the data to be send or received.
    *
-   * Before the data is sent it it copied to a consecutive buffer and
+   * Before the data is sent it is copied to a consecutive buffer and
    * then that buffer is sent.
    * The data is received in another buffer and then copied to the actual
    * position.
@@ -1260,6 +1260,7 @@ namespace Dune
   template<class Data, class GatherScatter, bool FORWARD>
   inline void BufferedCommunicator::MessageGatherer<Data,GatherScatter,FORWARD,VariableSize>::operator()(const InterfaceMap& interfaces,const Data& data, Type* buffer, size_t bufferSize) const
   {
+    DUNE_UNUSED_PARAMETER(bufferSize);
     typedef typename InterfaceMap::const_iterator
     const_iterator;
 
@@ -1420,6 +1421,8 @@ namespace Dune
 
     MPI_Request* sendRequests = new MPI_Request[messageInformation_.size()];
     MPI_Request* recvRequests = new MPI_Request[messageInformation_.size()];
+    /* Number of recvRequests that are not MPI_REQUEST_NULL */
+    size_t numberOfRealRecvRequests = 0;
 
     // Setup receive first
     typedef typename InformationMap::const_iterator const_iterator;
@@ -1433,23 +1436,27 @@ namespace Dune
       if(FORWARD) {
         assert(info->second.second.start_*sizeof(typename CommPolicy<Data>::IndexedType)+info->second.second.size_ <= recvBufferSize );
         Dune::dvverb<<rank<<": receiving "<<info->second.second.size_<<" from "<<info->first<<std::endl;
-        if(info->second.second.size_)
+        if(info->second.second.size_) {
           MPI_Irecv(recvBuffer+info->second.second.start_, info->second.second.size_,
                     MPI_BYTE, info->first, commTag_, communicator_,
                     recvRequests+i);
-        else
+          numberOfRealRecvRequests += 1;
+        } else {
           // Nothing to receive -> set request to inactive
           recvRequests[i]=MPI_REQUEST_NULL;
+        }
       }else{
         assert(info->second.first.start_*sizeof(typename CommPolicy<Data>::IndexedType)+info->second.first.size_ <= recvBufferSize );
         Dune::dvverb<<rank<<": receiving "<<info->second.first.size_<<" to "<<info->first<<std::endl;
-        if(info->second.first.size_)
+        if(info->second.first.size_) {
           MPI_Irecv(recvBuffer+info->second.first.start_, info->second.first.size_,
                     MPI_BYTE, info->first, commTag_, communicator_,
                     recvRequests+i);
-        else
+          numberOfRealRecvRequests += 1;
+        } else {
           // Nothing to receive -> set request to inactive
           recvRequests[i]=MPI_REQUEST_NULL;
+        }
       }
     }
 
@@ -1486,7 +1493,7 @@ namespace Dune
     MPI_Status status; //[messageInformation_.size()];
     //MPI_Waitall(messageInformation_.size(), recvRequests, status);
 
-    for(i=0; i< messageInformation_.size(); i++) {
+    for(i=0; i< numberOfRealRecvRequests; i++) {
       status.MPI_ERROR=MPI_SUCCESS;
       MPI_Waitany(messageInformation_.size(), recvRequests, &finished, &status);
       assert(finished != MPI_UNDEFINED);

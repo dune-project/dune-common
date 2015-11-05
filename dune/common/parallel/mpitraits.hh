@@ -7,6 +7,7 @@
 #include <mpi.h>
 #endif
 
+#include <cstdint>
 #include <utility>
 
 namespace Dune
@@ -127,7 +128,7 @@ namespace Dune
     static inline MPI_Datatype getType()
     {
       if(datatype==MPI_DATATYPE_NULL) {
-        MPI_Type_contiguous(bigunsignedint<k>::n, MPITraits<unsigned short>::getType(),
+        MPI_Type_contiguous(bigunsignedint<k>::n, MPITraits<std::uint16_t>::getType(),
                             &vectortype);
         //MPI_Type_commit(&vectortype);
         bigunsignedint<k> data;

@@ -271,10 +271,10 @@ template<>
 struct TestSorting<false>
 {
   template<class Container>
-  static void testSorting(Container& c, std::random_access_iterator_tag)
+  static void testSorting(Container&, std::random_access_iterator_tag)
   {}
   template<class Container, typename IteratorTag>
-  static void testSorting(Container& c, IteratorTag tag)
+  static void testSorting(Container&, IteratorTag)
   {}
 };
 

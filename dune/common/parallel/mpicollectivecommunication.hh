@@ -50,7 +50,7 @@ namespace Dune
       return *op;
     }
   private:
-    static void operation (Type *in, Type *inout, int *len, MPI_Datatype *dptr)
+    static void operation (Type *in, Type *inout, int *len, MPI_Datatype*)
     {
       BinaryFunction func;
 

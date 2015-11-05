@@ -30,6 +30,7 @@ MODULES = \
   FindUMFPack.cmake       \
   Headercheck.cmake       \
   LanguageSupport.cmake   \
+  OverloadCompilerFlags.cmake \
   UseInkscape.cmake       \
   UseLATEX.cmake
 
