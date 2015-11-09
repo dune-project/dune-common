@@ -3,6 +3,8 @@
 #ifndef DUNE_ALIGNMENT_HH
 #define DUNE_ALIGNMENT_HH
 
+#warning The header dune/common/alignment.hh is deprecated. Use alignof(T) instead of Dune::AlignmentOf<T>::value.
+
 #include <type_traits>
 
 namespace Dune
