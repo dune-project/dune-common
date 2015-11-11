@@ -1,21 +1,38 @@
-# Module that checks whether SuiteSparse is available.
+# .. cmake_module::
 #
-# Synopsis:
-#   find_package(SuiteSparse COMPONENTS component1 [component2 ...])
+#    Find the SuiteSparse libraries like UMFPACK or SPQR.
 #
-#  Components are:
-#   amd, btf, camd, ccolamd, cholmod, colamd, cxsparse,
-#   klu, ldl, RBio, spqr, umfpack
+#    .. cmake_param:: COMPONENTS
+#       :multi:
+#       :argname: component
 #
-# Variables used by this module which you may want to set:
-# SUITESPARSE_ROOT   Path list to search for SuiteSparse
+#       A list of required components. Components are:
+#       AMD, BTF, CAMD, CCOLAMD, CHOLMOD, COLAMD, CXSPARSE,
+#       KLU, LDL, RBIO, SPQR, UMFPACK
 #
-# Sets the following result variables:
+#    :ref:`SuiteSparse_ROOT`
+#       Path list to search for SuiteSparse
 #
-# SuiteSparse_FOUND               Whether SuiteSparse was found and usable in the desired setting
-# SUITESPARSE_INCLUDE_DIRS        Path to the SuiteSparse include dirs
-# SUITESPARSE_LIBRARIES           Name of the SuiteSparse libraries
-# SUITESPARSE_<COMPONENT>_FOUND   Whether <COMPONENT> was found as part of SuiteSparse
+#    Sets the following variables:
+#
+#    :code:`SuiteSparse_FOUND`
+#       True if SuiteSparse was found.
+#
+#    :code:`SuiteSparse_INCLUDE_DIRS`
+#       Path to the SuiteSparse include dirs.
+#
+#    :code:`SuiteSparse_LIBRARIES`
+#       Name of the SuiteSparse libraries.
+#
+#    :code:`SuiteSparse_<COMPONENT>_FOUND`
+#       Whether <COMPONENT> was found as part of SuiteSparse.
+#
+# .. cmake_variable:: SuiteSparse_ROOT
+#
+#   You may set this variable to have :ref:`FindSuiteSparse` look
+#   for SuiteSparse in the given path before inspecting
+#   system paths.
+#
 
 find_package(BLAS QUIET REQUIRED)
 if(NOT BLAS_FOUND)
