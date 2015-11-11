@@ -1,11 +1,15 @@
-# module providing convenience methods for compiling
-# binaries with SuiteSparse support
+# Defines the functions to use SuiteSparse
 #
-# Provides the following functions:
+# .. cmake_function:: add_dune_suitesparse_flags
 #
-# add_dune_suitsparse_flags(target1 target2...)
+#    .. cmake_param:: targets
+#       :positional:
+#       :single:
+#       :required:
 #
-# adds SuiteSparse flags to the targets for compilation and linking
+#       A list of targets to use SuiteSparse with.
+#
+
 function(add_dune_suitesparse_flags _targets)
   if(SUITESPARSE_FOUND)
     foreach(_target ${_targets})
