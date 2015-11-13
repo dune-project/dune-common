@@ -38,14 +38,14 @@ DefineImplementation(InterfaceB, Bis, int, std::string);
 int main()
 {
     // int as parameter
-    Dune::ParameterizedObjectFactory<InterfaceA(int)> FactoryA;
+    Dune::ParameterizedObjectFactory<InterfaceA, std::string, int> FactoryA;
     FactoryA.define<Ai>("Ai");
     FactoryA.define<Bi>("Bi");
     CheckInstance(FactoryA, Ai, 0);
     CheckInstance(FactoryA, Bi, 1);
 
     // default constructor
-    Dune::ParameterizedObjectFactory<InterfaceA> FactoryAd;
+    Dune::ParameterizedObjectFactory<InterfaceA, std::string> FactoryAd;
     FactoryAd.define<Ax>("Ax");
     FactoryAd.define<Bx>("Bx");
     Dune::ParameterTree param;
@@ -53,14 +53,14 @@ int main()
     CheckInstance(FactoryAd, Bx);
 
     // explicitly request the default constructor
-    Dune::ParameterizedObjectFactory<InterfaceA()> FactoryAx;
+    Dune::ParameterizedObjectFactory<InterfaceA, std::string> FactoryAx;
     FactoryAx.define<Ax>("Ax");
     FactoryAx.define<Bx>("Bx");
     CheckInstance(FactoryAx, Ax);
     CheckInstance(FactoryAx, Bx);
 
     // multiple parameters
-    Dune::ParameterizedObjectFactory<InterfaceB(int, std::string)> FactoryB;
+    Dune::ParameterizedObjectFactory<InterfaceB, std::string, int, std::string> FactoryB;
     FactoryB.define<Ais>("Ais");
     FactoryB.define<Bis>("Bis");
     CheckInstance(FactoryB, Ais, 0, std::to_string(2));

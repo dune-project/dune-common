@@ -8,64 +8,6 @@
 
 namespace Dune {
 
-    namespace Impl {
-
-        template<typename Interface,
-                 typename KeyT,
-                 typename... Args
-                 >
-        class ParameterizedObjectFactoryBase {
-        public:
-            /** @brief The typ of the keys. */
-            typedef KeyT Key;
-            /** @brief The type of the pointer to the interface. */
-            typedef std::unique_ptr<Interface> Type;
-            /** @brief The type of the function that creates the object. */
-            typedef Type (*Creator)(Args ... );
-
-            /**
-             * @brief Creates an object identified by a key from a parameter object.
-             * @param key The key the object is registered with @see define.
-             * @param d The parameter object used for the construction.
-             * @return a shared_pointer to created object.
-             */
-            Type create(Key const& key, Args ... args) {
-                typename Registry::const_iterator i = registry_.find(key);
-                if (i == registry_.end()) {
-                    DUNE_THROW(Dune::InvalidStateException,
-                        "ParametrizedObjectFactory: key ``" <<
-                        key << "'' not registered");
-                }
-                else return i->second(args...);
-            }
-
-            /**
-             * @brief Registers a new type with a key.
-             *
-             * After registration objects of this type can be constructed with the
-             * specified key using the creat function.
-             * @tparam Impl The type. It must implement and subclass Interface.
-             */
-            template<class Impl>
-            void define (Key const& key)
-            {
-                registry_[key] =
-                    ParameterizedObjectFactoryBase::create_func<Impl>;
-            }
-
-        private:
-
-            template<class Impl>
-            static
-            Type create_func(Args ... args) {
-                return Dune::Std::make_unique<Impl>(args...);
-            }
-
-            typedef std::map<Key, Creator> Registry;
-            Registry registry_;
-        };
-
-    } // end namespace Impl
 
 /**
  * @brief A factory class for parameterized objects.
@@ -85,19 +27,62 @@ namespace Dune {
  * @tparam Tag A class tag which allows to have different factories for the same interface [DEFAULT: ParameterizedObjectDefaultTag].
  * @tparam KeyT The type of the objects that are used as keys in the lookup [DEFAULT: std::string].
  */
-template<typename Signature,
-         typename KeyT=std::string>
-class ParameterizedObjectFactory :
-        public Impl::ParameterizedObjectFactoryBase<Signature,KeyT> {};
-
-#ifndef DOXYGEN
-// specialization for the multi-argument case
 template<typename Interface,
          typename KeyT,
          typename... Args>
-class ParameterizedObjectFactory<Interface(Args...), KeyT> :
-        public Impl::ParameterizedObjectFactoryBase<Interface,KeyT,Args...> {};
-#endif
+class ParameterizedObjectFactory
+{
+    public:
+
+        /** @brief The typ of the keys. */
+        typedef KeyT Key;
+        /** @brief The type of the pointer to the interface. */
+        typedef std::unique_ptr<Interface> Type;
+        /** @brief The type of the function that creates the object. */
+        typedef Type (*Creator)(Args ... );
+
+        /**
+         * @brief Creates an object identified by a key from a parameter object.
+         * @param key The key the object is registered with @see define.
+         * @param d The parameter object used for the construction.
+         * @return a shared_pointer to created object.
+         */
+        Type create(Key const& key, Args ... args) {
+            typename Registry::const_iterator i = registry_.find(key);
+            if (i == registry_.end()) {
+                DUNE_THROW(Dune::InvalidStateException,
+                    "ParametrizedObjectFactory: key ``" <<
+                    key << "'' not registered");
+            }
+            else return i->second(args...);
+        }
+
+        /**
+         * @brief Registers a new type with a key.
+         *
+         * After registration objects of this type can be constructed with the
+         * specified key using the creat function.
+         * @tparam Impl The type. It must implement and subclass Interface.
+         */
+        template<class Impl>
+        void define (Key const& key)
+        {
+            registry_[key] =
+                ParameterizedObjectFactory::create_func<Impl>;
+        }
+
+    private:
+
+        template<class Impl>
+        static
+        Type create_func(Args ... args) {
+            return Dune::Std::make_unique<Impl>(args...);
+        }
+
+        typedef std::map<Key, Creator> Registry;
+        Registry registry_;
+};
+
 
 
 } // end namespace Dune
