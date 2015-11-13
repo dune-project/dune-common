@@ -37,23 +37,50 @@ DefineImplementation(InterfaceB, Bis, int, std::string);
     assert(#T == F.create(#T,##PARAM)->info())
 
 
+struct AImp : public InterfaceA
+{
+    AImp(std::string s) :
+        s_(s)
+    {}
+
+    AImp(const AImp& other) :
+        s_("copied")
+    {}
+
+    virtual std::string info()
+    {
+        return s_;
+    }
+    std::string s_;
+};
+
 int main()
 {
     // int as parameter
     Dune::ParameterizedObjectFactory<std::unique_ptr<InterfaceA>, std::string, int> FactoryA;
     FactoryA.define<Ai>("Ai");
     FactoryA.define<Bi>("Bi");
+    FactoryA.define<Ax>("Ax", [](int i) { return Dune::Std::make_unique<Ax>(); });
     CheckInstance(FactoryA, Ai, 0);
     CheckInstance(FactoryA, Bi, 1);
+    CheckInstance(FactoryA, Ax, 1);
 
     // default constructor
     Dune::ParameterizedObjectFactory<std::shared_ptr<InterfaceA>, std::string> FactoryAd;
     FactoryAd.define<Ax>("Ax");
     FactoryAd.define<Bx>("Bx");
+    FactoryAd.define<Ai>("Ai", []() { return std::make_shared<Ai>(0); });
+    AImp aimp("onStack");
+    FactoryAd.define<AImp>("AImp", [&]() { return Dune::stackobject_to_shared_ptr<AImp>(aimp); });
+    FactoryAd.define("AImp2", Dune::stackobject_to_shared_ptr<AImp>(aimp));
+    FactoryAd.define("AImp3", std::make_shared<AImp>("shared"));
     Dune::ParameterTree param;
     CheckInstance(FactoryAd, Ax);
     CheckInstance(FactoryAd, Bx);
     CheckInstance(FactoryAd, Ai);
+    std::cout << FactoryAd.create("AImp")->info() << std::endl;
+    std::cout << FactoryAd.create("AImp2")->info() << std::endl;
+    std::cout << FactoryAd.create("AImp3")->info() << std::endl;
 
     // explicitly request the default constructor
     Dune::ParameterizedObjectFactory<std::unique_ptr<InterfaceA>, std::string> FactoryAx;
