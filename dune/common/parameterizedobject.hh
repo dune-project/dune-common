@@ -3,10 +3,14 @@
 #ifndef PARAMETERIZED_OBJECT_HH
 #define PARAMETERIZED_OBJECT_HH
 
+#include <map>
+
+#include <dune/common/exceptions.hh>
 #include <dune/common/std/memory.hh>
-#include <dune/common/parametertree.hh>
+#include <dune/common/prioritytag.hh>
 
 namespace Dune {
+
 
 
 /**
@@ -24,10 +28,9 @@ namespace Dune {
  * allows for easy registration of type with new keys.
  *
  * @tparam Signature Signature of the "virtual" constructor call in the form for Interface(Args...). For default constructors onecan omit the ()-brackets.
- * @tparam Tag A class tag which allows to have different factories for the same interface [DEFAULT: ParameterizedObjectDefaultTag].
  * @tparam KeyT The type of the objects that are used as keys in the lookup [DEFAULT: std::string].
  */
-template<typename Interface,
+template<typename TypeT,
          typename KeyT,
          typename... Args>
 class ParameterizedObjectFactory
@@ -36,16 +39,22 @@ class ParameterizedObjectFactory
 
         /** @brief The typ of the keys. */
         typedef KeyT Key;
-        /** @brief The type of the pointer to the interface. */
-        typedef std::unique_ptr<Interface> Type;
-        /** @brief The type of the function that creates the object. */
-        typedef Type (*Creator)(Args ... );
+
+        /** @brief The type of objects created by the factory. */
+        using Type = TypeT;
+
+    protected:
+
+        using Creator = std::function<Type(Args...)>;
+
+    public:
 
         /**
-         * @brief Creates an object identified by a key from a parameter object.
+         * @brief Creates an object identified by a key from given parameters
+         *
          * @param key The key the object is registered with @see define.
-         * @param d The parameter object used for the construction.
-         * @return a shared_pointer to created object.
+         * @param args The parameters used for the construction.
+         * @return The object wrapped as Type
          */
         Type create(Key const& key, Args ... args) {
             typename Registry::const_iterator i = registry_.find(key);
@@ -61,23 +70,51 @@ class ParameterizedObjectFactory
          * @brief Registers a new type with a key.
          *
          * After registration objects of this type can be constructed with the
-         * specified key using the creat function.
-         * @tparam Impl The type. It must implement and subclass Interface.
+         * specified key using a matching default creation functions. If Type
+         * is a unique_ptr or shared_ptr, the object is created via make_unique
+         * or make_shared, respectively. Otherwise a constructor of Impl
+         * is called.
+         *
+         * @tparam Impl The type of objects to create.
+         *
+         * @param key The key associated with this type.
          */
         template<class Impl>
-        void define (Key const& key)
+        void define(Key const& key)
         {
-            registry_[key] =
-                ParameterizedObjectFactory::create_func<Impl>;
+            registry_[key] = DefaultCreator<Impl>();
         }
 
     private:
 
+        template<class T>
+        struct Tag{};
+
         template<class Impl>
-        static
-        Type create_func(Args ... args) {
-            return Dune::Std::make_unique<Impl>(args...);
-        }
+        struct DefaultCreator
+        {
+            template<class...  T>
+            Type operator()(T&&... args) const
+            {
+                return DefaultCreator::create(Tag<Type>(), PriorityTag<42>(), std::forward<T>(args)...);
+            }
+
+            template<class Target, class... T>
+            static Type create(Tag<Target>, PriorityTag<1>, T&& ... args) {
+                return Impl(std::forward<T>(args)...);
+            }
+
+            template<class Target, class... T>
+            static Type create(Tag<std::unique_ptr<Target>>, PriorityTag<2>, T&& ... args) {
+                return Dune::Std::make_unique<Impl>(std::forward<T>(args)...);
+            }
+
+            template<class Target, class... T>
+            static Type create(Tag<std::shared_ptr<Target>>, PriorityTag<3>, T&& ... args) {
+                return std::make_shared<Impl>(std::forward<T>(args)...);
+            }
+
+        };
 
         typedef std::map<Key, Creator> Registry;
         Registry registry_;
