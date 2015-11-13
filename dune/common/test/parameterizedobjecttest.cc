@@ -57,7 +57,7 @@ struct AImp : public InterfaceA
 int main()
 {
     // int as parameter
-    Dune::ParameterizedObjectFactory<std::unique_ptr<InterfaceA>, std::string, int> FactoryA;
+    Dune::ParameterizedObjectFactory<std::unique_ptr<InterfaceA>(int)> FactoryA;
     FactoryA.define<Ai>("Ai");
     FactoryA.define<Bi>("Bi");
     FactoryA.define<Ax>("Ax", [](int i) { return Dune::Std::make_unique<Ax>(); });
@@ -66,7 +66,7 @@ int main()
     CheckInstance(FactoryA, Ax, 1);
 
     // default constructor
-    Dune::ParameterizedObjectFactory<std::shared_ptr<InterfaceA>, std::string> FactoryAd;
+    Dune::ParameterizedObjectFactory<std::shared_ptr<InterfaceA>()> FactoryAd;
     FactoryAd.define<Ax>("Ax");
     FactoryAd.define<Bx>("Bx");
     FactoryAd.define<Ai>("Ai", []() { return std::make_shared<Ai>(0); });
@@ -83,14 +83,14 @@ int main()
     std::cout << FactoryAd.create("AImp3")->info() << std::endl;
 
     // explicitly request the default constructor
-    Dune::ParameterizedObjectFactory<std::unique_ptr<InterfaceA>, std::string> FactoryAx;
+    Dune::ParameterizedObjectFactory<std::unique_ptr<InterfaceA>()> FactoryAx;
     FactoryAx.define<Ax>("Ax");
     FactoryAx.define<Bx>("Bx");
     CheckInstance(FactoryAx, Ax);
     CheckInstance(FactoryAx, Bx);
 
     // multiple parameters
-    Dune::ParameterizedObjectFactory<std::unique_ptr<InterfaceB>, std::string, int, std::string> FactoryB;
+    Dune::ParameterizedObjectFactory<std::unique_ptr<InterfaceB>(int, std::string)> FactoryB;
     FactoryB.define<Ais>("Ais");
     FactoryB.define<Bis>("Bis");
     CheckInstance(FactoryB, Ais, 0, std::to_string(2));

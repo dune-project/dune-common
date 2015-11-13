@@ -30,10 +30,14 @@ namespace Dune {
  * @tparam Signature Signature of the "virtual" constructor call in the form for Interface(Args...). For default constructors onecan omit the ()-brackets.
  * @tparam KeyT The type of the objects that are used as keys in the lookup [DEFAULT: std::string].
  */
+template<typename Signature,
+         typename KeyT = std::string>
+class ParameterizedObjectFactory;
+
 template<typename TypeT,
          typename KeyT,
          typename... Args>
-class ParameterizedObjectFactory
+class ParameterizedObjectFactory<TypeT(Args...), KeyT>
 {
     public:
 
