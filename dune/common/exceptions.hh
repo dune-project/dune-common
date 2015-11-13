@@ -4,6 +4,7 @@
 #ifndef DUNE_EXCEPTIONS_HH
 #define DUNE_EXCEPTIONS_HH
 
+#include <exception>
 #include <string>
 #include <sstream>
 
@@ -88,13 +89,15 @@ namespace Dune {
      \see DUNE_THROW, IOError, MathError
 
    */
-  class Exception {
+  class Exception
+  : public std::exception
+  {
   public:
     Exception ();
     void message(const std::string &msg); //!< store string in internal message buffer
-    const std::string& what() const;        //!< output internal message buffer
+    virtual const char* what() const noexcept; //!< output internal message buffer
     static void registerHook (ExceptionHook * hook); //!< add a functor which is called before a Dune::Exception is emitted (see Dune::ExceptionHook) \see Dune::ExceptionHook
-    static void clearHook ();                       //!< remove all hooks
+    static void clearHook ();                  //!< remove all hooks
   private:
     std::string _message;
     static ExceptionHook * _hook;
@@ -170,36 +173,6 @@ namespace Dune {
     virtual ~ExceptionHook() {}
     virtual void operator () () = 0;
   };
-
-  /*
-     Implementation of Dune::Exception
-   */
-
-  inline Exception::Exception ()
-  {
-    // call the hook if necessary
-    if (_hook != 0) _hook->operator()();
-  }
-
-  inline void Exception::registerHook (ExceptionHook * hook)
-  {
-    _hook = hook;
-  }
-
-  inline void Exception::clearHook ()
-  {
-    _hook = 0;
-  }
-
-  inline void Exception::message(const std::string & msg)
-  {
-    _message = msg;
-  }
-
-  inline const std::string& Exception::what() const
-  {
-    return _message;
-  }
 
   inline std::ostream& operator<<(std::ostream &stream, const Exception &e)
   {

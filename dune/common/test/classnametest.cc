@@ -3,10 +3,13 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <dune/common/fvector.hh>
-#include <dune/common/classname.hh>
-#include <iostream>
+
 #include <complex>
+#include <iostream>
+
+#include <dune/common/classname.hh>
+#include <dune/common/exceptions.hh>
+#include <dune/common/fvector.hh>
 
 
 using Dune::FieldVector;
@@ -49,8 +52,7 @@ int main()
     std::cout << std::endl;
 
   } catch (Dune::Exception& e) {
-    std::cerr << e << std::endl;
-    return 1;
+    throw;
   } catch (...) {
     std::cerr << "Generic exception!" << std::endl;
     return 2;

@@ -22,7 +22,8 @@ dune_add_test(NAME check_fvector_size_fail2
               COMPILE_DEFINITIONS DIM=3
               EXPECT_COMPILE_FAIL)
 
-dune_add_test(SOURCES classnametest.cc)
+dune_add_test(SOURCES classnametest.cc
+              LINK_LIBRARIES dunecommon)
 
 dune_add_test(SOURCES conversiontest.cc)
 
@@ -32,7 +33,8 @@ dune_add_test(SOURCES diagonalmatrixtest.cc
 dune_add_test(SOURCES dynmatrixtest.cc
               LINK_LIBRARIES dunecommon)
 
-dune_add_test(SOURCES dynvectortest.cc)
+dune_add_test(SOURCES dynvectortest.cc
+              LINK_LIBRARIES dunecommon)
 
 dune_add_test(SOURCES enumsettest.cc)
 

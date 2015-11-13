@@ -3,6 +3,38 @@
 #include <dune/common/exceptions.hh>
 
 namespace Dune {
-  // static member of Dune::Exception
+  /*
+    static member of Dune::Exception
+  */
   ExceptionHook * Exception::_hook = 0;
+
+  /*
+     Implementation of Dune::Exception
+   */
+  Exception::Exception ()
+  {
+    // call the hook if necessary
+    if (_hook != 0) _hook->operator()();
+  }
+
+  void Exception::registerHook (ExceptionHook * hook)
+  {
+    _hook = hook;
+  }
+
+  void Exception::clearHook ()
+  {
+    _hook = 0;
+  }
+
+  void Exception::message(const std::string & msg)
+  {
+    _message = msg;
+  }
+
+  const char* Exception::what() const noexcept
+  {
+    return _message.data();
+  }
+
 }
