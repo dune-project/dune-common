@@ -8,13 +8,9 @@
 
 namespace Dune {
 
-/** default tag parameter for ParameterizedObjectFactory */
-struct ParameterizedObjectDefaultTag {};
-
     namespace Impl {
 
         template<typename Interface,
-                 typename Tag,
                  typename KeyT,
                  typename... Args
                  >
@@ -33,10 +29,9 @@ struct ParameterizedObjectDefaultTag {};
              * @param d The parameter object used for the construction.
              * @return a shared_pointer to created object.
              */
-            static
             Type create(Key const& key, Args ... args) {
-                typename Registry::const_iterator i = registry().find(key);
-                if (i == registry().end()) {
+                typename Registry::const_iterator i = registry_.find(key);
+                if (i == registry_.end()) {
                     DUNE_THROW(Dune::InvalidStateException,
                         "ParametrizedObjectFactory: key ``" <<
                         key << "'' not registered");
@@ -52,9 +47,9 @@ struct ParameterizedObjectDefaultTag {};
              * @tparam Impl The type. It must implement and subclass Interface.
              */
             template<class Impl>
-            static void define (Key const& key)
+            void define (Key const& key)
             {
-                registry()[key] =
+                registry_[key] =
                     ParameterizedObjectFactoryBase::create_func<Impl>;
             }
 
@@ -67,13 +62,7 @@ struct ParameterizedObjectDefaultTag {};
             }
 
             typedef std::map<Key, Creator> Registry;
-
-            // singleton registry
-            static Registry & registry()
-            {
-                static Registry _registry;
-                return _registry;
-            }
+            Registry registry_;
         };
 
     } // end namespace Impl
@@ -97,17 +86,18 @@ struct ParameterizedObjectDefaultTag {};
  * @tparam KeyT The type of the objects that are used as keys in the lookup [DEFAULT: std::string].
  */
 template<typename Signature,
-         typename Tag=ParameterizedObjectDefaultTag,
          typename KeyT=std::string>
 class ParameterizedObjectFactory :
-        public Impl::ParameterizedObjectFactoryBase<Signature,Tag,KeyT> {};
+        public Impl::ParameterizedObjectFactoryBase<Signature,KeyT> {};
 
+#ifndef DOXYGEN
+// specialization for the multi-argument case
 template<typename Interface,
-         typename Tag,
          typename KeyT,
          typename... Args>
-class ParameterizedObjectFactory<Interface(Args...), Tag, KeyT> :
-        public Impl::ParameterizedObjectFactoryBase<Interface,Tag,KeyT,Args...> {};
+class ParameterizedObjectFactory<Interface(Args...), KeyT> :
+        public Impl::ParameterizedObjectFactoryBase<Interface,KeyT,Args...> {};
+#endif
 
 
 } // end namespace Dune
