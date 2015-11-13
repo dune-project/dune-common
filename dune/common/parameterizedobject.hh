@@ -47,6 +47,19 @@ class ParameterizedObjectFactory
 
         using Creator = std::function<Type(Args...)>;
 
+        template<class F>
+        static constexpr auto has_proper_signature(Dune::PriorityTag<1>)
+            -> decltype( std::declval<F>()(std::declval<Args>()...), std::true_type())
+        {
+            return {};
+        }
+
+        template<class F>
+        static constexpr std::false_type has_proper_signature(Dune::PriorityTag<0>)
+        {
+            return {};
+        }
+
     public:
 
         /**
@@ -83,6 +96,27 @@ class ParameterizedObjectFactory
         void define(Key const& key)
         {
             registry_[key] = DefaultCreator<Impl>();
+        }
+
+        /**
+         * @brief Registers a new type with a key.
+         *
+         * After registration objects of this type can be constructed using
+         * the given creator function.
+         *
+         * @tparam Impl The type of objects to create.
+         * @tparam F Type of creator function. This must be callable with Args... .
+         *
+         * @param key The key associated with this type.
+         * @param f Function for creation of objects of type Impl
+         *
+         * \todo Replace has_proper_signature by concept check
+         */
+        template<class Impl, class F,
+            typename std::enable_if<has_proper_signature<F>(PriorityTag<42>()), int>::type = 0>
+        void define(Key const& key, F&& f)
+        {
+            registry_[key] = f;
         }
 
     private:
