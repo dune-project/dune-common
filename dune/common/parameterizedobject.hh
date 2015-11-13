@@ -119,6 +119,26 @@ class ParameterizedObjectFactory
             registry_[key] = f;
         }
 
+        /**
+         * @brief Registers a new type with a key.
+         *
+         * After registration objects of this type can be created.
+         * This method will store a copy of the given object and
+         * create will hand out a copy to this.
+         *
+         * @tparam Impl The type of objects to create.
+         * @tparam T Type convertible of creator function. This must be callable with Args... .
+         *
+         * @param key The key associated with this type.
+         * @param f Function for creation of objects of type Impl
+         */
+        template<class Impl,
+            typename std::enable_if<std::is_convertible<Impl, Type>::value, int>::type = 0>
+        void define(Key const& key, Impl&& t)
+        {
+            registry_[key] = [=](Args...) { return t;};
+        }
+
     private:
 
         template<class T>
