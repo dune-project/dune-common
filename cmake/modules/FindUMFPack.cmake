@@ -10,31 +10,28 @@
 # UMFPACK_LIBRARIES      Name of the UMFPack libraries
 #
 
-include( FindSuiteSparse )
 find_package(SuiteSparse COMPONENTS UMFPACK)
 
-if(SuiteSparse_UMFPACK_FOUND)
-  set( UMFPACK_INCLUDE_DIR ${SUITESPARSE_INCLUDE_DIR} )
-  set( UMFPACK_LIBRARY ${SUITESPARSE_LIBRARY} )
-endif()
+set(UMFPACK_INCLUDE_DIRS ${SuiteSparse_INCLUDE_DIRS})
+set(UMFPACK_LIBRARIES ${SuiteSparse_LIBRARIES})
 
 # behave like a CMake module is supposed to behave
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
   "UMFPack"
   DEFAULT_MSG
-  UMFPACK_INCLUDE_DIR
-  UMFPACK_LIBRARY
+  UMFPACK_INCLUDE_DIRS
+  UMFPACK_LIBRARIES
 )
 
-mark_as_advanced(UMFPACK_INCLUDE_DIR UMFPACK_LIBRARY)
+mark_as_advanced(UMFPACK_INCLUDE_DIRS UMFPACK_LIBRARIES)
 
 # if both headers and library are found, store results
 if(UMFPACK_FOUND)
   foreach( dir ${UMFPACK_INCLUDE_DIR} )
     list( APPEND UMFPACK_INCLUDE_FLAGS "-I${dir}/ " )
   endforeach()
-  set(UMFPACK_LIBRARIES ${UMFPACK_LIBRARY})
+  set(UMFPACK_LIBRARIES ${UMFPACK_LIBRARIES})
   # log result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
     "Determining location of UMFPack succeded:\n"
