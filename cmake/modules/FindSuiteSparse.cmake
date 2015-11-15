@@ -18,7 +18,7 @@
 #    :code:`SuiteSparse_FOUND`
 #       True if SuiteSparse was found.
 #
-#    :code:`SuiteSparse_INCLUDE_DIRS`
+#    :code:`SUITESPARSE_INCLUDE_DIRS`
 #       Path to the SuiteSparse include dirs.
 #
 #    :code:`SuiteSparse_LIBRARIES`
@@ -57,7 +57,7 @@ endif()
 # look for library at positions given by the user
 find_library(SUITESPARSE_CONFIG_LIB
   NAMES "suitesparseconfig"
-  PATHS ${SUITESPARSE_ROOT}
+  PATHS ${SuiteSparse_ROOT}
   PATH_SUFFIXES "lib" "lib32" "lib64" "Lib"
   NO_DEFAULT_PATH
 )
@@ -70,14 +70,14 @@ find_library(SUITESPARSE_CONFIG_LIB
 #look for header files at positions given by the user
 find_path(SUITESPARSE_INCLUDE_DIR
   NAMES "SuiteSparse_config.h"
-  PATHS ${SUITESPARSE_ROOT}
+  PATHS ${SuiteSparse_ROOT}
   PATH_SUFFIXES "SuiteSparse_config" "SuiteSparse_config/include" "suitesparse" "include" "src" "SuiteSparse_config/Include"
   NO_DEFAULT_PATH
 )
 #now also look for default paths
 find_path(SUITESPARSE_INCLUDE_DIR
   NAMES "SuiteSparse_config.h"
-  PATHS ${SUITESPARSE_ROOT}
+  PATHS ${SuiteSparse_ROOT}
   PATH_SUFFIXES "SuiteSparse_config" "SuiteSparse_config/include" "suitesparse" "include" "src" "SuiteSparse_config/Include"
 )
 
@@ -87,7 +87,7 @@ foreach(_component ${SUITESPARSE_COMPONENTS})
   #look for library at positions given by the user
   find_library(${_component}_LIBRARY
     NAMES "${_componentLower}"
-    PATHS ${SUITESPARSE_ROOT}
+    PATHS ${SuiteSparse_ROOT}
     PATH_SUFFIXES "lib" "lib32" "lib64" "${_component}" "${_component}/Lib"
     NO_DEFAULT_PATH
   )
@@ -100,7 +100,7 @@ foreach(_component ${SUITESPARSE_COMPONENTS})
   #look for header files at positions given by the user
   find_path(${_component}_INCLUDE_DIR
     NAMES "${_componentLower}.h"
-    PATHS ${SUITESPARSE_ROOT}
+    PATHS ${SuiteSparse_ROOT}
     PATH_SUFFIXES "${_componentLower}" "include/${_componentLower}" "suitesparse" "include" "src" "${_component}" "${_component}/Include"
     NO_DEFAULT_PATH
   )
@@ -158,9 +158,11 @@ foreach(_component ${SUITESPARSE_COMPONENTS})
   endif()
 
   set(HAVE_SUITESPARSE_${_component} 1)
-  mark_as_advanced(HAVE_SUITESPARSE_${_component})
-  mark_as_advanced(SUITESPARSE_${_component}_FOUND)
-  mark_as_advanced(SuiteSparse_${_component}_FOUND)
+  mark_as_advanced(
+    HAVE_SUITESPARSE_${_component}
+    SuiteSparse_${_component}_FOUND
+    ${_component}_INCLUDE_DIR
+    ${_component}_LIBRARY)
 endforeach()
 
 list(APPEND SUITESPARSE_LIBRARY ${SUITESPARSE_CONFIG_LIB})
@@ -186,31 +188,34 @@ find_package_handle_standard_args(
   HANDLE_COMPONENTS
 )
 
-mark_as_advanced(SUITESPARSE_INCLUDE_DIR SUITESPARSE_LIBRARY)
+mark_as_advanced(
+  SUITESPARSE_INCLUDE_DIR
+  SUITESPARSE_LIBRARY
+  SUITESPARSE_CONFIG_LIB)
 
 # if both headers and library are found, store results
 if(SuiteSparse_FOUND)
-  set(SUITESPARSE_LIBRARIES ${SUITESPARSE_LIBRARY})
-  set(SUITESPARSE_INCLUDE_DIRS ${SUITESPARSE_INCLUDE_DIR})
+  set(SuiteSparse_LIBRARIES ${SUITESPARSE_LIBRARY})
+  set(SuiteSparse_INCLUDE_DIRS ${SUITESPARSE_INCLUDE_DIR})
   # log result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
     "Determining location of SuiteSparse succeded:\n"
     "Include directory: ${SUITESPARSE_INCLUDE_DIRS}\n"
-    "Library directory: ${SUITESPARSE_LIBRARIES}\n\n")
-  set(SUITESPARSE_COMPILER_FLAGS)
+    "Library directory: ${SuiteSparse_LIBRARIES}\n\n")
+  set(SuiteSparse_COMPILER_FLAGS)
   foreach(dir ${SUITESPARSE_INCLUDE_DIRS})
-    set(SUITESPARSE_COMPILER_FLAGS "${SUITESPARSE_COMPILER_FLAGS} -I${dir}/")
+    set(SuiteSparse_COMPILER_FLAGS "${SuiteSparse_COMPILER_FLAGS} -I${dir}/")
   endforeach()
-  set(SUITESPARSE_DUNE_COMPILE_FLAGS ${SUITESPARSE_COMPILER_FLAGS}
+  set(SuiteSparse_DUNE_COMPILE_FLAGS ${SuiteSparse_COMPILER_FLAGS}
     CACHE STRING "Compile Flags used by DUNE when compiling with SuiteSparse programs")
-  set(SUITESPARSE_DUNE_LIBRARIES ${BLAS_LIBRARIES} ${SUITESPARSE_LIBRARIES}
+  set(SuiteSparse_DUNE_LIBRARIES ${BLAS_LIBRARIES} ${SuiteSparse_LIBRARIES}
     CACHE STRING "Libraries used by DUNE when linking SuiteSparse programs")
 else()
   # log errornous result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKES_FILES_DIRECTORY}/CMakeError.log
     "Determing location of SuiteSparse failed:\n"
     "Include directory: ${SUITESPARSE_INCLUDE_DIRS}\n"
-    "Library directory: ${SUITESPARSE_LIBRARIES}\n\n")
+    "Library directory: ${SuiteSparse_LIBRARIES}\n\n")
 endif()
 
 #set HAVE_SUITESPARSE for config.h
@@ -220,6 +225,6 @@ set(HAVE_SUITESPARSE ${SuiteSparse_FOUND})
 if(SuiteSparse_FOUND)
   dune_register_package_flags(
     COMPILE_DEFINITIONS "ENABLE_SUITESPARSE=1"
-    LIBRARIES "${SUITESPARSE_LIBRARIES}"
+    LIBRARIES "${SuiteSparse_LIBRARIES}"
     INCLUDE_DIRS "${SUITESPARSE_INCLUDE_DIRS}")
 endif()
