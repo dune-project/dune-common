@@ -3,6 +3,7 @@
 
 #include <dune/common/exceptions.hh>
 
+#ifndef DUNE_ASSERT_BOUNDS
 #ifdef DUNE_CHECK_BOUNDS
 #define DUNE_ASSERT_BOUNDS(cond)                            \
   do {                                                      \
@@ -11,6 +12,7 @@
   } while (false)
 #else
 #define DUNE_ASSERT_BOUNDS(cond)
+#endif
 #endif
 
 #endif
