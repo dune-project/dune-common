@@ -40,13 +40,13 @@ find_package(BLAS QUIET)
 set(SUITESPARSE_COMPONENTS ${SuiteSparse_FIND_COMPONENTS})
 
 # resolve inter-component dependencies
-list(FIND SUITESPARSE_COMPONENTS "umfpack" WILL_USE_UMFPACK)
+list(FIND SUITESPARSE_COMPONENTS "UMFPACK" WILL_USE_UMFPACK)
 if(NOT WILL_USE_UMFPACK EQUAL -1)
-  list(APPEND SUITESPARSE_COMPONENTS amd cholmod)
+  list(APPEND SUITESPARSE_COMPONENTS AMD CHOLMOD)
 endif()
-list(FIND SUITESPARSE_COMPONENTS "cholmod" WILL_USE_CHOLMOD)
+list(FIND SUITESPARSE_COMPONENTS "CHOLMOD" WILL_USE_CHOLMOD)
 if(NOT WILL_USE_CHOLMOD EQUAL -1)
-  list(APPEND SUITESPARSE_COMPONENTS amd camd colamd ccolamd)
+  list(APPEND SUITESPARSE_COMPONENTS AMD CAMD COLAMD CCOLAMD)
 endif()
 
 if(SUITESPARSE_COMPONENTS)
@@ -81,33 +81,33 @@ find_path(SUITESPARSE_INCLUDE_DIR
   PATH_SUFFIXES "SuiteSparse_config" "SuiteSparse_config/include" "suitesparse" "include" "src" "SuiteSparse_config/Include"
 )
 
-foreach(modname ${SUITESPARSE_COMPONENTS})
-  dune_module_to_uppercase(MODNAME ${modname})
+foreach(_component ${SUITESPARSE_COMPONENTS})
+  string(TOLOWER _component _componentLower)
 
   #look for library at positions given by the user
-  find_library(${MODNAME}_LIBRARY
-    NAMES "${modname}"
+  find_library(${_component}_LIBRARY
+    NAMES "${_componentLower}"
     PATHS ${SUITESPARSE_ROOT}
-    PATH_SUFFIXES "lib" "lib32" "lib64" "${MODNAME}" "${MODNAME}/Lib"
+    PATH_SUFFIXES "lib" "lib32" "lib64" "${_component}" "${_component}/Lib"
     NO_DEFAULT_PATH
   )
   #now  also include the deafult paths
-  find_library(${MODNAME}_LIBRARY
-    NAMES "${modname}"
-    PATH_SUFFIXES "lib" "lib32" "lib64" "${MODNAME}" "${MODNAME}/Lib"
+  find_library(${_component}_LIBRARY
+    NAMES "${_componentLower}"
+    PATH_SUFFIXES "lib" "lib32" "lib64" "${_component}" "${_component}/Lib"
   )
 
   #look for header files at positions given by the user
-  find_path(${MODNAME}_INCLUDE_DIR
-    NAMES "${modname}.h"
+  find_path(${_component}_INCLUDE_DIR
+    NAMES "${_componentLower}.h"
     PATHS ${SUITESPARSE_ROOT}
-    PATH_SUFFIXES "${modname}" "include/${modname}" "suitesparse" "include" "src" "${MODNAME}" "${MODNAME}/Include"
+    PATH_SUFFIXES "${_componentLower}" "include/${_componentLower}" "suitesparse" "include" "src" "${_component}" "${_component}/Include"
     NO_DEFAULT_PATH
   )
   #now also look for default paths
-  find_path(${MODNAME}_INCLUDE_DIR
-    NAMES "${modname}.h"
-    PATH_SUFFIXES "${modname}" "include/${modname}" "suitesparse" "include" "${MODNAME}" "${MODNAME}/Include"
+  find_path(${_component}_INCLUDE_DIR
+    NAMES "${_componentLower}.h"
+    PATH_SUFFIXES "${_componentLower}" "include/${_componentLower}" "suitesparse" "include" "${_component}" "${_component}/Include"
   )
 endforeach()
 
@@ -149,20 +149,18 @@ if(UMFPACK_LIBRARY)
 endif()
 
 # check wether everything was found
-foreach(modname ${SUITESPARSE_COMPONENTS})
-  dune_module_to_uppercase(MODNAME ${modname})
-  set(SUITESPARSE_${MODNAME}_FOUND TRUE)
+foreach(_component ${SUITESPARSE_COMPONENTS})
   # variable used for component handling
-  set(SuiteSparse_${modname}_FOUND TRUE)
-  if(${MODNAME}_LIBRARY AND ${MODNAME}_INCLUDE_DIR)
-    list(APPEND SUITESPARSE_INCLUDE_DIR "${${MODNAME}_INCLUDE_DIR}")
-    list(APPEND SUITESPARSE_LIBRARY "${${MODNAME}_LIBRARY}")
+  set(SuiteSparse_${_component}_FOUND TRUE)
+  if(${_component}_LIBRARY AND ${_component}_INCLUDE_DIR)
+    list(APPEND SUITESPARSE_INCLUDE_DIR "${${_component}_INCLUDE_DIR}")
+    list(APPEND SUITESPARSE_LIBRARY "${${_component}_LIBRARY}")
   endif()
 
-  set(HAVE_SUITESPARSE_${MODNAME} 1)
-  mark_as_advanced(HAVE_SUITESPARSE_${MODNAME})
-  mark_as_advanced(SUITESPARSE_${MODNAME}_FOUND)
-  mark_as_advanced(SuiteSparse_${modname}_FOUND)
+  set(HAVE_SUITESPARSE_${_component} 1)
+  mark_as_advanced(HAVE_SUITESPARSE_${_component})
+  mark_as_advanced(SUITESPARSE_${_component}_FOUND)
+  mark_as_advanced(SuiteSparse_${_component}_FOUND)
 endforeach()
 
 list(APPEND SUITESPARSE_LIBRARY ${SUITESPARSE_CONFIG_LIB})
@@ -171,13 +169,11 @@ list(APPEND SUITESPARSE_LIBRARY ${SUITESPARSE_CONFIG_LIB})
 if(SUITESPARSE_INCLUDE_DIR)
   list(REMOVE_DUPLICATES SUITESPARSE_INCLUDE_DIR)
 endif()
-
 if(SUITESPARSE_LIBRARY)
   list(REVERSE SUITESPARSE_LIBRARY)
   list(REMOVE_DUPLICATES SUITESPARSE_LIBRARY)
   list(REVERSE SUITESPARSE_LIBRARY)
 endif()
-
 
 # behave like a CMake module is supposed to behave
 include(FindPackageHandleStandardArgs)
