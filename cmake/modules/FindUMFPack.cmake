@@ -27,9 +27,9 @@
 #
 
 include( FindSuiteSparse )
-find_package( SuiteSparse COMPONENTS umfpack )
+find_package(SuiteSparse COMPONENTS UMFPACK)
 
-if(SuiteSparse_umfpack_FOUND)
+if(SuiteSparse_UMFPACK_FOUND)
   set( UMFPACK_INCLUDE_DIR ${SUITESPARSE_INCLUDE_DIR} )
   set( UMFPACK_LIBRARY ${SUITESPARSE_LIBRARY} )
 endif()
