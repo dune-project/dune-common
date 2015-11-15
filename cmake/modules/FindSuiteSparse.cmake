@@ -53,17 +53,6 @@ if(SUITESPARSE_COMPONENTS)
   list(REMOVE_DUPLICATES SUITESPARSE_COMPONENTS)
 endif()
 
-set(ready TRUE)
-foreach(modname ${SUITESPARSE_COMPONENTS})
-  dune_module_to_uppercase(MODNAME ${modname})
-  if(NOT SUITESPARSE_${MODNAME}_FOUND)
-    set(ready FALSE)
-  endif()
-endforeach()
-if(ready)
-  return()
-endif()
-
 # find SuiteSparse config:
 # look for library at positions given by the user
 find_library(SUITESPARSE_CONFIG_LIB
@@ -129,7 +118,7 @@ endforeach()
 if(CHOLMOD_LIBRARY)
   if(NOT (AMD_LIBRARY AND COLAMD_LIBRARY))
     message(WARNING "CHOLMOD requires AMD and COLAMD which were not found, skipping the test.")
-    return()
+    set(SuiteSparse_CHOLMOD_FOUND "CHOLMOD requires AMD and COLAMD-NOTFOUND")
   endif()
 
   list(APPEND CHOLMOD_LIBRARY ${AMD_LIBRARY} ${COLAMD_LIBRARY})
@@ -159,7 +148,6 @@ if(UMFPACK_LIBRARY)
   list(REVERSE UMFPACK_LIBRARY)
 endif()
 
-set(SUITESPARSE_FOUND TRUE)
 # check wether everything was found
 foreach(modname ${SUITESPARSE_COMPONENTS})
   dune_module_to_uppercase(MODNAME ${modname})
@@ -169,8 +157,6 @@ foreach(modname ${SUITESPARSE_COMPONENTS})
   if(${MODNAME}_LIBRARY AND ${MODNAME}_INCLUDE_DIR)
     list(APPEND SUITESPARSE_INCLUDE_DIR "${${MODNAME}_INCLUDE_DIR}")
     list(APPEND SUITESPARSE_LIBRARY "${${MODNAME}_LIBRARY}")
-  else()
-      set(SUITESPARSE_FOUND FALSE)
   endif()
 
   set(HAVE_SUITESPARSE_${MODNAME} 1)
