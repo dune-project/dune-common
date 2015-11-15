@@ -34,11 +34,7 @@
 #   system paths.
 #
 
-find_package(BLAS QUIET REQUIRED)
-if(NOT BLAS_FOUND)
-  message(WARNING "SuiteSparse requires BLAS which was not found, skipping the test.")
-  return()
-endif()
+find_package(BLAS QUIET)
 
 # look for desired componenents
 set(SUITESPARSE_COMPONENTS ${SuiteSparse_FIND_COMPONENTS})
@@ -202,6 +198,7 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
   "SuiteSparse"
   REQUIRED_VARS
+  BLAS_FOUND
   SUITESPARSE_INCLUDE_DIR
   SUITESPARSE_LIBRARY
   HANDLE_COMPONENTS
