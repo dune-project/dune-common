@@ -60,7 +60,7 @@ int main()
     Dune::ParameterizedObjectFactory<std::unique_ptr<InterfaceA>(int)> FactoryA;
     FactoryA.define<Ai>("Ai");
     FactoryA.define<Bi>("Bi");
-    FactoryA.define<Ax>("Ax", [](int i) { return Dune::Std::make_unique<Ax>(); });
+    FactoryA.define("Ax", [](int i) { return Dune::Std::make_unique<Ax>(); });
     CheckInstance(FactoryA, Ai, 0);
     CheckInstance(FactoryA, Bi, 1);
     CheckInstance(FactoryA, Ax, 1);
@@ -69,9 +69,9 @@ int main()
     Dune::ParameterizedObjectFactory<std::shared_ptr<InterfaceA>()> FactoryAd;
     FactoryAd.define<Ax>("Ax");
     FactoryAd.define<Bx>("Bx");
-    FactoryAd.define<Ai>("Ai", []() { return std::make_shared<Ai>(0); });
+    FactoryAd.define("Ai", []() { return std::make_shared<Ai>(0); });
     AImp aimp("onStack");
-    FactoryAd.define<AImp>("AImp", [&]() { return Dune::stackobject_to_shared_ptr<AImp>(aimp); });
+    FactoryAd.define("AImp", [&]() { return Dune::stackobject_to_shared_ptr<AImp>(aimp); });
     FactoryAd.define("AImp2", Dune::stackobject_to_shared_ptr<AImp>(aimp));
     FactoryAd.define("AImp3", std::make_shared<AImp>("shared"));
     Dune::ParameterTree param;
@@ -95,4 +95,16 @@ int main()
     FactoryB.define<Bis>("Bis");
     CheckInstance(FactoryB, Ais, 0, std::to_string(2));
     CheckInstance(FactoryB, Bis, 1, "Hallo");
+
+    // value semantics
+    Dune::ParameterizedObjectFactory<std::function<double(double)>(int)> FactoryC;
+    FactoryC.define("fi", [](int i) {
+        return [=](double x) { return x+i;};
+    });
+    FactoryC.define("fi1", [](int i) {
+        return [=](double x) { return x+i+1;};
+    });
+    assert(FactoryC.create("fi", 42)(0) == 42);
+    assert(FactoryC.create("fi1", 42)(0) == 43);
+
 }
