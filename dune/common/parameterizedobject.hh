@@ -103,12 +103,11 @@ class ParameterizedObjectFactory<TypeT(Args...), KeyT>
         }
 
         /**
-         * @brief Registers a new type with a key.
+         * @brief Registers a new creator with a key.
          *
-         * After registration objects of this type can be constructed using
+         * After registration objects can be constructed using
          * the given creator function.
          *
-         * @tparam Impl The type of objects to create.
          * @tparam F Type of creator function. This must be callable with Args... .
          *
          * @param key The key associated with this type.
@@ -116,7 +115,7 @@ class ParameterizedObjectFactory<TypeT(Args...), KeyT>
          *
          * \todo Replace has_proper_signature by concept check
          */
-        template<class Impl, class F,
+        template<class F,
             typename std::enable_if<has_proper_signature<F>(PriorityTag<42>()), int>::type = 0>
         void define(Key const& key, F&& f)
         {
