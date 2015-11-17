@@ -209,20 +209,7 @@ namespace Dune
   : public integral_constant<bool, (__is_lvalue_reference_helper<T>::value)>
     { };
 
-  template<typename _Tp>
-    struct __remove_pointer_helper
-    { typedef _Tp     type; };
-
-  template<typename _Tp>
-    struct __remove_pointer_helper<_Tp*>
-    { typedef _Tp     type; };
-
-  /** \brief Return the type a pointer type points to
-   */
-  template<typename _Tp>
-    struct remove_pointer
-    : public __remove_pointer_helper<typename remove_const<_Tp>::type >
-    { };
+  using std::remove_pointer;
 
   /**
      \brief template which always yields a false value

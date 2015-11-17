@@ -26,12 +26,5 @@ int main() {
   assert(     Dune::is_lvalue_reference<int&>::value );
   assert( not Dune::is_lvalue_reference<int&&>::value );
 
-  // Test remove_pointer
-  assert( (Dune::is_same<int,       Dune::remove_pointer<int>::type>::value) );
-  assert( (Dune::is_same<int,       Dune::remove_pointer<int*>::type>::value) );
-  assert( (Dune::is_same<int*,      Dune::remove_pointer<int**>::type>::value) );
-  assert( (Dune::is_same<const int, Dune::remove_pointer<const int*>::type>::value) );
-  assert( (Dune::is_same<int,       Dune::remove_pointer<int* const>::type>::value) );
-
   return 0;
 }
