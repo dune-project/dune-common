@@ -28,7 +28,7 @@ namespace Dune
   struct Empty {};
 
   /**
-   * @brief Determines wether a type is const or volatile and provides the
+   * @brief Determines whether a type is const or volatile and provides the
    * unqualified types.
    */
   template<typename T>
@@ -49,7 +49,7 @@ namespace Dune
     typedef DUNE_DEPRECATED_MSG("Use std::add_cv instead!") typename std::add_cv<UnqualifiedType>::type ConstVolatileType;
   };
 
-  /** @brief Tests wether a type is volatile. */
+  /** @brief Tests whether a type is volatile. */
   template<typename T>
   struct DUNE_DEPRECATED_MSG("Use std::is_volatile instead!") IsVolatile
   {
@@ -59,7 +59,7 @@ namespace Dune
     };
   };
 
-  /** @brief Tests wether a type is constant. */
+  /** @brief Tests whether a type is constant. */
   template<typename T>
   struct DUNE_DEPRECATED_MSG("Use std::is_const instead!") IsConst
   {
@@ -82,7 +82,7 @@ namespace Dune
   };
 
   /**
-   * @brief Checks wether a type is convertible to another.
+   * @brief Checks whether a type is convertible to another.
    *
    * @tparam From type you want to convert
    * @tparam To type you want to obtain
@@ -101,7 +101,7 @@ namespace Dune
   };
 
   /**
-   * @brief Checks wether a type is derived from another.
+   * @brief Checks whether a type is derived from another.
    *
    * @tparam Base the potential base class you want to test for
    * @tparam Derived type you want to test
@@ -116,7 +116,7 @@ namespace Dune
   };
 
   /**
-   * @brief Checks wether two types are interoperable.
+   * @brief Checks whether two types are interoperable.
    *
    * Two types are interoperable if conversions in either directions
    * exists.

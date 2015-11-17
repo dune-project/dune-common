@@ -79,7 +79,7 @@ int testForwardIterator(Iter begin, Iter end, Opt& opt)
 /**
  * @brief Tests the capabilities of a bidirectional iterator.
  *
- * Namely it test wether random positions can be reached from
+ * Namely it test whether random positions can be reached from
  * each directions.
  *
  * @param begin Iterator positioned at the stsrt.

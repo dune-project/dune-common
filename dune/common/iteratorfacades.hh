@@ -458,7 +458,7 @@ namespace Dune
      * // advance the iterator by a number of positions-
      * void advance(DifferenceType n);
      * // calculate the distance to another iterator.
-     * // One should incorporate an assertion wether
+     * // One should incorporate an assertion whether
      * // the same containers are referenced
      * DifferenceType distanceTo(j) const;
      * \endcode
