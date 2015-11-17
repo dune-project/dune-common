@@ -89,6 +89,7 @@ install(FILES
         timer.hh
         tuples.hh
         tupleutility.hh
+        typelist.hh
         typetraits.hh
         unused.hh
         version.hh
