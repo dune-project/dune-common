@@ -35,7 +35,7 @@ namespace Dune {
   /**
    * \brief Check if given type is a TypeList
    *
-   * \ingroup Utility
+   * \ingroup TypeUtilities
    *
    * The result of the check is encoded in the
    * base class of type std::integral_constant<bool, result>.
@@ -43,6 +43,11 @@ namespace Dune {
   template<class T>
   struct IsTypeList : std::false_type {};
 
+  /**
+   * \copydoc IsTypeList
+   *
+   * \ingroup TypeUtilities
+   */
   template<class... T>
   struct IsTypeList<TypeList<T...> > : std::true_type {};
 
@@ -51,7 +56,7 @@ namespace Dune {
   /**
    * \brief Check if given type is an empty TypeList
    *
-   * \ingroup Utility
+   * \ingroup TypeUtilities
    *
    * The result of the check is encoded in the
    * base class of type std::integral_constant<bool, result>.
@@ -67,7 +72,7 @@ namespace Dune {
   /**
    * \brief Get size of TypeList
    *
-   * \ingroup Utility
+   * \ingroup TypeUtilities
    *
    * The result of is encoded in the base class of
    * type std::integral_constant<std::size_t, result>.
@@ -83,7 +88,7 @@ namespace Dune {
   /**
    * \brief Get element of TypeList
    *
-   * \ingroup Utility
+   * \ingroup TypeUtilities
    */
   template<std::size_t i, class... T>
   struct TypeListElement<i, TypeList<T...>>
