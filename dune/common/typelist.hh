@@ -93,14 +93,21 @@ namespace Dune {
      *
      * \todo Implement without using std::tuple.
      */
-    using Type = typename std::tuple_element<i, std::tuple<T...>>::type;
+    using type = typename std::tuple_element<i, std::tuple<T...>>::type;
+
+    /**
+     * \brief Export type of i-th element in TypeList
+     *
+     * \todo Implement without using std::tuple.
+     */
+    using Type = type;
   };
 
   /**
-   * \brief Shortcut for TypeListElement<i, T>::Type;
+   * \brief Shortcut for TypeListElement<i, T>::type;
    */
   template<std::size_t i, class T>
-  using TypeListEntry_t = typename TypeListElement<i, T>::Type;
+  using TypeListEntry_t = typename TypeListElement<i, T>::type;
 
 
 } // namespace Dune
