@@ -28,52 +28,6 @@ namespace Dune
   struct Empty {};
 
   /**
-   * @brief General type traits class to check whether type is reference or
-   * pointer type
-   *
-   * \deprecated This class will be replaced by alternatives found in the C++11 stl.
-   *   - Use is_pointer<T>::value instead of TypeTraits<T>::isPointer
-   *   - Use is_lvalue_reference<T>::value instead of TypeTraits<T>::isReference
-   *   - Use remove_pointer<T>::type instead of TypeTraits<T>::PointeeType
-   *   - Use remove_reference<T>::type instead of TypeTraits<T>::ReferredType
-   */
-  template <typename T>
-  class TypeTraits
-  {
-  private:
-    template <class U>
-    struct PointerTraits {
-      enum { result = false };
-      typedef Empty PointeeType;
-    };
-
-    template <class U>
-    struct PointerTraits<U*> {
-      enum { result = true };
-      typedef U PointeeType;
-    };
-
-    template <class U> struct ReferenceTraits
-    {
-      enum { result = false };
-      typedef U ReferredType;
-    };
-
-    template <class U> struct ReferenceTraits<U&>
-    {
-      enum { result = true };
-      typedef U ReferredType;
-    };
-
-  public:
-    enum { isPointer = PointerTraits<T>::result };
-    typedef typename PointerTraits<T>::PointeeType PointeeType DUNE_DEPRECATED_MSG("Use remove_pointer instead!");
-
-    enum { isReference = ReferenceTraits<T>::result };
-    typedef typename ReferenceTraits<T>::ReferredType ReferredType DUNE_DEPRECATED_MSG("Use remove_reference instead!");
-  };
-
-  /**
    * @brief Determines wether a type is const or volatile and provides the
    * unqualified types.
    */
@@ -338,9 +292,6 @@ namespace Dune
     { typedef _Tp     type; };
 
   /** \brief Return the type a pointer type points to
-   *
-   * \note When the argument T is not a pointer, TypeTraits::PointeeType returns Dune::Empty,
-   * while Dune::remove_pointer (as std::remove_pointer), returns T itself.
    */
   template<typename _Tp>
     struct remove_pointer

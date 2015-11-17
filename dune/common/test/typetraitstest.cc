@@ -5,7 +5,7 @@
 #endif
 
 /** \file
- * \brief Test the TypeTraits class
+ * \brief Test the type traits classes
  */
 
 #include <iostream>
@@ -14,17 +14,6 @@
 #include <dune/common/typetraits.hh>
 
 int main() {
-
-  // Test TypeTraits::isPointer
-  assert( not Dune::TypeTraits<int>::isPointer );
-  assert(     Dune::TypeTraits<int*>::isPointer );
-  assert(     Dune::TypeTraits<int**>::isPointer );
-  assert(     Dune::TypeTraits<int(*)(int)>::isPointer );
-
-  // Test TypeTraits::isReference
-  assert( not Dune::TypeTraits<int>::isReference );
-  assert(     Dune::TypeTraits<int&>::isReference );
-  assert( not Dune::TypeTraits<int&&>::isReference );
 
   // Test is_pointer
   assert( not Dune::is_pointer<int>::value );
@@ -38,8 +27,6 @@ int main() {
   assert( not Dune::is_lvalue_reference<int&&>::value );
 
   // Test remove_pointer
-  // Note: when the argument T is not a pointer, TypeTraits::PointeeType returns Dune::Empty,
-  // while Dune::remove_pointer (as std::remove_pointer), returns T itself
   assert( (Dune::is_same<int,       Dune::remove_pointer<int>::type>::value) );
   assert( (Dune::is_same<int,       Dune::remove_pointer<int*>::type>::value) );
   assert( (Dune::is_same<int*,      Dune::remove_pointer<int**>::type>::value) );

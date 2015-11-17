@@ -43,7 +43,6 @@ TESTPROGS = \
     tuplestest \
     tupleutilitytest \
     typetraitstest \
-    typetraitstest_deprecated \
     utilitytest
 
 # which tests to run
@@ -202,8 +201,6 @@ tuplestest_SOURCES = tuplestest.cc
 tupleutilitytest_SOURCES = tupleutilitytest.cc
 
 typetraitstest_SOURCES = typetraitstest.cc
-
-typetraitstest_deprecated_SOURCES = typetraitstest_deprecated.cc
 
 utilitytest_SOURCES = utilitytest.cc
 
