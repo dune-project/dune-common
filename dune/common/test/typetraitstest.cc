@@ -33,10 +33,5 @@ int main() {
   assert( (Dune::is_same<const int, Dune::remove_pointer<const int*>::type>::value) );
   assert( (Dune::is_same<int,       Dune::remove_pointer<int* const>::type>::value) );
 
-  // Test remove_reference
-  assert( (Dune::is_same<int, Dune::remove_reference<int>::type>::value) );
-  assert( (Dune::is_same<int, Dune::remove_reference<int&>::type>::value) );
-  assert( (Dune::is_same<int, Dune::remove_reference<int&&>::type>::value) );
-
   return 0;
 }
