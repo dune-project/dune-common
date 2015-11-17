@@ -143,8 +143,6 @@ dune_add_test(SOURCES tupleutilitytest.cc)
 
 dune_add_test(SOURCES typetraitstest.cc)
 
-dune_add_test(SOURCES typetraitstest_deprecated.cc)
-
 #dune_add_test(SOURCES utilitytest.cc)
 
 if(${LAPACK_FOUND})
