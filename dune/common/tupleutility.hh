@@ -267,7 +267,7 @@ namespace Dune {
   template<class T>
   struct AddPtrTypeEvaluator
   {
-    typedef typename remove_reference<T>::type* Type;
+    typedef typename std::remove_reference<T>::type* Type;
     static Type apply(T& t)
     {
       return &t;
