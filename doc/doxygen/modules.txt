@@ -7,3 +7,10 @@
   @brief Implementations of the STL allocator concept
   @ingroup Common
 */
+
+
+/**
+  @defgroup TypeUtilities Type Utilities
+  @brief Type traits, overload helpers, and other utilities for type computations
+  @ingroup Common
+*/

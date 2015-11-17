@@ -8,7 +8,7 @@
 namespace Dune {
 
   /**
-   * @addtogroup Common
+   * \ingroup TypeUtilities
    *
    * @{
    */
