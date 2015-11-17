@@ -4,6 +4,7 @@
 #define DUNE_COMMON_TYPELIST_HH
 
 #include <type_traits>
+#include <tuple>
 
 
 namespace Dune {
