@@ -153,11 +153,11 @@ foreach(_component ${SUITESPARSE_COMPONENTS})
   # variable used for component handling
   if(${_component}_LIBRARY AND ${_component}_INCLUDE_DIR)
     set(SuiteSparse_${_component}_FOUND TRUE)
+    set(HAVE_SUITESPARSE_${_component} TRUE)
     list(APPEND SUITESPARSE_INCLUDE_DIR "${${_component}_INCLUDE_DIR}")
     list(APPEND SUITESPARSE_LIBRARY "${${_component}_LIBRARY}")
   endif()
 
-  set(HAVE_SUITESPARSE_${_component} 1)
   mark_as_advanced(
     HAVE_SUITESPARSE_${_component}
     SuiteSparse_${_component}_FOUND
