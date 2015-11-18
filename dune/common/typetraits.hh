@@ -111,69 +111,19 @@ namespace Dune
    *
    * @tparam From type you want to convert
    * @tparam To type you want to obtain
-   *
-   * Inspired by
-   * <A HREF="http://www.kotiposti.net/epulkkin/instructive/base-class-determination.html"> this website</A>
    */
   template<class From, class To>
   class Conversion
   {
-    typedef char Small;
-    struct Big {char dummy[2];};
-    static Small test(To);
-    static Big test(...);
-    static typename remove_reference< From >::type &makeFrom ();
-
   public:
     enum {
       /** @brief True if the conversion exists. */
-      exists =  sizeof(test(makeFrom())) == sizeof(Small),
+      exists =  std::is_convertible<From,To>::value,
       /** @brief Whether the conversion exists in both ways. */
-      isTwoWay = exists && Conversion<To,From>::exists,
+      isTwoWay = exists && std::is_convertible<To,From>::value,
       /** @brief True if To and From are the same type. */
-      sameType = false
+      sameType = std::is_same<From,To>::value
     };
-    Conversion(){}
-
-  };
-
-  template <class From>
-  class Conversion<From, void>
-  {
-  public:
-    enum {
-      exists = false,
-      isTwoWay = false,
-      sameType = false
-    };
-  };
-
-  template <class To>
-  class Conversion<void, To>
-  {
-  public:
-    enum {
-      exists = false,
-      isTwoWay = false,
-      sameType = false
-    };
-  };
-
-  template<>
-  class Conversion< int, double >
-  {
-  public:
-    enum {
-      exists = true,
-      isTwoWay = false,
-      sameType = false
-    };
-  };
-
-  template<class T>
-  class Conversion<T,T>{
-  public:
-    enum { exists=true, isTwoWay=true, sameType=true};
   };
 
   /**
@@ -181,27 +131,15 @@ namespace Dune
    *
    * @tparam Base the potential base class you want to test for
    * @tparam Derived type you want to test
-   *
-   * Similar idea to
-   * <A HREF="http://www.kotiposti.net/epulkkin/instructive/base-class-determination.html"> this website</A>
    */
   template <class Base, class Derived>
   class IsBaseOf
   {
-    typedef typename ConstantVolatileTraits< typename remove_reference< Base >::type >::UnqualifiedType RawBase;
-    typedef typename ConstantVolatileTraits< typename remove_reference< Derived >::type >::UnqualifiedType RawDerived;
-    typedef char Small;
-    struct Big {char dummy[2];};
-    static Small test(RawBase*);
-    static Big test(...);
-    static RawDerived* &makePtr ();
   public:
     enum {
       /** @brief True if Base is a base class of Derived. */
-      value = sizeof(test(makePtr())) == sizeof(Small)
+      value = std::is_base_of<Base, Derived>::value
     };
-    IsBaseOf(){}
-
   };
 
   /**
