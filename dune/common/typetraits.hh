@@ -89,7 +89,7 @@ namespace Dune
   {
     enum {
       /** @brief True if The type is volatile. */
-      value=ConstantVolatileTraits<T>::isVolatile
+      value=std::is_volatile<T>::value
     };
   };
 
@@ -99,7 +99,7 @@ namespace Dune
   {
     enum {
       /** @brief True if The type is constant. */
-      value=ConstantVolatileTraits<T>::isConst
+      value=std::is_const<T>::value
     };
   };
 
