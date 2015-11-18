@@ -111,6 +111,19 @@ foreach(_component ${SUITESPARSE_COMPONENTS})
   )
 endforeach()
 
+# SPQR has different header file name SuiteSparseQR.hpp
+#look for header files at positions given by the user
+find_path(SPQR_INCLUDE_DIR
+  NAMES "SuiteSparseQR_C.hpp"
+  PATHS ${SuiteSparse_ROOT}
+  PATH_SUFFIXES "spqr" "include/spqr" "suitesparse" "include" "src" "SPQR" "SPQR/Include"
+  NO_DEFAULT_PATH
+)
+#now also look for default paths
+find_path(SPQR_INCLUDE_DIR
+  NAMES "SuiteSparseQR.hpp"
+  PATH_SUFFIXES "spqr" "include/spqr" "suitesparse" "include" "SPQR" "SPQR/Include"
+)
 
 # resolve inter-modular dependencies
 
