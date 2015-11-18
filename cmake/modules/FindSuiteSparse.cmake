@@ -4,10 +4,10 @@
 #
 #    Example which tries to find Suite Sparse's UMFPack component:
 #
-#    :code:`find(SuiteSparse COMPONENTS UMFPACK)`
+#    :code:`find_package(SuiteSparse OPTIONAL_COMPONENTS UMFPACK)`
 #
-#    :ref:`COMPONENTS`
-#       A list of required components. Components are:
+#    `OPTIONAL_COMPONENTS`
+#       A list of components. Components are:
 #       AMD, BTF, CAMD, CCOLAMD, CHOLMOD, COLAMD, CXSPARSE,
 #       KLU, LDL, RBIO, SPQR, UMFPACK
 #

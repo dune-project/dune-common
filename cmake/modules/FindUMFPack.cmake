@@ -2,6 +2,9 @@
 #
 #    Find the UMFPack library
 #
+# .. deprecated:: 3.0
+#    Use :code:`find_package(SuiteSparse OPTIONAL_COMPONENTS UMFPACK)` instead
+#
 #    You may set the following variables to modify the
 #    behaviour of this module:
 #
@@ -27,6 +30,9 @@
 #
 
 find_package(SuiteSparse OPTIONAL_COMPONENTS UMFPACK)
+
+# use find_package(SuiteSparse OPTIONAL_COMPONENTS UMFPACK) instead
+message(WARNING "find_package(UMFPack) is deprecated, please use FindSuiteSparse instead")
 
 set(UMFPACK_INCLUDE_DIRS ${SuiteSparse_INCLUDE_DIRS})
 set(UMFPACK_LIBRARIES ${SuiteSparse_LIBRARIES})
