@@ -178,37 +178,8 @@ namespace Dune
   using std::integral_constant;
   using std::true_type;
   using std::false_type;
-
-
-  template<typename>
-  struct __is_pointer_helper
-  : public false_type { };
-
-  template<typename T>
-  struct __is_pointer_helper<T*>
-  : public true_type { };
-
-  /// is_pointer
-  template<typename T>
-  struct is_pointer
-  : public integral_constant<bool, (__is_pointer_helper<T>::value)>
-    { };
-
-  // Helper class for is_lvalue_reference
-  template<typename>
-  struct __is_lvalue_reference_helper
-  : public false_type { };
-
-  template<typename T>
-  struct __is_lvalue_reference_helper<T&>
-  : public true_type { };
-
-  /** \brief Determine whether a type is a lvalue reference type */
-  template<typename T>
-  struct is_lvalue_reference
-  : public integral_constant<bool, (__is_lvalue_reference_helper<T>::value)>
-    { };
-
+  using std::is_pointer;
+  using std::is_lvalue_reference;
   using std::remove_pointer;
 
   /**
