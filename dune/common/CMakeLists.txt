@@ -32,6 +32,7 @@ install(FILES
         binaryfunctions.hh
         bitsetvector.hh
         classname.hh
+        concept.hh
         debugallocator.hh
         debugstream.hh
         deprecated.hh
