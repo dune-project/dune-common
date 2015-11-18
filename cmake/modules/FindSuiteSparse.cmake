@@ -114,7 +114,7 @@ endforeach()
 # SPQR has different header file name SuiteSparseQR.hpp
 #look for header files at positions given by the user
 find_path(SPQR_INCLUDE_DIR
-  NAMES "SuiteSparseQR_C.hpp"
+  NAMES "SuiteSparseQR.hpp"
   PATHS ${SuiteSparse_ROOT}
   PATH_SUFFIXES "spqr" "include/spqr" "suitesparse" "include" "src" "SPQR" "SPQR/Include"
   NO_DEFAULT_PATH
