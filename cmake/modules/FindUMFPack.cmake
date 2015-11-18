@@ -3,7 +3,11 @@
 # Variables used by this module which you may want to set:
 # UMFPACK_ROOT   Path list to search for UMFPack
 #
-# Sets the following variables
+# .. deprecated:: 3.0
+#    Use :code:`find_package(SuiteSparse OPTIONAL_COMPONENTS UMFPACK)` instead
+#
+#    You may set the following variables to modify the
+#    behaviour of this module:
 #
 # UMFPACK_FOUND          True if UMFPack was found and usable
 # UMFPACK_INCLUDE_DIRS   Path to the UMFPack include dirs
@@ -11,6 +15,9 @@
 #
 
 find_package(SuiteSparse OPTIONAL_COMPONENTS UMFPACK)
+
+# use find_package(SuiteSparse OPTIONAL_COMPONENTS UMFPACK) instead
+message(WARNING "find_package(UMFPack) is deprecated, please use FindSuiteSparse instead")
 
 set(UMFPACK_INCLUDE_DIRS ${SuiteSparse_INCLUDE_DIRS})
 set(UMFPACK_LIBRARIES ${SuiteSparse_LIBRARIES})
