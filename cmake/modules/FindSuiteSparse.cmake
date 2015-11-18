@@ -2,10 +2,11 @@
 #
 #    Find the SuiteSparse libraries like UMFPACK or SPQR.
 #
-#    .. cmake_param:: COMPONENTS
-#       :multi:
-#       :argname: component
+#    Example which tries to find Suite Sparse's UMFPack component:
 #
+#    :code:`find(SuiteSparse COMPONENTS UMFPACK)`
+#
+#    :ref:`COMPONENTS`
 #       A list of required components. Components are:
 #       AMD, BTF, CAMD, CCOLAMD, CHOLMOD, COLAMD, CXSPARSE,
 #       KLU, LDL, RBIO, SPQR, UMFPACK
