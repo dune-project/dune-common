@@ -26,7 +26,7 @@
 #   system paths.
 #
 
-find_package(SuiteSparse COMPONENTS UMFPACK)
+find_package(SuiteSparse OPTIONAL_COMPONENTS UMFPACK)
 
 set(UMFPACK_INCLUDE_DIRS ${SuiteSparse_INCLUDE_DIRS})
 set(UMFPACK_LIBRARIES ${SuiteSparse_LIBRARIES})
