@@ -103,18 +103,6 @@ namespace Dune
     };
   };
 
-  template<typename T, bool isVolatile>
-  struct RemoveConstHelper
-  {
-    typedef typename ConstantVolatileTraits<T>::UnqualifiedType Type;
-  };
-
-  template<typename T>
-  struct RemoveConstHelper<T,true>
-  {
-    typedef volatile typename ConstantVolatileTraits<T>::UnqualifiedType Type;
-  };
-
   using std::remove_const;
   using std::remove_reference;
 
