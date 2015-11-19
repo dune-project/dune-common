@@ -76,7 +76,6 @@ install(FILES
         poolallocator.hh
         power.hh
         precision.hh
-        prioritytag.hh
         propertymap.hh
         promotiontraits.hh
         proxymemberaccess.hh

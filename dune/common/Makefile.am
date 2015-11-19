@@ -70,7 +70,6 @@ commoninclude_HEADERS = 			\
 	poolallocator.hh			\
 	power.hh				\
 	precision.hh				\
-	prioritytag.hh \
 	promotiontraits.hh			\
 	propertymap.hh				\
         proxymemberaccess.hh                    \
