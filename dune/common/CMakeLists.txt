@@ -92,6 +92,7 @@ install(FILES
         tupleutility.hh
         typelist.hh
         typetraits.hh
+        typeutilities.hh
         unused.hh
         version.hh
         visibility.hh

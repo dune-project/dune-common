@@ -85,6 +85,7 @@ commoninclude_HEADERS = 			\
 	tuples.hh				\
 	tupleutility.hh                         \
 	typelist.hh \
+	typeutilities.hh \
 	typetraits.hh				\
 	unused.hh				\
 	version.hh				\
