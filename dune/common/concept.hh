@@ -7,7 +7,7 @@
 #include <utility>
 #include <tuple>
 
-#include <dune/common/prioritytag.hh>
+#include <dune/common/typeutilities.hh>
 #include <dune/common/typelist.hh>
 
 
