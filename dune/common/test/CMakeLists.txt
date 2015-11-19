@@ -25,6 +25,9 @@ dune_add_test(NAME check_fvector_size_fail2
 dune_add_test(SOURCES classnametest.cc
               LINK_LIBRARIES dunecommon)
 
+dune_add_test(SOURCES concept.cc
+              LINK_LIBRARIES dunecommon)
+
 dune_add_test(SOURCES conversiontest.cc)
 
 dune_add_test(SOURCES diagonalmatrixtest.cc
@@ -149,3 +152,9 @@ if(${LAPACK_FOUND})
                 LINK_LIBRARIES dunecommon
                 SKIP_ON_77)
 endif()
+
+install(
+  FILES
+  testsuite.hh
+  collectorstream.hh
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common/test)
