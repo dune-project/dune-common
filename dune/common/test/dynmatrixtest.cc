@@ -4,8 +4,8 @@
 #include "config.h"
 #endif
 // Activate checking
-#ifndef DUNE_ISTL_WITH_CHECKING
-#define DUNE_ISTL_WITH_CHECKING
+#ifndef DUNE_FMatrix_WITH_CHECKING
+#define DUNE_FMatrix_WITH_CHECKING
 #endif
 #include <dune/common/dynmatrix.hh>
 #include <dune/common/dynvector.hh>

@@ -4,6 +4,9 @@
 #include "config.h"
 #endif
 
+#ifndef DUNE_FMatrix_WITH_CHECKING
+#define DUNE_FMatrix_WITH_CHECKING
+#endif
 
 #include <iostream>
 #include <algorithm>
