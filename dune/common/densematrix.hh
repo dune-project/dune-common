@@ -511,7 +511,8 @@ namespace Dune
 
     //! y += alpha A x
     template<class X, class Y>
-    void usmv (const field_type& alpha, const X& x, Y& y) const
+    void usmv (const typename FieldTraits<Y>::field_type & alpha,
+      const X& x, Y& y) const
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
       if (x.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
@@ -524,7 +525,8 @@ namespace Dune
 
     //! y += alpha A^T x
     template<class X, class Y>
-    void usmtv (const field_type& alpha, const X& x, Y& y) const
+    void usmtv (const typename FieldTraits<Y>::field_type & alpha,
+      const X& x, Y& y) const
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
       if (x.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
@@ -538,7 +540,8 @@ namespace Dune
 
     //! y += alpha A^H x
     template<class X, class Y>
-    void usmhv (const field_type& alpha, const X& x, Y& y) const
+    void usmhv (const typename FieldTraits<Y>::field_type & alpha,
+      const X& x, Y& y) const
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
       if (x.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
