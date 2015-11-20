@@ -394,9 +394,11 @@ namespace Dune
       if (x.N()!=M()) DUNE_THROW(FMatrixError,"Index out of range");
       if (y.N()!=N()) DUNE_THROW(FMatrixError,"Index out of range");
 #endif
+
+      using field_type = typename FieldTraits<Y>::field_type;
       for (size_type i=0; i<rows(); ++i)
       {
-        y[i] = value_type(0);
+        y[i] = field_type(0);
         for (size_type j=0; j<cols(); j++)
           y[i] += (*this)[i][j] * x[j];
       }
@@ -413,11 +415,13 @@ namespace Dune
       if( y.N() != M() )
         DUNE_THROW( FMatrixError, "Index out of range." );
 #endif
-      for( size_type i = 0; i < cols(); ++i )
+
+      using field_type = typename FieldTraits<Y>::field_type;
+      for(size_type i = 0; i < cols(); ++i)
       {
-        y[ i ] = value_type(0);
-        for( size_type j = 0; j < rows(); ++j )
-          y[ i ] += (*this)[ j ][ i ] * x[ j ];
+        y[i] = field_type(0);
+        for(size_type j = 0; j < rows(); ++j)
+          y[i] += (*this)[j][i] * x[j];
       }
     }
 
