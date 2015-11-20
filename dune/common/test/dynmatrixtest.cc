@@ -249,21 +249,21 @@ void test_matrix()
     test_mult(A, v0, f );
   }
 
-  {
-    std::vector<K> v1( m ) ;
-    std::vector<K> f1( n, 1 ) ;
-    // random access vector
-    for (size_type i=0; i<v1.size(); i++) v1[i] = i;
-    test_mult(A, v1, f1 );
-  }
-  {
-    K v2[ m ];
-    K f2[ n ];
-    // random access vector
-    for (size_type i=0; i<m; ++i) v2[i] = i;
-    for (size_type i=0; i<n; ++i) f2[i] = 1;
-    test_mult(A, v2, f2 );
-  }
+  // {
+  //   std::vector<K> v1( m ) ;
+  //   std::vector<K> f1( n, 1 ) ;
+  //   // random access vector
+  //   for (size_type i=0; i<v1.size(); i++) v1[i] = i;
+  //   test_mult(A, v1, f1 );
+  // }
+  // {
+  //   K v2[ m ];
+  //   K f2[ n ];
+  //   // random access vector
+  //   for (size_type i=0; i<m; ++i) v2[i] = i;
+  //   for (size_type i=0; i<n; ++i) f2[i] = 1;
+  //   test_mult(A, v2, f2 );
+  // }
 
   // Test the different matrix norms
   assert( A.frobenius_norm() >= 0 );
