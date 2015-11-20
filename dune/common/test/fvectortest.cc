@@ -17,10 +17,11 @@
 using Dune::FieldVector;
 using std::complex;
 
+// Tests that can be run without the construction of complex<rt>
 template<class ft, class rt, int d>
-struct FieldVectorMainTest
+struct FieldVectorMainTestCommons
 {
-  FieldVectorMainTest() {
+  FieldVectorMainTestCommons() {
     ft a = 1;
     FieldVector<ft,d> v(1);
     FieldVector<ft,d> w(2);
@@ -85,11 +86,6 @@ struct FieldVectorMainTest
     b = (w != v);
     b = (w == v);
 
-    // assignment to vector of complex
-    FieldVector< std::complex<rt> ,d> cv = v;
-    cv = a;
-    const FieldVector< std::complex<rt> ,d> ccv DUNE_UNUSED = x;
-
     // test istream operator
     std::stringstream s;
     for (int i=0; i<d; i++)
@@ -106,6 +102,35 @@ struct FieldVectorMainTest
   }
 };
 
+// Additional tests for floating point types, for which complex<rt> will work
+template<class ft, class rt, int d,
+         bool floating_point = std::is_floating_point<rt>::value>
+struct FieldVectorMainTest
+  : FieldVectorMainTestCommons<ft,rt,d>
+{
+  FieldVectorMainTest()
+    : FieldVectorMainTestCommons<ft,rt,d>()
+  {
+    ft a = 1;
+    FieldVector<ft,d> v(1);
+    FieldVector<ft,d> z(2);
+    const FieldVector<ft,d> x(z);
+
+    // assignment to vector of complex
+    FieldVector< std::complex<rt> ,d> cv = v;
+    cv = a;
+    const FieldVector< std::complex<rt> ,d> ccv DUNE_UNUSED = x;
+  }
+};
+
+template<class ft, class rt, int d>
+struct FieldVectorMainTest<ft,rt,d,false>
+  : FieldVectorMainTestCommons<ft,rt,d>
+{
+  FieldVectorMainTest()
+    : FieldVectorMainTestCommons<ft,rt,d>()
+  {}
+};
 
 template<class ft, class testft=ft>
 struct ScalarOperatorTest
@@ -224,7 +249,8 @@ struct Epsilon<int>
 };
 
 // scalar ordering doesn't work for complex numbers
-template <class rt, int d>
+template <class rt, int d,
+          bool floating_point = std::is_floating_point<rt>::value>
 struct DotProductTest
 {
   DotProductTest() {
@@ -290,10 +316,44 @@ struct DotProductTest
     assert(std::abs(result-ct(2)*length*I)<= myEps);
 
   }
-
 };
 
-template<class ft, int d>
+// scalar ordering doesn't work for complex numbers
+template <class rt, int d>
+struct DotProductTest<rt, d, false>
+{
+  DotProductTest() {
+    DUNE_UNUSED const rt myEps = Epsilon<rt>::value();
+
+    static_assert(
+      ( Dune::is_same< typename Dune::FieldTraits<rt>::real_type, rt>::value ),
+      "DotProductTest requires real data type as template parameter!"
+      );
+
+    const FieldVector<rt,d> one(1.); // vector filled with 1
+
+    std::cout << __func__ << "\t \t ( " << Dune::className(one) << " only)" << std::endl;
+
+    const bool isRealOne = Dune::is_same<typename Dune::FieldTraits<rt>::field_type,typename Dune::FieldTraits<rt>::real_type>::value;
+    static_assert(isRealOne,"1-vector expected to be real");
+
+    rt result = rt();
+    rt length = rt(d);
+
+    // one^H*one should equal d
+    result = dot(one,one);
+    assert(abs(result-length)<= myEps);
+    result = one.dot(one);
+    assert(abs(result-length)<= myEps);
+
+    // test that dotT does not conjugate at all
+    result = dotT(one,one) + one*one;
+    assert(abs(result-rt(2)*length)<= myEps);
+  }
+};
+
+template<class ft, int d,
+         bool floating_point = std::is_floating_point<ft>::value>
 struct FieldVectorTest
 {
   FieldVectorTest()
@@ -307,9 +367,23 @@ struct FieldVectorTest
   }
 };
 
-// specialization for 1d vector
+// specialisation for non-floating-point vectors
+template<class ft, int d>
+struct FieldVectorTest<ft, d, false>
+{
+  FieldVectorTest()
+  {
+    // --- test real valued vectors
+    FieldVectorMainTest<ft,ft,d>();
+    DotProductTest<ft,d>();
+    // --- test next lower dimension
+    FieldVectorTest<ft,d-1>();
+  }
+};
+
+// specialization for 1d floating point vector
 template<class ft>
-class FieldVectorTest<ft,1>
+class FieldVectorTest<ft,1,true>
 {
 public:
   FieldVectorTest()
@@ -323,6 +397,26 @@ public:
     FieldVectorMainTest<complex<ft>,ft,1>();
     ScalarOperatorTest< complex<ft> >();
     // ordering doesn't work for complex numbers
+
+    // --- test with an integer
+    ScalarOperatorTest< ft, int >();
+    // --- test next lower dimension
+    FieldVectorMainTest<ft,ft,0>();
+  }
+};
+
+// specialization for other 1d vectors
+template<class ft>
+class FieldVectorTest<ft,1,false>
+{
+public:
+  FieldVectorTest()
+  {
+    // --- real valued
+    FieldVectorMainTest<ft,ft,1>();
+    ScalarOperatorTest<ft>();
+    ScalarOrderingTest<ft>();
+    DotProductTest<ft,1>();
 
     // --- test with an integer
     ScalarOperatorTest< ft, int >();
@@ -379,8 +473,7 @@ int main()
     FieldVectorTest<int, 3>();
     FieldVectorTest<float, 3>();
     FieldVectorTest<double, 3>();
-    FieldVectorTest<int, 1>();
-    FieldVectorTest<double, 1>();
+    FieldVectorTest<long double, 3>();
 #if HAVE_GMP
     // we skip the complex test and the int test, as these will be very hard to implement with GMPField
     typedef Dune::GMPField<128u> ft;
