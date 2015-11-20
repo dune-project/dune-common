@@ -164,9 +164,9 @@ endif()
 # check wether everything was found
 foreach(_component ${SUITESPARSE_COMPONENTS})
   # variable used for component handling
-  if(${_component}_LIBRARY AND ${_component}_INCLUDE_DIR)
-    set(SuiteSparse_${_component}_FOUND TRUE)
-    set(HAVE_SUITESPARSE_${_component} TRUE)
+  set(SuiteSparse_${_component}_FOUND (${_component}_LIBRARY AND ${_component}_INCLUDE_DIR))
+  set(HAVE_SUITESPARSE_${_component} SuiteSparse_${_component}_FOUND)
+  if(SuiteSparse_${_component}_FOUND)
     list(APPEND SUITESPARSE_INCLUDE_DIR "${${_component}_INCLUDE_DIR}")
     list(APPEND SUITESPARSE_LIBRARY "${${_component}_LIBRARY}")
   endif()
