@@ -709,10 +709,8 @@ namespace Dune {
     //! same for read only access
     const K& operator[] (size_type i) const
     {
-      DUNE_ASSERT_BOUNDS(i == row_);
-#ifndef DUNE_CHECK_BOUNDS
       DUNE_UNUSED_PARAMETER(i);
-#endif
+      DUNE_ASSERT_BOUNDS(i == row_);
       return *p_;
     }
 
@@ -850,10 +848,8 @@ namespace Dune {
     //! random access
     K& operator[] (size_type i)
     {
-      DUNE_ASSERT_BOUNDS(i == row_);
-#ifndef DUNE_CHECK_BOUNDS
       DUNE_UNUSED_PARAMETER(i);
-#endif
+      DUNE_ASSERT_BOUNDS(i == row_);
       return *p_;
     }
 

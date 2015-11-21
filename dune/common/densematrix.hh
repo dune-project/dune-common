@@ -681,12 +681,10 @@ namespace Dune
     //! return true when (i,j) is in pattern
     bool exists (size_type i, size_type j) const
     {
-      DUNE_ASSERT_BOUNDS(i >= 0 && i < rows());
-      DUNE_ASSERT_BOUNDS(j >= 0 && j < cols());
-#ifndef DUNE_CHECK_BOUNDS
       DUNE_UNUSED_PARAMETER(i);
       DUNE_UNUSED_PARAMETER(j);
-#endif
+      DUNE_ASSERT_BOUNDS(i >= 0 && i < rows());
+      DUNE_ASSERT_BOUNDS(j >= 0 && j < cols());
       return true;
     }
 
