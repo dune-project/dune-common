@@ -4,6 +4,7 @@
 #include "config.h"
 #endif
 
+#include <array>
 #include <cstdlib>
 #include <iostream>
 #include <ostream>
@@ -53,8 +54,8 @@ void testparam(const P & p)
   // try reading array like structures
   std::vector<unsigned int>
   array1 = p.template get< std::vector<unsigned int> >("array");
-  Dune::array<unsigned int, 8>
-  array2 = p.template get< Dune::array<unsigned int, 8> >("array");
+  std::array<unsigned int, 8>
+  array2 = p.template get< std::array<unsigned int, 8> >("array");
   Dune::FieldVector<unsigned int, 8>
   array3 = p.template get< Dune::FieldVector<unsigned int, 8> >("array");
   check_assert(array1.size() == 8);

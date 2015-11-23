@@ -7,6 +7,7 @@
 #include <dune/common/parallel/indicessyncer.hh>
 #include <dune/common/sllist.hh>
 #include <string>
+#include <tuple>
 #include <iostream>
 
 enum GridFlags {
@@ -25,7 +26,7 @@ void deleteOverlapEntries(T& indices,
   typedef typename RemoteIndices::RemoteIndexList::const_iterator RemoteIterator;
   typedef Dune::SLList<std::pair<GlobalIndex,Attribute>, typename RemoteIndices::RemoteIndexList::Allocator> GlobalList;
   typedef typename GlobalList::ModifyIterator GlobalModifier;
-  typedef Dune::tuple<RemoteModifier,GlobalModifier,const RemoteIterator,const typename GlobalList::const_iterator,
+  typedef std::tuple<RemoteModifier,GlobalModifier,const RemoteIterator,const typename GlobalList::const_iterator,
       const GlobalList*, const typename RemoteIndices::RemoteIndexList*> IteratorTuple;
   typedef std::map<int,IteratorTuple> IteratorMap;
   typedef typename RemoteIndices::const_iterator RemoteMapIterator;
@@ -77,30 +78,30 @@ void deleteOverlapEntries(T& indices,
       for(iterator remote = iterators.begin(); remote != end; ++remote) {
 
         // Search for the index
-        while(Dune::get<0>(remote->second) != Dune::get<2>(remote->second)
-              && *(Dune::get<1>(remote->second)) < *index) {
+        while(std::get<0>(remote->second) != std::get<2>(remote->second)
+              && *(std::get<1>(remote->second)) < *index) {
           // increment all iterators
-          ++(Dune::get<0>(remote->second));
-          ++(Dune::get<1>(remote->second));
-          if(Dune::get<0>(remote->second)!=Dune::get<2>(remote->second))
-            assert(Dune::get<1>(remote->second)!=Dune::get<3>(remote->second));
+          ++(std::get<0>(remote->second));
+          ++(std::get<1>(remote->second));
+          if(std::get<0>(remote->second)!=std::get<2>(remote->second))
+            assert(std::get<1>(remote->second)!=std::get<3>(remote->second));
         }
 
         // Delete the entry if present
-        if(Dune::get<0>(remote->second) != Dune::get<2>(remote->second)) {
-          assert(Dune::get<1>(remote->second) != Dune::get<3>(remote->second));
+        if(std::get<0>(remote->second) != std::get<2>(remote->second)) {
+          assert(std::get<1>(remote->second) != std::get<3>(remote->second));
 
-          if(*(Dune::get<1>(remote->second)) == *index) {
+          if(*(std::get<1>(remote->second)) == *index) {
 
             std::cout<<rank<<": Deleting remote "<<
-            Dune::get<1>(remote->second)->first<<", "<<
-            Dune::get<1>(remote->second)->second<<" of process "
+            std::get<1>(remote->second)->first<<", "<<
+            std::get<1>(remote->second)->second<<" of process "
             << remote->first<<std::endl;
 
             // Delete entries
-            Dune::get<0>(remote->second).remove();
-            Dune::get<1>(remote->second).remove();
-            assert(Dune::get<4>(remote->second)->size()==Dune::get<5>(remote->second)->size());
+            std::get<0>(remote->second).remove();
+            std::get<1>(remote->second).remove();
+            assert(std::get<4>(remote->second)->size()==std::get<5>(remote->second)->size());
           }
         }
       }
