@@ -83,6 +83,7 @@ commoninclude_HEADERS = 			\
 	timer.hh				\
 	tuples.hh				\
 	tupleutility.hh                         \
+	typelist.hh \
 	typetraits.hh				\
 	unused.hh				\
 	version.hh				\
