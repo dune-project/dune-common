@@ -158,12 +158,10 @@ namespace Dune {
     }
     using Base::operator=;
 
-    DUNE_CONSTEXPR size_type size () const { return vec_size(); }
-
     // make this thing a vector
-    DUNE_CONSTEXPR size_type vec_size () const { return SIZE; }
-    K & vec_access(size_type i) { return _data[i]; }
-    const K & vec_access(size_type i) const { return _data[i]; }
+    DUNE_CONSTEXPR size_type size () const { return SIZE; }
+    K & operator[](size_type i) { return _data[i]; }
+    const K & operator[](size_type i) const { return _data[i]; }
   private:
     void fill(const K& t)
     {
@@ -266,17 +264,15 @@ namespace Dune {
       return *this;
     }
 
-    DUNE_CONSTEXPR size_type size () const { return vec_size(); }
-
     //===== forward methods to container
-    DUNE_CONSTEXPR size_type vec_size () const { return 1; }
-    K & vec_access(size_type i)
+    DUNE_CONSTEXPR size_type size () const { return 1; }
+    K & operator[](size_type i)
     {
       DUNE_UNUSED_PARAMETER(i);
       assert(i == 0);
       return _data;
     }
-    const K & vec_access(size_type i) const
+    const K & operator[](size_type i) const
     {
       DUNE_UNUSED_PARAMETER(i);
       assert(i == 0);

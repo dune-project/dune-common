@@ -284,18 +284,18 @@ namespace Dune {
     //! random access
     value_type & operator[] (size_type i)
     {
-      return asImp().vec_access(i);
+      return asImp()[i];
     }
 
     const value_type & operator[] (size_type i) const
     {
-      return asImp().vec_access(i);
+      return asImp()[i];
     }
 
     //! size method
     size_type size() const
     {
-      return asImp().vec_size();
+      return asImp().size();
     }
 
     //! Iterator class for sequential access
