@@ -194,6 +194,7 @@ endif()
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
   "SuiteSparse"
+  FOUND_VAR SuiteSparse_FOUND
   REQUIRED_VARS
   BLAS_FOUND
   SUITESPARSE_INCLUDE_DIR
