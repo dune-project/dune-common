@@ -891,24 +891,13 @@ namespace Dune {
                                MPITraits<ParallelLocalIndex<TA> >::getType(), MPI_UB};
       IndexPair<TG,ParallelLocalIndex<TA> > rep[2];
       length[0]=length[1]=length[2]=length[3]=1;
-      #if MPI_2
       MPI_Get_address(rep, disp); // lower bound of the datatype
       MPI_Get_address(&(rep[0].global_), disp+1);
       MPI_Get_address(&(rep[0].local_), disp+2);
       MPI_Get_address(rep+1, disp+3); // upper bound of the datatype
-      #else
-      MPI_Address(rep, disp); // lower bound of the datatype
-      MPI_Address(&(rep[0].global_), disp+1);
-      MPI_Address(&(rep[0].local_), disp+2);
-      MPI_Address(rep+1, disp+3); // upper bound of the datatype
-      #endif
       for(int i=3; i >= 0; --i)
         disp[i] -= disp[0];
-      #if MPI_2
       MPI_Type_create_struct(4, length, disp, types, &type);
-      #else
-      MPI_Type_struct(4, length, disp, types, &type);
-      #endif
       MPI_Type_commit(&type);
     }
     return type;
