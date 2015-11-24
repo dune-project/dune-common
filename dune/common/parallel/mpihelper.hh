@@ -261,14 +261,14 @@ namespace Dune
     //! \brief calls MPI_Finalize
     ~MPIHelper()
     {
-#ifdef MPI_2
+#if MPI_2
       int wasFinalized = -1;
       MPI_Finalized( &wasFinalized );
       if(!wasFinalized) {
 #endif
       MPI_Finalize();
       dverb << "Called MPI_Finalize on p=" << rank_ << "!" <<std::endl;
-#ifdef MPI_2
+#if MPI_2
     }
 
 #endif

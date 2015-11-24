@@ -640,11 +640,20 @@ namespace Dune
     // Compute displacement
     MessageInformation message;
 
+    #if MPI_2
+    MPI_Get_address( &(message.publish), displacement);
+    MPI_Get_address( &(message.pairs), displacement+1);
+    #else
     MPI_Address( &(message.publish), displacement);
     MPI_Address( &(message.pairs), displacement+1);
+    #endif
 
     // Make the displacement relative
+    #if MPI_2
+    MPI_Get_address(&message, &base);
+    #else
     MPI_Address(&message, &base);
+    #endif
     displacement[0] -= base;
     displacement[1] -= base;
 
