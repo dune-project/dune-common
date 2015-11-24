@@ -305,7 +305,11 @@ namespace Dune
       #endif
       for(int i=2; i >= 0; --i)
         disp[i] -= disp[0];
+      #if MPI_2
+      MPI_Type_create_struct(3, length, disp, types, &type);
+      #else
       MPI_Type_struct(3, length, disp, types, &type);
+      #endif
       MPI_Type_commit(&type);
     }
     return type;
