@@ -657,7 +657,11 @@ namespace Dune
     displacement[0] -= base;
     displacement[1] -= base;
 
+    #if MPI_2
+    MPI_Type_create_struct( 2, blocklength, displacement, type, &datatype_);
+    #else
     MPI_Type_struct( 2, blocklength, displacement, type, &datatype_);
+    #endif
     MPI_Type_commit(&datatype_);
   }
 
