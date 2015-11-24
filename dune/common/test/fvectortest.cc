@@ -447,15 +447,24 @@ void checkNormNAN(V const &v, int line) {
   }
 }
 
-// Make sure that a vector with only NaN entries has norm NaN.
-// Prior to r6914, the infinity_norm would be zero; see also FS #1147.
+// Make sure that a vectors with NaN entries have norm NaN.
+// See also bug flyspray/FS#1147
+template <typename T>
 void
-test_nan()
+test_nan(T const &mynan)
 {
-  double mynan = 0.0/0.0;
-
-  Dune::FieldVector<double, 2> v2(mynan);
-  checkNormNAN(v2, __LINE__);
+  {
+    Dune::FieldVector<T, 2> v = { mynan, mynan };
+    checkNormNAN(v, __LINE__);
+  }
+  {
+    Dune::FieldVector<T, 2> v = { mynan, 0 };
+    checkNormNAN(v, __LINE__);
+  }
+  {
+    Dune::FieldVector<T, 2> v = { 0, mynan };
+    checkNormNAN(v, __LINE__);
+  }
 }
 
 void
@@ -499,7 +508,14 @@ int main()
     DotProductTest<ft,3>();
 #endif // HAVE_GMP
 
-    test_nan();
+    {
+      double nan = std::nan("");
+      test_nan(nan);
+    }
+    {
+      std::complex<double> nan( std::nan(""), 17 );
+      test_nan(nan);
+    }
     test_infinity_norms();
     test_initialisation();
   } catch (Dune::Exception& e) {
