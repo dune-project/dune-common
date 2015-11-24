@@ -425,6 +425,28 @@ public:
   }
 };
 
+template <class V>
+void checkNormNAN(V const &v, int line) {
+  if (!std::isnan(v.one_norm())) {
+    std::cerr << "error: norm not NaN: one_norm() on line "
+              << line << " (type: " << Dune::className(v[0]) << ")"
+              << std::endl;
+    std::exit(-1);
+  }
+  if (!std::isnan(v.two_norm())) {
+    std::cerr << "error: norm not NaN: two_norm() on line "
+              << line << " (type: " << Dune::className(v[0]) << ")"
+              << std::endl;
+    std::exit(-1);
+  }
+  if (!std::isnan(v.infinity_norm())) {
+    std::cerr << "error: norm not NaN: infinity_norm() on line "
+              << line << " (type: " << Dune::className(v[0]) << ")"
+              << std::endl;
+    std::exit(-1);
+  }
+}
+
 // Make sure that a vector with only NaN entries has norm NaN.
 // Prior to r6914, the infinity_norm would be zero; see also FS #1147.
 void
@@ -433,16 +455,7 @@ test_nan()
   double mynan = 0.0/0.0;
 
   Dune::FieldVector<double, 2> v2(mynan);
-  assert(std::isnan(v2.infinity_norm()));
-  assert(std::isnan(v2.one_norm()));
-  assert(std::isnan(v2.two_norm()));
-  assert(std::isnan(v2.two_norm2()));
-
-  Dune::FieldVector<double, 0> v0(mynan);
-  assert(0.0 == v0.infinity_norm());
-  assert(0.0 == v0.one_norm());
-  assert(0.0 == v0.two_norm());
-  assert(0.0 == v0.two_norm2());
+  checkNormNAN(v2, __LINE__);
 }
 
 void
