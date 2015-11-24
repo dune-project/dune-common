@@ -294,9 +294,15 @@ namespace Dune
       MPI_Datatype types[3] = {MPI_LB, MPITraits<char>::getType(), MPI_UB};
       ParallelLocalIndex<T> rep[2];
       length[0]=length[1]=length[2]=1;
+      #if MPI_2
+      MPI_Get_address(rep, disp); // lower bound of the datatype
+      MPI_Get_address(&(rep[0].attribute_), disp+1);
+      MPI_Get_address(rep+1, disp+2); // upper bound of the datatype
+      #else
       MPI_Address(rep, disp); // lower bound of the datatype
       MPI_Address(&(rep[0].attribute_), disp+1);
       MPI_Address(rep+1, disp+2); // upper bound of the datatype
+      #endif
       for(int i=2; i >= 0; --i)
         disp[i] -= disp[0];
       MPI_Type_struct(3, length, disp, types, &type);
