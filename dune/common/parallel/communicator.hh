@@ -419,8 +419,13 @@ namespace Dune
       {
         IndexedTypeInformation& info=information_[proc];
         assert((info.elements)<info.size);
+        #if MPI_2
+        MPI_Get_address( const_cast<void*>(CommPolicy<V>::getAddress(data_, local)),
+                         info.displ+info.elements);
+        #else
         MPI_Address( const_cast<void*>(CommPolicy<V>::getAddress(data_, local)),
                      info.displ+info.elements);
+        #endif
         info.length[info.elements]=CommPolicy<V>::getSize(data_, local);
         info.elements++;
       }
@@ -1006,7 +1011,11 @@ namespace Dune
       IndexedTypeInformation& info=dataInfo.information_[process->first];
       // Shift the displacement
       MPI_Aint base;
+      #if MPI_2
+      MPI_Get_address(const_cast<void *>(CommPolicy<V>::getAddress(data, 0)), &base);
+      #else
       MPI_Address(const_cast<void *>(CommPolicy<V>::getAddress(data, 0)), &base);
+      #endif
 
       for(int i=0; i< info.elements; i++) {
         info.displ[i]-=base;
