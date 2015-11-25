@@ -91,76 +91,6 @@ namespace Dune {
       }
     };
 
-    template <typename V,
-              bool hasNaN = std::is_floating_point<typename FieldTraits<
-                  typename DenseMatVecTraits<V>::value_type>::real_type>::value>
-    struct InfinityNormComputer {
-      using value_type = typename DenseMatVecTraits<V>::value_type;
-      using real_type = typename FieldTraits<value_type>::real_type;
-
-      real_type
-      static infinity_norm(V const &v) {
-        using std::abs;
-        using std::max;
-
-        real_type norm = 0.0;
-        for (auto &&x : v) {
-          real_type const a = abs(x);
-          norm = max(a, norm);
-        }
-        return norm;
-      }
-
-      real_type
-      static infinity_norm_real(V const &v) {
-        using std::max;
-
-        real_type norm = 0.0;
-        for (auto &&x : v) {
-          real_type const a = absreal(x);
-          norm = max(a, norm);
-        }
-        return norm;
-      }
-    };
-
-    template <typename V>
-    struct InfinityNormComputer<V,true> {
-      using value_type = typename DenseMatVecTraits<V>::value_type;
-      using real_type = typename FieldTraits<value_type>::real_type;
-
-      real_type
-      static infinity_norm(V const &v) {
-        using std::abs;
-        using std::max;
-
-        real_type norm = 0.0;
-        real_type isNaN = 1.0;
-        for (auto &&x : v) {
-          real_type const a = abs(x);
-          norm = max(a, norm);
-          isNaN += a;
-        }
-        isNaN /= isNaN;
-        return norm * isNaN;
-      }
-
-      real_type
-      static infinity_norm_real(V const &v) {
-        using std::max;
-
-        real_type norm = 0.0;
-        real_type isNaN = 1.0;
-        for (auto &&x : v) {
-          real_type const a = absreal(x);
-          norm = max(a, norm);
-          isNaN += a;
-        }
-        isNaN /= isNaN;
-        return norm * isNaN;
-      }
-    };
-
     /**
        \private
        \memberof Dune::DenseVector
@@ -185,6 +115,91 @@ namespace Dune {
       return Sqrt<K>::sqrt(k);
     }
 
+    template <typename T>
+    struct has_nan {
+      bool static const value = std::is_floating_point<T>::value;
+    };
+
+    template <typename T>
+    struct has_nan<std::complex<T>> {
+      bool static const value = std::is_floating_point<T>::value;
+    };
+
+    template <typename V>
+    typename std::enable_if<
+        !has_nan<typename DenseMatVecTraits<V>::value_type>::value,
+        typename FieldTraits<typename DenseMatVecTraits<V>::value_type>::
+            real_type>::type static infinity_norm(V const& v) {
+      using real_type = typename FieldTraits<
+          typename DenseMatVecTraits<V>::value_type>::real_type;
+      using std::abs;
+      using std::max;
+
+      real_type norm = 0.0;
+      for (auto&& x : v) {
+        real_type const a = abs(x);
+        norm = max(a, norm);
+      }
+      return norm;
+    }
+
+    template <typename V>
+    typename std::enable_if<
+        !has_nan<typename DenseMatVecTraits<V>::value_type>::value,
+        typename FieldTraits<typename DenseMatVecTraits<V>::value_type>::
+            real_type>::type static infinity_norm_real(V const& v) {
+      using real_type = typename FieldTraits<
+          typename DenseMatVecTraits<V>::value_type>::real_type;
+      using std::max;
+
+      real_type norm = 0.0;
+      for (auto&& x : v) {
+        real_type const a = absreal(x);
+        norm = max(a, norm);
+      }
+      return norm;
+    }
+
+    template <typename V>
+    typename std::enable_if<
+        has_nan<typename DenseMatVecTraits<V>::value_type>::value,
+        typename FieldTraits<typename DenseMatVecTraits<V>::value_type>::
+            real_type>::type static infinity_norm(V const& v) {
+      using real_type = typename FieldTraits<
+          typename DenseMatVecTraits<V>::value_type>::real_type;
+      using std::abs;
+      using std::max;
+
+      real_type norm = 0.0;
+      real_type isNaN = 1.0;
+      for (auto&& x : v) {
+        real_type const a = abs(x);
+        norm = max(a, norm);
+        isNaN += a;
+      }
+      isNaN /= isNaN;
+      return norm * isNaN;
+    }
+
+    template <typename V>
+    typename std::enable_if<
+        has_nan<typename DenseMatVecTraits<V>::value_type>::value,
+        typename FieldTraits<typename DenseMatVecTraits<V>::value_type>::
+            real_type>::type static infinity_norm_real(V const& v) {
+      using real_type = typename FieldTraits<
+          typename DenseMatVecTraits<V>::value_type>::real_type;
+      using std::max;
+
+      real_type norm = 0.0;
+      real_type isNaN = 1.0;
+      for (auto&& x : v) {
+        real_type const a = absreal(x);
+        norm = max(a, norm);
+        isNaN += a;
+      }
+      isNaN /= isNaN;
+      return norm * isNaN;
+    }
   }
 
   /*! \brief Generic iterator class for dense vector and matrix implementations
@@ -676,13 +691,13 @@ namespace Dune {
     //! infinity norm (maximum of absolute values of entries)
     typename FieldTraits<value_type>::real_type infinity_norm () const
     {
-      return fvmeta::InfinityNormComputer<V>::infinity_norm(*this);
+      return fvmeta::infinity_norm<V>(*this);
     }
 
     //! simplified infinity norm (uses Manhattan norm for complex values)
     typename FieldTraits<value_type>::real_type infinity_norm_real () const
     {
-      return fvmeta::InfinityNormComputer<V>::infinity_norm_real(*this);
+      return fvmeta::infinity_norm_real<V>(*this);
     }
 
     //===== sizes
