@@ -3,6 +3,7 @@
 #ifndef DUNE_TYPETRAITS_HH
 #define DUNE_TYPETRAITS_HH
 
+#include <complex>
 #include <type_traits>
 
 #include <dune/common/deprecated.hh>
