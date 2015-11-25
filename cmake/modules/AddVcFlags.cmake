@@ -10,10 +10,6 @@
 #       A list of targets to use GMP with.
 #
 
-MESSAGE(STATUS "{Vc_LIBRARIES} ${Vc_LIBRARIES}")
-MESSAGE(STATUS "{Vc_ALL_FLAGS} ${Vc_ALL_FLAGS}")
-MESSAGE(STATUS "{Vc_INCLUDE_DIR} ${Vc_INCLUDE_DIR}")
-
 function(add_dune_vc_flags _targets)
   if(Vc_FOUND)
     foreach(_target ${_targets})
