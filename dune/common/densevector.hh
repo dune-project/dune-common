@@ -91,6 +91,76 @@ namespace Dune {
       }
     };
 
+    template <typename V,
+              bool hasNaN = std::is_floating_point<typename FieldTraits<
+                  typename DenseMatVecTraits<V>::value_type>::real_type>::value>
+    struct InfinityNormComputer {
+      using value_type = typename DenseMatVecTraits<V>::value_type;
+      using real_type = typename FieldTraits<value_type>::real_type;
+
+      real_type
+      static infinity_norm(V const &v) {
+        using std::abs;
+        using std::max;
+
+        real_type norm = 0.0;
+        for (auto &&x : v) {
+          real_type const a = abs(x);
+          norm = max(a, norm);
+        }
+        return norm;
+      }
+
+      real_type
+      static infinity_norm_real(V const &v) {
+        using std::max;
+
+        real_type norm = 0.0;
+        for (auto &&x : v) {
+          real_type const a = absreal(x);
+          norm = max(a, norm);
+        }
+        return norm;
+      }
+    };
+
+    template <typename V>
+    struct InfinityNormComputer<V,true> {
+      using value_type = typename DenseMatVecTraits<V>::value_type;
+      using real_type = typename FieldTraits<value_type>::real_type;
+
+      real_type
+      static infinity_norm(V const &v) {
+        using std::abs;
+        using std::max;
+
+        real_type norm = 0.0;
+        real_type isNaN = 1.0;
+        for (auto &&x : v) {
+          real_type const a = abs(x);
+          norm = max(a, norm);
+          isNaN += a;
+        }
+        isNaN /= isNaN;
+        return norm * isNaN;
+      }
+
+      real_type
+      static infinity_norm_real(V const &v) {
+        using std::max;
+
+        real_type norm = 0.0;
+        real_type isNaN = 1.0;
+        for (auto &&x : v) {
+          real_type const a = absreal(x);
+          norm = max(a, norm);
+          isNaN += a;
+        }
+        isNaN /= isNaN;
+        return norm * isNaN;
+      }
+    };
+
     /**
        \private
        \memberof Dune::DenseVector
@@ -606,35 +676,13 @@ namespace Dune {
     //! infinity norm (maximum of absolute values of entries)
     typename FieldTraits<value_type>::real_type infinity_norm () const
     {
-      using std::abs;
-      using std::max;
-      typedef typename FieldTraits<value_type>::real_type real_type;
-
-      if (size() == 0)
-        return 0.0;
-
-      ConstIterator it = begin();
-      real_type max_val = abs(*it);
-      for (it = it + 1; it != end(); ++it)
-        max_val = max(max_val, real_type(abs(*it)));
-
-      return max_val;
+      return fvmeta::InfinityNormComputer<V>::infinity_norm(*this);
     }
 
     //! simplified infinity norm (uses Manhattan norm for complex values)
     typename FieldTraits<value_type>::real_type infinity_norm_real () const
     {
-      using std::max;
-
-      if (size() == 0)
-        return 0.0;
-
-      ConstIterator it = begin();
-      typename FieldTraits<value_type>::real_type max_val = fvmeta::absreal(*it);
-      for (it = it + 1; it != end(); ++it)
-        max_val = max(max_val, fvmeta::absreal(*it));
-
-      return max_val;
+      return fvmeta::InfinityNormComputer<V>::infinity_norm_real(*this);
     }
 
     //===== sizes
