@@ -604,37 +604,71 @@ namespace Dune {
     }
 
     //! infinity norm (maximum of absolute values of entries)
-    typename FieldTraits<value_type>::real_type infinity_norm () const
-    {
+    template <typename vt = value_type,
+              typename std::enable_if<!has_nan<vt>::value, int>::type = 0>
+    typename FieldTraits<vt>::real_type infinity_norm() const {
+      using real_type = typename FieldTraits<vt>::real_type;
       using std::abs;
       using std::max;
-      typedef typename FieldTraits<value_type>::real_type real_type;
 
-      if (size() == 0)
-        return 0.0;
-
-      ConstIterator it = begin();
-      real_type max_val = abs(*it);
-      for (it = it + 1; it != end(); ++it)
-        max_val = max(max_val, real_type(abs(*it)));
-
-      return max_val;
+      real_type norm = 0;
+      for (auto const &x : *this) {
+        real_type const a = abs(x);
+        norm = max(a, norm);
+      }
+      return norm;
     }
 
     //! simplified infinity norm (uses Manhattan norm for complex values)
-    typename FieldTraits<value_type>::real_type infinity_norm_real () const
-    {
+    template <typename vt = value_type,
+              typename std::enable_if<!has_nan<vt>::value, int>::type = 0>
+    typename FieldTraits<vt>::real_type infinity_norm_real() const {
+      using real_type = typename FieldTraits<vt>::real_type;
       using std::max;
 
-      if (size() == 0)
-        return 0.0;
+      real_type norm = 0;
+      for (auto const &x : *this) {
+        real_type const a = fvmeta::absreal(x);
+        norm = max(a, norm);
+      }
+      return norm;
+    }
 
-      ConstIterator it = begin();
-      typename FieldTraits<value_type>::real_type max_val = fvmeta::absreal(*it);
-      for (it = it + 1; it != end(); ++it)
-        max_val = max(max_val, fvmeta::absreal(*it));
+    //! infinity norm (maximum of absolute values of entries)
+    template <typename vt = value_type,
+              typename std::enable_if<has_nan<vt>::value, int>::type = 0>
+    typename FieldTraits<vt>::real_type infinity_norm() const {
+      using real_type = typename FieldTraits<vt>::real_type;
+      using std::abs;
+      using std::max;
 
-      return max_val;
+      real_type norm = 0;
+      real_type isNaN = 1;
+      for (auto const &x : *this) {
+        real_type const a = abs(x);
+        norm = max(a, norm);
+        isNaN += a;
+      }
+      isNaN /= isNaN;
+      return norm * isNaN;
+    }
+
+    //! simplified infinity norm (uses Manhattan norm for complex values)
+    template <typename vt = value_type,
+              typename std::enable_if<has_nan<vt>::value, int>::type = 0>
+    typename FieldTraits<vt>::real_type infinity_norm_real() const {
+      using real_type = typename FieldTraits<vt>::real_type;
+      using std::max;
+
+      real_type norm = 0;
+      real_type isNaN = 1;
+      for (auto const &x : *this) {
+        real_type const a = fvmeta::absreal(x);
+        norm = max(a, norm);
+        isNaN += a;
+      }
+      isNaN /= isNaN;
+      return norm * isNaN;
     }
 
     //===== sizes

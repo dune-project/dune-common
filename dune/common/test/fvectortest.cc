@@ -425,24 +425,46 @@ public:
   }
 };
 
-// Make sure that a vector with only NaN entries has norm NaN.
-// Prior to r6914, the infinity_norm would be zero; see also FS #1147.
+template <class V>
+void checkNormNAN(V const &v, int line) {
+  if (!std::isnan(v.one_norm())) {
+    std::cerr << "error: norm not NaN: one_norm() on line "
+              << line << " (type: " << Dune::className(v[0]) << ")"
+              << std::endl;
+    std::exit(-1);
+  }
+  if (!std::isnan(v.two_norm())) {
+    std::cerr << "error: norm not NaN: two_norm() on line "
+              << line << " (type: " << Dune::className(v[0]) << ")"
+              << std::endl;
+    std::exit(-1);
+  }
+  if (!std::isnan(v.infinity_norm())) {
+    std::cerr << "error: norm not NaN: infinity_norm() on line "
+              << line << " (type: " << Dune::className(v[0]) << ")"
+              << std::endl;
+    std::exit(-1);
+  }
+}
+
+// Make sure that vectors with NaN entries have norm NaN.
+// See also bug flyspray/FS#1147
+template <typename T>
 void
-test_nan()
+test_nan(T const &mynan)
 {
-  double mynan = 0.0/0.0;
-
-  Dune::FieldVector<double, 2> v2(mynan);
-  assert(std::isnan(v2.infinity_norm()));
-  assert(std::isnan(v2.one_norm()));
-  assert(std::isnan(v2.two_norm()));
-  assert(std::isnan(v2.two_norm2()));
-
-  Dune::FieldVector<double, 0> v0(mynan);
-  assert(0.0 == v0.infinity_norm());
-  assert(0.0 == v0.one_norm());
-  assert(0.0 == v0.two_norm());
-  assert(0.0 == v0.two_norm2());
+  {
+    Dune::FieldVector<T, 2> v = { mynan, mynan };
+    checkNormNAN(v, __LINE__);
+  }
+  {
+    Dune::FieldVector<T, 2> v = { mynan, 0 };
+    checkNormNAN(v, __LINE__);
+  }
+  {
+    Dune::FieldVector<T, 2> v = { 0, mynan };
+    checkNormNAN(v, __LINE__);
+  }
 }
 
 void
@@ -486,7 +508,14 @@ int main()
     DotProductTest<ft,3>();
 #endif // HAVE_GMP
 
-    test_nan();
+    {
+      double nan = std::nan("");
+      test_nan(nan);
+    }
+    {
+      std::complex<double> nan( std::nan(""), 17 );
+      test_nan(nan);
+    }
     test_infinity_norms();
     test_initialisation();
   } catch (Dune::Exception& e) {

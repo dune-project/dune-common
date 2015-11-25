@@ -405,6 +405,15 @@ namespace Dune
     static const bool value = true;
   };
 
+  template <typename T>
+  struct has_nan
+      : public std::integral_constant<bool, std::is_floating_point<T>::value> {
+  };
+
+  template <typename T>
+  struct has_nan<std::complex<T>>
+      : public std::integral_constant<bool, std::is_floating_point<T>::value> {
+  };
 
 #if defined(DOXYGEN) or HAVE_IS_INDEXABLE_SUPPORT
 

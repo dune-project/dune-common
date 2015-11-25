@@ -502,27 +502,64 @@ void test_invert ()
   A.invert();
 }
 
-// Make sure that a matrix with only NaN entries has norm NaN.
-// Prior to r6819, the infinity_norm would be zero; see also FS #1147.
+template <class M>
+void checkNormNAN(M const &v, int line) {
+  if (!std::isnan(v.frobenius_norm())) {
+    std::cerr << "error: norm not NaN: frobenius_norm() on line "
+              << line << " (type: " << Dune::className(v[0]) << ")"
+              << std::endl;
+    std::exit(-1);
+  }
+  if (!std::isnan(v.infinity_norm())) {
+    std::cerr << "error: norm not NaN: infinity_norm() on line "
+              << line << " (type: " << Dune::className(v[0]) << ")"
+              << std::endl;
+    std::exit(-1);
+  }
+}
+
+// Make sure that matrices with NaN entries have norm NaN.
+// See also bug flyspray/FS#1147
+template <typename T>
 void
-test_nan()
+test_nan(T const &mynan)
 {
-  double mynan = 0.0/0.0;
-
-  Dune::FieldMatrix<double, 2, 2> m2(mynan);
-  assert(std::isnan(m2.infinity_norm()));
-  assert(std::isnan(m2.frobenius_norm()));
-  assert(std::isnan(m2.frobenius_norm2()));
-
-  Dune::FieldMatrix<double, 0, 2> m02(mynan);
-  assert(0.0 == m02.infinity_norm());
-  assert(0.0 == m02.frobenius_norm());
-  assert(0.0 == m02.frobenius_norm2());
-
-  Dune::FieldMatrix<double, 2, 0> m20(mynan);
-  assert(0.0 == m20.infinity_norm());
-  assert(0.0 == m20.frobenius_norm());
-  assert(0.0 == m20.frobenius_norm2());
+  T const n(0);
+  {
+    Dune::FieldMatrix<T, 2, 2> m = {
+      { mynan, mynan },
+      { mynan, mynan }
+    };
+    checkNormNAN(m, __LINE__);
+  }
+  {
+    Dune::FieldMatrix<T, 2, 2> m = {
+      { mynan, n },
+      { n, n }
+    };
+    checkNormNAN(m, __LINE__);
+  }
+  {
+    Dune::FieldMatrix<T, 2, 2> m = {
+      { n, mynan },
+      { n, n }
+    };
+    checkNormNAN(m, __LINE__);
+  }
+  {
+    Dune::FieldMatrix<T, 2, 2> m = {
+      { n, n },
+      { mynan, n }
+    };
+    checkNormNAN(m, __LINE__);
+  }
+  {
+    Dune::FieldMatrix<T, 2, 2> m = {
+      { n, n },
+      { n, mynan }
+    };
+    checkNormNAN(m, __LINE__);
+  }
 }
 
 // The computation of infinity_norm_real() was flawed from r6819 on
@@ -568,7 +605,14 @@ void test_initialisation()
 int main()
 {
   try {
-    test_nan();
+    {
+      double nan = std::nan("");
+      test_nan(nan);
+    }
+    {
+      std::complex<double> nan( std::nan(""), 17 );
+      test_nan(nan);
+    }
     test_infinity_norms();
     test_initialisation();
 
