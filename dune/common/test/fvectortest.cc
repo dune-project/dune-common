@@ -447,7 +447,7 @@ void checkNormNAN(V const &v, int line) {
   }
 }
 
-// Make sure that a vectors with NaN entries have norm NaN.
+// Make sure that vectors with NaN entries have norm NaN.
 // See also bug flyspray/FS#1147
 template <typename T>
 void
