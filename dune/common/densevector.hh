@@ -610,7 +610,7 @@ namespace Dune {
       using std::abs;
       using std::max;
 
-      real_type norm = 0.0;
+      real_type norm = 0;
       for (auto&& x : *this) {
         real_type const a = abs(x);
         norm = max(a, norm);
@@ -625,7 +625,7 @@ namespace Dune {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::max;
 
-      real_type norm = 0.0;
+      real_type norm = 0;
       for (auto&& x : *this) {
         real_type const a = fvmeta::absreal(x);
         norm = max(a, norm);
@@ -641,8 +641,8 @@ namespace Dune {
       using std::abs;
       using std::max;
 
-      real_type norm = 0.0;
-      real_type isNaN = 1.0;
+      real_type norm = 0;
+      real_type isNaN = 1;
       for (auto&& x : *this) {
         real_type const a = abs(x);
         norm = max(a, norm);
@@ -659,8 +659,8 @@ namespace Dune {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::max;
 
-      real_type norm = 0.0;
-      real_type isNaN = 1.0;
+      real_type norm = 0;
+      real_type isNaN = 1;
       for (auto&& x : *this) {
         real_type const a = fvmeta::absreal(x);
         norm = max(a, norm);
