@@ -32,6 +32,7 @@ install(FILES
         binaryfunctions.hh
         bitsetvector.hh
         classname.hh
+        concept.hh
         debugallocator.hh
         debugstream.hh
         deprecated.hh
@@ -75,7 +76,6 @@ install(FILES
         poolallocator.hh
         power.hh
         precision.hh
-        prioritytag.hh
         propertymap.hh
         promotiontraits.hh
         proxymemberaccess.hh
@@ -91,6 +91,7 @@ install(FILES
         tupleutility.hh
         typelist.hh
         typetraits.hh
+        typeutilities.hh
         unused.hh
         version.hh
         visibility.hh

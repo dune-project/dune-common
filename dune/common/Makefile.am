@@ -26,6 +26,7 @@ commoninclude_HEADERS = 			\
 	binaryfunctions.hh			\
 	bitsetvector.hh				\
 	classname.hh				\
+	concept.hh \
 	debugallocator.hh			\
 	debugstream.hh				\
 	deprecated.hh				\
@@ -69,7 +70,6 @@ commoninclude_HEADERS = 			\
 	poolallocator.hh			\
 	power.hh				\
 	precision.hh				\
-	prioritytag.hh \
 	promotiontraits.hh			\
 	propertymap.hh				\
         proxymemberaccess.hh                    \
@@ -84,6 +84,7 @@ commoninclude_HEADERS = 			\
 	tuples.hh				\
 	tupleutility.hh                         \
 	typelist.hh \
+	typeutilities.hh \
 	typetraits.hh				\
 	unused.hh				\
 	version.hh				\
