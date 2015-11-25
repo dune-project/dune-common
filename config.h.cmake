@@ -38,9 +38,7 @@
 /* Define to 1 if you have the <malloc.h> header file. */
 // Not used! #cmakedefine01 HAVE_MALLOC_H
 
-/* Define if you have the MPI library. This is only true if MPI was found by
-   configure _and_ if the application uses the DUNEMPICPPFLAGS (or the
-   deprecated MPI_CPPFLAGS) */
+/* Define if you have the MPI library.  */
 #cmakedefine HAVE_MPI ENABLE_MPI
 
 /* Define if you have the GNU GMP library. The value should be ENABLE_GMP
@@ -55,9 +53,6 @@
 
 /* Define to 1 if you have <sys/mman.h>. */
 #cmakedefine HAVE_SYS_MMAN_H 1
-
-/* Define to 1 if the MPI2 Standard is supported */
-#cmakedefine MPI_2 1
 
 /* begin private */
 
@@ -96,6 +91,7 @@
 #define HAVE_NOEXCEPT_SPECIFIER 1
 #define HAVE_STD_DECLVAL 1
 #define HAVE_KEYWORD_FINAL 1
+#define MPI_2 1
 
 /* Define to 1 if the compiler properly supports testing for operator[] */
 #cmakedefine HAVE_IS_INDEXABLE_SUPPORT 1
