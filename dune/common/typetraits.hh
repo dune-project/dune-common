@@ -527,6 +527,7 @@ namespace Dune
     static_assert(std::is_same<I,std::size_t>::value,"Your compiler is broken and does not support checking for arbitrary index types");
   };
 
+
 #endif // defined(DOXYGEN) or HAVE_IS_INDEXABLE_SUPPORT
 
 

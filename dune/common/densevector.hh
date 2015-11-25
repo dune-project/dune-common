@@ -114,6 +114,7 @@ namespace Dune {
     {
       return Sqrt<K>::sqrt(k);
     }
+
   }
 
   /*! \brief Generic iterator class for dense vector and matrix implementations
