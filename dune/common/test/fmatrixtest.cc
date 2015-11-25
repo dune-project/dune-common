@@ -524,10 +524,42 @@ template <typename T>
 void
 test_nan(T const &mynan)
 {
-  Dune::FieldMatrix<T, 2, 2> m = {
-    { mynan, mynan },
-    { mynan, mynan }
-  checkNormNAN(m, __LINE__);
+  T const n(0);
+  {
+    Dune::FieldMatrix<T, 2, 2> m = {
+      { mynan, mynan },
+      { mynan, mynan }
+    };
+    checkNormNAN(m, __LINE__);
+  }
+  {
+    Dune::FieldMatrix<T, 2, 2> m = {
+      { mynan, n },
+      { n, n }
+    };
+    checkNormNAN(m, __LINE__);
+  }
+  {
+    Dune::FieldMatrix<T, 2, 2> m = {
+      { n, mynan },
+      { n, n }
+    };
+    checkNormNAN(m, __LINE__);
+  }
+  {
+    Dune::FieldMatrix<T, 2, 2> m = {
+      { n, n },
+      { mynan, n }
+    };
+    checkNormNAN(m, __LINE__);
+  }
+  {
+    Dune::FieldMatrix<T, 2, 2> m = {
+      { n, n },
+      { n, mynan }
+    };
+    checkNormNAN(m, __LINE__);
+  }
 }
 
 // The computation of infinity_norm_real() was flawed from r6819 on
@@ -573,8 +605,14 @@ void test_initialisation()
 int main()
 {
   try {
-    double nan = std::nan("");
-    test_nan(nan);
+    {
+      double nan = std::nan("");
+      test_nan(nan);
+    }
+    {
+      std::complex<double> nan( std::nan(""), 17 );
+      test_nan(nan);
+    }
     test_infinity_norms();
     test_initialisation();
 
