@@ -612,7 +612,7 @@ namespace Dune {
       using std::max;
 
       real_type norm = 0;
-      for (auto&& x : *this) {
+      for (auto const &x : *this) {
         real_type const a = abs(x);
         norm = max(a, norm);
       }
@@ -627,7 +627,7 @@ namespace Dune {
       using std::max;
 
       real_type norm = 0;
-      for (auto&& x : *this) {
+      for (auto const &x : *this) {
         real_type const a = fvmeta::absreal(x);
         norm = max(a, norm);
       }
@@ -644,7 +644,7 @@ namespace Dune {
 
       real_type norm = 0;
       real_type isNaN = 1;
-      for (auto&& x : *this) {
+      for (auto const &x : *this) {
         real_type const a = abs(x);
         norm = max(a, norm);
         isNaN += a;
@@ -662,7 +662,7 @@ namespace Dune {
 
       real_type norm = 0;
       real_type isNaN = 1;
-      for (auto&& x : *this) {
+      for (auto const &x : *this) {
         real_type const a = fvmeta::absreal(x);
         norm = max(a, norm);
         isNaN += a;
