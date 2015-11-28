@@ -7,6 +7,29 @@
 
 namespace Dune
 {
+
+  template<typename T>
+  const T & cond(bool b, const T & v1, const T & v2)
+  {
+    return (b ? v1 : v2);
+  }
+
+  template<typename T, typename A>
+  Vc::Vector<T,A> cond(const Vc::Mask<T,A> & b,
+    const Vc::Vector<T,A> & v1,
+    const Vc::Vector<T,A> & v2)
+  {
+    return std::move(Vc::iif(b, v1, v2));
+  }
+
+  template<typename T, std::size_t N, typename V, std::size_t M>
+  Vc::SimdArray<T,N,V,M> cond(const Vc::SimdMaskArray<T,N,V,M> & b,
+    const Vc::SimdArray<T,N,V,M> & v1,
+    const Vc::SimdArray<T,N,V,M> & v2)
+  {
+    return std::move(Vc::iif(b, v1, v2));
+  }
+
   template<typename T, typename A>
   T max_value(const Vc::Vector<T,A> & v)
   {
@@ -34,37 +57,25 @@ namespace Dune
   template<typename T, typename A>
   bool any_true(const Vc::Mask<T,A> & v)
   {
-    bool b = false;
-    for (std::size_t i = 0; i < v.size(); i++)
-      b = b or bool(v[i]);
-    return b;
+    return Vc::any_of(v);
   }
 
   template<typename T, std::size_t N, typename V, std::size_t M>
   bool any_true(const Vc::SimdMaskArray<T,N,V,M> & v)
   {
-    bool b = false;
-    for (std::size_t i = 0; i < v.size(); i++)
-      b = b or bool(v[i]);
-    return b;
+    return Vc::any_of(v);
   }
 
   template<typename T, typename A>
   bool all_true(const Vc::Mask<T,A> & v)
   {
-    bool b = true;
-    for (std::size_t i = 0; i < v.size(); i++)
-      b = b and bool(v[i]);
-    return b;
+    return Vc::all_of(v);
   }
 
   template<typename T, std::size_t N, typename V, std::size_t M>
   bool all_true(const Vc::SimdMaskArray<T,N,V,M> & v)
   {
-    bool b = true;
-    for (std::size_t i = 0; i < v.size(); i++)
-      b = b and bool(v[i]);
-    return b;
+    return Vc::all_of(v);
   }
 
 }
