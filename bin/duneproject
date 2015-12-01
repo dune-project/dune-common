@@ -377,7 +377,7 @@ Most probably you'll have to provide additional information to dunecontrol
 The most convenient way is to use options files in this case. The files
 define four variables:
 
-CMAKE_FLAGS      flags passed to cmake (durin configure)
+CMAKE_FLAGS      flags passed to cmake (during configure)
 MAKE_FLAGS       flags passed to make
 
 An example options file might look like this:
