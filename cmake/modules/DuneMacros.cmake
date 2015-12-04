@@ -775,7 +775,6 @@ macro(dune_regenerate_config_cmake)
  file(APPEND ${CONFIG_H_CMAKE_FILE} "\n${_myfile}")
  # append CONFIG_H_BOTTOM section at the end if found
  if(CONFIG_H_BOTTOM)
-    message( "Appending: ${CONFIG_H_BOTTOM}" )
     file(APPEND ${CONFIG_H_CMAKE_FILE} "${CONFIG_H_BOTTOM}")
  endif(CONFIG_H_BOTTOM)
 endmacro(dune_regenerate_config_cmake)
