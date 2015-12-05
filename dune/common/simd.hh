@@ -23,7 +23,7 @@ namespace Dune
   }
 
   template<typename T, std::size_t N, typename V, std::size_t M>
-  Vc::SimdArray<T,N,V,M> cond(const Vc::SimdMaskArray<T,N,V,M> & b,
+  Vc::SimdArray<T,N,V,M> cond(const typename Vc::SimdArray<T,N,V,M>::mask_type & b,
     const Vc::SimdArray<T,N,V,M> & v1,
     const Vc::SimdArray<T,N,V,M> & v2)
   {
