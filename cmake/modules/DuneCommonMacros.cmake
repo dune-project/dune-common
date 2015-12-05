@@ -28,7 +28,7 @@ include(UseInkscape)
 include(FindMProtect)
 
 # try to find the Vc library
-find_package(Vc)
+find_package(Vc QUIET)
 set(HAVE_VC ${Vc_FOUND})
 if(${HAVE_VC})
   dune_register_package_flags(COMPILE_OPTIONS "${Vc_ALL_FLAGS}"
