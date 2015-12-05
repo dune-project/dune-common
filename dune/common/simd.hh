@@ -2,17 +2,12 @@
 #define DUNE_COMMON_SIMD_HH
 
 #include <dune/common/rangeutilities.hh>
+#include <dune/common/conditional.hh>
 #if HAVE_VC
 #include <Vc/Vc>
 
 namespace Dune
 {
-
-  template<typename T1, typename T2>
-  const T1 cond(bool b, const T1 & v1, const T2 & v2)
-  {
-    return (b ? v1 : v2);
-  }
 
   template<typename T, typename A>
   Vc::Vector<T,A> cond(const Vc::Mask<T,A> & b,
@@ -78,7 +73,7 @@ namespace Dune
     return Vc::all_of(v);
   }
 
-}
-#endif
+} // end namespace Dune
+#endif // HAVE_VC
 
 #endif // DUNE_COMMON_SIMD_HH
