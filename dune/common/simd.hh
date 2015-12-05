@@ -8,8 +8,8 @@
 namespace Dune
 {
 
-  template<typename T>
-  const T & cond(bool b, const T & v1, const T & v2)
+  template<typename T1, typename T2>
+  const T1 & cond(bool b, const T1 & v1, const T2 & v2)
   {
     return (b ? v1 : v2);
   }
