@@ -531,6 +531,52 @@ namespace Dune
 
 #endif // defined(DOXYGEN) or HAVE_IS_INDEXABLE_SUPPORT
 
+  namespace detail
+  {
+    /// @internal
+    /// helper to make void_t work with gcc
+    template <class...>
+    struct voider
+    {
+      using type = void;
+    };
+
+    template <class,class = void> class Real_t;
+  }
+
+  template <class> struct FieldTraits;
+
+  /**
+   * @brief Is void for all valid input types.
+   *
+   * The workhorse for C++11 SFINAE-techniques.
+   */
+  template <class... Types>
+  using void_t = typename detail::voider<Types...>::type;
+
+  //! Convenient access to Type::field_type.
+  template <class Type>
+  using field_t = typename Type::field_type;
+
+  //! Convenient access to Type::real_type, resp. FieldTraits<Type::field_type>::real_type.
+  template <class Type>
+  using real_t = typename detail::Real_t<Type>::type;
+
+
+  namespace detail
+  {
+    template <class Type,class>
+    struct Real_t
+    {
+      using type = typename FieldTraits<Type>::real_type;
+    };
+
+    template <class Type>
+    struct Real_t< Type , void_t< field_t<Type> > >
+    {
+      using type = typename Real_t< field_t<Type> >::type;
+    };
+  }
 
   /** @} */
 }
