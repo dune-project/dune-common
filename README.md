@@ -28,7 +28,7 @@ dune-common depends on the following software packages
   icc (C/C++) >= 13.0
   Clang >= 3.2
 
-The following software is recommend but optional:
+The following software is recommended but optional:
 
 - MPI (either OpenMPI, lam, or mpich suffice)
 
