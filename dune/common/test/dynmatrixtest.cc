@@ -300,11 +300,11 @@ void test_matrix()
       DUNE_THROW(FMatrixError,"Axpy test failed!");
   }
   {
-    DynamicMatrix<K> A(n,n+1);
-    for(size_type i=0; i<A.N(); ++i)
-      for(size_type j=0; j<A.M(); ++j)
-        A[i][j] = i;
-    const DynamicMatrix<K>& Aref DUNE_UNUSED = A;
+    DynamicMatrix<K> A2(n,n+1);
+    for(size_type i=0; i<A2.N(); ++i)
+      for(size_type j=0; j<A2.M(); ++j)
+        A2[i][j] = i;
+    const DynamicMatrix<K>& Aref DUNE_UNUSED = A2;
 
 
     DynamicMatrix<K> B(n+1,n+1);
