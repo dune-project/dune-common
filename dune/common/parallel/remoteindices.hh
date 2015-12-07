@@ -1120,7 +1120,7 @@ namespace Dune {
 
   template<typename T, typename A>
   template<bool ignorePublic>
-  inline void RemoteIndices<T,A>::buildRemote(bool includeSelf)
+  inline void RemoteIndices<T,A>::buildRemote(bool includeSelf_)
   {
     // Processor configuration
     int rank, procs;
@@ -1134,7 +1134,7 @@ namespace Dune {
     // Do we need to send two index sets?
     char sendTwo = (source_ != target_);
 
-    if(procs==1 && !(sendTwo || includeSelf))
+    if(procs==1 && !(sendTwo || includeSelf_))
       // Nothing to communicate
       return;
 
@@ -1209,9 +1209,9 @@ namespace Dune {
 
 
     // Update remote indices for ourself
-    if(sendTwo|| includeSelf)
+    if(sendTwo|| includeSelf_)
       unpackCreateRemote(buffer[0], sourcePairs, destPairs, rank, sourcePublish,
-                         destPublish, bufferSize, sendTwo, includeSelf);
+                         destPublish, bufferSize, sendTwo, includeSelf_);
 
     neighbourIds.erase(rank);
 
@@ -1866,11 +1866,8 @@ namespace Dune {
       if(!rindex->second.second->empty()) {
         os<<rank<<": Prozess "<<rindex->first<<": "<<"receive: ";
 
-        const typename RList::const_iterator rend= rindex->second.second->end();
-
-        for(typename RList::const_iterator index = rindex->second.second->begin();
-            index != rend; ++index)
-          os<<*index<<" ";
+        for(const auto& index : *(rindex->second.second))
+          os << index << " ";
       }
       os<<std::endl<<std::flush;
     }
