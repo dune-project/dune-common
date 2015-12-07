@@ -538,7 +538,8 @@ namespace Dune
      * @internal
      * @brief Helper to make void_t work with gcc versions prior to gcc 5.0.
      *
-     * This was not a compiler bug, but an accidental omission in the C++11 standard. It is not clearly specified what happens
+     * This was not a compiler bug, but an accidental omission in the C++11 standard (see N3911, CWG issue 1558).
+     * It is not clearly specified what happens
      * with unused template arguments in template aliases. The developers of GCC decided to ignore them, thus making void_t equivalent to void.
      * With gcc 5.0 this was changed and the voider-hack is no longer needed.
      */
@@ -551,7 +552,7 @@ namespace Dune
 
   template <class> struct FieldTraits;
 
-  //! Is void for all valid input types. The workhorse for C++11 SFINAE-techniques.
+  //! Is void for all valid input types (see N3911). The workhorse for C++11 SFINAE-techniques.
   template <class... Types>
   using void_t = typename detail::voider<Types...>::type;
 
