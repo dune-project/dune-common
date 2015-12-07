@@ -38,10 +38,10 @@ namespace Dune {
     typedef Dune::BitSetVector<block_size, Alloc> BitSetVector;
     friend class Dune::BitSetVector<block_size, Alloc>;
 
-    BitSetVectorConstReference(const BitSetVector& blockBitField, int block_number) :
-      blockBitField(blockBitField),
-      block_number(block_number)
-    {};
+    BitSetVectorConstReference(const BitSetVector& blockBitField_, int block_number_) :
+      blockBitField(blockBitField_),
+      block_number(block_number_)
+    {}
 
     //! hide assignment operator
     BitSetVectorConstReference& operator=(const BitSetVectorConstReference & b);
@@ -212,10 +212,10 @@ namespace Dune {
 
     typedef Dune::BitSetVectorConstReference<block_size,Alloc> BitSetVectorConstReference;
 
-    BitSetVectorReference(BitSetVector& blockBitField, int block_number) :
-      BitSetVectorConstReference(blockBitField, block_number),
-      blockBitField(blockBitField)
-    {};
+    BitSetVectorReference(BitSetVector& blockBitField_, int block_number_) :
+      BitSetVectorConstReference(blockBitField_, block_number_),
+      blockBitField(blockBitField_)
+    {}
 
   public:
     typedef std::bitset<block_size> bitset;
