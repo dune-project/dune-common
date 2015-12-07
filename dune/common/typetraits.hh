@@ -533,50 +533,35 @@ namespace Dune
 
   namespace detail
   {
-    /// @internal
-    /// helper to make void_t work with gcc
+    ///
+    /**
+     * @internal
+     * @brief Helper to make void_t work with gcc versions prior to gcc 5.0.
+     *
+     * This was not a compiler bug, but an accidental omission in the C++11 standard. It is not clearly specified what happens
+     * with unused template arguments in template aliases. The developers of GCC decided to ignore them, thus making void_t equivalent to void.
+     * With gcc 5.0 this was changed and the voider-hack is no longer needed.
+     */
     template <class...>
     struct voider
     {
       using type = void;
     };
-
-    template <class,class = void> class Real_t;
   }
 
   template <class> struct FieldTraits;
 
-  /**
-   * @brief Is void for all valid input types.
-   *
-   * The workhorse for C++11 SFINAE-techniques.
-   */
+  //! Is void for all valid input types. The workhorse for C++11 SFINAE-techniques.
   template <class... Types>
   using void_t = typename detail::voider<Types...>::type;
 
-  //! Convenient access to Type::field_type.
+  //! Convenient access to FieldTraits<Type>::field_type.
   template <class Type>
-  using field_t = typename Type::field_type;
+  using field_t = typename FieldTraits<Type>::field_type;
 
-  //! Convenient access to Type::real_type, resp. FieldTraits<Type::field_type>::real_type.
+  //! Convenient access to FieldTraits<Type>::real_type.
   template <class Type>
-  using real_t = typename detail::Real_t<Type>::type;
-
-
-  namespace detail
-  {
-    template <class Type,class>
-    struct Real_t
-    {
-      using type = typename FieldTraits<Type>::real_type;
-    };
-
-    template <class Type>
-    struct Real_t< Type , void_t< field_t<Type> > >
-    {
-      using type = typename Real_t< field_t<Type> >::type;
-    };
-  }
+  using real_t = typename FieldTraits<Type>::real_type;
 
   /** @} */
 }
