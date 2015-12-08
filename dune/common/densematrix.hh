@@ -390,12 +390,15 @@ namespace Dune
     void mv (const X& x, Y& y) const
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
+      assert( (void*)(&x) != (void*)(&y) );
       if (x.N()!=M()) DUNE_THROW(FMatrixError,"Index out of range");
       if (y.N()!=N()) DUNE_THROW(FMatrixError,"Index out of range");
 #endif
+
+      using field_type = typename FieldTraits<Y>::field_type;
       for (size_type i=0; i<rows(); ++i)
       {
-        y[i] = value_type(0);
+        y[i] = field_type(0);
         for (size_type j=0; j<cols(); j++)
           y[i] += (*this)[i][j] * x[j];
       }
@@ -406,20 +409,19 @@ namespace Dune
     void mtv ( const X &x, Y &y ) const
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
-      //assert( &x != &y );
-      //This assert did not work for me. Compile error:
-      //  comparison between distinct pointer types ‘const
-      //  Dune::FieldVector<double, 3>*’ and ‘Dune::FieldVector<double, 2>*’ lacks a cast
+      assert( (void*)(&x) != (void*)(&y) );
       if( x.N() != N() )
         DUNE_THROW( FMatrixError, "Index out of range." );
       if( y.N() != M() )
         DUNE_THROW( FMatrixError, "Index out of range." );
 #endif
-      for( size_type i = 0; i < cols(); ++i )
+
+      using field_type = typename FieldTraits<Y>::field_type;
+      for(size_type i = 0; i < cols(); ++i)
       {
-        y[ i ] = value_type(0);
-        for( size_type j = 0; j < rows(); ++j )
-          y[ i ] += (*this)[ j ][ i ] * x[ j ];
+        y[i] = field_type(0);
+        for(size_type j = 0; j < rows(); ++j)
+          y[i] += (*this)[j][i] * x[j];
       }
     }
 
@@ -509,7 +511,8 @@ namespace Dune
 
     //! y += alpha A x
     template<class X, class Y>
-    void usmv (const field_type& alpha, const X& x, Y& y) const
+    void usmv (const typename FieldTraits<Y>::field_type & alpha,
+      const X& x, Y& y) const
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
       if (x.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
@@ -522,7 +525,8 @@ namespace Dune
 
     //! y += alpha A^T x
     template<class X, class Y>
-    void usmtv (const field_type& alpha, const X& x, Y& y) const
+    void usmtv (const typename FieldTraits<Y>::field_type & alpha,
+      const X& x, Y& y) const
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
       if (x.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
@@ -536,7 +540,8 @@ namespace Dune
 
     //! y += alpha A^H x
     template<class X, class Y>
-    void usmhv (const field_type& alpha, const X& x, Y& y) const
+    void usmhv (const typename FieldTraits<Y>::field_type & alpha,
+      const X& x, Y& y) const
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
       if (x.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");

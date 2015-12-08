@@ -102,21 +102,24 @@ namespace Dune
 
     /** \copydoc Dune::DenseMatrix::usmv */
     template< class X, class Y >
-    void usmv ( const field_type &alpha, const X &x, Y &y ) const
+    void usmv (const typename FieldTraits<Y>::field_type & alpha,
+      const X& x, Y& y) const
     {
       y.axpy( alpha, x );
     }
 
     /** \copydoc Dune::DenseMatrix::usmtv */
     template< class X, class Y >
-    void usmtv ( const field_type &alpha, const X &x, Y &y ) const
+    void usmtv (const typename FieldTraits<Y>::field_type & alpha,
+      const X& x, Y& y) const
     {
       y.axpy( alpha, x );
     }
 
     /** \copydoc Dune::DenseMatrix::usmhv */
     template< class X, class Y >
-    void usmhv ( const field_type &alpha, const X &x, Y &y ) const
+    void usmhv (const typename FieldTraits<Y>::field_type & alpha,
+      const X& x, Y& y) const
     {
       y.axpy( alpha, x );
     }
