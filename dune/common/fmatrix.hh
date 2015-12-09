@@ -137,8 +137,11 @@ namespace Dune
     using Base::rightmultiply;
 
     //! Multiplies M from the right to this matrix
-    FieldMatrix& rightmultiply (const FieldMatrix<K,cols,cols>& M)
+    template <int r, int c>
+    FieldMatrix& rightmultiply (const FieldMatrix<K,r,c>& M)
     {
+      static_assert(r == c, "Cannot rightmultiply with non-square matrix");
+      static_assert(r == cols, "Size mismatch");
       FieldMatrix<K,rows,cols> C(*this);
 
       for (size_type i=0; i<rows; i++)
