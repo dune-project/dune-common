@@ -134,6 +134,8 @@ namespace Dune
       return C;
     }
 
+    using Base::rightmultiply;
+
     //! Multiplies M from the right to this matrix
     FieldMatrix& rightmultiply (const FieldMatrix<K,cols,cols>& M)
     {
