@@ -1095,8 +1095,8 @@ namespace Dune
           int messageLength;
           MPI_Error_string(status[i].MPI_ERROR, message, &messageLength);
           std::cerr<<" source="<<status[i].MPI_SOURCE<<" message: ";
-          for(int i=0; i< messageLength; i++)
-            std::cout<<message[i];
+          for(int j = 0; j < messageLength; j++)
+            std::cout << message[j];
         }
       std::cerr<<std::endl;
       success=0;
@@ -1113,8 +1113,8 @@ namespace Dune
           int messageLength;
           MPI_Error_string(status[i].MPI_ERROR, message, &messageLength);
           std::cerr<<" source="<<status[i].MPI_SOURCE<<" message: ";
-          for(int i=0; i< messageLength; i++)
-            std::cerr<<message[i];
+          for(int j = 0; j < messageLength; j++)
+            std::cerr << message[j];
         }
       std::cerr<<std::endl;
       success=0;
