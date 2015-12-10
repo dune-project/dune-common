@@ -299,11 +299,11 @@ void test_matrix()
       DUNE_THROW(FMatrixError,"Axpy test failed!");
   }
   {
-    FieldMatrix<K,n,n+1> A;
-    for(size_type i=0; i<A.N(); ++i)
-      for(size_type j=0; j<A.M(); ++j)
-        A[i][j] = i;
-    const FieldMatrix<K,n,n+1>& Aref = A;
+    FieldMatrix<K,n,n+1> A2;
+    for(size_type i=0; i<A2.N(); ++i)
+      for(size_type j=0; j<A2.M(); ++j)
+        A2[i][j] = i;
+    const FieldMatrix<K,n,n+1>& Aref = A2;
 
 
     FieldMatrix<K,n+1,n+1> B;
@@ -324,13 +324,13 @@ void test_matrix()
         if (std::abs(AB[i][j] - K(i*n*(n+1)/2)) > 1e-10)
           DUNE_THROW(FMatrixError,"Rightmultiplyany test failed!");
 
-    FieldMatrix<K,n,n+1> AB2 = A;
+    FieldMatrix<K,n,n+1> AB2 = A2;
     AB2.rightmultiply(B);
     AB2 -= AB;
     if (std::abs(AB2.infinity_norm()) > 1e-10)
       DUNE_THROW(FMatrixError,"Rightmultiply test failed!");
 
-    FieldMatrix<K,n,n+1> AB3 = Bref.leftmultiplyany(A);
+    FieldMatrix<K,n,n+1> AB3 = Bref.leftmultiplyany(A2);
     AB3 -= AB;
     if (std::abs(AB3.infinity_norm()) > 1e-10)
       DUNE_THROW(FMatrixError,"Leftmultiplyany test failed!");
@@ -341,13 +341,13 @@ void test_matrix()
         if (std::abs(CA[i][j] - K(i*n*(n-1)/2)) > 1e-10)
           DUNE_THROW(FMatrixError,"Leftmultiplyany test failed!");
 
-    FieldMatrix<K,n,n+1> CA2 = A;
+    FieldMatrix<K,n,n+1> CA2 = A2;
     CA2.leftmultiply(C);
     CA2 -= CA;
     if (std::abs(CA2.infinity_norm()) > 1e-10)
       DUNE_THROW(FMatrixError,"Leftmultiply test failed!");
 
-    FieldMatrix<K,n,n+1> CA3 = Cref.rightmultiplyany(A);
+    FieldMatrix<K,n,n+1> CA3 = Cref.rightmultiplyany(A2);
     CA3 -= CA;
     if (std::abs(CA3.infinity_norm()) > 1e-10)
       DUNE_THROW(FMatrixError,"Rightmultiplyany test failed!");

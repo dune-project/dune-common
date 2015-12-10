@@ -776,13 +776,13 @@ namespace Dune
     std::size_t noOldNeighbours = remoteIndices_.neighbours();
     int* oldNeighbours = new int[noOldNeighbours];
     sendBufferSizes_ = new std::size_t[noOldNeighbours];
-    std::size_t i=0;
+    std::size_t neighbourI = 0;
 
-    for(RemoteIterator remote = remoteIndices_.begin(); remote != end; ++remote, ++i) {
+    for(RemoteIterator remote = remoteIndices_.begin(); remote != end; ++remote, ++neighbourI) {
       typedef typename RemoteIndices::RemoteIndexList::const_iterator
       RemoteIndexIterator;
 
-      oldNeighbours[i]=remote->first;
+      oldNeighbours[neighbourI] = remote->first;
 
       // Make sure we only have one remote index list.
       assert(remote->second.first==remote->second.second);
@@ -824,7 +824,7 @@ namespace Dune
 
     Dune::dverb<<rank_<<": Neighbours: ";
 
-    for(i = 0; i<noOldNeighbours; ++i)
+    for(std::size_t i = 0; i<noOldNeighbours; ++i)
       Dune::dverb<<oldNeighbours[i]<<" ";
 
     Dune::dverb<<std::endl;
@@ -833,11 +833,11 @@ namespace Dune
     MPI_Status* statuses = new MPI_Status[noOldNeighbours];
 
     // Pack Message data and start the sends
-    for(i = 0; i<noOldNeighbours; ++i)
+    for(std::size_t i = 0; i<noOldNeighbours; ++i)
       packAndSend(oldNeighbours[i], sendBuffers_[i], sendBufferSizes_[i], requests[i]);
 
     // Probe for incoming messages, receive and unpack them
-    for(i = 0; i<noOldNeighbours; ++i)
+    for(std::size_t i = 0; i<noOldNeighbours; ++i)
       recvAndUnpack(numberer);
     //       }else{
     //  recvAndUnpack(oldNeighbours[i], numberer);
@@ -851,7 +851,7 @@ namespace Dune
     // Wait for completion of sends
     if(MPI_SUCCESS!=MPI_Waitall(noOldNeighbours, requests, statuses)) {
       std::cerr<<": MPI_Error occurred while sending message"<<std::endl;
-      for(i=0; i< noOldNeighbours; i++)
+      for(std::size_t i=0; i< noOldNeighbours; i++)
         if(MPI_SUCCESS!=statuses[i].MPI_ERROR)
           std::cerr<<"Destination "<<statuses[i].MPI_SOURCE<<" error code: "<<statuses[i].MPI_ERROR<<std::endl;
     }
@@ -961,9 +961,9 @@ namespace Dune
           assert(pairs <= infoSend_[destination].pairs);
           MPI_Pack(&process, 1, MPI_INT, buffer, bufferSize, &bpos,
                    remoteIndices_.communicator());
-          char attr = iterators->second.remoteIndex().attribute();
+          char attr2 = iterators->second.remoteIndex().attribute();
 
-          MPI_Pack(&attr, 1, MPI_CHAR, buffer, bufferSize, &bpos,
+          MPI_Pack(&attr2, 1, MPI_CHAR, buffer, bufferSize, &bpos,
                    remoteIndices_.communicator());
           --indices;
         }
