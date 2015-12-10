@@ -36,6 +36,7 @@
 #
 
 find_package(BLAS QUIET)
+find_package(LAPACK QUIET)
 
 # look for desired componenents
 set(SUITESPARSE_COMPONENTS ${SuiteSparse_FIND_COMPONENTS})
@@ -197,6 +198,7 @@ find_package_handle_standard_args(
   FOUND_VAR SuiteSparse_FOUND
   REQUIRED_VARS
   BLAS_FOUND
+  LAPACK_FOUND
   SUITESPARSE_INCLUDE_DIR
   SUITESPARSE_LIBRARY
   HANDLE_COMPONENTS
@@ -224,7 +226,7 @@ if(SuiteSparse_FOUND)
   endforeach()
   set(SuiteSparse_DUNE_COMPILE_FLAGS ${SuiteSparse_COMPILER_FLAGS}
     CACHE STRING "Compile Flags used by DUNE when compiling with SuiteSparse programs")
-  set(SuiteSparse_DUNE_LIBRARIES ${BLAS_LIBRARIES} ${SuiteSparse_LIBRARIES}
+  set(SuiteSparse_DUNE_LIBRARIES ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} ${SuiteSparse_LIBRARIES}
     CACHE STRING "Libraries used by DUNE when linking SuiteSparse programs")
 else()
   # log errornous result
