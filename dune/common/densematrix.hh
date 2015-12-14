@@ -217,10 +217,7 @@ namespace Dune
     typedef typename Traits::const_row_reference const_row_reference;
 
     //! We are at the leaf of the block recursion
-    enum {
-      //! The number of block levels we contain. This is 1.
-      blocklevel = 1
-    };
+    static constexpr int blocklevel = 1;
 
     //===== access to components
 

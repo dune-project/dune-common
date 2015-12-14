@@ -138,7 +138,7 @@ namespace Dune {
    */
   template <DebugLevel current, DebugLevel mask>
   struct common_bits {
-    enum {value = ((current & mask)!=0) };
+    static constexpr bool value = ((current & mask)!=0);
   };
 
 

@@ -67,13 +67,11 @@ namespace Dune
   class FakeMPIHelper
   {
   public:
-    enum {
-      /**
-       * @brief Are we fake (i.e. pretend to have MPI support but are compiled
-       * without.)
-       */
-      isFake = true
-    };
+
+    /**
+     * @brief Are we fake (i.e. pretend to have MPI support but are compiled without).
+     */
+    static constexpr bool isFake = true;
 
     /**
      * @brief The type of the mpi communicator.
@@ -159,13 +157,10 @@ namespace Dune
   class MPIHelper
   {
   public:
-    enum {
-      /**
-       * @brief Are we fake (i. e. pretend to have MPI support but are compiled
-       * without.
-       */
-      isFake = false
-    };
+    /**
+     * @brief Are we fake (i.e. pretend to have MPI support but are compiled without).
+     */
+    static constexpr bool isFake = false;
 
     /**
      * @brief The type of the mpi communicator.

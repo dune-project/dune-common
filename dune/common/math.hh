@@ -86,7 +86,7 @@ namespace Dune
   struct Factorial
   {
     //! factorial stores m!
-    enum { factorial = m * Factorial<m-1>::factorial };
+    static constexpr int factorial = m * Factorial<m-1>::factorial;
   };
 
   //! end of recursion of factorial via specialization
@@ -94,7 +94,7 @@ namespace Dune
   struct Factorial<0>
   {
     // 0! = 1
-    enum { factorial = 1 };
+    static constexpr int factorial = 1;
   };
 
   //! compute conjugate complex of x

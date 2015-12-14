@@ -91,14 +91,11 @@ namespace Dune
      */
     typedef const T* const_pointer;
 
-    enum
-    {
-      /**
-       * @brief The number of elements in one chunk of the list.
-       * This has to be at least one. The default is 100.
-       */
-      chunkSize_ = (N > 0) ? N : 1
-    };
+    /**
+     * @brief The number of elements in one chunk of the list.
+     * This has to be at least one. The default is 100.
+     */
+    static constexpr int chunkSize_ = (N > 0) ? N : 1;
 
     /**
      * @brief A random access iterator.
@@ -273,16 +270,12 @@ namespace Dune
 
     typedef typename A::const_reference const_reference;
 
-    enum
-    {
-      /**
-       * @brief The number of elements in one chunk of the list.
-       *
-       * This has to be at least one. The default is 100.
-       */
-      chunkSize_ = (N > 0) ? N : 1
-    };
-
+    /**
+     * @brief The number of elements in one chunk of the list.
+     *
+     * This has to be at least one. The default is 100.
+     */
+    static constexpr int chunkSize_ = (N > 0) ? N : 1;
 
     /**
      * @brief Comares two iterators.
@@ -394,15 +387,13 @@ namespace Dune
     typedef typename A::reference reference;
 
     typedef typename A::const_reference const_reference;
-    enum
-    {
-      /**
-       * @brief The number of elements in one chunk of the list.
-       *
-       * This has to be at least one. The default is 100.
-       */
-      chunkSize_ = (N > 0) ? N : 1
-    };
+
+    /**
+     * @brief The number of elements in one chunk of the list.
+     *
+     * This has to be at least one. The default is 100.
+     */
+    static constexpr int chunkSize_ = (N > 0) ? N : 1;
 
     /**
      * @brief Comares to iterators.

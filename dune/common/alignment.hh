@@ -32,12 +32,8 @@ namespace Dune
   template <class T>
   struct AlignmentOf
   {
-
-    enum
-    {
-      /** @brief The alignment requirement. */
-      value = std::alignment_of<T>::value
-    };
+    /** @brief The alignment requirement. */
+    static constexpr int value = std::alignment_of<T>::value;
   };
 
   /** @} */

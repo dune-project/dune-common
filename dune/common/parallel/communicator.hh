@@ -295,12 +295,10 @@ namespace Dune
      */
     void free();
   private:
-    enum {
-      /**
-       * @brief Tag for the MPI communication.
-       */
-      commTag_ = 234
-    };
+    /**
+     * @brief Tag for the MPI communication.
+     */
+    static constexpr int commTag_ = 234;
 
     /**
      * @brief The indices also known at other processes.
@@ -687,14 +685,12 @@ namespace Dune
        */
       typedef GatherScatter Gatherer;
 
-      enum {
-        /**
-         * @brief The communication mode
-         *
-         * True if this was a forward communication.
-         */
-        forward=send
-      };
+      /**
+       * @brief The communication mode
+       *
+       * True if this was a forward communication.
+       */
+      static constexpr bool forward = send;
 
       /**
        * @brief Copies the values to send into the buffer.
@@ -722,14 +718,12 @@ namespace Dune
        */
       typedef GatherScatter Gatherer;
 
-      enum {
-        /**
-         * @brief The communication mode
-         *
-         * True if this was a forward communication.
-         */
-        forward=send
-      };
+      /**
+       * @brief The communication mode
+       *
+       * True if this was a forward communication.
+       */
+      static constexpr bool forward = send;
 
       /**
        * @brief Copies the values to send into the buffer.
@@ -764,14 +758,12 @@ namespace Dune
        */
       typedef GatherScatter Scatterer;
 
-      enum {
-        /**
-         * @brief The communication mode
-         *
-         * True if this was a forward communication.
-         */
-        forward=send
-      };
+      /**
+       * @brief The communication mode
+       *
+       * True if this was a forward communication.
+       */
+      static constexpr bool forward = send;
 
       /**
        * @brief Copy the message data from the receive buffer to the data.
@@ -798,14 +790,12 @@ namespace Dune
        */
       typedef GatherScatter Scatterer;
 
-      enum {
-        /**
-         * @brief The communication mode
-         *
-         * True if this was a forward communication.
-         */
-        forward=send
-      };
+      /**
+       * @brief The communication mode
+       *
+       * True if this was a forward communication.
+       */
+      static constexpr bool forward = send;
 
       /**
        * @brief Copy the message data from the receive buffer to the data.
@@ -868,12 +858,10 @@ namespace Dune
      */
     size_t bufferSize_[2];
 
-    enum {
-      /**
-       * @brief The tag we use for communication.
-       */
-      commTag_
-    };
+    /**
+     * @brief The tag we use for communication.
+     */
+    static constexpr int commTag_ = 0;
 
     /**
      * @brief The interface we currently work with.

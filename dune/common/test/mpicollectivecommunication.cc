@@ -21,7 +21,7 @@ int main(int argc, char** argv)
     typedef Helper::MPICommunicator MPIComm;
     Dune::CollectiveCommunication<MPIComm> comm(mpi.getCommunicator());
 
-    enum { length = 5 };
+    constexpr int length = 5;
     double values[5];
     for(int i=0; i<length; ++i) values[i] = 1.0;
 

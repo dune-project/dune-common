@@ -13,7 +13,6 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/densematrix.hh>
 #include <dune/common/precision.hh>
-#include <dune/common/std/constexpr.hh>
 
 namespace Dune
 {
@@ -69,13 +68,10 @@ namespace Dune
     typedef DenseMatrix< FieldMatrix<K,ROWS,COLS> > Base;
   public:
 
-    //! export size
-    enum {
-      //! The number of rows.
-      rows = ROWS,
-      //! The number of columns.
-      cols = COLS
-    };
+    //! The number of rows.
+    static constexpr int rows = ROWS;
+    //! The number of columns.
+    static constexpr int cols = COLS;
 
     typedef typename Base::size_type size_type;
     typedef typename Base::row_type row_type;
@@ -165,8 +161,8 @@ namespace Dune
     }
 
     // make this thing a matrix
-    DUNE_CONSTEXPR size_type mat_rows() const { return ROWS; }
-    DUNE_CONSTEXPR size_type mat_cols() const { return COLS; }
+    constexpr size_type mat_rows() const { return ROWS; }
+    constexpr size_type mat_cols() const { return COLS; }
 
     row_reference mat_access ( size_type i )
     {
@@ -198,26 +194,19 @@ namespace Dune
     typedef typename Base::size_type size_type;
 
     //! We are at the leaf of the block recursion
-    enum {
-      //! The number of block levels we contain.
-      //! This is always one for this type.
-      blocklevel = 1
-    };
+    static constexpr int blocklevel = 1;
 
     typedef typename Base::row_type row_type;
 
     typedef typename Base::row_reference row_reference;
     typedef typename Base::const_row_reference const_row_reference;
 
-    //! export size
-    enum {
-      //! \brief The number of rows.
-      //! This is always one for this type.
-      rows = 1,
-      //! \brief The number of columns.
-      //! This is always one for this type.
-      cols = 1
-    };
+    //! \brief The number of rows.
+    //! This is always one for this type.
+    static constexpr int rows = 1;
+    //! \brief The number of columns.
+    //! This is always one for this type.
+    static constexpr int cols = 1;
 
     //===== constructors
     /** \brief Default constructor
@@ -268,8 +257,8 @@ namespace Dune
     }
 
     // make this thing a matrix
-    DUNE_CONSTEXPR size_type mat_rows() const { return 1; }
-    DUNE_CONSTEXPR size_type mat_cols() const { return 1; }
+    constexpr size_type mat_rows() const { return 1; }
+    constexpr size_type mat_cols() const { return 1; }
 
     row_reference mat_access ( size_type i )
     {

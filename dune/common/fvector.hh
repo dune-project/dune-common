@@ -12,8 +12,6 @@
 #include <initializer_list>
 #include <algorithm>
 
-#include <dune/common/std/constexpr.hh>
-
 #include "typetraits.hh"
 #include "exceptions.hh"
 #include "array.hh"
@@ -61,25 +59,20 @@ namespace Dune {
   template<typename C, int SIZE>
   struct IsFieldVectorSizeCorrect
   {
-    enum {
-      /**
-         *@param True if C is not of type FieldVector or its dimension
-       * is not equal SIZE.
-       */
-      value = true
-    };
+    /** @param True if C is not of type FieldVector or its dimension is not equal SIZE. */
+    static constexpr bool value = true;
   };
 
   template<typename T, int SIZE>
   struct IsFieldVectorSizeCorrect<FieldVector<T,SIZE>,SIZE>
   {
-    enum {value = true};
+    static constexpr bool value = true;
   };
 
   template<typename T, int SIZE, int SIZE1>
   struct IsFieldVectorSizeCorrect<FieldVector<T,SIZE1>,SIZE>
   {
-    enum {value = false};
+    static constexpr bool value = false;
   };
 
 
@@ -95,17 +88,14 @@ namespace Dune {
     std::array<K,SIZE> _data;
     typedef DenseVector< FieldVector<K,SIZE> > Base;
   public:
-    //! export size
-    enum {
-      //! The size of this vector.
-      dimension = SIZE
-    };
+    //! The size of this vector.
+    static constexpr int dimension = SIZE;
 
     typedef typename Base::size_type size_type;
     typedef typename Base::value_type value_type;
 
     //! Constructor making default-initialized vector
-    DUNE_CONSTEXPR FieldVector()
+    constexpr FieldVector()
       : _data{}
     {}
 
@@ -159,7 +149,7 @@ namespace Dune {
     using Base::operator=;
 
     // make this thing a vector
-    DUNE_CONSTEXPR size_type size () const { return SIZE; }
+    constexpr size_type size () const { return SIZE; }
     K & operator[](size_type i) { return _data[i]; }
     const K & operator[](size_type i) const { return _data[i]; }
   private:
@@ -211,18 +201,15 @@ namespace Dune {
     K _data;
     typedef DenseVector< FieldVector<K,1> > Base;
   public:
-    //! export size
-    enum {
-      //! The size of this vector.
-      dimension = 1
-    };
+    //! The size of this vector.
+    static constexpr int dimension = 1;
 
     typedef typename Base::size_type size_type;
 
     //===== construction
 
     /** \brief Default constructor */
-    DUNE_CONSTEXPR FieldVector ()
+    constexpr FieldVector ()
       : _data()
     {}
 
@@ -265,7 +252,7 @@ namespace Dune {
     }
 
     //===== forward methods to container
-    DUNE_CONSTEXPR size_type size () const { return 1; }
+    constexpr size_type size () const { return 1; }
     K & operator[](size_type i)
     {
       DUNE_UNUSED_PARAMETER(i);

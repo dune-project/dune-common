@@ -244,7 +244,7 @@ namespace Dune {
 
   protected:
     // construction allowed to derived classes only
-    DUNE_CONSTEXPR DenseVector () {}
+    constexpr DenseVector () {}
 
   public:
     //===== type definitions and constants
@@ -265,10 +265,7 @@ namespace Dune {
     typedef typename Traits::size_type size_type;
 
     //! We are at the leaf of the block recursion
-    enum {
-      //! The number of block levels we contain
-      blocklevel = 1
-    };
+    static constexpr int blocklevel = 1;
 
     //===== assignment from scalar
     //! Assignment operator for scalar

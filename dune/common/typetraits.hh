@@ -43,33 +43,33 @@ namespace Dune
   private:
     template <class U>
     struct PointerTraits {
-      enum { result = false };
+      static constexpr bool result = false;
       typedef Empty PointeeType;
     };
 
     template <class U>
     struct PointerTraits<U*> {
-      enum { result = true };
+      static constexpr bool result = true;
       typedef U PointeeType;
     };
 
     template <class U> struct ReferenceTraits
     {
-      enum { result = false };
+      static constexpr bool result = false;
       typedef U ReferredType;
     };
 
     template <class U> struct ReferenceTraits<U&>
     {
-      enum { result = true };
+      static constexpr bool result = true;
       typedef U ReferredType;
     };
 
   public:
-    enum { isPointer = PointerTraits<T>::result };
+    static constexpr bool isPointer = PointerTraits<T>::result;
     typedef typename PointerTraits<T>::PointeeType PointeeType DUNE_DEPRECATED_MSG("Use remove_pointer instead!");
 
-    enum { isReference = ReferenceTraits<T>::result };
+    static constexpr bool isReference = ReferenceTraits<T>::result;
     typedef typename ReferenceTraits<T>::ReferredType ReferredType DUNE_DEPRECATED_MSG("Use remove_reference instead!");
   };
 
@@ -80,13 +80,10 @@ namespace Dune
   template<typename T>
   struct ConstantVolatileTraits
   {
-    enum {
-      /** @brief True if T has a volatile specifier. */
-      isVolatile=false,
-      /** @brief True if T has a const qualifier. */
-      isConst=false
-    };
-
+    /** @brief True if T has a volatile specifier. */
+    static constexpr bool isVolatile = false;
+    /** @brief True if T has a const qualifier. */
+    static constexpr bool isConst = false;
     /** @brief The unqualified type. */
     typedef T UnqualifiedType;
     /** @brief The const type. */
@@ -98,9 +95,8 @@ namespace Dune
   template<typename T>
   struct ConstantVolatileTraits<const T>
   {
-    enum {
-      isVolatile=false, isConst=true
-    };
+    static constexpr bool isVolatile = false;
+    static constexpr bool isConst = true;
     typedef T UnqualifiedType;
     typedef const UnqualifiedType ConstType;
     typedef const volatile UnqualifiedType ConstVolatileType;
@@ -110,9 +106,8 @@ namespace Dune
   template<typename T>
   struct ConstantVolatileTraits<volatile T>
   {
-    enum {
-      isVolatile=true, isConst=false
-    };
+    static constexpr bool isVolatile = true;
+    static constexpr bool isConst = false;
     typedef T UnqualifiedType;
     typedef const UnqualifiedType ConstType;
     typedef const volatile UnqualifiedType ConstVolatileType;
@@ -121,9 +116,8 @@ namespace Dune
   template<typename T>
   struct ConstantVolatileTraits<const volatile T>
   {
-    enum {
-      isVolatile=true, isConst=true
-    };
+    static constexpr bool isVolatile = true;
+    static constexpr bool isConst = true;
     typedef T UnqualifiedType;
     typedef const UnqualifiedType ConstType;
     typedef const volatile UnqualifiedType ConstVolatileType;
@@ -133,20 +127,16 @@ namespace Dune
   template<typename T>
   struct IsVolatile
   {
-    enum {
-      /** @brief True if The type is volatile. */
-      value=ConstantVolatileTraits<T>::isVolatile
-    };
+    /** @brief True if The type is volatile. */
+    static constexpr bool value = ConstantVolatileTraits<T>::isVolatile;
   };
 
   /** @brief Tests wether a type is constant. */
   template<typename T>
   struct IsConst
   {
-    enum {
-      /** @brief True if The type is constant. */
-      value=ConstantVolatileTraits<T>::isConst
-    };
+    /** @brief True if The type is constant. */
+    static constexpr bool value = ConstantVolatileTraits<T>::isConst;
   };
 
   template<typename T, bool isVolatile>
@@ -183,14 +173,12 @@ namespace Dune
     static typename remove_reference< From >::type &makeFrom ();
 
   public:
-    enum {
-      /** @brief True if the conversion exists. */
-      exists =  sizeof(test(makeFrom())) == sizeof(Small),
-      /** @brief Whether the conversion exists in both ways. */
-      isTwoWay = exists && Conversion<To,From>::exists,
-      /** @brief True if To and From are the same type. */
-      sameType = false
-    };
+    /** @brief True if the conversion exists. */
+    static constexpr bool exists = sizeof(test(makeFrom())) == sizeof(Small);
+    /** @brief Whether the conversion exists in both ways. */
+    static constexpr bool isTwoWay = exists && Conversion<To,From>::exists;
+    /** @brief True if To and From are the same type. */
+    static constexpr bool sameType = false;
     Conversion(){}
 
   };
@@ -199,39 +187,35 @@ namespace Dune
   class Conversion<From, void>
   {
   public:
-    enum {
-      exists = false,
-      isTwoWay = false,
-      sameType = false
-    };
+    static constexpr bool exists = false;
+    static constexpr bool isTwoWay = false;
+    static constexpr bool sameType = false;
   };
 
   template <class To>
   class Conversion<void, To>
   {
   public:
-    enum {
-      exists = false,
-      isTwoWay = false,
-      sameType = false
-    };
+    static constexpr bool exists = false;
+    static constexpr bool isTwoWay = false;
+    static constexpr bool sameType = false;
   };
 
   template<>
   class Conversion< int, double >
   {
   public:
-    enum {
-      exists = true,
-      isTwoWay = false,
-      sameType = false
-    };
+    static constexpr bool exists = true;
+    static constexpr bool isTwoWay = false;
+    static constexpr bool sameType = false;
   };
 
   template<class T>
   class Conversion<T,T>{
   public:
-    enum { exists=true, isTwoWay=true, sameType=true};
+    static constexpr bool exists = true;
+    static constexpr bool isTwoWay = true;
+    static constexpr bool sameType = true;
   };
 
   /**
@@ -254,10 +238,8 @@ namespace Dune
     static Big test(...);
     static RawDerived* &makePtr ();
   public:
-    enum {
-      /** @brief True if Base is a base class of Derived. */
-      value = sizeof(test(makePtr())) == sizeof(Small)
-    };
+    /** @brief True if Base is a base class of Derived. */
+    static constexpr bool value = sizeof(test(makePtr())) == sizeof(Small);
     IsBaseOf(){}
 
   };
@@ -271,13 +253,8 @@ namespace Dune
   template<class T1, class T2>
   struct IsInteroperable
   {
-    enum {
-      /**
-       * @brief True if either a conversion from T1 to T2 or vice versa
-       * exists.
-       */
-      value = Conversion<T1,T2>::exists || Conversion<T2,T1>::exists
-    };
+    /** @brief True if either a conversion from T1 to T2 or vice versa exists. */
+    static constexpr bool value = Conversion<T1,T2>::exists || Conversion<T2,T1>::exists;
   };
 
   using std::enable_if;

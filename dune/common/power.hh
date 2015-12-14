@@ -19,7 +19,7 @@ namespace Dune {
   struct StaticPower
   {
     /** \brief power stores m^p */
-    enum { power = (m * StaticPower<m,p-1>::power ) };
+    static constexpr int power = m * StaticPower<m,p-1>::power;
   };
 
   //! end of recursion via specialization
@@ -27,7 +27,7 @@ namespace Dune {
   struct StaticPower< m , 0>
   {
     /** \brief m^0 = 1 */
-    enum { power = 1 };
+    static constexpr int power = 1;
   };
 
 
