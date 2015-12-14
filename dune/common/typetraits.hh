@@ -367,7 +367,7 @@ namespace Dune
   template<typename T>
   struct AlwaysFalse {
     //! always a false value
-    static const bool value = false;
+    static constexpr bool value = false;
   };
 
   /**
@@ -380,7 +380,7 @@ namespace Dune
   template<typename T>
   struct AlwaysTrue {
     //! always a true value
-    static const bool value = true;
+    static constexpr bool value = true;
   };
 
   template <typename T>

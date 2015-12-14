@@ -205,8 +205,7 @@ namespace Dune
   template<int k>
   void bigunsignedint<k>::assign(std::uintmax_t x)
   {
-    static const int no=std::min(static_cast<int>(n),
-                                 static_cast<int>(std::numeric_limits<std::uintmax_t>::digits/bits));
+    static constexpr int no=std::min(static_cast<int>(n),static_cast<int>(std::numeric_limits<std::uintmax_t>::digits/bits));
 
     for(int i=0; i<no; ++i) {
       digit[i] = (x&bitmask);
@@ -593,7 +592,7 @@ namespace std
     : private Dune::numeric_limits_helper<Dune::bigunsignedint<k> > // for access to internal state of bigunsignedint
   {
   public:
-    static const bool is_specialized = true;
+    static constexpr bool is_specialized = true;
 
     static Dune::bigunsignedint<k> min()
     {
@@ -611,12 +610,11 @@ namespace std
     }
 
 
-    static const int digits = Dune::bigunsignedint<k>::bits *
-                              Dune::bigunsignedint<k>::n;
-    static const bool is_signed = false;
-    static const bool is_integer = true;
-    static const bool is_exact = true;
-    static const int radix = 2;
+    static constexpr int digits = Dune::bigunsignedint<k>::bits * Dune::bigunsignedint<k>::n;
+    static constexpr bool is_signed = false;
+    static constexpr bool is_integer = true;
+    static constexpr bool is_exact = true;
+    static constexpr int radix = 2;
 
     static Dune::bigunsignedint<k> epsilon()
     {
@@ -628,17 +626,17 @@ namespace std
       return static_cast<Dune::bigunsignedint<k> >(0);
     }
 
-    static const int min_exponent = 0;
-    static const int min_exponent10 = 0;
-    static const int max_exponent = 0;
-    static const int max_exponent10 = 0;
+    static constexpr int min_exponent = 0;
+    static constexpr int min_exponent10 = 0;
+    static constexpr int max_exponent = 0;
+    static constexpr int max_exponent10 = 0;
 
-    static const bool has_infinity = false;
-    static const bool has_quiet_NaN = false;
-    static const bool has_signaling_NaN = false;
+    static constexpr bool has_infinity = false;
+    static constexpr bool has_quiet_NaN = false;
+    static constexpr bool has_signaling_NaN = false;
 
-    static const float_denorm_style has_denorm = denorm_absent;
-    static const bool has_denorm_loss = false;
+    static constexpr float_denorm_style has_denorm = denorm_absent;
+    static constexpr bool has_denorm_loss = false;
 
     static Dune::bigunsignedint<k> infinity() throw()
     {
@@ -660,13 +658,13 @@ namespace std
       return static_cast<Dune::bigunsignedint<k> >(0);
     }
 
-    static const bool is_iec559 = false;
-    static const bool is_bounded = true;
-    static const bool is_modulo = true;
+    static constexpr bool is_iec559 = false;
+    static constexpr bool is_bounded = true;
+    static constexpr bool is_modulo = true;
 
-    static const bool traps = false;
-    static const bool tinyness_before = false;
-    static const float_round_style round_style = round_toward_zero;
+    static constexpr bool traps = false;
+    static constexpr bool tinyness_before = false;
+    static constexpr float_round_style round_style = round_toward_zero;
 
   };
 

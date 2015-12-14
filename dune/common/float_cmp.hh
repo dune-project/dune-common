@@ -291,9 +291,9 @@ namespace Dune {
   public:
     // record template parameters
     //! How comparisons are done
-    static const CmpStyle cstyle = cstyle_;
+    static constexpr CmpStyle cstyle = cstyle_;
     //! How rounding is done
-    static const RoundingStyle rstyle = rstyle_;
+    static constexpr RoundingStyle rstyle = rstyle_;
     //! Type of the values to compare
     typedef T ValueType;
     //! Type of the epsilon.

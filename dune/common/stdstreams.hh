@@ -64,13 +64,13 @@ namespace Dune {
 #ifndef DUNE_MINIMAL_DEBUG_LEVEL
 #define DUNE_MINIMAL_DEBUG_LEVEL 4
 #endif
-  static const DebugLevel MINIMAL_DEBUG_LEVEL = DUNE_MINIMAL_DEBUG_LEVEL;
+  static constexpr DebugLevel MINIMAL_DEBUG_LEVEL = DUNE_MINIMAL_DEBUG_LEVEL;
 
   /**
       @brief The level of the very verbose debug stream.
       @see dvverb
    */
-  static const DebugLevel VERY_VERBOSE_DEBUG_LEVEL = 1;
+  static constexpr DebugLevel VERY_VERBOSE_DEBUG_LEVEL = 1;
 
   /**
       @brief Type of very verbose debug stream.
@@ -96,7 +96,7 @@ namespace Dune {
       @brief The level of the verbose debug stream.
       @see dvverb
    */
-  static const DebugLevel VERBOSE_DEBUG_LEVEL = 2;
+  static constexpr DebugLevel VERBOSE_DEBUG_LEVEL = 2;
 
   /**
       @brief Type of more verbose debug stream.
@@ -117,7 +117,7 @@ namespace Dune {
       @brief The level of the informative debug stream.
       @see dinfo
    */
-  static const DebugLevel INFO_DEBUG_LEVEL = 3;
+  static constexpr DebugLevel INFO_DEBUG_LEVEL = 3;
 
   /**
       @brief Type of debug stream with info level.
@@ -141,7 +141,7 @@ namespace Dune {
       @brief The level of the debug stream for warnings.
       @see dwarn
    */
-  static const DebugLevel WARN_DEBUG_LEVEL = 4;
+  static constexpr DebugLevel WARN_DEBUG_LEVEL = 4;
 
   /**
       @brief Type of debug stream with warn level.
@@ -162,7 +162,7 @@ namespace Dune {
       @brief The level of the debug stream for fatal errors.
       @see dgrave
    */
-  static const DebugLevel GRAVE_DEBUG_LEVEL = 5;
+  static constexpr DebugLevel GRAVE_DEBUG_LEVEL = 5;
 
   /** @brief Type of debug stream for fatal errors.*/
   typedef DebugStream<GRAVE_DEBUG_LEVEL, MINIMAL_DEBUG_LEVEL> DGraveType;

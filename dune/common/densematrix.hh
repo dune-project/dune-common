@@ -118,7 +118,7 @@ namespace Dune
         static no test(...);
 
       public:
-         static const bool v = sizeof( test< const T >( 0 ) ) == sizeof( yes );
+         static constexpr bool v = sizeof( test< const T >( 0 ) ) == sizeof( yes );
       };
 
       template< class M, class T, bool = have_istl_assign_to_fmatrix< M, T >::v >

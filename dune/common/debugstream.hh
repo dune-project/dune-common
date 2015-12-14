@@ -48,7 +48,7 @@ namespace Dune {
      Example:
 
      \code
-     static const Dune::DebugLevel APPL_MINLEVEL = 3;
+     static constexpr Dune::DebugLevel APPL_MINLEVEL = 3;
 
      Dune::DebugStream<1, APPL_MINLEVEL> myverbose;
      Dune::DebugStream<2, APPL_MINLEVEL> myinfo;
@@ -64,8 +64,8 @@ namespace Dune {
      \code
      enum { APPL_CORE = 1, APPL_IO = 2, APPL_GRAPHICS = 4};
 
-     static const Dune::DebugLevel APPL_DEBUG_MASK = APPL_CORE | APPL_GRAPHICS;
-     static const Dune::DebugLevel APPL_ACTIVE_MASK = 0xff;
+     static constexpr Dune::DebugLevel APPL_DEBUG_MASK = APPL_CORE | APPL_GRAPHICS;
+     static constexpr Dune::DebugLevel APPL_ACTIVE_MASK = 0xff;
 
      Dune::DebugStream<APPL_CORE, APPL_DEBUG_MASK, APPL_ACTIVE_MASK, Dune::common_bits> coreout;
      Dune::DebugStream<APPL_IO, APPL_DEBUG_MASK, APPL_ACTIVE_MASK, Dune::common_bits> ioout;
@@ -126,7 +126,7 @@ namespace Dune {
    */
   template <DebugLevel current, DebugLevel threshold>
   struct greater_or_equal {
-    static const bool value = (current >= threshold);
+    static constexpr bool value = (current >= threshold);
   };
 
 

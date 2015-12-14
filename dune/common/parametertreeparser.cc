@@ -220,7 +220,7 @@ void Dune::ParameterTreeParser::readNamedOptions(int argc, char* argv[],
 std::string Dune::ParameterTreeParser::generateHelpString(
   std::string progname, std::vector<std::string> keywords, unsigned int required, std::vector<std::string> help)
 {
-  static const char braces[] = "<>[]";
+  constexpr char braces[] = "<>[]";
   std::string helpstr = "";
   helpstr = helpstr + "Usage: " + progname;
   for (std::size_t i=0; i<keywords.size(); i++)

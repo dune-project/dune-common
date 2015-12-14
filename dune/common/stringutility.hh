@@ -71,7 +71,7 @@ namespace Dune {
   template<class... T>
   static std::string formatString(const std::string& s, const T&... args)
   {
-    static const int bufferSize=1000;
+    constexpr int bufferSize=1000;
     char buffer[bufferSize];
 
     // try to format with static buffer

@@ -44,17 +44,17 @@ namespace CheckMatrixInterface
     template< class Matrix >
     struct hasStaticSizes
     {
-      static const bool v = false;
-      static const int rows = ~0;
-      static const int cols = ~0;
+      static constexpr bool v = false;
+      static constexpr int rows = ~0;
+      static constexpr int cols = ~0;
     };
 
     template< class Matrix >
     struct hasStaticSizes< const Matrix >
     {
-      static const bool v = hasStaticSizes< Matrix >::v;
-      static const int rows = hasStaticSizes< Matrix >::rows;
-      static const int cols = hasStaticSizes< Matrix >::cols;
+      static constexpr bool v = hasStaticSizes< Matrix >::v;
+      static constexpr int rows = hasStaticSizes< Matrix >::rows;
+      static constexpr int cols = hasStaticSizes< Matrix >::cols;
     };
 
 
@@ -65,13 +65,13 @@ namespace CheckMatrixInterface
     template< class Matrix >
     struct isSquare
     {
-      static const bool v = false;
+      static constexpr bool v = false;
     };
 
     template< class Matrix >
     struct isSquare< const Matrix >
     {
-      static const bool v = isSquare< Matrix >::v;
+      static constexpr bool v = isSquare< Matrix >::v;
     };
 
 
@@ -82,15 +82,15 @@ namespace CheckMatrixInterface
     template< class K, int r, int c >
     struct hasStaticSizes< Dune::FieldMatrix< K, r, c > >
     {
-      static const bool v = true;
-      static const int rows = r;
-      static const int cols = c;
+      static constexpr bool v = true;
+      static constexpr int rows = r;
+      static constexpr int cols = c;
     };
 
     template< class K, int rows, int cols >
     struct isSquare< Dune::FieldMatrix< K, rows, cols > >
     {
-      static const bool v = ( rows == cols );
+      static constexpr bool v = ( rows == cols );
     };
 
 
@@ -101,15 +101,15 @@ namespace CheckMatrixInterface
     template< class K, int n >
     struct hasStaticSizes< Dune::DiagonalMatrix<K,n> >
     {
-      static const bool v = true;
-      static const int rows = n;
-      static const int cols = n;
+      static constexpr bool v = true;
+      static constexpr int rows = n;
+      static constexpr int cols = n;
     };
 
     template< class K, int n >
     struct isSquare< Dune::DiagonalMatrix<K,n> >
     {
-      static const bool v = true;
+      static constexpr bool v = true;
     };
 
   } // namespace Capabilities
