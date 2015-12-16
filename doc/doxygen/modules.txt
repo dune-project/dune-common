@@ -1,5 +1,6 @@
 /**
-  @defgroup Common Common (foundation classes)
+  @defgroup Common Common
+  @brief foundation classes
 */
 
 /**
@@ -8,9 +9,43 @@
   @ingroup Common
 */
 
+/**
+  @defgroup Utilities Utilities
+  @brief Collection of helper classes, type traits, etc.
+  @ingroup Common
+*/
+
+/**
+  @defgroup Path Filesystem Paths
+  @brief Utilities for filesystem path management
+  @ingroup Utilities
+*/
+
+/**
+  @defgroup StringUtilities String Utilities
+  @brief Utility functions for std::string
+  @ingroup Utilities
+*/
+
+/**
+  @defgroup TupleUtilities Tuple Utilities
+  @brief Utility classes which can be used with std::tuple
+  @ingroup Utilities
+*/
 
 /**
   @defgroup TypeUtilities Type Utilities
   @brief Type traits, overload helpers, and other utilities for type computations
+  @ingroup Utilities
+*/
+
+/**
+  @defgroup Numbers Numbers
+  @brief Class implementing different number representations and helper functions
   @ingroup Common
+*/
+
+/**
+  @defgroup FloatCmp FloatCmp
+  @ingroup Numbers
 */
