@@ -531,6 +531,25 @@ namespace Dune
 
 #endif // defined(DOXYGEN) or HAVE_IS_INDEXABLE_SUPPORT
 
+  /**
+     typetrait to check that a class has begin() and end() members
+   */
+  // default version, gets picked if SFINAE fails
+  template<typename T, typename = void, typename = void>
+  struct is_range
+    : public std::false_type
+  {};
+
+#ifndef DOXYGEN
+  // version for types with begin() and end()
+  template<typename T>
+  struct is_range<T,
+                  decltype(Std::declval<T>().begin()),
+                  decltype(Std::declval<T>().end())>
+    : public std::true_type
+  {};
+#endif
+
   namespace detail
   {
     ///
