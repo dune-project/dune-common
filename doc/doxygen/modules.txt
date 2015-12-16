@@ -1,5 +1,6 @@
 /**
-  @defgroup Common Common (foundation classes)
+  @defgroup Common Common
+  @brief foundation classes
 */
 
 /**
@@ -36,4 +37,15 @@
   @defgroup TypeUtilities Type Utilities
   @brief Type traits, overload helpers, and other utilities for type computations
   @ingroup Utilities
+*/
+
+/**
+  @defgroup Numbers Numbers
+  @brief Class implementing different number representations and helper functions
+  @ingroup Common
+*/
+
+/**
+  @defgroup FloatCmp FloatCmp
+  @ingroup Numbers
 */
