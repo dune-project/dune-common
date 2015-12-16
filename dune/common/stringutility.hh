@@ -22,11 +22,11 @@
 
 namespace Dune {
 
-   /** @addtogroup Common
-
-          @{
-   */
-
+   /**
+    * @addtogroup StringUtilities
+    *
+    * @{
+    */
 
   /** \brief Check whether a character container has a given prefix
    *

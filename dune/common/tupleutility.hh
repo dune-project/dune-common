@@ -14,7 +14,7 @@
 
 namespace Dune {
 
-  /** @ addtogroup Common
+  /** @addtogroup TupleUtilities
    *
    * @{
    */
