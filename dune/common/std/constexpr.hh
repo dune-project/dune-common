@@ -24,4 +24,6 @@
 #define DUNE_CONSTEXPR
 #endif // #else // #if HAVE_CONSTEXPR
 
+#warning The header dune/common/std/constexpr.hh is deprecated. Just remove the include.
+
 #endif // #ifndef DUNE_COMMON_STD_CONSTEXPR_HH
