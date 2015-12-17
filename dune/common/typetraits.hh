@@ -85,7 +85,7 @@ namespace Dune
 
   /** @brief Tests wether a type is volatile. */
   template<typename T>
-  struct IsVolatile
+  struct DUNE_DEPRECATED_MSG("Use std::is_volatile instead!") IsVolatile
   {
     enum {
       /** @brief True if The type is volatile. */
@@ -95,7 +95,7 @@ namespace Dune
 
   /** @brief Tests wether a type is constant. */
   template<typename T>
-  struct IsConst
+  struct DUNE_DEPRECATED_MSG("Use std::is_const instead!") IsConst
   {
     enum {
       /** @brief True if The type is constant. */
@@ -133,7 +133,7 @@ namespace Dune
    * @tparam Derived type you want to test
    */
   template <class Base, class Derived>
-  class IsBaseOf
+  class DUNE_DEPRECATED_MSG("Use std::is_base_of instead!") IsBaseOf
   {
   public:
     enum {
