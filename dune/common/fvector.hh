@@ -12,8 +12,6 @@
 #include <initializer_list>
 #include <algorithm>
 
-#include <dune/common/std/constexpr.hh>
-
 #include "typetraits.hh"
 #include "exceptions.hh"
 #include "array.hh"
@@ -105,7 +103,7 @@ namespace Dune {
     typedef typename Base::value_type value_type;
 
     //! Constructor making default-initialized vector
-    DUNE_CONSTEXPR FieldVector()
+    constexpr FieldVector()
       : _data{}
     {}
 
@@ -159,7 +157,7 @@ namespace Dune {
     using Base::operator=;
 
     // make this thing a vector
-    DUNE_CONSTEXPR size_type size () const { return SIZE; }
+    constexpr size_type size () const { return SIZE; }
     K & operator[](size_type i) { return _data[i]; }
     const K & operator[](size_type i) const { return _data[i]; }
   private:
@@ -222,7 +220,7 @@ namespace Dune {
     //===== construction
 
     /** \brief Default constructor */
-    DUNE_CONSTEXPR FieldVector ()
+    constexpr FieldVector ()
       : _data()
     {}
 
@@ -265,7 +263,7 @@ namespace Dune {
     }
 
     //===== forward methods to container
-    DUNE_CONSTEXPR size_type size () const { return 1; }
+    constexpr size_type size () const { return 1; }
     K & operator[](size_type i)
     {
       DUNE_UNUSED_PARAMETER(i);

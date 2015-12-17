@@ -40,9 +40,9 @@ namespace Dune
     typedef std::size_t size_type;
 
     /** \brief return number of rows */
-    DUNE_CONSTEXPR size_type rows () const { return N; }
+    constexpr size_type rows () const { return N; }
     /** \brief return number of columns */
-    DUNE_CONSTEXPR size_type cols () const { return N; }
+    constexpr size_type cols () const { return N; }
 
     /** \copydoc Dune::DenseMatrix::mv */
     template< class X, class Y >
