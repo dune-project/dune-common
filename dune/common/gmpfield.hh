@@ -10,13 +10,17 @@
 #include <iostream>
 #include <string>
 
-#if HAVE_GMP
+#if HAVE_GMP || DOXYGEN
 
 #include <gmpxx.h>
 
 namespace Dune
 {
 
+  /**
+   * \ingroup Numbers
+   * \brief Number class for high precision floating point number using the GMP library mpf_class implementation
+   */
   template< unsigned int precision >
   class GMPField
     : public mpf_class
