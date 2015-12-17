@@ -4,7 +4,6 @@
 #include <dune/common/fmatrix.hh>
 #include <dune/common/ftraits.hh>
 #include <dune/common/math.hh>
-#include <dune/common/std/constexpr.hh>
 
 /**
  * \file
