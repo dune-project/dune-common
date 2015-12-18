@@ -138,7 +138,7 @@ namespace Dune {
      * \param[in]  dummy  A void* dummy argument needed by SFINAE.
      */
     template<class C>
-    FieldVector (const DenseVector<C> & x, typename Dune::enable_if<IsFieldVectorSizeCorrect<C,SIZE>::value>::type* dummy=0 )
+    FieldVector (const DenseVector<C> & x, typename std::enable_if<IsFieldVectorSizeCorrect<C,SIZE>::value>::type* dummy=0 )
     {
       DUNE_UNUSED_PARAMETER(dummy);
       // do a run-time size check, for the case that x is not a FieldVector

@@ -371,7 +371,7 @@ namespace Dune
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename enable_if<Conversion<T2,T1>::exists,bool>::type
+  inline typename std::enable_if<Conversion<T2,T1>::exists,bool>::type
   operator==(const BidirectionalIteratorFacade<T1,V1,R1,D>& lhs,
              const BidirectionalIteratorFacade<T2,V2,R2,D>& rhs)
   {
@@ -389,7 +389,7 @@ namespace Dune
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
   inline
-  typename enable_if<Conversion<T1,T2>::exists && !Conversion<T2,T1>::exists,
+  typename std::enable_if<Conversion<T1,T2>::exists && !Conversion<T2,T1>::exists,
       bool>::type
   operator==(const BidirectionalIteratorFacade<T1,V1,R1,D>& lhs,
              const BidirectionalIteratorFacade<T2,V2,R2,D>& rhs)
