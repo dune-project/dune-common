@@ -27,8 +27,8 @@ namespace Dune
      template<class C, class T>
      class TestIterator : public Dune::BidirectionalIteratorFacade<TestIterator<C,T>,T, T&, int>
      {
-      friend class TestIterator<typename remove_const<C>::type, typename remove_const<T>::type >;
-      friend class TestIterator<const typename remove_const<C>::type, const typename remove_const<T>::type >;
+      friend class TestIterator<typename std::remove_const<C>::type, typename std::remove_const<T>::type >;
+      friend class TestIterator<const typename std::remove_const<C>::type, const typename std::remove_const<T>::type >;
 
      public:
 
@@ -40,23 +40,23 @@ namespace Dune
         : container_(&cont), position_(pos)
       {}
 
-      TestIterator(const TestIterator<typename remove_const<C>::type, typename remove_const<T>::type >& other)
+      TestIterator(const TestIterator<typename std::remove_const<C>::type, typename std::remove_const<T>::type >& other)
         : container_(other.container_), position_(other.position_)
       {}
 
 
-      TestIterator(const TestIterator<const typename remove_const<C>::type, const typename remove_const<T>::type >& other)
+      TestIterator(const TestIterator<const typename std::remove_const<C>::type, const typename std::remove_const<T>::type >& other)
         : container_(other.container_), position_(other.position_)
       {}
 
       // Methods needed by the forward iterator
-      bool equals(const TestIterator<typename remove_const<C>::type,typename remove_const<T>::type>& other) const
+      bool equals(const TestIterator<typename std::remove_const<C>::type,typename std::remove_const<T>::type>& other) const
       {
         return position_ == other.position_ && container_ == other.container_;
       }
 
 
-      bool equals(const TestIterator<const typename remove_const<C>::type,const typename remove_const<T>::type>& other) const
+      bool equals(const TestIterator<const typename std::remove_const<C>::type,const typename std::remove_const<T>::type>& other) const
       {
         return position_ == other.position_ && container_ == other.container_;
       }
@@ -88,13 +88,13 @@ namespace Dune
         position_=position_+n;
       }
 
-      std::ptrdiff_t distanceTo(TestIterator<const typename remove_const<C>::type,const typename remove_const<T>::type> other) const
+      std::ptrdiff_t distanceTo(TestIterator<const typename std::remove_const<C>::type,const typename std::remove_const<T>::type> other) const
       {
         assert(other.container_==container_);
         return other.position_ - position_;
       }
 
-      std::ptrdiff_t distanceTo(TestIterator<const typename remove_const<C>::type, typename remove_const<T>::type> other) const
+      std::ptrdiff_t distanceTo(TestIterator<const typename std::remove_const<C>::type, typename std::remove_const<T>::type> other) const
       {
         assert(other.container_==container_);
         return other.position_ - position_;
@@ -134,7 +134,7 @@ namespace Dune
   template<class T, class V, class R = V&, class D = std::ptrdiff_t>
   class ForwardIteratorFacade :
     public std::iterator< std::forward_iterator_tag,
-        typename remove_const<V>::type,                   // std::iterator needs mutable value type
+        typename std::remove_const<V>::type,                   // std::iterator needs mutable value type
         D,
         V*,
         R>
@@ -265,7 +265,7 @@ namespace Dune
   template<class T, class V, class R = V&, class D = std::ptrdiff_t>
   class BidirectionalIteratorFacade :
     public std::iterator< std::bidirectional_iterator_tag,
-        typename remove_const<V>::type,                   // std::iterator needs mutable value type
+        typename std::remove_const<V>::type,                   // std::iterator needs mutable value type
         D,
         V*,
         R>
@@ -423,7 +423,7 @@ namespace Dune
   template<class T, class V, class R = V&, class D = std::ptrdiff_t>
   class RandomAccessIteratorFacade :
     public std::iterator< std::random_access_iterator_tag,
-        typename remove_const<V>::type,                   // std::iterator needs mutable value type
+        typename std::remove_const<V>::type,                   // std::iterator needs mutable value type
         D,
         V*,
         R>

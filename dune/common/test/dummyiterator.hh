@@ -13,7 +13,7 @@ class dummyiterator
   : public Dune::BidirectionalIteratorFacade<dummyiterator<T>, T, T&,
         std::ptrdiff_t>
 {
-  friend class dummyiterator<const typename Dune::remove_const<T>::type>;
+  friend class dummyiterator<const typename std::remove_const<T>::type>;
 
   T *value;
 
