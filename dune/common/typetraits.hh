@@ -36,51 +36,17 @@ namespace Dune
   {
     enum {
       /** @brief True if T has a volatile specifier. */
-      isVolatile=false,
+      isVolatile=std::is_volatile<T>::value,
       /** @brief True if T has a const qualifier. */
-      isConst=false
+      isConst=std::is_const<T>::value
     };
 
     /** @brief The unqualified type. */
-    typedef T UnqualifiedType;
+    typedef typename std::remove_cv<T>::type UnqualifiedType;
     /** @brief The const type. */
-    typedef const T ConstType;
+    typedef typename std::add_const<UnqualifiedType>::type ConstType;
     /** @brief The const volatile type. */
-    typedef const volatile T ConstVolatileType;
-  };
-
-  template<typename T>
-  struct ConstantVolatileTraits<const T>
-  {
-    enum {
-      isVolatile=false, isConst=true
-    };
-    typedef T UnqualifiedType;
-    typedef const UnqualifiedType ConstType;
-    typedef const volatile UnqualifiedType ConstVolatileType;
-  };
-
-
-  template<typename T>
-  struct ConstantVolatileTraits<volatile T>
-  {
-    enum {
-      isVolatile=true, isConst=false
-    };
-    typedef T UnqualifiedType;
-    typedef const UnqualifiedType ConstType;
-    typedef const volatile UnqualifiedType ConstVolatileType;
-  };
-
-  template<typename T>
-  struct ConstantVolatileTraits<const volatile T>
-  {
-    enum {
-      isVolatile=true, isConst=true
-    };
-    typedef T UnqualifiedType;
-    typedef const UnqualifiedType ConstType;
-    typedef const volatile UnqualifiedType ConstVolatileType;
+    typedef typename std::add_cv<UnqualifiedType>::type ConstVolatileType;
   };
 
   /** @brief Tests wether a type is volatile. */
