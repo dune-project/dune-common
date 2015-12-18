@@ -61,7 +61,7 @@ typedef std::tuple<char, float> MyTuple2;
 typedef std::tuple<MyTuple, MyTuple2> MyTupleTuple;
 typedef Dune::FlattenTuple<MyTupleTuple>::type MyTupleTupleFlat1;
 typedef std::tuple<int, unsigned, double, char, float> MyTupleTupleFlat2;
-static_assert((Dune::is_same<MyTupleTupleFlat1, MyTupleTupleFlat2>::value),
+static_assert((std::is_same<MyTupleTupleFlat1, MyTupleTupleFlat2>::value),
               "FlattenTuples failed!");
 
 

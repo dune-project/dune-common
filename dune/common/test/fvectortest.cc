@@ -36,22 +36,22 @@ struct FieldVectorMainTestCommons
 
     // test exported types
     static_assert(
-      Dune::is_same<ft,typename FieldVector<ft,d>::value_type>::value,
+      std::is_same<ft,typename FieldVector<ft,d>::value_type>::value,
       "FieldVector::value_type is not the correct type"
     );
 
     // test traits
     static_assert(
-      ( Dune::is_same< typename Dune::FieldTraits<
+      ( std::is_same< typename Dune::FieldTraits<
                 FieldVector<ft,d> >::field_type, ft >::value ),
       "FieldTraits<FieldVector> yields wrong field_type"
       );
     static_assert(
-      ( Dune::is_same< typename Dune::FieldTraits<ft>::real_type, rt >::value ),
+      ( std::is_same< typename Dune::FieldTraits<ft>::real_type, rt >::value ),
       "FieldTraits<field_type> yields wrong real_type"
       );
     static_assert(
-      ( Dune::is_same< typename Dune::FieldTraits<
+      ( std::is_same< typename Dune::FieldTraits<
                 FieldVector<ft,d> >::real_type, rt >::value ),
       "FieldTraits<FieldVector> yields wrong real_type"
       );
@@ -258,7 +258,7 @@ struct DotProductTest
     DUNE_UNUSED const rt myEps = Epsilon<rt>::value();
 
     static_assert(
-      ( Dune::is_same< typename Dune::FieldTraits<rt>::real_type, rt>::value ),
+      ( std::is_same< typename Dune::FieldTraits<rt>::real_type, rt>::value ),
       "DotProductTest requires real data type as template parameter!"
       );
 
@@ -268,8 +268,8 @@ struct DotProductTest
 
     std::cout << __func__ << "\t \t ( " << Dune::className(one) << " and " << Dune::className(iVec) << ")" << std::endl;
 
-    const bool isRealOne = Dune::is_same<typename Dune::FieldTraits<rt>::field_type,typename Dune::FieldTraits<rt>::real_type>::value;
-    const bool isRealIVec = Dune::is_same<typename Dune::FieldTraits<ct>::field_type,typename Dune::FieldTraits<ct>::real_type> ::value;
+    const bool isRealOne = std::is_same<typename Dune::FieldTraits<rt>::field_type,typename Dune::FieldTraits<rt>::real_type>::value;
+    const bool isRealIVec = std::is_same<typename Dune::FieldTraits<ct>::field_type,typename Dune::FieldTraits<ct>::real_type> ::value;
     static_assert(isRealOne,"1-vector expected to be real");
     static_assert(!isRealIVec,"i-vector expected to be complex");
 
@@ -326,7 +326,7 @@ struct DotProductTest<rt, d, false>
     DUNE_UNUSED const rt myEps = Epsilon<rt>::value();
 
     static_assert(
-      ( Dune::is_same< typename Dune::FieldTraits<rt>::real_type, rt>::value ),
+      ( std::is_same< typename Dune::FieldTraits<rt>::real_type, rt>::value ),
       "DotProductTest requires real data type as template parameter!"
       );
 
@@ -334,7 +334,7 @@ struct DotProductTest<rt, d, false>
 
     std::cout << __func__ << "\t \t ( " << Dune::className(one) << " only)" << std::endl;
 
-    const bool isRealOne = Dune::is_same<typename Dune::FieldTraits<rt>::field_type,typename Dune::FieldTraits<rt>::real_type>::value;
+    const bool isRealOne = std::is_same<typename Dune::FieldTraits<rt>::field_type,typename Dune::FieldTraits<rt>::real_type>::value;
     static_assert(isRealOne,"1-vector expected to be real");
 
     rt result = rt();
