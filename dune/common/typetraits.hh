@@ -135,7 +135,7 @@ namespace Dune
    */
   template<class T1, class T2, class Type>
   struct EnableIfInterOperable
-    : public enable_if<IsInteroperable<T1,T2>::value, Type>
+    : public std::enable_if<IsInteroperable<T1,T2>::value, Type>
   {};
 
   // pull in default implementation
