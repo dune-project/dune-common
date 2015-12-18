@@ -149,11 +149,11 @@ namespace Dune {
   class GenericIterator :
     public IteratorFacade<GenericIterator<C,T,R,D,IteratorFacade>,T,R,D>
   {
-    friend class GenericIterator<typename remove_const<C>::type, typename remove_const<T>::type, typename mutable_reference<R>::type, D, IteratorFacade>;
-    friend class GenericIterator<const typename remove_const<C>::type, const typename remove_const<T>::type, typename const_reference<R>::type, D, IteratorFacade>;
+    friend class GenericIterator<typename std::remove_const<C>::type, typename std::remove_const<T>::type, typename mutable_reference<R>::type, D, IteratorFacade>;
+    friend class GenericIterator<const typename std::remove_const<C>::type, const typename std::remove_const<T>::type, typename const_reference<R>::type, D, IteratorFacade>;
 
-    typedef GenericIterator<typename remove_const<C>::type, typename remove_const<T>::type, typename mutable_reference<R>::type, D, IteratorFacade> MutableIterator;
-    typedef GenericIterator<const typename remove_const<C>::type, const typename remove_const<T>::type, typename const_reference<R>::type, D, IteratorFacade> ConstIterator;
+    typedef GenericIterator<typename std::remove_const<C>::type, typename std::remove_const<T>::type, typename mutable_reference<R>::type, D, IteratorFacade> MutableIterator;
+    typedef GenericIterator<const typename std::remove_const<C>::type, const typename std::remove_const<T>::type, typename const_reference<R>::type, D, IteratorFacade> ConstIterator;
 
   public:
 

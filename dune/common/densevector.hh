@@ -125,11 +125,11 @@ namespace Dune {
   class DenseIterator :
     public Dune::RandomAccessIteratorFacade<DenseIterator<C,T,R>,T, R, std::ptrdiff_t>
   {
-    friend class DenseIterator<typename remove_const<C>::type, typename remove_const<T>::type, typename mutable_reference<R>::type >;
-    friend class DenseIterator<const typename remove_const<C>::type, const typename remove_const<T>::type, typename const_reference<R>::type >;
+    friend class DenseIterator<typename std::remove_const<C>::type, typename std::remove_const<T>::type, typename mutable_reference<R>::type >;
+    friend class DenseIterator<const typename std::remove_const<C>::type, const typename std::remove_const<T>::type, typename const_reference<R>::type >;
 
-    typedef DenseIterator<typename remove_const<C>::type, typename remove_const<T>::type, typename mutable_reference<R>::type > MutableIterator;
-    typedef DenseIterator<const typename remove_const<C>::type, const typename remove_const<T>::type, typename const_reference<R>::type > ConstIterator;
+    typedef DenseIterator<typename std::remove_const<C>::type, typename std::remove_const<T>::type, typename mutable_reference<R>::type > MutableIterator;
+    typedef DenseIterator<const typename std::remove_const<C>::type, const typename std::remove_const<T>::type, typename const_reference<R>::type > ConstIterator;
   public:
 
     /**
@@ -193,13 +193,13 @@ namespace Dune {
       position_=position_+n;
     }
 
-    DifferenceType distanceTo(DenseIterator<const typename remove_const<C>::type,const typename remove_const<T>::type> other) const
+    DifferenceType distanceTo(DenseIterator<const typename std::remove_const<C>::type,const typename std::remove_const<T>::type> other) const
     {
       assert(other.container_==container_);
       return other.position_ - position_;
     }
 
-    DifferenceType distanceTo(DenseIterator<typename remove_const<C>::type, typename remove_const<T>::type> other) const
+    DifferenceType distanceTo(DenseIterator<typename std::remove_const<C>::type, typename std::remove_const<T>::type> other) const
     {
       assert(other.container_==container_);
       return other.position_ - position_;

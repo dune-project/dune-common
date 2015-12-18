@@ -978,7 +978,7 @@ namespace Dune {
   template<class CW, class T, class R>
   class ContainerWrapperIterator : public BidirectionalIteratorFacade<ContainerWrapperIterator<CW,T,R>,T, R, int>
   {
-    typedef typename remove_const<CW>::type NonConstCW;
+    typedef typename std::remove_const<CW>::type NonConstCW;
 
     friend class ContainerWrapperIterator<CW, typename mutable_reference<T>::type, typename mutable_reference<R>::type>;
     friend class ContainerWrapperIterator<CW, typename const_reference<T>::type, typename const_reference<R>::type>;
