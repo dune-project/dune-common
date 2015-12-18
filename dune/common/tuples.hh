@@ -33,15 +33,15 @@ namespace Dune {
   template<class T>
   struct TupleAccessTraits
   {
-    typedef typename ConstantVolatileTraits<T>::ConstType& ConstType;
+    typedef typename std::add_const<T>::type& ConstType;
     typedef T& NonConstType;
-    typedef const typename ConstantVolatileTraits<T>::UnqualifiedType& ParameterType;
+    typedef const typename std::remove_const<T>::type& ParameterType;
   };
 
   template<class T>
   struct TupleAccessTraits<T*>
   {
-    typedef typename ConstantVolatileTraits<T>::ConstType* ConstType;
+    typedef typename std::add_const<T>::type* ConstType;
     typedef T* NonConstType;
     typedef T* ParameterType;
   };
