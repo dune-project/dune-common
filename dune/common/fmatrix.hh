@@ -13,7 +13,6 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/densematrix.hh>
 #include <dune/common/precision.hh>
-#include <dune/common/std/constexpr.hh>
 
 namespace Dune
 {
@@ -134,9 +133,14 @@ namespace Dune
       return C;
     }
 
+    using Base::rightmultiply;
+
     //! Multiplies M from the right to this matrix
-    FieldMatrix& rightmultiply (const FieldMatrix<K,cols,cols>& M)
+    template <int r, int c>
+    FieldMatrix& rightmultiply (const FieldMatrix<K,r,c>& M)
     {
+      static_assert(r == c, "Cannot rightmultiply with non-square matrix");
+      static_assert(r == cols, "Size mismatch");
       FieldMatrix<K,rows,cols> C(*this);
 
       for (size_type i=0; i<rows; i++)
@@ -165,8 +169,8 @@ namespace Dune
     }
 
     // make this thing a matrix
-    DUNE_CONSTEXPR size_type mat_rows() const { return ROWS; }
-    DUNE_CONSTEXPR size_type mat_cols() const { return COLS; }
+    constexpr size_type mat_rows() const { return ROWS; }
+    constexpr size_type mat_cols() const { return COLS; }
 
     row_reference mat_access ( size_type i )
     {
@@ -268,8 +272,8 @@ namespace Dune
     }
 
     // make this thing a matrix
-    DUNE_CONSTEXPR size_type mat_rows() const { return 1; }
-    DUNE_CONSTEXPR size_type mat_cols() const { return 1; }
+    constexpr size_type mat_rows() const { return 1; }
+    constexpr size_type mat_cols() const { return 1; }
 
     row_reference mat_access ( size_type i )
     {

@@ -8,8 +8,7 @@
  */
 
 /**
-   @addtogroup FloatCmp FloatCmp
-   @ingroup Common
+   @addtogroup FloatCmp
 
    @section How_to_compare How to compare floats
 

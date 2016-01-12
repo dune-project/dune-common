@@ -7,8 +7,7 @@
 
 namespace Dune {
   /**
-   * @addtogroup Path Filesystem Paths
-   * @ingroup Common
+   * @addtogroup Path
    * @{
    */
 
