@@ -332,6 +332,9 @@ esac'
 # list of all dunecontrol commands
 COMMANDS="printdeps vcsetup update autogen configure make all exec bexec status svn git"
 
+# list of dunecontrol commands for which the version check is skipped by default
+COMMANDSTOSKIPVERSIONCHECK="update status svn git exec bexec"
+
 # help string for the commands
 printdeps_HELP="print recursive dependencies of a module"
 vcsetup_HELP="setup version control repository (Git etc.) or working copy (SVN)"
@@ -1300,7 +1303,10 @@ EOF
       fi
     fi
     set -e
-    if test "$1" = "update"; then export SKIPVERSIONCHECK=yes; fi
+    # skip version check if command is in according list
+    if grep -q "$1" <<<"$COMMANDSTOSKIPVERSIONCHECK" ; then
+      export SKIPVERSIONCHECK=yes;
+    fi
     check_commands "$@"
     create_module_list
     NAMES=""
