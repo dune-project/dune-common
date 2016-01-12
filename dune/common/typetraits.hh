@@ -69,8 +69,13 @@ namespace Dune
     };
   };
 
-  using std::remove_const;
-  using std::remove_reference;
+  template<typename T>
+  struct DUNE_DEPRECATED_MSG("Use std::remove_const instead!") remove_const
+    : public std::remove_const<T> {};
+
+  template<typename T>
+  struct DUNE_DEPRECATED_MSG("Use std::remove_reference instead!") remove_reference
+    : public std::remove_reference<T> {};
 
   /**
    * @brief Checks wether a type is convertible to another.
@@ -126,7 +131,9 @@ namespace Dune
     };
   };
 
-  using std::enable_if;
+  template<bool B, class T = void>
+  struct DUNE_DEPRECATED_MSG("Use std::enable_if instead!") enable_if
+    : public std::enable_if<B,T> {};
 
   /**
    * @brief Enable typedef if two types are interoperable.
@@ -139,14 +146,35 @@ namespace Dune
   {};
 
   // pull in default implementation
-  using std::is_same;
-  using std::conditional;
-  using std::integral_constant;
-  using std::true_type;
-  using std::false_type;
-  using std::is_pointer;
-  using std::is_lvalue_reference;
-  using std::remove_pointer;
+  template<typename T, typename U>
+  struct DUNE_DEPRECATED_MSG("Use std::is_same instead!") is_same
+    : public std::is_same<T,U> {};
+
+  template<bool B, typename T, typename F>
+  struct DUNE_DEPRECATED_MSG("Use std::conditional instead!") conditional
+    : public std::conditional<B,T,F> {};
+
+  template<typename T, T v>
+  struct DUNE_DEPRECATED_MSG("Use std::integral_constant instead!") integral_constant
+    : public std::integral_constant<T,v> {};
+
+  struct DUNE_DEPRECATED_MSG("Use std::true_type instead!") true_type
+    : public std::true_type {};
+
+  struct DUNE_DEPRECATED_MSG("Use std::false_type instead!") false_type
+    : public std::false_type {};
+
+  template<typename T>
+  struct DUNE_DEPRECATED_MSG("Use std::is_pointer instead!") is_pointer
+    : public std::is_pointer<T> {};
+
+  template<typename T>
+  struct DUNE_DEPRECATED_MSG("Use std::is_lvalue_reference instead!") is_lvalue_reference
+    : public std::is_lvalue_reference<T> {};
+
+  template<typename T>
+  struct DUNE_DEPRECATED_MSG("Use std::remove_pointer instead!") remove_pointer
+    : public std::remove_pointer<T> {};
 
   /**
      \brief template which always yields a false value
