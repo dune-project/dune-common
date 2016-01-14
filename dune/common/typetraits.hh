@@ -53,7 +53,7 @@ namespace Dune
   template<typename T>
   struct DUNE_DEPRECATED_MSG("Use std::is_volatile instead!") IsVolatile
   {
-    enum {
+    enum DUNE_DEPRECATED_MSG("Use std::is_volatile instead!") {
       /** @brief True if The type is volatile. */
       value=std::is_volatile<T>::value
     };
@@ -63,7 +63,7 @@ namespace Dune
   template<typename T>
   struct DUNE_DEPRECATED_MSG("Use std::is_const instead!") IsConst
   {
-    enum {
+    enum DUNE_DEPRECATED_MSG("Use std::is_const instead!") {
       /** @brief True if The type is constant. */
       value=std::is_const<T>::value
     };
@@ -71,11 +71,15 @@ namespace Dune
 
   template<typename T>
   struct DUNE_DEPRECATED_MSG("Use std::remove_const instead!") remove_const
-    : public std::remove_const<T> {};
+  {
+    typedef DUNE_DEPRECATED_MSG("Use std::remove_const instead!") typename std::remove_const<T>::type type;
+  };
 
   template<typename T>
   struct DUNE_DEPRECATED_MSG("Use std::remove_reference instead!") remove_reference
-    : public std::remove_reference<T> {};
+  {
+    typedef DUNE_DEPRECATED_MSG("Use std::remove_reference instead!") typename std::remove_reference<T>::type type;
+  };
 
   /**
    * @brief Checks wether a type is convertible to another.
@@ -107,7 +111,7 @@ namespace Dune
   class DUNE_DEPRECATED_MSG("Use std::is_base_of instead!") IsBaseOf
   {
   public:
-    enum {
+    enum DUNE_DEPRECATED_MSG("Use std::is_base_of instead!") {
       /** @brief True if Base is a base class of Derived. */
       value = std::is_base_of<Base, Derived>::value
     };
@@ -133,7 +137,9 @@ namespace Dune
 
   template<bool B, class T = void>
   struct DUNE_DEPRECATED_MSG("Use std::enable_if instead!") enable_if
-    : public std::enable_if<B,T> {};
+  {
+    typedef DUNE_DEPRECATED_MSG("Use std::enable_if instead!") typename std::enable_if<B,T>::type type;
+  };
 
   /**
    * @brief Enable typedef if two types are interoperable.
@@ -148,33 +154,60 @@ namespace Dune
   // pull in default implementation
   template<typename T, typename U>
   struct DUNE_DEPRECATED_MSG("Use std::is_same instead!") is_same
-    : public std::is_same<T,U> {};
+  {
+    enum DUNE_DEPRECATED_MSG("Use std::is_same instead!") {
+      value = std::is_same<T,U>::value
+    };
+  };
 
   template<bool B, typename T, typename F>
   struct DUNE_DEPRECATED_MSG("Use std::conditional instead!") conditional
-    : public std::conditional<B,T,F> {};
+  {
+    typedef DUNE_DEPRECATED_MSG("Use std::conditional instead!") typename std::conditional<B,T,F>::type type;
+  };
 
   template<typename T, T v>
   struct DUNE_DEPRECATED_MSG("Use std::integral_constant instead!") integral_constant
-    : public std::integral_constant<T,v> {};
+  {
+    DUNE_DEPRECATED_MSG("Use std::integral_constant instead!")
+    static constexpr T value = v;
+  };
 
   struct DUNE_DEPRECATED_MSG("Use std::true_type instead!") true_type
-    : public std::true_type {};
+  {
+    enum DUNE_DEPRECATED_MSG("Use std::true_type instead!") {
+      value = true
+    };
+  };
 
   struct DUNE_DEPRECATED_MSG("Use std::false_type instead!") false_type
-    : public std::false_type {};
+  {
+    enum DUNE_DEPRECATED_MSG("Use std::false_type instead!") {
+      value = false
+    };
+  };
 
   template<typename T>
   struct DUNE_DEPRECATED_MSG("Use std::is_pointer instead!") is_pointer
-    : public std::is_pointer<T> {};
+  {
+    enum DUNE_DEPRECATED_MSG("Use std::is_pointer instead!") {
+      value = std::is_pointer<T>::value
+    };
+  };
 
   template<typename T>
   struct DUNE_DEPRECATED_MSG("Use std::is_lvalue_reference instead!") is_lvalue_reference
-    : public std::is_lvalue_reference<T> {};
+  {
+    enum DUNE_DEPRECATED_MSG("Use std::is_lvalue_reference instead!") {
+      value = std::is_lvalue_reference<T>::value
+    };
+  };
 
   template<typename T>
   struct DUNE_DEPRECATED_MSG("Use std::remove_pointer instead!") remove_pointer
-    : public std::remove_pointer<T> {};
+  {
+    typedef DUNE_DEPRECATED_MSG("Use std::remove_pointer instead!") typename std::remove_pointer<T>::type type;
+  };
 
   /**
      \brief template which always yields a false value
