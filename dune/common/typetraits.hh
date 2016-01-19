@@ -136,11 +136,11 @@ namespace Dune
   };
 
   template<bool B, class T = void>
-  struct DUNE_DEPRECATED_MSG("Use std::enable_if instead!") enable_if
+  struct enable_if
   {};
 
   template<class T>
-  struct DUNE_DEPRECATED_MSG("Use std::enable_if instead!") enable_if<true,T>
+  struct enable_if<true,T>
   {
     typedef DUNE_DEPRECATED_MSG("Use std::enable_if instead!") T type;
   };
