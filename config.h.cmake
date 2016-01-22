@@ -123,7 +123,7 @@
 #cmakedefine HAVE_KEYWORD_FINAL 1
 
 /* Define to ENABLE_UMFPACK if the UMFPack library is available */
-#cmakedefine HAVE_UMFPACK ENABLE_UMFPACK
+#cmakedefine HAVE_UMFPACK ENABLE_SUITESPARSE
 
 /* Define to ENABLE_SUITESPARSE if the SuiteSparse library is available */
 #cmakedefine HAVE_SUITESPARSE ENABLE_SUITESPARSE

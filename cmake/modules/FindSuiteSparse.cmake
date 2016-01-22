@@ -236,6 +236,7 @@ endif()
 
 #set HAVE_SUITESPARSE for config.h
 set(HAVE_SUITESPARSE ${SuiteSparse_FOUND})
+set(HAVE_UMFPACK ${SuiteSparse_UMFPACK_FOUND})
 
 # register all SuiteSparse related flags
 if(SuiteSparse_FOUND)
