@@ -1084,17 +1084,17 @@ namespace Dune {
     size_t position_;
   };
 
-
-
-  template<class M, class K, int n>
-  void istl_assign_to_fmatrix(DenseMatrix<M>& fm, const DiagonalMatrix<K,n>& s)
-  {
-    assert( fm.rows() == n );
-    assert( fm.cols() == n );
-    fm = K();
-    for(int i=0; i<n; ++i)
-      fm[i][i] = s.diagonal()[i];
-  }
+  template <class DenseMatrix, class field, int N>
+  struct DenseMatrixAssigner<DenseMatrix, DiagonalMatrix<field, N>> {
+    static void apply(DenseMatrix& denseMatrix,
+                      DiagonalMatrix<field, N> const& rhs) {
+      assert(denseMatrix.M() == N);
+      assert(denseMatrix.N() == N);
+      denseMatrix = field(0);
+      for (int i = 0; i < N; ++i)
+        denseMatrix[i][i] = rhs.diagonal()[i];
+    }
+  };
   /* @} */
 } // end namespace
 #endif
