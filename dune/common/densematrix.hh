@@ -71,18 +71,6 @@ namespace Dune
   template< class DenseMatrix, class RHS >
   struct DenseMatrixAssigner;
 
-
-
-  template< class DenseMatrix, class K, int N, int M >
-  void istl_assign_to_fmatrix ( DenseMatrix &denseMatrix, const K (&values)[ M ][ N ] )
-  {
-    for( int i = 0; i < N; ++i )
-      for( int j = 0; j < M; ++j )
-        denseMatrix[ i ][ j ] = values[ i ][ j ];
-  }
-
-
-
 #ifndef DOXYGEN
   namespace
   {
