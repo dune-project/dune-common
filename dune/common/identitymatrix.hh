@@ -146,17 +146,18 @@ namespace Dune
     {
       return FieldTraits< field_type >::real_type( 1 );
     }
-
-    /** \brief cast to FieldMatrix */
-    operator FieldMatrix< field_type, N, N > () const
-    {
-      FieldMatrix< field_type, N, N > fieldMatrix( 0 );
-      for( int i = 0; i < N; ++i )
-        fieldMatrix[ i ][ i ] = field_type( 1 );
-      return fieldMatrix;
-    }
   };
 
+  template <class DenseMatrix, class field, int N>
+  struct DenseMatrixAssigner<DenseMatrix, IdentityMatrix<field, N>> {
+    static void apply(DenseMatrix &denseMatrix, IdentityMatrix<field, N> const &rhs) {
+      assert(denseMatrix.M() == N);
+      assert(denseMatrix.N() == N);
+      denseMatrix = field(0);
+      for (int i = 0; i < N; ++i)
+        denseMatrix[i][i] = field(1);
+    }
+  };
 } // namespace Dune
 
 #endif // #ifndef DUNE_COMMON_IDENTITYMATRIX_HH
