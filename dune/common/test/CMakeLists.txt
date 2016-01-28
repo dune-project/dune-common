@@ -7,6 +7,16 @@ dune_add_test(SOURCES bigunsignedinttest.cc
 
 dune_add_test(SOURCES bitsetvectortest.cc)
 
+dune_add_test(SOURCES boundscheckingtest.cc
+              COMPILE_DEFINITIONS DUNE_CHECK_BOUNDS=1
+              LINK_LIBRARIES dunecommon)
+dune_add_test(SOURCES boundscheckingmvtest.cc
+              COMPILE_DEFINITIONS DUNE_CHECK_BOUNDS=1
+              LINK_LIBRARIES dunecommon)
+dune_add_test(SOURCES boundscheckingoptest.cc
+              COMPILE_DEFINITIONS DUNE_CHECK_BOUNDS=1
+              LINK_LIBRARIES dunecommon)
+
 dune_add_test(SOURCES calloncetest.cc
               LINK_LIBRARIES dunecommon)
 

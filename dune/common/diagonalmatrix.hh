@@ -16,6 +16,7 @@
 #include <iostream>
 #include <memory>
 
+#include <dune/common/boundschecking.hh>
 #include <dune/common/densematrix.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fmatrix.hh>
@@ -478,10 +479,8 @@ namespace Dune {
     //! return true when (i,j) is in pattern
     bool exists (size_type i, size_type j) const
     {
-#ifdef DUNE_FMatrix_WITH_CHECKING
-      if (i<0 || i>=n) DUNE_THROW(FMatrixError,"row index out of range");
-      if (j<0 || j>=n) DUNE_THROW(FMatrixError,"column index out of range");
-#endif
+      DUNE_ASSERT_BOUNDS(i >= 0 && i < n);
+      DUNE_ASSERT_BOUNDS(j >= 0 && j < n);
       return i==j;
     }
 
@@ -713,12 +712,8 @@ namespace Dune {
     //! same for read only access
     const K& operator[] (size_type i) const
     {
-#ifdef DUNE_FMatrix_WITH_CHECKING
-      if (i!=row_)
-        DUNE_THROW(FMatrixError,"index is not contained in pattern");
-#else
       DUNE_UNUSED_PARAMETER(i);
-#endif
+      DUNE_ASSERT_BOUNDS(i == row_);
       return *p_;
     }
 
@@ -857,10 +852,7 @@ namespace Dune {
     K& operator[] (size_type i)
     {
       DUNE_UNUSED_PARAMETER(i);
-#ifdef DUNE_FMatrix_WITH_CHECKING
-      if (i!=row_)
-        DUNE_THROW(FMatrixError,"index is contained in pattern");
-#endif
+      DUNE_ASSERT_BOUNDS(i == row_);
       return *p_;
     }
 

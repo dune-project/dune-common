@@ -19,6 +19,7 @@
 #include "ftraits.hh"
 #include "densevector.hh"
 #include "unused.hh"
+#include "boundschecking.hh"
 
 namespace Dune {
 
@@ -158,8 +159,14 @@ namespace Dune {
 
     // make this thing a vector
     constexpr size_type size () const { return SIZE; }
-    K & operator[](size_type i) { return _data[i]; }
-    const K & operator[](size_type i) const { return _data[i]; }
+    K & operator[](size_type i) {
+      DUNE_ASSERT_BOUNDS(i < SIZE);
+      return _data[i];
+    }
+    const K & operator[](size_type i) const {
+      DUNE_ASSERT_BOUNDS(i < SIZE);
+      return _data[i];
+    }
   private:
     void fill(const K& t)
     {
@@ -267,13 +274,13 @@ namespace Dune {
     K & operator[](size_type i)
     {
       DUNE_UNUSED_PARAMETER(i);
-      assert(i == 0);
+      DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }
     const K & operator[](size_type i) const
     {
       DUNE_UNUSED_PARAMETER(i);
-      assert(i == 0);
+      DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }
 
