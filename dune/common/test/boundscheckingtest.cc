@@ -1,3 +1,4 @@
+#include <dune/common/bitsetvector.hh>
 #include <dune/common/diagonalmatrix.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
@@ -196,6 +197,53 @@ int main() try {
               << ") All good: Exception thrown as expected." << std::endl;
   }
 
+  // Read beyond end of bitsetvector
+  try {
+    Dune::BitSetVector<3> const b(10);
+    auto const x = b[10];
+    std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
+              << std::endl;
+    passed = false;
+  } catch (Dune::RangeError) {
+    std::cout << "(line " << __LINE__
+              << ") All good: Exception thrown as expected." << std::endl;
+  }
+
+  // Write beyond end of bitsetvector
+  try {
+    Dune::BitSetVector<3> b(10);
+    b[10] = true;
+    std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
+              << std::endl;
+    passed = false;
+  } catch (Dune::RangeError) {
+    std::cout << "(line " << __LINE__
+              << ") All good: Exception thrown as expected." << std::endl;
+  }
+
+  // Read beyond end of bitsetvectorreference
+  try {
+    Dune::BitSetVector<3> const b(10);
+    auto const x = b[10][3];
+    std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
+              << std::endl;
+    passed = false;
+  } catch (Dune::RangeError) {
+    std::cout << "(line " << __LINE__
+              << ") All good: Exception thrown as expected." << std::endl;
+  }
+
+  // Write beyond end of bitsetvectorreference
+  try {
+    Dune::BitSetVector<3> b(10);
+    b[10][3] = true;
+    std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
+              << std::endl;
+    passed = false;
+  } catch (Dune::RangeError) {
+    std::cout << "(line " << __LINE__
+              << ") All good: Exception thrown as expected." << std::endl;
+  }
   return passed ? 0 : 1;
 } catch (Dune::Exception &e) {
   std::cerr << e << std::endl;
