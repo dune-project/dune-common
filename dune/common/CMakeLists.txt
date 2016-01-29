@@ -31,6 +31,7 @@ install(FILES
         bigunsignedint.hh
         binaryfunctions.hh
         bitsetvector.hh
+        boundschecking.hh
         classname.hh
         concept.hh
         debugallocator.hh
