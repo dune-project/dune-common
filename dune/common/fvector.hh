@@ -3,6 +3,7 @@
 #ifndef DUNE_FVECTOR_HH
 #define DUNE_FVECTOR_HH
 
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <cstdlib>
@@ -14,7 +15,6 @@
 
 #include "typetraits.hh"
 #include "exceptions.hh"
-#include "array.hh"
 
 #include "ftraits.hh"
 #include "densevector.hh"
