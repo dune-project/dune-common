@@ -237,7 +237,8 @@ namespace Dune {
        thrown. Otherwise the child streams would certainly break on the
        next output
      */
-    ~DebugStream() {
+    ~DebugStream() noexcept(false)
+    {
       // untie
       if (_tied)
         tiedstate->_tied_streams--;
