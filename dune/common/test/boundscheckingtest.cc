@@ -1,7 +1,10 @@
+#include <config.h>
+
 #include <dune/common/diagonalmatrix.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
+#include <dune/common/unused.hh>
 
 int main() try {
   bool passed = true;
@@ -21,7 +24,7 @@ int main() try {
   // Read beyond end of singleton vector
   try {
     Dune::FieldVector<double, 1> const v = {1};
-    double const x = v[1];
+    DUNE_UNUSED double const x = v[1];
     std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
               << std::endl;
     passed = false;
@@ -45,7 +48,7 @@ int main() try {
   // Read beyond end of vector
   try {
     Dune::FieldVector<double, 3> const v = {1, 2, 3};
-    double const x = v[3];
+    DUNE_UNUSED double const x = v[3];
     std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
               << std::endl;
     passed = false;
@@ -69,7 +72,7 @@ int main() try {
   // Read beyond end of singleton matrix
   try {
     Dune::FieldMatrix<double, 1, 1> const m = {{1}};
-    double const x = m[1][0];
+    DUNE_UNUSED double const x = m[1][0];
     std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
               << std::endl;
     passed = false;
@@ -93,7 +96,7 @@ int main() try {
   // Read beyond end of matrix
   try {
     Dune::FieldMatrix<double, 2, 3> const m = {{1, 2, 3}, {10, 20, 30}};
-    double const x = m[2][0];
+    DUNE_UNUSED double const x = m[2][0];
     std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
               << std::endl;
     passed = false;
@@ -128,7 +131,7 @@ int main() try {
   // Read beyond end of diagonal matrix (way #1)
   try {
     Dune::DiagonalMatrix<double, 3> const d(5);
-    double const x = d[3][3];
+    DUNE_UNUSED double const x = d[3][3];
     std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
               << std::endl;
     passed = false;
@@ -139,7 +142,7 @@ int main() try {
   // Read beyond end of diagonal matrix (way #2)
   try {
     Dune::DiagonalMatrix<double, 3> const d(5);
-    double const x = d.diagonal(3);
+    DUNE_UNUSED double const x = d.diagonal(3);
     std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
               << std::endl;
     passed = false;
@@ -163,7 +166,7 @@ int main() try {
   // Read outside of diagonal matrix pattern
   try {
     Dune::DiagonalMatrix<double, 3> const d(5);
-    double const x = d[1][2];
+    DUNE_UNUSED double const x = d[1][2];
     std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
               << std::endl;
     passed = false;
