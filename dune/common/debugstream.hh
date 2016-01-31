@@ -147,7 +147,7 @@ namespace Dune {
 
   class StreamWrap {
   public:
-    StreamWrap(std::ostream& _out) : out(_out) { };
+    StreamWrap(std::ostream& _out) : out(_out) { }
     std::ostream& out;
     StreamWrap *next;
   };
@@ -207,7 +207,7 @@ namespace Dune {
 
       // no child streams yet
       _tied_streams = 0;
-    };
+    }
 
     /*! \brief Create a DebugStream and directly tie to another DebugStream
 
@@ -229,7 +229,7 @@ namespace Dune {
       _tied = true;
       tiedstate = &master;
       tiedstate->_tied_streams++;
-    };
+    }
 
     /*! \brief Destroy stream.
 
@@ -247,15 +247,15 @@ namespace Dune {
         if (_tied_streams != 0)
           DUNE_THROW(DebugStreamError,
                      "There are streams still tied to this stream!");
-      };
+      }
 
       // remove ostream-stack
       while (current != 0) {
         StreamWrap *s = current;
         current = current->next;
         delete s;
-      };
-    };
+      }
+    }
 
     //! \brief Generic types are passed on to current output stream
     template <class T>
@@ -268,8 +268,8 @@ namespace Dune {
         } else {
           if (_active && tiedstate->_active)
             tiedstate->current->out << data;
-        };
-      };
+        }
+      }
 
       return *this;
     }
@@ -290,8 +290,8 @@ namespace Dune {
         } else {
           if (_active && tiedstate->_active)
             tiedstate->current->out << data;
-        };
-      };
+        }
+      }
 
       return *this;
     }
@@ -305,11 +305,11 @@ namespace Dune {
         } else {
           if (_active && tiedstate->_active)
             f(tiedstate->current->out);
-        };
+        }
       }
 
       return *this;
-    };
+    }
 
     //! \brief pass on flush to underlying output stream
     DebugStream& flush() {
@@ -320,11 +320,11 @@ namespace Dune {
         } else {
           if (_active && tiedstate->_active)
             tiedstate->current->out.flush();
-        };
+        }
       }
 
       return *this;
-    };
+    }
 
     //! \brief set activation flag and store old value
     void push(bool b) {
@@ -335,8 +335,8 @@ namespace Dune {
       } else {
         // stay off
         _actstack.push(false);
-      };
-    };
+      }
+    }
 
     //! \brief restore previously set activation flag
     void pop() throw(DebugStreamError) {
@@ -345,7 +345,7 @@ namespace Dune {
 
       _active = _actstack.top();
       _actstack.pop();
-    };
+    }
 
     /*! \brief reports if this stream will produce output
 
@@ -355,7 +355,7 @@ namespace Dune {
      */
     bool active() const {
       return activator<thislevel, dlevel>::value && _active;
-    };
+    }
 
     /*! \brief set output to a different stream.
 
@@ -368,7 +368,7 @@ namespace Dune {
       StreamWrap* newcurr = new StreamWrap(stream);
       newcurr->next = current;
       current = newcurr;
-    };
+    }
 
     //! \brief detach current output stream and restore to previous stream
     void detach() throw(DebugStreamError) {
@@ -380,7 +380,7 @@ namespace Dune {
       StreamWrap* old = current;
       current = current->next;
       delete old;
-    };
+    }
 
     // \brief Tie a stream to this one.
     void tie(DebugStreamState& to) throw(DebugStreamError) {
@@ -394,7 +394,7 @@ namespace Dune {
 
       // tell master class
       tiedstate->_tied_streams++;
-    };
+    }
 
     //! \brief Untie stream
     void untie() throw(DebugStreamError) {
@@ -404,7 +404,7 @@ namespace Dune {
       tiedstate->_tied_streams--;
       _tied = false;
       tiedstate = 0;
-    };
+    }
 
   private:
     //! \brief pointer to data of stream we're tied to
