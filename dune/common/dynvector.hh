@@ -78,7 +78,7 @@ namespace Dune {
 
     //! Constructor making vector with identical coordinates
     DynamicVector(const DynamicVector & x) :
-      _data(x._data)
+      Base(), _data(x._data)
     {}
 
     //! Move constructor
