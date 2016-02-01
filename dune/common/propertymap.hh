@@ -5,8 +5,7 @@
 
 #include <cstddef>
 #include <iterator>
-
-#include "typetraits.hh"
+#include <type_traits>
 
 namespace Dune
 {
@@ -91,8 +90,8 @@ namespace Dune
   put(const RAPropertyMapHelper<Reference,PropertyMap>& pmap,
       const Key& key, const Value& value)
   {
-    static_assert((Conversion<typename PropertyMap::Category,WritablePropertyMapTag>
-                        ::exists), "WritablePropertyMapTag required!");
+    static_assert(std::is_convertible<typename PropertyMap::Category,WritablePropertyMapTag>::value,
+                  "WritablePropertyMapTag required!");
     static_cast<const PropertyMap&>(pmap)[key] = value;
   }
 

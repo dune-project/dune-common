@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstddef>
 #include <iostream>
+#include <type_traits>
 #include <vector>
 
 #include <dune/common/boundschecking.hh>
@@ -87,7 +88,7 @@ namespace Dune
   namespace
   {
     template< class DenseMatrix, class RHS,
-              bool primitive = Conversion< RHS, typename DenseMatrix::field_type >::exists >
+              bool primitive = std::is_convertible< RHS, typename DenseMatrix::field_type >::value >
     class DenseMatrixAssignerImplementation;
 
     template< class DenseMatrix, class RHS >
@@ -141,7 +142,7 @@ namespace Dune
       {
         static void apply ( M &m, const T &t )
         {
-          static_assert( (Conversion< const T, const M >::exists), "No template specialization of DenseMatrixAssigner found" );
+          static_assert( (std::is_convertible< const T, const M >::value), "No template specialization of DenseMatrixAssigner found" );
           m = static_cast< const M & >( t );
         }
       };
