@@ -116,7 +116,7 @@ namespace Dune {
     }
 
     //! Constructor making vector with identical coordinates
-    FieldVector (const FieldVector & x) : _data(x._data)
+    FieldVector (const FieldVector & x) : Base(), _data(x._data)
     {}
 
     FieldVector (std::initializer_list<K> const &l)
@@ -248,7 +248,7 @@ namespace Dune {
 
     //! copy constructor
     FieldVector ( const FieldVector &other )
-      : _data( other._data )
+      : Base(), _data( other._data )
     {}
 
     //! Assignment operator for scalar
