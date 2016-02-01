@@ -20,24 +20,17 @@
 using namespace Dune;
 
 template<typename T, std::size_t n>
-int test_invert_solve(T A_data[n*n], T inv_data[n*n],
-                      T x_data[n], T b_data[n])
+int test_invert_solve(Dune::FieldMatrix<double, n, n> &A,
+                      Dune::FieldMatrix<double, n, n> &inv,
+                      Dune::FieldVector<double, 3> &x,
+                      Dune::FieldVector<double, 3> &b)
 {
   int ret=0;
 
   std::cout <<"Checking inversion of:"<<std::endl;
 
-  FieldMatrix<T,n,n> A, inv, calced_inv;
-  FieldVector<T,n> x, b, calced_x;
-
-  for(size_t i =0; i < n; ++i) {
-    x[i]=x_data[i];
-    b[i]=b_data[i];
-    for(size_t j=0; j <n; ++j) {
-      A[i][j] = A_data[i*n+j];
-      inv[i][j] = inv_data[i*n+j];
-    }
-  }
+  FieldMatrix<T,n,n> calced_inv;
+  FieldVector<T,n> calced_x;
 
   std::cout<<A<<std::endl;
 
@@ -118,34 +111,35 @@ int test_invert_solve(T A_data[n*n], T inv_data[n*n],
 
 int test_invert_solve()
 {
-  int ret=0;
+  int ret = 0;
 
-  double A_data[9] = {1, 5, 7, 2, 14, 15, 4, 40, 39};
-  double inv_data[9] = {-9.0/4, 85.0/24, -23.0/24, -3.0/4, 11.0/24, -1.0/24, 1, -5.0/6, 1.0/6};
-  double b[3] = {32,75,201};
-  double x[3] = {1,2,3};
+  using FM = Dune::FieldMatrix<double, 3, 3>;
+  using FV = Dune::FieldVector<double, 3>;
 
-  ret += test_invert_solve<double,3>(A_data, inv_data, x, b);
+  FM A_data = {{1, 5, 7}, {2, 14, 15}, {4, 40, 39}};
+  FM inv_data = {{-9.0 / 4, 85.0 / 24, -23.0 / 24},
+                 {-3.0 / 4, 11.0 / 24, -1.0 / 24},
+                 {1, -5.0 / 6, 1.0 / 6}};
+  FV b = {32, 75, 201};
+  FV x = {1, 2, 3};
+  ret += test_invert_solve<double, 3>(A_data, inv_data, x, b);
 
-  double A_data0[9] = {-0.5, 0, -0.25, 0.5, 0, -0.25, 0, 0.5, 0};
-  double inv_data0[9] = {-1, 1, 0, 0, 0, 2, -2, -2, 0};
-  double b0[3] = {32,75,201};
-  double x0[3] = {43, 402, -214};
+  FM A_data0 = {{-0.5, 0, -0.25}, {0.5, 0, -0.25}, {0, 0.5, 0}};
+  FM inv_data0 = {{-1, 1, 0}, {0, 0, 2}, {-2, -2, 0}};
+  FV b0 = {32, 75, 201};
+  FV x0 = {43, 402, -214};
+  ret += test_invert_solve<double, 3>(A_data0, inv_data0, x0, b0);
 
-  ret += test_invert_solve<double,3>(A_data0, inv_data0, x0, b0);
+  FM A_data1 = {{0, 1, 0}, {1, 0, 0}, {0, 0, 1}};
+  FV b1 = {0, 1, 2};
+  FV x1 = {1, 0, 2};
+  ret += test_invert_solve<double, 3>(A_data1, A_data1, x1, b1);
 
-  double A_data1[9] = {0, 1, 0, 1, 0, 0, 0, 0, 1};
-  double b1[3] = {0,1,2};
-  double x1[3] = {1,0,2};
-
-  ret += test_invert_solve<double,3>(A_data1, A_data1, x1, b1);
-
-  double A_data2[9] ={3, 1, 6, 2, 1, 3, 1, 1, 1};
-  double inv_data2[9] ={-2, 5, -3, 1, -3, 3, 1, -2, 1};
-  double b2[3] = {2, 7, 4};
-  double x2[3] = {19,-7,-8};
-
-  return ret + test_invert_solve<double,3>(A_data2, inv_data2, x2, b2);
+  FM A_data2 = {{3, 1, 6}, {2, 1, 3}, {1, 1, 1}};
+  FM inv_data2 = {{-2, 5, -3}, {1, -3, 3}, {1, -2, 1}};
+  FV b2 = {2, 7, 4};
+  FV x2 = {19, -7, -8};
+  return ret + test_invert_solve<double, 3>(A_data2, inv_data2, x2, b2);
 }
 
 template<class K, int n, int m, class X, class Y, class XT, class YT>
