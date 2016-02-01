@@ -38,8 +38,6 @@ dune_add_test(SOURCES classnametest.cc
 dune_add_test(SOURCES concept.cc
               LINK_LIBRARIES dunecommon)
 
-dune_add_test(SOURCES conversiontest.cc)
-
 dune_add_test(SOURCES diagonalmatrixtest.cc
               LINK_LIBRARIES dunecommon)
 

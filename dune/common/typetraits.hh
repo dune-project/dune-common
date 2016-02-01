@@ -131,7 +131,7 @@ namespace Dune
        * @brief True if either a conversion from T1 to T2 or vice versa
        * exists.
        */
-      value = Conversion<T1,T2>::exists || Conversion<T2,T1>::exists
+      value = std::is_convertible<T1,T2>::value || std::is_convertible<T2,T1>::value
     };
   };
 
