@@ -14,10 +14,11 @@
 # UMFPACK_LIBRARIES      Name of the UMFPack libraries
 #
 
-find_package(SuiteSparse OPTIONAL_COMPONENTS UMFPACK)
+if((DEFINED UMFPACK_ROOT) AND (NOT DEFINED SuiteSparse_ROOT))
+  set(SuiteSparse_ROOT "${UMFPACK_ROOT}")
+endif()
 
-# use find_package(SuiteSparse OPTIONAL_COMPONENTS UMFPACK) instead
-message(WARNING "find_package(UMFPack) is deprecated, please use FindSuiteSparse instead")
+find_package(SuiteSparse OPTIONAL_COMPONENTS UMFPACK)
 
 set(UMFPACK_INCLUDE_DIRS ${SuiteSparse_INCLUDE_DIRS})
 set(UMFPACK_LIBRARIES ${SuiteSparse_LIBRARIES})
