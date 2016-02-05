@@ -26,6 +26,7 @@ MODULES = \
   FindMProtect.cmake      \
   FindParMETIS.cmake      \
   FindPTScotch.cmake      \
+  FindSuiteSparse.cmake   \
   FindThreadsCMake31.cmake \
   FindUMFPack.cmake       \
   Headercheck.cmake       \
