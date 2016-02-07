@@ -32,9 +32,9 @@ namespace Dune
    * unqualified types.
    */
   template<typename T>
-  struct ConstantVolatileTraits
+  struct DUNE_DEPRECATED_MSG("Use <type_traits> instead!") ConstantVolatileTraits
   {
-    enum {
+    enum DUNE_DEPRECATED_MSG("Use std::is_volatile/std::is_const instead!") {
       /** @brief True if T has a volatile specifier. */
       isVolatile=std::is_volatile<T>::value,
       /** @brief True if T has a const qualifier. */
@@ -42,11 +42,11 @@ namespace Dune
     };
 
     /** @brief The unqualified type. */
-    typedef typename std::remove_cv<T>::type UnqualifiedType;
+    typedef DUNE_DEPRECATED_MSG("Use std::remove_const instead!") typename std::remove_cv<T>::type UnqualifiedType;
     /** @brief The const type. */
-    typedef typename std::add_const<UnqualifiedType>::type ConstType;
+    typedef DUNE_DEPRECATED_MSG("Use std::add_const instead!") typename std::add_const<UnqualifiedType>::type ConstType;
     /** @brief The const volatile type. */
-    typedef typename std::add_cv<UnqualifiedType>::type ConstVolatileType;
+    typedef DUNE_DEPRECATED_MSG("Use std::add_cv instead!") typename std::add_cv<UnqualifiedType>::type ConstVolatileType;
   };
 
   /** @brief Tests wether a type is volatile. */
@@ -88,14 +88,13 @@ namespace Dune
    * @tparam To type you want to obtain
    */
   template<class From, class To>
-  class Conversion
+  struct DUNE_DEPRECATED_MSG("Use std::is_convertible/std::is_same instead!") Conversion
   {
-  public:
-    enum {
+    enum DUNE_DEPRECATED_MSG("Use std::is_convertible/std::is_same instead!") {
       /** @brief True if the conversion exists. */
       exists =  std::is_convertible<From,To>::value,
       /** @brief Whether the conversion exists in both ways. */
-      isTwoWay = exists && std::is_convertible<To,From>::value,
+      isTwoWay = std::is_convertible<From,To>::value && std::is_convertible<To,From>::value,
       /** @brief True if To and From are the same type. */
       sameType = std::is_same<From,To>::value
     };
@@ -108,9 +107,8 @@ namespace Dune
    * @tparam Derived type you want to test
    */
   template <class Base, class Derived>
-  class DUNE_DEPRECATED_MSG("Use std::is_base_of instead!") IsBaseOf
+  struct DUNE_DEPRECATED_MSG("Use std::is_base_of instead!") IsBaseOf
   {
-  public:
     enum DUNE_DEPRECATED_MSG("Use std::is_base_of instead!") {
       /** @brief True if Base is a base class of Derived. */
       value = std::is_base_of<Base, Derived>::value
@@ -131,7 +129,7 @@ namespace Dune
        * @brief True if either a conversion from T1 to T2 or vice versa
        * exists.
        */
-      value = Conversion<T1,T2>::exists || Conversion<T2,T1>::exists
+      value = std::is_convertible<T1,T2>::value || std::is_convertible<T2,T1>::value
     };
   };
 

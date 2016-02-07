@@ -8,7 +8,6 @@ TESTPROGS = \
     calloncetest \
     check_fvector_size \
     classnametest \
-    conversiontest \
     diagonalmatrixtest \
     dynmatrixtest \
     dynvectortest \
