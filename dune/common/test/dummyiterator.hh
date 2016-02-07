@@ -25,7 +25,7 @@ public:
   template<typename T2>
   dummyiterator
     ( const dummyiterator<T2>& o,
-    typename std::enable_if<std::is_convertible<T2&, T&>::exists>::value* = 0)
+    typename std::enable_if<std::is_convertible<T2&, T&>::value>::type* = 0)
     : value(o.value)
   {}
 

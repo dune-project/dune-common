@@ -6,6 +6,8 @@
 #include <iterator>
 #include <type_traits>
 
+#include "typetraits.hh"
+
 namespace Dune
 {
   /*! \defgroup IteratorFacades Iterator facades
