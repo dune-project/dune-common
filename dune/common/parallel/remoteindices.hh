@@ -1866,8 +1866,11 @@ namespace Dune {
       if(!rindex->second.second->empty()) {
         os<<rank<<": Prozess "<<rindex->first<<": "<<"receive: ";
 
-        for(const auto& index : *(rindex->second.second))
-          os << index << " ";
+        const typename RList::const_iterator rend= rindex->second.second->end();
+
+        for(typename RList::const_iterator index = rindex->second.second->begin();
+            index != rend; ++index)
+          os << *index << " ";
       }
       os<<std::endl<<std::flush;
     }
