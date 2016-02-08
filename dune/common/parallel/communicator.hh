@@ -1012,8 +1012,14 @@ namespace Dune
 
       // Create data type
       MPI_Datatype* type = &( send ? messageTypes[process->first].first : messageTypes[process->first].second);
+#if MPI_2
       MPI_Type_create_hindexed(info.elements, info.length, info.displ,
                                MPITraits<typename CommPolicy<V>::IndexedType>::getType(), type);
+#else
+      MPI_Type_hindexed(info.elements, info.length, info.displ,
+                        MPITraits<typename CommPolicy<V>::IndexedType>::getType(),
+                        type);
+#endif
       MPI_Type_commit(type);
       // Deallocate memory
       info.free();
