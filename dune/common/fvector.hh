@@ -105,7 +105,7 @@ namespace Dune {
 
     //! Constructor making default-initialized vector
     constexpr FieldVector()
-      : _data{}
+      : _data{{}}
     {}
 
     //! Constructor making vector with identical coordinates
