@@ -221,6 +221,9 @@ namespace Dune
      - overload new/delte
      - use the Debug memory management for new/delete
      - DEBUG_NEW_DELETE > 2 gives extensive debug output
+
+     \note DebugAllocator is not very stable on OS X, consider using either valgrind
+           or one of the address sanitizers built into recent versions of GCC and Clang.
    */
   template <class T>
   class DebugAllocator {

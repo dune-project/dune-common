@@ -110,38 +110,41 @@ dune_add_test(SOURCES streamtest.cc
 dune_add_test(SOURCES stringutilitytest.cc
               LINK_LIBRARIES dunecommon)
 
-dune_add_test(SOURCES testdebugallocator.cc
-              LINK_LIBRARIES dunecommon)
+if(NOT ${APPLE})
 
-dune_add_test(NAME testdebugallocator_fail1
-              SOURCES testdebugallocator.cc
-              LINK_LIBRARIES dunecommon
-              COMPILE_DEFINITIONS "FAILURE1;EXPECTED_SIGNAL=SIGSEGV"
-              EXPECT_FAIL)
+  dune_add_test(SOURCES testdebugallocator.cc
+                LINK_LIBRARIES dunecommon)
 
-dune_add_test(NAME testdebugallocator_fail2
-              SOURCES testdebugallocator.cc
-              LINK_LIBRARIES dunecommon
-              COMPILE_DEFINITIONS "FAILURE2;EXPECTED_SIGNAL=SIGABRT"
-              EXPECT_FAIL)
+  dune_add_test(NAME testdebugallocator_fail1
+                SOURCES testdebugallocator.cc
+                LINK_LIBRARIES dunecommon
+                COMPILE_DEFINITIONS "FAILURE1;EXPECTED_SIGNAL=SIGSEGV"
+                EXPECT_FAIL)
 
-dune_add_test(NAME testdebugallocator_fail3
-              SOURCES testdebugallocator.cc
-              LINK_LIBRARIES dunecommon
-              COMPILE_DEFINITIONS "FAILURE3;EXPECTED_SIGNAL=SIGABRT"
-              EXPECT_FAIL)
+  dune_add_test(NAME testdebugallocator_fail2
+                SOURCES testdebugallocator.cc
+                LINK_LIBRARIES dunecommon
+                COMPILE_DEFINITIONS "FAILURE2;EXPECTED_SIGNAL=SIGABRT"
+                EXPECT_FAIL)
 
-dune_add_test(NAME testdebugallocator_fail4
-              SOURCES testdebugallocator.cc
-              LINK_LIBRARIES dunecommon
-              COMPILE_DEFINITIONS "FAILURE4;DEBUG_ALLOCATOR_KEEP=1;EXPECTED_SIGNAL=SIGSEGV"
-              EXPECT_FAIL)
+  dune_add_test(NAME testdebugallocator_fail3
+                SOURCES testdebugallocator.cc
+                LINK_LIBRARIES dunecommon
+                COMPILE_DEFINITIONS "FAILURE3;EXPECTED_SIGNAL=SIGABRT"
+                EXPECT_FAIL)
 
-dune_add_test(NAME testdebugallocator_fail5
-              SOURCES testdebugallocator.cc
-              LINK_LIBRARIES dunecommon
-              COMPILE_DEFINITIONS "FAILURE5;EXPECTED_SIGNAL=SIGSEGV"
-              EXPECT_FAIL)
+  dune_add_test(NAME testdebugallocator_fail4
+                SOURCES testdebugallocator.cc
+                LINK_LIBRARIES dunecommon
+                COMPILE_DEFINITIONS "FAILURE4;DEBUG_ALLOCATOR_KEEP=1;EXPECTED_SIGNAL=SIGSEGV"
+                EXPECT_FAIL)
+
+  dune_add_test(NAME testdebugallocator_fail5
+                SOURCES testdebugallocator.cc
+                LINK_LIBRARIES dunecommon
+                COMPILE_DEFINITIONS "FAILURE5;EXPECTED_SIGNAL=SIGSEGV"
+                EXPECT_FAIL)
+endif()
 
 dune_add_test(SOURCES testfloatcmp.cc)
 
