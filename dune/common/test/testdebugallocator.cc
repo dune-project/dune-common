@@ -93,6 +93,9 @@ int main(int, char**)
 #if EXPECTED_SIGNAL
   std::signal(EXPECTED_SIGNAL, std::_Exit);
 #endif
+#if EXPECTED_ALT_SIGNAL
+  std::signal(EXPECTED_ALT_SIGNAL, std::_Exit);
+#endif
 
   basic_tests();
   allocator_tests();
