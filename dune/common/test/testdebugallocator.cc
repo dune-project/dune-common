@@ -100,5 +100,9 @@ int main(int, char**)
   basic_tests();
   allocator_tests();
   new_delete_tests();
+#ifdef EXPECTED_SIGNAL
+  return 1;
+#else
   return 0;
+#endif
 }
