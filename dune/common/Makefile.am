@@ -54,6 +54,7 @@ commoninclude_HEADERS = 			\
 	hash.hh					\
 	identitymatrix.hh                       \
 	indent.hh				\
+	indices.hh				\
 	interfaces.hh				\
 	ios_state.hh				\
 	iteratorfacades.hh			\
