@@ -1,7 +1,7 @@
 dune_add_test(SOURCES indexsettest.cc
               LINK_LIBRARIES dunecommon)
 
-dune_add_test(SOURCES indicestest.cc
+dune_add_test(SOURCES remoteindicestest.cc
               LINK_LIBRARIES dunecommon
               SKIP_ON_77)
 
