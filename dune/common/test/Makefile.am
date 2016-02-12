@@ -16,6 +16,7 @@ TESTPROGS = \
     fmatrixtest \
     fvectortest \
     gcdlcmtest \
+    indicestest \
     integersequence \
     iteratorfacadetest \
     iteratorfacadetest2 \
@@ -122,6 +123,8 @@ fmatrixtest_LDADD = $(LAPACK_LIBS) $(LDADD) $(BLAS_LIBS) $(LIBS) $(FLIBS)
 fvectortest_SOURCES = fvectortest.cc
 
 gcdlcmtest_SOURCES = gcdlcmtest.cc
+
+indicestest_SOURCES = indicestest.cc
 
 genericiterator_compile_fail_SOURCES = genericiterator_compile_fail.cc
 
