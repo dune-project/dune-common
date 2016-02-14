@@ -72,18 +72,6 @@ namespace Dune
   template< class DenseMatrix, class RHS >
   struct DenseMatrixAssigner;
 
-
-
-  template< class DenseMatrix, class K, int N, int M >
-  void istl_assign_to_fmatrix ( DenseMatrix &denseMatrix, const K (&values)[ M ][ N ] )
-  {
-    for( int i = 0; i < N; ++i )
-      for( int j = 0; j < M; ++j )
-        denseMatrix[ i ][ j ] = values[ i ][ j ];
-  }
-
-
-
 #ifndef DOXYGEN
   namespace
   {
@@ -105,52 +93,12 @@ namespace Dune
     template< class DenseMatrix, class RHS >
     class DenseMatrixAssignerImplementation< DenseMatrix, RHS, false >
     {
-      template< class M, class T>
-      struct have_istl_assign_to_fmatrix
-      {
-        struct yes { char dummy[ 1 ]; };
-        struct no  { char dummy[ 2 ]; };
-
-        template< class C>
-        static C &get_ref();
-
-        template< class C>
-        static yes test( decltype( istl_assign_to_fmatrix( get_ref< M >(), get_ref< C >() ) ) * );
-        template< class C >
-        static no test(...);
-
-      public:
-         static const bool v = sizeof( test< const T >( 0 ) ) == sizeof( yes );
-      };
-
-      template< class M, class T, bool = have_istl_assign_to_fmatrix< M, T >::v >
-      struct DefaultImplementation;
-
-      // forward to istl_assign_to_fmatrix()
-      template< class M, class T >
-      struct DefaultImplementation< M, T, true >
-      {
-        static void apply ( M &m, const T &t )
-        {
-          istl_assign_to_fmatrix( m, t );
-        }
-      };
-
-      // static_cast
-      template< class M, class T >
-      struct DefaultImplementation< M, T, false >
-      {
-        static void apply ( M &m, const T &t )
-        {
-          static_assert( (std::is_convertible< const T, const M >::value), "No template specialization of DenseMatrixAssigner found" );
-          m = static_cast< const M & >( t );
-        }
-      };
-
     public:
       static void apply ( DenseMatrix &denseMatrix, const RHS &rhs )
       {
-        DefaultImplementation< DenseMatrix, RHS >::apply( denseMatrix, rhs );
+        static_assert( (Conversion< const RHS, const DenseMatrix >::exists),
+                       "No template specialization of DenseMatrixAssigner found" );
+        denseMatrix = static_cast< const DenseMatrix & >( rhs );
       }
     };
   }
