@@ -3,6 +3,7 @@ MODULES = \
   AddMETISFlags.cmake      \
   AddParMETISFlags.cmake   \
   AddPTScotchFlags.cmake   \
+  AddSuiteSparseFlags.cmake \
   AddUMFPackFlags.cmake    \
   CheckCXX11Features.cmake \
   DuneBoost.cmake \
@@ -26,6 +27,7 @@ MODULES = \
   FindMProtect.cmake      \
   FindParMETIS.cmake      \
   FindPTScotch.cmake      \
+  FindSuiteSparse.cmake   \
   FindThreadsCMake31.cmake \
   FindUMFPack.cmake       \
   Headercheck.cmake       \
