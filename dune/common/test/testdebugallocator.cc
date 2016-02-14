@@ -93,9 +93,16 @@ int main(int, char**)
 #if EXPECTED_SIGNAL
   std::signal(EXPECTED_SIGNAL, std::_Exit);
 #endif
+#if EXPECTED_ALT_SIGNAL
+  std::signal(EXPECTED_ALT_SIGNAL, std::_Exit);
+#endif
 
   basic_tests();
   allocator_tests();
   new_delete_tests();
+#ifdef EXPECTED_SIGNAL
+  return 1;
+#else
   return 0;
+#endif
 }
