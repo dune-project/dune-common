@@ -180,19 +180,19 @@ testdebugallocator_SOURCES = testdebugallocator.cc
 testdebugallocator_CPPFLAGS = $(AM_CPPFLAGS)
 
 testdebugallocator_fail1_SOURCES = testdebugallocator.cc
-testdebugallocator_fail1_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE1
+testdebugallocator_fail1_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE1 -DEXPECTED_SIGNAL=SIGSEGV -DEXPECTED_ALT_SIGNAL=SIGBUS
 
 testdebugallocator_fail2_SOURCES = testdebugallocator.cc
-testdebugallocator_fail2_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE2
+testdebugallocator_fail2_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE2 -DEXPECTED_SIGNAL=SIGABRT
 
 testdebugallocator_fail3_SOURCES = testdebugallocator.cc
-testdebugallocator_fail3_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE3
+testdebugallocator_fail3_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE3 -DEXPECTED_SIGNAL=SIGABRT
 
 testdebugallocator_fail4_SOURCES = testdebugallocator.cc
-testdebugallocator_fail4_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE4 -DDEBUG_ALLOCATOR_KEEP=1
+testdebugallocator_fail4_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE4 -DDEBUG_ALLOCATOR_KEEP=1 -DEXPECTED_SIGNAL=SIGSEGV -DEXPECTED_ALT_SIGNAL=SIGBUS
 
 testdebugallocator_fail5_SOURCES = testdebugallocator.cc
-testdebugallocator_fail5_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE5
+testdebugallocator_fail5_CPPFLAGS = $(AM_CPPFLAGS) -DFAILURE5 -DEXPECTED_SIGNAL=SIGSEGV -DEXPECTED_ALT_SIGNAL=SIGBUS
 
 testfloatcmp_SOURCES = testfloatcmp.cc
 
