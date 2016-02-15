@@ -92,11 +92,36 @@ set(CXX_VERSIONS_FLAGS "17\;1z" "14\;1y" "11\;1x")
 set(CXX_MAX_STANDARD 14 CACHE STRING "highest version of the C++ standard to enable")
 
 
+function(dune_require_cxx_standard)
+  include(CMakeParseArguments)
 
+  cmake_parse_arguments("" "" "MODULE;VERSION" "" ${ARGN})
+
+  if(_UNPARSED_ARGUMENTS)
+    message(WARNING "Unknown arguments in call to dune_require_cxx_standard(${ARGN})")
   endif()
 
+  if(${_VERSION} GREATER ${CXX_MAX_SUPPORTED_STANDARD})
 
+    if(NOT _MODULE)
+      set(_MODULE "This module")
+    endif()
+
+    if(${_VERSION} GREATER ${CXX_MAX_STANDARD})
+      message(FATAL_ERROR "\
+${_MODULE} requires compiler support for C++${_VERSION}, but the build system is currently \
+set up to not allow newer language standards than C++${CXX_MAX_STANDARD}. Try setting the \
+CMake variable CXX_MAX_STANDARD to at least ${_VERSION}."
+        )
     else()
+      message(FATAL_ERROR "
+${_MODULE} requires compiler support for C++${_VERSION}, but your compiler only supports \
+C++${CXX_MAX_SUPPORTED_STANDARD}."
+        )
+    endif()
+  endif()
+endfunction()
+
 
 # try to enable all of the C++ standards that we know about, in descending order
 if(NOT DISABLE_CXX_VERSION_CHECK)
@@ -162,11 +187,8 @@ CMAKE_CXX_FLAGS."
 
 endif()
 
-
 # make sure we have at least C++11
-if(CXX_MAX_SUPPORTED_STANDARD LESS 11)
-  message(FATAL_ERROR "Your compiler does not seem to support C++11. If it does, please add any required flags to your CMAKE_CXX_FLAGS.")
-endif()
+dune_require_cxx_standard(MODULE "DUNE" VERSION 11)
 
 # perform tests
 
