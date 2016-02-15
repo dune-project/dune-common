@@ -49,51 +49,71 @@ function(dune_check_cxx_14 COMPILER_SUPPORT_VAR)
 
 endfunction()
 
+function(dune_check_cxx_11 COMPILER_SUPPORT_VAR)
+
+  check_cxx_source_compiles("
+      #include <memory>
+
+      int main() {
+        // this checks both the compiler (by using auto) and the library (by using
+        // std::make_shared() for C++11 compliance at GCC 4.4 level. We have to also
+        // check the library to make sure the user doesn't have a self-installed clang
+        // without a sufficiently recent system compiler (which might have a pre-C++11
+        // C++ library).
+        auto v = std::make_shared<int>(0);
+        return *v;
+      }
+    " CHECK_COMPILER_SUPPORTS_CXX11)
+  set(${COMPILER_SUPPORT_VAR} ${CHECK_COMPILER_SUPPORTS_CXX11} PARENT_SCOPE)
+
+endfunction()
+
 
 # test for C++14 flags
 if(NOT DISABLE_CXX_VERSION_CHECK)
   # try to use compiler flag -std=c++14
-  check_cxx_compiler_flag("-std=c++14" CXX_FLAG_CXX14)
+  check_cxx_compiler_flag("-std=c++14" CXX_STD_CXX14)
 
-  cmake_push_check_state()
-  set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++14")
-  dune_check_cxx_14(CXX_LIB_SUPPORTS_CXX14)
-  cmake_pop_check_state()
-
-endif()
-
-if(CXX_FLAG_CXX14 AND CXX_LIB_SUPPORTS_CXX14)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 ")
-  set(CXX_STD14_FLAGS "-std=c++14")
-else()
-  if(NOT DISABLE_CXX_VERSION_CHECK)
-    # try to use compiler flag -std=c++1y for older compilers
-    check_cxx_compiler_flag("-std=c++1y" CXX_FLAG_CXX1Y)
-
-    cmake_push_check_state()
-    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++1y")
-    dune_check_cxx_14(CXX_LIB_SUPPORTS_CXX1Y)
-    cmake_pop_check_state()
-  endif()
-  if(CXX_FLAG_CXX1Y AND CXX_LIB_SUPPORTS_CXX1Y)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y ")
-  set(CXX_STD14_FLAGS "-std=c++1y")
-  endif()
-endif()
-
-# test for C++11 flags
-if(NOT DISABLE_CXX_VERSION_CHECK
-   AND NOT ((CXX_FLAG_CXX14 AND CXX_LIB_SUPPORTS_CXX14)
-            OR (CXX_FLAG_CXX1Y AND CXX_LIB_SUPPORTS_CXX1Y)))
-  # try to use compiler flag -std=c++11
-  check_cxx_compiler_flag("-std=c++11" CXX_FLAG_CXX11)
-
-  if(CXX_FLAG_CXX11)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ")
-    set(CXX_STD11_FLAGS "-std=c++11")
+  if(CXX_STD_CXX14)
+    set(CXX_STD_FLAG "-std=c++14")
   else()
-    message(FATAL_ERROR "Your compiler does not seem to support C++11. If it does, please add any required flags to your CMAKE_CXX_FLAGS or set DISABLE_CXX_VERSION_CHECK.")
+    # try to use compiler flag -std=c++1y for older compilers
+    check_cxx_compiler_flag("-std=c++1y" CXX_STD_CXX1Y)
+    if (CXX_STD_CXX1Y)
+      set(CXX_STD_FLAG "-std=c++1y")
+    endif()
   endif()
+
+  if(CXX_STD_CXX14 OR CXX_STD_CXX1Y)
+    cmake_push_check_state()
+    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${CXX_STD_FLAG}")
+    dune_check_cxx_14(CXX_LIB_SUPPORTS_CXX14)
+    cmake_pop_check_state()
+  else()
+    set(CXX_LIB_SUPPORTS_CXX14 FALSE)
+  endif()
+
+  if(NOT CXX_LIB_SUPPORTS_CXX14)
+    # try to use compiler flag -std=c++11
+    check_cxx_compiler_flag("-std=c++11" CXX_STD_CXX11)
+
+    if(CXX_STD_CXX11)
+      set(CXX_STD_FLAG "-std=c++11")
+    else()
+      set(CXX_STD_FLAG "")
+    endif()
+  endif()
+endif()
+
+cmake_push_check_state()
+set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${CXX_STD_FLAG}")
+dune_check_cxx_11(CXX_LIB_SUPPORTS_CXX11)
+cmake_pop_check_state()
+
+if(CXX_LIB_SUPPORTS_CXX11)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_STD_FLAG} ")
+else()
+  message(FATAL_ERROR "Your compiler does not seem to support C++11. If it does, please add any required flags to your CMAKE_CXX_FLAGS.")
 endif()
 
 # perform tests
