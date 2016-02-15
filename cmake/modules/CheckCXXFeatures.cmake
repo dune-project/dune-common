@@ -27,7 +27,6 @@
 
 
 include(CMakePushCheckState)
-cmake_push_check_state()
 
 # test for C++14 flags
 if(NOT DISABLE_CXX_VERSION_CHECK)
@@ -229,8 +228,6 @@ check_cxx_source_compiles("
 " HAVE_IS_INDEXABLE_SUPPORT
   )
 
-
-cmake_pop_check_state()
 
 # find the threading library
 # Use a copy FindThreads from CMake 3.1 due to its support of pthread
