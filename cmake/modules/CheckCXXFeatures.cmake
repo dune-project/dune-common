@@ -30,6 +30,25 @@ include(CMakePushCheckState)
 include(CheckCXXCompilerFlag)
 include(CheckCXXSourceCompiles)
 
+function(dune_check_cxx_14 COMPILER_SUPPORT_VAR)
+
+  check_cxx_source_compiles("
+      #include <memory>
+
+      int main() {
+        // lambdas with auto parameters are C++14 - so this checks the compiler
+        auto l = [](auto x) { return x; };
+        // std::make_unique() is a C++14 library feature - this checks whether the
+        // compiler uses a C++14 compliant library to work around problems like
+        // self-installed clang with an older, C++11 only system compiler
+        auto v = std::make_unique<int>(l(0));
+        return *v;
+      }
+    " CHECK_COMPILER_SUPPORTS_CXX14)
+  set(${COMPILER_SUPPORT_VAR} ${CHECK_COMPILER_SUPPORTS_CXX14} PARENT_SCOPE)
+
+endfunction()
+
 
 # test for C++14 flags
 if(NOT DISABLE_CXX_VERSION_CHECK)
@@ -38,14 +57,9 @@ if(NOT DISABLE_CXX_VERSION_CHECK)
 
   cmake_push_check_state()
   set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++14")
-  check_cxx_source_compiles("
-      #include <memory>
-
-      int main() {
-        std::make_unique<int>();
-      }
-    " CXX_LIB_SUPPORTS_CXX14)
+  dune_check_cxx_14(CXX_LIB_SUPPORTS_CXX14)
   cmake_pop_check_state()
+
 endif()
 
 if(CXX_FLAG_CXX14 AND CXX_LIB_SUPPORTS_CXX14)
@@ -63,13 +77,7 @@ else()
 
     cmake_push_check_state()
     set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++1y")
-    check_cxx_source_compiles("
-        #include <memory>
-
-        int main() {
-          std::make_unique<int>();
-        }
-      " CXX_LIB_SUPPORTS_CXX1Y)
+    dune_check_cxx_14(CXX_LIB_SUPPORTS_CXX1Y)
     cmake_pop_check_state()
   endif()
   if(CXX_FLAG_CXX1Y AND CXX_LIB_SUPPORTS_CXX1Y)
