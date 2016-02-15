@@ -96,7 +96,7 @@ namespace Dune
     public:
       static void apply ( DenseMatrix &denseMatrix, const RHS &rhs )
       {
-        static_assert( (Conversion< const RHS, const DenseMatrix >::exists),
+        static_assert( (std::is_convertible< const RHS, const DenseMatrix >::value),
                        "No template specialization of DenseMatrixAssigner found" );
         denseMatrix = static_cast< const DenseMatrix & >( rhs );
       }
