@@ -27,14 +27,15 @@
 
 
 include(CMakePushCheckState)
+include(CheckCXXCompilerFlag)
+include(CheckCXXSourceCompiles)
+
 
 # test for C++14 flags
 if(NOT DISABLE_CXX_VERSION_CHECK)
   # try to use compiler flag -std=c++14
-  include(CheckCXXCompilerFlag)
   check_cxx_compiler_flag("-std=c++14" CXX_FLAG_CXX14)
 
-  include(CheckCXXSourceCompiles)
   cmake_push_check_state()
   set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++14")
   check_cxx_source_compiles("
@@ -60,7 +61,6 @@ else()
     # try to use compiler flag -std=c++1y for older compilers
     check_cxx_compiler_flag("-std=c++1y" CXX_FLAG_CXX1Y)
 
-    include(CheckCXXSourceCompiles)
     cmake_push_check_state()
     set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++1y")
     check_cxx_source_compiles("
@@ -104,7 +104,6 @@ if(NOT DISABLE_CXX_VERSION_CHECK
 endif()
 
 # perform tests
-include(CheckCXXSourceCompiles)
 
 # __attribute__((unused))
 check_cxx_source_compiles("
