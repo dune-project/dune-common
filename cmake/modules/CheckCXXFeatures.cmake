@@ -151,7 +151,6 @@ if(NOT DISABLE_CXX_VERSION_CHECK)
       if(cxx_std_flag)
 
         list(GET CXX_VERSIONS_TEST ${version_index} version_test)
-        set(test_compiler_support "dune_check_cxx_${version}")
         set(test_compiler_output "compiler_supports_cxx${version}")
 
         cmake_push_check_state()
