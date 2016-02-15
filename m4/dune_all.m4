@@ -17,6 +17,9 @@ AC_DEFUN([DUNE_CHECK_ALL],[
   AC_REQUIRE([AC_PROG_CXX])
   AC_REQUIRE([AC_PROG_CXXCPP])
   AC_REQUIRE([DUNE_SYNC_FC_F77])
+  AC_LANG_PUSH([Fortran])
+  AC_REQUIRE([__AC_FC_NAME_MANGLING])
+  AC_LANG_POP([Fortran])
   AC_REQUIRE([AC_PROG_F77])
   AC_REQUIRE([AC_PROG_FC])
   # don't build shared libs per default, this is way better for debugging...
