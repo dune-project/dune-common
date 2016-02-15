@@ -324,5 +324,3 @@ if(NOT STDTHREAD_WORKS)
     "STDTHREAD_LINK_FLAGS.  If you think this test is wrong, set the cache "
     "variable STDTHREAD_WORKS.")
 endif(NOT STDTHREAD_WORKS)
-
-cmake_pop_check_state()
