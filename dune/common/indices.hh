@@ -4,12 +4,9 @@
 #ifndef DUNE_COMMON_INDICES_HH
 #define DUNE_COMMON_INDICES_HH
 
-#include <memory>
-#include <tuple>
+#include <cstddef>
 #include <type_traits>
 
-#include <dune/common/shared_ptr.hh>
-#include <dune/common/std/utility.hh>
 
 namespace Dune
 {
