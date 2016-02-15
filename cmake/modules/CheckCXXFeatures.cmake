@@ -85,7 +85,7 @@ set(CXX_VERSIONS_TEST "${cxx_17_test}" "${cxx_14_test}" "${cxx_11_test}")
 
 # these are appended to "-std=c++" and tried in this order
 # note the escaped semicolons; that's necessary to create a nested list
-set(CXX_VERSIONS_FLAGS "17\;1z" "14\;1y" "11\;1x")
+set(CXX_VERSIONS_FLAGS "17\;1z" "14\;1y" "11\;0x")
 
 # by default, we enable C++14 for now, but not C++17
 # The user can override this choice by explicitly setting this variable
