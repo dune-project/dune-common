@@ -213,7 +213,7 @@ namespace Dune
 
   /**
      \brief template which always yields a false value
-     \tparam T Some type.  It sould be a type expression involving template
+     \tparam T Some type.  It should be a type expression involving template
                parameters of the class or function using AlwaysFalse.
 
      Suppose you have a template class.  You want to document the required
@@ -259,7 +259,7 @@ namespace Dune
 
   /**
      \brief template which always yields a true value
-     \tparam T Some type.  It sould be a type expression involving template
+     \tparam T Some type.  It should be a type expression involving template
                parameters of the class or function using AlwaysTrue.
 
      \note This class exists mostly for consistency with AlwaysFalse.

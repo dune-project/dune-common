@@ -29,7 +29,7 @@
 #
 # .. cmake_variable:: THREADS_PREFER_PTHREAD_FLAG
 #
-#    If the use of the -pthread compiler and linker flag is prefered then the
+#    If the use of the -pthread compiler and linker flag is preferred then the
 #    caller can set this variable. Modifies the behaviour of :ref:`FindThreadsCMake31`.
 #
 

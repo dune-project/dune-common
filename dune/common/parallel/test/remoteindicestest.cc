@@ -664,7 +664,7 @@ void MPI_err_handler(MPI_Comm *comm, int *err_code, ...){
   std::string s(err_string, err_length);
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  std::cerr << rank<<": An MPI Error ocurred:"<<std::endl<<s<<std::endl;
+  std::cerr << rank<<": An MPI Error occurred:"<<std::endl<<s<<std::endl;
   delete[] err_string;
   throw MPIError(s, *err_code);
 }

@@ -99,7 +99,7 @@ if(PTSCOTCH_FOUND)
   set(HAVE_PTSCOTCH 1)
   # log result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
-    "Determing location of PT-Scotch succeded:\n"
+    "Determing location of PT-Scotch succeeded:\n"
     "Include directory: ${PTSCOTCH_INCLUDE_DIRS}\n"
     "Library directory: ${PTSCOTCH_LIBRARIES}\n\n")
 

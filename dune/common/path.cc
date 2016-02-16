@@ -45,7 +45,7 @@ namespace Dune {
 
     // each path component now has a trailing '/'
 
-    // collapse any occurance of multiple '/' to a single '/'
+    // collapse any occurrence of multiple '/' to a single '/'
     dst = src = 0;
     while(src < result.size()) {
       result[dst] = result[src];
@@ -59,7 +59,7 @@ namespace Dune {
 
     // the path is now free of multiple '/' in a row
 
-    // collapse any occurance of "/./" to "/"
+    // collapse any occurrence of "/./" to "/"
     dst = src = 0;
     while(src < result.size()) {
       result[dst] = result[src];

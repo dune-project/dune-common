@@ -24,7 +24,7 @@ namespace Dune {
       standard debug streams with level below MINIMAL_DEBUG_LEVEL will
       collapse to doing nothing if output is requested.
 
-      MINIMAL_DEBUG_LEVEL is set to DUNE_MINIMAL_DEBUG_LEVEL, wich is
+      MINIMAL_DEBUG_LEVEL is set to DUNE_MINIMAL_DEBUG_LEVEL, which is
       defined in config.h and can be changed by the configure option
       @code --with-minimal-debug-level=[grave|warn|info|verb|vverb] @endcode
 

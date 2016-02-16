@@ -549,7 +549,7 @@ namespace Dune {
   };
 
   /**
-   * @brief Find the first occurance of a type in a std::tuple
+   * @brief Find the first occurrence of a type in a std::tuple
    *
    * \tparam Tuple The std::tuple type to search in.
    * \tparam T     Type to search for.
@@ -558,7 +558,7 @@ namespace Dune {
    *
    * This class can search for a particular type in std::tuple. It will check each
    * type in the std::tuple in turn, and set its member constant \c value to the
-   * index of the first occurance of type was found.  If the type was not
+   * index of the first occurrence of type was found.  If the type was not
    * found, a static_assert is triggered.
    */
   template<class Tuple, class T, std::size_t start = 0>

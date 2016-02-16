@@ -503,12 +503,12 @@ namespace Dune {
      * @param localEntries The number of local indices.
      * @param type The mpi data type for unpacking.
      * @param p_in The input buffer to unpack from.
-     * @param postion The position in the buffer to start unpacking from.
+     * @param position The position in the buffer to start unpacking from.
      * @param bufferSize The size of the input buffer.
      */
     inline void unpackIndices(RemoteIndexList& remote, int remoteEntries,
                               PairType** local, int localEntries, char* p_in,
-                              MPI_Datatype type, int* positon, int bufferSize,
+                              MPI_Datatype type, int* position, int bufferSize,
                               bool fromOurself);
 
     inline void unpackIndices(RemoteIndexList& send, RemoteIndexList& receive,

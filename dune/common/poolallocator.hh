@@ -163,7 +163,7 @@ namespace Dune
       char chunk_[chunkSize];
 
       /**
-       * @brief Adress the first properly aligned
+       * @brief Address of the first properly aligned
        * position in the chunk.
        */
       char* memory_;

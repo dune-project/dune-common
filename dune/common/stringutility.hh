@@ -61,7 +61,7 @@ namespace Dune {
    * \brief Format values according to printf format string
    *
    * \param s The format string to be used
-   * \param args The valued to be formated
+   * \param args The valued to be formatted
    *
    * This is a wrapper to std::snprintf that provides
    * overflow save printf functionality. For up to 1000

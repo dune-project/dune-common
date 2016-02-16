@@ -341,7 +341,7 @@ void MPI_err_handler(MPI_Comm *comm, int *err_code, ...){
   int err_length;
   MPI_Error_string(*err_code, err_string, &err_length);
   std::string s(err_string, err_length);
-  std::cerr << "An MPI Error ocurred:"<<std::endl<<s<<std::endl;
+  std::cerr << "An MPI Error occurred:"<<std::endl<<s<<std::endl;
   delete[] err_string;
   throw MPIError(s, *err_code);
 }

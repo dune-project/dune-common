@@ -108,7 +108,7 @@ namespace Dune
      You create a MPIGuard object. If an exception is risen on a
      process the MPIGuard detects the exception, because the finalize
      method was not called.  when reaching the finalize call all
-     other processes are informed that an error occured and the
+     other processes are informed that an error occurred and the
      MPIGuard throws an exception of type MPIGuardError.
 
      @note You can initialize the MPIGuard from different types of communication objects:
@@ -189,7 +189,7 @@ namespace Dune
        If no success parameter is passed, the guard assumes that
        everything worked as planned.  All errors are communicated
        and an exception of type MPIGuardError is thrown if an error
-       (or exception) occured on any of the processors in the
+       (or exception) occurred on any of the processors in the
        communicator.
 
        @param success inform the guard about possible errors

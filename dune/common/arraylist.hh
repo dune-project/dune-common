@@ -310,7 +310,7 @@ namespace Dune
 
     /**
      * @brief Get the value of the list at an arbitrary position.
-     * @return The value at that postion.
+     * @return The value at that position.
      */
     inline reference elementAt(size_type i) const;
 
@@ -358,7 +358,7 @@ namespace Dune
     inline ArrayListIterator(ArrayList<T,N,A>& arrayList, size_type position);
 
     /**
-     * @brief The current postion.
+     * @brief The current position.
      */
     size_type position_;
     /**
@@ -429,7 +429,7 @@ namespace Dune
 
     /**
      * @brief Get the value of the list at an arbitrary position.
-     * @return The value at that postion.
+     * @return The value at that position.
      */
     inline const_reference elementAt(size_type i) const;
 
@@ -456,7 +456,7 @@ namespace Dune
     inline ConstArrayListIterator(const ArrayList<T,N,A>& arrayList, size_type position);
 
     /**
-     * @brief The current postion.
+     * @brief The current position.
      */
     size_type position_;
     /**

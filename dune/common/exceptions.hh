@@ -279,7 +279,7 @@ namespace Dune {
   class InvalidStateException : public Exception {};
 
   /*! \brief Default exception if an error in the parallel
-     communication of the programm occured
+     communication of the programm occurred
      \ingroup ParallelCommunication
    */
   class ParallelError : public Exception {};
