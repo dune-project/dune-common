@@ -22,7 +22,7 @@ namespace Dune {
    * Usage: Construct a TestSuite and call check() or require()
    * with the condition to check and probably a name for this check.
    * These methods return a stream such that you can pipe in an
-   * explanantion accomponied by respective data to give a reason
+   * explanantion accompanied by respective data to give a reason
    * for a test failure.
    */
   class TestSuite
