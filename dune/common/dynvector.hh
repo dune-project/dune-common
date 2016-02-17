@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <complex>
 #include <cstring>
+#include <initializer_list>
 #include <limits>
 #include <utility>
 
@@ -74,6 +75,11 @@ namespace Dune {
     //! Constructor making vector with identical coordinates
     DynamicVector( size_type n, value_type c, const allocator_type &a = allocator_type() ) :
       _data( n, c, a )
+    {}
+
+    /** \brief Construct from a std::initializer_list */
+    DynamicVector (std::initializer_list<K> const &l) :
+      _data(l)
     {}
 
     //! Constructor making vector with identical coordinates

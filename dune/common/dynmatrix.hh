@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstddef>
 #include <iostream>
+#include <initializer_list>
 
 #include <dune/common/exceptions.hh>
 #include <dune/common/dynvector.hh>
@@ -69,6 +70,13 @@ namespace Dune
     DynamicMatrix (size_type r, size_type c, value_type v = value_type() ) :
       _data(r, row_type(c, v) )
     {}
+
+    /** \brief Constructor initializing the matrix from a list of vector
+     */
+    DynamicMatrix (std::initializer_list<DynamicVector<K>> const &ll)
+      : _data(ll)
+    {}
+
 
     //==== resize related methods
     /**
