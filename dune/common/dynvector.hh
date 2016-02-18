@@ -138,8 +138,12 @@ namespace Dune {
 
     //==== make this thing a vector
     size_type size() const { return _data.size(); }
-    K & operator[](size_type i) { return _data[i]; }
-    const K & operator[](size_type i) const { return _data[i]; }
+    typename std::vector<K>::reference operator[](size_type i) {
+      return _data[i];
+    }
+    typename std::vector<K>::const_reference
+      operator[](size_type i) const { return _data[i];
+    }
   };
 
   /** \brief Read a DynamicVector from an input stream
