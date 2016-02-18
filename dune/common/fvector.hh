@@ -111,7 +111,7 @@ namespace Dune {
     //! Constructor making vector with identical coordinates
     explicit FieldVector (const K& t)
     {
-      fill(t);
+      std::fill(_data.begin(),_data.end(),t);
     }
 
     //! Copy constructor
@@ -166,11 +166,6 @@ namespace Dune {
     const K & operator[](size_type i) const {
       DUNE_ASSERT_BOUNDS(i < SIZE);
       return _data[i];
-    }
-  private:
-    void fill(const K& t)
-    {
-      for (int i=0; i<SIZE; i++) _data[i]=t;
     }
   };
 
