@@ -265,6 +265,10 @@ namespace Dune {
     //! The type used for the index access and size operation
     typedef typename Traits::size_type size_type;
 
+    //! The return types of operator[]
+    typedef typename Traits::reference reference;
+    typedef typename Traits::const_reference const_reference;
+
     //! We are at the leaf of the block recursion
     enum {
       //! The number of block levels we contain
@@ -283,12 +287,12 @@ namespace Dune {
     //===== access to components
 
     //! random access
-    value_type & operator[] (size_type i)
+    reference operator[] (size_type i)
     {
       return asImp()[i];
     }
 
-    const value_type & operator[] (size_type i) const
+    const_reference operator[] (size_type i) const
     {
       return asImp()[i];
     }

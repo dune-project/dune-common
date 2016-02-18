@@ -40,6 +40,8 @@ namespace Dune {
     typedef std::array<K,SIZE> container_type;
     typedef K value_type;
     typedef typename container_type::size_type size_type;
+    typedef typename container_type::reference reference;
+    typedef typename container_type::const_reference const_reference;
   };
 
   template< class K, int SIZE >
@@ -102,6 +104,8 @@ namespace Dune {
 
     typedef typename Base::size_type size_type;
     typedef typename Base::value_type value_type;
+    typedef typename Base::reference reference;
+    typedef typename Base::const_reference const_reference;
 
     //! Constructor making default-initialized vector
     constexpr FieldVector()
@@ -159,11 +163,11 @@ namespace Dune {
 
     // make this thing a vector
     constexpr size_type size () const { return SIZE; }
-    K & operator[](size_type i) {
+    reference operator[](size_type i) {
       DUNE_ASSERT_BOUNDS(i < SIZE);
       return _data[i];
     }
-    const K & operator[](size_type i) const {
+    const_reference operator[](size_type i) const {
       DUNE_ASSERT_BOUNDS(i < SIZE);
       return _data[i];
     }
@@ -205,6 +209,8 @@ namespace Dune {
     typedef K container_type;
     typedef K value_type;
     typedef size_t size_type;
+    typedef K& reference;
+    typedef const K& const_reference;
   };
 
   /** \brief Vectors containing only one component
@@ -223,6 +229,8 @@ namespace Dune {
     };
 
     typedef typename Base::size_type size_type;
+    typedef typename Base::reference reference;
+    typedef typename Base::const_reference const_reference;
 
     //===== construction
 
@@ -271,13 +279,13 @@ namespace Dune {
 
     //===== forward methods to container
     constexpr size_type size () const { return 1; }
-    K & operator[](size_type i)
+    reference operator[](size_type i)
     {
       DUNE_UNUSED_PARAMETER(i);
       DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }
-    const K & operator[](size_type i) const
+    const_reference operator[](size_type i) const
     {
       DUNE_UNUSED_PARAMETER(i);
       DUNE_ASSERT_BOUNDS(i == 0);
@@ -287,10 +295,10 @@ namespace Dune {
     //===== conversion operator
 
     /** \brief Conversion operator */
-    operator K& () { return _data; }
+    operator reference () { return _data; }
 
     /** \brief Const conversion operator */
-    operator const K& () const { return _data; }
+    operator const_reference () const { return _data; }
   };
 
   /* ----- FV / FV ----- */

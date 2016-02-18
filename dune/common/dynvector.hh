@@ -35,6 +35,8 @@ namespace Dune {
     typedef std::vector< K, Allocator > container_type;
     typedef K value_type;
     typedef typename container_type::size_type size_type;
+    typedef typename container_type::reference reference;
+    typedef typename container_type::const_reference const_reference;
   };
 
   template< class K, class Allocator >
@@ -59,6 +61,8 @@ namespace Dune {
   public:
     typedef typename Base::size_type size_type;
     typedef typename Base::value_type value_type;
+    typedef typename Base::reference reference;
+    typedef typename Base::const_reference const_reference;
 
     typedef Allocator allocator_type;
 
@@ -138,12 +142,8 @@ namespace Dune {
 
     //==== make this thing a vector
     size_type size() const { return _data.size(); }
-    typename std::vector<K>::reference operator[](size_type i) {
-      return _data[i];
-    }
-    typename std::vector<K>::const_reference
-      operator[](size_type i) const { return _data[i];
-    }
+    reference operator[](size_type i) { return _data[i]; }
+    const_reference operator[](size_type i) const { return _data[i]; }
   };
 
   /** \brief Read a DynamicVector from an input stream
