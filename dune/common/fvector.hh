@@ -114,7 +114,7 @@ namespace Dune {
       fill(t);
     }
 
-    //! Constructor making vector with identical coordinates
+    //! Copy constructor
     FieldVector (const FieldVector & x) : Base(), _data(x._data)
     {}
 
@@ -241,7 +241,7 @@ namespace Dune {
              >
     FieldVector (const T& k) : _data(k) {}
 
-    //! Constructor making vector with identical coordinates
+    //! Constructor from static vector of different type
     template<class C>
     FieldVector (const DenseVector<C> & x)
     {
