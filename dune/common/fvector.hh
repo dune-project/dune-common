@@ -255,6 +255,13 @@ namespace Dune {
       : Base(), _data( other._data )
     {}
 
+    /** \brief Construct from a std::initializer_list */
+    FieldVector (std::initializer_list<K> const &l)
+    {
+      assert(l.size() == 1);
+      _data = *l.begin();
+    }
+
     //! Assignment operator for scalar
     template<typename T,
              typename EnableIf = typename std::enable_if<
