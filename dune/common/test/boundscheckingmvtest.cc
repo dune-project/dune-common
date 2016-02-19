@@ -332,9 +332,6 @@ int main() try {
 
   // right multiplication: None-square Matrix argument
   try {
-    // TODO: This leads to a segfault
-    // Dune::FieldMatrix<double, 2, 3> A = {{1, 2, 3}, {10, 20, 30}};
-    // Dune::FieldMatrix<double, 3, 2> const B = {{1, 2}, {10, 20}, {100, 200}};
     Dune::DynamicMatrix<double> A(2, 3, 5);
     Dune::DynamicMatrix<double> const B(3, 2, 5);
     A.rightmultiply(B);
@@ -347,10 +344,6 @@ int main() try {
   }
   // right multiplication: Incorrect number of rows
   try {
-    // TODO: This leads to a segfault
-    // Dune::FieldMatrix<double, 2, 2> A = {{1, 2}, {10, 20}};
-    // Dune::FieldMatrix<double, 3, 3> const B = {
-    //     {1, 2, 3}, {10, 20, 30}, {100, 200, 300}};
     Dune::DynamicMatrix<double> A(2, 2, 5);
     Dune::DynamicMatrix<double> const B(3, 3, 5);
     A.rightmultiply(B);
