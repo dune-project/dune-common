@@ -70,6 +70,13 @@ namespace Dune
       _data(r, row_type(c, v) )
     {}
 
+    template <class T,
+              typename = std::enable_if_t<!std::is_convertible<T, K>::value>>
+    DynamicMatrix(T const& rhs)
+    {
+      *this = rhs;
+    }
+
     //==== resize related methods
     void resize (size_type r, size_type c, value_type v = value_type() )
     {
@@ -78,7 +85,22 @@ namespace Dune
     }
 
     //===== assignment
-    using Base::operator=;
+    // General assignment with resizing
+    template <typename T,
+              typename = std::enable_if_t<!std::is_convertible<T, K>::value>>
+    DynamicMatrix& operator=(T const& rhs) {
+      _data.resize(rhs.N(), row_type(rhs.M(), K(0)));
+      Base::operator=(rhs);
+      return *this;
+    }
+
+    // Specialisation: scalar assignment (no resizing)
+    template <typename T,
+              typename = std::enable_if_t<std::is_convertible<T, K>::value>>
+    DynamicMatrix& operator=(T scalar) {
+      std::fill(_data.begin(), _data.end(), scalar);
+      return *this;
+    }
 
     // make this thing a matrix
     size_type mat_rows() const { return _data.size(); }

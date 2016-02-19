@@ -38,6 +38,29 @@ dune_add_test(SOURCES classnametest.cc
 dune_add_test(SOURCES concept.cc
               LINK_LIBRARIES dunecommon)
 
+dune_add_test(SOURCES densematrixassignmenttest.cc
+              LINK_LIBRARIES dunecommon)
+dune_add_test(NAME densematrixassignmenttest_fail1
+              SOURCES densematrixassignmenttest.cc
+              LINK_LIBRARIES dunecommon
+              COMPILE_DEFINITIONS "FAILURE1"
+              EXPECT_COMPILE_FAIL)
+dune_add_test(NAME densematrixassignmenttest_fail2
+              SOURCES densematrixassignmenttest.cc
+              LINK_LIBRARIES dunecommon
+              COMPILE_DEFINITIONS "FAILURE2"
+              EXPECT_COMPILE_FAIL)
+dune_add_test(NAME densematrixassignmenttest_fail3
+              SOURCES densematrixassignmenttest.cc
+              LINK_LIBRARIES dunecommon
+              COMPILE_DEFINITIONS "FAILURE3"
+              EXPECT_COMPILE_FAIL)
+dune_add_test(NAME densematrixassignmenttest_fail4
+              SOURCES densematrixassignmenttest.cc
+              LINK_LIBRARIES dunecommon
+              COMPILE_DEFINITIONS "FAILURE4"
+              EXPECT_COMPILE_FAIL)
+
 dune_add_test(SOURCES diagonalmatrixtest.cc
               LINK_LIBRARIES dunecommon)
 

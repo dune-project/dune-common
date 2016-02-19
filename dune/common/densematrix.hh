@@ -75,12 +75,13 @@ namespace Dune
 #ifndef DOXYGEN
   namespace
   {
-    template< class DenseMatrix, class RHS,
-              bool primitive = std::is_convertible< RHS, typename DenseMatrix::field_type >::value >
+    template< class DM, class RHS,
+              bool densematrix = std::is_base_of<DenseMatrix<RHS>, RHS>::value,
+              bool primitive = std::is_convertible< RHS, typename DM::field_type >::value >
     class DenseMatrixAssignerImplementation;
 
-    template< class DenseMatrix, class RHS >
-    class DenseMatrixAssignerImplementation< DenseMatrix, RHS, true >
+    template< class DenseMatrix, class RHS, bool densematrix >
+    class DenseMatrixAssignerImplementation< DenseMatrix, RHS, densematrix, true >
     {
     public:
       static void apply ( DenseMatrix &denseMatrix, const RHS &rhs )
@@ -90,15 +91,26 @@ namespace Dune
       }
     };
 
-    template< class DenseMatrix, class RHS >
-    class DenseMatrixAssignerImplementation< DenseMatrix, RHS, false >
+    template< class DM, class RHS>
+    class DenseMatrixAssignerImplementation< DM, RHS, true, false >
     {
     public:
-      static void apply ( DenseMatrix &denseMatrix, const RHS &rhs )
+      static void apply ( DM &denseMatrix, const RHS &rhs )
       {
-        static_assert( (std::is_convertible< const RHS, const DenseMatrix >::value),
-                       "No template specialization of DenseMatrixAssigner found" );
-        denseMatrix = static_cast< const DenseMatrix & >( rhs );
+        typename DM::iterator tIt = std::begin(denseMatrix);
+        typename RHS::const_iterator sIt = std::begin(rhs);
+        for(; sIt != std::end(rhs); ++tIt, ++sIt)
+          std::copy(std::begin(*sIt), std::end(*sIt), std::begin(*tIt));
+      }
+    };
+
+    template< class DM, class RHS>
+    class DenseMatrixAssignerImplementation< DM, RHS, false, false >
+    {
+    public:
+      static void apply ( DM &denseMatrix, const RHS &rhs )
+      {
+        DUNE_THROW(Dune::Exception, "Assignment not implemented");
       }
     };
   }
