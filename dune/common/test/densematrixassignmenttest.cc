@@ -165,7 +165,7 @@ int main() {
       fieldT = diagM;
     }
     {
-      M const fieldT = identM;
+      DUNE_UNUSED M const fieldT = identM;
     }
     {
       M fieldT;
