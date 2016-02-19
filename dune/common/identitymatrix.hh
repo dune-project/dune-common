@@ -29,9 +29,9 @@ namespace Dune
    *  Implementation of an identity matrix that does not store any data.
    *
    *  \tparam  K  field type
-   *  \tparam  N  dimension
+   *  \tparam  n  dimension
    */
-  template< class K, int N >
+  template< class K, int n >
   struct IdentityMatrix
   {
     /** \brief field type */
@@ -40,9 +40,9 @@ namespace Dune
     typedef std::size_t size_type;
 
     /** \brief return number of rows */
-    constexpr size_type rows () const { return N; }
+    constexpr size_type rows () const { return n; }
     /** \brief return number of columns */
-    constexpr size_type cols () const { return N; }
+    constexpr size_type cols () const { return n; }
 
     /** \copydoc Dune::DenseMatrix::mv */
     template< class X, class Y >
@@ -133,7 +133,7 @@ namespace Dune
     /** \copydoc Dune::DenseMatrix::frobenius_norm2 */
     typename FieldTraits< field_type >::real_type frobenius_norm2 () const
     {
-      return FieldTraits< field_type >::real_type( N );
+      return FieldTraits< field_type >::real_type( n );
     }
 
     /** \copydoc Dune::DenseMatrix::infinity_norm */
@@ -149,13 +149,13 @@ namespace Dune
     }
   };
 
-  template <class DenseMatrix, class field, int N>
-  struct DenseMatrixAssigner<DenseMatrix, IdentityMatrix<field, N>> {
-    static void apply(DenseMatrix &denseMatrix, IdentityMatrix<field, N> const &rhs) {
-      DUNE_ASSERT_BOUNDS(denseMatrix.M() == N);
-      DUNE_ASSERT_BOUNDS(denseMatrix.N() == N);
+  template <class DenseMatrix, class field, int n>
+  struct DenseMatrixAssigner<DenseMatrix, IdentityMatrix<field, n>> {
+    static void apply(DenseMatrix &denseMatrix, IdentityMatrix<field, n> const &rhs) {
+      DUNE_ASSERT_BOUNDS(denseMatrix.M() == n);
+      DUNE_ASSERT_BOUNDS(denseMatrix.N() == n);
       denseMatrix = field(0);
-      for (int i = 0; i < N; ++i)
+      for (int i = 0; i < n; ++i)
         denseMatrix[i][i] = field(1);
     }
   };
