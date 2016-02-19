@@ -41,8 +41,13 @@ namespace Dune
 
     /** \brief return number of rows */
     constexpr size_type rows () const { return n; }
+    /** \brief return number of rows */
+    constexpr size_type N () const { return n; }
+
     /** \brief return number of columns */
     constexpr size_type cols () const { return n; }
+    /** \brief return number of columns */
+    constexpr size_type M () const { return n; }
 
     /** \copydoc Dune::DenseMatrix::mv */
     template< class X, class Y >
