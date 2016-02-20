@@ -103,6 +103,12 @@ namespace Dune {
     typedef typename Base::size_type size_type;
     typedef typename Base::value_type value_type;
 
+    /** \brief The type used for references to the vector entry */
+    typedef value_type& reference;
+
+    /** \brief The type used for const references to the vector entry */
+    typedef const value_type& const_reference;
+
     //! Constructor making default-initialized vector
     constexpr FieldVector()
       : _data{{}}
@@ -218,6 +224,12 @@ namespace Dune {
     };
 
     typedef typename Base::size_type size_type;
+
+    /** \brief The type used for references to the vector entry */
+    typedef K& reference;
+
+    /** \brief The type used for const references to the vector entry */
+    typedef const K& const_reference;
 
     //===== construction
 
