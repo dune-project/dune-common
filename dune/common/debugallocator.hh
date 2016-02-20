@@ -124,7 +124,12 @@ namespace Dune
         size_type overlap = ai.capacity % page_size;
         ai.page_ptr = mmap(NULL, ai.pages * page_size,
                            PROT_READ | PROT_WRITE,
-                           MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+#ifdef __APPLE__
+                           MAP_ANON | MAP_PRIVATE,
+#else
+                           MAP_ANONYMOUS | MAP_PRIVATE,
+#endif
+                           -1, 0);
         if (MAP_FAILED == ai.page_ptr)
         {
           throw std::bad_alloc();
