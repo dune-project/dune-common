@@ -109,6 +109,15 @@ namespace Dune {
       return ! any();
     }
 
+    //! Returns true if all bits are set
+    bool all() const
+    {
+      for(size_type i=0; i<block_size; ++i)
+        if(not test(i))
+          return false;
+      return true;
+    }
+
     //! Returns true if bit n is set.
     bool test(size_type n) const
     {
