@@ -61,6 +61,8 @@ dune_add_test(SOURCES genericiterator_compile_fail.cc
 
 dune_add_test(SOURCES gcdlcmtest.cc)
 
+dune_add_test(SOURCES indicestest.cc)
+
 dune_add_test(SOURCES integersequence.cc)
 
 dune_add_test(SOURCES iteratorfacadetest2.cc)
