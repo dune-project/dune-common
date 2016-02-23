@@ -71,6 +71,19 @@ namespace Dune
     {}
 
     //==== resize related methods
+    /**
+     * \brief resize matrix to <code>r × c</code>
+     *
+     * Resize the matrix to <code>r × c</code>, using <code>v</code>
+     * as the value of all entries.
+     *
+     * \warning All previous entries are lost, even when the matrix
+     *          was not actually resized.
+     *
+     * \param r number of rows
+     * \param c number of columns
+     * \param v value of matrix entries
+     */
     void resize (size_type r, size_type c, value_type v = value_type() )
     {
       _data.resize(0);
