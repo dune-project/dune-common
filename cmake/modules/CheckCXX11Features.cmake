@@ -167,7 +167,7 @@ to the highest version of the standard supported by your compiler (e.g. 14). If 
 needs custom flags to switch to that standard version, you have to manually add them to \
 CMAKE_CXX_FLAGS."
       )
-    set(CXX_MAX_SUPPORTED_STANDARD 3)
+    set(CXX_MAX_SUPPORTED_STANDARD 03)
   endif()
 
 endif()
