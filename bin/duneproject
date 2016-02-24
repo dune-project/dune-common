@@ -186,7 +186,7 @@ ENABLE_ALL="$5"
 while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
 
   # Track minimum CMake version
-  CMAKE_MINIMUM_REQUIRED=2.8.6
+  CMAKE_MINIMUM_REQUIRED=2.8.12
 
   while [ -z $PROJECT ]; do
     read -p "1) Name of your new Project? (e.g.: dune-grid): " PROJECT
