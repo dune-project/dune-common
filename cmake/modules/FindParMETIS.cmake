@@ -99,7 +99,6 @@ if(PARMETIS_FOUND)
   if(PARMETIS_LIBRARY)
     set(_PARMETIS_LIBRARIES ${PARMETIS_LIBRARY} ${METIS_LIBRARIES} ${MPI_DUNE_LIBRARIES})
     set(CMAKE_REQUIRED_LIBRARIES ${_PARMETIS_LIBRARIES} ${_CMAKE_REQUIRED_LIBRARIES})
-    message("CMAKE_REQUIRED_LIBRARIES=${CMAKE_REQUIRED_LIBRARIES}")
     include(CheckFunctionExists)
     check_function_exists(parmetis_v3_partkway HAVE_PARMETIS)
     if(NOT HAVE_PARMETIS)
@@ -117,12 +116,13 @@ if(PARMETIS_FOUND)
         set(_PARMETIS_LIBRARIES ${PARMETIS_LIBRARY} ${PTSCOTCH_LIBRARY}
           ${PTSCOTCHERR_LIBRARY} ${METIS_LIBRARIES} ${MPI_DUNE_LIBRARIES})
         set(CMAKE_REQUIRED_LIBRARIES ${_PARMETIS_LIBRARIES}
-          ${CMAKE_REQUIRED_LIBRARIES})
+          ${_CMAKE_REQUIRED_LIBRARIES})
         unset(HAVE_PARMETIS CACHE)
         check_function_exists(parmetis_v3_partkway HAVE_PARMETIS)
       endif()
     endif()
   endif(PARMETIS_LIBRARY)
+    set(CMAKE_REQUIRED_LIBRARIES "${_CMAKE_REQUIRED_LIBRARIES}") # get backup
 endif(PARMETIS_FOUND)
 
 # behave like a CMake module is supposed to behave
