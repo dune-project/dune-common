@@ -88,10 +88,13 @@ if(METIS_LIBRARY)
   if(NOT HAVE_METIS_PARTGRAPHKWAY)
     # Maybe we are using static scotch libraries. In this case we need to link
     # the other scotch libraries too. Let's make a best effort.
-    # Get the path eher METIS_LIBRARY resides
+    # Get the path where METIS_LIBRARY resides
     get_filename_component(_lib_root ${METIS_LIBRARY} DIRECTORY)
-    find_library(SCOTCH_LIBRARY scotch PATHS ${_lib_root} "The Scotch library.")
-    find_library(SCOTCHERR_LIBRARY scotcherr PATHS ${_lib_root} "The Scotch error library.")
+    # Search for additional libs only in this directory.
+    # Otherwise we might find incompatible ones, e.g. for int instead of long
+    find_library(SCOTCH_LIBRARY scotch PATHS ${_lib_root} "The Scotch library." NO_DEFAULT_PATH)
+    find_library(SCOTCHERR_LIBRARY scotcherr PATHS ${_lib_root} "The Scotch error library."
+      NO_DEFAULT_PATH)
     if(SCOTCH_LIBRARY AND SCOTCHERR_LIBRARY)
       set(_METIS_SCOTCH_LIBRARIES ${SCOTCH_LIBRARY} ${SCOTCHERR_LIBRARY} "${_METIS_LIBRARIES}")
       set(CMAKE_REQUIRED_LIBRARIES ${_CMAKE_REQUIRED_LIBRARIES} ${METIS_LIBRARY} ${_METIS_SCOTCH_LIBRARIES} ${_METIS_LM_LIBRARY})

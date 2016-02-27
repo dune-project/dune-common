@@ -99,15 +99,20 @@ if(PARMETIS_FOUND)
   if(PARMETIS_LIBRARY)
     set(_PARMETIS_LIBRARIES ${PARMETIS_LIBRARY} ${METIS_LIBRARIES} ${MPI_DUNE_LIBRARIES})
     set(CMAKE_REQUIRED_LIBRARIES ${_PARMETIS_LIBRARIES} ${_CMAKE_REQUIRED_LIBRARIES})
+    message("CMAKE_REQUIRED_LIBRARIES=${CMAKE_REQUIRED_LIBRARIES}")
     include(CheckFunctionExists)
     check_function_exists(parmetis_v3_partkway HAVE_PARMETIS)
     if(NOT HAVE_PARMETIS)
       # Maybe we are using static scotch libraries. In this case we need to link
       # the other scotch libraries too. Let's make a best effort.
-      # Get the path eher METIS_LIBRARY resides
+      # Get the path where ParMETIS_LIBRARY resides
       get_filename_component(_lib_root ${METIS_LIBRARY} DIRECTORY)
-      find_library(PTSCOTCH_LIBRARY ptscotch PATHS ${_lib_root} "The PT-Scotch library.")
-      find_library(PTSCOTCHERR_LIBRARY ptscotcherr PATHS ${_lib_root} "The Scotch error library.")
+      # Search for additional libs only in this directory.
+      # Otherwise we might find incompatible ones, e.g. for int instead of long
+      find_library(PTSCOTCH_LIBRARY ptscotch PATHS ${_lib_root} "The PT-Scotch library."
+        NO_DEFAULT_PATH)
+      find_library(PTSCOTCHERR_LIBRARY ptscotcherr PATHS ${_lib_root} "The Scotch error library."
+        NO_DEFAULT_PATH)
       if(PTSCOTCH_LIBRARY AND PTSCOTCHERR_LIBRARY)
         set(_PARMETIS_LIBRARIES ${PARMETIS_LIBRARY} ${PTSCOTCH_LIBRARY}
           ${PTSCOTCHERR_LIBRARY} ${METIS_LIBRARIES} ${MPI_DUNE_LIBRARIES})
