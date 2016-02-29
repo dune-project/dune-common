@@ -1,5 +1,5 @@
 # we need the module file to be able to build via dunecontrol
-EXTRA_DIST= CMakeLists.txt dune.module
+EXTRA_DIST= CMakeLists.txt CONTRIBUTING.md dune.module LICENSE.md README.md
 
 # don't follow the full GNU-standard
 # we need automake 1.9 or newer
