@@ -104,9 +104,9 @@
 #
 # dune_regenerate_config_cmake()
 #
-# Creates a new config_collected.h.cmake file in ${CMAKE_CURRENT_BINARY_DIR) that
+# Creates a new config_collected.h.cmake file in ${CMAKE_CURRENT_BINARY_DIR} that
 # consists of entries from ${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake
-# and includes non-private entries from the files config_collected.h.cmake files
+# and includes non-private entries from the config.h.cmake files
 # of all dependent modules.
 # Finally config.h is created from config_collected.h.cmake.
 #
