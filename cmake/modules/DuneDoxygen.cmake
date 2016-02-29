@@ -43,11 +43,23 @@ add_custom_target(doxygen_install)
 # Doxyfile[.in] files needed to doxygen.
 MACRO (prepare_doxyfile)
   message(STATUS "using ${DOXYSTYLE_FILE} to create doxystyle file")
-  set(make_doxyfile_command ${CMAKE_COMMAND} -D DOT_TRUE=${DOT_TRUE} -D DUNEWEB_TRUE=\# -D ProjectName=${ProjectName} -D DUNE_MOD_VERSION=${DUNE_MOD_VERSION} -D DOXYSTYLE=${DOXYSTYLE_FILE}  -D DOXYLOCAL=${CMAKE_CURRENT_SOURCE_DIR}/Doxylocal -D abs_top_srcdir=${CMAKE_SOURCE_DIR} -D srcdir=${CMAKE_CURRENT_SOURCE_DIR} -D top_srcdir=${CMAKE_SOURCE_DIR} -P ${SCRIPT_DIR}/CreateDoxyFile.cmake)
-  add_custom_command (OUTPUT Doxyfile.in Doxyfile
-    COMMAND ${make_doxyfile_command}
-    COMMENT "Creating Doxyfile.in"
-    DEPENDS ${DOXYSTYLE_FILE} ${CMAKE_CURRENT_SOURCE_DIR}/Doxylocal)
+
+  # check whether module has a Doxylocal file
+  file(_DOXYLOCAL PATHS ${CURRENT_SOURCE_DIR} NO_DEFAULT_PATH)
+
+  if(_DOXYLOCAL)
+    set(make_doxyfile_command ${CMAKE_COMMAND} -D DOT_TRUE=${DOT_TRUE} -D DUNEWEB_TRUE=\# -D ProjectName=${ProjectName} -D DUNE_MOD_VERSION=${DUNE_MOD_VERSION} -D DOXYSTYLE=${DOXYSTYLE_FILE}  -D DOXYLOCAL=${CMAKE_CURRENT_SOURCE_DIR}/Doxylocal -D abs_top_srcdir=${CMAKE_SOURCE_DIR} -D srcdir=${CMAKE_CURRENT_SOURCE_DIR} -D top_srcdir=${CMAKE_SOURCE_DIR} -P ${SCRIPT_DIR}/CreateDoxyFile.cmake)
+    add_custom_command (OUTPUT Doxyfile.in Doxyfile
+      COMMAND ${make_doxyfile_command}
+      COMMENT "Creating Doxyfile.in"
+      DEPENDS ${DOXYSTYLE_FILE} ${CMAKE_CURRENT_SOURCE_DIR}/Doxylocal)
+  else()
+    set(make_doxyfile_command ${CMAKE_COMMAND} -D DOT_TRUE=${DOT_TRUE} -D DUNEWEB_TRUE=\# -D ProjectName=${ProjectName} -D DUNE_MOD_VERSION=${DUNE_MOD_VERSION} -D DOXYSTYLE=${DOXYSTYLE_FILE}  -D DOXYLOCAL=${CMAKE_CURRENT_SOURCE_DIR}/Doxylocal -D abs_top_srcdir=${CMAKE_SOURCE_DIR} -D top_srcdir=${CMAKE_SOURCE_DIR} -P ${SCRIPT_DIR}/CreateDoxyFile.cmake)
+    add_custom_command (OUTPUT Doxyfile.in Doxyfile
+      COMMAND ${make_doxyfile_command}
+      COMMENT "Creating Doxyfile.in"
+      DEPENDS ${DOXYSTYLE_FILE})
+  endif()
   add_custom_target(Doxyfile DEPENDS Doxyfile.in Doxyfile)
 ENDMACRO (prepare_doxyfile)
 
