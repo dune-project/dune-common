@@ -17,8 +17,6 @@ if(Fortran_Works)
 else(Fortran_Works)
   set(HAVE_LAPACK Off)
   set(HAVE_BLAS Off)
-  # Write an empty FC header
-  file(WRITE ${CMAKE_BINARY_DIR}/FC.h "")
 endif(Fortran_Works)
 
 find_package(GMP)
