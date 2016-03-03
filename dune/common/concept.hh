@@ -124,20 +124,16 @@ namespace Imp {
   // # for the tupleEntriesModel() function below.
   // #############################################################################
 
-  template<class C, class First>
-  constexpr auto allModel()
-    -> std::integral_constant<bool, models<C, First>()>
-  { return {}; }
-
-  template<class C, class First, class... Other>
-  constexpr auto allModel()
-    -> std::integral_constant<bool, models<C, First>() and allModel<C, Other...>()>
-  { return {}; }
-
-  template<class C, class... T>
-  constexpr auto tupleEntriesModel(const std::tuple<T...>&)
-    -> decltype(allModel<C, T...>())
-  { return {}; }
+  template<class C, class Tuple>
+  struct TupleEntriesModelHelper
+  {
+    template<class Accumulated, class T>
+    struct AccumulateFunctor
+    {
+      using type = typename std::integral_constant<bool, Accumulated::value and models<C, T>()>;
+    };
+    using Result = typename ReduceTuple<AccumulateFunctor, Tuple, std::true_type>::type;
+  };
 
 } // namespace Dune::Concept::Imp
 
@@ -150,7 +146,7 @@ namespace Imp {
 
 template<class C, class Tuple>
 constexpr auto tupleEntriesModel()
-  -> decltype(Imp::tupleEntriesModel<C>(std::declval<Tuple>()))
+  -> typename Imp::TupleEntriesModelHelper<C, Tuple>::Result
 {
   return {};
 }
