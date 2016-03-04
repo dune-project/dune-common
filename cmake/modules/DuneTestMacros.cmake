@@ -229,7 +229,7 @@ function(dune_add_test)
   endif()
 
   # Make sure to exclude the target from all, even when it is user-provided
-  if(DUNE_BUILD_TESTS_ON_MAKE_ALL)
+  if(DUNE_BUILD_TESTS_ON_MAKE_ALL AND (NOT ADDTEST_EXPECT_COMPILE_FAIL))
     set_property(TARGET ${ADDTEST_TARGET} PROPERTY EXCLUDE_FROM_ALL 0)
   else()
     set_property(TARGET ${ADDTEST_TARGET} PROPERTY EXCLUDE_FROM_ALL 1)
