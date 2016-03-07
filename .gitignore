@@ -1,4 +1,5 @@
 # Stuff to ignore recursively
+*.a
 *.la
 *.lo
 *.o
