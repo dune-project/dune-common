@@ -45,6 +45,9 @@
    to facilitate activating and deactivating GMP using compile flags. */
 #cmakedefine HAVE_GMP ENABLE_GMP
 
+/* Define to 1 if you have the Vc library. */
+#cmakedefine HAVE_VC 1
+
 /* Define to 1 if you have the symbol mprotect. */
 #cmakedefine HAVE_MPROTECT 1
 
