@@ -299,6 +299,9 @@ It is a mere wrapper around CMake's own testing tool CTest. You can check :code:
 for a lot of useful options, such as choosing the set of tests to be run by matching regular expressions or
 showing the output of failed tests.
 
+The test programs are not built automatically. You need to build them manually
+before running them using :code:`make build_tests`.
+
 The Dune test suite also defines tests that run in parallel. You may set an upperbound to the number
 of cores in use for a single test by setting :ref:`DUNE_MAX_TEST_CORES`.
 
