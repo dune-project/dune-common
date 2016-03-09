@@ -279,7 +279,7 @@ This violates the CMake philosophy and there is no clean solution to achieve it.
 to have for each configuration one out-of-source build. We have nevertheless implemented a workaround. It can be enable
 by setting the variable :ref:`ALLOW_CXXFLAGS_OVERWRITE` in your opts file. You can then type:
 
-.. code-block: bash
+.. code-block:: bash
 
    make CXXFLAGS="<your flags>" <target>
 
