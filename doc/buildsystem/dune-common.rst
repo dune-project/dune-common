@@ -272,7 +272,9 @@ Note that the generator name has to match character by character, including case
 
 To configure highlighting of CMake errors in Emacs' compilation mode, include
 the following in your :code:`~./emacs` (see the `Emacs bug
-<http://debbugs.gnu.org/cgi/bugreport.cgi?bug=22944>`_)::
+<http://debbugs.gnu.org/cgi/bugreport.cgi?bug=22944>`_):
+
+.. code-block:: elisp
 
    (setq compilation-error-regexp-alist-alist
       `((cmake "^CMake \\(?:Error\\|\\(Warning\\)\\) at \\(.*\\):\\([1-9][0-9]*\\) ([^)]+):$"
