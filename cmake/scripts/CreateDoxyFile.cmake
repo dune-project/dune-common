@@ -1,8 +1,8 @@
 #For now we just support appending Doxyfile and Doxylocal
 FILE(READ ${DOXYSTYLE} file_contents)
 FILE(WRITE Doxyfile.in ${file_contents})
-if(DOXYLOCAL)
-  FILE(READ ${DOXYLOCAL} file_contents)
+if(_DOXYLOCAL)
+  FILE(READ ${_DOXYLOCAL} file_contents)
 endif()
 FILE(APPEND Doxyfile.in ${file_contents})
 
