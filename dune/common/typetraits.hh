@@ -458,11 +458,12 @@ namespace Dune
   // Implementation of IsTupleOrDerived
   namespace Imp {
 
-  template<class... T>
-  std::true_type isTupleOrDerived(const std::tuple<T...>*)
+  template<class... T, class Dummy>
+  std::true_type isTupleOrDerived(const std::tuple<T...>*, Dummy)
   { return {}; }
 
-  std::false_type isTupleOrDerived(const void*)
+  template<class Dummy>
+  std::false_type isTupleOrDerived(const void*, Dummy)
   { return {}; }
 
   } // namespace Imp
@@ -474,7 +475,7 @@ namespace Dune
    */
   template<class T>
   struct IsTupleOrDerived :
-    public decltype(Imp::isTupleOrDerived(std::declval<T*>()))
+    public decltype(Imp::isTupleOrDerived(std::declval<T*>(), true))
   {};
 
 
