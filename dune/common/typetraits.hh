@@ -462,7 +462,7 @@ namespace Dune
   std::true_type isTupleOrDerived(const std::tuple<T...>*)
   { return {}; }
 
-  std::false_type isTupleOrDerived(const void*)
+  inline std::false_type isTupleOrDerived(const void*)
   { return {}; }
 
   } // namespace Imp
