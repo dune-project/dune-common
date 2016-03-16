@@ -26,7 +26,3 @@ include(AddGMPFlags)
 find_package(Inkscape)
 include(UseInkscape)
 include(FindMProtect)
-
-# try to find the Vc library
-find_package(Vc)
-include(AddVcFlags)

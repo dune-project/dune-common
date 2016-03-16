@@ -22,15 +22,6 @@
 */
 
 /**
- @defgroup RangeUtilities Range Utilities
- @brief Utilities for reduction like operations on ranges
-
- All these reduction operations work for appropriate ranges and scalar values
-
- @ingroup Utilities
-*/
-
-/**
   @defgroup StringUtilities String Utilities
   @brief Utility functions for std::string
   @ingroup Utilities
