@@ -428,6 +428,79 @@ namespace Dune
   template <class Type>
   using real_t = typename FieldTraits<Type>::real_type;
 
+
+
+  // Implementation of IsTuple
+  namespace Imp {
+
+  template<class T>
+  struct IsTuple : public std::false_type
+  {};
+
+  template<class... T>
+  struct IsTuple<std::tuple<T...>> : public std::true_type
+  {};
+
+  } // namespace Imp
+
+  /**
+   * \brief Check if T is a std::tuple<...>
+   *
+   * The result is exported by deriving from std::true_type or std::false_type.
+   */
+  template<class T>
+  struct IsTuple :
+    public Imp::IsTuple<T>
+  {};
+
+
+
+  // Implementation of IsTupleOrDerived
+  namespace Imp {
+
+  template<class... T>
+  std::true_type isTupleOrDerived(const std::tuple<T...>*)
+  { return {}; }
+
+  std::false_type isTupleOrDerived(const void*)
+  { return {}; }
+
+  } // namespace Imp
+
+  /**
+   * \brief Check if T derived from a std::tuple<...>
+   *
+   * The result is exported by deriving from std::true_type or std::false_type.
+   */
+  template<class T>
+  struct IsTupleOrDerived :
+    public decltype(Imp::isTupleOrDerived(std::declval<T*>()))
+  {};
+
+
+
+  // Implementation of is IsIntegralConstant
+  namespace Imp {
+
+  template<class T>
+  struct IsIntegralConstant : public std::false_type
+  {};
+
+  template<class T, T t>
+  struct IsIntegralConstant<std::integral_constant<T, t>> : public std::true_type
+  {};
+
+  } // namespace Imp
+
+  /**
+   * \brief Check if T is an std::integral_constant<I, i>
+   *
+   * The result is exported by deriving from std::true_type or std::false_type.
+   */
+  template<class T>
+  struct IsIntegralConstant : public Imp::IsIntegralConstant<std::decay_t<T>>
+  {};
+
   /** @} */
 }
 #endif
