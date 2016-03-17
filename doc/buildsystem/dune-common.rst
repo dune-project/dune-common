@@ -270,6 +270,22 @@ As already said, CMake is merely a build system generator with multiple backends
 a different generator. Check :code:`cmake --help` for a list of generators. You can then add the :code:`-G` to the :code:`CMAKE_FLAGS` in your opts file.
 Note that the generator name has to match character by character, including case and spaces.
 
+To configure highlighting of CMake errors in Emacs' compilation mode, include
+the following in your :code:`~./emacs` (see the `Emacs bug
+<http://debbugs.gnu.org/cgi/bugreport.cgi?bug=22944>`_):
+
+.. code-block:: elisp
+
+   (setq compilation-error-regexp-alist-alist
+      `((cmake "^CMake \\(?:Error\\|\\(Warning\\)\\) at \\(.*\\):\\([1-9][0-9]*\\) ([^)]+):$"
+               2 3 nil (1))
+        (cmake-info "^  \\(?: \\*\\)?\\(.*\\):\\([1-9][0-9]*\\) ([^)]+)$"
+               2 3 nil 0)
+        . ,compilation-error-regexp-alist-alist))
+
+Then customize the option :code:`compilation-error-regexp-alist` and add the
+two predefined symbols :code:`cmake` and :code:`cmake-info` to the list.
+
 .. _cxxflags:
 
 I usually modify my CXXFLAGS upon calling make. How can I do this in CMake?
