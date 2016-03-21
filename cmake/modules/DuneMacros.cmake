@@ -679,7 +679,13 @@ macro(dune_project)
     FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
   else(Fortran_Works)
     # Write empty FC.h header
-    file(WRITE ${CMAKE_BINARY_DIR}/FC.h "")
+    # Make sure to only write this file once, otherwise every cmake run
+    # will trigger a full rebuild of the whole project.
+    unset(_FC_H CACHE)
+    find_file(_FC_H NAME FC.h PATHS "${CMAKE_BINARY_DIR}" NO_DEFAULT_PATH)
+    if(NOT _FC_H)
+      file(WRITE "${CMAKE_BINARY_DIR}/FC.h" "")
+    endif()
   endif(Fortran_Works)
 
   # Create custom target for building the documentation
