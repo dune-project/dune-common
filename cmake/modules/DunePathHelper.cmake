@@ -16,10 +16,12 @@
 #       The name of the variable to export the result.
 #
 #    .. cmake_param:: CMAKE_MODULES
+#       :option:
 #
 #       Set to return the path to cmake modules
 #
 #    .. cmake_param:: BUILD_DIR
+#       :option:
 #
 #       Set to return the path to the build directory
 #
@@ -29,9 +31,10 @@
 #       Set to return the include path of the module
 #
 #
-#    Returns the path to the source of the given module. This differs
+#    Returns the specified path of the given module. This differs
 #    whether it is called from the actual module, or from a module
-#    requiring or suggesting this module.
+#    requiring or suggesting this module. One and only one type of path
+#    may be requested.
 #
 
 function(dune_module_path)
