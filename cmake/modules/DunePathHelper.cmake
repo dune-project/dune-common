@@ -23,6 +23,12 @@
 #
 #       Set to return the path to the build directory
 #
+#    .. cmake_param:: SOURCE_DIR
+#       :option:
+#
+#       Set to return the include path of the module
+#
+#
 #    Returns the path to the source of the given module. This differs
 #    whether it is called from the actual module, or from a module
 #    requiring or suggesting this module.
@@ -30,7 +36,7 @@
 
 function(dune_module_path)
   # Parse Arguments
-  set(OPTION CMAKE_MODULES BUILD_DIR)
+  set(OPTION CMAKE_MODULES BUILD_DIR SOURCE_DIR)
   set(SINGLE MODULE RESULT)
   set(MULTI)
   include(CMakeParseArguments)
@@ -60,10 +66,16 @@ function(dune_module_path)
     set(IF_NOT_CURRENT_MOD ${${PATH_MODULE}_MODULE_PATH})
   endif()
 
-  # Set the requested paths
+  # Set the requested paths for the build directory
   if(PATH_BUILD_DIR)
     set(IF_CURRENT_MOD ${CMAKE_BINARY_DIR})
     set(IF_NOT_CURRENT_MOD ${${PATH_MODULE}_DIR})
+  endif()
+
+  # Set the requested paths for the include directory
+  if(PATH_SOURCE_DIR)
+    set(IF_CURRENT_MOD ${CMAKE_SOURCE_DIR})
+    set(IF_NOT_CURRENT_MOD ${${PATH_MODULE}_PREFIX})
   endif()
 
   # Now set the path in the outer scope!
