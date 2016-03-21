@@ -951,24 +951,6 @@ macro(target_link_dune_default_libraries _target)
   endforeach(_lib ${DUNE_DEFAULT_LIBS})
 endmacro(target_link_dune_default_libraries)
 
-# Gets path to the common Dune CMake scripts
-macro(dune_common_script_dir _script_dir)
-  if("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-    set(${_script_dir} ${CMAKE_SOURCE_DIR}/cmake/scripts)
-  else("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-    set(${_script_dir} ${dune-common_SCRIPT_DIR})
-  endif("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-endmacro(dune_common_script_dir)
-
-# Gets path to the common Dune CMake scripts source
-macro(dune_common_script_source_dir _script_dir)
-  if("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-    set(${_script_dir} ${CMAKE_SOURCE_DIR}/cmake/scripts)
-  else("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-    set(${_script_dir} ${dune-ommon_SCRIPT_SOURCE_DIR})
-  endif("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-endmacro(dune_common_script_source_dir)
-
 function(dune_expand_object_libraries _SOURCES_var _ADD_LIBS_var _COMPILE_FLAGS_var)
   set(_new_SOURCES "")
   set(_new_ADD_LIBS "${${_ADD_LIBS_var}}")
