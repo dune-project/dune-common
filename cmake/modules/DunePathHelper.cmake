@@ -30,6 +30,11 @@
 #
 #       Set to return the include path of the module
 #
+#    .. cmake_param:: SCRIPT_DIR
+#       :option:
+#
+#       Set to return the CMake script dir
+#
 #
 #    Returns the specified path of the given module. This differs
 #    whether it is called from the actual module, or from a module
@@ -39,7 +44,7 @@
 
 function(dune_module_path)
   # Parse Arguments
-  set(OPTION CMAKE_MODULES BUILD_DIR SOURCE_DIR)
+  set(OPTION CMAKE_MODULES BUILD_DIR SOURCE_DIR SCRIPT_DIR)
   set(SINGLE MODULE RESULT)
   set(MULTI)
   include(CMakeParseArguments)
@@ -67,6 +72,12 @@ function(dune_module_path)
   if(PATH_CMAKE_MODULES)
     set(IF_CURRENT_MOD ${CMAKE_SOURCE_DIR}/cmake/modules)
     set(IF_NOT_CURRENT_MOD ${${PATH_MODULE}_MODULE_PATH})
+  endif()
+
+  # Set the requested paths for the cmake script path
+  if(PATH_SCRIPT_DIR)
+    set(IF_CURRENT_MOD ${CMAKE_SOURCE_DIR}/cmake/scripts)
+    set(IF_NOT_CURRENT_MOD ${${PATH_MODULE}_SCRIPT_DIR})
   endif()
 
   # Set the requested paths for the build directory
