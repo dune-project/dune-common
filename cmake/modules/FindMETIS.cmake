@@ -131,7 +131,7 @@ if(METIS_FOUND)
   set(HAVE_METIS ${METIS_FOUND})
   # log result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
-    "Determing location of METIS succeded:\n"
+    "Determing location of METIS succeeded:\n"
     "Include directory: ${METIS_INCLUDE_DIRS}\n"
     "Library directory: ${METIS_LIBRARIES}\n\n")
 else(METIS_FOUND)

@@ -56,7 +56,7 @@ if(UMFPACK_FOUND)
   set(UMFPACK_LIBRARIES ${UMFPACK_LIBRARIES})
   # log result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
-    "Determining location of UMFPack succeded:\n"
+    "Determining location of UMFPack succeeded:\n"
     "Include directory: ${UMFPACK_INCLUDE_DIRS}\n"
     "Library directory: ${UMFPACK_LIBRARIES}\n\n")
   set(UMFPACK_DUNE_COMPILE_FLAGS "${UMFPACK_INCLUDE_FLAGS}"

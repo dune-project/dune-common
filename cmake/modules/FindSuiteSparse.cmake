@@ -219,7 +219,7 @@ if(SuiteSparse_FOUND)
   set(SuiteSparse_INCLUDE_DIRS ${SUITESPARSE_INCLUDE_DIR})
   # log result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
-    "Determining location of SuiteSparse succeded:\n"
+    "Determining location of SuiteSparse succeeded:\n"
     "Include directory: ${SuiteSparse_INCLUDE_DIRS}\n"
     "Library directory: ${SuiteSparse_LIBRARIES}\n\n")
   set(SuiteSparse_COMPILER_FLAGS)

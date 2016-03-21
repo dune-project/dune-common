@@ -75,10 +75,10 @@ namespace Dune
    * Based on the information about the distributed index sets,  data
    * independent interfaces between different sets of the index sets
    * can be setup using the class Interface.  For the actual communication
-   * data dependant communicators can be setup using BufferedCommunicator,
+   * data dependent communicators can be setup using BufferedCommunicator,
    * DatatypeCommunicator VariableSizeCommunicator based on the interface
    * information. In contrast to the former
-   * the latter is independant of the class Interface can work on a map
+   * the latter is independent of the class Interface can work on a map
    * from process number to a pair of index lists describing which local indices
    * are send and received from that processs, respectively.
    */
@@ -265,7 +265,7 @@ namespace Dune
      * \code
      * bool contains(Attribute flag) const;
      * \endcode
-     * for checking whether the set contains a specfic flag.
+     * for checking whether the set contains a specific flag.
      * This functionality is for example provided the classes
      * EnumItem, EnumRange and Combine.
      *

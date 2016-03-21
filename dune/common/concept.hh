@@ -154,7 +154,7 @@ constexpr auto tupleEntriesModel()
 
 // #############################################################################
 // # The following require*() functions are just helpers that allow to
-// # propagate a failed check as substitution failure. This is usefull
+// # propagate a failed check as substitution failure. This is useful
 // # inside of a concept definition.
 // #############################################################################
 

@@ -23,7 +23,7 @@ else(CMakePkgConfigHelpersMacroFile)
     if(NOT PMPKG_INSTALL_DESTINATION)
       message(FATAL_ERROR "configure_package_config_file needs an option INSTALL_DESTINATION with a relative path")
     endif(NOT PMPKG_INSTALL_DESTINATION)
-    # asume that PMPKG_INSTALL_DESTINATION is relative
+    # assume that PMPKG_INSTALL_DESTINATION is relative
     string(REGEX REPLACE "[^/]+" ".." prefix_path ${PMPKG_INSTALL_DESTINATION})
     set(PACKAGE_INIT "# Set prefix to source dir
 get_filename_component(PACKAGE_PREFIX_DIR \"\${CMAKE_CURRENT_LIST_DIR}/${prefix_path}\" ABSOLUTE)

@@ -80,7 +80,7 @@ if(GMP_FOUND)
   set(GMP_COMPILE_FLAGS "-DENABLE_GMP=1")
   # log result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
-    "Determing location of GMP succeded:\n"
+    "Determing location of GMP succeeded:\n"
     "Include directory: ${GMP_INCLUDE_DIRS}\n"
     "Library directory: ${GMP_LIBRARIES}\n\n")
 else(GMP_FOUND)

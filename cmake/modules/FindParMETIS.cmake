@@ -148,7 +148,7 @@ if(PARMETIS_FOUND)
       CACHE STRING "ParMETIS link flags")
   # log result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
-    "Determing location of ParMETIS succeded:\n"
+    "Determing location of ParMETIS succeeded:\n"
     "Include directory: ${PARMETIS_INCLUDE_DIRS}\n"
     "Library directory: ${PARMETIS_LIBRARIES}\n\n")
 endif(PARMETIS_FOUND)

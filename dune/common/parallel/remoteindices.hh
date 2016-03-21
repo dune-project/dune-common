@@ -498,17 +498,17 @@ namespace Dune {
      *
      * @param remote The list to add the indices to.
      * @param remoteEntries The number of remote entries to unpack.
-     * @param local The local indices to check wether we know the remote
+     * @param local The local indices to check whether we know the remote
      *              indices.
      * @param localEntries The number of local indices.
      * @param type The mpi data type for unpacking.
      * @param p_in The input buffer to unpack from.
-     * @param postion The position in the buffer to start unpacking from.
+     * @param position The position in the buffer to start unpacking from.
      * @param bufferSize The size of the input buffer.
      */
     inline void unpackIndices(RemoteIndexList& remote, int remoteEntries,
                               PairType** local, int localEntries, char* p_in,
-                              MPI_Datatype type, int* positon, int bufferSize,
+                              MPI_Datatype type, int* position, int bufferSize,
                               bool fromOurself);
 
     inline void unpackIndices(RemoteIndexList& send, RemoteIndexList& receive,
@@ -1178,7 +1178,7 @@ namespace Dune {
     MPI_Pack_size(1, MPI_CHAR, comm_,
                   &charSize);
     // Our message will contain the following:
-    // a bool wether two index sets where sent
+    // a bool whether two index sets where sent
     // the size of the source and the dest indexset,
     // then the source and destination indices
     bufferSize += 2 * intSize + charSize;
@@ -1447,7 +1447,7 @@ namespace Dune {
   template<bool ignorePublic>
   inline void RemoteIndices<T,A>::rebuild()
   {
-    // Test wether a rebuild is Needed.
+    // Test whether a rebuild is Needed.
     if(firstBuild ||
        ignorePublic!=publicIgnored || !
        isSynced()) {

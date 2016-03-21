@@ -1,4 +1,4 @@
-# Module that provides convertion routines using inkscape
+# Module that provides conversion routines using inkscape
 #
 # .. cmake_function:: inkscape_generate_png_from_svg
 #

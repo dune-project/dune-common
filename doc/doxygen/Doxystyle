@@ -159,10 +159,10 @@ DOT_MULTI_TARGETS      = NO
 GENERATE_LEGEND        = NO
 DOT_CLEANUP            = NO
 
-####################################################################
-# Header Footer and Stylesheet in use is controled by the Makefile #
-#                                           (christi 16. Jan 2006) #
-####################################################################
+#####################################################################
+# Header Footer and Stylesheet in use is controlled by the Makefile #
+#                                            (christi 16. Jan 2006) #
+#####################################################################
 
 # The HTML_HEADER tag can be used to specify a personal HTML header for
 # each generated HTML page. If it is left blank doxygen will generate a

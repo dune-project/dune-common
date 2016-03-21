@@ -86,7 +86,7 @@ language:
 - :ref:`dune_add_test` to register tests to the test suite.
 - :ref:`install` to mark files for installation.
 
-For futher commands, browse this documentation.
+For further commands, browse this documentation.
 
 If your module requires any other packages than the dune modules listed in your :code:`dune.module` file, you should
 also use the command :ref:`find_package` in the module :code:`dune-foo/cmake/modules/DuneFooMacros.cmake`
@@ -248,7 +248,7 @@ How should I handle ini and grid files in an out-of-source-build setup?
 =======================================================================
 
 Such files are under version control, but they are needed in the build directory.
-There are some CMake functions targetting this issue:
+There are some CMake functions targeting this issue:
 
 * :ref:`dune_symlink_to_source_tree`
 * :ref:`dune_symlink_to_source_files`
