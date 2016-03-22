@@ -182,6 +182,35 @@ foreach(_component ${SUITESPARSE_COMPONENTS})
     ${_component}_LIBRARY)
 endforeach()
 
+# check version, for SPQR we need at least SuiteSparse 4.3
+if(SuiteSparse_SPQR_FOUND)
+  include(CheckCSourceCompiles)
+  include(CMakePushCheckState)
+  cmake_push_check_state()
+  set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${SUITESPARSE_INCLUDE_DIR})
+  set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ${SUITESPARSE_LIBRARY})
+  # check whether version is at least 4.3
+  check_c_source_compiles("
+    #include <SuiteSparse_config.h>
+    int main(void)
+    {
+      #ifndef SUITESPARSE_HAS_VERSION_FUNCTION
+        #error SuiteSparse <= 4.2.0 too old, required version 4.3 or newer for SPQR.
+      #endif
+      #if SUITESPARSE_VERSION <= 4003
+        #error SuiteSparse too old, required version 4.3 or newer for SPQR.
+      #endif
+      return 0;
+    }"
+    SUITESPARSE_MIN_VERSION_4_3)
+
+  if(NOT SUITESPARSE_MIN_VERSION_4_3)
+    set(SuiteSparse_SPQR_FOUND FALSE)
+    set(HAVE_SUITESPARSE_SPQR FALSE)
+  endif()
+  cmake_pop_check_state()
+endif()
+
 list(APPEND SUITESPARSE_LIBRARY ${SUITESPARSE_CONFIG_LIB})
 
 # make them unique
@@ -210,6 +239,7 @@ mark_as_advanced(
   SUITESPARSE_INCLUDE_DIR
   SUITESPARSE_LIBRARY
   SUITESPARSE_CONFIG_LIB
+  SUITESPARSE_MIN_VERSION_4_3
   WILL_USE_CHOLMOD
   WILL_USE_UMFPACK)
 
