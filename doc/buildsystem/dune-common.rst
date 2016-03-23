@@ -18,9 +18,9 @@ CMake...
 Dune got support for CMake in version 2.3 alongside the old Autotools build system. It got the default in the
 2.4 release. After that release, the Autotools build system will be removed from the master branch.
 
-You can install cmake through your favorite package manager or downloading source code from
+You can install CMake through your favorite package manager or downloading source code from
 `KITWare <http://www.cmake.org>`_
-The minimum required version to build Dune with CMake is 2.8.6.
+The minimum required version to build Dune with CMake is 2.8.12.
 
 .. _howtouse:
 
@@ -33,7 +33,7 @@ CMake flags. While this is a great tool to determine how to do the transition, i
 a CMake-only approach.
 
 :code:`dunecontrol` will pickup the variable :code:`CMAKE_FLAGS` from your opts file and use it as command line options for
-any call to CMake. There, you can define variables for the configure process with CMakes :code:`-D` option; just as
+any call to CMake. There, you can define variables for the configure process with CMake's :code:`-D` option; just as
 with the C pre-processor.
 
 The most important part of the configure flags is to tell the build system where to look for external libraries.
@@ -189,7 +189,7 @@ at the same time.
 Out-of-source builds are the default with CMake. In-source builds are strongly discouraged.
 
 By default, a subfolder :code:`build-cmake` is generated within each dune module and is used as a build directory.
-You can customize this folder through the :code:--builddir: option of :code:`dunecontrol`. Give an absolute path to
+You can customize this folder through the :code:`--builddir` option of :code:`dunecontrol`. Give an absolute path to
 the :code:`--builddir` option, you will get something like this:
 
 ::
@@ -215,10 +215,10 @@ This will modify all targets in the directory of the :code:`CMakeLists.txt`, whe
 subdirectories. The compile flags for all found external packages are added to those targets and the target is
 linked against all found external libraries.
 
-To use this while using custom external packages, you have to register your flags to the mechansim.
+To use this while using custom external packages, you have to register your flags to the mechanism.
 Also, some special care has to be given, if your module does build one or more library which targets within the module do link against.
 
-Carefully read the followinf documentation in those cases:
+Carefully read the following documentation in those cases:
 
 * :ref:`dune_enable_all_packages`
 * :ref:`dune_register_package_flags`
@@ -231,16 +231,18 @@ How do I change my compiler and compiler flags?
 
 In general, there are multiple ways to do this:
 
-* Setting the CMake variables :ref:`CMAKE_<LANG>_COMPILER` (with :code:`LANG` being :code:`C` or :code:`CXX`) from the opts file
+* Setting the CMake variables :ref:`CMAKE_<LANG>_COMPILER` (with :code:`LANG` being :code:`C`
+  or :code:`CXX` or :code:`Fortran`) from the opts file
 * Setting those variables within the project with the :code:`set` command
-* Setting the environment variables :code:`CC`, :code:`CXX` etc.
+* Setting the environment variables :code:`CC`, :code:`CXX`, :code:`FC` etc.
 
 The first option is the recommended way. Whenever you change your compiler, you should delete all build
 directories. For some CMake versions, there is a known CMake bug, that requires you to give an absolute path
 to your compiler, but Dune will issue a warning, if you violate that.
 
 You can modify your default compiler flags by setting the variables
-:ref:`CMAKE_<LANG>_FLAGS` in your opts file (again with :code:`LANG` being :code:`C` or :code:`CXX`).
+:ref:`CMAKE_<LANG>_FLAGS` in your opts file (again with :code:`LANG` being :code:`C` or
+:code:`CXX` or :code:`Fortran`).
 
 .. _symlink:
 
@@ -318,7 +320,7 @@ showing the output of failed tests.
 The test programs are not built automatically. You need to build them manually
 before running them using :code:`make build_tests`.
 
-The Dune test suite also defines tests that run in parallel. You may set an upperbound to the number
+The Dune test suite also defines tests that run in parallel. You may set an upper bound to the number
 of cores in use for a single test by setting :ref:`DUNE_MAX_TEST_CORES`.
 
 .. _disable:
@@ -374,7 +376,7 @@ Whenever you experience any problems, your first step should be to delete all bu
 
 ::
 
-   dunecontrol exec rm -rf build-cmake
+   dunecontrol exec "rm -rf build-cmake"
 
 This will remove all build directories from all DUNE modules.
 
