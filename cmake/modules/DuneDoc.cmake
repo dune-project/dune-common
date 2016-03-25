@@ -46,6 +46,12 @@ FIND_PROGRAM(IMAGEMAGICK_CONVERT convert
   )
 set(LATEX_USABLE "ON")
 
+# UseLATEX.cmake does only work in out-of-source builds
+if(${CMAKE_BINARY_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
+  message(WARNING "In-source detected, disabling LaTeX documentation. Use an out-of-source build to generate documentation.")
+  set(LATEX_USABLE FALSE)
+endif()
+# check needed LaTeX executables
 if(NOT LATEX_COMPILER)
   message(WARNING " Need latex to create documentation!")
   set(LATEX_USABLE)
