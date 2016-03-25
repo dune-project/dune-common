@@ -40,11 +40,11 @@
 #    What are use cases for this function?
 #
 
-FIND_PACKAGE(LATEX)
-FIND_PROGRAM(IMAGEMAGICK_CONVERT convert
+find_package(LATEX)
+find_program(IMAGEMAGICK_CONVERT convert
   DOC "The convert program that comes with ImageMagick (available at http://www.imagemagick.org)."
   )
-set(LATEX_USABLE "ON")
+set(LATEX_USABLE TRUE)
 
 # UseLATEX.cmake does only work in out-of-source builds
 if(${CMAKE_BINARY_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
@@ -54,24 +54,24 @@ endif()
 # check needed LaTeX executables
 if(NOT LATEX_COMPILER)
   message(WARNING " Need latex to create documentation!")
-  set(LATEX_USABLE)
-endif(NOT LATEX_COMPILER)
+  set(LATEX_USABLE FALSE)
+endif()
 if(NOT BIBTEX_COMPILER)
   message(WARNING " Need bibtex to create documentation!")
-  set(LATEX_USABLE)
-endif(NOT BIBTEX_COMPILER)
+  set(LATEX_USABLE FALSE)
+endif()
 if(NOT MAKEINDEX_COMPILER)
   message(WARNING " Need makeindex to create documentation!")
-  set(LATEX_USABLE)
-endif(NOT MAKEINDEX_COMPILER)
+  set(LATEX_USABLE FALSE)
+endif()
 if(NOT IMAGEMAGICK_CONVERT)
   message(WARNING " Need imagemagick to create latex documentation!")
-  set(LATEX_USABLE)
-endif(NOT IMAGEMAGICK_CONVERT)
+  set(LATEX_USABLE FALSE)
+endif()
 if(LATEX_USABLE)
   set(LATEX_MANGLE_TARGET_NAMES "ON" CACHE INTERNAL "Mangle target names to allow multiple latex documents")
   include(UseLATEX)
-endif(LATEX_USABLE)
+endif()
 
 
 add_custom_target(doc)
@@ -80,7 +80,7 @@ add_custom_target(doc)
 include(DuneSphinxCMakeDoc)
 
 
-MACRO(create_doc_install filename targetdir)
+macro(create_doc_install filename targetdir)
   dune_module_path(MODULE dune-common RESULT scriptdir SCRIPT_DIR)
   get_filename_component(targetfile ${filename} NAME)
   # The doc file might be in CMAKE_CURRENT_<SOURCE|BINARY>_DIR
@@ -104,10 +104,10 @@ MACRO(create_doc_install filename targetdir)
   # When installing, call cmake install with the above install target and add the file to install_manifest.txt
   install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" --build \"${CMAKE_BINARY_DIR}\" --target install_${targetfile} )
             LIST(APPEND CMAKE_INSTALL_MANIFEST_FILES ${CMAKE_INSTALL_PREFIX}/${targetdir}/${targetfile})")
-ENDMACRO(create_doc_install)
+endmacro(create_doc_install)
 
 
-MACRO(dune_add_latex_document tex_file)
+macro(dune_add_latex_document tex_file)
   # We assume that we always generate a PDF file.
   # If the corresponding pdf file already exists in the source tree
   # we do not add a rule to build it.
@@ -130,7 +130,7 @@ MACRO(dune_add_latex_document tex_file)
       message(SEND_ERROR "No tex source ${tex_file} and no generated ${file} found!")
     endif(NOT pdffilevar)
   endif(filevar)
-ENDMACRO(dune_add_latex_document tex_file)
+endmacro(dune_add_latex_document tex_file)
 
 # Support building documentation with doxygen.
 include(DuneDoxygen)
