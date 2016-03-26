@@ -34,11 +34,6 @@
 #       shadows all options provided by the base implementation
 #       :code:`add_latex_document`.
 #
-# .. cmake_function:: create_doc_install
-#
-#    TODO doc me
-#    What are use cases for this function?
-#
 
 find_package(LATEX)
 find_program(IMAGEMAGICK_CONVERT convert
@@ -78,33 +73,6 @@ add_custom_target(doc)
 
 # add the Sphinx-generated build system documentation
 include(DuneSphinxCMakeDoc)
-
-
-macro(create_doc_install filename targetdir)
-  dune_module_path(MODULE dune-common RESULT scriptdir SCRIPT_DIR)
-  get_filename_component(targetfile ${filename} NAME)
-  # The doc file might be in CMAKE_CURRENT_<SOURCE|BINARY>_DIR
-  # Depending on whether this is a tarball or not
-  set(_src_file _src_file-NOTFOUND)
-  find_file(_src_file ${targetfile} ${CMAKE_CURRENT_SOURCE_DIR})
-  if(NOT _src_file)
-    set(_src_file ${filename})
-    set(_need_to_generate TRUE)
-  endif(NOT _src_file)
-  set(install_command ${CMAKE_COMMAND} -D FILES=${_src_file} -D DIR=${CMAKE_INSTALL_PREFIX}/${targetdir} -P ${scriptdir}/InstallFile.cmake)
-  # create a custom target for the installation
-  if("${ARGC}" EQUAL "3" AND _need_to_generate)
-    set(_depends ${ARGV2})
-  else("${ARGC}" EQUAL "3" AND _need_to_generate)
-    set(_depends  ${_src_file})
-  endif("${ARGC}" EQUAL "3" AND _need_to_generate)
-  add_custom_target(install_${targetfile} ${install_command}
-    COMMENT "Installing ${filename} to ${targetdir}"
-    DEPENDS ${_depends})
-  # When installing, call cmake install with the above install target and add the file to install_manifest.txt
-  install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" --build \"${CMAKE_BINARY_DIR}\" --target install_${targetfile} )
-            LIST(APPEND CMAKE_INSTALL_MANIFEST_FILES ${CMAKE_INSTALL_PREFIX}/${targetdir}/${targetfile})")
-endmacro(create_doc_install)
 
 
 macro(dune_add_latex_document tex_file)
