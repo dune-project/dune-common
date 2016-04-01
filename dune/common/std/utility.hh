@@ -169,7 +169,6 @@ namespace Dune
       return typename make_index_sequence_impl< sizeof...( T ) >::type();
     }
 
-    using std::declval;
 
   } // namespace Std
 
