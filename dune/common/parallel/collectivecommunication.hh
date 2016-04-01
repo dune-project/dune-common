@@ -66,16 +66,27 @@ namespace Dune
      is not visible in the interface, i.e. Dune grid implementations
      are not restricted to MPI.
 
+     \tparam Communicator The communicator type used by your message-passing implementation.
+       For MPI this will be MPI_Comm.  For sequential codes there is the dummy communicator No_Comm.
+       It is assumed that if you want to specialize the CollectiveCommunication class for a
+       message-passing system other than MPI, that message-passing system will have something
+       equivalent to MPI communicators.
+
      \ingroup ParallelCommunication
    */
-  template<typename C>
+  template<typename Communicator>
   class CollectiveCommunication
   {
   public:
     //! Construct default object
     CollectiveCommunication()
     {}
-    CollectiveCommunication (const C&)
+
+    /** \brief Constructor with a given communicator
+     *
+     * As this is implementation for the sequential setting, the communicator is a dummy and simply discarded.
+     */
+    CollectiveCommunication (const Communicator&)
     {}
 
     //! Return rank, is between 0 and size()-1
