@@ -112,6 +112,8 @@ namespace Dune
 
     /** @brief Compute the sum over all processes for each component of an array and return the result
             in every process. Assumes that T has an operator+
+
+        @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
     int sum (T* inout, int len) const
@@ -131,6 +133,7 @@ namespace Dune
     /** @brief Compute the product over all processes
             for each component of an array and return the result
             in every process. Assumes that T has an operator*
+        @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
     int prod (T* inout, int len) const
@@ -150,6 +153,7 @@ namespace Dune
     /** @brief Compute the minimum over all processes
             for each component of an array and return the result
             in every process. Assumes that T has an operator<
+        @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
     int min (T* inout, int len) const
@@ -169,6 +173,7 @@ namespace Dune
     /** @brief Compute the maximum over all processes
             for each component of an array and return the result
             in every process. Assumes that T has an operator<
+        @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
     int max (T* inout, int len) const
@@ -177,6 +182,7 @@ namespace Dune
     }
 
     /** @brief Wait until all processes have arrived at this point in the program.
+        @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     int barrier () const
     {
@@ -184,6 +190,7 @@ namespace Dune
     }
 
     /** @brief Distribute an array from the process with rank root to all other processes
+        @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
     int broadcast (T* inout, int len, int root) const
@@ -201,6 +208,7 @@ namespace Dune
      *                  tasks.
      * @param[in] len The number of elements to send on each task.
      * @param[in] root The root task that gathers the data.
+     * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
     int gather (T* in, T* out, int len, int root) const     // note out must have same size as in
@@ -227,6 +235,7 @@ namespace Dune
      *                  process i will be written starting at out+displ[i] on the root process.
      *                  May have length zero on non-root tasks.
      * @param[in] root The root task that gathers the data.
+     * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
     int gatherv (T* in, int sendlen, T* out, int* recvlen, int* displ, int root) const
@@ -247,6 +256,7 @@ namespace Dune
      *                 send buffer of the root task before.
      * @param[in] len The number of elements in the recv buffer.
      * @param[in] root The root task that gathers the data.
+     * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
     int scatter (T* send, T* recv, int len, int root) const // note out must have same size as in
@@ -272,6 +282,7 @@ namespace Dune
      *                  send buffer of the root task before.
      * @param[in] recvlen The number of elements in the recv buffer.
      * @param[in] root The root task that gathers the data.
+     * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
     int scatterv (T* send, int* sendlen, int* displ, T* recv, int recvlen, int root) const
@@ -292,6 +303,7 @@ namespace Dune
      * @param[in] count The number of elements to send by any process.
      * @param[out] rbuf The receive buffer for the data. Has to be of size
      *  notasks*count, with notasks being the number of tasks in the communicator.
+     * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
     int allgather(T* sbuf, int count, T* rbuf) const
@@ -311,10 +323,11 @@ namespace Dune
      * @param[in] sendlen The number of elements to send on each task.
      * @param[out] out The buffer to store the received data in.
      * @param[in] recvlen An array with size equal to the number of processes containing the number
-     *                    of elements to receive from process i at position i, i.e. the number that
+     *                    of elements to recieve from process i at position i, i.e. the number that
      *                    is passed as sendlen argument to this function in process i.
-     * @param[in] displ An array with size equal to the number of processes. Data received from
+     * @param[in] displ An array with size equal to the number of processes. Data recieved from
      *                  process i will be written starting at out+displ[i].
+     * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
     int allgatherv (T* in, int sendlen, T* out, int* recvlen, int* displ) const
@@ -334,6 +347,7 @@ namespace Dune
      *
      * @param inout The array to compute on.
      * @param len The number of components in the array
+     * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename BinaryFunction, typename Type>
     int allreduce(Type* inout, int len) const
@@ -352,6 +366,7 @@ namespace Dune
      * @param in The array to compute on.
      * @param out The array to store the results in.
      * @param len The number of components in the array
+     * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename BinaryFunction, typename Type>
     void allreduce(Type* in, Type* out, int len) const
