@@ -18,9 +18,9 @@ array_to_tuple_impl ( const std::array< T, sizeof...( Ints ) > &array, Dune::Std
 
 template< class T, std::size_t N >
 auto array_to_tuple ( const std::array< T, N > &array )
-  -> decltype( array_to_tuple_impl( array, Dune::Std::make_index_sequence< N >() ) )
+  -> decltype( array_to_tuple_impl( array, Dune::Std::make_index_sequence< N >{} ) )
 {
-  return array_to_tuple_impl( array, Dune::Std::make_index_sequence< N >() );
+  return array_to_tuple_impl( array, Dune::Std::make_index_sequence< N >{} );
 }
 
 int main ( int, char** )
@@ -28,7 +28,7 @@ int main ( int, char** )
   using Dune::operator<<;
   std::array< int, 4 > array{{ 1, 2, 3, 4 }};
 
-  auto tuple = array_to_tuple_impl( array, Dune::Std::make_index_sequence< 4 >() );
+  auto tuple = array_to_tuple_impl( array, Dune::Std::make_index_sequence< 4 >{} );
   std::cout << Dune::className( tuple ) << std::endl;
   std::cout << tuple << std::endl;
 }
