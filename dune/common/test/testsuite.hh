@@ -82,7 +82,7 @@ namespace Dune {
     }
 
     /**
-     * \brief Check a required condition condition
+     * \brief Check a required condition
      *
      * This will always throw an exception if the check fails.
      *
