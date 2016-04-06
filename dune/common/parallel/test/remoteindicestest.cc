@@ -675,8 +675,8 @@ int main(int argc, char **argv)
 #if HAVE_MPI
   MPI_Init(&argc, &argv);
   MPI_Errhandler handler;
-  MPI_Errhandler_create(MPI_err_handler, &handler);
-  MPI_Errhandler_set(MPI_COMM_WORLD, handler);
+  MPI_Comm_create_errhandler(MPI_err_handler, &handler);
+  MPI_Comm_set_errhandler(MPI_COMM_WORLD, handler);
   int rank;
   int size;
   const int firstRank=2;
