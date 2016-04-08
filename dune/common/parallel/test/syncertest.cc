@@ -351,8 +351,8 @@ int main(int argc, char** argv){
 #if HAVE_MPI
   MPI_Init(&argc, &argv);
   MPI_Errhandler handler;
-  MPI_Errhandler_create(MPI_err_handler, &handler);
-  MPI_Errhandler_set(MPI_COMM_WORLD, handler);
+  MPI_Comm_create_errhandler(MPI_err_handler, &handler);
+  MPI_Comm_set_errhandler(MPI_COMM_WORLD, handler);
   int procs, rank;
   MPI_Comm_size(MPI_COMM_WORLD, &procs);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);

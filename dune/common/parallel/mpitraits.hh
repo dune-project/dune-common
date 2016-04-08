@@ -7,7 +7,9 @@
 #include <mpi.h>
 #endif
 
+#include <cstddef>
 #include <cstdint>
+#include <type_traits>
 #include <utility>
 
 namespace Dune
@@ -165,20 +167,23 @@ namespace Dune
   MPI_Datatype MPITraits<std::pair<T1,T2> >::getType()
   {
     if(type==MPI_DATATYPE_NULL) {
-      int length[4];
-      MPI_Aint disp[4];
-      MPI_Datatype types[4] = {MPI_LB, MPITraits<T1>::getType(),
-                               MPITraits<T2>::getType(), MPI_UB};
-      std::pair<T1,T2> rep[2];
-      length[0]=length[1]=length[2]=length[3]=1;
-      MPI_Get_address(rep, disp); // lower bound of the datatype
-      MPI_Get_address(&(rep[0].first), disp+1);
-      MPI_Get_address(&(rep[0].second), disp+2);
-      MPI_Get_address(rep+1, disp+3); // upper bound of the datatype
-      for(int i=3; i >= 0; --i)
-        disp[i] -= disp[0];
-      MPI_Type_create_struct(4, length, disp, types, &type);
+      int length[2] = {1, 1};
+      MPI_Aint disp[2];
+      MPI_Datatype types[2] = {MPITraits<T1>::getType(),
+                               MPITraits<T2>::getType()};
+
+      using Pair = std::pair<T1, T2>;
+      static_assert(std::is_standard_layout<Pair>::value, "offsetof() is only defined for standard layout types");
+      disp[0] = offsetof(Pair, first);
+      disp[1] = offsetof(Pair, second);
+
+      MPI_Datatype tmp;
+      MPI_Type_create_struct(2, length, disp, types, &tmp);
+
+      MPI_Type_create_resized(tmp, 0, sizeof(Pair), &type);
       MPI_Type_commit(&type);
+
+      MPI_Type_free(&tmp);
     }
     return type;
   }
