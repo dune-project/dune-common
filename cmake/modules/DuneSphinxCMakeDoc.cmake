@@ -86,8 +86,7 @@ function(dune_cmake_sphinx_doc)
   endif()
 
   # Extract the script directory from dune-common
-  set(DUNE_SPHINX_EXT_PATH)
-  dune_common_script_dir(DUNE_SPHINX_EXT_PATH)
+  dune_module_path(MODULE dune-common RESULT DUNE_SPHINX_EXT_PATH SCRIPT_DIR)
 
   # Find the configuration file template.
   if(NOT SPHINX_CMAKE_SPHINX_CONF)

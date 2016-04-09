@@ -301,7 +301,7 @@ Update the cmake_minimum_required() call in your main CMakeLists.txt file to get
     # make sure the /lib directory exists - we need it to create the stub source file in there
     file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
     # figure out the location of the stub source template
-    dune_common_script_dir(script_dir)
+    dune_module_path(MODULE dune_common RESULT script_dir SCRIPT_DIR)
     foreach(module_lib ${DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES})
       # create the stub source file in the output directory...
       configure_file("${script_dir}/module_library.cc.in" "${PROJECT_BINARY_DIR}/lib/lib${module_lib}_stub.cc")
