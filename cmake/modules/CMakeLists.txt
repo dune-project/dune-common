@@ -16,6 +16,7 @@ install(FILES
   DuneEnableAllPackages.cmake
   DuneMacros.cmake
   DuneMPI.cmake
+  DunePathHelper.cmake
   DunePkgConfig.cmake
   DuneSphinxCMakeDoc.cmake
   DuneStreams.cmake
