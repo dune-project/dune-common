@@ -69,7 +69,7 @@ namespace Dune {
     template<class T>
     static std::ostream& put(std::ostream& os, const T& t, const char* delim=", ")
     {
-      return tuple_writer<i-1>::put(os,t,delim)<<delim<<Dune::get<i-1>(t);
+      return tuple_writer<i-1>::put(os,t,delim)<<delim<<std::get<i-1>(t);
     }
 
     template< class T >
@@ -83,7 +83,7 @@ namespace Dune {
         if( c != *it )
           is.setstate( std::ios::failbit );
       }
-      return is >> Dune::get< i-1 >( t );
+      return is >> std::get< i-1 >( t );
     }
   };
 
@@ -94,13 +94,13 @@ namespace Dune {
     static std::ostream& put(std::ostream& os, const T& t, const char* delim=", ")
     {
       DUNE_UNUSED_PARAMETER(delim);
-      return os<<Dune::get<0>(t);
+      return os<<std::get<0>(t);
     }
 
     template< class T >
     static std::istream &get ( std::istream &is, T &t, const char *delim = ", " )
     {
-      return is >> Dune::get< 0 >( t );
+      return is >> std::get< 0 >( t );
     }
   };
 
