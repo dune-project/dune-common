@@ -63,6 +63,7 @@ commoninclude_HEADERS = 			\
 	lru.hh					\
 	mallocallocator.hh			\
 	math.hh					\
+	matrixhelper.hh \
 	matvectraits.hh                         \
 	nullptr.hh				\
 	parametertree.hh                        \
