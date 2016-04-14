@@ -30,7 +30,6 @@ namespace Dune
 
     static FieldType abs ( const FieldType &x )
     {
-      //return std::abs( x );
       return FieldHelper< FieldType >::abs( x );
     }
 
