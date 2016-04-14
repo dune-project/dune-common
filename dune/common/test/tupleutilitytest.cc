@@ -6,8 +6,8 @@
 #endif
 
 #include <cstddef>
+#include <tuple>
 
-#include <dune/common/tuples.hh>
 #include <dune/common/tupleutility.hh>
 
 //////////////////////////////////////////////////////////////////////
@@ -83,7 +83,7 @@ struct Range
 template<int start>
 struct Range<start, start>
 {
-  typedef Dune::tuple<> type;
+  typedef std::tuple<> type;
 };
 
 // An accumulator to build up a list of divisors of an integer using reduce
@@ -129,7 +129,7 @@ struct Primes
   typedef typename Dune::ReduceTuple<
       PrimeAccumulator,
       typename Range<1,X+1>::type,
-      typename Dune::tuple<>
+      typename std::tuple<>
       >::type type;
 };
 

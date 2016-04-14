@@ -5,13 +5,13 @@
 #define DUNE_TUPLE_UTILITY_HH
 
 #include <cstddef>
+#include <iostream>
 #include <tuple>
 
+#include "unused.hh"
 #include <dune/common/typetraits.hh>
 #include <dune/common/std/type_traits.hh>
 #include <dune/common/std/utility.hh>
-
-#include "tuples.hh"
 
 namespace Dune {
 
@@ -24,6 +24,30 @@ namespace Dune {
    * @file
    * @brief Contains utility classes which can be used with std::tuple.
    */
+
+  template<class T>
+  struct TupleAccessTraits
+  {
+    typedef typename std::add_const<T>::type& ConstType;
+    typedef T& NonConstType;
+    typedef const typename std::remove_const<T>::type& ParameterType;
+  };
+
+  template<class T>
+  struct TupleAccessTraits<T*>
+  {
+    typedef typename std::add_const<T>::type* ConstType;
+    typedef T* NonConstType;
+    typedef T* ParameterType;
+  };
+
+  template<class T>
+  struct TupleAccessTraits<T&>
+  {
+    typedef T& ConstType;
+    typedef T& NonConstType;
+    typedef T& ParameterType;
+  };
 
   /**
    * @brief A helper template that initializes a std::tuple consisting of pointers
@@ -394,7 +418,7 @@ namespace Dune {
    * the same as ForEachValue, just that the corresponding function object
    * takes one argument from the first std::tuple and one argument from the second.
    *
-   * \note You have to ensure that the two std::tuples you provide are compatible
+   * \note You have to ensure that the two std::tuple's you provide are compatible
    * in the sense that they have the same length and that the objects passed
    * to the function objects are related in meaningful way. The best way to
    * enforce it is to build the second std::tuple from the existing first std::tuple
@@ -613,7 +637,7 @@ namespace Dune {
       template <class, class> class F,
       class Tuple,
       class Seed=std::tuple<>,
-      int N=tuple_size<Tuple>::value>
+      int N=std::tuple_size<Tuple>::value>
   struct ReduceTuple
   {
     typedef typename ReduceTuple<F, Tuple, Seed, N-1>::type Accumulated;
@@ -674,6 +698,25 @@ namespace Dune {
     typedef typename ReduceTuple<JoinTuples, Tuple>::type type;
   };
 
+  //! Print a tuple
+  template<typename... Ts>
+  inline std::ostream& operator<<(std::ostream& os, const std::tuple<Ts...>& t)
+  {
+    ForEachValue< const std::tuple<Ts...> > forEachValue(t);
+    forEachValue.apply([&os](const auto& elem){os<<elem<<" ";});
+    return os;
+  }
+
+  //! Read a tuple
+  template<typename... Ts>
+  inline std::istream& operator>>(std::istream& is, std::tuple<Ts...>& t)
+  {
+    ForEachValue< std::tuple<Ts...> > forEachValue(t);
+    forEachValue.apply([&is](auto& elem){is>>elem;});
+    return is;
+  }
+
+  /** }@ */
 }
 
 #endif

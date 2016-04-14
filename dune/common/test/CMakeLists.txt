@@ -192,8 +192,6 @@ dune_add_test(NAME testdebugallocator_fail5
 
 dune_add_test(SOURCES testfloatcmp.cc)
 
-dune_add_test(SOURCES tuplestest.cc)
-
 dune_add_test(SOURCES tupleutilitytest.cc)
 
 #dune_add_test(SOURCES utilitytest.cc)

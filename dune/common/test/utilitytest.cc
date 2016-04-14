@@ -5,10 +5,11 @@
 #include "config.h"
 #endif
 
-#include <dune/common/tuples.hh>
+#include <iostream>
+#include <tuple>
+
 #include <dune/common/typetraits.hh>
 #include <dune/common/tupleutility.hh>
-#include <iostream>
 
 template<class T>
 struct Eval
