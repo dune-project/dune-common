@@ -33,157 +33,157 @@ namespace Dune
       return FieldHelper< FieldType >::abs( x );
     }
 
-    template< int m, int n >
+    template< int rows, int cols >
     static void
-    Ax ( const typename Traits :: template Matrix< m, n > :: type &A,
-         const typename Traits :: template Vector< n > :: type &x,
-         typename Traits :: template Vector< m > :: type &ret )
+    Ax ( const typename Traits :: template Matrix< rows, cols > :: type &A,
+         const typename Traits :: template Vector< cols > :: type &x,
+         typename Traits :: template Vector< rows > :: type &ret )
     {
-      for( int i = 0; i < m; ++i )
+      for( int i = 0; i < rows; ++i )
       {
         ret[ i ] = FieldType( 0 );
-        for( int j = 0; j < n; ++j )
+        for( int j = 0; j < cols; ++j )
           ret[ i ] += A[ i ][ j ] * x[ j ];
       }
     }
 
-    template< int m, int n >
+    template< int rows, int cols >
     static void
-    ATx ( const typename Traits :: template Matrix< m, n > :: type &A,
-          const typename Traits :: template Vector< m > :: type &x,
-          typename Traits :: template Vector< n > :: type &ret )
+    ATx ( const typename Traits :: template Matrix< rows, cols > :: type &A,
+          const typename Traits :: template Vector< rows > :: type &x,
+          typename Traits :: template Vector< cols > :: type &ret )
     {
-      for( int i = 0; i < n; ++i )
+      for( int i = 0; i < cols; ++i )
       {
         ret[ i ] = FieldType( 0 );
-        for( int j = 0; j < m; ++j )
+        for( int j = 0; j < rows; ++j )
           ret[ i ] += A[ j ][ i ] * x[ j ];
       }
     }
 
-    template< int m, int n, int p >
+    template< int rows, int cols, int p >
     static void
-    AB ( const typename Traits :: template Matrix< m, n > :: type &A,
-         const typename Traits :: template Matrix< n, p > :: type &B,
-         typename Traits :: template Matrix< m, p > :: type &ret )
+    AB ( const typename Traits :: template Matrix< rows, cols > :: type &A,
+         const typename Traits :: template Matrix< cols, p > :: type &B,
+         typename Traits :: template Matrix< rows, p > :: type &ret )
     {
-      for( int i = 0; i < m; ++i )
+      for( int i = 0; i < rows; ++i )
       {
         for( int j = 0; j < p; ++j )
         {
           ret[ i ][ j ] = FieldType( 0 );
-          for( int k = 0; k < n; ++k )
+          for( int k = 0; k < cols; ++k )
             ret[ i ][ j ] += A[ i ][ k ] * B[ k ][ j ];
         }
       }
     }
 
-    template< int m, int n, int p >
+    template< int rows, int cols, int p >
     static void
-    ATBT ( const typename Traits :: template Matrix< m, n > :: type &A,
-           const typename Traits :: template Matrix< p, m > :: type &B,
-           typename Traits :: template Matrix< n, p > :: type &ret )
+    ATBT ( const typename Traits :: template Matrix< rows, cols > :: type &A,
+           const typename Traits :: template Matrix< p, rows > :: type &B,
+           typename Traits :: template Matrix< cols, p > :: type &ret )
     {
-      for( int i = 0; i < n; ++i )
+      for( int i = 0; i < cols; ++i )
       {
         for( int j = 0; j < p; ++j )
         {
           ret[ i ][ j ] = FieldType( 0 );
-          for( int k = 0; k < m; ++k )
+          for( int k = 0; k < rows; ++k )
             ret[ i ][ j ] += A[ k ][ i ] * B[ j ][ k ];
         }
       }
     }
 
-    template< int m, int n >
+    template< int rows, int cols >
     static void
-    ATA_L ( const typename Traits :: template Matrix< m, n > :: type &A,
-            typename Traits :: template Matrix< n, n > :: type &ret )
+    ATA_L ( const typename Traits :: template Matrix< rows, cols > :: type &A,
+            typename Traits :: template Matrix< cols, cols > :: type &ret )
     {
-      for( int i = 0; i < n; ++i )
+      for( int i = 0; i < cols; ++i )
       {
         for( int j = 0; j <= i; ++j )
         {
           ret[ i ][ j ] = FieldType( 0 );
-          for( int k = 0; k < m; ++k )
+          for( int k = 0; k < rows; ++k )
             ret[ i ][ j ] += A[ k ][ i ] * A[ k ][ j ];
         }
       }
     }
 
-    template< int m, int n >
+    template< int rows, int cols >
     static void
-    ATA ( const typename Traits :: template Matrix< m, n > :: type &A,
-          typename Traits :: template Matrix< n, n > :: type &ret )
+    ATA ( const typename Traits :: template Matrix< rows, cols > :: type &A,
+          typename Traits :: template Matrix< cols, cols > :: type &ret )
     {
-      for( int i = 0; i < n; ++i )
+      for( int i = 0; i < cols; ++i )
       {
         for( int j = 0; j <= i; ++j )
         {
           ret[ i ][ j ] = FieldType( 0 );
-          for( int k = 0; k < m; ++k )
+          for( int k = 0; k < rows; ++k )
             ret[ i ][ j ] += A[ k ][ i ] * A[ k ][ j ];
           ret[ j ][ i ] = ret[ i ][ j ];
         }
 
         ret[ i ][ i ] = FieldType( 0 );
-        for( int k = 0; k < m; ++k )
+        for( int k = 0; k < rows; ++k )
           ret[ i ][ i ] += A[ k ][ i ] * A[ k ][ i ];
       }
     }
 
-    template< int m, int n >
+    template< int rows, int cols >
     static void
-    AAT_L ( const typename Traits :: template Matrix< m, n > :: type &A,
-            typename Traits :: template Matrix< m, m > :: type &ret )
+    AAT_L ( const typename Traits :: template Matrix< rows, cols > :: type &A,
+            typename Traits :: template Matrix< rows, rows > :: type &ret )
     {
       /*
-         if (m==2) {
+         if (rows==2) {
          ret[0][0] = A[0]*A[0];
          ret[1][1] = A[1]*A[1];
          ret[1][0] = A[0]*A[1];
          }
          else
        */
-      for( int i = 0; i < m; ++i )
+      for( int i = 0; i < rows; ++i )
       {
         for( int j = 0; j <= i; ++j )
         {
           FieldType &retij = ret[ i ][ j ];
           retij = A[ i ][ 0 ] * A[ j ][ 0 ];
-          for( int k = 1; k < n; ++k )
+          for( int k = 1; k < cols; ++k )
             retij += A[ i ][ k ] * A[ j ][ k ];
         }
       }
     }
 
-    template< int m, int n >
+    template< int rows, int cols >
     static void
-    AAT ( const typename Traits :: template Matrix< m, n > :: type &A,
-          typename Traits :: template Matrix< m, m > :: type &ret )
+    AAT ( const typename Traits :: template Matrix< rows, cols > :: type &A,
+          typename Traits :: template Matrix< rows, rows > :: type &ret )
     {
-      for( int i = 0; i < m; ++i )
+      for( int i = 0; i < rows; ++i )
       {
         for( int j = 0; j < i; ++j )
         {
           ret[ i ][ j ] = FieldType( 0 );
-          for( int k = 0; k < n; ++k )
+          for( int k = 0; k < cols; ++k )
             ret[ i ][ j ] += A[ i ][ k ] * A[ j ][ k ];
           ret[ j ][ i ] = ret[ i ][ j ];
         }
         ret[ i ][ i ] = FieldType( 0 );
-        for( int k = 0; k < n; ++k )
+        for( int k = 0; k < cols; ++k )
           ret[ i ][ i ] += A[ i ][ k ] * A[ i ][ k ];
       }
     }
 
-    template< int n >
+    template< int cols >
     static void
-    Lx ( const typename Traits :: template Matrix< n, n > :: type &L,
-         const typename Traits :: template Vector< n > :: type &x,
-         typename Traits :: template Vector< n > :: type &ret )
+    Lx ( const typename Traits :: template Matrix< cols, cols > :: type &L,
+         const typename Traits :: template Vector< cols > :: type &x,
+         typename Traits :: template Vector< cols > :: type &ret )
     {
-      for( int i = 0; i < n; ++i )
+      for( int i = 0; i < cols; ++i )
       {
         ret[ i ] = FieldType( 0 );
         for( int j = 0; j <= i; ++j )
@@ -191,46 +191,46 @@ namespace Dune
       }
     }
 
-    template< int n >
+    template< int cols >
     static void
-    LTx ( const typename Traits :: template Matrix< n, n > :: type &L,
-          const typename Traits :: template Vector< n > :: type &x,
-          typename Traits :: template Vector< n > :: type &ret )
+    LTx ( const typename Traits :: template Matrix< cols, cols > :: type &L,
+          const typename Traits :: template Vector< cols > :: type &x,
+          typename Traits :: template Vector< cols > :: type &ret )
     {
-      for( int i = 0; i < n; ++i )
+      for( int i = 0; i < cols; ++i )
       {
         ret[ i ] = FieldType( 0 );
-        for( int j = i; j < n; ++j )
+        for( int j = i; j < cols; ++j )
           ret[ i ] += L[ j ][ i ] * x[ j ];
       }
     }
 
-    template< int n >
+    template< int cols >
     static void
-    LTL ( const typename Traits :: template Matrix< n, n > :: type &L,
-          typename Traits :: template Matrix< n, n > :: type &ret )
+    LTL ( const typename Traits :: template Matrix< cols, cols > :: type &L,
+          typename Traits :: template Matrix< cols, cols > :: type &ret )
     {
-      for( int i = 0; i < n; ++i )
+      for( int i = 0; i < cols; ++i )
       {
         for( int j = 0; j < i; ++j )
         {
           ret[ i ][ j ] = FieldType( 0 );
-          for( int k = i; k < n; ++k )
+          for( int k = i; k < cols; ++k )
             ret[ i ][ j ] += L[ k ][ i ] * L[ k ][ j ];
           ret[ j ][ i ] = ret[ i ][ j ];
         }
         ret[ i ][ i ] = FieldType( 0 );
-        for( int k = i; k < n; ++k )
+        for( int k = i; k < cols; ++k )
           ret[ i ][ i ] += L[ k ][ i ] * L[ k ][ i ];
       }
     }
 
-    template< int n >
+    template< int cols >
     static void
-    LLT ( const typename Traits :: template Matrix< n, n > :: type &L,
-          typename Traits :: template Matrix< n, n > :: type &ret )
+    LLT ( const typename Traits :: template Matrix< cols, cols > :: type &L,
+          typename Traits :: template Matrix< cols, cols > :: type &ret )
     {
-      for( int i = 0; i < n; ++i )
+      for( int i = 0; i < cols; ++i )
       {
         for( int j = 0; j < i; ++j )
         {
@@ -245,12 +245,12 @@ namespace Dune
       }
     }
 
-    template< int n >
+    template< int cols >
     static void
-    cholesky_L ( const typename Traits :: template Matrix< n, n > :: type &A,
-                 typename Traits :: template Matrix< n, n > :: type &ret )
+    cholesky_L ( const typename Traits :: template Matrix< cols, cols > :: type &A,
+                 typename Traits :: template Matrix< cols, cols > :: type &ret )
     {
-      for( int i = 0; i < n; ++i )
+      for( int i = 0; i < cols; ++i )
       {
         FieldType &rii = ret[ i ][ i ];
 
@@ -261,7 +261,7 @@ namespace Dune
         rii = sqrt( xDiag );
 
         FieldType invrii = FieldType( 1 ) / rii;
-        for( int k = i+1; k < n; ++k )
+        for( int k = i+1; k < cols; ++k )
         {
           FieldType x = A[ k ][ i ];
           for( int j = 0; j < i; ++j )
@@ -271,22 +271,22 @@ namespace Dune
       }
     }
 
-    template< int n >
+    template< int cols >
     static FieldType
-    detL ( const typename Traits :: template Matrix< n, n > :: type &L )
+    detL ( const typename Traits :: template Matrix< cols, cols > :: type &L )
     {
       FieldType det = FieldType( 1 );
-      for( int i = 0; i < n; ++i )
+      for( int i = 0; i < cols; ++i )
         det *= L[ i ][ i ];
       return det;
     }
 
-    template< int n >
+    template< int cols >
     static FieldType
-    invL ( typename Traits :: template Matrix< n, n > :: type &L )
+    invL ( typename Traits :: template Matrix< cols, cols > :: type &L )
     {
       FieldType det = FieldType( 1 );
-      for( int i = 0; i < n; ++i )
+      for( int i = 0; i < cols; ++i )
       {
         FieldType &lii = L[ i ][ i ];
         det *= lii;
@@ -304,12 +304,12 @@ namespace Dune
     }
 
     // calculates x := L^{-1} x
-    template< int n >
+    template< int cols >
     static void
-    invLx ( typename Traits :: template Matrix< n, n > :: type &L,
-            typename Traits :: template Vector< n > :: type &x )
+    invLx ( typename Traits :: template Matrix< cols, cols > :: type &L,
+            typename Traits :: template Vector< cols > :: type &x )
     {
-      for( int i = 0; i < n; ++i )
+      for( int i = 0; i < cols; ++i )
       {
         for( int j = 0; j < i; ++j )
           x[ i ] -= L[ i ][ j ] * x[ j ];
@@ -318,61 +318,61 @@ namespace Dune
     }
 
     // calculates x := L^{-T} x
-    template< int n >
+    template< int cols >
     static void
-    invLTx ( typename Traits :: template Matrix< n, n > :: type &L,
-             typename Traits :: template Vector< n > :: type &x )
+    invLTx ( typename Traits :: template Matrix< cols, cols > :: type &L,
+             typename Traits :: template Vector< cols > :: type &x )
     {
-      for( int i = n; i > 0; --i )
+      for( int i = cols; i > 0; --i )
       {
-        for( int j = i; j < n; ++j )
+        for( int j = i; j < cols; ++j )
           x[ i-1 ] -= L[ j ][ i-1 ] * x[ j ];
         x[ i-1 ] /= L[ i-1 ][ i-1 ];
       }
     }
 
-    template< int n >
+    template< int cols >
     static FieldType
-    spdDetA ( const typename Traits :: template Matrix< n, n > :: type &A )
+    spdDetA ( const typename Traits :: template Matrix< cols, cols > :: type &A )
     {
       // return A[0][0]*A[1][1]-A[1][0]*A[1][0];
-      typename Traits :: template Matrix< n, n > :: type L;
-      cholesky_L< n >( A, L );
-      return detL< n >( L );
+      typename Traits :: template Matrix< cols, cols > :: type L;
+      cholesky_L< cols >( A, L );
+      return detL< cols >( L );
     }
 
-    template< int n >
+    template< int cols >
     static FieldType
-    spdInvA ( typename Traits :: template Matrix< n, n > :: type &A )
+    spdInvA ( typename Traits :: template Matrix< cols, cols > :: type &A )
     {
-      typename Traits :: template Matrix< n, n > :: type L;
-      cholesky_L< n >( A, L );
-      const FieldType det = invL< n >( L );
-      LTL< n >( L, A );
+      typename Traits :: template Matrix< cols, cols > :: type L;
+      cholesky_L< cols >( A, L );
+      const FieldType det = invL< cols >( L );
+      LTL< cols >( L, A );
       return det;
     }
 
     // calculate x := A^{-1} x
-    template< int n >
+    template< int cols >
     static void
-    spdInvAx ( typename Traits :: template Matrix< n, n > :: type &A,
-               typename Traits :: template Vector< n > :: type &x )
+    spdInvAx ( typename Traits :: template Matrix< cols, cols > :: type &A,
+               typename Traits :: template Vector< cols > :: type &x )
     {
-      typename Traits :: template Matrix< n, n > :: type L;
-      cholesky_L< n >( A, L );
-      invLx< n >( L, x );
-      invLTx< n >( L, x );
+      typename Traits :: template Matrix< cols, cols > :: type L;
+      cholesky_L< cols >( A, L );
+      invLx< cols >( L, x );
+      invLTx< cols >( L, x );
     }
 
-    template< int m, int n >
+    template< int rows, int cols >
     static FieldType
-    detATA ( const typename Traits :: template Matrix< m, n > :: type &A )
+    detATA ( const typename Traits :: template Matrix< rows, cols > :: type &A )
     {
-      if( m >= n )
+      if( rows >= cols )
       {
-        typename Traits :: template Matrix< n, n > :: type ata;
-        ATA_L< m, n >( A, ata );
-        return spdDetA< n >( ata );
+        typename Traits :: template Matrix< cols, cols > :: type ata;
+        ATA_L< rows, cols >( A, ata );
+        return spdDetA< cols >( ata );
       }
       else
         return FieldType( 0 );
@@ -383,19 +383,19 @@ namespace Dune
      *  This is the volume element for an embedded submanifold and needed to
      *  implement the method integrationElement().
      */
-    template< int m, int n >
+    template< int rows, int cols >
     static FieldType
-    sqrtDetAAT ( const typename Traits::template Matrix< m, n >::type &A )
+    sqrtDetAAT ( const typename Traits::template Matrix< rows, cols >::type &A )
     {
       // These special cases are here not only for speed reasons:
       // The general implementation aborts if the matrix is almost singular,
       // and the special implementation provide a stable way to handle that case.
-      if( (n == 2) && (m == 2) )
+      if( (cols == 2) && (rows == 2) )
       {
         // Special implementation for 2x2 matrices: faster and more stable
         return abs( A[ 0 ][ 0 ]*A[ 1 ][ 1 ] - A[ 1 ][ 0 ]*A[ 0 ][ 1 ] );
       }
-      else if( (n == 3) && (m == 3) )
+      else if( (cols == 3) && (rows == 3) )
       {
         // Special implementation for 3x3 matrices
         const FieldType v0 = A[ 0 ][ 1 ] * A[ 1 ][ 2 ] - A[ 1 ][ 1 ] * A[ 0 ][ 2 ];
@@ -403,7 +403,7 @@ namespace Dune
         const FieldType v2 = A[ 0 ][ 0 ] * A[ 1 ][ 1 ] - A[ 1 ][ 0 ] * A[ 0 ][ 1 ];
         return abs( v0 * A[ 2 ][ 0 ] + v1 * A[ 2 ][ 1 ] + v2 * A[ 2 ][ 2 ] );
       }
-      else if ( (n == 3) && (m == 2) )
+      else if ( (cols == 3) && (rows == 2) )
       {
         // Special implementation for 2x3 matrices
         const FieldType v0 = A[ 0 ][ 0 ] * A[ 1 ][ 1 ] - A[ 0 ][ 1 ] * A[ 1 ][ 0 ];
@@ -411,12 +411,12 @@ namespace Dune
         const FieldType v2 = A[ 0 ][ 1 ] * A[ 1 ][ 2 ] - A[ 0 ][ 2 ] * A[ 1 ][ 1 ];
         return sqrt( v0*v0 + v1*v1 + v2*v2);
       }
-      else if( n >= m )
+      else if( cols >= rows )
       {
         // General case
-        typename Traits::template Matrix< m, m >::type aat;
-        AAT_L< m, n >( A, aat );
-        return spdDetA< m >( aat );
+        typename Traits::template Matrix< rows, rows >::type aat;
+        AAT_L< rows, cols >( A, aat );
+        return spdDetA< rows >( aat );
       }
       else
         return FieldType( 0 );
@@ -424,40 +424,40 @@ namespace Dune
 
     // A^{-1}_L = (A^T A)^{-1} A^T
     // => A^{-1}_L A = I
-    template< int m, int n >
+    template< int rows, int cols >
     static FieldType
-    leftInvA ( const typename Traits :: template Matrix< m, n > :: type &A,
-               typename Traits :: template Matrix< n, m > :: type &ret )
+    leftInvA ( const typename Traits :: template Matrix< rows, cols > :: type &A,
+               typename Traits :: template Matrix< cols, rows > :: type &ret )
     {
-      static_assert((m >= n), "Matrix has no left inverse.");
-      typename Traits :: template Matrix< n, n > :: type ata;
-      ATA_L< m, n >( A, ata );
-      const FieldType det = spdInvA< n >( ata );
-      ATBT< n, n, m >( ata, A, ret );
+      static_assert((rows >= cols), "Matrix has no left inverse.");
+      typename Traits :: template Matrix< cols, cols > :: type ata;
+      ATA_L< rows, cols >( A, ata );
+      const FieldType det = spdInvA< cols >( ata );
+      ATBT< cols, cols, rows >( ata, A, ret );
       return det;
     }
 
-    template< int m, int n >
+    template< int rows, int cols >
     static void
-    leftInvAx ( const typename Traits :: template Matrix< m, n > :: type &A,
-                const typename Traits :: template Vector< m > :: type &x,
-                typename Traits :: template Vector< n > :: type &y )
+    leftInvAx ( const typename Traits :: template Matrix< rows, cols > :: type &A,
+                const typename Traits :: template Vector< rows > :: type &x,
+                typename Traits :: template Vector< cols > :: type &y )
     {
-      static_assert((m >= n), "Matrix has no left inverse.");
-      typename Traits :: template Matrix< n, n > :: type ata;
-      ATx< m, n >( A, x, y );
-      ATA_L< m, n >( A, ata );
-      spdInvAx< n >( ata, y );
+      static_assert((rows >= cols), "Matrix has no left inverse.");
+      typename Traits :: template Matrix< cols, cols > :: type ata;
+      ATx< rows, cols >( A, x, y );
+      ATA_L< rows, cols >( A, ata );
+      spdInvAx< cols >( ata, y );
     }
 
     /** \brief Compute right pseudo-inverse of matrix A */
-    template< int m, int n >
+    template< int rows, int cols >
     static FieldType
-    rightInvA ( const typename Traits :: template Matrix< m, n > :: type &A,
-                typename Traits :: template Matrix< n, m > :: type &ret )
+    rightInvA ( const typename Traits :: template Matrix< rows, cols > :: type &A,
+                typename Traits :: template Matrix< cols, rows > :: type &ret )
     {
-      static_assert((n >= m), "Matrix has no right inverse.");
-      if( (n == 2) && (m == 2) )
+      static_assert((cols >= rows), "Matrix has no right inverse.");
+      if( (cols == 2) && (rows == 2) )
       {
         const FieldType det = (A[ 0 ][ 0 ]*A[ 1 ][ 1 ] - A[ 1 ][ 0 ]*A[ 0 ][ 1 ]);
         const FieldType detInv = FieldType( 1 ) / det;
@@ -469,25 +469,25 @@ namespace Dune
       }
       else
       {
-        typename Traits :: template Matrix< m , m > :: type aat;
-        AAT_L< m, n >( A, aat );
-        const FieldType det = spdInvA< m >( aat );
-        ATBT< m, n, m >( A , aat , ret );
+        typename Traits :: template Matrix< rows , rows > :: type aat;
+        AAT_L< rows, cols >( A, aat );
+        const FieldType det = spdInvA< rows >( aat );
+        ATBT< rows, cols, rows >( A , aat , ret );
         return det;
       }
     }
 
-    template< int m, int n >
+    template< int rows, int cols >
     static void
-    xTRightInvA ( const typename Traits :: template Matrix< m, n > :: type &A,
-                  const typename Traits :: template Vector< n > :: type &x,
-                  typename Traits :: template Vector< m > :: type &y )
+    xTRightInvA ( const typename Traits :: template Matrix< rows, cols > :: type &A,
+                  const typename Traits :: template Vector< cols > :: type &x,
+                  typename Traits :: template Vector< rows > :: type &y )
     {
-      static_assert((n >= m), "Matrix has no right inverse.");
-      typename Traits :: template Matrix< m, m > :: type aat;
-      Ax< m, n >( A, x, y );
-      AAT_L< m, n >( A, aat );
-      spdInvAx< m >( aat, y );
+      static_assert((cols >= rows), "Matrix has no right inverse.");
+      typename Traits :: template Matrix< rows, rows > :: type aat;
+      Ax< rows, cols >( A, x, y );
+      AAT_L< rows, cols >( A, aat );
+      spdInvAx< rows >( aat, y );
     }
   };
 } // namespace Dune
