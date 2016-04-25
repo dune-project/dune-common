@@ -6,8 +6,6 @@
 #include <type_traits>
 #include <utility>
 
-#include <dune/common/std/noexcept.hh>
-
 namespace Dune
 {
 
