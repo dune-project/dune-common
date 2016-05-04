@@ -38,6 +38,16 @@
 #
 #       A list of libraries that should be incorporated into this library.
 #
+#    .. cmake_param:: APPEND
+#       :option:
+#
+#       Whether the library should be appended to the
+#       exported libraries. If there a DUNE module must
+#       make several libraries available, then first one
+#       must not use this option but the others have to
+#       use it. Otherwise only the last library will be
+#       exported as the others will be overwritten.
+#
 #    .. cmake_param:: OBJECT
 #       :option:
 #
@@ -978,7 +988,7 @@ endfunction(dune_expand_object_libraries)
 # More docu can be found at the top of this file.
 macro(dune_add_library basename)
   include(CMakeParseArguments)
-  cmake_parse_arguments(DUNE_LIB "NO_EXPORT;OBJECT" "COMPILE_FLAGS"
+  cmake_parse_arguments(DUNE_LIB ";APPEND;NO_EXPORT;OBJECT" "COMPILE_FLAGS"
     "ADD_LIBS;SOURCES" ${ARGN})
   if(DUNE_LIB_OBJECT)
     if(DUNE_LIB_${basename}_SOURCES)
@@ -1063,12 +1073,22 @@ macro(dune_add_library basename)
     endif(DUNE_BUILD_BOTH_LIBS)
 
     if(NOT DUNE_LIB_NO_EXPORT)
+      # The follwing allows for adding multiple libs in the same
+      # directory or below with passing the APPEND keyword.
+      # If there are additional calls to dune_add_library in other
+      # modules then you have to use APPEND or otherwise only the
+      # last lib will get exported as a target.
       if(NOT _MODULE_EXPORT_USED)
         set(_MODULE_EXPORT_USED ON)
         set(_append "")
       else(NOT _MODULE_EXPORT_USED)
         set(_append APPEND)
       endif(NOT _MODULE_EXPORT_USED)
+      # Allow to explicitly pass APPEND
+      if(DUNE_LIB_APPEND)
+        set(_append APPEND)
+      endif(DUNE_LIB_APPEND)
+
       # install targets to use the libraries in other modules.
       install(TARGETS ${_created_libs}
         EXPORT ${ProjectName}-targets DESTINATION ${CMAKE_INSTALL_LIBDIR})
