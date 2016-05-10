@@ -56,8 +56,7 @@ class Generator(object):
             Returns:
                 module: the name of the generated and imported extension module
         """
-        selector = database.selector(myType, **{i: str(parameters[i])
-                                                for i in parameters})
+        selector = database.selector(myType, **{i: str(parameters[i]) for i in parameters})
         self.dataBase.check_parameters(selector)
         myTypeName = self.modifyTypeName(self.dataBase.get_type(selector))
         myTypeHash = hashlib.md5(myTypeName.encode('utf-8')).hexdigest()
@@ -67,6 +66,7 @@ class Generator(object):
         includes = parameters[ "extra_includes" ] if "extra_includes" in parameters else ""
         for include in self.dataBase.get_includes(selector):
             includes = includes + "#include <" + include + ">\n"
+        includes = self.modifyIncludes(includes)
 
         if femmpi.comm.rank == 0:
             if not os.path.isfile(os.path.join(compilePath, moduleName + ".so")):
@@ -104,6 +104,9 @@ class Generator(object):
         setattr(module, "_includes", includes)
         setattr(module, "_moduleBase", moduleBase)
         return module
+
+    def modifyIncludes(self, includes):
+        return includes
 
     def modifyTypeName(self, typeName):
         return typeName
