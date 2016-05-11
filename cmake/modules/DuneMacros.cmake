@@ -253,7 +253,8 @@ macro(find_dune_package module)
     endforeach()
     if(NOT ${module}_dune_module)
       message(FATAL_ERROR "Could not find dune.module file for module ${module} "
-        "in ${${module}_PREFIX},  ${${module}_PREFIX}/lib/dunecontrol/${module}/")
+        "in ${${module}_PREFIX},  ${${module}_PREFIX}/lib/dunecontrol/${module}/, "
+        "${${module}_PREFIX}/lib64/dunecontrol/${module}/dune.module")
     endif(NOT ${module}_dune_module)
     if(module_version_wrong)
       message(FATAL_ERROR "Could not find requested version of module ${module}. "
