@@ -12,7 +12,9 @@
 # .. cmake_function:: finalize_dune_project
 #
 #    Finalize a Dune module. This function needs to be run at the end of
-#    every top-level CMakeLists.txt file.
+#    every top-level CMakeLists.txt file. Among other things it creates
+#    the cmake package configuration files. Modules can add additional
+#    entries to these files by setting the variable @${ProjectName}_INIT.
 #
 # .. cmake_function:: dune_add_library
 #
@@ -823,6 +825,10 @@ macro(finalize_dune_project)
 "if(NOT ${ProjectName}_FOUND)
 # Whether this module is installed or not
 set(${ProjectName}_INSTALLED @MODULE_INSTALLED@)
+
+# Settings specific to the module
+@${ProjectName}_INIT@
+# Package initialization
 @PACKAGE_INIT@
 
 #report other information
