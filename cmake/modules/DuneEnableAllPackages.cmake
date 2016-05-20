@@ -303,8 +303,10 @@ Update the cmake_minimum_required() call in your main CMakeLists.txt file to get
     # figure out the location of the stub source template
     dune_module_path(MODULE dune-common RESULT script_dir SCRIPT_DIR)
     foreach(module_lib ${DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES})
-      # create the stub source file in the output directory...
+      # create the stub source file in the output directory (using a c++ compatible name)...
+      string(REGEX REPLACE "[^a-zA-Z0-9]" "_" module_lib_mangled ${module_lib})
       configure_file("${script_dir}/module_library.cc.in" "${PROJECT_BINARY_DIR}/lib/lib${module_lib}_stub.cc")
+
       # ...and create the library...
       dune_add_library(${module_lib} SOURCES "${PROJECT_BINARY_DIR}/lib/lib${module_lib}_stub.cc")
       # ...and add it to all future targets in the module
