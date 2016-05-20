@@ -971,7 +971,8 @@ namespace Dune {
   template<typename T, typename A>
   RemoteIndices<T,A>::RemoteIndices()
     : source_(0), target_(0), sourceSeqNo_(-1),
-      destSeqNo_(-1), publicIgnored(false), firstBuild(true)
+      destSeqNo_(-1), publicIgnored(false), firstBuild(true),
+      includeSelf(false)
   {}
 
   template<class T, typename A>
