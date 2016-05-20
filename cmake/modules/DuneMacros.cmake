@@ -12,7 +12,9 @@
 # .. cmake_function:: finalize_dune_project
 #
 #    Finalize a Dune module. This function needs to be run at the end of
-#    every top-level CMakeLists.txt file.
+#    every top-level CMakeLists.txt file. Among other things it creates
+#    the cmake package configuration files. Modules can add additional
+#    entries to these files by setting the variable @${ProjectName}_INIT.
 #
 # .. cmake_function:: dune_add_library
 #
@@ -821,6 +823,12 @@ macro(finalize_dune_project)
     # Generate a standard cmake package configuration file
     file(WRITE ${PROJECT_BINARY_DIR}/CMakeFiles/${ProjectName}-config.cmake.in
 "if(NOT ${ProjectName}_FOUND)
+# Whether this module is installed or not
+set(${ProjectName}_INSTALLED @MODULE_INSTALLED@)
+
+# Settings specific to the module
+@${ProjectName}_INIT@
+# Package initialization
 @PACKAGE_INIT@
 
 #report other information
@@ -866,6 +874,7 @@ endif()")
   # Set the location of the doc file source. Needed by custom package configuration
   # file section of dune-grid.
   set(DUNE_MODULE_SRC_DOCDIR "${PROJECT_SOURCE_DIR}/doc")
+  set(MODULE_INSTALLED ON)
 
   configure_package_config_file(${CONFIG_SOURCE_FILE}
     ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake
@@ -889,6 +898,7 @@ macro(set_and_check _var _file)
     message(FATAL_ERROR \"File or directory \${_file} referenced by variable \${_var} does not exist !\")
   endif()
 endmacro()")
+  set(MODULE_INSTALLED OFF)
   configure_file(
     ${CONFIG_SOURCE_FILE}
     ${PROJECT_BINARY_DIR}/${ProjectName}-config.cmake @ONLY)
