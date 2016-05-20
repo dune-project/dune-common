@@ -73,23 +73,23 @@ namespace Dune {
                 size_type cols = (mat_block_offset[block+1] - mat_block_offset[block]) >> Memory::block_size_log2<kernel_block_size>::value;
 
                 // extract data for current block from d
-                for (int ii = 0; ii < block_dim; ++ii)
-                  for (int i = 0; i < kernel_block_size; ++i)
+                for (size_type ii = 0; ii < block_dim; ++ii)
+                  for (size_type i = 0; i < kernel_block_size; ++i)
                     rhs[ii * kernel_block_size + i] = d[block*kernel_block_size*block_dim + ii + i*block_dim];
 
                 // calculate rhs = d - (L+U) * v_old
-                for (int j = 0; j < cols; ++j)
+                for (size_type j = 0; j < cols; ++j)
                   {
                     // extract data for current block (in column direction) from v_old and
                     // apply mask zeroing out data on diagonal block
-                    for (int jj = 0; jj < block_dim; ++jj)
-                      for (int i = 0; i < kernel_block_size; ++i)
+                    for (size_type jj = 0; jj < block_dim; ++jj)
+                      for (size_type i = 0; i < kernel_block_size; ++i)
                         y[jj * kernel_block_size + i] = (kernel_offset + block * kernel_block_size + i != mat_col[offset*kernel_block_size + kernel_block_size*j+i]) * v_old[mat_col[offset*kernel_block_size + kernel_block_size*j+i] * block_dim + jj];
                     // do mmv operation
-                    for (int ii = 0; ii < block_dim; ++ii)
+                    for (size_type ii = 0; ii < block_dim; ++ii)
                       {
-                        for (int jj = 0; jj < block_dim; ++jj)
-                          for (int i = 0; i < kernel_block_size; ++i)
+                        for (size_type jj = 0; jj < block_dim; ++jj)
+                          for (size_type i = 0; i < kernel_block_size; ++i)
                             rhs[ii * kernel_block_size + i] -= mat_data[(((offset + j)*block_dim + ii) * block_dim + jj) * kernel_block_size + i] * y[jj * kernel_block_size + i];
                       }
                   }
@@ -98,37 +98,37 @@ namespace Dune {
                 // now solve D * v_new = rhs
 
                 // forward substitution
-                for (int ii = 0; ii < block_dim; ++ii)
+                for (size_type ii = 0; ii < block_dim; ++ii)
                   {
 
                     // do first column separately to avoid having to zero out y1 and avoid branch by masking with (ii > 0)
                     // this makes sure y will always be initialized to a known value
-                    for (int i = 0; i < kernel_block_size; ++i)
+                    for (size_type i = 0; i < kernel_block_size; ++i)
                       y[ii * kernel_block_size + i] = (ii > 0) * (-diag_mat_data[((block * block_dim + ii) * block_dim) * kernel_block_size + i] * y[i]);
 
-                    for (int jj = 1; jj < ii; ++jj)
+                    for (size_type jj = 1; jj < ii; ++jj)
                       {
-                        for (int i = 0; i < kernel_block_size; ++i)
+                        for (size_type i = 0; i < kernel_block_size; ++i)
                           y[ii * kernel_block_size + i] -= diag_mat_data[((block * block_dim + ii) * block_dim + jj) * kernel_block_size + i] * y[jj * kernel_block_size + i];
                       }
-                    for (int i = 0; i < kernel_block_size; ++i)
+                    for (size_type i = 0; i < kernel_block_size; ++i)
                       y[ii * kernel_block_size + i] += rhs[ii * kernel_block_size + i];
                   }
 
                 // backward substitution
-                for (int ii = block_dim - 1; ii >= 0; --ii)
+                for (size_type ii = block_dim - 1; ii >= 0; --ii)
                   {
-                    for (int jj = ii + 1; jj < block_dim; ++jj)
+                    for (size_type jj = ii + 1; jj < block_dim; ++jj)
                       {
-                        for (int i = 0; i < kernel_block_size; ++i)
+                        for (size_type i = 0; i < kernel_block_size; ++i)
                           y[ii * kernel_block_size + i] -= diag_mat_data[((block * block_dim + ii) * block_dim + jj) * kernel_block_size + i] * y[jj * kernel_block_size + i];
                       }
 
-                    for (int i = 0; i < kernel_block_size; ++i)
+                    for (size_type i = 0; i < kernel_block_size; ++i)
                       y[ii * kernel_block_size + i] /= diag_mat_data[((block * block_dim + ii) * block_dim + ii) * kernel_block_size + i];
 
                     // update output vector
-                    for (int i = 0; i < kernel_block_size; ++i)
+                    for (size_type i = 0; i < kernel_block_size; ++i)
                       v_new[block * block_dim * kernel_block_size + i * block_dim + ii] = y[ii * kernel_block_size + i];
                   }
                 offset += cols;

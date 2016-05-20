@@ -58,7 +58,7 @@ namespace Dune {
               size_type cols = (kernel_block_offset[block+1] - kernel_block_offset[block]) >> Memory::block_size_log2<kernel_block_size>::value;
 
               // work through the SIMD blocks sequentally - there's no calculations here...
-              for (int i = 0; i < kernel_block_size; ++i)
+              for (size_type i = 0; i < kernel_block_size; ++i)
                 {
                   // find diagonal matrix block
                   size_type row_start = offset*kernel_block_size + i;
@@ -77,8 +77,8 @@ namespace Dune {
                   size_type diag_j = l;
 
                   // copy block to diagonal matrix
-                  for (int ii = 0; ii < block_height; ++ii)
-                    for (int jj = 0; jj < block_width; ++jj)
+                  for (size_type ii = 0; ii < block_height; ++ii)
+                    for (size_type jj = 0; jj < block_width; ++jj)
                       diag_data[((block*block_height + ii) * block_width + jj) * kernel_block_size + i] = data[(((offset + diag_j) * block_height + ii) * block_width + jj) * kernel_block_size + i];
                 }
               offset += cols;

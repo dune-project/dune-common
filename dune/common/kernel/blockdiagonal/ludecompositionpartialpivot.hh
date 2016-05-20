@@ -42,46 +42,46 @@ namespace Dune {
           DUNE_ASSUME_ALIGNED(permutation,size_type,alignment);
           for (size_type block = 0; block < n; ++block)
             {
-              for (int ii = 0; ii < block_size; ++ii)
+              for (size_type ii = 0; ii < block_size; ++ii)
                 {
                   // find largest column entry
                   size_type offset[kernel_block_size];
-                  for (int i = 0; i < kernel_block_size; ++i)
+                  for (size_type i = 0; i < kernel_block_size; ++i)
                     offset[i] = ii;
                   size_type is_larger[kernel_block_size] = {0};
                   T1 maxval[kernel_block_size] = {0.0};
                   T1 val[kernel_block_size] = {0.0};
-                  for (int k = ii; k < block_size; ++k)
+                  for (size_type k = ii; k < block_size; ++k)
                     {
-                      for (int i = 0; i < kernel_block_size; ++i)
+                      for (size_type i = 0; i < kernel_block_size; ++i)
                         val[i] = std::abs(mat_in[((block * block_size + k) * block_size + ii) * kernel_block_size + i]);
-                      for (int i = 0; i < kernel_block_size; ++i)
+                      for (size_type i = 0; i < kernel_block_size; ++i)
                         {
                           offset[i] = is_larger[i] * k + (1-is_larger[i]) * offset[i];
                           maxval[i] = is_larger[i] * val[i] + (1-is_larger[i]) * maxval[i];
                         }
                     }
 
-                  for (int i = 0; i < kernel_block_size; ++i)
+                  for (size_type i = 0; i < kernel_block_size; ++i)
                     permutation[(block * block_size + ii) * kernel_block_size + i] = offset[i];
 
-                  for (int jj = 0; jj < block_size; ++jj)
-                    for (int i = 0; i < kernel_block_size; ++i)
+                  for (size_type jj = 0; jj < block_size; ++jj)
+                    for (size_type i = 0; i < kernel_block_size; ++i)
                       {
                         val[i] = mat_in[((block * block_size + ii) * block_size + jj) * kernel_block_size + i];
                         mat_out[((block * block_size + ii) * block_size + jj) * kernel_block_size + i] = mat_in[((block * block_size + offset[i]) * block_size + jj) * kernel_block_size + i];
                         mat_in[((block * block_size + offset[i]) * block_size + jj) * kernel_block_size + i] = val[i];
                       }
 
-                  for (int k = ii + 1; k < block_size; ++k)
+                  for (size_type k = ii + 1; k < block_size; ++k)
                     {
                       // divide remainder of column by diagonal entry
-                      for (int i = 0; i < kernel_block_size; ++i)
+                      for (size_type i = 0; i < kernel_block_size; ++i)
                         mat_out[((block * block_size + k) * block_size + ii) * kernel_block_size + i] /= mat_in[((block * block_size + ii) * block_size + ii) * kernel_block_size + i];
 
                       // transform bottom right corner matrix
-                      for (int jj = ii + 1; jj < block_size; ++jj)
-                        for (int i = 0; i < kernel_block_size; ++i)
+                      for (size_type jj = ii + 1; jj < block_size; ++jj)
+                        for (size_type i = 0; i < kernel_block_size; ++i)
                           mat_out[((block * block_size + k) * block_size + jj) * kernel_block_size + i] -= mat_in[((block * block_size + k) * block_size + ii) * kernel_block_size + i] * mat_in[((block * block_size + ii) * block_size + jj) * kernel_block_size + i];
                     }
                 }

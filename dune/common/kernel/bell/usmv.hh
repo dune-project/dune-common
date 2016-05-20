@@ -57,16 +57,16 @@ namespace Dune {
           for (size_type block = 0; block < n; ++block)
             {
               size_type cols = (mat_block_offset[block+1] - mat_block_offset[block]) >> Memory::block_size_log2<kernel_block_size>::value;
-              for (int j = 0; j < cols; ++j)
-                for (int ii = 0; ii < block_height; ++ii)
+              for (size_type j = 0; j < cols; ++j)
+                for (size_type ii = 0; ii < block_height; ++ii)
                   {
                     T1 y_[kernel_block_size];
-                    for (int i = 0; i < kernel_block_size; ++i)
+                    for (size_type i = 0; i < kernel_block_size; ++i)
                       y_[i] = y[block*kernel_block_size*block_height + ii + i*block_height];
-                    for (int jj = 0; jj < block_width; ++jj)
-                      for (int i = 0; i < kernel_block_size; ++i)
+                    for (size_type jj = 0; jj < block_width; ++jj)
+                      for (size_type i = 0; i < kernel_block_size; ++i)
                         y_[i] += alpha * mat_data[(((offset + j)*block_height + ii) * block_width + jj) * kernel_block_size + i] * x[mat_col[offset*kernel_block_size + kernel_block_size*j+i] * block_width + jj];
-                    for (int i = 0; i < kernel_block_size; ++i)
+                    for (size_type i = 0; i < kernel_block_size; ++i)
                       y[block*kernel_block_size*block_height + ii + i*block_height] = y_[i];
                   }
               offset += cols;

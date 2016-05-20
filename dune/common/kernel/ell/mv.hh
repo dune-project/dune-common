@@ -53,13 +53,13 @@ namespace Dune {
               size_type cols = (mat_block_offset[block+1] - mat_block_offset[block]) >> Memory::block_size_log2<kernel_block_size>::value;
 
               // zero out existing values
-              for (int i = 0; i < kernel_block_size; ++i)
+              for (size_type i = 0; i < kernel_block_size; ++i)
                 y[block*kernel_block_size + i] = 0;
 
               // accumulate matrix-vector product
-              for (int j = 0; j < cols; ++j)
+              for (size_type j = 0; j < cols; ++j)
                 {
-                  for (int i = 0; i < kernel_block_size; ++i)
+                  for (size_type i = 0; i < kernel_block_size; ++i)
                     y[block*kernel_block_size + i] += mat_data[offset*kernel_block_size + kernel_block_size*j+i] * x[mat_col[offset*kernel_block_size + kernel_block_size*j+i]];
                 }
               offset += cols;

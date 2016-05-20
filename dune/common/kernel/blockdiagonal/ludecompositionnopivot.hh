@@ -39,22 +39,22 @@ namespace Dune {
           DUNE_ASSUME_ALIGNED(mat_out,T1,alignment);
           for (size_type block = 0; block < n; ++block)
             {
-              for (int ii = 0; ii < block_size; ++ii)
+              for (size_type ii = 0; ii < block_size; ++ii)
                 {
                   //T1 diag_value[kernel_block_size] __attribute__((aligned(kernel_block_size)));
-                  //for (int i = 0; i < kernel_block_size; ++i)
+                  //for (size_type i = 0; i < kernel_block_size; ++i)
                   //  diag_value[i] = mat_out[((block * block_size + ii) * block_size + ii) * kernel_block_size + i];
-                  for (int k = ii + 1; k < block_size; ++k)
+                  for (size_type k = ii + 1; k < block_size; ++k)
                     {
                       // divide remainder of column by diagonal entry and store the result for the transformation of
                       // the lower right bottom corner matrix
                       T1 row_value[kernel_block_size] __attribute__((aligned(kernel_block_size)));
-                      for (int i = 0; i < kernel_block_size; ++i)
+                      for (size_type i = 0; i < kernel_block_size; ++i)
                         row_value[i] = (mat_out[((block * block_size + k) * block_size + ii) * kernel_block_size + i] /= mat_out[((block * block_size + ii) * block_size + ii) * kernel_block_size + i]);
 
                       // transform bottom right corner matrix
-                      for (int jj = ii + 1; jj < block_size; ++jj)
-                        for (int i = 0; i < kernel_block_size; ++i)
+                      for (size_type jj = ii + 1; jj < block_size; ++jj)
+                        for (size_type i = 0; i < kernel_block_size; ++i)
                           mat_out[((block * block_size + k) * block_size + jj) * kernel_block_size + i] -= row_value[i] * mat_out[((block * block_size + ii) * block_size + jj) * kernel_block_size + i];
                     }
                 }

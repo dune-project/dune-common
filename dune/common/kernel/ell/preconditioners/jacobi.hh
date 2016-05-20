@@ -70,19 +70,19 @@ namespace Dune {
                 size_type cols = (mat_block_offset[block+1] - mat_block_offset[block]) >> Memory::block_size_log2<kernel_block_size>::value;
 
                 // extract data for current block from d
-                for (int i = 0; i < kernel_block_size; ++i)
+                for (size_type i = 0; i < kernel_block_size; ++i)
                   rhs[i] = d[block*kernel_block_size + i];
 
                 // clear out diagonal, but set padded diagonals to 1 to avoid division by zero
-                for (int i = 0; i < kernel_block_size; ++i)
+                for (size_type i = 0; i < kernel_block_size; ++i)
                   diag[i] = kernel_offset + block * kernel_block_size + i < size ? 0.0 : 1.0;
 
                 // calculate rhs = d - (L+U) * v_old
-                for (int j = 0; j < cols; ++j)
+                for (size_type j = 0; j < cols; ++j)
                   {
                     // extract data for current block (in column direction) from v_old and
                     // apply mask zeroing out data on diagonal block
-                    for (int i = 0; i < kernel_block_size; ++i)
+                    for (size_type i = 0; i < kernel_block_size; ++i)
                       {
                         // do mmv operation off-diagonal
                         rhs[i] -= mat_data[(offset + j) * kernel_block_size + i] * (kernel_offset + block * kernel_block_size + i != mat_col[offset*kernel_block_size + kernel_block_size*j+i]) * v_old[mat_col[offset*kernel_block_size + kernel_block_size*j+i]];
@@ -94,7 +94,7 @@ namespace Dune {
 
                 // now solve D * v_new = rhs
 
-                for (int i = 0; i < kernel_block_size; ++i)
+                for (size_type i = 0; i < kernel_block_size; ++i)
                   v_new[block*kernel_block_size + i] = rhs[i] / diag[i];
 
                 offset += cols;

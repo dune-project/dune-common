@@ -54,34 +54,34 @@ namespace Dune {
           for (size_type block = 0; block < n; ++block)
             {
               // forward substitution
-              for (int ii = 0; ii < block_size; ++ii)
+              for (size_type ii = 0; ii < block_size; ++ii)
                 {
 
                   // do first column separately to avoid having to zero out y1 and avoid branch by masking with (ii > 0)
-                  for (int i = 0; i < kernel_block_size; ++i)
+                  for (size_type i = 0; i < kernel_block_size; ++i)
                     y[ii * kernel_block_size + i] = (ii > 0) * (-mat_data[((block * block_size + ii) * block_size) * kernel_block_size + i] * y[i]);
 
-                  for (int jj = 1; jj < ii; ++jj)
+                  for (size_type jj = 1; jj < ii; ++jj)
                     {
-                      for (int i = 0; i < kernel_block_size; ++i)
+                      for (size_type i = 0; i < kernel_block_size; ++i)
                         y[ii * kernel_block_size + i] -= mat_data[((block * block_size + ii) * block_size + jj) * kernel_block_size + i] * y[jj * kernel_block_size + i];
                     }
-                  for (int i = 0; i < kernel_block_size; ++i)
+                  for (size_type i = 0; i < kernel_block_size; ++i)
                     y[ii * kernel_block_size + i] += d[block * block_size * kernel_block_size + i * block_size + permutation[block * block_size * kernel_block_size + i * block_size + ii]];
                 }
 
               // backward substitution
-              for (int ii = block_size - 1; ii >= 0; --ii)
+              for (size_type ii = block_size - 1; ii >= 0; --ii)
                 {
-                  for (int jj = ii + 1; jj < block_size - 1; ++jj)
+                  for (size_type jj = ii + 1; jj < block_size - 1; ++jj)
                     {
-                      for (int i = 0; i < kernel_block_size; ++i)
+                      for (size_type i = 0; i < kernel_block_size; ++i)
                         y[ii * kernel_block_size + i] -= mat_data[((block * block_size + ii) * block_size + jj) * kernel_block_size + i] * y[jj * kernel_block_size + i];
                     }
 
                   // calculate relaxation and update result
                   //T1 retention_factor = T1(1.0) - relaxation_factor;
-                  for (int i = 0; i < kernel_block_size; ++i)
+                  for (size_type i = 0; i < kernel_block_size; ++i)
                     v[block * block_size * kernel_block_size + i * block_size + permutation[block * block_size * kernel_block_size + i * block_size + ii]] += relaxation_factor * y[ii * kernel_block_size + i];
                     //v[(block * block_size + i) * kernel_block_size + permutation[(block * block_size + i) * kernel_block_size + ii]] = relaxation_factor * y2[ii * kernel_block_size + i] + retention_factor * v[(block * block_size + i) * kernel_block_size + permutation[(block * block_size + i) * kernel_block_size + ii]];
                 }
