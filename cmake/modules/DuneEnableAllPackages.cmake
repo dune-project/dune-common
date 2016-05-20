@@ -386,6 +386,10 @@ List of libraries defined in dune_enable_all_packages: ${DUNE_ENABLE_ALL_PACKAGE
   endif()
 
   foreach(source ${DUNE_LIBRARY_ADD_SOURCES_SOURCES})
-    target_sources(${lib} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${source})
+    if(IS_ABSOLUTE ${source})
+      target_sources(${lib} PRIVATE ${source})
+    else()
+      target_sources(${lib} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${source})
+    endif()
   endforeach()
 endfunction()
