@@ -27,30 +27,29 @@ struct Counter {
   int result_;
 };
 
-
 int main(int, char**)
 {
 
-  typedef Dune::tuple<int*,double*,long*,char*> PointerTuple;
+  typedef std::tuple<int*,double*,long*,char*> PointerTuple;
 
-  Dune::tuple<int*,double*,long*,char*> pointers = Dune::NullPointerInitialiser<PointerTuple>::apply();
+  std::tuple<int*,double*,long*,char*> pointers = Dune::NullPointerInitialiser<PointerTuple>::apply();
   int ret=0;
 
-  if(Dune::get<0>(pointers)!=0) {
+  if(std::get<0>(pointers)!=0) {
     std::cerr<<"First pointer not null"<<std::endl;
     ret=1;
   }
-  if(Dune::get<1>(pointers)!=0) {
+  if(std::get<1>(pointers)!=0) {
     std::cerr<<"Second pointer not null"<<std::endl;
     ret=2;
   }
 
-  if(Dune::get<2>(pointers)!=0) {
+  if(std::get<2>(pointers)!=0) {
     std::cerr<<"Third pointer not null"<<std::endl;
     ret=3;
   }
 
-  if(Dune::get<3>(pointers)!=0) {
+  if(std::get<3>(pointers)!=0) {
     std::cerr<<"Fourth pointer not null"<<std::endl;
     ret=4;
   }
@@ -59,25 +58,28 @@ int main(int, char**)
   long l = 4;
   char c = 's';
 
-  typedef Dune::tuple<int&,char&,long&,char&> RefTuple1;
-  typedef Dune::tuple<int*,char*,long*,char*> PointerTuple1;
-  static_assert((Dune::is_same<PointerTuple1,
+  typedef std::tuple<int,char,long,char> Tuple1;
+  typedef std::tuple<int&,char&,long&,char&> RefTuple1;
+  typedef std::tuple<int*,char*,long*,char*> PointerTuple1;
+  static_assert((std::is_same<PointerTuple1,
                           Dune::ForEachType<Dune::AddPtrTypeEvaluator,
                               RefTuple1>::Type>::value),
                      "RefTuple1 with added pointers should be the same as "
                      "PointerTuple1, but it isn't!");
 
+  Tuple1 t1(i,c,l,c);
   RefTuple1 refs(i, c, l, c);
+  DUNE_UNUSED RefTuple1 refs2(Dune::transformTuple<Dune::AddRefTypeEvaluator>(t1));
   PointerTuple1 pointers1
     (Dune::transformTuple<Dune::AddPtrTypeEvaluator>(refs));
-  if(&i != Dune::get<0>(pointers1) || &c != Dune::get<1>(pointers1) ||
-     &l != Dune::get<2>(pointers1) || &c != Dune::get<3>(pointers1)) {
+  if(&i != std::get<0>(pointers1) || &c != std::get<1>(pointers1) ||
+     &l != std::get<2>(pointers1) || &c != std::get<3>(pointers1)) {
     std::cerr << "utilitytest: error: incorrect pointers in pointers1"
               << std::endl;
     ret = 1;
   }
 
-  if(static_cast<size_t>(Dune::tuple_size<PointerTuple>::value) != static_cast<size_t>(Dune::tuple_size<PointerTuple>::value)) {
+  if(static_cast<size_t>(std::tuple_size<PointerTuple>::value) != static_cast<size_t>(std::tuple_size<PointerTuple>::value)) {
     std::cerr<<"Length and size do not match!"<<std::endl;
   }
 
@@ -93,7 +95,7 @@ int main(int, char**)
 
   foreach1.apply(count);
 
-  if(Dune::At<2>::get(pointers)!=Dune::get<1>(pointers)) {
+  if(Dune::At<2>::get(pointers)!=std::get<1>(pointers)) {
     ret+=10;
     std::cerr<<"at inconsistent!"<<std::endl;
   }

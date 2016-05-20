@@ -1,11 +1,10 @@
-# Module that checks whether the compiler supports the
+# This Module checks whether the compiler supports the
 # abi::__cxa_demangle function required to
 # make the type names returned by typeid() human-readable
 #
-# Sets the following variable:
-# HAVE_CXA_DEMANGLE
+# It sets the a variable :code:`HAVE_CXA_DEMANGLE` with the result.
 #
-# perform tests
+
 include(CheckCXXSourceCompiles)
 
 CHECK_CXX_SOURCE_COMPILES("#include <typeinfo>

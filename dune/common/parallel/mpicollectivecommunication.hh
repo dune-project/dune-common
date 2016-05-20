@@ -15,10 +15,10 @@
 #include <complex>
 #include <algorithm>
 #include <functional>
+#include <memory>
 
 #include <dune/common/exceptions.hh>
 #include <dune/common/binaryfunctions.hh>
-#include <dune/common/shared_ptr.hh>
 
 #include "collectivecommunication.hh"
 #include "mpitraits.hh"
@@ -44,7 +44,7 @@ namespace Dune
     {
       if (!op)
       {
-        op = shared_ptr<MPI_Op>(new MPI_Op);
+        op = std::shared_ptr<MPI_Op>(new MPI_Op);
         MPI_Op_create((void (*)(void*, void*, int*, MPI_Datatype*))&operation,true,op.get());
       }
       return *op;
@@ -62,12 +62,12 @@ namespace Dune
     }
     Generic_MPI_Op () {}
     Generic_MPI_Op (const Generic_MPI_Op& ) {}
-    static shared_ptr<MPI_Op> op;
+    static std::shared_ptr<MPI_Op> op;
   };
 
 
   template<typename Type, typename BinaryFunction>
-  shared_ptr<MPI_Op> Generic_MPI_Op<Type,BinaryFunction>::op = shared_ptr<MPI_Op>(static_cast<MPI_Op*>(0));
+  std::shared_ptr<MPI_Op> Generic_MPI_Op<Type,BinaryFunction>::op = std::shared_ptr<MPI_Op>(static_cast<MPI_Op*>(0));
 
 #define ComposeMPIOp(type,func,op) \
   template<> \

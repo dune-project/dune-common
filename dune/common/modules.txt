@@ -7,8 +7,3 @@
 
    Only @addtogroup is used in the code documentation.
 */
-
-  /**
-   * @defgroup COGeometryType GeometryType
-   * @ingroup Common
-  */

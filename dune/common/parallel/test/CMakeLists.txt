@@ -1,39 +1,16 @@
-set(MPITESTPROGS indicestest indexsettest syncertest selectiontest variablesizecommunicatortest)
+dune_add_test(SOURCES indexsettest.cc
+              LINK_LIBRARIES dunecommon)
 
-add_directory_test_target(_test_target)
-# We do not want want to build the tests during make all,
-# but just build them on demand
-add_dependencies(${_test_target} ${MPITESTPROGS})
+dune_add_test(SOURCES remoteindicestest.cc
+              LINK_LIBRARIES dunecommon
+              SKIP_ON_77)
 
-add_executable("indexsettest" indexsettest.cc)
-target_link_libraries("indexsettest" "dunecommon" ${CMAKE_THREAD_LIBS_INIT} ${})
+dune_add_test(SOURCES selectiontest.cc
+              LINK_LIBRARIES dunecommon)
 
-include(DuneMPI)
-add_executable("indicestest" indicestest.cc)
-target_link_libraries("indicestest" "dunecommon")
-add_dune_mpi_flags(indicestest)
+dune_add_test(SOURCES syncertest.cc
+              LINK_LIBRARIES dunecommon
+              SKIP_ON_77)
 
-add_executable("selectiontest" selectiontest.cc)
-target_link_libraries("selectiontest" "dunecommon")
-add_dune_mpi_flags(selectiontest)
-
-add_executable("syncertest" syncertest.cc)
-target_link_libraries("syncertest" "dunecommon")
-add_dune_mpi_flags(syncertest)
-
-add_executable("variablesizecommunicatortest" variablesizecommunicatortest.cc)
-target_link_libraries("variablesizecommunicatortest" "dunecommon")
-add_dune_mpi_flags(variablesizecommunicatortest)
-
-add_test(indexsettest indexsettest)
-add_test(selectiontest selectiontest)
-add_test(indicestest indicestest)
-add_test(syncertest syncertest)
-add_test(variablesizecommunicatortest variablesizecommunicatortest)
-
-# treat tests returning code 77 as skipped
-set_tests_properties(
-  indicestest
-  syncertest
-  variablesizecommunicatortest
-  PROPERTIES SKIP_RETURN_CODE 77)
+dune_add_test(SOURCES variablesizecommunicatortest.cc
+              SKIP_ON_77)

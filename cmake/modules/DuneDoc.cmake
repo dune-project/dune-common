@@ -15,7 +15,30 @@
 # If DEPENDENCY is specified, this is a dependency for
 # the installation. Otherwise FILENAME becomes the dependency
 #
-# dune_add_latex_document()
+# .. cmake_function:: dune_add_latex_document
+#
+#    .. cmake_brief::
+#
+#       build a pdf document through the dune buildsystem.
+#
+#    .. cmake_param:: texfile
+#       :single:
+#       :required:
+#       :positional:
+#
+#       The texfile to compile into a pdf.
+#
+#    .. note::
+#
+#       This function will be rewritten for Dune 3.0 as it currently
+#       shadows all options provided by the base implementation
+#       :code:`add_latex_document`.
+#
+# .. cmake_function:: create_doc_install
+#
+#    TODO doc me
+#    What are use cases for this function?
+#
 
 FIND_PACKAGE(LATEX)
 FIND_PROGRAM(IMAGEMAGICK_CONVERT convert
@@ -47,9 +70,12 @@ endif(LATEX_USABLE)
 
 add_custom_target(doc)
 
+# add the Sphinx-generated build system documentation
+include(DuneSphinxCMakeDoc)
+
 
 MACRO(create_doc_install filename targetdir)
-  dune_common_script_dir(SCRIPT_DIR)
+  dune_module_path(MODULE dune-common RESULT scriptdir SCRIPT_DIR)
   get_filename_component(targetfile ${filename} NAME)
   # The doc file might be in CMAKE_CURRENT_<SOURCE|BINARY>_DIR
   # Depending on whether this is a tarball or not
@@ -59,7 +85,7 @@ MACRO(create_doc_install filename targetdir)
     set(_src_file ${filename})
     set(_need_to_generate TRUE)
   endif(NOT _src_file)
-  set(install_command ${CMAKE_COMMAND} -D FILES=${_src_file} -D DIR=${CMAKE_INSTALL_PREFIX}/${targetdir} -P ${SCRIPT_DIR}/InstallFile.cmake)
+  set(install_command ${CMAKE_COMMAND} -D FILES=${_src_file} -D DIR=${CMAKE_INSTALL_PREFIX}/${targetdir} -P ${scriptdir}/InstallFile.cmake)
   # create a custom target for the installation
   if("${ARGC}" EQUAL "3" AND _need_to_generate)
     set(_depends ${ARGV2})

@@ -26,22 +26,8 @@
 /* does the compiler support __attribute__((unused))? */
 #cmakedefine HAS_ATTRIBUTE_UNUSED 1
 
-/* old feature support macros which were tested until 2.3, keep around for one more release */
-/* As these are now always supported due to the new compiler requirements, they are directly */
-/* defined without an explicit test. */
-#define HAVE_INTEGRAL_CONSTANT 1
-#define HAVE_DUNE_HASH 1
-#define HAVE_STD_HASH 1
-#define HAVE_TYPE_TRAITS 1
-#define HAVE_VARIADIC_TEMPLATES  1
-#define HAVE_VARIADIC_CONSTRUCTOR_SFINAE 1
-#define HAVE_RVALUE_REFERENCES 1
-
 /* Define if you have a BLAS library. */
 #cmakedefine HAVE_BLAS 1
-
-/* Define to ENABLE_BOOST if the Boost library is available */
-#cmakedefine HAVE_DUNE_BOOST ENABLE_BOOST
 
 /* does the compiler support abi::__cxa_demangle */
 #cmakedefine HAVE_CXA_DEMANGLE 1
@@ -52,9 +38,7 @@
 /* Define to 1 if you have the <malloc.h> header file. */
 // Not used! #cmakedefine01 HAVE_MALLOC_H
 
-/* Define if you have the MPI library. This is only true if MPI was found by
-   configure _and_ if the application uses the DUNEMPICPPFLAGS (or the
-   deprecated MPI_CPPFLAGS) */
+/* Define if you have the MPI library.  */
 #cmakedefine HAVE_MPI ENABLE_MPI
 
 /* Define if you have the GNU GMP library. The value should be ENABLE_GMP
@@ -64,17 +48,11 @@
 /* Define to 1 if you have the symbol mprotect. */
 #cmakedefine HAVE_MPROTECT 1
 
-/* Define to 1 if nullptr is supported */
-#cmakedefine HAVE_NULLPTR 1
-
 /* Define to 1 if you have the <stdint.h> header file. */
 #cmakedefine HAVE_STDINT_H 1
 
 /* Define to 1 if you have <sys/mman.h>. */
 #cmakedefine HAVE_SYS_MMAN_H 1
-
-/* Define to 1 if the MPI2 Standard is supported */
-#cmakedefine MPI_2 1
 
 /* Define to ENABLE_TBB if TBB was found */
 #cmakedefine HAVE_TBB ENABLE_TBB
@@ -110,26 +88,62 @@
 
 /* end private */
 
-/* Define to 1 if C++11 constexpr is supported */
-#cmakedefine HAVE_CONSTEXPR 1
-
-/* Define to 1 if C++11 range-based for is supported */
-#cmakedefine HAVE_RANGE_BASED_FOR 1
-
-/* Define to 1 if C++11 nonexcept specifier is supported */
-#cmakedefine HAVE_NOEXCEPT_SPECIFIER 1
-
-/* Define to 1 if C++11 std::declval() is supported */
-#cmakedefine HAVE_STD_DECLVAL 1
+/* old feature support macros which were tested until 2.4, kept around for one more release */
+/* As these are now always supported due to the new compiler requirements, they are directly */
+/* defined without an explicit test. */
+#define HAVE_NULLPTR 1
+#define HAVE_CONSTEXPR 1
+#define HAVE_RANGE_BASED_FOR 1
+#define HAVE_NOEXCEPT_SPECIFIER 1
+#define HAVE_STD_DECLVAL 1
+#define HAVE_KEYWORD_FINAL 1
+#define MPI_2 1
 
 /* Define to 1 if the compiler properly supports testing for operator[] */
 #cmakedefine HAVE_IS_INDEXABLE_SUPPORT 1
 
-/* does the compiler support the keyword 'final'? */
-#cmakedefine HAVE_KEYWORD_FINAL 1
+/* Define to ENABLE_UMFPACK if the UMFPack library is available */
+#cmakedefine HAVE_UMFPACK ENABLE_SUITESPARSE
 
-/* Define to if the UMFPack library is available */
-#cmakedefine HAVE_UMFPACK ENABLE_UMFPACK
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse library is available */
+#cmakedefine HAVE_SUITESPARSE ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's AMD library is available */
+#cmakedefine HAVE_SUITESPARSE_AMD ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's BTF library is available */
+#cmakedefine HAVE_SUITESPARSE_BTF ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's CAMD library is available */
+#cmakedefine HAVE_SUITESPARSE_CAMD ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's CCOLAMD library is available */
+#cmakedefine HAVE_SUITESPARSE_CCOLAMD ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's CHOLMOD library is available */
+#cmakedefine HAVE_SUITESPARSE_CHOLMOD ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's COLAMD library is available */
+#cmakedefine HAVE_SUITESPARSE_COLAMD ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's CXSPARSE library is available */
+#cmakedefine HAVE_SUITESPARSE_CXSPARSE ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's KLU library is available */
+#cmakedefine HAVE_SUITESPARSE_KLU ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's LDL library is available */
+#cmakedefine HAVE_SUITESPARSE_LDL ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's RBIO library is available */
+#cmakedefine HAVE_SUITESPARSE_RBIO ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's SPQR library is available
+   and if it's version is at least 4.3 */
+#cmakedefine HAVE_SUITESPARSE_SPQR ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's UMFPACK library is available */
+#cmakedefine HAVE_SUITESPARSE_UMFPACK ENABLE_SUITESPARSE
 
 /* Define to ENABLE_PARMETIS if you have the Parmetis library.
    This is only true if MPI was found

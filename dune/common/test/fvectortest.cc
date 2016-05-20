@@ -17,10 +17,11 @@
 using Dune::FieldVector;
 using std::complex;
 
+// Tests that can be run without the construction of complex<rt>
 template<class ft, class rt, int d>
-struct FieldVectorMainTest
+struct FieldVectorMainTestCommons
 {
-  FieldVectorMainTest() {
+  FieldVectorMainTestCommons() {
     ft a = 1;
     FieldVector<ft,d> v(1);
     FieldVector<ft,d> w(2);
@@ -35,22 +36,22 @@ struct FieldVectorMainTest
 
     // test exported types
     static_assert(
-      Dune::is_same<ft,typename FieldVector<ft,d>::value_type>::value,
+      std::is_same<ft,typename FieldVector<ft,d>::value_type>::value,
       "FieldVector::value_type is not the correct type"
     );
 
     // test traits
     static_assert(
-      ( Dune::is_same< typename Dune::FieldTraits<
+      ( std::is_same< typename Dune::FieldTraits<
                 FieldVector<ft,d> >::field_type, ft >::value ),
       "FieldTraits<FieldVector> yields wrong field_type"
       );
     static_assert(
-      ( Dune::is_same< typename Dune::FieldTraits<ft>::real_type, rt >::value ),
+      ( std::is_same< typename Dune::FieldTraits<ft>::real_type, rt >::value ),
       "FieldTraits<field_type> yields wrong real_type"
       );
     static_assert(
-      ( Dune::is_same< typename Dune::FieldTraits<
+      ( std::is_same< typename Dune::FieldTraits<
                 FieldVector<ft,d> >::real_type, rt >::value ),
       "FieldTraits<FieldVector> yields wrong real_type"
       );
@@ -85,11 +86,6 @@ struct FieldVectorMainTest
     b = (w != v);
     b = (w == v);
 
-    // assignment to vector of complex
-    FieldVector< std::complex<rt> ,d> cv = v;
-    cv = a;
-    const FieldVector< std::complex<rt> ,d> ccv DUNE_UNUSED = x;
-
     // test istream operator
     std::stringstream s;
     for (int i=0; i<d; i++)
@@ -106,6 +102,35 @@ struct FieldVectorMainTest
   }
 };
 
+// Additional tests for floating point types, for which complex<rt> will work
+template<class ft, class rt, int d,
+         bool floating_point = std::is_floating_point<rt>::value>
+struct FieldVectorMainTest
+  : FieldVectorMainTestCommons<ft,rt,d>
+{
+  FieldVectorMainTest()
+    : FieldVectorMainTestCommons<ft,rt,d>()
+  {
+    ft a = 1;
+    FieldVector<ft,d> v(1);
+    FieldVector<ft,d> z(2);
+    const FieldVector<ft,d> x(z);
+
+    // assignment to vector of complex
+    FieldVector< std::complex<rt> ,d> cv = v;
+    cv = a;
+    const FieldVector< std::complex<rt> ,d> ccv DUNE_UNUSED = x;
+  }
+};
+
+template<class ft, class rt, int d>
+struct FieldVectorMainTest<ft,rt,d,false>
+  : FieldVectorMainTestCommons<ft,rt,d>
+{
+  FieldVectorMainTest()
+    : FieldVectorMainTestCommons<ft,rt,d>()
+  {}
+};
 
 template<class ft, class testft=ft>
 struct ScalarOperatorTest
@@ -224,7 +249,8 @@ struct Epsilon<int>
 };
 
 // scalar ordering doesn't work for complex numbers
-template <class rt, int d>
+template <class rt, int d,
+          bool floating_point = std::is_floating_point<rt>::value>
 struct DotProductTest
 {
   DotProductTest() {
@@ -232,7 +258,7 @@ struct DotProductTest
     DUNE_UNUSED const rt myEps = Epsilon<rt>::value();
 
     static_assert(
-      ( Dune::is_same< typename Dune::FieldTraits<rt>::real_type, rt>::value ),
+      ( std::is_same< typename Dune::FieldTraits<rt>::real_type, rt>::value ),
       "DotProductTest requires real data type as template parameter!"
       );
 
@@ -242,8 +268,8 @@ struct DotProductTest
 
     std::cout << __func__ << "\t \t ( " << Dune::className(one) << " and " << Dune::className(iVec) << ")" << std::endl;
 
-    const bool isRealOne = Dune::is_same<typename Dune::FieldTraits<rt>::field_type,typename Dune::FieldTraits<rt>::real_type>::value;
-    const bool isRealIVec = Dune::is_same<typename Dune::FieldTraits<ct>::field_type,typename Dune::FieldTraits<ct>::real_type> ::value;
+    const bool isRealOne = std::is_same<typename Dune::FieldTraits<rt>::field_type,typename Dune::FieldTraits<rt>::real_type>::value;
+    const bool isRealIVec = std::is_same<typename Dune::FieldTraits<ct>::field_type,typename Dune::FieldTraits<ct>::real_type> ::value;
     static_assert(isRealOne,"1-vector expected to be real");
     static_assert(!isRealIVec,"i-vector expected to be complex");
 
@@ -290,10 +316,44 @@ struct DotProductTest
     assert(std::abs(result-ct(2)*length*I)<= myEps);
 
   }
-
 };
 
-template<class ft, int d>
+// scalar ordering doesn't work for complex numbers
+template <class rt, int d>
+struct DotProductTest<rt, d, false>
+{
+  DotProductTest() {
+    DUNE_UNUSED const rt myEps = Epsilon<rt>::value();
+
+    static_assert(
+      ( std::is_same< typename Dune::FieldTraits<rt>::real_type, rt>::value ),
+      "DotProductTest requires real data type as template parameter!"
+      );
+
+    const FieldVector<rt,d> one(1.); // vector filled with 1
+
+    std::cout << __func__ << "\t \t ( " << Dune::className(one) << " only)" << std::endl;
+
+    const bool isRealOne = std::is_same<typename Dune::FieldTraits<rt>::field_type,typename Dune::FieldTraits<rt>::real_type>::value;
+    static_assert(isRealOne,"1-vector expected to be real");
+
+    rt result = rt();
+    rt length = rt(d);
+
+    // one^H*one should equal d
+    result = dot(one,one);
+    assert(abs(result-length)<= myEps);
+    result = one.dot(one);
+    assert(abs(result-length)<= myEps);
+
+    // test that dotT does not conjugate at all
+    result = dotT(one,one) + one*one;
+    assert(abs(result-rt(2)*length)<= myEps);
+  }
+};
+
+template<class ft, int d,
+         bool floating_point = std::is_floating_point<ft>::value>
 struct FieldVectorTest
 {
   FieldVectorTest()
@@ -307,9 +367,23 @@ struct FieldVectorTest
   }
 };
 
-// specialization for 1d vector
+// specialisation for non-floating-point vectors
+template<class ft, int d>
+struct FieldVectorTest<ft, d, false>
+{
+  FieldVectorTest()
+  {
+    // --- test real valued vectors
+    FieldVectorMainTest<ft,ft,d>();
+    DotProductTest<ft,d>();
+    // --- test next lower dimension
+    FieldVectorTest<ft,d-1>();
+  }
+};
+
+// specialization for 1d floating point vector
 template<class ft>
-class FieldVectorTest<ft,1>
+class FieldVectorTest<ft,1,true>
 {
 public:
   FieldVectorTest()
@@ -331,24 +405,66 @@ public:
   }
 };
 
-// Make sure that a vector with only NaN entries has norm NaN.
-// Prior to r6914, the infinity_norm would be zero; see also FS #1147.
-void
-test_nan()
+// specialization for other 1d vectors
+template<class ft>
+class FieldVectorTest<ft,1,false>
 {
-  double mynan = 0.0/0.0;
+public:
+  FieldVectorTest()
+  {
+    // --- real valued
+    FieldVectorMainTest<ft,ft,1>();
+    ScalarOperatorTest<ft>();
+    ScalarOrderingTest<ft>();
+    DotProductTest<ft,1>();
 
-  Dune::FieldVector<double, 2> v2(mynan);
-  assert(std::isnan(v2.infinity_norm()));
-  assert(std::isnan(v2.one_norm()));
-  assert(std::isnan(v2.two_norm()));
-  assert(std::isnan(v2.two_norm2()));
+    // --- test with an integer
+    ScalarOperatorTest< ft, int >();
+    // --- test next lower dimension
+    FieldVectorMainTest<ft,ft,0>();
+  }
+};
 
-  Dune::FieldVector<double, 0> v0(mynan);
-  assert(0.0 == v0.infinity_norm());
-  assert(0.0 == v0.one_norm());
-  assert(0.0 == v0.two_norm());
-  assert(0.0 == v0.two_norm2());
+template <class V>
+void checkNormNAN(V const &v, int line) {
+  if (!std::isnan(v.one_norm())) {
+    std::cerr << "error: norm not NaN: one_norm() on line "
+              << line << " (type: " << Dune::className(v[0]) << ")"
+              << std::endl;
+    std::exit(-1);
+  }
+  if (!std::isnan(v.two_norm())) {
+    std::cerr << "error: norm not NaN: two_norm() on line "
+              << line << " (type: " << Dune::className(v[0]) << ")"
+              << std::endl;
+    std::exit(-1);
+  }
+  if (!std::isnan(v.infinity_norm())) {
+    std::cerr << "error: norm not NaN: infinity_norm() on line "
+              << line << " (type: " << Dune::className(v[0]) << ")"
+              << std::endl;
+    std::exit(-1);
+  }
+}
+
+// Make sure that vectors with NaN entries have norm NaN.
+// See also bug flyspray/FS#1147
+template <typename T>
+void
+test_nan(T const &mynan)
+{
+  {
+    Dune::FieldVector<T, 2> v = { mynan, mynan };
+    checkNormNAN(v, __LINE__);
+  }
+  {
+    Dune::FieldVector<T, 2> v = { mynan, 0 };
+    checkNormNAN(v, __LINE__);
+  }
+  {
+    Dune::FieldVector<T, 2> v = { 0, mynan };
+    checkNormNAN(v, __LINE__);
+  }
 }
 
 void
@@ -379,8 +495,7 @@ int main()
     FieldVectorTest<int, 3>();
     FieldVectorTest<float, 3>();
     FieldVectorTest<double, 3>();
-    FieldVectorTest<int, 1>();
-    FieldVectorTest<double, 1>();
+    FieldVectorTest<long double, 3>();
 #if HAVE_GMP
     // we skip the complex test and the int test, as these will be very hard to implement with GMPField
     typedef Dune::GMPField<128u> ft;
@@ -393,7 +508,14 @@ int main()
     DotProductTest<ft,3>();
 #endif // HAVE_GMP
 
-    test_nan();
+    {
+      double nan = std::nan("");
+      test_nan(nan);
+    }
+    {
+      std::complex<double> nan( std::nan(""), 17 );
+      test_nan(nan);
+    }
     test_infinity_norms();
     test_initialisation();
   } catch (Dune::Exception& e) {

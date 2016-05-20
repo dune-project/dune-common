@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include <dune/common/nullptr.hh>
 #include <dune/common/typetraits.hh>
 /**
  * @file
@@ -105,6 +104,53 @@ namespace Dune
   inline shared_ptr<T2> stackobject_to_shared_ptr(T & t)
   {
     return shared_ptr<T2>(dynamic_cast<T2*>(&t), null_deleter<T2>());
+  }
+
+
+  /**
+   * \brief Capture R-value reference to shared_ptr
+   *
+   * This will store a copy of the passed object in
+   * a shared_ptr.
+   *
+   * The two overloads of wrap_or_move are intended
+   * to capture references and temporaries in a unique
+   * way without creating copies and only moving if
+   * necessary.
+   *
+   * Be careful: Only use this function if you are
+   * aware of it's implications. You can e.g. easily
+   * end up storing a reference to a temporary if
+   * you use this inside of another function without
+   * perfect forwarding.
+   */
+  template<class T>
+  auto wrap_or_move(T&& t)
+  {
+    return std::make_shared<std::decay_t<T>>(std::forward<T>(t));
+  }
+
+  /**
+   * \brief Capture L-value reference to shared_ptr
+   *
+   * This will store a pointer for the passed reference
+   * in a non-owning shared_ptr.
+   *
+   * The two overloads of wrap_or_move are intended
+   * to capture references and temporaries in a unique
+   * way without creating copies and only moving if
+   * necessary.
+   *
+   * Be careful: Only use this function if you are
+   * aware of it's implications. You can e.g. easily
+   * end up storing a reference to a temporary if
+   * you use this inside of another function without
+   * perfect forwarding.
+   */
+  template<class T>
+  auto wrap_or_move(T& t)
+  {
+    return stackobject_to_shared_ptr(t);
   }
 
 }

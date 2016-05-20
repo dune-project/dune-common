@@ -311,7 +311,7 @@ namespace Dune {
         static I
         trunc(const T &val,
               typename EpsilonType<T>::Type epsilon = (DefaultEpsilon<T, cstyle>::value())) {
-          // this sould be optimized away unless needed
+          // this should be optimized away unless needed
           if(!std::numeric_limits<I>::is_signed)
             // make sure this works for all useful cases even if I is an unsigned type
             if(eq<T, cstyle>(val, T(0), epsilon)) return I(0);

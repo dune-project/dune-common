@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 
-#include "config.h"
+#include <config.h>
 
 #include <dune/common/parallel/indexset.hh>
 #include <dune/common/parallel/plocalindex.hh>
@@ -18,9 +18,6 @@ int main(int argc, char **argv)
 
   // The rank of our process
   int rank = helper.rank();
-
-  // The type used as the local index
-  typedef Dune::ParallelLocalIndex<Flag> LocalIndex;
 
   // The type used as the global index
   typedef int GlobalIndex;

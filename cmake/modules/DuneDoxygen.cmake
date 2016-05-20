@@ -1,16 +1,32 @@
 # Module for building documentation using doxygen.
 #
-# provides the following macros:
+# .. cmake_function:: add_doxygen_target
 #
-# add_doxgen_target
+#    .. cmake_param:: TARGET
+#       :single:
 #
-# This macro creates a target for building (doxygen_${ProjectName}) and installing
-# (doxygen_install_${ProjectName}) the generated doxygen documentation.
-# The documentation is built during the top-level make doc call. We have added a dependency
-# that makes sure it is built before running make install.
+#       The suffix to add to the target name, default to the module name.
 #
+#    .. cmake_param:: DEPENDS
+#       :multi:
 #
+#       A list of further dependencies of the doxygen documentation.
+#       Might include :code:`mainpage.txt`.
+#
+#    .. cmake_param:: OUTPUT
+#       :single:
+#
+#       Name of the output target, necessary if you don't generate html.
+#
+#    This macro creates a target for building (:code:`doxygen_${ProjectName}`) and installing
+#    (:code:`doxygen_install_${ProjectName}`) the generated doxygen documentation.
+#    The documentation is built during the top-level :code:`make doc` call. We have added a dependency
+#    that makes sure it is built before running :code:`make install`.
+#
+
 FIND_PACKAGE(Doxygen)
+
+include (CMakeParseArguments)
 
 #
 # Set DOT_TRUE for the Doxyfile generation.
@@ -27,40 +43,60 @@ add_custom_target(doxygen_install)
 # Doxyfile[.in] files needed to doxygen.
 MACRO (prepare_doxyfile)
   message(STATUS "using ${DOXYSTYLE_FILE} to create doxystyle file")
-  set(make_doxyfile_command ${CMAKE_COMMAND} -D DOT_TRUE=${DOT_TRUE} -D DUNEWEB_TRUE=\# -D ProjectName=${ProjectName} -D DUNE_MOD_VERSION=${DUNE_MOD_VERSION} -D DOXYSTYLE=${DOXYSTYLE_FILE}  -D DOXYLOCAL=${CMAKE_CURRENT_SOURCE_DIR}/Doxylocal -D abs_top_srcdir=${CMAKE_SOURCE_DIR} -D srcdir=${CMAKE_CURRENT_SOURCE_DIR} -D top_srcdir=${CMAKE_SOURCE_DIR} -P ${SCRIPT_DIR}/CreateDoxyFile.cmake)
-  add_custom_command (OUTPUT Doxyfile.in Doxyfile
-    COMMAND ${make_doxyfile_command}
-    COMMENT "Creating Doxyfile.in"
-    DEPENDS ${DOXYSTYLE_FILE} ${CMAKE_CURRENT_SOURCE_DIR}/Doxylocal)
+
+  # check whether module has a Doxylocal file
+  find_file(_DOXYLOCAL Doxylocal PATHS ${CMAKE_CURRENT_SOURCE_DIR} NO_DEFAULT_PATH)
+
+  if(_DOXYLOCAL)
+    set(make_doxyfile_command ${CMAKE_COMMAND} -D DOT_TRUE=${DOT_TRUE} -D DUNEWEB_TRUE=\# -D ProjectName=${ProjectName} -D DUNE_MOD_VERSION=${DUNE_MOD_VERSION} -D DOXYSTYLE=${DOXYSTYLE_FILE}  -D DOXYLOCAL=${CMAKE_CURRENT_SOURCE_DIR}/Doxylocal -D abs_top_srcdir=${CMAKE_SOURCE_DIR} -D srcdir=${CMAKE_CURRENT_SOURCE_DIR} -D top_srcdir=${CMAKE_SOURCE_DIR} -P ${scriptdir}/CreateDoxyFile.cmake)
+    add_custom_command (OUTPUT Doxyfile.in Doxyfile
+      COMMAND ${make_doxyfile_command}
+      COMMENT "Creating Doxyfile.in"
+      DEPENDS ${DOXYSTYLE_FILE} ${CMAKE_CURRENT_SOURCE_DIR}/Doxylocal)
+  else()
+    set(make_doxyfile_command ${CMAKE_COMMAND} -D DOT_TRUE=${DOT_TRUE} -D DUNEWEB_TRUE=\# -D ProjectName=${ProjectName} -D DUNE_MOD_VERSION=${DUNE_MOD_VERSION} -D DOXYSTYLE=${DOXYSTYLE_FILE} -D abs_top_srcdir=${CMAKE_SOURCE_DIR} -D top_srcdir=${CMAKE_SOURCE_DIR} -P ${scriptdir}/CreateDoxyFile.cmake)
+    add_custom_command (OUTPUT Doxyfile.in Doxyfile
+      COMMAND ${make_doxyfile_command}
+      COMMENT "Creating Doxyfile.in"
+      DEPENDS ${DOXYSTYLE_FILE})
+  endif()
   add_custom_target(Doxyfile DEPENDS Doxyfile.in Doxyfile)
 ENDMACRO (prepare_doxyfile)
 
-#
-# add_doxgen_target
-#
-# This macro creates a target for building (doxygen_${ProjectName}) and installing
-# (doxygen_install_${ProjectName}) the generated doxygen documentation.
-# The documentation is built during the top-level make doc call. We have added a dependency
-# that make sure it is built before running make install.
 MACRO (add_doxygen_target)
-  dune_common_script_dir(SCRIPT_DIR)
+  set(options )
+  set(oneValueArgs TARGET OUTPUT)
+  set(multiValueArgs DEPENDS)
+  cmake_parse_arguments(DOXYGEN "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+  # default target name is the module name
+  if(NOT DOXYGEN_TARGET)
+    set(DOXYGEN_TARGET ${ProjectName})
+  endif(NOT DOXYGEN_TARGET)
+
+  # default output is html
+  if(NOT DOXYGEN_OUTPUT)
+    set(DOXYGEN_OUTPUT html)
+  endif(NOT DOXYGEN_OUTPUT)
+
+  dune_module_path(MODULE dune-common RESULT scriptdir SCRIPT_DIR)
   if("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
     set(DOXYSTYLE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/Doxystyle)
   endif("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-  message(STATUS "Using scripts from ${SCRIPT_DIR} for creating doxygen stuff.")
+  message(STATUS "Using scripts from ${scriptdir} for creating doxygen stuff.")
 
   if(DOXYGEN_FOUND)
     prepare_doxyfile()
     # A custom command that executes doxygen
-    add_custom_command(OUTPUT html
-      COMMAND ${CMAKE_COMMAND} -D DOXYGEN_EXECUTABLE=${DOXYGEN_EXECUTABLE} -P ${SCRIPT_DIR}/RunDoxygen.cmake
+    add_custom_command(OUTPUT ${DOXYGEN_OUTPUT}
+      COMMAND ${CMAKE_COMMAND} -D DOXYGEN_EXECUTABLE=${DOXYGEN_EXECUTABLE} -P ${scriptdir}/RunDoxygen.cmake
       COMMENT "Running doxygen documentation. This may take a while"
-      DEPENDS Doxyfile.in)
+      DEPENDS Doxyfile.in ${DOXYGEN_DEPENDS})
     # Create a target for building the doxygen documentation of a module,
     # that is run during make doc
-    add_custom_target(doxygen_${ProjectName}
-      DEPENDS html)
-    add_dependencies(doc doxygen_${ProjectName})
+    add_custom_target(doxygen_${DOXYGEN_TARGET}
+      DEPENDS ${DOXYGEN_OUTPUT})
+    add_dependencies(doc doxygen_${DOXYGEN_TARGET})
   endif(DOXYGEN_FOUND)
 
   # Use a cmake call to install the doxygen documentation and create a
@@ -79,7 +115,7 @@ MACRO (add_doxygen_target)
       foreach(_file \${doxygenfiles})
          get_filename_component(_basename \${_file} NAME)
          LIST(APPEND CMAKE_INSTALL_MANIFEST_FILES ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen/\${_basename})
-       endforeach(_file in \${doxygenfiles})
+       endforeach()
        file(INSTALL \${doxygenfiles} DESTINATION ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen)
        message(STATUS \"Installed doxygen into ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen\")")
 

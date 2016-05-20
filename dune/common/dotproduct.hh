@@ -5,7 +5,6 @@
 
 #include "ftraits.hh"
 #include "typetraits.hh"
-#include "promotiontraits.hh"
 
 namespace Dune {
   /**
@@ -13,7 +12,7 @@ namespace Dune {
    * @brief  Provides the functions dot(a,b) := \f$a^H \cdot b \f$ and dotT(a,b) := \f$a^T \cdot b \f$
    *
    * The provided dot products dot,dotT are used to compute (indefinite) dot products for fundamental types as well as DUNE vector types, such as DenseVector, FieldVector, ISTLVector.
-   * Note that the definition of dot(a,b) conjugates the first argument. This agrees with the behvaior of Matlab and Petsc, but noch with BLAS.
+   * Note that the definition of dot(a,b) conjugates the first argument. This agrees with the behaviour of Matlab and Petsc, but not with BLAS.
    * @author Jö Fahlke, Matthias Wohlmuth
    */
 
@@ -26,11 +25,11 @@ namespace Dune {
   struct AlwaysVoid { typedef void type; };
 
   template<class T, class = void>
-  struct IsVector : false_type {};
+  struct IsVector : std::false_type {};
 
   template<class T>
   struct IsVector<T, typename AlwaysVoid<typename T::field_type>::type>
-    : true_type {};
+    : std::true_type {};
 
   /** @brief computes the dot product for fundamental data types according to Petsc's VectDot function: dot(a,b) := std::conj(a)*b
    *
@@ -40,8 +39,9 @@ namespace Dune {
    * @return conj(a)*b
    */
   template<class A, class B>
-  inline typename enable_if<!IsVector<A>::value && !is_same<typename FieldTraits<A>::field_type,typename FieldTraits<A>::real_type> ::value,  typename PromotionTraits<A,B>::PromotedType>::type
-  dot(const A & a, const B & b) {
+  auto
+  dot(const A & a, const B & b) -> typename std::enable_if<!IsVector<A>::value && !std::is_same<typename FieldTraits<A>::field_type,typename FieldTraits<A>::real_type> ::value, decltype(conj(a)*b)>::type
+  {
     return conj(a)*b;
   }
 
@@ -56,8 +56,9 @@ namespace Dune {
    */
   // fundamental type with A being a real type
   template<class A, class B>
-  inline typename enable_if<!IsVector<A>::value && is_same<typename FieldTraits<A>::field_type,typename FieldTraits<A>::real_type>::value,  typename PromotionTraits<A,B>::PromotedType>::type
-  dot(const A & a, const B & b) {
+  auto
+  dot(const A & a, const B & b) -> typename std::enable_if<!IsVector<A>::value && std::is_same<typename FieldTraits<A>::field_type,typename FieldTraits<A>::real_type>::value, decltype(a*b)>::type
+  {
     return a*b;
   }
 
@@ -70,11 +71,10 @@ namespace Dune {
    * @param b
    * @return dot(a,b)
    */
-  // vectors
   template<typename A, typename B>
-  //  inline typename enable_if<IsVector<A>::value, typename PromotionTraits<typename FieldTraits<A>::field_type, typename FieldTraits<B>::field_type >::PromotedType>::type
-  inline typename enable_if<IsVector<A>::value, typename PromotionTraits<typename A::field_type, typename B::field_type >::PromotedType>::type
-  dot(const A & a, const B & b) {
+  auto
+  dot(const A & a, const B & b) -> typename std::enable_if<IsVector<A>::value, decltype(a.dot(b))>::type
+  {
     return a.dot(b);
   }
   /** @} */
@@ -87,21 +87,9 @@ namespace Dune {
    * @return a*b
    */
   template<class A, class B>
-  inline typename enable_if<!IsVector<A>::value && !is_same<typename FieldTraits<A>::field_type,typename FieldTraits<A>::real_type> ::value,  typename PromotionTraits<A,B>::PromotedType>::type
-  dotT(const A & a, const B & b) {
-    return a*b;
-  }
-
-  /**
-   * @brief Computes an indefinite vector dot product for various dune vector types according to Petsc's VectTDot function: dotT(a,b) := a*b
-   * @see http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecTDot.html#VecTDot
-   * @param a
-   * @param b
-   * @return a*b
-   */
-  template<class A, class B>
-  inline typename enable_if<IsVector<A>::value, typename PromotionTraits<typename A::field_type, typename B::field_type >::PromotedType>::type
-  dotT(const A & a, const B & b) {
+  auto
+  dotT(const A & a, const B & b) -> decltype(a*b)
+  {
     return a*b;
   }
 

@@ -42,9 +42,9 @@ BLANK="$space$tab"
 NOBLANK="^$space$tab"
 
 #
-# read paramters from a $CONTROL file
+# read parameters from a $CONTROL file
 #
-# paramters:
+# parameters:
 # $1 file to read
 #
 PARSER_TRIM="awk '{gsub(/^[ \\t]+|[ \\t]+$/,\"\");printf(\"%s\", \$0);}'"
@@ -402,7 +402,7 @@ _check_deps()
 # recursive part of sort_modules
 # evaluate dependencies of one module
 #
-# paramters:
+# parameters:
 # $1 name of the modules
 # $2 parser mode:
 #    DEPS: search for dependencies
@@ -528,7 +528,7 @@ check_modname() {
 #
 get_sub_version() {
   #it would be nice to give the part to awk via a "-v FIELD=$2"
-  #command line argument.  Unfortunatly, SunOS does not support this.
+  #command line argument.  Unfortunately, SunOS does not support this.
   #Worse, we cannot use awks int() function here, since under SunOS it
   #will always return 0 for string input.
   echo $1 | cut -d. -f"$2" | sed 's/[^0-9].*$//;s/^$/0/'

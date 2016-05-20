@@ -16,6 +16,7 @@
 #include <iostream>
 #include <memory>
 
+#include <dune/common/boundschecking.hh>
 #include <dune/common/densematrix.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fmatrix.hh>
@@ -364,7 +365,8 @@ namespace Dune {
 
     //! y += alpha A x
     template<class X, class Y>
-    void usmv (const K& alpha, const X& x, Y& y) const
+    void usmv (const typename FieldTraits<Y>::field_type & alpha,
+      const X& x, Y& y) const
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
       if (x.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
@@ -376,7 +378,8 @@ namespace Dune {
 
     //! y += alpha A^T x
     template<class X, class Y>
-    void usmtv (const K& alpha, const X& x, Y& y) const
+    void usmtv (const typename FieldTraits<Y>::field_type & alpha,
+      const X& x, Y& y) const
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
       if (x.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
@@ -388,7 +391,8 @@ namespace Dune {
 
     //! y += alpha A^H x
     template<class X, class Y>
-    void usmhv (const K& alpha, const X& x, Y& y) const
+    void usmhv (const typename FieldTraits<Y>::field_type & alpha,
+      const X& x, Y& y) const
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
       if (x.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
@@ -475,10 +479,8 @@ namespace Dune {
     //! return true when (i,j) is in pattern
     bool exists (size_type i, size_type j) const
     {
-#ifdef DUNE_FMatrix_WITH_CHECKING
-      if (i<0 || i>=n) DUNE_THROW(FMatrixError,"row index out of range");
-      if (j<0 || j>=n) DUNE_THROW(FMatrixError,"column index out of range");
-#endif
+      DUNE_ASSERT_BOUNDS(i >= 0 && i < n);
+      DUNE_ASSERT_BOUNDS(j >= 0 && j < n);
       return i==j;
     }
 
@@ -710,12 +712,8 @@ namespace Dune {
     //! same for read only access
     const K& operator[] (size_type i) const
     {
-#ifdef DUNE_FMatrix_WITH_CHECKING
-      if (i!=row_)
-        DUNE_THROW(FMatrixError,"index is not contained in pattern");
-#else
       DUNE_UNUSED_PARAMETER(i);
-#endif
+      DUNE_ASSERT_BOUNDS(i == row_);
       return *p_;
     }
 
@@ -854,10 +852,7 @@ namespace Dune {
     K& operator[] (size_type i)
     {
       DUNE_UNUSED_PARAMETER(i);
-#ifdef DUNE_FMatrix_WITH_CHECKING
-      if (i!=row_)
-        DUNE_THROW(FMatrixError,"index is contained in pattern");
-#endif
+      DUNE_ASSERT_BOUNDS(i == row_);
       return *p_;
     }
 
@@ -975,7 +970,7 @@ namespace Dune {
   template<class CW, class T, class R>
   class ContainerWrapperIterator : public BidirectionalIteratorFacade<ContainerWrapperIterator<CW,T,R>,T, R, int>
   {
-    typedef typename remove_const<CW>::type NonConstCW;
+    typedef typename std::remove_const<CW>::type NonConstCW;
 
     friend class ContainerWrapperIterator<CW, typename mutable_reference<T>::type, typename mutable_reference<R>::type>;
     friend class ContainerWrapperIterator<CW, typename const_reference<T>::type, typename const_reference<R>::type>;
@@ -1082,17 +1077,17 @@ namespace Dune {
     size_t position_;
   };
 
-
-
-  template<class M, class K, int n>
-  void istl_assign_to_fmatrix(DenseMatrix<M>& fm, const DiagonalMatrix<K,n>& s)
-  {
-    assert( fm.rows() == n );
-    assert( fm.cols() == n );
-    fm = K();
-    for(int i=0; i<n; ++i)
-      fm[i][i] = s.diagonal()[i];
-  }
+  template <class DenseMatrix, class field, int N>
+  struct DenseMatrixAssigner<DenseMatrix, DiagonalMatrix<field, N>> {
+    static void apply(DenseMatrix& denseMatrix,
+                      DiagonalMatrix<field, N> const& rhs) {
+      DUNE_ASSERT_BOUNDS(denseMatrix.M() == N);
+      DUNE_ASSERT_BOUNDS(denseMatrix.N() == N);
+      denseMatrix = field(0);
+      for (int i = 0; i < N; ++i)
+        denseMatrix[i][i] = rhs.diagonal()[i];
+    }
+  };
   /* @} */
 } // end namespace
 #endif

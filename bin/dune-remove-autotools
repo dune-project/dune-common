@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+RM_F="rm -f"
+RM_RF="rm -rf"
+SED="sed"
+
+# parse commandline parameters
+while test $# -gt 0; do
+    # get option
+    command=$1
+    option=$1
+
+    # get args
+    set +e
+    # stolen from configure...
+    # when no option is set, this returns an error code
+    arg=`expr "x$option" : 'x[^=]*=\(.*\)'`
+    set -e
+
+    # switch
+    case "$option" in
+		-n|--dry-run)
+			DRYRUN=1
+			RM_F="echo rm -f"
+			RM_RF="echo rm -rf"
+			SED="echo sed"
+			;;
+		-h|--help)
+			echo "Usage: $0 [OPTIONS]"
+			echo "OPTIONS:"
+ 			echo "    -h, --help          show this help"
+ 			echo "    -n, --dry-run       perform a trial run with no changes made"
+			echo
+			exit 0
+			break
+			;;
+		*)
+			break
+			;;
+    esac
+
+    shift
+done
+
+$RM_RF autom4te.cache
+$RM_F aclocal.m4 dependencies.m4
+$RM_RF m4
+$RM_F config.guess config.h config.h.in config.sub configure configure.ac
+$RM_F compile depcomp install-sh ltmain.sh missing test-driver
+for i in $(find -name Makefile.am); do
+  DIR=$(dirname $i)
+  $RM_F $DIR/Makefile.am $DIR/Makefile.in $DIR/Makefile
+done
+$SED -i -e '/add_subdirectory(["'"'"']m4["'"'"'])/d' CMakeLists.txt
+if test "$DRYRUN" != "1"; then
+	echo "Done"
+fi

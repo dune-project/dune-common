@@ -2,18 +2,21 @@
 *.a
 *.la
 *.lo
+*.log
 *.o
+*.trs
 *~
+*.pyc
 .deps/
 .libs/
 Makefile
 Makefile.in
-semantic.cache
+TAGS
 
 # Stuff to ignore in this directory only
 /aclocal.m4
 /autom4te.cache/
-/build-cmake/
+/build-*/
 /compile
 /config.guess
 /config.h

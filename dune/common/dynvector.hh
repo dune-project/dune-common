@@ -78,7 +78,7 @@ namespace Dune {
 
     //! Constructor making vector with identical coordinates
     DynamicVector(const DynamicVector & x) :
-      _data(x._data)
+      Base(), _data(x._data)
     {}
 
     //! Move constructor
@@ -137,9 +137,9 @@ namespace Dune {
     }
 
     //==== make this thing a vector
-    size_type vec_size() const { return _data.size(); }
-    K & vec_access(size_type i) { return _data[i]; }
-    const K & vec_access(size_type i) const { return _data[i]; }
+    size_type size() const { return _data.size(); }
+    K & operator[](size_type i) { return _data[i]; }
+    const K & operator[](size_type i) const { return _data[i]; }
   };
 
   /** \brief Read a DynamicVector from an input stream

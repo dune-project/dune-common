@@ -1,10 +1,16 @@
-# module providing convenience mehtods for compiling bianries with UMFPack support
+# Defines the functions to use UMFPack
 #
-# Provides the following functions:
+# .. cmake_function:: add_dune_umfpack_flags
 #
-# add_dune_umfpack_flags(target1 target2...)
+#    .. cmake_param:: targets
+#       :positional:
+#       :single:
+#       :required:
 #
-# adds UMFPack flags to the targets for compilation and linking
+#       A list of targets to use UMFPack with.
+#
+
+
 function(add_dune_umfpack_flags _targets)
   if(UMFPACK_FOUND)
     foreach(_target ${_targets})

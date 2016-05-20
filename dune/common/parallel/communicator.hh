@@ -75,10 +75,10 @@ namespace Dune
    * Based on the information about the distributed index sets,  data
    * independent interfaces between different sets of the index sets
    * can be setup using the class Interface.  For the actual communication
-   * data dependant communicators can be setup using BufferedCommunicator,
+   * data dependent communicators can be setup using BufferedCommunicator,
    * DatatypeCommunicator VariableSizeCommunicator based on the interface
    * information. In contrast to the former
-   * the latter is independant of the class Interface can work on a map
+   * the latter is independent of the class Interface can work on a map
    * from process number to a pair of index lists describing which local indices
    * are send and received from that processs, respectively.
    */
@@ -265,7 +265,7 @@ namespace Dune
      * \code
      * bool contains(Attribute flag) const;
      * \endcode
-     * for checking whether the set contains a specfic flag.
+     * for checking whether the set contains a specific flag.
      * This functionality is for example provided the classes
      * EnumItem, EnumRange and Combine.
      *
@@ -419,8 +419,8 @@ namespace Dune
       {
         IndexedTypeInformation& info=information_[proc];
         assert((info.elements)<info.size);
-        MPI_Address( const_cast<void*>(CommPolicy<V>::getAddress(data_, local)),
-                     info.displ+info.elements);
+        MPI_Get_address( const_cast<void*>(CommPolicy<V>::getAddress(data_, local)),
+                         info.displ+info.elements);
         info.length[info.elements]=CommPolicy<V>::getSize(data_, local);
         info.elements++;
       }
@@ -464,7 +464,7 @@ namespace Dune
      * @param interface The interface that defines what indices are to be communicated.
      */
     template<class Data, class Interface>
-    typename enable_if<is_same<SizeOne,typename CommPolicy<Data>::IndexedTypeFlag>::value, void>::type
+    typename std::enable_if<std::is_same<SizeOne,typename CommPolicy<Data>::IndexedTypeFlag>::value, void>::type
     build(const Interface& interface);
 
     /**
@@ -975,9 +975,7 @@ namespace Dune
       for(iterator process = messageTypes.begin(); process != end; ++process) {
         MPI_Datatype *type = &(process->second.first);
         int finalized=0;
-#if MPI_2
         MPI_Finalized(&finalized);
-#endif
         if(*type!=MPI_DATATYPE_NULL && !finalized)
           MPI_Type_free(type);
         type = &(process->second.second);
@@ -1006,7 +1004,7 @@ namespace Dune
       IndexedTypeInformation& info=dataInfo.information_[process->first];
       // Shift the displacement
       MPI_Aint base;
-      MPI_Address(const_cast<void *>(CommPolicy<V>::getAddress(data, 0)), &base);
+      MPI_Get_address(const_cast<void *>(CommPolicy<V>::getAddress(data, 0)), &base);
 
       for(int i=0; i< info.elements; i++) {
         info.displ[i]-=base;
@@ -1014,9 +1012,8 @@ namespace Dune
 
       // Create data type
       MPI_Datatype* type = &( send ? messageTypes[process->first].first : messageTypes[process->first].second);
-      MPI_Type_hindexed(info.elements, info.length, info.displ,
-                        MPITraits<typename CommPolicy<V>::IndexedType>::getType(),
-                        type);
+      MPI_Type_create_hindexed(info.elements, info.length, info.displ,
+                               MPITraits<typename CommPolicy<V>::IndexedType>::getType(), type);
       MPI_Type_commit(type);
       // Deallocate memory
       info.free();
@@ -1097,8 +1094,8 @@ namespace Dune
           int messageLength;
           MPI_Error_string(status[i].MPI_ERROR, message, &messageLength);
           std::cerr<<" source="<<status[i].MPI_SOURCE<<" message: ";
-          for(int i=0; i< messageLength; i++)
-            std::cout<<message[i];
+          for(int j = 0; j < messageLength; j++)
+            std::cout << message[j];
         }
       std::cerr<<std::endl;
       success=0;
@@ -1115,8 +1112,8 @@ namespace Dune
           int messageLength;
           MPI_Error_string(status[i].MPI_ERROR, message, &messageLength);
           std::cerr<<" source="<<status[i].MPI_SOURCE<<" message: ";
-          for(int i=0; i< messageLength; i++)
-            std::cerr<<message[i];
+          for(int j = 0; j < messageLength; j++)
+            std::cerr << message[j];
         }
       std::cerr<<std::endl;
       success=0;
@@ -1140,7 +1137,7 @@ namespace Dune
   }
 
   template<class Data, class Interface>
-  typename enable_if<is_same<SizeOne, typename CommPolicy<Data>::IndexedTypeFlag>::value, void>::type
+  typename std::enable_if<std::is_same<SizeOne, typename CommPolicy<Data>::IndexedTypeFlag>::value, void>::type
   BufferedCommunicator::build(const Interface& interface)
   {
     interfaces_=interface.interfaces();

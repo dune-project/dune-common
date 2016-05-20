@@ -22,11 +22,11 @@
 
 namespace Dune {
 
-   /** @addtogroup Common
-
-          @{
-   */
-
+   /**
+    * @addtogroup StringUtilities
+    *
+    * @{
+    */
 
   /** \brief Check whether a character container has a given prefix
    *
@@ -41,7 +41,7 @@ namespace Dune {
 
   /** \brief Check whether a character container has a given suffix
    *
-   * The container must support the the begin() and size() methods and the
+   * The container must support the begin() and size() methods and the
    * const_iterator member type.
    *
    * \note This is slow for containers which don't have random access iterators.
@@ -61,7 +61,7 @@ namespace Dune {
    * \brief Format values according to printf format string
    *
    * \param s The format string to be used
-   * \param args The valued to be formated
+   * \param args The valued to be formatted
    *
    * This is a wrapper to std::snprintf that provides
    * overflow save printf functionality. For up to 1000

@@ -1,60 +1,290 @@
-# Module provides macros that allow for on demand test building.
-# In DUNE tests are not built by make all but by make test.
+# Module that provides tools for testing the Dune way.
 #
-# Provides the following macros:
+# Note that "the Dune way" of doing this has changed after
+# the 2.4 release. See the buildsystem documentation for details.
 #
-# test_dep()
+# .. cmake_function:: dune_add_test
 #
-# Finds all directories called test and creates a dependency for
-# testing that calls builds the tests for this directory.
+#    .. cmake_brief::
 #
+#       Adds a test to the Dune testing suite!
 #
-# add_directory_test_target(_target)
+#    .. cmake_param:: NAME
+#       :single:
 #
-# Creates a custom target for building
-# the tests in the current directory.
+#       The name of the test that should be added. If an executable
+#       is also added (by specifying SOURCES), the executable is also
+#       named accordingly. If omitted, the name will be deduced from
+#       the (single) sources parameter or from the given target. Note,
+#       that this requires you to take care, that you only use a target
+#       or source file for but one such test.
 #
-# The target name will be the path of the
-# current directory relative to ${CMAKE_BINARY_DIR}
-# with all slashes replaced by underlines.
-# E.g. for dune/istl/test the target will be dune_istl_test.
+#    .. cmake_param:: SOURCES
+#       :multi:
 #
-macro(test_dep)
-  dune_common_script_dir(SCRIPT_DIR)
-  get_filename_component(RELPATH "${CMAKE_SOURCE_DIR}"  REALPATH)
-  execute_process(COMMAND ${CMAKE_COMMAND} -D RELPATH=${RELPATH} -P ${SCRIPT_DIR}/FindFiles.cmake
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    RESULT_VARIABLE _res ERROR_VARIABLE _dirs)
+#       The source files that this test depends on. These are the
+#       sources that will be passed to :ref:`add_executable`.
+#
+#       You *must* specify either :code:`SOURCES` or :code:`TARGET`.
+#
+#    .. cmake_param:: TARGET
+#       :single:
+#
+#       An executable target which should be used for the test. Use
+#       this option over the :code:`SOURCES` parameter if you want to
+#       reuse already added targets.
+#
+#       You *must* specify either :code:`SOURCES` or :code:`TARGET`.
+#
+#    .. cmake_param:: COMPILE_DEFINITIONS
+#       :multi:
+#       :argname: def
+#
+#       A set of compile definitions to add to the target.
+#       Only definitions beyond the application of :ref:`add_dune_all_flags`
+#       have to be stated.
+#       This is only used, if :code:`dune_add_test` adds the executable itself.
+#
+#    .. cmake_param:: COMPILE_FLAGS
+#       :multi:
+#       :argname: flag
+#
+#       A set of non-definition compile flags to add to the target.
+#       Only flags beyond the application of :ref:`add_dune_all_flags`
+#       have to be stated.
+#       This is only used, if :code:`dune_add_test` adds the executable itself.
+#
+#    .. cmake_param:: LINK_LIBRARIES
+#       :multi:
+#       :argname: lib
+#
+#       A list of libraries to link the target to.
+#       Only libraries beyond the application of :ref:`add_dune_all_flags`
+#       have to be stated.
+#       This is only used, if :code:`dune_add_test` adds the executable itself.
+#
+#    .. cmake_param:: EXPECT_COMPILE_FAIL
+#       :option:
+#
+#       If given, the test is expected to not compile successfully!
+#
+#    .. cmake_param:: EXPECT_FAIL
+#       :option:
+#
+#       If given, this test is expected to compile, but fail to run.
+#
+#    .. cmake_param:: SKIP_ON_77
+#
+#       The test will be marked as skipped in ctest if it returned 77.
+#
+#    .. cmake_param:: CMD_ARGS
+#       :multi:
+#       :argname: arg
+#
+#       Command line arguments that should be passed to this test.
+#
+#    .. cmake_param:: MPI_RANKS
+#       :multi:
+#       :argname: ranks
+#
+#       The numbers of cores that this tests should be executed with.
+#       Note, that one test (in the ctest sense) is created for each number
+#       given here. Any number exceeding the user-specified processor maximum
+#       :ref:`DUNE_MAX_TEST_CORES` will be ignored. Tests with a
+#       processor number :code:`n` higher than one will have the suffix
+#       :code:`-mpi-n` appended to their name. You need to specify the
+#       TIMEOUT option when specifying the MPI_RANKS option.
+#
+#    .. cmake_param:: COMMAND
+#       :multi:
+#       :argname: cmd
+#
+#       You may specify the COMMAND option to give the exact command line to be
+#       executed when running the test. This defaults to the name of the executable
+#       added by dune_add_test for this test. Note, that if you specify both CMD_ARGS
+#       and COMMAND, the given CMD_ARGS will be put behind your COMMAND. If you use
+#       this in combination with the MPI_RANKS parameter, the call to mpi will still be
+#       wrapped around the given commands.
+#
+#    .. cmake_param:: COMPILE_ONLY
+#       :option:
+#
+#       Set if the given test should only be compiled during :code:`make build_tests`,
+#       but not run during :code:`make test`. This is useful if you compile the same
+#       executable twice, but with different compile flags, where you want to assue that
+#       it compiles with both sets of flags, but you already know they will produce the
+#       same result.
+#
+#    .. cmake_param:: TIMEOUT
+#       :single:
+#
+#       If set, the test will time out after the given number of seconds. This supersedes
+#       any timeout setting in ctest (see `cmake --help-property TIMEOUT`). If you
+#       specify the MPI_RANKS option, you need to specify a TIMEOUT.
+#
+#    This function defines the Dune way of adding a test to the testing suite.
+#    You may either add the executable yourself through :ref:`add_executable`
+#    and pass it to the :code:`TARGET` option, or you may rely on :ref:`dune_add_test`
+#    to do so.
+#
+# .. cmake_variable:: DUNE_REENABLE_ADD_TEST
+#
+#    You may set this variable to True either through your opts file or in your module
+#    (before the call to :code:`include(DuneMacros)`) to suppress the error that is thrown if
+#    :code:`add_test` is used. You should only do that if you have proper reason to do so.
+#
+# .. cmake_variable:: DUNE_MAX_TEST_CORES
+#
+#    You may set this variable to give an upperbound to the number of processors, that
+#    a single test may use. Defaults to 2, when MPI is found and to 1 otherwise.
+#
+# .. cmake_variable:: DUNE_BUILD_TESTS_ON_MAKE_ALL
+#
+#    You may set this variable through your opts file or on a per module level (in the toplevel
+#    :code:`CMakeLists.txt` before :code:`include(DuneMacros)`) to have the Dune build system
+#    build all tests during `make all`. Note, that this may take quite some time for some modules.
+#    If not in use, you have to build tests through the target :code:`build_tests`.
+#
 
-  foreach(_dir ${_dirs})
-    string(REGEX REPLACE "([^ \t\n]+)[ \n\t]*$" "\\1" _dir ${_dir})
-    if(IS_DIRECTORY ${_dir})
-      set_property(DIRECTORY ${_dir} PROPERTY TEST_INCLUDE_FILE ${CMAKE_BINARY_DIR}/${_dir}/BuildTests.cmake)
-    else(IS_DIRECTORY ${_dir})
-      message(WARNING "Could not set property TEST_INCLUDE_FILE on missing directory ${_dir}")
-    endif(IS_DIRECTORY ${_dir})
-  endforeach(_dir ${_dirs})
-endmacro(test_dep)
+# enable the testing suite on the CMake side.
+enable_testing()
+include(CTest)
 
-macro(get_directory_test_target _target _dir)
-  string(REPLACE "${CMAKE_BINARY_DIR}" "" _relative_dir "${_dir}")
-  string(REPLACE "/" "_" ${_target} "${_relative_dir}")
-endmacro(get_directory_test_target _target _dir)
+# Introduce a target that triggers the building of all tests
+add_custom_target(build_tests)
 
-#
-# - Create a custom target for building
-# the tests in the current directory.
-#
-# The target name will be the path of the
-# current directory relative to ${CMAKE_BINARY_DIR}
-# with all slashes replaced by underlines.
-# E.g. for dune/istl/test the target will be dune_istl_test.
-#
-macro(add_directory_test_target _target)
-  if(DUNE_TEST_MAGIC)
-    get_directory_test_target(${_target} "${CMAKE_CURRENT_BINARY_DIR}")
-    add_custom_target(${${_target}})
-    dune_common_script_dir(SCRIPT_DIR)
-    configure_file(${SCRIPT_DIR}/BuildTests.cmake.in BuildTests.cmake @ONLY)
+# Set the default on the variable DUNE_MAX_TEST_CORES
+if(NOT DUNE_MAX_TEST_CORES)
+  set(DUNE_MAX_TEST_CORES 2)
+endif()
+
+function(dune_add_test)
+  include(CMakeParseArguments)
+  set(OPTIONS EXPECT_COMPILE_FAIL EXPECT_FAIL SKIP_ON_77 COMPILE_ONLY)
+  set(SINGLEARGS NAME TARGET TIMEOUT)
+  set(MULTIARGS SOURCES COMPILE_DEFINITIONS COMPILE_FLAGS LINK_LIBRARIES CMD_ARGS MPI_RANKS COMMAND)
+  cmake_parse_arguments(ADDTEST "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
+
+  # Check whether the parser produced any errors
+  if(ADDTEST_UNPARSED_ARGUMENTS)
+    message(WARNING "Unrecognized arguments ('${ADDTEST_UNPARSED_ARGUMENTS}') for dune_add_test!")
   endif()
-endmacro(add_directory_test_target)
+
+  # Check input for validity and apply defaults
+  if(NOT ADDTEST_SOURCES AND NOT ADDTEST_TARGET)
+    message(FATAL_ERROR "You need to specify either the SOURCES or the TARGET option for dune_add_test!")
+  endif()
+  if(ADDTEST_SOURCES AND ADDTEST_TARGET)
+    message(FATAL_ERROR "You cannot specify both SOURCES and TARGET for dune_add_test")
+  endif()
+  if(NOT ADDTEST_NAME)
+    # try deducing the test name from the executable name
+    if(ADDTEST_TARGET)
+      set(ADDTEST_NAME ${ADDTEST_TARGET})
+    endif()
+    # try deducing the test name form the source name
+    if(ADDTEST_SOURCES)
+      # deducing a name is only possible with a single source argument
+      list(LENGTH ADDTEST_SOURCES len)
+      if(NOT len STREQUAL "1")
+        message(FATAL_ERROR "Cannot deduce test name from multiple sources!")
+      endif()
+      # strip file extension
+      get_filename_component(ADDTEST_NAME ${ADDTEST_SOURCES} NAME_WE)
+    endif()
+  endif()
+  if(NOT ADDTEST_COMMAND)
+    set(ADDTEST_COMMAND ${ADDTEST_NAME})
+  endif()
+  if(ADDTEST_MPI_RANKS AND (NOT ADDTEST_TIMEOUT))
+    message(FATAL_ERROR "dune_add_test: You need to specify the TIMEOUT parameter if using the MPI_RANKS parameter.")
+  endif()
+  if(NOT ADDTEST_MPI_RANKS)
+    set(ADDTEST_MPI_RANKS 1)
+  endif()
+  if(NOT ADDTEST_TIMEOUT)
+    set(ADDTEST_TIMEOUT 300)
+  endif()
+  foreach(num ${ADDTEST_MPI_RANKS})
+    if(NOT "${num}" MATCHES "[1-9][0-9]*")
+      message(FATAL_ERROR "${num} was given to the MPI_RANKS arugment of dune_add_test, but it does not seem like a correct processor number")
+    endif()
+  endforeach()
+
+  # Discard all parallel tests if MPI was not found
+  if(NOT MPI_FOUND)
+    set(DUNE_MAX_TEST_CORES 1)
+  endif()
+
+  # Add the executable if it is not already present
+  if(ADDTEST_SOURCES)
+    add_executable(${ADDTEST_NAME} ${ADDTEST_SOURCES})
+    # add all flags to the target!
+    add_dune_all_flags(${ADDTEST_NAME})
+    # This is just a placeholder
+    target_compile_definitions(${ADDTEST_NAME} PUBLIC ${ADDTEST_COMPILE_DEFINITIONS})
+    target_compile_options(${ADDTEST_NAME} PUBLIC ${ADDTEST_COMPILE_FLAGS})
+    target_link_libraries(${ADDTEST_NAME} ${ADDTEST_LINK_LIBRARIES})
+    set(ADDTEST_TARGET ${ADDTEST_NAME})
+  endif()
+
+  # Make sure to exclude the target from all, even when it is user-provided
+  if(DUNE_BUILD_TESTS_ON_MAKE_ALL AND (NOT ADDTEST_EXPECT_COMPILE_FAIL))
+    set_property(TARGET ${ADDTEST_TARGET} PROPERTY EXCLUDE_FROM_ALL 0)
+  else()
+    set_property(TARGET ${ADDTEST_TARGET} PROPERTY EXCLUDE_FROM_ALL 1)
+  endif()
+
+  # Have the given target depend on build_tests in order to trigger the build correctly
+  if(NOT ADDTEST_EXPECT_COMPILE_FAIL)
+    add_dependencies(build_tests ${ADDTEST_TARGET})
+  endif()
+
+  # Process the EXPECT_COMPILE_FAIL option
+  if(ADDTEST_EXPECT_COMPILE_FAIL)
+    set(ADDTEST_COMMAND ${CMAKE_COMMAND} --build . --target ${ADDTEST_TARGET} --config $<CONFIGURATION>)
+  endif()
+
+  # Add one test for each specified processor number
+  foreach(procnum ${ADDTEST_MPI_RANKS})
+    if((NOT "${procnum}" GREATER "${DUNE_MAX_TEST_CORES}") AND (NOT ADDTEST_COMPILE_ONLY))
+      if(NOT ${procnum} STREQUAL "1")
+        set(ACTUAL_TESTCOMMAND ${MPIEXEC} ${MPIEXEC_PREFLAGS} ${MPIEXEC_NUMPROC_FLAG} ${procnum} ${ADDTEST_COMMAND} ${MPIEXEC_POSTFLAGS})
+        set(ACTUAL_NAME "${ADDTEST_NAME}-mpi-${procnum}")
+      else()
+        set(ACTUAL_TESTCOMMAND ${ADDTEST_COMMAND})
+        set(ACTUAL_NAME ${ADDTEST_NAME})
+      endif()
+
+      # Now add the actual test
+      _add_test(NAME ${ACTUAL_NAME}
+                COMMAND ${ACTUAL_TESTCOMMAND} ${ADDTEST_CMD_ARGS}
+               )
+
+      # Define the number of processors (ctest will coordinate this with the -j option)
+      set_tests_properties(${ACTUAL_NAME} PROPERTIES PROCESSORS ${procnum})
+      # Apply the timeout (which was defaulted to 5 minutes if not specified)
+      set_tests_properties(${ACTUAL_NAME} PROPERTIES TIMEOUT ${ADDTEST_TIMEOUT})
+      # Process the EXPECT_FAIL option
+      if(ADDTEST_EXPECT_COMPILE_FAIL OR ADDTEST_EXPECT_FAIL)
+        set_tests_properties(${ACTUAL_NAME} PROPERTIES WILL_FAIL true)
+      endif()
+      # Process the SKIP_ON_77 option
+      if(ADDTEST_SKIP_ON_77)
+        set_tests_properties(${ACTUAL_NAME} PROPERTIES SKIP_RETURN_CODE 77)
+      endif()
+    endif()
+  endforeach()
+endfunction()
+
+macro(add_directory_test_target)
+  message(FATAL_ERROR "The function add_directory_test_target has been removed alongside all testing magic in dune-common. Check dune_add_test for the new way!")
+endmacro()
+
+macro(add_test)
+  if(NOT DUNE_REENABLE_ADD_TEST)
+    message(SEND_ERROR "Please use dune_add_test instead of add_test! If you need add_test in a downstream project, set the variable DUNE_REENABLE_ADD_TEST to True in that project to suppress this error.")
+  else()
+    _add_test(${ARGN})
+  endif()
+endmacro()

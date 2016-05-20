@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e
 
@@ -143,15 +143,15 @@ build_module() {
     # build the modules
     local path="$(eval "echo \$PATH_${module}")"
     eval echo "--- calling $command for \$NAME_${module} ---"
-	trap onbuildfailure EXIT
+    trap onbuildfailure EXIT
     if ! (
       set -e
       cd "$path"
       export module
-	  export ABS_BUILDDIR=$(abs_builddir $module $BUILDDIR)
+      export ABS_BUILDDIR=$(abs_builddir $module $BUILDDIR)
       eval_control $runcommand "$path/$CONTROL"
     ); then eval echo "--- Failed to build \$NAME_${module} ---"; exit 1; fi
-	trap onfailure EXIT
+    trap onfailure EXIT
 
     eval echo "--- \$NAME_${module} done ---"
   done
@@ -223,6 +223,13 @@ load_opts() {
   fi
 }
 
+module_la_libname()
+{
+    local m=$1
+    local name="$(eval echo \$NAME_$m)"
+    echo "lib$(echo $name | sed 's/-//g').la"
+}
+
 abs_builddir()
 {
   local m=$1
@@ -230,12 +237,12 @@ abs_builddir()
   local name="$(eval echo \$NAME_$m)"
   local path="$(eval echo \$PATH_$m)"
   case $BUILDDIR in
-	  /*)
-		  echo $builddir/$name
-		  ;;
-	  *)
-		  echo $path/$builddir
-		  ;;
+      /*)
+          echo $builddir/$name
+          ;;
+      *)
+          echo $path/$builddir
+          ;;
   esac
 }
 
@@ -324,6 +331,9 @@ esac'
 
 # list of all dunecontrol commands
 COMMANDS="printdeps vcsetup update autogen configure make all exec bexec status svn git"
+
+# list of dunecontrol commands for which the version check is skipped by default
+COMMANDSTOSKIPVERSIONCHECK="update status svn git exec bexec"
 
 # help string for the commands
 printdeps_HELP="print recursive dependencies of a module"
@@ -655,7 +665,7 @@ run_default_configure () {
             ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $dir"
         fi
       done
-	  local m_ABS_BUILDDIR=$(abs_builddir $m $BUILDDIR)
+      local m_ABS_BUILDDIR=$(abs_builddir $m $BUILDDIR)
       if test -d "$m_ABS_BUILDDIR"; then
         PARAMS="$PARAMS \"--with-$name=$m_ABS_BUILDDIR\""
       else
@@ -665,16 +675,16 @@ run_default_configure () {
       fi
       if test "x$LOCAL_USE_CMAKE" = "xyes"; then
           if test -d "$m_ABS_BUILDDIR"; then
-	      CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$m_ABS_BUILDDIR\""
+            CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$m_ABS_BUILDDIR\""
           else
-	      TMP_PARAMS="\"-D""$name""_DIR=$path\""
-	      for i in $MULTIARCH_LIBDIR lib lib64 lib32; do
-		  if test -d "$path/$i/cmake/$name"; then
-                      TMP_PARAMS="\"-D""$name""_DIR=$path/$i/cmake/$name\""
-		      break;
-		  fi
-	      done
-	      CMAKE_PARAMS="$CMAKE_PARAMS $TMP_PARAMS"
+            TMP_PARAMS="\"-D""$name""_DIR=$path\""
+            for i in $MULTIARCH_LIBDIR lib lib64 lib32; do
+              if test -d "$path/$i/cmake/$name"; then
+                TMP_PARAMS="\"-D""$name""_DIR=$path/$i/cmake/$name\""
+                break;
+              fi
+            done
+            CMAKE_PARAMS="$CMAKE_PARAMS $TMP_PARAMS"
           fi
       fi
     done
@@ -716,8 +726,14 @@ run_default_configure () {
       SRCDIR="$PWD"
       cd "$ABS_BUILDDIR"
       # check for libtool libs, which might break modules depending on this module
-      test -n "`find . -name \*.la`" && \
-          echo "Warning: your build directory $ABS_BUILDDIR contains libtool built libraries, please cleanup"
+      libname=$(module_la_libname $module)
+      found_libs=$(find dune -name \*.la) # find intermediate libtool libs
+      if test -e lib; then
+        found_libs="$found_libs"$(find lib -name $libname) #find primary lib
+      fi
+      test -n "$found_libs" && \
+          echo "ERROR: your build directory $ABS_BUILDDIR contains libtool built libraries $found_libs, please cleanup" && \
+          exit 1
       echo "$PREPARAMS $CMAKE -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\""
       eval $PREPARAMS $CMAKE "-DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\"" || exit 1
     else
@@ -755,9 +771,9 @@ run_default_make () {
     echo make "$PARAMS"
     eval $MAKE "$PARAMS"
   else
-	# prepend '--' to separate cmake and make parameters
-	if ! $(echo "$PARAMS" | grep -q -- '--'); then
-	  PARAMS="-- $PARAMS"
+    # prepend '--' to separate cmake and make parameters
+    if ! $(echo "$PARAMS" | grep -q -- '--'); then
+      PARAMS="-- $PARAMS"
     fi
     echo $CMAKE --build . "$PARAMS"
     eval $CMAKE --build . "$PARAMS"
@@ -1222,7 +1238,7 @@ EOF
 EOF
       fi
     done
-	### ANALYSE MODULE
+    ### ANALYSE MODULE
     sort_modules $mainmod
     ### DEPENDENCIES
     for mod in $SORTEDMODULES_DEPS; do
@@ -1287,7 +1303,10 @@ EOF
       fi
     fi
     set -e
-    if test "$1" = "update"; then export SKIPVERSIONCHECK=yes; fi
+    # skip version check if command is in according list
+    if grep -q "$1" <<<"$COMMANDSTOSKIPVERSIONCHECK" ; then
+      export SKIPVERSIONCHECK=yes;
+    fi
     check_commands "$@"
     create_module_list
     NAMES=""

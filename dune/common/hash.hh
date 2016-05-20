@@ -284,7 +284,6 @@ namespace Dune {
 
   //! Calculates the hash value of arg and combines it in-place with seed.
   /**
-   * \note This function is only available if the macro `HAVE_DUNE_HASH` is defined.
    *
    * \param seed  The hash value that will be combined with the hash of arg.
    * \param arg   The object for which to calculate a hash value and combine it with seed.
@@ -297,7 +296,6 @@ namespace Dune {
 
   //! Hashes all elements in the range [first,last) and returns the combined hash.
   /**
-   * \note This function is only available if the macro `HAVE_DUNE_HASH` is defined.
    *
    * \param first  Iterator pointing to the first object to hash.
    * \param last   Iterator pointing one past the last object to hash.
@@ -318,7 +316,6 @@ namespace Dune {
 
   //! Hashes all elements in the range [first,last) and combines the hashes in-place with seed.
   /**
-   * \note This function is only available if the macro `HAVE_DUNE_HASH` is defined.
    *
    * \param seed   Start value that will be combined with the hash values of all objects in
    *               the range using hash_combine() in sequential fashion.

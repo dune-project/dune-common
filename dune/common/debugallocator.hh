@@ -106,7 +106,7 @@ namespace Dune
             it->capacity << " bytes at " << it->ptr << std::endl;
             error = true;
           }
-          free(it->page_ptr);
+          munmap(it->page_ptr, it->pages * page_size);
         }
         if (error)
           allocation_error("lost allocations");
@@ -122,8 +122,15 @@ namespace Dune
         ai.pages = (ai.capacity) / page_size + 2;
         ai.not_free = true;
         size_type overlap = ai.capacity % page_size;
-        int result = posix_memalign(&(ai.page_ptr), page_size, ai.pages * page_size);
-        if (0 != result)
+        ai.page_ptr = mmap(NULL, ai.pages * page_size,
+                           PROT_READ | PROT_WRITE,
+#ifdef __APPLE__
+                           MAP_ANON | MAP_PRIVATE,
+#else
+                           MAP_ANONYMOUS | MAP_PRIVATE,
+#endif
+                           -1, 0);
+        if (MAP_FAILED == ai.page_ptr)
         {
           throw std::bad_alloc();
         }
@@ -171,7 +178,7 @@ namespace Dune
             memprotect(it->page_ptr,
                        (it->pages) * page_size,
                        PROT_READ | PROT_WRITE);
-            std::free(it->page_ptr);
+            munmap(it->page_ptr, it->pages * page_size);
             // remove chunk info
             allocation_list.erase(it);
 #endif
@@ -295,7 +302,7 @@ namespace Dune
 }
 
 #ifdef DEBUG_NEW_DELETE
-void * operator new(size_t size) throw(std::bad_alloc)
+void * operator new(size_t size)
 {
   // try to allocate size bytes
   void *p = Dune::DebugMemory::alloc_man.allocate<char>(size);

@@ -28,12 +28,12 @@ dune-common depends on the following software packages
   icc (C/C++) >= 13.0
   Clang >= 3.2
 
-The following software is recommend but optional:
+The following software is recommended but optional:
 
 - MPI (either OpenMPI, lam, or mpich suffice)
 
 For a full explanation of the DUNE installation process please read
-the installation notes [0]. The following introduction is meant for
+the [installation notes][installation]. The following introduction is meant for
 the impatient.
 
 License
@@ -55,7 +55,7 @@ follows:
    Public License.
 
 This licence clones the one of the libstc++ library. For further
-implications of this library please see their licence page [3]
+implications of this library please see their [licence page][licence]
 
 See the file COPYING for full copying permissions.
 
@@ -63,7 +63,7 @@ Installation
 ------------
 
 Short installation instructions can be found in file INSTALL. For the
-full instructions please see [0].
+full instructions please see [here][installation].
 
 Links
 -----
@@ -72,3 +72,6 @@ Links
 1. http://www.dune-project.org/download.html
 2. http://dune-project.org/doc/buildsystem/buildsystem.pdf
 3. http://gcc.gnu.org/onlinedocs/libstdc++/faq.html#faq.license
+
+[installation]: http://www.dune-project.org/doc/installation-notes.html
+[licence]: http://gcc.gnu.org/onlinedocs/libstdc++/faq.html#faq.license

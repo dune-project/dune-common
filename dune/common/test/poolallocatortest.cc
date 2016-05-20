@@ -5,7 +5,6 @@
 #endif
 
 #include <dune/common/poolallocator.hh>
-#include <dune/common/alignment.hh>
 #include <dune/common/fmatrix.hh>
 
 using namespace Dune;
@@ -108,7 +107,7 @@ int testPool()
   int ret=0;
 
   std::cout<<"Checking "<<typeid(T).name()<<" sizeof="<<sizeof(T)<<" with size "<< size<<
-  " alignment="<<AlignmentOf<T>::value<<std::endl;
+  " alignment="<< alignof(T) <<std::endl;
 
   ret += testPoolMain<0,T>::test();
   ret += testPoolMain<size,T>::test();
@@ -157,7 +156,7 @@ int main(int, char **)
 
   ret+=testPoolAllocator();
 
-  std::cout<<AlignmentOf<UnAligned>::value<<" "<<sizeof(UnAligned)<<std::endl;
+  std::cout<< alignof(UnAligned) <<" "<<sizeof(UnAligned)<<std::endl;
 
   ret += testPool<UnAligned>();
 

@@ -1,10 +1,10 @@
 #ifndef DUNE_COMMON_IDENTITYMATRIX_HH
 #define DUNE_COMMON_IDENTITYMATRIX_HH
 
+#include <dune/common/boundschecking.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/ftraits.hh>
 #include <dune/common/math.hh>
-#include <dune/common/std/constexpr.hh>
 
 /**
  * \file
@@ -40,9 +40,9 @@ namespace Dune
     typedef std::size_t size_type;
 
     /** \brief return number of rows */
-    DUNE_CONSTEXPR size_type rows () const { return N; }
+    constexpr size_type rows () const { return N; }
     /** \brief return number of columns */
-    DUNE_CONSTEXPR size_type cols () const { return N; }
+    constexpr size_type cols () const { return N; }
 
     /** \copydoc Dune::DenseMatrix::mv */
     template< class X, class Y >
@@ -102,21 +102,24 @@ namespace Dune
 
     /** \copydoc Dune::DenseMatrix::usmv */
     template< class X, class Y >
-    void usmv ( const field_type &alpha, const X &x, Y &y ) const
+    void usmv (const typename FieldTraits<Y>::field_type & alpha,
+      const X& x, Y& y) const
     {
       y.axpy( alpha, x );
     }
 
     /** \copydoc Dune::DenseMatrix::usmtv */
     template< class X, class Y >
-    void usmtv ( const field_type &alpha, const X &x, Y &y ) const
+    void usmtv (const typename FieldTraits<Y>::field_type & alpha,
+      const X& x, Y& y) const
     {
       y.axpy( alpha, x );
     }
 
     /** \copydoc Dune::DenseMatrix::usmhv */
     template< class X, class Y >
-    void usmhv ( const field_type &alpha, const X &x, Y &y ) const
+    void usmhv (const typename FieldTraits<Y>::field_type & alpha,
+      const X& x, Y& y) const
     {
       y.axpy( alpha, x );
     }
@@ -144,17 +147,18 @@ namespace Dune
     {
       return FieldTraits< field_type >::real_type( 1 );
     }
-
-    /** \brief cast to FieldMatrix */
-    operator FieldMatrix< field_type, N, N > () const
-    {
-      FieldMatrix< field_type, N, N > fieldMatrix( 0 );
-      for( int i = 0; i < N; ++i )
-        fieldMatrix[ i ][ i ] = field_type( 1 );
-      return fieldMatrix;
-    }
   };
 
+  template <class DenseMatrix, class field, int N>
+  struct DenseMatrixAssigner<DenseMatrix, IdentityMatrix<field, N>> {
+    static void apply(DenseMatrix &denseMatrix, IdentityMatrix<field, N> const &rhs) {
+      DUNE_ASSERT_BOUNDS(denseMatrix.M() == N);
+      DUNE_ASSERT_BOUNDS(denseMatrix.N() == N);
+      denseMatrix = field(0);
+      for (int i = 0; i < N; ++i)
+        denseMatrix[i][i] = field(1);
+    }
+  };
 } // namespace Dune
 
 #endif // #ifndef DUNE_COMMON_IDENTITYMATRIX_HH

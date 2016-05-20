@@ -1,18 +1,16 @@
 # also build these sub directories
-SUBDIRS = doxygen buildsystem comm
+SUBDIRS = doxygen comm
 
 # setting like in dune-web
 CURDIR=doc
 # position of the web base directory,
 # relative to $(CURDIR)
 BASEDIR=..
-EXTRAINSTALL=example.opts
 
 # install the html pages
 DOCFILES = $(PAGES)
-DOCFILES_EXTRA = example.opts
 
-EXTRA_DIST = CMakeLists.txt $(PAGES) example.opts
+EXTRA_DIST = CMakeLists.txt $(PAGES)
 
 dist_man_MANS = dunecontrol.1
 

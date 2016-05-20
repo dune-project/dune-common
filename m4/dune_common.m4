@@ -99,7 +99,7 @@ AC_DEFUN([DUNE_COMMON_CHECKS],
 
 AC_DEFUN([DUNE_COMMON_CHECK_MODULE],
 [
-    DUNE_CHECK_MODULES([dune-common], [common/stdstreams.hh],
+    DUNE_CHECK_MODULES([dune-common], [common/version.hh],
 	[#ifndef DUNE_MINIMAL_DEBUG_LEVEL
    #define DUNE_MINIMAL_DEBUG_LEVEL 1
    #endif

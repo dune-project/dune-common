@@ -9,11 +9,11 @@
 #include <algorithm>
 #include <initializer_list>
 
+#include <dune/common/boundschecking.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/densematrix.hh>
 #include <dune/common/precision.hh>
-#include <dune/common/std/constexpr.hh>
 
 namespace Dune
 {
@@ -42,7 +42,7 @@ namespace Dune
     typedef row_type &row_reference;
     typedef const row_type &const_row_reference;
 
-    typedef Dune::array<row_type,ROWS> container_type;
+    typedef std::array<row_type,ROWS> container_type;
     typedef K value_type;
     typedef typename container_type::size_type size_type;
   };
@@ -65,7 +65,7 @@ namespace Dune
   template<class K, int ROWS, int COLS>
   class FieldMatrix : public DenseMatrix< FieldMatrix<K,ROWS,COLS> >
   {
-    Dune::array< FieldVector<K,COLS>, ROWS > _data;
+    std::array< FieldVector<K,COLS>, ROWS > _data;
     typedef DenseMatrix< FieldMatrix<K,ROWS,COLS> > Base;
   public:
 
@@ -134,9 +134,14 @@ namespace Dune
       return C;
     }
 
+    using Base::rightmultiply;
+
     //! Multiplies M from the right to this matrix
-    FieldMatrix& rightmultiply (const FieldMatrix<K,cols,cols>& M)
+    template <int r, int c>
+    FieldMatrix& rightmultiply (const FieldMatrix<K,r,c>& M)
     {
+      static_assert(r == c, "Cannot rightmultiply with non-square matrix");
+      static_assert(r == cols, "Size mismatch");
       FieldMatrix<K,rows,cols> C(*this);
 
       for (size_type i=0; i<rows; i++)
@@ -165,18 +170,18 @@ namespace Dune
     }
 
     // make this thing a matrix
-    DUNE_CONSTEXPR size_type mat_rows() const { return ROWS; }
-    DUNE_CONSTEXPR size_type mat_cols() const { return COLS; }
+    constexpr size_type mat_rows() const { return ROWS; }
+    constexpr size_type mat_cols() const { return COLS; }
 
     row_reference mat_access ( size_type i )
     {
-      assert(i < ROWS);
+      DUNE_ASSERT_BOUNDS(i < ROWS);
       return _data[i];
     }
 
     const_row_reference mat_access ( size_type i ) const
     {
-      assert(i < ROWS);
+      DUNE_ASSERT_BOUNDS(i < ROWS);
       return _data[i];
     }
   };
@@ -268,20 +273,20 @@ namespace Dune
     }
 
     // make this thing a matrix
-    DUNE_CONSTEXPR size_type mat_rows() const { return 1; }
-    DUNE_CONSTEXPR size_type mat_cols() const { return 1; }
+    constexpr size_type mat_rows() const { return 1; }
+    constexpr size_type mat_cols() const { return 1; }
 
     row_reference mat_access ( size_type i )
     {
       DUNE_UNUSED_PARAMETER(i);
-      assert(i == 0);
+      DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }
 
     const_row_reference mat_access ( size_type i ) const
     {
       DUNE_UNUSED_PARAMETER(i);
-      assert(i == 0);
+      DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }
 

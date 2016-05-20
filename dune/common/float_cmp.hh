@@ -8,8 +8,7 @@
  */
 
 /**
-   @addtogroup FloatCmp FloatCmp
-   @ingroup Common
+   @addtogroup FloatCmp
 
    @section How_to_compare How to compare floats
 
@@ -224,9 +223,9 @@ namespace Dune {
      * @param first   left operand of less-or-equals operation
      * @param second  right operand of less-or-equals operation
      * @param epsilon The epsilon to use in the comparison
-     * @return        eq(first, second) || first > second
+     * @return        eq(first, second) || first < second
      *
-     * this is like first > second, but the region that compares equal with an
+     * this is like first < second, but the region that compares equal with an
      * epsilon is also included
      */
     template <class T, CmpStyle style /*= defaultCmpStyle*/>

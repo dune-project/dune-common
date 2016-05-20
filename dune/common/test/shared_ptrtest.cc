@@ -96,11 +96,11 @@ int main(){
     // test custom deleter
     bool deleted = false;
     {
-      shared_ptr<int> foo(new int(1), Deleter<int>(deleted));
+      shared_ptr<int> bar(new int(1), Deleter<int>(deleted));
 
       //test if deleter is called
       deleted = false;
-      foo.reset(new int(2));        // this should call the deleter in the constructor
+      bar.reset(new int(2));        // this should call the deleter in the constructor
       if (not (deleted))
       {
         std::cout << "Custom deleter not called!" << std::endl;
@@ -109,7 +109,7 @@ int main(){
 
       //test if old deleter is not called
       deleted = false;
-      foo.reset();        // this should call no deleter
+      bar.reset();        // this should call no deleter
       if (deleted)
       {
         std::cout << "Old deleter was called!" << std::endl;
@@ -118,7 +118,7 @@ int main(){
 
       //test if old deleter is not called
       deleted = false;
-      foo.reset(new int(3), Deleter<int>(deleted));        // this should call no deleter
+      bar.reset(new int(3), Deleter<int>(deleted));        // this should call no deleter
       if (deleted)
       {
         std::cout << "Old deleter was called!" << std::endl;
@@ -132,9 +132,9 @@ int main(){
       ret=1;
     }
     {
-      shared_ptr<int> foo(new int(1), Deleter<int>(deleted));
+      shared_ptr<int> bar(new int(1), Deleter<int>(deleted));
 
-      foo.reset(new int(4));        // this should call the deleter...
+      bar.reset(new int(4));        // this should call the deleter...
 
       deleted = false;
       // ... but going out of scope should call no deleter
@@ -219,10 +219,10 @@ int main(){
     // test assignment from null ptr
     // (should trigger FS 936, needs valgrind to check)
     {
-      shared_ptr<int> foo = shared_ptr<int>(new int(42));
-      shared_ptr<int> bar;        //null ptr
+      shared_ptr<int> foobar = shared_ptr<int>(new int(42));
+      shared_ptr<int> foobaz;        //null ptr
 
-      foo = bar;        // should release memory held by foo
+      foobar = foobaz;        // should release memory held by foo
     }
 
     // test shared_ptr for stack allocation
@@ -233,8 +233,8 @@ int main(){
 
     // test shared_ptr for stack allocation with down cast
     {
-      B b;
-      shared_ptr<A> pa = stackobject_to_shared_ptr<A>(b);
+      B b2;
+      shared_ptr<A> pa = stackobject_to_shared_ptr<A>(b2);
 #ifdef SHARED_PTR_COMPILE_FAIL
       C c;
       pa = stackobject_to_shared_ptr<A>(c);       // A is an inaccessible base of C

@@ -20,15 +20,15 @@
 
 namespace Dune
 {
-  /** @addtogroup Common
-   *
-   * @{
-   */
-
 #if HAVE_MPI
   template<class K>
   struct MPITraits;
 #endif
+
+  /** @addtogroup Numbers
+   *
+   * @{
+   */
 
   namespace {
 

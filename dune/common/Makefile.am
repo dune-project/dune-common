@@ -42,6 +42,7 @@ commoninclude_HEADERS = 			\
 	binaryfunctions.hh			\
 	bitsetvector.hh				\
 	classname.hh				\
+	concept.hh \
 	debugallocator.hh			\
 	debugstream.hh				\
 	deprecated.hh				\
@@ -55,7 +56,6 @@ commoninclude_HEADERS = 			\
         dynmatrixev.hh                          \
 	enumset.hh				\
 	exceptions.hh				\
-	fassign.hh				\
 	float_cmp.cc				\
 	float_cmp.hh				\
 	fmatrix.hh				\
@@ -70,6 +70,7 @@ commoninclude_HEADERS = 			\
 	hash.hh					\
 	identitymatrix.hh                       \
 	indent.hh				\
+	indices.hh				\
 	interfaces.hh				\
 	ios_state.hh				\
 	iteratoradapters.hh			\
@@ -94,13 +95,14 @@ commoninclude_HEADERS = 			\
 	shared_ptr.hh				\
 	singleton.hh				\
 	sllist.hh				\
-	static_assert.hh			\
 	stdstreams.hh				\
 	stdthread.hh				\
 	stringutility.hh			\
 	timer.hh				\
 	tuples.hh				\
 	tupleutility.hh                         \
+	typelist.hh \
+	typeutilities.hh \
 	typetraits.hh				\
 	unused.hh				\
 	version.hh				\

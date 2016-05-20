@@ -7,6 +7,7 @@
  * \brief A hierarchical structure of string parameters
  */
 
+#include <array>
 #include <cstddef>
 #include <iostream>
 #include <istream>
@@ -21,7 +22,6 @@
 #include <algorithm>
 #include <bitset>
 
-#include <dune/common/array.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/classname.hh>
@@ -308,10 +308,10 @@ namespace Dune {
   };
 
   template<typename T, std::size_t n>
-  struct ParameterTree::Parser<array<T, n> > {
-    static array<T, n>
+  struct ParameterTree::Parser<std::array<T, n> > {
+    static std::array<T, n>
     parse(const std::string& str) {
-      array<T, n> val;
+      std::array<T, n> val;
       parseRange(str, val.begin(), val.end());
       return val;
     }

@@ -5,23 +5,25 @@
 #   initialize_compiler_script() : needs to be called before further flags are added to CMAKE_CXX_FLAGS
 #   finalize_compiler_script()   : needs to be called at the end of the cmake macros, e.g. in finalize_dune_project
 #
-#   By default this feature is disabled. Use -DALLOW_CXXFLAGS_OVERWRITE=ON to activate.
-#   Then the following is possible:
+# Those two macro calls are hooked into dune_project/finalize_dune_project.
 #
-#   make CXXFLAGS="your flags" GRIDTYPE="grid type"
+# .. cmake_variable:: ALLOW_CXXFLAGS_OVERWRITE
 #
-#   GRIDTYPE can be anything defined in config.h via the dune_define_gridtype macro from dune-grid.
-#   Furthermore any CPP variable of the form -DVAR=VALUE can be overloaded on the command line.
+#    Setting this option will allow you to overload preprocessor definitions from
+#    the command line, as it was possible naturally with the autotools build system.
+#    This feature only works with a :code:`Unix Makefiles` based generator. You can
+#    use it as:
 #
-#   Note: If you don't know what this is or what it's good for, don't use it.
+#    :code:`make CXXFLAGS="your flags" GRIDTYPE="grid type"`
 #
-option(ALLOW_CXXFLAGS_OVERWRITE OFF)
+#    :code:`GRIDTYPE` can be anything defined in :code:`config.h` via the :ref:`dune_define_gridtype` macro from dune-grid.
+#    Furthermore any CPP variable of the form :code:`-DVAR=VALUE` can be overloaded on the command line.
+#
+#    .. note::
+#       If you don't know what this is or what it's good for, don't use it.
+#
 
-# check whether the user wants to append compile flags upon calling make
-if(ALLOW_EXTRA_CXXFLAGS AND (${CMAKE_GENERATOR} MATCHES ".*Unix Makefiles.*"))
-  message("ALLOW_EXTRA_CXXFLAGS is deprecated, please use -DALLOW_CXXFLAGS_OVERWRITE=ON")
-  set(ALLOW_CXXFLAGS_OVERWRITE ON)
-endif()
+option(ALLOW_CXXFLAGS_OVERWRITE OFF)
 
 macro(find_extended_unix_commands)
   include(FindUnixCommands)
@@ -68,7 +70,7 @@ macro(initialize_compiler_script)
     set( DEFAULT_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
     set( COMPILER_SCRIPT_FILE "#!${BASH}\nexec ${CMAKE_CXX_COMPILER} \"\$@\"")
     file(WRITE ${CMAKE_BINARY_DIR}/compiler.sh "${COMPILER_SCRIPT_FILE}")
-    exec_program(${CHMOD_PROGRAM} ARGS "+x ${CMAKE_BINARY_DIR}/compiler.sh")
+    execute_process(COMMAND ${CHMOD_PROGRAM} 755 ${CMAKE_BINARY_DIR}/compiler.sh)
     set(CMAKE_CXX_COMPILER ${CMAKE_BINARY_DIR}/compiler.sh)
   endif()
 endmacro()
@@ -81,6 +83,7 @@ macro(finalize_compiler_script)
     set( COMPILER_SCRIPT_FILE "${COMPILER_SCRIPT_FILE}\n# store flags\nFLAGS=\"\$@\"")
     set( COMPILER_SCRIPT_FILE "${COMPILER_SCRIPT_FILE}\nMAKE_EXECUTABLE_NEW=0\n")
     set( COMPILER_SCRIPT_FILE "${COMPILER_SCRIPT_FILE}\nif [ \"\$CXXFLAGS\" == \"\" ]; then\n  # default CXX flags\n  CXXFLAGS=\"${DEFAULT_CXXFLAGS}\"\nfi\n")
+    set( COMPILER_SCRIPT_FILE "${COMPILER_SCRIPT_FILE}\nif [ \"\$EXTRA_CXXFLAGS\" != \"\" ]; then\n  # extra CXX flags\n  CXXFLAGS=\"$CXXFLAGS $EXTRA_CXXFLAGS\"\nfi\n")
     set( COMPILER_SCRIPT_FILE "${COMPILER_SCRIPT_FILE}\nGRIDS=\nCONFIG_H=${CMAKE_BINARY_DIR}/config.h")
     set( COMPILER_SCRIPT_FILE "${COMPILER_SCRIPT_FILE}\nif [ \"\$GRIDTYPE\" != \"\" ]; then")
     set( COMPILER_SCRIPT_FILE "${COMPILER_SCRIPT_FILE}\n  GRIDS=`\$GREP \"defined USED_[A-Z_]*_GRIDTYPE\" \$CONFIG_H | \$SED 's/\\(.*defined USED\\_\\)\\(.*\\)\\(\\_GRIDTYPE*\\)/\\2/g'`\nfi\n")

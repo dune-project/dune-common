@@ -425,7 +425,7 @@ private:
   template<bool forward,class DataHandle>
   void communicate(DataHandle& handle);
   /**
-   * @brief Initialize the the trackers along the interface for the communication.
+   * @brief Initialize the trackers along the interface for the communication.
    * @tparam FORWARD If true we send in the forward direction.
    * @tparam DataHandle DataHandle The type of the data handle.
    * @param handle The handle describing the data and responsible for gather
@@ -944,7 +944,7 @@ bool validRecvRequests(const std::vector<MPI_Request> reqs)
  * @param handle The data handle describing the data.
  * @param trackers The trackers for the communication interfaces.
  * @param buffers The buffers for the comunication. One for each neighbour.
- * @param requests The send requests for each neigbour.
+ * @param requests The send requests for each neighbour.
  * @param setupFunctor The functor responsible for setting up the request.
  */
 template<class DataHandle, class Functor>

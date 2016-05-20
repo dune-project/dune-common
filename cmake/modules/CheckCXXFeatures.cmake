@@ -1,137 +1,195 @@
+# .. cmake_module::
 #
-# Module that checks for supported C++14, C++11 and non-standard features.
+#    Module that checks for supported C++14, C++11 and non-standard features.
 #
-# Sets the follwing variables:
+#    The behaviour of this module can be modified by the following variable:
 #
-# HAVE_NULLPTR                     True if nullptr is available
-# HAS_ATTRIBUTE_UNUSED             True if attribute unused is supported
-# HAS_ATTRIBUTE_DEPRECATED         True if attribute deprecated is supported
-# HAS_ATTRIBUTE_DEPRECATED_MSG     True if attribute deprecated("msg") is supported
-# HAVE_CONSTEXPR                   True if constexpr is supported
-# HAVE_KEYWORD_FINAL               True if final is supported.
-# HAVE_RANGE_BASED_FOR             True if range-based for is supported and working.
-# HAVE_NOEXCEPT_SPECIFIER          True if nonexcept specifier is supported.
+#    :ref:`DISABLE_CXX_VERSION_CHECK`
+#       Disable checking for std=c++11 (c++14, c++1y)
 #
-# Input variables:
+#    This module internally sets the following variables, which are then
+#    exported into the config.h of the current dune module.
 #
-# DISABLE_CXX_VERSION_CHECK        Disable checking for std=c++11 (c++14, c++1y)
+#    :code:`HAS_ATTRIBUTE_UNUSED`
+#       True if attribute unused is supported
+#
+#    :code:`HAS_ATTRIBUTE_DEPRECATED`
+#       True if attribute deprecated is supported
+#
+#    :code:`HAS_ATTRIBUTE_DEPRECATED_MSG`
+#       True if attribute deprecated("msg") is supported
+#
+# .. cmake_variable:: DISABLE_CXX_VERSION_CHECK
+#
+#    You may set this variable to TRUE to disable checking for
+#    std=c++11 (c++14, c++1y). For more details, check :ref:`CheckCXXFeatures`.
+#
+
 
 include(CMakePushCheckState)
-cmake_push_check_state()
-
-# test for C++14 flags
-if(NOT DISABLE_CXX_VERSION_CHECK)
-  # try to use compiler flag -std=c++14
-  include(TestCXXAcceptsFlag)
-  check_cxx_accepts_flag("-std=c++14" CXX_FLAG_CXX14)
-
-  include(CheckCXXSourceCompiles)
-  cmake_push_check_state()
-  set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++14")
-  check_cxx_source_compiles("
-      #include <memory>
-
-      int main() {
-        std::make_unique<int>();
-      }
-    " CXX_LIB_SUPPORTS_CXX14)
-  cmake_pop_check_state()
-endif()
-
-if(CXX_FLAG_CXX14 AND CXX_LIB_SUPPORTS_CXX14)
-  set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++14")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 ")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -std=c++14 ")
-  set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} -std=c++14 ")
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++14 ")
-  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -std=c++14 ")
-  set(CXX_STD14_FLAGS "-std=c++14")
-else()
-  if(NOT DISABLE_CXX_VERSION_CHECK)
-    # try to use compiler flag -std=c++1y for older compilers
-    check_cxx_accepts_flag("-std=c++1y" CXX_FLAG_CXX1Y)
-
-    include(CheckCXXSourceCompiles)
-    cmake_push_check_state()
-    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++1y")
-    check_cxx_source_compiles("
-        #include <memory>
-
-        int main() {
-          std::make_unique<int>();
-        }
-      " CXX_LIB_SUPPORTS_CXX1Y)
-    cmake_pop_check_state()
-  endif()
-  if(CXX_FLAG_CXX1Y AND CXX_LIB_SUPPORTS_CXX1Y)
-    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++1y" )
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y ")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -std=c++1y ")
-    set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} -std=c++1y ")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++1y ")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -std=c++1y ")
-  set(CXX_STD14_FLAGS "-std=c++1y")
-  endif()
-endif()
-
-# test for C++11 flags
-if(NOT DISABLE_CXX_VERSION_CHECK
-   AND NOT ((CXX_FLAG_CXX14 AND CXX_LIB_SUPPORTS_CXX14)
-            OR (CXX_FLAG_CXX1Y AND CXX_LIB_SUPPORTS_CXX1Y)))
-  # try to use compiler flag -std=c++11
-  check_cxx_accepts_flag("-std=c++11" CXX_FLAG_CXX11)
-
-  if(CXX_FLAG_CXX11)
-    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++11")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -std=c++11 ")
-    set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} -std=c++11 ")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++11 ")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -std=c++11 ")
-    set(CXX_STD11_FLAGS "-std=c++11")
-  else()
-    message(FATAL_ERROR "Your compiler does not seem to support C++11. If it does, please add any required flags to your CMAKE_CXX_FLAGS or set DISABLE_CXX_VERSION_CHECK.")
-  endif()
-endif()
-
-# perform tests
+include(CheckCXXCompilerFlag)
 include(CheckCXXSourceCompiles)
 
-# nullptr
-check_cxx_source_compiles("
-    int main(void)
-    {
-      char* ch = nullptr;
-      return 0;
-    }
-"  HAVE_NULLPTR
-  )
+# C++ standard versions that this test knows about
+set(CXX_VERSIONS 17 14 11)
 
-if(HAVE_NULLPTR)
-  check_cxx_source_compiles("
-    #include <cstddef>
 
-    int main(void)
-    {
-      std::nullptr_t npt = nullptr;
-      return 0;
-    }
-"  HAVE_NULLPTR_T
-    )
-  if (NOT HAVE_NULLPTR_T)
-    if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel")
-      message(FATAL_ERROR "Your compiler supports the 'nullptr' keyword, but not the type std::nullptr_t.
-You are using an Intel compiler, where this error is typically caused by an outdated underlying system GCC.
-Check if 'gcc --version' gives you at least GCC 4.6, otherwise please install a newer GCC and point your Intel compiler at it using the '-gcc-name' or '-gxx-name' options (see 'man icc' for further details)."
+# Compile tests for the different standard revisions; these test both the compiler
+# and the associated library to avoid problems like using a C++14 user-installed
+# compiler together with a non C++14-compliant stdlib from the system compiler.
+
+# we need to escape semicolons in the tests to be able to stick them into a list
+string(REPLACE ";" "\;" cxx_17_test
+  "
+  #include <type_traits>
+
+  // nested namespaces are a C++17 compiler feature
+  namespace A::B {
+    using T = int;
+  }
+
+  int main() {
+    // std::void_t is a C++17 library feature
+    return not std::is_same<void,std::void_t<A::B::T> >{};
+  }
+  ")
+
+string(REPLACE ";" "\;" cxx_14_test
+  "
+  #include <memory>
+
+  int main() {
+    // lambdas with auto parameters are C++14 - so this checks the compiler
+    auto l = [](auto x) { return x; };
+    // std::make_unique() is a C++14 library feature - this checks whether the
+    // compiler uses a C++14 compliant library.
+    auto v = std::make_unique<int>(l(0));
+    return *v;
+  }
+  ")
+
+string(REPLACE ";" "\;" cxx_11_test
+  "
+  #include <memory>
+
+  int main() {
+    // this checks both the compiler (by using auto) and the library (by using
+    // std::make_shared() for C++11 compliance at GCC 4.4 level.
+    auto v = std::make_shared<int>(0);
+    return *v;
+  }
+  ")
+
+# build a list out of the pre-escaped tests
+set(CXX_VERSIONS_TEST "${cxx_17_test}" "${cxx_14_test}" "${cxx_11_test}")
+
+# these are appended to "-std=c++" and tried in this order
+# note the escaped semicolons; that's necessary to create a nested list
+set(CXX_VERSIONS_FLAGS "17\;1z" "14\;1y" "11\;0x")
+
+# by default, we enable C++14 for now, but not C++17
+# The user can override this choice by explicitly setting this variable
+set(CXX_MAX_STANDARD 14 CACHE STRING "highest version of the C++ standard to enable")
+
+
+function(dune_require_cxx_standard)
+  include(CMakeParseArguments)
+
+  cmake_parse_arguments("" "" "MODULE;VERSION" "" ${ARGN})
+
+  if(_UNPARSED_ARGUMENTS)
+    message(WARNING "Unknown arguments in call to dune_require_cxx_standard(${ARGN})")
+  endif()
+
+  if(${_VERSION} GREATER ${CXX_MAX_SUPPORTED_STANDARD})
+
+    if(NOT _MODULE)
+      set(_MODULE "This module")
+    endif()
+
+    if(${_VERSION} GREATER ${CXX_MAX_STANDARD})
+      message(FATAL_ERROR "\
+${_MODULE} requires compiler support for C++${_VERSION}, but the build system is currently \
+set up to not allow newer language standards than C++${CXX_MAX_STANDARD}. Try setting the \
+CMake variable CXX_MAX_STANDARD to at least ${_VERSION}."
         )
     else()
-      message(FATAL_ERROR "Your compiler supports the 'nullptr' keyword, but not the type std::nullptr_t.
-THIS SHOULD NOT HAPPEN FOR YOUR COMPILER!
-Please submit a bug at https://dune-project.org/flyspray/"
+      message(FATAL_ERROR "
+${_MODULE} requires compiler support for C++${_VERSION}, but your compiler only supports \
+C++${CXX_MAX_SUPPORTED_STANDARD}."
         )
     endif()
   endif()
+endfunction()
+
+
+# try to enable all of the C++ standards that we know about, in descending order
+if(NOT DISABLE_CXX_VERSION_CHECK)
+
+  foreach(version ${CXX_VERSIONS})
+
+    # skip versions that are newer than allowed
+    if(NOT(version GREATER CXX_MAX_STANDARD))
+
+      list(FIND CXX_VERSIONS ${version} version_index)
+      list(GET CXX_VERSIONS_FLAGS ${version_index} version_flags)
+
+      # First try whether the compiler accepts one of the command line flags for this standard
+      foreach(flag ${version_flags})
+
+        set(cxx_std_flag_works "cxx_std_flag_${flag}")
+        check_cxx_compiler_flag("-std=c++${flag}" ${cxx_std_flag_works})
+
+        if(${cxx_std_flag_works})
+          set(cxx_std_flag "-std=c++${flag}")
+          break()
+        endif()
+
+      endforeach()
+
+      # and if it did, run the compile test
+      if(cxx_std_flag)
+
+        list(GET CXX_VERSIONS_TEST ${version_index} version_test)
+        set(test_compiler_output "compiler_supports_cxx${version}")
+
+        cmake_push_check_state()
+        set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${cxx_std_flag}")
+        check_cxx_source_compiles("${version_test}" ${test_compiler_output})
+        cmake_pop_check_state()
+
+        if(${test_compiler_output})
+          set(CXX_MAX_SUPPORTED_STANDARD ${version})
+          set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${cxx_std_flag} ")
+          break()
+        else()
+          # Wipe the variable, as this version of the standard doesn't seem to work
+          unset(cxx_std_flag)
+        endif()
+
+      endif()
+    endif()
+  endforeach()
+
+  if(NOT DEFINED CXX_MAX_SUPPORTED_STANDARD)
+    # Let's just assume every compiler at least claims C++03 compliance by now
+    message(WARNING "\
+Unable to determine C++ standard support for your compiler, falling back to C++03. \
+If you know that your compiler supports a newer version of the standard, please set the CMake \
+variable DISABLE_CXX_VERSION_CHECK to true and the CMake variable CXX_MAX_SUPPORTED_STANDARD \
+to the highest version of the standard supported by your compiler (e.g. 14). If your compiler \
+needs custom flags to switch to that standard version, you have to manually add them to \
+CMAKE_CXX_FLAGS."
+      )
+    set(CXX_MAX_SUPPORTED_STANDARD 3)
+  endif()
+
 endif()
+
+# make sure we have at least C++11
+dune_require_cxx_standard(MODULE "DUNE" VERSION 11)
+
+# perform tests
 
 # __attribute__((unused))
 check_cxx_source_compiles("
@@ -207,87 +265,6 @@ check_cxx_source_compiles("
 "  HAS_ATTRIBUTE_DEPRECATED_MSG
 )
 
-# constexpr
-check_cxx_source_compiles("
-  constexpr int foo()
-  { return 0; }
-
-  template<int v>
-  struct A
-  {
-    static const int value = v;
-  };
-
-  int main(void)
-  {
-    return A<foo()>::value;
-  }
-" HAVE_CONSTEXPR
-)
-
-# keyword final
-check_cxx_source_compiles("
-  struct Foo
-  {
-    virtual void foo() final;
-  };
-
-  int main(void)
-  {
-    return 0;
-  }
-" HAVE_KEYWORD_FINAL
-)
-
-# range-based for
-check_cxx_source_compiles("
-  int main(void)
-  {
-    int arr[3];
-    for(int &val : arr)
-      val = 0;
-  }
-" HAVE_RANGE_BASED_FOR
-)
-
-# nonexcept specifier
-check_cxx_source_compiles("
-  void func1() noexcept {}
-
-  void func2() noexcept(true) {}
-
-  template <class T>
-  void func3() noexcept(noexcept(T())) {}
-
-  int main(void)
-  {
-    func1();
-    func2();
-    func3<int>();
-  }
-" HAVE_NOEXCEPT_SPECIFIER
-)
-
-# std::declval()
-check_cxx_source_compiles("
-  #include <utility>
-
-  template<typename T>
-  struct check;
-
-  template<>
-  struct check<int&&>
-  {
-    int pass() { return 0; }
-  };
-
-  int main(void)
-  {
-    return check<decltype(std::declval<int>())>().pass();
-  }
-" HAVE_STD_DECLVAL
-  )
-
 # full support for is_indexable (checking whether a type supports operator[])
 check_cxx_source_compiles("
   #include <utility>
@@ -336,8 +313,6 @@ check_cxx_source_compiles("
 " HAVE_IS_INDEXABLE_SUPPORT
   )
 
-
-cmake_pop_check_state()
 
 # find the threading library
 # Use a copy FindThreads from CMake 3.1 due to its support of pthread

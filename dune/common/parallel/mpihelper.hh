@@ -238,11 +238,9 @@ namespace Dune
     //! \brief calls MPI_Init with argc and argv as parameters
     MPIHelper(int& argc, char**& argv)
     {
-#if MPI_2
       int wasInitialized = -1;
       MPI_Initialized( &wasInitialized );
       if(!wasInitialized)
-#endif
       {
         rank_ = -1;
         size_ = -1;
@@ -261,17 +259,13 @@ namespace Dune
     //! \brief calls MPI_Finalize
     ~MPIHelper()
     {
-#ifdef MPI_2
       int wasFinalized = -1;
       MPI_Finalized( &wasFinalized );
       if(!wasFinalized) {
-#endif
       MPI_Finalize();
       dverb << "Called MPI_Finalize on p=" << rank_ << "!" <<std::endl;
-#ifdef MPI_2
     }
 
-#endif
     }
     MPIHelper(const MPIHelper&);
     MPIHelper& operator=(const MPIHelper);

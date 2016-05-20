@@ -1,13 +1,13 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 
-#ifndef DUNE_ARRAYLIST_HH
-#define DUNE_ARRAYLIST_HH
+#ifndef DUNE_COMMON_ARRAYLIST_HH
+#define DUNE_COMMON_ARRAYLIST_HH
 
+#include <array>
 #include <cassert>
+#include <memory>
 #include <vector>
-#include "shared_ptr.hh"
-#include "array.hh"
 #include "iteratorfacades.hh"
 
 namespace Dune
@@ -40,7 +40,7 @@ namespace Dune
    *
    * Internally the data is organised in a list of arrays of fixed size.
    * Whenever the capacity of the array list is not sufficient a new
-   * Dune::array is allocated. In contrast to
+   * std::array is allocated. In contrast to
    * std::vector this approach prevents data copying. On the outside
    * we provide the same interface as the stl random access containers.
    *
@@ -194,13 +194,13 @@ namespace Dune
     /**
      * @brief The allocators for the smart pointer.
      */
-    typedef typename A::template rebind<shared_ptr<array<MemberType,chunkSize_> > >::other
+    typedef typename A::template rebind<std::shared_ptr<std::array<MemberType,chunkSize_> > >::other
     SmartPointerAllocator;
 
     /**
      * @brief The allocator for the fixed array.
      */
-    typedef typename A::template rebind<array<MemberType,chunkSize_> >::other
+    typedef typename A::template rebind<std::array<MemberType,chunkSize_> >::other
     ArrayAllocator;
 
     /**
@@ -210,7 +210,7 @@ namespace Dune
     friend class ConstArrayListIterator<T,N,A>;
 
     /** @brief the data chunks of our list. */
-    std::vector<shared_ptr<array<MemberType,chunkSize_> >,
+    std::vector<std::shared_ptr<std::array<MemberType,chunkSize_> >,
         SmartPointerAllocator> chunks_;
     /** @brief The current data capacity.
      * This is the capacity that the list could have theoretically
@@ -310,7 +310,7 @@ namespace Dune
 
     /**
      * @brief Get the value of the list at an arbitrary position.
-     * @return The value at that postion.
+     * @return The value at that position.
      */
     inline reference elementAt(size_type i) const;
 
@@ -358,7 +358,7 @@ namespace Dune
     inline ArrayListIterator(ArrayList<T,N,A>& arrayList, size_type position);
 
     /**
-     * @brief The current postion.
+     * @brief The current position.
      */
     size_type position_;
     /**
@@ -429,7 +429,7 @@ namespace Dune
 
     /**
      * @brief Get the value of the list at an arbitrary position.
-     * @return The value at that postion.
+     * @return The value at that position.
      */
     inline const_reference elementAt(size_type i) const;
 
@@ -456,7 +456,7 @@ namespace Dune
     inline ConstArrayListIterator(const ArrayList<T,N,A>& arrayList, size_type position);
 
     /**
-     * @brief The current postion.
+     * @brief The current position.
      */
     size_type position_;
     /**
@@ -493,7 +493,7 @@ namespace Dune
     size_t index=start_+size_;
     if(index==capacity_)
     {
-      chunks_.push_back(shared_ptr<array<MemberType,chunkSize_> >(new array<MemberType,chunkSize_>()));
+      chunks_.push_back(std::make_shared<std::array<MemberType,chunkSize_> >());
       capacity_ += chunkSize_;
     }
     elementAt(index)=entry;

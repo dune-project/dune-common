@@ -3,7 +3,7 @@ add_subdirectory("threads")
 add_subdirectory("kernel")
 add_subdirectory("memory")
 add_subdirectory("std")
-add_subdirectory("test" EXCLUDE_FROM_ALL)
+add_subdirectory("test")
 
 #build the library dunecommon
 if(LAPACK_FOUND)
@@ -37,7 +37,9 @@ install(FILES
         bigunsignedint.hh
         binaryfunctions.hh
         bitsetvector.hh
+        boundschecking.hh
         classname.hh
+        concept.hh
         debugallocator.hh
         debugstream.hh
         deprecated.hh
@@ -51,7 +53,6 @@ install(FILES
         dynvector.hh
         enumset.hh
         exceptions.hh
-        fassign.hh
         float_cmp.cc
         float_cmp.hh
         fmatrix.hh
@@ -66,6 +67,7 @@ install(FILES
         hash.hh
         identitymatrix.hh
         indent.hh
+        indices.hh
         interfaces.hh
         ios_state.hh
         iteratoradapters.hh
@@ -90,14 +92,15 @@ install(FILES
         shared_ptr.hh
         singleton.hh
         sllist.hh
-        static_assert.hh
         stdstreams.hh
         stdthread.hh
         stringutility.hh
         timer.hh
         tuples.hh
         tupleutility.hh
+        typelist.hh
         typetraits.hh
+        typeutilities.hh
         unused.hh
         version.hh
         visibility.hh

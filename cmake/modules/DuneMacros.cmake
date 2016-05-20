@@ -1,6 +1,92 @@
 # Core DUNE module for CMake.
 #
-# Provides the following macros:
+# Documentation of the public API defined in this module:
+#
+# .. cmake_function:: dune_project
+#
+#    Initialize a Dune module. This function needs to be run from every
+#    top-level CMakeLists.txt file. It sets up the module, defines basic
+#    variables and manages depedencies. Don't forget to call
+#    :ref:`finalize_dune_project` afterwards.
+#
+# .. cmake_function:: finalize_dune_project
+#
+#    Finalize a Dune module. This function needs to be run at the end of
+#    every top-level CMakeLists.txt file.
+#
+# .. cmake_function:: dune_add_library
+#
+#    .. cmake_brief::
+#
+#       Add a library to a Dune module!
+#
+#    .. cmake_param:: basename
+#       :single:
+#       :required:
+#       :positional:
+#
+#       The basename for the library. On Unix this created :code:`lib<basename>.so`
+#       and :code:`lib<basename>.a`
+#
+#    .. cmake_param:: NO_EXPORT
+#       :option:
+#
+#       If omitted the library is exported for usage in other modules.
+#
+#    .. cmake_param:: ADD_LIBS
+#       :multi:
+#
+#       A list of libraries that should be incorporated into this library.
+#
+#    .. cmake_param:: APPEND
+#       :option:
+#
+#       Whether the library should be appended to the
+#       exported libraries. If there a DUNE module must
+#       make several libraries available, then first one
+#       must not use this option but the others have to
+#       use it. Otherwise only the last library will be
+#       exported as the others will be overwritten.
+#
+#    .. cmake_param:: OBJECT
+#       :option:
+#
+#       .. note::
+#          This feature will very likely vanish in Dune 3.0
+#
+#    .. cmake_param:: SOURCES
+#       :multi:
+#       :required:
+#
+#       The source files from which to build the library.
+#
+#    .. cmake_param:: COMPILE_FLAGS
+#       :multi:
+#
+#       Any additional compile flags fpr building the library.
+#
+# .. cmake_function:: dune_target_link_libraries
+#
+#    .. cmake_param:: BASENAME
+#
+#    .. cmake_param:: LIBRARIES
+#
+#    Link libraries to the static and shared version of
+#    library BASENAME
+#
+#
+# .. cmake_function:: add_dune_all_flags
+#
+#    .. cmake_param:: targets
+#       :single:
+#       :required:
+#       :positional:
+#
+#       The targets to add the flags of all external libraries to.
+#
+#    This function is superseded by :ref:`dune_target_enable_all_packages`.
+#
+# Documentation of internal macros in this module:
 #
 # dune_module_to_uppercase(upper_name module_name)
 #
@@ -12,15 +98,6 @@
 #
 # Parse ${MODULE_DIR}/dune.module and provide that information.
 # If the second argument is QUIET no status message is printed.
-#
-#
-# dune_project()
-#
-#  macro that should be called near the begin of the top level CMakeLists.txt.
-# Namely it sets up the module, defines basic variables and manages
-# depedencies.
-# Don't forget to call finalize_dune_project afterwards.
-#
 #
 # dune_create_dependency_tree()
 #
@@ -35,45 +112,13 @@
 # _macro_name: variable where the name will be stored.
 # _dune_module: the name of the dune module.
 #
-#
 # dune_regenerate_config_cmake()
 #
-# Creates a new config.h.cmake file in ${CMAKE_CURRENT_BINARY_DIR) that
+# Creates a new config_collected.h.cmake file in ${CMAKE_CURRENT_BINARY_DIR} that
 # consists of entries from ${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake
-# and includes non-private entries from the files config.h.cmake files
+# and includes non-private entries from the config.h.cmake files
 # of all dependent modules.
-# Finally config.h is created from config.h.cmake.
-#
-#
-# dune_add_library(<basename> [NO_EXPORT] [ADD_LIBS <lib1> [<lib2> ...]]
-#   [OBJECT] SOURCES <source1> [<source2> ...] [COMPILE_FLAGS <flags>])
-#
-# Creates shared and static libraries with the same basename.
-# <basename> is the basename of the library.
-# On Unix this creates lib<basename>.so and lib<BASENAME>.a.
-# Libraries that should be incorporate into this library can
-# be specified with the ADD_LIBS option.
-# The libraries will be built in ${PROJECT_BINARY_DIR}/lib.
-# If the option NO_EXPORT is omitted the library is exported
-# for usage in other modules.
-#
-# Object libraries can now be created with dune_add_library(<target>
-#  OBJECT <sources>). It will create a GLOBAL property
-#  _DUNE_TARGET_OBJECTS:<target>_ that records the full path to the
-#  source files. Theses can later be referenced by providing
-#  _DUNE_TARGET_OBJECTS:<target>_ as one of the sources to dune_add_library
-#
-# finalize_dune_project()
-#
-# macro that should be called at the end of the top level CMakeLists.txt.
-# Namely it creates config.h and the cmake-config files,
-# some install directives and exports the module.
-#
-#
-# dune_target_link_libraries(BASENAME, LIBRARIES)
-#
-# Link libraries to the static and shared version of
-# library BASENAME
+# Finally config.h is created from config_collected.h.cmake.
 #
 
 # Make CMake use rpath on OS X
@@ -86,9 +131,10 @@ enable_language(C) # Enable C to skip CXX bindings for some tests.
 
 include(FeatureSummary)
 include(DuneEnableAllPackages)
+include(DuneTestMacros)
 include(OverloadCompilerFlags)
-
 include(DuneSymlinkOrCopy)
+include(DunePathHelper)
 
 # Converts a module name given by _module into an uppercase string
 # _upper where all dashes (-) are replaced by underscores (_)
@@ -619,8 +665,8 @@ macro(dune_project)
     endif (APPLE)
   endif(DUNE_USE_ONLY_STATIC_LIBS)
 
-  # set required compiler flags for C++11 (former C++0x)
-  include(CheckCXX11Features)
+  # check for C++ features, set compiler flags for C++14 or C++11 mode
+  include(CheckCXXFeatures)
 
   include(DuneCxaDemangle)
 
@@ -644,18 +690,19 @@ macro(dune_project)
     FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
   else(Fortran_Works)
     # Write empty FC.h header
-    file(WRITE ${CMAKE_BINARY_DIR}/FC.h "")
+    # Make sure to only write this file once, otherwise every cmake run
+    # will trigger a full rebuild of the whole project.
+    unset(_FC_H CACHE)
+    find_file(_FC_H NAME FC.h PATHS "${CMAKE_BINARY_DIR}" NO_DEFAULT_PATH)
+    if(NOT _FC_H)
+      file(WRITE "${CMAKE_BINARY_DIR}/FC.h" "")
+    endif()
   endif(Fortran_Works)
 
   # Create custom target for building the documentation
   # and provide macros for installing the docs and force
   # building them before.
   include(DuneDoc)
-
-  # activate testing the DUNE way
-  include(DuneTests)
-  # enable this way of testing by default
-  set(DUNE_TEST_MAGIC ON)
 
   # activate pkg-config
   include(DunePkgConfig)
@@ -691,7 +738,7 @@ endmacro(dune_project)
 
 # create a new config.h file and overwrite the existing one
 macro(dune_regenerate_config_cmake)
-  set(CONFIG_H_CMAKE_FILE "${CMAKE_BINARY_DIR}/config.h.cmake")
+  set(CONFIG_H_CMAKE_FILE "${CMAKE_BINARY_DIR}/config_collected.h.cmake")
   if(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
     file(READ ${CMAKE_SOURCE_DIR}/config.h.cmake _file)
     string(REGEX MATCH
@@ -699,8 +746,8 @@ macro(dune_regenerate_config_cmake)
       _myfile "${_file}")
   endif(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
   # overwrite file with new content
-  file(WRITE ${CONFIG_H_CMAKE_FILE} "/* config.h.  Generated from config.h.cmake by CMake.
-   It was generated from config.h.cmake which in turn is generated automatically
+  file(WRITE ${CONFIG_H_CMAKE_FILE} "/* config.h.  Generated from config_collected.h.cmake by CMake.
+   It was generated from config_collected.h.cmake which in turn is generated automatically
    from the config.h.cmake files of modules this module depends on. */"
    )
 
@@ -724,7 +771,18 @@ macro(dune_regenerate_config_cmake)
          ".*/\\*[ ]*begin[ ]+${_dep}[^\\*]*\\*/(.*)/[/\\*][ ]*end[ ]*${_dep}[^\\*]*\\*/" "\\1"
          _tfile "${_file}")
        # strip the private section
-       string(REGEX REPLACE "(.*)/[\\*][ ]*begin private.*/[\\*][ ]*end[ ]*private[^\\*]\\*/(.*)" "\\1\\2" _file "${_tfile}")
+       string(REGEX REPLACE "(.*)/[\\*][ ]*begin private.*/[\\*][ ]*end[ ]*private[^\\*]\\*/(.*)" "\\1\\2" _ttfile "${_tfile}")
+
+       # extract the bottom section
+       string(REGEX MATCH "/[\\*][ ]*begin bottom.*/[\\*][ ]*end[ ]*bottom[^\\*]\\*/" _tbottom "${_ttfile}")
+       string(REGEX REPLACE ".*/\\*[ ]*begin[ ]+bottom[^\\*]*\\*/(.*)/[/\\*][ ]*end[ ]*bottom[^\\*]*\\*/" "\\1" ${_dep}_CONFIG_H_BOTTOM "${_tbottom}" )
+       string(REGEX REPLACE "(.*)/[\\*][ ]*begin bottom.*/[\\*][ ]*end[ ]*bottom[^\\*]\\*/(.*)" "\\1\\2" _file  "${_ttfile}")
+
+       # append bottom section
+       if(${_dep}_CONFIG_H_BOTTOM)
+         set(CONFIG_H_BOTTOM "${CONFIG_H_BOTTOM} ${${_dep}_CONFIG_H_BOTTOM}")
+       endif()
+
        file(APPEND ${CONFIG_H_CMAKE_FILE} "${_file}")
      endif(EXISTS ${_mod_conf_file})
    endforeach()
@@ -732,6 +790,10 @@ macro(dune_regenerate_config_cmake)
  # parse again dune.module file of current module to set PACKAGE_* variables
  dune_module_information(${CMAKE_SOURCE_DIR} QUIET)
  file(APPEND ${CONFIG_H_CMAKE_FILE} "\n${_myfile}")
+ # append CONFIG_H_BOTTOM section at the end if found
+ if(CONFIG_H_BOTTOM)
+    file(APPEND ${CONFIG_H_CMAKE_FILE} "${CONFIG_H_BOTTOM}")
+ endif()
 endmacro(dune_regenerate_config_cmake)
 
 # macro that should be called at the end of the top level CMakeLists.txt.
@@ -781,12 +843,12 @@ ${DUNE_CUSTOM_PKG_CONFIG_SECTION}
 if(${ProjectName}_LIBRARIES)
   get_filename_component(_dir \"\${CMAKE_CURRENT_LIST_FILE}\" PATH)
   include(\"\${_dir}/${ProjectName}-targets.cmake\")
-endif(${ProjectName}_LIBRARIES)
-endif(NOT ${ProjectName}_FOUND)")
+endif()
+endif()")
       set(CONFIG_SOURCE_FILE ${PROJECT_BINARY_DIR}/CMakeFiles/${ProjectName}-config.cmake.in)
-  else(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
+  else()
     set(CONFIG_SOURCE_FILE ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
-  endif(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
+  endif()
   get_property(DUNE_MODULE_LIBRARIES GLOBAL PROPERTY DUNE_MODULE_LIBRARIES)
 
   # compute under which libdir the package configuration files are to be installed.
@@ -797,9 +859,9 @@ endif(NOT ${ProjectName}_FOUND)")
   get_property(DUNE_MODULE_LIBRARIES GLOBAL PROPERTY DUNE_MODULE_LIBRARIES)
   if(DUNE_MODULE_LIBRARIES)
     set(DUNE_INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR})
-  else(DUNE_MODULE_LIBRARIES)
+  else()
     set(DUNE_INSTALL_LIBDIR ${DUNE_INSTALL_NONOBJECTLIBDIR})
-  endif(DUNE_MODULE_LIBRARIES)
+  endif()
 
   # Set the location of the doc file source. Needed by custom package configuration
   # file section of dune-grid.
@@ -871,23 +933,18 @@ endif()
     message(STATUS "Adding custom target for config.h generation")
     dune_regenerate_config_cmake()
     # add a target to generate config.h.cmake
-    add_custom_target(OUTPUT config.h.cmake
+    add_custom_target(OUTPUT config_collected.h.cmake
       COMMAND dune_regenerate_config_cmake()
       DEPENDS stamp-regenerate-config-h)
     # actually write the config.h file to disk
     # using generated file
-    configure_file(${CMAKE_CURRENT_BINARY_DIR}/config.h.cmake
+    configure_file(${CMAKE_CURRENT_BINARY_DIR}/config_collected.h.cmake
       ${CMAKE_CURRENT_BINARY_DIR}/config.h)
   else("${ARGC}" EQUAL "1")
     message(STATUS "Not adding custom target for config.h generation")
     # actually write the config.h file to disk
     configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
   endif("${ARGC}" EQUAL "1")
-
-  # add dependiencies to target "test"
-  if(DUNE_TEST_MAGIC)
-    test_dep()
-  endif()
 
   include(CPack)
 
@@ -903,24 +960,6 @@ macro(target_link_dune_default_libraries _target)
     target_link_libraries(${_target} ${_lib})
   endforeach(_lib ${DUNE_DEFAULT_LIBS})
 endmacro(target_link_dune_default_libraries)
-
-# Gets path to the common Dune CMake scripts
-macro(dune_common_script_dir _script_dir)
-  if("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-    set(${_script_dir} ${CMAKE_SOURCE_DIR}/cmake/scripts)
-  else("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-    set(${_script_dir} ${dune-common_SCRIPT_DIR})
-  endif("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-endmacro(dune_common_script_dir)
-
-# Gets path to the common Dune CMake scripts source
-macro(dune_common_script_source_dir _script_dir)
-  if("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-    set(${_script_dir} ${CMAKE_SOURCE_DIR}/cmake/scripts)
-  else("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-    set(${_script_dir} ${dune-ommon_SCRIPT_SOURCE_DIR})
-  endif("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-endmacro(dune_common_script_source_dir)
 
 function(dune_expand_object_libraries _SOURCES_var _ADD_LIBS_var _COMPILE_FLAGS_var)
   set(_new_SOURCES "")
@@ -949,7 +988,7 @@ endfunction(dune_expand_object_libraries)
 # More docu can be found at the top of this file.
 macro(dune_add_library basename)
   include(CMakeParseArguments)
-  cmake_parse_arguments(DUNE_LIB "NO_EXPORT;OBJECT" "COMPILE_FLAGS"
+  cmake_parse_arguments(DUNE_LIB ";APPEND;NO_EXPORT;OBJECT" "COMPILE_FLAGS"
     "ADD_LIBS;SOURCES" ${ARGN})
   if(DUNE_LIB_OBJECT)
     if(DUNE_LIB_${basename}_SOURCES)
@@ -1034,12 +1073,22 @@ macro(dune_add_library basename)
     endif(DUNE_BUILD_BOTH_LIBS)
 
     if(NOT DUNE_LIB_NO_EXPORT)
+      # The follwing allows for adding multiple libs in the same
+      # directory or below with passing the APPEND keyword.
+      # If there are additional calls to dune_add_library in other
+      # modules then you have to use APPEND or otherwise only the
+      # last lib will get exported as a target.
       if(NOT _MODULE_EXPORT_USED)
         set(_MODULE_EXPORT_USED ON)
         set(_append "")
       else(NOT _MODULE_EXPORT_USED)
         set(_append APPEND)
       endif(NOT _MODULE_EXPORT_USED)
+      # Allow to explicitly pass APPEND
+      if(DUNE_LIB_APPEND)
+        set(_append APPEND)
+      endif(DUNE_LIB_APPEND)
+
       # install targets to use the libraries in other modules.
       install(TARGETS ${_created_libs}
         EXPORT ${ProjectName}-targets DESTINATION ${CMAKE_INSTALL_LIBDIR})

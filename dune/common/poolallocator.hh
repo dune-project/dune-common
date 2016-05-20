@@ -7,7 +7,6 @@
  * \brief An stl-compliant pool allocator
  */
 
-#include "alignment.hh"
 #include "lcm.hh"
 #include <typeinfo>
 #include <iostream>
@@ -124,7 +123,7 @@ namespace Dune
        * @brief The alignment that suits both the MemberType and
        * the Reference (i.e. their least common multiple).
        */
-      alignment = Lcm<AlignmentOf<MemberType>::value,AlignmentOf<Reference>::value>::value,
+      alignment = Lcm<alignof(MemberType), alignof(Reference)>::value,
 
       /**
        * @brief The aligned size of the type.
@@ -164,7 +163,7 @@ namespace Dune
       char chunk_[chunkSize];
 
       /**
-       * @brief Adress the first properly aligned
+       * @brief Address of the first properly aligned
        * position in the chunk.
        */
       char* memory_;

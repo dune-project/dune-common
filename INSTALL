@@ -58,9 +58,9 @@ each module.
 As it is often not convenient (and for the target all impossible) to
 specify the options for each command as parameters after the call, one
 can pass the options via file specified by the --opts=<file>
-option. For each atomic command one specify the options via a ine
+option. For each atomic command one specify the options via a line
 
-<COMMANY_UPPERCASE>_FLAGS=<flags> # e.g.: MAKE_FLAGS=install
+<COMMAND_UPPERCASE>_FLAGS=<flags> # e.g.: MAKE_FLAGS=install
 
 The available options for make and svn are the natural ones. The
 configure commands available can be found by issuing
@@ -71,7 +71,7 @@ and for autogen by
 
 dunecontrol --only=dune-common autogen --help
 
-(In the svn version this has to be calles after running autogen.)
+(In the svn version this has to be called after running autogen.)
 
 
 An example of an options file is

@@ -135,7 +135,6 @@ class target_flags:
             'SUPERLU_': ['add_dune_superlu_flags', ''],
             'DUNEMPI': ['add_dune_mpi_flags', ''],
             'AMIRAMESH_': ['add_dune_amiramesh_flags',''],
-            'BOOST_': ['add_dune_boost_flags',''],
             'GMP_': ['add_dune_gmp_flags',''],
             'GRAPE_': ['add_dune_grape_flags',''],
             'PARMETIS_': ['add_dune_parmetis_flags',''],
@@ -467,7 +466,7 @@ def init_cmake_module(module_name):
     return''.join(['# set up project\n',
                   'project("'+module_name+'" C CXX)\n\n#circumvent not building docs\nset(BUILD_DOCS 1)\n\n',
                   '# general stuff\n',
-                  'cmake_minimum_required(VERSION 2.8.6)\n\n',
+                  'cmake_minimum_required(VERSION 2.8.12)\n\n',
                   '#find dune-common and set the module path\n',
                   'find_package(dune-common)\n'
                   'list(APPEND CMAKE_MODULE_PATH ${dune-common_MODULE_PATH}\n'
