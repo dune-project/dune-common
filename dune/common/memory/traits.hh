@@ -16,7 +16,7 @@ namespace Dune {
 
       template<typename A>
       struct allocators_are_interoperable<A>
-        : public true_type
+        : public std::true_type
       {};
 
       template<typename A1, typename A2, typename... A>
@@ -26,7 +26,7 @@ namespace Dune {
         static const bool tail_is_interoperable =
           allocators_are_interoperable<A2,A...>::value;
 
-        static const bool head_is_interoperable = is_same<
+        static const bool head_is_interoperable = std::is_same<
           typename A1::template rebind<void>::other,
           typename A2::template rebind<void>::other
           >::value;
@@ -39,26 +39,24 @@ namespace Dune {
 
     // repackage into integral_constant
     template<typename... A>
-    struct allocators_are_interoperable
-      : public integral_constant<bool,
-                                 impl::allocators_are_interoperable<
-                                   A...
-                                   >::value
-                                 >
-    {};
+    using allocators_are_interoperable = std::integral_constant<bool,
+                                                                impl::allocators_are_interoperable<
+                                                                  A...
+                                                                  >::value
+                                                                >;
 
 
     template<std::size_t i, std::size_t limit = 8>
     struct block_size_log2
-      : public conditional<(i == (1<<limit)),
-        integral_constant<std::size_t,limit>,
+      : public std::conditional<(i == (1<<limit)),
+        std::integral_constant<std::size_t,limit>,
         block_size_log2<i,limit-1>
         >::type
     {};
 
     template<std::size_t i>
     struct block_size_log2<i,0>
-      : public integral_constant<std::size_t,0>
+      : public std::integral_constant<std::size_t,0>
     {
       static_assert(i == 1, "Unsupported block size! Has to be a power of two up to an implementation-defined maximum.");
     };

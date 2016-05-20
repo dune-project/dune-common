@@ -6,6 +6,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <type_traits>
 #include <dune/common/typetraits.hh>
 
 #if defined __INTEL_COMPILER
@@ -26,7 +27,7 @@ namespace Dune {
 
     template<typename T>
     struct align_of
-      : public integral_constant<std::size_t,alignof(T)>
+      : public std::integral_constant<std::size_t,alignof(T)>
     {};
 
 #else
@@ -34,27 +35,27 @@ namespace Dune {
     // we have no idea, so let's be conservative
     template<typename T>
     struct align_of
-      : public integral_constant<std::size_t,1>
+      : public std::integral_constant<std::size_t,1>
     {};
 
     template<>
     struct align_of<std::size_t>
-      : public integral_constant<std::size_t,ALIGNOF_SIZE_T>
+      : public std::integral_constant<std::size_t,ALIGNOF_SIZE_T>
     {};
 
     template<>
     struct align_of<std::uint32_t>
-      : public integral_constant<std::size_t,ALIGNOF_UINT32_T>
+      : public std::integral_constant<std::size_t,ALIGNOF_UINT32_T>
     {};
 
     template<>
     struct align_of<double>
-      : public integral_constant<std::size_t,ALIGNOF_DOUBLE>
+      : public std::integral_constant<std::size_t,ALIGNOF_DOUBLE>
     {};
 
     template<>
     struct align_of<float>
-      : public integral_constant<std::size_t,ALIGNOF_FLOAT>
+      : public std::integral_constant<std::size_t,ALIGNOF_FLOAT>
     {};
 
 #endif // HAVE_ALIGNOF
