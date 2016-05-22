@@ -16,7 +16,7 @@ import os
 import re
 import timeit
 
-from .. import femmpi
+from .. import mpihelper
 from . import database
 
 dataBasePath = os.path.join(os.path.dirname(__file__), "../../database")
@@ -68,7 +68,7 @@ class Generator(object):
             includes = includes + "#include <" + include + ">\n"
         includes = self.modifyIncludes(includes)
 
-        if femmpi.comm.rank == 0:
+        if mpihelper.comm.rank == 0:
             if not os.path.isfile(os.path.join(compilePath, moduleName + ".so")):
                 start_time = timeit.default_timer()
                 out = open(os.path.join(compilePath, "generated_module.hh"), 'w')
@@ -96,7 +96,7 @@ class Generator(object):
                 os.rename(os.path.join(compilePath, "generated_module.hh"),
                           os.path.join(compilePath, moduleName + ".hh"))
 
-        femmpi.comm.barrier()
+        mpihelper.comm.barrier()
 
         module = importlib.import_module("dune.generated."+moduleName)
         setattr(module, "_typeName", myTypeName)
