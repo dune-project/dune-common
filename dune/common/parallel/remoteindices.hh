@@ -269,6 +269,13 @@ namespace Dune {
      */
     void setIncludeSelf(bool includeSelf);
 
+    void setBuilt()
+    {
+      firstBuild = false;
+      sourceSeqNo_ = source_->seqNo();
+      destSeqNo_ = target_->seqNo();
+    }
+
     /**
      * @brief Set the index sets and communicator we work with.
      *
