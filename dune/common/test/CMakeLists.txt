@@ -47,6 +47,9 @@ dune_add_test(SOURCES dynmatrixtest.cc
 dune_add_test(SOURCES dynvectortest.cc
               LINK_LIBRARIES dunecommon)
 
+dune_add_test(SOURCES densevectortest.cc
+              LINK_LIBRARIES dunecommon)
+
 dune_add_test(SOURCES enumsettest.cc)
 
 dune_add_test(NAME fmatrixtest
