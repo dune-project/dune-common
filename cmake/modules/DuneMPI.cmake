@@ -20,6 +20,9 @@
 #       The target list to add the MPI flags to.
 #
 
+# don't check for unused MPI C++ and Fortran wrapper
+set(CMAKE_DISABLE_FIND_PACKAGE_MPI_CXX true)
+set(CMAKE_DISABLE_FIND_PACKAGE_MPI_Fortran true)
 
 find_package(MPI)
 find_package(Threads)
