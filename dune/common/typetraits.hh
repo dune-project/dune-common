@@ -292,7 +292,7 @@ namespace Dune
     {};
 
     template<typename T, typename I>
-    struct _is_indexable<T,I,typename std::enable_if<(sizeof(Std::declval<T>()[Std::declval<I>()]) > 0),int>::type>
+    struct _is_indexable<T,I,typename std::enable_if<(sizeof(std::declval<T>()[std::declval<I>()]) > 0),int>::type>
       : public std::true_type
     {};
 
@@ -348,7 +348,7 @@ namespace Dune
 
     // version for types supporting the subscript operation
     template<typename T>
-    struct _is_indexable<T,decltype(Std::declval<T>()[0],0)>
+    struct _is_indexable<T,decltype(std::declval<T>()[0],0)>
       : public std::true_type
     {};
 

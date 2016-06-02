@@ -87,9 +87,9 @@ namespace Dune {
 
   template<class... Args, class Functor>
   auto genericTransformTupleBackend(std::tuple<Args...>& t, Functor& f) ->
-    decltype(genericTransformTupleBackendImpl(t, f,Std::make_index_sequence<sizeof...(Args)>()))
+    decltype(genericTransformTupleBackendImpl(t, f,Std::index_sequence_for<Args...>{}))
   {
-    return genericTransformTupleBackendImpl(t, f,Std::make_index_sequence<sizeof...(Args)>());
+    return genericTransformTupleBackendImpl(t, f,Std::index_sequence_for<Args...>{});
   }
 #endif
 
@@ -193,9 +193,9 @@ namespace Dune {
 
     template<class T>
     inline auto operator()(T&& t) ->
-      decltype(this->apply(t,Std::make_index_sequence<sizeof...(Args)>())) const
+      decltype(this->apply(t,Std::index_sequence_for<Args...>{})) const
     {
-      return apply(t,Std::make_index_sequence<sizeof...(Args)>());
+      return apply(t,Std::index_sequence_for<Args...>{});
     }
   };
 
