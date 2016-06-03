@@ -73,8 +73,7 @@ dune_add_test(SOURCES lrutest.cc
               LINK_LIBRARIES dunecommon)
 
 dune_add_test(SOURCES mpicollectivecommunication.cc
-              LINK_LIBRARIES dunecommon
-              SKIP_ON_77)
+              LINK_LIBRARIES dunecommon)
 
 dune_add_test(SOURCES mpiguardtest.cc
               LINK_LIBRARIES dunecommon)
@@ -89,8 +88,7 @@ dune_add_test(NAME mpihelpertest2
               )
 
 dune_add_test(SOURCES parametertreelocaletest.cc
-              LINK_LIBRARIES dunecommon
-              SKIP_ON_77)
+              LINK_LIBRARIES dunecommon)
 
 dune_add_test(SOURCES parametertreetest.cc
               LINK_LIBRARIES dunecommon)
@@ -155,8 +153,7 @@ dune_add_test(SOURCES tupleutilitytest.cc)
 
 if(${LAPACK_FOUND})
   dune_add_test(SOURCES eigenvaluestest.cc
-                LINK_LIBRARIES dunecommon
-                SKIP_ON_77)
+                LINK_LIBRARIES dunecommon)
 endif()
 
 install(

@@ -73,10 +73,6 @@
 #
 #       If given, this test is expected to compile, but fail to run.
 #
-#    .. cmake_param:: SKIP_ON_77
-#
-#       The test will be marked as skipped in ctest if it returned 77.
-#
 #    .. cmake_param:: CMD_ARGS
 #       :multi:
 #       :argname: arg
@@ -210,6 +206,9 @@ function(dune_add_test)
       message(FATAL_ERROR "${num} was given to the MPI_RANKS arugment of dune_add_test, but it does not seem like a correct processor number")
     endif()
   endforeach()
+  if(ADDTEST_SKIP_ON_77)
+    message(WARNING "The SKIP_ON_77 option for dune_add_test is obsolete, it is now enabled by default.")
+  endif()
 
   # Discard all parallel tests if MPI was not found
   if(NOT MPI_FOUND)
@@ -269,10 +268,8 @@ function(dune_add_test)
       if(ADDTEST_EXPECT_COMPILE_FAIL OR ADDTEST_EXPECT_FAIL)
         set_tests_properties(${ACTUAL_NAME} PROPERTIES WILL_FAIL true)
       endif()
-      # Process the SKIP_ON_77 option
-      if(ADDTEST_SKIP_ON_77)
-        set_tests_properties(${ACTUAL_NAME} PROPERTIES SKIP_RETURN_CODE 77)
-      endif()
+      # Skip the test if the return code is 77!
+      set_tests_properties(${ACTUAL_NAME} PROPERTIES SKIP_RETURN_CODE 77)
     endif()
   endforeach()
 endfunction()
