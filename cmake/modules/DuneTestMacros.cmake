@@ -83,6 +83,15 @@
 #       :multi:
 #       :argname: ranks
 #
+#    .. cmake_param:: CMAKE_GUARD
+#       :multi:
+#       :argname: condition
+#
+#       A number of conditions, that CMake should evaluate before adding this
+#       test. If one of the conditions fail, the test should instead be shown
+#       as skipped in the test summary. Use this feature instead of guarding
+#       the call to :code:`dune_add_test` with an :code:`if` clause.
+#
 #       The numbers of cores that this tests should be executed with.
 #       Note, that one test (in the ctest sense) is created for each number
 #       given here. Any number exceeding the user-specified processor maximum
@@ -158,7 +167,7 @@ function(dune_add_test)
   include(CMakeParseArguments)
   set(OPTIONS EXPECT_COMPILE_FAIL EXPECT_FAIL SKIP_ON_77 COMPILE_ONLY)
   set(SINGLEARGS NAME TARGET TIMEOUT)
-  set(MULTIARGS SOURCES COMPILE_DEFINITIONS COMPILE_FLAGS LINK_LIBRARIES CMD_ARGS MPI_RANKS COMMAND)
+  set(MULTIARGS SOURCES COMPILE_DEFINITIONS COMPILE_FLAGS LINK_LIBRARIES CMD_ARGS MPI_RANKS COMMAND CMAKE_GUARD)
   cmake_parse_arguments(ADDTEST "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
 
   # Check whether the parser produced any errors
@@ -213,6 +222,21 @@ function(dune_add_test)
   # Discard all parallel tests if MPI was not found
   if(NOT MPI_FOUND)
     set(DUNE_MAX_TEST_CORES 1)
+  endif()
+
+  # Find out whether this test should be a dummy
+  set(DOSOMETHING TRUE)
+  foreach(condition ${ADDTEST_CMAKE_GUARD})
+    if(NOT ${condition})
+      set(DOSOMETHING FALSE)
+    endif()
+  endforeach()
+
+  # If we do nothing, switch the sources for a dummy source
+  if(NOT DOSOMETHING)
+    dune_module_path(MODULE dune-common RESULT scriptdir SCRIPT_DIR)
+    set(ADDTEST_TARGET)
+    set(ADDTEST_SOURCES ${scriptdir}/main77.cc)
   endif()
 
   # Add the executable if it is not already present

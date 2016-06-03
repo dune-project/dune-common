@@ -151,10 +151,9 @@ dune_add_test(SOURCES tupleutilitytest.cc)
 
 #dune_add_test(SOURCES utilitytest.cc)
 
-if(${LAPACK_FOUND})
-  dune_add_test(SOURCES eigenvaluestest.cc
-                LINK_LIBRARIES dunecommon)
-endif()
+dune_add_test(SOURCES eigenvaluestest.cc
+              LINK_LIBRARIES dunecommon
+              CMAKE_GUARD LAPACK_FOUND)
 
 install(
   FILES
