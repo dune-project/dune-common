@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <type_traits>
 #include <utility>
+#include <array>
 
 namespace Dune
 {
@@ -190,6 +191,30 @@ namespace Dune
 
   template<typename T1, typename T2>
   MPI_Datatype MPITraits<std::pair<T1,T2> >::type=MPI_DATATYPE_NULL;
+
+
+  template<typename T, std::size_t n>
+  class MPITraits<std::array<T,n>>
+  {
+
+    static MPI_Datatype buildType()
+    {
+      MPI_Datatype type = MPI_DATATYPE_NULL;
+      MPI_Type_contiguous(n,MPITraits<T>::getType(),&type);
+      MPI_Type_commit(&type);
+      return type;
+    }
+
+  public:
+
+    static MPI_Datatype getType()
+    {
+      static MPI_Datatype type = buildType();
+      return type;
+    }
+
+  };
+
 #endif
 #endif
 #endif
