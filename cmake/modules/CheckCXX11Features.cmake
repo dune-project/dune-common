@@ -94,16 +94,9 @@ function(dune_require_cxx_standard)
     endif()
 
     if(${_VERSION} GREATER ${CXX_MAX_STANDARD})
-      message(FATAL_ERROR "\
-${_MODULE} requires compiler support for C++${_VERSION}, but the build system is currently \
-set up to not allow newer language standards than C++${CXX_MAX_STANDARD}. Try setting the \
-CMake variable CXX_MAX_STANDARD to at least ${_VERSION}."
-        )
+      message(FATAL_ERROR "${_MODULE} requires compiler support for C++${_VERSION}, but the build system is currently set up to not allow newer language standards than C++${CXX_MAX_STANDARD}. Try setting the CMake variable CXX_MAX_STANDARD to at least ${_VERSION}.")
     else()
-      message(FATAL_ERROR "
-${_MODULE} requires compiler support for C++${_VERSION}, but your compiler only supports \
-C++${CXX_MAX_SUPPORTED_STANDARD}."
-        )
+      message(FATAL_ERROR "${_MODULE} requires compiler support for C++${_VERSION}, but your compiler only supports C++${CXX_MAX_SUPPORTED_STANDARD}.")
     endif()
   endif()
 endfunction()
