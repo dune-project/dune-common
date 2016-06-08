@@ -113,10 +113,11 @@ namespace Dune {
 
     /** \brief get const substructure by name
      *
-     * \param sub substructure name
-     * \return reference to substructure
+     * \param sub              substructure name
+     * \param fail_if_missing  if true, throw an error if substructure is missing
+     * \return                 reference to substructure
      */
-    const ParameterTree& sub(const std::string& sub) const;
+    const ParameterTree& sub(const std::string& sub, bool fail_if_missing = false) const;
 
 
     /** \brief get value as string
@@ -203,6 +204,9 @@ namespace Dune {
     const KeyVector& getSubKeys() const;
 
   protected:
+
+    static const ParameterTree empty_;
+
     std::string prefix_;
 
     KeyVector valueKeys_;

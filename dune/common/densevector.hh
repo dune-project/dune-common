@@ -197,13 +197,13 @@ namespace Dune {
     DifferenceType distanceTo(DenseIterator<const typename std::remove_const<C>::type,const typename std::remove_const<T>::type> other) const
     {
       assert(other.container_==container_);
-      return other.position_ - position_;
+      return static_cast< DifferenceType >( other.position_ ) - static_cast< DifferenceType >( position_ );
     }
 
     DifferenceType distanceTo(DenseIterator<typename std::remove_const<C>::type, typename std::remove_const<T>::type> other) const
     {
       assert(other.container_==container_);
-      return other.position_ - position_;
+      return static_cast< DifferenceType >( other.position_ ) - static_cast< DifferenceType >( position_ );
     }
 
     //! return index
