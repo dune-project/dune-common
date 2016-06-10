@@ -3,9 +3,17 @@
 #ifndef DUNE_COMMON_STD_APPLY_HH
 #define DUNE_COMMON_STD_APPLY_HH
 
-#include <cstddef>
-#include <utility>
-#include <tuple>
+#if __cpp_lib_apply
+  #include <tuple>
+#elif __cpp_lib_experimental_apply
+  #include <experimental/tuple>
+#else
+  #include <cstddef>
+  #include <utility>
+  #include <tuple>
+#endif
+
+
 
 namespace Dune
 {
@@ -13,15 +21,23 @@ namespace Dune
   namespace Std
   {
 
+#if __cpp_lib_apply
+
+    using std::apply;
+
+#elif __cpp_lib_experimental_apply
+
+    using std::experimental::apply;
+
+#else
+
     namespace Impl
     {
-
       template<class F, class ArgTuple, std::size_t... i>
       auto applyHelper(F&& f, ArgTuple&& args, std::index_sequence<i...>)
       {
         return f(std::get<i>(args)...);
       }
-
     } // namespace Impl
 
 
@@ -40,6 +56,8 @@ namespace Dune
       auto indices = std::make_index_sequence<std::tuple_size<std::decay_t<ArgTuple>>::value>();
       return Impl::applyHelper(std::forward<F>(f), std::forward<ArgTuple>(args), indices);
     }
+
+#endif
 
   } // namespace Std
 } // namespace Dune
