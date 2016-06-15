@@ -59,6 +59,7 @@ install(FILES
         genericiterator.hh
         gmpfield.hh
         hash.hh
+        hybridutilities.hh
         identitymatrix.hh
         indent.hh
         indices.hh
