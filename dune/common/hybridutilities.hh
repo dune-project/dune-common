@@ -164,19 +164,13 @@ namespace Impl {
       end_(end)
     {}
 
-    const T& begin() const
-    { return begin_; }
-
-    const T& end() const
-    { return end_; }
-
     constexpr auto size() const
     {
-      return end() - begin();
+      return end_ - begin_;
     }
 
     constexpr T operator[](const T&i) const
-    { return begin()+i; }
+    { return begin_+i; }
 
   private:
     T begin_;
