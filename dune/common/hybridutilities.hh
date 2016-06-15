@@ -374,11 +374,11 @@ constexpr void ifElse(const Condition& condition, IfFunc&& ifFunc)
 namespace Impl {
 
   template<class T1, class T2>
-  constexpr auto equals(T1&& t1, T2&& t2, PriorityTag<1>) -> decltype(T1::value, T2::value, std::integral_constant<bool,T1::value == T2::value>())
+  constexpr auto equals(const T1& t1, const T2& t2, PriorityTag<1>) -> decltype(T1::value, T2::value, std::integral_constant<bool,T1::value == T2::value>())
   { return {}; }
 
   template<class T1, class T2>
-  constexpr auto equals(T1&& t1, T2&& t2, PriorityTag<0>)
+  constexpr auto equals(const T1& t1, const T2& t2, PriorityTag<0>)
   {
     return t1==t2;
   }
