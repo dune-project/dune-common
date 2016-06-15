@@ -78,7 +78,7 @@ namespace Impl {
 template<class T>
 constexpr auto size(const T& t)
 {
-  return Hybrid::Impl::size(&t, PriorityTag<42>());
+  return Impl::size(&t, PriorityTag<42>());
 }
 
 
@@ -131,7 +131,7 @@ namespace Impl {
 template<class Container, class Index>
 constexpr decltype(auto) elementAt(Container&& c, Index&& i)
 {
-  return Hybrid::Impl::elementAt(std::forward<Container>(c), std::forward<Index>(i), PriorityTag<42>());
+  return Impl::elementAt(std::forward<Container>(c), std::forward<Index>(i), PriorityTag<42>());
 }
 
 
@@ -222,7 +222,7 @@ namespace Impl {
 template<class Begin, class End>
 constexpr auto integralRange(const Begin& begin, const End& end)
 {
-  return Hybrid::Impl::integralRange(begin, end, PriorityTag<42>());
+  return Impl::integralRange(begin, end, PriorityTag<42>());
 }
 
 /**
@@ -241,7 +241,7 @@ constexpr auto integralRange(const Begin& begin, const End& end)
 template<class End>
 constexpr auto integralRange(const End& end)
 {
-  return Hybrid::Impl::integralRange(Dune::Indices::_0, end, PriorityTag<42>());
+  return Impl::integralRange(Dune::Indices::_0, end, PriorityTag<42>());
 }
 
 
@@ -298,7 +298,7 @@ namespace Impl {
 template<class Range, class F>
 constexpr void forEach(Range&& range, F&& f)
 {
-  Hybrid::Impl::forEach(std::forward<Range>(range), std::forward<F>(f), PriorityTag<42>());
+  Impl::forEach(std::forward<Range>(range), std::forward<F>(f), PriorityTag<42>());
 }
 
 
@@ -399,7 +399,7 @@ namespace Impl {
 template<class T1, class T2>
 constexpr auto equals(T1&& t1,  T2&& t2)
 {
-  return Hybrid::Impl::equals(std::forward<T1>(t1), std::forward<T2>(t2), PriorityTag<1>());
+  return Impl::equals(std::forward<T1>(t1), std::forward<T2>(t2), PriorityTag<1>());
 }
 
 
