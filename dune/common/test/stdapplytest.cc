@@ -40,5 +40,12 @@ int main()
 
   test.check(Dune::Std::apply(makeTuple, args) == args) << "Dune::Std::apply failed with makeTuple lambda";
 
+  auto intTuple = std::make_tuple(1,2,3);
+  auto&& intTuple0 = Dune::Std::apply([](auto&& arg0, auto&&... args) -> decltype(auto) { return arg0; }, intTuple);
+  intTuple0 = 42;
+
+  test.check(std::get<0>(intTuple) == intTuple0) << "Dune::Std::apply does not properly return references";
+
+
   return test.exit();
 }
