@@ -64,6 +64,9 @@ dune_add_test(SOURCES genericiterator_compile_fail.cc
 
 dune_add_test(SOURCES gcdlcmtest.cc)
 
+dune_add_test(SOURCES hybridutilitiestest.cc
+              LINK_LIBRARIES dunecommon)
+
 dune_add_test(SOURCES indicestest.cc)
 
 dune_add_test(SOURCES integersequence.cc)
