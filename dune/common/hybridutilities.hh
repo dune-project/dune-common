@@ -248,10 +248,14 @@ constexpr auto integralRange(const End& end)
 
 namespace Impl {
 
+  template<class T>
+  void evaluateFoldExpression(std::initializer_list<T>&&)
+  {}
+
   template<class Range, class F, class Index, Index... i>
   constexpr void forEachIndex(Range&& range, F&& f, std::integer_sequence<Index, i...>)
   {
-    std::initializer_list<int>{(f(Hybrid::elementAt(range, std::integral_constant<Index,i>())), 0)...};
+    evaluateFoldExpression({(f(Hybrid::elementAt(range, std::integral_constant<Index,i>())), 0)...});
   }
 
   template<class Range, class F,
