@@ -3,6 +3,12 @@
 #ifndef DUNE_COMMON_HYBRIDUTILITIES_HH
 #define DUNE_COMMON_HYBRIDUTILITIES_HH
 
+#include <tuple>
+#include <utility>
+
+#include <dune/common/typeutilities.hh>
+#include <dune/common/fvector.hh>
+#include <dune/common/indices.hh>
 
 
 
