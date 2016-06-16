@@ -79,12 +79,14 @@ void testparam(const P & p)
     DUNE_THROW(Dune::Exception, "failed to detect missing key");
   }
   catch (Dune::RangeError & r) {}
-  // try accessing inexistent subtree
+  // try accessing inexistent subtree in throwing mode
   try {
-    p.sub("bar");
+    p.sub("bar",true);
     DUNE_THROW(Dune::Exception, "failed to detect missing subtree");
   }
   catch (Dune::RangeError & r) {}
+  // try accessing inexistent subtree in non-throwing mode
+  p.sub("bar");
   // try accessing key as subtree
   try {
     p.sub("x1");
