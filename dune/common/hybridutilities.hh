@@ -302,22 +302,22 @@ namespace Impl {
   template<class IfFunc, class ElseFunc>
   constexpr void ifElse(std::true_type, IfFunc&& ifFunc, ElseFunc&& elseFunc)
   {
-    ifFunc([](auto&& x) { return std::forward<decltype(x)>(x);});
+    ifFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
   }
 
   template<class IfFunc, class ElseFunc>
   constexpr void ifElse(std::false_type, IfFunc&& ifFunc, ElseFunc&& elseFunc)
   {
-    elseFunc([](auto&& x) { return std::forward<decltype(x)>(x);});
+    elseFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
   }
 
   template<class IfFunc, class ElseFunc>
   constexpr void ifElse(const bool& condition, IfFunc&& ifFunc, ElseFunc&& elseFunc)
   {
     if (condition)
-      ifFunc([](auto&& x) { return std::forward<decltype(x)>(x);});
+      ifFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
     else
-      elseFunc([](auto&& x) { return std::forward<decltype(x)>(x);});
+      elseFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
   }
 
 } // namespace Impl
