@@ -271,6 +271,16 @@ namespace Dune
   };
 
   template <typename T>
+  struct isNumber
+    : public std::integral_constant<bool, std::is_arithmetic<T>::value> {
+  };
+
+  template <typename T>
+  struct isNumber<std::complex<T>>
+    : public std::integral_constant<bool, isNumber<T>::value> {
+  };
+
+  template <typename T>
   struct has_nan
       : public std::integral_constant<bool, std::is_floating_point<T>::value> {
   };
