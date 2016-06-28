@@ -9,6 +9,7 @@
 #include <dune/common/dynmatrix.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/gmpfield.hh>
+#include <dune/common/identitymatrix.hh>
 #include <dune/common/unused.hh>
 
 template <class M>
@@ -56,6 +57,10 @@ bool run() {
   Dune::DiagonalMatrix<ft, 1> const diagMWrong1 = {1};
   Dune::DiagonalMatrix<ft, 2> const diagMWrong2 = {1, 2};
   Dune::DiagonalMatrix<ft, 3> const diagMWrong3 = {1, 2, 3};
+
+  Dune::IdentityMatrix<ft, 1> const identMWrong1{};
+  Dune::IdentityMatrix<ft, 2> const identMWrong2{};
+  Dune::IdentityMatrix<ft, 3> const identMWrong3{};
 
   bool passed = true;
 
@@ -170,19 +175,31 @@ bool run() {
   {
     using M = Dune::FieldMatrix<ft, 3, 3>;
     Dune::DiagonalMatrix<ft, 3> diagM({1, 2, 3});
+    Dune::IdentityMatrix<ft, 3> identM;
     { DUNE_UNUSED M const fieldT = diagM; }
     {
       M fieldT;
       fieldT = diagM;
     }
+    { DUNE_UNUSED M const fieldT = identM; }
+    {
+      M fieldT;
+      fieldT = identM;
+    }
   }
   {
     using M = Dune::DynamicMatrix<ft>;
     Dune::DiagonalMatrix<ft, 3> diagM({1, 2, 3});
+    Dune::IdentityMatrix<ft, 3> identM;
     { DUNE_UNUSED M const dynT = diagM; }
     {
       M dynT;
       dynT = diagM;
+    }
+    { DUNE_UNUSED M const dynT = identM; }
+    {
+      M dynT;
+      dynT = identM;
     }
   }
 
@@ -279,6 +296,50 @@ bool run() {
       // DiagonalMatrix)
       M fieldT;
       fieldT = diagMWrong3;
+      std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
+                << std::endl;
+      passed = false;
+    } catch (Dune::RangeError) {
+      std::cout << "(line " << __LINE__
+                << ") All good: Exception thrown as expected." << std::endl;
+    }
+
+    try {
+      // Should fail at run-time with RangeError
+      // Note: this could be made to fail at compile-time already if
+      // we further specialised DenseMatrixAssigner to (FieldMatrix,
+      // IdentityMatrix)
+      M fieldT;
+      fieldT = identMWrong1;
+      std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
+                << std::endl;
+      passed = false;
+    } catch (Dune::RangeError) {
+      std::cout << "(line " << __LINE__
+                << ") All good: Exception thrown as expected." << std::endl;
+    }
+    try {
+      // Should fail at run-time with RangeError
+      // Note: this could be made to fail at compile-time already if
+      // we further specialised DenseMatrixAssigner to (FieldMatrix,
+      // IdentityMatrix)
+      M fieldT;
+      fieldT = identMWrong2;
+      std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
+                << std::endl;
+      passed = false;
+    } catch (Dune::RangeError) {
+      std::cout << "(line " << __LINE__
+                << ") All good: Exception thrown as expected." << std::endl;
+    }
+
+    try {
+      // Should fail at run-time with RangeError
+      // Note: this could be made to fail at compile-time already if
+      // we further specialised DenseMatrixAssigner to (FieldMatrix,
+      // IdentityMatrix)
+      M fieldT;
+      fieldT = identMWrong3;
       std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
                 << std::endl;
       passed = false;
