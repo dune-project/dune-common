@@ -276,9 +276,9 @@ namespace Impl {
   {
     for(std::size_t i=0; i<range.size(); ++i)
       f(range[i]);
-  // \todo Why does the following not compile?
-  //  for(auto e : range)
-  //    f(e);
+    // \todo Switch to real range for once DynamicIntegralRange has proper iterators
+    //  for(auto e : range)
+    //    f(e);
   }
 
 } // namespace Impl
