@@ -191,8 +191,12 @@ namespace Impl {
     return Impl::StaticIntegralRange<Begin,End>();
   }
 
+  // This should be constexpr but gcc-4.9 does not support
+  // the relaxed constexpr requirements. Hence for beeing
+  // constexpr the function body can only contain a return
+  // statement and no assertion before this.
   template<class Begin, class End>
-  constexpr auto integralRange(const Begin& begin, const End& end, const PriorityTag<0>&)
+  auto integralRange(const Begin& begin, const End& end, const PriorityTag<0>&)
   {
     assert(begin <= end);
     return Impl::DynamicIntegralRange<End>(begin, end);
