@@ -311,6 +311,32 @@ constexpr void forEach(Range&& range, F&& f)
 
 
 
+/**
+ * \brief Accumulate values
+ *
+ * \ingroup HybridUtilities
+ *
+ * \tparam Range Type of given range
+ * \tparam T Type of accumulated value
+ * \tparam F Type of binary accumulation operator
+ *
+ * \param range The range of values to accumulate
+ * \param value Initial value for accumulation
+ * \param f Binary operator for accumulation
+ *
+ * This supports looping over the same ranges as Hybrid::forEach
+ */
+template<class Range, class T, class F>
+T accumulate(Range&& range, T value, F&& f)
+{
+  forEach(std::forward<Range>(range), [&](auto&& entry) {
+    value = f(value, entry);
+  });
+  return value;
+}
+
+
+
 namespace Impl {
 
   template<class IfFunc, class ElseFunc>
