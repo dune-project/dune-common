@@ -27,8 +27,13 @@ public:
 
   /** \brief Array-style access to the tuple elements */
   template<std::size_t i>
-  constexpr auto operator[](const Dune::index_constant<i>&)
-    ->decltype(std::get<i>(*this))
+  decltype(auto) operator[](const Dune::index_constant<i>&)
+  {
+    return std::get<i>(*this);
+  }
+
+  template<std::size_t i>
+  constexpr const decltype(auto) operator[](const Dune::index_constant<i>&) const
   {
     return std::get<i>(*this);
   }
