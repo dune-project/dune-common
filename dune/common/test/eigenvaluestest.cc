@@ -32,10 +32,7 @@ using namespace Dune;
 template<typename ft>
 void testRosserMatrix()
 {
-  // Hack: I want this matrix to be a DynamicMatrix, but currently I cannot
-  // initialize such a matrix from initializer lists.  Therefore I take the
-  // detour over a FieldMatrix.
-  FieldMatrix<ft,8,8> AField = {
+  DynamicMatrix<ft> A = {
     { 611, 196, -192, 407, -8, -52, -49, 29 },
     { 196, 899, 113, -192, -71, -43, -8, -44 },
     { -192, 113, 899, 196, 61, 49, 8, 52 },
@@ -45,11 +42,6 @@ void testRosserMatrix()
     { -49, -8, 8, 59, 208, 208, 99, -911 },
     { 29, -44, 52, -23, 208, 208, -911, 99}
   };
-
-  DynamicMatrix<ft> A(8,8);
-  for (int i=0; i<8; i++)
-    for (int j=0; j<8; j++)
-      A[i][j] = AField[i][j];
 
   // compute eigenvalues
   DynamicVector<std::complex<ft> > eigenComplex;
