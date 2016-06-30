@@ -220,7 +220,7 @@ namespace Impl {
  * \returns An object encoding the given range
  *
  * If Begin and End are both instances of type
- * std::integral_constant, the returnes range
+ * std::integral_constant, the returned range
  * encodes begin and end statically.
  */
 template<class Begin, class End>
