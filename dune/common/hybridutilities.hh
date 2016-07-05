@@ -95,7 +95,7 @@ namespace Impl {
     std::enable_if_t<IsTuple<std::decay_t<Container>>::value, int> = 0>
   constexpr decltype(auto) elementAt(Container&& c, Index&&, PriorityTag<2>)
   {
-    return std::get<Index::value>(c);
+    return std::get<std::decay_t<Index>::value>(c);
   }
 
   template<class T, T... t, class Index>
