@@ -101,7 +101,7 @@ namespace Impl {
   template<class T, T... t, class Index>
   constexpr decltype(auto) elementAt(std::integer_sequence<T, t...> c, Index&&, PriorityTag<1>)
   {
-    return std::get<Index::value>(std::make_tuple(std::integral_constant<T, t>()...));
+    return std::get<std::decay_t<Index>::value>(std::make_tuple(std::integral_constant<T, t>()...));
   }
 
   template<class Container, class Index>
