@@ -68,12 +68,12 @@ if(LATEX_USABLE)
   include(UseLATEX)
 endif()
 
-
 add_custom_target(doc)
 
 # add the Sphinx-generated build system documentation
 include(DuneSphinxCMakeDoc)
-
+# Support building documentation with doxygen.
+include(DuneDoxygen)
 
 macro(dune_add_latex_document tex_file)
   # We assume that we always generate a PDF file.
@@ -100,5 +100,7 @@ macro(dune_add_latex_document tex_file)
   endif(filevar)
 endmacro(dune_add_latex_document tex_file)
 
-# Support building documentation with doxygen.
-include(DuneDoxygen)
+# this compatibility code can be removed after Dune 3.0
+macro(create_doc_install)
+  message(WARNING "create_doc_install is no longer needed, you can install these files directly")
+endmacro(create_doc_install)
