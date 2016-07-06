@@ -10,9 +10,8 @@ target_link_libraries(indexset "dunecommon")
 add_dune_mpi_flags("poosc08;poosc08_test;indexset")
 
 dune_add_latex_document(communication.tex
-  FATHER_TARGET doc
+  FORCE_DVI
   BIBFILES communication.bib
-  DEFAULT_SAFEPDF
   INPUTS poosc08_test.cc
   IMAGE_DIRS figures)
 install(FILES communication.pdf
