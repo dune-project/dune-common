@@ -33,7 +33,7 @@ public:
   }
 
   template<std::size_t i>
-  constexpr const decltype(auto) operator[](const Dune::index_constant<i>&) const
+  constexpr decltype(auto) operator[](const Dune::index_constant<i>&) const
   {
     return std::get<i>(*this);
   }
