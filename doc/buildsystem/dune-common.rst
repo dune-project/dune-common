@@ -82,7 +82,7 @@ In order to write your own :code:`CMakeLists.txt` files you should be aware of t
 language:
 
 - :ref:`add_subdirectory` for recursively adding subdirectories
-- :ref:`add_executable` to add some exectuable programs
+- :ref:`add_executable` to add some executable programs
 - :ref:`dune_add_test` to register tests to the test suite.
 - :ref:`install` to mark files for installation.
 
@@ -108,7 +108,7 @@ cover most flags. Example usage:
     add_dune_umfpack_flags(foo)
     add_dune_mpi_flags(foo)
 
-There is also the macro :ref:`add_dune_all_flags`, which uses the same flag registry mechanism then the simplfied
+There is also the macro :ref:`add_dune_all_flags`, which uses the same flag registry mechanism as the simplified
 build system in section :ref:`simplified`.
 
 If you want to fully control the configuration of the targets, you can do so. Build system entities such
