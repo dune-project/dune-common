@@ -78,25 +78,25 @@ void testparam(const P & p)
     p.template get<int>("bar");
     DUNE_THROW(Dune::Exception, "failed to detect missing key");
   }
-  catch (Dune::RangeError & r) {}
+  catch (Dune::Exception & r) {}
   // try accessing inexistent subtree
   try {
     p.sub("bar");
     DUNE_THROW(Dune::Exception, "failed to detect missing subtree");
   }
-  catch (Dune::RangeError & r) {}
+  catch (Dune::Exception & r) {}
   // try accessing key as subtree
   try {
     p.sub("x1");
     DUNE_THROW(Dune::Exception, "succeeded to access key as subtree");
   }
-  catch (Dune::RangeError & r) {}
+  catch (Dune::Exception & r) {}
   // try accessing subtree as key
   try {
     p.template get<double>("Foo");
     DUNE_THROW(Dune::Exception, "succeeded to access subtree as key");
   }
-  catch (Dune::RangeError & r) {}
+  catch (Dune::Exception & r) {}
 }
 
 template<class P>
