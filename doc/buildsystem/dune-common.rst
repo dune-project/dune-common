@@ -9,7 +9,7 @@ What is CMake anyway?
 
 CMake...
 
-- is an open source buildsystem tool developed at KITware.
+- is an open source build system tool developed at KITware.
 - offers a one-tool-solution to all building tasks, like configuring, building, linking, testing and packaging.
 - is a build system generator: It supports a set of backends called *generators*
 - is portable

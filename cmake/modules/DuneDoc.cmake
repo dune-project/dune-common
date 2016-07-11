@@ -19,7 +19,7 @@
 #
 #    .. cmake_brief::
 #
-#       build a pdf document through the dune buildsystem.
+#       build a pdf document through the Dune build system.
 #
 #    .. cmake_param:: texfile
 #       :single:
