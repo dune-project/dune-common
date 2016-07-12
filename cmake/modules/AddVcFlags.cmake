@@ -1,4 +1,7 @@
-# Defines the functions to use VC
+# Defines the functions to use Vc
+#
+# Vc is a library for high-level Vectorization support in C++
+# see https://github.com/VcDevel/Vc
 #
 # .. cmake_function:: add_dune_vc_flags
 #

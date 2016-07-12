@@ -1,6 +1,22 @@
 #ifndef DUNE_COMMON_SIMD_HH
 #define DUNE_COMMON_SIMD_HH
 
+/**
+   \file Abstractions for support of dedicated SIMD data types
+
+   Libraries like Vc (https://github.com/VcDevel/Vc) add high-level
+   data types for SIMD (or vectorization) support in C++.  Most of
+   these operations mimic the behavior of a numerical data type. Some
+   boolean operations can not be implemented in a compatible way to
+   trivial data types.
+
+   This header contains additional abstractions to help writing code
+   that works with trivial numericaldata types (like double) and Vc
+   vectorization data types.
+
+   See also the conditional.hh and range_utils.hh headers.
+ */
+
 #include <dune/common/rangeutilities.hh>
 #include <dune/common/conditional.hh>
 #if HAVE_VC
