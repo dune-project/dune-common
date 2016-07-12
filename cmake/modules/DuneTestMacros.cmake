@@ -226,9 +226,11 @@ function(dune_add_test)
 
   # Find out whether this test should be a dummy
   set(DOSOMETHING TRUE)
+  set(FAILED_CONDITION_PRINTING "")
   foreach(condition ${ADDTEST_CMAKE_GUARD})
     if(NOT ${condition})
       set(DOSOMETHING FALSE)
+      set(FAILED_CONDITION_PRINTING "${FAILED_CONDITION_PRINTING}std::cout << \"  ${condition}\" << std::endl;\n")
     endif()
   endforeach()
 
@@ -236,7 +238,9 @@ function(dune_add_test)
   if(NOT DOSOMETHING)
     dune_module_path(MODULE dune-common RESULT scriptdir SCRIPT_DIR)
     set(ADDTEST_TARGET)
-    set(ADDTEST_SOURCES ${scriptdir}/main77.cc)
+    set(dummymain ${CMAKE_CURRENT_BINARY_DIR}/main77_${ADDTEST_NAME}.cc)
+    configure_file(${scriptdir}/main77.cc.in ${dummymain})
+    set(ADDTEST_SOURCES ${dummymain})
   endif()
 
   # Add the executable if it is not already present
