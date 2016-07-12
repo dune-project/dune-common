@@ -94,12 +94,35 @@ if(PARMETIS_FOUND)
                NO_DEFAULT_PATH)
   find_library(PARMETIS_LIBRARY parmetis)
 
+  set(_CMAKE_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES}") # do a backup
   # check ParMETIS library
   if(PARMETIS_LIBRARY)
-    list(APPEND CMAKE_REQUIRED_LIBRARIES ${PARMETIS_LIBRARY} ${METIS_LIBRARY} ${MPI_DUNE_LIBRARIES})
+    set(_PARMETIS_LIBRARIES ${PARMETIS_LIBRARY} ${METIS_LIBRARIES} ${MPI_DUNE_LIBRARIES})
+    set(CMAKE_REQUIRED_LIBRARIES ${_PARMETIS_LIBRARIES} ${_CMAKE_REQUIRED_LIBRARIES})
     include(CheckFunctionExists)
     check_function_exists(parmetis_v3_partkway HAVE_PARMETIS)
+    if(NOT HAVE_PARMETIS)
+      # Maybe we are using static scotch libraries. In this case we need to link
+      # the other scotch libraries too. Let's make a best effort.
+      # Get the path where ParMETIS_LIBRARY resides
+      get_filename_component(_lib_root ${METIS_LIBRARY} DIRECTORY)
+      # Search for additional libs only in this directory.
+      # Otherwise we might find incompatible ones, e.g. for int instead of long
+      find_library(PTSCOTCH_LIBRARY ptscotch PATHS ${_lib_root} "The PT-Scotch library."
+        NO_DEFAULT_PATH)
+      find_library(PTSCOTCHERR_LIBRARY ptscotcherr PATHS ${_lib_root} "The Scotch error library."
+        NO_DEFAULT_PATH)
+      if(PTSCOTCH_LIBRARY AND PTSCOTCHERR_LIBRARY)
+        set(_PARMETIS_LIBRARIES ${PARMETIS_LIBRARY} ${PTSCOTCH_LIBRARY}
+          ${PTSCOTCHERR_LIBRARY} ${METIS_LIBRARIES} ${MPI_DUNE_LIBRARIES})
+        set(CMAKE_REQUIRED_LIBRARIES ${_PARMETIS_LIBRARIES}
+          ${_CMAKE_REQUIRED_LIBRARIES})
+        unset(HAVE_PARMETIS CACHE)
+        check_function_exists(parmetis_v3_partkway HAVE_PARMETIS)
+      endif()
+    endif()
   endif(PARMETIS_LIBRARY)
+    set(CMAKE_REQUIRED_LIBRARIES "${_CMAKE_REQUIRED_LIBRARIES}") # get backup
 endif(PARMETIS_FOUND)
 
 # behave like a CMake module is supposed to behave
@@ -119,13 +142,13 @@ cmake_pop_check_state()
 
 if(PARMETIS_FOUND)
   set(PARMETIS_INCLUDE_DIRS ${PARMETIS_INCLUDE_DIR})
-  set(PARMETIS_LIBRARIES "${PARMETIS_LIBRARY};${METIS_LIBRARY};${MPI_DUNE_LIBRARIES}"
+  set(PARMETIS_LIBRARIES "${_PARMETIS_LIBRARIES}"
       CACHE FILEPATH "ParMETIS libraries needed for linking")
   set(PARMETIS_LINK_FLAGS "${DUNE_MPI_LINK_FLAGS}"
       CACHE STRING "ParMETIS link flags")
   # log result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
-    "Determing location of ParMETIS succeded:\n"
+    "Determing location of ParMETIS succeeded:\n"
     "Include directory: ${PARMETIS_INCLUDE_DIRS}\n"
     "Library directory: ${PARMETIS_LIBRARIES}\n\n")
 endif(PARMETIS_FOUND)

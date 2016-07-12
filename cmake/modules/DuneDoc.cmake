@@ -19,7 +19,7 @@
 #
 #    .. cmake_brief::
 #
-#       build a pdf document through the dune buildsystem.
+#       build a pdf document through the Dune build system.
 #
 #    .. cmake_param:: texfile
 #       :single:
@@ -75,7 +75,7 @@ include(DuneSphinxCMakeDoc)
 
 
 MACRO(create_doc_install filename targetdir)
-  dune_common_script_dir(SCRIPT_DIR)
+  dune_module_path(MODULE dune-common RESULT scriptdir SCRIPT_DIR)
   get_filename_component(targetfile ${filename} NAME)
   # The doc file might be in CMAKE_CURRENT_<SOURCE|BINARY>_DIR
   # Depending on whether this is a tarball or not
@@ -85,7 +85,7 @@ MACRO(create_doc_install filename targetdir)
     set(_src_file ${filename})
     set(_need_to_generate TRUE)
   endif(NOT _src_file)
-  set(install_command ${CMAKE_COMMAND} -D FILES=${_src_file} -D DIR=${CMAKE_INSTALL_PREFIX}/${targetdir} -P ${SCRIPT_DIR}/InstallFile.cmake)
+  set(install_command ${CMAKE_COMMAND} -D FILES=${_src_file} -D DIR=${CMAKE_INSTALL_PREFIX}/${targetdir} -P ${scriptdir}/InstallFile.cmake)
   # create a custom target for the installation
   if("${ARGC}" EQUAL "3" AND _need_to_generate)
     set(_depends ${ARGV2})

@@ -1,4 +1,4 @@
-MPITESTS = indicestest                            \
+MPITESTS = remoteindicestest                      \
            indexsettest                           \
            syncertest                             \
            selectiontest                          \
@@ -14,12 +14,12 @@ TESTS = $(NORMALTESTS) $(MPITESTS)
 check_PROGRAMS = $(NORMALTESTS) $(MPITESTS)
 
 # define the programs
-indicestest_SOURCES = indicestest.cc
-indicestest_CPPFLAGS = $(AM_CPPFLAGS)		\
+remoteindicestest_SOURCES = remoteindicestest.cc
+remoteindicestest_CPPFLAGS = $(AM_CPPFLAGS)		\
 	$(DUNEMPICPPFLAGS)
-indicestest_LDFLAGS = $(AM_LDFLAGS)		\
+remoteindicestest_LDFLAGS = $(AM_LDFLAGS)		\
 	$(DUNEMPILDFLAGS)
-indicestest_LDADD =				\
+remoteindicestest_LDADD =				\
 	$(DUNEMPILIBS)				\
 	$(LDADD)
 

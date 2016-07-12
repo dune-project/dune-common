@@ -100,7 +100,7 @@
 #cmakedefine HAVE_IS_INDEXABLE_SUPPORT 1
 
 /* Define to ENABLE_UMFPACK if the UMFPack library is available */
-#cmakedefine HAVE_UMFPACK ENABLE_UMFPACK
+#cmakedefine HAVE_UMFPACK ENABLE_SUITESPARSE
 
 /* Define to ENABLE_SUITESPARSE if the SuiteSparse library is available */
 #cmakedefine HAVE_SUITESPARSE ENABLE_SUITESPARSE
@@ -135,7 +135,8 @@
 /* Define to ENABLE_SUITESPARSE if the SuiteSparse's RBIO library is available */
 #cmakedefine HAVE_SUITESPARSE_RBIO ENABLE_SUITESPARSE
 
-/* Define to ENABLE_SUITESPARSE if the SuiteSparse's SPQR library is available */
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's SPQR library is available
+   and if it's version is at least 4.3 */
 #cmakedefine HAVE_SUITESPARSE_SPQR ENABLE_SUITESPARSE
 
 /* Define to ENABLE_SUITESPARSE if the SuiteSparse's UMFPACK library is available */

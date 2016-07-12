@@ -12,7 +12,7 @@ namespace Dune {
 
   /**
    * \file
-   * \brief Utilities for type computations, constarining overloads, ...
+   * \brief Utilities for type computations, constraining overloads, ...
    * \author Carsten Gräser
    */
 
@@ -51,7 +51,7 @@ namespace Dune {
    *
    * In this case the matching overload with highest priority
    * will be used. This is achieved by the fact that PriorityTag<k>
-   * derives from all types PriorityTag<i> with i les than k.
+   * derives from all types PriorityTag<i> with i less than k.
    *
    * \tparam priority The priority of this tag.
    */

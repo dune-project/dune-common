@@ -25,11 +25,11 @@ namespace Dune {
   struct AlwaysVoid { typedef void type; };
 
   template<class T, class = void>
-  struct IsVector : false_type {};
+  struct IsVector : std::false_type {};
 
   template<class T>
   struct IsVector<T, typename AlwaysVoid<typename T::field_type>::type>
-    : true_type {};
+    : std::true_type {};
 
   /** @brief computes the dot product for fundamental data types according to Petsc's VectDot function: dot(a,b) := std::conj(a)*b
    *
@@ -40,7 +40,7 @@ namespace Dune {
    */
   template<class A, class B>
   auto
-  dot(const A & a, const B & b) -> typename enable_if<!IsVector<A>::value && !is_same<typename FieldTraits<A>::field_type,typename FieldTraits<A>::real_type> ::value, decltype(conj(a)*b)>::type
+  dot(const A & a, const B & b) -> typename std::enable_if<!IsVector<A>::value && !std::is_same<typename FieldTraits<A>::field_type,typename FieldTraits<A>::real_type> ::value, decltype(conj(a)*b)>::type
   {
     return conj(a)*b;
   }
@@ -57,7 +57,7 @@ namespace Dune {
   // fundamental type with A being a real type
   template<class A, class B>
   auto
-  dot(const A & a, const B & b) -> typename enable_if<!IsVector<A>::value && is_same<typename FieldTraits<A>::field_type,typename FieldTraits<A>::real_type>::value, decltype(a*b)>::type
+  dot(const A & a, const B & b) -> typename std::enable_if<!IsVector<A>::value && std::is_same<typename FieldTraits<A>::field_type,typename FieldTraits<A>::real_type>::value, decltype(a*b)>::type
   {
     return a*b;
   }
@@ -73,7 +73,7 @@ namespace Dune {
    */
   template<typename A, typename B>
   auto
-  dot(const A & a, const B & b) -> typename enable_if<IsVector<A>::value, decltype(a.dot(b))>::type
+  dot(const A & a, const B & b) -> typename std::enable_if<IsVector<A>::value, decltype(a.dot(b))>::type
   {
     return a.dot(b);
   }

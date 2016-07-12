@@ -8,7 +8,6 @@ TESTPROGS = \
     calloncetest \
     check_fvector_size \
     classnametest \
-    conversiontest \
     diagonalmatrixtest \
     dynmatrixtest \
     dynvectortest \
@@ -17,6 +16,7 @@ TESTPROGS = \
     fmatrixtest \
     fvectortest \
     gcdlcmtest \
+    indicestest \
     integersequence \
     iteratorfacadetest \
     iteratorfacadetest2 \
@@ -43,7 +43,6 @@ TESTPROGS = \
     tuplestest \
     tupleutilitytest \
     typetraitstest \
-    typetraitstest_deprecated \
     utilitytest
 
 # which tests to run
@@ -125,6 +124,8 @@ fvectortest_SOURCES = fvectortest.cc
 
 gcdlcmtest_SOURCES = gcdlcmtest.cc
 
+indicestest_SOURCES = indicestest.cc
+
 genericiterator_compile_fail_SOURCES = genericiterator_compile_fail.cc
 
 integersequence_SOURCES = integersequence.cc
@@ -202,8 +203,6 @@ tuplestest_SOURCES = tuplestest.cc
 tupleutilitytest_SOURCES = tupleutilitytest.cc
 
 typetraitstest_SOURCES = typetraitstest.cc
-
-typetraitstest_deprecated_SOURCES = typetraitstest_deprecated.cc
 
 utilitytest_SOURCES = utilitytest.cc
 

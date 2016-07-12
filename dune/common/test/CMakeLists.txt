@@ -7,6 +7,16 @@ dune_add_test(SOURCES bigunsignedinttest.cc
 
 dune_add_test(SOURCES bitsetvectortest.cc)
 
+dune_add_test(SOURCES boundscheckingtest.cc
+              COMPILE_DEFINITIONS DUNE_CHECK_BOUNDS=1
+              LINK_LIBRARIES dunecommon)
+dune_add_test(SOURCES boundscheckingmvtest.cc
+              COMPILE_DEFINITIONS DUNE_CHECK_BOUNDS=1
+              LINK_LIBRARIES dunecommon)
+dune_add_test(SOURCES boundscheckingoptest.cc
+              COMPILE_DEFINITIONS DUNE_CHECK_BOUNDS=1
+              LINK_LIBRARIES dunecommon)
+
 dune_add_test(SOURCES calloncetest.cc
               LINK_LIBRARIES dunecommon)
 
@@ -28,8 +38,6 @@ dune_add_test(SOURCES classnametest.cc
 dune_add_test(SOURCES concept.cc
               LINK_LIBRARIES dunecommon)
 
-dune_add_test(SOURCES conversiontest.cc)
-
 dune_add_test(SOURCES diagonalmatrixtest.cc
               LINK_LIBRARIES dunecommon)
 
@@ -37,6 +45,9 @@ dune_add_test(SOURCES dynmatrixtest.cc
               LINK_LIBRARIES dunecommon)
 
 dune_add_test(SOURCES dynvectortest.cc
+              LINK_LIBRARIES dunecommon)
+
+dune_add_test(SOURCES densevectortest.cc
               LINK_LIBRARIES dunecommon)
 
 dune_add_test(SOURCES enumsettest.cc)
@@ -52,6 +63,11 @@ dune_add_test(SOURCES genericiterator_compile_fail.cc
               EXPECT_COMPILE_FAIL)
 
 dune_add_test(SOURCES gcdlcmtest.cc)
+
+dune_add_test(SOURCES hybridutilitiestest.cc
+              LINK_LIBRARIES dunecommon)
+
+dune_add_test(SOURCES indicestest.cc)
 
 dune_add_test(SOURCES integersequence.cc)
 
@@ -96,6 +112,9 @@ dune_add_test(SOURCES singletontest.cc)
 
 dune_add_test(SOURCES sllisttest.cc)
 
+dune_add_test(SOURCES stdapplytest.cc
+              LINK_LIBRARIES dunecommon)
+
 dune_add_test(SOURCES streamtest.cc
               LINK_LIBRARIES dunecommon)
 
@@ -108,7 +127,7 @@ dune_add_test(SOURCES testdebugallocator.cc
 dune_add_test(NAME testdebugallocator_fail1
               SOURCES testdebugallocator.cc
               LINK_LIBRARIES dunecommon
-              COMPILE_DEFINITIONS "FAILURE1;EXPECTED_SIGNAL=SIGSEGV"
+              COMPILE_DEFINITIONS "FAILURE1;EXPECTED_SIGNAL=SIGSEGV;EXPECTED_ALT_SIGNAL=SIGBUS"
               EXPECT_FAIL)
 
 dune_add_test(NAME testdebugallocator_fail2
@@ -126,13 +145,13 @@ dune_add_test(NAME testdebugallocator_fail3
 dune_add_test(NAME testdebugallocator_fail4
               SOURCES testdebugallocator.cc
               LINK_LIBRARIES dunecommon
-              COMPILE_DEFINITIONS "FAILURE4;DEBUG_ALLOCATOR_KEEP=1;EXPECTED_SIGNAL=SIGSEGV"
+              COMPILE_DEFINITIONS "FAILURE4;DEBUG_ALLOCATOR_KEEP=1;EXPECTED_SIGNAL=SIGSEGV;EXPECTED_ALT_SIGNAL=SIGBUS"
               EXPECT_FAIL)
 
 dune_add_test(NAME testdebugallocator_fail5
               SOURCES testdebugallocator.cc
               LINK_LIBRARIES dunecommon
-              COMPILE_DEFINITIONS "FAILURE5;EXPECTED_SIGNAL=SIGSEGV"
+              COMPILE_DEFINITIONS "FAILURE5;EXPECTED_SIGNAL=SIGSEGV;EXPECTED_ALT_SIGNAL=SIGBUS"
               EXPECT_FAIL)
 
 dune_add_test(SOURCES testfloatcmp.cc)
@@ -140,10 +159,6 @@ dune_add_test(SOURCES testfloatcmp.cc)
 dune_add_test(SOURCES tuplestest.cc)
 
 dune_add_test(SOURCES tupleutilitytest.cc)
-
-dune_add_test(SOURCES typetraitstest.cc)
-
-dune_add_test(SOURCES typetraitstest_deprecated.cc)
 
 #dune_add_test(SOURCES utilitytest.cc)
 

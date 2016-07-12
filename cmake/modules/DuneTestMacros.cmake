@@ -1,7 +1,7 @@
 # Module that provides tools for testing the Dune way.
 #
 # Note that "the Dune way" of doing this has changed after
-# the 2.4 release. See the buildsystem documentation for details.
+# the 2.4 release. See the build system documentation for details.
 #
 # .. cmake_function:: dune_add_test
 #
@@ -229,7 +229,7 @@ function(dune_add_test)
   endif()
 
   # Make sure to exclude the target from all, even when it is user-provided
-  if(DUNE_BUILD_TESTS_ON_MAKE_ALL)
+  if(DUNE_BUILD_TESTS_ON_MAKE_ALL AND (NOT ADDTEST_EXPECT_COMPILE_FAIL))
     set_property(TARGET ${ADDTEST_TARGET} PROPERTY EXCLUDE_FROM_ALL 0)
   else()
     set_property(TARGET ${ADDTEST_TARGET} PROPERTY EXCLUDE_FROM_ALL 1)

@@ -9,11 +9,11 @@
 #include <algorithm>
 #include <initializer_list>
 
+#include <dune/common/boundschecking.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/densematrix.hh>
 #include <dune/common/precision.hh>
-#include <dune/common/std/constexpr.hh>
 
 namespace Dune
 {
@@ -170,18 +170,18 @@ namespace Dune
     }
 
     // make this thing a matrix
-    DUNE_CONSTEXPR size_type mat_rows() const { return ROWS; }
-    DUNE_CONSTEXPR size_type mat_cols() const { return COLS; }
+    constexpr size_type mat_rows() const { return ROWS; }
+    constexpr size_type mat_cols() const { return COLS; }
 
     row_reference mat_access ( size_type i )
     {
-      assert(i < ROWS);
+      DUNE_ASSERT_BOUNDS(i < ROWS);
       return _data[i];
     }
 
     const_row_reference mat_access ( size_type i ) const
     {
-      assert(i < ROWS);
+      DUNE_ASSERT_BOUNDS(i < ROWS);
       return _data[i];
     }
   };
@@ -273,20 +273,20 @@ namespace Dune
     }
 
     // make this thing a matrix
-    DUNE_CONSTEXPR size_type mat_rows() const { return 1; }
-    DUNE_CONSTEXPR size_type mat_cols() const { return 1; }
+    constexpr size_type mat_rows() const { return 1; }
+    constexpr size_type mat_cols() const { return 1; }
 
     row_reference mat_access ( size_type i )
     {
       DUNE_UNUSED_PARAMETER(i);
-      assert(i == 0);
+      DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }
 
     const_row_reference mat_access ( size_type i ) const
     {
       DUNE_UNUSED_PARAMETER(i);
-      assert(i == 0);
+      DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }
 

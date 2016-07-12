@@ -62,7 +62,7 @@ find_library(SUITESPARSE_CONFIG_LIB
   PATH_SUFFIXES "lib" "lib32" "lib64" "Lib"
   NO_DEFAULT_PATH
 )
-# now also include the deafult paths
+# now also include the default paths
 find_library(SUITESPARSE_CONFIG_LIB
   NAMES "suitesparseconfig"
   PATH_SUFFIXES "lib" "lib32" "lib64" "Lib"
@@ -91,7 +91,7 @@ foreach(_component ${SUITESPARSE_COMPONENTS})
     PATH_SUFFIXES "lib" "lib32" "lib64" "${_component}" "${_component}/Lib"
     NO_DEFAULT_PATH
   )
-  #now  also include the deafult paths
+  #now also include the default paths
   find_library(${_component}_LIBRARY
     NAMES "${_componentLower}"
     PATH_SUFFIXES "lib" "lib32" "lib64" "${_component}" "${_component}/Lib"
@@ -164,8 +164,12 @@ endif()
 # check wether everything was found
 foreach(_component ${SUITESPARSE_COMPONENTS})
   # variable used for component handling
-  set(SuiteSparse_${_component}_FOUND (${_component}_LIBRARY AND ${_component}_INCLUDE_DIR))
-  set(HAVE_SUITESPARSE_${_component} SuiteSparse_${_component}_FOUND)
+  if(${_component}_LIBRARY AND ${_component}_INCLUDE_DIR)
+    set(SuiteSparse_${_component}_FOUND TRUE)
+  else()
+    set(SuiteSparse_${_component}_FOUND FALSE)
+  endif()
+  set(HAVE_SUITESPARSE_${_component} ${SuiteSparse_${_component}_FOUND})
   if(SuiteSparse_${_component}_FOUND)
     list(APPEND SUITESPARSE_INCLUDE_DIR "${${_component}_INCLUDE_DIR}")
     list(APPEND SUITESPARSE_LIBRARY "${${_component}_LIBRARY}")
@@ -177,6 +181,35 @@ foreach(_component ${SUITESPARSE_COMPONENTS})
     ${_component}_INCLUDE_DIR
     ${_component}_LIBRARY)
 endforeach()
+
+# check version, for SPQR we need at least SuiteSparse 4.3
+if(SuiteSparse_SPQR_FOUND)
+  include(CheckCSourceCompiles)
+  include(CMakePushCheckState)
+  cmake_push_check_state()
+  set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${SUITESPARSE_INCLUDE_DIR})
+  set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ${SUITESPARSE_LIBRARY})
+  # check whether version is at least 4.3
+  check_c_source_compiles("
+    #include <SuiteSparse_config.h>
+    int main(void)
+    {
+      #ifndef SUITESPARSE_HAS_VERSION_FUNCTION
+        #error SuiteSparse <= 4.2.0 too old, required version 4.3 or newer for SPQR.
+      #endif
+      #if SUITESPARSE_VERSION <= 4003
+        #error SuiteSparse too old, required version 4.3 or newer for SPQR.
+      #endif
+      return 0;
+    }"
+    SUITESPARSE_MIN_VERSION_4_3)
+
+  if(NOT SUITESPARSE_MIN_VERSION_4_3)
+    set(SuiteSparse_SPQR_FOUND FALSE)
+    set(HAVE_SUITESPARSE_SPQR FALSE)
+  endif()
+  cmake_pop_check_state()
+endif()
 
 list(APPEND SUITESPARSE_LIBRARY ${SUITESPARSE_CONFIG_LIB})
 
@@ -206,6 +239,7 @@ mark_as_advanced(
   SUITESPARSE_INCLUDE_DIR
   SUITESPARSE_LIBRARY
   SUITESPARSE_CONFIG_LIB
+  SUITESPARSE_MIN_VERSION_4_3
   WILL_USE_CHOLMOD
   WILL_USE_UMFPACK)
 
@@ -215,7 +249,7 @@ if(SuiteSparse_FOUND)
   set(SuiteSparse_INCLUDE_DIRS ${SUITESPARSE_INCLUDE_DIR})
   # log result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
-    "Determining location of SuiteSparse succeded:\n"
+    "Determining location of SuiteSparse succeeded:\n"
     "Include directory: ${SuiteSparse_INCLUDE_DIRS}\n"
     "Library directory: ${SuiteSparse_LIBRARIES}\n\n")
   set(SuiteSparse_COMPILER_FLAGS)
@@ -236,6 +270,7 @@ endif()
 
 #set HAVE_SUITESPARSE for config.h
 set(HAVE_SUITESPARSE ${SuiteSparse_FOUND})
+set(HAVE_UMFPACK ${SuiteSparse_UMFPACK_FOUND})
 
 # register all SuiteSparse related flags
 if(SuiteSparse_FOUND)

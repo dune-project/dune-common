@@ -104,7 +104,7 @@ namespace Dune {
     /**
      * @brief Removes the first element.
      */
-    const void pop_front()
+    void pop_front()
     {
       key_type k = _data.front().first;
       _data.pop_front();
@@ -113,7 +113,7 @@ namespace Dune {
     /**
      * @brief Removes the last element.
      */
-    const void pop_back()
+    void pop_back()
     {
       key_type k = _data.back().first;
       _data.pop_back();

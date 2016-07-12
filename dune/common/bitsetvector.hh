@@ -12,6 +12,7 @@
 #include <iostream>
 #include <algorithm>
 
+#include <dune/common/boundschecking.hh>
 #include <dune/common/genericiterator.hh>
 #include <dune/common/exceptions.hh>
 
@@ -41,7 +42,9 @@ namespace Dune {
     BitSetVectorConstReference(const BitSetVector& blockBitField_, int block_number_) :
       blockBitField(blockBitField_),
       block_number(block_number_)
-    {}
+    {
+      DUNE_ASSERT_BOUNDS(blockBitField_.size() > block_number_);
+    }
 
     //! hide assignment operator
     BitSetVectorConstReference& operator=(const BitSetVectorConstReference & b);
@@ -104,6 +107,15 @@ namespace Dune {
     bool none() const
     {
       return ! any();
+    }
+
+    //! Returns true if all bits are set
+    bool all() const
+    {
+      for(size_type i=0; i<block_size; ++i)
+        if(not test(i))
+          return false;
+      return true;
     }
 
     //! Returns true if bit n is set.
@@ -588,10 +600,14 @@ namespace Dune {
     }
 
     typename std::vector<bool>::reference getBit(size_type i, size_type j) {
+      DUNE_ASSERT_BOUNDS(j < block_size);
+      DUNE_ASSERT_BOUNDS(i < size());
       return BlocklessBaseClass::operator[](i*block_size+j);
     }
 
     typename std::vector<bool>::const_reference getBit(size_type i, size_type j) const {
+      DUNE_ASSERT_BOUNDS(j < block_size);
+      DUNE_ASSERT_BOUNDS(i < size());
       return BlocklessBaseClass::operator[](i*block_size+j);
     }
 

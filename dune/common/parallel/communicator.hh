@@ -75,10 +75,10 @@ namespace Dune
    * Based on the information about the distributed index sets,  data
    * independent interfaces between different sets of the index sets
    * can be setup using the class Interface.  For the actual communication
-   * data dependant communicators can be setup using BufferedCommunicator,
+   * data dependent communicators can be setup using BufferedCommunicator,
    * DatatypeCommunicator VariableSizeCommunicator based on the interface
    * information. In contrast to the former
-   * the latter is independant of the class Interface can work on a map
+   * the latter is independent of the class Interface can work on a map
    * from process number to a pair of index lists describing which local indices
    * are send and received from that processs, respectively.
    */
@@ -265,7 +265,7 @@ namespace Dune
      * \code
      * bool contains(Attribute flag) const;
      * \endcode
-     * for checking whether the set contains a specfic flag.
+     * for checking whether the set contains a specific flag.
      * This functionality is for example provided the classes
      * EnumItem, EnumRange and Combine.
      *
@@ -464,7 +464,7 @@ namespace Dune
      * @param interface The interface that defines what indices are to be communicated.
      */
     template<class Data, class Interface>
-    typename enable_if<is_same<SizeOne,typename CommPolicy<Data>::IndexedTypeFlag>::value, void>::type
+    typename std::enable_if<std::is_same<SizeOne,typename CommPolicy<Data>::IndexedTypeFlag>::value, void>::type
     build(const Interface& interface);
 
     /**
@@ -1012,9 +1012,8 @@ namespace Dune
 
       // Create data type
       MPI_Datatype* type = &( send ? messageTypes[process->first].first : messageTypes[process->first].second);
-      MPI_Type_hindexed(info.elements, info.length, info.displ,
-                        MPITraits<typename CommPolicy<V>::IndexedType>::getType(),
-                        type);
+      MPI_Type_create_hindexed(info.elements, info.length, info.displ,
+                               MPITraits<typename CommPolicy<V>::IndexedType>::getType(), type);
       MPI_Type_commit(type);
       // Deallocate memory
       info.free();
@@ -1138,7 +1137,7 @@ namespace Dune
   }
 
   template<class Data, class Interface>
-  typename enable_if<is_same<SizeOne, typename CommPolicy<Data>::IndexedTypeFlag>::value, void>::type
+  typename std::enable_if<std::is_same<SizeOne, typename CommPolicy<Data>::IndexedTypeFlag>::value, void>::type
   BufferedCommunicator::build(const Interface& interface)
   {
     interfaces_=interface.interfaces();

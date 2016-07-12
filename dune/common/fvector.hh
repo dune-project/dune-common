@@ -3,6 +3,7 @@
 #ifndef DUNE_FVECTOR_HH
 #define DUNE_FVECTOR_HH
 
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <cstdlib>
@@ -12,15 +13,13 @@
 #include <initializer_list>
 #include <algorithm>
 
-#include <dune/common/std/constexpr.hh>
-
 #include "typetraits.hh"
 #include "exceptions.hh"
-#include "array.hh"
 
 #include "ftraits.hh"
 #include "densevector.hh"
 #include "unused.hh"
+#include "boundschecking.hh"
 
 namespace Dune {
 
@@ -104,19 +103,25 @@ namespace Dune {
     typedef typename Base::size_type size_type;
     typedef typename Base::value_type value_type;
 
+    /** \brief The type used for references to the vector entry */
+    typedef value_type& reference;
+
+    /** \brief The type used for const references to the vector entry */
+    typedef const value_type& const_reference;
+
     //! Constructor making default-initialized vector
-    DUNE_CONSTEXPR FieldVector()
-      : _data{}
+    constexpr FieldVector()
+      : _data{{}}
     {}
 
     //! Constructor making vector with identical coordinates
     explicit FieldVector (const K& t)
     {
-      fill(t);
+      std::fill(_data.begin(),_data.end(),t);
     }
 
-    //! Constructor making vector with identical coordinates
-    FieldVector (const FieldVector & x) : _data(x._data)
+    //! Copy constructor
+    FieldVector (const FieldVector & x) : Base(), _data(x._data)
     {}
 
     /** \brief Construct from a std::initializer_list */
@@ -140,7 +145,7 @@ namespace Dune {
      * \param[in]  dummy  A void* dummy argument needed by SFINAE.
      */
     template<class C>
-    FieldVector (const DenseVector<C> & x, typename Dune::enable_if<IsFieldVectorSizeCorrect<C,SIZE>::value>::type* dummy=0 )
+    FieldVector (const DenseVector<C> & x, typename std::enable_if<IsFieldVectorSizeCorrect<C,SIZE>::value>::type* dummy=0 )
     {
       DUNE_UNUSED_PARAMETER(dummy);
       // do a run-time size check, for the case that x is not a FieldVector
@@ -159,13 +164,14 @@ namespace Dune {
     using Base::operator=;
 
     // make this thing a vector
-    DUNE_CONSTEXPR size_type size () const { return SIZE; }
-    K & operator[](size_type i) { return _data[i]; }
-    const K & operator[](size_type i) const { return _data[i]; }
-  private:
-    void fill(const K& t)
-    {
-      for (int i=0; i<SIZE; i++) _data[i]=t;
+    constexpr size_type size () const { return SIZE; }
+    K & operator[](size_type i) {
+      DUNE_ASSERT_BOUNDS(i < SIZE);
+      return _data[i];
+    }
+    const K & operator[](size_type i) const {
+      DUNE_ASSERT_BOUNDS(i < SIZE);
+      return _data[i];
     }
   };
 
@@ -219,10 +225,16 @@ namespace Dune {
 
     typedef typename Base::size_type size_type;
 
+    /** \brief The type used for references to the vector entry */
+    typedef K& reference;
+
+    /** \brief The type used for const references to the vector entry */
+    typedef const K& const_reference;
+
     //===== construction
 
     /** \brief Default constructor */
-    DUNE_CONSTEXPR FieldVector ()
+    constexpr FieldVector ()
       : _data()
     {}
 
@@ -236,7 +248,7 @@ namespace Dune {
              >
     FieldVector (const T& k) : _data(k) {}
 
-    //! Constructor making vector with identical coordinates
+    //! Constructor from static vector of different type
     template<class C>
     FieldVector (const DenseVector<C> & x)
     {
@@ -247,8 +259,15 @@ namespace Dune {
 
     //! copy constructor
     FieldVector ( const FieldVector &other )
-      : _data( other._data )
+      : Base(), _data( other._data )
     {}
+
+    /** \brief Construct from a std::initializer_list */
+    FieldVector (std::initializer_list<K> const &l)
+    {
+      assert(l.size() == 1);
+      _data = *l.begin();
+    }
 
     //! Assignment operator for scalar
     template<typename T,
@@ -265,17 +284,17 @@ namespace Dune {
     }
 
     //===== forward methods to container
-    DUNE_CONSTEXPR size_type size () const { return 1; }
+    constexpr size_type size () const { return 1; }
     K & operator[](size_type i)
     {
       DUNE_UNUSED_PARAMETER(i);
-      assert(i == 0);
+      DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }
     const K & operator[](size_type i) const
     {
       DUNE_UNUSED_PARAMETER(i);
-      assert(i == 0);
+      DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }
 

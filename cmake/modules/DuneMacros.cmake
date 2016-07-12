@@ -12,7 +12,9 @@
 # .. cmake_function:: finalize_dune_project
 #
 #    Finalize a Dune module. This function needs to be run at the end of
-#    every top-level CMakeLists.txt file.
+#    every top-level CMakeLists.txt file. Among other things it creates
+#    the cmake package configuration files. Modules can add additional
+#    entries to these files by setting the variable @${ProjectName}_INIT.
 #
 # .. cmake_function:: dune_add_library
 #
@@ -37,6 +39,16 @@
 #       :multi:
 #
 #       A list of libraries that should be incorporated into this library.
+#
+#    .. cmake_param:: APPEND
+#       :option:
+#
+#       Whether the library should be appended to the
+#       exported libraries. If there a DUNE module must
+#       make several libraries available, then first one
+#       must not use this option but the others have to
+#       use it. Otherwise only the last library will be
+#       exported as the others will be overwritten.
 #
 #    .. cmake_param:: OBJECT
 #       :option:
@@ -104,9 +116,9 @@
 #
 # dune_regenerate_config_cmake()
 #
-# Creates a new config_collected.h.cmake file in ${CMAKE_CURRENT_BINARY_DIR) that
+# Creates a new config_collected.h.cmake file in ${CMAKE_CURRENT_BINARY_DIR} that
 # consists of entries from ${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake
-# and includes non-private entries from the files config_collected.h.cmake files
+# and includes non-private entries from the config.h.cmake files
 # of all dependent modules.
 # Finally config.h is created from config_collected.h.cmake.
 #
@@ -124,6 +136,7 @@ include(DuneEnableAllPackages)
 include(DuneTestMacros)
 include(OverloadCompilerFlags)
 include(DuneSymlinkOrCopy)
+include(DunePathHelper)
 
 # Converts a module name given by _module into an uppercase string
 # _upper where all dashes (-) are replaced by underscores (_)
@@ -240,7 +253,8 @@ macro(find_dune_package module)
     endforeach()
     if(NOT ${module}_dune_module)
       message(FATAL_ERROR "Could not find dune.module file for module ${module} "
-        "in ${${module}_PREFIX},  ${${module}_PREFIX}/lib/dunecontrol/${module}/")
+        "in ${${module}_PREFIX},  ${${module}_PREFIX}/lib/dunecontrol/${module}/, "
+        "${${module}_PREFIX}/lib64/dunecontrol/${module}/dune.module")
     endif(NOT ${module}_dune_module)
     if(module_version_wrong)
       message(FATAL_ERROR "Could not find requested version of module ${module}. "
@@ -679,7 +693,13 @@ macro(dune_project)
     FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
   else(Fortran_Works)
     # Write empty FC.h header
-    file(WRITE ${CMAKE_BINARY_DIR}/FC.h "")
+    # Make sure to only write this file once, otherwise every cmake run
+    # will trigger a full rebuild of the whole project.
+    unset(_FC_H CACHE)
+    find_file(_FC_H NAME FC.h PATHS "${CMAKE_BINARY_DIR}" NO_DEFAULT_PATH)
+    if(NOT _FC_H)
+      file(WRITE "${CMAKE_BINARY_DIR}/FC.h" "")
+    endif()
   endif(Fortran_Works)
 
   # Create custom target for building the documentation
@@ -754,7 +774,18 @@ macro(dune_regenerate_config_cmake)
          ".*/\\*[ ]*begin[ ]+${_dep}[^\\*]*\\*/(.*)/[/\\*][ ]*end[ ]*${_dep}[^\\*]*\\*/" "\\1"
          _tfile "${_file}")
        # strip the private section
-       string(REGEX REPLACE "(.*)/[\\*][ ]*begin private.*/[\\*][ ]*end[ ]*private[^\\*]\\*/(.*)" "\\1\\2" _file "${_tfile}")
+       string(REGEX REPLACE "(.*)/[\\*][ ]*begin private.*/[\\*][ ]*end[ ]*private[^\\*]\\*/(.*)" "\\1\\2" _ttfile "${_tfile}")
+
+       # extract the bottom section
+       string(REGEX MATCH "/[\\*][ ]*begin bottom.*/[\\*][ ]*end[ ]*bottom[^\\*]\\*/" _tbottom "${_ttfile}")
+       string(REGEX REPLACE ".*/\\*[ ]*begin[ ]+bottom[^\\*]*\\*/(.*)/[/\\*][ ]*end[ ]*bottom[^\\*]*\\*/" "\\1" ${_dep}_CONFIG_H_BOTTOM "${_tbottom}" )
+       string(REGEX REPLACE "(.*)/[\\*][ ]*begin bottom.*/[\\*][ ]*end[ ]*bottom[^\\*]\\*/(.*)" "\\1\\2" _file  "${_ttfile}")
+
+       # append bottom section
+       if(${_dep}_CONFIG_H_BOTTOM)
+         set(CONFIG_H_BOTTOM "${CONFIG_H_BOTTOM} ${${_dep}_CONFIG_H_BOTTOM}")
+       endif()
+
        file(APPEND ${CONFIG_H_CMAKE_FILE} "${_file}")
      endif(EXISTS ${_mod_conf_file})
    endforeach()
@@ -762,6 +793,10 @@ macro(dune_regenerate_config_cmake)
  # parse again dune.module file of current module to set PACKAGE_* variables
  dune_module_information(${CMAKE_SOURCE_DIR} QUIET)
  file(APPEND ${CONFIG_H_CMAKE_FILE} "\n${_myfile}")
+ # append CONFIG_H_BOTTOM section at the end if found
+ if(CONFIG_H_BOTTOM)
+    file(APPEND ${CONFIG_H_CMAKE_FILE} "${CONFIG_H_BOTTOM}")
+ endif()
 endmacro(dune_regenerate_config_cmake)
 
 # macro that should be called at the end of the top level CMakeLists.txt.
@@ -789,6 +824,12 @@ macro(finalize_dune_project)
     # Generate a standard cmake package configuration file
     file(WRITE ${PROJECT_BINARY_DIR}/CMakeFiles/${ProjectName}-config.cmake.in
 "if(NOT ${ProjectName}_FOUND)
+# Whether this module is installed or not
+set(${ProjectName}_INSTALLED @MODULE_INSTALLED@)
+
+# Settings specific to the module
+@${ProjectName}_INIT@
+# Package initialization
 @PACKAGE_INIT@
 
 #report other information
@@ -804,7 +845,7 @@ set(${ProjectName}_SUGGESTS \"@${ProjectName}_SUGGESTS@\")
 set(${ProjectName}_MODULE_PATH \"@PACKAGE_DUNE_INSTALL_MODULEDIR@\")
 set(${ProjectName}_LIBRARIES \"@DUNE_MODULE_LIBRARIES@\")
 
-# Lines that are set by the CMake buildsystem via the variable DUNE_CUSTOM_PKG_CONFIG_SECTION
+# Lines that are set by the CMake build system via the variable DUNE_CUSTOM_PKG_CONFIG_SECTION
 ${DUNE_CUSTOM_PKG_CONFIG_SECTION}
 
 #import the target
@@ -834,6 +875,7 @@ endif()")
   # Set the location of the doc file source. Needed by custom package configuration
   # file section of dune-grid.
   set(DUNE_MODULE_SRC_DOCDIR "${PROJECT_SOURCE_DIR}/doc")
+  set(MODULE_INSTALLED ON)
 
   configure_package_config_file(${CONFIG_SOURCE_FILE}
     ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake
@@ -857,6 +899,7 @@ macro(set_and_check _var _file)
     message(FATAL_ERROR \"File or directory \${_file} referenced by variable \${_var} does not exist !\")
   endif()
 endmacro()")
+  set(MODULE_INSTALLED OFF)
   configure_file(
     ${CONFIG_SOURCE_FILE}
     ${PROJECT_BINARY_DIR}/${ProjectName}-config.cmake @ONLY)
@@ -929,24 +972,6 @@ macro(target_link_dune_default_libraries _target)
   endforeach(_lib ${DUNE_DEFAULT_LIBS})
 endmacro(target_link_dune_default_libraries)
 
-# Gets path to the common Dune CMake scripts
-macro(dune_common_script_dir _script_dir)
-  if("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-    set(${_script_dir} ${CMAKE_SOURCE_DIR}/cmake/scripts)
-  else("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-    set(${_script_dir} ${dune-common_SCRIPT_DIR})
-  endif("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-endmacro(dune_common_script_dir)
-
-# Gets path to the common Dune CMake scripts source
-macro(dune_common_script_source_dir _script_dir)
-  if("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-    set(${_script_dir} ${CMAKE_SOURCE_DIR}/cmake/scripts)
-  else("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-    set(${_script_dir} ${dune-ommon_SCRIPT_SOURCE_DIR})
-  endif("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
-endmacro(dune_common_script_source_dir)
-
 function(dune_expand_object_libraries _SOURCES_var _ADD_LIBS_var _COMPILE_FLAGS_var)
   set(_new_SOURCES "")
   set(_new_ADD_LIBS "${${_ADD_LIBS_var}}")
@@ -974,7 +999,7 @@ endfunction(dune_expand_object_libraries)
 # More docu can be found at the top of this file.
 macro(dune_add_library basename)
   include(CMakeParseArguments)
-  cmake_parse_arguments(DUNE_LIB "NO_EXPORT;OBJECT" "COMPILE_FLAGS"
+  cmake_parse_arguments(DUNE_LIB ";APPEND;NO_EXPORT;OBJECT" "COMPILE_FLAGS"
     "ADD_LIBS;SOURCES" ${ARGN})
   if(DUNE_LIB_OBJECT)
     if(DUNE_LIB_${basename}_SOURCES)
@@ -1059,12 +1084,22 @@ macro(dune_add_library basename)
     endif(DUNE_BUILD_BOTH_LIBS)
 
     if(NOT DUNE_LIB_NO_EXPORT)
+      # The follwing allows for adding multiple libs in the same
+      # directory or below with passing the APPEND keyword.
+      # If there are additional calls to dune_add_library in other
+      # modules then you have to use APPEND or otherwise only the
+      # last lib will get exported as a target.
       if(NOT _MODULE_EXPORT_USED)
         set(_MODULE_EXPORT_USED ON)
         set(_append "")
       else(NOT _MODULE_EXPORT_USED)
         set(_append APPEND)
       endif(NOT _MODULE_EXPORT_USED)
+      # Allow to explicitly pass APPEND
+      if(DUNE_LIB_APPEND)
+        set(_append APPEND)
+      endif(DUNE_LIB_APPEND)
+
       # install targets to use the libraries in other modules.
       install(TARGETS ${_created_libs}
         EXPORT ${ProjectName}-targets DESTINATION ${CMAKE_INSTALL_LIBDIR})

@@ -55,7 +55,7 @@ namespace Dune
      * \code
      * bool contains(Attribute flag) const;
      * \endcode
-     * for checking whether the set contains a specfic flag.
+     * for checking whether the set contains a specific flag.
      * This functionality is for example provided the classes
      * EnumItem, EnumRange and Combine.
      *
@@ -222,7 +222,7 @@ namespace Dune
      * \code
      * bool contains(Attribute flag) const;
      * \endcode
-     * for checking whether the set contains a specfic flag.
+     * for checking whether the set contains a specific flag.
      * This functionality is for example provided the classes
      * EnumItem, EnumRange and Combine.
      * @param remoteIndices The indices known to remote processes.

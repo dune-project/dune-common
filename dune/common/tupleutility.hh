@@ -87,9 +87,9 @@ namespace Dune {
 
   template<class... Args, class Functor>
   auto genericTransformTupleBackend(std::tuple<Args...>& t, Functor& f) ->
-    decltype(genericTransformTupleBackendImpl(t, f,Std::make_index_sequence<sizeof...(Args)>()))
+    decltype(genericTransformTupleBackendImpl(t, f,Std::index_sequence_for<Args...>{}))
   {
-    return genericTransformTupleBackendImpl(t, f,Std::make_index_sequence<sizeof...(Args)>());
+    return genericTransformTupleBackendImpl(t, f,Std::index_sequence_for<Args...>{});
   }
 #endif
 
@@ -193,9 +193,9 @@ namespace Dune {
 
     template<class T>
     inline auto operator()(T&& t) ->
-      decltype(this->apply(t,Std::make_index_sequence<sizeof...(Args)>())) const
+      decltype(this->apply(t,Std::index_sequence_for<Args...>{})) const
     {
-      return apply(t,Std::make_index_sequence<sizeof...(Args)>());
+      return apply(t,Std::index_sequence_for<Args...>{});
     }
   };
 
@@ -267,7 +267,7 @@ namespace Dune {
   template<class T>
   struct AddPtrTypeEvaluator
   {
-    typedef typename remove_reference<T>::type* Type;
+    typedef typename std::remove_reference<T>::type* Type;
     static Type apply(T& t)
     {
       return &t;
@@ -549,7 +549,7 @@ namespace Dune {
   };
 
   /**
-   * @brief Find the first occurance of a type in a std::tuple
+   * @brief Find the first occurrence of a type in a std::tuple
    *
    * \tparam Tuple The std::tuple type to search in.
    * \tparam T     Type to search for.
@@ -558,7 +558,7 @@ namespace Dune {
    *
    * This class can search for a particular type in std::tuple. It will check each
    * type in the std::tuple in turn, and set its member constant \c value to the
-   * index of the first occurance of type was found.  If the type was not
+   * index of the first occurrence of type was found.  If the type was not
    * found, a static_assert is triggered.
    */
   template<class Tuple, class T, std::size_t start = 0>

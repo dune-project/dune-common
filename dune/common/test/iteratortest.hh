@@ -79,7 +79,7 @@ int testForwardIterator(Iter begin, Iter end, Opt& opt)
 /**
  * @brief Tests the capabilities of a bidirectional iterator.
  *
- * Namely it test wether random positions can be reached from
+ * Namely it test whether random positions can be reached from
  * each directions.
  *
  * @param begin Iterator positioned at the stsrt.
@@ -329,7 +329,7 @@ int testIterator(Iter& begin, Iter& end, Opt& opt)
 
 template<class T>
 class Printer {
-  typename Dune::remove_const<T>::type res;
+  typename std::remove_const<T>::type res;
 public:
   Printer() : res(0){}
   void operator()(const T& t){

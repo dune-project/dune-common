@@ -31,6 +31,7 @@ install(FILES
         bigunsignedint.hh
         binaryfunctions.hh
         bitsetvector.hh
+        boundschecking.hh
         classname.hh
         concept.hh
         conditional.hh
@@ -59,8 +60,10 @@ install(FILES
         genericiterator.hh
         gmpfield.hh
         hash.hh
+        hybridutilities.hh
         identitymatrix.hh
         indent.hh
+        indices.hh
         interfaces.hh
         ios_state.hh
         iteratorfacades.hh

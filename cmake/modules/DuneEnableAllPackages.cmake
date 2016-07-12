@@ -197,7 +197,7 @@ Update the cmake_minimum_required() call in your main CMakeLists.txt file to get
   include(CMakeParseArguments)
   set(OPTIONS APPEND VERBOSE)
   set(SINGLEARGS)
-  set(MULTIARGS COMPILE_DEFINITIONS INCLUDE_DIRS MODULE_LIBRARIES)
+  set(MULTIARGS COMPILE_DEFINITIONS COMPILE_OPTIONS INCLUDE_DIRS MODULE_LIBRARIES)
   cmake_parse_arguments(DUNE_ENABLE_ALL_PACKAGES "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
 
   if(DUNE_ENABLE_ALL_PACKAGES_UNPARSED_ARGUMENTS)
@@ -301,10 +301,12 @@ Update the cmake_minimum_required() call in your main CMakeLists.txt file to get
     # make sure the /lib directory exists - we need it to create the stub source file in there
     file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
     # figure out the location of the stub source template
-    dune_common_script_dir(script_dir)
+    dune_module_path(MODULE dune-common RESULT script_dir SCRIPT_DIR)
     foreach(module_lib ${DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES})
-      # create the stub source file in the output directory...
+      # create the stub source file in the output directory (using a c++ compatible name)...
+      string(REGEX REPLACE "[^a-zA-Z0-9]" "_" module_lib_mangled ${module_lib})
       configure_file("${script_dir}/module_library.cc.in" "${PROJECT_BINARY_DIR}/lib/lib${module_lib}_stub.cc")
+
       # ...and create the library...
       dune_add_library(${module_lib} SOURCES "${PROJECT_BINARY_DIR}/lib/lib${module_lib}_stub.cc")
       # ...and add it to all future targets in the module
@@ -384,6 +386,10 @@ List of libraries defined in dune_enable_all_packages: ${DUNE_ENABLE_ALL_PACKAGE
   endif()
 
   foreach(source ${DUNE_LIBRARY_ADD_SOURCES_SOURCES})
-    target_sources(${lib} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${source})
+    if(IS_ABSOLUTE ${source})
+      target_sources(${lib} PRIVATE ${source})
+    else()
+      target_sources(${lib} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${source})
+    endif()
   endforeach()
 endfunction()
