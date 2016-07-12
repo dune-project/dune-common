@@ -21,10 +21,38 @@
 #include <dune/common/conditional.hh>
 #if HAVE_VC
 #include <Vc/Vc>
+#endif
 
 namespace Dune
 {
 
+  template<typename T>
+  struct SimdScalarTypeTraits
+  {
+    using type = T;
+  };
+
+  template<typename T>
+  using SimdScalar = typename SimdScalarTypeTraits<T>::type;
+
+#if HAVE_VC
+  /*
+    Add Vc specializations for the SimdScalarTypeTraits trais class
+   */
+  template<typename T, typename A>
+  struct SimdScalarTypeTraits< Vc::Vector<T,A> >
+  {
+    using type = T;
+  };
+
+  template<typename T, std::size_t N, typename V, std::size_t M>
+  struct SimdScalarTypeTraits< Vc::SimdArray<T,N,V,M> >
+  {
+    using type = T;
+  };
+#endif // HAVE_VC
+
+#if HAVE_VC
   /*
     Add Vc specializations for cond(), see conditional.hh
    */
@@ -43,6 +71,9 @@ namespace Dune
   {
     return std::move(Vc::iif(b, v1, v2));
   }
+#endif // HAVE_VC
+
+#if HAVE_VC
   /*
     Add Vc specializations for several boolean operations, see rangeutitlities.hh:
 
@@ -95,8 +126,8 @@ namespace Dune
   {
     return Vc::all_of(v);
   }
+#endif // HAVE_VC
 
 } // end namespace Dune
-#endif // HAVE_VC
 
 #endif // DUNE_COMMON_SIMD_HH
