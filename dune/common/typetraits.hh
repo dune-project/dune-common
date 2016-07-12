@@ -408,8 +408,8 @@ namespace Dune
   // version for types with begin() and end()
   template<typename T>
   struct is_range<T,
-                  decltype(Std::declval<T>().begin()),
-                  decltype(Std::declval<T>().end())>
+                  decltype(std::declval<T>().begin()),
+                  decltype(std::declval<T>().end())>
     : public std::true_type
   {};
 #endif
