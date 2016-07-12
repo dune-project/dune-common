@@ -5,6 +5,7 @@ install(FILES
   AddPTScotchFlags.cmake
   AddSuiteSparseFlags.cmake
   AddUMFPackFlags.cmake
+  AddVcFlags.cmake
   CheckCXXFeatures.cmake
   CheckForPthreads.c
   CMakeBuiltinFunctionsDocumentation.cmake
