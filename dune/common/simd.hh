@@ -25,6 +25,9 @@
 namespace Dune
 {
 
+  /*
+    Add Vc specializations for cond(), see conditional.hh
+   */
   template<typename T, typename A>
   Vc::Vector<T,A> cond(const Vc::Mask<T,A> & b,
     const Vc::Vector<T,A> & v1,
@@ -40,7 +43,11 @@ namespace Dune
   {
     return std::move(Vc::iif(b, v1, v2));
   }
+  /*
+    Add Vc specializations for several boolean operations, see rangeutitlities.hh:
 
+    max_value, min_value, any_true, all_true
+   */
   template<typename T, typename A>
   T max_value(const Vc::Vector<T,A> & v)
   {
