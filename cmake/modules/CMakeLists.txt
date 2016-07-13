@@ -5,10 +5,10 @@ install(FILES
   AddPTScotchFlags.cmake
   AddSuiteSparseFlags.cmake
   AddUMFPackFlags.cmake
+  AddVcFlags.cmake
   CheckCXXFeatures.cmake
   CheckForPthreads.c
   CMakeBuiltinFunctionsDocumentation.cmake
-  DuneCMakePackageConfigHelpers.cmake
   DuneCommonMacros.cmake
   DuneCxaDemangle.cmake
   DuneDoc.cmake

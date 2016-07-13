@@ -24,3 +24,8 @@ include(AddGMPFlags)
 find_package(Inkscape)
 include(UseInkscape)
 include(FindMProtect)
+
+# try to find the Vc library
+find_package(Vc)
+include(AddVcFlags)
+set_package_info("Vc" "C++ Vectorization library" "https://github.com/VcDevel/Vc")

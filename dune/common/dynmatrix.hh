@@ -6,7 +6,9 @@
 #include <cmath>
 #include <cstddef>
 #include <iostream>
+#include <initializer_list>
 
+#include <dune/common/boundschecking.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/dynvector.hh>
 #include <dune/common/densematrix.hh>
@@ -70,6 +72,13 @@ namespace Dune
       _data(r, row_type(c, v) )
     {}
 
+    /** \brief Constructor initializing the matrix from a list of vector
+     */
+    DynamicMatrix (std::initializer_list<DynamicVector<K>> const &ll)
+      : _data(ll)
+    {}
+
+
     //==== resize related methods
     /**
      * \brief resize matrix to <code>r × c</code>
@@ -99,8 +108,14 @@ namespace Dune
       assert(this->rows());
       return _data.front().size();
     }
-    row_type & mat_access(size_type i) { return _data[i]; }
-    const row_type & mat_access(size_type i) const { return _data[i]; }
+    row_type & mat_access(size_type i) {
+      DUNE_ASSERT_BOUNDS(i < _data.size());
+      return _data[i];
+    }
+    const row_type & mat_access(size_type i) const {
+      DUNE_ASSERT_BOUNDS(i < _data.size());
+      return _data[i];
+    }
   };
 
   /** @} end documentation */

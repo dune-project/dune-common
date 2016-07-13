@@ -22,6 +22,15 @@
 */
 
 /**
+ @defgroup RangeUtilities Range Utilities
+ @brief Utilities for reduction like operations on ranges
+
+ All these reduction operations work for appropriate ranges and scalar values
+
+ @ingroup Utilities
+*/
+
+/**
   @defgroup StringUtilities String Utilities
   @brief Utility functions for std::string
   @ingroup Utilities
@@ -36,6 +45,12 @@
 /**
   @defgroup TypeUtilities Type Utilities
   @brief Type traits, overload helpers, and other utilities for type computations
+  @ingroup Utilities
+*/
+
+/**
+  @defgroup HybridUtilities Hybrid Utilities
+  @brief Hybrid utility functions that work on homogeneous as well as heterogeneous containers
   @ingroup Utilities
 */
 

@@ -2,6 +2,8 @@
 
 #include <dune/common/bitsetvector.hh>
 #include <dune/common/diagonalmatrix.hh>
+#include <dune/common/dynvector.hh>
+#include <dune/common/dynmatrix.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
@@ -45,6 +47,16 @@ int main() try {
     std::cout << "(line " << __LINE__
               << ") All good: Exception thrown as expected." << std::endl;
   }
+  try {
+    Dune::DynamicVector<double> v = {1, 2, 3};
+    v[3] = 10;
+    std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
+              << std::endl;
+    passed = false;
+  } catch (Dune::RangeError) {
+    std::cout << "(line " << __LINE__
+              << ") All good: Exception thrown as expected." << std::endl;
+  }
 
   // Read beyond end of vector
   try {
@@ -57,6 +69,17 @@ int main() try {
     std::cout << "(line " << __LINE__
               << ") All good: Exception thrown as expected." << std::endl;
   }
+  try {
+    Dune::DynamicVector<double> const v = {1, 2, 3};
+    DUNE_UNUSED double const x = v[3];
+    std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
+              << std::endl;
+    passed = false;
+  } catch (Dune::RangeError) {
+    std::cout << "(line " << __LINE__
+              << ") All good: Exception thrown as expected." << std::endl;
+  }
+
 
   // Write beyond end of singleton matrix
   try {
@@ -93,10 +116,30 @@ int main() try {
     std::cout << "(line " << __LINE__
               << ") All good: Exception thrown as expected." << std::endl;
   }
+  try {
+    Dune::DynamicMatrix<double> m = {{1, 2, 3}, {10, 20, 30}};
+    m[2][0] = 100;
+    std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
+              << std::endl;
+    passed = false;
+  } catch (Dune::RangeError) {
+    std::cout << "(line " << __LINE__
+              << ") All good: Exception thrown as expected." << std::endl;
+  }
 
   // Read beyond end of matrix
   try {
     Dune::FieldMatrix<double, 2, 3> const m = {{1, 2, 3}, {10, 20, 30}};
+    DUNE_UNUSED double const x = m[2][0];
+    std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
+              << std::endl;
+    passed = false;
+  } catch (Dune::RangeError) {
+    std::cout << "(line " << __LINE__
+              << ") All good: Exception thrown as expected." << std::endl;
+  }
+  try {
+    Dune::DynamicMatrix<double> const m = {{1, 2, 3}, {10, 20, 30}};
     DUNE_UNUSED double const x = m[2][0];
     std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
               << std::endl;

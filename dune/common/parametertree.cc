@@ -22,6 +22,8 @@ using namespace Dune;
 ParameterTree::ParameterTree()
 {}
 
+const Dune::ParameterTree Dune::ParameterTree::empty_;
+
 void ParameterTree::report(std::ostream& stream, const std::string& prefix) const
 {
   typedef std::map<std::string, std::string>::const_iterator ValueIt;
@@ -93,7 +95,7 @@ ParameterTree& ParameterTree::sub(const std::string& key)
   }
 }
 
-const ParameterTree& ParameterTree::sub(const std::string& key) const
+const ParameterTree& ParameterTree::sub(const std::string& key, bool fail_if_missing) const
 {
   std::string::size_type dot = key.find(".");
 
@@ -105,8 +107,15 @@ const ParameterTree& ParameterTree::sub(const std::string& key) const
   else
   {
     if (subs_.count(key) == 0)
-      DUNE_THROW(Dune::RangeError, "SubTree '" << key
-        << "' not found in ParameterTree (prefix " + prefix_ + ")");
+      {
+        if (fail_if_missing)
+          {
+            DUNE_THROW(Dune::RangeError, "SubTree '" << key
+                       << "' not found in ParameterTree (prefix " + prefix_ + ")");
+          }
+        else
+          return empty_;
+      }
     return subs_.find(key)->second;
   }
 }

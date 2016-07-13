@@ -1,7 +1,7 @@
 # Module that provides tools for testing the Dune way.
 #
 # Note that "the Dune way" of doing this has changed after
-# the 2.4 release. See the buildsystem documentation for details.
+# the 2.4 release. See the build system documentation for details.
 #
 # .. cmake_function:: dune_add_test
 #

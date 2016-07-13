@@ -47,6 +47,9 @@ dune_add_test(SOURCES dynmatrixtest.cc
 dune_add_test(SOURCES dynvectortest.cc
               LINK_LIBRARIES dunecommon)
 
+dune_add_test(SOURCES densevectortest.cc
+              LINK_LIBRARIES dunecommon)
+
 dune_add_test(SOURCES enumsettest.cc)
 
 dune_add_test(NAME fmatrixtest
@@ -60,6 +63,9 @@ dune_add_test(SOURCES genericiterator_compile_fail.cc
               EXPECT_COMPILE_FAIL)
 
 dune_add_test(SOURCES gcdlcmtest.cc)
+
+dune_add_test(SOURCES hybridutilitiestest.cc
+              LINK_LIBRARIES dunecommon)
 
 dune_add_test(SOURCES indicestest.cc)
 
@@ -103,6 +109,9 @@ dune_add_test(SOURCES shared_ptrtest.cc)
 dune_add_test(SOURCES singletontest.cc)
 
 dune_add_test(SOURCES sllisttest.cc)
+
+dune_add_test(SOURCES stdapplytest.cc
+              LINK_LIBRARIES dunecommon)
 
 dune_add_test(SOURCES streamtest.cc
               LINK_LIBRARIES dunecommon)

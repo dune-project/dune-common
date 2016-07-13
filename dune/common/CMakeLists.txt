@@ -34,6 +34,7 @@ install(FILES
         boundschecking.hh
         classname.hh
         concept.hh
+        conditional.hh
         debugallocator.hh
         debugstream.hh
         deprecated.hh
@@ -59,6 +60,7 @@ install(FILES
         genericiterator.hh
         gmpfield.hh
         hash.hh
+        hybridutilities.hh
         identitymatrix.hh
         indent.hh
         indices.hh
@@ -81,8 +83,10 @@ install(FILES
         propertymap.hh
         promotiontraits.hh
         proxymemberaccess.hh
+        rangeutilities.hh
         reservedvector.hh
         shared_ptr.hh
+        simd.hh
         singleton.hh
         sllist.hh
         stdstreams.hh
