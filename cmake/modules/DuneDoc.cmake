@@ -8,17 +8,6 @@
 # make doc.
 # It provides the following macros:
 #
-# create_doc_install(FILENAME  TARGETDIR DEPENDENCY)
-#
-# creates a target for installing the file FILENAME
-# to the directory TARGETDIR.
-# DEPENDENCY is a target that will be called to create the
-# documentation before installation.
-#
-# This macro is needed, as we cannot add dependencies to the install
-# target. See https://gitlab.kitware.com/cmake/cmake/issues/8438
-# and https://gitlab.dune-project.org/core/dune-common/issues/36
-#
 # .. cmake_function:: dune_add_latex_document
 #
 #    .. cmake_brief::
@@ -40,8 +29,37 @@
 #
 # .. cmake_function:: create_doc_install
 #
-#    TODO doc me
-#    What are use cases for this function?
+#    .. cmake_brief::
+#
+#       creates a target for creating and installing a file
+#       to a given directory.
+#
+#    .. cmake_param:: filename
+#       :single:
+#       :required:
+#       :positional:
+#
+#       The name of the file to be installed.
+#
+#    .. cmake_param:: targetdir
+#       :single:
+#       :required:
+#       :positional:
+#
+#       The directory into which the beforementioned file will be installed.
+#
+#    .. cmake_param:: dependency
+#       :single:
+#       :required:
+#       :positional:
+#
+#       A target that gets called to create the file that will be installed.
+#
+#    .. note::
+#
+#       This macro is needed, as we cannot add dependencies to the install
+#       target. See https://gitlab.kitware.com/cmake/cmake/issues/8438
+#       and https://gitlab.dune-project.org/core/dune-common/issues/36
 #
 
 find_package(LATEX)
