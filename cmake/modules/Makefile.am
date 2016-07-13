@@ -5,7 +5,6 @@ MODULES = \
   AddPTScotchFlags.cmake   \
   AddUMFPackFlags.cmake    \
   CheckCXXFeatures.cmake   \
-  DuneCMakePackageConfigHelpers.cmake \
   DuneCommonMacros.cmake  \
   DuneCxaDemangle.cmake   \
   DuneDoc.cmake           \
