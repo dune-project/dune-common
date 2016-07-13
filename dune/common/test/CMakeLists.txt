@@ -64,6 +64,9 @@ dune_add_test(SOURCES genericiterator_compile_fail.cc
 
 dune_add_test(SOURCES gcdlcmtest.cc)
 
+dune_add_test(SOURCES hybridutilitiestest.cc
+              LINK_LIBRARIES dunecommon)
+
 dune_add_test(SOURCES indicestest.cc)
 
 dune_add_test(SOURCES integersequence.cc)
@@ -108,6 +111,9 @@ dune_add_test(SOURCES shared_ptrtest.cc)
 dune_add_test(SOURCES singletontest.cc)
 
 dune_add_test(SOURCES sllisttest.cc)
+
+dune_add_test(SOURCES stdapplytest.cc
+              LINK_LIBRARIES dunecommon)
 
 dune_add_test(SOURCES streamtest.cc
               LINK_LIBRARIES dunecommon)

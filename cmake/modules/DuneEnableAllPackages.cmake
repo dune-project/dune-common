@@ -65,11 +65,6 @@
 #    You can optionally add additional include dirs and compile definitions that will also be applied to
 #    all targets in the module.
 #
-#    .. warning::
-#       :ref:`dune_enable_all_packages` requires CMake 2.8.12+. If you call this function with an older version
-#       of CMake, the build will fail with a fatal error. DO NOT enable this feature if your module needs
-#       to compile on machines with an older version of CMake.
-#
 #    .. note::
 #       If you want to use :code:`dune_enable_all_packages` with an older version of CMake and your DUNE module
 #       creates its own library, you have to manually create the library in the top-level CMakeLists.txt
@@ -95,9 +90,6 @@
 #    Adds all currently registered package flags (see :ref:`dune_register_package_flags`) to the given targets.
 #    This function is mainly intended to help write DUNE modules that want to use :ref:`dune_enable_all_packages` and
 #    define their own libraries, but need to be compatible with CMake < 3.1
-#
-#    .. note::
-#       Just like :ref:`dune_enable_all_packages`, this function requires CMake 2.8.12+.
 #
 # .. cmake_function:: dune_register_package_flags
 #
@@ -184,16 +176,6 @@ endfunction(dune_register_package_flags)
 
 
 function(dune_enable_all_packages)
-
-  if (CMAKE_VERSION VERSION_LESS 2.8.12)
-    message(FATAL_ERROR "dune_enable_all_packages() needs CMake 2.8.12+")
-  elseif(CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS 2.8.12)
-    message(WARNING
-"You are using dune_enable_all_packages().
-This requires at least CMake 2.8.12, but your Dune module only requires ${CMAKE_MINIMUM_REQUIRED_VERSION}.
-Update the cmake_minimum_required() call in your main CMakeLists.txt file to get rid of this warning.")
-  endif()
-
   include(CMakeParseArguments)
   set(OPTIONS APPEND VERBOSE)
   set(SINGLEARGS)
@@ -331,15 +313,6 @@ endfunction(dune_enable_all_packages)
 
 
 function(dune_target_enable_all_packages)
-  if (CMAKE_VERSION VERSION_LESS 2.8.12)
-    message(FATAL_ERROR "dune_target_enable_all_packages() needs CMake 2.8.12+")
-  elseif(CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS 2.8.12)
-    message(WARNING
-"You are using dune_target_enable_all_packages().
-This requires at least CMake 2.8.12, but your Dune module only requires ${CMAKE_MINIMUM_REQUIRED_VERSION}.
-Update the cmake_minimum_required() call in your main CMakeLists.txt file to get rid of this warning.")
-  endif()
-
   foreach(_target ${ARGN})
 
     get_property(all_incs GLOBAL PROPERTY ALL_PKG_INCS)

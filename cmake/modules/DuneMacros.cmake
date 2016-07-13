@@ -125,7 +125,7 @@
 
 # Make CMake use rpath on OS X
 if(POLICY CMP0042)
-  # this policy only needed for CMake older then 2.8.12
+  # this policy only needed for CMake older then 3.0
   cmake_policy(SET CMP0042 NEW)
 endif()
 
@@ -811,7 +811,7 @@ macro(finalize_dune_project)
   finalize_headercheck()
 
   #create cmake-config files for installation tree
-  include(DuneCMakePackageConfigHelpers)
+  include(CMakePackageConfigHelpers)
   include(GNUInstallDirs)
   set(DOXYSTYLE_DIR ${CMAKE_INSTALL_DATAROOTDIR}/dune-common/doc/doxygen/)
   set(SCRIPT_DIR ${CMAKE_INSTALL_DATAROOTDIR}/dune/cmake/scripts)
@@ -845,7 +845,7 @@ set(${ProjectName}_SUGGESTS \"@${ProjectName}_SUGGESTS@\")
 set(${ProjectName}_MODULE_PATH \"@PACKAGE_DUNE_INSTALL_MODULEDIR@\")
 set(${ProjectName}_LIBRARIES \"@DUNE_MODULE_LIBRARIES@\")
 
-# Lines that are set by the CMake buildsystem via the variable DUNE_CUSTOM_PKG_CONFIG_SECTION
+# Lines that are set by the CMake build system via the variable DUNE_CUSTOM_PKG_CONFIG_SECTION
 ${DUNE_CUSTOM_PKG_CONFIG_SECTION}
 
 #import the target

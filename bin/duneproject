@@ -404,7 +404,7 @@ See
 for further options.
 
 
-The full build-system is described in the dune-common/doc/buildsystem (Git version) or under share/doc/dune-common/buildsystem if you installed DUNE!
+The full build system is described in the dune-common/doc/buildsystem (Git version) or under share/doc/dune-common/buildsystem if you installed DUNE!
 R_DELIM
 
 ################## CMakeLists.txt ##################

@@ -1,5 +1,6 @@
 install(
   FILES
+  apply.hh
   constexpr.hh
   final.hh
   noexcept.hh

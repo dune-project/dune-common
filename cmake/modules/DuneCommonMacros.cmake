@@ -61,3 +61,8 @@ CHECK_ALIGNOF(float)
 CHECK_ALIGNOF(size_t)
 CHECK_ALIGNOF(uint64_t)
 CHECK_ALIGNOF(uint32_t)
+
+# try to find the Vc library
+find_package(Vc)
+include(AddVcFlags)
+set_package_info("Vc" "C++ Vectorization library" "https://github.com/VcDevel/Vc")

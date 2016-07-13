@@ -1,0 +1,66 @@
+/**
+  @defgroup Common Common
+  @brief foundation classes
+*/
+
+/**
+  @defgroup Allocators Allocators
+  @brief Implementations of the STL allocator concept
+  @ingroup Common
+*/
+
+/**
+  @defgroup Utilities Utilities
+  @brief Collection of helper classes, type traits, etc.
+  @ingroup Common
+*/
+
+/**
+  @defgroup Path Filesystem Paths
+  @brief Utilities for filesystem path management
+  @ingroup Utilities
+*/
+
+/**
+ @defgroup RangeUtilities Range Utilities
+ @brief Utilities for reduction like operations on ranges
+
+ All these reduction operations work for appropriate ranges and scalar values
+
+ @ingroup Utilities
+*/
+
+/**
+  @defgroup StringUtilities String Utilities
+  @brief Utility functions for std::string
+  @ingroup Utilities
+*/
+
+/**
+  @defgroup TupleUtilities Tuple Utilities
+  @brief Utility classes which can be used with std::tuple
+  @ingroup Utilities
+*/
+
+/**
+  @defgroup TypeUtilities Type Utilities
+  @brief Type traits, overload helpers, and other utilities for type computations
+  @ingroup Utilities
+*/
+
+/**
+  @defgroup HybridUtilities Hybrid Utilities
+  @brief Hybrid utility functions that work on homogeneous as well as heterogeneous containers
+  @ingroup Utilities
+*/
+
+/**
+  @defgroup Numbers Numbers
+  @brief Class implementing different number representations and helper functions
+  @ingroup Common
+*/
+
+/**
+  @defgroup FloatCmp FloatCmp
+  @ingroup Numbers
+*/
