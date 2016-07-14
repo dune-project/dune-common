@@ -2,27 +2,10 @@
 #include <iostream>
 #include <cassert>
 #include <tuple>
-#include <dune/common/parameterizedobject.hh>
 #include <dune/common/parametertree.hh>
 #include <dune/common/shared_ptr.hh>
 
-#define DefineImplementation(IF,T,PARAM...)     \
-    struct T : public IF {                      \
-        T(PARAM) {}                          \
-        virtual std::string info() {            \
-            return #T;                          \
-        }                                       \
-    }
-
-struct InterfaceA
-{
-    virtual std::string info() = 0;
-};
-
-struct InterfaceB
-{
-    virtual std::string info() = 0;
-};
+#include "parameterizedobjectfactorysingleton.hh"
 
 DefineImplementation(InterfaceA, Ai, int);
 DefineImplementation(InterfaceA, Bi, int);
@@ -35,7 +18,6 @@ DefineImplementation(InterfaceB, Bis, int, std::string);
 
 #define CheckInstance(F,T,PARAM...)             \
     assert(#T == F.create(#T,##PARAM)->info())
-
 
 struct AImp : public InterfaceA
 {
@@ -57,13 +39,16 @@ struct AImp : public InterfaceA
 int main()
 {
     // int as parameter
-    Dune::ParameterizedObjectFactory<std::unique_ptr<InterfaceA>(int)> FactoryA;
-    FactoryA.define<Ai>("Ai");
-    FactoryA.define<Bi>("Bi");
-    FactoryA.define("Ax", [](int i) { return Dune::Std::make_unique<Ax>(); });
-    CheckInstance(FactoryA, Ai, 0);
-    CheckInstance(FactoryA, Bi, 1);
-    CheckInstance(FactoryA, Ax, 1);
+    // Dune::ParameterizedObjectFactory<std::unique_ptr<InterfaceA>(int)> FactoryA;
+    globalPtrFactory<InterfaceA>().define<Ai>("Ai");
+    globalPtrFactory<InterfaceA>().define<Bi>("Bi");
+    globalPtrFactory<InterfaceA>().define("Ax", [](int i) { return Dune::Std::make_unique<Ax>(); });
+    CheckInstance(globalPtrFactory<InterfaceA>(), Ai, 0);
+    CheckInstance(globalPtrFactory<InterfaceA>(), Bi, 1);
+    CheckInstance(globalPtrFactory<InterfaceA>(), Ax, 1);
+    // int as parameter for external factory
+    CheckInstance(globalPtrFactory<InterfaceA>(), Aix, 0);
+    CheckInstance(globalPtrFactory<InterfaceA>(), Bix, 1);
 
     // default constructor
     Dune::ParameterizedObjectFactory<std::shared_ptr<InterfaceA>()> FactoryAd;
