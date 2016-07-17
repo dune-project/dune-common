@@ -97,7 +97,7 @@ class DataBase:
         variables = []
         string = self.defs[grid]["type"]
         while True:
-            match = re.search(r"\$\(([a-zA-Z]+)\)", string)
+            match = re.search(r"\$\(([a-zA-Z][a-zA-Z0-9]*)\)", string)
             if not match:
                 return variables
             if match.group(1) not in variables:
@@ -131,11 +131,19 @@ class DataBase:
             for test in defs["checks"]:
                 self.check(test, selector.parameters, self.get_defaults(selector.grid))
 
+    def uses_extension(self, selector):
+        defs = self.defs[selector.grid]
+        if "extension" in defs:
+            if "extension" == "yes":
+                return True
+        else:
+            return False
+
     # private methods
 
     def replace(self, string, parameters, defaults, translations):
         while True:
-            match = re.search(r"\$\(([a-zA-Z]+)\)", string)
+            match = re.search(r"\$\(([a-zA-Z][a-zA-Z0-9]*)\)", string)
             if not match:
                 break
             option = match.group(1)
@@ -157,7 +165,7 @@ class DataBase:
     def check(self, string, parameters, defaults):
         before = string
         while True:
-            match = re.search(r"\$\(([a-zA-Z]+)\)", string)
+            match = re.search(r"\$\(([a-zA-Z][a-zA-Z0-9]*)\)", string)
             if not match:
                 break
             option = match.group(1)
