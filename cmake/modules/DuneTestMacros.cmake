@@ -73,10 +73,6 @@
 #
 #       If given, this test is expected to compile, but fail to run.
 #
-#    .. cmake_param:: SKIP_ON_77
-#
-#       The test will be marked as skipped in ctest if it returned 77.
-#
 #    .. cmake_param:: CMD_ARGS
 #       :multi:
 #       :argname: arg
@@ -86,6 +82,15 @@
 #    .. cmake_param:: MPI_RANKS
 #       :multi:
 #       :argname: ranks
+#
+#    .. cmake_param:: CMAKE_GUARD
+#       :multi:
+#       :argname: condition
+#
+#       A number of conditions, that CMake should evaluate before adding this
+#       test. If one of the conditions fail, the test should instead be shown
+#       as skipped in the test summary. Use this feature instead of guarding
+#       the call to :code:`dune_add_test` with an :code:`if` clause.
 #
 #       The numbers of cores that this tests should be executed with.
 #       Note, that one test (in the ctest sense) is created for each number
@@ -162,7 +167,7 @@ function(dune_add_test)
   include(CMakeParseArguments)
   set(OPTIONS EXPECT_COMPILE_FAIL EXPECT_FAIL SKIP_ON_77 COMPILE_ONLY)
   set(SINGLEARGS NAME TARGET TIMEOUT)
-  set(MULTIARGS SOURCES COMPILE_DEFINITIONS COMPILE_FLAGS LINK_LIBRARIES CMD_ARGS MPI_RANKS COMMAND)
+  set(MULTIARGS SOURCES COMPILE_DEFINITIONS COMPILE_FLAGS LINK_LIBRARIES CMD_ARGS MPI_RANKS COMMAND CMAKE_GUARD)
   cmake_parse_arguments(ADDTEST "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
 
   # Check whether the parser produced any errors
@@ -210,10 +215,32 @@ function(dune_add_test)
       message(FATAL_ERROR "${num} was given to the MPI_RANKS arugment of dune_add_test, but it does not seem like a correct processor number")
     endif()
   endforeach()
+  if(ADDTEST_SKIP_ON_77)
+    message(WARNING "The SKIP_ON_77 option for dune_add_test is obsolete, it is now enabled by default.")
+  endif()
 
   # Discard all parallel tests if MPI was not found
   if(NOT MPI_FOUND)
     set(DUNE_MAX_TEST_CORES 1)
+  endif()
+
+  # Find out whether this test should be a dummy
+  set(DOSOMETHING TRUE)
+  set(FAILED_CONDITION_PRINTING "")
+  foreach(condition ${ADDTEST_CMAKE_GUARD})
+    if(NOT ${condition})
+      set(DOSOMETHING FALSE)
+      set(FAILED_CONDITION_PRINTING "${FAILED_CONDITION_PRINTING}std::cout << \"  ${condition}\" << std::endl;\n")
+    endif()
+  endforeach()
+
+  # If we do nothing, switch the sources for a dummy source
+  if(NOT DOSOMETHING)
+    dune_module_path(MODULE dune-common RESULT scriptdir SCRIPT_DIR)
+    set(ADDTEST_TARGET)
+    set(dummymain ${CMAKE_CURRENT_BINARY_DIR}/main77_${ADDTEST_NAME}.cc)
+    configure_file(${scriptdir}/main77.cc.in ${dummymain})
+    set(ADDTEST_SOURCES ${dummymain})
   endif()
 
   # Add the executable if it is not already present
@@ -269,10 +296,8 @@ function(dune_add_test)
       if(ADDTEST_EXPECT_COMPILE_FAIL OR ADDTEST_EXPECT_FAIL)
         set_tests_properties(${ACTUAL_NAME} PROPERTIES WILL_FAIL true)
       endif()
-      # Process the SKIP_ON_77 option
-      if(ADDTEST_SKIP_ON_77)
-        set_tests_properties(${ACTUAL_NAME} PROPERTIES SKIP_RETURN_CODE 77)
-      endif()
+      # Skip the test if the return code is 77!
+      set_tests_properties(${ACTUAL_NAME} PROPERTIES SKIP_RETURN_CODE 77)
     endif()
   endforeach()
 endfunction()
