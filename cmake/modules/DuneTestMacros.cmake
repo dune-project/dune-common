@@ -83,6 +83,14 @@
 #       :multi:
 #       :argname: ranks
 #
+#       The numbers of cores that this tests should be executed with.
+#       Note, that one test (in the ctest sense) is created for each number
+#       given here. Any number exceeding the user-specified processor maximum
+#       :ref:`DUNE_MAX_TEST_CORES` will be ignored. Tests with a
+#       processor number :code:`n` higher than one will have the suffix
+#       :code:`-mpi-n` appended to their name. You need to specify the
+#       TIMEOUT option when specifying the MPI_RANKS option.
+#
 #    .. cmake_param:: CMAKE_GUARD
 #       :multi:
 #       :argname: condition
@@ -91,14 +99,6 @@
 #       test. If one of the conditions fail, the test should instead be shown
 #       as skipped in the test summary. Use this feature instead of guarding
 #       the call to :code:`dune_add_test` with an :code:`if` clause.
-#
-#       The numbers of cores that this tests should be executed with.
-#       Note, that one test (in the ctest sense) is created for each number
-#       given here. Any number exceeding the user-specified processor maximum
-#       :ref:`DUNE_MAX_TEST_CORES` will be ignored. Tests with a
-#       processor number :code:`n` higher than one will have the suffix
-#       :code:`-mpi-n` appended to their name. You need to specify the
-#       TIMEOUT option when specifying the MPI_RANKS option.
 #
 #    .. cmake_param:: COMMAND
 #       :multi:
