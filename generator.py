@@ -31,7 +31,7 @@ class Generator(object):
         The main class for on the fly generation of wrapper classes.
     """
     force = False
-    def __init__(self, typeName, pathToRegisterMethod, namespace):
+    def __init__(self, typeName, pathToRegisterMethod, namespace, pythonName=None):
         """ Constructor
 
             Args:
@@ -42,6 +42,10 @@ class Generator(object):
         self.typeName = typeName
         self.pathToRegisterMethod = pathToRegisterMethod
         self.namespace = namespace
+        if pythonName==None:
+          self.pythonName = typeName
+        else:
+          self.pythonName = pythonName
         dbpaths = [os.path.join(p, typeName.lower()) for p in dataBasePaths]
         dbfiles = []
         for p in dbpaths:
@@ -82,16 +86,19 @@ class Generator(object):
                 print("Compiling " + self.typeName + " module for " + myTypeName)
                 start_time = timeit.default_timer()
                 out = open(os.path.join(compilePath, "generated_module.hh"), 'w')
+                print(includes, file=out)
                 if self.dataBase.uses_extension(selector) == False:
                     print("#include <"+self.pathToRegisterMethod+"/" + self.typeName.lower() + ".hh>", file=out)
                     print(file=out)
-                print(includes, file=out)
                 print("typedef " + myTypeName + " DuneType;", file=out)
                 print(file=out)
                 print("PYBIND11_PLUGIN( " + moduleName + " )", file=out)
                 print("{", file=out)
                 print("  pybind11::module module( \"" + moduleName + "\" );", file=out)
-                print("  "+self.namespace+"::register" + self.typeName + "< DuneType >( module );", file=out)
+                print("  typedef std::unique_ptr<DuneType> Holder;", file=out)
+                print("  typedef DuneType TypeAlias;", file=out)
+                print("  auto cls = pybind11::class_<DuneType,Holder,TypeAlias>(module,\"" + self.pythonName + "\");", file=out);
+                print("  "+self.namespace+"::register" + self.typeName + "( module, cls );", file=out)
                 print("  return module.ptr();", file=out)
                 print("}", file=out)
                 out.close()
