@@ -30,7 +30,7 @@ class Generator(object):
 
         The main class for on the fly generation of wrapper classes.
     """
-
+    force = False
     def __init__(self, typeName, pathToRegisterMethod, namespace):
         """ Constructor
 
@@ -78,7 +78,7 @@ class Generator(object):
         # includes = list(set( includes ))
 
         if comm.rank == 0:
-            if not os.path.isfile(os.path.join(compilePath, moduleName + ".so")):
+            if not os.path.isfile(os.path.join(compilePath, moduleName + ".so")) or self.force:
                 print("Compiling " + self.typeName + " module for " + myTypeName)
                 start_time = timeit.default_timer()
                 out = open(os.path.join(compilePath, "generated_module.hh"), 'w')
