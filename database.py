@@ -75,7 +75,6 @@ class DataBase:
     def __init__(self, *includes):
         self.defs = dict()
         for defs in includes:
-            print(os.path.basename(defs))
             self.defs.update(json.load(open(defs, 'r')))
 
     def __len__(self):
