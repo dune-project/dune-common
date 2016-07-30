@@ -100,6 +100,9 @@
 #       as skipped in the test summary. Use this feature instead of guarding
 #       the call to :code:`dune_add_test` with an :code:`if` clause.
 #
+#       The passed condition can be a complex expression like
+#       `( A OR B ) AND ( C OR D )`. Mind the spaces around the parantheses.
+#
 #    .. cmake_param:: COMMAND
 #       :multi:
 #       :argname: cmd
@@ -228,7 +231,8 @@ function(dune_add_test)
   set(DOSOMETHING TRUE)
   set(FAILED_CONDITION_PRINTING "")
   foreach(condition ${ADDTEST_CMAKE_GUARD})
-    if(NOT ${condition})
+    separate_arguments(condition)
+    if(NOT (${condition}))
       set(DOSOMETHING FALSE)
       set(FAILED_CONDITION_PRINTING "${FAILED_CONDITION_PRINTING}std::cout << \"  ${condition}\" << std::endl;\n")
     endif()
