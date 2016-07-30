@@ -100,6 +100,9 @@
 #       as skipped in the test summary. Use this feature instead of guarding
 #       the call to :code:`dune_add_test` with an :code:`if` clause.
 #
+#       The passed condition can be a complex expression like
+#       `( A OR B ) AND ( C OR D )`. Mind the spaces around the parantheses.
+#
 #    .. cmake_param:: COMMAND
 #       :multi:
 #       :argname: cmd
