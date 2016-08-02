@@ -373,7 +373,7 @@ int test_determinant()
     ++ret;
   }
 
-  return 0;
+  return ret;
 }
 
 template<class ft>
@@ -604,6 +604,8 @@ void test_initialisation()
 int main()
 {
   try {
+    int errors = 0; // counts errors
+
     {
       double nan = std::nan("");
       test_nan(nan);
@@ -640,14 +642,17 @@ int main()
     test_ev<double>();
 #endif
     // test high level methods
-    test_determinant();
+    errors += test_determinant();
     test_invert< float, 34 >();
     test_invert< double, 34 >();
     test_invert< std::complex< long double >, 2 >();
-    return test_invert_solve();
+    errors += test_invert_solve();
+
+    return (errors > 0 ? 1 : 0); // convert error count to unix exit status
   }
   catch (Dune::Exception & e)
   {
     std::cerr << "Exception: " << e << std::endl;
+    return 1;
   }
 }
