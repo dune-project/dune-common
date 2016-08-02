@@ -3,17 +3,20 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+
 // Activate checking.
 #ifndef DUNE_FMatrix_WITH_CHECKING
 #define DUNE_FMatrix_WITH_CHECKING
 #endif
-#include <dune/common/fmatrix.hh>
-#include <dune/common/classname.hh>
-#include <iostream>
+
 #include <algorithm>
-#include <vector>
 #include <cassert>
 #include <complex>
+#include <iostream>
+#include <vector>
+
+#include <dune/common/classname.hh>
+#include <dune/common/fmatrix.hh>
 
 #include "checkmatrixinterface.hh"
 
