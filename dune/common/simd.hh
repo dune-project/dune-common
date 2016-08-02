@@ -18,6 +18,7 @@
  */
 
 #include <cstddef>
+#include <utility>
 
 #if HAVE_VC
 #include <Vc/Vc>
@@ -128,6 +129,36 @@ namespace Dune
   bool all_true(const Vc::SimdMaskArray<T,N,V,M> & v)
   {
     return Vc::all_of(v);
+  }
+#endif // HAVE_VC
+
+  template<class T>
+  void swap(T &v1, T &v2, bool mask)
+  {
+    using std::swap;
+    if(mask) swap(v1, v2);
+  }
+
+#if HAVE_VC
+  /*
+    Add Vc specializations for masked swap
+  */
+  template<class T, class A>
+  void swap(Vc::Vector<T, A> &v1, Vc::Vector<T, A> &v2,
+            typename Vc::Vector<T, A>::mask_type mask)
+  {
+    auto tmp = v1;
+    v1(mask) = v2;
+    v2(mask) = tmp;
+  }
+
+  template<class T, std::size_t n, class V>
+  void swap(Vc::SimdArray<T, n, V> &v1, Vc::SimdArray<T, n, V> &v2,
+            typename Vc::SimdArray<T, n, V>::mask_type mask)
+  {
+    auto tmp = v1;
+    v1(mask) = v2;
+    v2(mask) = tmp;
   }
 #endif // HAVE_VC
 
