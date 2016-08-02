@@ -766,27 +766,32 @@ namespace Dune
   {
     (*rhs_)[k] -= factor*(*rhs_)[i];
   }
+
   template<typename MAT>
   template<typename Func>
   inline void DenseMatrix<MAT>::luDecomposition(DenseMatrix<MAT>& A, Func func) const
   {
-    typedef typename FieldTraits<value_type>::real_type
-    real_type;
+    typedef typename FieldTraits<value_type>::real_type real_type;
+
     real_type norm = A.infinity_norm_real(); // for relative thresholds
-    real_type pivthres = std::max( FMatrixPrecision< real_type >::absolute_limit(), norm * FMatrixPrecision< real_type >::pivoting_limit() );
-    real_type singthres = std::max( FMatrixPrecision< real_type >::absolute_limit(), norm * FMatrixPrecision< real_type >::singular_limit() );
+    real_type pivthres =
+      std::max( FMatrixPrecision< real_type >::absolute_limit(),
+                norm * FMatrixPrecision< real_type >::pivoting_limit() );
+    real_type singthres =
+      std::max( FMatrixPrecision< real_type >::absolute_limit(),
+                norm * FMatrixPrecision< real_type >::singular_limit() );
 
     // LU decomposition of A in A
     for (size_type i=0; i<rows(); i++)  // loop over all rows
     {
-      typename FieldTraits<value_type>::real_type pivmax=fvmeta::absreal(A[i][i]);
+      real_type pivmax = fvmeta::absreal(A[i][i]);
 
       // pivoting ?
       if (pivmax<pivthres)
       {
         // compute maximum of column
         size_type imax=i;
-        typename FieldTraits<value_type>::real_type abs(0.0);
+        real_type abs(0.0);
         for (size_type k=i+1; k<rows(); k++)
           if ((abs=fvmeta::absreal(A[k][i]))>pivmax)
           {
