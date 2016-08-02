@@ -10,13 +10,12 @@
 #include <vector>
 
 #include <dune/common/boundschecking.hh>
+#include <dune/common/classname.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
-#include <dune/common/precision.hh>
-#include <dune/common/classname.hh>
 #include <dune/common/math.hh>
+#include <dune/common/precision.hh>
 #include <dune/common/unused.hh>
-
 
 namespace Dune
 {
