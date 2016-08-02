@@ -17,11 +17,14 @@
    See also the conditional.hh and range_utils.hh headers.
  */
 
-#include <dune/common/rangeutilities.hh>
-#include <dune/common/conditional.hh>
+#include <cstddef>
+
 #if HAVE_VC
 #include <Vc/Vc>
 #endif
+
+#include <dune/common/conditional.hh>
+#include <dune/common/rangeutilities.hh>
 
 namespace Dune
 {
