@@ -56,6 +56,33 @@ namespace Dune
   };
 #endif // HAVE_VC
 
+  template<typename V, typename = void>
+  struct SimdIndexTypeTraits {
+    using type = std::size_t;
+  };
+
+  //! An simd vector of indices corresponding to a simd vector V
+  /**
+   * lanes(T()) == lanes(SimdIndex<T>()) holds.
+   *
+   * \note The size of the elements of a SimdIndex isn't very well-defined.
+   *       Be careful.
+   */
+  template<typename V>
+  using SimdIndex = typename SimdIndexTypeTraits<V>::type;
+
+#if HAVE_VC
+  template<typename T, typename A>
+  struct SimdIndexTypeTraits<Vc::Vector<T, A> > {
+    using type = typename Vc::Vector<T, A>::index_type;
+  };
+
+  template<typename T, std::size_t n, typename V>
+  struct SimdIndexTypeTraits<Vc::SimdArray<T, n, V> > {
+    using type = typename Vc::SimdArray<T, n, V>::index_type;
+  };
+#endif // HAVE_VC
+
 #if HAVE_VC
   /*
     Add Vc specializations for cond(), see conditional.hh
