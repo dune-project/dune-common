@@ -518,7 +518,7 @@ namespace Dune
    * The result is exported by deriving from std::true_type or std::false_type.
    */
   template<class T>
-  struct IsIntegralConstant : public Imp::IsIntegralConstant<std::decay_t<T>>
+  struct IsIntegralConstant : public Imp::IsIntegralConstant<std::decay<T>>
   {};
 
   /** @} */
