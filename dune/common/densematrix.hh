@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <iostream>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include <dune/common/boundschecking.hh>
@@ -15,6 +16,7 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/math.hh>
 #include <dune/common/precision.hh>
+#include <dune/common/simd.hh>
 #include <dune/common/unused.hh>
 
 namespace Dune
@@ -171,6 +173,15 @@ namespace Dune
       blocklevel = 1
     };
 
+  private:
+    //! \brief if value_type is a simd vector, then this is a simd vector of
+    //!        the same length that can be used for indices.
+    /**
+     * Just pray that the fundamental type is actually large enough...
+     */
+    using simd_index_type = SimdIndex<value_type>;
+
+  public:
     //===== access to components
 
     //! random access
@@ -688,15 +699,15 @@ namespace Dune
 #ifndef DOXYGEN
     struct ElimPivot
     {
-      ElimPivot(std::vector<size_type> & pivot);
+      ElimPivot(std::vector<simd_index_type> & pivot);
 
-      void swap(int i, int j);
+      void swap(std::size_t i, simd_index_type j);
 
       template<typename T>
       void operator()(const T&, int, int)
       {}
 
-      std::vector<size_type> & pivot_;
+      std::vector<simd_index_type> & pivot_;
     };
 
     template<typename V>
@@ -704,7 +715,7 @@ namespace Dune
     {
       Elim(V& rhs);
 
-      void swap(int i, int j);
+      void swap(std::size_t i, simd_index_type j);
 
       void operator()(const typename V::field_type& factor, int k, int i);
 
@@ -716,8 +727,12 @@ namespace Dune
       ElimDet(field_type& sign) : sign_(sign)
       { sign_ = 1; }
 
-      void swap(int, int)
-      { sign_ *= -1; }
+      void swap(std::size_t i, simd_index_type j)
+      {
+        field_type newsign = 1;
+        assign(newsign, field_type(-1), simd_index_type(i) != j);
+        sign_ *= newsign;
+      }
 
       void operator()(const field_type&, int, int)
       {}
@@ -732,7 +747,7 @@ namespace Dune
 
 #ifndef DOXYGEN
   template<typename MAT>
-  DenseMatrix<MAT>::ElimPivot::ElimPivot(std::vector<size_type> & pivot)
+  DenseMatrix<MAT>::ElimPivot::ElimPivot(std::vector<simd_index_type> & pivot)
     : pivot_(pivot)
   {
     typedef typename std::vector<size_type>::size_type size_type;
@@ -740,9 +755,9 @@ namespace Dune
   }
 
   template<typename MAT>
-  void DenseMatrix<MAT>::ElimPivot::swap(int i, int j)
+  void DenseMatrix<MAT>::ElimPivot::swap(std::size_t i, simd_index_type j)
   {
-    pivot_[i]=j;
+    assign(pivot_[i], j, i != j);
   }
 
   template<typename MAT>
@@ -753,9 +768,14 @@ namespace Dune
 
   template<typename MAT>
   template<typename V>
-  void DenseMatrix<MAT>::Elim<V>::swap(int i, int j)
+  void DenseMatrix<MAT>::Elim<V>::swap(std::size_t i, simd_index_type j)
   {
-    std::swap((*rhs_)[i], (*rhs_)[j]);
+    using std::swap;
+
+    // see the comment in luDecomposition()
+    for(std::size_t l = 0; l < lanes(j); ++l)
+      swap(lane(l, (*rhs_)[        i ]),
+           lane(l, (*rhs_)[lane(l, j)]));
   }
 
   template<typename MAT>
@@ -770,6 +790,8 @@ namespace Dune
   template<typename Func>
   inline void DenseMatrix<MAT>::luDecomposition(DenseMatrix<MAT>& A, Func func) const
   {
+    using std::swap;
+
     typedef typename FieldTraits<value_type>::real_type real_type;
 
     real_type norm = A.infinity_norm_real(); // for relative thresholds
@@ -784,28 +806,41 @@ namespace Dune
     for (size_type i=0; i<rows(); i++)  // loop over all rows
     {
       real_type pivmax = fvmeta::absreal(A[i][i]);
+      auto do_pivot = pivmax<pivthres;
 
       // pivoting ?
-      if (pivmax<pivthres)
+      if (any_true(do_pivot))
       {
         // compute maximum of column
-        size_type imax=i;
-        real_type abs(0.0);
+        simd_index_type imax=i;
         for (size_type k=i+1; k<rows(); k++)
-          if ((abs=fvmeta::absreal(A[k][i]))>pivmax)
-          {
-            pivmax = abs; imax = k;
-          }
+        {
+          auto abs = fvmeta::absreal(A[k][i]);
+          auto mask = abs > pivmax && do_pivot;
+          pivmax = cond(mask, abs, pivmax);
+          imax   = cond(mask, simd_index_type(k), imax);
+        }
         // swap rows
-        if (imax!=i) {
+        if (any_true(imax != i)) {
           for (size_type j=0; j<rows(); j++)
-            std::swap(A[i][j],A[imax][j]);
+          {
+            // This is a swap operation where the second operand is scattered,
+            // and on top of that is also extracted from deep within a
+            // moderately complicated data structure (a DenseMatrix), where we
+            // can't assume much on the memory layout.  On intel processors,
+            // the only instruction that might help us here is vgather, but it
+            // is unclear whether that is even faster than a software
+            // implementation, and we would also need vscatter which does not
+            // exist.  So break vectorization here and do it manually.
+            for(std::size_t l = 0; l < lanes(A[i][j]); ++l)
+              swap(lane(l, A[i][j]), lane(l, A[lane(l, imax)][j]));
+          }
           func.swap(i, imax); // swap the pivot or rhs
         }
       }
 
       // singular ?
-      if (pivmax<singthres)
+      if (any_true(pivmax<singthres))
         DUNE_THROW(FMatrixError,"matrix is singular");
 
       // eliminate
@@ -924,7 +959,7 @@ namespace Dune
     else {
 
       MAT A(asImp());
-      std::vector<size_type> pivot(rows());
+      std::vector<simd_index_type> pivot(rows());
       luDecomposition(A, ElimPivot(pivot));
       DenseMatrix<MAT>& L=A;
       DenseMatrix<MAT>& U=A;
