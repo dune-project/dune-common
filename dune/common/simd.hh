@@ -222,6 +222,35 @@ namespace Dune
   }
 #endif // HAVE_VC
 
+  //! masked Simd assignment (scalar version)
+  /**
+   * Assign \c src to \c dest for those lanes where \c mask is true.
+   */
+  template<class T>
+  void assign(T &dst, const T &src, bool mask)
+  {
+    if(mask) dst = src;
+  }
+
+#if HAVE_VC
+  /*
+    Add Vc specializations for masked assignment
+  */
+  template<class T, class A>
+  void assign(Vc::Vector<T, A> &dst, const Vc::Vector<T, A> &src,
+              typename Vc::Vector<T, A>::mask_type mask)
+  {
+    dst(mask) = src;
+  }
+
+  template<class T, std::size_t n, class V>
+  void assign(Vc::SimdArray<T, n, V> &dst, const Vc::SimdArray<T, n, V> &src,
+              typename Vc::SimdArray<T, n, V>::mask_type mask)
+  {
+    dst(mask) = src;
+  }
+#endif // HAVE_VC
+
   template<class T>
   void swap(T &v1, T &v2, bool mask)
   {
