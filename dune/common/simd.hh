@@ -17,6 +17,7 @@
    See also the conditional.hh and range_utils.hh headers.
  */
 
+#include <cassert>
 #include <cstddef>
 #include <utility>
 
@@ -156,6 +157,68 @@ namespace Dune
   bool all_true(const Vc::SimdMaskArray<T,N,V,M> & v)
   {
     return Vc::all_of(v);
+  }
+#endif // HAVE_VC
+
+  //! get the number of lanes of a simd vector (scalar version)
+  template<class T>
+  std::size_t lanes(const T &) { return 1; }
+
+  //! access a lane of a simd vector (scalar version)
+  template<class T>
+  T lane(std::size_t l, const T &v)
+  {
+    assert(l == 0);
+    return v;
+  }
+
+  //! access a lane of a simd vector (scalar version)
+  template<class T>
+  T &lane(std::size_t l, T &v)
+  {
+    assert(l == 0);
+    return v;
+  }
+
+#if HAVE_VC
+  template<class T, class A>
+  std::size_t lanes(const Vc::Vector<T, A> &)
+  {
+    return Vc::Vector<T, A>::size();
+  }
+
+  template<class T, class A>
+  T lane(std::size_t l, const Vc::Vector<T, A> &v)
+  {
+    assert(l < lanes(v));
+    return v[l];
+  }
+
+  template<class T, class A>
+  T &lane(std::size_t l, Vc::Vector<T, A> &v)
+  {
+    assert(l < lanes(v));
+    return v[l];
+  }
+
+  template<class T, std::size_t n, class V>
+  std::size_t lanes(const Vc::SimdArray<T, n, V> &)
+  {
+    return n;
+  }
+
+  template<class T, std::size_t n, class V>
+  const T lane(std::size_t l, const Vc::SimdArray<T, n, V> &v)
+  {
+    assert(l < n);
+    return v[l];
+  }
+
+  template<class T, std::size_t n, class V>
+  T &lane(std::size_t l, Vc::SimdArray<T, n, V> &v)
+  {
+    assert(l < n);
+    return v[l];
   }
 #endif // HAVE_VC
 
