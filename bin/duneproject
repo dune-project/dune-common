@@ -445,10 +445,6 @@ add_subdirectory("cmake/modules")
 finalize_dune_project(GENERATE_CONFIG_H_CMAKE)
 M_DELIM
 
-################## STAMP-VC ##################
-echo "- $PROJECT/stamp-vc"
-echo 'A stamp file to signify that this directory comes from a version control system, not an unpacked tarball' > $PROJECT/stamp-vc
-
 ################## PROJECT.PC.IN ##################
 echo "- $PROJECT/$MODULE.pc.in"
 cat> "$PROJECT/$MODULE.pc.in" << CC_DELIM

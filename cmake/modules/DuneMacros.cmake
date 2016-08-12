@@ -945,8 +945,7 @@ endif()
     dune_regenerate_config_cmake()
     # add a target to generate config.h.cmake
     add_custom_target(OUTPUT config_collected.h.cmake
-      COMMAND dune_regenerate_config_cmake()
-      DEPENDS stamp-regenerate-config-h)
+      COMMAND dune_regenerate_config_cmake())
     # actually write the config.h file to disk
     # using generated file
     configure_file(${CMAKE_CURRENT_BINARY_DIR}/config_collected.h.cmake

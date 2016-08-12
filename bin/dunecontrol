@@ -538,7 +538,7 @@ run_default_vcsetup() {
   fi
 
   # Run custom setup scripts
-  if [ -d .git -o -f .git -o -d .svn -o -d CVS -o -f stamp-vc ]; then
+  if [ -d .git -o -f .git -o -d .svn -o -d CVS ]; then
     if [ -d .vcsetup/run.d ]; then
       for SCRIPT in .vcsetup/run.d/* ; do
         if [ -x "$SCRIPT" ]; then
