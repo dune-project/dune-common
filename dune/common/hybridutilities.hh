@@ -340,24 +340,24 @@ T accumulate(Range&& range, T value, F&& f)
 namespace Impl {
 
   template<class IfFunc, class ElseFunc>
-  constexpr void ifElse(std::true_type, IfFunc&& ifFunc, ElseFunc&& elseFunc)
+  constexpr auto ifElse(std::true_type, IfFunc&& ifFunc, ElseFunc&& elseFunc)
   {
-    ifFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
+    return ifFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
   }
 
   template<class IfFunc, class ElseFunc>
-  constexpr void ifElse(std::false_type, IfFunc&& ifFunc, ElseFunc&& elseFunc)
+  constexpr auto ifElse(std::false_type, IfFunc&& ifFunc, ElseFunc&& elseFunc)
   {
-    elseFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
+    return elseFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
   }
 
   template<class IfFunc, class ElseFunc>
-  constexpr void ifElse(const bool& condition, IfFunc&& ifFunc, ElseFunc&& elseFunc)
+  constexpr auto ifElse(const bool& condition, IfFunc&& ifFunc, ElseFunc&& elseFunc)
   {
     if (condition)
-      ifFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
+      return ifFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
     else
-      elseFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
+      return elseFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
   }
 
 } // namespace Impl
@@ -385,9 +385,9 @@ namespace Impl {
  * a static if statement.
  */
 template<class Condition, class IfFunc, class ElseFunc>
-constexpr void ifElse(const Condition& condition, IfFunc&& ifFunc, ElseFunc&& elseFunc)
+constexpr auto ifElse(const Condition& condition, IfFunc&& ifFunc, ElseFunc&& elseFunc)
 {
-  Impl::ifElse(condition, std::forward<IfFunc>(ifFunc), std::forward<ElseFunc>(elseFunc));
+  return Impl::ifElse(condition, std::forward<IfFunc>(ifFunc), std::forward<ElseFunc>(elseFunc));
 }
 
 /**
