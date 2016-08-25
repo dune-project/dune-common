@@ -626,10 +626,6 @@ run_default_configure () {
 
     done
 
-    if test "x$HAVE_duneweb" == "xyes"; then
-      PARAMS="$PARAMS \"--with-duneweb=$PATH_duneweb\""
-    fi
-
       # we have to export the compiler and compiler flags
       # such that they are honored by cmake.
       flags="CXX CC CXXFLAGS CFLAGS CPPFLAGS LDFLAGS F77 FFLAGS FLIBS FC FCFLAGS FCLIBS LIBS"
