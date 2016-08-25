@@ -103,6 +103,9 @@
 #       The passed condition can be a complex expression like
 #       `( A OR B ) AND ( C OR D )`. Mind the spaces around the parentheses.
 #
+#       Example: Write CMAKE_GUARD dune-foo_FOUND if you want your test to only
+#       build and run when the dune-foo module is present.
+#
 #    .. cmake_param:: COMMAND
 #       :multi:
 #       :argname: cmd
