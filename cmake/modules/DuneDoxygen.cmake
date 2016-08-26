@@ -76,7 +76,7 @@ MACRO (add_doxygen_target)
 
   # default output is html
   if(NOT DOXYGEN_OUTPUT)
-    set(DOXYGEN_OUTPUT html)
+    set(DOXYGEN_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/html")
   endif(NOT DOXYGEN_OUTPUT)
 
   dune_module_path(MODULE dune-common RESULT scriptdir SCRIPT_DIR)
