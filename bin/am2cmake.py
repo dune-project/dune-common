@@ -232,7 +232,6 @@ def rename_var(tokens):
         'ALUGRID': 'ALUGRID_FOUND',
         'AMIRAMESH': 'AMIRAMESH_FOUND',
         'CONVERT': 'CONVERT_FOUND',
-        'DUNEWEB': 'DUNEWEB_FOUND',
         'EIGEN': 'EIGEN_FOUND',
         'GLUT': 'GLUT_FOUND',
         'GMP': 'GMP_FOUND',
@@ -244,8 +243,7 @@ def rename_var(tokens):
         'PSURFACE': 'PSURFACE_FOUND',
         'SUPERLU': 'SUPERLU_FOUND',
         'TEX4HT': 'TEX4HT_FOUND',
-        'UG': 'UG_FOUND',
-        'WML': 'WML_FOUND'}.setdefault(name, tokens[0])
+        'UG': 'UG_FOUND'}.setdefault(name, tokens[0])
     if name.startswith('HAVE_DUNE'):
         tokens[0]=re.sub(r'have-(.*)$', '\\1', name.lower().replace('_','-'))+'_FOUND'
     #print tokens[0]
