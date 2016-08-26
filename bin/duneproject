@@ -382,7 +382,7 @@ MAKE_FLAGS       flags passed to make
 
 An example options file might look like this:
 
-#use this options to autogen, configure and make if no other options are given
+#use this options to configure and make if no other options are given
 CMAKE_FLAGS=" \\
 -DCMAKE_CXX_COMPILER=g++-4.9 \\
 -DCMAKE_CXX_FLAGS='-Wall -pedantic' \\
