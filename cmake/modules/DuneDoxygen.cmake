@@ -24,7 +24,7 @@
 #    that makes sure it is built before running :code:`make install`.
 #
 
-FIND_PACKAGE(Doxygen)
+find_package(Doxygen)
 
 include (CMakeParseArguments)
 
@@ -33,7 +33,7 @@ include (CMakeParseArguments)
 #
 if (NOT DOXYGEN_DOT_FOUND)
   set(DOT_TRUE '\#')
-endif (NOT DOXYGEN_DOT_FOUND)
+endif()
 
 add_custom_target(doxygen_install)
 
@@ -72,12 +72,12 @@ MACRO (add_doxygen_target)
   # default target name is the module name
   if(NOT DOXYGEN_TARGET)
     set(DOXYGEN_TARGET ${ProjectName})
-  endif(NOT DOXYGEN_TARGET)
+  endif()
 
   # default output is html
   if(NOT DOXYGEN_OUTPUT)
     set(DOXYGEN_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/html")
-  endif(NOT DOXYGEN_OUTPUT)
+  endif()
 
   dune_module_path(MODULE dune-common RESULT scriptdir SCRIPT_DIR)
   if("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
@@ -97,7 +97,7 @@ MACRO (add_doxygen_target)
     add_custom_target(doxygen_${DOXYGEN_TARGET}
       DEPENDS ${DOXYGEN_OUTPUT})
     add_dependencies(doc doxygen_${DOXYGEN_TARGET})
-  endif(DOXYGEN_FOUND)
+  endif()
 
   # Use a cmake call to install the doxygen documentation and create a
   # target for it
