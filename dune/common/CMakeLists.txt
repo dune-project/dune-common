@@ -35,6 +35,7 @@ install(FILES
         classname.hh
         concept.hh
         conditional.hh
+        constexpr_assert.hh
         debugallocator.hh
         debugstream.hh
         deprecated.hh
