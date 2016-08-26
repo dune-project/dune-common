@@ -314,7 +314,7 @@ esac'
 }
 
 # list of all dunecontrol commands
-COMMANDS="printdeps vcsetup update autogen configure make all exec bexec status svn git"
+COMMANDS="printdeps vcsetup update configure make all exec bexec status svn git"
 
 # list of dunecontrol commands for which the version check is skipped by default
 COMMANDSTOSKIPVERSIONCHECK="update status svn git exec bexec"
@@ -325,7 +325,7 @@ vcsetup_HELP="setup version control repository (Git etc.) or working copy (SVN)"
 update_HELP="updated all modules from the repository"
 configure_HELP="run configure or cmake for each module"
 make_HELP="build each module"
-all_HELP="\trun 'vcsetup', 'autogen', 'configure' and 'make' command for each module"
+all_HELP="\trun 'vcsetup', 'configure' and 'make' command for each module"
 exec_HELP="execute an arbitrary command in each module source directory"
 bexec_HELP="execute an arbitrary command in each module build directory"
 status_HELP="show vc status for all modules"
