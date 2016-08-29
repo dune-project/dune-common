@@ -438,6 +438,90 @@ constexpr auto equals(T1&& t1,  T2&& t2)
 
 
 
+namespace Impl {
+
+  template<class Result, class T, class Value, class Branches, class ElseBranch>
+  constexpr Result switchCases(std::integer_sequence<T>, const Value& value, Branches&& branches, ElseBranch&& elseBranch)
+  {
+    return elseBranch();
+  }
+
+  template<class Result, class T, T t0, T... tt, class Value, class Branches, class ElseBranch>
+  constexpr Result switchCases(std::integer_sequence<T, t0, tt...>, const Value& value, Branches&& branches, ElseBranch&& elseBranch)
+  {
+    return ifElse(
+        Hybrid::equals(std::integral_constant<T, t0>(), value),
+      [&](auto id) -> decltype(auto) {
+        return id(branches)(std::integral_constant<T, t0>());
+      }, [&](auto id) -> decltype(auto) {
+        return Impl::switchCases<Result>(id(std::integer_sequence<T, tt...>()), value, branches, elseBranch);
+    });
+  }
+
+} // namespace Impl
+
+
+
+/**
+ * \brief Switch statement
+ *
+ * \ingroup HybridUtilities
+ *
+ * \tparam Cases Type of case range
+ * \tparam Value Type of value to check against the cases
+ * \tparam Branches Type of branch function
+ * \tparam ElseBranch Type of branch function
+ *
+ * \param cases A range of cases to check for
+ * \param value The value to check against the cases
+ * \param branches A callback that will be executed with matching entry from case list
+ * \param elseBranch A callback that will be executed if no other entry matches
+ *
+ * Value is checked against all entries of the given range.
+ * If one matches, then branches is executed with the matching
+ * value as single argument. If the range is an std::integer_sequence,
+ * the value is passed as std::integral_constant.
+ * If non of the entries matches, then elseBranch is executed
+ * without any argument.
+ *
+ * Notice that this short circuits, e.g., if one case matches,
+ * the others are no longer evaluated.
+ *
+ * The return value will be deduced from the else branch.
+ */
+template<class Cases, class Value, class Branches, class ElseBranch>
+constexpr decltype(auto) switchCases(const Cases& cases, const Value& value, Branches&& branches, ElseBranch&& elseBranch)
+{
+  return Impl::switchCases<decltype(elseBranch())>(cases, value, std::forward<Branches>(branches), std::forward<ElseBranch>(elseBranch));
+}
+
+/**
+ * \brief Switch statement
+ *
+ * \ingroup HybridUtilities
+ *
+ * \tparam Cases Type of case range
+ * \tparam Value Type of value to check against the cases
+ * \tparam Branches Type of branch function
+ *
+ * \param cases A range of cases to check for
+ * \param value The value to check against the cases
+ * \param branches A callback that will be executed with matching entry from case list
+ *
+ * Value is checked against all entries of the given range.
+ * If one matches, then branches is executed with the matching
+ * value as single argument. If the range is an std::integer_sequence,
+ * the value is passed as std::integral_constant.
+ * If non of the entries matches, then elseBranch is executed
+ * without any argument.
+ */
+template<class Cases, class Value, class Branches>
+constexpr void switchCases(const Cases& cases, const Value& value, Branches&& branches)
+{
+  return Impl::switchCases<void>(cases, value, std::forward<Branches>(branches), []() {});
+}
+
+
 } // namespace Hybrid
 } // namespace Dune
 
