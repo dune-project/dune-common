@@ -14,5 +14,4 @@ dune_add_latex_document(communication.tex
   BIBFILES communication.bib
   INPUTS poosc08_test.cc
   IMAGE_DIRS figures)
-install(FILES communication.pdf
-  DESTINATION ${CMAKE_INSTALL_DOCDIR}/comm)
+create_doc_install(${CMAKE_CURRENT_BINARY_DIR}/communication.pdf ${CMAKE_INSTALL_DOCDIR}/comm communication_safepdf)

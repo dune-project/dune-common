@@ -5,7 +5,7 @@ install(FILES
   FinalizeHeadercheck.cmake
   index.rst.in
   InstallFile.cmake
-  main77.cc
+  main77.cc.in
   RunDoxygen.cmake
   sphinx_cmake_dune.py
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/dune/cmake/scripts)

@@ -74,6 +74,27 @@ namespace Std
   template< typename T >
   struct to_true_type : public std::true_type {};
 
+
+#if __cpp_lib_bool_constant
+
+    using std::bool_constant;
+
+#elif __cpp_lib_experimental_bool_constant
+
+    using std::experimental::bool_constant;
+
+#else
+
+    /**
+     *  \brief A template alias for std::integral_constant<bool, value>
+     *
+     *  \tparam value Boolean value to encode as std::integral_constant<bool, value>
+     */
+    template <bool value>
+    using bool_constant = std::integral_constant<bool, value>;
+
+#endif
+
 } // namespace Std
 
 } // namespace Dune
