@@ -113,6 +113,7 @@ class Generator(object):
                           os.path.join(compilePath, moduleName + ".so"))
                 os.rename(os.path.join(compilePath, "generated_module.hh"),
                           os.path.join(compilePath, moduleName + ".hh"))
+                print("Compilation took: " , timeit.default_timer()-start_time, "seconds")
 
         comm.barrier()
 
