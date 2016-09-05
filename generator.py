@@ -41,7 +41,10 @@ class Generator(object):
         """
         self.typeName = typeName
         self.pathToRegisterMethod = pathToRegisterMethod
-        self.namespace = namespace
+        if namespace:
+            self.namespace = namespace+"::"
+        else:
+            self.namespace = ""
         if pythonname == None:
           self.pythonName = typeName
         else:
@@ -101,13 +104,21 @@ class Generator(object):
                         print(file=out)
                 print("typedef " + myTypeName + " DuneType;", file=out)
                 print(file=out)
+                if self.namespace == "":
+                    print("void register" + self.typeName + "( ... ) {}", file=out)
                 print("PYBIND11_PLUGIN( " + moduleName + " )", file=out)
                 print("{", file=out)
                 print("  pybind11::module module( \"" + moduleName + "\" );", file=out)
                 print("  typedef std::unique_ptr<DuneType> Holder;", file=out)
                 print("  typedef DuneType TypeAlias;", file=out)
                 print("  auto cls = pybind11::class_<DuneType,Holder,TypeAlias>(module,\"" + self.pythonName + "\");", file=out);
-                print("  "+self.namespace+"::register" + self.typeName + "( module, cls );", file=out)
+                print("  "+self.namespace+"register" + self.typeName + "( module, cls );", file=out)
+
+                for c in self.dataBase.get_constructors(selector):
+                    print(" cls.def(pybind11::init<"+c+">());", file=out)
+                for m in self.dataBase.get_methods(selector):
+                    print(" cls.def(\""+m[0]+"\",&"+m[1]+");", file=out)
+
                 print("  return module.ptr();", file=out)
                 print("}", file=out)
                 out.close()
@@ -141,5 +152,5 @@ class Generator(object):
         return typeName
 
 def getModule(clsType, filename, **parameters):
-    generator = Generator(clsType, None, "", None, filename)
+    generator = Generator(clsType, None, None, None, filename)
     return generator.getModule(clsType, **parameters)
