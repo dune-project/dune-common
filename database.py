@@ -124,17 +124,17 @@ class DataBase:
     def get_includes(self, selector):
         if selector.grid not in self.defs:
             raise DataBase.RangeError(selector.grid)
-        return self.defs[selector.grid]["include"]
+        return self.defs[selector.grid].get("include",[])
 
     def get_constructors(self, selector):
         if selector.grid not in self.defs:
             raise DataBase.RangeError(selector.grid)
-        return self.defs[selector.grid]["constructors"]
+        return self.defs[selector.grid].get("constructors",[])
 
     def get_methods(self, selector):
         if selector.grid not in self.defs:
             raise DataBase.RangeError(selector.grid)
-        return self.defs[selector.grid]["methods"]
+        return self.defs[selector.grid].get("methods",[])
 
     def get_type(self, selector):
         if selector.grid not in self.defs:
