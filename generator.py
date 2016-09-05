@@ -96,7 +96,8 @@ class Generator(object):
                         print("#include <"+self.pathToRegisterMethod+"/" + self.typeName.lower() + ".hh>", file=out)
                         print(file=out)
                     if not self.fileName == None:
-                        print("#include \""+self.fileName+"\"", file=out)
+                        include = open(self.fileName, "r")
+                        out.write( include.read() )
                         print(file=out)
                 print("typedef " + myTypeName + " DuneType;", file=out)
                 print(file=out)
