@@ -72,7 +72,8 @@ class DataBase:
             return "Check '" + self.checkStr + "' failed ('" + self.check +\
                    "' evaluates to false)"
 
-    def __init__(self, *includes,cppFile=False):
+    def __init__(self, *includes, **kwargs):
+      cppFile = kwargs.get("cppFile",False)
       if not cppFile:
         self.defs = dict()
         for defs in includes:
