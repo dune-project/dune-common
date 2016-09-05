@@ -31,7 +31,7 @@ class Generator(object):
         The main class for on the fly generation of wrapper classes.
     """
     force = False
-    def __init__(self, typeName, pathToRegisterMethod, namespace, pythonName=None):
+    def __init__(self, typeName, pathToRegisterMethod, namespace, pythonname=None, filename=None):
         """ Constructor
 
             Args:
@@ -42,18 +42,22 @@ class Generator(object):
         self.typeName = typeName
         self.pathToRegisterMethod = pathToRegisterMethod
         self.namespace = namespace
-        if pythonName==None:
+        if pythonname == None:
           self.pythonName = typeName
         else:
-          self.pythonName = pythonName
-        dbpaths = [os.path.join(p, typeName.lower()) for p in dataBasePaths]
-        dbfiles = []
-        for p in dbpaths:
-            if os.path.isdir(p):
-              dbfiles += [os.path.join(p,dbfile)
-                                  for dbfile in os.listdir(p)
-                                  if re.match(".*[.]db$", dbfile)]
-        self.dataBase = database.DataBase(*dbfiles)
+          self.pythonName = pythonname
+        self.fileName = filename
+        if filename == None:
+          dbpaths = [os.path.join(p, typeName.lower()) for p in dataBasePaths]
+          dbfiles = []
+          for p in dbpaths:
+              if os.path.isdir(p):
+                dbfiles += [os.path.join(p,dbfile)
+                                    for dbfile in os.listdir(p)
+                                    if re.match(".*[.]db$", dbfile)]
+          self.dataBase = database.DataBase(*dbfiles,cppFile=False)
+        else:
+          self.dataBase = database.DataBase(filename,cppFile=True)
 
     def getModule(self, myType, **parameters):
         """ generate and load the extension module for a given
@@ -88,8 +92,12 @@ class Generator(object):
                 out = open(os.path.join(compilePath, "generated_module.hh"), 'w')
                 print(includes, file=out)
                 if self.dataBase.uses_extension(selector) == False:
-                    print("#include <"+self.pathToRegisterMethod+"/" + self.typeName.lower() + ".hh>", file=out)
-                    print(file=out)
+                    if not self.pathToRegisterMethod == None:
+                        print("#include <"+self.pathToRegisterMethod+"/" + self.typeName.lower() + ".hh>", file=out)
+                        print(file=out)
+                    if not self.fileName == None:
+                        print("#include \""+self.fileName+"\"", file=out)
+                        print(file=out)
                 print("typedef " + myTypeName + " DuneType;", file=out)
                 print(file=out)
                 print("PYBIND11_PLUGIN( " + moduleName + " )", file=out)
@@ -130,3 +138,7 @@ class Generator(object):
 
     def modifyTypeName(self, typeName):
         return typeName
+
+def getModule(clsType, filename, **parameters):
+    generator = Generator(clsType, None, "", None, filename)
+    return generator.getModule(clsType, **parameters)

@@ -72,10 +72,23 @@ class DataBase:
             return "Check '" + self.checkStr + "' failed ('" + self.check +\
                    "' evaluates to false)"
 
-    def __init__(self, *includes):
+    def __init__(self, *includes,cppFile=False):
+      if not cppFile:
         self.defs = dict()
         for defs in includes:
             self.defs.update(json.load(open(defs, 'r')))
+      else:
+        result = ""
+        with open(includes[0]) as infile:
+          copy = False
+          for line in infile:
+            if line.strip() == "BEGIN-DB":
+              copy = True
+            elif line.strip() == "END-DB":
+              copy = False
+            elif copy:
+              result = result + line
+        self.defs = json.loads(result)
 
     def __len__(self):
         return len(self.defs)
