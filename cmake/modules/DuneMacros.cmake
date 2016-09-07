@@ -65,7 +65,7 @@
 #    .. cmake_param:: COMPILE_FLAGS
 #       :single:
 #
-#       Any additional compile flags fpr building the library.
+#       Any additional compile flags for building the library.
 #
 # .. cmake_function:: dune_target_link_libraries
 #
