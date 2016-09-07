@@ -63,7 +63,7 @@
 #       The source files from which to build the library.
 #
 #    .. cmake_param:: COMPILE_FLAGS
-#       :multi:
+#       :single:
 #
 #       Any additional compile flags fpr building the library.
 #
