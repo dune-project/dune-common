@@ -28,7 +28,7 @@ class DataBase:
     class CompileError(Exception):
         '''raise this when there's a problem compiling an extension module'''
         def __init__(self, db, cpptype):
-            Exception.__init__("DataBase::CompileError:")
+            Exception.__init__(self,"DataBase::CompileError:")
             self.db = db
             self.cpptype = cpptype
 
@@ -38,7 +38,7 @@ class DataBase:
 
     class RangeError(Exception):
         def __init__(self, grid):
-            Exception.__init__("DataBase::RangeError:")
+            Exception.__init__(self,"DataBase::RangeError:")
             self.grid = grid
 
         def __str__(self):
@@ -46,7 +46,7 @@ class DataBase:
 
     class MissingParameter(Exception):
         def __init__(self, parameter):
-            Exception.__init__("DataBase::MissingParameter:")
+            Exception.__init__(self,"DataBase::MissingParameter:")
             self.parameter = parameter
 
         def __str__(self):
@@ -54,7 +54,7 @@ class DataBase:
 
     class UnknownTranslation(Exception):
         def __init__(self, parameter, value):
-            Exception.__init__("DataBase::UnknownTranslation:")
+            Exception.__init__(self,"DataBase::UnknownTranslation:")
             self.parameter = parameter
             self.value = value
 
@@ -64,7 +64,7 @@ class DataBase:
 
     class FailedParameterCheck(Exception):
         def __init__(self, checkStr, check):
-            Exception.__init__("DataBase::FailedParameterCheck:")
+            Exception.__init__(self,"DataBase::FailedParameterCheck:")
             self.checkStr = checkStr
             self.check = check
 
