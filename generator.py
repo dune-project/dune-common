@@ -62,7 +62,7 @@ class Generator(object):
         else:
           self.dataBase = database.DataBase(filename,cppFile=True)
 
-    def getModule(self, myType, **parameters):
+    def getModule(self, myType, myTypeHash=None, **parameters):
         """ generate and load the extension module for a given
             implementation
 
@@ -77,7 +77,8 @@ class Generator(object):
         selector = database.selector(myType, **{i: str(parameters[i]) for i in parameters})
         self.dataBase.check_parameters(selector)
         myTypeName = self.modifyTypeName(self.dataBase.get_type(selector))
-        myTypeHash = hashlib.md5(myTypeName.encode('utf-8')).hexdigest()
+        if not myTypeHash:
+            myTypeHash = hashlib.md5(myTypeName.encode('utf-8')).hexdigest()
         moduleBase = self.typeName.lower()
         moduleName = moduleBase + "_" + myTypeHash
 
@@ -160,6 +161,8 @@ def getModule(filename, **parameters):
             extra_includes += module._includes
         except:
             pass
+    with open(filename, 'r') as myfile:
+        fileHash = hashlib.md5(myfile.read().encode('utf-8')).hexdigest()
     className = parameters.get("class","Object")
     generator = Generator("Object", None, None, None, filename)
-    return generator.getModule("Object", extra_includes=extra_includes,**parameters).Object
+    return generator.getModule("Object", myTypeHash=fileHash, extra_includes=extra_includes,**parameters).Object
