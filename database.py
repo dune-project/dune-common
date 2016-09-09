@@ -89,7 +89,8 @@ class DataBase:
               copy = False
             elif copy:
               result = result + line
-        self.defs = json.loads(result)
+
+        self.defs = {"Object":json.loads(result)}
 
     def __len__(self):
         return len(self.defs)

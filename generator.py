@@ -151,6 +151,15 @@ class Generator(object):
     def modifyTypeName(self, typeName):
         return typeName
 
-def getModule(clsType, filename, **parameters):
-    generator = Generator(clsType, None, None, None, filename)
-    return generator.getModule(clsType, **parameters)
+def getModule(filename, **parameters):
+    extra_includes=""
+    for k,v in parameters.items():
+        try:
+            module = v._module
+            parameters[k] = module._typeName
+            extra_includes += module._includes
+        except:
+            pass
+    className = parameters.get("class","Object")
+    generator = Generator("Object", None, None, None, filename)
+    return generator.getModule("Object", extra_includes=extra_includes,**parameters).Object
