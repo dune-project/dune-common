@@ -8,18 +8,13 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import importlib
-import subprocess
 import hashlib
-import sys
 import os
 import re
-import timeit
 
 from . import builder
 from . import database
 
-from dune import comm
 from dune import __path__ as basePaths
 
 dataBasePaths = [os.path.join(p, "../database") for p in basePaths]
