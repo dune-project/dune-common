@@ -23,8 +23,6 @@ from dune import comm
 from dune import __path__ as basePaths
 
 dataBasePaths = [os.path.join(p, "../database") for p in basePaths]
-compilePath = os.path.join(basePaths[0],"generated")
-sys.path.append(compilePath)
 
 class Generator(object):
     """ Generator class:
