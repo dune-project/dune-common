@@ -19,41 +19,19 @@ from dune import __path__ as basePaths
 
 dataBasePaths = [os.path.join(p, "../database") for p in basePaths]
 
-class Generator(object):
-    """ Generator class:
-
-        The main class for on the fly generation of wrapper classes.
-    """
+class SimpleGenerator(object):
     def __init__(self, typeName, pathToRegisterMethod, namespace, pythonname=None, filename=None):
-        """ Constructor
-
-            Args:
-                typeName (string): identifier for the interface classes to be
-                                   generated (used for finding the right
-                                   dictionary files)
-        """
         self.typeName = typeName
         self.pathToRegisterMethod = pathToRegisterMethod
         if namespace:
             self.namespace = namespace+"::"
         else:
             self.namespace = ""
-        if pythonname == None:
+        if pythonname is None:
           self.pythonName = typeName
         else:
           self.pythonName = pythonname
         self.fileName = filename
-        if filename == None:
-          dbpaths = [os.path.join(p, typeName.lower()) for p in dataBasePaths]
-          dbfiles = []
-          for p in dbpaths:
-              if os.path.isdir(p):
-                dbfiles += [os.path.join(p,dbfile)
-                                    for dbfile in os.listdir(p)
-                                    if re.match(".*[.]db$", dbfile)]
-          self.dataBase = database.DataBase(*dbfiles,cppFile=False)
-        else:
-          self.dataBase = database.DataBase(filename,cppFile=True)
         self.builder = builder.Builder(verbose=True)
 
     def load(self, includes, typeName, moduleName, constructors=None, methods=None):
@@ -91,6 +69,33 @@ class Generator(object):
         setattr(module, "_typeName", typeName)
         setattr(module, "_includes", includes)
         return module
+
+
+class Generator(SimpleGenerator):
+    """ Generator class:
+
+        The main class for on the fly generation of wrapper classes.
+    """
+    def __init__(self, typeName, pathToRegisterMethod, namespace, pythonname=None, filename=None):
+        """ Constructor
+
+            Args:
+                typeName (string): identifier for the interface classes to be
+                                   generated (used for finding the right
+                                   dictionary files)
+        """
+        SimpleGenerator.__init__(self, typeName, pathToRegisterMethod, namespace, pythonname, filename)
+        if filename is None:
+          dbpaths = [os.path.join(p, typeName.lower()) for p in dataBasePaths]
+          dbfiles = []
+          for p in dbpaths:
+              if os.path.isdir(p):
+                dbfiles += [os.path.join(p,dbfile)
+                                    for dbfile in os.listdir(p)
+                                    if re.match(".*[.]db$", dbfile)]
+          self.dataBase = database.DataBase(*dbfiles,cppFile=False)
+        else:
+          self.dataBase = database.DataBase(filename,cppFile=True)
 
     def getModule(self, myType, myTypeHash=None, **parameters):
         """ generate and load the extension module for a given
