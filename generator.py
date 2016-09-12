@@ -63,6 +63,42 @@ class Generator(object):
           self.dataBase = database.DataBase(filename,cppFile=True)
         self.builder = builder.Builder(verbose=True)
 
+    def load(self, includes, typeName, moduleName, constructors=None, methods=None):
+        source = includes
+        if self.pathToRegisterMethod is not None:
+            source += "#include <" + self.pathToRegisterMethod + "/" + self.typeName.lower() + ".hh>\n"
+            source += "\n"
+
+        if self.fileName is not None:
+            with open(self.fileName, "r") as include:
+                source += include.read()
+            source += "\n"
+
+        source += "typedef " + typeName + " DuneType;\n"
+        source += "\n"
+        if self.namespace == "":
+            source += "void register" + self.typeName + "( ... ) {}\n"
+        source += "PYBIND11_PLUGIN( " + moduleName + " )\n"
+        source += "{\n"
+        source += "  pybind11::module module( \"" + moduleName + "\" );\n"
+        source += "  typedef std::unique_ptr< DuneType > Holder;\n"
+        source += "  typedef DuneType TypeAlias;\n"
+        source += "  auto cls = pybind11::class_< DuneType, Holder, TypeAlias >( module, \"" + self.pythonName + "\" );\n"
+        source += "  " + self.namespace + "register" + self.typeName + "( module, cls );\n"
+
+        if constructors is not None:
+            source += "".join(["  cls.def( pybind11::init< " + c + " >() );\n" for c in constructors])
+        if methods is not None:
+            source += "".join(["  cls.def( \"" + m[0] + "\", &" + m[1] + ");\n" for m in methods])
+
+        source += "  return module.ptr();\n"
+        source += "}\n"
+
+        module = self.builder.load(moduleName, source)
+        setattr(module, "_typeName", typeName)
+        setattr(module, "_includes", includes)
+        return module
+
     def getModule(self, myType, myTypeHash=None, **parameters):
         """ generate and load the extension module for a given
             implementation
@@ -90,41 +126,9 @@ class Generator(object):
         # remove duplicate
         # includes = list(set( includes ))
 
-        source = includes
-        if self.dataBase.uses_extension(selector) == False:
-            if not self.pathToRegisterMethod == None:
-                source += "#include <" + self.pathToRegisterMethod + "/" + self.typeName.lower() + ".hh>\n"
-                source += "\n"
-
-            if not self.fileName == None:
-                include = open(self.fileName, "r")
-                source += include.read()
-                source += "\n"
-
-        source += "typedef " + myTypeName + " DuneType;\n"
-        source += "\n"
-        if self.namespace == "":
-            source += "void register" + self.typeName + "( ... ) {}\n"
-        source += "PYBIND11_PLUGIN( " + moduleName + " )\n"
-        source += "{\n"
-        source += "  pybind11::module module( \"" + moduleName + "\" );\n"
-        source += "  typedef std::unique_ptr< DuneType > Holder;\n"
-        source += "  typedef DuneType TypeAlias;\n"
-        source += "  auto cls = pybind11::class_< DuneType, Holder, TypeAlias >( module, \"" + self.pythonName + "\" );\n"
-        source += "  " + self.namespace + "register" + self.typeName + "( module, cls );\n"
-
-        for c in self.dataBase.get_constructors(selector):
-            source += "  cls.def( pybind11::init< " + c + " >() );\n"
-        for m in self.dataBase.get_methods(selector):
-            source += "  cls.def( \"" + m[0] + "\", &" + m[1] + ");\n"
-
-        source += "  return module.ptr();\n"
-        source += "}\n"
-
-        module = self.builder.load(moduleName, source)
-        setattr(module, "_typeName", myTypeName)
-        setattr(module, "_typeHash", myTypeHash)
-        setattr(module, "_includes", includes)
+        constructors = self.dataBase.get_constructors(selector)
+        methods = self.dataBase.get_methods(selector)
+        module = self.load(includes, myTypeName, moduleName, constructors, methods)
         setattr(module, "_moduleBase", moduleBase)
         setattr(module, "_selector", selector)
         return module
