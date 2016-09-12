@@ -35,10 +35,10 @@ class SimpleGenerator(object):
         self.builder = builder.Builder(verbose=True)
 
     def load(self, includes, typeName, moduleName, constructors=None, methods=None):
-        source = includes
+        source = "".join(["#include <" + i + ">\n" for i in includes])
         if self.pathToRegisterMethod is not None:
             source += "#include <" + self.pathToRegisterMethod + "/" + self.typeName.lower() + ".hh>\n"
-            source += "\n"
+        source += "\n"
 
         if self.fileName is not None:
             with open(self.fileName, "r") as include:
@@ -117,9 +117,8 @@ class Generator(SimpleGenerator):
         moduleBase = self.typeName.lower()
         moduleName = moduleBase + "_" + myTypeHash
 
-        includes = parameters[ "extra_includes" ] if "extra_includes" in parameters else ""
-        for include in self.dataBase.get_includes(selector):
-            includes = includes + "#include <" + include + ">\n"
+        includes = parameters[ "extra_includes" ] if "extra_includes" in parameters else []
+        includes += self.dataBase.get_includes(selector)
         includes = self.modifyIncludes(includes)
         # remove duplicate
         # includes = list(set( includes ))
