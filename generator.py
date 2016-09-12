@@ -16,6 +16,7 @@ import os
 import re
 import timeit
 
+from . import builder
 from . import database
 
 from dune import comm
@@ -30,7 +31,6 @@ class Generator(object):
 
         The main class for on the fly generation of wrapper classes.
     """
-    force = False
     def __init__(self, typeName, pathToRegisterMethod, namespace, pythonname=None, filename=None):
         """ Constructor
 
@@ -61,6 +61,7 @@ class Generator(object):
           self.dataBase = database.DataBase(*dbfiles,cppFile=False)
         else:
           self.dataBase = database.DataBase(filename,cppFile=True)
+        self.builder = builder.Builder(verbose=True)
 
     def getModule(self, myType, myTypeHash=None, **parameters):
         """ generate and load the extension module for a given
@@ -89,56 +90,38 @@ class Generator(object):
         # remove duplicate
         # includes = list(set( includes ))
 
-        if comm.rank == 0:
-            if not os.path.isfile(os.path.join(compilePath, moduleName + ".so")) or self.force:
-                print("Compiling " + self.typeName + " module for " + myTypeName)
-                start_time = timeit.default_timer()
-                out = open(os.path.join(compilePath, "generated_module.hh"), 'w')
-                print(includes, file=out)
-                if self.dataBase.uses_extension(selector) == False:
-                    if not self.pathToRegisterMethod == None:
-                        print("#include <"+self.pathToRegisterMethod+"/" + self.typeName.lower() + ".hh>", file=out)
-                        print(file=out)
-                    if not self.fileName == None:
-                        include = open(self.fileName, "r")
-                        out.write( include.read() )
-                        print(file=out)
-                print("typedef " + myTypeName + " DuneType;", file=out)
-                print(file=out)
-                if self.namespace == "":
-                    print("void register" + self.typeName + "( ... ) {}", file=out)
-                print("PYBIND11_PLUGIN( " + moduleName + " )", file=out)
-                print("{", file=out)
-                print("  pybind11::module module( \"" + moduleName + "\" );", file=out)
-                print("  typedef std::unique_ptr<DuneType> Holder;", file=out)
-                print("  typedef DuneType TypeAlias;", file=out)
-                print("  auto cls = pybind11::class_<DuneType,Holder,TypeAlias>(module,\"" + self.pythonName + "\");", file=out);
-                print("  "+self.namespace+"register" + self.typeName + "( module, cls );", file=out)
+        source = includes
+        if self.dataBase.uses_extension(selector) == False:
+            if not self.pathToRegisterMethod == None:
+                source += "#include <" + self.pathToRegisterMethod + "/" + self.typeName.lower() + ".hh>\n"
+                source += "\n"
 
-                for c in self.dataBase.get_constructors(selector):
-                    print(" cls.def(pybind11::init<"+c+">());", file=out)
-                for m in self.dataBase.get_methods(selector):
-                    print(" cls.def(\""+m[0]+"\",&"+m[1]+");", file=out)
+            if not self.fileName == None:
+                include = open(self.fileName, "r")
+                source += include.read()
+                source += "\n"
 
-                print("  return module.ptr();", file=out)
-                print("}", file=out)
-                out.close()
-                cmake = subprocess.Popen(["cmake", "--build", "../../..", "--target", "generated_module"], cwd=compilePath)
-                cmake.wait()
-                if cmake.returncode > 0:
-                    print('FAILURE: could not build module -\
-                           perhaps wrong choice of parameter or\
-                           wrong configure options used during build?')
-                    raise self.dataBase.CompileError(self.typeName.lower(), myTypeName)
-                os.rename(os.path.join(compilePath, "generated_module.so"),
-                          os.path.join(compilePath, moduleName + ".so"))
-                os.rename(os.path.join(compilePath, "generated_module.hh"),
-                          os.path.join(compilePath, moduleName + ".hh"))
-                print("Compilation took: " , timeit.default_timer()-start_time, "seconds")
+        source += "typedef " + myTypeName + " DuneType;\n"
+        source += "\n"
+        if self.namespace == "":
+            source += "void register" + self.typeName + "( ... ) {}\n"
+        source += "PYBIND11_PLUGIN( " + moduleName + " )\n"
+        source += "{\n"
+        source += "  pybind11::module module( \"" + moduleName + "\" );\n"
+        source += "  typedef std::unique_ptr< DuneType > Holder;\n"
+        source += "  typedef DuneType TypeAlias;\n"
+        source += "  auto cls = pybind11::class_< DuneType, Holder, TypeAlias >( module, \"" + self.pythonName + "\" );\n"
+        source += "  " + self.namespace + "register" + self.typeName + "( module, cls );\n"
 
-        comm.barrier()
+        for c in self.dataBase.get_constructors(selector):
+            source += "  cls.def( pybind11::init< " + c + " >() );\n"
+        for m in self.dataBase.get_methods(selector):
+            source += "  cls.def( \"" + m[0] + "\", &" + m[1] + ");\n"
 
-        module = importlib.import_module("dune.generated."+moduleName)
+        source += "  return module.ptr();\n"
+        source += "}\n"
+
+        module = self.builder.load(moduleName, source)
         setattr(module, "_typeName", myTypeName)
         setattr(module, "_typeHash", myTypeHash)
         setattr(module, "_includes", includes)

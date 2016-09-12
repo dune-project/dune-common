@@ -1,3 +1,4 @@
+add_python_target(builder)
 add_python_target(database)
 add_python_target(generator)
 
