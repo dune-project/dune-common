@@ -12,12 +12,14 @@ import hashlib
 import os
 import re
 
-from . import builder
+from .builder import Builder
 from . import database
 
 from dune import __path__ as basePaths
 
 dataBasePaths = [os.path.join(p, "../database") for p in basePaths]
+
+builder = Builder(verbose=True)
 
 class SimpleGenerator(object):
     def __init__(self, typeName, namespace, pythonname=None, filename=None):
@@ -31,7 +33,6 @@ class SimpleGenerator(object):
         else:
           self.pythonName = pythonname
         self.fileName = filename
-        self.builder = builder.Builder(verbose=True)
 
     def load(self, includes, typeName, moduleName, constructors=None, methods=None):
         source = "".join(["#include <" + i + ">\n" for i in includes])
@@ -68,7 +69,7 @@ class SimpleGenerator(object):
         source += "  return module.ptr();\n"
         source += "}\n"
 
-        module = self.builder.load(moduleName, source)
+        module = builder.load(moduleName, source)
         setattr(module, "_typeName", typeName)
         setattr(module, "_includes", includes)
         return module
