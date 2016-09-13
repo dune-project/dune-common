@@ -20,9 +20,8 @@ from dune import __path__ as basePaths
 dataBasePaths = [os.path.join(p, "../database") for p in basePaths]
 
 class SimpleGenerator(object):
-    def __init__(self, typeName, pathToRegisterMethod, namespace, pythonname=None, filename=None):
+    def __init__(self, typeName, namespace, pythonname=None, filename=None):
         self.typeName = typeName
-        self.pathToRegisterMethod = pathToRegisterMethod
         if namespace:
             self.namespace = namespace+"::"
         else:
@@ -36,8 +35,6 @@ class SimpleGenerator(object):
 
     def load(self, includes, typeName, moduleName, constructors=None, methods=None):
         source = "".join(["#include <" + i + ">\n" for i in includes])
-        if self.pathToRegisterMethod is not None:
-            source += "#include <" + self.pathToRegisterMethod + "/" + self.typeName.lower() + ".hh>\n"
         source += "\n"
 
         if self.fileName is not None:
@@ -90,7 +87,7 @@ class Generator(SimpleGenerator):
                                    generated (used for finding the right
                                    dictionary files)
         """
-        SimpleGenerator.__init__(self, typeName, pathToRegisterMethod, namespace, pythonname, filename)
+        SimpleGenerator.__init__(self, typeName, namespace, pythonname, filename)
         if filename is None:
           dbpaths = [os.path.join(p, typeName.lower()) for p in dataBasePaths]
           dbfiles = []
@@ -102,6 +99,7 @@ class Generator(SimpleGenerator):
           self.dataBase = database.DataBase(*dbfiles,cppFile=False)
         else:
           self.dataBase = database.DataBase(filename,cppFile=True)
+        self.pathToRegisterMethod = pathToRegisterMethod
 
     def getModule(self, myType, myTypeHash=None, **parameters):
         """ generate and load the extension module for a given
@@ -126,6 +124,9 @@ class Generator(SimpleGenerator):
         includes = parameters[ "extra_includes" ] if "extra_includes" in parameters else []
         includes += self.dataBase.get_includes(selector)
         includes = self.modifyIncludes(includes)
+        if self.pathToRegisterMethod is not None:
+            includes += [self.pathToRegisterMethod + "/" + self.typeName.lower() + ".hh"]
+
         # remove duplicate
         # includes = list(set( includes ))
 
