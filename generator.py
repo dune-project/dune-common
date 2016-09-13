@@ -52,7 +52,10 @@ class SimpleGenerator(object):
         source += "  pybind11::module module( \"" + moduleName + "\" );\n"
         source += "  typedef std::unique_ptr< DuneType > Holder;\n"
         source += "  typedef DuneType TypeAlias;\n"
+        source += '  auto entry = Dune::CorePy::typeRegistry().insert<DuneType>("' + typeName + '",{' +\
+                  ",".join(['"' + i + '"' for i in includes]) + "});\n"
         source += "  auto cls = pybind11::class_< DuneType, Holder, TypeAlias >( module, \"" + self.pythonName + "\" );\n"
+        source += " Dune::CorePy::typeRegistry().exportToPython(cls,entry.first->second);\n"
         source += "  " + self.namespace + "register" + self.typeName + "( module, cls );\n"
 
         if constructors is not None:
