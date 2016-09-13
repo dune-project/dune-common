@@ -32,7 +32,7 @@ class Builder:
                     print("Compiling " + moduleName + "...")
                     start_time = timeit.default_timer()
 
-                cmake = subprocess.Popen(["cmake", "--build", "../../..", "--target", "generated_module"], cwd=self.path, stderr=subprocess.PIPE)
+                cmake = subprocess.Popen(["cmake", "--build", "../../..", "--target", "generated_module"], cwd=self.path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 cmake.wait()
                 if cmake.returncode > 0:
                     raise self.CompileError(cmake.stderr.read())
