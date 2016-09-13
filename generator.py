@@ -58,7 +58,13 @@ class SimpleGenerator(object):
         source += "  " + self.namespace + "register" + self.typeName + "( module, cls );\n"
 
         if constructors is not None:
-            source += "".join(["  cls.def( pybind11::init< " + c + " >() );\n" for c in constructors])
+            for constructor in constructors:
+                if isinstance(constructor, list):
+                    source += "  cls.def( \"__init__\", "
+                    source += "\n    ".join(constructor)
+                    source += " );\n"
+                else:
+                    source += "  cls.def( pybind11::init< " + constructor + " >() );\n"
         if methods is not None:
             source += "".join(["  cls.def( \"" + m[0] + "\", &" + m[1] + ");\n" for m in methods])
 
