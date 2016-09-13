@@ -63,9 +63,9 @@
 #       The source files from which to build the library.
 #
 #    .. cmake_param:: COMPILE_FLAGS
-#       :multi:
+#       :single:
 #
-#       Any additional compile flags fpr building the library.
+#       Any additional compile flags for building the library.
 #
 # .. cmake_function:: dune_target_link_libraries
 #
