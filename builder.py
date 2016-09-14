@@ -35,7 +35,10 @@ class Builder:
                 cmake = subprocess.Popen(["cmake", "--build", "../../..", "--target", "generated_module"], cwd=self.path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 cmake.wait()
                 if cmake.returncode > 0:
-                    raise self.CompileError(cmake.stderr.read().decode('utf-8'))
+                    if sys.version_info.major == 2:
+                        raise self.CompileError(cmake.stderr.read())
+                    else:
+                        raise self.CompileError(cmake.stderr.read().decode('utf-8'))
 
                 os.rename(os.path.join(self.path, "generated_module.so"), os.path.join(self.path, moduleName + ".so"))
                 os.rename(os.path.join(self.path, "generated_module.hh"), os.path.join(self.path, moduleName + ".hh"))
