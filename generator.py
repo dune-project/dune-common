@@ -139,6 +139,7 @@ class Generator(SimpleGenerator):
         module = self.load(includes, myTypeName, moduleName, constructors, methods)
         setattr(module, "_moduleBase", moduleBase)
         setattr(module, "_selector", selector)
+        setattr(module, "_typeHash", myTypeHash)
         return module
 
     def modifyIncludes(self, includes):
