@@ -75,6 +75,7 @@ class SimpleGenerator(object):
         module = builder.load(moduleName, source)
         setattr(module, "_typeName", typeName)
         setattr(module, "_includes", includes)
+        setattr(module, "_moduleName", moduleName)
         return module
 
 
