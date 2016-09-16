@@ -14,8 +14,8 @@ list of available modules.
 
 To compile the modules Dune has to check several components of
 your system and whether prerequisites within the modules are met. For
-the ease of users we have designed a custom build system on top of the
-automake tools. Run
+the ease of users we have designed a custom build system on top of CMake.
+Run
 
   ./dune-common/bin/dunecontrol all
 
