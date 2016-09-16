@@ -68,10 +68,10 @@ full instructions please see [here][installation].
 Links
 -----
 
-0. http://www.dune-project.org/doc/installation-notes.html
-1. http://www.dune-project.org/download.html
-2. http://dune-project.org/doc/buildsystem/buildsystem.pdf
+0. https://www.dune-project.org/doc/installation
+1. https://dune-project.org/releases/
+2. https://dune-project.org/buildsystem/
 3. http://gcc.gnu.org/onlinedocs/libstdc++/faq.html#faq.license
 
-[installation]: http://www.dune-project.org/doc/installation-notes.html
+[installation]: https://www.dune-project.org/doc/installation
 [licence]: http://gcc.gnu.org/onlinedocs/libstdc++/faq.html#faq.license
