@@ -87,6 +87,12 @@ void testparam(const P & p)
   catch (Dune::RangeError & r) {}
   // try accessing inexistent subtree in non-throwing mode
   p.sub("bar");
+  // try accessing inexistent subtree that shadows a value key
+  try {
+    p.sub("x1.bar");
+    DUNE_THROW(Dune::Exception, "succeeded to access non-existent subtree that shadows a value key");
+  }
+  catch (Dune::RangeError & r) {}
   // try accessing key as subtree
   try {
     p.sub("x1");
