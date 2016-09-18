@@ -6,8 +6,7 @@ import sys
 import os
 import timeit
 
-from dune import comm
-from dune import __path__ as basePaths
+from dune import comm, pathToGenerated
 
 class Builder:
     class CompileError(Exception):
@@ -19,8 +18,7 @@ class Builder:
         self.force = force
         self.verbose = verbose
 
-        self.path = os.path.join(basePaths[0], "generated")
-        sys.path.append(self.path)
+        self.path = pathToGenerated
 
     def load(self, moduleName, source):
         if comm.rank == 0:
@@ -32,11 +30,11 @@ class Builder:
                     print("Compiling " + moduleName + "...")
                     start_time = timeit.default_timer()
 
-                cmake = subprocess.Popen(["cmake", "--build", "../../..", "--target", "generated_module"], cwd=self.path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                cmake = subprocess.Popen(["cmake", "--build", pathToGenerated + "/../../..", "--target", "generated_module"], cwd=self.path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 cmake.wait()
                 if cmake.returncode > 0:
                     if sys.version_info.major == 2:
-                        raise self.CompileError(cmake.stderr.read())
+                        raise self.CompileError(cmake.stdout.read() + cmake.stderr.read())
                     else:
                         raise self.CompileError(cmake.stderr.read().decode('utf-8'))
 
