@@ -77,7 +77,7 @@ function(dune_module_path)
   # Set the requested paths for the cmake script path
   if(PATH_SCRIPT_DIR)
     set(IF_CURRENT_MOD ${CMAKE_SOURCE_DIR}/cmake/scripts)
-    set(IF_NOT_CURRENT_MOD ${${PATH_MODULE}_SCRIPT_DIR})
+    set(IF_NOT_CURRENT_MOD ${${PATH_MODULE}_PREFIX}/cmake/scripts)
   endif()
 
   # Set the requested paths for the build directory
