@@ -3,8 +3,8 @@
 
 _dunecontrol_complete ()
 {
-  local COMMANDS="printdeps vcsetup update autogen configure make all exec bexec status svn git"
-  local COMMAND_OPTS="$(for i in printdeps vcsetup update autogen configure make all exec bexec status svn git; do echo --$i-opts; done)"
+  local COMMANDS="printdeps vcsetup update configure make all exec bexec status svn git"
+  local COMMAND_OPTS="$(for i in printdeps vcsetup update configure make all exec bexec status svn git; do echo --$i-opts; done)"
   # per default we offer the list of all core modules and the advertised discretization modules
   local MODULES="dune-common dune-grid dune-grid-howto dune-istl dune-geometry dune-localfunctions dune-pdelab dune-fem dune-fufem"
   if test "x$DUNE_MODULES" != x; then
@@ -19,7 +19,7 @@ _dunecontrol_complete ()
   local have_command=0
   for i in `seq $COMP_CWORD`; do
     case ${COMP_WORDS[i]} in
-    printdeps|vcsetup|update|autogen|configure|make|all|exec|bexec|status|svn|git)
+    printdeps|vcsetup|update|configure|make|all|exec|bexec|status|svn|git)
 			have_command=1
 			;;
 	esac
