@@ -36,7 +36,7 @@ class Builder:
                     if sys.version_info.major == 2:
                         raise self.CompileError(cmake.stdout.read() + cmake.stderr.read())
                     else:
-                        raise self.CompileError(cmake.stderr.read().decode('utf-8'))
+                        raise self.CompileError(cmake.stdout.read().decode('utf-8') + cmake.stderr.read().decode("utf-8"))
 
                 os.rename(os.path.join(self.path, "generated_module.so"), os.path.join(self.path, moduleName + ".so"))
                 os.rename(os.path.join(self.path, "generated_module.hh"), os.path.join(self.path, moduleName + ".hh"))
