@@ -117,7 +117,7 @@ class Builder:
         self.dune_py_dir = get_dune_py_dir()
         self.generated_dir = os.path.join(self.dune_py_dir, 'python', 'dune', 'generated')
         #dune.__path__.append(os.path.join(self.dune_py_dir, 'python', 'dune'))
-        sys.path.append(self.generated_dir)
+        dune.__path__.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
 
         if comm.rank == 0:
             if self.verbose:
@@ -156,5 +156,4 @@ class Builder:
 
         comm.barrier()
 
-        #return importlib.import_module("dune.generated." + moduleName)
-        return importlib.import_module(moduleName)
+        return importlib.import_module("dune.generated." + moduleName)
