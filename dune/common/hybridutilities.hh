@@ -152,7 +152,7 @@ namespace Impl {
     template<std::size_t i>
     constexpr auto operator[](Dune::index_constant<i>) const
     {
-      return Dune::index_constant<Begin::value+i>();
+      return std::integral_constant<typename Begin::value_type, Begin::value+i>();
     }
 
     static constexpr auto size()
