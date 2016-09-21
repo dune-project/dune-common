@@ -99,9 +99,8 @@ def build_dune_py_module(dune_py_dir=None):
             prefix[name] = dune.module.default_build_dir(dir, name)
 
     output = dune.module.configure_module(dune_py_dir, dune_py_dir, {d: prefix[d] for d in deps}, definitions)
-    print(output)
-    output = dune.module.build_module(dune_py_dir)
-    print(output)
+    output += dune.module.build_module(dune_py_dir)
+    return output
 
 
 class Builder:
@@ -110,9 +109,22 @@ class Builder:
         def __init__(self, error):
             Exception.__init__(self,error)
 
-    def __init__(self, force=False, verbose=False):
+    def __init__(self, force=False, verbose=None):
         self.force = force
-        self.verbose = verbose
+
+        if verbose is None:
+            try:
+                verbose = os.environ['DUNE_PY_BUILDER_VERBOSE'].lower()
+                if verbose in ['yes', 'true', '1']:
+                    self.verbose = True
+                elif verbose in ['no', 'false', '0']:
+                    self.verbose = False
+                else:
+                    raise RuntineError('Invalid value for environment variable DUNE_PY_BUILDER_VERBOSE: "' + verbose + '".')
+            except KeyError:
+                self.verbose = False
+        else:
+            self.verbose = verbose
 
         self.dune_py_dir = get_dune_py_dir()
         self.generated_dir = os.path.join(self.dune_py_dir, 'python', 'dune', 'generated')
@@ -124,8 +136,9 @@ class Builder:
                 print("Building dune-py module...")
                 start_time = timeit.default_timer()
             make_dune_py_module(self.dune_py_dir)
-            build_dune_py_module(self.dune_py_dir)
+            output = build_dune_py_module(self.dune_py_dir)
             if self.verbose:
+                print(output)
                 print("Building dune-py module took", (timeit.default_timer() - start_time), "seconds")
         comm.barrier()
 

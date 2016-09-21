@@ -19,7 +19,7 @@ from dune import __path__ as basePaths
 
 dataBasePaths = [os.path.join(p, "../database") for p in basePaths]
 
-builder = Builder(verbose=True)
+builder = Builder()
 
 class SimpleGenerator(object):
     def __init__(self, typeName, namespace, pythonname=None, filename=None):
