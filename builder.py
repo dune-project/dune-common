@@ -74,8 +74,7 @@ def make_dune_py_module(dune_py_dir=None):
         modules, _ = dune.module.select_modules()
         description = dune.module.Description(module='dune-py', maintainer='dune@dune-project.org', depends=list(modules.values()))
 
-        cmake_dir = dune.project.make_cmake_modules(dune_py_dir, description, macros=['declare_python_dune_module(' + description.name + ')'])
-        dune.project.make_project(dune_py_dir, description, subdirs=[cmake_dir, generated_dir])
+        dune.project.make_project(dune_py_dir, description, subdirs=[generated_dir])
     else:
         if dune.module.Description(descFile).name != 'dune-py':
             raise RunetimeError('"' + dune_py_dir + '" already contains a different dune module.')
