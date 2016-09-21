@@ -36,6 +36,8 @@ def get_cmake_definitions():
     try:
         for arg in shlex.split(os.environ['DUNE_CMAKE_FLAGS']):
             key, value = arg.split('=', 1)
+            if key.startswith('-D'):
+                key = key[2:]
             definitions[key] = value
     except KeyError:
         pass
