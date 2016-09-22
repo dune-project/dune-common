@@ -72,7 +72,7 @@ class SimpleGenerator(object):
         source += "  return module.ptr();\n"
         source += "}\n"
 
-        module = builder.load(moduleName, source)
+        module = builder.load(moduleName, source, self.pythonName)
         setattr(module, "_typeName", typeName)
         setattr(module, "_includes", includes)
         setattr(module, "_moduleName", moduleName)

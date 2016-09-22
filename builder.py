@@ -45,6 +45,7 @@ def get_cmake_definitions():
 def make_dune_py_module(dune_py_dir=None):
     if dune_py_dir is None:
         dune_py_dir = get_dune_py_dir()
+    print("checking dune-py module in ", dune_py_dir)
     descFile = os.path.join(dune_py_dir, 'dune.module')
     if not os.path.isfile(descFile):
         if not os.path.isdir(dune_py_dir):
@@ -136,19 +137,21 @@ class Builder:
                 print("Building dune-py module...")
                 start_time = timeit.default_timer()
             make_dune_py_module(self.dune_py_dir)
-            output = build_dune_py_module(self.dune_py_dir)
+            build_dune_py_module(self.dune_py_dir)
             if self.verbose:
                 print(output)
                 print("Building dune-py module took", (timeit.default_timer() - start_time), "seconds")
         comm.barrier()
 
 
-    def load(self, moduleName, source):
+    def load(self, moduleName, source, classType=None):
         if comm.rank == 0:
             if not os.path.isfile(os.path.join(self.generated_dir, moduleName + ".so")) or self.force:
                 with open(os.path.join(self.generated_dir, "generated_module.hh"), 'w') as out:
                     out.write(source)
 
+                if classType:
+                    print('generating: ', classType)
                 if self.verbose:
                     print("Compiling " + moduleName + "...")
                     start_time = timeit.default_timer()
