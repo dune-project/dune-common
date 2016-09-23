@@ -1,4 +1,4 @@
-add_python_target(generator
+add_python_targets(generator
   __init__
   builder
   database
