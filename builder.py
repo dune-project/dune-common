@@ -17,6 +17,92 @@ import dune.module
 import dune.project
 
 
+def get_dune_py_dir():
+    try:
+        return os.environ['DUNE_PY_DIR']
+    except KeyError:
+        pass
+
+    try:
+        return os.path.join(os.environ['HOME'], '.cache', 'dune-py')
+    except KeyError:
+        pass
+
+    raise RuntimeError('Unable to determine location for dune-py module. Please set the environment variable "DUNE_PY_DIR".')
+
+
+def get_cmake_definitions():
+    definitions = {}
+    try:
+        for arg in shlex.split(os.environ['DUNE_CMAKE_FLAGS']):
+            key, value = arg.split('=', 1)
+            if key.startswith('-D'):
+                key = key[2:]
+            definitions[key] = value
+    except KeyError:
+        pass
+    return definitions
+
+
+def make_dune_py_module(dune_py_dir=None):
+    if dune_py_dir is None:
+        dune_py_dir = get_dune_py_dir()
+    descFile = os.path.join(dune_py_dir, 'dune.module')
+    if not os.path.isfile(descFile):
+        if not os.path.isdir(dune_py_dir):
+            os.makedirs(dune_py_dir)
+
+        # create python/dune/generated
+        generated_dir_rel = os.path.join('python','dune', 'generated')
+        generated_dir = os.path.join(dune_py_dir, generated_dir_rel)
+        if not os.path.isdir(generated_dir):
+            os.makedirs(generated_dir)
+
+        cmake_content = ['add_library(generated_module SHARED EXCLUDE_FROM_ALL generated_module.cc)',
+                         'target_include_directories(generated_module PRIVATE ${CMAKE_CURRENT_BINARY_DIR})',
+                         'add_dune_mpi_flags(generated_module)',
+                         'set_target_properties(generated_module PROPERTIES PREFIX "")',
+                         'target_compile_definitions(generated_module PRIVATE USING_COREPY)',
+                         'file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/__init__.py")']
+        dune.project.write_cmake_file(generated_dir, cmake_content)
+
+        with open(os.path.join(generated_dir, 'generated_module.cc'), 'w') as file:
+            file.write('#include <config.h>\n\n')
+            file.write('#define USING_COREPY 1\n\n')
+            file.write('#include <dune/corepy/common/typeregistry.hh>\n')
+            file.write('#include <dune/corepy/pybind11/pybind11.h>\n')
+            file.write('\n#include "generated_module.hh"\n')
+
+        modules, _ = dune.module.select_modules()
+        description = dune.module.Description(module='dune-py', maintainer='dune@dune-project.org', depends=list(modules.values()))
+
+        dune.project.make_project(dune_py_dir, description, subdirs=[generated_dir])
+    else:
+        if dune.module.Description(descFile).name != 'dune-py':
+            raise RunetimeError('"' + dune_py_dir + '" already contains a different dune module.')
+
+
+def build_dune_py_module(dune_py_dir=None):
+    if dune_py_dir is None:
+        dune_py_dir = get_dune_py_dir()
+    definitions = get_cmake_definitions()
+
+    desc = dune.module.Description(os.path.join(dune_py_dir, 'dune.module'))
+
+    modules, dirs = dune.module.select_modules()
+    deps = dune.module.resolve_dependencies(modules, desc)
+
+    prefix = {}
+    for name, dir in dirs.items():
+        if dune.module.is_installed(dir, name):
+            prefix[name] = dune.module.get_prefix(name)
+        else:
+            prefix[name] = dune.module.default_build_dir(dir, name)
+
+    output = dune.module.configure_module(dune_py_dir, dune_py_dir, {d: prefix[d] for d in deps}, definitions)
+    output += dune.module.build_module(dune_py_dir)
+    return output
+
 class Builder:
     class CompileError(Exception):
         '''raise this when there's a problem compiling an extension module'''
