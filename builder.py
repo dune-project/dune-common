@@ -78,10 +78,13 @@ def make_dune_py_module(dune_py_dir=None):
         cmake_dir = dune.project.make_cmake_modules(dune_py_dir, description, macros=[])
         # , macros=['declare_python_dune_module(' + description.name + ')'])
         dune.project.make_project(dune_py_dir, description, subdirs=[cmake_dir, generated_dir])
+        foundModule = False
     else:
         if dune.module.Description(descFile).name != 'dune-py':
             raise RunetimeError('"' + dune_py_dir + '" already contains a different dune module.')
+        foundModule = True
 
+    return foundModule
 
 def build_dune_py_module(dune_py_dir=None):
     if dune_py_dir is None:
@@ -137,11 +140,18 @@ class Builder:
             if self.verbose:
                 print("Building dune-py module...")
                 start_time = timeit.default_timer()
-            make_dune_py_module(self.dune_py_dir)
-            build_dune_py_module(self.dune_py_dir)
-            if self.verbose:
-                print(output)
-                print("Building dune-py module took", (timeit.default_timer() - start_time), "seconds")
+            foundModule = make_dune_py_module(self.dune_py_dir)
+            try:
+                output = build_dune_py_module(self.dune_py_dir)
+                if self.verbose:
+                    print(output)
+                    print("Building dune-py module took", (timeit.default_timer() - start_time), "seconds")
+            except:
+                if not foundModule:
+                    raise RuntimeError('Unable to configure new dune-py module".')
+                else:
+                    if self.verbose:
+                        print("couldn't reconfigure - using existing configuration")
         comm.barrier()
 
 
