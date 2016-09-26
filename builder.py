@@ -13,8 +13,7 @@ except:
     pass
 
 from dune.common import comm
-import dune.module
-import dune.project
+import dune.common.module
 
 
 class Builder:
@@ -40,8 +39,8 @@ class Builder:
         else:
             self.verbose = verbose
 
-        self.build_args = dune.module.get_default_build_args()
-        self.dune_py_dir = dune.module.get_dune_py_dir()
+        self.build_args = dune.common.module.get_default_build_args()
+        self.dune_py_dir = dune.common.module.get_dune_py_dir()
         self.generated_dir = os.path.join(self.dune_py_dir, 'python', 'dune', 'generated')
         #dune.__path__.append(os.path.join(self.dune_py_dir, 'python', 'dune'))
         dune.__path__.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
@@ -50,9 +49,9 @@ class Builder:
             if self.verbose:
                 print("Building dune-py module...")
                 start_time = timeit.default_timer()
-            foundModule = dune.module.make_dune_py_module(self.dune_py_dir)
+            foundModule = dune.common.module.make_dune_py_module(self.dune_py_dir)
             try:
-                output = dune.module.build_dune_py_module(self.dune_py_dir)
+                output = dune.common.module.build_dune_py_module(self.dune_py_dir)
                 if self.verbose:
                     print(output)
                     print("Building dune-py module took", (timeit.default_timer() - start_time), "seconds")
