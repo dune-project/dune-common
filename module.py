@@ -454,7 +454,7 @@ def get_dune_py_dir():
     raise RuntimeError('Unable to determine location for dune-py module. Please set the environment variable "DUNE_PY_DIR".')
 
 
-def get_cmake_definitions(opts=None):
+def get_cmake_definitions():
     definitions = {}
     try:
         for arg in shlex.split(os.environ['DUNE_CMAKE_FLAGS']):
@@ -464,15 +464,6 @@ def get_cmake_definitions(opts=None):
             definitions[key] = value
     except KeyError:
         pass
-    if opts:
-        command = ['bash', '-c', 'source '+opts+' && echo "$CMAKE_FLAGS"']
-        proc = subprocess.Popen(command, stdout = subprocess.PIPE)
-        for arg in shlex.split(proc.stdout):
-            key, value = arg.split('=', 1)
-            if key.startswith('-D'):
-                key = key[2:]
-            definitions[key] = value
-        proc.communicate()
     return definitions
 
 
@@ -517,11 +508,11 @@ def make_dune_py_module(dune_py_dir=None):
         return True
 
 
-def build_dune_py_module(dune_py_dir=None, definitions=None, build_args=None, opts=None):
+def build_dune_py_module(dune_py_dir=None, definitions=None, build_args=None):
     if dune_py_dir is None:
         dune_py_dir = get_dune_py_dir()
     if definitions is None:
-        definitions = get_cmake_definitions(opts)
+        definitions = get_cmake_definitions()
 
     desc = Description(os.path.join(dune_py_dir, 'dune.module'))
 
