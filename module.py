@@ -146,6 +146,11 @@ class Description:
         except KeyError:
             self.whitespace_hook = None
 
+        try:
+            self.python_modules = data['python-modules'].split()
+        except KeyError:
+            self.python_modules = None
+
         def parse_deps(s):
             deps = []
             if isinstance(s, list):
