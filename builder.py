@@ -40,6 +40,7 @@ class Builder:
         else:
             self.verbose = verbose
 
+        self.build_args = dune.module.get_default_build_args()
         self.dune_py_dir = dune.module.get_dune_py_dir()
         self.generated_dir = os.path.join(self.dune_py_dir, 'python', 'dune', 'generated')
         #dune.__path__.append(os.path.join(self.dune_py_dir, 'python', 'dune'))
@@ -76,7 +77,10 @@ class Builder:
                     print("Compiling " + moduleName + "...")
                     start_time = timeit.default_timer()
 
-                cmake = subprocess.Popen(["cmake", "--build", self.dune_py_dir, "--target", "generated_module"], cwd=self.generated_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                cmake_args = ["cmake", "--build", self.dune_py_dir, "--target", "generated_module"]
+                if self.build_args is not None:
+                    cmake_args += ['--'] + self.build_args
+                cmake = subprocess.Popen([cmake_args, cwd=self.generated_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 cmake.wait()
                 if cmake.returncode > 0:
                     if sys.version_info.major == 2:
