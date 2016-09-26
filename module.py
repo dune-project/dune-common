@@ -1,0 +1,540 @@
+from __future__ import absolute_import, division, print_function, unicode_literals
+
+import email.utils
+import os
+import sys
+import shlex
+import re
+import subprocess
+import string
+import sys
+import timeit
+
+from dune.common import project
+
+def buffer_to_str(b):
+    return b if sys.version_info.major == 2 else b.decode('utf-8')
+
+
+class Version:
+    def __init__(self, s):
+        if s is None:
+            self.major = 0
+            self.minor = 0
+            self.revision = 0
+        else:
+            match = re.match('(?P<major>[0-9]+)[.](?P<minor>[0-9]+)([.](?P<revision>[0-9]+))?', s)
+            if not match:
+                raise ValueError('Invalid version: \'' + s + '\'.')
+            self.major = int(match.group('major'))
+            self.minor = int(match.group('minor'))
+            self.revision = int(match.group('revision')) if match.group( 'revision' ) else 0
+
+    def __str__(self):
+        return str(self.major) + '.' + str(self.minor) + '.' + str(self.revision)
+
+    def as_tuple(self):
+        return (self.major, self.minor, self.revision)
+
+    def __eq__(self, other):
+        return self.as_tuple() == other.as_tuple()
+
+    def __ne__(self, other):
+        return self.as_tuple() != other.as_tuple()
+
+    def __lt__(self, other):
+        return self.as_tuple() < other.as_tuple()
+
+    def __le__(self, other):
+        return self.as_tuple() <= other.as_tuple()
+
+    def __gt__(self, other):
+        return self.as_tuple() > other.as_tuple()
+
+    def __ge__(self, other):
+        return self.as_tuple() >= other.as_tuple()
+
+
+class VersionRequirement:
+    def __init__(self, s):
+        if s:
+            match = re.match('(?P<operator>(>|>=|==|<=|<))\s*(?P<version>[0-9.]+)', s)
+            if not match:
+                raise ValueError('Invalid version qualifier: \'' + s + '\'.')
+            self.version = Version(match.group('version'))
+            operator = match.group('operator')
+
+            if operator == '>':
+                self.operator = Version.__gt__
+            elif operator == '>=':
+                self.operator = Version.__ge__
+            elif operator == '==':
+                self.operator = Version.__eq__
+            elif operator == '<=':
+                self.operator = Version.__le__
+            elif operator == '<':
+                self.operator = Version.__lt__
+            else:
+                raise ValueError('Invalid comparison operator: \'' + operator + '\'.')
+        else:
+            self.operator = lambda a, b : True
+            self.version = None
+
+    def __bool__(self):
+        return self.version is not None
+
+    __nonzero__ = __bool__
+
+    def __call__(self, version):
+        return self.operator(version, self.version)
+
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        if self.operator == Version.__gt__:
+            return '(> ' + str(self.version) + ')'
+        elif self.operator == Version.__ge__:
+            return '(>= ' + str(self.version) + ')'
+        elif self.operator == Version.__eq__:
+            return '(== ' + str(self.version) + ')'
+        elif self.operator == Version.__le__:
+            return '(<= ' + str(self.version) + ')'
+        elif self.operator == Version.__lt__:
+            return '(< ' + str(self.version) + ')'
+        else:
+            return ''
+
+
+class Description:
+    def __init__(self, fileName=None, **kwargs):
+        data = kwargs.copy()
+        if fileName is not None:
+            with open(fileName, 'r') as file:
+                for line in file:
+                    line = line.strip()
+                    if not line or line[ 0 ] == '#':
+                        continue
+
+                    pos = line.find(':')
+                    if pos < 0:
+                        raise ValueError('Invalid key:value pair (' + line + ').')
+                    data[line[:pos].strip().lower()] = line[pos+1:].strip()
+
+        try:
+            self.name = data['module']
+        except KeyError:
+            raise KeyError('Module description does not contain module name.')
+
+        self.version = Version(data.get('version'))
+
+        try:
+            self.maintainer = email.utils.parseaddr(data['maintainer'])
+            if not self.maintainer[1]:
+                raise ValueError('Module description contains invalid maintainer e-mail address.')
+        except KeyError:
+            self.maintainer = None
+
+        try:
+            wshook = data['whitespace-hook'].lower()
+            if wshook == 'yes':
+                self.whitespace_hook = True
+            elif wshook == 'no':
+                self.whitespace_hook = False
+            else:
+              raise ValueError('Invalid value for whitespace-hook: ' + wshook + '.')
+        except KeyError:
+            self.whitespace_hook = None
+
+        def parse_deps(s):
+            deps = []
+            if isinstance(s, list):
+                for m in s:
+                    if isinstance(m, Description):
+                        deps.append((m.name, VersionRequirement(None)))
+                    else:
+                        deps.append((m, VersionRequirement(None)))
+            else:
+                while s:
+                    match = re.match('(?P<module>[a-zA-Z0-9_\-]+)(\s*\((?P<version>[^)]*)\))?', s)
+                    if not match:
+                        raise ValueError('Invalid dependency list.')
+                    deps.append((match.group('module'), VersionRequirement(match.group('version'))))
+                    s = s[match.end():].strip()
+            return deps
+
+        self.depends = parse_deps(data.get('depends'))
+        self.suggests = parse_deps(data.get('suggests'))
+
+    def __repr__(self):
+        s = 'Module:          ' + self.name + '\n'
+        s += 'Version:         ' + str(self.version) + '\n'
+        if self.maintainer is not None:
+            s += 'Maintainer:      ' + email.utils.formataddr(self.maintainer) + '\n'
+        if self.whitespace_hook is not None:
+            s += 'Whitespace-Hook: ' + ('Yes' if self.whitespace_hook else 'No') + '\n'
+
+        def print_deps(deps):
+            return ' '.join([m + (' ' + str(c) if c else '') for m, c in deps])
+
+        if self.depends:
+            s += 'Depends:         ' + print_deps(self.depends) + '\n'
+        if self.suggests:
+            s += 'Suggests:        ' + print_deps(self.suggests) + '\n'
+        return s
+
+    def __str__(self):
+        return self.name + " (" + str(self.version) + ")"
+
+
+def find_modules(path):
+    """find DUNE modules in given path
+
+    Args:
+        path: Iterable containing directories to search modules in
+
+    Returns:
+        List of (description, dir) pairs of found modules.
+    """
+    modules = []
+    for dir in path:
+        for root, dirs, files in os.walk(dir):
+            if 'dune.module' in files:
+                description = Description(os.path.join(root, 'dune.module'))
+                modules.append((description,os.path.abspath(root)))
+                # do not traverse subdirectories
+                del dirs[:]
+    return modules
+
+
+def resolve_dependencies(modules, module=None, deps=None):
+    """resolve module dependencies
+
+    Args:
+        modules:             dictionary mapping module name to description
+        module (optional):   name or description of module to resolve dependencies for
+        deps (optional):     dictionary mapping module name to an unordered set of its
+            dependency names. This dictionary is extedend.
+
+    Return:
+        If module is given, an unordered set of its dependency names is returned.
+        Otherwise a dictionary mapping module name to such a set is returned (i.e., deps).
+    """
+    if deps is None:
+        deps = dict()
+
+    if module is None:
+        for m in modules:
+            if m not in deps:
+                resolve_dependencies(modules, m, deps)
+        return deps
+
+    if not isinstance(module, Description):
+        module = modules[module]
+
+    def resolve(desc, req):
+        if not req(desc.version):
+            raise ValueError('Module \'' + module.name + '\' requires ' + desc.name + ' ' + req + '.')
+        try:
+            d = deps[desc.name]
+            if d is None:
+                raise ValueError('Module \'' + module.name + '\' has circular dependency on ' + desc.name + '.')
+            return d | {desc.name}
+        except KeyError:
+            return resolve_dependencies(modules, desc, deps) | {desc.name}
+
+    deps[module.name] = None
+    mod_deps = set()
+    for m, r in module.depends:
+        try:
+            mod_deps |= resolve(modules[m], r)
+        except KeyError:
+            raise ValueError('Module \'' + module.name + '\' has missing dependency \'' + m + '\'.')
+    for m, r in module.suggests:
+        try:
+            mod_deps |= resolve(modules[m], r)
+        except KeyError:
+            pass
+    deps[module.name] = mod_deps
+    return mod_deps
+
+
+def resolve_order(deps):
+    """resolve module dependencies
+
+    Args:
+       deps:     dictionary mapping module name to its dependency names
+
+    Return:
+       Ordred list of module names such that each module only depends on
+       modules preceeding it.
+    """
+    order = []
+
+    def resolve(m):
+        if m not in order:
+            for d in deps[m]:
+                if d not in order:
+                    resolve(d)
+            order.append(m)
+
+    for m in deps:
+        resolve(m)
+    return order
+
+
+def pkg_config(pkg, var=None):
+    args = ['pkg-config', pkg]
+    if var is not None:
+        args += ['--variable=' + var]
+    pkgconfig = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    pkgconfig.wait()
+    if pkgconfig.returncode != 0:
+        raise KeyError('package ' + pkg + 'not found.')
+    return pkgconfig.stdout.read()
+
+
+def get_prefix(module):
+    return pkg_config(module, 'prefix')
+
+
+def is_installed(dir, module=None):
+    """check whether a path contains an installed or a source version of a DUNE module
+
+    Args:
+        dir:                directory containing the module description file (dune.module)
+        module (optional):  name of the module (either str or Description)
+            If omitted, the module description file is parsed for it.
+
+    Returns:
+        True, if the module is installed, false otherwise
+    """
+    if module is None:
+        module = Description(os.path.join(dir, 'dune.module'))
+    if isinstance(module, Description):
+        module = module.name
+    try:
+        return dir == os.path.join(get_prefix(module), 'lib', 'dunecontrol', module)
+    except KeyError:
+        return False
+
+
+def get_module_path():
+    try:
+        return [p for p in os.environ['DUNE_CONTROL_PATH'].split(':') if p and os.path.isdir(p)]
+    except KeyError:
+        pass
+
+    # try to guess module path using pkg-config
+    try:
+        return [p for p in ['.', os.path.join(pkg_config('dune-common', 'prefix'), 'lib', 'dunecontrol')] if os.path.isdir(p)]
+    except KeyError:
+        pass
+
+    # try to guess modules path for unix systems
+    path = [p for p in ['.', '/usr/local/lib/dunecontrol', '/usr/lib/dunecontrol'] if os.path.isdir(p)]
+    try:
+        pkg_config_path = [p for p in os.environ['PKG_CONFIG_PATH'].split(':') if p and os.path.isdir(p)]
+        return path + [p + '../dunecontrol' for p in pkg_config_path if os.path.isdir(p + '../dunecontrol')]
+    except KeyError:
+        return path
+
+
+def select_modules(modules=None):
+    """choose one version of each module from a list of modules
+
+    Args:
+        modules (optional): List of (description, dir) pairs
+            If not given, the find_modules(get_module_path()) is used
+
+    Returns:
+        pair of dictionaries mapping module name to unique description and directory respectively
+    """
+    if modules is None:
+        modules = find_modules(get_module_path())
+    desc = {}
+    dir = {}
+    for d, p in modules:
+        n = d.name
+        if n in dir:
+            if is_installed(dir[n], n):
+                if is_installed(p, n):
+                    raise KeyError('Multiple installed versions for module \'' + n + '\' found.')
+                else:
+                  desc[n], dir[n] = d, p
+            else:
+              if not is_installed(d, n):
+                  raise KeyError('Multiple source versions for module \'' + n + '\' found.')
+        else:
+            desc[n], dir[n] = d, p
+    return (desc, dir)
+
+
+def default_build_dir(srcdir, module=None):
+    try:
+        builddir = os.environ['DUNE_BUILD_DIR']
+    except KeyError:
+        builddir = 'build-cmake'
+
+    if os.path.isabs(builddir):
+        if module is None:
+            module = Description(os.path.join(srcdir, 'dune.module'))
+        if isinstance(module, Description):
+            module = module.name
+        return os.path.join(builddir, module)
+    else:
+        return os.path.join(srcdir, builddir)
+
+
+def configure_module(srcdir, builddir, prefix_dirs, definitions=None):
+    """configure a given module by running CMake
+
+    Args:
+        srcdir:                  source directory of module
+        builddir:                build directory for module (may equal srcdir for in-source builds)
+        prefix_dirs:             dictionary mapping dependent modules to their prefix
+        definitions (optional):  dictionary of additional CMake definitions
+
+    Returns:
+        Output of CMake command
+    """
+    args = ['cmake']
+    if definitions is None:
+        pass
+    elif isinstance(definitions, dict):
+        args += ['-D' + key + '=' + value + '' for key, value in definitions.items()]
+    else:
+        raise ValueError('definitions must be a dictionary.')
+    args += ['-D' + module + '_DIR=' + dir for module, dir in prefix_dirs.items()]
+    args.append(srcdir)
+    if not os.path.isdir(builddir):
+        os.makedirs(builddir)
+    cmake = subprocess.Popen(args, cwd=builddir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = cmake.communicate()
+    if cmake.returncode != 0:
+        raise RuntimeError(buffer_to_str(stderr))
+    return buffer_to_str(stdout)
+
+
+def get_default_build_args():
+    try:
+        return shlex.split(os.environ['DUNE_BUILD_FLAGS'])
+    except KeyError:
+        pass
+
+    return None
+
+
+def build_module(builddir, build_args=None):
+    if build_args is None:
+        build_args = get_default_build_args()
+
+    cmake_args = ['cmake', '--build', '.']
+    if build_args is not None:
+        cmake_args += ['--'] + build_args
+
+    cmake = subprocess.Popen(cmake_args, cwd=builddir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = cmake.communicate()
+    if cmake.returncode != 0:
+        raise RuntimeError(buffer_to_str(stderr))
+    return buffer_to_str(stdout)
+
+
+def get_dune_py_dir():
+    try:
+        return os.environ['DUNE_PY_DIR']
+    except KeyError:
+        pass
+
+    try:
+        return os.path.join(os.environ['HOME'], '.cache', 'dune-py')
+    except KeyError:
+        pass
+
+    raise RuntimeError('Unable to determine location for dune-py module. Please set the environment variable "DUNE_PY_DIR".')
+
+
+def get_cmake_definitions(opts=None):
+    definitions = {}
+    try:
+        for arg in shlex.split(os.environ['DUNE_CMAKE_FLAGS']):
+            key, value = arg.split('=', 1)
+            if key.startswith('-D'):
+                key = key[2:]
+            definitions[key] = value
+    except KeyError:
+        pass
+    if opts:
+        command = ['bash', '-c', 'source '+opts+' && echo "$CMAKE_FLAGS"']
+        proc = subprocess.Popen(command, stdout = subprocess.PIPE)
+        for arg in shlex.split(proc.stdout):
+            key, value = arg.split('=', 1)
+            if key.startswith('-D'):
+                key = key[2:]
+            definitions[key] = value
+        proc.communicate()
+    return definitions
+
+
+def make_dune_py_module(dune_py_dir=None):
+    if dune_py_dir is None:
+        dune_py_dir = get_dune_py_dir()
+    print("checking dune-py module in ", dune_py_dir)
+    descFile = os.path.join(dune_py_dir, 'dune.module')
+    if not os.path.isfile(descFile):
+        if not os.path.isdir(dune_py_dir):
+            os.makedirs(dune_py_dir)
+
+        # create python/dune/generated
+        generated_dir_rel = os.path.join('python','dune', 'generated')
+        generated_dir = os.path.join(dune_py_dir, generated_dir_rel)
+        if not os.path.isdir(generated_dir):
+            os.makedirs(generated_dir)
+
+        cmake_content = ['add_library(generated_module SHARED EXCLUDE_FROM_ALL generated_module.cc)',
+                         'target_include_directories(generated_module PRIVATE ${CMAKE_CURRENT_BINARY_DIR})',
+                         'add_dune_mpi_flags(generated_module)',
+                         'set_target_properties(generated_module PROPERTIES PREFIX "")',
+                         'target_compile_definitions(generated_module PRIVATE USING_COREPY)',
+                         'file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/__init__.py")']
+        project.write_cmake_file(generated_dir, cmake_content)
+
+        with open(os.path.join(generated_dir, 'generated_module.cc'), 'w') as file:
+            file.write('#include <config.h>\n\n')
+            file.write('#define USING_COREPY 1\n\n')
+            file.write('#include <dune/corepy/common/typeregistry.hh>\n')
+            file.write('#include <dune/corepy/pybind11/pybind11.h>\n')
+            file.write('\n#include "generated_module.hh"\n')
+
+        modules, _ = select_modules()
+        description = Description(module='dune-py', maintainer='dune@dune-project.org', depends=list(modules.values()))
+
+        project.make_project(dune_py_dir, description, subdirs=[generated_dir])
+        return False
+    else:
+        if Description(descFile).name != 'dune-py':
+            raise RunetimeError('"' + dune_py_dir + '" already contains a different dune module.')
+        return True
+
+
+def build_dune_py_module(dune_py_dir=None, definitions=None, build_args=None, opts=None):
+    if dune_py_dir is None:
+        dune_py_dir = get_dune_py_dir()
+    if definitions is None:
+        definitions = get_cmake_definitions(opts)
+
+    desc = Description(os.path.join(dune_py_dir, 'dune.module'))
+
+    modules, dirs = select_modules()
+    deps = resolve_dependencies(modules, desc)
+
+    prefix = {}
+    for name, dir in dirs.items():
+        if is_installed(dir, name):
+            prefix[name] = get_prefix(name)
+        else:
+            prefix[name] = default_build_dir(dir, name)
+
+    output = configure_module(dune_py_dir, dune_py_dir, {d: prefix[d] for d in deps}, definitions)
+    output += build_module(dune_py_dir, build_args)
+    return output
