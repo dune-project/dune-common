@@ -80,7 +80,7 @@ class Builder:
                 cmake_args = ["cmake", "--build", self.dune_py_dir, "--target", "generated_module"]
                 if self.build_args is not None:
                     cmake_args += ['--'] + self.build_args
-                cmake = subprocess.Popen([cmake_args, cwd=self.generated_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                cmake = subprocess.Popen(cmake_args, cwd=self.generated_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 cmake.wait()
                 if cmake.returncode > 0:
                     if sys.version_info.major == 2:
