@@ -57,7 +57,7 @@ class Builder:
                     print("Building dune-py module took", (timeit.default_timer() - start_time), "seconds")
             except:
                 if not foundModule:
-                    raise RuntimeError('Unable to configure new dune-py module".')
+                    raise
                 else:
                     if self.verbose:
                         print("couldn't reconfigure - using existing configuration")
