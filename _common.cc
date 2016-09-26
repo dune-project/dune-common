@@ -42,9 +42,9 @@ std::string className ( void *typeInfo )
   return className;
 }
 
-PYBIND11_PLUGIN(common)
+PYBIND11_PLUGIN(_common)
 {
-  pybind11::module module( "common" );
+  pybind11::module module( "_common" );
 
   module.def( "className", [] ( pybind11::object o ) {
       return className( pybind11::detail::get_type_info( Py_TYPE( o.ptr() ) ) );
