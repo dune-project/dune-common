@@ -1,16 +1,19 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import email.utils
+import logging
 import os
+import re
 import sys
 import shlex
-import re
-import subprocess
 import string
+import subprocess
 import sys
-import timeit
 
 from dune.common import project
+
+
+logger = logging.getLogger(__name__)
 
 def buffer_to_str(b):
     return b if sys.version_info.major == 2 else b.decode('utf-8')
@@ -475,7 +478,7 @@ def get_cmake_definitions():
 def make_dune_py_module(dune_py_dir=None):
     if dune_py_dir is None:
         dune_py_dir = get_dune_py_dir()
-    print("checking dune-py module in ", dune_py_dir)
+    logger.info('Checking dune-py module in ' + dune_py_dir)
     descFile = os.path.join(dune_py_dir, 'dune.module')
     if not os.path.isfile(descFile):
         if not os.path.isdir(dune_py_dir):
