@@ -189,6 +189,9 @@ class Description:
             s += 'Depends:         ' + print_deps(self.depends) + '\n'
         if self.suggests:
             s += 'Suggests:        ' + print_deps(self.suggests) + '\n'
+
+        if self.python_modules:
+            s += 'Python-Modules:  ' + ' '.join(self.python_modules) + '\n'
         return s
 
     def __str__(self):
