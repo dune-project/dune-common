@@ -33,19 +33,24 @@ class Builder:
         #dune.__path__.append(os.path.join(self.dune_py_dir, 'python', 'dune'))
         dune.__path__.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
 
-        if comm.rank == 0:
-            logger.info('Started building dune-py module')
-            foundModule = dune.common.module.make_dune_py_module(self.dune_py_dir)
-            try:
-                output = dune.common.module.build_dune_py_module(self.dune_py_dir)
-                logger.info('Successfully built dune-py module')
-            except:
-                logger.exception('Failed to build dune-py module')
-                if not foundModule:
-                    raise
-                else:
-                    logger.warn('Could not reconfigure dune-py - using existing configuration')
-        comm.barrier()
+        tagfile = os.path.join(self.dune_py_dir, ".noconfigure")
+        if not os.path.isfile(tagfile):
+            if comm.rank == 0:
+                logger.info('Started building dune-py module')
+                foundModule = dune.common.module.make_dune_py_module(self.dune_py_dir)
+                try:
+                    output = dune.common.module.build_dune_py_module(self.dune_py_dir)
+                    logger.info('Successfully built dune-py module')
+                except:
+                    logger.exception('Failed to build dune-py module')
+                    if not foundModule:
+                        raise
+                    else:
+                        logger.warn('Could not reconfigure dune-py - using existing configuration')
+            comm.barrier()
+        else:
+            print('using pre configured dune-py module')
+            logger.info('using pre configured dune-py module')
 
 
     def load(self, moduleName, source, classType=None):
