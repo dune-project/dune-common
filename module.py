@@ -429,8 +429,10 @@ def configure_module(srcdir, builddir, prefix_dirs, definitions=None):
     args.append(srcdir)
     if not os.path.isdir(builddir):
         os.makedirs(builddir)
+    logger.debug('Calling "' + ' '.join(args) + '"')
     cmake = subprocess.Popen(args, cwd=builddir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = cmake.communicate()
+    logging.debug(buffer_to_str(stdout))
     if cmake.returncode != 0:
         raise RuntimeError(buffer_to_str(stderr))
     return buffer_to_str(stdout)
@@ -453,11 +455,8 @@ def build_module(builddir, build_args=None):
     if build_args is not None:
         cmake_args += ['--'] + build_args
 
-    logger.debug('Calling "' + ' '.join(cmake_args) + '"')
     cmake = subprocess.Popen(cmake_args, cwd=builddir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = cmake.communicate()
-    logger.debug(buffer_to_str(stdout))
-    logger.debug(buffer_to_str(stderr))
     if cmake.returncode != 0:
         raise RuntimeError(buffer_to_str(stderr))
     return buffer_to_str(stdout)
