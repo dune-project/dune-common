@@ -332,13 +332,18 @@ def is_installed(dir, module=None):
 
 def get_module_path():
     try:
-        return [p for p in os.environ['DUNE_CONTROL_PATH'].split(':') if p and os.path.isdir(p)]
+        path = [p for p in os.environ['DUNE_CONTROL_PATH'].split(':') if p and os.path.isdir(p)]
+        logger.debug('Module path [DUNE_CONTROL_PATH]: ' + ':'.join(path))
+        return path
     except KeyError:
         pass
 
     # try to guess module path using pkg-config
     try:
-        return [p for p in ['.', os.path.join(pkg_config('dune-common', 'prefix'), 'lib', 'dunecontrol')] if os.path.isdir(p)]
+        prefix = pkg_config('dune-common', 'prefix').strip()
+        path = [p for p in ['.', os.path.join(prefix, 'lib', 'dunecontrol')] if os.path.isdir(p)]
+        logger.debug('Module path [pkg-config]: ' + ':'.join(path))
+        return path
     except KeyError:
         pass
 
@@ -346,9 +351,13 @@ def get_module_path():
     path = [p for p in ['.', '/usr/local/lib/dunecontrol', '/usr/lib/dunecontrol'] if os.path.isdir(p)]
     try:
         pkg_config_path = [p for p in os.environ['PKG_CONFIG_PATH'].split(':') if p and os.path.isdir(p)]
-        return path + [p + '../dunecontrol' for p in pkg_config_path if os.path.isdir(p + '../dunecontrol')]
+        pkg_config_path = [os.join(p, '..', 'dunecontrol') for p in pkg_config_path]
+        path += [p for p in pkg_config_path if os.path.isdir(p)]
     except KeyError:
-        return path
+        pass
+
+    logger.debug('Module path [guessed]: ' + ':'.join(path))
+    return path
 
 
 def select_modules(modules=None):
@@ -444,8 +453,11 @@ def build_module(builddir, build_args=None):
     if build_args is not None:
         cmake_args += ['--'] + build_args
 
+    logger.debug('Calling "' + ' '.join(cmake_args) + '"')
     cmake = subprocess.Popen(cmake_args, cwd=builddir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = cmake.communicate()
+    logger.debug(buffer_to_str(stdout))
+    logger.debug(buffer_to_str(stderr))
     if cmake.returncode != 0:
         raise RuntimeError(buffer_to_str(stderr))
     return buffer_to_str(stdout)
@@ -481,9 +493,9 @@ def get_cmake_definitions():
 def make_dune_py_module(dune_py_dir=None):
     if dune_py_dir is None:
         dune_py_dir = get_dune_py_dir()
-    logger.info('Checking dune-py module in ' + dune_py_dir)
     descFile = os.path.join(dune_py_dir, 'dune.module')
     if not os.path.isfile(descFile):
+        logger.info('Creating new dune-py module in ' + dune_py_dir)
         if not os.path.isdir(dune_py_dir):
             os.makedirs(dune_py_dir)
 
@@ -510,13 +522,12 @@ def make_dune_py_module(dune_py_dir=None):
 
         modules, _ = select_modules()
         description = Description(module='dune-py', maintainer='dune@dune-project.org', depends=list(modules.values()))
-
+        logger.debug('dune-py will depend on ' + ' '.join([m + (' ' + str(c) if c else '') for m, c in description.depends]))
         project.make_project(dune_py_dir, description, subdirs=[generated_dir])
-        return False
     else:
         if Description(descFile).name != 'dune-py':
             raise RunetimeError('"' + dune_py_dir + '" already contains a different dune module.')
-        return True
+        logger.info('Using existing dune-py module in ' + dune_py_dir)
 
 
 def build_dune_py_module(dune_py_dir=None, definitions=None, build_args=None):
