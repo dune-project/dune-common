@@ -13,7 +13,6 @@ import dune.common.module
 
 logger = logging.getLogger(__name__)
 
-
 def buffer_to_str(b):
     return b if sys.version_info.major == 2 else b.decode('utf-8')
 
@@ -37,16 +36,9 @@ class Builder:
         if not os.path.isfile(tagfile):
             if comm.rank == 0:
                 logger.info('Started building dune-py module')
-                foundModule = dune.common.module.make_dune_py_module(self.dune_py_dir)
-                try:
-                    output = dune.common.module.build_dune_py_module(self.dune_py_dir)
-                    logger.info('Successfully built dune-py module')
-                except:
-                    logger.exception('Failed to build dune-py module')
-                    if not foundModule:
-                        raise
-                    else:
-                        logger.warn('Could not reconfigure dune-py - using existing configuration')
+                dune.common.module.make_dune_py_module(self.dune_py_dir)
+                output = dune.common.module.build_dune_py_module(self.dune_py_dir)
+                logger.info('Successfully built dune-py module')
             comm.barrier()
         else:
             print('using pre configured dune-py module')
