@@ -41,7 +41,6 @@ class Builder:
                 logger.info('Successfully built dune-py module')
             comm.barrier()
         else:
-            print('using pre configured dune-py module')
             logger.info('using pre configured dune-py module')
 
 
