@@ -84,6 +84,30 @@ namespace Dune
   };
 #endif // HAVE_VC
 
+  template<typename V, typename = void>
+  struct SimdMaskTypeTraits {
+    using type = bool;
+  };
+
+  //! A simd vector of truth values corresponding to a simd vector V
+  /**
+   * lanes(T()) == lanes(SimdMask<T>()) holds.
+   */
+  template<typename V>
+  using SimdMask = typename SimdMaskTypeTraits<V>::type;
+
+#if HAVE_VC
+  template<typename T, typename A>
+  struct SimdMaskTypeTraits<Vc::Vector<T, A> > {
+    using type = typename Vc::Vector<T, A>::mask_type;
+  };
+
+  template<typename T, std::size_t n, typename V>
+  struct SimdMaskTypeTraits<Vc::SimdArray<T, n, V> > {
+    using type = typename Vc::SimdArray<T, n, V>::mask_type;
+  };
+#endif // HAVE_VC
+
 #if HAVE_VC
   /*
     Add Vc specializations for cond(), see conditional.hh
