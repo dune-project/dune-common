@@ -302,7 +302,7 @@ def pkg_config(pkg, var=None):
     pkgconfig.wait()
     if pkgconfig.returncode != 0:
         raise KeyError('package ' + pkg + 'not found.')
-    return pkgconfig.stdout.read()
+    return buffer_to_str(pkgconfig.stdout.read())
 
 
 def get_prefix(module):
