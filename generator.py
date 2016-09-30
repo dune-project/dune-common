@@ -8,9 +8,7 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from .builder import Builder
-
-builder = Builder()
+from . import builder
 
 class SimpleGenerator(object):
     def __init__(self, typeName, namespace, pythonname=None, filename=None):
