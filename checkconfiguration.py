@@ -4,7 +4,7 @@ import logging
 import os
 import subprocess
 
-from . import module
+import dune.common.module
 from dune.generator import builder
 
 logger = logging.getLogger(__name__)
