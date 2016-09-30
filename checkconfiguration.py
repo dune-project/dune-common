@@ -2,6 +2,7 @@ from __future__ import print_function, unicode_literals
 
 import logging
 import os
+import re
 import subprocess
 
 import dune.common.module
@@ -23,18 +24,15 @@ def have(identifier):
        provided the config file by calling
        have("HAVE_DUNE_COMMON")
     '''
-    config = os.path.join(module.get_dune_py_dir(),"config.h")
+    config = os.path.join(dune.common.module.get_dune_py_dir(), "config.h")
 
-    s = [ line for line in open(config) if identifier in line]
-    if not s.__len__() == 1:
-        logger.info("checkconfiguration.have("+identifier+") failed - identifier not found in " + config)
+    matches = [match for match in [re.match('^[ ]*#define[ ]+' + identifier.strip() + '[ ]+1$', line) for line in open(config)] if match is not None]
+    if not matches:
+        logger.info("checkconfiguration.have(" + identifier + ") failed - identifier not defined in " + config)
         raise ConfigurationError(identifier + " is not set in dune-py's config.h")
-    slist = s[0].split()
-    # note that the correct line should be #define identifier 1 anything
-    # else will throw an exception
-    if not slist.__len__() == 3 or not slist[0] == "#define" or not slist[2] == "1":
-        logger.critical("checkconfiguration.have("+identifier+") failed - only found "+s[0]+" in "+config)
-        raise ConfigurationError(identifier + " is not set in dune-py's config.h")
+    elif matches.__len__() > 1:
+        logger.info("checkconfiguration.have(" + identifier + ") failed - multiple definitions in " + config)
+        raise ConfigurationError(identifier + " found multiple times in dune-py's config.h")
 
 def preprocessorTest(tests):
     '''perform preprocessore checks.
