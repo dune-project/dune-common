@@ -44,21 +44,25 @@ class Builder:
             logger.info('using pre configured dune-py module')
 
 
+    def compile(self, source, target="generated_module" ):
+        with open(os.path.join(self.generated_dir, "generated_module.hh"), 'w') as out:
+            out.write(source)
+
+        cmake_args = ["cmake", "--build", self.dune_py_dir, "--target", target]
+        if self.build_args is not None:
+            cmake_args += ['--'] + self.build_args
+        cmake = subprocess.Popen(cmake_args, cwd=self.generated_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = cmake.communicate()
+        logger.debug(buffer_to_str(stdout))
+        return cmake.returncode, stdout, stderr
+
     def load(self, moduleName, source, classType=None):
         if comm.rank == 0:
             if not os.path.isfile(os.path.join(self.generated_dir, moduleName + ".so")) or self.force:
-                with open(os.path.join(self.generated_dir, "generated_module.hh"), 'w') as out:
-                    out.write(source)
-
                 logger.info("Started compiling " + moduleName)
-
-                cmake_args = ["cmake", "--build", self.dune_py_dir, "--target", "generated_module"]
-                if self.build_args is not None:
-                    cmake_args += ['--'] + self.build_args
-                cmake = subprocess.Popen(cmake_args, cwd=self.generated_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                stdout, stderr = cmake.communicate()
+                returncode, stdout, stderr = self.compile(source)
                 logger.debug(buffer_to_str(stdout))
-                if cmake.returncode > 0:
+                if returncode > 0:
                     logger.error(buffer_to_str(stderr))
                     raise self.CompileError(buffer_to_str(stderr))
 
