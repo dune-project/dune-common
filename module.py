@@ -509,6 +509,10 @@ def make_dune_py_module(dune_py_dir=None):
                          'add_dune_mpi_flags(generated_module)',
                          'set_target_properties(generated_module PROPERTIES PREFIX "")',
                          'target_compile_definitions(generated_module PRIVATE USING_COREPY)',
+                         'add_executable(generated_test EXCLUDE_FROM_ALL generated_module.cc)',
+                         'add_dune_mpi_flags(generated_test)',
+                         'target_compile_definitions(generated_test PRIVATE USING_COREPY)',
+                         'target_link_libraries( generated_test  )',
                          'file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/__init__.py")']
         project.write_cmake_file(generated_dir, cmake_content)
 
