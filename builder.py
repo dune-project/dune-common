@@ -29,8 +29,10 @@ class Builder:
         self.build_args = dune.common.module.get_default_build_args()
         self.dune_py_dir = dune.common.module.get_dune_py_dir()
         self.generated_dir = os.path.join(self.dune_py_dir, 'python', 'dune', 'generated')
-        #dune.__path__.append(os.path.join(self.dune_py_dir, 'python', 'dune'))
-        dune.__path__.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
+        try:
+            dune.__path__._path.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
+        except:
+            dune.__path__.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
 
         tagfile = os.path.join(self.dune_py_dir, ".noconfigure")
         if not os.path.isfile(tagfile):
