@@ -56,10 +56,10 @@ class Builder:
         logger.debug(buffer_to_str(stdout))
         return cmake.returncode, stdout, stderr
 
-    def load(self, moduleName, source, classType=None):
+    def load(self, moduleName, source, pythonName):
         if comm.rank == 0:
             if not os.path.isfile(os.path.join(self.generated_dir, moduleName + ".so")) or self.force:
-                logger.info("Started compiling " + moduleName)
+                logger.info("Started compiling " + pythonName)
                 returncode, stdout, stderr = self.compile(source)
                 logger.debug(buffer_to_str(stdout))
                 if returncode > 0:
@@ -69,7 +69,7 @@ class Builder:
                 os.rename(os.path.join(self.generated_dir, "generated_module.so"), os.path.join(self.generated_dir, moduleName + ".so"))
                 os.rename(os.path.join(self.generated_dir, "generated_module.hh"), os.path.join(self.generated_dir, moduleName + ".hh"))
 
-                logger.info('Successfully compiled ' + moduleName)
+                logger.info('Successfully compiled ' + pythonName)
 
         comm.barrier()
 
