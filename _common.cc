@@ -10,10 +10,6 @@
 #include <typeinfo>
 #include <utility>
 
-#if HAVE_CXA_DEMANGLE
-#include <cxxabi.h>
-#endif // #HAVE_CXA_DEMANGLE
-
 #include <dune/corepy/common/common.hh>
 #include <dune/corepy/common/dynmatrix.hh>
 #include <dune/corepy/common/dynvector.hh>
@@ -26,29 +22,9 @@
 
 #include <dune/corepy/pybind11/pybind11.h>
 
-std::string className ( void *typeInfo )
-{
-  const auto &types = pybind11::detail::get_internals().registered_types_cpp;
-  const auto pred = [ typeInfo ] ( const std::pair< const std::type_index, void * > &t ) { return (t.second == typeInfo); };
-  const auto it = std::find_if( types.begin(), types.end(), pred );
-  assert( it != types.end() );
-  std::string className = it->first.name();
-#if HAVE_CXA_DEMANGLE
-  int status = 0;
-  std::unique_ptr< char[], void (*)( void * ) > demangled( abi::__cxa_demangle( className.c_str(), nullptr, nullptr, &status ), std::free );
-  if( (status == 0) && demangled )
-    className = demangled.get();
-#endif // #if HAVE_CXA_DEMANGLE
-  return className;
-}
-
 PYBIND11_PLUGIN(_common)
 {
   pybind11::module module( "_common" );
-
-  module.def( "className", [] ( pybind11::object o ) {
-      return className( pybind11::detail::get_type_info( Py_TYPE( o.ptr() ) ) );
-    } );
 
   Dune::CorePy::registerFieldVector<double>(module, std::make_integer_sequence<int, 10>());
   Dune::CorePy::registerFieldMatrix<double>(module, std::make_integer_sequence<int, 5>());
