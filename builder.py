@@ -75,4 +75,7 @@ class Builder:
 
         comm.barrier()
 
-        return importlib.import_module("dune.generated." + moduleName)
+        module = importlib.import_module("dune.generated." + moduleName)
+        if self.force:
+            module = importlib.reload(module)
+        return module
