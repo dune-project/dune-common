@@ -15,6 +15,7 @@
 #include <dune/common/precision.hh>
 #include <dune/common/classname.hh>
 #include <dune/common/math.hh>
+#include <dune/common/typetraits.hh>
 #include <dune/common/unused.hh>
 
 
@@ -76,7 +77,7 @@ namespace Dune
   namespace
   {
     template< class DenseMatrix, class RHS,
-              bool primitive = std::is_convertible< RHS, typename DenseMatrix::field_type >::value >
+              bool scalar = Dune::IsNumber<RHS>::value>
     class DenseMatrixAssignerImplementation;
 
     template< class DenseMatrix, class RHS >
@@ -96,9 +97,10 @@ namespace Dune
     public:
       static void apply ( DenseMatrix &denseMatrix, const RHS &rhs )
       {
-        static_assert( (std::is_convertible< const RHS, const DenseMatrix >::value),
-                       "No template specialization of DenseMatrixAssigner found" );
-        denseMatrix = static_cast< const DenseMatrix & >( rhs );
+        typename DenseMatrix::iterator tIt = std::begin(denseMatrix);
+        typename RHS::const_iterator sIt = std::begin(rhs);
+        for(; sIt != std::end(rhs); ++tIt, ++sIt)
+          std::copy(std::begin(*sIt), std::end(*sIt), std::begin(*tIt));
       }
     };
   }
