@@ -60,7 +60,7 @@ MACRO (prepare_doxyfile)
       COMMENT "Creating Doxyfile.in"
       DEPENDS ${DOXYSTYLE_FILE})
   endif()
-  add_custom_target(Doxyfile DEPENDS Doxyfile.in Doxyfile)
+  add_custom_target(doxyfile DEPENDS Doxyfile.in Doxyfile)
 ENDMACRO (prepare_doxyfile)
 
 MACRO (add_doxygen_target)
