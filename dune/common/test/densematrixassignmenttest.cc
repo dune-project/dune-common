@@ -13,18 +13,20 @@
 
 template <class M>
 void populateMatrix(M &A, int rows, int cols) {
-  for (size_t i = 0; i < rows; ++i)
-    for (size_t j = 0; j < cols; ++j)
+  for (int i = 0; i < rows; ++i)
+    for (int j = 0; j < cols; ++j)
       A[i][j] = i + 10 * j;
 }
 
 template <class A, class B>
 bool identicalContents(A const &a, B const &b) {
+  typedef typename A::size_type Size;
+
   if (a.N() != b.N() or a.M() != b.M())
     return false;
 
-  for (int i = 0; i < a.N(); ++i)
-    for (int j = 0; j < b.N(); ++j)
+  for (Size i = 0; i < a.N(); ++i)
+    for (Size j = 0; j < b.N(); ++j)
       if (a[i][j] != b[i][j])
         return false;
   return true;
