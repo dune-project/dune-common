@@ -150,6 +150,9 @@
 /* Define to 1 if PT-Scotch is available */
 #cmakedefine HAVE_PTSCOTCH 1
 
+/* Define to ENABLE_VALGRIND if the Valgrind headers are available */
+#cmakedefine HAVE_VALGRIND ENABLE_VALGRIND
+
 /* Include always useful headers */
 #include "FC.h"
 #define FC_FUNC FC_GLOBAL_

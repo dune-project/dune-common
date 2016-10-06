@@ -32,6 +32,7 @@ install(FILES
   FindSuiteSparse.cmake
   FindThreadsCMake31.cmake
   FindUMFPack.cmake
+  FindValgrind.cmake
   Headercheck.cmake
   LanguageSupport.cmake
   OverloadCompilerFlags.cmake
