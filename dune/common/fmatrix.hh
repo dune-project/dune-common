@@ -106,7 +106,7 @@ namespace Dune
     }
 
     template <class T,
-              typename = std::enable_if_t<!Dune::IsNumber<T>::value>>
+              typename = std::enable_if_t<!Dune::IsNumber<T>::value && HasDenseMatrixAssigner<FieldMatrix, T>::value>>
     FieldMatrix(T const& rhs)
     {
       *this = rhs;
@@ -259,10 +259,11 @@ namespace Dune
       _data[0] = k;
     }
 
-    template< class Other >
-    FieldMatrix ( const Other &other )
+    template <class T,
+              typename = std::enable_if_t<HasDenseMatrixAssigner<FieldMatrix, T>::value>>
+    FieldMatrix(T const& rhs)
     {
-      DenseMatrixAssigner< FieldMatrix< K, 1, 1 >, Other >::apply( *this, other );
+      *this = rhs;
     }
 
     //===== solve
