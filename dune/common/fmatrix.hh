@@ -100,7 +100,7 @@ namespace Dune
 
     template <typename T,
               typename = std::enable_if_t<Dune::IsNumber<T>::value>>
-    explicit FieldMatrix (T scalar)
+    FieldMatrix (T scalar)
     {
       *this = scalar;
     }
