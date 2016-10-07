@@ -87,8 +87,6 @@ bool run() {
     {
       M fieldT;
       fieldT = constant;
-      // Intentionally disabled: ( compile-time size mismatch )
-      // fieldT = Dune::FieldMatrix<ft, 1, 1>(constant);
     }
 
     // Copy construction
@@ -109,9 +107,7 @@ bool run() {
       }
     }
     {
-      DUNE_UNUSED M const fieldT(constant);
-      // Intentionally disabled:
-      // M const fieldT2 = constant;
+      DUNE_UNUSED M const fieldT = constant;
     }
   }
 
