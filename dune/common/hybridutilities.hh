@@ -9,6 +9,7 @@
 #include <dune/common/typeutilities.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/indices.hh>
+#include <dune/common/assertandreturn.hh>
 
 
 
@@ -196,10 +197,9 @@ namespace Impl {
   // constexpr the function body can only contain a return
   // statement and no assertion before this.
   template<class Begin, class End>
-  auto integralRange(const Begin& begin, const End& end, const PriorityTag<0>&)
+  constexpr auto integralRange(const Begin& begin, const End& end, const PriorityTag<0>&)
   {
-    assert(begin <= end);
-    return Impl::DynamicIntegralRange<End>(begin, end);
+    return DUNE_ASSERT_AND_RETURN(begin<=end, Impl::DynamicIntegralRange<End>(begin, end));
   }
 
 } // namespace Impl
