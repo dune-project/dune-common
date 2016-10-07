@@ -244,6 +244,27 @@ namespace Dune
     assert(l < n);
     return v[l];
   }
+
+  template<class T, std::size_t n, class V>
+  std::size_t lanes(const Vc::SimdMaskArray<T, n, V> &)
+  {
+    return n;
+  }
+
+  template<class T, std::size_t n, class V>
+  const bool lane(std::size_t l, const Vc::SimdMaskArray<T, n, V> &v)
+  {
+    assert(l < n);
+    return v[l];
+  }
+
+  template<class T, std::size_t n, class V>
+  auto lane(std::size_t l, Vc::SimdMaskArray<T, n, V> &v)
+    -> decltype(v[l])
+  {
+    assert(l < n);
+    return v[l];
+  }
 #endif // HAVE_VC
 
   //! masked Simd assignment (scalar version)
