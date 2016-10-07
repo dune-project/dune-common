@@ -219,7 +219,7 @@ macro(find_dune_package module)
         endif()
       endif()
     endif()
-    unset()
+    unset(${module}_FAKE_CMAKE_PKGCONFIG)
   endif()
   if(${module}_FOUND)
     # parse other module's dune.module file to generate variables for config.h
