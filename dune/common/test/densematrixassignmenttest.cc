@@ -357,6 +357,15 @@ bool run() {
                 << ") All good: Exception thrown as expected." << std::endl;
     }
   }
+  {
+#ifdef FAILURE6
+    using M = Dune::DynamicMatrix<ft>;
+    {
+      // Should fail at compile-time
+      DUNE_UNUSED M const dynT = constant;
+    }
+#endif
+  }
   std::cout << std::endl;
   return passed;
 }
