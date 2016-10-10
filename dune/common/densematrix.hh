@@ -741,8 +741,47 @@ namespace Dune
     };
 #endif // DOXYGEN
 
-    template<class Func>
-    void luDecomposition(DenseMatrix<MAT>& A, Func func) const;
+    //! do an LU-Decomposition on matrix A
+    /**
+     * \param A ______________ The matrix to decompose, and to store the
+     *                         result in.
+     * \param func ___________ Functor used for swapping lanes and to conduct
+     *                         the elimination.  Depending on the functor, \c
+     *                         luDecomposition() can be used for solving, for
+     *                         inverting, or to compute the determinant.
+     * \param nonsingularLanes SimdMask of lanes that are nonsingular.
+     * \param throwEarly _____ Whether to throw an \c FMatrixError immediately
+     *                         as soon as one lane is discovered to be
+     *                         singular.  If \c false, do not throw, instead
+     *                         continue until finished or all lanes are
+     *                         singular, and exit via return in both cases.
+     *
+     * There are two modes of operation:
+     * <ul>
+     * <li>Terminate as soon as one lane is discovered to be singular.  Early
+     *     termination is done by throwing an \c FMatrixError.  On entry, \c
+     *     all_true(nonsingularLanes) and \c throwEarly==true should hold.
+     *     After early termination, the contents of \c A should be considered
+     *     bogus, and \c nonsingularLanes has the lane(s) that triggered the
+     *     early termination unset.  There may be more singular lanes than the
+     *     one reported in \c nonsingularLanes, which just havent been
+     *     discovered yet; so the value of \c nonsingularLanes is mostly
+     *     useful for diagnostics.</li>
+     * <li>Terminate only when all lanes are discovered to be singular.  Use
+     *     this when you want to apply special postprocessing in singular
+     *     lines (e.g. setting the determinant of singular lanes to 0 in \c
+     *     determinant()).  On entry, \c nonsingularLanes may have any value
+     *     and \c throwEarly==false should hold.  The function will not throw
+     *     an exception if some lanes are discovered to be singular, instead
+     *     it will continue running until all lanes are singular or until
+     *     finished, and terminate only via normal return.  On exit, \c
+     *     nonsingularLanes contains the map of lanes that are valid in \c
+     *     A.</li>
+     * </ul>
+     */
+    template<class Func, class Mask>
+    void luDecomposition(DenseMatrix<MAT>& A, Func func,
+                         Mask &nonsingularLanes, bool throwEarly) const;
   };
 
 #ifndef DOXYGEN
@@ -787,8 +826,10 @@ namespace Dune
   }
 
   template<typename MAT>
-  template<typename Func>
-  inline void DenseMatrix<MAT>::luDecomposition(DenseMatrix<MAT>& A, Func func) const
+  template<typename Func, class Mask>
+  inline void DenseMatrix<MAT>::
+  luDecomposition(DenseMatrix<MAT>& A, Func func, Mask &nonsingularLanes,
+                  bool throwEarly) const
   {
     using std::swap;
 
@@ -809,7 +850,7 @@ namespace Dune
       auto do_pivot = pivmax<pivthres;
 
       // pivoting ?
-      if (any_true(do_pivot))
+      if (any_true(do_pivot && nonsingularLanes))
       {
         // compute maximum of column
         simd_index_type imax=i;
@@ -821,7 +862,7 @@ namespace Dune
           imax   = cond(mask, simd_index_type(k), imax);
         }
         // swap rows
-        if (any_true(imax != i)) {
+        if (any_true(imax != i && nonsingularLanes)) {
           for (size_type j=0; j<rows(); j++)
           {
             // This is a swap operation where the second operand is scattered,
@@ -840,12 +881,21 @@ namespace Dune
       }
 
       // singular ?
-      if (any_true(pivmax<singthres))
-        DUNE_THROW(FMatrixError,"matrix is singular");
+      nonsingularLanes = nonsingularLanes && !(pivmax<singthres);
+      if (throwEarly) {
+        if(!all_true(nonsingularLanes))
+          DUNE_THROW(FMatrixError, "matrix is singular");
+      }
+      else { // !throwEarly
+        if(!any_true(nonsingularLanes))
+          return;
+      }
 
       // eliminate
       for (size_type k=i+1; k<rows(); k++)
       {
+        // in the simd case, A[i][i] may be close to zero in some lanes.  Pray
+        // that the result is no worse than a quiet NaN.
         field_type factor = A[k][i]/A[i][i];
         A[k][i] = factor;
         for (size_type j=i+1; j<rows(); j++)
@@ -866,7 +916,8 @@ namespace Dune
     if (rows()==1) {
 
 #ifdef DUNE_FMatrix_WITH_CHECKING
-      if (fvmeta::absreal((*this)[0][0])<FMatrixPrecision<>::absolute_limit())
+      if (any_true(fvmeta::absreal((*this)[0][0])
+                   < FMatrixPrecision<>::absolute_limit()))
         DUNE_THROW(FMatrixError,"matrix is singular");
 #endif
       x[0] = b[0]/(*this)[0][0];
@@ -876,7 +927,8 @@ namespace Dune
 
       field_type detinv = (*this)[0][0]*(*this)[1][1]-(*this)[0][1]*(*this)[1][0];
 #ifdef DUNE_FMatrix_WITH_CHECKING
-      if (fvmeta::absreal(detinv)<FMatrixPrecision<>::absolute_limit())
+      if (any_true(fvmeta::absreal(detinv)
+                   < FMatrixPrecision<>::absolute_limit()))
         DUNE_THROW(FMatrixError,"matrix is singular");
 #endif
       detinv = 1.0/detinv;
@@ -889,7 +941,7 @@ namespace Dune
 
       field_type d = determinant();
 #ifdef DUNE_FMatrix_WITH_CHECKING
-      if (fvmeta::absreal(d)<FMatrixPrecision<>::absolute_limit())
+      if (any_true(fvmeta::absreal(d) < FMatrixPrecision<>::absolute_limit()))
         DUNE_THROW(FMatrixError,"matrix is singular");
 #endif
 
@@ -912,8 +964,10 @@ namespace Dune
       rhs = b; // copy data
       Elim<V> elim(rhs);
       MAT A(asImp());
+      SimdMask<typename FieldTraits<value_type>::real_type>
+        nonsingularLanes(true);
 
-      luDecomposition(A, elim);
+      luDecomposition(A, elim, nonsingularLanes, true);
 
       // backsolve
       for(int i=rows()-1; i>=0; i--) {
@@ -934,7 +988,8 @@ namespace Dune
     if (rows()==1) {
 
 #ifdef DUNE_FMatrix_WITH_CHECKING
-      if (fvmeta::absreal((*this)[0][0])<FMatrixPrecision<>::absolute_limit())
+      if (any_true(fvmeta::absreal((*this)[0][0])
+                   < FMatrixPrecision<>::absolute_limit()))
         DUNE_THROW(FMatrixError,"matrix is singular");
 #endif
       (*this)[0][0] = field_type( 1 ) / (*this)[0][0];
@@ -944,7 +999,8 @@ namespace Dune
 
       field_type detinv = (*this)[0][0]*(*this)[1][1]-(*this)[0][1]*(*this)[1][0];
 #ifdef DUNE_FMatrix_WITH_CHECKING
-      if (fvmeta::absreal(detinv)<FMatrixPrecision<>::absolute_limit())
+      if (any_true(fvmeta::absreal(detinv)
+                   < FMatrixPrecision<>::absolute_limit()))
         DUNE_THROW(FMatrixError,"matrix is singular");
 #endif
       detinv = field_type( 1 ) / detinv;
@@ -960,7 +1016,9 @@ namespace Dune
 
       MAT A(asImp());
       std::vector<simd_index_type> pivot(rows());
-      luDecomposition(A, ElimPivot(pivot));
+      SimdMask<typename FieldTraits<value_type>::real_type>
+        nonsingularLanes(true);
+      luDecomposition(A, ElimPivot(pivot), nonsingularLanes, true);
       DenseMatrix<MAT>& L=A;
       DenseMatrix<MAT>& U=A;
 
@@ -1026,14 +1084,12 @@ namespace Dune
 
     MAT A(asImp());
     field_type det;
-    try
-    {
-      luDecomposition(A, ElimDet(det));
-    }
-    catch (FMatrixError&)
-    {
-      return 0;
-    }
+    SimdMask<typename FieldTraits<value_type>::real_type>
+      nonsingularLanes(true);
+
+    luDecomposition(A, ElimDet(det), nonsingularLanes, false);
+    assign(det, field_type(0), !nonsingularLanes);
+
     for (size_type i = 0; i < rows(); ++i)
       det *= A[i][i];
     return det;
