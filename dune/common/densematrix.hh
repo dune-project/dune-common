@@ -796,7 +796,7 @@ namespace Dune
   template<typename MAT>
   void DenseMatrix<MAT>::ElimPivot::swap(std::size_t i, simd_index_type j)
   {
-    assign(pivot_[i], j, i != j);
+    assign(pivot_[i], j, SimdScalar<simd_index_type>(i) != j);
   }
 
   template<typename MAT>
@@ -1046,9 +1046,10 @@ namespace Dune
 
       for(size_type i=rows(); i>0; ) {
         --i;
-        if(i!=pivot[i])
-          for(size_type j=0; j<rows(); ++j)
-            std::swap((*this)[j][pivot[i]], (*this)[j][i]);
+        for(size_type j=0; j<rows(); ++j)
+          for(std::size_t l = 0; l < lanes((*this)[0][0]); ++l)
+            std::swap(lane(l, (*this)[j][lane(l, pivot[i])]),
+                      lane(l, (*this)[j][        i        ]));
       }
     }
   }
