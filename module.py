@@ -10,10 +10,10 @@ import string
 import subprocess
 import sys
 
-if __package__ is None:
-    import project
-else:
+if __package__:
     from dune.common import project
+else:
+    import project
 
 logger = logging.getLogger(__name__)
 
