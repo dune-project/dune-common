@@ -10,7 +10,7 @@ import string
 import subprocess
 import sys
 
-if __package__:
+if __name__ == "dune.common.module":
     from dune.common import project
 else:
     import project
