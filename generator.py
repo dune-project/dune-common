@@ -38,6 +38,7 @@ class SimpleGenerator(object):
             source += "void register" + self.typeName + "( ... ) {}\n"
         source += "PYBIND11_PLUGIN( " + moduleName + " )\n"
         source += "{\n"
+        source += "  using pybind11::operator\"\"_a;\n"
         source += "  pybind11::module module( \"" + moduleName + "\" );\n"
         source += "  typedef std::unique_ptr< DuneType > Holder;\n"
         source += "  typedef DuneType TypeAlias;\n"
