@@ -25,7 +25,7 @@ function(add_dune_vc_flags _targets)
 endfunction(add_dune_vc_flags)
 
 if(Vc_FOUND)
-  dune_register_package_flags(COMPILE_OPTIONS "${Vc_ALL_FLAGS} -DENABLE_VC=1"
+  dune_register_package_flags(COMPILE_OPTIONS "${Vc_ALL_FLAGS};-DENABLE_VC=1"
                               LIBRARIES "${Vc_LIBRARIES}"
                               INCLUDE_DIRS "${Vc_INCLUDE_DIR}")
 endif(Vc_FOUND)
