@@ -1,28 +1,16 @@
 ---
 debian:9--gcc:
   image: duneci/base:9
-  script:
-  - ./bin/dunecontrol --current --opts=/duneci/opts.gcc all
-  - ./bin/dunecontrol --current make build_tests
-  - cd build-cmake; duneci-ctest
+  script: duneci-standard-test
 
 debian:9--clang:
   image: duneci/base:9
-  script:
-  - ./bin/dunecontrol --current --opts=/duneci/opts.clang all
-  - ./bin/dunecontrol --current make build_tests
-  - cd build-cmake; duneci-ctest
+  script: duneci-standard-test --opts=/duneci/opts.clang
 
 debian:8--gcc:
   image: duneci/base:8
-  script:
-  - ./bin/dunecontrol --current --opts=/duneci/opts.gcc all
-  - ./bin/dunecontrol --current make build_tests
-  - cd build-cmake; duneci-ctest
+  script: duneci-standard-test
 
 debian:8--clang:
   image: duneci/base:8
-  script:
-  - ./bin/dunecontrol --current --opts=/duneci/opts.clang all
-  - ./bin/dunecontrol --current make build_tests
-  - cd build-cmake; duneci-ctest
+  script: duneci-standard-test --opts=/duneci/opts.clang
