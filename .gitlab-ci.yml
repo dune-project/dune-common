@@ -10,3 +10,7 @@ debian:9--clang:
 debian:8--gcc:
   image: duneci/base:8
   script: duneci-standard-test
+
+debian:8-backports--clang:
+  image: duneci/base:8-backports
+  script: duneci-standard-test --opts=/duneci/opts.clang
