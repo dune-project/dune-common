@@ -14,3 +14,11 @@ debian:8--gcc:
 debian:8-backports--clang:
   image: duneci/base:8-backports
   script: duneci-standard-test --opts=/duneci/opts.clang
+
+ubuntu:16.04--gcc:
+  image: duneci/base:16.04
+  script: duneci-standard-test
+
+ubuntu:16.04--clang:
+  image: duneci/base:16.04
+  script: duneci-standard-test --opts=/duneci/opts.clang
