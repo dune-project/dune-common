@@ -109,6 +109,8 @@ dune_add_test(SOURCES indicestest.cc)
 
 dune_add_test(SOURCES integersequence.cc)
 
+dune_add_test(SOURCES iostreamtest.cc)
+
 dune_add_test(SOURCES iteratorfacadetest2.cc)
 
 dune_add_test(SOURCES iteratorfacadetest.cc)
@@ -191,8 +193,6 @@ dune_add_test(NAME testdebugallocator_fail5
               EXPECT_FAIL)
 
 dune_add_test(SOURCES testfloatcmp.cc)
-
-dune_add_test(SOURCES tuplestest.cc)
 
 dune_add_test(SOURCES tupleutilitytest.cc)
 
