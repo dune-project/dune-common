@@ -91,6 +91,7 @@ install(FILES
         sllist.hh
         stdstreams.hh
         stdthread.hh
+        streamoperators.hh
         stringutility.hh
         timer.hh
         tuples.hh
