@@ -5,8 +5,8 @@
 #include <tuple>
 
 #include <dune/common/classname.hh>
+#include <dune/common/streamoperators.hh>
 #include <dune/common/std/utility.hh>
-#include <dune/common/tuples.hh>
 
 template< class T, std::size_t... Ints >
 std::tuple< typename std::tuple_element< Ints, std::array< T, sizeof...( Ints ) > >::type... >
