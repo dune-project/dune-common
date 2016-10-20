@@ -77,5 +77,8 @@ class Builder:
 
         module = importlib.import_module("dune.generated." + moduleName)
         if self.force:
-            module = importlib.reload(module)
+            if sys.version_info.major == 2:
+                reload(module)
+            else:
+                module = importlib.reload(module)
         return module
