@@ -98,30 +98,14 @@ namespace Dune
                  _data.begin());
     }
 
-    template <typename T,
-              typename = std::enable_if_t<Dune::IsNumber<T>::value>>
-    FieldMatrix (T scalar)
-    {
-      *this = scalar;
-    }
-
     template <class T,
-              typename = std::enable_if_t<!Dune::IsNumber<T>::value>>
+              typename = std::enable_if_t<HasDenseMatrixAssigner<FieldMatrix, T>::value>>
     FieldMatrix(T const& rhs)
     {
       *this = rhs;
     }
 
-    //===== assignment
-    // General assignment with run-time bounds checking
-    template <typename T,
-              typename = std::enable_if_t<!Dune::IsNumber<T>::value>>
-    FieldMatrix& operator=(T const& rhs) {
-      DUNE_ASSERT_BOUNDS(rhs.N() == mat_rows());
-      DUNE_ASSERT_BOUNDS(rhs.M() == mat_cols());
-      Base::operator=(rhs);
-      return *this;
-    }
+    using Base::operator=;
 
     // Specialisation: FieldMatrix assignment (compile-time bounds checking)
     template <typename T, int rows, int cols>
@@ -130,14 +114,6 @@ namespace Dune
       static_assert(rows == ROWS, "Size mismatch in matrix assignment (rows)");
       static_assert(cols == COLS, "Size mismatch in matrix assignment (columns)");
       _data = rhs._data;
-      return *this;
-    }
-
-    // Specialisation: scalar assignment (no size check)
-    template <typename T,
-              typename = std::enable_if_t<Dune::IsNumber<T>::value>>
-    FieldMatrix& operator=(T scalar) {
-      std::fill(_data.begin(), _data.end(), scalar);
       return *this;
     }
 
@@ -252,18 +228,21 @@ namespace Dune
      */
     FieldMatrix () {}
 
-    /** \brief Constructor initializing the whole matrix with a scalar
+    /** \brief Constructor initializing the matrix from a list of vector
      */
-    FieldMatrix (const K& k)
+    FieldMatrix(std::initializer_list<Dune::FieldVector<K, 1>> const &l)
     {
-      _data[0] = k;
+      std::copy_n(l.begin(), std::min(static_cast< std::size_t >( 1 ), l.size()), &_data);
     }
 
-    template< class Other >
-    FieldMatrix ( const Other &other )
+    template <class T,
+              typename = std::enable_if_t<HasDenseMatrixAssigner<FieldMatrix, T>::value>>
+    FieldMatrix(T const& rhs)
     {
-      DenseMatrixAssigner< FieldMatrix< K, 1, 1 >, Other >::apply( *this, other );
+      *this = rhs;
     }
+
+    using Base::operator=;
 
     //===== solve
 

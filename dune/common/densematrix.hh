@@ -74,14 +74,15 @@ namespace Dune
   struct DenseMatrixAssigner;
 
 #ifndef DOXYGEN
-  namespace
+  namespace Impl
   {
-    template< class DenseMatrix, class RHS,
-              bool scalar = Dune::IsNumber<RHS>::value>
-    class DenseMatrixAssignerImplementation;
+
+    template< class DenseMatrix, class RHS, class = void >
+    class DenseMatrixAssigner
+    {};
 
     template< class DenseMatrix, class RHS >
-    class DenseMatrixAssignerImplementation< DenseMatrix, RHS, true >
+    class DenseMatrixAssigner< DenseMatrix, RHS, std::enable_if_t< Dune::IsNumber< RHS >::value > >
     {
     public:
       static void apply ( DenseMatrix &denseMatrix, const RHS &rhs )
@@ -92,29 +93,45 @@ namespace Dune
     };
 
     template< class DenseMatrix, class RHS >
-    class DenseMatrixAssignerImplementation< DenseMatrix, RHS, false >
+    class DenseMatrixAssigner< DenseMatrix, RHS, std::enable_if_t< !std::is_same< typename RHS::const_iterator, void >::value > >
     {
     public:
       static void apply ( DenseMatrix &denseMatrix, const RHS &rhs )
       {
+        DUNE_ASSERT_BOUNDS(rhs.N() == denseMatrix.N());
+        DUNE_ASSERT_BOUNDS(rhs.M() == denseMatrix.M());
         typename DenseMatrix::iterator tIt = std::begin(denseMatrix);
         typename RHS::const_iterator sIt = std::begin(rhs);
         for(; sIt != std::end(rhs); ++tIt, ++sIt)
           std::copy(std::begin(*sIt), std::end(*sIt), std::begin(*tIt));
       }
     };
-  }
+
+  } // namespace Impl
 
 
 
   template< class DenseMatrix, class RHS >
   struct DenseMatrixAssigner
+    : public Impl::DenseMatrixAssigner< DenseMatrix, RHS >
+  {};
+
+
+  namespace Impl
   {
-    static void apply ( DenseMatrix &denseMatrix, const RHS &rhs )
-    {
-      DenseMatrixAssignerImplementation< DenseMatrix, RHS >::apply( denseMatrix, rhs );
-    }
-  };
+
+    template< class DenseMatrix, class RHS >
+    std::true_type hasDenseMatrixAssigner ( DenseMatrix &, const RHS &, decltype( Dune::DenseMatrixAssigner< DenseMatrix, RHS >::apply( std::declval< DenseMatrix & >(), std::declval< const RHS & >() ) ) * = nullptr );
+
+    std::false_type hasDenseMatrixAssigner ( ... );
+
+  } // namespace Impl
+
+  template< class DenseMatrix, class RHS >
+  struct HasDenseMatrixAssigner
+    : public decltype( Impl::hasDenseMatrixAssigner( std::declval< DenseMatrix & >(), std::declval< const RHS & >() ) )
+  {};
+
 #endif // #ifndef DOXYGEN
 
 
@@ -266,7 +283,7 @@ namespace Dune
 
     //===== assignment
 
-    template< class RHS >
+    template< class RHS, class = std::enable_if_t< HasDenseMatrixAssigner< MAT, RHS >::value > >
     DenseMatrix &operator= ( const RHS &rhs )
     {
       DenseMatrixAssigner< MAT, RHS >::apply( asImp(), rhs );

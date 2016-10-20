@@ -70,6 +70,11 @@ dune_add_test(NAME densematrixassignmenttest_fail5
               LINK_LIBRARIES dunecommon
               COMPILE_DEFINITIONS "FAILURE5"
               EXPECT_COMPILE_FAIL)
+dune_add_test(NAME densematrixassignmenttest_fail6
+              SOURCES densematrixassignmenttest.cc
+              LINK_LIBRARIES dunecommon
+              COMPILE_DEFINITIONS "FAILURE6"
+              EXPECT_COMPILE_FAIL)
 
 dune_add_test(SOURCES diagonalmatrixtest.cc
               LINK_LIBRARIES dunecommon)

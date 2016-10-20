@@ -18,6 +18,22 @@ void populateMatrix(M &A, int rows, int cols) {
       A[i][j] = i + 10 * j;
 }
 
+
+template< class K, int rows, int cols >
+struct Foo
+{
+  constexpr static int M () noexcept { return cols; }
+  constexpr static int N () noexcept { return rows; }
+
+  operator Dune::FieldMatrix< K, rows, cols > () const
+  {
+    Dune::FieldMatrix< K, rows, cols > A;
+    populateMatrix( A, rows, cols );
+    return A;
+  }
+};
+
+
 template <class A, class B>
 bool identicalContents(A const &a, B const &b) {
   typedef typename A::size_type Size;
@@ -45,6 +61,9 @@ bool run() {
   populateMatrix(fieldMWrong11, 1, 1);
   populateMatrix(fieldMWrong22, 2, 2);
   populateMatrix(fieldMWrong33, 3, 3);
+
+  Foo< ft, 2, 3 > fooM;
+  fieldM = static_cast< Dune::FieldMatrix< ft, 2, 3 > >( fooM );
 
   Dune::DynamicMatrix<ft> dynM(2, 3);
   Dune::DynamicMatrix<ft> dynMWrong11(1, 1);
@@ -337,6 +356,15 @@ bool run() {
       std::cout << "(line " << __LINE__
                 << ") All good: Exception thrown as expected." << std::endl;
     }
+  }
+  {
+#ifdef FAILURE6
+    using M = Dune::DynamicMatrix<ft>;
+    {
+      // Should fail at compile-time
+      DUNE_UNUSED M const dynT = constant;
+    }
+#endif
   }
   std::cout << std::endl;
   return passed;
