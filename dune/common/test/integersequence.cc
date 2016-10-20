@@ -6,7 +6,7 @@
 
 #include <dune/common/classname.hh>
 #include <dune/common/std/utility.hh>
-#include <dune/common/tuples.hh>
+#include <dune/common/tupleutility.hh>
 
 template< class T, std::size_t... Ints >
 std::tuple< typename std::tuple_element< Ints, std::array< T, sizeof...( Ints ) > >::type... >
