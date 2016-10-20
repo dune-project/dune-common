@@ -154,6 +154,8 @@ dune_add_test(SOURCES stdapplytest.cc
 dune_add_test(SOURCES stdtypetraitstest.cc
               LINK_LIBRARIES dunecommon)
 
+dune_add_test(SOURCES streamoperatorstest.cc)
+
 dune_add_test(SOURCES streamtest.cc
               LINK_LIBRARIES dunecommon)
 
@@ -194,8 +196,6 @@ dune_add_test(NAME testdebugallocator_fail5
               EXPECT_FAIL)
 
 dune_add_test(SOURCES testfloatcmp.cc)
-
-dune_add_test(SOURCES tuplestest.cc)
 
 dune_add_test(SOURCES tupleutilitytest.cc)
 
