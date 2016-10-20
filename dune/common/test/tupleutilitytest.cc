@@ -6,8 +6,10 @@
 #endif
 
 #include <cstddef>
+#include <sstream>
+#include <string>
+#include <tuple>
 
-#include <dune/common/tuples.hh>
 #include <dune/common/tupleutility.hh>
 
 //////////////////////////////////////////////////////////////////////
@@ -83,7 +85,7 @@ struct Range
 template<int start>
 struct Range<start, start>
 {
-  typedef Dune::tuple<> type;
+  typedef std::tuple<> type;
 };
 
 // An accumulator to build up a list of divisors of an integer using reduce
@@ -129,7 +131,7 @@ struct Primes
   typedef typename Dune::ReduceTuple<
       PrimeAccumulator,
       typename Range<1,X+1>::type,
-      typename Dune::tuple<>
+      typename std::tuple<>
       >::type type;
 };
 
@@ -142,5 +144,36 @@ typedef std::tuple<
 static_assert((std::is_same<Primes1, Primes2>::value),
               "ReduceTuple failed in primes-tmp!");
 
+int inputTest()
+{
+  using Dune::operator>>;
 
-int main() {}
+  typedef std::tuple<int, int, int> Tuple;
+  const std::string data = "1, 2, 3";
+  const Tuple expected{1, 2, 3};
+
+  std::istringstream in(data);
+  Tuple t;
+  in >> t;
+
+  return t == expected ? 0 : 1;
+}
+
+int outputTest()
+{
+  using Dune::operator<<;
+
+  typedef std::tuple<int, int, int> Tuple;
+  const Tuple t{1, 2, 3};
+  const std::string expected = "1, 2, 3";
+
+  std::ostringstream out;
+  out << t;
+
+  return out.str() == expected ? 0 : 1;
+}
+
+int main()
+{
+  return ( inputTest() + outputTest() );
+}
