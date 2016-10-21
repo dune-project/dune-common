@@ -9,10 +9,10 @@
  */
 
 #include <array>
-#include <ostream>
 #include <tuple>
 
-#include <dune/common/forloop.hh>
+#include <dune/common/hybridutilities.hh>
+#include <dune/common/std/utility.hh>
 
 namespace Dune
 {
@@ -21,29 +21,6 @@ namespace Dune
      @{
    */
 
-  namespace
-  {
-    template<int i>
-    struct PrintTupleElement
-    {
-      template<typename Stream, typename Tuple>
-      static void apply(Stream& stream, const Tuple& t)
-      {
-        stream<<std::get<i>(t)<<",";
-      }
-    };
-
-    template<int i>
-    struct ReadTupleElement
-    {
-      template<typename Stream, typename Tuple>
-      static void apply(Stream& stream, Tuple& t)
-      {
-        stream>>std::get<i>(t);
-      }
-    };
-  }
-
   //! Print a std::tuple
   template<typename Stream, typename... Ts>
   inline Stream& operator<<(Stream& stream, const std::tuple<Ts...>& t)
@@ -51,7 +28,8 @@ namespace Dune
     stream<<"[";
     if(sizeof...(Ts)>0)
     {
-      ForLoop<PrintTupleElement, 0, sizeof...(Ts)-2>::apply(stream, t);
+      Hybrid::forEach(Std::make_index_sequence<sizeof...(Ts)-1>{},
+        [&](auto i){stream<<std::get<i>(t)<<",";});
       stream<<std::get<sizeof...(Ts)-1>(t);
     }
     stream<<"]";
@@ -62,7 +40,8 @@ namespace Dune
   template<typename Stream, typename... Ts>
   inline Stream& operator>>(Stream& stream, std::tuple<Ts...>& t)
   {
-    ForLoop<ReadTupleElement, 0, sizeof...(Ts)-1>::apply(stream, t);
+    Hybrid::forEach(Std::make_index_sequence<sizeof...(Ts)>{},
+      [&](auto i){stream>>std::get<i>(t);});
     return stream;
   }
 
