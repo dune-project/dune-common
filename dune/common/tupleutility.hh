@@ -5,12 +5,10 @@
 #define DUNE_TUPLE_UTILITY_HH
 
 #include <cstddef>
-#include <iostream>
 #include <tuple>
+#include <type_traits>
 
-#include <dune/common/forloop.hh>
-#include <dune/common/unused.hh>
-#include <dune/common/typetraits.hh>
+#include <dune/common/hybridutilities.hh>
 #include <dune/common/std/type_traits.hh>
 #include <dune/common/std/utility.hh>
 
@@ -318,43 +316,6 @@ namespace Dune {
     }
   };
 
-  namespace
-  {
-    template<int i, typename T1,typename F>
-    struct Visitor
-    {
-      static inline void visit(F& func, T1& t1)
-      {
-        func.visit(std::get<std::tuple_size<T1>::value-i>(t1));
-        Visitor<i-1,T1,F>::visit(func, t1);
-      }
-    };
-
-    template<typename T1,typename F>
-    struct Visitor<0,T1,F>
-    {
-      static inline void visit(F&, T1&)
-      {}
-    };
-
-    template<int i, typename T1, typename T2,typename F>
-    struct PairVisitor
-    {
-      static inline void visit(F& func, T1& t1, T2& t2)
-      {
-        func.visit(std::get<std::tuple_size<T1>::value-i>(t1), std::get<std::tuple_size<T2>::value-i>(t2));
-        PairVisitor<i-1,T1,T2,F>::visit(func, t1, t2);
-      }
-    };
-
-    template<typename T1, typename T2, typename F>
-    struct PairVisitor<0,T1,T2,F>
-    {
-      static inline void visit(F&, T1&, T2&)
-      {}
-    };
-  }
-
   /**
    * @brief Helper template which implements iteration over all storage
    * elements in a std::tuple.
@@ -413,7 +374,8 @@ namespace Dune {
     template<class Functor>
     void apply(Functor& f) const
     {
-      Visitor<std::tuple_size<Tuple>::value,Tuple,Functor>::visit(f, t_);
+      Hybrid::forEach(Std::make_index_sequence<std::tuple_size<Tuple>::value>{},
+        [&](auto i){f.visit(std::get<i>(t_));});
     }
   private:
     Tuple& t_;
@@ -449,7 +411,8 @@ namespace Dune {
     template<class Functor>
     void apply(Functor& f)
     {
-      PairVisitor<std::tuple_size<Tuple1>::value,Tuple1,Tuple2,Functor>::visit(f, t1_, t2_);
+      Hybrid::forEach(Std::make_index_sequence<std::tuple_size<Tuple1>::value>{},
+        [&](auto i){f.visit(std::get<i>(t1_), std::get<i>(t2_));});
     }
   private:
     Tuple1& t1_;
@@ -494,27 +457,14 @@ namespace Dune {
 
   /**
    * @brief Deletes all objects pointed to in a std::tuple of pointers.
-   *
-   * \warning Pointers cannot be set to nullptr, so calling the Deletor twice
-   * or accessing elements of a deleted std::tuple leads to unforeseeable results!
    */
   template<class Tuple>
-  class PointerPairDeletor
+  struct PointerPairDeletor
   {
-    struct Deletor
+    template<typename... Ts>
+    static void apply(std::tuple<Ts...>& t)
     {
-      template<typename P>
-      void visit(const P& p)
-      {
-        delete p;
-      }
-    };
-
-  public:
-    static void apply(Tuple& t)
-    {
-      static Deletor deletor;
-      ForEachValue<Tuple>(t).apply(deletor);
+      Hybrid::forEach(t,[&](auto&& ti){delete ti; ti=nullptr;});
     }
   };
 
