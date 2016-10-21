@@ -10,8 +10,8 @@
 
 #include <array>
 
-#include "dune/common/streamoperators.hh"
-#include "dune/common/std/make_array.hh"
+#include <dune/common/streamoperators.hh>
+#include <dune/common/std/make_array.hh>
 
 namespace Dune
 {
