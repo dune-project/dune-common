@@ -109,6 +109,8 @@ dune_add_test(SOURCES indicestest.cc)
 
 dune_add_test(SOURCES integersequence.cc)
 
+dune_add_test(SOURCES iostreamtest.cc)
+
 dune_add_test(SOURCES iteratorfacadetest2.cc)
 
 dune_add_test(SOURCES iteratorfacadetest.cc)

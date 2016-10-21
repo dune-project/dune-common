@@ -65,6 +65,7 @@ install(FILES
         indent.hh
         indices.hh
         interfaces.hh
+        iostream.hh
         ios_state.hh
         iteratorfacades.hh
         iteratorrange.hh

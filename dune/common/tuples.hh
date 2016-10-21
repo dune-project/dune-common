@@ -1,10 +1,11 @@
-#warning The header dune/common/tuples.hh is deprecated. Use directly "std::tuple" and include dune/common/tupleutility.hh for stream operators.
+#warning The header dune/common/tuples.hh is deprecated. Use directly "std::tuple" and include dune/common/iostream.hh for stream operators.
 
 #ifndef DUNE_TUPLES_HH
 #define DUNE_TUPLES_HH
 
 #include <tuple>
 #include "dune/common/tupleutility.hh"
+#include "dune/common/iostream.hh"
 
 namespace Dune {
   using std::tuple;

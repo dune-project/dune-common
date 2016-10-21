@@ -144,36 +144,5 @@ typedef std::tuple<
 static_assert((std::is_same<Primes1, Primes2>::value),
               "ReduceTuple failed in primes-tmp!");
 
-int inputTest()
-{
-  using Dune::operator>>;
-
-  typedef std::tuple<int, int, int> Tuple;
-  const std::string data = "1, 2, 3";
-  const Tuple expected{1, 2, 3};
-
-  std::istringstream in(data);
-  Tuple t;
-  in >> t;
-
-  return t == expected ? 0 : 1;
-}
-
-int outputTest()
-{
-  using Dune::operator<<;
-
-  typedef std::tuple<int, int, int> Tuple;
-  const Tuple t{1, 2, 3};
-  const std::string expected = "1, 2, 3";
-
-  std::ostringstream out;
-  out << t;
-
-  return out.str() == expected ? 0 : 1;
-}
-
 int main()
-{
-  return ( inputTest() + outputTest() );
-}
+{}

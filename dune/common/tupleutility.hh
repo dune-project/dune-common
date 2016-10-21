@@ -699,45 +699,6 @@ namespace Dune {
     typedef typename ReduceTuple<JoinTuples, Tuple>::type type;
   };
 
-  namespace
-  {
-    template<int i>
-    struct PrintTupleElement
-    {
-      template<typename Stream, typename Tuple>
-      static void apply(Stream& stream, const Tuple& t)
-      {
-        stream<<std::get<i>(t)<<" ";
-      }
-    };
-
-    template<int i>
-    struct ReadTupleElement
-    {
-      template<typename Stream, typename Tuple>
-      static void apply(Stream& stream, Tuple& t)
-      {
-        stream>>std::get<i>(t);
-      }
-    };
-  }
-
-  //! Print a std::tuple
-  template<typename Stream, typename... Ts>
-  inline Stream& operator<<(Stream& stream, const std::tuple<Ts...>& t)
-  {
-    ForLoop<PrintTupleElement, 0, sizeof...(Ts)-1>::apply(stream, t);
-    return stream;
-  }
-
-  //! Read a std::tuple
-  template<typename Stream, typename... Ts>
-  inline Stream& operator>>(Stream& stream, std::tuple<Ts...>& t)
-  {
-    ForLoop<ReadTupleElement, 0, sizeof...(Ts)-1>::apply(stream, t);
-    return stream;
-  }
-
   /** }@ */
 }
 
