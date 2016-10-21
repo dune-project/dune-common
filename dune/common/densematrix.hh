@@ -1046,10 +1046,14 @@ namespace Dune
 
       for(size_type i=rows(); i>0; ) {
         --i;
-        for(size_type j=0; j<rows(); ++j)
-          for(std::size_t l = 0; l < lanes((*this)[0][0]); ++l)
-            std::swap(lane(l, (*this)[j][lane(l, pivot[i])]),
-                      lane(l, (*this)[j][        i        ]));
+        for(std::size_t l = 0; l < lanes((*this)[0][0]); ++l)
+        {
+          std::size_t pi = lane(l, pivot[i]);
+          if(i!=pi)
+            for(size_type j=0; j<rows(); ++j)
+              std::swap(lane(l, (*this)[j][pi]),
+                        lane(l, (*this)[j][ i]));
+        }
       }
     }
   }
