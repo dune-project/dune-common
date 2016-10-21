@@ -743,14 +743,14 @@ namespace Dune
 
     //! do an LU-Decomposition on matrix A
     /**
-     * \param A ______________ The matrix to decompose, and to store the
+     * \param A                The matrix to decompose, and to store the
      *                         result in.
-     * \param func ___________ Functor used for swapping lanes and to conduct
+     * \param func             Functor used for swapping lanes and to conduct
      *                         the elimination.  Depending on the functor, \c
      *                         luDecomposition() can be used for solving, for
      *                         inverting, or to compute the determinant.
      * \param nonsingularLanes SimdMask of lanes that are nonsingular.
-     * \param throwEarly _____ Whether to throw an \c FMatrixError immediately
+     * \param throwEarly       Whether to throw an \c FMatrixError immediately
      *                         as soon as one lane is discovered to be
      *                         singular.  If \c false, do not throw, instead
      *                         continue until finished or all lanes are
