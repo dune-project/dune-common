@@ -311,43 +311,6 @@ namespace Dune {
     }
   };
 
-  namespace
-  {
-    template<int i, typename T1,typename F>
-    struct Visitor
-    {
-      static inline void visit(F& func, T1& t1)
-      {
-        func.visit(std::get<std::tuple_size<T1>::value-i>(t1));
-        Visitor<i-1,T1,F>::visit(func, t1);
-      }
-    };
-
-    template<typename T1,typename F>
-    struct Visitor<0,T1,F>
-    {
-      static inline void visit(F&, T1&)
-      {}
-    };
-
-    template<int i, typename T1, typename T2,typename F>
-    struct PairVisitor
-    {
-      static inline void visit(F& func, T1& t1, T2& t2)
-      {
-        func.visit(std::get<std::tuple_size<T1>::value-i>(t1), std::get<std::tuple_size<T2>::value-i>(t2));
-        PairVisitor<i-1,T1,T2,F>::visit(func, t1, t2);
-      }
-    };
-
-    template<typename T1, typename T2, typename F>
-    struct PairVisitor<0,T1,T2,F>
-    {
-      static inline void visit(F&, T1&, T2&)
-      {}
-    };
-  }
-
   /**
    * @brief Helper template which implements iteration over all storage
    * elements in a std::tuple.
@@ -391,7 +354,20 @@ namespace Dune {
    * std::cout << "Number of elements is: " << c.result_ << std::endl;
    * \endcode
    */
-  template<class Tuple>
+  namespace
+  {
+    template<int i>
+    struct Visitor
+    {
+      template<typename Functor, typename Tuple>
+      static void apply(Functor& f, Tuple& t)
+      {
+         f.visit(std::get<i>(t));
+      }
+    };
+  }
+
+  template<typename Tuple>
   class ForEachValue
   {
   public:
@@ -403,10 +379,10 @@ namespace Dune {
 
     //! \brief Applies a function object to each storage element of the std::tuple.
     //! \param f Function object.
-    template<class Functor>
+    template<typename Functor>
     void apply(Functor& f) const
     {
-      Visitor<std::tuple_size<Tuple>::value,Tuple,Functor>::visit(f, t_);
+      ForLoop<Visitor, 0, std::tuple_size<Tuple>::value-1>::apply(f, t_);
     }
   private:
     Tuple& t_;
@@ -425,7 +401,20 @@ namespace Dune {
    * enforce it is to build the second std::tuple from the existing first std::tuple
    * using ForEachType.
    */
-  template<class Tuple1, class Tuple2>
+  namespace
+  {
+    template<int i>
+    struct PairVisitor
+    {
+      template<typename Functor, typename Tuple1, typename Tuple2>
+      static void apply(Functor& f, Tuple1& t1, Tuple2& t2)
+      {
+         f.visit(std::get<i>(t1), std::get<i>(t2));
+      }
+    };
+  }
+
+  template<typename Tuple1, typename Tuple2>
   class ForEachValuePair
   {
   public:
@@ -433,16 +422,15 @@ namespace Dune {
     //! \param t1 First std::tuple.
     //! \param t2 Second std::tuple.
     ForEachValuePair(Tuple1& t1, Tuple2& t2) :
-      t1_(t1),
-      t2_(t2)
+      t1_(t1), t2_(t2)
     {}
 
     //! Applies the function object f to the pair of std::tuple's.
     //! \param f The function object to apply on the pair of std::tuple's.
-    template<class Functor>
+    template<typename Functor>
     void apply(Functor& f)
     {
-      PairVisitor<std::tuple_size<Tuple1>::value,Tuple1,Tuple2,Functor>::visit(f, t1_, t2_);
+      ForLoop<PairVisitor, 0, std::tuple_size<Tuple1>::value-1>::apply(f, t1_, t2_);
     }
   private:
     Tuple1& t1_;
