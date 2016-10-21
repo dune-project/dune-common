@@ -488,26 +488,28 @@ namespace Dune {
   /**
    * @brief Deletes all objects pointed to in a std::tuple of pointers.
    *
-   * \warning Pointers cannot be set to nullptr, so calling the Deletor twice
-   * or accessing elements of a deleted std::tuple leads to unforeseeable results!
    */
-  template<class Tuple>
-  class PointerPairDeletor
+  namespace
   {
+    template<int i>
     struct Deletor
     {
-      template<typename P>
-      void visit(const P& p)
+      template<typename Tuple>
+      static void apply(Tuple& t)
       {
-        delete p;
+        delete std::get<i>(t);
+        std::get<i>(t)=nullptr;
       }
     };
+  }
 
-  public:
-    static void apply(Tuple& t)
+  template<typename Tuple>
+  struct PointerPairDeletor
+  {
+    template<typename... Ts>
+    static void apply(std::tuple<Ts...>& t)
     {
-      static Deletor deletor;
-      ForEachValue<Tuple>(t).apply(deletor);
+      ForLoop<Deletor, 0, sizeof...(Ts)-1>::apply(t);
     }
   };
 

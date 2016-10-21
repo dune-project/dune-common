@@ -105,6 +105,8 @@ int main(int, char**)
 
   typedef Dune::ForEachType<Eval,PointerTuple1>::Type ConvertedType DUNE_UNUSED;
   Dune::PointerPairDeletor<PointerTuple1>::apply(p);
+  if(p != PointerTuple1(nullptr,nullptr,nullptr,nullptr))
+    std::cerr<<"PointerPairDeletor not working!"<<std::endl;
 
   return ret;
 }
