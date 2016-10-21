@@ -729,9 +729,7 @@ namespace Dune
 
       void swap(std::size_t i, simd_index_type j)
       {
-        field_type newsign = 1;
-        assign(newsign, field_type(-1), simd_index_type(i) != j);
-        sign_ *= newsign;
+        sign_ *= cond(simd_index_type(i) == j, field_type(1), field_type(-1));
       }
 
       void operator()(const field_type&, int, int)
