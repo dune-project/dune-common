@@ -5,10 +5,10 @@
 #define DUNE_TUPLE_UTILITY_HH
 
 #include <cstddef>
-#include <iostream>
 #include <tuple>
+#include <type_traits>
 
-#include <dune/common/forloop.hh>
+#include <dune/common/hybridutilities.hh>
 #include <dune/common/unused.hh>
 #include <dune/common/typetraits.hh>
 #include <dune/common/std/type_traits.hh>
@@ -354,19 +354,6 @@ namespace Dune {
    * std::cout << "Number of elements is: " << c.result_ << std::endl;
    * \endcode
    */
-  namespace
-  {
-    template<int i>
-    struct Visitor
-    {
-      template<typename Functor, typename Tuple>
-      static void apply(Functor& f, Tuple& t)
-      {
-         f.visit(std::get<i>(t));
-      }
-    };
-  }
-
   template<typename Tuple>
   class ForEachValue
   {
@@ -382,7 +369,8 @@ namespace Dune {
     template<typename Functor>
     void apply(Functor& f) const
     {
-      ForLoop<Visitor, 0, std::tuple_size<Tuple>::value-1>::apply(f, t_);
+      Hybrid::forEach(Std::make_index_sequence<std::tuple_size<Tuple>::value>{},
+        [&](auto i){f.visit(std::get<i>(t_));});
     }
   private:
     Tuple& t_;
@@ -401,19 +389,6 @@ namespace Dune {
    * enforce it is to build the second std::tuple from the existing first std::tuple
    * using ForEachType.
    */
-  namespace
-  {
-    template<int i>
-    struct PairVisitor
-    {
-      template<typename Functor, typename Tuple1, typename Tuple2>
-      static void apply(Functor& f, Tuple1& t1, Tuple2& t2)
-      {
-         f.visit(std::get<i>(t1), std::get<i>(t2));
-      }
-    };
-  }
-
   template<typename Tuple1, typename Tuple2>
   class ForEachValuePair
   {
@@ -430,7 +405,8 @@ namespace Dune {
     template<typename Functor>
     void apply(Functor& f)
     {
-      ForLoop<PairVisitor, 0, std::tuple_size<Tuple1>::value-1>::apply(f, t1_, t2_);
+      Hybrid::forEach(Std::make_index_sequence<std::tuple_size<Tuple1>::value>{},
+        [&](auto i){f.visit(std::get<i>(t1_), std::get<i>(t2_));});
     }
   private:
     Tuple1& t1_;
@@ -477,27 +453,13 @@ namespace Dune {
    * @brief Deletes all objects pointed to in a std::tuple of pointers.
    *
    */
-  namespace
-  {
-    template<int i>
-    struct Deletor
-    {
-      template<typename Tuple>
-      static void apply(Tuple& t)
-      {
-        delete std::get<i>(t);
-        std::get<i>(t)=nullptr;
-      }
-    };
-  }
-
   template<typename Tuple>
   struct PointerPairDeletor
   {
     template<typename... Ts>
     static void apply(std::tuple<Ts...>& t)
     {
-      ForLoop<Deletor, 0, sizeof...(Ts)-1>::apply(t);
+      Hybrid::forEach(t,[&](auto&& ti){delete ti; ti=nullptr;});
     }
   };
 
