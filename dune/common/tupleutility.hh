@@ -311,61 +311,14 @@ namespace Dune {
     }
   };
 
-  /**
-   * @brief Helper template which implements iteration over all storage
-   * elements in a std::tuple.
-   *
-   * Compile-time constructs that allows one to process all elements in a std::tuple.
-   * The exact operation performed on an element is defined by a function
-   * object, which needs to implement a visit method which is applicable to
-   * all storage elements of a std::tuple.  Each std::tuple element is visited once, and
-   * the iteration is done in ascending order.
-   *
-   * The following example implements a function object which counts the
-   * elements in a std::tuple
-   *
-   * \code
-   * template <class T>
-   * struct Counter
-   * {
-   *   Counter() :
-   *     result_(0)
-   *   {}
-   *
-   *   template <class T>
-   *   void visit(T& elem)
-   *   {
-   *     ++result_;
-   *   }
-   *
-   *   int result_;
-   * };
-   * \endcode
-   *
-   * The number of elements in the std::tuple are stored in the member variable
-   * result_. The Counter can be used as follows, assuming a std::tuple t of type
-   * MyTuple is given:
-   *
-   * \code
-   * Counter c;
-   * ForEachValue<MyTuple> forEach(t);
-   *
-   * forEach.apply(c);
-   * std::cout << "Number of elements is: " << c.result_ << std::endl;
-   * \endcode
-   */
   template<typename Tuple>
   class DUNE_DEPRECATED_MSG("Use Hybrid::forEach instead!") ForEachValue
   {
   public:
-    //! \brief Constructor
-    //! \param t The std::tuple which we want to process.
     ForEachValue(Tuple& t) :
       t_(t)
     {}
 
-    //! \brief Applies a function object to each storage element of the std::tuple.
-    //! \param f Function object.
     template<typename Functor>
     void apply(Functor& f) const
     {
@@ -376,32 +329,14 @@ namespace Dune {
     Tuple& t_;
   };
 
-  /**
-   * @brief Extension of ForEachValue to two std::tuple's.
-   *
-   * This class provides the framework to process two std::tuple's at once. It works
-   * the same as ForEachValue, just that the corresponding function object
-   * takes one argument from the first std::tuple and one argument from the second.
-   *
-   * \note You have to ensure that the two std::tuple's you provide are compatible
-   * in the sense that they have the same length and that the objects passed
-   * to the function objects are related in meaningful way. The best way to
-   * enforce it is to build the second std::tuple from the existing first std::tuple
-   * using ForEachType.
-   */
   template<typename Tuple1, typename Tuple2>
   class DUNE_DEPRECATED_MSG("Use Hybrid::forEach instead!") ForEachValuePair
   {
   public:
-    //! Constructor
-    //! \param t1 First std::tuple.
-    //! \param t2 Second std::tuple.
     ForEachValuePair(Tuple1& t1, Tuple2& t2) :
       t1_(t1), t2_(t2)
     {}
 
-    //! Applies the function object f to the pair of std::tuple's.
-    //! \param f The function object to apply on the pair of std::tuple's.
     template<typename Functor>
     void apply(Functor& f)
     {
