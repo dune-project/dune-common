@@ -17,17 +17,6 @@ struct Eval
   typedef void* Type;
 };
 
-struct Counter {
-  Counter() : result_(0) {}
-
-  template <class T1>
-  void visit(T1) { ++result_; }
-
-  template <class T1, class T2>
-  void visit(T1, T2) { ++(++result_); }
-  int result_;
-};
-
 int main(int, char**)
 {
   typedef std::tuple<int*,double*,long*,char*> PointerTuple;
@@ -87,16 +76,6 @@ int main(int, char**)
     std::cerr<<"Length and size do not match!"<<std::endl;
   }
 
-  Counter count;
-  Dune::ForEachValue<PointerTuple> forEach(pointers);
-
-  forEach.apply(count);
-  std::cout << "Number of elements is: " << count.result_ << std::endl;
-
-  Dune::ForEachValuePair<PointerTuple,PointerTuple1> foreach1(pointers, pointers1);
-
-  foreach1.apply(count);
-
   if(Dune::At<2>::get(pointers)!=std::get<1>(pointers)) {
     ret+=10;
     std::cerr<<"at inconsistent!"<<std::endl;
@@ -110,6 +89,7 @@ int main(int, char**)
     ret+=20;
     std::cerr<<"PointerPairDeletor not working!"<<std::endl;
   }
+  Dune::PointerPairDeletor<PointerTuple1>::apply(pointers1);
 
   return ret;
 }

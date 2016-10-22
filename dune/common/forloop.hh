@@ -1,3 +1,4 @@
+#warning The header dune/common/forloop.hh is deprecated. Use directly "Hibryd::forEach" and include "dune/common/hybridutilities.hh".
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 
@@ -5,6 +6,8 @@
 #define DUNE_COMMON_FORLOOP_HH
 
 #include <utility>
+
+#include <dune/common/unesed.hh>
 
 /** \file
  * \brief A static for loop for template meta-programming
@@ -105,7 +108,7 @@ namespace Dune
    *
    */
   template< template< int > class Operation, int first, int last >
-  class ForLoop
+  class DUNE_DEPRECATED_MSG("Use Hybrid::forEach instead!") ForLoop
     : public GenericForLoop< ForLoopHelper::Apply, Operation, first, last >
   {
     static_assert( (first <= last), "ForLoop: first > last" );

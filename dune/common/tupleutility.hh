@@ -355,7 +355,7 @@ namespace Dune {
    * \endcode
    */
   template<typename Tuple>
-  class ForEachValue
+  class DUNE_DEPRECATED_MSG("Use Hybrid::forEach instead!") ForEachValue
   {
   public:
     //! \brief Constructor
@@ -390,7 +390,7 @@ namespace Dune {
    * using ForEachType.
    */
   template<typename Tuple1, typename Tuple2>
-  class ForEachValuePair
+  class DUNE_DEPRECATED_MSG("Use Hybrid::forEach instead!") ForEachValuePair
   {
   public:
     //! Constructor
