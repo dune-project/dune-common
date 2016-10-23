@@ -198,6 +198,9 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
     elif echo "$PROJECT" | grep -q "\."; then
       echo "The Name contains a dot (.) which is not allowed."
       PROJECT=""
+    elif echo "$PROJECT" | grep -q "[0-9]$"; then
+      echo "The Name ends with number which is not allowed."
+      PROJECT=""
     fi
   done
   MODULE="$PROJECT"
