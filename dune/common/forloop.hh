@@ -5,7 +5,7 @@
 
 #include <utility>
 
-#include <dune/common/unesed.hh>
+#include <dune/common/unused.hh>
 
 namespace Dune
 {
