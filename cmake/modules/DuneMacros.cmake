@@ -279,10 +279,13 @@ macro(extract_line HEADER  OUTPUT FILE_NAME)
   endif()
 endmacro(extract_line)
 
+#
+# split list of modules, potentially with version information
+# into list of modules and list of versions
+#
 macro(split_module_version STRING MODULES VERSIONS)
   set(REGEX "[a-zA-Z-]+[ ]*(\\([ ]*([^ ]+)?[ ]*[^ ]+[ ]*\\))?")
-  #set(REGEX "dune")
-  string(REGEX MATCHALL "${REGEX}"  matches "${STRING}")
+  string(REGEX MATCHALL "${REGEX}" matches "${STRING}")
   set(${MODULES} "")
   set(${VERSIONS} "")
   foreach(i ${matches})
@@ -302,6 +305,9 @@ macro(split_module_version STRING MODULES VERSIONS)
   endforeach()
 endmacro(split_module_version)
 
+#
+# Convert a string with spaces in a list which is a string with semicolon
+#
 function(convert_deps_to_list var)
   string(REGEX REPLACE "([a-zA-Z\\)]) ([a-zA-Z])" "\\1;\\2" ${var} ${${var}})
   set(${var} ${${var}} PARENT_SCOPE)
