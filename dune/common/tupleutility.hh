@@ -92,6 +92,13 @@ namespace Dune {
   {
     return genericTransformTupleBackendImpl(t, f,Std::index_sequence_for<Args...>{});
   }
+
+  template<class... Args, class Functor>
+  auto genericTransformTupleBackend(const std::tuple<Args...>& t, Functor& f) ->
+    decltype(genericTransformTupleBackendImpl(t, f, Std::index_sequence_for<Args...>{}))
+  {
+    return genericTransformTupleBackendImpl(t, f, Std::index_sequence_for<Args...>{});
+  }
 #endif
 
   /**
