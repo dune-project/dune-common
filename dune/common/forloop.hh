@@ -63,7 +63,7 @@ namespace Dune
    * \endcode
    */
   template< template< int > class Operation, int first, int last >
-  class ForLoop
+  struct ForLoop
   {
     static_assert( (first <= last), "ForLoop: first > last" );
 
@@ -71,7 +71,7 @@ namespace Dune
     static void apply(Args&&... args)
     {
       Hybrid::forEach(Std::make_index_sequence<last+1-first>{},
-        [&](auto i){Operation<i>::apply(std::forward<Args>(args)...);});
+        [&](auto i){Operation<i+first>::apply(std::forward<Args>(args)...);});
     }
   };
 
