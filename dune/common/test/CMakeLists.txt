@@ -151,6 +151,9 @@ dune_add_test(SOURCES sllisttest.cc)
 dune_add_test(SOURCES stdapplytest.cc
               LINK_LIBRARIES dunecommon)
 
+dune_add_test(SOURCES stdtypetraitstest.cc
+              LINK_LIBRARIES dunecommon)
+
 dune_add_test(SOURCES streamtest.cc
               LINK_LIBRARIES dunecommon)
 
