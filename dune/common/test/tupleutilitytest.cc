@@ -5,7 +5,9 @@
 #include "config.h"
 #endif
 
+#include <cmath>
 #include <cstddef>
+#include <iostream>
 
 #include <dune/common/tuples.hh>
 #include <dune/common/tupleutility.hh>
@@ -142,5 +144,28 @@ typedef std::tuple<
 static_assert((std::is_same<Primes1, Primes2>::value),
               "ReduceTuple failed in primes-tmp!");
 
+struct Reciprocal
+{
+  template<class>
+  struct TypeEvaluator
+  {
+    typedef double Type;
+  };
+  template<class T>
+  typename TypeEvaluator<T>::Type operator()(const T& val) const {
+    return 1./val;
+  };
+};
 
-int main() {}
+int main() {
+  const std::tuple<int, double> t1(1, 2.);
+  auto t2 = Dune::genericTransformTuple(t1, Reciprocal());
+  static_assert(std::is_same<decltype(t2), std::tuple<double, double>>::value,
+                "Type after genericTransformTuple does not match!");
+  if(fabs(std::get<0>(t2)-1.) > 1e-8 ||
+     fabs(std::get<1>(t2)-.5) > 1e-8)
+  {
+    std::cout << "genericTransformTuple gives wrong result!\n";
+    std::abort();
+  }
+}
