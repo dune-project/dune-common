@@ -81,7 +81,7 @@ namespace Dune
 
 
     template <class T,
-              typename = std::enable_if_t<!Dune::IsNumber<T>::value>>
+              typename = std::enable_if_t<!Dune::IsNumber<T>::value && HasDenseMatrixAssigner<DynamicMatrix, T>::value>>
     DynamicMatrix(T const& rhs)
     {
       *this = rhs;
