@@ -12,6 +12,7 @@
 #include <dune/common/exceptions.hh>
 #include <dune/common/dynvector.hh>
 #include <dune/common/densematrix.hh>
+#include <dune/common/typetraits.hh>
 
 namespace Dune
 {
@@ -79,6 +80,13 @@ namespace Dune
     {}
 
 
+    template <class T,
+              typename = std::enable_if_t<!Dune::IsNumber<T>::value && HasDenseMatrixAssigner<DynamicMatrix, T>::value>>
+    DynamicMatrix(T const& rhs)
+    {
+      *this = rhs;
+    }
+
     //==== resize related methods
     /**
      * \brief resize matrix to <code>r × c</code>
@@ -100,7 +108,23 @@ namespace Dune
     }
 
     //===== assignment
-    using Base::operator=;
+    // General assignment with resizing
+    template <typename T,
+              typename = std::enable_if_t<!Dune::IsNumber<T>::value>>
+    DynamicMatrix& operator=(T const& rhs) {
+      _data.resize(rhs.N());
+      std::fill(_data.begin(), _data.end(), row_type(rhs.M(), K(0)));
+      Base::operator=(rhs);
+      return *this;
+    }
+
+    // Specialisation: scalar assignment (no resizing)
+    template <typename T,
+              typename = std::enable_if_t<Dune::IsNumber<T>::value>>
+    DynamicMatrix& operator=(T scalar) {
+      std::fill(_data.begin(), _data.end(), scalar);
+      return *this;
+    }
 
     // make this thing a matrix
     size_type mat_rows() const { return _data.size(); }

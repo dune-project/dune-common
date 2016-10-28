@@ -164,7 +164,8 @@ namespace Dune {
     using Base::operator=;
 
     // make this thing a vector
-    constexpr size_type size () const { return SIZE; }
+    static constexpr size_type size () { return SIZE; }
+
     K & operator[](size_type i) {
       DUNE_ASSERT_BOUNDS(i < SIZE);
       return _data[i];
@@ -284,7 +285,8 @@ namespace Dune {
     }
 
     //===== forward methods to container
-    constexpr size_type size () const { return 1; }
+    static constexpr size_type size () { return 1; }
+
     K & operator[](size_type i)
     {
       DUNE_UNUSED_PARAMETER(i);

@@ -14,8 +14,8 @@ list of available modules.
 
 To compile the modules Dune has to check several components of
 your system and whether prerequisites within the modules are met. For
-the ease of users we have designed a custom build system on top of the
-automake tools. Run
+the ease of users we have designed a custom build system on top of CMake.
+Run
 
   ./dune-common/bin/dunecontrol all
 
@@ -37,7 +37,7 @@ need to run
 to install Dune (you may need root-permissions for the install
 part depending on the prefix set)
 
-A more comprehensive introduction to the build system can be found in [2].
+A more comprehensive introduction to the build system can be found in [0].
 
 Passing options to the build process
 ------------------------------------
@@ -45,50 +45,31 @@ Passing options to the build process
 Using the dunecontrol script the following atomic commands can be
 executed:
 
-- autogen (runs autogen in each module, only needed when downloaded
-  via svn)
-- configure (runs the configure tests for each module
-- exec (executes a command in each module directory)
-- make (runs make for each module)
-- update (updates the svn version)
+- configure (runs the CMake configuration tests for each module)
+- exec (executes a command in each module source directory)
+- bexec (executes a command in each module build directory)
+- make (builds each module)
+- update (updates the Git or Subversion version)
 
-The composite command all simply runs autogen, configure and make for
+The composite command all simply runs configure and make for
 each module.
 
-As it is often not convenient (and for the target all impossible) to
-specify the options for each command as parameters after the call, one
-can pass the options via file specified by the --opts=<file>
-option. For each atomic command one specify the options via a line
+As it is often not convenient to specify the desired options after
+the duncontroll call, one can pass the options via a file specified
+by the --opts=<file> option. Specify the options via the variable
 
-<COMMAND_UPPERCASE>_FLAGS=<flags> # e.g.: MAKE_FLAGS=install
-
-The available options for make and svn are the natural ones. The
-configure commands available can be found by issuing
-
-dunecontrol --only=dune-common configure --help
-
-and for autogen by
-
-dunecontrol --only=dune-common autogen --help
-
-(In the svn version this has to be called after running autogen.)
-
+  CMAKE_FLAGS=<flags>
 
 An example of an options file is
 
-  # use a special compiler (g++ version 3.4) and install to a custom
-  # directory, default is /usr/local/bin
-  CONFIGURE_FLAGS="CXX=g++-3.4 --prefix='/tmp/Hu Hu'"
-  # Set the default target of make to install. Now the call above will
-  # not just build the DUNE modules but also install it
-   MAKE_FLAGS=install
-  # The default versions of automake and autogen are not sufficient
-  # therefore we need to specify what versions to use
-  AUTOGEN_FLAGS="--ac=2.59 --am=1.9
+  # use a special compiler (g++ version 5.0),
+  # install to a custom directory, default is /usr/local/bin,
+  # disable the external library SuperLU,
+  # and use Ninja-build instead of make as the build-tool
+  CMAKE_FLAGS="-DCMAKE_CXX_COMPILER=g++-5 -DCMAKE_INSTALL_PREFIX='/tmp/HuHu' -DCMAKE_DISABLE_FIND_PACKAGE_SuperLU=true -GNinja"
 
 Links
 -----
 
-0. http://www.dune-project.org/doc/installation-notes.html
-1. http://www.dune-project.org/download.html
-2. http://dune-project.org/doc/buildsystem/buildsystem.pdf
+0. https://www.dune-project.org/doc/installation
+1. https://dune-project.org/releases/
