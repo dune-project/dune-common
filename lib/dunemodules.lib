@@ -309,6 +309,29 @@ sort_modules() {
   done
 }
 
+# strip any leading spaces, tabs, or newlines
+_ltrim()
+{
+  local val="$1"
+  local tab="	"
+  local nl="
+"
+  while :; do
+    case $val in
+      " "*|"$tab"*|"$nl"*)
+        val=${val#?}
+        ;;
+      *)
+        break
+        ;;
+    esac
+  done
+  # if this is used inside `...` or $(...), any trailing newlines will be
+  # stripped, no matter what we do.  Setting a variable to the result would
+  # work around this, but is not a common idiom.
+  printf "%s" "$val"
+}
+
 _check_deps()
 {
   local module="$1"
@@ -326,13 +349,12 @@ _check_deps()
   fi
   eval deps=\$${mode}_$module
   #initially remove leading space
-  deps=`echo ${deps//^[, ]}`
+  deps=$(_ltrim "$deps")
   while test -n "$deps"; do
-    #the end of the name is marked either by space, opening parenthesis,
-    #or comma
-    name="${deps%%[ (,]*}"
+    #the end of the name is marked either by space or opening parenthesis
+    name="${deps%%[ (]*}"
     #remove the name and adjacent whitespace
-    deps=`echo "$deps" | sed 's/^[^ (,]* *//'`
+    deps=$(_ltrim "${deps#"$name"}")
     #check whether there is a dependency version
     case "$deps" in
     '('*) deps="${deps#(}"
@@ -342,23 +364,24 @@ _check_deps()
     *)    depver=
           ;;
     esac
-    #remove any leading whitespace or commas for the next iteration
-    deps=`echo ${deps//^[, ]}`
+    #remove any leading whitespace for the next iteration
+    deps=$(_ltrim "$deps")
+
     dep=$(fix_variable_name $name)
     if ! check_modname $dep; then
-      echo "ERROR: invalid module name $name ($dependency of $module)" >&2
+      echo "ERROR: invalid module name '$name' ($dependency of '$module')" >&2
       exit 1
     fi
     if eval test x\$HAVE_$dep != "x"; then
       eval ver=\$VERS_$dep
       if test "$SKIPVERSIONCHECK" != "yes" && ! check_version "$ver" "$depver"; then
         echo "$report: version mismatch." >&2
-        echo "       $modname $requires $name $depver," >&2
-        echo "       but only $name = $ver is available." >&2
+        echo "       $modname $requires '$name $depver'," >&2
+        echo "       but only '$name' = '$ver' is available." >&2
         if test "x$mode" = "xDEPS"; then
           exit 1
         else
-          echo "Skipping $name!" >&2
+          echo "Skipping '$name'!" >&2
           continue
         fi
       fi
@@ -367,26 +390,26 @@ _check_deps()
       # perhaps this module is installed,
       # then it should be handled via pkg-config
       if ! pkg-config $name; then
-        echo "$report: could not find module $name," >&2
+        echo "$report: could not find module '$name'," >&2
         echo "       module is also unknown to pkg-config." >&2
         echo "       Maybe you need to adjust PKG_CONFIG_PATH!" >&2
-        echo "       $name is $required by $modname" >&2
+        echo "       '$name' is $required by $modname" >&2
         if test "x$mode" = "xDEPS"; then
           exit 1
         else
-          echo "Skipping $name!" >&2
+          echo "Skipping '$name'!" >&2
           continue
         fi
       else
         eval ver=$(pkg-config $name --modversion)
         if test "$SKIPVERSIONCHECK" != "yes" && ! check_version "$ver" "$depver"; then
           echo "$report: version mismatch." >&2
-          echo "       $modname $requires $name $depver," >&2
-          echo "       but only $name = $ver is installed." >&2
+          echo "       $modname $requires '$name $depver'," >&2
+          echo "       but only '$name' = '$ver' is installed." >&2
           if test "x$mode" = "xDEPS"; then
             exit 1
           else
-            echo "Skipping $name!" >&2
+            echo "Skipping '$name'!" >&2
             continue
           fi
         fi
