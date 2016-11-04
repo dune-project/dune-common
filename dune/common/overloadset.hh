@@ -30,6 +30,7 @@ namespace Impl {
       F0(std::forward<FF0>(f0))
     {}
 
+    // pull in operator() of F0 and of all F... via the base class
     using F0::operator();
     using Base::operator();
   };
@@ -44,6 +45,7 @@ namespace Impl {
       F0(std::forward<FF0>(f0))
     {}
 
+    // pull in operator() of F0
     using F0::operator();
   };
 
@@ -95,6 +97,7 @@ namespace Impl {
       F0(std::forward<FF0>(f0))
     {}
 
+    // Forward to operator() of F0 if it can be called with the given arguments.
     template<class...  Args,
         std::enable_if_t<Std::is_callable<F0(Args&&...)>::value, int> = 0>
     decltype(auto) operator()(Args&&... args)
@@ -102,6 +105,9 @@ namespace Impl {
       return F0::operator()(std::forward<Args>(args)...);
     }
 
+    // Forward to operator() of base class if F0 cannot be called with the given
+    // arguments. In this case the base class will successively try operator()
+    // of all F... .
     template<class...  Args,
         std::enable_if_t< not Std::is_callable<F0(Args&&...)>::value, int> = 0>
     decltype(auto) operator()(Args&&... args)
@@ -121,6 +127,8 @@ namespace Impl {
       F0(std::forward<FF0>(f0))
     {}
 
+    // Forward to operator() of F0. If it cannot be called with
+    // the given arguments a static assertion will fail.
     template<class...  Args>
     decltype(auto) operator()(Args&&... args)
     {
