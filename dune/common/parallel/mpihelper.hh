@@ -214,10 +214,10 @@ namespace Dune
      * @param argc The number of arguments provided to main.
      * @param argv The arguments provided to main.
      */
-    DUNE_EXPORT static MPIHelper& instance(int& argc, char**& argv)
+    DUNE_EXPORT static MPIHelper& instance(int& argc, char**& argv, int required = MPI_THREAD_SINGLE)
     {
       // create singleton instance
-      static MPIHelper singleton (argc, argv);
+      static MPIHelper singleton (argc, argv,required);
       return singleton;
     }
 
@@ -236,7 +236,7 @@ namespace Dune
     void prevent_warning(int){}
 
     //! \brief calls MPI_Init with argc and argv as parameters
-    MPIHelper(int& argc, char**& argv)
+    MPIHelper(int& argc, char**& argv, int required)
     {
       int wasInitialized = -1;
       MPI_Initialized( &wasInitialized );
@@ -244,7 +244,8 @@ namespace Dune
       {
         rank_ = -1;
         size_ = -1;
-        static int is_initialized = MPI_Init(&argc, &argv);
+        int provided;
+        static int is_initialized = MPI_Init_thread(&argc, &argv, required, &provided);
         prevent_warning(is_initialized);
       }
 
