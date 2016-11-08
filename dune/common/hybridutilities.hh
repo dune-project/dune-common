@@ -372,7 +372,7 @@ namespace Impl {
  * This will call either ifFunc or elseFunc depending
  * on the condition. In any case a single argument
  * will be passed to the called function. This will always
- * be the indentity function. Passing an expression through
+ * be the identity function. Passing an expression through
  * this function will lead to lazy evaluation. This way both
  * 'branches' can contain expressions that are only valid
  * within this branch if the condition is a std::integral_constant<bool,*>.
