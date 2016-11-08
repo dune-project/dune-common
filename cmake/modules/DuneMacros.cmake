@@ -659,6 +659,12 @@ macro(dune_project)
   option(DUNE_BUILD_BOTH_LIBS "If set to ON, shared and static libs will be built"
     ${_default_enable_static})
 
+  # Request position independent code if shared lbs are built
+  # This should allow DUNE modules to use CMake's object libraries.
+  if(BUILD_SHARED_LIBS)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+  endif()
+
   if(DUNE_USE_ONLY_STATIC_LIBS)
     # Use only static libraries.
     # We do this by overriding the library suffixes.
