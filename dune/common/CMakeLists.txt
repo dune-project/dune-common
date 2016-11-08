@@ -74,6 +74,7 @@ install(FILES
         math.hh
         matvectraits.hh
         nullptr.hh
+        overloadset.hh
         parametertree.hh
         parametertreeparser.hh
         path.hh
