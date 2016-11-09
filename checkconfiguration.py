@@ -12,12 +12,6 @@ logger = logging.getLogger(__name__)
 
 from dune.generator.builder import buffer_to_str
 
-class ConfigurationError(Exception):
-    '''raise this when there's a problem with the configuration of dune-py'''
-    def __init__(self, error):
-        Exception.__init__(self,error)
-
-
 def have(identifier):
     '''check if an identifier is defined equal to 1 in the dune-py config.h file.
        use this to check if for example #define HAVE_DUNE_COMMON 1 is
@@ -29,10 +23,10 @@ def have(identifier):
     matches = [match for match in [re.match('^[ ]*#define[ ]+' + identifier.strip() + '[ ]+1$', line) for line in open(config)] if match is not None]
     if not matches:
         logger.info("checkconfiguration.have(" + identifier + ") failed - identifier not defined in " + config)
-        raise ConfigurationError(identifier + " is not set in dune-py's config.h")
+        raise builder.ConfigurationError(identifier + " is not set in dune-py's config.h")
     elif matches.__len__() > 1:
         logger.info("checkconfiguration.have(" + identifier + ") failed - multiple definitions in " + config)
-        raise ConfigurationError(identifier + " found multiple times in dune-py's config.h")
+        raise builder.ConfigurationError(identifier + " found multiple times in dune-py's config.h")
 
 def preprocessorTest(tests):
     '''perform preprocessore checks.
@@ -69,4 +63,4 @@ def preprocessorTest(tests):
     if returncode > 0:
         logger.debug("failed testing:\n"+source)
         logger.critical("checking "+tests[returncode-1][0]+" failed: "+tests[returncode-1][1])
-        raise ConfigurationError(tests[returncode-1][1])
+        raise builder.ConfigurationError(tests[returncode-1][1])
