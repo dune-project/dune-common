@@ -1,15 +1,15 @@
-#For now we just support appending Doxyfile and Doxylocal
-FILE(READ ${DOXYSTYLE} file_contents)
-FILE(WRITE Doxyfile.in ${file_contents})
+# For now we just support appending Doxyfile and Doxylocal
+file(READ ${DOXYSTYLE} file_contents)
+file(WRITE Doxyfile.in ${file_contents})
 if(DOXYLOCAL)
-  FILE(READ ${DOXYLOCAL} file_contents)
+  file(READ ${DOXYLOCAL} file_contents)
 endif()
-FILE(APPEND Doxyfile.in ${file_contents})
+file(APPEND Doxyfile.in ${file_contents})
 
 # configure_file does not work as it insists an existing input file, which in our
 # needs to be generated first.
-# Therefore we read the Doxyfile.in and replace the variables using STRING(CONFIGURE)
-# and the write the file.
-FILE(READ Doxyfile.in file_contents)
-STRING(CONFIGURE ${file_contents} output)
-FILE(WRITE Doxyfile ${output})
+# Therefore we read the Doxyfile.in and replace the variables using string(CONFIGURE)
+# and then write the file.
+file(READ Doxyfile.in file_contents)
+string(CONFIGURE ${file_contents} output)
+file(WRITE Doxyfile ${output})

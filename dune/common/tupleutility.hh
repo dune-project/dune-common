@@ -9,6 +9,7 @@
 
 #include <dune/common/typetraits.hh>
 #include <dune/common/std/type_traits.hh>
+#include <dune/common/std/utility.hh>
 
 #include "tuples.hh"
 
@@ -90,6 +91,13 @@ namespace Dune {
     decltype(genericTransformTupleBackendImpl(t, f,Std::index_sequence_for<Args...>{}))
   {
     return genericTransformTupleBackendImpl(t, f,Std::index_sequence_for<Args...>{});
+  }
+
+  template<class... Args, class Functor>
+  auto genericTransformTupleBackend(const std::tuple<Args...>& t, Functor& f) ->
+    decltype(genericTransformTupleBackendImpl(t, f, Std::index_sequence_for<Args...>{}))
+  {
+    return genericTransformTupleBackendImpl(t, f, Std::index_sequence_for<Args...>{});
   }
 #endif
 

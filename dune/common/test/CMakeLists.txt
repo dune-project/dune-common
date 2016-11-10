@@ -38,6 +38,44 @@ dune_add_test(SOURCES classnametest.cc
 dune_add_test(SOURCES concept.cc
               LINK_LIBRARIES dunecommon)
 
+dune_add_test(SOURCES densematrixassignmenttest.cc
+              LINK_LIBRARIES dunecommon)
+dune_add_test(NAME densematrixassignmenttest_fail0
+              SOURCES densematrixassignmenttest.cc
+              LINK_LIBRARIES dunecommon
+              COMPILE_DEFINITIONS "FAILURE0"
+              EXPECT_COMPILE_FAIL)
+dune_add_test(NAME densematrixassignmenttest_fail1
+              SOURCES densematrixassignmenttest.cc
+              LINK_LIBRARIES dunecommon
+              COMPILE_DEFINITIONS "FAILURE1"
+              EXPECT_COMPILE_FAIL)
+dune_add_test(NAME densematrixassignmenttest_fail2
+              SOURCES densematrixassignmenttest.cc
+              LINK_LIBRARIES dunecommon
+              COMPILE_DEFINITIONS "FAILURE2"
+              EXPECT_COMPILE_FAIL)
+dune_add_test(NAME densematrixassignmenttest_fail3
+              SOURCES densematrixassignmenttest.cc
+              LINK_LIBRARIES dunecommon
+              COMPILE_DEFINITIONS "FAILURE3"
+              EXPECT_COMPILE_FAIL)
+dune_add_test(NAME densematrixassignmenttest_fail4
+              SOURCES densematrixassignmenttest.cc
+              LINK_LIBRARIES dunecommon
+              COMPILE_DEFINITIONS "FAILURE4"
+              EXPECT_COMPILE_FAIL)
+dune_add_test(NAME densematrixassignmenttest_fail5
+              SOURCES densematrixassignmenttest.cc
+              LINK_LIBRARIES dunecommon
+              COMPILE_DEFINITIONS "FAILURE5"
+              EXPECT_COMPILE_FAIL)
+dune_add_test(NAME densematrixassignmenttest_fail6
+              SOURCES densematrixassignmenttest.cc
+              LINK_LIBRARIES dunecommon
+              COMPILE_DEFINITIONS "FAILURE6"
+              EXPECT_COMPILE_FAIL)
+
 dune_add_test(SOURCES diagonalmatrixtest.cc
               LINK_LIBRARIES dunecommon)
 
@@ -94,6 +132,9 @@ dune_add_test(NAME mpihelpertest2
               LINK_LIBRARIES dunecommon
               )
 
+dune_add_test(SOURCES overloadsettest.cc
+              LINK_LIBRARIES dunecommon)
+
 dune_add_test(SOURCES parametertreelocaletest.cc
               LINK_LIBRARIES dunecommon)
 
@@ -112,6 +153,9 @@ dune_add_test(SOURCES singletontest.cc)
 dune_add_test(SOURCES sllisttest.cc)
 
 dune_add_test(SOURCES stdapplytest.cc
+              LINK_LIBRARIES dunecommon)
+
+dune_add_test(SOURCES stdtypetraitstest.cc
               LINK_LIBRARIES dunecommon)
 
 dune_add_test(SOURCES streamtest.cc

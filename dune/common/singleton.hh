@@ -3,8 +3,6 @@
 #ifndef DUNE_SINGLETON_HH
 #define DUNE_SINGLETON_HH
 
-#include <memory>
-
 #include <dune/common/visibility.hh>
 
 /**
@@ -69,11 +67,8 @@ namespace Dune
      */
     DUNE_EXPORT static T& instance()
     {
-      /* Smartpointer to the instance. */
-      static std::unique_ptr<T> instance_;
-      if(instance_.get() == 0)
-        instance_ = std::unique_ptr<T>(new T());
-      return *instance_;
+      static T instance_;
+      return instance_;
     }
   };
 

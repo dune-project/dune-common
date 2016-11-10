@@ -1,6 +1,8 @@
 #ifndef DUNE_COMMON_IDENTITYMATRIX_HH
 #define DUNE_COMMON_IDENTITYMATRIX_HH
 
+#warning Deprecated since dune-common 2.5: If you really do need an identity matrix, use DiagonalMatrix or ScalarIdentityMatrix (from dune-istl) instead!
+
 #include <dune/common/boundschecking.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/ftraits.hh>

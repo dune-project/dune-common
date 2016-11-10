@@ -382,7 +382,7 @@ MAKE_FLAGS       flags passed to make
 
 An example options file might look like this:
 
-#use this options to autogen, configure and make if no other options are given
+#use this options to configure and make if no other options are given
 CMAKE_FLAGS=" \\
 -DCMAKE_CXX_COMPILER=g++-4.9 \\
 -DCMAKE_CXX_FLAGS='-Wall -pedantic' \\
@@ -444,10 +444,6 @@ add_subdirectory("cmake/modules")
 # finalize the dune project, e.g. generating config.h etc.
 finalize_dune_project(GENERATE_CONFIG_H_CMAKE)
 M_DELIM
-
-################## STAMP-VC ##################
-echo "- $PROJECT/stamp-vc"
-echo 'A stamp file to signify that this directory comes from a version control system, not an unpacked tarball' > $PROJECT/stamp-vc
 
 ################## PROJECT.PC.IN ##################
 echo "- $PROJECT/$MODULE.pc.in"

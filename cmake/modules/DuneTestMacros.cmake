@@ -15,7 +15,7 @@
 #       The name of the test that should be added. If an executable
 #       is also added (by specifying SOURCES), the executable is also
 #       named accordingly. If omitted, the name will be deduced from
-#       the (single) sources parameter or from the given target. Note,
+#       the (single) sources parameter or from the given target. Note
 #       that this requires you to take care, that you only use a target
 #       or source file for but one such test.
 #
@@ -83,8 +83,8 @@
 #       :multi:
 #       :argname: ranks
 #
-#       The numbers of cores that this tests should be executed with.
-#       Note, that one test (in the ctest sense) is created for each number
+#       The numbers of cores that this test should be executed with.
+#       Note that one test (in the ctest sense) is created for each number
 #       given here. Any number exceeding the user-specified processor maximum
 #       :ref:`DUNE_MAX_TEST_CORES` will be ignored. Tests with a
 #       processor number :code:`n` higher than one will have the suffix
@@ -95,13 +95,16 @@
 #       :multi:
 #       :argname: condition
 #
-#       A number of conditions, that CMake should evaluate before adding this
-#       test. If one of the conditions fail, the test should instead be shown
+#       A number of conditions that CMake should evaluate before adding this
+#       test. If one of the conditions fails, the test should be shown
 #       as skipped in the test summary. Use this feature instead of guarding
 #       the call to :code:`dune_add_test` with an :code:`if` clause.
 #
 #       The passed condition can be a complex expression like
-#       `( A OR B ) AND ( C OR D )`. Mind the spaces around the parantheses.
+#       `( A OR B ) AND ( C OR D )`. Mind the spaces around the parentheses.
+#
+#       Example: Write CMAKE_GUARD dune-foo_FOUND if you want your test to only
+#       build and run when the dune-foo module is present.
 #
 #    .. cmake_param:: COMMAND
 #       :multi:
@@ -109,7 +112,7 @@
 #
 #       You may specify the COMMAND option to give the exact command line to be
 #       executed when running the test. This defaults to the name of the executable
-#       added by dune_add_test for this test. Note, that if you specify both CMD_ARGS
+#       added by dune_add_test for this test. Note that if you specify both CMD_ARGS
 #       and COMMAND, the given CMD_ARGS will be put behind your COMMAND. If you use
 #       this in combination with the MPI_RANKS parameter, the call to mpi will still be
 #       wrapped around the given commands.
@@ -119,7 +122,7 @@
 #
 #       Set if the given test should only be compiled during :code:`make build_tests`,
 #       but not run during :code:`make test`. This is useful if you compile the same
-#       executable twice, but with different compile flags, where you want to assue that
+#       executable twice, but with different compile flags, where you want to assure that
 #       it compiles with both sets of flags, but you already know they will produce the
 #       same result.
 #
