@@ -1,4 +1,5 @@
 add_subdirectory("parallel")
+add_subdirectory("simd")
 add_subdirectory("std")
 add_subdirectory("test")
 
