@@ -555,8 +555,8 @@ run_default_update () {
     svn update
   elif test -d CVS; then
     cvs update -dP
-  elif test -d .git; then
-      if test -d ".git/svn" && test -n "`git svn find-rev HEAD`"; then
+  elif test -d .git || test -f .git; then
+      if test -d .git && test -d ".git/svn" && test -n "`git svn find-rev HEAD`"; then
           # If the current HEAD points to a SVN commit, update via git-svn
           git svn rebase
       else
