@@ -262,6 +262,13 @@ namespace Impl {
     evaluateFoldExpression<int>({(f(Hybrid::elementAt(range, std::integral_constant<Index,i>())), 0)...});
   }
 
+  template<class F, class Index, Index... i>
+  constexpr void forEach(std::integer_sequence<Index, i...> range, F&& f, PriorityTag<2>)
+  {
+    evaluateFoldExpression<int>({(f(std::integral_constant<Index,i>()), 0)...});
+  }
+
+
   template<class Range, class F,
     std::enable_if_t<IsIntegralConstant<decltype(Hybrid::size(std::declval<Range>()))>::value, int> = 0>
   constexpr void forEach(Range&& range, F&& f, PriorityTag<1>)
