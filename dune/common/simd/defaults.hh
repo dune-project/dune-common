@@ -6,6 +6,9 @@
  *
  * This file provides default overloads for SIMD implementations, and deleted
  * placeholders where there are not default implementations.
+ *
+ * This file should never be included by users of the SIMD
+ * abstraction. Include <dune/common/simd/simd.hh> instead.
  */
 
 #include <cstddef>

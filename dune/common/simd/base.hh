@@ -7,8 +7,8 @@
  * This file provides basic definitions and template declarations that are
  * used to write SIMD abtraction layers.
  *
- * This file should never be included by users of the SIMD abstraction.  It
- * must be included by implementors of SIMD abstractions.
+ * This file should never be included by users of the SIMD
+ * abstraction. Include <dune/common/simd/simd.hh> instead.
  */
 
 namespace Dune {

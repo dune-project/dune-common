@@ -1,6 +1,16 @@
 #ifndef DUNE_COMMON_SIMD_INTERFACE_HH
 #define DUNE_COMMON_SIMD_INTERFACE_HH
 
+/** @file
+ *  @brief User interface of the SIMD abstraction
+ *
+ * This file provides the unser interface functions of the SIMD abstraction
+ * layer.
+ *
+ * This file should never be included by users of the SIMD
+ * abstraction. Include <dune/common/simd/simd.hh> instead.
+ */
+
 #include <cstddef>
 #include <utility>
 

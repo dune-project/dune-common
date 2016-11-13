@@ -3,6 +3,15 @@
 
 /** @file
  *  @brief SIMD abstractions for the standard built-in types
+ *
+ * This file should never be included by users of the SIMD abstraction
+ * (i.e. other Dune headers).  Neither should it be included by the
+ * translation units passing built-in types to Dune headers that in turn
+ * support SIMD types through the SIMD abstraction.  Dune-functionality always
+ * supports built-in types.  Either because that functionality does not
+ * support SIMD types and so only supports built-in types, or if it does
+ * support SIMD types it must include <dune/common/simd/simd.hh>, which in
+ * turn includes this header.
  */
 
 #include <complex>
