@@ -9,9 +9,9 @@
  */
 
 #include <array>
-#include <ostream>
 
-#include "std/make_array.hh"
+#include <dune/common/streamoperators.hh>
+#include <dune/common/std/make_array.hh>
 
 namespace Dune
 {
@@ -22,22 +22,6 @@ namespace Dune
 
   // pull in default implementation
   using std::array;
-
-  //! Output operator for array
-  template < class T, size_t N >
-  inline std::ostream& operator<< (std::ostream& s, const std::array<T,N>& e)
-  {
-    if (N == 0)
-    {
-      s << "[]";
-      return s;
-    }
-
-    s << "[";
-    for (size_t i=0; i<N-1; i++) s << e[i] << ",";
-    s << e[N-1] << "]";
-    return s;
-  }
 
   using Dune::Std::make_array;
 
