@@ -5,10 +5,11 @@
 #include "config.h"
 #endif
 
-#include <dune/common/tuples.hh>
+#include <iostream>
+#include <tuple>
+
 #include <dune/common/typetraits.hh>
 #include <dune/common/tupleutility.hh>
-#include <iostream>
 
 template<class T>
 struct Eval
@@ -29,27 +30,26 @@ struct Counter {
 
 int main(int, char**)
 {
-
   typedef std::tuple<int*,double*,long*,char*> PointerTuple;
+  PointerTuple pointers = Dune::NullPointerInitialiser<PointerTuple>::apply();
 
-  std::tuple<int*,double*,long*,char*> pointers = Dune::NullPointerInitialiser<PointerTuple>::apply();
   int ret=0;
 
-  if(std::get<0>(pointers)!=0) {
+  if(std::get<0>(pointers)!=nullptr) {
     std::cerr<<"First pointer not null"<<std::endl;
     ret=1;
   }
-  if(std::get<1>(pointers)!=0) {
+  if(std::get<1>(pointers)!=nullptr) {
     std::cerr<<"Second pointer not null"<<std::endl;
     ret=2;
   }
 
-  if(std::get<2>(pointers)!=0) {
+  if(std::get<2>(pointers)!=nullptr) {
     std::cerr<<"Third pointer not null"<<std::endl;
     ret=3;
   }
 
-  if(std::get<3>(pointers)!=0) {
+  if(std::get<3>(pointers)!=nullptr) {
     std::cerr<<"Fourth pointer not null"<<std::endl;
     ret=4;
   }
@@ -69,15 +69,20 @@ int main(int, char**)
 
   Tuple1 t1(i,c,l,c);
   RefTuple1 refs(i, c, l, c);
+
+#if 0
+  // Broken with Debian 8 and gcc. See issue #53 on the bug tracker.
   DUNE_UNUSED RefTuple1 refs2(Dune::transformTuple<Dune::AddRefTypeEvaluator>(t1));
-  PointerTuple1 pointers1
-    (Dune::transformTuple<Dune::AddPtrTypeEvaluator>(refs));
+  PointerTuple1 pointers1(Dune::transformTuple<Dune::AddPtrTypeEvaluator>(refs));
   if(&i != std::get<0>(pointers1) || &c != std::get<1>(pointers1) ||
      &l != std::get<2>(pointers1) || &c != std::get<3>(pointers1)) {
     std::cerr << "utilitytest: error: incorrect pointers in pointers1"
               << std::endl;
     ret = 1;
   }
+#endif
+
+  PointerTuple1 pointers1 = Dune::NullPointerInitialiser<PointerTuple1>::apply();
 
   if(static_cast<size_t>(std::tuple_size<PointerTuple>::value) != static_cast<size_t>(std::tuple_size<PointerTuple>::value)) {
     std::cerr<<"Length and size do not match!"<<std::endl;
@@ -88,8 +93,6 @@ int main(int, char**)
 
   forEach.apply(count);
   std::cout << "Number of elements is: " << count.result_ << std::endl;
-
-
 
   Dune::ForEachValuePair<PointerTuple,PointerTuple1> foreach1(pointers, pointers1);
 
@@ -104,6 +107,10 @@ int main(int, char**)
 
   typedef Dune::ForEachType<Eval,PointerTuple1>::Type ConvertedType DUNE_UNUSED;
   Dune::PointerPairDeletor<PointerTuple1>::apply(p);
+  if(p != PointerTuple1(nullptr,nullptr,nullptr,nullptr)){
+    ret+=20;
+    std::cerr<<"PointerPairDeletor not working!"<<std::endl;
+  }
 
   return ret;
 }
