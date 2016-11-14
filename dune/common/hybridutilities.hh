@@ -6,6 +6,7 @@
 #include <tuple>
 #include <utility>
 
+#include <dune/common/typetraits.hh>
 #include <dune/common/typeutilities.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/indices.hh>
@@ -99,9 +100,9 @@ namespace Impl {
   }
 
   template<class T, T... t, class Index>
-  constexpr decltype(auto) elementAt(std::integer_sequence<T, t...> c, Index&&, PriorityTag<1>)
+  constexpr decltype(auto) elementAt(std::integer_sequence<T, t...> c, Index, PriorityTag<1>)
   {
-    return std::get<std::decay_t<Index>::value>(std::make_tuple(std::integral_constant<T, t>()...));
+    return Dune::integerSequenceEntry(c, std::integral_constant<std::size_t, Index::value>());
   }
 
   template<class Container, class Index>
