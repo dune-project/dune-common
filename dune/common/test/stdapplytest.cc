@@ -46,6 +46,17 @@ int main()
 
   test.check(std::get<0>(intTuple) == intTuple0) << "Dune::Std::apply does not properly return references";
 
+  // transformTuple implemented using Std::apply
+  auto transformTuple = [](auto&& t, auto&& f) {
+    return Dune::Std::apply([&](auto&&... args) {
+      return std::make_tuple((f(std::forward<decltype(args)>(args)))...);
+    }, t);
+  };
+
+  auto t1 = std::make_tuple(1, 0.2);
+  auto t2 = transformTuple(t1, [](auto&& x) { return 1.0/x; });
+
+  test.check(t2 == std::make_tuple(1.0, 5.0)) << "transformTuple implementation based on Dune::Std::apply fails";
 
   return test.exit();
 }
