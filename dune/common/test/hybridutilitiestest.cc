@@ -9,48 +9,8 @@
 #include <vector>
 
 #include <dune/common/hybridutilities.hh>
+#include <dune/common/tuplevector.hh>
 #include <dune/common/test/testsuite.hh>
-
-
-/** \brief A std::tuple that allows access to its element via operator[]
- *
- * Since there is no heterogeneous container in dune-common that supports
- * operator[std::integralconstant<T,i>] we make our own for the test.
- */
-template<class... T>
-class TupleVector : public std::tuple<T...>
-{
-  using Base = std::tuple<T...>;
-public:
-
-  using Base::Base;
-
-  /** \brief Array-style access to the tuple elements */
-  template<std::size_t i>
-  decltype(auto) operator[](const Dune::index_constant<i>&)
-  {
-    return std::get<i>(*this);
-  }
-
-  template<std::size_t i>
-  constexpr decltype(auto) operator[](const Dune::index_constant<i>&) const
-  {
-    return std::get<i>(*this);
-  }
-
-  static constexpr auto size()
-  {
-    return std::tuple_size<Base>::value;
-  }
-};
-
-template<class... T>
-constexpr auto makeTupleVector(T&&... t)
-{
-  // The std::decay_t<T> is is a slight simplification,
-  // because std::reference_wrapper needs special care.
-  return TupleVector<std::decay_t<T>...>(std::forward<T>(t)...);
-}
 
 
 
@@ -91,7 +51,7 @@ auto incAndAppendToFirst(C&& c)
 int main()
 {
   auto vector = std::vector<int>{1, 2, 3};
-  auto numberTuple = makeTupleVector(0.1, 2, 3);
+  auto numberTuple = Dune::makeTupleVector(0.1, 2, 3);
 
   Dune::TestSuite test;
 
@@ -100,7 +60,7 @@ int main()
     << "Incrementing vector entries with Hybrid::forEach failed.";
 
   incrementAll(numberTuple);
-  test.check(numberTuple == makeTupleVector(1.1, 3, 4))
+  test.check(numberTuple == Dune::makeTupleVector(1.1, 3, 4))
     << "Incrementing tuple entries with Hybrid::forEach failed.";
 
   addIndex(vector);
@@ -108,13 +68,13 @@ int main()
     << "Adding indices to vector entries with Hybrid::forEach failed.";
 
   addIndex(numberTuple);
-  test.check(numberTuple == makeTupleVector(1.1, 4, 6))
+  test.check(numberTuple == Dune::makeTupleVector(1.1, 4, 6))
     << "Adding indices to vector entries with Hybrid::forEach failed.";
 
 
-  auto mixedTuple = makeTupleVector(std::string("1"), 2, 3);
+  auto mixedTuple = Dune::makeTupleVector(std::string("1"), 2, 3);
   incAndAppendToFirst(mixedTuple);
-  test.check(mixedTuple == makeTupleVector(std::string("1+1"), 3, 4))
+  test.check(mixedTuple == Dune::makeTupleVector(std::string("1+1"), 3, 4))
     << "Adding indices to vector entries with Hybrid::forEach failed.";
 
   return test.exit();
