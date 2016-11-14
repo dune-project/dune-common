@@ -17,17 +17,6 @@ struct Eval
   typedef void* Type;
 };
 
-struct Counter {
-  Counter() : result_(0) {}
-
-  template <class T1>
-  void visit(T1) { ++result_; }
-
-  template <class T1, class T2>
-  void visit(T1, T2) { ++(++result_); }
-  int result_;
-};
-
 int main(int, char**)
 {
   typedef std::tuple<int*,double*,long*,char*> PointerTuple;
@@ -81,22 +70,6 @@ int main(int, char**)
     ret = 1;
   }
 #endif
-
-  PointerTuple1 pointers1 = Dune::NullPointerInitialiser<PointerTuple1>::apply();
-
-  if(static_cast<size_t>(std::tuple_size<PointerTuple>::value) != static_cast<size_t>(std::tuple_size<PointerTuple>::value)) {
-    std::cerr<<"Length and size do not match!"<<std::endl;
-  }
-
-  Counter count;
-  Dune::ForEachValue<PointerTuple> forEach(pointers);
-
-  forEach.apply(count);
-  std::cout << "Number of elements is: " << count.result_ << std::endl;
-
-  Dune::ForEachValuePair<PointerTuple,PointerTuple1> foreach1(pointers, pointers1);
-
-  foreach1.apply(count);
 
   if(Dune::At<2>::get(pointers)!=std::get<1>(pointers)) {
     ret+=10;
