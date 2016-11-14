@@ -5,6 +5,7 @@
 
 #include <complex>
 #include <type_traits>
+#include <utility>
 
 #include <dune/common/deprecated.hh>
 
@@ -548,6 +549,79 @@ namespace Dune
   template<typename... T>
   struct SizeOf
     : public std::integral_constant<std::size_t,sizeof...(T)>
+  {};
+
+
+
+  namespace Impl {
+
+  template<class T, T...>
+  struct IntegerSequenceHelper;
+
+  // Helper struct to compute the i-th entry of a std::integer_sequence
+  //
+  // This could also be implemented using std::get<index>(std::make_tuple(t...)).
+  // However, the gcc-6 implementation of std::make_tuple increases the instantiation
+  // depth by 15 levels for each argument, such that the maximal instantiation depth
+  // is easily hit, especially with clang where it is set to 256.
+  template<class T, T head, T... tail>
+  struct IntegerSequenceHelper<T, head, tail...>
+  {
+
+    // get first entry
+    static constexpr auto get(std::integral_constant<std::size_t, 0>)
+    {
+      return std::integral_constant<T, head>();
+    }
+
+    // call get with first entry cut off and decremented index
+    template<std::size_t index,
+      std::enable_if_t<(index > 0) and (index < sizeof...(tail)+1), int> = 0>
+    static constexpr auto get(std::integral_constant<std::size_t, index>)
+    {
+      return IntegerSequenceHelper<T, tail...>::get(std::integral_constant<std::size_t, index-1>());
+    }
+
+    // use static assertion if index exceeds size
+    template<std::size_t index,
+      std::enable_if_t<(index >= sizeof...(tail)+1), int> = 0>
+    static constexpr auto get(std::integral_constant<std::size_t, index>)
+    {
+      static_assert(index < sizeof...(tail)+1, "index used in IntegerSequenceEntry exceed size");
+    }
+  };
+
+  } // end namespace Impl
+
+
+  /**
+   * \brief Get entry of std::integer_sequence
+   *
+   * \param seq An object of type std::integer_sequence<...>
+   * \param i Index
+   *
+   * \return The i-th entry of the integer_sequence encoded as std::integral_constant<std::size_t, entry>.
+   *
+   */
+  template<class T, T... t, std::size_t index>
+  constexpr auto integerSequenceEntry(std::integer_sequence<T, t...> seq, std::integral_constant<std::size_t, index> i)
+  {
+    static_assert(index < sizeof...(t), "index used in IntegerSequenceEntry exceed size");
+    return Impl::IntegerSequenceHelper<T, t...>::get(i);
+  }
+
+  template<class IntegerSequence, std::size_t index>
+  struct IntegerSequenceEntry;
+
+  /**
+   * \brief Get entry of std::integer_sequence
+   *
+   * Computes the i-th entry of the integer_sequence. The result
+   * is exported as ::value by deriving form std::integral_constant<std::size_t, entry>.
+   */
+  template<class T, T... t, std::size_t i>
+  struct IntegerSequenceEntry<std::integer_sequence<T, t...>, i>
+    : public decltype(Impl::IntegerSequenceHelper<T, t...>::get(std::integral_constant<std::size_t, i>()))
   {};
 
 

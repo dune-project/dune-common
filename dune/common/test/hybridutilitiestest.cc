@@ -46,6 +46,28 @@ auto incAndAppendToFirst(C&& c)
   });
 }
 
+template<class C>
+auto sum(C&& c)
+{
+  using namespace Dune::Hybrid;
+  using namespace Dune::Indices;
+  return accumulate(c, 0.0, [](auto&& a, auto&& b) {
+    return a+b;
+  });
+}
+
+template<class C, class I>
+auto sumSubsequence(C&& c, I&& indices)
+{
+  using namespace Dune::Hybrid;
+  using namespace Dune::Indices;
+  double result = 0;
+  forEach(indices, [&](auto i) {
+    result += elementAt(c, i);
+  });
+  return result;
+}
+
 
 
 int main()
@@ -76,6 +98,13 @@ int main()
   incAndAppendToFirst(mixedTuple);
   test.check(mixedTuple == Dune::makeTupleVector(std::string("1+1"), 3, 4))
     << "Adding indices to vector entries with Hybrid::forEach failed.";
+
+  auto values = std::make_integer_sequence<std::size_t, 30>();
+  test.check((30*29)/2 == sum(values))
+    << "accumulate() yields incorrect result.";
+
+  test.check((29*28)/2 == sumSubsequence(values, std::make_integer_sequence<std::size_t, 29>()))
+    << "Summing up subsequence failed.";
 
   return test.exit();
 }
