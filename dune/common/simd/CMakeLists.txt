@@ -1,3 +1,5 @@
+add_subdirectory(test)
+
 #install headers
 install(FILES
   base.hh
