@@ -235,7 +235,7 @@ abs_builddir()
 # Uses the current compiler to extract information about the
 # multiarch triplets and sets the export variable MULTIARCH_LIBDIR
 # according to it.
-# If not compiler is specified then cc or gcc is used.
+# If no compiler is specified then cc or gcc is used.
 extract_multiarch(){
   set +e #error in the multiarch detection should not be fatal.
   local my_cxx_compiler
@@ -300,7 +300,7 @@ check_commands() {
   done
 }
 
-# check wheteher the parameter is valid command or not
+# check whether the parameter is valid command or not
 is_command() {
 eval '
 case "$1" in
