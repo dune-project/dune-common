@@ -93,6 +93,7 @@ dune_add_test(SOURCES enumsettest.cc)
 dune_add_test(NAME fmatrixtest
               SOURCES fmatrixtest.cc dummy.f
               LINK_LIBRARIES dunecommon)
+add_dune_vc_flags(fmatrixtest)
 
 dune_add_test(SOURCES fvectortest.cc
               LINK_LIBRARIES dunecommon)
