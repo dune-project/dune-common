@@ -1,7 +1,7 @@
 .\" First parameter, NAME, should be all caps
 .\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
 .\" other parameters are allowed: see man(7), man(1)
-.TH DUNECONTROL 1 "November 26, 2013"
+.TH DUNECONTROL 1 "November 8, 2016"
 .\" Please adjust this date whenever revising the manpage.
 .\"
 .\" Some roff macros, for reference:
@@ -23,17 +23,17 @@ dunecontrol \- Control program for the Dune build system
 .B dunecontrol
 is the control program for the build system of the Dune libraries.
 
-The Dune libraries form a set of modules.  Each can be built independently using either
-the AutoTools or cmake.  Additionally, though, there are dependencies between modules,
+The Dune libraries form a set of modules.  Each can be built independently using CMake.
+Additionally, though, there are dependencies between modules,
 which are expected to form a directed acyclic graph.  These dependencies are set in a
 file called
 .B dune.module
-contained in the main directory of a Dune module.
+contained in the main directory of each Dune module.
 
 The
 .B dunecontrol
-program helps to build sets of inter-dependent modules.  It allows one to construct
-the entire dependency graph and obtain information about it.  Then it allows one to give various build-related
+program helps to build sets of inter-dependent modules.  It allows to construct
+the entire dependency graph and obtain information about it.  Then it allows to run various build-related
 commands for all modules.  These are executed in the order mandated by the dependency graph.
 
 .SH COMMANDS
@@ -41,11 +41,11 @@ Colon-separated list of commands. Available commands are:
 .HP
 .B help
 .IP
-Shows a help message and exits
+Show a help message and exit
 .HP
 .B print
 .IP
-Print the list of modules sorted after their dependencies
+Print the list of modules sorted according to their dependency relations
 .HP
 .B info
 .IP
@@ -61,11 +61,11 @@ Setup version control repository (Git etc.) or working copy (SVN)
 .HP
 .B update
 .IP
-Update all modules from the repository
+Update all modules from the repository from their respective version control systems
 .HP
 .B configure
 .IP
-Run configure or cmake for each module
+Run cmake for each module
 .HP
 .B make
 .IP
@@ -85,15 +85,15 @@ Execute an arbitrary command in each module build directory
 .HP
 .B status
 .IP
-Show version control status for all modules
+Show version control status for each module
 .HP
 .B svn
 .IP
-Run svn command for each svn managed module
+Run svn command for each svn-managed module
 .HP
 .B git
 .IP
-Run git command for each git managed module
+Run git command for each git-managed module
 .HP
 .B export
 .IP
@@ -108,14 +108,6 @@ Show this help
 .IP
 Run with debugging output enabled
 .HP
-\fB--use-cmake\fP
-.IP
-Use cmake instead of the AutoTools for building individual modules
-.HP
-\fB--no-cmake\fP
-.IP
-Use the AutoTools instead of cmake for building individual modules
-.HP
 \fB--module=\fP\fImod\fP
 .IP
 Apply the actions on module
@@ -126,7 +118,7 @@ and all modules it depends on
 .IP
 Only apply the actions on module
 .I mod
-, but not the modules it depends on
+, but not on the modules it depends on
 .HP
 \fB--current\fP
 .IP
