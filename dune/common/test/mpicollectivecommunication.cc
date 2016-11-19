@@ -13,10 +13,10 @@
 #include <iostream>
 int main(int argc, char** argv)
 {
+#if HAVE_MPI
   typedef Dune::MPIHelper Helper;
   Helper& mpi = Helper::instance(argc, argv);
 
-#if HAVE_MPI
   {
     typedef Helper::MPICommunicator MPIComm;
     Dune::CollectiveCommunication<MPIComm> comm(mpi.getCommunicator());
