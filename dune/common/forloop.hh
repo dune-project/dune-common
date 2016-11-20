@@ -24,7 +24,7 @@ namespace Dune
     static void apply(Args&&... args)
     {
       Hybrid::forEach(Std::make_index_sequence<last+1-first>{},
-        [&](auto i){Operation<i+first>::apply(std::forward<Args>(args)...);});
+        [&](auto i){Operation<i+first>::apply(args...);});
     }
   };
 
