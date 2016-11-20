@@ -7,36 +7,34 @@
 
 namespace Dune {
   namespace Simd {
-    namespace Test {
 
-      extern template bool checkVector<char              >();
-      extern template bool checkVector<unsigned char     >();
-      extern template bool checkVector<signed char       >();
+    extern template void UnitTest::checkSimdType<char              >();
+    extern template void UnitTest::checkSimdType<unsigned char     >();
+    extern template void UnitTest::checkSimdType<signed char       >();
 
-      extern template bool checkVector<short             >();
-      extern template bool checkVector<unsigned short    >();
-      extern template bool checkVector<int               >();
-      extern template bool checkVector<unsigned          >();
-      extern template bool checkVector<long              >();
-      extern template bool checkVector<unsigned long     >();
-      extern template bool checkVector<long long         >();
-      extern template bool checkVector<unsigned long long>();
+    extern template void UnitTest::checkSimdType<short             >();
+    extern template void UnitTest::checkSimdType<unsigned short    >();
+    extern template void UnitTest::checkSimdType<int               >();
+    extern template void UnitTest::checkSimdType<unsigned          >();
+    extern template void UnitTest::checkSimdType<long              >();
+    extern template void UnitTest::checkSimdType<unsigned long     >();
+    extern template void UnitTest::checkSimdType<long long         >();
+    extern template void UnitTest::checkSimdType<unsigned long long>();
 
-      extern template bool checkVector<wchar_t           >();
-      extern template bool checkVector<char16_t          >();
-      extern template bool checkVector<char32_t          >();
+    extern template void UnitTest::checkSimdType<wchar_t           >();
+    extern template void UnitTest::checkSimdType<char16_t          >();
+    extern template void UnitTest::checkSimdType<char32_t          >();
 
-      extern template bool checkVector<bool              >();
+    extern template void UnitTest::checkSimdType<bool              >();
 
-      extern template bool checkVector<float             >();
-      extern template bool checkVector<double            >();
-      extern template bool checkVector<long double       >();
+    extern template void UnitTest::checkSimdType<float             >();
+    extern template void UnitTest::checkSimdType<double            >();
+    extern template void UnitTest::checkSimdType<long double       >();
 
-      extern template bool checkVector<std::complex<float      >>();
-      extern template bool checkVector<std::complex<double     >>();
-      extern template bool checkVector<std::complex<long double>>();
+    extern template void UnitTest::checkSimdType<std::complex<float      >>();
+    extern template void UnitTest::checkSimdType<std::complex<double     >>();
+    extern template void UnitTest::checkSimdType<std::complex<long double>>();
 
-    } // namespace Test
   } // namespace Simd
 } // namespace Dune
 

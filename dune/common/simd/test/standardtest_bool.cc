@@ -5,10 +5,8 @@
 
 namespace Dune {
   namespace Simd {
-    namespace Test {
 
-      template bool checkVector<bool              >();
+    template void UnitTest::checkSimdType<bool              >();
 
-    } // namespace Test
   } // namespace Simd
 } // namespace Dune

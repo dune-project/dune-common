@@ -10,36 +10,34 @@
 
 int main()
 {
-  using Dune::Simd::Test::checkVector;
+  Dune::Simd::UnitTest test;
 
-  bool good = true;
+  test.checkSimdType<char              >();
+  test.checkSimdType<unsigned char     >();
+  test.checkSimdType<signed char       >();
 
-  good &= checkVector<char              >();
-  good &= checkVector<unsigned char     >();
-  good &= checkVector<signed char       >();
+  test.checkSimdType<short             >();
+  test.checkSimdType<unsigned short    >();
+  test.checkSimdType<int               >();
+  test.checkSimdType<unsigned          >();
+  test.checkSimdType<long              >();
+  test.checkSimdType<unsigned long     >();
+  test.checkSimdType<long long         >();
+  test.checkSimdType<unsigned long long>();
 
-  good &= checkVector<short             >();
-  good &= checkVector<unsigned short    >();
-  good &= checkVector<int               >();
-  good &= checkVector<unsigned          >();
-  good &= checkVector<long              >();
-  good &= checkVector<unsigned long     >();
-  good &= checkVector<long long         >();
-  good &= checkVector<unsigned long long>();
+  test.checkSimdType<wchar_t           >();
+  test.checkSimdType<char16_t          >();
+  test.checkSimdType<char32_t          >();
 
-  good &= checkVector<wchar_t           >();
-  good &= checkVector<char16_t          >();
-  good &= checkVector<char32_t          >();
+  test.checkSimdType<bool              >();
 
-  good &= checkVector<bool              >();
+  test.checkSimdType<float             >();
+  test.checkSimdType<double            >();
+  test.checkSimdType<long double       >();
 
-  good &= checkVector<float             >();
-  good &= checkVector<double            >();
-  good &= checkVector<long double       >();
+  test.checkSimdType<std::complex<float      >>();
+  test.checkSimdType<std::complex<double     >>();
+  test.checkSimdType<std::complex<long double>>();
 
-  good &= checkVector<std::complex<float      >>();
-  good &= checkVector<std::complex<double     >>();
-  good &= checkVector<std::complex<long double>>();
-
-  return good ? EXIT_SUCCESS : EXIT_FAILURE;
+  return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

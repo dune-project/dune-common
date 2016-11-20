@@ -10,414 +10,27 @@
 #include <cstddef>
 #include <iostream>
 #include <type_traits>
+#include <typeindex>
+#include <typeinfo>
+#include <unordered_set>
 
 #include <dune/common/classname.hh>
 #include <dune/common/simd/simd.hh>
+#include <dune/common/typetraits.hh>
 #include <dune/common/unused.hh>
 
 namespace Dune {
   namespace Simd {
-    namespace Test {
 
-      static bool checkGoodHelper(const char *file, int line, const char *func,
-                                  const char *expr, bool result)
-      {
-        if(!result)
-        {
-          std::cerr << file << ":" << line << ": In " << func  << ": Error: "
-                    << "check (" << expr << ") failed." << std::endl;
-        }
-        return result;
-      }
+    namespace Impl {
 
-#define DUNE_CHECK_GOOD(expr)                                           \
-      (good &= checkGoodHelper(__FILE__, __LINE__, __func__, #expr, (expr)))
-
-      template<class V>
-      bool checkVector();
-
-      template<class V>
-      bool checkLanes()
-      {
-        // check lanes
-        static_assert(std::is_same<std::size_t, decltype(lanes<V>())>::value,
-                      "return type of lanes<V>() should be std::size_t");
-        static_assert(std::is_same<std::size_t, decltype(lanes(V{}))>::value,
-                      "return type of lanes(V{}) should be std::size_t");
-
-        // the result of lanes<V>() must be constexpr
-        constexpr auto size = lanes<V>();
-        // but the result of lanes(vec) does not need to be constexpr
-        if(size != lanes(V{}))
-        {
-          std::cerr << "Error: lanes<V>() and lanes(V{}) differ (" << size
-                    << " vs. " << lanes(V{}) << ")" << std::endl;
-          return false;
-        }
-        else
-        {
-          return true;
-        }
-      }
-
-      template<class V>
-      bool checkScalar()
-      {
-        // check that the type Scalar<V> exists
-        using T = Scalar<V>;
-
-        static_assert(std::is_same<T, std::decay_t<T> >::value, "Scalar types "
-                      "must not be references, and must not include "
-                      "cv-qualifiers");
-        T a{};
-        //don't complain about unused variables
-        (void)a;
-
-        return true;
-      }
-
-      template<class V>
-      bool checkIndex()
-      {
-        // check that the type Scalar<V> exists
-        using I = Index<V>;
-        std::cerr << "Index type of " << className<V>() << " is "
-                  << className<I>() << std::endl;
-
-
-        static_assert(std::is_same<I, std::decay_t<I> >::value, "Index types "
-                      "must not be references, and must not include "
-                      "cv-qualifiers");
-        static_assert(lanes<V>() == lanes<I>(), "Index types must have the "
-                      "same number of lanes as the original vector types");
-
-        return checkVector<I>();
-      }
-
-      template<class V>
-      bool checkMask()
-      {
-        // check that the type Scalar<V> exists
-        using M = Mask<V>;
-        std::cerr << "Mask type of " << className<V>() << " is "
-                  << className<M>() << std::endl;
-
-        static_assert(std::is_same<M, std::decay_t<M> >::value, "Mask types "
-                      "must not be references, and must not include "
-                      "cv-qualifiers");
-        static_assert(lanes<V>() == lanes<M>(), "Mask types must have the "
-                      "same number of lanes as the original vector types");
-
-        return checkVector<M>();
-      }
-
-      template<class V>
-      bool check42(const V &v)
-      {
-        bool good = true;
-
-        for(std::size_t l = 0; l < lanes(v); ++l)
-          // need to cast in case we have a mask type
-          DUNE_CHECK_GOOD(lane(l, v) == Scalar<V>(42));
-
-        return good;
-      }
-
-      template<class V>
-      V make123()
-      {
-        V vec;
-        for(std::size_t l = 0; l < lanes(vec); ++l)
-          lane(l, vec) = l + 1;
-        return vec;
-      }
-
-      template<class V>
-      bool check123(const V &v)
-      {
-        bool good = true;
-
-        for(std::size_t l = 0; l < lanes(v); ++l)
-          // need to cast in case we have a mask type
-          DUNE_CHECK_GOOD(lane(l, v) == Scalar<V>(l+1));
-
-        return good;
-      }
-
-      template<class V>
-      bool checkDefaultConstruct()
-      {
-        bool good = true;
-
-        { V DUNE_UNUSED vec;      }
-        { V DUNE_UNUSED vec{};    }
-        { V DUNE_UNUSED vec = {}; }
-
-        return good;
-      }
-
-      template<class T>
-      T rvalue(T t)
-      {
-        return t;
-      }
-
-      template<class> struct show_type;
-
-      template<class V>
-      bool checkLane()
-      {
-        bool good = true;
-
-        V vec;
-        // check lane() on mutable lvalues
-        for(std::size_t l = 0; l < lanes(vec); ++l)
-          lane(l, vec) = l + 1;
-        for(std::size_t l = 0; l < lanes(vec); ++l)
-          DUNE_CHECK_GOOD(lane(l, vec) == Scalar<V>(l + 1));
-        using MLRes = decltype(lane(0, vec));
-        static_assert(std::is_same<MLRes, Scalar<V>&>::value ||
-                      std::is_same<MLRes, std::decay_t<MLRes> >::value,
-                      "Result of lane() on a mutable lvalue vector must "
-                      "either be a mutable reference to a scalar of that "
-                      "vector or a proxy object (which itself may not be a "
-                      "reference nor const).");
-
-        // check lane() on const lvalues
-        const V &vec2 = vec;
-        for(std::size_t l = 0; l < lanes(vec); ++l)
-          DUNE_CHECK_GOOD(lane(l, vec2) == Scalar<V>(l + 1));
-        using CLRes = decltype(lane(0, vec2));
-        static_assert(std::is_same<CLRes, const Scalar<V>&>::value ||
-                      std::is_same<CLRes, std::decay_t<CLRes> >::value,
-                      "Result of lane() on a const lvalue vector must "
-                      "either be a const lvalue reference to a scalar of that "
-                      "vector or a proxy object (which itself may not be a "
-                      "reference nor const).");
-        static_assert(!std::is_assignable<CLRes, Scalar<V> >::value,
-                      "Result of lane() on a const lvalue vector must not be "
-                      "assignable from a scalar.");
-
-        // check lane() on rvalues
-        for(std::size_t l = 0; l < lanes(vec); ++l)
-          DUNE_CHECK_GOOD(lane(l, rvalue(vec)) == Scalar<V>(l + 1));
-        using RRes = decltype(lane(0, rvalue(vec)));
-        // TODO: do we really want to allow Scalar<V>&& here?  If we allow it,
-        // then `auto &&res = lane(0, vec*vec);` creates a dangling reference,
-        // and the scalar (and even the vector types) are small enough to be
-        // passed in registers anyway.  On the other hand, the only comparable
-        // accessor function in the standard library that I can think of is
-        // std::get(), and that does return an rvalue reference in this
-        // situation.  However, that cannot assume anything about the size of
-        // the returned types.
-        static_assert(std::is_same<RRes, Scalar<V>  >::value ||
-                      std::is_same<RRes, Scalar<V>&&>::value,
-                      "Result of lane() on a rvalue vector V must be "
-                      "Scalar<V> or Scalar<V>&&.");
-        // Can't assert non-assignable, fails for any typical class,
-        // e.g. std::complex<>.  Would need to return const Scalar<V> or const
-        // Scalar<V>&&, which would inhibit moving from the return value.
-        // static_assert(!std::is_assignable<RRes, Scalar<V> >::value,
-        //               "Result of lane() on a rvalue vector must not be "
-        //               "assignable from a scalar.");
-
-        return good;
-      }
-
-      // check non-default constructors
-      template<class V>
-      bool checkConstruct()
-      {
-        bool good = true;
-
-        // elided copy/move constructors
-        { V vec(make123<V>());  good &= check123(vec); }
-        { V vec{make123<V>()};  good &= check123(vec); }
-
-        // copy constructors
-        { V ref = make123<V>(); V vec(ref);
-          good &= check123(vec) && check123(ref); }
-        { V ref = make123<V>(); V vec{ref};
-          good &= check123(vec) && check123(ref); }
-        { const V ref = make123<V>(); V vec(ref); good &= check123(vec); }
-        { const V ref = make123<V>(); V vec{ref}; good &= check123(vec); }
-
-        // move constructors
-        { V ref = make123<V>(); V vec(std::move(ref));
-          good &= check123(vec); }
-        { V ref = make123<V>(); V vec{std::move(ref)};
-          good &= check123(vec); }
-
-        // broadcast copy constructors
-        { Scalar<V> ref = 42; V vec(ref);
-          good &= check42(vec) && ref == Scalar<V>(42); }
-        { Scalar<V> ref = 42; V vec{ref};
-          good &= check42(vec) && ref == Scalar<V>(42); }
-        { const Scalar<V> ref = 42; V vec(ref); good &= check42(vec); }
-        { const Scalar<V> ref = 42; V vec{ref}; good &= check42(vec); }
-
-        // broadcast move constructors
-        { Scalar<V> ref = 42; V vec(std::move(ref)); good &= check42(vec); }
-        { Scalar<V> ref = 42; V vec{std::move(ref)}; good &= check42(vec); }
-
-        return good;
-      }
-
-      template<class V>
-      bool checkAssign()
-      {
-        bool good = true;
-
-        // copy assignment
-        { V ref = make123<V>();       V vec; vec = ref;
-          good &= check123(vec) && check123(ref); }
-        { V ref = make123<V>();       V vec; vec = {ref};
-          good &= check123(vec) && check123(ref); }
-        { const V ref = make123<V>(); V vec; vec = ref;
-          good &= check123(vec); }
-        { const V ref = make123<V>(); V vec; vec = {ref};
-          good &= check123(vec); }
-
-        // move assignment
-        { V vec; vec = make123<V>();   good &= check123(vec); }
-        { V vec; vec = {make123<V>()}; good &= check123(vec); }
-
-        // broadcast copy assignment
-        { Scalar<V> ref = 42;       V vec; vec = ref;
-          good &= check42(vec) && ref == Scalar<V>(42); }
-        { Scalar<V> ref = 42;       V vec; vec = {ref};
-          good &= check42(vec) && ref == Scalar<V>(42); }
-        { const Scalar<V> ref = 42; V vec; vec = ref;   good &= check42(vec); }
-        { const Scalar<V> ref = 42; V vec; vec = {ref}; good &= check42(vec); }
-
-        // broadcast move assignment
-        { Scalar<V> ref = 42; V vec; vec = std::move(ref);
-          good &= check42(vec); }
-        { Scalar<V> ref = 42; V vec; vec = {std::move(ref)};
-          good &= check42(vec); }
-
-        return good;
-      }
-
-      struct OpBinaryData {
-        template<class V>
-        V leftVector() const
-        {
-          V res;
-          for(std::size_t l = 0; l < lanes(res); ++l)
-            lane(l, res) = Scalar<V>(l+1);
-          return res;
-        }
-
-        template<class V>
-        V rightVector() const
-        {
-          V res;
-          for(std::size_t l = 0; l < lanes(res); ++l)
-            lane(l, res) = Scalar<V>(l*l+1);
-          return res;
-        }
-
-        template<class T>
-        T leftScalar() const
-        {
-          return T(42);
-        }
-
-        template<class T>
-        T rightScalar() const
-        {
-          return T(23);
-        }
-      };
-
-      struct OpBinaryShift : OpBinaryData
-      {
-        template<class V>
-        V rightVector() const
-        {
-          V res;
-          for(std::size_t l = 0; l < lanes(res); ++l)
-            // do not exceed number of bits in char
-            lane(l, res) = Scalar<V>((l+1)%8);
-          return res;
-        }
-
-        template<class T>
-        T rightScalar() const
-        {
-          // do not exceed number of bits in char
-          return T(5);
-        }
-      };
-
-#define DUNE_DEFINE_BINARY_OP(NAME, DATA, SYMBOL)                       \
-      struct OpBinary##NAME : OpBinary##DATA                            \
-      {                                                                 \
-        template<class V1, class V2>                                    \
-        auto operator()(V1&& v1, V2&& v2) const                         \
-          -> decltype(std::forward<V1>(v1) SYMBOL std::forward<V2>(v2)) \
-        {                                                               \
-          return std::forward<V1>(v1) SYMBOL std::forward<V2>(v2);      \
-        }                                                               \
-      }
-
-      DUNE_DEFINE_BINARY_OP(Mul,              Data,  *  );
-      DUNE_DEFINE_BINARY_OP(Div,              Data,  /  );
-      DUNE_DEFINE_BINARY_OP(Remainder,        Data,  %  );
-
-      DUNE_DEFINE_BINARY_OP(Plus,             Data,  +  );
-      DUNE_DEFINE_BINARY_OP(Minus,            Data,  -  );
-
-      DUNE_DEFINE_BINARY_OP(LeftShift,        Shift, << );
-      DUNE_DEFINE_BINARY_OP(RightShift,       Shift, >> );
-
-      DUNE_DEFINE_BINARY_OP(Less,             Data,  <  );
-      DUNE_DEFINE_BINARY_OP(Greater,          Data,  >  );
-      DUNE_DEFINE_BINARY_OP(LessEqual,        Data,  <  );
-      DUNE_DEFINE_BINARY_OP(GreaterEqual,     Data,  >  );
-
-      DUNE_DEFINE_BINARY_OP(Equal,            Data,  == );
-      DUNE_DEFINE_BINARY_OP(NotEqual,         Data,  != );
-
-      DUNE_DEFINE_BINARY_OP(BitAnd,           Data,  &  );
-      DUNE_DEFINE_BINARY_OP(BitXor,           Data,  ^  );
-      DUNE_DEFINE_BINARY_OP(BitOr,            Data,  |  );
-
-      DUNE_DEFINE_BINARY_OP(LogicAnd,         Data,  && );
-      DUNE_DEFINE_BINARY_OP(LogicOr,          Data,  || );
-
-      DUNE_DEFINE_BINARY_OP(Assign,           Data,  =  );
-      DUNE_DEFINE_BINARY_OP(AssignMul,        Data,  *= );
-      DUNE_DEFINE_BINARY_OP(AssignDiv,        Data,  /= );
-      DUNE_DEFINE_BINARY_OP(AssignRemainder,  Data,  %= );
-      DUNE_DEFINE_BINARY_OP(AssignPlus,       Data,  += );
-      DUNE_DEFINE_BINARY_OP(AssignMinus,      Data,  -= );
-      DUNE_DEFINE_BINARY_OP(AssignLeftShift,  Data,  <<=);
-      DUNE_DEFINE_BINARY_OP(AssignRightShift, Data,  >>=);
-      DUNE_DEFINE_BINARY_OP(AssignAnd,        Data,  &= );
-      DUNE_DEFINE_BINARY_OP(AssignXor,        Data,  ^= );
-      DUNE_DEFINE_BINARY_OP(AssignOr,         Data,  |= );
-
-#define DUNE_COMMA_SYMBOL ,
-      DUNE_DEFINE_BINARY_OP(Comma,            Data,  DUNE_COMMA_SYMBOL);
-#undef DUNE_COMMA_SYMBOL
-
-#undef DUNE_DEFINE_BINARY_OP
-
-      template<class>
-      struct VoidType
-      {
-        using type = void;
-      };
-      template<class T>
-      using Void = typename VoidType<T>::type;
-      template<class Expr, class = void>
+      template<class Expr, bool = false>
       struct CanCall;
-      template<class Op, class... Args, class Dummy>
-      struct CanCall<Op(Args...), Dummy> : std::false_type {};
+      template<class Op, class... Args, bool dummy>
+      struct CanCall<Op(Args...), dummy> : std::false_type {};
       template<class Op, class... Args>
-      struct CanCall<Op(Args...), Void<std::result_of_t<Op(Args...)> > >
+      struct CanCall<Op(Args...),
+                     AlwaysFalse<std::result_of_t<Op(Args...)> >::value>
         : std::true_type
       {};
 
@@ -472,18 +85,389 @@ namespace Dune {
         Src
         >::type;
 
+    } // namespace Impl
+
+    class UnitTest {
+      bool good_ = true;
+      std::ostream &log_ = std::cerr;
+      // records the types for which checks have started running to avoid
+      // infinite recursion
+      std::unordered_set<std::type_index> seen_;
+
+      ////////////////////////////////////////////////////////////////////////
+      //
+      //  Helper functions
+      //
+
+      void complain(const char *file, int line, const char *func,
+                    const char *expr);
+
+      // This macro is defined only within this file, do not use anywhere
+      // else.  Doing the actual printing in an external function dramatically
+      // reduces memory use during compilation.  Defined in such a way that
+      // the call will only happen for failed checks.
+#define DUNE_SIMD_CHECK(expr)                                           \
+      ((expr) ? void() : complain(__FILE__, __LINE__, __func__, #expr))
+
+      // "cast" into a prvalue
+      template<class T>
+      static T prvalue(T t)
+      {
+        return t;
+      }
+
+      // whether the vector is 42 in all lanes
+      template<class V>
+      static bool is42(const V &v)
+      {
+        bool good = true;
+
+        for(std::size_t l = 0; l < lanes(v); ++l)
+          // need to cast in case we have a mask type
+          good &= (lane(l, v) == Scalar<V>(42));
+
+        return good;
+      }
+
+      // make a vector that contains the sequence { 1, 2, ... }
+      template<class V>
+      static V make123()
+      {
+        V vec;
+        for(std::size_t l = 0; l < lanes(vec); ++l)
+          lane(l, vec) = l + 1;
+        return vec;
+      }
+
+      // whether the vector contains the sequence { 1, 2, ... }
+      template<class V>
+      static bool is123(const V &v)
+      {
+        bool good = true;
+
+        for(std::size_t l = 0; l < lanes(v); ++l)
+          // need to cast in case we have a mask type
+          good &= (lane(l, v) == Scalar<V>(l+1));
+
+        return good;
+      }
+
+      template<class Call>
+      using CanCall = Impl::CanCall<Call>;
+
+      template<class Dst, class Src>
+      using CopyRefQual = Impl::CopyRefQual<Dst, Src>;
+
+      //////////////////////////////////////////////////////////////////////
+      //
+      // Check associated types
+      //
+
+      template<class V>
+      void checkScalar()
+      {
+        // check that the type Scalar<V> exists
+        using T = Scalar<V>;
+
+        static_assert(std::is_same<T, std::decay_t<T> >::value, "Scalar types "
+                      "must not be references, and must not include "
+                      "cv-qualifiers");
+        T DUNE_UNUSED a{};
+      }
+
+      template<class V>
+      void checkIndex()
+      {
+        // check that the type Scalar<V> exists
+        using I = Index<V>;
+        log_ << "Index type of " << className<V>() << " is " << className<I>()
+             << std::endl;
+
+
+        static_assert(std::is_same<I, std::decay_t<I> >::value, "Index types "
+                      "must not be references, and must not include "
+                      "cv-qualifiers");
+        static_assert(lanes<V>() == lanes<I>(), "Index types must have the "
+                      "same number of lanes as the original vector types");
+
+        checkSimdType<I>();
+      }
+
+      template<class V>
+      void checkMask()
+      {
+        // check that the type Scalar<V> exists
+        using M = Mask<V>;
+        log_ << "Mask type of " << className<V>() << " is " << className<M>()
+             << std::endl;
+
+        static_assert(std::is_same<M, std::decay_t<M> >::value, "Mask types "
+                      "must not be references, and must not include "
+                      "cv-qualifiers");
+        static_assert(lanes<V>() == lanes<M>(), "Mask types must have the "
+                      "same number of lanes as the original vector types");
+
+        checkSimdType<M>();
+      }
+
+      //////////////////////////////////////////////////////////////////////
+      //
+      //  Fundamental checks
+      //
+
+      template<class V>
+      void checkLanes()
+      {
+        // check lanes
+        static_assert(std::is_same<std::size_t, decltype(lanes<V>())>::value,
+                      "return type of lanes<V>() should be std::size_t");
+        static_assert(std::is_same<std::size_t, decltype(lanes(V{}))>::value,
+                      "return type of lanes(V{}) should be std::size_t");
+
+        // the result of lanes<V>() must be constexpr
+        constexpr auto DUNE_UNUSED size = lanes<V>();
+        // but the result of lanes(vec) does not need to be constexpr
+        DUNE_SIMD_CHECK(lanes<V>() == lanes(V{}));
+      }
+
+      template<class V>
+      void checkDefaultConstruct()
+      {
+        { V DUNE_UNUSED vec;      }
+        { V DUNE_UNUSED vec{};    }
+        { V DUNE_UNUSED vec = {}; }
+      }
+
+      template<class V>
+      void checkLane()
+      {
+        V vec;
+        // check lane() on mutable lvalues
+        for(std::size_t l = 0; l < lanes(vec); ++l)
+          lane(l, vec) = l + 1;
+        for(std::size_t l = 0; l < lanes(vec); ++l)
+          DUNE_SIMD_CHECK(lane(l, vec) == Scalar<V>(l + 1));
+        using MLRes = decltype(lane(0, vec));
+        static_assert(std::is_same<MLRes, Scalar<V>&>::value ||
+                      std::is_same<MLRes, std::decay_t<MLRes> >::value,
+                      "Result of lane() on a mutable lvalue vector must "
+                      "either be a mutable reference to a scalar of that "
+                      "vector or a proxy object (which itself may not be a "
+                      "reference nor const).");
+
+        // check lane() on const lvalues
+        const V &vec2 = vec;
+        for(std::size_t l = 0; l < lanes(vec); ++l)
+          DUNE_SIMD_CHECK(lane(l, vec2) == Scalar<V>(l + 1));
+        using CLRes = decltype(lane(0, vec2));
+        static_assert(std::is_same<CLRes, const Scalar<V>&>::value ||
+                      std::is_same<CLRes, std::decay_t<CLRes> >::value,
+                      "Result of lane() on a const lvalue vector must "
+                      "either be a const lvalue reference to a scalar of that "
+                      "vector or a proxy object (which itself may not be a "
+                      "reference nor const).");
+        static_assert(!std::is_assignable<CLRes, Scalar<V> >::value,
+                      "Result of lane() on a const lvalue vector must not be "
+                      "assignable from a scalar.");
+
+        // check lane() on rvalues
+        for(std::size_t l = 0; l < lanes(vec); ++l)
+          DUNE_SIMD_CHECK(lane(l, prvalue(vec)) == Scalar<V>(l + 1));
+        using RRes = decltype(lane(0, prvalue(vec)));
+        // TODO: do we really want to allow Scalar<V>&& here?  If we allow it,
+        // then `auto &&res = lane(0, vec*vec);` creates a dangling reference,
+        // and the scalar (and even the vector types) are small enough to be
+        // passed in registers anyway.  On the other hand, the only comparable
+        // accessor function in the standard library that I can think of is
+        // std::get(), and that does return an rvalue reference in this
+        // situation.  However, that cannot assume anything about the size of
+        // the returned types.
+        static_assert(std::is_same<RRes, Scalar<V>  >::value ||
+                      std::is_same<RRes, Scalar<V>&&>::value,
+                      "Result of lane() on a rvalue vector V must be "
+                      "Scalar<V> or Scalar<V>&&.");
+        // Can't assert non-assignable, fails for any typical class,
+        // e.g. std::complex<>.  Would need to return const Scalar<V> or const
+        // Scalar<V>&&, which would inhibit moving from the return value.
+        // static_assert(!std::is_assignable<RRes, Scalar<V> >::value,
+        //               "Result of lane() on a rvalue vector must not be "
+        //               "assignable from a scalar.");
+      }
+
+      // check non-default constructors
+      template<class V>
+      void checkConstruct()
+      {
+        // elided copy/move constructors
+        { V vec(make123<V>()); DUNE_SIMD_CHECK(is123(vec)); }
+        { V vec{make123<V>()}; DUNE_SIMD_CHECK(is123(vec)); }
+
+        // copy constructors
+        { V ref = make123<V>();       V vec(ref);
+          DUNE_SIMD_CHECK(is123(vec)); DUNE_SIMD_CHECK(is123(ref)); }
+        { V ref = make123<V>();       V vec{ref};
+          DUNE_SIMD_CHECK(is123(vec)); DUNE_SIMD_CHECK(is123(ref)); }
+        { const V ref = make123<V>(); V vec(ref);
+          DUNE_SIMD_CHECK(is123(vec)); }
+        { const V ref = make123<V>(); V vec{ref};
+          DUNE_SIMD_CHECK(is123(vec)); }
+
+        // move constructors
+        { V ref = make123<V>(); V vec(std::move(ref));
+          DUNE_SIMD_CHECK(is123(vec)); }
+        { V ref = make123<V>(); V vec{std::move(ref)};
+          DUNE_SIMD_CHECK(is123(vec)); }
+
+        // broadcast copy constructors
+        { Scalar<V> ref = 42; V vec(ref);
+          DUNE_SIMD_CHECK(is42(vec)); DUNE_SIMD_CHECK(ref == Scalar<V>(42)); }
+        { Scalar<V> ref = 42; V vec{ref};
+          DUNE_SIMD_CHECK(is42(vec)); DUNE_SIMD_CHECK(ref == Scalar<V>(42)); }
+        { const Scalar<V> ref = 42; V vec(ref);
+          DUNE_SIMD_CHECK(is42(vec)); }
+        { const Scalar<V> ref = 42; V vec{ref};
+          DUNE_SIMD_CHECK(is42(vec)); }
+
+        // broadcast move constructors
+        { Scalar<V> ref = 42; V vec(std::move(ref));
+          DUNE_SIMD_CHECK(is42(vec)); }
+        { Scalar<V> ref = 42; V vec{std::move(ref)};
+          DUNE_SIMD_CHECK(is42(vec)); }
+      }
+
+      // assignment is checked in the binary ops as well, but this checks
+      // assignment from a braced-init-list
+      template<class V>
+      void checkAssign()
+      {
+        // copy assignment
+        { V ref = make123<V>();       V vec; vec = {ref};
+          DUNE_SIMD_CHECK(is123(vec)); DUNE_SIMD_CHECK(is123(ref)); }
+        { const V ref = make123<V>(); V vec; vec = {ref};
+          DUNE_SIMD_CHECK(is123(vec)); DUNE_SIMD_CHECK(is123(ref)); }
+
+        // move assignment
+        { V vec; vec = {make123<V>()}; DUNE_SIMD_CHECK(is123(vec)); }
+
+        // broadcast copy assignment
+        { Scalar<V> ref = 42;       V vec; vec = {ref};
+          DUNE_SIMD_CHECK(is42(vec)); DUNE_SIMD_CHECK(ref == Scalar<V>(42)); }
+        { const Scalar<V> ref = 42; V vec; vec = {ref};
+          DUNE_SIMD_CHECK(is42(vec)); }
+
+        // broadcast move assignment
+        { Scalar<V> ref = 42; V vec; vec = {std::move(ref)};
+          DUNE_SIMD_CHECK(is42(vec)); }
+      }
+
+      //////////////////////////////////////////////////////////////////////
+      //
+      // checks for binary operators
+      //
+
+      // base class for binary operations, provides test data
+      struct OpBinaryData {
+        template<class V>
+        V leftVector() const
+        {
+          V res;
+          for(std::size_t l = 0; l < lanes(res); ++l)
+            lane(l, res) = Scalar<V>(l+1);
+          return res;
+        }
+
+        template<class V>
+        V rightVector() const
+        {
+          V res;
+          for(std::size_t l = 0; l < lanes(res); ++l)
+            // do not exceed number of bits in char (for shifts)
+            lane(l, res) = Scalar<V>((l+1)%8);
+          return res;
+        }
+
+        template<class T>
+        T leftScalar() const
+        {
+          return T(42);
+        }
+
+        template<class T>
+        T rightScalar() const
+        {
+          // do not exceed number of bits in char
+          return T(5);
+        }
+      };
+
+#define DUNE_SIMD_BINARY_OP(NAME, SYMBOL)                               \
+      struct OpBinary##NAME : OpBinaryData                              \
+      {                                                                 \
+        template<class V1, class V2>                                    \
+        auto operator()(V1&& v1, V2&& v2) const                         \
+          -> decltype(std::forward<V1>(v1) SYMBOL std::forward<V2>(v2)) \
+        {                                                               \
+          return std::forward<V1>(v1) SYMBOL std::forward<V2>(v2);      \
+        }                                                               \
+      }
+
+      DUNE_SIMD_BINARY_OP(Mul,              *  );
+      DUNE_SIMD_BINARY_OP(Div,              /  );
+      DUNE_SIMD_BINARY_OP(Remainder,        %  );
+
+      DUNE_SIMD_BINARY_OP(Plus,             +  );
+      DUNE_SIMD_BINARY_OP(Minus,            -  );
+
+      DUNE_SIMD_BINARY_OP(LeftShift,        << );
+      DUNE_SIMD_BINARY_OP(RightShift,       >> );
+
+      DUNE_SIMD_BINARY_OP(Less,             <  );
+      DUNE_SIMD_BINARY_OP(Greater,          >  );
+      DUNE_SIMD_BINARY_OP(LessEqual,        <  );
+      DUNE_SIMD_BINARY_OP(GreaterEqual,     >  );
+
+      DUNE_SIMD_BINARY_OP(Equal,            == );
+      DUNE_SIMD_BINARY_OP(NotEqual,         != );
+
+      DUNE_SIMD_BINARY_OP(BitAnd,           &  );
+      DUNE_SIMD_BINARY_OP(BitXor,           ^  );
+      DUNE_SIMD_BINARY_OP(BitOr,            |  );
+
+      DUNE_SIMD_BINARY_OP(LogicAnd,         && );
+      DUNE_SIMD_BINARY_OP(LogicOr,          || );
+
+      DUNE_SIMD_BINARY_OP(Assign,           =  );
+      DUNE_SIMD_BINARY_OP(AssignMul,        *= );
+      DUNE_SIMD_BINARY_OP(AssignDiv,        /= );
+      DUNE_SIMD_BINARY_OP(AssignRemainder,  %= );
+      DUNE_SIMD_BINARY_OP(AssignPlus,       += );
+      DUNE_SIMD_BINARY_OP(AssignMinus,      -= );
+      DUNE_SIMD_BINARY_OP(AssignLeftShift,  <<=);
+      DUNE_SIMD_BINARY_OP(AssignRightShift, >>=);
+      DUNE_SIMD_BINARY_OP(AssignAnd,        &= );
+      DUNE_SIMD_BINARY_OP(AssignXor,        ^= );
+      DUNE_SIMD_BINARY_OP(AssignOr,         |= );
+
+#define DUNE_SIMD_COMMA_SYMBOL ,
+      DUNE_SIMD_BINARY_OP(Comma,            DUNE_SIMD_COMMA_SYMBOL);
+#undef DUNE_SIMD_COMMA_SYMBOL
+
+#undef DUNE_SIMD_BINARY_OP
+
+      //////////////////////////////////////////////////////////////////////
+      //
+      // checks for vector-vector binary operations
+      //
+
       template<class V1, class V2, class Op>
       std::enable_if_t<
         CanCall<Op(decltype(lane(0, std::declval<V1>())),
-                   decltype(lane(0, std::declval<V2>())))>::value,
-        bool>
+                   decltype(lane(0, std::declval<V2>())))>::value>
       checkBinaryOpVV(Op op)
       {
         static_assert(std::is_same<std::decay_t<V1>, std::decay_t<V2> >::value,
                       "Internal testsystem error: called with two types that "
                       "don't decay to the same thing");
-
-        bool good = true;
 
         // arguments
         auto val1 = op.template leftVector<std::decay_t<V1>>();
@@ -494,124 +478,111 @@ namespace Dune {
         auto arg2 = val2;
         auto &&result = op(static_cast<V1>(arg1), static_cast<V2>(arg2));
         for(std::size_t l = 0; l < lanes(val1); ++l)
-          DUNE_CHECK_GOOD(lane(l, result) ==
+          DUNE_SIMD_CHECK(lane(l, result) ==
                           op(lane(l, static_cast<V1>(val1)),
                              lane(l, static_cast<V2>(val2))));
         // op might modify val1 and val2, verify that any such
         // modification also happens in the vector case
         for(std::size_t l = 0; l < lanes<std::decay_t<V1> >(); ++l)
         {
-          DUNE_CHECK_GOOD(lane(l, val1) == lane(l, arg1));
-          DUNE_CHECK_GOOD(lane(l, val2) == lane(l, arg2));
+          DUNE_SIMD_CHECK(lane(l, val1) == lane(l, arg1));
+          DUNE_SIMD_CHECK(lane(l, val2) == lane(l, arg2));
         }
-
-        return good;
       }
 
       template<class V1, class V2, class Op>
       std::enable_if_t<
         !CanCall<Op(decltype(lane(0, std::declval<V1>())),
-                    decltype(lane(0, std::declval<V2>())))>::value,
-        bool>
+                    decltype(lane(0, std::declval<V2>())))>::value>
       checkBinaryOpVV(Op op)
       {
-        // std::cerr << "No "
-        //           << className<Op(decltype(lane(0, std::declval<V1>())),
-        //                           decltype(lane(0, std::declval<V2>())))>()
-        //           << std::endl
-        //           << " ==> Not checking " << className<Op(V1, V2)>()
-        //           << std::endl;
-        // there is no op for that scalar so don't check for the vector
-        return true;
+        // log_ << "No " << className<Op(decltype(lane(0, std::declval<V1>())),
+        //                               decltype(lane(0, std::declval<V2>())))>()
+        //      << std::endl
+        //      << " ==> Not checking " << className<Op(V1, V2)>() << std::endl;
       }
 
       template<class V, class Op>
-      bool checkBinaryOpVV(Op op)
+      void checkBinaryOpVV(Op op)
       {
-        bool good = true;
+        checkBinaryOpVV<V&, V&>(op);
+        checkBinaryOpVV<V&, const V&>(op);
+        checkBinaryOpVV<V&, V&&>(op);
+        checkBinaryOpVV<V&, const V&&>(op);
 
-        good &= checkBinaryOpVV<V&, V&>(op);
-        good &= checkBinaryOpVV<V&, const V&>(op);
-        good &= checkBinaryOpVV<V&, V&&>(op);
-        good &= checkBinaryOpVV<V&, const V&&>(op);
+        checkBinaryOpVV<const V&, V&>(op);
+        checkBinaryOpVV<const V&, const V&>(op);
+        checkBinaryOpVV<const V&, V&&>(op);
+        checkBinaryOpVV<const V&, const V&&>(op);
 
-        good &= checkBinaryOpVV<const V&, V&>(op);
-        good &= checkBinaryOpVV<const V&, const V&>(op);
-        good &= checkBinaryOpVV<const V&, V&&>(op);
-        good &= checkBinaryOpVV<const V&, const V&&>(op);
+        checkBinaryOpVV<V&&, V&>(op);
+        checkBinaryOpVV<V&&, const V&>(op);
+        checkBinaryOpVV<V&&, V&&>(op);
+        checkBinaryOpVV<V&&, const V&&>(op);
 
-        good &= checkBinaryOpVV<V&&, V&>(op);
-        good &= checkBinaryOpVV<V&&, const V&>(op);
-        good &= checkBinaryOpVV<V&&, V&&>(op);
-        good &= checkBinaryOpVV<V&&, const V&&>(op);
-
-        good &= checkBinaryOpVV<const V&&, V&>(op);
-        good &= checkBinaryOpVV<const V&&, const V&>(op);
-        good &= checkBinaryOpVV<const V&&, V&&>(op);
-        good &= checkBinaryOpVV<const V&&, const V&&>(op);
-
-        return good;
+        checkBinaryOpVV<const V&&, V&>(op);
+        checkBinaryOpVV<const V&&, const V&>(op);
+        checkBinaryOpVV<const V&&, V&&>(op);
+        checkBinaryOpVV<const V&&, const V&&>(op);
       }
 
       template<class V>
-      bool checkBinaryOpsVV()
+      void checkBinaryOpsVV()
       {
-        bool good = true;
+        checkBinaryOpVV<V>(OpBinaryMul{});
+        checkBinaryOpVV<V>(OpBinaryDiv{});
+        checkBinaryOpVV<V>(OpBinaryRemainder{});
 
-        good &= checkBinaryOpVV<V>(OpBinaryMul{});
-        good &= checkBinaryOpVV<V>(OpBinaryDiv{});
-        good &= checkBinaryOpVV<V>(OpBinaryRemainder{});
+        checkBinaryOpVV<V>(OpBinaryPlus{});
+        checkBinaryOpVV<V>(OpBinaryMinus{});
 
-        good &= checkBinaryOpVV<V>(OpBinaryPlus{});
-        good &= checkBinaryOpVV<V>(OpBinaryMinus{});
+        checkBinaryOpVV<V>(OpBinaryLeftShift{});
+        checkBinaryOpVV<V>(OpBinaryRightShift{});
 
-        good &= checkBinaryOpVV<V>(OpBinaryLeftShift{});
-        good &= checkBinaryOpVV<V>(OpBinaryRightShift{});
+        checkBinaryOpVV<V>(OpBinaryLess{});
+        checkBinaryOpVV<V>(OpBinaryGreater{});
+        checkBinaryOpVV<V>(OpBinaryLessEqual{});
+        checkBinaryOpVV<V>(OpBinaryGreaterEqual{});
 
-        good &= checkBinaryOpVV<V>(OpBinaryLess{});
-        good &= checkBinaryOpVV<V>(OpBinaryGreater{});
-        good &= checkBinaryOpVV<V>(OpBinaryLessEqual{});
-        good &= checkBinaryOpVV<V>(OpBinaryGreaterEqual{});
+        checkBinaryOpVV<V>(OpBinaryEqual{});
+        checkBinaryOpVV<V>(OpBinaryNotEqual{});
 
-        good &= checkBinaryOpVV<V>(OpBinaryEqual{});
-        good &= checkBinaryOpVV<V>(OpBinaryNotEqual{});
+        checkBinaryOpVV<V>(OpBinaryBitAnd{});
+        checkBinaryOpVV<V>(OpBinaryBitXor{});
+        checkBinaryOpVV<V>(OpBinaryBitOr{});
 
-        good &= checkBinaryOpVV<V>(OpBinaryBitAnd{});
-        good &= checkBinaryOpVV<V>(OpBinaryBitXor{});
-        good &= checkBinaryOpVV<V>(OpBinaryBitOr{});
+        checkBinaryOpVV<V>(OpBinaryLogicAnd{});
+        checkBinaryOpVV<V>(OpBinaryLogicOr{});
 
-        good &= checkBinaryOpVV<V>(OpBinaryLogicAnd{});
-        good &= checkBinaryOpVV<V>(OpBinaryLogicOr{});
+        checkBinaryOpVV<V>(OpBinaryAssign{});
+        checkBinaryOpVV<V>(OpBinaryAssignMul{});
+        checkBinaryOpVV<V>(OpBinaryAssignDiv{});
+        checkBinaryOpVV<V>(OpBinaryAssignRemainder{});
+        checkBinaryOpVV<V>(OpBinaryAssignPlus{});
+        checkBinaryOpVV<V>(OpBinaryAssignMinus{});
+        checkBinaryOpVV<V>(OpBinaryAssignLeftShift{});
+        checkBinaryOpVV<V>(OpBinaryAssignRightShift{});
+        checkBinaryOpVV<V>(OpBinaryAssignAnd{});
+        checkBinaryOpVV<V>(OpBinaryAssignXor{});
+        checkBinaryOpVV<V>(OpBinaryAssignOr{});
 
-        good &= checkBinaryOpVV<V>(OpBinaryAssign{});
-        good &= checkBinaryOpVV<V>(OpBinaryAssignMul{});
-        good &= checkBinaryOpVV<V>(OpBinaryAssignDiv{});
-        good &= checkBinaryOpVV<V>(OpBinaryAssignRemainder{});
-        good &= checkBinaryOpVV<V>(OpBinaryAssignPlus{});
-        good &= checkBinaryOpVV<V>(OpBinaryAssignMinus{});
-        good &= checkBinaryOpVV<V>(OpBinaryAssignLeftShift{});
-        good &= checkBinaryOpVV<V>(OpBinaryAssignRightShift{});
-        good &= checkBinaryOpVV<V>(OpBinaryAssignAnd{});
-        good &= checkBinaryOpVV<V>(OpBinaryAssignXor{});
-        good &= checkBinaryOpVV<V>(OpBinaryAssignOr{});
-
-        good &= checkBinaryOpVV<V>(OpBinaryComma{});
-
-        return good;
+        checkBinaryOpVV<V>(OpBinaryComma{});
       }
+
+      //////////////////////////////////////////////////////////////////////
+      //
+      // checks for scalar-vector binary operations
+      //
 
       template<class T1, class V2, class Op>
       std::enable_if_t<
-        CanCall<Op(T1, decltype(lane(0, std::declval<V2>())))>::value,
-        bool>
+        CanCall<Op(T1, decltype(lane(0, std::declval<V2>())))>::value>
       checkBinaryOpSV(Op op)
       {
         static_assert(std::is_same<std::decay_t<T1>,
                       Scalar<std::decay_t<V2> > >::value,
                       "Internal testsystem error: called with a scalar that "
                       "does not match the vector type.");
-
-        bool good = true;
 
         using V1 = CopyRefQual<V2, T1>;
 
@@ -632,124 +603,111 @@ namespace Dune {
         auto &&vresult = op(static_cast<V1>(varg1), static_cast<V2>(varg2));
         for(std::size_t l = 0; l < lanes<std::decay_t<V1> >(); ++l)
         {
-          DUNE_CHECK_GOOD(lane(l, sresult) ==
+          DUNE_SIMD_CHECK(lane(l, sresult) ==
                           op(        static_cast<T1>(sval1),
                              lane(l, static_cast<V2>(sval2))));
-          DUNE_CHECK_GOOD(lane(l, vresult) ==
+          DUNE_SIMD_CHECK(lane(l, vresult) ==
                           op(lane(l, static_cast<V1>(vval1)),
                              lane(l, static_cast<V2>(vval2))));
           // cross check
-          DUNE_CHECK_GOOD(lane(l, sresult) == lane(l, vresult));
+          DUNE_SIMD_CHECK(lane(l, sresult) == lane(l, vresult));
         }
         // op might modify [sv]val1 and [sv]val2, verify that any such
         // modification also happens in the vector case
         for(std::size_t l = 0; l < lanes<std::decay_t<V1> >(); ++l)
         {
-          DUNE_CHECK_GOOD(        sval1  == lane(l, sarg1));
-          DUNE_CHECK_GOOD(lane(l, sval2) == lane(l, sarg2));
-          DUNE_CHECK_GOOD(lane(l, vval1) == lane(l, varg1));
-          DUNE_CHECK_GOOD(lane(l, vval2) == lane(l, varg2));
+          DUNE_SIMD_CHECK(        sval1  == lane(l, sarg1));
+          DUNE_SIMD_CHECK(lane(l, sval2) == lane(l, sarg2));
+          DUNE_SIMD_CHECK(lane(l, vval1) == lane(l, varg1));
+          DUNE_SIMD_CHECK(lane(l, vval2) == lane(l, varg2));
           // cross check
-          DUNE_CHECK_GOOD(        sval1  == lane(l, vval1));
-          DUNE_CHECK_GOOD(lane(l, sval2) == lane(l, vval2));
+          DUNE_SIMD_CHECK(        sval1  == lane(l, vval1));
+          DUNE_SIMD_CHECK(lane(l, sval2) == lane(l, vval2));
         }
-
-        return good;
       }
 
       template<class T1, class V2, class Op>
       std::enable_if_t<
-        !CanCall<Op(T1, decltype(lane(0, std::declval<V2>())))>::value,
-        bool>
+        !CanCall<Op(T1, decltype(lane(0, std::declval<V2>())))>::value>
       checkBinaryOpSV(Op op)
       {
-        // std::cerr << "No "
-        //           << className<Op(T1, decltype(lane(0, std::declval<V2>())))>()
-        //           << std::endl
-        //           << " ==> Not checking " << className<Op(T1, V2)>()
-        //           << std::endl;
-        // there is no op for that scalar so don't check for the vector
-        return true;
+        // log_ << "No "
+        //      << className<Op(T1, decltype(lane(0, std::declval<V2>())))>()
+        //      << std::endl
+        //      << " ==> Not checking " << className<Op(T1, V2)>() << std::endl;
       }
 
       template<class V, class Op>
-      bool checkBinaryOpSV(Op op)
+      void checkBinaryOpSV(Op op)
       {
         using S = Scalar<V>;
 
-        bool good = true;
+        checkBinaryOpSV<S&, V&>(op);
+        checkBinaryOpSV<S&, const V&>(op);
+        checkBinaryOpSV<S&, V&&>(op);
+        checkBinaryOpSV<S&, const V&&>(op);
 
-        good &= checkBinaryOpSV<S&, V&>(op);
-        good &= checkBinaryOpSV<S&, const V&>(op);
-        good &= checkBinaryOpSV<S&, V&&>(op);
-        good &= checkBinaryOpSV<S&, const V&&>(op);
+        checkBinaryOpSV<const S&, V&>(op);
+        checkBinaryOpSV<const S&, const V&>(op);
+        checkBinaryOpSV<const S&, V&&>(op);
+        checkBinaryOpSV<const S&, const V&&>(op);
 
-        good &= checkBinaryOpSV<const S&, V&>(op);
-        good &= checkBinaryOpSV<const S&, const V&>(op);
-        good &= checkBinaryOpSV<const S&, V&&>(op);
-        good &= checkBinaryOpSV<const S&, const V&&>(op);
+        checkBinaryOpSV<S&&, V&>(op);
+        checkBinaryOpSV<S&&, const V&>(op);
+        checkBinaryOpSV<S&&, V&&>(op);
+        checkBinaryOpSV<S&&, const V&&>(op);
 
-        good &= checkBinaryOpSV<S&&, V&>(op);
-        good &= checkBinaryOpSV<S&&, const V&>(op);
-        good &= checkBinaryOpSV<S&&, V&&>(op);
-        good &= checkBinaryOpSV<S&&, const V&&>(op);
-
-        good &= checkBinaryOpSV<const S&&, V&>(op);
-        good &= checkBinaryOpSV<const S&&, const V&>(op);
-        good &= checkBinaryOpSV<const S&&, V&&>(op);
-        good &= checkBinaryOpSV<const S&&, const V&&>(op);
-
-        return good;
+        checkBinaryOpSV<const S&&, V&>(op);
+        checkBinaryOpSV<const S&&, const V&>(op);
+        checkBinaryOpSV<const S&&, V&&>(op);
+        checkBinaryOpSV<const S&&, const V&&>(op);
       }
-
 
       template<class V>
-      bool checkBinaryOpsSV()
+      void checkBinaryOpsSV()
       {
-        bool good = true;
+        checkBinaryOpSV<V>(OpBinaryMul{});
+        checkBinaryOpSV<V>(OpBinaryDiv{});
+        checkBinaryOpSV<V>(OpBinaryRemainder{});
 
-        good &= checkBinaryOpSV<V>(OpBinaryMul{});
-        good &= checkBinaryOpSV<V>(OpBinaryDiv{});
-        good &= checkBinaryOpSV<V>(OpBinaryRemainder{});
+        checkBinaryOpSV<V>(OpBinaryPlus{});
+        checkBinaryOpSV<V>(OpBinaryMinus{});
 
-        good &= checkBinaryOpSV<V>(OpBinaryPlus{});
-        good &= checkBinaryOpSV<V>(OpBinaryMinus{});
+        checkBinaryOpSV<V>(OpBinaryLeftShift{});
+        checkBinaryOpSV<V>(OpBinaryRightShift{});
 
-        good &= checkBinaryOpSV<V>(OpBinaryLeftShift{});
-        good &= checkBinaryOpSV<V>(OpBinaryRightShift{});
+        checkBinaryOpSV<V>(OpBinaryLess{});
+        checkBinaryOpSV<V>(OpBinaryGreater{});
+        checkBinaryOpSV<V>(OpBinaryLessEqual{});
+        checkBinaryOpSV<V>(OpBinaryGreaterEqual{});
 
-        good &= checkBinaryOpSV<V>(OpBinaryLess{});
-        good &= checkBinaryOpSV<V>(OpBinaryGreater{});
-        good &= checkBinaryOpSV<V>(OpBinaryLessEqual{});
-        good &= checkBinaryOpSV<V>(OpBinaryGreaterEqual{});
+        checkBinaryOpSV<V>(OpBinaryEqual{});
+        checkBinaryOpSV<V>(OpBinaryNotEqual{});
 
-        good &= checkBinaryOpSV<V>(OpBinaryEqual{});
-        good &= checkBinaryOpSV<V>(OpBinaryNotEqual{});
+        checkBinaryOpSV<V>(OpBinaryBitAnd{});
+        checkBinaryOpSV<V>(OpBinaryBitXor{});
+        checkBinaryOpSV<V>(OpBinaryBitOr{});
 
-        good &= checkBinaryOpSV<V>(OpBinaryBitAnd{});
-        good &= checkBinaryOpSV<V>(OpBinaryBitXor{});
-        good &= checkBinaryOpSV<V>(OpBinaryBitOr{});
+        checkBinaryOpSV<V>(OpBinaryLogicAnd{});
+        checkBinaryOpSV<V>(OpBinaryLogicOr{});
 
-        good &= checkBinaryOpSV<V>(OpBinaryLogicAnd{});
-        good &= checkBinaryOpSV<V>(OpBinaryLogicOr{});
-
-        good &= checkBinaryOpSV<V>(OpBinaryComma{});
-
-        return good;
+        checkBinaryOpSV<V>(OpBinaryComma{});
       }
+
+      //////////////////////////////////////////////////////////////////////
+      //
+      // checks for vector-scalar binary operations
+      //
 
       template<class V1, class T2, class Op>
       std::enable_if_t<
-        CanCall<Op(decltype(lane(0, std::declval<V1>())), T2)>::value,
-        bool>
+        CanCall<Op(decltype(lane(0, std::declval<V1>())), T2)>::value>
       checkBinaryOpVS(Op op)
       {
         static_assert(std::is_same<Scalar<std::decay_t<V1> >,
                       std::decay_t<T2> >::value,
                       "Internal testsystem error: called with a scalar that "
                       "does not match the vector type.");
-
-        bool good = true;
 
         using V2 = CopyRefQual<V1, T2>;
 
@@ -770,162 +728,187 @@ namespace Dune {
         auto &&vresult = op(static_cast<V1>(varg1), static_cast<V2>(varg2));
         for(std::size_t l = 0; l < lanes<std::decay_t<V1> >(); ++l)
         {
-          DUNE_CHECK_GOOD(lane(l, sresult) ==
+          DUNE_SIMD_CHECK(lane(l, sresult) ==
                           op(lane(l, static_cast<V1>(sval1)),
                                      static_cast<T2>(sval2) ));
-          DUNE_CHECK_GOOD(lane(l, vresult) ==
+          DUNE_SIMD_CHECK(lane(l, vresult) ==
                           op(lane(l, static_cast<V1>(vval1)),
                              lane(l, static_cast<V2>(vval2))));
           // cross check
-          DUNE_CHECK_GOOD(lane(l, sresult) == lane(l, vresult));
+          DUNE_SIMD_CHECK(lane(l, sresult) == lane(l, vresult));
         }
         // op might modify [sv]val1 and [sv]val2, verify that any such
         // modification also happens in the vector case
         for(std::size_t l = 0; l < lanes<std::decay_t<V1> >(); ++l)
         {
-          DUNE_CHECK_GOOD(lane(l, sval1) == lane(l, sarg1));
-          DUNE_CHECK_GOOD(        sval2  == lane(l, sarg2));
-          DUNE_CHECK_GOOD(lane(l, vval1) == lane(l, varg1));
-          DUNE_CHECK_GOOD(lane(l, vval2) == lane(l, varg2));
+          DUNE_SIMD_CHECK(lane(l, sval1) == lane(l, sarg1));
+          DUNE_SIMD_CHECK(        sval2  == lane(l, sarg2));
+          DUNE_SIMD_CHECK(lane(l, vval1) == lane(l, varg1));
+          DUNE_SIMD_CHECK(lane(l, vval2) == lane(l, varg2));
           // cross check
-          DUNE_CHECK_GOOD(        sval1  == lane(l, vval1));
-          DUNE_CHECK_GOOD(lane(l, sval2) == lane(l, vval2));
+          DUNE_SIMD_CHECK(        sval1  == lane(l, vval1));
+          DUNE_SIMD_CHECK(lane(l, sval2) == lane(l, vval2));
         }
-
-        return good;
       }
 
       template<class V1, class T2, class Op>
       std::enable_if_t<
-        !CanCall<Op(decltype(lane(0, std::declval<V1>())), T2)>::value,
-        bool>
+        !CanCall<Op(decltype(lane(0, std::declval<V1>())), T2)>::value>
       checkBinaryOpVS(Op op)
       {
-        // std::cerr << "No "
-        //           << className<Op(decltype(lane(0, std::declval<V1>())), T2)>()
-        //           << std::endl
-        //           << " ==> Not checking " << className<Op(V1, T2)>()
-        //           << std::endl;
-        // there is no op for that scalar so don't check for the vector
-        return true;
+        // log_ << "No "
+        //      << className<Op(decltype(lane(0, std::declval<V1>())), T2)>()
+        //      << std::endl
+        //      << " ==> Not checking " << className<Op(V1, T2)>() << std::endl;
       }
 
       template<class V, class Op>
-      bool checkBinaryOpVS(Op op)
+      void checkBinaryOpVS(Op op)
       {
         using S = Scalar<V>;
 
-        bool good = true;
+        checkBinaryOpVS<V&, S&>(op);
+        checkBinaryOpVS<V&, const S&>(op);
+        checkBinaryOpVS<V&, S&&>(op);
+        checkBinaryOpVS<V&, const S&&>(op);
 
-        good &= checkBinaryOpVS<V&, S&>(op);
-        good &= checkBinaryOpVS<V&, const S&>(op);
-        good &= checkBinaryOpVS<V&, S&&>(op);
-        good &= checkBinaryOpVS<V&, const S&&>(op);
+        checkBinaryOpVS<const V&, S&>(op);
+        checkBinaryOpVS<const V&, const S&>(op);
+        checkBinaryOpVS<const V&, S&&>(op);
+        checkBinaryOpVS<const V&, const S&&>(op);
 
-        good &= checkBinaryOpVS<const V&, S&>(op);
-        good &= checkBinaryOpVS<const V&, const S&>(op);
-        good &= checkBinaryOpVS<const V&, S&&>(op);
-        good &= checkBinaryOpVS<const V&, const S&&>(op);
+        checkBinaryOpVS<V&&, S&>(op);
+        checkBinaryOpVS<V&&, const S&>(op);
+        checkBinaryOpVS<V&&, S&&>(op);
+        checkBinaryOpVS<V&&, const S&&>(op);
 
-        good &= checkBinaryOpVS<V&&, S&>(op);
-        good &= checkBinaryOpVS<V&&, const S&>(op);
-        good &= checkBinaryOpVS<V&&, S&&>(op);
-        good &= checkBinaryOpVS<V&&, const S&&>(op);
-
-        good &= checkBinaryOpVS<const V&&, S&>(op);
-        good &= checkBinaryOpVS<const V&&, const S&>(op);
-        good &= checkBinaryOpVS<const V&&, S&&>(op);
-        good &= checkBinaryOpVS<const V&&, const S&&>(op);
-
-        return good;
-      }
-
-
-      template<class V>
-      bool checkBinaryOpsVS()
-      {
-        bool good = true;
-
-        good &= checkBinaryOpVS<V>(OpBinaryMul{});
-        good &= checkBinaryOpVS<V>(OpBinaryDiv{});
-        good &= checkBinaryOpVS<V>(OpBinaryRemainder{});
-
-        good &= checkBinaryOpVS<V>(OpBinaryPlus{});
-        good &= checkBinaryOpVS<V>(OpBinaryMinus{});
-
-        good &= checkBinaryOpVS<V>(OpBinaryLeftShift{});
-        good &= checkBinaryOpVS<V>(OpBinaryRightShift{});
-
-        good &= checkBinaryOpVS<V>(OpBinaryLess{});
-        good &= checkBinaryOpVS<V>(OpBinaryGreater{});
-        good &= checkBinaryOpVS<V>(OpBinaryLessEqual{});
-        good &= checkBinaryOpVS<V>(OpBinaryGreaterEqual{});
-
-        good &= checkBinaryOpVS<V>(OpBinaryEqual{});
-        good &= checkBinaryOpVS<V>(OpBinaryNotEqual{});
-
-        good &= checkBinaryOpVS<V>(OpBinaryBitAnd{});
-        good &= checkBinaryOpVS<V>(OpBinaryBitXor{});
-        good &= checkBinaryOpVS<V>(OpBinaryBitOr{});
-
-        good &= checkBinaryOpVS<V>(OpBinaryLogicAnd{});
-        good &= checkBinaryOpVS<V>(OpBinaryLogicOr{});
-
-        good &= checkBinaryOpVS<V>(OpBinaryAssign{});
-        good &= checkBinaryOpVS<V>(OpBinaryAssignMul{});
-        good &= checkBinaryOpVS<V>(OpBinaryAssignDiv{});
-        good &= checkBinaryOpVS<V>(OpBinaryAssignRemainder{});
-        good &= checkBinaryOpVS<V>(OpBinaryAssignPlus{});
-        good &= checkBinaryOpVS<V>(OpBinaryAssignMinus{});
-        good &= checkBinaryOpVS<V>(OpBinaryAssignLeftShift{});
-        good &= checkBinaryOpVS<V>(OpBinaryAssignRightShift{});
-        good &= checkBinaryOpVS<V>(OpBinaryAssignAnd{});
-        good &= checkBinaryOpVS<V>(OpBinaryAssignXor{});
-        good &= checkBinaryOpVS<V>(OpBinaryAssignOr{});
-
-        good &= checkBinaryOpVS<V>(OpBinaryComma{});
-
-        return good;
+        checkBinaryOpVS<const V&&, S&>(op);
+        checkBinaryOpVS<const V&&, const S&>(op);
+        checkBinaryOpVS<const V&&, S&&>(op);
+        checkBinaryOpVS<const V&&, const S&&>(op);
       }
 
       template<class V>
-      bool checkVector()
+      void checkBinaryOpsVS()
       {
-        bool first = false;
-        // We're not actually interested in first_anchor.  But its initializer
-        // is executed only once, meaning first will be true only in one
-        // invocation of checkVector<V>() (for a given V)
-        static const bool DUNE_UNUSED first_anchor = (first = true);
-        if(!first) return true;
+        checkBinaryOpVS<V>(OpBinaryMul{});
+        checkBinaryOpVS<V>(OpBinaryDiv{});
+        checkBinaryOpVS<V>(OpBinaryRemainder{});
 
-        // accumulate status of runtime tests
-        bool good = true;
+        checkBinaryOpVS<V>(OpBinaryPlus{});
+        checkBinaryOpVS<V>(OpBinaryMinus{});
 
-        // do these first so everything that appears after "Checking SIMD type
-        // ..." really pertains to that type
-        good &= checkIndex<V>();
-        good &= checkMask<V>();
+        checkBinaryOpVS<V>(OpBinaryLeftShift{});
+        checkBinaryOpVS<V>(OpBinaryRightShift{});
 
-        std::cerr << "Checking SIMD type " << className<V>() << std::endl;
+        checkBinaryOpVS<V>(OpBinaryLess{});
+        checkBinaryOpVS<V>(OpBinaryGreater{});
+        checkBinaryOpVS<V>(OpBinaryLessEqual{});
+        checkBinaryOpVS<V>(OpBinaryGreaterEqual{});
 
-        good &= checkLanes<V>();
-        good &= checkScalar<V>();
+        checkBinaryOpVS<V>(OpBinaryEqual{});
+        checkBinaryOpVS<V>(OpBinaryNotEqual{});
 
-        good &= checkDefaultConstruct<V>();
-        good &= checkLane<V>();
-        good &= checkConstruct<V>();
-        good &= checkAssign<V>();
+        checkBinaryOpVS<V>(OpBinaryBitAnd{});
+        checkBinaryOpVS<V>(OpBinaryBitXor{});
+        checkBinaryOpVS<V>(OpBinaryBitOr{});
 
-        good &= checkBinaryOpsVV<V>();
-        good &= checkBinaryOpsSV<V>();
-        good &= checkBinaryOpsVS<V>();
+        checkBinaryOpVS<V>(OpBinaryLogicAnd{});
+        checkBinaryOpVS<V>(OpBinaryLogicOr{});
 
-        return good;
+        checkBinaryOpVS<V>(OpBinaryAssign{});
+        checkBinaryOpVS<V>(OpBinaryAssignMul{});
+        checkBinaryOpVS<V>(OpBinaryAssignDiv{});
+        checkBinaryOpVS<V>(OpBinaryAssignRemainder{});
+        checkBinaryOpVS<V>(OpBinaryAssignPlus{});
+        checkBinaryOpVS<V>(OpBinaryAssignMinus{});
+        checkBinaryOpVS<V>(OpBinaryAssignLeftShift{});
+        checkBinaryOpVS<V>(OpBinaryAssignRightShift{});
+        checkBinaryOpVS<V>(OpBinaryAssignAnd{});
+        checkBinaryOpVS<V>(OpBinaryAssignXor{});
+        checkBinaryOpVS<V>(OpBinaryAssignOr{});
+
+        checkBinaryOpVS<V>(OpBinaryComma{});
       }
 
-#undef DUNE_CHECK_GOOD
+#undef DUNE_SIMD_CHECK
 
-    } // namespace Test
+    public:
+      //! run unit tests for simd type V
+      /**
+       * This function will also ensure that \c checkSimdType<Index<V>>() and
+       * \c checkSimdType<Mask<V>>() are run.  No test will be run twice for a
+       * given type.
+       *
+       * \note As an implementor of a unit test, you are encouraged to
+       *       explicitly instantiate this function in seperate compilation
+       *       units for the types you are testing.  Look at `standardtest.cc`
+       *       for how to do this.
+       *
+       * Background: The compiler can use a lot of memory when compiling a
+       * unit test for many Simd vector types.  E.g. for standardtest.cc,
+       * which tests all the fundamental arithmetic types plus \c
+       * std::complex, g++ 4.9.2 (-g -O0 -Wall on x86_64 GNU/Linux) used
+       * ~6GByte.
+       *
+       * One mitigation is to explicitly instantiate \c checkSimdType() for
+       * the types that are tested.  Still after doing that, standardtest.cc
+       * needed ~1.5GByte during compilation, which is more than the
+       * compilation units that actually instantiated \c checkSimdType()
+       * (which clocked in at maximum at around 800MB, depending on how many
+       * instantiations they contained).
+       *
+       * The second mitigation is to define \c checkSimdType() outside of the
+       * class.  I have no idea why this helps, but it makes compilation use
+       * less than ~100MByte.  (Yes, functions defined inside the class are
+       * implicitly \c inline, but the function is a template so it has inline
+       * semantics even when defined outside of the class.  And I tried \c
+       * __attribute__((__noinline__)), which had no effect on memory
+       * consumption.)
+       */
+      template<class V>
+      void checkSimdType();
+
+      //! whether all tests succeeded
+      bool good() const
+      {
+        return good_;
+      }
+
+    }; // class UnitTest
+
+    // Needs to be defined outside of the class to bring memory consumption
+    // during compilation down to an acceptable level.
+    template<class V>
+    void UnitTest::checkSimdType()
+    {
+      // check whether the test for this type already started
+      if(seen_.emplace(typeid (V)).second == false)
+      {
+        // type already seen, nothing to do
+        return;
+      }
+
+      // do these first so everything that appears after "Checking SIMD type
+      // ..." really pertains to that type
+      checkIndex<V>();
+      checkMask<V>();
+
+      log_ << "Checking SIMD type " << className<V>() << std::endl;
+
+      checkLanes<V>();
+      checkScalar<V>();
+
+      checkDefaultConstruct<V>();
+      checkLane<V>();
+      checkConstruct<V>();
+      checkAssign<V>();
+
+      checkBinaryOpsVV<V>();
+      checkBinaryOpsSV<V>();
+      checkBinaryOpsVS<V>();
+    }
+
   } // namespace Simd
 } // namespace Dune
 

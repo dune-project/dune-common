@@ -7,12 +7,10 @@
 
 namespace Dune {
   namespace Simd {
-    namespace Test {
 
-      template bool checkVector<std::complex<float      >>();
-      template bool checkVector<std::complex<double     >>();
-      template bool checkVector<std::complex<long double>>();
+    template void UnitTest::checkSimdType<std::complex<float      >>();
+    template void UnitTest::checkSimdType<std::complex<double     >>();
+    template void UnitTest::checkSimdType<std::complex<long double>>();
 
-    } // namespace Test
   } // namespace Simd
 } // namespace Dune

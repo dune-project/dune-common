@@ -5,12 +5,10 @@
 
 namespace Dune {
   namespace Simd {
-    namespace Test {
 
-      template bool checkVector<float             >();
-      template bool checkVector<double            >();
-      template bool checkVector<long double       >();
+    template void UnitTest::checkSimdType<float             >();
+    template void UnitTest::checkSimdType<double            >();
+    template void UnitTest::checkSimdType<long double       >();
 
-    } // namespace Test
   } // namespace Simd
 } // namespace Dune

@@ -11,5 +11,6 @@ dune_add_test(NAME standardtest
     standardtest_signed.cc
     standardtest_unsigned.cc
     standardtest_wchar.cc
+  LINK_LIBRARIES dunecommon
 )
 # no need to install standardtest.hh, used by standardtest*.cc only

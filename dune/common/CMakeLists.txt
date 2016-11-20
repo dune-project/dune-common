@@ -19,6 +19,7 @@ dune_add_library("dunecommon"
   parametertree.cc
   parametertreeparser.cc
   path.cc
+  simd/test.cc
   stdstreams.cc
   stdthread.cc
   ADD_LIBS "${_additional_libs}")
