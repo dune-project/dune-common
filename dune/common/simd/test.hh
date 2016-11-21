@@ -360,13 +360,8 @@ namespace Dune {
           DUNE_SIMD_CHECK(is42(vec)); }
       }
 
-      //////////////////////////////////////////////////////////////////////
-      //
-      // checks for binary operators
-      //
-
-      // base class for binary operations, provides test data
-      struct OpBinaryData {
+      // base class for operator data
+      struct OpData {
         template<class V>
         V leftVector() const
         {
@@ -400,8 +395,150 @@ namespace Dune {
         }
       };
 
+      //////////////////////////////////////////////////////////////////////
+      //
+      // checks for postfix operators
+      //
+
+#define DUNE_SIMD_POSTFIX_OP(NAME, SYMBOL)              \
+      struct OpPostfix##NAME : OpData                   \
+      {                                                 \
+        template<class V>                               \
+        auto operator()(V&& v) const                    \
+          -> decltype(std::forward<V>(v) SYMBOL)        \
+        {                                               \
+          return std::forward<V>(v) SYMBOL;             \
+        }                                               \
+      }
+
+      DUNE_SIMD_POSTFIX_OP(Decrement,        -- );
+      DUNE_SIMD_POSTFIX_OP(Increment,        ++ );
+
+#undef DUNE_SIMD_POSTFIX_OP
+
+      template<class V, class Op>
+      std::enable_if_t<
+        CanCall<Op(decltype(lane(0, std::declval<V>())))>::value>
+      checkPostfixOpV(Op op)
+      {
+        // arguments
+        auto val = op.template leftVector<std::decay_t<V>>();
+
+        // copy the arguments in case V is a references
+        auto arg = val;
+        auto &&result = op(static_cast<V>(arg));
+        for(std::size_t l = 0; l < lanes(val); ++l)
+          DUNE_SIMD_CHECK(lane(l, result) == op(lane(l, static_cast<V>(val))));
+        // op might modify val, verify that any such modification also happens
+        // in the vector case
+        for(std::size_t l = 0; l < lanes<std::decay_t<V> >(); ++l)
+          DUNE_SIMD_CHECK(lane(l, val) == lane(l, arg));
+      }
+
+      template<class V, class Op>
+      std::enable_if_t<
+        !CanCall<Op(decltype(lane(0, std::declval<V>())))>::value>
+      checkPostfixOpV(Op op)
+      {
+        // log_ << "No " << className<Op(decltype(lane(0, std::declval<V>())))>()
+        //      << std::endl
+        //      << " ==> Not checking " << className<Op(V)>() << std::endl;
+      }
+
+      template<class V, class Op>
+      void checkPostfixOpsV(Op op)
+      {
+        checkPostfixOpV<V&>(op);
+        checkPostfixOpV<const V&>(op);
+        checkPostfixOpV<V&&>(op);
+        checkPostfixOpV<const V&&>(op);
+      }
+
+      template<class V>
+      void checkPostfixOpsV()
+      {
+        checkPostfixOpsV<V>(OpPostfixDecrement{});
+        checkPostfixOpsV<V>(OpPostfixIncrement{});
+      }
+
+      //////////////////////////////////////////////////////////////////////
+      //
+      // checks for unary (prefix) operators
+      //
+
+#define DUNE_SIMD_PREFIX_OP(NAME, SYMBOL)               \
+      struct OpPrefix##NAME : OpData                    \
+      {                                                 \
+        template<class V>                               \
+        auto operator()(V&& v) const                    \
+          -> decltype(SYMBOL std::forward<V>(v))        \
+        {                                               \
+          return SYMBOL std::forward<V>(v);             \
+        }                                               \
+      }
+
+      DUNE_SIMD_PREFIX_OP(Decrement,        -- );
+      DUNE_SIMD_PREFIX_OP(Increment,        ++ );
+
+      DUNE_SIMD_PREFIX_OP(Plus,             +  );
+      DUNE_SIMD_PREFIX_OP(Minus,            -  );
+      DUNE_SIMD_PREFIX_OP(LogicNot,         !  );
+      DUNE_SIMD_PREFIX_OP(BitNot,           ~  );
+
+#undef DUNE_SIMD_PREFIX_OP
+
+      template<class V, class Op>
+      std::enable_if_t<
+        CanCall<Op(decltype(lane(0, std::declval<V>())))>::value>
+      checkPrefixOpV(Op op)
+      {
+        // arguments
+        auto val = op.template rightVector<std::decay_t<V>>();
+
+        // copy the arguments in case V is a references
+        auto arg = val;
+        auto &&result = op(static_cast<V>(arg));
+        for(std::size_t l = 0; l < lanes(val); ++l)
+          DUNE_SIMD_CHECK(lane(l, result) == op(lane(l, static_cast<V>(val))));
+        // op might modify val, verify that any such modification also happens
+        // in the vector case
+        for(std::size_t l = 0; l < lanes<std::decay_t<V> >(); ++l)
+          DUNE_SIMD_CHECK(lane(l, val) == lane(l, arg));
+      }
+
+      template<class V, class Op>
+      std::enable_if_t<
+        !CanCall<Op(decltype(lane(0, std::declval<V>())))>::value>
+      checkPrefixOpV(Op op)
+      {
+        // log_ << "No " << className<Op(decltype(lane(0, std::declval<V>())))>()
+        //      << std::endl
+        //      << " ==> Not checking " << className<Op(V)>() << std::endl;
+      }
+
+      template<class V, class Op>
+      void checkPrefixOpsV(Op op)
+      {
+        checkPrefixOpV<V&>(op);
+        checkPrefixOpV<const V&>(op);
+        checkPrefixOpV<V&&>(op);
+        checkPrefixOpV<const V&&>(op);
+      }
+
+      template<class V>
+      void checkPrefixOpsV()
+      {
+        checkPrefixOpsV<V>(OpPrefixDecrement{});
+        checkPrefixOpsV<V>(OpPrefixIncrement{});
+      }
+
+      //////////////////////////////////////////////////////////////////////
+      //
+      // checks for binary operators
+      //
+
 #define DUNE_SIMD_BINARY_OP(NAME, SYMBOL)                               \
-      struct OpBinary##NAME : OpBinaryData                              \
+      struct OpBinary##NAME : OpData                                    \
       {                                                                 \
         template<class V1, class V2>                                    \
         auto operator()(V1&& v1, V2&& v2) const                         \
@@ -503,7 +640,7 @@ namespace Dune {
       }
 
       template<class V, class Op>
-      void checkBinaryOpVV(Op op)
+      void checkBinaryOpsVV(Op op)
       {
         checkBinaryOpVV<V&, V&>(op);
         checkBinaryOpVV<V&, const V&>(op);
@@ -529,44 +666,44 @@ namespace Dune {
       template<class V>
       void checkBinaryOpsVV()
       {
-        checkBinaryOpVV<V>(OpBinaryMul{});
-        checkBinaryOpVV<V>(OpBinaryDiv{});
-        checkBinaryOpVV<V>(OpBinaryRemainder{});
+        checkBinaryOpsVV<V>(OpBinaryMul{});
+        checkBinaryOpsVV<V>(OpBinaryDiv{});
+        checkBinaryOpsVV<V>(OpBinaryRemainder{});
 
-        checkBinaryOpVV<V>(OpBinaryPlus{});
-        checkBinaryOpVV<V>(OpBinaryMinus{});
+        checkBinaryOpsVV<V>(OpBinaryPlus{});
+        checkBinaryOpsVV<V>(OpBinaryMinus{});
 
-        checkBinaryOpVV<V>(OpBinaryLeftShift{});
-        checkBinaryOpVV<V>(OpBinaryRightShift{});
+        checkBinaryOpsVV<V>(OpBinaryLeftShift{});
+        checkBinaryOpsVV<V>(OpBinaryRightShift{});
 
-        checkBinaryOpVV<V>(OpBinaryLess{});
-        checkBinaryOpVV<V>(OpBinaryGreater{});
-        checkBinaryOpVV<V>(OpBinaryLessEqual{});
-        checkBinaryOpVV<V>(OpBinaryGreaterEqual{});
+        checkBinaryOpsVV<V>(OpBinaryLess{});
+        checkBinaryOpsVV<V>(OpBinaryGreater{});
+        checkBinaryOpsVV<V>(OpBinaryLessEqual{});
+        checkBinaryOpsVV<V>(OpBinaryGreaterEqual{});
 
-        checkBinaryOpVV<V>(OpBinaryEqual{});
-        checkBinaryOpVV<V>(OpBinaryNotEqual{});
+        checkBinaryOpsVV<V>(OpBinaryEqual{});
+        checkBinaryOpsVV<V>(OpBinaryNotEqual{});
 
-        checkBinaryOpVV<V>(OpBinaryBitAnd{});
-        checkBinaryOpVV<V>(OpBinaryBitXor{});
-        checkBinaryOpVV<V>(OpBinaryBitOr{});
+        checkBinaryOpsVV<V>(OpBinaryBitAnd{});
+        checkBinaryOpsVV<V>(OpBinaryBitXor{});
+        checkBinaryOpsVV<V>(OpBinaryBitOr{});
 
-        checkBinaryOpVV<V>(OpBinaryLogicAnd{});
-        checkBinaryOpVV<V>(OpBinaryLogicOr{});
+        checkBinaryOpsVV<V>(OpBinaryLogicAnd{});
+        checkBinaryOpsVV<V>(OpBinaryLogicOr{});
 
-        checkBinaryOpVV<V>(OpBinaryAssign{});
-        checkBinaryOpVV<V>(OpBinaryAssignMul{});
-        checkBinaryOpVV<V>(OpBinaryAssignDiv{});
-        checkBinaryOpVV<V>(OpBinaryAssignRemainder{});
-        checkBinaryOpVV<V>(OpBinaryAssignPlus{});
-        checkBinaryOpVV<V>(OpBinaryAssignMinus{});
-        checkBinaryOpVV<V>(OpBinaryAssignLeftShift{});
-        checkBinaryOpVV<V>(OpBinaryAssignRightShift{});
-        checkBinaryOpVV<V>(OpBinaryAssignAnd{});
-        checkBinaryOpVV<V>(OpBinaryAssignXor{});
-        checkBinaryOpVV<V>(OpBinaryAssignOr{});
+        checkBinaryOpsVV<V>(OpBinaryAssign{});
+        checkBinaryOpsVV<V>(OpBinaryAssignMul{});
+        checkBinaryOpsVV<V>(OpBinaryAssignDiv{});
+        checkBinaryOpsVV<V>(OpBinaryAssignRemainder{});
+        checkBinaryOpsVV<V>(OpBinaryAssignPlus{});
+        checkBinaryOpsVV<V>(OpBinaryAssignMinus{});
+        checkBinaryOpsVV<V>(OpBinaryAssignLeftShift{});
+        checkBinaryOpsVV<V>(OpBinaryAssignRightShift{});
+        checkBinaryOpsVV<V>(OpBinaryAssignAnd{});
+        checkBinaryOpsVV<V>(OpBinaryAssignXor{});
+        checkBinaryOpsVV<V>(OpBinaryAssignOr{});
 
-        checkBinaryOpVV<V>(OpBinaryComma{});
+        checkBinaryOpsVV<V>(OpBinaryComma{});
       }
 
       //////////////////////////////////////////////////////////////////////
@@ -638,7 +775,7 @@ namespace Dune {
       }
 
       template<class V, class Op>
-      void checkBinaryOpSV(Op op)
+      void checkBinaryOpsSV(Op op)
       {
         using S = Scalar<V>;
 
@@ -666,32 +803,32 @@ namespace Dune {
       template<class V>
       void checkBinaryOpsSV()
       {
-        checkBinaryOpSV<V>(OpBinaryMul{});
-        checkBinaryOpSV<V>(OpBinaryDiv{});
-        checkBinaryOpSV<V>(OpBinaryRemainder{});
+        checkBinaryOpsSV<V>(OpBinaryMul{});
+        checkBinaryOpsSV<V>(OpBinaryDiv{});
+        checkBinaryOpsSV<V>(OpBinaryRemainder{});
 
-        checkBinaryOpSV<V>(OpBinaryPlus{});
-        checkBinaryOpSV<V>(OpBinaryMinus{});
+        checkBinaryOpsSV<V>(OpBinaryPlus{});
+        checkBinaryOpsSV<V>(OpBinaryMinus{});
 
-        checkBinaryOpSV<V>(OpBinaryLeftShift{});
-        checkBinaryOpSV<V>(OpBinaryRightShift{});
+        checkBinaryOpsSV<V>(OpBinaryLeftShift{});
+        checkBinaryOpsSV<V>(OpBinaryRightShift{});
 
-        checkBinaryOpSV<V>(OpBinaryLess{});
-        checkBinaryOpSV<V>(OpBinaryGreater{});
-        checkBinaryOpSV<V>(OpBinaryLessEqual{});
-        checkBinaryOpSV<V>(OpBinaryGreaterEqual{});
+        checkBinaryOpsSV<V>(OpBinaryLess{});
+        checkBinaryOpsSV<V>(OpBinaryGreater{});
+        checkBinaryOpsSV<V>(OpBinaryLessEqual{});
+        checkBinaryOpsSV<V>(OpBinaryGreaterEqual{});
 
-        checkBinaryOpSV<V>(OpBinaryEqual{});
-        checkBinaryOpSV<V>(OpBinaryNotEqual{});
+        checkBinaryOpsSV<V>(OpBinaryEqual{});
+        checkBinaryOpsSV<V>(OpBinaryNotEqual{});
 
-        checkBinaryOpSV<V>(OpBinaryBitAnd{});
-        checkBinaryOpSV<V>(OpBinaryBitXor{});
-        checkBinaryOpSV<V>(OpBinaryBitOr{});
+        checkBinaryOpsSV<V>(OpBinaryBitAnd{});
+        checkBinaryOpsSV<V>(OpBinaryBitXor{});
+        checkBinaryOpsSV<V>(OpBinaryBitOr{});
 
-        checkBinaryOpSV<V>(OpBinaryLogicAnd{});
-        checkBinaryOpSV<V>(OpBinaryLogicOr{});
+        checkBinaryOpsSV<V>(OpBinaryLogicAnd{});
+        checkBinaryOpsSV<V>(OpBinaryLogicOr{});
 
-        checkBinaryOpSV<V>(OpBinaryComma{});
+        checkBinaryOpsSV<V>(OpBinaryComma{});
       }
 
       //////////////////////////////////////////////////////////////////////
@@ -763,7 +900,7 @@ namespace Dune {
       }
 
       template<class V, class Op>
-      void checkBinaryOpVS(Op op)
+      void checkBinaryOpsVS(Op op)
       {
         using S = Scalar<V>;
 
@@ -791,44 +928,44 @@ namespace Dune {
       template<class V>
       void checkBinaryOpsVS()
       {
-        checkBinaryOpVS<V>(OpBinaryMul{});
-        checkBinaryOpVS<V>(OpBinaryDiv{});
-        checkBinaryOpVS<V>(OpBinaryRemainder{});
+        checkBinaryOpsVS<V>(OpBinaryMul{});
+        checkBinaryOpsVS<V>(OpBinaryDiv{});
+        checkBinaryOpsVS<V>(OpBinaryRemainder{});
 
-        checkBinaryOpVS<V>(OpBinaryPlus{});
-        checkBinaryOpVS<V>(OpBinaryMinus{});
+        checkBinaryOpsVS<V>(OpBinaryPlus{});
+        checkBinaryOpsVS<V>(OpBinaryMinus{});
 
-        checkBinaryOpVS<V>(OpBinaryLeftShift{});
-        checkBinaryOpVS<V>(OpBinaryRightShift{});
+        checkBinaryOpsVS<V>(OpBinaryLeftShift{});
+        checkBinaryOpsVS<V>(OpBinaryRightShift{});
 
-        checkBinaryOpVS<V>(OpBinaryLess{});
-        checkBinaryOpVS<V>(OpBinaryGreater{});
-        checkBinaryOpVS<V>(OpBinaryLessEqual{});
-        checkBinaryOpVS<V>(OpBinaryGreaterEqual{});
+        checkBinaryOpsVS<V>(OpBinaryLess{});
+        checkBinaryOpsVS<V>(OpBinaryGreater{});
+        checkBinaryOpsVS<V>(OpBinaryLessEqual{});
+        checkBinaryOpsVS<V>(OpBinaryGreaterEqual{});
 
-        checkBinaryOpVS<V>(OpBinaryEqual{});
-        checkBinaryOpVS<V>(OpBinaryNotEqual{});
+        checkBinaryOpsVS<V>(OpBinaryEqual{});
+        checkBinaryOpsVS<V>(OpBinaryNotEqual{});
 
-        checkBinaryOpVS<V>(OpBinaryBitAnd{});
-        checkBinaryOpVS<V>(OpBinaryBitXor{});
-        checkBinaryOpVS<V>(OpBinaryBitOr{});
+        checkBinaryOpsVS<V>(OpBinaryBitAnd{});
+        checkBinaryOpsVS<V>(OpBinaryBitXor{});
+        checkBinaryOpsVS<V>(OpBinaryBitOr{});
 
-        checkBinaryOpVS<V>(OpBinaryLogicAnd{});
-        checkBinaryOpVS<V>(OpBinaryLogicOr{});
+        checkBinaryOpsVS<V>(OpBinaryLogicAnd{});
+        checkBinaryOpsVS<V>(OpBinaryLogicOr{});
 
-        checkBinaryOpVS<V>(OpBinaryAssign{});
-        checkBinaryOpVS<V>(OpBinaryAssignMul{});
-        checkBinaryOpVS<V>(OpBinaryAssignDiv{});
-        checkBinaryOpVS<V>(OpBinaryAssignRemainder{});
-        checkBinaryOpVS<V>(OpBinaryAssignPlus{});
-        checkBinaryOpVS<V>(OpBinaryAssignMinus{});
-        checkBinaryOpVS<V>(OpBinaryAssignLeftShift{});
-        checkBinaryOpVS<V>(OpBinaryAssignRightShift{});
-        checkBinaryOpVS<V>(OpBinaryAssignAnd{});
-        checkBinaryOpVS<V>(OpBinaryAssignXor{});
-        checkBinaryOpVS<V>(OpBinaryAssignOr{});
+        checkBinaryOpsVS<V>(OpBinaryAssign{});
+        checkBinaryOpsVS<V>(OpBinaryAssignMul{});
+        checkBinaryOpsVS<V>(OpBinaryAssignDiv{});
+        checkBinaryOpsVS<V>(OpBinaryAssignRemainder{});
+        checkBinaryOpsVS<V>(OpBinaryAssignPlus{});
+        checkBinaryOpsVS<V>(OpBinaryAssignMinus{});
+        checkBinaryOpsVS<V>(OpBinaryAssignLeftShift{});
+        checkBinaryOpsVS<V>(OpBinaryAssignRightShift{});
+        checkBinaryOpsVS<V>(OpBinaryAssignAnd{});
+        checkBinaryOpsVS<V>(OpBinaryAssignXor{});
+        checkBinaryOpsVS<V>(OpBinaryAssignOr{});
 
-        checkBinaryOpVS<V>(OpBinaryComma{});
+        checkBinaryOpsVS<V>(OpBinaryComma{});
       }
 
 #undef DUNE_SIMD_CHECK
@@ -903,6 +1040,9 @@ namespace Dune {
       checkLane<V>();
       checkConstruct<V>();
       checkAssign<V>();
+
+      checkPostfixOpsV<V>();
+      checkPrefixOpsV<V>();
 
       checkBinaryOpsVV<V>();
       checkBinaryOpsSV<V>();
