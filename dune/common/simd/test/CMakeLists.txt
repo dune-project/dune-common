@@ -34,3 +34,11 @@ dune_add_test(NAME standardtest
   LINK_LIBRARIES dunecommon
 )
 # no need to install standardtest.hh, used by standardtest*.cc only
+
+dune_add_test(NAME vctest
+  SOURCES
+    vctest.cc
+  LINK_LIBRARIES dunecommon
+  CMAKE_GUARD Vc_FOUND
+)
+add_dune_vc_flags(vctest)
