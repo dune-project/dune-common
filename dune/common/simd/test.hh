@@ -93,6 +93,9 @@ namespace Dune {
       // records the types for which checks have started running to avoid
       // infinite recursion
       std::unordered_set<std::type_index> seen_;
+      // Same for the extra checks for mask types, although here we only avoid
+      // running checks more than once
+      std::unordered_set<std::type_index> maskSeen_;
 
       ////////////////////////////////////////////////////////////////////////
       //
@@ -152,6 +155,38 @@ namespace Dune {
         return good;
       }
 
+      template<class V>
+      static V leftVector()
+      {
+        V res;
+        for(std::size_t l = 0; l < lanes(res); ++l)
+          lane(l, res) = Scalar<V>(l+1);
+        return res;
+      }
+
+      template<class V>
+      static V rightVector()
+      {
+        V res;
+        for(std::size_t l = 0; l < lanes(res); ++l)
+          // do not exceed number of bits in char (for shifts)
+          lane(l, res) = Scalar<V>((l+1)%8);
+        return res;
+      }
+
+      template<class T>
+      static T leftScalar()
+      {
+        return T(42);
+      }
+
+      template<class T>
+      static T rightScalar()
+      {
+        // do not exceed number of bits in char
+        return T(5);
+      }
+
       template<class Call>
       using CanCall = Impl::CanCall<Call>;
 
@@ -176,7 +211,7 @@ namespace Dune {
       }
 
       template<class V>
-      void checkIndex()
+      void checkIndexOf()
       {
         // check that the type Scalar<V> exists
         using I = Index<V>;
@@ -194,20 +229,38 @@ namespace Dune {
       }
 
       template<class V>
-      void checkMask()
+      void checkMaskOf()
       {
         // check that the type Scalar<V> exists
         using M = Mask<V>;
         log_ << "Mask type of " << className<V>() << " is " << className<M>()
              << std::endl;
 
-        static_assert(std::is_same<M, std::decay_t<M> >::value, "Mask types "
-                      "must not be references, and must not include "
-                      "cv-qualifiers");
         static_assert(lanes<V>() == lanes<M>(), "Mask types must have the "
                       "same number of lanes as the original vector types");
 
+        checkMaskType<M>();
+      }
+
+      template<class M>
+      void checkMaskType()
+      {
+        static_assert(std::is_same<M, std::decay_t<M> >::value, "Mask types "
+                      "must not be references, and must not include "
+                      "cv-qualifiers");
+
+        // check whether the test for this type already started
+        if(maskSeen_.emplace(typeid (M)).second == false)
+        {
+          // type already seen, nothing to do
+          return;
+        }
+
         checkSimdType<M>();
+
+        log_ << "Checking SIMD mask type " << className<M>() << std::endl;
+
+        checkBoolReductions<M>();
       }
 
       //////////////////////////////////////////////////////////////////////
@@ -360,48 +413,13 @@ namespace Dune {
           DUNE_SIMD_CHECK(is42(vec)); }
       }
 
-      // base class for operator data
-      struct OpData {
-        template<class V>
-        V leftVector() const
-        {
-          V res;
-          for(std::size_t l = 0; l < lanes(res); ++l)
-            lane(l, res) = Scalar<V>(l+1);
-          return res;
-        }
-
-        template<class V>
-        V rightVector() const
-        {
-          V res;
-          for(std::size_t l = 0; l < lanes(res); ++l)
-            // do not exceed number of bits in char (for shifts)
-            lane(l, res) = Scalar<V>((l+1)%8);
-          return res;
-        }
-
-        template<class T>
-        T leftScalar() const
-        {
-          return T(42);
-        }
-
-        template<class T>
-        T rightScalar() const
-        {
-          // do not exceed number of bits in char
-          return T(5);
-        }
-      };
-
       //////////////////////////////////////////////////////////////////////
       //
       // checks for postfix operators
       //
 
 #define DUNE_SIMD_POSTFIX_OP(NAME, SYMBOL)              \
-      struct OpPostfix##NAME : OpData                   \
+      struct OpPostfix##NAME                            \
       {                                                 \
         template<class V>                               \
         auto operator()(V&& v) const                    \
@@ -422,7 +440,7 @@ namespace Dune {
       checkPostfixOpV(Op op)
       {
         // arguments
-        auto val = op.template leftVector<std::decay_t<V>>();
+        auto val = leftVector<std::decay_t<V>>();
 
         // copy the arguments in case V is a references
         auto arg = val;
@@ -467,7 +485,7 @@ namespace Dune {
       //
 
 #define DUNE_SIMD_PREFIX_OP(NAME, SYMBOL)               \
-      struct OpPrefix##NAME : OpData                    \
+      struct OpPrefix##NAME                             \
       {                                                 \
         template<class V>                               \
         auto operator()(V&& v) const                    \
@@ -493,7 +511,7 @@ namespace Dune {
       checkPrefixOpV(Op op)
       {
         // arguments
-        auto val = op.template rightVector<std::decay_t<V>>();
+        auto val = rightVector<std::decay_t<V>>();
 
         // copy the arguments in case V is a references
         auto arg = val;
@@ -538,7 +556,7 @@ namespace Dune {
       //
 
 #define DUNE_SIMD_BINARY_OP(NAME, SYMBOL)                               \
-      struct OpBinary##NAME : OpData                                    \
+      struct OpBinary##NAME                                             \
       {                                                                 \
         template<class V1, class V2>                                    \
         auto operator()(V1&& v1, V2&& v2) const                         \
@@ -607,8 +625,8 @@ namespace Dune {
                       "don't decay to the same thing");
 
         // arguments
-        auto val1 = op.template leftVector<std::decay_t<V1>>();
-        auto val2 = op.template rightVector<std::decay_t<V2>>();
+        auto val1 = leftVector<std::decay_t<V1>>();
+        auto val2 = rightVector<std::decay_t<V2>>();
 
         // copy the arguments in case V1 or V2 are references
         auto arg1 = val1;
@@ -724,8 +742,8 @@ namespace Dune {
         using V1 = CopyRefQual<V2, T1>;
 
         // arguments
-        auto sval1 = op.template leftScalar<std::decay_t<T1>>();
-        auto sval2 = op.template rightVector<std::decay_t<V2>>();
+        auto sval1 = leftScalar<std::decay_t<T1>>();
+        auto sval2 = rightVector<std::decay_t<V2>>();
         // these are used to cross check with pure vector ops
         std::decay_t<V1> vval1 = sval1;
         auto vval2 = sval2;
@@ -849,8 +867,8 @@ namespace Dune {
         using V2 = CopyRefQual<V1, T2>;
 
         // arguments
-        auto sval1 = op.template leftVector<std::decay_t<V1>>();
-        auto sval2 = op.template rightScalar<std::decay_t<T2>>();
+        auto sval1 = leftVector<std::decay_t<V1>>();
+        auto sval2 = rightScalar<std::decay_t<T2>>();
         // these are used to cross check with pure vector ops
         auto vval1 = sval1;
         std::decay_t<V2> vval2 = sval2;
@@ -968,6 +986,147 @@ namespace Dune {
         checkBinaryOpsVS<V>(OpBinaryComma{});
       }
 
+      //////////////////////////////////////////////////////////////////////
+      //
+      // SIMD interface functions
+      //
+
+      template<class V>
+      void checkValueCast()
+      {
+        using RValueResult = decltype(valueCast(lane(0, std::declval<V>())));
+        static_assert(std::is_same<RValueResult, Scalar<V> >::value,
+                      "Result of valueCast() must always be Scalar<V>");
+
+        using MutableLValueResult =
+          decltype(valueCast(lane(0, std::declval<V&>())));
+        static_assert(std::is_same<MutableLValueResult, Scalar<V> >::value,
+                      "Result of valueCast() must always be Scalar<V>");
+
+        using ConstLValueResult =
+          decltype(valueCast(lane(0, std::declval<const V&>())));
+        static_assert(std::is_same<ConstLValueResult, Scalar<V> >::value,
+                      "Result of valueCast() must always be Scalar<V>");
+
+        V vec = make123<V>();
+        for(std::size_t l = 0; l < lanes(vec); ++l)
+          DUNE_SIMD_CHECK(valueCast(lane(l, vec)) == Scalar<V>(l+1));
+      }
+
+      // may only be called for mask types
+      template<class M>
+      void checkBoolReductions()
+      {
+        M trueVec = true;
+
+        // mutable lvalue
+        DUNE_SIMD_CHECK(allTrue (static_cast<M&>(trueVec)) == true);
+        DUNE_SIMD_CHECK(anyTrue (static_cast<M&>(trueVec)) == true);
+        DUNE_SIMD_CHECK(allFalse(static_cast<M&>(trueVec)) == false);
+        DUNE_SIMD_CHECK(anyFalse(static_cast<M&>(trueVec)) == false);
+
+        // const lvalue
+        DUNE_SIMD_CHECK(allTrue (static_cast<const M&>(trueVec)) == true);
+        DUNE_SIMD_CHECK(anyTrue (static_cast<const M&>(trueVec)) == true);
+        DUNE_SIMD_CHECK(allFalse(static_cast<const M&>(trueVec)) == false);
+        DUNE_SIMD_CHECK(anyFalse(static_cast<const M&>(trueVec)) == false);
+
+        // rvalue
+        DUNE_SIMD_CHECK(allTrue (M(true)) == true);
+        DUNE_SIMD_CHECK(anyTrue (M(true)) == true);
+        DUNE_SIMD_CHECK(allFalse(M(true)) == false);
+        DUNE_SIMD_CHECK(anyFalse(M(true)) == false);
+
+        M falseVec = false;
+
+        // mutable lvalue
+        DUNE_SIMD_CHECK(allTrue (static_cast<M&>(falseVec)) == false);
+        DUNE_SIMD_CHECK(anyTrue (static_cast<M&>(falseVec)) == false);
+        DUNE_SIMD_CHECK(allFalse(static_cast<M&>(falseVec)) == true);
+        DUNE_SIMD_CHECK(anyFalse(static_cast<M&>(falseVec)) == true);
+
+        // const lvalue
+        DUNE_SIMD_CHECK(allTrue (static_cast<const M&>(falseVec)) == false);
+        DUNE_SIMD_CHECK(anyTrue (static_cast<const M&>(falseVec)) == false);
+        DUNE_SIMD_CHECK(allFalse(static_cast<const M&>(falseVec)) == true);
+        DUNE_SIMD_CHECK(anyFalse(static_cast<const M&>(falseVec)) == true);
+
+        // rvalue
+        DUNE_SIMD_CHECK(allTrue (M(false)) == false);
+        DUNE_SIMD_CHECK(anyTrue (M(false)) == false);
+        DUNE_SIMD_CHECK(allFalse(M(false)) == true);
+        DUNE_SIMD_CHECK(anyFalse(M(false)) == true);
+
+        M mixedVec;
+        for(std::size_t l = 0; l < lanes(mixedVec); ++l)
+          lane(l, mixedVec) = (l % 2);
+
+        // mutable lvalue
+        DUNE_SIMD_CHECK
+          (allTrue (static_cast<M&>(mixedVec)) == false);
+        DUNE_SIMD_CHECK
+          (anyTrue (static_cast<M&>(mixedVec)) == (lanes<M>() > 1));
+        DUNE_SIMD_CHECK
+          (allFalse(static_cast<M&>(mixedVec)) == (lanes<M>() == 1));
+        DUNE_SIMD_CHECK
+          (anyFalse(static_cast<M&>(mixedVec)) == true);
+
+        // const lvalue
+        DUNE_SIMD_CHECK
+          (allTrue (static_cast<const M&>(mixedVec)) == false);
+        DUNE_SIMD_CHECK
+          (anyTrue (static_cast<const M&>(mixedVec)) == (lanes<M>() > 1));
+        DUNE_SIMD_CHECK
+          (allFalse(static_cast<const M&>(mixedVec)) == (lanes<M>() == 1));
+        DUNE_SIMD_CHECK
+          (anyFalse(static_cast<const M&>(mixedVec)) == true);
+
+        // rvalue
+        DUNE_SIMD_CHECK(allTrue (M(mixedVec)) == false);
+        DUNE_SIMD_CHECK(anyTrue (M(mixedVec)) == (lanes<M>() > 1));
+        DUNE_SIMD_CHECK(allFalse(M(mixedVec)) == (lanes<M>() == 1));
+        DUNE_SIMD_CHECK(anyFalse(M(mixedVec)) == true);
+      }
+
+      template<class V>
+      void checkCond()
+      {
+        using M = Mask<V>;
+
+        static_assert
+          (std::is_same<decltype(cond(std::declval<M>(), std::declval<V>(),
+                                      std::declval<V>())), V>::value,
+           "The result of cond(M, V, V) should have exactly the type V");
+
+        static_assert
+          (std::is_same<decltype(cond(std::declval<const M&>(),
+                                      std::declval<const V&>(),
+                                      std::declval<const V&>())), V>::value,
+           "The result of cond(const M&, const V&, const V&) should have "
+           "exactly the type V");
+
+        static_assert
+          (std::is_same<decltype(cond(std::declval<M&>(), std::declval<V&>(),
+                                      std::declval<V&>())), V>::value,
+           "The result of cond(M&, V&, V&) should have exactly the type V");
+
+        V vec1 = leftVector<V>();
+        V vec2 = rightVector<V>();
+
+        DUNE_SIMD_CHECK(cond(M(true),  vec1, vec2) == vec1);
+        DUNE_SIMD_CHECK(cond(M(false), vec1, vec2) == vec2);
+
+        V mixedResult;
+        M mixedMask;
+        for(std::size_t l = 0; l < lanes(mixedMask); ++l)
+        {
+          lane(l, mixedMask  ) = (l % 2);
+          lane(l, mixedResult) = lane(l, (l % 2) ? vec1 : vec2);
+        }
+
+        DUNE_SIMD_CHECK(cond(mixedMask, vec1, vec2) == mixedResult);
+      }
+
 #undef DUNE_SIMD_CHECK
 
     public:
@@ -1028,8 +1187,8 @@ namespace Dune {
 
       // do these first so everything that appears after "Checking SIMD type
       // ..." really pertains to that type
-      checkIndex<V>();
-      checkMask<V>();
+      checkIndexOf<V>();
+      checkMaskOf<V>();
 
       log_ << "Checking SIMD type " << className<V>() << std::endl;
 
@@ -1047,6 +1206,10 @@ namespace Dune {
       checkBinaryOpsVV<V>();
       checkBinaryOpsSV<V>();
       checkBinaryOpsVS<V>();
+
+      checkValueCast<V>();
+      checkCond<V>();
+
     }
 
   } // namespace Simd
