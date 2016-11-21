@@ -7,8 +7,6 @@ namespace Dune {
   namespace Simd {
 
     template void UnitTest::checkSimdType<float             >();
-    template void UnitTest::checkSimdType<double            >();
-    template void UnitTest::checkSimdType<long double       >();
 
   } // namespace Simd
 } // namespace Dune

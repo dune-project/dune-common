@@ -4,13 +4,33 @@
 dune_add_test(NAME standardtest
   SOURCES
     standardtest.cc
-    standardtest_bool.cc
+
     standardtest_char.cc
-    standardtest_complex.cc
-    standardtest_floating.cc
-    standardtest_signed.cc
+    standardtest_unsigned_char.cc
+    standardtest_signed_char.cc
+
+    standardtest_short.cc
+    standardtest_unsigned_short.cc
+    standardtest_int.cc
     standardtest_unsigned.cc
-    standardtest_wchar.cc
+    standardtest_long.cc
+    standardtest_unsigned_long.cc
+    standardtest_long_long.cc
+    standardtest_unsigned_long_long.cc
+
+    standardtest_wchar_t.cc
+    standardtest_char16_t.cc
+    standardtest_char32_t.cc
+
+    standardtest_bool.cc
+
+    standardtest_float.cc
+    standardtest_double.cc
+    standardtest_long_double.cc
+
+    standardtest_complex_float.cc
+    standardtest_complex_double.cc
+    standardtest_complex_long_double.cc
   LINK_LIBRARIES dunecommon
 )
 # no need to install standardtest.hh, used by standardtest*.cc only

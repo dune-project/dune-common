@@ -6,8 +6,6 @@
 namespace Dune {
   namespace Simd {
 
-    template void UnitTest::checkSimdType<wchar_t           >();
-    template void UnitTest::checkSimdType<char16_t          >();
     template void UnitTest::checkSimdType<char32_t          >();
 
   } // namespace Simd
