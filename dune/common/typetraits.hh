@@ -428,6 +428,16 @@ namespace Dune
 
 #endif // defined(DOXYGEN) or HAVE_IS_INDEXABLE_SUPPORT
 
+  namespace Impl {
+    // This function does nothing.
+    // By passing expressions to this function one can avoid
+    // "value computed is not used" warnings that may show up
+    // in a comma expression.
+    template<class...T>
+    void ignore(T&&... t)
+    {}
+  }
+
   /**
      typetrait to check that a class has begin() and end() members
    */
@@ -440,10 +450,14 @@ namespace Dune
 #ifndef DOXYGEN
   // version for types with begin() and end()
   template<typename T>
-  struct is_range<T,
-                  typename std::enable_if<
-                    (sizeof(std::declval<T>().begin() == std::declval<T>().end()) != 0)
-                      >::type>
+  struct is_range<T, decltype(Impl::ignore(
+      std::declval<T>().begin(),
+      std::declval<T>().end(),
+      std::declval<T>().begin() != std::declval<T>().end(),
+      decltype(std::declval<T>().begin()){std::declval<T>().end()},
+      ++(std::declval<std::add_lvalue_reference_t<decltype(std::declval<T>().begin())>>()),
+      *(std::declval<T>().begin())
+      ))>
     : public std::true_type
   {};
 #endif
