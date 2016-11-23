@@ -118,7 +118,8 @@ dune_add_test(SOURCES lrutest.cc
               LINK_LIBRARIES dunecommon)
 
 dune_add_test(SOURCES mpicollectivecommunication.cc
-              LINK_LIBRARIES dunecommon)
+              LINK_LIBRARIES dunecommon
+              CMAKE_GUARD MPI_FOUND)
 
 dune_add_test(SOURCES mpiguardtest.cc
               LINK_LIBRARIES dunecommon)
