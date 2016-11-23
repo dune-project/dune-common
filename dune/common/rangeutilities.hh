@@ -4,6 +4,7 @@
 #define DUNE_COMMON_RANGE_UTILITIES_HH
 
 #include <dune/common/typetraits.hh>
+#include <algorithm>
 #include <utility>
 #include <type_traits>
 #include <bitset>
@@ -30,11 +31,8 @@ namespace Dune
             typename std::enable_if<is_range<T>::value, int>::type = 0>
   typename T::value_type
   max_value(const T & v) {
-    using std::max;
-    typename T::value_type m;
-    for (const auto & e : v)
-      m = max(e,m);
-    return m;
+    using std::max_element;
+    return *max_element(v.begin(), v.end());
   }
 
   template <typename T,
@@ -50,16 +48,13 @@ namespace Dune
             typename std::enable_if<is_range<T>::value, int>::type = 0>
   typename T::value_type
   min_value(const T & v) {
-    using std::min;
-    typename T::value_type m;
-    for (const auto & e : v)
-      m = min(e,m);
-    return m;
+    using std::min_element;
+    return *min_element(v.begin(), v.end());
   }
 
   template <typename T,
             typename std::enable_if<!is_range<T>::value, int>::type = 0>
-  T & min_value(const T & v) { return v; }
+  const T & min_value(const T & v) { return v; }
 
   /**
      \brief similar to std::bitset<N>::any() return true, if any entries is true

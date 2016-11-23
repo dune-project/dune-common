@@ -145,6 +145,9 @@ dune_add_test(SOURCES pathtest.cc
 
 dune_add_test(SOURCES poolallocatortest.cc)
 
+dune_add_test(SOURCES rangeutilitiestest.cc
+              LINK_LIBRARIES dunecommon)
+
 dune_add_test(SOURCES shared_ptrtest.cc)
 
 dune_add_test(SOURCES singletontest.cc)

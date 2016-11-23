@@ -408,7 +408,7 @@ namespace Dune
      typetrait to check that a class has begin() and end() members
    */
   // default version, gets picked if SFINAE fails
-  template<typename T, typename = void, typename = void>
+  template<typename T, typename = void>
   struct is_range
     : public std::false_type
   {};
@@ -417,8 +417,9 @@ namespace Dune
   // version for types with begin() and end()
   template<typename T>
   struct is_range<T,
-                  decltype(std::declval<T>().begin()),
-                  decltype(std::declval<T>().end())>
+                  typename std::enable_if<
+                    (sizeof(std::declval<T>().begin() == std::declval<T>().end()) != 0)
+                      >::type>
     : public std::true_type
   {};
 #endif
