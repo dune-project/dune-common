@@ -525,8 +525,8 @@ namespace Dune
 #ifndef NDEBUG
       Chunk* current=chunks_;
       while(current) {
-        if(static_cast<void*>(&current->chunk_)<=b &&
-           static_cast<void*>((&current->chunk_)+chunkSize)>b)
+        if(static_cast<void*>(current->chunk_)<=b &&
+           static_cast<void*>(current->chunk_+chunkSize)>b)
           break;
         current=current->next_;
       }
