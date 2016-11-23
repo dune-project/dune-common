@@ -59,7 +59,7 @@ namespace Dune
 
   template <typename T,
             typename std::enable_if<!is_range<T>::value, int>::type = 0>
-  T & min_value(const T & v) { return v; }
+  const T & min_value(const T & v) { return v; }
 
   /**
      \brief similar to std::bitset<N>::any() return true, if any entries is true
