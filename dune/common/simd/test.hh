@@ -548,6 +548,11 @@ namespace Dune {
       {
         checkPrefixOpsV<V>(OpPrefixDecrement{});
         checkPrefixOpsV<V>(OpPrefixIncrement{});
+
+        checkPrefixOpsV<V>(OpPrefixPlus{});
+        checkPrefixOpsV<V>(OpPrefixMinus{});
+        checkPrefixOpsV<V>(OpPrefixLogicNot{});
+        checkPrefixOpsV<V>(OpPrefixBitNot{});
       }
 
       //////////////////////////////////////////////////////////////////////
