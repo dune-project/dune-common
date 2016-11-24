@@ -1118,8 +1118,8 @@ namespace Dune {
         V vec1 = leftVector<V>();
         V vec2 = rightVector<V>();
 
-        DUNE_SIMD_CHECK(cond(M(true),  vec1, vec2) == vec1);
-        DUNE_SIMD_CHECK(cond(M(false), vec1, vec2) == vec2);
+        DUNE_SIMD_CHECK(allTrue(cond(M(true),  vec1, vec2) == vec1));
+        DUNE_SIMD_CHECK(allTrue(cond(M(false), vec1, vec2) == vec2));
 
         V mixedResult;
         M mixedMask;
@@ -1129,7 +1129,7 @@ namespace Dune {
           lane(l, mixedResult) = lane(l, (l % 2) ? vec1 : vec2);
         }
 
-        DUNE_SIMD_CHECK(cond(mixedMask, vec1, vec2) == mixedResult);
+        DUNE_SIMD_CHECK(allTrue(cond(mixedMask, vec1, vec2) == mixedResult));
       }
 
 #undef DUNE_SIMD_CHECK
