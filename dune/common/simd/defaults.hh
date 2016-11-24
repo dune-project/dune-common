@@ -60,7 +60,7 @@ namespace Dune {
       template<class Mask>
       bool allTrue(ADLTag<0>, Mask mask)
       {
-        return !anyTrue(!mask);
+        return !Dune::Simd::anyTrue(!mask);
       }
 
       //! implements Simd::anyFalse()
@@ -70,7 +70,7 @@ namespace Dune {
       template<class Mask>
       bool anyFalse(ADLTag<0>, Mask mask)
       {
-        return anyTrue(!mask);
+        return Dune::Simd::anyTrue(!mask);
       }
 
       //! implements Simd::allFalse()
@@ -80,7 +80,7 @@ namespace Dune {
       template<class Mask>
       bool allFalse(ADLTag<0>, Mask mask)
       {
-        return !anyTrue(mask);
+        return !Dune::Simd::anyTrue(mask);
       }
 
       //! @} Group SIMDDefaults
