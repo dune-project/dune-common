@@ -2,6 +2,18 @@ dune_add_test(SOURCES arraylisttest.cc)
 
 dune_add_test(SOURCES arraytest.cc)
 
+dune_add_test(SOURCES assertandreturntest.cc
+              LINK_LIBRARIES dunecommon)
+dune_add_test(NAME assertandreturntest_compiletime_fail
+              SOURCES assertandreturntest.cc
+              LINK_LIBRARIES dunecommon
+              COMPILE_DEFINITIONS "TEST_COMPILETIME_FAIL"
+              EXPECT_COMPILE_FAIL)
+dune_add_test(NAME assertandreturntest_ndebug
+              SOURCES assertandreturntest.cc
+              LINK_LIBRARIES dunecommon
+              COMPILE_DEFINITIONS "TEST_NDEBUG")
+
 dune_add_test(SOURCES bigunsignedinttest.cc
               LINK_LIBRARIES dunecommon)
 
