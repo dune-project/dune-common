@@ -906,8 +906,8 @@ namespace Dune {
           DUNE_SIMD_CHECK(lane(l, vval1) == lane(l, varg1));
           DUNE_SIMD_CHECK(lane(l, vval2) == lane(l, varg2));
           // cross check
-          DUNE_SIMD_CHECK(        sval1  == lane(l, vval1));
-          DUNE_SIMD_CHECK(lane(l, sval2) == lane(l, vval2));
+          DUNE_SIMD_CHECK(lane(l, sval1) == lane(l, vval1));
+          DUNE_SIMD_CHECK(        sval2  == lane(l, vval2));
         }
       }
 
