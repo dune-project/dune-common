@@ -1,0 +1,8 @@
+#include<iostream>
+
+int main()
+{
+  std::cout << "This test was skipped because it failed the following CMake Conditions:" << std::endl;
+  ${FAILED_CONDITION_PRINTING}
+  return 77;
+}

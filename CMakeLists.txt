@@ -2,7 +2,7 @@
 project("dune-common" C CXX)
 
 # general stuff
-cmake_minimum_required(VERSION 2.8.6)
+cmake_minimum_required(VERSION 2.8.12)
 
 # make sure our own modules are found
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/modules")
@@ -21,8 +21,6 @@ add_subdirectory("lib")
 add_subdirectory("share")
 add_subdirectory("dune")
 add_subdirectory("bin")
-add_subdirectory("m4")
-add_subdirectory("am")
 add_subdirectory("doc")
 add_subdirectory("cmake/modules")
 add_subdirectory("cmake/scripts")

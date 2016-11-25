@@ -20,7 +20,7 @@ struct ConstReferenceOp
   typedef typename BBF::const_reference const_reference;
 
   void operator()(const_reference t){
-    DUNE_UNUSED bitset x = t[0];
+    DUNE_UNUSED bitset x = t;
   }
 };
 

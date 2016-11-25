@@ -2,7 +2,10 @@
 // vi: set et ts=4 sw=2 sts=2:
 #ifndef DUNE_ITERATORFACADES_HH
 #define DUNE_ITERATORFACADES_HH
+
 #include <iterator>
+#include <type_traits>
+
 #include "typetraits.hh"
 
 namespace Dune
@@ -27,8 +30,8 @@ namespace Dune
      template<class C, class T>
      class TestIterator : public Dune::BidirectionalIteratorFacade<TestIterator<C,T>,T, T&, int>
      {
-      friend class TestIterator<typename remove_const<C>::type, typename remove_const<T>::type >;
-      friend class TestIterator<const typename remove_const<C>::type, const typename remove_const<T>::type >;
+      friend class TestIterator<typename std::remove_const<C>::type, typename std::remove_const<T>::type >;
+      friend class TestIterator<const typename std::remove_const<C>::type, const typename std::remove_const<T>::type >;
 
      public:
 
@@ -40,23 +43,23 @@ namespace Dune
         : container_(&cont), position_(pos)
       {}
 
-      TestIterator(const TestIterator<typename remove_const<C>::type, typename remove_const<T>::type >& other)
+      TestIterator(const TestIterator<typename std::remove_const<C>::type, typename std::remove_const<T>::type >& other)
         : container_(other.container_), position_(other.position_)
       {}
 
 
-      TestIterator(const TestIterator<const typename remove_const<C>::type, const typename remove_const<T>::type >& other)
+      TestIterator(const TestIterator<const typename std::remove_const<C>::type, const typename std::remove_const<T>::type >& other)
         : container_(other.container_), position_(other.position_)
       {}
 
       // Methods needed by the forward iterator
-      bool equals(const TestIterator<typename remove_const<C>::type,typename remove_const<T>::type>& other) const
+      bool equals(const TestIterator<typename std::remove_const<C>::type,typename std::remove_const<T>::type>& other) const
       {
         return position_ == other.position_ && container_ == other.container_;
       }
 
 
-      bool equals(const TestIterator<const typename remove_const<C>::type,const typename remove_const<T>::type>& other) const
+      bool equals(const TestIterator<const typename std::remove_const<C>::type,const typename std::remove_const<T>::type>& other) const
       {
         return position_ == other.position_ && container_ == other.container_;
       }
@@ -88,13 +91,13 @@ namespace Dune
         position_=position_+n;
       }
 
-      std::ptrdiff_t distanceTo(TestIterator<const typename remove_const<C>::type,const typename remove_const<T>::type> other) const
+      std::ptrdiff_t distanceTo(TestIterator<const typename std::remove_const<C>::type,const typename std::remove_const<T>::type> other) const
       {
         assert(other.container_==container_);
         return other.position_ - position_;
       }
 
-      std::ptrdiff_t distanceTo(TestIterator<const typename remove_const<C>::type, typename remove_const<T>::type> other) const
+      std::ptrdiff_t distanceTo(TestIterator<const typename std::remove_const<C>::type, typename std::remove_const<T>::type> other) const
       {
         assert(other.container_==container_);
         return other.position_ - position_;
@@ -134,7 +137,7 @@ namespace Dune
   template<class T, class V, class R = V&, class D = std::ptrdiff_t>
   class ForwardIteratorFacade :
     public std::iterator< std::forward_iterator_tag,
-        typename remove_const<V>::type,                   // std::iterator needs mutable value type
+        typename std::remove_const<V>::type,                   // std::iterator needs mutable value type
         D,
         V*,
         R>
@@ -230,7 +233,7 @@ namespace Dune
   operator==(const ForwardIteratorFacade<T1,V1,R1,D>& lhs,
              const ForwardIteratorFacade<T2,V2,R2,D>& rhs)
   {
-    if(Conversion<T2,T1>::exists)
+    if(std::is_convertible<T2,T1>::value)
       return static_cast<const T1&>(lhs).equals(static_cast<const T2&>(rhs));
     else
       return static_cast<const T2&>(rhs).equals(static_cast<const T1&>(lhs));
@@ -252,7 +255,7 @@ namespace Dune
   operator!=(const ForwardIteratorFacade<T1,V1,R1,D>& lhs,
              const ForwardIteratorFacade<T2,V2,R2,D>& rhs)
   {
-    if(Conversion<T2,T1>::exists)
+    if(std::is_convertible<T2,T1>::value)
       return !static_cast<const T1&>(lhs).equals(static_cast<const T2&>(rhs));
     else
       return !static_cast<const T2&>(rhs).equals(static_cast<const T1&>(lhs));
@@ -265,7 +268,7 @@ namespace Dune
   template<class T, class V, class R = V&, class D = std::ptrdiff_t>
   class BidirectionalIteratorFacade :
     public std::iterator< std::bidirectional_iterator_tag,
-        typename remove_const<V>::type,                   // std::iterator needs mutable value type
+        typename std::remove_const<V>::type,                   // std::iterator needs mutable value type
         D,
         V*,
         R>
@@ -371,7 +374,7 @@ namespace Dune
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename enable_if<Conversion<T2,T1>::exists,bool>::type
+  inline typename std::enable_if<std::is_convertible<T2,T1>::value,bool>::type
   operator==(const BidirectionalIteratorFacade<T1,V1,R1,D>& lhs,
              const BidirectionalIteratorFacade<T2,V2,R2,D>& rhs)
   {
@@ -389,7 +392,7 @@ namespace Dune
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
   inline
-  typename enable_if<Conversion<T1,T2>::exists && !Conversion<T2,T1>::exists,
+  typename std::enable_if<std::is_convertible<T1,T2>::value && !std::is_convertible<T2,T1>::value,
       bool>::type
   operator==(const BidirectionalIteratorFacade<T1,V1,R1,D>& lhs,
              const BidirectionalIteratorFacade<T2,V2,R2,D>& rhs)
@@ -423,7 +426,7 @@ namespace Dune
   template<class T, class V, class R = V&, class D = std::ptrdiff_t>
   class RandomAccessIteratorFacade :
     public std::iterator< std::random_access_iterator_tag,
-        typename remove_const<V>::type,                   // std::iterator needs mutable value type
+        typename std::remove_const<V>::type,                   // std::iterator needs mutable value type
         D,
         V*,
         R>
@@ -455,7 +458,7 @@ namespace Dune
      * // advance the iterator by a number of positions-
      * void advance(DifferenceType n);
      * // calculate the distance to another iterator.
-     * // One should incorporate an assertion wether
+     * // One should incorporate an assertion whether
      * // the same containers are referenced
      * DifferenceType distanceTo(j) const;
      * \endcode
@@ -582,7 +585,7 @@ namespace Dune
   operator==(const RandomAccessIteratorFacade<T1,V1,R1,D>& lhs,
              const RandomAccessIteratorFacade<T2,V2,R2,D>& rhs)
   {
-    if(Conversion<T2,T1>::exists)
+    if(std::is_convertible<T2,T1>::value)
       return static_cast<const T1&>(lhs).equals(static_cast<const T2&>(rhs));
     else
       return static_cast<const T2&>(rhs).equals(static_cast<const T1&>(lhs));
@@ -604,7 +607,7 @@ namespace Dune
   operator!=(const RandomAccessIteratorFacade<T1,V1,R1,D>& lhs,
              const RandomAccessIteratorFacade<T2,V2,R2,D>& rhs)
   {
-    if(Conversion<T2,T1>::exists)
+    if(std::is_convertible<T2,T1>::value)
       return !static_cast<const T1&>(lhs).equals(static_cast<const T2&>(rhs));
     else
       return !static_cast<const T2&>(rhs).equals(static_cast<const T1&>(lhs));
@@ -626,7 +629,7 @@ namespace Dune
   operator<(const RandomAccessIteratorFacade<T1,V1,R1,D>& lhs,
             const RandomAccessIteratorFacade<T2,V2,R2,D>& rhs)
   {
-    if(Conversion<T2,T1>::exists)
+    if(std::is_convertible<T2,T1>::value)
       return static_cast<const T1&>(lhs).distanceTo(static_cast<const T2&>(rhs))>0;
     else
       return static_cast<const T2&>(rhs).distanceTo(static_cast<const T1&>(lhs))<0;
@@ -649,7 +652,7 @@ namespace Dune
   operator<=(const RandomAccessIteratorFacade<T1,V1,R1,D>& lhs,
              const RandomAccessIteratorFacade<T2,V2,R2,D>& rhs)
   {
-    if(Conversion<T2,T1>::exists)
+    if(std::is_convertible<T2,T1>::value)
       return static_cast<const T1&>(lhs).distanceTo(static_cast<const T2&>(rhs))>=0;
     else
       return static_cast<const T2&>(rhs).distanceTo(static_cast<const T1&>(lhs))<=0;
@@ -672,7 +675,7 @@ namespace Dune
   operator>(const RandomAccessIteratorFacade<T1,V1,R1,D>& lhs,
             const RandomAccessIteratorFacade<T2,V2,R2,D>& rhs)
   {
-    if(Conversion<T2,T1>::exists)
+    if(std::is_convertible<T2,T1>::value)
       return static_cast<const T1&>(lhs).distanceTo(static_cast<const T2&>(rhs))<0;
     else
       return static_cast<const T2&>(rhs).distanceTo(static_cast<const T1&>(lhs))>0;
@@ -694,7 +697,7 @@ namespace Dune
   operator>=(const RandomAccessIteratorFacade<T1,V1,R1,D>& lhs,
              const RandomAccessIteratorFacade<T2,V2,R2,D>& rhs)
   {
-    if(Conversion<T2,T1>::exists)
+    if(std::is_convertible<T2,T1>::value)
       return static_cast<const T1&>(lhs).distanceTo(static_cast<const T2&>(rhs))<=0;
     else
       return static_cast<const T2&>(rhs).distanceTo(static_cast<const T1&>(lhs))>=0;
@@ -716,7 +719,7 @@ namespace Dune
   operator-(const RandomAccessIteratorFacade<T1,V1,R1,D>& lhs,
             const RandomAccessIteratorFacade<T2,V2,R2,D>& rhs)
   {
-    if(Conversion<T2,T1>::exists)
+    if(std::is_convertible<T2,T1>::value)
       return -static_cast<const T1&>(lhs).distanceTo(static_cast<const T2&>(rhs));
     else
       return static_cast<const T2&>(rhs).distanceTo(static_cast<const T1&>(lhs));

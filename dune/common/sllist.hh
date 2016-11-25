@@ -517,7 +517,7 @@ namespace Dune
     /**
      * @brief Delete the entry at the current position.
      *
-     * The iterator will be positioned at the next postion after the
+     * The iterator will be positioned at the next position after the
      * deletion
      * @warning This will invalidate all iterators positioned at the delete position! Use with care!
      */

@@ -26,8 +26,8 @@ namespace Dune {
   template <class Domain, class Range>
   class Function
   {
-    typedef typename ConstantVolatileTraits<typename TypeTraits< Domain >::ReferredType >::UnqualifiedType RawDomainType;
-    typedef typename ConstantVolatileTraits<typename TypeTraits< Range >::ReferredType >::UnqualifiedType RawRangeType;
+    typedef typename std::remove_cv<typename std::remove_reference< Domain >::type >::type RawDomainType;
+    typedef typename std::remove_cv<typename std::remove_reference< Range >::type >::type RawRangeType;
 
   public:
 

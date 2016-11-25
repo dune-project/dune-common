@@ -3,6 +3,9 @@
 #    This modules content is executed whenever a module required or suggests dune-common!
 #
 
+# enforce C++-14
+dune_require_cxx_standard(MODULE "dune-common" VERSION 14)
+
 include(DuneStreams)
 dune_set_minimal_debug_level()
 
@@ -17,8 +20,6 @@ if(Fortran_Works)
 else(Fortran_Works)
   set(HAVE_LAPACK Off)
   set(HAVE_BLAS Off)
-  # Write an empty FC header
-  file(WRITE ${CMAKE_BINARY_DIR}/FC.h "")
 endif(Fortran_Works)
 
 find_package(GMP)
@@ -26,3 +27,8 @@ include(AddGMPFlags)
 find_package(Inkscape)
 include(UseInkscape)
 include(FindMProtect)
+
+# try to find the Vc library
+find_package(Vc)
+include(AddVcFlags)
+set_package_info("Vc" "C++ Vectorization library" "https://github.com/VcDevel/Vc")

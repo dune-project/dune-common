@@ -6,8 +6,7 @@
 #include <type_traits>
 #include <utility>
 
-#include <dune/common/std/constexpr.hh>
-#include <dune/common/std/noexcept.hh>
+#include <dune/common/typetraits.hh>
 
 namespace Dune
 {
@@ -15,11 +14,20 @@ namespace Dune
   namespace Std
   {
 
+
+#if __cpp_lib_integer_sequence >= 201304
+
+    using std::integer_sequence;
+    using std::index_sequence;
+    using std::make_integer_sequence;
+    using std::make_index_sequence;
+
+#else // __cpp_lib_integer_sequence >= 201304
+
     // integer_sequence
     // ----------------
 
-    /** \brief an implementation of std::integer_sequence to be introduced in
-     *         C++14
+    /** \brief an implementation of std::integer_sequence as introduced in C++14
      *
      *  \tparam  T  an integer type
      *  \tparam  ...Ints  a non-type parameter pack
@@ -30,147 +38,67 @@ namespace Dune
       static_assert( std::is_integral< T >::value, "Template parameter T is required to be an integral type" );
 
     public:
-#ifndef DOXYGEN
-
-      template< class U >
-      struct rebind
-      {
-        typedef integer_sequence< U, static_cast< U >( Ints )... > type;
-      };
-
-#endif // #ifndef DOXYGEN
 
       /** \brief value type */
       typedef T value_type;
 
       /** \brief return number of elements in sequence */
-      static DUNE_CONSTEXPR std::size_t size () { return sizeof...( Ints ); }
+      static constexpr std::size_t size () { return sizeof...( Ints ); }
     };
 
 
-
-    // index_sequence
-    // --------------
-    // While this is similar to std::index_sequence, there is one
-    // major problem with the present implementation. Our index_sequence
-    // is only derived from integer_sequence but not equal to one.
-    // As a consequence template specializations that are common
-    // in nontrivial use cases will fail unless we take special
-    // care about index_sequence. The correct implementation is
-    // a template alias. We should switch to the correct implementation
-    // (i.e. a template alias) as soon as we allow this c++11 feature
-    // in dune-common.
-
-    /** \brief a function similar to std::index_sequence to be introduced in
-     *         C++14
+    /** \brief std::index_sequence as introduced in C++14
      *
      *  \tparam  ...Ints  a non-type parameter pack
      */
     template< std::size_t... Ints >
-    class index_sequence
-      : public integer_sequence< std::size_t, Ints... >
-    {};
-
-
+    using index_sequence = integer_sequence< std::size_t, Ints... >;
 
 #ifndef DOXYGEN
 
-    // make_index_sequence_impl
-    // ------------------------
+    namespace impl {
 
-    template< std::size_t N >
-    class make_index_sequence_impl;
+      template<typename T, T i, T n, T... indices>
+      struct _make_integer_sequence
+        : public _make_integer_sequence<T,i+1,n,indices...,i>
+      {};
 
-    template<>
-    class make_index_sequence_impl< 0u >
-    {
-    public:
-      typedef index_sequence<> type;
-    };
-
-    template<>
-    class make_index_sequence_impl< 1u >
-    {
-    public:
-      typedef index_sequence< 0 > type;
-    };
-
-    template< std::size_t N >
-    class make_index_sequence_impl
-    {
-      static_assert( N >= 0, "Cannot produce an index sequence of negative length" );
-
-      template< std::size_t... I1, std::size_t... I2 >
-      static index_sequence< I1..., (sizeof...( I1 )+I2)... >
-      add ( index_sequence< I1... >, index_sequence< I2... > )
+      template<typename T, T n, T... indices>
+      struct _make_integer_sequence<T,n,n,indices...>
       {
-        return index_sequence< I1..., (sizeof...( I1 )+I2)... >();
-      }
+        using type = integer_sequence<T,indices...>;
+      };
 
-    public:
-      typedef decltype( add( typename make_index_sequence_impl< N/2 >::type(), typename make_index_sequence_impl< N-N/2 >::type() ) ) type;
-    };
-
-#endif // #ifndef DOXYGEN
-
-
-
-    // make_index_sequence
-    // -------------------
-
-    /** \fn make_index_sequence
-     *
-     *  \brief a function similar to std::make_index_sequence to be introduced
-     *         in C++14
-     *
-     *  \tparam  N  requested size of index sequence
-     */
-    template< std::size_t N >
-    static DUNE_CONSTEXPR inline typename make_index_sequence_impl< N >::type make_index_sequence ()
-    {
-      return typename make_index_sequence_impl< N >::type();
     }
 
+#endif // DOXYGEN
 
+    template<typename T, T n>
+    using make_integer_sequence = typename impl::_make_integer_sequence<T,0,n>::type;
 
-    // make_integer_sequence
-    // ---------------------
+    template<std::size_t n>
+    using make_index_sequence = make_integer_sequence<std::size_t,n>;
 
-    /** \fn make_integer_sequence
+#endif // __cpp_lib_integer_sequence >= 201304
+
+    /**
+     * \brief Create index_sequence from 0 to sizeof...(T)-1
      *
-     *  \brief a function similar to std::make_integer_sequence to be
-     *         introduced in C++14
+     * This should do the same as std::index_sequence_for.
+     * But due to a bug in the sizeof... operator this
+     * may produce wrong results with clang<3.8.
      *
-     *  \tparam  T  an integer type
-     *  \tparam  N  requested size of integer sequence
+     * As a workaround we provide our own implementation
+     * that avoids this bug even if the std:: version
+     * exists.
+     *
+     * This implemenation can be dropped, once we require
+     * a minimum clang version that has this bug fixed (i.e. >=3.8).
      */
-    template< class T, T N >
-    static DUNE_CONSTEXPR inline typename make_index_sequence_impl< N >::type::template rebind< T >::type
-    make_integer_sequence ()
-    {
-      return typename make_index_sequence_impl< N >::type::template rebind< T >::type();
-    }
+    template<typename... T>
+    using index_sequence_for = make_index_sequence<typename Dune::SizeOf<T...>{}>;
 
 
-
-    // index_sequence_for
-    // ------------------
-
-    /** \fn index_sequence_for
-     *
-     *  \brief a function similar to std::index_sequence_for to be introduced
-     *         in C++14
-     *
-     *  \tparam  ...T  a type parameter pack
-     */
-    template< class... T >
-    static DUNE_CONSTEXPR inline typename make_index_sequence_impl< sizeof...( T ) >::type
-    index_sequence_for ()
-    {
-      return typename make_index_sequence_impl< sizeof...( T ) >::type();
-    }
-
-    using std::declval;
 
   } // namespace Std
 

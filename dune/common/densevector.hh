@@ -11,6 +11,7 @@
 #include "matvectraits.hh"
 #include "promotiontraits.hh"
 #include "dotproduct.hh"
+#include "boundschecking.hh"
 
 namespace Dune {
 
@@ -125,11 +126,11 @@ namespace Dune {
   class DenseIterator :
     public Dune::RandomAccessIteratorFacade<DenseIterator<C,T,R>,T, R, std::ptrdiff_t>
   {
-    friend class DenseIterator<typename remove_const<C>::type, typename remove_const<T>::type, typename mutable_reference<R>::type >;
-    friend class DenseIterator<const typename remove_const<C>::type, const typename remove_const<T>::type, typename const_reference<R>::type >;
+    friend class DenseIterator<typename std::remove_const<C>::type, typename std::remove_const<T>::type, typename mutable_reference<R>::type >;
+    friend class DenseIterator<const typename std::remove_const<C>::type, const typename std::remove_const<T>::type, typename const_reference<R>::type >;
 
-    typedef DenseIterator<typename remove_const<C>::type, typename remove_const<T>::type, typename mutable_reference<R>::type > MutableIterator;
-    typedef DenseIterator<const typename remove_const<C>::type, const typename remove_const<T>::type, typename const_reference<R>::type > ConstIterator;
+    typedef DenseIterator<typename std::remove_const<C>::type, typename std::remove_const<T>::type, typename mutable_reference<R>::type > MutableIterator;
+    typedef DenseIterator<const typename std::remove_const<C>::type, const typename std::remove_const<T>::type, typename const_reference<R>::type > ConstIterator;
   public:
 
     /**
@@ -193,16 +194,16 @@ namespace Dune {
       position_=position_+n;
     }
 
-    DifferenceType distanceTo(DenseIterator<const typename remove_const<C>::type,const typename remove_const<T>::type> other) const
+    DifferenceType distanceTo(DenseIterator<const typename std::remove_const<C>::type,const typename std::remove_const<T>::type> other) const
     {
       assert(other.container_==container_);
-      return other.position_ - position_;
+      return static_cast< DifferenceType >( other.position_ ) - static_cast< DifferenceType >( position_ );
     }
 
-    DifferenceType distanceTo(DenseIterator<typename remove_const<C>::type, typename remove_const<T>::type> other) const
+    DifferenceType distanceTo(DenseIterator<typename std::remove_const<C>::type, typename std::remove_const<T>::type> other) const
     {
       assert(other.container_==container_);
-      return other.position_ - position_;
+      return static_cast< DifferenceType >( other.position_ ) - static_cast< DifferenceType >( position_ );
     }
 
     //! return index
@@ -244,7 +245,7 @@ namespace Dune {
 
   protected:
     // construction allowed to derived classes only
-    DUNE_CONSTEXPR DenseVector () {}
+    constexpr DenseVector () {}
 
   public:
     //===== type definitions and constants
@@ -284,18 +285,18 @@ namespace Dune {
     //! random access
     value_type & operator[] (size_type i)
     {
-      return asImp().vec_access(i);
+      return asImp()[i];
     }
 
     const value_type & operator[] (size_type i) const
     {
-      return asImp().vec_access(i);
+      return asImp()[i];
     }
 
     //! size method
     size_type size() const
     {
-      return asImp().vec_size();
+      return asImp().size();
     }
 
     //! Iterator class for sequential access
@@ -378,7 +379,7 @@ namespace Dune {
     template <class Other>
     derived_type& operator+= (const DenseVector<Other>& y)
     {
-      assert(y.size() == size());
+      DUNE_ASSERT_BOUNDS(y.size() == size());
       for (size_type i=0; i<size(); i++)
         (*this)[i] += y[i];
       return asImp();
@@ -388,7 +389,7 @@ namespace Dune {
     template <class Other>
     derived_type& operator-= (const DenseVector<Other>& y)
     {
-      assert(y.size() == size());
+      DUNE_ASSERT_BOUNDS(y.size() == size());
       for (size_type i=0; i<size(); i++)
         (*this)[i] -= y[i];
       return asImp();
@@ -502,7 +503,7 @@ namespace Dune {
     template <class Other>
     bool operator== (const DenseVector<Other>& y) const
     {
-      assert(y.size() == size());
+      DUNE_ASSERT_BOUNDS(y.size() == size());
       for (size_type i=0; i<size(); i++)
         if ((*this)[i]!=y[i])
           return false;
@@ -522,7 +523,7 @@ namespace Dune {
     template <class Other>
     derived_type& axpy (const value_type& a, const DenseVector<Other>& y)
     {
-      assert(y.size() == size());
+      DUNE_ASSERT_BOUNDS(y.size() == size());
       for (size_type i=0; i<size(); i++)
         (*this)[i] += a*y[i];
       return asImp();
@@ -604,37 +605,71 @@ namespace Dune {
     }
 
     //! infinity norm (maximum of absolute values of entries)
-    typename FieldTraits<value_type>::real_type infinity_norm () const
-    {
+    template <typename vt = value_type,
+              typename std::enable_if<!has_nan<vt>::value, int>::type = 0>
+    typename FieldTraits<vt>::real_type infinity_norm() const {
+      using real_type = typename FieldTraits<vt>::real_type;
       using std::abs;
       using std::max;
-      typedef typename FieldTraits<value_type>::real_type real_type;
 
-      if (size() == 0)
-        return 0.0;
-
-      ConstIterator it = begin();
-      real_type max_val = abs(*it);
-      for (it = it + 1; it != end(); ++it)
-        max_val = max(max_val, real_type(abs(*it)));
-
-      return max_val;
+      real_type norm = 0;
+      for (auto const &x : *this) {
+        real_type const a = abs(x);
+        norm = max(a, norm);
+      }
+      return norm;
     }
 
     //! simplified infinity norm (uses Manhattan norm for complex values)
-    typename FieldTraits<value_type>::real_type infinity_norm_real () const
-    {
+    template <typename vt = value_type,
+              typename std::enable_if<!has_nan<vt>::value, int>::type = 0>
+    typename FieldTraits<vt>::real_type infinity_norm_real() const {
+      using real_type = typename FieldTraits<vt>::real_type;
       using std::max;
 
-      if (size() == 0)
-        return 0.0;
+      real_type norm = 0;
+      for (auto const &x : *this) {
+        real_type const a = fvmeta::absreal(x);
+        norm = max(a, norm);
+      }
+      return norm;
+    }
 
-      ConstIterator it = begin();
-      typename FieldTraits<value_type>::real_type max_val = fvmeta::absreal(*it);
-      for (it = it + 1; it != end(); ++it)
-        max_val = max(max_val, fvmeta::absreal(*it));
+    //! infinity norm (maximum of absolute values of entries)
+    template <typename vt = value_type,
+              typename std::enable_if<has_nan<vt>::value, int>::type = 0>
+    typename FieldTraits<vt>::real_type infinity_norm() const {
+      using real_type = typename FieldTraits<vt>::real_type;
+      using std::abs;
+      using std::max;
 
-      return max_val;
+      real_type norm = 0;
+      real_type isNaN = 1;
+      for (auto const &x : *this) {
+        real_type const a = abs(x);
+        norm = max(a, norm);
+        isNaN += a;
+      }
+      isNaN /= isNaN;
+      return norm * isNaN;
+    }
+
+    //! simplified infinity norm (uses Manhattan norm for complex values)
+    template <typename vt = value_type,
+              typename std::enable_if<has_nan<vt>::value, int>::type = 0>
+    typename FieldTraits<vt>::real_type infinity_norm_real() const {
+      using real_type = typename FieldTraits<vt>::real_type;
+      using std::max;
+
+      real_type norm = 0;
+      real_type isNaN = 1;
+      for (auto const &x : *this) {
+        real_type const a = fvmeta::absreal(x);
+        norm = max(a, norm);
+        isNaN += a;
+      }
+      isNaN /= isNaN;
+      return norm * isNaN;
     }
 
     //===== sizes

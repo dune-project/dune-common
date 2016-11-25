@@ -3,10 +3,11 @@
 #ifndef DUNE_TYPETRAITS_HH
 #define DUNE_TYPETRAITS_HH
 
+#include <complex>
 #include <type_traits>
+#include <utility>
 
 #include <dune/common/deprecated.hh>
-#include <dune/common/std/utility.hh>
 
 namespace Dune
 {
@@ -27,242 +28,95 @@ namespace Dune
   struct Empty {};
 
   /**
-   * @brief General type traits class to check whether type is reference or
-   * pointer type
-   *
-   * \deprecated This class will be replaced by alternatives found in the C++11 stl.
-   *   - Use is_pointer<T>::value instead of TypeTraits<T>::isPointer
-   *   - Use is_lvalue_reference<T>::value instead of TypeTraits<T>::isReference
-   *   - Use remove_pointer<T>::type instead of TypeTraits<T>::PointeeType
-   *   - Use remove_reference<T>::type instead of TypeTraits<T>::ReferredType
-   */
-  template <typename T>
-  class TypeTraits
-  {
-  private:
-    template <class U>
-    struct PointerTraits {
-      enum { result = false };
-      typedef Empty PointeeType;
-    };
-
-    template <class U>
-    struct PointerTraits<U*> {
-      enum { result = true };
-      typedef U PointeeType;
-    };
-
-    template <class U> struct ReferenceTraits
-    {
-      enum { result = false };
-      typedef U ReferredType;
-    };
-
-    template <class U> struct ReferenceTraits<U&>
-    {
-      enum { result = true };
-      typedef U ReferredType;
-    };
-
-  public:
-    enum { isPointer = PointerTraits<T>::result };
-    typedef typename PointerTraits<T>::PointeeType PointeeType DUNE_DEPRECATED_MSG("Use remove_pointer instead!");
-
-    enum { isReference = ReferenceTraits<T>::result };
-    typedef typename ReferenceTraits<T>::ReferredType ReferredType DUNE_DEPRECATED_MSG("Use remove_reference instead!");
-  };
-
-  /**
-   * @brief Determines wether a type is const or volatile and provides the
+   * @brief Determines whether a type is const or volatile and provides the
    * unqualified types.
    */
   template<typename T>
-  struct ConstantVolatileTraits
+  struct DUNE_DEPRECATED_MSG("Use <type_traits> instead!") ConstantVolatileTraits
   {
-    enum {
+    enum DUNE_DEPRECATED_MSG("Use std::is_volatile/std::is_const instead!") {
       /** @brief True if T has a volatile specifier. */
-      isVolatile=false,
+      isVolatile=std::is_volatile<T>::value,
       /** @brief True if T has a const qualifier. */
-      isConst=false
+      isConst=std::is_const<T>::value
     };
 
     /** @brief The unqualified type. */
-    typedef T UnqualifiedType;
+    typedef DUNE_DEPRECATED_MSG("Use std::remove_const instead!") typename std::remove_cv<T>::type UnqualifiedType;
     /** @brief The const type. */
-    typedef const T ConstType;
+    typedef DUNE_DEPRECATED_MSG("Use std::add_const instead!") typename std::add_const<UnqualifiedType>::type ConstType;
     /** @brief The const volatile type. */
-    typedef const volatile T ConstVolatileType;
+    typedef DUNE_DEPRECATED_MSG("Use std::add_cv instead!") typename std::add_cv<UnqualifiedType>::type ConstVolatileType;
   };
 
+  /** @brief Tests whether a type is volatile. */
   template<typename T>
-  struct ConstantVolatileTraits<const T>
+  struct DUNE_DEPRECATED_MSG("Use std::is_volatile instead!") IsVolatile
   {
-    enum {
-      isVolatile=false, isConst=true
-    };
-    typedef T UnqualifiedType;
-    typedef const UnqualifiedType ConstType;
-    typedef const volatile UnqualifiedType ConstVolatileType;
-  };
-
-
-  template<typename T>
-  struct ConstantVolatileTraits<volatile T>
-  {
-    enum {
-      isVolatile=true, isConst=false
-    };
-    typedef T UnqualifiedType;
-    typedef const UnqualifiedType ConstType;
-    typedef const volatile UnqualifiedType ConstVolatileType;
-  };
-
-  template<typename T>
-  struct ConstantVolatileTraits<const volatile T>
-  {
-    enum {
-      isVolatile=true, isConst=true
-    };
-    typedef T UnqualifiedType;
-    typedef const UnqualifiedType ConstType;
-    typedef const volatile UnqualifiedType ConstVolatileType;
-  };
-
-  /** @brief Tests wether a type is volatile. */
-  template<typename T>
-  struct IsVolatile
-  {
-    enum {
+    enum DUNE_DEPRECATED_MSG("Use std::is_volatile instead!") {
       /** @brief True if The type is volatile. */
-      value=ConstantVolatileTraits<T>::isVolatile
+      value=std::is_volatile<T>::value
     };
   };
 
-  /** @brief Tests wether a type is constant. */
+  /** @brief Tests whether a type is constant. */
   template<typename T>
-  struct IsConst
+  struct DUNE_DEPRECATED_MSG("Use std::is_const instead!") IsConst
   {
-    enum {
+    enum DUNE_DEPRECATED_MSG("Use std::is_const instead!") {
       /** @brief True if The type is constant. */
-      value=ConstantVolatileTraits<T>::isConst
+      value=std::is_const<T>::value
     };
   };
 
-  template<typename T, bool isVolatile>
-  struct RemoveConstHelper
+  template<typename T>
+  struct DUNE_DEPRECATED_MSG("Use std::remove_const instead!") remove_const
   {
-    typedef typename ConstantVolatileTraits<T>::UnqualifiedType Type;
+    typedef DUNE_DEPRECATED_MSG("Use std::remove_const instead!") typename std::remove_const<T>::type type;
   };
 
   template<typename T>
-  struct RemoveConstHelper<T,true>
+  struct DUNE_DEPRECATED_MSG("Use std::remove_reference instead!") remove_reference
   {
-    typedef volatile typename ConstantVolatileTraits<T>::UnqualifiedType Type;
+    typedef DUNE_DEPRECATED_MSG("Use std::remove_reference instead!") typename std::remove_reference<T>::type type;
   };
-
-  using std::remove_const;
-  using std::remove_reference;
 
   /**
-   * @brief Checks wether a type is convertible to another.
+   * @brief Checks whether a type is convertible to another.
    *
    * @tparam From type you want to convert
    * @tparam To type you want to obtain
-   *
-   * Inspired by
-   * <A HREF="http://www.kotiposti.net/epulkkin/instructive/base-class-determination.html"> this website</A>
    */
   template<class From, class To>
-  class Conversion
+  struct DUNE_DEPRECATED_MSG("Use std::is_convertible/std::is_same instead!") Conversion
   {
-    typedef char Small;
-    struct Big {char dummy[2];};
-    static Small test(To);
-    static Big test(...);
-    static typename remove_reference< From >::type &makeFrom ();
-
-  public:
-    enum {
+    enum DUNE_DEPRECATED_MSG("Use std::is_convertible/std::is_same instead!") {
       /** @brief True if the conversion exists. */
-      exists =  sizeof(test(makeFrom())) == sizeof(Small),
+      exists =  std::is_convertible<From,To>::value,
       /** @brief Whether the conversion exists in both ways. */
-      isTwoWay = exists && Conversion<To,From>::exists,
+      isTwoWay = std::is_convertible<From,To>::value && std::is_convertible<To,From>::value,
       /** @brief True if To and From are the same type. */
-      sameType = false
+      sameType = std::is_same<From,To>::value
     };
-    Conversion(){}
-
-  };
-
-  template <class From>
-  class Conversion<From, void>
-  {
-  public:
-    enum {
-      exists = false,
-      isTwoWay = false,
-      sameType = false
-    };
-  };
-
-  template <class To>
-  class Conversion<void, To>
-  {
-  public:
-    enum {
-      exists = false,
-      isTwoWay = false,
-      sameType = false
-    };
-  };
-
-  template<>
-  class Conversion< int, double >
-  {
-  public:
-    enum {
-      exists = true,
-      isTwoWay = false,
-      sameType = false
-    };
-  };
-
-  template<class T>
-  class Conversion<T,T>{
-  public:
-    enum { exists=true, isTwoWay=true, sameType=true};
   };
 
   /**
-   * @brief Checks wether a type is derived from another.
+   * @brief Checks whether a type is derived from another.
    *
    * @tparam Base the potential base class you want to test for
    * @tparam Derived type you want to test
-   *
-   * Similar idea to
-   * <A HREF="http://www.kotiposti.net/epulkkin/instructive/base-class-determination.html"> this website</A>
    */
   template <class Base, class Derived>
-  class IsBaseOf
+  struct DUNE_DEPRECATED_MSG("Use std::is_base_of instead!") IsBaseOf
   {
-    typedef typename ConstantVolatileTraits< typename remove_reference< Base >::type >::UnqualifiedType RawBase;
-    typedef typename ConstantVolatileTraits< typename remove_reference< Derived >::type >::UnqualifiedType RawDerived;
-    typedef char Small;
-    struct Big {char dummy[2];};
-    static Small test(RawBase*);
-    static Big test(...);
-    static RawDerived* &makePtr ();
-  public:
-    enum {
+    enum DUNE_DEPRECATED_MSG("Use std::is_base_of instead!") {
       /** @brief True if Base is a base class of Derived. */
-      value = sizeof(test(makePtr())) == sizeof(Small)
+      value = std::is_base_of<Base, Derived>::value
     };
-    IsBaseOf(){}
-
   };
 
   /**
-   * @brief Checks wether two types are interoperable.
+   * @brief Checks whether two types are interoperable.
    *
    * Two types are interoperable if conversions in either directions
    * exists.
@@ -275,11 +129,19 @@ namespace Dune
        * @brief True if either a conversion from T1 to T2 or vice versa
        * exists.
        */
-      value = Conversion<T1,T2>::exists || Conversion<T2,T1>::exists
+      value = std::is_convertible<T1,T2>::value || std::is_convertible<T2,T1>::value
     };
   };
 
-  using std::enable_if;
+  template<bool B, class T = void>
+  struct enable_if
+  {};
+
+  template<class T>
+  struct enable_if<true,T>
+  {
+    typedef DUNE_DEPRECATED_MSG("Use std::enable_if instead!") T type;
+  };
 
   /**
    * @brief Enable typedef if two types are interoperable.
@@ -288,67 +150,70 @@ namespace Dune
    */
   template<class T1, class T2, class Type>
   struct EnableIfInterOperable
-    : public enable_if<IsInteroperable<T1,T2>::value, Type>
+    : public std::enable_if<IsInteroperable<T1,T2>::value, Type>
   {};
 
   // pull in default implementation
-  using std::is_same;
-  using std::conditional;
-  using std::integral_constant;
-  using std::true_type;
-  using std::false_type;
+  template<typename T, typename U>
+  struct DUNE_DEPRECATED_MSG("Use std::is_same instead!") is_same
+  {
+    enum DUNE_DEPRECATED_MSG("Use std::is_same instead!") {
+      value = std::is_same<T,U>::value
+    };
+  };
 
+  template<bool B, typename T, typename F>
+  struct DUNE_DEPRECATED_MSG("Use std::conditional instead!") conditional
+  {
+    typedef DUNE_DEPRECATED_MSG("Use std::conditional instead!") typename std::conditional<B,T,F>::type type;
+  };
 
-  template<typename>
-  struct __is_pointer_helper
-  : public false_type { };
+  template<typename T, T v>
+  struct DUNE_DEPRECATED_MSG("Use std::integral_constant instead!") integral_constant
+  {
+    DUNE_DEPRECATED_MSG("Use std::integral_constant instead!")
+    static constexpr T value = v;
+  };
+
+  struct DUNE_DEPRECATED_MSG("Use std::true_type instead!") true_type
+  {
+    enum DUNE_DEPRECATED_MSG("Use std::true_type instead!") {
+      value = true
+    };
+  };
+
+  struct DUNE_DEPRECATED_MSG("Use std::false_type instead!") false_type
+  {
+    enum DUNE_DEPRECATED_MSG("Use std::false_type instead!") {
+      value = false
+    };
+  };
 
   template<typename T>
-  struct __is_pointer_helper<T*>
-  : public true_type { };
-
-  /// is_pointer
-  template<typename T>
-  struct is_pointer
-  : public integral_constant<bool, (__is_pointer_helper<T>::value)>
-    { };
-
-  // Helper class for is_lvalue_reference
-  template<typename>
-  struct __is_lvalue_reference_helper
-  : public false_type { };
+  struct DUNE_DEPRECATED_MSG("Use std::is_pointer instead!") is_pointer
+  {
+    enum DUNE_DEPRECATED_MSG("Use std::is_pointer instead!") {
+      value = std::is_pointer<T>::value
+    };
+  };
 
   template<typename T>
-  struct __is_lvalue_reference_helper<T&>
-  : public true_type { };
+  struct DUNE_DEPRECATED_MSG("Use std::is_lvalue_reference instead!") is_lvalue_reference
+  {
+    enum DUNE_DEPRECATED_MSG("Use std::is_lvalue_reference instead!") {
+      value = std::is_lvalue_reference<T>::value
+    };
+  };
 
-  /** \brief Determine whether a type is a lvalue reference type */
   template<typename T>
-  struct is_lvalue_reference
-  : public integral_constant<bool, (__is_lvalue_reference_helper<T>::value)>
-    { };
-
-  template<typename _Tp>
-    struct __remove_pointer_helper
-    { typedef _Tp     type; };
-
-  template<typename _Tp>
-    struct __remove_pointer_helper<_Tp*>
-    { typedef _Tp     type; };
-
-  /** \brief Return the type a pointer type points to
-   *
-   * \note When the argument T is not a pointer, TypeTraits::PointeeType returns Dune::Empty,
-   * while Dune::remove_pointer (as std::remove_pointer), returns T itself.
-   */
-  template<typename _Tp>
-    struct remove_pointer
-    : public __remove_pointer_helper<typename remove_const<_Tp>::type >
-    { };
+  struct DUNE_DEPRECATED_MSG("Use std::remove_pointer instead!") remove_pointer
+  {
+    typedef DUNE_DEPRECATED_MSG("Use std::remove_pointer instead!") typename std::remove_pointer<T>::type type;
+  };
 
   /**
      \brief template which always yields a false value
-     \tparam T Some type.  It sould be a type expression involving template
+     \tparam T Some type.  It should be a type expression involving template
                parameters of the class or function using AlwaysFalse.
 
      Suppose you have a template class.  You want to document the required
@@ -394,7 +259,7 @@ namespace Dune
 
   /**
      \brief template which always yields a true value
-     \tparam T Some type.  It sould be a type expression involving template
+     \tparam T Some type.  It should be a type expression involving template
                parameters of the class or function using AlwaysTrue.
 
      \note This class exists mostly for consistency with AlwaysFalse.
@@ -405,6 +270,25 @@ namespace Dune
     static const bool value = true;
   };
 
+  template <typename T>
+  struct IsNumber
+    : public std::integral_constant<bool, std::is_arithmetic<T>::value> {
+  };
+
+  template <typename T>
+  struct IsNumber<std::complex<T>>
+    : public std::integral_constant<bool, IsNumber<T>::value> {
+  };
+
+  template <typename T>
+  struct has_nan
+      : public std::integral_constant<bool, std::is_floating_point<T>::value> {
+  };
+
+  template <typename T>
+  struct has_nan<std::complex<T>>
+      : public std::integral_constant<bool, std::is_floating_point<T>::value> {
+  };
 
 #if defined(DOXYGEN) or HAVE_IS_INDEXABLE_SUPPORT
 
@@ -418,7 +302,7 @@ namespace Dune
     {};
 
     template<typename T, typename I>
-    struct _is_indexable<T,I,typename std::enable_if<(sizeof(Std::declval<T>()[Std::declval<I>()]) > 0),int>::type>
+    struct _is_indexable<T,I,typename std::enable_if<(sizeof(std::declval<T>()[std::declval<I>()]) > 0),int>::type>
       : public std::true_type
     {};
 
@@ -474,7 +358,7 @@ namespace Dune
 
     // version for types supporting the subscript operation
     template<typename T>
-    struct _is_indexable<T,decltype(Std::declval<T>()[0],0)>
+    struct _is_indexable<T,decltype(std::declval<T>()[0],0)>
       : public std::true_type
     {};
 
@@ -520,6 +404,227 @@ namespace Dune
 
 
 #endif // defined(DOXYGEN) or HAVE_IS_INDEXABLE_SUPPORT
+
+  /**
+     typetrait to check that a class has begin() and end() members
+   */
+  // default version, gets picked if SFINAE fails
+  template<typename T, typename = void>
+  struct is_range
+    : public std::false_type
+  {};
+
+#ifndef DOXYGEN
+  // version for types with begin() and end()
+  template<typename T>
+  struct is_range<T,
+                  typename std::enable_if<
+                    (sizeof(std::declval<T>().begin() == std::declval<T>().end()) != 0)
+                      >::type>
+    : public std::true_type
+  {};
+#endif
+
+  namespace detail
+  {
+    ///
+    /**
+     * @internal
+     * @brief Helper to make void_t work with gcc versions prior to gcc 5.0.
+     *
+     * This was not a compiler bug, but an accidental omission in the C++11 standard (see N3911, CWG issue 1558).
+     * It is not clearly specified what happens
+     * with unused template arguments in template aliases. The developers of GCC decided to ignore them, thus making void_t equivalent to void.
+     * With gcc 5.0 this was changed and the voider-hack is no longer needed.
+     */
+    template <class...>
+    struct voider
+    {
+      using type = void;
+    };
+  }
+
+  template <class> struct FieldTraits;
+
+  //! Is void for all valid input types (see N3911). The workhorse for C++11 SFINAE-techniques.
+  template <class... Types>
+  using void_t = typename detail::voider<Types...>::type;
+
+  //! Convenient access to FieldTraits<Type>::field_type.
+  template <class Type>
+  using field_t = typename FieldTraits<Type>::field_type;
+
+  //! Convenient access to FieldTraits<Type>::real_type.
+  template <class Type>
+  using real_t = typename FieldTraits<Type>::real_type;
+
+
+
+  // Implementation of IsTuple
+  namespace Imp {
+
+  template<class T>
+  struct IsTuple : public std::false_type
+  {};
+
+  template<class... T>
+  struct IsTuple<std::tuple<T...>> : public std::true_type
+  {};
+
+  } // namespace Imp
+
+  /**
+   * \brief Check if T is a std::tuple<...>
+   *
+   * The result is exported by deriving from std::true_type or std::false_type.
+   */
+  template<class T>
+  struct IsTuple :
+    public Imp::IsTuple<T>
+  {};
+
+
+
+  // Implementation of IsTupleOrDerived
+  namespace Imp {
+
+  template<class... T, class Dummy>
+  std::true_type isTupleOrDerived(const std::tuple<T...>*, Dummy)
+  { return {}; }
+
+  template<class Dummy>
+  std::false_type isTupleOrDerived(const void*, Dummy)
+  { return {}; }
+
+  } // namespace Imp
+
+  /**
+   * \brief Check if T derived from a std::tuple<...>
+   *
+   * The result is exported by deriving from std::true_type or std::false_type.
+   */
+  template<class T>
+  struct IsTupleOrDerived :
+    public decltype(Imp::isTupleOrDerived(std::declval<T*>(), true))
+  {};
+
+
+
+  // Implementation of is IsIntegralConstant
+  namespace Imp {
+
+  template<class T>
+  struct IsIntegralConstant : public std::false_type
+  {};
+
+  template<class T, T t>
+  struct IsIntegralConstant<std::integral_constant<T, t>> : public std::true_type
+  {};
+
+  } // namespace Imp
+
+  /**
+   * \brief Check if T is an std::integral_constant<I, i>
+   *
+   * The result is exported by deriving from std::true_type or std::false_type.
+   */
+  template<class T>
+  struct IsIntegralConstant : public Imp::IsIntegralConstant<std::decay_t<T>>
+  {};
+
+
+
+  /**
+   * \brief Compute size of variadic type list
+   *
+   * \tparam T Variadic type list
+   *
+   * The ::value member gives the size of the variadic type list T...
+   * This should be equivalent to sizeof...(T). However, with clang
+   * the latter may produce wrong results if used in template aliases
+   * due to clang bug 14858 (https://llvm.org/bugs/show_bug.cgi?id=14858).
+   *
+   * As a workaround one can use SizeOf<T...>::value instead of sizeof...(T)
+   * in template aliases for any code that should work with clang < 3.8.
+   */
+  template<typename... T>
+  struct SizeOf
+    : public std::integral_constant<std::size_t,sizeof...(T)>
+  {};
+
+
+
+  namespace Impl {
+
+  template<class T, T...>
+  struct IntegerSequenceHelper;
+
+  // Helper struct to compute the i-th entry of a std::integer_sequence
+  //
+  // This could also be implemented using std::get<index>(std::make_tuple(t...)).
+  // However, the gcc-6 implementation of std::make_tuple increases the instantiation
+  // depth by 15 levels for each argument, such that the maximal instantiation depth
+  // is easily hit, especially with clang where it is set to 256.
+  template<class T, T head, T... tail>
+  struct IntegerSequenceHelper<T, head, tail...>
+  {
+
+    // get first entry
+    static constexpr auto get(std::integral_constant<std::size_t, 0>)
+    {
+      return std::integral_constant<T, head>();
+    }
+
+    // call get with first entry cut off and decremented index
+    template<std::size_t index,
+      std::enable_if_t<(index > 0) and (index < sizeof...(tail)+1), int> = 0>
+    static constexpr auto get(std::integral_constant<std::size_t, index>)
+    {
+      return IntegerSequenceHelper<T, tail...>::get(std::integral_constant<std::size_t, index-1>());
+    }
+
+    // use static assertion if index exceeds size
+    template<std::size_t index,
+      std::enable_if_t<(index >= sizeof...(tail)+1), int> = 0>
+    static constexpr auto get(std::integral_constant<std::size_t, index>)
+    {
+      static_assert(index < sizeof...(tail)+1, "index used in IntegerSequenceEntry exceed size");
+    }
+  };
+
+  } // end namespace Impl
+
+
+  /**
+   * \brief Get entry of std::integer_sequence
+   *
+   * \param seq An object of type std::integer_sequence<...>
+   * \param i Index
+   *
+   * \return The i-th entry of the integer_sequence encoded as std::integral_constant<std::size_t, entry>.
+   *
+   */
+  template<class T, T... t, std::size_t index>
+  constexpr auto integerSequenceEntry(std::integer_sequence<T, t...> seq, std::integral_constant<std::size_t, index> i)
+  {
+    static_assert(index < sizeof...(t), "index used in IntegerSequenceEntry exceed size");
+    return Impl::IntegerSequenceHelper<T, t...>::get(i);
+  }
+
+  template<class IntegerSequence, std::size_t index>
+  struct IntegerSequenceEntry;
+
+  /**
+   * \brief Get entry of std::integer_sequence
+   *
+   * Computes the i-th entry of the integer_sequence. The result
+   * is exported as ::value by deriving form std::integral_constant<std::size_t, entry>.
+   */
+  template<class T, T... t, std::size_t i>
+  struct IntegerSequenceEntry<std::integer_sequence<T, t...>, i>
+    : public decltype(Impl::IntegerSequenceHelper<T, t...>::get(std::integral_constant<std::size_t, i>()))
+  {};
+
 
 
   /** @} */

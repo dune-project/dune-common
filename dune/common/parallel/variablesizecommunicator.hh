@@ -944,7 +944,7 @@ bool validRecvRequests(const std::vector<MPI_Request> reqs)
  * @param handle The data handle describing the data.
  * @param trackers The trackers for the communication interfaces.
  * @param buffers The buffers for the comunication. One for each neighbour.
- * @param requests The send requests for each neigbour.
+ * @param requests The send requests for each neighbour.
  * @param setupFunctor The functor responsible for setting up the request.
  */
 template<class DataHandle, class Functor>

@@ -8,9 +8,11 @@
 #include <cstdlib>
 #include <complex>
 #include <cstring>
+#include <initializer_list>
 #include <limits>
 #include <utility>
 
+#include "boundschecking.hh"
 #include "exceptions.hh"
 #include "genericiterator.hh"
 
@@ -76,9 +78,14 @@ namespace Dune {
       _data( n, c, a )
     {}
 
+    /** \brief Construct from a std::initializer_list */
+    DynamicVector (std::initializer_list<K> const &l) :
+      _data(l)
+    {}
+
     //! Constructor making vector with identical coordinates
     DynamicVector(const DynamicVector & x) :
-      _data(x._data)
+      Base(), _data(x._data)
     {}
 
     //! Move constructor
@@ -137,9 +144,15 @@ namespace Dune {
     }
 
     //==== make this thing a vector
-    size_type vec_size() const { return _data.size(); }
-    K & vec_access(size_type i) { return _data[i]; }
-    const K & vec_access(size_type i) const { return _data[i]; }
+    size_type size() const { return _data.size(); }
+    K & operator[](size_type i) {
+      DUNE_ASSERT_BOUNDS(i < size());
+      return _data[i];
+    }
+    const K & operator[](size_type i) const {
+      DUNE_ASSERT_BOUNDS(i < size());
+      return _data[i];
+    }
   };
 
   /** \brief Read a DynamicVector from an input stream

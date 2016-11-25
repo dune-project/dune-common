@@ -3,41 +3,43 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+
 // Activate checking.
-#ifndef DUNE_ISTL_WITH_CHECKING
-#define DUNE_ISTL_WITH_CHECKING
+#ifndef DUNE_FMatrix_WITH_CHECKING
+#define DUNE_FMatrix_WITH_CHECKING
 #endif
-#include <dune/common/fmatrix.hh>
-#include <dune/common/classname.hh>
-#include <iostream>
+
 #include <algorithm>
-#include <vector>
 #include <cassert>
 #include <complex>
+#include <iostream>
+#include <vector>
+
+#if HAVE_VC
+#include <Vc/Vc>
+#endif
+
+#include <dune/common/classname.hh>
+#include <dune/common/fmatrix.hh>
+#include <dune/common/rangeutilities.hh>
+#include <dune/common/simd.hh>
 
 #include "checkmatrixinterface.hh"
 
 using namespace Dune;
 
 template<typename T, std::size_t n>
-int test_invert_solve(T A_data[n*n], T inv_data[n*n],
-                      T x_data[n], T b_data[n])
+int test_invert_solve(Dune::FieldMatrix<double, n, n> &A,
+                      Dune::FieldMatrix<double, n, n> &inv,
+                      Dune::FieldVector<double, 3> &x,
+                      Dune::FieldVector<double, 3> &b)
 {
   int ret=0;
 
   std::cout <<"Checking inversion of:"<<std::endl;
 
-  FieldMatrix<T,n,n> A, inv, calced_inv;
-  FieldVector<T,n> x, b, calced_x;
-
-  for(size_t i =0; i < n; ++i) {
-    x[i]=x_data[i];
-    b[i]=b_data[i];
-    for(size_t j=0; j <n; ++j) {
-      A[i][j] = A_data[i*n+j];
-      inv[i][j] = inv_data[i*n+j];
-    }
-  }
+  FieldMatrix<T,n,n> calced_inv;
+  FieldVector<T,n> calced_x;
 
   std::cout<<A<<std::endl;
 
@@ -118,64 +120,67 @@ int test_invert_solve(T A_data[n*n], T inv_data[n*n],
 
 int test_invert_solve()
 {
-  int ret=0;
+  int ret = 0;
 
-  double A_data[9] = {1, 5, 7, 2, 14, 15, 4, 40, 39};
-  double inv_data[9] = {-9.0/4, 85.0/24, -23.0/24, -3.0/4, 11.0/24, -1.0/24, 1, -5.0/6, 1.0/6};
-  double b[3] = {32,75,201};
-  double x[3] = {1,2,3};
+  using FM = Dune::FieldMatrix<double, 3, 3>;
+  using FV = Dune::FieldVector<double, 3>;
 
-  ret += test_invert_solve<double,3>(A_data, inv_data, x, b);
+  FM A_data = {{1, 5, 7}, {2, 14, 15}, {4, 40, 39}};
+  FM inv_data = {{-9.0 / 4, 85.0 / 24, -23.0 / 24},
+                 {-3.0 / 4, 11.0 / 24, -1.0 / 24},
+                 {1, -5.0 / 6, 1.0 / 6}};
+  FV b = {32, 75, 201};
+  FV x = {1, 2, 3};
+  ret += test_invert_solve<double, 3>(A_data, inv_data, x, b);
 
-  double A_data0[9] = {-0.5, 0, -0.25, 0.5, 0, -0.25, 0, 0.5, 0};
-  double inv_data0[9] = {-1, 1, 0, 0, 0, 2, -2, -2, 0};
-  double b0[3] = {32,75,201};
-  double x0[3] = {43, 402, -214};
+  FM A_data0 = {{-0.5, 0, -0.25}, {0.5, 0, -0.25}, {0, 0.5, 0}};
+  FM inv_data0 = {{-1, 1, 0}, {0, 0, 2}, {-2, -2, 0}};
+  FV b0 = {32, 75, 201};
+  FV x0 = {43, 402, -214};
+  ret += test_invert_solve<double, 3>(A_data0, inv_data0, x0, b0);
 
-  ret += test_invert_solve<double,3>(A_data0, inv_data0, x0, b0);
+  FM A_data1 = {{0, 1, 0}, {1, 0, 0}, {0, 0, 1}};
+  FV b1 = {0, 1, 2};
+  FV x1 = {1, 0, 2};
+  ret += test_invert_solve<double, 3>(A_data1, A_data1, x1, b1);
 
-  double A_data1[9] = {0, 1, 0, 1, 0, 0, 0, 0, 1};
-  double b1[3] = {0,1,2};
-  double x1[3] = {1,0,2};
-
-  ret += test_invert_solve<double,3>(A_data1, A_data1, x1, b1);
-
-  double A_data2[9] ={3, 1, 6, 2, 1, 3, 1, 1, 1};
-  double inv_data2[9] ={-2, 5, -3, 1, -3, 3, 1, -2, 1};
-  double b2[3] = {2, 7, 4};
-  double x2[3] = {19,-7,-8};
-
-  return ret + test_invert_solve<double,3>(A_data2, inv_data2, x2, b2);
+  FM A_data2 = {{3, 1, 6}, {2, 1, 3}, {1, 1, 1}};
+  FM inv_data2 = {{-2, 5, -3}, {1, -3, 3}, {1, -2, 1}};
+  FV b2 = {2, 7, 4};
+  FV x2 = {19, -7, -8};
+  return ret + test_invert_solve<double, 3>(A_data2, inv_data2, x2, b2);
 }
 
-template<class K, int n, int m, class X, class Y>
+template<class K, int n, int m, class X, class Y, class XT, class YT>
 void test_mult(FieldMatrix<K, n, m>& A,
-               X& v, Y& f)
+               X& v, Y& f, XT& vT, YT& fT)
 {
   // test the various matrix-vector products
   A.mv(v,f);
-  A.mtv(f,v);
+  A.mtv(fT,vT);
   A.umv(v,f);
-  A.umtv(f,v);
-  A.umhv(f,v);
+  A.umtv(fT,vT);
+  A.umhv(fT,vT);
   A.mmv(v,f);
-  A.mmtv(f,v);
-  A.mmhv(f,v);
-  K scalar = (K)(0.5);
+  A.mmtv(fT,vT);
+  A.mmhv(fT,vT);
+  using S = typename FieldTraits<Y>::field_type;
+  using S2 = typename FieldTraits<XT>::field_type;
+  S scalar = (S)(0.5);
+  S2 scalar2 = (S2)(0.5);
   A.usmv(scalar,v,f);
-  A.usmtv(scalar,f,v);
-  A.usmhv(scalar,f,v);
+  A.usmtv(scalar2,fT,vT);
+  A.usmhv(scalar2,fT,vT);
 }
 
-
-template<class K, int n, int m>
+template<class K, class K2, class K3, int n, int m>
 void test_matrix()
 {
   typedef typename FieldMatrix<K,n,m>::size_type size_type;
 
   FieldMatrix<K,n,m> A;
-  FieldVector<K,n> f;
-  FieldVector<K,m> v;
+  FieldVector<K2,m> v;
+  FieldVector<K3,n> f;
 
   // assign matrix
   A=K();
@@ -184,11 +189,11 @@ void test_matrix()
     for (size_type j=0; j<m; j++)
       A[i][j] = i*j;
   // iterator matrix
-  typename FieldMatrix<K,n,m>::RowIterator rit = A.begin();
+  auto rit = A.begin();
   for (; rit!=A.end(); ++rit)
   {
     rit.index();
-    typename FieldMatrix<K,n,m>::ColIterator cit = rit->begin();
+    auto cit = rit->begin();
     for (; cit!=rit->end(); ++cit)
     {
       cit.index();
@@ -203,8 +208,8 @@ void test_matrix()
   for (size_type i=0; i<v.dim(); i++)
     v[i] = i;
   // iterator vector
-  typename FieldVector<K,m>::iterator it = v.begin();
-  typename FieldVector<K,m>::ConstIterator end = v.end();
+  auto it = v.begin();
+  auto end = v.end();
   for (; it!=end; ++it)
   {
     it.index();
@@ -226,10 +231,10 @@ void test_matrix()
   A.umv(v,f);
   // check that mv and umv are doing the same thing
   {
-    FieldVector<K,n> res2(0);
-    FieldVector<K,n> res1;
+    FieldVector<K3,n> res2(0);
+    FieldVector<K3,n> res1;
 
-    FieldVector<K,m> b(1);
+    FieldVector<K2,m> b(1);
 
     A.mv(b, res1);
     A.umv(b, res2);
@@ -241,25 +246,28 @@ void test_matrix()
   }
 
   {
-    FieldVector<K,m> v0 ( v );
-    test_mult(A, v0, f );
+    FieldVector<K2,m> v0 (v);
+    FieldVector<K3,n> f0 (f);
+    FieldVector<K3,m> vT (0);
+    FieldVector<K2,n> fT (0);
+    test_mult(A, v0, f0, vT, fT);
   }
 
-  {
-    std::vector<K> v1( m ) ;
-    std::vector<K> f1( n, 1 ) ;
-    // random access vector
-    for (size_type i=0; i<v1.size(); i++) v1[i] = i;
-    test_mult(A, v1, f1 );
-  }
-  {
-    K v2[ m ];
-    K f2[ n ];
-    // random access vector
-    for (size_type i=0; i<m; ++i) v2[i] = i;
-    for (size_type i=0; i<n; ++i) f2[i] = 1;
-    test_mult(A, v2, f2 );
-  }
+  // {
+  //   std::vector<K2> v1( m ) ;
+  //   std::vector<K3> f1( n, 1 ) ;
+  //   // random access vector
+  //   for (size_type i=0; i<v1.size(); i++) v1[i] = i;
+  //   test_mult(A, v1, f1 );
+  // }
+  // {
+  //   K2 v2[ m ];
+  //   K3 f2[ n ];
+  //   // random access vector
+  //   for (size_type i=0; i<m; ++i) v2[i] = i;
+  //   for (size_type i=0; i<n; ++i) f2[i] = 1;
+  //   test_mult(A, v2, f2 );
+  // }
 
   // Test the different matrix norms
   assert( A.frobenius_norm() >= 0 );
@@ -294,11 +302,11 @@ void test_matrix()
       DUNE_THROW(FMatrixError,"Axpy test failed!");
   }
   {
-    FieldMatrix<K,n,n+1> A;
-    for(size_type i=0; i<A.N(); ++i)
-      for(size_type j=0; j<A.M(); ++j)
-        A[i][j] = i;
-    const FieldMatrix<K,n,n+1>& Aref = A;
+    FieldMatrix<K,n,n+1> A2;
+    for(size_type i=0; i<A2.N(); ++i)
+      for(size_type j=0; j<A2.M(); ++j)
+        A2[i][j] = i;
+    const FieldMatrix<K,n,n+1>& Aref = A2;
 
 
     FieldMatrix<K,n+1,n+1> B;
@@ -319,13 +327,13 @@ void test_matrix()
         if (std::abs(AB[i][j] - K(i*n*(n+1)/2)) > 1e-10)
           DUNE_THROW(FMatrixError,"Rightmultiplyany test failed!");
 
-    FieldMatrix<K,n,n+1> AB2 = A;
+    FieldMatrix<K,n,n+1> AB2 = A2;
     AB2.rightmultiply(B);
     AB2 -= AB;
     if (std::abs(AB2.infinity_norm()) > 1e-10)
       DUNE_THROW(FMatrixError,"Rightmultiply test failed!");
 
-    FieldMatrix<K,n,n+1> AB3 = Bref.leftmultiplyany(A);
+    FieldMatrix<K,n,n+1> AB3 = Bref.leftmultiplyany(A2);
     AB3 -= AB;
     if (std::abs(AB3.infinity_norm()) > 1e-10)
       DUNE_THROW(FMatrixError,"Leftmultiplyany test failed!");
@@ -336,31 +344,33 @@ void test_matrix()
         if (std::abs(CA[i][j] - K(i*n*(n-1)/2)) > 1e-10)
           DUNE_THROW(FMatrixError,"Leftmultiplyany test failed!");
 
-    FieldMatrix<K,n,n+1> CA2 = A;
+    FieldMatrix<K,n,n+1> CA2 = A2;
     CA2.leftmultiply(C);
     CA2 -= CA;
     if (std::abs(CA2.infinity_norm()) > 1e-10)
       DUNE_THROW(FMatrixError,"Leftmultiply test failed!");
 
-    FieldMatrix<K,n,n+1> CA3 = Cref.rightmultiplyany(A);
+    FieldMatrix<K,n,n+1> CA3 = Cref.rightmultiplyany(A2);
     CA3 -= CA;
     if (std::abs(CA3.infinity_norm()) > 1e-10)
       DUNE_THROW(FMatrixError,"Rightmultiplyany test failed!");
   }
 }
 
+template<class T>
 int test_determinant()
 {
   int ret = 0;
 
-  FieldMatrix<double, 4, 4> B;
+  FieldMatrix<T, 4, 4> B;
   B[0][0] =  3.0; B[0][1] =  0.0; B[0][2] =  1.0; B[0][3] =  0.0;
   B[1][0] = -1.0; B[1][1] =  3.0; B[1][2] =  0.0; B[1][3] =  0.0;
   B[2][0] = -3.0; B[2][1] =  0.0; B[2][2] = -1.0; B[2][3] =  2.0;
   B[3][0] =  0.0; B[3][1] = -1.0; B[3][2] =  0.0; B[3][3] =  1.0;
-  if (std::abs(B.determinant() + 2.0) > 1e-12)
+  if (any_true(std::abs(B.determinant() + 2.0) > 1e-12))
   {
-    std::cerr << "Determinant 1 test failed" << std::endl;
+    std::cerr << "Determinant 1 test failed (" << Dune::className<T>() << ")"
+              << std::endl;
     ++ret;
   }
 
@@ -368,13 +378,14 @@ int test_determinant()
   B[1][0] = -1.0; B[1][1] =  3.0; B[1][2] =  0.0; B[1][3] =  0.0;
   B[2][0] = -3.0; B[2][1] =  0.0; B[2][2] = -1.0; B[2][3] =  2.0;
   B[3][0] = -1.0; B[3][1] =  3.0; B[3][2] =  0.0; B[3][3] =  2.0;
-  if (B.determinant() != 0.0)
+  if (any_true(B.determinant() != 0.0))
   {
-    std::cerr << "Determinant 2 test failed" << std::endl;
+    std::cerr << "Determinant 2 test failed (" << Dune::className<T>() << ")"
+              << std::endl;
     ++ret;
   }
 
-  return 0;
+  return ret;
 }
 
 template<class ft>
@@ -502,27 +513,64 @@ void test_invert ()
   A.invert();
 }
 
-// Make sure that a matrix with only NaN entries has norm NaN.
-// Prior to r6819, the infinity_norm would be zero; see also FS #1147.
+template <class M>
+void checkNormNAN(M const &v, int line) {
+  if (!std::isnan(v.frobenius_norm())) {
+    std::cerr << "error: norm not NaN: frobenius_norm() on line "
+              << line << " (type: " << Dune::className(v[0]) << ")"
+              << std::endl;
+    std::exit(-1);
+  }
+  if (!std::isnan(v.infinity_norm())) {
+    std::cerr << "error: norm not NaN: infinity_norm() on line "
+              << line << " (type: " << Dune::className(v[0]) << ")"
+              << std::endl;
+    std::exit(-1);
+  }
+}
+
+// Make sure that matrices with NaN entries have norm NaN.
+// See also bug flyspray/FS#1147
+template <typename T>
 void
-test_nan()
+test_nan(T const &mynan)
 {
-  double mynan = 0.0/0.0;
-
-  Dune::FieldMatrix<double, 2, 2> m2(mynan);
-  assert(std::isnan(m2.infinity_norm()));
-  assert(std::isnan(m2.frobenius_norm()));
-  assert(std::isnan(m2.frobenius_norm2()));
-
-  Dune::FieldMatrix<double, 0, 2> m02(mynan);
-  assert(0.0 == m02.infinity_norm());
-  assert(0.0 == m02.frobenius_norm());
-  assert(0.0 == m02.frobenius_norm2());
-
-  Dune::FieldMatrix<double, 2, 0> m20(mynan);
-  assert(0.0 == m20.infinity_norm());
-  assert(0.0 == m20.frobenius_norm());
-  assert(0.0 == m20.frobenius_norm2());
+  T const n(0);
+  {
+    Dune::FieldMatrix<T, 2, 2> m = {
+      { mynan, mynan },
+      { mynan, mynan }
+    };
+    checkNormNAN(m, __LINE__);
+  }
+  {
+    Dune::FieldMatrix<T, 2, 2> m = {
+      { mynan, n },
+      { n, n }
+    };
+    checkNormNAN(m, __LINE__);
+  }
+  {
+    Dune::FieldMatrix<T, 2, 2> m = {
+      { n, mynan },
+      { n, n }
+    };
+    checkNormNAN(m, __LINE__);
+  }
+  {
+    Dune::FieldMatrix<T, 2, 2> m = {
+      { n, n },
+      { mynan, n }
+    };
+    checkNormNAN(m, __LINE__);
+  }
+  {
+    Dune::FieldMatrix<T, 2, 2> m = {
+      { n, n },
+      { n, mynan }
+    };
+    checkNormNAN(m, __LINE__);
+  }
 }
 
 // The computation of infinity_norm_real() was flawed from r6819 on
@@ -541,10 +589,10 @@ test_infinity_norms()
 }
 
 
-template< class K, int rows, int cols >
+template< class K, class K2, int rows, int cols >
 void test_interface()
 {
-  typedef CheckMatrixInterface::UseFieldVector< K, rows, cols > Traits;
+  typedef CheckMatrixInterface::UseFieldVector< K2, rows, cols > Traits;
   typedef Dune::FieldMatrix< K, rows, cols > FMatrix;
 
   FMatrix m( 1 );
@@ -568,37 +616,58 @@ void test_initialisation()
 int main()
 {
   try {
-    test_nan();
+    int errors = 0; // counts errors
+
+    {
+      double nan = std::nan("");
+      test_nan(nan);
+    }
+    {
+      std::complex<double> nan( std::nan(""), 17 );
+      test_nan(nan);
+    }
     test_infinity_norms();
     test_initialisation();
 
     // test 1 x 1 matrices
-    test_interface<float, 1, 1>();
-    test_matrix<float, 1, 1>();
+    test_interface<float, float, 1, 1>();
+    test_matrix<float, float, float, 1, 1>();
     ScalarOperatorTest<float>();
-    test_matrix<double, 1, 1>();
+    test_matrix<double, double, double, 1, 1>();
     ScalarOperatorTest<double>();
     // test n x m matrices
-    test_interface<int, 10, 5>();
-    test_matrix<int, 10, 5>();
-    test_matrix<double, 5, 10>();
-    test_interface<double, 5, 10>();
+    test_interface<int, int, 10, 5>();
+    test_matrix<int, int, int, 10, 5>();
+    test_matrix<double, double, double, 5, 10>();
+    test_interface<double, double, 5, 10>();
+    // mixed precision
+    test_interface<float, float, 5, 10>();
+    test_matrix<float, double, float, 5, 10>();
     // test complex matrices
-    test_matrix<std::complex<float>, 1, 1>();
-    test_matrix<std::complex<double>, 5, 10>();
+    test_matrix<std::complex<float>, std::complex<float>, std::complex<float>, 1, 1>();
+    test_matrix<std::complex<double>, std::complex<double>, std::complex<double>, 5, 10>();
+    // test complex/real matrices mixed case
+    test_matrix<float, std::complex<float>, std::complex<float>, 1, 1>();
+    test_matrix<std::complex<float>, float, std::complex<float>, 1, 1>();
 #if HAVE_LAPACK
     // test eigemvalue computation
     test_ev<double>();
 #endif
     // test high level methods
-    test_determinant();
+    errors += test_determinant< double >();
+#if HAVE_VC
+    errors += test_determinant< Vc::SimdArray<double, 8> >();
+#endif
     test_invert< float, 34 >();
     test_invert< double, 34 >();
     test_invert< std::complex< long double >, 2 >();
-    return test_invert_solve();
+    errors += test_invert_solve();
+
+    return (errors > 0 ? 1 : 0); // convert error count to unix exit status
   }
   catch (Dune::Exception & e)
   {
     std::cerr << "Exception: " << e << std::endl;
+    return 1;
   }
 }

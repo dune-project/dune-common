@@ -4,16 +4,16 @@
 #define DUNE_COMMON_DUMMYITERATOR_HH
 
 #include <cstddef>
+#include <type_traits>
 
 #include <dune/common/iteratorfacades.hh>
-#include <dune/common/typetraits.hh>
 
 template<typename T>
 class dummyiterator
   : public Dune::BidirectionalIteratorFacade<dummyiterator<T>, T, T&,
         std::ptrdiff_t>
 {
-  friend class dummyiterator<const typename Dune::remove_const<T>::type>;
+  friend class dummyiterator<const typename std::remove_const<T>::type>;
 
   T *value;
 
@@ -25,7 +25,7 @@ public:
   template<typename T2>
   dummyiterator
     ( const dummyiterator<T2>& o,
-    typename Dune::enable_if<Dune::Conversion<T2&, T&>::exists>::type* = 0)
+    typename std::enable_if<std::is_convertible<T2&, T&>::value>::type* = 0)
     : value(o.value)
   {}
 

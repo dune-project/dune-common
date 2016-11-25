@@ -6,7 +6,6 @@
 #include "indexset.hh"
 #include "remoteindices.hh"
 #include <dune/common/stdstreams.hh>
-#include <dune/common/tuples.hh>
 #include <dune/common/sllist.hh>
 #include <dune/common/unused.hh>
 #include <cassert>
@@ -15,6 +14,7 @@
 #include <algorithm>
 #include <functional>
 #include <map>
+#include <tuple>
 
 #if HAVE_MPI
 namespace Dune
@@ -223,7 +223,7 @@ namespace Dune
     typedef typename RemoteIndexList::const_iterator ConstRemoteIndexIterator;
 
     /** @brief Type of the tuple of iterators needed for the adding of indices. */
-    typedef Dune::tuple<RemoteIndexModifier,GlobalIndexModifier,BoolListModifier,
+    typedef std::tuple<RemoteIndexModifier,GlobalIndexModifier,BoolListModifier,
         const ConstRemoteIndexIterator> IteratorTuple;
 
     /**
@@ -572,9 +572,9 @@ namespace Dune
   template<typename T>
   inline typename IndicesSyncer<T>::Iterators& IndicesSyncer<T>::Iterators::operator++()
   {
-    ++(get<0>(iterators_));
-    ++(get<1>(iterators_));
-    ++(get<2>(iterators_));
+    ++(std::get<0>(iterators_));
+    ++(std::get<1>(iterators_));
+    ++(std::get<2>(iterators_));
     return *this;
   }
 
@@ -582,29 +582,29 @@ namespace Dune
   inline void IndicesSyncer<T>::Iterators::insert(const RemoteIndex & index,
                                                   const std::pair<GlobalIndex,Attribute>& global)
   {
-    get<0>(iterators_).insert(index);
-    get<1>(iterators_).insert(global);
-    get<2>(iterators_).insert(false);
+    std::get<0>(iterators_).insert(index);
+    std::get<1>(iterators_).insert(global);
+    std::get<2>(iterators_).insert(false);
   }
 
   template<typename T>
   inline typename IndicesSyncer<T>::RemoteIndex&
   IndicesSyncer<T>::Iterators::remoteIndex() const
   {
-    return *(get<0>(iterators_));
+    return *(std::get<0>(iterators_));
   }
 
   template<typename T>
   inline std::pair<typename IndicesSyncer<T>::GlobalIndex,typename IndicesSyncer<T>::Attribute>&
   IndicesSyncer<T>::Iterators::globalIndexPair() const
   {
-    return *(get<1>(iterators_));
+    return *(std::get<1>(iterators_));
   }
 
   template<typename T>
   inline bool IndicesSyncer<T>::Iterators::isOld() const
   {
-    return *(get<2>(iterators_));
+    return *(std::get<2>(iterators_));
   }
 
   template<typename T>
@@ -612,21 +612,21 @@ namespace Dune
                                                  GlobalIndexList& globalIndices,
                                                  BoolList& booleans)
   {
-    get<0>(iterators_) = remoteIndices.beginModify();
-    get<1>(iterators_) = globalIndices.beginModify();
-    get<2>(iterators_) = booleans.beginModify();
+    std::get<0>(iterators_) = remoteIndices.beginModify();
+    std::get<1>(iterators_) = globalIndices.beginModify();
+    std::get<2>(iterators_) = booleans.beginModify();
   }
 
   template<typename T>
   inline bool IndicesSyncer<T>::Iterators::isNotAtEnd() const
   {
-    return get<0>(iterators_)!=get<3>(iterators_);
+    return std::get<0>(iterators_) != std::get<3>(iterators_);
   }
 
   template<typename T>
   inline bool IndicesSyncer<T>::Iterators::isAtEnd() const
   {
-    return get<0>(iterators_)==get<3>(iterators_);
+    return std::get<0>(iterators_) == std::get<3>(iterators_);
   }
 
   template<typename T>
@@ -640,15 +640,15 @@ namespace Dune
     // Compute displacement
     MessageInformation message;
 
-    MPI_Address( &(message.publish), displacement);
-    MPI_Address( &(message.pairs), displacement+1);
+    MPI_Get_address( &(message.publish), displacement);
+    MPI_Get_address( &(message.pairs), displacement+1);
 
     // Make the displacement relative
-    MPI_Address(&message, &base);
+    MPI_Get_address(&message, &base);
     displacement[0] -= base;
     displacement[1] -= base;
 
-    MPI_Type_struct( 2, blocklength, displacement, type, &datatype_);
+    MPI_Type_create_struct( 2, blocklength, displacement, type, &datatype_);
     MPI_Type_commit(&datatype_);
   }
 
@@ -776,13 +776,13 @@ namespace Dune
     std::size_t noOldNeighbours = remoteIndices_.neighbours();
     int* oldNeighbours = new int[noOldNeighbours];
     sendBufferSizes_ = new std::size_t[noOldNeighbours];
-    std::size_t i=0;
+    std::size_t neighbourI = 0;
 
-    for(RemoteIterator remote = remoteIndices_.begin(); remote != end; ++remote, ++i) {
+    for(RemoteIterator remote = remoteIndices_.begin(); remote != end; ++remote, ++neighbourI) {
       typedef typename RemoteIndices::RemoteIndexList::const_iterator
       RemoteIndexIterator;
 
-      oldNeighbours[i]=remote->first;
+      oldNeighbours[neighbourI] = remote->first;
 
       // Make sure we only have one remote index list.
       assert(remote->second.first==remote->second.second);
@@ -824,7 +824,7 @@ namespace Dune
 
     Dune::dverb<<rank_<<": Neighbours: ";
 
-    for(i = 0; i<noOldNeighbours; ++i)
+    for(std::size_t i = 0; i<noOldNeighbours; ++i)
       Dune::dverb<<oldNeighbours[i]<<" ";
 
     Dune::dverb<<std::endl;
@@ -833,11 +833,11 @@ namespace Dune
     MPI_Status* statuses = new MPI_Status[noOldNeighbours];
 
     // Pack Message data and start the sends
-    for(i = 0; i<noOldNeighbours; ++i)
+    for(std::size_t i = 0; i<noOldNeighbours; ++i)
       packAndSend(oldNeighbours[i], sendBuffers_[i], sendBufferSizes_[i], requests[i]);
 
     // Probe for incoming messages, receive and unpack them
-    for(i = 0; i<noOldNeighbours; ++i)
+    for(std::size_t i = 0; i<noOldNeighbours; ++i)
       recvAndUnpack(numberer);
     //       }else{
     //  recvAndUnpack(oldNeighbours[i], numberer);
@@ -851,7 +851,7 @@ namespace Dune
     // Wait for completion of sends
     if(MPI_SUCCESS!=MPI_Waitall(noOldNeighbours, requests, statuses)) {
       std::cerr<<": MPI_Error occurred while sending message"<<std::endl;
-      for(i=0; i< noOldNeighbours; i++)
+      for(std::size_t i=0; i< noOldNeighbours; i++)
         if(MPI_SUCCESS!=statuses[i].MPI_ERROR)
           std::cerr<<"Destination "<<statuses[i].MPI_SOURCE<<" error code: "<<statuses[i].MPI_ERROR<<std::endl;
     }
@@ -961,9 +961,9 @@ namespace Dune
           assert(pairs <= infoSend_[destination].pairs);
           MPI_Pack(&process, 1, MPI_INT, buffer, bufferSize, &bpos,
                    remoteIndices_.communicator());
-          char attr = iterators->second.remoteIndex().attribute();
+          char attr2 = iterators->second.remoteIndex().attribute();
 
-          MPI_Pack(&attr, 1, MPI_CHAR, buffer, bufferSize, &bpos,
+          MPI_Pack(&attr2, 1, MPI_CHAR, buffer, bufferSize, &bpos,
                    remoteIndices_.communicator());
           --indices;
         }
@@ -1186,11 +1186,11 @@ namespace Dune
   bool IndicesSyncer<T>::checkReset(const Iterators& iterators, RemoteIndexList& rList, GlobalIndexList& gList,
                                     BoolList& bList){
 
-    if(get<0>(iterators.iterators_)!=rList.begin())
+    if(std::get<0>(iterators.iterators_) != rList.begin())
       return false;
-    if(get<1>(iterators.iterators_)!=gList.begin())
+    if(std::get<1>(iterators.iterators_) != gList.begin())
       return false;
-    if(get<2>(iterators.iterators_)!=bList.begin())
+    if(std::get<2>(iterators.iterators_) != bList.begin())
       return false;
     return true;
   }

@@ -65,11 +65,6 @@
 #    You can optionally add additional include dirs and compile definitions that will also be applied to
 #    all targets in the module.
 #
-#    .. warning::
-#       :ref:`dune_enable_all_packages` requires CMake 2.8.12+. If you call this function with an older version
-#       of CMake, the build will fail with a fatal error. DO NOT enable this feature if your module needs
-#       to compile on machines with an older version of CMake.
-#
 #    .. note::
 #       If you want to use :code:`dune_enable_all_packages` with an older version of CMake and your DUNE module
 #       creates its own library, you have to manually create the library in the top-level CMakeLists.txt
@@ -95,9 +90,6 @@
 #    Adds all currently registered package flags (see :ref:`dune_register_package_flags`) to the given targets.
 #    This function is mainly intended to help write DUNE modules that want to use :ref:`dune_enable_all_packages` and
 #    define their own libraries, but need to be compatible with CMake < 3.1
-#
-#    .. note::
-#       Just like :ref:`dune_enable_all_packages`, this function requires CMake 2.8.12+.
 #
 # .. cmake_function:: dune_register_package_flags
 #
@@ -184,20 +176,10 @@ endfunction(dune_register_package_flags)
 
 
 function(dune_enable_all_packages)
-
-  if (CMAKE_VERSION VERSION_LESS 2.8.12)
-    message(FATAL_ERROR "dune_enable_all_packages() needs CMake 2.8.12+")
-  elseif(CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS 2.8.12)
-    message(WARNING
-"You are using dune_enable_all_packages().
-This requires at least CMake 2.8.12, but your Dune module only requires ${CMAKE_MINIMUM_REQUIRED_VERSION}.
-Update the cmake_minimum_required() call in your main CMakeLists.txt file to get rid of this warning.")
-  endif()
-
   include(CMakeParseArguments)
   set(OPTIONS APPEND VERBOSE)
   set(SINGLEARGS)
-  set(MULTIARGS COMPILE_DEFINITIONS INCLUDE_DIRS MODULE_LIBRARIES)
+  set(MULTIARGS COMPILE_DEFINITIONS COMPILE_OPTIONS INCLUDE_DIRS MODULE_LIBRARIES)
   cmake_parse_arguments(DUNE_ENABLE_ALL_PACKAGES "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
 
   if(DUNE_ENABLE_ALL_PACKAGES_UNPARSED_ARGUMENTS)
@@ -301,10 +283,12 @@ Update the cmake_minimum_required() call in your main CMakeLists.txt file to get
     # make sure the /lib directory exists - we need it to create the stub source file in there
     file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
     # figure out the location of the stub source template
-    dune_common_script_dir(script_dir)
+    dune_module_path(MODULE dune-common RESULT script_dir SCRIPT_DIR)
     foreach(module_lib ${DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES})
-      # create the stub source file in the output directory...
+      # create the stub source file in the output directory (using a c++ compatible name)...
+      string(REGEX REPLACE "[^a-zA-Z0-9]" "_" module_lib_mangled ${module_lib})
       configure_file("${script_dir}/module_library.cc.in" "${PROJECT_BINARY_DIR}/lib/lib${module_lib}_stub.cc")
+
       # ...and create the library...
       dune_add_library(${module_lib} SOURCES "${PROJECT_BINARY_DIR}/lib/lib${module_lib}_stub.cc")
       # ...and add it to all future targets in the module
@@ -329,15 +313,6 @@ endfunction(dune_enable_all_packages)
 
 
 function(dune_target_enable_all_packages)
-  if (CMAKE_VERSION VERSION_LESS 2.8.12)
-    message(FATAL_ERROR "dune_target_enable_all_packages() needs CMake 2.8.12+")
-  elseif(CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS 2.8.12)
-    message(WARNING
-"You are using dune_target_enable_all_packages().
-This requires at least CMake 2.8.12, but your Dune module only requires ${CMAKE_MINIMUM_REQUIRED_VERSION}.
-Update the cmake_minimum_required() call in your main CMakeLists.txt file to get rid of this warning.")
-  endif()
-
   foreach(_target ${ARGN})
 
     get_property(all_incs GLOBAL PROPERTY ALL_PKG_INCS)
@@ -384,6 +359,10 @@ List of libraries defined in dune_enable_all_packages: ${DUNE_ENABLE_ALL_PACKAGE
   endif()
 
   foreach(source ${DUNE_LIBRARY_ADD_SOURCES_SOURCES})
-    target_sources(${lib} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${source})
+    if(IS_ABSOLUTE ${source})
+      target_sources(${lib} PRIVATE ${source})
+    else()
+      target_sources(${lib} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${source})
+    endif()
   endforeach()
 endfunction()

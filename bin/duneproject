@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #
 # TODO:
@@ -186,7 +186,7 @@ ENABLE_ALL="$5"
 while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
 
   # Track minimum CMake version
-  CMAKE_MINIMUM_REQUIRED=2.8.6
+  CMAKE_MINIMUM_REQUIRED=2.8.12
 
   while [ -z $PROJECT ]; do
     read -p "1) Name of your new Project? (e.g.: dune-grid): " PROJECT
@@ -377,12 +377,12 @@ Most probably you'll have to provide additional information to dunecontrol
 The most convenient way is to use options files in this case. The files
 define four variables:
 
-CMAKE_FLAGS      flags passed to cmake (durin configure)
+CMAKE_FLAGS      flags passed to cmake (during configure)
 MAKE_FLAGS       flags passed to make
 
 An example options file might look like this:
 
-#use this options to autogen, configure and make if no other options are given
+#use this options to configure and make if no other options are given
 CMAKE_FLAGS=" \\
 -DCMAKE_CXX_COMPILER=g++-4.9 \\
 -DCMAKE_CXX_FLAGS='-Wall -pedantic' \\
@@ -404,7 +404,7 @@ See
 for further options.
 
 
-The full build-system is described in the dune-common/doc/buildsystem (Git version) or under share/doc/dune-common/buildsystem if you installed DUNE!
+The full build system is described in the dune-common/doc/buildsystem (Git version) or under share/doc/dune-common/buildsystem if you installed DUNE!
 R_DELIM
 
 ################## CMakeLists.txt ##################
@@ -444,10 +444,6 @@ add_subdirectory("cmake/modules")
 # finalize the dune project, e.g. generating config.h etc.
 finalize_dune_project(GENERATE_CONFIG_H_CMAKE)
 M_DELIM
-
-################## STAMP-VC ##################
-echo "- $PROJECT/stamp-vc"
-echo 'A stamp file to signify that this directory comes from a version control system, not an unpacked tarball' > $PROJECT/stamp-vc
 
 ################## PROJECT.PC.IN ##################
 echo "- $PROJECT/$MODULE.pc.in"
@@ -540,6 +536,9 @@ M_DELIM
 ################## PROJECT.CC ##################
 echo "- $PROJECT/src/$MODULE.cc"
 cat> "$PROJECT/src/$MODULE.cc" << CC_DELIM
+// -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
+// vi: set et ts=4 sw=2 sts=2:
+
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif

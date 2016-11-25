@@ -3,9 +3,9 @@ install(FILES
   CreateDoxyFile.cmake
   extract_cmake_data.py
   FinalizeHeadercheck.cmake
-  FindFiles.cmake
   index.rst.in
   InstallFile.cmake
+  main77.cc.in
   RunDoxygen.cmake
   sphinx_cmake_dune.py
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/dune/cmake/scripts)

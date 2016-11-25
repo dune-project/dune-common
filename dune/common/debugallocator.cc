@@ -15,7 +15,7 @@ namespace Dune
   namespace DebugMemory
   {
     // system constant for page size
-    const std::ptrdiff_t page_size = getpagesize();
+    const std::ptrdiff_t page_size = sysconf(_SC_PAGESIZE);
 
     // implement member functions
     void AllocationManager::allocation_error(const char* msg)

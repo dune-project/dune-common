@@ -498,17 +498,17 @@ namespace Dune {
      *
      * @param remote The list to add the indices to.
      * @param remoteEntries The number of remote entries to unpack.
-     * @param local The local indices to check wether we know the remote
+     * @param local The local indices to check whether we know the remote
      *              indices.
      * @param localEntries The number of local indices.
      * @param type The mpi data type for unpacking.
      * @param p_in The input buffer to unpack from.
-     * @param postion The position in the buffer to start unpacking from.
+     * @param position The position in the buffer to start unpacking from.
      * @param bufferSize The size of the input buffer.
      */
     inline void unpackIndices(RemoteIndexList& remote, int remoteEntries,
                               PairType** local, int localEntries, char* p_in,
-                              MPI_Datatype type, int* positon, int bufferSize,
+                              MPI_Datatype type, int* position, int bufferSize,
                               bool fromOurself);
 
     inline void unpackIndices(RemoteIndexList& send, RemoteIndexList& receive,
@@ -885,20 +885,25 @@ namespace Dune {
   MPI_Datatype MPITraits<IndexPair<TG,ParallelLocalIndex<TA> > >::getType()
   {
     if(type==MPI_DATATYPE_NULL) {
-      int length[4];
-      MPI_Aint disp[4];
-      MPI_Datatype types[4] = {MPI_LB, MPITraits<TG>::getType(),
-                               MPITraits<ParallelLocalIndex<TA> >::getType(), MPI_UB};
-      IndexPair<TG,ParallelLocalIndex<TA> > rep[2];
-      length[0]=length[1]=length[2]=length[3]=1;
-      MPI_Address(rep, disp); // lower bound of the datatype
-      MPI_Address(&(rep[0].global_), disp+1);
-      MPI_Address(&(rep[0].local_), disp+2);
-      MPI_Address(rep+1, disp+3); // upper bound of the datatype
-      for(int i=3; i >= 0; --i)
-        disp[i] -= disp[0];
-      MPI_Type_struct(4, length, disp, types, &type);
+      int length[2] = {1, 1};
+      MPI_Aint base;
+      MPI_Aint disp[2];
+      MPI_Datatype types[2] = {MPITraits<TG>::getType(),
+                               MPITraits<ParallelLocalIndex<TA> >::getType()};
+      IndexPair<TG,ParallelLocalIndex<TA> > rep;
+      MPI_Get_address(&rep, &base); // lower bound of the datatype
+      MPI_Get_address(&(rep.global_), &disp[0]);
+      MPI_Get_address(&(rep.local_), &disp[1]);
+      for (MPI_Aint& d : disp)
+        d -= base;
+
+      MPI_Datatype tmp;
+      MPI_Type_create_struct(2, length, disp, types, &tmp);
+
+      MPI_Type_create_resized(tmp, 0, sizeof(IndexPair<TG,ParallelLocalIndex<TA> >), &type);
       MPI_Type_commit(&type);
+
+      MPI_Type_free(&tmp);
     }
     return type;
   }
@@ -966,7 +971,8 @@ namespace Dune {
   template<typename T, typename A>
   RemoteIndices<T,A>::RemoteIndices()
     : source_(0), target_(0), sourceSeqNo_(-1),
-      destSeqNo_(-1), publicIgnored(false), firstBuild(true)
+      destSeqNo_(-1), publicIgnored(false), firstBuild(true),
+      includeSelf(false)
   {}
 
   template<class T, typename A>
@@ -1120,7 +1126,7 @@ namespace Dune {
 
   template<typename T, typename A>
   template<bool ignorePublic>
-  inline void RemoteIndices<T,A>::buildRemote(bool includeSelf)
+  inline void RemoteIndices<T,A>::buildRemote(bool includeSelf_)
   {
     // Processor configuration
     int rank, procs;
@@ -1134,7 +1140,7 @@ namespace Dune {
     // Do we need to send two index sets?
     char sendTwo = (source_ != target_);
 
-    if(procs==1 && !(sendTwo || includeSelf))
+    if(procs==1 && !(sendTwo || includeSelf_))
       // Nothing to communicate
       return;
 
@@ -1178,7 +1184,7 @@ namespace Dune {
     MPI_Pack_size(1, MPI_CHAR, comm_,
                   &charSize);
     // Our message will contain the following:
-    // a bool wether two index sets where sent
+    // a bool whether two index sets where sent
     // the size of the source and the dest indexset,
     // then the source and destination indices
     bufferSize += 2 * intSize + charSize;
@@ -1209,9 +1215,9 @@ namespace Dune {
 
 
     // Update remote indices for ourself
-    if(sendTwo|| includeSelf)
+    if(sendTwo|| includeSelf_)
       unpackCreateRemote(buffer[0], sourcePairs, destPairs, rank, sourcePublish,
-                         destPublish, bufferSize, sendTwo, includeSelf);
+                         destPublish, bufferSize, sendTwo, includeSelf_);
 
     neighbourIds.erase(rank);
 
@@ -1447,7 +1453,7 @@ namespace Dune {
   template<bool ignorePublic>
   inline void RemoteIndices<T,A>::rebuild()
   {
-    // Test wether a rebuild is Needed.
+    // Test whether a rebuild is Needed.
     if(firstBuild ||
        ignorePublic!=publicIgnored || !
        isSynced()) {
@@ -1866,11 +1872,8 @@ namespace Dune {
       if(!rindex->second.second->empty()) {
         os<<rank<<": Prozess "<<rindex->first<<": "<<"receive: ";
 
-        const typename RList::const_iterator rend= rindex->second.second->end();
-
-        for(typename RList::const_iterator index = rindex->second.second->begin();
-            index != rend; ++index)
-          os<<*index<<" ";
+        for(const auto& index : *(rindex->second.second))
+          os << index << " ";
       }
       os<<std::endl<<std::flush;
     }

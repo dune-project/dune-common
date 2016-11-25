@@ -8,6 +8,7 @@
  */
 
 #include <complex>
+#include <vector>
 
 namespace Dune {
 
@@ -39,6 +40,20 @@ namespace Dune {
   {
     typedef std::complex<T> field_type;
     typedef T real_type;
+  };
+
+  template<class T, unsigned int N>
+  struct FieldTraits< T[N] >
+  {
+    typedef typename FieldTraits<T>::field_type field_type;
+    typedef typename FieldTraits<T>::real_type real_type;
+  };
+
+  template<class T>
+  struct FieldTraits< std::vector<T> >
+  {
+    typedef typename FieldTraits<T>::field_type field_type;
+    typedef typename FieldTraits<T>::real_type real_type;
   };
 
 } // end namespace Dune

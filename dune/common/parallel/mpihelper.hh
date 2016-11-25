@@ -233,21 +233,22 @@ namespace Dune
   private:
     int rank_;
     int size_;
+    bool initializedHere_;
     void prevent_warning(int){}
 
     //! \brief calls MPI_Init with argc and argv as parameters
     MPIHelper(int& argc, char**& argv)
+    : initializedHere_(false)
     {
-#if MPI_2
       int wasInitialized = -1;
       MPI_Initialized( &wasInitialized );
       if(!wasInitialized)
-#endif
       {
         rank_ = -1;
         size_ = -1;
         static int is_initialized = MPI_Init(&argc, &argv);
         prevent_warning(is_initialized);
+        initializedHere_ = true;
       }
 
       MPI_Comm_rank(MPI_COMM_WORLD,&rank_);
@@ -261,17 +262,14 @@ namespace Dune
     //! \brief calls MPI_Finalize
     ~MPIHelper()
     {
-#ifdef MPI_2
       int wasFinalized = -1;
       MPI_Finalized( &wasFinalized );
-      if(!wasFinalized) {
-#endif
-      MPI_Finalize();
-      dverb << "Called MPI_Finalize on p=" << rank_ << "!" <<std::endl;
-#ifdef MPI_2
-    }
+      if(!wasFinalized && initializedHere_)
+      {
+        MPI_Finalize();
+        dverb << "Called MPI_Finalize on p=" << rank_ << "!" <<std::endl;
+      }
 
-#endif
     }
     MPIHelper(const MPIHelper&);
     MPIHelper& operator=(const MPIHelper);

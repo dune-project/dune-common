@@ -3,11 +3,12 @@ install(FILES
   AddMETISFlags.cmake
   AddParMETISFlags.cmake
   AddPTScotchFlags.cmake
+  AddSuiteSparseFlags.cmake
   AddUMFPackFlags.cmake
+  AddVcFlags.cmake
   CheckCXXFeatures.cmake
   CheckForPthreads.c
   CMakeBuiltinFunctionsDocumentation.cmake
-  DuneCMakePackageConfigHelpers.cmake
   DuneCommonMacros.cmake
   DuneCxaDemangle.cmake
   DuneDoc.cmake
@@ -15,6 +16,7 @@ install(FILES
   DuneEnableAllPackages.cmake
   DuneMacros.cmake
   DuneMPI.cmake
+  DunePathHelper.cmake
   DunePkgConfig.cmake
   DuneSphinxCMakeDoc.cmake
   DuneStreams.cmake
@@ -27,6 +29,7 @@ install(FILES
   FindParMETIS.cmake
   FindPTScotch.cmake
   FindSphinx.cmake
+  FindSuiteSparse.cmake
   FindThreadsCMake31.cmake
   FindUMFPack.cmake
   Headercheck.cmake

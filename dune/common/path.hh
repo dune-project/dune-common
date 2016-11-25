@@ -7,8 +7,7 @@
 
 namespace Dune {
   /**
-   * @addtogroup Path Filesystem Paths
-   * @ingroup Common
+   * @addtogroup Path
    * @{
    */
 
@@ -56,13 +55,13 @@ namespace Dune {
    * <ul>
    * <li> The path is a series of components, each followed by a single '/'.
    * <li> An absolute path starts with an empty component followed by a '/',
-   *      so its first charachter will be '/'.  This is the only case where an
+   *      so its first character will be '/'.  This is the only case where an
    *      empty component can occur.
    * <li> The path does not contain any component ".".  Any such component in
    *      the input is removed.
    * <li> A ".." component may only occur in the following case:  A relative
    *      path may contain a series of ".." in the beginning.  Any other
-   *      occurances of ".." int eh input is collapsed with a preceding
+   *      occurrences of ".." in the input is collapsed with a preceding
    *      component or simply removed if it is at the beginning of an absolute
    *      path.
    * </ul>
@@ -114,7 +113,7 @@ namespace Dune {
    *                    directory.
    *
    * Pretty print the path.  This removes any duplicate '/' and any
-   * superfluous occurances of ".." and ".".  The resulting path will have a
+   * superfluous occurrences of ".." and ".".  The resulting path will have a
    * trailing '/' if it is the root path or if isDirectory is true.  It will
    * however not have a trailing '/' if it is otherwise clear that it is a
    * directory -- i.e. if its last component is "." or "..".

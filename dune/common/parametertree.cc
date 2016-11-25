@@ -22,6 +22,8 @@ using namespace Dune;
 ParameterTree::ParameterTree()
 {}
 
+const Dune::ParameterTree Dune::ParameterTree::empty_;
+
 void ParameterTree::report(std::ostream& stream, const std::string& prefix) const
 {
   typedef std::map<std::string, std::string>::const_iterator ValueIt;
@@ -51,11 +53,22 @@ bool ParameterTree::hasKey(const std::string& key) const
     if (subs_.count(prefix) == 0)
       return false;
 
+    if (values_.count(prefix) > 0)
+      DUNE_THROW(RangeError,"key " << prefix << " occurs as value and as subtree");
+
     const ParameterTree& s = sub(prefix);
     return s.hasKey(key.substr(dot+1));
   }
   else
-    return (values_.count(key) != 0);
+    if (values_.count(key) != 0)
+      {
+        if (subs_.count(key) > 0)
+          DUNE_THROW(RangeError,"key " << key << " occurs as value and as subtree");
+        return true;
+      }
+    else
+      return false;
+
 }
 
 bool ParameterTree::hasSub(const std::string& key) const
@@ -68,11 +81,21 @@ bool ParameterTree::hasSub(const std::string& key) const
     if (subs_.count(prefix) == 0)
       return false;
 
+    if (values_.count(prefix) > 0)
+      DUNE_THROW(RangeError,"key " << prefix << " occurs as value and as subtree");
+
     const ParameterTree& s = sub(prefix);
     return s.hasSub(key.substr(dot+1));
   }
   else
-    return (subs_.count(key) != 0);
+    if (subs_.count(key) != 0)
+      {
+        if (values_.count(key) > 0)
+          DUNE_THROW(RangeError,"key " << key << " occurs as value and as subtree");
+        return true;
+      }
+    else
+      return false;
 }
 
 ParameterTree& ParameterTree::sub(const std::string& key)
@@ -86,6 +109,8 @@ ParameterTree& ParameterTree::sub(const std::string& key)
   }
   else
   {
+    if (values_.count(key) > 0)
+      DUNE_THROW(RangeError,"key " << key << " occurs as value and as subtree");
     if (subs_.count(key) == 0)
       subKeys_.push_back(key.substr(0,dot));
     subs_[key].prefix_ = prefix_ + key + ".";
@@ -93,7 +118,7 @@ ParameterTree& ParameterTree::sub(const std::string& key)
   }
 }
 
-const ParameterTree& ParameterTree::sub(const std::string& key) const
+const ParameterTree& ParameterTree::sub(const std::string& key, bool fail_if_missing) const
 {
   std::string::size_type dot = key.find(".");
 
@@ -104,9 +129,18 @@ const ParameterTree& ParameterTree::sub(const std::string& key) const
   }
   else
   {
+    if (values_.count(key) > 0)
+      DUNE_THROW(RangeError,"key " << key << " occurs as value and as subtree");
     if (subs_.count(key) == 0)
-      DUNE_THROW(Dune::RangeError, "SubTree '" << key
-        << "' not found in ParameterTree (prefix " + prefix_ + ")");
+      {
+        if (fail_if_missing)
+          {
+            DUNE_THROW(Dune::RangeError, "SubTree '" << key
+                       << "' not found in ParameterTree (prefix " + prefix_ + ")");
+          }
+        else
+          return empty_;
+      }
     return subs_.find(key)->second;
   }
 }
@@ -117,11 +151,6 @@ std::string& ParameterTree::operator[] (const std::string& key)
 
   if (dot != std::string::npos)
   {
-    if (! hasSub(key.substr(0,dot)))
-    {
-      subs_[key.substr(0,dot)];
-      subKeys_.push_back(key.substr(0,dot));
-    }
     ParameterTree& s = sub(key.substr(0,dot));
     return s[key.substr(dot+1)];
   }

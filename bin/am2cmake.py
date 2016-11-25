@@ -232,7 +232,6 @@ def rename_var(tokens):
         'ALUGRID': 'ALUGRID_FOUND',
         'AMIRAMESH': 'AMIRAMESH_FOUND',
         'CONVERT': 'CONVERT_FOUND',
-        'DUNEWEB': 'DUNEWEB_FOUND',
         'EIGEN': 'EIGEN_FOUND',
         'GLUT': 'GLUT_FOUND',
         'GMP': 'GMP_FOUND',
@@ -244,8 +243,7 @@ def rename_var(tokens):
         'PSURFACE': 'PSURFACE_FOUND',
         'SUPERLU': 'SUPERLU_FOUND',
         'TEX4HT': 'TEX4HT_FOUND',
-        'UG': 'UG_FOUND',
-        'WML': 'WML_FOUND'}.setdefault(name, tokens[0])
+        'UG': 'UG_FOUND'}.setdefault(name, tokens[0])
     if name.startswith('HAVE_DUNE'):
         tokens[0]=re.sub(r'have-(.*)$', '\\1', name.lower().replace('_','-'))+'_FOUND'
     #print tokens[0]
@@ -466,7 +464,7 @@ def init_cmake_module(module_name):
     return''.join(['# set up project\n',
                   'project("'+module_name+'" C CXX)\n\n#circumvent not building docs\nset(BUILD_DOCS 1)\n\n',
                   '# general stuff\n',
-                  'cmake_minimum_required(VERSION 2.8.6)\n\n',
+                  'cmake_minimum_required(VERSION 2.8.12)\n\n',
                   '#find dune-common and set the module path\n',
                   'find_package(dune-common)\n'
                   'list(APPEND CMAKE_MODULE_PATH ${dune-common_MODULE_PATH}\n'
@@ -510,7 +508,7 @@ def create_cmake_dirs_and_file(dirname, module_name):
         all_cmake_files.extend(fnmatch.filter(filenames,'*.cmake')[:])
     lines=['set(modules \n  ', '\n  '.join(all_cmake_files), '\n)\n']
     output=open(os.path.join(dirs['modules'], 'CMakeLists.txt'), 'w')
-    lines.extend(['install(FILES "${modules}" DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules)\n'])
+    lines.extend(['install(FILES "${modules}" DESTINATION ${DUNE_INSTALL_MODULEDIR})\n'])
     output.write(''.join(lines))
     output.close()
 

@@ -38,14 +38,16 @@
 /* Define to 1 if you have the <malloc.h> header file. */
 // Not used! #cmakedefine01 HAVE_MALLOC_H
 
-/* Define if you have the MPI library. This is only true if MPI was found by
-   configure _and_ if the application uses the DUNEMPICPPFLAGS (or the
-   deprecated MPI_CPPFLAGS) */
+/* Define if you have the MPI library.  */
 #cmakedefine HAVE_MPI ENABLE_MPI
 
 /* Define if you have the GNU GMP library. The value should be ENABLE_GMP
    to facilitate activating and deactivating GMP using compile flags. */
 #cmakedefine HAVE_GMP ENABLE_GMP
+
+/* Define if you have the Vc library. The value should be ENABLE_VC
+   to facilitate activating and deactivating Vc using compile flags. */
+#cmakedefine HAVE_VC ENABLE_VC
 
 /* Define to 1 if you have the symbol mprotect. */
 #cmakedefine HAVE_MPROTECT 1
@@ -55,9 +57,6 @@
 
 /* Define to 1 if you have <sys/mman.h>. */
 #cmakedefine HAVE_SYS_MMAN_H 1
-
-/* Define to 1 if the MPI2 Standard is supported */
-#cmakedefine MPI_2 1
 
 /* begin private */
 
@@ -96,12 +95,53 @@
 #define HAVE_NOEXCEPT_SPECIFIER 1
 #define HAVE_STD_DECLVAL 1
 #define HAVE_KEYWORD_FINAL 1
+#define MPI_2 1
 
 /* Define to 1 if the compiler properly supports testing for operator[] */
 #cmakedefine HAVE_IS_INDEXABLE_SUPPORT 1
 
-/* Define to if the UMFPack library is available */
-#cmakedefine HAVE_UMFPACK ENABLE_UMFPACK
+/* Define to ENABLE_UMFPACK if the UMFPack library is available */
+#cmakedefine HAVE_UMFPACK ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse library is available */
+#cmakedefine HAVE_SUITESPARSE ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's AMD library is available */
+#cmakedefine HAVE_SUITESPARSE_AMD ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's BTF library is available */
+#cmakedefine HAVE_SUITESPARSE_BTF ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's CAMD library is available */
+#cmakedefine HAVE_SUITESPARSE_CAMD ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's CCOLAMD library is available */
+#cmakedefine HAVE_SUITESPARSE_CCOLAMD ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's CHOLMOD library is available */
+#cmakedefine HAVE_SUITESPARSE_CHOLMOD ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's COLAMD library is available */
+#cmakedefine HAVE_SUITESPARSE_COLAMD ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's CXSPARSE library is available */
+#cmakedefine HAVE_SUITESPARSE_CXSPARSE ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's KLU library is available */
+#cmakedefine HAVE_SUITESPARSE_KLU ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's LDL library is available */
+#cmakedefine HAVE_SUITESPARSE_LDL ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's RBIO library is available */
+#cmakedefine HAVE_SUITESPARSE_RBIO ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's SPQR library is available
+   and if it's version is at least 4.3 */
+#cmakedefine HAVE_SUITESPARSE_SPQR ENABLE_SUITESPARSE
+
+/* Define to ENABLE_SUITESPARSE if the SuiteSparse's UMFPACK library is available */
+#cmakedefine HAVE_SUITESPARSE_UMFPACK ENABLE_SUITESPARSE
 
 /* Define to ENABLE_PARMETIS if you have the Parmetis library.
    This is only true if MPI was found

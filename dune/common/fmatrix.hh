@@ -9,11 +9,12 @@
 #include <algorithm>
 #include <initializer_list>
 
+#include <dune/common/boundschecking.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/densematrix.hh>
 #include <dune/common/precision.hh>
-#include <dune/common/std/constexpr.hh>
+#include <dune/common/typetraits.hh>
 
 namespace Dune
 {
@@ -88,24 +89,6 @@ namespace Dune
      */
     FieldMatrix () {}
 
-    /** \brief Constructor initializing the whole matrix with a scalar
-     */
-    template< class Other >
-    FieldMatrix ( const Other &other )
-    {
-      DenseMatrixAssigner< FieldMatrix< K, ROWS, COLS >, Other >::apply( *this, other );
-    }
-
-    /** \brief Constructor initializing the matrix from a list of lists of scalars
-     */
-    FieldMatrix (std::initializer_list<std::initializer_list<K> > const &ll)
-    {
-      assert(ll.size() == rows); // Actually, this is not needed any more!
-      std::copy_n(ll.begin(), std::min(static_cast<std::size_t>(ROWS),
-                                       ll.size()),
-                 _data.begin());
-    }
-
     /** \brief Constructor initializing the matrix from a list of vector
      */
     FieldMatrix(std::initializer_list<Dune::FieldVector<K, cols> > const &l) {
@@ -115,8 +98,24 @@ namespace Dune
                  _data.begin());
     }
 
-    //===== assignment
+    template <class T,
+              typename = std::enable_if_t<HasDenseMatrixAssigner<FieldMatrix, T>::value>>
+    FieldMatrix(T const& rhs)
+    {
+      *this = rhs;
+    }
+
     using Base::operator=;
+
+    // Specialisation: FieldMatrix assignment (compile-time bounds checking)
+    template <typename T, int rows, int cols>
+    FieldMatrix& operator=(FieldMatrix<T,rows,cols> const &rhs)
+    {
+      static_assert(rows == ROWS, "Size mismatch in matrix assignment (rows)");
+      static_assert(cols == COLS, "Size mismatch in matrix assignment (columns)");
+      _data = rhs._data;
+      return *this;
+    }
 
     //! Multiplies M from the left to this matrix, this matrix is not modified
     template<int l>
@@ -134,9 +133,14 @@ namespace Dune
       return C;
     }
 
+    using Base::rightmultiply;
+
     //! Multiplies M from the right to this matrix
-    FieldMatrix& rightmultiply (const FieldMatrix<K,cols,cols>& M)
+    template <int r, int c>
+    FieldMatrix& rightmultiply (const FieldMatrix<K,r,c>& M)
     {
+      static_assert(r == c, "Cannot rightmultiply with non-square matrix");
+      static_assert(r == cols, "Size mismatch");
       FieldMatrix<K,rows,cols> C(*this);
 
       for (size_type i=0; i<rows; i++)
@@ -165,18 +169,18 @@ namespace Dune
     }
 
     // make this thing a matrix
-    DUNE_CONSTEXPR size_type mat_rows() const { return ROWS; }
-    DUNE_CONSTEXPR size_type mat_cols() const { return COLS; }
+    constexpr size_type mat_rows() const { return ROWS; }
+    constexpr size_type mat_cols() const { return COLS; }
 
     row_reference mat_access ( size_type i )
     {
-      assert(i < ROWS);
+      DUNE_ASSERT_BOUNDS(i < ROWS);
       return _data[i];
     }
 
     const_row_reference mat_access ( size_type i ) const
     {
-      assert(i < ROWS);
+      DUNE_ASSERT_BOUNDS(i < ROWS);
       return _data[i];
     }
   };
@@ -224,18 +228,21 @@ namespace Dune
      */
     FieldMatrix () {}
 
-    /** \brief Constructor initializing the whole matrix with a scalar
+    /** \brief Constructor initializing the matrix from a list of vector
      */
-    FieldMatrix (const K& k)
+    FieldMatrix(std::initializer_list<Dune::FieldVector<K, 1>> const &l)
     {
-      _data[0] = k;
+      std::copy_n(l.begin(), std::min(static_cast< std::size_t >( 1 ), l.size()), &_data);
     }
 
-    template< class Other >
-    FieldMatrix ( const Other &other )
+    template <class T,
+              typename = std::enable_if_t<HasDenseMatrixAssigner<FieldMatrix, T>::value>>
+    FieldMatrix(T const& rhs)
     {
-      DenseMatrixAssigner< FieldMatrix< K, 1, 1 >, Other >::apply( *this, other );
+      *this = rhs;
     }
+
+    using Base::operator=;
 
     //===== solve
 
@@ -268,20 +275,20 @@ namespace Dune
     }
 
     // make this thing a matrix
-    DUNE_CONSTEXPR size_type mat_rows() const { return 1; }
-    DUNE_CONSTEXPR size_type mat_cols() const { return 1; }
+    constexpr size_type mat_rows() const { return 1; }
+    constexpr size_type mat_cols() const { return 1; }
 
     row_reference mat_access ( size_type i )
     {
       DUNE_UNUSED_PARAMETER(i);
-      assert(i == 0);
+      DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }
 
     const_row_reference mat_access ( size_type i ) const
     {
       DUNE_UNUSED_PARAMETER(i);
-      assert(i == 0);
+      DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }
 
