@@ -7,7 +7,7 @@
 
 #include <dune/common/exceptions.hh>
 #include <dune/common/std/memory.hh>
-#include <dune/common/prioritytag.hh>
+#include <dune/common/typeutilities.hh>
 
 namespace Dune {
 
