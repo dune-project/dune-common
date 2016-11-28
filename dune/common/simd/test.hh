@@ -472,13 +472,6 @@ namespace Dune {
         checkPostfixOpV<const V&&>(op);
       }
 
-      template<class V>
-      void checkPostfixOpsV()
-      {
-        checkPostfixOpsV<V>(OpPostfixDecrement{});
-        checkPostfixOpsV<V>(OpPostfixIncrement{});
-      }
-
       //////////////////////////////////////////////////////////////////////
       //
       // checks for unary (prefix) operators
@@ -541,18 +534,6 @@ namespace Dune {
         checkPrefixOpV<const V&>(op);
         checkPrefixOpV<V&&>(op);
         checkPrefixOpV<const V&&>(op);
-      }
-
-      template<class V>
-      void checkPrefixOpsV()
-      {
-        checkPrefixOpsV<V>(OpPrefixDecrement{});
-        checkPrefixOpsV<V>(OpPrefixIncrement{});
-
-        checkPrefixOpsV<V>(OpPrefixPlus{});
-        checkPrefixOpsV<V>(OpPrefixMinus{});
-        checkPrefixOpsV<V>(OpPrefixLogicNot{});
-        checkPrefixOpsV<V>(OpPrefixBitNot{});
       }
 
       //////////////////////////////////////////////////////////////////////
@@ -686,49 +667,6 @@ namespace Dune {
         checkBinaryOpVV<const V&&, const V&&>(op);
       }
 
-      template<class V>
-      void checkBinaryOpsVV()
-      {
-        checkBinaryOpsVV<V>(OpBinaryMul{});
-        checkBinaryOpsVV<V>(OpBinaryDiv{});
-        checkBinaryOpsVV<V>(OpBinaryRemainder{});
-
-        checkBinaryOpsVV<V>(OpBinaryPlus{});
-        checkBinaryOpsVV<V>(OpBinaryMinus{});
-
-        checkBinaryOpsVV<V>(OpBinaryLeftShift{});
-        checkBinaryOpsVV<V>(OpBinaryRightShift{});
-
-        checkBinaryOpsVV<V>(OpBinaryLess{});
-        checkBinaryOpsVV<V>(OpBinaryGreater{});
-        checkBinaryOpsVV<V>(OpBinaryLessEqual{});
-        checkBinaryOpsVV<V>(OpBinaryGreaterEqual{});
-
-        checkBinaryOpsVV<V>(OpBinaryEqual{});
-        checkBinaryOpsVV<V>(OpBinaryNotEqual{});
-
-        checkBinaryOpsVV<V>(OpBinaryBitAnd{});
-        checkBinaryOpsVV<V>(OpBinaryBitXor{});
-        checkBinaryOpsVV<V>(OpBinaryBitOr{});
-
-        checkBinaryOpsVV<V>(OpBinaryLogicAnd{});
-        checkBinaryOpsVV<V>(OpBinaryLogicOr{});
-
-        checkBinaryOpsVV<V>(OpBinaryAssign{});
-        checkBinaryOpsVV<V>(OpBinaryAssignMul{});
-        checkBinaryOpsVV<V>(OpBinaryAssignDiv{});
-        checkBinaryOpsVV<V>(OpBinaryAssignRemainder{});
-        checkBinaryOpsVV<V>(OpBinaryAssignPlus{});
-        checkBinaryOpsVV<V>(OpBinaryAssignMinus{});
-        checkBinaryOpsVV<V>(OpBinaryAssignLeftShift{});
-        checkBinaryOpsVV<V>(OpBinaryAssignRightShift{});
-        checkBinaryOpsVV<V>(OpBinaryAssignAnd{});
-        checkBinaryOpsVV<V>(OpBinaryAssignXor{});
-        checkBinaryOpsVV<V>(OpBinaryAssignOr{});
-
-        checkBinaryOpsVV<V>(OpBinaryComma{});
-      }
-
       //////////////////////////////////////////////////////////////////////
       //
       // checks for scalar-vector binary operations
@@ -821,37 +759,6 @@ namespace Dune {
         checkBinaryOpSV<const S&&, const V&>(op);
         checkBinaryOpSV<const S&&, V&&>(op);
         checkBinaryOpSV<const S&&, const V&&>(op);
-      }
-
-      template<class V>
-      void checkBinaryOpsSV()
-      {
-        checkBinaryOpsSV<V>(OpBinaryMul{});
-        checkBinaryOpsSV<V>(OpBinaryDiv{});
-        checkBinaryOpsSV<V>(OpBinaryRemainder{});
-
-        checkBinaryOpsSV<V>(OpBinaryPlus{});
-        checkBinaryOpsSV<V>(OpBinaryMinus{});
-
-        checkBinaryOpsSV<V>(OpBinaryLeftShift{});
-        checkBinaryOpsSV<V>(OpBinaryRightShift{});
-
-        checkBinaryOpsSV<V>(OpBinaryLess{});
-        checkBinaryOpsSV<V>(OpBinaryGreater{});
-        checkBinaryOpsSV<V>(OpBinaryLessEqual{});
-        checkBinaryOpsSV<V>(OpBinaryGreaterEqual{});
-
-        checkBinaryOpsSV<V>(OpBinaryEqual{});
-        checkBinaryOpsSV<V>(OpBinaryNotEqual{});
-
-        checkBinaryOpsSV<V>(OpBinaryBitAnd{});
-        checkBinaryOpsSV<V>(OpBinaryBitXor{});
-        checkBinaryOpsSV<V>(OpBinaryBitOr{});
-
-        checkBinaryOpsSV<V>(OpBinaryLogicAnd{});
-        checkBinaryOpsSV<V>(OpBinaryLogicOr{});
-
-        checkBinaryOpsSV<V>(OpBinaryComma{});
       }
 
       //////////////////////////////////////////////////////////////////////
@@ -949,8 +856,90 @@ namespace Dune {
       }
 
       template<class V>
-      void checkBinaryOpsVS()
+      void checkVectorOps()
       {
+        // postfix
+        checkPostfixOpsV<V>(OpPostfixDecrement{});
+        checkPostfixOpsV<V>(OpPostfixIncrement{});
+
+        // prefix
+        checkPrefixOpsV<V>(OpPrefixDecrement{});
+        checkPrefixOpsV<V>(OpPrefixIncrement{});
+
+        checkPrefixOpsV<V>(OpPrefixPlus{});
+        checkPrefixOpsV<V>(OpPrefixMinus{});
+        checkPrefixOpsV<V>(OpPrefixLogicNot{});
+        checkPrefixOpsV<V>(OpPrefixBitNot{});
+
+        // binary vector-vector
+        checkBinaryOpsVV<V>(OpBinaryMul{});
+        checkBinaryOpsVV<V>(OpBinaryDiv{});
+        checkBinaryOpsVV<V>(OpBinaryRemainder{});
+
+        checkBinaryOpsVV<V>(OpBinaryPlus{});
+        checkBinaryOpsVV<V>(OpBinaryMinus{});
+
+        checkBinaryOpsVV<V>(OpBinaryLeftShift{});
+        checkBinaryOpsVV<V>(OpBinaryRightShift{});
+
+        checkBinaryOpsVV<V>(OpBinaryLess{});
+        checkBinaryOpsVV<V>(OpBinaryGreater{});
+        checkBinaryOpsVV<V>(OpBinaryLessEqual{});
+        checkBinaryOpsVV<V>(OpBinaryGreaterEqual{});
+
+        checkBinaryOpsVV<V>(OpBinaryEqual{});
+        checkBinaryOpsVV<V>(OpBinaryNotEqual{});
+
+        checkBinaryOpsVV<V>(OpBinaryBitAnd{});
+        checkBinaryOpsVV<V>(OpBinaryBitXor{});
+        checkBinaryOpsVV<V>(OpBinaryBitOr{});
+
+        checkBinaryOpsVV<V>(OpBinaryLogicAnd{});
+        checkBinaryOpsVV<V>(OpBinaryLogicOr{});
+
+        checkBinaryOpsVV<V>(OpBinaryAssign{});
+        checkBinaryOpsVV<V>(OpBinaryAssignMul{});
+        checkBinaryOpsVV<V>(OpBinaryAssignDiv{});
+        checkBinaryOpsVV<V>(OpBinaryAssignRemainder{});
+        checkBinaryOpsVV<V>(OpBinaryAssignPlus{});
+        checkBinaryOpsVV<V>(OpBinaryAssignMinus{});
+        checkBinaryOpsVV<V>(OpBinaryAssignLeftShift{});
+        checkBinaryOpsVV<V>(OpBinaryAssignRightShift{});
+        checkBinaryOpsVV<V>(OpBinaryAssignAnd{});
+        checkBinaryOpsVV<V>(OpBinaryAssignXor{});
+        checkBinaryOpsVV<V>(OpBinaryAssignOr{});
+
+        checkBinaryOpsVV<V>(OpBinaryComma{});
+
+        // binary scalar-vector
+        checkBinaryOpsSV<V>(OpBinaryMul{});
+        checkBinaryOpsSV<V>(OpBinaryDiv{});
+        checkBinaryOpsSV<V>(OpBinaryRemainder{});
+
+        checkBinaryOpsSV<V>(OpBinaryPlus{});
+        checkBinaryOpsSV<V>(OpBinaryMinus{});
+
+        checkBinaryOpsSV<V>(OpBinaryLeftShift{});
+        checkBinaryOpsSV<V>(OpBinaryRightShift{});
+
+        checkBinaryOpsSV<V>(OpBinaryLess{});
+        checkBinaryOpsSV<V>(OpBinaryGreater{});
+        checkBinaryOpsSV<V>(OpBinaryLessEqual{});
+        checkBinaryOpsSV<V>(OpBinaryGreaterEqual{});
+
+        checkBinaryOpsSV<V>(OpBinaryEqual{});
+        checkBinaryOpsSV<V>(OpBinaryNotEqual{});
+
+        checkBinaryOpsSV<V>(OpBinaryBitAnd{});
+        checkBinaryOpsSV<V>(OpBinaryBitXor{});
+        checkBinaryOpsSV<V>(OpBinaryBitOr{});
+
+        checkBinaryOpsSV<V>(OpBinaryLogicAnd{});
+        checkBinaryOpsSV<V>(OpBinaryLogicOr{});
+
+        checkBinaryOpsSV<V>(OpBinaryComma{});
+
+        // binary vector-scalar
         checkBinaryOpsVS<V>(OpBinaryMul{});
         checkBinaryOpsVS<V>(OpBinaryDiv{});
         checkBinaryOpsVS<V>(OpBinaryRemainder{});
@@ -1205,12 +1194,7 @@ namespace Dune {
       checkConstruct<V>();
       checkAssign<V>();
 
-      checkPostfixOpsV<V>();
-      checkPrefixOpsV<V>();
-
-      checkBinaryOpsVV<V>();
-      checkBinaryOpsSV<V>();
-      checkBinaryOpsVS<V>();
+      checkVectorOps<V>();
 
       checkValueCast<V>();
       checkCond<V>();
