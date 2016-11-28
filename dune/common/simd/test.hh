@@ -497,8 +497,8 @@ namespace Dune {
       // checks for binary operators
       //
 
-#define DUNE_SIMD_BINARY_OP(NAME, SYMBOL)                               \
-      struct OpBinary##NAME                                             \
+#define DUNE_SIMD_INFIX_OP(NAME, SYMBOL)                               \
+      struct OpInfix##NAME                                             \
       {                                                                 \
         template<class V1, class V2>                                    \
         auto operator()(V1&& v1, V2&& v2) const                         \
@@ -508,48 +508,48 @@ namespace Dune {
         }                                                               \
       }
 
-      DUNE_SIMD_BINARY_OP(Mul,              *  );
-      DUNE_SIMD_BINARY_OP(Div,              /  );
-      DUNE_SIMD_BINARY_OP(Remainder,        %  );
+      DUNE_SIMD_INFIX_OP(Mul,              *  );
+      DUNE_SIMD_INFIX_OP(Div,              /  );
+      DUNE_SIMD_INFIX_OP(Remainder,        %  );
 
-      DUNE_SIMD_BINARY_OP(Plus,             +  );
-      DUNE_SIMD_BINARY_OP(Minus,            -  );
+      DUNE_SIMD_INFIX_OP(Plus,             +  );
+      DUNE_SIMD_INFIX_OP(Minus,            -  );
 
-      DUNE_SIMD_BINARY_OP(LeftShift,        << );
-      DUNE_SIMD_BINARY_OP(RightShift,       >> );
+      DUNE_SIMD_INFIX_OP(LeftShift,        << );
+      DUNE_SIMD_INFIX_OP(RightShift,       >> );
 
-      DUNE_SIMD_BINARY_OP(Less,             <  );
-      DUNE_SIMD_BINARY_OP(Greater,          >  );
-      DUNE_SIMD_BINARY_OP(LessEqual,        <  );
-      DUNE_SIMD_BINARY_OP(GreaterEqual,     >  );
+      DUNE_SIMD_INFIX_OP(Less,             <  );
+      DUNE_SIMD_INFIX_OP(Greater,          >  );
+      DUNE_SIMD_INFIX_OP(LessEqual,        <  );
+      DUNE_SIMD_INFIX_OP(GreaterEqual,     >  );
 
-      DUNE_SIMD_BINARY_OP(Equal,            == );
-      DUNE_SIMD_BINARY_OP(NotEqual,         != );
+      DUNE_SIMD_INFIX_OP(Equal,            == );
+      DUNE_SIMD_INFIX_OP(NotEqual,         != );
 
-      DUNE_SIMD_BINARY_OP(BitAnd,           &  );
-      DUNE_SIMD_BINARY_OP(BitXor,           ^  );
-      DUNE_SIMD_BINARY_OP(BitOr,            |  );
+      DUNE_SIMD_INFIX_OP(BitAnd,           &  );
+      DUNE_SIMD_INFIX_OP(BitXor,           ^  );
+      DUNE_SIMD_INFIX_OP(BitOr,            |  );
 
-      DUNE_SIMD_BINARY_OP(LogicAnd,         && );
-      DUNE_SIMD_BINARY_OP(LogicOr,          || );
+      DUNE_SIMD_INFIX_OP(LogicAnd,         && );
+      DUNE_SIMD_INFIX_OP(LogicOr,          || );
 
-      DUNE_SIMD_BINARY_OP(Assign,           =  );
-      DUNE_SIMD_BINARY_OP(AssignMul,        *= );
-      DUNE_SIMD_BINARY_OP(AssignDiv,        /= );
-      DUNE_SIMD_BINARY_OP(AssignRemainder,  %= );
-      DUNE_SIMD_BINARY_OP(AssignPlus,       += );
-      DUNE_SIMD_BINARY_OP(AssignMinus,      -= );
-      DUNE_SIMD_BINARY_OP(AssignLeftShift,  <<=);
-      DUNE_SIMD_BINARY_OP(AssignRightShift, >>=);
-      DUNE_SIMD_BINARY_OP(AssignAnd,        &= );
-      DUNE_SIMD_BINARY_OP(AssignXor,        ^= );
-      DUNE_SIMD_BINARY_OP(AssignOr,         |= );
+      DUNE_SIMD_INFIX_OP(Assign,           =  );
+      DUNE_SIMD_INFIX_OP(AssignMul,        *= );
+      DUNE_SIMD_INFIX_OP(AssignDiv,        /= );
+      DUNE_SIMD_INFIX_OP(AssignRemainder,  %= );
+      DUNE_SIMD_INFIX_OP(AssignPlus,       += );
+      DUNE_SIMD_INFIX_OP(AssignMinus,      -= );
+      DUNE_SIMD_INFIX_OP(AssignLeftShift,  <<=);
+      DUNE_SIMD_INFIX_OP(AssignRightShift, >>=);
+      DUNE_SIMD_INFIX_OP(AssignAnd,        &= );
+      DUNE_SIMD_INFIX_OP(AssignXor,        ^= );
+      DUNE_SIMD_INFIX_OP(AssignOr,         |= );
 
 #define DUNE_SIMD_COMMA_SYMBOL ,
-      DUNE_SIMD_BINARY_OP(Comma,            DUNE_SIMD_COMMA_SYMBOL);
+      DUNE_SIMD_INFIX_OP(Comma,            DUNE_SIMD_COMMA_SYMBOL);
 #undef DUNE_SIMD_COMMA_SYMBOL
 
-#undef DUNE_SIMD_BINARY_OP
+#undef DUNE_SIMD_INFIX_OP
 
       //////////////////////////////////////////////////////////////////////
       //
@@ -811,6 +811,18 @@ namespace Dune {
         checkBinaryOpVS<const V&&, const S&&>(op);
       }
 
+#define DUNE_SIMD_BINARY_OPCHECK(C1, C2, C3, NAME)      \
+      ( DUNE_SIMD_BINARY_OPCHECK_##C1(NAME),            \
+        DUNE_SIMD_BINARY_OPCHECK_##C2(NAME),            \
+        DUNE_SIMD_BINARY_OPCHECK_##C3(NAME) )
+#define DUNE_SIMD_BINARY_OPCHECK_(NAME) void()
+#define DUNE_SIMD_BINARY_OPCHECK_SV(NAME)       \
+      checkBinaryOpsSV<V>(Op##NAME{})
+#define DUNE_SIMD_BINARY_OPCHECK_VV(NAME)       \
+      checkBinaryOpsVV<V>(Op##NAME{})
+#define DUNE_SIMD_BINARY_OPCHECK_VS(NAME)       \
+      checkBinaryOpsVS<V>(Op##NAME{})
+
       template<class V>
       void checkVectorOps()
       {
@@ -827,114 +839,52 @@ namespace Dune {
         checkUnaryOpsV<V>(OpPrefixLogicNot{});
         checkUnaryOpsV<V>(OpPrefixBitNot{});
 
-        // binary vector-vector
-        checkBinaryOpsVV<V>(OpBinaryMul{});
-        checkBinaryOpsVV<V>(OpBinaryDiv{});
-        checkBinaryOpsVV<V>(OpBinaryRemainder{});
+        // binary
+        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixMul             );
+        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixDiv             );
+        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixRemainder       );
 
-        checkBinaryOpsVV<V>(OpBinaryPlus{});
-        checkBinaryOpsVV<V>(OpBinaryMinus{});
+        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixPlus            );
+        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixMinus           );
 
-        checkBinaryOpsVV<V>(OpBinaryLeftShift{});
-        checkBinaryOpsVV<V>(OpBinaryRightShift{});
+        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixLeftShift       );
+        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixRightShift      );
 
-        checkBinaryOpsVV<V>(OpBinaryLess{});
-        checkBinaryOpsVV<V>(OpBinaryGreater{});
-        checkBinaryOpsVV<V>(OpBinaryLessEqual{});
-        checkBinaryOpsVV<V>(OpBinaryGreaterEqual{});
+        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixLess            );
+        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixGreater         );
+        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixLessEqual       );
+        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixGreaterEqual    );
 
-        checkBinaryOpsVV<V>(OpBinaryEqual{});
-        checkBinaryOpsVV<V>(OpBinaryNotEqual{});
+        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixEqual           );
+        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixNotEqual        );
 
-        checkBinaryOpsVV<V>(OpBinaryBitAnd{});
-        checkBinaryOpsVV<V>(OpBinaryBitXor{});
-        checkBinaryOpsVV<V>(OpBinaryBitOr{});
+        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixBitAnd          );
+        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixBitXor          );
+        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixBitOr           );
 
-        checkBinaryOpsVV<V>(OpBinaryLogicAnd{});
-        checkBinaryOpsVV<V>(OpBinaryLogicOr{});
+        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixLogicAnd        );
+        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixLogicOr         );
 
-        checkBinaryOpsVV<V>(OpBinaryAssign{});
-        checkBinaryOpsVV<V>(OpBinaryAssignMul{});
-        checkBinaryOpsVV<V>(OpBinaryAssignDiv{});
-        checkBinaryOpsVV<V>(OpBinaryAssignRemainder{});
-        checkBinaryOpsVV<V>(OpBinaryAssignPlus{});
-        checkBinaryOpsVV<V>(OpBinaryAssignMinus{});
-        checkBinaryOpsVV<V>(OpBinaryAssignLeftShift{});
-        checkBinaryOpsVV<V>(OpBinaryAssignRightShift{});
-        checkBinaryOpsVV<V>(OpBinaryAssignAnd{});
-        checkBinaryOpsVV<V>(OpBinaryAssignXor{});
-        checkBinaryOpsVV<V>(OpBinaryAssignOr{});
+        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssign          );
+        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignMul       );
+        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignDiv       );
+        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignRemainder );
+        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignPlus      );
+        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignMinus     );
+        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignLeftShift );
+        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignRightShift);
+        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignAnd       );
+        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignXor       );
+        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignOr        );
 
-        checkBinaryOpsVV<V>(OpBinaryComma{});
-
-        // binary scalar-vector
-        checkBinaryOpsSV<V>(OpBinaryMul{});
-        checkBinaryOpsSV<V>(OpBinaryDiv{});
-        checkBinaryOpsSV<V>(OpBinaryRemainder{});
-
-        checkBinaryOpsSV<V>(OpBinaryPlus{});
-        checkBinaryOpsSV<V>(OpBinaryMinus{});
-
-        checkBinaryOpsSV<V>(OpBinaryLeftShift{});
-        checkBinaryOpsSV<V>(OpBinaryRightShift{});
-
-        checkBinaryOpsSV<V>(OpBinaryLess{});
-        checkBinaryOpsSV<V>(OpBinaryGreater{});
-        checkBinaryOpsSV<V>(OpBinaryLessEqual{});
-        checkBinaryOpsSV<V>(OpBinaryGreaterEqual{});
-
-        checkBinaryOpsSV<V>(OpBinaryEqual{});
-        checkBinaryOpsSV<V>(OpBinaryNotEqual{});
-
-        checkBinaryOpsSV<V>(OpBinaryBitAnd{});
-        checkBinaryOpsSV<V>(OpBinaryBitXor{});
-        checkBinaryOpsSV<V>(OpBinaryBitOr{});
-
-        checkBinaryOpsSV<V>(OpBinaryLogicAnd{});
-        checkBinaryOpsSV<V>(OpBinaryLogicOr{});
-
-        checkBinaryOpsSV<V>(OpBinaryComma{});
-
-        // binary vector-scalar
-        checkBinaryOpsVS<V>(OpBinaryMul{});
-        checkBinaryOpsVS<V>(OpBinaryDiv{});
-        checkBinaryOpsVS<V>(OpBinaryRemainder{});
-
-        checkBinaryOpsVS<V>(OpBinaryPlus{});
-        checkBinaryOpsVS<V>(OpBinaryMinus{});
-
-        checkBinaryOpsVS<V>(OpBinaryLeftShift{});
-        checkBinaryOpsVS<V>(OpBinaryRightShift{});
-
-        checkBinaryOpsVS<V>(OpBinaryLess{});
-        checkBinaryOpsVS<V>(OpBinaryGreater{});
-        checkBinaryOpsVS<V>(OpBinaryLessEqual{});
-        checkBinaryOpsVS<V>(OpBinaryGreaterEqual{});
-
-        checkBinaryOpsVS<V>(OpBinaryEqual{});
-        checkBinaryOpsVS<V>(OpBinaryNotEqual{});
-
-        checkBinaryOpsVS<V>(OpBinaryBitAnd{});
-        checkBinaryOpsVS<V>(OpBinaryBitXor{});
-        checkBinaryOpsVS<V>(OpBinaryBitOr{});
-
-        checkBinaryOpsVS<V>(OpBinaryLogicAnd{});
-        checkBinaryOpsVS<V>(OpBinaryLogicOr{});
-
-        checkBinaryOpsVS<V>(OpBinaryAssign{});
-        checkBinaryOpsVS<V>(OpBinaryAssignMul{});
-        checkBinaryOpsVS<V>(OpBinaryAssignDiv{});
-        checkBinaryOpsVS<V>(OpBinaryAssignRemainder{});
-        checkBinaryOpsVS<V>(OpBinaryAssignPlus{});
-        checkBinaryOpsVS<V>(OpBinaryAssignMinus{});
-        checkBinaryOpsVS<V>(OpBinaryAssignLeftShift{});
-        checkBinaryOpsVS<V>(OpBinaryAssignRightShift{});
-        checkBinaryOpsVS<V>(OpBinaryAssignAnd{});
-        checkBinaryOpsVS<V>(OpBinaryAssignXor{});
-        checkBinaryOpsVS<V>(OpBinaryAssignOr{});
-
-        checkBinaryOpsVS<V>(OpBinaryComma{});
+        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixComma           );
       }
+
+#undef DUNE_SIMD_BINARY_OPCHECK
+#undef DUNE_SIMD_BINARY_OPCHECK_
+#undef DUNE_SIMD_BINARY_OPCHECK_SV
+#undef DUNE_SIMD_BINARY_OPCHECK_VV
+#undef DUNE_SIMD_BINARY_OPCHECK_VS
 
       //////////////////////////////////////////////////////////////////////
       //
