@@ -6,7 +6,7 @@
 namespace Dune {
   namespace Simd {
 
-    template void UnitTest::checkSimdType<unsigned long long>();
+    template void UnitTest::checkVector<unsigned long long>();
 
   } // namespace Simd
 } // namespace Dune

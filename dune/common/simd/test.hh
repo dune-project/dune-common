@@ -225,7 +225,7 @@ namespace Dune {
         static_assert(lanes<V>() == lanes<I>(), "Index types must have the "
                       "same number of lanes as the original vector types");
 
-        checkSimdType<I>();
+        checkVector<I>();
       }
 
       template<class V>
@@ -239,28 +239,7 @@ namespace Dune {
         static_assert(lanes<V>() == lanes<M>(), "Mask types must have the "
                       "same number of lanes as the original vector types");
 
-        checkMaskType<M>();
-      }
-
-      template<class M>
-      void checkMaskType()
-      {
-        static_assert(std::is_same<M, std::decay_t<M> >::value, "Mask types "
-                      "must not be references, and must not include "
-                      "cv-qualifiers");
-
-        // check whether the test for this type already started
-        if(maskSeen_.emplace(typeid (M)).second == false)
-        {
-          // type already seen, nothing to do
-          return;
-        }
-
-        checkSimdType<M>();
-
-        log_ << "Checking SIMD mask type " << className<M>() << std::endl;
-
-        checkBoolReductions<M>();
+        checkMask<M>();
       }
 
       //////////////////////////////////////////////////////////////////////
@@ -1030,11 +1009,11 @@ namespace Dune {
 #undef DUNE_SIMD_CHECK
 
     public:
-      //! run unit tests for simd type V
+      //! run unit tests for simd vector type V
       /**
-       * This function will also ensure that \c checkSimdType<Index<V>>() and
-       * \c checkSimdType<Mask<V>>() are run.  No test will be run twice for a
-       * given type.
+       * This function will also ensure that \c checkVector<Index<V>>() and \c
+       * checkMask<Mask<V>>() are run.  No test will be run twice for a given
+       * type.
        *
        * \note As an implementor of a unit test, you are encouraged to
        *       explicitly instantiate this function in seperate compilation
@@ -1047,14 +1026,14 @@ namespace Dune {
        * std::complex, g++ 4.9.2 (-g -O0 -Wall on x86_64 GNU/Linux) used
        * ~6GByte.
        *
-       * One mitigation is to explicitly instantiate \c checkSimdType() for
-       * the types that are tested.  Still after doing that, standardtest.cc
+       * One mitigation is to explicitly instantiate \c checkVector() for the
+       * types that are tested.  Still after doing that, standardtest.cc
        * needed ~1.5GByte during compilation, which is more than the
-       * compilation units that actually instantiated \c checkSimdType()
-       * (which clocked in at maximum at around 800MB, depending on how many
+       * compilation units that actually instantiated \c checkVector() (which
+       * clocked in at maximum at around 800MB, depending on how many
        * instantiations they contained).
        *
-       * The second mitigation is to define \c checkSimdType() outside of the
+       * The second mitigation is to define \c checkVector() outside of the
        * class.  I have no idea why this helps, but it makes compilation use
        * less than ~100MByte.  (Yes, functions defined inside the class are
        * implicitly \c inline, but the function is a template so it has inline
@@ -1063,7 +1042,21 @@ namespace Dune {
        * consumption.)
        */
       template<class V>
-      void checkSimdType();
+      void checkVector();
+
+      //! run unit tests for simd maask type V
+      /**
+       * This function will also ensure that \c checkVector<Index<V>>() is
+       * run.  No test will be run twice for a given type.
+       *
+       * \note As an implementor of a unit test, you are encouraged to
+       *       explicitly instantiate this function in seperate compilation
+       *       units for the types you are testing.  Look at `standardtest.cc`
+       *       for how to do this.  See \c checkVector() for background on
+       *       this.
+       */
+      template<class V>
+      void checkMask();
 
       //! whether all tests succeeded
       bool good() const
@@ -1076,7 +1069,7 @@ namespace Dune {
     // Needs to be defined outside of the class to bring memory consumption
     // during compilation down to an acceptable level.
     template<class V>
-    void UnitTest::checkSimdType()
+    void UnitTest::checkVector()
     {
       // check whether the test for this type already started
       if(seen_.emplace(typeid (V)).second == false)
@@ -1090,7 +1083,7 @@ namespace Dune {
       checkIndexOf<V>();
       checkMaskOf<V>();
 
-      log_ << "Checking SIMD type " << className<V>() << std::endl;
+      log_ << "Checking SIMD vector type " << className<V>() << std::endl;
 
       checkLanes<V>();
       checkScalar<V>();
@@ -1105,6 +1098,44 @@ namespace Dune {
       checkValueCast<V>();
       checkCond<V>();
 
+      // checkBoolReductions<V>(); // not applicable
+    }
+
+    template<class M>
+    void UnitTest::checkMask()
+    {
+      static_assert(std::is_same<M, std::decay_t<M> >::value, "Mask types "
+                    "must not be references, and must not include "
+                    "cv-qualifiers");
+
+      // check whether the test for this type already started
+      if(maskSeen_.emplace(typeid (M)).second == false)
+      {
+        // type already seen, nothing to do
+        return;
+      }
+
+      // do these first so everything that appears after "Checking SIMD type
+      // ..." really pertains to that type
+      checkIndexOf<M>();
+      // checkMaskOf<M>(); // not applicable
+
+      log_ << "Checking SIMD mask type " << className<M>() << std::endl;
+
+      checkLanes<M>();
+      checkScalar<M>();
+
+      checkDefaultConstruct<M>();
+      checkLane<M>();
+      checkConstruct<M>();
+      checkAssign<M>();
+
+      checkVectorOps<M>();
+
+      checkValueCast<M>();
+      checkCond<M>();
+
+      checkBoolReductions<M>();
     }
 
   } // namespace Simd

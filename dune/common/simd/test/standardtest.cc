@@ -12,32 +12,32 @@ int main()
 {
   Dune::Simd::UnitTest test;
 
-  test.checkSimdType<char              >();
-  test.checkSimdType<unsigned char     >();
-  test.checkSimdType<signed char       >();
+  test.checkVector<char              >();
+  test.checkVector<unsigned char     >();
+  test.checkVector<signed char       >();
 
-  test.checkSimdType<short             >();
-  test.checkSimdType<unsigned short    >();
-  test.checkSimdType<int               >();
-  test.checkSimdType<unsigned          >();
-  test.checkSimdType<long              >();
-  test.checkSimdType<unsigned long     >();
-  test.checkSimdType<long long         >();
-  test.checkSimdType<unsigned long long>();
+  test.checkVector<short             >();
+  test.checkVector<unsigned short    >();
+  test.checkVector<int               >();
+  test.checkVector<unsigned          >();
+  test.checkVector<long              >();
+  test.checkVector<unsigned long     >();
+  test.checkVector<long long         >();
+  test.checkVector<unsigned long long>();
 
-  test.checkSimdType<wchar_t           >();
-  test.checkSimdType<char16_t          >();
-  test.checkSimdType<char32_t          >();
+  test.checkVector<wchar_t           >();
+  test.checkVector<char16_t          >();
+  test.checkVector<char32_t          >();
 
-  test.checkSimdType<bool              >();
+  test.checkVector<bool              >();
 
-  test.checkSimdType<float             >();
-  test.checkSimdType<double            >();
-  test.checkSimdType<long double       >();
+  test.checkVector<float             >();
+  test.checkVector<double            >();
+  test.checkVector<long double       >();
 
-  test.checkSimdType<std::complex<float      >>();
-  test.checkSimdType<std::complex<double     >>();
-  test.checkSimdType<std::complex<long double>>();
+  test.checkVector<std::complex<float      >>();
+  test.checkVector<std::complex<double     >>();
+  test.checkVector<std::complex<long double>>();
 
   return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

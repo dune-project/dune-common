@@ -8,7 +8,7 @@
 namespace Dune {
   namespace Simd {
 
-    template void UnitTest::checkSimdType<std::complex<float      >>();
+    template void UnitTest::checkVector<std::complex<float      >>();
 
   } // namespace Simd
 } // namespace Dune
