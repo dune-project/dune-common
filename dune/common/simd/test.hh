@@ -415,7 +415,7 @@ namespace Dune {
 
       //////////////////////////////////////////////////////////////////////
       //
-      // checks for postfix operators
+      // checks for unary operators
       //
 
 #define DUNE_SIMD_POSTFIX_OP(NAME, SYMBOL)              \
@@ -429,15 +429,35 @@ namespace Dune {
         }                                               \
       }
 
+#define DUNE_SIMD_PREFIX_OP(NAME, SYMBOL)               \
+      struct OpPrefix##NAME                             \
+      {                                                 \
+        template<class V>                               \
+        auto operator()(V&& v) const                    \
+          -> decltype(SYMBOL std::forward<V>(v))        \
+        {                                               \
+          return SYMBOL std::forward<V>(v);             \
+        }                                               \
+      }
+
       DUNE_SIMD_POSTFIX_OP(Decrement,        -- );
       DUNE_SIMD_POSTFIX_OP(Increment,        ++ );
 
+      DUNE_SIMD_PREFIX_OP (Decrement,        -- );
+      DUNE_SIMD_PREFIX_OP (Increment,        ++ );
+
+      DUNE_SIMD_PREFIX_OP (Plus,             +  );
+      DUNE_SIMD_PREFIX_OP (Minus,            -  );
+      DUNE_SIMD_PREFIX_OP (LogicNot,         !  );
+      DUNE_SIMD_PREFIX_OP (BitNot,           ~  );
+
 #undef DUNE_SIMD_POSTFIX_OP
+#undef DUNE_SIMD_PREFIX_OP
 
       template<class V, class Op>
       std::enable_if_t<
         CanCall<Op(decltype(lane(0, std::declval<V>())))>::value>
-      checkPostfixOpV(Op op)
+      checkUnaryOpV(Op op)
       {
         // arguments
         auto val = leftVector<std::decay_t<V>>();
@@ -456,7 +476,7 @@ namespace Dune {
       template<class V, class Op>
       std::enable_if_t<
         !CanCall<Op(decltype(lane(0, std::declval<V>())))>::value>
-      checkPostfixOpV(Op op)
+      checkUnaryOpV(Op op)
       {
         // log_ << "No " << className<Op(decltype(lane(0, std::declval<V>())))>()
         //      << std::endl
@@ -464,76 +484,12 @@ namespace Dune {
       }
 
       template<class V, class Op>
-      void checkPostfixOpsV(Op op)
+      void checkUnaryOpsV(Op op)
       {
-        checkPostfixOpV<V&>(op);
-        checkPostfixOpV<const V&>(op);
-        checkPostfixOpV<V&&>(op);
-        checkPostfixOpV<const V&&>(op);
-      }
-
-      //////////////////////////////////////////////////////////////////////
-      //
-      // checks for unary (prefix) operators
-      //
-
-#define DUNE_SIMD_PREFIX_OP(NAME, SYMBOL)               \
-      struct OpPrefix##NAME                             \
-      {                                                 \
-        template<class V>                               \
-        auto operator()(V&& v) const                    \
-          -> decltype(SYMBOL std::forward<V>(v))        \
-        {                                               \
-          return SYMBOL std::forward<V>(v);             \
-        }                                               \
-      }
-
-      DUNE_SIMD_PREFIX_OP(Decrement,        -- );
-      DUNE_SIMD_PREFIX_OP(Increment,        ++ );
-
-      DUNE_SIMD_PREFIX_OP(Plus,             +  );
-      DUNE_SIMD_PREFIX_OP(Minus,            -  );
-      DUNE_SIMD_PREFIX_OP(LogicNot,         !  );
-      DUNE_SIMD_PREFIX_OP(BitNot,           ~  );
-
-#undef DUNE_SIMD_PREFIX_OP
-
-      template<class V, class Op>
-      std::enable_if_t<
-        CanCall<Op(decltype(lane(0, std::declval<V>())))>::value>
-      checkPrefixOpV(Op op)
-      {
-        // arguments
-        auto val = rightVector<std::decay_t<V>>();
-
-        // copy the arguments in case V is a references
-        auto arg = val;
-        auto &&result = op(static_cast<V>(arg));
-        for(std::size_t l = 0; l < lanes(val); ++l)
-          DUNE_SIMD_CHECK(lane(l, result) == op(lane(l, static_cast<V>(val))));
-        // op might modify val, verify that any such modification also happens
-        // in the vector case
-        for(std::size_t l = 0; l < lanes<std::decay_t<V> >(); ++l)
-          DUNE_SIMD_CHECK(lane(l, val) == lane(l, arg));
-      }
-
-      template<class V, class Op>
-      std::enable_if_t<
-        !CanCall<Op(decltype(lane(0, std::declval<V>())))>::value>
-      checkPrefixOpV(Op op)
-      {
-        // log_ << "No " << className<Op(decltype(lane(0, std::declval<V>())))>()
-        //      << std::endl
-        //      << " ==> Not checking " << className<Op(V)>() << std::endl;
-      }
-
-      template<class V, class Op>
-      void checkPrefixOpsV(Op op)
-      {
-        checkPrefixOpV<V&>(op);
-        checkPrefixOpV<const V&>(op);
-        checkPrefixOpV<V&&>(op);
-        checkPrefixOpV<const V&&>(op);
+        checkUnaryOpV<V&>(op);
+        checkUnaryOpV<const V&>(op);
+        checkUnaryOpV<V&&>(op);
+        checkUnaryOpV<const V&&>(op);
       }
 
       //////////////////////////////////////////////////////////////////////
@@ -859,17 +815,17 @@ namespace Dune {
       void checkVectorOps()
       {
         // postfix
-        checkPostfixOpsV<V>(OpPostfixDecrement{});
-        checkPostfixOpsV<V>(OpPostfixIncrement{});
+        checkUnaryOpsV<V>(OpPostfixDecrement{});
+        checkUnaryOpsV<V>(OpPostfixIncrement{});
 
         // prefix
-        checkPrefixOpsV<V>(OpPrefixDecrement{});
-        checkPrefixOpsV<V>(OpPrefixIncrement{});
+        checkUnaryOpsV<V>(OpPrefixDecrement{});
+        checkUnaryOpsV<V>(OpPrefixIncrement{});
 
-        checkPrefixOpsV<V>(OpPrefixPlus{});
-        checkPrefixOpsV<V>(OpPrefixMinus{});
-        checkPrefixOpsV<V>(OpPrefixLogicNot{});
-        checkPrefixOpsV<V>(OpPrefixBitNot{});
+        checkUnaryOpsV<V>(OpPrefixPlus{});
+        checkUnaryOpsV<V>(OpPrefixMinus{});
+        checkUnaryOpsV<V>(OpPrefixLogicNot{});
+        checkUnaryOpsV<V>(OpPrefixBitNot{});
 
         // binary vector-vector
         checkBinaryOpsVV<V>(OpBinaryMul{});
