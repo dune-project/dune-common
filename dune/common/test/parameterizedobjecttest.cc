@@ -81,6 +81,11 @@ int main()
     CheckInstance(FactoryB, Ais, 0, std::to_string(2));
     CheckInstance(FactoryB, Bis, 1, "Hallo");
 
+    // check for ambiguous overloads
+    Dune::ParameterizedObjectFactory<bool()> FactoryBool;
+    FactoryBool.define("true",true);
+    FactoryBool.define("false",[](){return false;});
+
     // value semantics
     Dune::ParameterizedObjectFactory<std::function<double(double)>(int)> FactoryC;
     FactoryC.define("fi", [](int i) {
