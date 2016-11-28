@@ -11,8 +11,6 @@
 
 namespace Dune {
 
-
-
 /**
  * @brief A factory class for parameterized objects.
  *
@@ -130,10 +128,11 @@ class ParameterizedObjectFactory<TypeT(Args...), KeyT>
          * create will hand out a copy to this.
          *
          * @tparam Impl The type of objects to create.
-         * @tparam T Type convertible of creator function. This must be callable with Args... .
          *
          * @param key The key associated with this type.
-         * @param f Function for creation of objects of type Impl
+         * @param t reference object, "create" will call the copy-constructor
+         *
+         * note, this does not work fundamental types
          */
         template<class Impl,
             typename std::enable_if<std::is_convertible<Impl, Type>::value, int>::type = 0>
