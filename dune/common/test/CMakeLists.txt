@@ -147,6 +147,11 @@ dune_add_test(NAME mpihelpertest2
 dune_add_test(SOURCES overloadsettest.cc
               LINK_LIBRARIES dunecommon)
 
+dune_add_test(NAME parameterizedobjecttest
+              SOURCES parameterizedobjecttest.cc parameterizedobjectfactorysingleton.cc
+              LINK_LIBRARIES dunecommon
+              )
+
 dune_add_test(SOURCES parametertreelocaletest.cc
               LINK_LIBRARIES dunecommon)
 
