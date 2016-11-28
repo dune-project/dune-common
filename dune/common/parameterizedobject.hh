@@ -135,7 +135,10 @@ class ParameterizedObjectFactory<TypeT(Args...), KeyT>
          * note, this does not work fundamental types
          */
         template<class Impl,
-            typename std::enable_if<std::is_convertible<Impl, Type>::value, int>::type = 0>
+            typename std::enable_if<
+                std::is_convertible<Impl, Type>::value
+                and not std::is_convertible<Impl, Creator>::value,
+                int>::type = 0>
         void define(Key const& key, Impl&& t)
         {
             registry_[key] = [=](Args...) { return t;};
