@@ -25,7 +25,7 @@ namespace Dune {
  * Each type constructed by this factory is identified by a different key. This class
  * allows for easy registration of type with new keys.
  *
- * @tparam Signature Signature of the "virtual" constructor call in the form for Interface(Args...). For default constructors onecan omit the ()-brackets.
+ * @tparam Signature Signature of the "virtual" constructor call in the form for Interface(Args...). For default constructors one can omit the ()-brackets.
  * @tparam KeyT The type of the objects that are used as keys in the lookup [DEFAULT: std::string].
  */
 template<typename Signature,
@@ -85,7 +85,7 @@ class ParameterizedObjectFactory<TypeT(Args...), KeyT>
          * @brief Registers a new type with a key.
          *
          * After registration objects of this type can be constructed with the
-         * specified key using a matching default creation functions. If Type
+         * specified key using a matching default creation function. If Type
          * is a unique_ptr or shared_ptr, the object is created via make_unique
          * or make_shared, respectively. Otherwise a constructor of Impl
          * is called.
