@@ -11,6 +11,29 @@
 namespace Dune
 {
 
+  namespace detail
+  {
+    ///
+    /**
+     * @internal
+     * @brief Helper to make void_t work with gcc versions prior to gcc 5.0.
+     *
+     * This was not a compiler bug, but an accidental omission in the C++11 standard (see N3911, CWG issue 1558).
+     * It is not clearly specified what happens
+     * with unused template arguments in template aliases. The developers of GCC decided to ignore them, thus making void_t equivalent to void.
+     * With gcc 5.0 this was changed and the voider-hack is no longer needed.
+     */
+    template <class...>
+    struct voider
+    {
+      using type = void;
+    };
+  }
+
+  //! Is void for all valid input types (see N3911). The workhorse for C++11 SFINAE-techniques.
+  template <class... Types>
+  using void_t = typename detail::voider<Types...>::type;
+
   /**
    * @file
    * @brief Traits for type conversions and type information.
@@ -404,6 +427,16 @@ namespace Dune
 
 #endif // defined(DOXYGEN) or HAVE_IS_INDEXABLE_SUPPORT
 
+  namespace Impl {
+    // This function does nothing.
+    // By passing expressions to this function one can avoid
+    // "value computed is not used" warnings that may show up
+    // in a comma expression.
+    template<class...T>
+    void ignore(T&&... t)
+    {}
+  }
+
   /**
      typetrait to check that a class has begin() and end() members
    */
@@ -416,38 +449,19 @@ namespace Dune
 #ifndef DOXYGEN
   // version for types with begin() and end()
   template<typename T>
-  struct is_range<T,
-                  typename std::enable_if<
-                    (sizeof(std::declval<T>().begin() == std::declval<T>().end()) != 0)
-                      >::type>
+  struct is_range<T, decltype(Impl::ignore(
+      std::declval<T>().begin(),
+      std::declval<T>().end(),
+      std::declval<T>().begin() != std::declval<T>().end(),
+      decltype(std::declval<T>().begin()){std::declval<T>().end()},
+      ++(std::declval<std::add_lvalue_reference_t<decltype(std::declval<T>().begin())>>()),
+      *(std::declval<T>().begin())
+      ))>
     : public std::true_type
   {};
 #endif
 
-  namespace detail
-  {
-    ///
-    /**
-     * @internal
-     * @brief Helper to make void_t work with gcc versions prior to gcc 5.0.
-     *
-     * This was not a compiler bug, but an accidental omission in the C++11 standard (see N3911, CWG issue 1558).
-     * It is not clearly specified what happens
-     * with unused template arguments in template aliases. The developers of GCC decided to ignore them, thus making void_t equivalent to void.
-     * With gcc 5.0 this was changed and the voider-hack is no longer needed.
-     */
-    template <class...>
-    struct voider
-    {
-      using type = void;
-    };
-  }
-
   template <class> struct FieldTraits;
-
-  //! Is void for all valid input types (see N3911). The workhorse for C++11 SFINAE-techniques.
-  template <class... Types>
-  using void_t = typename detail::voider<Types...>::type;
 
   //! Convenient access to FieldTraits<Type>::field_type.
   template <class Type>
