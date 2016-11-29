@@ -31,7 +31,7 @@ namespace Dune {
     template<class T, typename A>
     struct EpsilonType<std::vector<T, A> > {
       //! The epsilon type corresponding to value type std::vector<T, A>
-      typedef EpsilonType<T> Type;
+      typedef typename EpsilonType<T>::Type Type;
     };
     //! Specialization of EpsilonType for Dune::FieldVector
     /**
@@ -42,7 +42,7 @@ namespace Dune {
     template<class T, int n>
     struct EpsilonType<FieldVector<T, n> > {
       //! The epsilon type corresponding to value type Dune::FieldVector<T, n>
-      typedef EpsilonType<T> Type;
+      typedef typename EpsilonType<T>::Type Type;
     };
 
     // default epsilon
