@@ -62,7 +62,7 @@ namespace Dune {
       { return std::max(std::numeric_limits<typename EpsilonType<T>::Type>::epsilon(), 1e-6); }
     };
 
-    namespace Detail {
+    namespace Impl {
       // basic comparison
       template<class T, CmpStyle style = defaultCmpStyle>
       struct eq_t;
@@ -126,7 +126,7 @@ namespace Dune {
       struct eq_t< Dune::FieldVector<T, n>, relativeStrong> : eq_t_fvec<T, n, relativeStrong> {};
       template< class T, int n >
       struct eq_t< Dune::FieldVector<T, n>, absolute> : eq_t_fvec<T, n, absolute> {};
-    } // namespace Detail
+    } // namespace Impl
 
     // operations in functional style
     template <class T, CmpStyle style>
@@ -134,7 +134,7 @@ namespace Dune {
             const T &second,
             typename EpsilonType<T>::Type epsilon)
     {
-      return Detail::eq_t<T, style>::eq(first, second, epsilon);
+      return Impl::eq_t<T, style>::eq(first, second, epsilon);
     }
     template <class T, CmpStyle style>
     bool ne(const T &first,
@@ -217,7 +217,7 @@ namespace Dune {
     }
 
     // rounding operations
-    namespace Detail {
+    namespace Impl {
       template<class I, class T, CmpStyle cstyle = defaultCmpStyle, RoundingStyle rstyle = defaultRoundingStyle>
       struct round_t;
       template<class I, class T, CmpStyle cstyle>
@@ -295,11 +295,11 @@ namespace Dune {
           return res;
         }
       };
-    } // namespace Detail
+    } // end namespace Impl
     template<class I, class T, CmpStyle cstyle, RoundingStyle rstyle>
     I round(const T &val, typename EpsilonType<T>::Type epsilon /*= DefaultEpsilon<T, cstyle>::value()*/)
     {
-      return Detail::round_t<I, T, cstyle, rstyle>::round(val, epsilon);
+      return Impl::round_t<I, T, cstyle, rstyle>::round(val, epsilon);
     }
     template<class I, class T, CmpStyle cstyle>
     I round(const T &val, typename EpsilonType<T>::Type epsilon = DefaultEpsilon<T, cstyle>::value())
@@ -318,7 +318,7 @@ namespace Dune {
     }
 
     // truncation
-    namespace Detail {
+    namespace Impl {
       template<class I, class T, CmpStyle cstyle = defaultCmpStyle, RoundingStyle rstyle = defaultRoundingStyle>
       struct trunc_t;
       template<class I, class T, CmpStyle cstyle>
@@ -391,11 +391,11 @@ namespace Dune {
           return res;
         }
       };
-    } // namespace Detail
+    } // namespace Impl
     template<class I, class T, CmpStyle cstyle, RoundingStyle rstyle>
     I trunc(const T &val, typename EpsilonType<T>::Type epsilon /*= DefaultEpsilon<T, cstyle>::value()*/)
     {
-      return Detail::trunc_t<I, T, cstyle, rstyle>::trunc(val, epsilon);
+      return Impl::trunc_t<I, T, cstyle, rstyle>::trunc(val, epsilon);
     }
     template<class I, class T, CmpStyle cstyle>
     I trunc(const T &val, typename EpsilonType<T>::Type epsilon = DefaultEpsilon<T, cstyle>::value())
