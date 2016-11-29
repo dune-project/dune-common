@@ -77,6 +77,14 @@ namespace Dune
 
     /** @} */
 
+    bool operator == (const ReservedVector & other) const
+    {
+      bool eq = (sz == other.sz);
+      for (size_type i=0; i<sz && eq; ++i)
+        eq = eq && (data[i] == other.data[i]);
+      return eq;
+    }
+
     /** @{ Data access operations */
 
     //! Erases all elements.
