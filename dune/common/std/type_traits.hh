@@ -100,7 +100,7 @@ namespace Std
 #endif
 
 
-  namespace Imp {
+  namespace Impl {
 
     // If R is void we only need to check if F can be called
     // with given Args... list. If this is not possible
@@ -165,7 +165,7 @@ namespace Std
    */
   template <class F, class... Args, class R>
   struct is_callable< F(Args...), R> :
-      decltype(Imp::is_callable_helper<R, F, Args...>(PriorityTag<42>()))
+      decltype(Impl::is_callable_helper<R, F, Args...>(PriorityTag<42>()))
   {};
 
 

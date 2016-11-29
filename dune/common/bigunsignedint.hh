@@ -30,7 +30,7 @@ namespace Dune
    * @{
    */
 
-  namespace {
+  namespace Impl {
 
     // numeric_limits_helper provides std::numeric_limits access to the internals
     // of bigunsignedint. Previously, the correct specialization of std::numeric_limits
@@ -168,7 +168,7 @@ namespace Dune
     double todouble() const;
 
     friend class bigunsignedint<k/2>;
-    friend struct numeric_limits_helper< bigunsignedint<k> >;
+    friend struct Impl::numeric_limits_helper< bigunsignedint<k> >;
 
     inline friend std::size_t hash_value(const bigunsignedint& arg)
     {
@@ -603,7 +603,7 @@ namespace std
 {
   template<int k>
   struct numeric_limits<Dune::bigunsignedint<k> >
-    : private Dune::numeric_limits_helper<Dune::bigunsignedint<k> > // for access to internal state of bigunsignedint
+    : private Dune::Impl::numeric_limits_helper<Dune::bigunsignedint<k> > // for access to internal state of bigunsignedint
   {
   public:
     static const bool is_specialized = true;
@@ -618,7 +618,7 @@ namespace std
       Dune::bigunsignedint<k> max_;
       for(std::size_t i=0; i < Dune::bigunsignedint<k>::n; ++i)
         // access internal state via the helper base class
-        Dune::numeric_limits_helper<Dune::bigunsignedint<k> >::
+        Dune::Impl::numeric_limits_helper<Dune::bigunsignedint<k> >::
           digit(max_,i)=std::numeric_limits<std::uint16_t>::max();
       return max_;
     }

@@ -13,7 +13,7 @@
 
 namespace Dune {
 
-  namespace {
+  namespace Impl {
 
     // helper struct to store a temporary / proxy
     // for the duration of the member access
@@ -37,7 +37,7 @@ namespace Dune {
 
     };
 
-  } // anonymous namespace
+  } // end Impl namespace
 
 
 #ifdef DOXYGEN
@@ -104,7 +104,7 @@ namespace Dune {
   template<typename T>
   inline typename std::enable_if<
     !std::is_lvalue_reference<T>::value,
-    member_access_proxy_holder<T>
+    Impl::member_access_proxy_holder<T>
     >::type
   handle_proxy_member_access(T&& target)
   {

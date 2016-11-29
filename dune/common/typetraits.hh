@@ -12,7 +12,7 @@
 namespace Dune
 {
 
-  namespace detail
+  namespace Impl
   {
     ///
     /**
@@ -33,7 +33,7 @@ namespace Dune
 
   //! Is void for all valid input types (see N3911). The workhorse for C++11 SFINAE-techniques.
   template <class... Types>
-  using void_t = typename detail::voider<Types...>::type;
+  using void_t = typename Impl::voider<Types...>::type;
 
   /**
    * @file
@@ -178,7 +178,7 @@ namespace Dune
 
 #ifndef DOXYGEN
 
-  namespace detail {
+  namespace Impl {
 
     template<typename T, typename I, typename = int>
     struct _is_indexable
@@ -202,7 +202,7 @@ namespace Dune
    */
   template<typename T, typename I = std::size_t>
   struct is_indexable
-    : public detail::_is_indexable<T,I>
+    : public Impl::_is_indexable<T,I>
   {};
 
 
@@ -220,7 +220,7 @@ namespace Dune
   // Let's get rid of GCC 4.4 ASAP!
 
 
-  namespace detail {
+  namespace Impl {
 
     // simple wrapper template to support the lazy evaluation required
     // in _is_indexable
@@ -275,11 +275,11 @@ namespace Dune
   struct is_indexable
     : public std::conditional<
                std::is_array<T>::value,
-               detail::_lazy<std::true_type>,
+               Impl::_lazy<std::true_type>,
                typename std::conditional<
                  std::is_class<T>::value,
-                 detail::_check_for_index_operator,
-                 detail::_lazy<std::false_type>
+                 Impl::_check_for_index_operator,
+                 Impl::_lazy<std::false_type>
                  >::type
                >::type::template evaluate<T>::type
   {
@@ -336,7 +336,7 @@ namespace Dune
 
 
   // Implementation of IsTuple
-  namespace Imp {
+  namespace Impl {
 
   template<class T>
   struct IsTuple : public std::false_type
@@ -346,7 +346,7 @@ namespace Dune
   struct IsTuple<std::tuple<T...>> : public std::true_type
   {};
 
-  } // namespace Imp
+  } // namespace Impl
 
   /**
    * \brief Check if T is a std::tuple<...>
@@ -355,13 +355,13 @@ namespace Dune
    */
   template<class T>
   struct IsTuple :
-    public Imp::IsTuple<T>
+    public Impl::IsTuple<T>
   {};
 
 
 
   // Implementation of IsTupleOrDerived
-  namespace Imp {
+  namespace Impl {
 
   template<class... T, class Dummy>
   std::true_type isTupleOrDerived(const std::tuple<T...>*, Dummy)
@@ -371,7 +371,7 @@ namespace Dune
   std::false_type isTupleOrDerived(const void*, Dummy)
   { return {}; }
 
-  } // namespace Imp
+  } // namespace Impl
 
   /**
    * \brief Check if T derived from a std::tuple<...>
@@ -380,13 +380,13 @@ namespace Dune
    */
   template<class T>
   struct IsTupleOrDerived :
-    public decltype(Imp::isTupleOrDerived(std::declval<T*>(), true))
+    public decltype(Impl::isTupleOrDerived(std::declval<T*>(), true))
   {};
 
 
 
   // Implementation of is IsIntegralConstant
-  namespace Imp {
+  namespace Impl {
 
   template<class T>
   struct IsIntegralConstant : public std::false_type
@@ -396,7 +396,7 @@ namespace Dune
   struct IsIntegralConstant<std::integral_constant<T, t>> : public std::true_type
   {};
 
-  } // namespace Imp
+  } // namespace Impl
 
   /**
    * \brief Check if T is an std::integral_constant<I, i>
@@ -404,7 +404,7 @@ namespace Dune
    * The result is exported by deriving from std::true_type or std::false_type.
    */
   template<class T>
-  struct IsIntegralConstant : public Imp::IsIntegralConstant<std::decay_t<T>>
+  struct IsIntegralConstant : public Impl::IsIntegralConstant<std::decay_t<T>>
   {};
 
 
