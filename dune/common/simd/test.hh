@@ -623,7 +623,7 @@ namespace Dune {
         auto sval1 = leftScalar<std::decay_t<T1>>();
         auto sval2 = rightVector<std::decay_t<V2>>();
         // these are used to cross check with pure vector ops
-        std::decay_t<V1> vval1 = sval1;
+        std::decay_t<V1> vval1(sval1);
         auto vval2 = sval2;
 
         // copy the arguments in case V1 or V2 are references
@@ -718,7 +718,7 @@ namespace Dune {
         auto sval2 = rightScalar<std::decay_t<T2>>();
         // these are used to cross check with pure vector ops
         auto vval1 = sval1;
-        std::decay_t<V2> vval2 = sval2;
+        std::decay_t<V2> vval2(sval2);
 
         // copy the arguments in case V1 or V2 are references
         auto sarg1 = sval1;
@@ -896,7 +896,7 @@ namespace Dune {
       template<class M>
       void checkBoolReductions()
       {
-        M trueVec = true;
+        M trueVec(true);
 
         // mutable lvalue
         DUNE_SIMD_CHECK(allTrue (static_cast<M&>(trueVec)) == true);
@@ -916,7 +916,7 @@ namespace Dune {
         DUNE_SIMD_CHECK(allFalse(M(true)) == false);
         DUNE_SIMD_CHECK(anyFalse(M(true)) == false);
 
-        M falseVec = false;
+        M falseVec(false);
 
         // mutable lvalue
         DUNE_SIMD_CHECK(allTrue (static_cast<M&>(falseVec)) == false);
