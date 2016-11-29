@@ -11,6 +11,7 @@
  * abstraction. Include <dune/common/simd/simd.hh> instead.
  */
 
+#include <cassert>
 #include <cstddef>
 #include <utility>
 
@@ -64,6 +65,7 @@ namespace Dune {
     template<class V>
     decltype(auto) lane(std::size_t l, V &&v)
     {
+      assert(l < lanes<V>());
       return lane(Overloads::ADLTag<6>{}, l, std::forward<V>(v));
     }
 
