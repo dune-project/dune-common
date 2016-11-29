@@ -331,39 +331,65 @@ namespace Dune {
       void checkConstruct()
       {
         // elided copy/move constructors
-        { V vec(make123<V>()); DUNE_SIMD_CHECK(is123(vec)); }
-        { V vec{make123<V>()}; DUNE_SIMD_CHECK(is123(vec)); }
+        { V vec   (make123<V>()); DUNE_SIMD_CHECK(is123(vec)); }
+        { V vec =  make123<V>() ; DUNE_SIMD_CHECK(is123(vec)); }
+        { V vec   {make123<V>()}; DUNE_SIMD_CHECK(is123(vec)); }
+        { V vec = {make123<V>()}; DUNE_SIMD_CHECK(is123(vec)); }
 
         // copy constructors
-        { V ref = make123<V>();       V vec(ref);
+        {       V ref(make123<V>());     V vec   (ref);
           DUNE_SIMD_CHECK(is123(vec)); DUNE_SIMD_CHECK(is123(ref)); }
-        { V ref = make123<V>();       V vec{ref};
+        {       V ref(make123<V>());     V vec =  ref ;
           DUNE_SIMD_CHECK(is123(vec)); DUNE_SIMD_CHECK(is123(ref)); }
-        { const V ref = make123<V>(); V vec(ref);
+        {       V ref(make123<V>());     V vec   {ref};
+          DUNE_SIMD_CHECK(is123(vec)); DUNE_SIMD_CHECK(is123(ref)); }
+        {       V ref(make123<V>());     V vec = {ref};
+          DUNE_SIMD_CHECK(is123(vec)); DUNE_SIMD_CHECK(is123(ref)); }
+        { const V ref(make123<V>());     V vec   (ref);
           DUNE_SIMD_CHECK(is123(vec)); }
-        { const V ref = make123<V>(); V vec{ref};
+        { const V ref(make123<V>());     V vec =  ref ;
+          DUNE_SIMD_CHECK(is123(vec)); }
+        { const V ref(make123<V>());     V vec   {ref};
+          DUNE_SIMD_CHECK(is123(vec)); }
+        { const V ref(make123<V>());     V vec = {ref};
           DUNE_SIMD_CHECK(is123(vec)); }
 
         // move constructors
-        { V ref = make123<V>(); V vec(std::move(ref));
+        { V ref(make123<V>());           V vec   (std::move(ref));
           DUNE_SIMD_CHECK(is123(vec)); }
-        { V ref = make123<V>(); V vec{std::move(ref)};
+        { V ref(make123<V>());           V vec =  std::move(ref) ;
+          DUNE_SIMD_CHECK(is123(vec)); }
+        { V ref(make123<V>());           V vec   {std::move(ref)};
+          DUNE_SIMD_CHECK(is123(vec)); }
+        { V ref(make123<V>());           V vec = {std::move(ref)};
           DUNE_SIMD_CHECK(is123(vec)); }
 
         // broadcast copy constructors
-        { Scalar<V> ref = 42; V vec(ref);
+        {       Scalar<V> ref = 42;      V vec   (ref);
           DUNE_SIMD_CHECK(is42(vec)); DUNE_SIMD_CHECK(ref == Scalar<V>(42)); }
-        { Scalar<V> ref = 42; V vec{ref};
+        {       Scalar<V> ref = 42;      V vec =  ref ;
           DUNE_SIMD_CHECK(is42(vec)); DUNE_SIMD_CHECK(ref == Scalar<V>(42)); }
-        { const Scalar<V> ref = 42; V vec(ref);
+        {       Scalar<V> ref = 42;      V vec   {ref};
+          DUNE_SIMD_CHECK(is42(vec)); DUNE_SIMD_CHECK(ref == Scalar<V>(42)); }
+        {       Scalar<V> ref = 42;      V vec = {ref};
+          DUNE_SIMD_CHECK(is42(vec)); DUNE_SIMD_CHECK(ref == Scalar<V>(42)); }
+        { const Scalar<V> ref = 42;      V vec   (ref);
           DUNE_SIMD_CHECK(is42(vec)); }
-        { const Scalar<V> ref = 42; V vec{ref};
+        { const Scalar<V> ref = 42;      V vec =  ref ;
+          DUNE_SIMD_CHECK(is42(vec)); }
+        { const Scalar<V> ref = 42;      V vec   {ref};
+          DUNE_SIMD_CHECK(is42(vec)); }
+        { const Scalar<V> ref = 42;      V vec = {ref};
           DUNE_SIMD_CHECK(is42(vec)); }
 
         // broadcast move constructors
-        { Scalar<V> ref = 42; V vec(std::move(ref));
+        { Scalar<V> ref = 42;            V vec   (std::move(ref));
           DUNE_SIMD_CHECK(is42(vec)); }
-        { Scalar<V> ref = 42; V vec{std::move(ref)};
+        { Scalar<V> ref = 42;            V vec =  std::move(ref) ;
+          DUNE_SIMD_CHECK(is42(vec)); }
+        { Scalar<V> ref = 42;            V vec   {std::move(ref)};
+          DUNE_SIMD_CHECK(is42(vec)); }
+        { Scalar<V> ref = 42;            V vec = {std::move(ref)};
           DUNE_SIMD_CHECK(is42(vec)); }
       }
 
