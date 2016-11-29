@@ -726,7 +726,7 @@ namespace Dune {
         // modification also happens in the vector case
         for(std::size_t l = 0; l < lanes<std::decay_t<V1> >(); ++l)
         {
-          DUNE_SIMD_CHECK(        sval1  == lane(l, sarg1));
+          DUNE_SIMD_CHECK(        sval1  ==         sarg1 );
           DUNE_SIMD_CHECK(lane(l, sval2) == lane(l, sarg2));
           DUNE_SIMD_CHECK(lane(l, vval1) == lane(l, varg1));
           DUNE_SIMD_CHECK(lane(l, vval2) == lane(l, varg2));
@@ -833,7 +833,7 @@ namespace Dune {
         for(std::size_t l = 0; l < lanes<std::decay_t<V1> >(); ++l)
         {
           DUNE_SIMD_CHECK(lane(l, sval1) == lane(l, sarg1));
-          DUNE_SIMD_CHECK(        sval2  == lane(l, sarg2));
+          DUNE_SIMD_CHECK(        sval2  ==         sarg2 );
           DUNE_SIMD_CHECK(lane(l, vval1) == lane(l, varg1));
           DUNE_SIMD_CHECK(lane(l, vval2) == lane(l, varg2));
           // cross check
