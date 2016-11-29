@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 // vi: set et ts=4 sw=4 sts=4:
 #ifndef DUNE_COMMON_PARAMETERIZEDOBJECT_HH
-#define DUNE_COMMON_PARAMETERIZEDBJECT_HH
+#define DUNE_COMMON_PARAMETERIZEDOBJECT_HH
 
 #include <map>
 
@@ -183,4 +183,4 @@ class ParameterizedObjectFactory<TypeT(Args...), KeyT>
 
 } // end namespace Dune
 
-#endif // DUNE_COMMON_PARAMETERIZEDBJECT_HH
+#endif // DUNE_COMMON_PARAMETERIZEDOBJECT_HH
