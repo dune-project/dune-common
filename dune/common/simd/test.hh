@@ -550,11 +550,51 @@ namespace Dune {
       DUNE_SIMD_INFIX_OP(AssignXor,        ^= );
       DUNE_SIMD_INFIX_OP(AssignOr,         |= );
 
-#define DUNE_SIMD_COMMA_SYMBOL ,
-      DUNE_SIMD_INFIX_OP(Comma,            DUNE_SIMD_COMMA_SYMBOL);
-#undef DUNE_SIMD_COMMA_SYMBOL
-
 #undef DUNE_SIMD_INFIX_OP
+
+      // just used as a tag
+      struct OpInfixComma {};
+
+      template<class T1, class T2>
+      void checkCommaOp(std::decay_t<T1> val1, std::decay_t<T2> val2)
+      {
+        static_assert(std::is_same<decltype((std::declval<T1>(),
+                                             std::declval<T2>())), T2>::value,
+                      "Type and value category of the comma operator must "
+                      "match that of the second operand");
+
+        // copy the arguments in case T1 or T2 are references
+        auto arg1 = val1;
+        auto arg2 = val2;
+        // Do not warn that the left side of the comma operator is unused.
+        // Seems to work for g++-4.9 and clang++-3.8.  Appears to be harmless
+        // for icpc (14 and 17), and icpc does not seem to issue a warning
+        // anyway.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-value"
+        auto &&result = (static_cast<T1>(arg1),
+                         static_cast<T2>(arg2));
+#pragma GCC diagnostic pop
+        if(std::is_reference<T2>::value)
+        {
+          // comma should return the same object as the second argument for
+          // lvalues and xvalues
+          DUNE_SIMD_CHECK(&result == &arg2);
+          // it should not modify any arguments
+          DUNE_SIMD_CHECK(allTrue(val1 == arg1));
+          DUNE_SIMD_CHECK(allTrue(val2 == arg2));
+        }
+        else
+        {
+          // comma should return the same value as the second argument for
+          // prvalues
+          DUNE_SIMD_CHECK(allTrue(result == arg2));
+          // it should not modify any arguments
+          DUNE_SIMD_CHECK(allTrue(val1 == arg1));
+          // second argument is a prvalue, any modifications happen to a
+          // temporary and we can't detect them
+        }
+      }
 
       //////////////////////////////////////////////////////////////////////
       //
@@ -602,6 +642,17 @@ namespace Dune {
         //                               decltype(lane(0, std::declval<V2>())))>()
         //      << std::endl
         //      << " ==> Not checking " << className<Op(V1, V2)>() << std::endl;
+      }
+
+      template<class V1, class V2>
+      void checkBinaryOpVV(OpInfixComma)
+      {
+        static_assert(std::is_same<std::decay_t<V1>, std::decay_t<V2> >::value,
+                      "Internal testsystem error: called with two types that "
+                      "don't decay to the same thing");
+
+        checkCommaOp<V1, V2>(leftVector<std::decay_t<V1>>(),
+                             rightVector<std::decay_t<V2>>());
       }
 
       template<class V, class Op>
@@ -696,6 +747,18 @@ namespace Dune {
         //      << " ==> Not checking " << className<Op(T1, V2)>() << std::endl;
       }
 
+      template<class T1, class V2>
+      void checkBinaryOpSV(OpInfixComma)
+      {
+        static_assert(std::is_same<std::decay_t<T1>,
+                      Scalar<std::decay_t<V2> > >::value,
+                      "Internal testsystem error: called with a scalar that "
+                      "does not match the vector type.");
+
+        checkCommaOp<T1, V2>(leftScalar<std::decay_t<T1>>(),
+                             rightVector<std::decay_t<V2>>());
+      }
+
       template<class V, class Op>
       void checkBinaryOpsSV(Op op)
       {
@@ -788,6 +851,18 @@ namespace Dune {
         //      << className<Op(decltype(lane(0, std::declval<V1>())), T2)>()
         //      << std::endl
         //      << " ==> Not checking " << className<Op(V1, T2)>() << std::endl;
+      }
+
+      template<class V1, class T2>
+      void checkBinaryOpVS(OpInfixComma)
+      {
+        static_assert(std::is_same<Scalar<std::decay_t<V1> >,
+                      std::decay_t<T2> >::value,
+                      "Internal testsystem error: called with a scalar that "
+                      "does not match the vector type.");
+
+        checkCommaOp<V1, T2>(leftVector<std::decay_t<V1>>(),
+                             rightScalar<std::decay_t<T2>>());
       }
 
       template<class V, class Op>
