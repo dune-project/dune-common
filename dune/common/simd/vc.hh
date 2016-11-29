@@ -4,6 +4,96 @@
 /** @file
  *  @brief SIMD abstractions for Vc
  *
+ *
+ * Here is a list of things that certain types do not support:
+ *
+ * - Vc::Vector<double> (Vc_1::Vector<double, Vc_1::VectorAbi::Avx>)
+ *
+ *   - Broadcast-assignment from a braced scalar (v = {s};)
+ *
+ *   - Broadcast-construction from a braced scalar (`V v{s};` or `V v = {s};`)
+ *
+ *   - "operator,": `(v1, v2)` constructs some kind of tuple, but the tests
+ *     assume that they can access the result of "operator," through lane().
+ *     That use of operator, is deprecated, but disable the check anyway so we
+ *     can continue.  `(s1, v2)` and `(v1, s2)` seem to work, though.
+ *
+ * - Vc::Vector<int> (Vc_1::Vector<int, Vc_1::VectorAbi::Sse>)
+ *
+ *   - Broadcast-assignment from a braced scalar (`v = {s};`)
+ *
+ *   - << and >> if the left side is a scalar
+ *
+ *   - "operator,": `(v1, v2)` constructs some kind of tuple, but the tests
+ *     assume that they can access the result of "operator," through lane().
+ *     That use of operator, is deprecated, but disable the check anyway so we
+ *     can continue.  `(s1, v2)` and `(v1, s2)` seem to work, though.
+ *
+ * - Vc::SimdArray<double, 4>
+ *
+ *   - Broadcast-assignment from a braced scalar (`v = {s};`)
+ *
+ *   - Broadcast-construction from a braced scalar (`V v{s};` or `V v = {s};`)
+ *
+ *   - Postfix/prefix -- and ++.
+ *
+ *   - operator&& and operator||
+ *
+ * - Vc::SimdArray<int, 4>
+ *
+ *   - Broadcast-assignment from a braced scalar (`v = {s};`)
+ *
+ *   - Broadcast-construction from a braced scalar (`V v{s};` or `V v = {s};`)
+ *
+ *   - Postfix/prefix -- and ++.
+ *
+ *   - << and >> if the left side is a scalar
+ *
+ *   - operator&& and operator||
+ *
+ * - Vc::Vector<int>::Mask
+ *
+ *   - Broadcast-assignment (`m = b;` or `m = {b};`)
+ *
+ *   - Implicit broadcast construction (`M m = b;` or `M m = {b};`)
+ *
+ *   - prefix +, -, ~
+ *
+ *   - infix *, /, %, +, -, <<, >>, <, >, <=, >= (all combinations)
+ *
+ *   - infix ==, != (scalar-vector and vector-scalar don't exist, and the
+ *     result vector-vector is a scalar)
+ *
+ *   - infix &, ^, |, &&, || (scalar-vector and vector-scalar don't exist)
+ *
+ *   - infix =, &=, ^=, |= (vector-scalar missing, scalar-vector would be
+ *     meaningless anyway)
+ *
+ *   - infix *=, /=, %=, +=, -=, <<=, >>= (vector-vector and vector-scalar,
+ *     scalar-vector would not make sense)
+ *
+ * - Vc::SimdArray<int, 4>::Mask
+ *   (Vc_1::SimdMaskArray<int, 4ul, Vc_1::Vector<int, Vc_1::VectorAbi::Sse>, 4ul>)
+ *
+ *   - Broadcast-assignment (`m = b;` or `m = {b};`)
+ *
+ *   - Implicit broadcast construction (`M m = b;` or `M m = {b};`)
+ *
+ *   - prefix +, -, ~
+ *
+ *   - infix *, /, %, +, -, <<, >>, <, >, <=, >= (all combinations)
+ *
+ *   - infix ==, != (scalar-vector and vector-scalar don't exist, and the
+ *     result vector-vector is a scalar)
+ *
+ *   - infix &, ^, |, &&, || (scalar-vector and vector-scalar don't exist)
+ *
+ *   - infix =, &=, ^=, |= (vector-scalar missing, scalar-vector would be
+ *     meaningless anyway)
+ *
+ *   - infix *=, /=, %=, +=, -=, <<=, >>= (vector-vector and vector-scalar,
+ *     scalar-vector would not make sense)
+ *
  */
 
 #include <cstddef>
