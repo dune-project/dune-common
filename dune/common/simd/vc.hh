@@ -215,7 +215,7 @@ namespace Dune {
        */
       template<class V>
       struct LaneCount<V, std::enable_if_t<VcImpl::IsVector<V>::value> >
-        : public index_constant<V::size()>
+        : public index_constant<std::decay_t<V>::size()>
       { };
 
       //! implements Simd::lane()
