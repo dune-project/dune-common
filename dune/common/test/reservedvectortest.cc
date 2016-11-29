@@ -38,4 +38,14 @@ int main() {
   test.check(rv2.size() == 4);
   test.check(rv2.back() == 4);
 
+  // make sure we can hash a reserved vector
+  std::hash< Dune::ReservedVector<unsigned int, 8> > rv_hash;
+  auto hash_value = rv_hash(rv);
+  auto hash_value2 = rv_hash(rv2);
+  test.check( hash_value != hash_value2 );
+
+  std::unordered_map< Dune::ReservedVector<unsigned int, 8>, double > rv_map;
+  rv_map[rv] = 1.0;
+  rv_map[rv2] = 2.0;
+
 }
