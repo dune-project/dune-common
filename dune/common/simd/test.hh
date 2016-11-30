@@ -170,7 +170,8 @@ namespace Dune {
         V res;
         for(std::size_t l = 0; l < lanes(res); ++l)
           // do not exceed number of bits in char (for shifts)
-          lane(l, res) = Scalar<V>((l+1)%8);
+          // avoid 0 (for / and %)
+          lane(l, res) = Scalar<V>((l)%7+1);
         return res;
       }
 
@@ -183,7 +184,8 @@ namespace Dune {
       template<class T>
       static T rightScalar()
       {
-        // do not exceed number of bits in char
+        // do not exceed number of bits in char (for shifts)
+        // avoid 0 (for / and %)
         return T(5);
       }
 
