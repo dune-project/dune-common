@@ -31,7 +31,7 @@ namespace Dune {
     template<class T, typename A>
     struct EpsilonType<std::vector<T, A> > {
       //! The epsilon type corresponding to value type std::vector<T, A>
-      typedef EpsilonType<T> Type;
+      typedef typename EpsilonType<T>::Type Type;
     };
     //! Specialization of EpsilonType for Dune::FieldVector
     /**
@@ -42,19 +42,19 @@ namespace Dune {
     template<class T, int n>
     struct EpsilonType<FieldVector<T, n> > {
       //! The epsilon type corresponding to value type Dune::FieldVector<T, n>
-      typedef EpsilonType<T> Type;
+      typedef typename EpsilonType<T>::Type Type;
     };
 
     // default epsilon
     template<class T>
     struct DefaultEpsilon<T, relativeWeak> {
       static typename EpsilonType<T>::Type value()
-      { return std::numeric_limits<typename EpsilonType<T>::Type>::epsilon()*8; }
+      { return std::numeric_limits<typename EpsilonType<T>::Type>::epsilon()*8.; }
     };
     template<class T>
     struct DefaultEpsilon<T, relativeStrong> {
       static typename EpsilonType<T>::Type value()
-      { return std::numeric_limits<typename EpsilonType<T>::Type>::epsilon()*8; }
+      { return std::numeric_limits<typename EpsilonType<T>::Type>::epsilon()*8.; }
     };
     template<class T>
     struct DefaultEpsilon<T, absolute> {
@@ -88,29 +88,44 @@ namespace Dune {
         { return std::abs(first-second) <= epsilon; }
       };
       template<class T, CmpStyle cstyle>
-      struct eq_t<std::vector<T>, cstyle> {
-        static bool eq(const std::vector<T> &first,
-                       const std::vector<T> &second,
-                       typename EpsilonType<T>::Type epsilon = DefaultEpsilon<T>::value()) {
-          unsigned int size = first.size();
+      struct eq_t_std_vec {
+        typedef std::vector<T> V;
+        static bool eq(const V &first,
+                       const V &second,
+                       typename EpsilonType<V>::Type epsilon = DefaultEpsilon<V>::value()) {
+          auto size = first.size();
           if(size != second.size()) return false;
           for(unsigned int i = 0; i < size; ++i)
-            if(!eq_t<T, cstyle>(first[i], second[i], epsilon))
+            if(!eq_t<T, cstyle>::eq(first[i], second[i], epsilon))
               return false;
           return true;
         }
       };
+      template< class T>
+      struct eq_t<std::vector<T>, relativeWeak> : eq_t_std_vec<T, relativeWeak> {};
+      template< class T>
+      struct eq_t<std::vector<T>, relativeStrong> : eq_t_std_vec<T, relativeStrong> {};
+      template< class T>
+      struct eq_t<std::vector<T>, absolute> : eq_t_std_vec<T, absolute> {};
+
       template<class T, int n, CmpStyle cstyle>
-      struct eq_t<Dune::FieldVector<T, n>, cstyle> {
-        static bool eq(const Dune::FieldVector<T, n> &first,
-                       const Dune::FieldVector<T, n> &second,
-                       typename EpsilonType<T>::Type epsilon = DefaultEpsilon<T>::value()) {
+      struct eq_t_fvec {
+        typedef Dune::FieldVector<T, n> V;
+        static bool eq(const V &first,
+                       const V &second,
+                       typename EpsilonType<V>::Type epsilon = DefaultEpsilon<V>::value()) {
           for(int i = 0; i < n; ++i)
-            if(!eq_t<T, cstyle>(first[i], second[i], epsilon))
+            if(!eq_t<T, cstyle>::eq(first[i], second[i], epsilon))
               return false;
           return true;
         }
       };
+      template< class T, int n >
+      struct eq_t< Dune::FieldVector<T, n>, relativeWeak> : eq_t_fvec<T, n, relativeWeak> {};
+      template< class T, int n >
+      struct eq_t< Dune::FieldVector<T, n>, relativeStrong> : eq_t_fvec<T, n, relativeStrong> {};
+      template< class T, int n >
+      struct eq_t< Dune::FieldVector<T, n>, absolute> : eq_t_fvec<T, n, absolute> {};
     } // namespace Detail
 
     // operations in functional style
