@@ -14,9 +14,23 @@
 
 int main()
 {
+  using Vc::Vector;
+
   Dune::Simd::UnitTest test;
 
-  test.checkSimdType<Vc::Vector<double> >();
+  test.checkVector<Vector<short             > >();
+  test.checkVector<Vector<unsigned short    > >();
+  test.checkVector<Vector<int               > >();
+  test.checkVector<Vector<unsigned          > >();
+#if 0 // missing broadcast
+  test.checkVector<Vector<long              > >();
+  test.checkVector<Vector<long unsigned     > >();
+  test.checkVector<Vector<long long         > >();
+  test.checkVector<Vector<long long unsigned> >();
+#endif
+
+  test.checkVector<Vector<float             > >();
+  test.checkVector<Vector<double            > >();
 
   return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
