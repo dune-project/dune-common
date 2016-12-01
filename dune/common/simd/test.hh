@@ -9,6 +9,7 @@
 
 #include <cstddef>
 #include <iostream>
+#include <string>
 #include <type_traits>
 #include <typeindex>
 #include <typeinfo>
@@ -105,12 +106,21 @@ namespace Dune {
       void complain(const char *file, int line, const char *func,
                     const char *expr);
 
+      void complain(const char *file, int line, const char *func,
+                    const std::string &opname, const char *expr);
+
       // This macro is defined only within this file, do not use anywhere
       // else.  Doing the actual printing in an external function dramatically
       // reduces memory use during compilation.  Defined in such a way that
       // the call will only happen for failed checks.
 #define DUNE_SIMD_CHECK(expr)                                           \
       ((expr) ? void() : complain(__FILE__, __LINE__, __func__, #expr))
+
+      // the function using this macro must define a way to compute the
+      // operator name in DUNE_SIMD_OPNAME
+#define DUNE_SIMD_CHECK_OP(expr)                                \
+      ((expr) ? void() : complain(__FILE__, __LINE__, __func__, \
+                                  DUNE_SIMD_OPNAME, #expr))
 
       // "cast" into a prvalue
       template<class T>
@@ -505,6 +515,7 @@ namespace Dune {
         CanCall<Op(decltype(lane(0, std::declval<V>())))>::value>
       checkUnaryOpV(Op op)
       {
+#define DUNE_SIMD_OPNAME (className<Op(V)>())
         // arguments
         auto val = leftVector<std::decay_t<V>>();
 
@@ -512,11 +523,13 @@ namespace Dune {
         auto arg = val;
         auto &&result = op(static_cast<V>(arg));
         for(std::size_t l = 0; l < lanes(val); ++l)
-          DUNE_SIMD_CHECK(lane(l, result) == op(lane(l, static_cast<V>(val))));
+          DUNE_SIMD_CHECK_OP
+            (lane(l, result) == op(lane(l, static_cast<V>(val))));
         // op might modify val, verify that any such modification also happens
         // in the vector case
         for(std::size_t l = 0; l < lanes<std::decay_t<V> >(); ++l)
-          DUNE_SIMD_CHECK(lane(l, val) == lane(l, arg));
+          DUNE_SIMD_CHECK_OP(lane(l, val) == lane(l, arg));
+#undef DUNE_SIMD_OPNAME
       }
 
       template<class V, class Op>
@@ -599,6 +612,7 @@ namespace Dune {
       template<class T1, class T2>
       void checkCommaOp(std::decay_t<T1> val1, std::decay_t<T2> val2)
       {
+#define DUNE_SIMD_OPNAME (className<OpInfixComma(T1, T2)>())
         static_assert(std::is_same<decltype((std::declval<T1>(),
                                              std::declval<T2>())), T2>::value,
                       "Type and value category of the comma operator must "
@@ -620,21 +634,22 @@ namespace Dune {
         {
           // comma should return the same object as the second argument for
           // lvalues and xvalues
-          DUNE_SIMD_CHECK(&result == &arg2);
+          DUNE_SIMD_CHECK_OP(&result == &arg2);
           // it should not modify any arguments
-          DUNE_SIMD_CHECK(allTrue(val1 == arg1));
-          DUNE_SIMD_CHECK(allTrue(val2 == arg2));
+          DUNE_SIMD_CHECK_OP(allTrue(val1 == arg1));
+          DUNE_SIMD_CHECK_OP(allTrue(val2 == arg2));
         }
         else
         {
           // comma should return the same value as the second argument for
           // prvalues
-          DUNE_SIMD_CHECK(allTrue(result == arg2));
+          DUNE_SIMD_CHECK_OP(allTrue(result == arg2));
           // it should not modify any arguments
-          DUNE_SIMD_CHECK(allTrue(val1 == arg1));
+          DUNE_SIMD_CHECK_OP(allTrue(val1 == arg1));
           // second argument is a prvalue, any modifications happen to a
           // temporary and we can't detect them
         }
+#undef DUNE_SIMD_OPNAME
       }
 
       //////////////////////////////////////////////////////////////////////
@@ -648,6 +663,7 @@ namespace Dune {
                    decltype(lane(0, std::declval<V2>())))>::value>
       checkBinaryOpVV(Op op)
       {
+#define DUNE_SIMD_OPNAME (className<Op(V1, V2)>())
         static_assert(std::is_same<std::decay_t<V1>, std::decay_t<V2> >::value,
                       "Internal testsystem error: called with two types that "
                       "don't decay to the same thing");
@@ -661,16 +677,17 @@ namespace Dune {
         auto arg2 = val2;
         auto &&result = op(static_cast<V1>(arg1), static_cast<V2>(arg2));
         for(std::size_t l = 0; l < lanes(val1); ++l)
-          DUNE_SIMD_CHECK(lane(l, result) ==
-                          op(lane(l, static_cast<V1>(val1)),
-                             lane(l, static_cast<V2>(val2))));
+          DUNE_SIMD_CHECK_OP
+            (lane(l, result) == op(lane(l, static_cast<V1>(val1)),
+                                   lane(l, static_cast<V2>(val2))));
         // op might modify val1 and val2, verify that any such
         // modification also happens in the vector case
         for(std::size_t l = 0; l < lanes<std::decay_t<V1> >(); ++l)
         {
-          DUNE_SIMD_CHECK(lane(l, val1) == lane(l, arg1));
-          DUNE_SIMD_CHECK(lane(l, val2) == lane(l, arg2));
+          DUNE_SIMD_CHECK_OP(lane(l, val1) == lane(l, arg1));
+          DUNE_SIMD_CHECK_OP(lane(l, val2) == lane(l, arg2));
         }
+#undef DUNE_SIMD_OPNAME
       }
 
       template<class V1, class V2, class Op>
@@ -730,6 +747,7 @@ namespace Dune {
         CanCall<Op(T1, decltype(lane(0, std::declval<V2>())))>::value>
       checkBinaryOpSV(Op op)
       {
+#define DUNE_SIMD_OPNAME (className<Op(T1, V2)>())
         static_assert(std::is_same<std::decay_t<T1>,
                       Scalar<std::decay_t<V2> > >::value,
                       "Internal testsystem error: called with a scalar that "
@@ -754,27 +772,28 @@ namespace Dune {
         auto &&vresult = op(static_cast<V1>(varg1), static_cast<V2>(varg2));
         for(std::size_t l = 0; l < lanes<std::decay_t<V1> >(); ++l)
         {
-          DUNE_SIMD_CHECK(lane(l, sresult) ==
-                          op(        static_cast<T1>(sval1),
-                             lane(l, static_cast<V2>(sval2))));
-          DUNE_SIMD_CHECK(lane(l, vresult) ==
-                          op(lane(l, static_cast<V1>(vval1)),
-                             lane(l, static_cast<V2>(vval2))));
+          DUNE_SIMD_CHECK_OP
+            (lane(l, sresult) == op(        static_cast<T1>(sval1),
+                                    lane(l, static_cast<V2>(sval2))));
+          DUNE_SIMD_CHECK_OP
+            (lane(l, vresult) == op(lane(l, static_cast<V1>(vval1)),
+                                    lane(l, static_cast<V2>(vval2))));
           // cross check
-          DUNE_SIMD_CHECK(lane(l, sresult) == lane(l, vresult));
+          DUNE_SIMD_CHECK_OP(lane(l, sresult) == lane(l, vresult));
         }
         // op might modify [sv]val1 and [sv]val2, verify that any such
         // modification also happens in the vector case
         for(std::size_t l = 0; l < lanes<std::decay_t<V1> >(); ++l)
         {
-          DUNE_SIMD_CHECK(        sval1  ==         sarg1 );
-          DUNE_SIMD_CHECK(lane(l, sval2) == lane(l, sarg2));
-          DUNE_SIMD_CHECK(lane(l, vval1) == lane(l, varg1));
-          DUNE_SIMD_CHECK(lane(l, vval2) == lane(l, varg2));
+          DUNE_SIMD_CHECK_OP(        sval1  ==         sarg1 );
+          DUNE_SIMD_CHECK_OP(lane(l, sval2) == lane(l, sarg2));
+          DUNE_SIMD_CHECK_OP(lane(l, vval1) == lane(l, varg1));
+          DUNE_SIMD_CHECK_OP(lane(l, vval2) == lane(l, varg2));
           // cross check
-          DUNE_SIMD_CHECK(        sval1  == lane(l, vval1));
-          DUNE_SIMD_CHECK(lane(l, sval2) == lane(l, vval2));
+          DUNE_SIMD_CHECK_OP(        sval1  == lane(l, vval1));
+          DUNE_SIMD_CHECK_OP(lane(l, sval2) == lane(l, vval2));
         }
+#undef DUNE_SIMD_OPNAME
       }
 
       template<class T1, class V2, class Op>
@@ -836,6 +855,7 @@ namespace Dune {
         CanCall<Op(decltype(lane(0, std::declval<V1>())), T2)>::value>
       checkBinaryOpVS(Op op)
       {
+#define DUNE_SIMD_OPNAME (className<Op(V1, T2)>())
         static_assert(std::is_same<Scalar<std::decay_t<V1> >,
                       std::decay_t<T2> >::value,
                       "Internal testsystem error: called with a scalar that "
@@ -860,27 +880,28 @@ namespace Dune {
         auto &&vresult = op(static_cast<V1>(varg1), static_cast<V2>(varg2));
         for(std::size_t l = 0; l < lanes<std::decay_t<V1> >(); ++l)
         {
-          DUNE_SIMD_CHECK(lane(l, sresult) ==
-                          op(lane(l, static_cast<V1>(sval1)),
-                                     static_cast<T2>(sval2) ));
-          DUNE_SIMD_CHECK(lane(l, vresult) ==
-                          op(lane(l, static_cast<V1>(vval1)),
-                             lane(l, static_cast<V2>(vval2))));
+          DUNE_SIMD_CHECK_OP
+            (lane(l, sresult) == op(lane(l, static_cast<V1>(sval1)),
+                                            static_cast<T2>(sval2) ));
+          DUNE_SIMD_CHECK_OP
+            (lane(l, vresult) == op(lane(l, static_cast<V1>(vval1)),
+                                    lane(l, static_cast<V2>(vval2))));
           // cross check
-          DUNE_SIMD_CHECK(lane(l, sresult) == lane(l, vresult));
+          DUNE_SIMD_CHECK_OP(lane(l, sresult) == lane(l, vresult));
         }
         // op might modify [sv]val1 and [sv]val2, verify that any such
         // modification also happens in the vector case
         for(std::size_t l = 0; l < lanes<std::decay_t<V1> >(); ++l)
         {
-          DUNE_SIMD_CHECK(lane(l, sval1) == lane(l, sarg1));
-          DUNE_SIMD_CHECK(        sval2  ==         sarg2 );
-          DUNE_SIMD_CHECK(lane(l, vval1) == lane(l, varg1));
-          DUNE_SIMD_CHECK(lane(l, vval2) == lane(l, varg2));
+          DUNE_SIMD_CHECK_OP(lane(l, sval1) == lane(l, sarg1));
+          DUNE_SIMD_CHECK_OP(        sval2  ==         sarg2 );
+          DUNE_SIMD_CHECK_OP(lane(l, vval1) == lane(l, varg1));
+          DUNE_SIMD_CHECK_OP(lane(l, vval2) == lane(l, varg2));
           // cross check
-          DUNE_SIMD_CHECK(lane(l, sval1) == lane(l, vval1));
-          DUNE_SIMD_CHECK(        sval2  == lane(l, vval2));
+          DUNE_SIMD_CHECK_OP(lane(l, sval1) == lane(l, vval1));
+          DUNE_SIMD_CHECK_OP(        sval2  == lane(l, vval2));
         }
+#undef DUNE_SIMD_OPNAME
       }
 
       template<class V1, class T2, class Op>
