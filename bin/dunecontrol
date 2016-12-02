@@ -566,7 +566,7 @@ run_default_vcsetup() {
   fi
 
   # Run custom setup scripts
-  if [ -d .git -o -f .git -o -d .svn -o -d CVS ]; then
+  if [ -d .git -o -f .git -o -d .svn ]; then
     if [ -d .vcsetup/run.d ]; then
       for SCRIPT in .vcsetup/run.d/* ; do
         if [ -x "$SCRIPT" ]; then
@@ -581,8 +581,6 @@ run_default_vcsetup() {
 run_default_update () {
   if test -d .svn; then
     svn update
-  elif test -d CVS; then
-    cvs update -dP
   elif test -d .git || test -f .git; then
       if test -d .git && test -d ".git/svn" && test -n "`git svn find-rev HEAD`"; then
           # If the current HEAD points to a SVN commit, update via git-svn
@@ -602,7 +600,7 @@ run_default_update () {
       fi
   else
     echo "WARNING: $module is not under a known version control system."
-    echo "         We support svn, git and cvs."
+    echo "         We support svn and git."
   fi
 }
 
