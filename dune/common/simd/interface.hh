@@ -3,6 +3,7 @@
 
 /** @file
  *  @brief User interface of the SIMD abstraction
+ *  @ingroup SIMDLib
  *
  * This file provides the unser interface functions of the SIMD abstraction
  * layer.
@@ -18,12 +19,18 @@
 #include <dune/common/simd/base.hh>
 
 namespace Dune {
-  //! @addtogroup SIMD
-  //! @{
 
+  //! @brief Namespace for vectorization interface functions used by library
+  //!        developers
+  /**
+   * @ingroup SIMDLib
+   */
   namespace Simd {
 
-    /** @defgroup SimdInterfaceBase Basic Simd Interface
+    //! @addtogroup SIMDLib
+    //! @{
+
+    /** @name Basic interface
      *
      * Templates and functions in this group are directly implemented by
      * templates and functions in namespace Overloads.
@@ -120,9 +127,9 @@ namespace Dune {
       return allFalse(Overloads::ADLTag<6>{}, mask);
     }
 
-    //! @} group SimdInterfaceBase
+    //! @}
 
-    /** @defgroup SimdInterfaceSugar Extended Simd Interface
+    /** @name Syntactic Sugar
      *
      * Templates and functions in this group provide syntactic sugar, they are
      * implemented using the functionality from @ref SimdInterfaceBase, and
@@ -142,11 +149,11 @@ namespace Dune {
       return lanes<T>();
     }
 
-    //! @} group SimdInterfaceSugar
+    //! @} group Syntactic Sugar
+
+    //! @} Group SIMDLib
 
   } // namespace Simd
-
-  //! @} Group SIMD
 } // namespace Dune
 
 #endif // DUNE_COMMON_SIMD_INTERFACE_HH

@@ -3,6 +3,7 @@
 
 /** @file
  *  @brief Basic definitions for SIMD Implementations
+ *  @ingroup SIMDAbstract
  *
  * This file provides basic definitions and template declarations that are
  * used to write SIMD abtraction layers.
@@ -11,23 +12,66 @@
  * abstraction. Include <dune/common/simd/simd.hh> instead.
  */
 
-namespace Dune {
-  //! @defgroup SIMD
-  //! @{
+/** @defgroup SIMD Vectorization
+ * @ingroup Common
+ * @brief Abstractions for using vectorization libraries
+ *
+ * This vectorization abstraction target three kinds of users:
+ *
+ * - Application developers create SIMD types (usually with the help of some
+ *   vectorization library) and pass them to the Dune library.  They are
+ *   responsible for a compilation unit, typically a .cc file that is compiled
+ *   into a program or part of a library.  Since they create the type, they
+ *   have the knowledge which library abstraction is needed and are
+ *   responsible for including that, as well as making sure the correct
+ *   compiler flags are provided.
+ *
+ * - Library developers implement support in Dune for handling SIMD types,
+ *   e.g. by extending some existing class.  By using the interfaces provided
+ *   here, they should not have to worry about the exact vectorization library
+ *   beeing used, or whether a vectorization library is used at all.
+ *
+ * - Abstraction developers provide the necessary hooks to make a
+ *   vectorization library known to this interface.  They are also responsible
+ *   for documenting for application developers how to meet the prerequisites
+ *   for using the abstraction, e.g. which headers to include and how to add
+ *   the necessary compiler flags.
+ */
 
-  //! @brief Namespace for Simd Abstraction
+/** @defgroup SIMDApp Application Developer's Interface
+ *  @ingroup SIMD
+ *  @brief How to request vectorization from Dune
+ *
+ * This group describes how to pass vectorized types to dune classes.  It
+ * lists the supported vectorization libraries and how to include each
+ * (although it cannot list those libraries where support is not part of the
+ * dune core).
+ */
+
+/** @defgroup SIMDLib Library Developer's Interface
+ *  @ingroup SIMD
+ *  @brief How to support vectorization in Dune classes
+ *
+ * This group describes how a Dune library developer can add support for
+ * vectorization to library facilities.
+ */
+
+/** @defgroup SIMDAbstract Abstraction Developer's Interface
+ *  @ingroup SIMD
+ *  @brief How to add support for a new vectorization library
+ *
+ * This group describes the interface that you must implement if you want to
+ * provide an abstraction layer for some vectorization library.
+ */
+
+namespace Dune {
   namespace Simd {
-    /** @defgroup SIMDImpl Implementors Interface
-     *
-     *  This group describes the interface that you must implement if you want
-     *  to write an abstraction layer for some vectorization library.
-     *
-     *  @{
-     */
 
     //! @brief Namespace for the overloads and specializations that make up a
     //!        SIMD implementation
     /**
+     * @ingroup SIMDAbstract
+     *
      * This namespace contains three sets of things: the struct ADLTag, which
      * is used to look up functions in this namespace using argument-dependet
      * lookup, traits classes that must be specialized by implementations, and
@@ -44,6 +88,9 @@ namespace Dune {
      * functions.
      */
     namespace Overloads {
+
+      //! @addtogroup SIMDAbstract
+      //! @{
 
       //! Tag used to force late-binding lookup in Dune::Simd::Overloads
       /**
@@ -143,12 +190,10 @@ namespace Dune {
       template<class V, class SFINAETag = void>
       struct LaneCount;
 
+      //! @} Group SIMDAbstract
+
     } // namespace Overloads
-
-    //! @} Group SIMDImpl
   } // namespace Simd
-  //! @} Group SIMD
-
 } // namespace Dune
 
 #endif // DUNE_COMMON_SIMD_BASE_HH

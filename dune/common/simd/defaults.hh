@@ -3,6 +3,7 @@
 
 /** @file
  *  @brief Default implementations for SIMD Implementations
+ *  @ingroup SIMDAbstract
  *
  * This file provides default overloads for SIMD implementations, and deleted
  * placeholders where there are not default implementations.
@@ -20,13 +21,19 @@ namespace Dune {
   namespace Simd {
     namespace Overloads {
 
-      /** @defgroup SIMDDefaults SIMD default implementations
-       *  @ingroup SIMDImpl
+      /**
+       * @addtogroup SIMDAbstract
+       * @{
+       */
+
+      /** @name Overloadable and default functions
        *
-       *  This group describes the interface that you must implement if you
-       *  want to write an abstraction layer for some vectorization library.
+       * This group contains functions that you, as an abstraction developer,
+       * must implement.  All functions that are deleted must be provided,
+       * functions that have a default implementation may be left
+       * unimplemented if the default behaviour is satisfactory.
        *
-       *  @{
+       * @{
        */
 
       //! implements Simd::lane()
@@ -83,7 +90,8 @@ namespace Dune {
         return !Dune::Simd::anyTrue(mask);
       }
 
-      //! @} Group SIMDDefaults
+      //! @} Overloadable and default functions
+      //! @} Group SIMDAbstract
     } // namespace Overloads
   } // namespace Simd
 } // namespace Dune
