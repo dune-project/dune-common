@@ -5,11 +5,35 @@
 
 #include <complex>
 #include <type_traits>
+#include <utility>
 
 #include <dune/common/deprecated.hh>
 
 namespace Dune
 {
+
+  namespace detail
+  {
+    ///
+    /**
+     * @internal
+     * @brief Helper to make void_t work with gcc versions prior to gcc 5.0.
+     *
+     * This was not a compiler bug, but an accidental omission in the C++11 standard (see N3911, CWG issue 1558).
+     * It is not clearly specified what happens
+     * with unused template arguments in template aliases. The developers of GCC decided to ignore them, thus making void_t equivalent to void.
+     * With gcc 5.0 this was changed and the voider-hack is no longer needed.
+     */
+    template <class...>
+    struct voider
+    {
+      using type = void;
+    };
+  }
+
+  //! Is void for all valid input types (see N3911). The workhorse for C++11 SFINAE-techniques.
+  template <class... Types>
+  using void_t = typename detail::voider<Types...>::type;
 
   /**
    * @file
@@ -404,11 +428,21 @@ namespace Dune
 
 #endif // defined(DOXYGEN) or HAVE_IS_INDEXABLE_SUPPORT
 
+  namespace Impl {
+    // This function does nothing.
+    // By passing expressions to this function one can avoid
+    // "value computed is not used" warnings that may show up
+    // in a comma expression.
+    template<class...T>
+    void ignore(T&&... t)
+    {}
+  }
+
   /**
      typetrait to check that a class has begin() and end() members
    */
   // default version, gets picked if SFINAE fails
-  template<typename T, typename = void, typename = void>
+  template<typename T, typename = void>
   struct is_range
     : public std::false_type
   {};
@@ -416,37 +450,19 @@ namespace Dune
 #ifndef DOXYGEN
   // version for types with begin() and end()
   template<typename T>
-  struct is_range<T,
-                  decltype(std::declval<T>().begin()),
-                  decltype(std::declval<T>().end())>
+  struct is_range<T, decltype(Impl::ignore(
+      std::declval<T>().begin(),
+      std::declval<T>().end(),
+      std::declval<T>().begin() != std::declval<T>().end(),
+      decltype(std::declval<T>().begin()){std::declval<T>().end()},
+      ++(std::declval<std::add_lvalue_reference_t<decltype(std::declval<T>().begin())>>()),
+      *(std::declval<T>().begin())
+      ))>
     : public std::true_type
   {};
 #endif
 
-  namespace detail
-  {
-    ///
-    /**
-     * @internal
-     * @brief Helper to make void_t work with gcc versions prior to gcc 5.0.
-     *
-     * This was not a compiler bug, but an accidental omission in the C++11 standard (see N3911, CWG issue 1558).
-     * It is not clearly specified what happens
-     * with unused template arguments in template aliases. The developers of GCC decided to ignore them, thus making void_t equivalent to void.
-     * With gcc 5.0 this was changed and the voider-hack is no longer needed.
-     */
-    template <class...>
-    struct voider
-    {
-      using type = void;
-    };
-  }
-
   template <class> struct FieldTraits;
-
-  //! Is void for all valid input types (see N3911). The workhorse for C++11 SFINAE-techniques.
-  template <class... Types>
-  using void_t = typename detail::voider<Types...>::type;
 
   //! Convenient access to FieldTraits<Type>::field_type.
   template <class Type>
@@ -548,6 +564,79 @@ namespace Dune
   template<typename... T>
   struct SizeOf
     : public std::integral_constant<std::size_t,sizeof...(T)>
+  {};
+
+
+
+  namespace Impl {
+
+  template<class T, T...>
+  struct IntegerSequenceHelper;
+
+  // Helper struct to compute the i-th entry of a std::integer_sequence
+  //
+  // This could also be implemented using std::get<index>(std::make_tuple(t...)).
+  // However, the gcc-6 implementation of std::make_tuple increases the instantiation
+  // depth by 15 levels for each argument, such that the maximal instantiation depth
+  // is easily hit, especially with clang where it is set to 256.
+  template<class T, T head, T... tail>
+  struct IntegerSequenceHelper<T, head, tail...>
+  {
+
+    // get first entry
+    static constexpr auto get(std::integral_constant<std::size_t, 0>)
+    {
+      return std::integral_constant<T, head>();
+    }
+
+    // call get with first entry cut off and decremented index
+    template<std::size_t index,
+      std::enable_if_t<(index > 0) and (index < sizeof...(tail)+1), int> = 0>
+    static constexpr auto get(std::integral_constant<std::size_t, index>)
+    {
+      return IntegerSequenceHelper<T, tail...>::get(std::integral_constant<std::size_t, index-1>());
+    }
+
+    // use static assertion if index exceeds size
+    template<std::size_t index,
+      std::enable_if_t<(index >= sizeof...(tail)+1), int> = 0>
+    static constexpr auto get(std::integral_constant<std::size_t, index>)
+    {
+      static_assert(index < sizeof...(tail)+1, "index used in IntegerSequenceEntry exceed size");
+    }
+  };
+
+  } // end namespace Impl
+
+
+  /**
+   * \brief Get entry of std::integer_sequence
+   *
+   * \param seq An object of type std::integer_sequence<...>
+   * \param i Index
+   *
+   * \return The i-th entry of the integer_sequence encoded as std::integral_constant<std::size_t, entry>.
+   *
+   */
+  template<class T, T... t, std::size_t index>
+  constexpr auto integerSequenceEntry(std::integer_sequence<T, t...> seq, std::integral_constant<std::size_t, index> i)
+  {
+    static_assert(index < sizeof...(t), "index used in IntegerSequenceEntry exceed size");
+    return Impl::IntegerSequenceHelper<T, t...>::get(i);
+  }
+
+  template<class IntegerSequence, std::size_t index>
+  struct IntegerSequenceEntry;
+
+  /**
+   * \brief Get entry of std::integer_sequence
+   *
+   * Computes the i-th entry of the integer_sequence. The result
+   * is exported as ::value by deriving form std::integral_constant<std::size_t, entry>.
+   */
+  template<class T, T... t, std::size_t i>
+  struct IntegerSequenceEntry<std::integer_sequence<T, t...>, i>
+    : public decltype(Impl::IntegerSequenceHelper<T, t...>::get(std::integral_constant<std::size_t, i>()))
   {};
 
 

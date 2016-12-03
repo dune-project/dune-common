@@ -2,6 +2,18 @@ dune_add_test(SOURCES arraylisttest.cc)
 
 dune_add_test(SOURCES arraytest.cc)
 
+dune_add_test(SOURCES assertandreturntest.cc
+              LINK_LIBRARIES dunecommon)
+dune_add_test(NAME assertandreturntest_compiletime_fail
+              SOURCES assertandreturntest.cc
+              LINK_LIBRARIES dunecommon
+              COMPILE_DEFINITIONS "TEST_COMPILETIME_FAIL"
+              EXPECT_COMPILE_FAIL)
+dune_add_test(NAME assertandreturntest_ndebug
+              SOURCES assertandreturntest.cc
+              LINK_LIBRARIES dunecommon
+              COMPILE_DEFINITIONS "TEST_NDEBUG")
+
 dune_add_test(SOURCES bigunsignedinttest.cc
               LINK_LIBRARIES dunecommon)
 
@@ -90,9 +102,9 @@ dune_add_test(SOURCES densevectortest.cc
 
 dune_add_test(SOURCES enumsettest.cc)
 
-dune_add_test(NAME fmatrixtest
-              SOURCES fmatrixtest.cc dummy.f
+dune_add_test(SOURCES fmatrixtest.cc
               LINK_LIBRARIES dunecommon)
+add_dune_vc_flags(fmatrixtest)
 
 dune_add_test(SOURCES fvectortest.cc
               LINK_LIBRARIES dunecommon)
@@ -117,7 +129,8 @@ dune_add_test(SOURCES lrutest.cc
               LINK_LIBRARIES dunecommon)
 
 dune_add_test(SOURCES mpicollectivecommunication.cc
-              LINK_LIBRARIES dunecommon)
+              LINK_LIBRARIES dunecommon
+              CMAKE_GUARD MPI_FOUND)
 
 dune_add_test(SOURCES mpiguardtest.cc
               LINK_LIBRARIES dunecommon)
@@ -134,6 +147,11 @@ dune_add_test(NAME mpihelpertest2
 dune_add_test(SOURCES overloadsettest.cc
               LINK_LIBRARIES dunecommon)
 
+dune_add_test(NAME parameterizedobjecttest
+              SOURCES parameterizedobjecttest.cc parameterizedobjectfactorysingleton.cc
+              LINK_LIBRARIES dunecommon
+              )
+
 dune_add_test(SOURCES parametertreelocaletest.cc
               LINK_LIBRARIES dunecommon)
 
@@ -144,6 +162,12 @@ dune_add_test(SOURCES pathtest.cc
               LINK_LIBRARIES dunecommon)
 
 dune_add_test(SOURCES poolallocatortest.cc)
+
+dune_add_test(SOURCES rangeutilitiestest.cc
+              LINK_LIBRARIES dunecommon)
+
+dune_add_test(SOURCES reservedvectortest.cc
+              LINK_LIBRARIES dunecommon)
 
 dune_add_test(SOURCES shared_ptrtest.cc)
 
@@ -156,6 +180,8 @@ dune_add_test(SOURCES stdapplytest.cc
 
 dune_add_test(SOURCES stdtypetraitstest.cc
               LINK_LIBRARIES dunecommon)
+
+dune_add_test(SOURCES streamoperatorstest.cc)
 
 dune_add_test(SOURCES streamtest.cc
               LINK_LIBRARIES dunecommon)
@@ -198,11 +224,9 @@ dune_add_test(NAME testdebugallocator_fail5
 
 dune_add_test(SOURCES testfloatcmp.cc)
 
-dune_add_test(SOURCES tuplestest.cc)
-
 dune_add_test(SOURCES tupleutilitytest.cc)
 
-#dune_add_test(SOURCES utilitytest.cc)
+dune_add_test(SOURCES utilitytest.cc)
 
 dune_add_test(SOURCES eigenvaluestest.cc
               LINK_LIBRARIES dunecommon

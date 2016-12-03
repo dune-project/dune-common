@@ -1,0 +1,28 @@
+#include <dune/common/parameterizedobject.hh>
+#include <dune/common/singleton.hh>
+#include <string>
+
+#define DefineImplementation(IF,T,PARAM...)     \
+    struct T : public IF {                      \
+        T(PARAM) {}                          \
+        virtual std::string info() {            \
+            return #T;                          \
+        }                                       \
+    }
+
+struct InterfaceA
+{
+    virtual std::string info() = 0;
+};
+
+struct InterfaceB
+{
+    virtual std::string info() = 0;
+};
+
+template<typename Interface>
+Dune::ParameterizedObjectFactory<std::unique_ptr<Interface>(int)> &
+globalPtrFactory()
+{
+    return Dune::Singleton<Dune::ParameterizedObjectFactory<std::unique_ptr<Interface>(int)>>::instance();
+}

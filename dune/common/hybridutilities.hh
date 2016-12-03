@@ -6,9 +6,11 @@
 #include <tuple>
 #include <utility>
 
+#include <dune/common/typetraits.hh>
 #include <dune/common/typeutilities.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/indices.hh>
+#include <dune/common/assertandreturn.hh>
 
 
 
@@ -99,9 +101,9 @@ namespace Impl {
   }
 
   template<class T, T... t, class Index>
-  constexpr decltype(auto) elementAt(std::integer_sequence<T, t...> c, Index&&, PriorityTag<1>)
+  constexpr decltype(auto) elementAt(std::integer_sequence<T, t...> c, Index, PriorityTag<1>)
   {
-    return std::get<std::decay_t<Index>::value>(std::make_tuple(std::integral_constant<T, t>()...));
+    return Dune::integerSequenceEntry(c, std::integral_constant<std::size_t, Index::value>());
   }
 
   template<class Container, class Index>
@@ -196,10 +198,9 @@ namespace Impl {
   // constexpr the function body can only contain a return
   // statement and no assertion before this.
   template<class Begin, class End>
-  auto integralRange(const Begin& begin, const End& end, const PriorityTag<0>&)
+  constexpr auto integralRange(const Begin& begin, const End& end, const PriorityTag<0>&)
   {
-    assert(begin <= end);
-    return Impl::DynamicIntegralRange<End>(begin, end);
+    return DUNE_ASSERT_AND_RETURN(begin<=end, Impl::DynamicIntegralRange<End>(begin, end));
   }
 
 } // namespace Impl
@@ -261,6 +262,13 @@ namespace Impl {
   {
     evaluateFoldExpression<int>({(f(Hybrid::elementAt(range, std::integral_constant<Index,i>())), 0)...});
   }
+
+  template<class F, class Index, Index... i>
+  constexpr void forEach(std::integer_sequence<Index, i...> range, F&& f, PriorityTag<2>)
+  {
+    evaluateFoldExpression<int>({(f(std::integral_constant<Index,i>()), 0)...});
+  }
+
 
   template<class Range, class F,
     std::enable_if_t<IsIntegralConstant<decltype(Hybrid::size(std::declval<Range>()))>::value, int> = 0>
