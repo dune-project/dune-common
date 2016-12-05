@@ -13,18 +13,36 @@
 
 template <class M>
 void populateMatrix(M &A, int rows, int cols) {
-  for (size_t i = 0; i < rows; ++i)
-    for (size_t j = 0; j < cols; ++j)
+  for (int i = 0; i < rows; ++i)
+    for (int j = 0; j < cols; ++j)
       A[i][j] = i + 10 * j;
 }
 
+
+template< class K, int rows, int cols >
+struct Foo
+{
+  constexpr static int M () noexcept { return cols; }
+  constexpr static int N () noexcept { return rows; }
+
+  operator Dune::FieldMatrix< K, rows, cols > () const
+  {
+    Dune::FieldMatrix< K, rows, cols > A;
+    populateMatrix( A, rows, cols );
+    return A;
+  }
+};
+
+
 template <class A, class B>
 bool identicalContents(A const &a, B const &b) {
+  typedef typename A::size_type Size;
+
   if (a.N() != b.N() or a.M() != b.M())
     return false;
 
-  for (int i = 0; i < a.N(); ++i)
-    for (int j = 0; j < b.N(); ++j)
+  for (Size i = 0; i < a.N(); ++i)
+    for (Size j = 0; j < b.N(); ++j)
       if (a[i][j] != b[i][j])
         return false;
   return true;
@@ -43,6 +61,9 @@ bool run() {
   populateMatrix(fieldMWrong11, 1, 1);
   populateMatrix(fieldMWrong22, 2, 2);
   populateMatrix(fieldMWrong33, 3, 3);
+
+  Foo< ft, 2, 3 > fooM;
+  fieldM = static_cast< Dune::FieldMatrix< ft, 2, 3 > >( fooM );
 
   Dune::DynamicMatrix<ft> dynM(2, 3);
   Dune::DynamicMatrix<ft> dynMWrong11(1, 1);
@@ -85,8 +106,6 @@ bool run() {
     {
       M fieldT;
       fieldT = constant;
-      // Intentionally disabled: ( compile-time size mismatch )
-      // fieldT = Dune::FieldMatrix<ft, 1, 1>(constant);
     }
 
     // Copy construction
@@ -107,9 +126,7 @@ bool run() {
       }
     }
     {
-      DUNE_UNUSED M const fieldT(constant);
-      // Intentionally disabled:
-      // M const fieldT2 = constant;
+      DUNE_UNUSED M const fieldT = constant;
     }
   }
 
@@ -339,6 +356,15 @@ bool run() {
       std::cout << "(line " << __LINE__
                 << ") All good: Exception thrown as expected." << std::endl;
     }
+  }
+  {
+#ifdef FAILURE6
+    using M = Dune::DynamicMatrix<ft>;
+    {
+      // Should fail at compile-time
+      DUNE_UNUSED M const dynT = constant;
+    }
+#endif
   }
   std::cout << std::endl;
   return passed;

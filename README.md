@@ -26,7 +26,7 @@ dune-common depends on the following software packages
 - GNU C, C++ >=4.9
   these might also work:
   icc (C/C++) >= 16.0
-  Clang >= 3.5
+  Clang >= 3.8
 
 The following software is recommended but optional:
 

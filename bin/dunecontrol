@@ -26,11 +26,39 @@ fi
 space=" "
 tab="	"
 BLANK="$space$tab"
+nl=$'\n'
 
 ###############################################
 ###
 ### read lib
 ###
+
+# quote parameter for passing it through the shell
+# the result is meant to be used inside "...", i.e. the outer quotes are _not_
+# included
+#
+# you should have the identity
+# eval "[ x\"\$param\" = x\"$(doublequote "$param")\" ]"
+doublequote()
+{
+  local val="$1"
+  local result=
+  local token=
+  local special=
+  while [ -n "$val" ]; do
+    token=${val%%[\"\$\`\\]*}
+    val=${val#"$token"}
+    special=${val:0:1}
+    val=${val:1}
+    result=$result$token${special:+\\$special}
+  done
+  # if the value ends in \n, protect it by appending two double-quotes so it
+  # wont get stripped by the surrounding $(...)
+  case $result in
+    *"$nl") result=$result'""';;
+  esac
+  printf "%s" "$result"
+}
 
 canonicalname(){
     if test $# -ne 1; then
@@ -122,7 +150,7 @@ build_module() {
     while test $# -gt 0 && test "$1" != ":"; do
       COMMAND=$(echo $command | tr '[:lower:]' '[:upper:]')
       # setup paramter list
-      CMD_FLAGS="$CMD_FLAGS \"$1\""
+      CMD_FLAGS="$CMD_FLAGS \"$(doublequote "$1")\""
       shift
     done
     if test -z "$CMD_FLAGS"; then
@@ -235,7 +263,7 @@ abs_builddir()
 # Uses the current compiler to extract information about the
 # multiarch triplets and sets the export variable MULTIARCH_LIBDIR
 # according to it.
-# If not compiler is specified then cc or gcc is used.
+# If no compiler is specified then cc or gcc is used.
 extract_multiarch(){
   set +e #error in the multiarch detection should not be fatal.
   local my_cxx_compiler
@@ -300,7 +328,7 @@ check_commands() {
   done
 }
 
-# check wheteher the parameter is valid command or not
+# check whether the parameter is valid command or not
 is_command() {
 eval '
 case "$1" in
@@ -538,7 +566,7 @@ run_default_vcsetup() {
   fi
 
   # Run custom setup scripts
-  if [ -d .git -o -f .git -o -d .svn -o -d CVS ]; then
+  if [ -d .git -o -f .git -o -d .svn ]; then
     if [ -d .vcsetup/run.d ]; then
       for SCRIPT in .vcsetup/run.d/* ; do
         if [ -x "$SCRIPT" ]; then
@@ -553,10 +581,8 @@ run_default_vcsetup() {
 run_default_update () {
   if test -d .svn; then
     svn update
-  elif test -d CVS; then
-    cvs update -dP
-  elif test -d .git; then
-      if test -d ".git/svn" && test -n "`git svn find-rev HEAD`"; then
+  elif test -d .git || test -f .git; then
+      if test -d .git && test -d ".git/svn" && test -n "`git svn find-rev HEAD`"; then
           # If the current HEAD points to a SVN commit, update via git-svn
           git svn rebase
       else
@@ -574,7 +600,7 @@ run_default_update () {
       fi
   else
     echo "WARNING: $module is not under a known version control system."
-    echo "         We support svn, git and cvs."
+    echo "         We support svn and git."
   fi
 }
 
@@ -666,8 +692,12 @@ run_default_configure () {
       test -n "$found_libs" && \
           echo "ERROR: your build directory $ABS_BUILDDIR contains libtool built libraries $found_libs, please cleanup" && \
           exit 1
-      echo "$PREPARAMS $CMAKE -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\""
-      eval $PREPARAMS $CMAKE "-DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\"" || exit 1
+      # Prevent using an empty module path
+      if test -n "$CMAKE_MODULE_PATH"; then
+          _MODULE_PATH="-DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\""
+      fi
+      echo "$PREPARAMS $CMAKE $_MODULE_PATH $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\""
+      eval $PREPARAMS $CMAKE "$_MODULE_PATH $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\"" || exit 1
 }
 
 run_default_make () {

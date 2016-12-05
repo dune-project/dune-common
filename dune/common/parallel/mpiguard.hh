@@ -107,7 +107,7 @@ namespace Dune
 
      You create a MPIGuard object. If an exception is risen on a
      process the MPIGuard detects the exception, because the finalize
-     method was not called.  when reaching the finalize call all
+     method was not called.  When reaching the finalize call all
      other processes are informed that an error occurred and the
      MPIGuard throws an exception of type MPIGuardError.
 

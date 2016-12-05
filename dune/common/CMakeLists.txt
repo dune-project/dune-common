@@ -27,6 +27,7 @@ install(FILES
         alignment.hh
         array.hh
         arraylist.hh
+        assertandreturn.hh
         bartonnackmanifcheck.hh
         bigunsignedint.hh
         binaryfunctions.hh
@@ -74,6 +75,7 @@ install(FILES
         math.hh
         matvectraits.hh
         nullptr.hh
+        overloadset.hh
         parametertree.hh
         parametertreeparser.hh
         path.hh
@@ -91,10 +93,12 @@ install(FILES
         sllist.hh
         stdstreams.hh
         stdthread.hh
+        streamoperators.hh
         stringutility.hh
         timer.hh
         tuples.hh
         tupleutility.hh
+        tuplevector.hh
         typelist.hh
         typetraits.hh
         typeutilities.hh

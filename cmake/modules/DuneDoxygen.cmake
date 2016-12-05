@@ -25,12 +25,9 @@
 #
 
 find_package(Doxygen)
+include(CMakeParseArguments)
 
-include (CMakeParseArguments)
-
-#
 # Set DOT_TRUE for the Doxyfile generation.
-#
 if (NOT DOXYGEN_DOT_FOUND)
   set(DOT_TRUE '\#')
 endif()
@@ -41,7 +38,7 @@ add_custom_target(doxygen_install)
 # prepare_doxyfile()
 # This functions adds the necessary routines for the generation of the
 # Doxyfile[.in] files needed to doxygen.
-MACRO (prepare_doxyfile)
+macro(prepare_doxyfile)
   message(STATUS "using ${DOXYSTYLE_FILE} to create doxystyle file")
 
   # check whether module has a Doxylocal file
@@ -49,21 +46,21 @@ MACRO (prepare_doxyfile)
 
   if(_DOXYLOCAL)
     set(make_doxyfile_command ${CMAKE_COMMAND} -D DOT_TRUE=${DOT_TRUE} -D DUNE_MOD_NAME=${ProjectName} -D DUNE_MOD_VERSION=${ProjectVersion} -D DOXYSTYLE=${DOXYSTYLE_FILE}  -D DOXYLOCAL=${CMAKE_CURRENT_SOURCE_DIR}/Doxylocal -D abs_top_srcdir=${CMAKE_SOURCE_DIR} -D srcdir=${CMAKE_CURRENT_SOURCE_DIR} -D top_srcdir=${CMAKE_SOURCE_DIR} -P ${scriptdir}/CreateDoxyFile.cmake)
-    add_custom_command (OUTPUT Doxyfile.in Doxyfile
+    add_custom_command(OUTPUT Doxyfile.in Doxyfile
       COMMAND ${make_doxyfile_command}
       COMMENT "Creating Doxyfile.in"
       DEPENDS ${DOXYSTYLE_FILE} ${CMAKE_CURRENT_SOURCE_DIR}/Doxylocal)
   else()
     set(make_doxyfile_command ${CMAKE_COMMAND} -D DOT_TRUE=${DOT_TRUE} -D DUNE_MOD_NAME=${ProjectName} -D DUNE_MOD_VERSION=${DUNE_MOD_VERSION} -D DOXYSTYLE=${DOXYSTYLE_FILE} -D abs_top_srcdir=${CMAKE_SOURCE_DIR} -D top_srcdir=${CMAKE_SOURCE_DIR} -P ${scriptdir}/CreateDoxyFile.cmake)
-    add_custom_command (OUTPUT Doxyfile.in Doxyfile
+    add_custom_command(OUTPUT Doxyfile.in Doxyfile
       COMMAND ${make_doxyfile_command}
       COMMENT "Creating Doxyfile.in"
       DEPENDS ${DOXYSTYLE_FILE})
   endif()
-  add_custom_target(Doxyfile DEPENDS Doxyfile.in Doxyfile)
-ENDMACRO (prepare_doxyfile)
+  add_custom_target(doxyfile DEPENDS Doxyfile.in Doxyfile)
+endmacro(prepare_doxyfile)
 
-MACRO (add_doxygen_target)
+macro(add_doxygen_target)
   set(options )
   set(oneValueArgs TARGET OUTPUT)
   set(multiValueArgs DEPENDS)
@@ -82,12 +79,12 @@ MACRO (add_doxygen_target)
   dune_module_path(MODULE dune-common RESULT scriptdir SCRIPT_DIR)
   if("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
     set(DOXYSTYLE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/Doxystyle)
-  endif("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
+  endif()
   message(STATUS "Using scripts from ${scriptdir} for creating doxygen stuff.")
 
   if(DOXYGEN_FOUND)
     prepare_doxyfile()
-    # A custom command that executes doxygen
+    # custom command that executes doxygen
     add_custom_command(OUTPUT ${DOXYGEN_OUTPUT}
       COMMAND ${CMAKE_COMMAND} -D DOXYGEN_EXECUTABLE=${DOXYGEN_EXECUTABLE} -P ${scriptdir}/RunDoxygen.cmake
       COMMENT "Running doxygen documentation. This may take a while"
@@ -118,5 +115,4 @@ MACRO (add_doxygen_target)
        endforeach()
        file(INSTALL \${doxygenfiles} DESTINATION ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen)
        message(STATUS \"Installed doxygen into ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen\")")
-
-ENDMACRO (add_doxygen_target)
+endmacro(add_doxygen_target)

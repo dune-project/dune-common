@@ -3,17 +3,26 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+
 // Activate checking.
 #ifndef DUNE_FMatrix_WITH_CHECKING
 #define DUNE_FMatrix_WITH_CHECKING
 #endif
-#include <dune/common/fmatrix.hh>
-#include <dune/common/classname.hh>
-#include <iostream>
+
 #include <algorithm>
-#include <vector>
 #include <cassert>
 #include <complex>
+#include <iostream>
+#include <vector>
+
+#if HAVE_VC
+#include <Vc/Vc>
+#endif
+
+#include <dune/common/classname.hh>
+#include <dune/common/fmatrix.hh>
+#include <dune/common/rangeutilities.hh>
+#include <dune/common/simd.hh>
 
 #include "checkmatrixinterface.hh"
 
@@ -348,18 +357,20 @@ void test_matrix()
   }
 }
 
+template<class T>
 int test_determinant()
 {
   int ret = 0;
 
-  FieldMatrix<double, 4, 4> B;
+  FieldMatrix<T, 4, 4> B;
   B[0][0] =  3.0; B[0][1] =  0.0; B[0][2] =  1.0; B[0][3] =  0.0;
   B[1][0] = -1.0; B[1][1] =  3.0; B[1][2] =  0.0; B[1][3] =  0.0;
   B[2][0] = -3.0; B[2][1] =  0.0; B[2][2] = -1.0; B[2][3] =  2.0;
   B[3][0] =  0.0; B[3][1] = -1.0; B[3][2] =  0.0; B[3][3] =  1.0;
-  if (std::abs(B.determinant() + 2.0) > 1e-12)
+  if (any_true(std::abs(B.determinant() + 2.0) > 1e-12))
   {
-    std::cerr << "Determinant 1 test failed" << std::endl;
+    std::cerr << "Determinant 1 test failed (" << Dune::className<T>() << ")"
+              << std::endl;
     ++ret;
   }
 
@@ -367,13 +378,14 @@ int test_determinant()
   B[1][0] = -1.0; B[1][1] =  3.0; B[1][2] =  0.0; B[1][3] =  0.0;
   B[2][0] = -3.0; B[2][1] =  0.0; B[2][2] = -1.0; B[2][3] =  2.0;
   B[3][0] = -1.0; B[3][1] =  3.0; B[3][2] =  0.0; B[3][3] =  2.0;
-  if (B.determinant() != 0.0)
+  if (any_true(B.determinant() != 0.0))
   {
-    std::cerr << "Determinant 2 test failed" << std::endl;
+    std::cerr << "Determinant 2 test failed (" << Dune::className<T>() << ")"
+              << std::endl;
     ++ret;
   }
 
-  return 0;
+  return ret;
 }
 
 template<class ft>
@@ -604,6 +616,8 @@ void test_initialisation()
 int main()
 {
   try {
+    int errors = 0; // counts errors
+
     {
       double nan = std::nan("");
       test_nan(nan);
@@ -640,14 +654,20 @@ int main()
     test_ev<double>();
 #endif
     // test high level methods
-    test_determinant();
+    errors += test_determinant< double >();
+#if HAVE_VC
+    errors += test_determinant< Vc::SimdArray<double, 8> >();
+#endif
     test_invert< float, 34 >();
     test_invert< double, 34 >();
     test_invert< std::complex< long double >, 2 >();
-    return test_invert_solve();
+    errors += test_invert_solve();
+
+    return (errors > 0 ? 1 : 0); // convert error count to unix exit status
   }
   catch (Dune::Exception & e)
   {
     std::cerr << "Exception: " << e << std::endl;
+    return 1;
   }
 }
