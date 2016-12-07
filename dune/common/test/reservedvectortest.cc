@@ -44,8 +44,13 @@ int main() {
   auto hash_value2 = rv_hash(rv2);
   test.check( hash_value != hash_value2 );
 
+  // try using an unordered map
   std::unordered_map< Dune::ReservedVector<unsigned int, 8>, double > rv_map;
   rv_map[rv] = 1.0;
   rv_map[rv2] = 2.0;
 
+  // try and try again with a const ReservedVector
+  std::unordered_map< const Dune::ReservedVector<unsigned int, 8>, double> const_rv_map;
+
+  return 0;
 }
