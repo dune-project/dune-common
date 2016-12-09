@@ -17,6 +17,8 @@ EXCLUDE                =
 
 EXCLUDE_PATTERNS       = */test/*
 
+EXCLUDE_SYMBOLS = Impl detail Imp Internal
+
 # If the SEARCH_INCLUDES tag is set to YES (the default) the includes files
 # in the INCLUDE_PATH (see below) will be search if a #include is found.
 
