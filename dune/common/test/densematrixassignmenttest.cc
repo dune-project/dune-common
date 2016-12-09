@@ -79,8 +79,10 @@ bool run() {
   Dune::DiagonalMatrix<ft, 3> const diagMWrong3 = {1, 2, 3};
 
 
-
   bool passed = true;
+
+  static_assert(!Dune::HasDenseMatrixAssigner< Dune::FieldMatrix<ft, 2, 3>, std::vector< Dune::FieldMatrix<ft, 2, 3> > >::value,
+                "FieldMatrix is not assignable by a std::vector< FieldMatrix >!");
 
   // class: FieldMatrix
   {
@@ -204,50 +206,6 @@ bool run() {
       dynT = diagM;
     }
   }
-
-  // class: std::vector<FieldMatrix<ft,2,3>>
-  Dune::FieldVector<Dune::FieldMatrix<ft, 2, 3>, 2> stdVecFieldM(fieldM);
-  Dune::FieldMatrix<ft, 2, 3> zeroMatrix(0);
-  {
-    using M = Dune::FieldVector<Dune::FieldMatrix<ft, 2, 3>, 2>;
-
-    // Assignment
-    {
-      M stdVecFieldT;
-      stdVecFieldT = stdVecFieldM;
-      stdVecFieldT -= stdVecFieldM;
-      if (!stdVecFieldT.size() == stdVecFieldM.size()) {
-        std::cout << "FAIL: Size mismatch on line: " << __LINE__
-                  << std::endl;
-        passed = false;
-      }
-      for (size_t i = 0; i < stdVecFieldT.size(); ++i) {
-        if (!identicalContents(stdVecFieldT[i], zeroMatrix)) {
-          std::cout << "FAIL: Content mismatch on line: " << __LINE__
-                    << std::endl;
-          passed = false;
-        }
-      }
-    }
-
-    // Copy construction
-    {
-      M const stdVecFieldT = stdVecFieldM;
-      if (!stdVecFieldT.size() == stdVecFieldM.size()) {
-        std::cout << "FAIL: Size mismatch on line: " << __LINE__
-                  << std::endl;
-        passed = false;
-      }
-      for (size_t i = 0; i < stdVecFieldT.size(); ++i) {
-        if (!identicalContents(stdVecFieldT[i], stdVecFieldM[i])) {
-          std::cout << "FAIL: Content mismatch on line: " << __LINE__
-                    << std::endl;
-          passed = false;
-        }
-      }
-    }
-  }
-
 
   // Invalid assignments
   {
