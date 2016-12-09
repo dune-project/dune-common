@@ -93,7 +93,8 @@ namespace Dune
     };
 
     template< class DenseMatrix, class RHS >
-    class DenseMatrixAssigner< DenseMatrix, RHS, std::enable_if_t< !std::is_same< typename RHS::const_iterator, void >::value > >
+    class DenseMatrixAssigner< DenseMatrix, RHS, std::enable_if_t< !std::is_same< typename RHS::const_iterator, void >::value
+        && std::is_convertible< typename RHS::const_iterator::value_type, typename DenseMatrix::iterator::value_type >::value > >
     {
     public:
       static void apply ( DenseMatrix &denseMatrix, const RHS &rhs )
