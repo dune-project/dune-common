@@ -78,7 +78,6 @@ bool run() {
   Dune::DiagonalMatrix<ft, 2> const diagMWrong2 = {1, 2};
   Dune::DiagonalMatrix<ft, 3> const diagMWrong3 = {1, 2, 3};
 
-
   bool passed = true;
 
   static_assert(!Dune::HasDenseMatrixAssigner< Dune::FieldMatrix<ft, 2, 3>, std::vector< Dune::FieldMatrix<ft, 2, 3> > >::value,
