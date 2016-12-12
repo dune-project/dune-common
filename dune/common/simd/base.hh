@@ -84,8 +84,7 @@ namespace Dune {
      *
      * An implementation must overload all functions within this namespace
      * that are defined deleted.  It may overload other functions.  It must
-     * not introduce new functions.  @see SIMDDefaults for a list of
-     * functions.
+     * not introduce new functions.
      */
     namespace Overloads {
 

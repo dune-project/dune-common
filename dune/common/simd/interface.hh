@@ -38,36 +38,86 @@ namespace Dune {
      * @{
      */
 
-    //! member type of some vectorized type
+    //! Element type of some SIMD type
+    /**
+     * \tparam V The SIMD (mask or vector) type.  May not include `const`,
+     *           `volatile` or reference qualifiers.
+     *
+     * Not all operations that access the element of a vector return (a
+     * reference to) the scalar type -- some may return proxy objects instead.
+     * Use `valueCast()` to make sure you are getting a prvalue of the scalar
+     * type.
+     *
+     * Implemented by `Overloads::ScalarType`.
+     */
     template<class V>
     using Scalar = typename Overloads::ScalarType<V>::type;
 
-    //! index vector type of some vectorized type
+    //! Index vector type of some SIMD type
     /**
-     * \note Typically (but not necessarily), \c
-     *       sizeof(Scalar<Index<T>>)==sizeof(Scalar<T>).  This implies that
-     *       the range of possible indices may be _very_ limited, e.g. if \c
-     *       Scalar<T> is \c char.
+     * \tparam V The SIMD (mask or vector) type.  May not include `const`,
+     *           `volatile` or reference qualifiers.
+     *
+     * The index type is a SIMD vector of integers with the same number of
+     * lanes as `V`.  The signedness and size of the integers is
+     * implementation defined, in particular, it may be as small as `char` --
+     * this can make sense if `V` is itself a SIMD vector of `char`.
+     *
+     * Implemented by `Overloads::IndexType`.
      */
     template<class V>
     using Index = typename Overloads::IndexType<V>::type;
 
-    //! mask vector type of some vectorized type
+    //! Mask type type of some SIMD type
+    /**
+     * \tparam V The SIMD (mask or vector) type.  May not include `const`,
+     *           `volatile` or reference qualifiers.
+     *
+     * The mask type is kind of a SIMD vector of `bool` with the same number
+     * of lanes as `V`.  It results from comparison operations between values
+     * of type `V`.  It is only "kind of" a SIMD vector, because the
+     * guaranteed supported operations are extremely limited.  At the moment
+     * only the logical operators `&&`, `||` and `!` and the "bitwise"
+     * operators `&`, `^` and `|` between masks are supported, and even with
+     * those operators you cannot rely on automatic broadcasting of `bool`
+     * values.
+     *
+     * \note In particular, masks do not support comparison.  As a workaround
+     *       you can use `^` instead of `!=` and `!(m1 ^ m2)` instead of `m1
+     *       == m2`.  (The reason why comparison is not supported is because
+     *       in Vc `==` and `!=` between masks yield a single `bool` result
+     *       and not a mask.)
+     *
+     * Implemented by `Overloads::MaskType`.
+     */
     template<class V>
     using Mask = typename Overloads::MaskType<V>::type;
 
-    //! number of lanes in type T
+    //! Number of lanes in a SIMD type
+    /**
+     * \tparam V The SIMD (mask or vector) type.  May not include `const`,
+     *           `volatile` or reference qualifiers.
+     *
+     * Implemented by `Overloads::LaneCount`.
+     */
     template<class V>
     constexpr std::size_t lanes()
     {
       return Overloads::LaneCount<V>::value;
     }
 
-    //! extract lane \c l from \c v
+    //! Extract an element of a SIMD type
     /**
-     * If \c v is an lvalue, the return value is either an lvalue too, or a
-     * proxy.  In either case its there is no requirement for its type to be
-     * \c Scalar<T>& (and it usually wont be with mask types).
+     * \param l Number of lane to extract
+     * \param v SIMD object to extract from
+     *
+     * \return If `v` is a non-`const` lvalue, a reference
+     *         `Scalar<decay_t<V>>&`, or a proxy object through which the
+     *         element of `v` may be modified.  Overwise, `v` is a `const`
+     *         lvalue or an rvalue, and the result is a prvalue (a temporary)
+     *         of type `Scalar<decay_t<V>>`.
+     *
+     * Implemented by `Overloads::lane()`.
      */
     template<class V>
     decltype(auto) lane(std::size_t l, V &&v)
@@ -76,15 +126,21 @@ namespace Dune {
       return lane(Overloads::ADLTag<6>{}, l, std::forward<V>(v));
     }
 
-    //! unproxies and returns a temporary
+    //! Unproxies and returns a temporary
     /**
-     * Many of the interface functions are allowed to return proxy objects or
-     * references when they are passed lvalues as arguments.  This makes it
-     * possible to deduce types of local variables when you want the actual
-     * type, not a proxy:
+     * \param t A value of any value category of some scalar obtained from a
+     *          SIMD type, or a proxy object denoting an element of a SIMD
+     *          type.
+     *
+     * Many of the interface functions are allowed to return proxy objects as
+     * well as references when they are passed lvalues as arguments.  This
+     * makes it possible to deduce types of local variables when you want the
+     * actual type, not a proxy:
      * \code
-     *   auto first_value = valueCast(lane(0, vec));
+     *   auto first_value = valueCast(lane(0, v));
      * \endcode
+     *
+     * Implemented by `Overloads::valueCast()`.
      */
     template<class T>
     auto valueCast(T &&t)
@@ -92,35 +148,59 @@ namespace Dune {
       return valueCast(Overloads::ADLTag<6>{}, std::forward<T>(t));
     }
 
-    //! like the ?: operator
+    //! Like the ?: operator
+    /**
+     * Equivalent to
+     * \code
+     *   V result;
+     *   for(std::size_t l = 0; l < lanes(mask); ++l)
+     *     lane(l, result) =
+     *       ( lane(l, mask) ? lane(l, ifTrue) : lane(l ifFalse) );
+     *   return result;
+     * \endcode
+     *
+     * Implemented by `Overloads::cond()`.
+     */
     template<class V>
     V cond(Mask<V> mask, V ifTrue, V ifFalse)
     {
       return cond(Overloads::ADLTag<6>{}, mask, ifTrue, ifFalse);
     }
 
-    //! whether any entry in \c mask is true
+    //! Whether any entry is `true`
+    /**
+     * Implemented by `Overloads::anyTrue()`.
+     */
     template<class Mask>
     bool anyTrue(Mask mask)
     {
       return anyTrue(Overloads::ADLTag<6>{}, mask);
     }
 
-    //! whether all entries in \c mask are true
+    //! Whether all entries are `true`
+    /**
+     * Implemented by `Overloads::allTrue()`.
+     */
     template<class Mask>
     bool allTrue(Mask mask)
     {
       return allTrue(Overloads::ADLTag<6>{}, mask);
     }
 
-    //! whether any entry in \c mask is false
+    //! Whether any entry is `false`
+    /**
+     * Implemented by `Overloads::anyFalse()`.
+     */
     template<class Mask>
     bool anyFalse(Mask mask)
     {
       return anyFalse(Overloads::ADLTag<6>{}, mask);
     }
 
-    //! whether all entries in \c mask are false
+    //! Whether all entries are `false`
+    /**
+     * Implemented by `Overloads::allFalse()`.
+     */
     template<class Mask>
     bool allFalse(Mask mask)
     {
@@ -138,15 +218,17 @@ namespace Dune {
      * @{
      */
 
-    //! number of lanes in v
+    //! Number of lanes in a SIMD type
     /**
-     * This actually ignores the value of v and forwards to \c lanes<T>().  It
-     * is often more convenient to use.
+     * \tparam V The SIMD (mask or vector) type.
+     *
+     * The value of the parameter is ignored; the call is simply forwarded to
+     * `lanes<V>()`.
      */
-    template<class T>
-    std::size_t lanes(T v)
+    template<class V>
+    std::size_t lanes(V)
     {
-      return lanes<T>();
+      return lanes<V>();
     }
 
     //! @} group Syntactic Sugar
