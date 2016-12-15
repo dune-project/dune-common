@@ -27,8 +27,91 @@ namespace Dune {
    */
   namespace Simd {
 
-    //! @addtogroup SIMDLib
-    //! @{
+    /** @addtogroup SIMDLib
+     *
+     * @{
+     *
+     * @section understand_simd Understanding SIMD types
+     *
+     * The (idealized) model of a SIMD type `V` used in this abstraction layer
+     * is that they are fixed-length vectors of some scalar type `S`.
+     * Operations and operators that take values of type `S` as arguments,
+     * except for `operator,()`, should be overloaded to support values of
+     * type `V` too.  These operations should apply element-wise.  If the
+     * operation takes more than one argument, it should accept arbitrary
+     * combinations of `V` and `S`.  The exception is the combination of `S`
+     * on the left hand side and `V` on the right hand side of one of the
+     * assignment operators, which does not make sense.
+     *
+     * The result of a boolean operation is a mask type `M`, which is a SIMD
+     * type with scalar type `bool` with the same number of elements as `V`.
+     * The result of all other operations is again of type `V`, or of some
+     * type convertible to `V`.
+     *
+     * This is very similiar to `std::valarray`, with the main difference
+     * being that `std::valarray` is dynamic in size, while for this
+     * abstraction the size is static.
+     *
+     * @section simd_abstraction_limit Limitations of the Abstraction Layer
+     *
+     * Since the abstraction layer cannot overload operators of SIMD types
+     * (that would be meddling with the domain of the library that provides
+     * the SIMD types), nor provide it's own constructors, there are severe
+     * limitations in what the abstraction layer guarantees.  Besides the
+     * standard types, the first SIMD library supported is Vc, so that is
+     * where most of the limitations stem from.
+     *
+     * The biggest limitations are with masks.  In Vc masks support a very
+     * restricted set of operations compared to other SIMD types, so in what
+     * follows we will distinguish between masks with a very small set of
+     * operations and between vectors with a larger set of operations.
+     *
+     * The limitations for vectors are:
+     *
+     * - Use `V v(s)` for broadcast construction
+     *
+     * - Don't use `++` or `--` (either kind), use `+= Scalar<V>(1)` / `-=
+     *   Scalar<V>(1)` instead
+     *
+     * - If you use `<<` or `>>` with scalar arguments, broadcast them
+     *   explicitly.
+     *
+     * - Don't rely on conversion to mask in `&&` and `||`, convert explicitly
+     *   instead.  `!!v` should work but may be expensive.  `(v !=
+     *   Scalar<V>(0))` should work too, but may be too ugly.  `Mask<V>(v)`
+     *   may work, but is untested.
+     *
+     *   \todo I should probably introduce an interface function mask() for
+     *         this job.
+     *
+     * - If you must use `operator,`, explicitly convert the left argument to
+     *   `void`.  That may hide compiler warnings, but, well, you have already
+     *   decided that you must use `operator,` despite those warnings.
+     *
+     * The limitations for masks are:
+     *
+     * - Use `M m(b)` for broadcast construction
+     *
+     * - Explicitly broadcast all arguments that may be scalar, e.g. `m @
+     *   M(b)`.
+     *
+     * - This applies for broadcast assignement too!  Use `m = M(b)`
+     *
+     * - The only operators that you can use are the binary operators `&`,
+     *   `^`, `|` and their assignment versions `&=`, `^=`, `|=`, the logical
+     *   operators `&&`, `||`, and `!`, and the assignment `=`.  If you must,
+     *   you can use the comma operator `,`.
+     *
+     * - In particular you cannot use comparison operators `==` and `!=`.  If
+     *   you can't live without them, instead of `!=` use `^`, and instead of
+     *   `==` use `!(m1 ^ m2)`.
+     *
+     *   \todo I should probably introduce interface functions `eq()` and
+     *         `ne()` to make this less arcane.
+     *
+     * The documentation for the Vc abstraction layer has more details on what
+     * is supported there, but we only try to make sure the the above works.
+     */
 
     /** @name Basic interface
      *
