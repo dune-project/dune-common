@@ -49,7 +49,11 @@ namespace Dune
     struct VectorSize< const FieldVector<K,N> >
     {
       typedef FieldVector<K,N> V;
-      static typename V::size_type size(const V & v) { return N; }
+      static typename V::size_type size(const V & v)
+      {
+        DUNE_UNUSED_PARAMETER(v);
+        return N;
+      }
     };
   }
 
