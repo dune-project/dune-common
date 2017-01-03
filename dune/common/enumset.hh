@@ -158,7 +158,7 @@ namespace Dune
   }
 
   template<class TI1, class TI2>
-  inline Combine<TI1,TI2,typename TI1::Type> combine(const TI1& set1, const TI2& set2)
+  inline Combine<TI1,TI2,typename TI1::Type> combine(const TI1& /*set1*/, const TI2& /*set2*/)
   {
     return Combine<TI1,TI2,typename TI1::Type>();
   }

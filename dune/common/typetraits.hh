@@ -434,7 +434,7 @@ namespace Dune
     // "value computed is not used" warnings that may show up
     // in a comma expression.
     template<class...T>
-    void ignore(T&&... t)
+    void ignore(T&&... /*t*/)
     {}
   }
 
@@ -619,7 +619,7 @@ namespace Dune
    *
    */
   template<class T, T... t, std::size_t index>
-  constexpr auto integerSequenceEntry(std::integer_sequence<T, t...> seq, std::integral_constant<std::size_t, index> i)
+  constexpr auto integerSequenceEntry(std::integer_sequence<T, t...> /*seq*/, std::integral_constant<std::size_t, index> i)
   {
     static_assert(index < sizeof...(t), "index used in IntegerSequenceEntry exceed size");
     return Impl::IntegerSequenceHelper<T, t...>::get(i);

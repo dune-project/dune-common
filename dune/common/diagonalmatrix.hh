@@ -789,12 +789,12 @@ namespace Dune {
 
   protected:
 
-    size_type realIndex(int i) const
+    size_type realIndex(int /*i*/) const
     {
       return rowIndex();
     }
 
-    K* pointer(size_type i) const
+    K* pointer(size_type /*i*/) const
     {
       return const_cast<K*>(p_);
     }

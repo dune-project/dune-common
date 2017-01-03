@@ -588,7 +588,7 @@ struct PackEntries
 
   int operator()(DataHandle& handle, InterfaceTracker& tracker,
                  MessageBuffer<typename DataHandle::DataType>& buffer,
-                 int i) const
+                 int /*i*/) const
   {
     return operator()(handle,tracker,buffer);
   }
