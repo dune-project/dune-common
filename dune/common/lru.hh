@@ -8,6 +8,7 @@
 #include <map>
 
 #include <dune/common/exceptions.hh>
+#include <dune/common/unused.hh>
 
 /** @file
     @author Christian Engwer
@@ -97,6 +98,7 @@ namespace Dune {
      */
     const_reference back (int i) const
     {
+      DUNE_UNUSED_PARAMETER(i);
       return _data.back().second;
     }
 
