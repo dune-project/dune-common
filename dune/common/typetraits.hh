@@ -8,6 +8,7 @@
 #include <utility>
 
 #include <dune/common/deprecated.hh>
+#include <dune/common/unused.hh>
 
 namespace Dune
 {
@@ -434,7 +435,7 @@ namespace Dune
     // "value computed is not used" warnings that may show up
     // in a comma expression.
     template<class...T>
-    void ignore(T&&... t)
+    void ignore(T&&... /*t*/)
     {}
   }
 
@@ -622,6 +623,7 @@ namespace Dune
   constexpr auto integerSequenceEntry(std::integer_sequence<T, t...> seq, std::integral_constant<std::size_t, index> i)
   {
     static_assert(index < sizeof...(t), "index used in IntegerSequenceEntry exceed size");
+    DUNE_UNUSED_PARAMETER(seq);
     return Impl::IntegerSequenceHelper<T, t...>::get(i);
   }
 

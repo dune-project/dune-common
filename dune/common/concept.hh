@@ -236,7 +236,7 @@ constexpr bool requireConcept()
 // Helper function for use in concept definitions.
 // This allows to avoid using decltype
 template<class C, class... T, typename std::enable_if<models<C, T...>(), int>::type = 0>
-constexpr bool requireConcept(T&&... t)
+constexpr bool requireConcept(T&&... /*t*/)
 {
   return true;
 }

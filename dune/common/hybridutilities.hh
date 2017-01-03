@@ -11,6 +11,7 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/indices.hh>
 #include <dune/common/assertandreturn.hh>
+#include <dune/common/unused.hh>
 
 
 
@@ -190,6 +191,8 @@ namespace Impl {
   constexpr auto integralRange(const Begin& begin, const End& end, const PriorityTag<1>&)
   {
     static_assert(Begin::value <= End::value, "You cannot create an integralRange where end<begin");
+    DUNE_UNUSED_PARAMETER(begin);
+    DUNE_UNUSED_PARAMETER(end);
     return Impl::StaticIntegralRange<Begin,End>();
   }
 
@@ -266,6 +269,7 @@ namespace Impl {
   template<class F, class Index, Index... i>
   constexpr void forEach(std::integer_sequence<Index, i...> range, F&& f, PriorityTag<2>)
   {
+    DUNE_UNUSED_PARAMETER(range);
     evaluateFoldExpression<int>({(f(std::integral_constant<Index,i>()), 0)...});
   }
 
@@ -350,12 +354,14 @@ namespace Impl {
   template<class IfFunc, class ElseFunc>
   constexpr decltype(auto) ifElse(std::true_type, IfFunc&& ifFunc, ElseFunc&& elseFunc)
   {
+    DUNE_UNUSED_PARAMETER(elseFunc);
     return ifFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
   }
 
   template<class IfFunc, class ElseFunc>
   constexpr decltype(auto) ifElse(std::false_type, IfFunc&& ifFunc, ElseFunc&& elseFunc)
   {
+    DUNE_UNUSED_PARAMETER(ifFunc);
     return elseFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
   }
 
@@ -408,7 +414,7 @@ decltype(auto) ifElse(const Condition& condition, IfFunc&& ifFunc, ElseFunc&& el
 template<class Condition, class IfFunc>
 void ifElse(const Condition& condition, IfFunc&& ifFunc)
 {
-  ifElse(condition, std::forward<IfFunc>(ifFunc), [](auto&& i) {});
+  ifElse(condition, std::forward<IfFunc>(ifFunc), [](auto&& i) { DUNE_UNUSED_PARAMETER(i); });
 }
 
 
@@ -417,7 +423,11 @@ namespace Impl {
 
   template<class T1, class T2>
   constexpr auto equals(const T1& t1, const T2& t2, PriorityTag<1>) -> decltype(T1::value, T2::value, std::integral_constant<bool,T1::value == T2::value>())
-  { return {}; }
+  {
+    DUNE_UNUSED_PARAMETER(t1);
+    DUNE_UNUSED_PARAMETER(t2);
+    return {};
+  }
 
   template<class T1, class T2>
   constexpr auto equals(const T1& t1, const T2& t2, PriorityTag<0>)
@@ -451,6 +461,8 @@ namespace Impl {
   template<class Result, class T, class Value, class Branches, class ElseBranch>
   constexpr Result switchCases(std::integer_sequence<T>, const Value& value, Branches&& branches, ElseBranch&& elseBranch)
   {
+    DUNE_UNUSED_PARAMETER(value);
+    DUNE_UNUSED_PARAMETER(branches);
     return elseBranch();
   }
 
