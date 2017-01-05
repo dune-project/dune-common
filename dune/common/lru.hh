@@ -8,6 +8,7 @@
 #include <map>
 
 #include <dune/common/exceptions.hh>
+#include <dune/common/unused.hh>
 
 /** @file
     @author Christian Engwer
@@ -95,8 +96,9 @@ namespace Dune {
      *  Returns a read-only (constant) reference to the data of the
      *  least recently used entry.
      */
-    const_reference back (int /*i*/) const
+    const_reference back (int i) const
     {
+      DUNE_UNUSED_PARAMETER(i);
       return _data.back().second;
     }
 

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include <dune/common/deprecated.hh>
+#include <dune/common/unused.hh>
 
 namespace Dune
 {
@@ -619,9 +620,10 @@ namespace Dune
    *
    */
   template<class T, T... t, std::size_t index>
-  constexpr auto integerSequenceEntry(std::integer_sequence<T, t...> /*seq*/, std::integral_constant<std::size_t, index> i)
+  constexpr auto integerSequenceEntry(std::integer_sequence<T, t...> seq, std::integral_constant<std::size_t, index> i)
   {
     static_assert(index < sizeof...(t), "index used in IntegerSequenceEntry exceed size");
+    DUNE_UNUSED_PARAMETER(seq);
     return Impl::IntegerSequenceHelper<T, t...>::get(i);
   }
 
