@@ -14,7 +14,6 @@
  * turn includes this header.
  */
 
-#include <complex>
 #include <cstddef>
 #include <type_traits>
 #include <utility>
@@ -22,33 +21,10 @@
 #include <dune/common/indices.hh>
 #include <dune/common/simd/base.hh>
 #include <dune/common/simd/defaults.hh> // for valueCast()
+#include <dune/common/simd/isstandard.hh>
 
 namespace Dune {
   namespace Simd {
-
-    //! Which types are subject to the standard SIMD abstraction implementation
-    /**
-     * This is derive from \c std::true_type if \c T should be handled by the
-     * standard SIMD abstraction implementation, otherwise from \c
-     * std::false_type.  By default it declares all arithmetic types (as per
-     * \c std::is_arithmetic) as handled.  In addition it declares the
-     * following types as handled if \c T is handled: \c const T, \c volatile
-     * T, \c T&, \c T&&, \c std::complex<T>.
-     *
-     * This may be specialized by dune headers that provide support for
-     * extended precision types.
-     */
-    template<class T, class SFINAE = void>
-    struct IsStandard : std::is_arithmetic<T> {};
-
-    template<class T>
-    struct IsStandard<T, std::enable_if_t<
-                           !std::is_same<T, std::decay_t<T> >::value> >
-      : IsStandard<std::decay_t<T> > {};
-
-    template<class T>
-    struct IsStandard<std::complex<T> > : IsStandard<T> {};
-
     namespace Overloads {
 
       //! should have a member type \c type
