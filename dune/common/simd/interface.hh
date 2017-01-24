@@ -66,7 +66,8 @@ namespace Dune {
      * follows we will distinguish between masks with a very small set of
      * operations and between vectors with a larger set of operations.
      *
-     * The limitations for vectors are:
+     * The limitations for vectors are (`V` is a vector type, `v` is an object
+     * of type `V`, and s is an expression of type `Scalar<V>`):
      *
      * - Use `V v(s)` for broadcast construction
      *
@@ -88,7 +89,8 @@ namespace Dune {
      *   `void`.  That may hide compiler warnings, but, well, you have already
      *   decided that you must use `operator,` despite those warnings.
      *
-     * The limitations for masks are:
+     * The limitations for masks are (`M` is a mask type, `m` is an object of
+     * type `M`, and `b` is an expression of type `bool`):
      *
      * - Use `M m(b)` for broadcast construction
      *

@@ -16,7 +16,7 @@
  * @ingroup Common
  * @brief Abstractions for using vectorization libraries
  *
- * This vectorization abstraction target three kinds of users:
+ * This vectorization abstraction targets three kinds of developers:
  *
  * - Application developers create SIMD types (usually with the help of some
  *   vectorization library) and pass them to the Dune library.  They are
@@ -42,7 +42,7 @@
  *  @ingroup SIMD
  *  @brief How to request vectorization from Dune
  *
- * This group describes how to pass vectorized types to dune classes.  It
+ * This module describes how to pass vectorized types to Dune classes.  It
  * lists the supported vectorization libraries and how to include each
  * (although it cannot list those libraries where support is not part of the
  * dune core).
