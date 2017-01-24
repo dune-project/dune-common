@@ -791,11 +791,13 @@ namespace Dune {
 
     size_type realIndex(int i) const
     {
+      DUNE_UNUSED_PARAMETER(i);
       return rowIndex();
     }
 
     K* pointer(size_type i) const
     {
+      DUNE_UNUSED_PARAMETER(i);
       return const_cast<K*>(p_);
     }
 

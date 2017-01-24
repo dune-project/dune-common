@@ -1,3 +1,6 @@
+#ifndef DUNE_COMMON_TEST_PARAMETERIZEDOBJECTFACTORYSINGLETON_HH
+#define DUNE_COMMON_TEST_PARAMETERIZEDOBJECTFACTORYSINGLETON_HH
+
 #include <dune/common/parameterizedobject.hh>
 #include <dune/common/singleton.hh>
 #include <string>
@@ -26,3 +29,5 @@ globalPtrFactory()
 {
     return Dune::Singleton<Dune::ParameterizedObjectFactory<std::unique_ptr<Interface>(int)>>::instance();
 }
+
+#endif //#ifndef DUNE_COMMON_TEST_PARAMETERIZEDOBJECTFACTORYSINGLETON_HH

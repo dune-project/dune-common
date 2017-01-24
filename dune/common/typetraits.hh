@@ -51,94 +51,6 @@ namespace Dune
   struct Empty {};
 
   /**
-   * @brief Determines whether a type is const or volatile and provides the
-   * unqualified types.
-   */
-  template<typename T>
-  struct DUNE_DEPRECATED_MSG("Use <type_traits> instead!") ConstantVolatileTraits
-  {
-    enum DUNE_DEPRECATED_MSG("Use std::is_volatile/std::is_const instead!") {
-      /** @brief True if T has a volatile specifier. */
-      isVolatile=std::is_volatile<T>::value,
-      /** @brief True if T has a const qualifier. */
-      isConst=std::is_const<T>::value
-    };
-
-    /** @brief The unqualified type. */
-    typedef DUNE_DEPRECATED_MSG("Use std::remove_const instead!") typename std::remove_cv<T>::type UnqualifiedType;
-    /** @brief The const type. */
-    typedef DUNE_DEPRECATED_MSG("Use std::add_const instead!") typename std::add_const<UnqualifiedType>::type ConstType;
-    /** @brief The const volatile type. */
-    typedef DUNE_DEPRECATED_MSG("Use std::add_cv instead!") typename std::add_cv<UnqualifiedType>::type ConstVolatileType;
-  };
-
-  /** @brief Tests whether a type is volatile. */
-  template<typename T>
-  struct DUNE_DEPRECATED_MSG("Use std::is_volatile instead!") IsVolatile
-  {
-    enum DUNE_DEPRECATED_MSG("Use std::is_volatile instead!") {
-      /** @brief True if The type is volatile. */
-      value=std::is_volatile<T>::value
-    };
-  };
-
-  /** @brief Tests whether a type is constant. */
-  template<typename T>
-  struct DUNE_DEPRECATED_MSG("Use std::is_const instead!") IsConst
-  {
-    enum DUNE_DEPRECATED_MSG("Use std::is_const instead!") {
-      /** @brief True if The type is constant. */
-      value=std::is_const<T>::value
-    };
-  };
-
-  template<typename T>
-  struct DUNE_DEPRECATED_MSG("Use std::remove_const instead!") remove_const
-  {
-    typedef DUNE_DEPRECATED_MSG("Use std::remove_const instead!") typename std::remove_const<T>::type type;
-  };
-
-  template<typename T>
-  struct DUNE_DEPRECATED_MSG("Use std::remove_reference instead!") remove_reference
-  {
-    typedef DUNE_DEPRECATED_MSG("Use std::remove_reference instead!") typename std::remove_reference<T>::type type;
-  };
-
-  /**
-   * @brief Checks whether a type is convertible to another.
-   *
-   * @tparam From type you want to convert
-   * @tparam To type you want to obtain
-   */
-  template<class From, class To>
-  struct DUNE_DEPRECATED_MSG("Use std::is_convertible/std::is_same instead!") Conversion
-  {
-    enum DUNE_DEPRECATED_MSG("Use std::is_convertible/std::is_same instead!") {
-      /** @brief True if the conversion exists. */
-      exists =  std::is_convertible<From,To>::value,
-      /** @brief Whether the conversion exists in both ways. */
-      isTwoWay = std::is_convertible<From,To>::value && std::is_convertible<To,From>::value,
-      /** @brief True if To and From are the same type. */
-      sameType = std::is_same<From,To>::value
-    };
-  };
-
-  /**
-   * @brief Checks whether a type is derived from another.
-   *
-   * @tparam Base the potential base class you want to test for
-   * @tparam Derived type you want to test
-   */
-  template <class Base, class Derived>
-  struct DUNE_DEPRECATED_MSG("Use std::is_base_of instead!") IsBaseOf
-  {
-    enum DUNE_DEPRECATED_MSG("Use std::is_base_of instead!") {
-      /** @brief True if Base is a base class of Derived. */
-      value = std::is_base_of<Base, Derived>::value
-    };
-  };
-
-  /**
    * @brief Checks whether two types are interoperable.
    *
    * Two types are interoperable if conversions in either directions
@@ -156,16 +68,6 @@ namespace Dune
     };
   };
 
-  template<bool B, class T = void>
-  struct enable_if
-  {};
-
-  template<class T>
-  struct enable_if<true,T>
-  {
-    typedef DUNE_DEPRECATED_MSG("Use std::enable_if instead!") T type;
-  };
-
   /**
    * @brief Enable typedef if two types are interoperable.
    *
@@ -175,64 +77,6 @@ namespace Dune
   struct EnableIfInterOperable
     : public std::enable_if<IsInteroperable<T1,T2>::value, Type>
   {};
-
-  // pull in default implementation
-  template<typename T, typename U>
-  struct DUNE_DEPRECATED_MSG("Use std::is_same instead!") is_same
-  {
-    enum DUNE_DEPRECATED_MSG("Use std::is_same instead!") {
-      value = std::is_same<T,U>::value
-    };
-  };
-
-  template<bool B, typename T, typename F>
-  struct DUNE_DEPRECATED_MSG("Use std::conditional instead!") conditional
-  {
-    typedef DUNE_DEPRECATED_MSG("Use std::conditional instead!") typename std::conditional<B,T,F>::type type;
-  };
-
-  template<typename T, T v>
-  struct DUNE_DEPRECATED_MSG("Use std::integral_constant instead!") integral_constant
-  {
-    DUNE_DEPRECATED_MSG("Use std::integral_constant instead!")
-    static constexpr T value = v;
-  };
-
-  struct DUNE_DEPRECATED_MSG("Use std::true_type instead!") true_type
-  {
-    enum DUNE_DEPRECATED_MSG("Use std::true_type instead!") {
-      value = true
-    };
-  };
-
-  struct DUNE_DEPRECATED_MSG("Use std::false_type instead!") false_type
-  {
-    enum DUNE_DEPRECATED_MSG("Use std::false_type instead!") {
-      value = false
-    };
-  };
-
-  template<typename T>
-  struct DUNE_DEPRECATED_MSG("Use std::is_pointer instead!") is_pointer
-  {
-    enum DUNE_DEPRECATED_MSG("Use std::is_pointer instead!") {
-      value = std::is_pointer<T>::value
-    };
-  };
-
-  template<typename T>
-  struct DUNE_DEPRECATED_MSG("Use std::is_lvalue_reference instead!") is_lvalue_reference
-  {
-    enum DUNE_DEPRECATED_MSG("Use std::is_lvalue_reference instead!") {
-      value = std::is_lvalue_reference<T>::value
-    };
-  };
-
-  template<typename T>
-  struct DUNE_DEPRECATED_MSG("Use std::remove_pointer instead!") remove_pointer
-  {
-    typedef DUNE_DEPRECATED_MSG("Use std::remove_pointer instead!") typename std::remove_pointer<T>::type type;
-  };
 
   /**
      \brief template which always yields a false value
@@ -434,7 +278,7 @@ namespace Dune
     // "value computed is not used" warnings that may show up
     // in a comma expression.
     template<class...T>
-    void ignore(T&&... t)
+    void ignore(T&&... /*t*/)
     {}
   }
 
@@ -619,7 +463,7 @@ namespace Dune
    *
    */
   template<class T, T... t, std::size_t index>
-  constexpr auto integerSequenceEntry(std::integer_sequence<T, t...> seq, std::integral_constant<std::size_t, index> i)
+  constexpr auto integerSequenceEntry(std::integer_sequence<T, t...> /*seq*/, std::integral_constant<std::size_t, index> i)
   {
     static_assert(index < sizeof...(t), "index used in IntegerSequenceEntry exceed size");
     return Impl::IntegerSequenceHelper<T, t...>::get(i);

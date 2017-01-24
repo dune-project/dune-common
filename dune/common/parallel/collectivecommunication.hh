@@ -15,6 +15,7 @@
 
 #include <dune/common/binaryfunctions.hh>
 #include <dune/common/exceptions.hh>
+#include <dune/common/unused.hh>
 
 /*! \defgroup ParallelCommunication Parallel Communication
    \ingroup Common
@@ -118,6 +119,8 @@ namespace Dune
     template<typename T>
     int sum (T* inout, int len) const
     {
+      DUNE_UNUSED_PARAMETER(inout);
+      DUNE_UNUSED_PARAMETER(len);
       return 0;
     }
 
@@ -138,6 +141,8 @@ namespace Dune
     template<typename T>
     int prod (T* inout, int len) const
     {
+      DUNE_UNUSED_PARAMETER(inout);
+      DUNE_UNUSED_PARAMETER(len);
       return 0;
     }
 
@@ -158,6 +163,8 @@ namespace Dune
     template<typename T>
     int min (T* inout, int len) const
     {
+      DUNE_UNUSED_PARAMETER(inout);
+      DUNE_UNUSED_PARAMETER(len);
       return 0;
     }
 
@@ -178,6 +185,8 @@ namespace Dune
     template<typename T>
     int max (T* inout, int len) const
     {
+      DUNE_UNUSED_PARAMETER(inout);
+      DUNE_UNUSED_PARAMETER(len);
       return 0;
     }
 
@@ -195,6 +204,9 @@ namespace Dune
     template<typename T>
     int broadcast (T* inout, int len, int root) const
     {
+      DUNE_UNUSED_PARAMETER(inout);
+      DUNE_UNUSED_PARAMETER(len);
+      DUNE_UNUSED_PARAMETER(root);
       return 0;
     }
 
@@ -213,6 +225,7 @@ namespace Dune
     template<typename T>
     int gather (T* in, T* out, int len, int root) const     // note out must have same size as in
     {
+      DUNE_UNUSED_PARAMETER(root);
       for (int i=0; i<len; i++)
         out[i] = in[i];
       return 0;
@@ -240,6 +253,8 @@ namespace Dune
     template<typename T>
     int gatherv (T* in, int sendlen, T* out, int* recvlen, int* displ, int root) const
     {
+      DUNE_UNUSED_PARAMETER(recvlen);
+      DUNE_UNUSED_PARAMETER(root);
       for (int i=*displ; i<sendlen; i++)
         out[i] = in[i];
       return 0;
@@ -261,6 +276,7 @@ namespace Dune
     template<typename T>
     int scatter (T* send, T* recv, int len, int root) const // note out must have same size as in
     {
+      DUNE_UNUSED_PARAMETER(root);
       for (int i=0; i<len; i++)
         recv[i] = send[i];
       return 0;
@@ -287,6 +303,8 @@ namespace Dune
     template<typename T>
     int scatterv (T* send, int* sendlen, int* displ, T* recv, int recvlen, int root) const
     {
+      DUNE_UNUSED_PARAMETER(recvlen);
+      DUNE_UNUSED_PARAMETER(root);
       for (int i=*displ; i<*sendlen; i++)
         recv[i] = send[i];
       return 0;
@@ -332,6 +350,7 @@ namespace Dune
     template<typename T>
     int allgatherv (T* in, int sendlen, T* out, int* recvlen, int* displ) const
     {
+      DUNE_UNUSED_PARAMETER(recvlen);
       for (int i=*displ; i<sendlen; i++)
         out[i] = in[i];
       return 0;
@@ -352,6 +371,8 @@ namespace Dune
     template<typename BinaryFunction, typename Type>
     int allreduce(Type* inout, int len) const
     {
+      DUNE_UNUSED_PARAMETER(inout);
+      DUNE_UNUSED_PARAMETER(len);
       return 0;
     }
 

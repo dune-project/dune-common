@@ -15,6 +15,7 @@
 \usepackage[dvips]{graphicx}
 \usepackage[a4paper,body={148mm,240mm,nohead}]{geometry}
 \usepackage[ansinew]{inputenc}
+\usepackage{tikz}
 \usepackage{listings}
 \lstset{language=C++, basicstyle=\ttfamily,
   stringstyle=\ttfamily, commentstyle=\it, extendedchars=true}
@@ -249,12 +250,50 @@ for \lstinline!ghost!).
   \label{fig:redistindex}
 \end{figure}
 \begin{figure*}%[b]
+  \tikzset{
+    box/.style={
+      draw,
+      shape=rectangle,
+      minimum width=1.5em,
+      minimum height=1.5em,
+      anchor=base,
+      inner sep=0pt,
+    },
+    overlap/.style={fill=black!25!white},
+  }
+  \newcommand{\interior}[1]{%
+    \tikz[baseline={(0,0)}]\node[box]{#1};%
+  }
+  \newcommand{\overlap}[1]{%
+    \tikz[baseline={(0,0)}]\node[box,overlap]{#1};%
+  }
+  \def\mc{\multicolumn}%
+  \newcommand{\leader}[1]{\makebox[2em][r]{#1 }}%
+  \renewcommand{\arraystretch}{2}%
   \centering
-  \psfrag{a0:}{$s_0$:}
-  \psfrag{a1:}{$s_1$:}
-  \psfrag{b0:}{$t_0$:}
-  \psfrag{b1:}{$t_1$:}
-  \epsfig{file=figures/distarray.eps,width=.9\textwidth}
+  \begin{tabular}{r|l}
+    \mc2c{global array} \\
+    \mc2c{\leader{a:}%
+            \foreach\i in {0,...,11} {\interior{\i}}} \\
+    \mc2c{local views} \\
+    \leader{$s_0$:}%
+      \foreach\i in {0,...,5}  {\interior{\i}}%
+      \foreach\i in {6}        {\overlap {\i}} &
+    \leader{$s_1$:}%
+      \foreach\i in {5}        {\overlap {\i}}%
+      \foreach\i in {6,...,11} {\interior{\i}} \\
+    \leader{$t_0$:}%
+      \foreach\i in {0,1,2}    {\interior{\i}}%
+      \foreach\i in {3,5}      {\overlap {\i}}%
+      \foreach\i in {6,7,8}    {\interior{\i}}%
+      \foreach\i in {9}        {\overlap {\i}} &
+    \leader{$t_1$:}%
+      \foreach\i in {2}        {\overlap {\i}}%
+      \foreach\i in {3,4,5}    {\interior{\i}}%
+      \foreach\i in {6,8}      {\overlap {\i}}%
+      \foreach\i in {9,10,11}  {\interior{\i}} \\
+    \mc1c{P0} & \mc1{|c}{P1} \\
+  \end{tabular}
   \caption{Redistributed array}
   \label{fig:redistarray}
 \end{figure*}

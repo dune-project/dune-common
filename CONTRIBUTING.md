@@ -8,12 +8,13 @@ explains how to get those changes to us and what to take care of.
 Take a look at the DUNE coding style
 ------------------------------------
 
-Your work will enjoy much smoother sailing if you take a look at the Coding
-Style and try to stick to it with your changes. We understand that everyone
-has their personal preferences and that there is no such thing as the *right*
-coding style (in the end, it's a matter of taste), but DUNE is a pretty large
-project, and a consistent way of doing things really helps a lot when trying
-to find your way around a body of code as big as DUNE.
+Your work will enjoy much smoother sailing if you take a look at the [Coding
+Style](https://dune-project.org/dev/codingstyle/) and try to stick to it with
+your changes. We understand that everyone has their personal preferences and
+that there is no such thing as the *right* coding style (in the end, it's a
+matter of taste), but DUNE is a pretty large project, and a consistent way of
+doing things really helps a lot when trying to find your way around a body of
+code as big as DUNE.
 
 Make sure to install the Whitespace Hook before starting to work, because
 our repositories enforce certain rules about whitespace and will not accept
