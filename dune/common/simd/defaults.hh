@@ -5,8 +5,8 @@
  *  @brief Default implementations for SIMD Implementations
  *  @ingroup SIMDAbstract
  *
- * This file provides default overloads for SIMD implementations, and deleted
- * placeholders where there are not default implementations.
+ * This file provides default overloads for SIMD implementation functions, and
+ * deleted placeholders where there are no default implementations.
  *
  * This file should never be included by users of the SIMD
  * abstraction. Include <dune/common/simd/simd.hh> instead.

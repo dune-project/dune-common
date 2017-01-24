@@ -52,7 +52,7 @@
  *  @ingroup SIMD
  *  @brief How to support vectorization in Dune classes
  *
- * This group describes how a Dune library developer can add support for
+ * This module describes how a Dune library developer can add support for
  * vectorization to library facilities.
  */
 
@@ -60,8 +60,29 @@
  *  @ingroup SIMD
  *  @brief How to add support for a new vectorization library
  *
- * This group describes the interface that you must implement if you want to
+ * This module describes the interface that you must implement if you want to
  * provide an abstraction layer for some vectorization library.
+ *
+ * Everything an abstraction implementation needs to provide is in namespace
+ * `Dune::Simd::Overloads`.
+ *
+ * An implementation must specialize all the template classes in namespace
+ * `Overloads` (with the exception of `Overloads::ADLTag`, see below).  To
+ * make it possible for certain specializations not to participate in overload
+ * resolution, each template class provides a dummy template parameter \c
+ * SFINAETag that defaults to \c void.
+ *
+ * An implementation must overload all functions within namespace `Overloads`
+ * that are defined deleted.  It may overload other functions if the default
+ * behaviour is not suitable.  All functions take a value of type
+ * `Overloads::ADLTag<priority, true>` as their first argument to enable
+ * argument-dependent lookup, to be able to prioritize different overloads
+ * with respect to each other, and to be able to inhibit certain overloads
+ * from taking part in overload resolution.  See the documentation for
+ * `Overloads::ADLTag` for a detailed explanation.
+ *
+ * An abstraction implementation may not specialize `Overloads::ADLTag`, and
+ * may not introduce new names into namespace `Overloads`.
  */
 
 namespace Dune {
@@ -74,17 +95,15 @@ namespace Dune {
      *
      * This namespace contains three sets of things: the struct ADLTag, which
      * is used to look up functions in this namespace using argument-dependet
-     * lookup, traits classes that must be specialized by implementations, and
-     * functions that must be overloaded by implementations.
+     * lookup, traits classes that must be specialized by abstraction
+     * implementations, and functions that must/can be overloaded by
+     * abstraction implementations.
      *
-     * An implementation must specialize all the template classes in this
-     * namespace.  To make it possible for certain specializations not to
-     * participate in overload resolution, each template class provides a
-     * dummy template parameter \c SFINAETag that defaults to \c void.
-     *
-     * An implementation must overload all functions within this namespace
-     * that are defined deleted.  It may overload other functions.  It must
-     * not introduce new functions.
+     * \note Only introduce new names into this namespace to extend the
+     *       interface.  This applies in particular to people in the
+     *       "abstraction developer" role; they may meddle in this namespace
+     *       only by providing overloads and/or specializations for existing
+     *       names (and for `ADLTag` even that is prohibited).
      */
     namespace Overloads {
 
@@ -122,7 +141,7 @@ namespace Dune {
        *       and then pulls them into the namespace Overloads by way of \c
        *       using.
        *
-       * \c ADLTag<i> derived from ADLTag<i-1>.  Thus it is possible to
+       * `ADLTag<i>` derives from `ADLTag<i-1>`.  Thus it is possible to
        * prioritize overloads by choosing an appropriate \c i.  The following
        * values for \c i are predefined:
        * - \c i==0: this is used by the defaults.
@@ -163,28 +182,28 @@ namespace Dune {
 
       //! should have a member type \c type
       /**
-       * Implements Simd::Scalar
+       * Implements `Simd::Scalar`
        */
       template<class V, class SFINAETag = void>
       struct ScalarType;
 
       //! should have a member type \c type
       /**
-       * Implements Simd::Index
+       * Implements `Simd::Index`
        */
       template<class V, class SFINAETag = void>
       struct IndexType;
 
       //! should have a member type \c type
       /**
-       * Implements Simd::Mask
+       * Implements `Simd::Mask`
        */
       template<class V, class SFINAETag = void>
       struct MaskType;
 
-      //! should be derived from an Dune::index_constant
+      //! should be derived from a `Dune::index_constant`
       /**
-       * Implements Simd::lanes()
+       * Implements `Simd::lanes()`
        */
       template<class V, class SFINAETag = void>
       struct LaneCount;
