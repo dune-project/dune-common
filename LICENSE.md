@@ -1,55 +1,61 @@
 Copyright holders:
 ==================
 
-2015          Marco Agnese
+2015--2016    Marco Agnese
 2015          Martin Alkämper
 2003--2010    Peter Bastian
-2004--2015    Markus Blatt
+2004--2016    Markus Blatt
 2013          Andreas Buhr
-2011--2015    Ansgar Burchardt
+2011--2016    Ansgar Burchardt
 2004--2005    Adrian Burri
 2014          Benjamin Bykowski (may appear in the logs as "Convex Function")
 2014          Marco Cecchetti
-2006--2014    Andreas Dedner
+2006--2016    Andreas Dedner
 2003          Marc Droske
-2003--2015    Christian Engwer
-2004--2015    Jorrit Fahlke
+2003--2016    Christian Engwer
+2004--2016    Jorrit Fahlke
+2016          Thomas Fetzer
 2008--2013    Bernd Flemisch
 2013--2014    Christoph Gersbacher
 2015          Stefan Girke
-2005--2015    Carsten Gräser
-2015          Felix Gruber
-2010--2015    Christoph Grüninger
+2005--2016    Carsten Gräser
+2015--2016    Felix Gruber
+2010--2016    Christoph Grüninger
 2006          Bernhard Haasdonk
 2015          Claus-Justus Heine
+2015--2016    René Heß
 2012--2013    Olaf Ippisch
-2013--2015    Dominic Kempf
+2013--2016    Dominic Kempf
 2009          Leonard Kern
 2013          Torbjörn Klatt
 2003--2015    Robert Klöfkorn
 2005--2007    Sreejith Pulloor Kuttanikkad
-2012--2014    Arne Morten Kvarving
+2012--2016    Arne Morten Kvarving
 2010--2014    Andreas Lauser
+2016          Tobias Leibner
+2015          Lars Lubkoll
+2012--2016    Tobias Malkmus
 2007--2011    Sven Marnach
-2012--2015    Tobias Malkmus
-2010          Rene Milk
-2011--2015    Steffen Müthing
+2010--2016    Rene Milk
+2011--2016    Steffen Müthing
 2003--2006    Thimo Neubauer
 2011          Rebecca Neumann
-2008--2015    Martin Nolte
+2008--2016    Martin Nolte
 2014          Andreas Nüßing
 2004--2005    Mario Ohlberger
 2014          Steffen Persvold
-2008--2014    Elias Pipping
+2008--2016    Elias Pipping
 2011          Dan Popovic
 2009          Atgeirr Rasmussen
-2003--2015    Oliver Sander
 2006--2014    Uli Sack
+2003--2016    Oliver Sander
 2006          Klaus Schneider
 2004          Roland Schulz
+2015          Nicolas Schwenck
+2016          Linus Seelinger
 2009--2014    Bård Skaflestad
 2012          Matthias Wohlmuth
-2011          Jonathan Youett
+2011--2016    Jonathan Youett
 
 
 The DUNE library and headers are licensed under version 2 of the GNU
