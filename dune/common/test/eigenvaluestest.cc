@@ -83,6 +83,7 @@ void testRosserMatrix()
 
   std::cout << "Eigenvalues of Rosser matrix: " << eigenComplex << std::endl;
 }
+#endif // HAVE_LAPACK
 
 template <class field_type>
 void testSymmetricFieldMatrix()
@@ -117,20 +118,18 @@ void testSymmetricFieldMatrix()
         DUNE_THROW(MathError, "Values computed by FMatrixHelp::eigenValues are not in ascending order");
   }
 }
-#endif // HAVE_LAPACK
 
 int main() try
 {
 #if HAVE_LAPACK
   testRosserMatrix<double>();
+#else
+  std::cout << "WARNING: eigenvaluetest needs LAPACK, test disabled" << std::endl;
+#endif // HAVE_LAPACK
 
   testSymmetricFieldMatrix<double>();
 
   return 0;
-#else
-  std::cout << "WARNING: eigenvaluetest needs LAPACK, test disabled" << std::endl;
-  return 77;
-#endif // HAVE_LAPACK
 } catch (Exception exception)
 {
   std::cerr << exception << std::endl;
