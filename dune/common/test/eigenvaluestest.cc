@@ -96,7 +96,7 @@ void testSymmetricFieldMatrix()
     FieldMatrix<field_type,dim,dim> testMatrix;
     for (int j=0; j<dim; j++)
       for (int k=j; k<dim; k++)
-        testMatrix[j][k] = testMatrix[k][j] = ((int)(M_PI*j*k*i))%100;
+        testMatrix[j][k] = testMatrix[k][j] = ((int)(M_PI*j*k*i))%100 - 1;
 
     FieldVector<field_type,dim> eigenValues;
     FMatrixHelp::eigenValues(testMatrix, eigenValues);
