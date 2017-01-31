@@ -61,13 +61,11 @@ namespace Dune {
       const K p = 0.5 * (matrix[0][0] + matrix [1][1]);
       K q = p * p - detM;
       if( q < 0 && q > -1e-14 ) q = 0;
-      if (p < 0 || q < 0)
+      if (q < 0)
       {
-        std::cout << p << " p | q " << q << "\n";
         std::cout << matrix << std::endl;
-        std::cout << "something went wrong in Eigenvalues for matrix!" << std::endl;
-        assert(false);
-        abort();
+        // Complex eigenvalues are either caused by non-symmetric matrices or by round-off errors
+        DUNE_THROW(MathError, "Complex eigenvalue detected (which this implementation cannot handle).");
       }
 
       // get square root
