@@ -243,9 +243,15 @@ $a$ is the attribute (either o for \lstinline!owner! or {g}
 for \lstinline!ghost!).
 \begin{figure}%[b]
   \centering
-  \psfrag{Is}{$I_s$}
-  \psfrag{It}{$I_t$}
-  \epsfig{file=figures/distindex.eps,width=.5\textwidth}
+  \begin{tikzpicture}
+    \draw (0,3.3) ellipse (2.2cm and 1.5cm) node [align=center,yshift=0.2cm] {$I_s$\\(0,0,o) (1,1,o)\\(2,2,o) (3,3,o) (4,4,o)\\(5,5,o) (6,6,g)};
+    \draw (0,0) ellipse (2.2cm and 1.5cm) node [align=center,yshift=0.2cm] {$I_t$\\(0,0,o) (1,1,o) (2,2,o)\\(3,3,g) (5,4,g) (6,5,o)\\(7,6,o) (8,7,o) (9,8,g)};
+    \draw (2.5,-2.7) -- ++(0,7.5);
+    \draw (5,3.3) ellipse (2.2cm and 1.5cm) node [align=center,yshift=0.2cm] {$I_s$\\(5,0,g) (6,1,o)\\(7,2,o) (8,3,o) (9,4,o)\\(10,5,o) (11,6,o)};
+    \draw (5,0) ellipse (2.2cm and 1.5cm) node [align=center,yshift=0.2cm] {$I_t$\\(2,0,g) (3,1,o) (4,2,o)\\(5,3,o) (6,4,g) (8,5,g)\\(9,6,o) (10,7,o) (11,8,o)};
+    \node at (0,-2.2) {Processor 0};
+    \node at (5,-2.2) {Processor 1};
+  \end{tikzpicture}
   \caption{Index sets for array redistribution}
   \label{fig:redistindex}
 \end{figure}
@@ -292,7 +298,7 @@ for \lstinline!ghost!).
       \foreach\i in {3,4,5}    {\interior{\i}}%
       \foreach\i in {6,8}      {\overlap {\i}}%
       \foreach\i in {9,10,11}  {\interior{\i}} \\
-    \mc1c{P0} & \mc1{|c}{P1} \\
+    \mc1c{Processor 0} & \mc1{|c}{Processor 1} \\
   \end{tabular}
   \caption{Redistributed array}
   \label{fig:redistarray}
