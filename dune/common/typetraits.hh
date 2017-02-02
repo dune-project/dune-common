@@ -137,6 +137,21 @@ namespace Dune
     static const bool value = true;
   };
 
+  //! Whether this type acts as a scalar when assigned to a DenseMatrix
+  /**
+     All types `T` for which `IsNumber<T>::value` is `true` will act as a
+     scalar when assigned to a `DenseMatrix` with compatible element type,
+     meaning that the scalar will be assigned to each element of the matrix.
+     (**Note**: Really, to each element, and not only the diagonal elements!)
+
+     By default is `true` for all arithmetic types (as per
+     `std::is_arithmetic`), and for `T=std::complex<U>`, iff
+     `IsNumber<U>::value` itself is `true`.
+
+     Should be specialized to `true` for e.g. extended precision types or
+     automatic differentiation types, or anything else that might be an
+     element of a `DenseMatrix`.
+   */
   template <typename T>
   struct IsNumber
     : public std::integral_constant<bool, std::is_arithmetic<T>::value> {
