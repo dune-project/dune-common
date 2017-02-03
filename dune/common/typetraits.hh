@@ -137,20 +137,22 @@ namespace Dune
     static const bool value = true;
   };
 
-  //! Whether this type acts as a scalar when assigned to a DenseMatrix
+  //! \brief Whether this type acts as a scalar in the context of
+  //!        (hierarchically blocked) containers
   /**
      All types `T` for which `IsNumber<T>::value` is `true` will act as a
-     scalar when assigned to a `DenseMatrix` with compatible element type,
-     meaning that the scalar will be assigned to each element of the matrix.
-     (**Note**: Really, to each element, and not only the diagonal elements!)
+     scalar when used with possibly hierarchically blocked containers, such as
+     `FieldMatrix`, `FieldVector`, `BCRSMatrix`, `BlockVector`,
+     `MultiTypeBlockVector`, etc.  This enables earlier error reporting when
+     implementing binary container-scalar operators, such as `=` or `*=`.
 
      By default is `true` for all arithmetic types (as per
      `std::is_arithmetic`), and for `T=std::complex<U>`, iff
      `IsNumber<U>::value` itself is `true`.
 
      Should be specialized to `true` for e.g. extended precision types or
-     automatic differentiation types, or anything else that might be an
-     element of a `DenseMatrix`.
+     automatic differentiation types, or anything else that might sensibly be
+     an element of a matrix or vector.
    */
   template <typename T>
   struct IsNumber
