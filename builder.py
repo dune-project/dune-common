@@ -4,18 +4,13 @@ import importlib
 import logging
 import shlex
 import subprocess
-import sys
 import os
 
 from dune.common import comm
+from dune.common.compatibility import buffer_to_str, reload_module
 import dune.common.module
 
-
 logger = logging.getLogger(__name__)
-
-def buffer_to_str(b):
-    return b if sys.version_info.major == 2 else b.decode('utf-8')
-
 
 class Builder:
     class CompileError(Exception):
@@ -81,8 +76,5 @@ class Builder:
 
         module = importlib.import_module("dune.generated." + moduleName)
         if self.force:
-            if sys.version_info.major == 2:
-                reload(module)
-            else:
-                module = importlib.reload(module)
+            module = reload_module(module)
         return module
