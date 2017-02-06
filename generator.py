@@ -1,7 +1,7 @@
 """ Generator module:
 
-    The module provides the main class for on the fly generation of boost
-    python wrappers for implementations of a gives interface. The necessary
+    The module provides the main class for on the fly generation of pybind11
+    Python wrappers for implementations of a gives interface. The necessary
     details for each implementation (the C++ typedef and the includes) are
     provided by python dictonaries stored in files.
 """
