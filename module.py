@@ -4,22 +4,18 @@ import email.utils
 import logging
 import os
 import re
-import sys
 import shlex
 import string
 import subprocess
-import sys
 
 if __name__ == "dune.common.module":
+    from dune.common.compatibility import buffer_to_str
     from dune.common import project
 else:
+    from compatibility import buffer_to_str
     import project
 
 logger = logging.getLogger(__name__)
-
-def buffer_to_str(b):
-    return b if sys.version_info.major == 2 else b.decode('utf-8')
-
 
 class Version:
     def __init__(self, s):

@@ -1,5 +1,6 @@
 add_python_targets(common
   __init__
+  compatibility
   module
   checkconfiguration
   project
