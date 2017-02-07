@@ -59,7 +59,8 @@ namespace Dune {
      * the SIMD types), nor provide it's own constructors, there are severe
      * limitations in what the abstraction layer guarantees.  Besides the
      * standard types, the first SIMD library supported is Vc, so that is
-     * where most of the limitations stem from.
+     * where most of the limitations stem from; see \ref SIMDVcRestrictions in
+     * \ref SIMDVc.
      *
      * The biggest limitations are with masks.  In Vc masks support a very
      * restricted set of operations compared to other SIMD types, so in what

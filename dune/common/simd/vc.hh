@@ -2,98 +2,8 @@
 #define DUNE_COMMON_SIMD_VC_HH
 
 /** @file
+ *  @ingroup SIMDVc
  *  @brief SIMD abstractions for Vc
- *
- *
- * Here is a list of things that certain types do not support:
- *
- * - Vc::Vector<double> (Vc_1::Vector<double, Vc_1::VectorAbi::Avx>)
- *
- *   - Broadcast-assignment from a braced scalar (v = {s};)
- *
- *   - Broadcast-construction from a braced scalar (`V v{s};` or `V v = {s};`)
- *
- *   - "operator,": `(v1, v2)` constructs some kind of tuple, but the tests
- *     assume that they can access the result of "operator," through lane().
- *     That use of operator, is deprecated, but disable the check anyway so we
- *     can continue.  `(s1, v2)` and `(v1, s2)` seem to work, though.
- *
- * - Vc::Vector<int> (Vc_1::Vector<int, Vc_1::VectorAbi::Sse>)
- *
- *   - Broadcast-assignment from a braced scalar (`v = {s};`)
- *
- *   - << and >> if the left side is a scalar
- *
- *   - "operator,": `(v1, v2)` constructs some kind of tuple, but the tests
- *     assume that they can access the result of "operator," through lane().
- *     That use of operator, is deprecated, but disable the check anyway so we
- *     can continue.  `(s1, v2)` and `(v1, s2)` seem to work, though.
- *
- * - Vc::SimdArray<double, 4>
- *
- *   - Broadcast-assignment from a braced scalar (`v = {s};`)
- *
- *   - Broadcast-construction from a braced scalar (`V v{s};` or `V v = {s};`)
- *
- *   - Postfix/prefix -- and ++.
- *
- *   - operator&& and operator||
- *
- * - Vc::SimdArray<int, 4>
- *
- *   - Broadcast-assignment from a braced scalar (`v = {s};`)
- *
- *   - Broadcast-construction from a braced scalar (`V v{s};` or `V v = {s};`)
- *
- *   - Postfix/prefix -- and ++.
- *
- *   - << and >> if the left side is a scalar
- *
- *   - operator&& and operator||
- *
- * - Vc::Vector<int>::Mask
- *
- *   - Broadcast-assignment (`m = b;` or `m = {b};`)
- *
- *   - Implicit broadcast construction (`M m = b;` or `M m = {b};`)
- *
- *   - prefix +, -, ~
- *
- *   - infix *, /, %, +, -, <<, >>, <, >, <=, >= (all combinations)
- *
- *   - infix ==, != (scalar-vector and vector-scalar don't exist, and the
- *     result vector-vector is a scalar)
- *
- *   - infix &, ^, |, &&, || (scalar-vector and vector-scalar don't exist)
- *
- *   - infix =, &=, ^=, |= (vector-scalar missing, scalar-vector would be
- *     meaningless anyway)
- *
- *   - infix *=, /=, %=, +=, -=, <<=, >>= (vector-vector and vector-scalar,
- *     scalar-vector would not make sense)
- *
- * - Vc::SimdArray<int, 4>::Mask
- *   (Vc_1::SimdMaskArray<int, 4ul, Vc_1::Vector<int, Vc_1::VectorAbi::Sse>, 4ul>)
- *
- *   - Broadcast-assignment (`m = b;` or `m = {b};`)
- *
- *   - Implicit broadcast construction (`M m = b;` or `M m = {b};`)
- *
- *   - prefix +, -, ~
- *
- *   - infix *, /, %, +, -, <<, >>, <, >, <=, >= (all combinations)
- *
- *   - infix ==, != (scalar-vector and vector-scalar don't exist, and the
- *     result vector-vector is a scalar)
- *
- *   - infix &, ^, |, &&, || (scalar-vector and vector-scalar don't exist)
- *
- *   - infix =, &=, ^=, |= (vector-scalar missing, scalar-vector would be
- *     meaningless anyway)
- *
- *   - infix *=, /=, %=, +=, -=, <<=, >>= (vector-vector and vector-scalar,
- *     scalar-vector would not make sense)
- *
  */
 
 #include <cstddef>
@@ -106,11 +16,141 @@
 #include <dune/common/simd/base.hh>
 #include <dune/common/simd/defaults.hh> // for anyFalse()
 
+/** @defgroup SIMDVc SIMD Abstraction Implementation for Vc
+ *  @ingroup SIMDApp
+ *
+ * This implements the vectorization interface for Vc types, namely
+ * `Vc::Vector`, `Vc::Mask`, `Vc::SimdArray` and `Vc::SimdMask`.
+ *
+ * As an application developer, you need to `#include
+ * <dune/common/simd/vc.hh>`.  You need to make sure that `HAVE_VC` is true
+ * before doing so:
+ *
+ * - If your program works both in the presence and the absence of Vc, wrap
+ *   the include in `#if HAVE_VC` and `#endif`
+ *
+ * - If you write a unit test, in your `CMakeLists.txt` use
+ *   `dune_add_test(... CMAKE_GUARD Vc_FOUND)`
+ *
+ * You also need to make sure that the compiler uses the correct flags and
+ * that the linker can find the library.  (The compilation flags include one
+ * that ensures a name mangling scheme that can distiguish the
+ * compiler-intrinsic vector types from non-vector types is used.)
+ *
+ * - Either use `add_dune_vc_flags(your_application)` in `CMakeLists.txt`,
+ *
+ * - or use `dune_enable_all_packages()` in your module's toplevel
+ *   `CMakeLists.txt`.
+ *
+ * There should be no need to explicitly call `find_package(Vc)` in your
+ * `CMakeLists.txt`, dune-common already does that.  If your module can't live
+ * without Vc, you may however want to do something like this in your
+ * `cmake/modules/YourModuleMacros.cmake`:
+ * \code
+ * if(NOT Vc_FOUND)
+ *   message(SEND_ERROR "This module requires Vc")
+ * endif(NOT Vc_FOUND)
+ * \endcode
+ *
+ * If you just want to compile dune, and have Vc installed to a location where
+ * cmake is not looking by default, you need to add that location to
+ * `CMAKE_PREFIX_PATH`.  E.g. pass `-DCMAKE_PREFIX_PATH=$VCDIR` to cmake, for
+ * instance by including that in the variable `CMAKE_FLAGS` in the options
+ * file that you pass to dunecontrol.  `$VCDIR` should be the same directory
+ * that you passed in `-DCMAKE_INSTALL_PREFIX=...` to cmake when you compiled
+ * Vc, i.e. Vc's main include file should be found under
+ * `$VCDIR/include/Vc/Vc`, and the library under `$VCDIR/lib/libVc.a` or
+ * similar.
+ *
+ * @section SIMDVcRestrictions Restrictions
+ *
+ * During thorough testing of the Vc abstraction implementation it turned out
+ * that certain operations were not supported, or were buggy.  This meant that
+ * the tests had to be relaxed, and/or some restrictions had to made as to how
+ * things must be done through the SIMD abstraction, see @ref
+ * simd_abstraction_limit.
+ *
+ * For future reference, here is a detailed list of things that certain Vc
+ * types do or don't support.  `s` denotes a scalar object/expression (i.e. of
+ * type `double` or in the case of masks `bool`).  `v` denotes a vector/mask
+ * object/expression.  `sv` means that both scalar and vector arguments are
+ * accepted.  `V` denotes a vector/mask type.  `@` means any applicable
+ * operator that is not otherwise listed.
+ *
+ * <!-- The following table is in orgtbl format -- If you are using emacs, you
+ *      may want to enable the `orgtbl` minor mode. -->
+ * \code
+   |                         | Vector       | Vector    | SimdArray  | SimdArray | Masks[4]  |
+   |                         | <double> AVX | <int> SSE | <double,4> | <int,4>   |           |
+   |-------------------------+--------------+-----------+------------+-----------+-----------|
+   | V v(s);                 | y            | y         | y          | y         | y         |
+   | V v = s;                | y            | y         | y          | y         | *N*       |
+   | V v{s};                 | *N*          | y         | *N*        | *N*       | y         |
+   | V v = {s};              | *N*          | y         | *N*        | *N*       | *N*       |
+   |-------------------------+--------------+-----------+------------+-----------+-----------|
+   | v = s;                  | y            | y         | y          | y         | *N*       |
+   | v = {s};                | *N*          | *N*       | *N*        | *N*       | *N*       |
+   |-------------------------+--------------+-----------+------------+-----------+-----------|
+   | v++; ++v;               | y            | y         | *N*        | *N*       | y(n/a)[2] |
+   | v--; --v;               | y            | y         | *N*        | *N*       | n/a       |
+   |-------------------------+--------------+-----------+------------+-----------+-----------|
+   | +v; -v;                 | y            | y         | y          | y         | *N*       |
+   | !v;                     | y            | y         | y          | y         | y         |
+   | ~v;                     | n/a          | y         | n/a        | y         | *N*       |
+   |-------------------------+--------------+-----------+------------+-----------+-----------|
+   | sv @ sv; but see below  | y            | y         | y          | y         | *N*       |
+   |-------------------------+--------------+-----------+------------+-----------+-----------|
+   | s << v; s >> v;         | n/a          | *N*       | n/a        | *N*       | *N*       |
+   |-------------------------+--------------+-----------+------------+-----------+-----------|
+   | v == v; v != v;         | y            | y         | y          | y         | *N* [1]   |
+   |-------------------------+--------------+-----------+------------+-----------+-----------|
+   | v & v; v ^ v; v ¦ v;    | n/a          | y         | n/a        | y         | y         |
+   | sv && sv; sv ¦¦ sv;     | y            | y         | *N*        | *N*       | *N*       |
+   | v && v; v ¦¦ v;         | y            | y         | *N*        | *N*       | y         |
+   |-------------------------+--------------+-----------+------------+-----------+-----------|
+   | v @= sv; but see below  | y            | y         | y          | y         | *N*       |
+   | v &= v; v ^= v; v ¦= v; | n/a          | y         | n/a        | y         | y         |
+   |-------------------------+--------------+-----------+------------+-----------+-----------|
+   | v, v;[3]                | *N*          | *N*       | y          | y         | y         |
+ * \endcode
+ *
+ * Notes:
+ *
+ * - [1] The result of the mask-mask `==` and `!=` operation is a scalar.
+ *
+ * - [2] `++` (either kind) on bools is deprecated by the standard
+ *
+ * - [3] contrary to the other operators, the expected result for `(sv1, sv2)`
+ *   is exactly `sv2`, no broadcasting applied.
+ *
+ * - [4] Checked with `Vector<int>::Mask` [SSE] and `SimdArray<int, 4>::Mask`,
+ *   which behaved identical
+ *
+ * Support levels:
+ *
+ * - `y`: operation generally works; some instances of the operation may not
+ *   apply
+ *
+ * - `*N*`: operation generally does not work; some instances of the operation
+ *   may not apply
+ *
+ * - `n/a`: operation does not apply (i.e. bitwise operations to
+ *   floating-point operands, `--` (and in the future possibly `++`) to
+ *   boolean operands, assignment operators to scalar left hand sides)
+ *
+ * Each operation was tested with the full set of combinations of possible
+ * `const`/non-`const` lvalue/xvalue arguments.  Each combination of constness
+ * and value category was applied to the scalar type and the operation tried
+ * in an SFINAE context; combinations that failed here were skipped for vector
+ * arguments too.
+ */
+
 namespace Dune {
   namespace Simd {
 
     namespace VcImpl {
 
+      //! specialized to true for Vc mask types
       template<class V, class SFINAE = void>
       struct IsMask : std::false_type {};
 
@@ -125,6 +165,7 @@ namespace Dune {
       template<typename T, std::size_t n, typename V, std::size_t m>
       struct IsMask<Vc::SimdMaskArray<T, n, V, m> > : std::true_type {};
 
+      //! specialized to true for Vc vector and mask types
       template<class V, class SFINAE = void>
       struct IsVector : IsMask<V> {};
 
@@ -140,6 +181,15 @@ namespace Dune {
       struct IsVector<Vc::SimdArray<T, n, V, m> > : std::true_type {};
 
       //! A reference-like proxy for elements of random-access vectors.
+      /**
+       * This is necessary because Vc's lane-access operation return a proxy
+       * that cannot constructed by non-Vc code (i.e. code that isn't
+       * explicitly declared `friend`).  This means in particular that there
+       * is no copy/move constructor, meaning we cannot return such proxies
+       * from our own functions, such as `lane()`.  To work around this, we
+       * define our own proxy class which internally holds a reference to the
+       * vector and a lane index.
+       */
       template<class V>
       class Proxy
       {
@@ -244,6 +294,11 @@ namespace Dune {
     } // namespace VcImpl
 
     namespace Overloads {
+
+      /** @name Specialized classes and overloaded functions
+       *  @ingroup SIMDVc
+       *  @{
+       */
 
       //! should have a member type \c type
       /**
@@ -389,6 +444,8 @@ namespace Dune {
       {
         return Vc::none_of(mask);
       }
+
+      //! @} group SIMDVc
 
     } // namespace Overloads
   } // namespace Simd
