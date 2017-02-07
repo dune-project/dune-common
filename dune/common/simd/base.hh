@@ -39,13 +39,15 @@
  *
  * Unsolved questions/TODOs:
  *
- * - Should `Dune::Simd::IsStandard` be replaced by `Dune::IsNumber`?  The
- *   documentation for the latter is a bit sparse, so it is difficult to
- *   determine whether it fits the need exactly.  In particular we need to
- *   make sure that it is never true for types that can't be supported by the
- *   standard abstraction implementation.
+ * - Should we keep `Dune::Simd::IsStandard`?  PRO: enables earlier error
+ *   reporting, making errors easier to find.  CON: error reporting may be
+ *   overeager, to get around each type that should be supported must be
+ *   "registered", but not all such types can be known in advance (e.g. some
+ *   extended precision type from some external library).  NOTE: `IsNumber` is
+ *   not an alternative, since it's meaning is different (whether something is
+ *   a leaf in the matrix/vector block hierarchy).
  *
- * - Look for types supported by dune common that should be subject to the
+ * - Look for types supported by dune-common that should be subject to the
  *   standard abstraction implementation (e.g. `Dune::GMPField`).
  */
 
