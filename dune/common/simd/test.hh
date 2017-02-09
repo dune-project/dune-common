@@ -1025,12 +1025,14 @@ namespace Dune {
       void checkMaskOps()
       {
         // postfix
-        checkUnaryOpsV<V>(OpPostfixDecrement{});
-        checkUnaryOpsV<V>(OpPostfixIncrement{});
+        // checkUnaryOpsV<V>(OpPostfixDecrement{});
+        // clang deprecation warning if bool++ is tested
+        // checkUnaryOpsV<V>(OpPostfixIncrement{});
 
         // prefix
-        checkUnaryOpsV<V>(OpPrefixDecrement{});
-        checkUnaryOpsV<V>(OpPrefixIncrement{});
+        // checkUnaryOpsV<V>(OpPrefixDecrement{});
+        // clang deprecation warning if ++bool is tested
+        // checkUnaryOpsV<V>(OpPrefixIncrement{});
 
         // checkUnaryOpsV<V>(OpPrefixPlus{});
         // checkUnaryOpsV<V>(OpPrefixMinus{});
