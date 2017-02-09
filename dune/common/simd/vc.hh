@@ -78,7 +78,8 @@
  * operator that is not otherwise listed.
  *
  * <!-- The following table is in orgtbl format -- If you are using emacs, you
- *      may want to enable the `orgtbl` minor mode. -->
+ *      may want to enable the `orgtbl` minor mode.  We substitute `|` with
+ *      `¦` when describing or-operators so as to not confuse orgtbl. -->
  * \code
    |                         | Vector       | Vector    | SimdArray  | SimdArray | Masks[4]  |
    |                         | <double> AVX | <int> SSE | <double,4> | <int,4>   |           |

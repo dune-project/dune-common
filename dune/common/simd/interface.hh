@@ -67,53 +67,78 @@ namespace Dune {
      * follows we will distinguish between masks with a very small set of
      * operations and between vectors with a larger set of operations.
      *
-     * The limitations for vectors are (`V` is a vector type, `v` is an object
-     * of type `V`, and s is an expression of type `Scalar<V>`):
+     * Here is a compact table of the limitations as a quick reference,
+     * together with suggested workarounds for the constructs that don't work.
+     * `s` denotes a scalar object/expression (i.e. of type `double` or in the
+     * case of masks `bool`).  `v` denotes a vector/mask object/expression.
+     * `sv` means that both scalar and vector arguments are accepted.  `V`
+     * denotes a vector/mask type.  `@` means any applicable operator that is
+     * not otherwise listed.
      *
-     * - Use `V v(s)` for broadcast construction
+     * <!-- The following table is in orgtbl format -- If you are using emacs,
+     *      you may want to enable the `orgtbl` minor mode.  We substitute `|`
+     *      with `¦` when describing or-operators so as to not confuse
+     *      orgtbl. -->
+     * \code
+       |                         | Vectors | workaround                | Masks     | workaround       |
+       |-------------------------+---------+---------------------------+-----------+------------------|
+       | V v(s);                 | y       |                           | y         |                  |
+       | V v = s;                | y       | V v(s);                   | *N*       | V v(s);          |
+       | V v{s};                 | *N*     | V v(s);                   | y         | V v(s);          |
+       | V v = {s};              | *N*     | V v(s);                   | y         | V v(s);          |
+       |-------------------------+---------+---------------------------+-----------+------------------|
+       | v = s;                  | y       | v = V(s);                 | *N*       | v = V(s);        |
+       | v = {s};                | *N*     | v = V(s);                 | *N*       | v = V(s);        |
+       |-------------------------+---------+---------------------------+-----------+------------------|
+       | v++; ++v;               | *N*     | v += Scalar<V>(1);        | y(n/a)[2] | none             |
+       | v--; --v;               | *N*     | v -= Scalar<V>(1);        | n/a       | none             |
+       |-------------------------+---------+---------------------------+-----------+------------------|
+       | +v; -v;                 | y       |                           | *N*       | none             |
+       | !v;                     | y       |                           | y         |                  |
+       | ~v;                     | y       |                           | *N*       | none             |
+       |-------------------------+---------+---------------------------+-----------+------------------|
+       | sv @ sv; but see below  | y       |                           | *N*       | none             |
+       |-------------------------+---------+---------------------------+-----------+------------------|
+       | s << v; s >> v;         | *N*     | v << V(s);                | *N*       | none             |
+       |-------------------------+---------+---------------------------+-----------+------------------|
+       | v == v; v != v;         | y       |                           | *N* [1]   | !(v ^ v); v ^ v; |
+       |-------------------------+---------+---------------------------+-----------+------------------|
+       | v & v; v ^ v; v ¦ v;    | y       |                           | y         |                  |
+       | v && v; v ¦¦ v;         | *N*     | Mask<V>(v) && Mask<V>(v); | y         |                  |
+       |-------------------------+---------+---------------------------+-----------+------------------|
+       | v @= sv; but see below  | y       |                           | *N*       | none             |
+       | v &= v; v ^= v; v ¦= v; | y       |                           | y         |                  |
+       |-------------------------+---------+---------------------------+-----------+------------------|
+       | v, v;[3,4]              | *N*     | void(v), v;               | y         |                  |
+     * \endcode
      *
-     * - Don't use `++` or `--` (either kind), use `+= Scalar<V>(1)` / `-=
-     *   Scalar<V>(1)` instead
+     * Notes:
      *
-     * - If you use `<<` or `>>` with scalar arguments, broadcast them
-     *   explicitly.
+     * - [1] In Vc, mask-mask `==` and `!=` operations exist, but the result
+     *   is of type `bool`, i.e. a scalar.
      *
-     * - Don't rely on conversion to mask in `&&` and `||`, convert explicitly
-     *   instead.  `!!v` should work but may be expensive.  `(v !=
-     *   Scalar<V>(0))` should work too, but may be too ugly.  `Mask<V>(v)`
-     *   may work, but is untested.
+     * - [2] `++` (either kind) on bools is deprecated by the standard.
      *
-     *   \todo I should probably introduce an interface function mask() for
-     *         this job.
+     * - [3] Contrary to the other operators, the expected result for `(sv1,
+     *   sv2)` is exactly `sv2`, no broadcasting applied.
      *
-     * - If you must use `operator,`, explicitly convert the left argument to
-     *   `void`.  That may hide compiler warnings, but, well, you have already
-     *   decided that you must use `operator,` despite those warnings.
+     * - [4] Try to avoid the use of `operator,` unless both operands are
+     *   built-in types if possible.  Libraries had a tendency to overload
+     *   `operator,` to provide for things like container initialization
+     *   before C++11, and these overloads may still be present in the library
+     *   you are using and replace the default meaning of `operator,`.
      *
-     * The limitations for masks are (`M` is a mask type, `m` is an object of
-     * type `M`, and `b` is an expression of type `bool`):
+     * Support levels:
      *
-     * - Use `M m(b)` for broadcast construction
+     * - `y`: operation generally works; some instances of the operation may
+     *   not apply
      *
-     * - Explicitly broadcast all arguments that may be scalar, e.g. `m @
-     *   M(b)`.
+     * - `*N*`: operation generally does not work; some instances of the
+     *   operation may not apply
      *
-     * - This applies for broadcast assignement too!  Use `m = M(b)`
-     *
-     * - The only operators that you can use are the binary operators `&`,
-     *   `^`, `|` and their assignment versions `&=`, `^=`, `|=`, the logical
-     *   operators `&&`, `||`, and `!`, and the assignment `=`.  If you must,
-     *   you can use the comma operator `,`.
-     *
-     * - In particular you cannot use comparison operators `==` and `!=`.  If
-     *   you can't live without them, instead of `!=` use `^`, and instead of
-     *   `==` use `!(m1 ^ m2)`.
-     *
-     *   \todo I should probably introduce interface functions `eq()` and
-     *         `ne()` to make this less arcane.
-     *
-     * The documentation for the Vc abstraction layer has more details on what
-     * is supported there, but we only try to make sure the the above works.
+     * - `n/a`: operation does not apply (i.e. bitwise operations to
+     *   floating-point operands, `--` (and in the future possibly `++`) to
+     *   boolean operands, assignment operators to scalar left hand sides)
      */
 
     /** @name Basic interface
