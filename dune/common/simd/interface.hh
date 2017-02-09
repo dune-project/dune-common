@@ -337,7 +337,7 @@ namespace Dune {
      * `lanes<V>()`.
      */
     template<class V>
-    std::size_t lanes(V)
+    std::size_t lanes(const V &)
     {
       return lanes<V>();
     }
