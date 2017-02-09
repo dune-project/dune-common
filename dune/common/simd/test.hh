@@ -25,13 +25,12 @@ namespace Dune {
 
     namespace Impl {
 
-      template<class Expr, bool = false>
-      struct CanCall;
-      template<class Op, class... Args, bool dummy>
-      struct CanCall<Op(Args...), dummy> : std::false_type {};
+      template<class Expr, class SFINAE = void>
+      struct CanCall; // not defined unless Expr has the form Op(Args...)
+      template<class Op, class... Args, class SFINAE>
+      struct CanCall<Op(Args...), SFINAE> : std::false_type {};
       template<class Op, class... Args>
-      struct CanCall<Op(Args...),
-                     AlwaysFalse<std::result_of_t<Op(Args...)> >::value>
+      struct CanCall<Op(Args...), void_t<std::result_of_t<Op(Args...)> > >
         : std::true_type
       {};
 
