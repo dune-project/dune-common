@@ -24,6 +24,7 @@
 #
 
 option(ALLOW_CXXFLAGS_OVERWRITE OFF)
+set(COMPILER_SCRIPT "${CMAKE_BINARY_DIR}/cxx_compiler.sh" )
 
 macro(find_extended_unix_commands)
   include(FindUnixCommands)
@@ -65,13 +66,13 @@ macro(initialize_compiler_script)
     # check for unix commands necessary
     find_extended_unix_commands()
     # set CXXFLAGS as environment variable
-    set( DEFAULT_CXXFLAGS ${CMAKE_CXX_FLAGS})
+    set( DEFAULT_CXXFLAGS ${CMAKE_CXX_FLAGS} CACHE STRING "default CXX flags")
     set( CMAKE_CXX_FLAGS "" )
     set( DEFAULT_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
     set( COMPILER_SCRIPT_FILE "#!${BASH}\nexec ${CMAKE_CXX_COMPILER} \"\$@\"")
-    file(WRITE ${CMAKE_BINARY_DIR}/compiler.sh "${COMPILER_SCRIPT_FILE}")
-    execute_process(COMMAND ${CHMOD_PROGRAM} 755 ${CMAKE_BINARY_DIR}/compiler.sh)
-    set(CMAKE_CXX_COMPILER ${CMAKE_BINARY_DIR}/compiler.sh)
+    file(WRITE ${COMPILER_SCRIPT} "${COMPILER_SCRIPT_FILE}")
+    execute_process(COMMAND ${CHMOD_PROGRAM} 755 ${COMPILER_SCRIPT})
+    set(CMAKE_CXX_COMPILER ${COMPILER_SCRIPT})
   endif()
 endmacro()
 
@@ -97,6 +98,6 @@ macro(finalize_compiler_script)
     set( COMPILER_SCRIPT_FILE "${COMPILER_SCRIPT_FILE}\n  FLAGS=\"\$FLAGS \$NEWFLAG\"\ndone")
     set( COMPILER_SCRIPT_FILE "${COMPILER_SCRIPT_FILE}\n\$ECHO \"${DEFAULT_CXX_COMPILER} \$CXXFLAGS \$FLAGS\"")
     set( COMPILER_SCRIPT_FILE "${COMPILER_SCRIPT_FILE}\nexec ${DEFAULT_CXX_COMPILER} \$CXXFLAGS \$FLAGS")
-    file(WRITE ${CMAKE_BINARY_DIR}/compiler.sh "${COMPILER_SCRIPT_FILE}")
+    file(WRITE ${COMPILER_SCRIPT} "${COMPILER_SCRIPT_FILE}")
   endif()
 endmacro()
