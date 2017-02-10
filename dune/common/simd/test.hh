@@ -521,9 +521,26 @@ namespace Dune {
         // copy the arguments in case V is a references
         auto arg = val;
         auto &&result = op(static_cast<V>(arg));
+        using T = Scalar<std::decay_t<decltype(result)> >;
         for(std::size_t l = 0; l < lanes(val); ++l)
+        {
+          // `op` might promote the argument.  This is a problem if the
+          // argument of the operation on the right of the `==` is
+          // e.g. `(unsigned short)1` and the operation is e.g. unary `-`.
+          // Then the argument is promoted to `int` before applying the
+          // negation, and the result is `(int)-1`.  However, the left side of
+          // the `==` is still `(unsigned short)-1`, which typically is the
+          // same as `(unsigned short)65535`.  The `==` promotes the left side
+          // before comparing, so that becomes `(int)65535`.  It will then
+          // compare `(int)65535` and `(int)-1` and rightly declare them to be
+          // not equal.
+
+          // To work around this, we explicitly convert the right side of the
+          // `==` to the scalar type before comparing.
           DUNE_SIMD_CHECK_OP
-            (lane(l, result) == op(lane(l, static_cast<V>(val))));
+            (lane(l, result)
+               == static_cast<T>(op(lane(l, static_cast<V>(val)))));
+        }
         // op might modify val, verify that any such modification also happens
         // in the vector case
         for(std::size_t l = 0; l < lanes<std::decay_t<V> >(); ++l)
@@ -675,10 +692,16 @@ namespace Dune {
         auto arg1 = val1;
         auto arg2 = val2;
         auto &&result = op(static_cast<V1>(arg1), static_cast<V2>(arg2));
+        using T = Scalar<std::decay_t<decltype(result)> >;
         for(std::size_t l = 0; l < lanes(val1); ++l)
+        {
+          // see the lengthy comment in `checkUnaryOpV()` as to why the
+          // `static_cast` around the `op()` is necessary
           DUNE_SIMD_CHECK_OP
-            (lane(l, result) == op(lane(l, static_cast<V1>(val1)),
-                                   lane(l, static_cast<V2>(val2))));
+            (lane(l, result)
+               == static_cast<T>(op(lane(l, static_cast<V1>(val1)),
+                                    lane(l, static_cast<V2>(val2)))));
+        }
         // op might modify val1 and val2, verify that any such
         // modification also happens in the vector case
         for(std::size_t l = 0; l < lanes<std::decay_t<V1> >(); ++l)
@@ -768,15 +791,21 @@ namespace Dune {
         auto varg2 = vval2;
 
         auto &&sresult = op(static_cast<T1>(sarg1), static_cast<V2>(sarg2));
+        using TS = Scalar<std::decay_t<decltype(sresult)> >;
         auto &&vresult = op(static_cast<V1>(varg1), static_cast<V2>(varg2));
+        using TV = Scalar<std::decay_t<decltype(vresult)> >;
         for(std::size_t l = 0; l < lanes<std::decay_t<V1> >(); ++l)
         {
+          // see the lengthy comment in `checkUnaryOpV()` as to why the
+          // `static_cast` around the `op()` is necessary
           DUNE_SIMD_CHECK_OP
-            (lane(l, sresult) == op(        static_cast<T1>(sval1),
-                                    lane(l, static_cast<V2>(sval2))));
+            (lane(l, sresult)
+               == static_cast<TS>(op(        static_cast<T1>(sval1),
+                                     lane(l, static_cast<V2>(sval2)))));
           DUNE_SIMD_CHECK_OP
-            (lane(l, vresult) == op(lane(l, static_cast<V1>(vval1)),
-                                    lane(l, static_cast<V2>(vval2))));
+            (lane(l, vresult)
+               == static_cast<TV>(op(lane(l, static_cast<V1>(vval1)),
+                                     lane(l, static_cast<V2>(vval2)))));
           // cross check
           DUNE_SIMD_CHECK_OP(lane(l, sresult) == lane(l, vresult));
         }
@@ -876,15 +905,21 @@ namespace Dune {
         auto varg2 = vval2;
 
         auto &&sresult = op(static_cast<V1>(sarg1), static_cast<T2>(sarg2));
+        using TS = Scalar<std::decay_t<decltype(sresult)> >;
         auto &&vresult = op(static_cast<V1>(varg1), static_cast<V2>(varg2));
+        using TV = Scalar<std::decay_t<decltype(vresult)> >;
         for(std::size_t l = 0; l < lanes<std::decay_t<V1> >(); ++l)
         {
+          // see the lengthy comment in `checkUnaryOpV()` as to why the
+          // `static_cast` around the `op()` is necessary
           DUNE_SIMD_CHECK_OP
-            (lane(l, sresult) == op(lane(l, static_cast<V1>(sval1)),
-                                            static_cast<T2>(sval2) ));
+            (lane(l, sresult)
+               == static_cast<TS>(op(lane(l, static_cast<V1>(sval1)),
+                                             static_cast<T2>(sval2) )));
           DUNE_SIMD_CHECK_OP
-            (lane(l, vresult) == op(lane(l, static_cast<V1>(vval1)),
-                                    lane(l, static_cast<V2>(vval2))));
+            (lane(l, vresult)
+               == static_cast<TV>(op(lane(l, static_cast<V1>(vval1)),
+                                     lane(l, static_cast<V2>(vval2)))));
           // cross check
           DUNE_SIMD_CHECK_OP(lane(l, sresult) == lane(l, vresult));
         }

@@ -52,6 +52,70 @@ namespace Dune {
      * being that `std::valarray` is dynamic in size, while for this
      * abstraction the size is static.
      *
+     * @section SIMDLibPromoWarn Type promotion issues
+     *
+     * True SIMD types have an issue with type promotion, which means they
+     * cannot behave completely analogous to built-in integral types (this is
+     * a non-issue with floating point types).  Essentially, operations on
+     * true SIMD types cannot promote their arguments, because the promoted
+     * types typically require more storage than the original types, meaning
+     * an argument that was passed in a single vector register would need
+     * multiple vector registers after promotion, which would mean greater
+     * register pressure.  Also, there would be conversion operations
+     * required, which (at least on x86) is not typically the case for
+     * promotions of the built-in types.  Lastly, with larger types the vector
+     * units can typically operate on fewer lanes at a time.
+     *
+     * Omitting integral promotions has in many cases no negative impact,
+     * because many programmers do not really expect them anyway.  There are
+     * however cases where they matter, and for illustration I want to explain
+     * one that crept up during unit testing.
+     *
+     * Here is a simplified (and somewhat pseudo-code) version of the test.
+     * The test checks the result of unary `-` on `Vc::Vector<unsigned short>`
+     * by comparing the result of unary `-` when applied to the complete
+     * vector to the result of unary `-` when applied to each lane
+     * individually.
+     * \code
+     * Vc::Vector<unsigned short> varg;
+     * for(std::size_t l = 0; l < lanes(varg); ++l)
+     *   lane(l, varg) = l + 1;
+     * auto vresult = -varg;
+     * for(std::size_t l = 0; l < lanes(varg); ++l)
+     *   assert(lane(l, vresult) == -lane(l, varg));
+     * \endcode
+     * The test fails in lane 0.  On the left side of the `==`, `lane(0,
+     * vresult)` is `(unsigned short)65535`, which is the same as `(unsigned
+     * short)-1`, as it should be.  On the right side, `lane(0, varg)` is
+     * `(unsigned short)1`.  `-` promotes its argument, so that becomes
+     * `(int)1`, and the result of the negation is `(int)-1`.
+     *
+     * Now the comparison is `(unsigned short)65535 == (int)-1`.  The
+     * comparison operator applies the *usual arithmetic conversions* to bring
+     * both operands to the same type.  In this case this boils down to
+     * converting the left side to `int` via integral promotions and the
+     * comparison becomes `(int)65535 == (int)-1`.  The result is of course
+     * `false` and the assertion triggers.
+     *
+     * The only way to thoroughly prevent this kind of problem is to convert
+     * the result of any operation back to the expected type.  In the above
+     * example, the assertion would need to be written as `assert(lane(l,
+     * vresult) == static_cast<unsigned short>(-lane(l, varg)));`.  In
+     * practice, this should only be a problem with operations on unsigned
+     * types where the result may be "negative".  Most code in Dune will want
+     * to operate on floating point types, where this is a non-issue.
+     *
+     * (Of couse, this is also a problem for code that operates on untrusted
+     * input, but you shoul not be doing that with Dune anyway).
+     *
+     * Still, when writing code using the SIMD abstractions, you should be
+     * aware that in the following snippet
+     * \code
+     * auto var1 = lane(0, -vec);
+     * auto var2 = -lane(0, vec);
+     * \endcode
+     * the exact types of `var1` and `var2` may be somewhat surprising.
+     *
      * @section simd_abstraction_limit Limitations of the Abstraction Layer
      *
      * Since the abstraction layer cannot overload operators of SIMD types
