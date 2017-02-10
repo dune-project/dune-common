@@ -3,7 +3,7 @@
 #endif
 
 #if !HAVE_VC
-#error Incosistent buildsystem.  This program should not be built in the \
+#error Inconsistent buildsystem.  This program should not be built in the \
   absence of Vc.
 #endif
 
