@@ -23,7 +23,7 @@ class SimpleGenerator(object):
           self.pythonName = pythonname
         self.fileName = filename
 
-    def load(self, includes, typeName, moduleName, constructors=None, methods=None):
+    def load(self, includes, typeName, moduleName, constructors=None, methods=None, bufferProtocol=False, options=None):
         source = "".join(["#include <" + i + ">\n" for i in includes])
         source += "\n"
 
@@ -40,11 +40,16 @@ class SimpleGenerator(object):
         source += "{\n"
         source += "  using pybind11::operator\"\"_a;\n"
         source += "  pybind11::module module( \"" + moduleName + "\" );\n"
-        source += "  typedef std::unique_ptr< DuneType > Holder;\n"
-        source += "  typedef DuneType TypeAlias;\n"
         source += '  auto entry = Dune::CorePy::typeRegistry().insert<DuneType>("' + typeName + '",{' +\
                   ",".join(['"' + i + '"' for i in includes]) + "});\n"
-        source += "  auto cls = pybind11::class_< DuneType, Holder, TypeAlias >( module, \"" + self.pythonName + "\" );\n"
+        if options is None:
+            options = ""
+        else:
+            options = ", " + options
+        if not bufferProtocol:
+            source += "  auto cls = pybind11::class_< DuneType " + options + " >( module, \"" + self.pythonName + "\", pybind11::metaclass() );\n"
+        else:
+            source += "  auto cls = pybind11::class_< DuneType, options >( module, \"" + self.pythonName + "\", pybind11::metaclass(), pybind11::buffer_protocol() );\n"
         source += "  Dune::CorePy::typeRegistry().exportToPython(cls,entry.first->second);\n"
         source += "  " + self.namespace + "register" + self.typeName + "( module, cls );\n"
 
