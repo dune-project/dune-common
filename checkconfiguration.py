@@ -44,9 +44,9 @@ def preprocessorTest(tests):
     source = "#include <config.h>\nint main() {\n"
     i = 0
     for t in tests:
-        source = source + t[0]+"\n#else\nexit("+str(i+1)+");\n#endif\n"
+        source = source + t[0]+"\n#else\nreturn "+str(i+1)+";\n#endif\n"
         i += 1
-    source = source + "exit(0);\n}\n"#
+    source = source + "return 0;\n}\n"
 
     returncode, stdout, stderr = builder.compile(source, "generated_test")
     if returncode > 0:

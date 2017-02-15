@@ -507,10 +507,10 @@ def make_dune_py_module(dune_py_dir=None):
                          'add_dune_mpi_flags(generated_module)',
                          'set_target_properties(generated_module PROPERTIES PREFIX "")',
                          'target_compile_definitions(generated_module PRIVATE USING_COREPY)',
-                         'add_executable(generated_test EXCLUDE_FROM_ALL generated_module.cc)',
+                         'add_executable(generated_test EXCLUDE_FROM_ALL generated_test.cc)',
                          'add_dune_mpi_flags(generated_test)',
                          'target_compile_definitions(generated_test PRIVATE USING_COREPY)',
-                         'target_link_libraries( generated_test  )',
+                         'target_link_libraries( generated_test ${DUNE_LIBS} )',
                          'file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/__init__.py")']
         project.write_cmake_file(generated_dir, cmake_content)
 
@@ -519,6 +519,10 @@ def make_dune_py_module(dune_py_dir=None):
             file.write('#define USING_COREPY 1\n\n')
             file.write('#include <dune/corepy/common/typeregistry.hh>\n')
             file.write('#include <dune/corepy/pybind11/pybind11.h>\n')
+            file.write('\n#include "generated_module.hh"\n')
+        with open(os.path.join(generated_dir, 'generated_test.cc'), 'w') as file:
+            file.write('#include <config.h>\n\n')
+            file.write('#define USING_COREPY 1\n\n')
             file.write('\n#include "generated_module.hh"\n')
 
         modules, _ = select_modules()
