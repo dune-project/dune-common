@@ -530,6 +530,20 @@ constexpr void switchCases(const Cases& cases, const Value& value, Branches&& br
   return Impl::switchCases<void>(cases, value, std::forward<Branches>(branches), []() {});
 }
 
+/**
+ * \brief A type that refers to another type
+ *
+ * Tuples of `MetaType<T...>` members can be used to iterate over types with
+ * `forEach()` without the need to pass around actual values of type `T...`.
+ */
+template<class T>
+struct MetaType {
+  using type = T;
+};
+
+template<class... T>
+using MetaTuple = std::tuple<MetaType<T>...>;
+
 
 } // namespace Hybrid
 } // namespace Dune
