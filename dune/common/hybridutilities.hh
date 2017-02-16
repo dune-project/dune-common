@@ -535,12 +535,39 @@ constexpr void switchCases(const Cases& cases, const Value& value, Branches&& br
  *
  * Tuples of `MetaType<T...>` members can be used to iterate over types with
  * `forEach()` without the need to pass around actual values of type `T...`.
+ *
+ * \code
+ * using namespace Hybrid;
+ * using TypeList = std::tuple<MetaType<void>,
+ *                             MetaType<NonConstructible>,
+ *                             MetaType<int> >;
+ * forEach(TypeList{}, [] (auto metaType) {
+ *   std::cout << className<typename decltype(metaType)::type>() << std::endl;
+ * });
+ * \endcode
+ *
+ * See `Dune::Hybrid::MetaTuple` for simplified construction of `TypeList`.
  */
 template<class T>
 struct MetaType {
+  //! \brief The referred-to type
   using type = T;
 };
 
+/**
+ * \brief Construction helper for `tuple`s of `MetaType`s
+ *
+ * This just wraps all template argument into `MetaType`s and constructs a
+ * tuple out of them.  Using this the example code from `MetaType` becomes a
+ * lot simpler:
+ *
+ * \code
+ * using namespace Hybrid;
+ * forEach(MetaTuple<void, NonConstructible, int>{}, [] (auto metaType) {
+ *   std::cout << className<typename decltype(metaType)::type>() << std::endl;
+ * });
+ * \endcode
+ */
 template<class... T>
 using MetaTuple = std::tuple<MetaType<T>...>;
 
