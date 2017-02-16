@@ -38,7 +38,38 @@ dune_add_test(NAME standardtest
 dune_add_test(NAME vctest
   SOURCES
     vctest.cc
+
+    # Vc::Vector types
+    vctest_vector_short.cc
+    vctest_vector_unsigned_short.cc
+    vctest_vector_int.cc
+    vctest_vector_unsigned.cc
+
+    vctest_vector_float.cc
+    vctest_vector_double.cc
+
+    # Vc::Mask types
+    vctest_mask_short.cc
+    vctest_mask_unsigned_short.cc
+    vctest_mask_int.cc
+    vctest_mask_unsigned.cc
+
+    vctest_mask_float.cc
+    vctest_mask_double.cc
+
+    # Vc::SimdArray types with 4 lanes
+    vctest_simdarray_int_4.cc
+
+    # Vc::SimdMaskArray types with 4 lanes
+    vctest_simdmaskarray_int_4.cc
+
+    # Vc::SimdArray types with 8 lanes
+    vctest_simdarray_int_8.cc
+
+    # Vc::SimdMaskArray types with 8 lanes
+    vctest_simdmaskarray_int_8.cc
   LINK_LIBRARIES dunecommon
   CMAKE_GUARD Vc_FOUND
 )
 add_dune_vc_flags(vctest)
+# no need to install vctest.hh, used by vctest*.cc only

@@ -10,6 +10,7 @@
 #include <cstdlib>
 
 #include <dune/common/simd/test.hh>
+#include <dune/common/simd/test/vctest.hh>
 #include <dune/common/simd/vc.hh>
 
 int main()
