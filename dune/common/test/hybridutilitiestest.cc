@@ -6,6 +6,8 @@
 #endif
 
 #include <tuple>
+#include <typeindex>
+#include <typeinfo>
 #include <vector>
 
 #include <dune/common/hybridutilities.hh>
@@ -68,7 +70,22 @@ auto sumSubsequence(C&& c, I&& indices)
   return result;
 }
 
+struct NonConstructible {
+  NonConstructible() = delete;
+};
 
+template<class TypeList>
+auto getTypeInfos(TypeList typeList)
+{
+  using namespace Dune::Hybrid;
+
+  std::vector<std::type_index> result;
+  forEach(typeList, [&](auto metaType) {
+    using type = typename decltype(metaType)::type;
+    result.emplace_back(typeid (type));
+  });
+  return result;
+}
 
 int main()
 {
@@ -105,6 +122,13 @@ int main()
 
   test.check((29*28)/2 == sumSubsequence(values, std::make_integer_sequence<std::size_t, 29>()))
     << "Summing up subsequence failed.";
+
+  auto typeList = Dune::Hybrid::MetaTuple<void, NonConstructible, int>{};
+  auto expectedTypeInfoList = std::vector<std::type_index>{
+    typeid (void), typeid (NonConstructible), typeid (int)
+  };
+  test.check(getTypeInfos(typeList) == expectedTypeInfoList)
+    << "Iterating over MetaTuple yields unexpected type information";
 
   return test.exit();
 }
