@@ -226,6 +226,9 @@ dune_add_test(SOURCES testfloatcmp.cc)
 
 dune_add_test(SOURCES tupleutilitytest.cc)
 
+dune_add_test(SOURCES typelisttest.cc
+              COMPILE_ONLY)
+
 dune_add_test(SOURCES utilitytest.cc)
 
 dune_add_test(SOURCES eigenvaluestest.cc
