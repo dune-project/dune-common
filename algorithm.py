@@ -1,8 +1,8 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import hashlib
 import numpy
 
+from . import hashIt
 from . import builder
 
 def load(functionName, includes, *args):
@@ -32,7 +32,7 @@ def load(functionName, includes, *args):
         includes += i
 
     signature = functionName + "( " + ", ".join(argTypes) + " )"
-    moduleName = "algorithm_" + hashlib.md5(signature.encode('utf-8')).hexdigest()
+    moduleName = "algorithm_" + hashIt(signature)
 
     source += "".join(["#include <" + i + ">\n" for i in includes])
     source += "\n"
