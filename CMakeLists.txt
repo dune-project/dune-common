@@ -3,6 +3,7 @@ add_python_targets(common
   compatibility
   module
   checkconfiguration
+  hashit
   project
 )
 
