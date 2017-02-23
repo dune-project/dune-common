@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import numpy
 
-from . import hashIt
+from dune.common.hashit import hashIt
 from . import builder
 
 def load(functionName, includes, *args):
