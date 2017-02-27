@@ -147,11 +147,6 @@ class Description:
         except KeyError:
             self.whitespace_hook = None
 
-        try:
-            self.python_modules = data['python-modules'].split()
-        except KeyError:
-            self.python_modules = None
-
         def parse_deps(s):
             deps = []
             if isinstance(s, list):
@@ -187,9 +182,6 @@ class Description:
             s += 'Depends:         ' + print_deps(self.depends) + '\n'
         if self.suggests:
             s += 'Suggests:        ' + print_deps(self.suggests) + '\n'
-
-        if self.python_modules:
-            s += 'Python-Modules:  ' + ' '.join(self.python_modules) + '\n'
         return s
 
     def __str__(self):
