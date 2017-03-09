@@ -41,14 +41,14 @@ def load(functionName, includes, *args):
     source += "{\n"
     source += "  pybind11::module module( \"" + moduleName + "\" );\n"
 
-    source += "  module.def( \"execute\", [] ( " + ", ".join([argTypes[i] + " arg" + str(i) for i in range(len(argTypes))]) + " ) {\n"
+    source += "  module.def( \"run\", [] ( " + ", ".join([argTypes[i] + " arg" + str(i) for i in range(len(argTypes))]) + " ) {\n"
     source += "      return " + functionName + "( " + ", ".join(["arg" + str(i) for i in range(len(argTypes))]) + " );\n"
     source += "    } );\n"
 
     source += "  return module.ptr();\n"
     source += "}\n"
 
-    return builder.load(moduleName, source, signature).execute
+    return builder.load(moduleName, source, signature).run
 
 
 def run(functionName, includes, *args):
