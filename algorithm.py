@@ -51,5 +51,5 @@ def load(functionName, includes, *args):
     return builder.load(moduleName, source, signature).execute
 
 
-def execute(functionName, includes, *args):
+def run(functionName, includes, *args):
     load(functionName, includes, *args)(*args)
