@@ -52,4 +52,4 @@ def load(functionName, includes, *args):
 
 
 def run(functionName, includes, *args):
-    load(functionName, includes, *args)(*args)
+    return load(functionName, includes, *args)(*args)
