@@ -1,8 +1,8 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 
-#ifndef DUNE_WRAPPED_PTR_HH
-#define DUNE_WRAPPED_PTR_HH
+#ifndef DUNE_TO_UNIQUE_PTR_HH
+#define DUNE_TO_UNIQUE_PTR_HH
 
 #include <cassert>
 #include <memory>
@@ -113,4 +113,4 @@ namespace Dune
 
 } // end namespace Dune
 
-#endif // DUNE_WRAPPED_PTR_HH
+#endif // DUNE_TO_UNIQUE_PTR_HH
