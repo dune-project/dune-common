@@ -58,25 +58,6 @@ namespace Dune
       : Super(nullptr)
     {}
 
-    /// Constructor, moves the pointer
-    to_unique_ptr(to_unique_ptr&& other) = default;
-
-    /// Assignment operator, moves the pointer
-    to_unique_ptr& operator=(to_unique_ptr&& other) = default;
-
-    /// Destructor, frees pointer if not invalidated by cast to (smart) pointer
-    ~to_unique_ptr() = default;
-
-
-    // Copy constructor is deleted
-    to_unique_ptr(to_unique_ptr const&) = delete;
-
-    // Assignment of raw pointer is deleted
-    to_unique_ptr& operator=(T const&) = delete;
-
-    // Copy-assignment is deleted
-    to_unique_ptr& operator=(to_unique_ptr const&) = delete;
-
     //@}
 
 
