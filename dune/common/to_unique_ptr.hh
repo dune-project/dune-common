@@ -4,7 +4,6 @@
 #ifndef DUNE_TO_UNIQUE_PTR_HH
 #define DUNE_TO_UNIQUE_PTR_HH
 
-#include <cassert>
 #include <memory>
 
 #include <dune/common/deprecated.hh>
