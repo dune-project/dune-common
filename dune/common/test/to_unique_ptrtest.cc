@@ -10,6 +10,8 @@
 #include "config.h"
 #endif
 
+#include <cassert>
+
 #include <dune/common/to_unique_ptr.hh>
 
 int* f_old() { return new int(0); }
