@@ -34,6 +34,7 @@ install(FILES
         bitsetvector.hh
         boundschecking.hh
         classname.hh
+        copy_ptr.hh
         concept.hh
         conditional.hh
         debugallocator.hh

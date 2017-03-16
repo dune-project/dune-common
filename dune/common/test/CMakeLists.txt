@@ -47,6 +47,9 @@ dune_add_test(NAME check_fvector_size_fail2
 dune_add_test(SOURCES classnametest.cc
               LINK_LIBRARIES dunecommon)
 
+dune_add_test(SOURCES test_copy_ptr.cc
+              LINK_LIBRARIES dunecommon)
+
 dune_add_test(SOURCES concept.cc
               LINK_LIBRARIES dunecommon)
 
