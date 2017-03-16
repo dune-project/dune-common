@@ -110,6 +110,7 @@ namespace Dune {
         {
             using std::swap;
             swap(*this,other);
+            return *this;
         }
 
         /** dereferences pointer to the managed object */
