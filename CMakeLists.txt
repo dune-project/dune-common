@@ -4,6 +4,7 @@ add_python_targets(common
   module
   checkconfiguration
   hashit
+  pickle
   project
 )
 
