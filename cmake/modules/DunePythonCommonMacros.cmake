@@ -45,6 +45,7 @@
 # Include all the other parts of the python extension to avoid that users need
 # to explicitly include parts of our build system.
 include(DunePythonFindPackage)
+include(DunePythonRequireVersion)
 
 # Find the Python Interpreter
 set(_VERSION_STRING "")
