@@ -33,11 +33,8 @@
 #       Whether the given version requirement has to be matched exactly.
 #
 #
-#    Find a given python package on the host system. Note, that you should
-#    only use this macro in the context of dune-python if you really need the
-#    package to be present on the host. Any dependencies of your python packages
-#    will instead be installed into the dune-python virtualenv. dune-python
-#    uses this module to check for the existence of the virtualenv and pip packages.
+#    Find a given python package on the system.
+#
 
 function(dune_python_find_package)
   # Parse Arguments

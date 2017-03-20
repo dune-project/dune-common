@@ -3,7 +3,7 @@
 # methods, see http://stackoverflow.com/questions/1871549
 #
 # Meant to be run from DunePythonCommonMacros.cmake. For that reason, it
-# exits with either 1 or 0 indicating, where 1 indicates that the interpreter
+# exits with either 1 or 0, where 1 indicates that the interpreter
 # runs inside a virtualenv
 #
 
