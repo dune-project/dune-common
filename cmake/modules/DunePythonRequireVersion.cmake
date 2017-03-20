@@ -72,8 +72,6 @@ endfunction()
 
 
 function(dune_python_force_version)
-  message("BLA: ${PYTHON_VERSION_MAJOR}")
-  message("BLUBB ${ARGV0}")
   if(NOT "${PYTHON_VERSION_MAJOR}" STREQUAL "${ARGV0}")
     message(FATAL_ERROR "${CMAKE_PROJECT_NAME} requires python ${ARGV0}!")
   endif()
