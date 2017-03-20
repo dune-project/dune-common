@@ -54,7 +54,6 @@
 #
 
 find_package(Sphinx)
-find_package(PythonInterp)
 
 
 function(dune_cmake_sphinx_doc)

@@ -32,3 +32,6 @@ include(FindMProtect)
 find_package(Vc)
 include(AddVcFlags)
 set_package_info("Vc" "C++ Vectorization library" "https://github.com/VcDevel/Vc")
+
+# Run the python extension of the Dune cmake build system
+include(DunePythonCommonMacros)
