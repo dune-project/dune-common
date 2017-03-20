@@ -31,6 +31,27 @@
 #       A user can set the input variable :ref:`DUNE_PYTHON_FORCE_PYTHON2` or
 #       :ref:`DUNE_PYTHON_FORCE_PYTHON3` to achieve the same result for a given build only.
 #
+# .. cmake_variable:: DUNE_PYTHON_FORCE_PYTHON2
+#
+#     Set this variable to TRUE to force usage of a python2 interpreter. This is
+#     the *user-facing* interface, developers of Dune modules, may force the python
+#     major version through :ref:`dune_force_python_version`.
+#
+#     .. note::
+#        This does not check for the interpreter requirements of your python packages.
+#        If you set it and one of your packages requires python2, you will get an error.
+#
+#
+# .. cmake_variable:: DUNE_PYTHON_FORCE_PYTHON3
+#
+#     Set this variable to TRUE to force usage of a python3 interpreter. This is
+#     the *user-facing* interface, developers of Dune modules, may force the python
+#     major version through :ref:`dune_force_python_version`.
+#
+#     .. note::
+#        This does not check for the interpreter requirements of your python packages.
+#        If you set it and one of your packages requires python2, you will get an error.
+#
 
 
 function(dune_python_require_version)

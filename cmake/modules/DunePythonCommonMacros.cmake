@@ -20,27 +20,7 @@
 #    system code for Dune modules shipping python, have a look at the command reference for
 #    commands prefixed `dune_python`.
 #
-# .. cmake_variable:: DUNE_PYTHON_FORCE_PYTHON2
-#
-#     Set this variable to TRUE to force usage of a python2 interpreter. This is
-#     the *user-facing* interface, developers of Dune modules, may force the python
-#     major version through :ref:`dune_force_python_version`.
-#
-#     .. note::
-#        This does not check for the interpreter requirements of your python packages.
-#        If you set it and one of your packages requires python2, you will get an error.
-#
-#
-# .. cmake_variable:: DUNE_PYTHON_FORCE_PYTHON3
-#
-#     Set this variable to TRUE to force usage of a python3 interpreter. This is
-#     the *user-facing* interface, developers of Dune modules, may force the python
-#     major version through :ref:`dune_force_python_version`.
-#
-#     .. note::
-#        This does not check for the interpreter requirements of your python packages.
-#        If you set it and one of your packages requires python2, you will get an error.
-#
+
 
 # Include all the other parts of the python extension to avoid that users need
 # to explicitly include parts of our build system.
