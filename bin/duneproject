@@ -84,7 +84,7 @@ modulesexist(){
       if [ "$found" = "0" ]; then
 	  echo "ERROR:">&2
 	  echo "Module with name $dep was not found" >&2
-	  echo "Did you forget to specify it's location" >&2
+	  echo "Did you forget to specify its location" >&2
 	  echo "in the DUNE_CONTROL_PATH variable?">&2
 	  echo >&2
 	  allfound=1
@@ -708,5 +708,5 @@ EOF
 echo
 echo "done."
 echo "------------------------------------------"
-echo "For further details read the Dune Buildsystem-Howto:"
-echo "http://www.dune-project.org/doc/buildsystem/buildsystem.pdf"
+echo "For further details read the Dune build system documentation at"
+echo "https://www.dune-project.org/buildsystem/"
