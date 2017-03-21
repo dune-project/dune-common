@@ -22,20 +22,6 @@
 #
 #    The package at the given location is expected to be a pip-installable package.
 #
-# .. cmake_variable:: DUNE_PYTHON_INSTALL_LOCATION
-#
-#    This variable can be used to control where Dune should install python
-#    packages. Possible values are:
-#    * `user`: installs into the users home directory through `pip --user`
-#    * `system`: into the standard paths of the interpreter which was found
-#      by cmake.
-#    * `none`: Never install any python packages.
-#
-#    The default value in use depends on the system interpreter to run in a virtual environment
-#    or not: If it does, `system` is the default, if it does not `none` is the default.
-#    This rather unintuitive default originates from the strong belief, that installing
-#    python packages into the system locations at `/usr/...` should be discouraged.
-#
 # .. cmake_variable:: DUNE_PYTHON_INSTALL_EDITABLE
 #
 #    Set this variable to have all installations of python packages use
@@ -53,23 +39,8 @@ function(dune_python_install_package)
     message(WARNING "Unparsed arguments in dune_python_install_package: This often indicates typos!")
   endif()
 
-  # Determine where to install python packages
-  set(INSTALL_LOCATION ${DUNE_PYTHON_INSTALL_LOCATION})
-  if(NOT INSTALL_LOCATION)
-    if(DUNE_PYTHON_SYSTEM_IS_VIRTUALENV)
-      set(INSTALL_LOCATION "system")
-    else()
-      set(INSTALL_LOCATION "none")
-    endif()
-  endif()
-  if(NOT(("${INSTALL_LOCATION}" STREQUAL "user") OR
-         ("${INSTALL_LOCATION}" STREQUAL "system") OR
-         ("${INSTALL_LOCATION}" STREQUAL "none")))
-    message(FATAL_ERROR "DUNE_PYTHON_INSTALL_LOCATION must be user|system|none.")
-  endif()
-
   # Leave this function if no installation rules are required
-  if("${INSTALL_LOCATION}" STREQUAL "none")
+  if("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "none")
     return()
   endif()
 
@@ -96,7 +67,7 @@ function(dune_python_install_package)
 
   # Construct the installation location option string
   set(INSTALL_OPTION "")
-  if("${INSTALL_LOCATION}" STREQUAL "user")
+  if("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "user")
     set(INSTALL_OPTION "--user")
   endif()
 
