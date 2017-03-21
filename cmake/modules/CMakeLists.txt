@@ -20,6 +20,7 @@ install(FILES
   DunePkgConfig.cmake
   DunePythonCommonMacros.cmake
   DunePythonFindPackage.cmake
+  DunePythonInstallPackage.cmake
   DunePythonRequireVersion.cmake
   DuneSphinxCMakeDoc.cmake
   DuneStreams.cmake

@@ -21,10 +21,10 @@
 #    commands prefixed `dune_python`.
 #
 
-
 # Include all the other parts of the python extension to avoid that users need
 # to explicitly include parts of our build system.
 include(DunePythonFindPackage)
+include(DunePythonInstallPackage)
 include(DunePythonRequireVersion)
 
 # Find the Python Interpreter
@@ -60,11 +60,17 @@ dune_python_find_package(PACKAGE pip)
 add_custom_target(test_python)
 add_custom_target(install_python)
 
-# Set up the installation script for pip installations
-# Background: Using self-defined functions in "install(CODE ...)" requires
-#             to import those commands. To avoid too much duplication, we do
-#             this once here to make sure that the includes are put into the
-#             cmake_install.cmake!
+# Set the path to a Dune wheelhouse that is to be used during installation
+# NB: Right now, the same logic is used to retrieve the location of the
+#     wheelhouse (which means that you have to use the same CMAKE_INSTALL_PREFIX
+#     when *using* installed modules, you used when *installing* them.
+#     TODO: Replace this with a better mechanism (like writing the location into
+#           dune-commons package config file)
+set(DUNE_PYTHON_WHEELHOUSE ${CMAKE_INSTALL_PREFIX}/share/dune/wheelhouse)
+
+# Have make install do the same as make install_python
 install(CODE "set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+              set(DUNE_PYTHON_WHEELHOUSE ${DUNE_PYTHON_WHEELHOUSE})
               include(DuneExecuteProcess)
-             ")
+              dune_execute_process(COMMAND \"${CMAKE_COMMAND}\" --build . --target install_python --config $<CONFIG>)
+              ")
