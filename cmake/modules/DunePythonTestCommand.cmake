@@ -9,6 +9,14 @@
 #       The command to run. It will be executed during :code:`make test_python`
 #       and during `ctest`.
 #
+#       .. note::
+#
+#          If your testing command involces an invocation of the python
+#          interpreter you should use `${PYTHON_EXECUTABLE}` for that.
+#          Also calling python executables through `-m` is generally to
+#          be favored, e.g. `${PYTHON_EXECUTABLE} -m pytest` instead of
+#          `py.test`.
+#
 #    .. cmake_param:: WORKING_DIRECTORY
 #       :single:
 #       :argname: dir
