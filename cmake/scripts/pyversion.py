@@ -25,6 +25,7 @@ import pip
 for package in pip.get_installed_distributions():
     if package.project_name == modstr and package.has_version():
         sys.stdout.write(package.version)
+        sys.exit(0)
 
 # Give up on this one
 sys.exit(1)
