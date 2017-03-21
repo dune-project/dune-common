@@ -44,6 +44,11 @@ function(dune_python_install_package)
     return()
   endif()
 
+  # Check for the presence of the pip package
+  if(NOT DUNE_PYTHON_pip_FOUND)
+    message(FATAL_ERROR "dune_python_install_package: Requested installations, but pip was not found!")
+  endif()
+
   # Find out whether we should install in editable mode
   set(INSTALL_EDITABLE ${DUNE_PYTHON_INSTALL_EDITABLE})
 
