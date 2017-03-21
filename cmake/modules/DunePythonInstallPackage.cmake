@@ -68,6 +68,11 @@ function(dune_python_install_package)
     message(FATAL_ERROR "DUNE_PYTHON_INSTALL_LOCATION must be user|system|none.")
   endif()
 
+  # Leave this function if no installation rules are required
+  if("${INSTALL_LOCATION}" STREQUAL "none")
+    return()
+  endif()
+
   # Find out whether we should install in editable mode
   set(INSTALL_EDITABLE ${DUNE_PYTHON_INSTALL_EDITABLE})
 
