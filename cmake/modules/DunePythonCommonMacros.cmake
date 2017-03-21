@@ -42,6 +42,10 @@ include(DunePythonInstallPackage)
 include(DunePythonRequireVersion)
 include(DunePythonTestCommand)
 
+# Update the list of valid python versions, the shipped CMake modules tend to outdate...
+# Mention all those not present in CMake 2.8.12
+set(Python_ADDITIONAL_VERSIONS 3.4 3.5 3.6)
+
 # Find the Python Interpreter
 set(_VERSION_STRING "")
 if(DUNE_PYTHON_FORCE_PYTHON2 AND DUNE_PYTHON_FORCE_PYTHON3)
