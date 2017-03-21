@@ -24,7 +24,8 @@
 #
 #    This variable can be used to control where Dune should install python
 #    packages. Possible values are:
-#    * `user`: installs into the users home directory through `pip --user`
+#    * `user`: installs into the users home directory through `pip --user`. Note, that
+#      this is incompatible with using virtual environments (as per pip docs).
 #    * `system`: into the standard paths of the interpreter which was found
 #      by cmake.
 #    * `none`: Never install any python packages.
@@ -87,6 +88,10 @@ if(NOT(("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "user") OR
        ("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "system") OR
        ("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "none")))
   message(FATAL_ERROR "DUNE_PYTHON_INSTALL_LOCATION must be user|system|none.")
+endif()
+if(("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "user") AND
+   DUNE_PYTHON_SYSTEM_IS_VIRTUALENV)
+  message(FATAL_ERROR "Specifying 'user' as install location is incomaptible with using virtual environments (as per pip docs)")
 endif()
 
 # Check presence of python packages required by the buildsystem
