@@ -12,7 +12,7 @@
 #    modules:
 #
 #    * All variables set by `FindPythonInterp.cmake` and `FindPythonLibs.cmake`
-#    * `DUNE_PYTHON_IS_VIRTUALENV`: True if the given system interpreter resides in
+#    * `DUNE_PYTHON_SYSTEM_IS_VIRTUALENV`: True if the given system interpreter resides in
 #      virtual environment.
 #
 #    For documentation on how to customize the build process, check the input variable

@@ -56,7 +56,7 @@ function(dune_python_install_package)
   # Determine where to install python packages
   set(INSTALL_LOCATION ${DUNE_PYTHON_INSTALL_LOCATION})
   if(NOT INSTALL_LOCATION)
-    if(DUNE_PYTHON_IS_VIRTUALENV)
+    if(DUNE_PYTHON_SYSTEM_IS_VIRTUALENV)
       set(INSTALL_LOCATION "system")
     else()
       set(INSTALL_LOCATION "none")
