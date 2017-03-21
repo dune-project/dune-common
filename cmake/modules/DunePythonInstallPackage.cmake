@@ -119,7 +119,7 @@ function(dune_python_install_package)
   # Add a custom target that globally installs this package if requested
   add_custom_target(${targetname}
                     COMMAND ${CMAKE_COMMAND}
-                            -DCMAKE_MODULE_PATH=${CMAKE_MODULE_PATH}
+                            -DCMAKE_MODULE_PATH="${CMAKE_MODULE_PATH}"
                             -DCMDLINE="${INSTALL_CMDLINE}"
                             -DPACKAGE_PATH="${PYINST_PATH}"
                              -P ${scriptdir}/install_python_package.cmake
