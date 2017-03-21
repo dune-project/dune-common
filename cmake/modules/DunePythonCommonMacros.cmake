@@ -59,6 +59,9 @@ if(DUNE_PYTHON_FORCE_PYTHON3)
 endif()
 find_package(PythonInterp ${_VERSION_STRING})
 
+# Find the Python libraries
+find_package(PythonLibs)
+
 # Determine whether the given interpreter is running inside a virtualenv
 if(PYTHONINTERP_FOUND)
   include(DuneExecuteProcess)
