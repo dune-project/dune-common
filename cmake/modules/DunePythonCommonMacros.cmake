@@ -26,6 +26,7 @@
 include(DunePythonFindPackage)
 include(DunePythonInstallPackage)
 include(DunePythonRequireVersion)
+include(DunePythonTestCommand)
 
 # Find the Python Interpreter
 set(_VERSION_STRING "")
