@@ -5,6 +5,7 @@ install(FILES
   extract_cmake_data.py
   FinalizeHeadercheck.cmake
   index.rst.in
+  install_python_package.cmake
   InstallFile.cmake
   main77.cc.in
   pyversion.py
