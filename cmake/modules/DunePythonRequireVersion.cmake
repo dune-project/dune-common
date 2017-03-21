@@ -10,7 +10,7 @@
 #       The minimum required version.
 #
 #    Error out, if the python interpreter found by cmake is older than the given version.
-#    Python2 and Pyhton3 versions are not compared to each other, so you can call this
+#    Python2 and Python3 versions are not compared to each other, so you can call this
 #    macro multiple times to enforce minimal versions on a python2 and python3 interpreter
 #    independently.
 #
@@ -35,18 +35,18 @@
 #
 #     Set this variable to TRUE to force usage of a python2 interpreter. This is
 #     the *user-facing* interface, developers of Dune modules, may force the python
-#     major version through :ref:`dune_force_python_version`.
+#     major version through :ref:`dune_python_force_version`.
 #
 #     .. note::
 #        This does not check for the interpreter requirements of your python packages.
-#        If you set it and one of your packages requires python2, you will get an error.
+#        If you set it and one of your packages requires python3, you will get an error.
 #
 #
 # .. cmake_variable:: DUNE_PYTHON_FORCE_PYTHON3
 #
 #     Set this variable to TRUE to force usage of a python3 interpreter. This is
 #     the *user-facing* interface, developers of Dune modules, may force the python
-#     major version through :ref:`dune_force_python_version`.
+#     major version through :ref:`dune_python_force_version`.
 #
 #     .. note::
 #        This does not check for the interpreter requirements of your python packages.
