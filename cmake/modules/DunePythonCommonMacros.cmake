@@ -54,13 +54,13 @@
 #    is to be run at configure time, i.e. to implement code generation in Python or
 #    to use Python wrappers in testing. Some downstream modules will *require* you
 #    to set this variable. When setting this variable, you allow the Dune buildsystem
-#    to install packages through `pip` into a virtualenv, that resides in a cmake
+#    to install packages through :code:`pip` into a virtualenv, that resides in a cmake
 #    build directory. For all the information on this virtualenv, see :ref:`DunePythonVirtualenv`.
 #
 # .. cmake_function:: dune_python_require_virtualenv_setup
 #
 #    Call this function from a downstream module, if that module relies on the
-#    the presence of the configure time virtualenv.
+#    the presence of the configure time virtualenv described in :ref:`DunePythonVirtualenv`.
 #
 
 # Include all the other parts of the python extension to avoid that users need
