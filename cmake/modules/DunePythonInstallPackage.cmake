@@ -80,7 +80,6 @@ function(dune_python_install_package)
                       "${INSTALL_OPTION}" "${WHEEL_OPTION}" "${EDIT_OPTION}" ${PYINST_ADDITIONAL_PIP_PARAMS}
                       "${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH}")
 
-
   #
   # Now define rules for `make install_python`.
   #
@@ -90,15 +89,11 @@ function(dune_python_install_package)
                    SCRIPT_DIR)
 
   # Determine a target name for installing this package
-  string(REPLACE "/" "_" targetname "install_python_${PYINST_PATH}")
+  string(REPLACE "/" "_" targetname "install_python_${CMAKE_CURRENT_SOURCE_DIR}_${PYINST_PATH}")
 
   # Add a custom target that globally installs this package if requested
   add_custom_target(${targetname}
-                    COMMAND ${CMAKE_COMMAND}
-                            -DCMAKE_MODULE_PATH="${CMAKE_MODULE_PATH}"
-                            -DCMDLINE="${INSTALL_CMDLINE}"
-                            -DPACKAGE_PATH="${PYINST_PATH}"
-                             -P ${scriptdir}/install_python_package.cmake
+                    COMMAND ${INSTALL_CMDLINE}
                     COMMENT "Installing the python package at ${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH}"
                     )
 
