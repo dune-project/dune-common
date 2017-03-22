@@ -12,10 +12,10 @@
 #       .. note::
 #
 #          If your testing command involces an invocation of the python
-#          interpreter you should use `${PYTHON_EXECUTABLE}` for that.
-#          Also calling python executables through `-m` is generally to
-#          be favored, e.g. `${PYTHON_EXECUTABLE} -m pytest` instead of
-#          `py.test`.
+#          interpreter you should use :code:`${PYTHON_EXECUTABLE}` for that.
+#          Also calling python executables through :code:`-m` is generally to
+#          be favored, e.g. :code:`${PYTHON_EXECUTABLE} -m pytest` instead of
+#          :code:`py.test`.
 #
 #    .. cmake_param:: WORKING_DIRECTORY
 #       :single:
@@ -32,7 +32,7 @@
 #
 #    Integrates a python testing framework command into the Dune
 #    build system. Added commands are run, when the target
-#    :code:`test_python` is built and during `ctest`.
+#    :code:`test_python` is built and during :code:`ctest`.
 #
 
 function(dune_python_add_test)

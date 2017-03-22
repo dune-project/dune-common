@@ -12,7 +12,7 @@
 #       :single:
 #
 #       The variable to store the result of the check in
-#       in the calling scope. Defaults to DUNE_PYTHON_<package>_FOUND
+#       in the calling scope. Defaults to :code:`DUNE_PYTHON_<package>_FOUND`
 #       Note that the package name is case sensitive and will
 #       usually be lowercase.
 #
@@ -36,7 +36,7 @@
 #       :single:
 #
 #       The python interpreter, whose paths are searched for the package.
-#       Defaults to "${PYTHON_EXECUTABLE}", might differ when dealing with
+#       Defaults to :code:`${PYTHON_EXECUTABLE}`, might differ when dealing with
 #       the configure-time virtualenv set up with :ref:`DUNE_PYTHON_VIRTUALENV_SETUP`.
 #
 #    Find a given python package on the system.

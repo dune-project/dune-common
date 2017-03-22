@@ -7,33 +7,45 @@
 #    rules for python packages in Dune modules and provides virtual environments to
 #    run python code from cmake.
 #
-#    After this module is run (which happens automatically when configuring dune-common)
-#    the following python-related variables will be set and available for use in downstream
-#    modules:
+#    If you want to use Dune modules that provide Python functionality, you should be aware
+#    of some facts:
 #
-#    * All variables set by `FindPythonInterp.cmake` and `FindPythonLibs.cmake`
-#    * `DUNE_PYTHON_SYSTEM_IS_VIRTUALENV`: True if the given system interpreter resides in
+#    * CMake looks for your python interpreter during configure. If you want to have it
+#      work with a virtual environment, you should activate your virtualenv before configure.
+#    * Each module has an additional target :code:`make install_python`, that installs python packages
+#      defined in the Dune module. You can customize the install location with
+#      :ref:`DUNE_PYTHON_INSTALL_LOCATION`. This is also included in :code:`make install`.
+#    * There is additional functionality, that automatically sets up a virtual environment
+#      at configure time, you can read more at :ref:`DunePythonVirtualenv`.
+#
+#    After the module :code:`DunePythonCommonMacros` is run (which happens automatically when
+#    configuring dune-common) the following python-related variables will be set and available
+#    for use in downstream modules:
+#
+#    * All variables set by :code:`FindPythonInterp.cmake` and :code:`FindPythonLibs.cmake`
+#    * :code:`DUNE_PYTHON_SYSTEM_IS_VIRTUALENV`: True if the given system interpreter resides in
 #      virtual environment.
 #
 #    For documentation on how to customize the build process, check the input variable
-#    reference for any variables prefixed with `DUNE_PYTHON`. To learn how to write build
+#    reference for any variables prefixed with :code:`DUNE_PYTHON`. To learn how to write build
 #    system code for Dune modules shipping python, have a look at the command reference for
-#    commands prefixed `dune_python`.
+#    commands prefixed :code:`dune_python`.
 #
 # .. cmake_variable:: DUNE_PYTHON_INSTALL_LOCATION
 #
 #    This variable can be used to control where Dune should install python
 #    packages. Possible values are:
-#    * `user`: installs into the users home directory through `pip --user`. Note, that
+#
+#    * :code:`user`: installs into the users home directory through :code:`pip --user`. Note, that
 #      this is incompatible with using virtual environments (as per pip docs).
-#    * `system`: into the standard paths of the interpreter which was found
+#    * :code:`system`: into the standard paths of the interpreter which was found
 #      by cmake.
-#    * `none`: Never install any python packages.
+#    * :code:`none`: Never install any python packages.
 #
 #    The default value in use depends on the system interpreter to run in a virtual environment
-#    or not: If it does, `system` is the default, if it does not `none` is the default.
+#    or not: If it does, :code:`system` is the default, if it does not :code:`none` is the default.
 #    This rather unintuitive default originates from the strong belief, that installing
-#    python packages into the system locations at `/usr/...` should be discouraged.
+#    python packages into the system locations at :code:`/usr/...` should be discouraged.
 #
 
 # Include all the other parts of the python extension to avoid that users need

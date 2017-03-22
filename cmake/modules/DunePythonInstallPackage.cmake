@@ -10,13 +10,14 @@
 #
 #    .. cmake_param:: ADDITIONAL_PIP_PARAMS
 #       :multi:
+#       :argname: param
 #
 #       Parameters to add to any :code:`pip install` call (appended).
 #
 #    This function installs the python package located at the given path. It
 #
 #    * installs it to the location specified with :ref:`DUNE_PYTHON_INSTALL_LOCATION` during
-#      :code:`make install-python` and during :code:`make install`.
+#      :code:`make install_python` and during :code:`make install`.
 #    * installs a wheel into the Dune wheelhouse during :code:`make install`.
 #      This is necessary for mixing installed and non-installed Dune modules.
 #
