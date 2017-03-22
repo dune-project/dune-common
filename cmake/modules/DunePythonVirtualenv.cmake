@@ -65,6 +65,21 @@ set(DUNE_PYTHON_VIRTUALENV_EXECUTABLE ${DUNE_PYTHON_VIRTUALENV_PATH}/bin/python)
 # build directories of the Dune stack
 dune_execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${DUNE_PYTHON_VIRTUALENV_PATH}/bin/activate ${CMAKE_BINARY_DIR}/activate)
 
+# Also write a small wrapper script 'run-in-dune-env' into the build directory
+# This is necessary to execute installed python scripts (the bin path of a virtualenv
+# is *not* in the sys path, so a simple `python scriptname` does not work.
+if(UNIX)
+  find_package(UnixCommands QUIET)
+  dune_module_path(MODULE dune-common
+                   RESULT scriptdir
+                   SCRIPT_DIR)
+  configure_file(${scriptdir}/run-in-dune-env.sh.in
+                 ${CMAKE_BINARY_DIR}/run-in-dune-env
+                 @ONLY)
+else()
+  message(WARNING "Writing script 'run-in-dune-env' not implemented on your platform!")
+endif()
+
 # We previously omitted pip from the env, because of this Debian bug:
 # https://bugs.launchpad.net/debian/+source/python3.4/+bug/1290847
 # We now, need to install pip. Easiest way is to download the get-pip
