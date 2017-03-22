@@ -17,12 +17,12 @@
 # that already contains a virtual environment.
 set(DUNE_PYTHON_VIRTUALENV_PATH)
 foreach(mod ${ALL_DEPENDENCIES})
-  if(IS_DIRECTORY ${${mod}_DIR}/python-env)
-    set(DUNE_PYTHON_VIRTUALENV_PATH ${${mod}_DIR}/python-env)
+  if(IS_DIRECTORY ${${mod}_DIR}/dune-env)
+    set(DUNE_PYTHON_VIRTUALENV_PATH ${${mod}_DIR}/dune-env)
   endif()
   # check in the current build directory - this might be a reconfigure
-  if(IS_DIRECTORY ${CMAKE_BINARY_DIR}/python-env)
-    set(DUNE_PYTHON_VIRTUALENV_PATH ${CMAKE_BINARY_DIR}/python-env)
+  if(IS_DIRECTORY ${CMAKE_BINARY_DIR}/dune-env)
+    set(DUNE_PYTHON_VIRTUALENV_PATH ${CMAKE_BINARY_DIR}/dune-env)
   endif()
 endforeach()
 
@@ -46,16 +46,16 @@ if(NOT DUNE_PYTHON_VIRTUALENV_PATH)
   endif()
 
   # Set up the env itself
-  message("-- Building a virtual env in ${CMAKE_BINARY_DIR}/python-env...")
+  message("-- Building a virtual env in ${CMAKE_BINARY_DIR}/dune-env...")
   dune_execute_process(COMMAND ${PYTHON_EXECUTABLE}
                                 -m ${VIRTUALENV_PACKAGE_NAME}
                                 ${NOPIP_OPTION}
-                                ${CMAKE_BINARY_DIR}/python-env
+                                ${CMAKE_BINARY_DIR}/dune-env
                        ERROR_MESSAGE "Fatal error when setting up a virtualenv."
                        )
 
   # And set the path to it
-  set(DUNE_PYTHON_VIRTUALENV_PATH ${CMAKE_BINARY_DIR}/python-env)
+  set(DUNE_PYTHON_VIRTUALENV_PATH ${CMAKE_BINARY_DIR}/dune-env)
 endif()
 
 # Also store the virtual env interpreter directly
