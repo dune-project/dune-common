@@ -40,11 +40,6 @@ function(dune_python_install_package)
     message(WARNING "Unparsed arguments in dune_python_install_package: This often indicates typos!")
   endif()
 
-  # Leave this function if no installation rules are required
-  if("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "none")
-    return()
-  endif()
-
   # Check for the presence of the pip package
   if(NOT DUNE_PYTHON_pip_FOUND)
     message(FATAL_ERROR "dune_python_install_package: Requested installations, but pip was not found!")
@@ -77,13 +72,29 @@ function(dune_python_install_package)
     set(INSTALL_OPTION "--user")
   endif()
 
-  set(INSTALL_CMDLINE "${PYTHON_EXECUTABLE}" -m pip install
+  set(INSTALL_CMDLINE -m pip install
                       "${INSTALL_OPTION}" "${WHEEL_OPTION}" "${EDIT_OPTION}" ${PYINST_ADDITIONAL_PIP_PARAMS}
                       "${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH}")
+
+
+  #
+  # If requested, install into the configure-time Dune virtualenv
+  #
+
+  if(DUNE_PYTHON_VIRTUALENV_SETUP)
+    message("-- Installing python package at ${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH} into the virtualenv...")
+    dune_execute_process(COMMAND "${DUNE_PYTHON_VIRTUALENV_EXECUTABLE}" "${INSTALL_CMDLINE}"
+                         ERROR_MESSAGE "dune_python_install_package: Error installing into virtualenv!")
+  endif()
 
   #
   # Now define rules for `make install_python`.
   #
+
+  # Leave this function if no installation rules are required
+  if("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "none")
+    return()
+  endif()
 
   dune_module_path(MODULE dune-common
                    RESULT scriptdir
@@ -94,7 +105,7 @@ function(dune_python_install_package)
 
   # Add a custom target that globally installs this package if requested
   add_custom_target(${targetname}
-                    COMMAND ${INSTALL_CMDLINE}
+                    COMMAND ${PYTHON_EXECUTABLE} ${INSTALL_CMDLINE}
                     COMMENT "Installing the python package at ${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH}"
                     )
 
