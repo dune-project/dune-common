@@ -6,6 +6,7 @@
 #       :single:
 #
 #       Error message to show if command exited with non-zero exit code.
+#       This also implies abortion of the current cmake run with a fatal error.
 #       Note, that if this is omitted, no return code checking is done.
 #
 #    A thin wrapper around the cmake command :code:`execute_process`, that
