@@ -1,5 +1,37 @@
 # Manage the creation of a configure-time virtual environment
 #
+# .. cmake_module::
+#
+#    This module manages the creation of virtual python environment during
+#    configuration. Execution of this module must be explicitly enabled by
+#    setting the variable :ref:`DUNE_PYTHON_VIRTUALENV_SETUP`. Note that some
+#    downstream modules will require you to set this variable. The purpose
+#    of this virtual environment is to be able to run python code from cmake
+#    in situations such as python-based code generation, running postprocessing
+#    in python during testing etc.
+#
+#    Although designed for internal use, this virtualenv can also be manually
+#    inspected. A symlink to the activation script is placed in the top level
+#    build directory of all Dune modules in the stack. To directly execute a
+#    command in the virtualenv, you can use the script :code:`run-in-dune-env <command>`,
+#    which is also placed into every build directory.
+#
+#    All packages installed with :ref:`dune_python_install_package` are automatically
+#    installed into the virtualenv.
+#
+#    After execution of this module, the following are available for use in
+#    downstream modules:
+#
+#    * `DUNE_PYTHON_VIRTUALENV_PATH` The path of the virtual environment
+#    * `DUNE_PYTHON_VIRTUALENV_EXECUTABLE` The python interpreter in the virtual environment
+#
+#    The created virtualenv resides in the first non-installed Dune module of
+#    the module stack (if no installation is performed: dune-common). Be aware
+#    that mixing installed and non-installed modules may result in a situation,
+#    where multiple such environments are created, although only one should.
+#    This is a known issue for now, a proper solution would offload the positioning
+#    of the environment to a bigger scope, such as dunecontrol.
+#
 # .. cmake_variable:: DUNE_PYTHON_ALLOW_GET_PIP
 #
 #    Set this variable to allow the Dune build system to download get-pip.py
@@ -9,7 +41,8 @@
 #    https://bugs.launchpad.net/debian/+source/python3.4/+bug/1290847
 #
 #    If you do not want the Dune build system to download get-pip.py, you can
-#    manually activate the virtual environment, install pip through your favorite
+#    manually activate the virtual environment (sourcing the activate script
+#    symlinked into the build directories), install pip through your favorite
 #    method and reconfigure.
 #
 
