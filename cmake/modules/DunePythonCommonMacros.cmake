@@ -45,6 +45,11 @@
 #    to install packages through `pip` into a virtualenv, that resides in a cmake
 #    build directory. For all the information on this virtualenv, see :ref:`DunePythonVirtualenv`.
 #
+# .. cmake_function:: dune_python_require_virtualenv_setup
+#
+#    Call this function from a downstream module, if that module relies on the
+#    the presence of the configure time virtualenv.
+#
 
 # Include all the other parts of the python extension to avoid that users need
 # to explicitly include parts of our build system.
@@ -125,6 +130,17 @@ install(CODE "set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
               include(DuneExecuteProcess)
               dune_execute_process(COMMAND \"${CMAKE_COMMAND}\" --build . --target install_python --config $<CONFIG>)
               ")
+
+# Implement a check for the presence of the virtualenv
+function(dune_python_require_virtualenv_setup)
+  if(NOT DUNE_PYTHON_VIRTUALENV_SETUP)
+    message(FATAL_ERROR "\n
+    ${CMAKE_PROJECT_NAME} relies on a configure-time virtual environment being
+    set up by the Dune python build system. You have to set the CMake variable
+    DUNE_PYTHON_VIRTUALENV_SETUP to allow that.\n
+    ")
+  endif()
+endfunction()
 
 # If requested, switch into DunePythonVirtualenv.cmake and setup the virtualenv.
 if(DUNE_PYTHON_VIRTUALENV_SETUP)
