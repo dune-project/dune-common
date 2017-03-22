@@ -52,19 +52,19 @@ class CMakeFunction(Directive):
         sl = [self.arguments[0] + '(\n']
         for rp, paramnode in required_params.items():
             if paramnode["multi"]:
-                sl.append(" "*(len(self.arguments[0])+2) + paramnode['name'] + ' ' + paramnode['argname'] + '1 [' + paramnode['argname'] + '2 ...]\n')
+                sl.append(" "*5 + paramnode['name'] + ' ' + paramnode['argname'] + '1 [' + paramnode['argname'] + '2 ...]\n')
             if paramnode["single"]:
-                sl.append(" "*(len(self.arguments[0])+2) + paramnode['name'] + ' ' + paramnode['argname'] + '\n')
+                sl.append(" "*5 + paramnode['name'] + ' ' + paramnode['argname'] + '\n')
             if paramnode["option"]:
-                sl.append(" "*(len(self.arguments[0])+2) + paramnode['name'] + '\n')
+                sl.append(" "*5 + paramnode['name'] + '\n')
 
         for op, paramnode in optional_params.items():
             if paramnode["multi"]:
-                sl.append(' '*(len(self.arguments[0])+1) + '[' + paramnode['name'] + ' ' + paramnode['argname'] + '1 [' + paramnode['argname'] + '2 ...]' + ']\n')
+                sl.append(' '*4 + '[' + paramnode['name'] + ' ' + paramnode['argname'] + '1 [' + paramnode['argname'] + '2 ...]' + ']\n')
             if paramnode["single"]:
-                sl.append(" "*(len(self.arguments[0])+1) + '['+ paramnode['name'] + ' ' + paramnode['argname'] + ']\n')
+                sl.append(" "*4 + '['+ paramnode['name'] + ' ' + paramnode['argname'] + ']\n')
             if paramnode["option"]:
-                sl.append(" "*(len(self.arguments[0])+1) + '['+ paramnode['name'] + ']\n')
+                sl.append(" "*4 + '['+ paramnode['name'] + ']\n')
 
         sl.append(")\n")
         lb = nodes.literal_block(''.join(sl), ''.join(sl))
