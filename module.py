@@ -2,11 +2,13 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import email.utils
 import logging
+import sys
 import os
 import re
 import shlex
 import string
 import subprocess
+from os.path import expanduser
 
 if __name__ == "dune.common.module":
     from dune.common.compatibility import buffer_to_str
@@ -458,8 +460,18 @@ def get_dune_py_dir():
     except KeyError:
         pass
 
+    # test if in virtual env
     try:
-        return os.path.join(os.environ['HOME'], '.cache', 'dune-py')
+        realPath = sys.real_prefix
+        virtualEnvPath = sys.prefix
+        return os.path.join(virtualEnvPath, '.cache', 'dune-py')
+    except AttributeError:
+        pass
+
+    # generate in home directory
+    try:
+        home = expanduser("~")
+        return os.path.join(home, '.cache', 'dune-py')
     except KeyError:
         pass
 
