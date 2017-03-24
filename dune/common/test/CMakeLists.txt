@@ -53,6 +53,9 @@ dune_add_test(SOURCES classnametest.cc
 dune_add_test(SOURCES concept.cc
               LINK_LIBRARIES dunecommon)
 
+dune_add_test(SOURCES debugaligntest.cc
+              LINK_LIBRARIES dunecommon)
+
 dune_add_test(SOURCES densematrixassignmenttest.cc
               LINK_LIBRARIES dunecommon)
 dune_add_test(NAME densematrixassignmenttest_fail0

@@ -10,6 +10,7 @@ elseif(BLAS_FOUND)
 endif(LAPACK_FOUND)
 
 dune_add_library("dunecommon"
+  debugalign.cc
   debugallocator.cc
   dynmatrixev.cc
   exceptions.cc
@@ -36,6 +37,7 @@ install(FILES
         classname.hh
         concept.hh
         conditional.hh
+        debugalign.hh
         debugallocator.hh
         debugstream.hh
         deprecated.hh
