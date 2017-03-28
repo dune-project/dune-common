@@ -70,17 +70,39 @@ int main()
 
   /* Check BigInteger arithmetic */
   CHECK(BigInteger(10u) + BigInteger(3u) == BigInteger(10u + 3u));
+  BigInteger tmp(10u); tmp += BigInteger(3u);
+  CHECK(tmp == BigInteger(10u + 3u));
   CHECK(BigInteger(10u) - BigInteger(3u) == BigInteger(10u - 3u));
+  tmp = BigInteger(10u); tmp -= BigInteger(3u);
+  CHECK(tmp == BigInteger(10u - 3u));
   CHECK(BigInteger(10u) * BigInteger(3u) == BigInteger(10u * 3u));
+  tmp = BigInteger(10u); tmp *= BigInteger(3u);
+  CHECK(tmp == BigInteger(10u * 3u));
   CHECK(BigInteger(10u) / BigInteger(3u) == BigInteger(10u / 3u));
+  tmp = BigInteger(10u); tmp /= BigInteger(3u);
+  CHECK(tmp == BigInteger(10u / 3u));
   CHECK(BigInteger(10u) % BigInteger(3u) == BigInteger(10u % 3u));
+  tmp = BigInteger(10u); tmp %= BigInteger(3u);
+  CHECK(tmp == BigInteger(10u % 3u));
 
   CHECK(BigInteger(100000u) + BigInteger(30000u) == BigInteger(100000u + 30000u));
+  tmp = BigInteger(100000u); tmp += BigInteger(30000u);
+  CHECK(tmp == BigInteger(100000u + 30000u));
   CHECK(BigInteger(100000u) - BigInteger(30000u) == BigInteger(100000u - 30000u));
+  tmp = BigInteger(100000u); tmp -= BigInteger(30000u);
+  CHECK(tmp == BigInteger(100000u - 30000u));
   CHECK(BigInteger(70000u) - BigInteger(30000u) == BigInteger(70000u - 30000u));
+  tmp = BigInteger(70000u); tmp -= BigInteger(30000u);
+  CHECK(tmp == BigInteger(70000u - 30000u));
   CHECK(BigInteger(100000u) * BigInteger(30000u) == BigInteger(100000u * 30000u));
+  tmp = BigInteger(100000u); tmp *= BigInteger(30000u);
+  CHECK(tmp == BigInteger(100000u * 30000u));
   CHECK(BigInteger(100000u) / BigInteger(30000u) == BigInteger(100000u / 30000u));
+  tmp = BigInteger(100000u); tmp /= BigInteger(30000u);
+  CHECK(tmp == BigInteger(100000u / 30000u));
   CHECK(BigInteger(100000u) % BigInteger(30000u) == BigInteger(100000u % 30000u));
+  tmp = BigInteger(100000u); tmp %= BigInteger(30000u);
+  CHECK(tmp == BigInteger(100000u % 30000u));
 
   /* Test hashing */
   {
