@@ -568,13 +568,17 @@ macro(dune_process_dependency_macros)
       dune_module_to_macro(_cmake_mod_name "${_mod}")
       set(_macro "${_cmake_mod_name}Macros")
       set(_mod_cmake _mod_cmake-NOTFOUND) # Prevent false positives due to caching
+      message(STATUS "Searching for macro file '${_macro}' for module '${_mod}'.")
       find_file(_mod_cmake
-        ${_macro}.cmake
-        ${CMAKE_MODULE_PATH}
-        NO_DEFAULT_PATH)
+        NAMES "${_macro}.cmake"
+        PATHS ${CMAKE_MODULE_PATH}
+        NO_DEFAULT_PATH
+        NO_CMAKE_FIND_ROOT_PATH)
       if(_mod_cmake)
         message(STATUS "Performing tests specific to ${_mod} from file ${_mod_cmake}.")
         include(${_mod_cmake})
+      else()
+        message(WARNING "macro file '${_macro}.cmake' for module '${_mod}' not found in ${CMAKE_MODULE_PATH}!")
       endif()
       dune_module_to_uppercase(_upper_case "${_mod}")
       if(${_mod}_INCLUDE_DIRS)
