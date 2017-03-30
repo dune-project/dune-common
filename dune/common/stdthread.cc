@@ -39,11 +39,11 @@ namespace Dune
 
   void doAssertCallOnce(const char *file, int line, const char *function)
   {
-    std::once_flag once;
+    // std::once_flag once;
     bool works = false;
     try {
       // pass address to works since call_once passes by value
-      std::call_once(once, setBool, &works);
+      //std::call_once(once, setBool, &works);
     }
     catch(...) {
       printCallOnceError(file, line, function,
