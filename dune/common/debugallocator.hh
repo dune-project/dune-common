@@ -20,6 +20,10 @@ enum DummyProtFlags { PROT_NONE, PROT_WRITE, PROT_READ };
 
 #include "mallocallocator.hh"
 
+#if not HAVE_MPROTECT
+#error mprotect is required to use te DebugAllocator
+#else
+
 namespace Dune
 {
 
@@ -323,5 +327,7 @@ void operator delete(void * p) throw()
 }
 
 #endif // DEBUG_NEW_DELETE
+
+#endif // HAVE_PROTECT
 
 #endif // DUNE_DEBUG_ALLOCATOR_HH
