@@ -10,7 +10,7 @@
 
 namespace Dune {
 
-  //! An interface class for cloneable objects
+  //! An interface class for dcloneable objects
   struct Cloneable {
 
     /** \brief Clones the object
