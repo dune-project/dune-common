@@ -275,15 +275,25 @@ namespace Dune
     return s;
   }
 
+  #define DUNE_BINOP(OP) \
+    template <int k> \
+    inline bigunsignedint<k> bigunsignedint<k>::operator OP (const bigunsignedint<k> &x) const \
+    { \
+      auto temp = *this; \
+      temp OP##= x; \
+      return temp; \
+    }
 
-  // Operators
-  template <int k>
-  inline bigunsignedint<k> bigunsignedint<k>::operator+ (const bigunsignedint<k>& x) const
-  {
-    auto temp = x;
-    temp += *this;
-    return temp;
-  }
+  DUNE_BINOP(+);
+  DUNE_BINOP(-);
+  DUNE_BINOP(*);
+  DUNE_BINOP(/);
+  DUNE_BINOP(%);
+  DUNE_BINOP(&);
+  DUNE_BINOP(^);
+  DUNE_BINOP(|);
+
+  #undef DUNE_BINOP
 
   template <int k>
   inline bigunsignedint<k>& bigunsignedint<k>::operator+= (const bigunsignedint<k>& x)
@@ -297,14 +307,6 @@ namespace Dune
       overflow = (sum>>bits)&overflowmask;
     }
     return *this;
-  }
-
-  template <int k>
-  inline bigunsignedint<k> bigunsignedint<k>::operator- (const bigunsignedint<k>& x) const
-  {
-    auto result = *this;
-    result -= x;
-    return result;
   }
 
   template <int k>
@@ -327,14 +329,6 @@ namespace Dune
       }
     }
     return *this;
-  }
-
-  template <int k>
-  inline bigunsignedint<k> bigunsignedint<k>::operator* (const bigunsignedint<k>& x) const
-  {
-    auto temp = x;
-    temp *= *this;
-    return temp;
   }
 
   template <int k>
@@ -374,14 +368,6 @@ namespace Dune
   }
 
   template <int k>
-  inline bigunsignedint<k> bigunsignedint<k>::operator/ (const bigunsignedint<k>& x) const
-  {
-    auto tmp = *this;
-    tmp /= x;
-    return tmp;
-  }
-
-  template <int k>
   inline bigunsignedint<k>& bigunsignedint<k>::operator/= (const bigunsignedint<k>& x)
   {
     if(x==0)
@@ -401,14 +387,6 @@ namespace Dune
   }
 
   template <int k>
-  inline bigunsignedint<k> bigunsignedint<k>::operator% (const bigunsignedint<k>& x) const
-  {
-    auto temp = *this;
-    temp %= x;
-    return temp;
-  }
-
-  template <int k>
   inline bigunsignedint<k>& bigunsignedint<k>::operator%= (const bigunsignedint<k>& x)
   {
     // better slow than nothing
@@ -421,14 +399,6 @@ namespace Dune
   }
 
   template <int k>
-  inline bigunsignedint<k> bigunsignedint<k>::operator& (const bigunsignedint<k>& x) const
-  {
-    auto temp = *this;
-    temp &= x;
-    return temp;
-  }
-
-  template <int k>
   inline bigunsignedint<k>& bigunsignedint<k>::operator&= (const bigunsignedint<k>& x)
   {
     for (unsigned int i=0; i<n; i++)
@@ -437,26 +407,10 @@ namespace Dune
   }
 
   template <int k>
-  inline bigunsignedint<k> bigunsignedint<k>::operator^ (const bigunsignedint<k>& x) const
-  {
-    auto temp = *this;
-    *this ^= x;
-    return;
-  }
-
-  template <int k>
   inline bigunsignedint<k>& bigunsignedint<k>::operator^= (const bigunsignedint<k>& x)
   {
     for (unsigned int i=0; i<n; i++)
       digit[i] = digit[i]^x.digit[i];
-    return *this;
-  }
-
-  template <int k>
-  inline bigunsignedint<k> bigunsignedint<k>::operator| (const bigunsignedint<k>& x) const
-  {
-    auto temp = *this;
-    *this |= temp;
     return *this;
   }
 
