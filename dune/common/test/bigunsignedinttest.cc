@@ -109,6 +109,14 @@ int main()
     Dune::hash<BigInteger> hasher;
     CHECK(hasher(BigInteger(100)) == hasher(BigInteger(100)));
   }
+  const BigInteger one{1};
+  const BigInteger zero{0};
+  CHECK((one & one) == one);
+  CHECK((one & zero) == zero);
+  CHECK((one | one) == one);
+  CHECK((one | zero) == one);
+  CHECK((one ^ one) == zero);
+  CHECK((one ^ zero) == one);
 
   return pass ? 0 : 1;
 }
