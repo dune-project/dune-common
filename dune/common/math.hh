@@ -36,15 +36,17 @@ namespace Dune
   template< class T >
   struct StandardMathematicalConstants
   {
-    static T e ()
+    static const T e ()
     {
-      static const T e = std::exp( T( 1 ) );
+      using std::exp;
+      static const T e = exp( T( 1 ) );
       return e;
     }
 
-    static T pi ()
+    static const T pi ()
     {
-      static const T pi = std::acos( T( -1 ) );
+      using std::acos;
+      static const T pi = acos( T( -1 ) );
       return pi;
     }
   };

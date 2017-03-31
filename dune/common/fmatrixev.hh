@@ -14,6 +14,7 @@
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
+#include <dune/common/math.hh>
 
 namespace Dune {
 
@@ -57,6 +58,7 @@ namespace Dune {
     static void eigenValues(const FieldMatrix<K, 2, 2>& matrix,
                             FieldVector<K, 2>& eigenvalues)
     {
+      using std::sqrt;
       const K detM = matrix[0][0] * matrix[1][1] - matrix[1][0] * matrix[0][1];
       const K p = 0.5 * (matrix[0][0] + matrix [1][1]);
       K q = p * p - detM;
@@ -69,7 +71,7 @@ namespace Dune {
       }
 
       // get square root
-      q = std :: sqrt(q);
+      q = sqrt(q);
 
       // store eigenvalues in ascending order
       eigenvalues[0] = p - q;
@@ -92,6 +94,9 @@ namespace Dune {
     static void eigenValues(const FieldMatrix<K, 3, 3>& matrix,
                             FieldVector<K, 3>& eigenvalues)
     {
+      using std::sqrt;
+      using std::acos;
+      const K pi = MathematicalConstants<K>::pi();
       K p1 = matrix[0][1]*matrix[0][1] + matrix[0][2]*matrix[0][2] + matrix[1][2]*matrix[1][2];
 
       if (p1 <= 1e-8)
@@ -109,7 +114,7 @@ namespace Dune {
           q += matrix[i][i]/3.0;
 
         K p2 = (matrix[0][0] - q)*(matrix[0][0] - q) + (matrix[1][1] - q)*(matrix[1][1] - q) + (matrix[2][2] - q)*(matrix[2][2] - q) + 2 * p1;
-        K p = std::sqrt(p2 / 6);
+        K p = sqrt(p2 / 6);
         // B = (1 / p) * (A - q * I);       // I is the identity matrix
         FieldMatrix<K,3,3> B;
         for (int i=0; i<3; i++)
@@ -122,15 +127,15 @@ namespace Dune {
         // but computation error can leave it slightly outside this range.
         K phi;
         if (r <= -1)
-          phi = M_PI / 3.0;
+          phi = pi / 3.0;
         else if (r >= 1)
           phi = 0;
         else
-          phi = std::acos(r) / 3;
+          phi = acos(r) / 3;
 
         // the eigenvalues satisfy eig[2] <= eig[1] <= eig[0]
         eigenvalues[2] = q + 2 * p * cos(phi);
-        eigenvalues[0] = q + 2 * p * cos(phi + (2*M_PI/3));
+        eigenvalues[0] = q + 2 * p * cos(phi + (2*pi/3));
         eigenvalues[1] = 3 * q - eigenvalues[0] - eigenvalues[2];     // since trace(matrix) = eig1 + eig2 + eig3
       }
     }
