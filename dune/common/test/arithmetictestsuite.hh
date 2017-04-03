@@ -116,7 +116,7 @@ namespace Dune {
         T t3{ std::move(t2) };
         T t4 = { std::move(t3) };
 
-        DUNE_TEST_CHECK(int(t4) == i);
+        DUNE_TEST_CHECK(bool(t4 == T(i)));
       }
     }
 
@@ -134,11 +134,11 @@ namespace Dune {
         T t3{ t2 };
         T t4 = { t3 };
 
-        DUNE_TEST_CHECK(int(t0) == i);
-        DUNE_TEST_CHECK(int(t1) == i);
-        DUNE_TEST_CHECK(int(t2) == i);
-        DUNE_TEST_CHECK(int(t3) == i);
-        DUNE_TEST_CHECK(int(t4) == i);
+        DUNE_TEST_CHECK(bool(t0 == T(i)));
+        DUNE_TEST_CHECK(bool(t1 == T(i)));
+        DUNE_TEST_CHECK(bool(t2 == T(i)));
+        DUNE_TEST_CHECK(bool(t3 == T(i)));
+        DUNE_TEST_CHECK(bool(t4 == T(i)));
       }
     }
 
@@ -155,7 +155,7 @@ namespace Dune {
         t2 = std::move(t0);
         t4 = { std::move(t2) };
 
-        DUNE_TEST_CHECK(int(t4) == i);
+        DUNE_TEST_CHECK(bool(t4 == T(i)));
       }
     }
 
@@ -172,9 +172,9 @@ namespace Dune {
         t2 = t0;
         t4 = { t2 };
 
-        DUNE_TEST_CHECK(int(t0) == i);
-        DUNE_TEST_CHECK(int(t2) == i);
-        DUNE_TEST_CHECK(int(t4) == i);
+        DUNE_TEST_CHECK(bool(t0 == T(i)));
+        DUNE_TEST_CHECK(bool(t2 == T(i)));
+        DUNE_TEST_CHECK(bool(t4 == T(i)));
       }
     }
 
