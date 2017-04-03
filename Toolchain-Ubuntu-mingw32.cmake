@@ -9,13 +9,13 @@ set(CMAKE_SYSTEM_NAME Windows)
 set(TOOLCHAIN_PREFIX i686-w64-mingw32)
 
 # cross compilers to use for C and C++
-set(CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}-gcc)
-set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}-g++)
-set(CMAKE_Fortran_COMPILER ${TOOLCHAIN_PREFIX}-gfortran)
+set(CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}-gcc-posix)
+set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}-g++-posix)
+set(CMAKE_Fortran_COMPILER ${TOOLCHAIN_PREFIX}-gfortran-posix)
 set(CMAKE_RC_COMPILER ${TOOLCHAIN_PREFIX}-windres)
 
 # we want to be fully static!
-set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++"  CACHE STRING "executable linker flags")
+set(CMAKE_EXE_LINKER_FLAGS "-static -static-libgcc -static-libstdc++"  CACHE STRING "executable linker flags")
 
 # target environment on the build host system
 #   set 1st to dir with the cross compiler's C/C++ headers/libs
@@ -29,7 +29,7 @@ set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
 # enable/disable some hardware specific feature
-set(THREADS_PTHREAD_ARG "-lpthread")
-set(STDTHREAD_LINK_FLAGS "-lpthread")
+set(THREADS_PTHREAD_ARG "-pthread")
+set(STDTHREAD_LINK_FLAGS "-pthread")
 set(STDTHREAD_WORKS true)
 
