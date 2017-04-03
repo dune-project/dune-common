@@ -276,8 +276,8 @@ namespace Dune {
     {
       DUNE_TEST_FUNCTION(T, tag);
 
-      DUNE_TEST_CHECK(bool(T(!T(0))));
-      DUNE_TEST_CHECK(!bool(T(!T(1))));
+      DUNE_TEST_CHECK(bool(!T(0)));
+      DUNE_TEST_CHECK(!bool(!T(1)));
     }
 
     //! check prefix `~`
