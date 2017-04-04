@@ -6,6 +6,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <istream>
+#include <ostream>
 #include <type_traits>
 #include <utility>
 
@@ -94,6 +96,21 @@ namespace Dune {
     template<class U,
              class = std::enable_if_t<std::is_convertible<T, U>::value> >
     explicit operator U() const { return value_; }
+
+    // I/O
+    template<class charT, class Traits>
+    friend std::basic_istream<charT, Traits>&
+    operator>>(std::basic_istream<charT, Traits>& str, AlignedNumber &u)
+    {
+      return str >> u.value_;
+    }
+
+    template<class charT, class Traits>
+    friend std::basic_ostream<charT, Traits>&
+    operator<<(std::basic_ostream<charT, Traits>& str, const AlignedNumber &u)
+    {
+      return str << u.value_;
+    }
 
     // The trick with `template<class U = T, class = void_t<expr(U)> >` is
     // needed because at least g++-4.9 seems to evaluates a default argument
