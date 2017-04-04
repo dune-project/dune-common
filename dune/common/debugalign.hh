@@ -3,8 +3,10 @@
 #ifndef DUNE_DEBUGALIGN_HH
 #define DUNE_DEBUGALIGN_HH
 
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib> // abs
 #include <functional>
 #include <istream>
 #include <ostream>
@@ -241,6 +243,88 @@ namespace Dune {
   DUNE_BINARY_OP(||);
 
 #undef DUNE_BINARY_OP
+
+  // <cmath> functions
+#define DUNE_UNARY_FUNC(name)                           \
+  template<class T, std::size_t align>                  \
+  decltype(auto) name(const AlignedNumber<T, align> &u) \
+  {                                                     \
+    using std::name;                                    \
+    return aligned<align>(name(T(u)));                  \
+  }
+
+  DUNE_UNARY_FUNC(abs);
+  DUNE_UNARY_FUNC(acos);
+  DUNE_UNARY_FUNC(acosh);
+  DUNE_UNARY_FUNC(asin);
+  DUNE_UNARY_FUNC(asinh);
+  DUNE_UNARY_FUNC(atan);
+  // atan2
+  DUNE_UNARY_FUNC(atanh);
+  DUNE_UNARY_FUNC(cbrt);
+  DUNE_UNARY_FUNC(ceil);
+  // copysign
+  DUNE_UNARY_FUNC(cos);
+  DUNE_UNARY_FUNC(cosh);
+  DUNE_UNARY_FUNC(erf);
+  DUNE_UNARY_FUNC(erfc);
+  DUNE_UNARY_FUNC(exp);
+  DUNE_UNARY_FUNC(exp2);
+  DUNE_UNARY_FUNC(expm1);
+  DUNE_UNARY_FUNC(fabs);
+  // fdim
+  DUNE_UNARY_FUNC(floor);
+  // fma
+  // fmax
+  // fmin
+  // fmod
+  // frexp
+  // hypos
+  DUNE_UNARY_FUNC(ilogb);
+  // ldexp
+  DUNE_UNARY_FUNC(lgamma);
+  DUNE_UNARY_FUNC(llrint);
+  DUNE_UNARY_FUNC(llround);
+  DUNE_UNARY_FUNC(log);
+  DUNE_UNARY_FUNC(log10);
+  DUNE_UNARY_FUNC(log1p);
+  DUNE_UNARY_FUNC(log2);
+  DUNE_UNARY_FUNC(logb);
+  DUNE_UNARY_FUNC(lrint);
+  DUNE_UNARY_FUNC(lround);
+  // modf
+  DUNE_UNARY_FUNC(nearbyint);
+  // nextafter
+  // nexttoward
+  // pow
+  // remainder
+  // remquo
+  DUNE_UNARY_FUNC(rint);
+  DUNE_UNARY_FUNC(round);
+  // scalbln
+  // scalbn
+  DUNE_UNARY_FUNC(sin);
+  DUNE_UNARY_FUNC(sinh);
+  DUNE_UNARY_FUNC(sqrt);
+  DUNE_UNARY_FUNC(tan);
+  DUNE_UNARY_FUNC(tanh);
+  DUNE_UNARY_FUNC(tgamma);
+  DUNE_UNARY_FUNC(trunc);
+
+  DUNE_UNARY_FUNC(isfinite);
+  DUNE_UNARY_FUNC(isinf);
+  DUNE_UNARY_FUNC(isnan);
+  DUNE_UNARY_FUNC(isnormal);
+  DUNE_UNARY_FUNC(signbit);
+
+  // isgreater
+  // isgreaterequal
+  // isless
+  // islessequal
+  // islessgreater
+  // isunordered
+
+#undef DUNE_UNARY_FUNC
 
   // SIMD-like functions
   template<class T, std::size_t align>
