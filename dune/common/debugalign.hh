@@ -225,6 +225,39 @@ namespace Dune {
 
 #undef DUNE_BINARY_OP
 
+  // SIMD-like functions
+  template<class T, std::size_t align>
+  AlignedNumber<T, align>
+  cond(const AlignedNumber<bool, align> &b,
+       const AlignedNumber<T, align> &v1, const AlignedNumber<T, align> &v2)
+  {
+    return b ? v1 : v2;
+  }
+
+  template<class T, std::size_t align>
+  T max_value(const AlignedNumber<T, align>& val)
+  {
+    return T(val);
+  }
+
+  template<class T, std::size_t align>
+  T min_value(const AlignedNumber<T, align>& val)
+  {
+    return T(val);
+  }
+
+  template<std::size_t align>
+  bool any_true(const AlignedNumber<bool, align>& val)
+  {
+    return bool(val);
+  }
+
+  template<std::size_t align>
+  bool all_true(const AlignedNumber<bool, align>& val)
+  {
+    return bool(val);
+  }
+
 } // namespace Dune
 
 #endif // DUNE_DEBUGALIGN_HH
