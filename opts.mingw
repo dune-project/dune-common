@@ -1,7 +1,2 @@
-CMAKE_FLAGS="-DCMAKE_TOOLCHAIN_FILE=/home/christi/DUNE-mingw/common/Toolchain-Ubuntu-mingw32.cmake
-"
-
-# DTHREADS_PTHREAD_ARG='-lpthread'
-# DSTDTHREAD_LINK_FLAGS='-lpthread'
-# DSTDTHREAD_WORKS=true
-# DCMAKE_EXE_LINKER_FLAGS='-static-libgcc -static-libstdc++ '
+BUILDDIR=build-mingw
+CMAKE_FLAGS="-DCMAKE_TOOLCHAIN_FILE=$PATH_dune_common/Toolchain-Ubuntu-mingw32.cmake"
