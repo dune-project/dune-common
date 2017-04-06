@@ -47,6 +47,8 @@ void checkAlignmentViolation(Dune::TestSuite &test)
 
   void* misalignedAddr;
   {
+    // a more portable way to ddo this would be to use std::align(), but that
+    // isn't supported by g++-4.9 yet
     auto addr = std::uintptr_t( (void*)buffer );
     addr += alignof(T) - 1;
     addr &= -std::uintptr_t(alignof(T));

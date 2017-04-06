@@ -47,6 +47,8 @@ namespace Dune {
   //! check whether an address conforms to the given alignment
   inline bool isAligned(const void *p, std::size_t align)
   {
+    // a more portable way to do this would be to abuse std::align(), but that
+    // isn't supported by g++-4.9 yet
     return std::uintptr_t(p) % align == 0;
   }
 
