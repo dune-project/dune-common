@@ -26,6 +26,7 @@ dune_add_library("dunecommon"
 #install headers
 install(FILES
         alignment.hh
+        alignedallocator.hh
         array.hh
         arraylist.hh
         assertandreturn.hh
