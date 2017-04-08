@@ -77,7 +77,7 @@ namespace Dune {
 
   namespace AlignedNumberImpl {
 
-    template<class T, std::size_t align>
+    template<class T, std::size_t align = debugAlignment>
     class AlignedNumber;
 
   } // namespace AlignedNumberImpl
@@ -97,7 +97,7 @@ namespace Dune {
   namespace AlignedNumberImpl {
 
     //! aligned wrappers for arithmetic types
-    template<class T, std::size_t align = debugAlignment>
+    template<class T, std::size_t align>
     class AlignedNumber
       : public AlignedBase<align, AlignedNumber<T, align> >
     {
