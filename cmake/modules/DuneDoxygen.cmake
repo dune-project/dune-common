@@ -105,6 +105,7 @@ macro(add_doxygen_target)
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
       file(GLOB doxygenfiles
         GLOB ${CMAKE_CURRENT_BINARY_DIR}/html/*.html
+        ${CMAKE_CURRENT_BINARY_DIR}/html/*.js
         ${CMAKE_CURRENT_BINARY_DIR}/html/*.png
         ${CMAKE_CURRENT_BINARY_DIR}/html/*.css
         ${CMAKE_CURRENT_BINARY_DIR}/html/*.gif)
