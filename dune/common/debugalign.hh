@@ -15,6 +15,7 @@
 
 #include <dune/common/classname.hh>
 #include <dune/common/typetraits.hh>
+#include <dune/common/simd.hh>
 
 namespace Dune {
 
@@ -387,6 +388,13 @@ namespace Dune {
   {
     return bool(val);
   }
+
+  //! deduce the underlying scalar data type of an AlignedNumber
+  template<typename T, std::size_t align>
+  struct SimdScalarTypeTraits< AlignedNumber<T,align> >
+  {
+    using type = T;
+  };
 
 } // namespace Dune
 
