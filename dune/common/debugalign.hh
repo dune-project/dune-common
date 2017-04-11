@@ -322,6 +322,8 @@ namespace Dune {
     // nextafter
     // nexttoward
     // pow
+    // real
+    DUNE_UNARY_FUNC(real);
     // remainder
     // remquo
     DUNE_UNARY_FUNC(rint);
