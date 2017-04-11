@@ -1,3 +1,6 @@
+dune_add_test(SOURCES arithmetictestsuitetest.cc
+              LINK_LIBRARIES dunecommon)
+
 dune_add_test(SOURCES arraylisttest.cc)
 
 dune_add_test(SOURCES arraytest.cc)
@@ -236,6 +239,7 @@ dune_add_test(SOURCES eigenvaluestest.cc
 
 install(
   FILES
-  testsuite.hh
+  arithmetictestsuite.hh
   collectorstream.hh
+  testsuite.hh
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common/test)
