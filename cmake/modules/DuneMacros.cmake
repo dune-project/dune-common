@@ -137,6 +137,7 @@ include(DuneTestMacros)
 include(OverloadCompilerFlags)
 include(DuneSymlinkOrCopy)
 include(DunePathHelper)
+include(DuneExecuteProcess)
 
 # Converts a module name given by _module into an uppercase string
 # _upper where all dashes (-) are replaced by underscores (_)
