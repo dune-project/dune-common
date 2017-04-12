@@ -14,8 +14,8 @@ set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}-g++-posix)
 set(CMAKE_Fortran_COMPILER ${TOOLCHAIN_PREFIX}-gfortran-posix)
 set(CMAKE_RC_COMPILER ${TOOLCHAIN_PREFIX}-windres)
 
-# we want to be fully static!
-set(CMAKE_EXE_LINKER_FLAGS "-static -static-libgcc -static-libstdc++"  CACHE STRING "executable linker flags")
+# enable to generate fully static binaries
+# set(CMAKE_EXE_LINKER_FLAGS "-static -static-libgcc -static-libstdc++"  CACHE STRING "executable linker flags")
 
 # target environment on the build host system
 #   set 1st to dir with the cross compiler's C/C++ headers/libs
