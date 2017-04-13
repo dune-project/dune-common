@@ -284,14 +284,14 @@ namespace Dune
       return temp; \
     }
 
-  DUNE_BINOP(+);
-  DUNE_BINOP(-);
-  DUNE_BINOP(*);
-  DUNE_BINOP(/);
-  DUNE_BINOP(%);
-  DUNE_BINOP(&);
-  DUNE_BINOP(^);
-  DUNE_BINOP(|);
+  DUNE_BINOP(+)
+  DUNE_BINOP(-)
+  DUNE_BINOP(*)
+  DUNE_BINOP(/)
+  DUNE_BINOP(%)
+  DUNE_BINOP(&)
+  DUNE_BINOP(^)
+  DUNE_BINOP(|)
 
   #undef DUNE_BINOP
 
