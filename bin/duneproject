@@ -984,6 +984,6 @@ touch $PROJECT/stamp-regenerate-config-h
 echo
 echo "done."
 echo "------------------------------------------"
-echo "For further details read the Dune Buildsystem-Howto:"
-echo "http://www.dune-project.org/doc/buildsystem/buildsystem.pdf"
+echo "For further details read the Dune build system documentation at"
+echo "https://www.dune-project.org/buildsystem/"
 
