@@ -1,0 +1,2 @@
+BUILDDIR=build-mingw
+CMAKE_FLAGS="-DCMAKE_TOOLCHAIN_FILE=$PATH_dune_common/Toolchain-Ubuntu-mingw32.cmake"

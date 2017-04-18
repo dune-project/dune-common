@@ -8,7 +8,7 @@
 #define DefineImplementation(IF,T,PARAM...)     \
     struct T : public IF {                      \
         T(PARAM) {}                          \
-        virtual std::string info() {            \
+        std::string info() override {            \
             return #T;                          \
         }                                       \
     }

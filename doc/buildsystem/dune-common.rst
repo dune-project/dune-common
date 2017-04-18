@@ -229,7 +229,7 @@ How do I change my compiler and compiler flags?
 In general, there are multiple ways to do this:
 
 * Setting the CMake variables :ref:`CMAKE_<LANG>_COMPILER` (with :code:`LANG` being :code:`C`
-  or :code:`CXX` or :code:`Fortran`) from the opts file
+  or :code:`CXX` or :code:`Fortran`) from the opts file, e.g. via :code:`CMAKE_FLAGS="-DCMAKE_CXX_COMPILER=otherc++"`.
 * Setting those variables within the project with the :code:`set` command
 * Setting the environment variables :code:`CC`, :code:`CXX`, :code:`FC` etc.
 

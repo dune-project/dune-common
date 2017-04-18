@@ -49,7 +49,7 @@ struct Refines
 
 
 
-namespace Imp {
+namespace Impl {
 
   // #############################################################################
   // # All functions following here are implementation details
@@ -98,7 +98,7 @@ namespace Imp {
   // and all concepts in the list C1,..,CN.
   template<class...T, class C0, class... CC>
   constexpr bool modelsConceptList(TypeList<C0, CC...>)
-  { return Imp::models<C0, T...>() and modelsConceptList<T...>(TypeList<CC...>()); }
+  { return models<C0, T...>() and modelsConceptList<T...>(TypeList<CC...>()); }
 
 
 
@@ -134,7 +134,7 @@ namespace Imp {
     return modelsConcept<C, T...>(PriorityTag<42>());
   }
 
-} // namespace Dune::Concept::Imp
+} // namespace Dune::Concept::Impl
 
 } // namespace Dune::Concept
 
@@ -171,14 +171,14 @@ namespace Imp {
 template<class C, class... T>
 constexpr auto models()
 {
-  return Std::bool_constant<Concept::Imp::models<C, T...>()>();
+  return Std::bool_constant<Concept::Impl::models<C, T...>()>();
 }
 
 
 
 namespace Concept {
 
-namespace Imp {
+namespace Impl {
 
   // #############################################################################
   // # All functions following here are implementation details for the
@@ -196,7 +196,7 @@ namespace Imp {
     using Result = typename ReduceTuple<AccumulateFunctor, Tuple, std::true_type>::type;
   };
 
-} // namespace Dune::Concept::Imp
+} // namespace Dune::Concept::Impl
 
 
 
@@ -207,7 +207,7 @@ namespace Imp {
 
 template<class C, class Tuple>
 constexpr auto tupleEntriesModel()
-  -> typename Imp::TupleEntriesModelHelper<C, Tuple>::Result
+  -> typename Impl::TupleEntriesModelHelper<C, Tuple>::Result
 {
   return {};
 }

@@ -9,9 +9,13 @@ elseif(BLAS_FOUND)
   set(_additional_libs ${BLAS_LIBRARIES})
 endif(LAPACK_FOUND)
 
+if(HAVE_MPROTECT)
+  set(debugallocator_src "debugallocator.cc")
+endif(HAVE_MPROTECT)
+
 dune_add_library("dunecommon"
   debugalign.cc
-  debugallocator.cc
+  ${debugallocator_src}
   dynmatrixev.cc
   exceptions.cc
   fmatrixev.cc

@@ -54,9 +54,9 @@ namespace Dune
       const CollectiveCommunication<T> comm;
       GenericGuardCommunicator(const CollectiveCommunication<T> & c) :
         comm(c) {}
-      virtual int rank() { return comm.rank(); };
-      virtual int size() { return comm.size(); };
-      virtual int sum(int i) { return comm.sum(i); }
+      int rank() override { return comm.rank(); };
+      int size() override { return comm.size(); };
+      int sum(int i) override { return comm.sum(i); }
     };
 
 #if HAVE_MPI

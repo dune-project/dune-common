@@ -196,37 +196,43 @@ dune_add_test(SOURCES stringutilitytest.cc
               LINK_LIBRARIES dunecommon)
 
 dune_add_test(SOURCES testdebugallocator.cc
-              LINK_LIBRARIES dunecommon)
+              LINK_LIBRARIES dunecommon
+              CMAKE_GUARD HAVE_MPROTECT)
 
 dune_add_test(NAME testdebugallocator_fail1
               SOURCES testdebugallocator.cc
               LINK_LIBRARIES dunecommon
               COMPILE_DEFINITIONS "FAILURE1;EXPECTED_SIGNAL=SIGSEGV;EXPECTED_ALT_SIGNAL=SIGBUS"
-              EXPECT_FAIL)
+              EXPECT_FAIL
+              CMAKE_GUARD HAVE_MPROTECT)
 
 dune_add_test(NAME testdebugallocator_fail2
               SOURCES testdebugallocator.cc
               LINK_LIBRARIES dunecommon
               COMPILE_DEFINITIONS "FAILURE2;EXPECTED_SIGNAL=SIGABRT"
-              EXPECT_FAIL)
+              EXPECT_FAIL
+              CMAKE_GUARD HAVE_MPROTECT)
 
 dune_add_test(NAME testdebugallocator_fail3
               SOURCES testdebugallocator.cc
               LINK_LIBRARIES dunecommon
               COMPILE_DEFINITIONS "FAILURE3;EXPECTED_SIGNAL=SIGABRT"
-              EXPECT_FAIL)
+              EXPECT_FAIL
+              CMAKE_GUARD HAVE_MPROTECT)
 
 dune_add_test(NAME testdebugallocator_fail4
               SOURCES testdebugallocator.cc
               LINK_LIBRARIES dunecommon
               COMPILE_DEFINITIONS "FAILURE4;DEBUG_ALLOCATOR_KEEP=1;EXPECTED_SIGNAL=SIGSEGV;EXPECTED_ALT_SIGNAL=SIGBUS"
-              EXPECT_FAIL)
+              EXPECT_FAIL
+              CMAKE_GUARD HAVE_MPROTECT)
 
 dune_add_test(NAME testdebugallocator_fail5
               SOURCES testdebugallocator.cc
               LINK_LIBRARIES dunecommon
               COMPILE_DEFINITIONS "FAILURE5;EXPECTED_SIGNAL=SIGSEGV;EXPECTED_ALT_SIGNAL=SIGBUS"
-              EXPECT_FAIL)
+              EXPECT_FAIL
+              CMAKE_GUARD HAVE_MPROTECT)
 
 dune_add_test(SOURCES testfloatcmp.cc)
 

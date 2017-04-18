@@ -56,7 +56,7 @@ namespace Dune
 
 #ifndef DOXYGEN
 
-    namespace impl {
+    namespace Impl {
 
       template<typename T, T i, T n, T... indices>
       struct _make_integer_sequence
@@ -74,7 +74,7 @@ namespace Dune
 #endif // DOXYGEN
 
     template<typename T, T n>
-    using make_integer_sequence = typename impl::_make_integer_sequence<T,0,n>::type;
+    using make_integer_sequence = typename Impl::_make_integer_sequence<T,0,n>::type;
 
     template<std::size_t n>
     using make_index_sequence = make_integer_sequence<std::size_t,n>;
