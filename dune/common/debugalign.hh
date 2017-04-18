@@ -4,6 +4,7 @@
 #define DUNE_DEBUGALIGN_HH
 
 #include <cmath>
+#include <complex>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib> // abs
@@ -270,7 +271,10 @@ namespace Dune {
 
 #undef DUNE_BINARY_OP
 
-    // <cmath> functions
+    //////////////////////////////////////////////////////////////////////
+    //
+    // Overloads for the functions provided by the standard library
+    //
 #define DUNE_UNARY_FUNC(name)                               \
     template<class T, std::size_t align>                    \
     decltype(auto) name(const AlignedNumber<T, align> &u)   \
@@ -279,6 +283,18 @@ namespace Dune {
       return aligned<align>(name(T(u)));                    \
     }
 
+    //
+    // <cmath> functions
+    //
+
+    // note: only unary functions are provided at the moment.  Getting all the
+    // overloads right for functions with more than one aregument is tricky.
+    // All <cmath> functions appear in the list below in the order they are
+    // listet in in the standard, but the unimplemented ones are commented
+    // out.
+
+    // note: abs is provided by both <cstdlib> (for integer) and <cmath> (for
+    // floating point).  This overload works for both.
     DUNE_UNARY_FUNC(abs);
     DUNE_UNARY_FUNC(acos);
     DUNE_UNARY_FUNC(acosh);
@@ -323,8 +339,6 @@ namespace Dune {
     // nextafter
     // nexttoward
     // pow
-    // real
-    DUNE_UNARY_FUNC(real);
     // remainder
     // remquo
     DUNE_UNARY_FUNC(rint);
@@ -351,6 +365,14 @@ namespace Dune {
     // islessequal
     // islessgreater
     // isunordered
+
+    //
+    // <complex> functions
+    //
+
+    // not all functions are implemented, und unlike for <cmath>, no
+    // comprehensive list is provided
+    DUNE_UNARY_FUNC(real);
 
 #undef DUNE_UNARY_FUNC
 
