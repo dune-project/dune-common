@@ -37,8 +37,10 @@ int main()
     ToUniquePtr<int> w2 = makeToUnique<int>(2);
 
     // test conversion to pointer
+    DUNE_NO_DEPRECATED_BEGIN
     int* p1 = f1();
     A* p2 = g();
+    DUNE_NO_DEPRECATED_END
 
     delete p1;
     delete p2;
