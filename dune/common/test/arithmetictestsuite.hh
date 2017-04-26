@@ -670,27 +670,27 @@ namespace Dune {
     template<class T>                           \
     void checkAssign##name(Tag) {}
 
-    DUNE_TEST_ASSIGN(*,      Mul,    Arithmetic, (0, 1, 2, 3), (0, 1, 2, 3));
-    DUNE_TEST_ASSIGN(/,      Div,    Arithmetic, (0, 1, 2, 3), (   1, 2, 3));
-    DUNE_TEST_ASSIGN(%,      Rem,    Arithmetic, (0, 1, 2, 3), (   1, 2, 3));
-    DUNE_TEST_ASSIGN_DISABLE(Rem,    Floating);
+    DUNE_TEST_ASSIGN(*,      Mul,    Arithmetic, (0, 1, 2, 3), (0, 1, 2, 3))
+    DUNE_TEST_ASSIGN(/,      Div,    Arithmetic, (0, 1, 2, 3), (   1, 2, 3))
+    DUNE_TEST_ASSIGN(%,      Rem,    Arithmetic, (0, 1, 2, 3), (   1, 2, 3))
+    DUNE_TEST_ASSIGN_DISABLE(Rem,    Floating)
 
-    DUNE_TEST_ASSIGN(+,      Plus,   Arithmetic, (0, 1, 2, 3), (0, 1, 2, 3));
-    DUNE_TEST_ASSIGN(-,      Minus,  Arithmetic, (0, 1, 2, 3), (0, 1, 2, 3));
+    DUNE_TEST_ASSIGN(+,      Plus,   Arithmetic, (0, 1, 2, 3), (0, 1, 2, 3))
+    DUNE_TEST_ASSIGN(-,      Minus,  Arithmetic, (0, 1, 2, 3), (0, 1, 2, 3))
 
-    DUNE_TEST_ASSIGN(<<,     LShift, Integral,   (0, 1, 2, 3), (0, 1, 2, 3));
-    DUNE_TEST_ASSIGN(>>,     RShift, Integral,   (0, 1, 2, 3), (0, 1, 2, 3));
-    DUNE_TEST_ASSIGN(<<,     LShift, Boolean,    (0, 1      ), (0, 1      ));
-    DUNE_TEST_ASSIGN(>>,     RShift, Boolean,    (0, 1      ), (0, 1      ));
-    DUNE_TEST_ASSIGN_DISABLE(LShift, Floating);
-    DUNE_TEST_ASSIGN_DISABLE(RShift, Floating);
+    DUNE_TEST_ASSIGN(<<,     LShift, Integral,   (0, 1, 2, 3), (0, 1, 2, 3))
+    DUNE_TEST_ASSIGN(>>,     RShift, Integral,   (0, 1, 2, 3), (0, 1, 2, 3))
+    DUNE_TEST_ASSIGN(<<,     LShift, Boolean,    (0, 1      ), (0, 1      ))
+    DUNE_TEST_ASSIGN(>>,     RShift, Boolean,    (0, 1      ), (0, 1      ))
+    DUNE_TEST_ASSIGN_DISABLE(LShift, Floating)
+    DUNE_TEST_ASSIGN_DISABLE(RShift, Floating)
 
-    DUNE_TEST_ASSIGN(&,      BitAnd, Integral,   (0, 1, 2, 3), (0, 1, 2, 3));
-    DUNE_TEST_ASSIGN(^,      BitXor, Integral,   (0, 1, 2, 3), (0, 1, 2, 3));
-    DUNE_TEST_ASSIGN(|,      BitOr,  Integral,   (0, 1, 2, 3), (0, 1, 2, 3));
-    DUNE_TEST_ASSIGN_DISABLE(BitAnd, Floating);
-    DUNE_TEST_ASSIGN_DISABLE(BitXor, Floating);
-    DUNE_TEST_ASSIGN_DISABLE(BitOr,  Floating);
+    DUNE_TEST_ASSIGN(&,      BitAnd, Integral,   (0, 1, 2, 3), (0, 1, 2, 3))
+    DUNE_TEST_ASSIGN(^,      BitXor, Integral,   (0, 1, 2, 3), (0, 1, 2, 3))
+    DUNE_TEST_ASSIGN(|,      BitOr,  Integral,   (0, 1, 2, 3), (0, 1, 2, 3))
+    DUNE_TEST_ASSIGN_DISABLE(BitAnd, Floating)
+    DUNE_TEST_ASSIGN_DISABLE(BitXor, Floating)
+    DUNE_TEST_ASSIGN_DISABLE(BitOr,  Floating)
 
 #undef DUNE_TEST_ASSIGN_DISABLE
 #undef DUNE_TEST_ASSIGN

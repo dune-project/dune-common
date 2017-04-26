@@ -154,7 +154,7 @@ struct Reciprocal
   template<class T>
   typename TypeEvaluator<T>::Type operator()(const T& val) const {
     return 1./val;
-  };
+  }
 };
 
 int main()
