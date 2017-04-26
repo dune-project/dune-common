@@ -653,22 +653,22 @@ namespace std
     static const float_denorm_style has_denorm = denorm_absent;
     static const bool has_denorm_loss = false;
 
-    static Dune::bigunsignedint<k> infinity() throw()
+    static Dune::bigunsignedint<k> infinity() noexcept
     {
       return static_cast<Dune::bigunsignedint<k> >(0);
     }
 
-    static Dune::bigunsignedint<k> quiet_NaN() throw()
+    static Dune::bigunsignedint<k> quiet_NaN() noexcept
     {
       return static_cast<Dune::bigunsignedint<k> >(0);
     }
 
-    static Dune::bigunsignedint<k> signaling_NaN() throw()
+    static Dune::bigunsignedint<k> signaling_NaN() noexcept
     {
       return static_cast<Dune::bigunsignedint<k> >(0);
     }
 
-    static Dune::bigunsignedint<k> denorm_min() throw()
+    static Dune::bigunsignedint<k> denorm_min() noexcept
     {
       return static_cast<Dune::bigunsignedint<k> >(0);
     }

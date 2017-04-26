@@ -56,14 +56,14 @@ namespace Dune {
      *
      * \param startImmediately If true (default) the timer starts counting immediately
      */
-    Timer (bool startImmediately=true) throw(TimerError)
+    Timer (bool startImmediately=true) noexcept(false)
     {
       isRunning_ = startImmediately;
       reset();
     }
 
     //! Reset timer while keeping the running/stopped state
-    void reset() throw (TimerError)
+    void reset() noexcept(false)
     {
       sumElapsed_ = 0.0;
       storedLastElapsed_ = 0.0;
@@ -72,7 +72,7 @@ namespace Dune {
 
 
     //! Start the timer and continue measurement if it is not running. Otherwise do nothing.
-    void start() throw (TimerError)
+    void start() noexcept(false)
     {
       if (not (isRunning_))
       {
@@ -83,7 +83,7 @@ namespace Dune {
 
 
     //! Get elapsed user-time from last reset until now/last stop in seconds.
-    double elapsed () const throw (TimerError)
+    double elapsed () const noexcept(false)
     {
       // if timer is running add the time elapsed since last start to sum
       if (isRunning_)
@@ -94,7 +94,7 @@ namespace Dune {
 
 
     //! Get elapsed user-time from last start until now/last stop in seconds.
-    double lastElapsed () const throw (TimerError)
+    double lastElapsed () const noexcept(false)
     {
       // if timer is running return the current value
       if (isRunning_)
@@ -106,7 +106,7 @@ namespace Dune {
 
 
     //! Stop the timer and return elapsed().
-    double stop() throw (TimerError)
+    double stop() noexcept(false)
     {
       if (isRunning_)
       {
@@ -127,24 +127,24 @@ namespace Dune {
 
 
 #ifdef TIMER_USE_STD_CLOCK
-    void rawReset() throw (TimerError)
+    void rawReset() noexcept(false)
     {
       cstart = std::clock();
     }
 
-    double rawElapsed () const throw (TimerError)
+    double rawElapsed () const noexcept(false)
     {
       return (std::clock()-cstart) / static_cast<double>(CLOCKS_PER_SEC);
     }
 
     std::clock_t cstart;
 #else
-    void rawReset() throw (TimerError)
+    void rawReset() noexcept(false)
     {
       cstart = std::chrono::high_resolution_clock::now();
     }
 
-    double rawElapsed () const throw (TimerError)
+    double rawElapsed () const noexcept(false)
     {
       std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
       std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double> >(now - cstart);

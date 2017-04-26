@@ -361,7 +361,7 @@ namespace Dune
     /**
      * @brief Not correctly implemented, yet!
      */
-    inline int max_size() const throw(){ return 1;}
+    inline int max_size() const noexcept { return 1; }
 
     /**
      * @brief Rebind the allocator to another type.

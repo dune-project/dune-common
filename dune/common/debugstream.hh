@@ -339,7 +339,7 @@ namespace Dune {
     }
 
     //! \brief restore previously set activation flag
-    void pop() throw(DebugStreamError) {
+    void pop() noexcept(false) {
       if (_actstack.empty())
         DUNE_THROW(DebugStreamError, "No previous activation setting!");
 
@@ -371,7 +371,7 @@ namespace Dune {
     }
 
     //! \brief detach current output stream and restore to previous stream
-    void detach() throw(DebugStreamError) {
+    void detach() noexcept(false) {
       if (current->next == 0)
         DUNE_THROW(DebugStreamError, "Cannot detach initial stream!");
       if (_tied)
@@ -383,7 +383,7 @@ namespace Dune {
     }
 
     // \brief Tie a stream to this one.
-    void tie(DebugStreamState& to) throw(DebugStreamError) {
+    void tie(DebugStreamState& to) noexcept(false) {
       if (to._tied)
         DUNE_THROW(DebugStreamError, "Cannot tie to an already tied stream!");
       if (_tied)
@@ -397,7 +397,7 @@ namespace Dune {
     }
 
     //! \brief Untie stream
-    void untie() throw(DebugStreamError) {
+    void untie() noexcept(false) {
       if(! _tied)
         DUNE_THROW(DebugStreamError, "Cannot untie, stream is not tied!");
 
