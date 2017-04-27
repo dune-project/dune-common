@@ -281,8 +281,10 @@ namespace Dune
        * The deleted flag will be set in the local index.
        * The index will be removed in the endResize method of the
        * index set.
+       *
+       * @exception InvalidIndexSetState only when NDEBUG is not defined
        */
-      inline void markAsDeleted() const throw(InvalidIndexSetState)
+      inline void markAsDeleted() const
       {
 #ifndef NDEBUG
         if(indexSet_->state_ != RESIZE)
@@ -323,7 +325,7 @@ namespace Dune
      * @exception InvalidState If index set was not in
      * ParallelIndexSetState::GROUND mode.
      */
-    void beginResize() throw(InvalidIndexSetState);
+    void beginResize();
 
     /**
      * @brief Add an new index to the set.
@@ -333,7 +335,7 @@ namespace Dune
      * @exception InvalidState If index set is not in
      * ParallelIndexSetState::RESIZE mode.
      */
-    inline void add(const GlobalIndex& global) throw(InvalidIndexSetState);
+    inline void add(const GlobalIndex& global);
 
     /**
      * @brief Add an new index to the set.
@@ -343,8 +345,7 @@ namespace Dune
      * @exception InvalidState If index set is not in
      * ParallelIndexSetState::RESIZE mode.
      */
-    inline void add(const GlobalIndex& global, const LocalIndex& local)
-    throw(InvalidIndexSetState);
+    inline void add(const GlobalIndex& global, const LocalIndex& local);
 
     /**
      * @brief Mark an index as deleted.
@@ -353,8 +354,7 @@ namespace Dune
      * @param position An iterator at the position we want to delete.
      * @exception InvalidState If index set is not in ParallelIndexSetState::RESIZE mode.
      */
-    inline void markAsDeleted(const iterator& position)
-    throw(InvalidIndexSetState);
+    inline void markAsDeleted(const iterator& position);
 
     /**
      * @brief Indicate that the resizing finishes.
@@ -368,7 +368,7 @@ namespace Dune
      * @exception InvalidState If index set was not in
      * ParallelIndexSetState::RESIZE mode.
      */
-    void endResize() throw(InvalidIndexSetState);
+    void endResize();
 
     /**
      * @brief Find the index pair with a specific global id.
@@ -381,7 +381,7 @@ namespace Dune
      * null reference might be returned. To be save use the throwing alternative at.
      */
     inline IndexPair&
-    operator[](const GlobalIndex& global);
+    operator[](const GlobalIndex& global) noexcept;
 
     /**
      * @brief Find the index pair with a specific global id.
@@ -406,7 +406,7 @@ namespace Dune
      * null reference might be returned. To be save use the throwing alternative at.
      */
     inline const IndexPair&
-    operator[](const GlobalIndex& global) const;
+    operator[](const GlobalIndex& global) const noexcept;
 
     /**
      * @brief Find the index pair with a specific global id.
@@ -764,7 +764,7 @@ namespace Dune
   {}
 
   template<class TG, class TL, int N>
-  void ParallelIndexSet<TG,TL,N>::beginResize() throw(InvalidIndexSetState)
+  void ParallelIndexSet<TG,TL,N>::beginResize()
   {
 
     // Checks in unproductive code
@@ -781,7 +781,6 @@ namespace Dune
 
   template<class TG, class TL, int N>
   inline void ParallelIndexSet<TG,TL,N>::add(const GlobalIndex& global)
-  throw(InvalidIndexSetState)
   {
     // Checks in unproductive code
 #ifndef NDEBUG
@@ -794,7 +793,6 @@ namespace Dune
 
   template<class TG, class TL, int N>
   inline void ParallelIndexSet<TG,TL,N>::add(const TG& global, const TL& local)
-  throw(InvalidIndexSetState)
   {
     // Checks in unproductive code
 #ifndef NDEBUG
@@ -807,7 +805,7 @@ namespace Dune
 
   template<class TG, class TL, int N>
   inline void ParallelIndexSet<TG,TL,N>::markAsDeleted(const iterator& global)
-  throw(InvalidIndexSetState){
+  {
     // Checks in unproductive code
 #ifndef NDEBUG
     if(state_ != RESIZE)
@@ -820,7 +818,7 @@ namespace Dune
   }
 
   template<class TG, class TL, int N>
-  void ParallelIndexSet<TG,TL,N>::endResize() throw(InvalidIndexSetState){
+  void ParallelIndexSet<TG,TL,N>::endResize() {
     // Checks in unproductive code
 #ifndef NDEBUG
     if(state_ != RESIZE)
@@ -920,7 +918,7 @@ namespace Dune
 
   template<class TG, class TL, int N>
   inline const IndexPair<TG,TL>&
-  ParallelIndexSet<TG,TL,N>::operator[](const TG& global) const
+  ParallelIndexSet<TG,TL,N>::operator[](const TG& global) const noexcept
   {
     // perform a binary search
     int low=0, high=localIndices_.size()-1, probe=-1;
@@ -962,6 +960,7 @@ namespace Dune
 
   template<class TG, class TL, int N>
   inline IndexPair<TG,TL>& ParallelIndexSet<TG,TL,N>::operator[](const TG& global)
+  noexcept
   {
     // perform a binary search
     int low=0, high=localIndices_.size()-1, probe=-1;
