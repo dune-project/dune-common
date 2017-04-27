@@ -1062,6 +1062,10 @@ macro(dune_add_library basename)
     set_target_properties(${basename} PROPERTIES
       LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
       ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+    target_include_directories(${basename} INTERFACE
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    )
 
     set(_created_libs ${basename})
 
