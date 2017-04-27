@@ -281,8 +281,10 @@ namespace Dune
        * The deleted flag will be set in the local index.
        * The index will be removed in the endResize method of the
        * index set.
+       *
+       * @exception InvalidIndexSetState only when NDEBUG is not defined
        */
-      inline void markAsDeleted() const noexcept(false)
+      inline void markAsDeleted() const
       {
 #ifndef NDEBUG
         if(indexSet_->state_ != RESIZE)
@@ -323,7 +325,7 @@ namespace Dune
      * @exception InvalidState If index set was not in
      * ParallelIndexSetState::GROUND mode.
      */
-    void beginResize() noexcept(false);
+    void beginResize();
 
     /**
      * @brief Add an new index to the set.
@@ -333,7 +335,7 @@ namespace Dune
      * @exception InvalidState If index set is not in
      * ParallelIndexSetState::RESIZE mode.
      */
-    inline void add(const GlobalIndex& global) noexcept(false);
+    inline void add(const GlobalIndex& global);
 
     /**
      * @brief Add an new index to the set.
@@ -343,8 +345,7 @@ namespace Dune
      * @exception InvalidState If index set is not in
      * ParallelIndexSetState::RESIZE mode.
      */
-    inline void add(const GlobalIndex& global, const LocalIndex& local)
-    noexcept(false);
+    inline void add(const GlobalIndex& global, const LocalIndex& local);
 
     /**
      * @brief Mark an index as deleted.
@@ -353,7 +354,7 @@ namespace Dune
      * @param position An iterator at the position we want to delete.
      * @exception InvalidState If index set is not in ParallelIndexSetState::RESIZE mode.
      */
-    inline void markAsDeleted(const iterator& position) noexcept(false);
+    inline void markAsDeleted(const iterator& position);
 
     /**
      * @brief Indicate that the resizing finishes.
@@ -367,7 +368,7 @@ namespace Dune
      * @exception InvalidState If index set was not in
      * ParallelIndexSetState::RESIZE mode.
      */
-    void endResize() noexcept(false);
+    void endResize();
 
     /**
      * @brief Find the index pair with a specific global id.
@@ -392,7 +393,7 @@ namespace Dune
      * @exception RangeError Thrown if the global id is not known.
      */
     inline IndexPair&
-    at(const GlobalIndex& global) noexcept(false);
+    at(const GlobalIndex& global);
 
     /**
      * @brief Find the index pair with a specific global id.
@@ -417,7 +418,7 @@ namespace Dune
      * @exception RangeError Thrown if the global id is not known.
      */
     inline const IndexPair&
-    at(const GlobalIndex& global) const noexcept(false);
+    at(const GlobalIndex& global) const;
 
     /**
      * @brief Get an iterator over the indices positioned at the first index.
@@ -763,7 +764,7 @@ namespace Dune
   {}
 
   template<class TG, class TL, int N>
-  void ParallelIndexSet<TG,TL,N>::beginResize() noexcept(false)
+  void ParallelIndexSet<TG,TL,N>::beginResize()
   {
 
     // Checks in unproductive code
@@ -780,7 +781,6 @@ namespace Dune
 
   template<class TG, class TL, int N>
   inline void ParallelIndexSet<TG,TL,N>::add(const GlobalIndex& global)
-  noexcept(false)
   {
     // Checks in unproductive code
 #ifndef NDEBUG
@@ -793,7 +793,6 @@ namespace Dune
 
   template<class TG, class TL, int N>
   inline void ParallelIndexSet<TG,TL,N>::add(const TG& global, const TL& local)
-  noexcept(false)
   {
     // Checks in unproductive code
 #ifndef NDEBUG
@@ -806,7 +805,7 @@ namespace Dune
 
   template<class TG, class TL, int N>
   inline void ParallelIndexSet<TG,TL,N>::markAsDeleted(const iterator& global)
-  noexcept(false) {
+  {
     // Checks in unproductive code
 #ifndef NDEBUG
     if(state_ != RESIZE)
@@ -819,7 +818,7 @@ namespace Dune
   }
 
   template<class TG, class TL, int N>
-  void ParallelIndexSet<TG,TL,N>::endResize() noexcept(false) {
+  void ParallelIndexSet<TG,TL,N>::endResize() {
     // Checks in unproductive code
 #ifndef NDEBUG
     if(state_ != RESIZE)
@@ -937,7 +936,6 @@ namespace Dune
   }
   template<class TG, class TL, int N>
   inline IndexPair<TG,TL>& ParallelIndexSet<TG,TL,N>::at(const TG& global)
-  noexcept(false)
   {
     // perform a binary search
     int low=0, high=localIndices_.size()-1, probe=-1;

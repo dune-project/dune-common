@@ -236,8 +236,10 @@ namespace Dune {
        if other streams still tie() to this stream an exception will be
        thrown. Otherwise the child streams would certainly break on the
        next output
+
+       \throws DebugStreamError
      */
-    ~DebugStream() noexcept(false)
+    ~DebugStream()
     {
       // untie
       if (_tied)
@@ -338,8 +340,10 @@ namespace Dune {
       }
     }
 
-    //! \brief restore previously set activation flag
-    void pop() noexcept(false) {
+    /*! \brief restore previously set activation flag
+     * \throws DebugStreamError
+     */
+    void pop() {
       if (_actstack.empty())
         DUNE_THROW(DebugStreamError, "No previous activation setting!");
 
@@ -370,8 +374,10 @@ namespace Dune {
       current = newcurr;
     }
 
-    //! \brief detach current output stream and restore to previous stream
-    void detach() noexcept(false) {
+    /*! \brief detach current output stream and restore to previous stream
+     * \throws DebugStreamError
+     */
+    void detach() {
       if (current->next == 0)
         DUNE_THROW(DebugStreamError, "Cannot detach initial stream!");
       if (_tied)
@@ -382,8 +388,10 @@ namespace Dune {
       delete old;
     }
 
-    // \brief Tie a stream to this one.
-    void tie(DebugStreamState& to) noexcept(false) {
+    /*! \brief Tie a stream to this one.
+     * \throws DebugStreamError
+     */
+    void tie(DebugStreamState& to) {
       if (to._tied)
         DUNE_THROW(DebugStreamError, "Cannot tie to an already tied stream!");
       if (_tied)
@@ -396,8 +404,10 @@ namespace Dune {
       tiedstate->_tied_streams++;
     }
 
-    //! \brief Untie stream
-    void untie() noexcept(false) {
+    /*! \brief Untie stream
+     * \throws DebugStreamError
+     */
+    void untie() {
       if(! _tied)
         DUNE_THROW(DebugStreamError, "Cannot untie, stream is not tied!");
 

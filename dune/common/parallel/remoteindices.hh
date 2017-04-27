@@ -619,7 +619,7 @@ namespace Dune {
      * @exception InvalidPosition Thrown if the index at the current position or
      * the one before has bigger global index than the one to be inserted.
      */
-    void insert(const RemoteIndex& index) noexcept(false);
+    void insert(const RemoteIndex& index);
 
 
     /**
@@ -636,7 +636,7 @@ namespace Dune {
      * @exception InvalidPosition Thrown if the index at the current position or
      * the one before has bigger global index than the one to be inserted.
      */
-    void insert(const RemoteIndex& index, const GlobalIndex& global) noexcept(false);
+    void insert(const RemoteIndex& index, const GlobalIndex& global);
 
     /**
      * @brief Remove a remote index.
@@ -645,7 +645,7 @@ namespace Dune {
      * @exception InvalidPostion If there was an insertion or deletion of
      * a remote index corresponding to a bigger global index before.
      */
-    bool remove(const GlobalIndex& global) noexcept(false);
+    bool remove(const GlobalIndex& global);
 
     /**
      * @brief Repair the pointers to the local index pairs.
@@ -659,7 +659,7 @@ namespace Dune {
      * index set is not in ParallelIndexSetState::GROUND mode (only when
      * compiled with DUNE_ISTL_WITH_CHECKING!).
      */
-    void repairLocalIndexPointers() noexcept(false);
+    void repairLocalIndexPointers();
 
 
     RemoteIndexListModifier(const RemoteIndexListModifier&);
@@ -1576,7 +1576,7 @@ namespace Dune {
   {}
 
   template<typename T, typename A, bool mode>
-  inline void RemoteIndexListModifier<T,A,mode>::repairLocalIndexPointers() noexcept(false)
+  inline void RemoteIndexListModifier<T,A,mode>::repairLocalIndexPointers()
   {
     if(MODIFYINDEXSET) {
       // repair pointers to local index set.
@@ -1609,7 +1609,7 @@ namespace Dune {
   }
 
   template<typename T, typename A, bool mode>
-  inline void RemoteIndexListModifier<T,A,mode>::insert(const RemoteIndex& index) noexcept(false)
+  inline void RemoteIndexListModifier<T,A,mode>::insert(const RemoteIndex& index)
   {
     static_assert(!mode,"Not allowed if the mode indicates that new indices"
                         "might be added to the underlying index set. Use "
@@ -1632,7 +1632,7 @@ namespace Dune {
   }
 
   template<typename T, typename A, bool mode>
-  inline void RemoteIndexListModifier<T,A,mode>::insert(const RemoteIndex& index, const GlobalIndex& global) noexcept(false)
+  inline void RemoteIndexListModifier<T,A,mode>::insert(const RemoteIndex& index, const GlobalIndex& global)
   {
     static_assert(mode,"Not allowed if the mode indicates that no new indices"
                        "might be added to the underlying index set. Use "
@@ -1657,7 +1657,7 @@ namespace Dune {
   }
 
   template<typename T, typename A, bool mode>
-  bool RemoteIndexListModifier<T,A,mode>::remove(const GlobalIndex& global) noexcept(false)
+  bool RemoteIndexListModifier<T,A,mode>::remove(const GlobalIndex& global)
   {
 #ifdef DUNE_ISTL_WITH_CHECKING
     if(!first_ && global<last_)

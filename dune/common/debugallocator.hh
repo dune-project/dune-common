@@ -117,7 +117,7 @@ namespace Dune
       }
 
       template<typename T>
-      T* allocate(size_type n) noexcept(false)
+      T* allocate(size_type n)
       {
         // setup chunk info
         AllocationInfo ai(typeid(T));
