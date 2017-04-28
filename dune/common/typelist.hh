@@ -62,7 +62,7 @@ namespace Dune {
    * base class of type std::integral_constant<bool, result>.
    */
   template<class T>
-  struct IsEmptyTypeList : std::integral_constant<bool, IsTypeList<T>() and std::is_same<T, TypeList<> >() > {};
+  struct IsEmptyTypeList : std::is_same<T, TypeList<> > {};
 
 
 
