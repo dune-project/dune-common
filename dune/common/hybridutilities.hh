@@ -22,23 +22,15 @@ namespace Impl {
 
   // Try if tuple_size is implemented for class
   template<class T, int i>
-  constexpr auto size(const Dune::FieldVector<T, i>*, const PriorityTag<5>&)
+  constexpr auto size(const Dune::FieldVector<T, i>&, const PriorityTag<5>&)
     -> decltype(std::integral_constant<std::size_t,i>())
   {
     return {};
   }
 
-  // Try if we have an instance of std::integer_sequence
-  template<class T, T... t, class Index>
-  constexpr auto size(std::integer_sequence<T, t...>, PriorityTag<4>)
-  {
-    using sizeAsType = std::tuple_size<decltype(std::make_tuple(t...))>;
-    return std::integral_constant<std::size_t, sizeAsType::value>();
-  }
-
   // Try if tuple_size is implemented for class
   template<class T>
-  constexpr auto size(const T*, const PriorityTag<3>&)
+  constexpr auto size(const T&, const PriorityTag<3>&)
     -> decltype(std::integral_constant<std::size_t,std::tuple_size<T>::value>())
   {
     return {};
@@ -46,7 +38,7 @@ namespace Impl {
 
   // Try if there's a static constexpr size()
   template<class T>
-  constexpr auto size(const T*, const PriorityTag<1>&)
+  constexpr auto size(const T&, const PriorityTag<1>&)
     -> decltype(std::integral_constant<std::size_t,T::size()>())
   {
     return {};
@@ -54,9 +46,9 @@ namespace Impl {
 
   // As a last resort try if there's a static constexpr size()
   template<class T>
-  constexpr auto size(const T* t, const PriorityTag<0>&)
+  constexpr auto size(const T& t, const PriorityTag<0>&)
   {
-    return t->size();
+    return t.size();
   }
 
 } // namespace Impl
@@ -87,7 +79,7 @@ namespace Impl {
 template<class T>
 constexpr auto size(const T& t)
 {
-  return Impl::size(&t, PriorityTag<42>());
+  return Impl::size(t, PriorityTag<42>());
 }
 
 
@@ -277,7 +269,7 @@ namespace Impl {
   {
     auto size = Hybrid::size(range);
     auto indices = std::make_index_sequence<size>();
-    forEachIndex(std::forward<Range>(range), std::forward<F>(f), indices);
+    (forEachIndex)(std::forward<Range>(range), std::forward<F>(f), indices);
   }
 
   template<class Range, class F>

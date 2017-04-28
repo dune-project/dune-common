@@ -228,12 +228,15 @@ int main()
 
   // This test also ensures that the type passed to the lamda in the
   // `forEach()` is indeed an instance of `MetaType`
+  auto metaTypeList =
+    Dune::TypeList<void, NonConstructible, std::tuple<void> >{};
   auto expectedMetaTypeInfoList = std::vector<std::type_index>{
     typeid (Dune::MetaType<void>),
     typeid (Dune::MetaType<NonConstructible>),
-    typeid (Dune::MetaType<int>),
+    typeid (Dune::MetaType<std::tuple<void> >),
   };
-  test.check(getMetaTypeInfos(typeList) == expectedMetaTypeInfoList)
+  // parens around `getMetaTypeInfos` needed to suppress ADL
+  test.check((getMetaTypeInfos)(metaTypeList) == expectedMetaTypeInfoList)
     << "Iterating over TypeList yields unexpected MetaTypes";
 
   return test.exit();
