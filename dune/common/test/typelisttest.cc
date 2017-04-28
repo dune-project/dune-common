@@ -5,9 +5,15 @@
 #include "config.h"
 #endif
 
+#include <tuple>
 #include <type_traits>
+#include <typeindex>
+#include <typeinfo>
 #include <utility>
+#include <vector>
 
+#include <dune/common/hybridutilities.hh>
+#include <dune/common/test/testsuite.hh>
 #include <dune/common/typelist.hh>
 #include <dune/common/typetraits.hh>
 
@@ -176,7 +182,59 @@ void staticTests()
   checkNonTypeList<std::tuple<void> >(skipOverloadTest);
 }
 
+struct NonConstructible {
+  NonConstructible() = delete;
+};
+
+template<class TypeList>
+auto getTypeInfos(TypeList typeList)
+{
+  using namespace Dune::Hybrid;
+
+  std::vector<std::type_index> result;
+  forEach(typeList, [&](auto metaType) {
+    using type = typename decltype(metaType)::type;
+    result.emplace_back(typeid (type));
+  });
+  return result;
+}
+
+template<class TypeList>
+auto getMetaTypeInfos(TypeList typeList)
+{
+  using namespace Dune::Hybrid;
+
+  std::vector<std::type_index> result;
+  // The parens around `forEach` are needed to suppress ADL here to avoid
+  // instantiation attempts for the member types of typeList
+  (forEach)(typeList, [&](auto metaType) {
+    result.emplace_back(typeid (metaType));
+  });
+  return result;
+}
+
 int main()
 {
   staticTests();
+
+  Dune::TestSuite test;
+
+  auto typeList = Dune::TypeList<void, NonConstructible, int>{};
+  auto expectedTypeInfoList = std::vector<std::type_index>{
+    typeid (void), typeid (NonConstructible), typeid (int)
+  };
+  test.check(getTypeInfos(typeList) == expectedTypeInfoList)
+    << "Iterating over TypeList yields unexpected type information";
+
+  // This test also ensures that the type passed to the lamda in the
+  // `forEach()` is indeed an instance of `MetaType`
+  auto expectedMetaTypeInfoList = std::vector<std::type_index>{
+    typeid (Dune::MetaType<void>),
+    typeid (Dune::MetaType<NonConstructible>),
+    typeid (Dune::MetaType<int>),
+  };
+  test.check(getMetaTypeInfos(typeList) == expectedMetaTypeInfoList)
+    << "Iterating over TypeList yields unexpected MetaTypes";
+
+  return test.exit();
 }

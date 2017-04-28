@@ -239,7 +239,7 @@ dune_add_test(SOURCES to_unique_ptrtest.cc
 dune_add_test(SOURCES tupleutilitytest.cc)
 
 dune_add_test(SOURCES typelisttest.cc
-              COMPILE_ONLY)
+              LINK_LIBRARIES dunecommon)
 
 dune_add_test(SOURCES utilitytest.cc)
 
