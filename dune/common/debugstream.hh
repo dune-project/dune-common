@@ -239,7 +239,7 @@ namespace Dune {
 
        \throws DebugStreamError
      */
-    ~DebugStream()
+    ~DebugStream() noexcept(false)
     {
       // untie
       if (_tied)
