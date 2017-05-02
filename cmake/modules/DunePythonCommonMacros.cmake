@@ -47,6 +47,21 @@
 #    This rather unintuitive default originates from the strong belief, that installing
 #    python packages into the system locations at :code:`/usr/...` should be discouraged.
 #
+# .. cmake_variable:: DUNE_PYTHON_VIRTUALENV_SETUP
+#
+#    Set this variable to allow the Dune build system to set up a virtualenv at
+#    configure time. Such virtual environment is very useful, whenever python code
+#    is to be run at configure time, i.e. to implement code generation in Python or
+#    to use Python wrappers in testing. Some downstream modules will *require* you
+#    to set this variable. When setting this variable, you allow the Dune buildsystem
+#    to install packages through :code:`pip` into a virtualenv, that resides in a cmake
+#    build directory. For all the information on this virtualenv, see :ref:`DunePythonVirtualenv`.
+#
+# .. cmake_function:: dune_python_require_virtualenv_setup
+#
+#    Call this function from a downstream module, if that module relies on the
+#    the presence of the configure time virtualenv described in :ref:`DunePythonVirtualenv`.
+#
 
 # Include all the other parts of the python extension to avoid that users need
 # to explicitly include parts of our build system.
@@ -127,3 +142,19 @@ install(CODE "set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
               include(DuneExecuteProcess)
               dune_execute_process(COMMAND \"${CMAKE_COMMAND}\" --build . --target install_python --config $<CONFIG>)
               ")
+
+# Implement a check for the presence of the virtualenv
+function(dune_python_require_virtualenv_setup)
+  if(NOT DUNE_PYTHON_VIRTUALENV_SETUP)
+    message(FATAL_ERROR "\n
+    ${CMAKE_PROJECT_NAME} relies on a configure-time virtual environment being
+    set up by the Dune python build system. You have to set the CMake variable
+    DUNE_PYTHON_VIRTUALENV_SETUP to allow that.\n
+    ")
+  endif()
+endfunction()
+
+# If requested, switch into DunePythonVirtualenv.cmake and setup the virtualenv.
+if(DUNE_PYTHON_VIRTUALENV_SETUP)
+  include(DunePythonVirtualenv)
+endif()

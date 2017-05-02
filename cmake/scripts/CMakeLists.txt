@@ -8,6 +8,7 @@ install(FILES
   InstallFile.cmake
   main77.cc.in
   pyversion.py
+  run-in-dune-env.sh.in
   RunDoxygen.cmake
   sphinx_cmake_dune.py
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/dune/cmake/scripts)
