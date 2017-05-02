@@ -45,6 +45,17 @@ function(dune_python_install_package)
     message(FATAL_ERROR "dune_python_install_package: Requested installations, but pip was not found!")
   endif()
 
+  set(PYINST_FULLPATH ${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH})
+  if(EXISTS ${PYINST_FULLPATH}/setup.py.in)
+    configure_file(${PYINST_PATH}/setup.py.in ${PYINST_PATH}/setup.py)
+    set(PYINST_FULLPATH ${CMAKE_CURRENT_BINARY_DIR}/${PYINST_PATH})
+    set(PYINST_PUREPYTHON FALSE)
+  elseif(EXISTS ${PYINST_FULLPATH}/setup.py)
+    set(PYINST_PUREPYTHON TRUE)
+  else()
+    message(FATAL_ERROR "dune_python_install_package: Requested installations, but neither setup.py nor setup.py.in found!")
+  endif()
+
   # Find out whether we should install in editable mode
   set(INSTALL_EDITABLE ${DUNE_PYTHON_INSTALL_EDITABLE})
 
@@ -74,14 +85,14 @@ function(dune_python_install_package)
 
   set(INSTALL_CMDLINE -m pip install
                       "${INSTALL_OPTION}" "${WHEEL_OPTION}" "${EDIT_OPTION}" ${PYINST_ADDITIONAL_PIP_PARAMS}
-                      "${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH}")
+                      "${PYINST_FULLPATH}")
 
 
   #
   # If requested, install into the configure-time Dune virtualenv
   #
 
-  if(DUNE_PYTHON_VIRTUALENV_SETUP)
+  if(PYINST_PUREPYTHON AND DUNE_PYTHON_VIRTUALENV_SETUP)
     message("-- Installing python package at ${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH} into the virtualenv...")
     dune_execute_process(COMMAND "${DUNE_PYTHON_VIRTUALENV_EXECUTABLE}" "${INSTALL_CMDLINE}"
                          ERROR_MESSAGE "dune_python_install_package: Error installing into virtualenv!")
@@ -106,7 +117,7 @@ function(dune_python_install_package)
   # Add a custom target that globally installs this package if requested
   add_custom_target(${targetname}
                     COMMAND ${PYTHON_EXECUTABLE} ${INSTALL_CMDLINE}
-                    COMMENT "Installing the python package at ${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH}"
+                    COMMENT "Installing the python package at ${PYINST_FULLPATH}"
                     )
 
   add_dependencies(install_python ${targetname})
@@ -119,12 +130,12 @@ function(dune_python_install_package)
   #
 
   # Construct the wheel installation commandline
-  set(WHEEL_COMMAND ${PYTHON_EXECUTABLE} -m pip wheel -w ${DUNE_PYTHON_WHEELHOUSE} ${WHEEL_OPTION} ${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH})
+  set(WHEEL_COMMAND ${PYTHON_EXECUTABLE} -m pip wheel -w ${DUNE_PYTHON_WHEELHOUSE} ${PYINST_FULLPATH})
 
   # Add the installation rule
-  install(CODE "message(\"Installing wheel for python package at ${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH}...\")
+  install(CODE "message(\"Installing wheel for python package at ${PYINST_FULLPATH}...\")
                 dune_execute_process(COMMAND ${WHEEL_COMMAND}
-                                     ERROR_MESSAGE \"Error installing wheel for python package at ${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH}\"
+                                     ERROR_MESSAGE \"Error installing wheel for python package at ${PYINST_FULLPATH}\"
                                      )"
           )
 endfunction()
