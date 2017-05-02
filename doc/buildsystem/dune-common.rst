@@ -374,6 +374,15 @@ Note that an un-packed copy is located there which contains a :code:`dune.module
 subdirectory. Otherwise it is going to break your next :code:`dunecontrol` run, because the module
 is defined multiple times.
 
+.. _dune-python:
+
+How does the Dune build system handle Python?
+=============================================
+
+dune-common contains a build system extension to handle many python-related aspects. You can
+read more on this in the module description :ref:`DunePythonCommonMacros` and the pieces of
+documentation mentioned inthere.
+
 .. _troubleshoot:
 
 How do I troubleshoot?
