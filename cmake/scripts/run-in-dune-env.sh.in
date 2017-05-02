@@ -1,0 +1,4 @@
+#!@BASH@
+
+source @DUNE_PYTHON_VIRTUALENV_PATH@/bin/activate
+"$@"
