@@ -19,6 +19,11 @@ install(FILES
   DuneMPI.cmake
   DunePathHelper.cmake
   DunePkgConfig.cmake
+  DunePythonCommonMacros.cmake
+  DunePythonFindPackage.cmake
+  DunePythonInstallPackage.cmake
+  DunePythonRequireVersion.cmake
+  DunePythonTestCommand.cmake
   DuneSphinxCMakeDoc.cmake
   DuneStreams.cmake
   DuneSymlinkOrCopy.cmake
