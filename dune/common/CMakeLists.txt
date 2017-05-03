@@ -14,6 +14,7 @@ if(HAVE_MPROTECT)
 endif(HAVE_MPROTECT)
 
 dune_add_library("dunecommon"
+  debugalign.cc
   ${debugallocator_src}
   dynmatrixev.cc
   exceptions.cc
@@ -29,6 +30,7 @@ dune_add_library("dunecommon"
 #install headers
 install(FILES
         alignment.hh
+        alignedallocator.hh
         array.hh
         arraylist.hh
         assertandreturn.hh
@@ -40,6 +42,7 @@ install(FILES
         classname.hh
         concept.hh
         conditional.hh
+        debugalign.hh
         debugallocator.hh
         debugstream.hh
         deprecated.hh
