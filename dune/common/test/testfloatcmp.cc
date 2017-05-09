@@ -88,6 +88,26 @@ void tests(F f1, F f2, typename Dune::FloatCmp::EpsilonType<F>::Type eps, bool i
 }
 
 template<typename F>
+void vectortests(F f1, F f2, typename Dune::FloatCmp::EpsilonType<F>::Type eps, bool inside)
+{
+  bool result;
+
+  cout << "eq({" << f1[0] << ", " << f1[1] << "}, {"
+       << f2[0] << ", " << f2[1] << "}, " << eps << ") = " << flush;
+  result = Dune::FloatCmp::eq(f1, f2, eps);
+  cout << repr(result) << "\t";
+  count(result == inside);
+  cout << endl;
+
+  cout << "ne({" << f1[0] << ", " << f1[1] << "}, {"
+       << f2[0] << ", " << f2[1] << "}, " << eps << ") = " << flush;
+  result = Dune::FloatCmp::ne(f1, f2, eps);
+  cout << repr(result) << "\t";
+  count(result == !inside);
+  cout << endl;
+}
+
+template<typename F>
 void tests(F f1, F f2, const typename Dune::FloatCmpOps<F> &ops, bool inside)
 {
   bool result;
@@ -130,26 +150,65 @@ void tests(F f1, F f2, const typename Dune::FloatCmpOps<F> &ops, bool inside)
   cout << endl;
 }
 
+template<typename F>
+void vectortests(F f1, F f2, typename Dune::FloatCmpOps<F> &ops, bool inside)
+{
+  bool result;
+  cout << "ops = operations(" << ops.epsilon() << ")" << endl;
+
+  cout << "ops.eq({" << f1[0] << ", " << f1[1] << "}, {"
+       << f2[0] << ", " << f2[1] << "}) = " << flush;
+  result = ops.eq(f1, f2);
+  cout << repr(result) << "\t";
+  count(result == inside);
+  cout << endl;
+
+  cout << "ops.ne({" << f1[0] << ", " << f1[1] << "}, {"
+       << f2[0] << ", " << f2[1] << "}) = " << flush;
+  result = ops.ne(f1, f2);
+  cout << repr(result) << "\t";
+  count(result == !inside);
+  cout << endl;
+}
+
 int main() {
   cout.setf(std::ios_base::scientific, std::ios_base::floatfield);
   cout.precision(16);
   Dune::FloatCmpOps<double> ops(1e-7);
+  Dune::FloatCmpOps<std::vector<double>> std_vec_ops(1e-7);
+  Dune::FloatCmpOps<Dune::FieldVector<double,2>> fvec_ops(1e-7);
 
   cout << "Tests inside the epsilon environment" << endl;
   tests<double>(1.0, 1.00000001, 1e-7, true);
   tests<double>(1.0, 1.00000001, ops,  true);
+  vectortests(std::vector<double>({1.0, 1.0}), std::vector<double>({1.00000001, 1.0}), 1e-7, true);
+  vectortests(std::vector<double>({1.0, 1.0}), std::vector<double>({1.00000001, 1.0}), std_vec_ops, true);
+  vectortests(Dune::FieldVector<double,2>({1.0, 1.0}), Dune::FieldVector<double,2>({1.00000001, 1.0}), 1e-7, true);
+  vectortests(Dune::FieldVector<double,2>({1.0, 1.0}), Dune::FieldVector<double,2>({1.00000001, 1.0}), fvec_ops, true);
 
   cout << "Tests outside the epsilon environment, f1 < f2" << endl;
   tests<double>(1.0, 1.000001, 1e-7, false);
   tests<double>(1.0, 1.000001, ops,  false);
+  vectortests(std::vector<double>({1.0, 1.0}), std::vector<double>({1.000001, 1.0}), 1e-7, false);
+  vectortests(std::vector<double>({1.0, 1.0}), std::vector<double>({1.000001, 1.0}), std_vec_ops, false);
+  vectortests(Dune::FieldVector<double,2>({1.0, 1.0}), Dune::FieldVector<double,2>({1.000001, 1.0}), 1e-7, false);
+  vectortests(Dune::FieldVector<double,2>({1.0, 1.0}), Dune::FieldVector<double,2>({1.000001, 1.0}), fvec_ops, false);
 
   cout << "Tests outside the epsilon environment, f1 > f2" << endl;
   tests<double>(1.000001, 1.0, 1e-7, false);
   tests<double>(1.000001, 1.0, ops,  false);
+  vectortests(std::vector<double>({1.000001, 1.0}), std::vector<double>({1.0, 1.0}), 1e-7, false);
+  vectortests(std::vector<double>({1.000001, 1.0}), std::vector<double>({1.0, 1.0}), std_vec_ops, false);
+  vectortests(Dune::FieldVector<double,2>({1.000001, 1.0}), Dune::FieldVector<double,2>({1.0, 1.0}), 1e-7, false);
+  vectortests(Dune::FieldVector<double,2>({1.000001, 1.0}), Dune::FieldVector<double,2>({1.0, 1.0}), fvec_ops, false);
 
   cout << "Tests with f1 = f2 = 0" << endl;
   tests<double>(0, 0, 1e-7, true);
   tests<double>(0, 0, ops,  true);
+  vectortests(std::vector<double>({0, 0}), std::vector<double>({0, 0}), 1e-7, true);
+  vectortests(std::vector<double>({0, 0}), std::vector<double>({0, 0}), std_vec_ops, true);
+  vectortests(Dune::FieldVector<double,2>({0, 0}), Dune::FieldVector<double,2>({0, 0}), 1e-7, true);
+  vectortests(Dune::FieldVector<double,2>({0, 0}), Dune::FieldVector<double,2>({0, 0}), fvec_ops, true);
 
   int total = passed + failed;
   cout << passed << "/" << total << " tests passed; " << failed << "/" << total << " tests failed" << endl;

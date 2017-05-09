@@ -12,10 +12,13 @@ elseif(BLAS_FOUND)
   set(_additional_libs ${BLAS_LIBRARIES})
 endif(LAPACK_FOUND)
 
-dune_library_add_sources(
-  dunecommon
-  SOURCES
-  debugallocator.cc
+if(HAVE_MPROTECT)
+  set(debugallocator_src "debugallocator.cc")
+endif(HAVE_MPROTECT)
+
+dune_add_library("dunecommon"
+  debugalign.cc
+  ${debugallocator_src}
   dynmatrixev.cc
   exceptions.cc
   fmatrixev.cc
@@ -25,14 +28,16 @@ dune_library_add_sources(
   path.cc
   stdstreams.cc
   stdthread.cc
-  )
+  ADD_LIBS "${_additional_libs}")
 
 #install headers
 install(FILES
         alignment.hh
+        alignedallocator.hh
         archive.hh
         array.hh
         arraylist.hh
+        assertandreturn.hh
         bartonnackmanifcheck.hh
         bigunsignedint.hh
         binaryfunctions.hh
@@ -41,6 +46,7 @@ install(FILES
         classname.hh
         concept.hh
         conditional.hh
+        debugalign.hh
         debugallocator.hh
         debugstream.hh
         deprecated.hh
@@ -81,6 +87,7 @@ install(FILES
         math.hh
         matvectraits.hh
         nullptr.hh
+        overloadset.hh
         parametertree.hh
         parametertreeparser.hh
         path.hh
@@ -98,10 +105,12 @@ install(FILES
         sllist.hh
         stdstreams.hh
         stdthread.hh
+        streamoperators.hh
         stringutility.hh
         timer.hh
         tuples.hh
         tupleutility.hh
+        tuplevector.hh
         typelist.hh
         typetraits.hh
         typeutilities.hh

@@ -95,7 +95,7 @@ namespace Dune {
   public:
     Exception ();
     void message(const std::string &msg); //!< store string in internal message buffer
-    virtual const char* what() const noexcept; //!< output internal message buffer
+    const char* what() const noexcept override; //!< output internal message buffer
     static void registerHook (ExceptionHook * hook); //!< add a functor which is called before a Dune::Exception is emitted (see Dune::ExceptionHook) \see Dune::ExceptionHook
     static void clearHook ();                  //!< remove all hooks
   private:
@@ -279,7 +279,7 @@ namespace Dune {
   class InvalidStateException : public Exception {};
 
   /*! \brief Default exception if an error in the parallel
-     communication of the programm occurred
+     communication of the program occurred
      \ingroup ParallelCommunication
    */
   class ParallelError : public Exception {};

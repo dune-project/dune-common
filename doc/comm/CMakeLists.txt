@@ -10,9 +10,6 @@ target_link_libraries(indexset "dunecommon")
 add_dune_mpi_flags("poosc08;poosc08_test;indexset")
 
 dune_add_latex_document(communication.tex
-  FORCE_DVI
   BIBFILES communication.bib
-  INPUTS poosc08_test.cc
-  IMAGE_DIRS figures)
-install(FILES communication.pdf
-  DESTINATION ${CMAKE_INSTALL_DOCDIR}/comm)
+  INPUTS poosc08_test.cc)
+create_doc_install(${CMAKE_CURRENT_BINARY_DIR}/communication.pdf ${CMAKE_INSTALL_DOCDIR}/comm communication)

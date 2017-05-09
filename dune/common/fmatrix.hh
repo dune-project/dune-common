@@ -14,6 +14,7 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/densematrix.hh>
 #include <dune/common/precision.hh>
+#include <dune/common/typetraits.hh>
 
 namespace Dune
 {
@@ -88,24 +89,6 @@ namespace Dune
      */
     FieldMatrix () {}
 
-    /** \brief Constructor initializing the whole matrix with a scalar
-     */
-    template< class Other >
-    FieldMatrix ( const Other &other )
-    {
-      DenseMatrixAssigner< FieldMatrix< K, ROWS, COLS >, Other >::apply( *this, other );
-    }
-
-    /** \brief Constructor initializing the matrix from a list of lists of scalars
-     */
-    FieldMatrix (std::initializer_list<std::initializer_list<K> > const &ll)
-    {
-      assert(ll.size() == rows); // Actually, this is not needed any more!
-      std::copy_n(ll.begin(), std::min(static_cast<std::size_t>(ROWS),
-                                       ll.size()),
-                 _data.begin());
-    }
-
     /** \brief Constructor initializing the matrix from a list of vector
      */
     FieldMatrix(std::initializer_list<Dune::FieldVector<K, cols> > const &l) {
@@ -115,8 +98,24 @@ namespace Dune
                  _data.begin());
     }
 
-    //===== assignment
+    template <class T,
+              typename = std::enable_if_t<HasDenseMatrixAssigner<FieldMatrix, T>::value>>
+    FieldMatrix(T const& rhs)
+    {
+      *this = rhs;
+    }
+
     using Base::operator=;
+
+    // Specialisation: FieldMatrix assignment (compile-time bounds checking)
+    template <typename T, int rows, int cols>
+    FieldMatrix& operator=(FieldMatrix<T,rows,cols> const &rhs)
+    {
+      static_assert(rows == ROWS, "Size mismatch in matrix assignment (rows)");
+      static_assert(cols == COLS, "Size mismatch in matrix assignment (columns)");
+      _data = rhs._data;
+      return *this;
+    }
 
     //! Multiplies M from the left to this matrix, this matrix is not modified
     template<int l>
@@ -229,18 +228,21 @@ namespace Dune
      */
     FieldMatrix () {}
 
-    /** \brief Constructor initializing the whole matrix with a scalar
+    /** \brief Constructor initializing the matrix from a list of vector
      */
-    FieldMatrix (const K& k)
+    FieldMatrix(std::initializer_list<Dune::FieldVector<K, 1>> const &l)
     {
-      _data[0] = k;
+      std::copy_n(l.begin(), std::min(static_cast< std::size_t >( 1 ), l.size()), &_data);
     }
 
-    template< class Other >
-    FieldMatrix ( const Other &other )
+    template <class T,
+              typename = std::enable_if_t<HasDenseMatrixAssigner<FieldMatrix, T>::value>>
+    FieldMatrix(T const& rhs)
     {
-      DenseMatrixAssigner< FieldMatrix< K, 1, 1 >, Other >::apply( *this, other );
+      *this = rhs;
     }
+
+    using Base::operator=;
 
     //===== solve
 

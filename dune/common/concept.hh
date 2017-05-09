@@ -10,16 +10,11 @@
 #include <dune/common/typeutilities.hh>
 #include <dune/common/typelist.hh>
 #include <dune/common/tupleutility.hh>
+#include <dune/common/std/type_traits.hh>
 
 
 
 namespace Dune {
-
-
-
-// Forward declaration
-template<class C, class... T>
-constexpr bool models();
 
 
 
@@ -54,12 +49,18 @@ struct Refines
 
 
 
-namespace Imp {
+namespace Impl {
 
   // #############################################################################
   // # All functions following here are implementation details
   // # for the models() function below.
   // #############################################################################
+
+  // Forward declaration
+  template<class C, class... T>
+  constexpr bool models();
+
+
 
   // Here is the implementation of the concept checking.
   // The first two overloads do the magic for checking
@@ -118,7 +119,66 @@ namespace Imp {
   constexpr bool modelsConcept(PriorityTag<1>)
   { return matchesRequirement<C, T...>(PriorityTag<42>()) and modelsConceptList<T...>(typename C::BaseConceptList()); }
 
+  // This is the full concept check. It's defined here in the
+  // implementation namespace with 'constexpr bool' return type
+  // because we need a forward declaration in order to use it
+  // internally above.
+  //
+  // The actual interface function can then call this one and
+  // return the result as std::integral_constant<bool,*> which
+  // does not allow for a forward declaration because the return
+  // type is deduced.
+  template<class C, class... T>
+  constexpr bool models()
+  {
+    return modelsConcept<C, T...>(PriorityTag<42>());
+  }
 
+} // namespace Dune::Concept::Impl
+
+} // namespace Dune::Concept
+
+
+
+/**
+ * \brief Check if concept is modeled by given types
+ *
+ * This will check if the given concept is modeled by the given
+ * list of types. This is true if the list of types models all
+ * the base concepts that are refined by the given concept
+ * and if it satisfies all additional requirements of the latter.
+ *
+ * Notice that a concept may be defined for a list of interacting types.
+ * The function will check if the given list of types matches the requirements
+ * on the whole list. It does not check if each individual type in the list
+ * satisfies the concept.
+ *
+ * This concept check mechanism is inspired by the concept checking
+ * facility in Eric Nieblers range-v3. For more information please
+ * refer to the libraries project page https://github.com/ericniebler/range-v3
+ * or this blog entry: http://ericniebler.com/2013/11/23/concept-checking-in-c11.
+ * In fact the interface provided here is almost exactly the same as in range-v3.
+ * However the implementation differs, because range-v3 uses its own meta-programming
+ * library whereas our implementation is more straight forward.
+ *
+ * The result is returned as std::integral_constant<bool, ...> which
+ * allows to nicely use this method with Hybrid::ifElse.
+ *
+ * \tparam C The concept to check
+ * \tparam T The list of type to check against the concept
+ *
+ */
+template<class C, class... T>
+constexpr auto models()
+{
+  return Std::bool_constant<Concept::Impl::models<C, T...>()>();
+}
+
+
+
+namespace Concept {
+
+namespace Impl {
 
   // #############################################################################
   // # All functions following here are implementation details for the
@@ -136,7 +196,7 @@ namespace Imp {
     using Result = typename ReduceTuple<AccumulateFunctor, Tuple, std::true_type>::type;
   };
 
-} // namespace Dune::Concept::Imp
+} // namespace Dune::Concept::Impl
 
 
 
@@ -147,7 +207,7 @@ namespace Imp {
 
 template<class C, class Tuple>
 constexpr auto tupleEntriesModel()
-  -> typename Imp::TupleEntriesModelHelper<C, Tuple>::Result
+  -> typename Impl::TupleEntriesModelHelper<C, Tuple>::Result
 {
   return {};
 }
@@ -176,7 +236,7 @@ constexpr bool requireConcept()
 // Helper function for use in concept definitions.
 // This allows to avoid using decltype
 template<class C, class... T, typename std::enable_if<models<C, T...>(), int>::type = 0>
-constexpr bool requireConcept(T&&... t)
+constexpr bool requireConcept(T&&... /*t*/)
 {
   return true;
 }
@@ -247,39 +307,6 @@ constexpr bool requireSameType()
 
 
 } // namespace Dune::Concept
-
-
-
-/**
- * \brief Check if concept is modeled by given types
- *
- * This will check if the given concept is modeled by the given
- * list of types. This is true if the list of types models all
- * the base concepts that are refined by the given concept
- * and if it satisfies all additional requirements of the latter.
- *
- * Notice that a concept may be defined for a list of interacting types.
- * The function will check if the given list of types matches the requirements
- * on the whole list. It does not check if each individual type in the list
- * satisfies the concept.
- *
- * This concept check mechanism is inspired by the concept checking
- * facility in Eric Nieblers range-v3. For more information please
- * refer to the libraries project page https://github.com/ericniebler/range-v3
- * or this blog entry: http://ericniebler.com/2013/11/23/concept-checking-in-c11.
- * In fact the interface provided here is almost exactly the same as in range-v3.
- * However the implementation differs, because range-v3 uses its own meta-programming
- * library whereas our implementation is more straight forward.
- *
- * \tparam C The concept to check
- * \tparam T The list of type to check against the concept
- *
- */
-template<class C, class... T>
-constexpr bool models()
-{
-  return Concept::Imp::modelsConcept<C, T...>(PriorityTag<42>());
-}
 
 
 

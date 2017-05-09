@@ -3,9 +3,7 @@
 #endif
 
 #include<iostream>
-#if HAVE_MPI
 #include<mpi.h>
-#endif
 
 #include <dune/common/unused.hh>
 
@@ -94,7 +92,6 @@ struct VarDataHandle
 
 int main(int argc, char** argv)
 {
-#if HAVE_MPI
     MPI_Init(&argc, &argv);
     int procs, rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -197,8 +194,6 @@ int main(int argc, char** argv)
     }
 
     MPI_Finalize();
-#else
-    std::cerr<<"Skipping as MPI seems not be available"<<std::endl;
-    return 77;
-#endif
+
+    return 0;
 }

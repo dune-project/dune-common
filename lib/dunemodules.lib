@@ -309,6 +309,29 @@ sort_modules() {
   done
 }
 
+# strip any leading spaces, tabs, or newlines
+_ltrim()
+{
+  local val="$1"
+  local tab="	"
+  local nl="
+"
+  while :; do
+    case $val in
+      " "*|"$tab"*|"$nl"*)
+        val=${val#?}
+        ;;
+      *)
+        break
+        ;;
+    esac
+  done
+  # if this is used inside `...` or $(...), any trailing newlines will be
+  # stripped, no matter what we do.  Setting a variable to the result would
+  # work around this, but is not a common idiom.
+  printf "%s" "$val"
+}
+
 _check_deps()
 {
   local module="$1"
@@ -326,13 +349,12 @@ _check_deps()
   fi
   eval deps=\$${mode}_$module
   #initially remove leading space
-  deps=`echo ${deps//^[, ]}`
+  deps=$(_ltrim "$deps")
   while test -n "$deps"; do
-    #the end of the name is marked either by space, opening parenthesis,
-    #or comma
-    name="${deps%%[ (,]*}"
+    #the end of the name is marked either by space or opening parenthesis
+    name="${deps%%[ (]*}"
     #remove the name and adjacent whitespace
-    deps=`echo "$deps" | sed 's/^[^ (,]* *//'`
+    deps=$(_ltrim "${deps#"$name"}")
     #check whether there is a dependency version
     case "$deps" in
     '('*) deps="${deps#(}"
@@ -342,23 +364,24 @@ _check_deps()
     *)    depver=
           ;;
     esac
-    #remove any leading whitespace or commas for the next iteration
-    deps=`echo ${deps//^[, ]}`
+    #remove any leading whitespace for the next iteration
+    deps=$(_ltrim "$deps")
+
     dep=$(fix_variable_name $name)
     if ! check_modname $dep; then
-      echo "ERROR: invalid module name $name ($dependency of $module)" >&2
+      echo "ERROR: invalid module name '$name' ($dependency of '$module')" >&2
       exit 1
     fi
     if eval test x\$HAVE_$dep != "x"; then
       eval ver=\$VERS_$dep
       if test "$SKIPVERSIONCHECK" != "yes" && ! check_version "$ver" "$depver"; then
         echo "$report: version mismatch." >&2
-        echo "       $modname $requires $name $depver," >&2
-        echo "       but only $name = $ver is available." >&2
+        echo "       $modname $requires '$name $depver'," >&2
+        echo "       but only '$name' = '$ver' is available." >&2
         if test "x$mode" = "xDEPS"; then
           exit 1
         else
-          echo "Skipping $name!" >&2
+          echo "Skipping '$name'!" >&2
           continue
         fi
       fi
@@ -367,26 +390,26 @@ _check_deps()
       # perhaps this module is installed,
       # then it should be handled via pkg-config
       if ! pkg-config $name; then
-        echo "$report: could not find module $name," >&2
+        echo "$report: could not find module '$name'," >&2
         echo "       module is also unknown to pkg-config." >&2
         echo "       Maybe you need to adjust PKG_CONFIG_PATH!" >&2
-        echo "       $name is $required by $modname" >&2
+        echo "       '$name' is $required by $modname" >&2
         if test "x$mode" = "xDEPS"; then
           exit 1
         else
-          echo "Skipping $name!" >&2
+          echo "Skipping '$name'!" >&2
           continue
         fi
       else
         eval ver=$(pkg-config $name --modversion)
         if test "$SKIPVERSIONCHECK" != "yes" && ! check_version "$ver" "$depver"; then
           echo "$report: version mismatch." >&2
-          echo "       $modname $requires $name $depver," >&2
-          echo "       but only $name = $ver is installed." >&2
+          echo "       $modname $requires '$name $depver'," >&2
+          echo "       but only '$name' = '$ver' is installed." >&2
           if test "x$mode" = "xDEPS"; then
             exit 1
           else
-            echo "Skipping $name!" >&2
+            echo "Skipping '$name'!" >&2
             continue
           fi
         fi
@@ -612,84 +635,4 @@ check_version() {
     return 0
   fi
   return 1
-}
-
-#
-# Function that the translates options for configure
-# The arguments are the case sensitive cmake package names.
-# It is assumed that their lowercase version is used
-# for the autotools. This function either deactivates
-# a package using CMAKE_DISABLE_FIND_PACKAGE_<package>=TRUE
-# or passes th provided path using
-# the  <CMAKE_PACKAGE_ALL_UPPERCASE>_ROOT variable
-default_am2cmake_options(){
-    while test "$#" -gt 0; do
-        local package=$1
-        local lowercase=`tr 'A-Z' 'a-z' <<< $1`
-        local uppercase=`tr 'a-z' 'A-Z' <<< $1`
-        shift
-        if eval test \$"$lowercase"_processed ; then
-            continue
-        fi
-        export "$lowercase"_processed=1
-        # check for --without-$lowercase
-        echo $PARAMS | grep \\-\\-without-$lowercase > /dev/null
-        if test "$?" -eq 0 ; then
-            CMAKE_PARAMS="$CMAKE_PARAMS -DCMAKE_DISABLE_FIND_PACKAGE_$package=TRUE"
-            continue
-        fi
-        # process --with-$lowercase=<arg>
-        local arg=`echo $PARAMS| sed "s/.*--with-$lowercase=\([$NOBLANK]*\).*/\1/"`
-        local arg=`eval echo $arg` # expand tilde to prevent problems
-        if test "x$arg" = "xno"; then
-            CMAKE_PARAMS="$CMAKE_PARAMS -DCMAKE_DISABLE_FIND_PACKAGE_$package=TRUE"
-            continue
-        fi
-        if  test -d "$arg"; then
-            CMAKE_PARAMS="$CMAKE_PARAMS -D$uppercase""_ROOT=$arg"
-        fi
-    done
-    export CMAKE_PARAMS
-}
-
-
-# Default translation routine for libraries.
-# Arguments are the CMake package names.
-# Searches for --with-<package>lib=<library>
-# in the configure options and translates them
-# to -D<PACKAGE>_LIBRARY=<library>
-default_am2cmake_libraries(){
-    while test "$#" -gt 0; do
-        lib=$1
-        local lowercase=`tr 'A-Z' 'a-z' <<< $1`
-        local uppercase=`tr 'a-z' 'A-Z' <<< $1`
-        shift
-	if eval test \$"$lowercase"-lib_processed; then
-	    continue
-	fi
-	export "$lowercase"-lib_processed=1
-	term="s/.*--with-""$lowercase""-lib=\([$NOBLANK]*\).*/\1/"
-        arg=`echo "$PARAMS" | grep \\-\\-with-$lowercase | sed "$term"`
-	if test "x$arg" != "x"; then
-	    CMAKE_PARAMS="$CMAKE_PARAMS -D$uppercase""_LIBRARY=$arg"
-	fi
-    done
-}
-
-module_translate_options_am2cmake()
-{
-    local module=$1 # the module name
-    local path=$2 # where the sh libs reside
-
-    # Check whether the module provides a lib named
-    # <module-without-dashes>autotools2cmake.lib
-    local module_undashed=`echo $module | sed "s/[-_]//g"`
-    local libfile="$path/$module_undashed""am2cmake.lib"
-    if test -e "$libfile"; then
-        . $libfile
-        local module_underline=`echo $module | sed "s/-/_/g"`
-        eval "$module_underline"_options_am2cmake
-    else
-        echo "$libfile for converting options does not exist"
-    fi
 }

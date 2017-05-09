@@ -1,43 +1,6 @@
-# Stuff to ignore recursively
-*.a
-*.la
-*.lo
-*.log
-*.o
-*.trs
+# ignore all build folders
+/build*/
+# ignore backup files
 *~
+# ignore Python files
 *.pyc
-.deps/
-.libs/
-Makefile
-Makefile.in
-TAGS
-
-# Stuff to ignore in this directory only
-/aclocal.m4
-/autom4te.cache/
-/build-*/
-/compile
-/config.guess
-/config.h
-/config.h.in
-/config.log
-/config.lt
-/config.status
-/config.sub
-/configure
-/configure
-/configure.lineno
-/depcomp
-/dependencies.m4
-/dune-common-*.tar.gz
-/dune-common-?.?
-/dune-common.pc
-/dune.css
-/install-sh
-/libtool
-/ltmain.sh
-/missing
-/mkinstalldirs
-/stamp-h1
-/test-driver

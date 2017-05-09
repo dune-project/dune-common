@@ -14,6 +14,8 @@
 
 #include <gmpxx.h>
 
+#include <dune/common/typetraits.hh>
+
 namespace Dune
 {
 
@@ -65,6 +67,10 @@ namespace Dune
 
   };
 
+  template <unsigned int precision>
+  struct IsNumber<GMPField<precision>>
+    : public std::integral_constant<bool, true> {
+  };
 }
 
 #endif // HAVE_GMP

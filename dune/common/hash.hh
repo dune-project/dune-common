@@ -148,6 +148,19 @@ namespace Dune {
       }                                              \
     };                                               \
                                                      \
+    template<template_args>                          \
+    struct hash<const type>                          \
+    {                                                \
+                                                     \
+      typedef type argument_type;                    \
+      typedef std::size_t result_type;               \
+                                                     \
+      std::size_t operator()(const type& arg) const  \
+      {                                              \
+        return hash_value(arg);                      \
+      }                                              \
+    };                                               \
+                                                     \
   }                                                  \
 
 // Wrapper macro for template arguments.

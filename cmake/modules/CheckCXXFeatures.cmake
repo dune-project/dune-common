@@ -160,7 +160,7 @@ if(NOT DISABLE_CXX_VERSION_CHECK)
 
         if(${test_compiler_output})
           set(CXX_MAX_SUPPORTED_STANDARD ${version})
-          set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${cxx_std_flag} ")
+          set(CMAKE_CXX_FLAGS "${cxx_std_flag} ${CMAKE_CXX_FLAGS}")
           break()
         else()
           # Wipe the variable, as this version of the standard doesn't seem to work

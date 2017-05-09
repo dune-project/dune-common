@@ -83,8 +83,9 @@ void testRosserMatrix()
 
   std::cout << "Eigenvalues of Rosser matrix: " << eigenComplex << std::endl;
 }
+#endif // HAVE_LAPACK
 
-template <class field_type>
+template <class field_type, int dim>
 void testSymmetricFieldMatrix()
 {
   int numberOfTestMatrices = 10;
@@ -92,19 +93,19 @@ void testSymmetricFieldMatrix()
   for (int i=0; i<numberOfTestMatrices; i++)
   {
     // Construct pseudo-random symmetric test matrix
-    FieldMatrix<field_type,3,3> testMatrix;
-    for (int j=0; j<3; j++)
-      for (int k=j; k<3; k++)
-        testMatrix[j][k] = testMatrix[k][j] = ((int)(M_PI*j*k*i))%100;
+    FieldMatrix<field_type,dim,dim> testMatrix;
+    for (int j=0; j<dim; j++)
+      for (int k=j; k<dim; k++)
+        testMatrix[j][k] = testMatrix[k][j] = ((int)(M_PI*j*k*i))%100 - 1;
 
-    FieldVector<field_type,3> eigenValues;
+    FieldVector<field_type,dim> eigenValues;
     FMatrixHelp::eigenValues(testMatrix, eigenValues);
 
     // Make sure the compute numbers really are the eigenvalues
-    for (int j=0; j<3; j++)
+    for (int j=0; j<dim; j++)
     {
-      FieldMatrix<field_type,3,3> copy = testMatrix;
-      for (int k=0; k<3; k++)
+      FieldMatrix<field_type,dim,dim> copy = testMatrix;
+      for (int k=0; k<dim; k++)
         copy[k][k] -= eigenValues[j];
 
       if (std::fabs(copy.determinant()) > 1e-8)
@@ -112,25 +113,24 @@ void testSymmetricFieldMatrix()
     }
 
     // Make sure the eigenvalues are in ascending order
-    for (int j=0; j<3-1; j++)
+    for (int j=0; j<dim-1; j++)
       if (eigenValues[j] > eigenValues[j+1] + 1e-10)
         DUNE_THROW(MathError, "Values computed by FMatrixHelp::eigenValues are not in ascending order");
   }
 }
-#endif // HAVE_LAPACK
 
 int main() try
 {
 #if HAVE_LAPACK
   testRosserMatrix<double>();
-
-  testSymmetricFieldMatrix<double>();
-
-  return 0;
 #else
   std::cout << "WARNING: eigenvaluetest needs LAPACK, test disabled" << std::endl;
-  return 77;
 #endif // HAVE_LAPACK
+
+  testSymmetricFieldMatrix<double,2>();
+  testSymmetricFieldMatrix<double,3>();
+
+  return 0;
 } catch (Exception exception)
 {
   std::cerr << exception << std::endl;

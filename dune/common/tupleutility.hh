@@ -6,11 +6,12 @@
 
 #include <cstddef>
 #include <tuple>
+#include <type_traits>
 
-#include <dune/common/typetraits.hh>
+#include <dune/common/deprecated.hh>
+#include <dune/common/hybridutilities.hh>
 #include <dune/common/std/type_traits.hh>
-
-#include "tuples.hh"
+#include <dune/common/std/utility.hh>
 
 namespace Dune {
 
@@ -23,6 +24,30 @@ namespace Dune {
    * @file
    * @brief Contains utility classes which can be used with std::tuple.
    */
+
+  template<class T>
+  struct TupleAccessTraits
+  {
+    typedef typename std::add_const<T>::type& ConstType;
+    typedef T& NonConstType;
+    typedef const typename std::remove_const<T>::type& ParameterType;
+  };
+
+  template<class T>
+  struct TupleAccessTraits<T*>
+  {
+    typedef typename std::add_const<T>::type* ConstType;
+    typedef T* NonConstType;
+    typedef T* ParameterType;
+  };
+
+  template<class T>
+  struct TupleAccessTraits<T&>
+  {
+    typedef T& ConstType;
+    typedef T& NonConstType;
+    typedef T& ParameterType;
+  };
 
   /**
    * @brief A helper template that initializes a std::tuple consisting of pointers
@@ -90,6 +115,13 @@ namespace Dune {
     decltype(genericTransformTupleBackendImpl(t, f,Std::index_sequence_for<Args...>{}))
   {
     return genericTransformTupleBackendImpl(t, f,Std::index_sequence_for<Args...>{});
+  }
+
+  template<class... Args, class Functor>
+  auto genericTransformTupleBackend(const std::tuple<Args...>& t, Functor& f) ->
+    decltype(genericTransformTupleBackendImpl(t, f, Std::index_sequence_for<Args...>{}))
+  {
+    return genericTransformTupleBackendImpl(t, f, Std::index_sequence_for<Args...>{});
   }
 #endif
 
@@ -285,140 +317,38 @@ namespace Dune {
     }
   };
 
-  namespace
-  {
-    template<int i, typename T1,typename F>
-    struct Visitor
-    {
-      static inline void visit(F& func, T1& t1)
-      {
-        func.visit(std::get<std::tuple_size<T1>::value-i>(t1));
-        Visitor<i-1,T1,F>::visit(func, t1);
-      }
-    };
-
-    template<typename T1,typename F>
-    struct Visitor<0,T1,F>
-    {
-      static inline void visit(F&, T1&)
-      {}
-    };
-
-    template<int i, typename T1, typename T2,typename F>
-    struct PairVisitor
-    {
-      static inline void visit(F& func, T1& t1, T2& t2)
-      {
-        func.visit(std::get<std::tuple_size<T1>::value-i>(t1), std::get<std::tuple_size<T2>::value-i>(t2));
-        PairVisitor<i-1,T1,T2,F>::visit(func, t1, t2);
-      }
-    };
-
-    template<typename T1, typename T2, typename F>
-    struct PairVisitor<0,T1,T2,F>
-    {
-      static inline void visit(F&, T1&, T2&)
-      {}
-    };
-  }
-
-  /**
-   * @brief Helper template which implements iteration over all storage
-   * elements in a std::tuple.
-   *
-   * Compile-time constructs that allows one to process all elements in a std::tuple.
-   * The exact operation performed on an element is defined by a function
-   * object, which needs to implement a visit method which is applicable to
-   * all storage elements of a std::tuple.  Each std::tuple element is visited once, and
-   * the iteration is done in ascending order.
-   *
-   * The following example implements a function object which counts the
-   * elements in a std::tuple
-   *
-   * \code
-   * template <class T>
-   * struct Counter
-   * {
-   *   Counter() :
-   *     result_(0)
-   *   {}
-   *
-   *   template <class T>
-   *   void visit(T& elem)
-   *   {
-   *     ++result_;
-   *   }
-   *
-   *   int result_;
-   * };
-   * \endcode
-   *
-   * The number of elements in the std::tuple are stored in the member variable
-   * result_. The Counter can be used as follows, assuming a std::tuple t of type
-   * MyTuple is given:
-   *
-   * \code
-   * Counter c;
-   * ForEachValue<MyTuple> forEach(t);
-   *
-   * forEach.apply(c);
-   * std::cout << "Number of elements is: " << c.result_ << std::endl;
-   * \endcode
-   */
   template<class Tuple>
-  class ForEachValue
+  struct DUNE_DEPRECATED_MSG("Use Hybrid::forEach instead!") ForEachValue
   {
-  public:
-    //! \brief Constructor
-    //! \param t The std::tuple which we want to process.
     ForEachValue(Tuple& t) :
       t_(t)
     {}
 
-    //! \brief Applies a function object to each storage element of the std::tuple.
-    //! \param f Function object.
     template<class Functor>
     void apply(Functor& f) const
     {
-      Visitor<std::tuple_size<Tuple>::value,Tuple,Functor>::visit(f, t_);
+      Hybrid::forEach(Std::make_index_sequence<std::tuple_size<Tuple>::value>{},
+        [&](auto i){f.visit(std::get<i>(t_));});
     }
-  private:
+
     Tuple& t_;
   };
 
-  /**
-   * @brief Extension of ForEachValue to two std::tuple's.
-   *
-   * This class provides the framework to process two std::tuple's at once. It works
-   * the same as ForEachValue, just that the corresponding function object
-   * takes one argument from the first std::tuple and one argument from the second.
-   *
-   * \note You have to ensure that the two std::tuples you provide are compatible
-   * in the sense that they have the same length and that the objects passed
-   * to the function objects are related in meaningful way. The best way to
-   * enforce it is to build the second std::tuple from the existing first std::tuple
-   * using ForEachType.
-   */
   template<class Tuple1, class Tuple2>
-  class ForEachValuePair
+  struct DUNE_DEPRECATED_MSG("Use Hybrid::forEach instead!") ForEachValuePair
   {
-  public:
-    //! Constructor
-    //! \param t1 First std::tuple.
-    //! \param t2 Second std::tuple.
     ForEachValuePair(Tuple1& t1, Tuple2& t2) :
       t1_(t1),
       t2_(t2)
     {}
 
-    //! Applies the function object f to the pair of std::tuple's.
-    //! \param f The function object to apply on the pair of std::tuple's.
     template<class Functor>
     void apply(Functor& f)
     {
-      PairVisitor<std::tuple_size<Tuple1>::value,Tuple1,Tuple2,Functor>::visit(f, t1_, t2_);
+      Hybrid::forEach(Std::make_index_sequence<std::tuple_size<Tuple1>::value>{},
+        [&](auto i){f.visit(std::get<i>(t1_), std::get<i>(t2_));});
     }
-  private:
+
     Tuple1& t1_;
     Tuple2& t2_;
   };
@@ -461,27 +391,14 @@ namespace Dune {
 
   /**
    * @brief Deletes all objects pointed to in a std::tuple of pointers.
-   *
-   * \warning Pointers cannot be set to nullptr, so calling the Deletor twice
-   * or accessing elements of a deleted std::tuple leads to unforeseeable results!
    */
   template<class Tuple>
-  class PointerPairDeletor
+  struct PointerPairDeletor
   {
-    struct Deletor
+    template<typename... Ts>
+    static void apply(std::tuple<Ts...>& t)
     {
-      template<typename P>
-      void visit(const P& p)
-      {
-        delete p;
-      }
-    };
-
-  public:
-    static void apply(Tuple& t)
-    {
-      static Deletor deletor;
-      ForEachValue<Tuple>(t).apply(deletor);
+      Hybrid::forEach(t,[&](auto&& ti){delete ti; ti=nullptr;});
     }
   };
 
@@ -612,7 +529,7 @@ namespace Dune {
       template <class, class> class F,
       class Tuple,
       class Seed=std::tuple<>,
-      int N=tuple_size<Tuple>::value>
+      int N=std::tuple_size<Tuple>::value>
   struct ReduceTuple
   {
     typedef typename ReduceTuple<F, Tuple, Seed, N-1>::type Accumulated;
@@ -673,6 +590,7 @@ namespace Dune {
     typedef typename ReduceTuple<JoinTuples, Tuple>::type type;
   };
 
+  /** }@ */
 }
 
 #endif

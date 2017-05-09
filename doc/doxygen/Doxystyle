@@ -15,7 +15,9 @@ FILE_PATTERNS          = *.hh \
 INPUT                  =
 EXCLUDE                =
 
-EXCLUDE_PATTERNS       = */.svn/* */test/*
+EXCLUDE_PATTERNS       = */test/*
+
+EXCLUDE_SYMBOLS = Impl detail Imp Internal
 
 # If the SEARCH_INCLUDES tag is set to YES (the default) the includes files
 # in the INCLUDE_PATH (see below) will be search if a #include is found.
@@ -54,11 +56,10 @@ INLINE_INHERITED_MEMB  = YES
 FULL_PATH_NAMES        = NO
 
 # If the SHORT_NAMES tag is set to YES, doxygen will generate much shorter
-# (but less readable) file names. This can be useful is your file systems
+# (but less readable) file names. This can be useful if your file systems
 # doesn't support long names like on DOS, Mac, or CD-ROM.
 
-@DUNEWEB_TRUE@SHORT_NAMES            = NO
-@DUNEWEB_FALSE@SHORT_NAMES            = YES
+SHORT_NAMES            = YES
 
 # If you use STL classes (i.e. std::string, std::vector, etc.) but do not want
 # to include (a tag file for) the STL sources as input, then you should
@@ -168,15 +169,13 @@ DOT_CLEANUP            = NO
 # each generated HTML page. If it is left blank doxygen will generate a
 # standard header.
 
-@DUNEWEB_TRUE@HTML_HEADER            = doxy-header.html
-@DUNEWEB_FALSE@HTML_HEADER            =
+HTML_HEADER            =
 
 # The HTML_FOOTER tag can be used to specify a personal HTML footer for
 # each generated HTML page. If it is left blank doxygen will generate a
 # standard footer.
 
-@DUNEWEB_TRUE@HTML_FOOTER            = doxy-footer.html
-@DUNEWEB_FALSE@HTML_FOOTER            =
+HTML_FOOTER            =
 
 ##########################  DOXYGEN DOXYSTYLE
 EXTRACT_ALL            = YES

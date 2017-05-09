@@ -6,6 +6,8 @@
 #include <type_traits>
 #include <utility>
 
+#include <dune/common/typetraits.hh>
+
 namespace Dune
 {
 
@@ -19,7 +21,6 @@ namespace Dune
     using std::index_sequence;
     using std::make_integer_sequence;
     using std::make_index_sequence;
-    using std::index_sequence_for;
 
 #else // __cpp_lib_integer_sequence >= 201304
 
@@ -55,7 +56,7 @@ namespace Dune
 
 #ifndef DOXYGEN
 
-    namespace impl {
+    namespace Impl {
 
       template<typename T, T i, T n, T... indices>
       struct _make_integer_sequence
@@ -73,34 +74,30 @@ namespace Dune
 #endif // DOXYGEN
 
     template<typename T, T n>
-    using make_integer_sequence = typename impl::_make_integer_sequence<T,0,n>::type;
+    using make_integer_sequence = typename Impl::_make_integer_sequence<T,0,n>::type;
 
     template<std::size_t n>
     using make_index_sequence = make_integer_sequence<std::size_t,n>;
 
-#ifndef DOXYGEN
-
-      namespace impl {
-
-        // This is a workaround for clang bug 14858 (https://llvm.org/bugs/show_bug.cgi?id=14858)
-        // in a template alias declaration, clang always deduces sizeof...(T) as 1, if the template
-        // alias is evaluated with an unpacked template parameter pack (instead of one that is explicitly
-        // constructed as a list of types at the call site. This is slightly braindead (and has been around
-        // since at least clang 3.0).
-        // As a workaround, we lift the computation into a struct definition.
-        template<typename... T>
-        struct _get_pack_length
-          : public std::integral_constant<std::size_t,sizeof...(T)>
-        {};
-
-      }
-
-#endif // DOXYGEN
-
-    template<typename... T>
-    using index_sequence_for = make_index_sequence<impl::_get_pack_length<T...>{}>;
-
 #endif // __cpp_lib_integer_sequence >= 201304
+
+    /**
+     * \brief Create index_sequence from 0 to sizeof...(T)-1
+     *
+     * This should do the same as std::index_sequence_for.
+     * But due to a bug in the sizeof... operator this
+     * may produce wrong results with clang<3.8.
+     *
+     * As a workaround we provide our own implementation
+     * that avoids this bug even if the std:: version
+     * exists.
+     *
+     * This implemenation can be dropped, once we require
+     * a minimum clang version that has this bug fixed (i.e. >=3.8).
+     */
+    template<typename... T>
+    using index_sequence_for = make_index_sequence<typename Dune::SizeOf<T...>{}>;
+
 
 
   } // namespace Std

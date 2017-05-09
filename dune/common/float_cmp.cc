@@ -31,7 +31,7 @@ namespace Dune {
     template<class T, typename A>
     struct EpsilonType<std::vector<T, A> > {
       //! The epsilon type corresponding to value type std::vector<T, A>
-      typedef EpsilonType<T> Type;
+      typedef typename EpsilonType<T>::Type Type;
     };
     //! Specialization of EpsilonType for Dune::FieldVector
     /**
@@ -42,19 +42,19 @@ namespace Dune {
     template<class T, int n>
     struct EpsilonType<FieldVector<T, n> > {
       //! The epsilon type corresponding to value type Dune::FieldVector<T, n>
-      typedef EpsilonType<T> Type;
+      typedef typename EpsilonType<T>::Type Type;
     };
 
     // default epsilon
     template<class T>
     struct DefaultEpsilon<T, relativeWeak> {
       static typename EpsilonType<T>::Type value()
-      { return std::numeric_limits<typename EpsilonType<T>::Type>::epsilon()*8; }
+      { return std::numeric_limits<typename EpsilonType<T>::Type>::epsilon()*8.; }
     };
     template<class T>
     struct DefaultEpsilon<T, relativeStrong> {
       static typename EpsilonType<T>::Type value()
-      { return std::numeric_limits<typename EpsilonType<T>::Type>::epsilon()*8; }
+      { return std::numeric_limits<typename EpsilonType<T>::Type>::epsilon()*8.; }
     };
     template<class T>
     struct DefaultEpsilon<T, absolute> {
@@ -62,7 +62,7 @@ namespace Dune {
       { return std::max(std::numeric_limits<typename EpsilonType<T>::Type>::epsilon(), 1e-6); }
     };
 
-    namespace Detail {
+    namespace Impl {
       // basic comparison
       template<class T, CmpStyle style = defaultCmpStyle>
       struct eq_t;
@@ -88,30 +88,45 @@ namespace Dune {
         { return std::abs(first-second) <= epsilon; }
       };
       template<class T, CmpStyle cstyle>
-      struct eq_t<std::vector<T>, cstyle> {
-        static bool eq(const std::vector<T> &first,
-                       const std::vector<T> &second,
-                       typename EpsilonType<T>::Type epsilon = DefaultEpsilon<T>::value()) {
-          unsigned int size = first.size();
+      struct eq_t_std_vec {
+        typedef std::vector<T> V;
+        static bool eq(const V &first,
+                       const V &second,
+                       typename EpsilonType<V>::Type epsilon = DefaultEpsilon<V>::value()) {
+          auto size = first.size();
           if(size != second.size()) return false;
           for(unsigned int i = 0; i < size; ++i)
-            if(!eq_t<T, cstyle>(first[i], second[i], epsilon))
+            if(!eq_t<T, cstyle>::eq(first[i], second[i], epsilon))
               return false;
           return true;
         }
       };
+      template< class T>
+      struct eq_t<std::vector<T>, relativeWeak> : eq_t_std_vec<T, relativeWeak> {};
+      template< class T>
+      struct eq_t<std::vector<T>, relativeStrong> : eq_t_std_vec<T, relativeStrong> {};
+      template< class T>
+      struct eq_t<std::vector<T>, absolute> : eq_t_std_vec<T, absolute> {};
+
       template<class T, int n, CmpStyle cstyle>
-      struct eq_t<Dune::FieldVector<T, n>, cstyle> {
-        static bool eq(const Dune::FieldVector<T, n> &first,
-                       const Dune::FieldVector<T, n> &second,
-                       typename EpsilonType<T>::Type epsilon = DefaultEpsilon<T>::value()) {
+      struct eq_t_fvec {
+        typedef Dune::FieldVector<T, n> V;
+        static bool eq(const V &first,
+                       const V &second,
+                       typename EpsilonType<V>::Type epsilon = DefaultEpsilon<V>::value()) {
           for(int i = 0; i < n; ++i)
-            if(!eq_t<T, cstyle>(first[i], second[i], epsilon))
+            if(!eq_t<T, cstyle>::eq(first[i], second[i], epsilon))
               return false;
           return true;
         }
       };
-    } // namespace Detail
+      template< class T, int n >
+      struct eq_t< Dune::FieldVector<T, n>, relativeWeak> : eq_t_fvec<T, n, relativeWeak> {};
+      template< class T, int n >
+      struct eq_t< Dune::FieldVector<T, n>, relativeStrong> : eq_t_fvec<T, n, relativeStrong> {};
+      template< class T, int n >
+      struct eq_t< Dune::FieldVector<T, n>, absolute> : eq_t_fvec<T, n, absolute> {};
+    } // namespace Impl
 
     // operations in functional style
     template <class T, CmpStyle style>
@@ -119,7 +134,7 @@ namespace Dune {
             const T &second,
             typename EpsilonType<T>::Type epsilon)
     {
-      return Detail::eq_t<T, style>::eq(first, second, epsilon);
+      return Impl::eq_t<T, style>::eq(first, second, epsilon);
     }
     template <class T, CmpStyle style>
     bool ne(const T &first,
@@ -202,7 +217,7 @@ namespace Dune {
     }
 
     // rounding operations
-    namespace Detail {
+    namespace Impl {
       template<class I, class T, CmpStyle cstyle = defaultCmpStyle, RoundingStyle rstyle = defaultRoundingStyle>
       struct round_t;
       template<class I, class T, CmpStyle cstyle>
@@ -280,11 +295,11 @@ namespace Dune {
           return res;
         }
       };
-    } // namespace Detail
+    } // end namespace Impl
     template<class I, class T, CmpStyle cstyle, RoundingStyle rstyle>
     I round(const T &val, typename EpsilonType<T>::Type epsilon /*= DefaultEpsilon<T, cstyle>::value()*/)
     {
-      return Detail::round_t<I, T, cstyle, rstyle>::round(val, epsilon);
+      return Impl::round_t<I, T, cstyle, rstyle>::round(val, epsilon);
     }
     template<class I, class T, CmpStyle cstyle>
     I round(const T &val, typename EpsilonType<T>::Type epsilon = DefaultEpsilon<T, cstyle>::value())
@@ -303,7 +318,7 @@ namespace Dune {
     }
 
     // truncation
-    namespace Detail {
+    namespace Impl {
       template<class I, class T, CmpStyle cstyle = defaultCmpStyle, RoundingStyle rstyle = defaultRoundingStyle>
       struct trunc_t;
       template<class I, class T, CmpStyle cstyle>
@@ -376,11 +391,11 @@ namespace Dune {
           return res;
         }
       };
-    } // namespace Detail
+    } // namespace Impl
     template<class I, class T, CmpStyle cstyle, RoundingStyle rstyle>
     I trunc(const T &val, typename EpsilonType<T>::Type epsilon /*= DefaultEpsilon<T, cstyle>::value()*/)
     {
-      return Detail::trunc_t<I, T, cstyle, rstyle>::trunc(val, epsilon);
+      return Impl::trunc_t<I, T, cstyle, rstyle>::trunc(val, epsilon);
     }
     template<class I, class T, CmpStyle cstyle>
     I trunc(const T &val, typename EpsilonType<T>::Type epsilon = DefaultEpsilon<T, cstyle>::value())

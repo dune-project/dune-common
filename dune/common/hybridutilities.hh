@@ -6,9 +6,12 @@
 #include <tuple>
 #include <utility>
 
+#include <dune/common/typetraits.hh>
 #include <dune/common/typeutilities.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/indices.hh>
+#include <dune/common/assertandreturn.hh>
+#include <dune/common/unused.hh>
 
 
 
@@ -99,9 +102,9 @@ namespace Impl {
   }
 
   template<class T, T... t, class Index>
-  constexpr decltype(auto) elementAt(std::integer_sequence<T, t...> c, Index&&, PriorityTag<1>)
+  constexpr decltype(auto) elementAt(std::integer_sequence<T, t...> c, Index, PriorityTag<1>)
   {
-    return std::get<std::decay_t<Index>::value>(std::make_tuple(std::integral_constant<T, t>()...));
+    return Dune::integerSequenceEntry(c, std::integral_constant<std::size_t, Index::value>());
   }
 
   template<class Container, class Index>
@@ -152,7 +155,7 @@ namespace Impl {
     template<std::size_t i>
     constexpr auto operator[](Dune::index_constant<i>) const
     {
-      return Dune::index_constant<Begin::value+i>();
+      return std::integral_constant<typename Begin::value_type, Begin::value+i>();
     }
 
     static constexpr auto size()
@@ -185,7 +188,7 @@ namespace Impl {
 
   template<class Begin, class End,
     std::enable_if_t<IsIntegralConstant<Begin>::value and IsIntegralConstant<End>::value, int> = 0>
-  constexpr auto integralRange(const Begin& begin, const End& end, const PriorityTag<1>&)
+  constexpr auto integralRange(const Begin& /*begin*/, const End& /*end*/, const PriorityTag<1>&)
   {
     static_assert(Begin::value <= End::value, "You cannot create an integralRange where end<begin");
     return Impl::StaticIntegralRange<Begin,End>();
@@ -196,10 +199,9 @@ namespace Impl {
   // constexpr the function body can only contain a return
   // statement and no assertion before this.
   template<class Begin, class End>
-  auto integralRange(const Begin& begin, const End& end, const PriorityTag<0>&)
+  constexpr auto integralRange(const Begin& begin, const End& end, const PriorityTag<0>&)
   {
-    assert(begin <= end);
-    return Impl::DynamicIntegralRange<End>(begin, end);
+    return DUNE_ASSERT_AND_RETURN(begin<=end, Impl::DynamicIntegralRange<End>(begin, end));
   }
 
 } // namespace Impl
@@ -261,6 +263,13 @@ namespace Impl {
   {
     evaluateFoldExpression<int>({(f(Hybrid::elementAt(range, std::integral_constant<Index,i>())), 0)...});
   }
+
+  template<class F, class Index, Index... i>
+  constexpr void forEach(std::integer_sequence<Index, i...> /*range*/, F&& f, PriorityTag<2>)
+  {
+    evaluateFoldExpression<int>({(f(std::integral_constant<Index,i>()), 0)...});
+  }
+
 
   template<class Range, class F,
     std::enable_if_t<IsIntegralConstant<decltype(Hybrid::size(std::declval<Range>()))>::value, int> = 0>
@@ -340,24 +349,24 @@ T accumulate(Range&& range, T value, F&& f)
 namespace Impl {
 
   template<class IfFunc, class ElseFunc>
-  constexpr void ifElse(std::true_type, IfFunc&& ifFunc, ElseFunc&& elseFunc)
+  constexpr decltype(auto) ifElse(std::true_type, IfFunc&& ifFunc, ElseFunc&& /*elseFunc*/)
   {
-    ifFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
+    return ifFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
   }
 
   template<class IfFunc, class ElseFunc>
-  constexpr void ifElse(std::false_type, IfFunc&& ifFunc, ElseFunc&& elseFunc)
+  constexpr decltype(auto) ifElse(std::false_type, IfFunc&& /*ifFunc*/, ElseFunc&& elseFunc)
   {
-    elseFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
+    return elseFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
   }
 
   template<class IfFunc, class ElseFunc>
-  constexpr void ifElse(const bool& condition, IfFunc&& ifFunc, ElseFunc&& elseFunc)
+  decltype(auto) ifElse(const bool& condition, IfFunc&& ifFunc, ElseFunc&& elseFunc)
   {
     if (condition)
-      ifFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
+      return ifFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
     else
-      elseFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
+      return elseFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
   }
 
 } // namespace Impl
@@ -372,7 +381,7 @@ namespace Impl {
  * This will call either ifFunc or elseFunc depending
  * on the condition. In any case a single argument
  * will be passed to the called function. This will always
- * be the indentity function. Passing an expression through
+ * be the identity function. Passing an expression through
  * this function will lead to lazy evaluation. This way both
  * 'branches' can contain expressions that are only valid
  * within this branch if the condition is a std::integral_constant<bool,*>.
@@ -385,9 +394,9 @@ namespace Impl {
  * a static if statement.
  */
 template<class Condition, class IfFunc, class ElseFunc>
-constexpr void ifElse(const Condition& condition, IfFunc&& ifFunc, ElseFunc&& elseFunc)
+decltype(auto) ifElse(const Condition& condition, IfFunc&& ifFunc, ElseFunc&& elseFunc)
 {
-  Impl::ifElse(condition, std::forward<IfFunc>(ifFunc), std::forward<ElseFunc>(elseFunc));
+  return Impl::ifElse(condition, std::forward<IfFunc>(ifFunc), std::forward<ElseFunc>(elseFunc));
 }
 
 /**
@@ -398,9 +407,9 @@ constexpr void ifElse(const Condition& condition, IfFunc&& ifFunc, ElseFunc&& el
  * This provides an ifElse conditional with empty else clause.
  */
 template<class Condition, class IfFunc>
-constexpr void ifElse(const Condition& condition, IfFunc&& ifFunc)
+void ifElse(const Condition& condition, IfFunc&& ifFunc)
 {
-  ifElse(condition, std::forward<IfFunc>(ifFunc), [](auto&& i) {});
+  ifElse(condition, std::forward<IfFunc>(ifFunc), [](auto&& i) { DUNE_UNUSED_PARAMETER(i); });
 }
 
 
@@ -408,7 +417,7 @@ constexpr void ifElse(const Condition& condition, IfFunc&& ifFunc)
 namespace Impl {
 
   template<class T1, class T2>
-  constexpr auto equals(const T1& t1, const T2& t2, PriorityTag<1>) -> decltype(T1::value, T2::value, std::integral_constant<bool,T1::value == T2::value>())
+  constexpr auto equals(const T1& /*t1*/, const T2& /*t2*/, PriorityTag<1>) -> decltype(T1::value, T2::value, std::integral_constant<bool,T1::value == T2::value>())
   { return {}; }
 
   template<class T1, class T2>
@@ -436,6 +445,90 @@ constexpr auto equals(T1&& t1,  T2&& t2)
   return Impl::equals(std::forward<T1>(t1), std::forward<T2>(t2), PriorityTag<1>());
 }
 
+
+
+namespace Impl {
+
+  template<class Result, class T, class Value, class Branches, class ElseBranch>
+  constexpr Result switchCases(std::integer_sequence<T>, const Value& /*value*/, Branches&& /*branches*/, ElseBranch&& elseBranch)
+  {
+    return elseBranch();
+  }
+
+  template<class Result, class T, T t0, T... tt, class Value, class Branches, class ElseBranch>
+  constexpr Result switchCases(std::integer_sequence<T, t0, tt...>, const Value& value, Branches&& branches, ElseBranch&& elseBranch)
+  {
+    return ifElse(
+        Hybrid::equals(std::integral_constant<T, t0>(), value),
+      [&](auto id) -> decltype(auto) {
+        return id(branches)(std::integral_constant<T, t0>());
+      }, [&](auto id) -> decltype(auto) {
+        return Impl::switchCases<Result>(id(std::integer_sequence<T, tt...>()), value, branches, elseBranch);
+    });
+  }
+
+} // namespace Impl
+
+
+
+/**
+ * \brief Switch statement
+ *
+ * \ingroup HybridUtilities
+ *
+ * \tparam Cases Type of case range
+ * \tparam Value Type of value to check against the cases
+ * \tparam Branches Type of branch function
+ * \tparam ElseBranch Type of branch function
+ *
+ * \param cases A range of cases to check for
+ * \param value The value to check against the cases
+ * \param branches A callback that will be executed with matching entry from case list
+ * \param elseBranch A callback that will be executed if no other entry matches
+ *
+ * Value is checked against all entries of the given range.
+ * If one matches, then branches is executed with the matching
+ * value as single argument. If the range is an std::integer_sequence,
+ * the value is passed as std::integral_constant.
+ * If non of the entries matches, then elseBranch is executed
+ * without any argument.
+ *
+ * Notice that this short circuits, e.g., if one case matches,
+ * the others are no longer evaluated.
+ *
+ * The return value will be deduced from the else branch.
+ */
+template<class Cases, class Value, class Branches, class ElseBranch>
+constexpr decltype(auto) switchCases(const Cases& cases, const Value& value, Branches&& branches, ElseBranch&& elseBranch)
+{
+  return Impl::switchCases<decltype(elseBranch())>(cases, value, std::forward<Branches>(branches), std::forward<ElseBranch>(elseBranch));
+}
+
+/**
+ * \brief Switch statement
+ *
+ * \ingroup HybridUtilities
+ *
+ * \tparam Cases Type of case range
+ * \tparam Value Type of value to check against the cases
+ * \tparam Branches Type of branch function
+ *
+ * \param cases A range of cases to check for
+ * \param value The value to check against the cases
+ * \param branches A callback that will be executed with matching entry from case list
+ *
+ * Value is checked against all entries of the given range.
+ * If one matches, then branches is executed with the matching
+ * value as single argument. If the range is an std::integer_sequence,
+ * the value is passed as std::integral_constant.
+ * If non of the entries matches, then elseBranch is executed
+ * without any argument.
+ */
+template<class Cases, class Value, class Branches>
+constexpr void switchCases(const Cases& cases, const Value& value, Branches&& branches)
+{
+  return Impl::switchCases<void>(cases, value, std::forward<Branches>(branches), []() {});
+}
 
 
 } // namespace Hybrid

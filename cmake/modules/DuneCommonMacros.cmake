@@ -3,6 +3,9 @@
 #    This modules content is executed whenever a module required or suggests dune-common!
 #
 
+# enforce C++-14
+dune_require_cxx_standard(MODULE "dune-common" VERSION 14)
+
 include(DuneStreams)
 dune_set_minimal_debug_level()
 
@@ -66,3 +69,6 @@ CHECK_ALIGNOF(uint32_t)
 find_package(Vc)
 include(AddVcFlags)
 set_package_info("Vc" "C++ Vectorization library" "https://github.com/VcDevel/Vc")
+
+# Run the python extension of the Dune cmake build system
+include(DunePythonCommonMacros)

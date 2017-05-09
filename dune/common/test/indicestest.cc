@@ -7,24 +7,9 @@
 #include <tuple>
 
 #include <dune/common/indices.hh>
+#include <dune/common/tuplevector.hh>
 
 using namespace Dune;
-
-/** \brief A std::tuple that allows access to its element via operator[]
- *
- * Helper class to test the static indices with
- */
-template<class... T>
-struct TupleVector : public std::tuple<T...>
-{
-  /** \brief Array-style access to the tuple elements */
-  template<std::size_t i>
-  auto operator[](const index_constant<i>&)
-    ->decltype(std::get<i>(*this))
-  {
-    return std::get<i>(*this);
-  }
-};
 
 
 
@@ -33,7 +18,7 @@ int main()
   using namespace Dune::Indices;
 
   // Test whether indices can be used to index a data structure
-  TupleVector<int,double,float> v;
+  Dune::TupleVector<int,double,float> v;
   v[_0] = 42;
   v[_1] = 3.14;
   v[_2] = 2.7;

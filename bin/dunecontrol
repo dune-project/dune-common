@@ -26,11 +26,39 @@ fi
 space=" "
 tab="	"
 BLANK="$space$tab"
+nl=$'\n'
 
 ###############################################
 ###
 ### read lib
 ###
+
+# quote parameter for passing it through the shell
+# the result is meant to be used inside "...", i.e. the outer quotes are _not_
+# included
+#
+# you should have the identity
+# eval "[ x\"\$param\" = x\"$(doublequote "$param")\" ]"
+doublequote()
+{
+  local val="$1"
+  local result=
+  local token=
+  local special=
+  while [ -n "$val" ]; do
+    token=${val%%[\"\$\`\\]*}
+    val=${val#"$token"}
+    special=${val:0:1}
+    val=${val:1}
+    result=$result$token${special:+\\$special}
+  done
+  # if the value ends in \n, protect it by appending two double-quotes so it
+  # wont get stripped by the surrounding $(...)
+  case $result in
+    *"$nl") result=$result'""';;
+  esac
+  printf "%s" "$result"
+}
 
 canonicalname(){
     if test $# -ne 1; then
@@ -122,7 +150,7 @@ build_module() {
     while test $# -gt 0 && test "$1" != ":"; do
       COMMAND=$(echo $command | tr '[:lower:]' '[:upper:]')
       # setup paramter list
-      CMD_FLAGS="$CMD_FLAGS \"$1\""
+      CMD_FLAGS="$CMD_FLAGS \"$(doublequote "$1")\""
       shift
     done
     if test -z "$CMD_FLAGS"; then
@@ -171,7 +199,6 @@ load_opts() {
   local CMD_FLAGS_FROM_FILE=""
   if test "$command" = "NONE"; then
     BUILDDIR=$DUNE_BUILDDIR
-    USE_CMAKE=$DUNE_USE_CMAKE
     if test "x$DUNE_OPTS_FILE" != "x"; then
       if test -z "$BUILDDIR"; then
         # no builddir set yet, use build dir from opts file if set
@@ -181,19 +208,7 @@ load_opts() {
           BUILDDIR="$OPTS_FILE_BUILDDIR"
         fi
       fi
-      if test -z "$USE_CMAKE"; then
-        # no USE_CMAKE set yet, use USE_CMAKE from opts file if set
-        # Note: if --use-cmake is used USE_CMAKE will be set already
-        OPTS_FILE_USE_CMAKE="$(eval USE_CMAKE=""; . $DUNE_OPTS_FILE; eval echo \$USE_CMAKE)"
-        if test -n "$OPTS_FILE_USE_CMAKE"; then
-          USE_CMAKE="$OPTS_FILE_USE_CMAKE"
-        fi
-        # if still no USE_CMAKE is set, default to true
-        if test -z "$USE_CMAKE"; then
-          USE_CMAKE="yes"
-        fi
-      fi
-      if test -n "$USE_CMAKE" && test "$system_default_cmake" = "yes"; then
+      if test "$system_default_cmake" = "yes"; then
         # We use cmake for building, but CMAKE is not yet set.
         # Check the opts file for it
         OPTS_FILE_CMAKE="$(eval CMAKE=""; . $DUNE_OPTS_FILE; eval echo \$CMAKE)"
@@ -216,10 +231,9 @@ load_opts() {
     echo "----- using default flags \$${COMMAND}_FLAGS from environment -----"
   fi
 
-  if test "x$USE_CMAKE" != "xno"; then
-    if test -z "$BUILDDIR"; then
-      export BUILDDIR=build-cmake
-    fi
+  # if no build directory is set, use default "build-cmake"
+  if test -z "$BUILDDIR"; then
+    export BUILDDIR=build-cmake
   fi
 }
 
@@ -249,16 +263,14 @@ abs_builddir()
 # Uses the current compiler to extract information about the
 # multiarch triplets and sets the export variable MULTIARCH_LIBDIR
 # according to it.
-# If not compiler is specified then cc or gcc is used.
+# If no compiler is specified then cc or gcc is used.
 extract_multiarch(){
   set +e #error in the multiarch detection should not be fatal.
   local my_cxx_compiler
   if test "x$MULTIARCH_LIBDIR" != "x"; then
     return
   fi
-  if test "x$USE_CMAKE" = "xyes"; then
-    load_opts "cmake"
-  fi
+  load_opts "cmake"
   if test "x$my_cxx_compiler" == "x"; then
     load_opts "configure"
   fi
@@ -316,7 +328,7 @@ check_commands() {
   done
 }
 
-# check wheteher the parameter is valid command or not
+# check whether the parameter is valid command or not
 is_command() {
 eval '
 case "$1" in
@@ -330,7 +342,7 @@ esac'
 }
 
 # list of all dunecontrol commands
-COMMANDS="printdeps vcsetup update autogen configure make all exec bexec status svn git"
+COMMANDS="printdeps vcsetup update configure make all exec bexec status svn git"
 
 # list of dunecontrol commands for which the version check is skipped by default
 COMMANDSTOSKIPVERSIONCHECK="update status svn git exec bexec"
@@ -339,10 +351,9 @@ COMMANDSTOSKIPVERSIONCHECK="update status svn git exec bexec"
 printdeps_HELP="print recursive dependencies of a module"
 vcsetup_HELP="setup version control repository (Git etc.) or working copy (SVN)"
 update_HELP="updated all modules from the repository"
-autogen_HELP="run the autogen.sh script for each module. Does nothing, if CMake is activated"
 configure_HELP="run configure or cmake for each module"
-make_HELP="run make for each module"
-all_HELP="\trun 'vcsetup', 'autogen', 'configure' and 'make' command for each module"
+make_HELP="build each module"
+all_HELP="\trun 'vcsetup', 'configure' and 'make' command for each module"
 exec_HELP="execute an arbitrary command in each module source directory"
 bexec_HELP="execute an arbitrary command in each module build directory"
 status_HELP="show vc status for all modules"
@@ -357,21 +368,6 @@ git_HELP="\trun git command for each git managed module"
 for command in $COMMANDS; do
   eval "run_$command () { run_default_$command; }"
 done
-
-#
-# Check whether we should use cmake for this particular value
-# and set LOCAL_USE_CMAKE accordingly.
-# We use cmake if USE_CMAKE is not set to no and the module has
-# CMake build infrastructure, i.e. a toplevel CMakeLists.txt
-#
-create_local_use_cmake() {
-  if test "x$USE_CMAKE" != "xno" && test -e "$(eval "echo \$PATH_$module")/CMakeLists.txt"; then
-    LOCAL_USE_CMAKE=yes
-  else
-    LOCAL_USE_CMAKE=no
-  fi
-}
-
 
 #
 # default implementations for commands...
@@ -570,7 +566,7 @@ run_default_vcsetup() {
   fi
 
   # Run custom setup scripts
-  if [ -d .git -o -f .git -o -d .svn -o -d CVS -o -f stamp-vc ]; then
+  if [ -d .git -o -f .git -o -d .svn ]; then
     if [ -d .vcsetup/run.d ]; then
       for SCRIPT in .vcsetup/run.d/* ; do
         if [ -x "$SCRIPT" ]; then
@@ -585,10 +581,8 @@ run_default_vcsetup() {
 run_default_update () {
   if test -d .svn; then
     svn update
-  elif test -d CVS; then
-    cvs update -dP
-  elif test -d .git; then
-      if test -d ".git/svn" && test -n "`git svn find-rev HEAD`"; then
+  elif test -d .git || test -f .git; then
+      if test -d .git && test -d ".git/svn" && test -n "`git svn find-rev HEAD`"; then
           # If the current HEAD points to a SVN commit, update via git-svn
           git svn rebase
       else
@@ -606,42 +600,14 @@ run_default_update () {
       fi
   else
     echo "WARNING: $module is not under a known version control system."
-    echo "         We support svn, git and cvs."
-  fi
-}
-
-run_default_autogen () {
-  create_local_use_cmake
-  if test "x$LOCAL_USE_CMAKE" = "xno"; then
-    PARAMS="$CMD_FLAGS"
-    local M4_PATH=""
-    if test -f configure.ac && \
-       ( test -d .svn || test -d .git || test -d CVS || test -f stamp-vc ); then
-      sort_modules $MODULES
-      for m in $MODULES; do
-        path="$(eval "echo \$PATH_$m")"
-        MODULE_PATHS="$MODULE_PATHS\"$path\" "
-      done
-      if test -f autogen.sh; then
-        eval echo "WARNING: \$NAME_$module contains obsolete autogen.sh," \
-            >&2
-        echo "         dune-autogen is used instead." >&2
-      fi
-      eval "\"$PREFIX_DIR/bin/dune-autogen\"" "$MODULE_PATHS" "$PARAMS" || exit 1
-    else
-      echo Skipping dune-autogen
-    fi
-  else
-    echo Skipping dune-autogen because of CMake
+    echo "         We support svn and git."
   fi
 }
 
 run_default_configure () {
   extract_multiarch
   PARAMS="$CMD_FLAGS"
-  create_local_use_cmake
 
-  if test -x configure || test "x$LOCAL_USE_CMAKE" = "xyes" ; then
     ACLOCAL_FLAGS="-I ."
     if test -d "m4"; then
       ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I m4"
@@ -651,13 +617,10 @@ run_default_configure () {
     sort_modules $module
     for m in $MODULES; do
       path="$(eval "echo \$PATH_$m")"
-      if test "x$LOCAL_USE_CMAKE" = "xyes"; then
-          #
-          # Translate the configure PARMS to cmake
-          export PARAMS
-          export CMAKE_PARAMS
-          module_translate_options_am2cmake $m $path/lib
-      fi
+      # Translate the configure PARMS to cmake
+      export PARAMS
+      export CMAKE_PARAMS
+
       if test x$module = x$m; then continue; fi # skip myself
       name=$(eval "echo \$NAME_$m")
       for dir in $path/m4 $path/share/dune/aclocal $path/share/aclocal; do
@@ -673,27 +636,22 @@ run_default_configure () {
           PARAMS="$PARAMS \"--with-$name=$path\""
         fi
       fi
-      if test "x$LOCAL_USE_CMAKE" = "xyes"; then
-          if test -d "$m_ABS_BUILDDIR"; then
-            CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$m_ABS_BUILDDIR\""
-          else
-            TMP_PARAMS="\"-D""$name""_DIR=$path\""
-            for i in $MULTIARCH_LIBDIR lib lib64 lib32; do
-              if test -d "$path/$i/cmake/$name"; then
-                TMP_PARAMS="\"-D""$name""_DIR=$path/$i/cmake/$name\""
-                break;
-              fi
-            done
-            CMAKE_PARAMS="$CMAKE_PARAMS $TMP_PARAMS"
+
+      if test -d "$m_ABS_BUILDDIR"; then
+        CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$m_ABS_BUILDDIR\""
+      else
+        TMP_PARAMS="\"-D""$name""_DIR=$path\""
+        for i in $MULTIARCH_LIBDIR lib lib64 lib32; do
+          if test -d "$path/$i/cmake/$name"; then
+            TMP_PARAMS="\"-D""$name""_DIR=$path/$i/cmake/$name\""
+            break;
           fi
+        done
+        CMAKE_PARAMS="$CMAKE_PARAMS $TMP_PARAMS"
       fi
+
     done
 
-    if test "x$HAVE_duneweb" == "xyes"; then
-      PARAMS="$PARAMS \"--with-duneweb=$PATH_duneweb\""
-    fi
-
-    if test "x$LOCAL_USE_CMAKE" = "xyes"; then
       # we have to export the compiler and compiler flags
       # such that they are honored by cmake.
       flags="CXX CC CXXFLAGS CFLAGS CPPFLAGS LDFLAGS F77 FFLAGS FLIBS FC FCFLAGS FCLIBS LIBS"
@@ -734,54 +692,28 @@ run_default_configure () {
       test -n "$found_libs" && \
           echo "ERROR: your build directory $ABS_BUILDDIR contains libtool built libraries $found_libs, please cleanup" && \
           exit 1
-      echo "$PREPARAMS $CMAKE -DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\""
-      eval $PREPARAMS $CMAKE "-DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\" $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\"" || exit 1
-    else
-      PARAMS="$PARAMS ACLOCAL_AMFLAGS=\"$ACLOCAL_FLAGS\""
-      echo ./configure "$PARAMS"
-      # create build directory if requested
-      if test -n "$ABS_BUILDDIR"; then
-        test -d "$ABS_BUILDDIR" || mkdir -p "$ABS_BUILDDIR"
-        SRCDIR="$PWD"
-        cd "$ABS_BUILDDIR"
-        eval "$SRCDIR/configure" "$PARAMS" || exit 1
-      else
-        eval ./configure "$PARAMS" || exit 1
+      # Prevent using an empty module path
+      if test -n "$CMAKE_MODULE_PATH"; then
+          _MODULE_PATH="-DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\""
       fi
-    fi
-  else
-    if test -f configure.in || test -f configure.ac; then
-      echo "ERROR: configure.[in|ac] found, but configure missing." >&2
-      echo "Did you forget to run autoconf?" >&2
-      echo "Perhaps you didn't update your project to" >&2
-      echo "the latest build system changes (FS#382)." >&2
-      echo "If your project is under version control, please make sure" >&2
-      echo "you have a file stamp-vc in you top_srcdir." >&2
-      exit 1
-    fi
-  fi
+      echo "$PREPARAMS $CMAKE $_MODULE_PATH $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\""
+      eval $PREPARAMS $CMAKE "$_MODULE_PATH $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\"" || exit 1
 }
 
 run_default_make () {
   test ! -d "$ABS_BUILDDIR" || cd "$ABS_BUILDDIR"
   PARAMS="$CMD_FLAGS"
   echo "build directory: $BUILDDIR"
-  create_local_use_cmake
-  if test "$LOCAL_USE_CMAKE" = "no"; then
-    echo make "$PARAMS"
-    eval $MAKE "$PARAMS"
-  else
-    # prepend '--' to separate cmake and make parameters
-    if ! $(echo "$PARAMS" | grep -q -- '--'); then
-      PARAMS="-- $PARAMS"
-    fi
-    echo $CMAKE --build . "$PARAMS"
-    eval $CMAKE --build . "$PARAMS"
+  # prepend '--' to separate cmake and make parameters
+  if ! $(echo "$PARAMS" | grep -q -- '--'); then
+    PARAMS="-- $PARAMS"
   fi
+  echo $CMAKE --build . "$PARAMS"
+  eval $CMAKE --build . "$PARAMS"
 }
 
 run_default_all () {
-  for cmd in vcsetup autogen configure make; do
+  for cmd in vcsetup configure make; do
     eval echo "--- calling $cmd for \$NAME_${module} ---"
     load_opts $cmd
     run_$cmd
@@ -824,8 +756,6 @@ usage () {
     echo "OPTIONS:"
     echo "  -h, --help          show this help"
     echo "      --debug         enable debug output of this script"
-    echo "      --use-cmake     use CMake instead of autotools for building"
-    echo "      --no-cmake      use autotools instead of CMake for building"
     echo "      --module=mod    apply the actions on module mod"
     echo "                      and all modules it depends on"
     echo "      --only=mod      only apply the actions on module mod"
@@ -931,9 +861,6 @@ export ONLY=""
 export RESUME_FLAG=no
 export REVERSE_FLAG=no
 export SKIPFIRST=no
-
-# read environment variable USE_CMAKE
-export DUNE_USE_CMAKE="$(echo $USE_CMAKE)"
 
 # parse commandline parameters
 while test $# -gt 0; do
@@ -1054,12 +981,6 @@ while test $# -gt 0; do
     --skipfirst)
       export SKIPFIRST=yes
     ;;
-    --use-cmake|--cmake)
-      export DUNE_USE_CMAKE=yes
-    ;;
-    --no-cmake)
-      export DUNE_USE_CMAKE=no
-    ;;
     --debug) true ;; # ignore this option, it is handled right at the beginning
     --*)
       usage
@@ -1139,152 +1060,6 @@ case "$command" in
       echo "  $mod (suggested)"
     done
     ;;
-  m4create)
-    find_modules_in_path
-    if test "x$SEARCH_MODULES" == "x"; then
-      echo "ERROR: m4create requires an explicit --module=... parameter"  >&2
-      exit 1
-    fi
-    mainmod=`echo $SEARCH_MODULES`
-    eval mainmodpath="\$PATH_$mainmod"
-    fname="$mainmodpath/dependencies.m4"
-    name=`eval echo \\${NAME_$mainmod}`
-    version=`eval echo \\${VERS_$mainmod}`
-    maintainer=`eval echo \\${MAIN_$mainmod}`
-    # get dependencies
-    eval deps=\$DEPS_$mainmod
-    #initially remove leading space
-    deps=`echo "$deps" | $SED 's/^ *//'`
-    while test -n "$deps"; do
-      #the end of the name is marked either by space, opening paren
-      #or comma
-      depname="${deps%%[ (,]*}"
-      #remove the name and adjacent whitespace
-      deps=`echo "$deps" | $SED 's/^[^ (,]* *//'`
-      #check whether there is a dependency version
-      case "$deps" in
-      '('*) deps="${deps#(}"
-            depver="${deps%%)*}"
-            deps="${deps#*)}"
-            ;;
-      *)    depver=
-            ;;
-      esac
-      #remove any leading whitespace or commas for te next iteration
-      deps=`echo "$deps" | $SED 's/^[, ]*//'`
-
-      requires="$requires $depname $depver "
-    done
-    # get suggestions
-    eval sugs=\$SUGS_$mainmod
-    #initially remove leading space
-    sugs=`echo "$sugs" | $SED 's/^ *//'`
-    while test -n "$sugs"; do
-      #the end of the name is marked either by space, opening paren
-      #or comma
-      sugsname="${sugs%%[ (,]*}"
-      #remove the name and adjacent whitespace
-      sugs=`echo "$sugs" | $SED 's/^[^ (,]* *//'`
-      #check whether there is a dependency version
-      case "$sugs" in
-      '('*) sugs="${sugs#(}"
-            sugsver="${sugs%%)*}"
-            sugs="${sugs#*)}"
-            ;;
-      *)    sugver=
-            ;;
-      esac
-      #remove any leading whitespace or commas for te next iteration
-      sugs=`echo "$sugs" | $SED 's/^[, ]*//'`
-
-      suggests="$suggests $sugsname"
-      suggestsall="$suggestsall $sugsname $sugsver "
-    done
-    # ensure a version number
-    if test "x$version" = "x"; then version="0.0"; fi
-    echo "writing $fname"
-    echo "    for $name $version $maintainer"
-    echo "        requires $requires"
-    echo "        suggests $suggestsall"
-      AC_MACRO_DIR="."
-      test ! -d m4 || AC_MACRO_DIR=m4
-    cat > "$fname" <<EOF
-# dependencies.m4 generated by dunecontrol
-
-m4_define([DUNE_AC_INIT],[
-  AC_INIT([$name], [$version], [$maintainer])
-  AM_INIT_AUTOMAKE([foreign 1.9 tar-pax])
-  m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([no])])
-  AC_SUBST([DUNE_MOD_VERSION], [$version])
-  AC_SUBST([DUNE_MOD_NAME], [$name])
-  AC_SUBST([DUNE_MAINTAINER_NAME], ["$maintainer"])
-  DUNE_PARSE_MODULE_VERSION([$name], [$version])
-  REQUIRES="$requires"
-  AC_SUBST(REQUIRES, [$REQUIRES])
-  AC_CONFIG_MACRO_DIR([$AC_MACRO_DIR])
-])
-
-AC_DEFUN([DUNE_CHECK_MOD_DEPENDENCIES], [
-EOF
-    ### initialize AM_CONDITIONAL for suggestions that were not found
-    for name in $suggests; do
-      mod=$(fix_variable_name $name)
-      MOD=`echo $mod | tr [:lower:] [:upper:]`
-      if test "x$(eval echo \$HAVE_$mod)" = "x"; then
-        cat >> "$fname" <<EOF
-  ### add a conditional check for $name,
-  # just in case the module is not available at autogen time
-  AM_CONDITIONAL([HAVE_${MOD}], false)
-EOF
-      fi
-    done
-    ### ANALYSE MODULE
-    sort_modules $mainmod
-    ### DEPENDENCIES
-    for mod in $SORTEDMODULES_DEPS; do
-      name=`eval echo \\$NAME_$mod`
-      MOD=`echo $mod | tr [:lower:] [:upper:]`
-      cat >> "$fname" <<EOF
-  ### check dependency $name
-  # invoke checks required by this module
-  AC_REQUIRE([${MOD}_CHECKS])
-  # invoke check for this module
-  AC_REQUIRE([${MOD}_CHECK_MODULE])
-  if test x\$with_$mod = xno; then
-    AC_MSG_ERROR([could not find required module _dune_name])
-  fi
-EOF
-    done
-    ###
-    for mod in $SORTEDMODULES_SUGS; do
-      name=`eval echo \\$NAME_$mod`
-      MOD=`echo $mod | tr [:lower:] [:upper:]`
-      cat >> "$fname" <<EOF
-  ### check suggestion $name
-  # invoke checks required by this module
-  AC_REQUIRE([${MOD}_CHECKS])
-  # invoke check for this module
-  AC_REQUIRE([${MOD}_CHECK_MODULE])
-  if test x\$with_$mod = xno; then
-    AC_MSG_WARN([could not find suggested module _dune_name])
-  fi
-EOF
-    done
-    ###
-    # only test for the module if we really define our own checks
-    if test -d m4; then
-      mod=$mainmod
-      name=`eval echo \\$NAME_$mod`
-      MOD=`echo $mod | tr [:lower:] [:upper:]`
-      cat >> "$fname" <<EOF
-  ### invoke checks for $name
-  AC_REQUIRE([${MOD}_CHECKS])
-EOF
-    fi
-    cat >> "$fname" <<EOF
-])
-EOF
-  ;;
   unexport)
     echo export DUNE_CONTROL_PATH=""
   ;;
@@ -1292,16 +1067,6 @@ EOF
     usage
   ;;
   *)
-    set +e
-    if test "x$USE_CMAKE" = "xno"; then
-      echo "$PREFIX_DIR" |$GREP "[ 	]" >/dev/null
-     if test "$?" -eq "0"; then
-        echo "ERROR: The prefix directory path ($PREFIX_DIR) contains spaces. This is not"
-        echo "       supported when using autotools."
-        echo "       Either rename the path or activate CMake with --use-cmake switch."
-        exit 1
-      fi
-    fi
     set -e
     # skip version check if command is in according list
     if grep -q "$1" <<<"$COMMANDSTOSKIPVERSIONCHECK" ; then

@@ -13,6 +13,8 @@
 #include <dune/common/genericiterator.hh>
 #include <initializer_list>
 
+#include <dune/common/hash.hh>
+
 #ifdef CHECK_RESERVEDVECTOR
 #define CHECKSIZE(X) assert(X)
 #else
@@ -74,6 +76,14 @@ namespace Dune
     }
 
     /** @} */
+
+    bool operator == (const ReservedVector & other) const
+    {
+      bool eq = (sz == other.sz);
+      for (size_type i=0; i<sz && eq; ++i)
+        eq = eq && (data[i] == other.data[i]);
+      return eq;
+    }
 
     /** @{ Data access operations */
 
@@ -203,12 +213,19 @@ namespace Dune
       return s;
     }
 
+    inline friend std::size_t hash_value(const ReservedVector& v) noexcept
+    {
+      return hash_range(v.data,v.data+v.sz);
+    }
+
   private:
     T data[n];
     size_type sz;
   };
 
 }
+
+DUNE_DEFINE_HASH(DUNE_HASH_TEMPLATE_ARGS(typename T, int n),DUNE_HASH_TYPE(Dune::ReservedVector<T,n>))
 
 #undef CHECKSIZE
 

@@ -6,20 +6,18 @@
 #endif
 
 #include <array>
-#include <cstddef>
 #include <iostream>
-#include <ostream>
 
 #include <dune/common/std/make_array.hh>
 #include <dune/common/classname.hh>
 #include <dune/common/fvector.hh>
+#include <dune/common/streamoperators.hh>
 
 template<class T, std::size_t n>
-void f(const std::array<T, n> &a) {
-  std::cout << "Got a " << Dune::className(a) << " with elements";
-  for(std::size_t i = 0; i < n; ++i)
-    std::cout << " (" << a[i] << ")";
-  std::cout << std::endl;
+void f(const std::array<T, n> &a)
+{
+  using Dune::operator<<;
+  std::cout << "Got a " << Dune::className(a) << " with elements " << a << std::endl;
 }
 
 int main() {

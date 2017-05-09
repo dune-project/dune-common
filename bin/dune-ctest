@@ -1,0 +1,105 @@
+#! /usr/bin/env python3
+#
+# Wrapper around CTest for DUNE
+#
+# CTest returns with an error status not only when tests failed, but also
+# when tests were only skipped.  This wrapper checks the log and returns
+# successfully if no tests failed; skipped tests do not result in an error.
+# This behaviour is needed in a continuous integration environment, when
+# building binary packages or in other cases where the testsuite should be
+# run automatically.
+#
+# Author: Ansgar Burchardt <Ansgar.Burchardt@tu-dresden.de>
+
+import errno
+import glob
+import os.path
+import shutil
+import subprocess
+import sys
+import xml.etree.ElementTree
+
+def printTest(test):
+    status = test.get("Status")
+    name = test.find("Name").text
+    fullName = test.find("FullName").text
+    output = test.find("Results").find("Measurement").find("Value").text
+
+    print("======================================================================")
+    print("Name:      {}".format(name))
+    print("FullName:  {}".format(fullName))
+    print("Status:    {}".format(status.upper()))
+    if output:
+        print("Output:")
+        for line in output.splitlines():
+            print("          ", line)
+    print()
+
+def handleTest(test):
+    status = test.get("Status")
+    name = test.find("Path").text
+    if status == "passed":
+        passed = True
+    elif status == "notrun":
+        printTest(test)
+        passed = True
+    else:
+        printTest(test)
+        passed = False
+    return passed
+
+def findCTestOutput():
+    files = glob.glob("Testing/*/Test.xml")
+    if len(files) != 1:
+        fn = files.join(", ")
+        raise Exception("Found multiple CTest output files: {}".format(files.join(", ")))
+    return files[0]
+
+def handleCTestOutput():
+    path = findCTestOutput()
+    with open(path, "r", encoding="latin-1") as fh:
+        tree = xml.etree.ElementTree.parse(fh)
+    root = tree.getroot()
+    testing = root.find("Testing")
+
+    passed = True
+    for test in testing.findall("Test"):
+        testPassed = handleTest(test)
+        passed = passed and testPassed
+
+    return passed
+
+def runCTest(argv=[]):
+    cmd = ["ctest",
+           "--output-on-failure",
+           "--dashboard", "ExperimentalTest",
+           "--no-compress-output",
+    ]
+    cmd.extend(argv)
+    subprocess.call(cmd)
+
+def checkDirectory():
+    if not os.path.exists("CMakeCache.txt"):
+        raise Exception("ERROR: dune-ctest must be run in a cmake build directory")
+
+def removeCTestOutput():
+    try:
+        shutil.rmtree("Testing")
+    except OSError as e:
+        if e.errno != errno.ENOENT:
+            raise
+
+def main():
+    try:
+        checkDirectory()
+        removeCTestOutput()
+        runCTest(argv=sys.argv[1:])
+        passed = handleCTestOutput()
+        status = 0 if passed else 1
+        sys.exit(status)
+    except Exception as e:
+        print("Internal error: {}".format(e))
+        sys.exit(127)
+
+if __name__ == "__main__":
+    main()

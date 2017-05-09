@@ -590,6 +590,7 @@ struct PackEntries
                  MessageBuffer<typename DataHandle::DataType>& buffer,
                  int i) const
   {
+    DUNE_UNUSED_PARAMETER(i);
     return operator()(handle,tracker,buffer);
   }
 
