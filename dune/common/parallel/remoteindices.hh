@@ -3,6 +3,8 @@
 #ifndef DUNE_REMOTEINDICES_HH
 #define DUNE_REMOTEINDICES_HH
 
+#if HAVE_MPI
+
 #include "indexset.hh"
 #include "plocalindex.hh"
 #include <dune/common/exceptions.hh>
@@ -15,7 +17,6 @@
 #include <iostream>
 #include <algorithm>
 #include <iterator>
-#if HAVE_MPI
 #include "mpitraits.hh"
 #include <mpi.h>
 
@@ -1882,5 +1883,6 @@ namespace Dune {
   /** @} */
 }
 
-#endif
+#endif // HAVE_MPI
+
 #endif

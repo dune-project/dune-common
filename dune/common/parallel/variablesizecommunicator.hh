@@ -1157,5 +1157,7 @@ void VariableSizeCommunicator<Allocator>::communicate(DataHandle& handle)
     communicateVariableSize<FORWARD>(handle);
 }
 } // end namespace Dune
-#endif
+
+#endif // HAVE_MPI
+
 #endif

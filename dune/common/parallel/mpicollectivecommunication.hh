@@ -11,6 +11,8 @@
    \ingroup ParallelCommunication
  */
 
+#if HAVE_MPI
+
 #include <iostream>
 #include <complex>
 #include <algorithm>
@@ -23,7 +25,6 @@
 #include "collectivecommunication.hh"
 #include "mpitraits.hh"
 
-#if HAVE_MPI
 // MPI header
 #include <mpi.h>
 
@@ -340,5 +341,6 @@ namespace Dune
   };
 } // namespace dune
 
-#endif
+#endif // HAVE_MPI
+
 #endif
