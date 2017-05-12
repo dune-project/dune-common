@@ -13,20 +13,18 @@
 
 #if HAVE_MPI
 
-#include <iostream>
-#include <complex>
 #include <algorithm>
+#include <complex>
 #include <functional>
+#include <iostream>
 #include <memory>
 
-#include <dune/common/exceptions.hh>
-#include <dune/common/binaryfunctions.hh>
-
-#include "collectivecommunication.hh"
-#include "mpitraits.hh"
-
-// MPI header
 #include <mpi.h>
+
+#include <dune/common/binaryfunctions.hh>
+#include <dune/common/exceptions.hh>
+#include <dune/common/parallel/collectivecommunication.hh>
+#include <dune/common/parallel/mpitraits.hh>
 
 namespace Dune
 {

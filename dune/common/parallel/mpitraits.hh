@@ -15,12 +15,12 @@
 
 #if HAVE_MPI
 
-#include <mpi.h>
-
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
 #include <utility>
+
+#include <mpi.h>
 
 namespace Dune
 {

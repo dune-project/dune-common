@@ -5,14 +5,14 @@
 
 #if HAVE_MPI
 
-#include "remoteindices.hh"
-#include "interface.hh"
-#include <dune/common/exceptions.hh>
-#include <dune/common/typetraits.hh>
-#include <dune/common/stdstreams.hh>
-
-// MPI header
 #include <mpi.h>
+
+#include <dune/common/exceptions.hh>
+#include <dune/common/parallel/interface.hh>
+#include <dune/common/parallel/remoteindices.hh>
+#include <dune/common/stdstreams.hh>
+#include <dune/common/typetraits.hh>
+
 
 namespace Dune
 {

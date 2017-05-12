@@ -6,13 +6,14 @@
 #if HAVE_MPI
 #include <cassert>
 #endif
-#include "collectivecommunication.hh"
-#if HAVE_MPI
-#include "mpi.h"
-#include "mpicollectivecommunication.hh"
-#endif
 
 #if HAVE_MPI
+#include <mpi.h>
+#endif
+
+#include <dune/common/parallel/collectivecommunication.hh>
+#if HAVE_MPI
+#include <dune/common/parallel/mpicollectivecommunication.hh>
 #include <dune/common/stdstreams.hh>
 #endif
 #include <dune/common/visibility.hh>

@@ -4,14 +4,16 @@
 #define DUNE_COMMON_PARALLEL_VARIABLESIZECOMMUNICATOR_HH
 
 #if HAVE_MPI
-// MPI header
-#include <mpi.h>
-#include <vector>
-#include <map>
+
 #include <functional>
+#include <map>
+#include <vector>
+
+#include <mpi.h>
+
+#include <dune/common/parallel/interface.hh>
+#include <dune/common/parallel/mpitraits.hh>
 #include <dune/common/unused.hh>
-#include "interface.hh"
-#include "mpitraits.hh"
 
 /**
  * @addtogroup Common_Parallel

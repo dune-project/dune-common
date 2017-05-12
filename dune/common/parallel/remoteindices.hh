@@ -5,20 +5,22 @@
 
 #if HAVE_MPI
 
-#include "indexset.hh"
-#include "plocalindex.hh"
-#include <dune/common/exceptions.hh>
-#include <dune/common/poolallocator.hh>
-#include <dune/common/sllist.hh>
-#include <dune/common/stdstreams.hh>
+#include <algorithm>
+#include <iostream>
+#include <iterator>
 #include <map>
 #include <set>
 #include <utility>
-#include <iostream>
-#include <algorithm>
-#include <iterator>
-#include "mpitraits.hh"
+
 #include <mpi.h>
+
+#include <dune/common/exceptions.hh>
+#include <dune/common/parallel/indexset.hh>
+#include <dune/common/parallel/mpitraits.hh>
+#include <dune/common/parallel/plocalindex.hh>
+#include <dune/common/poolallocator.hh>
+#include <dune/common/sllist.hh>
+#include <dune/common/stdstreams.hh>
 
 namespace Dune {
   /** @addtogroup Common_Parallel
