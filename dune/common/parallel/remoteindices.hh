@@ -5,12 +5,14 @@
 
 #if HAVE_MPI
 
-#include <algorithm>
+#include <cassert>
 #include <iostream>
-#include <iterator>
+#include <ostream>
 #include <map>
+#include <memory>
 #include <set>
 #include <utility>
+#include <vector>
 
 #include <mpi.h>
 
@@ -18,7 +20,6 @@
 #include <dune/common/parallel/indexset.hh>
 #include <dune/common/parallel/mpitraits.hh>
 #include <dune/common/parallel/plocalindex.hh>
-#include <dune/common/poolallocator.hh>
 #include <dune/common/sllist.hh>
 #include <dune/common/stdstreams.hh>
 
@@ -50,6 +51,7 @@ namespace Dune {
   template<typename T1, typename T2>
   class RemoteIndex;
 
+  // forward declaration needed for friend declaration.
   template<typename T>
   class IndicesSyncer;
 
@@ -154,6 +156,7 @@ namespace Dune {
   template<class T, class A>
   class CollectiveIterator;
 
+  // forward declaration needed for friend declaration.
   template<class T>
   class IndicesSyncer;
 

@@ -5,14 +5,20 @@
 
 #if HAVE_MPI
 
+#include <cassert>
+#include <cstddef>
+#include <iostream>
+#include <map>
+#include <type_traits>
+#include <utility>
+
 #include <mpi.h>
 
 #include <dune/common/exceptions.hh>
 #include <dune/common/parallel/interface.hh>
 #include <dune/common/parallel/remoteindices.hh>
 #include <dune/common/stdstreams.hh>
-#include <dune/common/typetraits.hh>
-
+#include <dune/common/unused.hh>
 
 namespace Dune
 {

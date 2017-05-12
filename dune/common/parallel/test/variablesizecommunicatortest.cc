@@ -1,9 +1,12 @@
 #include <config.h>
 
+#include <cstddef>
 #include <iostream>
+#include <utility>
 
 #include <mpi.h>
 
+#include <dune/common/parallel/interface.hh>
 #include <dune/common/parallel/variablesizecommunicator.hh>
 #include <dune/common/unused.hh>
 

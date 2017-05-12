@@ -5,13 +5,19 @@
 
 #include <algorithm>
 #include <iostream>
+#include <ostream>
+#include <string>
+#include <vector>
 
 #include <mpi.h>
 
 #include <dune/common/enumset.hh>
 #include <dune/common/parallel/communicator.hh>
 #include <dune/common/parallel/indexset.hh>
+#include <dune/common/parallel/interface.hh>
+#include <dune/common/parallel/plocalindex.hh>
 #include <dune/common/parallel/remoteindices.hh>
+#include <dune/common/unused.hh>
 
 enum GridFlags {
   owner, overlap, border

@@ -14,9 +14,7 @@
 #if HAVE_MPI
 
 #include <algorithm>
-#include <complex>
 #include <functional>
-#include <iostream>
 #include <memory>
 
 #include <mpi.h>

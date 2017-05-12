@@ -15,7 +15,6 @@
 
 #if HAVE_MPI
 
-#include <cstddef>
 #include <cstdint>
 #include <type_traits>
 #include <utility>

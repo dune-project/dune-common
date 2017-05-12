@@ -5,8 +5,13 @@
 
 #if HAVE_MPI
 
+#include <algorithm>
+#include <cassert>
+#include <cstddef>
 #include <functional>
 #include <map>
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include <mpi.h>
