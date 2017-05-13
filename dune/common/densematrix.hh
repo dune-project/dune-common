@@ -299,58 +299,58 @@ namespace Dune
     //===== assignment
 
     template< class RHS, class = std::enable_if_t< HasDenseMatrixAssigner< MAT, RHS >::value > >
-    DenseMatrix &operator= ( const RHS &rhs )
+    derived_type &operator= ( const RHS &rhs )
     {
       DenseMatrixAssigner< MAT, RHS >::apply( asImp(), rhs );
-      return *this;
+      return asImp();
     }
 
     //===== vector space arithmetic
 
     //! vector space addition
     template <class Other>
-    DenseMatrix& operator+= (const DenseMatrix<Other>& y)
+    derived_type &operator+= (const DenseMatrix<Other>& y)
     {
       DUNE_ASSERT_BOUNDS(rows() == y.rows());
       for (size_type i=0; i<rows(); i++)
         (*this)[i] += y[i];
-      return *this;
+      return asImp();
     }
 
     //! vector space subtraction
     template <class Other>
-    DenseMatrix& operator-= (const DenseMatrix<Other>& y)
+    derived_type &operator-= (const DenseMatrix<Other>& y)
     {
       DUNE_ASSERT_BOUNDS(rows() == y.rows());
       for (size_type i=0; i<rows(); i++)
         (*this)[i] -= y[i];
-      return *this;
+      return asImp();
     }
 
     //! vector space multiplication with scalar
-    DenseMatrix& operator*= (const field_type& k)
+    derived_type &operator*= (const field_type& k)
     {
       for (size_type i=0; i<rows(); i++)
         (*this)[i] *= k;
-      return *this;
+      return asImp();
     }
 
     //! vector space division by scalar
-    DenseMatrix& operator/= (const field_type& k)
+    derived_type &operator/= (const field_type& k)
     {
       for (size_type i=0; i<rows(); i++)
         (*this)[i] /= k;
-      return *this;
+      return asImp();
     }
 
     //! vector space axpy operation (*this += k y)
     template <class Other>
-    DenseMatrix &axpy (const field_type &k, const DenseMatrix<Other> &y )
+    derived_type &axpy (const field_type &k, const DenseMatrix<Other> &y )
     {
       DUNE_ASSERT_BOUNDS(rows() == y.rows());
       for( size_type i = 0; i < rows(); ++i )
         (*this)[ i ].axpy( k, y[ i ] );
-      return *this;
+      return asImp();
     }
 
     //! Binary matrix comparison
