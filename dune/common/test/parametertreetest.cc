@@ -281,6 +281,40 @@ void testReport()
   check_recursiveTreeCompare(ptree, ptree2);
 }
 
+void testINIParserErrors()
+{
+  for(auto config :
+    {
+      "junk without equal sign\n",
+      "junk without equal sign # with comment\n",
+      "[section] with junk\n",
+      "[section] followed = by_assignment\n",
+      "[section.without.closing.bracket\n",
+      "[section.containing.#]\n",
+      "[what.=.is.this?\n",
+      "[what=is.that]\n",
+      "key.containing.# = value\n",
+      "key = same key\nkey = set twice\n"
+      "key = 'unclosed quote\n",
+      "key = 'unclosed multiline\nquote\n",
+     })
+  {
+    std::istringstream stream(config);
+    Dune::ParameterTree tree;
+    try {
+      Dune::ParameterTreeParser::readINITree(stream, tree);
+    }
+    catch(...) {
+      continue;
+    }
+
+    std::cerr << "Dune::ParameterTreeParser::readINITree() accepted the "
+              << "following configuration without complaint:\n"
+              << config << std::flush;
+    std::abort();
+  }
+}
+
 int main()
 {
   try {
@@ -291,8 +325,11 @@ int main()
       << "x3 = no\n"
       << "array = 1   2 3 4 5\t6 7 8\n"
       << "\n"
+      << "# comment\n"
       << "[Foo]\n"
-      << "peng = ligapokal\n";
+      << "peng = ligapokal\n"
+      << "[nested.section.with.comment] # huhu\n"
+      << "key = value\n";
 
     Dune::ParameterTree c;
     Dune::ParameterTreeParser::readINITree(s, c);
@@ -307,6 +344,9 @@ int main()
 
     // more const tests
     testparam<Dune::ParameterTree>(c);
+
+    // check handling of errornous configurations
+    testINIParserErrors();
 
     // check the command line parser
     testOptionsParser();
