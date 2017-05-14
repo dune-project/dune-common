@@ -65,74 +65,108 @@ void Dune::ParameterTreeParser::readINITree(std::istream& in,
                                             const std::string srcname,
                                             bool overwrite)
 {
+  // reserved characters that can't occur in section or key names
+  const static std::string reserved = "[]='\"#";
+
   std::string prefix;
   std::set<std::string> keysInFile;
-  while(!in.eof())
+
+  std::string line;
+  while(getline(in, line))
   {
-    std::string line;
-    getline(in, line);
-    line = ltrim(line);
-    if (line.size() == 0)
+    // 1. trim leading whitespace
+    auto buffer = ltrim(line);
+
+    // 2. if line matches *=* (first =), set key
+    auto mid = buffer.find('=');
+    if(mid != buffer.npos) {
+      auto key = prefix+rtrim(buffer.substr(0, mid));
+
+      // check if key name is sane
+      if(key.find_first_of(reserved) != key.npos)
+        DUNE_THROW(ParameterTreeParserError, "Key name '" << key <<
+                   "' in " << srcname <<
+                   " containts invalid characters (one of "
+                   << reserved << ")");
+
+      // check if we already saw this key in this file
+      if (keysInFile.count(key) != 0)
+        DUNE_THROW(ParameterTreeParserError, "Key '" << key <<
+                   "' appears twice in " << srcname << " !");
+      keysInFile.insert(key);
+
+      // determine value
+      auto value = ltrim(buffer.substr(mid+1));
+      // Note: value[0] is valid (and == '\0') even for empty value.
+      if((value[0]=='\'') || (value[0]=='"'))
+      {
+        // handle quoted values
+        // no comments allowed after quoted values
+        char quote = value[0];
+        value.erase(0,1);
+
+        std::string trimmed;
+        while(trimmed = rtrim(value),
+              trimmed.empty() || trimmed.back() != quote)
+        {
+          if(!getline(in, buffer))
+            DUNE_THROW(ParameterTreeParserError,
+                       "Error while reading multi-line value for key " << key
+                       << " in " << srcname);
+
+          value += "\n";
+          value += buffer;
+        }
+        value.erase(trimmed.length()-1);
+      }
+      else
+      {
+        // handle unquoted values
+        // remove comments
+        value = rtrim(value.substr(0, value.find("#")));
+      }
+
+      // set value
+      if(overwrite || ! pt.hasKey(key))
+        pt[key] = value;
+
+      // next line
       continue;
-    switch (line[0]) {
-    case '#' :
-      break;
-    case '[' :
-      line = rtrim(line);
-      if (line[line.length()-1] == ']')
-      {
-        prefix = rtrim(ltrim(line.substr(1, line.length()-2)));
-        if (prefix != "")
-          prefix += ".";
-      }
-      break;
-    default :
-      std::string::size_type comment = line.find("#");
-      line = line.substr(0,comment);
-      std::string::size_type mid = line.find("=");
-      if (mid != std::string::npos)
-      {
-        std::string key = prefix+rtrim(ltrim(line.substr(0, mid)));
-        std::string value = ltrim(line.substr(mid+1));
-
-        if (value.length()>0)
-        {
-          // handle quoted strings
-          if ((value[0]=='\'') || (value[0]=='"'))
-          {
-            char quote = value[0];
-            value=value.substr(1);
-            while (*(rtrim(value).rbegin())!=quote)
-            {
-              if (! in.eof())
-              {
-                std::string l;
-                getline(in, l);
-                value = value+"\n"+l;
-              }
-              else
-                value = value+quote;
-            }
-            value = rtrim(value);
-            value = value.substr(0,value.length()-1);
-          }
-          else
-            value = rtrim(value);
-        }
-
-        if (keysInFile.count(key) != 0)
-          DUNE_THROW(ParameterTreeParserError, "Key '" << key <<
-                     "' appears twice in " << srcname << " !");
-        else
-        {
-          if(overwrite || ! pt.hasKey(key))
-            pt[key] = value;
-          keysInFile.insert(key);
-        }
-      }
-      break;
     }
+
+    // 3. trim comments and trailing whitespace
+    buffer = rtrim(buffer.substr(0, buffer.find('#')));
+
+    // 4. if line is empty, ignore it
+    if(buffer.empty())
+      continue;
+
+    // 5. if line matches "[*", start section
+    if(buffer.front() == '[' && buffer.back() == ']')
+    {
+      // check for closing bracket
+      prefix = rtrim(ltrim(buffer.substr(1, buffer.length() - 2)));
+
+      // check for reserved characters in section name
+      if(prefix.find_first_of(reserved) != prefix.npos)
+        DUNE_THROW(ParameterTreeParserError, "Section name '" << prefix <<
+                   "' in " << srcname <<
+                   " containts invalid characters (one of "
+                   << reserved << ")");
+
+      if(prefix != "") prefix += ".";
+
+      continue;
+    }
+
+    // 6. otherwise error out
+    DUNE_THROW(ParameterTreeParserError, "Invalid line '" << line << "' in "
+               << srcname);
   }
+
+  if(!in.eof())
+    // we stopped reading the file due to something besides EOF
+    DUNE_THROW(ParameterTreeParserError, "Error while reading " << srcname);
 
 }
 
