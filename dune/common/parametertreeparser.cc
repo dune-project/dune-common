@@ -78,14 +78,17 @@ void Dune::ParameterTreeParser::readINITree(std::istream& in,
     case '#' :
       break;
     case '[' :
-      line = rtrim(line);
-      if (line[line.length()-1] == ']')
       {
-        prefix = rtrim(ltrim(line.substr(1, line.length()-2)));
+        size_t pos = line.find(']');
+        if (pos == std::string::npos)
+          break; // do not try to make sense of this line
+
+        prefix = rtrim(ltrim(line.substr(1, pos-1)));
         if (prefix != "")
           prefix += ".";
+        line = ltrim(line.substr(pos+1, std::string::npos));
       }
-      break;
+      // fall through; could be made explicit with [[fallthrough]] (C++17)
     default :
       std::string::size_type comment = line.find("#");
       line = line.substr(0,comment);

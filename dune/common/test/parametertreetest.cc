@@ -291,8 +291,7 @@ int main()
       << "x3 = no\n"
       << "array = 1   2 3 4 5\t6 7 8\n"
       << "\n"
-      << "[Foo]\n"
-      << "peng = ligapokal\n";
+      << "[Foo] peng = ligapokal # another comment\n";
 
     Dune::ParameterTree c;
     Dune::ParameterTreeParser::readINITree(s, c);
