@@ -16,19 +16,21 @@ if(HAVE_MPROTECT)
   set(debugallocator_src "debugallocator.cc")
 endif(HAVE_MPROTECT)
 
-dune_add_library("dunecommon"
-  debugalign.cc
-  ${debugallocator_src}
-  dynmatrixev.cc
-  exceptions.cc
-  fmatrixev.cc
-  ios_state.cc
-  parametertree.cc
-  parametertreeparser.cc
-  path.cc
-  stdstreams.cc
-  stdthread.cc
-  ADD_LIBS "${_additional_libs}")
+dune_library_add_sources(
+  "dunecommon"
+  SOURCES
+    debugalign.cc
+    ${debugallocator_src}
+    dynmatrixev.cc
+    exceptions.cc
+    fmatrixev.cc
+    ios_state.cc
+    parametertree.cc
+    parametertreeparser.cc
+    path.cc
+    stdstreams.cc
+    stdthread.cc
+  )
 
 #install headers
 install(FILES
