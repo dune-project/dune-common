@@ -19,6 +19,9 @@
 #    :code:`HAS_ATTRIBUTE_DEPRECATED_MSG`
 #       True if attribute deprecated("msg") is supported
 #
+#    :code:`DUNE_HAVE_CXX_CLASS_TEMPLATE_ARGUMENT_DEDUCTION`
+#       True if C++17's class template argument deduction is supported
+#
 # .. cmake_variable:: DISABLE_CXX_VERSION_CHECK
 #
 #    You may set this variable to TRUE to disable checking for
@@ -313,6 +316,37 @@ check_cxx_source_compiles("
 " HAVE_IS_INDEXABLE_SUPPORT
   )
 
+# support for C++17's class template deduction guides
+check_cxx_source_compiles("
+  #include <type_traits>
+
+  template<typename T1>
+  struct A {
+    A(T1) {}
+
+    template<typename T2>
+    A(T2, T2) {}
+  };
+
+  struct B {
+    using type = bool;
+  };
+
+  template<typename T2>
+  A(T2, T2)
+    -> A<typename T2::type>;
+
+  int main()
+  {
+    A a1(1);
+    static_assert(std::is_same_v< decltype(a1), A<int> >);
+
+    B b;
+    A a2(b, b);
+    static_assert(std::is_same_v< decltype(a2), A<bool> >);
+  }
+" DUNE_HAVE_CXX_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
+  )
 
 # find the threading library
 # Use a copy FindThreads from CMake 3.1 due to its support of pthread
