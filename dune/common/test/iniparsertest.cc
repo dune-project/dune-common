@@ -14,7 +14,7 @@ bool single_test(std::string input, std::string key, std::string value) {
     std::map<std::string, std::string> map;
     parse(sstream, [&](std::string const &p, std::string const &k,
                        std::string const &v) {
-      std::string full_key = p + "." + k;
+      std::string full_key = p == "" ? k : (p + "." + k);
       map[full_key] = v;
     });
 
@@ -26,6 +26,10 @@ bool single_test(std::string input, std::string key, std::string value) {
 
 int all_tests() {
   int errors = 0;
+
+  if (!single_test("[my.prefix]\n[]\nk0 = value",
+                   "k0", "value"))
+    errors++;
 
   if (!single_test(" [  my.prefix]# one comment here\n  k1a= valuea",
                    "my.prefix.k1a", "valuea"))
@@ -70,7 +74,7 @@ int main() {
   int errors = all_tests();
 
   if (errors > 0)
-    std::cout << "WARNING: encountered " << errors << "errors!" << std::endl;
+    std::cout << "WARNING: encountered " << errors << " error(s)!" << std::endl;
   else
     std::cout << "All is good. Encountered no errors." << std::endl;
 
