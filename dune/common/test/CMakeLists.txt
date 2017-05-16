@@ -125,6 +125,8 @@ dune_add_test(SOURCES hybridutilitiestest.cc
 
 dune_add_test(SOURCES indicestest.cc)
 
+dune_add_test(SOURCES iniparsertest.cc)
+
 dune_add_test(SOURCES integersequence.cc)
 
 dune_add_test(SOURCES iteratorfacadetest2.cc)
@@ -162,6 +164,11 @@ dune_add_test(SOURCES parametertreelocaletest.cc
               LINK_LIBRARIES dunecommon)
 
 dune_add_test(SOURCES parametertreetest.cc
+              LINK_LIBRARIES dunecommon)
+
+dune_add_test(NAME parametertreetest-new
+              SOURCES parametertreetest.cc
+              COMPILE_DEFINITIONS USE_NEW_INIPARSER
               LINK_LIBRARIES dunecommon)
 
 dune_add_test(SOURCES pathtest.cc

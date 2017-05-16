@@ -60,6 +60,28 @@ void Dune::ParameterTreeParser::readINITree(std::istream& in,
 }
 
 
+#ifdef USE_NEW_INIPARSER
+#include "iniparser.hh"
+void Dune::ParameterTreeParser::readINITree(std::istream& in, ParameterTree& pt,
+                                            const std::string srcname,
+                                            bool overwrite) {
+  std::set<std::string> keysInFile;
+  parse(in, [&](std::string const& prefix, std::string const& key,
+                std::string const& value) {
+    // NB: zero sanity-checking of keys and prefixes is done at this point
+    std::string full_key = prefix == "" ? key : (prefix + "." + key);
+    if (keysInFile.count(full_key) != 0)
+      DUNE_THROW(
+          ParameterTreeParserError,
+          "Key '" << full_key << "' appears twice in " << srcname << " !");
+    else {
+      if (overwrite || !pt.hasKey(full_key))
+        pt[full_key] = value;
+      keysInFile.insert(key);
+    }
+  });
+}
+#else
 void Dune::ParameterTreeParser::readINITree(std::istream& in,
                                             ParameterTree& pt,
                                             const std::string srcname,
@@ -135,6 +157,7 @@ void Dune::ParameterTreeParser::readINITree(std::istream& in,
   }
 
 }
+#endif
 
 void Dune::ParameterTreeParser::readOptions(int argc, char* argv [],
                                             ParameterTree& pt)
