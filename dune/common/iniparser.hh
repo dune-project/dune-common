@@ -65,7 +65,7 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
       // After the content, only comments are allowed
       size_t trailing_start = line.find_first_not_of(ws, content_end);
       if (trailing_start != std::string::npos && line[trailing_start] != '#')
-        throw ParsingException(line, "Unexpected content after prefix");
+        throw ParsingException(line, "unexpected content after prefix");
 
       // Only set the prefix if the entire line could be parsed.
       prefix = line.substr(prefix_start, prefix_end - prefix_start);
@@ -141,7 +141,7 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
       // After the content, only comments are allowed
       size_t trailing_start = line.find_first_not_of(ws, value_end);
       if (trailing_start != std::string::npos && line[trailing_start] != '#')
-        throw ParsingException(line, "Unexpected content after prefix");
+        throw ParsingException(line, "unexpected content after assignment");
 
       store(prefix, key, value);
     }
