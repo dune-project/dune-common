@@ -27,6 +27,7 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
   std::string const identifierCharacters = "abcdefghijklmnopqrstuvwxyz"
                                            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                                            "0123456789._";
+  std::string const simpleStringInvalidCharacter = "'\"\\#=";
 
   std::string prefix;
   std::string line;
@@ -132,8 +133,12 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
         }
         value_end = chunk_end;
       } break;
-      default: {
-        value_end = line.find_first_of(ws + "#", value_start + 1);
+      default: { // simple, unquoted string
+        if (simpleStringInvalidCharacter.find(line[value_start]) !=
+            std::string::npos)
+          throw ParsingException(line, "invalid character in simple string");
+        value_end = line.find_first_of(ws + simpleStringInvalidCharacter,
+                                       value_start + 1);
         value = line.substr(value_start, value_end - value_start);
       }
       }
