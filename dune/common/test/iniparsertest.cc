@@ -6,7 +6,7 @@
 
 #include <dune/common/iniparser.hh>
 
-bool single_test(std::string input, std::string key, std::string value) {
+bool parsesTo(std::string input, std::string key, std::string value) {
   try {
     std::stringstream sstream;
     sstream << input << std::endl;
@@ -27,44 +27,43 @@ bool single_test(std::string input, std::string key, std::string value) {
 int all_tests() {
   int errors = 0;
 
-  if (!single_test("[my.prefix]\n[]\nk0 = value",
-                   "k0", "value"))
+  if (!parsesTo("[my.prefix]\n[]\nk0 = value", "k0", "value"))
     errors++;
 
-  if (!single_test(" [  my.prefix]# one comment here\n  k1a= valuea",
-                   "my.prefix.k1a", "valuea"))
+  if (!parsesTo(" [  my.prefix]# one comment here\n  k1a= valuea",
+                "my.prefix.k1a", "valuea"))
     errors++;
 
-  if (!single_test("[my.prefix  ] # one comment here\nk1b =valueb",
-                   "my.prefix.k1b", "valueb"))
+  if (!parsesTo("[my.prefix  ] # one comment here\nk1b =valueb",
+                "my.prefix.k1b", "valueb"))
     errors++;
 
-  if (!single_test("[my.prefix]#one comment here\nk1c=valuec#comment",
-                   "my.prefix.k1c", "valuec"))
+  if (!parsesTo("[my.prefix]#one comment here\nk1c=valuec#comment",
+                "my.prefix.k1c", "valuec"))
     errors++;
 
-  if (!single_test("[my.prefix]\nk2.a =\"string with hash (here: #) and "
-                   "a quote (here: \\\") in it\"",
-                   "my.prefix.k2.a",
-                   "string with hash (here: #) and a quote (here: \") in it"))
+  if (!parsesTo("[my.prefix]\nk2.a =\"string with hash (here: #) and "
+                "a quote (here: \\\") in it\"",
+                "my.prefix.k2.a",
+                "string with hash (here: #) and a quote (here: \") in it"))
     errors++;
 
-  if (!single_test(
+  if (!parsesTo(
           "[my.prefix]\nk2.b1 = 'string with a quote (here: \\') and "
           "a backslash (here: \\\\) in it\\n'",
           "my.prefix.k2.b1",
           "string with a quote (here: ') and a backslash (here: \\) in it\n"))
     errors++;
 
-  if (!single_test("[my.prefix]\nk2.b2 = 'string without a quote in it' "
-                   "# with comment",
-                   "my.prefix.k2.b2", "string without a quote in it"))
+  if (!parsesTo("[my.prefix]\nk2.b2 = 'string without a quote in it' "
+                "# with comment",
+                "my.prefix.k2.b2", "string without a quote in it"))
     errors++;
 
-  if (!single_test("[my.prefix]\nk2.c = 'multline\nstring with a hash "
-                   "(there: #)\n\nand newlines'",
-                   "my.prefix.k2.c",
-                   "multline\nstring with a hash (there: #)\n\nand newlines"))
+  if (!parsesTo("[my.prefix]\nk2.c = 'multline\nstring with a hash "
+                "(there: #)\n\nand newlines'",
+                "my.prefix.k2.c",
+                "multline\nstring with a hash (there: #)\n\nand newlines"))
     errors++;
 
   return errors;
