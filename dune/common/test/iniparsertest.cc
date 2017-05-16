@@ -24,6 +24,20 @@ bool parsesTo(std::string input, std::string key, std::string value) {
   }
 }
 
+bool failsToParse(std::string input) {
+  try {
+    std::stringstream sstream;
+    sstream << input << std::endl;
+
+    std::map<std::string, std::string> map;
+    parse(sstream, [&](std::string const &p, std::string const &k,
+                       std::string const &v) {});
+    return false;
+  } catch (ParsingException) {
+    return true;
+  }
+}
+
 int all_tests() {
   int errors = 0;
 
@@ -64,6 +78,15 @@ int all_tests() {
                 "(there: #)\n\nand newlines'",
                 "my.prefix.k2.c",
                 "multline\nstring with a hash (there: #)\n\nand newlines"))
+    errors++;
+
+  if (!failsToParse("[my.prefix]\nk3.a = abc\"def"))
+    errors++;
+
+  if (!failsToParse("[my.prefix]\nk3.b = abc def"))
+    errors++;
+
+  if (!failsToParse("[my.prefix]\nk3.c = abc=def"))
     errors++;
 
   return errors;
