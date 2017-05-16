@@ -44,16 +44,23 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
       if (prefix_start == std::string::npos)
         throw ParsingException(line);
 
-      size_t prefix_end =
-          line.find_first_not_of(identifierCharacters, prefix_start + 1);
-      if (prefix_end == std::string::npos)
-        throw ParsingException(line);
+      size_t prefix_end;
+      size_t content_end;
+      if (line[prefix_start] == ']') {
+        prefix_end = prefix_start; // empty prefix
+        content_end = prefix_end + 1;
+      } else {
+        prefix_end =
+            line.find_first_not_of(identifierCharacters, prefix_start + 1);
+        if (prefix_end == std::string::npos)
+          throw ParsingException(line);
 
-      size_t content_end = line.find_first_not_of(ws, prefix_end);
-      if (content_end == std::string::npos || line[content_end] != ']')
-        throw ParsingException(line);
-      else
-        content_end += 1; // make end exclusive
+        content_end = line.find_first_not_of(ws, prefix_end);
+        if (content_end == std::string::npos || line[content_end] != ']')
+          throw ParsingException(line);
+        else
+          content_end += 1; // make end exclusive
+      }
 
       // After the content, only comments are allowed
       size_t trailing_start = line.find_first_not_of(ws, content_end);
