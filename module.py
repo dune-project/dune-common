@@ -1,13 +1,15 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import email.utils
+import io
 import logging
-import sys
 import os
 import re
 import shlex
 import string
 import subprocess
+import sys
+
 from os.path import expanduser
 
 if __name__ == "dune.common.module":
@@ -113,7 +115,7 @@ class Description:
     def __init__(self, fileName=None, **kwargs):
         data = kwargs.copy()
         if fileName is not None:
-            with open(fileName, 'r') as file:
+            with io.open(fileName, 'r', encoding='utf-8') as file:
                 for line in file:
                     line = line.strip()
                     if not line or line[ 0 ] == '#':
