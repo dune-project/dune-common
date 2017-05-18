@@ -100,6 +100,8 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
       case '\"':
       case '\'': {
         char const quote = line[valueStart];
+        // We read the string in backslash-free chunks since only
+        // backslashes require special handling
         size_t chunkStart = valueStart;
         size_t chunkEnd;
         while (true) {
