@@ -25,10 +25,10 @@ private:
 template <class Action> void parse(std::istream &instream, Action &&store) {
   std::string const ws = " \t";
   // Characters that could make up an identifier.
-  std::string const identifierCharacters = "abcdefghijklmnopqrstuvwxyz"
-                                           "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                                           "0123456789._";
-  std::string const simpleStringInvalidCharacter = "'\"\\#=";
+  std::string const identifierWhitelist = "abcdefghijklmnopqrstuvwxyz"
+                                          "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                          "0123456789._";
+  std::string const simpleStringBlacklist = "'\"\\#=";
 
   std::string prefix;
   std::string line;
@@ -53,7 +53,7 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
         contentEnd = prefixEnd + 1;
       } else {
         prefixEnd =
-            line.find_first_not_of(identifierCharacters, prefixStart + 1);
+            line.find_first_not_of(identifierWhitelist, prefixStart + 1);
         if (prefixEnd == std::string::npos)
           throw ParsingException(line);
 
@@ -77,7 +77,7 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
       std::string key, value;
 
       size_t keyEnd =
-          line.find_first_not_of(identifierCharacters, contentStart + 1);
+          line.find_first_not_of(identifierWhitelist, contentStart + 1);
       if (keyEnd == std::string::npos)
         throw ParsingException(line);
       key = line.substr(contentStart, keyEnd - contentStart);
@@ -135,11 +135,10 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
         valueEnd = chunkEnd;
       } break;
       default: { // simple, unquoted string
-        if (simpleStringInvalidCharacter.find(line[valueStart]) !=
-            std::string::npos)
+        if (simpleStringBlacklist.find(line[valueStart]) != std::string::npos)
           throw ParsingException(line, "invalid character in simple string");
-        valueEnd = line.find_first_of(ws + simpleStringInvalidCharacter,
-                                      valueStart + 1);
+        valueEnd =
+            line.find_first_of(ws + simpleStringBlacklist, valueStart + 1);
         value = line.substr(valueStart, valueEnd - valueStart);
       }
       }
