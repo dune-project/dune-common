@@ -11,14 +11,21 @@ bool parsesTo(std::string input, std::string key, std::string value) {
     std::stringstream sstream;
     sstream << input << std::endl;
 
+    std::cout << std::endl;
+    std::cout << "# input:\n" << input << std::endl;
+    std::cout << "# excepting: " << key << " = " << value << std::endl;
+
     std::map<std::string, std::string> map;
     parse(sstream, [&](std::string const &p, std::string const &k,
                        std::string const &v) {
       std::string full_key = p == "" ? k : (p + "." + k);
       map[full_key] = v;
     });
+    std::cout << "# getting  : " << key << " = " << map[key] << std::endl;
+    bool ret = map[key] == value;
+    std::cout << "# returning: " << (ret ? "true" : "false") << std::endl;
 
-    return map[key] == value;
+    return ret;
   } catch (ParsingException) {
     return false;
   }
