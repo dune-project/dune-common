@@ -103,12 +103,30 @@ int all_tests() {
   if (!failsToParse("[my.prefix]\nk3.a = abc\"def"))
     errors++;
 
-  // simple-string with illegal whitespace
-  if (!failsToParse("[my.prefix]\nk3.b = abc def"))
+  // simple-string with whitespace (a)
+  if (!parsesTo("[my.prefix]\nk3.b.a = abc def", "my.prefix.k3.b.a", "abc def"))
+    errors++;
+
+  // simple-string with whitespace (b)
+  if (!parsesTo("[my.prefix]\nk3.b.b = \t abc  def  ", "my.prefix.k3.b.b",
+                "abc  def"))
+    errors++;
+
+  // simple-string with whitespace (c)
+  if (!parsesTo("[my.prefix]\nk3.b.c = abc def # comment", "my.prefix.k3.b.c",
+                "abc def"))
     errors++;
 
   // simple-string with legal characters only
   if (!parsesTo("[my.prefix]\nk3.c = abc=def", "my.prefix.k3.c", "abc=def"))
+    errors++;
+
+  // empty assignment (a)
+  if (!parsesTo("[my.prefix]\nk4.a = ", "my.prefix.k4.a", ""))
+    errors++;
+
+  // empty assignment (b)
+  if (!parsesTo("[my.prefix]\nk4.b = #comment", "my.prefix.k4.b", ""))
     errors++;
 
   return errors;
