@@ -125,7 +125,8 @@ dune_add_test(SOURCES hybridutilitiestest.cc
 
 dune_add_test(SOURCES indicestest.cc)
 
-dune_add_test(SOURCES iniparsertest.cc)
+dune_add_test(SOURCES iniparsertest.cc
+              LINK_LIBRARIES dunecommon)
 
 dune_add_test(SOURCES integersequence.cc)
 
