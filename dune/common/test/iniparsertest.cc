@@ -88,6 +88,10 @@ int all_tests() {
                 "multline\nstring with a hash (there: #)\n\nand newlines"))
     errors++;
 
+  // prefix/identifier with legal characters only
+  if (!parsesTo("[a+b-c]\nd-e+f = value", "a+b-c.d-e+f", "value"))
+    errors++;
+
   // simple-string with illegal character
   if (!failsToParse("[my.prefix]\nk3.a = abc\"def"))
     errors++;
