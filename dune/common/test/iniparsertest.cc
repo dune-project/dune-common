@@ -100,8 +100,8 @@ int all_tests() {
   if (!failsToParse("[my.prefix]\nk3.b = abc def"))
     errors++;
 
-  // simple-string with illegal character
-  if (!failsToParse("[my.prefix]\nk3.c = abc=def"))
+  // simple-string with legal characters only
+  if (!parsesTo("[my.prefix]\nk3.c = abc=def", "my.prefix.k3.c", "abc=def"))
     errors++;
 
   return errors;
