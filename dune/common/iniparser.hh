@@ -28,7 +28,7 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
   std::string const identifierWhitelist = "abcdefghijklmnopqrstuvwxyz"
                                           "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                                           "0123456789._+-";
-  std::string const simpleStringBlacklist = "'\"\\#=";
+  std::string const simpleStringBlacklist = "'\"\\#";
 
   std::string prefix;
   std::string line;
