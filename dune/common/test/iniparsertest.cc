@@ -41,27 +41,33 @@ bool failsToParse(std::string input) {
 int all_tests() {
   int errors = 0;
 
+  // resetting the prefix to the empty prefix
   if (!parsesTo("[my.prefix]\n[]\nk0 = value", "k0", "value"))
     errors++;
 
+  // comment after prefix, whitespace surrounding prefix (a)
   if (!parsesTo(" [  my.prefix]# one comment here\n  k1a= valuea",
                 "my.prefix.k1a", "valuea"))
     errors++;
 
+  // comment after prefix, whitespace surrounding prefix (b)
   if (!parsesTo("[my.prefix  ] # one comment here\nk1b =valueb",
                 "my.prefix.k1b", "valueb"))
     errors++;
 
+  // comment after prefix, whitespace surrounding prefix (c)
   if (!parsesTo("[my.prefix]#one comment here\nk1c=valuec#comment",
                 "my.prefix.k1c", "valuec"))
     errors++;
 
+  // double-quoted string with hash and backslash
   if (!parsesTo("[my.prefix]\nk2.a =\"string with hash (here: #) and "
                 "a quote (here: \\\") in it\"",
                 "my.prefix.k2.a",
                 "string with hash (here: #) and a quote (here: \") in it"))
     errors++;
 
+  // single-quoted string with escaped quote and backslash
   if (!parsesTo(
           "[my.prefix]\nk2.b1 = 'string with a quote (here: \\') and "
           "a backslash (here: \\\\) in it\\n'",
@@ -69,23 +75,28 @@ int all_tests() {
           "string with a quote (here: ') and a backslash (here: \\) in it\n"))
     errors++;
 
+  // single-quoted string, followed by comment
   if (!parsesTo("[my.prefix]\nk2.b2 = 'string without a quote in it' "
                 "# with comment",
                 "my.prefix.k2.b2", "string without a quote in it"))
     errors++;
 
+  // multiline single-quoted string, with hash
   if (!parsesTo("[my.prefix]\nk2.c = 'multline\nstring with a hash "
                 "(there: #)\n\nand newlines'",
                 "my.prefix.k2.c",
                 "multline\nstring with a hash (there: #)\n\nand newlines"))
     errors++;
 
+  // simple-string with illegal character
   if (!failsToParse("[my.prefix]\nk3.a = abc\"def"))
     errors++;
 
+  // simple-string with illegal whitespace
   if (!failsToParse("[my.prefix]\nk3.b = abc def"))
     errors++;
 
+  // simple-string with illegal character
   if (!failsToParse("[my.prefix]\nk3.c = abc=def"))
     errors++;
 
