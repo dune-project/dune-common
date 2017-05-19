@@ -162,6 +162,10 @@ int all_tests() {
   if (!parsesTo("[my.prefix]\nk4.b = #comment", "my.prefix.k4.b", ""))
     errors++;
 
+  // assignment to empty identifier
+  if (!failsToParse(" = value"))
+    errors++;
+
   return errors;
 }
 

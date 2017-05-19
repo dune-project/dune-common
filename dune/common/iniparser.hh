@@ -98,6 +98,8 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
 
       key = line.substr(contentStart, keyEnd - keyStart);
       key = ltrim(rtrim(key, ws), ws);
+      if (key == "")
+        throw ParsingException(line, "key cannot be empty");
 
       size_t valueStart = line.find_first_not_of(ws, equalSignPosition + 1);
       size_t valueEnd;
