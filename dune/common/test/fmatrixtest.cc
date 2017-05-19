@@ -280,16 +280,72 @@ void test_matrix()
   // print vector
   std::cout << f << std::endl;
 
-
+  A[0][0] += 5; // Make matrix non-zero
   {
-    FieldMatrix<K,n,m> A2 = A;
-    A2 *= 2;
+    // Test that operator= and opeator-= work before we can test anything else
+    using FM = FieldMatrix<K,n,m>;
+    FM A0 = A;
+    {
+      if (A0.infinity_norm() < 1e-12)
+        DUNE_THROW(FMatrixError, "Assignment had no effect!");
+    }
+    A0 -= A;
+    {
+      if (A0.infinity_norm() > 1e-12)
+        DUNE_THROW(FMatrixError, "Operator-= had no effect!");
+    }
+    FM A1 = A;         // A1 == A
+    FM A2 = (A1 *= 2); // A1 == A2 == 2*A
+    {
+      FM tmp = A1; tmp -= A;
+      if (tmp.infinity_norm() < 1e-12)
+        DUNE_THROW(FMatrixError,"Operator*= had no effect!");
+    }
+    {
+      FM tmp = A2; tmp -= A1;
+      if (tmp.infinity_norm() > 1e-12)
+        DUNE_THROW(FMatrixError, "Return value of Operator*= incorrect!");
+    }
+    FM A3 = (A2 *= 3); // A2 == A3 == 6*A
+    FM A4 = (A2 /= 2); // A2 == A4 == 3*A;
+    FM A5 = A;
+    A5 *= 3;           // A5       == 3*A
+    {
+      FM tmp = A2; tmp -= A5;
+      if (tmp.infinity_norm() > 1e-12)
+        DUNE_THROW(FMatrixError, "Operator/= had no effect!");
+    }
+    {
+      FM tmp = A4; tmp -= A5;
+      if (tmp.infinity_norm() > 1e-12)
+        DUNE_THROW(FMatrixError, "Return value of Operator/= incorrect!");
+    }
 
-    FieldMatrix<K,n,m> B = A;
-    B += A;
-    B -= A2;
-    if (std::abs(B.infinity_norm()) > 1e-12)
-      DUNE_THROW(FMatrixError,"Operator +=/-= test failed!");
+    FM A6 = A;
+    FM A7 = (A6 += A); // A6 == A7 == 2*A
+    {
+      FM tmp = A1; tmp -= A6;
+      if (tmp.infinity_norm() > 1e-12)
+        DUNE_THROW(FMatrixError, "Operator+= had no effect!");
+    }
+    {
+      FM tmp = A1; tmp -= A7;
+      if (tmp.infinity_norm() > 1e-12)
+        DUNE_THROW(FMatrixError, "Return value of Operator+= incorrect!");
+    }
+
+    FM A8 = A2;        // A8 == A2 == 3*A
+    FM A9 = (A8 -= A); // A9 == A8 == 2*A;
+    {
+      FM tmp = A8; tmp -= A1;
+      if (tmp.infinity_norm() > 1e-12)
+        DUNE_THROW(FMatrixError, "Operator-= had no effect!");
+    }
+    {
+      FM tmp = A9; tmp -= A1;
+      if (tmp.infinity_norm() > 1e-12)
+        DUNE_THROW(FMatrixError, "Return value of Operator-= incorrect!");
+    }
   }
   {
     FieldMatrix<K,n,m> A3 = A;
