@@ -57,7 +57,7 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
 
     switch (line[contentStart]) {
     case '#': // Handle comments
-      continue;
+      break;
     case '[': { // Handle prefixes
       size_t prefixStart =
           line.find_first_not_of(ws, contentStart + 1); // skip '['.
@@ -65,6 +65,7 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
         throw ParsingException(line,
                                "declaration of scope not terminated by ']'");
 
+      // Start from prefixStart to allow empty prefix
       size_t prefixEnd =
           line.find_first_not_of(identifierWhitelist, prefixStart);
       if (prefixEnd == std::string::npos)
@@ -87,7 +88,7 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
       std::string key, value;
 
       size_t keyStart = contentStart;
-      // intentionally re-read the first character to validate it
+      // Intentionally re-read the first character to validate it
       size_t keyEnd = line.find_first_not_of(identifierWhitelist, keyStart);
       if (keyEnd == std::string::npos)
         throw ParsingException(line, "'=' missing from assignment");
@@ -130,21 +131,19 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
           if (chunkEnd >= line.size())
             throw ParsingException(line, "line ended with a single backslash");
 
-          char const escaped_char = line[chunkEnd];
-          if (escaped_char == '\\' || escaped_char == quote)
-            value += escaped_char;
-          else if (escaped_char == 'n')
+          char const escapedCharacter = line[chunkEnd];
+          if (escapedCharacter == '\\' || escapedCharacter == quote)
+            value += escapedCharacter;
+          else if (escapedCharacter == 'n')
             value += '\n';
           else
             throw ParsingException(line, "unexpected escape in quoted string");
           chunkStart = chunkEnd;
         }
         valueEnd = chunkEnd;
-      } else {
-        // Handle unquoted or empty strings
+      } else { // Handle unquoted or empty strings
 
-        // Intentionally read the first character again, to avoid code
-        // duplication
+        // Intentionally re-read the first character to validate it
         valueEnd = line.find_first_of(simpleStringBlacklist, valueStart);
         if (valueStart != valueEnd)
           value = line.substr(valueStart, valueEnd - valueStart);
