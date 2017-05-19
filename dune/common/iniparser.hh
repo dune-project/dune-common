@@ -146,32 +146,10 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
 
         // Intentionally read the first character again, to avoid code
         // duplication
-        size_t chunkStart = valueStart;
-        size_t chunkEnd;
-        while (true) {
-          // Read a chunk of whitespace-free characters not on the blacklist
-          chunkEnd = line.find_first_of(ws + simpleStringBlacklist, chunkStart);
-          if (chunkEnd == std::string::npos || line[chunkEnd] == '#')
-            break;
-          if (simpleStringBlacklist.find(line[chunkEnd]) != std::string::npos)
-            throw ParsingException(line, "invalid character in simple string");
-
-          // Whitespace might be important or trailing whitespace. We only know
-          // once we have read the first character after it.
-          size_t potentialChunkEnd = line.find_first_not_of(ws, chunkEnd + 1);
-          if (potentialChunkEnd == std::string::npos ||
-              line[potentialChunkEnd] == '#')
-            break;
-          if (simpleStringBlacklist.find(line[potentialChunkEnd]) !=
-              std::string::npos)
-            throw ParsingException(line, "invalid character in simple string");
-
-          chunkEnd = potentialChunkEnd;
-          chunkStart = chunkEnd;
-        }
-        valueEnd = chunkEnd;
+        valueEnd = line.find_first_of(simpleStringBlacklist, valueStart);
         if (valueStart != valueEnd)
           value = line.substr(valueStart, valueEnd - valueStart);
+        value = ltrim(rtrim(value, ws), ws);
       }
 
       // After the content, only comments are allowed
