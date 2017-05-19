@@ -43,7 +43,8 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
   // Characters that could make up an identifier.
   std::string const identifierWhitelist = "abcdefghijklmnopqrstuvwxyz"
                                           "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                                          "0123456789._+-";
+                                          "0123456789._+-" +
+                                          ws;
   std::string const simpleStringBlacklist = "'\"\\#";
 
   std::string prefix;
@@ -65,7 +66,7 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
                                "declaration of scope not terminated by ']'");
 
       size_t prefixEnd =
-          line.find_first_not_of(ws + identifierWhitelist, prefixStart);
+          line.find_first_not_of(identifierWhitelist, prefixStart);
       if (prefixEnd == std::string::npos)
         throw ParsingException(line,
                                "declaration of scope not terminated by ']'");
@@ -87,8 +88,7 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
 
       size_t keyStart = contentStart;
       // intentionally re-read the first character to validate it
-      size_t keyEnd =
-          line.find_first_not_of(identifierWhitelist + ws, keyStart);
+      size_t keyEnd = line.find_first_not_of(identifierWhitelist, keyStart);
       if (keyEnd == std::string::npos)
         throw ParsingException(line, "'=' missing from assignment");
       if (line[keyEnd] != '=')
