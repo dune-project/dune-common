@@ -104,12 +104,12 @@ int all_tests() {
     errors++;
 
   // prefix/identifier with whitespace (c)
-  if (!parsesTo("[ prefix 2]\nkey = value", "prefix 2.key", "value"))
+  if (!parsesTo("[ prefix 2]\nkey 3 = value", "prefix 2.key 3", "value"))
     errors++;
 
   // prefix/identifier with whitespace (c)
-  if (!parsesTo("[ prefix with\ttab ]\nkey = value", "prefix with\ttab.key",
-                "value"))
+  if (!parsesTo("[ prefix with\ttab ]\nkey\twith tab = value",
+                "prefix with\ttab.key\twith tab", "value"))
     errors++;
 
   // prefix/identifier with whitespace (d)
