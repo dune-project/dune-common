@@ -20,6 +20,25 @@ private:
   std::string message_;
 };
 
+std::string ltrim(std::string const &s, std::string const &characterClass)
+{
+  std::size_t firstAdmissible = s.find_first_not_of(characterClass);
+
+  if (firstAdmissible != std::string::npos)
+    return s.substr(firstAdmissible);
+  return std::string();
+}
+
+std::string rtrim(std::string const &s, std::string const &characterClass)
+{
+  std::size_t lastAdmissible = s.find_last_not_of(characterClass);
+
+  if (lastAdmissible != std::string::npos)
+    return s.substr(0, lastAdmissible + 1);
+  return std::string();
+}
+
+
 // Parse the ini-format information from instream. For each key-value pair,
 // call store(prefix, key, value).
 template <class Action> void parse(std::istream &instream, Action &&store) {
@@ -48,83 +67,37 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
         throw ParsingException(line,
                                "declaration of scope not terminated by ']'");
 
-      size_t chunkStart = prefixStart;
-      size_t chunkEnd;
-      size_t prefixEnd;
-      size_t contentEnd;
-      while (true) {
-        // Intentionally read the first character again, to avoid code
-        // duplication
-        chunkEnd = line.find_first_not_of(identifierWhitelist, chunkStart);
-        if (chunkEnd == std::string::npos)
-          throw ParsingException(line,
-                                 "declaration of scope not terminated by ']'");
-        if (line[chunkEnd] == ']') {
-          contentEnd = chunkEnd + 1;
-          break;
-        }
-        if (ws.find(line[chunkEnd]) == std::string::npos)
-          throw ParsingException(line, "invalid character in prefix");
-
-        // Whitespace may or may not be important. We only know once
-        // we have read the first character after it.
-        size_t potentialChunkEnd = line.find_first_not_of(ws, chunkEnd + 1);
-        if (potentialChunkEnd == std::string::npos)
-          throw ParsingException(line,
-                                 "declaration of scope not terminated by ']'");
-        if (line[potentialChunkEnd] == ']') {
-          contentEnd = potentialChunkEnd + 1;
-          break;
-        }
-        chunkEnd = potentialChunkEnd;
-        chunkStart = chunkEnd;
-      }
-      prefixEnd = chunkEnd;
+      size_t prefixEnd = line.find_first_not_of(ws + identifierWhitelist, prefixStart);
+      if (prefixEnd == std::string::npos)
+        throw ParsingException(line,
+                               "declaration of scope not terminated by ']'");
+      if (line[prefixEnd] != ']')
+        throw ParsingException(line, "invalid character in prefix");
 
       // After the content, only comments are allowed
-      size_t trailingStart = line.find_first_not_of(ws, contentEnd);
+      size_t trailingStart = line.find_first_not_of(ws, prefixEnd + 1);
       if (trailingStart != std::string::npos && line[trailingStart] != '#')
         throw ParsingException(line, "unexpected content after prefix");
 
       // Only set the prefix if the entire line could be parsed.
       prefix = line.substr(prefixStart, prefixEnd - prefixStart);
+      prefix = ltrim(rtrim(prefix, ws), ws);
       break;
     }
     default: { // Handle anything else (i.e., assignments)
       std::string key, value;
 
-      size_t chunkStart = contentStart;
-      size_t chunkEnd;
-      size_t keyEnd;
-      size_t equalSignPosition;
-      while (true) {
-        // Intentionally read the first character again, to avoid code
-        // duplication
-        chunkEnd = line.find_first_not_of(identifierWhitelist, chunkStart);
-        if (chunkEnd == std::string::npos)
-          throw ParsingException(line, "'=' missing from assignment");
-        if (line[chunkEnd] == '=') {
-          equalSignPosition = chunkEnd;
-          break;
-        }
-        if (ws.find(line[chunkEnd]) == std::string::npos)
-          throw ParsingException(line, "invalid character in key");
+      size_t keyStart = contentStart;
+      // intentionally re-read the first character to validate it
+      size_t keyEnd = line.find_first_not_of(identifierWhitelist + ws, keyStart);
+      if (keyEnd == std::string::npos)
+        throw ParsingException(line, "'=' missing from assignment");
+      if (line[keyEnd] != '=')
+        throw ParsingException(line, "invalid character in key");
+      size_t equalSignPosition = keyEnd;
 
-        // Whitespace may or may not be important. We only know once
-        // we have read the first character after it.
-        size_t potentialChunkEnd = line.find_first_not_of(ws, chunkEnd + 1);
-        if (potentialChunkEnd == std::string::npos)
-          throw ParsingException(line, "'=' missing from assignment");
-        if (line[potentialChunkEnd] == '=') {
-          equalSignPosition = potentialChunkEnd;
-          break;
-        }
-
-        chunkEnd = potentialChunkEnd;
-        chunkStart = chunkEnd;
-      }
-      keyEnd = chunkEnd;
       key = line.substr(contentStart, keyEnd - contentStart);
+      key = ltrim(rtrim(key, ws), ws);
 
       size_t valueStart = line.find_first_not_of(ws, equalSignPosition + 1);
       size_t valueEnd;
