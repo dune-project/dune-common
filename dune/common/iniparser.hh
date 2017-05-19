@@ -42,27 +42,44 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
     case '#': // Handle comments
       continue;
     case '[': { // Handle prefixes
-      size_t prefixStart = line.find_first_not_of(ws, contentStart + 1);
+      size_t prefixStart =
+          line.find_first_not_of(ws, contentStart + 1); // skip '['.
       if (prefixStart == std::string::npos)
-        throw ParsingException(line);
+        throw ParsingException(line,
+                               "declaration of scope not terminated by ']'");
 
+      size_t chunkStart = prefixStart;
+      size_t chunkEnd;
       size_t prefixEnd;
       size_t contentEnd;
-      if (line[prefixStart] == ']') {
-        prefixEnd = prefixStart; // empty prefix
-        contentEnd = prefixEnd + 1;
-      } else {
-        prefixEnd =
-            line.find_first_not_of(identifierWhitelist, prefixStart + 1);
-        if (prefixEnd == std::string::npos)
-          throw ParsingException(line);
+      while (true) {
+        // Intentionally read the first character again, to avoid code
+        // duplication
+        chunkEnd = line.find_first_not_of(identifierWhitelist, chunkStart);
+        if (chunkEnd == std::string::npos)
+          throw ParsingException(line,
+                                 "declaration of scope not terminated by ']'");
+        if (line[chunkEnd] == ']') {
+          contentEnd = chunkEnd + 1;
+          break;
+        }
+        if (ws.find(line[chunkEnd]) == std::string::npos)
+          throw ParsingException(line, "invalid character in prefix");
 
-        contentEnd = line.find_first_not_of(ws, prefixEnd);
-        if (contentEnd == std::string::npos || line[contentEnd] != ']')
-          throw ParsingException(line);
-        else
-          contentEnd += 1; // make end exclusive
+        // Whitespace may or may not be important. We only know once
+        // we have read the first character after it.
+        size_t potentialChunkEnd = line.find_first_not_of(ws, chunkEnd + 1);
+        if (potentialChunkEnd == std::string::npos)
+          throw ParsingException(line,
+                                 "declaration of scope not terminated by ']'");
+        if (line[potentialChunkEnd] == ']') {
+          contentEnd = potentialChunkEnd + 1;
+          break;
+        }
+        chunkEnd = potentialChunkEnd;
+        chunkStart = chunkEnd;
       }
+      prefixEnd = chunkEnd;
 
       // After the content, only comments are allowed
       size_t trailingStart = line.find_first_not_of(ws, contentEnd);
