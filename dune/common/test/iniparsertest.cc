@@ -99,6 +99,39 @@ int all_tests() {
   if (!parsesTo("[a+b-c]\nd-e+f = value", "a+b-c.d-e+f", "value"))
     errors++;
 
+  // prefix/identifier with whitespace (a)
+  if (!parsesTo("[ prefix ]\nkey = value", "prefix.key", "value"))
+    errors++;
+
+  // prefix/identifier with whitespace (c)
+  if (!parsesTo("[ prefix 2]\nkey = value", "prefix 2.key", "value"))
+    errors++;
+
+  // prefix/identifier with whitespace (c)
+  if (!parsesTo("[ prefix with\ttab ]\nkey = value", "prefix with\ttab.key",
+                "value"))
+    errors++;
+
+  // prefix/identifier with whitespace (d)
+  if (!parsesTo("[ \t ]\nkey = value", "key", "value"))
+    errors++;
+
+  // incomplete prefix (a)
+  if (!failsToParse("[prefix\nkey = value"))
+    errors++;
+
+  // incomplete prefix (b)
+  if (!failsToParse("[prefix 2 # comment\nkey = value"))
+    errors++;
+
+  // prefix with illegal character (a)
+  if (!failsToParse("[ prefix] ]\nkey = value"))
+    errors++;
+
+  // prefix with illegal character (b)
+  if (!failsToParse("[a=b]\nkey = value"))
+    errors++;
+
   // simple-string with illegal character
   if (!failsToParse("[my.prefix]\nk3.a = abc\"def"))
     errors++;
