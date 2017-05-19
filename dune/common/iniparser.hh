@@ -96,7 +96,7 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
         throw ParsingException(line, "invalid character in key");
       size_t equalSignPosition = keyEnd;
 
-      key = line.substr(contentStart, keyEnd - contentStart);
+      key = line.substr(contentStart, keyEnd - keyStart);
       key = ltrim(rtrim(key, ws), ws);
 
       size_t valueStart = line.find_first_not_of(ws, equalSignPosition + 1);
