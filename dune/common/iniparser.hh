@@ -93,17 +93,40 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
     default: { // Handle anything else (i.e., assignments)
       std::string key, value;
 
-      size_t keyEnd =
-          line.find_first_not_of(identifierWhitelist, contentStart + 1);
-      if (keyEnd == std::string::npos)
-        throw ParsingException(line);
+      size_t chunkStart = contentStart;
+      size_t chunkEnd;
+      size_t keyEnd;
+      size_t equalSignPosition;
+      while (true) {
+        // Intentionally read the first character again, to avoid code
+        // duplication
+        chunkEnd = line.find_first_not_of(identifierWhitelist, chunkStart);
+        if (chunkEnd == std::string::npos)
+          throw ParsingException(line, "'=' missing from assignment");
+        if (line[chunkEnd] == '=') {
+          equalSignPosition = chunkEnd;
+          break;
+        }
+        if (ws.find(line[chunkEnd]) == std::string::npos)
+          throw ParsingException(line, "invalid character in key");
+
+        // Whitespace may or may not be important. We only know once
+        // we have read the first character after it.
+        size_t potentialChunkEnd = line.find_first_not_of(ws, chunkEnd + 1);
+        if (potentialChunkEnd == std::string::npos)
+          throw ParsingException(line, "'=' missing from assignment");
+        if (line[potentialChunkEnd] == '=') {
+          equalSignPosition = potentialChunkEnd;
+          break;
+        }
+
+        chunkEnd = potentialChunkEnd;
+        chunkStart = chunkEnd;
+      }
+      keyEnd = chunkEnd;
       key = line.substr(contentStart, keyEnd - contentStart);
 
-      size_t equal_pos = line.find_first_not_of(ws, keyEnd);
-      if (equal_pos == std::string::npos || line[equal_pos] != '=')
-        throw ParsingException(line);
-
-      size_t valueStart = line.find_first_not_of(ws, equal_pos + 1);
+      size_t valueStart = line.find_first_not_of(ws, equalSignPosition + 1);
       size_t valueEnd;
 
       if (valueStart != std::string::npos &&
