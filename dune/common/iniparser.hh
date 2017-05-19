@@ -20,8 +20,7 @@ private:
   std::string message_;
 };
 
-std::string ltrim(std::string const &s, std::string const &characterClass)
-{
+std::string ltrim(std::string const &s, std::string const &characterClass) {
   std::size_t firstAdmissible = s.find_first_not_of(characterClass);
 
   if (firstAdmissible != std::string::npos)
@@ -29,15 +28,13 @@ std::string ltrim(std::string const &s, std::string const &characterClass)
   return std::string();
 }
 
-std::string rtrim(std::string const &s, std::string const &characterClass)
-{
+std::string rtrim(std::string const &s, std::string const &characterClass) {
   std::size_t lastAdmissible = s.find_last_not_of(characterClass);
 
   if (lastAdmissible != std::string::npos)
     return s.substr(0, lastAdmissible + 1);
   return std::string();
 }
-
 
 // Parse the ini-format information from instream. For each key-value pair,
 // call store(prefix, key, value).
@@ -46,7 +43,8 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
   // Characters that could make up an identifier.
   std::string const identifierWhitelist = "abcdefghijklmnopqrstuvwxyz"
                                           "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                                          "0123456789._+-" + ws;
+                                          "0123456789._+-" +
+                                          ws;
   std::string const simpleStringBlacklist = "'\"\\#";
 
   std::string prefix;
@@ -67,7 +65,8 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
         throw ParsingException(line,
                                "declaration of scope not terminated by ']'");
 
-      size_t prefixEnd = line.find_first_not_of(identifierWhitelist, prefixStart);
+      size_t prefixEnd =
+          line.find_first_not_of(identifierWhitelist, prefixStart);
       if (prefixEnd == std::string::npos)
         throw ParsingException(line,
                                "declaration of scope not terminated by ']'");
