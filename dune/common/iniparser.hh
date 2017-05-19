@@ -21,7 +21,7 @@ private:
 };
 
 std::string ltrim(std::string const &s, std::string const &characterClass) {
-  std::size_t firstAdmissible = s.find_first_not_of(characterClass);
+  std::size_t const firstAdmissible = s.find_first_not_of(characterClass);
 
   if (firstAdmissible != std::string::npos)
     return s.substr(firstAdmissible);
@@ -29,7 +29,7 @@ std::string ltrim(std::string const &s, std::string const &characterClass) {
 }
 
 std::string rtrim(std::string const &s, std::string const &characterClass) {
-  std::size_t lastAdmissible = s.find_last_not_of(characterClass);
+  std::size_t const lastAdmissible = s.find_last_not_of(characterClass);
 
   if (lastAdmissible != std::string::npos)
     return s.substr(0, lastAdmissible + 1);
@@ -59,14 +59,14 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
     case '#': // Handle comments
       break;
     case '[': { // Handle prefixes
-      size_t prefixStart =
+      size_t const prefixStart =
           line.find_first_not_of(ws, contentStart + 1); // skip '['.
       if (prefixStart == std::string::npos)
         throw ParsingException(line,
                                "declaration of scope not terminated by ']'");
 
       // Start from prefixStart to allow empty prefix
-      size_t prefixEnd =
+      size_t const prefixEnd =
           line.find_first_not_of(identifierWhitelist, prefixStart);
       if (prefixEnd == std::string::npos)
         throw ParsingException(line,
@@ -75,7 +75,7 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
         throw ParsingException(line, "invalid character in prefix");
 
       // After the content, only comments are allowed
-      size_t trailingStart = line.find_first_not_of(ws, prefixEnd + 1);
+      size_t const trailingStart = line.find_first_not_of(ws, prefixEnd + 1);
       if (trailingStart != std::string::npos && line[trailingStart] != '#')
         throw ParsingException(line, "unexpected content after prefix");
 
@@ -87,21 +87,23 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
     default: { // Handle anything else (i.e., assignments)
       std::string key, value;
 
-      size_t keyStart = contentStart;
+      size_t const keyStart = contentStart;
       // Intentionally re-read the first character to validate it
-      size_t keyEnd = line.find_first_not_of(identifierWhitelist, keyStart);
+      size_t const keyEnd =
+          line.find_first_not_of(identifierWhitelist, keyStart);
       if (keyEnd == std::string::npos)
         throw ParsingException(line, "'=' missing from assignment");
       if (line[keyEnd] != '=')
         throw ParsingException(line, "invalid character in key");
-      size_t equalSignPosition = keyEnd;
+      size_t const equalSignPosition = keyEnd;
 
       key = line.substr(contentStart, keyEnd - keyStart);
       key = ltrim(rtrim(key, ws), ws);
       if (key == "")
         throw ParsingException(line, "key cannot be empty");
 
-      size_t valueStart = line.find_first_not_of(ws, equalSignPosition + 1);
+      size_t const valueStart =
+          line.find_first_not_of(ws, equalSignPosition + 1);
       size_t valueEnd;
 
       if (valueStart != std::string::npos &&
@@ -153,7 +155,7 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
       }
 
       // After the content, only comments are allowed
-      size_t trailingStart = line.find_first_not_of(ws, valueEnd);
+      size_t const trailingStart = line.find_first_not_of(ws, valueEnd);
       if (trailingStart != std::string::npos && line[trailingStart] != '#')
         throw ParsingException(line, "unexpected content after assignment");
 
