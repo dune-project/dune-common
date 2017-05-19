@@ -167,11 +167,6 @@ dune_add_test(SOURCES parametertreelocaletest.cc
 dune_add_test(SOURCES parametertreetest.cc
               LINK_LIBRARIES dunecommon)
 
-dune_add_test(NAME parametertreetest-new
-              SOURCES parametertreetest.cc
-              COMPILE_DEFINITIONS USE_NEW_INIPARSER
-              LINK_LIBRARIES dunecommon)
-
 dune_add_test(SOURCES pathtest.cc
               LINK_LIBRARIES dunecommon)
 

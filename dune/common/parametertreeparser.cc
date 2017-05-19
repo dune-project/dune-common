@@ -18,6 +18,7 @@
 #include <algorithm>
 
 #include <dune/common/exceptions.hh>
+#include <dune/common/iniparser.hh>
 
 std::string Dune::ParameterTreeParser::ltrim(const std::string& s)
 {
@@ -59,9 +60,6 @@ void Dune::ParameterTreeParser::readINITree(std::istream& in,
   readINITree(in, pt, "stream", overwrite);
 }
 
-
-#ifdef USE_NEW_INIPARSER
-#include "iniparser.hh"
 void Dune::ParameterTreeParser::readINITree(std::istream& in, ParameterTree& pt,
                                             const std::string srcname,
                                             bool overwrite) {
@@ -81,83 +79,6 @@ void Dune::ParameterTreeParser::readINITree(std::istream& in, ParameterTree& pt,
     }
   });
 }
-#else
-void Dune::ParameterTreeParser::readINITree(std::istream& in,
-                                            ParameterTree& pt,
-                                            const std::string srcname,
-                                            bool overwrite)
-{
-  std::string prefix;
-  std::set<std::string> keysInFile;
-  while(!in.eof())
-  {
-    std::string line;
-    getline(in, line);
-    line = ltrim(line);
-    if (line.size() == 0)
-      continue;
-    switch (line[0]) {
-    case '#' :
-      break;
-    case '[' :
-      line = rtrim(line);
-      if (line[line.length()-1] == ']')
-      {
-        prefix = rtrim(ltrim(line.substr(1, line.length()-2)));
-        if (prefix != "")
-          prefix += ".";
-      }
-      break;
-    default :
-      std::string::size_type comment = line.find("#");
-      line = line.substr(0,comment);
-      std::string::size_type mid = line.find("=");
-      if (mid != std::string::npos)
-      {
-        std::string key = prefix+rtrim(ltrim(line.substr(0, mid)));
-        std::string value = ltrim(line.substr(mid+1));
-
-        if (value.length()>0)
-        {
-          // handle quoted strings
-          if ((value[0]=='\'') || (value[0]=='"'))
-          {
-            char quote = value[0];
-            value=value.substr(1);
-            while (*(rtrim(value).rbegin())!=quote)
-            {
-              if (! in.eof())
-              {
-                std::string l;
-                getline(in, l);
-                value = value+"\n"+l;
-              }
-              else
-                value = value+quote;
-            }
-            value = rtrim(value);
-            value = value.substr(0,value.length()-1);
-          }
-          else
-            value = rtrim(value);
-        }
-
-        if (keysInFile.count(key) != 0)
-          DUNE_THROW(ParameterTreeParserError, "Key '" << key <<
-                     "' appears twice in " << srcname << " !");
-        else
-        {
-          if(overwrite || ! pt.hasKey(key))
-            pt[key] = value;
-          keysInFile.insert(key);
-        }
-      }
-      break;
-    }
-  }
-
-}
-#endif
 
 void Dune::ParameterTreeParser::readOptions(int argc, char* argv [],
                                             ParameterTree& pt)
