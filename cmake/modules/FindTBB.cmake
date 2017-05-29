@@ -1,60 +1,110 @@
 # Locate Intel Threading Building Blocks include paths and libraries
 #
-# TBB is a little special because there are three different ways to provide it:
-# - It can be installed using a package manager and just be available on the system include
-#   and library paths.
-# - It can be compiled from source. The package doesn't really provide an installation script
-#   for this, but expects you to source an environment file called tbbvars.sh that updates the
-#   required variables like CPATH etc.
-# - TBB is shipped as part of the Intel compilers. This bundled version can be enabled by adding
-#   -tbb to the compiler flags.
+# .. cmake_module::
 #
-# This module can find all three types of installations. They are looked for in the following
-# order of preference: tbbvars.sh file (for a custom installation), system paths and finally
-# the built-in version if an Intel compiler is present.
+#    TBB is a little special because there are three different ways to provide it:
 #
-# Note: If you provide a tbbvars.sh script (via the CMake variable TBB_VARS_SH), this module will
+#    * It can be installed using a package manager and just be available on the system include
+#      and library paths.
+#    * It can be compiled from source. The package doesn't really provide an installation script
+#      for this, but expects you to source an environment file called :code:`tbbvars.sh` that updates the
+#      required variables like :code:`CPATH` etc.
+#    * TBB is shipped as part of the Intel compilers. This bundled version can be enabled by adding
+#      :code:`-tbb` to the compiler flags.
+#
+#    This module can find all three types of installations. They are looked for in the following
+#    order of preference: :code:`tbbvars.sh` file (for a custom installation), system paths and finally
+#    the built-in version if an Intel compiler is present.
+#
+#    .. note::
+#       If you provide a tbbvars.sh script (via the CMake variable :ref:`TBB_VARS_SH`), this module will
 #       not find any libraries installed in the system path! This is on purpose to avoid
 #       accidental fallbacks.
 #
-# If the option TBB_DEBUG is set to ON, the module will look for the debug version of TBB. Note that
-# this does not work for the built-in library of the Intel Compiler due to linking problems. You can
-# however provide the module with the tbbvars.sh from that built-in installation (usually in the
-# subdirectory tbb/ of the Intel compiler root path), which will fix that problem.
+#    If the option :ref:`TBB_DEBUG` is set to ON, the module will look for the debug version of TBB. Note that
+#    this does not work for the built-in library of the Intel Compiler due to linking problems. You can
+#    however provide the module with the tbbvars.sh from that built-in installation (usually in the
+#    subdirectory :code:`tbb/` of the Intel compiler root path), which will fix that problem.
 #
-# Variables used by this module which you may want to set:
+#    Variables used by this module which you may want to set:
 #
-# TBB_VARS_SH       Path to the tbbvars.sh script
-# TBB_INCLUDE_DIR   Path to the include directory with the TBB headers
-# TBB_LIBRARY_DIR   Path to the library directory with the TBB libraries
-# TBB_DEBUG         Option that turns on TBB debugging
+#    :ref:`TBB_VARS_SH`
+#       Path to the :code:`tbbvars.sh` script
 #
+#    :ref:`TBB_INCLUDE_DIR`
+#       Path to the include directory with the TBB headers
 #
-# This module supports additional components of TBB that can be listed in the find_package() call:
-
-# cpf               Use comunity preview edition (links to libtbb_preview instead of libtbb). cpf
-#                   is not available for the built-in version of the Intel Compiler, but see the note
-#                   on debug mode above for a fix.
-# allocator         Use TBB's scalable allocator (links to libtbbmalloc).
+#    :ref:`TBB_LIBRARY_DIR`
+#       Path to the library directory with the TBB libraries
 #
+#    :ref:`TBB_DEBUG`
+#       Option that turns on TBB debugging
 #
-# This module sets the following variables:
+#    This module supports additional components of TBB that can be listed in the :ref:`find_package` call:
 #
-# TBB_FOUND                       True if TBB was found and is usable
-# TBB_cpf_FOUND                   True if community preview edition was found and is usable
-# TBB_allocator_FOUND             True if scalable allocator library was found and is usable
-# TBB_INCLUDE_DIRS                Path to the TBB include dirs. This variable is empty if the
-#                                 internal TBB version of an Intel compiler is in use
-# TBB_LIBRARIES                   List of the TBB libraries that a target must be linked to
-# TBB_COMPILE_DEFINITIONS         Required compile definitions to use TBB
-# TBB_COMPILE_OPTIONS             Required compile options to use TBB
-# TBB_INTEL_COMPILER_INTERNAL_TBB True if internal TBB version of Intel compiler is in use
+#    :code:`cpf`
+#       Use comunity preview edition (links to :code:`libtbb_preview` instead of :code:`libtbb`). cpf
+#       is not available for the built-in version of the Intel Compiler, but see the note
+#       on debug mode above for a fix.
+#
+#    :code:`allocator`
+#       Use TBB's scalable allocator (links to libtbbmalloc).
 #
 #
-# In addition, TBB is automatically registered with the dune_enable_all_packages() facility. If you
-# don't want to use that feature, the module also provides the following function:
+#    This module sets the following variables:
 #
-# add_dune_tbb_flags(target [target]...)  Adds all flags required to use TBB to the listed targets
+#    :code:`TBB_FOUND`
+#       True if TBB was found and is usable
+#
+#    :code:`TBB_cpf_FOUND`
+#       True if community preview edition was found and is usable
+#
+#    :code:`TBB_allocator_FOUND`
+#       True if scalable allocator library was found and is usable
+#
+#    :code:`TBB_INCLUDE_DIRS`
+#       Path to the TBB include dirs. This variable is empty if the
+#       internal TBB version of an Intel compiler is in use
+#
+#    :code:`TBB_LIBRARIES`
+#       List of the TBB libraries that a target must be linked to
+#
+#    :code:`TBB_COMPILE_DEFINITIONS`
+#       Required compile definitions to use TBB
+#
+#    :code:`TBB_COMPILE_OPTIONS`
+#       Required compile options to use TBB
+#
+#    :code:`TBB_INTEL_COMPILER_INTERNAL_TBB`
+#       True if internal TBB version of Intel compiler is in use
+#
+#    In addition, TBB is automatically registered with the :ref:`dune_enable_all_packages` facility. If you
+#    don't want to use that feature, the module also provides the function :ref:`add_dune_tbb_flags`.
+#
+# .. cmake_function:: add_dune_tbb_flags
+#
+#    .. cmake_param:: targets
+#       :positional:
+#       :single:
+#       :required:
+#
+#    Adds all flags required to use TBB to the listed targets
+#
+# .. cmake_variable:: TBB_VARS_SH
+#
+#       May be set to have the :ref:`FindTBB` module look for a :code:`tbbvars.sh` script
+#
+# .. cmake_variable:: TBB_INCLUDE_DIR
+#
+#       May be set to have the :ref:`FindTBB` module look for TBB includes in custom locations.
+#
+# .. cmake_variable:: TBB_LIBRARY_DIR
+#
+#       May be set to have the :ref:`FindTBB` module look for TBB libraries in custom locations.
+#
+# .. cmake_variable:: TBB_DEBUG
+#
+#       May be set to have the :ref:`FindTBB` module look for debug TBB libraries.
 #
 
 option(
