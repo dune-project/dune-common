@@ -124,8 +124,20 @@ dune_python_find_package(PACKAGE pip
                          )
 if(NOT pippresent)
   if(DUNE_PYTHON_ALLOW_GET_PIP)
+    # Fetch the get-pip.py script
     message("-- Installing pip using https://bootstrap.pypa.io/get-pip.py...")
     file(DOWNLOAD https://bootstrap.pypa.io/get-pip.py ${CMAKE_CURRENT_BINARY_DIR}/get-pip.py)
+
+    # Verify that the script was successfully fetched
+    file(READ ${CMAKE_CURRENT_BINARY_DIR}/get-pip.py verify LIMIT 1)
+    if(NOT verify)
+      message(FATAL_ERROR "
+      Fetching get-pip.py failed. This often happens when CMake is built from source without SSL/TLS support.
+      Consider using a different cmake version or fall back to manually installing pip into the virtualenv.
+                          ")
+    endif()
+
+    # Execute the script
     dune_execute_process(COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/get-pip.py
                          ERROR_MESSAGE "Fatal error when installing pip into the virtualenv."
                          )
