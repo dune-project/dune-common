@@ -132,6 +132,26 @@ int all_tests() {
   if (!failsToParse("[a=b]\nkey = value"))
     errors++;
 
+  // key with illegal character
+  if (!failsToParse("illegal\"key = value"))
+    errors++;
+
+  // equal sign missing from assignment
+  if (!failsToParse("key value"))
+    errors++;
+
+  // assignment to empty identifier
+  if (!failsToParse(" = value"))
+    errors++;
+
+  // empty assignment (a)
+  if (!parsesTo("[my.prefix]\nk4.a = ", "my.prefix.k4.a", ""))
+    errors++;
+
+  // empty assignment (b)
+  if (!parsesTo("[my.prefix]\nk4.b = #comment", "my.prefix.k4.b", ""))
+    errors++;
+
   // simple-string with illegal character
   if (!failsToParse("[my.prefix]\nk3.a = abc\"def"))
     errors++;
@@ -154,16 +174,20 @@ int all_tests() {
   if (!parsesTo("[my.prefix]\nk3.c = abc=def", "my.prefix.k3.c", "abc=def"))
     errors++;
 
-  // empty assignment (a)
-  if (!parsesTo("[my.prefix]\nk4.a = ", "my.prefix.k4.a", ""))
+  // simple-string with missing closing quote
+  if (!failsToParse("key = \"foo"))
     errors++;
 
-  // empty assignment (b)
-  if (!parsesTo("[my.prefix]\nk4.b = #comment", "my.prefix.k4.b", ""))
+  // simple-string with trailing backslash
+  if (!failsToParse("key = \"foo"))
     errors++;
 
-  // assignment to empty identifier
-  if (!failsToParse(" = value"))
+  // simple-string with illegal escape
+  if (!failsToParse("key = \"\\m\""))
+    errors++;
+
+  // simple-string with single backslash
+  if (!failsToParse("key = \"\\\n\""))
     errors++;
 
   return errors;
