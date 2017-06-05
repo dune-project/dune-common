@@ -7,13 +7,13 @@
 #include <dune/common/iniparser.hh>
 
 bool parsesTo(std::string input, std::string key, std::string value) {
+  std::cout << "\n\n"
+            << "# input    :\n" << input << '\n'
+            << "# expecting: " << key << " = " << value << std::endl;
+  bool ret;
   try {
     std::stringstream sstream;
     sstream << input << std::endl;
-
-    std::cout << std::endl;
-    std::cout << "# input:\n" << input << std::endl;
-    std::cout << "# excepting: " << key << " = " << value << std::endl;
 
     std::map<std::string, std::string> map;
     parse(sstream, [&](std::string const &p, std::string const &k,
@@ -22,27 +22,35 @@ bool parsesTo(std::string input, std::string key, std::string value) {
       map[full_key] = v;
     });
     std::cout << "# getting  : " << key << " = " << map[key] << std::endl;
-    bool ret = map[key] == value;
-    std::cout << "# returning: " << (ret ? "true" : "false") << std::endl;
-
-    return ret;
-  } catch (ParsingException) {
-    return false;
+    ret = map[key] == value;
+  } catch (ParsingException const &e) {
+    std::cout << "# exception: " << e << std::endl;
+    ret = false;
   }
+  std::cout << "# result   : " << (ret ? "PASS (good)" : "FAIL (bad)") << std::endl;
+  return ret;
 }
 
 bool failsToParse(std::string input) {
+  bool ret;
+  std::cout << "\n\n"
+            << "# input    :\n" << input << '\n'
+            << "# expecting: exception (unable to parse line)" << std::endl;
   try {
     std::stringstream sstream;
     sstream << input << std::endl;
 
+
     std::map<std::string, std::string> map;
     parse(sstream, [&](std::string const &p, std::string const &k,
                        std::string const &v) {});
-    return false;
-  } catch (ParsingException) {
-    return true;
+    ret = false;
+  } catch (ParsingException const &e) {
+    std::cout << "# exception: " << e << std::endl;
+    ret = true;
   }
+  std::cout << "# result   : " << (ret ? "XFAIL (good)" : "XPASS (bad)") << std::endl;
+  return ret;
 }
 
 int all_tests() {
@@ -196,6 +204,7 @@ int all_tests() {
 int main() {
   int errors = all_tests();
 
+  std::cout << '\n';
   if (errors > 0)
     std::cout << "WARNING: encountered " << errors << " error(s)!" << std::endl;
   else
