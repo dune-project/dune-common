@@ -61,11 +61,7 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
     case '[': { // Handle prefixes
       size_t const prefixStart =
           line.find_first_not_of(ws, contentStart + 1); // skip '['.
-      if (prefixStart == std::string::npos)
-        throw ParsingException(line,
-                               "declaration of scope not terminated by ']'");
 
-      // Start from prefixStart to allow empty prefix
       size_t const prefixEnd =
           line.find_first_not_of(identifierWhitelist, prefixStart);
       if (prefixEnd == std::string::npos)
