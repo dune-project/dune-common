@@ -47,9 +47,9 @@ class SimpleGenerator(object):
         else:
             options = ", " + options
         if not bufferProtocol:
-            source += "  auto cls = pybind11::class_< DuneType " + options + " >( module, \"" + self.pythonName + "\", pybind11::metaclass() );\n"
+            source += "  auto cls = pybind11::class_< DuneType " + options + " >( module, \"" + self.pythonName + "\" );\n"
         else:
-            source += "  auto cls = pybind11::class_< DuneType " + options + " >( module, \"" + self.pythonName + "\", pybind11::metaclass(), pybind11::buffer_protocol() );\n"
+            source += "  auto cls = pybind11::class_< DuneType " + options + " >( module, \"" + self.pythonName + "\", pybind11::buffer_protocol() );\n"
         source += "  Dune::CorePy::typeRegistry().exportToPython(cls,entry.first->second);\n"
         source += "  " + self.namespace + "register" + self.typeName + "( module, cls );\n"
 
