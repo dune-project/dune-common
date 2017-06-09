@@ -23,7 +23,7 @@ class SimpleGenerator(object):
           self.pythonName = pythonname
         self.fileName = filename
 
-    def load(self, includes, typeName, moduleName, constructors=None, methods=None, bufferProtocol=False, options=None):
+    def load(self, includes, typeName, moduleName, constructors=None, methods=None, metaclass=None, bufferProtocol=False, options=None):
         source = "".join(["#include <" + i + ">\n" for i in includes])
         source += "\n"
 
@@ -42,14 +42,18 @@ class SimpleGenerator(object):
         source += "  pybind11::module module( \"" + moduleName + "\" );\n"
         source += '  auto entry = Dune::CorePy::typeRegistry().insert<DuneType>("' + typeName + '",{' +\
                   ",".join(['"' + i + '"' for i in includes]) + "});\n"
-        if options is None:
-            options = ""
-        else:
-            options = ", " + options
-        if not bufferProtocol:
-            source += "  auto cls = pybind11::class_< DuneType " + options + " >( module, \"" + self.pythonName + "\" );\n"
-        else:
-            source += "  auto cls = pybind11::class_< DuneType " + options + " >( module, \"" + self.pythonName + "\", pybind11::buffer_protocol() );\n"
+
+        classTArgs = ['DuneType']
+        if options is not None:
+            classTArgs += options
+
+        classArgs = ['module', '"' + self.pythonName + '"']
+        if metaclass is not None:
+            classArgs.append('pybind11::metaclass( ' + metaclass + ' )')
+        if bufferProtocol:
+            classArgs.append('pybind11::buffer_protocol()')
+
+        source += '  auto cls = pybind11::class_< ' + ', '.join(classTArgs) + ' >( ' + ', '.join(classArgs) + ' );\n'
         source += "  Dune::CorePy::typeRegistry().exportToPython(cls,entry.first->second);\n"
         source += "  " + self.namespace + "register" + self.typeName + "( module, cls );\n"
 
