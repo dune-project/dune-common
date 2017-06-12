@@ -532,7 +532,7 @@ def make_dune_py_module(dune_py_dir=None):
             file.write('\n#include "generated_module.hh"\n')
 
         modules, _ = select_modules()
-        description = Description(module='dune-py', maintainer='dune@dune-project.org', depends=list(modules.values()))
+        description = Description(module='dune-py', maintainer='dune@lists.dune-project.org', depends=list(modules.values()))
         logger.debug('dune-py will depend on ' + ' '.join([m + (' ' + str(c) if c else '') for m, c in description.depends]))
         project.make_project(dune_py_dir, description, subdirs=[generated_dir])
     else:
