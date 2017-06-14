@@ -67,4 +67,4 @@ You should get your changes to us in the following way:
 
 If you have any questions or complaints about this workflow of
 contributing to Dune, please rant on the
-[dune-devel mailing list](mailto:dune-devel@dune-project.org).
+[dune-devel mailing list](mailto:dune-devel@lists.dune-project.org).
