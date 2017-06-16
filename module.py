@@ -508,24 +508,15 @@ def make_dune_py_module(dune_py_dir=None):
         if not os.path.isdir(generated_dir):
             os.makedirs(generated_dir)
 
-        cmake_content = ['add_library(generated_module SHARED EXCLUDE_FROM_ALL generated_module.cc)',
-                         'target_include_directories(generated_module PRIVATE ${CMAKE_CURRENT_BINARY_DIR})',
-                         'add_dune_mpi_flags(generated_module)',
-                         'set_target_properties(generated_module PROPERTIES PREFIX "")',
-                         'target_compile_definitions(generated_module PRIVATE USING_COREPY)',
-                         'add_executable(generated_test EXCLUDE_FROM_ALL generated_test.cc)',
+        cmake_content = ['add_executable(generated_test EXCLUDE_FROM_ALL generated_test.cc)',
                          'add_dune_mpi_flags(generated_test)',
                          'target_compile_definitions(generated_test PRIVATE USING_COREPY)',
-                         'target_link_libraries( generated_test ${DUNE_LIBS} )',
-                         'file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/__init__.py")']
+                         'target_link_libraries(generated_test ${DUNE_LIBS})',
+                         'file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/__init__.py")',
+                         '',
+                         '# The builder will append rules for dynamically generated modules, here']
         project.write_cmake_file(generated_dir, cmake_content)
 
-        with open(os.path.join(generated_dir, 'generated_module.cc'), 'w') as file:
-            file.write('#include <config.h>\n\n')
-            file.write('#define USING_COREPY 1\n\n')
-            file.write('#include <dune/corepy/common/typeregistry.hh>\n')
-            file.write('#include <dune/corepy/pybind11/pybind11.h>\n')
-            file.write('\n#include "generated_module.hh"\n')
         with open(os.path.join(generated_dir, 'generated_test.cc'), 'w') as file:
             file.write('#include <config.h>\n\n')
             file.write('#define USING_COREPY 1\n\n')
