@@ -6,7 +6,8 @@ from dune.common.hashit import hashIt
 from . import builder
 
 def load(functionName, includes, *args):
-    source = ""
+    source = '#include <config.h>\n\n'
+    source += '#define USING_COREPY 1\n\n'
     if isinstance(includes, str):
         with open(includes, "r") as include:
             source += include.read()
@@ -36,6 +37,9 @@ def load(functionName, includes, *args):
 
     source += "".join(["#include <" + i + ">\n" for i in includes])
     source += "\n"
+    source += '#include <dune/corepy/common/typeregistry.hh>\n'
+    source += '#include <dune/corepy/pybind11/pybind11.h>\n'
+    source += '\n'
 
     source += "PYBIND11_PLUGIN( " + moduleName + " )\n"
     source += "{\n"

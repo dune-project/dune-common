@@ -61,7 +61,7 @@ class Builder:
                 with open(os.path.join(sourceFileName), 'w') as out:
                     out.write(str(source))
                 with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'a') as out:
-                    out.write("dune_add_pybind11_module(NAME " + moduleName + " EXCLUDE_FROM_ALL COMPILE_DEFINITIONS USING_COREPY)\n")
+                    out.write("dune_add_pybind11_module(NAME " + moduleName + " EXCLUDE_FROM_ALL)\n")
                 # update build system
                 self.compile()
 
