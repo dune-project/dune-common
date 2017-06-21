@@ -46,6 +46,19 @@ int main(int argc, char** argv)
       t.check( std::abs( values[i] - sum ) < 1e-8 );
       t.check( std::abs( val[i]    - sum ) < 1e-8 );
     }
+
+    {
+      int i = 1;
+      const auto sum = comm.sum(i);
+      t.check(sum == comm.size())
+        << "sum of 1 must be equal to number of processes";
+    }
+    {
+      const int i = 1;
+      const auto sum = comm.sum(i);
+      t.check(sum == comm.size())
+        << "sum of 1 must be equal to number of processes";
+    }
   }
 
   std::cout << "We are at the end!"<<std::endl;
