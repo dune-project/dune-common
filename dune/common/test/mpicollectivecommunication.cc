@@ -6,10 +6,13 @@
 
 #include <dune/common/parallel/mpihelper.hh>
 #include <dune/common/parallel/mpicollectivecommunication.hh>
+#include <dune/common/test/testsuite.hh>
 
 #include <iostream>
 int main(int argc, char** argv)
 {
+  Dune::TestSuite t;
+
   typedef Dune::MPIHelper Helper;
   Helper& mpi = Helper::instance(argc, argv);
 
@@ -40,12 +43,12 @@ int main(int argc, char** argv)
 #endif
     for(int i=0; i<length; ++i)
     {
-      assert( std::abs( values[i] - sum ) < 1e-8 );
-      assert( std::abs( val[i]    - sum ) < 1e-8 );
+      t.check( std::abs( values[i] - sum ) < 1e-8 );
+      t.check( std::abs( val[i]    - sum ) < 1e-8 );
     }
   }
 
   std::cout << "We are at the end!"<<std::endl;
 
-  return 0;
+  return t.exit();
 }
