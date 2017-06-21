@@ -136,19 +136,25 @@ dune_add_test(SOURCES lrutest.cc
 
 dune_add_test(SOURCES mpicollectivecommunication.cc
               LINK_LIBRARIES dunecommon
-              CMAKE_GUARD MPI_FOUND)
+              MPI_RANKS 1 2 4 8
+              TIMEOUT 300)
 
 dune_add_test(SOURCES mpiguardtest.cc
-              LINK_LIBRARIES dunecommon)
+              LINK_LIBRARIES dunecommon
+              MPI_RANKS 1 2 4 8
+              TIMEOUT 300)
 
 dune_add_test(SOURCES mpihelpertest.cc
-              LINK_LIBRARIES dunecommon)
+              LINK_LIBRARIES dunecommon
+              MPI_RANKS 1 2 4 8
+              TIMEOUT 300)
 
 dune_add_test(NAME mpihelpertest2
               SOURCES mpihelpertest.cc
               COMPILE_DEFINITIONS MPIHELPER_PREINITIALIZE
               LINK_LIBRARIES dunecommon
-              )
+              MPI_RANKS 1 2 4 8
+              TIMEOUT 300)
 
 dune_add_test(SOURCES overloadsettest.cc
               LINK_LIBRARIES dunecommon)
