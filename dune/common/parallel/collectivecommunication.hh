@@ -106,7 +106,7 @@ namespace Dune
             return the result in every process. Assumes that T has an operator+
      */
     template<typename T>
-    T sum (T& in) const     // MPI does not know about const :-(
+    T sum (const T& in) const
     {
       return in;
     }
@@ -128,7 +128,7 @@ namespace Dune
             return the result in every process. Assumes that T has an operator*
      */
     template<typename T>
-    T prod (T& in) const     // MPI does not know about const :-(
+    T prod (const T& in) const
     {
       return in;
     }
@@ -150,7 +150,7 @@ namespace Dune
             return the result in every process. Assumes that T has an operator<
      */
     template<typename T>
-    T min (T& in) const     // MPI does not know about const :-(
+    T min (const T& in) const
     {
       return in;
     }
@@ -172,7 +172,7 @@ namespace Dune
             return the result in every process. Assumes that T has an operator<
      */
     template<typename T>
-    T max (T& in) const     // MPI does not know about const :-(
+    T max (const T& in) const
     {
       return in;
     }
@@ -223,7 +223,7 @@ namespace Dune
      * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
-    int gather (T* in, T* out, int len, int root) const     // note out must have same size as in
+    int gather (const T* in, T* out, int len, int root) const     // note out must have same size as in
     {
       DUNE_UNUSED_PARAMETER(root);
       for (int i=0; i<len; i++)
@@ -251,7 +251,7 @@ namespace Dune
      * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
-    int gatherv (T* in, int sendlen, T* out, int* recvlen, int* displ, int root) const
+    int gatherv (const T* in, int sendlen, T* out, int* recvlen, int* displ, int root) const
     {
       DUNE_UNUSED_PARAMETER(recvlen);
       DUNE_UNUSED_PARAMETER(root);
@@ -274,7 +274,7 @@ namespace Dune
      * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
-    int scatter (T* send, T* recv, int len, int root) const // note out must have same size as in
+    int scatter (const T* send, T* recv, int len, int root) const // note out must have same size as in
     {
       DUNE_UNUSED_PARAMETER(root);
       for (int i=0; i<len; i++)
@@ -301,7 +301,7 @@ namespace Dune
      * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
-    int scatterv (T* send, int* sendlen, int* displ, T* recv, int recvlen, int root) const
+    int scatterv (const T* send, int* sendlen, int* displ, T* recv, int recvlen, int root) const
     {
       DUNE_UNUSED_PARAMETER(recvlen);
       DUNE_UNUSED_PARAMETER(root);
@@ -324,7 +324,7 @@ namespace Dune
      * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
-    int allgather(T* sbuf, int count, T* rbuf) const
+    int allgather(const T* sbuf, int count, T* rbuf) const
     {
       for(T* end=sbuf+count; sbuf < end; ++sbuf, ++rbuf)
         *rbuf=*sbuf;
@@ -348,7 +348,7 @@ namespace Dune
      * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
-    int allgatherv (T* in, int sendlen, T* out, int* recvlen, int* displ) const
+    int allgatherv (const T* in, int sendlen, T* out, int* recvlen, int* displ) const
     {
       DUNE_UNUSED_PARAMETER(recvlen);
       for (int i=*displ; i<sendlen; i++)
@@ -390,7 +390,7 @@ namespace Dune
      * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename BinaryFunction, typename Type>
-    void allreduce(Type* in, Type* out, int len) const
+    void allreduce(const Type* in, Type* out, int len) const
     {
       std::copy(in, in+len, out);
       return;

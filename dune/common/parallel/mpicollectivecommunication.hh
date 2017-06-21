@@ -176,7 +176,7 @@ namespace Dune
 
     //! @copydoc CollectiveCommunication::sum
     template<typename T>
-    T sum (T& in) const     // MPI does not know about const :-(
+    T sum (const T& in) const
     {
       T out;
       allreduce<std::plus<T> >(&in,&out,1);
@@ -192,7 +192,7 @@ namespace Dune
 
     //! @copydoc CollectiveCommunication::prod
     template<typename T>
-    T prod (T& in) const     // MPI does not know about const :-(
+    T prod (const T& in) const
     {
       T out;
       allreduce<std::multiplies<T> >(&in,&out,1);
@@ -208,7 +208,7 @@ namespace Dune
 
     //! @copydoc CollectiveCommunication::min
     template<typename T>
-    T min (T& in) const     // MPI does not know about const :-(
+    T min (const T& in) const
     {
       T out;
       allreduce<Min<T> >(&in,&out,1);
@@ -225,7 +225,7 @@ namespace Dune
 
     //! @copydoc CollectiveCommunication::max
     template<typename T>
-    T max (T& in) const     // MPI does not know about const :-(
+    T max (const T& in) const
     {
       T out;
       allreduce<Max<T> >(&in,&out,1);
@@ -255,18 +255,18 @@ namespace Dune
     //! @copydoc CollectiveCommunication::gather()
     //! @note out must have space for P*len elements
     template<typename T>
-    int gather (T* in, T* out, int len, int root) const
+    int gather (const T* in, T* out, int len, int root) const
     {
-      return MPI_Gather(in,len,MPITraits<T>::getType(),
+      return MPI_Gather(const_cast<T*>(in),len,MPITraits<T>::getType(),
                         out,len,MPITraits<T>::getType(),
                         root,communicator);
     }
 
     //! @copydoc CollectiveCommunication::gatherv()
     template<typename T>
-    int gatherv (T* in, int sendlen, T* out, int* recvlen, int* displ, int root) const
+    int gatherv (const T* in, int sendlen, T* out, int* recvlen, int* displ, int root) const
     {
-      return MPI_Gatherv(in,sendlen,MPITraits<T>::getType(),
+      return MPI_Gatherv(const_cast<T*>(in),sendlen,MPITraits<T>::getType(),
                          out,recvlen,displ,MPITraits<T>::getType(),
                          root,communicator);
     }
@@ -274,18 +274,18 @@ namespace Dune
     //! @copydoc CollectiveCommunication::scatter()
     //! @note out must have space for P*len elements
     template<typename T>
-    int scatter (T* send, T* recv, int len, int root) const
+    int scatter (const T* send, T* recv, int len, int root) const
     {
-      return MPI_Scatter(send,len,MPITraits<T>::getType(),
+      return MPI_Scatter(const_cast<T*>(send),len,MPITraits<T>::getType(),
                          recv,len,MPITraits<T>::getType(),
                          root,communicator);
     }
 
     //! @copydoc CollectiveCommunication::scatterv()
     template<typename T>
-    int scatterv (T* send, int* sendlen, int* displ, T* recv, int recvlen, int root) const
+    int scatterv (const T* send, int* sendlen, int* displ, T* recv, int recvlen, int root) const
     {
-      return MPI_Scatterv(send,sendlen,displ,MPITraits<T>::getType(),
+      return MPI_Scatterv(const_cast<T*>(send),sendlen,displ,MPITraits<T>::getType(),
                           recv,recvlen,MPITraits<T>::getType(),
                           root,communicator);
     }
@@ -298,18 +298,18 @@ namespace Dune
 
     //! @copydoc CollectiveCommunication::allgather()
     template<typename T, typename T1>
-    int allgather(T* sbuf, int count, T1* rbuf) const
+    int allgather(const T* sbuf, int count, T1* rbuf) const
     {
-      return MPI_Allgather(sbuf, count, MPITraits<T>::getType(),
+      return MPI_Allgather(const_cast<T*>(sbuf), count, MPITraits<T>::getType(),
                            rbuf, count, MPITraits<T1>::getType(),
                            communicator);
     }
 
     //! @copydoc CollectiveCommunication::allgatherv()
     template<typename T>
-    int allgatherv (T* in, int sendlen, T* out, int* recvlen, int* displ) const
+    int allgatherv (const T* in, int sendlen, T* out, int* recvlen, int* displ) const
     {
-      return MPI_Allgatherv(in,sendlen,MPITraits<T>::getType(),
+      return MPI_Allgatherv(const_cast<T*>(in),sendlen,MPITraits<T>::getType(),
                             out,recvlen,displ,MPITraits<T>::getType(),
                             communicator);
     }
@@ -327,9 +327,9 @@ namespace Dune
 
     //! @copydoc CollectiveCommunication::allreduce(Type* in,Type* out,int len) const
     template<typename BinaryFunction, typename Type>
-    int allreduce(Type* in, Type* out, int len) const
+    int allreduce(const Type* in, Type* out, int len) const
     {
-      return MPI_Allreduce(in, out, len, MPITraits<Type>::getType(),
+      return MPI_Allreduce(const_cast<Type*>(in), out, len, MPITraits<Type>::getType(),
                            (Generic_MPI_Op<Type, BinaryFunction>::get()),communicator);
     }
 
