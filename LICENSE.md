@@ -13,13 +13,14 @@ Copyright holders:
 2006--2014    Andreas Dedner
 2003          Marc Droske
 2003--2016    Christian Engwer
-2004--2016    Jorrit Fahlke
+2004--2017    Jorrit Fahlke
+2016          Thomas Fetzer
 2008--2013    Bernd Flemisch
 2013--2014    Christoph Gersbacher
 2015          Stefan Girke
 2005--2016    Carsten Gräser
 2015--2016    Felix Gruber
-2010--2016    Christoph Grüninger
+2010--2017    Christoph Grüninger
 2006          Bernhard Haasdonk
 2015          Claus-Justus Heine
 2012--2013    Olaf Ippisch
@@ -43,7 +44,7 @@ Copyright holders:
 2008--2016    Elias Pipping
 2011          Dan Popovic
 2009          Atgeirr Rasmussen
-2003--2016    Oliver Sander
+2003--2017    Oliver Sander
 2006--2014    Uli Sack
 2006          Klaus Schneider
 2015          Nicolas Schwenck
