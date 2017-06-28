@@ -5,6 +5,7 @@ import logging
 import shlex
 import subprocess
 import os
+import sys
 
 from dune.common import comm
 from dune.common.compatibility import buffer_to_str, reload_module
@@ -54,22 +55,25 @@ class Builder:
             raise self.CompileError(buffer_to_str(stderr))
 
     def load(self, moduleName, source, pythonName):
-        if comm.rank == 0:
-            logger.info("Loading " + pythonName)
-            sourceFileName = os.path.join(self.generated_dir, moduleName + ".cc")
-            if not os.path.isfile(sourceFileName):
-                with open(os.path.join(sourceFileName), 'w') as out:
-                    out.write(str(source))
-                with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'a') as out:
-                    out.write("dune_add_pybind11_module(NAME " + moduleName + " EXCLUDE_FROM_ALL)\n")
-                # update build system
-                self.compile()
+        module = sys.modules.get("dune.generated." + moduleName)
+        if module is None:
+            if comm.rank == 0:
+                logger.info("Loading " + pythonName)
+                sourceFileName = os.path.join(self.generated_dir, moduleName + ".cc")
+                if not os.path.isfile(sourceFileName):
+                    with open(os.path.join(sourceFileName), 'w') as out:
+                        out.write(str(source))
+                    with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'a') as out:
+                        out.write("dune_add_pybind11_module(NAME " + moduleName + " EXCLUDE_FROM_ALL)\n")
+                    # update build system
+                    self.compile()
 
-            self.compile(moduleName)
+                self.compile(moduleName)
 
-        comm.barrier()
+            comm.barrier()
+            module = importlib.import_module("dune.generated." + moduleName)
 
-        module = importlib.import_module("dune.generated." + moduleName)
         if self.force:
+            logger.info("Reloading " + pythonName)
             module = reload_module(module)
         return module
