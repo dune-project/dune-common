@@ -27,6 +27,10 @@ class Version:
             self.major = 0
             self.minor = 0
             self.revision = 0
+        elif isinstance(s, Version):
+            self.major = s.major
+            self.minor = s.minor
+            self.revision = s.revision
         else:
             match = re.match('(?P<major>[0-9]+)[.](?P<minor>[0-9]+)([.](?P<revision>[0-9]+))?', s)
             if not match:
@@ -480,6 +484,13 @@ def get_dune_py_dir():
     raise RuntimeError('Unable to determine location for dune-py module. Please set the environment variable "DUNE_PY_DIR".')
 
 
+def get_dune_py_version():
+    # change this version on the following events:
+    # - a release (major version numbers)
+    # - any incompatible change to the dune-py module (revison number)
+    return Version("2.5.0")
+
+
 def get_cmake_definitions():
     definitions = {}
     try:
@@ -523,12 +534,17 @@ def make_dune_py_module(dune_py_dir=None):
             file.write('\n#include "generated_module.hh"\n')
 
         modules, _ = select_modules()
-        description = Description(module='dune-py', maintainer='dune@dune-project.org', depends=list(modules.values()))
+        description = Description(module='dune-py', version=get_dune_py_version(),  maintainer='dune@dune-project.org', depends=list(modules.values()))
         logger.debug('dune-py will depend on ' + ' '.join([m + (' ' + str(c) if c else '') for m, c in description.depends]))
         project.make_project(dune_py_dir, description, subdirs=[generated_dir])
     else:
-        if Description(descFile).name != 'dune-py':
-            raise RunetimeError('"' + dune_py_dir + '" already contains a different dune module.')
+        description = Description(descFile)
+        if description.name != 'dune-py':
+            raise RuntimeError('"' + dune_py_dir + '" already contains a different dune module.')
+        if description.version != get_dune_py_version():
+            logger.error('"' + dune_py_dir + '" contains version ' + str(description.version) + ' of the dune-py module, ' + str(get_dune_py_version()) + ' required.')
+            logger.error('If you updated dune-corepy, you can safely remove "' + dune_py_dir + '" and retry.')
+            raise RuntimeError('"' + dune_py_dir + '" contains a different version of the dune-py module.')
         logger.info('Using existing dune-py module in ' + dune_py_dir)
 
 
