@@ -107,6 +107,52 @@ namespace Dune {
 
     return std::string(dynamicBuffer.get());
   }
+
+  namespace TrimImpl {
+
+    // what trimLeft() and trimRight() consider whitespace by default.
+    static const std::string whitespace = " \t\n\r";
+
+  } // namespace TrimImpl
+
+  /**
+   * \brief Trim a string from the left
+   *
+   * \param s              The string to trim
+   * \param characterClass The set of characters to remove
+   *
+   * \return `s` with any leading characters from `characterClass` removed.
+   */
+  inline std::string
+  trimLeft(std::string const &s,
+           std::string const &characterClass = TrimImpl::whitespace)
+  {
+    std::size_t const firstAdmissible = s.find_first_not_of(characterClass);
+
+    if (firstAdmissible != std::string::npos)
+      return s.substr(firstAdmissible);
+    return std::string();
+  }
+
+  /**
+   * \brief Trim a string from the right
+   *
+   * \param s              The string to trim
+   * \param characterClass The set of characters to remove
+   *
+   * \return `s` with any trailing characters from `characterClass` removed.
+   */
+  inline std::string
+  trimRight(std::string const &s,
+            std::string const &characterClass = TrimImpl::whitespace)
+  {
+    std::size_t const lastAdmissible = s.find_last_not_of(characterClass);
+
+    if (lastAdmissible != std::string::npos)
+      return s.substr(0, lastAdmissible + 1);
+    return std::string();
+  }
+
   /** @} */
 
 }

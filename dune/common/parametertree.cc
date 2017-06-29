@@ -196,24 +196,6 @@ std::string ParameterTree::get(const std::string& key, const char* defaultValue)
     return defaultValue;
 }
 
-std::string ParameterTree::ltrim(const std::string& s)
-{
-  std::size_t firstNonWS = s.find_first_not_of(" \t\n\r");
-
-  if (firstNonWS!=std::string::npos)
-    return s.substr(firstNonWS);
-  return std::string();
-}
-
-std::string ParameterTree::rtrim(const std::string& s)
-{
-  std::size_t lastNonWS = s.find_last_not_of(" \t\n\r");
-
-  if (lastNonWS!=std::string::npos)
-    return s.substr(0, lastNonWS+1);
-  return std::string();
-}
-
 std::vector<std::string> ParameterTree::split(const std::string & s) {
   std::vector<std::string> substrings;
   std::size_t front = 0, back = 0, size = 0;

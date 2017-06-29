@@ -25,6 +25,7 @@
 #include <dune/common/classname.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
+#include <dune/common/stringutility.hh>
 
 namespace Dune {
 
@@ -215,8 +216,6 @@ namespace Dune {
     std::map<std::string, std::string> values_;
     std::map<std::string, ParameterTree> subs_;
 
-    static std::string ltrim(const std::string& s);
-    static std::string rtrim(const std::string& s);
     static std::vector<std::string> split(const std::string & s);
 
     // parse into a fixed-size range of iterators
@@ -270,7 +269,7 @@ namespace Dune {
   struct ParameterTree::Parser<std::basic_string<char, traits, Allocator> > {
     static std::basic_string<char, traits, Allocator>
     parse(const std::string& str) {
-      std::string trimmed = ltrim(rtrim(str));
+      std::string trimmed = trimLeft(trimRight(str));
       return std::basic_string<char, traits, Allocator>(trimmed.begin(),
                                                         trimmed.end());
     }

@@ -31,10 +31,6 @@ namespace Dune {
    */
   class ParameterTreeParser
   {
-
-    static std::string ltrim(const std::string& s);
-    static std::string rtrim(const std::string& s);
-
   public:
 
     /** @name Parsing methods for the INITree file format

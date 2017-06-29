@@ -20,25 +20,6 @@
 #include <dune/common/exceptions.hh>
 #include <dune/common/iniparser.hh>
 
-std::string Dune::ParameterTreeParser::ltrim(const std::string& s)
-{
-  std::size_t firstNonWS = s.find_first_not_of(" \t\n\r");
-
-  if (firstNonWS!=std::string::npos)
-    return s.substr(firstNonWS);
-  return std::string();
-}
-
-std::string Dune::ParameterTreeParser::rtrim(const std::string& s)
-{
-  std::size_t lastNonWS = s.find_last_not_of(" \t\n\r");
-
-  if (lastNonWS!=std::string::npos)
-    return s.substr(0, lastNonWS+1);
-  return std::string();
-}
-
-
 
 void Dune::ParameterTreeParser::readINITree(std::string file,
                                             ParameterTree& pt,

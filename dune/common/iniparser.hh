@@ -5,6 +5,7 @@
 #include <string>
 
 #include <dune/common/exceptions.hh>
+#include <dune/common/stringutility.hh>
 
 namespace Dune
 {
@@ -22,22 +23,6 @@ public:
 private:
   std::string message_;
 };
-
-std::string ltrim(std::string const &s, std::string const &characterClass) {
-  std::size_t const firstAdmissible = s.find_first_not_of(characterClass);
-
-  if (firstAdmissible != std::string::npos)
-    return s.substr(firstAdmissible);
-  return std::string();
-}
-
-std::string rtrim(std::string const &s, std::string const &characterClass) {
-  std::size_t const lastAdmissible = s.find_last_not_of(characterClass);
-
-  if (lastAdmissible != std::string::npos)
-    return s.substr(0, lastAdmissible + 1);
-  return std::string();
-}
 
 // Parse the ini-format information from instream. For each key-value pair,
 // call store(prefix, key, value).
@@ -80,7 +65,7 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
 
       // Only set the prefix if the entire line could be parsed.
       prefix = line.substr(prefixStart, prefixEnd - prefixStart);
-      prefix = ltrim(rtrim(prefix, ws), ws);
+      prefix = trimLeft(trimRight(prefix, ws), ws);
       break;
     }
     default: { // Handle anything else (i.e., assignments)
@@ -97,7 +82,7 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
       size_t const equalSignPosition = keyEnd;
 
       key = line.substr(contentStart, keyEnd - keyStart);
-      key = ltrim(rtrim(key, ws), ws);
+      key = trimLeft(trimRight(key, ws), ws);
       if (key == "")
         throw ParsingException(line, "key cannot be empty");
 
@@ -150,7 +135,7 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
         valueEnd = line.find_first_of(simpleStringBlacklist, valueStart);
         if (valueStart != valueEnd)
           value = line.substr(valueStart, valueEnd - valueStart);
-        value = ltrim(rtrim(value, ws), ws);
+        value = trimLeft(trimRight(value, ws), ws);
       }
 
       // After the content, only comments are allowed
