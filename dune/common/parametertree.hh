@@ -7,7 +7,9 @@
  * \brief A hierarchical structure of string parameters
  */
 
+#include <algorithm>
 #include <array>
+#include <bitset>
 #include <cstddef>
 #include <iostream>
 #include <istream>
@@ -19,12 +21,10 @@
 #include <string>
 #include <typeinfo>
 #include <vector>
-#include <algorithm>
-#include <bitset>
 
+#include <dune/common/classname.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
-#include <dune/common/classname.hh>
 
 namespace Dune {
 
