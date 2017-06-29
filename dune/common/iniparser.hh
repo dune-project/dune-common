@@ -6,7 +6,10 @@
 
 #include <dune/common/exceptions.hh>
 
-class ParsingException : public Dune::Exception {
+namespace Dune
+{
+
+class ParsingException : public Exception {
 public:
   ParsingException(std::string line, std::string reason = "") {
     message_ = "Unable to parse line: " + line;
@@ -160,4 +163,7 @@ template <class Action> void parse(std::istream &instream, Action &&store) {
     }
   }
 }
+
+} // namespace Dune
+
 #endif

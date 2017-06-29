@@ -64,8 +64,8 @@ void Dune::ParameterTreeParser::readINITree(std::istream& in, ParameterTree& pt,
                                             const std::string srcname,
                                             bool overwrite) {
   std::set<std::string> keysInFile;
-  parse(in, [&](std::string const& prefix, std::string const& key,
-                std::string const& value) {
+  Dune::parse(in, [&](std::string const& prefix, std::string const& key,
+                      std::string const& value) {
     // NB: zero sanity-checking of keys and prefixes is done at this point
     std::string full_key = prefix == "" ? key : (prefix + "." + key);
     if (keysInFile.count(full_key) != 0)

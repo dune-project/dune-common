@@ -18,14 +18,14 @@ bool parsesTo(std::string input, std::string key, std::string value) {
     sstream << input << std::endl;
 
     std::map<std::string, std::string> map;
-    parse(sstream, [&](std::string const &p, std::string const &k,
-                       std::string const &v) {
+    Dune::parse(sstream, [&](std::string const &p, std::string const &k,
+                             std::string const &v) {
       std::string full_key = p == "" ? k : (p + "." + k);
       map[full_key] = v;
     });
     std::cout << "# getting  : " << key << " = " << map[key] << std::endl;
     ret = map[key] == value;
-  } catch (ParsingException const &e) {
+  } catch (Dune::ParsingException const &e) {
     std::cout << "# exception: " << e << std::endl;
     ret = false;
   }
@@ -44,10 +44,10 @@ bool failsToParse(std::string input) {
 
 
     std::map<std::string, std::string> map;
-    parse(sstream, [&](std::string const &p, std::string const &k,
-                       std::string const &v) {});
+    Dune::parse(sstream, [&](std::string const &p, std::string const &k,
+                             std::string const &v) {});
     ret = false;
-  } catch (ParsingException const &e) {
+  } catch (Dune::ParsingException const &e) {
     std::cout << "# exception: " << e << std::endl;
     ret = true;
   }
