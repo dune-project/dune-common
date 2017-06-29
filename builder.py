@@ -34,14 +34,14 @@ class Builder:
         except:
             dune.__path__.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
 
-        tagfile = os.path.join(self.dune_py_dir, ".noconfigure")
-        if not os.path.isfile(tagfile):
-            if comm.rank == 0:
-                dune.common.module.make_dune_py_module(self.dune_py_dir)
-                output = dune.common.module.build_dune_py_module(self.dune_py_dir)
-            comm.barrier()
-        else:
-            logger.info('using pre configured dune-py module')
+        if comm.rank == 0:
+            dune.common.module.make_dune_py_module(self.dune_py_dir)
+            tagfile = os.path.join(self.dune_py_dir, ".noconfigure")
+            if not os.path.isfile(tagfile):
+                dune.common.module.build_dune_py_module(self.dune_py_dir)
+            else:
+                logger.info('using pre configured dune-py module')
+        comm.barrier()
 
     def compile(self, target='all'):
         cmake_args = ["cmake", "--build", self.dune_py_dir, "--target", target]
