@@ -8,5 +8,4 @@ add_python_targets(common
   project
 )
 
-add_library(_common SHARED _common.cc)
-set_target_properties(_common PROPERTIES PREFIX "")
+dune_add_pybind11_module(NAME _common)

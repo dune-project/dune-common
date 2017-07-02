@@ -6,11 +6,13 @@ import re
 import subprocess
 
 import dune.common.module
+
+from dune.common.compatibility import buffer_to_str
 from dune.generator import builder
 
 logger = logging.getLogger(__name__)
 
-from dune.generator.builder import buffer_to_str
+ConfigurationError = builder.ConfigurationError
 
 def have(identifier):
     '''check if an identifier is defined equal to 1 in the dune-py config.h file.
@@ -23,10 +25,10 @@ def have(identifier):
     matches = [match for match in [re.match('^[ ]*#define[ ]+' + identifier.strip() + '[ ]+1$', line) for line in open(config)] if match is not None]
     if not matches:
         logger.info("checkconfiguration.have(" + identifier + ") failed - identifier not defined in " + config)
-        raise builder.ConfigurationError(identifier + " is not set in dune-py's config.h")
+        raise ConfigurationError(identifier + " is not set in dune-py's config.h")
     elif matches.__len__() > 1:
         logger.info("checkconfiguration.have(" + identifier + ") failed - multiple definitions in " + config)
-        raise builder.ConfigurationError(identifier + " found multiple times in dune-py's config.h")
+        raise ConfigurationError(identifier + " found multiple times in dune-py's config.h")
 
 def preprocessorTest(tests):
     '''perform preprocessore checks.
@@ -48,11 +50,9 @@ def preprocessorTest(tests):
         i += 1
     source = source + "return 0;\n}\n"
 
-    returncode, stdout, stderr = builder.compile(source, "generated_test")
-    if returncode > 0:
-        logger.error(buffer_to_str(stderr))
-        raise builder.CompileError(buffer_to_str(stderr))
-
+    with open(os.path.join(builder.generated_dir, "generated_module.hh"), 'w') as out:
+        out.write(source)
+    builder.compile("generated_test")
 
     test_args = ["./generated_test"]
     test = subprocess.Popen(test_args, cwd=builder.generated_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -63,4 +63,4 @@ def preprocessorTest(tests):
     if returncode > 0:
         logger.debug("failed testing:\n"+source)
         logger.critical("checking "+tests[returncode-1][0]+" failed: "+tests[returncode-1][1])
-        raise builder.ConfigurationError(tests[returncode-1][1])
+        raise ConfigurationError(tests[returncode-1][1])

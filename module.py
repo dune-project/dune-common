@@ -27,6 +27,10 @@ class Version:
             self.major = 0
             self.minor = 0
             self.revision = 0
+        elif isinstance(s, Version):
+            self.major = s.major
+            self.minor = s.minor
+            self.revision = s.revision
         else:
             match = re.match('(?P<major>[0-9]+)[.](?P<minor>[0-9]+)([.](?P<revision>[0-9]+))?', s)
             if not match:
@@ -480,6 +484,13 @@ def get_dune_py_dir():
     raise RuntimeError('Unable to determine location for dune-py module. Please set the environment variable "DUNE_PY_DIR".')
 
 
+def get_dune_py_version():
+    # change this version on the following events:
+    # - a release (major version numbers)
+    # - any incompatible change to the dune-py module (revison number)
+    return Version("2.5.0")
+
+
 def get_cmake_definitions():
     definitions = {}
     try:
@@ -508,36 +519,32 @@ def make_dune_py_module(dune_py_dir=None):
         if not os.path.isdir(generated_dir):
             os.makedirs(generated_dir)
 
-        cmake_content = ['add_library(generated_module SHARED EXCLUDE_FROM_ALL generated_module.cc)',
-                         'target_include_directories(generated_module PRIVATE ${CMAKE_CURRENT_BINARY_DIR})',
-                         'add_dune_mpi_flags(generated_module)',
-                         'set_target_properties(generated_module PROPERTIES PREFIX "")',
-                         'target_compile_definitions(generated_module PRIVATE USING_COREPY)',
-                         'add_executable(generated_test EXCLUDE_FROM_ALL generated_test.cc)',
+        cmake_content = ['add_executable(generated_test EXCLUDE_FROM_ALL generated_test.cc)',
                          'add_dune_mpi_flags(generated_test)',
                          'target_compile_definitions(generated_test PRIVATE USING_COREPY)',
-                         'target_link_libraries( generated_test ${DUNE_LIBS} )',
-                         'file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/__init__.py")']
+                         'target_link_libraries(generated_test ${DUNE_LIBS})',
+                         'file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/__init__.py")',
+                         '',
+                         '# The builder will append rules for dynamically generated modules, here']
         project.write_cmake_file(generated_dir, cmake_content)
 
-        with open(os.path.join(generated_dir, 'generated_module.cc'), 'w') as file:
-            file.write('#include <config.h>\n\n')
-            file.write('#define USING_COREPY 1\n\n')
-            file.write('#include <dune/corepy/common/typeregistry.hh>\n')
-            file.write('#include <dune/corepy/pybind11/pybind11.h>\n')
-            file.write('\n#include "generated_module.hh"\n')
         with open(os.path.join(generated_dir, 'generated_test.cc'), 'w') as file:
             file.write('#include <config.h>\n\n')
             file.write('#define USING_COREPY 1\n\n')
             file.write('\n#include "generated_module.hh"\n')
 
         modules, _ = select_modules()
-        description = Description(module='dune-py', maintainer='dune@lists.dune-project.org', depends=list(modules.values()))
+        description = Description(module='dune-py', version=get_dune_py_version(),  maintainer='dune@lists.dune-project.org', depends=list(modules.values()))
         logger.debug('dune-py will depend on ' + ' '.join([m + (' ' + str(c) if c else '') for m, c in description.depends]))
         project.make_project(dune_py_dir, description, subdirs=[generated_dir])
     else:
-        if Description(descFile).name != 'dune-py':
-            raise RunetimeError('"' + dune_py_dir + '" already contains a different dune module.')
+        description = Description(descFile)
+        if description.name != 'dune-py':
+            raise RuntimeError('"' + dune_py_dir + '" already contains a different dune module.')
+        if description.version != get_dune_py_version():
+            logger.error('"' + dune_py_dir + '" contains version ' + str(description.version) + ' of the dune-py module, ' + str(get_dune_py_version()) + ' required.')
+            logger.error('If you updated dune-corepy, you can safely remove "' + dune_py_dir + '" and retry.')
+            raise RuntimeError('"' + dune_py_dir + '" contains a different version of the dune-py module.')
         logger.info('Using existing dune-py module in ' + dune_py_dir)
 
 
