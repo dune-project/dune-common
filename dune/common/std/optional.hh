@@ -7,6 +7,20 @@
 
 #include <dune/common/typeutilities.hh>
 
+#ifdef DUNE_HAVE_CXX_OPTIONAL
+
+#include <optional>
+
+namespace Dune {
+  namespace Std {
+    template< class T >
+    using Optional = std::optional< T >;
+  }
+}
+
+#else
+
+// In case of C++ standard < 17 we take the fallback implementation
 namespace Dune {
 
 namespace Std  {
@@ -182,4 +196,5 @@ namespace Std  {
 
 } // namespace Dune
 
+#endif // #ifdef DUNE_HAVE_CXX_OPTIONAL
 #endif // #ifndef DUNE_COMMON_STD_OPTIONAL_HH
