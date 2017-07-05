@@ -22,6 +22,9 @@
 #    :code:`DUNE_HAVE_CXX_CLASS_TEMPLATE_ARGUMENT_DEDUCTION`
 #       True if C++17's class template argument deduction is supported
 #
+#    :code:`DUNE_HAVE_CXX_OPTIONAL`
+#       True if C++17's optional implementation is supported
+#
 # .. cmake_variable:: DISABLE_CXX_VERSION_CHECK
 #
 #    You may set this variable to TRUE to disable checking for
@@ -347,6 +350,21 @@ check_cxx_source_compiles("
   }
 " DUNE_HAVE_CXX_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
   )
+
+
+# support for C++17's optional implementation
+check_cxx_source_compiles("
+  #include <optional>
+  #include <string>
+
+  int main()
+  {
+    std::optional< std::string > a;
+    std::string b = a.value_or( \"empty\" );
+  }
+" DUNE_HAVE_CXX_OPTIONAL
+  )
+
 
 # find the threading library
 # Use a copy FindThreads from CMake 3.1 due to its support of pthread
