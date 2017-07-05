@@ -114,6 +114,18 @@ namespace Std  {
     }
 
     //! Get reference to internal T
+    const T& operator* () const
+    {
+      return *p_;
+    }
+
+    //! Get mutable reference to internal T
+    T& operator* ()
+    {
+      return *p_;
+    }
+
+    //! Get reference to internal T
     const T& value() const
     {
       return *p_;
@@ -123,6 +135,12 @@ namespace Std  {
     T& value()
     {
       return *p_;
+    }
+
+    template< class U >
+    T value_or ( U&& default_value )
+    {
+       return bool(*this) ? **this : static_cast<T>(std::forward<U>(default_value));
     }
 
     //! Construct internal T from given arguments
@@ -142,6 +160,16 @@ namespace Std  {
         p_->~T();
         p_ = nullptr;
       }
+    }
+
+    void reset ()
+    {
+      release();
+    }
+
+    void swap ( Optional< T >&other )
+    {
+      std::swap( p_, other.p_ );
     }
 
   private:
