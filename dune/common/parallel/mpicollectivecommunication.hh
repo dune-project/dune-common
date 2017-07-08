@@ -11,21 +11,18 @@
    \ingroup ParallelCommunication
  */
 
-#include <iostream>
-#include <complex>
+#if HAVE_MPI
+
 #include <algorithm>
 #include <functional>
 #include <memory>
 
-#include <dune/common/exceptions.hh>
-#include <dune/common/binaryfunctions.hh>
-
-#include "collectivecommunication.hh"
-#include "mpitraits.hh"
-
-#if HAVE_MPI
-// MPI header
 #include <mpi.h>
+
+#include <dune/common/binaryfunctions.hh>
+#include <dune/common/exceptions.hh>
+#include <dune/common/parallel/collectivecommunication.hh>
+#include <dune/common/parallel/mpitraits.hh>
 
 namespace Dune
 {
@@ -340,5 +337,6 @@ namespace Dune
   };
 } // namespace dune
 
-#endif
+#endif // HAVE_MPI
+
 #endif

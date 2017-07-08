@@ -3,28 +3,26 @@
 #ifndef DUNE_MPITRAITS_HH
 #define DUNE_MPITRAITS_HH
 
-#if HAVE_MPI
-#include <mpi.h>
-#endif
+/** @addtogroup ParallelCommunication
+ *
+ * @{
+ */
+/**
+ * @file
+ * @brief Traits classes for mapping types onto MPI_Datatype.
+ * @author Markus Blatt
+ */
 
-#include <cstddef>
+#if HAVE_MPI
+
 #include <cstdint>
 #include <type_traits>
 #include <utility>
 
+#include <mpi.h>
+
 namespace Dune
 {
-  /** @addtogroup ParallelCommunication
-   *
-   * @{
-   */
-  /**
-   * @file
-   * @brief Traits classes for mapping types onto MPI_Datatype.
-   * @author Markus Blatt
-   */
-
-#if HAVE_MPI
   /**
    * @brief A traits class describing the mapping of types onto MPI_Datatypes.
    *
@@ -57,7 +55,6 @@ namespace Dune
   MPI_Datatype MPITraits<T>::datatype = MPI_DATATYPE_NULL;
 
 #ifndef DOXYGEN
-#if HAVE_MPI
 
   // A Macro for defining traits for the primitive data types
 #define ComposeMPITraits(p,m) \
@@ -190,10 +187,13 @@ namespace Dune
 
   template<typename T1, typename T2>
   MPI_Datatype MPITraits<std::pair<T1,T2> >::type=MPI_DATATYPE_NULL;
-#endif
-#endif
-#endif
-  /** @} */
-}
+
+#endif // !DOXYGEN
+
+} // namespace Dune
+
+#endif // HAVE_MPI
+
+/** @} group ParallelCommunication */
 
 #endif

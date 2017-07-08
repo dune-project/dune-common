@@ -3,14 +3,19 @@
 #ifndef DUNE_MPIHELPER
 #define DUNE_MPIHELPER
 
-#include <cassert>
-#include "collectivecommunication.hh"
 #if HAVE_MPI
-#include "mpi.h"
-#include "mpicollectivecommunication.hh"
+#include <cassert>
 #endif
 
+#if HAVE_MPI
+#include <mpi.h>
+#endif
+
+#include <dune/common/parallel/collectivecommunication.hh>
+#if HAVE_MPI
+#include <dune/common/parallel/mpicollectivecommunication.hh>
 #include <dune/common/stdstreams.hh>
+#endif
 #include <dune/common/visibility.hh>
 
 namespace Dune
@@ -274,7 +279,7 @@ namespace Dune
     MPIHelper(const MPIHelper&);
     MPIHelper& operator=(const MPIHelper);
   };
-#else
+#else // !HAVE_MPI
   // We do not have MPI therefore FakeMPIHelper
   // is the MPIHelper
   /**
@@ -283,7 +288,7 @@ namespace Dune
    */
   typedef FakeMPIHelper MPIHelper;
 
-#endif
+#endif // !HAVE_MPI
 
 } // end namespace Dune
 #endif
