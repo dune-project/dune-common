@@ -61,6 +61,8 @@
 /* Define to 1 if you have <sys/mman.h>. */
 #cmakedefine HAVE_SYS_MMAN_H 1
 
+#define HAVE_TBB ${HAVE_TBB}
+
 /* begin private */
 
 /* Name of package */

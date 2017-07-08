@@ -28,6 +28,8 @@ find_package(Inkscape)
 include(UseInkscape)
 include(FindMProtect)
 
+find_package(TBB OPTIONAL_COMPONENTS cpf allocator)
+
 # try to find the Vc library
 find_package(Vc)
 include(AddVcFlags)
