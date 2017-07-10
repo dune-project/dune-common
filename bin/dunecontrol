@@ -769,7 +769,6 @@ usage () {
     echo "                      not built successfully on the previous run)"
     echo "      --skipfirst     skip the first module (use with --resume)"
     echo "      --opts=FILE     load default options from FILE"
-    echo "                      (see dune-common/doc/example.opts)"
     echo "      --builddir=NAME make out-of-source builds in a subdir NAME."
     echo "                      This directory is created inside each module."
     echo "                      If NAME is an absolute path, the build directory "
