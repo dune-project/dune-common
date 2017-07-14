@@ -156,8 +156,8 @@ namespace Dune {
         const char jobz = 'n'; // only calculate eigenvalues
         const char uplo = 'u'; // use upper triangular matrix
 
-        // length of matrix vector
-        const long int w = N * N ;
+        // length of matrix vector, LWORK >= max(1,3*N-1)
+        const long int lwork = 3*N -1 ;
 
         // matrix to put into dsyev
         double matrixVector[dim * dim];
@@ -173,14 +173,14 @@ namespace Dune {
         }
 
         // working memory
-        double workSpace[dim * dim];
+        double workSpace[lwork];
 
         // return value information
         long int info = 0;
 
         // call LAPACK routine (see fmatrixev.cc)
         eigenValuesLapackCall(&jobz, &uplo, &N, &matrixVector[0], &N,
-                              &eigenvalues[0], &workSpace[0], &w, &info);
+                              &eigenvalues[0], &workSpace[0], &lwork, &info);
 
         if( info != 0 )
         {
@@ -189,7 +189,7 @@ namespace Dune {
         }
       }
     }
-    /** \brief calculates the eigenvalues of a symmetric field matrix
+    /** \brief calculates the eigenvalues of a non-symmetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
         \param[out] eigenValues FieldVector that contains eigenvalues in
                     ascending order
