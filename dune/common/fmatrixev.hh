@@ -102,20 +102,19 @@ namespace Dune {
       const K pi = MathematicalConstants<K>::pi();
       K p1 = matrix[0][1]*matrix[0][1] + matrix[0][2]*matrix[0][2] + matrix[1][2]*matrix[1][2];
 
-      if (p1 <= 1e-8)
-      {
-        // A is diagonal.
-        eigenvalues[0] = matrix[0][0];
-        eigenvalues[1] = matrix[1][1];
-        eigenvalues[2] = matrix[2][2];
-      }
-      else
+      // this block is only here to produce a smaller diff
       {
         // q = trace(A)/3
         K q = (matrix[0][0] + matrix[1][1] + matrix[2][2]) / 3;
 
         K p2 = (matrix[0][0] - q)*(matrix[0][0] - q) + (matrix[1][1] - q)*(matrix[1][1] - q) + (matrix[2][2] - q)*(matrix[2][2] - q) + 2 * p1;
         K p = sqrt(p2 / 6);
+
+        if (p == 0) {
+          eigenvalues = q;
+          return;
+        }
+
         // B = (1 / p) * (A - q * I);       // I is the identity matrix
         FieldMatrix<K,3,3> B;
         K pinv = 1 / p;
