@@ -135,7 +135,6 @@ namespace Dune {
           r = 1;
         K phi = acos(r) / 3;
 
-        // the eigenvalues satisfy eig[2] <= eig[1] <= eig[0]
         eigenvalues[2] = q + 2 * p * cos(phi);
         eigenvalues[0] = q + 2 * p * cos(phi + (2*pi/3));
         eigenvalues[1] = 3 * q - eigenvalues[0] - eigenvalues[2];     // since trace(matrix) = eig1 + eig2 + eig3
