@@ -96,6 +96,7 @@ namespace Dune {
     {
       using std::sqrt;
       using std::acos;
+      using std::cos;
       const K pi = MathematicalConstants<K>::pi();
       K p1 = matrix[0][1]*matrix[0][1] + matrix[0][2]*matrix[0][2] + matrix[1][2]*matrix[1][2];
 
