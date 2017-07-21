@@ -23,9 +23,11 @@ namespace Dune {
 
 // symmetric matrices
 #define DSYEV_FORTRAN FC_FUNC (dsyev, DSYEV)
+#define SSYEV_FORTRAN FC_FUNC (ssyev, SSYEV)
 
 // generic matrices
 #define DGEEV_FORTRAN FC_FUNC (dgeev, DGEEV)
+#define SGEEV_FORTRAN FC_FUNC (sgeev, SGEEV)
 
 extern "C" {
 
@@ -94,6 +96,9 @@ extern "C" {
   extern void DSYEV_FORTRAN(const char* jobz, const char* uplo, const long
                             int* n, double* a, const long int* lda, double* w,
                             double* work, const long int* lwork, long int* info);
+  extern void SSYEV_FORTRAN(const char* jobz, const char* uplo, const long
+                            int* n, float* a, const long int* lda, float* w,
+                            float* work, const long int* lwork, long int* info);
 
   /*
    *
@@ -199,6 +204,10 @@ extern "C" {
                             int* n, double* a, const long int* lda, double* wr, double* wi, double* vl,
                             const long int* ldvl, double* vr, const long int* ldvr, double* work,
                             const long int* lwork, const long int* info);
+  extern void SGEEV_FORTRAN(const char* jobvl, const char* jobvr, const long
+                            int* n, float* a, const long int* lda, float* wr, float* wi, float* vl,
+                            const long int* ldvl, float* vr, const long int* ldvr, float* work,
+                            const long int* lwork, const long int* info);
 } // end extern C
 #endif
 
@@ -244,6 +253,31 @@ struct LapackHelper<double, dim>
   }
 };
 
+template <int dim>
+struct LapackHelper<float, dim>
+{
+  using K = float;
+  void static callXSYEV(const char* jobz, const char* uplo, const long
+                        int* n, K* a, const long int* lda, K* w,
+                        K* work, const long int* lwork, long int* info) {
+#if HAVE_LAPACK
+    SSYEV_FORTRAN(jobz, uplo, n, a, lda, w, work, lwork, info);
+#else
+    DUNE_THROW(Dune::NotImplemented, "LAPACK not found!");
+#endif
+  }
+
+  void static callXGEEV(const char* jobvl, const char* jobvr, const long
+                        int* n, K* a, const long int* lda, K* wr, K* wi, K* vl,
+                        const long int* ldvl, K* vr, const long int* ldvr, K* work,
+                        const long int* lwork, const long int* info) {
+#if HAVE_LAPACK
+    SGEEV_FORTRAN(jobvl, jobvr, n, a, lda, wr, wi, vl, ldvl, vr, ldvr,
+                  work, lwork, info);
+    DUNE_THROW(Dune::NotImplemented, "LAPACK not found!");
+#endif
+  }
+};
 
 template <typename K, int n>
 struct DuneEigenvalueHelper
