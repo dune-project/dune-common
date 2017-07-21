@@ -18,7 +18,6 @@ dune_add_library("dunecommon"
   ${debugallocator_src}
   dynmatrixev.cc
   exceptions.cc
-  fmatrixev.cc
   ios_state.cc
   parametertree.cc
   parametertreeparser.cc
