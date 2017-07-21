@@ -62,12 +62,14 @@ namespace Dune {
       const K detM = matrix[0][0] * matrix[1][1] - matrix[1][0] * matrix[0][1];
       const K p = 0.5 * (matrix[0][0] + matrix [1][1]);
       K q = p * p - detM;
-      if( q < 0 && q > -1e-14 ) q = 0;
-      if (q < 0)
-      {
-        std::cout << matrix << std::endl;
-        // Complex eigenvalues are either caused by non-symmetric matrices or by round-off errors
-        DUNE_THROW(MathError, "Complex eigenvalue detected (which this implementation cannot handle).");
+      if (q < 0) {
+        if (q > -1e-14)
+          q = 0;
+        else {
+          std::cout << matrix << std::endl;
+          // Complex eigenvalues are either caused by non-symmetric matrices or by round-off errors
+          DUNE_THROW(MathError, "Complex eigenvalue detected (which this implementation cannot handle).");
+        }
       }
 
       // get square root
@@ -110,29 +112,28 @@ namespace Dune {
       else
       {
         // q = trace(A)/3
-        K q = 0;
-        for (int i=0; i<3; i++)
-          q += matrix[i][i]/3.0;
+        K q = (matrix[0][0] + matrix[1][1] + matrix[2][2]) / 3;
 
         K p2 = (matrix[0][0] - q)*(matrix[0][0] - q) + (matrix[1][1] - q)*(matrix[1][1] - q) + (matrix[2][2] - q)*(matrix[2][2] - q) + 2 * p1;
         K p = sqrt(p2 / 6);
         // B = (1 / p) * (A - q * I);       // I is the identity matrix
         FieldMatrix<K,3,3> B;
-        for (int i=0; i<3; i++)
-          for (int j=0; j<3; j++)
-            B[i][j] = (1/p) * (matrix[i][j] - q*(i==j));
+        K pinv = 1 / p;
+        for (int i=0; i<3; i++) {
+          B[i][i] = pinv * (matrix[i][i] - q);
+          for (int j=0; j<i; j++)
+            B[i][j] = B[j][i] = pinv * matrix[i][j];
+        }
 
-        K r = B.determinant() / 2.0;
+        K r = B.determinant() / 2;
 
-        // In exact arithmetic for a symmetric matrix  -1 <= r <= 1
+        // In exact arithmetic for a symmetric matrix,  -1 <= r <= 1
         // but computation error can leave it slightly outside this range.
-        K phi;
-        if (r <= -1)
-          phi = pi / 3.0;
-        else if (r >= 1)
-          phi = 0;
-        else
-          phi = acos(r) / 3;
+        if (r < -1)
+          r = -1;
+        else if (r > 1)
+          r = 1;
+        K phi = acos(r) / 3;
 
         // the eigenvalues satisfy eig[2] <= eig[1] <= eig[0]
         eigenvalues[2] = q + 2 * p * cos(phi);
