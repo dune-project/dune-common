@@ -25,9 +25,15 @@ namespace Dune {
 #define DSYEV_FORTRAN FC_FUNC (dsyev, DSYEV)
 #define SSYEV_FORTRAN FC_FUNC (ssyev, SSYEV)
 
+// hermitian matrices
+#define CHEEV_FORTRAN FC_FUNC (cheev, CHEEV)
+#define ZHEEV_FORTRAN FC_FUNC (zheev, ZHEEV)
+
 // generic matrices
 #define DGEEV_FORTRAN FC_FUNC (dgeev, DGEEV)
 #define SGEEV_FORTRAN FC_FUNC (sgeev, SGEEV)
+#define CGEEV_FORTRAN FC_FUNC (cgeev, CGEEV)
+#define ZGEEV_FORTRAN FC_FUNC (zgeev, ZGEEV)
 
 extern "C" {
 
@@ -99,6 +105,14 @@ extern "C" {
   extern void SSYEV_FORTRAN(const char* jobz, const char* uplo, const long
                             int* n, float* a, const long int* lda, float* w,
                             float* work, const long int* lwork, long int* info);
+
+  // TODO: Document
+  extern void CHEEV_FORTRAN(const char* jobz, const char* uplo, const long
+                            int* n, std::complex<float>* a, const long int* lda, float* w,
+                            std::complex<float>* work, const long int* lwork, float *rwork, long int* info);
+  extern void ZHEEV_FORTRAN(const char* jobz, const char* uplo, const long
+                            int* n, std::complex<double>* a, const long int* lda, double* w,
+                            std::complex<double>* work, const long int* lwork, double *rwork, long int* info);
 
   /*
    *
@@ -208,6 +222,16 @@ extern "C" {
                             int* n, float* a, const long int* lda, float* wr, float* wi, float* vl,
                             const long int* ldvl, float* vr, const long int* ldvr, float* work,
                             const long int* lwork, const long int* info);
+
+  // TODO: Document
+  extern void CGEEV_FORTRAN(const char* jobvl, const char* jobvr, const long
+                            int* n, std::complex<float>* a, const long int* lda, std::complex<float>* w, std::complex<float>* vl,
+                            const long int* ldvl, std::complex<float>* vr, const long int* ldvr, std::complex<float>* work,
+                            const long int* lwork, float *rwork, const long int* info);
+  extern void ZGEEV_FORTRAN(const char* jobvl, const char* jobvr, const long
+                            int* n, std::complex<double>* a, const long int* lda, std::complex<double>* w, std::complex<double>* vl,
+                            const long int* ldvl, std::complex<double>* vr, const long int* ldvr, std::complex<double>* work,
+                            const long int* lwork, double *rwork, const long int* info);
 } // end extern C
 #endif
 
@@ -275,6 +299,62 @@ struct LapackHelper<float, dim>
 #if HAVE_LAPACK
     SGEEV_FORTRAN(jobvl, jobvr, n, a, lda, wr, wi, vl, ldvl, vr, ldvr,
                   work, lwork, info);
+#else
+    DUNE_THROW(Dune::NotImplemented, "LAPACK not found!");
+#endif
+  }
+};
+
+template <int dim>
+struct LapackHelper<std::complex<float>, dim>
+{
+  using K = std::complex<float>;
+  using KR = typename K::value_type;
+  void static callXHEEV(const char* jobz, const char* uplo, const long
+                        int* n, K* a, const long int* lda, KR* w,
+                        K* work, const long int* lwork, KR* rwork, long int* info) {
+#if HAVE_LAPACK
+    CHEEV_FORTRAN(jobz, uplo, n, a, lda, w, work, lwork, rwork, info);
+#else
+    DUNE_THROW(Dune::NotImplemented, "LAPACK not found!");
+#endif
+  }
+
+  void static callXGEEV(const char* jobvl, const char* jobvr, const long
+                        int* n, K* a, const long int* lda, K* w, K* vl,
+                        const long int* ldvl, K* vr, const long int* ldvr, K* work,
+                        const long int* lwork, KR* rwork, const long int* info) {
+#if HAVE_LAPACK
+    CGEEV_FORTRAN(jobvl, jobvr, n, a, lda, w, vl, ldvl, vr, ldvr,
+                  work, lwork, rwork, info);
+#else
+    DUNE_THROW(Dune::NotImplemented, "LAPACK not found!");
+#endif
+  }
+};
+
+template <int dim>
+struct LapackHelper<std::complex<double>, dim>
+{
+  using K = std::complex<double>;
+  using KR = typename K::value_type;
+  void static callXHEEV(const char* jobz, const char* uplo, const long
+                        int* n, K* a, const long int* lda, KR* w,
+                        K* work, const long int* lwork, KR* rwork, long int* info) {
+#if HAVE_LAPACK
+    ZHEEV_FORTRAN(jobz, uplo, n, a, lda, w, work, lwork, rwork, info);
+#else
+    DUNE_THROW(Dune::NotImplemented, "LAPACK not found!");
+#endif
+  }
+
+  void static callXGEEV(const char* jobvl, const char* jobvr, const long
+                        int* n, K* a, const long int* lda, K* w, K* vl,
+                        const long int* ldvl, K* vr, const long int* ldvr, K* work,
+                        const long int* lwork, KR* rwork, const long int* info) {
+#if HAVE_LAPACK
+    ZGEEV_FORTRAN(jobvl, jobvr, n, a, lda, w, vl, ldvl, vr, ldvr,
+                  work, lwork, rwork, info);
 #else
     DUNE_THROW(Dune::NotImplemented, "LAPACK not found!");
 #endif
@@ -430,6 +510,44 @@ struct LapackEigenvalueHelper
       eigenvalues[i] = { eigenR[i], eigenI[i] };
   }
 
+  void static eigenvaluesComplexGeneric(FieldMatrix<std::complex<K>, n, n> const &matrix,
+                                        FieldVector<std::complex<K>, n> &eigenvalues) {
+    const long int N = n;
+    const char jobvl = 'n';
+    const char jobvr = 'n';
+
+    // matrix to put into xgeev
+    std::complex<K> matrixVector[n * n];
+
+    // copy matrix
+    int row = 0;
+    for(int i=0; i<n; ++i)
+    {
+      for(int j=0; j<n; ++j, ++row)
+      {
+        matrixVector[ row ] = matrix[ i ][ j ];
+      }
+    }
+
+    // working memory
+    std::complex<K> work[2*n];
+    K rwork[2*n];
+
+    // return value information
+    long int info = 0;
+    long int lwork = 2*n;
+
+    LapackHelper<std::complex<K>, n>::callXGEEV(&jobvl, &jobvr, &N, &matrixVector[0], &N,
+                                                &eigenvalues[0], 0, &N, 0, &N, &work[0],
+                                                &lwork, &rwork[0], &info);
+
+    if( info != 0 )
+    {
+      std::cerr << "For matrix " << matrix << " eigenvalue calculation failed! " << std::endl;
+      DUNE_THROW(InvalidStateException,"eigenvalues: Eigenvalue calculation failed!");
+    }
+  }
+
   void static eigenvaluesRealSymmetric(FieldMatrix<K, n, n> const &matrix,
                                        FieldVector<K, n> &eigenvalues) {
     const long int N = n;
@@ -460,6 +578,45 @@ struct LapackEigenvalueHelper
 
     LapackHelper<K, n>::callXSYEV(&jobz, &uplo, &N, &matrixVector[0], &N,
                                   &eigenvalues[0], &workSpace[0], &lwork, &info);
+
+    if( info != 0 )
+    {
+      std::cerr << "For matrix " << matrix << " eigenvalue calculation failed! " << std::endl;
+      DUNE_THROW(InvalidStateException,"eigenvalues: Eigenvalue calculation failed!");
+    }
+  }
+
+  void static eigenvaluesComplexHermitian(FieldMatrix<std::complex<K>, n, n> const &matrix,
+                                          FieldVector<K, n> &eigenvalues) {
+    const long int N = n;
+    const char jobz = 'n'; // only calculate eigenvalues
+    const char uplo = 'u'; // use upper triangular matrix
+
+    // length of matrix vector, LWORK >= max(1,2*N-1)
+    const long int lwork = 2*n -1 ;
+
+    // matrix to put into dsyev
+    std::complex<K> matrixVector[n * n];
+
+    // copy matrix
+    int row = 0;
+    for(int i=0; i<n; ++i)
+    {
+      for(int j=0; j<n; ++j, ++row)
+      {
+        matrixVector[ row ] = matrix[ i ][ j ];
+      }
+    }
+
+    // working memory
+    std::complex<K> work[lwork];
+    K rwork[3*n-1]; // size max(1,3n-1)
+
+    // return value information
+    long int info = 0;
+
+    LapackHelper<std::complex<K>, n>::callXHEEV(&jobz, &uplo, &N, &matrixVector[0], &N,
+                                                &eigenvalues[0], &work[0], &lwork, &rwork[0], &info);
 
     if( info != 0 )
     {
