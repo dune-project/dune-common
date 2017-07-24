@@ -15,6 +15,7 @@
 
 #if HAVE_MPI
 
+#include <cstddef>
 #include <cstdint>
 #include <type_traits>
 #include <utility>
@@ -169,15 +170,15 @@ namespace Dune
       MPI_Datatype types[2] = {MPITraits<T1>::getType(),
                                MPITraits<T2>::getType()};
 
-      using Pair = std::pair<T1, T2>;
-      static_assert(std::is_standard_layout<Pair>::value, "offsetof() is only defined for standard layout types");
-      disp[0] = offsetof(Pair, first);
-      disp[1] = offsetof(Pair, second);
+      typedef std::pair<T1, T2> P;
+      static_assert(std::is_standard_layout<P>::value, "offsetof() is only defined for standard layout types");
+      disp[0] = offsetof(P, first);
+      disp[1] = offsetof(P, second);
 
       MPI_Datatype tmp;
       MPI_Type_create_struct(2, length, disp, types, &tmp);
 
-      MPI_Type_create_resized(tmp, 0, sizeof(Pair), &type);
+      MPI_Type_create_resized(tmp, 0, sizeof(P), &type);
       MPI_Type_commit(&type);
 
       MPI_Type_free(&tmp);
