@@ -1,4 +1,8 @@
 ---
+debian:10  gcc:c++17:
+  image: duneci/base:10
+  script: duneci-standard-test --opts=/duneci/opts.gcc.c++17
+
 debian:9--gcc:
   image: duneci/base:9
   script: duneci-standard-test
@@ -10,10 +14,6 @@ debian:9--clang:
 debian:8--gcc:
   image: duneci/base:8
   script: duneci-standard-test
-
-debian:8-backports--clang:
-  image: duneci/base:8-backports
-  script: duneci-standard-test --opts=/duneci/opts.clang
 
 ubuntu:16.04--gcc:
   image: duneci/base:16.04
