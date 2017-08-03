@@ -391,7 +391,7 @@ run_default_status () {
   local is_svn=""
   name="$(eval echo \$NAME_$module)"
 
-  if test -d .git; then is_git=1; fi
+  if test -e .git; then is_git=1; fi
   if test -d .svn; then is_svn=1; fi
   if test ! "$is_svn" -a ! "$is_git" ; then
     echo "module $name not under known version control"
@@ -469,7 +469,7 @@ run_default_vcsetup() {
   fi
 
   # Check for both a file and a directory to cope with Git submodules
-  if [ -d .git -o -f .git ] ; then
+  if [ -e .git ] ; then
 
     # Read Whitespace-Hook setting from dune.module file
     local SETUPGITHOOK="$($GREP -i "^[$BLANK]*Whitespace-Hook:" dune.module | cut -d ':' -f2 | eval $PARSER_TRIM | tr '[:upper:]' '[:lower:]')"
@@ -566,7 +566,7 @@ run_default_vcsetup() {
   fi
 
   # Run custom setup scripts
-  if [ -d .git -o -f .git -o -d .svn ]; then
+  if [ -e .git -o -d .svn ]; then
     if [ -d .vcsetup/run.d ]; then
       for SCRIPT in .vcsetup/run.d/* ; do
         if [ -x "$SCRIPT" ]; then
@@ -581,7 +581,7 @@ run_default_vcsetup() {
 run_default_update () {
   if test -d .svn; then
     svn update
-  elif test -d .git || test -f .git; then
+  elif test -e .git; then
       if test -d .git && test -d ".git/svn" && test -n "`git svn find-rev HEAD`"; then
           # If the current HEAD points to a SVN commit, update via git-svn
           git svn rebase
@@ -728,7 +728,7 @@ run_default_svn () {
 }
 
 run_default_git () {
-  if test -d .git; then
+  if test -e .git; then
     PARAMS="$CMD_FLAGS"
     eval git "$PARAMS"
   fi
