@@ -234,13 +234,6 @@ namespace Dune {
             << className<Value>()
             << " (" << n << " items were extracted successfully)");
       }
-      Value dummy;
-      s >> dummy;
-      // now extraction should have failed, and eof should be set
-      if(not s.fail() or not s.eof())
-        DUNE_THROW(RangeError, "as a range of "
-          << n << " items of type "
-          << className<Value>() << " (more items than the range can hold)");
     }
   };
 
