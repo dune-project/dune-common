@@ -20,7 +20,7 @@
 /*! \defgroup ParallelCommunication Parallel Communication
    \ingroup Common
 
-   \brief Abstractions for paralle computing
+   \brief Abstractions for parallel computing
 
    Dune offers an abstraction to the basic methods of parallel
    communication. It allows one to switch parallel features on and off,
