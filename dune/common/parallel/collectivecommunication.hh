@@ -20,7 +20,7 @@
 /*! \defgroup ParallelCommunication Parallel Communication
    \ingroup Common
 
-   \brief Abstractions for paralle computing
+   \brief Abstractions for parallel computing
 
    Dune offers an abstraction to the basic methods of parallel
    communication. It allows one to switch parallel features on and off,
@@ -326,7 +326,7 @@ namespace Dune
     template<typename T>
     int allgather(const T* sbuf, int count, T* rbuf) const
     {
-      for(T* end=sbuf+count; sbuf < end; ++sbuf, ++rbuf)
+      for(const T* end=sbuf+count; sbuf < end; ++sbuf, ++rbuf)
         *rbuf=*sbuf;
       return 0;
     }
