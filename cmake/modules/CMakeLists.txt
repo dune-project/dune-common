@@ -37,6 +37,7 @@ install(FILES
   FindPTScotch.cmake
   FindSphinx.cmake
   FindSuiteSparse.cmake
+  FindTBB.cmake
   FindThreadsCMake31.cmake
   FindUMFPack.cmake
   Headercheck.cmake
