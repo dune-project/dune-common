@@ -24,6 +24,7 @@ install(FILES
   DunePythonInstallPackage.cmake
   DunePythonRequireVersion.cmake
   DunePythonTestCommand.cmake
+  DunePythonVirtualenv.cmake
   DuneSphinxCMakeDoc.cmake
   DuneStreams.cmake
   DuneSymlinkOrCopy.cmake
@@ -36,6 +37,7 @@ install(FILES
   FindPTScotch.cmake
   FindSphinx.cmake
   FindSuiteSparse.cmake
+  FindTBB.cmake
   FindThreadsCMake31.cmake
   FindUMFPack.cmake
   Headercheck.cmake
