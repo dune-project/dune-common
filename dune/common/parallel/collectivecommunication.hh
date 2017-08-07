@@ -326,7 +326,7 @@ namespace Dune
     template<typename T>
     int allgather(const T* sbuf, int count, T* rbuf) const
     {
-      for(T* end=sbuf+count; sbuf < end; ++sbuf, ++rbuf)
+      for(const T* end=sbuf+count; sbuf < end; ++sbuf, ++rbuf)
         *rbuf=*sbuf;
       return 0;
     }
