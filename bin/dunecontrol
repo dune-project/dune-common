@@ -482,7 +482,7 @@ run_default_vcsetup() {
 
       if [ -f .git ] ; then
         # submodule -> .git contains a pointer to the repository
-        GITHOOKPATH="$($SED 's/gitdir: //' < .git)/hooks/pre-commit"
+        GITHOOKPATH="$($SED -e 's/^gitdir: //' -e 's/worktree.*//' < .git)/hooks/pre-commit"
       else
         # standard case, .git is the repository
         GITHOOKPATH=.git/hooks/pre-commit
