@@ -8,8 +8,10 @@
 #include <ostream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 #include <dune/common/exceptions.hh>
+#include <dune/common/fvector.hh>
 #include <dune/common/parametertree.hh>
 
 // This assert macro does not depend on the value of NDEBUG
@@ -86,12 +88,25 @@ int main()
   }
   { // Try with comma
     Dune::ParameterTree ptree;
-    check_throw(ptree["setting"] = "42,42"; ptree.get<double>("setting"),
+    check_throw((ptree["setting"] = "42,42",
+                 ptree.get<double>("setting")),
+                Dune::RangeError);
+    check_throw((ptree["setting"] = "42 2,5",
+                 ptree.get<Dune::FieldVector<double, 2> >("setting")),
+                Dune::RangeError);
+    check_throw((ptree["setting"] = "42 2,5",
+                 ptree.get<std::vector<double> >("setting")),
                 Dune::RangeError);
   }
   { // Try with point
     Dune::ParameterTree ptree;
     check_assert((ptree["setting"] = "42.42",
                   ptree.get<double>("setting") == 42.42));
+    check_assert((ptree["setting"] = "42 2.5",
+                  ptree.get<Dune::FieldVector<double, 2> >("setting")
+                                  == Dune::FieldVector<double, 2>{42.0, 2.5}));
+    check_assert((ptree["setting"] = "42 2.5",
+                  ptree.get<std::vector<double> >("setting")
+                                           == std::vector<double>{42.0, 2.5}));
   }
 }
