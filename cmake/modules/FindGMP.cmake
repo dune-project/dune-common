@@ -1,40 +1,42 @@
 # .. cmake_module::
 #
-#    Find the GNU MP Bignum (GMP) library
+#    Find the GNU MULTI-Precision Bignum (GMP) library
+#    and the according C++ bindings GMPxx
 #
 #    You may set the following variables to modify the
 #    behaviour of this module:
 #
 #    :ref:`GMP_ROOT`
-#       Path list to search for GMP
+#       Path list to search for GMP and GMPxx
 #
 #    Sets the following variables:
 #
 #    :code:`GMP_FOUND`
-#       True if the GMP library was found.
+#       True if the GMP library, the GMPxx headers and
+#       the GMPxx library were found.
 #
 # .. cmake_variable:: GMP_ROOT
 #
 #   You may set this variable to have :ref:`FindGMP` look
-#   for the gmp package in the given path before inspecting
-#   system paths.
+#   for the gmp and gmpxx packages in the given path before
+#   inspecting system paths.
 #
 
 
 # search for location of header gmpxx.h", only at positions given by the user
-find_path(GMP_INCLUDE_DIR
+find_path(GMPXX_INCLUDE_DIR
   NAMES "gmpxx.h"
   PATHS ${GMP_PREFIX} ${GMP_ROOT}
   PATH_SUFFIXES include
   NO_DEFAULT_PATH)
 # try default paths now
-find_path(GMP_INCLUDE_DIR
+find_path(GMPXX_INCLUDE_DIR
   NAMES "gmpxx.h")
 
 # check if header is accepted
 include(CMakePushCheckState)
 cmake_push_check_state()
-set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${GMP_INCLUDE_DIR})
+set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${GMPXX_INCLUDE_DIR})
 include(CheckIncludeFileCXX)
 check_include_file_cxx("gmpxx.h" GMP_HEADER_WORKS)
 
@@ -68,29 +70,32 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
   "GMP"
   DEFAULT_MSG
-  GMP_INCLUDE_DIR GMP_LIB GMPXX_LIB GMP_HEADER_WORKS GMPXX_LIB_WORKS
+  GMPXX_INCLUDE_DIR GMP_LIB GMPXX_LIB GMP_HEADER_WORKS GMPXX_LIB_WORKS
 )
 
-mark_as_advanced(GMP_LIB GMPXX_LIB GMP_INCLUDE_DIR)
+mark_as_advanced(GMP_LIB GMPXX_LIB GMPXX_INCLUDE_DIR)
 
-# if both headers and library are found, store results
+# text for feature summary
+set_package_info("GMP" "GNU multi-precision library, including the C++ bindings GMPxx")
+
+# if GMPxx headers, GMP library, and GMPxx library are found, store results
 if(GMP_FOUND)
-  set(GMP_INCLUDE_DIRS ${GMP_INCLUDE_DIR})
+  set(GMP_INCLUDE_DIRS ${GMPXX_INCLUDE_DIR})
   set(GMP_LIBRARIES ${GMP_LIB} ${GMPXX_LIB})
   set(GMP_COMPILE_FLAGS "-DENABLE_GMP=1")
   # log result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
-    "Determing location of GMP succeeded:\n"
+    "Determing location of GMP, GMPxx succeeded:\n"
     "Include directory: ${GMP_INCLUDE_DIRS}\n"
     "Library directory: ${GMP_LIBRARIES}\n\n")
-else(GMP_FOUND)
+else()
   # log errornous result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
-    "Determing location of GMP failed:\n"
-    "Include directory: ${GMP_INCLUDE_DIR}\n"
+    "Determing location of GMP, GMPxx failed:\n"
+    "Include directory: ${GMPXX_INCLUDE_DIR}\n"
     "gmp library directory: ${GMP_LIB}\n"
-    "gmpx library directory: ${GMPXX_LIB}\n\n")
-endif(GMP_FOUND)
+    "gmpxx library directory: ${GMPXX_LIB}\n\n")
+endif()
 
 # set HAVE_GMP for config.h
 set(HAVE_GMP ${GMP_FOUND})
@@ -99,5 +104,5 @@ set(HAVE_GMP ${GMP_FOUND})
 if(HAVE_GMP)
   dune_register_package_flags(COMPILE_DEFINITIONS "ENABLE_GMP=1"
                               LIBRARIES "${GMP_LIB};${GMPXX_LIB}"
-                              INCLUDE_DIRS "${GMP_INCLUDE_DIR}")
+                              INCLUDE_DIRS "${GMPXX_INCLUDE_DIR}")
 endif()
