@@ -127,9 +127,9 @@ if(PARMETIS_FOUND)
         check_function_exists(parmetis_v3_partkway HAVE_PARMETIS)
       endif()
     endif()
-  endif(PARMETIS_LIBRARY)
+  endif()
     set(CMAKE_REQUIRED_LIBRARIES "${_CMAKE_REQUIRED_LIBRARIES}") # get backup
-endif(PARMETIS_FOUND)
+endif()
 
 # behave like a CMake module is supposed to behave
 include(FindPackageHandleStandardArgs)
@@ -164,7 +164,7 @@ else()
     "Include directory: ${PARMETIS_INCLUDE_DIR}\n"
     "ParMETIS library directory: ${PARMETIS_LIBRARY}\n"
     "Header metis.h: ${METIS_FOUND}\n\n")
-endif(PARMETIS_FOUND)
+endif()
 
 # register all ParMETIS related flags
 if(PARMETIS_FOUND)
