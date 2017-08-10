@@ -76,6 +76,14 @@ set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${MPI_DUNE_COMPILE_FLAGS}")
 check_include_file(metis.h METIS_FOUND)
 check_include_file(parmetis.h PARMETIS_FOUND)
 
+# check whether metis.h is available
+# to work around installation bug in ParMETIS 4.0.3
+if(NOT METIS_FOUND)
+  message(WARNING "metis.h is missing, you have to copy it manually next to parmetis.h")
+  else()
+  message("komisch")
+endif()
+
 if(PARMETIS_FOUND)
   set(ParMETIS_INCLUDE_PATH ${CMAKE_REQUIRED_INCLUDES})
   set(ParMETIS_COMPILE_FLAGS "${CMAKE_REQUIRED_FLAGS} -DENABLE_PARMETIS=1")
@@ -151,6 +159,13 @@ if(PARMETIS_FOUND)
     "Determing location of ParMETIS succeeded:\n"
     "Include directory: ${PARMETIS_INCLUDE_DIRS}\n"
     "Library directory: ${PARMETIS_LIBRARIES}\n\n")
+else()
+  # log errornous result
+  file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
+    "Determing location of ParMETIS failed:\n"
+    "Include directory: ${PARMETIS_INCLUDE_DIR}\n"
+    "ParMETIS library directory: ${PARMETIS_LIBRARY}\n"
+    "Header metis.h: ${METIS_FOUND}\n\n")
 endif(PARMETIS_FOUND)
 
 # register all ParMETIS related flags
