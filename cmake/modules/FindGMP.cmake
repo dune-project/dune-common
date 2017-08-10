@@ -24,19 +24,19 @@
 
 
 # search for location of header gmpxx.h", only at positions given by the user
-find_path(GMP_INCLUDE_DIR
+find_path(GMPXX_INCLUDE_DIR
   NAMES "gmpxx.h"
   PATHS ${GMP_PREFIX} ${GMP_ROOT}
   PATH_SUFFIXES include
   NO_DEFAULT_PATH)
 # try default paths now
-find_path(GMP_INCLUDE_DIR
+find_path(GMPXX_INCLUDE_DIR
   NAMES "gmpxx.h")
 
 # check if header is accepted
 include(CMakePushCheckState)
 cmake_push_check_state()
-set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${GMP_INCLUDE_DIR})
+set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${GMPXX_INCLUDE_DIR})
 include(CheckIncludeFileCXX)
 check_include_file_cxx("gmpxx.h" GMP_HEADER_WORKS)
 
@@ -70,17 +70,17 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
   "GMP"
   DEFAULT_MSG
-  GMP_INCLUDE_DIR GMP_LIB GMPXX_LIB GMP_HEADER_WORKS GMPXX_LIB_WORKS
+  GMPXX_INCLUDE_DIR GMP_LIB GMPXX_LIB GMP_HEADER_WORKS GMPXX_LIB_WORKS
 )
 
-mark_as_advanced(GMP_LIB GMPXX_LIB GMP_INCLUDE_DIR)
+mark_as_advanced(GMP_LIB GMPXX_LIB GMPXX_INCLUDE_DIR)
 
 # text for feature summary
 set_package_info("GMP" "GNU multi-precision library, including the C++ bindings GMPxx")
 
 # if GMPxx headers, GMP library, and GMPxx library are found, store results
 if(GMP_FOUND)
-  set(GMP_INCLUDE_DIRS ${GMP_INCLUDE_DIR})
+  set(GMP_INCLUDE_DIRS ${GMPXX_INCLUDE_DIR})
   set(GMP_LIBRARIES ${GMP_LIB} ${GMPXX_LIB})
   set(GMP_COMPILE_FLAGS "-DENABLE_GMP=1")
   # log result
@@ -92,7 +92,7 @@ else(GMP_FOUND)
   # log errornous result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
     "Determing location of GMP, GMPxx failed:\n"
-    "Include directory: ${GMP_INCLUDE_DIR}\n"
+    "Include directory: ${GMPXX_INCLUDE_DIR}\n"
     "gmp library directory: ${GMP_LIB}\n"
     "gmpxx library directory: ${GMPXX_LIB}\n\n")
 endif(GMP_FOUND)
@@ -104,5 +104,5 @@ set(HAVE_GMP ${GMP_FOUND})
 if(HAVE_GMP)
   dune_register_package_flags(COMPILE_DEFINITIONS "ENABLE_GMP=1"
                               LIBRARIES "${GMP_LIB};${GMPXX_LIB}"
-                              INCLUDE_DIRS "${GMP_INCLUDE_DIR}")
+                              INCLUDE_DIRS "${GMPXX_INCLUDE_DIR}")
 endif()
