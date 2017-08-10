@@ -88,14 +88,14 @@ if(GMP_FOUND)
     "Determing location of GMP, GMPxx succeeded:\n"
     "Include directory: ${GMP_INCLUDE_DIRS}\n"
     "Library directory: ${GMP_LIBRARIES}\n\n")
-else(GMP_FOUND)
+else()
   # log errornous result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
     "Determing location of GMP, GMPxx failed:\n"
     "Include directory: ${GMPXX_INCLUDE_DIR}\n"
     "gmp library directory: ${GMP_LIB}\n"
     "gmpxx library directory: ${GMPXX_LIB}\n\n")
-endif(GMP_FOUND)
+endif()
 
 # set HAVE_GMP for config.h
 set(HAVE_GMP ${GMP_FOUND})
