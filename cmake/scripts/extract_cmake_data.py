@@ -12,6 +12,7 @@
 from __future__ import print_function
 
 import argparse
+import errno
 import os
 import re
 
@@ -27,11 +28,18 @@ def write_line(f, line):
     else:
         f.write('\n')
 
+def makedirs_if_not_exists(path):
+    # Python3's os.makedirs has exist_ok=True, but this is still Python2...
+    try:
+        os.makedirs(path)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+
 def read_module(args=get_args()):
     modname = os.path.splitext(os.path.basename(args['module']))[0]
     modpath = os.path.join(args['builddir'], 'modules')
-    if not os.path.exists(modpath):
-        os.makedirs(modpath)
+    makedirs_if_not_exists(modpath)
     modfile = os.path.join(modpath, modname + '.rst')
     with open(args['module'], 'r') as i:
 #         mod = open(modfile, 'w')
@@ -50,8 +58,7 @@ def read_module(args=get_args()):
                 if o:
                     o.close()
                 cmdpath = os.path.join(args['builddir'], 'commands')
-                if not os.path.exists(cmdpath):
-                    os.makedirs(cmdpath)
+                makedirs_if_not_exists(cmdpath)
                 try:
                     cmd = re.findall(r'# .. cmake_function:: (.*)', l)[0]
                 except IndexError as e:
@@ -71,8 +78,7 @@ def read_module(args=get_args()):
                 if o:
                     o.close()
                 varpath = os.path.join(args['builddir'], 'variables')
-                if not os.path.exists(varpath):
-                    os.makedirs(varpath)
+                makedirs_if_not_exists(varpath)
                 try:
                     var = re.findall(r'# .. cmake_variable:: (.*)', l)[0]
                 except IndexError as e:
@@ -88,8 +94,7 @@ def read_module(args=get_args()):
                 if o:
                     o.close()
                 modpath = os.path.join(args['builddir'], 'modules')
-                if not os.path.exists(modpath):
-                    os.makedirs(modpath)
+                makedirs_if_not_exists(modpath)
                 modfile = os.path.join(modpath, modname + ".rst")
                 o = open(modfile, 'w')
                 o.write(".. _" + modname + ":\n\n")
