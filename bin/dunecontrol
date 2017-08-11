@@ -489,13 +489,13 @@ run_default_vcsetup() {
       # manual parsing
 
       GITHOOKPATH="$(git rev-parse --git-common-dir)"
-      if [ $? -ne 0 -o "${GITHOOKPATH}" == "--git-common-dir" ] ; then
+      if [ $? -ne 0 -o "${GITHOOKPATH}" = "--git-common-dir" ] ; then
 
         # no worktree support from here on out
 
         GITHOOKPATH="$(git rev-parse --git-dir)"
 
-        if [ $? -ne 0 -o "${GITHOOKPATH}" == "--git-dir" ] ; then
+        if [ $? -ne 0 -o "${GITHOOKPATH}" = "--git-dir" ] ; then
 
           # do the parsing manually
 
