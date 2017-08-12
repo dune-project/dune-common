@@ -477,16 +477,38 @@ run_default_vcsetup() {
     if [ "x$SETUPGITHOOK" = "xyes" ]; then
       # we have to install the Git whitespace hook
 
-      # The current Git repository might be a submodule, so we have to start by
-      # determining the location of the commit hook
+      # There are several options as to what the current worktreee might be backed by right now:
+      # - a plain old repository    -> copy to .git/hooks
+      # - a submodule repository    -> .git refers to the submodule repository inside the root $GIT_DIR
+      # - a git repo worktree       -> .git refers to the worktree data inside the original $GIT_DIR and we need to find
+      #                                the "canonical" $GIT_DIR root
+      # - a submodule in a worktree -> That just gets checked out again into the worktree backing store, so no worktree
+      #                                dereferencing here
 
-      if [ -f .git ] ; then
-        # submodule -> .git contains a pointer to the repository
-        GITHOOKPATH="$($SED 's/gitdir: //' < .git)/hooks/pre-commit"
-      else
-        # standard case, .git is the repository
-        GITHOOKPATH=.git/hooks/pre-commit
+      # We try this first by trying git's built-in infrastructure, but if the user's git is too old, we fall back to
+      # manual parsing
+
+      GITHOOKPATH="$(git rev-parse --git-common-dir)"
+      if [ $? -ne 0 -o "${GITHOOKPATH}" = "--git-common-dir" ] ; then
+
+        # no worktree support from here on out
+
+        GITHOOKPATH="$(git rev-parse --git-dir)"
+
+        if [ $? -ne 0 -o "${GITHOOKPATH}" = "--git-dir" ] ; then
+
+          # do the parsing manually
+
+          if [ -f .git ] ; then
+            # submodule -> .git contains a pointer to the repository
+            GITHOOKPATH="$($SED 's/gitdir: //' < .git)"
+          else
+            # standard case, .git is the repository
+            GITHOOKPATH=.git
+          fi
+        fi
       fi
+      GITHOOKPATH="${GITHOOKPATH}/hooks/pre-commit"
 
       if [ -n "$DISABLEWHITESPACEHOOK" ] ; then
         # the user doesn't want the Git whitespace hook - deinstall it if necessary and warn the user
