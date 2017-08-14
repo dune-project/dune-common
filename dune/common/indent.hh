@@ -85,7 +85,7 @@ namespace Dune {
     inline Indent operator+(const std::string& newindent) const {
       return Indent(this, newindent);
     }
-    //! create a copy of this indetation object with raised level
+    //! create a copy of this indentation object with raised level
     inline Indent operator+(unsigned morelevel) const {
       return Indent(parent, basic_indent, level+morelevel);
     }
