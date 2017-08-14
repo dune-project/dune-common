@@ -92,7 +92,7 @@ namespace Dune {
     //! raise indentation level
     inline Indent& operator++() { ++level; return *this; }
     //! lower indentation level
-    inline Indent& operator--() { --level; return *this; }
+    inline Indent& operator--() { if ( level > 0 ) --level; return *this; }
 
     //! write indentation to a stream
     friend inline std::ostream& operator<<(std::ostream& s,
