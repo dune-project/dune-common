@@ -62,6 +62,8 @@ namespace Dune {
     typedef typename Base::size_type size_type;
     typedef typename Base::value_type value_type;
 
+    typedef std::vector< K, Allocator > container_type;
+
     typedef Allocator allocator_type;
 
     //! Constructor making uninitialized vector
@@ -153,6 +155,9 @@ namespace Dune {
       DUNE_ASSERT_BOUNDS(i < size());
       return _data[i];
     }
+
+    const container_type &container () const { return _data; }
+    container_type &container () { return _data; }
   };
 
   /** \brief Read a DynamicVector from an input stream
