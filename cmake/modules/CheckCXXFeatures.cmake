@@ -440,3 +440,44 @@ if(NOT STDTHREAD_WORKS)
     "STDTHREAD_LINK_FLAGS.  If you think this test is wrong, set the cache "
     "variable STDTHREAD_WORKS.")
 endif(NOT STDTHREAD_WORKS)
+
+
+# Make sure we have working generalized constexpr - GCC 4.9 lacks this feature
+check_cxx_source_compiles("
+  constexpr int foo(int bar)
+  {
+    int r = 1;
+    for (int i = 0 ; i < bar ; ++i)
+      r += r;
+    return r;
+  }
+
+  int main()
+  {
+    static_assert(foo(4) == 16, \"test failed\");
+    return 0;
+  }
+" DUNE_HAVE_CXX_GENERALIZED_CONSTEXPR
+  )
+
+
+# Check whether we can conditionally throw exceptions in constexpr context to
+# signal errors both at compile time and at run time - this does not work in GCC 5
+check_cxx_source_compiles("
+  constexpr int foo(int bar)
+  {
+    if (bar < 0)
+      throw bar;
+    int r = 1;
+    for (int i = 0 ; i < bar ; ++i)
+      r += r;
+    return r;
+  }
+
+  int main()
+  {
+    static_assert(foo(4) == 16, \"test failed\");
+    return 0;
+  }
+" DUNE_SUPPORTS_CXX_THROW_IN_CONSTEXPR
+  )
