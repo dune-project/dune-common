@@ -481,3 +481,15 @@ check_cxx_source_compiles("
   }
 " DUNE_SUPPORTS_CXX_THROW_IN_CONSTEXPR
   )
+
+
+# Check whether the compiler supports inline variables
+check_cxx_source_compiles("
+  inline int foo = 42;
+
+  int main()
+  {
+    return not (foo == 42);
+  }
+" DUNE_HAVE_CXX_INLINE_VARIABLES
+  )
