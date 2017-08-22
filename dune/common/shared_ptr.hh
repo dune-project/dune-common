@@ -101,9 +101,14 @@ namespace Dune
      @sa shared_ptr, null_deleter
    */
   template<typename T, typename T2>
-  inline shared_ptr<T2> stackobject_to_shared_ptr(T & t)
+  inline
+  std::enable_if_t<
+    not std::is_same<T,T2>::value,
+    shared_ptr<T>
+    >
+  stackobject_to_shared_ptr(T2 & t)
   {
-    return shared_ptr<T2>(dynamic_cast<T2*>(&t), null_deleter<T2>());
+    return shared_ptr<T2>(&t, null_deleter<T2>());
   }
 
 
