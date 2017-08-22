@@ -144,8 +144,8 @@ PREDEFINED             = DOXYGEN \
                          "DUNE_DEPRECATED:=/** \deprecated */" \
                          "DUNE_DEPRECATED_MSG(A):=/** \deprecated A */" \
                          "DUNE_INLINE_VARIABLE:= " \
-                         DUNE_HAVE_CXX_INLINE_VARIABLES:=1 \
-                         DUNE_HAVE_CXX_GENERALIZED_CONSTEXPR:=1 \
+                         __cpp_inline_variables:=201606 \
+                         __cpp_constexpr:=201603 \
 
 
 @DOT_TRUE@HAVE_DOT               = YES
