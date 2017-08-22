@@ -61,6 +61,12 @@
 */
 
 /**
+  @defgroup CxxConcepts C++ concepts
+  @brief Concepts built on top of C++14.
+  @ingroup Utilities
+*/
+
+/**
   @defgroup Numbers Numbers
   @brief Class implementing different number representations and helper functions
   @ingroup Common
