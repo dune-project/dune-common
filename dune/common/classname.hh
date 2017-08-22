@@ -19,6 +19,9 @@
 namespace Dune {
 
   /** \brief Provide the demangled class name of a type T as a string */
+  /*
+   * \ingroup CxxUtilities
+   */
   template <class T>
   std::string className ()
   {
@@ -45,6 +48,9 @@ namespace Dune {
   }
 
   /** \brief Provide the demangled class name of a given object as a string */
+  /*
+   * \ingroup CxxUtilities
+   */
   template <class T>
   std::string className ( T& )
   {

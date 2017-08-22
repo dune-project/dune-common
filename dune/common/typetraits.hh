@@ -317,7 +317,7 @@ namespace Dune
     {}
   }
 
-#endif DOXYGEN
+#endif // DOXYGEN
 
   /**
      \brief typetrait to check that a class has begin() and end() members

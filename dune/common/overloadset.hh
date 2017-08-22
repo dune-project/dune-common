@@ -74,6 +74,8 @@ namespace Impl {
  *
  * Notice that the passed function objects are
  * stored by value and must be copy-constructible.
+ *
+ * \ingroup CxxUtilities
  */
 template<class... F>
 auto overload(F&&... f)
@@ -160,6 +162,8 @@ namespace Impl {
  *
  * Notice that the passed function objects are
  * stored by value and must be copy-constructible.
+ *
+ * \ingroup CxxUtilities
  */
 template<class... F>
 auto orderedOverload(F&&... f)

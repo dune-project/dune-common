@@ -6,6 +6,7 @@
 /**
  * \file
  * \brief infrastructure for supporting operator->() on both references and proxies
+ * \ingroup CxxUtilities
  */
 
 #include <type_traits>
@@ -70,6 +71,8 @@ namespace Dune {
    * \note This function exploits the special type deduction rules for unqualified rvalue references
    *       to distinguish between lvalues and rvalues and thus needs to be passed the object returned
    *       by the implementation.
+   *
+   * \ingroup CxxUtilities
    */
   template<typename T>
   pointer_or_proxy_holder

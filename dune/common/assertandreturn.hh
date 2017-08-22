@@ -5,10 +5,15 @@
 
 #include <cassert>
 
-// The macro DUNE_ASSERT_AND_RETURN can be used as expression in the return
-// statement of a constexpr function to have assert() and constexpr at the
-// same time. It first uses assert for the condition given by the first argument
-// and then returns the value of the second argument.
+//! Asserts a condition and return on success in constexpr context.
+/**
+ * The macro DUNE_ASSERT_AND_RETURN can be used as expression in the return
+ * statement of a constexpr function to have assert() and constexpr at the
+ * same time. It first uses assert for the condition given by the first argument
+ * and then returns the value of the second argument.
+ *
+ * \ingroup CxxUtilities
+ */
 #ifdef NDEBUG
   #define DUNE_ASSERT_AND_RETURN(C,X) X
 #else
