@@ -55,6 +55,12 @@
 */
 
 /**
+  @defgroup CxxUtilities C++ utilities and backports
+  @brief Standard library features backported from newer C++ versions or technical specifications and DUNE-specific utilities.
+  @ingroup Utilities
+*/
+
+/**
   @defgroup Numbers Numbers
   @brief Class implementing different number representations and helper functions
   @ingroup Common

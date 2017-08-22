@@ -45,6 +45,8 @@ namespace Dune
      *
      *  This fallback implementation using perfect forwarding
      *  as proposed by Herb Sutter in http://herbsutter.com/gotw/_102/
+     *
+     * \ingroup CxxUtilities
      */
     template<typename T, typename... Args>
     typename MakeUniqueHelper<T>::NonArrayUniquePtr
@@ -58,6 +60,8 @@ namespace Dune
      *  \tparam  T Array type of unknown bound
      *
      *  \param  n Size of array to allocate
+     *
+     * \ingroup CxxUtilities
      */
     template<typename T>
     typename MakeUniqueHelper<T>::UnknownBoundArrayUniquePtr
@@ -75,6 +79,8 @@ namespace Dune
      *  participate in overload resolution
      *
      *  \param args Dummy arguments
+     *
+     * \ingroup CxxUtilities
      */
     template<typename T, typename ...Args>
     typename MakeUniqueHelper<T>::KnownBoundArrayUniquePtr
