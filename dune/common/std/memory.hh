@@ -12,29 +12,36 @@ namespace Dune
   namespace Std
   {
 
-    // Helper struct to distinguish non-array, unknown bound
-    // array, and known bound array types using SFINAE
-    // following proposal N3656 by Stephan T. Lavavej.
+#ifndef DOXYGEN
 
-    template<class T>
-    struct MakeUniqueHelper
-    {
-      typedef std::unique_ptr<T> NonArrayUniquePtr;
-    };
+    namespace Impl {
 
-    template<class T>
-    struct MakeUniqueHelper<T[]>
-    {
-      typedef std::unique_ptr<T[]> UnknownBoundArrayUniquePtr;
-      typedef T RawType;
-    };
+      // Helper struct to distinguish non-array, unknown bound
+      // array, and known bound array types using SFINAE
+      // following proposal N3656 by Stephan T. Lavavej.
 
-    template<class T, size_t N>
-    struct MakeUniqueHelper<T[N]>
-    {
-      typedef void KnownBoundArrayUniquePtr;
-    };
+      template<class T>
+      struct MakeUniqueHelper
+      {
+        typedef std::unique_ptr<T> NonArrayUniquePtr;
+      };
 
+      template<class T>
+      struct MakeUniqueHelper<T[]>
+      {
+        typedef std::unique_ptr<T[]> UnknownBoundArrayUniquePtr;
+        typedef T RawType;
+      };
+
+      template<class T, size_t N>
+      struct MakeUniqueHelper<T[N]>
+      {
+        typedef void KnownBoundArrayUniquePtr;
+      };
+
+    }
+
+#endif // DOXYGEN
 
     /** \brief Implementation of std::make_unique to be introduced in C++14
      *
