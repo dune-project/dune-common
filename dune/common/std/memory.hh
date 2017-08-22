@@ -12,6 +12,12 @@ namespace Dune
   namespace Std
   {
 
+#if __cpp_lib_make_unique >= 201304
+
+    using std::make_unique;
+
+#else
+
 #ifndef DOXYGEN
 
     namespace Impl {
@@ -87,6 +93,7 @@ namespace Dune
     typename MakeUniqueHelper<T>::KnownBoundArrayUniquePtr
       make_unique(Args&&... args) = delete;
 
+#endif // __cpp_lib_make_unique >= 201304
 
   } // namespace Std
 
