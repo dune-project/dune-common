@@ -300,6 +300,7 @@ namespace Std
   template<template<typename...> class Op, typename... Args>
   using is_detected = typename detected_or<nonesuch,Op,Args...>::value_t;
 
+#ifdef __cpp_variable_templates
   //! Detects whether `Op<Args...>` is valid and makes the result available as a value.
   /**
    * This constexpr variable checks whether `Op<Args...>` can be instantiated. It is
@@ -312,6 +313,7 @@ namespace Std
    */
   template<template<typename...> class Op, typename... Args>
   constexpr bool is_detected_v = is_detected<Op,Args...>::value;
+#endif // __cpp_variable_templates
 
   //! Returns `Op<Args...>` if that is valid; otherwise returns nonesuch.
   /**
@@ -352,6 +354,7 @@ namespace Std
   template<typename Expected, template<typename...> class Op, typename... Args>
   using is_detected_exact = std::is_same<Expected,detected_t<Op,Args...>>;
 
+#ifdef __cpp_variable_templates
   //! Convenient access to the result value of is_detected_exact.
   /**
    * \note This functionality is part of the C++ library fundamentals TS v2 and might
@@ -361,6 +364,7 @@ namespace Std
    */
   template<typename Expected, template<typename...> class Op, typename... Args>
   constexpr bool is_detected_exact_v = is_detected_exact<Expected,Op,Args...>::value;
+#endif // __cpp_variable_templates
 
   //! Checks whether `Op<Args...>` is convertible to `Target` without causing an error if `Op<Args...>` is invalid.
   /**
@@ -372,6 +376,7 @@ namespace Std
   template<typename Target, template<typename...> class Op, typename... Args>
   using is_detected_convertible = std::is_convertible<Target,detected_t<Op,Args...>>;
 
+#ifdef __cpp_variable_templates
   //! Convenient access to the result value of is_detected_convertible.
   /**
    * \note This functionality is part of the C++ library fundamentals TS v2 and might
@@ -381,6 +386,7 @@ namespace Std
    */
   template<typename Target, template<typename...> class Op, typename... Args>
   constexpr bool is_detected_convertible_v = is_detected_convertible<Target,Op,Args...>::value;
+#endif // __cpp_variable_templates
 
 #endif // __cpp_lib_experimental_detect >= 201505
 
