@@ -35,6 +35,7 @@ namespace Dune {
    * \endcode
    *
    * \sa implementationDefined
+   * \ingroup Common
    */
   struct ImplementationDefined {};
 
@@ -47,6 +48,7 @@ namespace Dune {
    * \endcode
    *
    * \sa ImplementationDefined
+   * \ingroup Common
    */
   enum { implementationDefined };
 

@@ -17,6 +17,8 @@ namespace Std {
    *       never be used with expliclitly given template arguments, or
    *       with std::reference_wrapper<...> arguments, and we do not
    *       give a diagnostic when anyone happens to do that.
+   *
+   * \ingroup CxxUtilities
    */
   template <typename... Args>
   std::array<typename std::common_type<Args...>::type, sizeof...(Args)>

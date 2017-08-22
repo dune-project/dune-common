@@ -32,6 +32,9 @@ namespace Dune
   }
 
   //! Is void for all valid input types (see N3911). The workhorse for C++11 SFINAE-techniques.
+  /**
+   * \ingroup CxxUtilities
+   */
   template <class... Types>
   using void_t = typename Impl::voider<Types...>::type;
 
@@ -40,7 +43,7 @@ namespace Dune
    * @brief Traits for type conversions and type information.
    * @author Markus Blatt, Christian Engwer
    */
-  /** @addtogroup Common
+  /** @addtogroup CxxUtilities
    *
    * @{
    */
@@ -159,20 +162,34 @@ namespace Dune
     : public std::integral_constant<bool, std::is_arithmetic<T>::value> {
   };
 
+#ifndef DOXYGEN
+
   template <typename T>
   struct IsNumber<std::complex<T>>
     : public std::integral_constant<bool, IsNumber<T>::value> {
   };
 
+#endif // DOXYGEN
+
+
+  //! \brief Whether this type has a value of NaN.
+  /**
+   * Internally, this is just a forward to `std::is_floating_point<T>`.
+   */
   template <typename T>
   struct has_nan
       : public std::integral_constant<bool, std::is_floating_point<T>::value> {
   };
 
+#ifndef DOXYGEN
+
   template <typename T>
   struct has_nan<std::complex<T>>
       : public std::integral_constant<bool, std::is_floating_point<T>::value> {
   };
+
+#endif // DOXYGEN
+
 
 #if defined(DOXYGEN) or HAVE_IS_INDEXABLE_SUPPORT
 
@@ -194,8 +211,7 @@ namespace Dune
 
 #endif // DOXYGEN
 
-  //! Type trait to determine whether an instance of T has an operator[](I), i.e. whether
-  //! it can be indexed with an index of type I.
+  //! Type trait to determine whether an instance of T has an operator[](I), i.e. whether it can be indexed with an index of type I.
   /**
    * \warning Not all compilers support testing for arbitrary index types. In particular, there
    *          are problems with GCC 4.4 and 4.5.
@@ -289,6 +305,8 @@ namespace Dune
 
 #endif // defined(DOXYGEN) or HAVE_IS_INDEXABLE_SUPPORT
 
+#ifndef DOXYGEN
+
   namespace Impl {
     // This function does nothing.
     // By passing expressions to this function one can avoid
@@ -299,8 +317,10 @@ namespace Dune
     {}
   }
 
+#endif // DOXYGEN
+
   /**
-     typetrait to check that a class has begin() and end() members
+     \brief typetrait to check that a class has begin() and end() members
    */
   // default version, gets picked if SFINAE fails
   template<typename T, typename = void>
@@ -323,7 +343,10 @@ namespace Dune
   {};
 #endif
 
+#ifndef DOXYGEN
+  // this is just a forward declaration
   template <class> struct FieldTraits;
+#endif
 
   //! Convenient access to FieldTraits<Type>::field_type.
   template <class Type>
@@ -334,6 +357,7 @@ namespace Dune
   using real_t = typename FieldTraits<Type>::real_type;
 
 
+#ifndef DOXYGEN
 
   // Implementation of IsTuple
   namespace Impl {
@@ -348,6 +372,8 @@ namespace Dune
 
   } // namespace Impl
 
+#endif // DOXYGEN
+
   /**
    * \brief Check if T is a std::tuple<...>
    *
@@ -359,6 +385,7 @@ namespace Dune
   {};
 
 
+#ifndef DOXYGEN
 
   // Implementation of IsTupleOrDerived
   namespace Impl {
@@ -373,6 +400,8 @@ namespace Dune
 
   } // namespace Impl
 
+#endif // DOXYGEN
+
   /**
    * \brief Check if T derived from a std::tuple<...>
    *
@@ -384,6 +413,7 @@ namespace Dune
   {};
 
 
+#ifndef DOXYGEN
 
   // Implementation of is IsIntegralConstant
   namespace Impl {
@@ -397,6 +427,8 @@ namespace Dune
   {};
 
   } // namespace Impl
+
+#endif // DOXYGEN
 
   /**
    * \brief Check if T is an std::integral_constant<I, i>
@@ -428,6 +460,7 @@ namespace Dune
   {};
 
 
+#ifndef DOXYGEN
 
   namespace Impl {
 
@@ -469,6 +502,8 @@ namespace Dune
 
   } // end namespace Impl
 
+#endif // DOXYGEN
+
 
   /**
    * \brief Get entry of std::integer_sequence
@@ -486,8 +521,6 @@ namespace Dune
     return Impl::IntegerSequenceHelper<T, t...>::get(i);
   }
 
-  template<class IntegerSequence, std::size_t index>
-  struct IntegerSequenceEntry;
 
   /**
    * \brief Get entry of std::integer_sequence
@@ -495,12 +528,17 @@ namespace Dune
    * Computes the i-th entry of the integer_sequence. The result
    * is exported as ::value by deriving form std::integral_constant<std::size_t, entry>.
    */
+  template<class IntegerSequence, std::size_t index>
+  struct IntegerSequenceEntry;
+
+#ifndef DOXYGEN
+
   template<class T, T... t, std::size_t i>
   struct IntegerSequenceEntry<std::integer_sequence<T, t...>, i>
     : public decltype(Impl::IntegerSequenceHelper<T, t...>::get(std::integral_constant<std::size_t, i>()))
   {};
 
-
+#endif // DOXYGEN
 
   /** @} */
 }

@@ -28,6 +28,7 @@ namespace Dune
   //! Create an array and fill it with copies of the provided value.
   /**
    * \note This method is Dune-specific and not part of any C++ standard.
+   * \ingroup CxxUtilities
    */
   template<typename T, std::size_t n>
   std::array<T,n> fill_array(const T& t)

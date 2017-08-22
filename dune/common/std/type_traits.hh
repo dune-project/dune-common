@@ -10,6 +10,16 @@
 namespace Dune
 {
 
+//! Namespace for features backported from new C++ standards
+/**
+ * The namespace Dune::Std contains library features of new C++ standards and
+ * technical specifications backported to older compilers. Most features are
+ * detected and pulled into this namespace from the standard library if your
+ * compiler has native support. If it doesn't, we provide a fallback implementation
+ * on a best-effort basis.
+ *
+ * \ingroup CxxUtilities
+ */
 namespace Std
 {
 
@@ -58,6 +68,8 @@ namespace Std
    *  Since there might be an specialization of to_false_type for template
    *  parameter T, the compiler cannot trigger static_assert() until the type
    *  of T is known, that is, until Traits<T> is instantiated.
+   *
+   * \ingroup CxxUtilities
    */
   template< typename T >
   struct to_false_type : public std::false_type {};
@@ -74,6 +86,8 @@ namespace Std
    *  \tparam T Some type
    *
    *  \note This class exists mostly for consistency with to_false_type.
+   *
+   * \ingroup CxxUtilities
    */
   template< typename T >
   struct to_true_type : public std::true_type {};
@@ -93,6 +107,8 @@ namespace Std
      *  \brief A template alias for std::integral_constant<bool, value>
      *
      *  \tparam value Boolean value to encode as std::integral_constant<bool, value>
+     *
+     * \ingroup CxxUtilities
      */
     template <bool value>
     using bool_constant = std::integral_constant<bool, value>;
@@ -144,6 +160,8 @@ namespace Std
    * If D is not of the form D = F(Args...) this class is not defined.
    *
    * This implements std::is_callable as proposed in N4446 for C++17.
+   *
+   * \ingroup CxxUtilities
    */
   template <class D, class R= void>
   struct is_callable;
@@ -162,6 +180,8 @@ namespace Std
    * If D is not of the form D = F(Args...) this class is not defined.
    *
    * This implements std::is_callable as proposed in N4446 for C++17.
+   *
+   * \ingroup CxxUtilities
    */
   template <class F, class... Args, class R>
   struct is_callable< F(Args...), R> :
