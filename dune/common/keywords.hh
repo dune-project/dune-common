@@ -13,7 +13,7 @@
  */
 
 
-#if DUNE_HAVE_CXX_INLINE_VARIABLES
+#if __cpp_inline_variables >= 201606
 #define DUNE_INLINE_VARIABLE inline
 #else
 //! Preprocessor macro used for marking variables inline on supported compilers.
@@ -24,7 +24,7 @@
 #endif
 
 
-#if DUNE_HAVE_CXX_GENERALIZED_CONSTEXPR
+#if __cpp_constexpr >= 201304
 #define DUNE_GENERALIZED_CONSTEXPR constexpr
 #else
 //! Preprocessor macro used for marking code as constexpr under the relaxed rules of C++14 if supported by the compiler.

@@ -442,25 +442,6 @@ if(NOT STDTHREAD_WORKS)
 endif(NOT STDTHREAD_WORKS)
 
 
-# Make sure we have working generalized constexpr - GCC 4.9 lacks this feature
-check_cxx_source_compiles("
-  constexpr int foo(int bar)
-  {
-    int r = 1;
-    for (int i = 0 ; i < bar ; ++i)
-      r += r;
-    return r;
-  }
-
-  int main()
-  {
-    static_assert(foo(4) == 16, \"test failed\");
-    return 0;
-  }
-" DUNE_HAVE_CXX_GENERALIZED_CONSTEXPR
-  )
-
-
 # Check whether we can conditionally throw exceptions in constexpr context to
 # signal errors both at compile time and at run time - this does not work in GCC 5
 check_cxx_source_compiles("
@@ -480,16 +461,4 @@ check_cxx_source_compiles("
     return 0;
   }
 " DUNE_SUPPORTS_CXX_THROW_IN_CONSTEXPR
-  )
-
-
-# Check whether the compiler supports inline variables
-check_cxx_source_compiles("
-  inline int foo = 42;
-
-  int main()
-  {
-    return not (foo == 42);
-  }
-" DUNE_HAVE_CXX_INLINE_VARIABLES
   )

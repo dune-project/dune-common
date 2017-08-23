@@ -29,14 +29,8 @@
 /* does the compiler support C++17's class template argument deduction? */
 #cmakedefine DUNE_HAVE_CXX_CLASS_TEMPLATE_ARGUMENT_DEDUCTION 1
 
-/* does the compiler support C++14's generalized constant expressions? */
-#cmakedefine DUNE_HAVE_CXX_GENERALIZED_CONSTEXPR 1
-
 /* does the compiler support conditionally throwing exceptions in constexpr context? */
 #cmakedefine DUNE_SUPPORTS_CXX_THROW_IN_CONSTEXPR 1
-
-/* does the compiler support inline variables? */
-#cmakedefine DUNE_HAVE_CXX_INLINE_VARIABLES 1
 
 /* Define if you have a BLAS library. */
 #cmakedefine HAVE_BLAS 1

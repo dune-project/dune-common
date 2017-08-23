@@ -4,8 +4,19 @@
 #include <array>
 #include <type_traits>
 
+#if __cpp_lib_experimental_make_array >= 201505
+#include <experimental/array>
+#endif
+
 namespace Dune {
 namespace Std {
+
+#if __cpp_lib_experimental_make_array >= 201505
+
+  using std::experimental::make_array;
+
+#else // __cpp_lib_experimental_make_array >= 201505
+
   //! Create and initialize an array
   /**
    * \note This method is a somewhat limited dune-specific version of
@@ -27,6 +38,9 @@ namespace Std {
         result = {{args...}};
     return result;
   }
+
+#endif // __cpp_lib_experimental_make_array >= 201505
+
 }
 }
 
