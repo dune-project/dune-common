@@ -148,6 +148,10 @@
 /* Define to ENABLE_SUITESPARSE if the SuiteSparse's UMFPACK library is available */
 #cmakedefine HAVE_SUITESPARSE_UMFPACK ENABLE_SUITESPARSE
 
+/* Define to 1 if METIS is available */
+#cmakedefine HAVE_METIS 1
+
+
 /* Define to ENABLE_PARMETIS if you have the Parmetis library.
    This is only true if MPI was found
    by configure _and_ if the application uses the PARMETIS_CPPFLAGS */
