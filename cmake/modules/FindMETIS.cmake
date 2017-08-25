@@ -144,6 +144,7 @@ endif(METIS_FOUND)
 
 # register all METIS related flags
 if(METIS_FOUND)
+  set (METIS_CONFIG_VAR HAVE_METIS)
   dune_register_package_flags(LIBRARIES "${METIS_LIBRARIES}"
                               INCLUDE_DIRS "${METIS_INCLUDE_DIRS}")
 endif()
