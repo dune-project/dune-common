@@ -12,11 +12,11 @@
 #include <dune/common/tupleutility.hh>
 #include <dune/common/std/type_traits.hh>
 
-
+/**
+ * \file \brief Infrastructure for conceps.
+ */
 
 namespace Dune {
-
-
 
 /**
  * \brief Namespace for concepts
@@ -24,6 +24,8 @@ namespace Dune {
  * This namespace contains helper functions for
  * concept definitions and the concept definitions
  * themselves.
+ *
+ * \ingroup CxxConcepts
  */
 namespace Concept {
 
@@ -40,6 +42,8 @@ namespace Concept {
  * class.
  *
  * \tparam BaseConcepts The list of concepts to be refined.
+ *
+ * \ingroup CxxConcepts
  */
 template<class... BaseConcepts>
 struct Refines
@@ -48,8 +52,9 @@ struct Refines
 };
 
 
+#ifndef DOXYGEN
 
-namespace Imp {
+namespace Impl {
 
   // #############################################################################
   // # All functions following here are implementation details
@@ -98,7 +103,7 @@ namespace Imp {
   // and all concepts in the list C1,..,CN.
   template<class...T, class C0, class... CC>
   constexpr bool modelsConceptList(TypeList<C0, CC...>)
-  { return Imp::models<C0, T...>() and modelsConceptList<T...>(TypeList<CC...>()); }
+  { return models<C0, T...>() and modelsConceptList<T...>(TypeList<CC...>()); }
 
 
 
@@ -134,7 +139,9 @@ namespace Imp {
     return modelsConcept<C, T...>(PriorityTag<42>());
   }
 
-} // namespace Dune::Concept::Imp
+} // namespace Dune::Concept::Impl
+
+#endif // DOXYGEN
 
 } // namespace Dune::Concept
 
@@ -167,18 +174,21 @@ namespace Imp {
  * \tparam C The concept to check
  * \tparam T The list of type to check against the concept
  *
+ * \ingroup CxxConcepts
  */
 template<class C, class... T>
 constexpr auto models()
 {
-  return Std::bool_constant<Concept::Imp::models<C, T...>()>();
+  return Std::bool_constant<Concept::Impl::models<C, T...>()>();
 }
 
 
 
 namespace Concept {
 
-namespace Imp {
+#ifndef DOXYGEN
+
+namespace Impl {
 
   // #############################################################################
   // # All functions following here are implementation details for the
@@ -196,8 +206,9 @@ namespace Imp {
     using Result = typename ReduceTuple<AccumulateFunctor, Tuple, std::true_type>::type;
   };
 
-} // namespace Dune::Concept::Imp
+} // namespace Dune::Concept::Impl
 
+#endif // DOXYGEN
 
 
 // #############################################################################
@@ -207,7 +218,7 @@ namespace Imp {
 
 template<class C, class Tuple>
 constexpr auto tupleEntriesModel()
-  -> typename Imp::TupleEntriesModelHelper<C, Tuple>::Result
+  -> typename Impl::TupleEntriesModelHelper<C, Tuple>::Result
 {
   return {};
 }
@@ -308,7 +319,7 @@ constexpr bool requireSameType()
 
 } // namespace Dune::Concept
 
-
+  /** @} */
 
 } // namespace Dune
 

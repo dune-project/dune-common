@@ -226,6 +226,8 @@ namespace Dune {
     {
       typedef typename std::iterator_traits<Iterator>::value_type Value;
       std::istringstream s(str);
+      // make sure we are in locale "C"
+      s.imbue(std::locale::classic());
       std::size_t n = 0;
       for(; it != end; ++it, ++n) {
         s >> *it;

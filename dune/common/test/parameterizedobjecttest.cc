@@ -29,7 +29,7 @@ struct AImp : public InterfaceA
         s_("copied")
     {}
 
-    virtual std::string info()
+    std::string info() override
     {
         return s_;
     }

@@ -30,7 +30,7 @@ namespace Dune
    * @{
    */
 
-  namespace {
+  namespace Impl {
 
     // numeric_limits_helper provides std::numeric_limits access to the internals
     // of bigunsignedint. Previously, the correct specialization of std::numeric_limits
@@ -90,12 +90,15 @@ namespace Dune
 
     //! add
     bigunsignedint<k> operator+ (const bigunsignedint<k>& x) const;
+    bigunsignedint<k>& operator+= (const bigunsignedint<k>& x);
 
     //! subtract
     bigunsignedint<k> operator- (const bigunsignedint<k>& x) const;
+    bigunsignedint<k>& operator-= (const bigunsignedint<k>& x);
 
     //! multiply
     bigunsignedint<k> operator* (const bigunsignedint<k>& x) const;
+    bigunsignedint<k>& operator*= (const bigunsignedint<k>& x);
 
     //! prefix increment
     bigunsignedint<k>& operator++ ();
@@ -104,21 +107,25 @@ namespace Dune
     //! \warning This function is very slow and its usage should be
     //! prevented if possible
     bigunsignedint<k> operator/ (const bigunsignedint<k>& x) const;
+    bigunsignedint<k>& operator/= (const bigunsignedint<k>& x);
 
     //! modulo
     //! \warning This function is very slow and its usage should be
     //! prevented if possible
     bigunsignedint<k> operator% (const bigunsignedint<k>& x) const;
-
+    bigunsignedint<k>& operator%= (const bigunsignedint<k>& x);
 
     //! bitwise and
     bigunsignedint<k> operator& (const bigunsignedint<k>& x) const;
+    bigunsignedint<k>& operator&= (const bigunsignedint<k>& x);
 
     //! bitwise exor
     bigunsignedint<k> operator^ (const bigunsignedint<k>& x) const;
+    bigunsignedint<k>& operator^= (const bigunsignedint<k>& x);
 
     //! bitwise or
     bigunsignedint<k> operator| (const bigunsignedint<k>& x) const;
+    bigunsignedint<k>& operator|= (const bigunsignedint<k>& x);
 
     //! bitwise complement
     bigunsignedint<k> operator~ () const;
@@ -161,7 +168,7 @@ namespace Dune
     double todouble() const;
 
     friend class bigunsignedint<k/2>;
-    friend struct numeric_limits_helper< bigunsignedint<k> >;
+    friend struct Impl::numeric_limits_helper< bigunsignedint<k> >;
 
     inline friend std::size_t hash_value(const bigunsignedint& arg)
     {
@@ -268,27 +275,43 @@ namespace Dune
     return s;
   }
 
+  #define DUNE_BINOP(OP) \
+    template <int k> \
+    inline bigunsignedint<k> bigunsignedint<k>::operator OP (const bigunsignedint<k> &x) const \
+    { \
+      auto temp = *this; \
+      temp OP##= x; \
+      return temp; \
+    }
 
-  // Operators
+  DUNE_BINOP(+)
+  DUNE_BINOP(-)
+  DUNE_BINOP(*)
+  DUNE_BINOP(/)
+  DUNE_BINOP(%)
+  DUNE_BINOP(&)
+  DUNE_BINOP(^)
+  DUNE_BINOP(|)
+
+  #undef DUNE_BINOP
+
   template <int k>
-  inline bigunsignedint<k> bigunsignedint<k>::operator+ (const bigunsignedint<k>& x) const
+  inline bigunsignedint<k>& bigunsignedint<k>::operator+= (const bigunsignedint<k>& x)
   {
-    bigunsignedint<k> result;
     std::uint_fast32_t overflow=0;
 
     for (unsigned int i=0; i<n; i++)
     {
       std::uint_fast32_t sum = static_cast<std::uint_fast32_t>(digit[i]) + static_cast<std::uint_fast32_t>(x.digit[i]) + overflow;
-      result.digit[i] = sum&bitmask;
+      digit[i] = sum&bitmask;
       overflow = (sum>>bits)&overflowmask;
     }
-    return result;
+    return *this;
   }
 
   template <int k>
-  inline bigunsignedint<k> bigunsignedint<k>::operator- (const bigunsignedint<k>& x) const
+  inline bigunsignedint<k>& bigunsignedint<k>::operator-= (const bigunsignedint<k>& x)
   {
-    bigunsignedint<k> result;
     std::int_fast32_t overflow=0;
 
     for (unsigned int i=0; i<n; i++)
@@ -296,20 +319,20 @@ namespace Dune
       std::int_fast32_t diff = static_cast<std::int_fast32_t>(digit[i]) - static_cast<std::int_fast32_t>(x.digit[i]) - overflow;
       if (diff>=0)
       {
-        result.digit[i] = static_cast<std::uint16_t>(diff);
+        digit[i] = static_cast<std::uint16_t>(diff);
         overflow = 0;
       }
       else
       {
-        result.digit[i] = static_cast<std::uint16_t>(diff+bitmask+1);
+        digit[i] = static_cast<std::uint16_t>(diff+bitmask+1);
         overflow = 1;
       }
     }
-    return result;
+    return *this;
   }
 
   template <int k>
-  inline bigunsignedint<k> bigunsignedint<k>::operator* (const bigunsignedint<k>& x) const
+  inline bigunsignedint<k>& bigunsignedint<k>::operator*= (const bigunsignedint<k>& x)
   {
     bigunsignedint<2*k> finalproduct(0);
 
@@ -326,9 +349,8 @@ namespace Dune
       finalproduct = finalproduct+singleproduct;
     }
 
-    bigunsignedint<k> result;
-    for (unsigned int i=0; i<n; i++) result.digit[i] = finalproduct.digit[i];
-    return result;
+    for (unsigned int i=0; i<n; i++) digit[i] = finalproduct.digit[i];
+    return *this;
   }
 
   template <int k>
@@ -346,64 +368,58 @@ namespace Dune
   }
 
   template <int k>
-  inline bigunsignedint<k> bigunsignedint<k>::operator/ (const bigunsignedint<k>& x) const
+  inline bigunsignedint<k>& bigunsignedint<k>::operator/= (const bigunsignedint<k>& x)
   {
     if(x==0)
       DUNE_THROW(Dune::MathError, "division by zero!");
 
     // better slow than nothing
-    bigunsignedint<k> temp(*this);
     bigunsignedint<k> result(0);
 
-    while (temp>=x)
+    while (*this>=x)
     {
       ++result;
-      temp = temp-x;
+      *this -= x;
     }
 
-    return result;
+    *this = result;
+    return *this;
   }
 
   template <int k>
-  inline bigunsignedint<k> bigunsignedint<k>::operator% (const bigunsignedint<k>& x) const
+  inline bigunsignedint<k>& bigunsignedint<k>::operator%= (const bigunsignedint<k>& x)
   {
     // better slow than nothing
-    bigunsignedint<k> temp(*this);
-
-    while (temp>=x)
+    while (*this>=x)
     {
-      temp = temp-x;
+      *this -= x;
     }
 
-    return temp;
-  }
-
-
-  template <int k>
-  inline bigunsignedint<k> bigunsignedint<k>::operator& (const bigunsignedint<k>& x) const
-  {
-    bigunsignedint<k> result;
-    for (unsigned int i=0; i<n; i++)
-      result.digit[i] = digit[i]&x.digit[i];
-    return result;
+    return *this;
   }
 
   template <int k>
-  inline bigunsignedint<k> bigunsignedint<k>::operator^ (const bigunsignedint<k>& x) const
+  inline bigunsignedint<k>& bigunsignedint<k>::operator&= (const bigunsignedint<k>& x)
   {
-    bigunsignedint<k> result;
     for (unsigned int i=0; i<n; i++)
-      result.digit[i] = digit[i]^x.digit[i];
-    return result;
+      digit[i] = digit[i]&x.digit[i];
+    return *this;
   }
 
   template <int k>
-  inline bigunsignedint<k> bigunsignedint<k>::operator| (const bigunsignedint<k>& x) const
+  inline bigunsignedint<k>& bigunsignedint<k>::operator^= (const bigunsignedint<k>& x)
   {
-    bigunsignedint<k> result;
     for (unsigned int i=0; i<n; i++)
-      result.digit[i] = digit[i]|x.digit[i];
-    return result;
+      digit[i] = digit[i]^x.digit[i];
+    return *this;
+  }
+
+  template <int k>
+  inline bigunsignedint<k>& bigunsignedint<k>::operator|= (const bigunsignedint<k>& x)
+  {
+    for (unsigned int i=0; i<n; i++)
+      digit[i] = digit[i]|x.digit[i];
+    return *this;
   }
 
   template <int k>
@@ -587,7 +603,7 @@ namespace std
 {
   template<int k>
   struct numeric_limits<Dune::bigunsignedint<k> >
-    : private Dune::numeric_limits_helper<Dune::bigunsignedint<k> > // for access to internal state of bigunsignedint
+    : private Dune::Impl::numeric_limits_helper<Dune::bigunsignedint<k> > // for access to internal state of bigunsignedint
   {
   public:
     static const bool is_specialized = true;
@@ -602,7 +618,7 @@ namespace std
       Dune::bigunsignedint<k> max_;
       for(std::size_t i=0; i < Dune::bigunsignedint<k>::n; ++i)
         // access internal state via the helper base class
-        Dune::numeric_limits_helper<Dune::bigunsignedint<k> >::
+        Dune::Impl::numeric_limits_helper<Dune::bigunsignedint<k> >::
           digit(max_,i)=std::numeric_limits<std::uint16_t>::max();
       return max_;
     }
@@ -637,22 +653,22 @@ namespace std
     static const float_denorm_style has_denorm = denorm_absent;
     static const bool has_denorm_loss = false;
 
-    static Dune::bigunsignedint<k> infinity() throw()
+    static Dune::bigunsignedint<k> infinity() noexcept
     {
       return static_cast<Dune::bigunsignedint<k> >(0);
     }
 
-    static Dune::bigunsignedint<k> quiet_NaN() throw()
+    static Dune::bigunsignedint<k> quiet_NaN() noexcept
     {
       return static_cast<Dune::bigunsignedint<k> >(0);
     }
 
-    static Dune::bigunsignedint<k> signaling_NaN() throw()
+    static Dune::bigunsignedint<k> signaling_NaN() noexcept
     {
       return static_cast<Dune::bigunsignedint<k> >(0);
     }
 
-    static Dune::bigunsignedint<k> denorm_min() throw()
+    static Dune::bigunsignedint<k> denorm_min() noexcept
     {
       return static_cast<Dune::bigunsignedint<k> >(0);
     }

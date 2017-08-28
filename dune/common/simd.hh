@@ -212,14 +212,16 @@ namespace Dune
   }
 
   template<class T, class A>
-  T lane(std::size_t l, const Vc::Vector<T, A> &v)
+  auto lane(std::size_t l, const Vc::Vector<T, A> &v)
+    -> decltype(v[l])
   {
     assert(l < lanes(v));
     return v[l];
   }
 
   template<class T, class A>
-  T &lane(std::size_t l, Vc::Vector<T, A> &v)
+  auto lane(std::size_t l, Vc::Vector<T, A> &v)
+    -> decltype(v[l])
   {
     assert(l < lanes(v));
     return v[l];
@@ -232,14 +234,16 @@ namespace Dune
   }
 
   template<class T, std::size_t n, class V>
-  const T lane(std::size_t l, const Vc::SimdArray<T, n, V> &v)
+  auto lane(std::size_t l, const Vc::SimdArray<T, n, V> &v)
+    -> decltype(v[l])
   {
     assert(l < n);
     return v[l];
   }
 
   template<class T, std::size_t n, class V>
-  T &lane(std::size_t l, Vc::SimdArray<T, n, V> &v)
+  auto lane(std::size_t l, Vc::SimdArray<T, n, V> &v)
+    -> decltype(v[l])
   {
     assert(l < n);
     return v[l];

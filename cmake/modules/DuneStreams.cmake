@@ -6,7 +6,7 @@
 #    Standard debug streams with level below :code:`MINIMAL_DEBUG_LEVEL` will
 #    collapse to doing nothing if output is requested. Possible values are
 #    :code:`vverb`, :code:`verb`, :code:`info`, :code:`warn` and :code:`grave`.
-#    Deafults to :code:`warn`.
+#    Defaults to :code:`warn`.
 #
 
 macro(dune_set_minimal_debug_level)
@@ -24,4 +24,5 @@ elseif(MINIMAL_DEBUG_LEVEL MATCHES "vverb")
 else()
   set(DUNE_MINIMAL_DEBUG_LEVEL 4)
 endif()
+message(STATUS "Set Minimal Debug Level to ${DUNE_MINIMAL_DEBUG_LEVEL}")
 endmacro(dune_set_minimal_debug_level)

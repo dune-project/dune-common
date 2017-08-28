@@ -6,6 +6,7 @@
 /**
  * \file
  * \brief infrastructure for supporting operator->() on both references and proxies
+ * \ingroup CxxUtilities
  */
 
 #include <type_traits>
@@ -13,7 +14,7 @@
 
 namespace Dune {
 
-  namespace {
+  namespace Impl {
 
     // helper struct to store a temporary / proxy
     // for the duration of the member access
@@ -37,7 +38,7 @@ namespace Dune {
 
     };
 
-  } // anonymous namespace
+  } // end Impl namespace
 
 
 #ifdef DOXYGEN
@@ -70,6 +71,8 @@ namespace Dune {
    * \note This function exploits the special type deduction rules for unqualified rvalue references
    *       to distinguish between lvalues and rvalues and thus needs to be passed the object returned
    *       by the implementation.
+   *
+   * \ingroup CxxUtilities
    */
   template<typename T>
   pointer_or_proxy_holder
@@ -104,7 +107,7 @@ namespace Dune {
   template<typename T>
   inline typename std::enable_if<
     !std::is_lvalue_reference<T>::value,
-    member_access_proxy_holder<T>
+    Impl::member_access_proxy_holder<T>
     >::type
   handle_proxy_member_access(T&& target)
   {

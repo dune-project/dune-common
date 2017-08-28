@@ -85,14 +85,14 @@ namespace Dune {
     inline Indent operator+(const std::string& newindent) const {
       return Indent(this, newindent);
     }
-    //! create a copy of this indetation object with raised level
+    //! create a copy of this indentation object with raised level
     inline Indent operator+(unsigned morelevel) const {
       return Indent(parent, basic_indent, level+morelevel);
     }
     //! raise indentation level
     inline Indent& operator++() { ++level; return *this; }
     //! lower indentation level
-    inline Indent& operator--() { --level; return *this; }
+    inline Indent& operator--() { if ( level > 0 ) --level; return *this; }
 
     //! write indentation to a stream
     friend inline std::ostream& operator<<(std::ostream& s,

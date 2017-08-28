@@ -11,14 +11,6 @@
 #include <ctime>
 #endif
 
-// headers for stderror(3)
-#include <cstring>
-
-// access to errno in C++
-#include <cerrno>
-
-#include "exceptions.hh"
-
 namespace Dune {
 
   /** @addtogroup Common
@@ -28,9 +20,6 @@ namespace Dune {
   /*! \file
       \brief A simple timing class.
    */
-
-  /** \brief %Exception thrown by the Timer class */
-  class TimerError : public SystemError {} ;
 
 
   /** \brief A simple stop watch
@@ -56,14 +45,14 @@ namespace Dune {
      *
      * \param startImmediately If true (default) the timer starts counting immediately
      */
-    Timer (bool startImmediately=true) throw(TimerError)
+    Timer (bool startImmediately=true) noexcept
     {
       isRunning_ = startImmediately;
       reset();
     }
 
     //! Reset timer while keeping the running/stopped state
-    void reset() throw (TimerError)
+    void reset() noexcept
     {
       sumElapsed_ = 0.0;
       storedLastElapsed_ = 0.0;
@@ -72,7 +61,7 @@ namespace Dune {
 
 
     //! Start the timer and continue measurement if it is not running. Otherwise do nothing.
-    void start() throw (TimerError)
+    void start() noexcept
     {
       if (not (isRunning_))
       {
@@ -83,7 +72,7 @@ namespace Dune {
 
 
     //! Get elapsed user-time from last reset until now/last stop in seconds.
-    double elapsed () const throw (TimerError)
+    double elapsed () const noexcept
     {
       // if timer is running add the time elapsed since last start to sum
       if (isRunning_)
@@ -94,7 +83,7 @@ namespace Dune {
 
 
     //! Get elapsed user-time from last start until now/last stop in seconds.
-    double lastElapsed () const throw (TimerError)
+    double lastElapsed () const noexcept
     {
       // if timer is running return the current value
       if (isRunning_)
@@ -106,7 +95,7 @@ namespace Dune {
 
 
     //! Stop the timer and return elapsed().
-    double stop() throw (TimerError)
+    double stop() noexcept
     {
       if (isRunning_)
       {
@@ -127,24 +116,24 @@ namespace Dune {
 
 
 #ifdef TIMER_USE_STD_CLOCK
-    void rawReset() throw (TimerError)
+    void rawReset() noexcept
     {
       cstart = std::clock();
     }
 
-    double rawElapsed () const throw (TimerError)
+    double rawElapsed () const noexcept
     {
       return (std::clock()-cstart) / static_cast<double>(CLOCKS_PER_SEC);
     }
 
     std::clock_t cstart;
 #else
-    void rawReset() throw (TimerError)
+    void rawReset() noexcept
     {
       cstart = std::chrono::high_resolution_clock::now();
     }
 
-    double rawElapsed () const throw (TimerError)
+    double rawElapsed () const noexcept
     {
       std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
       std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double> >(now - cstart);

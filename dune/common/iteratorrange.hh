@@ -13,6 +13,7 @@ namespace Dune {
    * pair of member functions.
    *
    * \tparam Iterator  The type of iterator
+   * \ingroup CxxUtilities
    */
   template<typename Iterator>
   class IteratorRange

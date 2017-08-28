@@ -34,12 +34,12 @@ namespace Dune
     };
 
     //! create a new MallocAllocator
-    MallocAllocator() throw() {}
+    MallocAllocator() noexcept {}
     //! copy construct from an other MallocAllocator, possibly for a different result type
     template <class U>
-    MallocAllocator(const MallocAllocator<U>&) throw() {}
+    MallocAllocator(const MallocAllocator<U>&) noexcept {}
     //! cleanup this allocator
-    ~MallocAllocator() throw() {}
+    ~MallocAllocator() noexcept {}
 
     pointer address(reference x) const
     {
@@ -72,7 +72,7 @@ namespace Dune
     }
 
     //! max size for allocate
-    size_type max_size() const throw()
+    size_type max_size() const noexcept
     {
       return size_type(-1) / sizeof(T);
     }

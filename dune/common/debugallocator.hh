@@ -20,6 +20,10 @@ enum DummyProtFlags { PROT_NONE, PROT_WRITE, PROT_READ };
 
 #include "mallocallocator.hh"
 
+#if not HAVE_MPROTECT
+#error mprotect is required to use te DebugAllocator
+#else
+
 namespace Dune
 {
 
@@ -113,7 +117,7 @@ namespace Dune
       }
 
       template<typename T>
-      T* allocate(size_type n) throw(std::bad_alloc)
+      T* allocate(size_type n)
       {
         // setup chunk info
         AllocationInfo ai(typeid(T));
@@ -146,7 +150,7 @@ namespace Dune
       }
 
       template<typename T>
-      void deallocate(T* ptr, size_type n = 0) throw()
+      void deallocate(T* ptr, size_type n = 0) noexcept
       {
         // compute page address
         void* page_ptr =
@@ -244,12 +248,12 @@ namespace Dune
     };
 
     //! create a new DebugAllocator
-    DebugAllocator() throw() {}
+    DebugAllocator() noexcept {}
     //! copy construct from an other DebugAllocator, possibly for a different result type
     template <class U>
-    DebugAllocator(const DebugAllocator<U>&) throw() {}
+    DebugAllocator(const DebugAllocator<U>&) noexcept {}
     //! cleanup this allocator
-    ~DebugAllocator() throw() {}
+    ~DebugAllocator() noexcept {}
 
     pointer address(reference x) const
     {
@@ -275,7 +279,7 @@ namespace Dune
     }
 
     //! max size for allocate
-    size_type max_size() const throw()
+    size_type max_size() const noexcept
     {
       return size_type(-1) / sizeof(T);
     }
@@ -314,7 +318,7 @@ void * operator new(size_t size)
   return p;
 }
 
-void operator delete(void * p) throw()
+void operator delete(void * p) noexcept
 {
 #if DEBUG_NEW_DELETE > 2
   std::cout << "FREE " << p << std::endl;
@@ -323,5 +327,7 @@ void operator delete(void * p) throw()
 }
 
 #endif // DEBUG_NEW_DELETE
+
+#endif // HAVE_PROTECT
 
 #endif // DUNE_DEBUG_ALLOCATOR_HH

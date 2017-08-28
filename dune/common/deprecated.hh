@@ -8,7 +8,7 @@
  *      is not available
  */
 
-//! @addtogroup Common
+//! @addtogroup CxxUtilities
 //! @{
 #if defined(DOXYGEN) || !defined(HAS_ATTRIBUTE_DEPRECATED)
 //! Mark some entity as deprecated

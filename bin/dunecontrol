@@ -350,8 +350,8 @@ COMMANDSTOSKIPVERSIONCHECK="update status svn git exec bexec"
 # help string for the commands
 printdeps_HELP="print recursive dependencies of a module"
 vcsetup_HELP="setup version control repository (Git etc.) or working copy (SVN)"
-update_HELP="updated all modules from the repository"
-configure_HELP="run configure or cmake for each module"
+update_HELP="update all modules from their repositories"
+configure_HELP="run cmake for each module"
 make_HELP="build each module"
 all_HELP="\trun 'vcsetup', 'configure' and 'make' command for each module"
 exec_HELP="execute an arbitrary command in each module source directory"
@@ -391,7 +391,7 @@ run_default_status () {
   local is_svn=""
   name="$(eval echo \$NAME_$module)"
 
-  if test -d .git; then is_git=1; fi
+  if test -e .git; then is_git=1; fi
   if test -d .svn; then is_svn=1; fi
   if test ! "$is_svn" -a ! "$is_git" ; then
     echo "module $name not under known version control"
@@ -469,7 +469,7 @@ run_default_vcsetup() {
   fi
 
   # Check for both a file and a directory to cope with Git submodules
-  if [ -d .git -o -f .git ] ; then
+  if [ -e .git ] ; then
 
     # Read Whitespace-Hook setting from dune.module file
     local SETUPGITHOOK="$($GREP -i "^[$BLANK]*Whitespace-Hook:" dune.module | cut -d ':' -f2 | eval $PARSER_TRIM | tr '[:upper:]' '[:lower:]')"
@@ -477,16 +477,38 @@ run_default_vcsetup() {
     if [ "x$SETUPGITHOOK" = "xyes" ]; then
       # we have to install the Git whitespace hook
 
-      # The current Git repository might be a submodule, so we have to start by
-      # determining the location of the commit hook
+      # There are several options as to what the current worktreee might be backed by right now:
+      # - a plain old repository    -> copy to .git/hooks
+      # - a submodule repository    -> .git refers to the submodule repository inside the root $GIT_DIR
+      # - a git repo worktree       -> .git refers to the worktree data inside the original $GIT_DIR and we need to find
+      #                                the "canonical" $GIT_DIR root
+      # - a submodule in a worktree -> That just gets checked out again into the worktree backing store, so no worktree
+      #                                dereferencing here
 
-      if [ -f .git ] ; then
-        # submodule -> .git contains a pointer to the repository
-        GITHOOKPATH="$($SED 's/gitdir: //' < .git)/hooks/pre-commit"
-      else
-        # standard case, .git is the repository
-        GITHOOKPATH=.git/hooks/pre-commit
+      # We try this first by trying git's built-in infrastructure, but if the user's git is too old, we fall back to
+      # manual parsing
+
+      GITHOOKPATH="$(git rev-parse --git-common-dir)"
+      if [ $? -ne 0 -o "${GITHOOKPATH}" = "--git-common-dir" ] ; then
+
+        # no worktree support from here on out
+
+        GITHOOKPATH="$(git rev-parse --git-dir)"
+
+        if [ $? -ne 0 -o "${GITHOOKPATH}" = "--git-dir" ] ; then
+
+          # do the parsing manually
+
+          if [ -f .git ] ; then
+            # submodule -> .git contains a pointer to the repository
+            GITHOOKPATH="$($SED 's/gitdir: //' < .git)"
+          else
+            # standard case, .git is the repository
+            GITHOOKPATH=.git
+          fi
+        fi
       fi
+      GITHOOKPATH="${GITHOOKPATH}/hooks/pre-commit"
 
       if [ -n "$DISABLEWHITESPACEHOOK" ] ; then
         # the user doesn't want the Git whitespace hook - deinstall it if necessary and warn the user
@@ -566,7 +588,7 @@ run_default_vcsetup() {
   fi
 
   # Run custom setup scripts
-  if [ -d .git -o -f .git -o -d .svn ]; then
+  if [ -e .git -o -d .svn ]; then
     if [ -d .vcsetup/run.d ]; then
       for SCRIPT in .vcsetup/run.d/* ; do
         if [ -x "$SCRIPT" ]; then
@@ -581,7 +603,7 @@ run_default_vcsetup() {
 run_default_update () {
   if test -d .svn; then
     svn update
-  elif test -d .git || test -f .git; then
+  elif test -e .git; then
       if test -d .git && test -d ".git/svn" && test -n "`git svn find-rev HEAD`"; then
           # If the current HEAD points to a SVN commit, update via git-svn
           git svn rebase
@@ -728,7 +750,7 @@ run_default_svn () {
 }
 
 run_default_git () {
-  if test -d .git; then
+  if test -e .git; then
     PARAMS="$CMD_FLAGS"
     eval git "$PARAMS"
   fi
@@ -769,7 +791,6 @@ usage () {
     echo "                      not built successfully on the previous run)"
     echo "      --skipfirst     skip the first module (use with --resume)"
     echo "      --opts=FILE     load default options from FILE"
-    echo "                      (see dune-common/doc/example.opts)"
     echo "      --builddir=NAME make out-of-source builds in a subdir NAME."
     echo "                      This directory is created inside each module."
     echo "                      If NAME is an absolute path, the build directory "

@@ -3,21 +3,25 @@
 #ifndef DUNE_REMOTEINDICES_HH
 #define DUNE_REMOTEINDICES_HH
 
-#include "indexset.hh"
-#include "plocalindex.hh"
-#include <dune/common/exceptions.hh>
-#include <dune/common/poolallocator.hh>
-#include <dune/common/sllist.hh>
-#include <dune/common/stdstreams.hh>
+#if HAVE_MPI
+
+#include <cassert>
+#include <iostream>
+#include <ostream>
 #include <map>
+#include <memory>
 #include <set>
 #include <utility>
-#include <iostream>
-#include <algorithm>
-#include <iterator>
-#if HAVE_MPI
-#include "mpitraits.hh"
+#include <vector>
+
 #include <mpi.h>
+
+#include <dune/common/exceptions.hh>
+#include <dune/common/parallel/indexset.hh>
+#include <dune/common/parallel/mpitraits.hh>
+#include <dune/common/parallel/plocalindex.hh>
+#include <dune/common/sllist.hh>
+#include <dune/common/stdstreams.hh>
 
 namespace Dune {
   /** @addtogroup Common_Parallel
@@ -47,6 +51,7 @@ namespace Dune {
   template<typename T1, typename T2>
   class RemoteIndex;
 
+  // forward declaration needed for friend declaration.
   template<typename T>
   class IndicesSyncer;
 
@@ -151,6 +156,7 @@ namespace Dune {
   template<class T, class A>
   class CollectiveIterator;
 
+  // forward declaration needed for friend declaration.
   template<class T>
   class IndicesSyncer;
 
@@ -619,7 +625,7 @@ namespace Dune {
      * @exception InvalidPosition Thrown if the index at the current position or
      * the one before has bigger global index than the one to be inserted.
      */
-    void insert(const RemoteIndex& index) throw(InvalidPosition);
+    void insert(const RemoteIndex& index);
 
 
     /**
@@ -636,7 +642,7 @@ namespace Dune {
      * @exception InvalidPosition Thrown if the index at the current position or
      * the one before has bigger global index than the one to be inserted.
      */
-    void insert(const RemoteIndex& index, const GlobalIndex& global) throw(InvalidPosition);
+    void insert(const RemoteIndex& index, const GlobalIndex& global);
 
     /**
      * @brief Remove a remote index.
@@ -645,7 +651,7 @@ namespace Dune {
      * @exception InvalidPostion If there was an insertion or deletion of
      * a remote index corresponding to a bigger global index before.
      */
-    bool remove(const GlobalIndex& global) throw(InvalidPosition);
+    bool remove(const GlobalIndex& global);
 
     /**
      * @brief Repair the pointers to the local index pairs.
@@ -659,7 +665,7 @@ namespace Dune {
      * index set is not in ParallelIndexSetState::GROUND mode (only when
      * compiled with DUNE_ISTL_WITH_CHECKING!).
      */
-    void repairLocalIndexPointers() throw(InvalidIndexSetState);
+    void repairLocalIndexPointers();
 
 
     RemoteIndexListModifier(const RemoteIndexListModifier&);
@@ -1576,7 +1582,7 @@ namespace Dune {
   {}
 
   template<typename T, typename A, bool mode>
-  inline void RemoteIndexListModifier<T,A,mode>::repairLocalIndexPointers() throw(InvalidIndexSetState)
+  inline void RemoteIndexListModifier<T,A,mode>::repairLocalIndexPointers()
   {
     if(MODIFYINDEXSET) {
       // repair pointers to local index set.
@@ -1609,7 +1615,7 @@ namespace Dune {
   }
 
   template<typename T, typename A, bool mode>
-  inline void RemoteIndexListModifier<T,A,mode>::insert(const RemoteIndex& index) throw(InvalidPosition)
+  inline void RemoteIndexListModifier<T,A,mode>::insert(const RemoteIndex& index)
   {
     static_assert(!mode,"Not allowed if the mode indicates that new indices"
                         "might be added to the underlying index set. Use "
@@ -1632,7 +1638,7 @@ namespace Dune {
   }
 
   template<typename T, typename A, bool mode>
-  inline void RemoteIndexListModifier<T,A,mode>::insert(const RemoteIndex& index, const GlobalIndex& global) throw(InvalidPosition)
+  inline void RemoteIndexListModifier<T,A,mode>::insert(const RemoteIndex& index, const GlobalIndex& global)
   {
     static_assert(mode,"Not allowed if the mode indicates that no new indices"
                        "might be added to the underlying index set. Use "
@@ -1657,7 +1663,7 @@ namespace Dune {
   }
 
   template<typename T, typename A, bool mode>
-  bool RemoteIndexListModifier<T,A,mode>::remove(const GlobalIndex& global) throw(InvalidPosition)
+  bool RemoteIndexListModifier<T,A,mode>::remove(const GlobalIndex& global)
   {
 #ifdef DUNE_ISTL_WITH_CHECKING
     if(!first_ && global<last_)
@@ -1882,5 +1888,6 @@ namespace Dune {
   /** @} */
 }
 
-#endif
+#endif // HAVE_MPI
+
 #endif

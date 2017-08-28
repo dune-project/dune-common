@@ -14,10 +14,17 @@ install(FILES
   DuneDoc.cmake
   DuneDoxygen.cmake
   DuneEnableAllPackages.cmake
+  DuneExecuteProcess.cmake
   DuneMacros.cmake
   DuneMPI.cmake
   DunePathHelper.cmake
   DunePkgConfig.cmake
+  DunePythonCommonMacros.cmake
+  DunePythonFindPackage.cmake
+  DunePythonInstallPackage.cmake
+  DunePythonRequireVersion.cmake
+  DunePythonTestCommand.cmake
+  DunePythonVirtualenv.cmake
   DuneSphinxCMakeDoc.cmake
   DuneStreams.cmake
   DuneSymlinkOrCopy.cmake
@@ -30,6 +37,7 @@ install(FILES
   FindPTScotch.cmake
   FindSphinx.cmake
   FindSuiteSparse.cmake
+  FindTBB.cmake
   FindThreadsCMake31.cmake
   FindUMFPack.cmake
   Headercheck.cmake

@@ -26,6 +26,12 @@
 /* does the compiler support __attribute__((unused))? */
 #cmakedefine HAS_ATTRIBUTE_UNUSED 1
 
+/* does the compiler support C++17's class template argument deduction? */
+#cmakedefine DUNE_HAVE_CXX_CLASS_TEMPLATE_ARGUMENT_DEDUCTION 1
+
+/* does the compiler support conditionally throwing exceptions in constexpr context? */
+#cmakedefine DUNE_SUPPORTS_CXX_THROW_IN_CONSTEXPR 1
+
 /* Define if you have a BLAS library. */
 #cmakedefine HAVE_BLAS 1
 
@@ -57,6 +63,9 @@
 
 /* Define to 1 if you have <sys/mman.h>. */
 #cmakedefine HAVE_SYS_MMAN_H 1
+
+/* Define to 1 if you have the Threading Building Blocks (TBB) library */
+#cmakedefine HAVE_TBB 1
 
 /* begin private */
 
@@ -142,6 +151,10 @@
 
 /* Define to ENABLE_SUITESPARSE if the SuiteSparse's UMFPACK library is available */
 #cmakedefine HAVE_SUITESPARSE_UMFPACK ENABLE_SUITESPARSE
+
+/* Define to 1 if METIS is available */
+#cmakedefine HAVE_METIS 1
+
 
 /* Define to ENABLE_PARMETIS if you have the Parmetis library.
    This is only true if MPI was found

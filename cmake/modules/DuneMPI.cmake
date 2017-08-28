@@ -39,7 +39,7 @@ if(MPI_C_FOUND)
     "Libraries used by DUNE when linking MPI programs")
 
   # TODO check on where to position this exactly, doesn't look completely thought through
-  dune_register_package_flags(COMPILE_DEFINITIONS "ENABLE_MPI=1;MPICH_SKIP_MPICXX;MPIPP_H"
+  dune_register_package_flags(COMPILE_DEFINITIONS "ENABLE_MPI=1;MPICH_SKIP_MPICXX;MPIPP_H;MPI_NO_CPPBIND"
                               INCLUDE_DIRS "${MPI_DUNE_INCLUDE_PATH}"
                               LIBRARIES "${MPI_DUNE_LIBRARIES}")
 endif(MPI_C_FOUND)

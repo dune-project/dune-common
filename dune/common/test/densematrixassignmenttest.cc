@@ -33,6 +33,7 @@ struct Foo
   }
 };
 
+struct Bar {};
 
 template <class A, class B>
 bool identicalContents(A const &a, B const &b) {
@@ -79,6 +80,15 @@ bool run() {
   Dune::DiagonalMatrix<ft, 3> const diagMWrong3 = {1, 2, 3};
 
   bool passed = true;
+
+  static_assert(!Dune::HasDenseMatrixAssigner< Dune::FieldMatrix<ft, 2, 3>, std::vector< Dune::FieldMatrix<ft, 2, 3> > >::value,
+                "FieldMatrix is not assignable by a std::vector< FieldMatrix >!");
+  static_assert(!Dune::HasDenseMatrixAssigner< Dune::FieldMatrix<ft, 2, 3>, Bar >::value,
+                "FieldMatrix is not assignable by a Bar!");
+  static_assert(Dune::HasDenseMatrixAssigner< Dune::FieldMatrix<ft, 2, 3>, Dune::FieldMatrix<ft, 2, 3> >::value,
+                "FieldMatrix is assignable by FieldMatrix!");
+  static_assert(Dune::HasDenseMatrixAssigner< Dune::FieldMatrix<ft, 2, 3>, Dune::DynamicMatrix<ft> >::value,
+                "FieldMatrix is assignable by a DynamicMatrix!");
 
   // class: FieldMatrix
   {

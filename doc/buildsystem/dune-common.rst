@@ -229,7 +229,7 @@ How do I change my compiler and compiler flags?
 In general, there are multiple ways to do this:
 
 * Setting the CMake variables :ref:`CMAKE_<LANG>_COMPILER` (with :code:`LANG` being :code:`C`
-  or :code:`CXX` or :code:`Fortran`) from the opts file
+  or :code:`CXX` or :code:`Fortran`) from the opts file, e.g. via :code:`CMAKE_FLAGS="-DCMAKE_CXX_COMPILER=otherc++"`.
 * Setting those variables within the project with the :code:`set` command
 * Setting the environment variables :code:`CC`, :code:`CXX`, :code:`FC` etc.
 
@@ -373,6 +373,15 @@ packages below :code:`<CMAKE_BINARY_DIR>/_CPack_Packages`.
 Note that an un-packed copy is located there which contains a :code:`dune.module` file. Delete the
 subdirectory. Otherwise it is going to break your next :code:`dunecontrol` run, because the module
 is defined multiple times.
+
+.. _dune-python:
+
+How does the Dune build system handle Python?
+=============================================
+
+dune-common contains a build system extension to handle many python-related aspects. You can
+read more on this in the module description :ref:`DunePythonCommonMacros` and the pieces of
+documentation mentioned inthere.
 
 .. _troubleshoot:
 

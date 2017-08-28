@@ -539,6 +539,14 @@ namespace Dune {
     FieldVector<K,n> diag_;
   };
 
+  template< class K, int n >
+  struct FieldTraits< DiagonalMatrix<K,n> >
+  {
+    typedef typename FieldTraits<K>::field_type field_type;
+    typedef typename FieldTraits<K>::real_type real_type;
+  };
+
+
 #ifndef DOXYGEN // hide specialization
   /** \brief Special type for 1x1 matrices
    */

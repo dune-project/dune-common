@@ -10,8 +10,13 @@ elseif(BLAS_FOUND)
   set(_additional_libs ${BLAS_LIBRARIES})
 endif(LAPACK_FOUND)
 
+if(HAVE_MPROTECT)
+  set(debugallocator_src "debugallocator.cc")
+endif(HAVE_MPROTECT)
+
 dune_add_library("dunecommon"
-  debugallocator.cc
+  debugalign.cc
+  ${debugallocator_src}
   dynmatrixev.cc
   exceptions.cc
   fmatrixev.cc
@@ -24,9 +29,11 @@ dune_add_library("dunecommon"
   stdthread.cc
   ADD_LIBS "${_additional_libs}")
 
+add_dune_tbb_flags(dunecommon)
 #install headers
 install(FILES
         alignment.hh
+        alignedallocator.hh
         array.hh
         arraylist.hh
         assertandreturn.hh
@@ -38,6 +45,7 @@ install(FILES
         classname.hh
         concept.hh
         conditional.hh
+        debugalign.hh
         debugallocator.hh
         debugstream.hh
         deprecated.hh
@@ -71,6 +79,7 @@ install(FILES
         ios_state.hh
         iteratorfacades.hh
         iteratorrange.hh
+        keywords.hh
         lcm.hh
         lru.hh
         mallocallocator.hh

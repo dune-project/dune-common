@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <type_traits>
 
+#include <dune/common/keywords.hh>
 
 namespace Dune
 {
@@ -46,64 +47,64 @@ namespace Dune
   namespace Indices
   {
     //! Compile time index with value 0.
-    constexpr index_constant< 0>  _0 = {};
+    DUNE_INLINE_VARIABLE constexpr index_constant< 0>  _0 = {};
 
     //! Compile time index with value 1.
-    constexpr index_constant< 1>  _1 = {};
+    DUNE_INLINE_VARIABLE constexpr index_constant< 1>  _1 = {};
 
     //! Compile time index with value 2.
-    constexpr index_constant< 2>  _2 = {};
+    DUNE_INLINE_VARIABLE constexpr index_constant< 2>  _2 = {};
 
     //! Compile time index with value 3.
-    constexpr index_constant< 3>  _3 = {};
+    DUNE_INLINE_VARIABLE constexpr index_constant< 3>  _3 = {};
 
     //! Compile time index with value 4.
-    constexpr index_constant< 4>  _4 = {};
+    DUNE_INLINE_VARIABLE constexpr index_constant< 4>  _4 = {};
 
     //! Compile time index with value 5.
-    constexpr index_constant< 5>  _5 = {};
+    DUNE_INLINE_VARIABLE constexpr index_constant< 5>  _5 = {};
 
     //! Compile time index with value 6.
-    constexpr index_constant< 6>  _6 = {};
+    DUNE_INLINE_VARIABLE constexpr index_constant< 6>  _6 = {};
 
     //! Compile time index with value 7.
-    constexpr index_constant< 7>  _7 = {};
+    DUNE_INLINE_VARIABLE constexpr index_constant< 7>  _7 = {};
 
     //! Compile time index with value 8.
-    constexpr index_constant< 8>  _8 = {};
+    DUNE_INLINE_VARIABLE constexpr index_constant< 8>  _8 = {};
 
     //! Compile time index with value 9.
-    constexpr index_constant< 9>  _9 = {};
+    DUNE_INLINE_VARIABLE constexpr index_constant< 9>  _9 = {};
 
     //! Compile time index with value 10.
-    constexpr index_constant<10> _10 = {};
+    DUNE_INLINE_VARIABLE constexpr index_constant<10> _10 = {};
 
     //! Compile time index with value 11.
-    constexpr index_constant<11> _11 = {};
+    DUNE_INLINE_VARIABLE constexpr index_constant<11> _11 = {};
 
     //! Compile time index with value 12.
-    constexpr index_constant<12> _12 = {};
+    DUNE_INLINE_VARIABLE constexpr index_constant<12> _12 = {};
 
     //! Compile time index with value 13.
-    constexpr index_constant<13> _13 = {};
+    DUNE_INLINE_VARIABLE constexpr index_constant<13> _13 = {};
 
     //! Compile time index with value 14.
-    constexpr index_constant<14> _14 = {};
+    DUNE_INLINE_VARIABLE constexpr index_constant<14> _14 = {};
 
     //! Compile time index with value 15.
-    constexpr index_constant<15> _15 = {};
+    DUNE_INLINE_VARIABLE constexpr index_constant<15> _15 = {};
 
     //! Compile time index with value 16.
-    constexpr index_constant<16> _16 = {};
+    DUNE_INLINE_VARIABLE constexpr index_constant<16> _16 = {};
 
     //! Compile time index with value 17.
-    constexpr index_constant<17> _17 = {};
+    DUNE_INLINE_VARIABLE constexpr index_constant<17> _17 = {};
 
     //! Compile time index with value 18.
-    constexpr index_constant<18> _18 = {};
+    DUNE_INLINE_VARIABLE constexpr index_constant<18> _18 = {};
 
     //! Compile time index with value 19.
-    constexpr index_constant<19> _19 = {};
+    DUNE_INLINE_VARIABLE constexpr index_constant<19> _19 = {};
 
   } // namespace Indices
 

@@ -3,6 +3,7 @@
 #ifndef DUNE_COMMON_PARAMETERIZEDOBJECT_HH
 #define DUNE_COMMON_PARAMETERIZEDOBJECT_HH
 
+#include <functional>
 #include <map>
 
 #include <dune/common/exceptions.hh>

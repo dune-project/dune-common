@@ -4,14 +4,21 @@
 #define DUNE_COMMON_PARALLEL_VARIABLESIZECOMMUNICATOR_HH
 
 #if HAVE_MPI
-// MPI header
-#include <mpi.h>
-#include <vector>
-#include <map>
+
+#include <algorithm>
+#include <cassert>
+#include <cstddef>
 #include <functional>
+#include <map>
+#include <memory>
+#include <utility>
+#include <vector>
+
+#include <mpi.h>
+
+#include <dune/common/parallel/interface.hh>
+#include <dune/common/parallel/mpitraits.hh>
 #include <dune/common/unused.hh>
-#include "interface.hh"
-#include "mpitraits.hh"
 
 /**
  * @addtogroup Common_Parallel
@@ -1157,5 +1164,7 @@ void VariableSizeCommunicator<Allocator>::communicate(DataHandle& handle)
     communicateVariableSize<FORWARD>(handle);
 }
 } // end namespace Dune
-#endif
+
+#endif // HAVE_MPI
+
 #endif

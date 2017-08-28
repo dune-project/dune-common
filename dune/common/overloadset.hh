@@ -14,6 +14,26 @@ namespace Dune {
 
 namespace Impl {
 
+#if __cpp_variadic_using >= 201611
+
+  template<typename... F>
+  class OverloadSet
+    : public F...
+  {
+
+  public:
+
+    template<typename... FF>
+    OverloadSet(FF&&... ff)
+      : F(std::forward<FF>(ff))...
+    {}
+
+    using F::operator()...;
+
+  };
+
+#else // __cpp_variadic_using >= 201611
+
   // This overload set derives from
   // all passed functions. Since we
   // cannot do argument pack expansion
@@ -49,6 +69,8 @@ namespace Impl {
     using F0::operator();
   };
 
+#endif // __cpp_variadic_using >= 201611
+
 } // end namespace Impl
 
 
@@ -74,6 +96,8 @@ namespace Impl {
  *
  * Notice that the passed function objects are
  * stored by value and must be copy-constructible.
+ *
+ * \ingroup CxxUtilities
  */
 template<class... F>
 auto overload(F&&... f)
@@ -160,6 +184,8 @@ namespace Impl {
  *
  * Notice that the passed function objects are
  * stored by value and must be copy-constructible.
+ *
+ * \ingroup CxxUtilities
  */
 template<class... F>
 auto orderedOverload(F&&... f)

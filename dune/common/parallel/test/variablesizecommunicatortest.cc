@@ -1,10 +1,13 @@
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include <config.h>
 
-#include<iostream>
-#include<mpi.h>
+#include <cstddef>
+#include <iostream>
+#include <utility>
 
+#include <mpi.h>
+
+#include <dune/common/parallel/interface.hh>
+#include <dune/common/parallel/variablesizecommunicator.hh>
 #include <dune/common/unused.hh>
 
 struct MyDataHandle
@@ -87,8 +90,6 @@ struct VarDataHandle
     }
 
 };
-
-#include<dune/common/parallel/variablesizecommunicator.hh>
 
 int main(int argc, char** argv)
 {
