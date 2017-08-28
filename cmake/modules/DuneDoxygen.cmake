@@ -46,13 +46,13 @@ macro(prepare_doxyfile)
   find_file(_DOXYLOCAL Doxylocal PATHS ${CMAKE_CURRENT_SOURCE_DIR} NO_DEFAULT_PATH)
 
   if(_DOXYLOCAL)
-    set(make_doxyfile_command ${CMAKE_COMMAND} -D DOT_TRUE=${DOT_TRUE} -D DUNE_MOD_NAME=${ProjectName} -D DUNE_MOD_VERSION=${ProjectVersion} -D DOXYSTYLE=${DOXYSTYLE_FILE} -DDOXYGENMACROS=${DOXYGENMACROS_FILE}  -D DOXYLOCAL=${CMAKE_CURRENT_SOURCE_DIR}/Doxylocal -D abs_top_srcdir=${CMAKE_SOURCE_DIR} -D srcdir=${CMAKE_CURRENT_SOURCE_DIR} -D top_srcdir=${CMAKE_SOURCE_DIR} -P ${scriptdir}/CreateDoxyFile.cmake)
+    set(make_doxyfile_command ${CMAKE_COMMAND} -D DOT_TRUE=${DOT_TRUE} -D DUNE_MOD_NAME=${ProjectName} -D DUNE_MOD_VERSION=${ProjectVersion} -D DOXYSTYLE=${DOXYSTYLE_FILE} -D DOXYGENMACROS=${DOXYGENMACROS_FILE}  -D DOXYLOCAL=${CMAKE_CURRENT_SOURCE_DIR}/Doxylocal -D abs_top_srcdir=${CMAKE_SOURCE_DIR} -D srcdir=${CMAKE_CURRENT_SOURCE_DIR} -D top_srcdir=${CMAKE_SOURCE_DIR} -P ${scriptdir}/CreateDoxyFile.cmake)
     add_custom_command(OUTPUT Doxyfile.in Doxyfile
       COMMAND ${make_doxyfile_command}
       COMMENT "Creating Doxyfile.in"
       DEPENDS ${DOXYSTYLE_FILE} ${DOXYGENMACROS_FILE} ${CMAKE_CURRENT_SOURCE_DIR}/Doxylocal)
   else()
-    set(make_doxyfile_command ${CMAKE_COMMAND} -D DOT_TRUE=${DOT_TRUE} -D DUNE_MOD_NAME=${ProjectName} -D DUNE_MOD_VERSION=${DUNE_MOD_VERSION} -D DOXYSTYLE=${DOXYSTYLE_FILE} -DDOXYGENMACROS=${DOXYGENMACROS_FILE} -D abs_top_srcdir=${CMAKE_SOURCE_DIR} -D top_srcdir=${CMAKE_SOURCE_DIR} -P ${scriptdir}/CreateDoxyFile.cmake)
+    set(make_doxyfile_command ${CMAKE_COMMAND} -D DOT_TRUE=${DOT_TRUE} -D DUNE_MOD_NAME=${ProjectName} -D DUNE_MOD_VERSION=${DUNE_MOD_VERSION} -D DOXYSTYLE=${DOXYSTYLE_FILE} -D DOXYGENMACROS=${DOXYGENMACROS_FILE} -D abs_top_srcdir=${CMAKE_SOURCE_DIR} -D top_srcdir=${CMAKE_SOURCE_DIR} -P ${scriptdir}/CreateDoxyFile.cmake)
     add_custom_command(OUTPUT Doxyfile.in Doxyfile
       COMMAND ${make_doxyfile_command}
       COMMENT "Creating Doxyfile.in"
