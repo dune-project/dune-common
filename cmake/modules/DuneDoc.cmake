@@ -102,16 +102,18 @@ include(DuneSphinxCMakeDoc)
 include(DuneDoxygen)
 
 macro(create_doc_install filename targetdir dependency)
-  dune_module_path(MODULE dune-common RESULT scriptdir SCRIPT_DIR)
-  get_filename_component(targetfile ${filename} NAME)
-  set(install_command ${CMAKE_COMMAND} -D FILES=${filename} -D DIR=${CMAKE_INSTALL_PREFIX}/${targetdir} -P ${scriptdir}/InstallFile.cmake)
-  # create a custom target for the installation
-  add_custom_target(install_${targetfile} ${install_command}
-    COMMENT "Installing ${filename} to ${targetdir}"
-    DEPENDS ${dependency})
-  # When installing, call cmake install with the above install target and add the file to install_manifest.txt
-  install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" --build \"${CMAKE_BINARY_DIR}\" --target install_${targetfile} )
-            LIST(APPEND CMAKE_INSTALL_MANIFEST_FILES ${CMAKE_INSTALL_PREFIX}/${targetdir}/${targetfile})")
+  if(LATEX_USABLE)
+    dune_module_path(MODULE dune-common RESULT scriptdir SCRIPT_DIR)
+    get_filename_component(targetfile ${filename} NAME)
+    set(install_command ${CMAKE_COMMAND} -D FILES=${filename} -D DIR=${CMAKE_INSTALL_PREFIX}/${targetdir} -P ${scriptdir}/InstallFile.cmake)
+    # create a custom target for the installation
+    add_custom_target(install_${targetfile} ${install_command}
+      COMMENT "Installing ${filename} to ${targetdir}"
+      DEPENDS ${dependency})
+    # When installing, call cmake install with the above install target and add the file to install_manifest.txt
+    install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" --build \"${CMAKE_BINARY_DIR}\" --target install_${targetfile} )
+              LIST(APPEND CMAKE_INSTALL_MANIFEST_FILES ${CMAKE_INSTALL_PREFIX}/${targetdir}/${targetfile})")
+  endif()
 endmacro(create_doc_install)
 
 

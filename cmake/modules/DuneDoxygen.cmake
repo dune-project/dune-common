@@ -96,26 +96,26 @@ macro(add_doxygen_target)
     add_custom_target(doxygen_${DOXYGEN_TARGET}
       DEPENDS ${DOXYGEN_OUTPUT})
     add_dependencies(doc doxygen_${DOXYGEN_TARGET})
-  endif()
 
-  # Use a cmake call to install the doxygen documentation and create a
-  # target for it
-  include(GNUInstallDirs)
-  # When installing call cmake install with the above install target
-  install(CODE
-    "execute_process(COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target doxygen_${ProjectName}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-      file(GLOB doxygenfiles
-        GLOB ${CMAKE_CURRENT_BINARY_DIR}/html/*.html
-        ${CMAKE_CURRENT_BINARY_DIR}/html/*.js
-        ${CMAKE_CURRENT_BINARY_DIR}/html/*.png
-        ${CMAKE_CURRENT_BINARY_DIR}/html/*.css
-        ${CMAKE_CURRENT_BINARY_DIR}/html/*.gif)
-      set(doxygenfiles \"\${doxygenfiles}\")
-      foreach(_file \${doxygenfiles})
-         get_filename_component(_basename \${_file} NAME)
-         LIST(APPEND CMAKE_INSTALL_MANIFEST_FILES ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen/\${_basename})
-       endforeach()
-       file(INSTALL \${doxygenfiles} DESTINATION ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen)
-       message(STATUS \"Installed doxygen into ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen\")")
+    # Use a cmake call to install the doxygen documentation and create a
+    # target for it
+    include(GNUInstallDirs)
+    # When installing call cmake install with the above install target
+    install(CODE
+      "execute_process(COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target doxygen_${ProjectName}
+          WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+        file(GLOB doxygenfiles
+          GLOB ${CMAKE_CURRENT_BINARY_DIR}/html/*.html
+          ${CMAKE_CURRENT_BINARY_DIR}/html/*.js
+          ${CMAKE_CURRENT_BINARY_DIR}/html/*.png
+          ${CMAKE_CURRENT_BINARY_DIR}/html/*.css
+          ${CMAKE_CURRENT_BINARY_DIR}/html/*.gif)
+        set(doxygenfiles \"\${doxygenfiles}\")
+        foreach(_file \${doxygenfiles})
+           get_filename_component(_basename \${_file} NAME)
+           LIST(APPEND CMAKE_INSTALL_MANIFEST_FILES ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen/\${_basename})
+         endforeach()
+         file(INSTALL \${doxygenfiles} DESTINATION ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen)
+         message(STATUS \"Installed doxygen into ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen\")")
+  endif()
 endmacro(add_doxygen_target)
