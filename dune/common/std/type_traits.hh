@@ -7,7 +7,7 @@
 #include <dune/common/typetraits.hh>
 #include <dune/common/typeutilities.hh>
 
-#if __cpp_lib_experimental_detect >= 201505
+#if DUNE_HAVE_HEADER_EXPERIMENTAL_TYPE_TRAITS
 #include <experimental/type_traits>
 #endif
 
