@@ -32,6 +32,9 @@
 /* does the compiler support conditionally throwing exceptions in constexpr context? */
 #cmakedefine DUNE_SUPPORTS_CXX_THROW_IN_CONSTEXPR 1
 
+/* does the standard library provide <experimental/type_traits> ? */
+#cmakedefine DUNE_HAVE_HEADER_EXPERIMENTAL_TYPE_TRAITS 1
+
 /* Define if you have a BLAS library. */
 #cmakedefine HAVE_BLAS 1
 
