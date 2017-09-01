@@ -504,7 +504,16 @@ namespace Dune {
       DUNE_SIMD_PREFIX_OP (Plus,             +  );
       DUNE_SIMD_PREFIX_OP (Minus,            -  );
       DUNE_SIMD_PREFIX_OP (LogicNot,         !  );
+      // Do not warn about ~ being applied to bool.  (1) Yes, doing that is
+      // weird, but we do want to test the weird stuff too.  (2) It avoids
+      // running into <https://gcc.gnu.org/bugzilla/show_bug.cgi?id=82040> on
+      // g++-7.0 through 7.2.  Also, ignore -Wpragmas to not warn about an
+      // unknown -Wbool-operation on compilers that do not know that option.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wbool-operation"
       DUNE_SIMD_PREFIX_OP (BitNot,           ~  );
+#pragma GCC diagnostic push
 
 #undef DUNE_SIMD_POSTFIX_OP
 #undef DUNE_SIMD_PREFIX_OP
