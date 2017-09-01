@@ -138,15 +138,6 @@ GENERATE_LEGEND        = NO
 
 MACRO_EXPANSION        = YES
 EXPAND_ONLY_PREDEF     = YES
-PREDEFINED             = DOXYGEN \
-                         HAVE_MPI:=1 \
-                         _DEBUG_ALLOCATOR_H:=1 \
-                         "DUNE_DEPRECATED:=/** \deprecated */" \
-                         "DUNE_DEPRECATED_MSG(A):=/** \deprecated A */" \
-                         "DUNE_INLINE_VARIABLE:= " \
-                         __cpp_inline_variables:=201606 \
-                         __cpp_constexpr:=201603 \
-                         __cpp_variable_templates:=201304 \
 
 
 @DOT_TRUE@HAVE_DOT               = YES

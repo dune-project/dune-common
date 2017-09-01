@@ -31,6 +31,7 @@
 
 include(CMakePushCheckState)
 include(CheckCXXCompilerFlag)
+include(CheckIncludeFileCXX)
 include(CheckCXXSourceCompiles)
 
 # C++ standard versions that this test knows about
@@ -461,4 +462,10 @@ check_cxx_source_compiles("
     return 0;
   }
 " DUNE_SUPPORTS_CXX_THROW_IN_CONSTEXPR
+  )
+
+# Check whether we have <experimental/type_traits> (for is_detected et. al.)
+check_include_file_cxx(
+  experimental/type_traits
+  DUNE_HAVE_HEADER_EXPERIMENTAL_TYPE_TRAITS
   )

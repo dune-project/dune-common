@@ -1,0 +1,19 @@
+# This file contains the list of predefined preprocessor macros required for running
+# Doxygen. It should be included automatically by the build system after
+# Doxystyle.
+#
+# The reason to have this separate is for building the website, where we
+# would otherwise have to maintain these definitions a second time.
+
+PREDEFINED             = DOXYGEN \
+                         HAVE_MPI:=1 \
+                         _DEBUG_ALLOCATOR_H:=1 \
+                         "DUNE_DEPRECATED:=/** \deprecated */" \
+                         "DUNE_DEPRECATED_MSG(A):=/** \deprecated A */" \
+                         "DUNE_INLINE_VARIABLE:= " \
+                         __cpp_inline_variables:=201606 \
+                         __cpp_constexpr:=201603 \
+                         __cpp_variable_templates:=201304 \
+
+
+# marker - here to allow the last line continuation
