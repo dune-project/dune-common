@@ -513,7 +513,7 @@ namespace Dune {
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wbool-operation"
       DUNE_SIMD_PREFIX_OP (BitNot,           ~  );
-#pragma GCC diagnostic push
+#pragma GCC diagnostic pop
 
 #undef DUNE_SIMD_POSTFIX_OP
 #undef DUNE_SIMD_PREFIX_OP
