@@ -31,7 +31,7 @@ include(FindMProtect)
 find_package(TBB OPTIONAL_COMPONENTS cpf allocator)
 
 # try to find the Vc library
-find_package(Vc)
+find_package(Vc NO_MODULE)
 include(AddVcFlags)
 set_package_info("Vc" "C++ Vectorization library" "https://github.com/VcDevel/Vc")
 
