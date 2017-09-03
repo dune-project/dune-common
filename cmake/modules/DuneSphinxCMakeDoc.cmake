@@ -54,7 +54,11 @@
 #
 
 find_package(Sphinx)
-
+# text for feature summary
+set_package_properties("Sphinx" PROPERTIES
+  DESCRIPTION "Documentation generator"
+  URL "www.sphinx-doc.org"
+  PURPOSE "To generate the documentation from CMake and Python sources")
 
 function(dune_cmake_sphinx_doc)
   # Only proceed if Sphinx was found on the system

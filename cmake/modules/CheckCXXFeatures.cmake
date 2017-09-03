@@ -359,6 +359,9 @@ if(${CMAKE_VERSION} VERSION_LESS "3.1")
 else()
   find_package(Threads)
 endif()
+# text for feature summary
+set_package_properties("Threads" PROPERTIES
+  DESCRIPTION "Multi-threading library")
 
 # see whether threading needs -no-as-needed
 if(EXISTS /etc/dpkg/origins/ubuntu)
