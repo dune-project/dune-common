@@ -21,6 +21,10 @@ else(Fortran_Works)
   set(HAVE_LAPACK Off)
   set(HAVE_BLAS Off)
 endif(Fortran_Works)
+set_package_properties("BLAS" PROPERTIES
+  DESCRIPTION "fast linear algebra routines")
+set_package_properties("LAPACK" PROPERTIES
+  DESCRIPTION "fast linear algebra routines")
 
 find_package(GMP)
 include(AddGMPFlags)

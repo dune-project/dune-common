@@ -24,6 +24,11 @@
 find_package(MPI)
 find_package(Threads)
 
+# text for feature summary
+set_package_properties("MPI" PROPERTIES
+  DESCRIPTION "Message Passing Interface library"
+  PURPOSE "Parallel programming on multiple processors")
+
 if(MPI_C_FOUND)
   set(HAVE_MPI ${MPI_C_FOUND})
   # We do not support the CXX bindings of MPI

@@ -25,6 +25,10 @@
 #
 
 find_package(Doxygen)
+set_package_properties("Doxygen" PROPERTIES
+  DESCRIPTION "Class documentation generator"
+  URL "www.doxygen.org"
+  PURPOSE "To generate the class documentation from C++ sources")
 include(CMakeParseArguments)
 
 # Set DOT_TRUE for the Doxyfile generation.

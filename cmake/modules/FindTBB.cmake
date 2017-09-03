@@ -460,3 +460,8 @@ function(add_dune_tbb_flags _targets)
     endif()
   endforeach(_target)
 endfunction(add_dune_tbb_flags)
+
+# text for feature summary
+set_package_properties("TBB" PROPERTIES
+  DESCRIPTION "Threading Building Blocks library"
+  PURPOSE "Parallel programming on multi-core processors")
