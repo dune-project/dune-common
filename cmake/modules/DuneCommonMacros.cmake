@@ -33,7 +33,11 @@ find_package(TBB OPTIONAL_COMPONENTS cpf allocator)
 # try to find the Vc library
 find_package(Vc NO_MODULE)
 include(AddVcFlags)
-set_package_info("Vc" "C++ Vectorization library" "https://github.com/VcDevel/Vc")
+# text for feature summary
+set_package_properties("Vc" PROPERTIES
+  DESCRIPTION "C++ Vectorization library"
+  URL "https://github.com/VcDevel/Vc"
+  PURPOSE "For use of SIMD instructions")
 
 # Run the python extension of the Dune cmake build system
 include(DunePythonCommonMacros)
