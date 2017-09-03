@@ -76,7 +76,9 @@ find_package_handle_standard_args(
 mark_as_advanced(GMP_LIB GMPXX_LIB GMPXX_INCLUDE_DIR)
 
 # text for feature summary
-set_package_info("GMP" "GNU multi-precision library, including the C++ bindings GMPxx")
+set_package_properties("GMP" PROPERTIES
+  DESCRIPTION "GNU multi-precision library including the C++ bindings GMPxx"
+  PURPOSE "Mulity-precision quadrature rules, basis function evaluation etc.")
 
 # if GMPxx headers, GMP library, and GMPxx library are found, store results
 if(GMP_FOUND)
