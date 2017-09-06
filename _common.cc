@@ -42,8 +42,8 @@ PYBIND11_PLUGIN(_common)
   pybind11::enum_< Dune::CorePy::VTKDataType > vtkDataType( module, "DataType" );
   vtkDataType.value( "CellData", Dune::CorePy::VTKDataType::CellData );
   vtkDataType.value( "PointData", Dune::CorePy::VTKDataType::PointData );
-  vtkDataType.value( "CellVector", Dune::CorePy::VTKDataType::CellData );
-  vtkDataType.value( "PointVector", Dune::CorePy::VTKDataType::PointData );
+  vtkDataType.value( "CellVector", Dune::CorePy::VTKDataType::CellVector );
+  vtkDataType.value( "PointVector", Dune::CorePy::VTKDataType::PointVector );
 
   pybind11::enum_< Dune::PartitionType > partitionType( module, "PartitionType" );
   partitionType.value( "Interior", Dune::InteriorEntity );
