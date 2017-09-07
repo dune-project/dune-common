@@ -14,7 +14,7 @@
 function(add_dune_parmetis_flags _targets)
   if(PARMETIS_FOUND)
     foreach(_target ${_targets})
-      target_link_libraries(${_target} ${PARMETIS_LIBRARY} ${METIS_LIBRARY})
+      target_link_libraries(${_target} PUBLIC ${PARMETIS_LIBRARY} ${METIS_LIBRARY})
       GET_TARGET_PROPERTY(_props ${_target} INCLUDE_DIRECTORIES)
       string(REPLACE "_props-NOTFOUND" "" _props "${_props}")
       SET_TARGET_PROPERTIES(${_target} PROPERTIES INCLUDE_DIRECTORIES

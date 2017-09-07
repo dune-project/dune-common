@@ -16,7 +16,7 @@
 function(add_dune_vc_flags _targets)
   if(Vc_FOUND)
     foreach(_target ${_targets})
-      target_link_libraries(${_target} ${Vc_LIBRARIES})
+      target_link_libraries(${_target} PUBLIC ${Vc_LIBRARIES})
       target_compile_options(${_target} PUBLIC ${Vc_ALL_FLAGS})
       target_compile_definitions(${_target} PUBLIC ENABLE_VC=1)
       target_include_directories(${_target} SYSTEM PUBLIC ${Vc_INCLUDE_DIR})

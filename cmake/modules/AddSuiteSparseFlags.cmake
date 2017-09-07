@@ -13,7 +13,7 @@
 function(add_dune_suitesparse_flags _targets)
   if(SuiteSparse_FOUND)
     foreach(_target ${_targets})
-      target_link_libraries(${_target} ${SuiteSparse_DUNE_LIBRARIES})
+      target_link_libraries(${_target} PUBLIC ${SuiteSparse_DUNE_LIBRARIES})
       get_target_property(_props ${_target} COMPILE_FLAGS)
       string(REPLACE "_props-NOTFOUND" "" _props "${_props}")
       set_target_properties(${_target} PROPERTIES COMPILE_FLAGS
