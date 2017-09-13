@@ -33,12 +33,27 @@ namespace Dune
       if (n > this->max_size())
         throw std::bad_alloc();
 
-      pointer ret =
-        static_cast<pointer>(aligned_alloc(alignment, n * sizeof(T)));
+#if __APPLE__
+      /*
+       * Apple's standard library doesn't have aligned_alloc() - C11 is still something
+       * from the future in Cupertino. Luckily, they got around to finally implementing
+       * posix_memalign(), so let's use that instead.
+       */
+      void* ret = nullptr;
+      if (posix_memalign(&ret, alignment, n * sizeof(T)) != 0)
+        throw std::bad_alloc();
+
+      return static_cast<pointer>(ret);
+#else
+      /*
+       * Everybody else gets the standard treatment.
+       */
+      pointer ret = static_cast<pointer>(aligned_alloc(alignment, n * sizeof(T)));
       if (!ret)
         throw std::bad_alloc();
 
       return ret;
+#endif
     }
   };
 
