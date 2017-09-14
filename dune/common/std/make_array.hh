@@ -4,18 +4,18 @@
 #include <array>
 #include <type_traits>
 
-#if __cpp_lib_experimental_make_array >= 201505
+#if DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY
 #include <experimental/array>
 #endif
 
 namespace Dune {
 namespace Std {
 
-#if __cpp_lib_experimental_make_array >= 201505
+#if DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY
 
   using std::experimental::make_array;
 
-#else // __cpp_lib_experimental_make_array >= 201505
+#else // DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY
 
   //! Create and initialize an array
   /**
@@ -39,7 +39,7 @@ namespace Std {
     return result;
   }
 
-#endif // __cpp_lib_experimental_make_array >= 201505
+#endif // DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY
 
 }
 }

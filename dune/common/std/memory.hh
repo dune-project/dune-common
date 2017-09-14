@@ -12,7 +12,7 @@ namespace Dune
   namespace Std
   {
 
-#if __cpp_lib_make_unique >= 201304
+#if DUNE_HAVE_CXX_MAKE_UNIQUE
 
     using std::make_unique;
 
@@ -99,7 +99,7 @@ namespace Dune
     typename MakeUniqueHelper<T>::KnownBoundArrayUniquePtr
       make_unique(Args&&... args) = delete;
 
-#endif // __cpp_lib_make_unique >= 201304
+#endif // DUNE_HAVE_CXX_MAKE_UNIQUE
 
   } // namespace Std
 
