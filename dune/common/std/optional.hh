@@ -7,11 +7,23 @@
 #include <type_traits>
 #include <utility>
 
+#ifdef DUNE_HAVE_CXX_OPTIONAL
+#include <optional>
+#endif // #ifdef DUNE_HAVE_CXX_OPTIONAL
+
+
 namespace Dune
 {
 
   namespace Std
   {
+
+#ifdef DUNE_HAVE_CXX_OPTIONAL
+    // In case of C++ standard >= 17 we forward optionals into our namespace
+    template< class T >
+    using optional = std::optional< T >;
+#else
+    // In case of C++ standard < 17 we take the fallback implementation
 
     // nullopt
     // -------
@@ -414,11 +426,14 @@ namespace Dune
       return optional< typename std::decay< T >::type >( std::forward< T >( value ) );
     }
 
+#endif //#ifdef DUNE_HAVE_CXX_OPTIONAL
+
   } // namespace Std
 
 } // namespace Dune
 
 
+#ifndef DUNE_HAVE_CXX_OPTIONAL
 namespace std
 {
 
@@ -446,5 +461,7 @@ namespace std
   };
 
 } // namespace std
+
+#endif //#ifndef DUNE_HAVE_CXX_OPTIONAL
 
 #endif // #ifndef DUNE_COMMON_STD_OPTIONAL_HH

@@ -29,6 +29,9 @@
 /* does the compiler support C++17's class template argument deduction? */
 #cmakedefine DUNE_HAVE_CXX_CLASS_TEMPLATE_ARGUMENT_DEDUCTION 1
 
+/* does the compiler support C++17's optional? */
+#cmakedefine DUNE_HAVE_CXX_OPTIONAL 1
+
 /* does the compiler support conditionally throwing exceptions in constexpr context? */
 #cmakedefine DUNE_SUPPORTS_CXX_THROW_IN_CONSTEXPR 1
 
