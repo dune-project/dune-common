@@ -62,7 +62,7 @@ namespace Dune
      * \ingroup CxxUtilities
      */
     template<typename T, typename... Args>
-    typename MakeUniqueHelper<T>::NonArrayUniquePtr
+    typename Impl::MakeUniqueHelper<T>::NonArrayUniquePtr
       make_unique(Args&&... args)
     {
       return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
@@ -77,10 +77,10 @@ namespace Dune
      * \ingroup CxxUtilities
      */
     template<typename T>
-    typename MakeUniqueHelper<T>::UnknownBoundArrayUniquePtr
+    typename Impl::MakeUniqueHelper<T>::UnknownBoundArrayUniquePtr
       make_unique(size_t n)
     {
-      return std::unique_ptr<T>(new typename MakeUniqueHelper<T>::RawType[n]());
+      return std::unique_ptr<T>(new typename Impl::MakeUniqueHelper<T>::RawType[n]());
     }
 
     /** \brief Implementation of std::make_unique to be introduced in C++14
@@ -96,7 +96,7 @@ namespace Dune
      * \ingroup CxxUtilities
      */
     template<typename T, typename ...Args>
-    typename MakeUniqueHelper<T>::KnownBoundArrayUniquePtr
+    typename Impl::MakeUniqueHelper<T>::KnownBoundArrayUniquePtr
       make_unique(Args&&... args) = delete;
 
 #endif // DUNE_HAVE_CXX_MAKE_UNIQUE
