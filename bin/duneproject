@@ -179,14 +179,10 @@ PROJECT="$1"
 DEPENDENCIES="$2"
 VERSION="$3"
 MAINTAINER="$4"
-ENABLE_ALL="$5"
 
 ################## READ OPTIONS ##################
 
 while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
-
-  # Track minimum CMake version
-  CMAKE_MINIMUM_REQUIRED=2.8.12
 
   while [ -z $PROJECT ]; do
     read -p "1) Name of your new Project? (e.g.: dune-grid): " PROJECT
@@ -228,30 +224,11 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
   while [ -z "$MAINTAINER" ]; do
     read -p "4) Maintainer's email address? " MAINTAINER
   done
-  while [ "$ENABLE_ALL" != "y" -a "$ENABLE_ALL" != "Y" -a "$ENABLE_ALL" != "n" -a "$ENABLE_ALL" != "N" ]; do
-    echo "5) Enable all available packages? Choose 'y' if you don't understand the question, but note that you need"
-    read -p "   at least CMake 2.8.12 for this. You can check your version with 'cmake --version' [y/N]" ENABLE_ALL
-  done
-
-  # canonicalize contents of ENABLE_ALL
-  ENABLE_ALL=$(tr '[:upper:]' '[:lower:]' <<< "$ENABLE_ALL")
-
-  # set newer CMake minimum version if ENABLE_ALL is true
-  if [ 'y' == "$ENABLE_ALL" ] ; then
-    CMAKE_MINIMUM_REQUIRED=2.8.12
-  fi
 
   echo
   echo "creating Project \"$PROJECT\", version $VERSION "
   echo "which depends on \"$DEPENDENCIES\""
   echo "with maintainer \"$MAINTAINER\""
-  if [ "y" == "$ENABLE_ALL" ] ; then
-    echo "and new, automatic external package handling based on dune_enable_all_packages()."
-  else
-    echo "and old external package handling (you need to manually add external dependencies to each target in CMakeLists.txt)."
-  fi
-  echo "Minimum required CMake version for building this project: ${CMAKE_MINIMUM_REQUIRED}"
-  echo
   read -p "Are these informations correct? [y/N] " DATACORRECT
 
   # reset data if necessary
@@ -260,7 +237,6 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
     DEPENDENCIES=""
     VERSION=""
     MAINTAINER=""
-    ENABLE_ALL=""
   fi
 
   done
@@ -356,7 +332,7 @@ Preparing the Sources
 Additional to the software mentioned in README you'll need the
 following programs installed on your system:
 
-  cmake >= ${CMAKE_MINIMUM_REQUIRED}
+  cmake >= 2.8.12
 
 Getting started
 ---------------
@@ -378,7 +354,6 @@ The most convenient way is to use options files in this case. The files
 define four variables:
 
 CMAKE_FLAGS      flags passed to cmake (during configure)
-MAKE_FLAGS       flags passed to make
 
 An example options file might look like this:
 
@@ -387,7 +362,6 @@ CMAKE_FLAGS=" \\
 -DCMAKE_CXX_COMPILER=g++-4.9 \\
 -DCMAKE_CXX_FLAGS='-Wall -pedantic' \\
 -DCMAKE_INSTALL_PREFIX=/install/path" #Force g++-4.9 and set compiler flags
-MAKE_FLAGS=install #Per default run make install instead of simply make
 
 If you save this information into example.opts you can pass the opts file to
 dunecontrol via the --opts option, e. g.
@@ -410,7 +384,7 @@ R_DELIM
 ################## CMakeLists.txt ##################
 echo "- $PROJECT/CMakeLists.txt"
 cat> "$PROJECT/CMakeLists.txt" << M_DELIM
-cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED})
+cmake_minimum_required(VERSION 2.8.12)
 project($PROJECT CXX)
 
 if(NOT (dune-common_DIR OR dune-common_ROOT OR
@@ -429,17 +403,13 @@ include(DuneMacros)
 
 # start a dune project with information from dune.module
 dune_project()
-M_DELIM
-if [ 'y' == "$ENABLE_ALL" ] ; then
-cat>> "$PROJECT/CMakeLists.txt" << M_DELIM
+
 dune_enable_all_packages()
-M_DELIM
-fi
-cat>> "$PROJECT/CMakeLists.txt" << M_DELIM
-add_subdirectory("src")
-add_subdirectory("dune")
-add_subdirectory("doc")
-add_subdirectory("cmake/modules")
+
+add_subdirectory(src)
+add_subdirectory(dune)
+add_subdirectory(doc)
+add_subdirectory(cmake/modules)
 
 # finalize the dune project, e.g. generating config.h etc.
 finalize_dune_project(GENERATE_CONFIG_H_CMAKE)
