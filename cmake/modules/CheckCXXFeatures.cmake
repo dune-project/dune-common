@@ -1,11 +1,11 @@
 # .. cmake_module::
 #
-#    Module that checks for supported C++14, C++11 and non-standard features.
+#    Module that checks for supported C++17, C++14 and non-standard features.
 #
 #    The behaviour of this module can be modified by the following variable:
 #
 #    :ref:`DISABLE_CXX_VERSION_CHECK`
-#       Disable checking for std=c++11 (c++14, c++1y)
+#       Disable checking for std=c++14 (c++17, ...)
 #
 #    This module internally sets the following variables, which are then
 #    exported into the config.h of the current dune module.
@@ -36,7 +36,7 @@ include(CheckCXXSourceCompiles)
 include(CheckCXXSymbolExists)
 
 # C++ standard versions that this test knows about
-set(CXX_VERSIONS 17 14 11)
+set(CXX_VERSIONS 17 14)
 
 
 # Compile tests for the different standard revisions; these test both the compiler
@@ -73,24 +73,12 @@ string(REPLACE ";" "\;" cxx_14_test
   }
   ")
 
-string(REPLACE ";" "\;" cxx_11_test
-  "
-  #include <memory>
-
-  int main() {
-    // this checks both the compiler (by using auto) and the library (by using
-    // std::make_shared() for C++11 compliance at GCC 4.4 level.
-    auto v = std::make_shared<int>(0);
-    return *v;
-  }
-  ")
-
 # build a list out of the pre-escaped tests
-set(CXX_VERSIONS_TEST "${cxx_17_test}" "${cxx_14_test}" "${cxx_11_test}")
+set(CXX_VERSIONS_TEST "${cxx_17_test}" "${cxx_14_test}")
 
 # these are appended to "-std=c++" and tried in this order
 # note the escaped semicolons; that's necessary to create a nested list
-set(CXX_VERSIONS_FLAGS "17\;1z" "14\;1y" "11\;0x")
+set(CXX_VERSIONS_FLAGS "17\;1z" "14\;1y")
 
 # by default, we enable C++14 for now, but not C++17
 # The user can override this choice by explicitly setting this variable
