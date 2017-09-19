@@ -63,15 +63,18 @@ string(REPLACE ";" "\;" cxx_14_test
   "
   #include <memory>
 
+  constexpr auto f(int i)
+  {
+    if (i > 0)
+      return i;
+    else
+      return -i;
+  }
+
   int main() {
     // lambdas with auto parameters are C++14 - so this checks the compiler
     auto l = [](auto x) { return x; };
-    constexpr auto i = [](auto i) {
-      if (i > 0)
-        return i;
-      else
-        return -i;
-    }(4);
+    static_assert(f(4) == f(-4),\"\");
     // std::make_unique() is a C++14 library feature - this checks whether the
     // compiler uses a C++14 compliant library.
     auto v = std::make_unique<int>(l(0));
