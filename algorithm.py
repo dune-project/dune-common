@@ -33,7 +33,7 @@ def load(functionName, includes, *args):
         includes += i
 
     signature = functionName + "( " + ", ".join(argTypes) + " )"
-    moduleName = "algorithm_" + hashIt(signature)
+    moduleName = "algorithm_" + hashIt(signature) + "_" + hashIt(source)
 
     source += "".join(["#include <" + i + ">\n" for i in includes])
     source += "\n"
