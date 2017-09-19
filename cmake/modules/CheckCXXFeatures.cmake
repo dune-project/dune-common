@@ -191,8 +191,8 @@ CMAKE_CXX_FLAGS."
 
 endif()
 
-# make sure we have at least C++11
-dune_require_cxx_standard(MODULE "DUNE" VERSION 11)
+# make sure we have at least C++14
+dune_require_cxx_standard(MODULE "DUNE" VERSION 14)
 
 # perform tests
 
