@@ -113,9 +113,12 @@ set up to not allow newer language standards than C++${CXX_MAX_STANDARD}. Try se
 CMake variable CXX_MAX_STANDARD to at least ${_VERSION}."
         )
     else()
-      message(FATAL_ERROR "
-${_MODULE} requires compiler support for C++${_VERSION}, but your compiler only supports \
-C++${CXX_MAX_SUPPORTED_STANDARD}."
+      if(${CXX_MAX_SUPPORTED_STANDARD} EQUAL 3)
+        set(CXX_STD_NAME 03)
+      else()
+        set(CXX_STD_NAME ${CXX_MAX_SUPPORTED_STANDARD})
+      endif()
+      message(FATAL_ERROR "${_MODULE} requires support for C++${_VERSION}, but your compiler failed our compatibility test."
         )
     endif()
   endif()
