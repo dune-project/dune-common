@@ -82,7 +82,7 @@ set(CXX_VERSIONS_FLAGS "17\;1z" "14\;1y")
 
 # by default, we enable C++14 for now, but not C++17
 # The user can override this choice by explicitly setting this variable
-set(CXX_MAX_STANDARD 14 CACHE STRING "highest version of the C++ standard to enable")
+set(CXX_MAX_STANDARD 17 CACHE STRING "highest version of the C++ standard to enable")
 
 
 function(dune_require_cxx_standard)
