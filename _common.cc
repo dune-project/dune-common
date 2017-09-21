@@ -22,10 +22,8 @@
 
 #include <dune/corepy/pybind11/pybind11.h>
 
-PYBIND11_PLUGIN(_common)
+PYBIND11_MODULE( _common, module )
 {
-  pybind11::module module( "_common" );
-
   Dune::CorePy::registerFieldVector<double>(module, std::make_integer_sequence<int, 10>());
   Dune::CorePy::registerFieldMatrix<double>(module, std::make_integer_sequence<int, 5>());
 
@@ -81,6 +79,4 @@ PYBIND11_PLUGIN(_common)
   marker.value( "coarsen", Dune::CorePy::Marker::Coarsen );
   marker.value( "keep", Dune::CorePy::Marker::Keep );
   marker.value( "refine", Dune::CorePy::Marker::Refine );
-
-  return module.ptr();
 }
