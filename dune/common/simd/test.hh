@@ -604,8 +604,8 @@ namespace Dune {
 
       DUNE_SIMD_INFIX_OP(Less,             <  );
       DUNE_SIMD_INFIX_OP(Greater,          >  );
-      DUNE_SIMD_INFIX_OP(LessEqual,        <  );
-      DUNE_SIMD_INFIX_OP(GreaterEqual,     >  );
+      DUNE_SIMD_INFIX_OP(LessEqual,        <= );
+      DUNE_SIMD_INFIX_OP(GreaterEqual,     >= );
 
       DUNE_SIMD_INFIX_OP(Equal,            == );
       DUNE_SIMD_INFIX_OP(NotEqual,         != );
