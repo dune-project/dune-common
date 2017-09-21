@@ -389,10 +389,7 @@ def select_modules(modules=None):
 
 
 def default_build_dir(srcdir, module=None):
-    try:
-        builddir = os.environ['DUNE_BUILD_DIR']
-    except KeyError:
-        builddir = 'build-cmake'
+    builddir = os.environ.get('DUNE_BUILDDIR', 'build-cmake')
 
     if os.path.isabs(builddir):
         if module is None:
