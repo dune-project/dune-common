@@ -47,15 +47,13 @@ def load(functionName, includes, *args):
     source += '#include <dune/corepy/pybind11/pybind11.h>\n'
     source += '\n'
 
-    source += "PYBIND11_PLUGIN( " + moduleName + " )\n"
+    source += "PYBIND11_MODULE( " + moduleName + ", module )\n"
     source += "{\n"
-    source += "  pybind11::module module( \"" + moduleName + "\" );\n"
 
     source += "  module.def( \"run\", [] ( " + ", ".join([argTypes[i] + " arg" + str(i) for i in range(len(argTypes))]) + " ) {\n"
     source += "      return " + functionName + "( " + ", ".join(["arg" + str(i) for i in range(len(argTypes))]) + " );\n"
     source += "    } );\n"
 
-    source += "  return module.ptr();\n"
     source += "}\n"
 
     return builder.load(moduleName, source, signature).run

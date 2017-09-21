@@ -41,10 +41,9 @@ class SimpleGenerator(object):
         source += "\n"
         if self.namespace == "":
             source += "void register" + self.typeName + "( ... ) {}\n"
-        source += "PYBIND11_PLUGIN( " + moduleName + " )\n"
+        source += "PYBIND11_MODULE( " + moduleName + ", module )\n"
         source += "{\n"
         source += "  using pybind11::operator\"\"_a;\n"
-        source += "  pybind11::module module( \"" + moduleName + "\" );\n"
         source += '  auto entry = Dune::CorePy::typeRegistry().insert<DuneType>("' + typeName + '",{' +\
                   ",".join(['"' + i + '"' for i in includes]) + "});\n"
         if options is None:
@@ -69,7 +68,6 @@ class SimpleGenerator(object):
         if methods is not None:
             source += "".join(["  cls.def( \"" + m[0] + "\", &" + m[1] + ");\n" for m in methods])
 
-        source += "  return module.ptr();\n"
         source += "}\n"
 
         module = builder.load(moduleName, source, self.pythonName)
