@@ -417,7 +417,8 @@ def configure_module(srcdir, builddir, prefix_dirs, definitions=None):
     if definitions is None:
         pass
     elif isinstance(definitions, dict):
-        args += ['-D' + key + '=' + value + '' for key, value in definitions.items()]
+        args += ['-D' + key + '=' + value + '' for key, value in definitions.items() if value]
+        args += [key + '' for key, value in definitions.items() if not value]
     else:
         raise ValueError('definitions must be a dictionary.')
     args += ['-D' + module + '_DIR=' + dir for module, dir in prefix_dirs.items()]
@@ -492,9 +493,12 @@ def get_cmake_definitions():
     definitions = {}
     try:
         for arg in shlex.split(os.environ['DUNE_CMAKE_FLAGS']):
-            key, value = arg.split('=', 1)
-            if key.startswith('-D'):
-                key = key[2:]
+            try:
+                key, value = arg.split('=', 1)
+                if key.startswith('-D'):
+                    key = key[2:]
+            except ValueError:
+                key, value = arg, None
             definitions[key] = value
     except KeyError:
         pass
