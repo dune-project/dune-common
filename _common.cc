@@ -45,6 +45,7 @@ PYBIND11_MODULE( _common, module )
   reader.value( "dgf", Dune::CorePy::Reader::dgf );
   reader.value( "dgfString", Dune::CorePy::Reader::dgfString );
   reader.value( "gmsh", Dune::CorePy::Reader::gmsh );
+  reader.value( "structured", Dune::CorePy::Reader::structured );
 
   pybind11::enum_< Dune::CorePy::VTKDataType > vtkDataType( module, "DataType" );
   vtkDataType.value( "CellData", Dune::CorePy::VTKDataType::CellData );
