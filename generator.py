@@ -8,7 +8,48 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
+
 from . import builder
+
+logger = logging.getLogger(__name__)
+
+class Constructor(object):
+    def __init__(self, args, body=None, extra=None):
+        self.args = args
+        self.body = body
+        self.extra = [] if extra is None else extra
+
+    def __str__(self, cls):
+        if self.body is None:
+            return cls + ".def( pybind11::init( " + args + " )" + "".join(", " + e for e in self.extra) + " );\n"
+        if self.args:
+            source = cls + ".def( pybind11::init( [] ( " + ", ".join(self.args) + " ) {"
+        else:
+            source = cls + ".def( pybind11::init( [] () {"
+        source += "\n    ".join(self.body)
+        source += "\n  } )" + "".join(", " + e for e in self.extra) + " );\n"
+        return source
+
+
+class Method(object):
+    def __init__(self, name, args, body=None, extra=None):
+        self.name = name
+        self.args = args
+        self.body = body
+        self.extra = extra
+
+    def __str__(self):
+        if self.body is None:
+            return cls + ".def( " + self.name + ", " + args + " )" + "".join(", " + e for e in self.extra) + " );\n"
+        if self.args:
+            source = "cls.def( " + self.name + ", [] ( " + ", ".join(self.args) + " ) {"
+        else:
+            source = "cls.def( " + self.name + ", [] () {"
+        source += "\n    ".join(self.body)
+        source += "\n  } )" + "".join(", " + e for e in self.extra) + " );\n"
+        return source
+
 
 class SimpleGenerator(object):
     def __init__(self, typeName, namespace, pythonname=None, filename=None):
@@ -23,7 +64,7 @@ class SimpleGenerator(object):
           self.pythonName = pythonname
         self.fileName = filename
 
-    def load(self, includes, typeName, moduleName, constructors=None, methods=None, bufferProtocol=False, options=None):
+    def load(self, includes, typeName, moduleName, *args, **kwargs):
         source = '#include <config.h>\n\n'
         source += '#define USING_COREPY 1\n\n'
         source += ''.join(["#include <" + i + ">\n" for i in includes])
@@ -46,27 +87,16 @@ class SimpleGenerator(object):
         source += "  using pybind11::operator\"\"_a;\n"
         source += '  auto entry = Dune::CorePy::typeRegistry().insert<DuneType>("' + typeName + '",{' +\
                   ",".join(['"' + i + '"' for i in includes]) + "});\n"
-        if options is None:
-            options = ""
+        options = kwargs.get("options", [])
+        if not kwargs.get("BufferProtocol", False):
+            source += "  auto cls = pybind11::class_< DuneType" + ", ".join(options) + " >( module, \"" + self.pythonName + "\" );\n"
         else:
-            options = ", " + options
-        if not bufferProtocol:
-            source += "  auto cls = pybind11::class_< DuneType " + options + " >( module, \"" + self.pythonName + "\" );\n"
-        else:
-            source += "  auto cls = pybind11::class_< DuneType " + options + " >( module, \"" + self.pythonName + "\", pybind11::buffer_protocol() );\n"
+            source += "  auto cls = pybind11::class_< DuneType " + ", ".join(options) + " >( module, \"" + self.pythonName + "\", pybind11::buffer_protocol() );\n"
         source += "  Dune::CorePy::typeRegistry().exportToPython(cls,entry.first->second);\n"
         source += "  " + self.namespace + "register" + self.typeName + "( module, cls );\n"
 
-        if constructors is not None:
-            for constructor in constructors:
-                if isinstance(constructor, list):
-                    source += "  cls.def( \"__init__\", "
-                    source += "\n    ".join(constructor)
-                    source += " );\n"
-                else:
-                    source += "  cls.def( pybind11::init< " + constructor + " >() );\n"
-        if methods is not None:
-            source += "".join(["  cls.def( \"" + m[0] + "\", &" + m[1] + ");\n" for m in methods])
+        for arg in args:
+            source += "".join("  " + s + "\n" for s in str(args).splitlines())
 
         source += "}\n"
 
