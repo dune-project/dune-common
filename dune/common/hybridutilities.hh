@@ -125,7 +125,7 @@ namespace Impl {
  * If this returns the i-th entry of c. It supports the following
  * containers
  * * Containers providing dynamic access via operator[]
- * * Heterogenous containers providing access via operator[](integral_constant<...>)
+ * * Heterogeneous containers providing access via operator[](integral_constant<...>)
  * * std::tuple<...>
  * * std::integer_sequence
  */
@@ -187,7 +187,7 @@ namespace Impl {
   }
 
   // This should be constexpr but gcc-4.9 does not support
-  // the relaxed constexpr requirements. Hence for beeing
+  // the relaxed constexpr requirements. Hence for being
   // constexpr the function body can only contain a return
   // statement and no assertion before this.
   template<class Begin, class End>
