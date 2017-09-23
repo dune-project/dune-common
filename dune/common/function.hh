@@ -133,7 +133,7 @@ namespace Dune {
   makeVirtualFunction(F&& f)
   {
     return {std::forward<F>(f)};
-  };
+  }
 
   /** @} end documentation */
 
