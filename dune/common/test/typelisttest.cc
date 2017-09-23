@@ -172,8 +172,8 @@ void staticTests()
   checkNonTypeList<std::tuple<int> >();
   // `tuple<void>` is a complete, but noninstantiable type.  Attempting to use
   // an object of type `tuple<void>` as an argument to a function call
-  // neccessiates instantiation -- which is illegal even in an SFINAE context.
-  // The instantiation is neccessary to check for conversions (via conversion
+  // necessiates instantiation -- which is illegal even in an SFINAE context.
+  // The instantiation is necessary to check for conversions (via conversion
   // operators and base classes) during overload resolution.  Even if the
   // signature of the function is of the form `f(const Expr<T>*)` for some
   // template parameter `T` and we call it as `f(declval<tuple<void>*>())` the
