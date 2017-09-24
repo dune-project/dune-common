@@ -13,6 +13,12 @@ def load(functionName, includes, *args):
             source += include.read()
         source += "\n"
         includes = []
+    elif isinstance(includes, list):
+        for includefile in includes:
+            with open(includefile, "r") as include:
+                source += include.read()
+        source += "\n"
+        includes = []
 
     argTypes = []
     for arg in args:
