@@ -390,6 +390,66 @@ namespace Std
 
 #endif // DUNE_HAVE_CXX_EXPERIMENTAL_IS_DETECTED
 
+
+
+  // conjunction
+  // -----------
+
+  /**
+   * \brief forms the logical conjunction of the type traits B...
+   *
+   * \note This functionality is part of the C++17 standard.
+   *
+   * \ingroup CxxUtilities
+   **/
+  template< class... B >
+  struct conjunction;
+
+  template<>
+  struct conjunction<>
+    : std::true_type
+  {};
+
+  template< class B >
+  struct conjunction< B >
+    : B
+  {};
+
+  template< class B1, class... Bn >
+  struct conjunction< B1, Bn... >
+    : std::conditional_t< static_cast< bool >( B1::value ), conjunction< Bn... >, B1 >
+  {};
+
+
+
+  // disjunction
+  // -----------
+
+  /**
+   * \brief forms the logical disjunction of the type traits B...
+   *
+   * \note This functionality is part of the C++17 standard.
+   *
+   * \ingroup CxxUtilities
+   **/
+  template< class... B >
+  struct disjunction;
+
+  template<>
+  struct disjunction<>
+    : std::false_type
+  {};
+
+  template< class B >
+  struct disjunction< B >
+    : B
+  {};
+
+  template< class B1, class... Bn >
+  struct disjunction< B1, Bn... >
+    : std::conditional_t< static_cast< bool >( B1::value ), B1, disjunction< Bn... > >
+  {};
+
 } // namespace Std
 
 } // namespace Dune
