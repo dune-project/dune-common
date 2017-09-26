@@ -259,6 +259,9 @@ dune_add_test(SOURCES eigenvaluestest.cc
               LINK_LIBRARIES dunecommon
               CMAKE_GUARD LAPACK_FOUND)
 
+dune_add_test(SOURCES optionaltest.cc
+              LINK_LIBRARIES dunecommon)
+
 install(
   FILES
   arithmetictestsuite.hh
