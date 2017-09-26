@@ -81,5 +81,7 @@ dune_add_test(NAME fakevectortest
   SOURCES
     fakevectortest.cc
 
-  LINK_LIBRARIES dunecommon
+    fakevectortest_bool.cc
+
+ LINK_LIBRARIES dunecommon
 )

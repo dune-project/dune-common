@@ -5,6 +5,7 @@
 #include <complex>
 #include <cstdlib>
 
+#include <dune/common/simd/simdfakevector.hh>
 #include <dune/common/simd/test.hh>
 #include <dune/common/simd/test/fakevectortest.hh>
 
@@ -21,10 +22,10 @@ int main()
 
 //  test.checkVector<simdfakevector<short             ,size>>();
 //  test.checkVector<simdfakevector<unsigned short    ,size>>();
-  test.checkVector<simdfakevector<int               ,size>>();
-  test.checkVector<simdfakevector<unsigned          ,size>>();
-  test.checkVector<simdfakevector<long              ,size>>();
-  test.checkVector<simdfakevector<unsigned long     ,size>>();
+//  test.checkVector<simdfakevector<int               ,size>>();
+//  test.checkVector<simdfakevector<unsigned          ,size>>();
+//  test.checkVector<simdfakevector<long              ,size>>();
+//  test.checkVector<simdfakevector<unsigned long     ,size>>();
 //  test.checkVector<simdfakevector<long long         ,size>>();
 //  test.checkVector<simdfakevector<unsigned long long,size>>();
 
@@ -34,7 +35,7 @@ int main()
   test.checkVector<simdfakevector<char32_t          ,size>>();
 */
 
-  test.checkVector<simdfakevector<bool              ,size>>();
+  test.checkVector<Dune::simdfakevector<bool              ,5>>();
 
 //  test.checkVector<simdfakevector<float             ,size>>();
 //  test.checkVector<simdfakevector<double            ,size>>();

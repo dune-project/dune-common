@@ -3,127 +3,250 @@
 
 #include <array>
 #include <iostream>
+#include <dune/common/simd/simd.hh>
 
 //using namespace std;
 
 namespace Dune {
-  template<class T, int S> class simdfakevector: public std::array<T,S> {
 
-   typedef std::array<T,S> arr_t;
+  /**
+    *  This class specifies a vector-like type deriving from std::array for memory management and
+    *  basic accessibility.
+    *  This type is capable of dealing with all (well-defined) operators and is usable with the
+    *  SIMD-interface.
+    */
+
+  template<class T, int S>
+  class simdfakevector: public std::array<T,S> {
+
+    typedef std::array<T,S> arr_t;
 
   public:
 
-  //Prefix operators
-  #define DUNE_SIMD_FAKEVECTOR_PREFIX_OP(SYMBOL)	\
-   auto operator SYMBOL() {				\
-    simdfakevector<T,S> out;				\
-    for(unsigned int i=0; i<arr_t::size(); i++){	\
-     out[i] = SYMBOL((*this)[i]);			\
-    }							\
-    return out;						\
-   }							\
+    /**
+      *  Definition of basic operators
+      */
 
-   DUNE_SIMD_FAKEVECTOR_PREFIX_OP(++);
-   DUNE_SIMD_FAKEVECTOR_PREFIX_OP(--);
-   DUNE_SIMD_FAKEVECTOR_PREFIX_OP(+);
-   DUNE_SIMD_FAKEVECTOR_PREFIX_OP(-);
-   DUNE_SIMD_FAKEVECTOR_PREFIX_OP(!);
+    //Prefix operators
+#define DUNE_SIMD_FAKEVECTOR_PREFIX_OP(SYMBOL)		\
+    auto operator SYMBOL() {				\
+      for(std::size_t i=0; i<S; i++){			\
+        SYMBOL(*this)[i];				\
+      }							\
+      return *this;					\
+    }
 
-  #undef DUNE_SIMD_FAKEVECTOR_PREFIX_OPS
+    DUNE_SIMD_FAKEVECTOR_PREFIX_OP(++);
+    DUNE_SIMD_FAKEVECTOR_PREFIX_OP(--);
+#undef DUNE_SIMD_FAKEVECTOR_PREFIX_OP
 
-  //Postfix operators
-  #define DUNE_SIMD_FAKEVECTOR_POSTFIX_OP(SYMBOL)	\
-   auto operator SYMBOL(int){				\
-    simdfakevector<T,S> out = *this;			\
-    SYMBOL(*this);					\
-    return out;						\
-   }							\
+#define DUNE_SIMD_FAKEVECTOR_UNARY_OP(SYMBOL)		\
+    auto operator SYMBOL() {                            \
+      simdfakevector<T,S> out;                          \
+      for(std::size_t i=0; i<S; i++){		        \
+        out[i] = SYMBOL((*this)[i]);                    \
+      }                                                 \
+      return out;                            		\
+    }
+
+    DUNE_SIMD_FAKEVECTOR_UNARY_OP(+);
+    DUNE_SIMD_FAKEVECTOR_UNARY_OP(-);
+    DUNE_SIMD_FAKEVECTOR_UNARY_OP(!);
+#undef DUNE_SIMD_FAKEVECTOR_UNARY_OP
+
+    //Postfix operators
+#define DUNE_SIMD_FAKEVECTOR_POSTFIX_OP(SYMBOL)		\
+    auto operator SYMBOL(int){				\
+      simdfakevector<T,S> out = *this;			\
+      SYMBOL(*this);					\
+      return out;					\
+    }
 
    DUNE_SIMD_FAKEVECTOR_POSTFIX_OP(++);
    DUNE_SIMD_FAKEVECTOR_POSTFIX_OP(--);
+#undef DUNE_SIMD_FAKEVECTOR_POSTFIX_OP
 
-  #undef DUNE_SIMD_FAKEVECTOR_POSTFIX_OPS
-
-  //Assignment operators
-  #define DUNE_SIMD_FAKEVECTOR_ASSIGNMENT_OPS(SYMBOL)	\
-   void operator SYMBOL(const T s) {			\
-    for(unsigned int i=0; i<arr_t::size(); i++){	\
-     (*this)[i] SYMBOL s;				\
-    }							\
-   }							\							\
-   void operator SYMBOL(const simdfakevector<T,S> &V) {	\
-   /**@ToDo: size comparision*/				\
-    for(unsigned int i=0; i<V.size(); i++){		\
-     (*this)[i] SYMBOL V[i];				\
-    }							\
-   }							\
-
-   DUNE_SIMD_FAKEVECTOR_ASSIGNMENT_OPS(+=);
-   DUNE_SIMD_FAKEVECTOR_ASSIGNMENT_OPS(-=);
-   DUNE_SIMD_FAKEVECTOR_ASSIGNMENT_OPS(*=);
-   DUNE_SIMD_FAKEVECTOR_ASSIGNMENT_OPS(/=);
-   DUNE_SIMD_FAKEVECTOR_ASSIGNMENT_OPS(%=);
-
-   DUNE_SIMD_FAKEVECTOR_ASSIGNMENT_OPS(<<=);
-   DUNE_SIMD_FAKEVECTOR_ASSIGNMENT_OPS(>>=);
-   DUNE_SIMD_FAKEVECTOR_ASSIGNMENT_OPS(&=);
-   DUNE_SIMD_FAKEVECTOR_ASSIGNMENT_OPS(|=);
-   DUNE_SIMD_FAKEVECTOR_ASSIGNMENT_OPS(^=);
-
-  #undef DUNE_SIMD_FAKEVECTOR_ASSIGNMENT_OPS
-
-   //dummy function for testing purpose
-   void print(){
-    for(auto it = arr_t::begin(); it != arr_t::end(); ++it){
-     std::cout << *it << std::endl;
+    //Assignment operators
+#define DUNE_SIMD_FAKEVECTOR_ASSIGNMENT_OP(SYMBOL)		\
+    auto operator SYMBOL(const T s) {				\
+      for(std::size_t i=0; i<S; i++){				\
+        (*this)[i] SYMBOL s;					\
+      }								\
+      return *this;						\
+    }								\
+    auto operator SYMBOL(const simdfakevector<T,S> &v) {	\
+    /**@ToDo: size comparision*/				\
+      for(std::size_t i=0; i<S; i++){				\
+        (*this)[i] SYMBOL v[i];					\
+      }								\
+      return *this;						\
     }
-   }
+
+    DUNE_SIMD_FAKEVECTOR_ASSIGNMENT_OP(+=);
+    DUNE_SIMD_FAKEVECTOR_ASSIGNMENT_OP(-=);
+    DUNE_SIMD_FAKEVECTOR_ASSIGNMENT_OP(*=);
+    DUNE_SIMD_FAKEVECTOR_ASSIGNMENT_OP(/=);
+    DUNE_SIMD_FAKEVECTOR_ASSIGNMENT_OP(%=);
+#undef DUNE_SIMD_FAKEVECTOR_ASSIGNMENT_OP
+
+    //Bitwise operators
+#define DUNE_SIMD_FAKEVECTOR_BITWISE_OP(SYMBOL) 			\
+    auto operator SYMBOL(const T s) {                   	\
+      for(std::size_t i=0; i<S; i++){		      		\
+        (*this)[i] SYMBOL s;                            	\
+      }								\
+      return *this;                                             \
+    }                                                   	\
+    auto operator SYMBOL(const simdfakevector<T,S> &v) {        \
+    /**@ToDo: size comparision*/                                \
+      for(std::size_t i=0; i<S; i++){	           		\
+        (*this)[i] SYMBOL v[i];                        	 	\
+      }                                                		\
+      return *this;						\
+    }
+
+    DUNE_SIMD_FAKEVECTOR_BITWISE_OP(<<=);
+    DUNE_SIMD_FAKEVECTOR_BITWISE_OP(>>=);
+    DUNE_SIMD_FAKEVECTOR_BITWISE_OP(&=);
+    DUNE_SIMD_FAKEVECTOR_BITWISE_OP(|=);
+    DUNE_SIMD_FAKEVECTOR_BITWISE_OP(^=);
+#undef DUNE_SIMD_FAKEVECTOR_BITWISE_OP
+
+    //dummy function for testing purpose
+    void print(){
+      for(auto it = arr_t::begin(); it != arr_t::end(); ++it){
+        std::cout << *it << std::endl;
+      }
+    }
   };
 
   //Arithmetic operators
-  #define DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OPS(SYMBOL)			\
+#define DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OP(SYMBOL)			\
   template<class T, int S>						\
-   auto operator SYMBOL(const simdfakevector<T,S> &V, const T s) {	\
+  auto operator SYMBOL(const simdfakevector<T,S> &v, const T s) {	\
     simdfakevector<T,S> out;						\
-    for(unsigned int i=0; i<V.size(); i++){				\
-     out[i] = V[i] SYMBOL s;						\
+    for(std::size_t i=0; i<S; i++){					\
+      out[i] = v[i] SYMBOL s;						\
     }									\
     return out;								\
-   }									\									\
+  }									\
   template<class T, int S>						\
-   auto operator SYMBOL(const T s, const simdfakevector<T,S> &V) {	\
-    return V SYMBOL s;							\
-   }									\											\
+  auto operator SYMBOL(const T s, const simdfakevector<T,S> &v) {	\
+    return v SYMBOL s;							\
+  }									\
   template<class T, int S>								\
-   auto operator SYMBOL(const simdfakevector<T,S> &V, const simdfakevector<T,S> &W) {	\
+  auto operator SYMBOL(const simdfakevector<T,S> &v, const simdfakevector<T,S> &w) {	\
    /**@ToDo: size comparision*/								\
     simdfakevector<T,S> out;								\
-     for(unsigned int i=0; i<V.size(); i++){						\
-      out[i] = V[i] SYMBOL W[i];							\
-     }											\
+      for(std::size_t i=0; i<S; i++){							\
+        out[i] = v[i] SYMBOL w[i];							\
+      }											\
     return out;										\
-   }											\
+  }											\
 
-   DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OPS(+);
-   DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OPS(-);
-   DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OPS(*);
-   DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OPS(/);
-   DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OPS(%);
+  DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OP(+);
+  DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OP(-);
+  DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OP(*);
+  DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OP(/);
+  DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OP(%);
+#undef DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OP
 
-   DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OPS(<);
-   DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OPS(>);
-   DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OPS(<=);
-   DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OPS(>=);
-   DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OPS(==);
-   DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OPS(!=);
+  //Logical operators
+#define DUNE_SIMD_FAKEVECTOR_LOGICAL_OP(SYMBOL)	                        \
+  template<class T, int S>                                              \
+  auto operator SYMBOL(const simdfakevector<T,S> &v, const T s) {       \
+    simdfakevector<bool,S> out;                                         \
+    for(std::size_t i=0; i<S; i++){                                     \
+      out[i] = v[i] SYMBOL s;                                           \
+    }                                                                   \
+    return out;                                                         \
+  }                                                                     \
+  template<class T, int S>                                              \
+  auto operator SYMBOL(const T s, const simdfakevector<T,S> &v) {       \
+    return v SYMBOL s;                                                  \
+  }                                                                     \
+  template<class T, int S>                                                              \
+  auto operator SYMBOL(const simdfakevector<T,S> &v, const simdfakevector<T,S> &w) {    \
+   /**@ToDo: size comparision*/                                                         \
+    simdfakevector<bool,S> out;                                                         \
+      for(std::size_t i=0; i<S; i++){                                                   \
+        out[i] = v[i] SYMBOL w[i];                                                      \
+      }                                                                                 \
+    return out;                                                                         \
+  }                                                                                     \
 
-   DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OPS(&);
-   DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OPS(|);
-   DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OPS(^);
-   DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OPS(&&);
-   DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OPS(||);
+  DUNE_SIMD_FAKEVECTOR_LOGICAL_OP(<);
+  DUNE_SIMD_FAKEVECTOR_LOGICAL_OP(>);
+  DUNE_SIMD_FAKEVECTOR_LOGICAL_OP(<=);
+  DUNE_SIMD_FAKEVECTOR_LOGICAL_OP(>=);
+  DUNE_SIMD_FAKEVECTOR_LOGICAL_OP(==);
+  DUNE_SIMD_FAKEVECTOR_LOGICAL_OP(!=);
+#undef DUNE_SIMD_FAKEVECTOR_LOGICAL_OP
 
-  #undef DUNE_SIMD_FAKEVECTOR_ARITHMETIC_OPS
-}
+  //Boolean operators
+#define DUNE_SIMD_FAKEVECTOR_BOOLEAN_OP(SYMBOL)                        					\
+  template<class T, int S, typename std::enable_if_t<std::is_same<T, bool>::value, bool>* = nullptr>	\
+  auto operator SYMBOL(const simdfakevector<T,S> &v, const T s) {       				\
+    simdfakevector<bool,S> out;                                         				\
+    for(std::size_t i=0; i<S; i++){                                     				\
+      out[i] = v[i] SYMBOL s;                                           				\
+    }                                                                   				\
+    return out;                                                         				\
+  }                                                                     				\
+  template<class T, int S, typename std::enable_if_t<std::is_same<T, bool>::value, bool>* = nullptr>	\
+  auto operator SYMBOL(const bool s, const simdfakevector<T,S> &v) {      				\
+    return v SYMBOL s;                                                  				\
+  }                                                                     				\
+  template<class T, int S, typename std::enable_if_t<std::is_same<T, bool>::value, bool>* = nullptr>    \
+  auto operator SYMBOL(const simdfakevector<T,S> &v, const simdfakevector<T,S> &w) {    		\
+   /**@ToDo: size comparision*/                                                         		\
+    simdfakevector<bool,S> out;                                                         		\
+      for(std::size_t i=0; i<S; i++){                                                   		\
+        out[i] = v[i] SYMBOL w[i];                                                      		\
+      }                                                                                 		\
+    return out;                                                                         		\
+  }
+  DUNE_SIMD_FAKEVECTOR_BOOLEAN_OP(&);
+  DUNE_SIMD_FAKEVECTOR_BOOLEAN_OP(|);
+  DUNE_SIMD_FAKEVECTOR_BOOLEAN_OP(^);
+  DUNE_SIMD_FAKEVECTOR_BOOLEAN_OP(&&);
+  DUNE_SIMD_FAKEVECTOR_BOOLEAN_OP(||);
+#undef DUNE_SIMD_FAKEVECTOR_BOOLEAN_OP
+
+  namespace Simd {
+    namespace Overloads {
+      /**
+        *  Implementation/Overloads of the functions needed for SIMD-compatibility
+        */
+
+      /**@ToDo: check for type of V via SFINAE (has to be some sort of simdvectortype)
+        *       perhaps need for implementation of some kind of getType()/getSize() function?
+        */
+
+      template<class V>
+      Struct ScalarType<V> {
+        using type = simdvectortype<T,1>;
+      };
+
+      template<class V>
+      Struct IndexType<V> {
+        using type = simdvectortype<int,S>;
+      };
+
+      template<class V>
+      Struct MaskType<V> {
+        using type = simdvectortype<bool,S>;
+      };
+
+/**
+      template<class V>
+      Scalar<V> lane(ADLtag<5>, std::size_t l, const V &v) {
+        return v[l];
+      }
+*/
+
+    }  //namespace Overloads
+  }  //namespace Simd
+}  //namespace Dune
 
 #endif
