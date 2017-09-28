@@ -9,5 +9,6 @@ namespace Dune {
     template void UnitTest::checkVector<simdfakevector<bool,             5>>();
 
     //template void UnitTest::checkMask<simdfakevector<bool              >>();
-  }
+
+  } //namespace Dune
 } // namespace Dune

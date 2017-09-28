@@ -3,7 +3,7 @@
 
 #include <array>
 #include <iostream>
-#include <dune/common/simd/simd.hh>
+//#include <dune/common/simd/simd.hh>
 
 //using namespace std;
 
@@ -185,7 +185,7 @@ namespace Dune {
 
   //Boolean operators
 #define DUNE_SIMD_FAKEVECTOR_BOOLEAN_OP(SYMBOL)                        					\
-  template<class T, int S, typename std::enable_if_t<std::is_same<T, bool>::value, bool>* = nullptr>	\
+  template<class T, int S, class = std::enable_if_t<std::is_same<T, bool>::value>>			\
   auto operator SYMBOL(const simdfakevector<T,S> &v, const T s) {       				\
     simdfakevector<bool,S> out;                                         				\
     for(std::size_t i=0; i<S; i++){                                     				\
@@ -193,11 +193,11 @@ namespace Dune {
     }                                                                   				\
     return out;                                                         				\
   }                                                                     				\
-  template<class T, int S, typename std::enable_if_t<std::is_same<T, bool>::value, bool>* = nullptr>	\
+  template<class T, int S, class =  std::enable_if_t<std::is_same<T, bool>::value>>			\
   auto operator SYMBOL(const bool s, const simdfakevector<T,S> &v) {      				\
     return v SYMBOL s;                                                  				\
   }                                                                     				\
-  template<class T, int S, typename std::enable_if_t<std::is_same<T, bool>::value, bool>* = nullptr>    \
+  template<class T, int S, typename std::enable_if_t<std::is_same<T, bool>::value>>			\
   auto operator SYMBOL(const simdfakevector<T,S> &v, const simdfakevector<T,S> &w) {    		\
    /**@ToDo: size comparision*/                                                         		\
     simdfakevector<bool,S> out;                                                         		\
@@ -214,36 +214,92 @@ namespace Dune {
 #undef DUNE_SIMD_FAKEVECTOR_BOOLEAN_OP
 
   namespace Simd {
+
+    /**
+      *  Functions to determine if a given object is a simdfakevector-type
+      */
+
+    template<class V>
+    struct isFakevector : std::false_type {};
+
+    template<class V, class = std::enable_if_t<!std::is_same<V, std::decay<V>::type >::value>>
+    struct isFakevector<V> : isFakevector<std::decay<V>::type > {};
+
+    template<typename T, typename S>
+    struct isFakevector<simdfakevector<T,S>> : std::true_type {};
+
+    template<class V>
+    struct isFakevectormask : std::false_type {};
+
+    template<class V, class = std::enable_if_t<!std::is_same<V, std::decay<V>::type >::value>>
+    struct isFakevectormask<V> : isFakevectormask<std::decay<V>::type > {};
+
+    template<typename S>
+    struct isFakevectormask<simdfakevector<bool,S>> : std::true_type {};
+
+
+
     namespace Overloads {
       /**
         *  Implementation/Overloads of the functions needed for SIMD-compatibility
         */
 
-      /**@ToDo: check for type of V via SFINAE (has to be some sort of simdvectortype)
-        *       perhaps need for implementation of some kind of getType()/getSize() function?
-        */
-
+      //Implementation of SIMD-types
       template<class V>
-      Struct ScalarType<V> {
-        using type = simdvectortype<T,1>;
+      struct ScalarType<V, std::enable_if_t<isFakevector<V>::value> > {
+        using type = typename simdvectortype<V::value_type,1>;
       };
 
       template<class V>
-      Struct IndexType<V> {
-        using type = simdvectortype<int,S>;
+      struct IndexType<V, std::enable_if_t<isFakevector<V>::value> > {
+        using type = typename simdvectortype<int,V::size_type>;
       };
 
       template<class V>
-      Struct MaskType<V> {
-        using type = simdvectortype<bool,S>;
+      struct MaskType<V, std::enable_if_t<isFakevector<V>::value> > {
+        using type = typename simdvectortype<bool,V::size_type>;
       };
 
-/**
-      template<class V>
+      //Implementation of SIMD-functionality
+      template<class V, class = std::enable_if_t<isFakevector<V>::value> >
+      std::size_t LaneCount(ADLTag<5>, const V &v) {
+        return v.size();
+      }
+
+      template<class V, class = std::enable_if_t<isFakevector<V>::value> >
       Scalar<V> lane(ADLtag<5>, std::size_t l, const V &v) {
         return v[l];
       }
-*/
+
+      /**@ToDo*/
+      template<class V, class = std::enable_if_t<isFakevector<V>::value> >
+      V cond(ADLTag<5>, MaskType<V> mask, V ifTrue, V ifFalse) {
+        return ifTrue;
+      }
+
+      /**@ToDo*/
+      template<class M, class = std::enable_if_t<isFakevectormask<M>::value> >
+      bool anyTrue(ADLTag<5>, M mask) {
+        return true;
+      }
+
+      /**@ToDo*/
+      template<class M, class = std::enable_if_t<isFakevectormask<M>::value> >
+      bool allTrue(ADLTag<5>, M mask) {
+        return true;
+      }
+
+      /**@ToDo*/
+      template<class M, class = std::enable_if_t<isFakevectormask<M>::value> >
+      bool anyFalse(ADLTag<5>, M mask) {
+        return true;
+      }
+
+      /**@ToDo*/
+      template<class M, class = std::enable_if_t<isFakevectormask<M>::value> >
+      bool allFalse(ADLTag<5>, M mask) {
+        return true;
+      }
 
     }  //namespace Overloads
   }  //namespace Simd
