@@ -14,23 +14,24 @@ logger = logging.getLogger(__name__)
 
 ConfigurationError = builder.ConfigurationError
 
-def have(identifier):
+def assertHave(identifier):
     '''check if an identifier is defined equal to 1 in the dune-py config.h file.
        use this to check if for example #define HAVE_DUNE_COMMON 1 is
        provided the config file by calling
-       have("HAVE_DUNE_COMMON")
+       assertHave("HAVE_DUNE_COMMON")
     '''
     config = os.path.join(dune.common.module.get_dune_py_dir(), "config.h")
 
     matches = [match for match in [re.match('^[ ]*#define[ ]+' + identifier.strip() + '[ ]+1$', line) for line in open(config)] if match is not None]
+
     if not matches:
-        logger.info("checkconfiguration.have(" + identifier + ") failed - identifier not defined in " + config)
+        # logger.info("checkconfiguration.have(" + identifier + ") failed - identifier not defined in " + config)
         raise ConfigurationError(identifier + " is not set in dune-py's config.h")
     elif matches.__len__() > 1:
-        logger.info("checkconfiguration.have(" + identifier + ") failed - multiple definitions in " + config)
+        # logger.info("checkconfiguration.have(" + identifier + ") failed - multiple definitions in " + config)
         raise ConfigurationError(identifier + " found multiple times in dune-py's config.h")
 
-def preprocessorTest(tests):
+def preprocessorAssert(tests):
     '''perform preprocessore checks.
        A list of checks can be provided each should contain a pair, the
        first being the preprocessor check to perform (e.g. #if or #ifdef)
