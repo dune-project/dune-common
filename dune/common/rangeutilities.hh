@@ -104,6 +104,70 @@ namespace Dune
     return b.all();
   }
 
+
+
+  /**
+     \brief iterator for implementing range based for loops over an integer range
+   */
+  template <class T>
+  class IntegralRangeIterator
+  {
+  public:
+    IntegralRangeIterator(T value)
+    : value_(value) {}
+    bool operator!=(IntegralRangeIterator const& other) const
+    {
+      return value_ != other.value_;
+    }
+    T const& operator*() const
+    {
+      return value_;
+    }
+    IntegralRangeIterator& operator++()
+    {
+      ++value_;
+      return *this;
+    }
+  private:
+    T value_;
+  };
+  template <class T>
+  class IntegralRange
+  {
+  public:
+    IntegralRange(T from, T to)
+    : from_(from), to_(to) {}
+    IntegralRange(std::pair<T,T> range)
+    : from_(range.first), to_(range.second) {}
+    IntegralRange(T to)
+    : from_(0), to_(to){}
+    IntegralRangeIterator<T> begin() const
+    {
+      return IntegralRangeIterator<T>(from_);
+    }
+    IntegralRangeIterator<T> end() const
+    {
+      return IntegralRangeIterator<T>(to_);
+    }
+  private:
+    T const from_;
+    T const to_;
+  };
+
+  /**
+     \brief free standing function for setting up a range based for loop
+     over an integer range
+     for (auto i: integralRange(0,10))
+     or
+     for (auto i: integralRange<int>(-10,10))
+   */
+  template<typename T=unsigned>
+  IntegralRange<T> integralRange(T from, T to)
+  {
+    static_assert(std::is_integral<T>::value, "range only accepts integral values");
+    return { from, to };
+  }
+
 }
 
 #endif // DUNE_COMMON_RANGE_UTILITIES_HH
