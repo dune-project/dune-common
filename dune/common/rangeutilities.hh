@@ -104,6 +104,105 @@ namespace Dune
     return b.all();
   }
 
+
+
+  /**
+     \brief iterator for implementing range based for loops over an integer range
+   */
+  template <class T>
+  class IntegralRangeIterator
+    : public std::iterator<std::random_access_iterator_tag, T, std::make_signed_t<T>, const T *, T>
+  {
+    typedef std::iterator<std::random_access_iterator_tag, T, std::make_signed_t<T>, const T *, T> Base;
+
+  public:
+    using typename Base::value_type;
+    using typename Base::pointer;
+    using typename Base::reference;
+    using typename Base::difference_type;
+
+    IntegralRangeIterator() noexcept = default;
+    explicit IntegralRangeIterator(value_type value) noexcept : value_(value) {}
+
+    pointer operator->() const noexcept { return &value_; }
+    reference operator*() const noexcept { return value_; }
+
+    reference operator[]( difference_type n ) const noexcept { return (value_ + n); }
+
+    bool operator==(const IntegralRangeIterator & other) const noexcept { return (value_ == other.value_); }
+    bool operator!=(const IntegralRangeIterator & other) const noexcept { return (value_ != other.value_); }
+
+    bool operator<(const IntegralRangeIterator & other) const noexcept { return (value_ <= other.value_); }
+    bool operator<=(const IntegralRangeIterator & other) const noexcept { return (value_ <= other.value_); }
+    bool operator>(const IntegralRangeIterator & other) const noexcept { return (value_ >= other.value_); }
+    bool operator>=(const IntegralRangeIterator & other) const noexcept { return (value_ >= other.value_); }
+
+    IntegralRangeIterator& operator++() noexcept { ++value_; return *this; }
+    IntegralRangeIterator operator++(int) noexcept { IntegralRangeIterator copy( *this ); ++(*this); return copy; }
+
+    IntegralRangeIterator& operator--() noexcept { --value_; return *this; }
+    IntegralRangeIterator operator--(int) noexcept { IntegralRangeIterator copy( *this ); --(*this); return copy; }
+
+    IntegralRangeIterator& operator+=(difference_type n) noexcept { value_ += n; return *this; }
+    IntegralRangeIterator& operator-=(difference_type n) noexcept { value_ -= n; return *this; }
+
+    friend IntegralRangeIterator operator+(const IntegralRangeIterator &a, difference_type n) noexcept { return IntegralRangeIterator(a.value_ + n); }
+    friend IntegralRangeIterator operator+(difference_type n, const IntegralRangeIterator &a) noexcept { return IntegralRangeIterator(a.value_ + n); }
+    friend IntegralRangeIterator operator-(const IntegralRangeIterator &a, difference_type n) noexcept { return IntegralRangeIterator(a.value_ - n); }
+
+    difference_type operator-(const IntegralRangeIterator &other) const noexcept { return (static_cast<difference_type>(value_) - static_cast<difference_type>(other.value_)); }
+
+  private:
+    value_type value_;
+  };
+
+  template <class T>
+  class IntegralRange
+  {
+  public:
+    typedef T value_type;
+    typedef IntegralRangeIterator<T> iterator;
+    typedef std::make_unsigned_t<T> size_type;
+
+    IntegralRange(value_type from, value_type to) noexcept : from_(from), to_(to) {}
+    IntegralRange(std::pair<value_type, value_type> range) noexcept : from_(range.first), to_(range.second) {}
+    IntegralRange(value_type to) noexcept : from_(0), to_(to) {}
+
+    iterator begin() const noexcept { return iterator(from_); }
+    iterator end() const noexcept { return iterator(to_); }
+
+    value_type operator[](const value_type i) const noexcept { return (from_ + i); }
+
+    bool empty() const noexcept { return (from_ == to_); }
+    size_type size() const noexcept { return (static_cast<size_type>(to_) - static_cast<size_type>(from_)); }
+
+  private:
+    value_type from_, to_;
+  };
+
+  /**
+     \brief free standing function for setting up a range based for loop
+     over an integer range
+     for (auto i: range(0,10)) // 0,1,2,3,4,5,6,7,8,9
+     or
+     for (auto i: range(-10,10)) // -10,-9,..,8,9
+     or
+     for (auto i: range(10)) // 0,1,2,3,4,5,6,7,8,9
+   */
+  template<class T, class U,
+           std::enable_if_t<std::is_same<std::decay_t<T>, std::decay_t<U>>::value, int> = 0,
+           std::enable_if_t<std::is_integral<std::decay_t<T>>::value, int> = 0>
+  inline static IntegralRange<std::decay_t<T>> range(T &&from, U &&to) noexcept
+  {
+    return {std::forward<T>(from), std::forward<U>(to)};
+  }
+
+  template<class T, std::enable_if_t<std::is_integral<std::decay_t<T>>::value, int> = 0>
+  inline static IntegralRange<std::decay_t<T>> range(T &&to) noexcept
+  {
+    return {std::forward<T>(to)};
+  }
+
 }
 
 #endif // DUNE_COMMON_RANGE_UTILITIES_HH
