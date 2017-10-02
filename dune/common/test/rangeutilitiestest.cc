@@ -1,6 +1,7 @@
 #include "config.h"
 
 #include <array>
+#include <vector>
 
 #include <dune/common/rangeutilities.hh>
 #include <dune/common/iteratorrange.hh>
@@ -75,6 +76,14 @@ int main()
     suite.check(!Dune::all_true(f))
       << "all_true(false) must be false";
   }
+
+  // integer ranges
+  using Dune::range;
+  std::vector< int > numbers( range( 1, 6 ).begin(), range( 1, 6 ).end() );
+  int sum = 0;
+  for( auto i : range( numbers.size() ) )
+    sum += numbers[ i ];
+  suite.check( sum == 15 ) << "sum over range( 1, 6 ) must be 15.";
 
   return suite.exit();
 
