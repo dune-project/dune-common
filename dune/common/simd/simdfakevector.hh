@@ -17,9 +17,6 @@ namespace Dune {
   template<class T, std::size_t S>
   class simdfakevector: public std::array<T,S> {
 
-    /**ToDo:remove*/
-    typedef std::array<T,S> arr_t;
-
   public:
 
     /**
@@ -209,7 +206,7 @@ namespace Dune {
   template<class T, std::size_t S>
   std::ostream& operator<< (std::ostream &os, const simdfakevector<T,S> &v) {
     os << "[";
-    for(std::size_t i; i<S-1; i++) {
+    for(std::size_t i=0; i<S-1; i++) {
       os << v[i] << ", ";
     }
     os << v[S-1] << "]";
@@ -240,31 +237,31 @@ namespace Dune {
 
       //Implementation of SIMD-functionality
       template<class T, std::size_t S>
-      struct LaneCount(ADLTag<5>, const simdfakevector<T,S> &v) {
-        return S;
-      };
+      struct LaneCount<simdfakevector<T,S> &v> : index_constant<S> {};
 
       template<class T, std::size_t S>
-      auto lane(ADLtag<5>, std::size_t l, const simdfakevector<T,S> &v) {
+      T lane(ADLtag<5>, std::size_t l, const simdfakevector<T,S> &v) {
         return v[l];
       }
 
       template<class T, std::size_t S>
-      auto lane(ADLtag<5>, std::size_t l, simdfakevector<T,S> &v) {
+      T& lane(ADLtag<5>, std::size_t l, simdfakevector<T,S> &v) {
         return v[l];
       }
 
       template<class T, std::size_t S>
       auto cond(ADLTag<5>, simdfakevector<bool,S> mask, simdfakevector<T,S> ifTrue, simdfakevector<T,S> ifFalse) {
         simdfakevector<T,S> out;
-        for(std::size_t i; i<S; i++) {
+        for(std::size_t i=0; i<S; i++) {
           out[i] = mask[i] ? ifTrue[i] : ifFalse[i];
+        }
+        return out;
       }
 
       template<std::size_t S>
       bool anyTrue(ADLTag<5>, simdfakevector<bool,S> mask) {
         bool out = false;
-        for(std::size_t i; i<S; i++) {
+        for(std::size_t i=0; i<S; i++) {
           out |= mask[i];
         }
         return out;
@@ -273,7 +270,7 @@ namespace Dune {
       template<std::size_t S>
       bool allTrue(ADLTag<5>, simdfakevector<bool,S> mask) {
         bool out = true;
-        for(std::size_t i; i<S; i++) {
+        for(std::size_t i=0; i<S; i++) {
           out &= mask[i];
         }
         return out;
@@ -282,7 +279,7 @@ namespace Dune {
       template<std::size_t S>
       bool anyFalse(ADLTag<5>, simdfakevector<bool,S> mask) {
         bool out = false;
-        for(std::size_t i; i<S; i++) {
+        for(std::size_t i=0; i<S; i++) {
           out |= !mask[i];
         }
         return out;
@@ -291,8 +288,8 @@ namespace Dune {
       template<std::size_t S>
       bool allFalse(ADLTag<5>, simdfakevector<bool,S> mask) {
         bool out = true;
-        for(std::size_t i; i<S; i++) {
-          out  &= !mask[i];
+        for(std::size_t i=0; i<S; i++) {
+          out &= !mask[i];
         }
         return out;
       }
