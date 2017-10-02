@@ -17,7 +17,7 @@ macro(setup_headercheck)
 
   #define headercheck target
   dune_module_path(MODULE dune-common RESULT scriptdir SCRIPT_DIR)
-  add_custom_target(headercheck ${CMAKE_COMMAND} -P ${scriptdir}/FinalizeHeadercheck.cmake -DENABLE_HEADERCHECK=${ENABLE_HEADERCHECK}
+  add_custom_target(headercheck ${CMAKE_COMMAND} -DENABLE_HEADERCHECK=${ENABLE_HEADERCHECK} -P ${scriptdir}/FinalizeHeadercheck.cmake
                   WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 endmacro(setup_headercheck)
 
