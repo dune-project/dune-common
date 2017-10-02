@@ -181,9 +181,11 @@ namespace Dune
   /**
      \brief free standing function for setting up a range based for loop
      over an integer range
-     for (auto i: integralRange(0,10))
+     for (auto i: range(0,10)) // 0,1,2,3,4,5,6,7,8,9
      or
-     for (auto i: integralRange<int>(-10,10))
+     for (auto i: range(-10,10)) // -10,-9,..,8,9
+     or
+     for (auto i: range(10)) // 0,1,2,3,4,5,6,7,8,9
    */
   template<class T, std::enable_if_t<std::is_integral<std::decay_t<T>>::value, int> = 0>
   inline static IntegralRange<std::decay_t<T>> range(T &&from, T &&to) noexcept
