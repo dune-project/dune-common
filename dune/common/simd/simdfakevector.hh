@@ -237,7 +237,7 @@ namespace Dune {
 
       //Implementation of SIMD-functionality
       template<class T, std::size_t S>
-      struct LaneCount<simdfakevector<T,S> &v> : index_constant<S> {};
+      struct LaneCount<simdfakevector<T,S>> : index_constant<S> {};
 
       template<class T, std::size_t S>
       T lane(ADLtag<5>, std::size_t l, const simdfakevector<T,S> &v) {
