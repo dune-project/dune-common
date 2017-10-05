@@ -247,8 +247,10 @@ namespace Dune {
       else {
         // check if somebody still ties to us...
         if (_tied_streams != 0)
-          DUNE_THROW(DebugStreamError,
-                     "There are streams still tied to this stream!");
+        {
+          std::cerr << "DebugStream destructor is called while other streams are still tied to it. Terminating!" << std::endl;
+          std::terminate();
+        }
       }
 
       // remove ostream-stack
