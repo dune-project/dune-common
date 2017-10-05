@@ -1,11 +1,11 @@
 # .. cmake_module::
 #
-#    Module that checks for supported C++14, C++11 and non-standard features.
+#    Module that checks for supported C++17, C++14 and non-standard features.
 #
 #    The behaviour of this module can be modified by the following variable:
 #
 #    :ref:`DISABLE_CXX_VERSION_CHECK`
-#       Disable checking for std=c++11 (c++14, c++1y)
+#       Disable checking for std=c++14 (c++17, ...)
 #
 #    This module internally sets the following variables, which are then
 #    exported into the config.h of the current dune module.
@@ -39,7 +39,7 @@ include(CheckCXXSourceCompiles)
 include(CheckCXXSymbolExists)
 
 # C++ standard versions that this test knows about
-set(CXX_VERSIONS 17 14 11)
+set(CXX_VERSIONS 17 14)
 
 
 # Compile tests for the different standard revisions; these test both the compiler
@@ -66,9 +66,18 @@ string(REPLACE ";" "\;" cxx_14_test
   "
   #include <memory>
 
+  constexpr auto f(int i)
+  {
+    if (i > 0)
+      return i;
+    else
+      return -i;
+  }
+
   int main() {
     // lambdas with auto parameters are C++14 - so this checks the compiler
     auto l = [](auto x) { return x; };
+    static_assert(f(4) == f(-4),\"\");
     // std::make_unique() is a C++14 library feature - this checks whether the
     // compiler uses a C++14 compliant library.
     auto v = std::make_unique<int>(l(0));
@@ -76,28 +85,16 @@ string(REPLACE ";" "\;" cxx_14_test
   }
   ")
 
-string(REPLACE ";" "\;" cxx_11_test
-  "
-  #include <memory>
-
-  int main() {
-    // this checks both the compiler (by using auto) and the library (by using
-    // std::make_shared() for C++11 compliance at GCC 4.4 level.
-    auto v = std::make_shared<int>(0);
-    return *v;
-  }
-  ")
-
 # build a list out of the pre-escaped tests
-set(CXX_VERSIONS_TEST "${cxx_17_test}" "${cxx_14_test}" "${cxx_11_test}")
+set(CXX_VERSIONS_TEST "${cxx_17_test}" "${cxx_14_test}")
 
 # these are appended to "-std=c++" and tried in this order
 # note the escaped semicolons; that's necessary to create a nested list
-set(CXX_VERSIONS_FLAGS "17\;1z" "14\;1y" "11\;0x")
+set(CXX_VERSIONS_FLAGS "17\;1z" "14\;1y")
 
 # by default, we enable C++14 for now, but not C++17
 # The user can override this choice by explicitly setting this variable
-set(CXX_MAX_STANDARD 14 CACHE STRING "highest version of the C++ standard to enable")
+set(CXX_MAX_STANDARD 17 CACHE STRING "highest version of the C++ standard to enable")
 
 
 function(dune_require_cxx_standard)
@@ -122,9 +119,12 @@ set up to not allow newer language standards than C++${CXX_MAX_STANDARD}. Try se
 CMake variable CXX_MAX_STANDARD to at least ${_VERSION}."
         )
     else()
-      message(FATAL_ERROR "
-${_MODULE} requires compiler support for C++${_VERSION}, but your compiler only supports \
-C++${CXX_MAX_SUPPORTED_STANDARD}."
+      if(${CXX_MAX_SUPPORTED_STANDARD} EQUAL 3)
+        set(CXX_STD_NAME 03)
+      else()
+        set(CXX_STD_NAME ${CXX_MAX_SUPPORTED_STANDARD})
+      endif()
+      message(FATAL_ERROR "${_MODULE} requires support for C++${_VERSION}, but your compiler failed our compatibility test."
         )
     endif()
   endif()
@@ -194,8 +194,8 @@ CMAKE_CXX_FLAGS."
 
 endif()
 
-# make sure we have at least C++11
-dune_require_cxx_standard(MODULE "DUNE" VERSION 11)
+# make sure we have at least C++14
+dune_require_cxx_standard(MODULE "DUNE" VERSION 14)
 
 # perform tests
 
