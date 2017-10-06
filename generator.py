@@ -85,14 +85,13 @@ class SimpleGenerator(object):
         source += "PYBIND11_MODULE( " + moduleName + ", module )\n"
         source += "{\n"
         source += "  using pybind11::operator\"\"_a;\n"
-        source += '  auto entry = Dune::CorePy::typeRegistry().insert<DuneType>("' + typeName + '",{' +\
-                  ",".join(['"' + i + '"' for i in includes]) + "});\n"
         options = kwargs.get("options", [])
         if not kwargs.get("BufferProtocol", False):
             source += "  auto cls = pybind11::class_< DuneType" + ", ".join(options) + " >( module, \"" + self.pythonName + "\" );\n"
         else:
             source += "  auto cls = pybind11::class_< DuneType " + ", ".join(options) + " >( module, \"" + self.pythonName + "\", pybind11::buffer_protocol() );\n"
-        source += "  Dune::CorePy::typeRegistry().exportToPython(cls,entry.first->second);\n"
+        source += '  Dune::CorePy::typeRegistry().insertClass<DuneType>(cls, "' + typeName + '",{' +\
+                  ",".join(['"' + i + '"' for i in includes]) + "});\n"
         source += "  " + self.namespace + "register" + self.typeName + "( module, cls );\n"
 
         for arg in args:
