@@ -233,11 +233,10 @@ namespace Dune {
 
     /*! \brief Destroy stream.
 
-       if other streams still tie() to this stream an exception will be
-       thrown. Otherwise the child streams would certainly break on the
-       next output
-
-       \throws DebugStreamError
+       If other streams still tie() to this stream the destructor
+       will call std::terminate() because you can hardly recover
+       from this problem and the child streams would certainly break on the
+       next output.
      */
     ~DebugStream()
     {
@@ -247,8 +246,10 @@ namespace Dune {
       else {
         // check if somebody still ties to us...
         if (_tied_streams != 0)
-          DUNE_THROW(DebugStreamError,
-                     "There are streams still tied to this stream!");
+        {
+          std::cerr << "DebugStream destructor is called while other streams are still tied to it. Terminating!" << std::endl;
+          std::terminate();
+        }
       }
 
       // remove ostream-stack
