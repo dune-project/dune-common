@@ -90,8 +90,9 @@ class SimpleGenerator(object):
             source += "  auto cls = pybind11::class_< DuneType" + ", ".join(options) + " >( module, \"" + self.pythonName + "\" );\n"
         else:
             source += "  auto cls = pybind11::class_< DuneType " + ", ".join(options) + " >( module, \"" + self.pythonName + "\", pybind11::buffer_protocol() );\n"
-        source += '  Dune::CorePy::typeRegistry().insertClass<DuneType>(cls, "' + typeName + '",{' +\
-                  ",".join(['"' + i + '"' for i in includes]) + "});\n"
+        source += '  Dune::CorePy::AddToTypeRegistry("' + typeName + '").\n' + \
+           '      includes({'+','.join(['"' + i + '"' for i in includes]) + '}).\n' + \
+           '      set(cls);'
         source += "  " + self.namespace + "register" + self.typeName + "( module, cls );\n"
 
         for arg in args:
