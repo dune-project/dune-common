@@ -30,6 +30,7 @@ class SimpleGenerator(object):
         source += '\n'
         source += '#include <dune/corepy/common/typeregistry.hh>\n'
         source += '#include <dune/corepy/pybind11/pybind11.h>\n'
+        source += '#include <dune/corepy/pybind11/stl.h>\n'
         source += '\n'
 
         if self.fileName is not None:
