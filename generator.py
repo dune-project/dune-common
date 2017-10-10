@@ -102,5 +102,5 @@ class SimpleGenerator(object):
         source += "}\n"
 
         module = builder.load(moduleName, source, self.pythonName)
-        setattr(getattr(module,self.pythonName),"_module",module)
+        # setattr(getattr(module,self.pythonName),"_module",module)
         return module
