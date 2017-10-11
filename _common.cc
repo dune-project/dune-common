@@ -28,10 +28,12 @@ PYBIND11_PLUGIN(_common)
 
   Dune::CorePy::registerFieldVector<double>(module, std::make_integer_sequence<int, 10>());
   Dune::CorePy::registerFieldMatrix<double>(module, std::make_integer_sequence<int, 5>());
-
   Dune::CorePy::registerDynamicVector<double>(module);
   Dune::CorePy::registerDynamicMatrix<double>(module);
 
+  int argc = 0;
+  char **argv = NULL;
+  Dune::MPIHelper::instance(argc,argv);
   Dune::CorePy::registerCollectiveCommunication(module);
 
   pybind11::enum_< Dune::CorePy::Reader > reader( module, "reader" );
