@@ -38,7 +38,7 @@ namespace Dune {
 
       //! implements Simd::lane()
       template<class V>
-      decltype(auto) lane(ADLTag<0>, std::size_t l, V &&v) = delete;
+      decltype(auto) lane(ADLTag<0>, std::size_t l, V v) = delete;
 
       //! implements Simd::valueCast()
       /**
