@@ -16,11 +16,14 @@
 #include <dune/corepy/common/fmatrix.hh>
 #include <dune/corepy/common/fvector.hh>
 #include <dune/corepy/common/mpihelper.hh>
+#include <dune/corepy/common/typeregistry.hh>
+
 
 #include <dune/grid/common/gridenums.hh>
 #include <dune/grid/io/file/vtk/vtkwriter.hh>
 
 #include <dune/corepy/pybind11/pybind11.h>
+#include <dune/corepy/pybind11/stl.h>
 
 PYBIND11_MODULE( _common, module )
 {
@@ -31,6 +34,8 @@ PYBIND11_MODULE( _common, module )
   Dune::CorePy::registerDynamicMatrix<double>(module);
 
   Dune::CorePy::registerCollectiveCommunication(module);
+
+  Dune::CorePy::registerTypeRegistry(module);
 
   pybind11::enum_< Dune::CorePy::Reader > reader( module, "reader" );
   reader.value( "dgf", Dune::CorePy::Reader::dgf );
