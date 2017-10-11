@@ -613,7 +613,7 @@ run_default_update () {
 
           # merge all changes fast-forward style if possible
           if ! git merge --ff-only FETCH_HEAD 2> /dev/null; then
-              echo "$module seems to be using git, and could not be"
+              eval echo "\$NAME_${module} seems to be using git, and could not be"
               echo "updated automatically. Please update it manually."
               echo "(Usually, this is done via 'git svn rebase' for modules using"
               echo "subversion or 'git merge' for modules which use git natively."
@@ -621,7 +621,7 @@ run_default_update () {
           fi
       fi
   else
-    echo "WARNING: $module is not under a known version control system."
+    eval echo "WARNING: \$NAME_${module} is not under a known version control system."
     echo "         We support svn and git."
   fi
 }
