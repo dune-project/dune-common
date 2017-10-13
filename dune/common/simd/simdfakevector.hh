@@ -15,9 +15,26 @@ namespace Dune {
     */
 
   template<class T, std::size_t S>
-  class simdfakevector: public std::array<T,S> {
+  class simdfakevector : public std::array<T,S> {
 
   public:
+
+  //default constructor
+  simdfakevector() {}
+
+  //constructor initializing the content with a given value
+  /** @ToDo: allow initialization with I different than T (=> casting)? */
+  template<class I>
+  simdfakevector(I i) : simdfakevector() {
+    this->fill(i);
+  };
+
+  //Typecasting scalar vectortypes
+  /** @ToDo: allow casting with S>1? */
+  template<typename U = T>
+  operator typename std::enable_if_t<S==1,U> () {
+    return this->front();
+  }
 
     /**
       *  Definition of basic operators
@@ -36,8 +53,9 @@ namespace Dune {
     DUNE_SIMD_FAKEVECTOR_PREFIX_OP(--);
 #undef DUNE_SIMD_FAKEVECTOR_PREFIX_OP
 
+  /** @ToDo: is const really necessary? check after when "lane()" is working properly */
 #define DUNE_SIMD_FAKEVECTOR_UNARY_OP(SYMBOL)		\
-    auto operator SYMBOL() {                            \
+    auto operator SYMBOL() const {                            \
       simdfakevector<T,S> out;                          \
       for(std::size_t i=0; i<S; i++){		        \
         out[i] = SYMBOL((*this)[i]);                    \
@@ -47,8 +65,9 @@ namespace Dune {
 
     DUNE_SIMD_FAKEVECTOR_UNARY_OP(+);
     DUNE_SIMD_FAKEVECTOR_UNARY_OP(-);
+    DUNE_SIMD_FAKEVECTOR_UNARY_OP(~);
 
-    auto operator!() {
+    auto operator!() const {
       simdfakevector<bool,S> out;
       for(std::size_t i=0; i<S; i++){
         out[i] = !((*this)[i]);
@@ -71,7 +90,7 @@ namespace Dune {
 
     //Assignment operators
 #define DUNE_SIMD_FAKEVECTOR_ASSIGNMENT_OP(SYMBOL)		\
-    auto operator SYMBOL(const T s) {				\
+    auto operator SYMBOL (const T s) {				\
       for(std::size_t i=0; i<S; i++){				\
         (*this)[i] SYMBOL s;					\
       }								\
@@ -222,30 +241,43 @@ namespace Dune {
       //Implementation of SIMD-types
       template<class T, std::size_t S>
       struct ScalarType<simdfakevector<T,S>> {
-        using type = typename simdvectortype<T,1>;
+        using type = simdfakevector<T,1>;
       };
 
       template<class T, std::size_t S>
       struct IndexType<simdfakevector<T,S>> {
-        using type = typename simdvectortype<std::size_t,S>;
+        using type =  simdfakevector<std::size_t,S>;
       };
 
       template<class T, std::size_t S>
       struct MaskType<simdfakevector<T,S>> {
-        using type = typename simdvectortype<bool,S>;
+        using type =  simdfakevector<bool,S>;
       };
 
       //Implementation of SIMD-functionality
+
+      /** @ToDo: condense code somehow? */
       template<class T, std::size_t S>
       struct LaneCount<simdfakevector<T,S>> : index_constant<S> {};
 
       template<class T, std::size_t S>
-      T lane(ADLtag<5>, std::size_t l, const simdfakevector<T,S> &v) {
-        return v[l];
+      struct LaneCount<simdfakevector<T,S>&> : index_constant<S> {};
+
+      template<class T, std::size_t S>
+      struct LaneCount<const simdfakevector<T,S>> : index_constant<S> {};
+
+      template<class T, std::size_t S>
+      struct LaneCount<const simdfakevector<T,S>&> : index_constant<S> {};
+
+
+      template<class T, std::size_t S>
+      T lane(ADLTag<5>, std::size_t l, const simdfakevector<T,S> &v) {
+       static T out = v[l];
+       return out;
       }
 
       template<class T, std::size_t S>
-      T& lane(ADLtag<5>, std::size_t l, simdfakevector<T,S> &v) {
+      T& lane(ADLTag<5>, std::size_t l, simdfakevector<T,S> &v) {
         return v[l];
       }
 
