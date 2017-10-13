@@ -73,3 +73,26 @@ dune_add_test(NAME vctest
 )
 add_dune_vc_flags(vctest)
 # no need to install vctest.hh, used by vctest*.cc only
+
+
+
+
+dune_add_test(NAME fakevectortest
+  SOURCES
+    fakevectortest.cc
+    fakevectortest_bool.cc
+
+    #fakevectortest_short.cc
+    #fakevectortest_unsigned_short.cc
+    #fakevectortest_int.cc
+    #fakevectortest_unsigned.cc
+    #fakevectortest_long.cc
+    #fakevectortest_unsigned_long.cc
+    #fakevectortest_long_long.cc
+    #fakevectortest_unsigned_long_long.cc
+
+    #fakevectortest_float.cc
+    #fakevectortest_double.cc
+    #fakevectortest_long_double.cc
+  LINK_LIBRARIES dunecommon
+)
