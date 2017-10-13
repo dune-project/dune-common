@@ -96,3 +96,9 @@ dune_add_test(NAME fakevectortest
     #fakevectortest_long_double.cc
   LINK_LIBRARIES dunecommon
 )
+
+dune_add_test(NAME fakevectorCustomTest
+  SOURCES
+    simdfakevectorTest.cc
+  LINK_LIBRARIES dunecommon
+)
