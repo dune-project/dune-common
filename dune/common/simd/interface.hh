@@ -14,6 +14,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <type_traits>
 #include <utility>
 
 #include <dune/common/simd/base.hh>
@@ -272,15 +273,15 @@ namespace Dune {
 
     //! Number of lanes in a SIMD type
     /**
-     * \tparam V The SIMD (mask or vector) type.  May not include `const`,
-     *           `volatile` or reference qualifiers.
+     * \tparam V The SIMD (mask or vector) type.  `const`, `volatile`
+     *           or reference qualifiers are automatically ignored.
      *
      * Implemented by `Overloads::LaneCount`.
      */
     template<class V>
     constexpr std::size_t lanes()
     {
-      return Overloads::LaneCount<V>::value;
+      return Overloads::LaneCount<std::decay_t<V>>::value;
     }
 
     //! Extract an element of a SIMD type
