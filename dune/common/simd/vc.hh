@@ -155,11 +155,6 @@ namespace Dune {
       template<class V, class SFINAE = void>
       struct IsMask : std::false_type {};
 
-      template<class T>
-      struct IsMask<T, std::enable_if_t<
-                           !std::is_same<T, std::decay_t<T> >::value> >
-        : IsMask<std::decay_t<T> > {};
-
       template<typename T, typename A>
       struct IsMask<Vc::Mask<T, A> > : std::true_type {};
 
@@ -169,11 +164,6 @@ namespace Dune {
       //! specialized to true for Vc vector and mask types
       template<class V, class SFINAE = void>
       struct IsVector : IsMask<V> {};
-
-      template<class T>
-      struct IsVector<T, std::enable_if_t<
-                       !std::is_same<T, std::decay_t<T> >::value> >
-        : IsVector<std::decay_t<T> > {};
 
       template<typename T, typename A>
       struct IsVector<Vc::Vector<T, A> > : std::true_type {};
@@ -361,7 +351,7 @@ namespace Dune {
        */
       template<class V>
       struct LaneCount<V, std::enable_if_t<VcImpl::IsVector<V>::value> >
-        : public index_constant<std::decay_t<V>::size()>
+        : public index_constant<V::size()>
       { };
 
       //! implements Simd::lane()
