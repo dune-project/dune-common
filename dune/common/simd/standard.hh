@@ -97,7 +97,7 @@ namespace Dune {
 
       //! implements Simd::lane()
       template<class V>
-      decltype(auto) lane(ADLTag<2, IsStandard<V>::value>,
+      decltype(auto) lane(ADLTag<2, IsStandard<std::decay_t<V>>::value>,
                           std::size_t l, V &&v)
       {
         return std::forward<V>(v);

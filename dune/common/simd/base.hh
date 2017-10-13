@@ -197,28 +197,32 @@ namespace Dune {
 
       //! should have a member type \c type
       /**
-       * Implements `Simd::Scalar`
+       * Implements `Simd::Scalar`.  `V` will never have cv or reference
+       * qualifiers, no need to strip those.
        */
       template<class V, class SFINAETag = void>
       struct ScalarType;
 
       //! should have a member type \c type
       /**
-       * Implements `Simd::Index`
+       * Implements `Simd::Index`.  `V` will never have cv or reference
+       * qualifiers, no need to strip those.
        */
       template<class V, class SFINAETag = void>
       struct IndexType;
 
       //! should have a member type \c type
       /**
-       * Implements `Simd::Mask`
+       * Implements `Simd::Mask`.  `V` will never have cv or reference
+       * qualifiers, no need to strip those.
        */
       template<class V, class SFINAETag = void>
       struct MaskType;
 
       //! should be derived from a `Dune::index_constant`
       /**
-       * Implements `Simd::lanes()`
+       * Implements `Simd::lanes()`.  `V` will never have cv or reference
+       * qualifiers, no need to strip those.
        */
       template<class V, class SFINAETag = void>
       struct LaneCount;
