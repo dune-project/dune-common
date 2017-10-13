@@ -218,8 +218,8 @@ namespace Dune {
 
     //! Element type of some SIMD type
     /**
-     * \tparam V The SIMD (mask or vector) type.  May not include `const`,
-     *           `volatile` or reference qualifiers.
+     * \tparam V The SIMD (mask or vector) type.  `const`, `volatile` or
+     *           reference qualifiers are automatically ignored.
      *
      * Not all operations that access the element of a vector return (a
      * reference to) the scalar type -- some may return proxy objects instead.
@@ -229,12 +229,12 @@ namespace Dune {
      * Implemented by `Overloads::ScalarType`.
      */
     template<class V>
-    using Scalar = typename Overloads::ScalarType<V>::type;
+    using Scalar = typename Overloads::ScalarType<std::decay_t<V> >::type;
 
     //! Index vector type of some SIMD type
     /**
-     * \tparam V The SIMD (mask or vector) type.  May not include `const`,
-     *           `volatile` or reference qualifiers.
+     * \tparam V The SIMD (mask or vector) type.  `const`, `volatile` or
+     *           reference qualifiers are automatically ignored.
      *
      * The index type is a SIMD vector of integers with the same number of
      * lanes as `V`.  The signedness and size of the integers is
@@ -244,12 +244,12 @@ namespace Dune {
      * Implemented by `Overloads::IndexType`.
      */
     template<class V>
-    using Index = typename Overloads::IndexType<V>::type;
+    using Index = typename Overloads::IndexType<std::decay_t<V> >::type;
 
     //! Mask type type of some SIMD type
     /**
-     * \tparam V The SIMD (mask or vector) type.  May not include `const`,
-     *           `volatile` or reference qualifiers.
+     * \tparam V The SIMD (mask or vector) type.  `const`, `volatile` or
+     *           reference qualifiers are automatically ignored.
      *
      * The mask type is kind of a SIMD vector of `bool` with the same number
      * of lanes as `V`.  It results from comparison operations between values
@@ -269,7 +269,7 @@ namespace Dune {
      * Implemented by `Overloads::MaskType`.
      */
     template<class V>
-    using Mask = typename Overloads::MaskType<V>::type;
+    using Mask = typename Overloads::MaskType<std::decay_t<V> >::type;
 
     //! Number of lanes in a SIMD type
     /**
