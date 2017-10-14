@@ -300,7 +300,7 @@ namespace Dune {
                       "reference nor const).");
 
         // check lane() on const lvalues
-/**        const V &vec2 = vec;
+        const V &vec2 = vec;
         for(std::size_t l = 0; l < lanes(vec); ++l)
           DUNE_SIMD_CHECK(lane(l, vec2) == Scalar<V>(l + 1));
         using CLRes = decltype(lane(0, vec2));
@@ -313,9 +313,9 @@ namespace Dune {
         static_assert(!std::is_assignable<CLRes, Scalar<V> >::value,
                       "Result of lane() on a const lvalue vector must not be "
                       "assignable from a scalar.");
-*/
+
         // check lane() on rvalues
-/**        for(std::size_t l = 0; l < lanes(vec); ++l)
+        for(std::size_t l = 0; l < lanes(vec); ++l)
           DUNE_SIMD_CHECK(lane(l, prvalue(vec)) == Scalar<V>(l + 1));
         using RRes = decltype(lane(0, prvalue(vec)));
         // TODO: do we really want to allow Scalar<V>&& here?  If we allow it,
@@ -330,7 +330,7 @@ namespace Dune {
                       std::is_same<RRes, Scalar<V>&&>::value,
                       "Result of lane() on a rvalue vector V must be "
                       "Scalar<V> or Scalar<V>&&.");
-   */     // Can't assert non-assignable, fails for any typical class,
+        // Can't assert non-assignable, fails for any typical class,
         // e.g. std::complex<>.  Would need to return const Scalar<V> or const
         // Scalar<V>&&, which would inhibit moving from the return value.
         // static_assert(!std::is_assignable<RRes, Scalar<V> >::value,
@@ -976,17 +976,17 @@ namespace Dune {
       {
         using S = Scalar<V>;
 
-//        checkBinaryOpVS<V&, S&>(op);
-//        checkBinaryOpVS<V&, const S&>(op);
-//        checkBinaryOpVS<V&, S&&>(op);
-//        checkBinaryOpVS<V&, const S&&>(op);
+        checkBinaryOpVS<V&, S&>(op);
+        checkBinaryOpVS<V&, const S&>(op);
+        checkBinaryOpVS<V&, S&&>(op);
+        checkBinaryOpVS<V&, const S&&>(op);
 
-//        checkBinaryOpVS<const V&, S&>(op);
-//        checkBinaryOpVS<const V&, const S&>(op);
-//        checkBinaryOpVS<const V&, S&&>(op);
-//        checkBinaryOpVS<const V&, const S&&>(op);
+        checkBinaryOpVS<const V&, S&>(op);
+        checkBinaryOpVS<const V&, const S&>(op);
+        checkBinaryOpVS<const V&, S&&>(op);
+        checkBinaryOpVS<const V&, const S&&>(op);
 
-/**        checkBinaryOpVS<V&&, S&>(op);
+        checkBinaryOpVS<V&&, S&>(op);
         checkBinaryOpVS<V&&, const S&>(op);
         checkBinaryOpVS<V&&, S&&>(op);
         checkBinaryOpVS<V&&, const S&&>(op);
@@ -995,7 +995,7 @@ namespace Dune {
         checkBinaryOpVS<const V&&, const S&>(op);
         checkBinaryOpVS<const V&&, S&&>(op);
         checkBinaryOpVS<const V&&, const S&&>(op);
-     */ }
+      }
 
 #define DUNE_SIMD_BINARY_OPCHECK(C1, C2, C3, NAME)      \
       ( DUNE_SIMD_BINARY_OPCHECK_##C1(NAME),            \
@@ -1003,9 +1003,9 @@ namespace Dune {
         DUNE_SIMD_BINARY_OPCHECK_##C3(NAME) )
 #define DUNE_SIMD_BINARY_OPCHECK_(NAME) void()
 #define DUNE_SIMD_BINARY_OPCHECK_SV(NAME)       \
-void()//      checkBinaryOpsSV<V>(Op##NAME{})
+      checkBinaryOpsSV<V>(Op##NAME{})
 #define DUNE_SIMD_BINARY_OPCHECK_VV(NAME)       \
-void()//      checkBinaryOpsVV<V>(Op##NAME{})
+      checkBinaryOpsVV<V>(Op##NAME{})
 #define DUNE_SIMD_BINARY_OPCHECK_VS(NAME)       \
       checkBinaryOpsVS<V>(Op##NAME{})
 
@@ -1027,7 +1027,7 @@ void()//      checkBinaryOpsVV<V>(Op##NAME{})
 
         // binary
         DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixMul             );
-/**        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixDiv             );
+        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixDiv             );
         DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixRemainder       );
 
         DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixPlus            );
@@ -1062,7 +1062,7 @@ void()//      checkBinaryOpsVV<V>(Op##NAME{})
         DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignAnd       );
         DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignXor       );
         DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignOr        );
-*/
+
   //      DUNE_SIMD_BINARY_OPCHECK(SV,   , VS, InfixComma           );
       }
 
@@ -1079,10 +1079,10 @@ void()//      checkBinaryOpsVV<V>(Op##NAME{})
         // clang deprecation warning if ++bool is tested
         // checkUnaryOpsV<V>(OpPrefixIncrement{});
 
-        // checkUnaryOpsV<V>(OpPrefixPlus{});
-        // checkUnaryOpsV<V>(OpPrefixMinus{});
+        checkUnaryOpsV<V>(OpPrefixPlus{});
+        checkUnaryOpsV<V>(OpPrefixMinus{});
         checkUnaryOpsV<V>(OpPrefixLogicNot{});
-        // checkUnaryOpsV<V>(OpPrefixBitNot{});
+        checkUnaryOpsV<V>(OpPrefixBitNot{});
 
         // binary
         DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixMul             );
@@ -1347,7 +1347,7 @@ void()//      checkBinaryOpsVV<V>(Op##NAME{})
       // do these first so everything that appears after "Checking SIMD type
       // ..." really pertains to that type
       checkIndexOf<V>();
-//      checkMaskOf<V>();
+      checkMaskOf<V>();
 
       log_ << "Checking SIMD vector type " << className<V>() << std::endl;
 
@@ -1356,14 +1356,14 @@ void()//      checkBinaryOpsVV<V>(Op##NAME{})
 
       checkDefaultConstruct<V>();
       checkLane<V>();
-/**      checkCopyMoveConstruct<V>();
+      checkCopyMoveConstruct<V>();
       checkBroadcastVectorConstruct<V>();
       checkBracedAssign<V>();
       checkBracedBroadcastAssign<V>();
 
       checkVectorOps<V>();
-*/
-//      checkValueCast<V>();
+
+      checkValueCast<V>();
       checkCond<V>();
 
       // checkBoolReductions<V>(); // not applicable
