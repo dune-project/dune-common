@@ -82,18 +82,18 @@ dune_add_test(NAME fakevectortest
     fakevectortest.cc
     fakevectortest_bool.cc
 
-    #fakevectortest_short.cc
-    #fakevectortest_unsigned_short.cc
-    #fakevectortest_int.cc
-    #fakevectortest_unsigned.cc
-    #fakevectortest_long.cc
-    #fakevectortest_unsigned_long.cc
-    #fakevectortest_long_long.cc
-    #fakevectortest_unsigned_long_long.cc
+    fakevectortest_short.cc
+    fakevectortest_unsigned_short.cc
+    fakevectortest_int.cc
+    fakevectortest_unsigned.cc
+    fakevectortest_long.cc
+    fakevectortest_unsigned_long.cc
+    fakevectortest_long_long.cc
+    fakevectortest_unsigned_long_long.cc
 
-    #fakevectortest_float.cc
-    #fakevectortest_double.cc
-    #fakevectortest_long_double.cc
+    fakevectortest_float.cc
+    fakevectortest_double.cc
+    fakevectortest_long_double.cc
   LINK_LIBRARIES dunecommon
 )
 

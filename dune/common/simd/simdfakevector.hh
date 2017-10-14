@@ -27,15 +27,15 @@ namespace Dune {
   template<class I>
   simdfakevector(I i) : simdfakevector() {
     this->fill(i);
-  };
+  }
 
   //Typecasting scalar vectortypes
   /** @ToDo: allow casting with S>1? */
-  template<typename U = T>
+/**  template<typename U = T>
   operator typename std::enable_if_t<S==1,U> () {
     return this->front();
   }
-
+*/
     /**
       *  Definition of basic operators
       */
@@ -53,7 +53,7 @@ namespace Dune {
     DUNE_SIMD_FAKEVECTOR_PREFIX_OP(--);
 #undef DUNE_SIMD_FAKEVECTOR_PREFIX_OP
 
-  /** @ToDo: is const really necessary? check after when "lane()" is working properly */
+  /** @ToDo: is const really necessary? check again when "lane()" is working properly */
 #define DUNE_SIMD_FAKEVECTOR_UNARY_OP(SYMBOL)		\
     auto operator SYMBOL() const {                            \
       simdfakevector<T,S> out;                          \
@@ -90,7 +90,7 @@ namespace Dune {
 
     //Assignment operators
 #define DUNE_SIMD_FAKEVECTOR_ASSIGNMENT_OP(SYMBOL)		\
-    auto operator SYMBOL (const T s) {				\
+    auto operator SYMBOL(const T s) {				\
       for(std::size_t i=0; i<S; i++){				\
         (*this)[i] SYMBOL s;					\
       }								\
@@ -154,6 +154,32 @@ namespace Dune {
   DUNE_SIMD_FAKEVECTOR_BINARY_OP(^);
 
 #undef DUNE_SIMD_FAKEVECTOR_BINARY_OP
+
+  //Bitshift operators
+  /** @ToDo: Do we really want to allow something like  simdfakevector<double,S> << 4.7?
+    */
+#define DUNE_SIMD_FAKEVECTOR_BITSHIFT_OP(SYMBOL)			\
+  template<class T, std::size_t S>					\
+  auto operator SYMBOL(const simdfakevector<T,S> &v, const T s) {	\
+    simdfakevector<T,S> out;						\
+    for(std::size_t i=0; i<S; i++){                                     \
+      out[i] = v[i] SYMBOL s;                                           \
+    }                                                                   \
+    return out;                                                         \
+  }									\
+  template<class T, std::size_t S>				         		\
+  auto operator SYMBOL(const simdfakevector<T,S> &v, const simdfakevector<T,S> &w) {	\
+    simdfakevector<T,S> out;								\
+    for(std::size_t i=0; i<S; i++){							\
+      out[i] = v[i] SYMBOL w[i];							\
+    }											\
+    return out;										\
+  }
+
+  DUNE_SIMD_FAKEVECTOR_BITSHIFT_OP(<<);
+  DUNE_SIMD_FAKEVECTOR_BITSHIFT_OP(>>);
+
+#undef DUNE_SIMD_FAKEVECTOR_BITSHIFT_OP
 
   //Comparison operators
 #define DUNE_SIMD_FAKEVECTOR_COMPARISON_OP(SYMBOL)	                \
@@ -241,7 +267,7 @@ namespace Dune {
       //Implementation of SIMD-types
       template<class T, std::size_t S>
       struct ScalarType<simdfakevector<T,S>> {
-        using type = simdfakevector<T,1>;
+        using type = T;
       };
 
       template<class T, std::size_t S>
@@ -260,7 +286,7 @@ namespace Dune {
       template<class T, std::size_t S>
       struct LaneCount<simdfakevector<T,S>> : index_constant<S> {};
 
-      template<class T, std::size_t S>
+/**      template<class T, std::size_t S>
       struct LaneCount<simdfakevector<T,S>&> : index_constant<S> {};
 
       template<class T, std::size_t S>
@@ -268,12 +294,11 @@ namespace Dune {
 
       template<class T, std::size_t S>
       struct LaneCount<const simdfakevector<T,S>&> : index_constant<S> {};
-
+*/
 
       template<class T, std::size_t S>
       T lane(ADLTag<5>, std::size_t l, const simdfakevector<T,S> &v) {
-       static T out = v[l];
-       return out;
+       return v[l];
       }
 
       template<class T, std::size_t S>

@@ -9,41 +9,40 @@
 namespace Dune {
   namespace Simd {
 
-    static int size = 5;
 /**
-    extern template void UnitTest::checkVector<simdfakevector<char              ,size>>();
-    extern template void UnitTest::checkVector<simdfakevector<unsigned char     ,size>>();
-    extern template void UnitTest::checkVector<simdfakevector<signed char       ,size>>();
+    extern template void UnitTest::checkVector<simdfakevector<char              ,5>>();
+    extern template void UnitTest::checkVector<simdfakevector<unsigned char     ,5>>();
+    extern template void UnitTest::checkVector<simdfakevector<signed char       ,5>>();
 */
 
-//    extern template void UnitTest::checkVector<simdfakevector<short             ,size>>();
-//    extern template void UnitTest::checkVector<simdfakevector<unsigned short    ,size>>();
-//    extern template void UnitTest::checkVector<simdfakevector<int               ,size>>();
-//    extern template void UnitTest::checkVector<simdfakevector<unsigned          ,size>>();
-//    extern template void UnitTest::checkVector<simdfakevector<long              ,size>>();
-//    extern template void UnitTest::checkVector<simdfakevector<unsigned long     ,size>>();
-//    extern template void UnitTest::checkVector<simdfakevector<long long         ,size>>();
-//    extern template void UnitTest::checkVector<simdfakevector<unsigned long long,size>>();
+    extern template void UnitTest::checkVector<simdfakevector<short             ,5>>();
+    extern template void UnitTest::checkVector<simdfakevector<unsigned short    ,5>>();
+    extern template void UnitTest::checkVector<simdfakevector<int               ,5>>();
+    extern template void UnitTest::checkVector<simdfakevector<unsigned          ,5>>();
+    extern template void UnitTest::checkVector<simdfakevector<long              ,5>>();
+    extern template void UnitTest::checkVector<simdfakevector<unsigned long     ,5>>();
+    extern template void UnitTest::checkVector<simdfakevector<long long         ,5>>();
+    extern template void UnitTest::checkVector<simdfakevector<unsigned long long,5>>();
 
 /**
-    extern template void UnitTest::checkVector<simdfakevector<wchar_t           ,size>>();
-    extern template void UnitTest::checkVector<simdfakevector<char16_t          ,size>>();
-    extern template void UnitTest::checkVector<simdfakevector<char32_t          ,size>>();
+    extern template void UnitTest::checkVector<simdfakevector<wchar_t           ,5>>();
+    extern template void UnitTest::checkVector<simdfakevector<char16_t          ,5>>();
+    extern template void UnitTest::checkVector<simdfakevector<char32_t          ,5>>();
 */
 
     extern template void UnitTest::checkVector<simdfakevector<bool              ,5>>();
 
-//    extern template void UnitTest::checkVector<simdfakevector<float             ,size>>();
-//    extern template void UnitTest::checkVector<simdfakevector<double            ,size>>();
-//    extern template void UnitTest::checkVector<simdfakevector<long double       ,size>>();
+    extern template void UnitTest::checkVector<simdfakevector<float             ,5>>();
+    extern template void UnitTest::checkVector<simdfakevector<double            ,5>>();
+    extern template void UnitTest::checkVector<simdfakevector<long double       ,5>>();
 
 /**
-    extern template void UnitTest::checkVector<simdfakevector<std::complex<float      >,size>>();
-    extern template void UnitTest::checkVector<simdfakevector<std::complex<double     >,size>>();
-    extern template void UnitTest::checkVector<simdfakevector<std::complex<long double>,size>>();
-
-    extern template void UnitTest::checkMask<bool              ,size>>();
+    extern template void UnitTest::checkVector<simdfakevector<std::complex<float      >,5>>();
+    extern template void UnitTest::checkVector<simdfakevector<std::complex<double     >,5>>();
+    extern template void UnitTest::checkVector<simdfakevector<std::complex<long double>,5>>();
 */
+//    extern template void UnitTest::checkMask<bool              ,5>>();
+
   } //namespace Simd
 } // namespace Dune
 

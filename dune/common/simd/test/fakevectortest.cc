@@ -12,39 +12,38 @@
 int main()
 {
   Dune::Simd::UnitTest test;
-  static int size = 5;
 
 /**
-  test.checkVector<simdfakevector<char              ,size>>();
-  test.checkVector<simdfakevector<unsigned char     ,size>>();
-  test.checkVector<simdfakevector<signed char       ,size>>();
+  test.checkVector<simdfakevector<char              ,5>>();
+  test.checkVector<simdfakevector<unsigned char     ,5>>();
+  test.checkVector<simdfakevector<signed char       ,5>>();
 */
 
-//  test.checkVector<simdfakevector<short             ,size>>();
-//  test.checkVector<simdfakevector<unsigned short    ,size>>();
-//  test.checkVector<simdfakevector<int               ,size>>();
-//  test.checkVector<simdfakevector<unsigned          ,size>>();
-//  test.checkVector<simdfakevector<long              ,size>>();
-//  test.checkVector<simdfakevector<unsigned long     ,size>>();
-//  test.checkVector<simdfakevector<long long         ,size>>();
-//  test.checkVector<simdfakevector<unsigned long long,size>>();
+  test.checkVector<Dune::simdfakevector<short             ,5>>();
+  test.checkVector<Dune::simdfakevector<unsigned short    ,5>>();
+  test.checkVector<Dune::simdfakevector<int               ,5>>();
+  test.checkVector<Dune::simdfakevector<unsigned          ,5>>();
+  test.checkVector<Dune::simdfakevector<long              ,5>>();
+  test.checkVector<Dune::simdfakevector<unsigned long     ,5>>();
+  test.checkVector<Dune::simdfakevector<long long         ,5>>();
+  test.checkVector<Dune::simdfakevector<unsigned long long,5>>();
 
 /**
-  test.checkVector<simdfakevector<wchar_t           ,size>>();
-  test.checkVector<simdfakevector<char16_t          ,size>>();
-  test.checkVector<simdfakevector<char32_t          ,size>>();
+  test.checkVector<Dune::simdfakevector<wchar_t           ,5>>();
+  test.checkVector<Dune::simdfakevector<char16_t          ,5>>();
+  test.checkVector<Dune::simdfakevector<char32_t          ,5>>();
 */
 
   test.checkVector<Dune::simdfakevector<bool              ,5>>();
 
-//  test.checkVector<simdfakevector<float             ,size>>();
-//  test.checkVector<simdfakevector<double            ,size>>();
-//  test.checkVector<simdfakevector<long double       ,size>>();
+  test.checkVector<Dune::simdfakevector<float             ,5>>();
+  test.checkVector<Dune::simdfakevector<double            ,5>>();
+  test.checkVector<Dune::simdfakevector<long double       ,5>>();
 
 /**
-  test.checkVector<simdfakevector<std::complex<float      >,size>>();
-  test.checkVector<simdfakevector<std::complex<double     >,size>>();
-  test.checkVector<simdfakevector<std::complex<long double>,size>>();
+  test.checkVector<Dune::simdfakevector<std::complex<float      >,5>>();
+  test.checkVector<Dune::simdfakevector<std::complex<double     >,5>>();
+  test.checkVector<Dune::simdfakevector<std::complex<long double>,5>>();
 */
 
   return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;
