@@ -88,12 +88,17 @@ class SimpleGenerator(object):
         source += "  using pybind11::operator\"\"_a;\n"
         options = kwargs.get("options", [])
         if not kwargs.get("BufferProtocol", False):
-            source += "  auto cls = pybind11::class_< DuneType" + ", ".join(options) + " >( module, \"" + self.pythonName + "\" );\n"
+            clsParams = []
         else:
-            source += "  auto cls = pybind11::class_< DuneType " + ", ".join(options) + " >( module, \"" + self.pythonName + "\", pybind11::buffer_protocol() );\n"
-        source += '  Dune::CorePy::addToTypeRegistry(cls, Dune::CorePy::GenerateTypeName("' + typeName + '"),\n' + \
-           '      {'+','.join(['"' + i + '"' for i in includes]) + '});\n'
-        source += "  " + self.namespace + "register" + self.typeName + "( module, cls );\n"
+            clsParams = ['pybind11::buffer_protocol()']
+        source += '  auto entry = Dune::CorePy::insertClass' +\
+                     '< DuneType' + ', '.join(options) + ' >' +\
+                     '( module, "' + self.pythonName + '"' +\
+                     ','.join(['']+clsParams) +\
+                     ', Dune::CorePy::GenerateTypeName("' + typeName + '")' +\
+                     ', Dune::CorePy::IncludeFiles{' + ','.join(['"' + i + '"' for i in includes]) + '}' +\
+                     ");\n"
+        source += "  " + self.namespace + "register" + self.typeName + "( module, entry.first );\n"
 
         for arg in args:
             if arg:
