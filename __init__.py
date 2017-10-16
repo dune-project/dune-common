@@ -28,7 +28,6 @@ def fvgetitem(self,index):
     return numpy.array(self,copy=False)[index]
 finished = False
 nr = 1
-print(finished,nr)
 while not finished:
     try:
         setattr(globals()["FieldVector_"+str(nr)], "__getitem__", fvgetitem)
