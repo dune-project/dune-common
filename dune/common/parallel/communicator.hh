@@ -531,7 +531,7 @@ namespace Dune
      * and
      *
      * \code
-     * static onst typename CommPolicy<Data>::IndexedType> gather(Data& data, int index, int subindex);
+     * static const typename CommPolicy<Data>::IndexedType> gather(Data& data, int index, int subindex);
      *
      * static void scatter(Data& data, typename CommPolicy<Data>::IndexedType> value,
      *                     int index, int subindex);
@@ -562,7 +562,7 @@ namespace Dune
      * and
      *
      * \code
-     * static onst typename CommPolicy<Data>::IndexedType> gather(Data& data, int index, int subindex);
+     * static const typename CommPolicy<Data>::IndexedType> gather(Data& data, int index, int subindex);
      *
      * static void scatter(Data& data, typename CommPolicy<Data>::IndexedType> value,
      *                     int index, int subindex);
@@ -590,7 +590,7 @@ namespace Dune
      * and
      *
      * \code
-     * static onst typename CommPolicy<Data>::IndexedType> gather(Data& data, int index, int subindex);
+     * static const typename CommPolicy<Data>::IndexedType> gather(Data& data, int index, int subindex);
      *
      * static void scatter(Data& data, typename CommPolicy<Data>::IndexedType> value,
      *                     int index, int subindex);
