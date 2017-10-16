@@ -47,7 +47,7 @@ namespace Dune
      */
     typedef TA Type;
     /**
-     * @brief Always returns false.
+     * @brief Always returns true.
      */
     static bool contains(const Type& attribute);
   };
