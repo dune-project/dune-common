@@ -77,6 +77,7 @@ class SimpleGenerator(object):
         source += '\n'
         source += '#include <dune/corepy/common/typeregistry.hh>\n'
         source += '#include <dune/corepy/pybind11/pybind11.h>\n'
+        source += '#include <dune/corepy/pybind11/stl.h>\n'
         source += '\n'
 
         if self.fileName is not None:
@@ -107,4 +108,5 @@ class SimpleGenerator(object):
         source += "}\n"
 
         module = builder.load(moduleName, source, self.pythonName)
+        setattr(getattr(module,self.pythonName),"_module",module)
         return module
