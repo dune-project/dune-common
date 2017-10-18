@@ -23,8 +23,8 @@ PYBIND11_MODULE( _common, module )
   Dune::CorePy::registerFieldVector<double>(module, std::make_integer_sequence<int, 10>());
 
   Dune::Hybrid::forEach( std::make_integer_sequence< int, 5 >(), [ module ] ( auto rows ) {
-      Dune::Hybrid::forEach( std::make_integer_sequence< int, 5 >(), [ module, rows ] ( auto cols ) {
-        Dune::CorePy::registerFieldMatrix< double, rows, cols >( module );
+      Dune::Hybrid::forEach( std::make_integer_sequence< int, 5 >(), [ module ] ( auto cols ) {
+        Dune::CorePy::registerFieldMatrix< double, decltype(rows)::value, cols >( module );
       } );
     } );
 
