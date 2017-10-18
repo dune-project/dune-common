@@ -16,8 +16,6 @@
 #include <dune/corepy/common/fmatrix.hh>
 #include <dune/corepy/common/fvector.hh>
 #include <dune/corepy/common/mpihelper.hh>
-#include <dune/corepy/common/typeregistry.hh>
-
 
 #include <dune/grid/common/gridenums.hh>
 #include <dune/grid/io/file/vtk/vtkwriter.hh>
@@ -27,6 +25,10 @@
 
 PYBIND11_MODULE( _common, module )
 {
+  Dune::CorePy::addToTypeRegistry<double>(Dune::CorePy::GenerateTypeName("double"));
+  Dune::CorePy::addToTypeRegistry<int>(Dune::CorePy::GenerateTypeName("int"));
+  Dune::CorePy::addToTypeRegistry<std::size_t>(Dune::CorePy::GenerateTypeName("std::size_t"));
+
   Dune::CorePy::registerFieldVector<double>(module, std::make_integer_sequence<int, 10>());
   Dune::CorePy::registerFieldMatrix<double>(module, std::make_integer_sequence<int, 5>());
   Dune::CorePy::registerDynamicVector<double>(module);
@@ -36,8 +38,6 @@ PYBIND11_MODULE( _common, module )
   char **argv = NULL;
   Dune::MPIHelper::instance(argc,argv);
   Dune::CorePy::registerCollectiveCommunication(module);
-
-  Dune::CorePy::registerTypeRegistry(module);
 
   pybind11::enum_< Dune::CorePy::Reader > reader( module, "reader" );
   reader.value( "dgf", Dune::CorePy::Reader::dgf );
