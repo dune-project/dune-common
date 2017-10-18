@@ -17,9 +17,14 @@
 #include <dune/grid/io/file/vtk/vtkwriter.hh>
 
 #include <dune/corepy/pybind11/pybind11.h>
+#include <dune/corepy/pybind11/stl.h>
 
 PYBIND11_MODULE( _common, module )
 {
+  Dune::CorePy::addToTypeRegistry<double>(Dune::CorePy::GenerateTypeName("double"));
+  Dune::CorePy::addToTypeRegistry<int>(Dune::CorePy::GenerateTypeName("int"));
+  Dune::CorePy::addToTypeRegistry<std::size_t>(Dune::CorePy::GenerateTypeName("std::size_t"));
+
   Dune::CorePy::registerFieldVector<double>(module, std::make_integer_sequence<int, 10>());
 
   Dune::Hybrid::forEach( std::make_integer_sequence< int, 5 >(), [ module ] ( auto rows ) {
