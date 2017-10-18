@@ -20,7 +20,7 @@ class Constructor(object):
         self.body = body
         self.extra = [] if extra is None else extra
 
-    def __str__(self, cls):
+    def register(self, cls="cls"):
         if self.body is None:
             return cls + ".def( pybind11::init( " + args + " )" + "".join(", " + e for e in self.extra) + " );\n"
         if self.args:
@@ -31,6 +31,9 @@ class Constructor(object):
         source += "\n  } )" + "".join(", " + e for e in self.extra) + " );\n"
         return source
 
+    def __str__(self):
+        return self.register()
+
 
 class Method(object):
     def __init__(self, name, args, body=None, extra=None):
@@ -39,16 +42,19 @@ class Method(object):
         self.body = body
         self.extra = extra
 
-    def __str__(self):
+    def register(self, cls="cls"):
         if self.body is None:
             return cls + ".def( " + self.name + ", " + args + " )" + "".join(", " + e for e in self.extra) + " );\n"
         if self.args:
-            source = "cls.def( " + self.name + ", [] ( " + ", ".join(self.args) + " ) {"
+            source = cls + ".def( " + self.name + ", [] ( " + ", ".join(self.args) + " ) {"
         else:
-            source = "cls.def( " + self.name + ", [] () {"
+            source = cls + ".def( " + self.name + ", [] () {"
         source += "\n    ".join(self.body)
         source += "\n  } )" + "".join(", " + e for e in self.extra) + " );\n"
         return source
+
+    def __str__(self):
+        return self.register()
 
 
 class SimpleGenerator(object):
