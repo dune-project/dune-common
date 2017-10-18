@@ -2,15 +2,11 @@
 // vi: set et ts=4 sw=2 sts=2:
 #include <config.h>
 
-#include <cassert>
-#include <cstdlib>
-
-#include <algorithm>
-#include <memory>
-#include <typeinfo>
 #include <utility>
 
 #include <dune/corepy/common/common.hh>
+
+#include <dune/common/hybridutilities.hh>
 #include <dune/corepy/common/dynmatrix.hh>
 #include <dune/corepy/common/dynvector.hh>
 #include <dune/corepy/common/fmatrix.hh>
@@ -30,7 +26,13 @@ PYBIND11_MODULE( _common, module )
   Dune::CorePy::addToTypeRegistry<std::size_t>(Dune::CorePy::GenerateTypeName("std::size_t"));
 
   Dune::CorePy::registerFieldVector<double>(module, std::make_integer_sequence<int, 10>());
-  Dune::CorePy::registerFieldMatrix<double>(module, std::make_integer_sequence<int, 5>());
+
+  Dune::Hybrid::forEach( std::make_integer_sequence< int, 5 >(), [ module ] ( auto rows ) {
+      Dune::Hybrid::forEach( std::make_integer_sequence< int, 5 >(), [ module ] ( auto cols ) {
+        Dune::CorePy::registerFieldMatrix< double, decltype(rows)::value, cols >( module );
+      } );
+    } );
+
   Dune::CorePy::registerDynamicVector<double>(module);
   Dune::CorePy::registerDynamicMatrix<double>(module);
 

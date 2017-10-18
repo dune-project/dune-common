@@ -460,7 +460,9 @@ def build_module(builddir, build_args=None):
 
 def get_dune_py_dir():
     try:
-        return os.environ['DUNE_PY_DIR']
+        basedir = os.path.realpath( os.environ['DUNE_PY_DIR'] )
+        basedir = os.path.join(basedir,'dune-py')
+        return basedir
     except KeyError:
         pass
 

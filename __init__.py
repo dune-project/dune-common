@@ -22,3 +22,19 @@ except ImportError:
     logger.info('mpi4py not found, MPI not initialized')
 
 from ._common import *
+
+import numpy
+def fvgetitem(self,index):
+    return numpy.array(self,copy=False)[index]
+finished = False
+nr = 1
+while not finished:
+    try:
+        setattr(globals()["FieldVector_"+str(nr)], "__getitem__", fvgetitem)
+        nr += 1
+    except KeyError:
+        finished = True
+
+def FieldVector(values):
+    fv = "FieldVector_" + str(len(values))
+    return globals()[fv](values)
