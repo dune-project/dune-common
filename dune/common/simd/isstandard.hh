@@ -59,11 +59,6 @@ namespace Dune {
     struct IsStandard : std::is_arithmetic<T> {};
 
     template<class T>
-    struct IsStandard<T, std::enable_if_t<
-                           !std::is_same<T, std::decay_t<T> >::value> >
-      : IsStandard<std::decay_t<T> > {};
-
-    template<class T>
     struct IsStandard<std::complex<T> > : IsStandard<T> {};
 
     //! group SIMDStandard
