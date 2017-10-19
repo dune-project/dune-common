@@ -41,7 +41,7 @@ We generally expect vectorization libraries to provide all the usual operators
 (arithmetic operations, assignment, comparisons) for their vector types.
 Comparisons should yield mask types specific to that vectorization library;
 these must be summarized to `bool` with functions of the abstraction layer
-(like `any_true()`) before they can be used in `if`-conditions.
+(like `anyTrue()`) before they can be used in `if`-conditions.
 
 We may require them to provide conversions from scalar types to vector types
 to some extend, however, an exact specification needs more experience.
