@@ -46,6 +46,56 @@ these must be summarized to `bool` with functions of the abstraction layer
 We may require them to provide conversions from scalar types to vector types
 to some extend, however, an exact specification needs more experience.
 
+Specifically for vectors (or masks) `v1` and `v2` of type `V`, with associated
+scalar type `T=Scalar<V>`, we require
+
+- for any unary arithmetic expression `@v1` (where `@` is one of `+`, `-`, or
+  `~`):  
+  `lane(l,@v1) == T(@lane(l,v1))` for all `l`  
+  there are no side-effects
+
+- for any binary arithmetic expression `v1@v2` (where `@` is one of `+`, `-`,
+  `*`, `/`, `%`, `<<`, `>>`, `&`, `|`, `^`):  
+  `lane(l,v1@v2) == T(lane(l,v1)@lane(l,v2))` for all `l`  
+  there are no side-effects
+
+- for any compound assignment expression `v1@=v2` (where `@` is one of`+`,
+  `-`, `*`, `/`, `%`, `<<`, `>>`, `&`, `|`, `^`):  
+  `v1@=v2` has the same side-effects as `lane(l,v1)@=lane(l,v2)` for all `l`  
+  the result of `v1@=v2` is an lvalue denoting `v1`
+
+- for any comparison expression `v1@v2` (where `@` is one of `==`, `!=`, `<`,
+  `<=`, `>` or `>=`):  
+  `lane(l,v1@v2) == lane(l,v1)@lane(l,v2)` for all `l`  
+  The result of `v1@v2` is a prvalue of type `Mask<V>`  
+  there are no side-effects
+
+- for the unary logic expression `!v1`:  
+  `lane(l,!v1) == !lane(l,v1)` for all `l`  
+  The result of `!v1` is a prvalue of type `Mask<V>`  
+  there are no side-effects
+
+- for any binary logic expression `v1@v2` (where `@` is one of `&&` or `||`):  
+  `lane(l,v1@v2) == lane(l,v1)@lane(l,v2)` for all `l`  
+  The result of `v1@v2` is a prvalue of type `Mask<V>`  
+  there are no side-effects
+
+Note 1: Short-circuiting may or may not happen for `&&` and `||` -- it will
+happen for the built-in types, but it cannot happen for proper multi-lane simd
+types.
+
+Note 2: For all expressions there is a lane-wise equality requirement with the
+scalar operation.  This requirement is formulated such that promotions of
+arguments are permitted, but not required.  This is neccessary to allow both
+the built-in types (which are promoted) and proper simd types (which typically
+are not promoted to stay within the same simd register).
+
+Note 3: The `==` in the lane-wise equality requirement may be overloaded to
+account for proxies returned by `lane()`.
+
+Note 4: Any expression that is invalid for the scalar case is not required for
+the simd case either.
+
 `#include` Structure
 ====================
 
