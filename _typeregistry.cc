@@ -3,7 +3,7 @@
 #include <config.h>
 
 
-#include <dune/corepy/common/typeregistry.hh>
+#include <dune/python/common/typeregistry.hh>
 
 
 PYBIND11_MODULE( _typeregistry, module )
