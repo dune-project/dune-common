@@ -19,7 +19,7 @@
 namespace Dune
 {
 
-  namespace CorePy
+  namespace Python
   {
 
     // registerFieldMatrix
@@ -89,7 +89,7 @@ namespace Dune
       registerDenseMatrix< FM >( cls );
     }
 
-  } // namespace CorePy
+  } // namespace Python
 
 } // namespace Dune
 

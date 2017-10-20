@@ -40,7 +40,7 @@ namespace Dune
 
 
 
-  namespace CorePy
+  namespace Python
   {
 
     // IsDenseVector

@@ -4,7 +4,7 @@
 #include <dune/python/pybind11/pybind11.h>
 
 namespace Dune {
-namespace CorePy {
+namespace Python {
 
 /**
  * Simple range between a begin and an end iterator, with optional length.
@@ -92,7 +92,7 @@ auto registerIteratorRange(pybind11::handle scope, const char* name, bool hasLen
   return cls;
 }
 
-} /* namespace CorePy */
+} /* namespace Python */
 } /* namespace Dune */
 
 #endif

@@ -18,7 +18,7 @@
 namespace Dune
 {
 
-  namespace CorePy
+  namespace Python
   {
 
     template< class K >
@@ -57,7 +57,7 @@ namespace Dune
       registerDenseVector<DV>(cls);
     }
 
-  } // namespace CorePy
+  } // namespace Python
 
 } // namespace Dune
 

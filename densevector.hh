@@ -16,7 +16,7 @@
 namespace Dune
 {
 
-  namespace CorePy
+  namespace Python
   {
 
     namespace detail
@@ -99,7 +99,7 @@ namespace Dune
       pybind11::implicitly_convertible< pybind11::list, T >();
     }
 
-  } // namespace CorePy
+  } // namespace Python
 
 } // namespace Dune
 

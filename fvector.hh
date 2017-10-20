@@ -22,7 +22,7 @@
 namespace Dune
 {
 
-  namespace CorePy
+  namespace Python
   {
 
     // to_string
@@ -140,7 +140,7 @@ namespace Dune
       std::ignore = std::make_tuple((registerFieldVector<K>(scope, std::integral_constant<int, size>()), size)...);
     }
 
-  } // namespace CorePy
+  } // namespace Python
 
 } // namespace Dune
 

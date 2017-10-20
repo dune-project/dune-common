@@ -7,7 +7,7 @@
 namespace Dune
 {
 
-  namespace CorePy
+  namespace Python
   {
 
     using std::to_string;
@@ -37,7 +37,7 @@ namespace Dune
       return join( delimiter, [] ( decltype( *begin ) s ) -> decltype( *begin ) { return s; }, begin, end );
     }
 
-  } // namespace CorePy
+  } // namespace Python
 
 } // namespace Dune
 

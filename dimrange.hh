@@ -18,7 +18,7 @@
 namespace Dune
 {
 
-  namespace CorePy
+  namespace Python
   {
 
     namespace detail
@@ -98,7 +98,7 @@ namespace Dune
     template< class T >
     using DimRange = detail::DimRange< T >;
 
-  } // namespace CorePy
+  } // namespace Python
 
 } // namespace Dune
 

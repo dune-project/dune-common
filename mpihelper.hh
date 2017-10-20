@@ -14,7 +14,7 @@
 namespace Dune
 {
 
-  namespace CorePy
+  namespace Python
   {
 
     namespace py = pybind11;
@@ -35,7 +35,7 @@ namespace Dune
       scope.attr("comm") = py::cast(Dune::MPIHelper::getCollectiveCommunication());
     }
 
-  } // namespace CorePy
+  } // namespace Python
 
 } // namespace Dune
 

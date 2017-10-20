@@ -10,7 +10,7 @@
 namespace Dune
 {
 
-  namespace CorePy
+  namespace Python
   {
 
     // Internal Forward Declarations
@@ -19,7 +19,7 @@ namespace Dune
     template< class K >
     class PythonVector;
 
-  } // namespace CorePy
+  } // namespace Python
 
 
 
@@ -27,9 +27,9 @@ namespace Dune
   // ----------------------------------
 
   template< class K >
-  struct DenseMatVecTraits< CorePy::PythonVector< K > >
+  struct DenseMatVecTraits< Python::PythonVector< K > >
   {
-    typedef CorePy::PythonVector< K > derived_type;
+    typedef Python::PythonVector< K > derived_type;
     typedef K value_type;
     typedef std::size_t size_type;
   };
@@ -40,7 +40,7 @@ namespace Dune
   // ----------------------------
 
   template< class K >
-  struct FieldTraits< CorePy::PythonVector< K > >
+  struct FieldTraits< Python::PythonVector< K > >
   {
     typedef typename FieldTraits< K >::field_type field_type;
     typedef typename FieldTraits< K >::real_type real_type;
@@ -48,7 +48,7 @@ namespace Dune
 
 
 
-  namespace CorePy
+  namespace Python
   {
 
     template< class K >
@@ -96,7 +96,7 @@ namespace Dune
       size_type stride_;
     };
 
-  } // namespace CorePy
+  } // namespace Python
 
 } // namespace Dune
 

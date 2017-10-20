@@ -14,7 +14,7 @@
 namespace Dune
 {
 
-  namespace CorePy
+  namespace Python
   {
 
     // registerDenseMatrix
@@ -68,7 +68,7 @@ namespace Dune
       cls.def_property_readonly( "cols", [] ( const Matrix &self ) { return self.mat_cols(); } );
     }
 
-  } // namespace CorePy
+  } // namespace Python
 
 } // namespace Dune
 

@@ -22,7 +22,7 @@
 namespace Dune
 {
 
-  namespace CorePy
+  namespace Python
   {
 
     namespace detail
@@ -431,7 +431,7 @@ namespace Dune
           }); // , "main"_a, "targs"_a); annotation fails - only one argument expected
     }
 
-  } // namespace CorePy
+  } // namespace Python
 
 } // namespace Dune
 
