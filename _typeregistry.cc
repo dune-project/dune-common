@@ -8,5 +8,5 @@
 
 PYBIND11_MODULE( _typeregistry, module )
 {
-  Dune::CorePy::registerTypeRegistry(module);
+  Dune::Python::registerTypeRegistry(module);
 }
