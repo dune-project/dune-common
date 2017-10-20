@@ -7,7 +7,7 @@ from . import builder
 
 def load(functionName, includes, *args):
     source = '#include <config.h>\n\n'
-    source += '#define USING_COREPY 1\n\n'
+    source += '#define USING_DUNE_PYTHON 1\n\n'
     if isinstance(includes, str):
         with open(includes, "r") as include:
             source += include.read()

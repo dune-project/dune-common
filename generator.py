@@ -72,7 +72,7 @@ class SimpleGenerator(object):
 
     def load(self, includes, typeName, moduleName, *args, **kwargs):
         source = '#include <config.h>\n\n'
-        source += '#define USING_COREPY 1\n\n'
+        source += '#define USING_DUNE_PYTHON 1\n\n'
         source += ''.join(["#include <" + i + ">\n" for i in includes])
         source += '\n'
         source += '#include <dune/python/common/typeregistry.hh>\n'
