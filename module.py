@@ -546,7 +546,7 @@ def make_dune_py_module(dune_py_dir=None):
             raise RuntimeError('"' + dune_py_dir + '" already contains a different dune module.')
         if description.version != get_dune_py_version():
             logger.error('"' + dune_py_dir + '" contains version ' + str(description.version) + ' of the dune-py module, ' + str(get_dune_py_version()) + ' required.')
-            logger.error('If you updated dune-corepy, you can safely remove "' + dune_py_dir + '" and retry.')
+            logger.error('If you upgraded dune-python, you can safely remove "' + dune_py_dir + '" and retry.')
             raise RuntimeError('"' + dune_py_dir + '" contains a different version of the dune-py module.')
         logger.info('Using existing dune-py module in ' + dune_py_dir)
 
