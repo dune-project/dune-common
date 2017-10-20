@@ -524,7 +524,7 @@ def make_dune_py_module(dune_py_dir=None):
 
         cmake_content = ['add_executable(generated_test EXCLUDE_FROM_ALL generated_test.cc)',
                          'add_dune_mpi_flags(generated_test)',
-                         'target_compile_definitions(generated_test PRIVATE USING_COREPY)',
+                         'target_compile_definitions(generated_test PRIVATE USING_DUNE_PYTHON)',
                          'target_link_libraries(generated_test ${DUNE_LIBS})',
                          'file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/__init__.py")',
                          '',
@@ -533,7 +533,7 @@ def make_dune_py_module(dune_py_dir=None):
 
         with open(os.path.join(generated_dir, 'generated_test.cc'), 'w') as file:
             file.write('#include <config.h>\n\n')
-            file.write('#define USING_COREPY 1\n\n')
+            file.write('#define USING_DUNE_PYTHON 1\n\n')
             file.write('\n#include "generated_module.hh"\n')
 
         modules, _ = select_modules()
