@@ -21,37 +21,37 @@
 
 PYBIND11_MODULE( _common, module )
 {
-  Dune::CorePy::addToTypeRegistry<double>(Dune::CorePy::GenerateTypeName("double"));
-  Dune::CorePy::addToTypeRegistry<int>(Dune::CorePy::GenerateTypeName("int"));
-  Dune::CorePy::addToTypeRegistry<std::size_t>(Dune::CorePy::GenerateTypeName("std::size_t"));
+  Dune::Python::addToTypeRegistry<double>(Dune::Python::GenerateTypeName("double"));
+  Dune::Python::addToTypeRegistry<int>(Dune::Python::GenerateTypeName("int"));
+  Dune::Python::addToTypeRegistry<std::size_t>(Dune::Python::GenerateTypeName("std::size_t"));
 
-  Dune::CorePy::registerFieldVector<double>(module, std::make_integer_sequence<int, 10>());
+  Dune::Python::registerFieldVector<double>(module, std::make_integer_sequence<int, 10>());
 
   Dune::Hybrid::forEach( std::make_integer_sequence< int, 5 >(), [ module ] ( auto rows ) {
       Dune::Hybrid::forEach( std::make_integer_sequence< int, 5 >(), [ module ] ( auto cols ) {
-        Dune::CorePy::registerFieldMatrix< double, decltype(rows)::value, cols >( module );
+        Dune::Python::registerFieldMatrix< double, decltype(rows)::value, cols >( module );
       } );
     } );
 
-  Dune::CorePy::registerDynamicVector<double>(module);
-  Dune::CorePy::registerDynamicMatrix<double>(module);
+  Dune::Python::registerDynamicVector<double>(module);
+  Dune::Python::registerDynamicMatrix<double>(module);
 
   int argc = 0;
   char **argv = NULL;
   Dune::MPIHelper::instance(argc,argv);
-  Dune::CorePy::registerCollectiveCommunication(module);
+  Dune::Python::registerCollectiveCommunication(module);
 
-  pybind11::enum_< Dune::CorePy::Reader > reader( module, "reader" );
-  reader.value( "dgf", Dune::CorePy::Reader::dgf );
-  reader.value( "dgfString", Dune::CorePy::Reader::dgfString );
-  reader.value( "gmsh", Dune::CorePy::Reader::gmsh );
-  reader.value( "structured", Dune::CorePy::Reader::structured );
+  pybind11::enum_< Dune::Python::Reader > reader( module, "reader" );
+  reader.value( "dgf", Dune::Python::Reader::dgf );
+  reader.value( "dgfString", Dune::Python::Reader::dgfString );
+  reader.value( "gmsh", Dune::Python::Reader::gmsh );
+  reader.value( "structured", Dune::Python::Reader::structured );
 
-  pybind11::enum_< Dune::CorePy::VTKDataType > vtkDataType( module, "DataType" );
-  vtkDataType.value( "CellData", Dune::CorePy::VTKDataType::CellData );
-  vtkDataType.value( "PointData", Dune::CorePy::VTKDataType::PointData );
-  vtkDataType.value( "CellVector", Dune::CorePy::VTKDataType::CellVector );
-  vtkDataType.value( "PointVector", Dune::CorePy::VTKDataType::PointVector );
+  pybind11::enum_< Dune::Python::VTKDataType > vtkDataType( module, "DataType" );
+  vtkDataType.value( "CellData", Dune::Python::VTKDataType::CellData );
+  vtkDataType.value( "PointData", Dune::Python::VTKDataType::PointData );
+  vtkDataType.value( "CellVector", Dune::Python::VTKDataType::CellVector );
+  vtkDataType.value( "PointVector", Dune::Python::VTKDataType::PointVector );
 
   pybind11::enum_< Dune::PartitionType > partitionType( module, "PartitionType" );
   partitionType.value( "Interior", Dune::InteriorEntity );
@@ -85,8 +85,8 @@ PYBIND11_MODULE( _common, module )
   vtkOutputType.value("appendedraw", Dune::VTK::OutputType::appendedraw);
   vtkOutputType.value("appendedbase64", Dune::VTK::OutputType::appendedbase64);
 
-  pybind11::enum_< Dune::CorePy::Marker > marker( module, "Marker" );
-  marker.value( "coarsen", Dune::CorePy::Marker::Coarsen );
-  marker.value( "keep", Dune::CorePy::Marker::Keep );
-  marker.value( "refine", Dune::CorePy::Marker::Refine );
+  pybind11::enum_< Dune::Python::Marker > marker( module, "Marker" );
+  marker.value( "coarsen", Dune::Python::Marker::Coarsen );
+  marker.value( "keep", Dune::Python::Marker::Keep );
+  marker.value( "refine", Dune::Python::Marker::Refine );
 }
