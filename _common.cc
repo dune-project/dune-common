@@ -4,20 +4,20 @@
 
 #include <utility>
 
-#include <dune/corepy/common/common.hh>
+#include <dune/python/common/common.hh>
 
 #include <dune/common/hybridutilities.hh>
-#include <dune/corepy/common/dynmatrix.hh>
-#include <dune/corepy/common/dynvector.hh>
-#include <dune/corepy/common/fmatrix.hh>
-#include <dune/corepy/common/fvector.hh>
-#include <dune/corepy/common/mpihelper.hh>
+#include <dune/python/common/dynmatrix.hh>
+#include <dune/python/common/dynvector.hh>
+#include <dune/python/common/fmatrix.hh>
+#include <dune/python/common/fvector.hh>
+#include <dune/python/common/mpihelper.hh>
 
 #include <dune/grid/common/gridenums.hh>
 #include <dune/grid/io/file/vtk/vtkwriter.hh>
 
-#include <dune/corepy/pybind11/pybind11.h>
-#include <dune/corepy/pybind11/stl.h>
+#include <dune/python/pybind11/pybind11.h>
+#include <dune/python/pybind11/stl.h>
 
 PYBIND11_MODULE( _common, module )
 {
