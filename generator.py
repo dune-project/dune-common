@@ -97,12 +97,12 @@ class SimpleGenerator(object):
             clsParams = []
         else:
             clsParams = ['pybind11::buffer_protocol()']
-        source += '  auto cls = Dune::CorePy::insertClass' +\
+        source += '  auto cls = Dune::Python::insertClass' +\
                      '< DuneType' + ', '.join(options) + ' >' +\
                      '( module, "' + self.pythonName + '"' +\
                      ','.join(['']+clsParams) +\
-                     ', Dune::CorePy::GenerateTypeName("' + typeName + '")' +\
-                     ', Dune::CorePy::IncludeFiles{' + ','.join(['"' + i + '"' for i in includes]) + '}' +\
+                     ', Dune::Python::GenerateTypeName("' + typeName + '")' +\
+                     ', Dune::Python::IncludeFiles{' + ','.join(['"' + i + '"' for i in includes]) + '}' +\
                      ").first;\n"
         source += "  " + self.namespace + "register" + self.typeName + "( module, cls );\n"
 
