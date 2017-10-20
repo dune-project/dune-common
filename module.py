@@ -488,7 +488,7 @@ def get_dune_py_version():
     # change this version on the following events:
     # - a release (major version numbers)
     # - any incompatible change to the dune-py module (revison number)
-    return Version("2.5.0")
+    return Version("2.6.0")
 
 
 def get_cmake_definitions():
