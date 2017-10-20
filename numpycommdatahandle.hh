@@ -25,7 +25,7 @@ namespace Dune
 
 
 
-  namespace CorePy
+  namespace Python
   {
 
     // NumPyCommDataHandle
@@ -139,7 +139,7 @@ namespace Dune
       return NumPyCommDataHandle< Mapper, Vector, Function >( mapper, std::move( array ), std::move( function ) );
     }
 
-  } // namespace CorePy
+  } // namespace Python
 
 } // namespace Dune
 
