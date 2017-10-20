@@ -6,7 +6,7 @@ namespace Dune {
   namespace Simd {
 
     template
-    void UnitTest::checkMask<Vc::SimdMaskArray<int,                4> >();
+    void UnitTest::checkVector<Vc::SimdArray<@SCALAR@, @LANES@> >();
 
   } // namespace Simd
 } // namespace Dune

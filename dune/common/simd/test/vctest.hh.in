@@ -59,21 +59,7 @@ namespace Dune {
     extern template
     void UnitTest::checkMask<Vc::Mask<double            > >();
 
-    // Vc::SimdArray types with 4 lanes
-    extern template
-    void UnitTest::checkVector<Vc::SimdArray<int,                4> >();
-
-    // Vc::SimdMaskArray types with 4 lanes
-    extern template
-    void UnitTest::checkMask<Vc::SimdMaskArray<int,                4> >();
-
-    // Vc::SimdArray types with 8 lanes
-    extern template
-    void UnitTest::checkVector<Vc::SimdArray<int,                8> >();
-
-    // Vc::SimdMaskArray types with 8 lanes
-    extern template
-    void UnitTest::checkMask<Vc::SimdMaskArray<int,                8> >();
+${VCTEST_HH_CONTENT}
 
   } // namespace Simd
 } // namespace Dune

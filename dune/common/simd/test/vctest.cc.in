@@ -8,7 +8,9 @@
 #endif
 
 #include <cstdlib>
+#include <utility>
 
+#include <dune/common/hybridutilities.hh>
 #include <dune/common/simd/test.hh>
 #include <dune/common/simd/test/vctest.hh>
 #include <dune/common/simd/vc.hh>
@@ -16,6 +18,7 @@
 int main()
 {
   using Vc::Vector;
+  using Vc::SimdArray;
 
   Dune::Simd::UnitTest test;
 
@@ -23,7 +26,7 @@ int main()
   test.checkVector<Vector<unsigned short    > >();
   test.checkVector<Vector<int               > >();
   test.checkVector<Vector<unsigned          > >();
-#if 0 // missing broadcast
+#if 0 // missing broadcast constructor
   test.checkVector<Vector<long              > >();
   test.checkVector<Vector<long unsigned     > >();
   test.checkVector<Vector<long long         > >();
@@ -32,6 +35,8 @@ int main()
 
   test.checkVector<Vector<float             > >();
   test.checkVector<Vector<double            > >();
+
+${VCTEST_CC_CONTENT}
 
   return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

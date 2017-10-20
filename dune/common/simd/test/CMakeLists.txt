@@ -57,19 +57,50 @@ dune_add_test(NAME vctest
     vctest_mask_float.cc
     vctest_mask_double.cc
 
-    # Vc::SimdArray types with 4 lanes
-    vctest_simdarray_int_4.cc
-
-    # Vc::SimdMaskArray types with 4 lanes
-    vctest_simdmaskarray_int_4.cc
-
-    # Vc::SimdArray types with 8 lanes
-    vctest_simdarray_int_8.cc
-
-    # Vc::SimdMaskArray types with 8 lanes
-    vctest_simdmaskarray_int_8.cc
   LINK_LIBRARIES dunecommon
   CMAKE_GUARD Vc_FOUND
 )
 add_dune_vc_flags(vctest)
 # no need to install vctest.hh, used by vctest*.cc only
+
+# Generate files with instanciations, external declarations, and also the
+# invocations in the test for each instance.
+set(VCTEST_HH_CONTENT)
+set(VCTEST_CC_CONTENT)
+
+set(VCTEST_TYPES
+  "short"
+  "unsigned short"
+  "int"
+  "unsigned"
+  "float"
+  "double")
+
+foreach(SCALAR IN LISTS VCTEST_TYPES)
+  string(REGEX REPLACE "[^a-zA-Z0-9]+" _ MANGLED_SCALAR "${SCALAR}")
+  foreach(LANES IN ITEMS 4 8)
+    configure_file(vctest_simdarray.cc.in
+      "vctest_simdarray_${MANGLED_SCALAR}_${LANES}.cc")
+    configure_file(vctest_simdmaskarray.cc.in
+      "vctest_simdmaskarray_${MANGLED_SCALAR}_${LANES}.cc")
+    set_property(
+      SOURCE
+        "vctest_simdarray_${MANGLED_SCALAR}_${LANES}.cc"
+        "vctest_simdmaskarray_${MANGLED_SCALAR}_${LANES}.cc"
+      PROPERTY GENERATED TRUE)
+    set_property(TARGET vctest APPEND PROPERTY SOURCES
+      "vctest_simdarray_${MANGLED_SCALAR}_${LANES}.cc"
+      "vctest_simdmaskarray_${MANGLED_SCALAR}_${LANES}.cc")
+    string(APPEND VCTEST_HH_CONTENT
+"extern template void UnitTest::checkVector<Vc::SimdArray<${SCALAR}, ${LANES}> >();
+extern template void UnitTest::checkVector<Vc::SimdMaskArray<${SCALAR}, ${LANES}> >();
+")
+    string(APPEND VCTEST_CC_CONTENT
+"test.checkVector<SimdArray<${SCALAR}, ${LANES}> >();
+")
+  endforeach(LANES IN ITEMS 4 8)
+endforeach()
+
+configure_file(vctest.hh.in vctest.hh)
+configure_file(vctest.cc.in vctest.cc)
+set_property(SOURCE vctest.cc vctest.hh PROPERTY GENERATED TRUE)
