@@ -75,9 +75,9 @@ class SimpleGenerator(object):
         source += '#define USING_COREPY 1\n\n'
         source += ''.join(["#include <" + i + ">\n" for i in includes])
         source += '\n'
-        source += '#include <dune/corepy/common/typeregistry.hh>\n'
-        source += '#include <dune/corepy/pybind11/pybind11.h>\n'
-        source += '#include <dune/corepy/pybind11/stl.h>\n'
+        source += '#include <dune/python/common/typeregistry.hh>\n'
+        source += '#include <dune/python/pybind11/pybind11.h>\n'
+        source += '#include <dune/python/pybind11/stl.h>\n'
         source += '\n'
 
         if self.fileName is not None:

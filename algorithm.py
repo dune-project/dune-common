@@ -30,9 +30,9 @@ def load(functionName, includes, *args):
             elif isinstance(arg, float):
                 t, i = "double", []
             elif isinstance(arg, numpy.ndarray):
-                t, i = "pybind11::array", ["dune/corepy/pybind11/numpy.h"]
+                t, i = "pybind11::array", ["dune/python/pybind11/numpy.h"]
             elif callable(arg):
-                t, i = "pybind11::function", ["dune/corepy/pybind11/pybind11.h"]
+                t, i = "pybind11::function", ["dune/python/pybind11/pybind11.h"]
             else:
                 raise Exception("Cannot deduce C++ type for the following argument: " + repr(arg))
         argTypes.append(t)
@@ -43,8 +43,8 @@ def load(functionName, includes, *args):
 
     source += "".join(["#include <" + i + ">\n" for i in includes])
     source += "\n"
-    source += '#include <dune/corepy/common/typeregistry.hh>\n'
-    source += '#include <dune/corepy/pybind11/pybind11.h>\n'
+    source += '#include <dune/python/common/typeregistry.hh>\n'
+    source += '#include <dune/python/pybind11/pybind11.h>\n'
     source += '\n'
 
     source += "PYBIND11_MODULE( " + moduleName + ", module )\n"
