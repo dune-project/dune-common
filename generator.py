@@ -93,12 +93,12 @@ class SimpleGenerator(object):
         source += "{\n"
         source += "  using pybind11::operator\"\"_a;\n"
         options = kwargs.get("options", [])
-        if not kwargs.get("BufferProtocol", False):
+        if not kwargs.get("bufferProtocol", False):
             clsParams = []
         else:
             clsParams = ['pybind11::buffer_protocol()']
         source += '  auto cls = Dune::Python::insertClass' +\
-                     '< DuneType' + ', '.join(options) + ' >' +\
+                     '< DuneType' + ', '.join([""]+options) + ' >' +\
                      '( module, "' + self.pythonName + '"' +\
                      ','.join(['']+clsParams) +\
                      ', Dune::Python::GenerateTypeName("' + typeName + '")' +\
