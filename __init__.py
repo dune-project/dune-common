@@ -38,3 +38,6 @@ while not finished:
 def FieldVector(values):
     fv = "FieldVector_" + str(len(values))
     return globals()[fv](values)
+
+def _raise(exception):
+    raise exception
