@@ -72,7 +72,7 @@ foreach(SCALAR IN LISTS VCTEST_TYPES)
 extern template void UnitTest::checkVector<Vc::Vector<${SCALAR}> >();
 extern template void UnitTest::checkVector<Vc::Mask<${SCALAR}> >();
 ")
-  set(APPEND VCTEST_CC_CONTENT "${VCTEST_CC_CONTENT}\
+  set(VCTEST_CC_CONTENT "${VCTEST_CC_CONTENT}\
 test.checkVector<Vector<${SCALAR}> >();
 ")
 endforeach()
@@ -97,7 +97,7 @@ foreach(SCALAR IN LISTS VCTEST_TYPES)
 extern template void UnitTest::checkVector<Vc::SimdArray<${SCALAR}, ${LANES}> >();
 extern template void UnitTest::checkVector<Vc::SimdMaskArray<${SCALAR}, ${LANES}> >();
 ")
-    set(APPEND VCTEST_CC_CONTENT "${VCTEST_CC_CONTENT}\
+    set(VCTEST_CC_CONTENT "${VCTEST_CC_CONTENT}\
 test.checkVector<SimdArray<${SCALAR}, ${LANES}> >();
 ")
   endforeach(LANES IN ITEMS 4 8)
