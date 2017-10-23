@@ -1,5 +1,7 @@
 #include <config.h>
 
+#include <cstdint>
+
 #include <dune/common/simd/test/vctest.hh>
 
 namespace Dune {

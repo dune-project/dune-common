@@ -1,12 +1,14 @@
 #include <config.h>
 
+#include <cstdint>
+
 #include <dune/common/simd/test/vctest.hh>
 
 namespace Dune {
   namespace Simd {
 
     template
-    void UnitTest::checkMask<Vc::SimdMaskArray<${SCALAR}, ${LANES}> >();
+    void UnitTest::checkMask<Vc::SimdMaskArray<@SCALAR@, @LANES@> >();
 
   } // namespace Simd
 } // namespace Dune

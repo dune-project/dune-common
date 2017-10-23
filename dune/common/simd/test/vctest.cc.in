@@ -7,6 +7,7 @@
   absence of Vc.
 #endif
 
+#include <cstdint>
 #include <cstdlib>
 #include <utility>
 
@@ -22,21 +23,7 @@ int main()
 
   Dune::Simd::UnitTest test;
 
-  test.checkVector<Vector<short             > >();
-  test.checkVector<Vector<unsigned short    > >();
-  test.checkVector<Vector<int               > >();
-  test.checkVector<Vector<unsigned          > >();
-#if 0 // missing broadcast constructor
-  test.checkVector<Vector<long              > >();
-  test.checkVector<Vector<long unsigned     > >();
-  test.checkVector<Vector<long long         > >();
-  test.checkVector<Vector<long long unsigned> >();
-#endif
-
-  test.checkVector<Vector<float             > >();
-  test.checkVector<Vector<double            > >();
-
-${VCTEST_CC_CONTENT}
+@VCTEST_CC_CONTENT@
 
   return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

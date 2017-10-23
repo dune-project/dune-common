@@ -42,14 +42,42 @@ set(VCTEST_SOURCES)
 set(VCTEST_HH_CONTENT)
 set(VCTEST_CC_CONTENT)
 
+# as of Vc-1.3.2: Vc/common/simdarray.h:561: SimdArray<T, N> may only be used
+# with T = { double, float, int32_t, uint32_t, int16_t, uint16_t }
 set(VCTEST_TYPES
-  "short"
-  "unsigned short"
-  "int"
-  "unsigned"
+  "std::int16_t"
+  "std::uint16_t"
+  "std::int32_t"
+  "std::uint32_t"
   "float"
   "double")
 
+# Vc::Vector and Vc::Mask
+foreach(SCALAR IN LISTS VCTEST_TYPES)
+  string(REGEX REPLACE "[^a-zA-Z0-9]+" _ MANGLED_SCALAR "${SCALAR}")
+
+  configure_file(vctest_vector.cc.in
+    "vctest_vector_${MANGLED_SCALAR}.cc")
+  configure_file(vctest_mask.cc.in
+    "vctest_mask_${MANGLED_SCALAR}.cc")
+  set_property(
+    SOURCE
+      "vctest_vector_${MANGLED_SCALAR}.cc"
+      "vctest_mask_${MANGLED_SCALAR}.cc"
+    PROPERTY GENERATED TRUE)
+  list(APPEND VCTEST_SOURCES
+    "vctest_vector_${MANGLED_SCALAR}.cc"
+    "vctest_mask_${MANGLED_SCALAR}.cc")
+  set(VCTEST_HH_CONTENT "${VCTEST_HH_CONTENT}\
+extern template void UnitTest::checkVector<Vc::Vector<${SCALAR}> >();
+extern template void UnitTest::checkVector<Vc::Mask<${SCALAR}> >();
+")
+  set(APPEND VCTEST_CC_CONTENT "${VCTEST_CC_CONTENT}\
+test.checkVector<Vector<${SCALAR}> >();
+")
+endforeach()
+
+# Vc::SimdArray and Vc::SimdMaskArray
 foreach(SCALAR IN LISTS VCTEST_TYPES)
   string(REGEX REPLACE "[^a-zA-Z0-9]+" _ MANGLED_SCALAR "${SCALAR}")
   foreach(LANES IN ITEMS 4 8)
@@ -80,30 +108,7 @@ configure_file(vctest.cc.in vctest.cc)
 set_property(SOURCE vctest.cc vctest.hh PROPERTY GENERATED TRUE)
 
 dune_add_test(NAME vctest
-  SOURCES
-    vctest.cc
-
-    # Vc::Vector types
-    vctest_vector_short.cc
-    vctest_vector_unsigned_short.cc
-    vctest_vector_int.cc
-    vctest_vector_unsigned.cc
-
-    vctest_vector_float.cc
-    vctest_vector_double.cc
-
-    # Vc::Mask types
-    vctest_mask_short.cc
-    vctest_mask_unsigned_short.cc
-    vctest_mask_int.cc
-    vctest_mask_unsigned.cc
-
-    vctest_mask_float.cc
-    vctest_mask_double.cc
-
-    # Vc::SimdArray types
-    ${VCTEST_SOURCES}
-
+  SOURCES vctest.cc ${VCTEST_SOURCES}
   LINK_LIBRARIES dunecommon
   CMAKE_GUARD Vc_FOUND
 )
