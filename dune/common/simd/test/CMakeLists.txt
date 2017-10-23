@@ -91,12 +91,12 @@ foreach(SCALAR IN LISTS VCTEST_TYPES)
     set_property(TARGET vctest APPEND PROPERTY SOURCES
       "vctest_simdarray_${MANGLED_SCALAR}_${LANES}.cc"
       "vctest_simdmaskarray_${MANGLED_SCALAR}_${LANES}.cc")
-    string(APPEND VCTEST_HH_CONTENT
-"extern template void UnitTest::checkVector<Vc::SimdArray<${SCALAR}, ${LANES}> >();
+    set(VCTEST_HH_CONTENT "${VCTEST_HH_CONTENT}\
+extern template void UnitTest::checkVector<Vc::SimdArray<${SCALAR}, ${LANES}> >();
 extern template void UnitTest::checkVector<Vc::SimdMaskArray<${SCALAR}, ${LANES}> >();
 ")
-    string(APPEND VCTEST_CC_CONTENT
-"test.checkVector<SimdArray<${SCALAR}, ${LANES}> >();
+    set(APPEND VCTEST_CC_CONTENT "${VCTEST_CC_CONTENT}\
+test.checkVector<SimdArray<${SCALAR}, ${LANES}> >();
 ")
   endforeach(LANES IN ITEMS 4 8)
 endforeach()
