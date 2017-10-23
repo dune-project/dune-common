@@ -60,47 +60,50 @@ dune_add_test(NAME vctest
   LINK_LIBRARIES dunecommon
   CMAKE_GUARD Vc_FOUND
 )
-add_dune_vc_flags(vctest)
-# no need to install vctest.hh, used by vctest*.cc only
+# This if condition should be in sync with the CMAKE_GUARD above
+if(Vc_FOUND)
+  add_dune_vc_flags(vctest)
 
-# Generate files with instanciations, external declarations, and also the
-# invocations in the test for each instance.
-set(VCTEST_HH_CONTENT)
-set(VCTEST_CC_CONTENT)
+  # Generate files with instanciations, external declarations, and also the
+  # invocations in the test for each instance.
+  set(VCTEST_HH_CONTENT)
+  set(VCTEST_CC_CONTENT)
 
-set(VCTEST_TYPES
-  "short"
-  "unsigned short"
-  "int"
-  "unsigned"
-  "float"
-  "double")
+  set(VCTEST_TYPES
+    "short"
+    "unsigned short"
+    "int"
+    "unsigned"
+    "float"
+    "double")
 
-foreach(SCALAR IN LISTS VCTEST_TYPES)
-  string(REGEX REPLACE "[^a-zA-Z0-9]+" _ MANGLED_SCALAR "${SCALAR}")
-  foreach(LANES IN ITEMS 4 8)
-    configure_file(vctest_simdarray.cc.in
-      "vctest_simdarray_${MANGLED_SCALAR}_${LANES}.cc")
-    configure_file(vctest_simdmaskarray.cc.in
-      "vctest_simdmaskarray_${MANGLED_SCALAR}_${LANES}.cc")
-    set_property(
-      SOURCE
+  foreach(SCALAR IN LISTS VCTEST_TYPES)
+    string(REGEX REPLACE "[^a-zA-Z0-9]+" _ MANGLED_SCALAR "${SCALAR}")
+    foreach(LANES IN ITEMS 4 8)
+      configure_file(vctest_simdarray.cc.in
+        "vctest_simdarray_${MANGLED_SCALAR}_${LANES}.cc")
+      configure_file(vctest_simdmaskarray.cc.in
+        "vctest_simdmaskarray_${MANGLED_SCALAR}_${LANES}.cc")
+      set_property(
+        SOURCE
+          "vctest_simdarray_${MANGLED_SCALAR}_${LANES}.cc"
+          "vctest_simdmaskarray_${MANGLED_SCALAR}_${LANES}.cc"
+        PROPERTY GENERATED TRUE)
+      set_property(TARGET vctest APPEND PROPERTY SOURCES
         "vctest_simdarray_${MANGLED_SCALAR}_${LANES}.cc"
-        "vctest_simdmaskarray_${MANGLED_SCALAR}_${LANES}.cc"
-      PROPERTY GENERATED TRUE)
-    set_property(TARGET vctest APPEND PROPERTY SOURCES
-      "vctest_simdarray_${MANGLED_SCALAR}_${LANES}.cc"
-      "vctest_simdmaskarray_${MANGLED_SCALAR}_${LANES}.cc")
-    set(VCTEST_HH_CONTENT "${VCTEST_HH_CONTENT}\
+        "vctest_simdmaskarray_${MANGLED_SCALAR}_${LANES}.cc")
+      set(VCTEST_HH_CONTENT "${VCTEST_HH_CONTENT}\
 extern template void UnitTest::checkVector<Vc::SimdArray<${SCALAR}, ${LANES}> >();
 extern template void UnitTest::checkVector<Vc::SimdMaskArray<${SCALAR}, ${LANES}> >();
 ")
-    set(APPEND VCTEST_CC_CONTENT "${VCTEST_CC_CONTENT}\
+      set(APPEND VCTEST_CC_CONTENT "${VCTEST_CC_CONTENT}\
 test.checkVector<SimdArray<${SCALAR}, ${LANES}> >();
 ")
-  endforeach(LANES IN ITEMS 4 8)
-endforeach()
+    endforeach(LANES IN ITEMS 4 8)
+  endforeach()
 
-configure_file(vctest.hh.in vctest.hh)
-configure_file(vctest.cc.in vctest.cc)
-set_property(SOURCE vctest.cc vctest.hh PROPERTY GENERATED TRUE)
+  configure_file(vctest.hh.in vctest.hh)
+  configure_file(vctest.cc.in vctest.cc)
+  set_property(SOURCE vctest.cc vctest.hh PROPERTY GENERATED TRUE)
+endif(Vc_FOUND)
+# no need to install vctest.hh, used by vctest*.cc only
