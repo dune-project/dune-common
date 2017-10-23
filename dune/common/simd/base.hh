@@ -75,7 +75,7 @@
  *
  * This module describes the interface that you must implement if you want to
  * provide an abstraction layer for some vectorization library.  To understand
- * some of the design choices, have a look at dune/common/simd/README.md in
+ * some of the design choices, have a look at dune/common/simd/DESIGN.md in
  * dune-common's source.
  *
  * Everything an abstraction implementation needs to provide is in namespace
