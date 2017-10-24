@@ -19,6 +19,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <type_traits>
 #include <utility>
 
 #if HAVE_VC
@@ -30,6 +31,150 @@
 
 namespace Dune
 {
+
+#if HAVE_VC
+  namespace VcImpl {
+    //! A reference-like proxy for elements of random-access vectors.
+    /**
+     * This is necessary because Vc's lane-access operation return a proxy
+     * that cannot constructed by non-Vc code (i.e. code that isn't
+     * explicitly declared `friend`).  This means in particular that there
+     * is no copy/move constructor, meaning we cannot return such proxies
+     * from our own functions, such as `lane()`.  To work around this, we
+     * define our own proxy class which internally holds a reference to the
+     * vector and a lane index.
+     */
+    template<class V>
+    class Proxy
+    {
+      static_assert(std::is_same<V, std::decay_t<V> >::value, "Class Proxy "
+                    "may only be instantiated with unqualified types");
+    public:
+      using value_type = typename V::value_type;
+
+    private:
+      static_assert(std::is_arithmetic<value_type>::value,
+                    "Only artihmetic types are supported");
+      V &vec_;
+      std::size_t idx_;
+
+    public:
+      Proxy(std::size_t idx, V &vec)
+        : vec_(vec), idx_(idx)
+      { }
+
+      operator value_type() const { return vec_[idx_]; }
+
+      // postfix operators
+
+      template<class T = value_type,
+               class = std::enable_if_t<!std::is_same<T, bool>::value> >
+      value_type operator++(int) { return vec_[idx_]++; }
+      template<class T = value_type,
+               class = std::enable_if_t<!std::is_same<T, bool>::value> >
+      value_type operator--(int) { return vec_[idx_]--; }
+
+      // unary (prefix) operators
+      template<class T = value_type,
+               class = std::enable_if_t<!std::is_same<T, bool>::value> >
+      Proxy &operator++() { ++(vec_[idx_]); return *this; }
+      template<class T = value_type,
+               class = std::enable_if_t<!std::is_same<T, bool>::value> >
+      Proxy &operator--() { --(vec_[idx_]); return *this; }
+      decltype(auto) operator!() const { return !(vec_[idx_]); }
+      decltype(auto) operator+() const { return +(vec_[idx_]); }
+      decltype(auto) operator-() const { return -(vec_[idx_]); }
+      template<class T = value_type,
+               class = std::enable_if_t<std::is_integral<T>::value> >
+      decltype(auto) operator~() const { return ~(vec_[idx_]); }
+
+      // binary operators
+#define DUNE_SIMD_VC_BINARY_OP(OP)                                      \
+      template<class T>                                                 \
+      auto operator OP(T &&o) const                                     \
+        -> decltype(vec_[idx_] OP valueCast(std::forward<T>(o)))        \
+      {                                                                 \
+        return vec_[idx_] OP valueCast(std::forward<T>(o));             \
+      }
+
+      DUNE_SIMD_VC_BINARY_OP(*);
+      DUNE_SIMD_VC_BINARY_OP(/);
+      DUNE_SIMD_VC_BINARY_OP(%);
+
+      DUNE_SIMD_VC_BINARY_OP(+);
+      DUNE_SIMD_VC_BINARY_OP(-);
+
+      DUNE_SIMD_VC_BINARY_OP(<<);
+      DUNE_SIMD_VC_BINARY_OP(>>);
+
+      DUNE_SIMD_VC_BINARY_OP(<);
+      DUNE_SIMD_VC_BINARY_OP(>);
+      DUNE_SIMD_VC_BINARY_OP(<=);
+      DUNE_SIMD_VC_BINARY_OP(>=);
+
+      DUNE_SIMD_VC_BINARY_OP(==);
+      DUNE_SIMD_VC_BINARY_OP(!=);
+
+      DUNE_SIMD_VC_BINARY_OP(&);
+      DUNE_SIMD_VC_BINARY_OP(^);
+      DUNE_SIMD_VC_BINARY_OP(|);
+
+      DUNE_SIMD_VC_BINARY_OP(&&);
+      DUNE_SIMD_VC_BINARY_OP(||);
+#undef DUNE_SIMD_VC_BINARY_OP
+
+#define DUNE_SIMD_VC_ASSIGNMENT(OP)                             \
+      template<class T>                                         \
+      auto operator OP(T &&o)                                   \
+        -> std::enable_if_t<AlwaysTrue<decltype(                \
+                 vec_[idx_] OP valueCast(std::forward<T>(o))    \
+               )>::value, Proxy&>                               \
+      {                                                         \
+        vec_[idx_] OP valueCast(std::forward<T>(o));            \
+        return *this;                                           \
+      }
+
+      DUNE_SIMD_VC_ASSIGNMENT(=);
+      DUNE_SIMD_VC_ASSIGNMENT(*=);
+      DUNE_SIMD_VC_ASSIGNMENT(/=);
+      DUNE_SIMD_VC_ASSIGNMENT(%=);
+      DUNE_SIMD_VC_ASSIGNMENT(+=);
+      DUNE_SIMD_VC_ASSIGNMENT(-=);
+      DUNE_SIMD_VC_ASSIGNMENT(<<=);
+      DUNE_SIMD_VC_ASSIGNMENT(>>=);
+      DUNE_SIMD_VC_ASSIGNMENT(&=);
+      DUNE_SIMD_VC_ASSIGNMENT(^=);
+      DUNE_SIMD_VC_ASSIGNMENT(|=);
+#undef DUNE_SIMD_VC_ASSIGNMENT
+
+      // swap on proxies swaps the proxied vector entries.  As such, it
+      // applies to rvalues of proxies too, not just lvalues
+      template<class V1, class V2>
+      friend void swap(Proxy<V1>, Proxy<V2>);
+
+      template<class T>
+      friend void swap(Proxy p1, T& s2)
+      {
+        using std::swap;
+        swap(p1.vec_[p1.idx_], s2);
+      }
+
+      template<class T>
+      friend void swap(T& s1, Proxy p2)
+      {
+        using std::swap;
+        swap(s1, p2.vec_[p2.idx_]);
+      }
+    };
+
+    template<class V1, class V2>
+    void swap(Proxy<V1> p1, Proxy<V2> p2)
+    {
+      using std::swap;
+      swap(p1.vec_[p1.idx_], p2.vec_[p2.idx_]);
+    }
+  } //  namespace VcImpl
+#endif // HAVE_VC
 
   template<typename T>
   struct SimdScalarTypeTraits
@@ -212,8 +357,7 @@ namespace Dune
   }
 
   template<class T, class A>
-  auto lane(std::size_t l, const Vc::Vector<T, A> &v)
-    -> decltype(v[l])
+  T lane(std::size_t l, const Vc::Vector<T, A> &v)
   {
     assert(l < lanes(v));
     return v[l];
@@ -221,10 +365,9 @@ namespace Dune
 
   template<class T, class A>
   auto lane(std::size_t l, Vc::Vector<T, A> &v)
-    -> decltype(v[l])
   {
     assert(l < lanes(v));
-    return v[l];
+    return VcImpl::Proxy<Vc::Vector<T, A> >{l, v};
   }
 
   template<class T, std::size_t n, class V>
@@ -234,8 +377,7 @@ namespace Dune
   }
 
   template<class T, std::size_t n, class V>
-  auto lane(std::size_t l, const Vc::SimdArray<T, n, V> &v)
-    -> decltype(v[l])
+  T lane(std::size_t l, const Vc::SimdArray<T, n, V> &v)
   {
     assert(l < n);
     return v[l];
@@ -243,10 +385,9 @@ namespace Dune
 
   template<class T, std::size_t n, class V>
   auto lane(std::size_t l, Vc::SimdArray<T, n, V> &v)
-    -> decltype(v[l])
   {
     assert(l < n);
-    return v[l];
+    return VcImpl::Proxy<Vc::SimdArray<T, n, V> >{l, v};
   }
 
   template<class T, std::size_t n, class V>
@@ -264,10 +405,9 @@ namespace Dune
 
   template<class T, std::size_t n, class V>
   auto lane(std::size_t l, Vc::SimdMaskArray<T, n, V> &v)
-    -> decltype(v[l])
   {
     assert(l < n);
-    return v[l];
+    return VcImpl::Proxy<Vc::SimdMaskArray<T, n, V> >{l, v};
   }
 #endif // HAVE_VC
 
