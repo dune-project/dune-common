@@ -230,17 +230,14 @@ namespace Dune
       };
 
 
-      template <class DuneType>
-      auto _addToTypeRegistry( const std::string &pyName,
-           const GenerateTypeName &typeName,
-           const std::vector<std::string> &inc={})
+      template< class DuneType >
+      inline static auto _addToTypeRegistry ( std::string pyName, const GenerateTypeName &typeName, const std::vector< std::string > &inc = {} )
       {
-        std::vector<std::string> includes = typeName.includes();
-        includes.insert(includes.end(), inc.begin(), inc.end());
-        auto entry = detail::insertIntoTypeRegistry<DuneType>(typeName.name(), std::move(pyName),includes);
-        if (!entry.second)
-          throw std::invalid_argument( (std::string("adding a class (") +
-                typeid(DuneType).name() + ") twice to the type registry").c_str() );
+        std::vector< std::string > includes = typeName.includes();
+        includes.insert( includes.end(), inc.begin(), inc.end() );
+        auto entry = detail::insertIntoTypeRegistry< DuneType >( typeName.name(), std::move( pyName ), includes );
+        if( !entry.second )
+          throw std::invalid_argument( std::string( "adding a class (" ) + typeid( DuneType ).name() + ") twice to the type registry" );
         return entry;
       }
 
@@ -388,32 +385,27 @@ namespace Dune
      *   registry) The second argument is false if the type was
      *   already registered and otherwise it is true.
      */
-    template <class Type, class... options, class... Args>
-    std::pair<pybind11::class_<Type,options...>,bool>
-    insertClass(pybind11::handle scope,const std::string &pyName, Args... args)
+    template< class Type, class... options, class... Args >
+    inline static std::pair< pybind11::class_< Type, options... >, bool >
+    insertClass ( pybind11::handle scope, std::string pyName, Args... args )
     {
       auto entry = detail::findInTypeRegistry<Type>();
-      if (!entry.second)
+      if( !entry.second )
       {
-        scope.attr(entry.first->second.pyName.c_str()) = entry.first->second.object;
-        return std::make_pair(
-            static_cast<pybind11::class_<Type,options...>>
-                (entry.first->second.object), false);
+        scope.attr( pyName.c_str() ) = entry.first->second.object;
+        return std::make_pair( static_cast< pybind11::class_< Type, options... > >( entry.first->second.object ), false );
       }
       else
       {
-        auto entry = detail::_addToTypeRegistry_filter_impl<Type>(pyName,
-                        std::forward_as_tuple(std::forward<Args>(args)...),
-                        detail::Filter<detail::baseTag, std::decay_t<Args>...>{});
-        pybind11::class_< Type, options... >
-          cls = detail::generateClass_filter_impl<Type,options...>(scope, entry.first->second.pyName.c_str(),
-              std::forward_as_tuple(std::forward<Args>(args)...),
-              detail::Filter<detail::notBaseTag, std::decay_t<Args>...>{});
+        auto entry = detail::_addToTypeRegistry_filter_impl< Type >( std::move( pyName ), std::forward_as_tuple( std::forward< Args >( args )... ), detail::Filter< detail::baseTag, std::decay_t< Args >... >{} );
+        auto cls = detail::generateClass_filter_impl< Type, options...>( scope, entry.first->second.pyName.c_str(), std::forward_as_tuple( std::forward< Args >( args )... ), detail::Filter< detail::notBaseTag, std::decay_t< Args >... >{} );
         entry.first->second.object = cls;
+
         cls.def_property_readonly_static( "_typeName", [ entry ] ( pybind11::object ) { return entry.first->second.name; } );
         cls.def_property_readonly_static( "_includes", [ entry ] ( pybind11::object ) { return entry.first->second.includes; } );
         cls.def( "__repr__", [ entry ] ( pybind11::object ) { return entry.first->second.name; } );
-        return std::make_pair(cls,true);
+
+        return std::make_pair( cls, true );
       }
     }
 
