@@ -178,6 +178,7 @@ namespace Dune
             return pybind11::str(obj);
           }
         }
+        static std::string getTypeName ( const GenerateTypeName &name ) { return name.name(); }
         std::string getTypeName ( const std::string &name ) { return name; }
         std::string getTypeName ( const char *name ) { return name; }
         template <class T>
@@ -203,6 +204,7 @@ namespace Dune
             return {};
           }
         }
+        static std::vector< std::string > getIncludes ( const GenerateTypeName &name ) { return name.includes(); }
         template <class T>
         const std::vector<std::string> &getIncludes ( const Dune::MetaType<T> & )
         {
