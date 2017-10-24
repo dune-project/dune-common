@@ -146,7 +146,33 @@ namespace Dune
       DUNE_SIMD_VC_ASSIGNMENT(^=);
       DUNE_SIMD_VC_ASSIGNMENT(|=);
 #undef DUNE_SIMD_VC_ASSIGNMENT
+
+      // swap on proxies swaps the proxied vector entries.  As such, it
+      // applies to rvalues of proxies too, not just lvalues
+      template<class V1, class V2>
+      friend void swap(Proxy<V1>, Proxy<V2>);
+
+      template<class T>
+      friend void swap(Proxy p1, T& s2)
+      {
+        using std::swap;
+        swap(p1.vec_[p1.idx_], s2);
+      }
+
+      template<class T>
+      friend void swap(T& s1, Proxy p2)
+      {
+        using std::swap;
+        swap(s1, p2.vec_[p2.idx_]);
+      }
     };
+
+    template<class V1, class V2>
+    void swap(Proxy<V1> p1, Proxy<V2> p2)
+    {
+      using std::swap;
+      swap(p1.vec_[p1.idx_], p2.vec_[p2.idx_]);
+    }
   } //  namespace VcImpl
 #endif // HAVE_VC
 
