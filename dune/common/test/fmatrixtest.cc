@@ -15,14 +15,11 @@
 #include <iostream>
 #include <vector>
 
-#if HAVE_VC
-#include <Vc/Vc>
-#endif
-
 #include <dune/common/classname.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/rangeutilities.hh>
 #include <dune/common/simd.hh>
+#include <dune/common/vc.hh>
 
 #include "checkmatrixinterface.hh"
 

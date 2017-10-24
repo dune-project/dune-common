@@ -22,12 +22,9 @@
 #include <type_traits>
 #include <utility>
 
-#if HAVE_VC
-#include <Vc/Vc>
-#endif
-
 #include <dune/common/conditional.hh>
 #include <dune/common/rangeutilities.hh>
+#include <dune/common/vc.hh>
 
 namespace Dune
 {
