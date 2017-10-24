@@ -10,6 +10,7 @@ set(HEADERS
   getdimension.hh
   iteratorrange.hh
   mpihelper.hh
+  numpyvector.hh
   pythonvector.hh
   string.hh
   typeregistry.hh
