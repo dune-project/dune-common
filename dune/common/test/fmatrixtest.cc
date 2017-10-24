@@ -16,6 +16,7 @@
 #include <vector>
 
 #if HAVE_VC
+#include <algorithm> // work around #88
 #include <Vc/Vc>
 #endif
 
