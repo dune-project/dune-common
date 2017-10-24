@@ -21,4 +21,6 @@
 // include the rest of Vc
 #include <Vc/Vc>
 
+#endif // HAVE_VC
+
 #endif // DUNE_COMMON_VC_HH
