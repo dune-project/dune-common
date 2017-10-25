@@ -2,6 +2,20 @@
 // vi: set et ts=4 sw=2 sts=2:
 #ifndef DUNE_COMMON_STD_VARIANT_HH
 #define DUNE_COMMON_STD_VARIANT_HH
+#if __has_include(<variant>)
+#include <variant>
+namespace Dune {
+namespace Std {
+  using std::variant;
+  using std::visit;
+  using std::variant_size;
+  using std::variant_size_v;
+  using std::get;
+  using std::get_if;
+  using std::holds_alternative;
+}
+}
+#else
 #include <tuple>
 #include <memory>
 #include <dune/common/hybridutilities.hh>
@@ -400,4 +414,5 @@ namespace Impl {
 
 } // end namespace Std
 } // end namespace Dune
+#endif
 #endif
