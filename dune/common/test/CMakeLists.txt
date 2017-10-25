@@ -184,6 +184,8 @@ dune_add_test(SOURCES rangeutilitiestest.cc
 dune_add_test(SOURCES reservedvectortest.cc
               LINK_LIBRARIES dunecommon)
 
+dune_add_test(SOURCES resolverefstest.cc)
+
 dune_add_test(SOURCES shared_ptrtest.cc)
 
 dune_add_test(SOURCES singletontest.cc)
