@@ -6,6 +6,7 @@
 #include <complex>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include <dune/common/deprecated.hh>
 
@@ -571,6 +572,13 @@ namespace Dune
   //! Specialization to remove volatile qualifiers
   template<class T>
   struct AutonomousValueType<volatile T> : AutonomousValueType<T> {};
+
+  //! Specialization for the proxies of `vector<bool>`
+  template<>
+  struct AutonomousValueType<std::vector<bool>::reference>
+  {
+    using type = bool;
+  };
 
   //! Specialization to remove both const and volatile qualifiers
   template<class T>
