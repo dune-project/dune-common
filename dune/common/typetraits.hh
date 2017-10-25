@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include <dune/common/deprecated.hh>
 #include <dune/common/typeutilities.hh>
@@ -582,6 +583,19 @@ namespace Dune
     template<class T, std::size_t n>
     constexpr const std::array<T, n> &
     resolveRefs(ADLTag, PriorityTag<0>, const std::array<T, n> &v)
+    {
+      return v;
+    }
+
+    /**
+     * \brief Special implementation for `std::vector<bool>`
+     *
+     * There seems to be no way to recognize `vector<bool, Alloc>::reference`
+     * for all values of `Alloc`, so we only support `vector<bool>::reference`
+     * here.
+     */
+    inline bool resolveRefs(ADLTag, PriorityTag<0>,
+                            std::vector<bool>::reference v)
     {
       return v;
     }
