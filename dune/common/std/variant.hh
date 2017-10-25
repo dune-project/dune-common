@@ -353,23 +353,33 @@ namespace Impl {
   }
 
   template<typename Tp, typename ...T>
-  const auto* get_if(const variant<T...>& var) {
-    return var.template get_if<Tp>();
+  const auto* get_if(const variant<T...>* var) {
+    if (var == nullptr)
+      return (const Tp*) nullptr;
+    return var->template get_if<Tp>();
   }
 
   template<typename Tp, typename ...T>
-  auto* get_if(variant<T...>& var) {
-    return var.template get_if<Tp>();
+  auto* get_if(variant<T...>* var) {
+    if (var == nullptr)
+      return (Tp*) nullptr;
+    return var->template get_if<Tp>();
   }
 
   template<size_t N, typename ...T>
-  const auto* get_if(const variant<T...>& var) {
-    return var.template get_if<N>();
+  const auto* get_if(const variant<T...>* var) {
+    using Tp = std::decay_t<decltype(var->template get<N>())>;
+    if (var == nullptr)
+      return (const Tp*) nullptr;
+    return var->template get_if<N>();
   }
 
   template<size_t N, typename ...T>
-  auto* get_if(variant<T...>& var) {
-    return var.template get_if<N>();
+  auto* get_if(variant<T...>* var) {
+    using Tp = std::decay_t<decltype(var->template get<N>())>;
+    if (var == nullptr)
+      return (Tp*) nullptr;
+    return var->template get_if<N>();
   }
 
   template<typename Tp, typename ...T>
@@ -377,10 +387,16 @@ namespace Impl {
     return var.template holds_alternative<Tp>();
   }
 
+  template <typename T>
+  struct variant_size {};
+
   template <typename... T>
-  constexpr auto variant_size_v(const variant<T...>&) {
-    return std::integral_constant<std::size_t,sizeof...(T)>::value;
-  }
+  struct variant_size<variant<T...>>
+  : std::integral_constant<std::size_t, sizeof...(T)> { };
+
+  // this cannot be inline (as it is in the STL) as this would need C++17
+  template <typename T>
+  constexpr std::size_t variant_size_v = variant_size<T>::value;
 
 } // end namespace Std
 } // end namespace Dune

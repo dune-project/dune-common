@@ -30,7 +30,7 @@ Dune::TestSuite testVariant() {
 
   auto variant = Std::variant<int, double, F, V>();
 
-  suite.check(Std::variant_size_v(variant) == 4, "Test variant_size_v");
+  suite.check(Std::variant_size_v<decltype(variant)> == 4, "Test variant_size_v");
 
 
   variant = d;
@@ -45,11 +45,14 @@ Dune::TestSuite testVariant() {
   suite.check(Std::get<int>(variant) == i, "Test get<Type>");
   suite.check(Std::get<0>(variant) == i, "Test get<Index>");
 
-  suite.check(Std::get_if<int>(variant) != nullptr, "Test get_if on right type");
-  suite.check(Std::get_if<double>(variant) == nullptr, "Test get_if on wrong type");
+  suite.check(Std::get_if<int>(&variant) != nullptr, "Test get_if on right type");
+  suite.check(Std::get_if<double>(&variant) == nullptr, "Test get_if on wrong type");
 
-  suite.check(Std::get_if<0>(variant) != nullptr, "Test get_if on right index");
-  suite.check(Std::get_if<1>(variant) == nullptr, "Test get_if on wrong index");
+  suite.check(Std::get_if<0>(&variant) != nullptr, "Test get_if on right index");
+  suite.check(Std::get_if<1>(&variant) == nullptr, "Test get_if on wrong index");
+
+  Std::variant<int, double>* var_nullptr = nullptr;
+  suite.check(Std::get_if<0>(var_nullptr) == nullptr, "Test get_if on nullptr input");
 
   // test if get<Type> throws if one tries to get the wrong type:
   try {
@@ -81,7 +84,7 @@ Dune::TestSuite testVariant() {
   // try on a const reference:
   const auto& constv2 = variant2;
   suite.check(Std::visit(size, constv2)== 2, "Test const visit");
-  suite.check(Std::get_if<V2>(constv2) != nullptr, "Test const get_if");
+  suite.check(Std::get_if<V2>(&constv2) != nullptr, "Test const get_if");
 
 
   return suite;
