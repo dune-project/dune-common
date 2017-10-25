@@ -3,11 +3,14 @@
 #ifndef DUNE_TYPETRAITS_HH
 #define DUNE_TYPETRAITS_HH
 
+#include <array>
 #include <complex>
+#include <cstddef>
 #include <type_traits>
 #include <utility>
 
 #include <dune/common/deprecated.hh>
+#include <dune/common/typeutilities.hh>
 
 namespace Dune
 {
@@ -539,6 +542,162 @@ namespace Dune
   {};
 
 #endif // DOXYGEN
+
+  /**
+   * \brief namespace for overloads of `resolveRefs()`
+   */
+  namespace ResolveRefsOverloads {
+
+    /**
+     * \brief Tag to enable argument-dependent lookup `resolveRefs()`
+     *
+     * This should not be used outside of the namespace
+     * `Dune::ResolveRefsOverloads`, except in `Dune::resolveRefs()` itself.
+     */
+    struct ADLTag {};
+
+    /**
+     * \brief Default implementation for `Dune::resolveRefs()`.
+     *
+     * This overload takes its argument by-value (`T`) instead of by universal
+     * reference (`T&&`).  Taking it by universal reference would make it
+     * difficult to add overloads for proxy types, because the universal
+     * reference of the default overload would always match exactly.  So any
+     * custom overload would need one overload per possible combination of of
+     * cv- and reference qualifiers.
+     */
+    template<class T>
+    constexpr auto resolveRefs(ADLTag, PriorityTag<0>, T v)
+    {
+      return v;
+    }
+
+    /**
+     * \brief Special implementation for `std::array`
+     *
+     * We provide this special implementation because array will always be
+     * copied instead of moved, and the default implementation would
+     * potentially neccessiate multiple copies.
+     */
+    template<class T, std::size_t n>
+    constexpr const std::array<T, n> &
+    resolveRefs(ADLTag, PriorityTag<0>, const std::array<T, n> &v)
+    {
+      return v;
+    }
+
+  } // namespace ResolveRefsOverloads
+
+  /**
+   * \brief Resolve references and return a prvalue result
+   *
+   * This function is an unproxyfier or an expression evaluator or a fancy
+   * cast.  It ensures two things:
+   *
+   *   1. The return value is a prvalue,
+   *   2. the returned value is self-sufficient.
+   *
+   * The latter means that there will be no references into other objects
+   * (like containers) which are not guaranteed to be kept alive during the
+   * lifetime of the returned value.
+   *
+   *  An example usage would be
+   * ```c++
+   *   std::vector<bool> bitvector{24};
+   *   auto value = resolveRefs(bitvector[23]);
+   *   bitvector.resize(42);
+   *   // value still valid
+   * ```
+   * Since `vector<bool>` may use proxies, `auto value = bitvector[23];` would
+   * mean that the type of `value` is such a proxy.  The proxy keeps internal
+   * references into the vector, and thus can be invalidated by anything that
+   * modifies the vector -- such as a later call to `resize()`.
+   * `resolveRefs()` lets you work around that problem by converting the proxy
+   * to a `bool` prvalue.
+   *
+   * Another example would be an automatic differentiation library that lets
+   * you track the operations in a computation, and later ask for derivatives.
+   * Imagine that your operation involves a parameter function, and you want
+   * to use that function both with plain types and with automatic
+   * differentiation types.  You might write the parameter function as
+   * follows:
+   * ```c++
+   *   template<class NumberType>
+   *   auto param(NumberType v)
+   *   {
+   *     return 2*v;
+   *   }
+   * ```
+   * If the automatic differentiation library is Adept, this would lead to
+   * use-after-end-of-life-bugs.  The reason is that for efficiency reasons
+   * Adept does not immidiately evaluate the expression, but instead it
+   * constructs an expression object that records the kind of expression an
+   * references to the operands.  The expression object is only evaluated when
+   * it is assigned to an object of some number type -- which will only happen
+   * after the operands (`v` and the temporary object representing `2`) have
+   * gone out of scope and been destroyed.  Basically, Adept was invented
+   * before `auto` and rvalue-references were a thing.
+   *
+   * This can be handled with `resolveRefs()`:
+   * ```c++
+   *   template<class NumberType>
+   *   auto param(NumberType v)
+   *   {
+   *     return resolveRefs(2*v);
+   *   }
+   * ```
+   * Of course, `resolveRefs()` needs to be taught about the expression
+   * objects of Adept for this to work.
+   *
+   * `resolveRefs()` will by default simply return the argument as a prvalue
+   * of the same type with cv-qualifiers removed.  This involves one or more
+   * copy/move operation, so it will only work with types that are in fact
+   * copyable.
+   *
+   * To teach `resolveRefs()` about a particular proxy type, overload
+   * `Dune::ResolveRefsOverloads::resolveRefs(Dune::ResolveRefsOverloads::ADLTag,
+   * Dune::PriorityTag<n>, ...)`.  The first argument must be exactly of type
+   * `Dune::ResolveRefsOverloads::ADLTag` (and that type may not be used
+   * outside the namespace `Dune::ResolveRefsOverloads`).  This ensures that
+   * `Dune::resolveRefs()` can find the correct overload using
+   * argument-denpendent lookup.
+   *
+   * The second can be used to resolve ambiguities when you otherwise need to
+   * use the same argument list as the default overload.  The default overload
+   * uses `n==0`, any higher value takes priority.  The highes possible value
+   * is currently `n==6`.  Example:
+   * ```c++
+   * namespace ResolveRefsOverloads {
+   *   template<class T, class = void_t<typename T::my_member_type> >
+   *   auto resolveRefs(ADLTag, PriorityTag<1>, T v);
+   * }
+   * ```
+   *
+   * The second argument must match the type you want to overload for.
+   * `Dune::resolveRefs()` will forward this argument exactly as it receives
+   * it.  The default overload declares this operand by-value, so it is often
+   * sufficient to overload for `const T&` or just plain `T` to match all
+   * possible ways in which this argument might be passed.
+   *
+   * Your overload can return any value category of the resolved type, the
+   * return value will be converted into a prvalue by `Dune::resolveRefs()`
+   * and qualifiers will be stripped.  Just ensure that it is valid in an
+   * expression invoking you overload -- i.e. you should not return a
+   * reference to the parameter if your overload is declared to take it by
+   * value.
+   *
+   * \note Do not overload `Dune::resolveRefs()` directly.  The indirection is
+   *       neccessary to enable the late binding provided by
+   *       argument-dependent lookup.  Overloading directly means any code
+   *       that uses `resolveRefs()` and happens to be included before your
+   *       overload in the translation unit will not see your overload.
+   */
+  template<class T>
+  constexpr auto resolveRefs(T &&v)
+  {
+    return resolveRefs(ResolveRefsOverloads::ADLTag{}, PriorityTag<6>{},
+                       std::forward<T>(v));
+  }
 
   /** @} */
 }
