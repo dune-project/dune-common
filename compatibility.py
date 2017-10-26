@@ -29,3 +29,12 @@ if sys.version_info.major == 2:
         return module
 else:
     reload_module = importlib.reload
+
+if sys.version_info.major == 2:
+    from inspect import getargspec
+    def getNumberOfParameters(func):
+        return len( getargspec(func).args )
+else:
+    from inspect import signature
+    def getNumberOfParameters(func):
+        return len( signature(func).parameters )
