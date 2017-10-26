@@ -129,10 +129,10 @@ namespace Dune
     }
 
     template< class Mapper, class T >
-    void registerDataHandle( pybind11::handle module, pybind11::class_<NumPyCommDataHandle< Mapper, T, pybind11::function >> cls)
+    void registerDataHandle( pybind11::handle module, pybind11::class_<NumPyCommDataHandle< Mapper, T, std::function< T( T,T ) >>> cls)
     {
-      cls.def( pybind11::init([](Mapper &mapper, pybind11::array_t<double> array, pybind11::function function) {
-        return NumPyCommDataHandle<Mapper,T,pybind11::function> ( mapper, array, function );
+      cls.def( pybind11::init([](Mapper &mapper, pybind11::array_t<double> array, std::function< T( T,T ) > function) {
+        return NumPyCommDataHandle<Mapper,T, std::function< T( T,T )>> ( mapper, array, function );
       } ), pybind11::keep_alive<1,2>() );
     }
 
