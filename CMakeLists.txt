@@ -8,6 +8,7 @@ set(HEADERS
   fmatrix.hh
   fvector.hh
   getdimension.hh
+  logger.hh
   iteratorrange.hh
   mpihelper.hh
   numpyvector.hh
