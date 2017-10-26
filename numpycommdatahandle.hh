@@ -106,7 +106,7 @@ namespace Dune
               T remote;
               commBuffer.read( remote );
               T &local = static_cast< T * >( buffer.ptr )[ index*buffer.strides[ 0 ]/sizeof(double) + r ];
-              local = function_( local, remote ).template cast<T>();
+              local = function_( local, remote );
             }
       }
 
