@@ -392,7 +392,8 @@ namespace Dune
       auto entry = detail::findInTypeRegistry<Type>();
       if( !entry.second )
       {
-        scope.attr( pyName.c_str() ) = entry.first->second.object;
+        if( scope )
+          scope.attr( pyName.c_str() ) = entry.first->second.object;
         return std::make_pair( static_cast< pybind11::class_< Type, options... > >( entry.first->second.object ), false );
       }
       else
