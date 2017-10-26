@@ -34,96 +34,85 @@ namespace Dune
     template< class Mapper, class T, class Function >
     class NumPyCommDataHandle;
 
-    template< class GV, template< int > class Layout, class T, class Function >
-    class NumPyCommDataHandle< MultipleCodimMultipleGeomTypeMapper< GV, Layout >, T, Function >
-      : public CommDataHandleIF< NumPyCommDataHandle< MultipleCodimMultipleGeomTypeMapper< GV, Layout >, T, Function >, T >
+    template< class GV, class T, class Function >
+    class NumPyCommDataHandle< MultipleCodimMultipleGeomTypeMapper< GV >, T, Function >
+      : public CommDataHandleIF< NumPyCommDataHandle< MultipleCodimMultipleGeomTypeMapper< GV >, T, Function >, T >
     {
-      typedef NumPyCommDataHandle< MultipleCodimMultipleGeomTypeMapper< GV, Layout >, Vector, Function > This;
+      typedef NumPyCommDataHandle< MultipleCodimMultipleGeomTypeMapper< GV >, T, Function > This;
 
-      typedef MultipleCodimMultipleGeomTypeMapper< GV, Layout > Mapper;
+      typedef MultipleCodimMultipleGeomTypeMapper< GV > Mapper;
 
     public:
-      NumPyCommDataHandle ( const Mapper &mapper, pybind11::array_t< T > array, Function function = Function() )
-        : mapper_( mapper ), buffer_( array.request() ), function_( function )
+      NumPyCommDataHandle ( const Mapper &mapper, std::vector<pybind11::array_t< T >> arrays, Function function = Function() )
+        : mapper_( mapper ), buffers_(arrays.size()), function_( function )
       {
-        if( buffer_.strides[ 0 ] * buffer_.shape[ 0 ] != buffer_.size )
-          DUNE_THROW( Exception, "NumPyCommDataHandle requires contiguous array entries." );
+        for ( size_t i=0;i<arrays.size();++i)
+        {
+          buffers_[i] = arrays[i].request();
+          if( buffers_[i].strides[ 0 ] * buffers_[i].shape[ 0 ] != buffers_[i].size )
+            DUNE_THROW( Exception, "NumPyCommDataHandle requires contiguous array entries." );
+          if( buffers_[i].size/sizeof(double) == mapper.size() )
+            DUNE_THROW( Exception, "Array does not match mapper in construction of NumPyCommDataHandle." );
+          if( buffers_[i].strides[ 0 ] == buffers_[0].strides[ 0 ] )
+            DUNE_THROW( Exception, "Arrays passed to NumPyCommDataHandle do not match." );
+        }
       }
+      NumPyCommDataHandle ( const Mapper &mapper, pybind11::array_t< T > array, Function function = Function() )
+        : NumPyCommDataHandle( mapper, std::vector<pybind11::array_t<T>>{array}, function )
+      {}
 
       bool contains ( int dim, int codim ) const
       {
-        // mapper_.layout is private, so assume it is default-constructed
-        Layout< GV::dimension > layout;
-
-        // a codim is contained, if the layout contains any geometry type of
-        // dimension dim - codim
-        const int mydim = dim - codim;
-        for( unsigned int id = 0u; id < (1u << mydim); id += 2u )
-        {
-          if( layout.contains( GeometryType( id, mydim ) ) )
+        for (const auto &gt : mapper_.types( codim ) )
+          if ( mapper_.size(gt)>0 )
             return true;
-        }
-        return layout.contains( GeometryType( GeometryType::none, mydim ) );
+        return false;
       }
 
       bool fixedsize ( int dim, int codim ) const
       {
-        // if a codim is not contained, it has fixed size (namely zero)
-        if( !contains( dim, codim ) )
-          return true;
-
-        // mapper_.layout is private, so assume it is default-constructed
-        Layout< GV::dimension > layout;
-
-        // a codim has fixed size, if the layout contains all geometry types of
-        // dimension dim - codim
-        const int mydim = dim - codim;
-        for( unsigned int id = 0u; id < (1u << mydim); id += 2u )
-        {
-          if( !layout.contains( GeometryType( id, mydim ) ) )
+        size_t size = 0;
+        for (const auto &gt : mapper_.types( codim ) )
+          if ( mapper_.size(gt) != size )
             return false;
-        }
-        return layout.contains( GeometryType( GeometryType::none, mydim ) );
+        return true;
       }
 
       template< class Entity >
       std::size_t size ( const Entity &entity ) const
       {
-        typename Mapper::Index index;
-        return (mapper_.contains( entity, index ) ? buffer_.strides[ 0 ] : 0);
+        auto size = mapper_.size( entity.type() );
+        return buffers_[0].strides[ 0 ]/sizeof(T) * size;
       }
 
       template< class Buffer, class Entity >
-      void gather ( Buffer &buffer, const Entity &entity ) const
+      void gather ( Buffer &commBuffer, const Entity &entity ) const
       {
-        typename Mapper::Index index;
-        if( !mapper_.contains( entity, index ) )
-          return;
-
-        for( std::size_t i = 0; i < buffer_.strides[ 0 ]; ++i )
-          buffer.write( static_cast< T * >( buffer_.ptr )[ index*buffer_.strides[ 0 ] + i ] );
+        for (auto index : mapper_.indices( entity ) )
+          for ( buffer : buffers_ )
+            for( std::size_t r = 0; r < buffer.strides[ 0 ]/sizeof(double); ++r )
+              commBuffer.write( static_cast< T * >( buffer.ptr )[ index*buffer.strides[ 0 ]/sizeof(double) + r ] );
       }
 
       template< class Buffer, class Entity >
-      void scatter ( Buffer &buffer, const Entity &entity, std::size_t n )
+      void scatter ( Buffer &commBuffer, const Entity &entity, std::size_t n )
       {
         assert( n == size( entity ) );
-        typename Mapper::Index index;
-        if( !mapper_.contains( entity, index ) )
-          return;
 
-        for( std::size_t i = 0; i < buffer_.strides[ 0 ]; ++i )
-        {
-          T remote;
-          buffer.read( remote );
-          T &local = static_cast< T * >( buffer_.ptr )[ index*buffer_.strides[ 0 ] + i ];
-          local = function_( local, remote );
-        }
+        for (index : mapper_.indices( entity ) )
+          for ( buffer : buffers_ )
+            for( std::size_t r = 0; r < buffer.strides[ 0 ]/sizeof(double); ++r )
+            {
+              T remote;
+              commBuffer.read( remote );
+              T &local = static_cast< T * >( buffer.ptr )[ index*buffer.strides[ 0 ]/sizeof(double) + r ];
+              local = function_( local, remote ).template cast<T>();
+            }
       }
 
     private:
       const Mapper &mapper_;
-      pybind11::buffer_info buffer_;
+      std::vector<pybind11::buffer_info> buffers_;
       Function function_;
     };
 
@@ -136,7 +125,15 @@ namespace Dune
     inline static NumPyCommDataHandle< Mapper, T, Function >
     numPyCommDataHandle( const Mapper &mapper, pybind11::array_t< T > array, Function function )
     {
-      return NumPyCommDataHandle< Mapper, Vector, Function >( mapper, std::move( array ), std::move( function ) );
+      return NumPyCommDataHandle< Mapper, T, Function >( mapper, std::move( array ), std::move( function ) );
+    }
+
+    template< class Mapper, class T >
+    void registerDataHandle( pybind11::handle module, pybind11::class_<NumPyCommDataHandle< Mapper, T, pybind11::function >> cls)
+    {
+      cls.def( pybind11::init([](Mapper &mapper, pybind11::array_t<double> array, pybind11::function function) {
+        return NumPyCommDataHandle<Mapper,T,pybind11::function> ( mapper, array, function );
+      } ), pybind11::keep_alive<1,2>() );
     }
 
   } // namespace Python
