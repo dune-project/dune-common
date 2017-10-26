@@ -152,23 +152,28 @@ namespace Dune
       template<class T>
       friend void swap(Proxy p1, T& s2)
       {
-        using std::swap;
-        swap(p1.vec_[p1.idx_], s2);
+        // don't use swap() ourselves -- not supported by Vc 1.3.0 (but is
+        // supported by Vc 1.3.2)
+        T tmp = p1.vec_[p1.idx_];
+        p1.vec_[p1.idx_] = s2;
+        s2 = tmp;
       }
 
       template<class T>
       friend void swap(T& s1, Proxy p2)
       {
-        using std::swap;
-        swap(s1, p2.vec_[p2.idx_]);
+        T tmp = s1;
+        s1 = p2.vec_[p2.idx_];
+        p2.vec_[p2.idx_] = tmp;
       }
     };
 
     template<class V1, class V2>
     void swap(Proxy<V1> p1, Proxy<V2> p2)
     {
-      using std::swap;
-      swap(p1.vec_[p1.idx_], p2.vec_[p2.idx_]);
+      typename V1::value_type tmp = p1.vec_[p1.idx_];
+      p1.vec_[p1.idx_] = p2.vec_[p2.idx_];
+      p2.vec_[p2.idx_] = tmp;
     }
   } //  namespace VcImpl
 #endif // HAVE_VC
