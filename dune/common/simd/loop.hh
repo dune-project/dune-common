@@ -5,6 +5,7 @@
 #include <ostream>
 #include <cstddef>
 #include <dune/common/simd/simd.hh>
+#include <cmath>
 
 namespace Dune {
 
@@ -338,5 +339,103 @@ namespace Dune {
     }  //namespace Overloads
   }  //namespace Simd
 }  //namespace Dune
+
+/* @ToDo: implement different behaviour for integral types?*/
+
+#define DUNE_SIMD_LOOP_CMATH_UNARY_OP(expr)    \
+template<class T, std::size_t S>               \
+auto expr(Dune::LoopSIMD<T,S> &v){             \
+  Dune::LoopSIMD<T,S> out;                     \
+  for(std::size_t i=0; i<S; i++) {             \
+    out[i] = expr(v[i]);                       \
+  }                                            \
+  return 0;                                    \
+}
+
+/*
+  template<class T, std::size_t S>
+  auto expr(LoopSIMD<T,S> &v,
+            std::enable_if_t<std::is_integral<T>::type>) {
+    LoopSIMD<double,S> out;
+    for(std::size_t i=0; i<S; i++){
+      out[i] = expr(v[i]);
+    }
+    return out;
+  }
+*/
+
+#define DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN(expr, returnType)    \
+template<class T, std::size_t S>                           \
+auto expr(Dune::LoopSIMD<T,S> &v){                         \
+  Dune::LoopSIMD<returnType,S> out;                              \
+  for(std::size_t i=0; i<S; i++) {                         \
+    out[i] = expr(v[i]);                                   \
+  }                                                        \
+  return 0;                                                \
+}
+
+
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(cos);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(sin);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(tan);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(acos);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(asin);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(atan);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(cosh);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(sinh);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(tanh);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(acosh);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(asinh);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(atanh);
+
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(exp);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(log);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(log10);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(exp2);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(expm1);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN(ilogb, int);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(log1p);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(log2);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(logb);
+
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(sqrt);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(cbrt);
+
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(erf);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(erfc);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(tgamma);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(lgamma);
+
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(ceil);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(floor);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(trunc);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(round);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN(lround, long);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN(llround, long long);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(rint);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN(lrint, long);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN(llrint, long long);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(nearbyint);
+
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(fabs);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(abs);
+
+#undef DUNE_SIMD_LOOP_CMATH_UNARY_OP
+#undef DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN
+
+
+/*  not implemented cmath-functions:
+ *  atan2
+ *  frexp, idexp
+ *  modf
+ *  scalbn, scalbln
+ *  pow
+ *  hypot
+ *  remainder, remquo
+ *  copysign
+ *  nan
+ *  nextafter, nexttoward
+ *  fdim, fmax, fmin
+ */
 
 #endif
