@@ -7,6 +7,8 @@
 #include <type_traits>
 #include <utility>
 
+#include <dune/common/visibility.hh>
+
 #include <dune/geometry/type.hh>
 
 #include <dune/grid/common/datahandleif.hh>
@@ -35,7 +37,7 @@ namespace Dune
     class NumPyCommDataHandle;
 
     template< class GV, class T, class Function >
-    class NumPyCommDataHandle< MultipleCodimMultipleGeomTypeMapper< GV >, T, Function >
+    class DUNE_PRIVATE NumPyCommDataHandle< MultipleCodimMultipleGeomTypeMapper< GV >, T, Function >
       : public CommDataHandleIF< NumPyCommDataHandle< MultipleCodimMultipleGeomTypeMapper< GV >, T, Function >, T >
     {
       typedef NumPyCommDataHandle< MultipleCodimMultipleGeomTypeMapper< GV >, T, Function > This;
