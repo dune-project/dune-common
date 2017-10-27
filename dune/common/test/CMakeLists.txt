@@ -17,6 +17,8 @@ dune_add_test(NAME assertandreturntest_ndebug
               LINK_LIBRARIES dunecommon
               COMPILE_DEFINITIONS "TEST_NDEBUG")
 
+dune_add_test(SOURCES autocopytest.cc)
+
 dune_add_test(SOURCES bigunsignedinttest.cc
               LINK_LIBRARIES dunecommon)
 
