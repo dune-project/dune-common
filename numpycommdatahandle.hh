@@ -88,8 +88,8 @@ namespace Dune
       template< class Buffer, class Entity >
       void gather ( Buffer &commBuffer, const Entity &entity ) const
       {
-        for (auto index : mapper_.indices( entity ) )
-          for ( buffer : buffers_ )
+        for( const auto index : mapper_.indices( entity ) )
+          for( const auto &buffer : buffers_ )
             for( std::size_t r = 0; r < buffer.strides[ 0 ]/sizeof(double); ++r )
               commBuffer.write( static_cast< T * >( buffer.ptr )[ index*buffer.strides[ 0 ]/sizeof(double) + r ] );
       }
@@ -99,8 +99,8 @@ namespace Dune
       {
         assert( n == size( entity ) );
 
-        for (index : mapper_.indices( entity ) )
-          for ( buffer : buffers_ )
+        for( const auto index : mapper_.indices( entity ) )
+          for( auto &buffer : buffers_ )
             for( std::size_t r = 0; r < buffer.strides[ 0 ]/sizeof(double); ++r )
             {
               T remote;
