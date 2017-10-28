@@ -145,6 +145,12 @@ namespace Dune
     {
       return NumPyCommDataHandle< Mapper, T, Function >( mapper, std::move( array ), std::move( function ) );
     }
+    template< class Mapper, class T, class Function >
+    inline static NumPyCommDataHandle< Mapper, T, Function >
+    numPyCommDataHandle( const Mapper &mapper, std::vector<pybind11::array_t< T >> array, Function function )
+    {
+      return NumPyCommDataHandle< Mapper, T, Function >( mapper, std::move( array ), std::move( function ) );
+    }
 
     template< class Mapper, class T, class Function, class... options >
     void registerDataHandle ( pybind11::handle module, pybind11::class_< NumPyCommDataHandle< Mapper, T, Function >, options... > cls )
