@@ -26,17 +26,6 @@ inline bool already_registered() {
 }
 
 
-template <class T>
-inline std::enable_if_t<std::is_reference<T>::value, std::add_pointer_t<T>> return_as_reference(T t) {
-  return &t;
-}
-
-template <class T>
-inline std::enable_if_t<!std::is_reference<T>::value, std::add_pointer_t<T>> return_as_reference(T t) {
-  return new T(std::move(t));
-}
-
-
 template <class F>
 inline void handle_buffer_format(const pybind11::buffer_info &info, F &&f) {
   if(info.format.size() != 1)
