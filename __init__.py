@@ -25,12 +25,17 @@ from ._common import *
 
 import numpy
 def fvgetitem(self,index):
-    return numpy.array(self,copy=False)[index]
+    try:
+        return self._getitem(index)
+    except TypeError:
+        return numpy.array(self,copy=False)[index]
 finished = False
 nr = 1
 while not finished:
     try:
-        setattr(globals()["FieldVector_"+str(nr)], "__getitem__", fvgetitem)
+        cls = globals()["FieldVector_"+str(nr)]
+        setattr(cls, "_getitem", cls.__getitem__)
+        setattr(cls, "__getitem__", fvgetitem)
         nr += 1
     except KeyError:
         finished = True
@@ -38,6 +43,9 @@ while not finished:
 def FieldVector(values):
     fv = "FieldVector_" + str(len(values))
     return globals()[fv](values)
+def FieldMatrix(values):
+    fm = "FieldMatrix_" + str(len(values)) + "_" + str(len(values[0]))
+    return globals()[fm](values)
 
 def _raise(exception):
     raise exception
