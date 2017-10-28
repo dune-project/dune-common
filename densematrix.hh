@@ -21,18 +21,18 @@ namespace Dune
     // -------------------
 
     template< class Matrix >
-    void registerDenseMatrix ( pybind11::class_< Matrix > &cls )
+    void registerDenseMatrix ( pybind11::class_< Matrix > cls )
     {
       typedef typename Matrix::field_type field_type;
       typedef typename Matrix::row_type row_type;
       typedef typename Matrix::row_reference row_reference;
 
-      cls.def( "__getitem__", [] ( Matrix &self, std::size_t i ) {
+      cls.def( "__getitem__", [] ( Matrix &self, std::size_t i ) -> row_reference {
           if( i < self.mat_rows() )
-            return pybind11::return_as_reference< row_reference >( self[ i ] );
+            return self[ i ];
           else
             throw pybind11::index_error();
-        }, pybind11::keep_alive< 0, 1 >() );
+        }, (std::is_reference< row_reference >::value ? pybind11::return_value_policy::reference : pybind11::return_value_policy::move), pybind11::keep_alive< 0, 1 >() );
 
       cls.def( "__setitem__", [] ( Matrix &self, std::size_t i, pybind11::object l ) {
           if( i < self.mat_rows() )
