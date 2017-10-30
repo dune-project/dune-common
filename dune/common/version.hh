@@ -98,7 +98,7 @@
 
 /**
  * \brief True if 'module' has the version major.minor or newer
- * \note Deprecated, use DUNE_VERSION_GE instead.
+ * \note Deprecated, use DUNE_VERSION_GTE instead.
  *
  * For the DUNE core modules you need to use the following module names:
  *  - DUNE_COMMON for dune-common
@@ -112,7 +112,7 @@
  * need to use FOO_BAR as module name in the context of this macro.
  */
 #define DUNE_VERSION_NEWER(module,major,minor) \
-  ! DUNE_VERSION_GTE(module,major,minor)
+  DUNE_VERSION_GTE(module,major,minor)
 
 /**
  * \brief True if 'module' has a version greater than major.minor
@@ -188,7 +188,7 @@
 
 /**
  * \brief True if 'module' has the version major.minor.revision or newer
- * \note Deprecated, use DUNE_VERSION_GE_REV instead.
+ * \note Deprecated, use DUNE_VERSION_GTE_REV instead.
  *
  * For the DUNE core modules you need to use the following module names:
  *  - DUNE_COMMON for dune-common
