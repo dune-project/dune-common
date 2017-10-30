@@ -1,6 +1,9 @@
 #ifndef DUNE_COMMON_SIMD_HH
 #define DUNE_COMMON_SIMD_HH
 
+#warning dune/common/simd.hh is deprecated.
+#warning Use the new infrastructure from dune/common/simd/simd.h instead.
+
 /**
    \file Abstractions for support of dedicated SIMD data types
 
@@ -15,6 +18,9 @@
    vectorization data types.
 
    See also the conditional.hh and range_utils.hh headers.
+
+   \deprecated Use the newer simd architecture from dune/common/simd/simd.hh
+               instead.
  */
 
 #include <cassert>
