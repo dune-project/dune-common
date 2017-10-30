@@ -5,6 +5,7 @@
 #define DUNE_ITERATORTEST_HH
 #include <iostream>
 #include <algorithm>
+#include <dune/common/classname.hh>
 #include <dune/common/typetraits.hh>
 #include <dune/common/unused.hh>
 
@@ -24,9 +25,16 @@ int testForwardIterator(Iter begin, Iter end, Opt& opt)
   int ret=0;
 
   // Test whether iterator is default-constructible
-  // This object will go out of scope at the end of this method, and hence
-  // it will also test whether the object is destructible.
-  Iter defaultConstructedIterator;
+  // These object will go out of scope at the end of this method, and hence
+  // it will also test whether these objects are destructible.
+  Iter defaultConstructedIterator1, defaultConstructedIterator2;
+
+  // Since C++14, default-constructed forward iterators are specified as the
+  // end iterator of the same, empty sequence. Hence, they should compare equal.
+  if (defaultConstructedIterator1 != defaultConstructedIterator2) {
+    std::cerr<<"Default constructed iterators do not compare equal for "+Dune::className<Iter>()+"."<<std::endl;
+    ret=1;
+  }
 
   // Test whether iterator is copy-constructible
   Iter tmp1(begin);
