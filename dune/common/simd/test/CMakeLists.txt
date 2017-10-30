@@ -114,3 +114,27 @@ dune_add_test(NAME vctest
 )
 add_dune_vc_flags(vctest)
 # no need to install vctest.hh, used by vctest*.cc only
+
+dune_add_test(NAME looptest
+  SOURCES
+    looptest.cc
+    looptest_bool.cc
+
+    looptest_char.cc
+    looptest_unsigned_char.cc
+    looptest_signed_char.cc
+
+    looptest_short.cc
+    looptest_unsigned_short.cc
+    looptest_int.cc
+    looptest_unsigned.cc
+    looptest_long.cc
+    looptest_unsigned_long.cc
+    looptest_long_long.cc
+    looptest_unsigned_long_long.cc
+
+    looptest_float.cc
+    looptest_double.cc
+    looptest_long_double.cc
+  LINK_LIBRARIES dunecommon
+)

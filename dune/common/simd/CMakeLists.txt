@@ -6,6 +6,7 @@ install(FILES
   defaults.hh
   interface.hh
   isstandard.hh
+  loop.hh
   simd.hh
   standard.hh
   test.hh # may be used from dependent modules
