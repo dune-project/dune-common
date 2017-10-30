@@ -9,11 +9,13 @@
 
 #include <iostream>
 #include <string>
+#include <type_traits>
 
 #if HAVE_GMP || DOXYGEN
 
 #include <gmpxx.h>
 
+#include <dune/common/simd/isstandard.hh>
 #include <dune/common/typetraits.hh>
 
 namespace Dune
@@ -71,6 +73,12 @@ namespace Dune
   struct IsNumber<GMPField<precision>>
     : public std::integral_constant<bool, true> {
   };
+
+  namespace Simd {
+    template <unsigned int precision>
+    struct IsStandard<GMPField<precision> > : std::true_type {};
+  }
+
 }
 
 #endif // HAVE_GMP
