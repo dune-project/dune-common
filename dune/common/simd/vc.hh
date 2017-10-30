@@ -10,11 +10,10 @@
 #include <type_traits>
 #include <utility>
 
-#include <Vc/Vc>
-
 #include <dune/common/indices.hh>
 #include <dune/common/simd/base.hh>
 #include <dune/common/simd/defaults.hh> // for anyFalse()
+#include <dune/common/vc.hh>
 
 /** @defgroup SIMDVc SIMD Abstraction Implementation for Vc
  *  @ingroup SIMDApp
