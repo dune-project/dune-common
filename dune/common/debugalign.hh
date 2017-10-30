@@ -16,7 +16,6 @@
 
 #include <dune/common/classname.hh>
 #include <dune/common/typetraits.hh>
-#include <dune/common/simd.hh>
 
 namespace Dune {
 
@@ -378,7 +377,7 @@ namespace Dune {
 
   } // namespace AlignedNumberImpl
 
-  // SIMD-like functions
+  // SIMD-like functions from "conditional.hh"
   template<class T, std::size_t align>
   AlignedNumber<T, align>
   cond(const AlignedNumber<bool, align> &b,
@@ -387,6 +386,7 @@ namespace Dune {
     return b ? v1 : v2;
   }
 
+  // SIMD-like functions from "rangeutilities.hh"
   template<class T, std::size_t align>
   T max_value(const AlignedNumber<T, align>& val)
   {
@@ -410,13 +410,6 @@ namespace Dune {
   {
     return bool(val);
   }
-
-  //! deduce the underlying scalar data type of an AlignedNumber
-  template<typename T, std::size_t align>
-  struct SimdScalarTypeTraits< AlignedNumber<T,align> >
-  {
-    using type = T;
-  };
 
 } // namespace Dune
 

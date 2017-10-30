@@ -29,6 +29,7 @@
 #include <utility>
 
 #include <dune/common/conditional.hh>
+#include <dune/common/debugalign.hh>
 #include <dune/common/rangeutilities.hh>
 #include <dune/common/vc.hh>
 
@@ -209,6 +210,13 @@ namespace Dune
     using type = T;
   };
 #endif // HAVE_VC
+
+  //! deduce the underlying scalar data type of an AlignedNumber
+  template<typename T, std::size_t align>
+  struct SimdScalarTypeTraits< AlignedNumber<T,align> >
+  {
+    using type = T;
+  };
 
   template<typename V, typename = void>
   struct SimdIndexTypeTraits {
