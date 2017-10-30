@@ -262,6 +262,9 @@ dune_add_test(SOURCES eigenvaluestest.cc
 dune_add_test(SOURCES optionaltest.cc
               LINK_LIBRARIES dunecommon)
 
+dune_add_test(SOURCES versiontest.cc
+              LINK_LIBRARIES dunecommon)
+
 install(
   FILES
   arithmetictestsuite.hh
