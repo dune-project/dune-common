@@ -23,10 +23,11 @@ Dependencies
 dune-common depends on the following software packages
 
 - pkg-config
-- GNU C, C++ >=4.9
+- GNU C, C++ >=5
   these might also work:
   icc (C/C++) >= 16.0
   Clang >= 3.8
+  The compiler has to support C++14.
 
 The following software is recommended but optional:
 

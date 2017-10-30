@@ -97,11 +97,11 @@ namespace Std
   struct to_true_type : public std::true_type {};
 
 
-#if __cpp_lib_bool_constant
+#if DUNE_HAVE_CXX_BOOL_CONSTANT
 
     using std::bool_constant;
 
-#elif __cpp_lib_experimental_bool_constant
+#elif DUNE_HAVE_CXX_EXPERIMENTAL_BOOL_CONSTANT
 
     using std::experimental::bool_constant;
 
@@ -193,7 +193,7 @@ namespace Std
   {};
 
 
-#if __cpp_lib_experimental_detect >= 201505
+#if DUNE_HAVE_CXX_EXPERIMENTAL_IS_DETECTED
 
   using std::experimental::nonesuch;
   using std::experimental::detected_or;
@@ -206,7 +206,7 @@ namespace Std
   using std::experimental::is_detected_convertible;
   using std::experimental::is_detected_convertible_v;
 
-#else // __cpp_lib_experimental_detect >= 201505
+#else // DUNE_HAVE_CXX_EXPERIMENTAL_IS_DETECTED
 
   // fallback version of std::experimental::is_detected et al., heavily scribbled
   // from cppreference.com (but there is actually not much implementation to the thing)
@@ -388,7 +388,67 @@ namespace Std
   constexpr bool is_detected_convertible_v = is_detected_convertible<Target,Op,Args...>::value;
 #endif // __cpp_variable_templates
 
-#endif // __cpp_lib_experimental_detect >= 201505
+#endif // DUNE_HAVE_CXX_EXPERIMENTAL_IS_DETECTED
+
+
+
+  // conjunction
+  // -----------
+
+  /**
+   * \brief forms the logical conjunction of the type traits B...
+   *
+   * \note This functionality is part of the C++17 standard.
+   *
+   * \ingroup CxxUtilities
+   **/
+  template< class... B >
+  struct conjunction;
+
+  template<>
+  struct conjunction<>
+    : std::true_type
+  {};
+
+  template< class B >
+  struct conjunction< B >
+    : B
+  {};
+
+  template< class B1, class... Bn >
+  struct conjunction< B1, Bn... >
+    : std::conditional_t< static_cast< bool >( B1::value ), conjunction< Bn... >, B1 >
+  {};
+
+
+
+  // disjunction
+  // -----------
+
+  /**
+   * \brief forms the logical disjunction of the type traits B...
+   *
+   * \note This functionality is part of the C++17 standard.
+   *
+   * \ingroup CxxUtilities
+   **/
+  template< class... B >
+  struct disjunction;
+
+  template<>
+  struct disjunction<>
+    : std::false_type
+  {};
+
+  template< class B >
+  struct disjunction< B >
+    : B
+  {};
+
+  template< class B1, class... Bn >
+  struct disjunction< B1, Bn... >
+    : std::conditional_t< static_cast< bool >( B1::value ), B1, disjunction< Bn... > >
+  {};
 
 } // namespace Std
 

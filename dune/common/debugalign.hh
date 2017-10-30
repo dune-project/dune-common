@@ -27,7 +27,7 @@ namespace Dune {
   //! access the handler called by `violatedAlignment()`
   /**
    * This may be used to obtain the handler for the purpose of calling, or for
-   * saving it somwhere to restore it later.  It may also be used to set the
+   * saving it somewhere to restore it later.  It may also be used to set the
    * handler simply by assigning a new handler.  Setting the handler races
    * with other accesses.
    */

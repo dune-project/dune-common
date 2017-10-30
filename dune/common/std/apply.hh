@@ -3,9 +3,9 @@
 #ifndef DUNE_COMMON_STD_APPLY_HH
 #define DUNE_COMMON_STD_APPLY_HH
 
-#if __cpp_lib_apply
+#if DUNE_HAVE_CXX_APPLY
   #include <tuple>
-#elif __cpp_lib_experimental_apply
+#elif DUNE_HAVE_CXX_EXPERIMENTAL_APPLY
   #include <experimental/tuple>
 #else
   #include <cstddef>
@@ -21,11 +21,11 @@ namespace Dune
   namespace Std
   {
 
-#if __cpp_lib_apply
+#if DUNE_HAVE_CXX_APPLY
 
     using std::apply;
 
-#elif __cpp_lib_experimental_apply
+#elif DUNE_HAVE_CXX_EXPERIMENTAL_APPLY
 
     using std::experimental::apply;
 

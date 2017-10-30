@@ -112,6 +112,9 @@ dune_add_test(SOURCES fmatrixtest.cc
               LINK_LIBRARIES dunecommon)
 add_dune_vc_flags(fmatrixtest)
 
+dune_add_test(SOURCES functiontest.cc
+              LINK_LIBRARIES dunecommon)
+
 dune_add_test(SOURCES fvectortest.cc
               LINK_LIBRARIES dunecommon)
 
@@ -255,6 +258,12 @@ dune_add_test(SOURCES utilitytest.cc)
 dune_add_test(SOURCES eigenvaluestest.cc
               LINK_LIBRARIES dunecommon
               CMAKE_GUARD LAPACK_FOUND)
+
+dune_add_test(SOURCES optionaltest.cc
+              LINK_LIBRARIES dunecommon)
+
+dune_add_test(SOURCES versiontest.cc
+              LINK_LIBRARIES dunecommon)
 
 install(
   FILES

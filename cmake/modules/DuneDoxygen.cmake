@@ -25,6 +25,10 @@
 #
 
 find_package(Doxygen)
+set_package_properties("Doxygen" PROPERTIES
+  DESCRIPTION "Class documentation generator"
+  URL "www.doxygen.org"
+  PURPOSE "To generate the class documentation from C++ sources")
 include(CMakeParseArguments)
 
 # Set DOT_TRUE for the Doxyfile generation.
@@ -89,7 +93,7 @@ macro(add_doxygen_target)
     # custom command that executes doxygen
     add_custom_command(OUTPUT ${DOXYGEN_OUTPUT}
       COMMAND ${CMAKE_COMMAND} -D DOXYGEN_EXECUTABLE=${DOXYGEN_EXECUTABLE} -P ${scriptdir}/RunDoxygen.cmake
-      COMMENT "Running doxygen documentation. This may take a while"
+      COMMENT "Building doxygen documentation. This may take a while"
       DEPENDS Doxyfile.in ${DOXYGEN_DEPENDS})
     # Create a target for building the doxygen documentation of a module,
     # that is run during make doc

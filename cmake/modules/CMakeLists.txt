@@ -7,7 +7,6 @@ install(FILES
   AddUMFPackFlags.cmake
   AddVcFlags.cmake
   CheckCXXFeatures.cmake
-  CheckForPthreads.c
   CMakeBuiltinFunctionsDocumentation.cmake
   DuneCommonMacros.cmake
   DuneCxaDemangle.cmake
@@ -38,7 +37,6 @@ install(FILES
   FindSphinx.cmake
   FindSuiteSparse.cmake
   FindTBB.cmake
-  FindThreadsCMake31.cmake
   FindUMFPack.cmake
   Headercheck.cmake
   LanguageSupport.cmake

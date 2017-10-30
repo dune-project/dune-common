@@ -63,9 +63,15 @@
 #
 
 find_package(LATEX)
-find_program(IMAGEMAGICK_CONVERT convert
-  DOC "The convert program that comes with ImageMagick (available at http://www.imagemagick.org)."
-  )
+set_package_properties("LATEX" PROPERTIES
+  DESCRIPTION "Type setting system"
+  PURPOSE "To generate the documentation")
+find_program(IMAGEMAGICK_CONVERT convert)
+set(HAVE_IMAGEMAGICK_CONVERT IMAGEMAGICK_CONVERT)
+set_package_properties("IMAGEMAGICK_CONVERT" PROPERTIES
+  DESCRIPTION "convert program that comes with ImageMagick"
+  URL "www.imagemagick.org"
+  PURPOSE "To generate the documentation with LaTeX")
 set(LATEX_USABLE TRUE)
 
 # UseLATEX.cmake does only work in out-of-source builds
@@ -92,6 +98,9 @@ if(NOT IMAGEMAGICK_CONVERT)
 endif()
 if(LATEX_USABLE)
   include(UseLATEX)
+  set_package_properties("UnixCommands" PROPERTIES
+    DESCRIPTION "Some common Unix commands"
+    PURPOSE "To generate the documentation with LaTeX")
 endif()
 
 add_custom_target(doc)

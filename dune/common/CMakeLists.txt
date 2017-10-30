@@ -114,6 +114,7 @@ install(FILES
         typetraits.hh
         typeutilities.hh
         unused.hh
+        vc.hh
         version.hh
         visibility.hh
 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common)

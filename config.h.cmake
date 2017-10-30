@@ -29,11 +29,35 @@
 /* does the compiler support C++17's class template argument deduction? */
 #cmakedefine DUNE_HAVE_CXX_CLASS_TEMPLATE_ARGUMENT_DEDUCTION 1
 
+/* does the compiler support C++17's optional? */
+#cmakedefine DUNE_HAVE_CXX_OPTIONAL 1
+
 /* does the compiler support conditionally throwing exceptions in constexpr context? */
 #cmakedefine DUNE_SUPPORTS_CXX_THROW_IN_CONSTEXPR 1
 
 /* does the standard library provide <experimental/type_traits> ? */
 #cmakedefine DUNE_HAVE_HEADER_EXPERIMENTAL_TYPE_TRAITS 1
+
+/* does the standard library provide make_unique() ? */
+#cmakedefine DUNE_HAVE_CXX_MAKE_UNIQUE 1
+
+/* does the standard library provide bool_constant ? */
+#cmakedefine DUNE_HAVE_CXX_BOOL_CONSTANT 1
+
+/* does the standard library provide experimental::bool_constant ? */
+#cmakedefine DUNE_HAVE_CXX_EXPERIMENTAL_BOOL_CONSTANT 1
+
+/* does the standard library provide apply() ? */
+#cmakedefine DUNE_HAVE_CXX_APPLY 1
+
+/* does the standard library provide experimental::apply() ? */
+#cmakedefine DUNE_HAVE_CXX_EXPERIMENTAL_APPLY 1
+
+/* does the standard library provide experimental::make_array() ? */
+#cmakedefine DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY 1
+
+/* does the standard library provide experimental::is_detected ? */
+#cmakedefine DUNE_HAVE_CXX_EXPERIMENTAL_IS_DETECTED 1
 
 /* Define if you have a BLAS library. */
 #cmakedefine HAVE_BLAS 1
