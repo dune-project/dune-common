@@ -43,7 +43,7 @@ namespace Dune {
       blockBitField(blockBitField_),
       block_number(block_number_)
     {
-      DUNE_ASSERT_BOUNDS(blockBitField_.size() > block_number_);
+      DUNE_ASSERT_BOUNDS(blockBitField_.size() > static_cast<size_t>(block_number_));
     }
 
     //! hide assignment operator
