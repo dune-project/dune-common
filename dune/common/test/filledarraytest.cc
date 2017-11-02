@@ -26,10 +26,14 @@ int main() {
   }
 
 #ifdef __cpp_lib_array_constexpr
-  // make sure the result is constexpr when array is constexpr
+  std::cout << "The result of Dune::filledArray() is constexpr" << std::endl;
   constexpr auto test2 = Dune::filledArray<2>(2);
   (void)test2;
-#endif // __cpp_lib_array_constexpr
+#else // !__cpp_lib_array_constexpr
+  std::cout << "Not checking whether Dune::filledArray() is constexpr\n"
+            << "since the library does not declare std::array as constexpr\n"
+            << "(__cpp_lib_array_constexpr is not defined)." << std::endl;
+#endif // !__cpp_lib_array_constexpr
 
   return status;
 }

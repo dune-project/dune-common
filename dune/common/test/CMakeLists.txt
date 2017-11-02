@@ -3,6 +3,8 @@ dune_add_test(SOURCES arithmetictestsuitetest.cc
 
 dune_add_test(SOURCES arraylisttest.cc)
 
+dune_add_test(SOURCES arraydeprecationtest.cc)
+
 dune_add_test(SOURCES arraytest.cc)
 
 dune_add_test(SOURCES assertandreturntest.cc
