@@ -31,6 +31,11 @@
 #include <dune/common/conditional.hh>
 #include <dune/common/debugalign.hh>
 #include <dune/common/rangeutilities.hh>
+#if HAVE_VC
+// include Vc part of new simd interface to provide compatibility for
+// functionality that has been switched over.
+#include <dune/common/simd/vc.hh>
+#endif
 #include <dune/common/vc.hh>
 
 namespace Dune
