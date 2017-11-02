@@ -12,7 +12,6 @@
  * complete SIMD abstraction layer.
  */
 
-#include <complex>
 #include <type_traits>
 
 /** @defgroup SIMDStandard SIMD Abstraction Implementation for standard types
@@ -54,12 +53,17 @@ namespace Dune {
      * You need to make sure that this happens only once.  So if there is a
      * Dune header that should be included anyway to enable support for your
      * type, that header is a good place to add the specialization.
+     *
+     * \note If you plan to use `IsStandard` for your own devices (you
+     *       probably should not), be aware that the specialization for
+     *       `std::complex` is in `<dune/common/simd/standard.hh>` so that
+     *       `<dune/common/simd/isstandard.hh>` does not need to include
+     *       `<complex>`.  This is because many headers will need to include
+     *       `<dune/common/simd/isstandard.hh>`, and thus we try to pull in as
+     *       little as we can get away with.
      */
     template<class T, class SFINAE = void>
     struct IsStandard : std::is_arithmetic<T> {};
-
-    template<class T>
-    struct IsStandard<std::complex<T> > : IsStandard<T> {};
 
     //! group SIMDStandard
   } // namespace Simd

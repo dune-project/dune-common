@@ -15,6 +15,7 @@
  * turn includes this header.
  */
 
+#include <complex>
 #include <cstddef>
 #include <type_traits>
 #include <utility>
@@ -49,6 +50,16 @@
 
 namespace Dune {
   namespace Simd {
+
+    //! Declare std::complex a standard type
+    /**
+     * \note This is done in `<dune/common/simd/standard.hh>` rather than
+     *       `<dune/common/simd/isstandard.hh>` to in order not to have to
+     *       include `<complex>` from the latter.
+     */
+    template<class T>
+    struct IsStandard<std::complex<T> > : IsStandard<T> {};
+
     namespace Overloads {
 
       /** @name Specialized classes and overloaded functions
