@@ -36,7 +36,8 @@ namespace Dune
   {
     Array arr{};
     // this is constexpr in c++17, `r.fill(t)` is not
-    for(auto &el : arr) el = t;
+    for(auto &el : arr)
+      el = t;
     return arr;
   }
 
