@@ -9,6 +9,7 @@
 // the warnings are indeed displayed.
 #define NO_DEPRECATION_WARNINGS
 
+#include <array>
 #include <type_traits>
 
 #ifdef NO_DEPRECATION_WARNINGS
@@ -24,9 +25,9 @@ int main()
   Dune::array<int, 2> test1;
   (void)test1;
 
-  auto test2 = Dune::make_array(1, 0u, 2.0);
-  static_assert(std::is_same<decltype(test2)::value_type, double>::value,
-                "make_array should use the common type of it's arguments");
+  auto test2 = Dune::make_array(1, 2, 3);
+  static_assert(std::is_same<decltype(test2), std::array<int, 3> >::value,
+                "Unexpected result type for Dune::make_array()");
 
 #ifdef NO_DEPRECATION_WARNINGS
   DUNE_NO_DEPRECATED_BEGIN;
