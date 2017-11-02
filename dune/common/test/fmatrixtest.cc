@@ -19,6 +19,7 @@
 #include <dune/common/fmatrix.hh>
 #include <dune/common/rangeutilities.hh>
 #include <dune/common/simd.hh>
+#include <dune/common/unused.hh>
 #include <dune/common/vc.hh>
 
 #include "checkmatrixinterface.hh"
@@ -303,7 +304,7 @@ void test_matrix()
       if (tmp.infinity_norm() > 1e-12)
         DUNE_THROW(FMatrixError, "Return value of Operator*= incorrect!");
     }
-    FM A3 = (A2 *= 3); // A2 == A3 == 6*A
+    FM DUNE_UNUSED A3 = (A2 *= 3); // A2 == A3 == 6*A
     FM A4 = (A2 /= 2); // A2 == A4 == 3*A;
     FM A5 = A;
     A5 *= 3;           // A5       == 3*A
