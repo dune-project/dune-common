@@ -15,6 +15,7 @@
 #include <utility>
 
 #include <dune/common/classname.hh>
+#include <dune/common/simd/isstandard.hh>
 #include <dune/common/typetraits.hh>
 
 namespace Dune {
@@ -409,6 +410,13 @@ namespace Dune {
   bool all_true(const AlignedNumber<bool, align>& val)
   {
     return bool(val);
+  }
+
+  // make sure AlignedNumber is considered standard type for the purpose of
+  // <dune/common/simd/standard.hh>
+  namespace Simd {
+    template<class T, std::size_t align>
+    struct IsStandard<AlignedNumber<T, align> > : std::true_type {};
   }
 
 } // namespace Dune
