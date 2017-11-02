@@ -108,6 +108,8 @@ dune_add_test(SOURCES densevectortest.cc
 
 dune_add_test(SOURCES enumsettest.cc)
 
+dune_add_test(SOURCES filledarraytest.cc)
+
 dune_add_test(SOURCES fmatrixtest.cc
               LINK_LIBRARIES dunecommon)
 add_dune_vc_flags(fmatrixtest)
