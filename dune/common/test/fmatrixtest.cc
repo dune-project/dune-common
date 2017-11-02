@@ -18,7 +18,9 @@
 #include <dune/common/classname.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/simd/simd.hh>
+#if HAVE_VC
 #include <dune/common/simd/vc.hh>
+#endif
 #include <dune/common/unused.hh>
 
 #include "checkmatrixinterface.hh"
