@@ -35,7 +35,7 @@ namespace Dune
   constexpr auto filledArray(const T& t)
   {
     Array arr{};
-    // this is constexpr in c++17, `r.fill(t)` is not
+    // this is constexpr in c++17, `arr.fill(t)` is not
     for(auto &el : arr)
       el = t;
     return arr;
