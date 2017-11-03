@@ -340,11 +340,17 @@ namespace Dune {
   }  //namespace Simd
 }  //namespace Dune
 
-/* @ToDo: implement different behaviour for integral types?*/
+/*
+ *  Overloads the unary cmath-operations. Operations requiring
+ *  or returning more than one argument are not supported.
+ *  Due to inconsistency with the return values, cmath-operations
+ *  on integral types are also not supported-
+ */
 
 #define DUNE_SIMD_LOOP_CMATH_UNARY_OP(expr)    \
-template<class T, std::size_t S>               \
-auto expr(Dune::LoopSIMD<T,S> &v){             \
+template<class T, std::size_t S, typename Sfinae = \
+         typename std::enable_if_t<!std::is_integral<T>::value> >  \
+auto expr(Dune::LoopSIMD<T,S> &v) {  \
   Dune::LoopSIMD<T,S> out;                     \
   for(std::size_t i=0; i<S; i++) {             \
     out[i] = expr(v[i]);                       \
@@ -352,22 +358,11 @@ auto expr(Dune::LoopSIMD<T,S> &v){             \
   return 0;                                    \
 }
 
-/*
-  template<class T, std::size_t S>
-  auto expr(LoopSIMD<T,S> &v,
-            std::enable_if_t<std::is_integral<T>::type>) {
-    LoopSIMD<double,S> out;
-    for(std::size_t i=0; i<S; i++){
-      out[i] = expr(v[i]);
-    }
-    return out;
-  }
-*/
-
-#define DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN(expr, returnType)    \
-template<class T, std::size_t S>                           \
+#define DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN(expr, returnType)  \
+template<class T, std::size_t S, typename Sfinae = \
+         typename std::enable_if_t<!std::is_integral<T>::value> >    \
 auto expr(Dune::LoopSIMD<T,S> &v){                         \
-  Dune::LoopSIMD<returnType,S> out;                              \
+  Dune::LoopSIMD<returnType,S> out;                        \
   for(std::size_t i=0; i<S; i++) {                         \
     out[i] = expr(v[i]);                                   \
   }                                                        \
