@@ -3,6 +3,7 @@
 #ifndef DUNE_DEBUGALIGN_HH
 #define DUNE_DEBUGALIGN_HH
 
+#include <cassert>
 #include <cmath>
 #include <complex>
 #include <cstddef>
@@ -15,7 +16,9 @@
 #include <utility>
 
 #include <dune/common/classname.hh>
-#include <dune/common/simd/isstandard.hh>
+#include <dune/common/indices.hh>
+#include <dune/common/simd/base.hh>
+#include <dune/common/simd/defaults.hh>
 #include <dune/common/typetraits.hh>
 
 namespace Dune {
@@ -113,9 +116,13 @@ namespace Dune {
                                         std::is_convertible<U, T>::value> >
         AlignedNumber(const AlignedNumber<U, uAlign> &o) : value_(U(o)) {}
 
+      // accessors
       template<class U,
                class = std::enable_if_t<std::is_convertible<T, U>::value> >
       explicit operator U() const { return value_; }
+
+      const T &value() const { return value_; }
+      T &value() { return value_; }
 
       // I/O
       template<class charT, class Traits>
@@ -412,12 +419,57 @@ namespace Dune {
     return bool(val);
   }
 
-  // make sure AlignedNumber is considered standard type for the purpose of
-  // <dune/common/simd/standard.hh>
+  // SIMD-like functionality from "simd/interface.hh"
   namespace Simd {
-    template<class T, std::size_t align>
-    struct IsStandard<AlignedNumber<T, align> > : std::true_type {};
-  }
+    namespace Overloads {
+
+      template<class T, std::size_t align>
+      struct ScalarType<AlignedNumber<T, align> > { using type = T; };
+
+      template<class T, std::size_t align>
+      struct IndexType<AlignedNumber<T, align> > {
+        using type = AlignedNumber<std::size_t, align>;
+      };
+
+      template<class T, std::size_t align>
+      struct MaskType<AlignedNumber<T, align> > {
+        using type = AlignedNumber<bool, align>;
+      };
+
+      template<class T, std::size_t align>
+      struct LaneCount<AlignedNumber<T, align> > : index_constant<1> {};
+
+      template<class T, std::size_t align>
+      T& lane(ADLTag<5>, std::size_t l, AlignedNumber<T, align> &v)
+      {
+        assert(l == 0);
+        return v.value();
+      }
+
+      template<class T, std::size_t align>
+      const T& lane(ADLTag<5>, std::size_t l, const AlignedNumber<T, align> &v)
+      {
+        assert(l == 0);
+        return v.value();
+      }
+
+      template<class T, std::size_t align>
+      const AlignedNumber<T, align> &
+      cond(ADLTag<5>, AlignedNumber<bool, align> mask,
+           const AlignedNumber<T, align> &ifTrue,
+           const AlignedNumber<T, align> &ifFalse)
+      {
+        return mask ? ifTrue : ifFalse;
+      }
+
+      template<std::size_t align>
+      bool anyTrue(ADLTag<5>, const AlignedNumber<bool, align> &mask)
+      {
+        return bool(mask);
+      }
+
+    } // namespace Overloads
+  } // namespace Simd
 
 } // namespace Dune
 
