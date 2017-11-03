@@ -385,6 +385,26 @@ namespace Dune {
       return allFalse(Overloads::ADLTag<6>{}, mask);
     }
 
+    //! The maximum value over all lanes
+    /**
+     * Implemented by `Overloads::max()`.
+     */
+    template<class V>
+    Scalar<V> max(const V &v)
+    {
+      return max(Overloads::ADLTag<6>{}, v);
+    }
+
+    //! The minimum value over all lanes
+    /**
+     * Implemented by `Overloads::min()`.
+     */
+    template<class V>
+    Scalar<V> min(const V &v)
+    {
+      return min(Overloads::ADLTag<6>{}, v);
+    }
+
     //! @}
 
     /** @name Syntactic Sugar

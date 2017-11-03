@@ -468,6 +468,38 @@ namespace Dune {
         return Vc::none_of(mask);
       }
 
+      //! implements Simd::maxValue()
+      template<class V>
+      auto max(ADLTag<5, VcImpl::IsVector<V>::value &&
+                         !VcImpl::IsMask<V>::value>,
+               const V &v)
+      {
+        return v.max();
+      }
+
+      //! implements Simd::maxValue()
+      template<class M>
+      bool max(ADLTag<5, VcImpl::IsMask<M>::value>, M mask)
+      {
+        return Vc::any_of(mask);
+      }
+
+      //! implements Simd::minValue()
+      template<class V>
+      auto min(ADLTag<5, VcImpl::IsVector<V>::value &&
+                         !VcImpl::IsMask<V>::value>,
+               const V &v)
+      {
+        return v.min();
+      }
+
+      //! implements Simd::minValue()
+      template<class M>
+      bool min(ADLTag<5, VcImpl::IsMask<M>::value>, M mask)
+      {
+        return !Vc::any_of(!mask);
+      }
+
       //! @} group SIMDVc
 
     } // namespace Overloads
