@@ -26,15 +26,11 @@ namespace Dune
    * \tparam n     Size of the returned array.
    * \tparam T     Value type of the returned array.  This is usually deduced
    *               from `t`.
-   * \tparam Array Helper template parameter to make specifying `constexpr`
-   *               well-defined under all circumstances.  Do not provide an
-   *               argument for this parameter or otherwise rely on it, it may
-   *               vanish without notice.
    */
-  template<std::size_t n, class T, class Array = std::array<T, n> >
-  constexpr auto filledArray(const T& t)
+  template<std::size_t n, class T>
+  constexpr std::array<T, n> filledArray(const T& t)
   {
-    Array arr{};
+    std::array<T, n> arr{};
     // this is constexpr in c++17, `arr.fill(t)` is not
     for(auto &el : arr)
       el = t;
