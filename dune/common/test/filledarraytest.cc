@@ -9,7 +9,7 @@
 #include <iostream>
 #include <type_traits>
 
-#include <dune/common/filled_array.hh>
+#include <dune/common/filledarray.hh>
 
 int main() {
 

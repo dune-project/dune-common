@@ -9,7 +9,7 @@
 #warning This header is deprecated.
 #warning Instead of Dune::array, use std::array from <array>.
 #warning Instead of Dune::make_array(), use Dune::Std::make_array() from <dune/common/std/make_array.hh>.
-#warning Instead of Dune::fill_array(), use Dune::filledArray() from <dune/common/filled_array.hh>.
+#warning Instead of Dune::fill_array(), use Dune::filledArray() from <dune/common/filledarray.hh>.
 
 #endif // DUNE_DISABLE_ARRAY_HH_DEPRECATION_WARNING
 
@@ -42,12 +42,12 @@ namespace Dune
   /**
    * \note This method is Dune-specific and not part of any C++ standard.
    *
-   * \deprecated Use Dune::filledArray() from <dune/common/filled_array.hh>.
+   * \deprecated Use Dune::filledArray() from <dune/common/filledarray.hh>.
    *
    * \ingroup CxxUtilities
    */
   template<typename T, std::size_t n>
-  [[deprecated("Use Dune::filledArray() from <dune/common/filled_array.hh>")]]
+  [[deprecated("Use Dune::filledArray() from <dune/common/filledarray.hh>")]]
   std::array<T,n> fill_array(const T& t)
   {
     std::array<T,n> r;
