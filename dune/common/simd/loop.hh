@@ -316,7 +316,7 @@ namespace Dune {
         for(std::size_t i=0; i<S; i++) {
           out &= mask[i];
         }
-       return out;
+        return out;
       }
 
       template<std::size_t S>
