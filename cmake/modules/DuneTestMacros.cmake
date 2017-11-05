@@ -282,12 +282,16 @@ function(dune_add_test)
   # Add one test for each specified processor number
   foreach(procnum ${ADDTEST_MPI_RANKS})
     if((NOT "${procnum}" GREATER "${DUNE_MAX_TEST_CORES}") AND (NOT ADDTEST_COMPILE_ONLY))
-      if(NOT ${procnum} STREQUAL "1")
-        set(ACTUAL_TESTCOMMAND ${MPIEXEC} ${MPIEXEC_PREFLAGS} ${MPIEXEC_NUMPROC_FLAG} ${procnum} ${ADDTEST_COMMAND} ${MPIEXEC_POSTFLAGS})
-        set(ACTUAL_NAME "${ADDTEST_NAME}-mpi-${procnum}")
+      set(ACTUAL_NAME ${ADDTEST_NAME})
+      if(TARGET "${ADDTEST_COMMAND}")
+        set(ACTUAL_TESTCOMMAND "$<TARGET_FILE:${ADDTEST_COMMAND}>")
       else()
         set(ACTUAL_TESTCOMMAND ${ADDTEST_COMMAND})
-        set(ACTUAL_NAME ${ADDTEST_NAME})
+      endif()
+
+      if(NOT ${procnum} STREQUAL "1")
+        set(ACTUAL_TESTCOMMAND ${MPIEXEC} ${MPIEXEC_PREFLAGS} ${MPIEXEC_NUMPROC_FLAG} ${procnum} ${ACTUAL_TESTCOMMAND} ${MPIEXEC_POSTFLAGS})
+        set(ACTUAL_NAME "${ACTUAL_NAME}-mpi-${procnum}")
       endif()
 
       # Now add the actual test
