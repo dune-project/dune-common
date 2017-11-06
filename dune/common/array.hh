@@ -19,6 +19,7 @@
 
 #include <array>
 
+#include <dune/common/deprecated.hh>
 #include <dune/common/streamoperators.hh>
 #include <dune/common/std/make_array.hh>
 
@@ -31,11 +32,11 @@ namespace Dune
 
   // pull in default implementation
   // deprecation does not work:
-  // [[deprecated("Use std::array from <array>")]]
+  // DUNE_DEPRECATED_MSG("Use std::array from <array>")
   using std::array;
 
   // deprecation does not work:
-  // [[deprecated("Use Dune::Std::make_array from <dune/common/std/make_array.hh>")]]
+  // DUNE_DEPRECATED_MSG("Use Dune::Std::make_array from <dune/common/std/make_array.hh>")
   using Dune::Std::make_array;
 
   //! Create an array and fill it with copies of the provided value.
@@ -47,7 +48,7 @@ namespace Dune
    * \ingroup CxxUtilities
    */
   template<typename T, std::size_t n>
-  [[deprecated("Use Dune::filledArray() from <dune/common/filledarray.hh>")]]
+  DUNE_DEPRECATED_MSG("Use Dune::filledArray() from <dune/common/filledarray.hh>")
   std::array<T,n> fill_array(const T& t)
   {
     std::array<T,n> r;
