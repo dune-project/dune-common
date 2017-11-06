@@ -7,7 +7,7 @@
 
 // This should be defined for regular unit test use; undefine to check that
 // the warnings are indeed displayed.
-#define NO_DEPRECATION_WARNINGS
+// #define NO_DEPRECATION_WARNINGS
 
 #include <array>
 #include <type_traits>
