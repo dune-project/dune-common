@@ -276,27 +276,30 @@ function(dune_add_test)
 
   # Process the EXPECT_COMPILE_FAIL option
   if(ADDTEST_EXPECT_COMPILE_FAIL)
-    set(ADDTEST_COMMAND ${CMAKE_COMMAND} --build . --target ${ADDTEST_TARGET} --config $<CONFIGURATION>)
+    set(ADDTEST_COMMAND "${CMAKE_COMMAND}")
+    set(ADDTEST_CMD_ARGS --build . --target ${ADDTEST_TARGET} --config "$<CONFIGURATION>")
   endif()
 
   # Add one test for each specified processor number
   foreach(procnum ${ADDTEST_MPI_RANKS})
     if((NOT "${procnum}" GREATER "${DUNE_MAX_TEST_CORES}") AND (NOT ADDTEST_COMPILE_ONLY))
       set(ACTUAL_NAME ${ADDTEST_NAME})
+      set(ACTUAL_CMD_ARGS ${ADDTEST_CMD_ARGS})
       if(TARGET "${ADDTEST_COMMAND}")
         set(ACTUAL_TESTCOMMAND "$<TARGET_FILE:${ADDTEST_COMMAND}>")
       else()
-        set(ACTUAL_TESTCOMMAND ${ADDTEST_COMMAND})
+        set(ACTUAL_TESTCOMMAND "${ADDTEST_COMMAND}")
       endif()
 
       if(NOT ${procnum} STREQUAL "1")
-        set(ACTUAL_TESTCOMMAND ${MPIEXEC} ${MPIEXEC_PREFLAGS} ${MPIEXEC_NUMPROC_FLAG} ${procnum} ${ACTUAL_TESTCOMMAND} ${MPIEXEC_POSTFLAGS})
         set(ACTUAL_NAME "${ACTUAL_NAME}-mpi-${procnum}")
+        set(ACTUAL_CMD_ARGS ${MPIEXEC_PREFLAGS} ${MPIEXEC_NUMPROC_FLAG} ${procnum} "${ACTUAL_TESTCOMMAND}" ${MPIEXEC_POSTFLAGS} ${ACTUAL_CMD_ARGS})
+        set(ACTUAL_TESTCOMMAND "${MPIEXEC}")
       endif()
 
       # Now add the actual test
       _add_test(NAME ${ACTUAL_NAME}
-                COMMAND ${ACTUAL_TESTCOMMAND} ${ADDTEST_CMD_ARGS}
+                COMMAND "${ACTUAL_TESTCOMMAND}" ${ACTUAL_CMD_ARGS}
                )
 
       # Define the number of processors (ctest will coordinate this with the -j option)
