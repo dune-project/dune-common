@@ -38,6 +38,7 @@ install(FILES
   FindSuiteSparse.cmake
   FindTBB.cmake
   FindUMFPack.cmake
+  GeneratedInstances.cmake
   Headercheck.cmake
   LanguageSupport.cmake
   OverloadCompilerFlags.cmake
