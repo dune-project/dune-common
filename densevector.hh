@@ -22,33 +22,107 @@ namespace Dune
     namespace detail
     {
 
+      // registerScalarCopyingDenseVectorMethods
+      // ---------------------------------------
+
+      template< class T, class... options >
+      inline static std::enable_if_t< std::is_copy_constructible< T >::value && (T::dimension == 1) >
+      registerScalarCopyingDenseVectorMethods ( pybind11::class_< T, options... > cls, PriorityTag< 2 > )
+      {
+        using ValueType = typename T::value_type;
+
+        cls.def( "__add__", [] ( const T &self, int a ) { T *copy = new T( self ); (*copy)[ 0 ] += ValueType( a ); return copy; } );
+        cls.def( "__add__", [] ( const T &self, const ValueType &a ) { T *copy = new T( self ); (*copy)[ 0 ] += a; return copy; } );
+        cls.def( "__sub__", [] ( const T &self, int a ) { T *copy = new T( self ); (*copy)[ 0 ] -= ValueType( a ); return copy; } );
+        cls.def( "__sub__", [] ( const T &self, const ValueType &a ) { T *copy = new T( self ); (*copy)[ 0 ] -= a; return copy; } );
+
+        cls.def( "__radd__", [] ( const T &self, int a ) { T *copy = new T( self ); (*copy)[ 0 ] = ValueType( a ) + (*copy)[ 0 ]; return copy; } );
+        cls.def( "__radd__", [] ( const T &self, const ValueType &a ) { T *copy = new T( self ); (*copy)[ 0 ] = a + (*copy)[ 0 ]; return copy; } );
+        cls.def( "__rsub__", [] ( const T &self, int a ) { T *copy = new T( self ); (*copy)[ 0 ] = ValueType( a ) - (*copy)[ 0 ]; return copy; } );
+        cls.def( "__rsub__", [] ( const T &self, const ValueType &a ) { T *copy = new T( self ); (*copy)[ 0 ] = a - (*copy)[ 0 ]; return copy; } );
+      }
+
       template< class T, class... options >
       inline static std::enable_if_t< std::is_copy_constructible< T >::value >
-      registerCopyingDenseVectorMethods ( pybind11::class_< T, options... > cls )
+      registerScalarCopyingDenseVectorMethods ( pybind11::class_< T, options... > cls, PriorityTag< 1 > )
+      {
+        using ValueType = typename T::value_type;
+
+        cls.def( "__add__", [] ( pybind11::object self, int a ) {
+            if( a != 0 )
+              throw pybind11::value_error( "Cannot add " + std::to_string( a ) + " to multidimensional dense vector." );
+            return self;
+          } );
+        cls.def( "__sub__", [] ( pybind11::object self, int a ) {
+            if( a != 0 )
+              throw pybind11::value_error( "Cannot subtract " + std::to_string( a ) + " from multidimensional dense vector." );
+            return self;
+          } );
+
+        cls.def( "__radd__", [] ( pybind11::object self, int a ) {
+            if( a != 0 )
+              throw pybind11::value_error( "Cannot add multidimensional dense vector to " + std::to_string( a ) + "." );
+            return self;
+          } );
+        cls.def( "__rsub__", [] ( const T &self, int a ) {
+            if( a != 0 )
+              throw pybind11::value_error( "Cannot subtract multidimensional dense vector from " + std::to_string( a ) + "." );
+            T *copy = new T( self ); *copy *= ValueType( -1 ); return copy;
+          } );
+      }
+
+      template< class T, class... options >
+      inline static void registerScalarCopyingDenseVectorMethods ( pybind11::class_< T, options... > cls, PriorityTag< 0 > )
+      {}
+
+      template< class T, class... options >
+      inline static void registerScalarCopyingDenseVectorMethods ( pybind11::class_< T, options... > cls )
+      {
+        registerScalarCopyingDenseVectorMethods ( cls, PriorityTag< 42 >() );
+      }
+
+
+
+
+      // registerCopyingDenseVectorMethods
+      // ---------------------------------
+
+      template< class T, class... options >
+      inline static std::enable_if_t< std::is_copy_constructible< T >::value >
+      registerCopyingDenseVectorMethods ( pybind11::class_< T, options... > cls, PriorityTag< 1 > )
       {
         using ValueType = typename T::value_type;
 
         using pybind11::operator""_a;
 
+        cls.def( "__pos__", [] ( pybind11::object self ) { return self; } );
+        cls.def( "__neg__", [] ( T &self ) { T *copy = new T( self ); *copy *= ValueType( -1 ); return copy; } );
+
         cls.def( pybind11::self + pybind11::self );
         cls.def( pybind11::self - pybind11::self );
 
-        cls.def( "__mul__", [] ( const T &self, ValueType x ) { T copy( self ); copy *= x; return copy; }, "x"_a );
-        cls.def( "__div__", [] ( const T &self, ValueType x ) { T copy( self ); copy /= x; return copy; }, "x"_a );
-
         cls.def( "__add__", [] ( T &self, pybind11::list x ) { return self + x.cast< T >(); }, "x"_a );
         cls.def( "__sub__", [] ( T &self, pybind11::list x ) { return self - x.cast< T >(); }, "x"_a );
-        cls.def( "__mul__", [] ( T &self, pybind11::list x ) { return self * x.cast< T >(); }, "x"_a );
 
         cls.def( "__radd__", [] ( T &self, pybind11::list x ) { return x.cast< T >() + self; }, "x"_a );
         cls.def( "__rsub__", [] ( T &self, pybind11::list x ) { return x.cast< T >() - self; }, "x"_a );
-        cls.def( "__rmul__", [] ( T &self, pybind11::list x ) { return x.cast< T >() * self; }, "x"_a );
+
+        cls.def( "__mul__", [] ( const T &self, ValueType x ) { T *copy = new T( self ); *copy *= x; return copy; }, "x"_a );
+        cls.def( "__div__", [] ( const T &self, ValueType x ) { T *copy = new T( self ); *copy /= x; return copy; }, "x"_a );
+        cls.def( "__truediv__", [] ( const T &self, ValueType x ) { T *copy = new T( self ); *copy /= x; return copy; }, "x"_a );
+
+        cls.def( "__rmul__", [] ( const T &self, ValueType x ) { T *copy = new T( self ); *copy *= x; return copy; }, "x"_a );
       }
 
       template< class T, class... options >
-      inline static std::enable_if_t< !std::is_copy_constructible< T >::value >
-      registerCopyingDenseVectorMethods ( pybind11::class_< T, options... > cls )
+      inline static void registerCopyingDenseVectorMethods ( pybind11::class_< T, options... > cls, PriorityTag< 0 > )
       {}
+
+      template< class T, class... options >
+      inline static void registerCopyingDenseVectorMethods ( pybind11::class_< T, options... > cls )
+      {
+        registerCopyingDenseVectorMethods ( cls, PriorityTag< 42 >() );
+      }
 
     } // namespace detail
 
@@ -95,6 +169,7 @@ namespace Dune
 
       detail::registerOneTensorInterface( cls );
       detail::registerCopyingDenseVectorMethods( cls );
+      detail::registerScalarCopyingDenseVectorMethods( cls );
 
       pybind11::implicitly_convertible< pybind11::list, T >();
     }

@@ -34,6 +34,8 @@ namespace Dune
       return "(" + join( ", ", [] ( auto &&x ) { return to_string( x ); }, x.begin(), x.end() ) + ")";
     }
 
+
+
     // registerFieldVector
     // -------------------
 
@@ -65,9 +67,9 @@ namespace Dune
       cls.def( pybind11::init( [] ( pybind11::buffer x ) {
           pybind11::buffer_info info = x.request();
           if( info.format != pybind11::format_descriptor< K >::format() )
-            throw std::runtime_error( "Incompatible buffer format." );
+            throw pybind11::value_error( "Incompatible buffer format." );
           if( info.ndim != 1 )
-            throw std::runtime_error( "Only on-dimensional buffers can be converted into FieldVector." );
+            throw pybind11::value_error( "Only one-dimensional buffers can be converted into FieldVector." );
           const ssize_t stride = info.strides[ 0 ] / sizeof( K );
           const ssize_t sz = std::min( static_cast< ssize_t >( size ), info.shape[ 0 ] );
 
