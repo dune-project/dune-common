@@ -25,12 +25,20 @@ def load(functionName, includes, *args):
         try:
             t, i = arg._typeName + " &", arg._includes
         except AttributeError:
-            if isinstance(arg, int):
+            if isinstance(arg, int) or isinstance(arg,numpy.int_):
                 t, i = "int", []
-            elif isinstance(arg, float):
+            elif isinstance(arg, float) or isinstance(arg,numpy.float_):
                 t, i = "double", []
             elif isinstance(arg, numpy.ndarray):
-                t, i = "pybind11::array", ["dune/python/pybind11/numpy.h"]
+                dtype = None
+                if arg.dtype.type == numpy.int_:
+                    dtype="int"
+                elif arg.dtype.type == numpy.float_:
+                    dtype="double"
+                if dtype is None:
+                    t, i = "pybind11::array", ["dune/python/pybind11/numpy.h"]
+                else:
+                    t, i = "pybind11::array_t<"+dtype+">", ["dune/python/pybind11/numpy.h"]
             elif callable(arg):
                 t, i = "pybind11::function", ["dune/python/pybind11/pybind11.h"]
             else:
