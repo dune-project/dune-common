@@ -1,11 +1,14 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 #include "config.h"
+
 #include <iostream>
-#include <dune/common/timer.hh>
+
 #include <dune/common/enumset.hh>
-#include <dune/common/parallel/remoteindices.hh>
+#include <dune/common/parallel/indexset.hh>
+#include <dune/common/parallel/plocalindex.hh>
 #include <dune/common/parallel/selection.hh>
+#include <dune/common/timer.hh>
 
 enum GridFlags {
   owner, overlap, border
