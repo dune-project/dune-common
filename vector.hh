@@ -109,6 +109,7 @@ namespace Dune
         -> std::enable_if_t< IsOneTensor< T >::value >
       {
         cls.def( "__mul__", [] ( const T &self, const T &other ) { return self * other; } );
+        cls.def( "__rmul__", [] ( const T &self, const T &other ) { return self * other; } );
 
         cls.def_property_readonly( "one_norm", [] ( const T &self ) { return self.one_norm(); } );
         cls.def_property_readonly( "one_norm_real", [] ( const T &self ) { return self.one_norm_real(); } );
