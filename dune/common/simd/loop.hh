@@ -7,6 +7,8 @@
 #include <dune/common/simd/simd.hh>
 #include <cmath>
 
+#include <stdlib.h>
+
 namespace Dune {
 
   /**
@@ -350,7 +352,7 @@ namespace Dune {
 #define DUNE_SIMD_LOOP_CMATH_UNARY_OP(expr)                          \
 template<class T, std::size_t S, typename Sfinae =                   \
          typename std::enable_if_t<!std::is_integral<T>::value> >    \
-auto expr(Dune::LoopSIMD<T,S> &v) {                                  \
+auto expr(const Dune::LoopSIMD<T,S> &v) {                            \
   Dune::LoopSIMD<T,S> out;                                           \
   for(std::size_t i=0; i<S; i++) {                                   \
     out[i] = expr(v[i]);                                             \
@@ -361,7 +363,7 @@ auto expr(Dune::LoopSIMD<T,S> &v) {                                  \
 #define DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN(expr, returnType)  \
 template<class T, std::size_t S, typename Sfinae =                   \
          typename std::enable_if_t<!std::is_integral<T>::value> >    \
-auto expr(Dune::LoopSIMD<T,S> &v){                                   \
+auto expr(const Dune::LoopSIMD<T,S> &v){                             \
   Dune::LoopSIMD<returnType,S> out;                                  \
   for(std::size_t i=0; i<S; i++) {                                   \
     out[i] = expr(v[i]);                                             \
@@ -413,7 +415,8 @@ auto expr(Dune::LoopSIMD<T,S> &v){                                   \
   DUNE_SIMD_LOOP_CMATH_UNARY_OP(nearbyint);
 
   DUNE_SIMD_LOOP_CMATH_UNARY_OP(fabs);
-  DUNE_SIMD_LOOP_CMATH_UNARY_OP(abs);
+  /* the abs function needs special treatment*/
+//  DUNE_SIMD_LOOP_CMATH_UNARY_OP(abs);
 
 #undef DUNE_SIMD_LOOP_CMATH_UNARY_OP
 #undef DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN
@@ -432,5 +435,44 @@ auto expr(Dune::LoopSIMD<T,S> &v){                                   \
  *  nextafter, nexttoward
  *  fdim, fmax, fmin
  */
+
+/*
+ * Overloads specific functions usually provided by the std library
+ * More overloads will be provided should the need arise.
+ *
+ * @ToDo: check for fabs
+ * @ToDo: check if sfinae is needed for specific functions (I think it is, at least for abs)
+ * @ToDo: check why using the namespace is necessary - overloading std::abs without the namespace
+ *        would be better
+ */
+
+namespace std {
+  template<class T, std::size_t S>
+  auto abs(const Dune::LoopSIMD<T,S> &v) {
+    Dune::LoopSIMD<T,S> out;
+    for(std::size_t i=0; i<S; i++) {
+      out[i] = std::abs(v[i]);
+    }
+    return out;
+  }
+
+#define DUNE_SIMD_LOOP_STD_BINARY_OP(expr)                                \
+  template<class T, std::size_t S>                                        \
+  auto expr(const Dune::LoopSIMD<T,S> &v, const Dune::LoopSIMD<T,S> &w) { \
+    Dune::LoopSIMD<T,S> out;                                              \
+    for(std::size_t i=0; i<S; i++) {                                      \
+      out[i] = expr(v[i],w[i]);                                           \
+    }                                                                     \
+    return out;                                                           \
+  }
+
+//  DUNE_SIMD_STD_UNARY_OP(abs);
+  DUNE_SIMD_LOOP_STD_BINARY_OP(max);
+  DUNE_SIMD_LOOP_STD_BINARY_OP(min);
+
+//#undef DUNE_SIMD_LOOP_STD_UNARY_OP
+#undef DUNE_SIMD_LOOP_STD_BINARY_OP
+
+} //namespace std
 
 #endif
