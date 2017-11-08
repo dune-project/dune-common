@@ -347,26 +347,26 @@ namespace Dune {
  *  on integral types are also not supported-
  */
 
-#define DUNE_SIMD_LOOP_CMATH_UNARY_OP(expr)    \
-template<class T, std::size_t S, typename Sfinae = \
-         typename std::enable_if_t<!std::is_integral<T>::value> >  \
-auto expr(Dune::LoopSIMD<T,S> &v) {  \
-  Dune::LoopSIMD<T,S> out;                     \
-  for(std::size_t i=0; i<S; i++) {             \
-    out[i] = expr(v[i]);                       \
-  }                                            \
-  return 0;                                    \
+#define DUNE_SIMD_LOOP_CMATH_UNARY_OP(expr)                          \
+template<class T, std::size_t S, typename Sfinae =                   \
+         typename std::enable_if_t<!std::is_integral<T>::value> >    \
+auto expr(Dune::LoopSIMD<T,S> &v) {                                  \
+  Dune::LoopSIMD<T,S> out;                                           \
+  for(std::size_t i=0; i<S; i++) {                                   \
+    out[i] = expr(v[i]);                                             \
+  }                                                                  \
+  return out;                                                        \
 }
 
 #define DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN(expr, returnType)  \
-template<class T, std::size_t S, typename Sfinae = \
+template<class T, std::size_t S, typename Sfinae =                   \
          typename std::enable_if_t<!std::is_integral<T>::value> >    \
-auto expr(Dune::LoopSIMD<T,S> &v){                         \
-  Dune::LoopSIMD<returnType,S> out;                        \
-  for(std::size_t i=0; i<S; i++) {                         \
-    out[i] = expr(v[i]);                                   \
-  }                                                        \
-  return 0;                                                \
+auto expr(Dune::LoopSIMD<T,S> &v){                                   \
+  Dune::LoopSIMD<returnType,S> out;                                  \
+  for(std::size_t i=0; i<S; i++) {                                   \
+    out[i] = expr(v[i]);                                             \
+  }                                                                  \
+  return out;                                                        \
 }
 
 
