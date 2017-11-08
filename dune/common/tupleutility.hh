@@ -590,6 +590,63 @@ namespace Dune {
     typedef typename ReduceTuple<JoinTuples, Tuple>::type type;
   };
 
+
+
+  namespace Impl
+  {
+
+    // AddIfNotContained
+    // -----------------
+
+    template<class, class>
+    struct AddIfNotContained;
+
+    template<class T, class... Ts>
+    struct AddIfNotContained<T, std::tuple<Ts...>>
+    {
+      typedef std::conditional_t<
+          Std::disjunction<std::is_same<Ts, T>...>::value,
+          std::tuple<Ts...>,
+          std::tuple<Ts..., T>
+        > type;
+    };
+
+
+    // UniqueTupleImpl
+    // ---------------
+
+    template<class, class = std::tuple<>>
+    struct UniqueTupleImpl;
+
+    template<class Tuple>
+    struct UniqueTupleImpl<std::tuple<>, Tuple>
+    {
+      typedef Tuple type;
+    };
+
+    template<class T, class... Ts, class Tuple>
+    struct UniqueTupleImpl<std::tuple<T, Ts...>, Tuple> :
+      public UniqueTupleImpl<std::tuple<Ts...>, typename AddIfNotContained<T, Tuple>::type >
+    {};
+
+  } // namespace Impl
+
+  /**
+   * @brief Generate a std::tuple of unique types from a given std::tuple
+   *
+   * \tparam Tuple The std::tuple type to unique.
+   *
+   *
+   * This class uniques the types in a std::tuple. It will take the first occurrence
+   * of each type and add it to the output, later occurrences of the exact same type
+   * are discarded. The relative ordering of the unique types is preserved.
+   */
+  template<class Tuple>
+  using UniqueTuple = Impl::UniqueTupleImpl<Tuple>;
+
+  template<class Tuple>
+  using UniqueTuple_t = typename UniqueTuple<Tuple>::type;
+
   /** }@ */
 }
 

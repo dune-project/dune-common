@@ -157,6 +157,18 @@ struct Reciprocal
   }
 };
 
+
+
+//////////////////////////////////////////////////////////////////////
+//
+// check JoinTuples
+typedef std::tuple<int, double, char, int&, double, char*, const int, double, char, int&&> MyTuple3;
+typedef std::tuple<int, double, char, int&, char*, const int, int&&> MyUniqueTuple3;
+static_assert((std::is_same<Dune::UniqueTuple_t<MyTuple3>, MyUniqueTuple3>::value),
+              "UniqueTuple failed!");
+
+
+
 int main()
 {
   const std::tuple<int, double> t1(1, 2.);
