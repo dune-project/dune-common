@@ -25,14 +25,22 @@ def load(functionName, includes, *args):
         try:
             t, i = arg._typeName + " &", arg._includes
         except AttributeError:
-            if isinstance(arg, int) or isinstance(arg,numpy.int_):
+            if isinstance(arg, int) or isinstance(arg,numpy.intc):
                 t, i = "int", []
+            if isinstance(arg,numpy.int_):
+                t, i = "long", []
+            if isinstance(arg,numpy.intp):
+                t, i = "std::size_t", []
             elif isinstance(arg, float) or isinstance(arg,numpy.float_):
                 t, i = "double", []
             elif isinstance(arg, numpy.ndarray):
                 dtype = None
-                if arg.dtype.type == numpy.int_:
+                if arg.dtype.type == numpy.intc:
                     dtype="int"
+                elif arg.dtype.type == numpy.int_:
+                    dtype="long"
+                elif arg.dtype.type == numpy.intp:
+                    dtype="std::size_t"
                 elif arg.dtype.type == numpy.float_:
                     dtype="double"
                 if dtype is None:
