@@ -27,9 +27,9 @@ def load(functionName, includes, *args):
         except AttributeError:
             if isinstance(arg, int) or isinstance(arg,numpy.intc):
                 t, i = "int", []
-            if isinstance(arg,numpy.int_):
+            elif isinstance(arg,numpy.int_):
                 t, i = "long", []
-            if isinstance(arg,numpy.intp):
+            elif isinstance(arg,numpy.intp):
                 t, i = "std::size_t", []
             elif isinstance(arg, float) or isinstance(arg,numpy.float_):
                 t, i = "double", []
