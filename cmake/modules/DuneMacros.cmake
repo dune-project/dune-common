@@ -668,9 +668,8 @@ macro(dune_project)
   # This should allow DUNE modules to use CMake's object libraries.
   # This can be overwritten for targets by setting the target property
   # POSITION_INDEPENDENT_CODE to false/OFF
-  if(BUILD_SHARED_LIBS)
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-  endif()
+  include(CMakeDependentOption)
+  cmake_dependent_option(CMAKE_POSITION_INDEPENDENT_CODE "Build position independent code" ON "NOT BUILD_SHARED_LIBS" ON)
 
   if(DUNE_USE_ONLY_STATIC_LIBS)
     # Use only static libraries.
