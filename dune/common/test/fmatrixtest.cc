@@ -17,12 +17,11 @@
 
 #include <dune/common/classname.hh>
 #include <dune/common/fmatrix.hh>
+#include <dune/common/simd/loop.hh>
 #include <dune/common/simd/simd.hh>
 #if HAVE_VC
 #include <dune/common/simd/vc.hh>
 #endif
-
-#include <dune/common/simd/loop.hh>
 
 #include <dune/common/unused.hh>
 
@@ -437,7 +436,9 @@ int test_determinant()
   B[1][0] = -1.0; B[1][1] =  3.0; B[1][2] =  0.0; B[1][3] =  0.0;
   B[2][0] = -3.0; B[2][1] =  0.0; B[2][2] = -1.0; B[2][3] =  2.0;
   B[3][0] =  0.0; B[3][1] = -1.0; B[3][2] =  0.0; B[3][3] =  1.0;
-  if (Simd::anyTrue(std::abs(B.determinant() + 2.0) > 1e-12))
+
+  using std::abs;
+  if (Simd::anyTrue(abs(B.determinant() + 2.0) > 1e-12))
   {
     std::cerr << "Determinant 1 test failed (" << Dune::className<T>() << ")"
               << std::endl;
@@ -729,7 +730,7 @@ int main()
     errors += test_determinant< Vc::SimdArray<double, 8> >();
 #endif
 
-//test LoopSIMD stuff
+    //test LoopSIMD stuff
     errors += test_determinant< Dune::LoopSIMD<double, 8> >();
 
     test_invert< float, 34 >();
