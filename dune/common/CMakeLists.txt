@@ -57,6 +57,7 @@ install(FILES
         dynvector.hh
         enumset.hh
         exceptions.hh
+        filledarray.hh
         float_cmp.cc
         float_cmp.hh
         fmatrix.hh
