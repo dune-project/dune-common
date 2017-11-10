@@ -111,7 +111,7 @@ namespace Dune {
       template<class U, std::size_t uAlign,
                class = std::enable_if_t<(align >= uAlign) &&
                                         std::is_convertible<U, T>::value> >
-        AlignedNumber(const AlignedNumber<U, uAlign> &o) : value_(U(o)) {}
+      AlignedNumber(const AlignedNumber<U, uAlign> &o) : value_(U(o)) {}
 
       template<class U,
                class = std::enable_if_t<std::is_convertible<T, U>::value> >
@@ -184,10 +184,10 @@ namespace Dune {
         return *this;                                                   \
       }                                                                 \
                                                                         \
-        template<class U,                                               \
-                 class = void_t<decltype(std::declval<T&>() OP          \
-                                         std::declval<U>())> >          \
-        AlignedNumber &operator OP(const U &u)                          \
+      template<class U,                                                 \
+               class = void_t<decltype(std::declval<T&>() OP            \
+                                       std::declval<U>())> >            \
+      AlignedNumber &operator OP(const U &u)                            \
       {                                                                 \
         value_ OP u;                                                    \
         return *this;                                                   \
