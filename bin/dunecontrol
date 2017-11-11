@@ -238,13 +238,6 @@ load_opts() {
   fi
 }
 
-module_la_libname()
-{
-    local m=$1
-    local name="$(eval echo \$NAME_$m)"
-    echo "lib$(echo $name | sed 's/-//g').la"
-}
-
 abs_builddir()
 {
   local m=$1
