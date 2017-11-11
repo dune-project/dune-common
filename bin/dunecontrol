@@ -622,7 +622,8 @@ run_default_update () {
 
 run_default_configure () {
   extract_multiarch
-  PARAMS="$CMD_FLAGS"
+  # add arguments given as configure-opts to CMAKE_params
+  CMAKE_PARAMS="$CMAKE_PARAMS $CMD_FLAGS"
 
   # get dependencies & suggestions
   sort_modules $module
@@ -631,6 +632,7 @@ run_default_configure () {
 
     # add other module's build dir to path
     if [ $module != $m ] ; then
+      name=$(eval "echo \$NAME_$m")
       local m_ABS_BUILDDIR=$(abs_builddir $m $BUILDDIR)
 
       if test -d "$m_ABS_BUILDDIR"; then
@@ -647,35 +649,6 @@ run_default_configure () {
       fi
     fi
   done
-
-      # we have to export the compiler and compiler flags
-      # such that they are honored by CMake, i.e., filter them out
-      # and put them before the CMake commnd
-      flags="CXX CC CXXFLAGS CFLAGS CPPFLAGS LDFLAGS F77 FFLAGS FLIBS FC FCFLAGS FCLIBS LIBS"
-      for i in  $flags; do
-        cflags=`echo "$PARAMS" | $GREP $i= | $SED -e "s/^\($i=\"[^\"]*\"\).*/\1/" -e "s/.*[$BLANK]\($i=\"[^\"]*\"\).*/\1/" -e "s/^\($i='[^']*'\).*/\1/" -e "s/.*[$BLANK]\($i='[^']*'\).*/\1/"`
-        if test -n "$cflags" && test "$PARAMS" != "$cflags" ; then
-          PREPARAMS="$PREPARAMS $cflags"
-        else
-          cflags=`echo "$PARAMS" | $GREP $i= | $SED -e "s/^\($i=[^$BLANK]*\).*/\1/" -e "s/.*[$BLANK]\($i=[^$BLANK]*\).*/\1/"`
-          if test -n "$cflags" && test "$PARAMS" != "$cflags" ; then
-            PREPARAMS="$PREPARAMS $cflags"
-          fi
-        fi
-      done
-      # MPI flags are special. find_package(MPI) does not honor MPICC, MPICXX
-      # Therefore we translate them to CMake variables and add them to CMAKE_FLAGS. Fortran is omitted.
-      for i in CC CXX; do
-        comp=`echo "$PARAMS" | $GREP MPI$i= | $SED -e "s/^\($i=\"[^\"]*\"\).*/\1/" -e "s/.*[$BLANK]\($i=\"[^\"]*\"\).*/\1/" -e "s/^\($i='[^']*'\).*/\1/" -e "s/.*[$BLANK]\($i='[^']*'\).*/\1/"`
-        if test -n "$comp" && test "$PARAMS" != "$comp" ; then
-          CMAKE_FLAGS="-DMPI_$(echo $i| $SED 's/^CC$/C/')""_COMPILER:FILEPATH=`which $comp` $CMAKE_FLAGS"
-        else
-          comp=`echo "$PARAMS" | $GREP MPI$i= | $SED -e "s/^MPI$i=\([^$BLANK]*\).*/\1/" -e "s/.*[$BLANK]MPI$i=\([^$BLANK]*\).*/\1/"`
-          if test -n "$comp" && test "$PARAMS" != "$comp" ; then
-            CMAKE_FLAGS="-DMPI_$(echo $i| $SED 's/^CC$/C/')""_COMPILER:FILEPATH=`which $comp` $CMAKE_FLAGS"
-          fi
-        fi
-      done
       # create build directory if requested
       test -d "$ABS_BUILDDIR" || mkdir -p "$ABS_BUILDDIR"
       SRCDIR="$PWD"
@@ -685,8 +658,8 @@ run_default_configure () {
       if test -n "$CMAKE_MODULE_PATH"; then
           _MODULE_PATH="-DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\""
       fi
-      echo "$PREPARAMS $CMAKE $_MODULE_PATH $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\""
-      eval $PREPARAMS $CMAKE "$_MODULE_PATH $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\"" || exit 1
+      echo "$CMAKE $_MODULE_PATH $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\""
+      eval $CMAKE "$_MODULE_PATH $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\"" || exit 1
 }
 
 run_default_make () {
