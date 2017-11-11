@@ -624,16 +624,13 @@ run_default_configure () {
   extract_multiarch
   PARAMS="$CMD_FLAGS"
 
-    # get dependencies & suggestions
-    sort_modules $module
-    for m in $MODULES; do
-      path="$(eval "echo \$PATH_$m")"
-      # Translate the configure PARMS to cmake
-      export PARAMS
-      export CMAKE_PARAMS
+  # get dependencies & suggestions
+  sort_modules $module
+  for m in $MODULES; do
+    path="$(eval "echo \$PATH_$m")"
 
-      if test x$module = x$m; then continue; fi # skip myself
-
+    # add other module's build dir to path
+    if [ $module != $m ] ; then
       local m_ABS_BUILDDIR=$(abs_builddir $m $BUILDDIR)
 
       if test -d "$m_ABS_BUILDDIR"; then
@@ -648,8 +645,8 @@ run_default_configure () {
         done
         CMAKE_PARAMS="$CMAKE_PARAMS $TMP_PARAMS"
       fi
-
-    done
+    fi
+  done
 
       # we have to export the compiler and compiler flags
       # such that they are honored by cmake.
