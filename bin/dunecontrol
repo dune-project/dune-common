@@ -631,11 +631,6 @@ run_default_configure () {
   extract_multiarch
   PARAMS="$CMD_FLAGS"
 
-    ACLOCAL_FLAGS="-I ."
-    if test -d "m4"; then
-      ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I m4"
-    fi
-    MY_MODULES=
     # get dependencies & suggestions
     sort_modules $module
     for m in $MODULES; do
@@ -645,20 +640,8 @@ run_default_configure () {
       export CMAKE_PARAMS
 
       if test x$module = x$m; then continue; fi # skip myself
-      name=$(eval "echo \$NAME_$m")
-      for dir in $path/m4 $path/share/dune/aclocal $path/share/aclocal; do
-        if test -d "$dir"; then
-            ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $dir"
-        fi
-      done
+
       local m_ABS_BUILDDIR=$(abs_builddir $m $BUILDDIR)
-      if test -d "$m_ABS_BUILDDIR"; then
-        PARAMS="$PARAMS \"--with-$name=$m_ABS_BUILDDIR\""
-      else
-        if test x$(eval echo \$INST_$m) != xyes; then
-          PARAMS="$PARAMS \"--with-$name=$path\""
-        fi
-      fi
 
       if test -d "$m_ABS_BUILDDIR"; then
         CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$m_ABS_BUILDDIR\""
@@ -706,15 +689,7 @@ run_default_configure () {
       test -d "$ABS_BUILDDIR" || mkdir -p "$ABS_BUILDDIR"
       SRCDIR="$PWD"
       cd "$ABS_BUILDDIR"
-      # check for libtool libs, which might break modules depending on this module
-      libname=$(module_la_libname $module)
-      found_libs=$(find dune -name \*.la) # find intermediate libtool libs
-      if test -e lib; then
-        found_libs="$found_libs"$(find lib -name $libname) #find primary lib
-      fi
-      test -n "$found_libs" && \
-          echo "ERROR: your build directory $ABS_BUILDDIR contains libtool built libraries $found_libs, please cleanup" && \
-          exit 1
+
       # Prevent using an empty module path
       if test -n "$CMAKE_MODULE_PATH"; then
           _MODULE_PATH="-DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\""
