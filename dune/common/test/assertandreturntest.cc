@@ -5,7 +5,7 @@
 #ifdef TEST_NDEBUG
     #define NDEBUG TEST_NDEBUG
 #else
-    #undef NDDEBUG
+    #undef NDEBUG
 #endif
 
 #include <cassert>
