@@ -28,3 +28,8 @@
   allows to easily convert any function object (e.g. lambda) to a `VirtualFunction`
 
     See core/dune-common!282
+
+- `FieldMatrix` now has experimental support for SIMD types from
+  [Vc](https://github.com/VcDevel/Vc) as field types.
+
+    See core/dune-common!121
