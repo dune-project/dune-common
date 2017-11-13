@@ -1,16 +1,16 @@
 # Release 2.6
 
 - New class `IntegralRange<integral_type>` and free standing function
-  `range` added providing a feature similar to Python's `range` function:
+  `range` added, providing a feature similar to Python's `range` function:
   ```
     for (const auto &i : range(5,10))
   ```
   See core/dune-common!325
 
-- `Dune::array` was deprecated use `std::array` from <array> instead.
+- `Dune::array` was deprecated, use `std::array` from <array> instead.
    Instead of `Dune::make_array`, use `Dune::Std::make_array`
    from dune/common/std/make_array.hh
-   and `Dune::filledArray` instead of `Dune::fill_array`
+   and instead of `Dune::fill_array` use `Dune::filledArray`
    from dune/common/filledarray.hh.`
 
     See core/dune-common!359
