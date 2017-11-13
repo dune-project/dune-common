@@ -5,7 +5,9 @@
 #include "config.h"
 #endif
 
-#include <dune/common/typeutility.hh>
+#include <type_traits>
+
+#include <dune/common/typeutilities.hh>
 
 //////////////////////////////////////////////////////////////////////
 //
@@ -14,7 +16,7 @@
 
 struct Foo {
 
-    template< class ...Args, disableCopyMove< Foo, Args ... > = 0 >
+    template< class ...Args, Dune::disableCopyMove< Foo, Args ... > = 0 >
     Foo( Args&& ... )
     {}
 
@@ -22,9 +24,9 @@ struct Foo {
     Foo( Foo&& ) = delete;
 };
 
+static_assert( std::is_default_constructible< Foo >::value, "Foo is not default constructible." );
 static_assert( not std::is_copy_constructible< Foo >::value, "Foo is copy constructible." );
 static_assert( not std::is_move_constructible< Foo >::value, "Foo is move constructible." );
-static_assert( not std::is_default_constructible< Foo >::value, "Foo is default constructible." );
 
 int main()
 {}
