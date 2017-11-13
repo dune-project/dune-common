@@ -22,7 +22,7 @@ namespace Dune {
                                        std::size_t expectedAlignment,
                                        const void *address)
   {
-    std::cerr << "Error: Detected invalid alignement for type " << className
+    std::cerr << "Error: Detected invalid alignment for type " << className
               << ": Address " << address << " not aligned to 0x" << std::hex
               << expectedAlignment << std::endl;
     std::abort();
