@@ -57,6 +57,8 @@ class CMakeFunction(Directive):
                 sl.append(" "*5 + paramnode['name'] + ' ' + paramnode['argname'] + '\n')
             if paramnode["option"]:
                 sl.append(" "*5 + paramnode['name'] + '\n')
+            if paramnode["special"]:
+                sl.append(" "*5 + paramnode['argname'] + '\n')
 
         for op, paramnode in optional_params.items():
             if paramnode["multi"]:
@@ -65,6 +67,8 @@ class CMakeFunction(Directive):
                 sl.append(" "*4 + '['+ paramnode['name'] + ' ' + paramnode['argname'] + ']\n')
             if paramnode["option"]:
                 sl.append(" "*4 + '['+ paramnode['name'] + ']\n')
+            if paramnode["special"]:
+                sl.append(" "*4 + '['+ paramnode['argname'] + ']\n')
 
         sl.append(")\n")
         lb = nodes.literal_block(''.join(sl), ''.join(sl))
@@ -108,7 +112,8 @@ class CMakeParam(Directive):
                    'option': lambda s: True,
                    'positional' : lambda s: True,
                    'required': lambda s: True,
-                   'single': lambda s: True
+                   'single': lambda s: True,
+                   'special': lambda s: True
                    }
     has_content = True
 
@@ -119,6 +124,7 @@ class CMakeParam(Directive):
         node['single'] = self.options.get('single', False)
         node['multi'] = self.options.get('multi', False)
         node['option'] = self.options.get('option', False)
+        node['special'] = self.options.get('special', False)
         node['positional'] = self.options.get('positional', False)
         node['required'] = self.options.get('required', False)
         node['argname'] = self.options.get('argname', self.arguments[0].lower() if self.arguments[0].lower()[-1:] != 's' else self.arguments[0].lower()[:-1])

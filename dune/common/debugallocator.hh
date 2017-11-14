@@ -21,7 +21,7 @@ enum DummyProtFlags { PROT_NONE, PROT_WRITE, PROT_READ };
 #include "mallocallocator.hh"
 
 #if not HAVE_MPROTECT
-#error mprotect is required to use te DebugAllocator
+#error mprotect is required to use the DebugAllocator
 #else
 
 namespace Dune
