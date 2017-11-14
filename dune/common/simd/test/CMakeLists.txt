@@ -36,11 +36,6 @@ dune_add_test(NAME standardtest
 # no need to install standardtest.hh, used by standardtest*.cc only
 
 
-include(GeneratedInstances)
-# Generate files with instanciations, external declarations, and also the
-# invocations in the test for each instance.
-begin_instances(HEADER vctest.hh BODY vctest.cc OUTPUTS VCTEST_SOURCES)
-
 # as of Vc-1.3.2: Vc/common/simdarray.h:561: SimdArray<T, N> may only be used
 # with T = { double, float, int32_t, uint32_t, int16_t, uint16_t }
 set(VCTEST_TYPES
@@ -51,39 +46,47 @@ set(VCTEST_TYPES
   "float"
   "double")
 
-# Vc::Vector and Vc::Mask
-define_template(NAME VECTOR
-  BODY "test.checkVector<Vector<@SCALAR@> >();\n"
-  HEADER "extern template void UnitTest::checkVector<Vc::Vector<@SCALAR@> >();\n"
-  FILE "vctest_vector.cc.in")
-define_template(NAME MASK
-  HEADER "extern template void UnitTest::checkMask<Vc::Mask<@SCALAR@> >();\n"
-  FILE "vctest_mask.cc.in")
+include(DuneInstance)
+# Generate files with instanciations, external declarations, and also the
+# invocations in the test for each instance.
+dune_instance_begin(
+  COLLECTORS HEADER BODY
+  OUTPUTS VCTEST_SOURCES
+)
 
-foreach(SCALAR IN LISTS VCTEST_TYPES)
-  add_instance(TEMPLATE VECTOR NAME "${SCALAR}")
-  add_instance(TEMPLATE MASK   NAME "${SCALAR}")
-endforeach()
+# Vc::Vector and Vc::Mask
+dune_instance_template(NAME VECTOR
+  HEADER "\
+extern template void UnitTest::checkVector<Vc::Vector<@SCALAR@> >();
+extern template void UnitTest::checkMask<Vc::Mask<@SCALAR@> >();
+"
+  BODY "\
+test.checkVector<Vector<@SCALAR@> >();
+"
+  FILES vctest_vector.cc vctest_mask.cc)
 
 # Vc::SimdArray and Vc::SimdMaskArray
-define_template(NAME SIMDARRAY
-  BODY "test.checkVector<SimdArray<@SCALAR@, @LANES@> >();\n"
-  HEADER
-    "extern template void UnitTest::checkVector<Vc::SimdArray<@SCALAR@, @LANES@> >();\n"
-  FILE "vctest_simdarray.cc.in")
-define_template(NAME SIMDMASKARRAY
-  HEADER
-    "extern template void UnitTest::checkMask<Vc::SimdMaskArray<@SCALAR@, @LANES@> >();\n"
-  FILE "vctest_simdmaskarray.cc.in")
+dune_instance_template(NAME ARRAY
+  HEADER "\
+extern template void UnitTest::checkVector<Vc::SimdArray<@SCALAR@, @LANES@> >();
+extern template void UnitTest::checkMask<Vc::SimdMaskArray<@SCALAR@, @LANES@> >();
+"
+  BODY "\
+test.checkVector<SimdArray<@SCALAR@, @LANES@> >();
+"
+  FILES vctest_simdarray.cc vctest_simdmaskarray.cc)
+
+foreach(SCALAR IN LISTS VCTEST_TYPES)
+  dune_instance_add(TEMPLATE VECTOR ID "${SCALAR}")
+endforeach()
 
 foreach(SCALAR IN LISTS VCTEST_TYPES)
   foreach(LANES IN ITEMS 4 8)
-    add_instance(TEMPLATE SIMDARRAY     NAME "${SCALAR}_${LANES}")
-    add_instance(TEMPLATE SIMDMASKARRAY NAME "${SCALAR}_${LANES}")
+    dune_instance_add(TEMPLATE ARRAY ID "${SCALAR}_${LANES}")
   endforeach(LANES IN ITEMS 4 8)
 endforeach()
 
-end_instances()
+dune_instance_end(FILES vctest.hh vctest.cc)
 
 dune_add_test(NAME vctest
   SOURCES vctest.cc ${VCTEST_SOURCES}

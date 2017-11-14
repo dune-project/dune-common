@@ -25,7 +25,7 @@ int main()
 
   Dune::Simd::UnitTest test;
 
-@BODY_CONTENT@
+@BODY@
 
   return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

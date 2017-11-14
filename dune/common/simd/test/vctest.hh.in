@@ -11,7 +11,7 @@
 namespace Dune {
   namespace Simd {
 
-@HEADER_CONTENT@
+@HEADER@
 
   } // namespace Simd
 } // namespace Dune

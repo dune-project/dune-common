@@ -14,6 +14,7 @@ install(FILES
   DuneDoxygen.cmake
   DuneEnableAllPackages.cmake
   DuneExecuteProcess.cmake
+  DuneInstance.cmake
   DuneMacros.cmake
   DuneMPI.cmake
   DunePathHelper.cmake
@@ -38,7 +39,6 @@ install(FILES
   FindSuiteSparse.cmake
   FindTBB.cmake
   FindUMFPack.cmake
-  GeneratedInstances.cmake
   Headercheck.cmake
   LanguageSupport.cmake
   OverloadCompilerFlags.cmake
