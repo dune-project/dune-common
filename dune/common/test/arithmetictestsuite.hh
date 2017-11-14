@@ -671,7 +671,7 @@ namespace Dune {
     void checkAssign##name(Tag) {}
 
     DUNE_TEST_ASSIGN(*,      Mul,    Arithmetic, (0, 1, 2, 3), (0, 1, 2, 3))
-    DUNE_TEST_ASSIGN(/,      Div,    Arithmetic, (0, 1, 2, 3), (   1, 2, 3))
+    DUNE_TEST_ASSIGN(/,      Div,    Arithmetic, (0, 1, 2, 3), (   1, 2, 4))
     DUNE_TEST_ASSIGN(%,      Rem,    Arithmetic, (0, 1, 2, 3), (   1, 2, 3))
     DUNE_TEST_ASSIGN_DISABLE(Rem,    Floating)
 
