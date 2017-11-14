@@ -341,37 +341,38 @@ namespace Dune {
       }
     }  //namespace Overloads
   }  //namespace Simd
-}  //namespace Dune
 
-/*
- *  Overloads the unary cmath-operations. Operations requiring
- *  or returning more than one argument are not supported.
- *  Due to inconsistency with the return values, cmath-operations
- *  on integral types are also not supported-
- */
+
+  /*
+   *  Overloads the unary cmath-operations. Operations requiring
+   *  or returning more than one argument are not supported.
+   *  Due to inconsistency with the return values, cmath-operations
+   *  on integral types are also not supported-
+   */
 
 #define DUNE_SIMD_LOOP_CMATH_UNARY_OP(expr)                          \
-template<class T, std::size_t S, typename Sfinae =                   \
-         typename std::enable_if_t<!std::is_integral<T>::value> >    \
-auto expr(const Dune::LoopSIMD<T,S> &v) {                            \
-  Dune::LoopSIMD<T,S> out;                                           \
-  for(std::size_t i=0; i<S; i++) {                                   \
-    out[i] = expr(v[i]);                                             \
-  }                                                                  \
-  return out;                                                        \
-}
+  template<class T, std::size_t S, typename Sfinae =                 \
+           typename std::enable_if_t<!std::is_integral<T>::value> >  \
+  auto expr(const Dune::LoopSIMD<T,S> &v) {                          \
+    using std::expr;                                                 \
+    Dune::LoopSIMD<T,S> out;                                         \
+    for(std::size_t i=0; i<S; i++) {                                 \
+      out[i] = expr(v[i]);                                           \
+    }                                                                \
+    return out;                                                      \
+  }
 
 #define DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN(expr, returnType)  \
-template<class T, std::size_t S, typename Sfinae =                   \
-         typename std::enable_if_t<!std::is_integral<T>::value> >    \
-auto expr(const Dune::LoopSIMD<T,S> &v){                             \
-  Dune::LoopSIMD<returnType,S> out;                                  \
-  for(std::size_t i=0; i<S; i++) {                                   \
-    out[i] = expr(v[i]);                                             \
-  }                                                                  \
-  return out;                                                        \
-}
-
+  template<class T, std::size_t S, typename Sfinae =                 \
+           typename std::enable_if_t<!std::is_integral<T>::value> >  \
+  auto expr(const Dune::LoopSIMD<T,S> &v){                           \
+    using std::expr;                                                 \
+    Dune::LoopSIMD<returnType,S> out;                                \
+    for(std::size_t i=0; i<S; i++) {                                 \
+      out[i] = expr(v[i]);                                           \
+    }                                                                \
+    return out;                                                      \
+  }
 
   DUNE_SIMD_LOOP_CMATH_UNARY_OP(cos);
   DUNE_SIMD_LOOP_CMATH_UNARY_OP(sin);
@@ -416,45 +417,30 @@ auto expr(const Dune::LoopSIMD<T,S> &v){                             \
   DUNE_SIMD_LOOP_CMATH_UNARY_OP(nearbyint);
 
   DUNE_SIMD_LOOP_CMATH_UNARY_OP(fabs);
-  /* the abs function needs special treatment*/
-  //  DUNE_SIMD_LOOP_CMATH_UNARY_OP(abs);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(abs);
 
 #undef DUNE_SIMD_LOOP_CMATH_UNARY_OP
 #undef DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN
 
 
-/*  not implemented cmath-functions:
- *  atan2
- *  frexp, idexp
- *  modf
- *  scalbn, scalbln
- *  pow
- *  hypot
- *  remainder, remquo
- *  copysign
- *  nan
- *  nextafter, nexttoward
- *  fdim, fmax, fmin
- */
+  /*  not implemented cmath-functions:
+   *  atan2
+   *  frexp, idexp
+   *  modf
+   *  scalbn, scalbln
+   *  pow
+   *  hypot
+   *  remainder, remquo
+   *  copysign
+   *  nan
+   *  nextafter, nexttoward
+   *  fdim, fmax, fmin
+   */
 
-/*
- * Overloads specific functions usually provided by the std library
- * More overloads will be provided should the need arise.
- *
- * @ToDo: check for fabs
- * @ToDo: check if sfinae is needed for specific functions (I think it is, at least for abs)
- */
-
-namespace Dune {
-  template<class T, std::size_t S>
-  auto abs(const Dune::LoopSIMD<T,S> &v) {
-    using std::abs;
-    Dune::LoopSIMD<T,S> out;
-    for(std::size_t i=0; i<S; i++) {
-      out[i] = abs(v[i]);
-    }
-    return out;
-  }
+  /*
+   * Overloads specific functions usually provided by the std library
+   * More overloads will be provided should the need arise.
+   */
 
 #define DUNE_SIMD_LOOP_STD_BINARY_OP(expr)                                \
   template<class T, std::size_t S>                                        \
@@ -467,11 +453,9 @@ namespace Dune {
     return out;                                                           \
   }
 
-  //DUNE_SIMD_STD_UNARY_OP(abs);
   DUNE_SIMD_LOOP_STD_BINARY_OP(max);
   DUNE_SIMD_LOOP_STD_BINARY_OP(min);
 
-//#undef DUNE_SIMD_LOOP_STD_UNARY_OP
 #undef DUNE_SIMD_LOOP_STD_BINARY_OP
 
 } //namespace Dune
