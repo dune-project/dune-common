@@ -32,6 +32,8 @@ int test_invert_solve(Dune::FieldMatrix<double, n, n> &A,
                       Dune::FieldVector<double, 3> &x,
                       Dune::FieldVector<double, 3> &b)
 {
+  using std::abs;
+
   int ret=0;
 
   std::cout <<"Checking inversion of:"<<std::endl;
@@ -61,7 +63,6 @@ int test_invert_solve(Dune::FieldMatrix<double, n, n> &A,
 
 
   double singthres = FMatrixPrecision<>::singular_limit()*10;
-  using std::abs;
   for(size_t i =0; i < n; ++i)
     for(size_t j=0; j <n; ++j)
       if(abs(A[i][j])>singthres) {
@@ -359,17 +360,20 @@ void test_matrix()
     }
   }
   {
+    using std::abs;
+
     FieldMatrix<K,n,m> A3 = A;
     A3 *= 3;
 
     FieldMatrix<K,n,m> B = A;
     B.axpy( K( 2 ), B );
     B -= A3;
-    using std::abs;
     if (abs(B.infinity_norm()) > 1e-12)
       DUNE_THROW(FMatrixError,"Axpy test failed!");
   }
   {
+    using std::abs;
+
     FieldMatrix<K,n,n+1> A2;
     for(size_type i=0; i<A2.N(); ++i)
       for(size_type j=0; j<A2.M(); ++j)
@@ -390,7 +394,6 @@ void test_matrix()
     const FieldMatrix<K,n,n>& Cref = C;
 
     FieldMatrix<K,n,n+1> AB = Aref.rightmultiplyany(B);
-    using std::abs;
     for(size_type i=0; i<AB.N(); ++i)
       for(size_type j=0; j<AB.M(); ++j)
         if (abs(AB[i][j] - K(i*n*(n+1)/2)) > 1e-10)
@@ -429,6 +432,8 @@ void test_matrix()
 template<class T>
 int test_determinant()
 {
+  using std::abs;
+
   int ret = 0;
 
   FieldMatrix<T, 4, 4> B;
@@ -436,7 +441,6 @@ int test_determinant()
   B[1][0] = -1.0; B[1][1] =  3.0; B[1][2] =  0.0; B[1][3] =  0.0;
   B[2][0] = -3.0; B[2][1] =  0.0; B[2][2] = -1.0; B[2][3] =  2.0;
   B[3][0] =  0.0; B[3][1] = -1.0; B[3][2] =  0.0; B[3][3] =  1.0;
-  using std::abs;
   if (any_true(abs(B.determinant() + 2.0) > 1e-12))
   {
     std::cerr << "Determinant 1 test failed (" << Dune::className<T>() << ")"
@@ -648,13 +652,14 @@ test_nan(T const &mynan)
 void
 test_infinity_norms()
 {
+  using std::abs;
+
   std::complex<double> threefour(3.0, -4.0);
   std::complex<double> eightsix(8.0, -6.0);
 
   Dune::FieldMatrix<std::complex<double>, 2, 2> m;
   m[0] = threefour;
   m[1] = eightsix;
-  using std::abs;
   assert(abs(m.infinity_norm()     -20.0) < 1e-10); // max(5+5, 10+10)
   assert(abs(m.infinity_norm_real()-28.0) < 1e-10); // max(7+7, 14+14)
 }
