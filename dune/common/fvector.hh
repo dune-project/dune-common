@@ -485,6 +485,59 @@ namespace Dune {
   }
 #endif
 
+  /* Overloads for common classification functions */
+
+  // ! Returns whether all entries are finite
+  template<class K, int SIZE>
+  bool isfinite(const FieldVector<K,SIZE> &b) {
+    bool out = true;
+    for(auto el : b) {
+      out &= std::isfinite(el);
+    }
+    return out;
+  }
+
+  // ! Returns whether any entry is infinite
+  template<class K, int SIZE>
+  bool isinf(const FieldVector<K,SIZE> &b) {
+    bool out = false;
+    for(auto el : b) {
+      out |= std::isinf(el);
+    }
+    return out;
+  }
+
+  // ! Returns whether any entry is NaN
+  template<class K, int SIZE, typename = std::enable_if_t<has_nan<K>::value>>
+  bool isnan(const FieldVector<K,SIZE> &b) {
+    bool out = false;
+    for(auto el : b) {
+      out |= std::isnan(el);
+    }
+    return out;
+  }
+
+  // ! Returns true if either b or c is NaN
+  template<class K, typename = std::enable_if_t<has_nan<K>::value>>
+  bool isunordered(const FieldVector<K,1> &b, const FieldVector<K,1> &c) {
+    return isunordered(b[0],c[0]);
+  }
+
+  template<class T>
+  bool isfinite(std::complex<T> &c) {
+    return isfinite(c.real()) && isfinite(c.imag());
+  }
+
+  template<class T>
+  bool isinf(std::complex<T> &c) {
+    return isinf(c.real()) || isinf(c.imag());
+  }
+
+  template<class T>
+  bool isnan(std::complex<T> &c) {
+    return isnan(c.real()) || isnan(c.imag());
+  }
+
   /** @} end documentation */
 
 } // end namespace
