@@ -61,9 +61,10 @@ int test_invert_solve(Dune::FieldMatrix<double, n, n> &A,
 
 
   double singthres = FMatrixPrecision<>::singular_limit()*10;
+  using std::abs;
   for(size_t i =0; i < n; ++i)
     for(size_t j=0; j <n; ++j)
-      if(std::abs(A[i][j])>singthres) {
+      if(abs(A[i][j])>singthres) {
         std::cerr<<"calculated inverse wrong at ("<<i<<","<<j<<")"<<std::endl;
         equal=false;
       }
@@ -97,7 +98,7 @@ int test_invert_solve(Dune::FieldMatrix<double, n, n> &A,
   equal=true;
 
   for(size_t i =0; i < n; ++i)
-    if(std::abs(xcopy[i])>singthres) {
+    if(abs(xcopy[i])>singthres) {
       std::cerr<<"calculated isolution wrong at ("<<i<<")"<<std::endl;
       equal=false;
     }
@@ -364,7 +365,8 @@ void test_matrix()
     FieldMatrix<K,n,m> B = A;
     B.axpy( K( 2 ), B );
     B -= A3;
-    if (std::abs(B.infinity_norm()) > 1e-12)
+    using std::abs;
+    if (abs(B.infinity_norm()) > 1e-12)
       DUNE_THROW(FMatrixError,"Axpy test failed!");
   }
   {
@@ -388,37 +390,38 @@ void test_matrix()
     const FieldMatrix<K,n,n>& Cref = C;
 
     FieldMatrix<K,n,n+1> AB = Aref.rightmultiplyany(B);
+    using std::abs;
     for(size_type i=0; i<AB.N(); ++i)
       for(size_type j=0; j<AB.M(); ++j)
-        if (std::abs(AB[i][j] - K(i*n*(n+1)/2)) > 1e-10)
+        if (abs(AB[i][j] - K(i*n*(n+1)/2)) > 1e-10)
           DUNE_THROW(FMatrixError,"Rightmultiplyany test failed!");
 
     FieldMatrix<K,n,n+1> AB2 = A2;
     AB2.rightmultiply(B);
     AB2 -= AB;
-    if (std::abs(AB2.infinity_norm()) > 1e-10)
+    if (abs(AB2.infinity_norm()) > 1e-10)
       DUNE_THROW(FMatrixError,"Rightmultiply test failed!");
 
     FieldMatrix<K,n,n+1> AB3 = Bref.leftmultiplyany(A2);
     AB3 -= AB;
-    if (std::abs(AB3.infinity_norm()) > 1e-10)
+    if (abs(AB3.infinity_norm()) > 1e-10)
       DUNE_THROW(FMatrixError,"Leftmultiplyany test failed!");
 
     FieldMatrix<K,n,n+1> CA = Aref.leftmultiplyany(C);
     for(size_type i=0; i<CA.N(); ++i)
       for(size_type j=0; j<CA.M(); ++j)
-        if (std::abs(CA[i][j] - K(i*n*(n-1)/2)) > 1e-10)
+        if (abs(CA[i][j] - K(i*n*(n-1)/2)) > 1e-10)
           DUNE_THROW(FMatrixError,"Leftmultiplyany test failed!");
 
     FieldMatrix<K,n,n+1> CA2 = A2;
     CA2.leftmultiply(C);
     CA2 -= CA;
-    if (std::abs(CA2.infinity_norm()) > 1e-10)
+    if (abs(CA2.infinity_norm()) > 1e-10)
       DUNE_THROW(FMatrixError,"Leftmultiply test failed!");
 
     FieldMatrix<K,n,n+1> CA3 = Cref.rightmultiplyany(A2);
     CA3 -= CA;
-    if (std::abs(CA3.infinity_norm()) > 1e-10)
+    if (abs(CA3.infinity_norm()) > 1e-10)
       DUNE_THROW(FMatrixError,"Rightmultiplyany test failed!");
   }
 }
@@ -433,7 +436,8 @@ int test_determinant()
   B[1][0] = -1.0; B[1][1] =  3.0; B[1][2] =  0.0; B[1][3] =  0.0;
   B[2][0] = -3.0; B[2][1] =  0.0; B[2][2] = -1.0; B[2][3] =  2.0;
   B[3][0] =  0.0; B[3][1] = -1.0; B[3][2] =  0.0; B[3][3] =  1.0;
-  if (any_true(std::abs(B.determinant() + 2.0) > 1e-12))
+  using std::abs;
+  if (any_true(abs(B.determinant() + 2.0) > 1e-12))
   {
     std::cerr << "Determinant 1 test failed (" << Dune::className<T>() << ")"
               << std::endl;
@@ -650,8 +654,9 @@ test_infinity_norms()
   Dune::FieldMatrix<std::complex<double>, 2, 2> m;
   m[0] = threefour;
   m[1] = eightsix;
-  assert(std::abs(m.infinity_norm()     -20.0) < 1e-10); // max(5+5, 10+10)
-  assert(std::abs(m.infinity_norm_real()-28.0) < 1e-10); // max(7+7, 14+14)
+  using std::abs;
+  assert(abs(m.infinity_norm()     -20.0) < 1e-10); // max(5+5, 10+10)
+  assert(abs(m.infinity_norm_real()-28.0) < 1e-10); // max(7+7, 14+14)
 }
 
 
