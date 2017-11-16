@@ -193,6 +193,45 @@ namespace Std
   {};
 
 
+  /**
+   * \brief Traits class to check if function is invocable
+   *
+   * \tparam F    Function to check
+   * \tparam Args Function arguments to check
+   *
+   * This checks if F can be called with an arguments list of type Args....
+   * The result is encoded by deriving from std::ingegral_constant<bool, result>.
+   *
+   * This implements std::is_invocable from C++17.
+   *
+   * \ingroup CxxUtilities
+   */
+  template <class F, class... Args>
+  struct is_invocable :
+      decltype(Impl::is_callable_helper<void, F, Args...>(PriorityTag<42>()))
+  {};
+
+  /**
+   * \brief Traits class to check if function is invocable and the return type is compatible
+   *
+   * \tparam R    Desired result type
+   * \tparam F    Function to check
+   * \tparam Args Function arguments to check
+   *
+   * This checks if F can be called with an arguments list of type Args..., and
+   * if the return value can be converted to R.
+   * The result is encoded by deriving from std::ingegral_constant<bool, result>.
+   *
+   * This implements std::is_invocable_r from C++17.
+   *
+   * \ingroup CxxUtilities
+   */
+  template <class R, class F, class... Args>
+  struct is_invocable_r :
+      decltype(Impl::is_callable_helper<R, F, Args...>(PriorityTag<42>()))
+  {};
+
+
 #if DUNE_HAVE_CXX_EXPERIMENTAL_IS_DETECTED
 
   using std::experimental::nonesuch;
