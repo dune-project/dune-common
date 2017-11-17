@@ -485,6 +485,36 @@ namespace Dune {
   }
 #endif
 
+  /* Overloads for common classification functions */
+
+  // ! Returns whether all entries are finite
+  template<class K>
+  bool isfinite(const FieldVector<K,1> &b) {
+    using std::isfinite;
+    return isfinite(b[0])
+  }
+
+  // ! Returns whether any entry is infinite
+  template<class K>
+  bool isinf(const FieldVector<K,1> &b) {
+    using std::isinf;
+    return isinf(b[0])
+  }
+
+  // ! Returns whether any entry is NaN
+  template<class K, typename = std::enable_if_t<has_nan<K>::value>>
+  bool isnan(const FieldVector<K,1> &b) {
+    using std::isnan;
+    return isnan(b[0])
+  }
+
+  // ! Returns true if either b or c is NaN
+  template<class K, typename = std::enable_if_t<has_nan<K>::value>>
+  bool isunordered(const FieldVector<K,1> &b, const FieldVector<K,1> &c) {
+    using std::isunordered;
+    return isunordered(b[0],c[0]);
+  }
+
   /** @} end documentation */
 
 } // end namespace
