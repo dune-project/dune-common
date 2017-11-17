@@ -443,7 +443,6 @@ int test_determinant()
   B[2][0] = -3.0; B[2][1] =  0.0; B[2][2] = -1.0; B[2][3] =  2.0;
   B[3][0] =  0.0; B[3][1] = -1.0; B[3][2] =  0.0; B[3][3] =  1.0;
   if (Simd::anyTrue(abs(B.determinant() + 2.0) > 1e-12))
-  if (any_true(abs(B.determinant() + 2.0) > 1e-12))
   {
     std::cerr << "Determinant 1 test failed (" << Dune::className<T>() << ")"
               << std::endl;
