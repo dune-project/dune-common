@@ -2,9 +2,9 @@
 #define DUNE_COMMON_SIMD_LOOP_HH
 
 #include <array>
+#include <cmath>
 #include <cstddef>
 #include <cstdlib>
-#include <cmath>
 #include <ostream>
 
 #include <dune/common/simd/simd.hh>

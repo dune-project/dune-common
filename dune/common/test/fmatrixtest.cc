@@ -22,7 +22,6 @@
 #if HAVE_VC
 #include <dune/common/simd/vc.hh>
 #endif
-
 #include <dune/common/unused.hh>
 
 #include "checkmatrixinterface.hh"
