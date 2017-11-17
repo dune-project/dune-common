@@ -527,6 +527,24 @@ namespace Dune {
     return isunordered(b[0],c[0]);
   }
 
+  template<class T>
+  bool isfinite(std::complex<T> &c) {
+    using std::isfinite;
+    return isfinite(c.real()) && isfinite(c.imag());
+  }
+
+  template<class T>
+  bool isinf(std::complex<T> &c) {
+    using std::isinf;
+    return isinf(c.real()) || isinf(c.imag());
+  }
+
+  template<class T>
+  bool isnan(std::complex<T> &c) {
+    using std::isnan;
+    return isnan(c.real()) || isnan(c.imag());
+  }
+
   /** @} end documentation */
 
 } // end namespace
