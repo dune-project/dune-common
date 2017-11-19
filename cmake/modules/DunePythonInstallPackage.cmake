@@ -29,6 +29,9 @@
 #    :code:`pip --editable`.
 #
 
+# option to disable pip requirement (if you know what you're doing)
+set(DUNE_PYTHON_INSTALL_PACKAGE_REQUIRE_PIP TRUE)
+
 function(dune_python_install_package)
   # Parse Arguments
   set(OPTION)
@@ -42,8 +45,12 @@ function(dune_python_install_package)
 
   # Check for the presence of the pip package
   if(NOT DUNE_PYTHON_pip_FOUND)
-    message(FATAL_ERROR "dune_python_install_package: Requested installations, but pip was not found!")
-  endif()
+    if(DUNE_PYTHON_INSTALL_PACKAGE_REQUIRE_PIP)
+      message(ERROR "dune_python_install_package: Requested installations, but pip was not found!")
+    else()
+      message(WARNING "dune_python_install_package: Requested installations, but pip was not found! Execute the following manually: \n export PYTHONPATH=$PYTHONPATH:${CMAKE_CURRENT_BINARY_DIR}/python\n")
+    endif()
+  else()
 
   set(PYINST_FULLPATH ${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH})
   if(EXISTS ${PYINST_FULLPATH}/setup.py.in)
@@ -138,4 +145,5 @@ function(dune_python_install_package)
                                      ERROR_MESSAGE \"Error installing wheel for python package at ${PYINST_FULLPATH}\"
                                      )"
           )
+  endif() # pip found
 endfunction()
