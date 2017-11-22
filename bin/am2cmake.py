@@ -238,7 +238,6 @@ def rename_var(tokens):
         'GRAPE': 'GRAPE_FOUND',
         'INKSCAPE': 'INKSCAPE_FOUND',
         'MPI': 'MPI_CXX_FOUND',
-        'PARDISO': 'PARDISO_FOUND',
         'PETSC': 'PETSC_FOUND',
         'PSURFACE': 'PSURFACE_FOUND',
         'SUPERLU': 'SUPERLU_FOUND',
