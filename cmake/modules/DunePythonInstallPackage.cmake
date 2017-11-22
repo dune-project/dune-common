@@ -30,6 +30,11 @@
 #
 
 function(dune_python_install_package)
+  # Leave this function if no installation rules are required
+  if("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "none" AND NOT DUNE_PYTHON_pip_FOUND)
+    return()
+  endif()
+
   # Parse Arguments
   set(OPTION)
   set(SINGLE PATH)
