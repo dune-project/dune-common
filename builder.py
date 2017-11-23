@@ -9,20 +9,12 @@ import sys
 
 from dune.common import comm
 from dune.common.compatibility import buffer_to_str, isString, reload_module
+from dune.generator.exceptions import CompileError, ConfigurationError
 import dune.common.module
 
 logger = logging.getLogger(__name__)
 
 class Builder:
-    class CompileError(Exception):
-        '''raise this when there's a problem compiling an extension module'''
-        def __init__(self, error):
-            Exception.__init__(self,error)
-    class ConfigurationError(Exception):
-        '''raise this when there's a problem with the configuration of dune-py'''
-        def __init__(self, error):
-            Exception.__init__(self,error)
-
     def __init__(self, force=False):
         self.force = force
 
@@ -52,7 +44,7 @@ class Builder:
         logger.debug(buffer_to_str(stdout))
         if cmake.returncode > 0:
             logger.error(buffer_to_str(stderr))
-            raise self.CompileError(buffer_to_str(stderr))
+            raise CompileError(buffer_to_str(stderr))
 
     def load(self, moduleName, source, pythonName):
         module = sys.modules.get("dune.generated." + moduleName)

@@ -1,5 +1,6 @@
 import os
 
+from .exceptions import CompileError, ConfigurationError
 from .builder import Builder
 
 env_force = os.environ.get('DUNE_FORCE_BUILD', 'FALSE').upper()
