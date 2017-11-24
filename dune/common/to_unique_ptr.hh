@@ -10,7 +10,7 @@
 
 namespace Dune
 {
-  /// \brief An owning pointer wrapper that can be assigned to (smart) pointers. Can not be copied.
+  /// \brief An owning pointer wrapper that can be assigned to (smart) pointers. Cannot be copied.
   /// Transfers ownership by cast to any (smart) pointer type. Releases the stored pointer on transfer.
   /// NOTE: This is an intermediate solution to switch to std::unique_ptr in later releases smoothly.
   /**

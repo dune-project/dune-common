@@ -90,6 +90,28 @@ namespace Dune {
         return !Dune::Simd::anyTrue(mask);
       }
 
+      //! implements Simd::maxValue()
+      template<class V>
+      auto max(ADLTag<0>, const V &v)
+      {
+        Scalar<V> m = Simd::lane(0, v);
+        for(std::size_t l = 1; l < Simd::lanes(v); ++l)
+          if(m < Simd::lane(l, v))
+            m = Simd::lane(l, v);
+        return m;
+      }
+
+      //! implements Simd::minValue()
+      template<class V>
+      auto min(ADLTag<0>, const V &v)
+      {
+        Scalar<V> m = Simd::lane(0, v);
+        for(std::size_t l = 1; l < Simd::lanes(v); ++l)
+          if(Simd::lane(l, v) < m)
+            m = Simd::lane(l, v);
+        return m;
+      }
+
       //! @} Overloadable and default functions
       //! @} Group SIMDAbstract
     } // namespace Overloads

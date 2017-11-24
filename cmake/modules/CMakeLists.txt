@@ -14,6 +14,7 @@ install(FILES
   DuneDoxygen.cmake
   DuneEnableAllPackages.cmake
   DuneExecuteProcess.cmake
+  DuneInstance.cmake
   DuneMacros.cmake
   DuneMPI.cmake
   DunePathHelper.cmake

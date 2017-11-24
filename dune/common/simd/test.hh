@@ -14,6 +14,7 @@
 #include <typeindex>
 #include <typeinfo>
 #include <unordered_set>
+#include <utility>
 
 #include <dune/common/classname.hh>
 #include <dune/common/simd/simd.hh>
@@ -32,6 +33,14 @@ namespace Dune {
       template<class Op, class... Args>
       struct CanCall<Op(Args...), void_t<std::result_of_t<Op(Args...)> > >
         : std::true_type
+      {};
+
+      template<class T, class SFINAE = void>
+      struct LessThenComparable : std::false_type {};
+      template<class T>
+      struct LessThenComparable<T, void_t<decltype(std::declval<T>()
+                                                   < std::declval<T>())> > :
+        std::true_type
       {};
 
       template<class Dst, class Src>
@@ -1271,6 +1280,36 @@ namespace Dune {
         DUNE_SIMD_CHECK(allTrue(cond(mixedMask, vec1, vec2) == mixedResult));
       }
 
+      template<class V>
+      std::enable_if_t<!Impl::LessThenComparable<Scalar<V> >::value>
+      checkMinMax() {}
+
+      template<class V>
+      std::enable_if_t<Impl::LessThenComparable<Scalar<V> >::value>
+      checkMinMax()
+      {
+        static_assert
+          (std::is_same<decltype(max(std::declval<V>())), Scalar<V> >::value,
+           "The result of max(V) should be exactly Scalar<V>");
+
+        static_assert
+          (std::is_same<decltype(min(std::declval<V>())), Scalar<V> >::value,
+           "The result of min(V) should be exactly Scalar<V>");
+
+        static_assert
+          (std::is_same<decltype(max(std::declval<V&>())), Scalar<V> >::value,
+           "The result of max(V) should be exactly Scalar<V>");
+
+        static_assert
+          (std::is_same<decltype(min(std::declval<V&>())), Scalar<V> >::value,
+           "The result of min(V) should be exactly Scalar<V>");
+
+        const V vec1 = leftVector<V>();
+
+        DUNE_SIMD_CHECK(max(vec1) == Scalar<V>(lanes(vec1)));
+        DUNE_SIMD_CHECK(min(vec1) == Scalar<V>(1));
+      }
+
 #undef DUNE_SIMD_CHECK
 
     public:
@@ -1366,6 +1405,8 @@ namespace Dune {
       checkCond<V>();
 
       // checkBoolReductions<V>(); // not applicable
+
+      checkMinMax<V>();
     }
 
     template<class M>
@@ -1405,6 +1446,8 @@ namespace Dune {
       checkCond<M>();
 
       checkBoolReductions<M>();
+
+      checkMinMax<M>();
     }
 
   } // namespace Simd

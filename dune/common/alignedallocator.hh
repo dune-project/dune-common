@@ -11,10 +11,10 @@ namespace Dune
 
   /**
      @ingroup Allocators
-     @brief Allocators which guarantees alignement of the memory
+     @brief Allocators which guarantee alignment of the memory
 
-     @tparam T          type of the object one wants to allocate
-     @tparam Alignement explicitly specify the alignement, by default it is std::alignment_of<T>::value
+     @tparam T         type of the object one wants to allocate
+     @tparam Alignment explicitly specify the alignment, by default it is std::alignment_of<T>::value
    */
   template<class T, int Alignment = -1>
   class AlignedAllocator : public MallocAllocator<T> {
