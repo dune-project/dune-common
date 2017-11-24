@@ -2,9 +2,13 @@
 #define DUNE_COMMON_SIMD_LOOP_HH
 
 #include <array>
-#include <ostream>
+#include <cmath>
 #include <cstddef>
+#include <cstdlib>
+#include <ostream>
+
 #include <dune/common/simd/simd.hh>
+
 
 namespace Dune {
 
@@ -337,6 +341,123 @@ namespace Dune {
       }
     }  //namespace Overloads
   }  //namespace Simd
-}  //namespace Dune
+
+
+  /*
+   *  Overloads the unary cmath-operations. Operations requiring
+   *  or returning more than one argument are not supported.
+   *  Due to inconsistency with the return values, cmath-operations
+   *  on integral types are also not supported-
+   */
+
+#define DUNE_SIMD_LOOP_CMATH_UNARY_OP(expr)                          \
+  template<class T, std::size_t S, typename Sfinae =                 \
+           typename std::enable_if_t<!std::is_integral<T>::value> >  \
+  auto expr(const Dune::LoopSIMD<T,S> &v) {                          \
+    using std::expr;                                                 \
+    Dune::LoopSIMD<T,S> out;                                         \
+    for(std::size_t i=0; i<S; i++) {                                 \
+      out[i] = expr(v[i]);                                           \
+    }                                                                \
+    return out;                                                      \
+  }
+
+#define DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN(expr, returnType)  \
+  template<class T, std::size_t S, typename Sfinae =                 \
+           typename std::enable_if_t<!std::is_integral<T>::value> >  \
+  auto expr(const Dune::LoopSIMD<T,S> &v){                           \
+    using std::expr;                                                 \
+    Dune::LoopSIMD<returnType,S> out;                                \
+    for(std::size_t i=0; i<S; i++) {                                 \
+      out[i] = expr(v[i]);                                           \
+    }                                                                \
+    return out;                                                      \
+  }
+
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(cos);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(sin);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(tan);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(acos);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(asin);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(atan);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(cosh);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(sinh);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(tanh);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(acosh);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(asinh);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(atanh);
+
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(exp);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(log);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(log10);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(exp2);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(expm1);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN(ilogb, int);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(log1p);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(log2);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(logb);
+
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(sqrt);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(cbrt);
+
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(erf);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(erfc);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(tgamma);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(lgamma);
+
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(ceil);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(floor);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(trunc);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(round);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN(lround, long);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN(llround, long long);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(rint);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN(lrint, long);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN(llrint, long long);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(nearbyint);
+
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(fabs);
+  DUNE_SIMD_LOOP_CMATH_UNARY_OP(abs);
+
+#undef DUNE_SIMD_LOOP_CMATH_UNARY_OP
+#undef DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN
+
+
+  /*  not implemented cmath-functions:
+   *  atan2
+   *  frexp, idexp
+   *  modf
+   *  scalbn, scalbln
+   *  pow
+   *  hypot
+   *  remainder, remquo
+   *  copysign
+   *  nan
+   *  nextafter, nexttoward
+   *  fdim, fmax, fmin
+   */
+
+  /*
+   * Overloads specific functions usually provided by the std library
+   * More overloads will be provided should the need arise.
+   */
+
+#define DUNE_SIMD_LOOP_STD_BINARY_OP(expr)                                \
+  template<class T, std::size_t S>                                        \
+  auto expr(const Dune::LoopSIMD<T,S> &v, const Dune::LoopSIMD<T,S> &w) { \
+    using std::expr;                                                      \
+    Dune::LoopSIMD<T,S> out;                                              \
+    for(std::size_t i=0; i<S; i++) {                                      \
+      out[i] = expr(v[i],w[i]);                                           \
+    }                                                                     \
+    return out;                                                           \
+  }
+
+  DUNE_SIMD_LOOP_STD_BINARY_OP(max);
+  DUNE_SIMD_LOOP_STD_BINARY_OP(min);
+
+#undef DUNE_SIMD_LOOP_STD_BINARY_OP
+
+} //namespace Dune
 
 #endif

@@ -17,6 +17,7 @@
 
 #include <dune/common/classname.hh>
 #include <dune/common/fmatrix.hh>
+#include <dune/common/simd/loop.hh>
 #include <dune/common/simd/simd.hh>
 #if HAVE_VC
 #include <dune/common/simd/vc.hh>
@@ -735,6 +736,10 @@ int main()
 #if HAVE_VC
     errors += test_determinant< Vc::SimdArray<double, 8> >();
 #endif
+
+    //test LoopSIMD stuff
+    errors += test_determinant< Dune::LoopSIMD<double, 8> >();
+
     test_invert< float, 34 >();
     test_invert< double, 34 >();
     test_invert< std::complex< long double >, 2 >();
