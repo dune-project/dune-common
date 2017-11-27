@@ -297,6 +297,12 @@ function(dune_add_test)
         set(ACTUAL_TESTCOMMAND "${MPIEXEC}")
       endif()
 
+      # if this is a skipped test because a guard was false, overwrite the command
+      if(SHOULD_SKIP_TEST)
+        set(ACTUAL_TESTCOMMAND ${CMAKE_CURRENT_BINARY_DIR}/${ADDTEST_NAME})
+        set(ACTUAL_CMD_ARGS)
+      endif()
+
       # Now add the actual test
       _add_test(NAME ${ACTUAL_NAME}
                 COMMAND "${ACTUAL_TESTCOMMAND}" ${ACTUAL_CMD_ARGS}
