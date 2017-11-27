@@ -231,18 +231,18 @@ function(dune_add_test)
   endif()
 
   # Find out whether this test should be a dummy
-  set(DOSOMETHING TRUE)
+  set(SHOULD_SKIP_TEST FALSE)
   set(FAILED_CONDITION_PRINTING "")
   foreach(condition ${ADDTEST_CMAKE_GUARD})
     separate_arguments(condition)
     if(NOT (${condition}))
-      set(DOSOMETHING FALSE)
+      set(SHOULD_SKIP_TEST TRUE)
       set(FAILED_CONDITION_PRINTING "${FAILED_CONDITION_PRINTING}std::cout << \"  ${condition}\" << std::endl;\n")
     endif()
   endforeach()
 
   # If we do nothing, switch the sources for a dummy source
-  if(NOT DOSOMETHING)
+  if(SHOULD_SKIP_TEST)
     dune_module_path(MODULE dune-common RESULT scriptdir SCRIPT_DIR)
     set(ADDTEST_TARGET)
     set(dummymain ${CMAKE_CURRENT_BINARY_DIR}/main77_${ADDTEST_NAME}.cc)
