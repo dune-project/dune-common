@@ -285,16 +285,22 @@ function(dune_add_test)
     if((NOT "${procnum}" GREATER "${DUNE_MAX_TEST_CORES}") AND (NOT ADDTEST_COMPILE_ONLY))
       set(ACTUAL_NAME ${ADDTEST_NAME})
       set(ACTUAL_CMD_ARGS ${ADDTEST_CMD_ARGS})
-      if(TARGET "${ADDTEST_COMMAND}")
+      if(TARGET "${ADDTEST_COMMAND}" AND NOT SHOULD_SKIP_TEST)
         set(ACTUAL_TESTCOMMAND "$<TARGET_FILE:${ADDTEST_COMMAND}>")
       else()
         set(ACTUAL_TESTCOMMAND "${ADDTEST_COMMAND}")
       endif()
 
-      if(NOT ${procnum} STREQUAL "1")
+      if(NOT ${procnum} STREQUAL "1" AND NOT SHOULD_SKIP_TEST)
         set(ACTUAL_NAME "${ACTUAL_NAME}-mpi-${procnum}")
         set(ACTUAL_CMD_ARGS ${MPIEXEC_PREFLAGS} ${MPIEXEC_NUMPROC_FLAG} ${procnum} "${ACTUAL_TESTCOMMAND}" ${MPIEXEC_POSTFLAGS} ${ACTUAL_CMD_ARGS})
         set(ACTUAL_TESTCOMMAND "${MPIEXEC}")
+      endif()
+
+      # if this is a skipped test because a guard was false, overwrite the command
+      if(SHOULD_SKIP_TEST)
+        set(ACTUAL_TESTCOMMAND ${CMAKE_CURRENT_BINARY_DIR}/${ADDTEST_NAME})
+        set(ACTUAL_CMD_ARGS)
       endif()
 
       # Now add the actual test
