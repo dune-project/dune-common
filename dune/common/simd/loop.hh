@@ -458,6 +458,11 @@ namespace Dune {
 
 #undef DUNE_SIMD_LOOP_STD_BINARY_OP
 
+  template<class T, std::size_t S>
+  struct IsNumber<Dune::LoopSIMD<T,S>> :
+          public std::integral_constant<bool, IsNumber<T>::value>{
+  };
+
 } //namespace Dune
 
 #endif
