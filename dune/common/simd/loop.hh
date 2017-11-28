@@ -8,7 +8,7 @@
 #include <ostream>
 
 #include <dune/common/simd/simd.hh>
-
+#include <dune/common/typetraits.hh>
 
 namespace Dune {
 
@@ -390,7 +390,6 @@ namespace Dune {
   DUNE_SIMD_LOOP_CMATH_UNARY_OP(exp);
   DUNE_SIMD_LOOP_CMATH_UNARY_OP(log);
   DUNE_SIMD_LOOP_CMATH_UNARY_OP(log10);
-
   DUNE_SIMD_LOOP_CMATH_UNARY_OP(exp2);
   DUNE_SIMD_LOOP_CMATH_UNARY_OP(expm1);
   DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN(ilogb, int);
