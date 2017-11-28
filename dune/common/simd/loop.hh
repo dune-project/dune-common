@@ -353,9 +353,9 @@ namespace Dune {
 #define DUNE_SIMD_LOOP_CMATH_UNARY_OP(expr)                          \
   template<class T, std::size_t S, typename Sfinae =                 \
            typename std::enable_if_t<!std::is_integral<T>::value> >  \
-  auto expr(const Dune::LoopSIMD<T,S> &v) {                          \
+  auto expr(const LoopSIMD<T,S> &v) {                                \
     using std::expr;                                                 \
-    Dune::LoopSIMD<T,S> out;                                         \
+    LoopSIMD<T,S> out;                                               \
     for(std::size_t i=0; i<S; i++) {                                 \
       out[i] = expr(v[i]);                                           \
     }                                                                \
@@ -365,9 +365,9 @@ namespace Dune {
 #define DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN(expr, returnType)  \
   template<class T, std::size_t S, typename Sfinae =                 \
            typename std::enable_if_t<!std::is_integral<T>::value> >  \
-  auto expr(const Dune::LoopSIMD<T,S> &v){                           \
+  auto expr(const LoopSIMD<T,S> &v) {                                \
     using std::expr;                                                 \
-    Dune::LoopSIMD<returnType,S> out;                                \
+    LoopSIMD<returnType,S> out;                                      \
     for(std::size_t i=0; i<S; i++) {                                 \
       out[i] = expr(v[i]);                                           \
     }                                                                \
@@ -390,6 +390,7 @@ namespace Dune {
   DUNE_SIMD_LOOP_CMATH_UNARY_OP(exp);
   DUNE_SIMD_LOOP_CMATH_UNARY_OP(log);
   DUNE_SIMD_LOOP_CMATH_UNARY_OP(log10);
+
   DUNE_SIMD_LOOP_CMATH_UNARY_OP(exp2);
   DUNE_SIMD_LOOP_CMATH_UNARY_OP(expm1);
   DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN(ilogb, int);
@@ -442,15 +443,41 @@ namespace Dune {
    * More overloads will be provided should the need arise.
    */
 
-#define DUNE_SIMD_LOOP_STD_BINARY_OP(expr)                                \
-  template<class T, std::size_t S>                                        \
-  auto expr(const Dune::LoopSIMD<T,S> &v, const Dune::LoopSIMD<T,S> &w) { \
-    using std::expr;                                                      \
-    Dune::LoopSIMD<T,S> out;                                              \
-    for(std::size_t i=0; i<S; i++) {                                      \
-      out[i] = expr(v[i],w[i]);                                           \
-    }                                                                     \
-    return out;                                                           \
+#define DUNE_SIMD_LOOP_STD_UNARY_OP(expr)   \
+  template<class T, std::size_t S>          \
+  auto expr(const LoopSIMD<T,S> &v) {       \
+    using std::expr;                        \
+    LoopSIMD<T,S> out;                      \
+    for(std::size_t i=0; i<S; i++) {        \
+      out[i] = expr(v[i]);                  \
+    }                                       \
+    return out;                             \
+  }                                         \
+                                                    \
+  template<class T, std::size_t S>                  \
+  auto expr(const LoopSIMD<std::complex<T>,S> &v) { \
+    using std::expr;                                \
+    LoopSIMD<T,S> out;                              \
+    for(std::size_t i=0; i<S; i++) {                \
+      out[i] = expr(v[i]);                          \
+    }                                               \
+    return out;                                     \
+  }
+
+  DUNE_SIMD_LOOP_STD_UNARY_OP(real);
+  DUNE_SIMD_LOOP_STD_UNARY_OP(imag);
+
+#undef DUNE_SIMD_LOOP_STD_UNARY_OP
+
+#define DUNE_SIMD_LOOP_STD_BINARY_OP(expr)                    \
+  template<class T, std::size_t S>                            \
+  auto expr(const LoopSIMD<T,S> &v, const LoopSIMD<T,S> &w) { \
+    using std::expr;                                          \
+    LoopSIMD<T,S> out;                                        \
+    for(std::size_t i=0; i<S; i++) {                          \
+      out[i] = expr(v[i],w[i]);                               \
+    }                                                         \
+    return out;                                               \
   }
 
   DUNE_SIMD_LOOP_STD_BINARY_OP(max);
@@ -459,7 +486,7 @@ namespace Dune {
 #undef DUNE_SIMD_LOOP_STD_BINARY_OP
 
   template<class T, std::size_t S>
-  struct IsNumber<Dune::LoopSIMD<T,S>> :
+  struct IsNumber<LoopSIMD<T,S>> :
           public std::integral_constant<bool, IsNumber<T>::value>{
   };
 
