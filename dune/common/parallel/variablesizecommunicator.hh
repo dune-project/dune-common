@@ -287,7 +287,7 @@ class VariableSizeCommunicator
 {
 public:
   /**
-     * @brief The type of the map form process number to InterfaceInformation for
+     * @brief The type of the map from process number to InterfaceInformation for
      * sending and receiving to and from it.
      */
   typedef std::map<int,std::pair<InterfaceInformation,InterfaceInformation>,
