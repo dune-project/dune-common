@@ -180,8 +180,8 @@ namespace Dune {
 
   //Comparison operators
 #define DUNE_SIMD_LOOP_COMPARISON_OP(SYMBOL)                      \
-  template<class T, std::size_t S>                                \
-  auto operator SYMBOL(const LoopSIMD<T,S> &v, const T s) {       \
+  template<class T, std::size_t S, class U>                                \
+  auto operator SYMBOL(const LoopSIMD<T,S> &v, const U s) {       \
     LoopSIMD<bool,S> out;                                         \
     for(std::size_t i=0; i<S; i++){                               \
       out[i] = v[i] SYMBOL s;                                     \
@@ -483,6 +483,17 @@ namespace Dune {
   DUNE_SIMD_LOOP_STD_BINARY_OP(min);
 
 #undef DUNE_SIMD_LOOP_STD_BINARY_OP
+
+  /* revise once the interface for isfinite() etc is done*/
+  template<class T, std::size_t S>
+  auto isfinite(LoopSIMD<T,S> &v) {
+    using std::isfinite;
+    LoopSIMD<bool,S> out;
+    for(std::size_t i=0; i<S; i++) {
+      out[i] = isfinite(v[i]);
+    }
+    return Simd::anyTrue(out);
+  }
 
   template<class T, std::size_t S>
   struct IsNumber<LoopSIMD<T,S>> :
