@@ -1088,7 +1088,7 @@ void VariableSizeCommunicator<Allocator>::communicateSizes(DataHandle& handle,
     if(i->empty())
       --size_to_recv;
 
-  size_to_send -= setupRequests(size_handle, send_trackers, send_buffers, send_requests,
+  setupRequests(size_handle, send_trackers, send_buffers, send_requests,
                                 SetupSendRequest<SizeDataHandle<DataHandle> >(), communicator_);
   setupRequests(size_handle, recv_trackers, recv_buffers, recv_requests,
                 SetupRecvRequest<SizeDataHandle<DataHandle> >(), communicator_);
@@ -1131,7 +1131,7 @@ void VariableSizeCommunicator<Allocator>::communicateVariableSize(DataHandle& ha
   std::size_t no_to_send, no_to_recv;
   no_to_send = no_to_recv =  interface_->size();
   // Setup requests for sending and receiving.
-  no_to_send -= setupRequests(handle, send_trackers, send_buffers, send_requests,
+  setupRequests(handle, send_trackers, send_buffers, send_requests,
                 SetupSendRequest<DataHandle>(), communicator_);
   setupRequests(handle, recv_trackers, recv_buffers, recv_requests,
                 SetupRecvRequest<DataHandle>(), communicator_);
