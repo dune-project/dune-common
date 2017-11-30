@@ -868,7 +868,7 @@ std::size_t checkAndContinue(DataHandle& handle,
       comm_func(handle, tracker, buffers[*index], requests2[*index], comm);
       tracker.skipZeroIndices();
       if(valid)
-      no_completed-=!tracker.finished(); // communication not finished, decrement counter for finished ones.
+      --no_completed; // communication not finished, decrement counter for finished ones.
     }
   }
   return no_completed;
