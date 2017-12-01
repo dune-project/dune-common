@@ -10,6 +10,8 @@
 #include <cmath>
 #include <complex>
 
+#include <dune/common/typeutilities.hh>
+
 namespace Dune
 {
 
@@ -123,6 +125,73 @@ namespace Dune
     return (val < 0 ? -1 : 1);
   }
 
+
+  /** Returns whether a given type behaves like std::complex<>, i.e. whether
+      real() and imag() are defined*/
+  template<class T>
+  struct isComplexLike {
+    private:
+      //template<class U>
+      static auto test(T* u) -> decltype(u->real(), u->imag(), std::true_type());
+
+      //template<class U>
+      static auto test(...) -> decltype(std::false_type());
+
+    public:
+      static const bool value = decltype(test(0))::value;
+  };
+
+  namespace MathOverloads {
+    //necessary to find the following overloads in this namespace
+    struct ADLTag {};
+
+    /* Default implementation, only applicable if isNaN is defined for T.
+       Otherwise, SFINAE prevents the overload from being considered.*/
+    template<class T>
+    auto isNaN(const T &t, PriorityTag<1>, ADLTag) -> decltype(isNaN(t)) {
+      return isNaN(t);
+    }
+
+    /* last resort: rerouting to std::isnan and potential customizations*/
+    template<class T>
+    auto isNaN(const T &t, PriorityTag<0>, ADLTag) {
+      using std::isnan;
+      return isnan(t);
+    }
+
+  namespace MathImpl {
+    struct isNaNImpl {
+      template<class T>
+      constexpr auto operator()(const T &t) const {
+        return isNaN(t, PriorityTag<10>{}, MathOverloads::ADLTag{});
+      }
+    };
+  } //MathImpl
+
+
+  /* We need to make sure a call to Dune::isNaN(t) leads to a call to the
+     functor defined in the MathImpl namespace above. Defining the functor
+     in the Dune namespace would yield ambiguousity. Therefore we need to
+     pass the Dune::isNaN() call which also allows us to simply call
+     Dune::isNaN() without actually creating a Dune::isNaN functor everytime */
+  template<class T>
+  struct MathDummy
+  {
+    static constexpr T value{};
+  };
+
+  namespace {
+    constexpr auto const &isNaN = MathDummy<MathImpl::isNaNImpl>::value;
+  }
+
+  namespace MathOverloads {
+    /**Overload for complex types*/
+    template<class T, class = std::enable_if_t<isComplexLike<T>::value> >
+    auto isNaN(const T &t, PriorityTag<2>, ADLTag) {
+      using Dune::isNaN;
+      return isNaN(real(t)) || isNaN(imag(t));
+    }
+  } //MathOverloads
 }
 
 #endif // #ifndef DUNE_MATH_HH
