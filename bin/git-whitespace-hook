@@ -25,7 +25,7 @@ fi
 
 # By default, we disallow trailing whitespace for the following files, but the check for C/C++ and CMake sources
 # happens in the tab-in-indent check to avoid confusing users with duplicate error messages
-TRAILING_WHITESPACE_DEFAULT='^(dune\.module|README|README\.SVN|COPYING|README\.md|LICENSE\.md|CONTRIBUTING\.md|INSTALL|TODO|[^/]*\.pc\.in)$'
+TRAILING_WHITESPACE_DEFAULT='^(dune\.module|README|README\.SVN|COPYING|INSTALL|TODO)$|^[^/]*(\.md|\.pc\.in)$|^doc/.*\.md$'
 
 # By default, we disallow tabs in indents and trailing whitespace in C/C++ and CMake source files
 TAB_IN_INDENT_DEFAULT='(^|/)CMakeLists\.txt$|(\.cpp|\.hpp|\.cc|\.hh|\.c|\.h|\.cmake|\.sh|\.py)$'
