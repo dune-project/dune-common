@@ -10,6 +10,8 @@
 #include <cmath>
 #include <complex>
 
+#include <dune/common/typeutilities.hh>
+
 namespace Dune
 {
 
@@ -122,6 +124,65 @@ namespace Dune
   {
     return (val < 0 ? -1 : 1);
   }
+
+
+  /** Returns whether a given type behaves like std::complex<>, i.e. whether
+      real() and imag() are defined*/
+  template<class T>
+  struct isComplexLike {
+    private:
+      //template<class U>
+      static auto test(T* u) -> decltype(u->real(), u->imag(), std::true_type());
+
+      //template<class U>
+      static auto test(...) -> decltype(std::false_type());
+
+    public:
+      static const bool value = decltype(test(0))::value;
+  };
+
+
+  /*to be implemented*/
+  template<class F, class args>
+  struct is_callable {
+
+    public:
+      static const bool value = true;
+  };
+
+  namespace MathOverloads {
+    struct ADLTag {};
+
+    /** default implementation*/
+    template<class T>
+    auto isNaN(T &t, PriorityTag<0>, ADLTag) {
+      return isNaN(t);
+    }
+
+
+  }
+
+  /*WIP over here..*/
+  struct isNaN {
+
+    template<class T>
+    auto operator()(T &t);
+
+  };
+
+  namespace {
+    template<class T>
+    auto isNaN::operator()(T &t) {
+      if(is_callable<isNaN, T>::value) {
+        return  MathOverloads::isNaN(t, PriorityTag<10>{}, MathOverloads::ADLTag{});
+      }
+      //else {
+        using std::isnan;
+        return isnan(t);
+      //}
+    }
+  }
+
 
 }
 
