@@ -143,6 +143,9 @@ dune_add_test(SOURCES iteratorfacadetest.cc)
 dune_add_test(SOURCES lrutest.cc
               LINK_LIBRARIES dunecommon)
 
+dune_add_test(SOURCES mathclassifierstest.cc
+              LINK_LIBRARIES dunecommon)
+
 dune_add_test(SOURCES mpicollectivecommunication.cc
               LINK_LIBRARIES dunecommon
               MPI_RANKS 1 2 4 8
