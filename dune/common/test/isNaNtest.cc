@@ -14,7 +14,6 @@ int main(){
             << "isNaN(const int): " << Dune::isNaN(b) << "\n"
             << "isNaN(42): " << Dune::isNaN(42) << "\n"
             << "isNaN(NaN): " << Dune::isNaN(c) << "\n"
-            << "isNaN(std::complex<double> with NaN): " << Dune::isNaN(d) << "\n"
             << "isComplex<std::complex>: " << Dune::Impl::isComplexLike<std::complex<int>>::value  << "\n"
             << "isComplex<int>: " << Dune::Impl::isComplexLike<int>::value  << "\n"
             << std::endl;
