@@ -535,7 +535,7 @@ namespace Dune
   };
 
   template<typename T, typename A>
-  std::ostream& operator<<(std::ostream& os, const SLList<T,A> sllist)
+  std::ostream& operator<<(std::ostream& os, const SLList<T,A>& sllist)
   {
     typedef typename SLList<T,A>::const_iterator Iterator;
     Iterator end = sllist.end();
