@@ -84,7 +84,7 @@ function(dune_python_install_package)
   endif()
 
   set(INSTALL_CMDLINE -m pip install
-                      "${INSTALL_OPTION}" "${WHEEL_OPTION}" "${EDIT_OPTION}" ${PYINST_ADDITIONAL_PIP_PARAMS}
+                      "${INSTALL_OPTION}" --upgrade "${WHEEL_OPTION}" "${EDIT_OPTION}" ${PYINST_ADDITIONAL_PIP_PARAMS}
                       "${PYINST_FULLPATH}")
 
 
