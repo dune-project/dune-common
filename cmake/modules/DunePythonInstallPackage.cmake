@@ -30,11 +30,6 @@
 #
 
 function(dune_python_install_package)
-  # Leave this function if no installation rules are required
-  if("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "none" AND NOT DUNE_PYTHON_pip_FOUND)
-    return()
-  endif()
-
   # Parse Arguments
   set(OPTION)
   set(SINGLE PATH)
@@ -43,11 +38,6 @@ function(dune_python_install_package)
   cmake_parse_arguments(PYINST "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
   if(PYINST_UNPARSED_ARGUMENTS)
     message(WARNING "Unparsed arguments in dune_python_install_package: This often indicates typos!")
-  endif()
-
-  # Check for the presence of the pip package
-  if(NOT DUNE_PYTHON_pip_FOUND)
-    message(FATAL_ERROR "dune_python_install_package: Requested installations, but pip was not found!")
   endif()
 
   set(PYINST_FULLPATH ${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH})
@@ -92,6 +82,16 @@ function(dune_python_install_package)
                       "${INSTALL_OPTION}" "${WHEEL_OPTION}" "${EDIT_OPTION}" ${PYINST_ADDITIONAL_PIP_PARAMS}
                       "${PYINST_FULLPATH}")
 
+
+  # Leave this function if no installation rules are required
+  if("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "none" AND NOT DUNE_PYTHON_VIRTUALENV_SETUP)
+    return()
+  endif()
+
+  # Check for the presence of the pip package
+  if(NOT DUNE_PYTHON_pip_FOUND)
+    message(FATAL_ERROR "dune_python_install_package: Requested installations, but pip was not found!")
+  endif()
 
   #
   # If requested, install into the configure-time Dune virtualenv
