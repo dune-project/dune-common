@@ -3,6 +3,30 @@
 # Note that "the Dune way" of doing this has changed after
 # the 2.4 release. See the build system documentation for details.
 #
+# .. cmake_function:: dune_declare_test_label
+#
+#    .. cmake_brief::
+#
+#       Declare labels for `dune_add_test`.
+#
+#    .. cmake_param:: LABELS
+#       :multi:
+#       :positional:
+#
+#       The names of labels to declare.  Label names must be nonempty and
+#       consist only of alphanumeric characters plus :code:`-` and :code:`_`
+#       to make sure it is easy to construct regular expressions from them for
+#       :code:`ctest -L ${label_regex}`.
+#
+#    Labels need to be declared to ensure that the target
+#    :code:`build_${label}_tests` exists.  They will normally be declared
+#    on-demand by `dune_add_test`.  But sometimes it is useful to be able to
+#    run :code:`make build_${label}_tests` whether or not any tests with that
+#    label exist in a module.  For these cases `dune_declare_test_label` can
+#    be called explicitly.
+#
+#    The label :code:`quick` guaranteed to be always declared.
+#
 # .. cmake_function:: dune_add_test
 #
 #    .. cmake_brief::
@@ -133,6 +157,28 @@
 #       any timeout setting in ctest (see `cmake --help-property TIMEOUT`). If you
 #       specify the MPI_RANKS option, you need to specify a TIMEOUT.
 #
+#    .. cmake_param:: LABELS
+#       :multi:
+#
+#       A list of labels to add to the test.  This has two effects: it sets
+#       the LABELS property on the test so `ctest -L ${label_regex}` can be
+#       used to run all tests with certain labels.  It also adds any targets
+#       created for this test to the custom target build_${label}_tests (in
+#       addition to build_tests} so only tests with certain labels can be
+#       built.
+#
+#       The build_${label}_tests targets are created on-demand using
+#       `dune_declare_test_label`.  This means they will not exist and
+#       :code:`make build_${label}_tests` will fail unless either a call to
+#       `dune_add_test` creates them implicitly or `dune_declare_test_label`
+#       is called explicitly to create them.  The label :code:`quick` is
+#       always predeclared.
+#
+#       The label names must be non-empty, and must only contain alphanumeric
+#       characters plus :code:`-` or :code:`_`.  This restriction is in place
+#       to make it easy to construct regular expressions from the label names
+#       for :code:`ctest -L ${label_regex}`.
+#
 #    This function defines the Dune way of adding a test to the testing suite.
 #    You may either add the executable yourself through :ref:`add_executable`
 #    and pass it to the :code:`TARGET` option, or you may rely on :ref:`dune_add_test`
@@ -164,6 +210,27 @@ include(CTest)
 # Introduce a target that triggers the building of all tests
 add_custom_target(build_tests)
 
+function(dune_declare_test_label)
+  foreach(label IN LISTS ARGV)
+    # Make sure the label is not empty, and does not contain any funny
+    # characters, in particular regex characters
+    if(NOT (label MATCHES "[-_0-9a-zA-Z]+"))
+      message(FATAL_ERROR "Refusing to add label \"${label}\" since it is "
+        "empty or contains funny characters (characters other than "
+        "alphanumeric ones and \"-\" or \"_\"; the intent of this restriction "
+        "is to make construction of the argument to \"ctest -L\" easier")
+    endif()
+    set(target "build_${label}_tests")
+    if(NOT TARGET "${target}")
+      add_custom_target("${target}")
+    endif()
+  endforeach()
+endfunction(dune_declare_test_label)
+
+# predefine "quick" test label so build_quick_tests can be built
+# unconditionally
+dune_declare_test_label(quick)
+
 # Set the default on the variable DUNE_MAX_TEST_CORES
 if(NOT DUNE_MAX_TEST_CORES)
   set(DUNE_MAX_TEST_CORES 2)
@@ -173,7 +240,7 @@ function(dune_add_test)
   include(CMakeParseArguments)
   set(OPTIONS EXPECT_COMPILE_FAIL EXPECT_FAIL SKIP_ON_77 COMPILE_ONLY)
   set(SINGLEARGS NAME TARGET TIMEOUT)
-  set(MULTIARGS SOURCES COMPILE_DEFINITIONS COMPILE_FLAGS LINK_LIBRARIES CMD_ARGS MPI_RANKS COMMAND CMAKE_GUARD)
+  set(MULTIARGS SOURCES COMPILE_DEFINITIONS COMPILE_FLAGS LINK_LIBRARIES CMD_ARGS MPI_RANKS COMMAND CMAKE_GUARD LABELS)
   cmake_parse_arguments(ADDTEST "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
 
   # Check whether the parser produced any errors
@@ -269,9 +336,16 @@ function(dune_add_test)
     set_property(TARGET ${ADDTEST_TARGET} PROPERTY EXCLUDE_FROM_ALL 1)
   endif()
 
-  # Have the given target depend on build_tests in order to trigger the build correctly
+  # make sure each label exists and its name is acceptable
+  dune_declare_test_label(${ADDTEST_LABELS})
+
+  # Have build_tests and build_${label}_tests depend on the given target in
+  # order to trigger the build correctly
   if(NOT ADDTEST_EXPECT_COMPILE_FAIL)
     add_dependencies(build_tests ${ADDTEST_TARGET})
+    foreach(label IN LISTS ADDTEST_LABELS)
+      add_dependencies(build_${label}_tests ${ADDTEST_TARGET})
+    endforeach()
   endif()
 
   # Process the EXPECT_COMPILE_FAIL option
@@ -322,6 +396,8 @@ function(dune_add_test)
       endif()
       # Skip the test if the return code is 77!
       set_tests_properties(${ACTUAL_NAME} PROPERTIES SKIP_RETURN_CODE 77)
+      # Set the labels on the test
+      set_tests_properties(${ACTUAL_NAME} PROPERTIES LABELS "${ADDTEST_LABELS}")
     endif()
   endforeach()
 endfunction()
