@@ -9,9 +9,9 @@
 #
 #       Declare labels for `dune_add_test`.
 #
-#    .. cmake_param:: LABELS
-#       :multi:
-#       :positional:
+#    .. cmake_param:: LABELn
+#       :special:
+#       :argname: label1 [label2 ...]
 #
 #       The names of labels to declare.  Label names must be nonempty and
 #       consist only of alphanumeric characters plus :code:`-` and :code:`_`
@@ -20,9 +20,9 @@
 #
 #    Labels need to be declared to ensure that the target
 #    :code:`build_${label}_tests` exists.  They will normally be declared
-#    on-demand by `dune_add_test`.  But sometimes it is useful to be able to
+#    on-demand by :ref:`dune_add_test`.  But sometimes it is useful to be able to
 #    run :code:`make build_${label}_tests` whether or not any tests with that
-#    label exist in a module.  For these cases `dune_declare_test_label` can
+#    label exist in a module.  For these cases :ref:`dune_declare_test_label` can
 #    be called explicitly.
 #
 #    The label :code:`quick` guaranteed to be always declared.
@@ -161,23 +161,27 @@
 #       :multi:
 #
 #       A list of labels to add to the test.  This has two effects: it sets
-#       the LABELS property on the test so `ctest -L ${label_regex}` can be
-#       used to run all tests with certain labels.  It also adds any targets
-#       created for this test to the custom target build_${label}_tests (in
-#       addition to build_tests} so only tests with certain labels can be
-#       built.
+#       the LABELS property on the test so :code:`ctest -L ${label_regex}` can
+#       be used to run all tests with certain labels.  It also adds any
+#       targets created as dependencies to a custom target, so you can build
+#       all tests with a particular label by doing :code:`make
+#       build_${label}_tests` without having to build all the other tests as
+#       well.
 #
-#       The build_${label}_tests targets are created on-demand using
-#       `dune_declare_test_label`.  This means they will not exist and
-#       :code:`make build_${label}_tests` will fail unless either a call to
-#       `dune_add_test` creates them implicitly or `dune_declare_test_label`
-#       is called explicitly to create them.  The label :code:`quick` is
-#       always predeclared.
+#       The :code:`build_${label}_tests` targets are created on-demand the
+#       first time a test with that label is added.  In some situations it can
+#       depend on the values of cmake cache variables whether a test is added,
+#       and then it can happen that the :code:`build_${target}_tests` target
+#       exists only sometimes.  If your workflow relies on the existance of
+#       these targets, even if building them just returns successfully without
+#       doing anything, you can ensure they exist by calling
+#       :ref:`dune_declare_test_label` unconditionally.  The label
+#       :code:`quick` is always predeclared in this way.
 #
 #       The label names must be non-empty, and must only contain alphanumeric
-#       characters plus :code:`-` or :code:`_`.  This restriction is in place
-#       to make it easy to construct regular expressions from the label names
-#       for :code:`ctest -L ${label_regex}`.
+#       characters other than :code:`-` or :code:`_`.  This restriction is in
+#       place to make it easy to construct regular expressions from the label
+#       names for :code:`ctest -L ${label_regex}`.
 #
 #    This function defines the Dune way of adding a test to the testing suite.
 #    You may either add the executable yourself through :ref:`add_executable`
