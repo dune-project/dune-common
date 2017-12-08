@@ -131,58 +131,81 @@ namespace Dune
   template<class T>
   struct isComplexLike {
     private:
-      //template<class U>
-      static auto test(T* u) -> decltype(u->real(), u->imag(), std::true_type());
+      template<class U>
+      static auto test(U* u) -> decltype(u->real(), u->imag(), std::true_type());
 
-      //template<class U>
+      template<class U>
       static auto test(...) -> decltype(std::false_type());
 
     public:
-      static const bool value = decltype(test(0))::value;
+      static const bool value = decltype(test<T>(nullptr))::value;
   };
 
 
-  /*to be implemented*/
-  template<class F, class args>
-  struct is_callable {
+  /** Returns whether a given type can call a function 'FNAME' */
+  /*maybe use preprocessor later on*/
+  template<class T>
+  struct canCallIsNaN {
+   private:
+      template<class U>
+      static auto test(U &u) -> decltype(isNaN(u), std::true_type());
+
+      template<class U>
+      static auto test(...) -> decltype(std::false_type());
 
     public:
-      static const bool value = true;
+      static const bool value = decltype(test<T>(0))::value;
   };
+
+  struct NanTest {};
 
   namespace MathOverloads {
     struct ADLTag {};
 
-    /** default implementation*/
-    template<class T>
-    auto isNaN(T &t, PriorityTag<0>, ADLTag) {
+    /* default implementation, only applicable id isNaN is defined for T*/
+    template<class T, typename U = typename std::enable_if_t<canCallIsNaN<T>::value> >
+    auto isNaN(T &&t, PriorityTag<1>, ADLTag) {
       return isNaN(t);
     }
 
-
-  }
-
-  /*WIP over here..*/
-  struct isNaN {
-
+    /* last resort: rerouting to std::isnan and potential customizations*/
     template<class T>
-    auto operator()(T &t);
+    auto isNaN(T &&t, PriorityTag<0>, ADLTag) {
+      using std::isnan;
+      return isnan(t);
+    }
 
+  } //MathOverloads
+
+  namespace MathImpl {
+
+    struct isNaNImpl {
+      template<class T>
+      constexpr auto operator()(T &&t) const {
+        return  MathOverloads::isNaN(std::forward<T>(t), PriorityTag<10>{}, MathOverloads::ADLTag{});
+      }
+    };
+
+  } //MathImpl
+
+  template<class T>
+  struct MathDummy
+  {
+    static constexpr T value{};
   };
 
+  template<class T>
+  constexpr T MathDummy<T>::value;
+
   namespace {
-    template<class T>
-    auto isNaN::operator()(T &t) {
-      if(is_callable<isNaN, T>::value) {
-        return  MathOverloads::isNaN(t, PriorityTag<10>{}, MathOverloads::ADLTag{});
-      }
-      //else {
-        using std::isnan;
-        return isnan(t);
-      //}
-    }
+    constexpr auto const &isNaN = MathDummy<MathImpl::isNaNImpl>::value;
   }
 
+  namespace MathOverloads {
+    auto isNaN(NanTest &&t, PriorityTag<2>, ADLTag) {
+      return true;
+    }
+  }
 
 }
 
