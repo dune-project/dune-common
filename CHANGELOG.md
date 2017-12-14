@@ -2,6 +2,8 @@
 
 # Release 2.6
 
+**This release is dedicated to Elias Pipping (1986-2017).**
+
 - New class `IntegralRange<integral_type>` and free standing function
   `range` added, providing a feature similar to Python's `range` function:
   ```
