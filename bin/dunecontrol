@@ -238,13 +238,6 @@ load_opts() {
   fi
 }
 
-module_la_libname()
-{
-    local m=$1
-    local name="$(eval echo \$NAME_$m)"
-    echo "lib$(echo $name | sed 's/-//g').la"
-}
-
 abs_builddir()
 {
   local m=$1
@@ -629,36 +622,18 @@ run_default_update () {
 
 run_default_configure () {
   extract_multiarch
-  PARAMS="$CMD_FLAGS"
+  # add arguments given as configure-opts to CMAKE_params
+  CMAKE_PARAMS="$CMAKE_PARAMS $CMD_FLAGS"
 
-    ACLOCAL_FLAGS="-I ."
-    if test -d "m4"; then
-      ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I m4"
-    fi
-    MY_MODULES=
-    # get dependencies & suggestions
-    sort_modules $module
-    for m in $MODULES; do
-      path="$(eval "echo \$PATH_$m")"
-      # Translate the configure PARMS to cmake
-      export PARAMS
-      export CMAKE_PARAMS
+  # get dependencies & suggestions
+  sort_modules $module
+  for m in $MODULES; do
+    path="$(eval "echo \$PATH_$m")"
 
-      if test x$module = x$m; then continue; fi # skip myself
+    # add other module's build dir to path
+    if [ $module != $m ] ; then
       name=$(eval "echo \$NAME_$m")
-      for dir in $path/m4 $path/share/dune/aclocal $path/share/aclocal; do
-        if test -d "$dir"; then
-            ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $dir"
-        fi
-      done
       local m_ABS_BUILDDIR=$(abs_builddir $m $BUILDDIR)
-      if test -d "$m_ABS_BUILDDIR"; then
-        PARAMS="$PARAMS \"--with-$name=$m_ABS_BUILDDIR\""
-      else
-        if test x$(eval echo \$INST_$m) != xyes; then
-          PARAMS="$PARAMS \"--with-$name=$path\""
-        fi
-      fi
 
       if test -d "$m_ABS_BUILDDIR"; then
         CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$m_ABS_BUILDDIR\""
@@ -672,55 +647,19 @@ run_default_configure () {
         done
         CMAKE_PARAMS="$CMAKE_PARAMS $TMP_PARAMS"
       fi
-
-    done
-
-      # we have to export the compiler and compiler flags
-      # such that they are honored by cmake.
-      flags="CXX CC CXXFLAGS CFLAGS CPPFLAGS LDFLAGS F77 FFLAGS FLIBS FC FCFLAGS FCLIBS LIBS"
-      for i in  $flags; do
-        cflags=`echo "$PARAMS" | $GREP $i= | $SED -e "s/^\($i=\"[^\"]*\"\).*/\1/" -e "s/.*[$BLANK]\($i=\"[^\"]*\"\).*/\1/" -e "s/^\($i='[^']*'\).*/\1/" -e "s/.*[$BLANK]\($i='[^']*'\).*/\1/"`
-        if test -n "$cflags" && test "$PARAMS" != "$cflags" ; then
-            PREPARAMS="$PREPARAMS $cflags"
-          else
-           cflags=`echo "$PARAMS" | $GREP $i= | $SED -e "s/^\($i=[^$BLANK]*\).*/\1/" -e "s/.*[$BLANK]\($i=[^$BLANK]*\).*/\1/"`
-           if test -n "$cflags" && test "$PARAMS" != "$cflags" ; then
-            PREPARAMS="$PREPARAMS $cflags"
-           fi
-        fi
-      done
-      # MPI flags are special. find_package(MPI) does not honor MPICC, MPICXX
-      # Therefore we translate them to CMake variables and add them to CMAKE_FLAGS. Fortran is omitted.
-      for i in CC CXX; do
-        comp=`echo "$PARAMS" | $GREP MPI$i= | $SED -e "s/^\($i=\"[^\"]*\"\).*/\1/" -e "s/.*[$BLANK]\($i=\"[^\"]*\"\).*/\1/" -e "s/^\($i='[^']*'\).*/\1/" -e "s/.*[$BLANK]\($i='[^']*'\).*/\1/"`
-        if test -n "$comp" && test "$PARAMS" != "$comp" ; then
-          CMAKE_FLAGS="-DMPI_$(echo $i| $SED 's/^CC$/C/')""_COMPILER:FILEPATH=`which $comp` $CMAKE_FLAGS"
-          else
-            comp=`echo "$PARAMS" | $GREP MPI$i= | $SED -e "s/^MPI$i=\([^$BLANK]*\).*/\1/" -e "s/.*[$BLANK]MPI$i=\([^$BLANK]*\).*/\1/"`
-            if test -n "$comp" && test "$PARAMS" != "$comp" ; then
-              CMAKE_FLAGS="-DMPI_$(echo $i| $SED 's/^CC$/C/')""_COMPILER:FILEPATH=`which $comp` $CMAKE_FLAGS"
-            fi
-        fi
-      done
+    fi
+  done
       # create build directory if requested
       test -d "$ABS_BUILDDIR" || mkdir -p "$ABS_BUILDDIR"
       SRCDIR="$PWD"
       cd "$ABS_BUILDDIR"
-      # check for libtool libs, which might break modules depending on this module
-      libname=$(module_la_libname $module)
-      found_libs=$(find dune -name \*.la) # find intermediate libtool libs
-      if test -e lib; then
-        found_libs="$found_libs"$(find lib -name $libname) #find primary lib
-      fi
-      test -n "$found_libs" && \
-          echo "ERROR: your build directory $ABS_BUILDDIR contains libtool built libraries $found_libs, please cleanup" && \
-          exit 1
+
       # Prevent using an empty module path
       if test -n "$CMAKE_MODULE_PATH"; then
           _MODULE_PATH="-DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\""
       fi
-      echo "$PREPARAMS $CMAKE $_MODULE_PATH $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\""
-      eval $PREPARAMS $CMAKE "$_MODULE_PATH $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\"" || exit 1
+      echo "$CMAKE $_MODULE_PATH $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\""
+      eval $CMAKE "$_MODULE_PATH $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\"" || exit 1
 }
 
 run_default_make () {
