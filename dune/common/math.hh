@@ -141,36 +141,20 @@ namespace Dune
       static const bool value = decltype(test<T>(nullptr))::value;
   };
 
-
-  /** Returns whether a given type can call a function 'FNAME' */
-  /*maybe use preprocessor later on*/
-  template<class T>
-  struct canCallIsNaN {
-   private:
-      template<class U>
-      static auto test(U &u) -> decltype(isNaN(u), std::true_type());
-
-      template<class U>
-      static auto test(...) -> decltype(std::false_type());
-
-    public:
-      static const bool value = decltype(test<T>(0))::value;
-  };
-
-  struct NanTest {};
-
   namespace MathOverloads {
+    //necessary to find the following overloads in this namespace
     struct ADLTag {};
 
-    /* default implementation, only applicable id isNaN is defined for T*/
-    template<class T, typename U = typename std::enable_if_t<canCallIsNaN<T>::value> >
-    auto isNaN(T &&t, PriorityTag<1>, ADLTag) {
+    /* Default implementation, only applicable if isNaN is defined for T.
+       Otherwise, SFINAE prevents the overload from being considered.*/
+    template<class T>
+    auto isNaN(const T &t, PriorityTag<1>, ADLTag) -> decltype(isNaN(t)) {
       return isNaN(t);
     }
 
     /* last resort: rerouting to std::isnan and potential customizations*/
     template<class T>
-    auto isNaN(T &&t, PriorityTag<0>, ADLTag) {
+    auto isNaN(const T &t, PriorityTag<0>, ADLTag) {
       using std::isnan;
       return isnan(t);
     }
@@ -178,16 +162,20 @@ namespace Dune
   } //MathOverloads
 
   namespace MathImpl {
-
     struct isNaNImpl {
       template<class T>
-      constexpr auto operator()(T &&t) const {
-        return  MathOverloads::isNaN(std::forward<T>(t), PriorityTag<10>{}, MathOverloads::ADLTag{});
+      constexpr auto operator()(const T &t) const {
+        return isNaN(t, PriorityTag<10>{}, MathOverloads::ADLTag{});
       }
     };
-
   } //MathImpl
 
+
+  /* We need to make sure a call to Dune::isNaN(t) leads to a call to the
+     functor defined in the MathImpl namespace above. Defining the functor
+     in the Dune namespace would yield ambiguousity. Therefore we need to
+     pass the Dune::isNaN() call which also allows us to simply call
+     Dune::isNaN() without actually creating a Dune::isNaN functor everytime */
   template<class T>
   struct MathDummy
   {
@@ -202,11 +190,13 @@ namespace Dune
   }
 
   namespace MathOverloads {
-    auto isNaN(NanTest &&t, PriorityTag<2>, ADLTag) {
-      return true;
+    /**Overload for complex types*/
+    template<class T, class = std::enable_if_t<isComplexLike<T>::value> >
+    auto isNaN(const T &t, PriorityTag<2>, ADLTag) {
+      using Dune::isNaN;
+      return isNaN(real(t)) || isNaN(imag(t));
     }
-  }
-
+  } //MathOverloads
 }
 
 #endif // #ifndef DUNE_MATH_HH
