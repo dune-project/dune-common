@@ -117,10 +117,10 @@ class SimpleGenerator(object):
         return module
 
 from dune.common.hashit import hashIt
-def simpleGenerator(typeName, namespace, pythonname=None, filename=None):
-    generator = SimpleGenerator(typeName, namespace, pythonname, filename)
+def simpleGenerator(inc, baseType, namespace, pythonname=None, filename=None):
+    generator = SimpleGenerator(baseType, namespace, pythonname, filename)
     def load(includes, typeName, *args):
-        includes = includes + ["dune/mymodule/py/foo.hh"]
-        moduleName = "foo_" + hashIt(typeName)
+        includes = includes + inc
+        moduleName = baseType + "_" + hashIt(typeName)
         return generator.load(includes, typeName, moduleName, *args)
     return load
