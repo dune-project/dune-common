@@ -145,35 +145,51 @@ namespace Dune
     //necessary to find the following overloads in this namespace
     struct ADLTag {};
 
-    /* Default implementation, only applicable if isNaN is defined for T.
-       Otherwise, SFINAE prevents the overload from being considered.*/
-    template<class T>
-    auto isNaN(const T &t, PriorityTag<1>, ADLTag) -> decltype(isNaN(t)) {
-      return isNaN(t);
+    /*  <1> provides a default implementation, only applicable if isNaN
+            is defined for T. Otherwise, SFINAE prevents the overload
+            from being considered.
+        <0> provides a call to the corresponding function in the std namespace
+            and potential customizations */
+#define DUNE_COMMON_MATH_ISFUNCTION(function, stdfunction)  \
+    template<class T>                                       \
+    auto function(const T &t, PriorityTag<1>, ADLTag)       \
+                  -> decltype(function(t)) {                \
+      return function(t);                                   \
+    }                                                       \
+    template<class T>                                       \
+    auto function(const T &t, PriorityTag<0>, ADLTag) {     \
+      using std::stdfunction;                               \
+      return stdfunction(t);                                \
     }
 
-    /* last resort: rerouting to std::isnan and potential customizations*/
-    template<class T>
-    auto isNaN(const T &t, PriorityTag<0>, ADLTag) {
-      using std::isnan;
-      return isnan(t);
-    }
+    DUNE_COMMON_MATH_ISFUNCTION(isNaN,isnan);
+    DUNE_COMMON_MATH_ISFUNCTION(isInf,isinf);
+    DUNE_COMMON_MATH_ISFUNCTION(isFinite,isfinite);
+#undef DUNE_COMMON_MATH_ISFUNTION
 
   namespace MathImpl {
-    struct isNaNImpl {
-      template<class T>
-      constexpr auto operator()(const T &t) const {
-        return isNaN(t, PriorityTag<10>{}, MathOverloads::ADLTag{});
-      }
+
+#define DUNE_COMMON_MATH_ISFUNCTION_FUNCTOR(function)                     \
+    struct function##Impl {                                              \
+      template<class T>                                                  \
+      constexpr auto operator()(const T &t) const {                      \
+        return function(t, PriorityTag<10>{}, MathOverloads::ADLTag{});  \
+      }                                                                  \
     };
+
+    DUNE_COMMON_MATH_ISFUNCTION_FUNCTOR(isNaN);
+    DUNE_COMMON_MATH_ISFUNCTION_FUNCTOR(isInf);
+    DUNE_COMMON_MATH_ISFUNCTION_FUNCTOR(isFinite);
+#undef DUNE_COMMON_MATH_ISFUNCTION_FUNCTOR
+
   } //MathImpl
 
 
-  /* We need to make sure a call to Dune::isNaN(t) leads to a call to the
+  /* We need to make sure a call to Dune::is*(t) leads to a call to the
      functor defined in the MathImpl namespace above. Defining the functor
      in the Dune namespace would yield ambiguousity. Therefore we need to
-     pass the Dune::isNaN() call which also allows us to simply call
-     Dune::isNaN() without actually creating a Dune::isNaN functor everytime */
+     pass the Dune::is*() call which also allows us to simply call
+     Dune::is*() without actually creating a Dune::is* functor everytime */
   template<class T>
   struct MathDummy
   {
@@ -182,14 +198,28 @@ namespace Dune
 
   namespace {
     constexpr auto const &isNaN = MathDummy<MathImpl::isNaNImpl>::value;
+    constexpr auto const &isInf = MathDummy<MathImpl::isInfImpl>::value;
+    constexpr auto const &isFinite = MathDummy<MathImpl::isFiniteImpl>::value;
   }
 
   namespace MathOverloads {
-    /**Overload for complex types*/
+    /**Overloads for complex types*/
     template<class T, class = std::enable_if_t<isComplexLike<T>::value> >
     auto isNaN(const T &t, PriorityTag<2>, ADLTag) {
       using Dune::isNaN;
       return isNaN(real(t)) || isNaN(imag(t));
+    }
+
+    template<class T, class = std::enable_if_t<isComplexLike<T>::value> >
+    auto isInf(const T &t, PriorityTag<2>, ADLTag) {
+      using Dune::isInf;
+      return isInf(real(t)) || isInf(imag(t));
+    }
+
+    template<class T, class = std::enable_if_t<isComplexLike<T>::value> >
+    auto isFinite(const T &t, PriorityTag<2>, ADLTag) {
+      using Dune::isFinite;
+      return isFinite(real(t)) && isFinite(imag(t));
     }
   } //MathOverloads
 }
