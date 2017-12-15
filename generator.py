@@ -115,3 +115,12 @@ class SimpleGenerator(object):
         module = builder.load(moduleName, source, self.pythonName)
         # setattr(getattr(module,self.pythonName),"_module",module)
         return module
+
+from dune.common.hashit import hashIt
+def simpleGenerator(typeName, namespace, pythonname=None, filename=None):
+    generator = SimpleGenerator(typeName, namespace, pythonname, filename)
+    def load(includes, typeName, *args):
+        includes = includes + ["dune/mymodule/py/foo.hh"]
+        moduleName = "foo_" + hashIt(typeName)
+        return generator.load(includes, typeName, moduleName, *args)
+    return load
