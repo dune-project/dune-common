@@ -492,7 +492,7 @@ namespace Dune {
     for(std::size_t i=0; i<S; i++) {
       out[i] = isfinite(v[i]);
     }
-    return Simd::anyTrue(out);
+    return out;
   }
 
   template<class T, std::size_t S>
