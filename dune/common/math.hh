@@ -167,6 +167,18 @@ namespace Dune
     DUNE_COMMON_MATH_ISFUNCTION(isFinite,isfinite);
 #undef DUNE_COMMON_MATH_ISFUNTION
 
+    template<class T>
+    auto isUnordered(const T &t1, const T &t2, PriorityTag<1>, ADLTag)
+                  -> decltype(isUnordered(t1, t2)) {
+      return isUnordered(t);
+    }
+
+    template<class T>
+    auto isUnordered(const T &t1, const T &t2, PriorityTag<0>, ADLTag) {
+      using std::isunordered;
+      return isunordered(t);
+    }
+
   namespace MathImpl {
 
 #define DUNE_COMMON_MATH_ISFUNCTION_FUNCTOR(function)                     \
@@ -181,6 +193,13 @@ namespace Dune
     DUNE_COMMON_MATH_ISFUNCTION_FUNCTOR(isInf);
     DUNE_COMMON_MATH_ISFUNCTION_FUNCTOR(isFinite);
 #undef DUNE_COMMON_MATH_ISFUNCTION_FUNCTOR
+
+    struct isUnorderedImpl {
+      template<class T>
+      constexpr auto operator()(const T &t1, const T &t2) const {
+        return isUnordered(t, PriorityTag<10>{}, MathOverloads::ADLTag{});
+      }
+    };
 
   } //MathImpl
 
@@ -200,6 +219,7 @@ namespace Dune
     constexpr auto const &isNaN = MathDummy<MathImpl::isNaNImpl>::value;
     constexpr auto const &isInf = MathDummy<MathImpl::isInfImpl>::value;
     constexpr auto const &isFinite = MathDummy<MathImpl::isFiniteImpl>::value;
+    constexpr auto const &isUnordered = MathDummy<MathImpl::isUnorderedImpl>::value;
   }
 
   namespace MathOverloads {
