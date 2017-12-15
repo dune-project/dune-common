@@ -21,6 +21,8 @@
 #include "unused.hh"
 #include "boundschecking.hh"
 
+#include <dune/common/math.hh>
+
 namespace Dune {
 
   /** @addtogroup DenseMatVec
@@ -486,34 +488,37 @@ namespace Dune {
 #endif
 
   /* Overloads for common classification functions */
+  namespace MathOverloads {
 
-  // ! Returns whether all entries are finite
-  template<class K>
-  bool isfinite(const FieldVector<K,1> &b) {
-    using std::isfinite;
-    return isfinite(b[0])
-  }
+    // ! Returns whether all entries are finite
+    template<class K>
+    auto isFinite(const FieldVector<K,1> &b, PriorityTag<2>, ADLTag) {
+      using Dune::isFinite;
+      return isFinite(b[0])
+    }
 
-  // ! Returns whether any entry is infinite
-  template<class K>
-  bool isinf(const FieldVector<K,1> &b) {
-    using std::isinf;
-    return isinf(b[0])
-  }
+    // ! Returns whether any entry is infinite
+    template<class K>
+    bool isInf(const FieldVector<K,1> &b, PriorityTag<2>, ADLTag) {
+      using Dune::isInf;
+      return isInf(b[0])
+    }
 
-  // ! Returns whether any entry is NaN
-  template<class K, typename = std::enable_if_t<has_nan<K>::value>>
-  bool isnan(const FieldVector<K,1> &b) {
-    using std::isnan;
-    return isnan(b[0])
-  }
+    // ! Returns whether any entry is NaN
+    template<class K, typename = std::enable_if_t<has_nan<K>::value>>
+    bool isNaN(const FieldVector<K,1> &b, PriorityTag<2>, ADLTag) {
+      using Dune::isNaN;
+      return isNaN(b[0])
+    }
 
-  // ! Returns true if either b or c is NaN
-  template<class K, typename = std::enable_if_t<has_nan<K>::value>>
-  bool isunordered(const FieldVector<K,1> &b, const FieldVector<K,1> &c) {
-    using std::isunordered;
-    return isunordered(b[0],c[0]);
-  }
+    // ! Returns true if either b or c is NaN
+    template<class K, typename = std::enable_if_t<has_nan<K>::value>>
+    bool isUnordered(const FieldVector<K,1> &b, const FieldVector<K,1> &c,
+                     PriorityTag<2>, ADLTag) {
+      using Dune::isUnordered;
+      return isUnordered(b[0],c[0]);
+    }
+  } //MathOverloads
 
   /** @} end documentation */
 
