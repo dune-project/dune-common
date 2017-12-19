@@ -40,11 +40,14 @@ class Method(object):
         self.name = name
         self.args = args
         self.body = body
-        self.extra = extra
+        if extra is None:
+            self.extra = []
+        else:
+            self.extra = extra
 
     def register(self, cls="cls"):
         if self.body is None:
-            return cls + ".def( " + self.name + ", " + args + " )" + "".join(", " + e for e in self.extra) + " );\n"
+            return cls + ".def( \"" + self.name + "\", " + self.args + "".join(", " + e for e in self.extra) + " );\n"
         if self.args:
             source = cls + ".def( " + self.name + ", [] ( " + ", ".join(self.args) + " ) {"
         else:
@@ -121,6 +124,6 @@ def simpleGenerator(inc, baseType, namespace, pythonname=None, filename=None):
     generator = SimpleGenerator(baseType, namespace, pythonname, filename)
     def load(includes, typeName, *args):
         includes = includes + inc
-        moduleName = baseType + "_" + hashIt(typeName)
+        moduleName = namespace + "_" + baseType + "_" + hashIt(typeName)
         return generator.load(includes, typeName, moduleName, *args)
     return load
