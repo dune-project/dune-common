@@ -153,8 +153,10 @@ macro(find_dune_package module)
   if(DUNE_FIND_REQUIRED)
     set(required REQUIRED)
     set_package_properties(${module} PROPERTIES TYPE REQUIRED)
+    set(_warning_level "FATAL_ERROR")
   else()
     unset(required)
+    set(_warning_level "WARNING")
     set_package_properties(${module} PROPERTIES TYPE OPTIONAL)
   endif()
   if(DUNE_FIND_VERSION MATCHES "(>=|=|<=).*")
@@ -253,13 +255,15 @@ macro(find_dune_package module)
       endif()
     endforeach()
     if(NOT ${module}_dune_module)
-      message(FATAL_ERROR "Could not find dune.module file for module ${module} "
+      message(${_warning_level} "Could not find dune.module file for module ${module} "
         "in ${${module}_PREFIX},  ${${module}_PREFIX}/lib/dunecontrol/${module}/, "
         "${${module}_PREFIX}/lib64/dunecontrol/${module}/dune.module")
+      set(${module}_FOUND OFF)
     endif()
     if(module_version_wrong)
-      message(FATAL_ERROR "Could not find requested version of module ${module}. "
+      message(${warning_level} "Could not find requested version of module ${module}. "
         "Requested version was ${DUNE_FIND_VERSION}, found version is ${DUNE_FIND_MOD_VERSION_STRING}")
+      set(${module}_FOUND OFF)
     endif()
   else(${module}_FOUND)
     if(required)
