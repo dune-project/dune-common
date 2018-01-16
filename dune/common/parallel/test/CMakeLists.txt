@@ -12,5 +12,6 @@ dune_add_test(SOURCES syncertest.cc
               LINK_LIBRARIES dunecommon
               CMAKE_GUARD MPI_FOUND)
 
-dune_add_test(SOURCES variablesizecommunicatortest.cc
+dune_add_test(NAME varcommtest
+              SOURCES variablesizecommunicatortest.cc
               CMAKE_GUARD MPI_FOUND)
