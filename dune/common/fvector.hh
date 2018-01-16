@@ -491,32 +491,40 @@ namespace Dune {
   namespace MathOverloads {
 
     // ! Returns whether all entries are finite
-    template<class K>
-    auto isFinite(const FieldVector<K,1> &b, PriorityTag<2>, ADLTag) {
-      using Dune::isFinite;
-      return isFinite(b[0])
+    template<class K, int SIZE>
+    auto isFinite(const FieldVector<K,SIZE> &b, PriorityTag<2>, ADLTag) {
+      bool out = true;
+      for(int i=0; i<SIZE; i++) {
+        out &= Dune::isFinite(b[i]);
+      }
+      return out;
     }
 
     // ! Returns whether any entry is infinite
-    template<class K>
-    bool isInf(const FieldVector<K,1> &b, PriorityTag<2>, ADLTag) {
-      using Dune::isInf;
-      return isInf(b[0])
+    template<class K, int SIZE>
+    bool isInf(const FieldVector<K,SIZE> &b, PriorityTag<2>, ADLTag) {
+      bool out = false;
+      for(int i=0; i<SIZE; i++) {
+        out |= Dune::isInf(b[i]);
+      }
+      return out;
     }
 
     // ! Returns whether any entry is NaN
-    template<class K, typename = std::enable_if_t<has_nan<K>::value>>
-    bool isNaN(const FieldVector<K,1> &b, PriorityTag<2>, ADLTag) {
-      using Dune::isNaN;
-      return isNaN(b[0])
+    template<class K, int SIZE, typename = std::enable_if_t<has_nan<K>::value>>
+    bool isNaN(const FieldVector<K,SIZE> &b, PriorityTag<2>, ADLTag) {
+      bool out = false;
+      for(int i=0; i<SIZE; i++) {
+        out |= Dune::isNaN(b[i]);
+      }
+      return out;
     }
 
     // ! Returns true if either b or c is NaN
     template<class K, typename = std::enable_if_t<has_nan<K>::value>>
     bool isUnordered(const FieldVector<K,1> &b, const FieldVector<K,1> &c,
                      PriorityTag<2>, ADLTag) {
-      using Dune::isUnordered;
-      return isUnordered(b[0],c[0]);
+      return Dune::isUnordered(b[0],c[0]);
     }
   } //MathOverloads
 
