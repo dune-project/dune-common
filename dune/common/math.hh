@@ -128,18 +128,20 @@ namespace Dune
 
   /** Returns whether a given type behaves like std::complex<>, i.e. whether
       real() and imag() are defined*/
-  template<class T>
-  struct isComplexLike {
-    private:
-      //template<class U>
-      static auto test(T* u) -> decltype(u->real(), u->imag(), std::true_type());
+  namespace Impl {
+    template<class T>
+    struct isComplexLike {
+      private:
+        template<class U>
+        static auto test(U* u) -> decltype(u->real(), u->imag(), std::true_type());
 
-      //template<class U>
-      static auto test(...) -> decltype(std::false_type());
+        template<class U>
+        static auto test(...) -> decltype(std::false_type());
 
-    public:
-      static const bool value = decltype(test(0))::value;
-  };
+      public:
+        static const bool value = decltype(test<T>(0))::value;
+    };
+  } // namespace Impl
 
   namespace MathOverloads {
     //necessary to find the following overloads in this namespace
@@ -165,19 +167,20 @@ namespace Dune
     DUNE_COMMON_MATH_ISFUNCTION(isNaN,isnan);
     DUNE_COMMON_MATH_ISFUNCTION(isInf,isinf);
     DUNE_COMMON_MATH_ISFUNCTION(isFinite,isfinite);
-#undef DUNE_COMMON_MATH_ISFUNTION
+#undef DUNE_COMMON_MATH_ISFUNCTION
 
     template<class T>
     auto isUnordered(const T &t1, const T &t2, PriorityTag<1>, ADLTag)
                   -> decltype(isUnordered(t1, t2)) {
-      return isUnordered(t);
+      return isUnordered(t1, t2);
     }
 
     template<class T>
     auto isUnordered(const T &t1, const T &t2, PriorityTag<0>, ADLTag) {
       using std::isunordered;
-      return isunordered(t);
+      return isunordered(t1, t2);
     }
+  }
 
   namespace MathImpl {
 
@@ -197,49 +200,52 @@ namespace Dune
     struct isUnorderedImpl {
       template<class T>
       constexpr auto operator()(const T &t1, const T &t2) const {
-        return isUnordered(t, PriorityTag<10>{}, MathOverloads::ADLTag{});
+        return isUnordered(t1, t2, PriorityTag<10>{}, MathOverloads::ADLTag{});
       }
     };
 
   } //MathImpl
 
 
-  /* We need to make sure a call to Dune::is*(t) leads to a call to the
-     functor defined in the MathImpl namespace above. Defining the functor
-     in the Dune namespace would yield ambiguousity. Therefore we need to
-     pass the Dune::is*() call which also allows us to simply call
-     Dune::is*() without actually creating a Dune::is* functor everytime */
-  template<class T>
-  struct MathDummy
-  {
-    static constexpr T value{};
-  };
+  namespace Impl {
+    /* We need to make sure a call to Dune::is*(t) leads to a call to the
+       functor defined in the MathImpl namespace above. Defining the functor
+       in the Dune namespace would yield ambiguousity. Therefore we need to
+       pass the Dune::is*() call which also allows us to simply call
+       Dune::is*() without actually creating a Dune::is* functor everytime */
+    template<class T>
+    struct MathDummy
+    {
+      static constexpr T value{};
+    };
+
+    template<class T>
+    constexpr T MathDummy<T>::value;
+
+  } //namespace Impl
 
   namespace {
-    constexpr auto const &isNaN = MathDummy<MathImpl::isNaNImpl>::value;
-    constexpr auto const &isInf = MathDummy<MathImpl::isInfImpl>::value;
-    constexpr auto const &isFinite = MathDummy<MathImpl::isFiniteImpl>::value;
-    constexpr auto const &isUnordered = MathDummy<MathImpl::isUnorderedImpl>::value;
+    constexpr auto const &isNaN = Impl::MathDummy<MathImpl::isNaNImpl>::value;
+    constexpr auto const &isInf = Impl::MathDummy<MathImpl::isInfImpl>::value;
+    constexpr auto const &isFinite = Impl::MathDummy<MathImpl::isFiniteImpl>::value;
+    constexpr auto const &isUnordered = Impl::MathDummy<MathImpl::isUnorderedImpl>::value;
   }
 
   namespace MathOverloads {
-    /**Overloads for complex types*/
-    template<class T, class = std::enable_if_t<isComplexLike<T>::value> >
+    /*Overloads for complex types*/
+    template<class T, class = std::enable_if_t<Impl::isComplexLike<T>::value> >
     auto isNaN(const T &t, PriorityTag<2>, ADLTag) {
-      using Dune::isNaN;
-      return isNaN(real(t)) || isNaN(imag(t));
+      return Dune::isNaN(real(t)) || Dune::isNaN(imag(t));
     }
 
-    template<class T, class = std::enable_if_t<isComplexLike<T>::value> >
+    template<class T, class = std::enable_if_t<Impl::isComplexLike<T>::value> >
     auto isInf(const T &t, PriorityTag<2>, ADLTag) {
-      using Dune::isInf;
-      return isInf(real(t)) || isInf(imag(t));
+      return Dune::isInf(real(t)) || Dune::isInf(imag(t));
     }
 
-    template<class T, class = std::enable_if_t<isComplexLike<T>::value> >
+    template<class T, class = std::enable_if_t<Impl::isComplexLike<T>::value> >
     auto isFinite(const T &t, PriorityTag<2>, ADLTag) {
-      using Dune::isFinite;
-      return isFinite(real(t)) && isFinite(imag(t));
+      return Dune::isFinite(real(t)) && Dune::isFinite(imag(t));
     }
   } //MathOverloads
 }
