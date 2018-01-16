@@ -46,6 +46,7 @@ struct MyDataHandle
         {
             double index;
             buffer.read(index);
+            assert(std::abs(index-i) <= 0.1);
             std::cout<<index<<" ";
         }
         std::cout<<std::endl;
@@ -85,11 +86,14 @@ struct VarDataHandle
     void scatter(B& buffer, int i, int size)
     {
         std::cout<<rank<<": Scattering "<<size<<" entries for "<<i<<": ";
+        int tmp = 0;
         for(;size>0;--size)
         {
             double index;
             buffer.read(index);
+            assert(std::abs(index-(i+tmp) <= 0.001));
             std::cout<<index<<" ";
+            tmp++;
         }
         std::cout<<std::endl;
     }
@@ -106,6 +110,7 @@ int main(int argc, char** argv)
     int procs, rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &procs);
+    std::cout << "num procs: " << procs << std::endl;
     if(procs==1)
     {
         // Invent a consecutive index set with 11 indices [0, 10].  Set every
@@ -215,7 +220,7 @@ int main(int argc, char** argv)
 
         VarDataHandle vhandle(rank);
         MPI_Barrier(MPI_COMM_WORLD);
-        comm.forward(vhandle);
+        //comm.forward(vhandle);
         MPI_Barrier(MPI_COMM_WORLD);
         if(rank==0)
             std::cout<<"===================== backward ========================="<<std::endl;
