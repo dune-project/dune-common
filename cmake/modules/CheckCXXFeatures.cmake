@@ -484,6 +484,17 @@ check_cxx_source_compiles("
 " DUNE_SUPPORTS_CXX_THROW_IN_CONSTEXPR
   )
 
+# Check whether the stadard library supports aligned_alloc()
+check_cxx_source_compiles("
+  #include <cstdlib>
+  int main()
+  {
+    int* p = static_cast<int*>(aligned_alloc(64, 64*sizeof *p));
+  }
+" DUNE_HAVE_C_ALIGNED_ALLOC
+  )
+
+
 
 # ******************************************************************************
 #
