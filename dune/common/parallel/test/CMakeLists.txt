@@ -16,7 +16,10 @@ dune_add_test(SOURCES syncertest.cc
               TIMEOUT 300
               CMAKE_GUARD MPI_FOUND)
 
+<<<<<<< HEAD
 dune_add_test(SOURCES variablesizecommunicatortest.cc
               MPI_RANKS 1 2 4
               TIMEOUT 300
+=======
+>>>>>>> 6825911... [variablesizecommunicatortest] rework the way the communicator is being tested
               CMAKE_GUARD MPI_FOUND)
