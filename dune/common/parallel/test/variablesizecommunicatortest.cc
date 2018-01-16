@@ -220,7 +220,7 @@ int main(int argc, char** argv)
 
         VarDataHandle vhandle(rank);
         MPI_Barrier(MPI_COMM_WORLD);
-        //comm.forward(vhandle);
+        comm.forward(vhandle);
         MPI_Barrier(MPI_COMM_WORLD);
         if(rank==0)
             std::cout<<"===================== backward ========================="<<std::endl;
