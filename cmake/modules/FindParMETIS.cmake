@@ -50,7 +50,6 @@
 #    library, that should be used by :ref:`FindParMETIS`.
 #
 
-
 find_path(PARMETIS_INCLUDE_DIR parmetis.h
           PATHS ${PARMETIS_DIR} ${PARMETIS_ROOT}
           PATH_SUFFIXES include parmetis
@@ -87,18 +86,18 @@ if(PARMETIS_FOUND)
   set(ParMETIS_COMPILE_FLAGS "${CMAKE_REQUIRED_FLAGS} -DENABLE_PARMETIS=1")
 
   # search METIS library
-  find_library(METIS_LIBRARY metis
+  find_library(METIS_LIBRARY ${METIS_LIB_NAME}
                PATHS ${PARMETIS_DIR} ${PARMETIS_ROOT}
                PATH_SUFFIXES lib
                NO_DEFAULT_PATH)
-  find_library(METIS_LIBRARY metis)
+  find_library(METIS_LIBRARY ${METIS_LIB_NAME})
 
   # search ParMETIS library
-  find_library(PARMETIS_LIBRARY parmetis
+  find_library(PARMETIS_LIBRARY ${PARMETIS_LIB_NAME}
                PATHS ${PARMETIS_DIR} ${PARMETIS_ROOT}
                PATH_SUFFIXES lib
                NO_DEFAULT_PATH)
-  find_library(PARMETIS_LIBRARY parmetis)
+  find_library(PARMETIS_LIBRARY ${PARMETIS_LIB_NAME})
 
   set(_CMAKE_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES}") # do a backup
   # check ParMETIS library
