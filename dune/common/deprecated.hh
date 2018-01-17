@@ -205,7 +205,8 @@
 #  elif defined __INTEL_COMPILER
 #    define DUNE_NO_DEPRECATED_BEGIN \
          _Pragma("warning push") \
-         _Pragma("warning(disable:1478)")
+         _Pragma("warning(disable:1478)") \
+         _Pragma("warning(disable:1786)")
 #    define DUNE_NO_DEPRECATED_END _Pragma("warning pop")
 #  elif defined __GNUC__
 #    define DUNE_NO_DEPRECATED_BEGIN \
