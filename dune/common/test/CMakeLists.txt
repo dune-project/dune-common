@@ -273,6 +273,9 @@ dune_add_test(SOURCES optionaltest.cc
 dune_add_test(SOURCES versiontest.cc
               LINK_LIBRARIES dunecommon)
 
+dune_add_test(SOURCES unreachabletest.cc
+              LINK_LIBRARIES dunecommon)
+
 install(
   FILES
   arithmetictestsuite.hh
