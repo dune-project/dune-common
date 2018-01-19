@@ -126,9 +126,9 @@ namespace Dune
   }
 
 
-  /** Returns whether a given type behaves like std::complex<>, i.e. whether
-      real() and imag() are defined*/
   namespace Impl {
+    // Returns whether a given type behaves like std::complex<>, i.e. whether
+    // real() and imag() are defined
     template<class T>
     struct isComplexLike {
       private:
