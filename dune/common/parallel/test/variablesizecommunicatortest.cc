@@ -1,5 +1,6 @@
 #include <config.h>
 
+#include <array>
 #include <cstddef>
 #include <iostream>
 #include <utility>
@@ -12,6 +13,9 @@
 
 struct MyDataHandle
 {
+    std::array<bool, 100000> dataSendAt;
+    std::array<bool, 100000> dataRecievedAt;
+
     MyDataHandle(int r)
     : rank(r)
     {
@@ -24,9 +28,50 @@ struct MyDataHandle
     {
         return true;
     }
+    void init() {
+      dataSendAt.fill(false);
+      dataRecievedAt.fill(false);
+    }
+    void verify(int procs, int start, int end) {
+      std::array<int,4> indices= {0,0,0,0};
+      if(rank && rank < procs) {
+        indices[0] = start-1;
+        indices[1] = start;
+      }
+      if(rank < procs-1) {
+        indices[2] = end-1;
+        indices[3] = end;
+      }
+      for(int idx : indices) {
+        if(idx) {
+          if(dataSendAt[idx] && dataRecievedAt[idx]) {
+            dataSendAt[idx] = false;
+            dataRecievedAt[idx] = false;
+          }
+          else {
+            std::cerr << rank << ": No communication at index " << idx << "!";
+            std::abort();
+          }
+        }
+      }
+      for(int i=0; i<100000; i++) {
+        if(dataSendAt[i] || dataRecievedAt[i]) {
+          std::cerr << rank << ": Unexpected communication at index " << i << "!";
+          std::abort();
+        }
+      }
+    }
     template<class B>
     void gather(B& buffer, int i)
     {
+        if(!dataSendAt[i]) {
+          dataSendAt[i] = true;
+        }
+        else {
+          std::cerr << rank << ": Gather() was called twice for index " << i << "! \n";
+          std::abort();
+        }
+
         std::cout<<rank<<": Gathering "<<i<<std::endl;
         double d=i;
         buffer.write(d);
@@ -36,13 +81,29 @@ struct MyDataHandle
     template<class B>
     void scatter(B& buffer, int i, int size)
     {
+        if(!dataRecievedAt[i]) {
+          dataRecievedAt[i] = true;
+        }
+        else {
+          std::cerr << rank << ": Scatter() was called twice for index " << i << "! \n";
+          std::abort();
+        }
+
         std::cout<<rank<<": Scattering "<<size<<" entries for "<<i<<": ";
+        if(size != 3) {
+          std::cerr << "\n" << rank <<": Number of communicated entries does not match! \n";
+          std::abort();
+        }
+
         for(;size>0;--size)
         {
             double index;
             buffer.read(index);
-            assert(std::abs(index-i) <= 0.1);
             std::cout<<index<<" ";
+            if(std::abs(index-i) >= 0.001) {
+              std::cerr << "\n" << rank << ": Communicated value does not match! \n";
+              std::abort();
+            }
         }
         std::cout<<std::endl;
     }
@@ -77,13 +138,21 @@ struct VarDataHandle
     void scatter(B& buffer, int i, int size)
     {
         std::cout<<rank<<": Scattering "<<size<<" entries for "<<i<<": ";
+        if(size != i%5) {
+          std::cerr << "\n" << rank <<": Number of communicated entries does not match! \n";
+          std::abort();
+        }
+
         int tmp = 0;
         for(;size>0;--size)
         {
             double index;
             buffer.read(index);
-            assert(std::abs(index-(i+tmp) <= 0.001));
             std::cout<<index<<" ";
+            if(std::abs(index-(i+tmp) >= 0.001)) {
+              std::cerr << "\n" << rank << ": Communicated value does not match! \n";
+              std::abort();
+            }
             tmp++;
         }
         std::cout<<std::endl;
@@ -117,8 +186,10 @@ int main(int argc, char** argv)
         inf[0]=std::make_pair(send, recv);
         Dune::VariableSizeCommunicator<> comm(MPI_COMM_SELF, inf, 6);
         MyDataHandle handle(0);
+        handle.init();
         comm.forward(handle);
         std::cout<<"===================== backward ========================="<<std::endl;
+        handle.init();
         comm.backward(handle);
         std::cout<<"================== variable size ======================="<<std::endl;
         VarDataHandle vhandle(0);
@@ -179,17 +250,22 @@ int main(int argc, char** argv)
 
         Dune::VariableSizeCommunicator<> comm(MPI_COMM_WORLD, inf, 6);
         MyDataHandle handle(rank);
+        handle.init();
         comm.forward(handle);
+        MPI_Barrier(MPI_COMM_WORLD);
+        handle.verify(procs, start, end);
         MPI_Barrier(MPI_COMM_WORLD);
         if(rank==0)
             std::cout<<"===================== backward ========================="<<std::endl;
         MPI_Barrier(MPI_COMM_WORLD);
+        handle.init();
         comm.backward(handle);
+        MPI_Barrier(MPI_COMM_WORLD);
+        handle.verify(procs, start, end);
         MPI_Barrier(MPI_COMM_WORLD);
         if(rank==0)
             std::cout<<"================== variable size ======================="<<std::endl;
         MPI_Barrier(MPI_COMM_WORLD);
-
         VarDataHandle vhandle(rank);
         MPI_Barrier(MPI_COMM_WORLD);
         comm.forward(vhandle);
