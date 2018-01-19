@@ -143,15 +143,35 @@ namespace Dune
     };
   } // namespace Impl
 
+  //! namespace for customization of math functions with Dune-Semantics
+  /**
+     You can add overloads for the Dune-semantics of math-functions in this
+     namespace.  These overloads will be used by functors like `Dune::isNaN`
+     to implement these functions, and will be preferred over functions found
+     by ADL, or the corresponding functions from the standard (whether they
+     are found by ADL or in the namespace `std`.
+
+     PriorityTag
+     ===========
+
+     There are two predefined priorities:
+
+     <1> provides a default implementation, only applicable if the
+         camelCase-Version of the function (e.g. `isNaN`) can be found via ADL
+         for an argument of type `T`.  (Otherwise the overload should not
+         participate in overload resolution.)
+
+     <0> provides a default implementation that forwards the call to the
+         lower-case version of the function (e.g. `isnan`), found via ADL and
+         the namespace `std`.
+
+     Any higher priority up to 10 can be used by other overloads.
+    */
   namespace MathOverloads {
-    //necessary to find the following overloads in this namespace
+
+    //! Tag to make sure the functions in this namespace can be found by ADL.
     struct ADLTag {};
 
-    /*  <1> provides a default implementation, only applicable if isNaN
-            is defined for T. Otherwise, SFINAE prevents the overload
-            from being considered.
-        <0> provides a call to the corresponding function in the std namespace
-            and potential customizations */
 #define DUNE_COMMON_MATH_ISFUNCTION(function, stdfunction)  \
     template<class T>                                       \
     auto function(const T &t, PriorityTag<1>, ADLTag)       \
@@ -184,7 +204,11 @@ namespace Dune
 
   namespace MathImpl {
 
-#define DUNE_COMMON_MATH_ISFUNCTION_FUNCTOR(function)                     \
+    // NOTE: it is important that these functors have names different from the
+    // names of the functions they are forwarding to.  Otherwise the
+    // unqualified call would find the functor type, not a function, and ADL
+    // would never be attempted.
+#define DUNE_COMMON_MATH_ISFUNCTION_FUNCTOR(function)                   \
     struct function##Impl {                                              \
       template<class T>                                                  \
       constexpr auto operator()(const T &t) const {                      \
@@ -208,11 +232,12 @@ namespace Dune
 
 
   namespace Impl {
-    /* We need to make sure a call to Dune::is*(t) leads to a call to the
-       functor defined in the MathImpl namespace above. Defining the functor
-       in the Dune namespace would yield ambiguousity. Therefore we need to
-       pass the Dune::is*() call which also allows us to simply call
-       Dune::is*() without actually creating a Dune::is* functor everytime */
+    /* This helper has a math functor as a static constexpr member.  Doing
+       this as a static member of a template struct means we can do this
+       without violating the ODR or putting the definition into a seperate
+       compilation unit, while still still ensuring the functor is the same
+       lvalue across all compilation units.
+     */
     template<class T>
     struct MathDummy
     {
@@ -225,9 +250,39 @@ namespace Dune
   } //namespace Impl
 
   namespace {
+    /* Provide the math functors directly in the `Dune` namespace.
+
+       This actually declares a different name in each translation unit, but
+       they all resolve to the same lvalue.
+    */
+
+    //! check wether the argument is NaN
+    /**
+     * Dune-Semantic: for multi-valued types (complex, vectors), check whether
+     * *any* value is NaN.
+     */
     constexpr auto const &isNaN = Impl::MathDummy<MathImpl::isNaNImpl>::value;
+
+    //! check wether the argument is infinite or NaN
+    /**
+     * Dune-Semantic: for multi-valued types (complex, vectors), check whether
+     * *any* value is infinite or NaN.
+     */
     constexpr auto const &isInf = Impl::MathDummy<MathImpl::isInfImpl>::value;
+
+    //! check wether the argument is finite and non-NaN
+    /**
+     * Dune-Semantic: for multi-valued types (complex, vectors), check whether
+     * *all* values are finite and non-NaN.
+     */
     constexpr auto const &isFinite = Impl::MathDummy<MathImpl::isFiniteImpl>::value;
+
+    //! check wether the arguments are ordered
+    /**
+     * Dune-Semantic: for multi-valued types (complex, vectors), there is
+     * never an ordering, so at the moment these types are not supported as
+     * arguments.
+     */
     constexpr auto const &isUnordered = Impl::MathDummy<MathImpl::isUnorderedImpl>::value;
   }
 
