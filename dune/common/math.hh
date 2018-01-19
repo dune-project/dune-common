@@ -9,6 +9,7 @@
 
 #include <cmath>
 #include <complex>
+#include <type_traits>
 
 #include <dune/common/typeutilities.hh>
 
