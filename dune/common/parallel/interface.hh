@@ -241,7 +241,7 @@ namespace Dune
     /**
      * @brief Get the MPI Communicator.
      */
-    MPI_Comm communicator() const;
+    MPIHelper::MPICommunicator communicator() const;
 
     /**
      * @brief Get information about the interfaces.
@@ -253,12 +253,12 @@ namespace Dune
      */
     const InformationMap& interfaces() const;
 
-    Interface(MPI_Comm comm)
+    Interface(MPIHelper::MPICommunicator comm)
       : communicator_(comm), interfaces_()
     {}
 
     Interface()
-      : communicator_(MPI_COMM_NULL), interfaces_()
+      : communicator_(), interfaces_()
     {}
 
     /**
@@ -273,7 +273,7 @@ namespace Dune
 
     bool operator==(const Interface& o) const
     {
-      if(communicator_!=o.communicator_)
+      if(communicator_)
         return false;
       if(interfaces_.size()!=o.interfaces_.size())
         return false;
@@ -311,7 +311,7 @@ namespace Dune
     InformationMap& interfaces();
 
     /** @brief The MPI communicator we use. */
-    MPI_Comm communicator_;
+    MPIHelper::MPICommunicator communicator_;
 
   private:
     /**
@@ -364,10 +364,6 @@ namespace Dune
 
     const const_iterator end=remoteIndices.end();
 
-    int rank;
-
-    MPI_Comm_rank(remoteIndices.communicator(), &rank);
-
     // Allocate memory for the type construction.
     for(const_iterator process=remoteIndices.begin(); process != end; ++process) {
       // Messure the number of indices send to the remote process first
@@ -412,7 +408,7 @@ namespace Dune
     }
   }
 
-  inline MPI_Comm Interface::communicator() const
+  inline MPIHelper::MPICommunicator Interface::communicator() const
   {
     return communicator_;
 
@@ -433,8 +429,7 @@ namespace Dune
   {
     typedef InformationMap::const_iterator const_iterator;
     const const_iterator end=interfaces_.end();
-    int rank;
-    MPI_Comm_rank(communicator(), &rank);
+    int rank = communicator().rank();
 
     for(const_iterator infoPair=interfaces_.begin(); infoPair!=end; ++infoPair) {
       {
@@ -504,10 +499,13 @@ namespace Dune
     free();
   }
   /** @} */
+}
 
-  inline std::ostream& operator<<(std::ostream& os, const Interface& interface)
+namespace std
+{
+  inline ostream& operator<<(ostream& os, const Dune::Interface& interface)
   {
-    typedef Interface::InformationMap InfoMap;
+    typedef Dune::Interface::InformationMap InfoMap;
     typedef InfoMap::const_iterator Iter;
     for(Iter i=interface.interfaces().begin(), end = interface.interfaces().end();
         i!=end; ++i)
@@ -522,7 +520,7 @@ namespace Dune
     }
     return os;
   }
-}
+} // end namespace std
 #endif // HAVE_MPI
 
 #endif

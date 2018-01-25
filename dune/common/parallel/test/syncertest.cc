@@ -283,8 +283,8 @@ bool testIndicesSyncer()
   indexSet.endResize();
   changedIndexSet.endResize();
 
-  Dune::RemoteIndices<ParallelIndexSet> remoteIndices(indexSet, indexSet, MPI_COMM_WORLD);
-  Dune::RemoteIndices<ParallelIndexSet> changedRemoteIndices(changedIndexSet, changedIndexSet, MPI_COMM_WORLD);
+  Dune::RemoteIndices<ParallelIndexSet> remoteIndices(indexSet, indexSet, Dune::MPIHelper::getCommunicator());
+  Dune::RemoteIndices<ParallelIndexSet> changedRemoteIndices(changedIndexSet, changedIndexSet, Dune::MPIHelper::getCommunicator());
 
   remoteIndices.rebuild<false>();
   changedRemoteIndices.rebuild<false>();

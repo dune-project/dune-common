@@ -381,7 +381,7 @@ namespace Dune
      * null reference might be returned. To be save use the throwing alternative at.
      */
     inline IndexPair&
-    operator[](const GlobalIndex& global);
+    operator[](const GlobalIndex& global) noexcept;
 
     /**
      * @brief Find the index pair with a specific global id.
@@ -406,7 +406,7 @@ namespace Dune
      * null reference might be returned. To be save use the throwing alternative at.
      */
     inline const IndexPair&
-    operator[](const GlobalIndex& global) const;
+    operator[](const GlobalIndex& global) const noexcept;
 
     /**
      * @brief Find the index pair with a specific global id.
@@ -918,7 +918,7 @@ namespace Dune
 
   template<class TG, class TL, int N>
   inline const IndexPair<TG,TL>&
-  ParallelIndexSet<TG,TL,N>::operator[](const TG& global) const
+  ParallelIndexSet<TG,TL,N>::operator[](const TG& global) const noexcept
   {
     // perform a binary search
     int low=0, high=localIndices_.size()-1, probe=-1;
@@ -960,6 +960,7 @@ namespace Dune
 
   template<class TG, class TL, int N>
   inline IndexPair<TG,TL>& ParallelIndexSet<TG,TL,N>::operator[](const TG& global)
+  noexcept
   {
     // perform a binary search
     int low=0, high=localIndices_.size()-1, probe=-1;

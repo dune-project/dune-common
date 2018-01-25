@@ -3,27 +3,29 @@
 #ifndef DUNE_MPITRAITS_HH
 #define DUNE_MPITRAITS_HH
 
-/** @addtogroup ParallelCommunication
- *
- * @{
- */
-/**
- * @file
- * @brief Traits classes for mapping types onto MPI_Datatype.
- * @author Markus Blatt
- */
-
-#if HAVE_MPI
-
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
 #include <utility>
+#include <array>
 
+#if HAVE_MPI
 #include <mpi.h>
+#endif
 
 namespace Dune
 {
+  /** @addtogroup ParallelCommunication
+   *
+   * @{
+   */
+  /**
+   * @file
+   * @brief Traits classes for mapping types onto MPI_Datatype.
+   * @author Markus Blatt
+   */
+
+#if HAVE_MPI
   /**
    * @brief A traits class describing the mapping of types onto MPI_Datatypes.
    *
@@ -56,12 +58,13 @@ namespace Dune
   MPI_Datatype MPITraits<T>::datatype = MPI_DATATYPE_NULL;
 
 #ifndef DOXYGEN
+#if HAVE_MPI
 
   // A Macro for defining traits for the primitive data types
 #define ComposeMPITraits(p,m) \
   template<> \
   struct MPITraits<p>{ \
-    static inline MPI_Datatype getType(){ \
+    static MPI_Datatype getType(){ \
       return m; \
     } \
   }
@@ -77,6 +80,20 @@ namespace Dune
   ComposeMPITraits(float,MPI_FLOAT);
   ComposeMPITraits(double,MPI_DOUBLE);
   ComposeMPITraits(long double,MPI_LONG_DOUBLE);
+
+  struct Dune_MPI_Byte {};
+  ComposeMPITraits(Dune_MPI_Byte, MPI_BYTE);
+
+  template<class C>
+  class MPIPack;
+
+  template<class C>
+  struct MPITraits<MPIPack<C>>{
+    static constexpr MPI_Datatype getType(){
+      return MPI_PACKED;
+    }
+  };
+
 
 
 #undef ComposeMPITraits
@@ -189,12 +206,33 @@ namespace Dune
   template<typename T1, typename T2>
   MPI_Datatype MPITraits<std::pair<T1,T2> >::type=MPI_DATATYPE_NULL;
 
-#endif // !DOXYGEN
 
-} // namespace Dune
+  template<typename T, std::size_t n>
+  class MPITraits<std::array<T,n>>
+  {
 
-#endif // HAVE_MPI
+    static MPI_Datatype buildType()
+    {
+      MPI_Datatype type = MPI_DATATYPE_NULL;
+      MPI_Type_contiguous(n,MPITraits<T>::getType(),&type);
+      MPI_Type_commit(&type);
+      return type;
+    }
 
-/** @} group ParallelCommunication */
+  public:
+
+    static MPI_Datatype getType()
+    {
+      static MPI_Datatype type = buildType();
+      return type;
+    }
+
+  };
+
+#endif
+#endif
+#endif
+  /** @} */
+}
 
 #endif

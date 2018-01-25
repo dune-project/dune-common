@@ -150,8 +150,9 @@ dune_add_test(SOURCES mpicollectivecommunication.cc
 
 dune_add_test(SOURCES mpiguardtest.cc
               LINK_LIBRARIES dunecommon
-              MPI_RANKS 1 2 4 8
-              TIMEOUT 300)
+              MPI_RANKS 1 2
+              TIMEOUT 30
+              COMMAND ${CMAKE_CURRENT_BINARY_DIR}/mpiguardtest)
 
 dune_add_test(SOURCES mpihelpertest.cc
               LINK_LIBRARIES dunecommon

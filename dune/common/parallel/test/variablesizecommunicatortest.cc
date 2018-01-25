@@ -1,20 +1,12 @@
-// -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-// vi: set et ts=4 sw=4 sts=4:
-#include <config.h>
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
-#include <cstddef>
-#include <iostream>
-#include <utility>
+#include<iostream>
 
-#include <mpi.h>
-
-#include <dune/common/parallel/interface.hh>
-#include <dune/common/parallel/variablesizecommunicator.hh>
 #include <dune/common/unused.hh>
+#include <dune/common/parallel/managedmpicomm.hh>
 
-// For each communicated index, send convert the index to a `double` and send
-// it three times on the sending side.  On the receiving side, simply print
-// the received data.
 struct MyDataHandle
 {
     MyDataHandle(int r)
@@ -57,10 +49,6 @@ struct MyDataHandle
     }
 };
 
-// On the sending side, for each index to send, send bewteen 0 and 4 numbers
-// (precisely: `index % 5` numbers).  The first number is the index converted
-// to `double`, incrementing by one for each consecutive number.  On the
-// receiving side just print the received numbers.
 struct VarDataHandle
 {
     VarDataHandle(int r)
@@ -100,6 +88,8 @@ struct VarDataHandle
 
 };
 
+#include<dune/common/parallel/variablesizecommunicator.hh>
+
 int main(int argc, char** argv)
 {
     MPI_Init(&argc, &argv);
@@ -108,9 +98,6 @@ int main(int argc, char** argv)
     MPI_Comm_size(MPI_COMM_WORLD, &procs);
     if(procs==1)
     {
-        // Invent a consecutive index set with 11 indices [0, 10].  Set every
-        // even index to communicate with ourself.  Then use the data handles
-        // defined at the top of this file to do some test communications.
         typedef Dune::VariableSizeCommunicator<>::InterfaceMap Interface;
         Dune::InterfaceInformation send, recv;
         send.reserve(6);
@@ -122,7 +109,7 @@ int main(int argc, char** argv)
             recv.add(i);
         Interface inf;
         inf[0]=std::make_pair(send, recv);
-        Dune::VariableSizeCommunicator<> comm(MPI_COMM_SELF, inf, 6);
+        Dune::VariableSizeCommunicator<> comm(Dune::MPIHelper::MPICommunicator::comm_self(), inf, 6);
         MyDataHandle handle(0);
         comm.forward(handle);
         std::cout<<"===================== backward ========================="<<std::endl;
@@ -141,22 +128,11 @@ int main(int argc, char** argv)
         // and we check for deadlocks.
         if(procs>2)
             --procs;
-
-        // Partition a consecutive set of indices among all active ranks
-        // (where the final rank possibly excluded above is considered
-        // inactive).  Set up interfaces so each rank communicates with its
-        // predecessors at the two indices next to the common partition
-        // boundary, and likewise for the successor.  Then use the data
-        // handles defined at the top of this file to do some test
-        // communications.
-        int N=100000; // number of indices
+        int N=100000;
         int num_per_proc=N/procs;
-        // start is our first index, end is one-past our last index.
         int start, end;
         if(rank<N%procs)
         {
-            // if the #active ranks does not divide #indices, lower ranks get
-            // an additional index in their range
             start=rank*(num_per_proc+1);
             end=(rank+1)*(num_per_proc+1);
         }
@@ -165,15 +141,12 @@ int main(int argc, char** argv)
             start=(N%procs)+rank*(num_per_proc);
             end=start+num_per_proc;
         }
-        // sanity check
         if(rank==procs-1)
             assert(N==end);
         typedef Dune::VariableSizeCommunicator<>::InterfaceMap Interface;
         Interface inf;
         if(rank && rank<procs) // rank==procs might hold and produce a deadlock otherwise!
         {
-            // left interface: communicate our first index and our
-            // predecessor's last index with our predecessor
             Dune::InterfaceInformation send, recv;
             send.reserve(2);
             recv.reserve(2);
@@ -185,8 +158,7 @@ int main(int argc, char** argv)
         }
         if(rank<procs-1)
         {
-            // right interface: communicate our last index and our successor's
-            // first index with our successor
+
             Dune::InterfaceInformation send, recv;
             send.reserve(2);
             recv.reserve(2);
@@ -196,11 +168,10 @@ int main(int argc, char** argv)
             recv.add(end);
             inf[rank+1]=std::make_pair(send, recv);
         }
-        // report inactive rank
         if(rank==procs)
             std::cout<<" rank "<<rank<<" has empty interface "<<inf.size()<<std::endl;
 
-        Dune::VariableSizeCommunicator<> comm(MPI_COMM_WORLD, inf, 6);
+        Dune::VariableSizeCommunicator<> comm(Dune::MPIHelper::getCommunicator(), inf, 6);
         MyDataHandle handle(rank);
         comm.forward(handle);
         MPI_Barrier(MPI_COMM_WORLD);

@@ -1,24 +1,18 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef DUNE_COMMUNICATOR
-#define DUNE_COMMUNICATOR
+#ifndef DUNE_COMMON_PARALLEL_COMMUNICATOR_HH
+#define DUNE_COMMON_PARALLEL_COMMUNICATOR_HH
+
+#include "remoteindices.hh"
+#include "interface.hh"
+#include "pointtopointcommunication.hh"
+#include <dune/common/exceptions.hh>
+#include <dune/common/typetraits.hh>
+#include <dune/common/stdstreams.hh>
 
 #if HAVE_MPI
-
-#include <cassert>
-#include <cstddef>
-#include <iostream>
-#include <map>
-#include <type_traits>
-#include <utility>
-
-#include <mpi.h>
-
-#include <dune/common/exceptions.hh>
-#include <dune/common/parallel/interface.hh>
-#include <dune/common/parallel/remoteindices.hh>
-#include <dune/common/stdstreams.hh>
-#include <dune/common/unused.hh>
+// MPI header
+#include "managedmpicomm.hh"
 
 namespace Dune
 {
@@ -531,7 +525,7 @@ namespace Dune
      * and
      *
      * \code
-     * static const typename CommPolicy<Data>::IndexedType> gather(Data& data, int index, int subindex);
+     * static onst typename CommPolicy<Data>::IndexedType> gather(Data& data, int index, int subindex);
      *
      * static void scatter(Data& data, typename CommPolicy<Data>::IndexedType> value,
      *                     int index, int subindex);
@@ -562,7 +556,7 @@ namespace Dune
      * and
      *
      * \code
-     * static const typename CommPolicy<Data>::IndexedType> gather(Data& data, int index, int subindex);
+     * static onst typename CommPolicy<Data>::IndexedType> gather(Data& data, int index, int subindex);
      *
      * static void scatter(Data& data, typename CommPolicy<Data>::IndexedType> value,
      *                     int index, int subindex);
@@ -590,7 +584,7 @@ namespace Dune
      * and
      *
      * \code
-     * static const typename CommPolicy<Data>::IndexedType> gather(Data& data, int index, int subindex);
+     * static onst typename CommPolicy<Data>::IndexedType> gather(Data& data, int index, int subindex);
      *
      * static void scatter(Data& data, typename CommPolicy<Data>::IndexedType> value,
      *                     int index, int subindex);
@@ -620,6 +614,7 @@ namespace Dune
     typedef std::map<int,std::pair<InterfaceInformation,InterfaceInformation> >
     InterfaceMap;
 
+    typedef MPIHelper::MPICommunicator Comm;
 
     /**
      * @brief Functors for message size caculation
@@ -887,7 +882,7 @@ namespace Dune
      */
     std::map<int,std::pair<InterfaceInformation,InterfaceInformation> > interfaces_;
 
-    MPI_Comm communicator_;
+    Comm communicator_;
 
     /**
      * @brief Send and receive Data.
@@ -1032,14 +1027,12 @@ namespace Dune
   void DatatypeCommunicator<T>::createRequests(V& sendData, V& receiveData)
   {
     typedef std::map<int,std::pair<MPI_Datatype,MPI_Datatype> >::const_iterator MapIterator;
-    int rank;
     static int index = createForward ? 1 : 0;
     int noMessages = messageTypes.size();
     // allocate request handles
     requests_[index] = new MPI_Request[2*noMessages];
     const MapIterator end = messageTypes.end();
     int request=0;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     // Set up the requests for receiving first
     for(MapIterator process = messageTypes.begin(); process != end;
@@ -1091,8 +1084,7 @@ namespace Dune
     // Error checks
     int success=1, globalSuccess=0;
     if(send==MPI_ERR_IN_STATUS) {
-      int rank;
-      MPI_Comm_rank(this->remoteIndices_->communicator(), &rank);
+      int rank = this->remoteIndices_->communicator().rank();
       std::cerr<<rank<<": Error in sending :"<<std::endl;
       // Search for the error
       for(int i=noMessages; i< 2*noMessages; i++)
@@ -1109,8 +1101,7 @@ namespace Dune
     }
 
     if(receive==MPI_ERR_IN_STATUS) {
-      int rank;
-      MPI_Comm_rank(this->remoteIndices_->communicator(), &rank);
+      int rank = this->remoteIndices_->communicator().rank();
       std::cerr<<rank<<": Error in receiving!"<<std::endl;
       // Search for the error
       for(int i=0; i< noMessages; i++)
@@ -1153,8 +1144,6 @@ namespace Dune
     ::const_iterator const_iterator;
     typedef typename CommPolicy<Data>::IndexedTypeFlag Flag;
     const const_iterator end = interfaces_.end();
-    int lrank;
-    MPI_Comm_rank(communicator_, &lrank);
 
     bufferSize_[0]=0;
     bufferSize_[1]=0;
@@ -1268,8 +1257,6 @@ namespace Dune
     typedef typename InterfaceMap::const_iterator
     const_iterator;
 
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     const const_iterator end = interfaces.end();
     size_t index=0;
 
@@ -1303,9 +1290,6 @@ namespace Dune
     const_iterator;
     const const_iterator end = interfaces.end();
     size_t index = 0;
-
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     for(const_iterator interfacePair = interfaces.begin();
         interfacePair != end; ++interfacePair) {
@@ -1392,10 +1376,7 @@ namespace Dune
   template<class GatherScatter, bool FORWARD, class Data>
   void BufferedCommunicator::sendRecv(const Data& source, Data& dest)
   {
-    int rank, lrank;
-
-    MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-    MPI_Comm_rank(MPI_COMM_WORLD,&lrank);
+    int rank = communicator_.rank();
 
     typedef typename CommPolicy<Data>::IndexedType Type;
     Type *sendBuffer, *recvBuffer;
@@ -1423,8 +1404,10 @@ namespace Dune
 
     MessageGatherer<Data,GatherScatter,FORWARD,Flag>() (interfaces_, source, sendBuffer, sendBufferSize);
 
-    MPI_Request* sendRequests = new MPI_Request[messageInformation_.size()];
-    MPI_Request* recvRequests = new MPI_Request[messageInformation_.size()];
+    std::vector<Future<>> sendRequests;
+    sendRequests.reserve(messageInformation_.size());
+    std::vector<RecvFuture<Span<Dune_MPI_Byte*>>> recvRequests;
+    recvRequests.reserve(messageInformation_.size());
     /* Number of recvRequests that are not MPI_REQUEST_NULL */
     size_t numberOfRealRecvRequests = 0;
 
@@ -1435,31 +1418,27 @@ namespace Dune
     size_t i=0;
     int* processMap = new int[messageInformation_.size()];
 
+    PointToPointCommunication<decltype(communicator_)> ptpc(communicator_);
+
     for(const_iterator info = messageInformation_.begin(); info != end; ++info, ++i) {
       processMap[i]=info->first;
       if(FORWARD) {
         assert(info->second.second.start_*sizeof(typename CommPolicy<Data>::IndexedType)+info->second.second.size_ <= recvBufferSize );
         Dune::dvverb<<rank<<": receiving "<<info->second.second.size_<<" from "<<info->first<<std::endl;
         if(info->second.second.size_) {
-          MPI_Irecv(recvBuffer+info->second.second.start_, info->second.second.size_,
-                    MPI_BYTE, info->first, commTag_, communicator_,
-                    recvRequests+i);
+          recvRequests.push_back(ptpc.irecv(Span<Dune_MPI_Byte*>{
+              (Dune_MPI_Byte*)(recvBuffer+info->second.second.start_), info->second.second.size_
+                }, info->first, commTag_));
           numberOfRealRecvRequests += 1;
-        } else {
-          // Nothing to receive -> set request to inactive
-          recvRequests[i]=MPI_REQUEST_NULL;
         }
       }else{
         assert(info->second.first.start_*sizeof(typename CommPolicy<Data>::IndexedType)+info->second.first.size_ <= recvBufferSize );
         Dune::dvverb<<rank<<": receiving "<<info->second.first.size_<<" to "<<info->first<<std::endl;
         if(info->second.first.size_) {
-          MPI_Irecv(recvBuffer+info->second.first.start_, info->second.first.size_,
-                    MPI_BYTE, info->first, commTag_, communicator_,
-                    recvRequests+i);
+          recvRequests.push_back(ptpc.irecv(Span<Dune_MPI_Byte*>{
+              (Dune_MPI_Byte*)(recvBuffer+info->second.first.start_), info->second.first.size_
+                }, info->first, commTag_));
           numberOfRealRecvRequests += 1;
-        } else {
-          // Nothing to receive -> set request to inactive
-          recvRequests[i]=MPI_REQUEST_NULL;
         }
       }
     }
@@ -1472,38 +1451,25 @@ namespace Dune
         Dune::dvverb<<rank<<": sending "<<info->second.first.size_<<" to "<<info->first<<std::endl;
         assert(info->second.first.start_*sizeof(typename CommPolicy<Data>::IndexedType)+info->second.first.size_ <= sendBufferSize );
         if(info->second.first.size_)
-          MPI_Issend(sendBuffer+info->second.first.start_, info->second.first.size_,
-                     MPI_BYTE, info->first, commTag_, communicator_,
-                     sendRequests+i);
-        else
-          // Nothing to send -> set request to inactive
-          sendRequests[i]=MPI_REQUEST_NULL;
+          sendRequests.push_back(ptpc.isend(Span<Dune_MPI_Byte*>{
+              (Dune_MPI_Byte*)(sendBuffer+info->second.first.start_), info->second.first.size_
+                }, info->first, commTag_));
       }else{
         assert(info->second.second.start_*sizeof(typename CommPolicy<Data>::IndexedType)+info->second.second.size_ <= sendBufferSize );
         Dune::dvverb<<rank<<": sending "<<info->second.second.size_<<" to "<<info->first<<std::endl;
         if(info->second.second.size_)
-          MPI_Issend(sendBuffer+info->second.second.start_, info->second.second.size_,
-                     MPI_BYTE, info->first, commTag_, communicator_,
-                     sendRequests+i);
-        else
-          // Nothing to send -> set request to inactive
-          sendRequests[i]=MPI_REQUEST_NULL;
+          sendRequests.push_back(ptpc.isend(Span<Dune_MPI_Byte*>{
+              (Dune_MPI_Byte*)(sendBuffer+info->second.second.start_), info->second.second.size_
+                }, info->first, commTag_));
       }
 
     // Wait for completion of receive and immediately start scatter
     i=0;
-    //int success = 1;
-    int finished = MPI_UNDEFINED;
-    MPI_Status status; //[messageInformation_.size()];
-    //MPI_Waitall(messageInformation_.size(), recvRequests, status);
-
-    for(i=0; i< numberOfRealRecvRequests; i++) {
-      status.MPI_ERROR=MPI_SUCCESS;
-      MPI_Waitany(messageInformation_.size(), recvRequests, &finished, &status);
-      assert(finished != MPI_UNDEFINED);
-
-      if(status.MPI_ERROR==MPI_SUCCESS) {
-        int& proc = processMap[finished];
+    for(i=0; i< numberOfRealRecvRequests;) {
+      auto v = waitsome(recvRequests);
+      for(const auto& finished : v){
+        //int& proc = processMap[finished];
+        int proc = recvRequests[finished].source();
         typename InformationMap::const_iterator infoIter = messageInformation_.find(proc);
         assert(infoIter != messageInformation_.end());
 
@@ -1511,30 +1477,11 @@ namespace Dune
         assert(info.start_+info.size_ <= recvBufferSize);
 
         MessageScatterer<Data,GatherScatter,FORWARD,Flag>() (interfaces_, dest, recvBuffer+info.start_, proc);
-      }else{
-        std::cerr<<rank<<": MPI_Error occurred while receiving message from "<<processMap[finished]<<std::endl;
-        //success=0;
       }
+      i += v.size();
     }
-
-    MPI_Status recvStatus;
-
-    // Wait for completion of sends
-    for(i=0; i< messageInformation_.size(); i++)
-      if(MPI_SUCCESS!=MPI_Wait(sendRequests+i, &recvStatus)) {
-        std::cerr<<rank<<": MPI_Error occurred while sending message to "<<processMap[finished]<<std::endl;
-        //success=0;
-      }
-    /*
-       int globalSuccess;
-       MPI_Allreduce(&success, &globalSuccess, 1, MPI_INT, MPI_MIN, interface_->communicator());
-
-       if(!globalSuccess)
-       DUNE_THROW(CommunicationError, "A communication error occurred!");
-     */
+    waitall(sendRequests);
     delete[] processMap;
-    delete[] sendRequests;
-    delete[] recvRequests;
 
   }
 
@@ -1543,6 +1490,6 @@ namespace Dune
   /** @} */
 }
 
-#endif // HAVE_MPI
+#endif
 
 #endif

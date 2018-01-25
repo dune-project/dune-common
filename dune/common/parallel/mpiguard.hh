@@ -3,7 +3,7 @@
 
 /**
  * @file
- * @brief Implements a MPIGuard which detects an error on a remote process
+ * @brief Implements a MPIGuard which detects an error on a remote process.
  * @author Christian Engwer
  * @ingroup ParallelCommunication
  */
@@ -18,68 +18,8 @@
 
 namespace Dune
 {
-
-#ifndef DOXYGEN
-
-  /*
-     Interface class for the communication needed by MPIGuard
-   */
-  struct GuardCommunicator
-  {
-    // cleanup
-    virtual ~GuardCommunicator() {};
-    // all the communication methods we need
-    virtual int rank() = 0;
-    virtual int size() = 0;
-    virtual int sum(int i) = 0;
-    // create a new GuardCommunicator pointer
-    template <class C>
-    static GuardCommunicator * create(const C & c);
-  };
-
-  namespace {
-    /*
-       templated implementation of different communication classes
-     */
-    // the default class will always fail, due to the missing implementation of "sum"
-    template <class Imp>
-    struct GenericGuardCommunicator
-      : public GuardCommunicator
-    {};
-    // specialization for CollectiveCommunication
-    template <class T>
-    struct GenericGuardCommunicator< CollectiveCommunication<T> >
-      : public GuardCommunicator
-    {
-      const CollectiveCommunication<T> comm;
-      GenericGuardCommunicator(const CollectiveCommunication<T> & c) :
-        comm(c) {}
-      int rank() override { return comm.rank(); };
-      int size() override { return comm.size(); };
-      int sum(int i) override { return comm.sum(i); }
-    };
-
-#if HAVE_MPI
-    // specialization for MPI_Comm
-    template <>
-    struct GenericGuardCommunicator<MPI_Comm>
-      : public GenericGuardCommunicator< CollectiveCommunication<MPI_Comm> >
-    {
-      GenericGuardCommunicator(const MPI_Comm & c) :
-        GenericGuardCommunicator< CollectiveCommunication<MPI_Comm> >(
-          CollectiveCommunication<MPI_Comm>(c)) {}
-    };
-#endif
-  }   // anonymous namespace
-
-  template<class C>
-  GuardCommunicator * GuardCommunicator::create(const C & comm)
-  {
-    return new GenericGuardCommunicator<C>(comm);
-  }
-#endif
-
-  /*! @brief This exception is thrown if the MPIGuard detects an error on a remote process
+  /*! @brief This exception is thrown if the MPIGuard detects an error
+      on a remote process
       @ingroup ParallelCommunication
    */
   class MPIGuardError : public ParallelError {};
@@ -115,14 +55,18 @@ namespace Dune
      - MPIHelper
      - CollectiveCommunication
      - MPI_Comm
+
+     @note It is not necessary to call finalize before leaving the
+     scope, since the MPIGuard will also detect thrown exceptions by
+     std::uncaught_exception.
    */
   class MPIGuard
   {
-    GuardCommunicator * comm_;
+    MPIHelper::MPICommunicator comm;
     bool active_;
 
     // we don't want to copy this class
-    MPIGuard (const MPIGuard &);
+    MPIGuard (const MPIGuard &) = delete;
 
   public:
     /*! @brief create an MPIGuard operating on the Communicator of the global Dune::MPIHelper
@@ -130,9 +74,7 @@ namespace Dune
        @param active should the MPIGuard be active upon creation?
      */
     MPIGuard (bool active=true) :
-      comm_(GuardCommunicator::create(
-              MPIHelper::getCollectiveCommunication())),
-      active_(active)
+      MPIGuard(MPIHelper::getCommunicator(), active)
     {}
 
     /*! @brief create an MPIGuard operating on the Communicator of a special Dune::MPIHelper m
@@ -141,9 +83,7 @@ namespace Dune
        @param active should the MPIGuard be active upon creation?
      */
     MPIGuard (MPIHelper & m, bool active=true) :
-      comm_(GuardCommunicator::create(
-              m.getCollectiveCommunication())),
-      active_(active)
+      MPIGuard(m.getCommunicator(), active)
     {}
 
     /*! @brief create an MPIGuard operating on an arbitrary communicator.
@@ -158,20 +98,30 @@ namespace Dune
      */
     template <class C>
     MPIGuard (const C & comm, bool active=true) :
-      comm_(GuardCommunicator::create(comm)),
+      comm(comm),
       active_(active)
-    {}
+    {
+      // wait until all process are in safe area
+      CollectiveCommunication<C> cc(this->comm);
+      cc.barrier();
+    }
 
     /*! @brief destroy the guard and check for undetected exceptions
      */
-    ~MPIGuard()
+    ~MPIGuard() noexcept(false)
     {
+      dverb << "MPIGuard::~MPIGuard()" << std::endl;
       if (active_)
       {
-        active_ = false;
-        finalize(false);
+        if(std::uncaught_exception())
+        {
+          try{
+            finalize(false);
+          } catch(...) {}
+        } else {
+          finalize(true); // might throw
+        }
       }
-      delete comm_;
     }
 
     /*! @brief reactivate the guard.
@@ -196,15 +146,15 @@ namespace Dune
      */
     void finalize(bool success = true)
     {
-      int result = success ? 0 : 1;
-      bool was_active = active_;
       active_ = false;
-      result = comm_->sum(result);
-      if (result>0 && was_active)
-      {
-        DUNE_THROW(MPIGuardError, "Terminating process "
-                   << comm_->rank() << " due to "
-                   << result << " remote error(s)");
+      if (!success){
+        comm.revoke();
+        if(!std::uncaught_exception())
+          DUNE_THROW(MPIGuardError, "Terminating process "
+                     << comm.rank());
+      }else{
+        CollectiveCommunication<decltype(comm)> cc(comm);
+        cc.barrier();
       }
     }
   };

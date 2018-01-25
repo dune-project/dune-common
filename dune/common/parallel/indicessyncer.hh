@@ -5,6 +5,9 @@
 
 #include "indexset.hh"
 #include "remoteindices.hh"
+#include "managedmpicomm.hh"
+#include "pointtopointcommunication.hh"
+#include "span.hh"
 #include <dune/common/stdstreams.hh>
 #include <dune/common/sllist.hh>
 #include <dune/common/unused.hh>
@@ -57,6 +60,8 @@ namespace Dune
      */
     typedef Dune::RemoteIndices<ParallelIndexSet> RemoteIndices;
 
+
+    typedef typename RemoteIndices::Comm Comm;
     /**
      * @brief Constructor.
      *
@@ -353,7 +358,8 @@ namespace Dune
      * @param bufferSize The size of the buffer.
      * @param req The MPI_Request to setup the nonblocking send.
      */
-    void packAndSend(int destination, char* buffer, std::size_t bufferSize, MPI_Request& req);
+    void packAndSend(int destination, char* buffer, std::size_t bufferSize,
+                     Future<>& req);
 
     /**
      * @brief Recv and unpack the message from another process and add the indices.
@@ -553,7 +559,7 @@ namespace Dune
     // index sets must match.
     assert(remoteIndices.source_ == remoteIndices.target_);
     assert(remoteIndices.source_ == &indexSet);
-    MPI_Comm_rank(remoteIndices_.communicator(), &rank_);
+    rank_ = remoteIndices_.communicator().rank();
   }
 
   template<typename T>
@@ -829,8 +835,7 @@ namespace Dune
 
     Dune::dverb<<std::endl;
 
-    MPI_Request* requests = new MPI_Request[noOldNeighbours];
-    MPI_Status* statuses = new MPI_Status[noOldNeighbours];
+    std::vector<Future<>> requests(noOldNeighbours);
 
     // Pack Message data and start the sends
     for(std::size_t i = 0; i<noOldNeighbours; ++i)
@@ -848,16 +853,7 @@ namespace Dune
     delete[] receiveBuffer_;
 
     // Wait for the completion of the sends
-    // Wait for completion of sends
-    if(MPI_SUCCESS!=MPI_Waitall(noOldNeighbours, requests, statuses)) {
-      std::cerr<<": MPI_Error occurred while sending message"<<std::endl;
-      for(std::size_t i=0; i< noOldNeighbours; i++)
-        if(MPI_SUCCESS!=statuses[i].MPI_ERROR)
-          std::cerr<<"Destination "<<statuses[i].MPI_SOURCE<<" error code: "<<statuses[i].MPI_ERROR<<std::endl;
-    }
-
-    delete[] statuses;
-    delete[] requests;
+    waitall(requests);
 
     for(std::size_t i=0; i<noOldNeighbours; ++i)
       delete[] sendBuffers_[i];
@@ -882,7 +878,9 @@ namespace Dune
   }
 
   template<typename T>
-  void IndicesSyncer<T>::packAndSend(int destination, char* buffer, std::size_t bufferSize, MPI_Request& request)
+  void IndicesSyncer<T>::packAndSend(int destination, char* buffer,
+                                     std::size_t bufferSize,
+                                     Future<>& request)
   {
     typedef typename ParallelIndexSet::const_iterator IndexIterator;
 
@@ -980,7 +978,9 @@ namespace Dune
 
     Dune::dverb << rank_<<": Sending message of "<<bpos<<" bytes to "<<destination<<std::endl;
 
-    MPI_Issend(buffer, bpos, MPI_PACKED, destination, 345, remoteIndices_.communicator(),&request);
+    PointToPointCommunication<decltype(remoteIndices_.communicator())> ptpc;
+    request = ptpc.template isend<Span<MPIPack<Comm>*>, synchronous>
+      (Span<MPIPack<Comm>*>((MPIPack<Comm>*) buffer, bpos), destination, 345);
   }
 
   template<typename T>
@@ -1050,14 +1050,11 @@ namespace Dune
 
     assert(checkReset());
 
-    MPI_Status status;
+    PointToPointCommunication<decltype(remoteIndices_.communicator())> ptpc;
+    auto status = ptpc.mprobe(MPI_ANY_SOURCE, 345);
 
-    // We have to determine the message size and source before the receive
-    MPI_Probe(MPI_ANY_SOURCE, 345, remoteIndices_.communicator(), &status);
-
-    int source=status.MPI_SOURCE;
-    int count;
-    MPI_Get_count(&status, MPI_PACKED, &count);
+    int source=status.get_source();
+    int count = status.get_count(MPI_PACKED);
 
     Dune::dvverb<<rank_<<": Receiving message from "<< source<<" with "<<count<<" bytes"<<std::endl;
 
@@ -1067,7 +1064,8 @@ namespace Dune
       receiveBuffer_ = new char[receiveBufferSize_];
     }
 
-    MPI_Recv(receiveBuffer_, count, MPI_PACKED, source, 345, remoteIndices_.communicator(), &status);
+    Span<MPIPack<Comm>*> span((MPIPack<Comm>*)receiveBuffer_, count);
+    status.recv(span);
 
     // How many global entries were published?
     MPI_Unpack(receiveBuffer_,  count, &bpos, &publish, 1, MPI_INT, remoteIndices_.communicator());

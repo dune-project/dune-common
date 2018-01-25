@@ -3,19 +3,18 @@
 #ifndef DUNE_MPIHELPER
 #define DUNE_MPIHELPER
 
-#if HAVE_MPI
 #include <cassert>
-#endif
 
+
+#include "collectivecommunication.hh"
+#include "pointtopointcommunication.hh"
 #if HAVE_MPI
+#include "mpicollectivecommunication.hh"
 #include <mpi.h>
+#include "managedmpicomm.hh"
 #endif
 
-#include <dune/common/parallel/collectivecommunication.hh>
-#if HAVE_MPI
-#include <dune/common/parallel/mpicollectivecommunication.hh>
 #include <dune/common/stdstreams.hh>
-#endif
 #include <dune/common/visibility.hh>
 
 namespace Dune
@@ -62,6 +61,7 @@ namespace Dune
    * For checking whether we really use MPI or just fake please use
    * MPIHelper::isFake (this is also possible at compile time!)
    */
+
   /**
    * @brief A fake mpi helper.
    *
@@ -114,6 +114,12 @@ namespace Dune
     getCollectiveCommunication()
     {
       return CollectiveCommunication<MPICommunicator>(getCommunicator());
+    }
+
+    static PointToPointCommunication<MPICommunicator>
+    getPointToPointCommunication()
+    {
+      return PointToPointCommunication<MPICommunicator>(getCommunicator());
     }
 
     /**
@@ -175,7 +181,7 @@ namespace Dune
     /**
      * @brief The type of the mpi communicator.
      */
-    typedef MPI_Comm MPICommunicator;
+    typedef ManagedMPIComm MPICommunicator;
 
     /** \brief get the default communicator
      *
@@ -185,7 +191,7 @@ namespace Dune
      */
     static MPICommunicator getCommunicator ()
     {
-      return MPI_COMM_WORLD;
+      return MPICommunicator::comm_world();
     }
 
     /** \brief get a local communicator
@@ -196,7 +202,7 @@ namespace Dune
      */
     static MPICommunicator getLocalCommunicator ()
     {
-      return MPI_COMM_SELF;
+      return MPICommunicator::comm_self();
     }
 
     static CollectiveCommunication<MPICommunicator>
@@ -204,6 +210,13 @@ namespace Dune
     {
       return CollectiveCommunication<MPICommunicator>(getCommunicator());
     }
+
+    static PointToPointCommunication<MPICommunicator>
+    getPointToPointCommunication()
+    {
+      return PointToPointCommunication<MPICommunicator>(getCommunicator());
+    }
+
     /**
      * @brief Get the singleton instance of the helper.
      *
@@ -219,45 +232,48 @@ namespace Dune
      * @param argc The number of arguments provided to main.
      * @param argv The arguments provided to main.
      */
-    DUNE_EXPORT static MPIHelper& instance(int& argc, char**& argv)
+    DUNE_EXPORT static MPIHelper& instance(int& argc, char**& argv, int required = MPI_THREAD_SINGLE)
     {
       // create singleton instance
-      static MPIHelper singleton (argc, argv);
+      static MPIHelper singleton (argc, argv,required);
       return singleton;
     }
 
     /**
      * @brief return rank of process
      */
-    int rank () const { return rank_; }
+    static int rank ()
+    { return rank_; }
     /**
      * @brief return number of processes
      */
-    int size () const { return size_; }
+    static int size ()
+    { return size_; }
 
   private:
-    int rank_;
-    int size_;
+    static int rank_;
+    static int size_;
     bool initializedHere_;
     void prevent_warning(int){}
 
     //! \brief calls MPI_Init with argc and argv as parameters
-    MPIHelper(int& argc, char**& argv)
-    : initializedHere_(false)
+    MPIHelper(int& argc, char**& argv, int required)
+      : initializedHere_(false)
     {
       int wasInitialized = -1;
       MPI_Initialized( &wasInitialized );
       if(!wasInitialized)
       {
-        rank_ = -1;
-        size_ = -1;
-        static int is_initialized = MPI_Init(&argc, &argv);
+        int provided;
+        static int is_initialized = MPI_Init_thread(&argc, &argv, required, &provided);
         prevent_warning(is_initialized);
         initializedHere_ = true;
       }
 
-      MPI_Comm_rank(MPI_COMM_WORLD,&rank_);
-      MPI_Comm_size(MPI_COMM_WORLD,&size_);
+      dune_mpi_call(MPI_Comm_set_errhandler, MPI_COMM_WORLD, MPI_ERRORS_RETURN);
+
+      dune_mpi_call(MPI_Comm_rank, MPI_COMM_WORLD, &rank_);
+      dune_mpi_call(MPI_Comm_size, MPI_COMM_WORLD, &size_);
 
       assert( rank_ >= 0 );
       assert( size_ >= 1 );
@@ -279,7 +295,10 @@ namespace Dune
     MPIHelper(const MPIHelper&);
     MPIHelper& operator=(const MPIHelper);
   };
-#else // !HAVE_MPI
+
+  int MPIHelper::rank_ = -1;
+  int MPIHelper::size_ = -1;
+#else
   // We do not have MPI therefore FakeMPIHelper
   // is the MPIHelper
   /**
@@ -288,7 +307,7 @@ namespace Dune
    */
   typedef FakeMPIHelper MPIHelper;
 
-#endif // !HAVE_MPI
+#endif
 
 } // end namespace Dune
 #endif

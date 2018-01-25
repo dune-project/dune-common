@@ -4,21 +4,13 @@
 #define DUNE_COMMON_PARALLEL_VARIABLESIZECOMMUNICATOR_HH
 
 #if HAVE_MPI
-
-#include <algorithm>
-#include <cassert>
-#include <cstddef>
-#include <functional>
-#include <map>
-#include <memory>
-#include <utility>
+#include "managedmpicomm.hh"
 #include <vector>
-
-#include <mpi.h>
-
-#include <dune/common/parallel/interface.hh>
-#include <dune/common/parallel/mpitraits.hh>
+#include <map>
+#include <functional>
 #include <dune/common/unused.hh>
+#include "interface.hh"
+#include "mpitraits.hh"
 
 /**
  * @addtogroup Common_Parallel
@@ -287,7 +279,7 @@ class VariableSizeCommunicator
 {
 public:
   /**
-     * @brief The type of the map from process number to InterfaceInformation for
+     * @brief The type of the map form process number to InterfaceInformation for
      * sending and receiving to and from it.
      */
   typedef std::map<int,std::pair<InterfaceInformation,InterfaceInformation>,
@@ -301,10 +293,10 @@ public:
    * The default size ist either what the macro DUNE_MAX_COMMUNICATION_BUFFER_SIZE
    * is set to or 32768 if is not set.
    */
-  VariableSizeCommunicator(MPI_Comm comm, const InterfaceMap& inf)
+  VariableSizeCommunicator(MPIHelper::MPICommunicator comm, const InterfaceMap& inf)
     : maxBufferSize_(32768), interface_(&inf)
   {
-    MPI_Comm_dup(comm, &communicator_);
+    communicator_ = comm.dup();
   }
   /**
    * @brief Creates a communicator with the default maximum buffer size.
@@ -313,7 +305,7 @@ public:
   VariableSizeCommunicator(const Interface& inf)
   : maxBufferSize_(32768), interface_(&inf.interfaces())
   {
-    MPI_Comm_dup(inf.communicator(), &communicator_);
+    communicator_ = inf.communicator().dup();
   }
 #else
   /**
@@ -322,11 +314,11 @@ public:
    * The default size ist either what the macro DUNE_MAX_COMMUNICATION_BUFFER_SIZE
    * is set to or 32768 if is not set.
    */
-  VariableSizeCommunicator(MPI_Comm comm, InterfaceMap& inf)
+  VariableSizeCommunicator(MPIHelper::MPICommunicator comm, InterfaceMap& inf)
     : maxBufferSize_(DUNE_PARALLEL_MAX_COMMUNICATION_BUFFER_SIZE),
       interface_(&inf)
   {
-    MPI_Comm_dup(comm, &communicator_);
+    communicator_ = comm.dup();
   }
   /**
    * @brief Creates a communicator with the default maximum buffer size.
@@ -336,7 +328,7 @@ public:
   : maxBufferSize_(DUNE_PARALLEL_MAX_COMMUNICATION_BUFFER_SIZE),
     interface_(&inf.interfaces())
   {
-    MPI_Comm_dup(inf.communicator(), &communicator_);
+    communicator_ = inf.communicator().dup();
   }
 #endif
   /**
@@ -345,10 +337,10 @@ public:
   * @param inf The communication interface.
   * @param max_buffer_size The maximum buffer size allowed.
   */
-  VariableSizeCommunicator(MPI_Comm comm, const InterfaceMap& inf, std::size_t max_buffer_size)
+  VariableSizeCommunicator(MPIHelper::MPICommunicator comm, const InterfaceMap& inf, std::size_t max_buffer_size)
     : maxBufferSize_(max_buffer_size), interface_(&inf)
   {
-    MPI_Comm_dup(comm, &communicator_);
+    communicator_ = comm.dup();
   }
 
   /**
@@ -359,12 +351,7 @@ public:
   VariableSizeCommunicator(const Interface& inf, std::size_t max_buffer_size)
     : maxBufferSize_(max_buffer_size), interface_(&inf.interfaces())
   {
-    MPI_Comm_dup(inf.communicator(), &communicator_);
-  }
-
-  ~VariableSizeCommunicator()
-  {
-    MPI_Comm_free(&communicator_);
+    communicator_ = inf.communicator().dup();
   }
 
 
@@ -482,7 +469,7 @@ private:
    *
    * This is a cloned communicator to ensure there are no interferences.
    */
-  MPI_Comm communicator_;
+  MPIHelper::MPICommunicator communicator_;
 };
 
 /** @} */
@@ -728,7 +715,7 @@ void sendFixedSize(std::vector<InterfaceTracker>& send_trackers,
                    std::vector<MPI_Request>& send_requests,
                    std::vector<InterfaceTracker>& recv_trackers,
                    std::vector<MPI_Request>& recv_requests,
-                   MPI_Comm communicator)
+                   MPIHelper::MPICommunicator communicator)
 {
   typedef std::vector<InterfaceTracker>::iterator TIter;
   std::vector<MPI_Request>::iterator mIter=recv_requests.begin();
@@ -762,7 +749,7 @@ struct SetupSendRequest{
                   InterfaceTracker& tracker,
                   MessageBuffer<typename DataHandle::DataType>& buffer,
                   MPI_Request& request,
-                  MPI_Comm comm) const
+                  MPIHelper::MPICommunicator comm) const
   {
     buffer.reset();
     int size=PackEntries<DataHandle>()(handle, tracker, buffer);
@@ -786,7 +773,7 @@ struct SetupRecvRequest{
                   InterfaceTracker& tracker,
                   MessageBuffer<typename DataHandle::DataType>& buffer,
                   MPI_Request& request,
-                  MPI_Comm comm) const
+                  MPIHelper::MPICommunicator comm) const
   {
     buffer.reset();
     if(tracker.indicesLeft())
@@ -833,7 +820,7 @@ std::size_t checkAndContinue(DataHandle& handle,
                              std::vector<MPI_Request>& requests,
                              std::vector<MPI_Request>& requests2,
                              std::vector<MessageBuffer<typename DataHandle::DataType> >& buffers,
-                             MPI_Comm comm,
+                             MPIHelper::MPICommunicator comm,
                              BufferFunctor buffer_func,
                              CommunicationFunctor comm_func,
                              bool valid=true,
@@ -868,7 +855,7 @@ std::size_t checkAndContinue(DataHandle& handle,
       comm_func(handle, tracker, buffers[*index], requests2[*index], comm);
       tracker.skipZeroIndices();
       if(valid)
-      --no_completed; // communication not finished, decrement counter for finished ones.
+      no_completed-=!tracker.finished(); // communication not finished, decrement counter for finished ones.
     }
   }
   return no_completed;
@@ -890,7 +877,7 @@ std::size_t receiveSizeAndSetupReceive(DataHandle& handle,
                                        std::vector<MPI_Request>& size_requests,
                                        std::vector<MPI_Request>& data_requests,
                                        std::vector<MessageBuffer<typename DataHandle::DataType> >& buffers,
-                                       MPI_Comm comm)
+                                       MPIHelper::MPICommunicator comm)
 {
   return checkAndContinue(handle, trackers, size_requests, data_requests, buffers, comm,
                    NullPackUnpackFunctor<DataHandle>(), SetupRecvRequest<DataHandle>(), false);
@@ -909,7 +896,7 @@ std::size_t checkSendAndContinueSending(DataHandle& handle,
                                         std::vector<InterfaceTracker>& trackers,
                                         std::vector<MPI_Request>& requests,
                                         std::vector<MessageBuffer<typename DataHandle::DataType> >& buffers,
-                                        MPI_Comm comm)
+                                        MPIHelper::MPICommunicator comm)
 {
   return checkAndContinue(handle, trackers, requests, requests, buffers, comm,
                           NullPackUnpackFunctor<DataHandle>(), SetupSendRequest<DataHandle>());
@@ -928,7 +915,7 @@ std::size_t checkReceiveAndContinueReceiving(DataHandle& handle,
                                              std::vector<InterfaceTracker>& trackers,
                                              std::vector<MPI_Request>& requests,
                                              std::vector<MessageBuffer<typename DataHandle::DataType> >& buffers,
-                                             MPI_Comm comm)
+                                             MPIHelper::MPICommunicator comm)
 {
   return checkAndContinue(handle, trackers, requests, requests, buffers, comm,
                           UnpackEntries<DataHandle>(), SetupRecvRequest<DataHandle>(),
@@ -961,7 +948,7 @@ std::size_t setupRequests(DataHandle& handle,
                    std::vector<MessageBuffer<typename DataHandle::DataType> >& buffers,
                    std::vector<MPI_Request>& requests,
                    const Functor& setupFunctor,
-                   MPI_Comm communicator)
+                   MPIHelper::MPICommunicator communicator)
 {
   typedef typename std::vector<InterfaceTracker>::iterator TIter;
   typename std::vector<MessageBuffer<typename DataHandle::DataType> >::iterator
@@ -1088,7 +1075,7 @@ void VariableSizeCommunicator<Allocator>::communicateSizes(DataHandle& handle,
     if(i->empty())
       --size_to_recv;
 
-  setupRequests(size_handle, send_trackers, send_buffers, send_requests,
+  size_to_send -= setupRequests(size_handle, send_trackers, send_buffers, send_requests,
                                 SetupSendRequest<SizeDataHandle<DataHandle> >(), communicator_);
   setupRequests(size_handle, recv_trackers, recv_buffers, recv_requests,
                 SetupRecvRequest<SizeDataHandle<DataHandle> >(), communicator_);
@@ -1131,7 +1118,7 @@ void VariableSizeCommunicator<Allocator>::communicateVariableSize(DataHandle& ha
   std::size_t no_to_send, no_to_recv;
   no_to_send = no_to_recv =  interface_->size();
   // Setup requests for sending and receiving.
-  setupRequests(handle, send_trackers, send_buffers, send_requests,
+  no_to_send -= setupRequests(handle, send_trackers, send_buffers, send_requests,
                 SetupSendRequest<DataHandle>(), communicator_);
   setupRequests(handle, recv_trackers, recv_buffers, recv_requests,
                 SetupRecvRequest<DataHandle>(), communicator_);
@@ -1164,7 +1151,5 @@ void VariableSizeCommunicator<Allocator>::communicate(DataHandle& handle)
     communicateVariableSize<FORWARD>(handle);
 }
 } // end namespace Dune
-
-#endif // HAVE_MPI
-
+#endif
 #endif

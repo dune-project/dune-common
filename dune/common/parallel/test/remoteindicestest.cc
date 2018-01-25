@@ -1,23 +1,16 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 
-#include <config.h>
-
+#include "config.h"
+#include <dune/common/parallel/indexset.hh>
+#include <dune/common/parallel/communicator.hh>
+#include <dune/common/parallel/remoteindices.hh>
+#include <dune/common/enumset.hh>
 #include <algorithm>
 #include <iostream>
-#include <ostream>
-#include <string>
-#include <vector>
 
-#include <mpi.h>
-
-#include <dune/common/enumset.hh>
-#include <dune/common/parallel/communicator.hh>
-#include <dune/common/parallel/indexset.hh>
-#include <dune/common/parallel/interface.hh>
-#include <dune/common/parallel/plocalindex.hh>
-#include <dune/common/parallel/remoteindices.hh>
-#include <dune/common/unused.hh>
+#include <dune/common/parallel/mpihelper.hh>
+#include <dune/common/parallel/managedmpicomm.hh>
 
 enum GridFlags {
   owner, overlap, border
@@ -107,7 +100,7 @@ std::ostream& operator<<(std::ostream& os, const Array& a)
   return os;
 }
 
-void testIndices(MPI_Comm comm)
+void testIndices(Dune::MPIHelper::MPICommunicator comm)
 {
   //using namespace Dune;
 
@@ -116,9 +109,7 @@ void testIndices(MPI_Comm comm)
   const int Ny = 2;
 
   // Process configuration
-  int procs, rank, master=0;
-  MPI_Comm_size(comm, &procs);
-  MPI_Comm_rank(comm, &rank);
+  int procs = comm.size(), rank=comm.rank(), master=0;
 
   // shift the ranks
   //rank = (rank + 1) % procs;
@@ -305,7 +296,7 @@ void setupGlobal(Array& globalArray, Dune::ParallelIndexSet<TG,Dune::ParallelLoc
   globalIndexSet.endResize();
 }
 
-void testIndicesBuffered(MPI_Comm comm)
+void testIndicesBuffered(Dune::MPIHelper::MPICommunicator comm)
 {
   //using namespace Dune;
 
@@ -314,9 +305,7 @@ void testIndicesBuffered(MPI_Comm comm)
   const int Ny = 1;
 
   // Process configuration
-  int procs, rank, master=0;
-  MPI_Comm_size(comm, &procs);
-  MPI_Comm_rank(comm, &rank);
+  int procs = comm.size(), rank = comm.rank(), master=0;
 
   typedef Dune::ParallelIndexSet<int,Dune::ParallelLocalIndex<GridFlags> > ParallelIndexSet;
 
@@ -400,7 +389,7 @@ void testIndicesBuffered(MPI_Comm comm)
 }
 
 
-void testRedistributeIndices(MPI_Comm comm)
+void testRedistributeIndices(Dune::MPIHelper::MPICommunicator comm)
 {
   using namespace Dune;
 
@@ -409,9 +398,7 @@ void testRedistributeIndices(MPI_Comm comm)
   const int Ny = 2;
 
   // Process configuration
-  int procs, rank;
-  MPI_Comm_size(comm, &procs);
-  MPI_Comm_rank(comm, &rank);
+  int procs = comm.size(), rank = comm.rank();
 
   // The local grid
   int nx = Nx/procs;
@@ -505,7 +492,7 @@ void testRedistributeIndices(MPI_Comm comm)
   std::cout<<rank<<": redistributed array with overlap communicated: "<<redistributedArray<<std::endl;
 }
 
-void testRedistributeIndicesBuffered(MPI_Comm comm)
+void testRedistributeIndicesBuffered(Dune::MPIHelper::MPICommunicator comm)
 {
   using namespace Dune;
 
@@ -514,9 +501,7 @@ void testRedistributeIndicesBuffered(MPI_Comm comm)
   const int Ny = 2;
 
   // Process configuration
-  int procs, rank;
-  MPI_Comm_size(comm, &procs);
-  MPI_Comm_rank(comm, &rank);
+  int procs = comm.size(), rank = comm.rank();
 
   // The local grid
   int nx = Nx/procs;
@@ -654,42 +639,39 @@ void testRedistributeIndicesBuffered(MPI_Comm comm)
  * @brief MPI Error.
  * Thrown when an mpi error occurs.
  */
-class MPIError {
-public:
-  /** @brief Constructor. */
-  MPIError(std::string s, int e) : errorstring(s), errorcode(e){}
-  /** @brief The error string. */
-  std::string errorstring;
-  /** @brief The mpi error code. */
-  int errorcode;
-};
+// class MPIError {
+// public:
+//   /** @brief Constructor. */
+//   MPIError(std::string s, int e) : errorstring(s), errorcode(e){}
+//   /** @brief The error string. */
+//   std::string errorstring;
+//   /** @brief The mpi error code. */
+//   int errorcode;
+// };
 
-void MPI_err_handler(MPI_Comm *comm, int *err_code, ...){
-  DUNE_UNUSED_PARAMETER(comm);
-  char *err_string=new char[MPI_MAX_ERROR_STRING];
-  int err_length;
-  MPI_Error_string(*err_code, err_string, &err_length);
-  std::string s(err_string, err_length);
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  std::cerr << rank<<": An MPI Error occurred:"<<std::endl<<s<<std::endl;
-  delete[] err_string;
-  throw MPIError(s, *err_code);
-}
+// void MPI_err_handler(MPI_Comm *comm, int *err_code, ...){
+//   DUNE_UNUSED_PARAMETER(comm);
+//   char *err_string=new char[MPI_MAX_ERROR_STRING];
+//   int err_length;
+//   MPI_Error_string(*err_code, err_string, &err_length);
+//   std::string s(err_string, err_length);
+//   int rank;
+//   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+//   std::cerr << rank<<": An MPI Error occurred:"<<std::endl<<s<<std::endl;
+//   delete[] err_string;
+//   throw MPIError(s, *err_code);
+// }
 
 int main(int argc, char **argv)
 {
-  MPI_Init(&argc, &argv);
-  MPI_Errhandler handler;
-  MPI_Comm_create_errhandler(MPI_err_handler, &handler);
-  MPI_Comm_set_errhandler(MPI_COMM_WORLD, handler);
-  int rank;
-  int size;
+  Dune::MPIHelper & mpihelper = Dune::MPIHelper::instance(argc, argv);
+  // MPI_Errhandler handler;
+  // MPI_Comm_create_errhandler(MPI_err_handler, &handler);
+  // MPI_Comm_set_errhandler(MPI_COMM_WORLD, handler);
+  int rank = mpihelper.rank();
+  int size = mpihelper.size();
   const int firstRank=2;
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-  MPI_Comm comm;
   int key = rank;
 
   if(size>firstRank) {
@@ -699,12 +681,12 @@ int main(int argc, char **argv)
       key=0;
   }
 
-  MPI_Comm_split(MPI_COMM_WORLD, 0, key, &comm);
+  auto comm = Dune::MPIHelper::getCommunicator().split(0, key);
 
-#ifdef DEBUG
-  bool wait=1;
-  while(size>1 && wait) ;
-#endif
+// #ifdef DEBUG
+//   bool wait=1;
+//   while(size>1 && wait) ;
+// #endif
 
   //  testIndices(comm);
   testIndicesBuffered(comm);
@@ -716,8 +698,6 @@ int main(int argc, char **argv)
 
   //  testRedistributeIndices(comm);
   testRedistributeIndicesBuffered(comm);
-  MPI_Comm_free(&comm);
-  MPI_Finalize();
 
   return 0;
 }

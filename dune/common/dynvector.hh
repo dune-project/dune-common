@@ -17,6 +17,7 @@
 #include "genericiterator.hh"
 
 #include <vector>
+#include <dune/common/parallel/span.hh>
 #include "densevector.hh"
 
 namespace Dune {
@@ -55,6 +56,9 @@ namespace Dune {
   template< class K, class Allocator = std::allocator< K > >
   class DynamicVector : public DenseVector< DynamicVector< K, Allocator > >
   {
+    friend class Span<DynamicVector<K, Allocator>>;
+    friend class Span<const DynamicVector<K, Allocator>>;
+
     std::vector< K, Allocator > _data;
 
     typedef DenseVector< DynamicVector< K, Allocator > > Base;
@@ -185,6 +189,27 @@ namespace Dune {
 
   /** @} end documentation */
 
+  template< class K, class Allocator >
+  class Span<DynamicVector<K, Allocator>> : public Span<std::vector<K, Allocator>>
+  {
+  public:
+    Span( DynamicVector<K, Allocator>& s)
+      : Span<std::vector<K, Allocator>>(s._data)
+    {}
+
+    Span( const Span& s) = default;
+  };
+
+  template< class K, class Allocator >
+  class Span<const DynamicVector<K, Allocator>> : public Span<const std::vector<K, Allocator>>
+  {
+  public:
+    Span( const DynamicVector<K, Allocator>& s)
+      : Span<const std::vector<K, Allocator>>(s._data)
+    {}
+
+    Span( const Span& s) = default;
+  };
 } // end namespace
 
 #endif

@@ -7,6 +7,7 @@
 #include <dune/common/parallel/mpihelper.hh>
 #include <dune/common/parallel/mpicollectivecommunication.hh>
 #include <dune/common/test/testsuite.hh>
+#include <dune/common/parallel/span.hh>
 
 #include <iostream>
 int main(int argc, char** argv)
