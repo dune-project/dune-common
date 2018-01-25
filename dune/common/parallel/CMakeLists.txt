@@ -20,9 +20,11 @@ install(FILES
         mpistatus.hh
         mpitraits.hh
         mpiwin.hh
+        neighborindexmappingbuilder.hh
         plocalindex.hh
         pointtopointcommunication.hh
         remoteindices.hh
+        ringcommunication.hh
         selection.hh
         span.hh
         variablesizecommunicator.hh
