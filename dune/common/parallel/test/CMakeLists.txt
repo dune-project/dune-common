@@ -67,3 +67,10 @@ dune_add_test(SOURCES mpifiletest.cc
               MPI_RANKS 1 2
               TIMEOUT 300
               COMMAND ${CMAKE_CURRENT_BINARY_DIR}/mpifiletest)
+
+dune_add_test(SOURCES mpiwintest.cc
+              LINK_LIBRARIES dunecommon
+              CMAKE_GUARD MPI_FOUND
+              MPI_RANKS  1 2
+              TIMEOUT 300
+              COMMAND ${CMAKE_CURRENT_BINARY_DIR}/mpiwintest)

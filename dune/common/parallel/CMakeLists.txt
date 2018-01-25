@@ -19,6 +19,7 @@ install(FILES
         mpipack.hh
         mpistatus.hh
         mpitraits.hh
+        mpiwin.hh
         plocalindex.hh
         pointtopointcommunication.hh
         remoteindices.hh
