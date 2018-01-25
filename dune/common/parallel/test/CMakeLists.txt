@@ -61,3 +61,9 @@ dune_add_test(SOURCES guardtestallcases.cc
               TIMEOUT 300
               COMMAND ${CMAKE_CURRENT_BINARY_DIR}/guardtestallcases)
 
+dune_add_test(SOURCES mpifiletest.cc
+              LINK_LIBRARIES dunecommon
+              CMAKE_GUARD MPI_FOUND
+              MPI_RANKS 1 2
+              TIMEOUT 300
+              COMMAND ${CMAKE_CURRENT_BINARY_DIR}/mpifiletest)
