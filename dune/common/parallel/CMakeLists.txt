@@ -2,6 +2,7 @@ add_subdirectory(test)
 
 #install headers
 install(FILES
+        blackchannelcommunicator.hh
         collectivecommunication.hh
         communicator.hh
         future.hh

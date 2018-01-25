@@ -99,7 +99,6 @@ int main(int argc, char** argv)
     mpihelper.getCommunicator().shrink();
   }
 
-#if DUNE_ENABLE_ULFM
   cc.barrier();
   if (mpihelper.rank() == 0)
     std::cout << "---- deadlock test" << std::endl;
@@ -119,7 +118,6 @@ int main(int argc, char** argv)
               << e.what() << std::endl;
     mpihelper.getCommunicator().shrink();
   }
-#endif
 
   mpihelper.getCollectiveCommunication().barrier();
   if (mpihelper.rank() == 0)

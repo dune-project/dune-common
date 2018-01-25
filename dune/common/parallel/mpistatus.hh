@@ -75,6 +75,8 @@ namespace Dune {
   class MPIMatchingStatus : public MPIStatus {
     template<class T>
     friend class MPIProbeFuture;
+    template<class T>
+    friend class BlackChannelProbeFuture;
     MPI_Message message_;
 
   public:

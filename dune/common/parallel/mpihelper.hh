@@ -11,7 +11,11 @@
 #if HAVE_MPI
 #include "mpicollectivecommunication.hh"
 #include <mpi.h>
+#if MPI_VERSION <= 3 && !DUNE_ENABLE_ULFM
+#include "blackchannelcommunicator.hh"
+#else
 #include "managedmpicomm.hh"
+#endif
 #endif
 
 #include <dune/common/stdstreams.hh>
@@ -181,7 +185,11 @@ namespace Dune
     /**
      * @brief The type of the mpi communicator.
      */
+#if DUNE_ENABLE_ULFM || DISABLE_BLACKCHANNEL
     typedef ManagedMPIComm MPICommunicator;
+#else
+    typedef BlackChannelCommunicator MPICommunicator;
+#endif
 
     /** \brief get the default communicator
      *
