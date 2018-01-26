@@ -3,11 +3,11 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <dune/common/fvector.hh>
-#include <dune/common/exceptions.hh>
-#include <dune/common/typetraits.hh>
 #include <dune/common/classname.hh>
+#include <dune/common/exceptions.hh>
+#include <dune/common/fvector.hh>
 #include <dune/common/gmpfield.hh>
+#include <dune/common/typetraits.hh>
 #include <iostream>
 #include <complex>
 #include <typeinfo>
@@ -489,6 +489,31 @@ test_initialisation()
   assert(b[1] == 2);
 }
 
+void FieldVectorMathClassifiersTest() {
+  double nan = std::nan("");
+  double inf = exp(800);
+
+  FieldVector<double,3> fv_normal(1.);
+  FieldVector<double,3> fv_nan(1.);
+  FieldVector<double,3> fv_inf(1.);
+
+  fv_nan[2] = nan;
+  fv_inf[2] = inf;
+
+  assert(Dune::isNaN(fv_normal) == false);
+  assert(Dune::isInf(fv_normal) == false);
+  assert(Dune::isFinite(fv_normal) == true);
+
+  assert(Dune::isNaN(fv_nan) == true);
+  assert(Dune::isInf(fv_nan) == false);
+  assert(Dune::isFinite(fv_nan) == false);
+
+  assert(Dune::isNaN(fv_inf) == false);
+  assert(Dune::isInf(fv_inf) == true);
+  assert(Dune::isFinite(fv_inf) == false);
+}
+
+
 int main()
 {
   try {
@@ -507,6 +532,9 @@ int main()
     ScalarOrderingTest<ft>();
     DotProductTest<ft,3>();
 #endif // HAVE_GMP
+
+    //test the mathclassifiers Dune::isNaN, Dune::isInf, Dune::isFinite
+    FieldVectorMathClassifiersTest();
 
     {
       double nan = std::nan("");
