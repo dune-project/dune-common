@@ -13,6 +13,8 @@
 
 #include <dune/common/typeutilities.hh>
 
+#include <dune/common/typeutilities.hh>
+
 namespace Dune
 {
 
