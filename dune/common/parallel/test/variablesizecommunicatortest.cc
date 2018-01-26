@@ -36,13 +36,21 @@ struct MyDataHandle
     }
     void verify(int procs, int start, int end) {
       std::vector<int> indices;
-      if(rank && rank < procs) {
-        indices.push_back(start-1);
-        indices.push_back(start);
+
+      if(procs==1) {
+        for(int k=0;k<=10;k+=2) {
+          indices.push_back(k);
+        }
       }
-      if(rank < procs-1) {
-        indices.push_back(end-1);
-        indices.push_back(end);
+      else {
+        if(rank && rank < procs) {
+          indices.push_back(start-1);
+          indices.push_back(start);
+        }
+        if(rank < procs-1) {
+          indices.push_back(end-1);
+          indices.push_back(end);
+        }
       }
 
       std::set<int>::iterator it;
@@ -137,16 +145,23 @@ struct VarDataHandle
     }
     void verify(int procs, int start, int end) {
       std::vector<int> indices;
-      if(rank && rank < procs) {
-        indices.push_back(start-1);
-        indices.push_back(start);
+      if(procs==1) {
+        for(int k=0;k<=10;k+=2) {
+          indices.push_back(k);
+        }
       }
-      if(rank < procs-1) {
-        indices.push_back(end-1);
-        indices.push_back(end);
+      else {
+        if(rank && rank < procs) {
+          indices.push_back(start-1);
+          indices.push_back(start);
+        }
+        if(rank < procs-1) {
+          indices.push_back(end-1);
+          indices.push_back(end);
+        }
       }
 
-      //debug
+      /* //debug
       std::cout << rank << ": data send at ";
       for(const int &i : dataSendAt) {
         std::cout << i << " " ;
@@ -157,7 +172,7 @@ struct VarDataHandle
       for(const int &i : dataRecievedAt) {
         std::cout << i << " " ;
       }
-      std::cout << std::endl;
+      std::cout << std::endl;*/
 
       std::set<int>::iterator it;
       for(int idx : indices) {
@@ -173,7 +188,7 @@ struct VarDataHandle
           std::cerr << rank << ": No data recieved at index " << idx << "!" << std::endl;
           std::abort();
         }
-        else {
+        else if(it != dataRecievedAt.end()) {
           dataRecievedAt.erase(it);
         }
       }
@@ -205,6 +220,11 @@ struct VarDataHandle
     template<class B>
     void scatter(B& buffer, int i, int size)
     {
+        /* //debug
+        if(rank==1) {
+          std::cout << "scatter called with index " << i << std::endl;
+        }*/
+
         if(!dataRecievedAt.insert(i).second) {
           std::cerr << rank << ": Scatter() was called twice for index " << i << "!" << std::endl;
           std::abort();
@@ -251,22 +271,25 @@ int main(int argc, char** argv)
         send.reserve(6);
         for(std::size_t i=0; i<=10; i+=2)
             send.add(i);
-
         recv.reserve(6);
-        for(std::size_t i=10; i<=10; i-=2)
+        for(std::size_t i=0; i<=10; i+=2)
             recv.add(i);
         Interface inf;
         inf[0]=std::make_pair(send, recv);
         Dune::VariableSizeCommunicator<> comm(MPI_COMM_SELF, inf, 6);
         MyDataHandle handle(0);
         comm.forward(handle);
+        handle.verify(procs, 0, 0);
         std::cout<<"===================== backward ========================="<<std::endl;
         comm.backward(handle);
+        handle.verify(procs, 0, 0);
         std::cout<<"================== variable size ======================="<<std::endl;
         VarDataHandle vhandle(0);
         comm.forward(vhandle);
+        vhandle.verify(procs, 0, 0);
         std::cout<<"===================== backward ========================="<<std::endl;
         comm.backward(vhandle);
+        vhandle.verify(procs, 0, 0);
     }
     else
     {
