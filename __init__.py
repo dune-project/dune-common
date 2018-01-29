@@ -22,7 +22,16 @@ except ImportError:
     logger.info('mpi4py not found, MPI not initialized')
 
 from ._common import *
+from .deprecated import DeprecatedObject
+
 from ..grid._grid import CommunicationDirection, DataType, InterfaceType, Marker, OutputType, PartitionType, reader
+CommunicationDirection = DeprecatedObject(CommunicationDirection, "dune.common.CommunicationDirection is deprecated, use dune.grid.CommunicationDirection instead")
+DataType = DeprecatedObject(DataType, "dune.common.DataType is deprecated, use dune.grid.DataType instead")
+InterfaceType = DeprecatedObject(InterfaceType, "dune.common.Interface is deprecated, use dune.grid.InterfaceType instead")
+Marker = DeprecatedObject(Marker, "dune.common.Marker is deprecated, use dune.grid.Marker instead")
+OutputType = DeprecatedObject(OutputType, "dune.common.OutputType is deprecated, use dune.grid.OutputType instead")
+PartitionType = DeprecatedObject(PartitionType, "dune.common.PartitionType is deprecated, use dune.grid.PartitionType instead")
+reader = DeprecatedObject(reader, "dune.common.reader is deprecated, use dune.grid.reader instead")
 
 import numpy
 def fvgetitem(self,index):
