@@ -22,6 +22,7 @@ except ImportError:
     logger.info('mpi4py not found, MPI not initialized')
 
 from ._common import *
+from ..grid._grid import CommunicationDirection, DataType, InterfaceType, Marker, OutputType, PartitionType, reader
 
 import numpy
 def fvgetitem(self,index):
