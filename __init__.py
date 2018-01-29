@@ -21,10 +21,10 @@ try:
 except ImportError:
     logger.info('mpi4py not found, MPI not initialized')
 
-from ._common import *
+from .._common import *
 from .deprecated import DeprecatedObject
 
-from ..grid._grid import CommunicationDirection, DataType, InterfaceType, Marker, OutputType, PartitionType, reader
+from .._grid import CommunicationDirection, DataType, InterfaceType, Marker, OutputType, PartitionType, reader
 CommunicationDirection = DeprecatedObject(CommunicationDirection, "dune.common.CommunicationDirection is deprecated, use dune.grid.CommunicationDirection instead")
 DataType = DeprecatedObject(DataType, "dune.common.DataType is deprecated, use dune.grid.DataType instead")
 InterfaceType = DeprecatedObject(InterfaceType, "dune.common.Interface is deprecated, use dune.grid.InterfaceType instead")
