@@ -1,5 +1,4 @@
 set(HEADERS
-  common.hh
   densematrix.hh
   densevector.hh
   dimrange.hh
