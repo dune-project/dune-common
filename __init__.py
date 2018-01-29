@@ -1,1 +1,1 @@
-from ._typeregistry import *
+from .._typeregistry import *
