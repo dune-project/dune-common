@@ -13,6 +13,8 @@
 #include "dotproduct.hh"
 #include "boundschecking.hh"
 
+#include <dune/common/std/cmath.hh>
+
 namespace Dune {
 
   // forward declaration of template
@@ -43,7 +45,7 @@ namespace Dune {
     template<class K>
     inline typename FieldTraits<K>::real_type absreal (const K& k)
     {
-      using std::abs;
+      using Std::abs;
       return abs(k);
     }
 
@@ -54,7 +56,7 @@ namespace Dune {
     template<class K>
     inline typename FieldTraits<K>::real_type absreal (const std::complex<K>& c)
     {
-      using std::abs;
+      using Std::abs;
       return abs(c.real()) + abs(c.imag());
     }
 
@@ -87,7 +89,7 @@ namespace Dune {
     {
       static inline typename FieldTraits<K>::real_type sqrt (const K& k)
       {
-        using std::sqrt;
+        using Std::sqrt;
         return sqrt(k);
       }
     };
@@ -101,7 +103,7 @@ namespace Dune {
     {
       static inline typename FieldTraits<K>::real_type sqrt (const K& k)
       {
-        using std::sqrt;
+        using Std::sqrt;
         return typename FieldTraits<K>::real_type(sqrt(double(k)));
       }
     };
@@ -569,7 +571,7 @@ namespace Dune {
 
     //! one norm (sum over absolute values of entries)
     typename FieldTraits<value_type>::real_type one_norm() const {
-      using std::abs;
+      using Std::abs;
       typename FieldTraits<value_type>::real_type result( 0 );
       for (size_type i=0; i<size(); i++)
         result += abs((*this)[i]);
@@ -609,8 +611,8 @@ namespace Dune {
               typename std::enable_if<!has_nan<vt>::value, int>::type = 0>
     typename FieldTraits<vt>::real_type infinity_norm() const {
       using real_type = typename FieldTraits<vt>::real_type;
-      using std::abs;
-      using std::max;
+      using Std::abs;
+      using Std::max;
 
       real_type norm = 0;
       for (auto const &x : *this) {
@@ -625,7 +627,7 @@ namespace Dune {
               typename std::enable_if<!has_nan<vt>::value, int>::type = 0>
     typename FieldTraits<vt>::real_type infinity_norm_real() const {
       using real_type = typename FieldTraits<vt>::real_type;
-      using std::max;
+      using Std::max;
 
       real_type norm = 0;
       for (auto const &x : *this) {
@@ -640,8 +642,8 @@ namespace Dune {
               typename std::enable_if<has_nan<vt>::value, int>::type = 0>
     typename FieldTraits<vt>::real_type infinity_norm() const {
       using real_type = typename FieldTraits<vt>::real_type;
-      using std::abs;
-      using std::max;
+      using Std::abs;
+      using Std::max;
 
       real_type norm = 0;
       real_type isNaN = 1;
@@ -659,7 +661,7 @@ namespace Dune {
               typename std::enable_if<has_nan<vt>::value, int>::type = 0>
     typename FieldTraits<vt>::real_type infinity_norm_real() const {
       using real_type = typename FieldTraits<vt>::real_type;
-      using std::max;
+      using Std::max;
 
       real_type norm = 0;
       real_type isNaN = 1;

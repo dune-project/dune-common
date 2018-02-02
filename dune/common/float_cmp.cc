@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <dune/common/fvector.hh>
+#include <dune/common/std/cmath.hh>
 
 namespace Dune {
 
@@ -71,21 +72,30 @@ namespace Dune {
         static bool eq(const T &first,
                        const T &second,
                        typename EpsilonType<T>::Type epsilon = DefaultEpsilon<T>::value())
-        { return std::abs(first - second) <= epsilon*std::max(std::abs(first), std::abs(second)); }
+        {
+          using Std::abs;
+          return abs(first - second) <= epsilon*std::max(abs(first), abs(second));
+        }
       };
       template<class T>
       struct eq_t<T, relativeStrong> {
         static bool eq(const T &first,
                        const T &second,
                        typename EpsilonType<T>::Type epsilon = DefaultEpsilon<T>::value())
-        { return std::abs(first - second) <= epsilon*std::min(std::abs(first), std::abs(second)); }
+        {
+          using Std::abs;
+          return abs(first - second) <= epsilon*std::min(abs(first), abs(second));
+        }
       };
       template<class T>
       struct eq_t<T, absolute> {
         static bool eq(const T &first,
                        const T &second,
                        typename EpsilonType<T>::Type epsilon = DefaultEpsilon<T>::value())
-        { return std::abs(first-second) <= epsilon; }
+        {
+          using Std::abs;
+          return abs(first-second) <= epsilon;
+        }
       };
       template<class T, CmpStyle cstyle>
       struct eq_t_std_vec {
