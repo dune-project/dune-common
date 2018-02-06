@@ -44,3 +44,5 @@
 - Bash-style variables which are passed to `dunecontrol`'s command `configure-opts`
   are no longer transformed to their equivalent CMake command. Pass
   `-DCMAKE_C_COMPILER=gcc` instead of `CC=gcc`.
+
+- Added support for modules providing additional Python modules or bindings.
