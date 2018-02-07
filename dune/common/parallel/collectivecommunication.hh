@@ -240,7 +240,7 @@ namespace Dune
 
     /** @brief Non-Blocking Barrier. (See MPI_Ibarrier)
      *
-     * @return Futures which is valid when all process reached the
+     * @return Futures which is ready when all process reached the
      * barrier.
      * @throw MPIError
      */
@@ -349,9 +349,9 @@ namespace Dune
      * @param[in] out The buffer to store the received data in. Might have length zero on non-root
      *                  tasks.
      * @param[in] root The root task that gathers the data.
-     * @return Future containing the gathered data when valid
+     * @return Future containing the gathered data when ready
      * @warning \p in should not be modified until the returned
-     * future is valid.
+     * future is ready.
      * @throw MPIError
      */
     template<typename T, typename S>
@@ -410,7 +410,7 @@ namespace Dune
      *                  May have length zero on non-root tasks.
      * @param[in] root The root task that gathers the data.
      * @warning \p in should not be modified until the returned
-     * future is valid.
+     * future is ready.
      * @throw MPIError
      */
     template<typename T, typename S>
@@ -479,7 +479,7 @@ namespace Dune
      *                 send buffer of the root task before.
      * @param[in] root The root task that gathers the data.
      * @warning \p send should not be modified until the returned
-     * future is valid.
+     * future is ready.
      * @throw MPIError
      */
     template<typename T, typename S>
@@ -601,7 +601,7 @@ namespace Dune
      * @param[in] recv The receive buffer for the data. Has to be of size
      *  notasks*count, with notasks being the number of tasks in the communicator.
      * @warning \p send should not be modified until the returned
-     * future is valid.
+     * future is ready.
      * @throw MPIError
      */
     template<typename T, typename S>
@@ -755,7 +755,7 @@ namespace Dune
      * @param in The array to compute on.
      * @param out The array to store the results in.
      * @warning \p in should not be modified until the returned
-     * future is valid.
+     * future is ready.
      * @throw MPIError
      */
     template<typename BinaryFunction, typename T>
@@ -788,9 +788,9 @@ namespace Dune
      * @param in
      * @param out
      *
-     * @return Future object containing the result when it is valid
+     * @return Future object containing the result when it is ready
      * @warning \p in should not be modified until the returned
-     * future is valid.
+     * future is ready.
      * @throw MPIError
      */
     template<typename BinaryFunction, typename T>
@@ -825,9 +825,9 @@ namespace Dune
      * @param in
      * @param out
      *
-     * @return Function object containing the result when it is valid
+     * @return Function object containing the result when it is ready
      * @warning \p in should not be modified until the returned
-     * future is valid.
+     * future is ready.
      * @throw MPIError
      */
     template<typename BinaryFunction, typename T>

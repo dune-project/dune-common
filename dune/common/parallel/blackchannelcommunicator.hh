@@ -174,7 +174,7 @@ namespace Dune
 
 
   /*! @brief Adapts the MPIFutures for the Black-Channel communicator
-      by overriding the wait and valid methods.
+      by overriding the wait and ready methods.
    */
   template<class T = void>
   class BlackChannelFuture
@@ -231,13 +231,13 @@ namespace Dune
       }
     }
 
-    virtual bool valid() override{
-      if(this->comm_.bc_req_->valid()){
+    virtual bool ready() override{
+      if(this->comm_.bc_req_->ready()){
         comm_.renew_bc();
         *comm_.is_revoked_ = true;
         this->comm_.throw_exception();
       }
-      return MPIFuture<T>::valid();
+      return MPIFuture<T>::ready();
     }
   };
 
@@ -286,8 +286,8 @@ namespace Dune
       std::swap(status_, o.status_);
     }
 
-    virtual bool valid() override{
-      if(this->comm_.bc_req_->valid()){
+    virtual bool ready() override{
+      if(this->comm_.bc_req_->ready()){
         this->comm_.renew_bc();
         *this->comm_.is_revoked_ = true;
         this->comm_.throw_exception();
@@ -303,10 +303,10 @@ namespace Dune
         }else
           return false;
       }
-      return MPIFuture<T>::valid();
+      return MPIFuture<T>::ready();
     }
 
-    // we do not need to reimplement wait() because BlackChannelFuture::wait() rely on valid()
+    // we do not need to reimplement wait() because BlackChannelFuture::wait() rely on ready()
 
     const MPIStatus& status() const{
       return status_;
@@ -330,7 +330,7 @@ namespace Dune
   MPIStatus PointToPointCommunication<BlackChannelCommunicator>::recv(T& data, int rank, int tag)
   {
     do{ // busy wait check black-channel and probe alternating
-      if(communicator.bc_req_->valid())
+      if(communicator.bc_req_->ready())
         BlackChannelCommunicator::throw_exception();
       MPIMatchingStatus s = improbe(rank, tag);
       if(s.has_message()){

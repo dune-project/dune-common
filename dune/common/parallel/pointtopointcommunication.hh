@@ -90,7 +90,7 @@ namespace Dune{
      * @param tag
      *
      * @warning \p data should not be modified until the returned
-     * future is valid.
+     * future is ready.
      *
      * @throw MPIError
      */
