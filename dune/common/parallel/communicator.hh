@@ -1470,6 +1470,7 @@ namespace Dune
       for(const auto& finished : v){
         //int& proc = processMap[finished];
         int proc = recvRequests[finished].source();
+        recvRequests[finished].get(); // invalidate the future
         typename InformationMap::const_iterator infoIter = messageInformation_.find(proc);
         assert(infoIter != messageInformation_.end());
 

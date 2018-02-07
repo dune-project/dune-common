@@ -177,6 +177,11 @@ namespace Dune
       return communicator_;
     }
 
+    operator MPI_Comm () const
+    {
+      return communicator_;
+    }
+
     //! @copydoc CollectiveCommunication<No_Comm>::sum(const T&)const
     template<typename T>
     T sum (const T& in) const

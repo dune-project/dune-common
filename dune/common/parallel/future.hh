@@ -29,6 +29,7 @@ namespace Dune {
     {
     public:
       virtual bool valid() = 0;
+      virtual bool ready() = 0;
       virtual void wait() = 0;
       virtual T get() = 0;
       virtual int source() const = 0;
@@ -48,6 +49,11 @@ namespace Dune {
       bool valid() override
       {
         return obj_.valid();
+      }
+
+      bool ready() override
+      {
+        return obj_.ready();
       }
 
       void wait() override{
@@ -107,12 +113,18 @@ namespace Dune {
 
     Future() = default;
 
-    /** @brief Checks whether the 'Future<T>' is valid. I.e. the
-     *  communication is complete.
+    /** @brief Checks whether the 'Future<T>' is valid.
      */
     bool valid()
     {
       return ptr_->valid();
+    }
+
+    /** @brief Checks whether the 'Future<T>' is ready.
+     */
+    bool ready()
+    {
+      return ptr_->ready();
     }
 
     /** @brief Waits for the completion of the communication.
@@ -160,15 +172,23 @@ namespace Dune {
       return *p_buffer_;
     }
   public:
+    PseudoFuture() :
+      p_buffer_(nullptr),
+      is_valid_(false)
+    {}
+
     PseudoFuture(T&& d) :
       p_buffer_(std::make_unique<std::decay_t<T>>(std::move(d))),
       is_valid_(true)
     {}
+
     PseudoFuture(PseudoFuture&&) = default;
+
     PseudoFuture& operator= (PseudoFuture&& ) = default;
 
     bool valid() const
     { return is_valid_;}
+
     void wait() const {}
 
     T get(){
@@ -180,22 +200,20 @@ namespace Dune {
 
   template<>
   class PseudoFuture<void> {
-    bool is_valid_;
   public:
-    PseudoFuture() :
-      is_valid_(true)
-    {}
+    PseudoFuture() = default;
+
     PseudoFuture(PseudoFuture&&) = default;
+
     PseudoFuture& operator= (PseudoFuture&& ) = default;
 
     bool valid() const
-    { return is_valid_;}
+    { return false;}
 
     void wait() const {}
 
     void get(){
       wait();
-      is_valid_ = false;
     }
   };
 
@@ -225,13 +243,13 @@ namespace Dune {
      */
     template<class... Ts>
     static std::vector<int> waitsome(Future<Ts>&... futures) {
-      std::array<bool, sizeof...(futures)> is_valid;
+      std::array<bool, sizeof...(futures)> is_ready;
       do{
-        is_valid = {{futures.valid()...}};
-      }while(std::all_of(is_valid.begin(), is_valid.end(), [](bool b){return !b;}));
+        is_ready = {{(futures.valid() && futures.ready())...}};
+      }while(std::all_of(is_ready.begin(), is_ready.end(), [](bool b){return !b;}));
       std::vector<int> indices;
-      for(size_t i = 0; i < is_valid.size(); i++){
-        if(is_valid[i])
+      for(size_t i = 0; i < is_ready.size(); i++){
+        if(is_ready[i])
           indices.push_back(i);
       }
       return indices;
@@ -243,11 +261,11 @@ namespace Dune {
      */
     template<class... Ts>
     static int waitany(Future<Ts>&... futures) {
-      std::array<bool, sizeof...(futures)> is_valid;
+      std::array<bool, sizeof...(futures)> is_ready;
       do{
-        is_valid = {futures.valid()...};
-      }while(std::any_of(is_valid.begin(), is_valid.end(), [](bool b){return b;}));
-      return std::find(is_valid.begin(), is_valid.end(), true) - is_valid.begin();
+        is_ready = {(futures.ready() && futures.valid())...};
+      }while(std::any_of(is_ready.begin(), is_ready.end(), [](bool b){return b;}));
+      return std::find(is_ready.begin(), is_ready.end(), true) - is_ready.begin();
     }
 
     /** @brief Waits for all futures to finish.
@@ -267,7 +285,7 @@ namespace Dune {
       std::vector<int> ind(0);
       do{
         for(size_t i = 0; i < futures.size(); i++){
-          if(futures[i].valid())
+          if(futures[i].valid() && futures[i].ready())
             ind.push_back(i);
         }
       }while(ind.size()==0);
@@ -279,7 +297,7 @@ namespace Dune {
     static int waitany(C& futures)
     {
       for(size_t i = 0; true; i = (i+1)%futures.size()){
-        if(futures[i].valid())
+        if(futures[i].valid() && futures[i].ready())
           return i;
       }
     }
@@ -292,7 +310,7 @@ namespace Dune {
       do{
         not_all_ready = false;
         for(auto f : futures){
-          if(!f.valid())
+          if(f.valid() && !f.ready())
             not_all_ready = true;
         }
       }while(not_all_ready);

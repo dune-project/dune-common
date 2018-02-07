@@ -47,9 +47,11 @@ namespace Dune
   class MPIFutureBase {
     friend class ManagedMPIComm;
   protected:
+    bool is_valid_;
     MPI_Request req_;
-    MPIFutureBase() :
-      req_(MPI_REQUEST_NULL){
+    MPIFutureBase()
+      : req_(MPI_REQUEST_NULL)
+      , is_valid_(false){
       dverb << "MPIFutureBase::MPIFutureBase()" << std::endl;
     }
 
@@ -58,13 +60,17 @@ namespace Dune
     }
 
   public:
-    MPIFutureBase (const MPI_Request& r) :
-      req_(r) {}
+    MPIFutureBase (const MPI_Request& r)
+      : req_(r)
+      , is_valid_(true)
+    {}
     MPIFutureBase (const MPIFutureBase&) = delete;
-    MPIFutureBase (MPIFutureBase&& o) :
-      req_(MPI_REQUEST_NULL)
+    MPIFutureBase (MPIFutureBase&& o)
+      : req_(MPI_REQUEST_NULL)
+      , is_valid_(false)
     {
       std::swap(req_, o.req_);
+      std::swap(is_valid_, o.is_valid_);
     }
 
     MPIFutureBase& operator=(MPIFutureBase&& o) = default;
@@ -73,7 +79,13 @@ namespace Dune
       return req_;
     }
 
-    virtual bool valid() {
+    bool valid() const {
+      return is_valid_;
+    }
+
+    virtual bool ready() {
+      if(!valid())
+        return false;
       if(req_ == MPI_REQUEST_NULL)
         return true;
       int flag = 0;
@@ -176,12 +188,14 @@ namespace Dune
 
     T get(){
       wait();
+      is_valid_ = false;
       return std::move(*p_buffer_);
     }
   };
 
   template<>
   void MPIFuture<void>::get(){
+    is_valid_ = false;
     wait();
   }
 
@@ -276,7 +290,7 @@ namespace Dune
       std::swap(comm_, o.comm_);
     }
 
-    virtual bool valid() override{
+    virtual bool ready() override{
       if(status_.is_empty() &&
          status_.message_ == MPI_MESSAGE_NULL &&
          this->req_ == MPI_REQUEST_NULL){
@@ -288,7 +302,7 @@ namespace Dune
         }else
           return false;
       }
-      return MPIFuture<T>::valid();
+      return MPIFuture<T>::ready();
     }
 
     virtual void wait() override {
