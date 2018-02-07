@@ -803,7 +803,7 @@ namespace Dune
      */
     template<class Func, class Mask>
     void luDecomposition(DenseMatrix<MAT>& A, Func func,
-                         Mask &nonsingularLanes, bool throwEarly) const;
+                         Mask &nonsingularLanes, bool throwEarly, bool do_pivot) const;
   };
 
 #ifndef DOXYGEN
@@ -851,16 +851,13 @@ namespace Dune
   template<typename Func, class Mask>
   inline void DenseMatrix<MAT>::
   luDecomposition(DenseMatrix<MAT>& A, Func func, Mask &nonsingularLanes,
-                  bool throwEarly) const
+                  bool throwEarly, bool do_pivot) const
   {
     using std::swap;
 
     typedef typename FieldTraits<value_type>::real_type real_type;
 
     real_type norm = A.infinity_norm_real(); // for relative thresholds
-    real_type pivthres =
-      std::max( FMatrixPrecision< real_type >::absolute_limit(),
-                norm * FMatrixPrecision< real_type >::pivoting_limit() );
     real_type singthres =
       std::max( FMatrixPrecision< real_type >::absolute_limit(),
                 norm * FMatrixPrecision< real_type >::singular_limit() );
@@ -869,37 +866,34 @@ namespace Dune
     for (size_type i=0; i<rows(); i++)  // loop over all rows
     {
       real_type pivmax = fvmeta::absreal(A[i][i]);
-      auto do_pivot = pivmax<pivthres;
 
       // pivoting ?
-      if (any_true(do_pivot && nonsingularLanes))
+      if (do_pivot)
       {
         // compute maximum of column
         simd_index_type imax=i;
         for (size_type k=i+1; k<rows(); k++)
         {
           auto abs = fvmeta::absreal(A[k][i]);
-          auto mask = abs > pivmax && do_pivot;
+          auto mask = abs > pivmax;
           pivmax = cond(mask, abs, pivmax);
           imax   = cond(mask, simd_index_type(k), imax);
         }
         // swap rows
-        if (any_true(imax != i && nonsingularLanes)) {
-          for (size_type j=0; j<rows(); j++)
-          {
-            // This is a swap operation where the second operand is scattered,
-            // and on top of that is also extracted from deep within a
-            // moderately complicated data structure (a DenseMatrix), where we
-            // can't assume much on the memory layout.  On intel processors,
-            // the only instruction that might help us here is vgather, but it
-            // is unclear whether that is even faster than a software
-            // implementation, and we would also need vscatter which does not
-            // exist.  So break vectorization here and do it manually.
-            for(std::size_t l = 0; l < lanes(A[i][j]); ++l)
-              swap(lane(l, A[i][j]), lane(l, A[lane(l, imax)][j]));
-          }
-          func.swap(i, imax); // swap the pivot or rhs
+        for (size_type j=0; j<rows(); j++)
+        {
+          // This is a swap operation where the second operand is scattered,
+          // and on top of that is also extracted from deep within a
+          // moderately complicated data structure (a DenseMatrix), where we
+          // can't assume much on the memory layout.  On intel processors,
+          // the only instruction that might help us here is vgather, but it
+          // is unclear whether that is even faster than a software
+          // implementation, and we would also need vscatter which does not
+          // exist.  So break vectorization here and do it manually.
+          for(std::size_t l = 0; l < lanes(A[i][j]); ++l)
+            swap(lane(l, A[i][j]), lane(l, A[lane(l, imax)][j]));
         }
+        func.swap(i, imax); // swap the pivot or rhs
       }
 
       // singular ?
@@ -989,7 +983,7 @@ namespace Dune
       SimdMask<typename FieldTraits<value_type>::real_type>
         nonsingularLanes(true);
 
-      luDecomposition(A, elim, nonsingularLanes, true);
+      luDecomposition(A, elim, nonsingularLanes, true, true);
 
       // backsolve
       for(int i=rows()-1; i>=0; i--) {
@@ -1070,7 +1064,7 @@ namespace Dune
       std::vector<simd_index_type> pivot(rows());
       SimdMask<typename FieldTraits<value_type>::real_type>
         nonsingularLanes(true);
-      luDecomposition(A, ElimPivot(pivot), nonsingularLanes, true);
+      luDecomposition(A, ElimPivot(pivot), nonsingularLanes, true, true);
       DenseMatrix<MAT>& L=A;
       DenseMatrix<MAT>& U=A;
 
@@ -1144,7 +1138,7 @@ namespace Dune
     SimdMask<typename FieldTraits<value_type>::real_type>
       nonsingularLanes(true);
 
-    luDecomposition(A, ElimDet(det), nonsingularLanes, false);
+    luDecomposition(A, ElimDet(det), nonsingularLanes, false, true);
     assign(det, field_type(0), !nonsingularLanes);
 
     for (size_type i = 0; i < rows(); ++i)
