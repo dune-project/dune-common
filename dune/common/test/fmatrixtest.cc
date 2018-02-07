@@ -17,6 +17,7 @@
 
 #include <dune/common/classname.hh>
 #include <dune/common/fmatrix.hh>
+#include <dune/common/ftraits.hh>
 #include <dune/common/rangeutilities.hh>
 #include <dune/common/simd.hh>
 #include <dune/common/unused.hh>
@@ -27,10 +28,10 @@
 using namespace Dune;
 
 template<typename T, std::size_t n>
-int test_invert_solve(Dune::FieldMatrix<double, n, n> &A,
-                      Dune::FieldMatrix<double, n, n> &inv,
-                      Dune::FieldVector<double, n> &x,
-                      Dune::FieldVector<double, n> &b)
+int test_invert_solve(Dune::FieldMatrix<T, n, n> &A,
+                      Dune::FieldMatrix<T, n, n> &inv,
+                      Dune::FieldVector<T, n> &x,
+                      Dune::FieldVector<T, n> &b)
 {
   using std::abs;
 
@@ -62,10 +63,11 @@ int test_invert_solve(Dune::FieldMatrix<double, n, n> &A,
   A-=inv;
 
 
-  double singthres = FMatrixPrecision<>::singular_limit()*10;
+  auto epsilon = std::numeric_limits<typename FieldTraits<T>::real_type>::epsilon();
+  auto tolerance = 10*epsilon;
   for(size_t i =0; i < n; ++i)
     for(size_t j=0; j <n; ++j)
-      if(abs(A[i][j])>singthres) {
+      if(abs(A[i][j])>tolerance) {
         std::cerr<<"calculated inverse wrong at ("<<i<<","<<j<<")"<<std::endl;
         equal=false;
       }
@@ -99,7 +101,7 @@ int test_invert_solve(Dune::FieldMatrix<double, n, n> &A,
   equal=true;
 
   for(size_t i =0; i < n; ++i)
-    if(abs(xcopy[i])>singthres) {
+    if(abs(xcopy[i])>tolerance) {
       std::cerr<<"calculated isolution wrong at ("<<i<<")"<<std::endl;
       equal=false;
     }
