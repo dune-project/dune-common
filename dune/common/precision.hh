@@ -7,7 +7,7 @@
  * \brief Various precision settings for calculations with FieldMatrix and FieldVector
  */
 
-#include <stdlib.h>
+#include <dune/common/typetraits.hh>
 
 namespace Dune {
 
@@ -22,55 +22,42 @@ namespace Dune {
   template <class ctype = double>
   class FMatrixPrecision {
   public:
-    //! return threshold to do pivoting
-    static ctype pivoting_limit ()
-    {
-      return _pivoting;
-    }
-
-    //! set pivoting threshold
-    static void set_pivoting_limit (ctype pivthres)
-    {
-      _pivoting = pivthres;
-    }
+    typedef typename FieldTraits<ctype>::real_type real_type;
 
     //! return threshold to declare matrix singular
-    static ctype singular_limit ()
+    static real_type singular_limit ()
     {
       return _singular;
     }
 
     //! set singular threshold
-    static void set_singular_limit (ctype singthres)
+    static void set_singular_limit (real_type singthres)
     {
       _singular = singthres;
     }
 
     //! return threshold to declare matrix singular
-    static ctype absolute_limit ()
+    static real_type absolute_limit ()
     {
       return _absolute;
     }
 
     //! set singular threshold
-    static void set_absolute_limit (ctype absthres)
+    static void set_absolute_limit (real_type absthres)
     {
       _absolute = absthres;
     }
 
   private:
     // just to demonstrate some state information
-    static ctype _pivoting;
-    static ctype _singular;
-    static ctype _absolute;
+    static real_type _singular;
+    static real_type _absolute;
   };
 
   template <class ctype>
-  ctype FMatrixPrecision<ctype>::_pivoting = 1E-8;
+  typename FMatrixPrecision<ctype>::real_type FMatrixPrecision<ctype>::_singular = 1E-14;
   template <class ctype>
-  ctype FMatrixPrecision<ctype>::_singular = 1E-14;
-  template <class ctype>
-  ctype FMatrixPrecision<ctype>::_absolute = 1E-80;
+  typename FMatrixPrecision<ctype>::real_type FMatrixPrecision<ctype>::_absolute = 1E-80;
 
   /** @} end documentation */
 

@@ -859,8 +859,8 @@ namespace Dune
 
     real_type norm = A.infinity_norm_real(); // for relative thresholds
     real_type singthres =
-      std::max( FMatrixPrecision< real_type >::absolute_limit(),
-                norm * FMatrixPrecision< real_type >::singular_limit() );
+      std::max( FMatrixPrecision<SimdScalar<real_type>>::absolute_limit(),
+                norm * FMatrixPrecision<SimdScalar<real_type>>::singular_limit() );
 
     // LU decomposition of A in A
     for (size_type i=0; i<rows(); i++)  // loop over all rows
