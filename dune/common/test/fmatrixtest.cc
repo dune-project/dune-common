@@ -51,7 +51,7 @@ int test_invert_solve(Dune::FieldMatrix<T, n, n> &A,
     prod[i][i] -= 1;
 
   bool equal=true;
-  if (prod.infinity_norm() > 1e-6) {
+  if (any_true(prod.infinity_norm() > 1e-6)) {
     std::cerr<<"Given inverse wrong"<<std::endl;
     equal=false;
   }
@@ -67,7 +67,7 @@ int test_invert_solve(Dune::FieldMatrix<T, n, n> &A,
   auto tolerance = 10*epsilon;
   for(size_t i =0; i < n; ++i)
     for(size_t j=0; j <n; ++j)
-      if(abs(A[i][j])>tolerance) {
+      if(any_true(abs(A[i][j])>tolerance)) {
         std::cerr<<"calculated inverse wrong at ("<<i<<","<<j<<")"<<std::endl;
         equal=false;
       }
@@ -90,7 +90,7 @@ int test_invert_solve(Dune::FieldMatrix<T, n, n> &A,
   copy.mmv(x,trhs);
   equal=true;
 
-  if (trhs.infinity_norm() > 1e-6) {
+  if (any_true(trhs.infinity_norm() > 1e-6)) {
     std::cerr<<"Given rhs does not fit solution"<<std::endl;
     equal=false;
   }
@@ -101,7 +101,7 @@ int test_invert_solve(Dune::FieldMatrix<T, n, n> &A,
   equal=true;
 
   for(size_t i =0; i < n; ++i)
-    if(abs(xcopy[i])>tolerance) {
+    if(any_true(abs(xcopy[i])>tolerance)) {
       std::cerr<<"calculated isolution wrong at ("<<i<<")"<<std::endl;
       equal=false;
     }
@@ -154,6 +154,10 @@ int test_invert_solve()
 
   using FM6 = Dune::FieldMatrix<double, 6, 6>;
   using FV6 = Dune::FieldVector<double, 6>;
+  using FM6f = Dune::FieldMatrix<float, 6, 6>;
+  using FV6f = Dune::FieldVector<float, 6>;
+  using FM6c = Dune::FieldMatrix<std::complex<double>, 6, 6>;
+  using FV6c = Dune::FieldVector<std::complex<double>, 6>;
   FM6 A_data3 = {{0.1756212892262638, 0.18004482126181995, -0.49348712464381461, 0.49938830949606494, -0.7073160963417815, 1.0595994834402057e-06},
                 {0.17562806606385517, 0.18005184462676252, -0.49354113600539418, 0.50059575375120657, 0.70689735319270453, -3.769499436967368e-07},
                 {0.17562307226079987, 0.1800466692525447, -0.49350050991711036, -0.5000065175076156, 0.00018887507812282846, -0.70710715811504954},
@@ -168,7 +172,29 @@ int test_invert_solve()
                    { 0.000001450379141, 0.000000012708409, -0.707107586716496, 0.707105975654669, 0.000000019133995, 0.000000018693387}};
   FV6 b3 = {1, 1, 1, 1, 1, 1};
   FV6 x3 = {0.904587854793530, 0.917289473665475, -1.369740692593475, -0.000021581236636, -0.000061184685788, -0.000000110146895};
-  return ret + test_invert_solve<double, 6>(A_data3, inv_data3, x3, b3);
+  FM6f A_data3f, inv_data3f;
+  FM6c A_data3c, inv_data3c;
+  std::copy(A_data3.begin(), A_data3.end(), A_data3f.begin());
+  std::copy(inv_data3.begin(), inv_data3.end(), inv_data3f.begin());
+  std::copy(A_data3.begin(), A_data3.end(), A_data3c.begin());
+  std::copy(inv_data3.begin(), inv_data3.end(), inv_data3c.begin());
+  FV6f b3f = b3;
+  FV6f x3f = x3;
+  FV6c b3c = b3;
+  FV6c x3c = x3;
+#if HAVE_VC
+  using FM6vc = Dune::FieldMatrix< Vc::SimdArray<double, 8>, 6, 6>;
+  using FV6vc = Dune::FieldVector< Vc::SimdArray<double, 8>, 6>;
+  FM6vc A_data3vc, inv_data3vc;
+  std::copy(A_data3.begin(), A_data3.end(), A_data3vc.begin());
+  std::copy(inv_data3.begin(), inv_data3.end(), inv_data3vc.begin());
+  FV6vc b3vc = b3;
+  FV6vc x3vc = x3;
+  ret += test_invert_solve< Vc::SimdArray<double, 8>, 6>(A_data3vc, inv_data3vc, x3vc, b3vc);
+#endif
+  ret += test_invert_solve<double, 6>(A_data3, inv_data3, x3, b3);
+  ret += test_invert_solve<std::complex<double>, 6>(A_data3c, inv_data3c, x3c, b3c);
+  return ret + test_invert_solve<float, 6>(A_data3f, inv_data3f, x3f, b3f);
 }
 
 template<class K, int n, int m, class X, class Y, class XT, class YT>
