@@ -326,6 +326,14 @@ void operator delete(void * p) noexcept
   Dune::DebugMemory::alloc_man.deallocate<char>(static_cast<char*>(p));
 }
 
+void operator delete(void * p, size_t size) noexcept
+{
+#if DEBUG_NEW_DELETE > 2
+  std::cout << "FREE " << p << std::endl;
+#endif
+  Dune::DebugMemory::alloc_man.deallocate<char>(static_cast<char*>(p), size);
+}
+
 #endif // DEBUG_NEW_DELETE
 
 #endif // HAVE_PROTECT
