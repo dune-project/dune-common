@@ -197,6 +197,8 @@ namespace Dune
       blocklevel = 1
     };
 
+    static bool disable_pivoting;
+
   private:
     //! \brief if value_type is a simd vector, then this is a simd vector of
     //!        the same length that can be used for indices.
@@ -806,6 +808,9 @@ namespace Dune
                          Mask &nonsingularLanes, bool throwEarly) const;
   };
 
+  template<typename MAT>
+  bool DenseMatrix<MAT>::disable_pivoting = false;
+
 #ifndef DOXYGEN
   template<typename MAT>
   DenseMatrix<MAT>::ElimPivot::ElimPivot(std::vector<simd_index_type> & pivot)
@@ -861,10 +866,9 @@ namespace Dune
     for (size_type i=0; i<rows(); i++)  // loop over all rows
     {
       real_type pivmax = fvmeta::absreal(A[i][i]);
-      const bool do_pivot = true;
 
       // pivoting ?
-      if (do_pivot)
+      if (!disable_pivoting)
       {
         // compute maximum of column
         simd_index_type imax=i;
