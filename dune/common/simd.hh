@@ -94,30 +94,30 @@ namespace Dune
         return vec_[idx_] OP valueCast(std::forward<T>(o));             \
       }
 
-      DUNE_SIMD_VC_BINARY_OP(*);
-      DUNE_SIMD_VC_BINARY_OP(/);
-      DUNE_SIMD_VC_BINARY_OP(%);
+      DUNE_SIMD_VC_BINARY_OP(*)
+      DUNE_SIMD_VC_BINARY_OP(/)
+      DUNE_SIMD_VC_BINARY_OP(%)
 
-      DUNE_SIMD_VC_BINARY_OP(+);
-      DUNE_SIMD_VC_BINARY_OP(-);
+      DUNE_SIMD_VC_BINARY_OP(+)
+      DUNE_SIMD_VC_BINARY_OP(-)
 
-      DUNE_SIMD_VC_BINARY_OP(<<);
-      DUNE_SIMD_VC_BINARY_OP(>>);
+      DUNE_SIMD_VC_BINARY_OP(<<)
+      DUNE_SIMD_VC_BINARY_OP(>>)
 
-      DUNE_SIMD_VC_BINARY_OP(<);
-      DUNE_SIMD_VC_BINARY_OP(>);
-      DUNE_SIMD_VC_BINARY_OP(<=);
-      DUNE_SIMD_VC_BINARY_OP(>=);
+      DUNE_SIMD_VC_BINARY_OP(<)
+      DUNE_SIMD_VC_BINARY_OP(>)
+      DUNE_SIMD_VC_BINARY_OP(<=)
+      DUNE_SIMD_VC_BINARY_OP(>=)
 
-      DUNE_SIMD_VC_BINARY_OP(==);
-      DUNE_SIMD_VC_BINARY_OP(!=);
+      DUNE_SIMD_VC_BINARY_OP(==)
+      DUNE_SIMD_VC_BINARY_OP(!=)
 
-      DUNE_SIMD_VC_BINARY_OP(&);
-      DUNE_SIMD_VC_BINARY_OP(^);
-      DUNE_SIMD_VC_BINARY_OP(|);
+      DUNE_SIMD_VC_BINARY_OP(&)
+      DUNE_SIMD_VC_BINARY_OP(^)
+      DUNE_SIMD_VC_BINARY_OP(|)
 
-      DUNE_SIMD_VC_BINARY_OP(&&);
-      DUNE_SIMD_VC_BINARY_OP(||);
+      DUNE_SIMD_VC_BINARY_OP(&&)
+      DUNE_SIMD_VC_BINARY_OP(||)
 #undef DUNE_SIMD_VC_BINARY_OP
 
 #define DUNE_SIMD_VC_ASSIGNMENT(OP)                             \
@@ -131,17 +131,17 @@ namespace Dune
         return *this;                                           \
       }
 
-      DUNE_SIMD_VC_ASSIGNMENT(=);
-      DUNE_SIMD_VC_ASSIGNMENT(*=);
-      DUNE_SIMD_VC_ASSIGNMENT(/=);
-      DUNE_SIMD_VC_ASSIGNMENT(%=);
-      DUNE_SIMD_VC_ASSIGNMENT(+=);
-      DUNE_SIMD_VC_ASSIGNMENT(-=);
-      DUNE_SIMD_VC_ASSIGNMENT(<<=);
-      DUNE_SIMD_VC_ASSIGNMENT(>>=);
-      DUNE_SIMD_VC_ASSIGNMENT(&=);
-      DUNE_SIMD_VC_ASSIGNMENT(^=);
-      DUNE_SIMD_VC_ASSIGNMENT(|=);
+      DUNE_SIMD_VC_ASSIGNMENT(=)
+      DUNE_SIMD_VC_ASSIGNMENT(*=)
+      DUNE_SIMD_VC_ASSIGNMENT(/=)
+      DUNE_SIMD_VC_ASSIGNMENT(%=)
+      DUNE_SIMD_VC_ASSIGNMENT(+=)
+      DUNE_SIMD_VC_ASSIGNMENT(-=)
+      DUNE_SIMD_VC_ASSIGNMENT(<<=)
+      DUNE_SIMD_VC_ASSIGNMENT(>>=)
+      DUNE_SIMD_VC_ASSIGNMENT(&=)
+      DUNE_SIMD_VC_ASSIGNMENT(^=)
+      DUNE_SIMD_VC_ASSIGNMENT(|=)
 #undef DUNE_SIMD_VC_ASSIGNMENT
 
       // swap on proxies swaps the proxied vector entries.  As such, it
