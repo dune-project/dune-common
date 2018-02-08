@@ -1055,6 +1055,7 @@ namespace Dune
       (*this)[2][2] =  (t4-t8) * t17;
     }
     else {
+      using std::swap;
 
       MAT A(asImp());
       std::vector<simd_index_type> pivot(rows());
@@ -1093,8 +1094,7 @@ namespace Dune
           std::size_t pi = lane(l, pivot[i]);
           if(i!=pi)
             for(size_type j=0; j<rows(); ++j)
-              std::swap(lane(l, (*this)[j][pi]),
-                        lane(l, (*this)[j][ i]));
+              swap(lane(l, (*this)[j][pi]), lane(l, (*this)[j][ i]));
         }
       }
     }
