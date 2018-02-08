@@ -15,7 +15,7 @@ int main()
   Dune::TestSuite test;
 
   {
-    auto f = [](int i) { return 0; };
+    auto f = [](int /*i*/) { return 0; };
     using F = decltype(f);
 
     test.check(Dune::Std::is_callable<F(int)>() == true)
@@ -36,7 +36,7 @@ int main()
   }
 
   {
-    auto f = [](const int& i) {};
+    auto f = [](const int& /*i*/) {};
     using F = decltype(f);
 
     test.check(Dune::Std::is_callable<F(int)>() == true)
@@ -48,7 +48,7 @@ int main()
   }
 
   {
-    auto f = [](int& i) {};
+    auto f = [](int& /*i*/) {};
     using F = decltype(f);
 
     test.check(Dune::Std::is_callable<F(int)>() == false)
@@ -60,7 +60,7 @@ int main()
   }
 
   {
-    auto f = [](int&& i) {};
+    auto f = [](int&& /*i*/) {};
     using F = decltype(f);
 
     test.check(Dune::Std::is_callable<F(int)>() == true)
