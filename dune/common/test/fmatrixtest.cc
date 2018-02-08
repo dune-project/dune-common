@@ -198,7 +198,16 @@ int test_invert_solve()
 #endif
   ret += test_invert_solve<double, 6>(A_data3, inv_data3, x3, b3);
   ret += test_invert_solve<std::complex<double>, 6>(A_data3c, inv_data3c, x3c, b3c);
-  return ret + test_invert_solve<float, 6>(A_data3f, inv_data3f, x3f, b3f);
+  ret += test_invert_solve<float, 6>(A_data3f, inv_data3f, x3f, b3f);
+
+  FM::disable_pivoting = true;
+  FM A_data4 = {{2, -1, 0}, {-1, 2, -1}, {0, -1, 2}};
+  FM inv_data4 = {{0.75, 0.5, 0.25}, {0.5, 1, 0.5}, {0.25, 0.5, 0.75}};
+  FV b4 = {1, 2, 3};
+  FV x4 = {2.5, 4, 3.5};
+  ret += test_invert_solve<double, 3>(A_data4, inv_data4, x4, b4);
+  FM::disable_pivoting = false;
+  return ret;
 }
 
 template<class K, int n, int m, class X, class Y, class XT, class YT>
