@@ -402,7 +402,7 @@ namespace Dune
   }
 
   template<class T, std::size_t n, class V>
-  const bool lane(std::size_t l, const Vc::SimdMaskArray<T, n, V> &v)
+  bool lane(std::size_t l, const Vc::SimdMaskArray<T, n, V> &v)
   {
     assert(l < n);
     return v[l];
