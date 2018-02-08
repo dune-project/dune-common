@@ -24,6 +24,7 @@
 
 #include <dune/common/conditional.hh>
 #include <dune/common/rangeutilities.hh>
+#include <dune/common/typetraits.hh>
 #include <dune/common/vc.hh>
 
 namespace Dune
@@ -470,6 +471,17 @@ namespace Dune
     v1(mask) = v2;
     v2(mask) = tmp;
   }
+#endif // HAVE_VC
+
+#if HAVE_VC
+  /*
+   * Specialize IsNumber for Vc::SimdArray to be able to use it as a
+   * scalar in DenseMatrix etc.
+   */
+  template <typename T, std::size_t N>
+  struct IsNumber<Vc::SimdArray<T, N>>
+    : public std::integral_constant<bool, IsNumber<T>::value> {
+  };
 #endif // HAVE_VC
 
 } // end namespace Dune
