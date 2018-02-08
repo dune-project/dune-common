@@ -19,9 +19,9 @@ int main()
 
   {
     auto foo = Dune::overload(
-            [](double i) { return 0; },
-            [](int i) { return 1; },
-            [](long i) { return 2; });
+            [](double /*i*/) { return 0; },
+            [](int /*i*/) { return 1; },
+            [](long /*i*/) { return 2; });
 
     test.check(foo(3.14) == 0)
       << "incorrect overload selected from OverloadSet";
@@ -33,9 +33,9 @@ int main()
 
   {
     auto foo = Dune::orderedOverload(
-            [](double i) { return 0; },
-            [](int i) { return 1; },
-            [](long i) { return 2; });
+            [](double /*i*/) { return 0; },
+            [](int /*i*/) { return 1; },
+            [](long /*i*/) { return 2; });
 
     test.check(foo(3.14) == 0)
       << "incorrect overload selected from OverloadSet";
@@ -47,8 +47,8 @@ int main()
 
   {
     auto foo = Dune::overload(
-            [](const int& i) { return 0; },
-            [](int&& i) { return 1; });
+            [](const int& /*i*/) { return 0; },
+            [](int&& /*i*/) { return 1; });
 
     int i = 0;
     test.check(foo(long(42)) == 1)
@@ -61,8 +61,8 @@ int main()
 
   {
     auto foo = Dune::orderedOverload(
-            [](const int& i) { return 0; },
-            [](int&& i) { return 1; });
+            [](const int& /*i*/) { return 0; },
+            [](int&& /*i*/) { return 1; });
 
     int i = 0;
     test.check(foo(long(42)) == 0)
