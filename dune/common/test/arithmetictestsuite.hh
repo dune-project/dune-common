@@ -54,7 +54,7 @@ namespace Dune {
      * default-constructed object of that class is is returned.
      */
     template<class T>
-    constexpr static auto tag(T = T{})
+    constexpr static auto getTag(T = T{})
     {
       return
         Cond<std::is_convertible<T, Arithmetic>, T,
@@ -85,6 +85,7 @@ namespace Dune {
     {
       // the conversion to void stops the compiler from complaining about
       // unused variables
+      (void)tag;
       T t0;      (void)t0;
       (void)T();
       T t1{};    (void)t1;
@@ -721,7 +722,7 @@ namespace Dune {
     template<class T, class Tag>
     void checkArithmetic(Tag = Tag{})
     {
-      auto tag = this->tag<Tag>();
+      auto tag = this->getTag<Tag>();
 
       checkDefaultConstruct<T>(tag);
       checkExplicitIntConvert<T>(tag);
