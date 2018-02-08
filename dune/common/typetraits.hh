@@ -9,6 +9,7 @@
 #include <vector>
 
 #include <dune/common/deprecated.hh>
+#include <dune/common/vc.hh>
 
 namespace Dune
 {
@@ -169,6 +170,13 @@ namespace Dune
   struct IsNumber<std::complex<T>>
     : public std::integral_constant<bool, IsNumber<T>::value> {
   };
+
+#if HAVE_VC
+  template <typename T, std::size_t N>
+  struct IsNumber<Vc::SimdArray<T, N>>
+    : public std::integral_constant<bool, IsNumber<T>::value> {
+  };
+#endif
 
 #endif // DOXYGEN
 
