@@ -199,6 +199,9 @@ namespace Dune {
       // call LAPACK dsyev
       DSYEV_FORTRAN(jobz, uplo, n, a, lda, w, work, lwork, info);
 #else
+      // silence unused variable warnings
+      (void)jobz, (void)uplo, (void)n, (void)a, (void)lda, (void)w;
+      (void)work, (void)lwork, (void)info;
       DUNE_THROW(NotImplemented,"eigenValuesLapackCall: LAPACK not found!");
 #endif
     }
@@ -214,6 +217,9 @@ namespace Dune {
       DGEEV_FORTRAN(jobvl, jobvr, n, a, lda, wr, wi, vl, ldvl, vr, ldvr,
                     work, lwork, info);
 #else
+      // silence unused variable warnings
+      (void)jobvl, (void)jobvr, (void)n, (void)a, (void) lda, (void)wr, (void)wi;
+      (void)vl, (void)ldvl, (void)vr, (void)ldvr, (void)work, (void)lwork, (void)info;
       DUNE_THROW(NotImplemented,"eigenValuesNonsymLapackCall: LAPACK not found!");
 #endif
     }
