@@ -255,13 +255,13 @@ macro(find_dune_package module)
       endif()
     endforeach()
     if(NOT ${module}_dune_module)
-      message(${warning_level} "Could not find dune.module file for module ${module} "
+      message(${_warning_level} "Could not find dune.module file for module ${module} "
         "in ${${module}_PREFIX},  ${${module}_PREFIX}/lib/dunecontrol/${module}/, "
         "${${module}_PREFIX}/lib64/dunecontrol/${module}/dune.module")
       set(${module}_FOUND OFF)
     endif()
     if(module_version_wrong)
-      message(${warning_level} "Could not find requested version of module ${module}. "
+      message(${_warning_level} "Could not find requested version of module ${module}. "
         "Requested version was ${DUNE_FIND_VERSION}, found version is ${DUNE_FIND_MOD_VERSION_STRING}")
       set(${module}_FOUND OFF)
     endif()
