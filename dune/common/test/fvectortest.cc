@@ -3,16 +3,18 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+
+#include <cassert>
+#include <complex>
+#include <iostream>
+#include <limits>
+#include <typeinfo>
+
 #include <dune/common/classname.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/gmpfield.hh>
 #include <dune/common/typetraits.hh>
-#include <iostream>
-#include <complex>
-#include <typeinfo>
-#include <cassert>
-
 
 using Dune::FieldVector;
 using std::complex;
@@ -489,9 +491,9 @@ test_initialisation()
   assert(b[1] == 2);
 }
 
-void FieldVectorMathClassifiersTest() {
+void fieldvectorMathclassifiersTest() {
   double nan = std::nan("");
-  double inf = exp(800);
+  double inf = std::limits<double>::infinity();
 
   FieldVector<double,3> fv_normal(1.);
   FieldVector<double,3> fv_nan(1.);
@@ -500,17 +502,38 @@ void FieldVectorMathClassifiersTest() {
   fv_nan[2] = nan;
   fv_inf[2] = inf;
 
-  assert(Dune::isNaN(fv_normal) == false);
-  assert(Dune::isInf(fv_normal) == false);
-  assert(Dune::isFinite(fv_normal) == true);
+  //test vector containing only doubles
+  if(Dune::isNaN(fv_normal) == true) {
+    std::abort();
+  }
+  if(Dune::isInf(fv_normal) == true) {
+     std::abort();
+  }
+  if(Dune::isFinite(fv_normal) == false) {
+    std::abort();
+  }
 
-  assert(Dune::isNaN(fv_nan) == true);
-  assert(Dune::isInf(fv_nan) == false);
-  assert(Dune::isFinite(fv_nan) == false);
+  //test vector containing a NaN-entry
+  if(Dune::isNaN(fv_nan) == false) {
+     std::abort();
+  }
+  if(Dune::isInf(fv_nan) == true) {
+     std::abort();
+  }
+  if(Dune::isFinite(fv_nan) == true) {
+    std::abort();
+  }
 
-  assert(Dune::isNaN(fv_inf) == false);
-  assert(Dune::isInf(fv_inf) == true);
-  assert(Dune::isFinite(fv_inf) == false);
+  //test vector containing an infinity-entry
+  if(Dune::isNaN(fv_inf) == true) {
+    std::abort();
+  }
+  if(Dune::isInf(fv_inf) == false) {
+    std::abort();
+  }
+  if(Dune::isFinite(fv_inf) == false) {
+    std::abort();
+  }
 }
 
 
@@ -534,7 +557,7 @@ int main()
 #endif // HAVE_GMP
 
     //test the mathclassifiers Dune::isNaN, Dune::isInf, Dune::isFinite
-    FieldVectorMathClassifiersTest();
+    fieldvectorMathclassifiersTest();
 
     {
       double nan = std::nan("");
