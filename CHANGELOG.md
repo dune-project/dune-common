@@ -31,6 +31,13 @@
 
     See core/dune-common!282
 
+- Added infrastructure for explicit vectorization *(experimental)*
+
+    We added experimental support for SIMD data types. We currently
+    provide infrastructure to use [Vc](https://github.com/VcDevel/Vc)
+    and some helper functions to transparently switch between scalar data
+    types and SIMD data types.
+
 - `FieldMatrix` now has experimental support for SIMD types from
   [Vc](https://github.com/VcDevel/Vc) as field types.
 
