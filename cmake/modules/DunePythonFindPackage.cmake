@@ -101,7 +101,7 @@ function(dune_python_find_package)
   else()
     set(${PYPACKAGE_RESULT} FALSE)
     if(PYPACKAGE_REQUIRED)
-        message(FATAL_ERROR "The python package ${PYPACKAGE_PACKAGE} could not be found! (for interpreter ${PYPACKAGE_INTERPRETER})")
+      message(FATAL_ERROR "The python package ${PYPACKAGE_PACKAGE} could not be found! (for interpreter ${PYPACKAGE_INTERPRETER})")
     endif()
   endif()
 
