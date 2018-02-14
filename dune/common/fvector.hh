@@ -142,6 +142,14 @@ namespace Dune {
       return *this;
     }
 
+    template <typename T, int N>
+    FieldVector& operator= (const FieldVector<T, N>& other)
+    {
+      static_assert(N == SIZE, "Sizes have to match for assignment!");
+      std::copy_n(other.begin(), SIZE, _data.begin());
+      return *this;
+    }
+
     /**
      * \brief Copy constructor from a second vector of possibly different type
      *
@@ -275,6 +283,14 @@ namespace Dune {
     //! copy assignment operator
     FieldVector& operator= (const FieldVector& other)
     {
+      _data = other._data;
+      return *this;
+    }
+
+    template <typename T, int N>
+    FieldVector& operator= (const FieldVector<T, N>& other)
+    {
+      static_assert(N == 1, "Sizes have to match for assignment!");
       _data = other._data;
       return *this;
     }
