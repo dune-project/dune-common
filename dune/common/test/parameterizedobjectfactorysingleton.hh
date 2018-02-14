@@ -5,6 +5,14 @@
 #include <dune/common/singleton.hh>
 #include <string>
 
+#define DefineImplementation2(IF,T)             \
+    struct T : public IF {                      \
+        T() {}                                  \
+        std::string info() override {           \
+            return #T;                          \
+        }                                       \
+    }
+
 #define DefineImplementation(IF,T,...)          \
     struct T : public IF {                      \
         T(__VA_ARGS__) {}                       \
