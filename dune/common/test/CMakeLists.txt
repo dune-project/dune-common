@@ -98,6 +98,12 @@ dune_add_test(NAME densematrixassignmenttest_fail6
               COMPILE_DEFINITIONS "FAILURE6"
               EXPECT_COMPILE_FAIL)
 
+dune_add_test(SOURCES densevectortest.cc
+              LINK_LIBRARIES dunecommon)
+
+dune_add_test(SOURCES densevectorassignmenttest.cc
+              LINK_LIBRARIES dunecommon)
+
 dune_add_test(SOURCES diagonalmatrixtest.cc
               LINK_LIBRARIES dunecommon)
 
@@ -105,9 +111,6 @@ dune_add_test(SOURCES dynmatrixtest.cc
               LINK_LIBRARIES dunecommon)
 
 dune_add_test(SOURCES dynvectortest.cc
-              LINK_LIBRARIES dunecommon)
-
-dune_add_test(SOURCES densevectortest.cc
               LINK_LIBRARIES dunecommon)
 
 dune_add_test(SOURCES enumsettest.cc)
