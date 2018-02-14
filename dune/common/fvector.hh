@@ -133,6 +133,13 @@ namespace Dune {
                  _data.begin());
     }
 
+    //! copy assignment operator
+    FieldVector& operator= (const FieldVector& other)
+    {
+      _data = other._data;
+      return *this;
+    }
+
     /**
      * \brief Copy constructor from a second vector of possibly different type
      *
@@ -262,6 +269,13 @@ namespace Dune {
     FieldVector ( const FieldVector &other )
       : Base(), _data( other._data )
     {}
+
+    //! copy assignment operator
+    FieldVector& operator= (const FieldVector& other)
+    {
+      _data = other._data;
+      return *this;
+    }
 
     /** \brief Construct from a std::initializer_list */
     FieldVector (std::initializer_list<K> const &l)
