@@ -531,7 +531,7 @@ void fieldvectorMathclassifiersTest() {
   if(Dune::isInf(fv_inf) == false) {
     std::abort();
   }
-  if(Dune::isFinite(fv_inf) == false) {
+  if(Dune::isFinite(fv_inf) == true) {
     std::abort();
   }
 }
