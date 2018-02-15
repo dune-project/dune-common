@@ -139,6 +139,51 @@ constexpr decltype(auto) elementAt(Container&& c, Index&& i)
 
 namespace Impl {
 
+  template<class T>
+  class DynamicIntegralRangeIterator
+  {
+  public:
+    constexpr DynamicIntegralRangeIterator(const T& pos)
+      : pos_(pos)
+    {}
+
+    constexpr DynamicIntegralRangeIterator& operator++()
+    {
+      ++pos_;
+      return *this;
+    }
+
+    constexpr DynamicIntegralRangeIterator operator++(int)
+    {
+      auto ret = *this;
+      ++pos_;
+      return ret;
+    }
+
+    constexpr bool operator==(DynamicIntegralRangeIterator& other)
+    {
+      return pos_ == other.pos_;
+    }
+
+    constexpr bool operator!=(DynamicIntegralRangeIterator& other)
+    {
+      return pos_ != other.pos_;
+    }
+
+    constexpr T& operator*()
+    {
+      return pos_;
+    }
+
+    constexpr const T& operator*() const
+    {
+      return pos_;
+    }
+
+  private:
+    T pos_;
+  };
+
   template<class Begin, class End>
   class StaticIntegralRange
   {
@@ -159,6 +204,7 @@ namespace Impl {
   template<class T>
   class DynamicIntegralRange
   {
+    typedef DynamicIntegralRangeIterator<T> Iterator;
   public:
     constexpr DynamicIntegralRange(const T& begin, const T& end):
       begin_(begin),
@@ -172,6 +218,16 @@ namespace Impl {
 
     constexpr T operator[](const T&i) const
     { return begin_+i; }
+
+    constexpr Iterator begin() const
+    {
+      return Iterator(begin_);
+    }
+
+    constexpr Iterator end() const
+    {
+      return Iterator(end_);
+    }
 
   private:
     T begin_;
@@ -275,11 +331,8 @@ namespace Impl {
   template<class Range, class F>
   constexpr void forEach(Range&& range, F&& f, PriorityTag<0>)
   {
-    for(std::size_t i=0; i<range.size(); ++i)
-      f(range[i]);
-    // \todo Switch to real range for once DynamicIntegralRange has proper iterators
-    //  for(auto e : range)
-    //    f(e);
+    for(auto& e : range)
+      f(e);
   }
 
 } // namespace Impl
