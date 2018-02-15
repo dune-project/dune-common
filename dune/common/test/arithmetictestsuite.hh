@@ -9,6 +9,7 @@
 
 #include <dune/common/classname.hh>
 #include <dune/common/test/testsuite.hh>
+#include <dune/common/unused.hh>
 
 namespace Dune {
 
@@ -54,7 +55,7 @@ namespace Dune {
      * default-constructed object of that class is is returned.
      */
     template<class T>
-    constexpr static auto tag(T = T{})
+    constexpr static auto getTag(T = T{})
     {
       return
         Cond<std::is_convertible<T, Arithmetic>, T,
@@ -83,12 +84,11 @@ namespace Dune {
     template<class T>
     void checkDefaultConstruct(Arithmetic tag)
     {
-      // the conversion to void stops the compiler from complaining about
-      // unused variables
-      T t0;      (void)t0;
+      DUNE_UNUSED_PARAMETER(tag);
+      T DUNE_UNUSED t0;
       (void)T();
-      T t1{};    (void)t1;
-      T t2 = {}; (void)t2;
+      T DUNE_UNUSED t1{};
+      T DUNE_UNUSED t2 = {};
     }
 
     //! check explicit conversion from and to int
@@ -721,7 +721,7 @@ namespace Dune {
     template<class T, class Tag>
     void checkArithmetic(Tag = Tag{})
     {
-      auto tag = this->tag<Tag>();
+      auto tag = this->getTag<Tag>();
 
       checkDefaultConstruct<T>(tag);
       checkExplicitIntConvert<T>(tag);
