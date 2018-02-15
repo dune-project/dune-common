@@ -12,6 +12,7 @@
 #include <cassert>
 
 #include <dune/common/exceptions.hh>
+#include <dune/common/unused.hh>
 
 #if HAVE_LAPACK
 
@@ -144,6 +145,11 @@ namespace Dune {
       DGEEV_FORTRAN(jobvl, jobvr, n, a, lda, wr, wi, vl, ldvl, vr, ldvr,
                     work, lwork, info);
 #else
+      // silence unused variable warnings
+      DUNE_UNUSED_PARAMETER(jobvl), DUNE_UNUSED_PARAMETER(jobvr), DUNE_UNUSED_PARAMETER(n), DUNE_UNUSED_PARAMETER(a);
+      DUNE_UNUSED_PARAMETER(lda), DUNE_UNUSED_PARAMETER(wr), DUNE_UNUSED_PARAMETER(wi);
+      DUNE_UNUSED_PARAMETER(vl), DUNE_UNUSED_PARAMETER(ldvl), DUNE_UNUSED_PARAMETER(vr), DUNE_UNUSED_PARAMETER(ldvr);
+      DUNE_UNUSED_PARAMETER(work), DUNE_UNUSED_PARAMETER(lwork), DUNE_UNUSED_PARAMETER(info);
       DUNE_THROW(NotImplemented,"eigenValuesNonsymLapackCall: LAPACK not found!");
 #endif
     }
