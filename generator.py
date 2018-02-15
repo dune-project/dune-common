@@ -14,52 +14,6 @@ from . import builder
 
 logger = logging.getLogger(__name__)
 
-class Constructor(object):
-    def __init__(self, args, body=None, extra=None):
-        self.args = args
-        self.body = body
-        self.extra = [] if extra is None else extra
-
-    def register(self, cls="cls"):
-        if self.body is None:
-            return cls + ".def( pybind11::init( " + args + " )" + "".join(", " + e for e in self.extra) + " );\n"
-        if self.args:
-            source = cls + ".def( pybind11::init( [] ( " + ", ".join(self.args) + " ) {"
-        else:
-            source = cls + ".def( pybind11::init( [] () {"
-        source += "\n    ".join(self.body)
-        source += "\n  } )" + "".join(", " + e for e in self.extra) + " );\n"
-        return source
-
-    def __str__(self):
-        return self.register()
-
-
-class Method(object):
-    def __init__(self, name, args, body=None, extra=None):
-        self.name = name
-        self.args = args
-        self.body = body
-        if extra is None:
-            self.extra = []
-        else:
-            self.extra = extra
-
-    def register(self, cls="cls"):
-        if self.body is None:
-            return cls + ".def( \"" + self.name + "\", " + self.args + "".join(", " + e for e in self.extra) + " );\n"
-        if self.args:
-            source = cls + ".def( " + self.name + ", [] ( " + ", ".join(self.args) + " ) {"
-        else:
-            source = cls + ".def( " + self.name + ", [] () {"
-        source += "\n    ".join(self.body)
-        source += "\n  } )" + "".join(", " + e for e in self.extra) + " );\n"
-        return source
-
-    def __str__(self):
-        return self.register()
-
-
 class SimpleGenerator(object):
     def __init__(self, typeName, namespace, pythonname=None, filename=None):
         self.typeName = typeName
@@ -127,3 +81,13 @@ def simpleGenerator(inc, baseType, namespace, pythonname=None, filename=None):
         moduleName = namespace + "_" + baseType + "_" + hashIt(typeName)
         return generator.load(includes, typeName, moduleName, *args)
     return load
+
+from . import Method as Method_
+from . import Constructor as Constructor_
+from dune.deprecate import deprecated
+@deprecated
+class Method(Method_):
+    pass
+@deprecated
+class Constructor(Constructor_):
+    pass
