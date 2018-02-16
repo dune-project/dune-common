@@ -9,6 +9,7 @@
 
 #include <dune/common/classname.hh>
 #include <dune/common/test/testsuite.hh>
+#include <dune/common/unused.hh>
 
 namespace Dune {
 
@@ -81,21 +82,20 @@ namespace Dune {
 
     //! check the default constructors
     template<class T>
-    void checkDefaultConstruct(Arithmetic tag)
+    void checkDefaultConstruct(Arithmetic arithmetic_tag)
     {
-      // the conversion to void stops the compiler from complaining about
-      // unused variables
-      T t0;      (void)t0;
+      DUNE_UNUSED_PARAMETER(arithmetic_tag);
+      T DUNE_UNUSED t0;
       (void)T();
-      T t1{};    (void)t1;
-      T t2 = {}; (void)t2;
+      T DUNE_UNUSED t1{};
+      T DUNE_UNUSED t2 = {};
     }
 
     //! check explicit conversion from and to int
     template<class T>
-    void checkExplicitIntConvert(Arithmetic tag)
+    void checkExplicitIntConvert(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
       // this test may be applied to boolean-type types. 0 and 1 are the only
       // values that survive that.
       T t0(0); DUNE_TEST_CHECK(int(t0) == 0);
@@ -104,9 +104,9 @@ namespace Dune {
 
     //! check the move constructor
     template<class T>
-    void checkMoveConstruct(Arithmetic tag)
+    void checkMoveConstruct(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
       for(int i : { 0, 1 })
       {
         T t0(i);
@@ -122,9 +122,9 @@ namespace Dune {
 
     //! check the copy constructor
     template<class T>
-    void checkCopyConstruct(Arithmetic tag)
+    void checkCopyConstruct(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
       for(int i : { 0, 1 })
       {
         T t0(i);
@@ -144,9 +144,9 @@ namespace Dune {
 
     //! check the move assignment operator
     template<class T>
-    void checkMoveAssign(Arithmetic tag)
+    void checkMoveAssign(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
       for(int i : { 0, 1 })
       {
         T t0(i);
@@ -161,9 +161,9 @@ namespace Dune {
 
     //! check the copy assignment operator
     template<class T>
-    void checkCopyAssign(Arithmetic tag)
+    void checkCopyAssign(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
       for(int i : { 0, 1 })
       {
         T t0(i);
@@ -184,9 +184,9 @@ namespace Dune {
      *       bool, but it must be contextually convertible to bool.
      */
     template<class T>
-    void checkEqual(Arithmetic tag)
+    void checkEqual(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
       T t0(0);
       T t1(1);
 
@@ -214,9 +214,9 @@ namespace Dune {
      * Applies to boolean (deprecated), integral, and floating point.
      */
     template<class T>
-    void checkPostfixInc(Arithmetic tag)
+    void checkPostfixInc(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       T t0(0);
       DUNE_TEST_CHECK(bool(T(t0++) == T(0)));
@@ -230,9 +230,9 @@ namespace Dune {
      * Applies to integral (no boolean), and floating point.
      */
     template<class T>
-    void checkPostfixDec(Arithmetic tag)
+    void checkPostfixDec(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       T t1(1);
       DUNE_TEST_CHECK(bool(T(t1--) == T(1)));
@@ -246,9 +246,9 @@ namespace Dune {
      * Applies to boolean, integral, and floating point.
      */
     template<class T>
-    void checkPrefixPlus(Arithmetic tag)
+    void checkPrefixPlus(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       DUNE_TEST_CHECK(bool(T(+T(0)) == T(0)));
       DUNE_TEST_CHECK(bool(T(+T(1)) == T(1)));
@@ -259,9 +259,9 @@ namespace Dune {
      * Applies to boolean, integral, and floating point.
      */
     template<class T>
-    void checkPrefixMinus(Arithmetic tag)
+    void checkPrefixMinus(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       DUNE_TEST_CHECK(bool(T(-T(0)) == T( 0)));
       DUNE_TEST_CHECK(bool(T(-T(1)) == T(-1)));
@@ -272,9 +272,9 @@ namespace Dune {
      * Applies to boolean, integral, and floating point.
      */
     template<class T>
-    void checkPrefixNot(Arithmetic tag)
+    void checkPrefixNot(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       DUNE_TEST_CHECK(bool(!T(0)));
       DUNE_TEST_CHECK(!bool(!T(1)));
@@ -285,16 +285,16 @@ namespace Dune {
      * Applies to boolean and integral.
      */
     template<class T>
-    void checkPrefixBitNot(Boolean tag)
+    void checkPrefixBitNot(Boolean arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       DUNE_TEST_CHECK(bool(T(~T(0))));
     }
     template<class T>
-    void checkPrefixBitNot(Integral tag)
+    void checkPrefixBitNot(Integral arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       DUNE_TEST_CHECK(bool(T(~T(0))));
       DUNE_TEST_CHECK(bool(T(~T(1))));
@@ -303,9 +303,9 @@ namespace Dune {
       DUNE_TEST_CHECK(bool(T(~T(~T(1))) == T(1)));
     }
     template<class T>
-    void checkPrefixBitNot(Unsigned tag)
+    void checkPrefixBitNot(Unsigned arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       checkPrefixBitNot<T>(Integral{});
 
@@ -320,9 +320,9 @@ namespace Dune {
      * Applies to boolean (deprecated), integral, and floating point.
      */
     template<class T>
-    void checkPrefixInc(Arithmetic tag)
+    void checkPrefixInc(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       T t0(0);
       DUNE_TEST_CHECK(bool(T(++t0) == T(1)));
@@ -338,9 +338,9 @@ namespace Dune {
      * Applies to integral (no boolean), and floating point.
      */
     template<class T>
-    void checkPrefixDec(Arithmetic tag)
+    void checkPrefixDec(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       T t1(1);
       DUNE_TEST_CHECK(bool(T(--t1) == T(0)));
@@ -361,9 +361,9 @@ namespace Dune {
      * Applies to boolean, integral, and floating point.
      */
     template<class T>
-    void checkInfixMul(Arithmetic tag)
+    void checkInfixMul(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       DUNE_TEST_CHECK(bool(T(T(0)*T(0)) == T(0)));
       DUNE_TEST_CHECK(bool(T(T(1)*T(0)) == T(0)));
@@ -376,9 +376,9 @@ namespace Dune {
      * Applies to boolean, integral, and floating point.
      */
     template<class T>
-    void checkInfixDiv(Arithmetic tag)
+    void checkInfixDiv(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       DUNE_TEST_CHECK(bool(T(T(0)/T(1)) == T(0)));
       DUNE_TEST_CHECK(bool(T(T(1)/T(1)) == T(1)));
@@ -389,9 +389,9 @@ namespace Dune {
      * Applies to boolean and integral.
      */
     template<class T>
-    void checkInfixRem(Arithmetic tag)
+    void checkInfixRem(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       DUNE_TEST_CHECK(bool(T(T(0)%T(1)) == T(0)));
       DUNE_TEST_CHECK(bool(T(T(1)%T(1)) == T(0)));
@@ -404,9 +404,9 @@ namespace Dune {
      * Applies to boolean, integral, and floating point.
      */
     template<class T>
-    void checkInfixPlus(Arithmetic tag)
+    void checkInfixPlus(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       DUNE_TEST_CHECK(bool(T(T(0)+T(0)) == T(0)));
       DUNE_TEST_CHECK(bool(T(T(1)+T(0)) == T(1)));
@@ -419,9 +419,9 @@ namespace Dune {
      * Applies to boolean, integral, and floating point.
      */
     template<class T>
-    void checkInfixMinus(Arithmetic tag)
+    void checkInfixMinus(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       DUNE_TEST_CHECK(bool(T(T(0)-T(0)) == T( 0)));
       DUNE_TEST_CHECK(bool(T(T(1)-T(0)) == T( 1)));
@@ -434,9 +434,9 @@ namespace Dune {
      * Applies to boolean and integral.
      */
     template<class T>
-    void checkInfixLShift(Arithmetic tag)
+    void checkInfixLShift(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       DUNE_TEST_CHECK(bool(T(T(0)<<T(0)) == T(0)));
       DUNE_TEST_CHECK(bool(T(T(1)<<T(0)) == T(1)));
@@ -451,9 +451,9 @@ namespace Dune {
      * Applies to boolean and integral.
      */
     template<class T>
-    void checkInfixRShift(Arithmetic tag)
+    void checkInfixRShift(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       DUNE_TEST_CHECK(bool(T(T(0)>>T(0)) == T(0)));
       DUNE_TEST_CHECK(bool(T(T(1)>>T(0)) == T(1)));
@@ -468,9 +468,9 @@ namespace Dune {
      * Applies to boolean, integral, and floating point.
      */
     template<class T>
-    void checkInfixLess(Arithmetic tag)
+    void checkInfixLess(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       DUNE_TEST_CHECK(bool(T(0)<T(0)) == false);
       DUNE_TEST_CHECK(bool(T(1)<T(0)) == false);
@@ -478,18 +478,18 @@ namespace Dune {
       DUNE_TEST_CHECK(bool(T(1)<T(1)) == false);
     }
     template<class T>
-    void checkInfixLess(Signed tag)
+    void checkInfixLess(Signed arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       checkInfixLess<T>(Integral{});
 
       DUNE_TEST_CHECK(bool(T(-1)<T( 0)) == true);
     }
     template<class T>
-    void checkInfixLess(Unsigned tag)
+    void checkInfixLess(Unsigned arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       checkInfixLess<T>(Integral{});
 
@@ -501,9 +501,9 @@ namespace Dune {
      * Applies to boolean, integral, and floating point.
      */
     template<class T>
-    void checkInfixGreater(Arithmetic tag)
+    void checkInfixGreater(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       int values[] = { -1, 0, 1 };
       for(int i : values)
@@ -516,9 +516,9 @@ namespace Dune {
      * Applies to boolean, integral, and floating point.
      */
     template<class T>
-    void checkInfixLessEqual(Arithmetic tag)
+    void checkInfixLessEqual(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       int values[] = { -1, 0, 1 };
       for(int i : values)
@@ -531,9 +531,9 @@ namespace Dune {
      * Applies to boolean, integral, and floating point.
      */
     template<class T>
-    void checkInfixGreaterEqual(Arithmetic tag)
+    void checkInfixGreaterEqual(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       int values[] = { -1, 0, 1 };
       for(int i : values)
@@ -546,18 +546,18 @@ namespace Dune {
      * Applies to boolean and integral.
      */
     template<class T>
-    void checkInfixBitAnd(Arithmetic tag)
+    void checkInfixBitAnd(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       for(int i = 0; i < 4; ++i)
         for(int j = 0; j < 4; ++j)
           DUNE_TEST_CHECK(bool(T(T(i) & T(j)) == T(i&j)));
     }
     template<class T>
-    void checkInfixBitAnd(Boolean tag)
+    void checkInfixBitAnd(Boolean arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       for(int i = 0; i < 2; ++i)
         for(int j = 0; j < 2; ++j)
@@ -571,18 +571,18 @@ namespace Dune {
      * Applies to boolean and integral.
      */
     template<class T>
-    void checkInfixBitXor(Arithmetic tag)
+    void checkInfixBitXor(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       for(int i = 0; i < 4; ++i)
         for(int j = 0; j < 4; ++j)
           DUNE_TEST_CHECK(bool(T(T(i) ^ T(j)) == T(i^j)));
     }
     template<class T>
-    void checkInfixBitXor(Boolean tag)
+    void checkInfixBitXor(Boolean arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       for(int i = 0; i < 2; ++i)
         for(int j = 0; j < 2; ++j)
@@ -598,18 +598,18 @@ namespace Dune {
      * Applies to boolean and integral.
      */
     template<class T>
-    void checkInfixBitOr(Arithmetic tag)
+    void checkInfixBitOr(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       for(int i = 0; i < 4; ++i)
         for(int j = 0; j < 4; ++j)
           DUNE_TEST_CHECK(bool(T(T(i) | T(j)) == T(i|j)));
     }
     template<class T>
-    void checkInfixBitOr(Boolean tag)
+    void checkInfixBitOr(Boolean arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       for(int i = 0; i < 2; ++i)
         for(int j = 0; j < 2; ++j)
@@ -623,9 +623,9 @@ namespace Dune {
      * Applies to boolean, integral and floating point.
      */
     template<class T>
-    void checkInfixAnd(Arithmetic tag)
+    void checkInfixAnd(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       for(int i = 0; i < 4; ++i)
         for(int j = 0; j < 4; ++j)
@@ -637,9 +637,9 @@ namespace Dune {
      * Applies to boolean, integral and floating point.
      */
     template<class T>
-    void checkInfixOr(Arithmetic tag)
+    void checkInfixOr(Arithmetic arithmetic_tag)
     {
-      DUNE_TEST_FUNCTION(T, tag);
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);
 
       for(int i = 0; i < 4; ++i)
         for(int j = 0; j < 4; ++j)
@@ -653,9 +653,9 @@ namespace Dune {
 #define DUNE_TEST_PEEL(...) __VA_ARGS__
 #define DUNE_TEST_ASSIGN(OP, name, Tag, lrange, rrange)                 \
     template<class T>                                                   \
-    void checkAssign##name(Tag tag)                                     \
+    void checkAssign##name(Tag arithmetic_tag)                                     \
     {                                                                   \
-      DUNE_TEST_FUNCTION(T, tag);                                       \
+      DUNE_TEST_FUNCTION(T, arithmetic_tag);                                       \
                                                                         \
       for(int i : { DUNE_TEST_PEEL lrange })                            \
         for(int j : { DUNE_TEST_PEEL rrange })                          \
@@ -721,62 +721,62 @@ namespace Dune {
     template<class T, class Tag>
     void checkArithmetic(Tag = Tag{})
     {
-      auto tag = this->tag<Tag>();
+      auto arithmetic_tag = this->tag<Tag>();
 
-      checkDefaultConstruct<T>(tag);
-      checkExplicitIntConvert<T>(tag);
-      checkMoveConstruct<T>(tag);
-      checkCopyConstruct<T>(tag);
-      checkMoveAssign<T>(tag);
-      checkCopyAssign<T>(tag);
-      checkEqual<T>(tag);
+      checkDefaultConstruct<T>(arithmetic_tag);
+      checkExplicitIntConvert<T>(arithmetic_tag);
+      checkMoveConstruct<T>(arithmetic_tag);
+      checkCopyConstruct<T>(arithmetic_tag);
+      checkMoveAssign<T>(arithmetic_tag);
+      checkCopyAssign<T>(arithmetic_tag);
+      checkEqual<T>(arithmetic_tag);
 
-      checkPostfixInc<T>(tag);
-      checkPostfixDec<T>(tag);
+      checkPostfixInc<T>(arithmetic_tag);
+      checkPostfixDec<T>(arithmetic_tag);
 
-      checkPrefixPlus<T>(tag);
-      checkPrefixMinus<T>(tag);
-      checkPrefixNot<T>(tag);
-      checkPrefixBitNot<T>(tag);
+      checkPrefixPlus<T>(arithmetic_tag);
+      checkPrefixMinus<T>(arithmetic_tag);
+      checkPrefixNot<T>(arithmetic_tag);
+      checkPrefixBitNot<T>(arithmetic_tag);
 
-      checkPrefixInc<T>(tag);
-      checkPrefixDec<T>(tag);
+      checkPrefixInc<T>(arithmetic_tag);
+      checkPrefixDec<T>(arithmetic_tag);
 
-      checkInfixMul<T>(tag);
-      checkInfixDiv<T>(tag);
-      checkInfixRem<T>(tag);
+      checkInfixMul<T>(arithmetic_tag);
+      checkInfixDiv<T>(arithmetic_tag);
+      checkInfixRem<T>(arithmetic_tag);
 
-      checkInfixPlus<T>(tag);
-      checkInfixMinus<T>(tag);
+      checkInfixPlus<T>(arithmetic_tag);
+      checkInfixMinus<T>(arithmetic_tag);
 
-      checkInfixLShift<T>(tag);
-      checkInfixRShift<T>(tag);
+      checkInfixLShift<T>(arithmetic_tag);
+      checkInfixRShift<T>(arithmetic_tag);
 
-      checkInfixLess<T>(tag);
-      checkInfixGreater<T>(tag);
-      checkInfixLessEqual<T>(tag);
-      checkInfixGreaterEqual<T>(tag);
+      checkInfixLess<T>(arithmetic_tag);
+      checkInfixGreater<T>(arithmetic_tag);
+      checkInfixLessEqual<T>(arithmetic_tag);
+      checkInfixGreaterEqual<T>(arithmetic_tag);
 
-      checkInfixBitAnd<T>(tag);
-      checkInfixBitXor<T>(tag);
-      checkInfixBitOr<T>(tag);
+      checkInfixBitAnd<T>(arithmetic_tag);
+      checkInfixBitXor<T>(arithmetic_tag);
+      checkInfixBitOr<T>(arithmetic_tag);
 
-      checkInfixAnd<T>(tag);
-      checkInfixOr<T>(tag);
+      checkInfixAnd<T>(arithmetic_tag);
+      checkInfixOr<T>(arithmetic_tag);
 
-      checkAssignMul<T>(tag);
-      checkAssignDiv<T>(tag);
-      checkAssignRem<T>(tag);
+      checkAssignMul<T>(arithmetic_tag);
+      checkAssignDiv<T>(arithmetic_tag);
+      checkAssignRem<T>(arithmetic_tag);
 
-      checkAssignPlus<T>(tag);
-      checkAssignMinus<T>(tag);
+      checkAssignPlus<T>(arithmetic_tag);
+      checkAssignMinus<T>(arithmetic_tag);
 
-      checkAssignLShift<T>(tag);
-      checkAssignRShift<T>(tag);
+      checkAssignLShift<T>(arithmetic_tag);
+      checkAssignRShift<T>(arithmetic_tag);
 
-      checkAssignBitAnd<T>(tag);
-      checkAssignBitXor<T>(tag);
-      checkAssignBitOr<T>(tag);
+      checkAssignBitAnd<T>(arithmetic_tag);
+      checkAssignBitXor<T>(arithmetic_tag);
+      checkAssignBitOr<T>(arithmetic_tag);
     }
   };
 
