@@ -92,7 +92,8 @@ namespace Dune
         -> decltype(vec_[idx_] OP valueCast(std::forward<T>(o)))        \
       {                                                                 \
         return vec_[idx_] OP valueCast(std::forward<T>(o));             \
-      }
+      }                                                                 \
+      static_assert(true, "Require semicolon to unconfuse editors")
 
       DUNE_SIMD_VC_BINARY_OP(*);
       DUNE_SIMD_VC_BINARY_OP(/);
@@ -120,16 +121,17 @@ namespace Dune
       DUNE_SIMD_VC_BINARY_OP(||);
 #undef DUNE_SIMD_VC_BINARY_OP
 
-#define DUNE_SIMD_VC_ASSIGNMENT(OP)                             \
-      template<class T>                                         \
-      auto operator OP(T &&o)                                   \
-        -> std::enable_if_t<AlwaysTrue<decltype(                \
-                 vec_[idx_] OP valueCast(std::forward<T>(o))    \
-               )>::value, Proxy&>                               \
-      {                                                         \
-        vec_[idx_] OP valueCast(std::forward<T>(o));            \
-        return *this;                                           \
-      }
+#define DUNE_SIMD_VC_ASSIGNMENT(OP)                                   \
+      template<class T>                                               \
+      auto operator OP(T &&o)                                         \
+        -> std::enable_if_t<AlwaysTrue<decltype(                      \
+                 vec_[idx_] OP valueCast(std::forward<T>(o))          \
+               )>::value, Proxy&>                                     \
+      {                                                               \
+        vec_[idx_] OP valueCast(std::forward<T>(o));                  \
+        return *this;                                                 \
+      }                                                               \
+      static_assert(true, "Require semicolon to unconfuse editors")
 
       DUNE_SIMD_VC_ASSIGNMENT(=);
       DUNE_SIMD_VC_ASSIGNMENT(*=);
