@@ -237,11 +237,8 @@ namespace Impl {
   template<class Range, class F>
   constexpr void forEach(Range&& range, F&& f, PriorityTag<0>)
   {
-    for(std::size_t i=0; i<range.size(); ++i)
-      f(range[i]);
-    // \todo Switch to real range for once DynamicIntegralRange has proper iterators
-    //  for(auto e : range)
-    //    f(e);
+      for(auto&& e : range)
+        f(e);
   }
 
 } // namespace Impl
