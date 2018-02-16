@@ -27,6 +27,21 @@ namespace Dune
 namespace Std
 {
 
+  namespace Impl
+  {
+    template<class...>
+    struct voider
+    {
+      using type = void;
+    };
+  }
+
+  template <class... Types>
+  using void_t = typename Impl::voider<Types...>::type;
+
+
+
+
   // to_false_type
   // -------------
 
