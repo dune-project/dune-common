@@ -16,8 +16,8 @@ DefineImplementation(InterfaceA, Bd, Dune::ParameterTree);
 DefineImplementation(InterfaceB, Ais, int, std::string);
 DefineImplementation(InterfaceB, Bis, int, std::string);
 
-#define CheckInstance(F,T,PARAM...)             \
-    assert(#T == F.create(#T,##PARAM)->info())
+#define CheckInstance(F,T,...)                       \
+    assert(#T == F.create(#T,##__VA_ARGS__)->info())
 
 struct AImp : public InterfaceA
 {
@@ -25,7 +25,7 @@ struct AImp : public InterfaceA
         s_(s)
     {}
 
-    AImp(const AImp& other) :
+    AImp(const AImp& /*other*/) :
         s_("copied")
     {}
 
@@ -42,7 +42,7 @@ int main()
     // Dune::ParameterizedObjectFactory<std::unique_ptr<InterfaceA>(int)> FactoryA;
     globalPtrFactory<InterfaceA>().define<Ai>("Ai");
     globalPtrFactory<InterfaceA>().define<Bi>("Bi");
-    globalPtrFactory<InterfaceA>().define("Ax", [](int i) { return Dune::Std::make_unique<Ax>(); });
+    globalPtrFactory<InterfaceA>().define("Ax", [](int /*i*/) { return Dune::Std::make_unique<Ax>(); });
     CheckInstance(globalPtrFactory<InterfaceA>(), Ai, 0);
     CheckInstance(globalPtrFactory<InterfaceA>(), Bi, 1);
     CheckInstance(globalPtrFactory<InterfaceA>(), Ax, 1);
