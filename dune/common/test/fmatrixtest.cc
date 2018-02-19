@@ -17,6 +17,7 @@
 
 #include <dune/common/classname.hh>
 #include <dune/common/fmatrix.hh>
+#include <dune/common/ftraits.hh>
 #include <dune/common/rangeutilities.hh>
 #include <dune/common/simd.hh>
 #include <dune/common/unused.hh>
@@ -27,10 +28,10 @@
 using namespace Dune;
 
 template<typename T, std::size_t n>
-int test_invert_solve(Dune::FieldMatrix<double, n, n> &A,
-                      Dune::FieldMatrix<double, n, n> &inv,
-                      Dune::FieldVector<double, 3> &x,
-                      Dune::FieldVector<double, 3> &b)
+int test_invert_solve(Dune::FieldMatrix<T, n, n> &A,
+                      Dune::FieldMatrix<T, n, n> &inv,
+                      Dune::FieldVector<T, n> &x,
+                      Dune::FieldVector<T, n> &b)
 {
   using std::abs;
 
@@ -62,10 +63,11 @@ int test_invert_solve(Dune::FieldMatrix<double, n, n> &A,
   A-=inv;
 
 
-  double singthres = FMatrixPrecision<>::singular_limit()*10;
+  auto epsilon = std::numeric_limits<typename FieldTraits<T>::real_type>::epsilon();
+  auto tolerance = 10*epsilon;
   for(size_t i =0; i < n; ++i)
     for(size_t j=0; j <n; ++j)
-      if(abs(A[i][j])>singthres) {
+      if(abs(A[i][j])>tolerance) {
         std::cerr<<"calculated inverse wrong at ("<<i<<","<<j<<")"<<std::endl;
         equal=false;
       }
@@ -99,7 +101,7 @@ int test_invert_solve(Dune::FieldMatrix<double, n, n> &A,
   equal=true;
 
   for(size_t i =0; i < n; ++i)
-    if(abs(xcopy[i])>singthres) {
+    if(abs(xcopy[i])>tolerance) {
       std::cerr<<"calculated isolution wrong at ("<<i<<")"<<std::endl;
       equal=false;
     }
@@ -148,7 +150,25 @@ int test_invert_solve()
   FM inv_data2 = {{-2, 5, -3}, {1, -3, 3}, {1, -2, 1}};
   FV b2 = {2, 7, 4};
   FV x2 = {19, -7, -8};
-  return ret + test_invert_solve<double, 3>(A_data2, inv_data2, x2, b2);
+  ret += test_invert_solve<double, 3>(A_data2, inv_data2, x2, b2);
+
+  using FM6 = Dune::FieldMatrix<double, 6, 6>;
+  using FV6 = Dune::FieldVector<double, 6>;
+  FM6 A_data3 = {{0.1756212892262638, 0.18004482126181995, -0.49348712464381461, 0.49938830949606494, -0.7073160963417815, 1.0595994834402057e-06},
+                {0.17562806606385517, 0.18005184462676252, -0.49354113600539418, 0.50059575375120657, 0.70689735319270453, -3.769499436967368e-07},
+                {0.17562307226079987, 0.1800466692525447, -0.49350050991711036, -0.5000065175076156, 0.00018887507812282846, -0.70710715811504954},
+                {0.17562308446070105, 0.18004668189625178, -0.49350060714612815, -0.50000869003275417, 0.00019031361405394119, 0.70710640425695015},
+                {-0.0072214111281474463, 0.93288324029450198, -0.11009998093332186, -1.7482015044681947e-06, -2.35420746900079e-06, -4.2380607559371285e-09},
+                {0.93625470097440933, -0.0077746247590777659, -0.11696151733678119, -1.8717676241478393e-06, -2.5225363177584535e-06, -4.5410877139483271e-09}};
+  FM6 inv_data3 =  {{-0.069956619842954, -0.069956322880040, -0.069956501823745, -0.069956501289142, 0.063349638850509, 1.121064161778902},
+                   {-0.066113473123754, -0.066113223084417, -0.066113362249636, -0.066113361799508, 1.123470950632021, 0.058271943290769},
+                   {-0.555587502096003, -0.555615651279932, -0.555585807267011, -0.555585857939820, 0.432422844944552, 0.420211281044740},
+                   { 0.499710573383257, 0.500274796075355, -0.500006831431901, -0.500007846623773, 0.000003909674199, 0.000003817686226},
+                   {-0.707554041861306, 0.706659150542343, 0.000405628342406, 0.000407065756770, 0.000010628642550, 0.000010383891450},
+                   { 0.000001450379141, 0.000000012708409, -0.707107586716496, 0.707105975654669, 0.000000019133995, 0.000000018693387}};
+  FV6 b3 = {1, 1, 1, 1, 1, 1};
+  FV6 x3 = {0.904587854793530, 0.917289473665475, -1.369740692593475, -0.000021581236636, -0.000061184685788, -0.000000110146895};
+  return ret + test_invert_solve<double, 6>(A_data3, inv_data3, x3, b3);
 }
 
 template<class K, int n, int m, class X, class Y, class XT, class YT>
