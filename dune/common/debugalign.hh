@@ -295,69 +295,69 @@ namespace Dune {
 
     // note: abs is provided by both <cstdlib> (for integer) and <cmath> (for
     // floating point).  This overload works for both.
-    DUNE_UNARY_FUNC(abs);
-    DUNE_UNARY_FUNC(acos);
-    DUNE_UNARY_FUNC(acosh);
-    DUNE_UNARY_FUNC(asin);
-    DUNE_UNARY_FUNC(asinh);
-    DUNE_UNARY_FUNC(atan);
+    DUNE_UNARY_FUNC(abs)
+    DUNE_UNARY_FUNC(acos)
+    DUNE_UNARY_FUNC(acosh)
+    DUNE_UNARY_FUNC(asin)
+    DUNE_UNARY_FUNC(asinh)
+    DUNE_UNARY_FUNC(atan)
     // atan2
-    DUNE_UNARY_FUNC(atanh);
-    DUNE_UNARY_FUNC(cbrt);
-    DUNE_UNARY_FUNC(ceil);
+    DUNE_UNARY_FUNC(atanh)
+    DUNE_UNARY_FUNC(cbrt)
+    DUNE_UNARY_FUNC(ceil)
     // copysign
-    DUNE_UNARY_FUNC(cos);
-    DUNE_UNARY_FUNC(cosh);
-    DUNE_UNARY_FUNC(erf);
-    DUNE_UNARY_FUNC(erfc);
-    DUNE_UNARY_FUNC(exp);
-    DUNE_UNARY_FUNC(exp2);
-    DUNE_UNARY_FUNC(expm1);
-    DUNE_UNARY_FUNC(fabs);
+    DUNE_UNARY_FUNC(cos)
+    DUNE_UNARY_FUNC(cosh)
+    DUNE_UNARY_FUNC(erf)
+    DUNE_UNARY_FUNC(erfc)
+    DUNE_UNARY_FUNC(exp)
+    DUNE_UNARY_FUNC(exp2)
+    DUNE_UNARY_FUNC(expm1)
+    DUNE_UNARY_FUNC(fabs)
     // fdim
-    DUNE_UNARY_FUNC(floor);
+    DUNE_UNARY_FUNC(floor)
     // fma
     // fmax
     // fmin
     // fmod
     // frexp
     // hypos
-    DUNE_UNARY_FUNC(ilogb);
+    DUNE_UNARY_FUNC(ilogb)
     // ldexp
-    DUNE_UNARY_FUNC(lgamma);
-    DUNE_UNARY_FUNC(llrint);
-    DUNE_UNARY_FUNC(llround);
-    DUNE_UNARY_FUNC(log);
-    DUNE_UNARY_FUNC(log10);
-    DUNE_UNARY_FUNC(log1p);
-    DUNE_UNARY_FUNC(log2);
-    DUNE_UNARY_FUNC(logb);
-    DUNE_UNARY_FUNC(lrint);
-    DUNE_UNARY_FUNC(lround);
+    DUNE_UNARY_FUNC(lgamma)
+    DUNE_UNARY_FUNC(llrint)
+    DUNE_UNARY_FUNC(llround)
+    DUNE_UNARY_FUNC(log)
+    DUNE_UNARY_FUNC(log10)
+    DUNE_UNARY_FUNC(log1p)
+    DUNE_UNARY_FUNC(log2)
+    DUNE_UNARY_FUNC(logb)
+    DUNE_UNARY_FUNC(lrint)
+    DUNE_UNARY_FUNC(lround)
     // modf
-    DUNE_UNARY_FUNC(nearbyint);
+    DUNE_UNARY_FUNC(nearbyint)
     // nextafter
     // nexttoward
     // pow
     // remainder
     // remquo
-    DUNE_UNARY_FUNC(rint);
-    DUNE_UNARY_FUNC(round);
+    DUNE_UNARY_FUNC(rint)
+    DUNE_UNARY_FUNC(round)
     // scalbln
     // scalbn
-    DUNE_UNARY_FUNC(sin);
-    DUNE_UNARY_FUNC(sinh);
-    DUNE_UNARY_FUNC(sqrt);
-    DUNE_UNARY_FUNC(tan);
-    DUNE_UNARY_FUNC(tanh);
-    DUNE_UNARY_FUNC(tgamma);
-    DUNE_UNARY_FUNC(trunc);
+    DUNE_UNARY_FUNC(sin)
+    DUNE_UNARY_FUNC(sinh)
+    DUNE_UNARY_FUNC(sqrt)
+    DUNE_UNARY_FUNC(tan)
+    DUNE_UNARY_FUNC(tanh)
+    DUNE_UNARY_FUNC(tgamma)
+    DUNE_UNARY_FUNC(trunc)
 
-    DUNE_UNARY_FUNC(isfinite);
-    DUNE_UNARY_FUNC(isinf);
-    DUNE_UNARY_FUNC(isnan);
-    DUNE_UNARY_FUNC(isnormal);
-    DUNE_UNARY_FUNC(signbit);
+    DUNE_UNARY_FUNC(isfinite)
+    DUNE_UNARY_FUNC(isinf)
+    DUNE_UNARY_FUNC(isnan)
+    DUNE_UNARY_FUNC(isnormal)
+    DUNE_UNARY_FUNC(signbit)
 
     // isgreater
     // isgreaterequal
@@ -372,7 +372,7 @@ namespace Dune {
 
     // not all functions are implemented, and unlike for <cmath>, no
     // comprehensive list is provided
-    DUNE_UNARY_FUNC(real);
+    DUNE_UNARY_FUNC(real)
 
 #undef DUNE_UNARY_FUNC
 
