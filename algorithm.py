@@ -4,11 +4,12 @@ import numpy
 
 from dune.common.hashit import hashIt
 from . import builder
+from dune.common.compatibility import isString
 
 def load(functionName, includes, *args):
     source = '#include <config.h>\n\n'
     source += '#define USING_DUNE_PYTHON 1\n\n'
-    if isinstance(includes, str):
+    if isString(includes):
         with open(includes, "r") as include:
             source += include.read()
         source += "\n"
