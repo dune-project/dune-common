@@ -288,8 +288,8 @@ private:
  * identical, but they do not have to be.
  *
  * For data send from rank A to rank B, the order that rank A inserts its
- * indices into its send-interface for rank B has to the same order that rank
- * B inserts its matching indices into its receive interface for rank A.
+ * indices into its send-interface for rank B has to be the same order that
+ * rank B inserts its matching indices into its receive interface for rank A.
  * (This is because the `VariableSizeCommunicator` has no concept of a global
  * index-space, so the order used to insert the indices into the interfaces is
  * the only clue it has to know which source index should be communicated to
