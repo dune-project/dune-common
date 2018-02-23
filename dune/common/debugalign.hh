@@ -288,9 +288,9 @@ namespace Dune {
     //
 
     // note: only unary functions are provided at the moment.  Getting all the
-    // overloads right for functions with more than one aregument is tricky.
+    // overloads right for functions with more than one argument is tricky.
     // All <cmath> functions appear in the list below in the order they are
-    // listet in in the standard, but the unimplemented ones are commented
+    // listed in in the standard, but the unimplemented ones are commented
     // out.
 
     // note: abs is provided by both <cstdlib> (for integer) and <cmath> (for
@@ -370,7 +370,7 @@ namespace Dune {
     // <complex> functions
     //
 
-    // not all functions are implemented, und unlike for <cmath>, no
+    // not all functions are implemented, and unlike for <cmath>, no
     // comprehensive list is provided
     DUNE_UNARY_FUNC(real);
 

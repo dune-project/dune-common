@@ -857,53 +857,43 @@ namespace Dune
 
     typedef typename FieldTraits<value_type>::real_type real_type;
 
-    real_type norm = A.infinity_norm_real(); // for relative thresholds
-    real_type pivthres =
-      std::max( FMatrixPrecision< real_type >::absolute_limit(),
-                norm * FMatrixPrecision< real_type >::pivoting_limit() );
-    real_type singthres =
-      std::max( FMatrixPrecision< real_type >::absolute_limit(),
-                norm * FMatrixPrecision< real_type >::singular_limit() );
-
     // LU decomposition of A in A
     for (size_type i=0; i<rows(); i++)  // loop over all rows
     {
       real_type pivmax = fvmeta::absreal(A[i][i]);
-      auto do_pivot = pivmax<pivthres;
+      const bool do_pivot = true;
 
       // pivoting ?
-      if (any_true(do_pivot && nonsingularLanes))
+      if (do_pivot)
       {
         // compute maximum of column
         simd_index_type imax=i;
         for (size_type k=i+1; k<rows(); k++)
         {
           auto abs = fvmeta::absreal(A[k][i]);
-          auto mask = abs > pivmax && do_pivot;
+          auto mask = abs > pivmax;
           pivmax = cond(mask, abs, pivmax);
           imax   = cond(mask, simd_index_type(k), imax);
         }
         // swap rows
-        if (any_true(imax != i && nonsingularLanes)) {
-          for (size_type j=0; j<rows(); j++)
-          {
-            // This is a swap operation where the second operand is scattered,
-            // and on top of that is also extracted from deep within a
-            // moderately complicated data structure (a DenseMatrix), where we
-            // can't assume much on the memory layout.  On intel processors,
-            // the only instruction that might help us here is vgather, but it
-            // is unclear whether that is even faster than a software
-            // implementation, and we would also need vscatter which does not
-            // exist.  So break vectorization here and do it manually.
-            for(std::size_t l = 0; l < lanes(A[i][j]); ++l)
-              swap(lane(l, A[i][j]), lane(l, A[lane(l, imax)][j]));
-          }
-          func.swap(i, imax); // swap the pivot or rhs
+        for (size_type j=0; j<rows(); j++)
+        {
+          // This is a swap operation where the second operand is scattered,
+          // and on top of that is also extracted from deep within a
+          // moderately complicated data structure (a DenseMatrix), where we
+          // can't assume much on the memory layout.  On intel processors,
+          // the only instruction that might help us here is vgather, but it
+          // is unclear whether that is even faster than a software
+          // implementation, and we would also need vscatter which does not
+          // exist.  So break vectorization here and do it manually.
+          for(std::size_t l = 0; l < lanes(A[i][j]); ++l)
+            swap(lane(l, A[i][j]), lane(l, A[lane(l, imax)][j]));
         }
+        func.swap(i, imax); // swap the pivot or rhs
       }
 
       // singular ?
-      nonsingularLanes = nonsingularLanes && !(pivmax<singthres);
+      nonsingularLanes = nonsingularLanes && (pivmax != real_type(0));
       if (throwEarly) {
         if(!all_true(nonsingularLanes))
           DUNE_THROW(FMatrixError, "matrix is singular");

@@ -200,7 +200,7 @@ namespace Std
    * \tparam Args Function arguments to check
    *
    * This checks if F can be called with an arguments list of type Args....
-   * The result is encoded by deriving from std::ingegral_constant<bool, result>.
+   * The result is encoded by deriving from std::integral_constant<bool, result>.
    *
    * This implements std::is_invocable from C++17.
    *
@@ -220,7 +220,7 @@ namespace Std
    *
    * This checks if F can be called with an arguments list of type Args..., and
    * if the return value can be converted to R.
-   * The result is encoded by deriving from std::ingegral_constant<bool, result>.
+   * The result is encoded by deriving from std::integral_constant<bool, result>.
    *
    * This implements std::is_invocable_r from C++17.
    *
