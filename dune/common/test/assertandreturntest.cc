@@ -46,7 +46,8 @@ try
 //               SOURCES assertandreturntest.cc
 //               LINK_LIBRARIES dunecommon
 //               COMPILE_DEFINITIONS "TEST_RUNTIME_FAIL"
-//               EXPECT_FAIL)
+//               EXPECT_FAIL
+//               LABELS quick)
 //
 // and the following code:
 #ifdef TEST_RUNTIME_FAIL
