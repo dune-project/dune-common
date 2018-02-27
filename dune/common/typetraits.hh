@@ -26,6 +26,7 @@ namespace Dune
      * With gcc 5.0 this was changed and the voider-hack is no longer needed.
      */
     template <class...>
+    DUNE_DEPRECATED_MSG("void_t has been moved. Use Std::void_t by including <dune/common/std/type_traits.hh> instead")
     struct voider
     {
       using type = void;
