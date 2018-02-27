@@ -85,9 +85,9 @@ def simpleGenerator(inc, baseType, namespace, pythonname=None, filename=None):
 from . import Method as Method_
 from . import Constructor as Constructor_
 from dune.deprecate import deprecated
-@deprecated
+@deprecated("import from dune.generator directly")
 class Method(Method_):
     pass
-@deprecated
+@deprecated("import from dune.generator directly")
 class Constructor(Constructor_):
     pass
