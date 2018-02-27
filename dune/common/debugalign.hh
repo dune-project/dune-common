@@ -186,8 +186,8 @@ namespace Dune {
       }                                                                 \
                                                                         \
       template<class U,                                                 \
-               class = Std::void_t<decltype(std::declval<T&>() OP            \
-                                       std::declval<U>())> >            \
+               class = Std::void_t<decltype(std::declval<T&>() OP       \
+                                            std::declval<U>())> >       \
       AlignedNumber &operator OP(const U &u)                            \
       {                                                                 \
         value_ OP u;                                                    \
@@ -216,8 +216,8 @@ namespace Dune {
     // binary operators
 #define DUNE_BINARY_OP(OP)                                              \
     template<class T, std::size_t tAlign, class U, std::size_t uAlign,  \
-             class = Std::void_t<decltype(std::declval<T>()                  \
-                                     OP std::declval<U>())> >           \
+             class = Std::void_t<decltype(std::declval<T>()             \
+                                          OP std::declval<U>())> >      \
     decltype(auto)                                                      \
       operator OP(const AlignedNumber<T, tAlign> &t,                    \
                   const AlignedNumber<U, uAlign> &u)                    \
@@ -227,8 +227,8 @@ namespace Dune {
     }                                                                   \
                                                                         \
     template<class T, class U, std::size_t uAlign,                      \
-             class = Std::void_t<decltype(std::declval<T>()                  \
-                                     OP std::declval<U>())> >           \
+             class = Std::void_t<decltype(std::declval<T>()             \
+                                          OP std::declval<U>())> >      \
     decltype(auto)                                                      \
       operator OP(const T &t, const AlignedNumber<U, uAlign> &u)        \
     {                                                                   \
@@ -236,8 +236,8 @@ namespace Dune {
     }                                                                   \
                                                                         \
     template<class T, std::size_t tAlign, class U,                      \
-             class = Std::void_t<decltype(std::declval<T>()                  \
-                                     OP std::declval<U>())> >           \
+             class = Std::void_t<decltype(std::declval<T>()             \
+                                          OP std::declval<U>())> >      \
     decltype(auto)                                                      \
       operator OP(const AlignedNumber<T, tAlign> &t, const U &u)        \
     {                                                                   \
