@@ -13,6 +13,7 @@
 #include <vector>
 
 #include <dune/common/hybridutilities.hh>
+#include <dune/common/std/type_traits.hh>
 #include <dune/common/test/testsuite.hh>
 #include <dune/common/typelist.hh>
 #include <dune/common/typetraits.hh>
@@ -25,7 +26,7 @@ struct IsTypeListByOverload : std::false_type {};
 
 template<class T>
 struct IsTypeListByOverload
-  <T, Dune::void_t<decltype(isTypeListByOverload(std::declval<const T*>()))> >
+  <T, Dune::Std::void_t<decltype(isTypeListByOverload(std::declval<const T*>()))> >
 : std::true_type {};
 
 template<class T>
