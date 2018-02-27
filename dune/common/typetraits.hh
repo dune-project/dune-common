@@ -217,12 +217,12 @@ namespace Dune
   namespace Impl {
 
     template<typename T, typename I, typename = int>
-    struct _is_indexable
+    struct _IsIndexable
       : public std::false_type
     {};
 
     template<typename T, typename I>
-    struct _is_indexable<T,I,typename std::enable_if<(sizeof(std::declval<T>()[std::declval<I>()]) > 0),int>::type>
+    struct _IsIndexable<T,I,typename std::enable_if<(sizeof(std::declval<T>()[std::declval<I>()]) > 0),int>::type>
       : public std::true_type
     {};
 
@@ -236,8 +236,18 @@ namespace Dune
    *          are problems with GCC 4.4 and 4.5.
    */
   template<typename T, typename I = std::size_t>
-  struct is_indexable
-    : public Impl::_is_indexable<T,I>
+  struct DUNE_DEPRECATED_MSG("Has been renamed to 'IsIndexable'.") is_indexable
+    : public Impl::_IsIndexable<T,I>
+  {};
+
+  //! Type trait to determine whether an instance of T has an operator[](I), i.e. whether it can be indexed with an index of type I.
+  /**
+   * \warning Not all compilers support testing for arbitrary index types. In particular, there
+   *          are problems with GCC 4.4 and 4.5.
+   */
+  template<typename T, typename I = std::size_t>
+  struct IsIndexable
+    : public Impl::_IsIndexable<T,I>
   {};
 
 
@@ -271,13 +281,13 @@ namespace Dune
 
     // default version, gets picked if SFINAE fails
     template<typename T, typename = int>
-    struct _is_indexable
+    struct _IsIndexable
       : public std::false_type
     {};
 
     // version for types supporting the subscript operation
     template<typename T>
-    struct _is_indexable<T,decltype(std::declval<T>()[0],0)>
+    struct _IsIndexable<T,decltype(std::declval<T>()[0],0)>
       : public std::true_type
     {};
 
@@ -289,7 +299,7 @@ namespace Dune
 
       template<typename T>
       struct evaluate
-        : public _is_indexable<T>
+        : public _IsIndexable<T>
       {};
 
     };
@@ -307,7 +317,32 @@ namespace Dune
   // In order to make sure that the compiler doesn't accidentally try the SFINAE evaluation
   // on an array or a scalar, we have to resort to lazy evaluation.
   template<typename T, typename I = std::size_t>
-  struct is_indexable
+  struct DUNE_DEPRECATED_MSG("Has been renamed to 'IsIndexable'.") is_indexable
+    : public std::conditional<
+               std::is_array<T>::value,
+               Impl::_lazy<std::true_type>,
+               typename std::conditional<
+                 std::is_class<T>::value,
+                 Impl::_check_for_index_operator,
+                 Impl::_lazy<std::false_type>
+                 >::type
+               >::type::template evaluate<T>::type
+  {
+    static_assert(std::is_same<I,std::size_t>::value,"Your compiler is broken and does not support checking for arbitrary index types");
+  }
+
+  // The rationale here is as follows:
+  // 1) If we have an array, we assume we can index into it. That isn't
+  //    true if I isn't an integral type, but that's why we have the static assertion
+  //    in the body - we could of course try and check whether I is integral, but I
+  //    can't be arsed and want to provide a motivation to switch to a newer compiler...
+  // 2) If we have a class, we use SFINAE to check for operator[]
+  // 3) Otherwise, we assume that T does not support indexing
+  //
+  // In order to make sure that the compiler doesn't accidentally try the SFINAE evaluation
+  // on an array or a scalar, we have to resort to lazy evaluation.
+  template<typename T, typename I = std::size_t>
+  struct IsIndexable
     : public std::conditional<
                std::is_array<T>::value,
                Impl::_lazy<std::true_type>,
