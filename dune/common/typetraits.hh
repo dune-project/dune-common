@@ -178,14 +178,32 @@ namespace Dune
    * Internally, this is just a forward to `std::is_floating_point<T>`.
    */
   template <typename T>
-  struct has_nan
+  struct DUNE_DEPRECATED_MSG("Has been renamed to 'HasNaN'.") has_nan
       : public std::integral_constant<bool, std::is_floating_point<T>::value> {
   };
 
 #ifndef DOXYGEN
 
   template <typename T>
-  struct has_nan<std::complex<T>>
+  struct DUNE_DEPRECATED_MSG("Has been renamed to 'HasNaN'.") has_nan<std::complex<T>>
+      : public std::integral_constant<bool, std::is_floating_point<T>::value> {
+  };
+
+#endif // DOXYGEN
+
+  //! \brief Whether this type has a value of NaN.
+  /**
+   * Internally, this is just a forward to `std::is_floating_point<T>`.
+   */
+  template <typename T>
+  struct HasNaN
+      : public std::integral_constant<bool, std::is_floating_point<T>::value> {
+  };
+
+#ifndef DOXYGEN
+
+  template <typename T>
+  struct HasNaN<std::complex<T>>
       : public std::integral_constant<bool, std::is_floating_point<T>::value> {
   };
 
