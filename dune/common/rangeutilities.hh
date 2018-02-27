@@ -28,7 +28,7 @@ namespace Dune
      overloads for scalar values, and ranges exist
   */
   template <typename T,
-            typename std::enable_if<is_range<T>::value, int>::type = 0>
+            typename std::enable_if<IsIterable<T>::value, int>::type = 0>
   typename T::value_type
   max_value(const T & v) {
     using std::max_element;
@@ -36,7 +36,7 @@ namespace Dune
   }
 
   template <typename T,
-            typename std::enable_if<!is_range<T>::value, int>::type = 0>
+            typename std::enable_if<!IsIterable<T>::value, int>::type = 0>
   const T & max_value(const T & v) { return v; }
 
   /**
@@ -45,7 +45,7 @@ namespace Dune
      overloads for scalar values, and ranges exist
    */
   template <typename T,
-            typename std::enable_if<is_range<T>::value, int>::type = 0>
+            typename std::enable_if<IsIterable<T>::value, int>::type = 0>
   typename T::value_type
   min_value(const T & v) {
     using std::min_element;
@@ -53,7 +53,7 @@ namespace Dune
   }
 
   template <typename T,
-            typename std::enable_if<!is_range<T>::value, int>::type = 0>
+            typename std::enable_if<!IsIterable<T>::value, int>::type = 0>
   const T & min_value(const T & v) { return v; }
 
   /**
@@ -62,7 +62,7 @@ namespace Dune
      overloads for scalar values, ranges, and std::bitset<N> exist
    */
   template <typename T,
-            typename std::enable_if<is_range<T>::value, int>::type = 0>
+            typename std::enable_if<IsIterable<T>::value, int>::type = 0>
   bool any_true(const T & v) {
     bool b = false;
     for (const auto & e : v)
@@ -71,7 +71,7 @@ namespace Dune
   }
 
   template <typename T,
-            typename std::enable_if<!is_range<T>::value, int>::type = 0>
+            typename std::enable_if<!IsIterable<T>::value, int>::type = 0>
   bool any_true(const T & v) { return v; }
 
   template<std::size_t N>
@@ -86,7 +86,7 @@ namespace Dune
      overloads for scalar values, ranges, and std::bitset<N> exist
    */
   template <typename T,
-            typename std::enable_if<is_range<T>::value, int>::type = 0>
+            typename std::enable_if<IsIterable<T>::value, int>::type = 0>
   bool all_true(const T & v) {
     bool b = true;
     for (const auto & e : v)
@@ -95,7 +95,7 @@ namespace Dune
   }
 
   template <typename T,
-            typename std::enable_if<!is_range<T>::value, int>::type = 0>
+            typename std::enable_if<!IsIterable<T>::value, int>::type = 0>
   bool all_true(const T & v) { return v; }
 
   template<std::size_t N>
