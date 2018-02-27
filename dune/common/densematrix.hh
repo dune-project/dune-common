@@ -492,8 +492,7 @@ namespace Dune
     {
       DUNE_ASSERT_BOUNDS(x.N() == N());
       DUNE_ASSERT_BOUNDS(y.N() == M());
-      for (size_type i=0; i<rows(); i++)
-        for (size_type j=0; j<cols(); j++)
+      for (size_type i=0; i<rows(); i++)        for (size_type j=0; j<cols(); j++)
           y[j] += alpha*(*this)[i][j]*x[i];
     }
 
@@ -529,7 +528,7 @@ namespace Dune
 
     //! infinity norm (row sum norm, how to generalize for blocks?)
     template <typename vt = value_type,
-              typename std::enable_if<!has_nan<vt>::value, int>::type = 0>
+              typename std::enable_if<!HasNaN<vt>::value, int>::type = 0>
     typename FieldTraits<vt>::real_type infinity_norm() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::max;
@@ -544,7 +543,7 @@ namespace Dune
 
     //! simplified infinity norm (uses Manhattan norm for complex values)
     template <typename vt = value_type,
-              typename std::enable_if<!has_nan<vt>::value, int>::type = 0>
+              typename std::enable_if<!HasNaN<vt>::value, int>::type = 0>
     typename FieldTraits<vt>::real_type infinity_norm_real() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::max;
@@ -559,7 +558,7 @@ namespace Dune
 
     //! infinity norm (row sum norm, how to generalize for blocks?)
     template <typename vt = value_type,
-              typename std::enable_if<has_nan<vt>::value, int>::type = 0>
+              typename std::enable_if<HasNaN<vt>::value, int>::type = 0>
     typename FieldTraits<vt>::real_type infinity_norm() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::max;
@@ -577,7 +576,7 @@ namespace Dune
 
     //! simplified infinity norm (uses Manhattan norm for complex values)
     template <typename vt = value_type,
-              typename std::enable_if<has_nan<vt>::value, int>::type = 0>
+              typename std::enable_if<HasNaN<vt>::value, int>::type = 0>
     typename FieldTraits<vt>::real_type infinity_norm_real() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::max;
