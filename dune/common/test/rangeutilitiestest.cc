@@ -12,10 +12,10 @@
 
 int main()
 {
-  // Check is_range<> for https://gitlab.dune-project.org/core/dune-common/issues/58
-  static_assert(Dune::is_range< std::array<int, 3> >::value, "std::array<int> must be a range");
-  static_assert(Dune::is_range< Dune::IteratorRange<int*> >::value, "IteratorRange must be a range");
-  static_assert(!Dune::is_range< int >::value, "int must not be a range");
+  // Check IsIterable<> for https://gitlab.dune-project.org/core/dune-common/issues/58
+  static_assert(Dune::IsIterable< std::array<int, 3> >::value, "std::array<int> must be a range");
+  static_assert(Dune::IsIterable< Dune::IteratorRange<int*> >::value, "IteratorRange must be a range");
+  static_assert(!Dune::IsIterable< int >::value, "int must not be a range");
 
   Dune::TestSuite suite;
 
