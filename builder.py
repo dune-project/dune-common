@@ -61,10 +61,10 @@ class Builder:
                 sourceFileName = os.path.join(self.generated_dir, moduleName + ".cc")
                 if not os.path.isfile(sourceFileName):
                     logger.info("Loading " + pythonName + " (new)")
-                    with open(os.path.join(sourceFileName), 'w') as out:
-                        out.write(str(source))
                     with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'a') as out:
                         out.write("dune_add_pybind11_module(NAME " + moduleName + " EXCLUDE_FROM_ALL)\n")
+                    with open(os.path.join(sourceFileName), 'w') as out:
+                        out.write(str(source))
                     # update build system
                     self.compile()
                 elif not source == open(os.path.join(sourceFileName), 'r').read():
