@@ -8,7 +8,7 @@ import os
 import sys
 
 from dune.common import comm
-from dune.common.compatibility import buffer_to_str, reload_module
+from dune.common.compatibility import buffer_to_str, isString, reload_module
 import dune.common.module
 
 logger = logging.getLogger(__name__)
@@ -67,7 +67,7 @@ class Builder:
                         out.write(str(source))
                     # update build system
                     self.compile()
-                elif not source == open(os.path.join(sourceFileName), 'r').read():
+                elif isString(source) and not source == open(os.path.join(sourceFileName), 'r').read():
                     logger.info("Loading " + pythonName + " (updated)")
                     with open(os.path.join(sourceFileName), 'w') as out:
                         out.write(str(source))
