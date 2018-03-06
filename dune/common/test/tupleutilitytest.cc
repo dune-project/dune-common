@@ -169,4 +169,15 @@ int main()
     std::cout << "genericTransformTuple gives wrong result!\n";
     std::abort();
   }
+
+  auto t3 = Dune::applyPartial([&] (auto&&... x) {
+      return std::make_tuple((1./x)...);
+    }, t1, std::make_index_sequence<2>());
+
+  if(t2 != t3)
+  {
+    std::cout << "genericTransformTuple gives wrong result!\n";
+    std::abort();
+  }
+
 }
