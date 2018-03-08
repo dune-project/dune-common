@@ -13,6 +13,7 @@
   #include <tuple>
 #endif
 
+#include <dune/common/tupleutility.hh>
 
 
 namespace Dune
@@ -31,19 +32,6 @@ namespace Dune
 
 #else
 
-#ifndef DOXYGEN
-
-    namespace Impl
-    {
-      template<class F, class ArgTuple, std::size_t... i>
-      decltype(auto) applyHelper(F&& f, ArgTuple&& args, std::index_sequence<i...>)
-      {
-        return f(std::get<i>(args)...);
-      }
-    } // namespace Impl
-
-#endif // DOXYGEN
-
     /**
      * \brief Apply function with arguments given as tuple
      *
@@ -58,7 +46,7 @@ namespace Dune
     decltype(auto) apply(F&& f, ArgTuple&& args)
     {
       auto indices = std::make_index_sequence<std::tuple_size<std::decay_t<ArgTuple>>::value>();
-      return Impl::applyHelper(std::forward<F>(f), std::forward<ArgTuple>(args), indices);
+      return applyPartial(std::forward<F>(f), std::forward<ArgTuple>(args), indices);
     }
 
 #endif
