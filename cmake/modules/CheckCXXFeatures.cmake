@@ -25,6 +25,9 @@
 #    :code:`DUNE_HAVE_CXX_OPTIONAL`
 #       True if C++17's optional implementation is supported
 #
+#    :code:`DUNE_HAVE_CXX_UNCAUGHT_EXCEPTIONS`
+#       True if C++17's std::uncaught_exceptions is supported
+#
 # .. cmake_variable:: DISABLE_CXX_VERSION_CHECK
 #
 #    You may set this variable to TRUE to disable checking for
@@ -370,6 +373,15 @@ check_cxx_source_compiles("
 " DUNE_HAVE_CXX_OPTIONAL
   )
 
+# support for c++17's std::uncaught_exceptions
+check_cxx_source_compiles("
+  #include <exception>
+
+  int main() {
+  int i = std::uncaught_exceptions();
+  }
+" DUNE_HAVE_CXX_UNCAUGHT_EXCEPTIONS
+  )
 
 # find the threading library
 if(NOT DEFINED THREADS_PREFER_PTHREAD_FLAG)

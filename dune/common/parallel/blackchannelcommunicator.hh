@@ -65,8 +65,7 @@ namespace Dune
     std::shared_ptr<bool> is_revoked_;
 
     static void throw_exception() {
-      if(!std::uncaught_exception())
-        DUNE_THROW(MPIRemoteError, comm_world().rank() << ":\tRemote rank failed!");
+      DUNE_THROW(MPIRemoteError, comm_world().rank() << ":\tRemote rank failed!");
     }
 
   protected:

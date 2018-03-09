@@ -58,12 +58,15 @@ namespace Dune
 
      @note It is not necessary to call finalize before leaving the
      scope, since the MPIGuard will also detect thrown exceptions by
-     std::uncaught_exception.
+     std::uncaught_exceptions.
    */
   class MPIGuard
   {
     MPIHelper::MPICommunicator comm;
     bool active_;
+#if DUNE_HAVE_CXX_UNCAUGHT_EXCEPTIONS
+    int uncaught_exceptions_;
+#endif
 
     // we don't want to copy this class
     MPIGuard (const MPIGuard &) = delete;
@@ -100,6 +103,9 @@ namespace Dune
     MPIGuard (const C & comm, bool active=true) :
       comm(comm),
       active_(active)
+#if DUNE_HAVE_CXX_UNCAUGHT_EXCEPTIONS
+      , uncaught_exceptions_(std::uncaught_exceptions())
+#endif
     {
       // wait until all process are in safe area
       CollectiveCommunication<C> cc(this->comm);
@@ -113,7 +119,11 @@ namespace Dune
       dverb << "MPIGuard::~MPIGuard()" << std::endl;
       if (active_)
       {
+#if DUNE_HAVE_CXX_UNCAUGHT_EXCEPTIONS
+        if(uncaught_exceptions_ < std::uncaught_exceptions())
+#else
         if(std::uncaught_exception())
+#endif
         {
           try{
             finalize(false);
@@ -149,7 +159,11 @@ namespace Dune
       active_ = false;
       if (!success){
         comm.revoke();
+#if DUNE_HAVE_CXX_UNCAUGHT_EXCEPTIONS
+        if(uncaught_exceptions_ >= std::uncaught_exceptions())
+#else
         if(!std::uncaught_exception())
+#endif
           DUNE_THROW(MPIGuardError, "Terminating process "
                      << comm.rank());
       }else{
