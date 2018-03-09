@@ -52,6 +52,7 @@ namespace Dune {
   template<typename T1, typename T2>
   class RemoteIndex;
 
+  // forward declaration needed for friend declaration.
   template<typename T>
   class IndicesSyncer;
 
@@ -156,6 +157,7 @@ namespace Dune {
   template<class T, class A>
   class CollectiveIterator;
 
+  // forward declaration needed for friend declaration.
   template<class T>
   class IndicesSyncer;
 
@@ -274,13 +276,6 @@ namespace Dune {
      * @param includeSelf If true it is enabled.
      */
     void setIncludeSelf(bool includeSelf);
-
-    void setBuilt()
-    {
-      firstBuild = false;
-      sourceSeqNo_ = source_->seqNo();
-      destSeqNo_ = target_->seqNo();
-    }
 
     /**
      * @brief Set the index sets and communicator we work with.

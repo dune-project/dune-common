@@ -499,13 +499,10 @@ namespace Dune
     free();
   }
   /** @} */
-}
 
-namespace std
-{
-  inline ostream& operator<<(ostream& os, const Dune::Interface& interface)
+  inline std::ostream& operator<<(std::ostream& os, const Interface& interface)
   {
-    typedef Dune::Interface::InformationMap InfoMap;
+    typedef Interface::InformationMap InfoMap;
     typedef InfoMap::const_iterator Iter;
     for(Iter i=interface.interfaces().begin(), end = interface.interfaces().end();
         i!=end; ++i)
@@ -520,7 +517,7 @@ namespace std
     }
     return os;
   }
-} // end namespace std
+}
 #endif // HAVE_MPI
 
 #endif

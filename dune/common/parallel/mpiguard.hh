@@ -3,7 +3,7 @@
 
 /**
  * @file
- * @brief Implements a MPIGuard which detects an error on a remote process.
+ * @brief Implements a MPIGuard which detects an error on a remote process
  * @author Christian Engwer
  * @ingroup ParallelCommunication
  */
