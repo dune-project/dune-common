@@ -111,7 +111,7 @@ struct MyDataHandle
             double index;
             buffer.read(index);
             std::cout<<index<<" ";
-            if(i != index) {
+            if(i != index && 10-i != index) {
               std::cerr << "\n" << rank << ": Communicated value does not match!" << std::endl;
               std::abort();
             }
@@ -210,7 +210,7 @@ struct VarDataHandle
         }
 
         std::cout<<rank<<": Scattering "<<size<<" entries for "<<i<<": ";
-        if(size != i%5) {
+        if(size != i%5 && size != (10-i)%5) {
           std::cerr << "\n" << rank <<": Number of communicated entries does not match!" << std::endl;
           std::abort();
         }
@@ -220,7 +220,7 @@ struct VarDataHandle
             double index;
             buffer.read(index);
             std::cout<<index<<" ";
-            if(index != i+k) {
+            if(index != i+k && index != (10-i)+k) {
               std::cerr << "\n" << rank << ": Communicated value does not match!" << std::endl;
               std::abort();
             }
