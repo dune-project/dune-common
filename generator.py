@@ -54,6 +54,8 @@ class SimpleGenerator(object):
             clsParams = []
         else:
             clsParams = ['pybind11::buffer_protocol()']
+        if kwargs.get("dynamicAttr", False):
+            clsParams += ['pybind11::dynamic_attr()']
         source += '  auto cls = Dune::Python::insertClass' +\
                      '< DuneType' + ', '.join([""]+options) + ' >' +\
                      '( module, "' + self.pythonName + '"' +\
