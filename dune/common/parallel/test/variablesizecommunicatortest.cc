@@ -111,7 +111,7 @@ struct MyDataHandle
             double index;
             buffer.read(index);
             std::cout<<index<<" ";
-            if(i != index && 10-i != index) {
+            if(i != index) {
               std::cerr << "\n" << rank << ": Communicated value does not match!" << std::endl;
               std::abort();
             }
@@ -122,6 +122,38 @@ struct MyDataHandle
     {
         DUNE_UNUSED_PARAMETER(i);
         return 3;
+    }
+};
+
+struct MyDataHandle1D : public MyDataHandle
+{
+    MyDataHandle1D(int r) : MyDataHandle(r) {}
+
+    template<class B>
+    void scatter(B& buffer, int i, int size)
+    {
+        if(!dataRecievedAt.insert(i).second) {
+          std::cerr << rank << ": Scatter() was called twice for index " << i << "!" << std::endl;
+          std::abort();
+        }
+
+        std::cout<<rank<<": Scattering "<<size<<" entries for "<<i<<": ";
+        if(size != 3) {
+          std::cerr << "\n" << rank <<": Number of communicated entries does not match!" << std::endl;
+          std::abort();
+        }
+
+        for(;size>0;--size)
+        {
+            double index;
+            buffer.read(index);
+            std::cout<<index<<" ";
+            if(10-i != index) {
+              std::cerr << "\n" << rank << ": Communicated value does not match!" << std::endl;
+              std::abort();
+            }
+        }
+        std::cout<<std::endl;
     }
 };
 
@@ -210,7 +242,7 @@ struct VarDataHandle
         }
 
         std::cout<<rank<<": Scattering "<<size<<" entries for "<<i<<": ";
-        if(size != i%5 && size != (10-i)%5) {
+        if(size != i%5) {
           std::cerr << "\n" << rank <<": Number of communicated entries does not match!" << std::endl;
           std::abort();
         }
@@ -220,7 +252,7 @@ struct VarDataHandle
             double index;
             buffer.read(index);
             std::cout<<index<<" ";
-            if(index != i+k && index != (10-i)+k) {
+            if(index != i+k) {
               std::cerr << "\n" << rank << ": Communicated value does not match!" << std::endl;
               std::abort();
             }
@@ -232,6 +264,38 @@ struct VarDataHandle
         return i%5;
     }
 
+};
+
+struct VarDataHandle1D : public VarDataHandle
+{
+    VarDataHandle1D(int r) : VarDataHandle(r) {}
+
+    template<class B>
+    void scatter(B& buffer, int i, int size)
+    {
+        if(!dataRecievedAt.insert(i).second) {
+          std::cerr << rank << ": Scatter() was called twice for index " << i << "!" << std::endl;
+          std::abort();
+        }
+
+        std::cout<<rank<<": Scattering "<<size<<" entries for "<<i<<": ";
+        if(size != (10-i)%5) {
+          std::cerr << "\n" << rank <<": Number of communicated entries does not match!" << std::endl;
+          std::abort();
+        }
+
+        for(int k=0; k<size; k++)
+        {
+            double index;
+            buffer.read(index);
+            std::cout<<index<<" ";
+            if(index != 10-i+k) {
+              std::cerr << "\n" << rank << ": Communicated value does not match!" << std::endl;
+              std::abort();
+            }
+        }
+        std::cout<<std::endl;
+    }
 };
 
 int main(int argc, char** argv)
@@ -256,14 +320,14 @@ int main(int argc, char** argv)
         Interface inf;
         inf[0]=std::make_pair(send, recv);
         Dune::VariableSizeCommunicator<> comm(MPI_COMM_SELF, inf, 6);
-        MyDataHandle handle(0);
+        MyDataHandle1D handle(0);
         comm.forward(handle);
         handle.verify(procs, 0, 0);
         std::cout<<"===================== backward ========================="<<std::endl;
         comm.backward(handle);
         handle.verify(procs, 0, 0);
         std::cout<<"================== variable size ======================="<<std::endl;
-        VarDataHandle vhandle(0);
+        VarDataHandle1D vhandle(0);
         comm.forward(vhandle);
         vhandle.verify(procs, 0, 0);
         std::cout<<"===================== backward ========================="<<std::endl;
