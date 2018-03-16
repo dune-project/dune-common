@@ -193,6 +193,7 @@ namespace Dune {
   class Span<DynamicVector<K, Allocator>> : public Span<std::vector<K, Allocator>>
   {
   public:
+    using Span<std::vector<K, Allocator>>::type;
     Span( DynamicVector<K, Allocator>& s)
       : Span<std::vector<K, Allocator>>(s._data)
     {}
@@ -204,6 +205,7 @@ namespace Dune {
   class Span<const DynamicVector<K, Allocator>> : public Span<const std::vector<K, Allocator>>
   {
   public:
+    using Span<const std::vector<K, Allocator>>::type;
     Span( const DynamicVector<K, Allocator>& s)
       : Span<const std::vector<K, Allocator>>(s._data)
     {}

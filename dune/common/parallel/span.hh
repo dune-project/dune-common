@@ -26,13 +26,9 @@ namespace Dune {
   template<typename T, typename = void>
   class Span
   {
-  protected:
-    // member variables
-    const T* ptr_;
-
   public:
-    typedef T type;
-    Span(const T& t) : ptr_(&t) {}
+    typedef std::remove_cv_t<T> type;
+    Span(const T& t) : ptr_(const_cast<std::remove_cv_t<T>*>(&t)) {}
     Span(const Span&) = default;
 
     // accessors:
@@ -42,8 +38,8 @@ namespace Dune {
     }
 #endif
 
-    T* ptr() const {
-      return const_cast<T*>(ptr_);
+    type* ptr() const {
+      return ptr_;
     }
 
     static constexpr size_t size() {
@@ -59,17 +55,20 @@ namespace Dune {
       if(s != 1)
         DUNE_THROW(Exception, "This function does not make any sense here");
     }
+  protected:
+    // member variables
+    type* ptr_;
   };
 
   // Specialization for C-Arrays
   template<class T>
   class Span<T*> {
   protected:
-    T* ptr_;
+    std::remove_cv_t<T*> ptr_;
     size_t len_;
 
   public:
-    typedef T type;
+    typedef std::remove_cv_t<T> type;
     Span(T* arr, std::size_t l) : ptr_(arr), len_(l)
     {}
 
@@ -80,7 +79,7 @@ namespace Dune {
     }
 #endif
 
-    T* ptr() const {
+    type* ptr() const {
       return ptr_;
     }
 
@@ -102,7 +101,7 @@ namespace Dune {
   template<class T>
   struct Span<Span<T*>> : public Span<T*>
   {
-    typedef T type;
+    typedef std::remove_cv_t<T> type;
     Span(const Span<Span<T*>>& s) = default;
     Span(Span<T*>& s) : Span<T*>(s.ptr(), s.size())
     {}
@@ -111,7 +110,7 @@ namespace Dune {
   template<class T>
   struct Span<const Span<T*>> : public Span<T*>
   {
-    typedef T type;
+    typedef std::remove_cv_t<T> type;
     Span(const Span<const Span<T*>>& s) = default;
     Span(const Span<T*>& s) : Span<T*>(s.ptr(), s.size())
     {}
@@ -157,8 +156,8 @@ namespace Dune {
     }
 #endif
 
-    value_type* ptr() const{
-      return const_cast<value_type*>(vec_.data());
+    type* ptr() const{
+      return reinterpret_cast<type*>(const_cast<value_type*>(vec_.data()));
     }
 
     size_t size() const {
