@@ -4,7 +4,9 @@
 
 #include <cstddef>
 #include <iostream>
+#include <set>
 #include <utility>
+#include <vector>
 
 #include <mpi.h>
 
@@ -17,6 +19,9 @@
 // the received data.
 struct MyDataHandle
 {
+    std::set<int> dataSendAt;
+    std::set<int> dataRecievedAt;
+
     MyDataHandle(int r)
     : rank(r)
     {
@@ -29,9 +34,58 @@ struct MyDataHandle
     {
         return true;
     }
+    void verify(int procs, int start, int end) {
+      std::vector<int> indices;
+
+      if(procs==1) {
+        for(int k=0;k<=10;k+=2) {
+          indices.push_back(k);
+        }
+      }
+      else {
+        if(rank && rank < procs) {
+          indices.push_back(start-1);
+          indices.push_back(start);
+        }
+        if(rank < procs-1) {
+          indices.push_back(end-1);
+          indices.push_back(end);
+        }
+      }
+
+      std::set<int>::iterator it;
+      for(int idx : indices) {
+        it  = dataSendAt.find(idx);
+        if(it == dataSendAt.end()) {
+          std::cerr << rank << ": No data send at index " << idx << "!" << std::endl;
+          std::abort();
+        }
+        dataSendAt.erase(it);
+
+        it  = dataRecievedAt.find(idx);
+        if(it == dataRecievedAt.end()) {
+          std::cerr << rank << ": No data recieved at index " << idx << "!" << std::endl;
+          std::abort();
+        }
+        dataRecievedAt.erase(it);
+      }
+      for(const int &i : dataSendAt) {
+        std::cerr << rank << ": Unexpected data send at index " << i << "!" << std::endl;
+        std::abort();
+      }
+      for(const int &i : dataRecievedAt) {
+        std::cerr << rank << ": Unexpected data recieved at index " << i << "!" << std::endl;
+        std::abort();
+      }
+    }
     template<class B>
     void gather(B& buffer, int i)
     {
+        if(!dataSendAt.insert(i).second) {
+          std::cerr << rank << ": Gather() was called twice for index " << i << "!" << std::endl;
+          std::abort();
+        }
+
         std::cout<<rank<<": Gathering "<<i<<std::endl;
         double d=i;
         buffer.write(d);
@@ -41,12 +95,26 @@ struct MyDataHandle
     template<class B>
     void scatter(B& buffer, int i, int size)
     {
+        if(!dataRecievedAt.insert(i).second) {
+          std::cerr << rank << ": Scatter() was called twice for index " << i << "!" << std::endl;
+          std::abort();
+        }
+
         std::cout<<rank<<": Scattering "<<size<<" entries for "<<i<<": ";
+        if(size != 3) {
+          std::cerr << "\n" << rank <<": Number of communicated entries does not match!" << std::endl;
+          std::abort();
+        }
+
         for(;size>0;--size)
         {
             double index;
             buffer.read(index);
             std::cout<<index<<" ";
+            if(i != index) {
+              std::cerr << "\n" << rank << ": Communicated value does not match!" << std::endl;
+              std::abort();
+            }
         }
         std::cout<<std::endl;
     }
@@ -57,12 +125,47 @@ struct MyDataHandle
     }
 };
 
+struct MyDataHandle1D : public MyDataHandle
+{
+    MyDataHandle1D(int r) : MyDataHandle(r) {}
+
+    template<class B>
+    void scatter(B& buffer, int i, int size)
+    {
+        if(!dataRecievedAt.insert(i).second) {
+          std::cerr << rank << ": Scatter() was called twice for index " << i << "!" << std::endl;
+          std::abort();
+        }
+
+        std::cout<<rank<<": Scattering "<<size<<" entries for "<<i<<": ";
+        if(size != 3) {
+          std::cerr << "\n" << rank <<": Number of communicated entries does not match!" << std::endl;
+          std::abort();
+        }
+
+        for(;size>0;--size)
+        {
+            double index;
+            buffer.read(index);
+            std::cout<<index<<" ";
+            if(10-i != index) {
+              std::cerr << "\n" << rank << ": Communicated value does not match!" << std::endl;
+              std::abort();
+            }
+        }
+        std::cout<<std::endl;
+    }
+};
+
 // On the sending side, for each index to send, send bewteen 0 and 4 numbers
 // (precisely: `index % 5` numbers).  The first number is the index converted
 // to `double`, incrementing by one for each consecutive number.  On the
 // receiving side just print the received numbers.
 struct VarDataHandle
 {
+    std::set<int> dataSendAt;
+    std::set<int> dataRecievedAt;
+
     VarDataHandle(int r)
     : rank(r)
     {}
@@ -72,10 +175,59 @@ struct VarDataHandle
     {
         return false;
     }
+    void verify(int procs, int start, int end) {
+      std::vector<int> indices;
+      if(procs==1) {
+        for(int k=0;k<=10;k+=2) {
+          indices.push_back(k);
+        }
+      }
+      else {
+        if(rank && rank < procs) {
+          indices.push_back(start-1);
+          indices.push_back(start);
+        }
+        if(rank < procs-1) {
+          indices.push_back(end-1);
+          indices.push_back(end);
+        }
+      }
 
+      std::set<int>::iterator it;
+      for(int idx : indices) {
+        it  = dataSendAt.find(idx);
+        if(it == dataSendAt.end()) {
+          std::cerr << rank << ": No data send at index " << idx << "!" << std::endl;
+          std::abort();
+        }
+        dataSendAt.erase(it);
+
+        it  = dataRecievedAt.find(idx);
+        if(it == dataRecievedAt.end() && idx%5) {
+          std::cerr << rank << ": No data recieved at index " << idx << "!" << std::endl;
+          std::abort();
+        }
+        else if(it != dataRecievedAt.end()) {
+          dataRecievedAt.erase(it);
+        }
+      }
+      for(const int &i : dataSendAt) {
+        std::cerr << rank << ": Unexpected data send at index " << i << "!" << std::endl;
+        std::abort();
+      }
+      for(const int &i : dataRecievedAt) {
+        std::cerr << rank << ": Unexpected data recieved at index " << i << "!" << std::endl;
+        std::abort();
+      }
+    }
     template<class B>
     void gather(B& buffer, int i)
     {
+        if(!dataSendAt.insert(i).second) {
+          std::cerr << rank << ": Gather() was called twice for index " << i << "!" << std::endl;
+          std::abort();
+        }
+
         std::size_t s=i%5;
         std::cout<<rank<<": Gathering "<<s<<" entries for index "<<i<<std::endl;
         for(std::size_t j=0; j<s; j++)
@@ -84,12 +236,26 @@ struct VarDataHandle
     template<class B>
     void scatter(B& buffer, int i, int size)
     {
+        if(!dataRecievedAt.insert(i).second) {
+          std::cerr << rank << ": Scatter() was called twice for index " << i << "!" << std::endl;
+          std::abort();
+        }
+
         std::cout<<rank<<": Scattering "<<size<<" entries for "<<i<<": ";
-        for(;size>0;--size)
+        if(size != i%5) {
+          std::cerr << "\n" << rank <<": Number of communicated entries does not match!" << std::endl;
+          std::abort();
+        }
+
+        for(int k=0; k<size; k++)
         {
             double index;
             buffer.read(index);
             std::cout<<index<<" ";
+            if(index != i+k) {
+              std::cerr << "\n" << rank << ": Communicated value does not match!" << std::endl;
+              std::abort();
+            }
         }
         std::cout<<std::endl;
     }
@@ -98,6 +264,38 @@ struct VarDataHandle
         return i%5;
     }
 
+};
+
+struct VarDataHandle1D : public VarDataHandle
+{
+    VarDataHandle1D(int r) : VarDataHandle(r) {}
+
+    template<class B>
+    void scatter(B& buffer, int i, int size)
+    {
+        if(!dataRecievedAt.insert(i).second) {
+          std::cerr << rank << ": Scatter() was called twice for index " << i << "!" << std::endl;
+          std::abort();
+        }
+
+        std::cout<<rank<<": Scattering "<<size<<" entries for "<<i<<": ";
+        if(size != (10-i)%5) {
+          std::cerr << "\n" << rank <<": Number of communicated entries does not match!" << std::endl;
+          std::abort();
+        }
+
+        for(int k=0; k<size; k++)
+        {
+            double index;
+            buffer.read(index);
+            std::cout<<index<<" ";
+            if(index != 10-i+k) {
+              std::cerr << "\n" << rank << ": Communicated value does not match!" << std::endl;
+              std::abort();
+            }
+        }
+        std::cout<<std::endl;
+    }
 };
 
 int main(int argc, char** argv)
@@ -116,22 +314,25 @@ int main(int argc, char** argv)
         send.reserve(6);
         for(std::size_t i=0; i<=10; i+=2)
             send.add(i);
-
         recv.reserve(6);
         for(std::size_t i=10; i<=10; i-=2)
             recv.add(i);
         Interface inf;
         inf[0]=std::make_pair(send, recv);
         Dune::VariableSizeCommunicator<> comm(MPI_COMM_SELF, inf, 6);
-        MyDataHandle handle(0);
+        MyDataHandle1D handle(0);
         comm.forward(handle);
+        handle.verify(procs, 0, 0);
         std::cout<<"===================== backward ========================="<<std::endl;
         comm.backward(handle);
+        handle.verify(procs, 0, 0);
         std::cout<<"================== variable size ======================="<<std::endl;
-        VarDataHandle vhandle(0);
+        VarDataHandle1D vhandle(0);
         comm.forward(vhandle);
+        vhandle.verify(procs, 0, 0);
         std::cout<<"===================== backward ========================="<<std::endl;
         comm.backward(vhandle);
+        vhandle.verify(procs, 0, 0);
     }
     else
     {
@@ -204,22 +405,30 @@ int main(int argc, char** argv)
         MyDataHandle handle(rank);
         comm.forward(handle);
         MPI_Barrier(MPI_COMM_WORLD);
+        handle.verify(procs, start, end);
+        MPI_Barrier(MPI_COMM_WORLD);
         if(rank==0)
             std::cout<<"===================== backward ========================="<<std::endl;
         MPI_Barrier(MPI_COMM_WORLD);
         comm.backward(handle);
         MPI_Barrier(MPI_COMM_WORLD);
+        handle.verify(procs, start, end);
+        MPI_Barrier(MPI_COMM_WORLD);
         if(rank==0)
             std::cout<<"================== variable size ======================="<<std::endl;
         MPI_Barrier(MPI_COMM_WORLD);
-
         VarDataHandle vhandle(rank);
         MPI_Barrier(MPI_COMM_WORLD);
         comm.forward(vhandle);
         MPI_Barrier(MPI_COMM_WORLD);
+        vhandle.verify(procs, start, end);
+        MPI_Barrier(MPI_COMM_WORLD);
         if(rank==0)
             std::cout<<"===================== backward ========================="<<std::endl;
+        MPI_Barrier(MPI_COMM_WORLD);
         comm.backward(vhandle);
+        MPI_Barrier(MPI_COMM_WORLD);
+        vhandle.verify(procs, start, end);
     }
 
     MPI_Finalize();
