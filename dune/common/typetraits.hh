@@ -191,6 +191,7 @@ namespace Dune
 #endif // DOXYGEN
 
   //! \brief Whether this type has a value of NaN.
+  //! \deprecated has_nan is deprecated, use `Dune::HasNaN` instead
   /**
    * Internally, this is just a forward to `std::is_floating_point<T>`.
    */
@@ -312,6 +313,7 @@ namespace Dune
 #endif // defined(DOXYGEN) or HAVE_IS_INDEXABLE_SUPPORT
 
   //! Type trait to determine whether an instance of T has an operator[](I), i.e. whether it can be indexed with an index of type I.
+  //! \deprecated is_indexable is deprecated, use `Dune::IsIndexable` instead
   /**
    * \warning Not all compilers support testing for arbitrary index types. In particular, there
    *          are problems with GCC 4.4 and 4.5.
@@ -360,6 +362,7 @@ namespace Dune
 
   /**
      \brief typetrait to check that a class has begin() and end() members
+     \deprecated is_range is deprecated, use `Dune::IsIterable` instead
    */
   template<typename T, typename = void>
   struct DUNE_DEPRECATED_MSG("Has been renamed to 'IsIterable'.") is_range
