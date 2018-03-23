@@ -45,7 +45,7 @@ struct testPoolMain
 
       Chunk* currentChunk = pool.chunks_;
 
-      assert(element==reinterpret_cast<unsigned long>(currentChunk->memory_));
+      assert(element==reinterpret_cast<unsigned long>(currentChunk->chunk_));
       unsigned long end = reinterpret_cast<unsigned long>(currentChunk->chunk_)+Pool<T,size>::chunkSize;
 
       if(element< reinterpret_cast<unsigned long>(currentChunk->chunk_))
