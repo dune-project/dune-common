@@ -7,7 +7,7 @@
 #
 #    .. cmake_brief::
 #
-#       Declare labels for `dune_add_test`.
+#       Declare labels for :ref:`dune_add_test`.
 #
 #    .. cmake_param:: LABELn
 #       :special:
@@ -25,7 +25,7 @@
 #    label exist in a module.  For these cases :ref:`dune_declare_test_label` can
 #    be called explicitly.
 #
-#    The label :code:`quick` guaranteed to be always declared.
+#    The label :code:`quick` is always predeclared.
 #
 # .. cmake_function:: dune_add_test
 #
