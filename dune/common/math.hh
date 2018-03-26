@@ -173,17 +173,18 @@ namespace Dune
     //! Tag to make sure the functions in this namespace can be found by ADL.
     struct ADLTag {};
 
-#define DUNE_COMMON_MATH_ISFUNCTION(function, stdfunction)  \
-    template<class T>                                       \
-    auto function(const T &t, PriorityTag<1>, ADLTag)       \
-                  -> decltype(function(t)) {                \
-      return function(t);                                   \
-    }                                                       \
-    template<class T>                                       \
-    auto function(const T &t, PriorityTag<0>, ADLTag) {     \
-      using std::stdfunction;                               \
-      return stdfunction(t);                                \
-    }
+#define DUNE_COMMON_MATH_ISFUNCTION(function, stdfunction)         \
+    template<class T>                                              \
+    auto function(const T &t, PriorityTag<1>, ADLTag)              \
+                  -> decltype(function(t)) {                       \
+      return function(t);                                          \
+    }                                                              \
+    template<class T>                                              \
+    auto function(const T &t, PriorityTag<0>, ADLTag) {            \
+      using std::stdfunction;                                      \
+      return stdfunction(t);                                       \
+    }                                                              \
+    static_assert(true, "Require semicolon to unconfuse editors")
 
     DUNE_COMMON_MATH_ISFUNCTION(isNaN,isnan);
     DUNE_COMMON_MATH_ISFUNCTION(isInf,isinf);
@@ -209,13 +210,14 @@ namespace Dune
     // names of the functions they are forwarding to.  Otherwise the
     // unqualified call would find the functor type, not a function, and ADL
     // would never be attempted.
-#define DUNE_COMMON_MATH_ISFUNCTION_FUNCTOR(function)                   \
+#define DUNE_COMMON_MATH_ISFUNCTION_FUNCTOR(function)                    \
     struct function##Impl {                                              \
       template<class T>                                                  \
       constexpr auto operator()(const T &t) const {                      \
         return function(t, PriorityTag<10>{}, MathOverloads::ADLTag{});  \
       }                                                                  \
-    };
+    };                                                                   \
+    static_assert(true, "Require semicolon to unconfuse editors")
 
     DUNE_COMMON_MATH_ISFUNCTION_FUNCTOR(isNaN);
     DUNE_COMMON_MATH_ISFUNCTION_FUNCTOR(isInf);
