@@ -9,9 +9,8 @@
 #
 #       Declare labels for :ref:`dune_add_test`.
 #
-#    .. cmake_param:: LABELn
-#       :special:
-#       :argname: label1 [label2 ...]
+#    .. cmake_param:: LABELS
+#       :multi:
 #
 #       The names of labels to declare.  Label names must be nonempty and
 #       consist only of alphanumeric characters plus :code:`-` and :code:`_`
@@ -22,7 +21,7 @@
 #    :code:`build_${label}_tests` exists.  They will normally be declared
 #    on-demand by :ref:`dune_add_test`.  But sometimes it is useful to be able to
 #    run :code:`make build_${label}_tests` whether or not any tests with that
-#    label exist in a module.  For these cases :ref:`dune_declare_test_label` can
+#    label exists in a module.  For these cases :ref:`dune_declare_test_label` can
 #    be called explicitly.
 #
 #    The label :code:`quick` is always predeclared.
@@ -215,7 +214,18 @@ include(CTest)
 add_custom_target(build_tests)
 
 function(dune_declare_test_label)
-  foreach(label IN LISTS ARGV)
+  include(CMakeParseArguments)
+  set(OPTIONS)
+  set(SINGLEARGS)
+  set(MULTIARGS LABELS)
+  cmake_parse_arguments(arg "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
+
+  if( (DEFINED arg_UNPARSED_ARGUMENTS) AND NOT ( arg_UNPARSED_ARGUMENTS STREQUAL "" ) )
+    message(FATAL_ERROR "Unhandled extra arguments given to dune_declare_test_label(): "
+      "<${arg_UNPARSED_ARGUMENTS}>")
+  endif()
+
+  foreach(label IN LISTS arg_LABELS)
     # Make sure the label is not empty, and does not contain any funny
     # characters, in particular regex characters
     if(NOT (label MATCHES "[-_0-9a-zA-Z]+"))
@@ -233,7 +243,7 @@ endfunction(dune_declare_test_label)
 
 # predefine "quick" test label so build_quick_tests can be built
 # unconditionally
-dune_declare_test_label(quick)
+dune_declare_test_label(LABELS quick)
 
 # Set the default on the variable DUNE_MAX_TEST_CORES
 if(NOT DUNE_MAX_TEST_CORES)
@@ -341,7 +351,7 @@ function(dune_add_test)
   endif()
 
   # make sure each label exists and its name is acceptable
-  dune_declare_test_label(${ADDTEST_LABELS})
+  dune_declare_test_label(LABELS ${ADDTEST_LABELS})
 
   # Have build_tests and build_${label}_tests depend on the given target in
   # order to trigger the build correctly
