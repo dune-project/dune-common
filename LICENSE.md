@@ -10,17 +10,17 @@ Copyright holders:
 2004--2005    Adrian Burri
 2014          Benjamin Bykowski (may appear in the logs as "Convex Function")
 2014          Marco Cecchetti
-2006--2017    Andreas Dedner
+2006--2018    Andreas Dedner
 2003          Marc Droske
-2003--2017    Christian Engwer
-2004--2017    Jorrit Fahlke
+2003--2018    Christian Engwer
+2004--2018    Jorrit Fahlke
 2016          Thomas Fetzer
 2008--2013    Bernd Flemisch
 2013--2014    Christoph Gersbacher
 2015          Stefan Girke
 2015--2017    Felix Gruber
 2005--2017    Carsten Gräser
-2010--2017    Christoph Grüninger
+2010--2018    Christoph Grüninger
 2006          Bernard Haasdonk
 2015--2016    René Heß
 2015          Claus-Justus Heine
@@ -37,10 +37,10 @@ Copyright holders:
 2012--2017    Tobias Malkmus
 2007--2011    Sven Marnach
 2010--2017    René Milk
-2011--2017    Steffen Müthing
+2011--2018    Steffen Müthing
 2003--2006    Thimo Neubauer
 2011          Rebecca Neumann
-2008--2017    Martin Nolte
+2008--2018    Martin Nolte
 2014          Andreas Nüßing
 2004--2005    Mario Ohlberger
 2014          Steffen Persvold
