@@ -7,6 +7,7 @@
 #include <utility>
 
 #include <dune/common/indices.hh>
+#include <dune/common/typetraits.hh>
 
 
 
@@ -34,8 +35,13 @@ class TupleVector : public std::tuple<T...>
 public:
 
   /** \brief Construct from a set of arguments
+   *
+   * This is only available if you can construct
+   * the underlying std::tuple from the same argument
+   * list.
    */
-  template<class... TT>
+  template<class... TT,
+    Dune::void_t<decltype(Base(std::declval<TT>()...))> >
   constexpr TupleVector(TT&&... tt) :
     Base(std::forward<TT>(tt)...)
   {}
