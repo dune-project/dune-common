@@ -26,11 +26,12 @@ namespace Dune
   /**
      \brief A Vector class with statically reserved memory.
 
-     ReservedVector is something between Dune::array and std::vector.
-     You have vector which can be extended and shrunk using methods like
-     push_back and pop_back, but reserved memory is predefined.
+     ReservedVector is something between std::array and std::vector.
+     It is a dynamically sized vector which can be extended and shrunk
+     using methods like push_back and pop_back, but reserved memory is
+     statically predefined.
 
-     This implies that the vector can not grow bigger than the predefined
+     This implies that the vector cannot grow bigger than the predefined
      maximum size.
 
      \tparam T The data type ReservedVector stores.
