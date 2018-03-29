@@ -404,7 +404,7 @@ namespace Dune
 
         cls.def_property_readonly_static( "_typeName", [ entry ] ( pybind11::object ) { return entry.first->second.name; } );
         cls.def_property_readonly_static( "_includes", [ entry ] ( pybind11::object ) { return entry.first->second.includes; } );
-        cls.def( "__repr__", [ entry ] ( pybind11::object ) { return entry.first->second.name; } );
+        // cls.def( "__str__", [ entry ] ( pybind11::object ) { return entry.first->second.name; } );
 
         return std::make_pair( cls, true );
       }
