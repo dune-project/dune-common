@@ -23,8 +23,6 @@ namespace Dune
     {
       template<class T = void>
       using FutureType = typename Comm::template FutureType<T>;
-      template<class T = void>
-      using RecvFutureType = typename Comm::template RecvFutureType<T>;
 
       Comm comm_;
       std::shared_ptr<MPI_Win> win_ptr_;
@@ -61,18 +59,18 @@ namespace Dune
         dune_mpi_call(MPI_Rput, span.ptr(), span.size(),
                       span.mpi_type(), target_rank, target_displ,
                       span.size(), span.type(),
-                      *win_ptr_, &future.req_);
+                      *win_ptr_, &future.mpirequest());
         return future;
       }
 
       template<class T>
-      RecvFutureType<std::decay_t<T>> get(int target_rank, int target_displ, T&& data)
+      FutureType<std::decay_t<T>> get(int target_rank, int target_displ, T&& data)
       {
-        RecvFutureType<std::decay_t<T>> future(comm_, false, std::forward<T>(data));
+        FutureType<std::decay_t<T>> future(comm_, false, std::forward<T>(data));
         Span<std::decay_t<T>> span(future.buffer());
         dune_mpi_call(MPI_Rget, span.ptr(), span.size(),
                       span.mpi_type(), target_rank, target_displ, span.size(),
-                      span.mpi_type(), *win_ptr_, &future.req_);
+                      span.mpi_type(), *win_ptr_, &future.mpirequest());
         return future;
       }
 
@@ -85,16 +83,16 @@ namespace Dune
                       span.mpi_type(), target_rank, target_displ,
                       span.size(), span.type(),
                       Generic_MPI_Op<typename decltype(span)::type, BinaryFunction>::get(),
-                      *win_ptr_, &future.req_);
+                      *win_ptr_, &future.mpirequest());
         return future;
       }
 
       template<class BinaryFunction, class T>
-      RecvFutureType<std::decay_t<T>> get_accumulate(const T& data, int target_rank,
+      FutureType<std::decay_t<T>> get_accumulate(const T& data, int target_rank,
                                              int target_displ, T&& result)
       {
         Span<std::decay_t<T>> span_data(data);
-        RecvFutureType<std::decay_t<T>> future(comm_, false, std::forward<T>(result));
+        FutureType<std::decay_t<T>> future(comm_, false, std::forward<T>(result));
         Span<std::decay_t<T>> span_result(future.buffer());
         dune_mpi_call(MPI_Rget_accumulate, span_data.ptr(),
                       span_data.size(), span_data.mpi_type(),
@@ -103,7 +101,7 @@ namespace Dune
                       span_data.size(),
                       span_data.mpi_type(),
                       Generic_MPI_Op<typename decltype(span_data)::type, BinaryFunction>::get(),
-                      *win_ptr_, &future.req_);
+                      *win_ptr_, &future.mpirequest());
         return future;
       }
 

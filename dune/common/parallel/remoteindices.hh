@@ -1209,12 +1209,12 @@ namespace Dune {
         MPIPack<Comm>& p_in = buffer[proc%2];
 
         if(rank%2==0) {
-          ptpc.template send<MPIPack<Comm>, synchronous>
+          ptpc.template send<MPIPack<Comm>>
             (p_out, (rank+1)%procs, commTag_);
           ptpc.template recv(p_in, (rank+procs-1)%procs, commTag_);
         }else{
           ptpc.template recv(p_in, (rank+procs-1)%procs, commTag_);
-          ptpc.template send<MPIPack<Comm>, synchronous>
+          ptpc.template send<MPIPack<Comm>>
             (p_out, (rank+1)%procs, commTag_);
         }
 
@@ -1230,7 +1230,7 @@ namespace Dune {
     }
     else
     {
-      typedef Future<> F;
+      typedef typename decltype(ptpc)::template FutureType<> F;
       std::vector<F> requests;
       requests.reserve(neighbourIds.size());
 
@@ -1259,7 +1259,7 @@ namespace Dune {
       }
       // wait for completion of pending requests
 
-      waitall(requests);
+      when_all(requests.begin(), requests.end()).wait();
     }
 
 

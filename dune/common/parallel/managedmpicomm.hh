@@ -45,14 +45,12 @@ namespace Dune
     explicit ManagedMPIComm(const std::shared_ptr<MPI_Comm>& pMPI_Comm)
       : comm_(pMPI_Comm)
     {
-      dverb << "ManagedMPIComm(const std::shared_ptr<MPI_Comm>&), *pMPI_Comm = " << *pMPI_Comm << std::endl;
     }
 
   protected:
     // deleter function to be used with shared_ptr
     static void freeComm(MPI_Comm* c)
     {
-      dverb << "ManagedMPIComm::freeComm(MPI_Comm*), c=" << *c << std::endl;
       if (c != nullptr &&
           *c != MPI_COMM_WORLD &&
           *c != MPI_COMM_SELF &&
@@ -90,12 +88,8 @@ namespace Dune
     {}
 
     // Export Future types
-    template<class T>
+    template<class T = void>
     using FutureType = MPIFuture<T>;
-    template<class T>
-    using RecvFutureType = MPIRecvFuture<T>;
-    template<class T>
-    using ProbeFutureType = MPIProbeFuture<T>;
 
     /** @brief Returns a communicator containing all processes.
      */
@@ -193,13 +187,17 @@ namespace Dune
 #if MPI_VERSION > 3 || DUNE_ENABLE_ULFM
     // @brief See MPI_Comm_revoke (ULFM proposal)
     void revoke() {
-      dverb << "ManagedMPIComm::revoke()" << std::endl;
       dune_mpi_call(MPIX_Comm_revoke, *comm_);
+    }
+
+    bool agree(bool success) {
+      int flag = success?1:0;
+      dune_mpi_call(MPIX_Comm_agree, *comm_, &flag);
+      return flag!=0;
     }
 
     // @brief See MPI_Comm_shrink (ULFM proposal)
     void shrink() {
-      dverb << "ManagedMPIComm::shrink()" << std::endl;
       MPI_Comm new_comm;
       dune_mpi_call(MPIX_Comm_shrink, *comm_, &new_comm);
       freeComm(comm_.get());
@@ -209,6 +207,11 @@ namespace Dune
     void revoke() {
       dinfo << "The Communicator can't be revoked. revoke() is not implemented." << std::endl;
       dune_mpi_call(MPI_Barrier, *comm_);
+    }
+
+    bool agree(bool success) {
+      dune_mpi_call(MPI_Allreduce, MPI_IN_PLACE, &success, 1, MPI_CXX_BOOL, MPI_LAND, *this);
+      return success;
     }
 
     void shrink() {
@@ -237,6 +240,7 @@ namespace Dune {
     constexpr int size() { return 1; }
     void revoke() {}
     void shrink() {}
+    bool agree(bool success) {return success;}
   };
 }
 #endif  // DUNE_MANAGEDMPICOMM

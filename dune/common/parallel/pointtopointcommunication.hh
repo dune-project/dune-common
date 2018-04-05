@@ -15,12 +15,13 @@
 #if HAVE_MPI
 #include <mpi.h>
 #endif
+#include <mutex>
 
-#include "future.hh"
 #include "mpiexceptions.hh"
 #include "span.hh"
 #include "mpitraits.hh"
 #include "mpistatus.hh"
+#include "mpigrequest.hh"
 
 namespace Dune{
   template<class Comm>
@@ -39,10 +40,54 @@ namespace Dune{
 
   template<class Comm>
   class PointToPointCommunication {
-    template<class T = void>
-    using RecvFutureType = typename Comm::template RecvFutureType<T>;
-    template<class T = void>
-    using ProbeFutureType = typename Comm::template ProbeFutureType<T>;
+
+    template<class T>
+    MPI_Request Iarecv(Span<T>& data, int rank, int tag){
+      constexpr int WAKEUPTAG = 321654;
+      std::shared_ptr<std::tuple<int, std::mutex>> mutex_data =
+        std::make_shared<std::tuple<int, std::mutex>>();
+      std::get<0>(*mutex_data) = 0;
+      auto worker = [data, rank, tag, comm{(MPI_Comm)communicator}, me{communicator.rank()}, mutex_data, WAKEUPTAG]
+        (MPIStatus& status) mutable{
+        MPIStatus s;
+        bool done = false;
+        do{
+          dune_mpi_call(MPI_Probe, MPI_ANY_SOURCE, MPI_ANY_TAG, comm, s);
+          if(s.get_source() == rank && s.get_tag() == tag){
+            data.resize(s.get_count(data.mpi_type()));
+            dune_mpi_call(MPI_Recv, data.ptr(), data.size(), data.mpi_type(),
+                          rank, tag, comm, status);
+            done = true;
+          }
+          if(s.get_source() == me && s.get_tag() == WAKEUPTAG){
+            bool recv = false;
+            std::get<1>(*mutex_data).lock();
+            if(std::get<0>(*mutex_data) == 1){
+              recv = true;
+            }
+            std::get<0>(*mutex_data) = 1;
+            std::get<1>(*mutex_data).unlock();
+            if(recv)
+              dune_mpi_call(MPI_Recv, nullptr, 0, MPI_INT, me, WAKEUPTAG, comm, MPI_STATUS_IGNORE);
+            done = true;
+          }
+        }while(!done);
+      };
+      auto cancel = [comm{(MPI_Comm)communicator}, me{communicator.rank()}, WAKEUPTAG, mutex_data]
+        (bool /*complete*/)
+        {
+        bool send = false;
+        std::get<1>(*mutex_data).lock();
+        if(std::get<0>(*mutex_data) == 0){
+          send = true;
+          std::get<0>(*mutex_data) = 1;
+        }
+        std::get<1>(*mutex_data).unlock();
+        if(send)
+          dune_mpi_call(MPI_Send, nullptr, 0, MPI_INT, me, WAKEUPTAG, comm);
+      };
+      return MPIGRequest<decltype(worker), decltype(cancel)> (std::move(worker), std::move(cancel));
+    }
   public:
     template<class T = void>
     using FutureType = typename Comm::template FutureType<T>;
@@ -115,8 +160,8 @@ namespace Dune{
       }
       dune_mpi_call(send_fun, span.ptr(), span.size(),
                     span.mpi_type(), rank, tag,
-                    communicator, &f.req_);
-      dverb << "isend() req = " << f.req_ << std::endl;
+                    communicator, &f.mpirequest());
+      dverb << "isend() req = " << f.mpirequest() << std::endl;
       return std::move(f);
     }
 
@@ -133,10 +178,10 @@ namespace Dune{
      * @throw MPIError
      */
     template<typename T>
-    MPIStatus recv(T& data, int rank, int tag)
+    MPIStatus recv(T& data, int rank, int tag, bool resize = false)
     {
       Span<T> span(data);
-      if(Span<T>::dynamic_size){
+      if(Span<T>::dynamic_size && resize){
         auto ms = mprobe(rank, tag);
         ms.recv(data);
         return ms;
@@ -163,21 +208,19 @@ namespace Dune{
      * @throw MPIError
      */
     template<typename T>
-    RecvFuture<std::decay_t<T>> irecv(T&& data, int rank, int tag, bool dynamic_size = false)
+    FutureType<std::decay_t<T>> irecv(T&& data, int rank, int tag, bool dynamic_size = false)
     {
+      FutureType<std::decay_t<T>> f(communicator, true, std::forward<T>(data));
+      Span<std::decay_t<T>> span(f.buffer());
       if(dynamic_size && Span<std::decay_t<T>>::dynamic_size){
-        return ProbeFutureType<std::decay_t<T>>(communicator, false,
-                                                std::forward<T>(data),
-                                                rank, tag);
+        f.mpirequest() = Iarecv(span, rank, tag);
       }else{
-        RecvFutureType<std::decay_t<T>> f(communicator, false, std::forward<T>(data));
-        Span<std::decay_t<T>> span(f.buffer());
         dune_mpi_call(MPI_Irecv, span.ptr(), span.size(),
                       span.mpi_type(), rank, tag,
-                      communicator, &f.req_);
-        dverb << "irecv() req = " << f.req_ << std::endl;
-        return std::move(f);
+                      communicator, &f.mpirequest());
       }
+      dverb << "irecv() req = " << f.mpirequest() << std::endl;
+      return std::move(f);
     }
 
     /** @brief See MPI_Probe.

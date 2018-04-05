@@ -1404,9 +1404,11 @@ namespace Dune
 
     MessageGatherer<Data,GatherScatter,FORWARD,Flag>() (interfaces_, source, sendBuffer, sendBufferSize);
 
-    std::vector<Future<>> sendRequests;
+    typedef typename decltype(communicator_)::template FutureType<> VoidFuture;
+    std::vector<VoidFuture> sendRequests;
     sendRequests.reserve(messageInformation_.size());
-    std::vector<RecvFuture<Span<Dune_MPI_Byte*>>> recvRequests;
+    typedef typename decltype(communicator_)::template FutureType<Span<Dune_MPI_Byte*>> SpanFuture;
+    std::vector<SpanFuture> recvRequests;
     recvRequests.reserve(messageInformation_.size());
     /* Number of recvRequests that are not MPI_REQUEST_NULL */
     size_t numberOfRealRecvRequests = 0;
@@ -1466,22 +1468,21 @@ namespace Dune
     // Wait for completion of receive and immediately start scatter
     i=0;
     for(i=0; i< numberOfRealRecvRequests;) {
-      auto v = waitsome(recvRequests);
-      for(const auto& finished : v){
-        //int& proc = processMap[finished];
-        int proc = recvRequests[finished].source();
-        recvRequests[finished].get(); // invalidate the future
-        typename InformationMap::const_iterator infoIter = messageInformation_.find(proc);
-        assert(infoIter != messageInformation_.end());
+      auto v = when_any(recvRequests.begin(), recvRequests.end()).get();
+      recvRequests = std::move(v.futures);
+      int proc = recvRequests[v.index].status().get_source();
+      recvRequests[v.index].get(); // invalidate the future
+      typename InformationMap::const_iterator infoIter = messageInformation_.find(proc);
+      assert(infoIter != messageInformation_.end());
 
-        MessageInformation info = (FORWARD) ? infoIter->second.second : infoIter->second.first;
-        assert(info.start_+info.size_ <= recvBufferSize);
+      MessageInformation info = (FORWARD) ? infoIter->second.second : infoIter->second.first;
+      assert(info.start_+info.size_ <= recvBufferSize);
 
-        MessageScatterer<Data,GatherScatter,FORWARD,Flag>() (interfaces_, dest, recvBuffer+info.start_, proc);
-      }
-      i += v.size();
+      MessageScatterer<Data,GatherScatter,FORWARD,Flag>() (interfaces_, dest, recvBuffer+info.start_, proc);
+      i++;
+      recvRequests.erase(recvRequests.begin() + v.index);
     }
-    waitall(sendRequests);
+    when_all(sendRequests.begin(), sendRequests.end()).wait();
     delete[] processMap;
 
   }
