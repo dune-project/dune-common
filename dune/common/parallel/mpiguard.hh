@@ -108,8 +108,9 @@ namespace Dune
 #endif
     {
       // wait until all process are in safe area
-      CollectiveCommunication<C> cc(this->comm);
-      cc.barrier();
+      this->comm.agree(true);
+      // CollectiveCommunication<C> cc(this->comm);
+      // cc.barrier();
     }
 
     /*! @brief destroy the guard and check for undetected exceptions
@@ -159,16 +160,15 @@ namespace Dune
       active_ = false;
       if (!success){
         comm.revoke();
+      }
+      bool all_success = comm.agree(success);
+      if(!all_success){
 #if DUNE_HAVE_CXX_UNCAUGHT_EXCEPTIONS
         if(uncaught_exceptions_ >= std::uncaught_exceptions())
 #else
         if(!std::uncaught_exception())
 #endif
-          DUNE_THROW(MPIGuardError, "Terminating process "
-                     << comm.rank());
-      }else{
-        CollectiveCommunication<decltype(comm)> cc(comm);
-        cc.barrier();
+          DUNE_THROW(MPIGuardError, "Terminating process ");
       }
     }
   };

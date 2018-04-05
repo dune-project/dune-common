@@ -33,7 +33,7 @@ void testBroadcast(CC& cc, const T& data, const T& init = {}){
     }
   }
   { // non-blocking
-    Dune::Future<T> f;
+    typename CC::template FutureType<T> f;
     if(cc.rank() == 0)
       f = cc.ibroadcast(data, 0);
     else{
@@ -132,7 +132,7 @@ void testScatter(CC& cc, const T& data, const T& init){
     T buf(init);
     if(Dune::Span<T>::dynamic_size)
       Dune::Span<T>(buf).resize(Dune::Span<const T>(data).size());
-    Dune::Future<T> f;
+    typename CC::template FutureType<T> f;
     if(cc.rank() == 0){
       std::vector<T> vec(cc.size(), data);
       f = cc.iscatter(vec, std::move(buf), 0);

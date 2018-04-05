@@ -42,7 +42,7 @@ namespace Dune{
       for(int i = 0; i < size_-1; i++){
         // use Span since we want to access the object during the communication
         auto send_future = ptpc_.isend(send_buffer, left_, tag);
-        ptpc_.recv(recv_buffer, right_, tag);
+        ptpc_.recv(recv_buffer, right_, tag, true);
         // apply the data (during the communication)
         fun(recv_buffer, (i+rank_)%size_);
         send_future.wait();

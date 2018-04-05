@@ -88,3 +88,17 @@ dune_add_test(SOURCES mpigrequesttest.cc
               MPI_RANKS  1 2
               TIMEOUT 300
               COMMAND ${CMAKE_CURRENT_BINARY_DIR}/mpigrequesttest)
+
+dune_add_test(SOURCES mpifuturetest.cc
+              LINK_LIBRARIES dunecommon
+              CMAKE_GUARD MPI_FOUND
+              MPI_RANKS  1 2
+              TIMEOUT 30
+              COMMAND ${CMAKE_CURRENT_BINARY_DIR}/mpifuturetest)
+
+dune_add_test(SOURCES mpidynamicrecvtest.cc
+              LINK_LIBRARIES dunecommon
+              CMAKE_GUARD MPI_FOUND
+              MPI_RANKS  1 2
+              TIMEOUT 30
+              COMMAND ${CMAKE_CURRENT_BINARY_DIR}/mpidynamicrecvtest)
