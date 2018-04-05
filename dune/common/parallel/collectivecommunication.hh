@@ -9,8 +9,7 @@
 
    \ingroup ParallelCommunication
  */
-#include <iostream>
-#include <complex>
+
 #include <algorithm>
 #include <memory>
 
@@ -20,8 +19,8 @@
 #include <dune/common/deprecated.hh>
 
 #include "managedmpicomm.hh"
-#include "future.hh"
 #include "span.hh"
+#include "pseudofuture.hh"
 /*! \defgroup ParallelCommunication Parallel Communication
    \ingroup Common
 
@@ -358,7 +357,7 @@ namespace Dune
     FutureType<std::decay<S>> igather (const T& in, S&& out, int root) const
     {
       DUNE_UNUSED_PARAMETER(root);
-      FutureType<std::decay_t<S>> f(true, std::forward<S>(out));
+      FutureType<std::decay_t<S>> f(false, std::forward<S>(out));
       f.buffer() = in;
       return f;
     }
@@ -486,7 +485,7 @@ namespace Dune
     FutureType<std::decay_t<S>> iscatter (const T& send, S&& recv, int root) const // note: out must have same size as in
     {
       DUNE_UNUSED_PARAMETER(root);
-      FutureType<std::decay_t<S>> f(true, std::forward<S>(recv));
+      FutureType<std::decay_t<S>> f(false, std::forward<S>(recv));
       f.buffer() = send;
       return f;
     }
@@ -761,7 +760,7 @@ namespace Dune
     template<typename BinaryFunction, typename T>
     FutureType<std::decay_t<T>> iallreduce(const T& in, T&& out) const
     {
-      FutureType<std::decay_t<T>> f(true, std::forward<T>(out));
+      FutureType<std::decay_t<T>> f(false, std::forward<T>(out));
       f.buffer() = in;
       return f;
     }
@@ -796,7 +795,7 @@ namespace Dune
     template<typename BinaryFunction, typename T>
     FutureType<std::decay_t<T>> iscan (const T& in, T&& out) const
     {
-      FutureType<std::decay_t<T>> f(true, std::forward<T>(out));
+      FutureType<std::decay_t<T>> f(false, std::forward<T>(out));
       f.buffer() = in;
       return f;
     }
@@ -834,7 +833,7 @@ namespace Dune
     FutureType<std::decay_t<T>> iexscan (const T& in, T&& out) const
     {
       DUNE_UNUSED_PARAMETER(in);
-      return {true, std::forward<T>(out)};
+      return {false, std::forward<T>(out)};
     }
   };
 }

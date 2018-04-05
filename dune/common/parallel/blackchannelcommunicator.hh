@@ -13,7 +13,6 @@
 
 #if HAVE_MPI
 
-#include <set>
 #include <vector>
 #include <type_traits>
 
@@ -27,14 +26,6 @@ namespace Dune
 
   template<class>
   class BlackChannelFuture;
-
-  template<class>
-  class BlackChannelProbeFuture;
-
-  template<class>
-  struct is_BlackChannelFuture : std::false_type {};
-  template<class T>
-  struct is_BlackChannelFuture<BlackChannelFuture<T>> : std::true_type {};
 
   /*! @brief Extends the ManagedMPIComm with a 'Black-Channel' on
       which is listen when waiting for an request. If the request of
@@ -52,32 +43,22 @@ namespace Dune
     template<class>
     friend class BlackChannelFuture;
     template<class>
-    friend class BlackChannelProbeFuture;
+    friend class BlackChannel_when_all_future;
     template<class>
-    friend class MPIProbeFuture;
-    template<class, class>
-    friend class MPIRecvFuture;
+    friend class BlackChannel_when_any_future;
 
     friend class PointToPointCommunication<BlackChannelCommunicator>;
 
     ManagedMPIComm bc_comm_;
-    std::shared_ptr<Future<int>> bc_req_;
+    std::shared_ptr<MPIFuture<int>> bc_req_;
     std::shared_ptr<bool> is_revoked_;
 
-    static void throw_exception() {
+    void throw_exception() {
+      *is_revoked_ = true;
       DUNE_THROW(MPIRemoteError, comm_world().rank() << ":\tRemote rank failed!");
     }
 
   protected:
-    /*! @brief recovers the communicator from error-state
-     */
-    void renew_bc(){
-      dverb << "BlackChannelCommunicator::renew_bc()" << std::endl;
-      bc_comm_.renew();
-      PointToPointCommunication<ManagedMPIComm> ptpc(bc_comm_);
-      *bc_req_ = ptpc.irecv(1, MPI_ANY_SOURCE, 666, false);
-    }
-
     // Adds a Black-Channel to a ManagedMPIComm
     BlackChannelCommunicator( const ManagedMPIComm& mc) :
       ManagedMPIComm(mc),
@@ -87,7 +68,7 @@ namespace Dune
       if(mc){
         dverb << "BlackChannelCommunicator::BlackChannelCommunicator( const ManagedMPIComm& )" << std::endl;
         PointToPointCommunication<ManagedMPIComm> ptpc(bc_comm_);
-        bc_req_ = std::make_shared<Future<int>>(ptpc.irecv(1, MPI_ANY_SOURCE, 666));
+        bc_req_ = std::make_shared<MPIFuture<int>>(ptpc.irecv(1, MPI_ANY_SOURCE, 666));
       }
     }
   public:
@@ -95,17 +76,12 @@ namespace Dune
     template<class T = void>
     using FutureType = BlackChannelFuture<T>;
 
-    template<class T = void>
-    using RecvFutureType = MPIRecvFuture<T, BlackChannelFuture<T>>;
-
-    template<class T = void>
-    using ProbeFutureType = BlackChannelProbeFuture<T>;
-
     BlackChannelCommunicator() : BlackChannelCommunicator(ManagedMPIComm())
     {};
 
     DUNE_DEPRECATED
-    BlackChannelCommunicator(MPI_Comm c) : BlackChannelCommunicator(ManagedMPIComm(c))
+    BlackChannelCommunicator(MPI_Comm c)
+      : BlackChannelCommunicator(ManagedMPIComm(c))
     {};
 
     static BlackChannelCommunicator comm_world(){
@@ -145,15 +121,25 @@ namespace Dune
         return;
       dverb << "BlackChannelCommunicator::revoke()" << std::endl;
       std::vector<MPIFuture<>> send_futures(0);
-      send_futures.reserve(size());
+      send_futures.reserve(size()-1);
       PointToPointCommunication<ManagedMPIComm> ptpc(bc_comm_);
       for (int i = 0; i < size(); ++i)
       {
         if(i != rank())
           send_futures.push_back(ptpc.isend(1, i, 666));
       }
-      renew_bc(); // synchronize with others
       *is_revoked_ = true;
+      when_all(send_futures.begin(), send_futures.end()).wait();
+    }
+
+    /** @brief
+     * Perforns a allreduce with AND operator on the success flag on the black-channel communicator.
+     */
+    bool agree(bool success)
+    {
+      CollectiveCommunication<ManagedMPIComm> cc(bc_comm_);
+      cc.allreduce<std::logical_and<bool>>(success);
+      return success;
     }
 
     /** @brief Resolves revoked state by duplicating this
@@ -162,9 +148,13 @@ namespace Dune
      */
     void shrink()
     {
-      dverb << "BlackChannelCommunicator::shrink()" << std::endl;
+      bc_comm_.renew();
+      PointToPointCommunication<ManagedMPIComm> ptpc(bc_comm_);
+      *bc_req_ = ptpc.irecv(1, MPI_ANY_SOURCE, 666, false);
+      dverb << "BlackChannelCommunicator::shrink()" << "(oldComm = " << *comm_;
       MPI_Comm new_comm;
       dune_mpi_call(MPI_Comm_dup, bc_comm_, &new_comm);
+      dverb << "| newComm = " << new_comm << ")" << std::endl;
       freeComm(comm_.get());
       *comm_ = new_comm;
       *is_revoked_ = false;
@@ -176,8 +166,7 @@ namespace Dune
       by overriding the wait and ready methods.
    */
   template<class T = void>
-  class BlackChannelFuture
-    : public MPIFuture<T>
+  class BlackChannelFuture : protected MPIFuture<T>
   {
     friend class BlackChannelCommunicator;
     friend class GenericMPICollectiveCommunication<BlackChannelCommunicator>;
@@ -185,132 +174,344 @@ namespace Dune
     friend class MPIFile<BlackChannelCommunicator>;
     friend class MPIWin<BlackChannelCommunicator>;
     friend class MPIMatchingStatus;
+    template<class>
+    friend class MPI_when_all_future;
+    template<class>
+    friend class BlackChannel_when_all_future;
+    template<class>
+    friend class MPI_when_any_future;
+    template<class>
+    friend class BlackChannel_when_any_future;
 
   protected:
     BlackChannelCommunicator comm_;
-    using MPIFutureBase::req_;
+    auto& getBlackChannel(){
+      return *(comm_.bc_req_);
+    }
+
   public:
-    BlackChannelFuture() : MPIFuture<T>() {
+    BlackChannelFuture()
+      : MPIFuture<T>()
+    {
       dverb << "BlackChannelFuture::BlackChannelFuture()" << std::endl;
     }
 
     template<typename U = T>
     BlackChannelFuture(const BlackChannelCommunicator& c, bool isCollective, U&& d) :
       MPIFuture<T>(comm_, isCollective, std::forward<U>(d)),
-      comm_(c) {
+      comm_(c)
+    {
       dverb << "BlackChannelFuture::BlackChannelFuture(const BlackChannelCommunicator&, bool, U&&)" << std::endl;
     }
 
     BlackChannelFuture(const BlackChannelCommunicator& c, bool isCollective) :
       MPIFuture<T>(comm_, isCollective),
-      comm_(c) {
+      comm_(c)
+    {
       dverb << "BlackChannelFuture::BlackChannelFuture(const BlackChannelCommunicator&, bool)" << std::endl;
     }
 
-    BlackChannelFuture(BlackChannelFuture&& o) :
-      MPIFuture<T>(std::move(o)),
-      comm_(std::move(o.comm_))
-    {
-    }
+    BlackChannelFuture(const BlackChannelFuture&) = delete;
+    BlackChannelFuture& operator= (const BlackChannelFuture&) = delete;
+    BlackChannelFuture(BlackChannelFuture&& o) = default;
+    BlackChannelFuture& operator= (BlackChannelFuture&& o) = default;
 
-    BlackChannelFuture& operator= (BlackChannelFuture&& o){
-      std::swap(comm_, o.comm_);
-      MPIFuture<T>::operator =(std::move(o));
-    }
-
-    // We have to wait for both the actual requests and the
+    // We have to wait for both the actual requests or the
     // Black-Channel.
     virtual void wait() override {
-      Future<T> f(*this);
-      std::vector<int> ind = waitsome(*this->comm_.bc_req_, f);
-      if(ind.size() > 1 || ind[0] == 0){
-        comm_.renew_bc();
-        *comm_.is_revoked_ = true;
-        this->comm_.throw_exception();
+      auto f = when_any(getBlackChannel(), static_cast<MPIFuture<T>&>(*this));
+      auto result = f.get();
+      if(result.index == 0){
+        comm_.throw_exception();
       }
     }
 
+    using MPIFuture<T>::get;
+    using MPIFuture<T>::valid;
+    using MPIFuture<T>::mpirequest;
+    using MPIFuture<T>::status;
+
     virtual bool ready() override{
-      if(this->comm_.bc_req_->ready()){
-        comm_.renew_bc();
-        *comm_.is_revoked_ = true;
-        this->comm_.throw_exception();
+      if(getBlackChannel().ready()){
+        comm_.throw_exception();
       }
       return MPIFuture<T>::ready();
     }
   };
 
+  template<class Sequence>
+  class BlackChannel_when_all_future;
 
   template<class T>
-  class BlackChannelProbeFuture : public BlackChannelFuture<T>
+  class BlackChannel_when_all_future<std::vector<BlackChannelFuture<T>>>
   {
-    int source_, tag_;
-    MPIMatchingStatus status_;
-
-    void irecv(){
-      Span<T> span(this->buffer());
-      if(Span<T>::dynamic_size){
-        span.resize(status_.get_count(span.mpi_type()));
-      }
-      dune_mpi_call(MPI_Imrecv, span.ptr(), span.size(),
-                    span.mpi_type(), &status_.message_, &this->req_);
-    }
-
-  protected:
-    virtual void complete(MPI_Status s) override {
-      BlackChannelFuture<T>::complete(s);
-      status_ = s;
-      // resize if possible
-      if (Span<T>::dynamic_size){
-        Span<T> span(this->buffer());
-        span.resize(status_.get_count(span.mpi_type()));
-      }
-    }
-
+    std::vector<BlackChannelFuture<T>> futures_;
+    bool valid_;
   public:
-    template<typename C = BlackChannelCommunicator, typename U = T>
-    BlackChannelProbeFuture(const C& c, bool isCollective, U&& d, int rank, int tag)
-      : BlackChannelFuture<T>(c, isCollective, std::forward<U>(d))
-      , source_(rank)
-      , tag_(tag)
-      , status_()
-    {}
-
-    BlackChannelProbeFuture(BlackChannelProbeFuture&& o) :
-      BlackChannelFuture<T>(std::move(o)),
-      status_()
+    template<class InputIt>
+    BlackChannel_when_all_future(InputIt first, InputIt last)
+      : futures_(std::make_move_iterator(first), std::make_move_iterator(last))
+      , valid_(true)
     {
-      std::swap(source_, o.source_);
-      std::swap(tag_, o.tag_);
-      std::swap(status_, o.status_);
     }
 
-    virtual bool ready() override{
-      if(this->comm_.bc_req_->ready()){
-        this->comm_.renew_bc();
-        *this->comm_.is_revoked_ = true;
-        this->comm_.throw_exception();
-      }
-      if(status_.is_empty() &&
-         this->status_.message_ == MPI_MESSAGE_NULL &&
-         this->req_ == MPI_REQUEST_NULL){
-        int flag;
-        dune_mpi_call(MPI_Improbe, source_, tag_, this->comm_, &flag, &status_.message_,
-                      status_);
-        if(flag){
-          irecv();
-        }else
+    bool ready(){
+      for(auto& f : futures_){
+        if(!f.ready())
           return false;
       }
-      return MPIFuture<T>::ready();
+      return true;
     }
 
-    // we do not need to reimplement wait() because BlackChannelFuture::wait() rely on ready()
+    bool valid(){
+      return valid_;
+    }
 
-    const MPIStatus& status() const{
-      return status_;
+    void wait(){
+      for(auto& f : futures_){
+        f.wait();
+      }
+    }
+
+    std::vector<BlackChannelFuture<T>> get(){
+      wait();
+      valid_ = false;
+      return std::move(futures_);
     }
   };
+
+  template<class... Fs>
+  class BlackChannel_when_all_future<std::tuple<Fs...>>{
+    std::tuple<Fs...> futures_;
+    bool valid_;
+  public:
+    BlackChannel_when_all_future(Fs&&... futures)
+      : futures_(std::forward<Fs>(futures)...)
+      , valid_(true)
+    {}
+
+    bool ready(){
+      bool ready = true;
+      Hybrid::forEach(futures_,
+                      [&](auto& f){
+                        if(f.getBlackChannel().ready()){
+                          f.comm_.throw_exception();
+                        }
+                        if(!f.ready())
+                          ready = false;
+                      });
+      return ready;
+    }
+
+    bool valid(){
+      return valid_;
+    }
+
+    void wait(){
+      Hybrid::forEach(futures_,
+                      [&](auto& f){
+                        f.wait();
+                      });
+    }
+
+    std::tuple<Fs...> get(){
+      wait();
+      valid_ = false;
+      return std::move(futures_);
+    }
+  };
+
+  template<class>
+  struct is_BlackChannelFuture : std::false_type {};
+  template<class T>
+  struct is_BlackChannelFuture<BlackChannelFuture<T>> : std::true_type {};
+
+  template<class InputIt>
+  std::enable_if_t<is_BlackChannelFuture<typename std::iterator_traits<InputIt>::value_type>::value,
+                 BlackChannel_when_all_future<typename std::vector<typename std::iterator_traits<InputIt>::value_type>>>
+  when_all(InputIt first, InputIt last){
+    typedef typename std::vector<typename std::iterator_traits<InputIt>::value_type> FutureType;
+    return BlackChannel_when_all_future<FutureType>(first, last);
+  }
+
+  template<class... Ts>
+  BlackChannel_when_all_future<typename std::tuple<BlackChannelFuture<Ts>...>>
+  when_all(BlackChannelFuture<Ts>&&... futures){
+    return BlackChannel_when_all_future<typename std::tuple<BlackChannelFuture<Ts>...>>(std::move(futures)...);
+  }
+
+  template<class... Ts>
+  BlackChannel_when_all_future<typename std::tuple<BlackChannelFuture<Ts>&...>>
+  when_all(BlackChannelFuture<Ts>&... futures){
+    return BlackChannel_when_all_future<typename std::tuple<BlackChannelFuture<Ts>&...>>(futures...);
+  }
+
+
+  template<class Sequence>
+  class BlackChannel_when_any_future;
+
+  template<class T>
+  class BlackChannel_when_any_future<std::vector<BlackChannelFuture<T>>>{
+    MPI_when_any_result<std::vector<BlackChannelFuture<T>>> result_;
+    std::vector<MPI_Request> req_;
+    MPI_Status status_;
+    bool valid_;
+    bool ready_;
+  public:
+    template<class InputIt>
+    BlackChannel_when_any_future(InputIt first, InputIt last)
+      : result_({{std::move_iterator<InputIt>(first), std::move_iterator<InputIt>(last)}, SIZE_MAX})
+      , valid_(true)
+    {
+    }
+
+    bool ready(){
+      if(result_.index != SIZE_MAX)
+        return true;
+      for(size_t i = 0; i < result_.futures.size(); i++){
+        if(result_.futures[i].ready()){
+          result_.index = i;
+          return true;
+        }
+      }
+      return false;
+    }
+
+    bool valid(){
+      return valid_;
+    }
+
+    void wait(){
+      if(result_.index != SIZE_MAX)
+        return;
+      std::vector<MPIFutureBase> vec;
+      for(auto& f : result_.futures){
+        vec.push_back(std::move(static_cast<MPIFutureBase&>(f)));
+      }
+      std::vector<size_t> indices;
+      for(size_t i = 0; i < result_.futures.size(); i++){
+        auto& f = result_.futures[i];
+        if(f.getBlackChannel().mpirequest() != MPI_REQUEST_NULL){
+          vec.push_back(std::move(static_cast<MPIFutureBase&>(f.getBlackChannel())));
+          indices.push_back(i);
+        }
+      }
+      auto any_result = when_any(vec.begin(), vec.end()).get();
+      result_.index = any_result.index;
+      for(size_t i = 0; i < result_.futures.size(); i++){
+        static_cast<MPIFutureBase&>(result_.futures[i]) = std::move(any_result.futures[i]);
+      }
+      for(size_t i = 0; i < indices.size(); i++){
+        static_cast<MPIFutureBase&>(result_.futures[indices[i]].getBlackChannel())
+          = std::move(any_result.futures[i + result_.futures.size()]);
+      }
+      if(any_result.index > result_.futures.size()){
+        result_.futures[indices[any_result.index - result_.futures.size()]].comm_.throw_exception();
+      }
+    }
+
+    MPI_when_any_result<std::vector<BlackChannelFuture<T>>> get(){
+      wait();
+      valid_ = false;
+      return std::move(result_);
+    }
+  };
+
+  template<class... Fs>
+  class BlackChannel_when_any_future<std::tuple<Fs...>>{
+    std::vector<MPI_Request> req_;
+    MPI_when_any_result<std::tuple<Fs...>> result_;
+    MPI_Status status_;
+    bool valid_;
+    bool ready_;
+  public:
+    BlackChannel_when_any_future(Fs&&... futures)
+      : result_({{std::forward<Fs>(futures)...}, SIZE_MAX})
+      , valid_(true)
+    {
+    }
+
+    bool ready(){
+      bool ready = false;
+      Hybrid::forEach(result_.futures,
+                      [&](auto& f){
+                        if(f.ready())
+                          ready = true;
+                      });
+      return ready;
+    }
+
+    bool valid(){
+      return valid_;
+    }
+
+    void wait(){
+      if(result_.index != SIZE_MAX)
+        return;
+      std::vector<MPIFutureBase> vec;
+      Hybrid::forEach(result_.futures,
+                      [&](auto& f){
+                        vec.push_back(std::move(static_cast<MPIFutureBase&>(f)));
+                      });
+      std::vector<size_t> indices;
+      Hybrid::forEach(Std::make_index_sequence<sizeof...(Fs)>{},
+                      [&](auto i){
+                        auto& f = std::get<i>(result_.futures);
+                        if(f.getBlackChannel().mpirequest() != MPI_REQUEST_NULL){
+                          vec.push_back(std::move(static_cast<MPIFutureBase&>(f.getBlackChannel())));
+                          indices.push_back((size_t)i);
+                        }
+                      });
+      auto any_result = when_any(vec.begin(), vec.end()).get();
+      Hybrid::forEach(Std::make_index_sequence<sizeof...(Fs)>{},
+                      [&](auto i){
+                        static_cast<MPIFutureBase&>(std::get<i>(result_.futures)) = std::move(any_result.futures[i]);
+                      });
+      int c = 0;
+      Hybrid::forEach(Std::make_index_sequence<sizeof...(Fs)>{},
+                      [&](auto i){
+                        if(i == indices[c]){
+                          static_cast<MPIFutureBase&>(std::get<i>(result_.futures).getBlackChannel())
+                            = std::move(any_result.futures[c + sizeof...(Fs)]);
+                          c++;
+                        }
+                      });
+      if(any_result.index > sizeof...(Fs)){
+        Hybrid::forEach(Std::make_index_sequence<sizeof...(Fs)>{},
+                        [&](auto i){
+                          if(i == any_result.index -sizeof...(Fs)){
+                            std::get<i>(result_.futures).comm_.throw_exception();
+                          }
+                        });
+      }
+    }
+
+    MPI_when_any_result<std::tuple<Fs...>> get(){
+      wait();
+      valid_ = false;
+      return std::move(result_);
+    }
+  };
+
+  template<class InputIt>
+  std::enable_if_t<is_BlackChannelFuture<typename std::iterator_traits<InputIt>::value_type>::value,
+                 BlackChannel_when_any_future<typename std::vector<typename std::iterator_traits<InputIt>::value_type>>>
+  when_any(InputIt first, InputIt last){
+    typedef typename std::vector<typename std::iterator_traits<InputIt>::value_type> FutureType;
+    return BlackChannel_when_any_future<FutureType>(first, last);
+  }
+
+  template<class... Ts>
+  BlackChannel_when_any_future<typename std::tuple<BlackChannelFuture<Ts>...>>
+  when_any(BlackChannelFuture<Ts>&&... futures){
+    return BlackChannel_when_any_future<typename std::tuple<BlackChannelFuture<Ts>...>>(std::move(futures)...);
+  }
+
+  template<class... Ts>
+  BlackChannel_when_any_future<typename std::tuple<BlackChannelFuture<Ts>&...>>
+  when_any(BlackChannelFuture<Ts>&... futures){
+    return BlackChannel_when_any_future<typename std::tuple<BlackChannelFuture<Ts>&...>>(futures...);
+  }
 
   // Specialize blocking communications to use non-blocking
   // communication. That is needed by the BlackChannelCommunicator
@@ -326,17 +527,11 @@ namespace Dune
   //! @copydoc PointToPointCommunication<ManagedMPIComm>::recv
   template<>
   template<typename T>
-  MPIStatus PointToPointCommunication<BlackChannelCommunicator>::recv(T& data, int rank, int tag)
+  MPIStatus PointToPointCommunication<BlackChannelCommunicator>::recv(T& data, int rank, int tag, bool resize)
   {
-    do{ // busy wait check black-channel and probe alternating
-      if(communicator.bc_req_->ready())
-        BlackChannelCommunicator::throw_exception();
-      MPIMatchingStatus s = improbe(rank, tag);
-      if(s.has_message()){
-        s.recv(data);
-        return s;
-      }
-    }while(true);
+    auto f = irecv(std::move(data), rank, tag, resize);
+    data = f.get();
+    return f.status();
   }
 
   // same for collective communications

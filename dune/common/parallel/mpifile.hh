@@ -35,8 +35,6 @@ namespace Dune
   public:
     template<class T = void>
     using FutureType = typename Comm::template FutureType<T>;
-    template<class T = void>
-    using RecvFutureType = typename Comm::template RecvFutureType<T>;
 
     MPIFile(const Comm& c, const char* filename,
             int amode = MPI_MODE_RDWR | MPI_MODE_CREATE,
@@ -139,13 +137,13 @@ namespace Dune
     }
 
     template<typename T>
-    RecvFutureType<std::decay_t<T>> iread_at(MPI_Offset offset, T&& data)
+    FutureType<std::decay_t<T>> iread_at(MPI_Offset offset, T&& data)
     {
-      RecvFutureType<std::decay_t<T>> future(comm_, false, std::forward<T>(data));
+      FutureType<std::decay_t<T>> future(comm_, false, std::forward<T>(data));
       Span<std::decay_t<T>> span(future.buffer());
       dune_mpi_call(MPI_File_iread_at, *file_ptr_, offset,
                     span.ptr(), span.size(),
-                    span.mpi_type(), &future.req_);
+                    span.mpi_type(), &future.mpirequest());
       return future;
     }
 
@@ -156,19 +154,19 @@ namespace Dune
       Span<std::decay_t<T>> span(data);
       dune_mpi_call(MPI_File_iwrite_at, *file_ptr_, offset,
                     span.ptr(), span.size(),
-                    span.mpi_type(), &future.req_);
+                    span.mpi_type(), &future.mpirequest());
       return future;
     }
 
     template<typename T>
-    RecvFutureType<std::decay_t<T>> iread(T&& data)
+    FutureType<std::decay_t<T>> iread(T&& data)
     {
-      RecvFutureType<std::decay_t<T>> future(comm_, false, std::forward<T>(data));
+      FutureType<std::decay_t<T>> future(comm_, false, std::forward<T>(data));
       Span<std::decay_t<T>> span(future.buffer());
       dune_mpi_call(MPI_File_iread, *file_ptr_,
                     span.ptr(), span.size(),
                     span.mpi_type(),
-                    &future.req_);
+                    &future.mpirequest());
       return future;
     }
 
@@ -180,19 +178,19 @@ namespace Dune
       dune_mpi_call(MPI_File_iwrite, *file_ptr_,
                     span.ptr(), span.size(),
                     span.mpi_type(),
-                    &future.req_);
+                    &future.mpirequest());
       return future;
     }
 
 #if MPI_VERSION > 3 || (MPI_VERSION==3 && MPI_SUBVERSION >=1)
     template<typename T>
-    RecvFutureType<std::decay_t<T>> iread_at_all(MPI_Offset offset, T&& data)
+    FutureType<std::decay_t<T>> iread_at_all(MPI_Offset offset, T&& data)
     {
-      RecvFutureType<std::decay_t<T>> future(comm_, true, std::forward<T>(data));
+      FutureType<std::decay_t<T>> future(comm_, false, std::forward<T>(data));
       Span<std::decay_t<T>> span (future.buffer());
       dune_mpi_call(MPI_File_iread_at_all, *file_ptr_, offset,
                     span.ptr(), span.size(),
-                    span.mpi_type(), &future.req_);
+                    span.mpi_type(), &future.mpirequest());
       return future;
     }
 
@@ -203,19 +201,19 @@ namespace Dune
       Span<std::decay_t<T>> span(data);
       dune_mpi_call(MPI_File_iwrite_at_all, *file_ptr_, offset,
                     span.ptr(), span.size(),
-                    span.mpi_type(), &future.req_);
+                    span.mpi_type(), &future.mpirequest());
       return future;
     }
 
     template<typename T>
-    RecvFutureType<std::decay_t<T>> iread_all(T&& data)
+    FutureType<std::decay_t<T>> iread_all(T&& data)
     {
-      RecvFutureType<std::decay_t<T>> future(comm_, false, std::forward<T>(data));
+      FutureType<std::decay_t<T>> future(comm_, false, std::forward<T>(data));
       Span<std::decay_t<T>> span(future.buffer());
       dune_mpi_call(MPI_File_iread_all, *file_ptr_,
                     span.ptr(), span.size(),
                     span.mpi_type(),
-                    &future.req_);
+                    &future.mpirequest());
       return future;
     }
 
@@ -227,7 +225,7 @@ namespace Dune
       dune_mpi_call(MPI_File_iwrite_all, *file_ptr_,
                     span.ptr(), span.size(),
                     span.mpi_type(),
-                    &future.req_);
+                    &future.mpirequest());
       return future;
     }
 #endif

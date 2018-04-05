@@ -13,9 +13,8 @@
 
 #include "mpihelper.hh"
 
-#include <thread>
-#include <mutex>
 
+#include <thread>
 #if HAVE_MPI
 
 namespace Dune{
@@ -42,12 +41,14 @@ namespace Dune{
       FFN free_;
       MPIStatus status_;
       std::thread worker_;
+      bool deleted_;
 
       Data(CFN&& cancel, FFN&& free)
         : req_(MPI_REQUEST_NULL)
         , cancel_(cancel)
         , free_(free)
         , status_()
+        , deleted_(false)
       {}
 
       void complete(){
@@ -60,14 +61,21 @@ namespace Dune{
     static int query_fn(void * data, MPI_Status* s){
       Data* ptr = static_cast<Data*>(data);
       *s = ptr->status_;
-      return MPI_SUCCESS;
+      return s->MPI_ERROR;
     }
 
     static int free_fn(void * data){
-      Data* ptr = static_cast<Data*>(data);
-      ptr->worker_.join();
-      ptr->free_();
-      delete ptr;
+      try{
+        Data* ptr = static_cast<Data*>(data);
+        if(std::this_thread::get_id() == ptr->worker_.get_id())
+          ptr->worker_.detach(); // free_fn is called within complete (joining would deadlock)
+        else
+          ptr->worker_.join();
+        ptr->free_();
+        delete ptr;
+      }catch(std::system_error& e){
+        std::cout << "Caught an exception! " << e.what() << std::endl;
+      }
       return MPI_SUCCESS;
     }
 
@@ -89,12 +97,12 @@ namespace Dune{
       data_->worker_ = std::thread([data{this->data_}, work{std::move(work)}]() mutable{
           try{
             work(data->status_);
-            data->complete();
           }catch(MPIError& e){
             data->status_.set_error(e.get_error_code());
           }catch(...){
             data->status_.set_error(MPI_ERR_UNKNOWN);
           }
+          data->complete();
         });
     }
 

@@ -98,7 +98,7 @@ int main(int argc, char** argv){
 
   int rank = comm.rank();
 
-  for (int c = 16; c < std::pow(2, __COUNTER__); c++){
+  for (int c = 0; c < std::pow(2, __COUNTER__); c++){
     for (int r = 1; r < std::pow(2, comm.size()); ++r){
       std::cout << "case " << c <<": " << DecimalToBinaryString(c) << "\t throwing rank: " << DecimalToBinaryString(r) << std::endl;
       try{
