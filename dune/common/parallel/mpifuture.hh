@@ -17,6 +17,8 @@
 #include <utility>
 #include <memory>
 #include <dune/common/stdstreams.hh>
+#include <dune/common/hybridutilities.hh>
+#include <dune/common/std/utility.hh>
 #include "span.hh"
 #include "mpiexceptions.hh"
 #include "mpistatus.hh"
@@ -44,63 +46,110 @@ namespace Dune
   template<class>
   class MPIFuture;
 
+  template<class>
+  class MPI_when_all_future;
+
+  template<class>
+  class MPI_when_any_future;
+
   class MPIFutureBase {
+    template<class>
+    friend class MPI_when_all_future;
+    template<class>
+    friend class MPI_when_any_future;
     friend class ManagedMPIComm;
-  protected:
-    bool is_valid_;
     MPI_Request req_;
+
+  protected:
+    MPIStatus status_;
+    bool cancelable_;
+
     MPIFutureBase()
       : req_(MPI_REQUEST_NULL)
-      , is_valid_(false){
+      , status_()
+      , cancelable_(false){
       dverb << "MPIFutureBase::MPIFutureBase()" << std::endl;
     }
 
-    virtual void complete(MPI_Status) {
-      req_ = MPI_REQUEST_NULL;
+  public:
+    MPIFutureBase (const MPI_Request& r, bool cancelable)
+      : req_(r)
+      , cancelable_(cancelable)
+    {}
+
+    ~MPIFutureBase() noexcept(false){
+      if (req_ != MPI_REQUEST_NULL){
+        if(cancelable_){
+          int wasFinalized = 0;
+          dune_mpi_call(MPI_Finalized, &wasFinalized);
+          if (!wasFinalized){
+            dverb << "free request " << req_ << " (null = " << MPI_REQUEST_NULL << ")" << std::endl;
+            dune_mpi_call(MPI_Cancel, &req_);
+            dune_mpi_call(MPI_Request_free, &req_);
+          }
+        }
+      }
     }
 
-  public:
-    MPIFutureBase (const MPI_Request& r)
-      : req_(r)
-      , is_valid_(true)
-    {}
+
     MPIFutureBase (const MPIFutureBase&) = delete;
+    MPIFutureBase& operator=(const MPIFutureBase&) = delete;
+
     MPIFutureBase (MPIFutureBase&& o)
       : req_(MPI_REQUEST_NULL)
-      , is_valid_(false)
+      , cancelable_(false)
     {
       std::swap(req_, o.req_);
-      std::swap(is_valid_, o.is_valid_);
+      std::swap(status_, o.status_);
+      std::swap(cancelable_, o.cancelable_);
     }
 
-    MPIFutureBase& operator=(MPIFutureBase&& o) = default;
+    MPIFutureBase& operator=(MPIFutureBase&& o){
+      std::swap(req_, o.req_);
+      std::swap(status_, o.status_);
+      std::swap(cancelable_, o.cancelable_);
+      return *this;
+    }
 
-    MPI_Request get_req() const{
+    MPI_Request& mpirequest() {
       return req_;
     }
 
-    bool valid() const {
-      return is_valid_;
+    const MPI_Request& mpirequest() const{
+      return req_;
     }
 
     virtual bool ready() {
-      if(!valid())
-        return false;
       if(req_ == MPI_REQUEST_NULL)
         return true;
-      int flag = 0;
-      MPI_Status s;
-      dune_mpi_call(MPI_Test, &req_, &flag, &s);
-      if(flag){
-        complete(s);
-      }
+      int flag = -1;
+      dune_mpi_call(MPI_Test, &req_, &flag, status_);
       return flag;
     }
+
+    virtual const MPIStatus& status() const{
+      return status_;
+    }
+
+    virtual MPIStatus& status() {
+      return status_;
+    }
+
+    virtual void wait() {
+      dverb << "MPIFutureBase::wait(), req_=" << req_ << std::endl;
+      if (req_ == MPI_REQUEST_NULL)
+        return;
+      dune_mpi_call(MPI_Wait, &req_, status_);
+    }
   };
+
+  class FutureNotValidException : public InvalidStateException {};
 
   template<class U>
   struct unique_ptr_or_nothing : public std::unique_ptr<U>
   {
+    using std::unique_ptr<U>::unique_ptr;
+    unique_ptr_or_nothing() = default;
     unique_ptr_or_nothing(std::unique_ptr<U>&& u) :
       std::unique_ptr<U>(std::move(u))
     {}
@@ -108,7 +157,33 @@ namespace Dune
 
   template<>
   struct unique_ptr_or_nothing<void> {
+    friend MPIFuture<void>;
     void release() const {}
+    explicit operator bool () const {
+      return is_valid_;
+    }
+
+    unique_ptr_or_nothing(bool valid = false)
+      : is_valid_(valid)
+    {}
+
+    // disallow copy
+    unique_ptr_or_nothing(const unique_ptr_or_nothing&) = delete;
+    unique_ptr_or_nothing& operator= (const unique_ptr_or_nothing&) = delete;
+    // Move
+    unique_ptr_or_nothing(unique_ptr_or_nothing&& o)
+    {
+      is_valid_ = o.is_valid_;
+      o.is_valid_ = false;
+    }
+    unique_ptr_or_nothing& operator=(unique_ptr_or_nothing&& o){
+      is_valid_ = o.is_valid_;
+      o.is_valid_ = false;
+      return *this;
+    }
+
+  protected:
+    bool is_valid_ = true;
   };
 
   /*! @brief Wraps a MPI_Request and provides the interface of a
@@ -122,205 +197,427 @@ namespace Dune
     friend class MPIFile<ManagedMPIComm>;
     friend class MPIWin<ManagedMPIComm>;
     friend class MPIMatchingStatus;
+    template<class>
+    friend class MPI_when_all_future;
+    template<class>
+    friend class MPI_when_any_future;
 
     unique_ptr_or_nothing<T> p_buffer_; // use a unique_ptr to ensure that the
-                             // address is preserved during moving
+    // address is preserved during moving
   protected:
-    // We need to store whether the request is collective_ since
-    // collective_ communications can't be canceled.
-    bool collective_;
-
     std::add_lvalue_reference_t<T> buffer(){
       return *p_buffer_;
     }
 
   public:
+    typedef T value_type;
+
     MPIFuture(){
       dverb << "MPIFuture::MPIFuture()" << std::endl;
     }
 
     template<typename U = T>
-    MPIFuture(const ManagedMPIComm&, bool isCollective, U&& d) :
-      MPIFutureBase(MPI_REQUEST_NULL),
-      p_buffer_{std::make_unique<T>(std::forward<U>(d))},
-      collective_(isCollective) {
+    MPIFuture(const ManagedMPIComm&, bool isCancelable, U&& d) :
+      MPIFutureBase(MPI_REQUEST_NULL, isCancelable),
+      p_buffer_(std::make_unique<T>(std::forward<U>(d)))
+    {
       dverb << "MPIFuture::MPIFuture(const ManagedMPIComm&, bool, T&&)" << std::endl;
     }
 
-    MPIFuture(const ManagedMPIComm&, bool isCollective)
-      : MPIFutureBase(MPI_REQUEST_NULL)
-      , collective_(isCollective) {
-      dverb << "MPIFuture::MPIFuture(const ManagedMPIComm&, bool)" << std::endl;
+    MPIFuture(const ManagedMPIComm&, bool isCancelable)
+      : MPIFutureBase(MPI_REQUEST_NULL, isCancelable)
+    {
+      dverb << "MPIFuture::MPIFuture(const ManagedMPIComm&, bool, T&&)" << std::endl;
     }
 
     MPIFuture(const MPIFuture&) = delete;
-    MPIFuture(MPIFuture&& other) = default;
+    MPIFuture& operator=(const MPIFuture&) = delete;
 
+    MPIFuture(MPIFuture&& other) = default;
     MPIFuture& operator=(MPIFuture&& o) = default;
 
     ~MPIFuture() noexcept(false){
-      dverb << "MPIFuture::~MPIFuture()" << std::endl;
-      if (req_ != MPI_REQUEST_NULL){
-        if(collective_)
+      if (mpirequest() != MPI_REQUEST_NULL && !cancelable_)
         {
-          dverb << "cant cancel collective_ request, releasing memory!" << std::endl;
+          dverb << "cant cancel request, releasing memory!" << std::endl;
           p_buffer_.release();
-        } else {
-          int wasFinalized = 0;
-          dune_mpi_call(MPI_Finalized, &wasFinalized);
-          if (!wasFinalized){
-            dverb << "free request " << req_ << " (null = " << MPI_REQUEST_NULL << ")" << std::endl;
-            dune_mpi_call(MPI_Cancel, &req_);
-            dune_mpi_call(MPI_Request_free, &req_);
-          }
         }
-      }
     }
 
-    virtual void wait() {
-      dverb << "MPIFuture::wait(), req_=" << req_ << std::endl;
-      if (req_ == MPI_REQUEST_NULL)  // already done
-        return;
-      MPI_Status s;
-      dune_mpi_call(MPI_Wait, &req_, &s);
-      complete(s);
+    bool valid() const{
+      return (bool)p_buffer_;
     }
 
     T get(){
+      if(!valid())
+        DUNE_THROW(FutureNotValidException, "The requested future is not valid.");
       wait();
-      is_valid_ = false;
-      return std::move(*p_buffer_);
+      // move buffer to a local unique_ptr s.t. p_buffer_ points to null when get() returns
+      T result(std::move(*p_buffer_));
+      p_buffer_.reset();
+      return std::move(result);
     }
   };
 
   template<>
   void MPIFuture<void>::get(){
     wait();
-    is_valid_ = false;
+    p_buffer_.is_valid_ = false;
   }
 
-  // Extend the Future with an MPI Status for MPI_Irecv
-  template<class T, class B = MPIFuture<T>>
-  class MPIRecvFuture : public B {
-  protected:
-    MPIStatus status_;
+  template<>
+  MPIFuture<void>::MPIFuture(const ManagedMPIComm&, bool isCancelable)
+    : MPIFutureBase(MPI_REQUEST_NULL, isCancelable)
+    , p_buffer_(true) // init as valid
+  {
+    dverb << "MPIFuture::MPIFuture(const ManagedMPIComm&, bool)" << std::endl;
+  }
 
+  template<class Sequence>
+  class MPI_when_all_future {};
+
+  template<class F>
+  class MPI_when_all_future<std::vector<F>>
+  {
+    std::vector<F> futures_;
+    std::vector<MPI_Request> req_;
+    std::vector<MPI_Status> status_;
+    bool valid_;
   public:
-    MPIRecvFuture(){
-      dverb << "MPIFuture::MPIFuture()" << std::endl;
-    }
-
-    template<typename C = ManagedMPIComm, typename U = T>
-    MPIRecvFuture(const C& c, bool isCollective, U&& d) :
-      B(c, isCollective, std::forward<U>(d))
+    template<class InputIt>
+    MPI_when_all_future(InputIt first, InputIt last)
+      : futures_(std::move_iterator<InputIt>(first), std::move_iterator<InputIt>(last))
+      , req_(futures_.size())
+      , status_(futures_.size())
+      , valid_(true)
     {
-      dverb << "MPIFuture::MPIFuture(const ManagedMPIComm&, bool, T&&)" << std::endl;
+      std::transform(futures_.begin(), futures_.end(), req_.begin(),
+                     [](const auto& f){
+                       return f.req_;
+                     });
     }
 
-    template<typename C = ManagedMPIComm, typename U = T>
-    MPIRecvFuture(const C& c, bool isCollective)
-      : B(c, isCollective)
-    {
-      dverb << "MPIFuture::MPIFuture(const ManagedMPIComm&, bool)" << std::endl;
+    bool ready(){
+      int flag = 0;
+      dune_mpi_call(MPI_Testall, req_.size(), req_.data(), &flag, status_.data());
+      if(flag){
+        for(int i = 0; i < futures_.size(); i++){
+          if(futures_[i].req_ != MPI_REQUEST_NULL){
+            futures_[i].req_ = MPI_REQUEST_NULL;
+            futures_[i].status_ = status_[i];
+          }
+        }
+      }
+      return flag;
     }
 
-    MPIRecvFuture(const MPIRecvFuture&) = delete;
-    MPIRecvFuture(MPIRecvFuture&& other) = default;
+    bool valid(){
+      return valid_;
+    }
 
-    virtual void complete(MPI_Status s) override {
-      B::complete(s);
-      status_ = s;
-      // resize if possible
-      if (Span<T>::dynamic_size){
-        Span<T> span(this->buffer());
-        span.resize(status_.get_count(span.mpi_type()));
+    void wait(){
+      dune_mpi_call(MPI_Waitall, req_.size(), req_.data(), status_.data());
+      for(size_t i = 0; i < futures_.size(); i++){
+        if(futures_[i].req_ != MPI_REQUEST_NULL){
+          futures_[i].req_ = MPI_REQUEST_NULL;
+          futures_[i].status_ = status_[i];
+        }
       }
     }
 
-    const MPIStatus& status() const{
-      return status_;
+    std::vector<F> get(){
+      if(!valid_)
+        DUNE_THROW(FutureNotValidException, "The requested future is not valid.");
+      wait();
+      valid_ = false;
+      req_.clear();
+      status_.clear();
+      return std::move(futures_);
     }
   };
 
-  template<class T>
-  class MPIProbeFuture : public MPIFuture<T>
-  {
-    int source_, tag_;
-    MPI_Comm comm_;
+  template<class... Fs>
+  class MPI_when_all_future<std::tuple<Fs...>>{
+    std::array<MPI_Request, sizeof...(Fs)> req_;
+    std::array<MPI_Status, sizeof...(Fs)> status_;
+    std::tuple<Fs...> futures_;
+    bool valid_;
 
-    void irecv(){
-      Span<T> span(this->buffer());
-      if(Span<T>::dynamic_size){
-        span.resize(status_.get_count(span.mpi_type()));
-      }
-      dune_mpi_call(MPI_Imrecv, span.ptr(), span.size(),
-                    span.mpi_type(), &status_.message_, &this->req_);
+    void refresh_requests(){
+      Hybrid::forEach(Std::make_index_sequence<sizeof...(Fs)>{},
+                      [&](auto i){
+                        req_[i] = std::get<i>(futures_).req_;
+                      });
     }
-
-  protected:
-    MPIMatchingStatus status_;
-    virtual void complete(MPI_Status s) override {
-      MPIFuture<T>::complete(s);
-      status_ = s;
-      // resize if possible
-      if (Span<T>::dynamic_size){
-        Span<T> span(this->buffer());
-        span.resize(status_.get_count(span.mpi_type()));
-      }
-    }
-
   public:
-    template<typename C = ManagedMPIComm, typename U = T>
-    MPIProbeFuture(const C& c, bool isCollective, U&& d, int rank, int tag)
-      : MPIFuture<T>(c, isCollective, std::forward<U>(d))
-      , source_(rank)
-      , tag_(tag)
-      , comm_(c)
-      , status_()
+    MPI_when_all_future(Fs&&... futures)
+      : futures_(std::forward<Fs>(futures)...)
+      , valid_(true)
     {}
 
-    MPIProbeFuture(MPIProbeFuture&& o)
-      : MPIFuture<T>(std::move(o))
-      , comm_(MPI_COMM_NULL)
-      , status_()
-    {
-      std::swap(source_, o.source_);
-      std::swap(tag_, o.tag_);
-      std::swap(status_, o.status_);
-      std::swap(comm_, o.comm_);
-    }
-
-    virtual bool ready() override{
-      if(status_.is_empty() &&
-         status_.message_ == MPI_MESSAGE_NULL &&
-         this->req_ == MPI_REQUEST_NULL){
-        int flag;
-        dune_mpi_call(MPI_Improbe, source_, tag_, comm_, &flag, &status_.message_,
-                      status_);
-        if(flag){
-          irecv();
-        }else
-          return false;
+    bool ready(){
+      int flag = 0;
+      refresh_requests();
+      dune_mpi_call(MPI_Testall, sizeof...(Fs), req_.data(), &flag, status_.data());
+      if(flag){
+        Hybrid::forEach(Std::make_index_sequence<sizeof...(Fs)>{},
+                        [&](auto i){
+                          if(std::get<i>(futures_).req_ != MPI_REQUEST_NULL){
+                            std::get<i>(futures_).req_ = MPI_REQUEST_NULL;
+                            std::get<i>(futures_).status_ = status_[i];
+                          }
+                        });
       }
-      return MPIFuture<T>::ready();
+      return flag;
     }
 
-    virtual void wait() override {
-      if(status_.is_empty() &&
-         status_.message_ == MPI_MESSAGE_NULL && this->req_ == MPI_REQUEST_NULL){
-        dune_mpi_call(MPI_Mprobe, source_, tag_, comm_, &status_.message_,
-                      status_);
-      }
-      if(status_.message_ != MPI_MESSAGE_NULL)
-        irecv();
-      MPIFuture<T>::wait();
+    bool valid(){
+      return valid_;
     }
 
-    const MPIStatus& status() const{
-      return status_;
+    void wait(){
+      refresh_requests();
+      dune_mpi_call(MPI_Waitall, sizeof...(Fs), req_.data(), status_.data());
+      Hybrid::forEach(Std::make_index_sequence<sizeof...(Fs)>{},
+                      [&](auto i){
+                        if(std::get<i>(futures_).req_ != MPI_REQUEST_NULL){
+                          std::get<i>(futures_).req_ = MPI_REQUEST_NULL;
+                          std::get<i>(futures_).status_ = status_[i];
+                        }
+                      });
+    }
+
+    std::tuple<Fs...> get(){
+      if(!valid_)
+        DUNE_THROW(FutureNotValidException, "The requested future is not valid.");
+      wait();
+      valid_ = false;
+      return std::move(futures_);
     }
   };
 
+  template<class Sequence>
+  class MPI_when_any_future {};
+
+  template<class Sequence>
+  struct MPI_when_any_result{
+    Sequence futures;
+    size_t index;
+  };
+
+  template<class F>
+  class MPI_when_any_future<std::vector<F>>
+  {
+    MPI_when_any_result<std::vector<F>> result_;
+    std::vector<MPI_Request> req_;
+    std::vector<int> indices_;
+    std::vector<MPI_Status> status_;
+    bool valid_;
+  public:
+    template<class InputIt>
+    MPI_when_any_future(InputIt first, InputIt last)
+      : result_({{std::move_iterator<InputIt>(first), std::move_iterator<InputIt>(last)}, SIZE_MAX})
+      , req_(result_.futures.size())
+      , indices_(result_.futures.size())
+      , status_(result_.futures.size())
+      , valid_(true)
+    {
+      std::transform(result_.futures.begin(), result_.futures.end(), req_.begin(),
+                     [](const auto& f){
+                       return f.req_;
+                     });
+      for(size_t i = 0; i < result_.futures.size(); i++)
+        if(result_.futures[i].ready()){
+          result_.index = i;
+          break;
+        }
+    }
+
+    bool ready(){
+      if(result_.index != SIZE_MAX)
+        return true;
+      int outcount = -1;
+      dune_mpi_call(MPI_Testsome, req_.size(), req_.data(), &outcount, indices_.data(), status_.data());
+      if(outcount != MPI_UNDEFINED && outcount > 0){
+        if(result_.index == SIZE_MAX)
+              result_.index = indices_[0];
+        for(int i = 0; i < outcount; i++){
+          if(result_.futures[indices_[i]].req_ != MPI_REQUEST_NULL){
+            result_.futures[indices_[i]].req_ = MPI_REQUEST_NULL;
+            result_.futures[indices_[i]].status_ = status_[indices_[i]];
+          }
+        }
+      }
+      return result_.index != SIZE_MAX;
+    }
+
+    bool valid(){
+      return valid_;
+    }
+
+    void wait(){
+      if(result_.index != SIZE_MAX)
+        return;
+      int outcount = -1;
+      dune_mpi_call(MPI_Waitsome, req_.size(), req_.data(), &outcount, indices_.data(), status_.data());
+      if(outcount != MPI_UNDEFINED){
+        for(int i = 0; i < outcount; i++){
+          if(result_.futures[indices_[i]].req_ != MPI_REQUEST_NULL){
+            result_.futures[indices_[i]].req_ = MPI_REQUEST_NULL;
+            result_.futures[indices_[i]].status_ = status_[i];
+            if(result_.index == SIZE_MAX)
+              result_.index = indices_[i];
+          }
+        }
+      }
+    }
+
+    MPI_when_any_result<std::vector<F>> get(){
+      if(!valid_)
+        DUNE_THROW(FutureNotValidException, "The requested Future is not valid.");
+      wait();
+      valid_ = false;
+      req_.clear();
+      status_.clear();
+      return std::move(result_);
+    }
+  };
+
+  template<class... Fs>
+  class MPI_when_any_future<std::tuple<Fs...>>{
+    std::array<MPI_Request, sizeof...(Fs)> req_;
+    std::array<MPI_Status, sizeof...(Fs)> status_;
+    std::array<int, sizeof...(Fs)> indices_;
+    MPI_when_any_result<std::tuple<Fs...>> result_;
+    bool valid_;
+
+    void refresh_requests(){
+      Hybrid::forEach(Std::make_index_sequence<sizeof...(Fs)>{},
+                      [&](auto i){
+                        req_[i] = std::get<i>(result_.futures).req_;
+                      });
+    }
+
+    template<class F>
+    void apply(size_t i, F f){
+      Hybrid::forEach(Std::make_index_sequence<sizeof...(Fs)>{},
+                      [&](auto j){
+                        if(i == (int)j){
+                          f(std::get<j>(result_.futures));
+                        }
+                      });
+    }
+  public:
+    MPI_when_any_future(Fs&&... futures)
+      : result_{std::tuple<Fs...>(std::forward<Fs>(futures)...), SIZE_MAX}
+      , valid_(true)
+    {
+      Hybrid::forEach(Std::make_index_sequence<sizeof...(Fs)>{},
+                      [&](auto j){
+                        if(std::get<j>(result_.futures).ready() && result_.index == SIZE_MAX)
+                          result_.index = j;
+                      });
+    }
+
+    bool ready(){
+      if(result_.index != SIZE_MAX)
+        return true;
+      int outcount = 0;
+      refresh_requests();
+      dune_mpi_call(MPI_Testsome, sizeof...(Fs), req_.data(), &outcount, indices_.data(), status_.data());
+      if(outcount != MPI_UNDEFINED && outcount > 0){
+        if(result_.index == SIZE_MAX)
+          result_.index = indices_[0];
+        for(int i = 0; i < outcount; i++){
+          apply(indices_[i], [&](auto& f){
+              f.mpirequest() = MPI_REQUEST_NULL;
+              f.status() = status_[i];
+            });
+        }
+      }
+      return result_.index != SIZE_MAX;
+    }
+
+    bool valid(){
+      return valid_;
+    }
+
+    void wait(){
+      if(result_.index != SIZE_MAX)
+        return;
+      int outcount = 0;
+      refresh_requests();
+      dune_mpi_call(MPI_Waitsome, sizeof...(Fs), req_.data(), &outcount, indices_.data(), status_.data());
+      if(outcount != MPI_UNDEFINED){
+        if(result_.index == SIZE_MAX)
+          result_.index = indices_[0];
+        for(int i = 0; i < outcount; i++){
+          apply(indices_[i], [&](auto& f){
+              f.mpirequest() = MPI_REQUEST_NULL;
+              f.status() = status_[i];
+            });
+        }
+      }
+    }
+
+    MPI_when_any_result<std::tuple<Fs...>> get(){
+      if(!valid())
+        DUNE_THROW(FutureNotValidException, "The requested Future is not valid.");
+      wait();
+      valid_ = false;
+      return std::move(result_);
+    }
+  };
+
+  template<class F>
+  struct is_MPIFuture : std::false_type {};
+  template<class T>
+  struct is_MPIFuture<MPIFuture<T>> : std::true_type {};
+
+  template<class InputIt>
+  std::enable_if_t<std::is_same<MPIFutureBase, typename std::iterator_traits<InputIt>::value_type>::value
+                   || is_MPIFuture<typename std::iterator_traits<InputIt>::value_type>::value,
+                   MPI_when_any_future<typename std::vector<typename std::iterator_traits<InputIt>::value_type>>>
+  when_any(InputIt first, InputIt last){
+    typedef typename std::vector<typename std::iterator_traits<InputIt>::value_type> FutureType;
+    return MPI_when_any_future<FutureType>(first, last);
+  }
+
+  constexpr bool static_and(){
+    return true;
+  }
+
+  template<class... B>
+  constexpr bool static_and(bool b0, B... bools){
+    return b0 && static_and(bools...);
+  }
+
+  template<class... Fs>
+  std::enable_if_t<static_and((std::is_same<MPIFutureBase, std::decay_t<Fs>>::value
+                     || is_MPIFuture<std::decay_t<Fs>>::value)...),
+                   MPI_when_any_future<typename std::tuple<Fs...>>>
+  when_any(Fs&&... futures){
+    return MPI_when_any_future<typename std::tuple<Fs...>>(std::forward<Fs>(futures)...);
+  }
+
+  template<class InputIt>
+  std::enable_if_t<(std::is_same<MPIFutureBase, typename std::iterator_traits<InputIt>::value_type>::value
+                    || is_MPIFuture<typename std::iterator_traits<InputIt>::value_type>::value),
+                   MPI_when_all_future<typename std::vector<typename std::iterator_traits<InputIt>::value_type>>>
+  when_all(InputIt first, InputIt last){
+    typedef typename std::vector<typename std::iterator_traits<InputIt>::value_type> FutureType;
+    return MPI_when_all_future<FutureType>(first, last);
+  }
+
+  template<class... Fs>
+  std::enable_if_t<static_and((std::is_same<MPIFutureBase, std::decay_t<Fs>>::value
+                     || is_MPIFuture<std::decay_t<Fs>>::value
+                     )...
+                    ),
+                   MPI_when_all_future<typename std::tuple<Fs...>>>
+  when_all(Fs&&... futures){
+    return MPI_when_all_future<typename std::tuple<Fs...>>(std::forward<Fs>(futures)...);
+  }
 #endif // HAVE_MPI
 
 }  // namespace Dune

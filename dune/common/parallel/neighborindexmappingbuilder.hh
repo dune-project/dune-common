@@ -70,7 +70,8 @@ namespace Dune {
                               int tag = 314159){
       std::map<int, std::vector<typename GI::value_type>> map;
       // send my indices to all neighbors
-      std::vector<Future<>> sendRequests;
+      typedef typename Comm::template FutureType<> VoidFuture;
+      std::vector<VoidFuture> sendRequests;
       sendRequests.reserve(neighbors.size());
       for(int n : neighbors) {
         sendRequests.push_back(ptpc_.isend(my_indices, n, tag));

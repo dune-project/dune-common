@@ -33,6 +33,7 @@ namespace Dune {
       status_.MPI_TAG = MPI_ANY_TAG;
       status_.MPI_SOURCE = MPI_ANY_SOURCE;
       status_.MPI_ERROR = MPI_SUCCESS;
+      dune_mpi_call(MPI_Status_set_cancelled, &status_, 0);
     }
 
     /** @brief Return the source of the message
@@ -55,9 +56,25 @@ namespace Dune {
       return status_.MPI_ERROR;
     }
 
+    /** @brief Set the MPI error code of the message.
+     */
+    void set_error(int e) {
+      status_.MPI_ERROR = e;
+    }
+
+    /** @brief Return the tag of the message.
+     */
+    int get_tag() const {
+      return status_.MPI_TAG;
+    }
+
     // used for native MPI calls
     operator MPI_Status* (){
       return &status_;
+    }
+
+    operator MPI_Status (){
+      return status_;
     }
 
     /** @brief Checks whether this objects contains information.
@@ -66,6 +83,16 @@ namespace Dune {
       return status_.MPI_TAG==MPI_ANY_TAG &&
         status_.MPI_SOURCE == MPI_ANY_SOURCE &&
         status_.MPI_ERROR == MPI_SUCCESS;
+    }
+
+    bool is_cancelled() const{
+      int flag = 0;
+      dune_mpi_call(MPI_Test_cancelled, &status_, &flag);
+      return flag;
+    }
+
+    void set_cancelled(bool cancel = true){
+      dune_mpi_call(MPI_Status_set_cancelled, &status_, cancel?1:0);
     }
   };
 
