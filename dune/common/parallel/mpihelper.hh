@@ -240,7 +240,7 @@ namespace Dune
      * @param argc The number of arguments provided to main.
      * @param argv The arguments provided to main.
      */
-    DUNE_EXPORT static MPIHelper& instance(int& argc, char**& argv, int required = MPI_THREAD_SINGLE)
+    DUNE_EXPORT static MPIHelper& instance(int& argc, char**& argv, int required = MPI_THREAD_MULTIPLE)
     {
       // create singleton instance
       static MPIHelper singleton (argc, argv,required);
@@ -258,11 +258,17 @@ namespace Dune
     static int size ()
     { return size_; }
 
+    /**
+     * @brief return the thread level of the MPI instance
+     */
+    static int thread_level ()
+    { return thread_level_; }
+
   private:
     static int rank_;
     static int size_;
+    static int thread_level_;
     bool initializedHere_;
-    void prevent_warning(int){}
 
     //! \brief calls MPI_Init with argc and argv as parameters
     MPIHelper(int& argc, char**& argv, int required)
@@ -272,9 +278,8 @@ namespace Dune
       MPI_Initialized( &wasInitialized );
       if(!wasInitialized)
       {
-        int provided;
-        static int is_initialized = MPI_Init_thread(&argc, &argv, required, &provided);
-        prevent_warning(is_initialized);
+        MPI_Init_thread(&argc, &argv, required, &thread_level_);
+        assert(thread_level_ >= required);
         initializedHere_ = true;
       }
 
@@ -306,6 +311,7 @@ namespace Dune
 
   int MPIHelper::rank_ = -1;
   int MPIHelper::size_ = -1;
+  int MPIHelper::thread_level_ = -1;
 #else
   // We do not have MPI therefore FakeMPIHelper
   // is the MPIHelper

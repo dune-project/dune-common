@@ -60,6 +60,9 @@ namespace Dune
      */
     typedef Dune::RemoteIndices<ParallelIndexSet> RemoteIndices;
 
+    template<class U = void>
+    using Future = typename PointToPointCommunication<typename RemoteIndices::Comm>::template FutureType<U>;
+
 
     typedef typename RemoteIndices::Comm Comm;
     /**
@@ -853,7 +856,7 @@ namespace Dune
     delete[] receiveBuffer_;
 
     // Wait for the completion of the sends
-    waitall(requests);
+    when_all(requests.begin(), requests.end()).wait();
 
     for(std::size_t i=0; i<noOldNeighbours; ++i)
       delete[] sendBuffers_[i];

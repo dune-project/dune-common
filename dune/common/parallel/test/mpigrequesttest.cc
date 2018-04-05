@@ -21,11 +21,11 @@ int main(int argc, char** argv)
 
   std::shared_ptr<std::mutex> mutex = std::make_shared<std::mutex>();
   mutex->lock();
-  auto work = [=](Dune::MPIStatus& s){
+  auto work = [=](Dune::MPIStatus&){
     mutex->lock();
     mutex->unlock();
   };
-  auto cancel = [=](bool complete){
+  auto cancel = [=](bool /*complete*/){
     mutex->unlock();
   };
 

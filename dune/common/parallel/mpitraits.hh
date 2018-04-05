@@ -80,6 +80,7 @@ namespace Dune
   ComposeMPITraits(float,MPI_FLOAT);
   ComposeMPITraits(double,MPI_DOUBLE);
   ComposeMPITraits(long double,MPI_LONG_DOUBLE);
+  ComposeMPITraits(bool,MPI_CXX_BOOL);
 
   struct Dune_MPI_Byte {};
   ComposeMPITraits(Dune_MPI_Byte, MPI_BYTE);

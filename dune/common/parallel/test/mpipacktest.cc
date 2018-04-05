@@ -21,7 +21,9 @@ int main(int argc, char** argv)
   int rank = world.rank();
   Dune::MPIPack<decltype(world)> p(world, 8);
   if(rank == 0){
-    p << (int)1 << rank << std::array<int,2 >{{3, 12}};
+    p << (int)1;
+    p << rank;
+    p.pack(std::array<int, 2>{{3, 12}});
     p2p.send(p, 1, 4711);
   }
   if(rank == 1){

@@ -5,8 +5,6 @@
 #include "config.h"
 #endif
 
-#define DUNE_MINIMAL_DEBUG_LEVEL 1
-
 #include <dune/common/parallel/mpihelper.hh>
 #include <dune/common/parallel/mpiguard.hh>
 #include <dune/common/parallel/mpiwin.hh>
@@ -20,7 +18,7 @@ int main(int argc, char** argv)
 #if MPI_VERSION < 3
   return 1;
 #else
-  Dune::MPIHelper& helper = Dune::MPIHelper::instance(argc, argv);
+  Dune::MPIHelper& helper = Dune::MPIHelper::instance(argc, argv, MPI_THREAD_SERIALIZED);
   if (helper.isFake)
     std::cout << "--- MPI not found ---" << std::endl;
   else
