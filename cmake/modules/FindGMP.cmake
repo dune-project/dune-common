@@ -78,7 +78,7 @@ mark_as_advanced(GMP_LIB GMPXX_LIB GMPXX_INCLUDE_DIR)
 # text for feature summary
 set_package_properties("GMP" PROPERTIES
   DESCRIPTION "GNU multi-precision library including the C++ bindings GMPxx"
-  PURPOSE "Mulity-precision quadrature rules, basis function evaluation etc.")
+  PURPOSE "Multi-precision quadrature rules, basis function evaluation etc.")
 
 # if GMPxx headers, GMP library, and GMPxx library are found, store results
 if(GMP_FOUND)
@@ -87,13 +87,13 @@ if(GMP_FOUND)
   set(GMP_COMPILE_FLAGS "-DENABLE_GMP=1")
   # log result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
-    "Determing location of GMP, GMPxx succeeded:\n"
+    "Determining location of GMP, GMPxx succeeded:\n"
     "Include directory: ${GMP_INCLUDE_DIRS}\n"
     "Library directory: ${GMP_LIBRARIES}\n\n")
 else()
   # log errornous result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
-    "Determing location of GMP, GMPxx failed:\n"
+    "Determining location of GMP, GMPxx failed:\n"
     "Include directory: ${GMPXX_INCLUDE_DIR}\n"
     "gmp library directory: ${GMP_LIB}\n"
     "gmpxx library directory: ${GMPXX_LIB}\n\n")
