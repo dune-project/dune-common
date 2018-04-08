@@ -47,7 +47,7 @@ namespace Dune
       typedef Dune::FieldVector<K, size> FV;
 
       auto entry = insertClass<FV>(scope, "FieldVector_"+std::to_string(size), pybind11::buffer_protocol(),
-        GenerateTypeName("FieldVector",MetaType<K>(),size),IncludeFiles{"dune/common/fvector"}
+        GenerateTypeName("Dune::FieldVector",MetaType<K>(),size),IncludeFiles{"dune/common/fvector.hh"}
         );
       if (!entry.second)
         return;

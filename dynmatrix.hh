@@ -27,7 +27,7 @@ namespace Dune
       typedef Dune::DynamicMatrix< K > DM;
 
       auto cls = insertClass< DM >( scope, "DynamicMatrix",
-          GenerateTypeName("DynamicMatrix",MetaType<K>()),
+          GenerateTypeName("Dune::DynamicMatrix",MetaType<K>()),
           IncludeFiles{"dune/common/dynmatrix.hh"} ).first;
 
       cls.def( pybind11::init( [] () { return new DM(); } ) );

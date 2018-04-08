@@ -31,7 +31,7 @@ namespace Dune
       typedef Dune::FieldMatrix< K, m, n > FM;
 
       auto entry = insertClass<FM>( scope, "FieldMatrix_"+std::to_string(m)+"_"+std::to_string(n), pybind11::buffer_protocol(),
-          GenerateTypeName("FieldMatrix",Dune::MetaType<K>(),m,n), IncludeFiles{"dune/common/fmatrix.hh"}
+          GenerateTypeName("Dune::FieldMatrix",Dune::MetaType<K>(),m,n), IncludeFiles{"dune/common/fmatrix.hh"}
         );
       if (!entry.second)
         return;

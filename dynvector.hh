@@ -29,7 +29,7 @@ namespace Dune
       typedef Dune::DynamicVector< K > DV;
 
       auto cls = insertClass< DV >( scope, "DynamicVector",
-          GenerateTypeName("DynamicVector",MetaType<K>()),
+          GenerateTypeName("Dune::DynamicVector",MetaType<K>()),
           IncludeFiles{"dune/common/dynvector.hh"} ).first;
 
       cls.def( pybind11::init( [] () { return new DV(); } ) );
