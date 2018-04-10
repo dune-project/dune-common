@@ -94,7 +94,7 @@ namespace Dune
 
     /** @brief Returns a communicator containing all processes.
      */
-    static ManagedMPIComm comm_world(){
+    static ManagedMPIComm commWorld(){
       static ManagedMPIComm mmc_world(std::make_shared<MPI_Comm>(MPI_COMM_WORLD));
       return mmc_world;
     }
@@ -102,7 +102,7 @@ namespace Dune
     /** @brief Returns a communicator containing only the local
      *  process.
      */
-    static ManagedMPIComm comm_self(){
+    static ManagedMPIComm commSelf(){
       static ManagedMPIComm mmc_self(std::make_shared<MPI_Comm>(MPI_COMM_SELF));
       return mmc_self;
     }
@@ -118,7 +118,7 @@ namespace Dune
      */
     int rank() const{
       int rank;
-      dune_mpi_call(MPI_Comm_rank, *comm_, &rank);
+      duneMPICall(MPI_Comm_rank, *comm_, &rank);
       return rank;
     }
 
@@ -127,7 +127,7 @@ namespace Dune
     int size() const
     {
       int size;
-      dune_mpi_call(MPI_Comm_size, *comm_, &size);
+      duneMPICall(MPI_Comm_size, *comm_, &size);
       return size;
     }
 
@@ -139,7 +139,7 @@ namespace Dune
     {
       std::shared_ptr<MPI_Comm> duplicate(new MPI_Comm(), freeComm);
       ManagedMPIComm mmc_duplicate(duplicate);
-      dune_mpi_call(MPI_Comm_dup, *comm_, mmc_duplicate.comm_.get());
+      duneMPICall(MPI_Comm_dup, *comm_, mmc_duplicate.comm_.get());
       return mmc_duplicate;
     }
 
@@ -151,7 +151,7 @@ namespace Dune
     {
       std::shared_ptr<MPI_Comm> split(new MPI_Comm(), freeComm);
       ManagedMPIComm mmc_split(split);
-      dune_mpi_call(MPI_Comm_split, *comm_, color, key,
+      duneMPICall(MPI_Comm_split, *comm_, color, key,
                     mmc_split.comm_.get());
       return mmc_split;
     }
@@ -164,7 +164,7 @@ namespace Dune
     */
     void renew() {
       MPI_Comm new_comm;
-      dune_mpi_call(MPI_Comm_dup, *comm_, &new_comm);
+      duneMPICall(MPI_Comm_dup, *comm_, &new_comm);
       freeComm(comm_.get());
       *comm_ = new_comm;
     }
@@ -188,30 +188,30 @@ namespace Dune
 #if MPI_VERSION > 3 || DUNE_ENABLE_ULFM
     // @brief See MPI_Comm_revoke (ULFM proposal)
     void revoke() {
-      dune_mpi_call(MPIX_Comm_revoke, *comm_);
+      duneMPICall(MPIX_Comm_revoke, *comm_);
     }
 
     bool agree(bool success) {
       int flag = success?1:0;
-      dune_mpi_call(MPIX_Comm_agree, *comm_, &flag);
+      duneMPICall(MPIX_Comm_agree, *comm_, &flag);
       return flag!=0;
     }
 
     // @brief See MPI_Comm_shrink (ULFM proposal)
     void shrink() {
       MPI_Comm new_comm;
-      dune_mpi_call(MPIX_Comm_shrink, *comm_, &new_comm);
+      duneMPICall(MPIX_Comm_shrink, *comm_, &new_comm);
       freeComm(comm_.get());
       *comm_ = new_comm;
     }
 #else
     void revoke() {
       dinfo << "The Communicator can't be revoked. revoke() is not implemented." << std::endl;
-      dune_mpi_call(MPI_Barrier, *comm_);
+      duneMPICall(MPI_Barrier, *comm_);
     }
 
     bool agree(bool success) {
-      dune_mpi_call(MPI_Allreduce, MPI_IN_PLACE, &success, 1, MPI_CXX_BOOL, MPI_LAND, *this);
+      duneMPICall(MPI_Allreduce, MPI_IN_PLACE, &success, 1, MPI_CXX_BOOL, MPI_LAND, *this);
       return success;
     }
 
@@ -230,7 +230,7 @@ namespace Dune {
   class PseudoFuture;
 
   /* define some type that definitely differs from MPI_Comm */
-  struct No_Comm {
+  struct NoComm {
     template<class T>
     using FutureType = PseudoFuture<T>;
     template<class T>

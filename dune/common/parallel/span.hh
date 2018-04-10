@@ -33,7 +33,7 @@ namespace Dune {
 
     // accessors:
 #if HAVE_MPI
-    static constexpr MPI_Datatype mpi_type(){
+    static constexpr MPI_Datatype mpiType(){
       return MPITraits<std::remove_cv_t<T>>::getType();
     }
 #endif
@@ -49,7 +49,7 @@ namespace Dune {
     /** @brief Indicated whether the underlying object has dynamic
      * size and is resizeable by this wrapper class.
      */
-    static constexpr bool dynamic_size = false;
+    static constexpr bool dynamicSize = false;
 
     void resize(size_t s){
       if(s != 1)
@@ -74,7 +74,7 @@ namespace Dune {
 
 #if HAVE_MPI
     // accessors:
-    static constexpr MPI_Datatype mpi_type(){
+    static constexpr MPI_Datatype mpiType(){
       return MPITraits<std::remove_cv_t<T>>::getType();
     }
 #endif
@@ -87,7 +87,7 @@ namespace Dune {
       return len_;
     }
 
-    static constexpr bool dynamic_size = false;
+    static constexpr bool dynamicSize = false;
     // this function should never be called:
     void resize(size_t s){
       if(s != len_)
@@ -134,15 +134,15 @@ namespace Dune {
   };
 
   // specialization for dynamic-sized vectors
-  template<typename T> struct is_vector : std::false_type {};
-  template<typename T, typename A> struct is_vector<std::vector<T, A>> : std::true_type {};
-  template<typename T, typename A> struct is_vector<const std::vector<T,A>> : std::true_type {};
+  template<typename T> struct isVector : std::false_type {};
+  template<typename T, typename A> struct isVector<std::vector<T, A>> : std::true_type {};
+  template<typename T, typename A> struct isVector<const std::vector<T,A>> : std::true_type {};
   // std::string satisfies the same interface
-  template<> struct is_vector<std::string> : std::true_type {};
-  template<> struct is_vector<const std::string> : std::true_type {};
+  template<> struct isVector<std::string> : std::true_type {};
+  template<> struct isVector<const std::string> : std::true_type {};
 
   template<class T>
-  struct Span<T, std::enable_if_t<is_vector<T>::value>>
+  struct Span<T, std::enable_if_t<isVector<T>::value>>
   {
     typedef typename T::value_type value_type;
     typedef typename Span<value_type>::type type;
@@ -151,8 +151,8 @@ namespace Dune {
     {}
 
 #if HAVE_MPI
-    static constexpr MPI_Datatype mpi_type(){
-      return Span<std::remove_cv_t<value_type>>::mpi_type();
+    static constexpr MPI_Datatype mpiType(){
+      return Span<std::remove_cv_t<value_type>>::mpiType();
     }
 #endif
 
@@ -164,9 +164,9 @@ namespace Dune {
       return vec_.size();
     }
 
-    static constexpr bool dynamic_size = !std::is_const<T>::value;
+    static constexpr bool dynamicSize = !std::is_const<T>::value;
     void resize(size_t s){
-      static_assert(dynamic_size, "This object can't be resized.");
+      static_assert(dynamicSize, "This object can't be resized.");
       vec_.resize(s);
     }
 

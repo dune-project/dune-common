@@ -87,7 +87,7 @@ namespace Dune
     /**
      * @brief The type of the mpi communicator.
      */
-    typedef No_Comm MPICommunicator;
+    typedef NoComm MPICommunicator;
 
     /** \brief get the default communicator
      *
@@ -199,7 +199,7 @@ namespace Dune
      */
     static MPICommunicator getCommunicator ()
     {
-      return MPICommunicator::comm_world();
+      return MPICommunicator::commWorld();
     }
 
     /** \brief get a local communicator
@@ -210,7 +210,7 @@ namespace Dune
      */
     static MPICommunicator getLocalCommunicator ()
     {
-      return MPICommunicator::comm_self();
+      return MPICommunicator::commSelf();
     }
 
     static CollectiveCommunication<MPICommunicator>
@@ -261,7 +261,7 @@ namespace Dune
     /**
      * @brief return the thread level of the MPI instance
      */
-    static int thread_level ()
+    static int threadLevel ()
     { return thread_level_; }
 
   private:
@@ -285,10 +285,10 @@ namespace Dune
         initializedHere_ = true;
       }
 
-      dune_mpi_call(MPI_Comm_set_errhandler, MPI_COMM_WORLD, MPI_ERRORS_RETURN);
+      duneMPICall(MPI_Comm_set_errhandler, MPI_COMM_WORLD, MPI_ERRORS_RETURN);
 
-      dune_mpi_call(MPI_Comm_rank, MPI_COMM_WORLD, &rank_);
-      dune_mpi_call(MPI_Comm_size, MPI_COMM_WORLD, &size_);
+      duneMPICall(MPI_Comm_rank, MPI_COMM_WORLD, &rank_);
+      duneMPICall(MPI_Comm_size, MPI_COMM_WORLD, &size_);
 
       assert( rank_ >= 0 );
       assert( size_ >= 1 );

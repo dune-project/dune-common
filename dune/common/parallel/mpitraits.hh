@@ -82,8 +82,8 @@ namespace Dune
   ComposeMPITraits(long double,MPI_LONG_DOUBLE);
   ComposeMPITraits(bool,MPI_CXX_BOOL);
 
-  struct Dune_MPI_Byte {};
-  ComposeMPITraits(Dune_MPI_Byte, MPI_BYTE);
+  struct DuneMPIByte {};
+  ComposeMPITraits(DuneMPIByte, MPI_BYTE);
 
   template<class C>
   class MPIPack;

@@ -1407,7 +1407,7 @@ namespace Dune
     typedef typename decltype(communicator_)::template FutureType<> VoidFuture;
     std::vector<VoidFuture> sendRequests;
     sendRequests.reserve(messageInformation_.size());
-    typedef typename decltype(communicator_)::template FutureType<Span<Dune_MPI_Byte*>> SpanFuture;
+    typedef typename decltype(communicator_)::template FutureType<Span<DuneMPIByte*>> SpanFuture;
     std::vector<SpanFuture> recvRequests;
     recvRequests.reserve(messageInformation_.size());
     /* Number of recvRequests that are not MPI_REQUEST_NULL */
@@ -1428,8 +1428,8 @@ namespace Dune
         assert(info->second.second.start_*sizeof(typename CommPolicy<Data>::IndexedType)+info->second.second.size_ <= recvBufferSize );
         Dune::dvverb<<rank<<": receiving "<<info->second.second.size_<<" from "<<info->first<<std::endl;
         if(info->second.second.size_) {
-          recvRequests.push_back(ptpc.irecv(Span<Dune_MPI_Byte*>{
-              (Dune_MPI_Byte*)(recvBuffer+info->second.second.start_), info->second.second.size_
+          recvRequests.push_back(ptpc.irecv(Span<DuneMPIByte*>{
+              (DuneMPIByte*)(recvBuffer+info->second.second.start_), info->second.second.size_
                 }, info->first, commTag_));
           numberOfRealRecvRequests += 1;
         }
@@ -1437,8 +1437,8 @@ namespace Dune
         assert(info->second.first.start_*sizeof(typename CommPolicy<Data>::IndexedType)+info->second.first.size_ <= recvBufferSize );
         Dune::dvverb<<rank<<": receiving "<<info->second.first.size_<<" to "<<info->first<<std::endl;
         if(info->second.first.size_) {
-          recvRequests.push_back(ptpc.irecv(Span<Dune_MPI_Byte*>{
-              (Dune_MPI_Byte*)(recvBuffer+info->second.first.start_), info->second.first.size_
+          recvRequests.push_back(ptpc.irecv(Span<DuneMPIByte*>{
+              (DuneMPIByte*)(recvBuffer+info->second.first.start_), info->second.first.size_
                 }, info->first, commTag_));
           numberOfRealRecvRequests += 1;
         }
@@ -1453,15 +1453,15 @@ namespace Dune
         Dune::dvverb<<rank<<": sending "<<info->second.first.size_<<" to "<<info->first<<std::endl;
         assert(info->second.first.start_*sizeof(typename CommPolicy<Data>::IndexedType)+info->second.first.size_ <= sendBufferSize );
         if(info->second.first.size_)
-          sendRequests.push_back(ptpc.isend(Span<Dune_MPI_Byte*>{
-              (Dune_MPI_Byte*)(sendBuffer+info->second.first.start_), info->second.first.size_
+          sendRequests.push_back(ptpc.isend(Span<DuneMPIByte*>{
+              (DuneMPIByte*)(sendBuffer+info->second.first.start_), info->second.first.size_
                 }, info->first, commTag_));
       }else{
         assert(info->second.second.start_*sizeof(typename CommPolicy<Data>::IndexedType)+info->second.second.size_ <= sendBufferSize );
         Dune::dvverb<<rank<<": sending "<<info->second.second.size_<<" to "<<info->first<<std::endl;
         if(info->second.second.size_)
-          sendRequests.push_back(ptpc.isend(Span<Dune_MPI_Byte*>{
-              (Dune_MPI_Byte*)(sendBuffer+info->second.second.start_), info->second.second.size_
+          sendRequests.push_back(ptpc.isend(Span<DuneMPIByte*>{
+              (DuneMPIByte*)(sendBuffer+info->second.second.start_), info->second.second.size_
                 }, info->first, commTag_));
       }
 
@@ -1470,7 +1470,7 @@ namespace Dune
     for(i=0; i< numberOfRealRecvRequests;) {
       auto v = when_any(recvRequests.begin(), recvRequests.end()).get();
       recvRequests = std::move(v.futures);
-      int proc = recvRequests[v.index].status().get_source();
+      int proc = recvRequests[v.index].status().source();
       recvRequests[v.index].get(); // invalidate the future
       typename InformationMap::const_iterator infoIter = messageInformation_.find(proc);
       assert(infoIter != messageInformation_.end());

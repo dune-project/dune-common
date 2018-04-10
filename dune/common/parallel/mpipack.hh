@@ -55,12 +55,12 @@ namespace Dune {
     void pack(const T& data){
       Span<const T> span(data);
       int data_size = 0;
-      dune_mpi_call(MPI_Pack_size, span.size(),
-                    span.mpi_type(), comm_, &data_size);
+      duneMPICall(MPI_Pack_size, span.size(),
+                    span.mpiType(), comm_, &data_size);
       if (position_ + data_size > 0 && size_t(position_ + data_size) > buffer_.size())
         buffer_.resize(position_ + data_size);
-      dune_mpi_call(MPI_Pack, span.ptr(), span.size(),
-                    span.mpi_type(), buffer_.data(), buffer_.size(),
+      duneMPICall(MPI_Pack, span.ptr(), span.size(),
+                    span.mpiType(), buffer_.data(), buffer_.size(),
                     &position_, comm_);
     }
 
@@ -71,9 +71,9 @@ namespace Dune {
     template<class T>
     void unpack(T& data){
       Span<T> span(data);
-      dune_mpi_call(MPI_Unpack, buffer_.data(), buffer_.size(), &position_,
+      duneMPICall(MPI_Unpack, buffer_.data(), buffer_.size(), &position_,
                     span.ptr(), span.size(),
-                    span.mpi_type(), comm_);
+                    span.mpiType(), comm_);
    }
 
     //! @copydoc pack
@@ -111,29 +111,29 @@ namespace Dune {
     /** @brief Sets the position_ in the buffer_ where the next
      * pack/unpack operation should take place.
     */
-    void set_position(int p){
+    void setPosition(int p){
       position_ = p;
     }
 
     /** @brief Gets the position_ in the buffer_ where the next
      * pack/unpack operation should take place.
     */
-    int get_position() const{
+    int position() const{
       return position_;
     }
 
     /** @brief Checks whether the end of the buffer_ is reached.
      */
-    bool at_end() const{
+    bool atAnd() const{
       return position_==buffer_.size();
     }
 
     /** @brief Returns the size of the data needed to store the data
      * in an MPIPack.
      */
-    static int get_pack_size(int len, const C& comm, const MPI_Datatype& dt){
+    static int packSize(int len, const C& comm, const MPI_Datatype& dt){
       int size;
-      dune_mpi_call(MPI_Pack_size, len, dt, comm, &size);
+      duneMPICall(MPI_Pack_size, len, dt, comm, &size);
       return size;
     }
 
@@ -145,19 +145,19 @@ namespace Dune {
     }
   };
 
-  template<typename> struct is_MPIPack : std::false_type {};
-  template<typename C> struct is_MPIPack<MPIPack<C>> : std::true_type {};
-  template<typename C> struct is_MPIPack<const MPIPack<C>> : std::true_type {};
+  template<typename> struct isMPIPack : std::false_type {};
+  template<typename C> struct isMPIPack<MPIPack<C>> : std::true_type {};
+  template<typename C> struct isMPIPack<const MPIPack<C>> : std::true_type {};
 
   // Specialization for MPIPack
   template<typename P>
-  struct Span<P, std::enable_if_t<is_MPIPack<P>::value>> {
+  struct Span<P, std::enable_if_t<isMPIPack<P>::value>> {
     typedef P type;
     Span(P& p)
       : pack_(p)
     {}
 
-    static constexpr MPI_Datatype mpi_type(){
+    static constexpr MPI_Datatype mpiType(){
       return MPI_PACKED;
     }
 
@@ -169,9 +169,9 @@ namespace Dune {
       return pack_.buffer_.size();
     }
 
-    static constexpr bool dynamic_size = !std::is_const<P>::value;
+    static constexpr bool dynamicSize = !std::is_const<P>::value;
     void resize(size_t s){
-      static_assert(dynamic_size, "MPIPack can't be resized.");
+      static_assert(dynamicSize, "MPIPack can't be resized.");
       pack_.buffer_.resize(s);
     }
 

@@ -33,38 +33,38 @@ namespace Dune {
       status_.MPI_TAG = MPI_ANY_TAG;
       status_.MPI_SOURCE = MPI_ANY_SOURCE;
       status_.MPI_ERROR = MPI_SUCCESS;
-      dune_mpi_call(MPI_Status_set_cancelled, &status_, 0);
+      duneMPICall(MPI_Status_set_cancelled, &status_, 0);
     }
 
     /** @brief Return the source of the message
      */
-    int get_source() const{
+    int source() const{
       return status_.MPI_SOURCE;
     }
 
     /** @brief Return the size of the message
      */
-    int get_count(const MPI_Datatype& datatype) const{
+    int count(const MPI_Datatype& datatype) const{
       int count = -1;
-      dune_mpi_call(MPI_Get_count, &status_, datatype, &count);
+      duneMPICall(MPI_Get_count, &status_, datatype, &count);
       return count;
     }
 
     /** @brief Return the MPI error code of the message.
      */
-    int get_error() const {
+    int error() const {
       return status_.MPI_ERROR;
     }
 
     /** @brief Set the MPI error code of the message.
      */
-    void set_error(int e) {
+    void setError(int e) {
       status_.MPI_ERROR = e;
     }
 
     /** @brief Return the tag of the message.
      */
-    int get_tag() const {
+    int tag() const {
       return status_.MPI_TAG;
     }
 
@@ -79,20 +79,20 @@ namespace Dune {
 
     /** @brief Checks whether this objects contains information.
      */
-    bool is_empty() const{
+    bool isEmpty() const{
       return status_.MPI_TAG==MPI_ANY_TAG &&
         status_.MPI_SOURCE == MPI_ANY_SOURCE &&
         status_.MPI_ERROR == MPI_SUCCESS;
     }
 
-    bool is_cancelled() const{
+    bool isCancelled() const{
       int flag = 0;
-      dune_mpi_call(MPI_Test_cancelled, &status_, &flag);
+      duneMPICall(MPI_Test_cancelled, &status_, &flag);
       return flag;
     }
 
-    void set_cancelled(bool cancel = true){
-      dune_mpi_call(MPI_Status_set_cancelled, &status_, cancel?1:0);
+    void setCancelled(bool cancel = true){
+      duneMPICall(MPI_Status_set_cancelled, &status_, cancel?1:0);
     }
   };
 
@@ -124,15 +124,15 @@ namespace Dune {
     template<typename T>
     void recv(T& data){
       Span<T> span(data);
-      if(Span<T>::dynamic_size)
-        span.resize(get_count(span.mpi_type()));
-      dune_mpi_call(MPI_Mrecv, span.ptr(), span.size(),
-                    span.mpi_type(), &message_, &status_);
+      if(Span<T>::dynamicSize)
+        span.resize(count(span.mpiType()));
+      duneMPICall(MPI_Mrecv, span.ptr(), span.size(),
+                    span.mpiType(), &message_, &status_);
     }
 
     /** @brief Checks whether this objects has a matched message
      */
-    bool has_message() const {
+    bool hasMessage() const {
       return message_ != MPI_MESSAGE_NULL;
     }
   };

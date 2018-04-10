@@ -20,7 +20,7 @@
 namespace Dune{
 #ifndef DOXYGEN
   namespace Impl{
-    struct no_op
+    struct NoOp
     {
       void operator()()
       {
@@ -33,7 +33,7 @@ namespace Dune{
   /**
    * @brief Wrapper class for Generalized Request
    */
-  template<class WFN, class CFN, class FFN = Impl::no_op>
+  template<class WFN, class CFN, class FFN = Impl::NoOp>
   class MPIGRequest {
     struct Data {
       MPI_Request req_;
@@ -52,19 +52,19 @@ namespace Dune{
       {}
 
       void complete(){
-        dune_mpi_call(MPI_Grequest_complete, req_);
+        duneMPICall(MPI_Grequest_complete, req_);
       }
     };
     Data* data_;
     MPI_Request req_;
 
-    static int query_fn(void * data, MPI_Status* s){
+    static int queryFn(void * data, MPI_Status* s){
       Data* ptr = static_cast<Data*>(data);
       *s = ptr->status_;
       return s->MPI_ERROR;
     }
 
-    static int free_fn(void * data){
+    static int freeFn(void * data){
       try{
         Data* ptr = static_cast<Data*>(data);
         if(std::this_thread::get_id() == ptr->worker_.get_id())
@@ -79,21 +79,21 @@ namespace Dune{
       return MPI_SUCCESS;
     }
 
-    static int cancel_fn(void * data, int complete){
+    static int cancelFn(void * data, int complete){
       Data* ptr = static_cast<Data*>(data);
       ptr->cancel_(complete);
       int finalized = 0;
       MPI_Finalized( &finalized );
       if(!complete && !finalized)
-        ptr->status_.set_cancelled(true);
+        ptr->status_.setCancelled(true);
       return MPI_SUCCESS;
     }
 
   public:
-    MPIGRequest(WFN&& work, CFN&& cancel, FFN&& free = Impl::no_op{})
+    MPIGRequest(WFN&& work, CFN&& cancel, FFN&& free = Impl::NoOp{})
     {
       data_ = new Data(std::move(cancel), std::move(free));
-      dune_mpi_call(MPI_Grequest_start, &query_fn, &free_fn, &cancel_fn,
+      duneMPICall(MPI_Grequest_start, &queryFn, &freeFn, &cancelFn,
                     data_,
                     &req_);
       data_->req_ = req_;
@@ -101,9 +101,9 @@ namespace Dune{
           try{
             work(data->status_);
           }catch(MPIError& e){
-            data->status_.set_error(e.get_error_code());
+            data->status_.setError(e.get_error_code());
           }catch(...){
-            data->status_.set_error(MPI_ERR_UNKNOWN);
+            data->status_.setError(MPI_ERR_UNKNOWN);
           }
           data->complete();
         });

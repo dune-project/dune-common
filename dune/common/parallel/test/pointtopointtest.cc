@@ -32,7 +32,7 @@ void test_blocking(P2PC& p2pc, const T& data, const T& init){
       Dune::MPIStatus s = p2pc.probe(0, 42);
       T recv_buf = init;
       p2pc.recv(recv_buf, 0, 42, true);
-      if(s.get_source() != 0 || recv_buf != data)
+      if(s.source() != 0 || recv_buf != data)
         DUNE_THROW(Dune::Exception, "2: received data does not match");
     }
     // mprobe
@@ -40,7 +40,7 @@ void test_blocking(P2PC& p2pc, const T& data, const T& init){
       auto s = p2pc.mprobe(0, 42);
       T recv_buf = init;
       s.recv(recv_buf);
-      if(s.get_source() != 0 || recv_buf != data)
+      if(s.source() != 0 || recv_buf != data)
         DUNE_THROW(Dune::Exception, "3: received data does not match");
     }
     // iprobe
@@ -48,10 +48,10 @@ void test_blocking(P2PC& p2pc, const T& data, const T& init){
       Dune::MPIStatus s;
       do{
         s = p2pc.iprobe(0, 42);
-      }while(s.is_empty());
+      }while(s.isEmpty());
       T recv_buf = init;
       p2pc.recv(recv_buf, 0, 42, true);
-      if(s.get_source() != 0 || recv_buf != data)
+      if(s.source() != 0 || recv_buf != data)
         DUNE_THROW(Dune::Exception, "4: received data does not match");
     }
     // improbe
@@ -59,9 +59,9 @@ void test_blocking(P2PC& p2pc, const T& data, const T& init){
       T recv_buf = init;
       do{
         auto s = p2pc.improbe(0, 42);
-        if(s.has_message()){
+        if(s.hasMessage()){
           s.recv(recv_buf);
-          if(s.get_source() != 0 || recv_buf != data)
+          if(s.source() != 0 || recv_buf != data)
             DUNE_THROW(Dune::Exception, "4: received data does not match");
           break;
         }
@@ -89,14 +89,14 @@ void test_nonblocking(P2PC& p2pc, const T& data, const T& init){
     auto recv = f.get();
     if(recv != data)
       DUNE_THROW(Dune::Exception, "5: received data does not match");
-    if(f.status().get_source() != 0)
+    if(f.status().source() != 0)
       DUNE_THROW(Dune::Exception, "5: received source does not match");
-    if((size_t)f.status().get_count(Dune::Span<const T>::mpi_type()) != Dune::Span<const T>(data).size())
+    if((size_t)f.status().count(Dune::Span<const T>::mpiType()) != Dune::Span<const T>(data).size())
       DUNE_THROW(Dune::Exception, "5: received count does not match");
     auto recv2 = f2.get();
     auto st = f2.status();
-    if(recv2 != data || st.get_source() != 0 ||
-       (size_t)st.get_count(Dune::Span<const T>::mpi_type()) != Dune::Span<const T>(data).size())
+    if(recv2 != data || st.source() != 0 ||
+       (size_t)st.count(Dune::Span<const T>::mpiType()) != Dune::Span<const T>(data).size())
       DUNE_THROW(Dune::Exception, "6: received data does not match");
   }
 }

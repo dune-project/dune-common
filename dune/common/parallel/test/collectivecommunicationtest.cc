@@ -25,7 +25,7 @@ void testBroadcast(CC& cc, const T& data, const T& init = {}){
       cc.broadcast(buf, 0);
     }else{
       T buf(init);
-      if(Dune::Span<T>::dynamic_size)
+      if(Dune::Span<T>::dynamicSize)
         Dune::Span<T>(buf).resize(Dune::Span<const T>(data).size());
       cc.broadcast(buf, 0);
       if(buf != data)
@@ -38,7 +38,7 @@ void testBroadcast(CC& cc, const T& data, const T& init = {}){
       f = cc.ibroadcast(data, 0);
     else{
       T buf(init);
-      if(Dune::Span<T>::dynamic_size)
+      if(Dune::Span<T>::dynamicSize)
         Dune::Span<T>(buf).resize(Dune::Span<const T>(data).size());
       f = cc.ibroadcast(std::move(buf), 0);
     }
@@ -50,7 +50,7 @@ void testBroadcast(CC& cc, const T& data, const T& init = {}){
 
 template<class CC, class T>
 void testGather(CC& cc, const T& data, const T& init){
-  if(Dune::Span<T>::dynamic_size)
+  if(Dune::Span<T>::dynamicSize)
     return; // Can't gather dynamic objects
   { // blocking
     if(cc.rank() == 0){
@@ -98,7 +98,7 @@ void testGather(CC& cc, const T& data, const T& init){
 
 template<class CC, class T>
 void testScatter(CC& cc, const T& data, const T& init){
-  if(Dune::Span<T>::dynamic_size)
+  if(Dune::Span<T>::dynamicSize)
     return; // Can't scatter dynamic objects
   { // blocking
     T buf(init);
@@ -130,7 +130,7 @@ void testScatter(CC& cc, const T& data, const T& init){
   }
   { // non-blocking
     T buf(init);
-    if(Dune::Span<T>::dynamic_size)
+    if(Dune::Span<T>::dynamicSize)
       Dune::Span<T>(buf).resize(Dune::Span<const T>(data).size());
     typename CC::template FutureType<T> f;
     if(cc.rank() == 0){
@@ -147,7 +147,7 @@ void testScatter(CC& cc, const T& data, const T& init){
 
 template<class CC, class T>
 void testAllgather(CC& cc, const T& data, const T& init){
-  if(Dune::Span<T>::dynamic_size)
+  if(Dune::Span<T>::dynamicSize)
     return; // Can't scatter dynamic objects
   { //blocking
     std::vector<T> vec(cc.size(), init);
@@ -193,7 +193,7 @@ void testAllreduce(CC& cc, const T& data, const T& init){
   }
   { // blocking
     T buf(init);
-    if(Dune::Span<T>::dynamic_size)
+    if(Dune::Span<T>::dynamicSize)
       Dune::Span<T>(buf).resize(Dune::Span<const T>(data).size());
     cc.template allreduce<Dune::Min<integral_type>>(data, buf);
     if(buf != data)
@@ -207,7 +207,7 @@ void testAllreduce(CC& cc, const T& data, const T& init){
   }
   { // non-blocking
     T buf(init);
-    if(Dune::Span<T>::dynamic_size)
+    if(Dune::Span<T>::dynamicSize)
       Dune::Span<T>(buf).resize(Dune::Span<const T>(data).size());
     auto f = cc.template iallreduce<Dune::Max<integral_type>>(data, std::move(buf));
     if(f.get() != data)
@@ -240,7 +240,7 @@ void testScan(CC& cc, const T& data, const T& init){
   typedef typename Dune::Span<T>::type integral_type;
   { // blocking scan
     T buf(init);
-    if(Dune::Span<T>::dynamic_size)
+    if(Dune::Span<T>::dynamicSize)
       Dune::Span<T>(buf).resize(Dune::Span<const T>(data).size());
     cc.template scan<Dune::Min<integral_type>>(data, buf);
     if(buf != data)
@@ -248,7 +248,7 @@ void testScan(CC& cc, const T& data, const T& init){
   }
   { // blocking exscan
     T buf(init);
-    if(Dune::Span<T>::dynamic_size)
+    if(Dune::Span<T>::dynamicSize)
       Dune::Span<T>(buf).resize(Dune::Span<const T>(data).size());
     cc.template exscan<Dune::Min<integral_type>>(data, buf);
     if(cc.rank() !=  0 && buf != data)
@@ -256,7 +256,7 @@ void testScan(CC& cc, const T& data, const T& init){
   }
   { // non-blocking scan
     T buf(init);
-    if(Dune::Span<T>::dynamic_size)
+    if(Dune::Span<T>::dynamicSize)
       Dune::Span<T>(buf).resize(Dune::Span<const T>(data).size());
     auto f = cc.template iscan<Dune::Max<integral_type>>(data, std::move(buf));
     if(f.get() != data)
@@ -264,7 +264,7 @@ void testScan(CC& cc, const T& data, const T& init){
   }
   { // non-blocking
     T buf(init);
-    if(Dune::Span<T>::dynamic_size)
+    if(Dune::Span<T>::dynamicSize)
       Dune::Span<T>(buf).resize(Dune::Span<const T>(data).size());
     auto f = cc.template iexscan<Dune::Max<integral_type>>(data, std::move(buf));
     if(f.get() != data && cc.rank() != 0)

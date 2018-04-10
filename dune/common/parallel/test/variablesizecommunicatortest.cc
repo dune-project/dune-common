@@ -116,7 +116,7 @@ int main(int argc, char** argv)
             recv.add(i);
         Interface inf;
         inf[0]=std::make_pair(send, recv);
-        Dune::VariableSizeCommunicator<> comm(Dune::MPIHelper::MPICommunicator::comm_self(), inf, 6);
+        Dune::VariableSizeCommunicator<> comm(Dune::MPIHelper::MPICommunicator::commSelf(), inf, 6);
         MyDataHandle handle(0);
         comm.forward(handle);
         std::cout<<"===================== backward ========================="<<std::endl;

@@ -27,7 +27,7 @@ namespace Dune{
   template<class Comm>
   class PointToPointCommunication;
 
-  enum Communication_Mode {
+  enum CommunicationMode {
     standard,
     buffered,
     synchronous,
@@ -52,14 +52,14 @@ namespace Dune{
         MPIStatus s;
         bool done = false;
         do{
-          dune_mpi_call(MPI_Probe, MPI_ANY_SOURCE, MPI_ANY_TAG, comm, s);
-          if(s.get_source() == rank && s.get_tag() == tag){
-            data.resize(s.get_count(data.mpi_type()));
-            dune_mpi_call(MPI_Recv, data.ptr(), data.size(), data.mpi_type(),
+          duneMPICall(MPI_Probe, MPI_ANY_SOURCE, MPI_ANY_TAG, comm, s);
+          if(s.source() == rank && s.tag() == tag){
+            data.resize(s.count(data.mpiType()));
+            duneMPICall(MPI_Recv, data.ptr(), data.size(), data.mpiType(),
                           rank, tag, comm, status);
             done = true;
           }
-          if(s.get_source() == me && s.get_tag() == WAKEUPTAG){
+          if(s.source() == me && s.tag() == WAKEUPTAG){
             bool recv = false;
             std::get<1>(*mutex_data).lock();
             if(std::get<0>(*mutex_data) == 1){
@@ -68,7 +68,7 @@ namespace Dune{
             std::get<0>(*mutex_data) = 1;
             std::get<1>(*mutex_data).unlock();
             if(recv)
-              dune_mpi_call(MPI_Recv, nullptr, 0, MPI_INT, me, WAKEUPTAG, comm, MPI_STATUS_IGNORE);
+              duneMPICall(MPI_Recv, nullptr, 0, MPI_INT, me, WAKEUPTAG, comm, MPI_STATUS_IGNORE);
             done = true;
           }
         }while(!done);
@@ -84,7 +84,7 @@ namespace Dune{
         }
         std::get<1>(*mutex_data).unlock();
         if(send)
-          dune_mpi_call(MPI_Send, nullptr, 0, MPI_INT, me, WAKEUPTAG, comm);
+          duneMPICall(MPI_Send, nullptr, 0, MPI_INT, me, WAKEUPTAG, comm);
       };
       return MPIGRequest<decltype(worker), decltype(cancel)> (std::move(worker), std::move(cancel));
     }
@@ -94,7 +94,7 @@ namespace Dune{
     // Export Communicator type
     typedef Comm Communicator;
 
-    PointToPointCommunication ( const Comm& c = Comm::comm_world()) :
+    PointToPointCommunication ( const Comm& c = Comm::commWorld()) :
       communicator(c)
     {}
 
@@ -106,7 +106,7 @@ namespace Dune{
      *
      * @throw MPIError
      */
-    template<typename T, Communication_Mode m = standard>
+    template<typename T, CommunicationMode m = standard>
     void send(const T& data, int rank, int tag)
     {
       std::function<decltype(MPI_Send)> send_fun;
@@ -124,8 +124,8 @@ namespace Dune{
         send_fun = MPI_Send;
       }
       Span<const T> span(data);
-      dune_mpi_call(send_fun, span.ptr(), span.size(),
-                    span.mpi_type(), rank, tag, communicator);
+      duneMPICall(send_fun, span.ptr(), span.size(),
+                    span.mpiType(), rank, tag, communicator);
     }
 
     /** @brief See MPI_ISend
@@ -139,29 +139,29 @@ namespace Dune{
      *
      * @throw MPIError
      */
-    template<typename T, Communication_Mode m = standard>
+    template<typename T, CommunicationMode m = standard>
     FutureType<> isend(const T& data, int rank, int tag)
     {
       Span<const T> span(data);
       FutureType<> f(communicator, false);
       std::function<decltype(MPI_Isend)> send_fun;
       switch(m){
-      case Communication_Mode::synchronous:
+      case CommunicationMode::synchronous:
         send_fun = MPI_Issend;
         break;
-      case Communication_Mode::buffered:
+      case CommunicationMode::buffered:
         send_fun = MPI_Ibsend;
         break;
-      case Communication_Mode::ready:
+      case CommunicationMode::ready:
         send_fun = MPI_Irsend;
         break;
       default:
         send_fun = MPI_Isend;
       }
-      dune_mpi_call(send_fun, span.ptr(), span.size(),
-                    span.mpi_type(), rank, tag,
-                    communicator, &f.mpirequest());
-      dverb << "isend() req = " << f.mpirequest() << std::endl;
+      duneMPICall(send_fun, span.ptr(), span.size(),
+                    span.mpiType(), rank, tag,
+                    communicator, &f.mpiRequest());
+      dverb << "isend() req = " << f.mpiRequest() << std::endl;
       return std::move(f);
     }
 
@@ -181,14 +181,14 @@ namespace Dune{
     MPIStatus recv(T& data, int rank, int tag, bool resize = false)
     {
       Span<T> span(data);
-      if(Span<T>::dynamic_size && resize){
+      if(Span<T>::dynamicSize && resize){
         auto ms = mprobe(rank, tag);
         ms.recv(data);
         return ms;
       }else{
         MPIStatus status;
-        dune_mpi_call(MPI_Recv, span.ptr(), span.size(),
-                      span.mpi_type(), rank, tag,
+        duneMPICall(MPI_Recv, span.ptr(), span.size(),
+                      span.mpiType(), rank, tag,
                       communicator, status);
         return status;
       }
@@ -199,7 +199,7 @@ namespace Dune{
      * @param data Message buffer. It is forwarded into the Future object.
      * @param rank
      * @param tag
-     * @param dynamic_size indicates whether the buffer is resized by
+     * @param dynamicSize indicates whether the buffer is resized by
      * the Future before actually receiving the message. That only
      * works for types of dynamic size (e.g. std::vector).
      *
@@ -208,18 +208,18 @@ namespace Dune{
      * @throw MPIError
      */
     template<typename T>
-    FutureType<std::decay_t<T>> irecv(T&& data, int rank, int tag, bool dynamic_size = false)
+    FutureType<std::decay_t<T>> irecv(T&& data, int rank, int tag, bool dynamicSize = false)
     {
       FutureType<std::decay_t<T>> f(communicator, true, std::forward<T>(data));
       Span<std::decay_t<T>> span(f.buffer());
-      if(dynamic_size && Span<std::decay_t<T>>::dynamic_size){
-        f.mpirequest() = Iarecv(span, rank, tag);
+      if(dynamicSize && Span<std::decay_t<T>>::dynamicSize){
+        f.mpiRequest() = Iarecv(span, rank, tag);
       }else{
-        dune_mpi_call(MPI_Irecv, span.ptr(), span.size(),
-                      span.mpi_type(), rank, tag,
-                      communicator, &f.mpirequest());
+        duneMPICall(MPI_Irecv, span.ptr(), span.size(),
+                      span.mpiType(), rank, tag,
+                      communicator, &f.mpiRequest());
       }
-      dverb << "irecv() req = " << f.mpirequest() << std::endl;
+      dverb << "irecv() req = " << f.mpiRequest() << std::endl;
       return std::move(f);
     }
 
@@ -233,7 +233,7 @@ namespace Dune{
      */
     MPIStatus probe(int source, int tag) const {
       MPI_Status status;
-      dune_mpi_call(MPI_Probe, source, tag, communicator, &status);
+      duneMPICall(MPI_Probe, source, tag, communicator, &status);
       return status;
     }
 
@@ -248,7 +248,7 @@ namespace Dune{
     MPIStatus iprobe(int source, int tag) const {
       int flag;
       MPIStatus status;
-      dune_mpi_call(MPI_Iprobe, source, tag, communicator, &flag, status);
+      duneMPICall(MPI_Iprobe, source, tag, communicator, &flag, status);
       if(flag)
         return status;
       else
@@ -267,7 +267,7 @@ namespace Dune{
     MPIMatchingStatus mprobe(int source, int tag) const {
       MPI_Status status;
       MPI_Message message;
-      dune_mpi_call(MPI_Mprobe, source, tag, communicator, &message, &status);
+      duneMPICall(MPI_Mprobe, source, tag, communicator, &message, &status);
       return {status, message};
     }
 
@@ -284,7 +284,7 @@ namespace Dune{
       MPI_Status status;
       MPI_Message message;
       int flag;
-      dune_mpi_call(MPI_Improbe, source, tag, communicator, &flag, &message, &status);
+      duneMPICall(MPI_Improbe, source, tag, communicator, &flag, &message, &status);
       if(flag)
         return {status, message};
       else
@@ -308,15 +308,15 @@ namespace Dune{
   };
 
 #endif
-  struct No_Comm;
+  struct NoComm;
 
   template<>
-  class PointToPointCommunication<No_Comm> {
+  class PointToPointCommunication<NoComm> {
   public:
     template<class T>
     using FutureType = PseudoFuture<T>;
 
-    PointToPointCommunication(const No_Comm&){}
+    PointToPointCommunication(const NoComm&){}
 
     // No implementation since point to point doesn't make sense in
     // sequential case

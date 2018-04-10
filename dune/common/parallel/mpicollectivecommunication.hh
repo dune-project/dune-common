@@ -46,7 +46,7 @@ namespace Dune
       if (!op)
       {
         op = std::shared_ptr<MPI_Op>(new MPI_Op);
-        dune_mpi_call(MPI_Op_create,(void (*)(void*, void*, int*, MPI_Datatype*))&operation,true,op.get());
+        duneMPICall(MPI_Op_create,(void (*)(void*, void*, int*, MPI_Datatype*))&operation,true,op.get());
       }
       return *op;
     }
@@ -175,7 +175,7 @@ namespace Dune
     using FutureType = typename Comm::template FutureType<T>;
 
     //! Instantiation using a MPI communicator_.
-    GenericMPICollectiveCommunication (const Comm& c = Comm::comm_world())
+    GenericMPICollectiveCommunication (const Comm& c = Comm::commWorld())
       : communicator_(c)
     {
       if (communicator_) {
@@ -284,14 +284,14 @@ namespace Dune
     //! @copydoc CollectiveCommunication<No_Comm>::barrier()
     void barrier () const
     {
-      dune_mpi_call(MPI_Barrier, communicator_);
+      duneMPICall(MPI_Barrier, communicator_);
     }
 
     //! @copydoc CollectiveCommunication<No_Comm>::ibarrier()
     FutureType<> ibarrier() const
     {
       FutureType<> f(communicator_, false);
-      dune_mpi_call(MPI_Ibarrier, communicator_, &f.mpirequest());
+      duneMPICall(MPI_Ibarrier, communicator_, &f.mpiRequest());
       return f;
     }
 
@@ -309,8 +309,8 @@ namespace Dune
     void broadcast (T& inout, int root) const
     {
       Span<T> span(inout);
-      dune_mpi_call(MPI_Bcast, span.ptr(), span.size(),
-                    span.mpi_type(), root, communicator_);
+      duneMPICall(MPI_Bcast, span.ptr(), span.size(),
+                    span.mpiType(), root, communicator_);
     }
 
     //! @copydoc CollectiveCommunication<No_Comm>::ibroadcast
@@ -320,9 +320,9 @@ namespace Dune
       FutureType<std::decay_t<T>> f(communicator_, false,
                                     std::forward<T>(data));
       Span<std::decay_t<T>> span(f.buffer());
-      dune_mpi_call(MPI_Ibcast, span.ptr(), span.size(),
-                    span.mpi_type(), root, communicator_,
-                    &f.mpirequest());
+      duneMPICall(MPI_Ibcast, span.ptr(), span.size(),
+                    span.mpiType(), root, communicator_,
+                    &f.mpiRequest());
       return f;
     }
 
@@ -343,9 +343,9 @@ namespace Dune
       Span<const T> span_in(in);
       Span<S> span_out(out);
       // WARNING: The size argument of the receive buffer is the count per process!
-      dune_mpi_call(MPI_Gather, span_in.ptr(), span_in.size(),
-                    span_in.mpi_type(), span_out.ptr(),
-                    span_in.size(), span_out.mpi_type(),
+      duneMPICall(MPI_Gather, span_in.ptr(), span_in.size(),
+                    span_in.mpiType(), span_out.ptr(),
+                    span_in.size(), span_out.mpiType(),
                     root, communicator_);
     }
 
@@ -357,10 +357,10 @@ namespace Dune
       FutureType<std::decay_t<S>> f(communicator_, false, std::forward<S>(out));
       Span<std::decay_t<S>> span_out(f.buffer());
       // WARNING: The size argument of the receive buffer is the count per process!
-      dune_mpi_call(MPI_Igather, span_in.ptr(), span_in.size(),
-                    span_in.mpi_type(), span_out.ptr(),
-                    span_in.size(), span_out.mpi_type(),
-                    root, communicator_, &f.mpirequest());
+      duneMPICall(MPI_Igather, span_in.ptr(), span_in.size(),
+                    span_in.mpiType(), span_out.ptr(),
+                    span_in.size(), span_out.mpiType(),
+                    root, communicator_, &f.mpiRequest());
       return f;
     }
 
@@ -379,10 +379,10 @@ namespace Dune
     {
       Span<const T> span_in(in);
       Span<S> span_out(out);
-      dune_mpi_call(MPI_Gatherv, span_in.ptr(), span_in.size(),
-                    span_in.mpi_type(), span_out.ptr(),
+      duneMPICall(MPI_Gatherv, span_in.ptr(), span_in.size(),
+                    span_in.mpiType(), span_out.ptr(),
                     recvlen.ptr(), displ.ptr(),
-                    span_out.mpi_type(), root,
+                    span_out.mpiType(), root,
                     communicator_);
     }
 
@@ -402,9 +402,9 @@ namespace Dune
       Span<const T> span_in(send);
       Span<S> span_out(recv);
       // WARNING: The size argument of the send buffer is the count per process!
-      dune_mpi_call(MPI_Scatter, span_in.ptr(), span_out.size(),
-                    span_in.mpi_type(), span_out.ptr(),
-                    span_out.size(), span_out.mpi_type(),
+      duneMPICall(MPI_Scatter, span_in.ptr(), span_out.size(),
+                    span_in.mpiType(), span_out.ptr(),
+                    span_out.size(), span_out.mpiType(),
                     root, communicator_);
     }
 
@@ -416,10 +416,10 @@ namespace Dune
       FutureType<std::decay_t<S>> f(communicator_, false, std::forward<S>(out));
       Span<std::decay_t<S>> span_out(f.buffer());
       // WARNING: The size argument of the send buffer is the count per process!
-      dune_mpi_call(MPI_Iscatter, span_in.ptr(), span_out.size(),
-                    span_in.mpi_type(), span_out.ptr(), span_out.size(),
-                    span_out.mpi_type(), root,
-                    communicator_, &f.mpirequest());
+      duneMPICall(MPI_Iscatter, span_in.ptr(), span_out.size(),
+                    span_in.mpiType(), span_out.ptr(), span_out.size(),
+                    span_out.mpiType(), root,
+                    communicator_, &f.mpiRequest());
       return f;
     }
 
@@ -441,10 +441,10 @@ namespace Dune
     {
       Span<const T> span_in(send);
       Span<S> span_out(recv);
-      dune_mpi_call(MPI_Scatterv, span_in.ptr(), sendlen.ptr(),
-                    displ.ptr(),span_in.mpi_type(),
+      duneMPICall(MPI_Scatterv, span_in.ptr(), sendlen.ptr(),
+                    displ.ptr(),span_in.mpiType(),
                     span_out.ptr(), span_out.size(),
-                    span_out.mpi_type(), root,
+                    span_out.mpiType(), root,
                     communicator_);
     }
 
@@ -464,9 +464,9 @@ namespace Dune
       Span<const T> span_in(send);
       Span<T1> span_out(recv);
       // WARNING: The size argument of the receive buffer is the count per process!
-      dune_mpi_call(MPI_Allgather, span_in.ptr(), span_in.size(),
-                    span_in.mpi_type(), span_out.ptr(),
-                    span_in.size(), span_out.mpi_type(),
+      duneMPICall(MPI_Allgather, span_in.ptr(), span_in.size(),
+                    span_in.mpiType(), span_out.ptr(),
+                    span_in.size(), span_out.mpiType(),
                     communicator_);
     }
 
@@ -478,9 +478,9 @@ namespace Dune
       FutureType<std::decay_t<S>> f(communicator_, false, std::forward<S>(out));
       Span<std::decay_t<S>> span_out(f.buffer());
       // WARNING: The size argument of the receive buffer is the count per process!
-      dune_mpi_call(MPI_Iallgather, span_in.ptr(), span_in.size(),
-                    span_in.mpi_type(), span_out.ptr(), span_in.size(),
-                    span_out.mpi_type(), communicator_, &f.mpirequest());
+      duneMPICall(MPI_Iallgather, span_in.ptr(), span_in.size(),
+                    span_in.mpiType(), span_out.ptr(), span_in.size(),
+                    span_out.mpiType(), communicator_, &f.mpiRequest());
       return f;
     }
 
@@ -500,9 +500,9 @@ namespace Dune
     {
       Span<const T> span_in(in);
       Span<S> span_out(out);
-      dune_mpi_call(MPI_Allgatherv, span_in.ptr(), span_in.size(),
-                    span_in.mpi_type(), span_out.ptr(),
-                    recvlen.ptr(), displ.ptr(), span_out.mpi_type(),
+      duneMPICall(MPI_Allgatherv, span_in.ptr(), span_in.size(),
+                    span_in.mpiType(), span_out.ptr(),
+                    recvlen.ptr(), displ.ptr(), span_out.mpiType(),
                     communicator_);
     }
 
@@ -520,8 +520,8 @@ namespace Dune
     void allreduce(T& inout) const
     {
       Span<T> span(inout);
-      dune_mpi_call(MPI_Allreduce, MPI_IN_PLACE, span.ptr(), span.size(),
-                    span.mpi_type(),
+      duneMPICall(MPI_Allreduce, MPI_IN_PLACE, span.ptr(), span.size(),
+                    span.mpiType(),
                     (Generic_MPI_Op<typename Span<T>::type, BinaryFunction>::get()),
                     communicator_);
     }
@@ -532,10 +532,10 @@ namespace Dune
     {
       FutureType<std::decay_t<T>> f(communicator_, false, std::forward<T>(data));
       Span<std::decay_t<T>> span(f.buffer());
-      dune_mpi_call(MPI_Iallreduce, MPI_IN_PLACE, span.ptr(),
-                    span.size(), span.mpi_type(),
+      duneMPICall(MPI_Iallreduce, MPI_IN_PLACE, span.ptr(),
+                    span.size(), span.mpiType(),
                     (Generic_MPI_Op<typename decltype(span)::type, BinaryFunction>::get()),
-                    communicator_, &f.mpirequest());
+                    communicator_, &f.mpiRequest());
       return f;
     }
 
@@ -554,8 +554,8 @@ namespace Dune
     {
       Span<const T> span_in(in);
       Span<T> span_out(out);
-      dune_mpi_call(MPI_Allreduce, span_in.ptr(), span_out.ptr(),
-                    span_in.size(), span_in.mpi_type(),
+      duneMPICall(MPI_Allreduce, span_in.ptr(), span_out.ptr(),
+                    span_in.size(), span_in.mpiType(),
                     (Generic_MPI_Op<typename Span<T>::type, BinaryFunction>::get()),
                     communicator_);
     }
@@ -567,10 +567,10 @@ namespace Dune
       Span<const T> span_in(in);
       FutureType<std::decay_t<T>> f(communicator_, false, std::forward<T>(out));
       Span<std::decay_t<T>> span_out(f.buffer());
-      dune_mpi_call(MPI_Iallreduce, span_in.ptr(), span_out.ptr(), span_out.size(),
-                    span_in.mpi_type(),
+      duneMPICall(MPI_Iallreduce, span_in.ptr(), span_out.ptr(), span_out.size(),
+                    span_in.mpiType(),
                     (Generic_MPI_Op<typename Span<T>::type, BinaryFunction>::get()),
-                    communicator_, &f.mpirequest());
+                    communicator_, &f.mpiRequest());
       return f;
     }
 
@@ -580,8 +580,8 @@ namespace Dune
     {
       Span<const T> span_in(in);
       Span<T> span_out(out);
-      dune_mpi_call(MPI_Scan, span_in.ptr(), span_out.ptr(),
-                    span_in.size(), span_in.mpi_type(),
+      duneMPICall(MPI_Scan, span_in.ptr(), span_out.ptr(),
+                    span_in.size(), span_in.mpiType(),
                     (Generic_MPI_Op<typename Span<T>::type, BinaryFunction>::get()),
                     communicator_);
     }
@@ -593,10 +593,10 @@ namespace Dune
       Span<const T> span_in(in);
       FutureType<std::decay_t<T>> f(communicator_, false, std::forward<T>(out));
       Span<T> span_out(f.buffer());
-      dune_mpi_call(MPI_Iscan, span_in.ptr(), span_out.ptr(),
-                    span_in.size(), span_in.mpi_type(),
+      duneMPICall(MPI_Iscan, span_in.ptr(), span_out.ptr(),
+                    span_in.size(), span_in.mpiType(),
                     (Generic_MPI_Op<typename Span<T>::type, BinaryFunction>::get()),
-                    communicator_, &f.mpirequest());
+                    communicator_, &f.mpiRequest());
       return f;
     }
 
@@ -606,8 +606,8 @@ namespace Dune
     {
       Span<const T> span_in(in);
       Span<T> span_out(out);
-      dune_mpi_call(MPI_Exscan, span_in.ptr(), span_out.ptr(),
-                    span_in.size(), span_in.mpi_type(),
+      duneMPICall(MPI_Exscan, span_in.ptr(), span_out.ptr(),
+                    span_in.size(), span_in.mpiType(),
                     (Generic_MPI_Op<typename Span<T>::type, BinaryFunction>::get()),
                     communicator_);
     }
@@ -619,10 +619,10 @@ namespace Dune
       Span<const T> span_in(in);
       FutureType<std::decay_t<T>> f(communicator_, false, std::forward<T>(out));
       Span<std::decay_t<T>> span_out(f.buffer());
-      dune_mpi_call(MPI_Iexscan, span_in.ptr(), span_out.ptr(), span_in.size(),
-                    span_in.mpi_type(),
+      duneMPICall(MPI_Iexscan, span_in.ptr(), span_out.ptr(), span_in.size(),
+                    span_in.mpiType(),
                     (Generic_MPI_Op<typename Span<T>::type, BinaryFunction>::get()),
-                    communicator_, &f.mpirequest());
+                    communicator_, &f.mpiRequest());
       return f;
     }
 
@@ -635,7 +635,7 @@ namespace Dune
     public GenericMPICollectiveCommunication<ManagedMPIComm>
   {
   public:
-    CollectiveCommunication(const ManagedMPIComm& c = ManagedMPIComm::comm_world()) :
+    CollectiveCommunication(const ManagedMPIComm& c = ManagedMPIComm::commWorld()) :
       GenericMPICollectiveCommunication(c) {}
   };
 } // namespace dune

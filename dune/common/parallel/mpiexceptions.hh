@@ -36,7 +36,7 @@ namespace Dune{
   struct MPIRemoteError : public ParallelError{};
 
   template<class F, class... Args>
-  void dune_mpi_call(const F& mpi_fun, Args&&... args){
+  void duneMPICall(const F& mpi_fun, Args&&... args){
     int result = mpi_fun(std::forward<Args>(args)...);
     if(result != MPI_SUCCESS){
       char buf[MPI_MAX_ERROR_STRING];

@@ -29,7 +29,7 @@ namespace Dune
     static void freeFile(MPI_File* f)
     {
       if(*f != MPI_FILE_NULL)
-        dune_mpi_call(MPI_File_close, f);
+        duneMPICall(MPI_File_close, f);
     }
 
   public:
@@ -42,7 +42,7 @@ namespace Dune
       : comm_(c)
       , file_ptr_(new MPI_File, freeFile)
     {
-      dune_mpi_call(MPI_File_open, comm_, filename, amode, info,
+      duneMPICall(MPI_File_open, comm_, filename, amode, info,
                     file_ptr_.get());
     }
 
@@ -53,56 +53,56 @@ namespace Dune
     {
     }
 
-    void set_size(MPI_Offset s)
+    void setSize(MPI_Offset s)
     {
-      dune_mpi_call(MPI_File_set_size, *file_ptr_, s);
+      duneMPICall(MPI_File_set_size, *file_ptr_, s);
     }
 
-    MPI_Offset get_size()
+    MPI_Offset size()
     {
       MPI_Offset s;
-      dune_mpi_call(MPI_File_get_size, *file_ptr_, &s);
+      duneMPICall(MPI_File_get_size, *file_ptr_, &s);
       return s;
     }
 
     void preallocate(MPI_Offset s)
     {
-      dune_mpi_call(MPI_File_preallocate, *file_ptr_, s);
+      duneMPICall(MPI_File_preallocate, *file_ptr_, s);
     }
 
-    void set_info(MPI_Info i)
+    void setInfo(MPI_Info i)
     {
-      dune_mpi_call(MPI_File_set_info, *file_ptr_, i);
+      duneMPICall(MPI_File_set_info, *file_ptr_, i);
     }
 
-    MPI_Info get_info()
+    MPI_Info info()
     {
       MPI_Info i;
-      dune_mpi_call(MPI_File_get_info, *file_ptr_, &i);
+      duneMPICall(MPI_File_get_info, *file_ptr_, &i);
       return i;
     }
 
-    int get_amode()
+    int amode()
     {
       int amode;
-      dune_mpi_call(MPI_File_get_amode, *file_ptr_, &amode);
+      duneMPICall(MPI_File_get_amode, *file_ptr_, &amode);
       return amode;
     }
 
     void sync()
     {
-      dune_mpi_call(MPI_File_sync, *file_ptr_);
+      duneMPICall(MPI_File_sync, *file_ptr_);
     }
 
-    void set_atomicity(bool flag)
+    void setAtomicity(bool flag)
     {
-      dune_mpi_call(MPI_File_set_atomicity, *file_ptr_, flag);
+      duneMPICall(MPI_File_set_atomicity, *file_ptr_, flag);
     }
 
-    bool get_atomicity() const
+    bool atomicity() const
     {
       int flag;
-      dune_mpi_call(MPI_File_get_atomicity, *file_ptr_, &flag);
+      duneMPICall(MPI_File_get_atomicity, *file_ptr_, &flag);
       return flag;
     }
 
@@ -121,111 +121,111 @@ namespace Dune
 
     void seek(MPI_Offset offset, Whence whence = Whence::set)
     {
-      dune_mpi_call(MPI_File_seek, *file_ptr_, offset, (int)whence);
+      duneMPICall(MPI_File_seek, *file_ptr_, offset, (int)whence);
     }
 
     MPI_Offset position(){
       MPI_Offset offset;
-      dune_mpi_call(MPI_File_get_position, *file_ptr_, &offset);
+      duneMPICall(MPI_File_get_position, *file_ptr_, &offset);
       return offset;
     }
 
-    MPI_Offset byte_offset(MPI_Offset offset){
+    MPI_Offset byteOffset(MPI_Offset offset){
       MPI_Offset disp;
-      dune_mpi_call(MPI_File_get_byte_offset, *file_ptr_, offset, &disp);
+      duneMPICall(MPI_File_get_byte_offset, *file_ptr_, offset, &disp);
       return disp;
     }
 
     template<typename T>
-    FutureType<std::decay_t<T>> iread_at(MPI_Offset offset, T&& data)
+    FutureType<std::decay_t<T>> iReadAt(MPI_Offset offset, T&& data)
     {
       FutureType<std::decay_t<T>> future(comm_, false, std::forward<T>(data));
       Span<std::decay_t<T>> span(future.buffer());
-      dune_mpi_call(MPI_File_iread_at, *file_ptr_, offset,
+      duneMPICall(MPI_File_iread_at, *file_ptr_, offset,
                     span.ptr(), span.size(),
-                    span.mpi_type(), &future.mpirequest());
+                    span.mpiType(), &future.mpiRequest());
       return future;
     }
 
     template<typename T>
-    FutureType<> iwrite_at(MPI_Offset offset, const T& data)
+    FutureType<> iWriteAt(MPI_Offset offset, const T& data)
     {
       FutureType<> future(comm_, false);
       Span<std::decay_t<T>> span(data);
-      dune_mpi_call(MPI_File_iwrite_at, *file_ptr_, offset,
+      duneMPICall(MPI_File_iwrite_at, *file_ptr_, offset,
                     span.ptr(), span.size(),
-                    span.mpi_type(), &future.mpirequest());
+                    span.mpiType(), &future.mpiRequest());
       return future;
     }
 
     template<typename T>
-    FutureType<std::decay_t<T>> iread(T&& data)
+    FutureType<std::decay_t<T>> iRead(T&& data)
     {
       FutureType<std::decay_t<T>> future(comm_, false, std::forward<T>(data));
       Span<std::decay_t<T>> span(future.buffer());
-      dune_mpi_call(MPI_File_iread, *file_ptr_,
+      duneMPICall(MPI_File_iread, *file_ptr_,
                     span.ptr(), span.size(),
-                    span.mpi_type(),
-                    &future.mpirequest());
+                    span.mpiType(),
+                    &future.mpiRequest());
       return future;
     }
 
     template<typename T>
-    FutureType<> iwrite(const T& data)
+    FutureType<> iWrite(const T& data)
     {
       FutureType<> future(comm_, false);
       Span<std::decay_t<T>> span(data);
-      dune_mpi_call(MPI_File_iwrite, *file_ptr_,
+      duneMPICall(MPI_File_iwrite, *file_ptr_,
                     span.ptr(), span.size(),
-                    span.mpi_type(),
-                    &future.mpirequest());
+                    span.mpiType(),
+                    &future.mpiRequest());
       return future;
     }
 
 #if MPI_VERSION > 3 || (MPI_VERSION==3 && MPI_SUBVERSION >=1)
     template<typename T>
-    FutureType<std::decay_t<T>> iread_at_all(MPI_Offset offset, T&& data)
+    FutureType<std::decay_t<T>> iReadAtAll(MPI_Offset offset, T&& data)
     {
       FutureType<std::decay_t<T>> future(comm_, false, std::forward<T>(data));
       Span<std::decay_t<T>> span (future.buffer());
-      dune_mpi_call(MPI_File_iread_at_all, *file_ptr_, offset,
+      duneMPICall(MPI_File_iread_at_all, *file_ptr_, offset,
                     span.ptr(), span.size(),
-                    span.mpi_type(), &future.mpirequest());
+                    span.mpiType(), &future.mpiRequest());
       return future;
     }
 
     template<typename T>
-    FutureType<> iwrite_at_all(MPI_Offset offset, const T& data)
+    FutureType<> iWriteAtAll(MPI_Offset offset, const T& data)
     {
       FutureType<> future(comm_, false);
       Span<std::decay_t<T>> span(data);
-      dune_mpi_call(MPI_File_iwrite_at_all, *file_ptr_, offset,
+      duneMPICall(MPI_File_iwrite_at_all, *file_ptr_, offset,
                     span.ptr(), span.size(),
-                    span.mpi_type(), &future.mpirequest());
+                    span.mpiType(), &future.mpiRequest());
       return future;
     }
 
     template<typename T>
-    FutureType<std::decay_t<T>> iread_all(T&& data)
+    FutureType<std::decay_t<T>> iReadAll(T&& data)
     {
       FutureType<std::decay_t<T>> future(comm_, false, std::forward<T>(data));
       Span<std::decay_t<T>> span(future.buffer());
-      dune_mpi_call(MPI_File_iread_all, *file_ptr_,
+      duneMPICall(MPI_File_iread_all, *file_ptr_,
                     span.ptr(), span.size(),
-                    span.mpi_type(),
-                    &future.mpirequest());
+                    span.mpiType(),
+                    &future.mpiRequest());
       return future;
     }
 
     template<typename T>
-    FutureType<> iwrite_all(const T& data)
+    FutureType<> iWriteAll(const T& data)
     {
       FutureType<> future(comm_, false);
       Span<std::decay_t<T>> span(data);
-      dune_mpi_call(MPI_File_iwrite_all, *file_ptr_,
+      duneMPICall(MPI_File_iwrite_all, *file_ptr_,
                     span.ptr(), span.size(),
-                    span.mpi_type(),
-                    &future.mpirequest());
+                    span.mpiType(),
+                    &future.mpiRequest());
       return future;
     }
 #endif
@@ -242,9 +242,9 @@ namespace Dune
     }
   };  // class MPIFile
 
-  inline void delete_file(const char* filename, MPI_Info info = MPI_INFO_NULL)
+  inline void deleteFile(const char* filename, MPI_Info info = MPI_INFO_NULL)
   {
-    dune_mpi_call(MPI_File_delete, filename, info);
+    duneMPICall(MPI_File_delete, filename, info);
   }
 }  // namespace Dune
 

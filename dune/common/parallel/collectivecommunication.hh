@@ -64,7 +64,7 @@ namespace Dune
      \tparam Communicator The communicator type used by your
        message-passing implementation.  For MPI this will be
        Dune::ManagedMPIComm.  For sequential codes there is the dummy
-       communicator No_Comm.  It is assumed that if you want to
+       communicator NoComm.  It is assumed that if you want to
        specialize the CollectiveCommunication class for a
        message-passing system other than MPI, that message-passing
        system will have something equivalent to MPI communicators.
@@ -75,7 +75,7 @@ namespace Dune
   class CollectiveCommunication;
 
   template<>
-  class CollectiveCommunication<No_Comm>
+  class CollectiveCommunication<NoComm>
   {
   public:
     // Export Future type
@@ -89,7 +89,7 @@ namespace Dune
      *
      * As this is implementation for the sequential setting, the communicator is a dummy and simply discarded.
      */
-    CollectiveCommunication (const No_Comm&)
+    CollectiveCommunication (const NoComm&)
     {}
 
     //! Return rank, is between 0 and size()-1

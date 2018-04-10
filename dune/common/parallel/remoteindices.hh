@@ -1061,8 +1061,8 @@ namespace Dune {
     // unpack the number of indices we received
     int noRemoteSource=-1, noRemoteDest=-1;
     char twoIndexSets=0;
-    int pos0 = p_in.get_position();
-    p_in.set_position(0);
+    int pos0 = p_in.position();
+    p_in.setPosition(0);
     // Did we receive two index sets?
     p_in.unpack(twoIndexSets);
     // The number of source indices received
@@ -1089,13 +1089,13 @@ namespace Dune {
       }
     }else{
 
-      int oldPos=p_in.get_position();
+      int oldPos=p_in.position();
       // Two index sets received
       unpackIndices(*receive, noRemoteSource, destPairs, destPublish,
                     p_in, fromOurSelf);
       if(!sendTwo)
         //unpack source entries again as destination entries
-        p_in.set_position(oldPos);
+        p_in.setPosition(oldPos);
 
       send = new RemoteIndexList();
       unpackIndices(*send, noRemoteDest, sourcePairs, sourcePublish,
@@ -1113,7 +1113,7 @@ namespace Dune {
       remoteIndices_.insert(std::make_pair(remoteProc,
                                            std::make_pair(send,receive)));
     }
-    p_in.set_position(pos0);
+    p_in.setPosition(pos0);
   }
 
 
@@ -1162,9 +1162,9 @@ namespace Dune {
       destPairs=sourcePairs;
 
 
-    int bufferSize = MPIPack<Comm>::get_pack_size(maxPublish, comm_, MPITraits<PairType>::getType());
-    int intSize = MPIPack<Comm>::get_pack_size(1, comm_, MPI_INT);
-    int charSize = MPIPack<Comm>:: get_pack_size(1, comm_, MPI_CHAR);
+    int bufferSize = MPIPack<Comm>::packSize(maxPublish, comm_, MPITraits<PairType>::getType());
+    int intSize = MPIPack<Comm>::packSize(1, comm_, MPI_INT);
+    int charSize = MPIPack<Comm>:: packSize(1, comm_, MPI_CHAR);
     // Our message will contain the following:
     // a bool whether two index sets where sent
     // the size of the source and the dest indexset,
@@ -1251,7 +1251,7 @@ namespace Dune {
       {
         auto status = ptpc.mprobe(MPI_ANY_SOURCE, commTag_);
         // probe for next message
-        int remoteProc=status.get_source();
+        int remoteProc=status.source();
         // receive message
         status.template recv(buffer[1]);
         unpackCreateRemote(buffer[1], sourcePairs, destPairs, remoteProc, sourcePublish,

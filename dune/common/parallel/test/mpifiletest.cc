@@ -38,13 +38,13 @@ int main(int argc, char** argv)
       // test assignment
       Dune::MPIFile<decltype(comm)> file2 = file;
       std::cout << rank << ":\tloaded file " << filename << std::endl;
-      std::cout << rank << ":\tfilesize: " << file2.get_size() << std::endl;
+      std::cout << rank << ":\tfilesize: " << file2.size() << std::endl;
 
-      bool a = file2.get_atomicity();
+      bool a = file2.atomicity();
       std::cout << rank << ":\tatomicity is set " << (a?"on":"off") << std::endl;
       file2.seek(sizeof(vec)*rank, Dune::MPIFile<decltype(comm)>::Whence::set);
       std::cout << comm.rank() << ":\twrite " << vec << std::endl;
-      auto f = file2.iwrite(vec);
+      auto f = file2.iWrite(vec);
       f.wait();
     }
     // switch to other communicator
@@ -53,17 +53,17 @@ int main(int argc, char** argv)
       Dune::MPIGuard guard(comm);
       Dune::MPIFile<decltype(comm)> file(comm, filename);
       std::cout << rank << ":\tloaded file " << filename << std::endl;
-      std::cout << rank << ":\tfilesize: " << file.get_size() << std::endl;
+      std::cout << rank << ":\tfilesize: " << file.size() << std::endl;
 
       file.seek(sizeof(vec)*rank, Dune::MPIFile<decltype(comm)>::Whence::set);
-      auto f = file.iread(VectorType{});
+      auto f = file.iRead(VectorType{});
       auto vec2 = f.get();
       std::cout << comm.rank() << ":\tread " << vec2 << std::endl;
       if (vec != vec2)
         DUNE_THROW(Dune::Exception, "Read wrong value");
     }
     if(rank == 0)
-      Dune::delete_file(filename);
+      Dune::deleteFile(filename);
   }catch(std::exception& e){
     std::cout << e.what() << std::endl;
     return 1;

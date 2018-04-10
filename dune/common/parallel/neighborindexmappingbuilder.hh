@@ -80,7 +80,7 @@ namespace Dune {
       GI remote_indices;
       for(size_t i = 0; i < neighbors.size(); i++){
         auto s = ptpc_.mprobe(MPI_ANY_SOURCE, tag);
-        int rank = s.get_source();
+        int rank = s.source();
         s.recv(remote_indices);
         std::set_intersection(my_indices.begin(), my_indices.end(),
                               remote_indices.begin(), remote_indices.end(),

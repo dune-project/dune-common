@@ -1056,8 +1056,8 @@ namespace Dune
     PointToPointCommunication<decltype(remoteIndices_.communicator())> ptpc;
     auto status = ptpc.mprobe(MPI_ANY_SOURCE, 345);
 
-    int source=status.get_source();
-    int count = status.get_count(MPI_PACKED);
+    int source=status.source();
+    int count = status.count(MPI_PACKED);
 
     Dune::dvverb<<rank_<<": Receiving message from "<< source<<" with "<<count<<" bytes"<<std::endl;
 
