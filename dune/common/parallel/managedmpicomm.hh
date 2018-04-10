@@ -80,7 +80,8 @@ namespace Dune
     {}
 
     /** @brief Wraps an native MPI_Comm into this class, but does not
-        obtain resource management!
+     *  obtain resource management!
+     * \deprecated Use dup() or split() instead.
      */
     DUNE_DEPRECATED
     ManagedMPIComm(MPI_Comm c)

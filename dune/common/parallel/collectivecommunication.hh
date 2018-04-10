@@ -124,6 +124,8 @@ namespace Dune
      * @param len number of elements
      *
      * @return error code
+     *
+     * \deprecated Use sum(const T&) const instead
      */
     template<typename T>
     DUNE_DEPRECATED
@@ -154,7 +156,9 @@ namespace Dune
      * @param inout
      * @param len
      *
-     *  @throw MPIError
+     * @throw MPIError
+     *
+     * \deprecated Use prod(const T&) const instead
      */
     template<typename T>
     DUNE_DEPRECATED
@@ -184,8 +188,10 @@ namespace Dune
      * @param inout
      * @param len
      *
-     * @return
+     * @return error code
      * @throw MPIError
+     *
+     * \deprecated Use min(const T&) const instead
      */
     template<typename T>
     DUNE_DEPRECATED
@@ -215,8 +221,10 @@ namespace Dune
      * @param inout
      * @param len
      *
-     * @return
+     * @return error code
      * @throw MPIError
+     *
+     * \deprecated Use max(const T&) const instead
      */
     template<typename T>
     DUNE_DEPRECATED
@@ -269,8 +277,10 @@ namespace Dune
      * @param len
      * @param root
      *
-     * @return
+     * @return error code
      * @throw MPIError
+     *
+     * \deprecated Use broadcast(T&, int) const instead
      */
     template<typename T>
     DUNE_DEPRECATED
@@ -328,6 +338,8 @@ namespace Dune
      * @param[in] len The number of elements to send on each task.
      * @param[in] root The root task that gathers the data.
      * @throw MPIError
+     *
+     * \deprecated Use gather(const T&, S&, int) const instead
      */
     template<typename T, typename S>
     DUNE_DEPRECATED
@@ -380,6 +392,8 @@ namespace Dune
      *                  May have length zero on non-root tasks.
      * @param[in] root The root task that gathers the data.
      * @throw MPIError
+     *
+     * \deprecated Use gatherv(const T&, S&, Span<int*>, Span<int*>, int) const instead
      */
     template<typename T, typename S>
     DUNE_DEPRECATED
@@ -435,6 +449,8 @@ namespace Dune
      * @param[in] len The number of elements in the recv buffer.
      * @param[in] root The root task that gathers the data.
      * @throw MPIError
+     *
+     * \deprecated Use scatter(const T&, S&, int) const instead
      */
     template<typename T, typename S>
     DUNE_DEPRECATED
@@ -507,6 +523,8 @@ namespace Dune
      * @param[in] recvlen The number of elements in the recv buffer.
      * @param[in] root The root task that gathers the data.
      * @throw MPIError
+     *
+     * \deprecated Use scatterv(const T&, S&, Span<int*>, Span<int*>, int) const instead
      */
     template<typename T, typename S>
     DUNE_DEPRECATED
@@ -561,6 +579,8 @@ namespace Dune
      * @param[out] recv The receive buffer for the data. Has to be of size
      *  notasks*count, with notasks being the number of tasks in the communicator.
      * @throw MPIError
+     *
+     * \deprecated Use allgather(const T&, S&) const instead
      */
     template<typename T, typename S>
     DUNE_DEPRECATED
@@ -624,6 +644,8 @@ namespace Dune
      * @param[in] displ An array with size equal to the number of processes. Data recieved from
      *                  process i will be written starting at out+displ[i].
      * @throw MPIError
+     *
+     * \deprecated Use allgatherv(const T&, S&, Span<int*>, Span<int*>) const instead
      */
     template<typename T, typename S>
     DUNE_DEPRECATED
@@ -668,6 +690,8 @@ namespace Dune
      * @param inout The array to compute on.
      * @param len The number of components in the array
      * @throw MPIError
+     *
+     * \deprecated Use allreduce(T&) const instead
      */
     template<typename BinaryFunction, typename T>
     DUNE_DEPRECATED
@@ -716,6 +740,8 @@ namespace Dune
      * @param out The array to store the results in
      * @param len The number of components in the array
      * @throw MPIError
+     *
+     * \deprecated Use allreduce(const T&, T&) const instead
      */
     template<typename BinaryFunction, typename T>
     DUNE_DEPRECATED
