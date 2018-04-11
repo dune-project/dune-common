@@ -83,6 +83,7 @@ install(FILES
         lru.hh
         mallocallocator.hh
         math.hh
+        mathutilities.hh
         matvectraits.hh
         nullptr.hh
         overloadset.hh
