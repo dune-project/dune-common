@@ -80,6 +80,55 @@ namespace Dune
     enum { factorial = 1 };
   };
 
+
+  //! calculate the factorial of n as a constexpr
+  // T has to be an integral type
+  template<class T,
+           std::enable_if_t<std::is_integral<std::decay_t<T>>::value, int> = 0>
+  constexpr inline static auto factorial(T&& n) noexcept
+    -> std::decay_t< T >
+  {
+    std::decay_t<T> fac = 1;
+    for(std::decay_t<T> k = 0; k < n; ++k)
+      fac *= k+1;
+    return fac;
+  }
+
+  //! calculate the factorial of n as a constexpr
+  template<class T, T n>
+  constexpr inline static auto factorial (std::integral_constant<T, n>) noexcept
+  {
+    return std::integral_constant<T, factorial(n)>{};
+  }
+
+
+  //! calculate the binomial coefficient n over k as a constexpr
+  // T and U have to be the same integral type
+  template<class T, class U,
+           std::enable_if_t<std::is_same<std::decay_t<T>, std::decay_t<U>>::value, int> = 0,
+           std::enable_if_t<std::is_integral<std::decay_t<T>>::value, int> = 0>
+  constexpr inline static auto binomial (T&& n, U&& k) noexcept
+    -> std::decay_t< T >
+  {
+    if( k < 0 || k > n )
+      return 0;
+
+    if (2*k > n)
+      return binomial(n, n-k);
+
+    std::decay_t<T> bin = 1;
+    for(auto i = n-k; i < n; ++i)
+      bin *= i+1;
+    return bin / factorial(k);
+  }
+
+  //! calculate the binomial coefficient n over k as a constexpr
+  template< class T, T n, T k>
+  constexpr inline static auto binomial (std::integral_constant<T, n>, std::integral_constant<T, k>) noexcept
+  {
+    return std::integral_constant<T, binomial(n, k)>{};
+  }
+
   //! compute conjugate complex of x
   // conjugate complex does nothing for non-complex types
   template<class K>
