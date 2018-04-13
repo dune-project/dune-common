@@ -172,25 +172,32 @@ namespace Dune
 
 #endif // DOXYGEN
 
-
   //! \brief Whether this type has a value of NaN.
   /**
    * Internally, this is just a forward to `std::is_floating_point<T>`.
    */
   template <typename T>
-  struct has_nan
+  struct HasNaN
       : public std::integral_constant<bool, std::is_floating_point<T>::value> {
   };
 
 #ifndef DOXYGEN
 
   template <typename T>
-  struct has_nan<std::complex<T>>
+  struct HasNaN<std::complex<T>>
       : public std::integral_constant<bool, std::is_floating_point<T>::value> {
   };
 
 #endif // DOXYGEN
 
+  //! \brief Whether this type has a value of NaN.
+  //! \deprecated has_nan is deprecated, use `Dune::HasNaN` instead
+  /**
+   * Internally, this is just a forward to `std::is_floating_point<T>`.
+   */
+  template <typename T>
+  struct DUNE_DEPRECATED_MSG("Has been renamed to 'HasNaN'.") has_nan
+    : HasNaN<T> {};
 
 #if defined(DOXYGEN) or HAVE_IS_INDEXABLE_SUPPORT
 
@@ -199,12 +206,12 @@ namespace Dune
   namespace Impl {
 
     template<typename T, typename I, typename = int>
-    struct _is_indexable
+    struct _IsIndexable
       : public std::false_type
     {};
 
     template<typename T, typename I>
-    struct _is_indexable<T,I,typename std::enable_if<(sizeof(std::declval<T>()[std::declval<I>()]) > 0),int>::type>
+    struct _IsIndexable<T,I,typename std::enable_if<(sizeof(std::declval<T>()[std::declval<I>()]) > 0),int>::type>
       : public std::true_type
     {};
 
@@ -218,10 +225,9 @@ namespace Dune
    *          are problems with GCC 4.4 and 4.5.
    */
   template<typename T, typename I = std::size_t>
-  struct is_indexable
-    : public Impl::_is_indexable<T,I>
+  struct IsIndexable
+    : public Impl::_IsIndexable<T,I>
   {};
-
 
 #else // defined(DOXYGEN) or HAVE_IS_INDEXABLE_SUPPORT
 
@@ -253,13 +259,13 @@ namespace Dune
 
     // default version, gets picked if SFINAE fails
     template<typename T, typename = int>
-    struct _is_indexable
+    struct _IsIndexable
       : public std::false_type
     {};
 
     // version for types supporting the subscript operation
     template<typename T>
-    struct _is_indexable<T,decltype(std::declval<T>()[0],0)>
+    struct _IsIndexable<T,decltype(std::declval<T>()[0],0)>
       : public std::true_type
     {};
 
@@ -271,7 +277,7 @@ namespace Dune
 
       template<typename T>
       struct evaluate
-        : public _is_indexable<T>
+        : public _IsIndexable<T>
       {};
 
     };
@@ -289,7 +295,7 @@ namespace Dune
   // In order to make sure that the compiler doesn't accidentally try the SFINAE evaluation
   // on an array or a scalar, we have to resort to lazy evaluation.
   template<typename T, typename I = std::size_t>
-  struct is_indexable
+  struct IsIndexable
     : public std::conditional<
                std::is_array<T>::value,
                Impl::_lazy<std::true_type>,
@@ -305,6 +311,16 @@ namespace Dune
 
 
 #endif // defined(DOXYGEN) or HAVE_IS_INDEXABLE_SUPPORT
+
+  //! Type trait to determine whether an instance of T has an operator[](I), i.e. whether it can be indexed with an index of type I.
+  //! \deprecated is_indexable is deprecated, use `Dune::IsIndexable` instead
+  /**
+   * \warning Not all compilers support testing for arbitrary index types. In particular, there
+   *          are problems with GCC 4.4 and 4.5.
+   */
+  template<typename T, typename I = std::size_t>
+  struct DUNE_DEPRECATED_MSG("Has been renamed to 'IsIndexable'.") is_indexable
+    : public IsIndexable<T,I> {};
 
 #ifndef DOXYGEN
 
@@ -325,14 +341,14 @@ namespace Dune
    */
   // default version, gets picked if SFINAE fails
   template<typename T, typename = void>
-  struct is_range
+  struct IsIterable
     : public std::false_type
   {};
 
 #ifndef DOXYGEN
   // version for types with begin() and end()
   template<typename T>
-  struct is_range<T, decltype(Impl::ignore(
+  struct IsIterable<T, decltype(Impl::ignore(
       std::declval<T>().begin(),
       std::declval<T>().end(),
       std::declval<T>().begin() != std::declval<T>().end(),
@@ -343,6 +359,14 @@ namespace Dune
     : public std::true_type
   {};
 #endif
+
+  /**
+     \brief typetrait to check that a class has begin() and end() members
+     \deprecated is_range is deprecated, use `Dune::IsIterable` instead
+   */
+  template<typename T, typename = void>
+  struct DUNE_DEPRECATED_MSG("Has been renamed to 'IsIterable'.") is_range
+    : public IsIterable<T> {};
 
 #ifndef DOXYGEN
   // this is just a forward declaration

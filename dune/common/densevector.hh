@@ -624,7 +624,7 @@ namespace Dune {
 
     //! infinity norm (maximum of absolute values of entries)
     template <typename vt = value_type,
-              typename std::enable_if<!has_nan<vt>::value, int>::type = 0>
+              typename std::enable_if<!HasNaN<vt>::value, int>::type = 0>
     typename FieldTraits<vt>::real_type infinity_norm() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::abs;
@@ -640,7 +640,7 @@ namespace Dune {
 
     //! simplified infinity norm (uses Manhattan norm for complex values)
     template <typename vt = value_type,
-              typename std::enable_if<!has_nan<vt>::value, int>::type = 0>
+              typename std::enable_if<!HasNaN<vt>::value, int>::type = 0>
     typename FieldTraits<vt>::real_type infinity_norm_real() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::max;
@@ -655,7 +655,7 @@ namespace Dune {
 
     //! infinity norm (maximum of absolute values of entries)
     template <typename vt = value_type,
-              typename std::enable_if<has_nan<vt>::value, int>::type = 0>
+              typename std::enable_if<HasNaN<vt>::value, int>::type = 0>
     typename FieldTraits<vt>::real_type infinity_norm() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::abs;
@@ -674,7 +674,7 @@ namespace Dune {
 
     //! simplified infinity norm (uses Manhattan norm for complex values)
     template <typename vt = value_type,
-              typename std::enable_if<has_nan<vt>::value, int>::type = 0>
+              typename std::enable_if<HasNaN<vt>::value, int>::type = 0>
     typename FieldTraits<vt>::real_type infinity_norm_real() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::max;
