@@ -36,11 +36,11 @@ namespace Dune
   constexpr inline static auto binomial (T&& n, U&& k) noexcept
     -> std::decay_t< T >
   {
+    if( k < 0 || k > n )
+      return 0;
+
     if (2*k > n)
       return binomial(n, n-k);
-
-    if( k < 0)
-      return 0;
 
     std::decay_t<T> bin = 1;
     for(auto i = n-k; i < n; ++i)
