@@ -39,7 +39,7 @@ namespace Dune
     if (2*k > n)
       return binomial(n, n-k);
 
-    if( k < 0)
+    if( k < 0 || k > n )
       return 0;
 
     std::decay_t<T> bin = 1;
