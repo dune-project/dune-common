@@ -541,7 +541,7 @@ namespace Dune {
     }
 
     // ! Returns whether any entry is NaN
-    template<class K, int SIZE, typename = std::enable_if_t<has_nan<K>::value>>
+    template<class K, int SIZE, typename = std::enable_if_t<HasNaN<K>::value>>
     bool isNaN(const FieldVector<K,SIZE> &b, PriorityTag<2>, ADLTag) {
       bool out = false;
       for(int i=0; i<SIZE; i++) {
@@ -551,7 +551,7 @@ namespace Dune {
     }
 
     // ! Returns true if either b or c is NaN
-    template<class K, typename = std::enable_if_t<has_nan<K>::value>>
+    template<class K, typename = std::enable_if_t<HasNaN<K>::value>>
     bool isUnordered(const FieldVector<K,1> &b, const FieldVector<K,1> &c,
                      PriorityTag<2>, ADLTag) {
       return Dune::isUnordered(b[0],c[0]);
