@@ -5,9 +5,6 @@ dune_add_test(SOURCES arithmetictestsuitetest.cc
 dune_add_test(SOURCES arraylisttest.cc
               LABELS quick)
 
-dune_add_test(SOURCES arraydeprecationtest.cc
-              LABELS quick)
-
 dune_add_test(SOURCES arraytest.cc
               LABELS quick)
 
