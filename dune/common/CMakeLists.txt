@@ -71,7 +71,6 @@ install(FILES
         gmpfield.hh
         hash.hh
         hybridutilities.hh
-        identitymatrix.hh
         indent.hh
         indices.hh
         interfaces.hh
