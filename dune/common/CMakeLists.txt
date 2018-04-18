@@ -30,7 +30,6 @@ dune_add_library("dunecommon"
 add_dune_tbb_flags(dunecommon)
 #install headers
 install(FILES
-        alignment.hh
         alignedallocator.hh
         array.hh
         arraylist.hh
