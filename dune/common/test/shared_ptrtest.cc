@@ -150,13 +150,7 @@ int main(){
     assert(bar);
 
     // test constructor from nullptr
-#ifndef HAVE_NULLPTR
-        #warning Construction of shared_ptr from a nullptr will not work as compiler
-        #warning does not support the latter.
-    shared_ptr<double> bar_null=shared_ptr<double>();
-#else
     shared_ptr<double> bar_null(nullptr);
-#endif
     assert(!bar_null);
     assert(!bar_null.get());
 
