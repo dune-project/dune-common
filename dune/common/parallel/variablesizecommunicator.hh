@@ -281,13 +281,39 @@ private:
  *
  * In contrast to BufferedCommunicator the amount of data is determined by the container
  * whose entries are sent and not known at the receiving side a priori.
+ *
+ * Note that there is no global index-space, only local index-spaces on each
+ * rank.  Note also that each rank has two index-spaces, one used for
+ * gathering/sending, and one used for scattering/receiving.  These may be the
+ * identical, but they do not have to be.
+ *
+ * For data send from rank A to rank B, the order that rank A inserts its
+ * indices into its send-interface for rank B has to be the same order that
+ * rank B inserts its matching indices into its receive interface for rank A.
+ * (This is because the `VariableSizeCommunicator` has no concept of a global
+ * index-space, so the order used to insert the indices into the interfaces is
+ * the only clue it has to know which source index should be communicated to
+ * which target index.)
+ *
+ * It is permissible for a rank to communicate with itself, i.e. it can define
+ * send- and receive-interfaces to itself.  These interfaces do not need to
+ * contain the same indices, as the local send index-space can be different
+ * from the local receive index-space.  This is useful for repartitioning or
+ * for aggregating in AMG.
+ *
+ * Do not assume that gathering to an index happens before scattering to the
+ * same index in the same communication, as `VariableSizeCommunicator` assumes
+ * they are from different index-spaces.  This is a pitfall if you want do
+ * communicate a vector in-place, e.g. to sum up partial results from
+ * different ranks.  Instead, have separate source and target vectors and copy
+ * the source vector to the target vector before communicating.
  */
 template<class Allocator=std::allocator<std::pair<InterfaceInformation,InterfaceInformation> > >
 class VariableSizeCommunicator
 {
 public:
   /**
-     * @brief The type of the map form process number to InterfaceInformation for
+     * @brief The type of the map from process number to InterfaceInformation for
      * sending and receiving to and from it.
      */
   typedef std::map<int,std::pair<InterfaceInformation,InterfaceInformation>,
@@ -868,7 +894,7 @@ std::size_t checkAndContinue(DataHandle& handle,
       comm_func(handle, tracker, buffers[*index], requests2[*index], comm);
       tracker.skipZeroIndices();
       if(valid)
-      no_completed-=!tracker.finished(); // communication not finished, decrement counter for finished ones.
+      --no_completed; // communication not finished, decrement counter for finished ones.
     }
   }
   return no_completed;
@@ -1088,7 +1114,7 @@ void VariableSizeCommunicator<Allocator>::communicateSizes(DataHandle& handle,
     if(i->empty())
       --size_to_recv;
 
-  size_to_send -= setupRequests(size_handle, send_trackers, send_buffers, send_requests,
+  setupRequests(size_handle, send_trackers, send_buffers, send_requests,
                                 SetupSendRequest<SizeDataHandle<DataHandle> >(), communicator_);
   setupRequests(size_handle, recv_trackers, recv_buffers, recv_requests,
                 SetupRecvRequest<SizeDataHandle<DataHandle> >(), communicator_);
@@ -1131,7 +1157,7 @@ void VariableSizeCommunicator<Allocator>::communicateVariableSize(DataHandle& ha
   std::size_t no_to_send, no_to_recv;
   no_to_send = no_to_recv =  interface_->size();
   // Setup requests for sending and receiving.
-  no_to_send -= setupRequests(handle, send_trackers, send_buffers, send_requests,
+  setupRequests(handle, send_trackers, send_buffers, send_requests,
                 SetupSendRequest<DataHandle>(), communicator_);
   setupRequests(handle, recv_trackers, recv_buffers, recv_requests,
                 SetupRecvRequest<DataHandle>(), communicator_);

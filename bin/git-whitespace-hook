@@ -25,10 +25,10 @@ fi
 
 # By default, we disallow trailing whitespace for the following files, but the check for C/C++ and CMake sources
 # happens in the tab-in-indent check to avoid confusing users with duplicate error messages
-TRAILING_WHITESPACE_DEFAULT='.*(dune.module|README|README.SVN|COPYING|README.md|LICENSE.md|CONTRIBUTING.md|INSTALL|TODO|\.pc\.in)$'
+TRAILING_WHITESPACE_DEFAULT='^(dune\.module|README|README\.SVN|COPYING|INSTALL|TODO)$|^[^/]*(\.md|\.pc\.in)$|^doc/.*\.md$'
 
 # By default, we disallow tabs in indents and trailing whitespace in C/C++ and CMake source files
-TAB_IN_INDENT_DEFAULT='.*(\.cpp|\.hpp|\.cc|\.hh|\.c|\.h|\.cmake|CMakeLists.txt|\.sh|\.py)$'
+TAB_IN_INDENT_DEFAULT='(^|/)CMakeLists\.txt$|(\.cpp|\.hpp|\.cc|\.hh|\.c|\.h|\.cmake|\.sh|\.py)$'
 
 # Get user preferences
 TRAILING_WHITESPACE_FILES=$(git config hooks.whitespace.trailing)
@@ -133,7 +133,10 @@ then
   git diff-index --check --cached $against --
   result=$?
 else
-  git diff-index --cached --name-only $against | perl -ne "print if /$TRAILING_WHITESPACE_FILES/" | $SILENTXARGS git diff-index --check --cached $against --
+  export TRAILING_WHITESPACE_FILES
+  git diff-index --cached --name-only $against                  \
+    | perl -ne 'print if /$ENV{TRAILING_WHITESPACE_FILES}/'     \
+    | $SILENTXARGS git diff-index --check --cached $against --
   result=$?
 fi
 
@@ -149,7 +152,10 @@ then
   git diff-index --check --cached $against --
   result=$?
 else
-  git diff-index --cached --name-only $against | perl -ne "print if /$TAB_IN_INDENT_FILES/" | $SILENTXARGS git diff-index --check --cached $against --
+  export TAB_IN_INDENT_FILES
+  git diff-index --cached --name-only $against                  \
+    | perl -ne 'print if /$ENV{TAB_IN_INDENT_FILES}/'           \
+    | $SILENTXARGS git diff-index --check --cached $against --
   result=$?
 fi
 

@@ -36,8 +36,9 @@ template<class C>
 auto incAndAppendToFirst(C&& c)
 {
   using namespace Dune::Hybrid;
-  using namespace Dune::Indices;
   forEach(integralRange(Dune::Hybrid::size(c)), [&](auto&& i) {
+    using namespace Dune::Hybrid;
+    using namespace Dune::Indices;
     ifElse(equals(i, _0), [&](auto id) {
       id(c[i]).append("+1");
     }, [&](auto id) {
@@ -60,10 +61,9 @@ template<class C, class I>
 auto sumSubsequence(C&& c, I&& indices)
 {
   using namespace Dune::Hybrid;
-  using namespace Dune::Indices;
   double result = 0;
   forEach(indices, [&](auto i) {
-    result += elementAt(c, i);
+    result += Dune::Hybrid::elementAt(c, i);
   });
   return result;
 }

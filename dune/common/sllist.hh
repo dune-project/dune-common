@@ -533,15 +533,11 @@ namespace Dune
     /** @brief Iterator positioned at the current position. */
     SLListIterator<T,A> iterator_;
   };
-} // namespace Dune
-
-namespace std
-{
 
   template<typename T, typename A>
-  ostream& operator<<(ostream& os, const Dune::SLList<T,A> sllist)
+  std::ostream& operator<<(std::ostream& os, const SLList<T,A>& sllist)
   {
-    typedef typename Dune::SLList<T,A>::const_iterator Iterator;
+    typedef typename SLList<T,A>::const_iterator Iterator;
     Iterator end = sllist.end();
     Iterator current= sllist.begin();
 
@@ -557,10 +553,6 @@ namespace std
     os<<"} ";
     return os;
   }
-} //namespace std
-
-namespace Dune
-{
 
   template<typename T, class A>
   SLList<T,A>::Element::Element(const MemberType& item, Element* next)

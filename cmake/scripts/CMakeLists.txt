@@ -7,6 +7,7 @@ install(FILES
   index.rst.in
   InstallFile.cmake
   main77.cc.in
+  module_library.cc.in
   pyversion.py
   run-in-dune-env.sh.in
   RunDoxygen.cmake
