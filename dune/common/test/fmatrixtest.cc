@@ -31,7 +31,8 @@ template<typename T, std::size_t n>
 int test_invert_solve(Dune::FieldMatrix<T, n, n> &A,
                       Dune::FieldMatrix<T, n, n> &inv,
                       Dune::FieldVector<T, n> &x,
-                      Dune::FieldVector<T, n> &b)
+                      Dune::FieldVector<T, n> &b,
+                      bool doPivoting = true)
 {
   using std::abs;
 
@@ -57,7 +58,7 @@ int test_invert_solve(Dune::FieldMatrix<T, n, n> &A,
   }
 
   FieldMatrix<T,n,n> copy(A);
-  A.invert();
+  A.invert(doPivoting);
 
   calced_inv = A;
   A-=inv;
@@ -94,7 +95,7 @@ int test_invert_solve(Dune::FieldMatrix<T, n, n> &A,
     std::cerr<<"Given rhs does not fit solution"<<std::endl;
     equal=false;
   }
-  copy.solve(calced_x, b);
+  copy.solve(calced_x, b, doPivoting);
   FieldVector<T,n> xcopy(calced_x);
   xcopy-=x;
 
@@ -196,13 +197,11 @@ int test_invert_solve()
   ret += test_invert_solve<std::complex<double>, 6>(A_data3c, inv_data3c, x3c, b3c);
   ret += test_invert_solve<float, 6>(A_data3f, inv_data3f, x3f, b3f);
 
-  FM::disable_pivoting = true;
   FM A_data4 = {{2, -1, 0}, {-1, 2, -1}, {0, -1, 2}};
   FM inv_data4 = {{0.75, 0.5, 0.25}, {0.5, 1, 0.5}, {0.25, 0.5, 0.75}};
   FV b4 = {1, 2, 3};
   FV x4 = {2.5, 4, 3.5};
-  ret += test_invert_solve<double, 3>(A_data4, inv_data4, x4, b4);
-  FM::disable_pivoting = false;
+  ret += test_invert_solve<double, 3>(A_data4, inv_data4, x4, b4, false);
   return ret;
 }
 
@@ -500,6 +499,8 @@ int test_determinant()
   {
     std::cerr << "Determinant 1 test failed (" << Dune::className<T>() << ")"
               << std::endl;
+    std::cerr << "Determinant 1 is " << B.determinant() << ", expected 2.0"
+              << std::endl;
     ++ret;
   }
 
@@ -510,6 +511,8 @@ int test_determinant()
   if (any_true(B.determinant() != 0.0))
   {
     std::cerr << "Determinant 2 test failed (" << Dune::className<T>() << ")"
+              << std::endl;
+    std::cerr << "Determinant 2 is " << B.determinant() << ", expected 0.0"
               << std::endl;
     ++ret;
   }

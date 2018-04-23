@@ -600,13 +600,13 @@ namespace Dune
      * \exception FMatrixError if the matrix is singular
      */
     template <class V>
-    void solve (V& x, const V& b) const;
+    void solve (V& x, const V& b, bool doPivoting = true) const;
 
     /** \brief Compute inverse
      *
      * \exception FMatrixError if the matrix is singular
      */
-    void invert();
+    void invert(bool doPivoting = true);
 
     //! calculates the determinant of this matrix
     field_type determinant () const;
@@ -803,7 +803,7 @@ namespace Dune
      */
     template<class Func, class Mask>
     void luDecomposition(DenseMatrix<MAT>& A, Func func,
-                         Mask &nonsingularLanes, bool throwEarly) const;
+                         Mask &nonsingularLanes, bool throwEarly, bool doPivoting) const;
   };
 
 #ifndef DOXYGEN
@@ -851,7 +851,7 @@ namespace Dune
   template<typename Func, class Mask>
   inline void DenseMatrix<MAT>::
   luDecomposition(DenseMatrix<MAT>& A, Func func, Mask &nonsingularLanes,
-                  bool throwEarly) const
+                  bool throwEarly, bool doPivoting) const
   {
     using std::swap;
 
@@ -861,10 +861,8 @@ namespace Dune
     for (size_type i=0; i<rows(); i++)  // loop over all rows
     {
       real_type pivmax = fvmeta::absreal(A[i][i]);
-      const bool do_pivot = true;
 
-      // pivoting ?
-      if (do_pivot)
+      if (doPivoting)
       {
         // compute maximum of column
         simd_index_type imax=i;
@@ -919,7 +917,7 @@ namespace Dune
 
   template<typename MAT>
   template <class V>
-  inline void DenseMatrix<MAT>::solve(V& x, const V& b) const
+  inline void DenseMatrix<MAT>::solve(V& x, const V& b, bool doPivoting) const
   {
     // never mind those ifs, because they get optimized away
     if (rows()!=cols())
@@ -979,7 +977,7 @@ namespace Dune
       SimdMask<typename FieldTraits<value_type>::real_type>
         nonsingularLanes(true);
 
-      luDecomposition(A, elim, nonsingularLanes, true);
+      luDecomposition(A, elim, nonsingularLanes, true, doPivoting);
 
       // backsolve
       for(int i=rows()-1; i>=0; i--) {
@@ -991,7 +989,7 @@ namespace Dune
   }
 
   template<typename MAT>
-  inline void DenseMatrix<MAT>::invert()
+  inline void DenseMatrix<MAT>::invert(bool doPivoting)
   {
     // never mind those ifs, because they get optimized away
     if (rows()!=cols())
@@ -1061,7 +1059,7 @@ namespace Dune
       std::vector<simd_index_type> pivot(rows());
       SimdMask<typename FieldTraits<value_type>::real_type>
         nonsingularLanes(true);
-      luDecomposition(A, ElimPivot(pivot), nonsingularLanes, true);
+      luDecomposition(A, ElimPivot(pivot), nonsingularLanes, true, doPivoting);
       DenseMatrix<MAT>& L=A;
       DenseMatrix<MAT>& U=A;
 
@@ -1134,7 +1132,7 @@ namespace Dune
     SimdMask<typename FieldTraits<value_type>::real_type>
       nonsingularLanes(true);
 
-    luDecomposition(A, ElimDet(det), nonsingularLanes, false);
+    luDecomposition(A, ElimDet(det), nonsingularLanes, false, true);
     assign(det, field_type(0), !nonsingularLanes);
 
     for (size_type i = 0; i < rows(); ++i)
