@@ -1,0 +1,22 @@
+// @GENERATED_SOURCE@
+
+#ifndef DUNE_COMMON_SIMD_TEST_STANDARDTEST_HH
+#define DUNE_COMMON_SIMD_TEST_STANDARDTEST_HH
+
+#include <complex>
+
+#include <dune/common/simd/test.hh>
+
+namespace Dune {
+  namespace Simd {
+
+#cmake @template@
+    extern template void UnitTest::checkVector<@SCALAR@>();
+#cmake @endtemplate@
+
+    extern template void UnitTest::checkMask<bool>();
+
+  } // namespace Simd
+} // namespace Dune
+
+#endif // DUNE_COMMON_SIMD_TEST_STANDARDTEST_HH
