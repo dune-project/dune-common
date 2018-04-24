@@ -1,0 +1,24 @@
+// @GENERATED_SOURCE@
+
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include <cstdlib>
+
+#include <dune/common/simd/loop.hh>
+#include <dune/common/simd/test.hh>
+#include <dune/common/simd/test/looptest.hh>
+
+int main()
+{
+  Dune::Simd::UnitTest test;
+
+#cmake @template@
+  test.checkVector<Dune::LoopSIMD<@SCALAR@, 5>>();
+#cmake @endtemplate@
+
+  test.checkMask<Dune::LoopSIMD<bool, 5>>();
+
+  return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;
+}

@@ -5,7 +5,7 @@
 namespace Dune {
   namespace Simd {
 
-    template void UnitTest::checkVector<LoopSIMD<signed char, 5>>();
+    template void UnitTest::checkMask<LoopSIMD<bool, 5>>();
 
   } //namespace Simd
 } // namespace Dune

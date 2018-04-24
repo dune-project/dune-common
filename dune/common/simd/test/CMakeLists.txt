@@ -1,8 +1,36 @@
+# We need to explicitly instantiate the tests for small groups of types --
+# else the compiler will eat excessive amounts of memory.  This way it seems
+# to stay below 1GByte (with g++ 4.9.2 -O0 -g on x86_64 GNU/Linux, looking at
+# standardtest).
 include(DuneInstance)
 
-# We need to explicitly instantiate the test for small groups of types -- else
-# the compiler will eat excessive amounts of memory.  This way it seems to
-# stay below 1GByte (with g++ 4.9.2 -O0 -g on x86_64 GNU/Linux).
+set(TYPES
+  char "unsigned char" "signed char"
+  short int long "long long"
+  "unsigned short" unsigned "unsigned long" "unsigned long long"
+  wchar_t char16_t char32_t
+  bool
+  float double "long double"
+#  std::complex<float> std::complex<double> "std::complex<long double>"
+  )
+
+# Generate files with instanciations, external declarations, and also the
+# invocations in the test for each instance.
+dune_instance_begin(FILES looptest.hh looptest.cc)
+foreach(SCALAR IN LISTS TYPES)
+  dune_instance_add(ID "${SCALAR}" FILES looptest_vector.cc)
+endforeach()
+dune_instance_end()
+
+list(FILTER DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
+dune_add_test(NAME looptest
+  SOURCES ${DUNE_INSTANCE_GENERATED} looptest_mask.cc
+  LINK_LIBRARIES dunecommon
+)
+# no need to install looptest.hh, used by looptest*.cc only
+
+
+
 set(TYPES
   char "unsigned char" "signed char"
   short int long "long long"
@@ -61,27 +89,3 @@ dune_add_test(NAME vctest
 )
 add_dune_vc_flags(vctest)
 # no need to install vctest.hh, used by vctest*.cc only
-
-dune_add_test(NAME looptest
-  SOURCES
-    looptest.cc
-    looptest_bool.cc
-
-    looptest_char.cc
-    looptest_unsigned_char.cc
-    looptest_signed_char.cc
-
-    looptest_short.cc
-    looptest_unsigned_short.cc
-    looptest_int.cc
-    looptest_unsigned.cc
-    looptest_long.cc
-    looptest_unsigned_long.cc
-    looptest_long_long.cc
-    looptest_unsigned_long_long.cc
-
-    looptest_float.cc
-    looptest_double.cc
-    looptest_long_double.cc
-  LINK_LIBRARIES dunecommon
-)
