@@ -38,58 +38,33 @@ dune_add_test(NAME standardtest
 
 # as of Vc-1.3.2: Vc/common/simdarray.h:561: SimdArray<T, N> may only be used
 # with T = { double, float, int32_t, uint32_t, int16_t, uint16_t }
-set(VCTEST_TYPES
-  "std::int16_t"
-  "std::uint16_t"
-  "std::int32_t"
-  "std::uint32_t"
-  "float"
-  "double")
+set(VCTEST_TYPES std::int16_t std::uint16_t std::int32_t std::uint32_t float double)
 
 include(DuneInstance)
 # Generate files with instanciations, external declarations, and also the
 # invocations in the test for each instance.
-dune_instance_begin(
-  COLLECTORS HEADER BODY
-  OUTPUTS VCTEST_SOURCES
-)
+dune_instance_begin(FILES vctest.hh vctest.cc)
 
 # Vc::Vector and Vc::Mask
-dune_instance_template(NAME VECTOR
-  HEADER "\
-extern template void UnitTest::checkVector<Vc::Vector<@SCALAR@> >();
-extern template void UnitTest::checkMask<Vc::Mask<@SCALAR@> >();
-"
-  BODY "\
-test.checkVector<Vector<@SCALAR@> >();
-"
-  FILES vctest_vector.cc vctest_mask.cc)
-
-# Vc::SimdArray and Vc::SimdMaskArray
-dune_instance_template(NAME ARRAY
-  HEADER "\
-extern template void UnitTest::checkVector<Vc::SimdArray<@SCALAR@, @LANES@> >();
-extern template void UnitTest::checkMask<Vc::SimdMaskArray<@SCALAR@, @LANES@> >();
-"
-  BODY "\
-test.checkVector<SimdArray<@SCALAR@, @LANES@> >();
-"
-  FILES vctest_simdarray.cc vctest_simdmaskarray.cc)
-
 foreach(SCALAR IN LISTS VCTEST_TYPES)
-  dune_instance_add(TEMPLATE VECTOR ID "${SCALAR}")
+  dune_instance_add(TEMPLATE VECTOR ID "${SCALAR}"
+    FILES vctest_vector.cc vctest_mask.cc)
 endforeach()
 
+# Vc::SimdArray and Vc::SimdMaskArray
 foreach(SCALAR IN LISTS VCTEST_TYPES)
   foreach(LANES IN ITEMS 4 8)
-    dune_instance_add(TEMPLATE ARRAY ID "${SCALAR}_${LANES}")
+    dune_instance_add(TEMPLATE ARRAY ID "${SCALAR}_${LANES}"
+      FILES vctest_simdarray.cc vctest_simdmaskarray.cc)
   endforeach(LANES IN ITEMS 4 8)
 endforeach()
 
-dune_instance_end(FILES vctest.hh vctest.cc)
+dune_instance_end()
+
+list(FILTER DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
 
 dune_add_test(NAME vctest
-  SOURCES vctest.cc ${VCTEST_SOURCES}
+  SOURCES ${DUNE_INSTANCE_GENERATED}
   LINK_LIBRARIES dunecommon
   CMAKE_GUARD Vc_FOUND
 )

@@ -11,7 +11,15 @@
 namespace Dune {
   namespace Simd {
 
-@HEADER@
+#cmake @template VECTOR@
+    extern template void UnitTest::checkVector<Vc::Vector<@SCALAR@> >();
+    extern template void UnitTest::checkMask<Vc::Mask<@SCALAR@> >();
+#cmake @endtemplate@
+
+#cmake @template ARRAY@
+    extern template void UnitTest::checkVector<Vc::SimdArray<@SCALAR@, @LANES@> >();
+    extern template void UnitTest::checkMask<Vc::SimdMaskArray<@SCALAR@, @LANES@> >();
+#cmake @endtemplate@
 
   } // namespace Simd
 } // namespace Dune

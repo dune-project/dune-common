@@ -25,7 +25,13 @@ int main()
 
   Dune::Simd::UnitTest test;
 
-@BODY@
+#@template VECTOR@
+  test.checkVector<Vector<@SCALAR@> >();
+#@endtemplate@
+
+#@template ARRAY@
+  test.checkVector<SimdArray<@SCALAR@, @LANES@> >();
+#@endtemplate@
 
   return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

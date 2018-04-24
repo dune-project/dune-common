@@ -40,8 +40,8 @@
 #    where ``@TYPE@`` is replaced by ``bool``, ``char``, etc as appropriate.
 #
 #    This is however not enough: all translation units need to know which
-#    instances of ``MyTestSuite::test()`` are instantiated explitly so they do
-#    not instantiate them implicitly themselves (that would violate the
+#    instances of ``MyTestSuite::test()`` are instantiated explicitly so they
+#    do not instantiate them implicitly themselves (that would violate the
 #    one-definition rule).  C++ only allows to declare individual instances as
 #    extern, not all of them collectively, so we need to put a list of all
 #    these instances into a header ``mytest.hh``::
@@ -60,62 +60,45 @@
 #    This is of course tedious and prone tp break if the list of tested types
 #    changes.  To make this less fragile this module provides a series of
 #    commands: :ref:`dune_instance_begin() <dune_instance_begin>`,
-#    :ref:`dune_instance_template() <dune_instance_template>`,
 #    :ref:`dune_instance_add() <dune_instance_add>`, and
 #    :ref:`dune_instance_end() <dune_instance_end>`, which can be used to
 #    automatically generate the explicit instantiations for each type and the
 #    contents for the header and the body of main.
 #
-#    This may loo like this in ``CMakeLists.txt``::
+#    This may look like this in ``CMakeLists.txt``::
 #
-#      dune_instance_begin(COLLECTORS BODY HEADER
-#                          OUTPUTS MYTEST_SOURCES)
-#      dune_instance_template(
-#        BODY "suite.test<@TYPE@>();\n"
-#        HEADER "extern template void MyTestSuite::test<@TYPE@>();\n"
-#        FILES mytest_instance.cc)
+#      dune_instance_begin(FILES mytest.cc mytest.hh)
 #
 #      foreach(TYPE IN ITEMS bool char int double)
-#        dune_instance_add(ID "${TYPE}")
+#        dune_instance_add(ID "${TYPE}" FILES mytest_instance.cc)
 #      endforeach(TYPE IN ITEMS bool char int double)
 #
-#      dune_instance_end(FILES mytest.cc mytest.hh)
+#      dune_instance_end()
 #
+#      list(FILTER DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
 #      dune_add_test(NAME mytest
-#        SOURCES mytest.cc ${MYTEST_SOURCES})
+#        SOURCES ${DUNE_INSTANCE_GENERATED})
 #
-#    The call to :ref:`dune_instance_begin() <dune_instance_begin>` declares
-#    that each instance will append something to the variables ``BODY`` and
-#    ``HEADER`` -- we will collect the contents of the header and the body of
-#    main there.  The list of generated instance files will be kept in the
-#    variable ``MYTEST_SOURCES``.
-#
-#    :ref:`dune_instance_template() <dune_instance_template>` defines a
-#    template.  It defines template strings for the body and header content.
-#    It also defines a base filename to use for the explicit template
-#    definitions.  This command must be invoked after
-#    :ref:`dune_instance_begin() <dune_instance_begin>` since it needs to know
-#    which the collector variables.
+#    The call to :ref:`dune_instance_begin() <dune_instance_begin>` reads
+#    ``mytest.cc.in`` and ``mytest.hh.in`` and splits them into embedded
+#    templates and other content.  It will replace occurrances of ``@VAR@``
+#    now in the other content and save the result for later.
 #
 #    The call to :ref:`dune_instance_add() <dune_instance_add>` occurs in a
-#    loop.  Each call will append to the variables ``HEADER`` and ``BODY``,
-#    using the template strings defined earlier.  These template strings are
-#    run through the cmake command ``string(CONFIGURE ...)`` to replace
-#    occurance of ``@TYPE@`` by the value of the variable ``TYPE`` set in the
-#    for loop.  Then files containing explicit instantiatons will be generated
-#    as ``mytest_instance_bool.cc``, ``mytest_instance_bool.cc``, etc, from a
-#    template file ``mytest_instance.cc.in``.  The name of the generated files
-#    are the base file name from the template definition with the ``ID``
-#    inserted before the extension.  The name of the template file is the same
-#    base file name with ``.in`` appended.
+#    loop.  Each call will instanciate the embedded templates extracted
+#    earlier to replace occurance of ``@TYPE@`` by the value of the variable
+#    ``TYPE`` set in the for loop.  Then files containing explicit
+#    instantiatons will be generated as ``mytest_instance_bool.cc``,
+#    ``mytest_instance_bool.cc``, etc, from a template file
+#    ``mytest_instance.cc.in``.  The name of the generated files are the base
+#    file name from the template definition with the ``ID`` inserted before
+#    the extension.  The name of the template file is the same base file name
+#    with ``.in`` appended.
 #
-#    :ref:`dune_instance_end() <dune_instance_end>` is used to generate
-#    ``mytest.cc`` and ``mytest.hh`` from ``mytest.cc.in`` and
-#    ``mytest.cc.hh``.  These contain ``@HEADER@`` and ``@BODY@``
-#    substitutions to insert the respective collected content.  These files
-#    are currently not included in the list of generated files
-#    ``MYTEST_SOURCES`` since the ``.hh`` file should not be included in the
-#    list of sources when defining a target.
+#    :ref:`dune_instance_end() <dune_instance_end>` is used to write
+#    ``mytest.cc`` and ``mytest.hh`` with the collected content from the
+#    embedded templates.  The list of generated files will be available in the
+#    variable ``DUNE_INSTANCE_GENERATED``.
 #
 #    The template files then look like this:
 #
@@ -130,7 +113,9 @@
 #      int main() {
 #        MyTestSuite suite;
 #
-#      @BODY@
+#      #cmake @template@
+#        suite.test<@TYPE@>();
+#      #cmake @endtemplate@
 #
 #        return suite.good() ? EXIT_SUCCESS : EXIT_FAILURE;
 #      }
@@ -141,7 +126,9 @@
 #
 #      #include <mytestsuite.hh>
 #
-#      @HEADER@
+#      #cmake @template@
+#      extern template void MyTestSuite::test<@TYPE@>();
+#      #cmake @endtemplate@
 #
 #    ``mytest_instance.cc.in``::
 #
@@ -154,8 +141,33 @@
 #      template void MyTestSuite::test<@TYPE@>();
 #
 #    The ``@GENERATED_SOURCE@`` substitution is good practice, it tells a
-#    human reader that this wile was generated and what the template file was,
+#    human reader that this file was generated and what the template file was,
 #    and it hints editors to go into read-only mode.
+#
+#    .. rubric:: Embedded Templates
+#
+#    The template files given in :ref:`dune_instance_begin()
+#    <dune_instance_begin>` can contain embedded templates.  These will be
+#    instantiated by :ref:`dune_instance_add() <dune_instance_add>`, and all
+#    instantiations will be concatenated together and replace the original
+#    embedded template.
+#
+#    The begin of an embedded template is marked by a line containing
+#    ``@template@`` or ``@template NAME@``.  Leaving off the name is
+#    equivalent to an empty name.  ``dune_instance_add(TEMPLATE NAME)`` will
+#    only instanciate embedded templates whose name matches and ignore all
+#    others.
+#
+#    The end of an embedded template is marked by a line containing
+#    ``@endtemplate@`` or ``@endtemplate NAME@``.  If a name is given, it must
+#    match the name of the embedded template it closes.  If no name is given
+#    (or the name is empty), that check is omitted.
+#
+#    There may be arbitrary characters on the same line before or after the
+#    begin and end markers.  These are ignored, so you can use them for
+#    comments or to trick your editor into proper indentation.  The one
+#    exception is that the line surrounding the marker may not contain any
+#    ``@`` characters to avoid ambiguities.
 #
 #    .. rubric:: How Files And Strings Are Generated
 #
@@ -163,7 +175,8 @@
 #    for template files and ``string(CONFIGURE ...)`` for template strings.
 #    These simply substitute the current variable values, so make sure to set
 #    up the variables to substitute before calling :ref:`dune_instance_add()
-#    <dune_instance_add>` or :ref:`dune_instance_end() <dune_instance_end>`.
+#    <dune_instance_add>` or :ref:`dune_instance_begin()
+#    <dune_instance_begin>`.
 #
 #    Refrain from using substitutions that begin with an underscore
 #    (i.e. ``@_my_local_var@``).  The generation functions in this module use
@@ -177,23 +190,22 @@
 #    contains a one-line message that this file was generated, including the
 #    name of the template file.
 #
-#    .. rubric:: Main Interface Commands
+#    .. rubric:: Main Interface
 #
 #    These are the ones you normally use.
 #
 #    * :ref:`dune_instance_begin() <dune_instance_begin>`
-#    * :ref:`dune_instance_template() <dune_instance_template>`
 #    * :ref:`dune_instance_add() <dune_instance_add>`
 #    * :ref:`dune_instance_end() <dune_instance_end>`
+#    * :ref:`DUNE_INSTANCE_GENERATED <DUNE_INSTANCE_GENERATED>`
 #
-#    .. rubric:: Utility Commands
+#    .. rubric:: Utilities
 #
 #    You would not use these directly under normal circumstances.
 #
 #    * :ref:`dune_instance_parse_file_spec() <dune_instance_parse_file_spec>`
 #    * :ref:`dune_instance_from_id() <dune_instance_from_id>`
 #    * :ref:`dune_instance_generate_file() <dune_instance_generate_file>`
-#    * :ref:`dune_instance_generate_files() <dune_instance_generate_files>`
 #
 #
 # .. cmake_function:: dune_instance_begin
@@ -202,74 +214,26 @@
 #
 #       Prepare for a list of instances.
 #
-#    .. cmake_param:: COLLECTORS
+#    .. cmake_param:: FILES
 #       :multi:
-#       :argname: collector_var
+#       :argname: file_spec
 #
-#       Variables in the scope of the caller to collect content generated from
-#       string templates in.
+#       List of template files with embedded templates.
 #
-#    .. cmake_param:: OUTPUTS
-#       :single:
-#       :argname: outputs_var
-#
-#       Name of a cmake variable in the scope of the caller to store the list
-#       of generated instance files in.
-#
-#    Clear the internal variables that hold the accumulated lists content, as
-#    well as the list of generated files.
+#    Read the given template files, and extract embedded templates.  Run the
+#    generator on the remaining file content with the variables currently in
+#    effect.
 #
 #    .. note::
 #
-#       There should normally be a matching :ref:`dune_instance_end()
-#       <dune_instance_end>`, although it is not strictly required.  Since
-#       information is communicated through variables in the callers scope,
-#       :ref:`dune_instance_begin()
+#       A matching :ref:`dune_instance_end() <dune_instance_end>` is required.
+#       Since information is communicated through variables in the callers
+#       scope, :ref:`dune_instance_begin()
 #       <dune_instance_begin>`/:ref:`dune_instance_end() <dune_instance_end>`
 #       blocks may not be nested inside the same scope.  Since a function is a
 #       new scope, it may safely contain a :ref:`dune_instance_begin()
 #       <dune_instance_begin>`/:ref:`dune_instance_end() <dune_instance_end>`
 #       block, even if it is itself called from one.
-#
-#
-# .. cmake_function:: dune_instance_template
-#
-#    .. cmake_brief::
-#
-#       Define a template for later use.
-#
-#    .. cmake_param:: NAME
-#       :single:
-#
-#       Name of the template, defaults to ``DEFAULT``.
-#
-#    .. cmake_param:: *COLLECTORS*
-#       :special:
-#       :argname: *COLLECTOR1* template_string1 [*COLLECTOR2* template_string2 ...]
-#
-#       Each pair of ``COLLECTOR template_string`` defines a template string
-#       for the given collector.
-#
-#       There may be multiple instances of this parameter, one for each
-#       collector defined in :ref:`dune_instance_begin()
-#       <dune_instance_begin>`.  If a collector isn't given it's
-#       `string_template` defaults to empty.
-#
-#    .. cmake_param:: FILES
-#       :multi:
-#
-#       List of file specifications to generate for each instance.  These are
-#       usually the names of template files with the ``.in`` extension
-#       removed.  See :ref:`dune_instance_add() <dune_instance_add>` for
-#       details.
-#
-#    Define a template for use in :ref:`dune_instance_add()
-#    <dune_instance_add>`.  The template is stored in cmake variables in the
-#    scope of the caller.  Calls to ``dune_instance_template()`` must appear
-#    after the corresponding :ref:`dune_instance_begin()
-#    <dune_instance_begin>` so the list of collectors in known.
-#
-#    It is permissible to redefine an existing template.
 #
 #
 # .. cmake_function:: dune_instance_add
@@ -278,21 +242,28 @@
 #
 #       Instantiate a template with the currently set variable values.
 #
+#    .. cmake_param:: FILES
+#       :multi:
+#       :argname: file_spec
+#
+#       List of template file specifications.  These are usually the names of
+#       template files with the ``.in`` extension removed.  See the ID
+#       parameter for details.
+#
 #    .. cmake_param:: ID
 #       :single:
-#       :required:
 #
 #       Used to build the names of generated files.  Each file specification
-#       given in the template together with this id is given to
-#       :ref:`dune_instance_from_id() <dune_instance_from_id>` to determine
-#       the name of a template file and the name of an instance file.  To get
-#       unique instance file names this ID should usually a list of variable
-#       values joined together by ``_``.
+#       together with this id is given to :ref:`dune_instance_from_id()
+#       <dune_instance_from_id>` to determine the name of a template file and
+#       the name of an instance file.  To get unique instance file names this
+#       ID should usually be a list of variable values joined together by
+#       ``_``.
 #
 #       Specifically, each file specification may be of the form
 #       ``template_file_name:base_instance_file_name``, or it may be a single
 #       token not containing ``:``.  In the latter case, if that token
-#       contains a trailing ``.in``, that is remove and the result it the base
+#       contains a trailing ``.in``, that is removed and the result it the base
 #       instance file name.  The base instance file name has the ``.in``
 #       appended again to form the template file name.
 #
@@ -307,12 +278,13 @@
 #    .. cmake_param:: TEMPLATE
 #       :single:
 #
-#       Set the name of the template to use.  Defaults to ``DEFAULT``.
+#       Instantiate embedded templates by this name.  Defaults to an empty
+#       name, matching embedded templates without name.
 #
-#    Append content to the collector variables generated from the template
-#    strings in the given template, substituting the current variables values.
-#    Then, generate files from the according the the file specifications in
-#    the template, doing substitutions as well.
+#    Instantiate any embedded templates that match the given template name,
+#    substituting the current variables values.  Then, generate files
+#    according the the file specifications in the template, doing
+#    substitutions as well.
 #
 #
 # .. cmake_function:: dune_instance_end
@@ -320,29 +292,13 @@
 #    .. cmake_brief::
 #
 #       Close a block started by :ref:`dune_instance_begin()
-#       <dune_instance_begin>`, generate files with collector content.
+#       <dune_instance_begin>`, and write the files generated from the
+#       templates given there.
 #
-#    .. cmake_param:: FILES
-#       :multi:
-#       :argname: file_spec
-#
-#       Each file specification can be the name of a template file if it has
-#       ``.in`` at the end, or the name of an instance file if it doesn't.
-#       The name of the other file is obtained by appending or removing
-#       ``.in``, as applicable.  Both file names can also be given explicitly
-#       in the form ``template_file_name:instance_file_name``.
-#
-#    For each file specification, generate files using
-#    :ref:`dune_instance_generate_files() <dune_instance_generate_files>`.
-#    This is typically used to substitute the content of collector variables.
-#
-#    .. note::
-#
-#       ``dune_instance_end()`` is mostly syntactic sugar.  You could directly
-#       use :ref:`dune_instance_generate_files()
-#       <dune_instance_generate_files>` instead.  ``dune_instance_end()`` does
-#       not clear any variables, so you can continue to use their contents
-#       afterwards.
+#    Write the files generated from the template files given in
+#    :ref:`dune_instance_begin() <dune_instance_begin>`, including any content
+#    generated from embedded templates in :ref:`dune_instance_add()
+#    <dune_instance_add>`.
 #
 #
 # .. cmake_function:: dune_instance_parse_file_spec
@@ -382,11 +338,9 @@
 #    .. note::
 #
 #       This is the function use to parse the file specifications in
-#       :ref:`dune_instance_end() <dune_instance_end>` and
-#       :ref:`dune_instance_generate_files() <dune_instance_generate_files>`.
-#       It is also used as a helper in :ref:`dune_instance_from_id()
-#       <dune_instance_from_id>` to determine template file name and base
-#       instance file name.
+#       :ref:`dune_instance_begin() <dune_instance_begin>`.  It is also used
+#       as a helper in :ref:`dune_instance_from_id() <dune_instance_from_id>`
+#       to determine template file name and base instance file name.
 #
 #
 # .. cmake_function:: dune_instance_from_id
@@ -408,7 +362,7 @@
 #       :single:
 #       :required:
 #
-#       The id specification.  This should be uniquely identify an instance.
+#       The id specification.  This should uniquely identify an instance.
 #
 #    .. cmake_param:: template_var
 #       :positional:
@@ -422,7 +376,7 @@
 #       :single:
 #
 #       Name of the variable to store the instance file name in.  Can be empty
-#       to discard then instance file name.
+#       to discard the instance file name.
 #
 #    The file specification is handed to :ref:`dune_instance_parse_file_spec()
 #    <dune_instance_parse_file_spec>` to determine a template file name and a
@@ -436,8 +390,7 @@
 #    .. note::
 #
 #       This is the function use to parse the file specifications given in
-#       :ref:`dune_instance_template(FILES ...) <dune_instance_template>` when
-#       :ref:`dune_instance_add() <dune_instance_add>` is invoked.
+#       :ref:`dune_instance_add(FILES ...) <dune_instance_add>`.
 #
 #
 # .. cmake_function:: dune_instance_generate_file
@@ -476,30 +429,51 @@
 #    accidential attempt to generate the same file twice is caught.
 #
 #
-# .. cmake_function:: dune_instance_generate_files
+# .. cmake_variable:: DUNE_INSTANCE_GENERATED
 #
-#    .. cmake_brief::
-#
-#       Generate multiple files from file specifications.
-#
-#    .. cmake_param:: file_specs
-#       :special:
-#       :argname: file_spec1 [file_spec2 ...]
-#
-#       File specifications.
-#
-#    Parse each file specification using :ref:`dune_instance_parse_file_spec()
-#    <dune_instance_parse_file_spec>`, and call
-#    :ref:`dune_instance_generate_file() <dune_instance_generate_file>` with
-#    the result.
-#
-#    .. note::
-#
-#       This exists mainly to give you an opportunity to generate files with
-#       collector content manually in a particular order in the same manner as
-#       other files generated using this module.  Normally is should simply be
-#       invoked through :ref:`dune_instance_end() <dune_instance_end>`.
+#    After :ref:`dune_instance_end() <dune_instance_end>`, this holds the list
+#    of files that were generated.  Do not rely on the value of this variable
+#    and do not modify it inside a :ref:`dune_instance_begin()
+#    <dune_instance_begin>`/:ref:`dune_instance_end() <dune_instance_end>`
+#    block.
 
+
+######################################################################
+#
+#  Coping with cmake list shortcomings
+#
+
+# We use these commands internally to quote text before adding it to lists as
+# an element, and to unquote elements again after extracting them.  The quoted
+# text is
+# - free of ';' characters.  This avoids problems when using list(APPEND),
+#   which does not quote ';' characters inside the appended element.  It would
+#   also avoid problems with list(INSERT), which mangles any cmake quoting in
+#   the list it inserts to, but we don't actually use that command.
+# - free of '\' characters.  This avoids problems with a list element that
+#   ends in a '\' merging with the next element, because the '\' quotes the
+#   ';' that is used to seperate the elements
+# - non-empty.  This avoids the problem that cmake can't destinguish between
+#   an empty list and a list with one empty element.
+function(dune_instance_quote_element VAR)
+  set(content "${${VAR}}")
+  string(REPLACE [[$]] [[$s]] content "${content}")
+  string(REPLACE [[;]] [[$:]] content "${content}")
+  string(REPLACE [[\]] [[$/]] content "${content}")
+  if(content STREQUAL "")
+    set(content [[$@]])
+  endif()
+  set("${VAR}" "${content}" PARENT_SCOPE)
+endfunction(dune_instance_quote_element)
+
+function(dune_instance_unquote_element VAR)
+  set(content "${${VAR}}")
+  string(REPLACE [[$@]] [[]]  content "${content}")
+  string(REPLACE [[$/]] [[\]] content "${content}")
+  string(REPLACE [[$:]] [[;]] content "${content}")
+  string(REPLACE [[$s]] [[$]] content "${content}")
+  set("${VAR}" "${content}" PARENT_SCOPE)
+endfunction(dune_instance_unquote_element)
 
 ######################################################################
 #
@@ -572,10 +546,117 @@ function(dune_instance_from_id file_spec id template_var instance_var)
   endif(NOT ("${instance_var}" STREQUAL ""))
 endfunction(dune_instance_from_id)
 
+
 ######################################################################
 #
 #  File generation
 #
+
+function(dune_instance_set_generated)
+  # prepare instance substitution variables
+  set(GENERATED_SOURCE
+    "generated from ${TEMPLATE} by cmake -*- buffer-read-only:t -*- vim: set readonly:"
+    PARENT_SCOPE)
+endfunction(dune_instance_set_generated)
+
+# Read a template file and split it into three lists
+# - content_parts contains the parts before, between, and after templates
+# - template_parts contains the content of each template
+# - template_names contains the names of each template
+# The elements in the lists are quoted using dune_instance_quote_element() to
+# protect against problems with empty elements and against cmakes list()
+# command butchering it's own quoting.
+function(dune_instance_parse_embedded name content_parts template_parts template_names)
+  message(STATUS "Parsing ${name} for embedded templates")
+  file(READ "${name}" content)
+  # ensure that the file content ends in a newline, which makes searching for
+  # template marker easier
+  string(APPEND content "\n")
+
+  set(content_list "")
+  set(template_list "")
+  set(template_name_list "")
+  set(acc "")
+  set(lineno 0)
+  set(in_template FALSE)
+  while(NOT (content STREQUAL ""))
+    string(FIND "${content}" "\n" nextline)
+    math(EXPR nextline "${nextline} + 1")
+
+    string(SUBSTRING "${content}" 0 "${nextline}" line)
+    string(SUBSTRING "${content}" "${nextline}" -1 content)
+    math(EXPR lineno "${lineno} + 1")
+
+    if(line MATCHES "(.*)(@((end)?template)([ \t]+([-+._/0-9a-zA-Z]*))?@)(.*)")
+      set(prefix "${CMAKE_MATCH_1}")
+      set(sep "${CMAKE_MATCH_2}")
+      set(sep_keyword "${CMAKE_MATCH_3}")
+      set(sep_name "${CMAKE_MATCH_6}")
+      set(sep_suffix "${CMAKE_MATCH_7}")
+
+      if(in_template)
+        if(NOT (sep_keyword STREQUAL "endtemplate"))
+          message(FATAL_ERROR "\
+${name}:${lineno}: '${sep}' nested inside...
+${name}:${template_lineno}: ...'${template_sep}' here")
+        endif()
+
+        if(NOT ((sep_name STREQUAL "") OR (sep_name STREQUAL template_name)))
+          message(FATAL_ERROR "\
+${name}:${template_lineno}: '${template_sep}' closed by nonmatching...
+${name}:${lineno}: ...'${sep}' here")
+        endif()
+
+        dune_instance_quote_element(acc)
+        list(APPEND template_list "${acc}")
+        dune_instance_quote_element(template_name)
+        list(APPEND template_name_list "${template_name}")
+
+        set(in_template FALSE)
+      else()
+        if(NOT (sep_keyword STREQUAL "template"))
+          message(FATAL_ERROR "${name}:${lineno}: Lone '${sep}'")
+        endif()
+
+        dune_instance_quote_element(acc)
+        list(APPEND content_list "${acc}")
+        set(template_sep "${sep}")
+        set(template_name "${sep_name}")
+        set(template_lineno "${lineno}")
+
+        set(in_template TRUE)
+      endif()
+      set(acc "")
+    else() # line did not match seperator
+      string(APPEND acc "${line}")
+    endif()
+  endwhile()
+
+  if(in_template)
+    message(FATAL_ERROR "${name}:${template_lineno}: Unclosed '${template_sep}'")
+  endif()
+
+  dune_instance_quote_element(acc)
+  list(APPEND content_list "${acc}")
+
+  set("${content_parts}" "${content_list}" PARENT_SCOPE)
+  set("${template_parts}" "${template_list}" PARENT_SCOPE)
+  set("${template_names}" "${template_name_list}" PARENT_SCOPE)
+endfunction(dune_instance_parse_embedded)
+
+# Take the name of a list variable containing content parts other then
+# embedded templates and instanciate each part.  Put the result back into the
+# same variable.  List elements are quoted.
+function(dune_instance_generate_parts _parts_list)
+  set(_acc "")
+  foreach(_part IN LISTS "${_parts_list}")
+    dune_instance_unquote_element(_part)
+    string(CONFIGURE "${_part}" _part)
+    dune_instance_quote_element(_part)
+    list(APPEND _acc "${_part}")
+  endforeach(_part)
+  set("${_parts_list}" "${_acc}" PARENT_SCOPE)
+endfunction(dune_instance_generate_parts)
 
 function(dune_instance_generate_file TEMPLATE INSTANCE)
   if(("${INSTANCE}" STREQUAL "") OR ("${TEMPLATE}" STREQUAL ""))
@@ -590,21 +671,13 @@ function(dune_instance_generate_file TEMPLATE INSTANCE)
   endif("${_seen}")
 
   # prepare instance substitution variables
-  set(GENERATED_SOURCE "generated from ${TEMPLATE} by cmake   "
-    "-*- buffer-read-only:t -*- vim: set readonly:")
+  dune_instance_set_generated()
 
   # do the generation
   message(STATUS "Generating ${TEMPLATE} -> ${INSTANCE}")
   configure_file("${TEMPLATE}" "${INSTANCE}")
   set_property(SOURCE "${INSTANCE}" PROPERTY GENERATED TRUE)
 endfunction(dune_instance_generate_file)
-
-function(dune_instance_generate_files)
-  foreach(_file IN LISTS ARGV)
-    dune_instance_parse_file_spec("${_file}" _template _instance)
-    dune_instance_generate_file("${_template}" "${_instance}")
-  endforeach(_file IN LISTS ARGV)
-endfunction(dune_instance_generate_files)
 
 
 ######################################################################
@@ -613,91 +686,50 @@ endfunction(dune_instance_generate_files)
 #
 
 function(dune_instance_begin)
-  cmake_parse_arguments(PARSE_ARGV 0 arg
+  cmake_parse_arguments(PARSE_ARGV 0 _arg
     "" # options
-    "OUTPUTS" # one_value_keywords
-    "COLLECTORS" # multi_value_keywords
-    )
-  if(DEFINED arg_UNPARSED_ARGUMENTS)
-    message(FATAL_ERROR "unrecognized arguments: ${arg_UNPARSED_ARGUMENTS}")
-  endif(DEFINED arg_UNPARSED_ARGUMENTS)
-
-  set(DUNE_INSTANCE_COLLECTORS "${arg_COLLECTORS}" PARENT_SCOPE)
-  foreach(var IN LISTS arg_COLLECTORS)
-    set("${var}" "" PARENT_SCOPE)
-  endforeach(var IN LISTS arg_COLLECTORS)
-
-  set(DUNE_INSTANCE_OUTPUTS "${arg_OUTPUTS}" PARENT_SCOPE)
-  set("${arg_OUTPUTS}" "" PARENT_SCOPE)
-endfunction(dune_instance_begin)
-
-
-function(dune_instance_template)
-  cmake_parse_arguments(PARSE_ARGV 0 arg
-    "" # options
-    "NAME;${DUNE_INSTANCE_COLLECTORS}" # one_value_keywords
+    "" # one_value_keywords
     "FILES" # multi_value_keywords
     )
+  if(DEFINED _arg_UNPARSED_ARGUMENTS)
+    message(FATAL_ERROR "unrecognized arguments: ${_arg_UNPARSED_ARGUMENTS}")
+  endif(DEFINED _arg_UNPARSED_ARGUMENTS)
 
-  if(DEFINED arg_UNPARSED_ARGUMENTS)
-    message(FATAL_ERROR "unrecognized arguments: ${arg_UNPARSED_ARGUMENTS}")
-  endif(DEFINED arg_UNPARSED_ARGUMENTS)
+  set(_all_content_parts "")
+  set(_all_template_parts "")
+  set(_all_template_names "")
+  foreach(_spec IN LISTS _arg_FILES)
+    dune_instance_parse_file_spec("${_spec}" TEMPLATE INSTANCE)
+    dune_instance_set_generated()
+    # reconfigure if the input template file changes
+    set_property(DIRECTORY APPEND
+      PROPERTY CMAKE_CONFIGURE_DEPENDS "${TEMPLATE}")
+    dune_instance_parse_embedded("${TEMPLATE}"
+      _file_content_parts _file_template_parts _file_template_names)
+    dune_instance_generate_parts(_file_content_parts)
 
-  if(NOT DEFINED arg_NAME)
-    set(arg_NAME DEFAULT)
-  endif(NOT DEFINED arg_NAME)
+    dune_instance_quote_element(_file_content_parts)
+    list(APPEND _all_content_parts "${_file_content_parts}")
 
-  set("DUNE_INSTANCE_TEMPLATE_${arg_NAME}_FILES" "${arg_FILES}" PARENT_SCOPE)
-  foreach(c IN LISTS DUNE_INSTANCE_COLLECTORS)
-    set("DUNE_INSTANCE_TEMPLATE_${arg_NAME}_${c}" "${arg_${c}}" PARENT_SCOPE)
-  endforeach(c IN LISTS DUNE_INSTANCE_COLLECTORS)
-endfunction(dune_instance_template)
+    dune_instance_quote_element(_file_template_parts)
+    list(APPEND _all_template_parts "${_file_template_parts}")
+
+    dune_instance_quote_element(_file_template_names)
+    list(APPEND _all_template_names "${_file_template_names}")
+  endforeach(_spec)
+  set(_DUNE_INSTANCE_GLOBAL_FILES "${_arg_FILES}" PARENT_SCOPE)
+  set(_DUNE_INSTANCE_CONTENT_PARTS "${_all_content_parts}" PARENT_SCOPE)
+  set(_DUNE_INSTANCE_TEMPLATE_PARTS "${_all_template_parts}" PARENT_SCOPE)
+  set(_DUNE_INSTANCE_TEMPLATE_NAMES "${_all_template_names}" PARENT_SCOPE)
+
+  set(DUNE_INSTANCE_GENERATED "" PARENT_SCOPE)
+endfunction(dune_instance_begin)
 
 
 function(dune_instance_add)
   cmake_parse_arguments(PARSE_ARGV 0 _arg
     "" # options
     "ID;TEMPLATE" # one_value_keywords
-    "" # multi_value_keywords
-    )
-
-  if(DEFINED _arg_UNPARSED_ARGUMENTS)
-    message(FATAL_ERROR "unrecognized arguments: ${_arg_UNPARSED_ARGUMENTS}")
-  endif(DEFINED _arg_UNPARSED_ARGUMENTS)
-
-  # determine template to use
-  if("${_arg_TEMPLATE}" STREQUAL "")
-    set(_arg_TEMPLATE DEFAULT)
-  endif("${_arg_TEMPLATE}" STREQUAL "")
-
-  # append collectors
-  foreach(_collector IN LISTS DUNE_INSTANCE_COLLECTORS)
-    string(CONFIGURE
-      "${DUNE_INSTANCE_TEMPLATE_${_arg_TEMPLATE}_${_collector}}" _content)
-    string(APPEND "${_collector}" "${_content}")
-    set("${_collector}" "${${_collector}}" PARENT_SCOPE)
-  endforeach(_collector IN LISTS DUNE_INSTANCE_COLLECTORS)
-
-  # generate instance files
-  foreach(_spec IN LISTS "DUNE_INSTANCE_TEMPLATE_${_arg_TEMPLATE}_FILES")
-    # determine instance and template file name
-    dune_instance_from_id("${_spec}" "${_arg_ID}" TEMPLATE INSTANCE)
-
-    # generate instanciation
-    dune_instance_generate_file("${TEMPLATE}" "${INSTANCE}")
-
-    # remember generated file
-    list(APPEND "${DUNE_INSTANCE_OUTPUTS}" "${INSTANCE}")
-  endforeach(_spec IN LISTS "DUNE_INSTANCE_TEMPLATE_${_arg_TEMPLATE}_FILES")
-
-  # export generated files
-  set("${DUNE_INSTANCE_OUTPUTS}" "${${DUNE_INSTANCE_OUTPUTS}}" PARENT_SCOPE)
-endfunction(dune_instance_add)
-
-function(dune_instance_end)
-  cmake_parse_arguments(PARSE_ARGV 0 _arg
-    "" # options
-    "" # one_value_keywords
     "FILES" # multi_value_keywords
     )
 
@@ -705,5 +737,135 @@ function(dune_instance_end)
     message(FATAL_ERROR "unrecognized arguments: ${_arg_UNPARSED_ARGUMENTS}")
   endif(DEFINED _arg_UNPARSED_ARGUMENTS)
 
-  dune_instance_generate_files(${_arg_FILES})
+  # ensure _arg_TEMPLATE is set, even if it is the empty value
+  set(_arg_TEMPLATE "${_arg_TEMPLATE}")
+
+  set(_template_used FALSE)
+
+  ######################################################################
+  # Instantiate global (list) templates
+  set(_all_content_parts "")
+  list(LENGTH _DUNE_INSTANCE_GLOBAL_FILES _file_count)
+  foreach(_file_index RANGE "${_file_count}")
+    # filter out the end of the range, this also works with empty ranges
+    if(_file_index EQUAL _file_count)
+      break()
+    endif()
+    list(GET _DUNE_INSTANCE_GLOBAL_FILES "${_file_index}" _spec)
+    dune_instance_parse_file_spec("${_spec}" TEMPLATE INSTANCE)
+    dune_instance_set_generated()
+
+    list(GET _DUNE_INSTANCE_CONTENT_PARTS "${_file_index}" _content_parts)
+    dune_instance_unquote_element(_content_parts)
+    list(GET _DUNE_INSTANCE_TEMPLATE_PARTS "${_file_index}" _template_parts)
+    dune_instance_unquote_element(_template_parts)
+    list(GET _DUNE_INSTANCE_TEMPLATE_NAMES "${_file_index}" _template_names)
+    dune_instance_unquote_element(_template_names)
+
+    set(_content_parts_result "")
+    list(LENGTH _template_parts _parts_count)
+    foreach(_part_index RANGE "${_parts_count}")
+      list(GET _content_parts "${_part_index}" _content_part)
+      # The list of template parts should be one shorter than the list of
+      # content parts
+      if(_part_index LESS _parts_count)
+        list(GET _template_names "${_part_index}" _template_name)
+        dune_instance_unquote_element(_template_name)
+        if(_template_name STREQUAL _arg_TEMPLATE)
+          set(_template_used TRUE)
+
+          list(GET _template_parts "${_part_index}" _template_part)
+          dune_instance_unquote_element(_template_part)
+          string(CONFIGURE "${_template_part}" _result)
+
+          dune_instance_unquote_element(_content_part)
+          string(APPEND _content_part "${_result}")
+          dune_instance_quote_element(_content_part)
+        endif()
+      endif()
+      list(APPEND _content_parts_result "${_content_part}")
+    endforeach(_part_index)
+
+    dune_instance_quote_element(_content_parts_result)
+    list(APPEND _all_content_parts "${_content_parts_result}")
+  endforeach(_file_index)
+  set(_DUNE_INSTANCE_CONTENT_PARTS "${_all_content_parts}" PARENT_SCOPE)
+
+  ######################################################################
+  # instantiate per instance templates
+  foreach(_spec IN LISTS _arg_FILES)
+    set(_template_used TRUE)
+    dune_instance_from_id("${_spec}" "${_arg_ID}" _template_file _instance_file)
+    dune_instance_generate_file("${_template_file}" "${_instance_file}")
+    list(APPEND DUNE_INSTANCE_GENERATED "${_instance_file}")
+  endforeach(_spec)
+
+  # if we did not instantiate anything, that is probably an error
+  if(NOT _template_used)
+    message(FATAL_ERROR "No embedded template matched template '${_arg_TEMPLATE}', and no instance template files were given")
+  endif()
+  set(DUNE_INSTANCE_GENERATED "${DUNE_INSTANCE_GENERATED}" PARENT_SCOPE)
+endfunction(dune_instance_add)
+
+function(dune_instance_end)
+  if(ARGC GREATER 0)
+    message(FATAL_ERROR "dune_instance_end() does not take any arguments")
+  endif()
+
+  ######################################################################
+  # Write global instances
+  list(LENGTH _DUNE_INSTANCE_GLOBAL_FILES _file_count)
+  foreach(_file_index RANGE "${_file_count}")
+    # filter out the end of the range, this also works with empty ranges
+    if(_file_index EQUAL _file_count)
+      break()
+    endif()
+    list(GET _DUNE_INSTANCE_GLOBAL_FILES "${_file_index}" _spec)
+    dune_instance_parse_file_spec("${_spec}" TEMPLATE INSTANCE)
+
+    # make sure we did not generate this file before
+    get_property(_seen SOURCE "${INSTANCE}" PROPERTY GENERATED)
+    if("${_seen}")
+      message(FATAL_ERROR "Attempt to generate ${INSTANCE} (from ${TEMPLATE}), "
+        "which has already been generated")
+    endif("${_seen}")
+
+    list(GET _DUNE_INSTANCE_CONTENT_PARTS "${_file_index}" _content_parts)
+    dune_instance_unquote_element(_content_parts)
+
+    set(_content "")
+    foreach(_part IN LISTS _content_parts)
+      dune_instance_unquote_element(_part)
+      string(APPEND _content "${_part}")
+    endforeach(_part)
+    # remove the final newline that we appended when reading the template file
+    string(REGEX REPLACE "\n\$" "" _content "${_content}")
+
+    # mimic the behaviour of configure_file(), placing relative paths in the
+    # current binary dir
+    set(_outname "${INSTANCE}")
+    if(NOT (_outname MATCHES "^/"))
+      set(_outname "${CMAKE_CURRENT_BINARY_DIR}/${_outname}")
+    endif()
+
+    # only write if the content changes, avoiding recompilations
+    set(_do_write TRUE)
+    if(EXISTS "${_outname}")
+      file(READ "${_outname}" _tmp)
+      if(_content STREQUAL _tmp)
+        set(_do_write FALSE)
+      endif()
+    endif()
+    if(_do_write)
+      message(STATUS "Writing ${INSTANCE}")
+      file(WRITE "${_outname}" "${_content}")
+    else()
+      message(STATUS "Writing ${INSTANCE} skipped (already up-to-date)")
+    endif()
+
+    set_property(SOURCE "${INSTANCE}" PROPERTY GENERATED TRUE)
+    list(APPEND DUNE_INSTANCE_GENERATED "${INSTANCE}")
+  endforeach(_file_index)
+
+  set(DUNE_INSTANCE_GENERATED "${DUNE_INSTANCE_GENERATED}" PARENT_SCOPE)
 endfunction(dune_instance_end)
