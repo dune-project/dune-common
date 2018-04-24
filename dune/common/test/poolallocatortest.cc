@@ -133,7 +133,7 @@ int testPoolAllocator()
     std::cerr<<"ERROR: deallocation should not work with copied allocators."<<std::endl;
 #endif
   }
-  catch(std::bad_alloc)
+  catch(const std::bad_alloc&)
   {}
   pool1.allocate(1);
   double *d1=pool2.allocate(1);
