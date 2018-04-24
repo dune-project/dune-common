@@ -35,7 +35,7 @@
                 << " should throw " << #except << std::endl;    \
       std::abort();                                             \
     }                                                           \
-    catch(except) {}                                            \
+    catch(const except&) {}                                            \
     catch(...) {                                                \
       std::cerr << __FILE__ << ":" << __LINE__ << ": " << #expr \
                 << " should throw " << #except << std::endl;    \
@@ -64,7 +64,7 @@ bool setCommaLocale()
       std::cout << "Using comma-locale " << std::locale().name() << std::endl;
       return true;
     }
-    catch(std::runtime_error) { }
+    catch(const std::runtime_error&) { }
   }
 
   std::cout << "No comma-using locale found on system, tried the following:";
