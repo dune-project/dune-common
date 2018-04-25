@@ -32,7 +32,6 @@ add_dune_tbb_flags(dunecommon)
 install(FILES
         alignment.hh
         alignedallocator.hh
-        array.hh
         arraylist.hh
         assertandreturn.hh
         bartonnackmanifcheck.hh
