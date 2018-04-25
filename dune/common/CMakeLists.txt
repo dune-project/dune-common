@@ -80,7 +80,6 @@ install(FILES
         mallocallocator.hh
         math.hh
         matvectraits.hh
-        nullptr.hh
         overloadset.hh
         parametertree.hh
         parametertreeparser.hh
