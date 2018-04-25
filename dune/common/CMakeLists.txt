@@ -61,7 +61,6 @@ install(FILES
         float_cmp.hh
         fmatrix.hh
         fmatrixev.hh
-        forloop.hh
         ftraits.hh
         function.hh
         fvector.hh
