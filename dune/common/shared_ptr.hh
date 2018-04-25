@@ -77,40 +77,6 @@ namespace Dune
     return shared_ptr<T>(&t, null_deleter<T>());
   }
 
-  /**
-     @brief Create a shared_ptr to a base class for a stack-allocated object
-     @relatesalso null_deleter
-     @code
-          #include <dune/common/shared_ptr.hh>
-     @endcode
-
-     Usage:
-     @code
-          class A {};
-          class B : public A {};
-
-          ...
-
-          B b;
-          shared_ptr<A> pa = stackobject_to_shared_ptr<A>(b);
-     @endcode
-     The @c shared_ptr points to the object on the stack, but its deleter is
-     set to an instance of @c null_deleter so that nothing happens when the @c
-     shared_ptr is destroyed.
-
-     @sa shared_ptr, null_deleter
-   */
-  template<typename T, typename T2>
-  inline DUNE_DEPRECATED_MSG("Do not use the explicit casting version of stackobject_to_shared_ptr, just assign the result to a shared_ptr to the base class")
-  std::enable_if_t<
-    not std::is_same<T,T2>::value,
-    shared_ptr<T>
-    >
-  stackobject_to_shared_ptr(T2 & t)
-  {
-    return shared_ptr<T2>(&t, null_deleter<T2>());
-  }
-
 
   /**
    * \brief Capture R-value reference to shared_ptr

@@ -13,7 +13,7 @@ int main() try {
     std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
               << std::endl;
     passed = false;
-  } catch (Dune::RangeError) {
+  } catch (const Dune::RangeError&) {
     std::cout << "(line " << __LINE__
               << ") All good: Exception thrown as expected." << std::endl;
   }
@@ -26,7 +26,7 @@ int main() try {
     std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
               << std::endl;
     passed = false;
-  } catch (Dune::RangeError) {
+  } catch (const Dune::RangeError&) {
     std::cout << "(line " << __LINE__
               << ") All good: Exception thrown as expected." << std::endl;
   }
@@ -39,7 +39,7 @@ int main() try {
     std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
               << std::endl;
     passed = false;
-  } catch (Dune::RangeError) {
+  } catch (const Dune::RangeError&) {
     std::cout << "(line " << __LINE__
               << ") All good: Exception thrown as expected." << std::endl;
   }
@@ -52,7 +52,7 @@ int main() try {
     std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
               << std::endl;
     passed = false;
-  } catch (Dune::RangeError) {
+  } catch (const Dune::RangeError&) {
     std::cout << "(line " << __LINE__
               << ") All good: Exception thrown as expected." << std::endl;
   }
@@ -65,7 +65,7 @@ int main() try {
     std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
               << std::endl;
     passed = false;
-  } catch (Dune::RangeError) {
+  } catch (const Dune::RangeError&) {
     std::cout << "(line " << __LINE__
               << ") All good: Exception thrown as expected." << std::endl;
   }
@@ -77,7 +77,7 @@ int main() try {
     std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
               << std::endl;
     passed = false;
-  } catch (Dune::RangeError) {
+  } catch (const Dune::RangeError&) {
     std::cout << "(line " << __LINE__
               << ") All good: Exception thrown as expected." << std::endl;
   }
@@ -89,7 +89,7 @@ int main() try {
     std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
               << std::endl;
     passed = false;
-  } catch (Dune::RangeError) {
+  } catch (const Dune::RangeError&) {
     std::cout << "(line " << __LINE__
               << ") All good: Exception thrown as expected." << std::endl;
   }
@@ -101,7 +101,7 @@ int main() try {
     std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
               << std::endl;
     passed = false;
-  } catch (Dune::RangeError) {
+  } catch (const Dune::RangeError&) {
     std::cout << "(line " << __LINE__
               << ") All good: Exception thrown as expected." << std::endl;
   }
@@ -113,7 +113,7 @@ int main() try {
     std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
               << std::endl;
     passed = false;
-  } catch (Dune::RangeError) {
+  } catch (const Dune::RangeError&) {
     std::cout << "(line " << __LINE__
               << ") All good: Exception thrown as expected." << std::endl;
   }
@@ -125,7 +125,7 @@ int main() try {
     std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
               << std::endl;
     passed = false;
-  } catch (Dune::RangeError) {
+  } catch (const Dune::RangeError&) {
     std::cout << "(line " << __LINE__
               << ") All good: Exception thrown as expected." << std::endl;
   }

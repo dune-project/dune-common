@@ -22,13 +22,13 @@ namespace Dune {
     /*
        hide the default traits in an empty namespace
      */
-    template <typename _Key, typename _Tp,
-        typename _Alloc = std::allocator<_Tp> >
+    template <typename Key, typename Tp,
+        typename Alloc = std::allocator<Tp> >
     struct _lru_default_traits
     {
-      typedef _Key key_type;
-      typedef _Alloc allocator;
-      typedef std::list< std::pair<_Key, _Tp> > list_type;
+      typedef Key key_type;
+      typedef Alloc allocator;
+      typedef std::list< std::pair<Key, Tp> > list_type;
       typedef typename list_type::iterator iterator;
       typedef typename std::less<key_type> cmp;
       typedef std::map< key_type, iterator, cmp,
@@ -44,18 +44,18 @@ namespace Dune {
       container. This implementation follows the approach presented in
       http://aim.adc.rmit.edu.au/phd/sgreuter/papers/graphite2003.pdf
    */
-  template <typename _Key, typename _Tp,
-      typename _Traits = _lru_default_traits<_Key, _Tp> >
+  template <typename Key, typename Tp,
+      typename Traits = _lru_default_traits<Key, Tp> >
   class lru
   {
-    typedef typename _Traits::list_type list_type;
-    typedef typename _Traits::map_type map_type;
-    typedef typename _Traits::allocator allocator;
+    typedef typename Traits::list_type list_type;
+    typedef typename Traits::map_type map_type;
+    typedef typename Traits::allocator allocator;
     typedef typename map_type::iterator map_iterator;
     typedef typename map_type::const_iterator const_map_iterator;
 
   public:
-    typedef typename _Traits::key_type key_type;
+    typedef typename Traits::key_type key_type;
     typedef typename allocator::value_type value_type;
     typedef typename allocator::pointer pointer;
     typedef typename allocator::const_pointer const_pointer;
