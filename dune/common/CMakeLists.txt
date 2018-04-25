@@ -101,7 +101,6 @@ install(FILES
         streamoperators.hh
         stringutility.hh
         timer.hh
-        tuples.hh
         tupleutility.hh
         tuplevector.hh
         typelist.hh
