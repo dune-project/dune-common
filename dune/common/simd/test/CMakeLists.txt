@@ -1,3 +1,5 @@
+include(DuneCMakeCompat)
+
 # We need to explicitly instantiate the tests for small groups of types --
 # else the compiler will eat excessive amounts of memory.  This way it seems
 # to stay below 1GByte (with g++ 4.9.2 -O0 -g on x86_64 GNU/Linux, looking at
@@ -22,7 +24,7 @@ foreach(SCALAR IN LISTS TYPES)
 endforeach()
 dune_instance_end()
 
-list(FILTER DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
+dune_list_filter(DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
 dune_add_test(NAME looptest
   SOURCES ${DUNE_INSTANCE_GENERATED} looptest_mask.cc
   LINK_LIBRARIES dunecommon
@@ -48,7 +50,7 @@ foreach(SCALAR IN LISTS TYPES)
 endforeach()
 dune_instance_end()
 
-list(FILTER DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
+dune_list_filter(DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
 dune_add_test(NAME standardtest
   SOURCES ${DUNE_INSTANCE_GENERATED} standardtest_mask.cc
   LINK_LIBRARIES dunecommon
@@ -80,7 +82,7 @@ endforeach()
 
 dune_instance_end()
 
-list(FILTER DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
+dune_list_filter(DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
 
 dune_add_test(NAME vctest
   SOURCES ${DUNE_INSTANCE_GENERATED}
