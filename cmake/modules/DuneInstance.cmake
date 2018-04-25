@@ -686,10 +686,11 @@ endfunction(dune_instance_generate_file)
 #
 
 function(dune_instance_begin)
-  cmake_parse_arguments(PARSE_ARGV 0 _arg
+  cmake_parse_arguments(_arg
     "" # options
     "" # one_value_keywords
     "FILES" # multi_value_keywords
+    ${ARGV}
     )
   if(DEFINED _arg_UNPARSED_ARGUMENTS)
     message(FATAL_ERROR "unrecognized arguments: ${_arg_UNPARSED_ARGUMENTS}")
@@ -727,10 +728,11 @@ endfunction(dune_instance_begin)
 
 
 function(dune_instance_add)
-  cmake_parse_arguments(PARSE_ARGV 0 _arg
+  cmake_parse_arguments(_arg
     "" # options
     "ID;TEMPLATE" # one_value_keywords
     "FILES" # multi_value_keywords
+    ${ARGV}
     )
 
   if(DEFINED _arg_UNPARSED_ARGUMENTS)
