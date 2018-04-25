@@ -1,7 +1,6 @@
 install(
   FILES
   apply.hh
-  final.hh
   noexcept.hh
   make_array.hh
   memory.hh
