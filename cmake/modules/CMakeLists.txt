@@ -8,6 +8,7 @@ install(FILES
   AddVcFlags.cmake
   CheckCXXFeatures.cmake
   CMakeBuiltinFunctionsDocumentation.cmake
+  DuneCMakeCompat.cmake
   DuneCommonMacros.cmake
   DuneCxaDemangle.cmake
   DuneDoc.cmake
