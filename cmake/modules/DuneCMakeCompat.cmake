@@ -83,9 +83,9 @@ function(dune_list_filter list mode REGEX regular_expression)
   endforeach(item)
 
   if("${mode}" STREQUAL "INCLUDE")
-    set(result "${matched}" PARENT_SCOPE)
+    set(result "${matched}")
   else()
-    set(result "${unmatched}" PARENT_SCOPE)
+    set(result "${unmatched}")
   endif()
 
   # remove the non-empty token from above.  If the proper result would be a
