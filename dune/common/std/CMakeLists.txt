@@ -1,8 +1,6 @@
 install(
   FILES
   apply.hh
-  constexpr.hh
-  final.hh
   make_array.hh
   memory.hh
   optional.hh

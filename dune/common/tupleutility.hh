@@ -8,7 +8,6 @@
 #include <tuple>
 #include <type_traits>
 
-#include <dune/common/deprecated.hh>
 #include <dune/common/hybridutilities.hh>
 #include <dune/common/std/type_traits.hh>
 #include <dune/common/std/utility.hh>
@@ -333,42 +332,6 @@ namespace Dune {
     {
       return &t;
     }
-  };
-
-  template<class Tuple>
-  struct DUNE_DEPRECATED_MSG("Use Hybrid::forEach instead!") ForEachValue
-  {
-    ForEachValue(Tuple& t) :
-      t_(t)
-    {}
-
-    template<class Functor>
-    void apply(Functor& f) const
-    {
-      Hybrid::forEach(Std::make_index_sequence<std::tuple_size<Tuple>::value>{},
-        [&](auto i){f.visit(std::get<i>(t_));});
-    }
-
-    Tuple& t_;
-  };
-
-  template<class Tuple1, class Tuple2>
-  struct DUNE_DEPRECATED_MSG("Use Hybrid::forEach instead!") ForEachValuePair
-  {
-    ForEachValuePair(Tuple1& t1, Tuple2& t2) :
-      t1_(t1),
-      t2_(t2)
-    {}
-
-    template<class Functor>
-    void apply(Functor& f)
-    {
-      Hybrid::forEach(Std::make_index_sequence<std::tuple_size<Tuple1>::value>{},
-        [&](auto i){f.visit(std::get<i>(t1_), std::get<i>(t2_));});
-    }
-
-    Tuple1& t1_;
-    Tuple2& t2_;
   };
 
   /**

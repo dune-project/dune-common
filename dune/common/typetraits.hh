@@ -206,12 +206,12 @@ namespace Dune
   namespace Impl {
 
     template<typename T, typename I, typename = int>
-    struct _IsIndexable
+    struct IsIndexable
       : public std::false_type
     {};
 
     template<typename T, typename I>
-    struct _IsIndexable<T,I,typename std::enable_if<(sizeof(std::declval<T>()[std::declval<I>()]) > 0),int>::type>
+    struct IsIndexable<T,I,typename std::enable_if<(sizeof(std::declval<T>()[std::declval<I>()]) > 0),int>::type>
       : public std::true_type
     {};
 
@@ -226,7 +226,7 @@ namespace Dune
    */
   template<typename T, typename I = std::size_t>
   struct IsIndexable
-    : public Impl::_IsIndexable<T,I>
+    : public Impl::IsIndexable<T,I>
   {};
 
 #else // defined(DOXYGEN) or HAVE_IS_INDEXABLE_SUPPORT
@@ -259,13 +259,13 @@ namespace Dune
 
     // default version, gets picked if SFINAE fails
     template<typename T, typename = int>
-    struct _IsIndexable
+    struct IsIndexable
       : public std::false_type
     {};
 
     // version for types supporting the subscript operation
     template<typename T>
-    struct _IsIndexable<T,decltype(std::declval<T>()[0],0)>
+    struct IsIndexable<T,decltype(std::declval<T>()[0],0)>
       : public std::true_type
     {};
 
@@ -277,7 +277,7 @@ namespace Dune
 
       template<typename T>
       struct evaluate
-        : public _IsIndexable<T>
+        : public IsIndexable<T>
       {};
 
     };

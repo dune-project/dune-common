@@ -5,9 +5,6 @@ dune_add_test(SOURCES arithmetictestsuitetest.cc
 dune_add_test(SOURCES arraylisttest.cc
               LABELS quick)
 
-dune_add_test(SOURCES arraydeprecationtest.cc
-              LABELS quick)
-
 dune_add_test(SOURCES arraytest.cc
               LABELS quick)
 
@@ -127,7 +124,8 @@ dune_add_test(NAME densematrixassignmenttest_fail6
               LABELS quick)
 
 dune_add_test(SOURCES densevectorassignmenttest.cc
-              LINK_LIBRARIES dunecommon)
+              LINK_LIBRARIES dunecommon
+              LABELS quick)
 
 dune_add_test(SOURCES diagonalmatrixtest.cc
               LINK_LIBRARIES dunecommon

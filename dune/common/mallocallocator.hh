@@ -84,10 +84,10 @@ namespace Dune
     }
 
     //! construct an object of type T from variadic parameters
-    template<typename ... _Args>
-    void construct(pointer p, _Args&&... __args)
+    template<typename ... Args>
+    void construct(pointer p, Args&&... args)
     {
-      ::new((void *)p)T(std::forward<_Args>(__args) ...);
+      ::new((void *)p)T(std::forward<Args>(args) ...);
     }
 
     //! destroy an object of type T (i.e. call the destructor)

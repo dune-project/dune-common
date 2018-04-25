@@ -30,9 +30,7 @@ dune_add_library("dunecommon"
 add_dune_tbb_flags(dunecommon)
 #install headers
 install(FILES
-        alignment.hh
         alignedallocator.hh
-        array.hh
         arraylist.hh
         assertandreturn.hh
         bartonnackmanifcheck.hh
@@ -62,7 +60,6 @@ install(FILES
         float_cmp.hh
         fmatrix.hh
         fmatrixev.hh
-        forloop.hh
         ftraits.hh
         function.hh
         fvector.hh
@@ -71,7 +68,6 @@ install(FILES
         gmpfield.hh
         hash.hh
         hybridutilities.hh
-        identitymatrix.hh
         indent.hh
         indices.hh
         interfaces.hh
@@ -84,7 +80,6 @@ install(FILES
         mallocallocator.hh
         math.hh
         matvectraits.hh
-        nullptr.hh
         overloadset.hh
         parametertree.hh
         parametertreeparser.hh
