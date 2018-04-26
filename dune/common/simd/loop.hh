@@ -285,7 +285,12 @@ namespace Dune {
       struct LaneCount<LoopSIMD<T,S>> : index_constant<S> {};
 
       template<class T, std::size_t S>
-      T lane(ADLTag<5>, std::size_t l, const LoopSIMD<T,S> &v) {
+      T&& lane(ADLTag<5>, std::size_t l, LoopSIMD<T,S> &&v) {
+        return std::move(v[l]);
+      }
+
+      template<class T, std::size_t S>
+      const T& lane(ADLTag<5>, std::size_t l, const LoopSIMD<T,S> &v) {
        return v[l];
       }
 
