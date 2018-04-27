@@ -19,7 +19,6 @@
 #include <dune/common/fmatrix.hh>
 #include <dune/common/ftraits.hh>
 #include <dune/common/rangeutilities.hh>
-#include <dune/common/simd.hh>
 #include <dune/common/simd/loop.hh>
 #include <dune/common/simd/simd.hh>
 #if HAVE_VC
@@ -55,7 +54,7 @@ int test_invert_solve(Dune::FieldMatrix<T, n, n> &A,
     prod[i][i] -= 1;
 
   bool equal=true;
-  if (any_true(prod.infinity_norm() > 1e-6)) {
+  if (Simd::anyTrue(prod.infinity_norm() > 1e-6)) {
     std::cerr<<"Given inverse wrong"<<std::endl;
     equal=false;
   }
@@ -71,7 +70,7 @@ int test_invert_solve(Dune::FieldMatrix<T, n, n> &A,
   auto tolerance = 10*epsilon;
   for(size_t i =0; i < n; ++i)
     for(size_t j=0; j <n; ++j)
-      if(any_true(abs(A[i][j])>tolerance)) {
+      if(Simd::anyTrue(abs(A[i][j])>tolerance)) {
         std::cerr<<"calculated inverse wrong at ("<<i<<","<<j<<")"<<std::endl;
         equal=false;
       }
@@ -94,7 +93,7 @@ int test_invert_solve(Dune::FieldMatrix<T, n, n> &A,
   copy.mmv(x,trhs);
   equal=true;
 
-  if (any_true(trhs.infinity_norm() > 1e-6)) {
+  if (Simd::anyTrue(trhs.infinity_norm() > 1e-6)) {
     std::cerr<<"Given rhs does not fit solution"<<std::endl;
     equal=false;
   }
@@ -105,7 +104,7 @@ int test_invert_solve(Dune::FieldMatrix<T, n, n> &A,
   equal=true;
 
   for(size_t i =0; i < n; ++i)
-    if(any_true(abs(xcopy[i])>tolerance)) {
+    if(Simd::anyTrue(abs(xcopy[i])>tolerance)) {
       std::cerr<<"calculated isolution wrong at ("<<i<<")"<<std::endl;
       equal=false;
     }
