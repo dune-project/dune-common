@@ -1032,7 +1032,7 @@ namespace Dune {
         // checkUnaryOpsV<V>(OpPrefixDecrement{});
         // checkUnaryOpsV<V>(OpPrefixIncrement{});
 
-        checkUnaryOpsV<V>(OpPrefixPlus{});
+        // checkUnaryOpsV<V>(OpPrefixPlus{});
         checkUnaryOpsV<V>(OpPrefixMinus{});
         checkUnaryOpsV<V>(OpPrefixLogicNot{});
         checkUnaryOpsV<V>(OpPrefixBitNot{});
