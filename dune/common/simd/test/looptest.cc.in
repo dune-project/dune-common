@@ -4,6 +4,7 @@
 #include "config.h"
 #endif
 
+#include <cstddef>
 #include <cstdlib>
 
 #include <dune/common/simd/loop.hh>
@@ -17,6 +18,8 @@ int main()
 #cmake @template@
   test.checkVector<Dune::LoopSIMD<@SCALAR@, 5>>();
 #cmake @endtemplate@
+
+  test.checkIndex<Dune::LoopSIMD<std::size_t, 5>>();
 
   test.checkMask<Dune::LoopSIMD<bool, 5>>();
 

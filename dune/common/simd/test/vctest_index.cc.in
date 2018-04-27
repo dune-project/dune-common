@@ -1,0 +1,16 @@
+// @GENERATED_SOURCE@
+
+#include <config.h>
+
+#include <cstdint>
+
+#include <dune/common/simd/test/vctest.hh>
+
+namespace Dune {
+  namespace Simd {
+
+    template
+    void UnitTest::checkIndex<Vc::SimdArray<@SCALAR@, @LANES@> >();
+
+  } // namespace Simd
+} // namespace Dune

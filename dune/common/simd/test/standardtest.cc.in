@@ -5,6 +5,7 @@
 #endif
 
 #include <complex>
+#include <cstddef>
 #include <cstdlib>
 
 #include <dune/common/simd/test.hh>
@@ -17,6 +18,10 @@ int main()
 #cmake @template@
   test.checkVector<@SCALAR@>();
 #cmake @endtemplate@
+
+  test.checkIndex<std::size_t>();
+
+  test.checkMask<bool>();
 
   return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

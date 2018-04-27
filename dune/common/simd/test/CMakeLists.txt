@@ -26,7 +26,7 @@ dune_instance_end()
 
 dune_list_filter(DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
 dune_add_test(NAME looptest
-  SOURCES ${DUNE_INSTANCE_GENERATED} looptest_mask.cc
+  SOURCES ${DUNE_INSTANCE_GENERATED} looptest_index.cc looptest_mask.cc
   LINK_LIBRARIES dunecommon
 )
 # no need to install looptest.hh, used by looptest*.cc only
@@ -52,7 +52,7 @@ dune_instance_end()
 
 dune_list_filter(DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
 dune_add_test(NAME standardtest
-  SOURCES ${DUNE_INSTANCE_GENERATED} standardtest_mask.cc
+  SOURCES ${DUNE_INSTANCE_GENERATED} standardtest_index.cc standardtest_mask.cc
   LINK_LIBRARIES dunecommon
 )
 # no need to install standardtest.hh, used by standardtest*.cc only
@@ -79,6 +79,16 @@ foreach(SCALAR IN LISTS VCTEST_TYPES)
       FILES vctest_simdarray.cc vctest_simdmaskarray.cc)
   endforeach(LANES IN ITEMS 4 8)
 endforeach()
+
+# Vc's Index types are always Vc::SimdArray<int, N>, even for Vc::Vector.
+# Instanciate for up to N=32, enough for std::int16_t on AVX512
+# Use exactly the same variables as for the ARRAY template so matching
+# instantiations of vctest_simdmaskarray.cc give the same result.
+set(SCALAR std::int32_t)
+foreach(LANES IN ITEMS 1 2 4 8 16 32)
+  dune_instance_add(TEMPLATE INDEX ID "${SCALAR}_${LANES}"
+    FILES vctest_index.cc vctest_simdmaskarray.cc)
+endforeach(LANES)
 
 dune_instance_end()
 

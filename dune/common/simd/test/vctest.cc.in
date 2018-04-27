@@ -33,5 +33,9 @@ int main()
   test.checkVector<SimdArray<@SCALAR@, @LANES@> >();
 #@endtemplate@
 
+#@template INDEX@
+  test.checkIndex<SimdArray<std::int32_t, @LANES@> >();
+#@endtemplate@
+
   return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
