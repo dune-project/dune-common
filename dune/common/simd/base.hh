@@ -44,7 +44,7 @@
  *   overeager, to get around each type that should be supported must be
  *   "registered", but not all such types can be known in advance (e.g. some
  *   extended precision type from some external library).  NOTE: `IsNumber` is
- *   not an alternative, since it's meaning is different (whether something is
+ *   not an alternative, since its meaning is different (whether something is
  *   a leaf in the matrix/vector block hierarchy).
  *
  * - Look for types supported by dune-common that should be subject to the
