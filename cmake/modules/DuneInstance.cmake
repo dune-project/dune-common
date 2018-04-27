@@ -663,22 +663,50 @@ function(dune_instance_generate_file TEMPLATE INSTANCE)
     message(FATAL_ERROR "need both INSTANCE and TEMPLATE")
   endif(("${INSTANCE}" STREQUAL "") OR ("${TEMPLATE}" STREQUAL ""))
 
-  # make sure we did not generate this file before
-  get_property(_seen SOURCE "${INSTANCE}" PROPERTY GENERATED)
-  if("${_seen}")
-    message(FATAL_ERROR "Attempt to generate ${INSTANCE} (from ${TEMPLATE}), "
-      "which has already been generated")
-  endif("${_seen}")
-
   # prepare instance substitution variables
   dune_instance_set_generated()
 
   # do the generation
   message(STATUS "Generating ${TEMPLATE} -> ${INSTANCE}")
-  configure_file("${TEMPLATE}" "${INSTANCE}")
-  set_property(SOURCE "${INSTANCE}" PROPERTY GENERATED TRUE)
+  file(READ "${TEMPLATE}" _content)
+  string(CONFIGURE "${_content}" _content)
+
+  # mimic the behaviour of configure_file(), placing relative paths in the
+  # current binary dir
+  set(_outname "${INSTANCE}")
+  if(NOT (IS_ABSOLUTE _outname))
+    set(_outname "${CMAKE_CURRENT_BINARY_DIR}/${_outname}")
+  endif()
+
+  # make sure we did not generate this file before
+  get_property(_seen SOURCE "${INSTANCE}" PROPERTY GENERATED)
+  if(_seen)
+    file(READ "${_outname}" _oldcontent)
+    if(NOT (_content STREQUAL _oldcontent))
+      message(FATAL_ERROR "Attempt to generate ${INSTANCE} (from ${TEMPLATE}), "
+        "which has already been generated with different content")
+    endif()
+    # otherwise, the content matches, so nothing to do
+  else(_seen)
+    # _seen was false, but the file may still be around from a previous cmake
+    # run, only write if changed to avoid recompilations
+    dune_write_changed_file("${_outname}" "${_content}")
+    set_property(SOURCE "${INSTANCE}" PROPERTY GENERATED TRUE)
+    set_property(DIRECTORY APPEND
+      PROPERTY CMAKE_CONFIGURE_DEPENDS "${TEMPLATE}")
+  endif(_seen)
 endfunction(dune_instance_generate_file)
 
+# only write if the content changes, avoiding recompilations
+function(dune_write_changed_file name content)
+  if(EXISTS "${name}")
+    file(READ "${name}" oldcontent)
+    if(content STREQUAL oldcontent)
+      return()
+    endif()
+  endif()
+  file(WRITE "${name}" "${content}")
+endfunction(dune_write_changed_file)
 
 ######################################################################
 #
@@ -799,7 +827,10 @@ function(dune_instance_add)
     set(_template_used TRUE)
     dune_instance_from_id("${_spec}" "${_arg_ID}" _template_file _instance_file)
     dune_instance_generate_file("${_template_file}" "${_instance_file}")
-    list(APPEND DUNE_INSTANCE_GENERATED "${_instance_file}")
+    list(FIND DUNE_INSTANCE_GENERATED "${_instance_file}" _found_pos)
+    if(_found_pos EQUAL -1)
+      list(APPEND DUNE_INSTANCE_GENERATED "${_instance_file}")
+    endif()
   endforeach(_spec)
 
   # if we did not instantiate anything, that is probably an error
@@ -846,24 +877,13 @@ function(dune_instance_end)
     # mimic the behaviour of configure_file(), placing relative paths in the
     # current binary dir
     set(_outname "${INSTANCE}")
-    if(NOT (_outname MATCHES "^/"))
+    if(NOT (IS_ABSOLUTE _outname))
       set(_outname "${CMAKE_CURRENT_BINARY_DIR}/${_outname}")
     endif()
 
+    message(STATUS "Writing ${INSTANCE}")
     # only write if the content changes, avoiding recompilations
-    set(_do_write TRUE)
-    if(EXISTS "${_outname}")
-      file(READ "${_outname}" _tmp)
-      if(_content STREQUAL _tmp)
-        set(_do_write FALSE)
-      endif()
-    endif()
-    if(_do_write)
-      message(STATUS "Writing ${INSTANCE}")
-      file(WRITE "${_outname}" "${_content}")
-    else()
-      message(STATUS "Writing ${INSTANCE} skipped (already up-to-date)")
-    endif()
+    dune_write_changed_file("${_outname}" "${_content}")
 
     set_property(SOURCE "${INSTANCE}" PROPERTY GENERATED TRUE)
     list(APPEND DUNE_INSTANCE_GENERATED "${INSTANCE}")
