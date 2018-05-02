@@ -500,6 +500,42 @@ namespace Dune {
         return !Vc::any_of(!mask);
       }
 
+      //! implements Simd::maskAnd()
+      template<class S1, class V2>
+      auto maskAnd(ADLTag<5, std::is_same<Mask<S1>, bool>::value &&
+                             VcImpl::IsVector<V2>::value>,
+                   const S1 &s1, const V2 &v2)
+      {
+        return Simd::Mask<V2>(Simd::mask(s1)) && Simd::mask(v2);
+      }
+
+      //! implements Simd::maskAnd()
+      template<class V1, class S2>
+      auto maskAnd(ADLTag<5, VcImpl::IsVector<V1>::value &&
+                             std::is_same<Mask<S2>, bool>::value>,
+                   const V1 &v1, const S2 &s2)
+      {
+        return Simd::mask(v1) && Simd::Mask<V1>(Simd::mask(s2));
+      }
+
+      //! implements Simd::maskOr()
+      template<class S1, class V2>
+      auto maskOr(ADLTag<5, std::is_same<Mask<S1>, bool>::value &&
+                            VcImpl::IsVector<V2>::value>,
+                   const S1 &s1, const V2 &v2)
+      {
+        return Simd::Mask<V2>(Simd::mask(s1)) || Simd::mask(v2);
+      }
+
+      //! implements Simd::maskOr()
+      template<class V1, class S2>
+      auto maskOr(ADLTag<5, VcImpl::IsVector<V1>::value &&
+                            std::is_same<Mask<S2>, bool>::value>,
+                   const V1 &v1, const S2 &s2)
+      {
+        return Simd::mask(v1) || Simd::Mask<V1>(Simd::mask(s2));
+      }
+
       //! @} group SIMDVc
 
     } // namespace Overloads

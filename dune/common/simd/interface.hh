@@ -405,6 +405,36 @@ namespace Dune {
       return min(Overloads::ADLTag<6>{}, v);
     }
 
+    //! Convert to mask, analogue of bool(s) for scalars
+    /**
+     * Implemented by `Overloads::mask()`.
+     */
+    template<class V>
+    auto mask(const V &v)
+    {
+      return mask(Overloads::ADLTag<6>{}, v);
+    }
+
+    //! Logic or of masks
+    /**
+     * Implemented by `Overloads::maskOr()`.
+     */
+    template<class V1, class V2>
+    auto maskOr(const V1 &v1, const V2 &v2)
+    {
+      return maskOr(Overloads::ADLTag<6>{}, v1, v2);
+    }
+
+    //! Logic and of masks
+    /**
+     * Implemented by `Overloads::maskAnd()`.
+     */
+    template<class V1, class V2>
+    auto maskAnd(const V1 &v1, const V2 &v2)
+    {
+      return maskAnd(Overloads::ADLTag<6>{}, v1, v2);
+    }
+
     //! @}
 
     /** @name Syntactic Sugar

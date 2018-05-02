@@ -14,6 +14,7 @@
 
 #include <cstddef>
 
+#include <dune/common/rangeutilities.hh>
 #include <dune/common/simd/base.hh>
 #include <dune/common/simd/interface.hh>
 
@@ -110,6 +111,36 @@ namespace Dune {
           if(Simd::lane(l, v) < m)
             m = Simd::lane(l, v);
         return m;
+      }
+
+      //! implements Simd::mask()
+      template<class V>
+      Mask<V> mask(ADLTag<0, std::is_same<V, Mask<V> >::value>,
+                   const V &v)
+      {
+        return v;
+      }
+
+      //! implements Simd::mask()
+      template<class V>
+      Mask<V> mask(ADLTag<0, !std::is_same<V, Mask<V> >::value>,
+                   const V &v)
+      {
+        return v != V(Scalar<V>(0));
+      }
+
+      //! implements Simd::maskOr()
+      template<class V1, class V2>
+      auto maskOr(ADLTag<0>, const V1 &v1, const V2 &v2)
+      {
+        return Simd::mask(v1) || Simd::mask(v2);
+      }
+
+      //! implements Simd::maskAnd()
+      template<class V1, class V2>
+      auto maskAnd(ADLTag<0>, const V1 &v1, const V2 &v2)
+      {
+        return Simd::mask(v1) && Simd::mask(v2);
       }
 
       //! @} Overloadable and default functions
