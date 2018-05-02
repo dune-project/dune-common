@@ -1245,25 +1245,25 @@ namespace Dune {
       //
 
       template<class V>
-      void checkValueCast()
+      void checkAutoCopy()
       {
-        using RValueResult = decltype(valueCast(lane(0, std::declval<V>())));
+        using RValueResult = decltype(autoCopy(lane(0, std::declval<V>())));
         static_assert(std::is_same<RValueResult, Scalar<V> >::value,
-                      "Result of valueCast() must always be Scalar<V>");
+                      "Result of autoCopy() must always be Scalar<V>");
 
         using MutableLValueResult =
-          decltype(valueCast(lane(0, std::declval<V&>())));
+          decltype(autoCopy(lane(0, std::declval<V&>())));
         static_assert(std::is_same<MutableLValueResult, Scalar<V> >::value,
-                      "Result of valueCast() must always be Scalar<V>");
+                      "Result of autoCopy() must always be Scalar<V>");
 
         using ConstLValueResult =
-          decltype(valueCast(lane(0, std::declval<const V&>())));
+          decltype(autoCopy(lane(0, std::declval<const V&>())));
         static_assert(std::is_same<ConstLValueResult, Scalar<V> >::value,
-                      "Result of valueCast() must always be Scalar<V>");
+                      "Result of autoCopy() must always be Scalar<V>");
 
         V vec = make123<V>();
         for(std::size_t l = 0; l < lanes(vec); ++l)
-          DUNE_SIMD_CHECK(valueCast(lane(l, vec)) == Scalar<V>(l+1));
+          DUNE_SIMD_CHECK(autoCopy(lane(l, vec)) == Scalar<V>(l+1));
       }
 
       // may only be called for mask types
@@ -1516,7 +1516,7 @@ namespace Dune {
 
       checkVectorOps<V>();
 
-      checkValueCast<V>();
+      checkAutoCopy<V>();
       checkCond<V>();
 
       // checkBoolReductions<V>(); // not applicable
@@ -1560,7 +1560,7 @@ namespace Dune {
 
       checkIndexOps<I>();
 
-      checkValueCast<I>();
+      checkAutoCopy<I>();
       checkCond<I>();
 
       // checkBoolReductions<V>(); // not applicable
@@ -1604,7 +1604,7 @@ namespace Dune {
 
       checkMaskOps<M>();
 
-      checkValueCast<M>();
+      checkAutoCopy<M>();
       checkCond<M>();
 
       checkBoolReductions<M>();

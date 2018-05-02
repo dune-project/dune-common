@@ -229,10 +229,11 @@ namespace Dune {
 #define DUNE_SIMD_VC_BINARY_OP(OP)                                      \
         template<class T>                                               \
         auto operator OP(T &&o) const                                   \
-          -> decltype(vec_[idx_] OP valueCast(std::forward<T>(o)))      \
+          -> decltype(vec_[idx_] OP autoCopy(std::forward<T>(o)))       \
         {                                                               \
-          return vec_[idx_] OP valueCast(std::forward<T>(o));           \
+          return vec_[idx_] OP autoCopy(std::forward<T>(o));            \
         }
+
         DUNE_SIMD_VC_BINARY_OP(*);
         DUNE_SIMD_VC_BINARY_OP(/);
         DUNE_SIMD_VC_BINARY_OP(%);
@@ -263,10 +264,10 @@ namespace Dune {
         template<class T>                                       \
         auto operator OP(T &&o)                                 \
           -> std::enable_if_t<AlwaysTrue<decltype(              \
-                   vec_[idx_] OP valueCast(std::forward<T>(o))  \
+                   vec_[idx_] OP autoCopy(std::forward<T>(o))   \
                  )>::value, Proxy&>                             \
         {                                                       \
-          vec_[idx_] OP valueCast(std::forward<T>(o));          \
+          vec_[idx_] OP autoCopy(std::forward<T>(o));           \
           return *this;                                         \
         }
         DUNE_SIMD_VC_ASSIGNMENT(=);
@@ -418,13 +419,6 @@ namespace Dune {
         return std::forward<V>(v)[l];
       }
 
-      //! implements Simd::valueCast()
-      template<class V>
-      Scalar<V> valueCast(ADLTag<5>, VcImpl::Proxy<V> p)
-      {
-        return p;
-      }
-
       //! implements Simd::cond()
       template<class V>
       V cond(ADLTag<5, VcImpl::IsVector<V>::value &&
@@ -554,6 +548,11 @@ namespace Dune {
   struct IsNumber<Vc::Vector<T, Abi>>
     : public std::integral_constant<bool, IsNumber<T>::value> {
   };
+
+  //! Specialization of AutonomousValue for Vc proxies
+  template<class V>
+  struct AutonomousValueType<Simd::VcImpl::Proxy<V> > :
+    AutonomousValueType<typename Simd::VcImpl::Proxy<V>::value_type> {};
 
 } // namespace Dune
 

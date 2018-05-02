@@ -41,18 +41,6 @@ namespace Dune {
       template<class V>
       decltype(auto) lane(ADLTag<0>, std::size_t l, V v) = delete;
 
-      //! implements Simd::valueCast()
-      /**
-       * By default returns \c t.  That should take care of rvalues and proper
-       * references -- overloading is only needed if your abstraction layer
-       * uses proxies.
-       */
-      template<class T>
-      auto valueCast(ADLTag<0>, T t)
-      {
-        return t;
-      }
-
       //! implements Simd::cond()
       template<class V>
       V cond(ADLTag<0>, Mask<V> mask, V ifTrue, V ifFalse) = delete;

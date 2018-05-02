@@ -22,7 +22,7 @@
 
 #include <dune/common/indices.hh>
 #include <dune/common/simd/base.hh>
-#include <dune/common/simd/defaults.hh> // for valueCast()
+#include <dune/common/simd/defaults.hh>
 #include <dune/common/simd/isstandard.hh>
 
 /** @defgroup SIMDStandard SIMD Abstraction Implementation for standard types
@@ -113,9 +113,6 @@ namespace Dune {
       {
         return std::forward<V>(v);
       }
-
-      // We don't use any proxies, so the default valueCast() is fine.
-      // But we do need to #include defaults.hh to ensure it is available.
 
       //! implements Simd::entries()
       template<class V>

@@ -223,7 +223,7 @@ namespace Dune {
      *
      * Not all operations that access the element of a vector return (a
      * reference to) the scalar type -- some may return proxy objects instead.
-     * Use `valueCast()` to make sure you are getting a prvalue of the scalar
+     * Use `autoCopy()` to make sure you are getting a prvalue of the scalar
      * type.
      *
      * Implemented by `Overloads::ScalarType`.
@@ -302,28 +302,6 @@ namespace Dune {
     {
       assert(l < lanes<V>());
       return lane(Overloads::ADLTag<6>{}, l, std::forward<V>(v));
-    }
-
-    //! Unproxies and returns a temporary
-    /**
-     * \param t A value of any value category of some scalar obtained from a
-     *          SIMD type, or a proxy object denoting an element of a SIMD
-     *          type.
-     *
-     * Many of the interface functions are allowed to return proxy objects as
-     * well as references when they are passed lvalues as arguments.  This
-     * makes it possible to deduce types of local variables when you want the
-     * actual type, not a proxy:
-     * \code
-     *   auto first_value = valueCast(lane(0, v));
-     * \endcode
-     *
-     * Implemented by `Overloads::valueCast()`.
-     */
-    template<class T>
-    auto valueCast(T &&t)
-    {
-      return valueCast(Overloads::ADLTag<6>{}, std::forward<T>(t));
     }
 
     //! Like the ?: operator

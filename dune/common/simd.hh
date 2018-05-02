@@ -99,12 +99,12 @@ namespace Dune
       decltype(auto) operator~() const { return ~(vec_[idx_]); }
 
       // binary operators
-#define DUNE_SIMD_VC_BINARY_OP(OP)                                      \
-      template<class T>                                                 \
-      auto operator OP(T &&o) const                                     \
-        -> decltype(vec_[idx_] OP valueCast(std::forward<T>(o)))        \
-      {                                                                 \
-        return vec_[idx_] OP valueCast(std::forward<T>(o));             \
+#define DUNE_SIMD_VC_BINARY_OP(OP)                              \
+      template<class T>                                         \
+      auto operator OP(T &&o) const                             \
+        -> decltype(vec_[idx_] OP autoCopy(std::forward<T>(o))) \
+      {                                                         \
+        return vec_[idx_] OP autoCopy(std::forward<T>(o));      \
       }
 
       DUNE_SIMD_VC_BINARY_OP(*);
@@ -137,10 +137,10 @@ namespace Dune
       template<class T>                                         \
       auto operator OP(T &&o)                                   \
         -> std::enable_if_t<AlwaysTrue<decltype(                \
-                 vec_[idx_] OP valueCast(std::forward<T>(o))    \
+                 vec_[idx_] OP autoCopy(std::forward<T>(o))     \
                )>::value, Proxy&>                               \
       {                                                         \
-        vec_[idx_] OP valueCast(std::forward<T>(o));            \
+        vec_[idx_] OP autoCopy(std::forward<T>(o));             \
         return *this;                                           \
       }
 
