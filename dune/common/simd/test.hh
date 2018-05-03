@@ -17,6 +17,7 @@
 #include <utility>
 
 #include <dune/common/classname.hh>
+#include <dune/common/hybridutilities.hh>
 #include <dune/common/simd/simd.hh>
 #include <dune/common/std/type_traits.hh>
 #include <dune/common/typetraits.hh>
@@ -1023,17 +1024,24 @@ namespace Dune {
         checkBinaryOpVS<V&&, S&&>(op);
       }
 
+      static constexpr bool doCombo   = false;
+      static constexpr bool doComboSV = true;
+      static constexpr bool doComboVV = true;
+      static constexpr bool doComboVS = true;
+
+      template<class V, bool doSV, bool doVV, bool doVS, class Op>
+      void checkBinaryOp(Op op)
+      {
+        Hybrid::ifElse(std::integral_constant<bool, doSV>{},
+                       [=](auto id) { this->checkBinaryOpsSV<V>(id(op)); });
+        Hybrid::ifElse(std::integral_constant<bool, doVV>{},
+                       [=](auto id) { this->checkBinaryOpsVV<V>(id(op)); });
+        Hybrid::ifElse(std::integral_constant<bool, doVS>{},
+                       [=](auto id) { this->checkBinaryOpsVS<V>(id(op)); });
+      }
+
 #define DUNE_SIMD_BINARY_OPCHECK(C1, C2, C3, NAME)      \
-      ( DUNE_SIMD_BINARY_OPCHECK_##C1(NAME),            \
-        DUNE_SIMD_BINARY_OPCHECK_##C2(NAME),            \
-        DUNE_SIMD_BINARY_OPCHECK_##C3(NAME) )
-#define DUNE_SIMD_BINARY_OPCHECK_(NAME) void()
-#define DUNE_SIMD_BINARY_OPCHECK_SV(NAME)       \
-      checkBinaryOpsSV<V>(Op##NAME{})
-#define DUNE_SIMD_BINARY_OPCHECK_VV(NAME)       \
-      checkBinaryOpsVV<V>(Op##NAME{})
-#define DUNE_SIMD_BINARY_OPCHECK_VS(NAME)       \
-      checkBinaryOpsVS<V>(Op##NAME{})
+      checkBinaryOp<V, doCombo##C1, doCombo##C2, doCombo##C3>(Op##NAME{})
 
       template<class V>
       void checkVectorOps()
@@ -1209,10 +1217,6 @@ namespace Dune {
       }
 
 #undef DUNE_SIMD_BINARY_OPCHECK
-#undef DUNE_SIMD_BINARY_OPCHECK_
-#undef DUNE_SIMD_BINARY_OPCHECK_SV
-#undef DUNE_SIMD_BINARY_OPCHECK_VV
-#undef DUNE_SIMD_BINARY_OPCHECK_VS
 
       //////////////////////////////////////////////////////////////////////
       //
