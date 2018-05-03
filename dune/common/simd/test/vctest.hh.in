@@ -22,7 +22,7 @@ namespace Dune {
 #cmake @endtemplate@
 
 #cmake @template INDEX@
-    extern template void UnitTest::checkIndex<Vc::SimdMaskArray<@SCALAR@, @LANES@> >();
+    extern template void UnitTest::checkIndex<Vc::SimdArray<@SCALAR@, @LANES@> >();
     extern template void UnitTest::checkMask<Vc::SimdMaskArray<@SCALAR@, @LANES@> >();
 #cmake @endtemplate@
 
