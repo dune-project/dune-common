@@ -590,7 +590,6 @@ namespace Dune {
         checkUnaryOpV<V&>(op);
         checkUnaryOpV<const V&>(op);
         checkUnaryOpV<V&&>(op);
-        checkUnaryOpV<const V&&>(op);
       }
 
       //////////////////////////////////////////////////////////////////////
@@ -794,22 +793,14 @@ namespace Dune {
         checkBinaryOpVV<V&, V&>(op);
         checkBinaryOpVV<V&, const V&>(op);
         checkBinaryOpVV<V&, V&&>(op);
-        checkBinaryOpVV<V&, const V&&>(op);
 
         checkBinaryOpVV<const V&, V&>(op);
         checkBinaryOpVV<const V&, const V&>(op);
         checkBinaryOpVV<const V&, V&&>(op);
-        checkBinaryOpVV<const V&, const V&&>(op);
 
         checkBinaryOpVV<V&&, V&>(op);
         checkBinaryOpVV<V&&, const V&>(op);
         checkBinaryOpVV<V&&, V&&>(op);
-        checkBinaryOpVV<V&&, const V&&>(op);
-
-        checkBinaryOpVV<const V&&, V&>(op);
-        checkBinaryOpVV<const V&&, const V&>(op);
-        checkBinaryOpVV<const V&&, V&&>(op);
-        checkBinaryOpVV<const V&&, const V&&>(op);
       }
 
       //////////////////////////////////////////////////////////////////////
@@ -912,22 +903,14 @@ namespace Dune {
         checkBinaryOpSV<S&, V&>(op);
         checkBinaryOpSV<S&, const V&>(op);
         checkBinaryOpSV<S&, V&&>(op);
-        checkBinaryOpSV<S&, const V&&>(op);
 
         checkBinaryOpSV<const S&, V&>(op);
         checkBinaryOpSV<const S&, const V&>(op);
         checkBinaryOpSV<const S&, V&&>(op);
-        checkBinaryOpSV<const S&, const V&&>(op);
 
         checkBinaryOpSV<S&&, V&>(op);
         checkBinaryOpSV<S&&, const V&>(op);
         checkBinaryOpSV<S&&, V&&>(op);
-        checkBinaryOpSV<S&&, const V&&>(op);
-
-        checkBinaryOpSV<const S&&, V&>(op);
-        checkBinaryOpSV<const S&&, const V&>(op);
-        checkBinaryOpSV<const S&&, V&&>(op);
-        checkBinaryOpSV<const S&&, const V&&>(op);
       }
 
       //////////////////////////////////////////////////////////////////////
@@ -1030,22 +1013,14 @@ namespace Dune {
         checkBinaryOpVS<V&, S&>(op);
         checkBinaryOpVS<V&, const S&>(op);
         checkBinaryOpVS<V&, S&&>(op);
-        checkBinaryOpVS<V&, const S&&>(op);
 
         checkBinaryOpVS<const V&, S&>(op);
         checkBinaryOpVS<const V&, const S&>(op);
         checkBinaryOpVS<const V&, S&&>(op);
-        checkBinaryOpVS<const V&, const S&&>(op);
 
         checkBinaryOpVS<V&&, S&>(op);
         checkBinaryOpVS<V&&, const S&>(op);
         checkBinaryOpVS<V&&, S&&>(op);
-        checkBinaryOpVS<V&&, const S&&>(op);
-
-        checkBinaryOpVS<const V&&, S&>(op);
-        checkBinaryOpVS<const V&&, const S&>(op);
-        checkBinaryOpVS<const V&&, S&&>(op);
-        checkBinaryOpVS<const V&&, const S&&>(op);
       }
 
 #define DUNE_SIMD_BINARY_OPCHECK(C1, C2, C3, NAME)      \
