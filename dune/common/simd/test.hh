@@ -20,6 +20,7 @@
 #include <dune/common/hybridutilities.hh>
 #include <dune/common/simd/simd.hh>
 #include <dune/common/std/type_traits.hh>
+#include <dune/common/typelist.hh>
 #include <dune/common/typetraits.hh>
 #include <dune/common/unused.hh>
 
@@ -723,44 +724,74 @@ namespace Dune {
       // checks for vector-vector binary operations
       //
 
+      // We check the following candidate operation
+      //
+      //   vopres = vop1 @ vop2
+      //
+      // against the reference operation
+      //
+      //   arefres[l] = aref1[l] @ aref2[l]  foreach l
+      //
+      // v... variables are simd-vectors and a... variables are arrays.  The
+      // operation may modify the operands, but if is does the modification
+      // needs to happen in both the candidate and the reference.
+      //
+      // We do the following checks:
+      // 1.  lanes(vopres)   == lanes(vop1)
+      // 2.  lane(l, vopres) == arefres[l]  foreach l
+      // 3.  lane(l, vop1)   == aref1[l]    foreach l
+      // 4.  lane(l, vop2)   == aref2[l]    foreach l
       template<class V1, class V2, class Op>
       std::enable_if_t<
         Std::is_detected_v<ScalarResult, Op,
                            decltype(lane(0, std::declval<V1>())),
                            decltype(lane(0, std::declval<V2>()))> >
-      checkBinaryOpVV(Op op)
+      checkBinaryOpVV(MetaType<V1>, MetaType<V2>, Op op)
       {
 #define DUNE_SIMD_OPNAME (className<Op(V1, V2)>())
         static_assert(std::is_same<std::decay_t<V1>, std::decay_t<V2> >::value,
                       "Internal testsystem error: called with two types that "
                       "don't decay to the same thing");
 
-        // arguments
-        auto val1 = leftVector<std::decay_t<V1>>();
-        auto val2 = rightVector<std::decay_t<V2>>();
+        // reference arguments
+        auto vref1 = leftVector<std::decay_t<V1>>();
+        auto vref2 = rightVector<std::decay_t<V2>>();
 
-        // copy the arguments in case V1 or V2 are references
-        auto arg1 = val1;
-        auto arg2 = val2;
-        auto &&result =
-          op.vector(static_cast<V1>(arg1), static_cast<V2>(arg2));
-        using T = Scalar<std::decay_t<decltype(result)> >;
-        for(std::size_t l = 0; l < lanes(val1); ++l)
+        // candidate arguments
+        auto vop1 = vref1;
+        auto vop2 = vref2;
+
+        // candidate operation
+        auto &&vopres =
+          op.vector(static_cast<V1>(vop1), static_cast<V2>(vop2));
+        using VR = decltype(vopres);
+
+        // check 1.  lanes(vopres)   == lanes(vop1)
+        static_assert(lanes<std::decay_t<VR> >() == lanes<std::decay_t<V1> >(),
+                      "The result must have the same number of lanes as the "
+                      "operands.");
+
+        // do the reference operation, and simultaneously
+        // check 2.  lane(l, vopres) == arefres[l]  foreach l
+        using T = Scalar<std::decay_t<VR> >;
+        for(auto l : range(lanes(vopres)))
         {
           // see the lengthy comment in `checkUnaryOpV()` as to why the
           // `static_cast` around the `op()` is necessary
           DUNE_SIMD_CHECK_OP
-            (lane(l, result)
-               == static_cast<T>(op.scalar(lane(l, static_cast<V1>(val1)),
-                                           lane(l, static_cast<V2>(val2)))));
+            (lane(l, vopres)
+               == static_cast<T>(op.scalar(lane(l, static_cast<V1>(vref1)),
+                                           lane(l, static_cast<V2>(vref2)))));
         }
-        // op might modify val1 and val2, verify that any such
-        // modification also happens in the vector case
-        for(std::size_t l = 0; l < lanes<std::decay_t<V1> >(); ++l)
-        {
-          DUNE_SIMD_CHECK_OP(lane(l, val1) == lane(l, arg1));
-          DUNE_SIMD_CHECK_OP(lane(l, val2) == lane(l, arg2));
-        }
+
+        // check 3.  lane(l, vop1)   == aref1[l]    foreach l
+        for(auto l : range(lanes(vop1)))
+          DUNE_SIMD_CHECK_OP(lane(l, vop1) == lane(l, vref1));
+
+        // check 4.  lane(l, vop2)   == aref2[l]    foreach l
+        for(auto l : range(lanes(vop2)))
+          DUNE_SIMD_CHECK_OP(lane(l, vop2) == lane(l, vref2));
+
 #undef DUNE_SIMD_OPNAME
       }
 
@@ -769,7 +800,7 @@ namespace Dune {
         !Std::is_detected_v<ScalarResult, Op,
                             decltype(lane(0, std::declval<V1>())),
                             decltype(lane(0, std::declval<V2>()))> >
-      checkBinaryOpVV(Op op)
+      checkBinaryOpVV(MetaType<V1>, MetaType<V2>, Op op)
       {
         // log_ << "No " << className<Op(decltype(lane(0, std::declval<V1>())),
         //                               decltype(lane(0, std::declval<V2>())))>()
@@ -778,7 +809,7 @@ namespace Dune {
       }
 
       template<class V1, class V2>
-      void checkBinaryOpVV(OpInfixComma)
+      void checkBinaryOpVV(MetaType<V1>, MetaType<V2>, OpInfixComma)
       {
         static_assert(std::is_same<std::decay_t<V1>, std::decay_t<V2> >::value,
                       "Internal testsystem error: called with two types that "
@@ -788,142 +819,44 @@ namespace Dune {
                              rightVector<std::decay_t<V2>>());
       }
 
-      template<class V, class Op>
-      void checkBinaryOpsVV(Op op)
-      {
-        checkBinaryOpVV<V&, V&>(op);
-        checkBinaryOpVV<V&, const V&>(op);
-        checkBinaryOpVV<V&, V&&>(op);
-
-        checkBinaryOpVV<const V&, V&>(op);
-        checkBinaryOpVV<const V&, const V&>(op);
-        checkBinaryOpVV<const V&, V&&>(op);
-
-        checkBinaryOpVV<V&&, V&>(op);
-        checkBinaryOpVV<V&&, const V&>(op);
-        checkBinaryOpVV<V&&, V&&>(op);
-      }
-
-      //////////////////////////////////////////////////////////////////////
-      //
-      // checks for scalar-vector binary operations
-      //
-
-      template<class T1, class V2, class Op>
-      std::enable_if_t<
-        Std::is_detected_v<ScalarResult, Op, T1,
-                           decltype(lane(0, std::declval<V2>()))> >
-      checkBinaryOpSV(Op op)
-      {
-#define DUNE_SIMD_OPNAME (className<Op(T1, V2)>())
-        static_assert(std::is_same<std::decay_t<T1>,
-                      Scalar<std::decay_t<V2> > >::value,
-                      "Internal testsystem error: called with a scalar that "
-                      "does not match the vector type.");
-
-        using V1 = CopyRefQual<V2, T1>;
-
-        // arguments
-        auto sval1 = leftScalar<std::decay_t<T1>>();
-        auto sval2 = rightVector<std::decay_t<V2>>();
-        // these are used to cross check with pure vector ops
-        std::decay_t<V1> vval1(sval1);
-        auto vval2 = sval2;
-
-        // copy the arguments in case V1 or V2 are references
-        auto sarg1 = sval1;
-        auto sarg2 = sval2;
-        auto varg1 = vval1;
-        auto varg2 = vval2;
-
-        auto &&sresult =
-          op.vector(static_cast<T1>(sarg1), static_cast<V2>(sarg2));
-        using TS = Scalar<std::decay_t<decltype(sresult)> >;
-        auto &&vresult =
-          op.vector(static_cast<V1>(varg1), static_cast<V2>(varg2));
-        using TV = Scalar<std::decay_t<decltype(vresult)> >;
-        for(std::size_t l = 0; l < lanes<std::decay_t<V1> >(); ++l)
-        {
-          // see the lengthy comment in `checkUnaryOpV()` as to why the
-          // `static_cast` around the `op()` is necessary
-          DUNE_SIMD_CHECK_OP
-            (lane(l, sresult)
-               == static_cast<TS>(op.scalar(        static_cast<T1>(sval1),
-                                            lane(l, static_cast<V2>(sval2)))));
-          DUNE_SIMD_CHECK_OP
-            (lane(l, vresult)
-               == static_cast<TV>(op.scalar(lane(l, static_cast<V1>(vval1)),
-                                            lane(l, static_cast<V2>(vval2)))));
-          // cross check
-          DUNE_SIMD_CHECK_OP(lane(l, sresult) == lane(l, vresult));
-        }
-        // op might modify [sv]val1 and [sv]val2, verify that any such
-        // modification also happens in the vector case
-        for(std::size_t l = 0; l < lanes<std::decay_t<V1> >(); ++l)
-        {
-          DUNE_SIMD_CHECK_OP(        sval1  ==         sarg1 );
-          DUNE_SIMD_CHECK_OP(lane(l, sval2) == lane(l, sarg2));
-          DUNE_SIMD_CHECK_OP(lane(l, vval1) == lane(l, varg1));
-          DUNE_SIMD_CHECK_OP(lane(l, vval2) == lane(l, varg2));
-          // cross check
-          DUNE_SIMD_CHECK_OP(        sval1  == lane(l, vval1));
-          DUNE_SIMD_CHECK_OP(lane(l, sval2) == lane(l, vval2));
-        }
-#undef DUNE_SIMD_OPNAME
-      }
-
-      template<class T1, class V2, class Op>
-      std::enable_if_t<
-        !Std::is_detected_v<ScalarResult, Op, T1,
-                            decltype(lane(0, std::declval<V2>()))> >
-      checkBinaryOpSV(Op op)
-      {
-        // log_ << "No "
-        //      << className<Op(T1, decltype(lane(0, std::declval<V2>())))>()
-        //      << std::endl
-        //      << " ==> Not checking " << className<Op(T1, V2)>() << std::endl;
-      }
-
-      template<class T1, class V2>
-      void checkBinaryOpSV(OpInfixComma)
-      {
-        static_assert(std::is_same<std::decay_t<T1>,
-                      Scalar<std::decay_t<V2> > >::value,
-                      "Internal testsystem error: called with a scalar that "
-                      "does not match the vector type.");
-
-        checkCommaOp<T1, V2>(leftScalar<std::decay_t<T1>>(),
-                             rightVector<std::decay_t<V2>>());
-      }
-
-      template<class V, class Op>
-      void checkBinaryOpsSV(Op op)
-      {
-        using S = Scalar<V>;
-
-        checkBinaryOpSV<S&, V&>(op);
-        checkBinaryOpSV<S&, const V&>(op);
-        checkBinaryOpSV<S&, V&&>(op);
-
-        checkBinaryOpSV<const S&, V&>(op);
-        checkBinaryOpSV<const S&, const V&>(op);
-        checkBinaryOpSV<const S&, V&&>(op);
-
-        checkBinaryOpSV<S&&, V&>(op);
-        checkBinaryOpSV<S&&, const V&>(op);
-        checkBinaryOpSV<S&&, V&&>(op);
-      }
-
       //////////////////////////////////////////////////////////////////////
       //
       // checks for vector-scalar binary operations
       //
 
+      // We check the following candidate operation
+      //
+      //   vopres = vop1 @ sop2
+      //
+      // against the reference operation
+      //
+      //   arefres[l] = aref1[l] @ sref2  foreach l
+      //
+      // v... variables are simd-vectors, a... variables are arrays, and
+      // s... variables are scalars.  The operation may modify the left
+      // operand, but if is does the modifications needs to happen in both the
+      // candidate and the reference.
+      //
+      // We do the following checks:
+      // 1.  lanes(vopres)   == lanes(vop1)
+      // 2.  lane(l, vopres) == arefres[l]  foreach l
+      // 3.  lane(l, vop1)   == aref1[l]    foreach l
+      // 4.  sop2  is never modified
+      // 5.  sref2 is never modified
+      //
+      // In fact, if the property "sref2 is never modified" is violated that
+      // means the operation is unsuitable for an automatic broadcast of the
+      // second operand and should not be checked.  There are no operations in
+      // the standard where the second operand is modified like this, but
+      // there are operations where the first operand is modified -- and this
+      // check is used for thos ops as well by exchanging the first and second
+      // argument below.
+
       template<class V1, class T2, class Op>
       std::enable_if_t<
         Std::is_detected_v<ScalarResult, Op,
                            decltype(lane(0, std::declval<V1>())), T2> >
-      checkBinaryOpVS(Op op)
+      checkBinaryOpVS(MetaType<V1>, MetaType<T2>, Op op)
       {
 #define DUNE_SIMD_OPNAME (className<Op(V1, T2)>())
         static_assert(std::is_same<Scalar<std::decay_t<V1> >,
@@ -931,54 +864,49 @@ namespace Dune {
                       "Internal testsystem error: called with a scalar that "
                       "does not match the vector type.");
 
-        using V2 = CopyRefQual<V1, T2>;
+        // initial values
+        auto sinit2 = rightScalar<std::decay_t<T2>>();
 
-        // arguments
-        auto sval1 = leftVector<std::decay_t<V1>>();
-        auto sval2 = rightScalar<std::decay_t<T2>>();
-        // these are used to cross check with pure vector ops
-        auto vval1 = sval1;
-        std::decay_t<V2> vval2(sval2);
+        // reference arguments
+        auto vref1 = leftVector<std::decay_t<V1>>();
+        auto sref2 = sinit2;
 
-        // copy the arguments in case V1 or V2 are references
-        auto sarg1 = sval1;
-        auto sarg2 = sval2;
-        auto varg1 = vval1;
-        auto varg2 = vval2;
+        // candidate arguments
+        auto vop1 = vref1;
+        auto sop2 = sref2;
 
-        auto &&sresult =
-          op.vector(static_cast<V1>(sarg1), static_cast<T2>(sarg2));
-        using TS = Scalar<std::decay_t<decltype(sresult)> >;
-        auto &&vresult =
-          op.vector(static_cast<V1>(varg1), static_cast<V2>(varg2));
-        using TV = Scalar<std::decay_t<decltype(vresult)> >;
-        for(std::size_t l = 0; l < lanes<std::decay_t<V1> >(); ++l)
+        // candidate operation
+        auto &&vopres =
+          op.vector(static_cast<V1>(vop1), static_cast<T2>(sop2));
+        using VR = decltype(vopres);
+
+        // check 1.  lanes(vopres)   == lanes(vop1)
+        static_assert(lanes<std::decay_t<VR> >() == lanes<std::decay_t<V1> >(),
+                      "The result must have the same number of lanes as the "
+                      "operands.");
+
+        // check 4.  sop2  is never modified
+        DUNE_SIMD_CHECK_OP(sop2 == sinit2);
+
+        // do the reference operation, and simultaneously check 2. and 5.
+        using T = Scalar<std::decay_t<decltype(vopres)> >;
+        for(auto l : range(lanes(vopres)))
         {
+          // check 2.  lane(l, vopres) == arefres[l]  foreach l
           // see the lengthy comment in `checkUnaryOpV()` as to why the
           // `static_cast` around the `op()` is necessary
           DUNE_SIMD_CHECK_OP
-            (lane(l, sresult)
-               == static_cast<TS>(op.scalar(lane(l, static_cast<V1>(sval1)),
-                                                    static_cast<T2>(sval2) )));
-          DUNE_SIMD_CHECK_OP
-            (lane(l, vresult)
-               == static_cast<TV>(op.scalar(lane(l, static_cast<V1>(vval1)),
-                                            lane(l, static_cast<V2>(vval2)))));
-          // cross check
-          DUNE_SIMD_CHECK_OP(lane(l, sresult) == lane(l, vresult));
+            (lane(l, vopres)
+               == static_cast<T>(op.scalar(lane(l, static_cast<V1>(vref1)),
+                                                   static_cast<T2>(sref2) )));
+          // check 5.  sref2 is never modified
+          DUNE_SIMD_CHECK_OP(sref2 == sinit2);
         }
-        // op might modify [sv]val1 and [sv]val2, verify that any such
-        // modification also happens in the vector case
-        for(std::size_t l = 0; l < lanes<std::decay_t<V1> >(); ++l)
-        {
-          DUNE_SIMD_CHECK_OP(lane(l, sval1) == lane(l, sarg1));
-          DUNE_SIMD_CHECK_OP(        sval2  ==         sarg2 );
-          DUNE_SIMD_CHECK_OP(lane(l, vval1) == lane(l, varg1));
-          DUNE_SIMD_CHECK_OP(lane(l, vval2) == lane(l, varg2));
-          // cross check
-          DUNE_SIMD_CHECK_OP(lane(l, sval1) == lane(l, vval1));
-          DUNE_SIMD_CHECK_OP(        sval2  == lane(l, vval2));
-        }
+
+        // check 3.  lane(l, vop1)   == aref1[l]    foreach l
+        for(auto l : range(lanes(vop1)))
+          DUNE_SIMD_CHECK_OP(lane(l, vop1) == lane(l, vref1));
+
 #undef DUNE_SIMD_OPNAME
       }
 
@@ -986,7 +914,7 @@ namespace Dune {
       std::enable_if_t<
         !Std::is_detected_v<ScalarResult, Op,
                             decltype(lane(0, std::declval<V1>())), T2> >
-      checkBinaryOpVS(Op op)
+      checkBinaryOpVS(MetaType<V1>, MetaType<T2>, Op op)
       {
         // log_ << "No "
         //      << className<Op(decltype(lane(0, std::declval<V1>())), T2)>()
@@ -995,7 +923,7 @@ namespace Dune {
       }
 
       template<class V1, class T2>
-      void checkBinaryOpVS(OpInfixComma)
+      void checkBinaryOpVS(MetaType<V1>, MetaType<T2>, OpInfixComma)
       {
         static_assert(std::is_same<Scalar<std::decay_t<V1> >,
                       std::decay_t<T2> >::value,
@@ -1006,39 +934,198 @@ namespace Dune {
                              rightScalar<std::decay_t<T2>>());
       }
 
-      template<class V, class Op>
-      void checkBinaryOpsVS(Op op)
+      //////////////////////////////////////////////////////////////////////
+      //
+      // cross-check scalar-vector binary operations against vector-vector
+      //
+
+      // We check the following candidate operation
+      //
+      //   vopres = vop1 @ vop2,    where vop2 = broadcast(sref2)
+      //
+      // against the reference operation
+      //
+      //   vrefres = vref1 @ sref2
+      //
+      // v... variables are simd-vectors, a... variables are arrays, and
+      // s... variables are scalars.
+      //
+      // We could check the following properties
+      // 1.  lanes(vopres)   == lanes(vop1)
+      // 2.  lane(l, vopres) == lane(l, vrefres)  foreach l
+      // 3.  lane(l, vop1)   == lane(l, vref1)    foreach l
+      // but these are given by checking the operation against the scalar
+      // operation in the vector@vector and vector@scalar cases above.
+      //
+      // The only thing left to check is:
+      // 4.  lane(l, vop2)  foreach l  is never modified
+
+      template<class V1, class T2, class Op>
+      std::enable_if_t<
+        Std::is_detected_v<ScalarResult, Op,
+                           decltype(lane(0, std::declval<V1>())), T2> >
+      checkBinaryOpVVAgainstVS(MetaType<V1>, MetaType<T2>, Op op)
       {
-        using S = Scalar<V>;
+#define DUNE_SIMD_OPNAME (className<Op(V1, T2)>())
+        static_assert(std::is_same<Scalar<std::decay_t<V1> >,
+                      std::decay_t<T2> >::value,
+                      "Internal testsystem error: called with a scalar that "
+                      "does not match the vector type.");
 
-        checkBinaryOpVS<V&, S&>(op);
-        checkBinaryOpVS<V&, const S&>(op);
-        checkBinaryOpVS<V&, S&&>(op);
+        // initial values
+        auto sinit2 = rightScalar<std::decay_t<T2>>();
 
-        checkBinaryOpVS<const V&, S&>(op);
-        checkBinaryOpVS<const V&, const S&>(op);
-        checkBinaryOpVS<const V&, S&&>(op);
+        // reference arguments
+        auto vop1 = leftVector<std::decay_t<V1>>();
+        using V2 = CopyRefQual<V1, T2>;
+        std::decay_t<V2> vop2(sinit2);
 
-        checkBinaryOpVS<V&&, S&>(op);
-        checkBinaryOpVS<V&&, const S&>(op);
-        checkBinaryOpVS<V&&, S&&>(op);
+        // candidate operation
+        op.vector(static_cast<V1>(vop1), static_cast<V2>(vop2));
+
+        // 4.  lane(l, vop2)  foreach l  is never modified
+        for(auto l : range(lanes(vop2)))
+          DUNE_SIMD_CHECK_OP(lane(l, vop2) == sinit2);
+
+#undef DUNE_SIMD_OPNAME
+      }
+
+      template<class V1, class T2, class Op>
+      std::enable_if_t<
+        !Std::is_detected_v<ScalarResult, Op,
+                            decltype(lane(0, std::declval<V1>())), T2> >
+      checkBinaryOpVVAgainstVS(MetaType<V1>, MetaType<T2>, Op op)
+      {
+        // log_ << "No "
+        //      << className<Op(decltype(lane(0, std::declval<V1>())), T2)>()
+        //      << std::endl
+        //      << " ==> Not checking " << className<Op(V1, T2)>() << std::endl;
+      }
+
+      template<class V1, class T2>
+      void checkBinaryOpVVAgainstVS(MetaType<V1>, MetaType<T2>, OpInfixComma)
+      { }
+
+      //////////////////////////////////////////////////////////////////////
+      //
+      // checks for scalar-vector binary operations
+      //
+
+      template<class Op>
+      struct OpInfixSwappedArgs
+      {
+        Op orig;
+
+        template<class V1, class V2>
+        decltype(auto) vector(V1&& v1, V2&& v2) const
+        {
+          return orig.vector(std::forward<V2>(v2), std::forward<V1>(v1));
+        }
+        template<class S1, class S2>
+        auto scalar(S1&& s1, S2&& s2) const
+          -> decltype(orig.scalar(std::forward<S2>(s2), std::forward<S1>(s1)))
+        {
+          return orig.scalar(std::forward<S2>(s2), std::forward<S1>(s1));
+        }
+      };
+
+      template<class T1, class V2, class Op>
+      void checkBinaryOpSV(MetaType<T1> t1, MetaType<V2> v2, Op op)
+      {
+        checkBinaryOpVS(v2, t1, OpInfixSwappedArgs<Op>{op});
+      }
+
+      template<class T1, class V2>
+      void checkBinaryOpSV(MetaType<T1>, MetaType<V2>, OpInfixComma)
+      {
+        static_assert(std::is_same<std::decay_t<T1>,
+                      Scalar<std::decay_t<V2> > >::value,
+                      "Internal testsystem error: called with a scalar that "
+                      "does not match the vector type.");
+
+        checkCommaOp<T1, V2>(leftScalar<std::decay_t<T1>>(),
+                             rightVector<std::decay_t<V2>>());
+      }
+
+      //////////////////////////////////////////////////////////////////////
+      //
+      // cross-check scalar-vector binary operations against vector-vector
+      //
+
+      // We check the following candidate operation
+      //
+      //   vopres = vop1 @ vop2,    where vop2 = broadcast(sref2)
+      //
+      // against the reference operation
+      //
+      //   vrefres = vref1 @ sref2
+      //
+      // v... variables are simd-vectors, a... variables are arrays, and
+      // s... variables are scalars.
+      //
+      // We could check the following properties
+      // 1.  lanes(vopres)   == lanes(vop1)
+      // 2.  lane(l, vopres) == lane(l, vrefres)  foreach l
+      // 3.  lane(l, vop1)   == lane(l, vref1)    foreach l
+      // but these are given by checking the operation against the scalar
+      // operation in the vector@vector and vector@scalar cases above.
+      //
+      // The only thing left to check is:
+      // 4.  lane(l, vop2)  foreach l  is never modified
+
+      template<class T1, class V2, class Op>
+      void checkBinaryOpVVAgainstSV(MetaType<T1> t1, MetaType<V2> v2, Op op)
+      {
+        checkBinaryOpVVAgainstVS(v2, t1, OpInfixSwappedArgs<Op>{op});
+      }
+
+      template<class V1, class T2>
+      void checkBinaryOpVVAgainstSV(MetaType<V1>, MetaType<T2>, OpInfixComma)
+      { }
+
+      //////////////////////////////////////////////////////////////////////
+      //
+      //  Invoke the checks for all combinations
+      //
+
+      template<class T1, class T2, bool condition, class Checker>
+      void checkBinaryRefQual(Checker checker)
+      {
+        Hybrid::ifElse(std::integral_constant<bool, condition>{},
+          [=] (auto id) {
+            Hybrid::forEach(id(TypeList<T1&, const T1&, T1&&>{}),
+              [=] (auto t1) {
+                Hybrid::forEach(id(TypeList<T2&, const T2&, T2&&>{}),
+                  [=] (auto t2) { id(checker)(t1, t2); });
+              });
+          });
+      }
+
+      template<class V, bool doSV, bool doVV, bool doVS, class Op>
+      void checkBinaryOp(Op op)
+      {
+        checkBinaryRefQual<Scalar<V>, V, doSV>
+          ([=](auto t1, auto t2) { this->checkBinaryOpSV(t1, t2, op); });
+        checkBinaryRefQual<V, V, doVV>
+          ([=](auto t1, auto t2) { this->checkBinaryOpVV(t1, t2, op); });
+        checkBinaryRefQual<V, Scalar<V>, doVS>
+          ([=](auto t1, auto t2) { this->checkBinaryOpVS(t1, t2, op); });
+
+        // cross-check
+        checkBinaryRefQual<Scalar<V>, V, doSV && doVV>
+          ([=](auto t1, auto t2) {
+            this->checkBinaryOpVVAgainstSV(t1, t2, op);
+          });
+        checkBinaryRefQual<V, Scalar<V>, doVV && doVS>
+          ([=](auto t1, auto t2) {
+            this->checkBinaryOpVVAgainstVS(t1, t2, op);
+          });
       }
 
       static constexpr bool doCombo   = false;
       static constexpr bool doComboSV = true;
       static constexpr bool doComboVV = true;
       static constexpr bool doComboVS = true;
-
-      template<class V, bool doSV, bool doVV, bool doVS, class Op>
-      void checkBinaryOp(Op op)
-      {
-        Hybrid::ifElse(std::integral_constant<bool, doSV>{},
-                       [=](auto id) { this->checkBinaryOpsSV<V>(id(op)); });
-        Hybrid::ifElse(std::integral_constant<bool, doVV>{},
-                       [=](auto id) { this->checkBinaryOpsVV<V>(id(op)); });
-        Hybrid::ifElse(std::integral_constant<bool, doVS>{},
-                       [=](auto id) { this->checkBinaryOpsVS<V>(id(op)); });
-      }
 
 #define DUNE_SIMD_BINARY_OPCHECK(C1, C2, C3, NAME)      \
       checkBinaryOp<V, doCombo##C1, doCombo##C2, doCombo##C3>(Op##NAME{})
