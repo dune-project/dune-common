@@ -185,9 +185,9 @@ namespace Dune
       return stdfunction(t);                                \
     }
 
-    DUNE_COMMON_MATH_ISFUNCTION(isNaN,isnan);
-    DUNE_COMMON_MATH_ISFUNCTION(isInf,isinf);
-    DUNE_COMMON_MATH_ISFUNCTION(isFinite,isfinite);
+    DUNE_COMMON_MATH_ISFUNCTION(isNaN,isnan)
+    DUNE_COMMON_MATH_ISFUNCTION(isInf,isinf)
+    DUNE_COMMON_MATH_ISFUNCTION(isFinite,isfinite)
 #undef DUNE_COMMON_MATH_ISFUNCTION
 
     template<class T>
@@ -217,9 +217,9 @@ namespace Dune
       }                                                                  \
     };
 
-    DUNE_COMMON_MATH_ISFUNCTION_FUNCTOR(isNaN);
-    DUNE_COMMON_MATH_ISFUNCTION_FUNCTOR(isInf);
-    DUNE_COMMON_MATH_ISFUNCTION_FUNCTOR(isFinite);
+    DUNE_COMMON_MATH_ISFUNCTION_FUNCTOR(isNaN)
+    DUNE_COMMON_MATH_ISFUNCTION_FUNCTOR(isInf)
+    DUNE_COMMON_MATH_ISFUNCTION_FUNCTOR(isFinite)
 #undef DUNE_COMMON_MATH_ISFUNCTION_FUNCTOR
 
     struct isUnorderedImpl {
