@@ -96,6 +96,22 @@ namespace Dune
       p->~T();
     }
   };
+
+  //! check whether allocators are equivalent
+  template<class T>
+  constexpr bool
+  operator==(const MallocAllocator<T> &, const MallocAllocator<T> &)
+  {
+    return true;
+  }
+
+  //! check whether allocators are not equivalent
+  template<class T>
+  constexpr bool
+  operator!=(const MallocAllocator<T> &, const MallocAllocator<T> &)
+  {
+    return false;
+  }
 }
 
 #endif // DUNE_MALLOC_ALLOCATOR_HH
