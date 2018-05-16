@@ -303,6 +303,22 @@ namespace Dune
       p->~T();
     }
   };
+
+  //! check whether allocators are equivalent
+  template<class T>
+  constexpr bool
+  operator==(const DebugAllocator<T> &, const DebugAllocator<T> &)
+  {
+    return true;
+  }
+
+  //! check whether allocators are not equivalent
+  template<class T>
+  constexpr bool
+  operator!=(const DebugAllocator<T> &, const DebugAllocator<T> &)
+  {
+    return false;
+  }
 }
 
 #ifdef DEBUG_NEW_DELETE
