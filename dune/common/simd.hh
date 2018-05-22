@@ -1,6 +1,9 @@
 #ifndef DUNE_COMMON_SIMD_HH
 #define DUNE_COMMON_SIMD_HH
 
+#warning dune/common/simd.hh is deprecated.
+#warning Use the new infrastructure from dune/common/simd/simd.h instead.
+
 /**
    \file Abstractions for support of dedicated SIMD data types
 
@@ -15,6 +18,9 @@
    vectorization data types.
 
    See also the conditional.hh and range_utils.hh headers.
+
+   \deprecated Use the newer simd architecture from dune/common/simd/simd.hh
+               instead.
  */
 
 #include <cassert>
@@ -23,7 +29,13 @@
 #include <utility>
 
 #include <dune/common/conditional.hh>
+#include <dune/common/debugalign.hh>
 #include <dune/common/rangeutilities.hh>
+#if HAVE_VC
+// include Vc part of new simd interface to provide compatibility for
+// functionality that has been switched over.
+#include <dune/common/simd/vc.hh>
+#endif
 #include <dune/common/typetraits.hh>
 #include <dune/common/vc.hh>
 
@@ -206,6 +218,13 @@ namespace Dune
     using type = T;
   };
 #endif // HAVE_VC
+
+  //! deduce the underlying scalar data type of an AlignedNumber
+  template<typename T, std::size_t align>
+  struct SimdScalarTypeTraits< AlignedNumber<T,align> >
+  {
+    using type = T;
+  };
 
   template<typename V, typename = void>
   struct SimdIndexTypeTraits {
@@ -473,22 +492,6 @@ namespace Dune
     v1(mask) = v2;
     v2(mask) = tmp;
   }
-#endif // HAVE_VC
-
-#if HAVE_VC
-  /*
-   * Specialize IsNumber for Vc::SimdArray and Vc::Vector to be able to use
-   * it as a scalar in DenseMatrix etc.
-   */
-  template <typename T, std::size_t N>
-  struct IsNumber<Vc::SimdArray<T, N>>
-    : public std::integral_constant<bool, IsNumber<T>::value> {
-  };
-
-  template <typename T, typename Abi>
-  struct IsNumber<Vc::Vector<T, Abi>>
-    : public std::integral_constant<bool, IsNumber<T>::value> {
-  };
 #endif // HAVE_VC
 
 } // end namespace Dune

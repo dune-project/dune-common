@@ -1,0 +1,16 @@
+// @GENERATED_SOURCE@
+
+#include <config.h>
+
+#include <cstdint>
+
+#include <dune/common/simd/test/vctest.hh>
+
+namespace Dune {
+  namespace Simd {
+
+    template
+    void UnitTest::checkVector<Vc::Vector<@SCALAR@> >();
+
+  } // namespace Simd
+} // namespace Dune

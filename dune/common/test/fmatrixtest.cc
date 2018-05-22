@@ -19,9 +19,12 @@
 #include <dune/common/fmatrix.hh>
 #include <dune/common/ftraits.hh>
 #include <dune/common/rangeutilities.hh>
-#include <dune/common/simd.hh>
+#include <dune/common/simd/loop.hh>
+#include <dune/common/simd/simd.hh>
+#if HAVE_VC
+#include <dune/common/simd/vc.hh>
+#endif
 #include <dune/common/unused.hh>
-#include <dune/common/vc.hh>
 
 #include "checkmatrixinterface.hh"
 
@@ -51,7 +54,7 @@ int test_invert_solve(Dune::FieldMatrix<T, n, n> &A,
     prod[i][i] -= 1;
 
   bool equal=true;
-  if (any_true(prod.infinity_norm() > 1e-6)) {
+  if (Simd::anyTrue(prod.infinity_norm() > 1e-6)) {
     std::cerr<<"Given inverse wrong"<<std::endl;
     equal=false;
   }
@@ -67,7 +70,7 @@ int test_invert_solve(Dune::FieldMatrix<T, n, n> &A,
   auto tolerance = 10*epsilon;
   for(size_t i =0; i < n; ++i)
     for(size_t j=0; j <n; ++j)
-      if(any_true(abs(A[i][j])>tolerance)) {
+      if(Simd::anyTrue(abs(A[i][j])>tolerance)) {
         std::cerr<<"calculated inverse wrong at ("<<i<<","<<j<<")"<<std::endl;
         equal=false;
       }
@@ -90,7 +93,7 @@ int test_invert_solve(Dune::FieldMatrix<T, n, n> &A,
   copy.mmv(x,trhs);
   equal=true;
 
-  if (any_true(trhs.infinity_norm() > 1e-6)) {
+  if (Simd::anyTrue(trhs.infinity_norm() > 1e-6)) {
     std::cerr<<"Given rhs does not fit solution"<<std::endl;
     equal=false;
   }
@@ -101,7 +104,7 @@ int test_invert_solve(Dune::FieldMatrix<T, n, n> &A,
   equal=true;
 
   for(size_t i =0; i < n; ++i)
-    if(any_true(abs(xcopy[i])>tolerance)) {
+    if(Simd::anyTrue(abs(xcopy[i])>tolerance)) {
       std::cerr<<"calculated isolution wrong at ("<<i<<")"<<std::endl;
       equal=false;
     }
@@ -487,7 +490,7 @@ int test_determinant()
   B[1][0] = -1.0; B[1][1] =  3.0; B[1][2] =  0.0; B[1][3] =  0.0;
   B[2][0] = -3.0; B[2][1] =  0.0; B[2][2] = -1.0; B[2][3] =  2.0;
   B[3][0] =  0.0; B[3][1] = -1.0; B[3][2] =  0.0; B[3][3] =  1.0;
-  if (any_true(abs(B.determinant() + 2.0) > 1e-12))
+  if (Simd::anyTrue(abs(B.determinant() + 2.0) > 1e-12))
   {
     std::cerr << "Determinant 1 test failed (" << Dune::className<T>() << ")"
               << std::endl;
@@ -498,7 +501,7 @@ int test_determinant()
   B[1][0] = -1.0; B[1][1] =  3.0; B[1][2] =  0.0; B[1][3] =  0.0;
   B[2][0] = -3.0; B[2][1] =  0.0; B[2][2] = -1.0; B[2][3] =  2.0;
   B[3][0] = -1.0; B[3][1] =  3.0; B[3][2] =  0.0; B[3][3] =  2.0;
-  if (any_true(B.determinant() != 0.0))
+  if (Simd::anyTrue(B.determinant() != 0.0))
   {
     std::cerr << "Determinant 2 test failed (" << Dune::className<T>() << ")"
               << std::endl;
@@ -780,6 +783,10 @@ int main()
 #if HAVE_VC
     errors += test_determinant< Vc::SimdArray<double, 8> >();
 #endif
+
+    //test LoopSIMD stuff
+    errors += test_determinant< Dune::LoopSIMD<double, 8> >();
+
     test_invert< float, 34 >();
     test_invert< double, 34 >();
     test_invert< std::complex< long double >, 2 >();
