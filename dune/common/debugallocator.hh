@@ -303,6 +303,22 @@ namespace Dune
       p->~T();
     }
   };
+
+  //! check whether allocators are equivalent
+  template<class T>
+  constexpr bool
+  operator==(const DebugAllocator<T> &, const DebugAllocator<T> &)
+  {
+    return true;
+  }
+
+  //! check whether allocators are not equivalent
+  template<class T>
+  constexpr bool
+  operator!=(const DebugAllocator<T> &, const DebugAllocator<T> &)
+  {
+    return false;
+  }
 }
 
 #ifdef DEBUG_NEW_DELETE
@@ -324,6 +340,14 @@ void operator delete(void * p) noexcept
   std::cout << "FREE " << p << std::endl;
 #endif
   Dune::DebugMemory::alloc_man.deallocate<char>(static_cast<char*>(p));
+}
+
+void operator delete(void * p, size_t size) noexcept
+{
+#if DEBUG_NEW_DELETE > 2
+  std::cout << "FREE " << p << std::endl;
+#endif
+  Dune::DebugMemory::alloc_man.deallocate<char>(static_cast<char*>(p), size);
 }
 
 #endif // DEBUG_NEW_DELETE

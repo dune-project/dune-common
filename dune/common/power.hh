@@ -46,7 +46,7 @@ namespace Dune {
   struct Power
   {
     template <typename T>
-    static T eval(const T & a)
+    static constexpr T eval(const T & a)
     {
       return PowerImp<p>::eval(a);
     }
@@ -57,7 +57,7 @@ namespace Dune {
   struct PowerImp<p,false>
   {
     template <typename T>
-    static T eval(const T & a)
+    static constexpr T eval(const T & a)
     {
       T t = Power<p/2>::eval(a);
       return t*t;
@@ -68,7 +68,7 @@ namespace Dune {
   struct PowerImp<p,true>
   {
     template <typename T>
-    static T eval(const T & a)
+    static constexpr T eval(const T & a)
     {
       return a*Power<p-1>::eval(a);;
     }
@@ -78,7 +78,7 @@ namespace Dune {
   struct PowerImp<1,true>
   {
     template <typename T>
-    static T eval(const T & a)
+    static constexpr T eval(const T & a)
     {
       return a;
     }

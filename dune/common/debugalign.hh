@@ -282,13 +282,14 @@ namespace Dune {
     //
     // Overloads for the functions provided by the standard library
     //
-#define DUNE_UNARY_FUNC(name)                               \
-    template<class T, std::size_t align>                    \
-    decltype(auto) name(const AlignedNumber<T, align> &u)   \
-    {                                                       \
-      using std::name;                                      \
-      return aligned<align>(name(T(u)));                    \
-    }
+#define DUNE_UNARY_FUNC(name)                                       \
+    template<class T, std::size_t align>                            \
+    decltype(auto) name(const AlignedNumber<T, align> &u)           \
+    {                                                               \
+      using std::name;                                              \
+      return aligned<align>(name(T(u)));                            \
+    }                                                               \
+    static_assert(true, "Require semicolon to unconfuse editors")
 
     //
     // <cmath> functions

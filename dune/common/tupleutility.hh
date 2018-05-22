@@ -37,7 +37,7 @@ namespace Dune {
    * \ingroup Utility
    */
   template<class F, class ArgTuple, class I, I... i>
-  decltype(auto) applyPartial(F&& f, ArgTuple&& args, std::integer_sequence<I, i...> indices)
+  decltype(auto) applyPartial(F&& f, ArgTuple&& args, std::integer_sequence<I, i...> /*indices*/)
   {
     return f(std::get<i>(args)...);
   }

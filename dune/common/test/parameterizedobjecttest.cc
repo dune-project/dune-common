@@ -9,15 +9,18 @@
 
 DefineImplementation(InterfaceA, Ai, int);
 DefineImplementation(InterfaceA, Bi, int);
-DefineImplementation(InterfaceA, Ax);
-DefineImplementation(InterfaceA, Bx);
+DefineImplementation2(InterfaceA, Ax);
+DefineImplementation2(InterfaceA, Bx);
 DefineImplementation(InterfaceA, Ad, const Dune::ParameterTree&);
 DefineImplementation(InterfaceA, Bd, Dune::ParameterTree);
 DefineImplementation(InterfaceB, Ais, int, std::string);
 DefineImplementation(InterfaceB, Bis, int, std::string);
 
-#define CheckInstance(F,T,PARAM...)             \
-    assert(#T == F.create(#T,##PARAM)->info())
+#define CheckInstance2(F,T)                       \
+    assert(#T == F.create(#T)->info())
+
+#define CheckInstance(F,T,...)                    \
+    assert(#T == F.create(#T,##__VA_ARGS__)->info())
 
 struct AImp : public InterfaceA
 {
@@ -25,7 +28,7 @@ struct AImp : public InterfaceA
         s_(s)
     {}
 
-    AImp(const AImp& other) :
+    AImp(const AImp& /*other*/) :
         s_("copied")
     {}
 
@@ -42,7 +45,7 @@ int main()
     // Dune::ParameterizedObjectFactory<std::unique_ptr<InterfaceA>(int)> FactoryA;
     globalPtrFactory<InterfaceA>().define<Ai>("Ai");
     globalPtrFactory<InterfaceA>().define<Bi>("Bi");
-    globalPtrFactory<InterfaceA>().define("Ax", [](int i) { return Dune::Std::make_unique<Ax>(); });
+    globalPtrFactory<InterfaceA>().define("Ax", [](int /*i*/) { return Dune::Std::make_unique<Ax>(); });
     CheckInstance(globalPtrFactory<InterfaceA>(), Ai, 0);
     CheckInstance(globalPtrFactory<InterfaceA>(), Bi, 1);
     CheckInstance(globalPtrFactory<InterfaceA>(), Ax, 1);
@@ -60,9 +63,9 @@ int main()
     FactoryAd.define("AImp2", Dune::stackobject_to_shared_ptr<AImp>(aimp));
     FactoryAd.define("AImp3", std::make_shared<AImp>("shared"));
     Dune::ParameterTree param;
-    CheckInstance(FactoryAd, Ax);
-    CheckInstance(FactoryAd, Bx);
-    CheckInstance(FactoryAd, Ai);
+    CheckInstance2(FactoryAd, Ax);
+    CheckInstance2(FactoryAd, Bx);
+    CheckInstance2(FactoryAd, Ai);
     std::cout << FactoryAd.create("AImp")->info() << std::endl;
     std::cout << FactoryAd.create("AImp2")->info() << std::endl;
     std::cout << FactoryAd.create("AImp3")->info() << std::endl;
@@ -71,8 +74,8 @@ int main()
     Dune::ParameterizedObjectFactory<std::unique_ptr<InterfaceA>()> FactoryAx;
     FactoryAx.define<Ax>("Ax");
     FactoryAx.define<Bx>("Bx");
-    CheckInstance(FactoryAx, Ax);
-    CheckInstance(FactoryAx, Bx);
+    CheckInstance2(FactoryAx, Ax);
+    CheckInstance2(FactoryAx, Bx);
 
     // multiple parameters
     Dune::ParameterizedObjectFactory<std::unique_ptr<InterfaceB>(int, std::string)> FactoryB;
