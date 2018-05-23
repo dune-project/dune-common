@@ -13,6 +13,16 @@
 
 namespace Dune {
 
+/*
+ * silence warnings from GCC about using integer operands on a bool
+ * (when instantiated for T=bool)
+ */
+#if __GNUC__ >= 8
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wbool-operation"
+#  pragma GCC diagnostic ignored "-Wint-in-bool-context"
+#endif
+
   //! Test suite for arithmetic types
   /**
    * You usually want to call the member function `checkArithmetic()`.  The
@@ -779,6 +789,10 @@ namespace Dune {
       checkAssignBitOr<T>(arithmetic_tag);
     }
   };
+
+#if __GNUC__ >= 8
+#  pragma GCC diagnostic pop
+#endif
 
 } // namespace Dune
 
