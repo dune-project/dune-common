@@ -18,4 +18,4 @@ int init_Factory()
     return 0;
 }
 
-static const int DUNE_UNUSED(init) = init_Factory();
+static const int DUNE_UNUSED init = init_Factory();
