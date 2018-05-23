@@ -170,9 +170,20 @@ namespace Dune {
                class = void_t<decltype(-std::declval<const U&>())> >
       decltype(auto) operator-() const { return aligned<align>(-value_); }
 
+      /*
+       * silence warnings from GCC about using `~` on a bool
+       * (when instantiated for T=bool)
+       */
+#ifdef __GNUC__
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wbool-operation"
+#endif
       template<class U = T,
                class = void_t<decltype(~std::declval<const U&>())> >
       decltype(auto) operator~() const { return aligned<align>(~value_); }
+#ifdef __GNUC__
+#  pragma GCC diagnostic pop
+#endif
 
       template<class U = T,
                class = void_t<decltype(!std::declval<const U&>())> >

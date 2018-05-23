@@ -12,6 +12,16 @@
 
 namespace Dune {
 
+/*
+ * silence warnings from GCC about using integer operands on a bool
+ * (when instantiated for T=bool)
+ */
+#ifdef __GNUC__
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wbool-operation"
+#  pragma GCC diagnostic ignored "-Wint-in-bool-context"
+#endif
+
   /**
     *  This class specifies a vector-like type deriving from std::array
     *  for memory management and basic accessibility.
@@ -504,6 +514,10 @@ namespace Dune {
   struct IsNumber<LoopSIMD<T,S>> :
           public std::integral_constant<bool, IsNumber<T>::value>{
   };
+
+#ifdef __GNUC__
+#  pragma GCC diagnostic pop
+#endif
 
 } //namespace Dune
 
