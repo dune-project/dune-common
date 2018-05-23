@@ -18,14 +18,23 @@ if hasattr(module, '__version__'):
     sys.stdout.write(module.__version__)
     sys.exit(0)
 
-# Alternative implementation: through pip (pip itself implement pip.__version__,
-# so we never get here, when checking the version of pip itself), only works if
-# package name and distribution name are the same
-import pip
-for package in pip.get_installed_distributions():
-    if package.project_name == modstr and package.has_version():
-        sys.stdout.write(package.version)
+# NOTE: pip itself implements pip.__version__, so we never get here, when
+# checking the version of pip itself
+
+# Alternative implementation: use pkg_resources
+import pkg_resources
+
+# Generate a dict of distribution information with project names as keys
+dist_info = {d.project_name: d for d in pkg_resources.working_set}
+
+# Check if package is available at all
+if modstr in dist_info:
+    # Check if there is version information and, if yes, write it to stdout
+    pkg_info = dist_info[modstr]
+
+    if pkg_info.has_version():
+        sys.stdout.write(pkg_info.version)
         sys.exit(0)
 
-# Give up on this one
+# If this point is reached, no version information could be extracted
 sys.exit(1)
