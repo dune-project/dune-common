@@ -499,16 +499,31 @@ namespace Dune {
 
 #undef DUNE_SIMD_LOOP_STD_BINARY_OP
 
-  /* revise once the interface for isfinite() etc is done*/
-  template<class T, std::size_t S>
-  auto isfinite(LoopSIMD<T,S> &v) {
-    using std::isfinite;
-    LoopSIMD<bool,S> out;
-    for(std::size_t i=0; i<S; i++) {
-      out[i] = isfinite(v[i]);
+  namespace MathOverloads {
+    template<class T, std::size_t S>
+    auto isNaN(const LoopSIMD<T,S> &v, PriorityTag<3>, ADLTag) {
+      LoopSimd<bool,S> out;
+      for(auto l : range(S))
+        out[l] = Dune::isNaN(v[l]);
+      return out;
     }
-    return out;
-  }
+
+    template<class T, std::size_t S>
+    auto isInf(const LoopSIMD<T,S> &v, PriorityTag<3>, ADLTag) {
+      LoopSimd<bool,S> out;
+      for(auto l : range(S))
+        out[l] = Dune::isInf(v[l]);
+      return out;
+    }
+
+    template<class T, std::size_t S>
+    auto isFinite(const LoopSIMD<T,S> &v, PriorityTag<3>, ADLTag) {
+      LoopSimd<bool,S> out;
+      for(auto l : range(S))
+        out[l] = Dune::isFinite(v[l]);
+      return out;
+    }
+  } //namepace MathOverloads
 
   template<class T, std::size_t S>
   struct IsNumber<LoopSIMD<T,S>> :
