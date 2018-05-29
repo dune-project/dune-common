@@ -185,8 +185,10 @@
 #
 #    When instantiating files we set up a few convenience variables before
 #    calling ``configure_file()`` that can be used in substitutions:
-#    ``@TEMPLATE@`` contains the name of the template file, ``@INSTANCE@``
-#    contains the name of the file being generated.  ``@GENERATED_SOURCE@``
+#    ``@TEMPLATE@`` contains the name of the template file.  ``@INSTANCE@``
+#    contains the name of the file being generated, not including an implied
+#    ``${CMAKE_CURRENT_BINARY_DIR}``.  Use ``@BINDIR_INSTANCE@`` if you do
+#    want the implied ``${CMAKE_CURRENT_BINARY_DIR}``.  ``@GENERATED_SOURCE@``
 #    contains a one-line message that this file was generated, including the
 #    name of the template file.
 #
@@ -393,12 +395,31 @@
 #       :ref:`dune_instance_add(FILES ...) <dune_instance_add>`.
 #
 #
+# .. cmake_function:: dune_instance_apply_bindir
+#
+#    .. cmake_brief::
+#
+#       Modify a filename to be relative to ``CMAKE_CURRENT_BINARY_DIR``.
+#
+#    .. cmake_param:: fname_var
+#       :positional:
+#       :single:
+#       :required:
+#
+#       The name of the variable containing the file name.
+#
+#    This is used to mimic the behaviour of ``configure_file()``.  If the file
+#    name given is not absolute, it is modified by prepending
+#    ``${CMAKE_CURRENT_BINARY_DIR}``.
+#
+#
 # .. cmake_function:: dune_instance_generate_file
 #
 #    .. cmake_brief::
 #
-#       Convenience wrapper around ``configure_file()``: enable standard
-#       substitutions and register files as generated.
+#       Convenience replacement for ``configure_file()``: enable standard
+#       substitutions, register files as generated, and flag the same file
+#       being generated twice.
 #
 #    .. cmake_param:: TEMPLATE
 #       :positional:
@@ -412,28 +433,34 @@
 #       :single:
 #       :required:
 #
-#       The name of the generated file.
+#       The name of the generated file.  This is assumed relative to
+#       ``${CMAKE_CURRENT_BINARY_DIR}``.
 #
-#    Make sure the variables ``TEMPLATE`` and ``INSTANCE`` are set to the
-#    parameter values and available for substitution.  Also set the variable
-#    ``GENERATED_SOURCE`` to a one-line message that tells a human reader that
-#    this file is generated, and the name of the template file it was
-#    generated from.  The message also includes hints for common editors
-#    telling them to switch to read-only mode.
+#    Make sure the variables ``TEMPLATE``, ``INSTANCE``, and
+#    ``BINDIR_INSTANCE`` are set to the parameter values and available for
+#    substitution.  Also set the variable ``GENERATED_SOURCE`` to a one-line
+#    message that tells a human reader that this file is generated, and the
+#    name of the template file it was generated from.  The message also
+#    includes hints for common editors telling them to switch to read-only
+#    mode.
 #
-#    Then call ``configure_file()`` and register the instance file a a
-#    generated source file.
+#    Then generate the file as if by ``configure_file()``.
 #
 #    If the instance file has been registered as a generated source file
 #    before, this function generates a fatal error.  This ensures that any
-#    accidential attempt to generate the same file twice is caught.
+#    accidential attempt to generate the same file twice is caught.  As a
+#    special exception, if the generated content is the same as before, the
+#    error is silently skipped.
 #
 #
 # .. cmake_variable:: DUNE_INSTANCE_GENERATED
 #
 #    After :ref:`dune_instance_end() <dune_instance_end>`, this holds the list
-#    of files that were generated.  Do not rely on the value of this variable
-#    and do not modify it inside a :ref:`dune_instance_begin()
+#    of files that were generated.  The list entries include an implied
+#    ``${CMAKE_CURRENT_BINARY_DIR}``, as appropriate.
+#
+#    Do not rely on the value of this variable and do not modify it inside a
+#    :ref:`dune_instance_begin()
 #    <dune_instance_begin>`/:ref:`dune_instance_end() <dune_instance_end>`
 #    block.
 
@@ -546,6 +573,14 @@ function(dune_instance_from_id file_spec id template_var instance_var)
   endif(NOT ("${instance_var}" STREQUAL ""))
 endfunction(dune_instance_from_id)
 
+# mimic the behaviour of configure_file(), placing relative paths in the
+# current binary dir
+function(dune_instance_apply_bindir fname_var)
+  if(NOT (IS_ABSOLUTE ${fname_var}))
+    set(${fname_var} "${CMAKE_CURRENT_BINARY_DIR}/${${fname_var}}" PARENT_SCOPE)
+  endif()
+endfunction(dune_instance_apply_bindir)
+
 
 ######################################################################
 #
@@ -557,6 +592,10 @@ function(dune_instance_set_generated)
   set(GENERATED_SOURCE
     "generated from ${TEMPLATE} by cmake -*- buffer-read-only:t -*- vim: set readonly:"
     PARENT_SCOPE)
+
+  set(BINDIR_INSTANCE "${INSTANCE}")
+  dune_instance_apply_bindir(BINDIR_INSTANCE)
+  set(BINDIR_INSTANCE "${BINDIR_INSTANCE}" PARENT_SCOPE)
 endfunction(dune_instance_set_generated)
 
 # Read a template file and split it into three lists
@@ -671,17 +710,10 @@ function(dune_instance_generate_file TEMPLATE INSTANCE)
   file(READ "${TEMPLATE}" _content)
   string(CONFIGURE "${_content}" _content)
 
-  # mimic the behaviour of configure_file(), placing relative paths in the
-  # current binary dir
-  set(_outname "${INSTANCE}")
-  if(NOT (IS_ABSOLUTE _outname))
-    set(_outname "${CMAKE_CURRENT_BINARY_DIR}/${_outname}")
-  endif()
-
   # make sure we did not generate this file before
-  get_property(_seen SOURCE "${INSTANCE}" PROPERTY GENERATED)
+  get_property(_seen SOURCE "${BINDIR_INSTANCE}" PROPERTY DUNE_INSTANCE_GENERATED)
   if(_seen)
-    file(READ "${_outname}" _oldcontent)
+    file(READ "${BINDIR_INSTANCE}" _oldcontent)
     if(NOT (_content STREQUAL _oldcontent))
       message(FATAL_ERROR "Attempt to generate ${INSTANCE} (from ${TEMPLATE}), "
         "which has already been generated with different content")
@@ -690,8 +722,8 @@ function(dune_instance_generate_file TEMPLATE INSTANCE)
   else(_seen)
     # _seen was false, but the file may still be around from a previous cmake
     # run, only write if changed to avoid recompilations
-    dune_write_changed_file("${_outname}" "${_content}")
-    set_property(SOURCE "${INSTANCE}" PROPERTY GENERATED TRUE)
+    dune_write_changed_file("${BINDIR_INSTANCE}" "${_content}")
+    set_property(SOURCE "${BINDIR_INSTANCE}" PROPERTY DUNE_INSTANCE_GENERATED TRUE)
     set_property(DIRECTORY APPEND
       PROPERTY CMAKE_CONFIGURE_DEPENDS "${TEMPLATE}")
   endif(_seen)
@@ -826,10 +858,12 @@ function(dune_instance_add)
   foreach(_spec IN LISTS _arg_FILES)
     set(_template_used TRUE)
     dune_instance_from_id("${_spec}" "${_arg_ID}" _template_file _instance_file)
+    set(_bindir_instance_file "${_instance_file}")
+    dune_instance_apply_bindir(_bindir_instance_file)
     dune_instance_generate_file("${_template_file}" "${_instance_file}")
-    list(FIND DUNE_INSTANCE_GENERATED "${_instance_file}" _found_pos)
+    list(FIND DUNE_INSTANCE_GENERATED "${_bindir_instance_file}" _found_pos)
     if(_found_pos EQUAL -1)
-      list(APPEND DUNE_INSTANCE_GENERATED "${_instance_file}")
+      list(APPEND DUNE_INSTANCE_GENERATED "${_bindir_instance_file}")
     endif()
   endforeach(_spec)
 
@@ -855,9 +889,11 @@ function(dune_instance_end)
     endif()
     list(GET _DUNE_INSTANCE_GLOBAL_FILES "${_file_index}" _spec)
     dune_instance_parse_file_spec("${_spec}" TEMPLATE INSTANCE)
+    set(BINDIR_INSTANCE "${INSTANCE}")
+    dune_instance_apply_bindir(BINDIR_INSTANCE)
 
     # make sure we did not generate this file before
-    get_property(_seen SOURCE "${INSTANCE}" PROPERTY GENERATED)
+    get_property(_seen SOURCE "${BINDIR_INSTANCE}" PROPERTY DUNE_INSTANCE_GENERATED)
     if("${_seen}")
       message(FATAL_ERROR "Attempt to generate ${INSTANCE} (from ${TEMPLATE}), "
         "which has already been generated")
@@ -874,19 +910,12 @@ function(dune_instance_end)
     # remove the final newline that we appended when reading the template file
     string(REGEX REPLACE "\n\$" "" _content "${_content}")
 
-    # mimic the behaviour of configure_file(), placing relative paths in the
-    # current binary dir
-    set(_outname "${INSTANCE}")
-    if(NOT (IS_ABSOLUTE _outname))
-      set(_outname "${CMAKE_CURRENT_BINARY_DIR}/${_outname}")
-    endif()
-
     message(STATUS "Writing ${INSTANCE}")
     # only write if the content changes, avoiding recompilations
-    dune_write_changed_file("${_outname}" "${_content}")
+    dune_write_changed_file("${BINDIR_INSTANCE}" "${_content}")
 
-    set_property(SOURCE "${INSTANCE}" PROPERTY GENERATED TRUE)
-    list(APPEND DUNE_INSTANCE_GENERATED "${INSTANCE}")
+    set_property(SOURCE "${BINDIR_INSTANCE}" PROPERTY DUNE_INSTANCE_GENERATED TRUE)
+    list(APPEND DUNE_INSTANCE_GENERATED "${BINDIR_INSTANCE}")
   endforeach(_file_index)
 
   set(DUNE_INSTANCE_GENERATED "${DUNE_INSTANCE_GENERATED}" PARENT_SCOPE)
