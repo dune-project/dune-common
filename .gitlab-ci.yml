@@ -1,13 +1,12 @@
 ---
+variables:
+  DUNECI_TEST_LABELS: quick
+
 debian:9--gcc:
   image: duneci/base:9
   script:
   - echo ================================
   - env
   - echo ================================
-  - cat $(which duneci-standard-test)
-  - echo ================================
-  - duneci-standard-test
-  variables:
-    DUNECI_TEST_LABELS: quick
+  variables: {DUNECI_OPTS: /duneci/opts.gcc.c++17}
   tags: [duneci]
