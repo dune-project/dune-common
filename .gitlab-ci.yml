@@ -7,6 +7,7 @@ debian:9--gcc:
   - echo ================================
   - cat $(which duneci-standard-test)
   - echo ================================
+  - duneci-standard-test
   variables:
     DUNECI_TEST_LABELS: quick
   tags: [duneci]
