@@ -8,5 +8,5 @@ debian:9--gcc:
   - echo ================================
   - env
   - echo ================================
-  variables: {DUNECI_OPTS: /duneci/opts.gcc.c++17}
+  variables: {}
   tags: [duneci]
