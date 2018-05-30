@@ -29,6 +29,9 @@ namespace Dune
   template< class T >
   struct StandardMathematicalConstants
   {
+    /**
+     * \brief Euler's number
+     */
     static const T e ()
     {
       using std::exp;
@@ -36,6 +39,9 @@ namespace Dune
       return e;
     }
 
+    /**
+     * \brief Archimedes' constant
+     */
     static const T pi ()
     {
       using std::acos;
