@@ -58,37 +58,6 @@ namespace Dune
   {};
 
 
-#ifndef DOXYGEN
-  // MathematicalConstants for float
-  // -------------------------------
-
-  template<>
-  struct MathematicalConstants< float >
-    : public StandardMathematicalConstants< float >
-  {};
-
-
-
-  // MathematicalConstants for double
-  // --------------------------------
-
-  template<>
-  struct MathematicalConstants< double >
-    : public StandardMathematicalConstants< double >
-  {};
-
-
-
-  // MathematicalConstants for long double
-  // -------------------------------------
-
-  template<>
-  struct MathematicalConstants< long double >
-    : public StandardMathematicalConstants< long double >
-  {};
-#endif // DOXYGEN
-
-
   //! Calculates the factorial of m at compile time
   template <int m>
   struct Factorial
