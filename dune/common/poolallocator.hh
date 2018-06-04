@@ -138,18 +138,15 @@ namespace Dune
       /**
        * @brief The size of each chunk memory chunk.
        *
-       * Will be adapted to be a multiple of the alignment plus
-       * an offset to handle the case that the pointer to the memory
-       * does not satisfy the alignment requirements.
+       * Will be adapted to be a multiple of the alignment
        */
       chunkSize = ((size % alignment == 0) ?
-                   size : ((size / alignment + 1)* alignment))
-                  + alignment - 1,
+                   size : ((size / alignment + 1)* alignment)),
 
       /**
        * @brief The number of element each chunk can hold.
        */
-      elements = ((chunkSize - alignment + 1)/ alignedSize)
+      elements = (chunkSize / alignedSize)
     };
 
   private:
@@ -160,31 +157,10 @@ namespace Dune
       //friend int testPool<s,T>();
 
       /** @brief The memory we hold. */
-      char chunk_[chunkSize];
-
-      /**
-       * @brief Address of the first properly aligned
-       * position in the chunk.
-       */
-      char* memory_;
+      alignas(alignment) char chunk_[chunkSize];
 
       /** @brief The next element */
       Chunk *next_;
-
-      /**
-       * @brief Constructor.
-       */
-      Chunk()
-      {
-        // Make sure the alignment is correct!
-        // long long should be 64bit safe!
-        unsigned long long lmemory = reinterpret_cast<unsigned long long>(chunk_);
-        if(lmemory % alignment != 0)
-          lmemory = (lmemory / alignment + 1)
-                    * alignment;
-
-        memory_ = reinterpret_cast<char *>(lmemory);
-      }
     };
 
   public:
@@ -458,7 +434,7 @@ namespace Dune
     static_assert(unionSize<=alignedSize, "Library Error: alignedSize too small");
     static_assert(sizeof(T)<=chunkSize, "Library Error: chunkSize must be able to hold at least one value");
     static_assert(sizeof(Reference)<=chunkSize, "Library Error: chunkSize must be able to hold at least one reference");
-    static_assert((chunkSize - (alignment - 1)) % alignment == 0, "Library Error: compiler cannot calculate!");
+    static_assert(chunkSize % alignment == 0, "Library Error: compiler cannot calculate!");
     static_assert(elements>=1, "Library Error: we need to hold at least one element!");
     static_assert(elements*alignedSize<=chunkSize, "Library Error: aligned elements must fit into chuck!");
   }
@@ -501,7 +477,7 @@ namespace Dune
     newChunk->next_ = chunks_;
     chunks_ = newChunk;
 
-    char* start = chunks_->memory_;
+    char* start = chunks_->chunk_;
     char* last  = &start[elements*alignedSize];
     Reference* ref = new (start) (Reference);
 
