@@ -39,6 +39,9 @@ namespace Dune {
 
     //! Which types are subject to the standard SIMD abstraction implementation
     /**
+     * \note This is obsolete, do not use, see
+     *       https://gitlab.dune-project.org/core/dune-common/issues/121#note_44588
+     *
      * This is derive from \c std::true_type if \c T should be handled by the
      * standard SIMD abstraction implementation, otherwise from \c
      * std::false_type.  By default it declares all arithmetic types (as per
@@ -63,7 +66,7 @@ namespace Dune {
      *       little as we can get away with.
      */
     template<class T, class SFINAE = void>
-    struct IsStandard : std::is_arithmetic<T> {};
+    struct IsStandard : std::true_type {};
 
     //! group SIMDStandard
   } // namespace Simd
