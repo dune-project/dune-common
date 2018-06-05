@@ -460,7 +460,7 @@ namespace Dune {
       }
 
       template<class T, std::size_t align>
-      const T& lane(ADLTag<5>, std::size_t l, const AlignedNumber<T, align> &v)
+      T lane(ADLTag<5>, std::size_t l, const AlignedNumber<T, align> &v)
       {
         assert(l == 0);
         return v.value();
