@@ -32,6 +32,9 @@ namespace Dune {
     public TestSuite
   {
   public:
+    // inherit all constructors from TestSuite
+    using TestSuite::TestSuite;
+
     //! tag denoting any arithmetic type
     struct Arithmetic            {};
     //! tag denoting integral types
