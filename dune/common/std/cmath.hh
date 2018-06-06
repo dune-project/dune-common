@@ -28,6 +28,11 @@ namespace Dune
     inline constexpr __float128 const& max(__float128 const& x, __float128 const& y) { return y < x ? x : y; }
     inline __float128 sqrt(__float128 const& x) { return sqrtq(x); }
     inline __float128 pow(__float128 const& x, __float128 const& p) { return powq(x,p); }
+
+    inline __float128 abs(std::complex<__float128> x)
+    {
+      return sqrtq(x.real() * x.real() + x.imag() * x.imag());
+    }
 #endif
 
   } // namespace Std

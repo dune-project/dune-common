@@ -73,8 +73,8 @@ namespace Dune {
                        const T &second,
                        typename EpsilonType<T>::Type epsilon = DefaultEpsilon<T>::value())
         {
-          using Std::abs;
-          return abs(first - second) <= epsilon*std::max(abs(first), abs(second));
+          using Std::abs; using Std::max;
+          return abs(first - second) <= epsilon*max(abs(first), abs(second));
         }
       };
       template<class T>
@@ -83,8 +83,8 @@ namespace Dune {
                        const T &second,
                        typename EpsilonType<T>::Type epsilon = DefaultEpsilon<T>::value())
         {
-          using Std::abs;
-          return abs(first - second) <= epsilon*std::min(abs(first), abs(second));
+          using Std::abs; using Std::min;
+          return abs(first - second) <= epsilon*min(abs(first), abs(second));
         }
       };
       template<class T>
