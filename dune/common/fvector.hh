@@ -20,6 +20,7 @@
 #include "densevector.hh"
 #include "unused.hh"
 #include "boundschecking.hh"
+#include "quadmath.hh"
 
 namespace Dune {
 

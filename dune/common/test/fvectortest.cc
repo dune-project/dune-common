@@ -12,7 +12,9 @@
 #include <complex>
 #include <typeinfo>
 #include <cassert>
-
+#if HAVE_QUADMATH
+#include <dune/common/quadmath.hh>
+#endif
 
 using Dune::FieldVector;
 using std::complex;
@@ -496,6 +498,9 @@ int main()
     FieldVectorTest<float, 3>();
     FieldVectorTest<double, 3>();
     FieldVectorTest<long double, 3>();
+#if HAVE_QUADMATH
+    FieldVectorTest<__float128, 3>();
+#endif
 #if HAVE_GMP
     // we skip the complex test and the int test, as these will be very hard to implement with GMPField
     typedef Dune::GMPField<128u> ft;

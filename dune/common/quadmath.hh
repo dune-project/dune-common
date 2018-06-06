@@ -37,7 +37,7 @@ namespace Dune
     return out;
   }
 
-  /// \brief An overload of input ostreams for `__float128` types.
+  /// \brief An overload of input streams for `__float128` types.
   template<typename CharT, typename Traits>
   std::basic_istream<CharT,Traits>& operator>> (std::basic_istream<CharT,Traits>& in,
                                                 __float128& value)
@@ -46,6 +46,37 @@ namespace Dune
     buf.reserve(128);
     in >> buf;
     value = strtoflt128(buf.c_str(), NULL);
+    return in;
+  }
+
+  /// \brief An overload of input streams for `std::complex<__float128>` types.
+  template<typename CharT, class Traits>
+  std::basic_istream<CharT, Traits>& operator>> (std::basic_istream<CharT, Traits>& in, std::complex<__float128>& x)
+  {
+    __float128 re_x, im_x;
+    CharT ch = CharT();
+    in >> ch;
+    if (ch == '(') {
+      in >> re_x >> ch;
+      if (ch == ',') {
+        in >> im_x >> ch;
+        if (ch == ')')
+          x = std::complex<__float128>(re_x, im_x);
+        else
+          in.setstate(std::ios_base::failbit);
+      }
+      else if (ch == ')')
+        x = re_x;
+      else
+        in.setstate(std::ios_base::failbit);
+    }
+    else if (in) {
+      in.putback(ch);
+      if (in >> re_x)
+        x = re_x;
+      else
+        in.setstate(std::ios_base::failbit);
+    }
     return in;
   }
 }

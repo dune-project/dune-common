@@ -41,7 +41,7 @@ int main()
   test.check(cmp(y3, 3.q), "vec.infinity_norm()");
 
   M.mv(v, x);   // x = M*v
-  M.mtv(v, x);  // x = X^T*v
+  M.mtv(v, x);  // x = M^T*v
   M.umv(v, x);  // x+= M*v
   M.umtv(v, x); // x+= M^T*v
   M.mmv(v, x);  // x-= M*v
