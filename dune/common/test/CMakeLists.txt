@@ -163,7 +163,7 @@ dune_add_test(SOURCES functiontest.cc
               LABELS quick)
 
 dune_add_test(SOURCES fvectortest.cc
-              LINK_LIBRARIES dunecommon
+              LINK_LIBRARIES dunecommon quadmath
               LABELS quick)
 
 dune_add_test(SOURCES genericiterator_compile_fail.cc

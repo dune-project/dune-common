@@ -9,6 +9,25 @@
 #include <iostream>
 #include <limits>
 #include <typeinfo>
+#include <quadmath.h>
+
+//namespace std {
+
+__float128 abs(__float128 val)
+{ return (val < 0)?-val:val; }
+
+__float128 sqrt(__float128 val)
+{ return sqrtq(val); }
+
+inline std::istream& operator>>(std::istream& is, __float128 &val)
+{
+    double tmp;
+    std::istream &ret = (is >> tmp);
+    val = tmp;
+    return ret;
+}
+
+//}
 
 #include <dune/common/classname.hh>
 #include <dune/common/exceptions.hh>
@@ -543,7 +562,7 @@ int main()
     FieldVectorTest<int, 3>();
     FieldVectorTest<float, 3>();
     FieldVectorTest<double, 3>();
-    FieldVectorTest<long double, 3>();
+    FieldVectorTest<__float128, 3>();
 #if HAVE_GMP
     // we skip the complex test and the int test, as these will be very hard to implement with GMPField
     typedef Dune::GMPField<128u> ft;
