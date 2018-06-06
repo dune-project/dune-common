@@ -159,20 +159,23 @@ namespace Dune {
        * `ADLTag<i>` derives from `ADLTag<i-1>`.  Thus it is possible to
        * prioritize overloads by choosing an appropriate \c i.  The following
        * values for \c i are predefined:
-       * - \c i==0: this is used by the defaults.
-       * - \c i==2: this is used by the implementation for standard types.
-       * - \c i==5: this should be the default priority for implementations
+       * - `i==0,1`: these are reserved for the defaults.
+       * - `i==2,3`: these are reserved for the implementation for standard
+       *   types.
+       * - `i==5,6`: these should normally be used by other implementations
+       *
+       * The lower priority should be used by default.  The higher priority
+       * can be used by an implementation to resolve ambiguities, e.g. between
+       * an overload with a by-value argument and an overload with an
+       * lvalue-reference argument.
        *
        * The folloing priorities should not normally be used.  However, they
        * may sometimes be necessary:
-       * - \c i==1: let the standard implementation take precedence
-       * - \c i==3: override standard implementation, but strongly favour
-       *   other implementations
-       * - \c i==4: override standard implementation, but weakly prefer other
+       * - \c i==4: override standard implementation, but prefer other
        *   implementations
-       * - \c i==6: try to override other implementations
+       * - \c i==7: try to override other implementations
        *
-       * \c i==6 is the highest supported priority.
+       * \c i==7 is the highest supported priority.
        *
        * The second (bool) template argument is to make writing abstraction
        * implementations that use SFINAE to remove (some of) their functions
