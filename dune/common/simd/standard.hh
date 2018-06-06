@@ -15,7 +15,6 @@
  * turn includes this header.
  */
 
-#include <complex>
 #include <cstddef>
 #include <type_traits>
 #include <utility>
@@ -23,19 +22,12 @@
 #include <dune/common/indices.hh>
 #include <dune/common/simd/base.hh>
 #include <dune/common/simd/defaults.hh>
-#include <dune/common/simd/isstandard.hh>
 
 /** @defgroup SIMDStandard SIMD Abstraction Implementation for standard types
  *  @ingroup SIMDApp
  *
- * This implements the vectorization interface for scalar types, in particular
- * the standard arithmetic types as per `std::is_arithmetic`, as well as
- * `std::complex<T>` for any supported type `T`.
- *
- * If you have a type that provides an interface sufficiently close to the
- * standard types, you can enable support for that type in this abstraction
- * implementation by specializing `Dune::Simd::IsStandard`.  Candidates for
- * this include extended precision types and automatic differentiation types.
+ * This implements the vectorization interface for scalar types.  It applies
+ * to any type that does not have a specialized interface implementation.
  *
  * As an application developer, there is nothing special you need to do to get
  * support for standard types in the vectorization abstraction.  If the dune
@@ -50,15 +42,6 @@
 
 namespace Dune {
   namespace Simd {
-
-    //! Declare std::complex a standard type
-    /**
-     * \note This is done in `<dune/common/simd/standard.hh>` rather than
-     *       `<dune/common/simd/isstandard.hh>` to in order not to have to
-     *       include `<complex>` from the latter.
-     */
-    template<class T>
-    struct IsStandard<std::complex<T> > : IsStandard<T> {};
 
     namespace Overloads {
 

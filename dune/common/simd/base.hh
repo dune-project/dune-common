@@ -36,19 +36,6 @@
  *   for documenting for application developers how to meet the prerequisites
  *   for using the abstraction, e.g. which headers to include and how to add
  *   the necessary compiler flags.
- *
- * Unsolved questions/TODOs:
- *
- * - Should we keep `Dune::Simd::IsStandard`?  PRO: enables earlier error
- *   reporting, making errors easier to find.  CON: error reporting may be
- *   overeager, to get around each type that should be supported must be
- *   "registered", but not all such types can be known in advance (e.g. some
- *   extended precision type from some external library).  NOTE: `IsNumber` is
- *   not an alternative, since its meaning is different (whether something is
- *   a leaf in the matrix/vector block hierarchy).
- *
- * - Look for types supported by dune-common that should be subject to the
- *   standard abstraction implementation (e.g. `Dune::GMPField`).
  */
 
 /** @defgroup SIMDApp Application Developer's Interface
