@@ -8,7 +8,6 @@
 #include <ostream>
 
 #include <dune/common/math.hh>
-#include <dune/common/simd/isstandard.hh>
 #include <dune/common/simd/simd.hh>
 #include <dune/common/typetraits.hh>
 
@@ -357,12 +356,6 @@ namespace Dune {
         return out;
       }
     }  //namespace Overloads
-
-
-    // temporary stop-gap measure to get IsStandard out of the way
-    // see https://gitlab.dune-project.org/core/dune-common/issues/121#note_44588
-    template<class T, std::size_t S>
-    struct IsStandard<LoopSIMD<T, S> > : std::false_type {};
 
   }  //namespace Simd
 

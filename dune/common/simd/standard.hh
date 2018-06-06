@@ -15,7 +15,6 @@
  * turn includes this header.
  */
 
-#include <complex>
 #include <cstddef>
 #include <type_traits>
 #include <utility>
@@ -23,19 +22,12 @@
 #include <dune/common/indices.hh>
 #include <dune/common/simd/base.hh>
 #include <dune/common/simd/defaults.hh>
-#include <dune/common/simd/isstandard.hh>
 
 /** @defgroup SIMDStandard SIMD Abstraction Implementation for standard types
  *  @ingroup SIMDApp
  *
- * This implements the vectorization interface for scalar types, in particular
- * the standard arithmetic types as per `std::is_arithmetic`, as well as
- * `std::complex<T>` for any supported type `T`.
- *
- * If you have a type that provides an interface sufficiently close to the
- * standard types, you can enable support for that type in this abstraction
- * implementation by specializing `Dune::Simd::IsStandard`.  Candidates for
- * this include extended precision types and automatic differentiation types.
+ * This implements the vectorization interface for scalar types.  It applies
+ * to any type that does not have a specialized interface implementation.
  *
  * As an application developer, there is nothing special you need to do to get
  * support for standard types in the vectorization abstraction.  If the dune
@@ -51,15 +43,6 @@
 namespace Dune {
   namespace Simd {
 
-    //! Declare std::complex a standard type
-    /**
-     * \note This is done in `<dune/common/simd/standard.hh>` rather than
-     *       `<dune/common/simd/isstandard.hh>` to in order not to have to
-     *       include `<complex>` from the latter.
-     */
-    template<class T>
-    struct IsStandard<std::complex<T> > : IsStandard<T> {};
-
     namespace Overloads {
 
       /** @name Specialized classes and overloaded functions
@@ -71,53 +54,55 @@ namespace Dune {
       /**
        * Implements Simd::Scalar
        */
-      template<class V>
-      struct ScalarType<V, std::enable_if_t<IsStandard<V>::value> >
-      {
-        using type = V;
-      };
+      template<class V, class>
+      struct ScalarType { using type = V; };
 
       //! should have a member type \c type
       /**
        * Implements Simd::Index
        */
-      template<class V>
-      struct IndexType<V, std::enable_if_t<IsStandard<V>::value> >
-      {
-        using type = std::size_t;
-      };
+      template<class, class>
+      struct IndexType { using type = std::size_t; };
 
       //! should have a member type \c type
       /**
        * Implements Simd::Mask
        */
-      template<class V>
-      struct MaskType<V, std::enable_if_t<IsStandard<V>::value> >
-      {
-        using type = bool;
-      };
+      template<class, class>
+      struct MaskType { using type = bool; };
 
       //! should be derived from an Dune::index_constant
       /**
        * Implements Simd::lanes()
        */
-      template<class V>
-      struct LaneCount<V, std::enable_if_t<IsStandard<V>::value> >
-        : public index_constant<1>
-      { };
+      template<class, class>
+      struct LaneCount : public index_constant<1> { };
 
       //! implements Simd::lane()
+      /**
+       * This binds to rvalues and const lvalues.  It would bind to non-const
+       * lvalues too, but those are caught by the overload with ADLTag<3>.
+       * Using a universal reference here would bind to any argument with a
+       * perfect match.  This would mean ambiguous overloads with other
+       * abstractions, if those only declare overloads for `const TheirType &`
+       * and `TheirType &`, because because universal references match
+       * perfectly.
+       */
       template<class V>
-      decltype(auto) lane(ADLTag<2, IsStandard<std::decay_t<V>>::value>,
-                          std::size_t l, V &&v)
+      V lane(ADLTag<2>, std::size_t l, V v)
       {
-        return std::forward<V>(v);
+        return v;
       }
 
-      //! implements Simd::entries()
       template<class V>
-      V cond(ADLTag<2, IsStandard<V>::value>,
-             bool mask, V ifTrue, V ifFalse)
+      V &lane(ADLTag<3>, std::size_t l, V &v)
+      {
+        return v;
+      }
+
+      //! implements Simd::cond()
+      template<class V>
+      V cond(ADLTag<2>, bool mask, V ifTrue, V ifFalse)
       {
         return mask ? ifTrue : ifFalse;
       }

@@ -615,6 +615,30 @@ namespace Dune {
         }                                                               \
       }
 
+      // for assign ops, accept only non-const lvalue arguments for scalars.
+      // This is needed class scalars (e.g. std::complex) because non-const
+      // class rvalues are actually usually assignable.  Though that
+      // assignment happens to a temporary, and thus is lost.  Except that the
+      // tests would bind the result of the assignment to a reference.  And
+      // because that result is returned from a function by reference, even
+      // though it is a temporary passed as an argument to that function,
+      // accessing the result later is undefined behaviour.
+#define DUNE_SIMD_ASSIGN_OP(NAME, SYMBOL)                               \
+      struct OpInfix##NAME                                              \
+      {                                                                 \
+        template<class V1, class V2>                                    \
+        decltype(auto) vector(V1&& v1, V2&& v2) const                   \
+        {                                                               \
+          return std::forward<V1>(v1) SYMBOL std::forward<V2>(v2);      \
+        }                                                               \
+        template<class S1, class S2>                                    \
+        auto scalar(S1& s1, S2&& s2) const                              \
+          -> decltype(s1 SYMBOL std::forward<S2>(s2))                   \
+        {                                                               \
+          return s1 SYMBOL std::forward<S2>(s2);                        \
+        }                                                               \
+      }
+
 #define DUNE_SIMD_REPL_OP(NAME, REPLFN, SYMBOL)                         \
       struct OpInfix##NAME                                              \
       {                                                                 \
@@ -658,20 +682,21 @@ namespace Dune {
       DUNE_SIMD_REPL_OP(LogicAnd, maskAnd, && );
       DUNE_SIMD_REPL_OP(LogicOr,  maskOr,  || );
 
-      DUNE_SIMD_INFIX_OP(Assign,           =  );
-      DUNE_SIMD_INFIX_OP(AssignMul,        *= );
-      DUNE_SIMD_INFIX_OP(AssignDiv,        /= );
-      DUNE_SIMD_INFIX_OP(AssignRemainder,  %= );
-      DUNE_SIMD_INFIX_OP(AssignPlus,       += );
-      DUNE_SIMD_INFIX_OP(AssignMinus,      -= );
-      DUNE_SIMD_INFIX_OP(AssignLeftShift,  <<=);
-      DUNE_SIMD_INFIX_OP(AssignRightShift, >>=);
-      DUNE_SIMD_INFIX_OP(AssignAnd,        &= );
-      DUNE_SIMD_INFIX_OP(AssignXor,        ^= );
-      DUNE_SIMD_INFIX_OP(AssignOr,         |= );
+      DUNE_SIMD_ASSIGN_OP(Assign,           =  );
+      DUNE_SIMD_ASSIGN_OP(AssignMul,        *= );
+      DUNE_SIMD_ASSIGN_OP(AssignDiv,        /= );
+      DUNE_SIMD_ASSIGN_OP(AssignRemainder,  %= );
+      DUNE_SIMD_ASSIGN_OP(AssignPlus,       += );
+      DUNE_SIMD_ASSIGN_OP(AssignMinus,      -= );
+      DUNE_SIMD_ASSIGN_OP(AssignLeftShift,  <<=);
+      DUNE_SIMD_ASSIGN_OP(AssignRightShift, >>=);
+      DUNE_SIMD_ASSIGN_OP(AssignAnd,        &= );
+      DUNE_SIMD_ASSIGN_OP(AssignXor,        ^= );
+      DUNE_SIMD_ASSIGN_OP(AssignOr,         |= );
 
 #undef DUNE_SIMD_INFIX_OP
 #undef DUNE_SIMD_REPL_OP
+#undef DUNE_SIMD_ASSIGN_OP
 
       // just used as a tag
       struct OpInfixComma {};

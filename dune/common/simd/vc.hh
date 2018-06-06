@@ -13,7 +13,6 @@
 #include <dune/common/indices.hh>
 #include <dune/common/simd/base.hh>
 #include <dune/common/simd/defaults.hh> // for anyFalse()
-#include <dune/common/simd/isstandard.hh>
 #include <dune/common/typetraits.hh>
 #include <dune/common/vc.hh>
 
@@ -534,13 +533,6 @@ namespace Dune {
       //! @} group SIMDVc
 
     } // namespace Overloads
-
-    // temporary stop-gap measure to get IsStandard out of the way
-    // see https://gitlab.dune-project.org/core/dune-common/issues/121#note_44588
-    template<class T>
-    struct IsStandard<T, std::enable_if_t<VcImpl::IsVector<T>::value> > :
-      std::false_type
-    {};
 
   } // namespace Simd
 
