@@ -10,6 +10,7 @@
 #include <dune/common/fmatrix.hh>
 #include <dune/common/float_cmp.hh>
 #include <dune/common/quadmath.hh>
+#include <dune/common/test/arithmetictestsuite.hh>
 #include <dune/common/test/testsuite.hh>
 
 using namespace Dune;
@@ -23,7 +24,11 @@ struct Comparator
 
 int main()
 {
-#if HAVE_QUADMATH
+  // check arithmetic properties of __float128 type
+  Dune::ArithmeticTestSuite arithmeticTest{};
+  arithmeticTest.checkArithmetic<__float128, __float128>();
+
+  // check vector and matrix type with __float128 field type
   TestSuite test{};
   Comparator<__float128> cmp{};
 
@@ -61,5 +66,4 @@ int main()
   using namespace FMatrixHelp;
 
   invertMatrix(M,A);
-#endif // HAVE_QUADMATH
 }

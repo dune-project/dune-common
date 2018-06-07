@@ -361,7 +361,8 @@ dune_add_test(SOURCES versiontest.cc
               LABELS quick)
 
 dune_add_test(SOURCES quadmathtest.cc
-              LINK_LIBRARIES dunecommon)
+              LINK_LIBRARIES dunecommon
+              CMAKE_GUARD HAVE_QUADMATH)
 
 install(
   FILES

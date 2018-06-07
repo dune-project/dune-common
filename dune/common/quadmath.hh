@@ -4,10 +4,6 @@
 #ifndef DUNE_COMMON_QUADMATH_HH
 #define DUNE_COMMON_QUADMATH_HH
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #if HAVE_QUADMATH
 #include <cmath>
 #include <iostream>
