@@ -78,6 +78,10 @@
    to facilitate activating and deactivating GMP using compile flags. */
 #cmakedefine HAVE_GMP ENABLE_GMP
 
+/* Define if you have the GCC Quad-Precision library. The value should be ENABLE_QUADMATH
+   to facilitate activating and deactivating QuadMath using compile flags. */
+#cmakedefine HAVE_QUADMATH ENABLE_QUADMATH
+
 /* Define if you have the Vc library. The value should be ENABLE_VC
    to facilitate activating and deactivating Vc using compile flags. */
 #cmakedefine HAVE_VC ENABLE_VC

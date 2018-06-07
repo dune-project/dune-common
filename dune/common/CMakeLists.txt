@@ -92,6 +92,7 @@ install(FILES
         propertymap.hh
         promotiontraits.hh
         proxymemberaccess.hh
+        quadmath.hh
         rangeutilities.hh
         reservedvector.hh
         shared_ptr.hh

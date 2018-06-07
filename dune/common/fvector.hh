@@ -339,6 +339,10 @@ namespace Dune {
 
     /** \brief Const conversion operator */
     operator const K& () const { return _data; }
+
+    template <class T,
+      std::enable_if_t<std::is_convertible<K,T>::value && std::is_arithmetic<T>::value, int> = 0>
+    operator T () const { return _data; }
   };
 
   /* ----- FV / FV ----- */
