@@ -51,12 +51,28 @@ namespace Dune
     struct GenericGuardCommunicator< CollectiveCommunication<T> >
       : public GuardCommunicator
     {
-      const CollectiveCommunication<T> comm;
+      CollectiveCommunication<T> comm;
       GenericGuardCommunicator(const CollectiveCommunication<T> & c) :
         comm(c) {}
       int rank() override { return comm.rank(); };
       int size() override { return comm.size(); };
+#if HAVE_ULFM_REVOKE
+      int sum(int i) override {
+        if(i != 0){
+          comm.revoke();
+        }
+        int flag = i==0?1:0;
+        comm.agree(flag);
+        if(!flag){
+          comm.shrink();
+          return comm.sum(i);
+        }else{
+          return 0;
+        }
+      }
+#else
       int sum(int i) override { return comm.sum(i); }
+#endif
     };
 
 #if HAVE_MPI

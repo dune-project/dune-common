@@ -19,10 +19,20 @@
 
 #include <mpi.h>
 
+#ifndef DISABLE_ULFM
+#ifdef OMPI_MPI_H //Openmpi
+#include <mpi-ext.h>
+#endif
+#ifdef HAVE_BLACKCHANNEL
+#include <blackchannel-ulfm.h>
+#endif
+#endif
+
 #include <dune/common/binaryfunctions.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/parallel/collectivecommunication.hh>
 #include <dune/common/parallel/mpitraits.hh>
+#include <dune/common/stdstreams.hh>
 
 namespace Dune
 {
@@ -141,18 +151,48 @@ namespace Dune
   template<>
   class CollectiveCommunication<MPI_Comm>
   {
+  protected:
+    // deleter function to be used with shared_ptr
+    static void freeComm(MPI_Comm* c)
+    {
+      if (c != nullptr &&
+          *c != MPI_COMM_WORLD &&
+          *c != MPI_COMM_SELF &&
+          *c != MPI_COMM_NULL)
+      {
+        int wasFinalized = 0;
+        MPI_Finalized(&wasFinalized);
+        if (!wasFinalized){
+          int res = MPI_Comm_free(c);
+          if(res == MPI_SUCCESS)
+            *c = MPI_COMM_NULL;
+          else
+            dverb << "Cannot free MPI_Comm (" << *c << ")" << std::endl;
+        }
+      }
+    }
+
+    // track the MPI_COMM_WORLD after shrinking it
+    static std::shared_ptr<MPI_Comm> world;
+
   public:
     //! Instantiation using a MPI communicator
-    CollectiveCommunication (const MPI_Comm& c = MPI_COMM_WORLD)
-      : communicator(c)
+    CollectiveCommunication (const MPI_Comm& c)
+      : CollectiveCommunication(std::shared_ptr<MPI_Comm>(new MPI_Comm(c), freeComm))
     {
-      if(communicator!=MPI_COMM_NULL) {
+    }
+
+    //! Instantiation using a shared_ptr to MPI communicator
+    CollectiveCommunication (const std::shared_ptr<MPI_Comm>& c = world)
+      : p_communicator(c)
+    {
+      if(*p_communicator!=MPI_COMM_NULL) {
         int initialized = 0;
         MPI_Initialized(&initialized);
         if (!initialized)
           DUNE_THROW(ParallelError,"You must call MPIHelper::instance(argc,argv) in your main() function before using the MPI CollectiveCommunication!");
-        MPI_Comm_rank(communicator,&me);
-        MPI_Comm_size(communicator,&procs);
+        MPI_Comm_rank(*p_communicator,&me);
+        MPI_Comm_size(*p_communicator,&procs);
       }else{
         procs=0;
         me=-1;
@@ -239,14 +279,14 @@ namespace Dune
     //! @copydoc CollectiveCommunication::barrier
     int barrier () const
     {
-      return MPI_Barrier(communicator);
+      return MPI_Barrier(*p_communicator);
     }
 
     //! @copydoc CollectiveCommunication::broadcast
     template<typename T>
     int broadcast (T* inout, int len, int root) const
     {
-      return MPI_Bcast(inout,len,MPITraits<T>::getType(),root,communicator);
+      return MPI_Bcast(inout,len,MPITraits<T>::getType(),root,*p_communicator);
     }
 
     //! @copydoc CollectiveCommunication::gather()
@@ -256,7 +296,7 @@ namespace Dune
     {
       return MPI_Gather(const_cast<T*>(in),len,MPITraits<T>::getType(),
                         out,len,MPITraits<T>::getType(),
-                        root,communicator);
+                        root,*p_communicator);
     }
 
     //! @copydoc CollectiveCommunication::gatherv()
@@ -265,7 +305,7 @@ namespace Dune
     {
       return MPI_Gatherv(const_cast<T*>(in),sendlen,MPITraits<T>::getType(),
                          out,recvlen,displ,MPITraits<T>::getType(),
-                         root,communicator);
+                         root,*p_communicator);
     }
 
     //! @copydoc CollectiveCommunication::scatter()
@@ -275,7 +315,7 @@ namespace Dune
     {
       return MPI_Scatter(const_cast<T*>(send),len,MPITraits<T>::getType(),
                          recv,len,MPITraits<T>::getType(),
-                         root,communicator);
+                         root,*p_communicator);
     }
 
     //! @copydoc CollectiveCommunication::scatterv()
@@ -284,13 +324,13 @@ namespace Dune
     {
       return MPI_Scatterv(const_cast<T*>(send),sendlen,displ,MPITraits<T>::getType(),
                           recv,recvlen,MPITraits<T>::getType(),
-                          root,communicator);
+                          root,*p_communicator);
     }
 
 
     operator MPI_Comm () const
     {
-      return communicator;
+      return *p_communicator;
     }
 
     //! @copydoc CollectiveCommunication::allgather()
@@ -299,7 +339,7 @@ namespace Dune
     {
       return MPI_Allgather(const_cast<T*>(sbuf), count, MPITraits<T>::getType(),
                            rbuf, count, MPITraits<T1>::getType(),
-                           communicator);
+                           *p_communicator);
     }
 
     //! @copydoc CollectiveCommunication::allgatherv()
@@ -308,7 +348,7 @@ namespace Dune
     {
       return MPI_Allgatherv(const_cast<T*>(in),sendlen,MPITraits<T>::getType(),
                             out,recvlen,displ,MPITraits<T>::getType(),
-                            communicator);
+                            *p_communicator);
     }
 
     //! @copydoc CollectiveCommunication::allreduce(Type* inout,int len) const
@@ -327,14 +367,38 @@ namespace Dune
     int allreduce(const Type* in, Type* out, int len) const
     {
       return MPI_Allreduce(const_cast<Type*>(in), out, len, MPITraits<Type>::getType(),
-                           (Generic_MPI_Op<Type, BinaryFunction>::get()),communicator);
+                           (Generic_MPI_Op<Type, BinaryFunction>::get()),*p_communicator);
     }
 
+#if HAVE_ULFM_REVOKE
+    int revoke()
+    {
+      return MPIX_Comm_revoke(*p_communicator);
+    }
+
+    int shrink()
+    {
+      MPI_Comm oldcomm = *p_communicator;
+      int result = MPIX_Comm_shrink(oldcomm, p_communicator.get());
+      if(result == MPI_SUCCESS){
+        freeComm(&oldcomm);
+      }else{
+        *p_communicator = oldcomm;
+      }
+      return result;
+    }
+
+    int agree(int& i) const{
+      return MPIX_Comm_agree(*p_communicator, &i);
+    }
+#endif
   private:
-    MPI_Comm communicator;
+    std::shared_ptr<MPI_Comm> p_communicator;
     int me;
     int procs;
   };
+
+  std::shared_ptr<MPI_Comm> CollectiveCommunication<MPI_Comm>::world = std::shared_ptr<MPI_Comm>(new MPI_Comm(MPI_COMM_WORLD));
 } // namespace dune
 
 #endif // HAVE_MPI

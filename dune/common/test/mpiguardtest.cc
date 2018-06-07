@@ -87,6 +87,30 @@ int main(int argc, char** argv)
               << e.what() << std::endl;
   }
 
+#if HAVE_ULFM_REVOKE
+  mpihelper.getCollectiveCommunication().barrier();
+  if (mpihelper.rank() == 0)
+    std::cout << "---- guard(MPIHelper) (ULFM, interrupt barrier)" << std::endl;
+  try
+  {
+    // at the end of this block the guard is destroyed and possible exceptions are communicated
+    {
+      Dune::MPIGuard guard(mpihelper);
+      if (mpihelper.rank() > 0)
+        DUNE_THROW(Dune::Exception, "Fakeproblem on process " << mpihelper.rank());
+      mpihelper.getCollectiveCommunication().barrier();
+    }
+  }
+  catch (Dune::Exception & e)
+  {
+    std::cout << "Error (rank " << mpihelper.rank() << "): "
+              << e.what() << std::endl;
+  }
+#else
+  if(mpihelper.rank() == 0)
+    std::cout << "Info: No ULFM available" << std::endl;
+#endif
+
   mpihelper.getCollectiveCommunication().barrier();
   if (mpihelper.rank() == 0)
     std::cout << "---- done" << std::endl;
