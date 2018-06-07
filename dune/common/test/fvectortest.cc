@@ -545,7 +545,9 @@ int main()
     FieldVectorTest<float, 3>();
     FieldVectorTest<double, 3>();
     FieldVectorTest<long double, 3>();
+#if HAVE_QUADMATH
     FieldVectorTest<Dune::Float128, 3>();
+#endif
 #if HAVE_GMP
     // we skip the complex test and the int test, as these will be very hard to implement with GMPField
     typedef Dune::GMPField<128u> ft;

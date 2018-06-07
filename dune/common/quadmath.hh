@@ -233,7 +233,7 @@ namespace Dune
     DUNE_UNARY_FUNC(log10, log10q);
     DUNE_UNARY_FUNC(log1p, log1pq);
     DUNE_UNARY_FUNC(log2, log2q);
-    DUNE_UNARY_FUNC(logb, logbq);
+    // DUNE_UNARY_FUNC(logb, logbq); // not available in gcc5
     DUNE_CUSTOM_UNARY_FUNC(long int, lrint, lrintq);
     DUNE_CUSTOM_UNARY_FUNC(long int, lround, lroundq);
     DUNE_UNARY_FUNC(nearbyint, nearbyintq);
