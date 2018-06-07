@@ -630,11 +630,12 @@ namespace Dune {
     typename FieldTraits<vt>::real_type infinity_norm() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using Std::abs;
+      using std::max;
 
       real_type norm = 0;
       for (auto const &x : *this) {
         real_type const a = abs(x);
-        norm = std::max(a, norm);
+        norm = max(a, norm);
       }
       return norm;
     }
@@ -644,11 +645,12 @@ namespace Dune {
               typename std::enable_if<!HasNaN<vt>::value, int>::type = 0>
     typename FieldTraits<vt>::real_type infinity_norm_real() const {
       using real_type = typename FieldTraits<vt>::real_type;
+      using std::max;
 
       real_type norm = 0;
       for (auto const &x : *this) {
         real_type const a = fvmeta::absreal(x);
-        norm = std::max(a, norm);
+        norm = max(a, norm);
       }
       return norm;
     }
@@ -659,12 +661,13 @@ namespace Dune {
     typename FieldTraits<vt>::real_type infinity_norm() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using Std::abs;
+      using std::max;
 
       real_type norm = 0;
       real_type isNaN = 1;
       for (auto const &x : *this) {
         real_type const a = abs(x);
-        norm = std::max(a, norm);
+        norm = max(a, norm);
         isNaN += a;
       }
       isNaN /= isNaN;
@@ -676,12 +679,13 @@ namespace Dune {
               typename std::enable_if<HasNaN<vt>::value, int>::type = 0>
     typename FieldTraits<vt>::real_type infinity_norm_real() const {
       using real_type = typename FieldTraits<vt>::real_type;
+      using std::max;
 
       real_type norm = 0;
       real_type isNaN = 1;
       for (auto const &x : *this) {
         real_type const a = fvmeta::absreal(x);
-        norm = std::max(a, norm);
+        norm = max(a, norm);
         isNaN += a;
       }
       isNaN /= isNaN;
