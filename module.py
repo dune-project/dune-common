@@ -349,7 +349,7 @@ def get_module_path():
     path = [p for p in ['.', '/usr/local/lib/dunecontrol', '/usr/lib/dunecontrol'] if os.path.isdir(p)]
     try:
         pkg_config_path = [p for p in os.environ['PKG_CONFIG_PATH'].split(':') if p and os.path.isdir(p)]
-        pkg_config_path = [os.join(p, '..', 'dunecontrol') for p in pkg_config_path]
+        pkg_config_path = [os.path.join(p, '..', 'dunecontrol') for p in pkg_config_path]
         path += [p for p in pkg_config_path if os.path.isdir(p)]
     except KeyError:
         pass
