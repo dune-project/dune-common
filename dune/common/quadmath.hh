@@ -37,6 +37,20 @@ namespace Dune
     return out;
   }
 
+  /// \brief An overload of output streams for `std::complex<__float128>` types.
+  template<typename CharT, class Traits>
+  std::basic_ostream<CharT, Traits>&
+  operator<<(std::basic_ostream<CharT, Traits>& os, const std::complex<__float128>& x)
+  {
+    std::basic_ostringstream<CharT, Traits> s;
+    s.flags(os.flags());
+    s.imbue(os.getloc());
+    s.precision(os.precision());
+    s << '(' << x.real() << ',' << x.imag() << ')';
+    return os << s.str();
+  }
+
+
   /// \brief An overload of input streams for `__float128` types.
   template<typename CharT, typename Traits>
   std::basic_istream<CharT,Traits>& operator>> (std::basic_istream<CharT,Traits>& in,

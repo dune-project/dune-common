@@ -17,6 +17,7 @@
 
 #include <dune/common/classname.hh>
 #include <dune/common/fmatrix.hh>
+#include <dune/common/quadmath.hh>
 #include <dune/common/rangeutilities.hh>
 #include <dune/common/simd.hh>
 #include <dune/common/unused.hh>
@@ -32,7 +33,7 @@ int test_invert_solve(Dune::FieldMatrix<double, n, n> &A,
                       Dune::FieldVector<double, 3> &x,
                       Dune::FieldVector<double, 3> &b)
 {
-  using std::abs;
+  using Dune::Std::abs;
 
   int ret=0;
 
@@ -360,7 +361,7 @@ void test_matrix()
     }
   }
   {
-    using std::abs;
+    using Dune::Std::abs;
 
     FieldMatrix<K,n,m> A3 = A;
     A3 *= 3;
@@ -372,7 +373,7 @@ void test_matrix()
       DUNE_THROW(FMatrixError,"Axpy test failed!");
   }
   {
-    using std::abs;
+    using Dune::Std::abs;
 
     FieldMatrix<K,n,n+1> A2;
     for(size_type i=0; i<A2.N(); ++i)
@@ -432,7 +433,7 @@ void test_matrix()
 template<class T>
 int test_determinant()
 {
-  using std::abs;
+  using Dune::Std::abs;
 
   int ret = 0;
 
@@ -652,7 +653,7 @@ test_nan(T const &mynan)
 void
 test_infinity_norms()
 {
-  using std::abs;
+  using Dune::Std::abs;
 
   std::complex<double> threefour(3.0, -4.0);
   std::complex<double> eightsix(8.0, -6.0);
@@ -711,20 +712,37 @@ int main()
     ScalarOperatorTest<float>();
     test_matrix<double, double, double, 1, 1>();
     ScalarOperatorTest<double>();
+#if HAVE_QUADMATH
+    test_matrix<__float128, __float128, __float128, 1, 1>();
+    ScalarOperatorTest<__float128>();
+#endif
     // test n x m matrices
     test_interface<int, int, 10, 5>();
     test_matrix<int, int, int, 10, 5>();
     test_matrix<double, double, double, 5, 10>();
     test_interface<double, double, 5, 10>();
+#if HAVE_QUADMATH
+    test_matrix<__float128, __float128, __float128, 5, 10>();
+    test_interface<__float128, __float128, 5, 10>();
+#endif
     // mixed precision
     test_interface<float, float, 5, 10>();
     test_matrix<float, double, float, 5, 10>();
+#if HAVE_QUADMATH
+    test_matrix<float, double, __float128, 5, 10>();
+#endif
     // test complex matrices
     test_matrix<std::complex<float>, std::complex<float>, std::complex<float>, 1, 1>();
     test_matrix<std::complex<double>, std::complex<double>, std::complex<double>, 5, 10>();
+#if HAVE_QUADMATH
+    test_matrix<std::complex<__float128>, std::complex<__float128>, std::complex<__float128>, 5, 10>();
+#endif
     // test complex/real matrices mixed case
     test_matrix<float, std::complex<float>, std::complex<float>, 1, 1>();
     test_matrix<std::complex<float>, float, std::complex<float>, 1, 1>();
+#if HAVE_QUADMATH
+    test_matrix<std::complex<__float128>, __float128, std::complex<__float128>, 1, 1>();
+#endif
 #if HAVE_LAPACK
     // test eigemvalue computation
     test_ev<double>();
@@ -736,6 +754,9 @@ int main()
 #endif
     test_invert< float, 34 >();
     test_invert< double, 34 >();
+#if HAVE_QUADMATH
+    test_invert< __float128, 34 >();
+#endif
     test_invert< std::complex< long double >, 2 >();
     errors += test_invert_solve();
 
