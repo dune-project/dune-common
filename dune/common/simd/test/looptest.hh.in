@@ -15,8 +15,6 @@ namespace Dune {
     extern template void UnitTest::checkVector<LoopSIMD<@SCALAR@, 5>>();
 #cmake @endtemplate@
 
-    extern template void UnitTest::checkIndex<LoopSIMD<std::size_t, 5>>();
-
     extern template void UnitTest::checkMask<LoopSIMD<bool, 5>>();
 
   } //namespace Simd
