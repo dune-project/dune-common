@@ -49,6 +49,6 @@ set(HAVE_QUADMATH ${QUADMATH_FOUND})
 # register all QuadMath related flags
 if(HAVE_QUADMATH)
   dune_register_package_flags(COMPILE_DEFINITIONS "ENABLE_QUADMATH=1" "_GLIBCXX_USE_FLOAT128=1"
-                              COMPILE_OPTIONS "-fext-numeric-literals" "-U__STRICT_ANSI__"
+                              COMPILE_OPTIONS "-fext-numeric-literals"
                               LIBRARIES "quadmath")
 endif()

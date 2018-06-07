@@ -20,7 +20,8 @@ namespace Dune
 
 
 #if HAVE_QUADMATH
-#if defined(__STRICT_ANSI__) || !defined(_GLIBCXX_USE_FLOAT128)
+#if defined(__STRICT_ANSI__) || !defined(_GLIBCXX_USE_FLOAT128) || defined(__CUDACC__)
+    // libstdc++ defines abs for __float128 if some flags are not set
     inline constexpr __float128 abs(__float128 x) { return x < 0 ? -x : x; }
 #endif
 

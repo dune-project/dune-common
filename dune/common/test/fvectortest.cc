@@ -14,10 +14,9 @@
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/gmpfield.hh>
-#include <dune/common/typetraits.hh>
-#if HAVE_QUADMATH
 #include <dune/common/quadmath.hh>
-#endif
+#include <dune/common/typetraits.hh>
+#include <dune/common/std/cmath.hh>
 
 using Dune::FieldVector;
 using std::complex;
@@ -281,44 +280,45 @@ struct DotProductTest
     ct result = ct();
     ct length = ct(d);
 
+    using Dune::Std::abs;
 
     // one^H*one should equal d
     result = dot(one,one);
-    assert(std::abs(result-length)<= myEps);
+    assert(abs(result-length)<= myEps);
     result = one.dot(one);
-    assert(std::abs(result-length)<= myEps);
+    assert(abs(result-length)<= myEps);
 
 
     // iVec^H*iVec should equal d
     result = dot(iVec,iVec);
-    assert(std::abs(result-length)<= myEps);
+    assert(abs(result-length)<= myEps);
     result = iVec.dot(iVec);
-    assert(std::abs(result-length)<= myEps);
+    assert(abs(result-length)<= myEps);
 
 
     // test that we do conjugate first argument
     result = dot(one,iVec);
-    assert(std::abs(result-length*I)<= myEps);
+    assert(abs(result-length*I)<= myEps);
     result = dot(one,iVec);
-    assert(std::abs(result-length*I)<= myEps);
+    assert(abs(result-length*I)<= myEps);
 
 
     // test that we do not conjugate second argument
     result = dot(iVec,one);
-    assert(std::abs(result+length*I)<= myEps);
+    assert(abs(result+length*I)<= myEps);
     result = iVec.dot(one);
-    assert(std::abs(result+length*I)<= myEps);
+    assert(abs(result+length*I)<= myEps);
 
 
     // test that dotT does not conjugate at all
     result = dotT(one,one) + one*one;
-    assert(std::abs(result-ct(2)*length)<= myEps);
+    assert(abs(result-ct(2)*length)<= myEps);
     result = dotT(iVec,iVec) + iVec*iVec;
-    assert(std::abs(result+ct(2)*length)<= myEps);
+    assert(abs(result+ct(2)*length)<= myEps);
     result = dotT(one,iVec) + one*iVec;
-    assert(std::abs(result-ct(2)*length*I)<= myEps);
+    assert(abs(result-ct(2)*length*I)<= myEps);
     result = dotT(iVec,one) + iVec*one;
-    assert(std::abs(result-ct(2)*length*I)<= myEps);
+    assert(abs(result-ct(2)*length*I)<= myEps);
 
   }
 };
@@ -344,6 +344,8 @@ struct DotProductTest<rt, d, false>
 
     rt result = rt();
     rt length = rt(d);
+
+    using Dune::Std::abs;
 
     // one^H*one should equal d
     result = dot(one,one);
