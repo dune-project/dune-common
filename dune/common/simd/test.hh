@@ -107,10 +107,6 @@ namespace Dune {
       std::unordered_set<std::type_index> seen_;
       // Same for the extra checks for mask types, although here we only avoid
       // running checks more than once
-      std::unordered_set<std::type_index> indexSeen_;
-
-      // Same for the extra checks for mask types, although here we only avoid
-      // running checks more than once
       std::unordered_set<std::type_index> maskSeen_;
 
       ////////////////////////////////////////////////////////////////////////
@@ -1213,63 +1209,6 @@ namespace Dune {
       }
 
       template<class V>
-      void checkIndexOps()
-      {
-        // postfix
-        // checkUnaryOpsV<V>(OpPostfixDecrement{});
-        // checkUnaryOpsV<V>(OpPostfixIncrement{});
-
-        // prefix
-        // checkUnaryOpsV<V>(OpPrefixDecrement{});
-        // checkUnaryOpsV<V>(OpPrefixIncrement{});
-
-        // checkUnaryOpsV<V>(OpPrefixPlus{});
-        checkUnaryOpsV<V>(OpPrefixMinus{});
-        checkUnaryOpsV<V>(OpPrefixLogicNot{});
-        checkUnaryOpsV<V>(OpPrefixBitNot{});
-
-        // binary
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixMul             );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixDiv             );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixRemainder       );
-
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixPlus            );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixMinus           );
-
-        DUNE_SIMD_BINARY_OPCHECK(  ,   , VS, InfixLeftShift       );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   , VS, InfixRightShift      );
-
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixLess            );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixGreater         );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixLessEqual       );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixGreaterEqual    );
-
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixEqual           );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixNotEqual        );
-
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixBitAnd          );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixBitXor          );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixBitOr           );
-
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixLogicAnd        );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixLogicOr         );
-
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssign          );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignMul       );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignDiv       );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignRemainder );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignPlus      );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignMinus     );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   , VS, InfixAssignLeftShift );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   , VS, InfixAssignRightShift);
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignAnd       );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignXor       );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignOr        );
-
-        DUNE_SIMD_BINARY_OPCHECK(SV,   , VS, InfixComma           );
-      }
-
-      template<class V>
       void checkMaskOps()
       {
         // postfix
@@ -1559,14 +1498,21 @@ namespace Dune {
        * `V` and run `checkMask<Mask<V>>()`.  No test will be run twice for a
        * given type.
        *
-       * \note As an implementor of a unit test, you are encouraged to
-       *       explicitly instantiate this function in seperate compilation
-       *       units for the types you are testing.  Look at `standardtest.cc`
-       *       for how to do this.  See \c checkVector() for background on
-       *       this.
+       * \note In the past, it was recommended to explicitly instanciate this
+       *       function in a seperate translation unit.  This should no longer
+       *       be necessary, as it is now basically only calls `checkVector()`
+       *       for the index type.
        */
-      template<class V>
-      void checkIndex();
+      template<class I>
+      void checkIndex()
+      {
+        static_assert(std::is_same<I, Index<I> >::value,
+                      "Index types must be their own index type");
+        static_assert(std::is_integral<Scalar<I> >::value,
+                      "Index types scalar must be integral");
+
+        checkVector<I>();
+      }
 
       //! whether all tests succeeded
       bool good() const
@@ -1581,6 +1527,10 @@ namespace Dune {
     template<class V>
     void UnitTest::checkVector()
     {
+      static_assert(std::is_same<V, std::decay_t<V> >::value, "Vector types "
+                    "must not be references, and must not include "
+                    "cv-qualifiers");
+
       // check whether the test for this type already started
       if(seen_.emplace(typeid (V)).second == false)
       {
@@ -1613,50 +1563,6 @@ namespace Dune {
       // checkBoolReductions<V>(); // not applicable
 
       checkMinMax<V>();
-    }
-
-    template<class I>
-    void UnitTest::checkIndex()
-    {
-      static_assert(std::is_same<I, std::decay_t<I> >::value, "Index types "
-                    "must not be references, and must not include "
-                    "cv-qualifiers");
-      static_assert(std::is_same<I, Index<I> >::value,
-                    "Index types must be their own index type");
-      static_assert(std::is_integral<Scalar<I> >::value,
-                    "Index types scalar must be integral");
-
-      // check whether the test for this type already started
-      if(indexSeen_.emplace(typeid (I)).second == false)
-      {
-        // type already seen, nothing to do
-        return;
-      }
-
-      // do these first so everything that appears after "Checking SIMD type
-      // ..." really pertains to that type
-      checkMaskOf<I>(); // not applicable
-
-      log_ << "Checking SIMD index type " << className<I>() << std::endl;
-
-      checkLanes<I>();
-      checkScalar<I>();
-
-      checkDefaultConstruct<I>();
-      checkLane<I>();
-      checkCopyMoveConstruct<I>();
-      checkBroadcastVectorConstruct<I>();
-      checkBracedAssign<I>();
-      checkBracedBroadcastAssign<I>();
-
-      checkIndexOps<I>();
-
-      checkAutoCopy<I>();
-      checkCond<I>();
-
-      // checkBoolReductions<V>(); // not applicable
-
-      checkMinMax<I>();
     }
 
     template<class M>
