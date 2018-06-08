@@ -17,16 +17,38 @@ using namespace Dune;
 template <class T>
 struct Comparator
 {
-  bool operator()(T const& x, T const& y) { return Dune::FloatCmp::eq(x, y); }
-};
+  Comparator(T tol)
+    : tol_(tol)
+  {}
 
+  bool operator()(T const& x, T const& y)
+  {
+    return Dune::FloatCmp::eq<T,FloatCmp::absolute>(x, y, tol_);
+  }
+
+private:
+  T tol_;
+};
 
 int main()
 {
   // check vector and matrix type with Float128 field type
   TestSuite test{};
-  Comparator<Float128> cmp{};
+  Comparator<Float128> cmp{std::numeric_limits<Float128>::epsilon() * 8};
+  Comparator<Float128> weakcmp{cbrt(std::numeric_limits<Float128>::epsilon())};
 
+  // implicit conversion
+  Float128 x1 = 1;
+  Float128 x2 = 1.0f;
+  Float128 x3 = 1.0;
+  Float128 x4 = 1.0l;
+
+  int z1 = x1;
+  float z2 = x2;
+  double z3 = x3;
+  long double z4 = x4;
+
+  // field-vector
   FieldVector<Float128,3> v{1,2,3}, x;
   FieldMatrix<Float128,3,3> M{ {1,2,3}, {2,3,4}, {3,4,6} }, A;
   FieldMatrix<Float128,3,3> M2{ {1,2,3}, {2,3,4}, {3,4,7} };
@@ -62,19 +84,54 @@ int main()
 
   invertMatrix(M,A);
 
-  constexpr Float128 y = 0.5;
-
   // test cmath functions for Float128 type
-  test.check(cmp(abs(Float128{-1}),Float128{1}), "abs");
-  test.check(cmp(cos(acos(Float128{0.5})),Float128{0.5}), "cos(acos)");
-  test.check(cmp(cosh(acosh(Float128{1.5})),Float128{1.5}), "cosh(acosh)");
-  test.check(cmp(sin(asin(Float128{0.5})),Float128{0.5}), "sin(asin)");
-  test.check(cmp(sinh(asinh(Float128{0.5})),Float128{0.5}), "sinh(asinh)");
-  test.check(cmp(tan(atan(Float128{0.5})),Float128{0.5}), "tan(atan)");
-  test.check(cmp(atan2(Float128{1},Float128{2}), atan(Float128{0.5})), "atan2");
-  test.check(cmp(tanh(atanh(Float128{0.5})),Float128{0.5}), "tanh(atanh)");
-  test.check(cmp(cbrt(Float128{0.5*0.5*0.5}),Float128{0.5}), "cbrt");
-  test.check(cmp(ceil(Float128{0.6}),Float128{1}), "ceil");
-  // TODO: add checks for all the other cmath functions
+  using T = Float128;
+  test.check(cmp(abs(T{-1}),T{1}), "abs");
+  test.check(cmp(fabs(T{-1}),T{1}), "fabs");
 
+  test.check(cmp(cos(acos(T{0.5})),T{0.5}), "cos(acos)");
+  test.check(cmp(cosh(acosh(T{1.5})),T{1.5}), "cosh(acosh)");
+  test.check(cmp(sin(asin(T{0.5})),T{0.5}), "sin(asin)");
+  test.check(cmp(sinh(asinh(T{0.5})),T{0.5}), "sinh(asinh)");
+  test.check(cmp(tan(atan(T{0.5})),T{0.5}), "tan(atan)");
+  test.check(cmp(atan2(T{1},T{2}), atan(T{0.5})), "atan2");
+  test.check(cmp(tanh(atanh(T{0.5})),T{0.5}), "tanh(atanh)");
+
+  test.check(cmp(fdim(T{4},T{1}),T{3}), "fdim"); // a > b ? a - b : +0
+  test.check(cmp(fma(T{0.5},T{0.4},T{1.8}),(T{0.5} * T{0.4}) + T{1.8}), "fma");
+  test.check(cmp(fmax(T{0.6},T{0.4}),T{0.6}), "fmax");
+  test.check(cmp(fmin(T{0.6},T{0.4}),T{0.4}), "fmin");
+  test.check(cmp(hypot(T{1.6}, T{2.3}), sqrt(T{1.6}*T{1.6} + T{2.3}*T{2.3})), "hypot");
+  // ilogb
+  test.check(cmp(llrint(T{2.3}),(long long int)(2)), "llrint");
+  test.check(cmp(lrint(T{2.3}),(long int)(2)), "lrint");
+  test.check(cmp(rint(T{2.3}),T{2}), "lrint");
+  test.check(cmp(llround(T{2.3}),(long long int)(2)), "llround");
+  test.check(cmp(lround(T{2.3}),(long int)(2)), "lround");
+  test.check(cmp(round(T{2.3}),T{2}), "round");
+  test.check(cmp(nearbyint(T{2.3}),T{2}), "nearbyint");
+  test.check(cmp(trunc(T{2.7}),T{2}), "trunc");
+  test.check(cmp(ceil(T{1.6}),T{2}), "ceil");
+  test.check(cmp(floor(T{1.6}),T{1}), "floor");
+
+  test.check(cmp(log(exp(T{1.5})),T{1.5}), "log(exp)");
+  test.check(cmp(exp(T{0.2}+T{0.4}), exp(T{0.2})*exp(T{0.4})), "exp"); // exp(a+b) = exp(a)*exp(b)
+  test.check(cmp(expm1(T{0.6}),exp(T{0.6})-T{1}), "expm1");
+  test.check(cmp(log10(T{1000}),T{3}), "log10");
+  test.check(cmp(log2(T{8}),T{3}), "log2");
+  test.check(cmp(log1p(T{1.6}),log(T{1} + T{1.6})), "log1p");
+  // nextafter
+
+  // these two functions produce larger errors
+  test.check(weakcmp(fmod(T{5.1},T{3}),T{2.1}), "fmod");
+  test.check(weakcmp(remainder(T{5.1},T{3}),T{-0.9}), "remainder");
+
+  test.check(cmp(pow(T{2},T{3}),T{8}), "pow");
+  test.check(cmp(cbrt(T{0.5*0.5*0.5}),T{0.5}), "cbrt");
+  test.check(cmp(sqrt(T{4}),T{2}), "sqrt");
+
+  test.check(cmp(erf(T{0}),T{0}), "erf");
+  test.check(cmp(erfc(T{0.6}), T{1}-erf(T{0.6})), "erfc");
+  test.check(cmp(lgamma(T{3}),log(T{2})), "lgamma");
+  test.check(cmp(tgamma(T{3}),T{2}), "tgamma");
 }
