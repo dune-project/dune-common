@@ -4,6 +4,8 @@
 #define DUNE_QUADMATH_HH
 
 #if HAVE_QUADMATH
+#include <quadmath.h>
+
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -14,39 +16,6 @@
 #include <utility>
 
 #include <dune/common/typetraits.hh>
-
-#if HAVE_INTEL_QUAD
-  // For intel quad library the prototypes must be defined manually
-  extern "C" {
-    _Quad __ldexpq(_Quad, int);
-    _Quad __frexpq(_Quad, int*);
-    _Quad __fabsq(_Quad);
-    _Quad __floorq(_Quad);
-    _Quad __ceilq(_Quad);
-    _Quad __sqrtq(_Quad);
-    _Quad __truncq(_Quad);
-    _Quad __expq(_Quad);
-    _Quad __powq(_Quad, _Quad);
-    _Quad __logq(_Quad);
-    _Quad __log10q(_Quad);
-    _Quad __sinq(_Quad);
-    _Quad __cosq(_Quad);
-    _Quad __tanq(_Quad);
-    _Quad __asinq(_Quad);
-    _Quad __acosq(_Quad);
-    _Quad __atanq(_Quad);
-    _Quad __sinhq(_Quad);
-    _Quad __coshq(_Quad);
-    _Quad __tanhq(_Quad);
-    _Quad __fmodq(_Quad, _Quad);
-    _Quad __atan2q(_Quad, _Quad);
-    // TODO: fill in all the missing functions with replacements
-  }
-  #define DUNE_ADD_QUAD_PREFIX(func) __ # func
-#else
-  #include <quadmath.h>
-  #define DUNE_ADD_QUAD_PREFIX(func) func
-#endif
 
 namespace Dune
 {
@@ -63,11 +32,7 @@ namespace Dune
   // out of namespace `Dune`, see AlignedNumber in debugalign.hh.
   namespace Impl
   {
-  #if HAVE_INTEL_QUAD
-    using float128_t = _Quad
-  #else
     using float128_t = __float128;
-  #endif
 
     /// Wrapper for quad-precision type __float128
     class Float128
@@ -217,28 +182,28 @@ namespace Dune
 #define DUNE_UNARY_FUNC(name,func)                                      \
     Float128 name(const Float128& u)                                    \
     {                                                                   \
-      return { DUNE_ADD_QUAD_PREFIX(func) (float128_t(u))};             \
+      return { func (float128_t(u))};             \
     }                                                                   \
     static_assert(true, "Require semicolon to unconfuse editors")
 
 #define DUNE_CUSTOM_UNARY_FUNC(type,name,func)                          \
     type name(const Float128& u)                                        \
     {                                                                   \
-      return (type)( DUNE_ADD_QUAD_PREFIX(func) (float128_t(u)));       \
+      return (type)( func (float128_t(u)));       \
     }                                                                   \
     static_assert(true, "Require semicolon to unconfuse editors")
 
 #define DUNE_BINARY_FUNC(name,func)                                     \
     Float128 name(const Float128& t, const Float128& u)                 \
     {                                                                   \
-      return { DUNE_ADD_QUAD_PREFIX(func) (float128_t(t), float128_t(u))}; \
+      return { func (float128_t(t), float128_t(u))}; \
     }                                                                   \
     static_assert(true, "Require semicolon to unconfuse editors")
 
 #define DUNE_TERTIARY_FUNC(name,func)                                   \
     Float128 name(const Float128&t, const Float128& u, const Float128& v)  \
     {                                                                   \
-      return { DUNE_ADD_QUAD_PREFIX(func) (float128_t(t),float128_t(u),float128_t(v))}; \
+      return { func (float128_t(t),float128_t(u),float128_t(v))}; \
     }                                                                   \
     static_assert(true, "Require semicolon to unconfuse editors")
 
@@ -249,11 +214,9 @@ namespace Dune
     DUNE_UNARY_FUNC(asin, asinq);
     DUNE_UNARY_FUNC(asinh, asinhq);
     DUNE_UNARY_FUNC(atan, atanq);
-    DUNE_BINARY_FUNC(atan2, atan2q);
     DUNE_UNARY_FUNC(atanh, atanhq);
     DUNE_UNARY_FUNC(cbrt, cbrtq);
     DUNE_UNARY_FUNC(ceil, ceilq);
-    DUNE_BINARY_FUNC(copysign, copysignq);
     DUNE_UNARY_FUNC(cos, cosq);
     DUNE_UNARY_FUNC(cosh, coshq);
     DUNE_UNARY_FUNC(erf, erfq);
@@ -261,13 +224,8 @@ namespace Dune
     DUNE_UNARY_FUNC(exp, expq);
     DUNE_UNARY_FUNC(expm1, expm1q);
     DUNE_UNARY_FUNC(fabs, fabsq);
-    DUNE_BINARY_FUNC(fdim, fdimq);
     DUNE_UNARY_FUNC(floor, floorq);
     DUNE_TERTIARY_FUNC(fma, fmaq);
-    DUNE_BINARY_FUNC(fmax, fmaxq);
-    DUNE_BINARY_FUNC(fmin, fminq);
-    DUNE_BINARY_FUNC(fmod, fmodq);
-    DUNE_BINARY_FUNC(hypot, hypotq);
     DUNE_CUSTOM_UNARY_FUNC(int, ilogb, ilogbq);
     DUNE_UNARY_FUNC(lgamma, lgammaq);
     DUNE_CUSTOM_UNARY_FUNC(long long int, llrint, llrintq);
@@ -281,8 +239,6 @@ namespace Dune
     DUNE_CUSTOM_UNARY_FUNC(long int, lround, lroundq);
     DUNE_UNARY_FUNC(nearbyint, nearbyintq);
     DUNE_BINARY_FUNC(nextafter, nextafterq);
-    DUNE_BINARY_FUNC(pow, powq);
-    DUNE_BINARY_FUNC(remainder, remainderq);
     DUNE_UNARY_FUNC(rint, rintq);
     DUNE_UNARY_FUNC(round, roundq);
     DUNE_UNARY_FUNC(sin, sinq);
@@ -303,34 +259,70 @@ namespace Dune
 #undef DUNE_TERTIARY_FUNC
 #undef DUNE_CUSTOM_UNARY_FUNC
 
+#define DUNE_BINARY_ARITHMETIC_FUNC(name,func)                          \
+    Float128 name(const Float128& t,                                    \
+                  const Float128& u)                                    \
+    {                                                                   \
+      return { func (float128_t(t), float128_t(u)) };                   \
+    }                                                                   \
+    template <class T,                                                  \
+      std::enable_if_t<std::is_arithmetic<T>::value, int> = 0>          \
+    Float128 name(const T& t,                                           \
+                  const Float128& u)                                    \
+    {                                                                   \
+      return { func (float128_t(t), float128_t(u)) };                   \
+    }                                                                   \
+    template <class U,                                                  \
+      std::enable_if_t<std::is_arithmetic<U>::value, int> = 0>          \
+    Float128 name(const Float128& t,                                    \
+                  const U& u)                                           \
+    {                                                                   \
+      return { func (float128_t(t), float128_t(u)) };                   \
+    }                                                                   \
+    static_assert(true, "Require semicolon to unconfuse editors")
+
+    DUNE_BINARY_ARITHMETIC_FUNC(atan2,atan2q);
+    DUNE_BINARY_ARITHMETIC_FUNC(copysign,copysignq);
+    DUNE_BINARY_ARITHMETIC_FUNC(fdim,fdimq);
+    DUNE_BINARY_ARITHMETIC_FUNC(fmax,fmaxq);
+    DUNE_BINARY_ARITHMETIC_FUNC(fmin,fminq);
+    DUNE_BINARY_ARITHMETIC_FUNC(fmod,fmodq);
+    DUNE_BINARY_ARITHMETIC_FUNC(hypot,hypotq);
+    DUNE_BINARY_ARITHMETIC_FUNC(pow,powq);
+    DUNE_BINARY_ARITHMETIC_FUNC(remainder,remainderq);
+
+#undef DUNE_BINARY_ARITHMETIC_FUNC
+
+    // some more functions with special signature
+
     Float128 frexp(const Float128& u, int* p)
     {
-      return { DUNE_ADD_QUAD_PREFIX(frexpq) (float128_t(u),p)};
+      return { frexpq(float128_t(u),p)};
     }
 
     Float128 ldexp(const Float128& u, int p)
     {
-      return { DUNE_ADD_QUAD_PREFIX(ldexpq) (float128_t(u),p)};
+      return { ldexpq(float128_t(u),p)};
     }
 
     Float128 nan(const char* arg)
     {
-      return { DUNE_ADD_QUAD_PREFIX(nanq) (arg)};
+      return { nanq(arg)};
     }
 
     Float128 remquo(const Float128& t, const Float128& u, int* quo)
     {
-      return { DUNE_ADD_QUAD_PREFIX(remquoq) (float128_t(t),float128_t(u),quo)};
+      return { remquoq(float128_t(t),float128_t(u),quo)};
     }
 
     Float128 scalbln(const Float128& u, long int exp)
     {
-      return { DUNE_ADD_QUAD_PREFIX(scalblnq) (float128_t(u),exp)};
+      return { scalblnq(float128_t(u),exp)};
     }
 
     Float128 scalbn(const Float128& u, int exp)
     {
-      return { DUNE_ADD_QUAD_PREFIX(scalbnq) (float128_t(u),exp)};
+      return { scalbnq(float128_t(u),exp)};
     }
 
   } // end namespace Impl
@@ -388,7 +380,6 @@ namespace std
 #endif
 #endif
 } // end namespace std
-
 
 #endif // HAVE_QUADMATH
 #endif // DUNE_QUADMATH_HH
