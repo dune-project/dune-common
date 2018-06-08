@@ -61,4 +61,20 @@ int main()
   using namespace FMatrixHelp;
 
   invertMatrix(M,A);
+
+  constexpr Float128 y = 0.5;
+
+  // test cmath functions for Float128 type
+  test.check(cmp(abs(Float128{-1}),Float128{1}), "abs");
+  test.check(cmp(cos(acos(Float128{0.5})),Float128{0.5}), "cos(acos)");
+  test.check(cmp(cosh(acosh(Float128{1.5})),Float128{1.5}), "cosh(acosh)");
+  test.check(cmp(sin(asin(Float128{0.5})),Float128{0.5}), "sin(asin)");
+  test.check(cmp(sinh(asinh(Float128{0.5})),Float128{0.5}), "sinh(asinh)");
+  test.check(cmp(tan(atan(Float128{0.5})),Float128{0.5}), "tan(atan)");
+  test.check(cmp(atan2(Float128{1},Float128{2}), atan(Float128{0.5})), "atan2");
+  test.check(cmp(tanh(atanh(Float128{0.5})),Float128{0.5}), "tanh(atanh)");
+  test.check(cmp(cbrt(Float128{0.5*0.5*0.5}),Float128{0.5}), "cbrt");
+  test.check(cmp(ceil(Float128{0.6}),Float128{1}), "ceil");
+  // TODO: add checks for all the other cmath functions
+
 }

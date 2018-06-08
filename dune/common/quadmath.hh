@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-#ifndef DUNE_FLOAT128_HH
-#define DUNE_FLOAT128_HH
+#ifndef DUNE_QUADMATH_HH
+#define DUNE_QUADMATH_HH
 
 #if HAVE_QUADMATH
 #include <cmath>
@@ -12,9 +12,41 @@
 #include <ostream>
 #include <type_traits>
 #include <utility>
-#include <quadmath.h>
 
 #include <dune/common/typetraits.hh>
+
+#if HAVE_INTEL_QUAD
+  // For intel quad library the prototypes must be defined manually
+  extern "C" {
+    _Quad __ldexpq(_Quad, int);
+    _Quad __frexpq(_Quad, int*);
+    _Quad __fabsq(_Quad);
+    _Quad __floorq(_Quad);
+    _Quad __ceilq(_Quad);
+    _Quad __sqrtq(_Quad);
+    _Quad __truncq(_Quad);
+    _Quad __expq(_Quad);
+    _Quad __powq(_Quad, _Quad);
+    _Quad __logq(_Quad);
+    _Quad __log10q(_Quad);
+    _Quad __sinq(_Quad);
+    _Quad __cosq(_Quad);
+    _Quad __tanq(_Quad);
+    _Quad __asinq(_Quad);
+    _Quad __acosq(_Quad);
+    _Quad __atanq(_Quad);
+    _Quad __sinhq(_Quad);
+    _Quad __coshq(_Quad);
+    _Quad __tanhq(_Quad);
+    _Quad __fmodq(_Quad, _Quad);
+    _Quad __atan2q(_Quad, _Quad);
+    // TODO: fill in all the missing functions with replacements
+  }
+  #define DUNE_ADD_QUAD_PREFIX(func) __ # func
+#else
+  #include <quadmath.h>
+  #define DUNE_ADD_QUAD_PREFIX(func) func
+#endif
 
 namespace Dune
 {
@@ -31,29 +63,35 @@ namespace Dune
   // out of namespace `Dune`, see AlignedNumber in debugalign.hh.
   namespace Impl
   {
+  #if HAVE_INTEL_QUAD
+    using float128_t = _Quad
+  #else
+    using float128_t = __float128;
+  #endif
+
     /// Wrapper for quad-precision type __float128
     class Float128
     {
-      __float128 value_ = 0.q;
+      float128_t value_ = 0.0q;
 
     public:
-      Float128() = default;
-      Float128(const __float128& value)
+      constexpr Float128() = default;
+      constexpr Float128(const float128_t& value)
         : value_(value)
       {}
 
       // constructor from any floating-point or integer type
       template <class T,
         std::enable_if_t<std::is_arithmetic<T>::value, int> = 0>
-      Float128(const T& number)
+      constexpr Float128(const T& number)
         : value_(number)
       {}
 
       // accessors
-      operator __float128() const { return value_; }
+      constexpr operator float128_t() const { return value_; }
 
-      __float128 const& value() const { return value_; }
-      __float128&       value()       { return value_; }
+      constexpr float128_t const& value() const { return value_; }
+      constexpr float128_t&       value()       { return value_; }
 
       // I/O
       template<class CharT, class Traits>
@@ -85,21 +123,21 @@ namespace Dune
       }
 
       // Increment, decrement
-      Float128& operator++() { ++value_; return *this; }
-      Float128& operator--() { --value_; return *this; }
+      constexpr Float128& operator++() { ++value_; return *this; }
+      constexpr Float128& operator--() { --value_; return *this; }
 
-      Float128 operator++(int) { Float128 tmp{*this}; ++value_; return tmp; }
-      Float128 operator--(int) { Float128 tmp{*this}; --value_; return tmp; }
+      constexpr Float128 operator++(int) { Float128 tmp{*this}; ++value_; return tmp; }
+      constexpr Float128 operator--(int) { Float128 tmp{*this}; --value_; return tmp; }
 
       // unary operators
-      Float128 operator+() const { return Float128{+value_}; }
-      Float128 operator-() const { return Float128{-value_}; }
+      constexpr Float128 operator+() const { return Float128{+value_}; }
+      constexpr Float128 operator-() const { return Float128{-value_}; }
 
       // assignment operators
 #define DUNE_ASSIGN_OP(OP)                                              \
-      Float128& operator OP(const Float128& u)                          \
+      constexpr Float128& operator OP(const Float128& u)                \
       {                                                                 \
-        value_ OP u.value();                                            \
+        value_ OP float128_t(u);                                        \
         return *this;                                                   \
       }                                                                 \
       static_assert(true, "Require semicolon to unconfuse editors")
@@ -109,29 +147,31 @@ namespace Dune
 
       DUNE_ASSIGN_OP(*=);
       DUNE_ASSIGN_OP(/=);
+
 #undef DUNE_ASSIGN_OP
-    };
+
+    }; // end class Float128
 
     // binary operators
 #define DUNE_BINARY_OP(OP)                                              \
-    Float128 operator OP(const Float128& t,                             \
-                         const Float128& u)                             \
+    constexpr Float128 operator OP(const Float128& t,                   \
+                                   const Float128& u)                   \
     {                                                                   \
-      return Float128{__float128(t) OP __float128(u)};                  \
+      return Float128{float128_t(t) OP float128_t(u)};                  \
     }                                                                   \
     template <class T,                                                  \
       std::enable_if_t<std::is_arithmetic<T>::value, int> = 0>          \
-    Float128 operator OP(const T& t,                                    \
-                         const Float128& u)                             \
+    constexpr Float128 operator OP(const T& t,                          \
+                                   const Float128& u)                   \
     {                                                                   \
-      return Float128{__float128(t) OP __float128(u)};                  \
+      return Float128{float128_t(t) OP float128_t(u)};                  \
     }                                                                   \
     template <class U,                                                  \
       std::enable_if_t<std::is_arithmetic<U>::value, int> = 0>          \
-    Float128 operator OP(const Float128& t,                             \
-                         const U& u)                                    \
+    constexpr Float128 operator OP(const Float128& t,                   \
+                                   const U& u)                          \
     {                                                                   \
-      return Float128{__float128(t) OP __float128(u)};                  \
+      return Float128{float128_t(t) OP float128_t(u)};                  \
     }                                                                   \
     static_assert(true, "Require semicolon to unconfuse editors")
 
@@ -139,27 +179,28 @@ namespace Dune
     DUNE_BINARY_OP(-);
     DUNE_BINARY_OP(*);
     DUNE_BINARY_OP(/);
+
 #undef DUNE_BINARY_OP
 
 #define DUNE_BINARY_BOOL_OP(OP)                                         \
-    bool operator OP(const Float128& t,                                 \
-                     const Float128& u)                                 \
+    constexpr bool operator OP(const Float128& t,                       \
+                               const Float128& u)                       \
     {                                                                   \
-      return __float128(t) OP __float128(u);                            \
+      return float128_t(t) OP float128_t(u);                            \
     }                                                                   \
     template <class T,                                                  \
       std::enable_if_t<std::is_arithmetic<T>::value, int> = 0>          \
-    bool operator OP(const T& t,                                        \
-                     const Float128& u)                                 \
+    constexpr bool operator OP(const T& t,                              \
+                               const Float128& u)                       \
     {                                                                   \
-      return __float128(t) OP __float128(u);                            \
+      return float128_t(t) OP float128_t(u);                            \
     }                                                                   \
     template <class U,                                                  \
       std::enable_if_t<std::is_arithmetic<U>::value, int> = 0>          \
-    bool operator OP(const Float128& t,                                 \
-                     const U& u)                                        \
+    constexpr bool operator OP(const Float128& t,                       \
+                               const U& u)                              \
     {                                                                   \
-      return __float128(t) OP __float128(u);                            \
+      return float128_t(t) OP float128_t(u);                            \
     }                                                                   \
     static_assert(true, "Require semicolon to unconfuse editors")
 
@@ -169,38 +210,40 @@ namespace Dune
     DUNE_BINARY_BOOL_OP(>);
     DUNE_BINARY_BOOL_OP(<=);
     DUNE_BINARY_BOOL_OP(>=);
+
 #undef DUNE_BINARY_BOOL_OP
 
     // Overloads for the cmath functions
 #define DUNE_UNARY_FUNC(name,func)                                      \
     Float128 name(const Float128& u)                                    \
     {                                                                   \
-      return Float128{func(__float128(u))};                             \
+      return { DUNE_ADD_QUAD_PREFIX(func) (float128_t(u))};             \
     }                                                                   \
     static_assert(true, "Require semicolon to unconfuse editors")
 
 #define DUNE_CUSTOM_UNARY_FUNC(type,name,func)                          \
     type name(const Float128& u)                                        \
     {                                                                   \
-      return (type)(func(__float128(u)));                               \
+      return (type)( DUNE_ADD_QUAD_PREFIX(func) (float128_t(u)));       \
     }                                                                   \
     static_assert(true, "Require semicolon to unconfuse editors")
 
 #define DUNE_BINARY_FUNC(name,func)                                     \
     Float128 name(const Float128& t, const Float128& u)                 \
     {                                                                   \
-      return Float128{func(__float128(t), __float128(u))};              \
+      return { DUNE_ADD_QUAD_PREFIX(func) (float128_t(t), float128_t(u))}; \
     }                                                                   \
     static_assert(true, "Require semicolon to unconfuse editors")
 
 #define DUNE_TERTIARY_FUNC(name,func)                                   \
     Float128 name(const Float128&t, const Float128& u, const Float128& v)  \
     {                                                                   \
-      return Float128{func(__float128(t),__float128(u),__float128(v))}; \
+      return { DUNE_ADD_QUAD_PREFIX(func) (float128_t(t),float128_t(u),float128_t(v))}; \
     }                                                                   \
     static_assert(true, "Require semicolon to unconfuse editors")
 
     DUNE_UNARY_FUNC(abs, fabsq);
+
     DUNE_UNARY_FUNC(acos, acosq);
     DUNE_UNARY_FUNC(acosh, acoshq);
     DUNE_UNARY_FUNC(asin, asinq);
@@ -262,32 +305,32 @@ namespace Dune
 
     Float128 frexp(const Float128& u, int* p)
     {
-      return Float128{frexpq(__float128(u),p)};
+      return { DUNE_ADD_QUAD_PREFIX(frexpq) (float128_t(u),p)};
     }
 
     Float128 ldexp(const Float128& u, int p)
     {
-      return Float128{ldexpq(__float128(u),p)};
+      return { DUNE_ADD_QUAD_PREFIX(ldexpq) (float128_t(u),p)};
     }
 
     Float128 nan(const char* arg)
     {
-      return Float128{nanq(arg)};
+      return { DUNE_ADD_QUAD_PREFIX(nanq) (arg)};
     }
 
     Float128 remquo(const Float128& t, const Float128& u, int* quo)
     {
-      return Float128{remquoq(__float128(t),__float128(u),quo)};
+      return { DUNE_ADD_QUAD_PREFIX(remquoq) (float128_t(t),float128_t(u),quo)};
     }
 
     Float128 scalbln(const Float128& u, long int exp)
     {
-      return Float128{scalblnq(__float128(u),exp)};
+      return { DUNE_ADD_QUAD_PREFIX(scalblnq) (float128_t(u),exp)};
     }
 
     Float128 scalbn(const Float128& u, int exp)
     {
-      return Float128{scalbnq(__float128(u),exp)};
+      return { DUNE_ADD_QUAD_PREFIX(scalbnq) (float128_t(u),exp)};
     }
 
   } // end namespace Impl
@@ -301,48 +344,51 @@ namespace Dune
 namespace std
 {
 #ifndef NO_STD_NUMERIC_LIMITS_SPECIALIZATION
+#ifndef HAVE_INTEL_QUAD
   template <>
   class numeric_limits<Dune::Impl::Float128>
   {
     using Float128 = Dune::Impl::Float128;
+    using float128_t = Dune::Impl::float128_t;
 
   public:
-    static const bool is_specialized = true;
-    static Float128 min() { return FLT128_MIN; }
-    static Float128 max() { return FLT128_MAX; }
-    static Float128 lowest() { return -FLT128_MAX; }
-    static const int digits = FLT128_MANT_DIG;
-    static const int digits10 = FLT128_DIG;
-    static const int max_digits10 = 0;
-    static const bool is_signed = true;
-    static const bool is_integer = false;
-    static const bool is_exact = true;
-    static const int radix = 2;
-    static Float128 epsilon() { return FLT128_EPSILON; }
-    static Float128 round_error() { return __float128{0.5}; }
-    static const int min_exponent = FLT128_MIN_EXP;
-    static const int min_exponent10 = FLT128_MIN_10_EXP;
-    static const int max_exponent = FLT128_MAX_EXP;
-    static const int max_exponent10 = FLT128_MAX_10_EXP;
-    static const bool has_infinity = false;
-    static const bool has_quiet_NaN = true;
-    static const bool has_signaling_NaN = false;
-    static const float_denorm_style has_denorm = denorm_present;
-    static const bool has_denorm_loss = false;
-    static Float128 infinity() { return __float128{}; }
-    static Float128 quiet_NaN() { return nanq(""); }
-    static Float128 signaling_NaN() { return __float128{}; }
-    static Float128 denorm_min() { return FLT128_DENORM_MIN; }
-    static const bool is_iec559 = false;
-    static const bool is_bounded = false;
-    static const bool is_modulo = false;
-    static const bool traps = false;
-    static const bool tinyness_before = false;
-    static const float_round_style round_style = round_toward_zero;
+    static constexpr bool is_specialized = true;
+    static constexpr Float128 min() noexcept { return FLT128_MIN; }
+    static constexpr Float128 max() noexcept { return FLT128_MAX; }
+    static constexpr Float128 lowest() noexcept { return -FLT128_MAX; }
+    static constexpr int digits = FLT128_MANT_DIG;
+    static constexpr int digits10 = FLT128_DIG;
+    static constexpr int max_digits10 = 0;
+    static constexpr bool is_signed = true;
+    static constexpr bool is_integer = false;
+    static constexpr bool is_exact = true;
+    static constexpr int radix = 2;
+    static constexpr Float128 epsilon() noexcept { return FLT128_EPSILON; }
+    static constexpr Float128 round_error() noexcept { return float128_t{0.5}; }
+    static constexpr int min_exponent = FLT128_MIN_EXP;
+    static constexpr int min_exponent10 = FLT128_MIN_10_EXP;
+    static constexpr int max_exponent = FLT128_MAX_EXP;
+    static constexpr int max_exponent10 = FLT128_MAX_10_EXP;
+    static constexpr bool has_infinity = false;
+    static constexpr bool has_quiet_NaN = true;
+    static constexpr bool has_signaling_NaN = false;
+    static constexpr float_denorm_style has_denorm = denorm_present;
+    static constexpr bool has_denorm_loss = false;
+    static constexpr Float128 infinity() noexcept { return float128_t{}; }
+    static Float128 quiet_NaN() noexcept { return nanq(""); }
+    static constexpr Float128 signaling_NaN() noexcept { return float128_t{}; }
+    static constexpr Float128 denorm_min() noexcept { return FLT128_DENORM_MIN; }
+    static constexpr bool is_iec559 = false;
+    static constexpr bool is_bounded = false;
+    static constexpr bool is_modulo = false;
+    static constexpr bool traps = false;
+    static constexpr bool tinyness_before = false;
+    static constexpr float_round_style round_style = round_toward_zero;
   };
+#endif
 #endif
 } // end namespace std
 
 
 #endif // HAVE_QUADMATH
-#endif // DUNE_FLOAT128_HH
+#endif // DUNE_QUADMATH_HH
