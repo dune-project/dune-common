@@ -333,6 +333,35 @@ namespace Dune
       return { DUNE_ADD_QUAD_PREFIX(scalbnq) (float128_t(u),exp)};
     }
 
+    template <class Scalar>
+    Float128 max(const Float128& a, const Scalar& b)
+    {
+        return std::max(a, Float128(b));
+    }
+
+    template <class Scalar>
+    Float128 max(const Scalar& a, const Float128& b)
+    {
+        return std::max(Float128(a), b);
+    }
+
+    template <class Scalar>
+    Float128 min(const Float128& a, const Scalar& b)
+    {
+        return std::min(a, Float128(b));
+    }
+
+    template <class Scalar>
+    Float128 min(const Scalar& a, const Float128& b)
+    {
+        return std::min(Float128(a), b);
+    }
+
+    template <class Scalar>
+    Float128 pow(const Float128& base, const Scalar& exp)
+    {
+        return powq(base, Float128(exp));
+    }
   } // end namespace Impl
 
   template <>
