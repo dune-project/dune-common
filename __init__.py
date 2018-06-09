@@ -17,7 +17,8 @@ logging.basicConfig(format=logformat, level=loglevel)
 
 try:
     from mpi4py import MPI
-    logger.info('MPI initialized successfully')
+    if MPI.rank == 0:
+        logger.info('MPI initialized successfully')
 except ImportError:
     logger.info('mpi4py not found, MPI not initialized')
 
