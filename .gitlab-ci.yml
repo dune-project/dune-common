@@ -1,4 +1,7 @@
 ---
+variables:
+  DUNECI_TEST_LABELS: quick
+
 debian:10  gcc:c++17:
   image: duneci/base:10
   script: duneci-standard-test

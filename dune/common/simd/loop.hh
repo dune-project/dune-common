@@ -7,10 +7,21 @@
 #include <cstdlib>
 #include <ostream>
 
+#include <dune/common/math.hh>
 #include <dune/common/simd/simd.hh>
 #include <dune/common/typetraits.hh>
 
 namespace Dune {
+
+/*
+ * silence warnings from GCC about using integer operands on a bool
+ * (when instantiated for T=bool)
+ */
+#if __GNUC__ >= 7
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wbool-operation"
+#  pragma GCC diagnostic ignored "-Wint-in-bool-context"
+#endif
 
   /**
     *  This class specifies a vector-like type deriving from std::array
@@ -345,6 +356,7 @@ namespace Dune {
         return out;
       }
     }  //namespace Overloads
+
   }  //namespace Simd
 
 
@@ -489,21 +501,40 @@ namespace Dune {
 
 #undef DUNE_SIMD_LOOP_STD_BINARY_OP
 
-  /* revise once the interface for isfinite() etc is done*/
-  template<class T, std::size_t S>
-  auto isfinite(LoopSIMD<T,S> &v) {
-    using std::isfinite;
-    LoopSIMD<bool,S> out;
-    for(std::size_t i=0; i<S; i++) {
-      out[i] = isfinite(v[i]);
+  namespace MathOverloads {
+    template<class T, std::size_t S>
+    auto isNaN(const LoopSIMD<T,S> &v, PriorityTag<3>, ADLTag) {
+      LoopSIMD<bool,S> out;
+      for(auto l : range(S))
+        out[l] = Dune::isNaN(v[l]);
+      return out;
     }
-    return out;
-  }
+
+    template<class T, std::size_t S>
+    auto isInf(const LoopSIMD<T,S> &v, PriorityTag<3>, ADLTag) {
+      LoopSIMD<bool,S> out;
+      for(auto l : range(S))
+        out[l] = Dune::isInf(v[l]);
+      return out;
+    }
+
+    template<class T, std::size_t S>
+    auto isFinite(const LoopSIMD<T,S> &v, PriorityTag<3>, ADLTag) {
+      LoopSIMD<bool,S> out;
+      for(auto l : range(S))
+        out[l] = Dune::isFinite(v[l]);
+      return out;
+    }
+  } //namepace MathOverloads
 
   template<class T, std::size_t S>
   struct IsNumber<LoopSIMD<T,S>> :
           public std::integral_constant<bool, IsNumber<T>::value>{
   };
+
+#if __GNUC__ >= 7
+#  pragma GCC diagnostic pop
+#endif
 
 } //namespace Dune
 

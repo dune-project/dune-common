@@ -170,9 +170,20 @@ namespace Dune {
                class = void_t<decltype(-std::declval<const U&>())> >
       decltype(auto) operator-() const { return aligned<align>(-value_); }
 
+      /*
+       * silence warnings from GCC about using `~` on a bool
+       * (when instantiated for T=bool)
+       */
+#if __GNUC__ >= 7
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wbool-operation"
+#endif
       template<class U = T,
                class = void_t<decltype(~std::declval<const U&>())> >
       decltype(auto) operator~() const { return aligned<align>(~value_); }
+#if __GNUC__ >= 7
+#  pragma GCC diagnostic pop
+#endif
 
       template<class U = T,
                class = void_t<decltype(!std::declval<const U&>())> >
@@ -448,7 +459,7 @@ namespace Dune {
       }
 
       template<class T, std::size_t align>
-      const T& lane(ADLTag<5>, std::size_t l, const AlignedNumber<T, align> &v)
+      T lane(ADLTag<5>, std::size_t l, const AlignedNumber<T, align> &v)
       {
         assert(l == 0);
         return v.value();
@@ -470,6 +481,7 @@ namespace Dune {
       }
 
     } // namespace Overloads
+
   } // namespace Simd
 
 } // namespace Dune

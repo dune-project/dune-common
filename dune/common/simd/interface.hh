@@ -301,7 +301,7 @@ namespace Dune {
     decltype(auto) lane(std::size_t l, V &&v)
     {
       assert(l < lanes<V>());
-      return lane(Overloads::ADLTag<6>{}, l, std::forward<V>(v));
+      return lane(Overloads::ADLTag<7>{}, l, std::forward<V>(v));
     }
 
     //! Like the ?: operator
@@ -320,7 +320,7 @@ namespace Dune {
     template<class V>
     V cond(Mask<V> mask, V ifTrue, V ifFalse)
     {
-      return cond(Overloads::ADLTag<6>{}, mask, ifTrue, ifFalse);
+      return cond(Overloads::ADLTag<7>{}, mask, ifTrue, ifFalse);
     }
 
     //! Whether any entry is `true`
@@ -330,7 +330,7 @@ namespace Dune {
     template<class Mask>
     bool anyTrue(Mask mask)
     {
-      return anyTrue(Overloads::ADLTag<6>{}, mask);
+      return anyTrue(Overloads::ADLTag<7>{}, mask);
     }
 
     //! Whether all entries are `true`
@@ -340,7 +340,7 @@ namespace Dune {
     template<class Mask>
     bool allTrue(Mask mask)
     {
-      return allTrue(Overloads::ADLTag<6>{}, mask);
+      return allTrue(Overloads::ADLTag<7>{}, mask);
     }
 
     //! Whether any entry is `false`
@@ -350,7 +350,7 @@ namespace Dune {
     template<class Mask>
     bool anyFalse(Mask mask)
     {
-      return anyFalse(Overloads::ADLTag<6>{}, mask);
+      return anyFalse(Overloads::ADLTag<7>{}, mask);
     }
 
     //! Whether all entries are `false`
@@ -360,7 +360,7 @@ namespace Dune {
     template<class Mask>
     bool allFalse(Mask mask)
     {
-      return allFalse(Overloads::ADLTag<6>{}, mask);
+      return allFalse(Overloads::ADLTag<7>{}, mask);
     }
 
     //! The maximum value over all lanes
@@ -370,7 +370,7 @@ namespace Dune {
     template<class V>
     Scalar<V> max(const V &v)
     {
-      return max(Overloads::ADLTag<6>{}, v);
+      return max(Overloads::ADLTag<7>{}, v);
     }
 
     //! The minimum value over all lanes
@@ -380,7 +380,7 @@ namespace Dune {
     template<class V>
     Scalar<V> min(const V &v)
     {
-      return min(Overloads::ADLTag<6>{}, v);
+      return min(Overloads::ADLTag<7>{}, v);
     }
 
     //! Convert to mask, analogue of bool(s) for scalars
@@ -390,7 +390,7 @@ namespace Dune {
     template<class V>
     auto mask(const V &v)
     {
-      return mask(Overloads::ADLTag<6>{}, v);
+      return mask(Overloads::ADLTag<7>{}, v);
     }
 
     //! Logic or of masks
@@ -400,7 +400,7 @@ namespace Dune {
     template<class V1, class V2>
     auto maskOr(const V1 &v1, const V2 &v2)
     {
-      return maskOr(Overloads::ADLTag<6>{}, v1, v2);
+      return maskOr(Overloads::ADLTag<7>{}, v1, v2);
     }
 
     //! Logic and of masks
@@ -410,7 +410,7 @@ namespace Dune {
     template<class V1, class V2>
     auto maskAnd(const V1 &v1, const V2 &v2)
     {
-      return maskAnd(Overloads::ADLTag<6>{}, v1, v2);
+      return maskAnd(Overloads::ADLTag<7>{}, v1, v2);
     }
 
     //! @}

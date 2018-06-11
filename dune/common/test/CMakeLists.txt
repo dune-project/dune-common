@@ -77,6 +77,10 @@ dune_add_test(SOURCES debugaligntest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
 
+dune_add_test(SOURCES debugalignsimdtest.cc
+              LINK_LIBRARIES dunecommon
+              LABELS quick)
+
 dune_add_test(SOURCES densematrixassignmenttest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)

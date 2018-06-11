@@ -533,6 +533,7 @@ namespace Dune {
       //! @} group SIMDVc
 
     } // namespace Overloads
+
   } // namespace Simd
 
   /*

@@ -4,6 +4,9 @@
 #include "config.h"
 #endif
 
+#include <cstdint>
+#include <vector>
+
 #include <dune/common/poolallocator.hh>
 #include <dune/common/fmatrix.hh>
 
@@ -32,25 +35,25 @@ struct testPoolMain
     //int chunkSize   = Pool<T,size>::chunkSize;
     //int alignedSize = Pool<T,size>::alignedSize;
 
-    unsigned long* oelements = new unsigned long[10*elements];
+    std::vector<std::uintptr_t> oelements(10*elements);
 
     typedef typename Pool<T,size>::Chunk Chunk;
 
     //Fill 10 chunks
     for(int chunk=0; chunk < 10; ++chunk) {
       //std::cout<< std::endl<<"Chunk "<<chunk<<" ";
-      unsigned long element = reinterpret_cast<unsigned long>(pool.allocate());
+      std::uintptr_t element = reinterpret_cast<std::uintptr_t>(pool.allocate());
       //void* celement = reinterpret_cast<void*>(element);
       //std::cout << element<<" "<< celement<<",  "<<std::endl;
 
       Chunk* currentChunk = pool.chunks_;
 
-      assert(element==reinterpret_cast<unsigned long>(currentChunk->memory_));
-      unsigned long end = reinterpret_cast<unsigned long>(currentChunk->chunk_)+Pool<T,size>::chunkSize;
+      assert(element==reinterpret_cast<std::uintptr_t>(currentChunk->chunk_));
+      std::uintptr_t end = reinterpret_cast<std::uintptr_t>(currentChunk->chunk_)+Pool<T,size>::chunkSize;
 
-      if(element< reinterpret_cast<unsigned long>(currentChunk->chunk_))
+      if(element< reinterpret_cast<std::uintptr_t>(currentChunk->chunk_))
       {
-        std::cerr <<" buffer overflow during first alloc: "<<reinterpret_cast<unsigned long>(currentChunk->chunk_)
+        std::cerr <<" buffer overflow during first alloc: "<<reinterpret_cast<std::uintptr_t>(currentChunk->chunk_)
                   <<">"<<element<<"+"<<sizeof(T)<<std::endl;
         return ++ret;
       }
@@ -64,12 +67,12 @@ struct testPoolMain
 
       for(int i=1; i < elements; i++)
       {
-        element = reinterpret_cast<unsigned long>(pool.allocate());
+        element = reinterpret_cast<std::uintptr_t>(pool.allocate());
         //celement = reinterpret_cast<void*>(element);
         //std::cout << element<<" "<<celement<<",  "<<std::endl;
 
-        if(element< reinterpret_cast<unsigned long>(currentChunk->chunk_)) {
-          std::cerr <<" buffer underflow during first alloc: "<<reinterpret_cast<unsigned long>(currentChunk->chunk_)
+        if(element< reinterpret_cast<std::uintptr_t>(currentChunk->chunk_)) {
+          std::cerr <<" buffer underflow during first alloc: "<<reinterpret_cast<std::uintptr_t>(currentChunk->chunk_)
                     <<">"<<element<<"+"<<sizeof(T)<<std::endl;
           return ++ret;
         }
@@ -93,7 +96,6 @@ struct testPoolMain
 
     for(int i=0; i < elements*10; ++i)
       pool.free(reinterpret_cast<void*>(oelements[i]));
-    delete[] oelements;
 
     return ret;
   }
