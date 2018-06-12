@@ -48,8 +48,8 @@ namespace Dune
       // constructor from any floating-point or integer type
       template <class T,
         std::enable_if_t<std::is_arithmetic<T>::value, int> = 0>
-      constexpr Float128(const T& number)
-        : value_(number)
+      constexpr Float128(const T& value)
+        : value_(value)
       {}
 
       // accessors
@@ -117,7 +117,9 @@ namespace Dune
 
     }; // end class Float128
 
-    // binary operators
+    // binary operators:
+    // For symmetry provide overloads with arithmetic types
+    // in the first or second argument.
 #define DUNE_BINARY_OP(OP)                                              \
     constexpr Float128 operator OP(const Float128& t,                   \
                                    const Float128& u)                   \
@@ -147,6 +149,9 @@ namespace Dune
 
 #undef DUNE_BINARY_OP
 
+    // logical operators:
+    // For symmetry provide overloads with arithmetic types
+    // in the first or second argument.
 #define DUNE_BINARY_BOOL_OP(OP)                                         \
     constexpr bool operator OP(const Float128& t,                       \
                                const Float128& u)                       \
@@ -179,36 +184,40 @@ namespace Dune
 #undef DUNE_BINARY_BOOL_OP
 
     // Overloads for the cmath functions
-#define DUNE_UNARY_FUNC(name,func)                                      \
-    Float128 name(const Float128& u)                                    \
-    {                                                                   \
-      return { func (float128_t(u))};             \
-    }                                                                   \
+
+    // function with name `name` redirects to quadmath function `func`
+#define DUNE_UNARY_FUNC(name,func)                                         \
+    Float128 name(const Float128& u)                                       \
+    {                                                                      \
+      return Float128{func (float128_t(u))};                               \
+    }                                                                      \
     static_assert(true, "Require semicolon to unconfuse editors")
 
-#define DUNE_CUSTOM_UNARY_FUNC(type,name,func)                          \
-    type name(const Float128& u)                                        \
-    {                                                                   \
-      return (type)( func (float128_t(u)));       \
-    }                                                                   \
+    // like DUNE_UNARY_FUNC but with cutom return type
+#define DUNE_CUSTOM_UNARY_FUNC(type,name,func)                             \
+    type name(const Float128& u)                                           \
+    {                                                                      \
+      return (type)(func (float128_t(u)));                                 \
+    }                                                                      \
     static_assert(true, "Require semicolon to unconfuse editors")
 
-#define DUNE_BINARY_FUNC(name,func)                                     \
-    Float128 name(const Float128& t, const Float128& u)                 \
-    {                                                                   \
-      return { func (float128_t(t), float128_t(u))}; \
-    }                                                                   \
+    // redirects to quadmath function with two arguments
+#define DUNE_BINARY_FUNC(name,func)                                        \
+    Float128 name(const Float128& t, const Float128& u)                    \
+    {                                                                      \
+      return Float128{func (float128_t(t), float128_t(u))};                \
+    }                                                                      \
     static_assert(true, "Require semicolon to unconfuse editors")
 
-#define DUNE_TERTIARY_FUNC(name,func)                                   \
+    // redirects to quadmath function with three arguments
+#define DUNE_TERTIARY_FUNC(name,func)                                      \
     Float128 name(const Float128&t, const Float128& u, const Float128& v)  \
-    {                                                                   \
-      return { func (float128_t(t),float128_t(u),float128_t(v))}; \
-    }                                                                   \
+    {                                                                      \
+      return Float128{func (float128_t(t),float128_t(u),float128_t(v))};   \
+    }                                                                      \
     static_assert(true, "Require semicolon to unconfuse editors")
 
     DUNE_UNARY_FUNC(abs, fabsq);
-
     DUNE_UNARY_FUNC(acos, acosq);
     DUNE_UNARY_FUNC(acosh, acoshq);
     DUNE_UNARY_FUNC(asin, asinq);
@@ -259,25 +268,27 @@ namespace Dune
 #undef DUNE_TERTIARY_FUNC
 #undef DUNE_CUSTOM_UNARY_FUNC
 
+    // like DUNE_BINARY_FUNC but provide overloads with arithmetic
+    // types in the first or second argument.
 #define DUNE_BINARY_ARITHMETIC_FUNC(name,func)                          \
     Float128 name(const Float128& t,                                    \
                   const Float128& u)                                    \
     {                                                                   \
-      return { func (float128_t(t), float128_t(u)) };                   \
+      return Float128{func (float128_t(t), float128_t(u))};             \
     }                                                                   \
     template <class T,                                                  \
       std::enable_if_t<std::is_arithmetic<T>::value, int> = 0>          \
     Float128 name(const T& t,                                           \
                   const Float128& u)                                    \
     {                                                                   \
-      return { func (float128_t(t), float128_t(u)) };                   \
+      return Float128{func (float128_t(t), float128_t(u))};             \
     }                                                                   \
     template <class U,                                                  \
       std::enable_if_t<std::is_arithmetic<U>::value, int> = 0>          \
     Float128 name(const Float128& t,                                    \
                   const U& u)                                           \
     {                                                                   \
-      return { func (float128_t(t), float128_t(u)) };                   \
+      return Float128{func (float128_t(t), float128_t(u))};             \
     }                                                                   \
     static_assert(true, "Require semicolon to unconfuse editors")
 
@@ -293,36 +304,36 @@ namespace Dune
 
 #undef DUNE_BINARY_ARITHMETIC_FUNC
 
-    // some more functions with special signature
+    // some more cmath functions with special signature
 
     Float128 frexp(const Float128& u, int* p)
     {
-      return { frexpq(float128_t(u),p)};
+      return Float128{frexpq(float128_t(u), p)};
     }
 
     Float128 ldexp(const Float128& u, int p)
     {
-      return { ldexpq(float128_t(u),p)};
+      return Float128{ldexpq(float128_t(u), p)};
     }
 
     Float128 nan(const char* arg)
     {
-      return { nanq(arg)};
+      return Float128{nanq(arg)};
     }
 
     Float128 remquo(const Float128& t, const Float128& u, int* quo)
     {
-      return { remquoq(float128_t(t),float128_t(u),quo)};
+      return Float128{remquoq(float128_t(t), float128_t(u), quo)};
     }
 
-    Float128 scalbln(const Float128& u, long int exp)
+    Float128 scalbln(const Float128& u, long int e)
     {
-      return { scalblnq(float128_t(u),exp)};
+      return Float128{scalblnq(float128_t(u), e)};
     }
 
-    Float128 scalbn(const Float128& u, int exp)
+    Float128 scalbn(const Float128& u, int e)
     {
-      return { scalbnq(float128_t(u),exp)};
+      return Float128{scalbnq(float128_t(u), e)};
     }
 
   } // end namespace Impl
@@ -331,12 +342,11 @@ namespace Dune
   struct IsNumber<Impl::Float128>
       : public std::true_type {};
 
-} // namespace Dune
+} // end namespace Dune
 
 namespace std
 {
 #ifndef NO_STD_NUMERIC_LIMITS_SPECIALIZATION
-#ifndef HAVE_INTEL_QUAD
   template <>
   class numeric_limits<Dune::Impl::Float128>
   {
@@ -377,7 +387,6 @@ namespace std
     static constexpr bool tinyness_before = false;
     static constexpr float_round_style round_style = round_toward_zero;
   };
-#endif
 #endif
 } // end namespace std
 
