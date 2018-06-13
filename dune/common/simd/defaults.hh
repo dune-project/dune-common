@@ -13,6 +13,7 @@
  */
 
 #include <cstddef>
+#include <type_traits>
 
 #include <dune/common/rangeutilities.hh>
 #include <dune/common/simd/base.hh>
