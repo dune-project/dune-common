@@ -210,14 +210,22 @@ namespace Dune {
         return T(5);
       }
 
-      template<class Op, class... Args>
-      using ScalarResult =
-        decltype(std::declval<Op>().scalar(std::declval<Args>()...));
       template<class Call>
       using CanCall = Impl::CanCall<Call>;
 
       template<class Dst, class Src>
       using CopyRefQual = Impl::CopyRefQual<Dst, Src>;
+
+      // test whether the Op supports the operation on scalars.  We do not use
+      // `lane()` to obtain the scalars, because that might return a proxy
+      // object, and we are interested in what exactly the scalar type can do,
+      // no a proxy that might have more overloads than needed.  In addition,
+      // `lane()` may not preserve `const` and reference qualifiers.
+      template<class Op, class... Vectors>
+      using ScalarResult =
+        decltype(std::declval<Op>().
+                 scalar(std::declval<CopyRefQual<Scalar<Vectors>,
+                                                 Vectors> >()...));
 
       //////////////////////////////////////////////////////////////////////
       //
@@ -595,25 +603,28 @@ namespace Dune {
       // checks for binary operators
       //
 
-#define DUNE_SIMD_INFIX_OP(NAME, SYMBOL)                               \
-      struct OpInfix##NAME                                             \
+      // The operators contain an `operator()`, which will be invoked for both
+      // scalar and vector arguments.  The function `scalar()` is used the
+      // test whether the scalar types support the operation (via
+      // `ScalarResult`).  The difference is that `scalar()` should only ever
+      // receive `const`-ref-qualified version of `Scalar<V>`, while the
+      // `operator()` may also be called with proxies representing scalars.
+#define DUNE_SIMD_INFIX_OP(NAME, SYMBOL)                                \
+      struct OpInfix##NAME                                              \
       {                                                                 \
         template<class V1, class V2>                                    \
-        decltype(auto) vector(V1&& v1, V2&& v2) const                   \
+        decltype(auto) operator()(V1&& v1, V2&& v2) const               \
         {                                                               \
           return std::forward<V1>(v1) SYMBOL std::forward<V2>(v2);      \
         }                                                               \
         template<class S1, class S2>                                    \
         auto scalar(S1&& s1, S2&& s2) const                             \
-          -> decltype(std::forward<S1>(s1) SYMBOL std::forward<S2>(s2)) \
-        {                                                               \
-          return std::forward<S1>(s1) SYMBOL std::forward<S2>(s2);      \
-        }                                                               \
+          -> decltype(std::forward<S1>(s1) SYMBOL std::forward<S2>(s2)); \
       }
 
       // for assign ops, accept only non-const lvalue arguments for scalars.
-      // This is needed class scalars (e.g. std::complex) because non-const
-      // class rvalues are actually usually assignable.  Though that
+      // This is needed for class scalars (e.g. std::complex) because
+      // non-const class rvalues are actually usually assignable.  Though that
       // assignment happens to a temporary, and thus is lost.  Except that the
       // tests would bind the result of the assignment to a reference.  And
       // because that result is returned from a function by reference, even
@@ -623,32 +634,26 @@ namespace Dune {
       struct OpInfix##NAME                                              \
       {                                                                 \
         template<class V1, class V2>                                    \
-        decltype(auto) vector(V1&& v1, V2&& v2) const                   \
+        decltype(auto) operator()(V1&& v1, V2&& v2) const               \
         {                                                               \
           return std::forward<V1>(v1) SYMBOL std::forward<V2>(v2);      \
         }                                                               \
         template<class S1, class S2>                                    \
         auto scalar(S1& s1, S2&& s2) const                              \
-          -> decltype(s1 SYMBOL std::forward<S2>(s2))                   \
-        {                                                               \
-          return s1 SYMBOL std::forward<S2>(s2);                        \
-        }                                                               \
+          -> decltype(s1 SYMBOL std::forward<S2>(s2));                  \
       }
 
 #define DUNE_SIMD_REPL_OP(NAME, REPLFN, SYMBOL)                         \
       struct OpInfix##NAME                                              \
       {                                                                 \
         template<class V1, class V2>                                    \
-        decltype(auto) vector(V1&& v1, V2&& v2) const                   \
+        decltype(auto) operator()(V1&& v1, V2&& v2) const               \
         {                                                               \
           return Simd::REPLFN(std::forward<V1>(v1), std::forward<V2>(v2)); \
         }                                                               \
         template<class S1, class S2>                                    \
         auto scalar(S1&& s1, S2&& s2) const                             \
-          -> decltype(std::forward<S1>(s1) SYMBOL std::forward<S2>(s2)) \
-        {                                                               \
-          return std::forward<S1>(s1) SYMBOL std::forward<S2>(s2);      \
-        }                                                               \
+          -> decltype(std::forward<S1>(s1) SYMBOL std::forward<S2>(s2)); \
       }
 
       DUNE_SIMD_INFIX_OP(Mul,              *  );
@@ -763,10 +768,7 @@ namespace Dune {
       // 3.  lane(l, vop1)   == aref1[l]    foreach l
       // 4.  lane(l, vop2)   == aref2[l]    foreach l
       template<class V1, class V2, class Op>
-      std::enable_if_t<
-        Std::is_detected_v<ScalarResult, Op,
-                           decltype(lane(0, std::declval<V1>())),
-                           decltype(lane(0, std::declval<V2>()))> >
+      std::enable_if_t<Std::is_detected_v<ScalarResult, Op, V1, V2> >
       checkBinaryOpVV(MetaType<V1>, MetaType<V2>, Op op)
       {
 #define DUNE_SIMD_OPNAME (className<Op(V1, V2)>())
@@ -783,8 +785,7 @@ namespace Dune {
         auto vop2 = vref2;
 
         // candidate operation
-        auto &&vopres =
-          op.vector(static_cast<V1>(vop1), static_cast<V2>(vop2));
+        auto &&vopres = op(static_cast<V1>(vop1), static_cast<V2>(vop2));
         using VR = decltype(vopres);
 
         // check 1.  lanes(vopres)   == lanes(vop1)
@@ -801,8 +802,8 @@ namespace Dune {
           // `static_cast` around the `op()` is necessary
           DUNE_SIMD_CHECK_OP
             (lane(l, vopres)
-               == static_cast<T>(op.scalar(lane(l, static_cast<V1>(vref1)),
-                                           lane(l, static_cast<V2>(vref2)))));
+               == static_cast<T>(op(lane(l, static_cast<V1>(vref1)),
+                                    lane(l, static_cast<V2>(vref2)))));
         }
 
         // check 3.  lane(l, vop1)   == aref1[l]    foreach l
@@ -817,10 +818,7 @@ namespace Dune {
       }
 
       template<class V1, class V2, class Op>
-      std::enable_if_t<
-        !Std::is_detected_v<ScalarResult, Op,
-                            decltype(lane(0, std::declval<V1>())),
-                            decltype(lane(0, std::declval<V2>()))> >
+      std::enable_if_t<!Std::is_detected_v<ScalarResult, Op, V1, V2> >
       checkBinaryOpVV(MetaType<V1>, MetaType<V2>, Op op)
       {
         // log_ << "No " << className<Op(decltype(lane(0, std::declval<V1>())),
@@ -874,9 +872,7 @@ namespace Dune {
       // argument below.
 
       template<class V1, class T2, class Op>
-      std::enable_if_t<
-        Std::is_detected_v<ScalarResult, Op,
-                           decltype(lane(0, std::declval<V1>())), T2> >
+      std::enable_if_t<Std::is_detected_v<ScalarResult, Op, V1, T2> >
       checkBinaryOpVS(MetaType<V1>, MetaType<T2>, Op op)
       {
 #define DUNE_SIMD_OPNAME (className<Op(V1, T2)>())
@@ -897,8 +893,7 @@ namespace Dune {
         auto sop2 = sref2;
 
         // candidate operation
-        auto &&vopres =
-          op.vector(static_cast<V1>(vop1), static_cast<T2>(sop2));
+        auto &&vopres = op(static_cast<V1>(vop1), static_cast<T2>(sop2));
         using VR = decltype(vopres);
 
         // check 1.  lanes(vopres)   == lanes(vop1)
@@ -918,8 +913,8 @@ namespace Dune {
           // `static_cast` around the `op()` is necessary
           DUNE_SIMD_CHECK_OP
             (lane(l, vopres)
-               == static_cast<T>(op.scalar(lane(l, static_cast<V1>(vref1)),
-                                                   static_cast<T2>(sref2) )));
+               == static_cast<T>(op(lane(l, static_cast<V1>(vref1)),
+                                            static_cast<T2>(sref2) )));
           // check 5.  sref2 is never modified
           DUNE_SIMD_CHECK_OP(sref2 == sinit2);
         }
@@ -932,9 +927,7 @@ namespace Dune {
       }
 
       template<class V1, class T2, class Op>
-      std::enable_if_t<
-        !Std::is_detected_v<ScalarResult, Op,
-                            decltype(lane(0, std::declval<V1>())), T2> >
+      std::enable_if_t<!Std::is_detected_v<ScalarResult, Op, V1, T2> >
       checkBinaryOpVS(MetaType<V1>, MetaType<T2>, Op op)
       {
         // log_ << "No "
@@ -982,9 +975,7 @@ namespace Dune {
       // 4.  lane(l, vop2)  foreach l  is never modified
 
       template<class V1, class T2, class Op>
-      std::enable_if_t<
-        Std::is_detected_v<ScalarResult, Op,
-                           decltype(lane(0, std::declval<V1>())), T2> >
+      std::enable_if_t<Std::is_detected_v<ScalarResult, Op, V1, T2> >
       checkBinaryOpVVAgainstVS(MetaType<V1>, MetaType<T2>, Op op)
       {
 #define DUNE_SIMD_OPNAME (className<Op(V1, T2)>())
@@ -1002,7 +993,7 @@ namespace Dune {
         std::decay_t<V2> vop2(sinit2);
 
         // candidate operation
-        op.vector(static_cast<V1>(vop1), static_cast<V2>(vop2));
+        op(static_cast<V1>(vop1), static_cast<V2>(vop2));
 
         // 4.  lane(l, vop2)  foreach l  is never modified
         for(auto l : range(lanes(vop2)))
@@ -1012,9 +1003,7 @@ namespace Dune {
       }
 
       template<class V1, class T2, class Op>
-      std::enable_if_t<
-        !Std::is_detected_v<ScalarResult, Op,
-                            decltype(lane(0, std::declval<V1>())), T2> >
+      std::enable_if_t<!Std::is_detected_v<ScalarResult, Op, V1, T2> >
       checkBinaryOpVVAgainstVS(MetaType<V1>, MetaType<T2>, Op op)
       {
         // log_ << "No "
@@ -1038,16 +1027,13 @@ namespace Dune {
         Op orig;
 
         template<class V1, class V2>
-        decltype(auto) vector(V1&& v1, V2&& v2) const
+        decltype(auto) operator()(V1&& v1, V2&& v2) const
         {
-          return orig.vector(std::forward<V2>(v2), std::forward<V1>(v1));
+          return orig(std::forward<V2>(v2), std::forward<V1>(v1));
         }
         template<class S1, class S2>
         auto scalar(S1&& s1, S2&& s2) const
-          -> decltype(orig.scalar(std::forward<S2>(s2), std::forward<S1>(s1)))
-        {
-          return orig.scalar(std::forward<S2>(s2), std::forward<S1>(s1));
-        }
+          -> decltype(orig.scalar(std::forward<S2>(s2), std::forward<S1>(s1)));
       };
 
       template<class T1, class V2, class Op>
