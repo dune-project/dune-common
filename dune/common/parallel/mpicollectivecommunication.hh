@@ -370,6 +370,22 @@ namespace Dune
                            (Generic_MPI_Op<Type, BinaryFunction>::get()),*p_communicator);
     }
 
+    //! @copydoc Collectivecommunication::scan(Type* inout, int len) const
+    template<typename BinaryFunction, typename Type>
+    int scan(Type* inout, int len) const
+    {
+      int ret = MPI_Scan(MPI_IN_PLACE, inout, len, MPITraits<Type>::getType(),
+                         (Generic_MPI_Op<Type, BinaryFunction>::get()), *p_communicator);
+    }
+
+    //! @copydoc Collectivecommunication::exscan(Type* inout, int len) const
+    template<typename BinaryFunction, typename Type>
+    int exscan(Type* inout, int len) const
+    {
+      int ret = MPI_Exscan(MPI_IN_PLACE, inout, len, MPITraits<Type>::getType(),
+                         (Generic_MPI_Op<Type, BinaryFunction>::get()), *p_communicator);
+    }
+
 #if HAVE_ULFM_REVOKE
     int revoke()
     {
