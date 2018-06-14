@@ -112,6 +112,30 @@ int main(int argc, char** argv)
 #endif
 
   mpihelper.getCollectiveCommunication().barrier();
+
+  if (mpihelper.rank() == 0)
+    std::cout << "---- test getFailedRanks() --- only even ranks fail" << std::endl;
+  try{
+    {
+      Dune::MPIGuard guard;
+      if(mpihelper.rank()%2 == 0)
+        DUNE_THROW(Dune::Exception, "Fakeproblem on process" << mpihelper.rank());
+      guard.finalize();
+    }
+  }catch(Dune::Exception& e){
+    auto failed = Dune::MPIGuard::getFailedRanks(e);
+    if(mpihelper.rank() == 0)
+      std::cout << "failed ranks are: ";
+    for(int r : failed){
+      if(mpihelper.rank() == 0)
+        std::cout << r << ", ";
+      if(r%2 != 0)
+        return 1;
+    }
+    if(mpihelper.rank() == 0)
+      std::cout << std::endl;
+  }
+  mpihelper.getCollectiveCommunication().barrier();
   if (mpihelper.rank() == 0)
     std::cout << "---- done" << std::endl;
 }

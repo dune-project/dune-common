@@ -11,6 +11,8 @@
 #ifndef DUNE_COMMON_MPIGUARD_HH
 #define DUNE_COMMON_MPIGUARD_HH
 
+#include <vector>
+
 #include "mpihelper.hh"
 #include "collectivecommunication.hh"
 #include "mpicollectivecommunication.hh"
@@ -98,7 +100,18 @@ namespace Dune
   /*! @brief This exception is thrown if the MPIGuard detects an error on a remote process
       @ingroup ParallelCommunication
    */
-  class MPIGuardError : public ParallelError {};
+  class MPIGuardError : public ParallelError {
+    bool failed_;
+  public:
+    MPIGuardError(bool failed) :
+      ParallelError(),
+      failed_(failed)
+    {}
+
+    virtual bool failed() const{
+      return failed_;
+    }
+  };
 
   /*! @brief detects a thrown exception and communicates to all other processes
       @ingroup ParallelCommunication
@@ -220,8 +233,35 @@ namespace Dune
       {
         DUNE_THROW(MPIGuardError, "Terminating process "
                    << comm_->rank() << " due to "
-                   << result << " remote error(s)");
+                   << result << " remote error(s)", !success);
       }
+    }
+
+    /*
+      Communicates the failed ranks. This function is collective. Each
+      exception is considered as failed unless it is dynamic_castable
+      to `MPIGuardException` and the `failed()` method returns false.
+     */
+    template<class CC = std::decay_t<decltype(MPIHelper::getCollectiveCommunication())>>
+    static std::vector<int> getFailedRanks(Exception& e, CC cc = MPIHelper::getCollectiveCommunication()){
+      bool failed = true; // no MPIGuardException => local error
+      MPIGuardError* mge = dynamic_cast<MPIGuardError*>(&e);
+      if(mge != nullptr){
+        failed = mge->failed(); // MPIGuardException might be sound
+      }
+      // assign index to failed ranks
+      int err_index = failed?1:0;
+      cc.template scan<std::plus<int>>(&err_index, 1);
+      int noErrors = err_index;
+      // broadcast the number of failed ranks over the eintire communicator
+      cc.broadcast(&noErrors, 1, cc.size()-1);
+      // fill vector locally
+      std::vector<int> ranks(noErrors, 0);
+      if(failed)
+        ranks[err_index-1] = cc.rank();
+      // sum up all data, only one rank will contribute to coefficient
+      cc.sum(ranks.data(), ranks.size());
+      return ranks;
     }
   };
 

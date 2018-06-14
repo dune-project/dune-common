@@ -396,6 +396,42 @@ namespace Dune
       return;
     }
 
+    /**
+     * @brief Reduces the value on process i over processes 0,..,i.
+     *
+     * The template parameter BinaryFunction is the type of
+     * the binary function to use for the computation
+     *
+     * @param inout The array to compute on.
+     * @param len The number of components in the array
+     * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
+     */
+    template<typename BinaryFunction, typename Type>
+    int scan(Type* inout, int len) const
+    {
+      DUNE_UNUSED_PARAMETER(inout);
+      DUNE_UNUSED_PARAMETER(len);
+      return 0;
+    }
+
+
+    /**
+     * @brief Reduces the value on process i over processes 0,..,i-1.
+     *
+     * The template parameter BinaryFunction is the type of
+     * the binary function to use for the computation
+     *
+     * @param inout The array to compute on.
+     * @param len The number of components in the array
+     * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
+     */
+    template<typename BinaryFunction, typename Type>
+    int exscan(Type* inout, int len) const
+    {
+      DUNE_UNUSED_PARAMETER(inout);
+      DUNE_UNUSED_PARAMETER(len);
+      return 0;
+    }
   };
 }
 

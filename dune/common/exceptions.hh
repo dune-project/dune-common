@@ -213,10 +213,10 @@ namespace Dune {
    */
   // this is the magic: use the usual do { ... } while (0) trick, create
   // the full message via a string stream and throw the created object
-#define DUNE_THROW(E, m) do { E th__ex; std::ostringstream th__out; \
+  // The variable arguments are used for list-initialization of the Exception type
+#define DUNE_THROW(E, m, ...) do { E th__ex{__VA_ARGS__}; std::ostringstream th__out; \
                               th__out << THROWSPEC(E) << m; th__ex.message(th__out.str()); throw th__ex; \
 } while (0)
-
   /*! \brief Default exception class for I/O errors
 
      This is a superclass for any errors dealing with file/socket I/O problems
