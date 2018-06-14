@@ -13,10 +13,12 @@
  */
 
 #include <cstddef>
+#include <type_traits>
 
 #include <dune/common/rangeutilities.hh>
 #include <dune/common/simd/base.hh>
 #include <dune/common/simd/interface.hh>
+#include <dune/common/typetraits.hh>
 
 namespace Dune {
   namespace Simd {
@@ -111,10 +113,11 @@ namespace Dune {
 
       //! implements Simd::mask()
       template<class V>
-      Mask<V> mask(ADLTag<0, !std::is_same<V, Mask<V> >::value>,
-                   const V &v)
+      auto mask(ADLTag<0, !std::is_same<V, Mask<V> >::value>,
+                const V &v)
       {
-        return v != V(Scalar<V>(0));
+        using Copy = AutonomousValue<V>; // just in case we are handed a proxy
+        return v != Copy(Scalar<Copy>(0));
       }
 
       //! implements Simd::maskOr()
