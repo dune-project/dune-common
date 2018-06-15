@@ -108,6 +108,22 @@ namespace Dune
 
   } // namespace Indices
 
+  /**
+   * \brief Unpack an std::integer_sequence<I,i...> to std::integral_constant<I,i>...
+   *
+   * This forward all entries of the given std::integer_sequence
+   * as individual std::integral_constant arguments to the given callback.
+   *
+   * \param f Callback which has to accept unpacked values
+   * \param sequence Packed std::integer_sequence of values
+   * \returns Result of calling f with unpacked integers.
+   */
+  template<class F, class I, I... i>
+  decltype(auto) unpackIntegerSequence(F&& f, std::integer_sequence<I, i...> sequence)
+  {
+    return f(std::integral_constant<I, i>()...);
+  }
+
 } //namespace Dune
 
 #endif // DUNE_COMMON_INDICES_HH
