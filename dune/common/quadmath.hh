@@ -41,22 +41,22 @@ namespace Dune
 
     public:
       constexpr Float128() = default;
-      constexpr Float128(const float128_t& value)
+      constexpr Float128(const float128_t& value) noexcept
         : value_(value)
       {}
 
       // constructor from any floating-point or integer type
       template <class T,
         std::enable_if_t<std::is_arithmetic<T>::value, int> = 0>
-      constexpr Float128(const T& value)
+      constexpr Float128(const T& value) noexcept
         : value_(value)
       {}
 
       // accessors
-      constexpr operator float128_t() const { return value_; }
+      constexpr operator float128_t() const noexcept { return value_; }
 
-      constexpr float128_t const& value() const { return value_; }
-      constexpr float128_t&       value()       { return value_; }
+      constexpr float128_t const& value() const noexcept { return value_; }
+      constexpr float128_t&       value() noexcept       { return value_; }
 
       // I/O
       template<class CharT, class Traits>
@@ -88,19 +88,19 @@ namespace Dune
       }
 
       // Increment, decrement
-      constexpr Float128& operator++() { ++value_; return *this; }
-      constexpr Float128& operator--() { --value_; return *this; }
+      constexpr Float128& operator++() noexcept { ++value_; return *this; }
+      constexpr Float128& operator--() noexcept { --value_; return *this; }
 
-      constexpr Float128 operator++(int) { Float128 tmp{*this}; ++value_; return tmp; }
-      constexpr Float128 operator--(int) { Float128 tmp{*this}; --value_; return tmp; }
+      constexpr Float128 operator++(int) noexcept { Float128 tmp{*this}; ++value_; return tmp; }
+      constexpr Float128 operator--(int) noexcept { Float128 tmp{*this}; --value_; return tmp; }
 
       // unary operators
-      constexpr Float128 operator+() const { return Float128{+value_}; }
-      constexpr Float128 operator-() const { return Float128{-value_}; }
+      constexpr Float128 operator+() const noexcept { return Float128{+value_}; }
+      constexpr Float128 operator-() const noexcept { return Float128{-value_}; }
 
       // assignment operators
 #define DUNE_ASSIGN_OP(OP)                                              \
-      constexpr Float128& operator OP(const Float128& u)                \
+      constexpr Float128& operator OP(const Float128& u) noexcept       \
       {                                                                 \
         value_ OP float128_t(u);                                        \
         return *this;                                                   \
@@ -122,21 +122,21 @@ namespace Dune
     // in the first or second argument.
 #define DUNE_BINARY_OP(OP)                                              \
     constexpr Float128 operator OP(const Float128& t,                   \
-                                   const Float128& u)                   \
+                                   const Float128& u) noexcept          \
     {                                                                   \
       return Float128{float128_t(t) OP float128_t(u)};                  \
     }                                                                   \
     template <class T,                                                  \
       std::enable_if_t<std::is_arithmetic<T>::value, int> = 0>          \
     constexpr Float128 operator OP(const T& t,                          \
-                                   const Float128& u)                   \
+                                   const Float128& u) noexcept          \
     {                                                                   \
       return Float128{float128_t(t) OP float128_t(u)};                  \
     }                                                                   \
     template <class U,                                                  \
       std::enable_if_t<std::is_arithmetic<U>::value, int> = 0>          \
     constexpr Float128 operator OP(const Float128& t,                   \
-                                   const U& u)                          \
+                                   const U& u) noexcept                 \
     {                                                                   \
       return Float128{float128_t(t) OP float128_t(u)};                  \
     }                                                                   \
@@ -154,21 +154,21 @@ namespace Dune
     // in the first or second argument.
 #define DUNE_BINARY_BOOL_OP(OP)                                         \
     constexpr bool operator OP(const Float128& t,                       \
-                               const Float128& u)                       \
+                               const Float128& u) noexcept              \
     {                                                                   \
       return float128_t(t) OP float128_t(u);                            \
     }                                                                   \
     template <class T,                                                  \
       std::enable_if_t<std::is_arithmetic<T>::value, int> = 0>          \
     constexpr bool operator OP(const T& t,                              \
-                               const Float128& u)                       \
+                               const Float128& u) noexcept              \
     {                                                                   \
       return float128_t(t) OP float128_t(u);                            \
     }                                                                   \
     template <class U,                                                  \
       std::enable_if_t<std::is_arithmetic<U>::value, int> = 0>          \
     constexpr bool operator OP(const Float128& t,                       \
-                               const U& u)                              \
+                               const U& u) noexcept                     \
     {                                                                   \
       return float128_t(t) OP float128_t(u);                            \
     }                                                                   \
@@ -187,7 +187,7 @@ namespace Dune
 
     // function with name `name` redirects to quadmath function `func`
 #define DUNE_UNARY_FUNC(name,func)                                         \
-    Float128 name(const Float128& u)                                       \
+    inline Float128 name(const Float128& u) noexcept                       \
     {                                                                      \
       return Float128{func (float128_t(u))};                               \
     }                                                                      \
@@ -195,7 +195,7 @@ namespace Dune
 
     // like DUNE_UNARY_FUNC but with cutom return type
 #define DUNE_CUSTOM_UNARY_FUNC(type,name,func)                             \
-    type name(const Float128& u)                                           \
+    inline type name(const Float128& u) noexcept                           \
     {                                                                      \
       return (type)(func (float128_t(u)));                                 \
     }                                                                      \
@@ -203,17 +203,10 @@ namespace Dune
 
     // redirects to quadmath function with two arguments
 #define DUNE_BINARY_FUNC(name,func)                                        \
-    Float128 name(const Float128& t, const Float128& u)                    \
+    inline Float128 name(const Float128& t,                                \
+                         const Float128& u) noexcept                       \
     {                                                                      \
       return Float128{func (float128_t(t), float128_t(u))};                \
-    }                                                                      \
-    static_assert(true, "Require semicolon to unconfuse editors")
-
-    // redirects to quadmath function with three arguments
-#define DUNE_TERTIARY_FUNC(name,func)                                      \
-    Float128 name(const Float128&t, const Float128& u, const Float128& v)  \
-    {                                                                      \
-      return Float128{func (float128_t(t),float128_t(u),float128_t(v))};   \
     }                                                                      \
     static_assert(true, "Require semicolon to unconfuse editors")
 
@@ -234,7 +227,6 @@ namespace Dune
     DUNE_UNARY_FUNC(expm1, expm1q);
     DUNE_UNARY_FUNC(fabs, fabsq);
     DUNE_UNARY_FUNC(floor, floorq);
-    DUNE_TERTIARY_FUNC(fma, fmaq);
     DUNE_CUSTOM_UNARY_FUNC(int, ilogb, ilogbq);
     DUNE_UNARY_FUNC(lgamma, lgammaq);
     DUNE_CUSTOM_UNARY_FUNC(long long int, llrint, llrintq);
@@ -264,29 +256,28 @@ namespace Dune
     DUNE_CUSTOM_UNARY_FUNC(bool, signbit, signbitq);
 
 #undef DUNE_UNARY_FUNC
-#undef DUNE_BINARY_FUNC
-#undef DUNE_TERTIARY_FUNC
 #undef DUNE_CUSTOM_UNARY_FUNC
+#undef DUNE_BINARY_FUNC
 
     // like DUNE_BINARY_FUNC but provide overloads with arithmetic
     // types in the first or second argument.
 #define DUNE_BINARY_ARITHMETIC_FUNC(name,func)                          \
-    Float128 name(const Float128& t,                                    \
-                  const Float128& u)                                    \
+    inline Float128 name(const Float128& t,                             \
+                         const Float128& u) noexcept                    \
     {                                                                   \
       return Float128{func (float128_t(t), float128_t(u))};             \
     }                                                                   \
     template <class T,                                                  \
       std::enable_if_t<std::is_arithmetic<T>::value, int> = 0>          \
-    Float128 name(const T& t,                                           \
-                  const Float128& u)                                    \
+    inline Float128 name(const T& t,                                    \
+                         const Float128& u) noexcept                    \
     {                                                                   \
       return Float128{func (float128_t(t), float128_t(u))};             \
     }                                                                   \
     template <class U,                                                  \
       std::enable_if_t<std::is_arithmetic<U>::value, int> = 0>          \
-    Float128 name(const Float128& t,                                    \
-                  const U& u)                                           \
+    inline Float128 name(const Float128& t,                             \
+                         const U& u) noexcept                           \
     {                                                                   \
       return Float128{func (float128_t(t), float128_t(u))};             \
     }                                                                   \
@@ -306,32 +297,32 @@ namespace Dune
 
     // some more cmath functions with special signature
 
-    Float128 frexp(const Float128& u, int* p)
+    inline Float128 fma(const Float128& t, const Float128& u, const Float128& v)
+    {
+      return Float128{fmaq(float128_t(t),float128_t(u),float128_t(v))};
+    }
+
+    inline Float128 frexp(const Float128& u, int* p)
     {
       return Float128{frexpq(float128_t(u), p)};
     }
 
-    Float128 ldexp(const Float128& u, int p)
+    inline Float128 ldexp(const Float128& u, int p)
     {
       return Float128{ldexpq(float128_t(u), p)};
     }
 
-    Float128 nan(const char* arg)
-    {
-      return Float128{nanq(arg)};
-    }
-
-    Float128 remquo(const Float128& t, const Float128& u, int* quo)
+    inline Float128 remquo(const Float128& t, const Float128& u, int* quo)
     {
       return Float128{remquoq(float128_t(t), float128_t(u), quo)};
     }
 
-    Float128 scalbln(const Float128& u, long int e)
+    inline Float128 scalbln(const Float128& u, long int e)
     {
       return Float128{scalblnq(float128_t(u), e)};
     }
 
-    Float128 scalbn(const Float128& u, int e)
+    inline Float128 scalbn(const Float128& u, int e)
     {
       return Float128{scalbnq(float128_t(u), e)};
     }
