@@ -5,8 +5,6 @@ variables:
 debian:9--gcc:
   image: duneci/base:9
   script:
-  - echo ================================
-  - env
-  - echo ================================
-  variables: {}
-  tags: [duneci]
+  - host
+  - echo "$DUNECI_PARALLEL"
+  tags: [duneci, "host:epic"]
