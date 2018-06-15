@@ -5,6 +5,6 @@ variables:
 debian:9--gcc:
   image: duneci/base:9
   script:
-  - host
   - echo "$DUNECI_PARALLEL"
-  tags: [duneci, "host:epic"]
+  - grep flags /proc/cpuinfo
+  tags: [duneci, "iset:avx512"]
