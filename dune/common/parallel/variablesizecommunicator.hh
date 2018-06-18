@@ -1098,8 +1098,8 @@ void VariableSizeCommunicator<Allocator>::communicateSizes(DataHandle& handle,
   std::vector<InterfaceTracker> send_trackers;
   std::vector<InterfaceTracker> recv_trackers;
   std::size_t size = interface_->size();
-  std::vector<MPI_Request> send_requests(size);
-  std::vector<MPI_Request> recv_requests(size);
+  std::vector<MPI_Request> send_requests(size, MPI_REQUEST_NULL);
+  std::vector<MPI_Request> recv_requests(size, MPI_REQUEST_NULL);
   std::vector<MessageBuffer<std::size_t> >
     send_buffers(size, MessageBuffer<std::size_t>(maxBufferSize_)),
     recv_buffers(size, MessageBuffer<std::size_t>(maxBufferSize_));
