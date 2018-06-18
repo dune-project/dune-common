@@ -157,7 +157,10 @@ namespace Dune {
       template<class V>
       static V make123()
       {
-        V vec;
+        // initialize to avoid undefined behaviour if assigning to lane()
+        // involves lvalue-to-rvalue conversions, e.g. due to bitmask
+        // operations
+        V vec{};
         for(std::size_t l = 0; l < lanes(vec); ++l)
           lane(l, vec) = l + 1;
         return vec;
@@ -179,7 +182,7 @@ namespace Dune {
       template<class V>
       static V leftVector()
       {
-        V res;
+        V res{};
         for(std::size_t l = 0; l < lanes(res); ++l)
           lane(l, res) = Scalar<V>(l+1);
         return res;
@@ -188,7 +191,7 @@ namespace Dune {
       template<class V>
       static V rightVector()
       {
-        V res;
+        V res{};
         for(std::size_t l = 0; l < lanes(res); ++l)
           // do not exceed number of bits in char (for shifts)
           // avoid 0 (for / and %)
@@ -307,7 +310,7 @@ namespace Dune {
       template<class V>
       void checkLane()
       {
-        V vec;
+        V vec{};
         // check lane() on mutable lvalues
         for(std::size_t l = 0; l < lanes(vec); ++l)
           lane(l, vec) = l + 1;
@@ -1326,7 +1329,7 @@ namespace Dune {
         DUNE_SIMD_CHECK(allFalse(M(false)) == true);
         DUNE_SIMD_CHECK(anyFalse(M(false)) == true);
 
-        M mixedVec;
+        M mixedVec{};
         for(std::size_t l = 0; l < lanes(mixedVec); ++l)
           lane(l, mixedVec) = (l % 2);
 
