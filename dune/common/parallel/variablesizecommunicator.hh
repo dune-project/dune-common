@@ -661,7 +661,6 @@ struct PackEntries
         }
         else
           break;
-      assert(packed);
       return packed;
     }
   }
