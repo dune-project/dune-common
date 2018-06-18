@@ -1,31 +1,28 @@
 ---
-variables:
-  DUNECI_TEST_LABELS: quick
-
 debian:10  gcc:c++17:
   image: duneci/base:10
   script: duneci-standard-test
   variables: {DUNECI_OPTS: /duneci/opts.gcc.c++17}
-  tags: [duneci]
+  tags: [duneci, iset:avx2]
 
 debian:9--gcc:
   image: duneci/base:9
   script: duneci-standard-test
-  tags: [duneci]
+  tags: [duneci, iset:avx2]
 
 debian:9--clang:
   image: duneci/base:9
   script: duneci-standard-test
   variables: {DUNECI_OPTS: /duneci/opts.clang}
-  tags: [duneci]
+  tags: [duneci, iset:avx2]
 
 ubuntu:16.04--gcc:
   image: duneci/base:16.04
   script: duneci-standard-test
-  tags: [duneci]
+  tags: [duneci, iset:avx2]
 
 ubuntu:16.04--clang:
   image: duneci/base:16.04
   script: duneci-standard-test
   variables: {DUNECI_OPTS: /duneci/opts.clang}
-  tags: [duneci]
+  tags: [duneci, iset:avx2]
