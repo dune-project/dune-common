@@ -86,6 +86,33 @@ Dune::TestSuite testVariant() {
   suite.check(Std::visit(size, constv2)== 2, "Test const visit");
   suite.check(Std::get_if<V2>(&constv2) != nullptr, "Test const get_if");
 
+  /// test copy and move construction/assignment
+  {
+    auto variant_copy_constructed = variant2;
+    // test if deep copy happened
+    auto getPtrToData = [&](const auto& vec) {return static_cast<const void*>(vec.data()); };
+    suite.check(Std::visit(getPtrToData, variant_copy_constructed) != Std::visit(getPtrToData, variant2), "Check deep copy") << "Both vector copies point to same data";
+
+    auto variant_move_constructed = std::move(variant_copy_constructed);
+    // TODO: Add sensible test condition here.
+    // Testing if the pointer to the data is the same as before is probably not a good idea,
+    // as moving does not imply that the data really stays at the same place (though it probably
+    // does).
+    // At least if this compiles and runs we can be confident no double frees happened.
+    //
+    // First idea: Test if the state looks somewhat valid
+    suite.check(Std::holds_alternative<V2>(variant_move_constructed), "Check if move constructed variant holds the right type");
+
+    Std::variant<V, V2> variant_copy_assigned;
+    variant_copy_assigned = variant2;
+    // test if deep copy happened
+    suite.check(Std::visit(getPtrToData, variant_copy_assigned) != Std::visit(getPtrToData, variant2), "Check deep copy at operator=") << "Both vector copies point to same data";
+
+    Std::variant<V, V2> variant_move_assigned;
+    variant_move_assigned = std::move(variant_copy_assigned);
+    // TODO: Again, as above, find a better test for this.
+    suite.check(Std::holds_alternative<V2>(variant_move_assigned), "Check if move assigned variant holds the right type");
+  }
 
   return suite;
 }
