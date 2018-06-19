@@ -13,6 +13,7 @@
 #include <memory>
 #include <utility>
 #include <vector>
+#include <algorithm>
 
 #include <mpi.h>
 
@@ -661,7 +662,6 @@ struct PackEntries
         }
         else
           break;
-      assert(packed);
       return packed;
     }
   }
@@ -1099,26 +1099,26 @@ void VariableSizeCommunicator<Allocator>::communicateSizes(DataHandle& handle,
   std::vector<InterfaceTracker> send_trackers;
   std::vector<InterfaceTracker> recv_trackers;
   std::size_t size = interface_->size();
-  std::vector<MPI_Request> send_requests(size);
-  std::vector<MPI_Request> recv_requests(size);
+  std::vector<MPI_Request> send_requests(size, MPI_REQUEST_NULL);
+  std::vector<MPI_Request> recv_requests(size, MPI_REQUEST_NULL);
   std::vector<MessageBuffer<std::size_t> >
     send_buffers(size, MessageBuffer<std::size_t>(maxBufferSize_)),
     recv_buffers(size, MessageBuffer<std::size_t>(maxBufferSize_));
   SizeDataHandle<DataHandle> size_handle(handle,data_recv_trackers);
   setupInterfaceTrackers<FORWARD>(size_handle,send_trackers, recv_trackers);
-  std::size_t size_to_send=size, size_to_recv=size;
-
-  // Skip empty interfaces.
-  typedef typename std::vector<InterfaceTracker>::const_iterator Iter;
-  for(Iter i=recv_trackers.begin(), end=recv_trackers.end(); i!=end; ++i)
-    if(i->empty())
-      --size_to_recv;
-
   setupRequests(size_handle, send_trackers, send_buffers, send_requests,
                                 SetupSendRequest<SizeDataHandle<DataHandle> >(), communicator_);
   setupRequests(size_handle, recv_trackers, recv_buffers, recv_requests,
                 SetupRecvRequest<SizeDataHandle<DataHandle> >(), communicator_);
 
+  // Count valid requests that we have to wait for.
+  auto valid_req_func =
+    [](const MPI_Request& req) { return req != MPI_REQUEST_NULL; };
+
+  auto size_to_send = std::count_if(send_requests.begin(), send_requests.end(),
+                                    valid_req_func);
+  auto size_to_recv = std::count_if(recv_requests.begin(), recv_requests.end(),
+                                    valid_req_func);
 
   while(size_to_send+size_to_recv)
   {
@@ -1154,14 +1154,20 @@ void VariableSizeCommunicator<Allocator>::communicateVariableSize(DataHandle& ha
     recv_buffers(interface_->size(), MessageBuffer<DataType>(maxBufferSize_));
 
   communicateSizes<FORWARD>(handle, recv_trackers);
-  std::size_t no_to_send, no_to_recv;
-  no_to_send = no_to_recv =  interface_->size();
   // Setup requests for sending and receiving.
   setupRequests(handle, send_trackers, send_buffers, send_requests,
                 SetupSendRequest<DataHandle>(), communicator_);
   setupRequests(handle, recv_trackers, recv_buffers, recv_requests,
                 SetupRecvRequest<DataHandle>(), communicator_);
 
+  // Determine number of valid requests.
+  auto valid_req_func =
+    [](const MPI_Request& req) { return req != MPI_REQUEST_NULL;};
+
+  auto no_to_send = std::count_if(send_requests.begin(), send_requests.end(),
+                             valid_req_func);
+  auto no_to_recv = std::count_if(recv_requests.begin(), recv_requests.end(),
+                             valid_req_func);
   while(no_to_send+no_to_recv)
   {
     // Check send completion and initiate other necessary sends
