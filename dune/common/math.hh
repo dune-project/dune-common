@@ -9,6 +9,7 @@
 
 #include <cmath>
 #include <complex>
+#include <limits>
 #include <type_traits>
 
 #include <dune/common/typeutilities.hh>
@@ -83,13 +84,12 @@ namespace Dune
 
   //! calculate the factorial of n as a constexpr
   // T has to be an integral type
-  template<class T,
-           std::enable_if_t<std::is_integral<std::decay_t<T>>::value, int> = 0>
-  constexpr inline static auto factorial(T&& n) noexcept
-    -> std::decay_t< T >
+  template<class T>
+  constexpr inline static T factorial(const T& n) noexcept
   {
-    std::decay_t<T> fac = 1;
-    for(std::decay_t<T> k = 0; k < n; ++k)
+    static_assert(std::numeric_limits<T>::is_integer, "`factorial(n)` has to be called with an integer type.");
+    T fac = 1;
+    for(T k = 0; k < n; ++k)
       fac *= k+1;
     return fac;
   }
@@ -104,26 +104,26 @@ namespace Dune
 
   //! calculate the binomial coefficient n over k as a constexpr
   // T and U have to be the same integral type
-  template<class T, class U,
-           std::enable_if_t<std::is_same<std::decay_t<T>, std::decay_t<U>>::value, int> = 0,
-           std::enable_if_t<std::is_integral<std::decay_t<T>>::value, int> = 0>
-  constexpr inline static auto binomial (T&& n, U&& k) noexcept
-    -> std::decay_t< T >
+  template<class T class U,
+           std::enable_if_t<std::is_same<T, U>::value, int> = 0>
+  constexpr inline static T binomial (const T& n, const U& k) noexcept
   {
+    static_assert(std::numeric_limits<T>::is_integer, "`binomial(n, k)` has to be called with an integer type.");
+
     if( k < 0 || k > n )
       return 0;
 
     if (2*k > n)
       return binomial(n, n-k);
 
-    std::decay_t<T> bin = 1;
+    T bin = 1;
     for(auto i = n-k; i < n; ++i)
       bin *= i+1;
     return bin / factorial(k);
   }
 
   //! calculate the binomial coefficient n over k as a constexpr
-  template< class T, T n, T k>
+  template<class T, T n, T k>
   constexpr inline static auto binomial (std::integral_constant<T, n>, std::integral_constant<T, k>) noexcept
   {
     return std::integral_constant<T, binomial(n, k)>{};
