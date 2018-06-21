@@ -14,23 +14,13 @@ namespace Dune
 {
 
   /**
-     \brief Provides commonly used mathematical constants.
-
-     a struct that is specialized for types repesenting real or complex
-     numbers. I provides commonly used mathematical constants with the
-     required accuary for the specified type.
-   */
-  template< class Field >
-  struct MathematicalConstants;
-
-  /**
      \brief Standard implementation of MathematicalConstants.
 
      This implementation will work with all built-in floating point
      types. It provides
 
-   * e as std::exp(1.0)
-   * pi as std::acos(-1.0)
+   * e as exp(1.0)
+   * pi as acos(-1.0)
 
    */
   template< class T >
@@ -52,35 +42,17 @@ namespace Dune
   };
 
 
-#ifndef DOXYGEN
-  // MathematicalConstants for float
-  // -------------------------------
+  /**
+     \brief Provides commonly used mathematical constants.
 
-  template<>
-  struct MathematicalConstants< float >
-    : public StandardMathematicalConstants< float >
+     a struct that is specialized for types repesenting real or complex
+     numbers. It provides commonly used mathematical constants with the
+     required accuary for the specified type.
+   */
+  template< class Field >
+  struct MathematicalConstants
+    : public StandardMathematicalConstants<Field>
   {};
-
-
-
-  // MathematicalConstants for double
-  // --------------------------------
-
-  template<>
-  struct MathematicalConstants< double >
-    : public StandardMathematicalConstants< double >
-  {};
-
-
-
-  // MathematicalConstants for long double
-  // -------------------------------------
-
-  template<>
-  struct MathematicalConstants< long double >
-    : public StandardMathematicalConstants< long double >
-  {};
-#endif // DOXYGEN
 
 
   //! Calculates the factorial of m at compile time
