@@ -414,7 +414,7 @@ namespace Dune
     int procs;
   };
 
-  std::shared_ptr<MPI_Comm> CollectiveCommunication<MPI_Comm>::world = std::shared_ptr<MPI_Comm>(new MPI_Comm(MPI_COMM_WORLD));
+  std::shared_ptr<MPI_Comm> CollectiveCommunication<MPI_Comm>::world = std::shared_ptr<MPI_Comm>(new MPI_Comm(MPI_COMM_WORLD), freeComm);
 } // namespace dune
 
 #endif // HAVE_MPI

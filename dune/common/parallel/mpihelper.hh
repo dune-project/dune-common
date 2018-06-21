@@ -202,7 +202,7 @@ namespace Dune
     static CollectiveCommunication<MPICommunicator>
     getCollectiveCommunication()
     {
-      return CollectiveCommunication<MPICommunicator>(getCommunicator());
+      return CollectiveCommunication<MPICommunicator>();
     }
     /**
      * @brief Get the singleton instance of the helper.

@@ -123,7 +123,7 @@ int main(int argc, char** argv)
       guard.finalize();
     }
   }catch(Dune::Exception& e){
-    auto failed = Dune::MPIGuard::getFailedRanks(e);
+    auto failed = Dune::MPIGuard::getFailedRanks(e, Dune::CollectiveCommunication<MPI_Comm>());
     if(mpihelper.rank() == 0)
       std::cout << "failed ranks are: ";
     for(int r : failed){
@@ -138,4 +138,5 @@ int main(int argc, char** argv)
   mpihelper.getCollectiveCommunication().barrier();
   if (mpihelper.rank() == 0)
     std::cout << "---- done" << std::endl;
+  return 0;
 }
