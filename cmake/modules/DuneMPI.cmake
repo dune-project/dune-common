@@ -62,7 +62,7 @@ function(add_dune_mpi_flags)
     set_property(${_prefix} ${ADD_MPI_UNPARSED_ARGUMENTS} APPEND PROPERTY COMPILE_DEFINITIONS ENABLE_MPI=1
       MPICH_SKIP_MPICXX MPIPP_H)
     if(NOT (ADD_MPI_SOURCE_ONLY OR ADD_MPI_OBJECT))
-    set_property(${_prefix} ${ADD_MPI_UNPARSED_ARGUMENTS} APPEND_STRING PROPERTY LINK_FLAGS ${MPI_DUNE_LINK_FLAGS})
+    set_property(${_prefix} ${ADD_MPI_UNPARSED_ARGUMENTS} APPEND_STRING PROPERTY LINK_FLAGS " ${MPI_DUNE_LINK_FLAGS} ")
     foreach(target ${ADD_MPI_UNPARSED_ARGUMENTS})
       target_link_libraries(${target} ${MPI_DUNE_LIBRARIES})
     endforeach(target ${ADD_MPI_UNPARSED_ARGUMENTS})
