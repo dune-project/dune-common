@@ -8,6 +8,9 @@
 int main(int argc, char** argv)
 {
   Dune::MPIHelper & mpihelper = Dune::MPIHelper::instance(argc, argv);
+  MPI_Comm barrier_comm;
+  MPI_Comm_dup(MPI_COMM_WORLD, &barrier_comm);
+  Dune::CollectiveCommunication<MPI_Comm> barrier_cc(barrier_comm);
 
   if (mpihelper.rank() == 0)
     std::cout << "---- default constructor" << std::endl;
@@ -27,7 +30,7 @@ int main(int argc, char** argv)
               << e.what() << std::endl;
   }
 
-  mpihelper.getCollectiveCommunication().barrier();
+  barrier_cc.barrier();
   if (mpihelper.rank() == 0)
     std::cout << "---- guard(MPI_COMM_WORLD)" << std::endl;
   try
@@ -50,7 +53,7 @@ int main(int argc, char** argv)
               << e.what() << std::endl;
   }
 
-  mpihelper.getCollectiveCommunication().barrier();
+  barrier_cc.barrier();
   if (mpihelper.rank() == 0)
     std::cout << "---- guard(MPIHelper)" << std::endl;
   try
@@ -69,8 +72,7 @@ int main(int argc, char** argv)
               << e.what() << std::endl;
   }
 
-
-  mpihelper.getCollectiveCommunication().barrier();
+  barrier_cc.barrier();
   if (mpihelper.rank() == 0)
     std::cout << "---- manual error" << std::endl;
   try
@@ -88,7 +90,7 @@ int main(int argc, char** argv)
   }
 
 #if HAVE_ULFM_REVOKE
-  mpihelper.getCollectiveCommunication().barrier();
+    barrier_cc.barrier();
   if (mpihelper.rank() == 0)
     std::cout << "---- guard(MPIHelper) (ULFM, interrupt barrier)" << std::endl;
   try
@@ -111,7 +113,7 @@ int main(int argc, char** argv)
     std::cout << "Info: No ULFM available" << std::endl;
 #endif
 
-  mpihelper.getCollectiveCommunication().barrier();
+  barrier_cc.barrier();
 
   if (mpihelper.rank() == 0)
     std::cout << "---- test getFailedRanks() --- only even ranks fail" << std::endl;
@@ -135,7 +137,7 @@ int main(int argc, char** argv)
     if(mpihelper.rank() == 0)
       std::cout << std::endl;
   }
-  mpihelper.getCollectiveCommunication().barrier();
+  barrier_cc.barrier();
   if (mpihelper.rank() == 0)
     std::cout << "---- done" << std::endl;
   return 0;
