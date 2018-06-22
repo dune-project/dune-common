@@ -17,6 +17,7 @@
 #include <dune/common/stdstreams.hh>
 #endif
 #include <dune/common/visibility.hh>
+#include <dune/common/exceptions.hh>
 
 namespace Dune
 {
@@ -155,6 +156,32 @@ namespace Dune
   };
 
 #if HAVE_MPI
+
+  class MPIError : public ParallelError{
+  public:
+    /** @brief Constructor. */
+    MPIError(int e) : errorcode(e)
+    {}
+
+    /** @brief Constructor. */
+    MPIError(std::string s, int e) : errorcode(e){
+      this->message(s);
+    }
+
+    /** @brief The error string. */
+    std::string errorstring;
+
+    /** @brief The mpi error code. */
+    int errorcode;
+
+    /** @brief The mpi error class. */
+    int errorClass() const{
+      int eclass = 0;
+      MPI_Error_class(errorcode, &eclass);
+      return eclass;
+    }
+  };
+
   /**
    * @brief A real mpi helper.
    * @ingroup ParallelCommunication
@@ -241,6 +268,14 @@ namespace Dune
     bool initializedHere_;
     void prevent_warning(int){}
 
+    static void MPI_err_handler(MPI_Comm * c, int *err_code, ...){
+      char err_string[MPI_MAX_ERROR_STRING];
+      int err_length = 0;
+      MPI_Error_string(*err_code, err_string, &err_length);
+      std::string s(err_string, err_length);
+      DUNE_THROW(MPIError, s, *err_code);
+    }
+
     //! \brief calls MPI_Init with argc and argv as parameters
     MPIHelper(int& argc, char**& argv)
     : initializedHere_(false)
@@ -256,7 +291,9 @@ namespace Dune
         initializedHere_ = true;
       }
 
-      MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_RETURN);
+      MPI_Errhandler errhandler;
+      MPI_Comm_create_errhandler(MPI_err_handler, &errhandler);
+      MPI_Comm_set_errhandler(MPI_COMM_WORLD, errhandler);
 
       MPI_Comm_rank(MPI_COMM_WORLD,&rank_);
       MPI_Comm_size(MPI_COMM_WORLD,&size_);

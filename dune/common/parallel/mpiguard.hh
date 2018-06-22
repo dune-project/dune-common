@@ -193,7 +193,7 @@ namespace Dune
 
     /*! @brief destroy the guard and check for undetected exceptions
      */
-    ~MPIGuard()
+    ~MPIGuard() noexcept(false)
     {
       if (active_)
       {
