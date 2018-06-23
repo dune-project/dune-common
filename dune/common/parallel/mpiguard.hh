@@ -240,7 +240,9 @@ namespace Dune
     /*
       Communicates the failed ranks. This function is collective. Each
       exception is considered as failed unless it is dynamic_castable
-      to `MPIGuardException` and the `failed()` method returns false.
+      to `MPIGuardException` and the `failed()` method returns false
+      or, if ULFM_REVOKE is available, it is dynamic_castable to
+      MPIError and the error class is MPIX_ERR_REVOKED.
      */
     template<class CC = std::decay_t<decltype(MPIHelper::getCollectiveCommunication())>>
     static std::vector<int> getFailedRanks(Exception& e, CC cc = MPIHelper::getCollectiveCommunication()){
@@ -249,6 +251,12 @@ namespace Dune
       if(mge != nullptr){
         failed = mge->failed(); // MPIGuardException might be sound
       }
+#if HAVE_ULFM_REVOKE
+      MPIError* me = dynamic_cast<MPIError*>(&e);
+      if(me != nullptr){
+        failed = me->errorClass() != MPIX_ERR_REVOKED;
+      }
+#endif
       // assign index to failed ranks
       int err_index = failed?1:0;
       cc.template scan<std::plus<int>>(&err_index, 1);

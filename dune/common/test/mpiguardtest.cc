@@ -122,7 +122,15 @@ int main(int argc, char** argv)
       Dune::MPIGuard guard;
       if(mpihelper.rank()%2 == 0)
         DUNE_THROW(Dune::Exception, "Fakeproblem on process" << mpihelper.rank());
-      guard.finalize();
+      if(mpihelper.rank()==1)
+        guard.finalize(); // throws MPIGuardError
+#if HAVE_ULFM_REVOKE
+      else
+        mpihelper.getCollectiveCommunication().barrier(); // throws MPIError with error class MPIX_ERR_REVOKED
+#else
+      else
+        guard.finalize(); // throws MPIGuardError
+#endif
     }
   }catch(Dune::Exception& e){
     auto failed = Dune::MPIGuard::getFailedRanks(e, Dune::CollectiveCommunication<MPI_Comm>());
