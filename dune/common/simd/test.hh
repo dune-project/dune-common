@@ -159,8 +159,9 @@ namespace Dune {
       {
         // initialize to avoid undefined behaviour if assigning to lane()
         // involves lvalue-to-rvalue conversions, e.g. due to bitmask
-        // operations
-        V vec{ Scalar<V>{0} };
+        // operations.  Avoid using broadcast<V>() for initialization to avoid
+        // test interdependencies.
+        V vec(Scalar<V>(0));
         for(std::size_t l = 0; l < lanes(vec); ++l)
           lane(l, vec) = l + 1;
         return vec;
@@ -182,7 +183,9 @@ namespace Dune {
       template<class V>
       static V leftVector()
       {
-        V res{ Scalar<V>{0} };
+        // Avoid using broadcast<V>() for initialization to avoid test
+        // interdependencies.
+        V res(Scalar<V>(0));
         for(std::size_t l = 0; l < lanes(res); ++l)
           lane(l, res) = Scalar<V>(l+1);
         return res;
@@ -191,7 +194,9 @@ namespace Dune {
       template<class V>
       static V rightVector()
       {
-        V res{ Scalar<V>{0} };
+        // Avoid using broadcast<V>() for initialization to avoid test
+        // interdependencies.
+        V res(Scalar<V>(0));
         for(std::size_t l = 0; l < lanes(res); ++l)
           // do not exceed number of bits in char (for shifts)
           // avoid 0 (for / and %)
@@ -310,7 +315,9 @@ namespace Dune {
       template<class V>
       void checkLane()
       {
-        V vec{ Scalar<V>{0} };
+        // Avoid using broadcast<V>() for initialization to avoid test
+        // interdependencies.
+        V vec(Scalar<V>(0));
         // check lane() on mutable lvalues
         for(std::size_t l = 0; l < lanes(vec); ++l)
           lane(l, vec) = l + 1;
@@ -464,6 +471,50 @@ namespace Dune {
           DUNE_SIMD_CHECK(is42(vec)); }
         // { Scalar<V> ref = 42;            V vec = {std::move(ref)};
         //   DUNE_SIMD_CHECK(is42(vec)); }
+      }
+
+      // check the broadcast function
+      template<class V>
+      void checkBroadcast()
+      {
+        // broadcast function
+        { // lvalue arg
+          Scalar<V> ref = 42;
+          auto vec = broadcast<V>(ref);
+          static_assert(std::is_same<decltype(vec), V>::value,
+                        "Unexpected result type for broadcast<V>()");
+          DUNE_SIMD_CHECK(is42(vec));
+          DUNE_SIMD_CHECK(ref == Scalar<V>(42));
+        }
+
+        { // const lvalue arg
+          const Scalar<V> ref = 42;
+          auto vec = broadcast<V>(ref);
+          static_assert(std::is_same<decltype(vec), V>::value,
+                        "Unexpected result type for broadcast<V>()");
+          DUNE_SIMD_CHECK(is42(vec));
+        }
+
+        { // rvalue arg
+          auto vec = broadcast<V>(Scalar<V>(42));
+          static_assert(std::is_same<decltype(vec), V>::value,
+                        "Unexpected result type for broadcast<V>()");
+          DUNE_SIMD_CHECK(is42(vec));
+        }
+
+        { // int arg
+          auto vec = broadcast<V>(42);
+          static_assert(std::is_same<decltype(vec), V>::value,
+                        "Unexpected result type for broadcast<V>()");
+          DUNE_SIMD_CHECK(is42(vec));
+        }
+
+        { // double arg
+          auto vec = broadcast<V>(42.0);
+          static_assert(std::is_same<decltype(vec), V>::value,
+                        "Unexpected result type for broadcast<V>()");
+          DUNE_SIMD_CHECK(is42(vec));
+        }
       }
 
       template<class V>
@@ -1329,7 +1380,7 @@ namespace Dune {
         DUNE_SIMD_CHECK(allFalse(M(false)) == true);
         DUNE_SIMD_CHECK(anyFalse(M(false)) == true);
 
-        M mixedVec{ Scalar<M>{0} };
+        auto mixedVec = broadcast<M>(0);
         for(std::size_t l = 0; l < lanes(mixedVec); ++l)
           lane(l, mixedVec) = (l % 2);
 
@@ -1388,8 +1439,8 @@ namespace Dune {
         DUNE_SIMD_CHECK(allTrue(cond(M(true),  vec1, vec2) == vec1));
         DUNE_SIMD_CHECK(allTrue(cond(M(false), vec1, vec2) == vec2));
 
-        V mixedResult{ Scalar<V>{0} };
-        M mixedMask{ Scalar<M>{0} };
+        auto mixedResult = broadcast<V>(0);
+        auto mixedMask = broadcast<M>(false);
         for(std::size_t l = 0; l < lanes(mixedMask); ++l)
         {
           lane(l, mixedMask  ) = (l % 2);
@@ -1540,6 +1591,7 @@ namespace Dune {
       checkDefaultConstruct<V>();
       checkLane<V>();
       checkCopyMoveConstruct<V>();
+      checkBroadcast<V>();
       checkBroadcastVectorConstruct<V>();
       checkBracedAssign<V>();
       checkBracedBroadcastAssign<V>();
@@ -1584,6 +1636,7 @@ namespace Dune {
       checkDefaultConstruct<M>();
       checkLane<M>();
       checkCopyMoveConstruct<M>();
+      checkBroadcast<M>();
       checkBroadcastMaskConstruct<M>();
       checkBracedAssign<M>();
       checkBracedBroadcastAssign<M>();

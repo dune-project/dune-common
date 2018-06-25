@@ -18,6 +18,7 @@
 #include <dune/common/rangeutilities.hh>
 #include <dune/common/simd/base.hh>
 #include <dune/common/simd/interface.hh>
+#include <dune/common/typelist.hh>
 #include <dune/common/typetraits.hh>
 
 namespace Dune {
@@ -132,6 +133,13 @@ namespace Dune {
       auto maskAnd(ADLTag<0>, const V1 &v1, const V2 &v2)
       {
         return Simd::mask(v1) && Simd::mask(v2);
+      }
+
+      //! implements Simd::broadcast<V>()
+      template<class V, class S>
+      auto broadcast(ADLTag<0>, MetaType<V>, S s)
+      {
+        return V(Simd::Scalar<V>(s));
       }
 
       //! @} Overloadable and default functions

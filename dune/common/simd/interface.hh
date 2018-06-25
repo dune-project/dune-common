@@ -18,6 +18,7 @@
 #include <utility>
 
 #include <dune/common/simd/base.hh>
+#include <dune/common/typelist.hh>
 
 namespace Dune {
 
@@ -411,6 +412,23 @@ namespace Dune {
     auto maskAnd(const V1 &v1, const V2 &v2)
     {
       return maskAnd(Overloads::ADLTag<7>{}, v1, v2);
+    }
+
+    //! Broadcast a scalar to a vector explicitly
+    /**
+     * Implemented by `Overloads::broadcast()`
+     *
+     * This is useful because the syntax for broadcasting can vary wildly
+     * between implementations.
+     *
+     * \note One of the few functions that explicitly take a template
+     *       argument (`V` in this case).
+     */
+    template<class V, class S>
+    constexpr V broadcast(S s)
+    {
+      return broadcast(Overloads::ADLTag<7>{}, MetaType<std::decay_t<V> >{},
+                       std::move(s));
     }
 
     //! @}
