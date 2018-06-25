@@ -107,7 +107,7 @@ namespace Dune {
      * to operate on floating point types, where this is a non-issue.
      *
      * (Of couse, this is also a problem for code that operates on untrusted
-     * input, but you shoul not be doing that with Dune anyway).
+     * input, but you should not be doing that with Dune anyway).
      *
      * Still, when writing code using the SIMD abstractions, you should be
      * aware that in the following snippet
