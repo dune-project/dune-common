@@ -6,7 +6,7 @@
 # MPI_DUNE_LINK_FLAGS Linker flags for MPI applications.
 # MPI_DUNE_LIBRARIES Libraries for MPI applications.
 #
-# DISABLE_ULFM_REVOKE Disables the ULFM revoke functionalities.
+# DISABLE_ULFM Disable ULFM MPI extention
 # USE_BLACKCHANNEL Uses the Blackchannel-ULFM library (if found) instead of the MPI build-in
 #
 # The DUNE way to compile MPI applications is to use the CXX
@@ -51,9 +51,9 @@ if(MPI_C_FOUND)
                               INCLUDE_DIRS "${MPI_DUNE_INCLUDE_PATH}"
                               LIBRARIES "${MPI_DUNE_LIBRARIES}")
 
-  set(DISABLE_ULFM_REVOKE 0 CACHE BOOL
-    "Disable ULFM revoke functionalities")
-  if(NOT DISABLE_ULFM_REVOKE)
+  set(DISABLE_ULFM 1 CACHE BOOL
+    "Disable ULFM MPI extention")
+  if(NOT DISABLE_ULFM)
     list(APPEND CMAKE_REQUIRED_LIBRARIES ${MPI_DUNE_LIBRARIES})
     list(APPEND CMAKE_REQUIRED_FLAGS ${MPI_DUNE_LINK_FLAGS})
     list(APPEND MPI_HEADER "${MPI_DUNE_INCLUDE_PATH}/mpi.h")
