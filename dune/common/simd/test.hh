@@ -466,6 +466,45 @@ namespace Dune {
         //   DUNE_SIMD_CHECK(is42(vec)); }
       }
 
+      // check the broadcast function
+      template<class V>
+      void checkBroadcast()
+      {
+        // broadcast function
+        { // lvalue arg
+          Scalar<V> ref = 42;
+          auto vec = broadcast<V>(ref);
+          static_assert(std::is_same_v<decltype(vec), V>, "Type mismatch");
+          DUNE_SIMD_CHECK(is42(vec));
+          DUNE_SIMD_CHECK(ref == Scalar<V>(42));
+        }
+
+        { // const lvalue arg
+          const Scalar<V> ref = 42;
+          auto vec = broadcast<V>(ref);
+          static_assert(std::is_same_v<decltype(vec), V>, "Type mismatch");
+          DUNE_SIMD_CHECK(is42(vec));
+        }
+
+        { // rvalue arg
+          auto vec = broadcast<V>(Scalar<V>(42));
+          static_assert(std::is_same_v<decltype(vec), V>, "Type mismatch");
+          DUNE_SIMD_CHECK(is42(vec));
+        }
+
+        { // int arg
+          auto vec = broadcast<V>(42);
+          static_assert(std::is_same_v<decltype(vec), V>, "Type mismatch");
+          DUNE_SIMD_CHECK(is42(vec));
+        }
+
+        { // double arg
+          auto vec = broadcast<V>(42.0);
+          static_assert(std::is_same_v<decltype(vec), V>, "Type mismatch");
+          DUNE_SIMD_CHECK(is42(vec));
+        }
+      }
+
       template<class V>
       void checkBracedAssign()
       {
@@ -1540,6 +1579,7 @@ namespace Dune {
       checkDefaultConstruct<V>();
       checkLane<V>();
       checkCopyMoveConstruct<V>();
+      checkBroadcast<V>();
       checkBroadcastVectorConstruct<V>();
       checkBracedAssign<V>();
       checkBracedBroadcastAssign<V>();
@@ -1584,6 +1624,7 @@ namespace Dune {
       checkDefaultConstruct<M>();
       checkLane<M>();
       checkCopyMoveConstruct<M>();
+      checkBroadcast<V>();
       checkBroadcastMaskConstruct<M>();
       checkBracedAssign<M>();
       checkBracedBroadcastAssign<M>();
