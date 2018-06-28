@@ -50,7 +50,7 @@ namespace Dune
       }
       return datatype;
     }
-
+    static constexpr bool is_intrinsic = false;
   };
   template<class T>
   MPI_Datatype MPITraits<T>::datatype = MPI_DATATYPE_NULL;
@@ -58,12 +58,13 @@ namespace Dune
 #ifndef DOXYGEN
 
   // A Macro for defining traits for the primitive data types
-#define ComposeMPITraits(p,m) \
-  template<> \
-  struct MPITraits<p>{ \
-    static inline MPI_Datatype getType(){ \
-      return m; \
-    } \
+#define ComposeMPITraits(p,m)                   \
+  template<>                                    \
+  struct MPITraits<p>{                          \
+    static inline MPI_Datatype getType(){       \
+      return m;                                 \
+    }                                           \
+    static constexpr bool is_intrinsic = true;  \
   }
 
   ComposeMPITraits(char, MPI_CHAR);
