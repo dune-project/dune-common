@@ -5,9 +5,6 @@
 
 #if HAVE_MPI
 #include <cassert>
-#endif
-
-#if HAVE_MPI
 #include <mpi.h>
 #endif
 
