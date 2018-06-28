@@ -23,6 +23,7 @@
 #include <dune/common/exceptions.hh>
 #include <dune/common/parallel/collectivecommunication.hh>
 #include <dune/common/parallel/mpitraits.hh>
+#include <dune/common/parallel/mpifuture.hh>
 
 namespace Dune
 {
@@ -66,9 +67,9 @@ namespace Dune
   template<typename Type, typename BinaryFunction>
   std::shared_ptr<MPI_Op> Generic_MPI_Op<Type,BinaryFunction>::op = std::shared_ptr<MPI_Op>(static_cast<MPI_Op*>(0));
 
-#define ComposeMPIOp(type,func,op) \
-  template<> \
-  class Generic_MPI_Op<type, func<type> >{ \
+#define ComposeMPIOp(func,op)                   \
+  template<class T, class S>                             \
+  class Generic_MPI_Op<T, func<S> >{             \
   public:\
     static MPI_Op get(){ \
       return op; \
@@ -79,53 +80,10 @@ namespace Dune
   }
 
 
-  ComposeMPIOp(char, std::plus, MPI_SUM);
-  ComposeMPIOp(unsigned char, std::plus, MPI_SUM);
-  ComposeMPIOp(short, std::plus, MPI_SUM);
-  ComposeMPIOp(unsigned short, std::plus, MPI_SUM);
-  ComposeMPIOp(int, std::plus, MPI_SUM);
-  ComposeMPIOp(unsigned int, std::plus, MPI_SUM);
-  ComposeMPIOp(long, std::plus, MPI_SUM);
-  ComposeMPIOp(unsigned long, std::plus, MPI_SUM);
-  ComposeMPIOp(float, std::plus, MPI_SUM);
-  ComposeMPIOp(double, std::plus, MPI_SUM);
-  ComposeMPIOp(long double, std::plus, MPI_SUM);
-
-  ComposeMPIOp(char, std::multiplies, MPI_PROD);
-  ComposeMPIOp(unsigned char, std::multiplies, MPI_PROD);
-  ComposeMPIOp(short, std::multiplies, MPI_PROD);
-  ComposeMPIOp(unsigned short, std::multiplies, MPI_PROD);
-  ComposeMPIOp(int, std::multiplies, MPI_PROD);
-  ComposeMPIOp(unsigned int, std::multiplies, MPI_PROD);
-  ComposeMPIOp(long, std::multiplies, MPI_PROD);
-  ComposeMPIOp(unsigned long, std::multiplies, MPI_PROD);
-  ComposeMPIOp(float, std::multiplies, MPI_PROD);
-  ComposeMPIOp(double, std::multiplies, MPI_PROD);
-  ComposeMPIOp(long double, std::multiplies, MPI_PROD);
-
-  ComposeMPIOp(char, Min, MPI_MIN);
-  ComposeMPIOp(unsigned char, Min, MPI_MIN);
-  ComposeMPIOp(short, Min, MPI_MIN);
-  ComposeMPIOp(unsigned short, Min, MPI_MIN);
-  ComposeMPIOp(int, Min, MPI_MIN);
-  ComposeMPIOp(unsigned int, Min, MPI_MIN);
-  ComposeMPIOp(long, Min, MPI_MIN);
-  ComposeMPIOp(unsigned long, Min, MPI_MIN);
-  ComposeMPIOp(float, Min, MPI_MIN);
-  ComposeMPIOp(double, Min, MPI_MIN);
-  ComposeMPIOp(long double, Min, MPI_MIN);
-
-  ComposeMPIOp(char, Max, MPI_MAX);
-  ComposeMPIOp(unsigned char, Max, MPI_MAX);
-  ComposeMPIOp(short, Max, MPI_MAX);
-  ComposeMPIOp(unsigned short, Max, MPI_MAX);
-  ComposeMPIOp(int, Max, MPI_MAX);
-  ComposeMPIOp(unsigned int, Max, MPI_MAX);
-  ComposeMPIOp(long, Max, MPI_MAX);
-  ComposeMPIOp(unsigned long, Max, MPI_MAX);
-  ComposeMPIOp(float, Max, MPI_MAX);
-  ComposeMPIOp(double, Max, MPI_MAX);
-  ComposeMPIOp(long double, Max, MPI_MAX);
+  ComposeMPIOp(std::plus, MPI_SUM);
+  ComposeMPIOp(std::multiplies, MPI_PROD);
+  ComposeMPIOp(Min, MPI_MIN);
+  ComposeMPIOp(Max, MPI_MAX);
 
 #undef ComposeMPIOp
 
@@ -169,6 +127,37 @@ namespace Dune
     int size () const
     {
       return procs;
+    }
+
+    template<class T>
+    int send(const T& data, int dest_rank, int tag){
+      MPIData<const T&> mpi_data(data);
+      return MPI_Send(mpi_data.ptr(), mpi_data.size(), mpi_data.type(),
+                      dest_rank, tag, communicator);
+    }
+
+    template<class T>
+    MPIFuture<T> isend(T&& data, int dest_rank, int tag){
+      MPIFuture<T> future(std::forward<T>(data));
+      MPI_Isend(future.data_->ptr(), future.data_->size(), future.data_->type(),
+                       dest_rank, tag, communicator, &future.req_);
+      return std::move(future);
+    }
+
+    template<class T>
+    T recv(T&& data, int source_rank, int tag, MPI_Status* status = MPI_STATUS_IGNORE){
+      MPIData<T> mpi_data(std::forward<T>(data));
+      MPI_Recv(mpi_data.ptr(), mpi_data.size(), mpi_data.type(),
+                      source_rank, tag, communicator, status);
+      return std::forward<T>(mpi_data.get());
+    }
+
+    template<class T>
+    MPIFuture<T> irecv(T&& data, int source_rank, int tag){
+      MPIFuture<T> future(std::forward<T>(data));
+      MPI_Irecv(future.data_->ptr(), future.data_->size(), future.data_->type(),
+                             source_rank, tag, communicator, &future.req_);
+      return std::move(future);
     }
 
     //! @copydoc CollectiveCommunication::sum
@@ -242,11 +231,33 @@ namespace Dune
       return MPI_Barrier(communicator);
     }
 
+    //! @copydoc CollectiveCommunication::barrier
+    MPIFuture<void> ibarrier () const
+    {
+      MPIFuture<void> future(true);
+      MPI_Ibarrier(communicator, &future.req_);
+      return future;
+    }
+
+
     //! @copydoc CollectiveCommunication::broadcast
     template<typename T>
     int broadcast (T* inout, int len, int root) const
     {
       return MPI_Bcast(inout,len,MPITraits<T>::getType(),root,communicator);
+    }
+
+    //! @copydoc CollectiveCommunication::ibroadcast
+    template<class T>
+    MPIFuture<T> ibroadcast(T&& data, int root) const{
+      MPIFuture<T> future(std::forward<T>(data));
+      MPI_Ibcast(future.data_->ptr(),
+                 future.data_->size(),
+                 future.data_->type(),
+                 root,
+                 communicator,
+                 &future.req_);
+      return std::move(future);
     }
 
     //! @copydoc CollectiveCommunication::gather()
@@ -257,6 +268,17 @@ namespace Dune
       return MPI_Gather(const_cast<T*>(in),len,MPITraits<T>::getType(),
                         out,len,MPITraits<T>::getType(),
                         root,communicator);
+    }
+
+    template<class TIN, class TOUT = std::vector<TIN>>
+    MPIFuture<TOUT, TIN> igather(TIN&& data_in, TOUT&& data_out, int root){
+      MPIFuture<TOUT, TIN> future(std::forward<TOUT>(data_out), std::forward<TIN>(data_in));
+      assert(root != me || future.send_data_->size()*procs <= future.data_->size());
+      int outlen = me==root * future.send_data_->size();
+      MPI_Igather(future.send_data_->ptr(), future.send_data_->size(), future.send_data_->type(),
+                  future.data_->ptr(), outlen, future.data_->type(),
+                  root, communicator, &future.req_);
+      return std::move(future);
     }
 
     //! @copydoc CollectiveCommunication::gatherv()
@@ -276,6 +298,16 @@ namespace Dune
       return MPI_Scatter(const_cast<T*>(send),len,MPITraits<T>::getType(),
                          recv,len,MPITraits<T>::getType(),
                          root,communicator);
+    }
+
+    template<class TIN, class TOUT = TIN>
+    MPIFuture<TOUT, TIN> iscatter(TIN&& data_in, TOUT&& data_out, int root){
+      MPIFuture<TOUT, TIN> future(std::forward<TOUT>(data_out), std::forward<TIN>(data_in));
+      int inlen = me==root * future.send_data_->size();
+      MPI_Iscatter(future.send_data_->ptr(), inlen, future.send_data_->type(),
+                  future.data_->ptr(), future.data_->size(), future.data_->type(),
+                  root, communicator, &future.req_);
+      return std::move(future);
     }
 
     //! @copydoc CollectiveCommunication::scatterv()
@@ -302,6 +334,17 @@ namespace Dune
                            communicator);
     }
 
+    template<class TIN, class TOUT = TIN>
+    MPIFuture<TOUT, TIN> iallgather(TIN&& data_in, TOUT&& data_out){
+      MPIFuture<TOUT, TIN> future(std::forward<TOUT>(data_out), std::forward<TIN>(data_in));
+      assert(future.send_data_->size()*procs <= future.data_->size());
+      int outlen = future.send_data_->size();
+      MPI_Iallgather(future.send_data_->ptr(), future.send_data_->size(), future.send_data_->type(),
+                  future.data_->ptr(), outlen, future.data_->type(),
+                  communicator, &future.req_);
+      return std::move(future);
+    }
+
     //! @copydoc CollectiveCommunication::allgatherv()
     template<typename T>
     int allgatherv (const T* in, int sendlen, T* out, int* recvlen, int* displ) const
@@ -320,6 +363,28 @@ namespace Dune
       std::copy(out, out+len, inout);
       delete[] out;
       return ret;
+    }
+
+    template<class BinaryFunction, class TIN, class TOUT = TIN>
+    MPIFuture<TOUT, TIN> iallreduce(TIN&& data_in, TOUT&& data_out){
+      MPIFuture<TOUT, TIN> future(std::forward<TOUT>(data_out), std::forward<TIN>(data_in));
+      assert(future.data_->size() == future.send_data_->size());
+      assert(future.data_->type() == future.send_data_->type());
+      MPI_Iallreduce(future.send_data_->ptr(), future.data_->ptr(),
+                     future.data_->size(), future.data_->type(),
+                     (Generic_MPI_Op<TIN, BinaryFunction>::get()),
+                     communicator, &future.req_);
+      return std::move(future);
+    }
+
+    template<class BinaryFunction, class T>
+    MPIFuture<T> iallreduce(T&& data){
+      MPIFuture<T> future(std::forward<T>(data));
+      MPI_Iallreduce(MPI_IN_PLACE, future.data_->ptr(),
+                     future.data_->size(), future.data_->type(),
+                     (Generic_MPI_Op<T, BinaryFunction>::get()),
+                     communicator, &future.req_);
+      return std::move(future);
     }
 
     //! @copydoc CollectiveCommunication::allreduce(Type* in,Type* out,int len) const
