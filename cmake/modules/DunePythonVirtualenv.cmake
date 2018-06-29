@@ -34,16 +34,18 @@
 #
 # .. cmake_variable:: DUNE_PYTHON_ALLOW_GET_PIP
 #
-#    Set this variable to allow the Dune build system to download :code:`get-pip.py`
-#    from https://bootstrap.pypa.io/get-pip.py at configure time and execute it
-#    to install pip into the freshly set up virtual environment. This step became
-#    necessary because of a debian bug:
-#    https://bugs.launchpad.net/debian/+source/python3.4/+bug/1290847
+#    The Dune build system will try to build a virtualenv with pip installed into it,
+#    but this can fail in some situations, in particular on Debian and Ubuntu distributions.
+#    In this case, you will se a warning message in the CMake output. If you are on Debian
+#    or Ubuntu, try installing the :code:`python3-venv` (for Python 3) and / or
+#    :code:`python-virtualenv` packages, delete your build directory and try configuring
+#    again.
 #
-#    If you do not want the Dune build system to download :code:`get-pip.py`, you can
-#    manually activate the virtual environment (sourcing the activate script
-#    symlinked into the build directories), install pip through your favorite
-#    method and reconfigure.
+#    If that still does not help, set this variable to allow the Dune build system to download
+#    :code:`get-pip.py` from https://bootstrap.pypa.io/get-pip.py at configure time and execute
+#    it to install pip into the freshly set up virtual environment. While this should normally
+#    not be necessary anymore, see https://bugs.launchpad.net/debian/+source/python3.4/+bug/1290847
+#    for more information about the underlying distribution bug.
 #
 
 # First, we look through the dependency tree of this module for a build directory
@@ -80,12 +82,34 @@ if(NOT DUNE_PYTHON_VIRTUALENV_PATH)
 
   # Set up the env itself
   message("-- Building a virtual env in ${CMAKE_BINARY_DIR}/dune-env...")
-  dune_execute_process(COMMAND ${PYTHON_EXECUTABLE}
-                                -m ${VIRTUALENV_PACKAGE_NAME}
-                                ${NOPIP_OPTION}
-                                ${CMAKE_BINARY_DIR}/dune-env
-                       ERROR_MESSAGE "Fatal error when setting up a virtualenv."
-                       )
+  # First, try to build it with pip installed, but only if the user has not set DUNE_PYTHON_ALLOW_GET_PIP
+  if(NOT DUNE_PYTHON_ALLOW_GET_PIP)
+    dune_execute_process(COMMAND ${PYTHON_EXECUTABLE}
+                                  -m ${VIRTUALENV_PACKAGE_NAME}
+                                  "${CMAKE_BINARY_DIR}/dune-env"
+                         RESULT_VARIABLE venv_install_result
+                         )
+  endif()
+
+  if(NOT "${venv_install_result}" STREQUAL "0")
+
+    if(NOT DUNE_PYTHON_ALLOW_GET_PIP)
+      # we attempted the default installation before, so issue a warning
+      message("-- WARNING: Failed to build a virtual env with pip installed, trying again without pip")
+      message("-- If you are using Debian or Ubuntu, consider installing python3-venv and / or python-virtualenv")
+    endif()
+
+    # remove the remainder of a potential first attempt
+    file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/dune-env")
+
+    # try to build the env without pip
+    dune_execute_process(COMMAND ${PYTHON_EXECUTABLE}
+                                  -m ${VIRTUALENV_PACKAGE_NAME}
+                                  ${NOPIP_OPTION}
+                                  "${CMAKE_BINARY_DIR}/dune-env"
+                         ERROR_MESSAGE "Fatal error when setting up a virtualenv."
+                         )
+  endif()
 
   # And set the path to it
   set(DUNE_PYTHON_VIRTUALENV_PATH ${CMAKE_BINARY_DIR}/dune-env)
@@ -113,11 +137,11 @@ else()
   message(WARNING "Writing script 'run-in-dune-env' not implemented on your platform!")
 endif()
 
-# We previously omitted pip from the env, because of this Debian bug:
+# The virtualenv might not contain pip due to the distribution bug described in
 # https://bugs.launchpad.net/debian/+source/python3.4/+bug/1290847
-# We now, need to install pip. Easiest way is to download the get-pip
-# script. We ask users for permission to do so, or we allow them to
-# set it up themselves.
+# We need to install pip, so if pip is missing, we offer to download and run the get-pip
+# script. We ask users for permission to do so, or we allow them to set it up themselves.
+
 dune_python_find_package(PACKAGE pip
                          RESULT pippresent
                          INTERPRETER ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE}
