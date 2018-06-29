@@ -28,8 +28,10 @@ class SimpleGenerator(object):
         self.fileName = filename
 
     def load(self, includes, typeName, moduleName, *args, **kwargs):
+        defines = kwargs.get("defines",[])
         source = '#include <config.h>\n\n'
         source += '#define USING_DUNE_PYTHON 1\n\n'
+        source += ''.join(["#define " + d + "\n" for d in defines])
         source += ''.join(["#include <" + i + ">\n" for i in includes])
         source += '\n'
         source += '#include <dune/python/common/typeregistry.hh>\n'
