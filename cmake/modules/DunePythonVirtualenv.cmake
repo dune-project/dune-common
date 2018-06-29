@@ -79,13 +79,29 @@ if(NOT DUNE_PYTHON_VIRTUALENV_PATH)
   endif()
 
   # Set up the env itself
+  # First, try to build it with pip installed.
   message("-- Building a virtual env in ${CMAKE_BINARY_DIR}/dune-env...")
   dune_execute_process(COMMAND ${PYTHON_EXECUTABLE}
                                 -m ${VIRTUALENV_PACKAGE_NAME}
-                                ${NOPIP_OPTION}
-                                ${CMAKE_BINARY_DIR}/dune-env
-                       ERROR_MESSAGE "Fatal error when setting up a virtualenv."
+                                "${CMAKE_BINARY_DIR}/dune-env"
+                       RESULT_VARIABLE venv_install_result
                        )
+
+  if(NOT "${venv_install_result}" STREQUAL "0")
+    message("-- WARNING: Failed to build a virtual env with pip installed, trying again without pip")
+    message("-- If you are using Debian or Ubuntu, consider installing python3-venv and / or python-virtualenv")
+
+    # remove the first attempt
+    file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/dune-env")
+
+    # try to build the env without pip
+    dune_execute_process(COMMAND ${PYTHON_EXECUTABLE}
+                                  -m ${VIRTUALENV_PACKAGE_NAME}
+                                  ${NOPIP_OPTION}
+                                  "${CMAKE_BINARY_DIR}/dune-env"
+                         ERROR_MESSAGE "Fatal error when setting up a virtualenv."
+                         )
+  endif()
 
   # And set the path to it
   set(DUNE_PYTHON_VIRTUALENV_PATH ${CMAKE_BINARY_DIR}/dune-env)
