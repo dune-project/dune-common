@@ -19,11 +19,11 @@ debian:10 gcc-7-14--expensive:
   # is unavailable
   allow_failure: true
 
-debian:10 gcc-8-17:
+debian:10 gcc-8-noassert-17:
   image: registry.dune-project.org/docker/ci/debian:10
   script: duneci-standard-test
   variables:
-    DUNECI_TOOLCHAIN: gcc-8-17
+    DUNECI_TOOLCHAIN: gcc-8-noassert-17
     DUNECI_CMAKE_FLAGS: "-DDUNE_PYTHON_VIRTUALENV_SETUP=1"
   tags: [duneci]
 
