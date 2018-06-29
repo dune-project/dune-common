@@ -24,6 +24,7 @@ debian:10 gcc-8-17:
   script: duneci-standard-test
   variables:
     DUNECI_TOOLCHAIN: gcc-8-17
+    DUNECI_CMAKE_FLAGS: "-DDUNE_PYTHON_VIRTUALENV_SETUP"
   tags: [duneci]
 
 debian:10 clang-6-libcpp-17:
@@ -38,6 +39,7 @@ debian:9 gcc-6-14:
   script: duneci-standard-test
   variables:
     DUNECI_TOOLCHAIN: gcc-6-14
+    DUNECI_CMAKE_FLAGS: "-DDUNE_PYTHON_VIRTUALENV_SETUP"
   tags: [duneci]
 
 debian:9 clang-3.8-14:
@@ -52,6 +54,7 @@ ubuntu:16.04 gcc-5-14:
   script: duneci-standard-test
   variables:
     DUNECI_TOOLCHAIN: gcc-5-14
+    DUNECI_CMAKE_FLAGS: "-DDUNE_PYTHON_VIRTUALENV_SETUP"
   tags: [duneci]
 
 ubuntu:18.04 clang-6-17:
@@ -59,4 +62,5 @@ ubuntu:18.04 clang-6-17:
   script: duneci-standard-test
   variables:
     DUNECI_TOOLCHAIN: clang-6-17
+    DUNECI_CMAKE_FLAGS: "-DDUNE_PYTHON_VIRTUALENV_SETUP"
   tags: [duneci]
