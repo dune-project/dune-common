@@ -43,15 +43,16 @@
 #
 # .. cmake_variable:: DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR
 #
-#    Before Dune 2.7, the virtualenv was always placed inside the build directory of  the first
+#    Before Dune 2.6, the virtualenv was always placed inside the build directory of  the first
 #    non-installed Dune module that the current module depends on. When using installed core modules
 #    or a multi-stage installation process, this can lead to situations where there are multiple
 #    virtualenvs, making it impossible to find all Python modules installed by upstream modules.
 #    In order to avoid this problem at least for builds using an absolute build directory (i.e., the
-#    :code:`--builddir` option of dunecontrol refers to an absolute path), the build system will
+#    :code:`--builddir` option of dunecontrol refers to an absolute path), you can set
+#    :code:`DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR=1`. This will make the build system
 #    place the virtualenv in a dedicated directory :code:`dune-python-env` inside that absolute
-#    build directory, where it will be found by all Dune modules. If you want to disable this
-#    behavior, set :code:`DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR=0`.
+#    build directory, where it will be found by all Dune modules. Starting from Dune 2.7, this
+#    behavior will become the default.
 #
 # .. cmake_variable:: DUNE_PYTHON_ALLOW_GET_PIP
 #
@@ -77,7 +78,7 @@ set(DUNE_PYTHON_VIRTUALENV_PATH "" CACHE PATH
   )
 
 # pre-populate DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR
-set(DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR ON CACHE BOOL
+set(DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR OFF CACHE BOOL
   "Place Python virtualenv in top-level directory \"dune-python-env\" when using an absolute build directory"
   )
 
