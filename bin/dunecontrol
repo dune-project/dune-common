@@ -622,6 +622,12 @@ run_default_update () {
 
 run_default_configure () {
   extract_multiarch
+
+  # tell CMake about the build directory root when we are using an absolute build directory
+  if [[ ${BUILDDIR} = /* ]] ; then
+      CMAKE_PARAMS="$CMAKE_PARAMS -DDUNE_BUILD_DIRECTORY_ROOT_PATH='${BUILDDIR}'"
+  fi
+
   # add arguments given as configure-opts to CMAKE_params
   CMAKE_PARAMS="$CMAKE_PARAMS $CMD_FLAGS"
 

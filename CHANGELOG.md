@@ -1,5 +1,11 @@
 # Master (will become release 2.7)
 
+-   When run with an absolute build directory, `dunecontrol` now exposes the root build
+    directory to CMake in the variable `DUNE_BUILD_DIRECTORY_ROOT_PATH`.
+
+    See core/dune-common!542
+
+
 # Release 2.6
 
 **This release is dedicated to Elias Pipping (1986-2017).**
