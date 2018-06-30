@@ -21,8 +21,8 @@ if hasattr(module, '__version__'):
 # Alternative implementation: through pip (pip itself implement pip.__version__,
 # so we never get here, when checking the version of pip itself), only works if
 # package name and distribution name are the same
-import pip
-for package in pip.get_installed_distributions():
+import pkg_resources
+for package in pkg_resources.working_set:
     if package.project_name == modstr and package.has_version():
         sys.stdout.write(package.version)
         sys.exit(0)
