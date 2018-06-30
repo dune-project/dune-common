@@ -5,6 +5,17 @@
 
     See core/dune-common!542
 
+-   The build system has learned some new tricks when creating or looking for the Python virtualenv:
+    When using an absolute build directory with `dunecontrol`, the virtualenv will now be placed
+    directly inside the root of the build directory hierarchy in the directory `dune-python-env`.
+    This should make it much easier to actually find the virtualenv and also avoids some corner
+    cases where the build system would create multiple virtualenvs that did not know about each
+    other. This behavior can be disabled by setting
+    `DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR=0`.
+    If you need even more precise control about the location of the virtualenv, you can now also
+    directly set the CMake variable `DUNE_PYTHON_VIRTUALENV_PATH` to the directory in which to
+    create the virtualenv.
+
 
 # Release 2.6
 
