@@ -12,7 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include <dune/common/visibility.hh>
 #include <dune/common/typelist.hh>
 #include <dune/common/visibility.hh>
 
@@ -27,6 +26,7 @@ namespace Dune
 
     namespace detail
     {
+
       struct DUNE_PRIVATE Entry
       {
         std::string name;
@@ -35,31 +35,33 @@ namespace Dune
         pybind11::object object;
       };
 
+
       // using an unordered_map directly for the type registry leads to a compilation
       // error in the cast used in the typeRegistry function:
       //   assertion failed: Unable to cast type to reference: value is local to type caster
       struct DUNE_PRIVATE TypeRegistry : public std::unordered_map< std::type_index, Entry >
       {};
 
-      TypeRegistry &typeRegistry ()
+
+      inline static TypeRegistry &typeRegistry ()
       {
         static pybind11::object instance;
-        if (!instance)
-        {
-          pybind11::module common = pybind11::module::import( "dune.typeregistry" );
-          instance = common.attr("typeRegistry");
-        }
-        return instance.cast<TypeRegistry&>();
+        if( !instance )
+          instance = pybind11::module::import( "dune.typeregistry" ).attr( "typeRegistry" );
+        return pybind11::cast< TypeRegistry & >( instance );
       }
 
-      template <class T>
-      auto findInTypeRegistry()
+
+      template< class T >
+      inline static auto findInTypeRegistry ()
       {
         auto pos = typeRegistry().find( typeid(T) );
         return std::make_pair( pos, pos == typeRegistry().end() );
       }
-      template <class T>
-      auto insertIntoTypeRegistry (
+
+
+      template< class T >
+      inline static auto insertIntoTypeRegistry (
           const std::string &name,
           const std::string &pyName,
           std::vector< std::string > includes )
@@ -75,9 +77,20 @@ namespace Dune
         return ret;
       }
 
+
+
+      // TypeRegistryTag
+      // ---------------
+
       struct TypeRegistryTag {};
 
-      struct GenerateTypeName : public TypeRegistryTag
+
+
+      // GenerateTypeName
+      // ----------------
+
+      struct GenerateTypeName
+        : public TypeRegistryTag
       {
         template <class... Templ>
         GenerateTypeName(const std::string &main, Templ... templ)
@@ -222,7 +235,14 @@ namespace Dune
         std::vector<std::vector<std::string>> includes_;
       };
 
-      struct IncludeFiles : public std::vector<std::string>, TypeRegistryTag
+
+
+      // IncludeFiles
+      // ------------
+
+      struct IncludeFiles
+        : public std::vector< std::string >,
+          TypeRegistryTag
       {
         template <class... Args>
         IncludeFiles(Args... args)
@@ -241,6 +261,7 @@ namespace Dune
         return entry;
       }
 
+
       template <typename S, typename M, typename O = std::index_sequence<>>
       struct filter : O {};
       template <std::size_t I, std::size_t... Is,
@@ -255,34 +276,34 @@ namespace Dune
                     std::index_sequence<Ks...>>
           : filter<std::index_sequence<Is...>, std::index_sequence<Js...>,
                    std::index_sequence<Ks..., I>> {};
-      template <template <typename T> class F, typename... Args>
-      using Filter = filter<std::make_index_sequence<sizeof...(Args)>,
-                            std::index_sequence<F<Args>{}...>>;
-      template <class DuneType>
-      auto _addToTypeRegistry( const std::string &pyName,
-          const IncludeFiles &inc, const GenerateTypeName &typeName)
+
+      template< template< class T> class F, class... Args >
+      using Filter = filter< std::index_sequence_for< Args... >, std::index_sequence< F< Args >{}... > >;
+
+      template< class DuneType >
+      inline static auto
+      _addToTypeRegistry( const std::string &pyName, const IncludeFiles &inc, const GenerateTypeName &typeName )
       {
         return _addToTypeRegistry<DuneType>(std::move(pyName),typeName,inc);
       }
-      template <class DuneType,
-                typename... Args, std::size_t... Is>
-      auto _addToTypeRegistry_filter_impl( const std::string &pyName,
-          std::tuple<Args...>&& tuple, std::index_sequence<Is...>)
+
+      template< class DuneType, class... Args, std::size_t... Is >
+      inline static auto
+      _addToTypeRegistry_filter_impl( const std::string &pyName, std::tuple< Args... > &&tuple, std::index_sequence< Is... > )
       {
         return _addToTypeRegistry<DuneType>(std::move(pyName),std::get<Is>(std::move(tuple))...);
       }
 
-      template <class DuneType, class... options,
-                typename... Args>
-      auto generateClass(pybind11::handle scope, const char *name,
-             Args... args)
+      template< class DuneType, class... options, class... Args >
+      inline static auto
+      generateClass ( pybind11::handle scope, const char *name, Args... args )
       {
         return pybind11::class_<DuneType,options...>(scope,name,args...);
       }
-      template <class DuneType, class... options,
-                typename... Args, std::size_t... Is>
-      auto generateClass_filter_impl(pybind11::handle scope, const char *name,
-              std::tuple<Args...>&& tuple, std::index_sequence<Is...>)
+
+      template< class DuneType, class... options, class... Args, std::size_t... Is >
+      inline static auto
+      generateClass_filter_impl ( pybind11::handle scope, const char *name, std::tuple<Args...>&& tuple, std::index_sequence< Is... > )
       {
         return generateClass<DuneType,options...>(scope,name,std::get<Is>(std::move(tuple))...);
       }
@@ -338,8 +359,7 @@ namespace Dune
     /** \brief add a type to the type registry without it being exported to python
      */
     template <class DuneType>
-    void addToTypeRegistry(const GenerateTypeName &typeName,
-         const std::vector<std::string> &inc={})
+    inline static void addToTypeRegistry ( const GenerateTypeName &typeName, const std::vector< std::string > &inc = {} )
     {
       std::vector<std::string> includes = typeName.includes();
       includes.insert(includes.end(), inc.begin(), inc.end());
@@ -410,20 +430,22 @@ namespace Dune
       }
     }
 
-    //////////////////////////////////////////////////////////////////////
 
-    void registerTypeRegistry(pybind11::module scope)
+    // registerTypeRegistry
+    // --------------------
+
+    inline static void registerTypeRegistry ( pybind11::module scope )
     {
       using pybind11::operator""_a;
+
       pybind11::class_< detail::TypeRegistry > cls( scope, "TypeRegistry" );
-      detail::TypeRegistry typeRegistry;
-      scope.attr( "typeRegistry" ) = pybind11::cast( typeRegistry );
-      scope.def("generateTypeName",
-          []( std::string main, pybind11::args targs)
-          {
-            GenerateTypeName gtn(main,targs);
-            return std::make_pair(gtn.name(), gtn.includes());
-          }); // , "main"_a, "targs"_a); annotation fails - only one argument expected
+
+      scope.attr( "typeRegistry" ) = pybind11::cast( new detail::TypeRegistry );
+
+      scope.def( "generateTypeName", []( std::string className, pybind11::args targs ) {
+          GenerateTypeName gtn( className, targs );
+          return std::make_pair( gtn.name(), gtn.includes() );
+        }, "className"_a );
     }
 
   } // namespace Python
