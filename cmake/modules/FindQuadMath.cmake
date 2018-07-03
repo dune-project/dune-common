@@ -46,9 +46,14 @@ set_package_properties("QuadMath" PROPERTIES
 # set HAVE_QUADMATH for config.h
 set(HAVE_QUADMATH ${QUADMATH_FOUND})
 
+# -fext-numeric-literals is a GCC extension not available in other compilers like clang
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
+  set(_QUADMATH_EXT_NUMERIC_LITERALS "-fext-numeric-literals")
+endif()
+
 # register all QuadMath related flags
 if(HAVE_QUADMATH)
   dune_register_package_flags(COMPILE_DEFINITIONS "ENABLE_QUADMATH=1" "_GLIBCXX_USE_FLOAT128=1"
-                              COMPILE_OPTIONS "-fext-numeric-literals"
+                              COMPILE_OPTIONS ${_QUADMATH_EXT_NUMERIC_LITERALS}
                               LIBRARIES "quadmath")
 endif()
