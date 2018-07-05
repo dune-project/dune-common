@@ -45,10 +45,17 @@ namespace Dune
 
       inline static TypeRegistry &typeRegistry ()
       {
+        // BUG: Capturing the pybind11::object in a static variable leads to a
+        //      memory fault in Python 3.6 upon module unloading.
+        //      As a simple fix, we reobtain the reference each time the type
+        //      registry is requested.
+#if 0
         static pybind11::object instance;
         if( !instance )
           instance = pybind11::module::import( "dune.typeregistry" ).attr( "typeRegistry" );
         return pybind11::cast< TypeRegistry & >( instance );
+#endif
+        return pybind11::cast< TypeRegistry & >( pybind11::module::import( "dune.typeregistry" ).attr( "typeRegistry" ) );
       }
 
 
