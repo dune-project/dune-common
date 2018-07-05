@@ -588,6 +588,7 @@ namespace Dune {
       // unknown -Wbool-operation on compilers that do not know that option.
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option" // clang 6.0.1
 #pragma GCC diagnostic ignored "-Wbool-operation"
       DUNE_SIMD_PREFIX_OP (BitNot,           ~  );
 #pragma GCC diagnostic pop
