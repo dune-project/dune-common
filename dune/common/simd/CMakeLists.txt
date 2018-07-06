@@ -5,6 +5,7 @@ install(FILES
   base.hh
   defaults.hh
   interface.hh
+  io.hh
   loop.hh
   simd.hh
   standard.hh

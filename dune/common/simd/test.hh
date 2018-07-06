@@ -9,6 +9,7 @@
 
 #include <cstddef>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <type_traits>
 #include <typeindex>
@@ -18,6 +19,7 @@
 
 #include <dune/common/classname.hh>
 #include <dune/common/hybridutilities.hh>
+#include <dune/common/simd/io.hh>
 #include <dune/common/simd/simd.hh>
 #include <dune/common/std/type_traits.hh>
 #include <dune/common/typelist.hh>
@@ -1481,6 +1483,41 @@ namespace Dune {
         DUNE_SIMD_CHECK(min(vec1) == Scalar<V>(1));
       }
 
+      template<class V>
+      void checkIO()
+      {
+        const V vec1 = leftVector<V>();
+
+        std::string reference;
+        {
+          const char *sep = "";
+          for(auto l : range(lanes(vec1)))
+          {
+            std::ostringstream stream;
+            stream << lane(l, vec1);
+
+            reference += sep;
+            reference += stream.str();
+            sep = ", ";
+          }
+        }
+
+        {
+          std::ostringstream stream;
+          stream << io(vec1);
+          if(lanes(vec1) == 1)
+            DUNE_SIMD_CHECK(stream.str() == reference);
+          else
+            DUNE_SIMD_CHECK(stream.str() == "<" + reference + ">");
+        }
+
+        {
+          std::ostringstream stream;
+          stream << vio(vec1);
+          DUNE_SIMD_CHECK(stream.str() == "<" + reference + ">");
+        }
+      }
+
 #undef DUNE_SIMD_CHECK
 
     public:
@@ -1605,6 +1642,7 @@ namespace Dune {
       // checkBoolReductions<V>(); // not applicable
 
       checkMinMax<V>();
+      checkIO<V>();
     }
 
     template<class M>
@@ -1650,6 +1688,7 @@ namespace Dune {
       checkBoolReductions<M>();
 
       checkMinMax<M>();
+      checkIO<M>();
     }
 
   } // namespace Simd
