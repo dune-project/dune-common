@@ -212,7 +212,7 @@ def find_modules(path):
                 description = Description(os.path.join(root, 'dune.module'))
                 modules.append((description,os.path.abspath(root)))
                 # do not traverse subdirectories
-                del dirs[:]
+                # del dirs[:]
     return modules
 
 
