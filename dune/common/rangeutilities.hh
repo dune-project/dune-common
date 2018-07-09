@@ -286,6 +286,12 @@ namespace Dune
     return IntegralRange<std::decay_t<T>>(std::forward<T>(to));
   }
 
+  template<class T, std::enable_if_t<std::is_enum<std::decay_t<T>>::value, int> = 0>
+  inline static IntegralRange<std::underlying_type_t<std::decay_t<T>>> range(T &&to) noexcept
+  {
+    return IntegralRange<std::underlying_type_t<std::decay_t<T>>>(std::forward<T>(to));
+  }
+
   template<class T, T from, T to>
   inline static StaticIntegralRange<T, to, from> range(std::integral_constant<T, from>, std::integral_constant<T, to>) noexcept
   {
