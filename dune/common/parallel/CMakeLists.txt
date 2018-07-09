@@ -10,6 +10,9 @@ install(FILES
         localindex.hh
         mpicollectivecommunication.hh
         mpiguard.hh
+        future.hh
+        mpifuture.hh
+        mpidata.hh
         mpihelper.hh
         mpitraits.hh
         plocalindex.hh

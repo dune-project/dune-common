@@ -112,7 +112,7 @@ namespace Dune{
 
 
   // Dune::DynamicVector
-  template<class K, class Allocator> struct DynamicVector;
+  template<class K, class Allocator> class DynamicVector;
   template<class V> struct is_DynamicVector : std::false_type{};
   template<class K, class Allocator> struct is_DynamicVector<DynamicVector<K, Allocator>> : std::true_type{};
   template<class T>
