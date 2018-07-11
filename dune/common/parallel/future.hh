@@ -34,17 +34,50 @@ namespace Dune{
     {}
 
     void wait() override{
+      if(!valid_)
+        DUNE_THROW(InvalidFutureException, "The PseudoFuture is not valid");
     }
 
     bool ready() override{
-      return valid_;
+      if(!valid_)
+        DUNE_THROW(InvalidFutureException, "The PseudoFuture is not valid");
+      return true;
     }
 
     T get() override{
       if(!valid_)
         DUNE_THROW(InvalidFutureException, "The PseudoFuture is not valid");
       valid_ = false;
-      return std::move(data_);
+      return std::forward<T>(data_);
+    }
+
+    bool valid() const override{
+      return valid_;
+    }
+  };
+
+  template<>
+  class PseudoFuture<void> : Future<void>{
+    bool valid_;
+  public:
+    PseudoFuture(bool valid = false) :
+      valid_(valid)
+    {}
+
+    void wait() override{
+      if(!valid_)
+        DUNE_THROW(InvalidFutureException, "The PseudoFuture is not valid");
+    }
+    bool ready() override{
+      if(!valid_)
+        DUNE_THROW(InvalidFutureException, "The PseudoFuture is not valid");
+      return true;
+    }
+
+    void get() override{
+      if(!valid_)
+        DUNE_THROW(InvalidFutureException, "The PseudoFuture is not valid");
+      valid_ = false;
     }
 
     bool valid() const override{
