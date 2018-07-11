@@ -129,6 +129,7 @@ namespace Dune
       return procs;
     }
 
+    //! @copydoc CollectiveCommunication::send
     template<class T>
     int send(const T& data, int dest_rank, int tag){
       MPIData<const T&> mpi_data(data);
@@ -136,6 +137,7 @@ namespace Dune
                       dest_rank, tag, communicator);
     }
 
+    //! @copydoc CollectiveCommunication::isend
     template<class T>
     MPIFuture<T> isend(T&& data, int dest_rank, int tag){
       MPIFuture<T> future(std::forward<T>(data));
@@ -144,6 +146,7 @@ namespace Dune
       return std::move(future);
     }
 
+    //! @copydoc CollectiveCommunication::recv
     template<class T>
     T recv(T&& data, int source_rank, int tag, MPI_Status* status = MPI_STATUS_IGNORE){
       MPIData<T> mpi_data(std::forward<T>(data));
@@ -152,6 +155,7 @@ namespace Dune
       return std::forward<T>(mpi_data.get());
     }
 
+    //! @copydoc CollectiveCommunication::irecv
     template<class T>
     MPIFuture<T> irecv(T&& data, int source_rank, int tag){
       MPIFuture<T> future(std::forward<T>(data));
@@ -231,7 +235,7 @@ namespace Dune
       return MPI_Barrier(communicator);
     }
 
-    //! @copydoc CollectiveCommunication::barrier
+    //! @copydoc CollectiveCommunication::ibarrier
     MPIFuture<void> ibarrier () const
     {
       MPIFuture<void> future(true);
@@ -270,6 +274,7 @@ namespace Dune
                         root,communicator);
     }
 
+    //! @copydoc CollectiveCommunication::igather
     template<class TIN, class TOUT = std::vector<TIN>>
     MPIFuture<TOUT, TIN> igather(TIN&& data_in, TOUT&& data_out, int root){
       MPIFuture<TOUT, TIN> future(std::forward<TOUT>(data_out), std::forward<TIN>(data_in));
@@ -300,6 +305,7 @@ namespace Dune
                          root,communicator);
     }
 
+    //! @copydoc CollectiveCommunication::iscatter
     template<class TIN, class TOUT = TIN>
     MPIFuture<TOUT, TIN> iscatter(TIN&& data_in, TOUT&& data_out, int root){
       MPIFuture<TOUT, TIN> future(std::forward<TOUT>(data_out), std::forward<TIN>(data_in));
@@ -334,6 +340,7 @@ namespace Dune
                            communicator);
     }
 
+    //! @copydoc CollectiveCommunication::iallgather
     template<class TIN, class TOUT = TIN>
     MPIFuture<TOUT, TIN> iallgather(TIN&& data_in, TOUT&& data_out){
       MPIFuture<TOUT, TIN> future(std::forward<TOUT>(data_out), std::forward<TIN>(data_in));
@@ -365,6 +372,7 @@ namespace Dune
       return ret;
     }
 
+    //! @copydoc CollectiveCommunication::iallreduce
     template<class BinaryFunction, class TIN, class TOUT = TIN>
     MPIFuture<TOUT, TIN> iallreduce(TIN&& data_in, TOUT&& data_out){
       MPIFuture<TOUT, TIN> future(std::forward<TOUT>(data_out), std::forward<TIN>(data_in));
@@ -377,6 +385,7 @@ namespace Dune
       return std::move(future);
     }
 
+    //! @copydoc CollectiveCommunication::iallreduce
     template<class BinaryFunction, class T>
     MPIFuture<T> iallreduce(T&& data){
       MPIFuture<T> future(std::forward<T>(data));

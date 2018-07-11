@@ -56,7 +56,7 @@ int main(int argc, char** argv){
 
   if(mpihelper.rank() == 0){
     std::cout << "nonb gather ===========================" << std::endl;
-    auto f = cc.igather(mpihelper.rank(), Dune::DynamicVector<int>(mpihelper.size()), 0);
+    auto f = cc.igather(mpihelper.rank() + 42, Dune::DynamicVector<int>(mpihelper.size()), 0);
     std::cout << "Gather result: " << f.get() << std::endl;
   }else{
     cc.igather(mpihelper.rank(), {}, 0).wait();
@@ -76,7 +76,7 @@ int main(int argc, char** argv){
   {
     if(mpihelper.rank() == 0)
       std::cout << "nonb allreduce ===========================" << std::endl;
-    auto f = cc.iallreduce<std::plus<int>>(mpihelper.rank(), 0);
+    auto f = cc.iallreduce<std::plus<int>>(mpihelper.rank()+4, 0);
     std::cout << "Allreduce result on rank " << mpihelper.rank() <<": " << f.get() << std::endl;
   }
 

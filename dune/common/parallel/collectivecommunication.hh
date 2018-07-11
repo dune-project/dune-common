@@ -12,10 +12,12 @@
 #include <iostream>
 #include <complex>
 #include <algorithm>
+#include <vector>
 
 #include <dune/common/binaryfunctions.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/unused.hh>
+#include <dune/common/parallel/future.hh>
 
 /*! \defgroup ParallelCommunication Parallel Communication
    \ingroup Common
@@ -100,6 +102,51 @@ namespace Dune
     int size () const
     {
       return 1;
+    }
+
+    /** @brief Sends the data to the dest_rank
+        @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
+     */
+    template<class T>
+    int send(const T& data, int dest_rank, int tag){
+      DUNE_UNUSED_PARAMETER(data);
+      DUNE_UNUSED_PARAMETER(dest_rank);
+      DUNE_UNUSED_PARAMETER(tag);
+      DUNE_THROW(ParallelError, "This method is not supported in sequential programs");
+    }
+
+    /** @brief Sends the data to the dest_rank nonblocking
+        @returns Future<T> containing the send buffer, completes when data is send
+     */
+    template<class T>
+    PseudoFuture<T> isend(T&& data, int dest_rank, int tag){
+      DUNE_UNUSED_PARAMETER(data);
+      DUNE_UNUSED_PARAMETER(dest_rank);
+      DUNE_UNUSED_PARAMETER(tag);
+      DUNE_THROW(ParallelError, "This method is not supported in sequential programs");
+    }
+
+    /** @brief Receives the data from the source_rank
+        @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
+     */
+    template<class T>
+    T recv(T&& data, int source_rank, int tag, void* status = 0){
+      DUNE_UNUSED_PARAMETER(data);
+      DUNE_UNUSED_PARAMETER(source_rank);
+      DUNE_UNUSED_PARAMETER(tag);
+      DUNE_UNUSED_PARAMETER(status);
+      DUNE_THROW(ParallelError, "This method is not supported in sequential programs");
+    }
+
+    /** @brief Receives the data from the source_rank nonblocking
+        @returns Future<T> containing the received data when complete
+     */
+    template<class T>
+    PseudoFuture<T> irecv(T&& data, int source_rank, int tag){
+      DUNE_UNUSED_PARAMETER(data);
+      DUNE_UNUSED_PARAMETER(source_rank);
+      DUNE_UNUSED_PARAMETER(tag);
+      DUNE_THROW(ParallelError, "This method is not supported in sequential programs");
     }
 
     /** @brief  Compute the sum of the argument over all processes and
@@ -198,6 +245,14 @@ namespace Dune
       return 0;
     }
 
+    /** @brief Nonblocking barrier
+        @returns Future<void> which is complete when all processes have reached the barrier
+     */
+    PseudoFuture<void> ibarrier () const
+    {
+      return {true}; // return a valid future
+    }
+
     /** @brief Distribute an array from the process with rank root to all other processes
         @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
@@ -209,6 +264,15 @@ namespace Dune
       DUNE_UNUSED_PARAMETER(root);
       return 0;
     }
+
+    /** @brief Distribute an array from the process with rank root to all other processes nonblocking
+        @returns Future<T> containing the distributed data
+     */
+    template<class T>
+    PseudoFuture<T> ibroadcast(T&& data, int root) const{
+      return {std::forward<T>(data)};
+    }
+
 
     /** @brief  Gather arrays on root task.
      *
@@ -230,6 +294,16 @@ namespace Dune
         out[i] = in[i];
       return 0;
     }
+
+    /** @brief  Gather arrays on root task nonblocking
+        @returns Future<TOUT, TIN> containing the gathered data
+     */
+    template<class TIN, class TOUT = std::vector<TIN>>
+    PseudoFuture<TOUT> igather(TIN&& data_in, TOUT&& data_out, int root){
+      *(data_out.begin()) = std::forward<TIN>(data_in);
+      return {std::forward<TOUT>(data_out)};
+    }
+
 
     /** @brief  Gather arrays of variable size on root task.
      *
@@ -282,6 +356,15 @@ namespace Dune
       return 0;
     }
 
+    /** @brief Scatter array from a root to all other task nonblocking.
+     * @returns Future<TOUT, TIN> containing scattered data;
+     */
+    template<class TIN, class TOUT = TIN>
+    PseudoFuture<TOUT> iscatter(TIN&& data_in, TOUT&& data_out, int root){
+      data_out = *(std::forward<TIN>(data_in).begin());
+      return {std::forward<TOUT>(data_out)};
+    }
+
     /** @brief Scatter arrays of variable length from a root to all other tasks.
      *
      * The root process sends the elements with index from send+displ[k] to send+displ[k]-1 in
@@ -332,6 +415,15 @@ namespace Dune
     }
 
     /**
+     * @brief Gathers data from all tasks and distribute it to all nonblocking.
+     @returns Future<TOUT, TIN> containing the distributed data
+     */
+    template<class TIN, class TOUT = TIN>
+    PseudoFuture<TOUT> iallgather(TIN&& data_in, TOUT&& data_out){
+      return {std::forward<TOUT>(data_out)};
+    }
+
+    /**
      * @brief Gathers data of variable length from all tasks and distribute it to all.
      *
      * The block of data sent from the jth process is received by every
@@ -375,6 +467,26 @@ namespace Dune
       DUNE_UNUSED_PARAMETER(len);
       return 0;
     }
+
+    /**
+     * @brief Compute something over all processes nonblocking
+     @return Future<TOUT, TIN> containing the computed something
+     */
+    template<class BinaryFunction, class TIN, class TOUT = TIN>
+    PseudoFuture<TOUT> iallreduce(TIN&& data_in, TOUT&& data_out){
+      data_out = std::forward<TIN>(data_in);
+      return {std::forward<TOUT>(data_out)};
+    }
+
+    /**
+     * @brief Compute something over all processes nonblocking and in-place
+     @return Future<T> containing the computed something
+     */
+    template<class BinaryFunction, class T>
+    PseudoFuture<T> iallreduce(T&& data){
+      return {std::forward<T>(data)};
+    }
+
 
     /**
      * @brief Compute something over all processes
