@@ -36,5 +36,4 @@ dune_add_test(SOURCES mpifuturetest.cc
               LINK_LIBRARIES dunecommon
               MPI_RANKS 1 2 4
               TIMEOUT 300
-              CMAKE_GUARD MPI_FOUND
               LABELS quick)
