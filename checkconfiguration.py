@@ -21,6 +21,8 @@ def assertHave(identifier):
     config = os.path.join(dune.common.module.get_dune_py_dir(), "config.h")
 
     matches = [match for match in [re.match('^[ ]*#define[ ]+' + identifier.strip() + '[ ]+1$', line) for line in open(config)] if match is not None]
+    if not matches:
+        matches = [match for match in [re.match('^[ ]*#define[ ]+' + identifier.strip() + '[ ]+ENABLE', line) for line in open(config)] if match is not None]
 
     if not matches:
         # logger.info("checkconfiguration.have(" + identifier + ") failed - identifier not defined in " + config)
