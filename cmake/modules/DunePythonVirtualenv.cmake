@@ -58,9 +58,8 @@
 #    The Dune build system will try to build a virtualenv with pip installed into it,
 #    but this can fail in some situations, in particular on Debian and Ubuntu distributions.
 #    In this case, you will se a warning message in the CMake output. If you are on Debian
-#    or Ubuntu, try installing the :code:`python3-venv` (for Python 3) and / or
-#    :code:`python-virtualenv` packages, delete your build directory and try configuring
-#    again.
+#    or Ubuntu, try installing the :code:`python-virtualenv` package, delete your build directory
+#    and try configuring again.
 #
 #    If that still does not help, set this variable to allow the Dune build system to download
 #    :code:`get-pip.py` from https://bootstrap.pypa.io/get-pip.py at configure time and execute
@@ -113,28 +112,14 @@ endif()
 # If it does not yet exist, set it up!
 if(NOT IS_DIRECTORY "${DUNE_PYTHON_VIRTUALENV_PATH}")
   # Check for presence of the virtualenv/venv package
-  dune_python_find_package(PACKAGE virtualenv)
-  dune_python_find_package(PACKAGE venv)
-  if(NOT(DUNE_PYTHON_virtualenv_FOUND OR DUNE_PYTHON_venv_FOUND))
-    message(FATAL_ERROR "One of the python packages virtualenv/venv is needed on the host system!")
-  endif()
-
-  # Set some options depending on which virtualenv package is used
-  if(DUNE_PYTHON_virtualenv_FOUND)
-    set(VIRTUALENV_PACKAGE_NAME virtualenv)
-    set(NOPIP_OPTION --no-pip)
-  endif()
-  if(DUNE_PYTHON_venv_FOUND)
-    set(VIRTUALENV_PACKAGE_NAME venv)
-    set(NOPIP_OPTION --without-pip)
-  endif()
+  dune_python_find_package(PACKAGE virtualenv REQUIRED)
 
   # Set up the env itself
   message("-- Building a virtualenv in ${DUNE_PYTHON_VIRTUALENV_PATH}")
   # First, try to build it with pip installed, but only if the user has not set DUNE_PYTHON_ALLOW_GET_PIP
   if(NOT DUNE_PYTHON_ALLOW_GET_PIP)
     dune_execute_process(COMMAND ${PYTHON_EXECUTABLE}
-                                  -m ${VIRTUALENV_PACKAGE_NAME}
+                                  -m virtualenv
                                   "${DUNE_PYTHON_VIRTUALENV_PATH}"
                          RESULT_VARIABLE venv_install_result
                          )
@@ -153,8 +138,8 @@ if(NOT IS_DIRECTORY "${DUNE_PYTHON_VIRTUALENV_PATH}")
 
     # try to build the env without pip
     dune_execute_process(COMMAND ${PYTHON_EXECUTABLE}
-                                  -m ${VIRTUALENV_PACKAGE_NAME}
-                                  ${NOPIP_OPTION}
+                                  -m virtualenv
+                                  --no-pip
                                   "${DUNE_PYTHON_VIRTUALENV_PATH}"
                          ERROR_MESSAGE "Fatal error when setting up a virtualenv."
                          )
