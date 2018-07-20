@@ -97,7 +97,8 @@ int main()
         int p = uniform_dist(gen);
         int qt = uniform_dist(gen);
 
-        /*auto const& data =*/ QuadratureCache::get({{gt,p,qt}}, init_data);
+        quadrature_key key{typename quadrature_key::type{gt,p,qt}};
+        /*auto const& data =*/ QuadratureCache::get(key, init_data);
       }
     });
   }
