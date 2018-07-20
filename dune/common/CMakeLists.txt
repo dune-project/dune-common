@@ -42,6 +42,7 @@ install(FILES
         boundschecking.hh
         classname.hh
         concept.hh
+        concurrentcache.hh
         conditional.hh
         debugalign.hh
         debugallocator.hh
