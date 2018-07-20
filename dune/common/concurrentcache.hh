@@ -4,6 +4,7 @@
 #define DUNE_COMMON_CONCURRENT_CACHE_HH
 
 #include <mutex>
+#include <shared_mutex>
 #include <thread>
 #include <tuple>
 #include <unordered_map>
@@ -100,13 +101,23 @@ namespace Dune
 
         // mutex used to access the data in the container, necessary since
         // access emplace is read-write.
-        static std::mutex access_mutex;
+        using mutex_type = std::shared_timed_mutex;
+        static mutex_type access_mutex;
 
-        std::lock_guard<std::mutex> lock(access_mutex);
-        auto it = cached_data.emplace(std::piecewise_construct, std::forward_as_tuple(key), std::forward_as_tuple(args...));
-        if (it.second)
-          f(&(it.first->second), key);
-        return it.first->second;
+        // first try to lock for read-only, if an element for key is found, return it,
+        // if not, obtain a unique_lock to insert a new element and initialize it.
+        std::shared_lock<mutex_type> read_lock(access_mutex);
+        auto it = cached_data.find(key);
+        if (it != cached_data.end())
+          return it->second;
+        else {
+          read_lock.unlock();
+          std::unique_lock<mutex_type> write_lock(access_mutex);
+          auto new_it = cached_data.emplace(std::piecewise_construct, std::forward_as_tuple(key), std::forward_as_tuple(args...));
+          if (new_it.second)
+            f(&(new_it.first->second), key);
+          return new_it.first->second;
+        }
       }
     };
 
