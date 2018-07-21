@@ -28,7 +28,7 @@ namespace Dune
 
   template<class Component, std::size_t Dim, int Size>
   struct IsFieldVectorSizeCorrect<MyVector<Component, Dim>, Size>
-    : std::bool_constant<Dim == Size>
+    : std::integral_constant<bool, Dim == Size>
   {};
 }
 
