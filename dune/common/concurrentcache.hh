@@ -15,10 +15,12 @@
 namespace Dune
 {
   /// Store cache thread local, requires no locking.
-  struct ThreadLocalPolicy {};
+  template <class Container>
+  struct ThreadLocalPolicy;
 
   /// Stores cache global static, requires locking on write access.
-  struct SharedPolicy {};
+  template <class Container>
+  struct SharedPolicy;
 
 
   /// \brief Cache for data of type `Data` that allows concurrent accessed by key of type `Key`.
@@ -26,132 +28,116 @@ namespace Dune
    * Cache data of arbitray type that needs initialization on the first access. The data is thereby
    * initialized thread-wise or globally only once, and guarantees that you always get initialized data.
    *
-   * \tparam Key     Type of key to access the data. Must be Hashable. \see DUNE_DEFINE_STD_HASH
-   * \tparam Data    Type of the data to store in the cache.
-   * \tparam Policy  One of \ref ThreadLocalPolicy, or \ref SharedPolicy. [`ThreadLocalPolicy`].
-   * \tparam Hash    Type of a hasher. [`Dune::hash<Key>`]
-   * \tparam KeyEqual  Type of a predicate to test for equailty of the keys. [`std::equal_to<Key>`]
+   * \tparam Key        Type of key to access the data.
+   * \tparam Data       Type of the data to store in the cache.
+   * \tparam Policy     E.g. one of \ref ThreadLocalPolicy, or \ref SharedPolicy. [`ThreadLocalPolicy`].
+   *                    \see ConcurrentCachePolicy
+   * \tparam Container  Associative container to store the data in. Default is an unordered_map,
+   *                    requiring the key to be hashable. [`std::unordered_map<Key,Data>`]
    *
-   * The types `Hash` and `KeyEqual` must be DefaultConstructible, since only the default constructor
-   * for the internal cache is called.
+   * The `Policy` is a template parametrizable with the container type, that provides a static `get_or_init()`
+   * method, that is called with the key, and a functor for creation of new data elements.
    **/
   template <class Key,
             class Data,
-            class Policy = ThreadLocalPolicy,
-            class Hash = hash<Key>,
-            class KeyEqual = std::equal_to<Key>>
+            template <class> class Policy = ThreadLocalPolicy,
+            class Container = std::unordered_map<Key, Data>>
   class ConcurrentCache;
 
 
-  namespace Impl
+#ifdef DOXYGEN
+  /// \brief Implementation of concrete policies for the \ref ConcurrentCache. May be specialized for
+  /// user-defined storage policies. \see ThreadLocalPolicy, \see SharedPolicy.
+  /**
+   * An implementation must provide a static `get_or_init()` method that returns a `const&` to the stored data.
+   *
+   * \tparam Container  The Type of the associative container key->data to store the cached data.
+   **/
+  template <class Container>
+  class ConcurrentCachePolicy;
+#endif
+
+  // implementation of the ThreadLocal policy
+  template <class Container>
+  struct ThreadLocalPolicy
   {
-    /// \brief Implementation of concrete policies for the ConcurrentCache. May be specialized for
-    /// user-defined storage policies.
-    /**
-     * An implementation must provide a static `get_or_init()` method that returns a `const&` to the stored data.
-     **/
-    template <class Key, class Data, class Policy, class Hash, class KeyEqual>
-    class ConcurrentCacheImpl;
+    using key_type = typename Container::key_type;
+    using data_type = typename Container::mapped_type;
+    using container_type = Container;
 
-    // implementation of the ThreadLocal policy
-    template <class Key, class Data, class Hash, class KeyEqual>
-    class ConcurrentCacheImpl<Key,Data,ThreadLocalPolicy,Hash,KeyEqual>
+    template <class F, class... Args>
+    static data_type const& get_or_init(key_type const& key, F&& f, Args&&... args)
     {
-      friend class ConcurrentCache<Key,Data,ThreadLocalPolicy,Hash,KeyEqual>;
+      // Container to store the cached values
+      thread_local container_type cached_data;
 
-      using key_type = Key;
-      using data_type = Data;
-      using hasher = Hash;
-      using key_equal = KeyEqual;
-
-      using container_type = std::unordered_map<key_type, data_type, hasher, key_equal>;
-
-      template <class F, class... Args>
-      static data_type const& get_or_init(key_type const& key, F&& f, Args&&... args)
-      {
-        // Container to store the cached values
-        thread_local container_type cached_data;
-
-        auto it = cached_data.emplace(std::piecewise_construct, std::forward_as_tuple(key), std::forward_as_tuple(args...));
-        if (it.second)
-          f(&(it.first->second), key);
-        return it.first->second;
-      }
-    };
+      data_type data = f(key, std::forward<Args>(args)...);
+      auto it = cached_data.emplace(key, std::move(data));
+      return it.first->second;
+    }
+  };
 
 
-    // implementation of the Shared policy
-    template <class Key, class Data, class Hash, class KeyEqual>
-    class ConcurrentCacheImpl<Key,Data,SharedPolicy,Hash,KeyEqual>
+  // implementation of the Shared policy
+  template <class Container>
+  struct SharedPolicy
+  {
+    using key_type = typename Container::key_type;
+    using data_type = typename Container::mapped_type;
+    using container_type = Container;
+
+    template <class F, class... Args>
+    static data_type const& get_or_init(key_type const& key, F&& f, Args&&... args)
     {
-      friend class ConcurrentCache<Key,Data,SharedPolicy,Hash,KeyEqual>;
+      // Container to store the cached values
+      static container_type cached_data;
 
-      using key_type = Key;
-      using data_type = Data;
-      using hasher = Hash;
-      using key_equal = KeyEqual;
+      // mutex used to access the data in the container, necessary since
+      // access emplace is read-write.
+      using mutex_type = std::shared_timed_mutex;
+      static mutex_type access_mutex;
 
-      using container_type = std::unordered_map<key_type, data_type, hasher, key_equal>;
-
-      template <class F, class... Args>
-      static data_type const& get_or_init(key_type const& key, F&& f, Args&&... args)
-      {
-        // Container to store the cached values
-        static container_type cached_data;
-
-        // mutex used to access the data in the container, necessary since
-        // access emplace is read-write.
-        using mutex_type = std::shared_timed_mutex;
-        static mutex_type access_mutex;
-
-        // first try to lock for read-only, if an element for key is found, return it,
-        // if not, obtain a unique_lock to insert a new element and initialize it.
-        std::shared_lock<mutex_type> read_lock(access_mutex);
-        auto it = cached_data.find(key);
-        if (it != cached_data.end())
-          return it->second;
-        else {
-          read_lock.unlock();
-          std::unique_lock<mutex_type> write_lock(access_mutex);
-          auto new_it = cached_data.emplace(std::piecewise_construct, std::forward_as_tuple(key), std::forward_as_tuple(args...));
-          if (new_it.second)
-            f(&(new_it.first->second), key);
-          return new_it.first->second;
-        }
+      // first try to lock for read-only, if an element for key is found, return it,
+      // if not, obtain a unique_lock to insert a new element and initialize it.
+      std::shared_lock<mutex_type> read_lock(access_mutex);
+      auto it = cached_data.find(key);
+      if (it != cached_data.end())
+        return it->second;
+      else {
+        read_lock.unlock();
+        data_type data = f(key, std::forward<Args>(args)...);
+        std::unique_lock<mutex_type> write_lock(access_mutex);
+        auto new_it = cached_data.emplace(key, std::move(data));
+        return new_it.first->second;
       }
-    };
+    }
+  };
 
-  } // end namespace Impl
 
-
-  template <class Key, class Data, class Policy, class Hash, class KeyEqual>
+  template <class Key, class Data, template <class> class Policy, class Container>
   class ConcurrentCache
+      : private Policy<Container>
   {
     using key_type = Key;
     using data_type = Data;
-
-    /// The actual implementation. Must provide a static get_or_init() method
-    using Implementation = Impl::ConcurrentCacheImpl<Key,Data,Policy,Hash,KeyEqual>;
 
   public:
 
     /// \brief Return the data associated to the key. If not yet initialized, call functor f.
     /**
-     * \tparam F        A functor of signature void(data_type*, key_type)
-     * \tparam Args...  Type of arguments passed to the constructor of data_type
+     * \tparam F        A functor of signature data_type(key_type, Args...)
+     * \tparam Args...  Type of arguments passed to the functor f
      *
-     * Return the data associated to key. If no data is found, create a new entry in the map
-     * with a value `data_type(args...)`, i.e. forward the additional arguments to the constructor
-     * of `data_type`. Then, call the functor `f` on the new created entry.
+     * Return the data associated to key. If no data is found, create a new entry in the container
+     * with a value obtainer from the functor, by calling `f(key, args...)`.
      **/
-    template <class F, class... Args,
-      std::enable_if_t<Std::is_invocable<F,data_type*,key_type>::value, int> = 0>
+    template <class F, class... Args>
     static data_type const& get(key_type key, F&& f, Args&&... args)
     {
-      static_assert(std::is_constructible<data_type, Args...>::value,
-        "Data stored in ConcurrentCache must be constructible with provided Args...");
+      static_assert(Std::is_callable<F(key_type, Args...), data_type>::value,
+        "Functor F must have the signature data_type(key_type, Args...)");
 
-      return Implementation::get_or_init(key, std::forward<F>(f), std::forward<Args>(args)...);
+      return ConcurrentCache::get_or_init(key, std::forward<F>(f), std::forward<Args>(args)...);
     }
   };
 

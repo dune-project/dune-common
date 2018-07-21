@@ -50,23 +50,22 @@ namespace Dune
 using quadrature_key = Dune::quadrature_key;
 using quadrature_data = std::vector<double>;
 
-void init_data(quadrature_data* data, quadrature_key const& key)
+quadrature_data init_data(quadrature_key const& key)
 {
-  if (data->size() != 10) {
-    DUNE_THROW(Dune::Exception, "Data must be constructed with size 10");
-  }
-
-  data->resize(100);
-  std::generate(data->begin(), data->end(), []{ return std::fmod(double(std::rand()), 10.0); });
+  quadrature_data data(100);
+  std::generate(data.begin(), data.end(), []{ return std::fmod(double(std::rand()), 10.0); });
   std::stringstream ss;
   ss << "init [" << key.id << "," << key.p << "," << key.qt << "]\n";
   std::cout << ss.str();
+  return data;
 }
 
-template <class Policy>
-void test(Policy)
+template <template <class> class Policy>
+void test()
 {
-  using QuadratureCache = Dune::ConcurrentCache<quadrature_key, quadrature_data, Policy, quadrature_key::hasher>;
+  using QuadratureCache = Dune::ConcurrentCache<quadrature_key, quadrature_data, Policy,
+    std::unordered_map<quadrature_key,quadrature_data,quadrature_key::hasher>>;
+
   std::random_device rd;
 
   constexpr unsigned threads_count = 16;
@@ -80,7 +79,7 @@ void test(Policy)
         int p = uniform_dist(gen);
         int qt = uniform_dist(gen);
 
-        auto const& data = QuadratureCache::get(quadrature_key{id,p,qt}, init_data, 10);
+        auto const& data = QuadratureCache::get(quadrature_key{id,p,qt}, init_data);
 
         if (data.size() != 100) {
           DUNE_THROW(Dune::Exception, "Data must be initialized to size 100");
@@ -96,6 +95,6 @@ void test(Policy)
 
 int main()
 {
-  test(Dune::ThreadLocalPolicy{});
-  test(Dune::SharedPolicy{});
+  test<Dune::ThreadLocalPolicy>();
+  test<Dune::SharedPolicy>();
 }
