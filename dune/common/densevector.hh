@@ -279,7 +279,9 @@ namespace Dune {
   public:
 
     //! Assignment operator for other DenseVector of different type
-    template <typename W>
+    template <typename W,
+              std::enable_if_t<
+                std::is_assignable<value_type&, typename DenseVector<W>::value_type>::value, int> = 0>
     derived_type& operator= (const DenseVector<W>& other)
     {
       assert(other.size() == size());

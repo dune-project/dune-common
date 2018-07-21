@@ -318,14 +318,16 @@ namespace Dune {
     template<typename T,
              typename EnableIf = typename std::enable_if<
                std::is_convertible<T, K>::value &&
-               ! std::is_same<K, DenseVector<typename FieldTraits<T>::field_type>
-                              >::value
+               ! std::is_base_of<DenseVector<typename FieldTraits<T>::field_type>, K
+                                 >::value
                >::type
              >
     FieldVector (const T& k) : _data(k) {}
 
     //! Constructor from static vector of different type
-    template<class C>
+    template<class C,
+             std::enable_if_t<
+               std::is_assignable<K&, typename DenseVector<C>::value_type>::value, int> = 0>
     FieldVector (const DenseVector<C> & x)
     {
       static_assert(((bool)IsFieldVectorSizeCorrect<C,1>::value), "FieldVectors do not match in dimension!");
@@ -359,9 +361,9 @@ namespace Dune {
     //! Assignment operator for scalar
     template<typename T,
              typename EnableIf = typename std::enable_if<
-               std::is_convertible<T, K>::value &&
-               ! std::is_same<K, DenseVector<typename FieldTraits<T>::field_type>
-                              >::value
+               std::is_assignable<K&, T>::value &&
+               ! std::is_base_of<DenseVector<typename FieldTraits<T>::field_type>, K
+                                 >::value
                >::type
              >
     inline FieldVector& operator= (const T& k)
