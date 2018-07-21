@@ -23,20 +23,26 @@ namespace Dune
   struct SharedPolicy;
 
 
-  /// \brief Cache for data of type `Data` that allows concurrent accessed by key of type `Key`.
+  /// \brief The class template ConcurrentCache describes an associative static container that allows the
+  /// concurrent access to the stored data.
   /**
    * Cache data of arbitray type that needs initialization on the first access. The data is thereby
    * initialized thread-wise or globally only once, and guarantees that you always get initialized data.
    *
-   * \tparam Key        Type of key to access the data.
-   * \tparam Data       Type of the data to store in the cache.
-   * \tparam Policy     E.g. one of \ref ThreadLocalPolicy, or \ref SharedPolicy. [`ThreadLocalPolicy`].
-   *                    \see ConcurrentCachePolicy
-   * \tparam Container  Associative container to store the data in. Default is an unordered_map,
-   *                    requiring the key to be hashable. [`std::unordered_map<Key,Data>`]
+   * \tparam Key        The type of key to access the data.
+   * \tparam Data       The type of the data stored in the cache. The behaviur is undefined if Data is not
+   *                    the same type as Container::mapped_type.
+   * \tparam Policy     A policy class template implementing the method `get_or_init()`. Two implementations
+   *                    are provided: \ref ThreadLocalPolicy and \ref SharedPolicy. By default, if not
+   *                    Policy class template is specified, the `ThreadLocalPolicy` is used. \see ConcurrentCachePolicy
+   * \tparam Container  The type of the underlying associative container to use to store the data. The
+   *                    container must satisfy the requirements of AssociativeContainer. The standard
+   *                    containers `std::map` and `std::unordered_map` satisfie this requirement. By default,
+   *                    if not container class is specified, the standard container `std::unordered_map<Key,Data>`
+   *                    is used. Note, an unordered_map requires the key to be hashable.
    *
-   * The `Policy` is a template parametrizable with the container type, that provides a static `get_or_init()`
-   * method, that is called with the key, and a functor for creation of new data elements.
+   * The `Policy` class template is a template parametrizable with the container type, that provides a static `get_or_init()`
+   * method that is called with the key, and a functor for creation of new data elements.
    **/
   template <class Key,
             class Data,
@@ -46,10 +52,12 @@ namespace Dune
 
 
 #ifdef DOXYGEN
-  /// \brief Implementation of concrete policies for the \ref ConcurrentCache. May be specialized for
-  /// user-defined storage policies. \see ThreadLocalPolicy, \see SharedPolicy.
+  /// \brief The class template ConcurrentCachePolicy describes a concrete policies for the use in \ref ConcurrentCache.
   /**
-   * An implementation must provide a static `get_or_init()` method that returns a `const&` to the stored data.
+   * Provide a static cache and a `get_or_init()` static method that extracts the data from the cache if it exists or
+   * creates a new extry by using an initialization functor.
+   *
+   * Realizations of this template are \ref ThreadLocalPolicy and \ref SharedPolicy.
    *
    * \tparam Container  The Type of the associative container key->data to store the cached data.
    **/
@@ -123,13 +131,13 @@ namespace Dune
 
   public:
 
-    /// \brief Return the data associated to the key. If not yet initialized, call functor f.
+    /// \brief Return the data associated to the `key`.
     /**
-     * \tparam F        A functor of signature data_type(key_type, Args...)
-     * \tparam Args...  Type of arguments passed to the functor f
-     *
      * Return the data associated to key. If no data is found, create a new entry in the container
-     * with a value obtainer from the functor, by calling `f(key, args...)`.
+     * with a value obtained from the functor, by calling `f(key, args...)`.
+     *
+     * \param f        A functor of signature data_type(key_type, Args...)
+     * \param args...  Arguments passed additionally to the functor f
      **/
     template <class F, class... Args>
     static data_type const& get(key_type key, F&& f, Args&&... args)
