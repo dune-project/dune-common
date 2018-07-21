@@ -167,6 +167,7 @@ dune_add_test(SOURCES fvectortest.cc
               LABELS quick)
 
 dune_add_test(SOURCES fvectorconversion1d.cc
+              LINK_LIBRARIES dunecommon
               LABELS quick)
 
 dune_add_test(SOURCES genericiterator_compile_fail.cc
