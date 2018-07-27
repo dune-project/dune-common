@@ -189,6 +189,9 @@ dune_add_test(SOURCES iteratorfacadetest2.cc
 dune_add_test(SOURCES iteratorfacadetest.cc
               LABELS quick)
 
+dune_add_test(SOURCES lexicalcasttest.cc
+              LINK_LIBRARIES dunecommon)
+
 dune_add_test(SOURCES lrutest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
