@@ -29,6 +29,7 @@ class SimpleGenerator(object):
 
     def load(self, includes, typeName, moduleName, *args, **kwargs):
         defines = kwargs.get("defines",[])
+        preamble = kwargs.get("preamble",None)
         source = '#include <config.h>\n\n'
         source += '#define USING_DUNE_PYTHON 1\n\n'
         source += ''.join(["#define " + d + "\n" for d in defines])
@@ -42,6 +43,9 @@ class SimpleGenerator(object):
         if self.fileName is not None:
             with open(self.fileName, "r") as include:
                 source += include.read()
+            source += "\n"
+        if preamble is not None:
+            source += preamble
             source += "\n"
 
         source += "typedef " + typeName + " DuneType;\n"
