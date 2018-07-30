@@ -12,13 +12,13 @@
 #    Sets the following variables:
 #
 #    :code:`MPFR_FOUND`
-#       True if the GMP library, the GMPxx headers and
-#       the GMPxx library were found.
+#       True if the GMP library, the MPFR and MPFR-C++ headers and
+#       the MPFR library were found.
 #
 # .. cmake_variable:: MPFR_ROOT
 #
-#   You may set this variable to have :ref:`FindGMP` look
-#   for the gmp and gmpxx packages in the given path before
+#   You may set this variable to have :ref:`FindMPFR` look
+#   for the gmp and mpfr library in the given path before
 #   inspecting system paths.
 #
 
@@ -52,7 +52,7 @@ check_include_file_cxx("mpreal.h" MPREAL_HEADER_WORKS)
 
 # look for library gmp, only at positions given by the user
 find_library(GMP_LIB gmp
-  PATHS ${GMP_PREFIX} ${GMP_ROOT}
+  PATHS ${MPFR_PREFIX} ${MPFR_ROOT}
   PATH_SUFFIXES lib lib64
   NO_DEFAULT_PATH
   DOC "GNU GMP library")
@@ -97,13 +97,13 @@ if(MPFR_FOUND)
   set(MPFR_COMPILE_FLAGS "-DENABLE_MPFR=1")
   # log result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
-    "Determining location of GMP, MPREAL succeeded:\n"
+    "Determining location of GMP, MPFR succeeded:\n"
     "Include directory: ${MPFR_INCLUDE_DIRS}\n"
-    "Library directory: ${MPFR_LIBRARIES}\n\n")
+    "Libraries: ${MPFR_LIBRARIES}\n\n")
 else()
   # log errornous result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
-    "Determining location of GMP, MPREAL failed:\n"
+    "Determining location of GMP, MPFR failed:\n"
     "Include directory: ${MPFR_INCLUDE_DIRS}\n"
     "gmp library directory: ${GMP_LIB}\n"
     "mpfr library directory: ${MPFR_LIB}\n\n")
@@ -112,7 +112,7 @@ endif()
 # set HAVE_MPFR for config.h
 set(HAVE_MPFR ${MPFR_FOUND})
 
-# register all MPREAL related flags
+# register all MPFR related flags
 if(HAVE_MPFR)
   dune_register_package_flags(COMPILE_DEFINITIONS "ENABLE_MPFR=1"
                               LIBRARIES "${GMP_LIB};${MPFR_LIB}"
