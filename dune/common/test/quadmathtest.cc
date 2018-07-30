@@ -128,6 +128,7 @@ int main()
   test.check(weakcmp(remainder(T{5.1},T{3}),T{-0.9}), "remainder");
 
   test.check(cmp(pow(T{2},T{3}),T{8}), "pow");
+  test.check(cmp(pow(T{M_PIq},T{3}),pow(T{M_PIq},3)), "pow"); // compare pow with float exponent and integer exponent
   test.check(cmp(cbrt(T{0.5*0.5*0.5}),T{0.5}), "cbrt");
   test.check(cmp(sqrt(T{4}),T{2}), "sqrt");
 
