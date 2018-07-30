@@ -74,9 +74,12 @@
 /* Define if you have the MPI library.  */
 #cmakedefine HAVE_MPI ENABLE_MPI
 
-/* Define if you have the GNU GMP library. The value should be ENABLE_GMP
-   to facilitate activating and deactivating GMP using compile flags. */
-#cmakedefine HAVE_GMP ENABLE_GMP
+/* Define if you have the GNU MPFR library. The value should be ENABLE_MPFR
+   to facilitate activating and deactivating MPFR using compile flags. */
+#cmakedefine HAVE_MPFR ENABLE_MPFR
+
+/* Since GMP is replaced by MPFR, the following definition is DEPRECATED! */
+#cmakedefine HAVE_GMP ENABLE_MPFR
 
 /* Define if you have the GCC Quad-Precision library. The value should be ENABLE_QUADMATH
    to facilitate activating and deactivating QuadMath using compile flags. */

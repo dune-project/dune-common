@@ -26,8 +26,8 @@ set_package_properties("BLAS" PROPERTIES
 set_package_properties("LAPACK" PROPERTIES
   DESCRIPTION "fast linear algebra routines")
 
-find_package(GMP)
-include(AddGMPFlags)
+find_package(MPFR)
+include(AddMPFRFlags)
 find_package(QuadMath)
 find_package(Inkscape)
 include(UseInkscape)
