@@ -29,6 +29,7 @@ set_package_properties("LAPACK" PROPERTIES
 find_package(GMP)
 include(AddGMPFlags)
 find_package(QuadMath)
+include(AddQuadMathFlags)
 find_package(Inkscape)
 include(UseInkscape)
 include(FindMProtect)
