@@ -22,6 +22,18 @@ namespace Dune
     // In case of C++ standard >= 17 we forward optionals into our namespace
     template< class T >
     using optional = std::optional< T >;
+
+    using nullopt_t = std::nullopt_t;
+    using in_place_t = std::in_place_t;
+
+    namespace
+    {
+      const std::nullopt_t nullopt = std::nullopt;
+      const std::in_place_t in_place =  std::in_place;
+    } // anonymous namespace
+
+    using bad_optional_access = std::bad_optional_access;
+
 #else
     // In case of C++ standard < 17 we take the fallback implementation
 
