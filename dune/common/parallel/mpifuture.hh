@@ -10,7 +10,12 @@
 namespace Dune{
 
   template<class R, class S = void>
-  class MPIFuture : public Future<R>{
+  class MPIFuture : public FutureBase<R>{
+    template<class T>
+    friend class when_all_MPIFuture;
+
+    template<class T>
+    friend class when_any_MPIFuture;
     MPI_Request req_;
     MPI_Status status_;
     std::unique_ptr<MPIData<R>> data_;
