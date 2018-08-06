@@ -3,12 +3,14 @@
 #ifndef DUNE_COMMON_PARALLEL_FUTURE_HH
 #define DUNE_COMMON_PARALLEL_FUTURE_HH
 
+#include <memory>
+
 namespace Dune{
 
   template<class T>
-  class Future{
+  class FutureBase{
   public:
-    virtual ~Future(){};
+    virtual ~FutureBase(){};
     virtual void wait() = 0;
     virtual T get()  = 0;
     virtual bool ready() = 0;
@@ -18,8 +20,35 @@ namespace Dune{
   class InvalidFutureException : public InvalidStateException
   {};
 
+  // Type-erasure class for Future
   template<class T>
-  class PseudoFuture : Future<T>{
+  class Future : public FutureBase<T>{
+    std::unique_ptr<FutureBase<T>> _future;
+  public:
+    template<class F>
+    Future(F&& f)
+      : _future(new F(std::forward<F>(f)))
+    {}
+
+    Future(){}
+    virtual void wait() override{
+      _future->wait();
+    }
+    virtual T get() override {
+      return _future->get();
+    }
+    virtual bool ready() override {
+      return _future->ready();
+    }
+    virtual bool valid() const override {
+      if(_future)
+        return _future->valid();
+      return false;
+    }
+  };
+
+  template<class T>
+  class PseudoFuture : public FutureBase<T>{
     bool valid_;
     T data_;
   public:
@@ -57,7 +86,7 @@ namespace Dune{
   };
 
   template<>
-  class PseudoFuture<void> : Future<void>{
+  class PseudoFuture<void> : FutureBase<void>{
     bool valid_;
   public:
     PseudoFuture(bool valid = false) :
