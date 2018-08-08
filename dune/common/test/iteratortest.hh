@@ -15,8 +15,6 @@
  * @param begin Iterator positioned at the start
  * @param end Iterator positioned at the end
  * @param opt Functor for doing whatever one wants
- *
- * \todo Test whether begin-> works.  (I don't know how)
  */
 template<class Iter, class Opt>
 int testForwardIterator(Iter begin, Iter end, Opt& opt)
