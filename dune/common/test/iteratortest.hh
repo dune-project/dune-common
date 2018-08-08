@@ -10,6 +10,51 @@
 #include <dune/common/unused.hh>
 
 /**
+ * @brief Test whether the class Iter implements the interface of an STL output iterator
+ *
+ * @param iterator Iterator to test
+ * @param iterations Number of times that 'iterator' can be safely incremented
+ * @param value A value that is sent to the output iterator
+ */
+template<class Iter, class Value>
+void testOutputIterator(Iter iterator, std::size_t iterations, Value value)
+{
+  // Test whether iterator is copy-constructible
+  // The new iterator object will go out of scope at the end of this method, and hence
+  // destructibility will also be tested.
+  Iter tmp1(iterator);
+
+  // Test whether iterator is copy-assignable
+  Iter tmp2 = iterator;
+
+  // Test whether pre-increment and assignment works
+  for (size_t i=0; i<iterations; ++i, ++tmp1)
+    // An output iterator can only be dereferenced as an lvalue (if in a dereferenceable state).
+    // It shall only be dereferenced as the left-side of an assignment statement.
+    *tmp1 = value;
+
+  // Test whether post-increment and assignment works
+  for (size_t i=0; i<iterations; ++i, tmp2++)
+    *tmp2 = value;
+
+  // Test whether std::iterator_traits is properly specialized
+  // The AlwaysTrue<A> construction allows one to test whether the type A exists at all,
+  // without assuming anything further about A.
+  static_assert(Dune::AlwaysTrue<typename std::iterator_traits<Iter>::difference_type>::value,
+                "std::iterator_traits::difference_type is not defined!");
+  static_assert(Dune::AlwaysTrue<typename std::iterator_traits<Iter>::value_type>::value,
+                "std::iterator_traits::value_type is not defined!");
+  static_assert(Dune::AlwaysTrue<typename std::iterator_traits<Iter>::pointer>::value,
+                "std::iterator_traits::pointer is not defined!");
+  static_assert(Dune::AlwaysTrue<typename std::iterator_traits<Iter>::reference>::value,
+                "std::iterator_traits::reference is not defined!");
+
+  // Make sure the iterator_category is properly set
+  static_assert(std::is_same<typename std::iterator_traits<Iter>::iterator_category, std::output_iterator_tag>::value,
+                "std::iterator_traits::iterator_category is not properly defined!");
+}
+
+/**
  * @brief Test whether the class Iter implements the interface of an STL forward iterator
  *
  * @param begin Iterator positioned at the start
