@@ -17,7 +17,7 @@
  * @param value A value that is sent to the output iterator
  */
 template<class Iter, class Value>
-int testOutputIterator(Iter iterator, std::size_t iterations, Value value)
+void testOutputIterator(Iter iterator, std::size_t iterations, Value value)
 {
   // Test whether iterator is copy-constructible
   // The new iterator object will go out of scope at the end of this method, and hence
@@ -52,8 +52,6 @@ int testOutputIterator(Iter iterator, std::size_t iterations, Value value)
   // Make sure the iterator_category is properly set
   static_assert(std::is_same<typename std::iterator_traits<Iter>::iterator_category, std::output_iterator_tag>::value,
                 "std::iterator_traits::iterator_category is not properly defined!");
-
-  return 0;
 }
 
 /**
