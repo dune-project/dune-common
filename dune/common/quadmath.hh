@@ -330,16 +330,16 @@ namespace Dune
 
     // specialization of LexicalCast to quad precision types
     template<>
-    struct LexicalCast<__float128> {
-      static __float128 eval (const char* str)
+    struct LexicalCast<float128_t> {
+      static float128_t eval (const char* str)
       {
-        return LexicalCastImpl<__float128>::evalImpl(str, strtoflt128);
+        return LexicalCastImpl<float128_t>::evalImpl(str, strtoflt128);
       }
     };
 
     template<>
     struct LexicalCast<Float128> {
-      static Float128 eval (const char* str) { return {LexicalCast<__float128>::eval(str)}; }
+      static Float128 eval (const char* str) { return Float128{LexicalCast<float128_t>::eval(str)}; }
     };
 
   } // end namespace Impl
