@@ -13,6 +13,7 @@
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/densematrix.hh>
+#include <dune/common/lexicalcast.hh>
 #include <dune/common/precision.hh>
 #include <dune/common/typetraits.hh>
 
@@ -332,6 +333,15 @@ namespace Dune
   {
     s << a[0][0];
     return s;
+  }
+
+  namespace Impl
+  {
+    // specialization of LexicalCast
+    template<typename K>
+    struct LexicalCast<FieldMatrix<K,1,1>> {
+      static FieldMatrix<K,1,1> eval (const char* str) { return LexicalCast<K>::eval(str); }
+    };
   }
 
 #endif // DOXYGEN

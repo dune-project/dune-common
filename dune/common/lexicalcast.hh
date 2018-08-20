@@ -10,14 +10,10 @@
 #include <limits>
 
 #include <dune/common/exceptions.hh>
-#include <dune/common/quadmath.hh>
 
 namespace Dune
 {
-  // forward declarations
-  template<class K, int SIZE> class FieldVector;
-  template<class K, int ROWS, int COLS> class FieldMatrix;
-
+  /// An exception thrown whenever interpretation of the argument is not possible.
   class InvalidArgument : public Exception {};
 
   namespace Impl
@@ -30,7 +26,7 @@ namespace Dune
 
     /// \brief Implementation of the acual number converter.
     /**
-     * It is required that the whole string is interpreted, i.e. no trailing whitespaces are allowed.
+     * Allows leading and trailing whitespace characters.
      *
      * \tparam T  Target numeric type
      * \tparam S  Output type of the parser [=T]
@@ -45,7 +41,13 @@ namespace Dune
         char* end;
         errno = 0;
         S x = parser(str, &end);
-        if (std::strlen(str) > end - str) {
+
+        // test whether all non-space characters are consumed during conversion
+        bool all_consumed = (end != str);
+        while (all_consumed && (*end != '\0'))
+          all_consumed = std::isspace(*end++);
+
+        if (!all_consumed) {
           DUNE_THROW(InvalidArgument,
             "Conversion to number failed. Possible reason: invalid string or locale format");
         }
@@ -195,34 +197,6 @@ namespace Dune
       }
     };
 
-
-    // Dune scalar-like vector/matrix
-    template<typename T>
-    struct LexicalCast<FieldVector<T,1>> {
-      static FieldVector<T,1> eval (const char* str) { return LexicalCast<T>::eval(str); }
-    };
-    template<typename T>
-    struct LexicalCast<FieldMatrix<T,1,1>> {
-      static FieldMatrix<T,1,1> eval (const char* str) { return LexicalCast<T>::eval(str); }
-    };
-
-
-#if HAVE_QUADMATH
-    // specialization for quadprecision floating-point type.
-    template<>
-    struct LexicalCast<__float128> {
-      static __float128 eval (const char* str)
-      {
-        return LexicalCastImpl<__float128>::evalImpl(str, strtoflt128);
-      }
-    };
-
-    template<>
-    struct LexicalCast<Float128> {
-      static Float128 eval (const char* str) { return {LexicalCast<__float128>::eval(str)}; }
-    };
-#endif
-
   } // end namespace Impl
 
 
@@ -236,11 +210,16 @@ namespace Dune
    * for conversion. All other types by default call the constructor with strings.
    *
    * The conversion is locale-dependent and throws an \ref InvalidArgument exception if not all
-   * characters are consumed during conversion. This means, that no trailing non-numeric characters
-   * are allowed.
+   * characters are consumed during conversion, except leading and trailing whitespaces.
    *
    * In case the represented number is out of range of the number type T, a \ref RangeError exception
    * is thrown.
+   *
+   * \tparam T   The target number type to convert the string to.
+   * \param str  A pointer to the null-terminated byte string to be interpreted.
+   *
+   * \throws InvalidArgument
+   * \throws RangeError
    **/
   template<typename T>
   T lexicalCast(const char* str) { return Impl::LexicalCast<T>::eval(str); }

@@ -21,6 +21,7 @@
 #include "unused.hh"
 #include "boundschecking.hh"
 
+#include <dune/common/lexicalcast.hh>
 #include <dune/common/math.hh>
 
 namespace Dune {
@@ -515,6 +516,16 @@ namespace Dune {
   {
     return a!=b[0];
   }
+
+  namespace Impl
+  {
+    // specialization of LexicalCast
+    template<typename K>
+    struct LexicalCast<FieldVector<K,1>> {
+      static FieldVector<K,1> eval (const char* str) { return LexicalCast<K>::eval(str); }
+    };
+  }
+
 #endif
 
   /* Overloads for common classification functions */

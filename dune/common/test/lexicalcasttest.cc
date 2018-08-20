@@ -18,6 +18,7 @@
 #include <dune/common/hybridutilities.hh>
 #include <dune/common/float_cmp.hh>
 #include <dune/common/lexicalcast.hh>
+#include <dune/common/quadmath.hh>
 #include <dune/common/timer.hh>
 #include <dune/common/test/testsuite.hh>
 
@@ -200,8 +201,15 @@ int main()
     } catch(Dune::Exception const&) {
       exception = true;
     }
+    test.check(exception, "InvalidArgument Exception: locale");
 
-    test.check(exception, "InvalidArgument Exception");
+    exception = false;
+    try {
+      T val2 = lexicalCast<T>("1.5__");
+    } catch(Dune::Exception const&) {
+      exception = true;
+    }
+    test.check(exception, "InvalidArgument Exception: trailing characters");
 
     exception = false;
     try {
@@ -209,8 +217,15 @@ int main()
     } catch(Dune::Exception const&) {
       exception = true;
     }
+    test.check(!exception, "InvalidArgument Exception: trailing whitespace");
 
-    test.check(exception, "InvalidArgument Exception");
+    exception = false;
+    try {
+      T val2 = lexicalCast<T>(" 1.5");
+    } catch(Dune::Exception const&) {
+      exception = true;
+    }
+    test.check(!exception, "InvalidArgument Exception: leading whitespace");
   });
 
 }
