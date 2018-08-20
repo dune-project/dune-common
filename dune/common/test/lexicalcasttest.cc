@@ -17,8 +17,8 @@
 #include <dune/common/classname.hh>
 #include <dune/common/hybridutilities.hh>
 #include <dune/common/float_cmp.hh>
-#include <dune/common/gmpfield.hh>
 #include <dune/common/lexicalcast.hh>
+#include <dune/common/timer.hh>
 #include <dune/common/test/testsuite.hh>
 
 using namespace Dune;
@@ -125,9 +125,6 @@ int main()
 #if HAVE_QUADMATH
     , Float128
 #endif
-#if HAVE_GMP
-    , GMPField<32>
-#endif
     >;
 
   TestSuite test;
@@ -140,7 +137,7 @@ int main()
 
     Comparator<T> cmp{};
     Generator<T> generate{};
-    for (int i = 0; i < 100; ++i) { // repeat the test 100 times
+    for (int i = 0; i < 2; ++i) { // repeat the test 100 times
       value = generate();
       std::ostringstream oss;
       oss << std::setprecision(std::numeric_limits<T>::digits10 + 1) << value;
@@ -155,5 +152,65 @@ int main()
       // compare with original value using floating-point comparison
       test.check(cmp(value, val1));
     }
+
+    T value2 = std::numeric_limits<T>::max();
+    std::ostringstream oss2;
+    oss2 << std::setprecision(std::numeric_limits<T>::digits10 + 2) << value2;
+
+    T val2 = lexicalCast<T>(oss2.str().c_str());
+    test.check(cmp(value2, val2));
+
+    bool exception = false;
+    try {
+      T val3 = lexicalCast<T>(("1" + oss2.str()).c_str()); // add one more digit in front of number
+    } catch(Dune::Exception const&) {
+      exception = true;
+    }
+    test.check(exception, "RangeError Exception");
   });
+
+
+  using FloatingPointTypes = std::tuple<float, double, long double
+#if HAVE_QUADMATH
+    , Float128
+#endif
+    >;
+
+  Hybrid::forEach(FloatingPointTypes{}, [&test](auto value)
+  {
+    using namespace Dune;
+    using T = decltype(value);
+    Comparator<T> cmp{};
+    std::cout << "test<" << className<T>() << ">...\n";
+
+    value = 1.5;
+
+    std::setlocale(LC_NUMERIC, "C");
+    T val0 = lexicalCast<T>("1.5");
+    std::setlocale(LC_NUMERIC, "de_DE.UTF-8");
+    T val1 = lexicalCast<T>("1,5");
+
+    test.check(cmp(value, val0), "Locale_C");
+    test.check(cmp(value, val1), "Locale_de_DE");
+
+    std::setlocale(LC_NUMERIC, "C");
+    bool exception = false;
+    try {
+      T val2 = lexicalCast<T>("1,5");
+    } catch(Dune::Exception const&) {
+      exception = true;
+    }
+
+    test.check(exception, "InvalidArgument Exception");
+
+    exception = false;
+    try {
+      T val2 = lexicalCast<T>("1.5 ");
+    } catch(Dune::Exception const&) {
+      exception = true;
+    }
+
+    test.check(exception, "InvalidArgument Exception");
+  });
+
 }
