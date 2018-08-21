@@ -38,15 +38,15 @@ void testOutputIterator(Iter iterator, std::size_t iterations, Value value)
     *tmp2 = value;
 
   // Test whether std::iterator_traits is properly specialized
-  // The is_same<A,A> construction allows one to test whether the type A exists at all,
+  // The AlwaysTrue<A> construction allows one to test whether the type A exists at all,
   // without assuming anything further about A.
-  static_assert(std::is_same<typename std::iterator_traits<Iter>::difference_type, typename std::iterator_traits<Iter>::difference_type>::value,
+  static_assert(Dune::AlwaysTrue<typename std::iterator_traits<Iter>::difference_type>::value,
                 "std::iterator_traits::difference_type is not defined!");
-  static_assert(std::is_same<typename std::iterator_traits<Iter>::value_type,      typename std::iterator_traits<Iter>::value_type>::value,
+  static_assert(Dune::AlwaysTrue<typename std::iterator_traits<Iter>::value_type>::value,
                 "std::iterator_traits::value_type is not defined!");
-  static_assert(std::is_same<typename std::iterator_traits<Iter>::pointer,         typename std::iterator_traits<Iter>::pointer>::value,
+  static_assert(Dune::AlwaysTrue<typename std::iterator_traits<Iter>::pointer>::value,
                 "std::iterator_traits::pointer is not defined!");
-  static_assert(std::is_same<typename std::iterator_traits<Iter>::reference,       typename std::iterator_traits<Iter>::reference>::value,
+  static_assert(Dune::AlwaysTrue<typename std::iterator_traits<Iter>::reference>::value,
                 "std::iterator_traits::reference is not defined!");
 
   // Make sure the iterator_category is properly set
