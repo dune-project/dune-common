@@ -42,7 +42,7 @@ struct Generator
 {
   Generator(T lo = std::numeric_limits<T>::min(),
             T hi = std::numeric_limits<T>::max())
-    : gen(rd())
+    : gen{}
     , dis(lo, hi)
   {}
 
@@ -51,7 +51,6 @@ struct Generator
     return dis(gen);
   }
 
-  std::random_device rd;
   std::mt19937 gen;
   typename Distribution<T>::type dis;
 };
@@ -64,7 +63,7 @@ struct Generator<bool,void>
 
   Generator(T lo = std::numeric_limits<T>::min(),
             T hi = std::numeric_limits<T>::max())
-    : gen(rd())
+    : gen{}
     , dis(lo, hi)
   {}
 
@@ -73,7 +72,6 @@ struct Generator<bool,void>
     return dis(gen) >= 0;
   }
 
-  std::random_device rd;
   std::mt19937 gen;
   typename Distribution<T>::type dis;
 };
@@ -91,7 +89,9 @@ struct Generator<T, std::enable_if_t<not std::is_arithmetic<T>::value
             T hi = std::numeric_limits<T>::max())
     : lo_(lo)
     , hi_(hi)
-  {}
+  {
+    std::srand(5489);
+  }
 
   T operator()() const
   {
@@ -130,6 +130,10 @@ int main()
 
   TestSuite test;
 
+  test.check(strTo<char>("0") == '\0');
+  test.check(strTo<signed char>("0") == '\0');
+  test.check(strTo<unsigned char>("0") == '\0');
+
   Hybrid::forEach(Types{}, [&test](auto value)
   {
     using namespace Dune;
@@ -138,25 +142,19 @@ int main()
 
     Comparator<T> cmp{};
     Generator<T> generate{};
-    for (int i = 0; i < 2; ++i) { // repeat the test 100 times
+    for (int i = 0; i < 100; ++i) { // repeat the test 10 times
       value = generate();
       std::ostringstream oss;
-      oss << std::setprecision(std::numeric_limits<T>::digits10 + 1) << value;
-
-      std::istringstream iss(oss.str());
-      T val0; iss >> val0;
+      oss << std::setprecision(std::numeric_limits<T>::digits10 + 3) << value;
       T val1 = strTo<T>(oss.str().c_str());
 
-      // compare the result of istringstream with strTo
-      test.check(bool(val0 == val1));
-
-      // compare with original value using floating-point comparison
-      test.check(cmp(value, val1));
+      // compare with original value
+      test.check(bool(value == val1));
     }
 
     T value2 = std::numeric_limits<T>::max();
     std::ostringstream oss2;
-    oss2 << std::setprecision(std::numeric_limits<T>::digits10 + 2) << value2;
+    oss2 << std::setprecision(std::numeric_limits<T>::digits10 + 4) << value2;
 
     T val2 = strTo<T>(oss2.str().c_str());
     test.check(cmp(value2, val2));
@@ -164,7 +162,7 @@ int main()
     bool exception = false;
     try {
       T val3 = strTo<T>(("1" + oss2.str()).c_str()); // add one more digit in front of number
-    } catch(Dune::Exception const&) {
+    } catch(Dune::RangeError const&) {
       exception = true;
     }
     test.check(exception, "RangeError Exception");
@@ -188,17 +186,21 @@ int main()
 
     std::setlocale(LC_NUMERIC, "C");
     T val0 = strTo<T>("1.5");
-    std::setlocale(LC_NUMERIC, "de_DE.UTF-8");
-    T val1 = strTo<T>("1,5");
-
     test.check(cmp(value, val0), "Locale_C");
-    test.check(cmp(value, val1), "Locale_de_DE");
+
+    char* new_loc = std::setlocale(LC_NUMERIC, "de_DE.UTF-8");
+    if (new_loc) {
+      T val1 = strTo<T>("1,5");
+      test.check(cmp(value, val1), "Locale_de_DE");
+    } else {
+      std::cout << "### skipped locale de_DE.UTF-8 test\n";
+    }
 
     std::setlocale(LC_NUMERIC, "C");
     bool exception = false;
     try {
       T val2 = strTo<T>("1,5");
-    } catch(Dune::Exception const&) {
+    } catch(Dune::InvalidArgument const&) {
       exception = true;
     }
     test.check(exception, "InvalidArgument Exception: locale");
@@ -206,7 +208,7 @@ int main()
     exception = false;
     try {
       T val2 = strTo<T>("1.5__");
-    } catch(Dune::Exception const&) {
+    } catch(Dune::InvalidArgument const&) {
       exception = true;
     }
     test.check(exception, "InvalidArgument Exception: trailing characters");
@@ -214,7 +216,7 @@ int main()
     exception = false;
     try {
       T val2 = strTo<T>("1.5 ");
-    } catch(Dune::Exception const&) {
+    } catch(Dune::InvalidArgument const&) {
       exception = true;
     }
     test.check(!exception, "InvalidArgument Exception: trailing whitespace");
@@ -222,7 +224,7 @@ int main()
     exception = false;
     try {
       T val2 = strTo<T>(" 1.5");
-    } catch(Dune::Exception const&) {
+    } catch(Dune::InvalidArgument const&) {
       exception = true;
     }
     test.check(!exception, "InvalidArgument Exception: leading whitespace");

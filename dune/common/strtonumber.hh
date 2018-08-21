@@ -38,11 +38,13 @@ namespace Dune
       static T evalImpl (const char* str, Parser parser)
       {
         char* end;
+        auto old_errno = errno;
         errno = 0;
-        auto x = parser(str, &end);
+        auto x = parser(str, &end); // maybe sets errno
+        std::swap(errno, old_errno);
 
-        if (errno == ERANGE) {
-          DUNE_THROW(RangeError, std::strerror(errno));
+        if (old_errno == ERANGE) {
+          DUNE_THROW(RangeError, std::strerror(old_errno));
         }
 
         // test whether all non-space characters are consumed during conversion
@@ -68,18 +70,21 @@ namespace Dune
         }
         return T(u);
       }
-
-      static T const& convert (T const& x)
-      {
-        return x;
-      }
     };
 
     // signed integer types
+    template<> struct StrToNumber<char> {
+      static char eval (const char* str)
+      {
+        auto parser = [](const char* str, char** end) { return std::strtol(str,end,0); };
+        return StrToNumberImpl<char>::evalImpl(str, parser);
+      }
+    };
+
     template<> struct StrToNumber<signed char> {
       static signed char eval (const char* str)
       {
-        auto parser = [](const char* str, char** end) { return std::strtol(str,end,10); };
+        auto parser = [](const char* str, char** end) { return std::strtol(str,end,0); };
         return StrToNumberImpl<signed char>::evalImpl(str, parser);
       }
     };
@@ -87,7 +92,7 @@ namespace Dune
     template<> struct StrToNumber<signed short> {
       static signed short eval (const char* str)
       {
-        auto parser = [](const char* str, char** end) { return std::strtol(str,end,10); };
+        auto parser = [](const char* str, char** end) { return std::strtol(str,end,0); };
         return StrToNumberImpl<signed short>::evalImpl(str, parser);
       }
     };
@@ -95,7 +100,7 @@ namespace Dune
     template<> struct StrToNumber<int> {
       static int eval (const char* str)
       {
-        auto parser = [](const char* str, char** end) { return std::strtol(str,end,10); };
+        auto parser = [](const char* str, char** end) { return std::strtol(str,end,0); };
         return StrToNumberImpl<int>::evalImpl(str, parser);
       }
     };
@@ -103,7 +108,7 @@ namespace Dune
     template<> struct StrToNumber<long> {
       static long eval (const char* str)
       {
-        auto parser = [](const char* str, char** end) { return std::strtol(str,end,10); };
+        auto parser = [](const char* str, char** end) { return std::strtol(str,end,0); };
         return StrToNumberImpl<long>::evalImpl(str, parser);
       }
     };
@@ -111,7 +116,7 @@ namespace Dune
     template<> struct StrToNumber<long long> {
       static long long eval (const char* str)
       {
-        auto parser = [](const char* str, char** end) { return std::strtoll(str,end,10); };
+        auto parser = [](const char* str, char** end) { return std::strtoll(str,end,0); };
         return StrToNumberImpl<long>::evalImpl(str, parser);
       }
     };
@@ -121,7 +126,7 @@ namespace Dune
     template<> struct StrToNumber<bool> {
       static unsigned char eval (const char* str)
       {
-        auto parser = [](const char* str, char** end) { return std::strtoul(str,end,10); };
+        auto parser = [](const char* str, char** end) { return std::strtoul(str,end,0); };
         return StrToNumberImpl<bool>::evalImpl(str, parser);
       }
     };
@@ -130,7 +135,7 @@ namespace Dune
     struct StrToNumber<unsigned char> {
       static unsigned char eval (const char* str)
       {
-        auto parser = [](const char* str, char** end) { return std::strtoul(str,end,10); };
+        auto parser = [](const char* str, char** end) { return std::strtoul(str,end,0); };
         return StrToNumberImpl<unsigned char>::evalImpl(str, parser);
       }
     };
@@ -139,7 +144,7 @@ namespace Dune
     struct StrToNumber<unsigned short> {
       static unsigned short eval (const char* str)
       {
-        auto parser = [](const char* str, char** end) { return std::strtoul(str,end,10); };
+        auto parser = [](const char* str, char** end) { return std::strtoul(str,end,0); };
         return StrToNumberImpl<unsigned short>::evalImpl(str, parser);
       }
     };
@@ -148,7 +153,7 @@ namespace Dune
     struct StrToNumber<unsigned int> {
       static unsigned int eval (const char* str)
       {
-        auto parser = [](const char* str, char** end) { return std::strtoul(str,end,10); };
+        auto parser = [](const char* str, char** end) { return std::strtoul(str,end,0); };
         return StrToNumberImpl<unsigned int>::evalImpl(str, parser);
       }
     };
@@ -157,7 +162,7 @@ namespace Dune
     struct StrToNumber<unsigned long> {
       static unsigned long eval (const char* str)
       {
-        auto parser = [](const char* str, char** end) { return std::strtoul(str,end,10); };
+        auto parser = [](const char* str, char** end) { return std::strtoul(str,end,0); };
         return StrToNumberImpl<unsigned long>::evalImpl(str, parser);
       }
     };
@@ -166,7 +171,7 @@ namespace Dune
     struct StrToNumber<unsigned long long> {
       static unsigned long long eval (const char* str)
       {
-        auto parser = [](const char* str, char** end) { return std::strtoull(str,end,10); };
+        auto parser = [](const char* str, char** end) { return std::strtoull(str,end,0); };
         return StrToNumberImpl<unsigned long long>::evalImpl(str, parser);
       }
     };
@@ -228,6 +233,10 @@ namespace Dune
    **/
   template<typename T>
   T strTo (const char* str) { return Impl::StrToNumber<T>::eval(str); }
+
+  /// Overload of \ref strTo for `std::string` arguments.
+  template<typename T>
+  T strTo (std::string const& str) { return strTo<T>(str.c_str()); }
 
 } // end namespace Dune
 
