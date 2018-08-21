@@ -595,12 +595,12 @@ mkdir "$PROJECT/doc/doxygen"
 
 echo "- $PROJECT/doc/doxygen/Doxylocal"
 if [ "x`which doxygen`" == "x" ]; then
-    echo "Doxygen is not installed! Your documentation will not work without."
+    echo "Doxygen is not installed! Your documentation will not work without it."
 fi
 # Where to search and which files to use
 cat> $PROJECT/doc/doxygen/Doxylocal << CC_DELIM
 # This file contains local changes to the doxygen configuration
-# please us '+=' to add file/directories to the lists
+# please use '+=' to add files/directories to the lists
 
 # The INPUT tag can be used to specify the files and/or directories that contain
 # documented source files. You may enter file names like "myfile.cpp" or
