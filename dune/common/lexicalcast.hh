@@ -6,7 +6,6 @@
 
 #include <cerrno>
 #include <cstdlib>
-#include <cstring>
 #include <limits>
 
 #include <dune/common/exceptions.hh>
@@ -24,23 +23,27 @@ namespace Dune
       static T eval (const char* str) { return T(str); }
     };
 
-    /// \brief Implementation of the acual number converter.
+    /// \brief Implementation of the actual number converter.
     /**
      * Allows leading and trailing whitespace characters.
      *
      * \tparam T  Target numeric type
-     * \tparam S  Output type of the parser [=T]
      **/
-    template<typename T, typename S=T>
+    template<typename T>
     struct LexicalCastImpl
     {
-      // The parser has the signature `T(const char*, char**)` and may set the errno in case of a range error.
+      // The parser has the signature `T(const char*, char**)` and may set the errno
+      // in case of a range error.
       template<typename Parser>
       static T evalImpl (const char* str, Parser parser)
       {
         char* end;
         errno = 0;
-        S x = parser(str, &end);
+        auto x = parser(str, &end);
+
+        if (errno == ERANGE) {
+          DUNE_THROW(RangeError, std::strerror(errno));
+        }
 
         // test whether all non-space characters are consumed during conversion
         bool all_consumed = (end != str);
@@ -49,10 +52,7 @@ namespace Dune
 
         if (!all_consumed) {
           DUNE_THROW(InvalidArgument,
-            "Conversion to number failed. Possible reason: invalid string or locale format");
-        }
-        if (errno == ERANGE) {
-          DUNE_THROW(RangeError, std::strerror(errno));
+            "Conversion of '" << str << "' to number failed. Possible reason: invalid string or locale format");
         }
 
         return convert(x);
@@ -60,13 +60,13 @@ namespace Dune
 
       // Check whether a numeric conversion is safe
       template<typename U>
-      static T convert (U const& x)
+      static T convert (U const& u)
       {
-        if (sizeof(U) > sizeof(T) && (x > U(std::numeric_limits<T>::max()) ||
-                                      x < U(std::numeric_limits<T>::min()))) {
+        if (sizeof(U) > sizeof(T) && (u > U(std::numeric_limits<T>::max()) ||
+                                      u < U(std::numeric_limits<T>::min()))) {
           DUNE_THROW(RangeError, "Numerical result out of range");
         }
-        return T(x);
+        return T(u);
       }
 
       static T const& convert (T const& x)
@@ -80,7 +80,7 @@ namespace Dune
       static signed char eval (const char* str)
       {
         auto parser = [](const char* str, char** end) { return std::strtol(str,end,10); };
-        return LexicalCastImpl<signed char, long>::evalImpl(str, parser);
+        return LexicalCastImpl<signed char>::evalImpl(str, parser);
       }
     };
 
@@ -88,7 +88,7 @@ namespace Dune
       static signed short eval (const char* str)
       {
         auto parser = [](const char* str, char** end) { return std::strtol(str,end,10); };
-        return LexicalCastImpl<signed short, long>::evalImpl(str, parser);
+        return LexicalCastImpl<signed short>::evalImpl(str, parser);
       }
     };
 
@@ -96,7 +96,7 @@ namespace Dune
       static int eval (const char* str)
       {
         auto parser = [](const char* str, char** end) { return std::strtol(str,end,10); };
-        return LexicalCastImpl<int, long>::evalImpl(str, parser);
+        return LexicalCastImpl<int>::evalImpl(str, parser);
       }
     };
 
@@ -122,7 +122,7 @@ namespace Dune
       static unsigned char eval (const char* str)
       {
         auto parser = [](const char* str, char** end) { return std::strtoul(str,end,10); };
-        return LexicalCastImpl<bool, unsigned long>::evalImpl(str, parser);
+        return LexicalCastImpl<bool>::evalImpl(str, parser);
       }
     };
 
@@ -131,7 +131,7 @@ namespace Dune
       static unsigned char eval (const char* str)
       {
         auto parser = [](const char* str, char** end) { return std::strtoul(str,end,10); };
-        return LexicalCastImpl<unsigned char, unsigned long>::evalImpl(str, parser);
+        return LexicalCastImpl<unsigned char>::evalImpl(str, parser);
       }
     };
 
@@ -140,7 +140,7 @@ namespace Dune
       static unsigned short eval (const char* str)
       {
         auto parser = [](const char* str, char** end) { return std::strtoul(str,end,10); };
-        return LexicalCastImpl<unsigned short, unsigned long>::evalImpl(str, parser);
+        return LexicalCastImpl<unsigned short>::evalImpl(str, parser);
       }
     };
 
@@ -149,7 +149,7 @@ namespace Dune
       static unsigned int eval (const char* str)
       {
         auto parser = [](const char* str, char** end) { return std::strtoul(str,end,10); };
-        return LexicalCastImpl<unsigned int, unsigned long>::evalImpl(str, parser);
+        return LexicalCastImpl<unsigned int>::evalImpl(str, parser);
       }
     };
 
@@ -222,7 +222,7 @@ namespace Dune
    * \throws RangeError
    **/
   template<typename T>
-  T lexicalCast(const char* str) { return Impl::LexicalCast<T>::eval(str); }
+  T lexicalCast (const char* str) { return Impl::LexicalCast<T>::eval(str); }
 
 } // end namespace Dune
 
