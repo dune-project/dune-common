@@ -1,8 +1,8 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 
-#ifndef DUNE_COMMON_LEXICALCAST_HH
-#define DUNE_COMMON_LEXICALCAST_HH
+#ifndef DUNE_COMMON_STRTONUMBER_HH
+#define DUNE_COMMON_STRTONUMBER_HH
 
 #include <cerrno>
 #include <cstdlib>
@@ -19,7 +19,7 @@ namespace Dune
   {
     // default behavior: call the string constructor
     template<typename T>
-    struct LexicalCast {
+    struct StrToNumber {
       static T eval (const char* str) { return T(str); }
     };
 
@@ -30,7 +30,7 @@ namespace Dune
      * \tparam T  Target numeric type
      **/
     template<typename T>
-    struct LexicalCastImpl
+    struct StrToNumberImpl
     {
       // The parser has the signature `T(const char*, char**)` and may set the errno
       // in case of a range error.
@@ -76,124 +76,124 @@ namespace Dune
     };
 
     // signed integer types
-    template<> struct LexicalCast<signed char> {
+    template<> struct StrToNumber<signed char> {
       static signed char eval (const char* str)
       {
         auto parser = [](const char* str, char** end) { return std::strtol(str,end,10); };
-        return LexicalCastImpl<signed char>::evalImpl(str, parser);
+        return StrToNumberImpl<signed char>::evalImpl(str, parser);
       }
     };
 
-    template<> struct LexicalCast<signed short> {
+    template<> struct StrToNumber<signed short> {
       static signed short eval (const char* str)
       {
         auto parser = [](const char* str, char** end) { return std::strtol(str,end,10); };
-        return LexicalCastImpl<signed short>::evalImpl(str, parser);
+        return StrToNumberImpl<signed short>::evalImpl(str, parser);
       }
     };
 
-    template<> struct LexicalCast<int> {
+    template<> struct StrToNumber<int> {
       static int eval (const char* str)
       {
         auto parser = [](const char* str, char** end) { return std::strtol(str,end,10); };
-        return LexicalCastImpl<int>::evalImpl(str, parser);
+        return StrToNumberImpl<int>::evalImpl(str, parser);
       }
     };
 
-    template<> struct LexicalCast<long> {
+    template<> struct StrToNumber<long> {
       static long eval (const char* str)
       {
         auto parser = [](const char* str, char** end) { return std::strtol(str,end,10); };
-        return LexicalCastImpl<long>::evalImpl(str, parser);
+        return StrToNumberImpl<long>::evalImpl(str, parser);
       }
     };
 
-    template<> struct LexicalCast<long long> {
+    template<> struct StrToNumber<long long> {
       static long long eval (const char* str)
       {
         auto parser = [](const char* str, char** end) { return std::strtoll(str,end,10); };
-        return LexicalCastImpl<long>::evalImpl(str, parser);
+        return StrToNumberImpl<long>::evalImpl(str, parser);
       }
     };
 
 
     // unsigned integer types
-    template<> struct LexicalCast<bool> {
+    template<> struct StrToNumber<bool> {
       static unsigned char eval (const char* str)
       {
         auto parser = [](const char* str, char** end) { return std::strtoul(str,end,10); };
-        return LexicalCastImpl<bool>::evalImpl(str, parser);
+        return StrToNumberImpl<bool>::evalImpl(str, parser);
       }
     };
 
     template<>
-    struct LexicalCast<unsigned char> {
+    struct StrToNumber<unsigned char> {
       static unsigned char eval (const char* str)
       {
         auto parser = [](const char* str, char** end) { return std::strtoul(str,end,10); };
-        return LexicalCastImpl<unsigned char>::evalImpl(str, parser);
+        return StrToNumberImpl<unsigned char>::evalImpl(str, parser);
       }
     };
 
     template<>
-    struct LexicalCast<unsigned short> {
+    struct StrToNumber<unsigned short> {
       static unsigned short eval (const char* str)
       {
         auto parser = [](const char* str, char** end) { return std::strtoul(str,end,10); };
-        return LexicalCastImpl<unsigned short>::evalImpl(str, parser);
+        return StrToNumberImpl<unsigned short>::evalImpl(str, parser);
       }
     };
 
     template<>
-    struct LexicalCast<unsigned int> {
+    struct StrToNumber<unsigned int> {
       static unsigned int eval (const char* str)
       {
         auto parser = [](const char* str, char** end) { return std::strtoul(str,end,10); };
-        return LexicalCastImpl<unsigned int>::evalImpl(str, parser);
+        return StrToNumberImpl<unsigned int>::evalImpl(str, parser);
       }
     };
 
     template<>
-    struct LexicalCast<unsigned long> {
+    struct StrToNumber<unsigned long> {
       static unsigned long eval (const char* str)
       {
         auto parser = [](const char* str, char** end) { return std::strtoul(str,end,10); };
-        return LexicalCastImpl<unsigned long>::evalImpl(str, parser);
+        return StrToNumberImpl<unsigned long>::evalImpl(str, parser);
       }
     };
 
     template<>
-    struct LexicalCast<unsigned long long> {
+    struct StrToNumber<unsigned long long> {
       static unsigned long long eval (const char* str)
       {
         auto parser = [](const char* str, char** end) { return std::strtoull(str,end,10); };
-        return LexicalCastImpl<unsigned long long>::evalImpl(str, parser);
+        return StrToNumberImpl<unsigned long long>::evalImpl(str, parser);
       }
     };
 
 
     // floating-point types
     template<>
-    struct LexicalCast<float> {
+    struct StrToNumber<float> {
       static float eval (const char* str)
       {
-        return LexicalCastImpl<float>::evalImpl(str, std::strtof);
+        return StrToNumberImpl<float>::evalImpl(str, std::strtof);
       }
     };
 
     template<>
-    struct LexicalCast<double> {
+    struct StrToNumber<double> {
       static double eval (const char* str)
       {
-        return LexicalCastImpl<double>::evalImpl(str, std::strtod);
+        return StrToNumberImpl<double>::evalImpl(str, std::strtod);
       }
     };
 
     template<>
-    struct LexicalCast<long double> {
+    struct StrToNumber<long double> {
       static long double eval (const char* str)
       {
-        return LexicalCastImpl<long double>::evalImpl(str, std::strtold);
+        return StrToNumberImpl<long double>::evalImpl(str, std::strtold);
       }
     };
 
@@ -206,7 +206,7 @@ namespace Dune
    * like `strtol()` and `strtod()` but parametrized with the concrete target type for ease of usage
    * in generic code.
    *
-   * Only types that provide a specialization of `Impl::LexicalCast` can call the special functions
+   * Only types that provide a specialization of `Impl::StrToNumber` can call the special functions
    * for conversion. All other types by default call the constructor with strings.
    *
    * The conversion is locale-dependent and throws an \ref InvalidArgument exception if not all
@@ -220,10 +220,15 @@ namespace Dune
    *
    * \throws InvalidArgument
    * \throws RangeError
+   *
+   * Example of usage:
+   * \code{.cpp}
+   * double x = strTo<double>("1.2345");
+   * \endcode
    **/
   template<typename T>
-  T lexicalCast (const char* str) { return Impl::LexicalCast<T>::eval(str); }
+  T strTo (const char* str) { return Impl::StrToNumber<T>::eval(str); }
 
 } // end namespace Dune
 
-#endif // DUNE_COMMON_LEXICALCAST_HH
+#endif // DUNE_COMMON_STRTONUMBER_HH

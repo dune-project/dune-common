@@ -15,7 +15,7 @@
 #include <type_traits>
 #include <utility>
 
-#include <dune/common/lexicalcast.hh>
+#include <dune/common/strtonumber.hh>
 #include <dune/common/typetraits.hh>
 
 namespace Dune
@@ -328,18 +328,18 @@ namespace Dune
       return Float128{scalbnq(float128_t(u), e)};
     }
 
-    // specialization of LexicalCast to quad precision types
+    // specialization of StrToNumber to quad precision types
     template<>
-    struct LexicalCast<float128_t> {
+    struct StrToNumber<float128_t> {
       static float128_t eval (const char* str)
       {
-        return LexicalCastImpl<float128_t>::evalImpl(str, strtoflt128);
+        return StrToNumberImpl<float128_t>::evalImpl(str, strtoflt128);
       }
     };
 
     template<>
-    struct LexicalCast<Float128> {
-      static Float128 eval (const char* str) { return Float128{LexicalCast<float128_t>::eval(str)}; }
+    struct StrToNumber<Float128> {
+      static Float128 eval (const char* str) { return Float128{StrToNumber<float128_t>::eval(str)}; }
     };
 
   } // end namespace Impl

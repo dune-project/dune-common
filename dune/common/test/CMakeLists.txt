@@ -189,9 +189,6 @@ dune_add_test(SOURCES iteratorfacadetest2.cc
 dune_add_test(SOURCES iteratorfacadetest.cc
               LABELS quick)
 
-dune_add_test(SOURCES lexicalcasttest.cc
-              LINK_LIBRARIES dunecommon)
-
 dune_add_test(SOURCES lrutest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
@@ -288,6 +285,9 @@ dune_add_test(SOURCES streamtest.cc
 dune_add_test(SOURCES stringutilitytest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
+
+dune_add_test(SOURCES strtonumbertest.cc
+              LINK_LIBRARIES dunecommon)
 
 dune_add_test(SOURCES testdebugallocator.cc
               LINK_LIBRARIES dunecommon

@@ -17,7 +17,7 @@
 #include <dune/common/classname.hh>
 #include <dune/common/hybridutilities.hh>
 #include <dune/common/float_cmp.hh>
-#include <dune/common/lexicalcast.hh>
+#include <dune/common/strtonumber.hh>
 #include <dune/common/quadmath.hh>
 #include <dune/common/timer.hh>
 #include <dune/common/test/testsuite.hh>
@@ -145,9 +145,9 @@ int main()
 
       std::istringstream iss(oss.str());
       T val0; iss >> val0;
-      T val1 = lexicalCast<T>(oss.str().c_str());
+      T val1 = strTo<T>(oss.str().c_str());
 
-      // compare the result of istringstream with lexicalCast
+      // compare the result of istringstream with strTo
       test.check(bool(val0 == val1));
 
       // compare with original value using floating-point comparison
@@ -158,12 +158,12 @@ int main()
     std::ostringstream oss2;
     oss2 << std::setprecision(std::numeric_limits<T>::digits10 + 2) << value2;
 
-    T val2 = lexicalCast<T>(oss2.str().c_str());
+    T val2 = strTo<T>(oss2.str().c_str());
     test.check(cmp(value2, val2));
 
     bool exception = false;
     try {
-      T val3 = lexicalCast<T>(("1" + oss2.str()).c_str()); // add one more digit in front of number
+      T val3 = strTo<T>(("1" + oss2.str()).c_str()); // add one more digit in front of number
     } catch(Dune::Exception const&) {
       exception = true;
     }
@@ -187,9 +187,9 @@ int main()
     value = 1.5;
 
     std::setlocale(LC_NUMERIC, "C");
-    T val0 = lexicalCast<T>("1.5");
+    T val0 = strTo<T>("1.5");
     std::setlocale(LC_NUMERIC, "de_DE.UTF-8");
-    T val1 = lexicalCast<T>("1,5");
+    T val1 = strTo<T>("1,5");
 
     test.check(cmp(value, val0), "Locale_C");
     test.check(cmp(value, val1), "Locale_de_DE");
@@ -197,7 +197,7 @@ int main()
     std::setlocale(LC_NUMERIC, "C");
     bool exception = false;
     try {
-      T val2 = lexicalCast<T>("1,5");
+      T val2 = strTo<T>("1,5");
     } catch(Dune::Exception const&) {
       exception = true;
     }
@@ -205,7 +205,7 @@ int main()
 
     exception = false;
     try {
-      T val2 = lexicalCast<T>("1.5__");
+      T val2 = strTo<T>("1.5__");
     } catch(Dune::Exception const&) {
       exception = true;
     }
@@ -213,7 +213,7 @@ int main()
 
     exception = false;
     try {
-      T val2 = lexicalCast<T>("1.5 ");
+      T val2 = strTo<T>("1.5 ");
     } catch(Dune::Exception const&) {
       exception = true;
     }
@@ -221,7 +221,7 @@ int main()
 
     exception = false;
     try {
-      T val2 = lexicalCast<T>(" 1.5");
+      T val2 = strTo<T>(" 1.5");
     } catch(Dune::Exception const&) {
       exception = true;
     }

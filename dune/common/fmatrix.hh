@@ -13,8 +13,8 @@
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/densematrix.hh>
-#include <dune/common/lexicalcast.hh>
 #include <dune/common/precision.hh>
+#include <dune/common/strtonumber.hh>
 #include <dune/common/typetraits.hh>
 
 namespace Dune
@@ -337,10 +337,10 @@ namespace Dune
 
   namespace Impl
   {
-    // specialization of LexicalCast
+    // specialization of StrToNumber
     template<typename K>
-    struct LexicalCast<FieldMatrix<K,1,1>> {
-      static FieldMatrix<K,1,1> eval (const char* str) { return LexicalCast<K>::eval(str); }
+    struct StrToNumber<FieldMatrix<K,1,1>> {
+      static FieldMatrix<K,1,1> eval (const char* str) { return StrToNumber<K>::eval(str); }
     };
   }
 

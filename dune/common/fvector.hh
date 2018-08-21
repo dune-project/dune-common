@@ -21,8 +21,8 @@
 #include "unused.hh"
 #include "boundschecking.hh"
 
-#include <dune/common/lexicalcast.hh>
 #include <dune/common/math.hh>
+#include <dune/common/strtonumber.hh>
 
 namespace Dune {
 
@@ -519,10 +519,10 @@ namespace Dune {
 
   namespace Impl
   {
-    // specialization of LexicalCast
+    // specialization of StrToNumber
     template<typename K>
-    struct LexicalCast<FieldVector<K,1>> {
-      static FieldVector<K,1> eval (const char* str) { return LexicalCast<K>::eval(str); }
+    struct StrToNumber<FieldVector<K,1>> {
+      static FieldVector<K,1> eval (const char* str) { return StrToNumber<K>::eval(str); }
     };
   }
 
