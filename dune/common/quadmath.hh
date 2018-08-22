@@ -52,6 +52,11 @@ namespace Dune
         : value_(value)
       {}
 
+      // constructor from pointer to null-terminated byte string
+      Float128(const char* str) noexcept
+        : value_(strtoflt128(str, NULL))
+      {}
+
       // accessors
       constexpr operator float128_t() const noexcept { return value_; }
 
