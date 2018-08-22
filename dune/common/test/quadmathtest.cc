@@ -86,6 +86,8 @@ int main()
 
   // test cmath functions for Float128 type
   using T = Float128;
+  test.check(cmp(T(0.5), T("0.5")), "string constructor");
+
   test.check(cmp(abs(T{-1}),T{1}), "abs");
   test.check(cmp(fabs(T{-1}),T{1}), "fabs");
 
