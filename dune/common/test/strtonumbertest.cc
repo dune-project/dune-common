@@ -142,7 +142,7 @@ int main()
 
     Comparator<T> cmp{};
     Generator<T> generate{};
-    for (int i = 0; i < 100; ++i) { // repeat the test 10 times
+    for (int i = 0; i < 100; ++i) { // repeat the test 100 times
       value = generate();
       std::ostringstream oss;
       oss << std::setprecision(std::numeric_limits<T>::digits10 + 3) << value;

@@ -236,7 +236,7 @@ namespace Dune
 
   /// Overload of \ref strTo for `std::string` arguments.
   template<typename T>
-  T strTo (std::string const& str) { return strTo<T>(str.c_str()); }
+  T strTo (const std::string& str) { return strTo<T>(str.c_str()); }
 
 } // end namespace Dune
 
