@@ -53,7 +53,7 @@ namespace Dune
       {}
 
       // constructor from pointer to null-terminated byte string
-      Float128(const char* str) noexcept
+      explicit Float128(const char* str) noexcept
         : value_(strtoflt128(str, NULL))
       {}
 
