@@ -7,14 +7,22 @@
 
 namespace Dune{
 
-  template<class T>
-  class FutureBase{
+  template<class...>
+  class FutureBase;
+
+  template<>
+  class FutureBase<>{
   public:
     virtual ~FutureBase(){};
     virtual void wait() = 0;
-    virtual T get()  = 0;
     virtual bool ready() = 0;
     virtual bool valid() const = 0;
+  };
+
+  template<class T>
+  class FutureBase<T> : public FutureBase<>{
+  public:
+    virtual T get() = 0;
   };
 
   class InvalidFutureException : public InvalidStateException
@@ -86,7 +94,7 @@ namespace Dune{
   };
 
   template<>
-  class PseudoFuture<void> : FutureBase<void>{
+  class PseudoFuture<void> : public FutureBase<void>{
     bool valid_;
   public:
     PseudoFuture(bool valid = false) :
