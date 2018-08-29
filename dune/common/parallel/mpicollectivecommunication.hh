@@ -378,6 +378,15 @@ namespace Dune
       return ret;
     }
 
+    template<typename BinaryFunction, typename Type>
+    Type allreduce(Type&& in) const{
+      MPIData<Type> data(std::forward<Type>(in));
+      MPI_Allreduce(MPI_IN_PLACE, data.ptr(), data.size(), data.type(),
+                    (Generic_MPI_Op<Type, BinaryFunction>::get()),
+                    communicator);
+      return data.get();
+    }
+
     //! @copydoc CollectiveCommunication::iallreduce
     template<class BinaryFunction, class TIN, class TOUT = TIN>
     MPIFuture<TOUT, TIN> iallreduce(TIN&& data_in, TOUT&& data_out) const {

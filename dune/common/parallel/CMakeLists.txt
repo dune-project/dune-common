@@ -1,4 +1,5 @@
 add_subdirectory(test)
+add_subdirectory(benchmark)
 
 #install headers
 install(FILES
