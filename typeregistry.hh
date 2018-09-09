@@ -193,7 +193,7 @@ namespace Dune
           {
             return obj.attr( "_typeName" ).cast<std::string>();
           }
-          catch(pybind11::error_already_set )
+          catch(const pybind11::error_already_set& )
           {
             return pybind11::str(obj);
           }
@@ -219,7 +219,7 @@ namespace Dune
           {
             return obj.attr( "_includes" ).cast<std::vector<std::string>>();
           }
-          catch(pybind11::error_already_set )
+          catch(const pybind11::error_already_set& )
           {
             return {};
           }
