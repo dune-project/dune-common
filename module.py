@@ -388,8 +388,9 @@ def select_modules(modules=None):
     return (desc, dir)
 
 
-def default_build_dir(srcdir, module=None):
-    builddir = os.environ.get('DUNE_BUILDDIR', 'build-cmake')
+def default_build_dir(srcdir, module=None, builddir=None):
+    if builddir is None:
+        builddir = os.environ.get('DUNE_BUILDDIR', 'build-cmake')
 
     if os.path.isabs(builddir):
         if module is None:
@@ -551,7 +552,7 @@ def make_dune_py_module(dune_py_dir=None):
         logger.info('Using existing dune-py module in ' + dune_py_dir)
 
 
-def build_dune_py_module(dune_py_dir=None, definitions=None, build_args=None):
+def build_dune_py_module(dune_py_dir=None, definitions=None, build_args=None, builddir=None):
     if dune_py_dir is None:
         dune_py_dir = get_dune_py_dir()
     if definitions is None:
@@ -567,7 +568,7 @@ def build_dune_py_module(dune_py_dir=None, definitions=None, build_args=None):
         if is_installed(dir, name):
             prefix[name] = get_prefix(name)
         else:
-            prefix[name] = default_build_dir(dir, name)
+            prefix[name] = default_build_dir(dir, name, builddir)
 
     output = configure_module(dune_py_dir, dune_py_dir, {d: prefix[d] for d in deps}, definitions)
     output += build_module(dune_py_dir, build_args)
