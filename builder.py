@@ -16,6 +16,10 @@ logger = logging.getLogger(__name__)
 cxxFlags = None
 noDepCheck = False
 
+import portalocker
+from portalocker import Lock
+from portalocker.constants import LOCK_EX, LOCK_SH
+
 class Builder:
     def __init__(self, force=False):
         self.force = force
@@ -70,7 +74,8 @@ class Builder:
                     with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'a') as out:
                         out.write("dune_add_pybind11_module(NAME " + moduleName + " EXCLUDE_FROM_ALL)\n")
                     # update build system
-                    self.compile()
+                    with Lock(os.path.join(self.dune_py_dir, 'lock-all.lock'), flags=LOCK_EX):
+                        self.compile()
                 elif isString(source) and not source == open(os.path.join(sourceFileName), 'r').read():
                     logger.info("Loading " + pythonName + " (updated)")
                     code = str(source)
@@ -79,7 +84,9 @@ class Builder:
                 else:
                     logger.info("Loading " + pythonName)
 
-                self.compile(moduleName)
+                with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
+                    with Lock(os.path.join(self.dune_py_dir, 'lock-all.lock'), flags=LOCK_SH):
+                        self.compile(moduleName)
 
             comm.barrier()
             module = importlib.import_module("dune.generated." + moduleName)
