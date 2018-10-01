@@ -16,6 +16,11 @@ logger = logging.getLogger(__name__)
 
 class SimpleGenerator(object):
     def __init__(self, typeName, namespace, pythonname=None, filename=None):
+        if not (isinstance(typeName,list) or isinstance(typeName,tuple)):
+            self.single = True
+            typeName = [typeName]
+        else:
+            self.single = False
         self.typeName = typeName
         if namespace:
             self.namespace = namespace+"::"
@@ -27,9 +32,7 @@ class SimpleGenerator(object):
           self.pythonName = pythonname
         self.fileName = filename
 
-    def load(self, includes, typeName, moduleName, *args, **kwargs):
-        defines = kwargs.get("defines",[])
-        preamble = kwargs.get("preamble",None)
+    def pre(self, includes, duneType, moduleName, defines=[], preamble=None):
         source = '#include <config.h>\n\n'
         source += '#define USING_DUNE_PYTHON 1\n\n'
         source += ''.join(["#define " + d + "\n" for d in defines])
@@ -48,38 +51,86 @@ class SimpleGenerator(object):
             source += preamble
             source += "\n"
 
-        source += "typedef " + typeName + " DuneType;\n"
-        source += "\n"
         if self.namespace == "":
-            source += "void register" + self.typeName + "( ... ) {}\n"
+            source += "void register" + self.typeName[0] + "( ... ) {}\n"
         source += "PYBIND11_MODULE( " + moduleName + ", module )\n"
         source += "{\n"
-        source += "  using pybind11::operator\"\"_a;\n"
-        options = kwargs.get("options", [])
-        if not kwargs.get("bufferProtocol", False):
+        return source
+
+    def main(self, nr, includes, duneType, *args,
+            options=[], bufferProtocol=False, dynamicAttr=False ):
+        source = "  using pybind11::operator\"\"_a;\n"
+        if not bufferProtocol: # kwargs.get("bufferProtocol", False):
             clsParams = []
         else:
             clsParams = ['pybind11::buffer_protocol()']
-        if kwargs.get("dynamicAttr", False):
+        if dynamicAttr:
             clsParams += ['pybind11::dynamic_attr()']
-        source += '  auto cls = Dune::Python::insertClass' +\
-                     '< DuneType' + ', '.join([""]+options) + ' >' +\
-                     '( module, "' + self.pythonName + '"' +\
-                     ','.join(['']+clsParams) +\
-                     ', Dune::Python::GenerateTypeName("' + typeName + '")' +\
-                     ', Dune::Python::IncludeFiles{' + ','.join(['"' + i + '"' for i in includes]) + '}' +\
-                     ").first;\n"
-        source += "  " + self.namespace + "register" + self.typeName + "( module, cls );\n"
+        if nr == 0:
+            module = "module"
+        else:
+            module = "cls0"
+
+        if nr == 0:
+            source += '  pybind11::handle cls0;\n'
+
+        source += '  {\n'
+        source += "    typedef " + duneType + " DuneType;\n"
+        source += '    auto cls = Dune::Python::insertClass' +\
+                       '< ' + duneType +\
+                       ', '.join([""]+options) + ' >' +\
+                       '( ' + module + ', "' + self.typeName[nr] + '"' +\
+                       ','.join(['']+clsParams) +\
+                       ', Dune::Python::GenerateTypeName("' + duneType + '")' +\
+                       ', Dune::Python::IncludeFiles{' + ','.join(['"' + i + '"' for i in includes]) + '}' +\
+                       ").first;\n"
+        source += "    " + self.namespace + "register" + self.typeName[nr] + "( module, cls );\n"
 
         for arg in args:
             if arg:
-                source += "".join("  " + s + "\n" for s in str(arg).splitlines())
+                source += "".join("    " + s + "\n" for s in str(arg).splitlines())
+        if nr == 0:
+            source += '    cls0 = cls;\n'
+        source += '  }\n'
+        return source
 
+    def post(self, moduleName, source):
         source += "}\n"
-
-        module = builder.load(moduleName, source, self.pythonName)
-        # setattr(getattr(module,self.pythonName),"_module",module)
+        module = builder.load(moduleName, source, self.typeName[0])
         return module
+
+    def _load(self, includes, duneType, moduleName, *args,
+            defines=[], preamble=None,
+            options=[], bufferProtocol=False, dynamicAttr=False ):
+        source  = self.pre(includes, duneType, moduleName, defines=defines, preamble=preamble)
+        source += self.main(includes, duneType, *args,
+                options=options, bufferProtocol=bufferProtocol, dynamicAttr=dynamicAttr)
+        return self.post(moduleName, source)
+
+    def load(self, includes, typeName, moduleName, *args,
+            defines=[], preamble=None,
+            options=[], bufferProtocol=False, dynamicAttr=False ):
+        if self.single:
+            typeName = (typeName,)
+            options = (options,)
+            bufferProtocol = (bufferProtocol,)
+            dynamicAttr = (dynamicAttr,)
+            args = (args,)
+        else:
+            if args == ():
+                args=((),)*2
+            else:
+                args = args[0]
+        if options == ():
+            options = ((),)*len(typeName)
+        if not bufferProtocol:
+            bufferProtocol = (False,)*len(typeName)
+        if not dynamicAttr:
+            dynamicAttr = (False,)*len(typeName)
+        source  = self.pre(includes, typeName[0], moduleName, defines, preamble)
+        for nr, (tn, a, o, b, d)  in enumerate( zip(typeName, args, options, bufferProtocol, dynamicAttr) ):
+            source += self.main(nr, includes, tn, *a, options=o, bufferProtocol=b, dynamicAttr=d)
+        return self.post(moduleName, source)
 
 from dune.common.hashit import hashIt
 def simpleGenerator(inc, baseType, namespace, pythonname=None, filename=None):
