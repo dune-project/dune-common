@@ -66,31 +66,25 @@ class SimpleGenerator(object):
             clsParams = ['pybind11::buffer_protocol()']
         if dynamicAttr:
             clsParams += ['pybind11::dynamic_attr()']
-        if nr == 0:
-            module = "module"
-        else:
-            module = "cls0"
 
         if nr == 0:
-            source += '  pybind11::handle cls0;\n'
+            source += '  pybind11::module cls0 = module;\n'
 
         source += '  {\n'
         source += "    typedef " + duneType + " DuneType;\n"
         source += '    auto cls = Dune::Python::insertClass' +\
                        '< ' + duneType +\
                        ', '.join([""]+options) + ' >' +\
-                       '( ' + module + ', "' + self.typeName[nr] + '"' +\
+                       '( cls0, "' + self.typeName[nr] + '"' +\
                        ','.join(['']+clsParams) +\
                        ', Dune::Python::GenerateTypeName("' + duneType + '")' +\
                        ', Dune::Python::IncludeFiles{' + ','.join(['"' + i + '"' for i in includes]) + '}' +\
                        ").first;\n"
-        source += "    " + self.namespace + "register" + self.typeName[nr] + "( module, cls );\n"
+        source += "    " + self.namespace + "register" + self.typeName[nr] + "( cls0, cls );\n"
 
         for arg in args:
             if arg:
                 source += "".join("    " + s + "\n" for s in str(arg).splitlines())
-        if nr == 0:
-            source += '    cls0 = cls;\n'
         source += '  }\n'
         return source
 
@@ -98,14 +92,6 @@ class SimpleGenerator(object):
         source += "}\n"
         module = builder.load(moduleName, source, self.typeName[0])
         return module
-
-    def _load(self, includes, duneType, moduleName, *args,
-            defines=[], preamble=None,
-            options=[], bufferProtocol=False, dynamicAttr=False ):
-        source  = self.pre(includes, duneType, moduleName, defines=defines, preamble=preamble)
-        source += self.main(includes, duneType, *args,
-                options=options, bufferProtocol=bufferProtocol, dynamicAttr=dynamicAttr)
-        return self.post(moduleName, source)
 
     def load(self, includes, typeName, moduleName, *args,
             defines=[], preamble=None,
