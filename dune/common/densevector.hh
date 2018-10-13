@@ -668,7 +668,8 @@ namespace Dune {
         norm = max(a, norm);
         isNaN += a;
       }
-      isNaN /= isNaN;
+      // isNaN will be 1.0 or NaN, *& is there to suppress -Wself-assign-overloaded warning
+      isNaN /= *& isNaN;
       return norm * isNaN;
     }
 
@@ -686,7 +687,8 @@ namespace Dune {
         norm = max(a, norm);
         isNaN += a;
       }
-      isNaN /= isNaN;
+      // isNaN will be 1.0 or NaN, *& is there to suppress -Wself-assign-overloaded warning
+      isNaN /= *& isNaN;
       return norm * isNaN;
     }
 
