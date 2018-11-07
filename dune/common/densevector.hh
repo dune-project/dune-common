@@ -668,7 +668,11 @@ namespace Dune {
         norm = max(a, norm);
         isNaN += a;
       }
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wself-assign-overloaded" // clang 7
       isNaN /= isNaN;
+#pragma GCC diagnostic pop
       return norm * isNaN;
     }
 
@@ -686,7 +690,11 @@ namespace Dune {
         norm = max(a, norm);
         isNaN += a;
       }
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wself-assign-overloaded" // clang 7
       isNaN /= isNaN;
+#pragma GCC diagnostic pop
       return norm * isNaN;
     }
 
