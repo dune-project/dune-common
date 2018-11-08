@@ -59,7 +59,7 @@ namespace Dune {
     template <typename T>
     static constexpr auto eval(const T & a)
     {
-      T t = Power<p/2>::eval(a);
+      auto t = Power<p/2>::eval(a);
       return t*t;
     }
   };
