@@ -105,6 +105,7 @@ install(FILES
         stdthread.hh
         streamoperators.hh
         stringutility.hh
+        to_unique_ptr.hh
         timer.hh
         tuples.hh
         tupleutility.hh
