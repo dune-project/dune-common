@@ -24,6 +24,11 @@
 find_package(MPI)
 find_package(Threads)
 
+# text for feature summary
+set_package_properties("MPI" PROPERTIES
+  DESCRIPTION "Message Passing Interface library"
+  PURPOSE "Parallel programming on multiple processors")
+
 if(MPI_C_FOUND)
   set(HAVE_MPI ${MPI_C_FOUND})
   # We do not support the CXX bindings of MPI
@@ -53,11 +58,11 @@ function(add_dune_mpi_flags)
     set(_prefix TARGET)
   endif()
   if(MPI_C_FOUND)
-    set_property(${_prefix} ${ADD_MPI_UNPARSED_ARGUMENTS} APPEND PROPERTY COMPILE_FLAGS ${MPI_DUNE_COMPILE_FLAGS})
+    set_property(${_prefix} ${ADD_MPI_UNPARSED_ARGUMENTS} APPEND PROPERTY COMPILE_OPTIONS ${MPI_DUNE_COMPILE_FLAGS})
     set_property(${_prefix} ${ADD_MPI_UNPARSED_ARGUMENTS} APPEND PROPERTY COMPILE_DEFINITIONS ENABLE_MPI=1
       MPICH_SKIP_MPICXX MPIPP_H)
     if(NOT (ADD_MPI_SOURCE_ONLY OR ADD_MPI_OBJECT))
-    set_property(${_prefix} ${ADD_MPI_UNPARSED_ARGUMENTS} APPEND_STRING PROPERTY LINK_FLAGS ${MPI_DUNE_LINK_FLAGS})
+    set_property(${_prefix} ${ADD_MPI_UNPARSED_ARGUMENTS} APPEND_STRING PROPERTY LINK_FLAGS " ${MPI_DUNE_LINK_FLAGS} ")
     foreach(target ${ADD_MPI_UNPARSED_ARGUMENTS})
       target_link_libraries(${target} ${MPI_DUNE_LIBRARIES})
     endforeach(target ${ADD_MPI_UNPARSED_ARGUMENTS})

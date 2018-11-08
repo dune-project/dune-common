@@ -13,6 +13,7 @@
 #include <memory>
 #include <utility>
 #include <vector>
+#include <algorithm>
 
 #include <mpi.h>
 
@@ -281,13 +282,39 @@ private:
  *
  * In contrast to BufferedCommunicator the amount of data is determined by the container
  * whose entries are sent and not known at the receiving side a priori.
+ *
+ * Note that there is no global index-space, only local index-spaces on each
+ * rank.  Note also that each rank has two index-spaces, one used for
+ * gathering/sending, and one used for scattering/receiving.  These may be the
+ * identical, but they do not have to be.
+ *
+ * For data send from rank A to rank B, the order that rank A inserts its
+ * indices into its send-interface for rank B has to be the same order that
+ * rank B inserts its matching indices into its receive interface for rank A.
+ * (This is because the `VariableSizeCommunicator` has no concept of a global
+ * index-space, so the order used to insert the indices into the interfaces is
+ * the only clue it has to know which source index should be communicated to
+ * which target index.)
+ *
+ * It is permissible for a rank to communicate with itself, i.e. it can define
+ * send- and receive-interfaces to itself.  These interfaces do not need to
+ * contain the same indices, as the local send index-space can be different
+ * from the local receive index-space.  This is useful for repartitioning or
+ * for aggregating in AMG.
+ *
+ * Do not assume that gathering to an index happens before scattering to the
+ * same index in the same communication, as `VariableSizeCommunicator` assumes
+ * they are from different index-spaces.  This is a pitfall if you want do
+ * communicate a vector in-place, e.g. to sum up partial results from
+ * different ranks.  Instead, have separate source and target vectors and copy
+ * the source vector to the target vector before communicating.
  */
 template<class Allocator=std::allocator<std::pair<InterfaceInformation,InterfaceInformation> > >
 class VariableSizeCommunicator
 {
 public:
   /**
-     * @brief The type of the map form process number to InterfaceInformation for
+     * @brief The type of the map from process number to InterfaceInformation for
      * sending and receiving to and from it.
      */
   typedef std::map<int,std::pair<InterfaceInformation,InterfaceInformation>,
@@ -635,7 +662,6 @@ struct PackEntries
         }
         else
           break;
-      assert(packed);
       return packed;
     }
   }
@@ -868,7 +894,7 @@ std::size_t checkAndContinue(DataHandle& handle,
       comm_func(handle, tracker, buffers[*index], requests2[*index], comm);
       tracker.skipZeroIndices();
       if(valid)
-      no_completed-=!tracker.finished(); // communication not finished, decrement counter for finished ones.
+      --no_completed; // communication not finished, decrement counter for finished ones.
     }
   }
   return no_completed;
@@ -1073,26 +1099,26 @@ void VariableSizeCommunicator<Allocator>::communicateSizes(DataHandle& handle,
   std::vector<InterfaceTracker> send_trackers;
   std::vector<InterfaceTracker> recv_trackers;
   std::size_t size = interface_->size();
-  std::vector<MPI_Request> send_requests(size);
-  std::vector<MPI_Request> recv_requests(size);
+  std::vector<MPI_Request> send_requests(size, MPI_REQUEST_NULL);
+  std::vector<MPI_Request> recv_requests(size, MPI_REQUEST_NULL);
   std::vector<MessageBuffer<std::size_t> >
     send_buffers(size, MessageBuffer<std::size_t>(maxBufferSize_)),
     recv_buffers(size, MessageBuffer<std::size_t>(maxBufferSize_));
   SizeDataHandle<DataHandle> size_handle(handle,data_recv_trackers);
   setupInterfaceTrackers<FORWARD>(size_handle,send_trackers, recv_trackers);
-  std::size_t size_to_send=size, size_to_recv=size;
-
-  // Skip empty interfaces.
-  typedef typename std::vector<InterfaceTracker>::const_iterator Iter;
-  for(Iter i=recv_trackers.begin(), end=recv_trackers.end(); i!=end; ++i)
-    if(i->empty())
-      --size_to_recv;
-
-  size_to_send -= setupRequests(size_handle, send_trackers, send_buffers, send_requests,
+  setupRequests(size_handle, send_trackers, send_buffers, send_requests,
                                 SetupSendRequest<SizeDataHandle<DataHandle> >(), communicator_);
   setupRequests(size_handle, recv_trackers, recv_buffers, recv_requests,
                 SetupRecvRequest<SizeDataHandle<DataHandle> >(), communicator_);
 
+  // Count valid requests that we have to wait for.
+  auto valid_req_func =
+    [](const MPI_Request& req) { return req != MPI_REQUEST_NULL; };
+
+  auto size_to_send = std::count_if(send_requests.begin(), send_requests.end(),
+                                    valid_req_func);
+  auto size_to_recv = std::count_if(recv_requests.begin(), recv_requests.end(),
+                                    valid_req_func);
 
   while(size_to_send+size_to_recv)
   {
@@ -1128,14 +1154,20 @@ void VariableSizeCommunicator<Allocator>::communicateVariableSize(DataHandle& ha
     recv_buffers(interface_->size(), MessageBuffer<DataType>(maxBufferSize_));
 
   communicateSizes<FORWARD>(handle, recv_trackers);
-  std::size_t no_to_send, no_to_recv;
-  no_to_send = no_to_recv =  interface_->size();
   // Setup requests for sending and receiving.
-  no_to_send -= setupRequests(handle, send_trackers, send_buffers, send_requests,
+  setupRequests(handle, send_trackers, send_buffers, send_requests,
                 SetupSendRequest<DataHandle>(), communicator_);
   setupRequests(handle, recv_trackers, recv_buffers, recv_requests,
                 SetupRecvRequest<DataHandle>(), communicator_);
 
+  // Determine number of valid requests.
+  auto valid_req_func =
+    [](const MPI_Request& req) { return req != MPI_REQUEST_NULL;};
+
+  auto no_to_send = std::count_if(send_requests.begin(), send_requests.end(),
+                             valid_req_func);
+  auto no_to_recv = std::count_if(recv_requests.begin(), recv_requests.end(),
+                             valid_req_func);
   while(no_to_send+no_to_recv)
   {
     // Check send completion and initiate other necessary sends

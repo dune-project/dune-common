@@ -12,29 +12,42 @@ namespace Dune
   namespace Std
   {
 
-    // Helper struct to distinguish non-array, unknown bound
-    // array, and known bound array types using SFINAE
-    // following proposal N3656 by Stephan T. Lavavej.
+#if DUNE_HAVE_CXX_MAKE_UNIQUE
 
-    template<class T>
-    struct MakeUniqueHelper
-    {
-      typedef std::unique_ptr<T> NonArrayUniquePtr;
-    };
+    using std::make_unique;
 
-    template<class T>
-    struct MakeUniqueHelper<T[]>
-    {
-      typedef std::unique_ptr<T[]> UnknownBoundArrayUniquePtr;
-      typedef T RawType;
-    };
+#else
 
-    template<class T, size_t N>
-    struct MakeUniqueHelper<T[N]>
-    {
-      typedef void KnownBoundArrayUniquePtr;
-    };
+#ifndef DOXYGEN
 
+    namespace Impl {
+
+      // Helper struct to distinguish non-array, unknown bound
+      // array, and known bound array types using SFINAE
+      // following proposal N3656 by Stephan T. Lavavej.
+
+      template<class T>
+      struct MakeUniqueHelper
+      {
+        typedef std::unique_ptr<T> NonArrayUniquePtr;
+      };
+
+      template<class T>
+      struct MakeUniqueHelper<T[]>
+      {
+        typedef std::unique_ptr<T[]> UnknownBoundArrayUniquePtr;
+        typedef T RawType;
+      };
+
+      template<class T, size_t N>
+      struct MakeUniqueHelper<T[N]>
+      {
+        typedef void KnownBoundArrayUniquePtr;
+      };
+
+    }
+
+#endif // DOXYGEN
 
     /** \brief Implementation of std::make_unique to be introduced in C++14
      *
@@ -45,9 +58,11 @@ namespace Dune
      *
      *  This fallback implementation using perfect forwarding
      *  as proposed by Herb Sutter in http://herbsutter.com/gotw/_102/
+     *
+     * \ingroup CxxUtilities
      */
     template<typename T, typename... Args>
-    typename MakeUniqueHelper<T>::NonArrayUniquePtr
+    typename Impl::MakeUniqueHelper<T>::NonArrayUniquePtr
       make_unique(Args&&... args)
     {
       return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
@@ -58,12 +73,14 @@ namespace Dune
      *  \tparam  T Array type of unknown bound
      *
      *  \param  n Size of array to allocate
+     *
+     * \ingroup CxxUtilities
      */
     template<typename T>
-    typename MakeUniqueHelper<T>::UnknownBoundArrayUniquePtr
+    typename Impl::MakeUniqueHelper<T>::UnknownBoundArrayUniquePtr
       make_unique(size_t n)
     {
-      return std::unique_ptr<T>(new typename MakeUniqueHelper<T>::RawType[n]());
+      return std::unique_ptr<T>(new typename Impl::MakeUniqueHelper<T>::RawType[n]());
     }
 
     /** \brief Implementation of std::make_unique to be introduced in C++14
@@ -75,11 +92,14 @@ namespace Dune
      *  participate in overload resolution
      *
      *  \param args Dummy arguments
+     *
+     * \ingroup CxxUtilities
      */
     template<typename T, typename ...Args>
-    typename MakeUniqueHelper<T>::KnownBoundArrayUniquePtr
+    typename Impl::MakeUniqueHelper<T>::KnownBoundArrayUniquePtr
       make_unique(Args&&... args) = delete;
 
+#endif // DUNE_HAVE_CXX_MAKE_UNIQUE
 
   } // namespace Std
 

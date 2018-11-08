@@ -3,16 +3,19 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <dune/common/fvector.hh>
-#include <dune/common/exceptions.hh>
-#include <dune/common/typetraits.hh>
-#include <dune/common/classname.hh>
-#include <dune/common/gmpfield.hh>
-#include <iostream>
-#include <complex>
-#include <typeinfo>
-#include <cassert>
 
+#include <cassert>
+#include <complex>
+#include <iostream>
+#include <limits>
+#include <typeinfo>
+
+#include <dune/common/classname.hh>
+#include <dune/common/exceptions.hh>
+#include <dune/common/fvector.hh>
+#include <dune/common/gmpfield.hh>
+#include <dune/common/quadmath.hh>
+#include <dune/common/typetraits.hh>
 
 using Dune::FieldVector;
 using std::complex;
@@ -489,6 +492,52 @@ test_initialisation()
   assert(b[1] == 2);
 }
 
+void fieldvectorMathclassifiersTest() {
+  double nan = std::nan("");
+  double inf = std::numeric_limits<double>::infinity();
+
+  FieldVector<double,3> fv_normal(1.);
+  FieldVector<double,3> fv_nan(1.);
+  FieldVector<double,3> fv_inf(1.);
+
+  fv_nan[2] = nan;
+  fv_inf[2] = inf;
+
+  //test vector containing only doubles
+  if(Dune::isNaN(fv_normal) == true) {
+    std::abort();
+  }
+  if(Dune::isInf(fv_normal) == true) {
+     std::abort();
+  }
+  if(Dune::isFinite(fv_normal) == false) {
+    std::abort();
+  }
+
+  //test vector containing a NaN-entry
+  if(Dune::isNaN(fv_nan) == false) {
+     std::abort();
+  }
+  if(Dune::isInf(fv_nan) == true) {
+     std::abort();
+  }
+  if(Dune::isFinite(fv_nan) == true) {
+    std::abort();
+  }
+
+  //test vector containing an infinity-entry
+  if(Dune::isNaN(fv_inf) == true) {
+    std::abort();
+  }
+  if(Dune::isInf(fv_inf) == false) {
+    std::abort();
+  }
+  if(Dune::isFinite(fv_inf) == true) {
+    std::abort();
+  }
+}
+
+
 int main()
 {
   try {
@@ -497,16 +546,35 @@ int main()
     FieldVectorTest<double, 3>();
     FieldVectorTest<long double, 3>();
 #if HAVE_GMP
-    // we skip the complex test and the int test, as these will be very hard to implement with GMPField
-    typedef Dune::GMPField<128u> ft;
-    FieldVectorMainTest<ft,ft,3>();
-    FieldVectorMainTest<ft,ft,2>();
-    FieldVectorMainTest<ft,ft,1>();
-    FieldVectorMainTest<ft,ft,0>();
-    ScalarOperatorTest<ft>();
-    ScalarOrderingTest<ft>();
-    DotProductTest<ft,3>();
+    {
+      // we skip the complex test and the int test, as these will be very hard to implement with GMPField
+      typedef Dune::GMPField<128u> ft;
+      FieldVectorMainTest<ft,ft,3>();
+      FieldVectorMainTest<ft,ft,2>();
+      FieldVectorMainTest<ft,ft,1>();
+      FieldVectorMainTest<ft,ft,0>();
+      ScalarOperatorTest<ft>();
+      ScalarOrderingTest<ft>();
+      DotProductTest<ft,3>();
+    }
 #endif // HAVE_GMP
+
+#if HAVE_QUADMATH
+    {
+      // we skip the int test, as these will be very hard to implement with Float128
+      typedef Dune::Float128 ft;
+      FieldVectorMainTest<ft,ft,3>();
+      FieldVectorMainTest<ft,ft,2>();
+      FieldVectorMainTest<ft,ft,1>();
+      FieldVectorMainTest<ft,ft,0>();
+      ScalarOperatorTest<ft>();
+      ScalarOrderingTest<ft>();
+      DotProductTest<ft,3>();
+    }
+#endif
+
+    //test the mathclassifiers Dune::isNaN, Dune::isInf, Dune::isFinite
+    fieldvectorMathclassifiersTest();
 
     {
       double nan = std::nan("");

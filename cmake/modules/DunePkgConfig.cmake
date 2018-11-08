@@ -4,6 +4,10 @@
 #
 
 find_package(PkgConfig)
+# text for feature summary
+set_package_properties("PkgConfig" PROPERTIES
+  DESCRIPTION "Unified interface for querying installed libraries"
+  PURPOSE "To find Dune module dependencies")
 
 function(create_and_install_pkconfig installlibdir)
   # set some variables that are used in the pkg-config file

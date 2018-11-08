@@ -4,8 +4,19 @@
 #include <array>
 #include <type_traits>
 
+#if DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY
+#include <experimental/array>
+#endif
+
 namespace Dune {
 namespace Std {
+
+#if DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY
+
+  using std::experimental::make_array;
+
+#else // DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY
+
   //! Create and initialize an array
   /**
    * \note This method is a somewhat limited dune-specific version of
@@ -17,6 +28,8 @@ namespace Std {
    *       never be used with expliclitly given template arguments, or
    *       with std::reference_wrapper<...> arguments, and we do not
    *       give a diagnostic when anyone happens to do that.
+   *
+   * \ingroup CxxUtilities
    */
   template <typename... Args>
   std::array<typename std::common_type<Args...>::type, sizeof...(Args)>
@@ -25,6 +38,9 @@ namespace Std {
         result = {{args...}};
     return result;
   }
+
+#endif // DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY
+
 }
 }
 

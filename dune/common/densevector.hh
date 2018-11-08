@@ -257,7 +257,7 @@ namespace Dune {
     typedef typename Traits::value_type value_type;
 
     //! export the type representing the field
-    typedef typename Traits::value_type field_type;
+    typedef typename FieldTraits< value_type >::field_type field_type;
 
     //! export the type representing the components
     typedef typename Traits::value_type block_type;
@@ -278,6 +278,24 @@ namespace Dune {
       for (size_type i=0; i<size(); i++)
         asImp()[i] = k;
       return asImp();
+    }
+
+     //===== assignment from other DenseVectors
+    //! Assignment operator for other DenseVector of same type
+    DenseVector<V>& operator= (const DenseVector<V>& other)
+    {
+      asImp() = other.asImp();
+      return *this;
+    }
+
+    //! Assignment operator for other DenseVector of different type
+    template <typename W>
+    DenseVector<V>& operator= (const DenseVector<W>& other)
+    {
+      assert(other.size() == size());
+      for (size_type i=0; i<size(); i++)
+        asImp()[i] = other[i];
+      return *this;
     }
 
     //===== access to components
@@ -458,20 +476,20 @@ namespace Dune {
     //! \brief vector space multiplication with scalar
     /**
        we use enable_if to avoid an ambiguity, if the
-       function parameter can be converted to value_type implicitly.
+       function parameter can be converted to field_type implicitly.
        (see FS#1457)
 
        The function is only enabled, if the parameter is directly
-       convertible to value_type.
+       convertible to field_type.
      */
-    template <typename ValueType>
+    template <typename FieldType>
     typename std::enable_if<
-      std::is_convertible<ValueType, value_type>::value,
+      std::is_convertible<FieldType, field_type>::value,
       derived_type
     >::type&
-    operator*= (const ValueType& kk)
+    operator*= (const FieldType& kk)
     {
-      const value_type& k = kk;
+      const field_type& k = kk;
       for (size_type i=0; i<size(); i++)
         (*this)[i] *= k;
       return asImp();
@@ -480,20 +498,20 @@ namespace Dune {
     //! \brief vector space division by scalar
     /**
        we use enable_if to avoid an ambiguity, if the
-       function parameter can be converted to value_type implicitly.
+       function parameter can be converted to field_type implicitly.
        (see FS#1457)
 
        The function is only enabled, if the parameter is directly
-       convertible to value_type.
+       convertible to field_type.
      */
-    template <typename ValueType>
+    template <typename FieldType>
     typename std::enable_if<
-      std::is_convertible<ValueType, value_type>::value,
+      std::is_convertible<FieldType, field_type>::value,
       derived_type
     >::type&
-    operator/= (const ValueType& kk)
+    operator/= (const FieldType& kk)
     {
-      const value_type& k = kk;
+      const field_type& k = kk;
       for (size_type i=0; i<size(); i++)
         (*this)[i] /= k;
       return asImp();
@@ -521,7 +539,7 @@ namespace Dune {
 
     //! vector space axpy operation ( *this += a y )
     template <class Other>
-    derived_type& axpy (const value_type& a, const DenseVector<Other>& y)
+    derived_type& axpy (const field_type& a, const DenseVector<Other>& y)
     {
       DUNE_ASSERT_BOUNDS(y.size() == size());
       for (size_type i=0; i<size(); i++)
@@ -606,7 +624,7 @@ namespace Dune {
 
     //! infinity norm (maximum of absolute values of entries)
     template <typename vt = value_type,
-              typename std::enable_if<!has_nan<vt>::value, int>::type = 0>
+              typename std::enable_if<!HasNaN<vt>::value, int>::type = 0>
     typename FieldTraits<vt>::real_type infinity_norm() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::abs;
@@ -622,7 +640,7 @@ namespace Dune {
 
     //! simplified infinity norm (uses Manhattan norm for complex values)
     template <typename vt = value_type,
-              typename std::enable_if<!has_nan<vt>::value, int>::type = 0>
+              typename std::enable_if<!HasNaN<vt>::value, int>::type = 0>
     typename FieldTraits<vt>::real_type infinity_norm_real() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::max;
@@ -637,7 +655,7 @@ namespace Dune {
 
     //! infinity norm (maximum of absolute values of entries)
     template <typename vt = value_type,
-              typename std::enable_if<has_nan<vt>::value, int>::type = 0>
+              typename std::enable_if<HasNaN<vt>::value, int>::type = 0>
     typename FieldTraits<vt>::real_type infinity_norm() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::abs;
@@ -656,7 +674,7 @@ namespace Dune {
 
     //! simplified infinity norm (uses Manhattan norm for complex values)
     template <typename vt = value_type,
-              typename std::enable_if<has_nan<vt>::value, int>::type = 0>
+              typename std::enable_if<HasNaN<vt>::value, int>::type = 0>
     typename FieldTraits<vt>::real_type infinity_norm_real() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::max;

@@ -38,13 +38,11 @@ int main(int argc, char** argv)
     }
 
     // result from above should be size of job
-#ifndef NDEBUG
-    double sum = mpi.size();
-#endif
+    double size = mpi.size();
     for(int i=0; i<length; ++i)
     {
-      t.check( std::abs( values[i] - sum ) < 1e-8 );
-      t.check( std::abs( val[i]    - sum ) < 1e-8 );
+      t.check( std::abs( values[i] - size ) < 1e-8 );
+      t.check( std::abs( val[i]    - size ) < 1e-8 );
     }
 
     {

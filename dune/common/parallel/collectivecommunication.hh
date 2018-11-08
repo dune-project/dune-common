@@ -20,7 +20,7 @@
 /*! \defgroup ParallelCommunication Parallel Communication
    \ingroup Common
 
-   \brief Abstractions for paralle computing
+   \brief Abstractions for parallel computing
 
    Dune offers an abstraction to the basic methods of parallel
    communication. It allows one to switch parallel features on and off,
@@ -326,7 +326,7 @@ namespace Dune
     template<typename T>
     int allgather(const T* sbuf, int count, T* rbuf) const
     {
-      for(T* end=sbuf+count; sbuf < end; ++sbuf, ++rbuf)
+      for(const T* end=sbuf+count; sbuf < end; ++sbuf, ++rbuf)
         *rbuf=*sbuf;
       return 0;
     }
@@ -341,9 +341,9 @@ namespace Dune
      * @param[in] sendlen The number of elements to send on each task.
      * @param[out] out The buffer to store the received data in.
      * @param[in] recvlen An array with size equal to the number of processes containing the number
-     *                    of elements to recieve from process i at position i, i.e. the number that
+     *                    of elements to receive from process i at position i, i.e. the number that
      *                    is passed as sendlen argument to this function in process i.
-     * @param[in] displ An array with size equal to the number of processes. Data recieved from
+     * @param[in] displ An array with size equal to the number of processes. Data received from
      *                  process i will be written starting at out+displ[i].
      * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */

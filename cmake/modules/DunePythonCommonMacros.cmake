@@ -72,18 +72,22 @@ include(DunePythonTestCommand)
 
 # Update the list of valid python versions, the shipped CMake modules tend to outdate...
 # Mention all those not present in CMake 2.8.12
-set(Python_ADDITIONAL_VERSIONS 3.4 3.5 3.6)
+set(Python_ADDITIONAL_VERSIONS 3.4 3.5 3.6 3.7)
 
 # Find the Python Interpreter
 set(_VERSION_STRING "")
 if(DUNE_PYTHON_FORCE_PYTHON2 AND DUNE_PYTHON_FORCE_PYTHON3)
   message(FATAL_ERROR "Cannot enforce both python2 *and* python3")
 endif()
-if(DUNE_PYTHON_FORCE_PYTHON2)
-  set(_VERSION_STRING "2")
-endif()
-if(DUNE_PYTHON_FORCE_PYTHON3)
-  set(_VERSION_STRING "3")
+if(DUNE_PYTHON_FORCE_PYTHON_VERSION)
+  set(_VERSION_STRING "${DUNE_PYTHON_FORCE_PYTHON_VERSION}")
+else()
+  if(DUNE_PYTHON_FORCE_PYTHON2)
+    set(_VERSION_STRING "2")
+  endif()
+  if(DUNE_PYTHON_FORCE_PYTHON3)
+    set(_VERSION_STRING "3")
+  endif()
 endif()
 find_package(PythonInterp ${_VERSION_STRING})
 

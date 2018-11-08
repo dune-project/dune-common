@@ -31,6 +31,14 @@
 #       A user can set the input variable :ref:`DUNE_PYTHON_FORCE_PYTHON2` or
 #       :ref:`DUNE_PYTHON_FORCE_PYTHON3` to achieve the same result for a given build only.
 #
+# .. cmake_variable:: DUNE_PYTHON_FORCE_PYTHON_VERSION
+#
+#     Set this variable to a python version (e.g. "3.6") if you want to force cmake to
+#     to pick up a specific version of the python interpreter in presence of several
+#     python versions. Note that if you just want to distinguish the major versions 2 and 3,
+#     you might as well use the variables :ref:`DUNE_PYTHON_FORCE_PYTHON2` or
+#     :ref:`DUNE_PYTHON_FORCE_PYTHON3`.
+#
 # .. cmake_variable:: DUNE_PYTHON_FORCE_PYTHON2
 #
 #     Set this variable to TRUE to force usage of a python2 interpreter. This is

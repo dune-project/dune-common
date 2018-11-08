@@ -7,9 +7,12 @@
 #ifndef DUNE_FMatrix_WITH_CHECKING
 #define DUNE_FMatrix_WITH_CHECKING
 #endif
+
 #include <dune/common/dynmatrix.hh>
 #include <dune/common/dynvector.hh>
+#include <dune/common/ftraits.hh>
 #include <dune/common/fvector.hh>
+
 #include <iostream>
 #include <algorithm>
 #include <vector>
@@ -52,10 +55,11 @@ int test_invert_solve(Dune::DynamicMatrix<T> &A,
   A-=inv;
 
 
-  double singthres = FMatrixPrecision<>::singular_limit()*10;
+  auto epsilon = std::numeric_limits<typename FieldTraits<T>::real_type>::epsilon();
+  auto tolerance = 10*epsilon;
   for(size_t i =0; i < n; ++i)
     for(size_t j=0; j <n; ++j)
-      if(std::abs(A[i][j])>singthres) {
+      if(std::abs(A[i][j])>tolerance) {
         std::cerr<<"calculated inverse wrong at ("<<i<<","<<j<<")"<<std::endl;
         equal=false;
       }
@@ -89,7 +93,7 @@ int test_invert_solve(Dune::DynamicMatrix<T> &A,
   equal=true;
 
   for(size_t i =0; i < n; ++i)
-    if(std::abs(xcopy[i])>singthres) {
+    if(std::abs(xcopy[i])>tolerance) {
       std::cerr<<"calculated isolution wrong at ("<<i<<")"<<std::endl;
       equal=false;
     }

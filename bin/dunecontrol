@@ -149,7 +149,7 @@ build_module() {
     CMD_FLAGS=
     while test $# -gt 0 && test "$1" != ":"; do
       COMMAND=$(echo $command | tr '[:lower:]' '[:upper:]')
-      # setup paramter list
+      # setup parameter list
       CMD_FLAGS="$CMD_FLAGS \"$(doublequote "$1")\""
       shift
     done
@@ -221,6 +221,7 @@ load_opts() {
   if test "x$DUNE_OPTS_FILE" != "x"; then
     if test "$command" = "configure"; then
       CMAKE_FLAGS="$(. $DUNE_OPTS_FILE; eval echo \$CMAKE_FLAGS)"
+      CMAKE_MODULE_PATH="$(. $DUNE_OPTS_FILE; eval echo \$CMAKE_MODULE_PATH)"
     fi
     CMD_FLAGS_FROM_FILE="$(eval ${COMMAND}_FLAGS=""; . $DUNE_OPTS_FILE; eval echo \$${COMMAND}_FLAGS)"
   fi
@@ -235,13 +236,6 @@ load_opts() {
   if test -z "$BUILDDIR"; then
     export BUILDDIR=build-cmake
   fi
-}
-
-module_la_libname()
-{
-    local m=$1
-    local name="$(eval echo \$NAME_$m)"
-    echo "lib$(echo $name | sed 's/-//g').la"
 }
 
 abs_builddir()
@@ -342,7 +336,7 @@ esac'
 }
 
 # list of all dunecontrol commands
-COMMANDS="printdeps vcsetup update configure make all exec bexec status svn git"
+COMMANDS="printdeps vcsetup update cmake configure make all exec bexec status svn git"
 
 # list of dunecontrol commands for which the version check is skipped by default
 COMMANDSTOSKIPVERSIONCHECK="update status svn git exec bexec"
@@ -350,8 +344,9 @@ COMMANDSTOSKIPVERSIONCHECK="update status svn git exec bexec"
 # help string for the commands
 printdeps_HELP="print recursive dependencies of a module"
 vcsetup_HELP="setup version control repository (Git etc.) or working copy (SVN)"
-update_HELP="updated all modules from the repository"
-configure_HELP="run configure or cmake for each module"
+update_HELP="update all modules from their repositories"
+cmake_HELP="run cmake for each module"
+configure_HELP="${cmake_HELP}"
 make_HELP="build each module"
 all_HELP="\trun 'vcsetup', 'configure' and 'make' command for each module"
 exec_HELP="execute an arbitrary command in each module source directory"
@@ -391,7 +386,7 @@ run_default_status () {
   local is_svn=""
   name="$(eval echo \$NAME_$module)"
 
-  if test -d .git; then is_git=1; fi
+  if test -e .git; then is_git=1; fi
   if test -d .svn; then is_svn=1; fi
   if test ! "$is_svn" -a ! "$is_git" ; then
     echo "module $name not under known version control"
@@ -469,7 +464,7 @@ run_default_vcsetup() {
   fi
 
   # Check for both a file and a directory to cope with Git submodules
-  if [ -d .git -o -f .git ] ; then
+  if [ -e .git ] ; then
 
     # Read Whitespace-Hook setting from dune.module file
     local SETUPGITHOOK="$($GREP -i "^[$BLANK]*Whitespace-Hook:" dune.module | cut -d ':' -f2 | eval $PARSER_TRIM | tr '[:upper:]' '[:lower:]')"
@@ -477,16 +472,38 @@ run_default_vcsetup() {
     if [ "x$SETUPGITHOOK" = "xyes" ]; then
       # we have to install the Git whitespace hook
 
-      # The current Git repository might be a submodule, so we have to start by
-      # determining the location of the commit hook
+      # There are several options as to what the current worktreee might be backed by right now:
+      # - a plain old repository    -> copy to .git/hooks
+      # - a submodule repository    -> .git refers to the submodule repository inside the root $GIT_DIR
+      # - a git repo worktree       -> .git refers to the worktree data inside the original $GIT_DIR and we need to find
+      #                                the "canonical" $GIT_DIR root
+      # - a submodule in a worktree -> That just gets checked out again into the worktree backing store, so no worktree
+      #                                dereferencing here
 
-      if [ -f .git ] ; then
-        # submodule -> .git contains a pointer to the repository
-        GITHOOKPATH="$($SED 's/gitdir: //' < .git)/hooks/pre-commit"
-      else
-        # standard case, .git is the repository
-        GITHOOKPATH=.git/hooks/pre-commit
+      # We try this first by trying git's built-in infrastructure, but if the user's git is too old, we fall back to
+      # manual parsing
+
+      GITHOOKPATH="$(git rev-parse --git-common-dir)"
+      if [ $? -ne 0 -o "${GITHOOKPATH}" = "--git-common-dir" ] ; then
+
+        # no worktree support from here on out
+
+        GITHOOKPATH="$(git rev-parse --git-dir)"
+
+        if [ $? -ne 0 -o "${GITHOOKPATH}" = "--git-dir" ] ; then
+
+          # do the parsing manually
+
+          if [ -f .git ] ; then
+            # submodule -> .git contains a pointer to the repository
+            GITHOOKPATH="$($SED 's/gitdir: //' < .git)"
+          else
+            # standard case, .git is the repository
+            GITHOOKPATH=.git
+          fi
+        fi
       fi
+      GITHOOKPATH="${GITHOOKPATH}/hooks/pre-commit"
 
       if [ -n "$DISABLEWHITESPACEHOOK" ] ; then
         # the user doesn't want the Git whitespace hook - deinstall it if necessary and warn the user
@@ -566,7 +583,7 @@ run_default_vcsetup() {
   fi
 
   # Run custom setup scripts
-  if [ -d .git -o -f .git -o -d .svn ]; then
+  if [ -e .git -o -d .svn ]; then
     if [ -d .vcsetup/run.d ]; then
       for SCRIPT in .vcsetup/run.d/* ; do
         if [ -x "$SCRIPT" ]; then
@@ -581,7 +598,7 @@ run_default_vcsetup() {
 run_default_update () {
   if test -d .svn; then
     svn update
-  elif test -d .git || test -f .git; then
+  elif test -e .git; then
       if test -d .git && test -d ".git/svn" && test -n "`git svn find-rev HEAD`"; then
           # If the current HEAD points to a SVN commit, update via git-svn
           git svn rebase
@@ -591,7 +608,7 @@ run_default_update () {
 
           # merge all changes fast-forward style if possible
           if ! git merge --ff-only FETCH_HEAD 2> /dev/null; then
-              echo "$module seems to be using git, and could not be"
+              eval echo "\$NAME_${module} seems to be using git, and could not be"
               echo "updated automatically. Please update it manually."
               echo "(Usually, this is done via 'git svn rebase' for modules using"
               echo "subversion or 'git merge' for modules which use git natively."
@@ -599,43 +616,31 @@ run_default_update () {
           fi
       fi
   else
-    echo "WARNING: $module is not under a known version control system."
+    eval echo "WARNING: \$NAME_${module} is not under a known version control system."
     echo "         We support svn and git."
   fi
 }
 
-run_default_configure () {
+run_default_cmake () {
   extract_multiarch
-  PARAMS="$CMD_FLAGS"
 
-    ACLOCAL_FLAGS="-I ."
-    if test -d "m4"; then
-      ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I m4"
-    fi
-    MY_MODULES=
-    # get dependencies & suggestions
-    sort_modules $module
-    for m in $MODULES; do
-      path="$(eval "echo \$PATH_$m")"
-      # Translate the configure PARMS to cmake
-      export PARAMS
-      export CMAKE_PARAMS
+  # tell CMake about the build directory root when we are using an absolute build directory
+  if [[ ${BUILDDIR} = /* ]] ; then
+      CMAKE_PARAMS="$CMAKE_PARAMS -DDUNE_BUILD_DIRECTORY_ROOT_PATH='${BUILDDIR}'"
+  fi
 
-      if test x$module = x$m; then continue; fi # skip myself
+  # add arguments given as configure-opts to CMAKE_params
+  CMAKE_PARAMS="$CMAKE_PARAMS $CMD_FLAGS"
+
+  # get dependencies & suggestions
+  sort_modules $module
+  for m in $MODULES; do
+    path="$(eval "echo \$PATH_$m")"
+
+    # add other module's build dir to path
+    if [ $module != $m ] ; then
       name=$(eval "echo \$NAME_$m")
-      for dir in $path/m4 $path/share/dune/aclocal $path/share/aclocal; do
-        if test -d "$dir"; then
-            ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $dir"
-        fi
-      done
       local m_ABS_BUILDDIR=$(abs_builddir $m $BUILDDIR)
-      if test -d "$m_ABS_BUILDDIR"; then
-        PARAMS="$PARAMS \"--with-$name=$m_ABS_BUILDDIR\""
-      else
-        if test x$(eval echo \$INST_$m) != xyes; then
-          PARAMS="$PARAMS \"--with-$name=$path\""
-        fi
-      fi
 
       if test -d "$m_ABS_BUILDDIR"; then
         CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$m_ABS_BUILDDIR\""
@@ -649,55 +654,24 @@ run_default_configure () {
         done
         CMAKE_PARAMS="$CMAKE_PARAMS $TMP_PARAMS"
       fi
-
-    done
-
-      # we have to export the compiler and compiler flags
-      # such that they are honored by cmake.
-      flags="CXX CC CXXFLAGS CFLAGS CPPFLAGS LDFLAGS F77 FFLAGS FLIBS FC FCFLAGS FCLIBS LIBS"
-      for i in  $flags; do
-        cflags=`echo "$PARAMS" | $GREP $i= | $SED -e "s/^\($i=\"[^\"]*\"\).*/\1/" -e "s/.*[$BLANK]\($i=\"[^\"]*\"\).*/\1/" -e "s/^\($i='[^']*'\).*/\1/" -e "s/.*[$BLANK]\($i='[^']*'\).*/\1/"`
-        if test -n "$cflags" && test "$PARAMS" != "$cflags" ; then
-            PREPARAMS="$PREPARAMS $cflags"
-          else
-           cflags=`echo "$PARAMS" | $GREP $i= | $SED -e "s/^\($i=[^$BLANK]*\).*/\1/" -e "s/.*[$BLANK]\($i=[^$BLANK]*\).*/\1/"`
-           if test -n "$cflags" && test "$PARAMS" != "$cflags" ; then
-            PREPARAMS="$PREPARAMS $cflags"
-           fi
-        fi
-      done
-      # MPI flags are special. find_package(MPI) does not honor MPICC, MPICXX
-      # Therefore we translate them to CMake variables and add them to CMAKE_FLAGS. Fortran is omitted.
-      for i in CC CXX; do
-        comp=`echo "$PARAMS" | $GREP MPI$i= | $SED -e "s/^\($i=\"[^\"]*\"\).*/\1/" -e "s/.*[$BLANK]\($i=\"[^\"]*\"\).*/\1/" -e "s/^\($i='[^']*'\).*/\1/" -e "s/.*[$BLANK]\($i='[^']*'\).*/\1/"`
-        if test -n "$comp" && test "$PARAMS" != "$comp" ; then
-          CMAKE_FLAGS="-DMPI_$(echo $i| $SED 's/^CC$/C/')""_COMPILER:FILEPATH=`which $comp` $CMAKE_FLAGS"
-          else
-            comp=`echo "$PARAMS" | $GREP MPI$i= | $SED -e "s/^MPI$i=\([^$BLANK]*\).*/\1/" -e "s/.*[$BLANK]MPI$i=\([^$BLANK]*\).*/\1/"`
-            if test -n "$comp" && test "$PARAMS" != "$comp" ; then
-              CMAKE_FLAGS="-DMPI_$(echo $i| $SED 's/^CC$/C/')""_COMPILER:FILEPATH=`which $comp` $CMAKE_FLAGS"
-            fi
-        fi
-      done
+    fi
+  done
       # create build directory if requested
       test -d "$ABS_BUILDDIR" || mkdir -p "$ABS_BUILDDIR"
       SRCDIR="$PWD"
       cd "$ABS_BUILDDIR"
-      # check for libtool libs, which might break modules depending on this module
-      libname=$(module_la_libname $module)
-      found_libs=$(find dune -name \*.la) # find intermediate libtool libs
-      if test -e lib; then
-        found_libs="$found_libs"$(find lib -name $libname) #find primary lib
-      fi
-      test -n "$found_libs" && \
-          echo "ERROR: your build directory $ABS_BUILDDIR contains libtool built libraries $found_libs, please cleanup" && \
-          exit 1
+
       # Prevent using an empty module path
       if test -n "$CMAKE_MODULE_PATH"; then
           _MODULE_PATH="-DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\""
       fi
-      echo "$PREPARAMS $CMAKE $_MODULE_PATH $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\""
-      eval $PREPARAMS $CMAKE "$_MODULE_PATH $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\"" || exit 1
+      echo "$CMAKE $_MODULE_PATH $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\""
+      eval $CMAKE "$_MODULE_PATH $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\"" || exit 1
+}
+
+run_default_configure () {
+  # configure just forwards to cmake
+  run_default_cmake
 }
 
 run_default_make () {
@@ -728,7 +702,7 @@ run_default_svn () {
 }
 
 run_default_git () {
-  if test -d .git; then
+  if test -e .git; then
     PARAMS="$CMD_FLAGS"
     eval git "$PARAMS"
   fi
@@ -769,7 +743,6 @@ usage () {
     echo "                      not built successfully on the previous run)"
     echo "      --skipfirst     skip the first module (use with --resume)"
     echo "      --opts=FILE     load default options from FILE"
-    echo "                      (see dune-common/doc/example.opts)"
     echo "      --builddir=NAME make out-of-source builds in a subdir NAME."
     echo "                      This directory is created inside each module."
     echo "                      If NAME is an absolute path, the build directory "

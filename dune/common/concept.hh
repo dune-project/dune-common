@@ -12,11 +12,11 @@
 #include <dune/common/tupleutility.hh>
 #include <dune/common/std/type_traits.hh>
 
-
+/**
+ * \file \brief Infrastructure for concepts.
+ */
 
 namespace Dune {
-
-
 
 /**
  * \brief Namespace for concepts
@@ -24,6 +24,8 @@ namespace Dune {
  * This namespace contains helper functions for
  * concept definitions and the concept definitions
  * themselves.
+ *
+ * \ingroup CxxConcepts
  */
 namespace Concept {
 
@@ -40,6 +42,8 @@ namespace Concept {
  * class.
  *
  * \tparam BaseConcepts The list of concepts to be refined.
+ *
+ * \ingroup CxxConcepts
  */
 template<class... BaseConcepts>
 struct Refines
@@ -48,6 +52,7 @@ struct Refines
 };
 
 
+#ifndef DOXYGEN
 
 namespace Impl {
 
@@ -136,6 +141,8 @@ namespace Impl {
 
 } // namespace Dune::Concept::Impl
 
+#endif // DOXYGEN
+
 } // namespace Dune::Concept
 
 
@@ -167,6 +174,7 @@ namespace Impl {
  * \tparam C The concept to check
  * \tparam T The list of type to check against the concept
  *
+ * \ingroup CxxConcepts
  */
 template<class C, class... T>
 constexpr auto models()
@@ -177,6 +185,8 @@ constexpr auto models()
 
 
 namespace Concept {
+
+#ifndef DOXYGEN
 
 namespace Impl {
 
@@ -198,6 +208,7 @@ namespace Impl {
 
 } // namespace Dune::Concept::Impl
 
+#endif // DOXYGEN
 
 
 // #############################################################################
@@ -308,7 +319,7 @@ constexpr bool requireSameType()
 
 } // namespace Dune::Concept
 
-
+  /** @} */
 
 } // namespace Dune
 

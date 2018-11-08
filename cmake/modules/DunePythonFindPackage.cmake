@@ -84,14 +84,13 @@ function(dune_python_find_package)
                     RESULT_VARIABLE retcode
                     OUTPUT_VARIABLE VERSION_STRING
                     OUTPUT_STRIP_TRAILING_WHITESPACE
-                    OUTPUT_QUIET
                     )
 
     set(${PYPACKAGE_RESULT} TRUE)
     if("${retcode}" STREQUAL "0")
       if(("${VERSION_STRING}" VERSION_LESS "${PYPACKAGE_VERSION}") OR
          (PYPACKAGE_EXACT AND NOT ("${VERSION_STRING}" VERSION_EQUAL "${PYPACKAGE_VERSION}")))
-        set(PYPACKAGE_RESULT FALSE)
+        set(${PYPACKAGE_RESULT} FALSE)
       endif()
     else()
       set(VERSION_STRING "unknown version")
@@ -102,7 +101,7 @@ function(dune_python_find_package)
   else()
     set(${PYPACKAGE_RESULT} FALSE)
     if(PYPACKAGE_REQUIRED)
-      message(FATAL_ERROR "The python package ${PYCHECK_PACKAGE} could not be found! (for interpreter ${PYPACKAGE_INTERPRETER})")
+      message(FATAL_ERROR "The python package ${PYPACKAGE_PACKAGE} could not be found! (for interpreter ${PYPACKAGE_INTERPRETER})")
     endif()
   endif()
 

@@ -35,7 +35,7 @@
                 << " should throw " << #except << std::endl;    \
       std::abort();                                             \
     }                                                           \
-    catch(except) {}                                            \
+    catch(const except&) {}                                            \
     catch(...) {                                                \
       std::cerr << __FILE__ << ":" << __LINE__ << ": " << #expr \
                 << " should throw " << #except << std::endl;    \

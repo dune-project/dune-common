@@ -16,7 +16,7 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/math.hh>
 #include <dune/common/precision.hh>
-#include <dune/common/simd.hh>
+#include <dune/common/simd/simd.hh>
 #include <dune/common/typetraits.hh>
 #include <dune/common/unused.hh>
 
@@ -203,7 +203,7 @@ namespace Dune
     /**
      * Just pray that the fundamental type is actually large enough...
      */
-    using simd_index_type = SimdIndex<value_type>;
+    using simd_index_type = Simd::Index<value_type>;
 
   public:
     //===== access to components
@@ -529,7 +529,7 @@ namespace Dune
 
     //! infinity norm (row sum norm, how to generalize for blocks?)
     template <typename vt = value_type,
-              typename std::enable_if<!has_nan<vt>::value, int>::type = 0>
+              typename std::enable_if<!HasNaN<vt>::value, int>::type = 0>
     typename FieldTraits<vt>::real_type infinity_norm() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::max;
@@ -544,7 +544,7 @@ namespace Dune
 
     //! simplified infinity norm (uses Manhattan norm for complex values)
     template <typename vt = value_type,
-              typename std::enable_if<!has_nan<vt>::value, int>::type = 0>
+              typename std::enable_if<!HasNaN<vt>::value, int>::type = 0>
     typename FieldTraits<vt>::real_type infinity_norm_real() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::max;
@@ -559,7 +559,7 @@ namespace Dune
 
     //! infinity norm (row sum norm, how to generalize for blocks?)
     template <typename vt = value_type,
-              typename std::enable_if<has_nan<vt>::value, int>::type = 0>
+              typename std::enable_if<HasNaN<vt>::value, int>::type = 0>
     typename FieldTraits<vt>::real_type infinity_norm() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::max;
@@ -577,7 +577,7 @@ namespace Dune
 
     //! simplified infinity norm (uses Manhattan norm for complex values)
     template <typename vt = value_type,
-              typename std::enable_if<has_nan<vt>::value, int>::type = 0>
+              typename std::enable_if<HasNaN<vt>::value, int>::type = 0>
     typename FieldTraits<vt>::real_type infinity_norm_real() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::max;
@@ -600,16 +600,16 @@ namespace Dune
      * \exception FMatrixError if the matrix is singular
      */
     template <class V>
-    void solve (V& x, const V& b) const;
+    void solve (V& x, const V& b, bool doPivoting = true) const;
 
     /** \brief Compute inverse
      *
      * \exception FMatrixError if the matrix is singular
      */
-    void invert();
+    void invert(bool doPivoting = true);
 
     //! calculates the determinant of this matrix
-    field_type determinant () const;
+    field_type determinant (bool doPivoting = true) const;
 
     //! Multiplies M from the left to this matrix
     template<typename M2>
@@ -753,7 +753,8 @@ namespace Dune
 
       void swap(std::size_t i, simd_index_type j)
       {
-        sign_ *= cond(simd_index_type(i) == j, field_type(1), field_type(-1));
+        sign_ *=
+          Simd::cond(simd_index_type(i) == j, field_type(1), field_type(-1));
       }
 
       void operator()(const field_type&, int, int)
@@ -782,7 +783,7 @@ namespace Dune
      * <ul>
      * <li>Terminate as soon as one lane is discovered to be singular.  Early
      *     termination is done by throwing an \c FMatrixError.  On entry, \c
-     *     all_true(nonsingularLanes) and \c throwEarly==true should hold.
+     *     Simd::allTrue(nonsingularLanes) and \c throwEarly==true should hold.
      *     After early termination, the contents of \c A should be considered
      *     bogus, and \c nonsingularLanes has the lane(s) that triggered the
      *     early termination unset.  There may be more singular lanes than the
@@ -803,7 +804,7 @@ namespace Dune
      */
     template<class Func, class Mask>
     void luDecomposition(DenseMatrix<MAT>& A, Func func,
-                         Mask &nonsingularLanes, bool throwEarly) const;
+                         Mask &nonsingularLanes, bool throwEarly, bool doPivoting) const;
   };
 
 #ifndef DOXYGEN
@@ -818,7 +819,8 @@ namespace Dune
   template<typename MAT>
   void DenseMatrix<MAT>::ElimPivot::swap(std::size_t i, simd_index_type j)
   {
-    assign(pivot_[i], j, SimdScalar<simd_index_type>(i) != j);
+    pivot_[i] =
+      Simd::cond(Simd::Scalar<simd_index_type>(i) == j, pivot_[i], j);
   }
 
   template<typename MAT>
@@ -834,9 +836,9 @@ namespace Dune
     using std::swap;
 
     // see the comment in luDecomposition()
-    for(std::size_t l = 0; l < lanes(j); ++l)
-      swap(lane(l, (*rhs_)[        i ]),
-           lane(l, (*rhs_)[lane(l, j)]));
+    for(std::size_t l = 0; l < Simd::lanes(j); ++l)
+      swap(Simd::lane(l, (*rhs_)[              i ]),
+           Simd::lane(l, (*rhs_)[Simd::lane(l, j)]));
   }
 
   template<typename MAT>
@@ -851,65 +853,55 @@ namespace Dune
   template<typename Func, class Mask>
   inline void DenseMatrix<MAT>::
   luDecomposition(DenseMatrix<MAT>& A, Func func, Mask &nonsingularLanes,
-                  bool throwEarly) const
+                  bool throwEarly, bool doPivoting) const
   {
+    using std::max;
     using std::swap;
 
     typedef typename FieldTraits<value_type>::real_type real_type;
-
-    real_type norm = A.infinity_norm_real(); // for relative thresholds
-    real_type pivthres =
-      std::max( FMatrixPrecision< real_type >::absolute_limit(),
-                norm * FMatrixPrecision< real_type >::pivoting_limit() );
-    real_type singthres =
-      std::max( FMatrixPrecision< real_type >::absolute_limit(),
-                norm * FMatrixPrecision< real_type >::singular_limit() );
 
     // LU decomposition of A in A
     for (size_type i=0; i<rows(); i++)  // loop over all rows
     {
       real_type pivmax = fvmeta::absreal(A[i][i]);
-      auto do_pivot = pivmax<pivthres;
 
-      // pivoting ?
-      if (any_true(do_pivot && nonsingularLanes))
+      if (doPivoting)
       {
         // compute maximum of column
         simd_index_type imax=i;
         for (size_type k=i+1; k<rows(); k++)
         {
           auto abs = fvmeta::absreal(A[k][i]);
-          auto mask = abs > pivmax && do_pivot;
-          pivmax = cond(mask, abs, pivmax);
-          imax   = cond(mask, simd_index_type(k), imax);
+          auto mask = abs > pivmax;
+          pivmax = Simd::cond(mask, abs, pivmax);
+          imax   = Simd::cond(mask, simd_index_type(k), imax);
         }
         // swap rows
-        if (any_true(imax != i && nonsingularLanes)) {
-          for (size_type j=0; j<rows(); j++)
-          {
-            // This is a swap operation where the second operand is scattered,
-            // and on top of that is also extracted from deep within a
-            // moderately complicated data structure (a DenseMatrix), where we
-            // can't assume much on the memory layout.  On intel processors,
-            // the only instruction that might help us here is vgather, but it
-            // is unclear whether that is even faster than a software
-            // implementation, and we would also need vscatter which does not
-            // exist.  So break vectorization here and do it manually.
-            for(std::size_t l = 0; l < lanes(A[i][j]); ++l)
-              swap(lane(l, A[i][j]), lane(l, A[lane(l, imax)][j]));
-          }
-          func.swap(i, imax); // swap the pivot or rhs
+        for (size_type j=0; j<rows(); j++)
+        {
+          // This is a swap operation where the second operand is scattered,
+          // and on top of that is also extracted from deep within a
+          // moderately complicated data structure (a DenseMatrix), where we
+          // can't assume much on the memory layout.  On intel processors,
+          // the only instruction that might help us here is vgather, but it
+          // is unclear whether that is even faster than a software
+          // implementation, and we would also need vscatter which does not
+          // exist.  So break vectorization here and do it manually.
+          for(std::size_t l = 0; l < Simd::lanes(A[i][j]); ++l)
+            swap(Simd::lane(l, A[i][j]),
+                 Simd::lane(l, A[Simd::lane(l, imax)][j]));
         }
+        func.swap(i, imax); // swap the pivot or rhs
       }
 
       // singular ?
-      nonsingularLanes = nonsingularLanes && !(pivmax<singthres);
+      nonsingularLanes = nonsingularLanes && (pivmax != real_type(0));
       if (throwEarly) {
-        if(!all_true(nonsingularLanes))
+        if(!Simd::allTrue(nonsingularLanes))
           DUNE_THROW(FMatrixError, "matrix is singular");
       }
       else { // !throwEarly
-        if(!any_true(nonsingularLanes))
+        if(!Simd::anyTrue(nonsingularLanes))
           return;
       }
 
@@ -929,7 +921,7 @@ namespace Dune
 
   template<typename MAT>
   template <class V>
-  inline void DenseMatrix<MAT>::solve(V& x, const V& b) const
+  inline void DenseMatrix<MAT>::solve(V& x, const V& b, bool doPivoting) const
   {
     // never mind those ifs, because they get optimized away
     if (rows()!=cols())
@@ -938,8 +930,8 @@ namespace Dune
     if (rows()==1) {
 
 #ifdef DUNE_FMatrix_WITH_CHECKING
-      if (any_true(fvmeta::absreal((*this)[0][0])
-                   < FMatrixPrecision<>::absolute_limit()))
+      if (Simd::anyTrue(fvmeta::absreal((*this)[0][0])
+                        < FMatrixPrecision<>::absolute_limit()))
         DUNE_THROW(FMatrixError,"matrix is singular");
 #endif
       x[0] = b[0]/(*this)[0][0];
@@ -949,8 +941,8 @@ namespace Dune
 
       field_type detinv = (*this)[0][0]*(*this)[1][1]-(*this)[0][1]*(*this)[1][0];
 #ifdef DUNE_FMatrix_WITH_CHECKING
-      if (any_true(fvmeta::absreal(detinv)
-                   < FMatrixPrecision<>::absolute_limit()))
+      if (Simd::anyTrue(fvmeta::absreal(detinv)
+                        < FMatrixPrecision<>::absolute_limit()))
         DUNE_THROW(FMatrixError,"matrix is singular");
 #endif
       detinv = 1.0/detinv;
@@ -961,9 +953,10 @@ namespace Dune
     }
     else if (rows()==3) {
 
-      field_type d = determinant();
+      field_type d = determinant(doPivoting);
 #ifdef DUNE_FMatrix_WITH_CHECKING
-      if (any_true(fvmeta::absreal(d) < FMatrixPrecision<>::absolute_limit()))
+      if (Simd::anyTrue(fvmeta::absreal(d)
+                        < FMatrixPrecision<>::absolute_limit()))
         DUNE_THROW(FMatrixError,"matrix is singular");
 #endif
 
@@ -986,10 +979,10 @@ namespace Dune
       rhs = b; // copy data
       Elim<V> elim(rhs);
       MAT A(asImp());
-      SimdMask<typename FieldTraits<value_type>::real_type>
+      Simd::Mask<typename FieldTraits<value_type>::real_type>
         nonsingularLanes(true);
 
-      luDecomposition(A, elim, nonsingularLanes, true);
+      luDecomposition(A, elim, nonsingularLanes, true, doPivoting);
 
       // backsolve
       for(int i=rows()-1; i>=0; i--) {
@@ -1001,8 +994,10 @@ namespace Dune
   }
 
   template<typename MAT>
-  inline void DenseMatrix<MAT>::invert()
+  inline void DenseMatrix<MAT>::invert(bool doPivoting)
   {
+    using std::swap;
+
     // never mind those ifs, because they get optimized away
     if (rows()!=cols())
       DUNE_THROW(FMatrixError, "Can't invert a " << rows() << "x" << cols() << " matrix!");
@@ -1010,8 +1005,8 @@ namespace Dune
     if (rows()==1) {
 
 #ifdef DUNE_FMatrix_WITH_CHECKING
-      if (any_true(fvmeta::absreal((*this)[0][0])
-                   < FMatrixPrecision<>::absolute_limit()))
+      if (Simd::anyTrue(fvmeta::absreal((*this)[0][0])
+                        < FMatrixPrecision<>::absolute_limit()))
         DUNE_THROW(FMatrixError,"matrix is singular");
 #endif
       (*this)[0][0] = field_type( 1 ) / (*this)[0][0];
@@ -1021,8 +1016,8 @@ namespace Dune
 
       field_type detinv = (*this)[0][0]*(*this)[1][1]-(*this)[0][1]*(*this)[1][0];
 #ifdef DUNE_FMatrix_WITH_CHECKING
-      if (any_true(fvmeta::absreal(detinv)
-                   < FMatrixPrecision<>::absolute_limit()))
+      if (Simd::anyTrue(fvmeta::absreal(detinv)
+                        < FMatrixPrecision<>::absolute_limit()))
         DUNE_THROW(FMatrixError,"matrix is singular");
 #endif
       detinv = field_type( 1 ) / detinv;
@@ -1065,12 +1060,13 @@ namespace Dune
       (*this)[2][2] =  (t4-t8) * t17;
     }
     else {
+      using std::swap;
 
       MAT A(asImp());
       std::vector<simd_index_type> pivot(rows());
-      SimdMask<typename FieldTraits<value_type>::real_type>
+      Simd::Mask<typename FieldTraits<value_type>::real_type>
         nonsingularLanes(true);
-      luDecomposition(A, ElimPivot(pivot), nonsingularLanes, true);
+      luDecomposition(A, ElimPivot(pivot), nonsingularLanes, true, doPivoting);
       DenseMatrix<MAT>& L=A;
       DenseMatrix<MAT>& U=A;
 
@@ -1098,13 +1094,13 @@ namespace Dune
 
       for(size_type i=rows(); i>0; ) {
         --i;
-        for(std::size_t l = 0; l < lanes((*this)[0][0]); ++l)
+        for(std::size_t l = 0; l < Simd::lanes((*this)[0][0]); ++l)
         {
-          std::size_t pi = lane(l, pivot[i]);
+          std::size_t pi = Simd::lane(l, pivot[i]);
           if(i!=pi)
             for(size_type j=0; j<rows(); ++j)
-              std::swap(lane(l, (*this)[j][pi]),
-                        lane(l, (*this)[j][ i]));
+              swap(Simd::lane(l, (*this)[j][pi]),
+                   Simd::lane(l, (*this)[j][ i]));
         }
       }
     }
@@ -1113,7 +1109,7 @@ namespace Dune
   // implementation of the determinant
   template<typename MAT>
   inline typename DenseMatrix<MAT>::field_type
-  DenseMatrix<MAT>::determinant() const
+  DenseMatrix<MAT>::determinant(bool doPivoting) const
   {
     // never mind those ifs, because they get optimized away
     if (rows()!=cols())
@@ -1141,11 +1137,11 @@ namespace Dune
 
     MAT A(asImp());
     field_type det;
-    SimdMask<typename FieldTraits<value_type>::real_type>
+    Simd::Mask<typename FieldTraits<value_type>::real_type>
       nonsingularLanes(true);
 
-    luDecomposition(A, ElimDet(det), nonsingularLanes, false);
-    assign(det, field_type(0), !nonsingularLanes);
+    luDecomposition(A, ElimDet(det), nonsingularLanes, false, doPivoting);
+    det = Simd::cond(nonsingularLanes, det, field_type(0));
 
     for (size_type i = 0; i < rows(); ++i)
       det *= A[i][i];

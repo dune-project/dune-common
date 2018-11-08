@@ -1,19 +1,21 @@
 #include "config.h"
 
 #include <array>
+#include <vector>
 
-#include <dune/common/rangeutilities.hh>
+#include <dune/common/hybridutilities.hh>
 #include <dune/common/iteratorrange.hh>
+#include <dune/common/rangeutilities.hh>
 #include <dune/common/typetraits.hh>
 #include <dune/common/test/testsuite.hh>
 
 
 int main()
 {
-  // Check is_range<> for https://gitlab.dune-project.org/core/dune-common/issues/58
-  static_assert(Dune::is_range< std::array<int, 3> >::value, "std::array<int> must be a range");
-  static_assert(Dune::is_range< Dune::IteratorRange<int*> >::value, "IteratorRange must be a range");
-  static_assert(!Dune::is_range< int >::value, "int must not be a range");
+  // Check IsIterable<> for https://gitlab.dune-project.org/core/dune-common/issues/58
+  static_assert(Dune::IsIterable< std::array<int, 3> >::value, "std::array<int> must be a range");
+  static_assert(Dune::IsIterable< Dune::IteratorRange<int*> >::value, "IteratorRange must be a range");
+  static_assert(!Dune::IsIterable< int >::value, "int must not be a range");
 
   Dune::TestSuite suite;
 
@@ -75,6 +77,28 @@ int main()
     suite.check(!Dune::all_true(f))
       << "all_true(false) must be false";
   }
+
+  // integer ranges
+  using Dune::range;
+  std::vector<int> numbers(range(6).begin(), range(6).end());
+  int sum = 0;
+  for( auto i : range(numbers.size()) )
+    sum += numbers[i];
+  suite.check(sum == 15) << "sum over range( 0, 6 ) must be 15.";
+  suite.check(range(sum, 100)[5] == 20) << "range(sum, 100)[5] must be 20.";
+  sum = 0;
+  for( auto i : range(-10, 11) )
+    sum += i;
+  suite.check(sum == 0) << "sum over range( -10, 11 ) must be 0.";
+
+  static_assert(std::is_same<decltype(range(std::integral_constant<int, 4>()))::integer_sequence, std::make_integer_sequence<int, 4>>::value,
+                "decltype(range(std::integral_constant<int, 4>))::integer_sequence must be the same as std::make_integer_sequence<int, 4>");
+
+  // Hybrid::forEach for integer ranges
+  Dune::Hybrid::forEach(range(std::integral_constant<int, 1>()), [] (auto &&i) {
+      static_assert(std::is_same<std::decay_t<decltype(i)>, std::integral_constant<int, 0>>::value,
+                    "Hybrid::forEach(range(std::integral_constant<int, 1>()), ...) should only visit std::integral_constant<int, 0>.");
+    });
 
   return suite.exit();
 

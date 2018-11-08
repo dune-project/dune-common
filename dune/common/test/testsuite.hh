@@ -123,7 +123,7 @@ namespace Dune {
      *
      * \returns False if any of the executed tests failed, otherwise true.
      */
-    explicit operator const bool () const
+    explicit operator bool () const
     {
       return (failedChecks_==0);
     }

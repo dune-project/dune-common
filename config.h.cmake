@@ -29,6 +29,36 @@
 /* does the compiler support C++17's class template argument deduction? */
 #cmakedefine DUNE_HAVE_CXX_CLASS_TEMPLATE_ARGUMENT_DEDUCTION 1
 
+/* does the compiler support C++17's optional? */
+#cmakedefine DUNE_HAVE_CXX_OPTIONAL 1
+
+/* does the compiler support conditionally throwing exceptions in constexpr context? */
+#cmakedefine DUNE_SUPPORTS_CXX_THROW_IN_CONSTEXPR 1
+
+/* does the standard library provide <experimental/type_traits> ? */
+#cmakedefine DUNE_HAVE_HEADER_EXPERIMENTAL_TYPE_TRAITS 1
+
+/* does the standard library provide make_unique() ? */
+#cmakedefine DUNE_HAVE_CXX_MAKE_UNIQUE 1
+
+/* does the standard library provide bool_constant ? */
+#cmakedefine DUNE_HAVE_CXX_BOOL_CONSTANT 1
+
+/* does the standard library provide experimental::bool_constant ? */
+#cmakedefine DUNE_HAVE_CXX_EXPERIMENTAL_BOOL_CONSTANT 1
+
+/* does the standard library provide apply() ? */
+#cmakedefine DUNE_HAVE_CXX_APPLY 1
+
+/* does the standard library provide experimental::apply() ? */
+#cmakedefine DUNE_HAVE_CXX_EXPERIMENTAL_APPLY 1
+
+/* does the standard library provide experimental::make_array() ? */
+#cmakedefine DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY 1
+
+/* does the standard library provide experimental::is_detected ? */
+#cmakedefine DUNE_HAVE_CXX_EXPERIMENTAL_IS_DETECTED 1
+
 /* Define if you have a BLAS library. */
 #cmakedefine HAVE_BLAS 1
 
@@ -48,6 +78,10 @@
    to facilitate activating and deactivating GMP using compile flags. */
 #cmakedefine HAVE_GMP ENABLE_GMP
 
+/* Define if you have the GCC Quad-Precision library. The value should be ENABLE_QUADMATH
+   to facilitate activating and deactivating QuadMath using compile flags. */
+#cmakedefine HAVE_QUADMATH ENABLE_QUADMATH
+
 /* Define if you have the Vc library. The value should be ENABLE_VC
    to facilitate activating and deactivating Vc using compile flags. */
 #cmakedefine HAVE_VC ENABLE_VC
@@ -61,7 +95,8 @@
 /* Define to 1 if you have <sys/mman.h>. */
 #cmakedefine HAVE_SYS_MMAN_H 1
 
-#define HAVE_TBB ${HAVE_TBB}
+/* Define to 1 if you have the Threading Building Blocks (TBB) library */
+#cmakedefine HAVE_TBB 1
 
 /* begin private */
 
@@ -147,6 +182,10 @@
 
 /* Define to ENABLE_SUITESPARSE if the SuiteSparse's UMFPACK library is available */
 #cmakedefine HAVE_SUITESPARSE_UMFPACK ENABLE_SUITESPARSE
+
+/* Define to 1 if METIS is available */
+#cmakedefine HAVE_METIS 1
+
 
 /* Define to ENABLE_PARMETIS if you have the Parmetis library.
    This is only true if MPI was found

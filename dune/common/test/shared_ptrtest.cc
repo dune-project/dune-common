@@ -150,13 +150,7 @@ int main(){
     assert(bar);
 
     // test constructor from nullptr
-#ifndef HAVE_NULLPTR
-        #warning Construction of shared_ptr from a nullptr will not work as compiler
-        #warning does not support the latter.
-    shared_ptr<double> bar_null=shared_ptr<double>();
-#else
     shared_ptr<double> bar_null(nullptr);
-#endif
     assert(!bar_null);
     assert(!bar_null.get());
 
@@ -233,8 +227,10 @@ int main(){
 
     // test shared_ptr for stack allocation with down cast
     {
+DUNE_NO_DEPRECATED_BEGIN
       B b2;
       shared_ptr<A> pa = stackobject_to_shared_ptr<A>(b2);
+DUNE_NO_DEPRECATED_END
 #ifdef SHARED_PTR_COMPILE_FAIL
       C c;
       pa = stackobject_to_shared_ptr<A>(c);       // A is an inaccessible base of C

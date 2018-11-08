@@ -5,13 +5,14 @@
 #ifdef TEST_NDEBUG
     #define NDEBUG TEST_NDEBUG
 #else
-    #undef NDDEBUG
+    #undef NDEBUG
 #endif
 
 #include <cassert>
-#include <dune/common/parallel/mpihelper.hh>
-#include <dune/common/exceptions.hh>
 #include <dune/common/assertandreturn.hh>
+#include <dune/common/exceptions.hh>
+#include <dune/common/parallel/mpihelper.hh>
+#include <dune/common/unused.hh>
 
 
 struct Foo
@@ -19,6 +20,9 @@ struct Foo
   static constexpr auto lessAndReturn(int a, int b, int x)
   {
     return DUNE_ASSERT_AND_RETURN(a<b, x);
+#ifdef NDEBUG
+    DUNE_UNUSED_PARAMETER(a), DUNE_UNUSED_PARAMETER(b);
+#endif
   }
 };
 
@@ -46,7 +50,8 @@ try
 //               SOURCES assertandreturntest.cc
 //               LINK_LIBRARIES dunecommon
 //               COMPILE_DEFINITIONS "TEST_RUNTIME_FAIL"
-//               EXPECT_FAIL)
+//               EXPECT_FAIL
+//               LABELS quick)
 //
 // and the following code:
 #ifdef TEST_RUNTIME_FAIL

@@ -3,6 +3,8 @@
 #ifndef DUNE_DEBUGALIGN_HH
 #define DUNE_DEBUGALIGN_HH
 
+#include <algorithm>
+#include <cassert>
 #include <cmath>
 #include <complex>
 #include <cstddef>
@@ -15,8 +17,10 @@
 #include <utility>
 
 #include <dune/common/classname.hh>
+#include <dune/common/indices.hh>
+#include <dune/common/simd/base.hh>
+#include <dune/common/simd/defaults.hh>
 #include <dune/common/typetraits.hh>
-#include <dune/common/simd.hh>
 
 namespace Dune {
 
@@ -27,7 +31,7 @@ namespace Dune {
   //! access the handler called by `violatedAlignment()`
   /**
    * This may be used to obtain the handler for the purpose of calling, or for
-   * saving it somwhere to restore it later.  It may also be used to set the
+   * saving it somewhere to restore it later.  It may also be used to set the
    * handler simply by assigning a new handler.  Setting the handler races
    * with other accesses.
    */
@@ -111,11 +115,15 @@ namespace Dune {
       template<class U, std::size_t uAlign,
                class = std::enable_if_t<(align >= uAlign) &&
                                         std::is_convertible<U, T>::value> >
-        AlignedNumber(const AlignedNumber<U, uAlign> &o) : value_(U(o)) {}
+      AlignedNumber(const AlignedNumber<U, uAlign> &o) : value_(U(o)) {}
 
+      // accessors
       template<class U,
                class = std::enable_if_t<std::is_convertible<T, U>::value> >
       explicit operator U() const { return value_; }
+
+      const T &value() const { return value_; }
+      T &value() { return value_; }
 
       // I/O
       template<class charT, class Traits>
@@ -163,9 +171,20 @@ namespace Dune {
                class = void_t<decltype(-std::declval<const U&>())> >
       decltype(auto) operator-() const { return aligned<align>(-value_); }
 
+      /*
+       * silence warnings from GCC about using `~` on a bool
+       * (when instantiated for T=bool)
+       */
+#if __GNUC__ >= 7
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wbool-operation"
+#endif
       template<class U = T,
                class = void_t<decltype(~std::declval<const U&>())> >
       decltype(auto) operator~() const { return aligned<align>(~value_); }
+#if __GNUC__ >= 7
+#  pragma GCC diagnostic pop
+#endif
 
       template<class U = T,
                class = void_t<decltype(!std::declval<const U&>())> >
@@ -184,10 +203,10 @@ namespace Dune {
         return *this;                                                   \
       }                                                                 \
                                                                         \
-        template<class U,                                               \
-                 class = void_t<decltype(std::declval<T&>() OP          \
-                                         std::declval<U>())> >          \
-        AlignedNumber &operator OP(const U &u)                          \
+      template<class U,                                                 \
+               class = void_t<decltype(std::declval<T&>() OP            \
+                                       std::declval<U>())> >            \
+      AlignedNumber &operator OP(const U &u)                            \
       {                                                                 \
         value_ OP u;                                                    \
         return *this;                                                   \
@@ -275,22 +294,23 @@ namespace Dune {
     //
     // Overloads for the functions provided by the standard library
     //
-#define DUNE_UNARY_FUNC(name)                               \
-    template<class T, std::size_t align>                    \
-    decltype(auto) name(const AlignedNumber<T, align> &u)   \
-    {                                                       \
-      using std::name;                                      \
-      return aligned<align>(name(T(u)));                    \
-    }
+#define DUNE_UNARY_FUNC(name)                                       \
+    template<class T, std::size_t align>                            \
+    decltype(auto) name(const AlignedNumber<T, align> &u)           \
+    {                                                               \
+      using std::name;                                              \
+      return aligned<align>(name(T(u)));                            \
+    }                                                               \
+    static_assert(true, "Require semicolon to unconfuse editors")
 
     //
     // <cmath> functions
     //
 
     // note: only unary functions are provided at the moment.  Getting all the
-    // overloads right for functions with more than one aregument is tricky.
+    // overloads right for functions with more than one argument is tricky.
     // All <cmath> functions appear in the list below in the order they are
-    // listet in in the standard, but the unimplemented ones are commented
+    // listed in in the standard, but the unimplemented ones are commented
     // out.
 
     // note: abs is provided by both <cstdlib> (for integer) and <cmath> (for
@@ -370,15 +390,69 @@ namespace Dune {
     // <complex> functions
     //
 
-    // not all functions are implemented, und unlike for <cmath>, no
+    // not all functions are implemented, and unlike for <cmath>, no
     // comprehensive list is provided
     DUNE_UNARY_FUNC(real);
 
 #undef DUNE_UNARY_FUNC
 
+    // We need to overload min() and max() since they require types to be
+    // LessThanComparable, which requires `a<b` to be "convertible to bool".
+    // That wording seems to be a leftover from C++03, and today is probably
+    // equivalent to "implicitly convertible".  There is also issue 2114
+    // <https://cplusplus.github.io/LWG/issue2114> in the standard (still open
+    // as of 2018-07-06), which strives to require both "implicitly" and
+    // "contextually" convertible -- plus a few other things.
+    //
+    // We do not want our debug type to automatically decay to the underlying
+    // type, so we do not want to make the conversion non-explicit.  So the
+    // only option left is to overload min() and max().
+
+    template<class T, std::size_t align>
+    T max(const AlignedNumber<T, align> &a, const AlignedNumber<T, align> &b)
+    {
+      using std::max;
+      return max(T(a), T(b));
+    }
+
+    template<class T, std::size_t align>
+    T max(const T &a, const AlignedNumber<T, align> &b)
+    {
+      using std::max;
+      return max(a, T(b));
+    }
+
+    template<class T, std::size_t align>
+    T max(const AlignedNumber<T, align> &a, const T &b)
+    {
+      using std::max;
+      return max(T(a), b);
+    }
+
+    template<class T, std::size_t align>
+    T min(const AlignedNumber<T, align> &a, const AlignedNumber<T, align> &b)
+    {
+      using std::min;
+      return min(T(a), T(b));
+    }
+
+    template<class T, std::size_t align>
+    T min(const T &a, const AlignedNumber<T, align> &b)
+    {
+      using std::min;
+      return min(a, T(b));
+    }
+
+    template<class T, std::size_t align>
+    T min(const AlignedNumber<T, align> &a, const T &b)
+    {
+      using std::min;
+      return min(T(a), b);
+    }
+
   } // namespace AlignedNumberImpl
 
-  // SIMD-like functions
+  // SIMD-like functions from "conditional.hh"
   template<class T, std::size_t align>
   AlignedNumber<T, align>
   cond(const AlignedNumber<bool, align> &b,
@@ -387,6 +461,7 @@ namespace Dune {
     return b ? v1 : v2;
   }
 
+  // SIMD-like functions from "rangeutilities.hh"
   template<class T, std::size_t align>
   T max_value(const AlignedNumber<T, align>& val)
   {
@@ -411,12 +486,58 @@ namespace Dune {
     return bool(val);
   }
 
-  //! deduce the underlying scalar data type of an AlignedNumber
-  template<typename T, std::size_t align>
-  struct SimdScalarTypeTraits< AlignedNumber<T,align> >
-  {
-    using type = T;
-  };
+  // SIMD-like functionality from "simd/interface.hh"
+  namespace Simd {
+    namespace Overloads {
+
+      template<class T, std::size_t align>
+      struct ScalarType<AlignedNumber<T, align> > { using type = T; };
+
+      template<class T, std::size_t align>
+      struct IndexType<AlignedNumber<T, align> > {
+        using type = AlignedNumber<std::size_t, align>;
+      };
+
+      template<class T, std::size_t align>
+      struct MaskType<AlignedNumber<T, align> > {
+        using type = AlignedNumber<bool, align>;
+      };
+
+      template<class T, std::size_t align>
+      struct LaneCount<AlignedNumber<T, align> > : index_constant<1> {};
+
+      template<class T, std::size_t align>
+      T& lane(ADLTag<5>, std::size_t l, AlignedNumber<T, align> &v)
+      {
+        assert(l == 0);
+        return v.value();
+      }
+
+      template<class T, std::size_t align>
+      T lane(ADLTag<5>, std::size_t l, const AlignedNumber<T, align> &v)
+      {
+        assert(l == 0);
+        return v.value();
+      }
+
+      template<class T, std::size_t align>
+      const AlignedNumber<T, align> &
+      cond(ADLTag<5>, AlignedNumber<bool, align> mask,
+           const AlignedNumber<T, align> &ifTrue,
+           const AlignedNumber<T, align> &ifFalse)
+      {
+        return mask ? ifTrue : ifFalse;
+      }
+
+      template<std::size_t align>
+      bool anyTrue(ADLTag<5>, const AlignedNumber<bool, align> &mask)
+      {
+        return bool(mask);
+      }
+
+    } // namespace Overloads
+
+  } // namespace Simd
 
 } // namespace Dune
 

@@ -12,6 +12,7 @@
 #include <dune/common/indices.hh>
 #include <dune/common/assertandreturn.hh>
 #include <dune/common/unused.hh>
+#include <dune/common/rangeutilities.hh>
 
 
 
@@ -125,7 +126,7 @@ namespace Impl {
  * If this returns the i-th entry of c. It supports the following
  * containers
  * * Containers providing dynamic access via operator[]
- * * Heterogenous containers providing access via operator[](integral_constant<...>)
+ * * Heterogeneous containers providing access via operator[](integral_constant<...>)
  * * std::tuple<...>
  * * std::integer_sequence
  */
@@ -139,61 +140,22 @@ constexpr decltype(auto) elementAt(Container&& c, Index&& i)
 
 namespace Impl {
 
-  template<class Begin, class End>
-  class StaticIntegralRange
-  {
-  public:
-
-    template<std::size_t i>
-    constexpr auto operator[](Dune::index_constant<i>) const
-    {
-      return std::integral_constant<typename Begin::value_type, Begin::value+i>();
-    }
-
-    static constexpr auto size()
-    {
-      return std::integral_constant<typename Begin::value_type, End::value - Begin::value>();
-    }
-  };
-
-  template<class T>
-  class DynamicIntegralRange
-  {
-  public:
-    constexpr DynamicIntegralRange(const T& begin, const T& end):
-      begin_(begin),
-      end_(end)
-    {}
-
-    constexpr auto size() const
-    {
-      return end_ - begin_;
-    }
-
-    constexpr T operator[](const T&i) const
-    { return begin_+i; }
-
-  private:
-    T begin_;
-    T end_;
-  };
-
   template<class Begin, class End,
     std::enable_if_t<IsIntegralConstant<Begin>::value and IsIntegralConstant<End>::value, int> = 0>
   constexpr auto integralRange(const Begin& /*begin*/, const End& /*end*/, const PriorityTag<1>&)
   {
     static_assert(Begin::value <= End::value, "You cannot create an integralRange where end<begin");
-    return Impl::StaticIntegralRange<Begin,End>();
+    return Dune::StaticIntegralRange<std::size_t, End::value, Begin::value>();
   }
 
   // This should be constexpr but gcc-4.9 does not support
-  // the relaxed constexpr requirements. Hence for beeing
+  // the relaxed constexpr requirements. Hence for being
   // constexpr the function body can only contain a return
   // statement and no assertion before this.
   template<class Begin, class End>
   constexpr auto integralRange(const Begin& begin, const End& end, const PriorityTag<0>&)
   {
-    return DUNE_ASSERT_AND_RETURN(begin<=end, Impl::DynamicIntegralRange<End>(begin, end));
+    return DUNE_ASSERT_AND_RETURN(begin<=end, Dune::IntegralRange<End>(begin, end));
   }
 
 } // namespace Impl
@@ -275,11 +237,8 @@ namespace Impl {
   template<class Range, class F>
   constexpr void forEach(Range&& range, F&& f, PriorityTag<0>)
   {
-    for(std::size_t i=0; i<range.size(); ++i)
-      f(range[i]);
-    // \todo Switch to real range for once DynamicIntegralRange has proper iterators
-    //  for(auto e : range)
-    //    f(e);
+      for(auto&& e : range)
+        f(e);
   }
 
 } // namespace Impl

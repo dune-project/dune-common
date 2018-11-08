@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <string>
+#include <type_traits>
 
 #if HAVE_GMP || DOXYGEN
 
@@ -71,6 +72,7 @@ namespace Dune
   struct IsNumber<GMPField<precision>>
     : public std::integral_constant<bool, true> {
   };
+
 }
 
 #endif // HAVE_GMP

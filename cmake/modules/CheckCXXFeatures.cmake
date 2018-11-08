@@ -1,11 +1,11 @@
 # .. cmake_module::
 #
-#    Module that checks for supported C++14, C++11 and non-standard features.
+#    Module that checks for supported C++17, C++14 and non-standard features.
 #
 #    The behaviour of this module can be modified by the following variable:
 #
 #    :ref:`DISABLE_CXX_VERSION_CHECK`
-#       Disable checking for std=c++11 (c++14, c++1y)
+#       Disable checking for std=c++14 (c++17, ...)
 #
 #    This module internally sets the following variables, which are then
 #    exported into the config.h of the current dune module.
@@ -22,6 +22,9 @@
 #    :code:`DUNE_HAVE_CXX_CLASS_TEMPLATE_ARGUMENT_DEDUCTION`
 #       True if C++17's class template argument deduction is supported
 #
+#    :code:`DUNE_HAVE_CXX_OPTIONAL`
+#       True if C++17's optional implementation is supported
+#
 # .. cmake_variable:: DISABLE_CXX_VERSION_CHECK
 #
 #    You may set this variable to TRUE to disable checking for
@@ -31,10 +34,12 @@
 
 include(CMakePushCheckState)
 include(CheckCXXCompilerFlag)
+include(CheckIncludeFileCXX)
 include(CheckCXXSourceCompiles)
+include(CheckCXXSymbolExists)
 
 # C++ standard versions that this test knows about
-set(CXX_VERSIONS 17 14 11)
+set(CXX_VERSIONS 17 14)
 
 
 # Compile tests for the different standard revisions; these test both the compiler
@@ -61,9 +66,18 @@ string(REPLACE ";" "\;" cxx_14_test
   "
   #include <memory>
 
+  constexpr auto f(int i)
+  {
+    if (i > 0)
+      return i;
+    else
+      return -i;
+  }
+
   int main() {
     // lambdas with auto parameters are C++14 - so this checks the compiler
     auto l = [](auto x) { return x; };
+    static_assert(f(4) == f(-4),\"\");
     // std::make_unique() is a C++14 library feature - this checks whether the
     // compiler uses a C++14 compliant library.
     auto v = std::make_unique<int>(l(0));
@@ -71,28 +85,16 @@ string(REPLACE ";" "\;" cxx_14_test
   }
   ")
 
-string(REPLACE ";" "\;" cxx_11_test
-  "
-  #include <memory>
-
-  int main() {
-    // this checks both the compiler (by using auto) and the library (by using
-    // std::make_shared() for C++11 compliance at GCC 4.4 level.
-    auto v = std::make_shared<int>(0);
-    return *v;
-  }
-  ")
-
 # build a list out of the pre-escaped tests
-set(CXX_VERSIONS_TEST "${cxx_17_test}" "${cxx_14_test}" "${cxx_11_test}")
+set(CXX_VERSIONS_TEST "${cxx_17_test}" "${cxx_14_test}")
 
 # these are appended to "-std=c++" and tried in this order
 # note the escaped semicolons; that's necessary to create a nested list
-set(CXX_VERSIONS_FLAGS "17\;1z" "14\;1y" "11\;0x")
+set(CXX_VERSIONS_FLAGS "17\;1z" "14\;1y")
 
 # by default, we enable C++14 for now, but not C++17
 # The user can override this choice by explicitly setting this variable
-set(CXX_MAX_STANDARD 14 CACHE STRING "highest version of the C++ standard to enable")
+set(CXX_MAX_STANDARD 17 CACHE STRING "highest version of the C++ standard to enable. This version is also used if the version check is disabled")
 
 
 function(dune_require_cxx_standard)
@@ -117,9 +119,12 @@ set up to not allow newer language standards than C++${CXX_MAX_STANDARD}. Try se
 CMake variable CXX_MAX_STANDARD to at least ${_VERSION}."
         )
     else()
-      message(FATAL_ERROR "
-${_MODULE} requires compiler support for C++${_VERSION}, but your compiler only supports \
-C++${CXX_MAX_SUPPORTED_STANDARD}."
+      if(${CXX_MAX_SUPPORTED_STANDARD} EQUAL 3)
+        set(CXX_STD_NAME 03)
+      else()
+        set(CXX_STD_NAME ${CXX_MAX_SUPPORTED_STANDARD})
+      endif()
+      message(FATAL_ERROR "${_MODULE} requires support for C++${_VERSION}, but your compiler failed our compatibility test."
         )
     endif()
   endif()
@@ -186,11 +191,14 @@ CMAKE_CXX_FLAGS."
       )
     set(CXX_MAX_SUPPORTED_STANDARD 3)
   endif()
-
+else()
+  # We did not check version but need to set maximum supported
+  # version for some checks. Therefore we set it to CXX_MAX_STANDARD.
+  set(CXX_MAX_SUPPORTED_STANDARD ${CXX_MAX_STANDARD})
 endif()
 
-# make sure we have at least C++11
-dune_require_cxx_standard(MODULE "DUNE" VERSION 11)
+# make sure we have at least C++14
+dune_require_cxx_standard(MODULE "DUNE" VERSION 14)
 
 # perform tests
 
@@ -348,16 +356,29 @@ check_cxx_source_compiles("
 " DUNE_HAVE_CXX_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
   )
 
+
+# support for C++17's optional implementation
+check_cxx_source_compiles("
+  #include <optional>
+  #include <string>
+
+  int main()
+  {
+    std::optional< std::string > a;
+    std::string b = a.value_or( \"empty\" );
+  }
+" DUNE_HAVE_CXX_OPTIONAL
+  )
+
+
 # find the threading library
-# Use a copy FindThreads from CMake 3.1 due to its support of pthread
 if(NOT DEFINED THREADS_PREFER_PTHREAD_FLAG)
   set(THREADS_PREFER_PTHREAD_FLAG 1)
 endif()
-if(${CMAKE_VERSION} VERSION_LESS "3.1")
-  find_package(ThreadsCMake31)
-else()
-  find_package(Threads)
-endif()
+find_package(Threads)
+# text for feature summary
+set_package_properties("Threads" PROPERTIES
+  DESCRIPTION "Multi-threading library")
 
 # see whether threading needs -no-as-needed
 if(EXISTS /etc/dpkg/origins/ubuntu)
@@ -440,3 +461,92 @@ if(NOT STDTHREAD_WORKS)
     "STDTHREAD_LINK_FLAGS.  If you think this test is wrong, set the cache "
     "variable STDTHREAD_WORKS.")
 endif(NOT STDTHREAD_WORKS)
+
+
+# Check whether we can conditionally throw exceptions in constexpr context to
+# signal errors both at compile time and at run time - this does not work in GCC 5
+check_cxx_source_compiles("
+  constexpr int foo(int bar)
+  {
+    if (bar < 0)
+      throw bar;
+    int r = 1;
+    for (int i = 0 ; i < bar ; ++i)
+      r += r;
+    return r;
+  }
+
+  int main()
+  {
+    static_assert(foo(4) == 16, \"test failed\");
+    return 0;
+  }
+" DUNE_SUPPORTS_CXX_THROW_IN_CONSTEXPR
+  )
+
+
+# ******************************************************************************
+#
+# Checks for standard library features
+#
+# While there are __cpp_lib_* feature test macros for all of these, those are
+# unfortunately unreliable, as libc++ does not have feature test macros yet.
+#
+# In order to keep the tests short, they use check_cxx_symbol_exists(). That
+# function can only test for macros and linkable symbols, however, so we wrap
+# tested types into a call to std::move(). That should be safe, as std::move()
+# does not require a complete type.
+#
+# ******************************************************************************
+
+# Check whether we have <experimental/type_traits> (for is_detected et. al.)
+check_include_file_cxx(
+  experimental/type_traits
+  DUNE_HAVE_HEADER_EXPERIMENTAL_TYPE_TRAITS
+  )
+
+check_cxx_symbol_exists(
+  "std::make_unique<int>"
+  memory
+  DUNE_HAVE_CXX_MAKE_UNIQUE
+  )
+
+check_cxx_symbol_exists(
+  "std::move<std::bool_constant<true>>"
+  "utility;type_traits"
+  DUNE_HAVE_CXX_BOOL_CONSTANT
+  )
+
+if (NOT DUNE_HAVE_CXX_BOOL_CONSTANT)
+  check_cxx_symbol_exists(
+    "std::move<std::experimental::bool_constant<true>>"
+    "utility;experimental/type_traits"
+    DUNE_HAVE_CXX_EXPERIMENTAL_BOOL_CONSTANT
+    )
+endif()
+
+check_cxx_symbol_exists(
+  "std::apply<std::negate<int>,std::tuple<int>>"
+  "functional;tuple"
+  DUNE_HAVE_CXX_APPLY
+  )
+
+if (NOT DUNE_HAVE_CXX_APPLY)
+  check_cxx_symbol_exists(
+    "std::experimental::apply<std::negate<int>,std::tuple<int>>"
+    "functional;experimental/tuple"
+    DUNE_HAVE_CXX_EXPERIMENTAL_APPLY
+  )
+endif()
+
+check_cxx_symbol_exists(
+  "std::experimental::make_array<int,int>"
+  "experimental/array"
+  DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY
+  )
+
+check_cxx_symbol_exists(
+  "std::move<std::experimental::detected_t<std::decay_t,int>>"
+  "utility;experimental/type_traits"
+  DUNE_HAVE_CXX_EXPERIMENTAL_IS_DETECTED
+  )

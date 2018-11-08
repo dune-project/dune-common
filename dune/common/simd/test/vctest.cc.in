@@ -1,0 +1,37 @@
+// @GENERATED_SOURCE@
+
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#if !HAVE_VC
+#error Inconsistent buildsystem.  This program should not be built in the \
+  absence of Vc.
+#endif
+
+#include <cstdint>
+#include <cstdlib>
+#include <utility>
+
+#include <dune/common/hybridutilities.hh>
+#include <dune/common/simd/test.hh>
+#include <dune/common/simd/test/vctest.hh>
+#include <dune/common/simd/vc.hh>
+
+int main()
+{
+  using Vc::Vector;
+  using Vc::SimdArray;
+
+  Dune::Simd::UnitTest test;
+
+#@template VECTOR@
+  test.checkVector<Vector<@SCALAR@> >();
+#@endtemplate@
+
+#@template ARRAY@
+  test.checkVector<SimdArray<@SCALAR@, @LANES@> >();
+#@endtemplate@
+
+  return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;
+}

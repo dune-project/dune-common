@@ -1,0 +1,27 @@
+// @GENERATED_SOURCE@
+
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include <complex>
+#include <cstddef>
+#include <cstdlib>
+
+#include <dune/common/simd/test.hh>
+#include <dune/common/simd/test/standardtest.hh>
+
+int main()
+{
+  Dune::Simd::UnitTest test;
+
+#cmake @template@
+  test.checkVector<@SCALAR@>();
+#cmake @endtemplate@
+
+  test.checkIndex<std::size_t>();
+
+  test.checkMask<bool>();
+
+  return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;
+}

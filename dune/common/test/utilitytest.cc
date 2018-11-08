@@ -59,8 +59,6 @@ int main(int, char**)
   Tuple1 t1(i,c,l,c);
   RefTuple1 refs(i, c, l, c);
 
-#if 0
-  // Broken with Debian 8 and gcc. See issue #53 on the bug tracker.
   DUNE_UNUSED RefTuple1 refs2(Dune::transformTuple<Dune::AddRefTypeEvaluator>(t1));
   PointerTuple1 pointers1(Dune::transformTuple<Dune::AddPtrTypeEvaluator>(refs));
   if(&i != std::get<0>(pointers1) || &c != std::get<1>(pointers1) ||
@@ -69,7 +67,6 @@ int main(int, char**)
               << std::endl;
     ret = 1;
   }
-#endif
 
   if(Dune::At<2>::get(pointers)!=std::get<1>(pointers)) {
     ret+=10;

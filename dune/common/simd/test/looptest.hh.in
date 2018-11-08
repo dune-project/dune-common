@@ -1,0 +1,23 @@
+// @GENERATED_SOURCE@
+
+#ifndef DUNE_COMMON_SIMD_TEST_LOOPTEST_HH
+#define DUNE_COMMON_SIMD_TEST_LOOPTEST_HH
+
+#include <cstddef>
+
+#include <dune/common/simd/test.hh>
+#include <dune/common/simd/loop.hh>
+
+namespace Dune {
+  namespace Simd {
+
+#cmake @template@
+    extern template void UnitTest::checkVector<LoopSIMD<@SCALAR@, 5>>();
+#cmake @endtemplate@
+
+    extern template void UnitTest::checkMask<LoopSIMD<bool, 5>>();
+
+  } //namespace Simd
+} // namespace Dune
+
+#endif

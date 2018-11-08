@@ -7,14 +7,15 @@ install(FILES
   AddUMFPackFlags.cmake
   AddVcFlags.cmake
   CheckCXXFeatures.cmake
-  CheckForPthreads.c
   CMakeBuiltinFunctionsDocumentation.cmake
+  DuneCMakeCompat.cmake
   DuneCommonMacros.cmake
   DuneCxaDemangle.cmake
   DuneDoc.cmake
   DuneDoxygen.cmake
   DuneEnableAllPackages.cmake
   DuneExecuteProcess.cmake
+  DuneInstance.cmake
   DuneMacros.cmake
   DuneMPI.cmake
   DunePathHelper.cmake
@@ -24,6 +25,7 @@ install(FILES
   DunePythonInstallPackage.cmake
   DunePythonRequireVersion.cmake
   DunePythonTestCommand.cmake
+  DunePythonVirtualenv.cmake
   DuneSphinxCMakeDoc.cmake
   DuneStreams.cmake
   DuneSymlinkOrCopy.cmake
@@ -36,7 +38,7 @@ install(FILES
   FindPTScotch.cmake
   FindSphinx.cmake
   FindSuiteSparse.cmake
-  FindThreadsCMake31.cmake
+  FindTBB.cmake
   FindUMFPack.cmake
   Headercheck.cmake
   LanguageSupport.cmake

@@ -25,42 +25,93 @@
 #    * :code:`DUNE_PYTHON_VIRTUALENV_PATH` The path of the virtual environment
 #    * :code:`DUNE_PYTHON_VIRTUALENV_EXECUTABLE` The python interpreter in the virtual environment
 #
-#    The created virtualenv resides in the first non-installed Dune module of
+#    By default, the created virtualenv resides in the first non-installed Dune module of
 #    the module stack (if no installation is performed: dune-common). Be aware
 #    that mixing installed and non-installed modules may result in a situation,
 #    where multiple such environments are created, although only one should.
-#    This is a known issue for now, a proper solution would offload the positioning
-#    of the environment to a tool with a broader scope, such as dunecontrol.
+#    You can change this behavior by either specifying a fixed path for the virtualenv
+#    using :ref:`DUNE_PYTHON_VIRTUALENV_PATH` or by enabling
+#    :ref:`DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR` if you are using an
+#    absolute build directory with dunecontrol. Note that this flag is enabled by default
+#    starting from Dune 2.7.
+#
+# .. cmake_variable:: DUNE_PYTHON_VIRTUALENV_PATH
+#
+#    When the Dune build system has setup a virtualenv, this variable will contain its location.
+#    You can also set this variable to a fixed path when CMake, and the virtualenv will be placed
+#    at that location.
+#
+# .. cmake_variable:: DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR
+#
+#    Before Dune 2.7, the virtualenv was always placed inside the build directory of  the first
+#    non-installed Dune module that the current module depends on. When using installed core modules
+#    or a multi-stage installation process, this can lead to situations where there are multiple
+#    virtualenvs, making it impossible to find all Python modules installed by upstream modules.
+#    In order to avoid this problem at least for builds using an absolute build directory (i.e., the
+#    :code:`--builddir` option of dunecontrol refers to an absolute path), the build system will
+#    place the virtualenv in a dedicated directory :code:`dune-python-env` inside that absolute
+#    build directory, where it will be found by all Dune modules. If you want to disable this
+#    behavior, set :code:`DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR=0`.
 #
 # .. cmake_variable:: DUNE_PYTHON_ALLOW_GET_PIP
 #
-#    Set this variable to allow the Dune build system to download :code:`get-pip.py`
-#    from https://bootstrap.pypa.io/get-pip.py at configure time and execute it
-#    to install pip into the freshly set up virtual environment. This step became
-#    necessary because of a debian bug:
-#    https://bugs.launchpad.net/debian/+source/python3.4/+bug/1290847
+#    The Dune build system will try to build a virtualenv with pip installed into it,
+#    but this can fail in some situations, in particular on Debian and Ubuntu distributions.
+#    In this case, you will se a warning message in the CMake output. If you are on Debian
+#    or Ubuntu, try installing the :code:`python3-venv` (for Python 3) and / or
+#    :code:`python-virtualenv` packages, delete your build directory and try configuring
+#    again.
 #
-#    If you do not want the Dune build system to download :code:`get-pip.py`, you can
-#    manually activate the virtual environment (sourcing the activate script
-#    symlinked into the build directories), install pip through your favorite
-#    method and reconfigure.
+#    If that still does not help, set this variable to allow the Dune build system to download
+#    :code:`get-pip.py` from https://bootstrap.pypa.io/get-pip.py at configure time and execute
+#    it to install pip into the freshly set up virtual environment. While this should normally
+#    not be necessary anymore, see https://bugs.launchpad.net/debian/+source/python3.4/+bug/1290847
+#    for more information about the underlying distribution bug.
 #
 
-# First, we look through the dependency tree of this module for a build directory
-# that already contains a virtual environment.
-set(DUNE_PYTHON_VIRTUALENV_PATH)
-foreach(mod ${ALL_DEPENDENCIES})
-  if(IS_DIRECTORY ${${mod}_DIR}/dune-env)
-    set(DUNE_PYTHON_VIRTUALENV_PATH ${${mod}_DIR}/dune-env)
+# If the user has not specified an absolute, we look through the dependency tree of this module
+# for a build directory that already contains a virtual environment.
+
+set(DUNE_PYTHON_VIRTUALENV_PATH "" CACHE PATH
+  "Location of Python virtualenv created by the Dune build system"
+  )
+
+# pre-populate DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR
+set(DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR ON CACHE BOOL
+  "Place Python virtualenv in top-level directory \"dune-python-env\" when using an absolute build directory"
+  )
+
+if(DUNE_PYTHON_VIRTUALENV_PATH STREQUAL "")
+  foreach(mod ${ALL_DEPENDENCIES})
+    if(IS_DIRECTORY ${${mod}_DIR}/dune-env)
+      set(DUNE_PYTHON_VIRTUALENV_PATH ${${mod}_DIR}/dune-env)
+      break()
+    endif()
+  endforeach()
+
+  # if we haven't found it yet, check in the current build directory - this might be a reconfigure
+  if(DUNE_PYTHON_VIRTUALENV_PATH STREQUAL "")
+    if(IS_DIRECTORY ${CMAKE_BINARY_DIR}/dune-env)
+      set(DUNE_PYTHON_VIRTUALENV_PATH ${CMAKE_BINARY_DIR}/dune-env)
+    endif()
   endif()
-  # check in the current build directory - this might be a reconfigure
-  if(IS_DIRECTORY ${CMAKE_BINARY_DIR}/dune-env)
+endif()
+
+
+if(DUNE_PYTHON_VIRTUALENV_PATH STREQUAL "")
+  # We didn't find anything, so figure out the correct location for building the virtualenv
+
+  if(DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR AND DUNE_BUILD_DIRECTORY_ROOT_PATH)
+    # Use a dedicated directory not associated with any module
+    set(DUNE_PYTHON_VIRTUALENV_PATH "${DUNE_BUILD_DIRECTORY_ROOT_PATH}/dune-python-env")
+  else()
+    # Create the virtualenv inside our build directory
     set(DUNE_PYTHON_VIRTUALENV_PATH ${CMAKE_BINARY_DIR}/dune-env)
   endif()
-endforeach()
+endif()
 
 # If it does not yet exist, set it up!
-if(NOT DUNE_PYTHON_VIRTUALENV_PATH)
+if(NOT IS_DIRECTORY "${DUNE_PYTHON_VIRTUALENV_PATH}")
   # Check for presence of the virtualenv/venv package
   dune_python_find_package(PACKAGE virtualenv)
   dune_python_find_package(PACKAGE venv)
@@ -69,26 +120,53 @@ if(NOT DUNE_PYTHON_VIRTUALENV_PATH)
   endif()
 
   # Set some options depending on which virtualenv package is used
-  if(DUNE_PYTHON_virtualenv_FOUND)
-    set(VIRTUALENV_PACKAGE_NAME virtualenv)
-    set(NOPIP_OPTION --no-pip)
-  endif()
   if(DUNE_PYTHON_venv_FOUND)
     set(VIRTUALENV_PACKAGE_NAME venv)
     set(NOPIP_OPTION --without-pip)
   endif()
+  if(DUNE_PYTHON_virtualenv_FOUND)
+    set(VIRTUALENV_PACKAGE_NAME virtualenv)
+    set(NOPIP_OPTION --no-pip)
+  endif()
+
+  if(("${VIRTUALENV_PACKAGE_NAME}" STREQUAL "venv") AND DUNE_PYTHON_SYSTEM_IS_VIRTUALENV)
+    message("-- WARNING: You are using a system interpreter which is a virtualenv and the venv package.")
+    message("            You might want to consider installing the virtualenv package if you experience inconveniences.")
+  endif()
 
   # Set up the env itself
-  message("-- Building a virtual env in ${CMAKE_BINARY_DIR}/dune-env...")
-  dune_execute_process(COMMAND ${PYTHON_EXECUTABLE}
-                                -m ${VIRTUALENV_PACKAGE_NAME}
-                                ${NOPIP_OPTION}
-                                ${CMAKE_BINARY_DIR}/dune-env
-                       ERROR_MESSAGE "Fatal error when setting up a virtualenv."
-                       )
+  message("-- Building a virtualenv in ${DUNE_PYTHON_VIRTUALENV_PATH}")
+  # First, try to build it with pip installed, but only if the user has not set DUNE_PYTHON_ALLOW_GET_PIP
+  if(NOT DUNE_PYTHON_ALLOW_GET_PIP)
+    dune_execute_process(COMMAND ${PYTHON_EXECUTABLE}
+                                  -m ${VIRTUALENV_PACKAGE_NAME}
+                                  "${DUNE_PYTHON_VIRTUALENV_PATH}"
+                         RESULT_VARIABLE venv_install_result
+                         )
+  endif()
 
-  # And set the path to it
-  set(DUNE_PYTHON_VIRTUALENV_PATH ${CMAKE_BINARY_DIR}/dune-env)
+  if(NOT "${venv_install_result}" STREQUAL "0")
+
+    if(NOT DUNE_PYTHON_ALLOW_GET_PIP)
+      # we attempted the default installation before, so issue a warning
+      message("-- WARNING: Failed to build a virtual env with pip installed, trying again without pip")
+      message("-- If you are using Debian or Ubuntu, consider installing python3-venv and / or python-virtualenv")
+    endif()
+
+    # remove the remainder of a potential first attempt
+    file(REMOVE_RECURSE "${DUNE_PYTHON_VIRTUALENV_PATH}")
+
+    # try to build the env without pip
+    dune_execute_process(COMMAND ${PYTHON_EXECUTABLE}
+                                  -m ${VIRTUALENV_PACKAGE_NAME}
+                                  ${NOPIP_OPTION}
+                                  "${DUNE_PYTHON_VIRTUALENV_PATH}"
+                         ERROR_MESSAGE "Fatal error when setting up a virtualenv."
+                         )
+  endif()
+
+else()
+  message("-- Using existing virtualenv in ${DUNE_PYTHON_VIRTUALENV_PATH}")
 endif()
 
 # Also store the virtual env interpreter directly
@@ -113,11 +191,11 @@ else()
   message(WARNING "Writing script 'run-in-dune-env' not implemented on your platform!")
 endif()
 
-# We previously omitted pip from the env, because of this Debian bug:
+# The virtualenv might not contain pip due to the distribution bug described in
 # https://bugs.launchpad.net/debian/+source/python3.4/+bug/1290847
-# We now, need to install pip. Easiest way is to download the get-pip
-# script. We ask users for permission to do so, or we allow them to
-# set it up themselves.
+# We need to install pip, so if pip is missing, we offer to download and run the get-pip
+# script. We ask users for permission to do so, or we allow them to set it up themselves.
+
 dune_python_find_package(PACKAGE pip
                          RESULT pippresent
                          INTERPRETER ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE}

@@ -23,16 +23,11 @@ def printTest(test):
     status = test.get("Status")
     name = test.find("Name").text
     fullName = test.find("FullName").text
-    output = test.find("Results").find("Measurement").find("Value").text
 
     print("======================================================================")
     print("Name:      {}".format(name))
     print("FullName:  {}".format(fullName))
     print("Status:    {}".format(status.upper()))
-    if output:
-        print("Output:")
-        for line in output.splitlines():
-            print("          ", line)
     print()
 
 def handleTest(test):

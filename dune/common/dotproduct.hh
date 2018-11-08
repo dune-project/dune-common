@@ -21,14 +21,11 @@ namespace Dune {
    * @{
    */
 
-  template<class T>
-  struct AlwaysVoid { typedef void type; };
-
   template<class T, class = void>
   struct IsVector : std::false_type {};
 
   template<class T>
-  struct IsVector<T, typename AlwaysVoid<typename T::field_type>::type>
+  struct IsVector<T, void_t<typename T::field_type> >
     : std::true_type {};
 
   /** @brief computes the dot product for fundamental data types according to Petsc's VectDot function: dot(a,b) := std::conj(a)*b

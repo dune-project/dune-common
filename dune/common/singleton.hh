@@ -53,14 +53,14 @@ namespace Dune
   class Singleton
   {
   protected:
-    /* @brief Private constructor. */
-    Singleton(){}
-    /** @brief Private copy constructor. */
-    Singleton(const Singleton&){}
-    /** @brief Private assignment operator. */
-    Singleton& operator=(const Singleton&){}
+    /* @brief Protected constructor. */
+    Singleton() = default;
 
   public:
+
+    Singleton(const Singleton&) = delete;
+    void operator=(const Singleton&) = delete;
+
     /**
      * @brief Get the instance of the singleton.
      * @return The instance of the singleton.

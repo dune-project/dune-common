@@ -32,12 +32,15 @@ class CMakeFunction(Directive):
 
         brief_nodes = []
         output_nodes = []
+        positional_params = []
         required_params = {}
         optional_params = {}
 
         for child in node:
             if isinstance(child, CMakeParamNode):
-                if child["required"]:
+                if child["positional"]:
+                    positional_params.append(child)
+                elif child["required"]:
                     required_params[child["name"]] = child
                 else:
                     optional_params[child["name"]] = child
@@ -48,34 +51,50 @@ class CMakeFunction(Directive):
             else:
                 output_nodes.append(child)
 
-        # Build the content of the box
-        sl = [self.arguments[0] + '(\n']
-        for rp, paramnode in required_params.items():
+        def render_required(paramnode):
             if paramnode["multi"]:
                 sl.append(" "*5 + paramnode['name'] + ' ' + paramnode['argname'] + '1 [' + paramnode['argname'] + '2 ...]\n')
             if paramnode["single"]:
                 sl.append(" "*5 + paramnode['name'] + ' ' + paramnode['argname'] + '\n')
             if paramnode["option"]:
                 sl.append(" "*5 + paramnode['name'] + '\n')
+            if paramnode["special"]:
+                sl.append(" "*5 + paramnode['argname'] + '\n')
 
-        for op, paramnode in optional_params.items():
+        def render_optional(paramnode):
             if paramnode["multi"]:
                 sl.append(' '*4 + '[' + paramnode['name'] + ' ' + paramnode['argname'] + '1 [' + paramnode['argname'] + '2 ...]' + ']\n')
             if paramnode["single"]:
                 sl.append(" "*4 + '['+ paramnode['name'] + ' ' + paramnode['argname'] + ']\n')
             if paramnode["option"]:
                 sl.append(" "*4 + '['+ paramnode['name'] + ']\n')
+            if paramnode["special"]:
+                sl.append(" "*4 + '['+ paramnode['argname'] + ']\n')
+
+        # Build the content of the box
+        sl = [self.arguments[0] + '(\n']
+
+        for paramnode in positional_params:
+            if paramnode["required"]:
+                render_required(paramnode)
+            else:
+                render_optional(paramnode)
+
+        for rp, paramnode in required_params.items():
+            render_required(paramnode)
+        for op, paramnode in optional_params.items():
+            render_optional(paramnode)
 
         sl.append(")\n")
         lb = nodes.literal_block(''.join(sl), ''.join(sl))
         brief_nodes.append(lb)
 
         dl = nodes.definition_list()
-        for param, paramnode in chain(required_params.items(), optional_params.items()):
+        for paramnode in chain(positional_params, required_params.values(), optional_params.values()):
             dli = nodes.definition_list_item()
             dl += dli
 
-            dlit = nodes.term(text=param)
+            dlit = nodes.term(text=paramnode["name"])
             dli += dlit
 
             dlic = nodes.definition()
@@ -108,7 +127,8 @@ class CMakeParam(Directive):
                    'option': lambda s: True,
                    'positional' : lambda s: True,
                    'required': lambda s: True,
-                   'single': lambda s: True
+                   'single': lambda s: True,
+                   'special': lambda s: True
                    }
     has_content = True
 
@@ -119,6 +139,7 @@ class CMakeParam(Directive):
         node['single'] = self.options.get('single', False)
         node['multi'] = self.options.get('multi', False)
         node['option'] = self.options.get('option', False)
+        node['special'] = self.options.get('special', False)
         node['positional'] = self.options.get('positional', False)
         node['required'] = self.options.get('required', False)
         node['argname'] = self.options.get('argname', self.arguments[0].lower() if self.arguments[0].lower()[-1:] != 's' else self.arguments[0].lower()[:-1])

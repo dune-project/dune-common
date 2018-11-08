@@ -7,6 +7,8 @@
 #include <utility>
 
 #include <dune/common/indices.hh>
+#include <dune/common/typetraits.hh>
+#include <dune/common/std/type_traits.hh>
 
 
 
@@ -31,11 +33,23 @@ class TupleVector : public std::tuple<T...>
 {
   using Base = std::tuple<T...>;
 
+  template<class... TT>
+  using TupleConstructorDetector = decltype(Base(std::declval<TT&&>()...));
+
+  template<class... TT>
+  using hasTupleConstructor = Dune::Std::is_detected<TupleConstructorDetector, TT...>;
+
+
 public:
 
   /** \brief Construct from a set of arguments
+   *
+   * This is only available if you can construct
+   * the underlying std::tuple from the same argument
+   * list.
    */
-  template<class... TT>
+  template<class... TT,
+    std::enable_if_t<hasTupleConstructor<TT...>::value, int> = 0>
   constexpr TupleVector(TT&&... tt) :
     Base(std::forward<TT>(tt)...)
   {}

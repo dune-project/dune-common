@@ -21,9 +21,14 @@ else(Fortran_Works)
   set(HAVE_LAPACK Off)
   set(HAVE_BLAS Off)
 endif(Fortran_Works)
+set_package_properties("BLAS" PROPERTIES
+  DESCRIPTION "fast linear algebra routines")
+set_package_properties("LAPACK" PROPERTIES
+  DESCRIPTION "fast linear algebra routines")
 
 find_package(GMP)
 include(AddGMPFlags)
+find_package(QuadMath)
 find_package(Inkscape)
 include(UseInkscape)
 include(FindMProtect)
@@ -31,9 +36,13 @@ include(FindMProtect)
 find_package(TBB OPTIONAL_COMPONENTS cpf allocator)
 
 # try to find the Vc library
-find_package(Vc)
+find_package(Vc NO_MODULE)
 include(AddVcFlags)
-set_package_info("Vc" "C++ Vectorization library" "https://github.com/VcDevel/Vc")
+# text for feature summary
+set_package_properties("Vc" PROPERTIES
+  DESCRIPTION "C++ Vectorization library"
+  URL "https://github.com/VcDevel/Vc"
+  PURPOSE "For use of SIMD instructions")
 
 # Run the python extension of the Dune cmake build system
 include(DunePythonCommonMacros)

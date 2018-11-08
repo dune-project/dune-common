@@ -21,7 +21,7 @@ enum DummyProtFlags { PROT_NONE, PROT_WRITE, PROT_READ };
 #include "mallocallocator.hh"
 
 #if not HAVE_MPROTECT
-#error mprotect is required to use te DebugAllocator
+#error mprotect is required to use the DebugAllocator
 #else
 
 namespace Dune
@@ -291,10 +291,10 @@ namespace Dune
     }
 
     //! construct an object of type T from variadic parameters
-    template<typename ... _Args>
-    void construct(pointer p, _Args&&... __args)
+    template<typename ... Args>
+    void construct(pointer p, Args&&... args)
     {
-      ::new((void *)p)T(std::forward<_Args>(__args) ...);
+      ::new((void *)p)T(std::forward<Args>(args) ...);
     }
 
     //! destroy an object of type T (i.e. call the destructor)
@@ -303,6 +303,22 @@ namespace Dune
       p->~T();
     }
   };
+
+  //! check whether allocators are equivalent
+  template<class T>
+  constexpr bool
+  operator==(const DebugAllocator<T> &, const DebugAllocator<T> &)
+  {
+    return true;
+  }
+
+  //! check whether allocators are not equivalent
+  template<class T>
+  constexpr bool
+  operator!=(const DebugAllocator<T> &, const DebugAllocator<T> &)
+  {
+    return false;
+  }
 }
 
 #ifdef DEBUG_NEW_DELETE
@@ -324,6 +340,14 @@ void operator delete(void * p) noexcept
   std::cout << "FREE " << p << std::endl;
 #endif
   Dune::DebugMemory::alloc_man.deallocate<char>(static_cast<char*>(p));
+}
+
+void operator delete(void * p, size_t size) noexcept
+{
+#if DEBUG_NEW_DELETE > 2
+  std::cout << "FREE " << p << std::endl;
+#endif
+  Dune::DebugMemory::alloc_man.deallocate<char>(static_cast<char*>(p), size);
 }
 
 #endif // DEBUG_NEW_DELETE

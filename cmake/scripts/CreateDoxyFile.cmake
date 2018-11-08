@@ -1,6 +1,9 @@
 # For now we just support appending Doxyfile and Doxylocal
 file(READ ${DOXYSTYLE} file_contents)
 file(WRITE Doxyfile.in ${file_contents})
+# Write the list of predefined C preprocessor macros
+file(READ ${DOXYGENMACROS} file_contents)
+file(APPEND Doxyfile.in ${file_contents})
 if(DOXYLOCAL)
   file(READ ${DOXYLOCAL} file_contents)
 endif()

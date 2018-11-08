@@ -1,4 +1,5 @@
 add_subdirectory("parallel")
+add_subdirectory("simd")
 add_subdirectory("std")
 add_subdirectory("test")
 
@@ -23,6 +24,7 @@ dune_add_library("dunecommon"
   parametertree.cc
   parametertreeparser.cc
   path.cc
+  simd/test.cc
   stdstreams.cc
   stdthread.cc
   ADD_LIBS "${_additional_libs}")
@@ -30,9 +32,7 @@ dune_add_library("dunecommon"
 add_dune_tbb_flags(dunecommon)
 #install headers
 install(FILES
-        alignment.hh
         alignedallocator.hh
-        array.hh
         arraylist.hh
         assertandreturn.hh
         bartonnackmanifcheck.hh
@@ -57,11 +57,11 @@ install(FILES
         dynvector.hh
         enumset.hh
         exceptions.hh
+        filledarray.hh
         float_cmp.cc
         float_cmp.hh
         fmatrix.hh
         fmatrixev.hh
-        forloop.hh
         ftraits.hh
         function.hh
         fvector.hh
@@ -70,19 +70,18 @@ install(FILES
         gmpfield.hh
         hash.hh
         hybridutilities.hh
-        identitymatrix.hh
         indent.hh
         indices.hh
         interfaces.hh
         ios_state.hh
         iteratorfacades.hh
         iteratorrange.hh
+        keywords.hh
         lcm.hh
         lru.hh
         mallocallocator.hh
         math.hh
         matvectraits.hh
-        nullptr.hh
         overloadset.hh
         parametertree.hh
         parametertreeparser.hh
@@ -93,6 +92,7 @@ install(FILES
         propertymap.hh
         promotiontraits.hh
         proxymemberaccess.hh
+        quadmath.hh
         rangeutilities.hh
         reservedvector.hh
         shared_ptr.hh
@@ -103,14 +103,15 @@ install(FILES
         stdthread.hh
         streamoperators.hh
         stringutility.hh
+        to_unique_ptr.hh
         timer.hh
-        tuples.hh
         tupleutility.hh
         tuplevector.hh
         typelist.hh
         typetraits.hh
         typeutilities.hh
         unused.hh
+        vc.hh
         version.hh
         visibility.hh
 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common)
