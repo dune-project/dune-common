@@ -120,13 +120,18 @@ if(NOT IS_DIRECTORY "${DUNE_PYTHON_VIRTUALENV_PATH}")
   endif()
 
   # Set some options depending on which virtualenv package is used
+  if(DUNE_PYTHON_venv_FOUND)
+    set(VIRTUALENV_PACKAGE_NAME venv)
+    set(NOPIP_OPTION --without-pip)
+  endif()
   if(DUNE_PYTHON_virtualenv_FOUND)
     set(VIRTUALENV_PACKAGE_NAME virtualenv)
     set(NOPIP_OPTION --no-pip)
   endif()
-  if(DUNE_PYTHON_venv_FOUND)
-    set(VIRTUALENV_PACKAGE_NAME venv)
-    set(NOPIP_OPTION --without-pip)
+
+  if(("${VIRTUALENV_PACKAGE_NAME}" STREQUAL "venv") AND DUNE_PYTHON_SYSTEM_IS_VIRTUALENV)
+    message("-- WARNING: You are using a system interpreter which is a virtualenv and the venv package.")
+    message("            You might want to consider installing the virtualenv package if you experience inconveniences.")
   endif()
 
   # Set up the env itself
