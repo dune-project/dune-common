@@ -336,7 +336,7 @@ esac'
 }
 
 # list of all dunecontrol commands
-COMMANDS="printdeps vcsetup update configure make all exec bexec status svn git"
+COMMANDS="printdeps vcsetup update cmake configure make all exec bexec status svn git"
 
 # list of dunecontrol commands for which the version check is skipped by default
 COMMANDSTOSKIPVERSIONCHECK="update status svn git exec bexec"
@@ -345,7 +345,8 @@ COMMANDSTOSKIPVERSIONCHECK="update status svn git exec bexec"
 printdeps_HELP="print recursive dependencies of a module"
 vcsetup_HELP="setup version control repository (Git etc.) or working copy (SVN)"
 update_HELP="update all modules from their repositories"
-configure_HELP="run cmake for each module"
+cmake_HELP="run cmake for each module"
+configure_HELP="${cmake_HELP}"
 make_HELP="build each module"
 all_HELP="\trun 'vcsetup', 'configure' and 'make' command for each module"
 exec_HELP="execute an arbitrary command in each module source directory"
@@ -620,7 +621,7 @@ run_default_update () {
   fi
 }
 
-run_default_configure () {
+run_default_cmake () {
   extract_multiarch
 
   # tell CMake about the build directory root when we are using an absolute build directory
@@ -666,6 +667,11 @@ run_default_configure () {
       fi
       echo "$CMAKE $_MODULE_PATH $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\""
       eval $CMAKE "$_MODULE_PATH $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\"" || exit 1
+}
+
+run_default_configure () {
+  # configure just forwards to cmake
+  run_default_cmake
 }
 
 run_default_make () {
