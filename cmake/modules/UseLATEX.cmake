@@ -1,6 +1,6 @@
 # File: UseLATEX.cmake
 # CMAKE commands to actually use the LaTeX compiler
-# Version: 2.4.6
+# Version: 2.4.9
 # Author: Kenneth Moreland <kmorel@sandia.gov>
 #
 # Copyright 2004, 2015 Sandia Corporation.
@@ -114,6 +114,13 @@
 #       in the multibib package.
 #
 # History:
+#
+# 2.4.9 Use biblatex.cfg file if it exists and the USE_BIBLATEX option is ON.
+#
+# 2.4.8 Fix synctex issue with absolute paths not being converted.
+#
+# 2.4.7 Fix some issues with spaces in the path of the working directory where
+#       LaTeX is executed.
 #
 # 2.4.6 Fix parse issue with older versions of CMake.
 #
@@ -459,11 +466,11 @@ function(latex_execute_latex)
   # we also want to make sure that we strip out any escape characters that can
   # foul up the WORKING_DIRECTORY argument.
   separate_arguments(LATEX_FULL_COMMAND UNIX_COMMAND "${LATEX_FULL_COMMAND}")
-  separate_arguments(LATEX_WORKING_DIRECTORY UNIX_COMMAND "${LATEX_WORKING_DIRECTORY}")
+  separate_arguments(LATEX_WORKING_DIRECTORY_SEP UNIX_COMMAND "${LATEX_WORKING_DIRECTORY}")
 
   execute_process(
     COMMAND ${LATEX_FULL_COMMAND}
-    WORKING_DIRECTORY ${LATEX_WORKING_DIRECTORY}
+    WORKING_DIRECTORY "${LATEX_WORKING_DIRECTORY_SEP}"
     RESULT_VARIABLE execute_result
     )
 
@@ -475,7 +482,7 @@ function(latex_execute_latex)
     message("\n\nLaTeX command failed")
     message("${full_command_original}")
     message("Log output:")
-    file(READ ${LATEX_WORKING_DIRECTORY}/${LATEX_TARGET}.log log_output)
+    file(READ "${LATEX_WORKING_DIRECTORY}/${LATEX_TARGET}.log" log_output)
     message("${log_output}")
     message(FATAL_ERROR
       "Successfully executed LaTeX, but LaTeX returned an error.")
@@ -677,6 +684,8 @@ function(latex_correct_synctex)
   if(NOT LATEX_BINARY_DIRECTORY)
     message(SEND_ERROR "Need to define LATEX_BINARY_DIRECTORY")
   endif()
+  message("${LATEX_BINARY_DIRECTORY}")
+  message("${LATEX_SOURCE_DIRECTORY}")
 
   set(synctex_file ${LATEX_BINARY_DIRECTORY}/${LATEX_TARGET}.synctex)
   set(synctex_file_gz ${synctex_file}.gz)
@@ -694,13 +703,24 @@ function(latex_correct_synctex)
     message("Reading synctex file.")
     file(READ ${synctex_file} synctex_data)
 
-    message("Replacing relative with absolute paths.")
-    string(REGEX REPLACE
-      "(Input:[0-9]+:)([^/\n][^\n]*)"
-      "\\1${LATEX_SOURCE_DIRECTORY}/\\2"
-      synctex_data
-      "${synctex_data}"
-      )
+    message("Replacing output paths with input paths.")
+    foreach(extension tex cls bst clo sty ist fd)
+      # Relative paths
+      string(REGEX REPLACE
+        "(Input:[0-9]+:)([^/\n][^\n]\\.${extension}*)"
+        "\\1${LATEX_SOURCE_DIRECTORY}/\\2"
+        synctex_data
+        "${synctex_data}"
+        )
+
+      # Absolute paths
+      string(REGEX REPLACE
+        "(Input:[0-9]+:)${LATEX_BINARY_DIRECTORY}([^\n]*\\.${extension})"
+        "\\1${LATEX_SOURCE_DIRECTORY}\\2"
+        synctex_data
+        "${synctex_data}"
+        )
+    endforeach(extension)
 
     message("Writing synctex file.")
     file(WRITE ${synctex_file} "${synctex_data}")
@@ -1586,6 +1606,12 @@ function(add_latex_targets_internal)
       endif()
       set(bib_compiler ${BIBER_COMPILER})
       set(bib_compiler_flags ${BIBER_COMPILER_ARGS})
+
+      if (LATEX_USE_BIBLATEX_CONFIG)
+        list(APPEND auxiliary_clean_files ${output_dir}/biblatex.cfg)
+        list(APPEND make_dvi_depends ${output_dir}/biblatex.cfg)
+        list(APPEND make_pdf_depends ${output_dir}/biblatex.cfg)
+      endif()
     else()
       set(bib_compiler ${BIBTEX_COMPILER})
       set(bib_compiler_flags ${BIBTEX_COMPILER_ARGS})
@@ -1877,6 +1903,11 @@ function(add_latex_document latex_main_input)
     foreach (bib_file ${LATEX_BIBFILES})
       latex_copy_input_file(${bib_file})
     endforeach (bib_file)
+
+    if (LATEX_USE_BIBLATEX AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/biblatex.cfg)
+      latex_copy_input_file(biblatex.cfg)
+      set(LATEX_USE_BIBLATEX_CONFIG TRUE)
+    endif()
 
     foreach (input ${LATEX_INPUTS})
       latex_copy_input_file(${input})
