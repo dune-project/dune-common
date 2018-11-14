@@ -33,13 +33,19 @@ void ParameterTree::report(std::ostream& stream, const std::string& prefix) cons
   for(; vit!=vend; ++vit)
     stream << vit->first << " = \"" << vit->second << "\"" << std::endl;
 
-  typedef std::map<std::string, ParameterTree>::const_iterator SubIt;
-  SubIt sit = subs_.begin();
-  SubIt send = subs_.end();
+  auto sit = subs_.begin();
+  auto send = subs_.end();
   for(; sit!=send; ++sit)
   {
-    stream << "[ " << prefix + prefix_ + sit->first << " ]" << std::endl;
-    (sit->second).report(stream, prefix);
+    if(sit->second->prefix_ != prefix + prefix_ + sit->first + "."){
+      std::string p = sit->second->prefix_;
+      if(p[p.size()-1] == '.')
+        p = p.substr(0, p.size()-1);
+      stream << "[ " << prefix + prefix_ + sit->first << "=" << p << " ]" << std::endl;
+    }else{
+      stream << "[ " << prefix + prefix_ + sit->first << " ]" << std::endl;
+      (sit->second)->report(stream, prefix);
+    }
   }
 }
 
@@ -98,23 +104,48 @@ bool ParameterTree::hasSub(const std::string& key) const
       return false;
 }
 
-ParameterTree& ParameterTree::sub(const std::string& key)
+ParameterTree& ParameterTree::sub(const std::string& key){
+  return *subPtr(key);
+}
+
+std::shared_ptr<ParameterTree> ParameterTree::subPtr(const std::string& key)
 {
   std::string::size_type dot = key.find(".");
 
   if (dot != std::string::npos)
   {
     ParameterTree& s = sub(key.substr(0,dot));
-    return s.sub(key.substr(dot+1));
+    return s.subPtr(key.substr(dot+1));
   }
   else
   {
     if (values_.count(key) > 0)
       DUNE_THROW(RangeError,"key " << key << " occurs as value and as subtree");
-    if (subs_.count(key) == 0)
+    if (subs_.count(key) == 0){
       subKeys_.push_back(key.substr(0,dot));
-    subs_[key].prefix_ = prefix_ + key + ".";
+      subs_[key] = std::make_shared<ParameterTree>();
+      subs_[key]->prefix_ = prefix_ + key + ".";
+    }
     return subs_[key];
+  }
+}
+
+void ParameterTree::insertSub(const std::string& key, std::shared_ptr<ParameterTree> subTree){
+  std::string::size_type dot = key.find(".");
+
+  if (dot != std::string::npos)
+  {
+    ParameterTree& s = sub(key.substr(0,dot));
+    return s.insertSub(key.substr(dot+1), subTree);
+  }
+  else
+  {
+    if (values_.count(key) > 0)
+      DUNE_THROW(RangeError,"key " << key << " occurs as value and as subtree");
+    if (subs_.count(key) == 0){
+      subKeys_.push_back(key.substr(0,dot));
+      subs_[key] = subTree;
+    }
   }
 }
 
@@ -141,7 +172,7 @@ const ParameterTree& ParameterTree::sub(const std::string& key, bool fail_if_mis
         else
           return empty_;
       }
-    return subs_.find(key)->second;
+    return *(subs_.find(key)->second);
   }
 }
 
