@@ -21,6 +21,7 @@
 #include <vector>
 #include <algorithm>
 #include <bitset>
+#include <memory>
 
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
@@ -109,6 +110,21 @@ namespace Dune {
      * \return reference to substructure
      */
     ParameterTree& sub(const std::string& sub);
+
+    /** \brief get substructure by name as a shared_ptr
+     *
+     * \param sub substructure name
+     * \return shared_ptr to substructure
+     */
+    std::shared_ptr<ParameterTree> subPtr(const std::string& sub);
+
+    /** \brief Inserts a existing ParameterTree as a subTree
+     *
+     * \param key of the substructure to be inserted
+     * \param sub the substructure
+     * \return shared_ptr to substructure
+     */
+    void insertSub(const std::string& key, std::shared_ptr<ParameterTree> sub);
 
 
     /** \brief get const substructure by name
@@ -213,7 +229,7 @@ namespace Dune {
     KeyVector subKeys_;
 
     std::map<std::string, std::string> values_;
-    std::map<std::string, ParameterTree> subs_;
+    std::map<std::string, std::shared_ptr<ParameterTree>> subs_;
 
     static std::string ltrim(const std::string& s);
     static std::string rtrim(const std::string& s);
