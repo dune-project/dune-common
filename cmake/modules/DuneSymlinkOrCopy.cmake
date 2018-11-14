@@ -122,6 +122,11 @@ macro(dune_add_copy_dependency target file_name)
 endmacro(dune_add_copy_dependency)
 
 function(dune_symlink_to_source_tree)
+  # if source and binary dir are equal then the symlink will create serious problems
+  if( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
+    return()
+  endif()
+
   # parse arguments
   include(CMakeParseArguments)
   cmake_parse_arguments(ARG "" "NAME" "" ${ARGN})
@@ -142,14 +147,18 @@ function(dune_symlink_to_source_tree)
     # iterate over all files, extract the directory name and write a symlink in the corresponding build directory
     foreach(f ${files})
       get_filename_component(dir ${f} DIRECTORY)
-      if(NOT "${CMAKE_SOURCE_DIR}/${dir}" MATCHES "${CMAKE_BINARY_DIR}/*")
-        execute_process(COMMAND ${CMAKE_COMMAND} "-E" "create_symlink" "${CMAKE_SOURCE_DIR}/${dir}" "${CMAKE_BINARY_DIR}/${dir}/${ARG_NAME}")
-      endif(NOT "${CMAKE_SOURCE_DIR}/${dir}" MATCHES "${CMAKE_BINARY_DIR}/*")
+      execute_process(COMMAND ${CMAKE_COMMAND} "-E" "create_symlink" "${CMAKE_SOURCE_DIR}/${dir}" "${CMAKE_BINARY_DIR}/${dir}/${ARG_NAME}")
     endforeach()
   endif()
 endfunction(dune_symlink_to_source_tree)
 
 function(dune_symlink_to_source_files)
+
+  # if source and binary dir are equal then the symlink will create serious problems
+  if( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
+    return()
+  endif()
+
   # parse arguments
   include(CMakeParseArguments)
   cmake_parse_arguments(ARG "" "" "FILES" ${ARGN})
