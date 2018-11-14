@@ -122,6 +122,12 @@ macro(dune_add_copy_dependency target file_name)
 endmacro(dune_add_copy_dependency)
 
 function(dune_symlink_to_source_tree)
+  # if source and binary dir are equal then the symlink will create serious problems
+  if( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
+    message(FATAL_ERROR "Source and binary dir are the same, avoid calling dune_symlink_to_source_tree!")
+    return()
+  endif()
+
   # parse arguments
   include(CMakeParseArguments)
   cmake_parse_arguments(ARG "" "NAME" "" ${ARGN})
@@ -150,6 +156,13 @@ function(dune_symlink_to_source_tree)
 endfunction(dune_symlink_to_source_tree)
 
 function(dune_symlink_to_source_files)
+
+  # if source and binary dir are equal then the symlink will create serious problems
+  if( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
+    message(FATAL_ERROR "Source and binary dir are the same, avoid calling dune_symlink_to_source_files!")
+    return()
+  endif()
+
   # parse arguments
   include(CMakeParseArguments)
   cmake_parse_arguments(ARG "" "" "FILES" ${ARGN})
