@@ -9,6 +9,7 @@
 
 #include <cmath>
 #include <complex>
+#include <limits>
 #include <type_traits>
 
 #include <dune/common/typeutilities.hh>
@@ -79,6 +80,60 @@ namespace Dune
     // 0! = 1
     enum { factorial = 1 };
   };
+
+
+  //! calculate the factorial of n as a constexpr
+  // T has to be an integral type
+  template<class T>
+  constexpr inline static T factorial(const T& n) noexcept
+  {
+    static_assert(std::numeric_limits<T>::is_integer, "`factorial(n)` has to be called with an integer type.");
+    T fac = 1;
+    for(T k = 0; k < n; ++k)
+      fac *= k+1;
+    return fac;
+  }
+
+  //! calculate the factorial of n as a constexpr
+  template<class T, T n>
+  constexpr inline static auto factorial (std::integral_constant<T, n>) noexcept
+  {
+    return std::integral_constant<T, factorial(n)>{};
+  }
+
+
+  //! calculate the binomial coefficient n over k as a constexpr
+  // T has to be an integral type
+  template<class T>
+  constexpr inline static T binomial (const T& n, const T& k) noexcept
+  {
+    static_assert(std::numeric_limits<T>::is_integer, "`binomial(n, k)` has to be called with an integer type.");
+
+    if( k < 0 || k > n )
+      return 0;
+
+    if (2*k > n)
+      return binomial(n, n-k);
+
+    T bin = 1;
+    for(auto i = n-k; i < n; ++i)
+      bin *= i+1;
+    return bin / factorial(k);
+  }
+
+  //! calculate the binomial coefficient n over k as a constexpr
+  template<class T, T n, T k>
+  constexpr inline static auto binomial (std::integral_constant<T, n>, std::integral_constant<T, k>) noexcept
+  {
+    return std::integral_constant<T, binomial(n, k)>{};
+  }
+
+  template<class T, T n>
+  constexpr inline static auto binomial (std::integral_constant<T, n>, std::integral_constant<T, n>) noexcept
+  {
+    return std::integral_constant<T, (n >= 0 ? 1 : 0)>{};
+  }
+
 
   //! compute conjugate complex of x
   // conjugate complex does nothing for non-complex types
