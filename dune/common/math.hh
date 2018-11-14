@@ -103,10 +103,9 @@ namespace Dune
 
 
   //! calculate the binomial coefficient n over k as a constexpr
-  // T and U have to be the same integral type
-  template<class T, class U,
-           std::enable_if_t<std::is_same<T, U>::value, int> = 0>
-  constexpr inline static T binomial (const T& n, const U& k) noexcept
+  // T has to be an integral type
+  template<class T>
+  constexpr inline static T binomial (const T& n, const T& k) noexcept
   {
     static_assert(std::numeric_limits<T>::is_integer, "`binomial(n, k)` has to be called with an integer type.");
 
@@ -128,6 +127,13 @@ namespace Dune
   {
     return std::integral_constant<T, binomial(n, k)>{};
   }
+
+  template<class T, T n>
+  constexpr inline static auto binomial (std::integral_constant<T, n>, std::integral_constant<T, n>) noexcept
+  {
+    return std::integral_constant<T, (n >= 0 ? 1 : 0)>{};
+  }
+
 
   //! compute conjugate complex of x
   // conjugate complex does nothing for non-complex types
