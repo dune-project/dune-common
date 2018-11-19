@@ -92,5 +92,37 @@ int main(int argc, char** argv){
       DUNE_THROW(Exception, "The vector has not the same memory");
   }
 
+
+  if(mpihelper.rank() == 0)
+    std::cout << "Test 3: DynamicVector (resize receive)" << std::endl;
+  if(mpihelper.rank() == 0){
+    cc.send(DynamicVector<double>{ 42.0, 43.0, 4711}, 1, 0);
+    DynamicVector<double> vec{ 42.0, 43.0, 4711};
+    const DynamicVector<double>& vec_ref = vec;
+    cc.send(vec_ref, 1, 0);
+    cc.send(std::move(vec), 1, 0);
+  }
+  else if(mpihelper.rank() == 1){
+    auto vec = cc.rrecv(DynamicVector<double>{}, 0, 0);
+    std::cout << "receive: ";
+    for(double d : vec)
+      std::cout << d << ",";
+    std::cout << "\b" << std::endl;
+    DynamicVector<double> vec2(3);
+    cc.recv(vec2, 0, 0);
+    for(double d : vec2)
+      std::cout << d << ",";
+    std::cout << "\b" << std::endl;
+
+    DynamicVector<double> vec3(3);
+    auto d = vec3.container().data();
+    DynamicVector<double> vec4 = cc.recv(std::move(vec3), 0, 0);
+    for(double d : vec4)
+      std::cout << d << ",";
+    std::cout << "\b" << std::endl;
+    if(d != vec4.container().data())
+      DUNE_THROW(Exception, "The vector has not the same memory");
+  }
+
   return 0;
 }

@@ -118,6 +118,10 @@ namespace Dune{
       return std::forward<T>(data_);
     }
 
+    void resize(int size){
+      data_.resize(size);
+    }
+
   protected:
     T data_;
   };
@@ -152,6 +156,10 @@ namespace Dune{
 
     T get(){
       return std::forward<T>(data_);
+    }
+
+    void resize(int size){
+      data_.resize(size);
     }
   protected:
     T data_;

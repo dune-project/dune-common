@@ -168,6 +168,23 @@ namespace Dune
       return std::move(future);
     }
 
+    template<class T>
+    T rrecv(T&& data, int source_rank, int tag, MPI_Status* status = MPI_STATUS_IGNORE) const
+    {
+      MPI_Status _status;
+      MPI_Message _message;
+      auto mpi_data = getMPIData(std::forward<T>(data));
+      static_assert(!mpi_data.static_size, "rrecv work only for non-static-sized types.");
+      if(status == MPI_STATUS_IGNORE)
+        status = &_status;
+      MPI_Mprobe(source_rank, tag, communicator, &_message, status);
+      int size;
+      MPI_Get_count(status, mpi_data.type(), &size);
+      mpi_data.resize(size);
+      MPI_Mrecv(mpi_data.ptr(), mpi_data.size(), mpi_data.type(), &_message, status);
+      return std::forward<T>(mpi_data.get());
+    }
+
     //! @copydoc Communication::sum
     template<typename T>
     T sum (const T& in) const
