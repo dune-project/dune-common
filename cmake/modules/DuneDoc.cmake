@@ -128,37 +128,13 @@ endmacro(create_doc_install)
 
 macro(dune_add_latex_document tex_file)
   set(latex_arguments "${ARGN}")
-  # replace old DEFAULT_SAFEPDF by FORCE_DVI and emit warning
-  # this compatibility code can be removed after Dune 3.0
-  list(FIND latex_arguments DEFAULT_SAFEPDF position_safepdf)
-  if(NOT position_safepdf EQUAL -1)
-    list(REMOVE_AT latex_arguments ${position_safepdf})
-    list(APPEND latex_arguments FORCE_DVI)
-    message(WARNING "dune_add_latex_document's argument DEFAULT_SAFEPDF is deprecated, use FORCE_DVI instead")
-  endif()
-  # replace old DEFAULT_PDF and emit warning
-  # this compatibility code can be removed after Dune 3.0
-  list(FIND latex_arguments DEFAULT_PDF position_defaultpdf)
-  if(NOT position_defaultpdf EQUAL -1)
-    list(REMOVE_AT latex_arguments ${position_defaultpdf})
-    message(WARNING "dune_add_latex_document's argument DEFAULT_PDF is deprecated, just drop it")
-  endif()
-  # remove old argument FATHER_TARGET which is dropped and handled by an automatism now
-  # this compatibility code can be removed after Dune 3.0
-  list(FIND latex_arguments FATHER_TARGET position_fathertarget)
-  if(NOT position_fathertarget EQUAL -1)
-    list(REMOVE_AT latex_arguments ${position_fathertarget})
-    # father has an according argument trailing which is removed, too
-    list(REMOVE_AT latex_arguments ${position_fathertarget})
-    message(WARNING "dune_add_latex_document's argument FATHER_TARGET <target> is deprecated, this is handled automatically now")
-  endif()
 
   if(LATEX_USABLE)
     # add rule to create latex document
     add_latex_document(${tex_file} ${latex_arguments}
       EXCLUDE_FROM_ALL
       EXCLUDE_FROM_DEFAULTS)
-    # add tependency for target doc, but first construct document's target name
+    # add dependency for target doc, but first construct document's target name
     string(REGEX REPLACE "(.+).tex" "\\1" tex_file_base_name ${tex_file})
     list(FIND latex_arguments FORCE_DVI has_forcedvi)
     if(has_forcedvi EQUAL -1)
