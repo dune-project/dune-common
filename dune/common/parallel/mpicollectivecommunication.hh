@@ -133,7 +133,7 @@ namespace Dune
     template<class T>
     int send(const T& data, int dest_rank, int tag) const
     {
-      MPIData<const T&> mpi_data(data);
+      auto mpi_data = getMPIData(data);
       return MPI_Send(mpi_data.ptr(), mpi_data.size(), mpi_data.type(),
                       dest_rank, tag, communicator);
     }
@@ -152,7 +152,7 @@ namespace Dune
     template<class T>
     T recv(T&& data, int source_rank, int tag, MPI_Status* status = MPI_STATUS_IGNORE) const
     {
-      MPIData<T> mpi_data(std::forward<T>(data));
+      auto mpi_data = getMPIData(data);
       MPI_Recv(mpi_data.ptr(), mpi_data.size(), mpi_data.type(),
                       source_rank, tag, communicator, status);
       return std::forward<T>(mpi_data.get());
@@ -380,7 +380,7 @@ namespace Dune
 
     template<typename BinaryFunction, typename Type>
     Type allreduce(Type&& in) const{
-      MPIData<Type> data(std::forward<Type>(in));
+      auto data = getMPIData(std::forward<Type>(in));
       MPI_Allreduce(MPI_IN_PLACE, data.ptr(), data.size(), data.type(),
                     (Generic_MPI_Op<Type, BinaryFunction>::get()),
                     communicator);

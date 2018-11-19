@@ -28,15 +28,28 @@
 
 namespace Dune{
 
+  template<class, class = void>
+  struct MPIData;
+
+// free function for template argument deduction
+  template<class T>
+  MPIData<T> getMPIData(T&& t){
+    return MPIData<T>(std::forward<T>(t));
+  }
+
   // Default implementation for static datatypes
-  template<class T, class Enable = void>
+  template<class T, class Enable>
   struct MPIData
   {
+  private:
+    friend MPIData<T> getMPIData<T>(T&& t);
+  protected:
 
     MPIData(T&& t)
       : data_(std::forward<T>(t))
     {}
 
+  public:
     void* ptr() const {
       return (void*)&data_;
     }
@@ -58,16 +71,13 @@ namespace Dune{
     T data_;
   };
 
-
-  // free function for template argument deduction
-  template<class T>
-  MPIData<T> getMPIData(T&& t){
-    return MPIData<T>(std::forward<T>(t));
-  }
-
   // dummy implementation for void
   template<>
   struct MPIData<void>{
+  protected:
+    MPIData() {}
+
+  public:
     void* ptr(){
       return nullptr;
     }
@@ -88,10 +98,12 @@ namespace Dune{
                        && MPIData<typename std::decay_t<T>::value_type>::static_size)
                       || std::is_same<std::decay_t<T>, std::string>::value>>{
 
+  protected:
+    friend MPIData<T> getMPIData<T>(T&&);
     MPIData(T&& t)
       : data_(std::forward<T>(t))
     {}
-
+  public:
     static constexpr bool static_size = false;
     void* ptr() {
       return (void*) data_.data();
@@ -118,10 +130,12 @@ namespace Dune{
   template<class T>
   struct MPIData<T, std::enable_if_t<is_DynamicVector<std::decay_t<T>>::value>>
   {
+  protected:
+    friend MPIData<T> getMPIData<T>(T&&);
     MPIData(T&& t)
       : data_(std::forward<T>(t))
     {}
-
+  public:
     static constexpr bool static_size = false;
 
     void* ptr() {

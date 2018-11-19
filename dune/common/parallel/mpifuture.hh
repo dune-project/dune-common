@@ -31,15 +31,15 @@ namespace Dune{
     template<class V = R, class U = S>
     MPIFuture(V&& recv_data, U&& send_data, typename std::enable_if_t<!std::is_void<V>::value && !std::is_void<U>::value>* = 0) :
       req_(MPI_REQUEST_NULL)
-      , data_(std::make_unique<MPIData<R>>(std::forward<R>(recv_data)))
-      , send_data_(std::make_unique<MPIData<S>>(std::forward<S>(send_data)))
+      , data_(std::make_unique<MPIData<R>>(getMPIData(std::forward<R>(recv_data))))
+      , send_data_(std::make_unique<MPIData<S>>(getMPIData(std::forward<S>(send_data))))
       , valid_(true)
     {}
 
     template<class V = R>
     MPIFuture(V&& recv_data, typename std::enable_if_t<!std::is_void<V>::value>* = 0) :
       req_(MPI_REQUEST_NULL)
-      , data_(std::make_unique<MPIData<R>>(std::forward<R>(recv_data)))
+      , data_(std::make_unique<MPIData<R>>(getMPIData(std::forward<R>(recv_data))))
       , valid_(true)
     {}
 
