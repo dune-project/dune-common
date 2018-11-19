@@ -93,22 +93,22 @@ namespace Dune
   // generate MPI operations
   //=======================================================
 
-  /*! \brief Specialization of CollectiveCommunication for MPI
+  /*! \brief Specialization of Communication for MPI
         \ingroup ParallelCommunication
    */
   template<>
-  class CollectiveCommunication<MPI_Comm>
+  class Communication<MPI_Comm>
   {
   public:
     //! Instantiation using a MPI communicator
-    CollectiveCommunication (const MPI_Comm& c = MPI_COMM_WORLD)
+    Communication (const MPI_Comm& c = MPI_COMM_WORLD)
       : communicator(c)
     {
       if(communicator!=MPI_COMM_NULL) {
         int initialized = 0;
         MPI_Initialized(&initialized);
         if (!initialized)
-          DUNE_THROW(ParallelError,"You must call MPIHelper::instance(argc,argv) in your main() function before using the MPI CollectiveCommunication!");
+          DUNE_THROW(ParallelError,"You must call MPIHelper::instance(argc,argv) in your main() function before using the MPI Communication!");
         MPI_Comm_rank(communicator,&me);
         MPI_Comm_size(communicator,&procs);
       }else{
@@ -117,19 +117,19 @@ namespace Dune
       }
     }
 
-    //! @copydoc CollectiveCommunication::rank
+    //! @copydoc Communication::rank
     int rank () const
     {
       return me;
     }
 
-    //! @copydoc CollectiveCommunication::size
+    //! @copydoc Communication::size
     int size () const
     {
       return procs;
     }
 
-    //! @copydoc CollectiveCommunication::send
+    //! @copydoc Communication::send
     template<class T>
     int send(const T& data, int dest_rank, int tag) const
     {
@@ -138,7 +138,7 @@ namespace Dune
                       dest_rank, tag, communicator);
     }
 
-    //! @copydoc CollectiveCommunication::isend
+    //! @copydoc Communication::isend
     template<class T>
     MPIFuture<T> isend(T&& data, int dest_rank, int tag) const
     {
@@ -148,7 +148,7 @@ namespace Dune
       return std::move(future);
     }
 
-    //! @copydoc CollectiveCommunication::recv
+    //! @copydoc Communication::recv
     template<class T>
     T recv(T&& data, int source_rank, int tag, MPI_Status* status = MPI_STATUS_IGNORE) const
     {
@@ -158,7 +158,7 @@ namespace Dune
       return std::forward<T>(mpi_data.get());
     }
 
-    //! @copydoc CollectiveCommunication::irecv
+    //! @copydoc Communication::irecv
     template<class T>
     MPIFuture<T> irecv(T&& data, int source_rank, int tag) const
     {
@@ -168,7 +168,7 @@ namespace Dune
       return std::move(future);
     }
 
-    //! @copydoc CollectiveCommunication::sum
+    //! @copydoc Communication::sum
     template<typename T>
     T sum (const T& in) const
     {
@@ -177,14 +177,14 @@ namespace Dune
       return out;
     }
 
-    //! @copydoc CollectiveCommunication::sum
+    //! @copydoc Communication::sum
     template<typename T>
     int sum (T* inout, int len) const
     {
       return allreduce<std::plus<T> >(inout,len);
     }
 
-    //! @copydoc CollectiveCommunication::prod
+    //! @copydoc Communication::prod
     template<typename T>
     T prod (const T& in) const
     {
@@ -193,14 +193,14 @@ namespace Dune
       return out;
     }
 
-    //! @copydoc CollectiveCommunication::prod
+    //! @copydoc Communication::prod
     template<typename T>
     int prod (T* inout, int len) const
     {
       return allreduce<std::multiplies<T> >(inout,len);
     }
 
-    //! @copydoc CollectiveCommunication::min
+    //! @copydoc Communication::min
     template<typename T>
     T min (const T& in) const
     {
@@ -209,7 +209,7 @@ namespace Dune
       return out;
     }
 
-    //! @copydoc CollectiveCommunication::min
+    //! @copydoc Communication::min
     template<typename T>
     int min (T* inout, int len) const
     {
@@ -217,7 +217,7 @@ namespace Dune
     }
 
 
-    //! @copydoc CollectiveCommunication::max
+    //! @copydoc Communication::max
     template<typename T>
     T max (const T& in) const
     {
@@ -226,20 +226,20 @@ namespace Dune
       return out;
     }
 
-    //! @copydoc CollectiveCommunication::max
+    //! @copydoc Communication::max
     template<typename T>
     int max (T* inout, int len) const
     {
       return allreduce<Max<T> >(inout,len);
     }
 
-    //! @copydoc CollectiveCommunication::barrier
+    //! @copydoc Communication::barrier
     int barrier () const
     {
       return MPI_Barrier(communicator);
     }
 
-    //! @copydoc CollectiveCommunication::ibarrier
+    //! @copydoc Communication::ibarrier
     MPIFuture<void> ibarrier () const
     {
       MPIFuture<void> future(true);
@@ -248,14 +248,14 @@ namespace Dune
     }
 
 
-    //! @copydoc CollectiveCommunication::broadcast
+    //! @copydoc Communication::broadcast
     template<typename T>
     int broadcast (T* inout, int len, int root) const
     {
       return MPI_Bcast(inout,len,MPITraits<T>::getType(),root,communicator);
     }
 
-    //! @copydoc CollectiveCommunication::ibroadcast
+    //! @copydoc Communication::ibroadcast
     template<class T>
     MPIFuture<T> ibroadcast(T&& data, int root) const{
       MPIFuture<T> future(std::forward<T>(data));
@@ -268,7 +268,7 @@ namespace Dune
       return std::move(future);
     }
 
-    //! @copydoc CollectiveCommunication::gather()
+    //! @copydoc Communication::gather()
     //! @note out must have space for P*len elements
     template<typename T>
     int gather (const T* in, T* out, int len, int root) const
@@ -278,7 +278,7 @@ namespace Dune
                         root,communicator);
     }
 
-    //! @copydoc CollectiveCommunication::igather
+    //! @copydoc Communication::igather
     template<class TIN, class TOUT = std::vector<TIN>>
     MPIFuture<TOUT, TIN> igather(TIN&& data_in, TOUT&& data_out, int root){
       MPIFuture<TOUT, TIN> future(std::forward<TOUT>(data_out), std::forward<TIN>(data_in));
@@ -290,7 +290,7 @@ namespace Dune
       return std::move(future);
     }
 
-    //! @copydoc CollectiveCommunication::gatherv()
+    //! @copydoc Communication::gatherv()
     template<typename T>
     int gatherv (const T* in, int sendlen, T* out, int* recvlen, int* displ, int root) const
     {
@@ -299,7 +299,7 @@ namespace Dune
                          root,communicator);
     }
 
-    //! @copydoc CollectiveCommunication::scatter()
+    //! @copydoc Communication::scatter()
     //! @note out must have space for P*len elements
     template<typename T>
     int scatter (const T* send, T* recv, int len, int root) const
@@ -309,7 +309,7 @@ namespace Dune
                          root,communicator);
     }
 
-    //! @copydoc CollectiveCommunication::iscatter
+    //! @copydoc Communication::iscatter
     template<class TIN, class TOUT = TIN>
     MPIFuture<TOUT, TIN> iscatter(TIN&& data_in, TOUT&& data_out, int root) const
     {
@@ -321,7 +321,7 @@ namespace Dune
       return std::move(future);
     }
 
-    //! @copydoc CollectiveCommunication::scatterv()
+    //! @copydoc Communication::scatterv()
     template<typename T>
     int scatterv (const T* send, int* sendlen, int* displ, T* recv, int recvlen, int root) const
     {
@@ -336,7 +336,7 @@ namespace Dune
       return communicator;
     }
 
-    //! @copydoc CollectiveCommunication::allgather()
+    //! @copydoc Communication::allgather()
     template<typename T, typename T1>
     int allgather(const T* sbuf, int count, T1* rbuf) const
     {
@@ -345,7 +345,7 @@ namespace Dune
                            communicator);
     }
 
-    //! @copydoc CollectiveCommunication::iallgather
+    //! @copydoc Communication::iallgather
     template<class TIN, class TOUT = TIN>
     MPIFuture<TOUT, TIN> iallgather(TIN&& data_in, TOUT&& data_out) const
     {
@@ -358,7 +358,7 @@ namespace Dune
       return std::move(future);
     }
 
-    //! @copydoc CollectiveCommunication::allgatherv()
+    //! @copydoc Communication::allgatherv()
     template<typename T>
     int allgatherv (const T* in, int sendlen, T* out, int* recvlen, int* displ) const
     {
@@ -367,7 +367,7 @@ namespace Dune
                             communicator);
     }
 
-    //! @copydoc CollectiveCommunication::allreduce(Type* inout,int len) const
+    //! @copydoc Communication::allreduce(Type* inout,int len) const
     template<typename BinaryFunction, typename Type>
     int allreduce(Type* inout, int len) const
     {
@@ -387,7 +387,7 @@ namespace Dune
       return data.get();
     }
 
-    //! @copydoc CollectiveCommunication::iallreduce
+    //! @copydoc Communication::iallreduce
     template<class BinaryFunction, class TIN, class TOUT = TIN>
     MPIFuture<TOUT, TIN> iallreduce(TIN&& data_in, TOUT&& data_out) const {
       MPIFuture<TOUT, TIN> future(std::forward<TOUT>(data_out), std::forward<TIN>(data_in));
@@ -400,7 +400,7 @@ namespace Dune
       return std::move(future);
     }
 
-    //! @copydoc CollectiveCommunication::iallreduce
+    //! @copydoc Communication::iallreduce
     template<class BinaryFunction, class T>
     MPIFuture<T> iallreduce(T&& data) const{
       MPIFuture<T> future(std::forward<T>(data));
@@ -411,7 +411,7 @@ namespace Dune
       return std::move(future);
     }
 
-    //! @copydoc CollectiveCommunication::allreduce(Type* in,Type* out,int len) const
+    //! @copydoc Communication::allreduce(Type* in,Type* out,int len) const
     template<typename BinaryFunction, typename Type>
     int allreduce(const Type* in, Type* out, int len) const
     {

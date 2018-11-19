@@ -46,13 +46,13 @@ namespace Dune
     struct GenericGuardCommunicator
       : public GuardCommunicator
     {};
-    // specialization for CollectiveCommunication
+    // specialization for Communication
     template <class T>
-    struct GenericGuardCommunicator< CollectiveCommunication<T> >
+    struct GenericGuardCommunicator< Communication<T> >
       : public GuardCommunicator
     {
-      const CollectiveCommunication<T> comm;
-      GenericGuardCommunicator(const CollectiveCommunication<T> & c) :
+      const Communication<T> comm;
+      GenericGuardCommunicator(const Communication<T> & c) :
         comm(c) {}
       int rank() override { return comm.rank(); };
       int size() override { return comm.size(); };
@@ -63,11 +63,11 @@ namespace Dune
     // specialization for MPI_Comm
     template <>
     struct GenericGuardCommunicator<MPI_Comm>
-      : public GenericGuardCommunicator< CollectiveCommunication<MPI_Comm> >
+      : public GenericGuardCommunicator< Communication<MPI_Comm> >
     {
       GenericGuardCommunicator(const MPI_Comm & c) :
-        GenericGuardCommunicator< CollectiveCommunication<MPI_Comm> >(
-          CollectiveCommunication<MPI_Comm>(c)) {}
+        GenericGuardCommunicator< Communication<MPI_Comm> >(
+          Communication<MPI_Comm>(c)) {}
     };
 #endif
   }   // anonymous namespace
@@ -113,7 +113,7 @@ namespace Dune
 
      @note You can initialize the MPIGuard from different types of communication objects:
      - MPIHelper
-     - CollectiveCommunication
+     - Communication
      - MPI_Comm
    */
   class MPIGuard
@@ -131,7 +131,7 @@ namespace Dune
      */
     MPIGuard (bool active=true) :
       comm_(GuardCommunicator::create(
-              MPIHelper::getCollectiveCommunication())),
+              MPIHelper::getCommunication())),
       active_(active)
     {}
 
@@ -142,7 +142,7 @@ namespace Dune
      */
     MPIGuard (MPIHelper & m, bool active=true) :
       comm_(GuardCommunicator::create(
-              m.getCollectiveCommunication())),
+              m.getCommunication())),
       active_(active)
     {}
 
@@ -150,7 +150,7 @@ namespace Dune
 
        Supported types for the communication object are:
        - MPIHelper
-       - CollectiveCommunication
+       - Communication
        - MPI_Comm
 
        @param comm reference to a communication object

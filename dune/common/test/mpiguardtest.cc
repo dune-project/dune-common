@@ -27,7 +27,7 @@ int main(int argc, char** argv)
               << e.what() << std::endl;
   }
 
-  mpihelper.getCollectiveCommunication().barrier();
+  mpihelper.getCommunication().barrier();
   if (mpihelper.rank() == 0)
     std::cout << "---- guard(MPI_COMM_WORLD)" << std::endl;
   try
@@ -50,7 +50,7 @@ int main(int argc, char** argv)
               << e.what() << std::endl;
   }
 
-  mpihelper.getCollectiveCommunication().barrier();
+  mpihelper.getCommunication().barrier();
   if (mpihelper.rank() == 0)
     std::cout << "---- guard(MPIHelper)" << std::endl;
   try
@@ -70,7 +70,7 @@ int main(int argc, char** argv)
   }
 
 
-  mpihelper.getCollectiveCommunication().barrier();
+  mpihelper.getCommunication().barrier();
   if (mpihelper.rank() == 0)
     std::cout << "---- manual error" << std::endl;
   try
@@ -87,7 +87,7 @@ int main(int argc, char** argv)
               << e.what() << std::endl;
   }
 
-  mpihelper.getCollectiveCommunication().barrier();
+  mpihelper.getCommunication().barrier();
   if (mpihelper.rank() == 0)
     std::cout << "---- done" << std::endl;
 }

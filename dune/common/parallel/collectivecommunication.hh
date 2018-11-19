@@ -26,8 +26,8 @@
 
    Dune offers an abstraction to the basic methods of parallel
    communication. It allows one to switch parallel features on and off,
-   without changing the code. This is done using either CollectiveCommunication
-   or MPICollectiveCommunication.
+   without changing the code. This is done using either Communication
+   or MPICommunication.
 
  */
 
@@ -44,16 +44,15 @@ namespace Dune
   /* define some type that definitely differs from MPI_Comm */
   struct No_Comm {};
 
-
   /*! @brief Collective communication interface and sequential default implementation
 
-     CollectiveCommunication offers an abstraction to the basic methods
+     Communication offers an abstraction to the basic methods
      of parallel communication, following the message-passing
      paradigm. It allows one to switch parallel features on and off, without
      changing the code. Currently only MPI and sequential code are
      supported.
 
-     A CollectiveCommunication object is returned by all grids (also
+     A Communication object is returned by all grids (also
      the sequential ones) in order to allow code to be written in
      a transparent way for sequential and parallel grids.
 
@@ -63,7 +62,7 @@ namespace Dune
 
      In specializations one can implement the real thing using appropriate
      communication functions, e.g. there exists an implementation using
-     the Message Passing %Interface (MPI), see Dune::CollectiveCommunication<MPI_Comm>.
+     the Message Passing %Interface (MPI), see Dune::Communication<MPI_Comm>.
 
      Moreover, the communication subsystem used by an implementation
      is not visible in the interface, i.e. Dune grid implementations
@@ -71,25 +70,25 @@ namespace Dune
 
      \tparam Communicator The communicator type used by your message-passing implementation.
        For MPI this will be MPI_Comm.  For sequential codes there is the dummy communicator No_Comm.
-       It is assumed that if you want to specialize the CollectiveCommunication class for a
+       It is assumed that if you want to specialize the Communication class for a
        message-passing system other than MPI, that message-passing system will have something
        equivalent to MPI communicators.
 
      \ingroup ParallelCommunication
    */
   template<typename Communicator>
-  class CollectiveCommunication
+  class Communication
   {
   public:
     //! Construct default object
-    CollectiveCommunication()
+    Communication()
     {}
 
     /** \brief Constructor with a given communicator
      *
      * As this is implementation for the sequential setting, the communicator is a dummy and simply discarded.
      */
-    CollectiveCommunication (const Communicator&)
+    Communication (const Communicator&)
     {}
 
     //! Return rank, is between 0 and size()-1
@@ -509,6 +508,9 @@ namespace Dune
     }
 
   };
+
+  template<class T>
+  using CollectiveCommunication [[deprecated("CollectiveCommunication is deprecated. Use Communication instead.")]] = Communication<T>;
 }
 
 #endif

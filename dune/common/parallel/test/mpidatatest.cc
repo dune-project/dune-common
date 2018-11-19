@@ -13,7 +13,7 @@ using namespace Dune;
 
 int main(int argc, char** argv){
   Dune::MPIHelper & mpihelper = Dune::MPIHelper::instance(argc, argv);
-  auto cc = mpihelper.getCollectiveCommunication();
+  auto cc = mpihelper.getCommunication();
 
   if(mpihelper.rank() == 0)
     std::cout << "Test 1: static data (int)" << std::endl;

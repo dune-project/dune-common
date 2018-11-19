@@ -176,7 +176,7 @@ double runNonblockingWait(CC& cc){
   return cc.sum(watch.elapsed())/iterations/cc.size();
 }
 
-std::tuple<double, double> runNonblockingSleep(decltype(Dune::MPIHelper::getCollectiveCommunication())& cc, std::chrono::duration<double> wait_time){
+std::tuple<double, double> runNonblockingSleep(decltype(Dune::MPIHelper::getCommunication())& cc, std::chrono::duration<double> wait_time){
   std::vector<char> answer(1, 42);
   Dune::Timer watch, watch_work;
   int iterations = options.get("iterations", 1000);
@@ -195,7 +195,7 @@ std::tuple<double, double> runNonblockingSleep(decltype(Dune::MPIHelper::getColl
                                     cc.sum(watch_work.stop())/iterations/cc.size());
 }
 
-std::tuple<double, double> runNonblockingActive(decltype(Dune::MPIHelper::getCollectiveCommunication())& cc, std::chrono::duration<double> wait_time){
+std::tuple<double, double> runNonblockingActive(decltype(Dune::MPIHelper::getCommunication())& cc, std::chrono::duration<double> wait_time){
   std::vector<char> answer(1, 42);
   int iterations = options.get("iterations", 1000);
   Dune::Timer watch, watch_work;
@@ -261,13 +261,13 @@ void printHeader(){
 }
 
 void run(int s){
-  auto comm_world = Dune::MPIHelper::getCollectiveCommunication();
+  auto comm_world = Dune::MPIHelper::getCommunication();
   Dune::MPIHelper::MPICommunicator comm;
   #if HAVE_MPI
   MPI_Comm_split(comm_world, comm_world.rank() < s, comm_world.rank(), &comm);
   #endif
   if(comm_world.rank() < s){
-    Dune::CollectiveCommunication<Dune::MPIHelper::MPICommunicator> cc(comm);
+    Dune::Communication<Dune::MPIHelper::MPICommunicator> cc(comm);
     std::cout << std::setw(10) << cc.size()
               << std::setw(12) << options.get("iterations", 1000) << std::flush;
 

@@ -21,7 +21,7 @@ namespace Dune{
     std::unique_ptr<MPIData<R>> data_;
     std::unique_ptr<MPIData<S>> send_data_;
     bool valid_;
-    friend class CollectiveCommunication<MPI_Comm>;
+    friend class Communication<MPI_Comm>;
   public:
     MPIFuture(bool valid = false) :
       req_(MPI_REQUEST_NULL),

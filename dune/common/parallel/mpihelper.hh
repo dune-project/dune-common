@@ -107,10 +107,16 @@ namespace Dune
 
 
 
-    static CollectiveCommunication<MPICommunicator>
-    getCollectiveCommunication()
+    [[deprecated("getCollectionCommunication is deprecated. Use getCommunication instead.")]]
+    static Communication<MPICommunicator> getCollectiveCommunication()
     {
-      return CollectiveCommunication<MPICommunicator>(getCommunicator());
+      return Communication<MPICommunicator>(getCommunicator());
+    }
+
+    static Communication<MPICommunicator>
+    getCommunication()
+    {
+      return Communication<MPICommunicator>(getCommunicator());
     }
 
     /**
@@ -196,10 +202,17 @@ namespace Dune
       return MPI_COMM_SELF;
     }
 
-    static CollectiveCommunication<MPICommunicator>
+    [[deprecated("getCollectionCommunication is deprecated. Use getCommunication instead.")]]
+    static Communication<MPICommunicator>
     getCollectiveCommunication()
     {
-      return CollectiveCommunication<MPICommunicator>(getCommunicator());
+      return Communication<MPICommunicator>(getCommunicator());
+    }
+
+    static Communication<MPICommunicator>
+    getCommunication()
+    {
+      return Communication<MPICommunicator>(getCommunicator());
     }
     /**
      * @brief Get the singleton instance of the helper.

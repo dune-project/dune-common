@@ -12,7 +12,7 @@
 
 int main(int argc, char** argv){
   Dune::MPIHelper& helper = Dune::MPIHelper::instance(argc, argv);
-  auto comm = helper.getCollectiveCommunication();
+  auto comm = helper.getCommunication();
 
   Dune::FutureBatch<std::vector<int>> batch; // accumulate 3 Futures
   auto f1 = batch.batch([](int t){return t+1;});

@@ -42,7 +42,7 @@ int main(int argc, char **argv)
     std::cout<<"Reordered lcoal indices:"<<std::endl;
 
   // Wait for all processes
-  helper.getCollectiveCommunication().barrier();
+  helper.getCommunication().barrier();
 
   std::cout<<indexSet<<std::endl;
   // Assign new local indices

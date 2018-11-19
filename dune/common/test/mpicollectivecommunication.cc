@@ -18,7 +18,7 @@ int main(int argc, char** argv)
 
   {
     typedef Helper::MPICommunicator MPIComm;
-    Dune::CollectiveCommunication<MPIComm> comm(mpi.getCommunicator());
+    Dune::Communication<MPIComm> comm(mpi.getCommunicator());
 
     enum { length = 5 };
     double values[5];

@@ -8,7 +8,7 @@
 int main(int argc, char** argv){
   auto& mpihelper = Dune::MPIHelper::instance(argc, argv);
 
-  auto cc = mpihelper.getCollectiveCommunication();
+  auto cc = mpihelper.getCommunication();
 
   // p2p
   if(mpihelper.size() > 1){
