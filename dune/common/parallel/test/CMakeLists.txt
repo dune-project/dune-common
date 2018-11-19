@@ -43,3 +43,9 @@ dune_add_test(SOURCES futurebatchtest.cc
               MPI_RANKS 1 2 4
               TIMEOUT 300
               LABELS quick)
+
+dune_add_test(SOURCES mpipacktest.cc
+              LINK_LIBRARIES dunecommon
+              MPI_RANKS 2
+              TIMEOUT 300
+              LABELS quick)
