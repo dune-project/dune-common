@@ -43,6 +43,7 @@ install(FILES
   FindUMFPack.cmake
   Headercheck.cmake
   LanguageSupport.cmake
+  latexmkrc.cmake
   OverloadCompilerFlags.cmake
   UseInkscape.cmake
   UseLATEX.cmake
