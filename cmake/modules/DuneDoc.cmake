@@ -62,6 +62,9 @@
 #       and https://gitlab.dune-project.org/core/dune-common/issues/36
 #
 
+include(UseLatexMk)
+
+# deprecated part for UseLATEX.cmake
 find_package(LATEX)
 set_package_properties("LATEX" PROPERTIES
   DESCRIPTION "Type setting system"
