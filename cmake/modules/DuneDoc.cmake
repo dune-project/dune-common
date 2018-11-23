@@ -101,6 +101,7 @@ if(NOT IMAGEMAGICK_CONVERT)
 endif()
 if(LATEX_USABLE)
   include(UseLATEX)
+  include(UseLatexMk)
   set_package_properties("UnixCommands" PROPERTIES
     DESCRIPTION "Some common Unix commands"
     PURPOSE "To generate the documentation with LaTeX")
