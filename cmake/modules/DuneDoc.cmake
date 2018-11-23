@@ -23,9 +23,9 @@
 #
 #    .. note::
 #
-#       This function will be rewritten for Dune 3.0 as it currently
-#       shadows all options provided by the base implementation
-#       :code:`add_latex_document`.
+#       This function is deprecated and will be removed after
+#       Dune 2.7. Please use add_latex_target from UseLatexMk.cmake
+#       instead.
 #
 # .. cmake_function:: create_doc_install
 #
@@ -127,11 +127,14 @@ endmacro(create_doc_install)
 
 
 macro(dune_add_latex_document tex_file)
+  message(AUTHOR_WARNING
+          "This function is deprecated and will be removed after Dune 2.7. Use add_latex_target from UseLatexMk.cmkae instead!")
+
   set(latex_arguments "${ARGN}")
 
   if(LATEX_USABLE)
     # add rule to create latex document
-    add_latex_document(${tex_file} ${latex_arguments}
+    add_latex_document_deprecated(${tex_file} ${latex_arguments}
       EXCLUDE_FROM_ALL
       EXCLUDE_FROM_DEFAULTS)
     # add dependency for target doc, but first construct document's target name
