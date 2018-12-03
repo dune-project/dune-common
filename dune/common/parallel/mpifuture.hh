@@ -70,6 +70,7 @@ namespace Dune{
       std::swap(data_, f.data_);
       std::swap(send_data_, f.send_data_);
       std::swap(valid_, f.valid_);
+      return *this;
     }
 
     bool valid() const override{
