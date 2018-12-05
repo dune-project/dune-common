@@ -14,6 +14,7 @@ int main()
 {
   Dune::TestSuite test;
 
+  // Check is_callable
   {
     auto f = [](int /*i*/) { return 0; };
     using F = decltype(f);
@@ -69,6 +70,18 @@ int main()
       << "Dune::Std::is_callable accepts r-value reference from l-value reference";
     test.check(Dune::Std::is_callable<F(int&&)>() == true)
       << "Dune::Std::is_callable does not accept r-value reference from r-value reference";
+  }
+
+  // Check negation
+  {
+    test.check(Dune::Std::negation<std::true_type>::value == false)
+      << "Dune::Std::negation of std::true_type is not false";
+    test.check(Dune::Std::negation<std::false_type>::value == true)
+      << "Dune::Std::negation of std::false_type is not true";
+    test.check(Dune::Std::negation<Dune::Std::negation<std::true_type>>::value == true)
+      << "Double Dune::Std::negation is not the identity";
+    test.check(Dune::Std::negation<Dune::Std::negation<std::false_type>>::value == false)
+      << "Double Dune::Std::negation is not the identity";
   }
 
   return test.exit();
