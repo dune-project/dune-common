@@ -489,6 +489,20 @@ namespace Std
     : std::conditional_t< static_cast< bool >( B1::value ), B1, disjunction< Bn... > >
   {};
 
+  // negation
+  // --------
+
+  /**
+   * \brief forms the logical negation of the type traits B...
+   *
+   * \note This functionality is part of the C++17 standard.
+   *
+   * \ingroup CxxUtilities
+   **/
+  template<class B>
+  struct negation : public bool_constant<!static_cast<bool>(B::value)>
+  {};
+
 } // namespace Std
 
 } // namespace Dune
