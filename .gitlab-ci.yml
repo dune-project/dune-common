@@ -1,6 +1,7 @@
 ---
-variables:
-  DUNECI_TEST_LABELS: quick
+include:
+  - "https://gitlab.dune-project.org/core/ci-config/raw/master/config/common/master.yml"
+  - "https://gitlab.dune-project.org/core/ci-config/raw/master/jobs/common/master.yml"
 
 before_script:
   - . /duneci/bin/duneci-init-job
@@ -18,49 +19,3 @@ debian:10 gcc-7-14--expensive:
   # allowed to fail to e.g. do no hold up a merge when a runner supporting avx
   # is unavailable
   allow_failure: true
-
-debian:10 gcc-8-noassert-17:
-  image: registry.dune-project.org/docker/ci/debian:10
-  script: duneci-standard-test
-  variables:
-    DUNECI_TOOLCHAIN: gcc-8-noassert-17
-    DUNECI_CMAKE_FLAGS: "-DDUNE_PYTHON_VIRTUALENV_SETUP=1"
-  tags: [duneci]
-
-debian:10 clang-7-libcpp-17:
-  image: registry.dune-project.org/docker/ci/debian:10
-  script: duneci-standard-test
-  variables:
-    DUNECI_TOOLCHAIN: clang-7-libcpp-17
-  tags: [duneci]
-
-debian:9 gcc-6-14:
-  image: registry.dune-project.org/docker/ci/debian:9
-  script: duneci-standard-test
-  variables:
-    DUNECI_TOOLCHAIN: gcc-6-14
-    DUNECI_CMAKE_FLAGS: "-DDUNE_PYTHON_VIRTUALENV_SETUP=1"
-  tags: [duneci]
-
-debian:9 clang-3.8-14:
-  image: registry.dune-project.org/docker/ci/debian:9
-  script: duneci-standard-test
-  variables:
-    DUNECI_TOOLCHAIN: clang-3.8-14
-  tags: [duneci]
-
-ubuntu:16.04 gcc-5-14:
-  image: registry.dune-project.org/docker/ci/ubuntu:16.04
-  script: duneci-standard-test
-  variables:
-    DUNECI_TOOLCHAIN: gcc-5-14
-    DUNECI_CMAKE_FLAGS: "-DDUNE_PYTHON_VIRTUALENV_SETUP=1"
-  tags: [duneci]
-
-ubuntu:18.04 clang-6-17:
-  image: registry.dune-project.org/docker/ci/ubuntu:18.04
-  script: duneci-standard-test
-  variables:
-    DUNECI_TOOLCHAIN: clang-6-17
-    DUNECI_CMAKE_FLAGS: "-DDUNE_PYTHON_VIRTUALENV_SETUP=1"
-  tags: [duneci]
