@@ -1,6 +1,6 @@
 ---
 include:
-  - "https://gitlab.dune-project.org/core/ci-config/raw/config/common/releases/2.6.yml"
+  - "https://gitlab.dune-project.org/core/ci-config/raw/master/config/common/releases/2.6.yml"
   - "https://gitlab.dune-project.org/core/ci-config/raw/master/jobs/common/releases/2.6.yml"
 
 before_script:
