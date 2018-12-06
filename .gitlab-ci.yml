@@ -6,6 +6,9 @@ include:
 before_script:
   - . /duneci/bin/duneci-init-job
 
+variables:
+  DUNECI_TEST_LABELS: quick
+
 debian:10 gcc-7-14--expensive:
   # This image has Vc
   image: registry.dune-project.org/docker/ci/debian:10
