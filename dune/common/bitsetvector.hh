@@ -378,7 +378,10 @@ namespace Dune {
 
     //! Clears every bit.
     BitSetVectorReference& reset()
-    {}
+    {
+      *this = false;
+      return *this;
+    }
 
     //! Sets bit n if val is nonzero, and clears bit n if val is zero.
     BitSetVectorReference& set(size_type n, int val = 1)
