@@ -62,6 +62,9 @@
 #       and https://gitlab.dune-project.org/core/dune-common/issues/36
 #
 
+include(UseLatexMk)
+
+# deprecated part for UseLATEX.cmake
 find_package(LATEX)
 set_package_properties("LATEX" PROPERTIES
   DESCRIPTION "Type setting system"
@@ -98,7 +101,6 @@ if(NOT IMAGEMAGICK_CONVERT)
 endif()
 if(LATEX_USABLE)
   include(UseLATEX)
-  include(UseLatexMk)
   set_package_properties("UnixCommands" PROPERTIES
     DESCRIPTION "Some common Unix commands"
     PURPOSE "To generate the documentation with LaTeX")
