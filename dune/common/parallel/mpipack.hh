@@ -70,7 +70,9 @@ namespace Dune {
      * @throw MPIError
      */
     template<class T>
-    std::enable_if_t<MPIData<T>::static_size, void> unpack(T& data){
+    auto /*void*/ unpack(T& data)
+      -> std::enable_if_t<decltype(getMPIData(data))::static_size, void>
+    {
       auto mpidata = getMPIData(data);
       MPI_Unpack(_buffer.data(), _buffer.size(), &_position,
                  mpidata.ptr(), mpidata.size(),
@@ -82,7 +84,9 @@ namespace Dune {
      * @throw MPIError
      */
     template<class T>
-    std::enable_if_t<!MPIData<T>::static_size, void> unpack(T& data){
+    auto /*void*/ unpack(T& data)
+      -> std::enable_if_t<!decltype(getMPIData(data))::static_size, void>
+    {
       auto mpidata = getMPIData(data);
       int size = 0;
       MPI_Unpack(_buffer.data(), _buffer.size(), &_position,
