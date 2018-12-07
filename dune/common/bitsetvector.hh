@@ -124,6 +124,7 @@ namespace Dune {
       return getBit(n);
     }
 
+    //! Return reference to the `i`-th bit
     const_reference operator[](size_type i) const
     {
       return getBit(i);
@@ -359,7 +360,7 @@ namespace Dune {
       return *this;
     }
 
-    // Sets every bit.
+    //! Sets every bit.
     BitSetVectorReference& set()
     {
       for (size_type i=0; i<block_size; i++)
@@ -403,6 +404,7 @@ namespace Dune {
     using BitSetVectorConstReference::test;
     using BitSetVectorConstReference::operator[];
 
+    //! Return reference to the `i`-th bit
     reference operator[](size_type i)
     {
       return getBit(i);
