@@ -22,7 +22,7 @@
 #
 #   dune_add_copy_dependency(target file_name)
 #
-# This macro adds a copy-dependecy to a target
+# This macro adds a copy-dependency to a target
 # The file_name is the name of a file that exists
 # in the source tree. This file will be copied
 # to the build tree.
