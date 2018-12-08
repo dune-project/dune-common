@@ -22,7 +22,7 @@
 #
 #   dune_add_copy_dependency(target file_name)
 #
-# This macro adds a copy-dependecy to a target
+# This macro adds a copy-dependency to a target
 # The file_name is the name of a file that exists
 # in the source tree. This file will be copied
 # to the build tree.
@@ -92,9 +92,9 @@
 #       :multi:
 #       :required:
 #
-#       The list of files to symlink.
+#       The list of files to symlink
 #
-#    Create symlinks in the current build directory, which
+#    Create symlinks in the current build directory that
 #    point to files in the source directory. This is usually
 #    used for grid and ini files and the like. On Windows systems,
 #    a warning is issued and copying is used as a fallback to
