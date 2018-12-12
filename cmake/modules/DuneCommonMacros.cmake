@@ -36,7 +36,13 @@ include(FindMProtect)
 find_package(TBB OPTIONAL_COMPONENTS cpf allocator)
 
 # try to find the Vc library
-find_package(Vc NO_MODULE)
+set(MINIMUM_VC_VERSION)
+if((CMAKE_CXX_COMPILER_ID STREQUAL Clang) AND
+    (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 7))
+  message("Raising minimum acceptable Vc version to 1.4.1 due to use of Clang 7 (or later), see https://gitlab.dune-project.org/core/dune-common/issues/132")
+  set(MINIMUM_VC_VERSION 1.4.1)
+endif()
+find_package(Vc ${MINIMUM_VC_VERSION} NO_MODULE)
 include(AddVcFlags)
 # text for feature summary
 set_package_properties("Vc" PROPERTIES
