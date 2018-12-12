@@ -3,6 +3,7 @@
 #ifndef DUNE_DEBUGALIGN_HH
 #define DUNE_DEBUGALIGN_HH
 
+#include <algorithm>
 #include <cmath>
 #include <complex>
 #include <cstddef>
@@ -375,6 +376,60 @@ namespace Dune {
     DUNE_UNARY_FUNC(real);
 
 #undef DUNE_UNARY_FUNC
+
+    // We need to overload min() and max() since they require types to be
+    // LessThanComparable, which requires `a<b` to be "convertible to bool".
+    // That wording seems to be a leftover from C++03, and today is probably
+    // equivalent to "implicitly convertible".  There is also issue 2114
+    // <https://cplusplus.github.io/LWG/issue2114> in the standard (still open
+    // as of 2018-07-06), which strives to require both "implicitly" and
+    // "contextually" convertible -- plus a few other things.
+    //
+    // We do not want our debug type to automatically decay to the underlying
+    // type, so we do not want to make the conversion non-explicit.  So the
+    // only option left is to overload min() and max().
+
+    template<class T, std::size_t align>
+    T max(const AlignedNumber<T, align> &a, const AlignedNumber<T, align> &b)
+    {
+      using std::max;
+      return max(T(a), T(b));
+    }
+
+    template<class T, std::size_t align>
+    T max(const T &a, const AlignedNumber<T, align> &b)
+    {
+      using std::max;
+      return max(a, T(b));
+    }
+
+    template<class T, std::size_t align>
+    T max(const AlignedNumber<T, align> &a, const T &b)
+    {
+      using std::max;
+      return max(T(a), b);
+    }
+
+    template<class T, std::size_t align>
+    T min(const AlignedNumber<T, align> &a, const AlignedNumber<T, align> &b)
+    {
+      using std::min;
+      return min(T(a), T(b));
+    }
+
+    template<class T, std::size_t align>
+    T min(const T &a, const AlignedNumber<T, align> &b)
+    {
+      using std::min;
+      return min(a, T(b));
+    }
+
+    template<class T, std::size_t align>
+    T min(const AlignedNumber<T, align> &a, const T &b)
+    {
+      using std::min;
+      return min(T(a), b);
+    }
 
   } // namespace AlignedNumberImpl
 
