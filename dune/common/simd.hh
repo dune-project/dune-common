@@ -222,12 +222,12 @@ namespace Dune
 #if HAVE_VC
   template<typename T, typename A>
   struct SimdIndexTypeTraits<Vc::Vector<T, A> > {
-    using type = typename Vc::Vector<T, A>::index_type;
+    using type = typename Vc::Vector<T, A>::IndexType;
   };
 
   template<typename T, std::size_t n, typename V>
   struct SimdIndexTypeTraits<Vc::SimdArray<T, n, V> > {
-    using type = typename Vc::SimdArray<T, n, V>::index_type;
+    using type = typename Vc::SimdArray<T, n, V>::IndexType;
   };
 #endif // HAVE_VC
 
