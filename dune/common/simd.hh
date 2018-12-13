@@ -19,6 +19,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <ios>
 #include <type_traits>
 #include <utility>
 
@@ -471,6 +472,45 @@ namespace Dune
     v2(mask) = tmp;
   }
 #endif // HAVE_VC
+
+  namespace Impl {
+
+    template<class T>
+    class SimdInserter {
+      T value_;
+
+    public:
+      SimdInserter(T value) : value_(value) {}
+
+      template<class Stream,
+               class = std::enable_if_t<std::is_base_of<std::ios_base,
+                                                        Stream>::value> >
+      friend Stream& operator<<(Stream &out, const SimdInserter &ins)
+      {
+        if(lanes(ins.value_) == 1)
+        {
+          out <<  SimdScalar<T>(lane(0, ins.value_));
+        }
+        else {
+          const char *sep = "<";
+          for(auto l : range(lanes(ins.value_)))
+          {
+            out << sep << SimdScalar<T>(lane(l, ins.value_));
+            sep = ", ";
+          }
+          out << '>';
+        }
+        return out;
+      }
+    };
+  }
+
+  // stopgap measure for dune-2.6.  For later dune versions, use Simd::io()
+  template<class V>
+  auto simdIO(const V &v)
+  {
+    return Impl::SimdInserter<V>{v};
+  }
 
 } // end namespace Dune
 
