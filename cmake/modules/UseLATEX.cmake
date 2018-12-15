@@ -39,7 +39,7 @@
 #
 # The following function is defined:
 #
-# add_latex_document(<tex_file>
+# add_latex_document_deprecated(<tex_file>
 #                    [BIBFILES <bib_files>]
 #                    [INPUTS <input_tex_files>]
 #                    [IMAGE_DIRS] <image_directories>
@@ -1893,7 +1893,7 @@ function(add_latex_targets latex_main_input)
   add_latex_targets_internal()
 endfunction(add_latex_targets)
 
-function(add_latex_document latex_main_input)
+function(add_latex_document_deprecated latex_main_input)
   latex_get_output_path(output_dir)
   if(output_dir)
     parse_add_latex_arguments(add_latex_document ${latex_main_input} ${ARGN})
@@ -1922,7 +1922,7 @@ function(add_latex_document latex_main_input)
 
     add_latex_targets_internal()
   endif()
-endfunction(add_latex_document)
+endfunction(add_latex_document_deprecated)
 
 #############################################################################
 # Actually do stuff
