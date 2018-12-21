@@ -369,6 +369,9 @@ dune_add_test(SOURCES mathtest.cc
               LABELS quick)
 
 
+dune_add_test(SOURCES varianttest.cc
+              LINK_LIBRARIES dunecommon)
+
 install(
   FILES
   arithmetictestsuite.hh
