@@ -73,7 +73,7 @@ namespace Dune {
     /** \brief get value reference for key
      *
      * Returns reference to value for given key name.
-     * This creates the key, if not existent.
+     * This creates the key, and an empty value, if not existent.
      *
      * \param key key name
      * \return reference to corresponding value
@@ -84,7 +84,6 @@ namespace Dune {
     /** \brief get value reference for key
      *
      * Returns reference to value for given key name.
-     * This creates the key, if not existent.
      *
      * \param key key name
      * \return reference to corresponding value
@@ -93,12 +92,34 @@ namespace Dune {
     const std::string& operator[] (const std::string& key) const;
 
 
+    /** \brief get shared_ptr to value for key
+     *
+     * Returns shared_ptr to value for given key name.
+     * This creates the key, and an empty ptr, if not existent.
+     *
+     * \param key key name
+     * \return reference to corresponding value
+     */
+    std::shared_ptr<std::string> & ptr (const std::string& key);
+
+
+    /** \brief get value reference for key
+     *
+     * Returns reference to value for given key name.
+     *
+     * \param key key name
+     * \throw Dune::RangeError if key is not found
+     */
+    const std::shared_ptr<std::string> ptr (const std::string& key) const;
+
+
     /** \brief print distinct substructure to stream
      *
      * Prints all entries with given prefix.
      *
      * \param stream Stream to print to
      * \param prefix for key and substructure names
+     * \param flatref don't print references, resolve them
      */
     void report(std::ostream& stream = std::cout,
                 const std::string& prefix = "") const;
@@ -228,7 +249,7 @@ namespace Dune {
     KeyVector valueKeys_;
     KeyVector subKeys_;
 
-    std::map<std::string, std::string> values_;
+    std::map<std::string, std::shared_ptr<std::string>> values_;
     std::map<std::string, std::shared_ptr<ParameterTree>> subs_;
 
     static std::string ltrim(const std::string& s);

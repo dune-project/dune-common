@@ -135,7 +135,17 @@ void Dune::ParameterTreeParser::readINITree(std::istream& in,
         else
         {
           if(overwrite || ! pt.hasKey(key))
-            pt[key] = value;
+          {
+            if (value[0] == '@')
+            {
+              auto ref = value.substr(1,std::string::npos);
+              if (!pt.ptr(ref))
+                pt.ptr(ref) = std::make_shared<std::string>("");
+              pt.ptr(key) = pt.ptr(ref);
+            }
+            else
+              pt[key] = value;
+          }
           keysInFile.insert(key);
         }
       }

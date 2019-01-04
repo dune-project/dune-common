@@ -290,6 +290,37 @@ void testReport()
   check_recursiveTreeCompare(ptree, ptree2);
 }
 
+void testReferences()
+{
+  std::stringstream s;
+  s
+    << "foo.i = 1 \n"
+    << "foo.bar.peng = hurz \n"
+    << "foo.bar.hurz = @foo.i \n"
+    << "[root=] \n"
+    << "[foobar = foo.bar]\n"
+    ;
+  Dune::ParameterTree ptree;
+  Dune::ParameterTreeParser::readINITree(s, ptree);
+
+  std::stringstream s2;
+  s2
+    << "[foobar = foo.bar]\n"
+    << "foo.bar.hurz = @foo.i \n"
+    << "foo.i = 1 \n"
+    << "foo.bar.peng = hurz \n"
+    << "[root=] \n"
+    ;
+  Dune::ParameterTree ptree2;
+  Dune::ParameterTreeParser::readINITree(s2, ptree2);
+  check_assert(ptree.get<int>("foobar.hurz") == 1);
+  check_assert(ptree.get<int>("foo.bar.hurz") == 1);
+  check_assert(ptree2.get<int>("foobar.hurz") == 1);
+  check_assert(ptree2.get<int>("foo.bar.hurz") == 1);
+
+  check_recursiveTreeCompare(ptree, ptree2);
+}
+
 int main()
 {
   try {
@@ -322,6 +353,9 @@ int main()
 
     // check report
     testReport();
+
+    // check resolution of references
+    testReferences();
 
     // check for specific bugs
     testFS1527();

@@ -26,12 +26,10 @@ const Dune::ParameterTree Dune::ParameterTree::empty_;
 
 void ParameterTree::report(std::ostream& stream, const std::string& prefix) const
 {
-  typedef std::map<std::string, std::string>::const_iterator ValueIt;
-  ValueIt vit = values_.begin();
-  ValueIt vend = values_.end();
-
+  auto vit = values_.begin();
+  auto vend = values_.end();
   for(; vit!=vend; ++vit)
-    stream << vit->first << " = \"" << vit->second << "\"" << std::endl;
+    stream << vit->first << " = \"" << *vit->second << "\"" << std::endl;
 
   auto sit = subs_.begin();
   auto send = subs_.end();
@@ -178,12 +176,25 @@ const ParameterTree& ParameterTree::sub(const std::string& key, bool fail_if_mis
 
 std::string& ParameterTree::operator[] (const std::string& key)
 {
+  auto & p = ptr(key);
+  if (!p)
+    p = std::make_shared<std::string>();
+  return *p;
+}
+
+const std::string& ParameterTree::operator[] (const std::string& key) const
+{
+  return *ptr(key);
+}
+
+std::shared_ptr<std::string>& ParameterTree::ptr (const std::string& key)
+{
   std::string::size_type dot = key.find(".");
 
   if (dot != std::string::npos)
   {
     ParameterTree& s = sub(key.substr(0,dot));
-    return s[key.substr(dot+1)];
+    return s.ptr(key.substr(dot+1));
   }
   else
   {
@@ -193,14 +204,14 @@ std::string& ParameterTree::operator[] (const std::string& key)
   }
 }
 
-const std::string& ParameterTree::operator[] (const std::string& key) const
+const std::shared_ptr<std::string> ParameterTree::ptr (const std::string& key) const
 {
   std::string::size_type dot = key.find(".");
 
   if (dot != std::string::npos)
   {
     const ParameterTree& s = sub(key.substr(0,dot));
-    return s[key.substr(dot+1)];
+    return s.ptr(key.substr(dot+1));
   }
   else
   {
