@@ -25,6 +25,9 @@
 #    :code:`DUNE_HAVE_CXX_OPTIONAL`
 #       True if C++17's optional implementation is supported
 #
+#    :code:`DUNE_HAVE_CXX_VARIANT`
+#       True if C++17's variant implementation is supported
+#
 # .. cmake_variable:: DISABLE_CXX_VERSION_CHECK
 #
 #    You may set this variable to TRUE to disable checking for
@@ -368,6 +371,21 @@ check_cxx_source_compiles("
     std::string b = a.value_or( \"empty\" );
   }
 " DUNE_HAVE_CXX_OPTIONAL
+  )
+
+
+# support for C++17's variant implementation
+check_cxx_source_compiles("
+  #include <variant>
+  #include <string>
+
+  int main()
+  {
+    std::variant< int, std::string > a;
+    a = \"stringvalue\";
+    std::string b = std::get< std::string >(a);
+  }
+" DUNE_HAVE_CXX_VARIANT
   )
 
 
