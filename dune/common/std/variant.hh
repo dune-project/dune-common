@@ -2,7 +2,7 @@
 // vi: set et ts=4 sw=2 sts=2:
 #ifndef DUNE_COMMON_STD_VARIANT_HH
 #define DUNE_COMMON_STD_VARIANT_HH
-#if __has_include(<variant>)
+#ifdef DUNE_HAVE_CXX_VARIANT
 #include <variant>
 namespace Dune {
 namespace Std {
@@ -13,6 +13,7 @@ namespace Std {
   using std::get;
   using std::get_if;
   using std::holds_alternative;
+  using std::monostate;
 }
 }
 #else
@@ -491,6 +492,21 @@ namespace Impl {
   // this cannot be inline (as it is in the STL) as this would need C++17
   template <typename T>
   constexpr std::size_t variant_size_v = variant_size<T>::value;
+
+  /**
+   * \brief Trial default constructible class
+   *
+   * This can be used to make Std::variant default-constructible.
+   */
+  struct monostate {};
+
+  constexpr bool operator<(monostate, monostate) noexcept { return false; }
+  constexpr bool operator>(monostate, monostate) noexcept { return false; }
+  constexpr bool operator<=(monostate, monostate) noexcept { return true; }
+  constexpr bool operator>=(monostate, monostate) noexcept { return true; }
+  constexpr bool operator==(monostate, monostate) noexcept { return true; }
+  constexpr bool operator!=(monostate, monostate) noexcept { return false; }
+
 
 } // end namespace Std
 } // end namespace Dune
