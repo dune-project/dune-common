@@ -67,13 +67,17 @@ int testForwardIterator(Iter begin, Iter end, Opt& opt)
   // Return status
   int ret=0;
 
-  // Test whether iterator is default-constructible
+  // Test whether iterator is can be value-initialized.
   // These object will go out of scope at the end of this method, and hence
   // it will also test whether these objects are destructible.
-  Iter defaultConstructedIterator1, defaultConstructedIterator2;
+  Iter defaultConstructedIterator1{}, defaultConstructedIterator2{};
 
-  // Since C++14, default-constructed forward iterators are specified as the
+  // Since C++14, value-initialized forward iterators are specified as the
   // end iterator of the same, empty sequence. Hence, they should compare equal.
+  // Notice that value-initialization and default-initialization are not the
+  // same for raw pointers. Since these are POD, value-initialization leads
+  // to zero-initialization while default-initialization would leave them
+  // uninitialized such that the comparison is undefined behaviour.
   if (defaultConstructedIterator1 != defaultConstructedIterator2) {
     std::cerr<<"Default constructed iterators do not compare equal for "+Dune::className<Iter>()+"."<<std::endl;
     ret=1;
@@ -140,20 +144,20 @@ int testForwardIterator(Iter begin, Iter end, Opt& opt)
 template<class Iter, class Opt>
 int testBidirectionalIterator(Iter begin, Iter end, Opt opt)
 {
-  testForwardIterator(begin, end, opt);
+  int ret=testForwardIterator(begin, end, opt);
   for(Iter pre = end, post = end; pre != begin; )
   {
     if(pre != post--)
     {
       std::cerr << "Postdecrement did not return the old iterator"
                 << std::endl;
-      return 1;
+      ++ret;
     }
     if(--pre != post)
     {
       std::cerr << "Predecrement did not return the new iterator"
                 << std::endl;
-      return 1;
+      ++ret;
     }
     opt(*pre);
   }
@@ -176,10 +180,10 @@ int testBidirectionalIterator(Iter begin, Iter end, Opt opt)
     {
       std::cerr<<"Did not reach same index by starting forward from "
                <<"begin and backwards from end."<<std::endl;
-      return 1;
+      ++ret;
     }
   }
-  return 0;
+  return ret;
 }
 
 template<class Iter, class Opt>
@@ -219,7 +223,7 @@ int testRandomAccessIterator(Iter begin, Iter end, Opt opt){
   for(int i=0; i < no; i++)
   {
     int index = static_cast<int>(size*(rand()/(RAND_MAX+1.0)));
-    Iter rand(begin), test(begin), res;
+    Iter rand(begin), test(begin), res{};
     rand+=index;
 
     if((res=begin+index) != rand)
