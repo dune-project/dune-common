@@ -8,6 +8,7 @@
 #include <dune/common/rangeutilities.hh>
 #include <dune/common/typetraits.hh>
 #include <dune/common/test/testsuite.hh>
+#include <dune/common/test/iteratortest.hh>
 
 
 int main()
@@ -99,6 +100,16 @@ int main()
       static_assert(std::is_same<std::decay_t<decltype(i)>, std::integral_constant<int, 0>>::value,
                     "Hybrid::forEach(range(std::integral_constant<int, 1>()), ...) should only visit std::integral_constant<int, 0>.");
     });
+
+
+  {
+    auto r = range(-10,11);
+    auto it = r.begin();
+    auto end = r.end();
+    auto op = [](const auto& x){};
+    suite.check(testConstIterator(it, end, op)==0)
+      << "iterator test fails for range(-10,11)";
+  }
 
   return suite.exit();
 

@@ -1,5 +1,11 @@
 # Master (will become release 2.7)
 
+- `dune-common` now provides an implementation of `std::variant` for all compilers
+  that support C++14.  It is contained in the file `dune/common/std/variant.hh`,
+  in the namespace `Dune::Std::`.  If your compiler does support C++17 the
+  implementation in `dune-common` is automatically disabled, and the official
+  implementation from the standard library is used instead.
+
 -   When run with an absolute build directory, `dunecontrol` now exposes the root build
     directory to CMake in the variable `DUNE_BUILD_DIRECTORY_ROOT_PATH`.
 

@@ -398,7 +398,7 @@ function(dune_add_test)
 
       # Make the test depend on the existence of the target to trigger "Not Run" response
       if(NOT ADDTEST_EXPECT_COMPILE_FAIL)
-        set_tests_properties(${ACTUAL_NAME} PROPERTIES REQUIRED_FILES ${ADDTEST_TARGET})
+        set_tests_properties(${ACTUAL_NAME} PROPERTIES REQUIRED_FILES $<TARGET_FILE:${ADDTEST_TARGET}>)
       endif()
       # Define the number of processors (ctest will coordinate this with the -j option)
       set_tests_properties(${ACTUAL_NAME} PROPERTIES PROCESSORS ${procnum})

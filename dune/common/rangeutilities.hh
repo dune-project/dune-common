@@ -119,7 +119,7 @@ namespace Dune
       typedef const T *pointer;
       typedef T reference;
 
-      constexpr IntegralRangeIterator() noexcept = default;
+      constexpr IntegralRangeIterator() noexcept : value_(0) {}
       constexpr explicit IntegralRangeIterator(value_type value) noexcept : value_(value) {}
 
       pointer operator->() const noexcept { return &value_; }

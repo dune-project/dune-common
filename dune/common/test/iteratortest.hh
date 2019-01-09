@@ -1,8 +1,8 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 
-#ifndef DUNE_ITERATORTEST_HH
-#define DUNE_ITERATORTEST_HH
+#ifndef DUNE_COMMON_TEST_ITERATORTEST_HH
+#define DUNE_COMMON_TEST_ITERATORTEST_HH
 #include <iostream>
 #include <algorithm>
 #include <dune/common/classname.hh>
@@ -10,13 +10,56 @@
 #include <dune/common/unused.hh>
 
 /**
+ * @brief Test whether the class Iter implements the interface of an STL output iterator
+ *
+ * @param iterator Iterator to test
+ * @param iterations Number of times that 'iterator' can be safely incremented
+ * @param value A value that is sent to the output iterator
+ */
+template<class Iter, class Value>
+void testOutputIterator(Iter iterator, std::size_t iterations, Value value)
+{
+  // Test whether iterator is copy-constructible
+  // The new iterator object will go out of scope at the end of this method, and hence
+  // destructibility will also be tested.
+  Iter tmp1(iterator);
+
+  // Test whether iterator is copy-assignable
+  Iter tmp2 = iterator;
+
+  // Test whether pre-increment and assignment works
+  for (size_t i=0; i<iterations; ++i, ++tmp1)
+    // An output iterator can only be dereferenced as an lvalue (if in a dereferenceable state).
+    // It shall only be dereferenced as the left-side of an assignment statement.
+    *tmp1 = value;
+
+  // Test whether post-increment and assignment works
+  for (size_t i=0; i<iterations; ++i, tmp2++)
+    *tmp2 = value;
+
+  // Test whether std::iterator_traits is properly specialized
+  // The AlwaysTrue<A> construction allows one to test whether the type A exists at all,
+  // without assuming anything further about A.
+  static_assert(Dune::AlwaysTrue<typename std::iterator_traits<Iter>::difference_type>::value,
+                "std::iterator_traits::difference_type is not defined!");
+  static_assert(Dune::AlwaysTrue<typename std::iterator_traits<Iter>::value_type>::value,
+                "std::iterator_traits::value_type is not defined!");
+  static_assert(Dune::AlwaysTrue<typename std::iterator_traits<Iter>::pointer>::value,
+                "std::iterator_traits::pointer is not defined!");
+  static_assert(Dune::AlwaysTrue<typename std::iterator_traits<Iter>::reference>::value,
+                "std::iterator_traits::reference is not defined!");
+
+  // Make sure the iterator_category is properly set
+  static_assert(std::is_same<typename std::iterator_traits<Iter>::iterator_category, std::output_iterator_tag>::value,
+                "std::iterator_traits::iterator_category is not properly defined!");
+}
+
+/**
  * @brief Test whether the class Iter implements the interface of an STL forward iterator
  *
  * @param begin Iterator positioned at the start
  * @param end Iterator positioned at the end
  * @param opt Functor for doing whatever one wants
- *
- * \todo Test whether begin-> works.  (I don't know how)
  */
 template<class Iter, class Opt>
 int testForwardIterator(Iter begin, Iter end, Opt& opt)
@@ -24,13 +67,17 @@ int testForwardIterator(Iter begin, Iter end, Opt& opt)
   // Return status
   int ret=0;
 
-  // Test whether iterator is default-constructible
+  // Test whether iterator is can be value-initialized.
   // These object will go out of scope at the end of this method, and hence
   // it will also test whether these objects are destructible.
-  Iter defaultConstructedIterator1, defaultConstructedIterator2;
+  Iter defaultConstructedIterator1{}, defaultConstructedIterator2{};
 
-  // Since C++14, default-constructed forward iterators are specified as the
+  // Since C++14, value-initialized forward iterators are specified as the
   // end iterator of the same, empty sequence. Hence, they should compare equal.
+  // Notice that value-initialization and default-initialization are not the
+  // same for raw pointers. Since these are POD, value-initialization leads
+  // to zero-initialization while default-initialization would leave them
+  // uninitialized such that the comparison is undefined behaviour.
   if (defaultConstructedIterator1 != defaultConstructedIterator2) {
     std::cerr<<"Default constructed iterators do not compare equal for "+Dune::className<Iter>()+"."<<std::endl;
     ret=1;
@@ -97,20 +144,20 @@ int testForwardIterator(Iter begin, Iter end, Opt& opt)
 template<class Iter, class Opt>
 int testBidirectionalIterator(Iter begin, Iter end, Opt opt)
 {
-  testForwardIterator(begin, end, opt);
+  int ret=testForwardIterator(begin, end, opt);
   for(Iter pre = end, post = end; pre != begin; )
   {
     if(pre != post--)
     {
       std::cerr << "Postdecrement did not return the old iterator"
                 << std::endl;
-      return 1;
+      ++ret;
     }
     if(--pre != post)
     {
       std::cerr << "Predecrement did not return the new iterator"
                 << std::endl;
-      return 1;
+      ++ret;
     }
     opt(*pre);
   }
@@ -133,10 +180,10 @@ int testBidirectionalIterator(Iter begin, Iter end, Opt opt)
     {
       std::cerr<<"Did not reach same index by starting forward from "
                <<"begin and backwards from end."<<std::endl;
-      return 1;
+      ++ret;
     }
   }
-  return 0;
+  return ret;
 }
 
 template<class Iter, class Opt>
@@ -176,7 +223,7 @@ int testRandomAccessIterator(Iter begin, Iter end, Opt opt){
   for(int i=0; i < no; i++)
   {
     int index = static_cast<int>(size*(rand()/(RAND_MAX+1.0)));
-    Iter rand(begin), test(begin), res;
+    Iter rand(begin), test(begin), res{};
     rand+=index;
 
     if((res=begin+index) != rand)
