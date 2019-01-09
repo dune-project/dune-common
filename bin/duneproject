@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# -*- indent-tabs-mode: nil; sh-basic-offset: 2; sh-indentation: 2 -*-
+# vi: set et sw=2:
+
+# The sh-indentation in the emacs mode-line is needed for emacs <26, see
+# https://debbugs.gnu.org/21751
 
 #
 # TODO:
@@ -8,127 +13,127 @@
 set -e
 
 canonicalname(){
-	if test $# -ne 1; then
-		echo Usage: canonicalname path >&2
-		return 1
-	fi
-	file="`eval echo $1`" # expand ~
-	if test ! -e "$file"; then
-		echo $file: file not found >&2
-		return 1
-	fi
-    # if this is a symlink, then follow the symlink
-	if test -L "$file"; then
-		fdir="`dirname \"$file\"`"
-		flink="`readlink \"$file\"`"
-		if test -e "$flink"; then
-			# these are absolute links, or links in the CWD
-			canonicalname "$flink"
-		else
-			canonicalname "$fdir/$flink"
-		fi
-	else
-        # if this is a file, then remember the filename and
-        # canonicalize the directory name
-		if test -f "$file"; then
-			fdir="`dirname \"$file\"`"
-			fname="`basename \"$file\"`"
-			fdir="`canonicalname \"$fdir\"`"
-			echo "$fdir/$fname"
-		fi
-        # if this is a directory, then create an absolute
-        # directory name and we are done
-		if test -d "$file"; then
-			(cd "$file"; pwd)
-		fi
-	fi
+  if test $# -ne 1; then
+    echo Usage: canonicalname path >&2
+    return 1
+  fi
+  file="`eval echo $1`" # expand ~
+  if test ! -e "$file"; then
+    echo $file: file not found >&2
+    return 1
+  fi
+  # if this is a symlink, then follow the symlink
+  if test -L "$file"; then
+    fdir="`dirname \"$file\"`"
+    flink="`readlink \"$file\"`"
+    if test -e "$flink"; then
+      # these are absolute links, or links in the CWD
+      canonicalname "$flink"
+    else
+      canonicalname "$fdir/$flink"
+    fi
+  else
+    # if this is a file, then remember the filename and
+    # canonicalize the directory name
+    if test -f "$file"; then
+      fdir="`dirname \"$file\"`"
+      fname="`basename \"$file\"`"
+      fdir="`canonicalname \"$fdir\"`"
+      echo "$fdir/$fname"
+    fi
+    # if this is a directory, then create an absolute
+    # directory name and we are done
+    if test -d "$file"; then
+      (cd "$file"; pwd)
+    fi
+  fi
 }
 
 canonicalpath(){
   if test $# -ne 1; then
-     echo Usage: canonicalpath path >&2
-     return 1
+    echo Usage: canonicalpath path >&2
+    return 1
   fi
   dirname "$(canonicalname "$1")"
 }
 
 pkg_config_dependencies(){
-    if test $# -ne 1; then
-	echo Usage: pkg_config_dependencies name >&2
-	return 1
-    fi
-    name="$1"
-    depends="`pkg-config --variable=DEPENDENCIES $name| sed -e 's/,/ /g'`"
-    for pkg in $depends; do
-	depends="$depends `pkg_config_dependencies $pkg`"
-    done
-    echo $depends
+  if test $# -ne 1; then
+    echo Usage: pkg_config_dependencies name >&2
+    return 1
+  fi
+  name="$1"
+  depends="`pkg-config --variable=DEPENDENCIES $name| sed -e 's/,/ /g'`"
+  for pkg in $depends; do
+    depends="$depends `pkg_config_dependencies $pkg`"
+  done
+  echo $depends
 }
 
 modulesexist(){
   allfound=0
 
   for dep in $1; do
-      found=0
-      for module in $2; do
-	  if [ "$dep" = "$module" ]; then
-	      found=1
-	      break
-	  fi
-      done
-      if [ "$found" = "0" ]; then
-          # Module not found in list, try pkg-config
-          pkg-config $module &> /dev/null
-          found=$?
+    found=0
+    for module in $2; do
+      if [ "$dep" = "$module" ]; then
+	found=1
+	break
       fi
-      if [ "$found" = "0" ]; then
-	  echo "ERROR:">&2
-	  echo "Module with name $dep was not found" >&2
-	  echo "Did you forget to specify its location" >&2
-	  echo "in the DUNE_CONTROL_PATH variable?">&2
-	  echo >&2
-	  allfound=1
-      fi
+    done
+    if [ "$found" = "0" ]; then
+      # Module not found in list, try pkg-config
+      pkg-config $module &> /dev/null
+      found=$?
+    fi
+    if [ "$found" = "0" ]; then
+      echo "ERROR:">&2
+      echo "Module with name $dep was not found" >&2
+      echo "Did you forget to specify its location" >&2
+      echo "in the DUNE_CONTROL_PATH variable?">&2
+      echo >&2
+      allfound=1
+    fi
   done
   return $allfound
 }
 
 make_unique(){
   if [ "$#" = "1" ]; then
-      # take first word
-      for exclude_word in $1; do
-	  break;
-      done
-      make_unique $exclude_word "$1" 0
+    # take first word
+    for exclude_word in $1; do
+      break;
+    done
+    make_unique $exclude_word "$1" 0
   else
-      local exclude_word="$1"
-      local words="$2"
-      local pos="$3"
-      local length=0
-      local i=0
-      local new_words=""
-      local cur=0
-      for word in $words; do
-	  if [ $i -le $pos ]; then
-	      i=$((i+1))
-	      length=$((length+1))
-	      new_words="$new_words $word"
-	      continue
-	  fi
-	  if [ "$word" != "$exclude_word" ]; then
-	      new_words="$new_words $word"
-	      if [ "$((length-1))" = "$pos" ]; then
-		  next_word="$word"
-	      fi
-	      length=$((length+1))
-	  fi
-      done
-      if [ "$pos" -lt "$length" ]; then
-       # process next word
-	  make_unique "$next_word" "$new_words" $((pos+1))
-      else
-	  export UNIQUE_WORDS="$new_words"
+    local exclude_word="$1"
+    local words="$2"
+    local pos="$3"
+    local length=0
+    local i=0
+    local new_words=""
+    local cur=0
+    for word in $words; do
+      if [ $i -le $pos ]; then
+	i=$((i+1))
+	length=$((length+1))
+	new_words="$new_words $word"
+	continue
       fi
+      if [ "$word" != "$exclude_word" ]; then
+	new_words="$new_words $word"
+	if [ "$((length-1))" = "$pos" ]; then
+	  next_word="$word"
+	fi
+	length=$((length+1))
+      fi
+    done
+    if [ "$pos" -lt "$length" ]; then
+      # process next word
+      make_unique "$next_word" "$new_words" $((pos+1))
+    else
+      export UNIQUE_WORDS="$new_words"
+    fi
   fi
 }
 
@@ -201,21 +206,21 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
   DEPOK=1
 
   while [ "$DEPOK" != 0 ]; do
-  echo "2) Which modules should this module depend on?"
-  echo "   The following modules have been found:"
-  echo "   $MODULES"
-#  for i in $MODULES; do echo -n " $i"; done
-#  echo ""
-  while [ -z "$DEPENDENCIES" ]; do
+    echo "2) Which modules should this module depend on?"
+    echo "   The following modules have been found:"
+    echo "   $MODULES"
+    #  for i in $MODULES; do echo -n " $i"; done
+    #  echo ""
+    while [ -z "$DEPENDENCIES" ]; do
       read -p "   Enter space-separated list: " DEPENDENCIES
-  done
-  set +e
-  modulesexist "$DEPENDENCIES" "$MODULES"
-  DEPOK=$?
-  set -e
-  if [ "$DEPOK" != 0 ]; then
-    DEPENDENCIES=""
-  fi
+    done
+    set +e
+    modulesexist "$DEPENDENCIES" "$MODULES"
+    DEPOK=$?
+    set -e
+    if [ "$DEPOK" != 0 ]; then
+      DEPENDENCIES=""
+    fi
   done
 
   while [ -z $VERSION ]; do
@@ -239,7 +244,7 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
     MAINTAINER=""
   fi
 
-  done
+done
 
 
 
@@ -294,7 +299,7 @@ for name in $DEPENDENCIES; do
     M_DEPS="`pkg_config_dependencies $name` $name"
   fi
   for dep in $M_DEPS; do
-      CHECK="$CHECK [$dep]"
+    CHECK="$CHECK [$dep]"
   done
 done
 set +x
@@ -303,12 +308,12 @@ make_unique "$CHECK"
 # insert , between modules
 j=0
 for dep in $UNIQUE_WORDS; do
-if [ "$j" = "0" ]; then
-      CHECK="$dep"
-      j=1
-    else
-      CHECK="$CHECK, $dep"
-    fi
+  if [ "$j" = "0" ]; then
+    CHECK="$dep"
+    j=1
+  else
+    CHECK="$CHECK, $dep"
+  fi
 done
 
 echo "------------------------------------------"
