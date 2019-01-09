@@ -145,7 +145,7 @@ namespace Dune
       MPIFuture<T> future(std::forward<T>(data));
       MPI_Isend(future.data_->ptr(), future.data_->size(), future.data_->type(),
                        dest_rank, tag, communicator, &future.req_);
-      return std::move(future);
+      return future;
     }
 
     //! @copydoc Communication::recv
@@ -165,7 +165,7 @@ namespace Dune
       MPIFuture<T> future(std::forward<T>(data));
       MPI_Irecv(future.data_->ptr(), future.data_->size(), future.data_->type(),
                              source_rank, tag, communicator, &future.req_);
-      return std::move(future);
+      return future;
     }
 
     template<class T>
@@ -282,7 +282,7 @@ namespace Dune
                  root,
                  communicator,
                  &future.req_);
-      return std::move(future);
+      return future;
     }
 
     //! @copydoc Communication::gather()
@@ -304,7 +304,7 @@ namespace Dune
       MPI_Igather(future.send_data_->ptr(), future.send_data_->size(), future.send_data_->type(),
                   future.data_->ptr(), outlen, future.data_->type(),
                   root, communicator, &future.req_);
-      return std::move(future);
+      return future;
     }
 
     //! @copydoc Communication::gatherv()
@@ -335,7 +335,7 @@ namespace Dune
       MPI_Iscatter(future.send_data_->ptr(), inlen, future.send_data_->type(),
                   future.data_->ptr(), future.data_->size(), future.data_->type(),
                   root, communicator, &future.req_);
-      return std::move(future);
+      return future;
     }
 
     //! @copydoc Communication::scatterv()
@@ -372,7 +372,7 @@ namespace Dune
       MPI_Iallgather(future.send_data_->ptr(), future.send_data_->size(), future.send_data_->type(),
                   future.data_->ptr(), outlen, future.data_->type(),
                   communicator, &future.req_);
-      return std::move(future);
+      return future;
     }
 
     //! @copydoc Communication::allgatherv()
@@ -414,7 +414,7 @@ namespace Dune
                      future.data_->size(), future.data_->type(),
                      (Generic_MPI_Op<TIN, BinaryFunction>::get()),
                      communicator, &future.req_);
-      return std::move(future);
+      return future;
     }
 
     //! @copydoc Communication::iallreduce
@@ -425,7 +425,7 @@ namespace Dune
                      future.data_->size(), future.data_->type(),
                      (Generic_MPI_Op<T, BinaryFunction>::get()),
                      communicator, &future.req_);
-      return std::move(future);
+      return future;
     }
 
     //! @copydoc Communication::allreduce(Type* in,Type* out,int len) const
