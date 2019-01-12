@@ -1,5 +1,10 @@
 # Master (will become release 2.7)
 
+- A helper class `TransformedRangeView` was added representing a
+  transformed version of a given range using an unary transformation
+  function. The transformation is done on the fly leaving the wrapped
+  range unchanged.
+
 - `dune-common` now provides an implementation of `std::variant` for all compilers
   that support C++14.  It is contained in the file `dune/common/std/variant.hh`,
   in the namespace `Dune::Std::`.  If your compiler does support C++17 the
