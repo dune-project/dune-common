@@ -373,8 +373,6 @@ namespace Dune
         f_()
       {}
 
-      constexpr TransformedRangeIterator& operator=(const TransformedRangeIterator& other) = default;
-
       // Dereferencing returns a value created by the function
       constexpr reference operator*() const noexcept {
         return (*f_)(*it_);
@@ -385,11 +383,13 @@ namespace Dune
         return (*f_)(*it_);
       }
 
+      constexpr TransformedRangeIterator& operator=(const TransformedRangeIterator& other) = default;
+
       constexpr bool operator==(const TransformedRangeIterator& other) const noexcept {
         return (it_ == other.it_);
       }
 
-      constexpr bool operator!=(const TransformedRangeIterator & other) const noexcept {
+      constexpr bool operator!=(const TransformedRangeIterator& other) const noexcept {
         return (it_ != other.it_);
       }
 
@@ -429,6 +429,23 @@ namespace Dune
 
       using Base::Base;
 
+      // Member functions of the forward_iterator that need
+      // to be redefined because the base class methods return a
+      // forward_iterator.
+      constexpr TransformedRangeIterator& operator=(const TransformedRangeIterator& other) = default;
+
+      TransformedRangeIterator& operator++() noexcept {
+        ++it_;
+        return *this;
+      }
+
+      TransformedRangeIterator operator++(int) noexcept {
+        TransformedRangeIterator copy(*this);
+        ++(*this);
+        return copy;
+      }
+
+      // Additional member functions of bidirectional_iterator
       TransformedRangeIterator& operator--() noexcept {
         --(this->it_);
         return *this;
@@ -462,6 +479,37 @@ namespace Dune
 
       using Base::Base;
 
+      // Member functions of the forward_iterator that need
+      // to be redefined because the base class methods return a
+      // forward_iterator.
+      constexpr TransformedRangeIterator& operator=(const TransformedRangeIterator& other) = default;
+
+      TransformedRangeIterator& operator++() noexcept {
+        ++it_;
+        return *this;
+      }
+
+      TransformedRangeIterator operator++(int) noexcept {
+        TransformedRangeIterator copy(*this);
+        ++(*this);
+        return copy;
+      }
+
+      // Member functions of the bidirectional_iterator that need
+      // to be redefined because the base class methods return a
+      // bidirectional_iterator.
+      TransformedRangeIterator& operator--() noexcept {
+        --(this->it_);
+        return *this;
+      }
+
+      TransformedRangeIterator operator--(int) noexcept {
+        TransformedRangeIterator copy(*this);
+        --(*this);
+        return copy;
+      }
+
+      // Additional member functions of random_access_iterator
       TransformedRangeIterator& operator+=(difference_type n) noexcept {
         it_ += n;
         return *this;
