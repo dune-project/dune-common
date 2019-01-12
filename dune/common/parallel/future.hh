@@ -7,48 +7,72 @@
 
 namespace Dune{
 
-  template<class...>
-  class FutureBase;
-
-  template<>
-  class FutureBase<>{
-  public:
-    virtual ~FutureBase(){};
-    virtual void wait() = 0;
-    virtual bool ready() const = 0;
-    virtual bool valid() const = 0;
-  };
-
-  template<class T>
-  class FutureBase<T> : public FutureBase<>{
-  public:
-    virtual T get() = 0;
-  };
-
   class InvalidFutureException : public InvalidStateException
   {};
 
   // Type-erasure class for Future
   template<class T>
-  class Future : public FutureBase<T>{
-    std::unique_ptr<FutureBase<T>> _future;
+  class Future{
+    // Future interface:
+    class FutureBase{
+    public:
+      virtual ~FutureBase() = default;
+      virtual void wait() = 0;
+      virtual bool ready() const = 0;
+      virtual bool valid() const = 0;
+      virtual T get() = 0;
+    };
+
+    // model class
+    template<class F>
+    class FutureModel
+      : public FutureBase
+    {
+      F _future;
+    public:
+      FutureModel(F&& f)
+        : _future(std::move(f))
+      {}
+
+      virtual void wait() override
+      {
+        _future.wait();
+      }
+
+      virtual bool ready() const override
+      {
+        return _future.ready();
+      }
+
+      virtual bool valid() const override
+      {
+        return _future.valid();
+      }
+
+      virtual T get() override{
+        return _future.get();
+      }
+    };
+
+    std::unique_ptr<FutureBase> _future;
   public:
     template<class F>
     Future(F&& f)
-      : _future(new F(std::forward<F>(f)))
+      : _future(new FutureModel<F>(std::forward<F>(f)))
     {}
 
-    Future(){}
-    virtual void wait() override{
+    Future() = default;
+
+    void wait(){
       _future->wait();
     }
-    virtual T get() override {
+    T get() {
       return _future->get();
     }
-    virtual bool ready() const override {
+    bool ready() const {
       return _future->ready();
     }
-    virtual bool valid() const override {
+    bool valid() const {
       if(_future)
         return _future->valid();
       return false;
@@ -56,7 +80,7 @@ namespace Dune{
   };
 
   template<class T>
-  class PseudoFuture : public FutureBase<T>{
+  class PseudoFuture{
     bool valid_;
     T data_;
   public:
@@ -70,54 +94,54 @@ namespace Dune{
       data_(std::forward<U>(u))
     {}
 
-    void wait() override{
+    void wait() {
       if(!valid_)
         DUNE_THROW(InvalidFutureException, "The PseudoFuture is not valid");
     }
 
-    bool ready() const override{
+    bool ready() const {
       if(!valid_)
         DUNE_THROW(InvalidFutureException, "The PseudoFuture is not valid");
       return true;
     }
 
-    T get() override{
+    T get() {
       if(!valid_)
         DUNE_THROW(InvalidFutureException, "The PseudoFuture is not valid");
       valid_ = false;
       return std::forward<T>(data_);
     }
 
-    bool valid() const override{
+    bool valid() const {
       return valid_;
     }
   };
 
   template<>
-  class PseudoFuture<void> : public FutureBase<void>{
+  class PseudoFuture<void>{
     bool valid_;
   public:
     PseudoFuture(bool valid = false) :
       valid_(valid)
     {}
 
-    void wait() override{
+    void wait(){
       if(!valid_)
         DUNE_THROW(InvalidFutureException, "The PseudoFuture is not valid");
     }
-    bool ready() const override{
+    bool ready() const{
       if(!valid_)
         DUNE_THROW(InvalidFutureException, "The PseudoFuture is not valid");
       return true;
     }
 
-    void get() override{
+    void get(){
       if(!valid_)
         DUNE_THROW(InvalidFutureException, "The PseudoFuture is not valid");
       valid_ = false;
     }
 
-    bool valid() const override{
+    bool valid() const{
       return valid_;
     }
   };

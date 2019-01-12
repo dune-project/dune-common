@@ -20,7 +20,7 @@ namespace Dune {
       // could be optimized when V is reference type
       V _vector;
     public:
-      BatchData(Future<V>&& f = {})
+      BatchData(Future<V>&& f = Future<V>())
         : _future(std::move(f))
       {}
 
@@ -39,7 +39,7 @@ namespace Dune {
   }
 
   template<class V>
-  class BatchedFuture : public FutureBase<typename std::decay_t<V>::value_type> {
+  class BatchedFuture{
     typedef typename std::decay_t<V>::value_type value_type;
     size_t index_;
     std::shared_ptr<impl::BatchData<V>> data_ptr_;

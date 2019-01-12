@@ -10,7 +10,7 @@
 namespace Dune{
 
   template<class R, class S = void>
-  class MPIFuture : public FutureBase<R>{
+  class MPIFuture{
     template<class T>
     friend class when_all_MPIFuture;
 
@@ -43,7 +43,7 @@ namespace Dune{
       , valid_(true)
     {}
 
-    virtual ~MPIFuture() override {
+    ~MPIFuture() {
       if(req_ != MPI_REQUEST_NULL){
         try{ // might fail when it is a collective communication
           MPI_Cancel(&req_);
@@ -73,23 +73,23 @@ namespace Dune{
       return *this;
     }
 
-    bool valid() const override{
+    bool valid() const{
       return valid_;
     }
 
-    void wait() override{
+    void wait(){
       if(!valid_)
         DUNE_THROW(InvalidFutureException, "The MPIFuture is not valid!");
       MPI_Wait(&req_, &status_);
     }
 
-    bool ready() const override{
+    bool ready() const{
       int flag = -1;
       MPI_Test(&req_, &flag, &status_);
       return flag;
     }
 
-    R get() override{
+    R get() {
       if(!valid_)
         DUNE_THROW(InvalidFutureException, "The MPIFuture is not valid!");
       wait();
