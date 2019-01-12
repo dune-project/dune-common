@@ -32,7 +32,7 @@ namespace Dune {
           _vector = _future.get();
       }
 
-      bool ready(){
+      bool ready() const{
         return _future.ready();
       }
     };
@@ -61,7 +61,7 @@ namespace Dune {
       return valid_;
     }
 
-    bool ready() {
+    bool ready() const {
       if(data_ptr_ && !data_ptr_->started())
         DUNE_THROW(BatchNotStarted, "The FutureBatch is not started yet! Call start() before waiting for a BatchedFuture.");
       return data_ptr_ && data_ptr_->ready();

@@ -16,8 +16,8 @@ namespace Dune{
 
     template<class T>
     friend class when_any_MPIFuture;
-    MPI_Request req_;
-    MPI_Status status_;
+    mutable MPI_Request req_;
+    mutable MPI_Status status_;
     std::unique_ptr<MPIData<R>> data_;
     std::unique_ptr<MPIData<S>> send_data_;
     bool valid_;
@@ -83,7 +83,7 @@ namespace Dune{
       MPI_Wait(&req_, &status_);
     }
 
-    bool ready() override{
+    bool ready() const override{
       int flag = -1;
       MPI_Test(&req_, &flag, &status_);
       return flag;

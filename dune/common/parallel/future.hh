@@ -15,7 +15,7 @@ namespace Dune{
   public:
     virtual ~FutureBase(){};
     virtual void wait() = 0;
-    virtual bool ready() = 0;
+    virtual bool ready() const = 0;
     virtual bool valid() const = 0;
   };
 
@@ -45,7 +45,7 @@ namespace Dune{
     virtual T get() override {
       return _future->get();
     }
-    virtual bool ready() override {
+    virtual bool ready() const override {
       return _future->ready();
     }
     virtual bool valid() const override {
@@ -75,7 +75,7 @@ namespace Dune{
         DUNE_THROW(InvalidFutureException, "The PseudoFuture is not valid");
     }
 
-    bool ready() override{
+    bool ready() const override{
       if(!valid_)
         DUNE_THROW(InvalidFutureException, "The PseudoFuture is not valid");
       return true;
@@ -105,7 +105,7 @@ namespace Dune{
       if(!valid_)
         DUNE_THROW(InvalidFutureException, "The PseudoFuture is not valid");
     }
-    bool ready() override{
+    bool ready() const override{
       if(!valid_)
         DUNE_THROW(InvalidFutureException, "The PseudoFuture is not valid");
       return true;
