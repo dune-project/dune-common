@@ -84,6 +84,10 @@ namespace Dune {
     }
   };
 
+  /*! This class allows to split a Future of a container in to multiple Futures
+      of the containing type. The multiple futures can be obtained before the
+      "container-future" exists.
+   */
   template<class V>
   class FutureBatch {
     size_t counter_;
@@ -95,17 +99,25 @@ namespace Dune {
       , data_ptr_(std::make_shared<impl::BatchData<V>>())
     {}
 
+    /*! \brief \returns A future that will contain the `size()`-th element of
+      the "container-future"
+      \param postprocessing a function that is executed after in the get method.
+     */
     BatchedFuture<V> batch(std::function<value_type(value_type)> postprocessing = {}){
       return BatchedFuture<V>(counter_++, data_ptr_, postprocessing);
     }
 
-    template<class F>
-    void start(F&& f){
+    /*! \brief starts the batch by moving the "container-future" in. Then this
+    future becomes ready, all futures contained from `batch()` become ready.
+    */
+    template<class F> void start(F&& f){
       *data_ptr_ = impl::BatchData<V>(std::move(f));
       data_ptr_ = std::make_shared<impl::BatchData<V>>();
       counter_ = 0;
     }
 
+    /*! \returns the number of generated futures.
+     */
     size_t size() const{
       return counter_;
     }

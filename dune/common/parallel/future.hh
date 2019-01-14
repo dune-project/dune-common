@@ -4,13 +4,20 @@
 #define DUNE_COMMON_PARALLEL_FUTURE_HH
 
 #include <memory>
+#include <dune/common/exceptions.hh>
 
 namespace Dune{
 
+  /*! \brief This exception is thrown when `ready()`, `wait()` or `get()` is
+    called on an invalid future. A future is valid until `get()` is called and
+    if it is not default-constructed and it was not moved from.
+  */
   class InvalidFutureException : public InvalidStateException
   {};
 
-  // Type-erasure class for Future
+  /*! \brief Type-erasure for future-like objects. A future-like object is a
+    object satisfying the interface of FutureBase.
+  */
   template<class T>
   class Future{
     // Future interface:
@@ -63,15 +70,34 @@ namespace Dune{
 
     Future() = default;
 
+    /*! \brief wait until the future is ready
+      \throws InvalidFutureException
+     */
     void wait(){
       _future->wait();
     }
+
+    /*! \brief Waits until the future is ready and returns the resulting value
+      \returns The contained value
+      \throws InvalidFutureException
+     */
     T get() {
       return _future->get();
     }
+
+    /*! \brief
+      \returns true is the future is ready, otherwise false
+      \throws InvalidFutureException
+    */
     bool ready() const {
       return _future->ready();
     }
+
+    /*! \brief Checks whether the future is valid. I.e. `get()' was not called
+      on that future and when it was not default-constructed and not moved
+      from.
+      \returns true is the future is valid, otherwise false
+    */
     bool valid() const {
       if(_future)
         return _future->valid();
@@ -79,6 +105,8 @@ namespace Dune{
     }
   };
 
+  /*! \brief A wrapper-class for a object which is ready immediately.
+   */
   template<class T>
   class PseudoFuture{
     bool valid_;

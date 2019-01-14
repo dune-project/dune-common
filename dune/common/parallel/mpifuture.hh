@@ -9,6 +9,10 @@
 #if HAVE_MPI
 namespace Dune{
 
+  /*! \brief Provides a future-like object for MPI communication.  It contains
+    the object that will be received and might contain also a sending object,
+    which must be hold (keep alive) until the communication has been completed.
+   */
   template<class R, class S = void>
   class MPIFuture{
     template<class T>
@@ -28,6 +32,7 @@ namespace Dune{
       valid_(valid)
     {}
 
+    // Hide this constructor if R or S is void
     template<class V = R, class U = S>
     MPIFuture(V&& recv_data, U&& send_data, typename std::enable_if_t<!std::is_void<V>::value && !std::is_void<U>::value>* = 0) :
       req_(MPI_REQUEST_NULL)
@@ -36,6 +41,7 @@ namespace Dune{
       , valid_(true)
     {}
 
+    // hide this constructor if R is void
     template<class V = R>
     MPIFuture(V&& recv_data, typename std::enable_if_t<!std::is_void<V>::value>* = 0) :
       req_(MPI_REQUEST_NULL)
