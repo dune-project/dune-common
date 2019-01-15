@@ -53,6 +53,11 @@ int main()
   test.check( !optFalse );
   test.check( *optTrue == "foo" );
 
+  // Check construction of optional for const types
+  Dune::Std::optional<const int> o1(42);
+  Dune::Std::optional<const int> o2(o1);
+  Dune::Std::optional<const int> o3(std::move(o1));
+
   optFalse = create( true );
   test.check( *optFalse == "void" );
 

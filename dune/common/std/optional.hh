@@ -111,7 +111,9 @@ namespace Dune
 
       template< class U = value_type,
                 std::enable_if_t< std::is_constructible< value_type, U&& >::value, int > = 0,
-                std::enable_if_t< std::is_convertible< U&&, value_type >::value, int > = 0 >
+                std::enable_if_t< not(std::is_same<std::decay_t<U>, optional<value_type>>::value), int > = 0,
+                std::enable_if_t< not(std::is_same<std::decay_t<U>, in_place_t>::value), int > = 0
+                >
       constexpr optional ( U && value )
         : engaged_( true ), value_( std::forward< U >( value ) )
       {}
@@ -135,14 +137,14 @@ namespace Dune
         : engaged_( other.engaged_ )
       {
         if( engaged_ )
-          new( &value_ ) value_type( other.value_ );
+          rawEmplace(other.value_);
       }
 
       optional ( optional &&other ) noexcept( std::is_nothrow_move_constructible< T >::value )
         : engaged_( other.engaged_ )
       {
         if( engaged_ )
-          new( &value_ ) value_type( std::move( other.value_ ) );
+          rawEmplace(std::move( other.value_ ));
       }
 
       template< class U,
@@ -158,7 +160,7 @@ namespace Dune
         : engaged_( other.engaged_ )
       {
         if( engaged_ )
-          new( &value_ ) value_type( other.value_ );
+          rawEmplace(other.value_);
       }
 
       template< class U,
@@ -174,7 +176,7 @@ namespace Dune
         : engaged_( other.engaged_ )
       {
         if( engaged_ )
-          new( &value_ ) value_type( other.value_ );
+          rawEmplace(other.value_);
       }
 
       template< class U,
@@ -190,7 +192,7 @@ namespace Dune
         : engaged_( other.engaged_ )
       {
         if( engaged_ )
-          new( &value_ ) value_type( std::move( other.value_ ) );
+          rawEmplace(std::move(other.value_));
       }
 
       template< class U,
@@ -206,7 +208,7 @@ namespace Dune
         : engaged_( other.engaged_ )
       {
         if( engaged_ )
-          new( &value_ ) value_type( std::move( other.value_ ) );
+          rawEmplace(std::move(other.value_));
       }
 
       optional &operator= ( nullopt_t ) noexcept
@@ -217,6 +219,8 @@ namespace Dune
         return *this;
       }
 
+      template<class DummyInt = int,
+        std::enable_if_t<std::is_copy_constructible<T>::value and std::is_copy_assignable<T>::value, DummyInt> = 0>
       optional &operator= ( const optional &other ) noexcept( std::is_nothrow_copy_constructible< T >::value && std::is_nothrow_copy_assignable< T >::value )
       {
         if( engaged_ )
@@ -227,11 +231,13 @@ namespace Dune
             value_.~value_type();
         }
         else if( other.engaged_ )
-          new( &value_ ) value_type( other.value_ );
+          rawEmplace(other.value_);
         engaged_ = other.engaged_;
         return *this;
       }
 
+      template<class DummyInt = int,
+        std::enable_if_t<std::is_move_constructible<T>::value and std::is_move_assignable<T>::value, DummyInt> = 0>
       optional &operator= ( optional &&other ) noexcept( std::is_nothrow_move_constructible< T >::value && std::is_nothrow_move_assignable< T >::value )
       {
         if( engaged_ )
@@ -242,7 +248,7 @@ namespace Dune
             value_.~value_type();
         }
         else if( other.engaged_ )
-          new( &value_ ) value_type( std::move( other.value_ ) );
+          rawEmplace(std::move(other.value_));
         engaged_ = other.engaged_;
         return *this;
       }
@@ -254,7 +260,7 @@ namespace Dune
         if( engaged_ )
           value_ = std::move( value );
         else
-          new( &value_ ) value_type( std::forward< U >( value ) );
+          rawEmplace(std::forward<U>(value));
         engaged_ = true;
         return *this;
       }
@@ -320,7 +326,7 @@ namespace Dune
         *this = nullopt;
         // note: At this point, the optional is disengaged. If the following
         //       constructor throws, the object is left in a disengaged state.
-        new( &value_ ) value_type( std::forward< Args >( args )... );
+        rawEmplace(std::forward<Args>(args)...);
         engaged_ = true;
       }
 
@@ -342,13 +348,13 @@ namespace Dune
             std::swap( value_, other.value_ );
           else
           {
-            new( &value_ ) value_type( std::move( other.value_ ) );
+            rawEmplace( std::move( other.value_ ) );
             other.value_.~value_type();
           }
         }
         else if( other.engaged_ )
         {
-          new( &other.value_ ) value_type( std::move( value_ ) );
+          other.rawEmplace( std::move( value_ ) );
           value_.~value_type();
         }
       }
@@ -356,6 +362,18 @@ namespace Dune
       /** \} */
 
     private:
+
+      // Construct value using placement new. This is needed
+      // for all assignments and conditional constructions
+      // whenever the original object cannot be assigned.
+      template<class... Args>
+      void rawEmplace(Args&&... args)
+      {
+        // To access the raw storage we need to cast away constness first.
+        // Otherwise placement new is not allowed.
+        new( const_cast<std::remove_const_t<value_type>*>(&value_) ) value_type( std::forward< Args >( args )... );
+      }
+
       bool engaged_;
       union { value_type value_; };
     };

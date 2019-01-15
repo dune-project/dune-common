@@ -304,6 +304,392 @@ namespace Dune
     return {};
   }
 
+
+
+  namespace Impl
+  {
+
+    // Helper class to mimic a pointer for proxy objects.
+    // This is needed to implement operator-> on an iterator
+    // using proxy-values. It stores the proxy value but
+    // provides operator-> like a pointer.
+    template<class ProxyType>
+    class PointerProxy
+    {
+    public:
+      PointerProxy(ProxyType&& p) : p_(p)
+      {}
+
+      ProxyType* operator->()
+      {
+        return &p_;
+      }
+
+      ProxyType p_;
+    };
+
+    // An iterator transforming a wrapped iterator using
+    // an unary function. It inherits the iterator-category
+    // of the underlying iterator.
+    template <class I, class F, class C = typename std::iterator_traits<I>::iterator_category>
+    class TransformedRangeIterator;
+
+
+
+    template <class I, class F>
+    class TransformedRangeIterator<I,F,std::forward_iterator_tag>
+    {
+    public:
+      using iterator_category = std::forward_iterator_tag;
+      using reference = decltype(std::declval<F>()(*(std::declval<I>())));
+      using value_type = std::decay_t<reference>;
+      using pointer = PointerProxy<value_type>;
+
+      // If we later want to allow standalone TransformedRangeIterators,
+      // we could customize the FunctionPointer to be a default-constructible,
+      // copy-assignable type storing a function but acting like a pointer
+      // to function.
+      using FunctionPointer = const F*;
+
+      constexpr TransformedRangeIterator(const I& it, FunctionPointer f) noexcept :
+        it_(it),
+        f_(f)
+      {}
+
+      // Explicitly initialize members. Using a plain
+      //
+      //   constexpr TransformedRangeIterator() noexcept {}
+      //
+      // would default-initialize the members while
+      //
+      //   constexpr TransformedRangeIterator() noexcept : it_(), f_() {}
+      //
+      // leads to value-initialization. This is a case where
+      // both are really different. If it_ is a raw pointer (i.e. POD)
+      // then default-initialization leaves it uninitialized while
+      // value-initialization zero-initializes it.
+      constexpr TransformedRangeIterator() noexcept :
+        it_(),
+        f_()
+      {}
+
+      // Dereferencing returns a value created by the function
+      constexpr reference operator*() const noexcept {
+        return (*f_)(*it_);
+      }
+
+      // Dereferencing returns a value created by the function
+      pointer operator->() const noexcept {
+        return (*f_)(*it_);
+      }
+
+      constexpr TransformedRangeIterator& operator=(const TransformedRangeIterator& other) = default;
+
+      constexpr bool operator==(const TransformedRangeIterator& other) const noexcept {
+        return (it_ == other.it_);
+      }
+
+      constexpr bool operator!=(const TransformedRangeIterator& other) const noexcept {
+        return (it_ != other.it_);
+      }
+
+      TransformedRangeIterator& operator++() noexcept {
+        ++it_;
+        return *this;
+      }
+
+      TransformedRangeIterator operator++(int) noexcept {
+        TransformedRangeIterator copy(*this);
+        ++(*this);
+        return copy;
+      }
+
+    protected:
+      I it_;
+      FunctionPointer f_;
+    };
+
+
+
+    template <class I, class F>
+    class TransformedRangeIterator<I,F,std::bidirectional_iterator_tag> :
+      public TransformedRangeIterator<I,F,std::forward_iterator_tag>
+    {
+    protected:
+      using Base = TransformedRangeIterator<I,F,std::forward_iterator_tag>;
+      using Base::it_;
+      using Base::f_;
+    public:
+      using iterator_category = std::bidirectional_iterator_tag;
+      using reference = typename Base::reference;
+      using value_type = typename Base::value_type;
+      using pointer = typename Base::pointer;
+
+      using FunctionPointer = typename Base::FunctionPointer;
+
+      using Base::Base;
+
+      // Member functions of the forward_iterator that need
+      // to be redefined because the base class methods return a
+      // forward_iterator.
+      constexpr TransformedRangeIterator& operator=(const TransformedRangeIterator& other) = default;
+
+      TransformedRangeIterator& operator++() noexcept {
+        ++it_;
+        return *this;
+      }
+
+      TransformedRangeIterator operator++(int) noexcept {
+        TransformedRangeIterator copy(*this);
+        ++(*this);
+        return copy;
+      }
+
+      // Additional member functions of bidirectional_iterator
+      TransformedRangeIterator& operator--() noexcept {
+        --(this->it_);
+        return *this;
+      }
+
+      TransformedRangeIterator operator--(int) noexcept {
+        TransformedRangeIterator copy(*this);
+        --(*this);
+        return copy;
+      }
+    };
+
+
+
+    template <class I, class F>
+    class TransformedRangeIterator<I,F,std::random_access_iterator_tag> :
+      public TransformedRangeIterator<I,F,std::bidirectional_iterator_tag>
+    {
+    protected:
+      using Base = TransformedRangeIterator<I,F,std::bidirectional_iterator_tag>;
+      using Base::it_;
+      using Base::f_;
+    public:
+      using iterator_category = std::random_access_iterator_tag;
+      using reference = typename Base::reference;
+      using value_type = typename Base::value_type;
+      using pointer = typename Base::pointer;
+      using difference_type = typename std::iterator_traits<I>::difference_type;
+
+      using FunctionPointer = typename Base::FunctionPointer;
+
+      using Base::Base;
+
+      // Member functions of the forward_iterator that need
+      // to be redefined because the base class methods return a
+      // forward_iterator.
+      constexpr TransformedRangeIterator& operator=(const TransformedRangeIterator& other) = default;
+
+      TransformedRangeIterator& operator++() noexcept {
+        ++it_;
+        return *this;
+      }
+
+      TransformedRangeIterator operator++(int) noexcept {
+        TransformedRangeIterator copy(*this);
+        ++(*this);
+        return copy;
+      }
+
+      // Member functions of the bidirectional_iterator that need
+      // to be redefined because the base class methods return a
+      // bidirectional_iterator.
+      TransformedRangeIterator& operator--() noexcept {
+        --(this->it_);
+        return *this;
+      }
+
+      TransformedRangeIterator operator--(int) noexcept {
+        TransformedRangeIterator copy(*this);
+        --(*this);
+        return copy;
+      }
+
+      // Additional member functions of random_access_iterator
+      TransformedRangeIterator& operator+=(difference_type n) noexcept {
+        it_ += n;
+        return *this;
+      }
+
+      TransformedRangeIterator& operator-=(difference_type n) noexcept {
+        it_ -= n;
+        return *this;
+      }
+
+      bool operator<(const TransformedRangeIterator& other) noexcept {
+        return it_<other.it_;
+      }
+
+      bool operator<=(const TransformedRangeIterator& other) noexcept {
+        return it_<=other.it_;
+      }
+
+      bool operator>(const TransformedRangeIterator& other) noexcept {
+        return it_>other.it_;
+      }
+
+      bool operator>=(const TransformedRangeIterator& other) noexcept {
+        return it_>=other.it_;
+      }
+
+      reference operator[](difference_type n) noexcept {
+        return (*f_)(*(it_+n));
+      }
+
+      friend
+      TransformedRangeIterator operator+(const TransformedRangeIterator& it, difference_type n) noexcept {
+        return TransformedRangeIterator(it.it_+n, it.f_);
+      }
+
+      friend
+      TransformedRangeIterator operator+(difference_type n, const TransformedRangeIterator& it) noexcept {
+        return TransformedRangeIterator(n+it.it_, it.f_);
+      }
+
+      friend
+      TransformedRangeIterator operator-(const TransformedRangeIterator& it, difference_type n) noexcept {
+        return TransformedRangeIterator(it.it_-n, it.f_);
+      }
+
+      friend
+      difference_type operator-(const TransformedRangeIterator& first, const TransformedRangeIterator& second) noexcept {
+        return first.it_-second.it_;
+      }
+    };
+
+
+  } // namespace Impl
+
+
+
+  /**
+   * \brief A range transforming the values of another range on-the-fly
+   *
+   * This behaves like a range providing `begin()` and `end()`.
+   * The iterators over this range internally iterate over
+   * the wrapped range. When dereferencing the iterator,
+   * the value is transformed on-the-fly using a given
+   * transformation function leaving the underlying range
+   * unchanged.
+   *
+   * The transformation may either return temorary values
+   * or l-value references. In the former case the range behaves
+   * like a proxy-container. In the latter case it forwards these
+   * references allowing, e.g., to sort a subset of some container
+   * by applying a transformation to an index-range for those values.
+   *
+   * The iterators of the TransformedRangeView have the same
+   * iterator_category as the ones of the wrapped container.
+   *
+   * If range is given as r-value, then the returned TransformedRangeView
+   * stores it by value, if range is given as (const) l-value, then the
+   * TransformedRangeView stores it by (const) reference.
+   *
+   * If R is a value type, then the TransformedRangeView stores the wrapped range by value,
+   * if R is a reference type, then the TransformedRangeView stores the wrapped range by reference.
+   *
+   * \tparam R Underlying range.
+   * \tparam F Unary function used to transform the values in the underlying range.
+   **/
+  template <class R, class F>
+  class TransformedRangeView
+  {
+    using  RawConstIterator = std::decay_t<decltype(std::declval<const R>().begin())>;
+    using  RawIterator = std::decay_t<decltype(std::declval<R>().begin())>;
+
+  public:
+
+    /**
+     * \brief Iterator type
+     *
+     * This inherits the iterator_category of the iterators
+     * of the underlying range.
+     */
+    using const_iterator = Impl::TransformedRangeIterator<RawConstIterator, F>;
+
+    using iterator = Impl::TransformedRangeIterator<RawIterator, F>;
+
+    /**
+     * \brief Construct from range and function
+     */
+    template<class RR>
+    constexpr TransformedRangeView(RR&& rawRange, const F& f) noexcept :
+      rawRange_(std::forward<RR>(rawRange)),
+      f_(f)
+    {}
+
+    /**
+     * \brief Obtain a iterator to the first element
+     *
+     * The life time of the returned iterator is bound to
+     * the life time of the range since it only contains a
+     * pointer to the transformation function stored
+     * in the range.
+     */
+    constexpr const_iterator begin() const noexcept {
+      return const_iterator(rawRange_.begin(), &f_);
+    }
+
+    constexpr iterator begin() noexcept {
+      return iterator(rawRange_.begin(), &f_);
+    }
+
+    /**
+     * \brief Obtain a iterator past the last element
+     *
+     * The life time of the returned iterator is bound to
+     * the life time of the range since it only contains a
+     * pointer to the transformation function stored
+     * in the range.
+     */
+    constexpr const_iterator end() const noexcept {
+      return const_iterator(rawRange_.end(), &f_);
+    }
+
+    constexpr iterator end() noexcept {
+      return iterator(rawRange_.end(), &f_);
+    }
+
+  private:
+    R rawRange_;
+    F f_;
+  };
+
+  /**
+   * \brief Create a TransformedRangeView
+   *
+   * \param range The range the transform
+   * \param f Unary function that should the applied to the entries of the range.
+   *
+   * This behaves like a range providing `begin()` and `end()`.
+   * The iterators over this range internally iterate over
+   * the wrapped range. When dereferencing the iterator,
+   * the value is transformed on-the-fly using a given
+   * transformation function leaving the underlying range
+   * unchanged.
+   *
+   * The transformation may either return temorary values
+   * or l-value references. In the former case the range behaves
+   * like a proxy-container. In the latter case it forwards these
+   * references allowing, e.g., to sort a subset of some container
+   * by applying a transformation to an index-range for those values.
+   *
+   * The iterators of the TransformedRangeView have the same
+   * iterator_category as the ones of the wrapped container.
+   *
+   * If range is an r-value, then the TransformedRangeView stores it by value,
+   * if range is an l-value, then the TransformedRangeView stores it by reference.
+   **/
+  template <class R, class F>
+  auto transformedRangeView(R&& range, const F& f)
+  {
+    return TransformedRangeView<R, F>(std::forward<R>(range), f);
+  }
+
 }
 
 #endif // DUNE_COMMON_RANGE_UTILITIES_HH

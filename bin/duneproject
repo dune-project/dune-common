@@ -70,32 +70,39 @@ pkg_config_dependencies(){
   echo $depends
 }
 
+# modulesexist DEPS MODULES
+#
+# DEPS is a space seperated list of modules the new module should depend on
+# MODULES is a space seperated list of modules that are known to be present
+#
+# Each name in DEPS is checked to see wether it is present in MODULES.  If
+# not, is is checked whether it can be found with pkg-config.  If still no, an
+# error message is issued and modulesexist will return with an exit status
+# indicating failure.
 modulesexist(){
-  allfound=0
+  local status dep found
+  status=0
 
   for dep in $1; do
-    found=0
-    for module in $2; do
-      if [ "$dep" = "$module" ]; then
-	found=1
-	break
-      fi
-    done
-    if [ "$found" = "0" ]; then
-      # Module not found in list, try pkg-config
-      pkg-config $module &> /dev/null
-      found=$?
+    found=false
+    if [[ " $2 " == *" $dep "* ]]; then
+      found=true
     fi
-    if [ "$found" = "0" ]; then
+    # If module not found in list, try pkg-config
+    if ! $found && pkg-config $dep &> /dev/null; then
+       found=true
+    fi
+    if ! $found; then
       echo "ERROR:">&2
       echo "Module with name $dep was not found" >&2
       echo "Did you forget to specify its location" >&2
       echo "in the DUNE_CONTROL_PATH variable?">&2
       echo >&2
-      allfound=1
+      status=1
     fi
   done
-  return $allfound
+
+  return $status
 }
 
 make_unique(){
