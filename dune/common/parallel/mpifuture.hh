@@ -44,7 +44,7 @@ namespace Dune{
   public:
     MPIFuture(bool valid = false)
       : req_(MPI_REQUEST_NULL)
-      , data_(valid?Std::make_optional<typename impl::WRAP_IF_REF<R>::type>({}):Std::nullopt_t{})
+      , data_(valid?Std::optional<typename impl::WRAP_IF_REF<R>::type>(typename impl::WRAP_IF_REF<R>::type()):Std::nullopt_t{})
     {}
 
     // Hide this constructor if R or S is void
