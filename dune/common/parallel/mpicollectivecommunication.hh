@@ -141,9 +141,9 @@ namespace Dune
 
     //! @copydoc Communication::isend
     template<class T>
-    MPIFuture<T> isend(T&& data, int dest_rank, int tag) const
+    MPIFuture<const T> isend(const T&& data, int dest_rank, int tag) const
     {
-      MPIFuture<T> future(std::forward<T>(data));
+      MPIFuture<const T> future(std::forward<const T>(data));
       auto mpidata = future.get_mpidata();
       MPI_Isend(mpidata.ptr(), mpidata.size(), mpidata.type(),
                        dest_rank, tag, communicator, &future.req_);
@@ -262,7 +262,7 @@ namespace Dune
     //! @copydoc Communication::ibarrier
     MPIFuture<void> ibarrier () const
     {
-      MPIFuture<void> future(true);
+      MPIFuture<void> future(true); // make a valid MPIFuture<void>
       MPI_Ibarrier(communicator, &future.req_);
       return future;
     }

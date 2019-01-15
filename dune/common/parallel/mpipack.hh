@@ -50,11 +50,12 @@ namespace Dune {
     void pack(const T& data){
       auto mpidata = getMPIData(data);
       int size = getPackSize(mpidata.size(), _comm, mpidata.type());
-      if(!mpidata.static_size)
+      constexpr bool has_static_size = decltype(getMPIData(std::declval<T&>()))::static_size;
+      if(!has_static_size)
         size += getPackSize(1, _comm, MPI_INT);
       if (_position + size > 0 && size_t(_position + size) > _buffer.size()) // resize buffer if necessary
         _buffer.resize(_position + size);
-      if(!mpidata.static_size){
+      if(!has_static_size){
         int size = mpidata.size();
         MPI_Pack(&size, 1, MPI_INT, _buffer.data(), _buffer.size(),
                  &_position, _comm);

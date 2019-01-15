@@ -13,7 +13,7 @@ namespace Dune{
   namespace impl {
     template<class T>
     struct WRAP_IF_REF{
-      typedef T type;
+      typedef std::remove_const_t<T> type; // work around since Std::optional<const T> cannot be move-constructed
     };
     template<class T>
     struct WRAP_IF_REF<T&>{
@@ -40,12 +40,11 @@ namespace Dune{
     mutable MPI_Status status_;
     Std::optional<typename impl::WRAP_IF_REF<R>::type> data_;
     Std::optional<typename impl::WRAP_IF_REF<S>::type> send_data_;
-    bool valid_;
     friend class Communication<MPI_Comm>;
   public:
-    MPIFuture(bool valid = false) :
-      req_(MPI_REQUEST_NULL),
-      valid_(valid)
+    MPIFuture(bool valid = false)
+      : req_(MPI_REQUEST_NULL)
+      , data_(valid?Std::make_optional<typename impl::WRAP_IF_REF<R>::type>({}):Std::nullopt_t{})
     {}
 
     // Hide this constructor if R or S is void
@@ -54,15 +53,13 @@ namespace Dune{
       req_(MPI_REQUEST_NULL)
       , data_(std::forward<R>(recv_data))
       , send_data_(std::forward<S>(send_data))
-      , valid_(true)
     {}
 
     // hide this constructor if R is void
     template<class V = R>
-    MPIFuture(V&& recv_data, typename std::enable_if_t<!std::is_void<V>::value>* = 0) :
-      req_(MPI_REQUEST_NULL)
+    MPIFuture(V&& recv_data, typename std::enable_if_t<!std::is_void<V>::value>* = 0)
+      : req_(MPI_REQUEST_NULL)
       , data_(std::forward<R>(recv_data))
-      , valid_(true)
     {}
 
     ~MPIFuture() {
@@ -77,13 +74,11 @@ namespace Dune{
 
     MPIFuture(MPIFuture&& f)
       : req_(MPI_REQUEST_NULL)
-      , valid_(false)
+      , data_(std::move(f.data_))
+      , send_data_(std::move(f.send_data_))
     {
       std::swap(req_, f.req_);
       std::swap(status_, f.status_);
-      std::swap(data_, f.data_);
-      std::swap(send_data_, f.send_data_);
-      std::swap(valid_, f.valid_);
     }
 
     MPIFuture& operator=(MPIFuture&& f){
@@ -91,16 +86,15 @@ namespace Dune{
       std::swap(status_, f.status_);
       std::swap(data_, f.data_);
       std::swap(send_data_, f.send_data_);
-      std::swap(valid_, f.valid_);
       return *this;
     }
 
     bool valid() const{
-      return valid_;
+      return (bool)data_;
     }
 
     void wait(){
-      if(!valid_)
+      if(!valid())
         DUNE_THROW(InvalidFutureException, "The MPIFuture is not valid!");
       MPI_Wait(&req_, &status_);
     }
@@ -112,16 +106,17 @@ namespace Dune{
     }
 
     R get() {
-      if(!valid_)
-        DUNE_THROW(InvalidFutureException, "The MPIFuture is not valid!");
       wait();
-      valid_ = false;
-      return std::move(data_.value());
+      R tmp(std::move(data_.value()));
+      data_.reset();
+      return tmp;
     }
 
     S get_send_data(){
       wait();
-      return std::move(send_data_.value());
+      S tmp(std::move(send_data_.value()));
+      send_data_.reset();
+      return tmp;
     }
 
     auto get_mpidata(){
