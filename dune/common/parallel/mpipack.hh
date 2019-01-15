@@ -28,8 +28,7 @@ namespace Dune {
     MPI_Comm _comm;
 
     friend struct MPIData<MPIPack>;
-    friend struct MPIData<MPIPack&>;
-    friend struct MPIData<const MPIPack&>;
+    friend struct MPIData<const MPIPack>;
   public:
     MPIPack(Communication<MPI_Comm> comm, std::size_t size = 0)
       : _buffer(size)
@@ -169,15 +168,15 @@ namespace Dune {
 
   };
 
-  template<class T>
-  struct MPIData<T, std::enable_if_t<std::is_same<std::decay_t<T>, MPIPack>::value, void>> {
+  template<class P>
+  struct MPIData<P, std::enable_if_t<std::is_same<std::remove_const_t<P>, MPIPack>::value>> {
   protected:
-    friend MPIData<T> getMPIData<T>(T&& t);
-    MPIData(T&& t) :
-      data_(std::forward<T>(t))
+    friend auto getMPIData<P>(P& t);
+    MPIData(P& t) :
+      data_(t)
     {}
   public:
-    static constexpr bool static_size = false;
+    static constexpr bool static_size = std::is_const<P>::value;
 
     void* ptr() {
       return (void*) data_._buffer.data();
@@ -191,15 +190,11 @@ namespace Dune {
       return MPI_PACKED;
     }
 
-    T get(){
-      return std::forward<T>(data_);
-    }
-
     void resize(int size){
       data_.resize(size);
     }
   protected:
-    T data_;
+    P& data_;
   };
 
 } // end namespace Dune

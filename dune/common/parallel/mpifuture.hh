@@ -3,11 +3,27 @@
 #ifndef DUNE_COMMON_PARALLEL_MPIFUTURE_HH
 #define DUNE_COMMON_PARALLEL_MPIFUTURE_HH
 
-#include "future.hh"
-#include "mpidata.hh"
+#include <dune/common/std/optional.hh>
+#include <dune/common/parallel/future.hh>
+#include <dune/common/parallel/mpidata.hh>
 
 #if HAVE_MPI
 namespace Dune{
+
+  namespace impl {
+    template<class T>
+    struct WRAP_IF_REF{
+      typedef T type;
+    };
+    template<class T>
+    struct WRAP_IF_REF<T&>{
+      typedef std::reference_wrapper<std::remove_reference_t<T>> type;
+    };
+    template<>
+    struct WRAP_IF_REF<void>{
+      typedef struct{} type;
+    };
+  }
 
   /*! \brief Provides a future-like object for MPI communication.  It contains
     the object that will be received and might contain also a sending object,
@@ -22,8 +38,8 @@ namespace Dune{
     friend class when_any_MPIFuture;
     mutable MPI_Request req_;
     mutable MPI_Status status_;
-    std::unique_ptr<MPIData<R>> data_;
-    std::unique_ptr<MPIData<S>> send_data_;
+    Std::optional<typename impl::WRAP_IF_REF<R>::type> data_;
+    Std::optional<typename impl::WRAP_IF_REF<S>::type> send_data_;
     bool valid_;
     friend class Communication<MPI_Comm>;
   public:
@@ -36,8 +52,8 @@ namespace Dune{
     template<class V = R, class U = S>
     MPIFuture(V&& recv_data, U&& send_data, typename std::enable_if_t<!std::is_void<V>::value && !std::is_void<U>::value>* = 0) :
       req_(MPI_REQUEST_NULL)
-      , data_(std::make_unique<MPIData<R>>(getMPIData(std::forward<R>(recv_data))))
-      , send_data_(std::make_unique<MPIData<S>>(getMPIData(std::forward<S>(send_data))))
+      , data_(std::forward<R>(recv_data))
+      , send_data_(std::forward<S>(send_data))
       , valid_(true)
     {}
 
@@ -45,7 +61,7 @@ namespace Dune{
     template<class V = R>
     MPIFuture(V&& recv_data, typename std::enable_if_t<!std::is_void<V>::value>* = 0) :
       req_(MPI_REQUEST_NULL)
-      , data_(std::make_unique<MPIData<R>>(getMPIData(std::forward<R>(recv_data))))
+      , data_(std::forward<R>(recv_data))
       , valid_(true)
     {}
 
@@ -100,12 +116,20 @@ namespace Dune{
         DUNE_THROW(InvalidFutureException, "The MPIFuture is not valid!");
       wait();
       valid_ = false;
-      return data_->get();
+      return std::move(data_.value());
     }
 
     S get_send_data(){
       wait();
-      return send_data_.get();
+      return std::move(send_data_.value());
+    }
+
+    auto get_mpidata(){
+      return getMPIData<R>(*data_);
+    }
+
+    auto get_send_mpidata(){
+      return getMPIData<S>(*send_data_);
     }
   };
 }

@@ -24,6 +24,7 @@
 #include <dune/common/parallel/collectivecommunication.hh>
 #include <dune/common/parallel/mpitraits.hh>
 #include <dune/common/parallel/mpifuture.hh>
+#include <dune/common/parallel/mpidata.hh>
 
 namespace Dune
 {
@@ -143,7 +144,8 @@ namespace Dune
     MPIFuture<T> isend(T&& data, int dest_rank, int tag) const
     {
       MPIFuture<T> future(std::forward<T>(data));
-      MPI_Isend(future.data_->ptr(), future.data_->size(), future.data_->type(),
+      auto mpidata = future.get_mpidata();
+      MPI_Isend(mpidata.ptr(), mpidata.size(), mpidata.type(),
                        dest_rank, tag, communicator, &future.req_);
       return future;
     }
@@ -155,7 +157,7 @@ namespace Dune
       auto mpi_data = getMPIData(data);
       MPI_Recv(mpi_data.ptr(), mpi_data.size(), mpi_data.type(),
                       source_rank, tag, communicator, status);
-      return std::forward<T>(mpi_data.get());
+      return std::forward<T>(data);
     }
 
     //! @copydoc Communication::irecv
@@ -163,17 +165,18 @@ namespace Dune
     MPIFuture<T> irecv(T&& data, int source_rank, int tag) const
     {
       MPIFuture<T> future(std::forward<T>(data));
-      MPI_Irecv(future.data_->ptr(), future.data_->size(), future.data_->type(),
+      auto mpidata = future.get_mpidata();
+      MPI_Irecv(mpidata.ptr(), mpidata.size(), mpidata.type(),
                              source_rank, tag, communicator, &future.req_);
       return future;
     }
 
     template<class T>
-    T rrecv(T&& data, int source_rank, int tag, MPI_Status* status = MPI_STATUS_IGNORE) const
+    T rrecv(T data, int source_rank, int tag, MPI_Status* status = MPI_STATUS_IGNORE) const
     {
       MPI_Status _status;
       MPI_Message _message;
-      auto mpi_data = getMPIData(std::forward<T>(data));
+      auto mpi_data = getMPIData(data);
       static_assert(!mpi_data.static_size, "rrecv work only for non-static-sized types.");
       if(status == MPI_STATUS_IGNORE)
         status = &_status;
@@ -182,7 +185,7 @@ namespace Dune
       MPI_Get_count(status, mpi_data.type(), &size);
       mpi_data.resize(size);
       MPI_Mrecv(mpi_data.ptr(), mpi_data.size(), mpi_data.type(), &_message, status);
-      return std::forward<T>(mpi_data.get());
+      return data;
     }
 
     //! @copydoc Communication::sum
@@ -276,9 +279,10 @@ namespace Dune
     template<class T>
     MPIFuture<T> ibroadcast(T&& data, int root) const{
       MPIFuture<T> future(std::forward<T>(data));
-      MPI_Ibcast(future.data_->ptr(),
-                 future.data_->size(),
-                 future.data_->type(),
+      auto mpidata = future.get_mpidata();
+      MPI_Ibcast(mpidata.ptr(),
+                 mpidata.size(),
+                 mpidata.type(),
                  root,
                  communicator,
                  &future.req_);
@@ -299,10 +303,12 @@ namespace Dune
     template<class TIN, class TOUT = std::vector<TIN>>
     MPIFuture<TOUT, TIN> igather(TIN&& data_in, TOUT&& data_out, int root){
       MPIFuture<TOUT, TIN> future(std::forward<TOUT>(data_out), std::forward<TIN>(data_in));
-      assert(root != me || future.send_data_->size()*procs <= future.data_->size());
-      int outlen = me==root * future.send_data_->size();
-      MPI_Igather(future.send_data_->ptr(), future.send_data_->size(), future.send_data_->type(),
-                  future.data_->ptr(), outlen, future.data_->type(),
+      auto mpidata_in = future.get_send_mpidata();
+      auto mpidata_out = future.get_mpidata();
+      assert(root != me || mpidata_in.size()*procs <= mpidata_out.size());
+      int outlen = me==root * mpidata_in.size();
+      MPI_Igather(mpidata_in.ptr(), mpidata_in.size(), mpidata_in.type(),
+                  mpidata_out.ptr(), outlen, mpidata_out.type(),
                   root, communicator, &future.req_);
       return future;
     }
@@ -331,9 +337,11 @@ namespace Dune
     MPIFuture<TOUT, TIN> iscatter(TIN&& data_in, TOUT&& data_out, int root) const
     {
       MPIFuture<TOUT, TIN> future(std::forward<TOUT>(data_out), std::forward<TIN>(data_in));
-      int inlen = me==root * future.send_data_->size();
-      MPI_Iscatter(future.send_data_->ptr(), inlen, future.send_data_->type(),
-                  future.data_->ptr(), future.data_->size(), future.data_->type(),
+      auto mpidata_in = future.get_send_mpidata();
+      auto mpidata_out = future.get_mpidata();
+      int inlen = me==root * mpidata_in.size();
+      MPI_Iscatter(mpidata_in.ptr(), inlen, mpidata_in.type(),
+                  mpidata_out.ptr(), mpidata_out.size(), mpidata_out.type(),
                   root, communicator, &future.req_);
       return future;
     }
@@ -367,10 +375,12 @@ namespace Dune
     MPIFuture<TOUT, TIN> iallgather(TIN&& data_in, TOUT&& data_out) const
     {
       MPIFuture<TOUT, TIN> future(std::forward<TOUT>(data_out), std::forward<TIN>(data_in));
-      assert(future.send_data_->size()*procs <= future.data_->size());
-      int outlen = future.send_data_->size();
-      MPI_Iallgather(future.send_data_->ptr(), future.send_data_->size(), future.send_data_->type(),
-                  future.data_->ptr(), outlen, future.data_->type(),
+      auto mpidata_in = future.get_send_mpidata();
+      auto mpidata_out = future.get_mpidata();
+      assert(mpidata_in.size()*procs <= mpidata_out.size());
+      int outlen = mpidata_in.size();
+      MPI_Iallgather(mpidata_in.ptr(), mpidata_in.size(), mpidata_in.type(),
+                  mpidata_out.ptr(), outlen, mpidata_out.type(),
                   communicator, &future.req_);
       return future;
     }
@@ -408,10 +418,12 @@ namespace Dune
     template<class BinaryFunction, class TIN, class TOUT = TIN>
     MPIFuture<TOUT, TIN> iallreduce(TIN&& data_in, TOUT&& data_out) const {
       MPIFuture<TOUT, TIN> future(std::forward<TOUT>(data_out), std::forward<TIN>(data_in));
-      assert(future.data_->size() == future.send_data_->size());
-      assert(future.data_->type() == future.send_data_->type());
-      MPI_Iallreduce(future.send_data_->ptr(), future.data_->ptr(),
-                     future.data_->size(), future.data_->type(),
+      auto mpidata_in = future.get_send_mpidata();
+      auto mpidata_out = future.get_mpidata();
+      assert(mpidata_out.size() == mpidata_in.size());
+      assert(mpidata_out.type() == mpidata_in.type());
+      MPI_Iallreduce(mpidata_in.ptr(), mpidata_out.ptr(),
+                     mpidata_out.size(), mpidata_out.type(),
                      (Generic_MPI_Op<TIN, BinaryFunction>::get()),
                      communicator, &future.req_);
       return future;
@@ -421,8 +433,9 @@ namespace Dune
     template<class BinaryFunction, class T>
     MPIFuture<T> iallreduce(T&& data) const{
       MPIFuture<T> future(std::forward<T>(data));
-      MPI_Iallreduce(MPI_IN_PLACE, future.data_->ptr(),
-                     future.data_->size(), future.data_->type(),
+      auto mpidata = getMPIData(future.data_.value());
+      MPI_Iallreduce(MPI_IN_PLACE, mpidata.ptr(),
+                     mpidata.size(), mpidata.type(),
                      (Generic_MPI_Op<T, BinaryFunction>::get()),
                      communicator, &future.req_);
       return future;

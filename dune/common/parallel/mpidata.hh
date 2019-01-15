@@ -31,22 +31,21 @@ namespace Dune{
   template<class, class = void>
   struct MPIData;
 
-// free function for template argument deduction
   template<class T>
-  MPIData<T> getMPIData(T&& t){
-    return MPIData<T>(std::forward<T>(t));
+  auto getMPIData(T& t){
+    return MPIData<T>(t);
   }
 
   // Default implementation for static datatypes
   template<class T, class Enable>
   struct MPIData
   {
-  private:
-    friend MPIData<T> getMPIData<T>(T&& t);
+    friend auto getMPIData<T>(T&);
   protected:
+    T& data_;
 
-    MPIData(T&& t)
-      : data_(std::forward<T>(t))
+    MPIData(T& t)
+      : data_(t)
     {}
 
   public:
@@ -60,15 +59,9 @@ namespace Dune{
       return 1;
     }
 
-    T get(){
-      return std::forward<T>(data_);
-    }
-
     MPI_Datatype type() const {
       return MPITraits<T>::getType();
     }
-  protected:
-    T data_;
   };
 
   // dummy implementation for void
@@ -99,12 +92,12 @@ namespace Dune{
                       || std::is_same<std::decay_t<T>, std::string>::value>>{
 
   protected:
-    friend MPIData<T> getMPIData<T>(T&&);
-    MPIData(T&& t)
-      : data_(std::forward<T>(t))
+    friend auto getMPIData<T>(T&);
+    MPIData(T& t)
+      : data_(t)
     {}
   public:
-    static constexpr bool static_size = false;
+    static constexpr bool static_size = std::is_const<T>::value;
     void* ptr() {
       return (void*) data_.data();
     }
@@ -114,16 +107,16 @@ namespace Dune{
     MPI_Datatype type() const{
       return MPITraits<typename std::decay_t<T>::value_type>::getType();
     }
-    T get(){
-      return std::forward<T>(data_);
-    }
 
-    void resize(int size){
+    template<class S = T>
+    auto /*void*/ resize(int size)
+      -> std::enable_if_t<!std::is_const<S>::value>
+    {
       data_.resize(size);
     }
 
   protected:
-    T data_;
+    T& data_;
   };
 
 
@@ -135,12 +128,15 @@ namespace Dune{
   struct MPIData<T, std::enable_if_t<is_DynamicVector<std::decay_t<T>>::value>>
   {
   protected:
-    friend MPIData<T> getMPIData<T>(T&&);
-    MPIData(T&& t)
-      : data_(std::forward<T>(t))
+    friend auto getMPIData<T>(T&);
+
+    T& data_;
+
+    MPIData(T& t)
+      : data_(t)
     {}
   public:
-    static constexpr bool static_size = false;
+    static constexpr bool static_size = std::is_const<T>::value;
 
     void* ptr() {
       return (void*) data_.container().data();
@@ -154,15 +150,12 @@ namespace Dune{
       return MPITraits<typename std::decay_t<T>::value_type>::getType();
     }
 
-    T get(){
-      return std::forward<T>(data_);
-    }
-
-    void resize(int size){
+    template<class S = T>
+    auto /*void*/ resize(int size)
+      -> std::enable_if_t<!std::is_const<S>::value>
+    {
       data_.resize(size);
     }
-  protected:
-    T data_;
   };
 
 }
