@@ -14,6 +14,7 @@ install(FILES
         future.hh
         mpifuture.hh
         mpidata.hh
+        mpipack.hh
         mpihelper.hh
         mpitraits.hh
         plocalindex.hh

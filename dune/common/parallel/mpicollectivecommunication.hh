@@ -154,10 +154,11 @@ namespace Dune
     template<class T>
     T recv(T&& data, int source_rank, int tag, MPI_Status* status = MPI_STATUS_IGNORE) const
     {
-      auto mpi_data = getMPIData(data);
+      T lvalue_data(std::forward<T>(data));
+      auto mpi_data = getMPIData(lvalue_data);
       MPI_Recv(mpi_data.ptr(), mpi_data.size(), mpi_data.type(),
                       source_rank, tag, communicator, status);
-      return std::forward<T>(data);
+      return lvalue_data;
     }
 
     //! @copydoc Communication::irecv
@@ -172,11 +173,12 @@ namespace Dune
     }
 
     template<class T>
-    T rrecv(T data, int source_rank, int tag, MPI_Status* status = MPI_STATUS_IGNORE) const
+    T rrecv(T&& data, int source_rank, int tag, MPI_Status* status = MPI_STATUS_IGNORE) const
     {
       MPI_Status _status;
       MPI_Message _message;
-      auto mpi_data = getMPIData(data);
+      T lvalue_data(std::forward<T>(data));
+      auto mpi_data = getMPIData(lvalue_data);
       static_assert(!mpi_data.static_size, "rrecv work only for non-static-sized types.");
       if(status == MPI_STATUS_IGNORE)
         status = &_status;
@@ -185,7 +187,7 @@ namespace Dune
       MPI_Get_count(status, mpi_data.type(), &size);
       mpi_data.resize(size);
       MPI_Mrecv(mpi_data.ptr(), mpi_data.size(), mpi_data.type(), &_message, status);
-      return data;
+      return lvalue_data;
     }
 
     //! @copydoc Communication::sum

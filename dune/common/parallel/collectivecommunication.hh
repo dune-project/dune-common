@@ -118,7 +118,7 @@ namespace Dune
         @returns Future<T> containing the send buffer, completes when data is send
      */
     template<class T>
-    PseudoFuture<T> isend(T&& data, int dest_rank, int tag){
+    PseudoFuture<T> isend(const T&& data, int dest_rank, int tag){
       DUNE_UNUSED_PARAMETER(data);
       DUNE_UNUSED_PARAMETER(dest_rank);
       DUNE_UNUSED_PARAMETER(tag);
@@ -148,6 +148,15 @@ namespace Dune
       DUNE_THROW(ParallelError, "This method is not supported in sequential programs");
     }
 
+    template<class T>
+    T rrecv(T&& data, int source_rank, int tag, void* status = 0) const
+    {
+      DUNE_UNUSED_PARAMETER(data);
+      DUNE_UNUSED_PARAMETER(source_rank);
+      DUNE_UNUSED_PARAMETER(tag);
+      DUNE_UNUSED_PARAMETER(status);
+      DUNE_THROW(ParallelError, "This method is not supported in sequential programs");
+    }
     /** @brief  Compute the sum of the argument over all processes and
             return the result in every process. Assumes that T has an operator+
      */
