@@ -42,7 +42,8 @@ namespace Dune {
     MPIPack(MPIPack&&) = default;
     MPIPack& operator = (MPIPack&& other) = default;
 
-    /** @brief Packs the data into the object.
+    /** @brief Packs the data into the object. Enlarges the internal buffer if
+     * necessary.
      *
      * @throw MPIError
      */
@@ -114,6 +115,7 @@ namespace Dune {
     }
 
     /** @brief Resizes the internal buffer.
+        \param size new size of internal buffer
      */
     void resize(int size){
       _buffer.resize(size);
@@ -152,7 +154,7 @@ namespace Dune {
     }
 
     /** @brief Returns the size of the data needed to store the data
-     * in an MPIPack.
+     * in an MPIPack. See `MPI_Pack_size`.
      */
     static int getPackSize(int len, const MPI_Comm& comm, const MPI_Datatype& dt){
       int size;

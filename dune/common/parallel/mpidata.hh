@@ -16,13 +16,13 @@
  * @{
  */
 /**
- * @file @brief Interface class to translate objects to a
- * MPI_Datatype, void* and size used for MPI calls. It can be used for
- * values types as well as for reference types. Furthermore it keeps
- * the object until it is deconstructed. Static datatypes are
- * supported by `Dune::MPITraits`.
+ * @file @brief Interface class to translate objects to a MPI_Datatype, void*
+ * and size used for MPI calls. Furthermore it can be used to resize the object
+ * if possible. This makes it possible to receive a message with variable
+ * size. See `Communication::rrecv`.
  *
- * To 'register' a new dynamic type for MPI communication just specialize MPIData.
+ * To 'register' a new dynamic type for MPI communication specialize `MPIData` or
+ * overload `getMPIData`.
  *
  */
 
@@ -53,6 +53,7 @@ namespace Dune{
       return (void*)&data_;
     }
 
+    // indicates whether the datatype can be resized
     static constexpr bool static_size = true;
 
     int size() const{
