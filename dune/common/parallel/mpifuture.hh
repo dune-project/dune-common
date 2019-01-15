@@ -13,7 +13,7 @@ namespace Dune{
   namespace impl {
     template<class T>
     struct WRAP_IF_REF{
-      typedef std::remove_const_t<T> type; // work around since Std::optional<const T> cannot be move-constructed
+      typedef T type;
     };
     template<class T>
     struct WRAP_IF_REF<T&>{
