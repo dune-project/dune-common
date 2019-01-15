@@ -8,14 +8,20 @@
 
 #include <dune/common/simd/test.hh>
 
+using Rebinds = Dune::Simd::RebindList<
+#cmake @template@
+  @SCALAR@,
+#cmake @endtemplate@
+  Dune::Simd::EndMark>;
+
 namespace Dune {
   namespace Simd {
 
 #cmake @template@
-    extern template void UnitTest::checkVector<@SCALAR@>();
+    extern template void UnitTest::checkVector<@SCALAR@, Rebinds>();
 #cmake @endtemplate@
 
-    extern template void UnitTest::checkMask<bool>();
+    extern template void UnitTest::checkMask<bool, Rebinds>();
 
   } // namespace Simd
 } // namespace Dune

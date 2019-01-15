@@ -195,11 +195,11 @@ namespace Dune {
 
       //! should have a member type \c type
       /**
-       * Implements `Simd::Index`.  `V` will never have cv or reference
-       * qualifiers, no need to strip those.
+       * Implements `Simd::Rebind`.  `V` and `S` will never have cv or
+       * reference qualifiers, no need to strip those.
        */
-      template<class V, class SFINAETag = void>
-      struct IndexType;
+      template<class S, class V, class SFINAETag = void>
+      struct RebindType;
 
       //! should have a member type \c type
       /**

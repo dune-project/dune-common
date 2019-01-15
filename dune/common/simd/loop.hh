@@ -39,7 +39,8 @@ namespace Dune {
     LoopSIMD() {}
 
     //constructor initializing the content with a given value
-    template<class I>
+    template<class I,
+             std::enable_if_t<std::is_same<I, Simd::Scalar<I> >::value>* = nullptr>
     LoopSIMD(I i) : LoopSIMD() {
       this->fill(i);
     }
@@ -281,9 +282,9 @@ namespace Dune {
         using type = T;
       };
 
-      template<class T, std::size_t S>
-      struct IndexType<LoopSIMD<T,S>> {
-        using type =  LoopSIMD<std::size_t,S>;
+      template<class U, class T, std::size_t S>
+      struct RebindType<U, LoopSIMD<T,S>> {
+        using type =  LoopSIMD<U,S>;
       };
 
       template<class T, std::size_t S>
@@ -317,6 +318,27 @@ namespace Dune {
         for(std::size_t i=0; i<S; i++) {
           out[i] = mask[i] ? ifTrue[i] : ifFalse[i];
         }
+        return out;
+      }
+
+      // template<class M, class V>
+      // auto cond(ADLTag<5, std::is_same<M, LoopSIMD<bool,Simd::lanes<V>()> >::value>,
+      //           M mask, V ifTrue, V ifFalse) {
+      //   Simd::Mask<V> native_mask(false);
+      //   for(auto l : range(Simd::lanes(mask)))
+      //     Simd::lane(l, native_mask) = Simd::lane(l, mask);
+      //   return cond(std::move(native_mask),
+      //               std::move(ifTrue), std::move(ifFalse));
+      // }
+
+      template<class M, class T>
+      auto cond(ADLTag<5, std::is_same<bool, Scalar<M> >::value>, M mask,
+                LoopSIMD<T,Simd::lanes<M>()> ifTrue,
+                LoopSIMD<T,Simd::lanes<M>()> ifFalse)
+      {
+        LoopSIMD<T,Simd::lanes<M>()> out;
+        for(auto l : range(Simd::lanes(mask)))
+          out[l] = Simd::lane(l, mask) ? ifTrue[l] : ifFalse[l];
         return out;
       }
 
