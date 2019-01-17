@@ -137,9 +137,9 @@ namespace Dune {
 
       // "cast" into a prvalue
       template<class T>
-      static T prvalue(T t)
+      static std::decay_t<T> prvalue(T &&t)
       {
-        return t;
+        return std::forward<T>(t);
       }
 
       // whether the vector is 42 in all lanes
@@ -760,7 +760,8 @@ namespace Dune {
       struct OpInfixComma {};
 
       template<class T1, class T2>
-      void checkCommaOp(std::decay_t<T1> val1, std::decay_t<T2> val2)
+      void checkCommaOp(const std::decay_t<T1> &val1,
+                        const std::decay_t<T2> &val2)
       {
 #define DUNE_SIMD_OPNAME (className<OpInfixComma(T1, T2)>())
         static_assert(std::is_same<decltype((std::declval<T1>(),

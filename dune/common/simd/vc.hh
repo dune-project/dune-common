@@ -423,7 +423,7 @@ namespace Dune {
       template<class V>
       V cond(ADLTag<5, VcImpl::IsVector<V>::value &&
                        !VcImpl::IsMask<V>::value>,
-             Mask<V> mask, V ifTrue, V ifFalse)
+             const Mask<V> &mask, const V &ifTrue, const V &ifFalse)
       {
         return Vc::iif(mask, ifTrue, ifFalse);
       }
