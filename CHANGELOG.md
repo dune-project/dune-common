@@ -16,6 +16,7 @@
     directly set the CMake variable `DUNE_PYTHON_VIRTUALENV_PATH` to the directory in which to
     create the virtualenv.
 
+-   The `dune_symlink_to_sources_files` cmake function now has a `DESTINATION` argument.
 
 # Release 2.6
 
