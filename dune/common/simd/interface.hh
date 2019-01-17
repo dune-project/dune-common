@@ -319,7 +319,7 @@ namespace Dune {
      * Implemented by `Overloads::cond()`.
      */
     template<class V>
-    V cond(Mask<V> mask, V ifTrue, V ifFalse)
+    V cond(const Mask<V> &mask, const V &ifTrue, const V &ifFalse)
     {
       return cond(Overloads::ADLTag<7>{}, mask, ifTrue, ifFalse);
     }

@@ -27,7 +27,7 @@ namespace Dune {
       T value_;
 
     public:
-      Inserter(T value) : value_(value) {}
+      Inserter(const T &value) : value_(value) {}
 
       template<class Stream,
                class = std::enable_if_t<std::is_base_of<std::ios_base,
