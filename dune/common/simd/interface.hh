@@ -305,6 +305,48 @@ namespace Dune {
       return lane(Overloads::ADLTag<7>{}, l, std::forward<V>(v));
     }
 
+    //! Cast an expression from one implementation to another
+    /**
+     * Implemented by `Overloads::implCast()`
+     *
+     * Requires the scalar type and the number of lanes to match exactly.
+     *
+     * This is particularly useful for masks, which often know the type they
+     * were derived from.  This can become a problem when doing a conditional
+     * operation e.g. on some floating point vector type, but with a mask
+     * derived from some index vector type.
+     *
+     * \note One of the few functions that explicitly take a template
+     *       argument (`V` in this case).
+     */
+    template<class V, class U>
+    constexpr V implCast(U &&u)
+    {
+      static_assert(std::is_same<Scalar<V>, Scalar<U> >::value,
+                    "Scalar types must match exactly in implCast");
+      static_assert(lanes<V>() == lanes<U>(),
+                    "Number of lanes must match in implCast");
+      return implCast(Overloads::ADLTag<7>{}, MetaType<std::decay_t<V> >{},
+                      std::forward<U>(u));
+    }
+
+    //! Broadcast a scalar to a vector explicitly
+    /**
+     * Implemented by `Overloads::broadcast()`
+     *
+     * This is useful because the syntax for broadcasting can vary wildly
+     * between implementations.
+     *
+     * \note One of the few functions that explicitly take a template
+     *       argument (`V` in this case).
+     */
+    template<class V, class S>
+    constexpr V broadcast(S s)
+    {
+      return broadcast(Overloads::ADLTag<7>{}, MetaType<std::decay_t<V> >{},
+                       std::move(s));
+    }
+
     //! Like the ?: operator
     /**
      * Equivalent to
@@ -412,23 +454,6 @@ namespace Dune {
     auto maskAnd(const V1 &v1, const V2 &v2)
     {
       return maskAnd(Overloads::ADLTag<7>{}, v1, v2);
-    }
-
-    //! Broadcast a scalar to a vector explicitly
-    /**
-     * Implemented by `Overloads::broadcast()`
-     *
-     * This is useful because the syntax for broadcasting can vary wildly
-     * between implementations.
-     *
-     * \note One of the few functions that explicitly take a template
-     *       argument (`V` in this case).
-     */
-    template<class V, class S>
-    constexpr V broadcast(S s)
-    {
-      return broadcast(Overloads::ADLTag<7>{}, MetaType<std::decay_t<V> >{},
-                       std::move(s));
     }
 
     //! @}
