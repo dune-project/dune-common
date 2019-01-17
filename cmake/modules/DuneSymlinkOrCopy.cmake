@@ -165,7 +165,8 @@ function(dune_symlink_to_source_files)
         message(WARNING "Your module wanted to create symlinks, but you cannot do that on your platform.")
         set(DUNE_WINDOWS_SYMLINK_WARNING)
       endif()
-      dune_add_copy_command(${f})
+      execute_process(COMMAND ${CMAKE_COMMAND} "-E" "copy" "${CMAKE_CURRENT_SOURCE_DIR}/${f}" "${CMAKE_CURRENT_BINARY_DIR}/${f}")
+      # create a copy
     else()
       # create symlink
       execute_process(COMMAND ${CMAKE_COMMAND} "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/${f}" "${CMAKE_CURRENT_BINARY_DIR}/${f}")
