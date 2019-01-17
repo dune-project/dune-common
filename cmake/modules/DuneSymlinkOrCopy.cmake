@@ -94,8 +94,14 @@
 #
 #       The list of files to symlink
 #
-#    Create symlinks in the current build directory that
-#    point to files in the source directory. This is usually
+#    .. cmake_param:: DESTINATION
+#       :multi:
+#       :required:
+#
+#       Relative path of the target directory
+#
+#    Create symlinks in the build tree that
+#    point to particular files in the source directory. This is usually
 #    used for grid and ini files and the like. On Windows systems,
 #    a warning is issued and copying is used as a fallback to
 #    symlinking.
@@ -152,24 +158,30 @@ endfunction(dune_symlink_to_source_tree)
 function(dune_symlink_to_source_files)
   # parse arguments
   include(CMakeParseArguments)
-  cmake_parse_arguments(ARG "" "" "FILES" ${ARGN})
+  cmake_parse_arguments(ARG "" "DESTINATION" "FILES" ${ARGN})
   if(ARG_UNPARSED_ARGUMENTS)
     message(WARNING "You are using dune_symlink_to_source_files without named arguments (or have typos in your named arguments)!")
   endif()
 
   # create symlinks for all given files
   foreach(f ${ARG_FILES})
+    # check whether there is an explicitly given destination
+    if(ARG_DESTINATION)
+      set(destination "${ARG_DESTINATION}/")
+    else()
+      set(destination "")
+    endif()
     # check for Windows to issue a warning
     if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
       if(NOT DEFINED DUNE_WINDOWS_SYMLINK_WARNING)
         message(WARNING "Your module wanted to create symlinks, but you cannot do that on your platform.")
         set(DUNE_WINDOWS_SYMLINK_WARNING)
       endif()
-      execute_process(COMMAND ${CMAKE_COMMAND} "-E" "copy" "${CMAKE_CURRENT_SOURCE_DIR}/${f}" "${CMAKE_CURRENT_BINARY_DIR}/${f}")
       # create a copy
+      execute_process(COMMAND ${CMAKE_COMMAND} "-E" "copy" "${CMAKE_CURRENT_SOURCE_DIR}/${f}" "${CMAKE_CURRENT_BINARY_DIR}/${destination}${f}")
     else()
       # create symlink
-      execute_process(COMMAND ${CMAKE_COMMAND} "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/${f}" "${CMAKE_CURRENT_BINARY_DIR}/${f}")
+      execute_process(COMMAND ${CMAKE_COMMAND} "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/${f}" "${CMAKE_CURRENT_BINARY_DIR}/${destination}${f}")
     endif()
   endforeach()
 endfunction(dune_symlink_to_source_files)
