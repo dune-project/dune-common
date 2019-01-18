@@ -20,6 +20,7 @@
 #include <dune/common/classname.hh>
 #include <dune/common/hybridutilities.hh>
 #include <dune/common/simd/io.hh>
+#include <dune/common/simd/loop.hh>
 #include <dune/common/simd/simd.hh>
 #include <dune/common/std/type_traits.hh>
 #include <dune/common/typelist.hh>
@@ -473,6 +474,48 @@ namespace Dune {
           DUNE_SIMD_CHECK(is42(vec)); }
         // { Scalar<V> ref = 42;            V vec = {std::move(ref)};
         //   DUNE_SIMD_CHECK(is42(vec)); }
+      }
+
+      // check the implCast function
+      template<class FromV, class ToV>
+      void checkImplCast()
+      {
+        { // lvalue arg
+          FromV fromVec = make123<FromV>();
+          auto toVec = implCast<ToV>(fromVec);
+          static_assert(std::is_same<decltype(toVec), ToV>::value,
+                        "Unexpected result type for implCast<ToV>(FromV&)");
+          DUNE_SIMD_CHECK(is123(fromVec));
+          DUNE_SIMD_CHECK(is123(toVec));
+        }
+
+        { // const lvalue arg
+          const FromV fromVec = make123<FromV>();
+          auto toVec = implCast<ToV>(fromVec);
+          static_assert(std::is_same<decltype(toVec), ToV>::value,
+                        "Unexpected result type for implCast<ToV>(const "
+                        "FromV&)");
+          DUNE_SIMD_CHECK(is123(toVec));
+        }
+
+        { // rvalue arg
+          auto toVec = implCast<ToV>(make123<FromV>());
+          static_assert(std::is_same<decltype(toVec), ToV>::value,
+                        "Unexpected result type for implCast<ToV>(FromV&&)");
+          DUNE_SIMD_CHECK(is123(toVec));
+        }
+      }
+
+      // check the implCast function
+      template<class V>
+      void checkImplCast()
+      {
+        // check against LoopSIMD
+        using LoopV = Dune::LoopSIMD<Scalar<V>, lanes<V>()>;
+
+        checkImplCast<V, V>();
+        checkImplCast<V, LoopV>();
+        checkImplCast<LoopV, V>();
       }
 
       // check the broadcast function
@@ -1630,6 +1673,7 @@ namespace Dune {
       checkDefaultConstruct<V>();
       checkLane<V>();
       checkCopyMoveConstruct<V>();
+      checkImplCast<V>();
       checkBroadcast<V>();
       checkBroadcastVectorConstruct<V>();
       checkBracedAssign<V>();
@@ -1676,6 +1720,7 @@ namespace Dune {
       checkDefaultConstruct<M>();
       checkLane<M>();
       checkCopyMoveConstruct<M>();
+      checkImplCast<M>();
       checkBroadcast<M>();
       checkBroadcastMaskConstruct<M>();
       checkBracedAssign<M>();

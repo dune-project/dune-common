@@ -44,6 +44,30 @@ namespace Dune {
       template<class V>
       decltype(auto) lane(ADLTag<0>, std::size_t l, V v) = delete;
 
+      //! implements Simd::implCast<V>(V)
+      template<class V>
+      constexpr V implCast(ADLTag<0>, MetaType<V>, const V &u)
+      {
+        return u;
+      }
+
+      //! implements Simd::implCast<V>(U)
+      template<class V, class U>
+      constexpr V implCast(ADLTag<0>, MetaType<V>, const U &u)
+      {
+        V result{};
+        for(auto l : range(Simd::lanes(u)))
+          Simd::lane(l, result) = Simd::lane(l, u);
+        return result;
+      }
+
+      //! implements Simd::broadcast<V>()
+      template<class V, class S>
+      auto broadcast(ADLTag<0>, MetaType<V>, S s)
+      {
+        return V(Simd::Scalar<V>(s));
+      }
+
       //! implements Simd::cond()
       template<class V>
       V cond(ADLTag<0>, Mask<V> mask, V ifTrue, V ifFalse) = delete;
@@ -133,13 +157,6 @@ namespace Dune {
       auto maskAnd(ADLTag<0>, const V1 &v1, const V2 &v2)
       {
         return Simd::mask(v1) && Simd::mask(v2);
-      }
-
-      //! implements Simd::broadcast<V>()
-      template<class V, class S>
-      auto broadcast(ADLTag<0>, MetaType<V>, S s)
-      {
-        return V(Simd::Scalar<V>(s));
       }
 
       //! @} Overloadable and default functions
