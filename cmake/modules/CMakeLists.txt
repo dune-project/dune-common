@@ -32,6 +32,7 @@ install(FILES
   DuneTestMacros.cmake
   FindGMP.cmake
   FindInkscape.cmake
+  FindLatexMk.cmake
   FindMETIS.cmake
   FindMProtect.cmake
   FindParMETIS.cmake
@@ -42,7 +43,9 @@ install(FILES
   FindUMFPack.cmake
   Headercheck.cmake
   LanguageSupport.cmake
+  latexmkrc.cmake
   OverloadCompilerFlags.cmake
   UseInkscape.cmake
   UseLATEX.cmake
+  UseLatexMk.cmake
   DESTINATION ${DUNE_INSTALL_MODULEDIR})

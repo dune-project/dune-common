@@ -16,6 +16,14 @@
 
     See core/dune-common!542
 
+-   LaTeX documents can now be built using `latexmk` with the help of UseLatexmk.cmake's
+    `add_latex_document`. `dune_add_latex_document` will use the new way of calling
+    LaTeX when the first argument is `SOURCE`. As a side effect, in-source builds are
+    supported, too. The old function call and UseLATEX.cmake are deprecated and will be
+    removed after 2.7.
+
+    See core/dune-common!594
+
 -   The build system has learned some new tricks when creating or looking for the Python virtualenv:
     When using an absolute build directory with `dunecontrol`, the virtualenv will now be placed
     directly inside the root of the build directory hierarchy in the directory `dune-python-env`.
