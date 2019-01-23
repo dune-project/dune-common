@@ -68,7 +68,9 @@ namespace Dune {
    */
   template<std::size_t priority>
   struct PriorityTag : public PriorityTag<priority-1>
-  {};
+  {
+    static constexpr std::size_t value = priority;
+  };
 
   /**
    * \brief Helper class for tagging priorities.
@@ -80,7 +82,9 @@ namespace Dune {
    */
   template<>
   struct PriorityTag<0>
-  {};
+  {
+    static constexpr std::size_t value = 0;
+  };
 
 
 
