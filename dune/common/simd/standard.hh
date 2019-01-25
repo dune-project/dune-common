@@ -100,12 +100,8 @@ namespace Dune {
         return v;
       }
 
-      //! implements Simd::cond()
-      template<class V>
-      V cond(ADLTag<2>, bool mask, V ifTrue, V ifFalse)
-      {
-        return mask ? ifTrue : ifFalse;
-      }
+      // No Simd::cond() implementation, the overload for bool masks in the
+      // interface is sufficient
 
       //! implements Simd::anyTrue()
       inline bool anyTrue(ADLTag<2>, bool mask) { return mask; }
