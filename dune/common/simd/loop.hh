@@ -287,11 +287,6 @@ namespace Dune {
         using type =  LoopSIMD<U,S>;
       };
 
-      template<class T, std::size_t S>
-      struct MaskType<LoopSIMD<T,S>> {
-        using type =  LoopSIMD<bool,S>;
-      };
-
       //Implementation of SIMD-interface-functionality
       template<class T, std::size_t S>
       struct LaneCount<LoopSIMD<T,S>> : index_constant<S> {};

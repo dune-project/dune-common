@@ -64,13 +64,6 @@ namespace Dune {
       template<class S, class, class>
       struct RebindType { using type = S; };
 
-      //! should have a member type \c type
-      /**
-       * Implements Simd::Mask
-       */
-      template<class, class>
-      struct MaskType { using type = bool; };
-
       //! should be derived from an Dune::index_constant
       /**
        * Implements Simd::lanes()

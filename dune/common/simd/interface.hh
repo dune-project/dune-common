@@ -250,6 +250,17 @@ namespace Dune {
     using Rebind =
       typename Overloads::RebindType<std::decay_t<S>, std::decay_t<V>>::type;
 
+    //! @} group Basic interface
+
+    /** @name Syntactic Sugar
+     *
+     * Templates and functions in this group provide syntactic sugar, they are
+     * implemented using the functionality from @ref SimdInterfaceBase, and
+     * are not customizable by implementations.
+     *
+     * @{
+     */
+
     //! Mask type type of some SIMD type
     /**
      * \tparam V The SIMD (mask or vector) type.  `const`, `volatile` or
@@ -270,10 +281,16 @@ namespace Dune {
      *       in Vc `==` and `!=` between masks yield a single `bool` result
      *       and not a mask.)
      *
-     * Implemented by `Overloads::MaskType`.
+     * This is an alias for `Rebind<bool, V>`.
      */
     template<class V>
-    using Mask = typename Overloads::MaskType<std::decay_t<V> >::type;
+    using Mask = Rebind<bool, V>;
+
+    //! @} group Syntactic Sugar
+
+    /** @name Basic interface
+     *  @{
+     */
 
     //! Number of lanes in a SIMD type
     /**
@@ -472,7 +489,7 @@ namespace Dune {
       return maskAnd(Overloads::ADLTag<7>{}, v1, v2);
     }
 
-    //! @}
+    //! @} group Basic interface
 
     /** @name Syntactic Sugar
      *
