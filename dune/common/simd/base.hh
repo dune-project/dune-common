@@ -201,10 +201,13 @@ namespace Dune {
       template<class S, class V, class SFINAETag = void>
       struct RebindType;
 
-      //! should have a member type \c type
+      //! backward compatibility
       /**
-       * Implements `Simd::Mask`.  `V` will never have cv or reference
-       * qualifiers, no need to strip those.
+       * Formerly implemented `Simd::Mask`.  Now provided so specializations
+       * don't produce errors.
+       *
+       * \note The test system will detect a specialization that is a complete
+       *       type and warn about it.
        */
       template<class V, class SFINAETag = void>
       struct MaskType;
