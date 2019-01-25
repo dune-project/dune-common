@@ -415,6 +415,7 @@ namespace Dune {
       struct RebindType<S, V,
                         std::enable_if_t<VcImpl::IsVector<V>::value &&
                                          !VcImpl::IsVectorizable<S>::value &&
+                                         !std::is_same<S, bool>::value &&
                                          !std::is_same<S, Scalar<V> >::value> >
       {
         using type = LoopSIMD<S, Simd::lanes<V>()>;
