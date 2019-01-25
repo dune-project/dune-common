@@ -499,11 +499,6 @@ namespace Dune {
       };
 
       template<class T, std::size_t align>
-      struct MaskType<AlignedNumber<T, align> > {
-        using type = AlignedNumber<bool, align>;
-      };
-
-      template<class T, std::size_t align>
       struct LaneCount<AlignedNumber<T, align> > : index_constant<1> {};
 
       template<class T, std::size_t align>

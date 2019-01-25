@@ -421,28 +421,6 @@ namespace Dune {
         using type = LoopSIMD<S, Simd::lanes<V>()>;
       };
 
-      //! should have a member type \c type
-      /**
-       * Implements Simd::Mask
-       */
-      template<class V>
-      struct MaskType<V, std::enable_if_t<VcImpl::IsVector<V>::value &&
-                                          !VcImpl::IsMask<V>::value> >
-      {
-        using type = typename V::mask_type;
-      };
-
-      //! should have a member type \c type
-      /**
-       * Implements Simd::Mask
-       */
-      template<class V>
-      struct MaskType<V, std::enable_if_t<VcImpl::IsVector<V>::value &&
-                                          VcImpl::IsMask<V>::value> >
-      {
-        using type = V;
-      };
-
       //! should be derived from an Dune::index_constant
       /**
        * Implements Simd::lanes()
