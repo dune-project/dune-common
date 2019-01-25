@@ -370,6 +370,18 @@ namespace Dune {
                   implCast<Mask<V> >(std::forward<M>(mask)), ifTrue, ifFalse);
     }
 
+    //! Like the ?: operator
+    /**
+     * Overload for plain bool masks, accepting any simd type
+     *
+     * Implemented by `Overloads::cond()`.
+     */
+    template<class V>
+    V cond(bool mask, const V &ifTrue, const V &ifFalse)
+    {
+      return mask ? ifTrue : ifFalse;
+    }
+
     //! Whether any entry is `true`
     /**
      * Implemented by `Overloads::anyTrue()`.
