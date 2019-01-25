@@ -493,9 +493,9 @@ namespace Dune {
       template<class T, std::size_t align>
       struct ScalarType<AlignedNumber<T, align> > { using type = T; };
 
-      template<class T, std::size_t align>
-      struct IndexType<AlignedNumber<T, align> > {
-        using type = AlignedNumber<std::size_t, align>;
+      template<class U, class T, std::size_t align>
+      struct RebindType<U, AlignedNumber<T, align> > {
+        using type = AlignedNumber<U, align>;
       };
 
       template<class T, std::size_t align>

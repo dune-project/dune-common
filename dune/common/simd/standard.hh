@@ -59,10 +59,10 @@ namespace Dune {
 
       //! should have a member type \c type
       /**
-       * Implements Simd::Index
+       * Implements Simd::Rebind
        */
-      template<class, class>
-      struct IndexType { using type = std::size_t; };
+      template<class S, class, class>
+      struct RebindType { using type = S; };
 
       //! should have a member type \c type
       /**

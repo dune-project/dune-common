@@ -232,20 +232,23 @@ namespace Dune {
     template<class V>
     using Scalar = typename Overloads::ScalarType<std::decay_t<V> >::type;
 
-    //! Index vector type of some SIMD type
+    //! Construct SIMD type with different scalar type
     /**
-     * \tparam V The SIMD (mask or vector) type.  `const`, `volatile` or
-     *           reference qualifiers are automatically ignored.
+     * \tparam S The new scalar type
+     * \tparam V The SIMD (mask or vector) type.
      *
-     * The index type is a SIMD vector of integers with the same number of
-     * lanes as `V`.  The signedness and size of the integers is
-     * implementation defined, in particular, it may be as small as `char` --
-     * this can make sense if `V` is itself a SIMD vector of `char`.
+     * The resulting type a SIMD vector of `S` with the same number of lanes
+     * as `V`.  `const`, `volatile` or reference qualifiers in `S` and `V` are
+     * automatically ignored, and the result will have no such qualifiers.
      *
-     * Implemented by `Overloads::IndexType`.
+     * Implementations shall rebind to `LoopSIMD<S, lanes<V>()>` if they can't
+     * support a particular rebind natively.
+     *
+     * Implemented by `Overloads::RebindType`.
      */
-    template<class V>
-    using Index = typename Overloads::IndexType<std::decay_t<V> >::type;
+    template<class S, class V>
+    using Rebind =
+      typename Overloads::RebindType<std::decay_t<S>, std::decay_t<V>>::type;
 
     //! Mask type type of some SIMD type
     /**
@@ -360,10 +363,11 @@ namespace Dune {
      *
      * Implemented by `Overloads::cond()`.
      */
-    template<class V>
-    V cond(const Mask<V> &mask, const V &ifTrue, const V &ifFalse)
+    template<class M, class V>
+    V cond(M &&mask, const V &ifTrue, const V &ifFalse)
     {
-      return cond(Overloads::ADLTag<7>{}, mask, ifTrue, ifFalse);
+      return cond(Overloads::ADLTag<7>{},
+                  implCast<Mask<V> >(std::forward<M>(mask)), ifTrue, ifFalse);
     }
 
     //! Whether any entry is `true`

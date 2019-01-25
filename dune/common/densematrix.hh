@@ -200,10 +200,7 @@ namespace Dune
   private:
     //! \brief if value_type is a simd vector, then this is a simd vector of
     //!        the same length that can be used for indices.
-    /**
-     * Just pray that the fundamental type is actually large enough...
-     */
-    using simd_index_type = Simd::Index<value_type>;
+    using simd_index_type = Simd::Rebind<std::size_t, value_type>;
 
   public:
     //===== access to components

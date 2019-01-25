@@ -26,11 +26,11 @@ int main()
   Dune::Simd::UnitTest test;
 
 #@template VECTOR@
-  test.checkVector<Vector<@SCALAR@> >();
+  test.checkVector<Vector<@SCALAR@>, Rebinds>();
 #@endtemplate@
 
 #@template ARRAY@
-  test.checkVector<SimdArray<@SCALAR@, @LANES@> >();
+  test.checkVector<SimdArray<@SCALAR@, @LANES@>, Rebinds>();
 #@endtemplate@
 
   return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;

@@ -16,12 +16,10 @@ int main()
   Dune::Simd::UnitTest test;
 
 #cmake @template@
-  test.checkVector<Dune::LoopSIMD<@SCALAR@, 5>>();
+  test.checkVector<Dune::LoopSIMD<@SCALAR@, 5>, Rebinds>();
 #cmake @endtemplate@
 
-  test.checkIndex<Dune::LoopSIMD<std::size_t, 5>>();
-
-  test.checkMask<Dune::LoopSIMD<bool, 5>>();
+  test.checkMask<Dune::LoopSIMD<bool, 5>, Rebinds>();
 
   return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

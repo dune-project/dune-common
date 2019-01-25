@@ -13,6 +13,7 @@
 #include <dune/common/indices.hh>
 #include <dune/common/simd/base.hh>
 #include <dune/common/simd/defaults.hh> // for anyFalse()
+#include <dune/common/simd/loop.hh>
 #include <dune/common/typetraits.hh>
 #include <dune/common/vc.hh>
 
@@ -170,6 +171,14 @@ namespace Dune {
 
       template<typename T, std::size_t n, typename V, std::size_t m>
       struct IsVector<Vc::SimdArray<T, n, V, m> > : std::true_type {};
+
+      template<typename T> struct IsVectorizable : std::false_type {};
+      template<> struct IsVectorizable<double>        : std::true_type {};
+      template<> struct IsVectorizable<float>         : std::true_type {};
+      template<> struct IsVectorizable<std::int32_t>  : std::true_type {};
+      template<> struct IsVectorizable<std::uint32_t> : std::true_type {};
+      template<> struct IsVectorizable<std::int16_t>  : std::true_type {};
+      template<> struct IsVectorizable<std::uint16_t> : std::true_type {};
 
       //! A reference-like proxy for elements of random-access vectors.
       /**
@@ -336,24 +345,79 @@ namespace Dune {
 
       //! should have a member type \c type
       /**
-       * Implements Simd::Index
+       * Implements Simd::Rebind
+       *
+       * This specialization covers
+       * - Mask -> bool
+       * - Vector -> Scalar<Vector>
        */
       template<class V>
-      struct IndexType<V, std::enable_if_t<VcImpl::IsVector<V>::value &&
-                                           !VcImpl::IsMask<V>::value> >
+      struct RebindType<Simd::Scalar<V>, V,
+                        std::enable_if_t<VcImpl::IsVector<V>::value> >
       {
-        using type = typename V::IndexType;
+        using type = V;
       };
 
       //! should have a member type \c type
       /**
-       * Implements Simd::Index
+       * Implements Simd::Rebind
+       *
+       * This specialization covers
+       * - Vector -> bool
        */
       template<class V>
-      struct IndexType<V, std::enable_if_t<VcImpl::IsVector<V>::value &&
-                                           VcImpl::IsMask<V>::value> >
+      struct RebindType<bool, V, std::enable_if_t<VcImpl::IsVector<V>::value &&
+                                                  !VcImpl::IsMask<V>::value>>
       {
-        using type = typename V::Vector::IndexType;
+        using type = typename V::mask_type;
+      };
+
+      //! should have a member type \c type
+      /**
+       * Implements Simd::Rebind
+       *
+       * This specialization covers
+       * - Mask -> Scalar<Mask::Vector>
+       */
+      template<class M>
+      struct RebindType<Scalar<typename M::Vector>, M,
+                        std::enable_if_t<VcImpl::IsMask<M>::value>>
+      {
+        using type = typename M::Vector;
+      };
+
+      //! should have a member type \c type
+      /**
+       * Implements Simd::Rebind
+       *
+       * This specialization covers
+       * - Mask -> Vc-vectorizable type except bool, Scalar<Mask::Vector>
+       * - Vector -> Vc-vectorizable type except bool, Scalar<Vector>
+       */
+      template<class S, class V>
+      struct RebindType<S, V,
+                        std::enable_if_t<VcImpl::IsVector<V>::value &&
+                                         VcImpl::IsVectorizable<S>::value &&
+                                         !std::is_same<S, Scalar<V> >::value> >
+      {
+        using type = Vc::SimdArray<S, Simd::lanes<V>()>;
+      };
+
+      //! should have a member type \c type
+      /**
+       * Implements Simd::Rebind
+       *
+       * This specialization covers
+       * - Mask -> non-Vc-vectorizable type except bool
+       * - Vector -> non-Vc-vectorizable type except bool
+       */
+      template<class S, class V>
+      struct RebindType<S, V,
+                        std::enable_if_t<VcImpl::IsVector<V>::value &&
+                                         !VcImpl::IsVectorizable<S>::value &&
+                                         !std::is_same<S, Scalar<V> >::value> >
+      {
+        using type = LoopSIMD<S, Simd::lanes<V>()>;
       };
 
       //! should have a member type \c type

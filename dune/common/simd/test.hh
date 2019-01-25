@@ -100,7 +100,36 @@ namespace Dune {
         Src
         >::type;
 
+      template<class Mark, class Types,
+               class Indices =
+                 std::make_index_sequence<TypeListSize<Types>::value - 1> >
+      struct RemoveEnd;
+      template<class Mark, class Types, std::size_t... I>
+      struct RemoveEnd<Mark, Types, std::index_sequence<I...>>
+      {
+        using Back = TypeListEntry_t<TypeListSize<Types>::value - 1, Types>;
+        static_assert(std::is_same<Mark, Back>::value,
+                      "TypeList not terminated by proper EndMark");
+        using type = TypeList<TypeListEntry_t<I, Types>...>;
+      };
+
     } // namespace Impl
+
+    //! final element marker for `RebindList`
+    struct EndMark {};
+    //! A list of types with the final element removed
+    /**
+     * This is `TypeList<NoEndTypes..>`, where `NoEndTypes...` is `Types...`
+     * with the final element removed.  The final element in `Types...` is
+     * required to be `EndMark`.
+     *
+     * This is useful to construct type lists in generated source files, since
+     * you don't need to avoid generating a trailing `,` in the list -- just
+     * terminate it with `EndMark`.
+     */
+    template<class... Types>
+    using RebindList =
+      typename Impl::RemoveEnd<EndMark, TypeList<Types...> >::type;
 
     class UnitTest {
       bool good_ = true;
@@ -255,25 +284,35 @@ namespace Dune {
         T DUNE_UNUSED a{};
       }
 
-      template<class V>
-      void checkIndexOf()
+      template<class V, class Rebinds>
+      void checkRebindOf()
       {
-        // check that the type Scalar<V> exists
-        using I = Index<V>;
-        log_ << "Index type of " << className<V>() << " is " << className<I>()
-             << std::endl;
+        Hybrid::forEach(Rebinds{}, [this](auto target) {
+            using T = typename decltype(target)::type;
 
+            // check that the rebound type exists
+            using W = Rebind<T, V>;
+            log_ << "Type " << className<V>() << " rebound to "
+                 << className<T>() << " is " << className<W>() << std::endl;
 
-        static_assert(std::is_same<I, std::decay_t<I> >::value, "Index types "
-                      "must not be references, and must not include "
-                      "cv-qualifiers");
-        static_assert(lanes<V>() == lanes<I>(), "Index types must have the "
-                      "same number of lanes as the original vector types");
+            static_assert(std::is_same<W, std::decay_t<W> >::value, "Rebound "
+                          "types must not be references, and must not include "
+                          "cv-qualifiers");
+            static_assert(lanes<V>() == lanes<W>(), "Rebound types must have "
+                          "the same number of lanes as the original vector "
+                          "types");
+            static_assert(std::is_same<T, Scalar<W> >::value, "Rebound types "
+                          "must have the bound-to scalar type");
 
-        checkIndex<I>();
+            this->checkVector<W, Rebinds>();
+          });
+
+        static_assert(std::is_same<Rebind<Scalar<V>, V>, V>::value, "A type "
+                      "rebound to its own scalar type must be the same type "
+                      "as the original type");
       }
 
-      template<class V>
+      template<class V, class Rebinds>
       void checkMaskOf()
       {
         // check that the type Scalar<V> exists
@@ -284,7 +323,7 @@ namespace Dune {
         static_assert(lanes<V>() == lanes<M>(), "Mask types must have the "
                       "same number of lanes as the original vector types");
 
-        checkMask<M>();
+        checkMask<M, Rebinds>();
       }
 
       //////////////////////////////////////////////////////////////////////
@@ -1567,9 +1606,11 @@ namespace Dune {
     public:
       //! run unit tests for simd vector type V
       /**
-       * This function will also ensure that \c checkVector<Index<V>>() and \c
-       * checkMask<Mask<V>>() are run.  No test will be run twice for a given
-       * type.
+       * This function will also ensure that `checkVector<Rebind<R, V>>()`
+       * (for any `R` in `Rebinds`) and \c checkMask<Mask<V>>() are run.  No
+       * test will be run twice for a given type.
+       *
+       * \tparam Rebinds A list of types, usually in the form of a `TypeList`.
        *
        * \note As an implementor of a unit test, you are encouraged to
        *       explicitly instantiate this function in seperate compilation
@@ -1597,13 +1638,16 @@ namespace Dune {
        * __attribute__((__noinline__)), which had no effect on memory
        * consumption.)
        */
-      template<class V>
+      template<class V, class Rebinds>
       void checkVector();
 
       //! run unit tests for simd mask type V
       /**
-       * This function will also ensure that \c checkVector<Index<V>>() is
-       * run.  No test will be run twice for a given type.
+       * This function will also ensure that `checkVector<Rebind<R, V>>()`
+       * (for any `R` in the `Rebinds`) is run.  No test will be run twice for
+       * a given type.
+       *
+       * \tparam Rebinds A list of types, usually in the form of a `TypeList`.
        *
        * \note As an implementor of a unit test, you are encouraged to
        *       explicitly instantiate this function in seperate compilation
@@ -1611,30 +1655,8 @@ namespace Dune {
        *       for how to do this.  See \c checkVector() for background on
        *       this.
        */
-      template<class V>
+      template<class V, class Rebinds>
       void checkMask();
-
-      //! run unit tests for simd index type V
-      /**
-       * This function will also ensure that `Index<V>` is the same type as
-       * `V` and run `checkMask<Mask<V>>()`.  No test will be run twice for a
-       * given type.
-       *
-       * \note In the past, it was recommended to explicitly instanciate this
-       *       function in a seperate translation unit.  This should no longer
-       *       be necessary, as it is now basically only calls `checkVector()`
-       *       for the index type.
-       */
-      template<class I>
-      void checkIndex()
-      {
-        static_assert(std::is_same<I, Index<I> >::value,
-                      "Index types must be their own index type");
-        static_assert(std::is_integral<Scalar<I> >::value,
-                      "Index types scalar must be integral");
-
-        checkVector<I>();
-      }
 
       //! whether all tests succeeded
       bool good() const
@@ -1646,7 +1668,7 @@ namespace Dune {
 
     // Needs to be defined outside of the class to bring memory consumption
     // during compilation down to an acceptable level.
-    template<class V>
+    template<class V, class Rebinds>
     void UnitTest::checkVector()
     {
       static_assert(std::is_same<V, std::decay_t<V> >::value, "Vector types "
@@ -1662,8 +1684,8 @@ namespace Dune {
 
       // do these first so everything that appears after "Checking SIMD type
       // ..." really pertains to that type
-      checkIndexOf<V>();
-      checkMaskOf<V>();
+      checkRebindOf<V, Rebinds>();
+      checkMaskOf<V, Rebinds>();
 
       log_ << "Checking SIMD vector type " << className<V>() << std::endl;
 
@@ -1690,7 +1712,7 @@ namespace Dune {
       checkIO<V>();
     }
 
-    template<class M>
+    template<class M, class Rebinds>
     void UnitTest::checkMask()
     {
       static_assert(std::is_same<M, std::decay_t<M> >::value, "Mask types "
@@ -1709,8 +1731,8 @@ namespace Dune {
 
       // do these first so everything that appears after "Checking SIMD type
       // ..." really pertains to that type
-      checkIndexOf<M>();
-      // checkMaskOf<M>(); // not applicable
+      checkRebindOf<M, Rebinds>();
+      // checkMaskOf<M, Rebinds>(); // not applicable
 
       log_ << "Checking SIMD mask type " << className<M>() << std::endl;
 

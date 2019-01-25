@@ -16,12 +16,10 @@ int main()
   Dune::Simd::UnitTest test;
 
 #cmake @template@
-  test.checkVector<@SCALAR@>();
+  test.checkVector<@SCALAR@, Rebinds>();
 #cmake @endtemplate@
 
-  test.checkIndex<std::size_t>();
-
-  test.checkMask<bool>();
+  test.checkMask<bool, Rebinds>();
 
   return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
