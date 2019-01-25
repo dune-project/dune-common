@@ -1537,6 +1537,34 @@ namespace Dune {
       }
 
       template<class V>
+      void checkBoolCond()
+      {
+        static_assert
+          (std::is_same<decltype(cond(std::declval<bool>(), std::declval<V>(),
+                                      std::declval<V>())), V>::value,
+           "The result of cond(bool, V, V) should have exactly the type V");
+
+        static_assert
+          (std::is_same<decltype(cond(std::declval<const bool&>(),
+                                      std::declval<const V&>(),
+                                      std::declval<const V&>())), V>::value,
+           "The result of cond(const bool&, const V&, const V&) should have "
+           "exactly the type V");
+
+        static_assert
+          (std::is_same<decltype(cond(std::declval<bool&>(),
+                                      std::declval<V&>(),
+                                      std::declval<V&>())), V>::value,
+           "The result of cond(bool&, V&, V&) should have exactly the type V");
+
+        V vec1 = leftVector<V>();
+        V vec2 = rightVector<V>();
+
+        DUNE_SIMD_CHECK(allTrue(cond(true,  vec1, vec2) == vec1));
+        DUNE_SIMD_CHECK(allTrue(cond(false, vec1, vec2) == vec2));
+      }
+
+      template<class V>
       std::enable_if_t<!Impl::LessThenComparable<Scalar<V> >::value>
       checkMinMax() {}
 
@@ -1705,6 +1733,7 @@ namespace Dune {
 
       checkAutoCopy<V>();
       checkCond<V>();
+      checkBoolCond<V>();
 
       // checkBoolReductions<V>(); // not applicable
 
@@ -1752,6 +1781,7 @@ namespace Dune {
 
       checkAutoCopy<M>();
       checkCond<M>();
+      checkBoolCond<M>();
 
       checkBoolReductions<M>();
 
