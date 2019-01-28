@@ -1761,22 +1761,22 @@ namespace Dune {
       checkImplCast<V>();
       checkBroadcast<V>();
       Hybrid::ifElse(isMask,
-        [this](auto id) { id(this)->checkBroadcastMaskConstruct<V>();   },
-        [this](auto id) { id(this)->checkBroadcastVectorConstruct<V>(); });
+        [this](auto id) { id(this)->template checkBroadcastMaskConstruct<V>();   },
+        [this](auto id) { id(this)->template checkBroadcastVectorConstruct<V>(); });
       checkBracedAssign<V>();
       checkBracedBroadcastAssign<V>();
 
       Hybrid::ifElse(isMask,
-        [this](auto id) { id(this)->checkMaskOps<V>();   },
-        [this](auto id) { id(this)->checkVectorOps<V>(); });
+        [this](auto id) { id(this)->template checkMaskOps<V>();   },
+        [this](auto id) { id(this)->template checkVectorOps<V>(); });
 
       checkAutoCopy<V>();
       checkCond<V>();
       checkBoolCond<V>();
 
       Hybrid::ifElse(isMask,
-        [this](auto id) { id(this)->checkBoolReductions<V>(); },
-        [this](auto id) { /* not applicable */                });
+        [this](auto id) { id(this)->template checkBoolReductions<V>(); },
+        [this](auto id) { /* not applicable */                         });
 
       checkMinMax<V>();
       checkIO<V>();
