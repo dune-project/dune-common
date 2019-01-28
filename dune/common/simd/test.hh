@@ -129,6 +129,11 @@ namespace Dune {
         TypeInList<T, TypeList<Rest...> >::type
       {};
 
+      template<class T>
+      struct IsLoop : std::false_type {};
+      template<class T, std::size_t S>
+      struct IsLoop<LoopSIMD<T, S> > : std::true_type {};
+
     } // namespace Impl
 
     //! final element marker for `RebindList`
@@ -146,6 +151,10 @@ namespace Dune {
     template<class... Types>
     using RebindList =
       typename Impl::RemoveEnd<EndMark, TypeList<Types...> >::type;
+
+    //! check whether a type is an instance of LoopSIMD
+    template<class T>
+    using IsLoop = typename Impl::IsLoop<T>::type;
 
     class UnitTest {
       bool good_ = true;
@@ -305,7 +314,7 @@ namespace Dune {
       template<class V>
       void warnMissingMaskRebind(std::false_type) {}
 
-      template<class V, class Rebinds>
+      template<class V, class Rebinds, template<class> class Prune>
       void checkRebindOf()
       {
         Hybrid::forEach(Rebinds{}, [this](auto target) {
@@ -325,7 +334,14 @@ namespace Dune {
             static_assert(std::is_same<T, Scalar<W> >::value, "Rebound types "
                           "must have the bound-to scalar type");
 
-            this->checkVector<W, Rebinds>();
+            Hybrid::ifElse(Prune<W>{},
+              [this](auto id) {
+                log_ << "Pruning check of Simd type " << className<W>()
+                     << std::endl;
+              },
+              [this](auto id) {
+                id(this)->template checkVector<W, Rebinds, Prune>();
+              });
           });
 
         static_assert(std::is_same<Rebind<Scalar<V>, V>, V>::value, "A type "
@@ -354,7 +370,7 @@ namespace Dune {
       template<class V>
       void warnDeprecatedMaskSpecialization(std::false_type) {}
 
-      template<class V, class Rebinds>
+      template<class V, class Rebinds, template<class> class Prune>
       void checkMaskOf()
       {
         // check that the type Scalar<V> exists
@@ -367,7 +383,7 @@ namespace Dune {
 
         warnDeprecatedMaskSpecialization<V>(Dune::Std::is_detected<MaskType, V>{});
 
-        checkVector<M, Rebinds>();
+        checkVector<M, Rebinds, Prune>();
       }
 
       //////////////////////////////////////////////////////////////////////
@@ -1683,6 +1699,8 @@ namespace Dune {
        * test will be run twice for a given type.
        *
        * \tparam Rebinds A list of types, usually in the form of a `TypeList`.
+       * \tparam Prune   A type predicate determining whether to run
+       *                 `checkVector()` for types obtained from `Rebinds`.
        *
        * \note As an implementor of a unit test, you are encouraged to
        *       explicitly instantiate this function in seperate compilation
@@ -1710,7 +1728,7 @@ namespace Dune {
        * __attribute__((__noinline__)), which had no effect on memory
        * consumption.)
        */
-      template<class V, class Rebinds>
+      template<class V, class Rebinds, template<class> class Prune = IsLoop>
       void checkVector();
 
       //! run unit tests for simd mask type V
@@ -1741,7 +1759,7 @@ namespace Dune {
 
     // Needs to be defined outside of the class to bring memory consumption
     // during compilation down to an acceptable level.
-    template<class V, class Rebinds>
+    template<class V, class Rebinds, template<class> class Prune>
     void UnitTest::checkVector()
     {
       static_assert(std::is_same<V, std::decay_t<V> >::value, "Simd types "
@@ -1757,8 +1775,8 @@ namespace Dune {
 
       // do these first so everything that appears after "Checking SIMD type
       // ..." really pertains to that type
-      checkRebindOf<V, Rebinds>();
-      checkMaskOf<V, Rebinds>();
+      checkRebindOf<V, Rebinds, Prune>();
+      checkMaskOf<V, Rebinds, Prune>();
 
       log_ << "Checking SIMD type " << className<V>() << std::endl;
 

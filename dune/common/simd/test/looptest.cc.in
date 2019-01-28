@@ -16,7 +16,7 @@ int main()
   Dune::Simd::UnitTest test;
 
 #cmake @template@
-  test.checkVector<Dune::LoopSIMD<@SCALAR@, 5>, Rebinds>();
+  test.checkVector<Dune::LoopSIMD<@SCALAR@, 5>, Rebinds, Prune>();
 #cmake @endtemplate@
 
   test.checkMask<Dune::LoopSIMD<bool, 5>, Rebinds>();
