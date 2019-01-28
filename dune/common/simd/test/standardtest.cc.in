@@ -19,7 +19,5 @@ int main()
   test.checkVector<@SCALAR@, Rebinds>();
 #cmake @endtemplate@
 
-  test.checkMask<bool, Rebinds>();
-
   return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
