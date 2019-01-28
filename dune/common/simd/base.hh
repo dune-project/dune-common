@@ -201,17 +201,6 @@ namespace Dune {
       template<class S, class V, class SFINAETag = void>
       struct RebindType;
 
-      //! backward compatibility
-      /**
-       * Formerly implemented `Simd::Mask`.  Now provided so specializations
-       * don't produce errors.
-       *
-       * \note The test system will detect a specialization that provides a
-       *       member `type` and warn about it.
-       */
-      template<class V, class SFINAETag = void>
-      struct MaskType;
-
       //! should be derived from a `Dune::index_constant`
       /**
        * Implements `Simd::lanes()`.  `V` will never have cv or reference
