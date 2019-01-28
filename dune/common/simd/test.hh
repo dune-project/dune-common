@@ -334,7 +334,8 @@ namespace Dune {
         static_assert(std::is_same<Rebind<bool, V>, Mask<V> >::value, "A type "
                       "rebound to bool must be the mask type for that type");
 
-        warnMissingMaskRebind<V>(Impl::TypeInList<bool, Rebinds>{});
+        constexpr bool hasBool = Impl::TypeInList<bool, Rebinds>::value;
+        warnMissingMaskRebind<V>(Std::bool_constant<!hasBool>{});
       }
 
       template<class V>
