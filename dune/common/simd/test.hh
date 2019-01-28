@@ -11,7 +11,6 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <tuple>
 #include <type_traits>
 #include <typeindex>
 #include <typeinfo>
@@ -114,6 +113,21 @@ namespace Dune {
                       "TypeList not terminated by proper EndMark");
         using type = TypeList<TypeListEntry_t<I, Types>...>;
       };
+
+      template<class T, class List, class = void>
+      struct TypeInList;
+
+      template<class T>
+      struct TypeInList<T, TypeList<> > : std::false_type {};
+
+      template<class T, class... Rest>
+      struct TypeInList<T, TypeList<T, Rest...> > : std::true_type {};
+
+      template<class T, class Head, class... Rest>
+      struct TypeInList<T, TypeList<Head, Rest...>,
+                        std::enable_if_t<!std::is_same<T, Head>::value> > :
+        TypeInList<T, TypeList<Rest...> >::type
+      {};
 
     } // namespace Impl
 
@@ -284,9 +298,6 @@ namespace Dune {
       }
 
       template<class V>
-      using BoolMember = decltype(std::get<MetaType<bool> >(V{}));
-
-      template<class V>
       DUNE_DEPRECATED_MSG("Warning: please include bool in the Rebinds for "
                           "simd type V, as the explicit call to checkMaskOf() "
                           "is going away")
@@ -323,7 +334,7 @@ namespace Dune {
         static_assert(std::is_same<Rebind<bool, V>, Mask<V> >::value, "A type "
                       "rebound to bool must be the mask type for that type");
 
-        warnMissingMaskRebind<V>(Dune::Std::is_detected<BoolMember, Rebinds>{});
+        warnMissingMaskRebind<V>(Impl::TypeInList<bool, Rebinds>{});
       }
 
       template<class V>
