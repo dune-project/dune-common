@@ -26,8 +26,6 @@ namespace Dune {
     UnitTest::checkVector<LoopSIMD<@SCALAR@, 5>, Rebinds, Prune>();
 #cmake @endtemplate@
 
-    extern template void UnitTest::checkMask<LoopSIMD<bool, 5>, Rebinds>();
-
   } //namespace Simd
 } // namespace Dune
 

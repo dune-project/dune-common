@@ -19,7 +19,5 @@ int main()
   test.checkVector<Dune::LoopSIMD<@SCALAR@, 5>, Rebinds, Prune>();
 #cmake @endtemplate@
 
-  test.checkMask<Dune::LoopSIMD<bool, 5>, Rebinds>();
-
   return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
