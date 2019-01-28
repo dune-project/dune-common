@@ -18,7 +18,6 @@
 #include <utility>
 
 #include <dune/common/classname.hh>
-#include <dune/common/deprecated.hh>
 #include <dune/common/hybridutilities.hh>
 #include <dune/common/simd/io.hh>
 #include <dune/common/simd/loop.hh>
@@ -313,22 +312,6 @@ namespace Dune {
                       "as the original type");
       }
 
-      template<class V>
-      using MaskType =
-        typename Simd::Overloads::MaskType<std::decay_t<V> >::type;
-
-      template<class V>
-      DUNE_DEPRECATED_MSG("There is a deprecated specialization for "
-                          "Dune::Simd::Overloads::MaskType for Simd type V")
-      void warnDeprecatedMaskSpecialization(std::true_type) {
-        static_assert(std::is_same<MaskType<V>, Simd::Rebind<bool, V> >::value,
-                      "This implementation still specializes "
-                      "Simd::Overloads::MaskType, and the result differs from "
-                      "Simd::Rebind<bool, V>");
-      }
-      template<class V>
-      void warnDeprecatedMaskSpecialization(std::false_type) {}
-
       template<class V, class Rebinds>
       void checkMaskOf()
       {
@@ -339,8 +322,6 @@ namespace Dune {
 
         static_assert(lanes<V>() == lanes<M>(), "Mask types must have the "
                       "same number of lanes as the original vector types");
-
-        warnDeprecatedMaskSpecialization<V>(Dune::Std::is_detected<MaskType, V>{});
 
         checkMask<M, Rebinds>();
       }
