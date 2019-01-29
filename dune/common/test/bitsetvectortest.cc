@@ -141,7 +141,7 @@ void testConstContainer(const BBF& bbf){
   const BBF & cbbf = bbf;
 
   bitset x = bbf[3];
-  value_type z;
+  value_type DUNE_UNUSED z;
   reference y = bbf[4];
 
   // assignement
