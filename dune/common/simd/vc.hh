@@ -500,6 +500,40 @@ namespace Dune {
         return (mask && ifTrue) || (!mask && ifFalse);
       }
 
+      //! implements binary Simd::max()
+      template<class V>
+      auto max(ADLTag<5, VcImpl::IsVector<V>::value &&
+                         !VcImpl::IsMask<V>::value>,
+               const V &v1, const V &v2)
+      {
+        return Simd::cond(v1 < v2, v2, v1);
+      }
+
+      //! implements binary Simd::max()
+      template<class M>
+      auto max(ADLTag<5, VcImpl::IsMask<M>::value>,
+               const M &m1, const M &m2)
+      {
+        return m1 || m2;
+      }
+
+      //! implements binary Simd::min()
+      template<class V>
+      auto min(ADLTag<5, VcImpl::IsVector<V>::value &&
+                         !VcImpl::IsMask<V>::value>,
+               const V &v1, const V &v2)
+      {
+        return Simd::cond(v1 < v2, v1, v2);
+      }
+
+      //! implements binary Simd::min()
+      template<class M>
+      auto min(ADLTag<5, VcImpl::IsMask<M>::value>,
+               const M &m1, const M &m2)
+      {
+        return m1 && m2;
+      }
+
       //! implements Simd::anyTrue()
       template<class M>
       bool anyTrue (ADLTag<5, VcImpl::IsMask<M>::value>, M mask)
