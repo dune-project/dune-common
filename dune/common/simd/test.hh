@@ -1670,7 +1670,7 @@ namespace Dune {
         const V arg1 = leftVector<V>();
         const V arg2 = rightVector<V>();
 
-        V maxExp{}, minExp{};
+        V maxExp(Scalar<V>(0)), minExp(Scalar<V>(0));
         for(auto l : range(lanes<V>()))
         {
           lane(l, maxExp) = max(lane(l, arg1), lane(l, arg2));
