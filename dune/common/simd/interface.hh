@@ -399,6 +399,26 @@ namespace Dune {
       return mask ? ifTrue : ifFalse;
     }
 
+    //! The binary maximum value over two simd objects
+    /**
+     * Implemented by `Overloads::max()`.
+     */
+    template<class V>
+    auto max(const V &v1, const V &v2)
+    {
+      return max(Overloads::ADLTag<7>{}, v1, v2);
+    }
+
+    //! The binary minimum value over two simd objects
+    /**
+     * Implemented by `Overloads::min()`.
+     */
+    template<class V>
+    auto min(const V &v1, const V &v2)
+    {
+      return min(Overloads::ADLTag<7>{}, v1, v2);
+    }
+
     //! Whether any entry is `true`
     /**
      * Implemented by `Overloads::anyTrue()`.
@@ -439,7 +459,7 @@ namespace Dune {
       return allFalse(Overloads::ADLTag<7>{}, mask);
     }
 
-    //! The maximum value over all lanes
+    //! The horizontal maximum value over all lanes
     /**
      * Implemented by `Overloads::max()`.
      */
@@ -449,7 +469,7 @@ namespace Dune {
       return max(Overloads::ADLTag<7>{}, v);
     }
 
-    //! The minimum value over all lanes
+    //! The horizontal minimum value over all lanes
     /**
      * Implemented by `Overloads::min()`.
      */

@@ -12,6 +12,7 @@
  * abstraction. Include <dune/common/simd/simd.hh> instead.
  */
 
+#include <algorithm>
 #include <cstddef>
 #include <type_traits>
 
@@ -71,6 +72,22 @@ namespace Dune {
       //! implements Simd::cond()
       template<class V>
       V cond(ADLTag<0>, Mask<V> mask, V ifTrue, V ifFalse) = delete;
+
+      //! implements binary Simd::max()
+      template<class V>
+      auto max(ADLTag<0>, const V &v1, const V &v2)
+      {
+        using std::max;
+        return max(v1, v2);
+      }
+
+      //! implements binary Simd::min()
+      template<class V>
+      auto min(ADLTag<0>, const V &v1, const V &v2)
+      {
+        using std::min;
+        return min(v1, v2);
+      }
 
       //! implements Simd::anyTrue()
       template<class Mask>
