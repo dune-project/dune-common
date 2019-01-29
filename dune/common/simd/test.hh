@@ -7,6 +7,7 @@
  * This file is an interface header and may be included without restrictions.
  */
 
+#include <algorithm>
 #include <cstddef>
 #include <iostream>
 #include <sstream>
@@ -20,6 +21,7 @@
 #include <dune/common/classname.hh>
 #include <dune/common/deprecated.hh>
 #include <dune/common/hybridutilities.hh>
+#include <dune/common/rangeutilities.hh>
 #include <dune/common/simd/io.hh>
 #include <dune/common/simd/loop.hh>
 #include <dune/common/simd/simd.hh>
@@ -1593,11 +1595,11 @@ namespace Dune {
 
       template<class V>
       std::enable_if_t<!Impl::LessThenComparable<Scalar<V> >::value>
-      checkMinMax() {}
+      checkHorizontalMinMax() {}
 
       template<class V>
       std::enable_if_t<Impl::LessThenComparable<Scalar<V> >::value>
-      checkMinMax()
+      checkHorizontalMinMax()
       {
         static_assert
           (std::is_same<decltype(max(std::declval<V>())), Scalar<V> >::value,
@@ -1619,6 +1621,49 @@ namespace Dune {
 
         DUNE_SIMD_CHECK(max(vec1) == Scalar<V>(lanes(vec1)));
         DUNE_SIMD_CHECK(min(vec1) == Scalar<V>(1));
+      }
+
+      template<class V>
+      std::enable_if_t<!Impl::LessThenComparable<Scalar<V> >::value>
+      checkBinaryMinMax() {}
+
+      template<class V>
+      std::enable_if_t<Impl::LessThenComparable<Scalar<V> >::value>
+      checkBinaryMinMax()
+      {
+        using std::max;
+        using std::min;
+
+        static_assert
+          (std::is_same<decltype(Simd::max(std::declval<V>(),
+                                           std::declval<V>())), V>::value,
+           "The result of Simd::max(V, V) should be exactly V");
+        static_assert
+          (std::is_same<decltype(Simd::min(std::declval<V>(),
+                                           std::declval<V>())), V>::value,
+           "The result of Simd::min(V, V) should be exactly V");
+
+        static_assert
+          (std::is_same<decltype(Simd::max(std::declval<V&>(),
+                                           std::declval<V&>())), V>::value,
+           "The result of Simd::max(V&, V&) should be exactly V");
+        static_assert
+          (std::is_same<decltype(Simd::min(std::declval<V&>(),
+                                           std::declval<V&>())), V>::value,
+           "The result of Simd::min(V&, V&) should be exactly V");
+
+        const V arg1 = leftVector<V>();
+        const V arg2 = rightVector<V>();
+
+        V maxExp(Scalar<V>(0)), minExp(Scalar<V>(0));
+        for(auto l : range(lanes<V>()))
+        {
+          lane(l, maxExp) = max(lane(l, arg1), lane(l, arg2));
+          lane(l, minExp) = min(lane(l, arg1), lane(l, arg2));
+        }
+
+        DUNE_SIMD_CHECK(allTrue(maxExp == Simd::max(arg1, arg2)));
+        DUNE_SIMD_CHECK(allTrue(minExp == Simd::min(arg1, arg2)));
       }
 
       template<class V>
@@ -1756,7 +1801,8 @@ namespace Dune {
         [this](auto id) { id(this)->template checkBoolReductions<V>(); });
       // checkBoolReductions() is not applicable for non-masks
 
-      checkMinMax<V>();
+      checkHorizontalMinMax<V>();
+      checkBinaryMinMax<V>();
       checkIO<V>();
     }
 
