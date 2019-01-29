@@ -182,9 +182,9 @@ struct ScalarOperatorTest
     v += 1; // make sure v!=0
     v = a / v;
 
-    v -= v;
+    v -= w;
     v -= a;
-    v += v;
+    v += w;
     v += a;
     v *= a;
     a += 1; // make sure a!=0
