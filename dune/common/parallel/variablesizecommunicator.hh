@@ -157,8 +157,7 @@ public:
    */
   InterfaceTracker(int rank, InterfaceInformation info, std::size_t fixedsize=0,
                    bool allocateSizes=false)
-    : fixedSize(fixedsize),rank_(rank), index_(), interface_(info), sizes_(),
-      sizesAllocated_(allocateSizes)
+    : fixedSize(fixedsize),rank_(rank), index_(), interface_(info), sizes_()
   {
     if(allocateSizes)
     {
@@ -266,7 +265,6 @@ private:
   /** @brief The list of local indices of this interface. */
   InterfaceInformation interface_;
   std::vector<std::size_t> sizes_;
-  bool sizesAllocated_;
 };
 
 
