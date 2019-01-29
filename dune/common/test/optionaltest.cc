@@ -14,6 +14,7 @@
 
 #include <dune/common/std/optional.hh>
 #include <dune/common/test/testsuite.hh>
+#include <dune/common/unused.hh>
 
 Dune::Std::optional< std::string > create ( bool b )
 {
@@ -55,8 +56,8 @@ int main()
 
   // Check construction of optional for const types
   Dune::Std::optional<const int> o1(42);
-  Dune::Std::optional<const int> o2(o1);
-  Dune::Std::optional<const int> o3(std::move(o1));
+  Dune::Std::optional<const int> DUNE_UNUSED o2(o1);
+  Dune::Std::optional<const int> DUNE_UNUSED o3(std::move(o1));
 
   optFalse = create( true );
   test.check( *optFalse == "void" );
