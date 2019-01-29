@@ -308,8 +308,7 @@ namespace Dune {
 
       template<class V>
       DUNE_DEPRECATED_MSG("Warning: please include bool in the Rebinds for "
-                          "simd type V, as the explicit call to checkMaskOf() "
-                          "is going away")
+                          "simd type V, as Masks are not checked otherwise.")
       void warnMissingMaskRebind(std::true_type) {}
       template<class V>
       void warnMissingMaskRebind(std::false_type) {}
@@ -352,20 +351,6 @@ namespace Dune {
 
         constexpr bool hasBool = Impl::TypeInList<bool, Rebinds>::value;
         warnMissingMaskRebind<V>(Std::bool_constant<!hasBool>{});
-      }
-
-      template<class V, class Rebinds, template<class> class Prune>
-      void checkMaskOf()
-      {
-        // check that the type Scalar<V> exists
-        using M = Mask<V>;
-        log_ << "Mask type of " << className<V>() << " is " << className<M>()
-             << std::endl;
-
-        static_assert(lanes<V>() == lanes<M>(), "Mask types must have the "
-                      "same number of lanes as the original vector types");
-
-        checkVector<M, Rebinds, Prune>();
       }
 
       //////////////////////////////////////////////////////////////////////
@@ -1677,8 +1662,8 @@ namespace Dune {
       //! run unit tests for simd vector type V
       /**
        * This function will also ensure that `checkVector<Rebind<R, V>>()`
-       * (for any `R` in `Rebinds`) and \c checkMask<Mask<V>>() are run.  No
-       * test will be run twice for a given type.
+       * (for any `R` in `Rebinds`) is run.  No test will be run twice for a
+       * given type.
        *
        * \tparam Rebinds A list of types, usually in the form of a `TypeList`.
        * \tparam Prune   A type predicate determining whether to run
@@ -1713,24 +1698,6 @@ namespace Dune {
       template<class V, class Rebinds, template<class> class Prune = IsLoop>
       void checkVector();
 
-      //! run unit tests for simd mask type V
-      /**
-       * This function will also ensure that `checkVector<Rebind<R, V>>()`
-       * (for any `R` in the `Rebinds`) is run.  No test will be run twice for
-       * a given type.
-       *
-       * \tparam Rebinds A list of types, usually in the form of a `TypeList`.
-       *
-       * \note As an implementor of a unit test, you are encouraged to
-       *       explicitly instantiate this function in seperate compilation
-       *       units for the types you are testing.  Look at `standardtest.cc`
-       *       for how to do this.  See \c checkVector() for background on
-       *       this.
-       */
-      template<class V, class Rebinds>
-      DUNE_DEPRECATED_MSG("Use checkVector<V, Rebinds>() instead")
-      void checkMask();
-
       //! whether all tests succeeded
       bool good() const
       {
@@ -1758,7 +1725,6 @@ namespace Dune {
       // do these first so everything that appears after "Checking SIMD type
       // ..." really pertains to that type
       checkRebindOf<V, Rebinds, Prune>();
-      checkMaskOf<V, Rebinds, Prune>();
 
       log_ << "Checking SIMD type " << className<V>() << std::endl;
 
@@ -1792,12 +1758,6 @@ namespace Dune {
 
       checkMinMax<V>();
       checkIO<V>();
-    }
-
-    template<class M, class Rebinds>
-    void UnitTest::checkMask()
-    {
-      checkVector<M, Rebinds>();
     }
 
   } // namespace Simd
