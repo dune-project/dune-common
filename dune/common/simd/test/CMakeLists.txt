@@ -26,7 +26,7 @@ dune_instance_end()
 
 dune_list_filter(DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
 dune_add_test(NAME looptest
-  SOURCES ${DUNE_INSTANCE_GENERATED} looptest_mask.cc
+  SOURCES ${DUNE_INSTANCE_GENERATED}
   LINK_LIBRARIES dunecommon
 )
 # no need to install looptest.hh, used by looptest*.cc only
@@ -52,7 +52,7 @@ dune_instance_end()
 
 dune_list_filter(DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
 dune_add_test(NAME standardtest
-  SOURCES ${DUNE_INSTANCE_GENERATED} standardtest_mask.cc
+  SOURCES ${DUNE_INSTANCE_GENERATED}
   LINK_LIBRARIES dunecommon
 )
 # no need to install standardtest.hh, used by standardtest*.cc only

@@ -21,8 +21,6 @@ namespace Dune {
     extern template void UnitTest::checkVector<@SCALAR@, Rebinds>();
 #cmake @endtemplate@
 
-    extern template void UnitTest::checkMask<bool, Rebinds>();
-
   } // namespace Simd
 } // namespace Dune
 

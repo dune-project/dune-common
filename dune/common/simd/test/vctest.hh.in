@@ -7,8 +7,14 @@
 
 #include <dune/common/simd/test.hh>
 #include <dune/common/simd/vc.hh>
+#include <dune/common/typelist.hh>
 
-using Rebinds = Dune::TypeList<std::size_t>;
+using Rebinds = Dune::TypeList<
+#cmake @template VECTOR@
+  @SCALAR@,
+#cmake @endtemplate@
+  bool,
+  std::size_t>;
 
 namespace Dune {
   namespace Simd {
@@ -17,14 +23,14 @@ namespace Dune {
     extern template void
     UnitTest::checkVector<Vc::Vector<@SCALAR@>, Rebinds>();
     extern template void
-    UnitTest::checkMask<Vc::Mask<@SCALAR@>, Rebinds>();
+    UnitTest::checkVector<Vc::Mask<@SCALAR@>, Rebinds>();
 #cmake @endtemplate@
 
 #cmake @template ARRAY@
     extern template void
     UnitTest::checkVector<Vc::SimdArray<@SCALAR@, @LANES@>, Rebinds>();
     extern template void
-    UnitTest::checkMask<Vc::SimdMaskArray<@SCALAR@, @LANES@>, Rebinds>();
+    UnitTest::checkVector<Vc::SimdMaskArray<@SCALAR@, @LANES@>, Rebinds>();
 #cmake @endtemplate@
 
   } // namespace Simd

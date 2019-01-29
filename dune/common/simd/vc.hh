@@ -392,11 +392,29 @@ namespace Dune {
        *
        * This specialization covers
        * - Mask -> Vc-vectorizable type except bool, Scalar<Mask::Vector>
+       */
+      template<class S, class M>
+      struct RebindType<S, M,
+                        std::enable_if_t<
+                          VcImpl::IsMask<M>::value &&
+                          VcImpl::IsVectorizable<S>::value &&
+                          !std::is_same<S, Scalar<typename M::Vector> >::value
+                          > >
+      {
+        using type = Vc::SimdArray<S, Simd::lanes<M>()>;
+      };
+
+      //! should have a member type \c type
+      /**
+       * Implements Simd::Rebind
+       *
+       * This specialization covers
        * - Vector -> Vc-vectorizable type except bool, Scalar<Vector>
        */
       template<class S, class V>
       struct RebindType<S, V,
                         std::enable_if_t<VcImpl::IsVector<V>::value &&
+                                         !VcImpl::IsMask<V>::value &&
                                          VcImpl::IsVectorizable<S>::value &&
                                          !std::is_same<S, Scalar<V> >::value> >
       {

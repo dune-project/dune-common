@@ -18,6 +18,7 @@
 #include <utility>
 
 #include <dune/common/classname.hh>
+#include <dune/common/deprecated.hh>
 #include <dune/common/hybridutilities.hh>
 #include <dune/common/simd/io.hh>
 #include <dune/common/simd/loop.hh>
@@ -113,6 +114,26 @@ namespace Dune {
         using type = TypeList<TypeListEntry_t<I, Types>...>;
       };
 
+      template<class T, class List, class = void>
+      struct TypeInList;
+
+      template<class T>
+      struct TypeInList<T, TypeList<> > : std::false_type {};
+
+      template<class T, class... Rest>
+      struct TypeInList<T, TypeList<T, Rest...> > : std::true_type {};
+
+      template<class T, class Head, class... Rest>
+      struct TypeInList<T, TypeList<Head, Rest...>,
+                        std::enable_if_t<!std::is_same<T, Head>::value> > :
+        TypeInList<T, TypeList<Rest...> >::type
+      {};
+
+      template<class T>
+      struct IsLoop : std::false_type {};
+      template<class T, std::size_t S>
+      struct IsLoop<LoopSIMD<T, S> > : std::true_type {};
+
     } // namespace Impl
 
     //! final element marker for `RebindList`
@@ -131,15 +152,16 @@ namespace Dune {
     using RebindList =
       typename Impl::RemoveEnd<EndMark, TypeList<Types...> >::type;
 
+    //! check whether a type is an instance of LoopSIMD
+    template<class T>
+    using IsLoop = typename Impl::IsLoop<T>::type;
+
     class UnitTest {
       bool good_ = true;
       std::ostream &log_ = std::cerr;
       // records the types for which checks have started running to avoid
       // infinite recursion
       std::unordered_set<std::type_index> seen_;
-      // Same for the extra checks for mask types, although here we only avoid
-      // running checks more than once
-      std::unordered_set<std::type_index> maskSeen_;
 
       ////////////////////////////////////////////////////////////////////////
       //
@@ -284,7 +306,15 @@ namespace Dune {
         T DUNE_UNUSED a{};
       }
 
-      template<class V, class Rebinds>
+      template<class V>
+      DUNE_DEPRECATED_MSG("Warning: please include bool in the Rebinds for "
+                          "simd type V, as the explicit call to checkMaskOf() "
+                          "is going away")
+      void warnMissingMaskRebind(std::true_type) {}
+      template<class V>
+      void warnMissingMaskRebind(std::false_type) {}
+
+      template<class V, class Rebinds, template<class> class Prune>
       void checkRebindOf()
       {
         Hybrid::forEach(Rebinds{}, [this](auto target) {
@@ -304,15 +334,27 @@ namespace Dune {
             static_assert(std::is_same<T, Scalar<W> >::value, "Rebound types "
                           "must have the bound-to scalar type");
 
-            this->checkVector<W, Rebinds>();
+            Hybrid::ifElse(Prune<W>{},
+              [this](auto id) {
+                log_ << "Pruning check of Simd type " << className<W>()
+                     << std::endl;
+              },
+              [this](auto id) {
+                id(this)->template checkVector<W, Rebinds, Prune>();
+              });
           });
 
         static_assert(std::is_same<Rebind<Scalar<V>, V>, V>::value, "A type "
                       "rebound to its own scalar type must be the same type "
                       "as the original type");
+        static_assert(std::is_same<Rebind<bool, V>, Mask<V> >::value, "A type "
+                      "rebound to bool must be the mask type for that type");
+
+        constexpr bool hasBool = Impl::TypeInList<bool, Rebinds>::value;
+        warnMissingMaskRebind<V>(Std::bool_constant<!hasBool>{});
       }
 
-      template<class V, class Rebinds>
+      template<class V, class Rebinds, template<class> class Prune>
       void checkMaskOf()
       {
         // check that the type Scalar<V> exists
@@ -323,7 +365,7 @@ namespace Dune {
         static_assert(lanes<V>() == lanes<M>(), "Mask types must have the "
                       "same number of lanes as the original vector types");
 
-        checkMask<M, Rebinds>();
+        checkVector<M, Rebinds, Prune>();
       }
 
       //////////////////////////////////////////////////////////////////////
@@ -1639,6 +1681,8 @@ namespace Dune {
        * test will be run twice for a given type.
        *
        * \tparam Rebinds A list of types, usually in the form of a `TypeList`.
+       * \tparam Prune   A type predicate determining whether to run
+       *                 `checkVector()` for types obtained from `Rebinds`.
        *
        * \note As an implementor of a unit test, you are encouraged to
        *       explicitly instantiate this function in seperate compilation
@@ -1666,7 +1710,7 @@ namespace Dune {
        * __attribute__((__noinline__)), which had no effect on memory
        * consumption.)
        */
-      template<class V, class Rebinds>
+      template<class V, class Rebinds, template<class> class Prune = IsLoop>
       void checkVector();
 
       //! run unit tests for simd mask type V
@@ -1684,6 +1728,7 @@ namespace Dune {
        *       this.
        */
       template<class V, class Rebinds>
+      DUNE_DEPRECATED_MSG("Use checkVector<V, Rebinds>() instead")
       void checkMask();
 
       //! whether all tests succeeded
@@ -1696,10 +1741,10 @@ namespace Dune {
 
     // Needs to be defined outside of the class to bring memory consumption
     // during compilation down to an acceptable level.
-    template<class V, class Rebinds>
+    template<class V, class Rebinds, template<class> class Prune>
     void UnitTest::checkVector()
     {
-      static_assert(std::is_same<V, std::decay_t<V> >::value, "Vector types "
+      static_assert(std::is_same<V, std::decay_t<V> >::value, "Simd types "
                     "must not be references, and must not include "
                     "cv-qualifiers");
 
@@ -1712,30 +1757,38 @@ namespace Dune {
 
       // do these first so everything that appears after "Checking SIMD type
       // ..." really pertains to that type
-      checkRebindOf<V, Rebinds>();
-      checkMaskOf<V, Rebinds>();
+      checkRebindOf<V, Rebinds, Prune>();
+      checkMaskOf<V, Rebinds, Prune>();
 
-      log_ << "Checking SIMD vector type " << className<V>() << std::endl;
+      log_ << "Checking SIMD type " << className<V>() << std::endl;
 
       checkLanes<V>();
       checkScalar<V>();
+
+      constexpr auto isMask = typename std::is_same<Scalar<V>, bool>::type{};
 
       checkDefaultConstruct<V>();
       checkLane<V>();
       checkCopyMoveConstruct<V>();
       checkImplCast<V>();
       checkBroadcast<V>();
-      checkBroadcastVectorConstruct<V>();
+      Hybrid::ifElse(isMask,
+        [this](auto id) { id(this)->template checkBroadcastMaskConstruct<V>();   },
+        [this](auto id) { id(this)->template checkBroadcastVectorConstruct<V>(); });
       checkBracedAssign<V>();
       checkBracedBroadcastAssign<V>();
 
-      checkVectorOps<V>();
+      Hybrid::ifElse(isMask,
+        [this](auto id) { id(this)->template checkMaskOps<V>();   },
+        [this](auto id) { id(this)->template checkVectorOps<V>(); });
 
       checkAutoCopy<V>();
       checkCond<V>();
       checkBoolCond<V>();
 
-      // checkBoolReductions<V>(); // not applicable
+      Hybrid::ifElse(isMask,
+        [this](auto id) { id(this)->template checkBoolReductions<V>(); },
+        [this](auto id) { /* not applicable */                         });
 
       checkMinMax<V>();
       checkIO<V>();
@@ -1744,49 +1797,7 @@ namespace Dune {
     template<class M, class Rebinds>
     void UnitTest::checkMask()
     {
-      static_assert(std::is_same<M, std::decay_t<M> >::value, "Mask types "
-                    "must not be references, and must not include "
-                    "cv-qualifiers");
-
-      static_assert(std::is_same<M, Mask<M> >::value,
-                    "Mask must be their own mask types.");
-
-      // check whether the test for this type already started
-      if(maskSeen_.emplace(typeid (M)).second == false)
-      {
-        // type already seen, nothing to do
-        return;
-      }
-
-      // do these first so everything that appears after "Checking SIMD type
-      // ..." really pertains to that type
-      checkRebindOf<M, Rebinds>();
-      // checkMaskOf<M, Rebinds>(); // not applicable
-
-      log_ << "Checking SIMD mask type " << className<M>() << std::endl;
-
-      checkLanes<M>();
-      checkScalar<M>();
-
-      checkDefaultConstruct<M>();
-      checkLane<M>();
-      checkCopyMoveConstruct<M>();
-      checkImplCast<M>();
-      checkBroadcast<M>();
-      checkBroadcastMaskConstruct<M>();
-      checkBracedAssign<M>();
-      checkBracedBroadcastAssign<M>();
-
-      checkMaskOps<M>();
-
-      checkAutoCopy<M>();
-      checkCond<M>();
-      checkBoolCond<M>();
-
-      checkBoolReductions<M>();
-
-      checkMinMax<M>();
-      checkIO<M>();
+      checkVector<M, Rebinds>();
     }
 
   } // namespace Simd

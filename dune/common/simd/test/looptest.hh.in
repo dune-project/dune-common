@@ -4,6 +4,7 @@
 #define DUNE_COMMON_SIMD_TEST_LOOPTEST_HH
 
 #include <cstddef>
+#include <type_traits>
 
 #include <dune/common/simd/test.hh>
 #include <dune/common/simd/loop.hh>
@@ -14,15 +15,16 @@ using Rebinds = Dune::Simd::RebindList<
 #cmake @endtemplate@
   Dune::Simd::EndMark>;
 
+template<class T>
+using Prune = std::false_type;
+
 namespace Dune {
   namespace Simd {
 
 #cmake @template@
     extern template void
-    UnitTest::checkVector<LoopSIMD<@SCALAR@, 5>, Rebinds>();
+    UnitTest::checkVector<LoopSIMD<@SCALAR@, 5>, Rebinds, Prune>();
 #cmake @endtemplate@
-
-    extern template void UnitTest::checkMask<LoopSIMD<bool, 5>, Rebinds>();
 
   } //namespace Simd
 } // namespace Dune

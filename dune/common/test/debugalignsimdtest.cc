@@ -13,7 +13,7 @@ int main(int argc, char **argv)
 
   Dune::Simd::UnitTest test;
 
-  test.checkVector<Dune::AlignedNumber<double>, Dune::TypeList<>>();
+  test.checkVector<Dune::AlignedNumber<double>, Dune::TypeList<bool>>();
 
   return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
