@@ -1753,8 +1753,8 @@ namespace Dune {
       checkBoolCond<V>();
 
       Hybrid::ifElse(isMask,
-        [this](auto id) { id(this)->template checkBoolReductions<V>(); },
-        [this](auto id) { /* not applicable */                         });
+        [this](auto id) { id(this)->template checkBoolReductions<V>(); });
+      // checkBoolReductions() is not applicable for non-masks
 
       checkMinMax<V>();
       checkIO<V>();
