@@ -409,45 +409,47 @@ namespace Dune {
     // only option left is to overload min() and max().
 
     template<class T, std::size_t align>
-    T max(const AlignedNumber<T, align> &a, const AlignedNumber<T, align> &b)
+    auto max(const AlignedNumber<T, align> &a,
+             const AlignedNumber<T, align> &b)
     {
       using std::max;
-      return max(T(a), T(b));
+      return aligned<align>(max(T(a), T(b)));
     }
 
     template<class T, std::size_t align>
-    T max(const T &a, const AlignedNumber<T, align> &b)
+    auto max(const T &a, const AlignedNumber<T, align> &b)
     {
       using std::max;
-      return max(a, T(b));
+      return aligned<align>(max(a, T(b)));
     }
 
     template<class T, std::size_t align>
-    T max(const AlignedNumber<T, align> &a, const T &b)
+    auto max(const AlignedNumber<T, align> &a, const T &b)
     {
       using std::max;
-      return max(T(a), b);
+      return aligned<align>(max(T(a), b));
     }
 
     template<class T, std::size_t align>
-    T min(const AlignedNumber<T, align> &a, const AlignedNumber<T, align> &b)
+    auto min(const AlignedNumber<T, align> &a,
+             const AlignedNumber<T, align> &b)
     {
       using std::min;
-      return min(T(a), T(b));
+      return aligned<align>(min(T(a), T(b)));
     }
 
     template<class T, std::size_t align>
-    T min(const T &a, const AlignedNumber<T, align> &b)
+    auto min(const T &a, const AlignedNumber<T, align> &b)
     {
       using std::min;
-      return min(a, T(b));
+      return aligned<align>(min(a, T(b)));
     }
 
     template<class T, std::size_t align>
-    T min(const AlignedNumber<T, align> &a, const T &b)
+    auto min(const AlignedNumber<T, align> &a, const T &b)
     {
       using std::min;
-      return min(T(a), b);
+      return aligned<align>(min(T(a), b));
     }
 
   } // namespace AlignedNumberImpl
