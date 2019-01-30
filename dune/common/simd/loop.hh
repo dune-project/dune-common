@@ -38,10 +38,8 @@ namespace Dune {
     //default constructor
     LoopSIMD() {}
 
-    //constructor initializing the content with a given value
-    template<class I,
-             std::enable_if_t<std::is_same<I, Simd::Scalar<I> >::value>* = nullptr>
-    LoopSIMD(I i) : LoopSIMD() {
+    // broadcast constructor initializing the content with a given value
+    LoopSIMD(T i) : LoopSIMD() {
       this->fill(i);
     }
 
