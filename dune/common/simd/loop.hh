@@ -40,7 +40,7 @@ namespace Dune {
 
     //constructor initializing the content with a given value
     template<class I,
-             std::enable_if_t<std::is_same<I, Simd::Scalar<I> >::value>* = nullptr>
+             std::enable_if_t<std::is_convertible<I, Simd::Scalar<LoopSIMD>>::value>* = nullptr>
     LoopSIMD(I i) : LoopSIMD() {
       this->fill(i);
     }
