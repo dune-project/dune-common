@@ -566,9 +566,9 @@ struct ScalarOperatorTest
     v = a * v;
     v = a / v;
 
-    v -= v;
+    v -= w;
     v -= a;
-    v += v;
+    v += w;
     v += a;
     v *= a;
     v /= a;
