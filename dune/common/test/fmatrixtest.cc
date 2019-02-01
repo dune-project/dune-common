@@ -756,6 +756,11 @@ int main()
   try {
     int errors = 0; // counts errors
 
+    static_assert(
+      std::is_same< Dune::FieldMatrix<double, 3, 3>, Dune::FieldMatrix<double, 3> >::value,
+      "default parameter for square matrices"
+      );
+
     {
       double nan = std::nan("");
       test_nan(nan);
