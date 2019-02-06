@@ -74,10 +74,10 @@ endforeach()
 
 # Vc::SimdArray and Vc::SimdMaskArray
 foreach(SCALAR IN LISTS VCTEST_TYPES)
-  foreach(LANES IN ITEMS 4 8)
+  foreach(LANES IN ITEMS 4 8 16)
     dune_instance_add(TEMPLATE ARRAY ID "${SCALAR}_${LANES}"
       FILES vctest_simdarray.cc vctest_simdmaskarray.cc)
-  endforeach(LANES IN ITEMS 4 8)
+  endforeach(LANES IN ITEMS 4 8 16)
 endforeach()
 
 dune_instance_end()
