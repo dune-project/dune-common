@@ -189,6 +189,9 @@ namespace Dune {
        * from our own functions, such as `lane()`.  To work around this, we
        * define our own proxy class which internally holds a reference to the
        * vector and a lane index.
+       *
+       * Note: this should be unnecessary with C++17, as just returning a
+       * temporary object should not involve copying it.
        */
       template<class V>
       class Proxy
@@ -209,75 +212,21 @@ namespace Dune {
           : vec_(vec), idx_(idx)
         { }
 
+        Proxy(const Proxy&) = delete;
+        // allow move construction so we can return proxies from functions
+        Proxy(Proxy&&) = default;
+
         operator value_type() const { return vec_[idx_]; }
 
-        // postfix operators
-
-        template<class T = value_type,
-                 class = std::enable_if_t<!std::is_same<T, bool>::value> >
-        value_type operator++(int) { return vec_[idx_]++; }
-        template<class T = value_type,
-                 class = std::enable_if_t<!std::is_same<T, bool>::value> >
-        value_type operator--(int) { return vec_[idx_]--; }
-
-        // unary (prefix) operators
-        template<class T = value_type,
-                 class = std::enable_if_t<!std::is_same<T, bool>::value> >
-        Proxy &operator++() { ++(vec_[idx_]); return *this; }
-        template<class T = value_type,
-                 class = std::enable_if_t<!std::is_same<T, bool>::value> >
-        Proxy &operator--() { --(vec_[idx_]); return *this; }
-        decltype(auto) operator!() const { return !(vec_[idx_]); }
-        decltype(auto) operator+() const { return +(vec_[idx_]); }
-        decltype(auto) operator-() const { return -(vec_[idx_]); }
-        template<class T = value_type,
-                 class = std::enable_if_t<std::is_integral<T>::value> >
-        decltype(auto) operator~() const { return ~(vec_[idx_]); }
-
-        // binary operators
-#define DUNE_SIMD_VC_BINARY_OP(OP)                                      \
-        template<class T>                                               \
-        auto operator OP(T &&o) const                                   \
-          -> decltype(vec_[idx_] OP autoCopy(std::forward<T>(o)))       \
-        {                                                               \
-          return vec_[idx_] OP autoCopy(std::forward<T>(o));            \
-        }
-
-        DUNE_SIMD_VC_BINARY_OP(*);
-        DUNE_SIMD_VC_BINARY_OP(/);
-        DUNE_SIMD_VC_BINARY_OP(%);
-
-        DUNE_SIMD_VC_BINARY_OP(+);
-        DUNE_SIMD_VC_BINARY_OP(-);
-
-        DUNE_SIMD_VC_BINARY_OP(<<);
-        DUNE_SIMD_VC_BINARY_OP(>>);
-
-        DUNE_SIMD_VC_BINARY_OP(<);
-        DUNE_SIMD_VC_BINARY_OP(>);
-        DUNE_SIMD_VC_BINARY_OP(<=);
-        DUNE_SIMD_VC_BINARY_OP(>=);
-
-        DUNE_SIMD_VC_BINARY_OP(==);
-        DUNE_SIMD_VC_BINARY_OP(!=);
-
-        DUNE_SIMD_VC_BINARY_OP(&);
-        DUNE_SIMD_VC_BINARY_OP(^);
-        DUNE_SIMD_VC_BINARY_OP(|);
-
-        DUNE_SIMD_VC_BINARY_OP(&&);
-        DUNE_SIMD_VC_BINARY_OP(||);
-#undef DUNE_SIMD_VC_BINARY_OP
-
-#define DUNE_SIMD_VC_ASSIGNMENT(OP)                             \
-        template<class T>                                       \
-        auto operator OP(T &&o)                                 \
-          -> std::enable_if_t<AlwaysTrue<decltype(              \
-                   vec_[idx_] OP autoCopy(std::forward<T>(o))   \
-                 )>::value, Proxy&>                             \
-        {                                                       \
-          vec_[idx_] OP autoCopy(std::forward<T>(o));           \
-          return *this;                                         \
+        // assignment operators
+#define DUNE_SIMD_VC_ASSIGNMENT(OP)                              \
+        template<class T,                                        \
+                 class = decltype(std::declval<value_type&>() OP \
+                                  autoCopy(std::declval<T>()) )> \
+        Proxy operator OP(T &&o) &&                              \
+        {                                                        \
+          vec_[idx_] OP autoCopy(std::forward<T>(o));            \
+          return { idx_, vec_ };                                 \
         }
         DUNE_SIMD_VC_ASSIGNMENT(=);
         DUNE_SIMD_VC_ASSIGNMENT(*=);
@@ -292,37 +241,47 @@ namespace Dune {
         DUNE_SIMD_VC_ASSIGNMENT(|=);
 #undef DUNE_SIMD_VC_ASSIGNMENT
 
+        // unary (prefix) operators
+        template<class T = value_type,
+                 class = std::enable_if_t<!std::is_same<T, bool>::value> >
+        Proxy operator++() { ++(vec_[idx_]); return *this; }
+        template<class T = value_type,
+                 class = std::enable_if_t<!std::is_same<T, bool>::value> >
+        Proxy operator--() { --(vec_[idx_]); return *this; }
+
+        // postfix operators
+        template<class T = value_type,
+                 class = std::enable_if_t<!std::is_same<T, bool>::value> >
+        value_type operator++(int) { return vec_[idx_]++; }
+        template<class T = value_type,
+                 class = std::enable_if_t<!std::is_same<T, bool>::value> >
+        value_type operator--(int) { return vec_[idx_]--; }
+
+
         // swap on proxies swaps the proxied vector entries.  As such, it
         // applies to rvalues of proxies too, not just lvalues
-        template<class V1, class V2>
-        friend void swap(Proxy<V1> p1, Proxy<V2> p2);
-
-        template<class T>
-        friend void swap(Proxy p1, T& s2)
-        {
+        friend void swap(const Proxy &a, const Proxy &b) {
           // don't use swap() ourselves -- not supported by Vc 1.3.0 (but is
           // supported by Vc 1.3.2)
-          T tmp = p1.vec_[p1.idx_];
-          p1.vec_[p1.idx_] = s2;
-          s2 = tmp;
+          value_type tmp = std::move(a.vec_[a.idx_]);
+          a.vec_[a.idx_] = std::move(b.vec_[b.idx_]);
+          b.vec_[b.idx_] = std::move(tmp);
         }
-
-        template<class T>
-        friend void swap(T& s1, Proxy p2)
-        {
-          T tmp = s1;
-          s1 = p2.vec_[p2.idx_];
-          p2.vec_[p2.idx_] = tmp;
+        friend void swap(value_type &a, const Proxy &b) {
+          // don't use swap() ourselves -- not supported by Vc 1.3.0 (but is
+          // supported by Vc 1.3.2)
+          value_type tmp = std::move(a);
+          a = std::move(b.vec_[b.idx_]);
+          b.vec_[b.idx_] = std::move(tmp);
+        }
+        friend void swap(const Proxy &a, value_type &b) {
+          // don't use swap() ourselves -- not supported by Vc 1.3.0 (but is
+          // supported by Vc 1.3.2)
+          value_type tmp = std::move(a.vec_[a.idx_]);
+          a.vec_[a.idx_] = std::move(b);
+          b = std::move(tmp);
         }
       };
-
-      template<class V1, class V2>
-      void swap(Proxy<V1> p1, Proxy<V2> p2)
-      {
-        typename V1::value_type tmp = p1.vec_[p1.idx_];
-        p1.vec_[p1.idx_] = p2.vec_[p2.idx_];
-        p2.vec_[p2.idx_] = tmp;
-      }
 
     } // namespace VcImpl
 
