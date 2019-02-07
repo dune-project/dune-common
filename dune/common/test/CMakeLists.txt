@@ -370,7 +370,8 @@ dune_add_test(SOURCES mathtest.cc
 
 
 dune_add_test(SOURCES varianttest.cc
-              LINK_LIBRARIES dunecommon)
+              LINK_LIBRARIES dunecommon
+              LABELS quick)
 
 install(
   FILES
