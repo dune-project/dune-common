@@ -344,26 +344,26 @@ namespace Dune {
 #define DUNE_SIMD_VC_BINARY(OP)                                         \
         template<class T, class Abi>                                    \
         friend auto operator OP(const Vc::Vector<T, Abi> &l, Proxy&& r) \
-          -> decltype(l OP value_type(r))                               \
+          -> decltype(l OP std::declval<value_type>())                  \
         {                                                               \
           return l OP value_type(r);                                    \
         }                                                               \
         template<class T, class Abi>                                    \
         auto operator OP(const Vc::Vector<T, Abi> &r) &&                \
-          -> decltype(value_type(*this) OP r)                           \
+          -> decltype(std::declval<value_type>() OP r)                  \
         {                                                               \
           return value_type(*this) OP r;                                \
         }                                                               \
         template<class T, std::size_t n, class Vec, std::size_t m>      \
         friend auto                                                     \
         operator OP(const Vc::SimdArray<T, n, Vec, m> &l, Proxy&& r)    \
-          -> decltype(l OP value_type(r))                               \
+          -> decltype(l OP std::declval<value_type>())                  \
         {                                                               \
           return l OP value_type(r);                                    \
         }                                                               \
         template<class T, std::size_t n, class Vec, std::size_t m>      \
         auto operator OP(const Vc::SimdArray<T, n, Vec, m> &r) &&       \
-          -> decltype(value_type(*this) OP r)                           \
+          -> decltype(std::declval<value_type>() OP r)                  \
         {                                                               \
           return value_type(*this) OP r;                                \
         }
@@ -406,7 +406,7 @@ namespace Dune {
 #define DUNE_SIMD_VC_ASSIGN(OP)                                         \
         template<class T, class Abi>                                    \
         friend auto operator OP(Vc::Vector<T, Abi> &l, Proxy&& r)       \
-          -> decltype(l OP value_type(r))                               \
+          -> decltype(l OP std::declval<value_type>())                  \
         {                                                               \
           return l OP value_type(r);                                    \
         }
