@@ -117,25 +117,57 @@ class CTestParser:
             failure.text = test.find("./Results/Measurement/Value").text
             self.printTest(test)
         elif outcome == "notrun":
-            status = test.find("./Results/NamedMeasurement[@name='Completion Status']/Value").text
-            if status == "SKIP_RETURN_CODE=77":
-                self.skipped += 1
-                et.SubElement(testcase,"skipped")
-            elif status == "Required Files Missing":
-                self.errors += 1
-                error = et.SubElement(testcase,"error")
-                error.set("message","compilation failed")
-                error.set("type","compilation error")
-                self.printTest(test,output="Compilation error")
-            else:
-                error = et.SubElement(testcase,"error")
-                error.message("unknown error during test execution")
-                error.type("unknown")
-                error.text = test.find("./Results/Measurement/Value").text
-                self.errors += 1
-                self.printTest(test)
-        out = et.SubElement(testcase,"system-out")
-        out.text = test.find("./Results/Measurement/Value").text
+            # This does not exit on older CMake versions, so work around that
+            try:
+                status = test.find("./Results/NamedMeasurement[@name='Completion Status']/Value").text
+                if status == "SKIP_RETURN_CODE=77":
+                    self.skipped += 1
+                    et.SubElement(testcase,"skipped")
+                elif status == "Required Files Missing":
+                    self.errors += 1
+                    error = et.SubElement(testcase,"error")
+                    error.set("message","compilation failed")
+                    error.set("type","compilation error")
+                    self.printTest(test,output="Compilation error")
+                else:
+                    error = et.SubElement(testcase,"error")
+                    error.message("unknown error during test execution")
+                    error.type("unknown")
+                    error.text = test.find("./Results/Measurement/Value").text
+                    self.errors += 1
+                    self.printTest(test)
+            except AttributeError:
+                output_tag = test.find("./Results/Measurement/Value")
+                if output_tag is not None:
+                    msg = output_tag.text
+                    if "skipped" in msg:
+                        self.skipped += 1
+                        et.SubElement(testcase,"skipped")
+                    elif "Unable to find required file" in msg:
+                        self.errors += 1
+                        error = et.SubElement(testcase,"error")
+                        error.set("message","compilation failed")
+                        error.set("type","compilation error")
+                        self.printTest(test,output="Compilation error")
+                    else:
+                        error = et.SubElement(testcase,"error")
+                        error.message("unknown error during test execution")
+                        error.type("unknown")
+                        error.text = msg
+                        self.errors += 1
+                        self.printTest(test)
+                else:
+                    error = et.SubElement(testcase,"error")
+                    error.message("unknown error during test execution")
+                    error.type("unknown")
+                    error.text = "no message"
+                    self.errors += 1
+                    self.printTest(test)
+
+        output_tag = test.find("./Results/Measurement/Value")
+        if output_tag is not None:
+            out = et.SubElement(testcase,"system-out")
+            out.text = output_tag.text
 
     def process(self):
 
