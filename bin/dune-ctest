@@ -149,6 +149,7 @@ class CTestParser:
 
         with self.junitpath.open("wb") as fh:
             fh.write(et.tostring(self.testsuites,encoding="utf-8"))
+            print("JUnit report for CTest results written to {}".format(self.junitpath))
 
         return self.errors + self.failures
 
