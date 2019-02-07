@@ -25,6 +25,7 @@ import sys
 import xml.etree.ElementTree as et
 from pathlib import Path
 import os
+import re
 
 
 class CTestParser:
@@ -58,7 +59,10 @@ class CTestParser:
         if junitpath is None:
             if "CI_PROJECT_DIR" in os.environ:
                 buildroot = Path(os.environ["CI_PROJECT_DIR"])
-                junitbasename = "{}-".format(Path.cwd().name)
+                # create a slug from the project name
+                name = os.environ["CI_PROJECT_NAME"].lower()
+                name = re.sub(r"[^-a-z0-9]","-",name);
+                junitbasename = "{}-".format(name)
             else:
                 buildroot = Path.cwd()
                 junitbasename = ""
