@@ -1,7 +1,17 @@
 ---
 include:
   - "https://gitlab.dune-project.org/core/ci-config/raw/master/config/common/master.yml"
-  - "https://gitlab.dune-project.org/core/ci-config/raw/master/jobs/common/master.yml"
+
+debian:10 gcc-8-noassert-17:
+  image: registry.dune-project.org/docker/ci/debian:10
+  script: duneci-standard-test
+  variables:
+    DUNECI_TOOLCHAIN: gcc-8-noassert-17
+  tags: [duneci, "host:epic"]
+  artifacts:
+    expire_in: 2 years
+    reports:
+      junit: junit/*.xml
 
 before_script:
   - . /duneci/bin/duneci-init-job
@@ -9,16 +19,3 @@ before_script:
 variables:
   DUNECI_TEST_LABELS: quick
 
-debian:10 gcc-7-14--expensive:
-  # This image has Vc
-  image: registry.dune-project.org/docker/ci/debian:10
-  script: duneci-standard-test
-  # allow expensive tests
-  variables:
-    DUNECI_TEST_LABELS: ""
-    DUNECI_TOOLCHAIN: gcc-7-14
-  # require AVX to properly test Vc
-  tags: [duneci, "iset:avx"]
-  # allowed to fail to e.g. do no hold up a merge when a runner supporting avx
-  # is unavailable
-  allow_failure: true
