@@ -151,7 +151,7 @@ class CTestParser:
                         self.printTest(test,output="Compilation error")
                     else:
                         error = et.SubElement(testcase,"error")
-                        error.set("message"."unknown error during test execution")
+                        error.set("message","unknown error during test execution")
                         error.set("type","unknown")
                         error.text = msg
                         self.errors += 1
