@@ -1,6 +1,7 @@
 #include "config.h"
 #include <iostream>
 #include <cassert>
+#include <memory>
 #include <tuple>
 #include <dune/common/parameterizedobject.hh>
 #include <dune/common/parametertree.hh>
@@ -14,7 +15,7 @@ DefineImplementation(InterfaceA, Bix, int);
 int init_Factory()
 {
     globalPtrFactory<InterfaceA>().define<Aix>("Aix");
-    globalPtrFactory<InterfaceA>().define("Bix", [](int i) { return Dune::Std::make_unique<Bix>(i); });
+    globalPtrFactory<InterfaceA>().define("Bix", [](int i) { return std::make_unique<Bix>(i); });
     return 0;
 }
 

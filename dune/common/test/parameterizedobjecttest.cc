@@ -1,6 +1,7 @@
 #include "config.h"
 #include <iostream>
 #include <cassert>
+#include <memory>
 #include <tuple>
 #include <dune/common/parametertree.hh>
 #include <dune/common/shared_ptr.hh>
@@ -45,7 +46,7 @@ int main()
     // Dune::ParameterizedObjectFactory<std::unique_ptr<InterfaceA>(int)> FactoryA;
     globalPtrFactory<InterfaceA>().define<Ai>("Ai");
     globalPtrFactory<InterfaceA>().define<Bi>("Bi");
-    globalPtrFactory<InterfaceA>().define("Ax", [](int /*i*/) { return Dune::Std::make_unique<Ax>(); });
+    globalPtrFactory<InterfaceA>().define("Ax", [](int /*i*/) { return std::make_unique<Ax>(); });
     CheckInstance(globalPtrFactory<InterfaceA>(), Ai, 0);
     CheckInstance(globalPtrFactory<InterfaceA>(), Bi, 1);
     CheckInstance(globalPtrFactory<InterfaceA>(), Ax, 1);
