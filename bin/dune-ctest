@@ -131,8 +131,8 @@ class CTestParser:
                     self.printTest(test,output="Compilation error")
                 else:
                     error = et.SubElement(testcase,"error")
-                    error.message("unknown error during test execution")
-                    error.type("unknown")
+                    error.set("message","unknown error during test execution")
+                    error.set("type","unknown")
                     error.text = test.find("./Results/Measurement/Value").text
                     self.errors += 1
                     self.printTest(test)
@@ -151,15 +151,15 @@ class CTestParser:
                         self.printTest(test,output="Compilation error")
                     else:
                         error = et.SubElement(testcase,"error")
-                        error.message("unknown error during test execution")
-                        error.type("unknown")
+                        error.set("message"."unknown error during test execution")
+                        error.set("type","unknown")
                         error.text = msg
                         self.errors += 1
                         self.printTest(test)
                 else:
                     error = et.SubElement(testcase,"error")
-                    error.message("unknown error during test execution")
-                    error.type("unknown")
+                    error.set("message","unknown error during test execution")
+                    error.set("type","unknown")
                     error.text = "no message"
                     self.errors += 1
                     self.printTest(test)
