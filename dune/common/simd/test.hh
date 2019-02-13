@@ -315,10 +315,11 @@ namespace Dune {
       template<class V>
       void warnMissingMaskRebind(std::false_type) {}
 
-      template<class V, class Rebinds, template<class> class Prune>
-      void checkRebindOf()
+      template<class V, class Rebinds, template<class> class Prune,
+               class Recurse>
+      void checkRebindOf(Recurse recurse)
       {
-        Hybrid::forEach(Rebinds{}, [this](auto target) {
+        Hybrid::forEach(Rebinds{}, [=](auto target) {
             using T = typename decltype(target)::type;
 
             // check that the rebound type exists
@@ -340,8 +341,8 @@ namespace Dune {
                 log_ << "Pruning check of Simd type " << className<W>()
                      << std::endl;
               },
-              [this](auto id) {
-                id(this)->template checkVector<W, Rebinds, Prune>();
+              [=](auto id) {
+                recurse(id(MetaType<W>{}));
               });
           });
 
@@ -1828,6 +1829,84 @@ namespace Dune {
 #undef DUNE_SIMD_CHECK
 
     public:
+      /**
+       * @name Test instantiation points
+       *
+       * These functions should not be called directly, but serve as explicit
+       * instantiation points to keep memory usage bounded during compilation.
+       * There should be an explicit instantiation declaration (`extern
+       * template ...`) in the the overall header of your unit test for each
+       * type that is tested (possibly implicitly tested due to recursive
+       * checks).  Similarly, there should be an explicit instantiation
+       * definition (`template ...`) in a separate translation unit.  Ideally,
+       * there should be one translation unit per explicit instantiation
+       * definition, otherwise each of them will contribute to the overall
+       * memory used during compilation.
+       *
+       * If explicitly instatiating the top-level instantiation point
+       * `checkType()` is not sufficient, there are further instantiation
+       * points for improved granularity.  The hierarchy of instantiation
+       * points is:
+       * - `checkType()`
+       *   - `checkNonOps()`
+       *   - `checkUnaryOps()`
+       *   - `checkBinaryOps()`
+       *     - `checkBinaryOpsVectorVector()`
+       *     - `checkBinaryOpsScalarVector()`
+       *     - `checkBinaryOpsVectorScalar()`
+       *     - `checkBinaryOpsProxyVector()`
+       *     - `checkBinaryOpsVectorProxy()`
+       *
+       * Each instation point in the hierarchy implicitly instantiates its
+       * descendents, unless there are explicit instantiation declarations for
+       * them.  However, for future-proofing it can make sense to explicitly
+       * instantiate nodes in the hierachy even if all their children are
+       * already explicitly instantiated.  This will limit the impact of
+       * instantiation points added in the future.
+       *
+       * @{
+       */
+      template<class V> void checkType();
+      template<class V> void checkNonOps();
+      template<class V> void checkUnaryOps();
+      template<class V> void checkBinaryOps();
+      template<class V> void checkBinaryOpsVectorVector();
+      template<class V> void checkBinaryOpsScalarVector();
+      template<class V> void checkBinaryOpsVectorScalar();
+      template<class V> void checkBinaryOpsProxyVector();
+      template<class V> void checkBinaryOpsVectorProxy();
+      /** @} Group Test instantiation points */
+
+      //! run unit tests for simd vector type V
+      /**
+       * This function will also ensure that `check<W>()` is run, for any type
+       * `W = Rebind<R, V>` where `R` is in `Rebinds`, and `Prune<W>::value ==
+       * false`.  No test will be run twice for a given type.
+       *
+       * \tparam Rebinds A list of types, usually in the form of a `TypeList`.
+       * \tparam Prune   A type predicate determining whether to run `check()`
+       *                 for types obtained from `Rebinds`.
+       */
+      template<class V, class Rebinds, template<class> class Prune = IsLoop>
+      void check() {
+        // check whether the test for this type already started
+        if(seen_.emplace(typeid (V)).second == false)
+        {
+          // type already seen, nothing to do
+          return;
+        }
+
+        // do these first so everything that appears after "Checking SIMD type
+        // ..." really pertains to that type
+        auto recurse = [this](auto w) {
+          using W = typename decltype(w)::type;
+          this->template check<W, Rebinds, Prune>();
+        };
+        checkRebindOf<V, Rebinds, Prune>(recurse);
+
+        checkType<V>();
+      }
+
       //! run unit tests for simd vector type V
       /**
        * This function will also ensure that `checkVector<Rebind<R, V>>()`
@@ -1837,6 +1916,11 @@ namespace Dune {
        * \tparam Rebinds A list of types, usually in the form of a `TypeList`.
        * \tparam Prune   A type predicate determining whether to run
        *                 `checkVector()` for types obtained from `Rebinds`.
+       *
+       * \deperecated Rather than calling this function, call `check()` with
+       *              the same template arguments.  Rather than explicitly
+       *              instantiating this function as described below,
+       *              explicitly instantiate `checkType()` and friends.
        *
        * \note As an implementor of a unit test, you are encouraged to
        *       explicitly instantiate this function in seperate compilation
@@ -1865,6 +1949,8 @@ namespace Dune {
        * consumption.)
        */
       template<class V, class Rebinds, template<class> class Prune = IsLoop>
+      DUNE_DEPRECATED_MSG("Call check() instead, and explicitly instantiate "
+                          "checkType() and friends instead")
       void checkVector();
 
       //! whether all tests succeeded
@@ -1875,32 +1961,29 @@ namespace Dune {
 
     }; // class UnitTest
 
-    // Needs to be defined outside of the class to bring memory consumption
-    // during compilation down to an acceptable level.
-    template<class V, class Rebinds, template<class> class Prune>
-    void UnitTest::checkVector()
+    template<class V> void UnitTest::checkType()
     {
       static_assert(std::is_same<V, std::decay_t<V> >::value, "Simd types "
                     "must not be references, and must not include "
                     "cv-qualifiers");
 
-      // check whether the test for this type already started
-      if(seen_.emplace(typeid (V)).second == false)
-      {
-        // type already seen, nothing to do
-        return;
-      }
-
-      // do these first so everything that appears after "Checking SIMD type
-      // ..." really pertains to that type
-      checkRebindOf<V, Rebinds, Prune>();
-
       log_ << "Checking SIMD type " << className<V>() << std::endl;
+
+      checkNonOps<V>();
+
+      constexpr auto isMask = typename std::is_same<Scalar<V>, bool>::type{};
+
+      Hybrid::ifElse(isMask,
+        [this](auto id) { id(this)->template checkMaskOps<V>();   },
+        [this](auto id) { id(this)->template checkVectorOps<V>(); });
+
+    }
+    template<class V> void UnitTest::checkNonOps()
+    {
+      constexpr auto isMask = typename std::is_same<Scalar<V>, bool>::type{};
 
       checkLanes<V>();
       checkScalar<V>();
-
-      constexpr auto isMask = typename std::is_same<Scalar<V>, bool>::type{};
 
       checkDefaultConstruct<V>();
       checkLane<V>();
@@ -1913,10 +1996,6 @@ namespace Dune {
       checkBracedAssign<V>();
       checkBracedBroadcastAssign<V>();
 
-      Hybrid::ifElse(isMask,
-        [this](auto id) { id(this)->template checkMaskOps<V>();   },
-        [this](auto id) { id(this)->template checkVectorOps<V>(); });
-
       checkAutoCopy<V>();
       checkCond<V>();
       checkBoolCond<V>();
@@ -1928,6 +2007,36 @@ namespace Dune {
       checkHorizontalMinMax<V>();
       checkBinaryMinMax<V>();
       checkIO<V>();
+    }
+    template<class V> void UnitTest::checkUnaryOps() {}
+    template<class V> void UnitTest::checkBinaryOps() {}
+    template<class V> void UnitTest::checkBinaryOpsVectorVector() {}
+    template<class V> void UnitTest::checkBinaryOpsScalarVector() {}
+    template<class V> void UnitTest::checkBinaryOpsVectorScalar() {}
+    template<class V> void UnitTest::checkBinaryOpsProxyVector() {}
+    template<class V> void UnitTest::checkBinaryOpsVectorProxy() {}
+
+    // Needs to be defined outside of the class to bring memory consumption
+    // during compilation down to an acceptable level.
+    template<class V, class Rebinds, template<class> class Prune>
+    void UnitTest::checkVector()
+    {
+      // check whether the test for this type already started
+      if(seen_.emplace(typeid (V)).second == false)
+      {
+        // type already seen, nothing to do
+        return;
+      }
+
+      // do these first so everything that appears after "Checking SIMD type
+      // ..." really pertains to that type
+      auto recurse = [this](auto w) {
+        using W = typename decltype(w)::type;
+        this->template checkVector<W, Rebinds, Prune>();
+      };
+      checkRebindOf<V, Rebinds, Prune>(recurse);
+
+      checkType<V>();
     }
 
   } // namespace Simd
