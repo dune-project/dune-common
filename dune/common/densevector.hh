@@ -273,20 +273,20 @@ namespace Dune {
 
      //===== assignment from other DenseVectors
     //! Assignment operator for other DenseVector of same type
-    DenseVector<V>& operator= (const DenseVector<V>& other)
+    derived_type& operator= (const DenseVector<V>& other)
     {
       asImp() = other.asImp();
-      return *this;
+      return asImp();
     }
 
     //! Assignment operator for other DenseVector of different type
     template <typename W>
-    DenseVector<V>& operator= (const DenseVector<W>& other)
+    derived_type& operator= (const DenseVector<W>& other)
     {
       assert(other.size() == size());
       for (size_type i=0; i<size(); i++)
         asImp()[i] = other[i];
-      return *this;
+      return asImp();
     }
 
     //===== access to components
