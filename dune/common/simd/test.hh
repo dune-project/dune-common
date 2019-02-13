@@ -1434,19 +1434,6 @@ namespace Dune {
       template<class V>
       void checkVectorOps()
       {
-        // postfix
-        // checkUnaryOpsV<V>(OpPostfixDecrement{});
-        // checkUnaryOpsV<V>(OpPostfixIncrement{});
-
-        // prefix
-        // checkUnaryOpsV<V>(OpPrefixDecrement{});
-        // checkUnaryOpsV<V>(OpPrefixIncrement{});
-
-        // checkUnaryOpsV<V>(OpPrefixPlus{});
-        checkUnaryOpsV<V>(OpPrefixMinus{});
-        checkUnaryOpsV<V>(OpPrefixLogicNot{});
-        checkUnaryOpsV<V>(OpPrefixBitNot{});
-
         // binary
         DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixMul             );
         DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixDiv             );
@@ -1491,21 +1478,6 @@ namespace Dune {
       template<class V>
       void checkMaskOps()
       {
-        // postfix
-        // checkUnaryOpsV<V>(OpPostfixDecrement{});
-        // clang deprecation warning if bool++ is tested
-        // checkUnaryOpsV<V>(OpPostfixIncrement{});
-
-        // prefix
-        // checkUnaryOpsV<V>(OpPrefixDecrement{});
-        // clang deprecation warning if ++bool is tested
-        // checkUnaryOpsV<V>(OpPrefixIncrement{});
-
-        // checkUnaryOpsV<V>(OpPrefixPlus{});
-        // checkUnaryOpsV<V>(OpPrefixMinus{});
-        checkUnaryOpsV<V>(OpPrefixLogicNot{});
-        // checkUnaryOpsV<V>(OpPrefixBitNot{});
-
         // binary
         DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixMul             );
         DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixDiv             );
@@ -1970,6 +1942,7 @@ namespace Dune {
       log_ << "Checking SIMD type " << className<V>() << std::endl;
 
       checkNonOps<V>();
+      checkUnaryOps<V>();
 
       constexpr auto isMask = typename std::is_same<Scalar<V>, bool>::type{};
 
@@ -2008,7 +1981,46 @@ namespace Dune {
       checkBinaryMinMax<V>();
       checkIO<V>();
     }
-    template<class V> void UnitTest::checkUnaryOps() {}
+    template<class V> void UnitTest::checkUnaryOps()
+    {
+      auto checkMask = [=](auto id) {
+        auto &self = *id(this);
+
+        // postfix
+        // self.checkUnaryOpsV<V>(OpPostfixDecrement{});
+        // clang deprecation warning if bool++ is tested
+        // self.checkUnaryOpsV<V>(OpPostfixIncrement{});
+
+        // prefix
+        // self.checkUnaryOpsV<V>(OpPrefixDecrement{});
+        // clang deprecation warning if ++bool is tested
+        // self.checkUnaryOpsV<V>(OpPrefixIncrement{});
+
+        // self.checkUnaryOpsV<V>(OpPrefixPlus{});
+        // self.checkUnaryOpsV<V>(OpPrefixMinus{});
+        self.checkUnaryOpsV<V>(OpPrefixLogicNot{});
+        // self.checkUnaryOpsV<V>(OpPrefixBitNot{});
+      };
+
+      auto checkVector = [=](auto id) {
+        auto &self = *id(this);
+
+        // postfix
+        // self.checkUnaryOpsV<V>(OpPostfixDecrement{});
+        // self.checkUnaryOpsV<V>(OpPostfixIncrement{});
+
+        // prefix
+        // self.checkUnaryOpsV<V>(OpPrefixDecrement{});
+        // self.checkUnaryOpsV<V>(OpPrefixIncrement{});
+
+        // self.checkUnaryOpsV<V>(OpPrefixPlus{});
+        self.checkUnaryOpsV<V>(OpPrefixMinus{});
+        self.checkUnaryOpsV<V>(OpPrefixLogicNot{});
+        self.checkUnaryOpsV<V>(OpPrefixBitNot{});
+      };
+
+      Hybrid::ifElse(std::is_same<Scalar<V>, bool>{}, checkMask, checkVector);
+    }
     template<class V> void UnitTest::checkBinaryOps() {}
     template<class V> void UnitTest::checkBinaryOpsVectorVector() {}
     template<class V> void UnitTest::checkBinaryOpsScalarVector() {}
