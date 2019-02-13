@@ -1984,39 +1984,43 @@ namespace Dune {
     template<class V> void UnitTest::checkUnaryOps()
     {
       auto checkMask = [=](auto id) {
-        auto &self = *id(this);
+        auto check = [=](auto op) {
+          id(this)->template checkUnaryOpsV<V>(op);
+        };
 
         // postfix
-        // self.checkUnaryOpsV<V>(OpPostfixDecrement{});
+        // check(OpPostfixDecrement{});
         // clang deprecation warning if bool++ is tested
-        // self.checkUnaryOpsV<V>(OpPostfixIncrement{});
+        // check(OpPostfixIncrement{});
 
         // prefix
-        // self.checkUnaryOpsV<V>(OpPrefixDecrement{});
+        // check(OpPrefixDecrement{});
         // clang deprecation warning if ++bool is tested
-        // self.checkUnaryOpsV<V>(OpPrefixIncrement{});
+        // check(OpPrefixIncrement{});
 
-        // self.checkUnaryOpsV<V>(OpPrefixPlus{});
-        // self.checkUnaryOpsV<V>(OpPrefixMinus{});
-        self.checkUnaryOpsV<V>(OpPrefixLogicNot{});
-        // self.checkUnaryOpsV<V>(OpPrefixBitNot{});
+        // check(OpPrefixPlus{});
+        // check(OpPrefixMinus{});
+        check(OpPrefixLogicNot{});
+        // check(OpPrefixBitNot{});
       };
 
       auto checkVector = [=](auto id) {
-        auto &self = *id(this);
+        auto check = [=](auto op) {
+          id(this)->template checkUnaryOpsV<V>(op);
+        };
 
         // postfix
-        // self.checkUnaryOpsV<V>(OpPostfixDecrement{});
-        // self.checkUnaryOpsV<V>(OpPostfixIncrement{});
+        // check(OpPostfixDecrement{});
+        // check(OpPostfixIncrement{});
 
         // prefix
-        // self.checkUnaryOpsV<V>(OpPrefixDecrement{});
-        // self.checkUnaryOpsV<V>(OpPrefixIncrement{});
+        // check(OpPrefixDecrement{});
+        // check(OpPrefixIncrement{});
 
-        // self.checkUnaryOpsV<V>(OpPrefixPlus{});
-        self.checkUnaryOpsV<V>(OpPrefixMinus{});
-        self.checkUnaryOpsV<V>(OpPrefixLogicNot{});
-        self.checkUnaryOpsV<V>(OpPrefixBitNot{});
+        // check(OpPrefixPlus{});
+        check(OpPrefixMinus{});
+        check(OpPrefixLogicNot{});
+        check(OpPrefixBitNot{});
       };
 
       Hybrid::ifElse(std::is_same<Scalar<V>, bool>{}, checkMask, checkVector);
