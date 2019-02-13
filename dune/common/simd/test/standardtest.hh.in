@@ -18,7 +18,7 @@ namespace Dune {
   namespace Simd {
 
 #cmake @template@
-    extern template void UnitTest::checkVector<@SCALAR@, Rebinds>();
+    extern template void UnitTest::checkType<@SCALAR@>();
 #cmake @endtemplate@
 
   } // namespace Simd

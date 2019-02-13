@@ -16,7 +16,7 @@ int main()
   Dune::Simd::UnitTest test;
 
 #cmake @template@
-  test.checkVector<@SCALAR@, Rebinds>();
+  test.check<@SCALAR@, Rebinds>();
 #cmake @endtemplate@
 
   return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;

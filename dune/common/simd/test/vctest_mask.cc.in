@@ -9,8 +9,7 @@
 namespace Dune {
   namespace Simd {
 
-    template
-    void UnitTest::checkVector<Vc::Mask<@SCALAR@>, Rebinds>();
+    template void UnitTest::checkType<Vc::Mask<@SCALAR@> >();
 
   } // namespace Simd
 } // namespace Dune

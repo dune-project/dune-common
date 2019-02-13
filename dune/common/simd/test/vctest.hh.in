@@ -20,17 +20,15 @@ namespace Dune {
   namespace Simd {
 
 #cmake @template VECTOR@
-    extern template void
-    UnitTest::checkVector<Vc::Vector<@SCALAR@>, Rebinds>();
-    extern template void
-    UnitTest::checkVector<Vc::Mask<@SCALAR@>, Rebinds>();
+    extern template void UnitTest::checkType<Vc::Vector<@SCALAR@> >();
+    extern template void UnitTest::checkType<Vc::Mask<@SCALAR@> >();
 #cmake @endtemplate@
 
 #cmake @template ARRAY@
     extern template void
-    UnitTest::checkVector<Vc::SimdArray<@SCALAR@, @LANES@>, Rebinds>();
+    UnitTest::checkType<Vc::SimdArray<@SCALAR@, @LANES@> >();
     extern template void
-    UnitTest::checkVector<Vc::SimdMaskArray<@SCALAR@, @LANES@>, Rebinds>();
+    UnitTest::checkType<Vc::SimdMaskArray<@SCALAR@, @LANES@> >();
 #cmake @endtemplate@
 
   } // namespace Simd

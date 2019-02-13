@@ -9,8 +9,7 @@
 namespace Dune {
   namespace Simd {
 
-    template
-    void UnitTest::checkVector<Vc::SimdArray<@SCALAR@, @LANES@>, Rebinds>();
+    template void UnitTest::checkType<Vc::SimdArray<@SCALAR@, @LANES@> >();
 
   } // namespace Simd
 } // namespace Dune

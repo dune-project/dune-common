@@ -16,7 +16,7 @@ int main()
   Dune::Simd::UnitTest test;
 
 #cmake @template@
-  test.checkVector<Dune::LoopSIMD<@SCALAR@, 5>, Rebinds, Prune>();
+  test.check<Dune::LoopSIMD<@SCALAR@, 5>, Rebinds, Prune>();
 #cmake @endtemplate@
 
   return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;

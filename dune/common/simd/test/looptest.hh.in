@@ -23,7 +23,7 @@ namespace Dune {
 
 #cmake @template@
     extern template void
-    UnitTest::checkVector<LoopSIMD<@SCALAR@, 5>, Rebinds, Prune>();
+    UnitTest::checkType<LoopSIMD<@SCALAR@, 5> >();
 #cmake @endtemplate@
 
   } //namespace Simd
