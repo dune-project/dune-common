@@ -220,15 +220,6 @@ namespace Dune {
   /** \brief Interface for a class of dense vectors over a given field.
    *
    * \tparam V implementation class of the vector
-   * \tparam T value type
-   * \tparam S size type
-   *
-   * V has to provide the following members:
-   * @code
-   * T &       _access (size_type);
-   * const T & _access (size_type) const;
-   * size_type _size   () const;
-   * @endcode
    */
   template<typename V>
   class DenseVector
