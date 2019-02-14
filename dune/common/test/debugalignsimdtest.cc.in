@@ -1,3 +1,5 @@
+// @GENERATED_SOURCE@
+
 #include <config.h>
 
 #include <cstdlib>
@@ -5,7 +7,7 @@
 #include <dune/common/debugalign.hh>
 #include <dune/common/parallel/mpihelper.hh>
 #include <dune/common/simd/test.hh>
-#include <dune/common/typelist.hh>
+#include <dune/common/test/debugalignsimdtest.hh>
 
 int main(int argc, char **argv)
 {
@@ -13,7 +15,15 @@ int main(int argc, char **argv)
 
   Dune::Simd::UnitTest test;
 
-  test.check<Dune::AlignedNumber<double>, Dune::TypeList<bool>>();
+  using Rebinds = Dune::Simd::RebindList<
+#cmake @template@
+    @SCALAR@,
+#cmake @endtemplate@
+    Dune::Simd::EndMark>;
+
+#cmake @template@
+  test.check<Dune::AlignedNumber<@SCALAR@>, Rebinds>();
+#cmake @endtemplate@
 
   return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
