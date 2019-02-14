@@ -1398,31 +1398,6 @@ namespace Dune {
           });
       }
 
-      template<class V, bool doSV, bool doVV, bool doVS, class Op>
-      void checkBinaryOp(Op op)
-      {
-        checkBinaryRefQual<Scalar<V>, V, doSV>
-          ([=](auto t1, auto t2) { this->checkBinaryOpSV(t1, t2, op); });
-        checkBinaryRefQual<V, V, doSV>
-          ([=](auto t1, auto t2) { this->checkBinaryOpPV(t1, t2, op); });
-        checkBinaryRefQual<V, V, doVV>
-          ([=](auto t1, auto t2) { this->checkBinaryOpVV(t1, t2, op); });
-        checkBinaryRefQual<V, Scalar<V>, doVS>
-          ([=](auto t1, auto t2) { this->checkBinaryOpVS(t1, t2, op); });
-        checkBinaryRefQual<V, V, doVS>
-          ([=](auto t1, auto t2) { this->checkBinaryOpVP(t1, t2, op); });
-
-        // cross-check
-        checkBinaryRefQual<Scalar<V>, V, doSV && doVV>
-          ([=](auto t1, auto t2) {
-            this->checkBinaryOpVVAgainstSV(t1, t2, op);
-          });
-        checkBinaryRefQual<V, Scalar<V>, doVV && doVS>
-          ([=](auto t1, auto t2) {
-            this->checkBinaryOpVVAgainstVS(t1, t2, op);
-          });
-      }
-
       template<class V, class Checker>
       void checkBinaryOps(Checker checker)
       {
@@ -1985,16 +1960,72 @@ namespace Dune {
     }
     template<class V> void UnitTest::checkBinaryOps()
     {
+      checkBinaryOpsVectorVector<V>();
+      checkBinaryOpsScalarVector<V>();
+      checkBinaryOpsVectorScalar<V>();
+      checkBinaryOpsProxyVector<V>();
+      checkBinaryOpsVectorProxy<V>();
+    }
+    template<class V> void UnitTest::checkBinaryOpsVectorVector()
+    {
       auto checker = [=](auto doSV, auto doVV, auto doVS, auto op) {
-        this->checkBinaryOp<V, doSV, doVV, doVS>(op);
+        auto check = [=](auto t1, auto t2) {
+          this->checkBinaryOpVV(t1, t2, op);
+        };
+        this->checkBinaryRefQual<V, V, doVV>(check);
       };
       checkBinaryOps<V>(checker);
     }
-    template<class V> void UnitTest::checkBinaryOpsVectorVector() {}
-    template<class V> void UnitTest::checkBinaryOpsScalarVector() {}
-    template<class V> void UnitTest::checkBinaryOpsVectorScalar() {}
-    template<class V> void UnitTest::checkBinaryOpsProxyVector() {}
-    template<class V> void UnitTest::checkBinaryOpsVectorProxy() {}
+    template<class V> void UnitTest::checkBinaryOpsScalarVector()
+    {
+      auto checker = [=](auto doSV, auto doVV, auto doVS, auto op) {
+        auto check = [=](auto t1, auto t2) {
+          this->checkBinaryOpSV(t1, t2, op);
+        };
+        this->checkBinaryRefQual<Scalar<V>, V, doSV>(check);
+
+        auto crossCheck = [=](auto t1, auto t2) {
+          this->checkBinaryOpVVAgainstSV(t1, t2, op);
+        };
+        this->checkBinaryRefQual<Scalar<V>, V, doSV && doVV>(crossCheck);
+      };
+      checkBinaryOps<V>(checker);
+    }
+    template<class V> void UnitTest::checkBinaryOpsVectorScalar()
+    {
+      auto checker = [=](auto doSV, auto doVV, auto doVS, auto op) {
+        auto check = [=](auto t1, auto t2) {
+          this->checkBinaryOpVS(t1, t2, op);
+        };
+        this->checkBinaryRefQual<V, Scalar<V>, doVS>(check);
+
+        auto crossCheck = [=](auto t1, auto t2) {
+          this->checkBinaryOpVVAgainstVS(t1, t2, op);
+        };
+        this->checkBinaryRefQual<V, Scalar<V>, doVV && doVS>(crossCheck);
+      };
+      checkBinaryOps<V>(checker);
+    }
+    template<class V> void UnitTest::checkBinaryOpsProxyVector()
+    {
+      auto checker = [=](auto doSV, auto doVV, auto doVS, auto op) {
+        auto check = [=](auto t1, auto t2) {
+          this->checkBinaryOpPV(t1, t2, op);
+        };
+        this->checkBinaryRefQual<V, V, doSV>(check);
+      };
+      checkBinaryOps<V>(checker);
+    }
+    template<class V> void UnitTest::checkBinaryOpsVectorProxy()
+    {
+      auto checker = [=](auto doSV, auto doVV, auto doVS, auto op) {
+        auto check = [=](auto t1, auto t2) {
+          this->checkBinaryOpVP(t1, t2, op);
+        };
+        this->checkBinaryRefQual<V, V, doVS>(check);
+      };
+      checkBinaryOps<V>(checker);
+    }
 
     // Needs to be defined outside of the class to bring memory consumption
     // during compilation down to an acceptable level.
