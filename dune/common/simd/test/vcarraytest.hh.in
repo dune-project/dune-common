@@ -1,0 +1,27 @@
+// @GENERATED_SOURCE@
+
+#ifndef DUNE_COMMON_SIMD_TEST_VCTEST_HH
+#define DUNE_COMMON_SIMD_TEST_VCTEST_HH
+
+#include <cstddef>
+#include <cstdint> // for std::[u]int#_t as substituted
+
+#include <dune/common/simd/test.hh>
+#include <dune/common/simd/vc.hh>
+
+constexpr std::size_t lanes = 4;
+
+namespace Dune {
+  namespace Simd {
+
+#cmake @template@
+    extern template void
+    UnitTest::checkType<Vc::SimdArray<@SCALAR@, ::lanes> >();
+    extern template void
+    UnitTest::checkType<Vc::SimdMaskArray<@SCALAR@, ::lanes> >();
+#cmake @endtemplate@
+
+  } // namespace Simd
+} // namespace Dune
+
+#endif // DUNE_COMMON_SIMD_TEST_VCTEST_HH

@@ -9,13 +9,6 @@
 #include <dune/common/simd/vc.hh>
 #include <dune/common/typelist.hh>
 
-using Rebinds = Dune::TypeList<
-#cmake @template VECTOR@
-  @SCALAR@,
-#cmake @endtemplate@
-  bool,
-  std::size_t>;
-
 namespace Dune {
   namespace Simd {
 
