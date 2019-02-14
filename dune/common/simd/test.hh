@@ -1943,13 +1943,7 @@ namespace Dune {
 
       checkNonOps<V>();
       checkUnaryOps<V>();
-
-      constexpr auto isMask = typename std::is_same<Scalar<V>, bool>::type{};
-
-      Hybrid::ifElse(isMask,
-        [this](auto id) { id(this)->template checkMaskOps<V>();   },
-        [this](auto id) { id(this)->template checkVectorOps<V>(); });
-
+      checkBinaryOps<V>();
     }
     template<class V> void UnitTest::checkNonOps()
     {
@@ -2025,7 +2019,14 @@ namespace Dune {
 
       Hybrid::ifElse(std::is_same<Scalar<V>, bool>{}, checkMask, checkVector);
     }
-    template<class V> void UnitTest::checkBinaryOps() {}
+    template<class V> void UnitTest::checkBinaryOps()
+    {
+      constexpr auto isMask = typename std::is_same<Scalar<V>, bool>::type{};
+
+      Hybrid::ifElse(isMask,
+        [this](auto id) { id(this)->template checkMaskOps<V>();   },
+        [this](auto id) { id(this)->template checkVectorOps<V>(); });
+    }
     template<class V> void UnitTest::checkBinaryOpsVectorVector() {}
     template<class V> void UnitTest::checkBinaryOpsScalarVector() {}
     template<class V> void UnitTest::checkBinaryOpsVectorScalar() {}
