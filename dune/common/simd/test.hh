@@ -1423,103 +1423,67 @@ namespace Dune {
           });
       }
 
-      static constexpr bool doCombo   = false;
-      static constexpr bool doComboSV = true;
-      static constexpr bool doComboVV = true;
-      static constexpr bool doComboVS = true;
-
-#define DUNE_SIMD_BINARY_OPCHECK(C1, C2, C3, NAME)      \
-      checkBinaryOp<V, doCombo##C1, doCombo##C2, doCombo##C3>(Op##NAME{})
-
-      template<class V>
-      void checkVectorOps()
+      template<class V, class Checker>
+      void checkBinaryOps(Checker checker)
       {
-        // binary
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixMul             );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixDiv             );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixRemainder       );
+        using Std::bool_constant;
 
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixPlus            );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixMinus           );
+        constexpr bool isMask = std::is_same<Scalar<V>, bool>::value;
 
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixLeftShift       );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixRightShift      );
+        constexpr bool do_   = false;
+        constexpr bool do_SV = true;
+        constexpr bool do_VV = true;
+        constexpr bool do_VS = true;
 
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixLess            );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixGreater         );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixLessEqual       );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixGreaterEqual    );
+#define DUNE_SIMD_DO(M1, M2, M3, V1, V2, V3, NAME)              \
+        checker(bool_constant<isMask ? do_##M1 : do_##V1>{},    \
+                bool_constant<isMask ? do_##M2 : do_##V2>{},    \
+                bool_constant<isMask ? do_##M3 : do_##V3>{},    \
+                Op##NAME{})
 
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixEqual           );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixNotEqual        );
+        //             (Mask      , Vector    , Name                 );
 
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixBitAnd          );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixBitXor          );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixBitOr           );
+        DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixMul             );
+        DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixDiv             );
+        DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixRemainder       );
 
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixLogicAnd        );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixLogicOr         );
+        DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixPlus            );
+        DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixMinus           );
 
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssign          );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignMul       );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignDiv       );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignRemainder );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignPlus      );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignMinus     );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignLeftShift );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignRightShift);
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignAnd       );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignXor       );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignOr        );
+        DUNE_SIMD_DO(  ,   ,   ,   , VV, VS, InfixLeftShift       );
+        DUNE_SIMD_DO(  ,   ,   ,   , VV, VS, InfixRightShift      );
 
-        DUNE_SIMD_BINARY_OPCHECK(SV,   , VS, InfixComma           );
+        DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixLess            );
+        DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixGreater         );
+        DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixLessEqual       );
+        DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixGreaterEqual    );
+
+        DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixEqual           );
+        DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixNotEqual        );
+
+        DUNE_SIMD_DO(  , VV,   , SV, VV, VS, InfixBitAnd          );
+        DUNE_SIMD_DO(  , VV,   , SV, VV, VS, InfixBitXor          );
+        DUNE_SIMD_DO(  , VV,   , SV, VV, VS, InfixBitOr           );
+
+        DUNE_SIMD_DO(SV, VV, VS, SV, VV, VS, InfixLogicAnd        );
+        DUNE_SIMD_DO(SV, VV, VS, SV, VV, VS, InfixLogicOr         );
+
+        DUNE_SIMD_DO(  , VV,   ,   , VV, VS, InfixAssign          );
+        DUNE_SIMD_DO(  ,   ,   ,   , VV, VS, InfixAssignMul       );
+        DUNE_SIMD_DO(  ,   ,   ,   , VV, VS, InfixAssignDiv       );
+        DUNE_SIMD_DO(  ,   ,   ,   , VV, VS, InfixAssignRemainder );
+        DUNE_SIMD_DO(  ,   ,   ,   , VV, VS, InfixAssignPlus      );
+        DUNE_SIMD_DO(  ,   ,   ,   , VV, VS, InfixAssignMinus     );
+        DUNE_SIMD_DO(  ,   ,   ,   , VV, VS, InfixAssignLeftShift );
+        DUNE_SIMD_DO(  ,   ,   ,   , VV, VS, InfixAssignRightShift);
+        DUNE_SIMD_DO(  , VV,   ,   , VV, VS, InfixAssignAnd       );
+        DUNE_SIMD_DO(  , VV,   ,   , VV, VS, InfixAssignXor       );
+        DUNE_SIMD_DO(  , VV,   ,   , VV, VS, InfixAssignOr        );
+
+        DUNE_SIMD_DO(SV, VV, VS, SV,   , VS, InfixComma           );
+
+#undef DUNE_SIMD_DO
       }
-
-      template<class V>
-      void checkMaskOps()
-      {
-        // binary
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixMul             );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixDiv             );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixRemainder       );
-
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixPlus            );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixMinus           );
-
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixLeftShift       );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixRightShift      );
-
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixLess            );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixGreater         );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixLessEqual       );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixGreaterEqual    );
-
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixEqual           );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixNotEqual        );
-
-        DUNE_SIMD_BINARY_OPCHECK(  , VV,   , InfixBitAnd          );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV,   , InfixBitXor          );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV,   , InfixBitOr           );
-
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixLogicAnd        );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixLogicOr         );
-
-        DUNE_SIMD_BINARY_OPCHECK(  , VV,   , InfixAssign          );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixAssignMul       );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixAssignDiv       );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixAssignRemainder );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixAssignPlus      );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixAssignMinus     );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixAssignLeftShift );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixAssignRightShift);
-        DUNE_SIMD_BINARY_OPCHECK(  , VV,   , InfixAssignAnd       );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV,   , InfixAssignXor       );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV,   , InfixAssignOr        );
-
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixComma           );
-      }
-
-#undef DUNE_SIMD_BINARY_OPCHECK
 
       //////////////////////////////////////////////////////////////////////
       //
@@ -2021,11 +1985,10 @@ namespace Dune {
     }
     template<class V> void UnitTest::checkBinaryOps()
     {
-      constexpr auto isMask = typename std::is_same<Scalar<V>, bool>::type{};
-
-      Hybrid::ifElse(isMask,
-        [this](auto id) { id(this)->template checkMaskOps<V>();   },
-        [this](auto id) { id(this)->template checkVectorOps<V>(); });
+      auto checker = [=](auto doSV, auto doVV, auto doVS, auto op) {
+        this->checkBinaryOp<V, doSV, doVV, doVS>(op);
+      };
+      checkBinaryOps<V>(checker);
     }
     template<class V> void UnitTest::checkBinaryOpsVectorVector() {}
     template<class V> void UnitTest::checkBinaryOpsScalarVector() {}
