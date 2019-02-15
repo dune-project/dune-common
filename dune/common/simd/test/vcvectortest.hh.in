@@ -12,9 +12,9 @@
 namespace Dune {
   namespace Simd {
 
-#cmake @template@
-    extern template void UnitTest::checkType<Vc::Vector<@SCALAR@> >();
-    extern template void UnitTest::checkType<Vc::Mask<@SCALAR@> >();
+#cmake @template POINT@
+    extern template void UnitTest::check@POINT@<Vc::Vector<@SCALAR@> >();
+    extern template void UnitTest::check@POINT@<Vc::Mask<@SCALAR@> >();
 #cmake @endtemplate@
 
   } // namespace Simd

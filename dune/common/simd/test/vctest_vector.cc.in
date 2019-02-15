@@ -7,7 +7,7 @@
 namespace Dune {
   namespace Simd {
 
-    template void UnitTest::checkType<Vc::Vector<@SCALAR@> >();
+    template void UnitTest::check@POINT@<Vc::Vector<@SCALAR@> >();
 
   } // namespace Simd
 } // namespace Dune

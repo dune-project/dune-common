@@ -7,7 +7,7 @@
 namespace Dune {
   namespace Simd {
 
-    template void UnitTest::checkType<Vc::Mask<@SCALAR@> >();
+    template void UnitTest::check@POINT@<Vc::Mask<@SCALAR@> >();
 
   } // namespace Simd
 } // namespace Dune

@@ -89,8 +89,14 @@ add_dune_vc_flags(vcarraytest)
 # invocations in the test for each instance.
 dune_instance_begin(FILES vcvectortest.hh vcvectortest.cc)
 foreach(SCALAR IN LISTS VCTEST_TYPES)
-  dune_instance_add(ID "${SCALAR}"
-    FILES vctest_vector.cc vctest_mask.cc)
+  dune_instance_add(ID "${SCALAR}")
+  foreach(POINT IN ITEMS
+      Type
+      BinaryOpsScalarVector BinaryOpsVectorScalar
+      BinaryOpsProxyVector BinaryOpsVectorProxy)
+    dune_instance_add(TEMPLATE POINT ID "${POINT}_${SCALAR}"
+      FILES vctest_vector.cc vctest_mask.cc)
+  endforeach()
 endforeach()
 dune_instance_end()
 dune_list_filter(DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
