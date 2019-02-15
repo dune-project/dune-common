@@ -7,7 +7,7 @@
 namespace Dune {
   namespace Simd {
 
-    template void UnitTest::checkType<LoopSIMD<@SCALAR@, 5> >();
+    template void UnitTest::check@POINT@<LoopSIMD<@SCALAR@, 5> >();
 
   } //namespace Simd
 } // namespace Dune

@@ -20,7 +20,13 @@ set(TYPES
 # invocations in the test for each instance.
 dune_instance_begin(FILES looptest.hh looptest.cc)
 foreach(SCALAR IN LISTS TYPES)
-  dune_instance_add(ID "${SCALAR}" FILES looptest_vector.cc)
+  dune_instance_add(ID "${SCALAR}")
+  foreach(POINT IN ITEMS
+      Type
+      BinaryOpsScalarVector BinaryOpsVectorScalar)
+    dune_instance_add(TEMPLATE POINT ID "${POINT}_${SCALAR}"
+      FILES looptest_vector.cc)
+  endforeach()
 endforeach()
 dune_instance_end()
 

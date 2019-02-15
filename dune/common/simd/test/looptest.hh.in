@@ -11,9 +11,9 @@
 namespace Dune {
   namespace Simd {
 
-#cmake @template@
+#cmake @template POINT@
     extern template void
-    UnitTest::checkType<LoopSIMD<@SCALAR@, 5> >();
+    UnitTest::check@POINT@<LoopSIMD<@SCALAR@, 5> >();
 #cmake @endtemplate@
 
   } //namespace Simd
