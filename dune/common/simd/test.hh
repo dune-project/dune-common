@@ -136,6 +136,18 @@ namespace Dune {
       template<class T, std::size_t S>
       struct IsLoop<LoopSIMD<T, S> > : std::true_type {};
 
+      // used inside static_assert to trick the compiler into printing a list
+      // of types:
+      //
+      //   static_assert(debugTypes<V>(Std::bool_constant<condition>{}), "msg");
+      //
+      // Should include what the type `V` expands to in the error message.
+      template<class...>
+      constexpr bool debugTypes(std::true_type) { return true; }
+      template<class... Types>
+      DUNE_DEPRECATED
+      constexpr bool debugTypes(std::false_type) { return false; }
+
     } // namespace Impl
 
     //! final element marker for `RebindList`
@@ -342,7 +354,8 @@ namespace Dune {
                      << std::endl;
               },
               [=](auto id) {
-                static_assert(id(RebindAccept<W>::value),
+                using Impl::debugTypes;
+                static_assert(debugTypes<T, V, W>(id(RebindAccept<W>{})),
                               "Rebind<T, V> is W, but that is not accepted "
                               "by RebindAccept");
                 recurse(id(MetaType<W>{}));
