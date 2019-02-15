@@ -18,12 +18,13 @@
 #include <dune/common/simd/vc.hh>
 #include <dune/common/typelist.hh>
 
-// ignore rebinds to LoopSIMD as well as Vc::Vector and Vc::Mask
-template<class T> struct Prune : Dune::Simd::IsLoop<T>  {};
-template<class T, class A>
-struct Prune<Vc::Vector<T, A> > : std::true_type {};
-template<class T, class A>
-struct Prune<Vc::Mask<T, A> >   : std::true_type {};
+template<class T> struct RebindAccept : std::false_type {};
+#cmake @template@
+template<>
+struct RebindAccept<Vc::SimdArray<@SCALAR@, ::lanes> >     : std::true_type {};
+template<>
+struct RebindAccept<Vc::SimdMaskArray<@SCALAR@, ::lanes> > : std::true_type {};
+#cmake @endtemplate@
 
 using Rebinds = Dune::TypeList<
 #cmake @template@
@@ -40,7 +41,8 @@ int main()
   Dune::Simd::UnitTest test;
 
 #@template@
-  test.check<SimdArray<@SCALAR@, ::lanes>, Rebinds, Prune>();
+  test.check<SimdArray<@SCALAR@, ::lanes>,
+             Rebinds, Dune::Simd::IsLoop, RebindAccept>();
 #@endtemplate@
 
   return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;
