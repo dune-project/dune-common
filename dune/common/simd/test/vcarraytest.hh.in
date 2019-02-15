@@ -14,11 +14,11 @@ constexpr std::size_t lanes = 4;
 namespace Dune {
   namespace Simd {
 
-#cmake @template@
+#cmake @template POINT@
     extern template void
-    UnitTest::checkType<Vc::SimdArray<@SCALAR@, ::lanes> >();
+    UnitTest::check@POINT@<Vc::SimdArray<@SCALAR@, ::lanes> >();
     extern template void
-    UnitTest::checkType<Vc::SimdMaskArray<@SCALAR@, ::lanes> >();
+    UnitTest::check@POINT@<Vc::SimdMaskArray<@SCALAR@, ::lanes> >();
 #cmake @endtemplate@
 
   } // namespace Simd

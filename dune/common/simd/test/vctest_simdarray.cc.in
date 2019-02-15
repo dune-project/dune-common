@@ -7,7 +7,8 @@
 namespace Dune {
   namespace Simd {
 
-    template void UnitTest::checkType<Vc::SimdArray<@SCALAR@, ::lanes> >();
+    template void
+    UnitTest::check@POINT@<Vc::SimdArray<@SCALAR@, ::lanes> >();
 
   } // namespace Simd
 } // namespace Dune
