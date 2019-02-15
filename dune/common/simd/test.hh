@@ -342,12 +342,10 @@ namespace Dune {
                      << std::endl;
               },
               [=](auto id) {
-                Hybrid::ifElse(id(RebindAccept<W>{}), [=](auto id) {
-                    recurse(id(MetaType<W>{}));
-                  }, [=](auto id) {
-                    static_assert(id(false), "Rebind<T, V> is W, but that is "
-                                  "not accepted by RebindAccept");
-                  });
+                static_assert(id(RebindAccept<W>::value),
+                              "Rebind<T, V> is W, but that is not accepted "
+                              "by RebindAccept");
+                recurse(id(MetaType<W>{}));
               });
           });
 
