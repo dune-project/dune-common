@@ -4,19 +4,29 @@
 #include "config.h"
 #endif
 
-#include <complex>
-#include <cstddef>
 #include <cstdlib>
+#include <type_traits>
 
 #include <dune/common/simd/test.hh>
 #include <dune/common/simd/test/standardtest.hh>
+
+template<class> struct RebindAccept : std::false_type {};
+#cmake @template@
+template<> struct RebindAccept<@SCALAR@> : std::true_type {};
+#cmake @endtemplate@
+
+using Rebinds = Dune::Simd::RebindList<
+#cmake @template@
+  @SCALAR@,
+#cmake @endtemplate@
+  Dune::Simd::EndMark>;
 
 int main()
 {
   Dune::Simd::UnitTest test;
 
 #cmake @template@
-  test.check<@SCALAR@, Rebinds>();
+  test.check<@SCALAR@, Rebinds, Dune::Std::to_false_type, RebindAccept>();
 #cmake @endtemplate@
 
   return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;

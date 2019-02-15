@@ -3,16 +3,9 @@
 #ifndef DUNE_COMMON_SIMD_TEST_STANDARDTEST_HH
 #define DUNE_COMMON_SIMD_TEST_STANDARDTEST_HH
 
-#include <complex>
-#include <cstddef>
+#include <complex> // for substituted types
 
 #include <dune/common/simd/test.hh>
-
-using Rebinds = Dune::Simd::RebindList<
-#cmake @template@
-  @SCALAR@,
-#cmake @endtemplate@
-  Dune::Simd::EndMark>;
 
 namespace Dune {
   namespace Simd {
