@@ -3,20 +3,10 @@
 #ifndef DUNE_COMMON_SIMD_TEST_LOOPTEST_HH
 #define DUNE_COMMON_SIMD_TEST_LOOPTEST_HH
 
-#include <cstddef>
-#include <type_traits>
+#include <complex> // as inserted by substitutions
 
 #include <dune/common/simd/test.hh>
 #include <dune/common/simd/loop.hh>
-
-using Rebinds = Dune::Simd::RebindList<
-#cmake @template@
-  @SCALAR@,
-#cmake @endtemplate@
-  Dune::Simd::EndMark>;
-
-template<class T>
-using Prune = std::false_type;
 
 namespace Dune {
   namespace Simd {
