@@ -20,7 +20,13 @@ set(TYPES
 # invocations in the test for each instance.
 dune_instance_begin(FILES looptest.hh looptest.cc)
 foreach(SCALAR IN LISTS TYPES)
-  dune_instance_add(ID "${SCALAR}" FILES looptest_vector.cc)
+  dune_instance_add(ID "${SCALAR}")
+  foreach(POINT IN ITEMS
+      Type
+      BinaryOpsScalarVector BinaryOpsVectorScalar)
+    dune_instance_add(TEMPLATE POINT ID "${POINT}_${SCALAR}"
+      FILES looptest_vector.cc)
+  endforeach()
 endforeach()
 dune_instance_end()
 
@@ -64,30 +70,46 @@ set(VCTEST_TYPES std::int16_t std::uint16_t std::int32_t std::uint32_t float dou
 
 # Generate files with instanciations, external declarations, and also the
 # invocations in the test for each instance.
-dune_instance_begin(FILES vctest.hh vctest.cc)
-
-# Vc::Vector and Vc::Mask
+dune_instance_begin(FILES vcarraytest.hh vcarraytest.cc)
 foreach(SCALAR IN LISTS VCTEST_TYPES)
-  dune_instance_add(TEMPLATE VECTOR ID "${SCALAR}"
-    FILES vctest_vector.cc vctest_mask.cc)
-endforeach()
-
-# Vc::SimdArray and Vc::SimdMaskArray
-foreach(SCALAR IN LISTS VCTEST_TYPES)
-  foreach(LANES IN ITEMS 4 8 16)
-    dune_instance_add(TEMPLATE ARRAY ID "${SCALAR}_${LANES}"
+  dune_instance_add(ID "${SCALAR}")
+  foreach(POINT IN ITEMS
+      Type
+      BinaryOpsScalarVector BinaryOpsVectorScalar
+      BinaryOpsProxyVector BinaryOpsVectorProxy)
+    dune_instance_add(TEMPLATE POINT ID "${POINT}_${SCALAR}"
       FILES vctest_simdarray.cc vctest_simdmaskarray.cc)
-  endforeach(LANES IN ITEMS 4 8 16)
+  endforeach()
 endforeach()
-
 dune_instance_end()
-
 dune_list_filter(DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
-
-dune_add_test(NAME vctest
+dune_add_test(NAME vcarraytest
   SOURCES ${DUNE_INSTANCE_GENERATED}
   LINK_LIBRARIES dunecommon
   CMAKE_GUARD Vc_FOUND
 )
-add_dune_vc_flags(vctest)
-# no need to install vctest.hh, used by vctest*.cc only
+add_dune_vc_flags(vcarraytest)
+# no need to install vcarraytest.hh, used by vctest*.cc only
+
+# Generate files with instanciations, external declarations, and also the
+# invocations in the test for each instance.
+dune_instance_begin(FILES vcvectortest.hh vcvectortest.cc)
+foreach(SCALAR IN LISTS VCTEST_TYPES)
+  dune_instance_add(ID "${SCALAR}")
+  foreach(POINT IN ITEMS
+      Type
+      BinaryOpsScalarVector BinaryOpsVectorScalar
+      BinaryOpsProxyVector BinaryOpsVectorProxy)
+    dune_instance_add(TEMPLATE POINT ID "${POINT}_${SCALAR}"
+      FILES vctest_vector.cc vctest_mask.cc)
+  endforeach()
+endforeach()
+dune_instance_end()
+dune_list_filter(DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
+dune_add_test(NAME vcvectortest
+  SOURCES ${DUNE_INSTANCE_GENERATED}
+  LINK_LIBRARIES dunecommon
+  CMAKE_GUARD Vc_FOUND
+)
+add_dune_vc_flags(vcvectortest)
+# no need to install vcvectortest.hh, used by vctest*.cc only

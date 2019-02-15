@@ -1,3 +1,6 @@
+include(DuneCMakeCompat)
+include(DuneInstance)
+
 dune_add_test(SOURCES arithmetictestsuitetest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
@@ -81,7 +84,21 @@ dune_add_test(SOURCES debugaligntest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
 
-dune_add_test(SOURCES debugalignsimdtest.cc
+# Generate files with instanciations, external declarations, and also the
+# invocations in the test for each instance.
+dune_instance_begin(FILES debugalignsimdtest.hh debugalignsimdtest.cc)
+foreach(SCALAR IN ITEMS double bool)
+  dune_instance_add(ID "${SCALAR}")
+  foreach(POINT IN ITEMS Type BinaryOpsScalarVector BinaryOpsVectorScalar)
+    dune_instance_add(TEMPLATE POINT
+                      ID "${POINT}_${SCALAR}"
+                      FILES debugalignsimd.cc)
+  endforeach()
+endforeach()
+dune_instance_end()
+dune_list_filter(DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
+dune_add_test(NAME debugalignsimdtest
+              SOURCES ${DUNE_INSTANCE_GENERATED}
               LINK_LIBRARIES dunecommon
               LABELS quick)
 

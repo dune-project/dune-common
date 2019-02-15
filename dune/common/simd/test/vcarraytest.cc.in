@@ -1,0 +1,49 @@
+// @GENERATED_SOURCE@
+
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#if !HAVE_VC
+#error Inconsistent buildsystem.  This program should not be built in the \
+  absence of Vc.
+#endif
+
+#include <cstddef>
+#include <cstdlib>
+#include <type_traits>
+
+#include <dune/common/simd/test.hh>
+#include <dune/common/simd/test/vcarraytest.hh>
+#include <dune/common/simd/vc.hh>
+#include <dune/common/typelist.hh>
+
+template<class T> struct RebindAccept : std::false_type {};
+#cmake @template@
+template<>
+struct RebindAccept<Vc::SimdArray<@SCALAR@, ::lanes> >     : std::true_type {};
+template<>
+struct RebindAccept<Vc::SimdMaskArray<@SCALAR@, ::lanes> > : std::true_type {};
+#cmake @endtemplate@
+
+using Rebinds = Dune::TypeList<
+#cmake @template@
+  @SCALAR@,
+#cmake @endtemplate@
+  bool,
+  std::size_t>;
+
+int main()
+{
+  using Vc::Vector;
+  using Vc::SimdArray;
+
+  Dune::Simd::UnitTest test;
+
+#@template@
+  test.check<SimdArray<@SCALAR@, ::lanes>,
+             Rebinds, Dune::Simd::IsLoop, RebindAccept>();
+#@endtemplate@
+
+  return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;
+}

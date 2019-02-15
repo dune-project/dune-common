@@ -1,0 +1,19 @@
+// @GENERATED_SOURCE@
+
+#ifndef DUNE_COMMON_TEST_DEBUGALIGNSIMDTEST_HH
+#define DUNE_COMMON_TEST_DEBUGALIGNSIMDTEST_HH
+
+#include <dune/common/debugalign.hh>
+#include <dune/common/simd/test.hh>
+
+namespace Dune {
+  namespace Simd {
+
+#cmake @template POINT@
+    extern template void UnitTest::check@POINT@<AlignedNumber<@SCALAR@> >();
+#cmake @endtemplate@
+
+  } //namespace Simd
+} // namespace Dune
+
+#endif // DUNE_COMMON_TEST_DEBUGALIGNSIMDTEST_HH
