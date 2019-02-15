@@ -73,6 +73,10 @@ dune_add_test(SOURCES concept.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
 
+dune_add_test(SOURCES constexprifelsetest.cc
+              LINK_LIBRARIES dunecommon
+              LABELS quick)
+
 dune_add_test(SOURCES debugaligntest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
