@@ -299,25 +299,32 @@ T accumulate(Range&& range, T value, F&& f)
 
 namespace Impl {
 
+  struct Id {
+    template<class T>
+    constexpr decltype(auto) operator()(T &&x) const {
+      return std::forward<T>(x);
+    }
+  };
+
   template<class IfFunc, class ElseFunc>
   constexpr decltype(auto) ifElse(std::true_type, IfFunc&& ifFunc, ElseFunc&& /*elseFunc*/)
   {
-    return ifFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
+    return ifFunc(Id{});
   }
 
   template<class IfFunc, class ElseFunc>
   constexpr decltype(auto) ifElse(std::false_type, IfFunc&& /*ifFunc*/, ElseFunc&& elseFunc)
   {
-    return elseFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
+    return elseFunc(Id{});
   }
 
   template<class IfFunc, class ElseFunc>
   decltype(auto) ifElse(const bool& condition, IfFunc&& ifFunc, ElseFunc&& elseFunc)
   {
     if (condition)
-      return ifFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
+      return ifFunc(Id{});
     else
-      return elseFunc([](auto&& x) -> decltype(auto) { return std::forward<decltype(x)>(x);});
+      return elseFunc(Id{});
   }
 
 } // namespace Impl
