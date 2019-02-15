@@ -315,8 +315,8 @@ namespace Dune {
       template<class V>
       void warnMissingMaskRebind(std::false_type) {}
 
-      template<class V, class Rebinds, template<class> class Prune,
-               class Recurse>
+      template<class V, class Rebinds, template<class> class RebindPrune,
+               template<class> class RebindAccept, class Recurse>
       void checkRebindOf(Recurse recurse)
       {
         Hybrid::forEach(Rebinds{}, [=](auto target) {
@@ -336,13 +336,18 @@ namespace Dune {
             static_assert(std::is_same<T, Scalar<W> >::value, "Rebound types "
                           "must have the bound-to scalar type");
 
-            Hybrid::ifElse(Prune<W>{},
+            Hybrid::ifElse(RebindPrune<W>{},
               [this](auto id) {
                 log_ << "Pruning check of Simd type " << className<W>()
                      << std::endl;
               },
               [=](auto id) {
-                recurse(id(MetaType<W>{}));
+                Hybrid::ifElse(id(RebindAccept<W>{}), [=](auto id) {
+                    recurse(id(MetaType<W>{}));
+                  }, [=](auto id) {
+                    static_assert(id(false), "Rebind<T, V> is W, but that is "
+                                  "not accepted by RebindAccept");
+                  });
               });
           });
 
@@ -1791,14 +1796,24 @@ namespace Dune {
       //! run unit tests for simd vector type V
       /**
        * This function will also ensure that `check<W>()` is run, for any type
-       * `W = Rebind<R, V>` where `R` is in `Rebinds`, and `Prune<W>::value ==
-       * false`.  No test will be run twice for a given type.
+       * `W = Rebind<R, V>` where `R` is in `Rebinds`, and
+       * `RebindPrune<W>::value == false`.  No test will be run twice for a
+       * given type.
        *
-       * \tparam Rebinds A list of types, usually in the form of a `TypeList`.
-       * \tparam Prune   A type predicate determining whether to run `check()`
-       *                 for types obtained from `Rebinds`.
+       * If the result of `Rebind` is not pruned by `RebindPrune`, it will be
+       * passed to `RebindAccept`.  If that rejects the type, a static
+       * assertion will trigger.
+       *
+       * \tparam Rebinds      A list of types, usually in the form of a
+       *                      `TypeList`.
+       * \tparam RebindPrune  A type predicate determining whether to run
+       *                      `check()` for types obtained from `Rebinds`.
+       * \tparam RebindAccept A type predicate determining whether a type is
+       *                      acceptable as the result of a `Rebind`.
        */
-      template<class V, class Rebinds, template<class> class Prune = IsLoop>
+      template<class V, class Rebinds,
+               template<class> class RebindPrune = IsLoop,
+               template<class> class RebindAccept = Std::to_true_type>
       void check() {
         // check whether the test for this type already started
         if(seen_.emplace(typeid (V)).second == false)
@@ -1811,9 +1826,9 @@ namespace Dune {
         // ..." really pertains to that type
         auto recurse = [this](auto w) {
           using W = typename decltype(w)::type;
-          this->template check<W, Rebinds, Prune>();
+          this->template check<W, Rebinds, RebindPrune, RebindAccept>();
         };
-        checkRebindOf<V, Rebinds, Prune>(recurse);
+        checkRebindOf<V, Rebinds, RebindPrune, RebindAccept>(recurse);
 
         checkType<V>();
       }
@@ -2045,7 +2060,7 @@ namespace Dune {
         using W = typename decltype(w)::type;
         this->template checkVector<W, Rebinds, Prune>();
       };
-      checkRebindOf<V, Rebinds, Prune>(recurse);
+      checkRebindOf<V, Rebinds, Prune, Std::to_true_type>(recurse);
 
       checkType<V>();
     }
