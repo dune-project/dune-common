@@ -219,8 +219,6 @@ namespace Dune
         return *this;
       }
 
-      template<class DummyInt = int,
-        std::enable_if_t<std::is_copy_constructible<T>::value and std::is_copy_assignable<T>::value, DummyInt> = 0>
       optional &operator= ( const optional &other ) noexcept( std::is_nothrow_copy_constructible< T >::value && std::is_nothrow_copy_assignable< T >::value )
       {
         if( engaged_ )
@@ -236,8 +234,6 @@ namespace Dune
         return *this;
       }
 
-      template<class DummyInt = int,
-        std::enable_if_t<std::is_move_constructible<T>::value and std::is_move_assignable<T>::value, DummyInt> = 0>
       optional &operator= ( optional &&other ) noexcept( std::is_nothrow_move_constructible< T >::value && std::is_nothrow_move_assignable< T >::value )
       {
         if( engaged_ )
