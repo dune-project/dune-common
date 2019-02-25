@@ -36,7 +36,8 @@ class Builder:
         comm.barrier()
 
     def compile(self, target='all'):
-        cmake_args = ["cmake", "--build", self.dune_py_dir, "--target", target]
+        cmake_command = dune.common.module.get_cmake_command()
+        cmake_args = [cmake_command, "--build", self.dune_py_dir, "--target", target]
         if self.build_args is not None:
             cmake_args += ['--'] + self.build_args
         cmake = subprocess.Popen(cmake_args, cwd=self.generated_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
