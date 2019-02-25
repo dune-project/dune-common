@@ -215,7 +215,8 @@ dune_add_test(SOURCES lrutest.cc
               LABELS quick)
 
 dune_add_test(SOURCES mathclassifierstest.cc
-              LINK_LIBRARIES dunecommon)
+              LINK_LIBRARIES dunecommon
+              LABELS quick)
 
 dune_add_test(SOURCES mpicollectivecommunication.cc
               LINK_LIBRARIES dunecommon

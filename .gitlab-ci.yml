@@ -5,6 +5,9 @@ include:
 before_script:
   - . /duneci/bin/duneci-init-job
 
+variables:
+  DUNECI_TEST_LABELS: quick
+
 debian:10 gcc-8-noassert-17:
   image: registry.dune-project.org/docker/ci/debian:10
   script: duneci-standard-test

@@ -34,6 +34,7 @@ dune_list_filter(DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
 dune_add_test(NAME looptest
   SOURCES ${DUNE_INSTANCE_GENERATED}
   LINK_LIBRARIES dunecommon
+  LABELS quick
 )
 # no need to install looptest.hh, used by looptest*.cc only
 
@@ -60,6 +61,7 @@ dune_list_filter(DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
 dune_add_test(NAME standardtest
   SOURCES ${DUNE_INSTANCE_GENERATED}
   LINK_LIBRARIES dunecommon
+  LABELS quick
 )
 # no need to install standardtest.hh, used by standardtest*.cc only
 
