@@ -327,6 +327,11 @@ def is_installed(dir, module=None):
     except KeyError:
         return False
 
+def get_cmake_command():
+    try:
+        return os.environ['DUNE_CMAKE']
+    except KeyError:
+        return 'cmake'
 
 def get_module_path():
     try:
@@ -414,7 +419,7 @@ def configure_module(srcdir, builddir, prefix_dirs, definitions=None):
     Returns:
         Output of CMake command
     """
-    args = ['cmake']
+    args = get_cmake_command()
     if definitions is None:
         pass
     elif isinstance(definitions, dict):
@@ -448,7 +453,7 @@ def build_module(builddir, build_args=None):
     if build_args is None:
         build_args = get_default_build_args()
 
-    cmake_args = ['cmake', '--build', '.']
+    cmake_args = [get_cmake_command(), '--build', '.']
     if build_args is not None:
         cmake_args += ['--'] + build_args
 
