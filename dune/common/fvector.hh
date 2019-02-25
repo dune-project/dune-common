@@ -291,7 +291,7 @@ namespace Dune {
     FieldVector& operator= (const FieldVector<T, N>& other)
     {
       static_assert(N == 1, "Sizes have to match for assignment!");
-      _data = other._data;
+      _data = other[0];
       return *this;
     }
 
