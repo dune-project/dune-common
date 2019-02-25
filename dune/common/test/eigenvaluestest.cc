@@ -119,7 +119,7 @@ void testSymmetricFieldMatrix()
   }
 }
 
-int main() try
+int main()
 {
 #if HAVE_LAPACK
   testRosserMatrix<double>();
@@ -131,8 +131,4 @@ int main() try
   testSymmetricFieldMatrix<double,3>();
 
   return 0;
-} catch (Exception exception)
-{
-  std::cerr << exception << std::endl;
-  return 1;
 }
