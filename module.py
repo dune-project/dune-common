@@ -419,7 +419,7 @@ def configure_module(srcdir, builddir, prefix_dirs, definitions=None):
     Returns:
         Output of CMake command
     """
-    args = get_cmake_command()
+    args = [ get_cmake_command() ]
     if definitions is None:
         pass
     elif isinstance(definitions, dict):
