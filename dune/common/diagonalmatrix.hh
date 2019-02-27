@@ -89,7 +89,7 @@ namespace Dune {
 
     //==== size
 
-    size_type size () const
+    static constexpr size_type size ()
     {
       return rows;
     }
@@ -462,13 +462,13 @@ namespace Dune {
     //===== sizes
 
     //! number of blocks in row direction
-    size_type N () const
+    static constexpr size_type N ()
     {
       return n;
     }
 
     //! number of blocks in column direction
-    size_type M () const
+    static constexpr size_type M ()
     {
       return n;
     }
