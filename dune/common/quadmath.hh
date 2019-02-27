@@ -334,7 +334,11 @@ namespace Dune
 
     /// \brief Overload of `pow` function for integer exponents.
     // NOTE: This is much faster than a pow(x, Float128(p)) call
-    // NOTE: Derived from the boost::math::cstdfloat::detail::pown implementation
+    // NOTE: This is a modified version of boost::math::cstdfloat::detail::pown
+    //   (adapted to the type Float128) that is part of the Boost 1.65 Math toolkit 2.8.0
+    //   and is implemented by Christopher Kormanyos, John Maddock, and Paul A. Bristow,
+    //   distributed under the Boost Software License, Version 1.0
+    //   (See http://www.boost.org/LICENSE_1_0.txt)
     template <class Int,
       std::enable_if_t<std::is_integral<Int>::value, int> = 0>
     inline Float128 pow(const Float128& x, const Int p)
