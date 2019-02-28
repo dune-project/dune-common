@@ -39,9 +39,8 @@ function(inkscape_generate_png_from_svg)
 
   foreach(pic ${INKSCAPE_UNPARSED_ARGUMENTS})
     string(REGEX REPLACE "\\.[a-zA-Z]+" ".svg" input ${pic})
+    execute_process(
       COMMAND ${INKSCAPE} --export-dpi=${INKSCAPE_DPI} -e ${pic} ${CMAKE_CURRENT_SOURCE_DIR}/${input}
-      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${input}
-      COMMENT "Generating ${INKSCAPE_OUTPUT_DIR}/${pic} from ${CMAKE_CURRENT_SOURCE_DIR}/${input}"
       WORKING_DIRECTORY  ${INKSCAPE_OUTPUT_DIR})
   endforeach()
 endfunction()
