@@ -436,7 +436,7 @@ namespace Dune
     template<class BinaryFunction, class T>
     MPIFuture<T> iallreduce(T&& data) const{
       MPIFuture<T> future(std::forward<T>(data));
-      auto mpidata = getMPIData(future.data_.value());
+      auto mpidata = future.get_mpidata();
       MPI_Iallreduce(MPI_IN_PLACE, mpidata.ptr(),
                      mpidata.size(), mpidata.type(),
                      (Generic_MPI_Op<T, BinaryFunction>::get()),

@@ -22,7 +22,7 @@ int main(int argc, char** argv){
       auto f = cc.irecv(41, 0, 0);
       std::cout << "Rank 1 received " << f.get() << std::endl;
       int j = 41;
-      auto f2 = cc.irecv<const int&>(j, 0, 0);
+      auto f2 = cc.irecv<int&>(j, 0, 0);
       std::cout << "Rank 1 received " << f2.get() << std::endl;
     }
   }
