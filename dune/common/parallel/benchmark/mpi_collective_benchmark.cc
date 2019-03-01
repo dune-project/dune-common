@@ -118,31 +118,25 @@ void communicate(CC& cc){
 }
 
 template<class CC>
-std::unique_ptr<Dune::FutureBase<>> startCommunication(CC& cc){
+Dune::Future<void> startCommunication(CC& cc){
   auto method = options.get("method", "allreduce");
   if(method == "allreduce"){
-    auto f = cc.template iallreduce<std::plus<char>>(42);
-    return std::make_unique<decltype(f)>(std::move(f));
+    return cc.template iallreduce<std::plus<char>>(42);
   }
   if(method == "barrier"){
-    auto f = cc.ibarrier();
-    return std::make_unique<decltype(f)>(std::move(f));
+    return cc.ibarrier();
   }
   if(method == "broadcast"){
-    auto f = cc.ibroadcast(42, 0);
-    return std::make_unique<decltype(f)>(std::move(f));
+    return cc.ibroadcast(42, 0);
   }
   if(method == "gather"){
-    auto f = cc.igather(42, std::vector<int>(cc.size()), 0);
-    return std::make_unique<decltype(f)>(std::move(f));
+    return cc.igather(42, std::vector<int>(cc.size()), 0);
   }
   if(method == "allgather"){
-    auto f = cc.iallgather(42, std::vector<int>(cc.size()));
-    return std::make_unique<decltype(f)>(std::move(f));
+    return cc.iallgather(42, std::vector<int>(cc.size()));
   }
   if(method == "scatter"){
-    auto f = cc.iscatter(std::vector<int>(cc.size(), 42), 0, 0);
-    return std::make_unique<decltype(f)>(std::move(f));
+    return cc.iscatter(std::vector<int>(cc.size(), 42), 0, 0);
   }
   DUNE_THROW(Dune::Exception, "Unknown method");
 }
@@ -170,7 +164,7 @@ double runNonblockingWait(CC& cc){
     cc.barrier();
     watch.start();
     auto f = startCommunication(cc);
-    f->wait();
+    f.wait();
     watch.stop();
   }
   return cc.sum(watch.elapsed())/iterations/cc.size();
@@ -188,7 +182,7 @@ std::tuple<double, double> runNonblockingSleep(decltype(Dune::MPIHelper::getComm
     auto start_time = std::chrono::high_resolution_clock::now();
     while(std::chrono::high_resolution_clock::now()-start_time < wait_time);
     watch_work.stop();
-    f->wait();
+    f.wait();
     watch.stop();
   }
   return std::tuple<double, double>(cc.sum(watch.stop())/iterations/cc.size(),
@@ -206,9 +200,9 @@ std::tuple<double, double> runNonblockingActive(decltype(Dune::MPIHelper::getCom
     watch_work.start();
     auto start_time = std::chrono::high_resolution_clock::now();
     while(std::chrono::high_resolution_clock::now()-start_time < wait_time)
-      f->ready();
+      f.ready();
     watch_work.stop();
-    f->wait();
+    f.wait();
     watch.stop();
   }
   // return the time spend in communication methods
