@@ -107,9 +107,9 @@ namespace Dune{
 
     R get() {
       wait();
-      R tmp(std::move(data_.value()));
-      data_.reset();
-      return tmp;
+      Std::optional<typename impl::WRAP_IF_REF<R>::type> tmp;
+      std::swap(tmp, data_);
+      return (R)tmp.value();
     }
 
     S get_send_data(){

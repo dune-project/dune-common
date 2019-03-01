@@ -57,7 +57,7 @@ namespace Dune{
       }
 
       virtual T get() override{
-        return _future.get();
+        return (T)_future.get();
       }
     };
 
