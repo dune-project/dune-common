@@ -38,7 +38,7 @@ namespace Dune{
       F _future;
     public:
       FutureModel(F&& f)
-        : _future(std::move(f))
+        : _future(std::forward<F>(f))
       {}
 
       virtual void wait() override
@@ -65,7 +65,7 @@ namespace Dune{
   public:
     template<class F>
     Future(F&& f)
-      : _future(new FutureModel<F>(std::forward<F>(f)))
+      : _future(std::make_unique<FutureModel<F>>(std::forward<F>(f)))
     {}
 
     Future() = default;
