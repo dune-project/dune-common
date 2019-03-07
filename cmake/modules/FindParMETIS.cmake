@@ -106,7 +106,7 @@ if(PARMETIS_FOUND)
     set(_PARMETIS_LIBRARIES ${PARMETIS_LIBRARY} ${METIS_LIBRARIES} ${MPI_DUNE_LIBRARIES})
     set(CMAKE_REQUIRED_LIBRARIES ${_PARMETIS_LIBRARIES} ${_CMAKE_REQUIRED_LIBRARIES})
     include(CheckFunctionExists)
-    check_function_exists(parmetis_v3_partkway HAVE_PARMETIS)
+    check_function_exists(ParMETIS_V3_PartKway HAVE_PARMETIS)
     if(NOT HAVE_PARMETIS)
       # Maybe we are using static scotch libraries. In this case we need to link
       # the other scotch libraries too. Let's make a best effort.
@@ -124,7 +124,7 @@ if(PARMETIS_FOUND)
         set(CMAKE_REQUIRED_LIBRARIES ${_PARMETIS_LIBRARIES}
           ${_CMAKE_REQUIRED_LIBRARIES})
         unset(HAVE_PARMETIS CACHE)
-        check_function_exists(parmetis_v3_partkway HAVE_PARMETIS)
+        check_function_exists(ParMETIS_V3_PartKway HAVE_PARMETIS)
       endif()
     endif()
   endif()
