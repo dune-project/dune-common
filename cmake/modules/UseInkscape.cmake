@@ -22,6 +22,13 @@
 #
 #    TODO Switch to named arguments!
 #
+#
+# .. cmake_function:: inkscape_generate_eps_from_svg
+#
+#    .. deprecated:: 2.7
+#       Switch to PNG instead of EPS and use
+#       inkscape_generate_png_from_svg.
+#
 
 include(CMakeParseArguments)
 
@@ -46,6 +53,7 @@ function(inkscape_generate_png_from_svg)
 endfunction()
 
 function(inkscape_generate_eps_from_svg)
+  message(AUTHOR_WARNING "inkscape_generate_eps_from_svg is deprecated and will be removed after Dune 2.7."
   cmake_parse_arguments(INKSCAPE "" "INPUT_DIR;OUTPUT_DIR;DPI" "" ${ARGN})
   if(NOT INKSCAPE_INPUT_DIR)
     set(INKSCAPE_INPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
