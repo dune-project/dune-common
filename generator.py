@@ -113,7 +113,12 @@ class SimpleGenerator(object):
             bufferProtocol = (False,)*len(typeName)
         if not dynamicAttr:
             dynamicAttr = (False,)*len(typeName)
-        source  = self.pre(includes, typeName[0], moduleName, defines, preamble)
+        if isinstance(includes[0],tuple) or isinstance(includes[0],list):
+            allIncludes = [item for sublist in includes for item in sublist]
+            includes = includes[0]
+        else:
+            allIncludes = includes
+        source  = self.pre(allIncludes, typeName[0], moduleName, defines, preamble)
         for nr, (tn, a, o, b, d)  in enumerate( zip(typeName, args, options, bufferProtocol, dynamicAttr) ):
             source += self.main(nr, includes, tn, *a, options=o, bufferProtocol=b, dynamicAttr=d)
         return self.post(moduleName, source)
