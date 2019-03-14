@@ -75,12 +75,12 @@ namespace Dune {
   };
 
   template <>
-  struct PowerImp<1,true>
+  struct PowerImp<0,false>
   {
     template <typename T>
     static constexpr auto eval(const T & a)
     {
-      return a;
+      return 1;
     }
   };
 #endif
