@@ -267,6 +267,10 @@ dune_add_test(SOURCES pathtest.cc
 dune_add_test(SOURCES poolallocatortest.cc
               LABELS quick)
 
+dune_add_test(SOURCES powertest.cc
+              LINK_LIBRARIES dunecommon
+              LABELS quick)
+
 dune_add_test(SOURCES quadmathtest.cc
               LINK_LIBRARIES dunecommon
               CMAKE_GUARD HAVE_QUADMATH)

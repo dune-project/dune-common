@@ -70,17 +70,17 @@ namespace Dune {
     template <typename T>
     static constexpr auto eval(const T & a)
     {
-      return a*Power<p-1>::eval(a);;
+      return a*Power<p-1>::eval(a);
     }
   };
 
   template <>
-  struct PowerImp<1,true>
+  struct PowerImp<0,false>
   {
     template <typename T>
     static constexpr auto eval(const T & a)
     {
-      return a;
+      return 1;
     }
   };
 #endif
