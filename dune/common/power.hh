@@ -16,7 +16,9 @@ namespace Dune {
        @{
    */
 
-  //! Calculates m^p at compile time
+  /** \brief Calculates m^p at compile time
+   * \deprecated Please use the method `power` from `math.hh` instead!
+   */
   template <int m, int p>
   struct StaticPower
   {
@@ -27,7 +29,7 @@ namespace Dune {
 
   /** \brief Compute power for a run-time mantissa and a compile-time integer exponent
    *
-   * Does some magic to create efficient code.  Not benchmarked AFAIK.
+   * \deprecated Please use the method `power` from `math.hh` instead!
    *
    * \tparam p The exponent
    */
