@@ -11,6 +11,10 @@
   implementation in `dune-common` is automatically disabled, and the official
   implementation from the standard library is used instead.
 
+- There is now (finally!) a method `power` in the file `math.hh` that computes
+  powers with an integer exponent, and is usable in compile-time expressions.
+  The use of the old power methods in `power.hh` is henceforth discouraged.
+
 -   When run with an absolute build directory, `dunecontrol` now exposes the root build
     directory to CMake in the variable `DUNE_BUILD_DIRECTORY_ROOT_PATH`.
 

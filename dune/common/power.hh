@@ -7,6 +7,8 @@
     \brief Various implementations of the power function for run-time and static arguments
  */
 
+#include <dune/common/math.hh>
+
 namespace Dune {
 
   /** @addtogroup Common
@@ -14,31 +16,20 @@ namespace Dune {
        @{
    */
 
-  //! Calculates m^p at compile time
+  /** \brief Calculates m^p at compile time
+   * \deprecated Please use the method `power` from `math.hh` instead!
+   */
   template <int m, int p>
   struct StaticPower
   {
     /** \brief power stores m^p */
-    enum { power = (m * StaticPower<m,p-1>::power ) };
+    enum { power = Dune::power(m,p) };
   };
 
-  //! end of recursion via specialization
-  template <int m>
-  struct StaticPower< m , 0>
-  {
-    /** \brief m^0 = 1 */
-    enum { power = 1 };
-  };
-
-
-   #ifndef DOXYGEN
-  template <int p, bool odd = p%2>
-  struct PowerImp {};
-#endif
 
   /** \brief Compute power for a run-time mantissa and a compile-time integer exponent
    *
-   * Does some magic to create efficient code.  Not benchmarked AFAIK.
+   * \deprecated Please use the method `power` from `math.hh` instead!
    *
    * \tparam p The exponent
    */
@@ -48,42 +39,9 @@ namespace Dune {
     template <typename T>
     static constexpr auto eval(const T & a)
     {
-      return PowerImp<p>::eval(a);
+      return power(a,p);
     }
   };
-
-#ifndef DOXYGEN
-  template <int p>
-  struct PowerImp<p,false>
-  {
-    template <typename T>
-    static constexpr auto eval(const T & a)
-    {
-      auto t = Power<p/2>::eval(a);
-      return t*t;
-    }
-  };
-
-  template <int p>
-  struct PowerImp<p,true>
-  {
-    template <typename T>
-    static constexpr auto eval(const T & a)
-    {
-      return a*Power<p-1>::eval(a);
-    }
-  };
-
-  template <>
-  struct PowerImp<0,false>
-  {
-    template <typename T>
-    static constexpr auto eval(const T & a)
-    {
-      return 1;
-    }
-  };
-#endif
 
 }
 
