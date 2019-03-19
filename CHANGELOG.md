@@ -41,6 +41,9 @@
 
 -   The `dune_symlink_to_sources_files` cmake function now has a `DESTINATION` argument.
 
+- The `inkscape_generate_png_from_svg` CMake function is deprecated and will be removed
+  after 2.7.
+
 # Release 2.6
 
 **This release is dedicated to Elias Pipping (1986-2017).**
