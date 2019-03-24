@@ -816,6 +816,33 @@ int main()
     test_invert< std::complex< long double >, 2 >();
     errors += test_invert_solve();
 
+    {  // Test whether multiplying one-column matrices by scalars work
+      FieldMatrix<double,3,1> A = {1,2,3};
+      double v = 0;
+      FieldVector<double,3> f = {2,3,4};
+      double vT = 0;
+      FieldVector<double,3> fT = {3,4,5};
+      test_mult(A, v, f, vT, fT);
+    }
+
+    {  // Test whether result of multiplying a one-row matrix can be a scalar
+      FieldMatrix<double,1,3> A = {{1,2,3}};
+      FieldVector<double,3> v = {2,3,4};
+      double f = 0;
+      FieldVector<double,3> vT = {3,4,5};
+      double fT = 0;
+      test_mult(A, v, f, vT, fT);
+    }
+
+    {  // Test multiplication of 1x1 matrix with scalars
+      FieldMatrix<double,1,1> A = {42};
+      double v = 0;
+      double f = 2;
+      double vT = 0;
+      double fT = 5;
+      test_mult(A, v, f, vT, fT);
+    }
+
     return (errors > 0 ? 1 : 0); // convert error count to unix exit status
   }
   catch (Dune::Exception & e)
