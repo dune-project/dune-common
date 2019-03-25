@@ -95,6 +95,7 @@ install(FILES
         quadmath.hh
         rangeutilities.hh
         reservedvector.hh
+        scalarvectorview.hh
         shared_ptr.hh
         simd.hh
         singleton.hh
