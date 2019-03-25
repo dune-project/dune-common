@@ -19,6 +19,7 @@
 #include <dune/common/simd/simd.hh>
 #include <dune/common/typetraits.hh>
 #include <dune/common/unused.hh>
+#include <dune/common/scalarvectorview.hh>
 
 namespace Dune
 {
@@ -374,85 +375,37 @@ namespace Dune
     template<class X, class Y>
     void mv (const X& x, Y& y) const
     {
+      auto&& xx = asVector(x);
+      auto&& yy = asVector(y);
       DUNE_ASSERT_BOUNDS((void*)(&x) != (void*)(&y));
+      DUNE_ASSERT_BOUNDS(xx.N() == M());
+      DUNE_ASSERT_BOUNDS(yy.N() == N());
 
       using field_type = typename FieldTraits<Y>::field_type;
-
-      if constexpr (IsNumber<X>() && IsNumber<Y>() )
+      for (size_type i=0; i<rows(); ++i)
       {
-        DUNE_ASSERT_BOUNDS(1 == M());
-        DUNE_ASSERT_BOUNDS(1 == N());
-        y = (*this)[0][0] * x;
-      }
-      if constexpr (!IsNumber<X>() && IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(x.N() == M());
-        DUNE_ASSERT_BOUNDS(1 == N());
-        y = field_type(0);
+        yy[i] = field_type(0);
         for (size_type j=0; j<cols(); j++)
-          y += (*this)[0][j] * x[j];
+          yy[i] += (*this)[i][j] * xx[j];
       }
-      if constexpr (IsNumber<X>() && !IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(1 == M());
-        DUNE_ASSERT_BOUNDS(y.N() == N());
-        for (size_type i=0; i<rows(); ++i)
-          y[i] = (*this)[i][0] * x;
-      }
-      if constexpr (!IsNumber<X>() && !IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(x.N() == M());
-        DUNE_ASSERT_BOUNDS(y.N() == N());
-        for (size_type i=0; i<rows(); ++i)
-        {
-          y[i] = field_type(0);
-          for (size_type j=0; j<cols(); j++)
-            y[i] += (*this)[i][j] * x[j];
-        }
-      }
-
     }
 
     //! y = A^T x
     template< class X, class Y >
     void mtv ( const X &x, Y &y ) const
     {
+      auto&& xx = asVector(x);
+      auto&& yy = asVector(y);
       DUNE_ASSERT_BOUNDS((void*)(&x) != (void*)(&y));
+      DUNE_ASSERT_BOUNDS(xx.N() == N());
+      DUNE_ASSERT_BOUNDS(yy.N() == M());
 
-      if constexpr (IsNumber<X>() && IsNumber<Y>() )
+      using field_type = typename FieldTraits<Y>::field_type;
+      for(size_type i = 0; i < cols(); ++i)
       {
-        DUNE_ASSERT_BOUNDS(1 == N());
-        DUNE_ASSERT_BOUNDS(1 == M());
-        y += (*this)[0][0] * x;
-      }
-      if constexpr (!IsNumber<X>() && IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(x.N() == N());
-        DUNE_ASSERT_BOUNDS(1 == M());
-
-        y = typename FieldTraits<Y>::field_type(0);
+        yy[i] = field_type(0);
         for(size_type j = 0; j < rows(); ++j)
-          y += (*this)[j][0] * x[j];
-      }
-      if constexpr (IsNumber<X>() && !IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(1 == N());
-        DUNE_ASSERT_BOUNDS(y.N() == M());
-
-        for(size_type i = 0; i < cols(); ++i)
-          y[i] = (*this)[0][i] * x;
-      }
-      if constexpr (!IsNumber<X>() && !IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(x.N() == N());
-        DUNE_ASSERT_BOUNDS(y.N() == M());
-
-        for(size_type i = 0; i < cols(); ++i)
-        {
-          y[i] = typename FieldTraits<Y>::field_type(0);
-          for(size_type j = 0; j < rows(); ++j)
-            y[i] += (*this)[j][i] * x[j];
-        }
+          yy[i] += (*this)[j][i] * xx[j];
       }
     }
 
@@ -460,204 +413,78 @@ namespace Dune
     template<class X, class Y>
     void umv (const X& x, Y& y) const
     {
-      if constexpr (IsNumber<X>() && IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(1 == M());
-        DUNE_ASSERT_BOUNDS(1 == N());
-        y += (*this)[0][0] * x;
-      }
-      if constexpr (!IsNumber<X>() && IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(x.N() == M());
-        DUNE_ASSERT_BOUNDS(1 == N());
+      auto&& xx = asVector(x);
+      auto&& yy = asVector(y);
+      DUNE_ASSERT_BOUNDS(xx.N() == M());
+      DUNE_ASSERT_BOUNDS(yy.N() == N());
+      for (size_type i=0; i<rows(); ++i)
         for (size_type j=0; j<cols(); j++)
-          y += (*this)[0][j] * x[j];
-      }
-      if constexpr (IsNumber<X>() && !IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(1 == M());
-        DUNE_ASSERT_BOUNDS(y.N() == N());
-        for (size_type i=0; i<rows(); i++)
-            y[i] += (*this)[i][0] * x;
-      }
-      if constexpr (!IsNumber<X>() && !IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(x.N() == M());
-        DUNE_ASSERT_BOUNDS(y.N() == N());
-        for (size_type i=0; i<rows(); i++)
-          for (size_type j=0; j<cols(); j++)
-            y[i] += (*this)[i][j] * x[j];
-      }
+          yy[i] += (*this)[i][j] * xx[j];
     }
 
     //! y += A^T x
     template<class X, class Y>
     void umtv (const X& x, Y& y) const
     {
-      if constexpr (IsNumber<X>() && IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(1 == N());
-        DUNE_ASSERT_BOUNDS(1 == M());
-        y += (*this)[0][0]*x;
-      }
-      if constexpr (!IsNumber<X>() && IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(x.N() == N());
-        DUNE_ASSERT_BOUNDS(1 == M());
-        for (size_type i=0; i<rows(); i++)
-          y += (*this)[i][0]*x[i];
-      }
-      if constexpr (IsNumber<X>() && !IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(1 == N());
-        DUNE_ASSERT_BOUNDS(y.N() == M());
+      auto&& xx = asVector(x);
+      auto&& yy = asVector(y);
+      DUNE_ASSERT_BOUNDS(xx.N() == N());
+      DUNE_ASSERT_BOUNDS(yy.N() == M());
+      for(size_type i = 0; i<rows(); ++i)
         for (size_type j=0; j<cols(); j++)
-          y[j] += (*this)[0][j]*x;
-      }
-      if constexpr (!IsNumber<X>() && !IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(x.N() == N());
-        DUNE_ASSERT_BOUNDS(y.N() == M());
-        for (size_type i=0; i<rows(); i++)
-          for (size_type j=0; j<cols(); j++)
-            y[j] += (*this)[i][j]*x[i];
-      }
+          yy[i] += (*this)[i][j]*xx[i];
     }
 
     //! y += A^H x
     template<class X, class Y>
     void umhv (const X& x, Y& y) const
     {
-      if constexpr (IsNumber<X>() && IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(1 == N());
-        DUNE_ASSERT_BOUNDS(1 == M());
-        y += conjugateComplex((*this)[0][0])*x;
-      }
-      if constexpr (!IsNumber<X>() && IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(x.N() == N());
-        DUNE_ASSERT_BOUNDS(1 == M());
-        for (size_type i=0; i<rows(); i++)
-          y += conjugateComplex((*this)[i][0])*x[i];
-      }
-      if constexpr (IsNumber<X>() && !IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(1 == N());
-        DUNE_ASSERT_BOUNDS(y.N() == M());
+      auto&& xx = asVector(x);
+      auto&& yy = asVector(y);
+      DUNE_ASSERT_BOUNDS(xx.N() == N());
+      DUNE_ASSERT_BOUNDS(yy.N() == M());
+      for (size_type i=0; i<rows(); i++)
         for (size_type j=0; j<cols(); j++)
-          y[j] += conjugateComplex((*this)[0][j])*x;
-      }
-      if constexpr (!IsNumber<X>() && !IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(x.N() == N());
-        DUNE_ASSERT_BOUNDS(y.N() == M());
-        for (size_type i=0; i<rows(); i++)
-          for (size_type j=0; j<cols(); j++)
-            y[j] += conjugateComplex((*this)[i][j])*x[i];
-      }
+          yy[j] += conjugateComplex((*this)[i][j])*xx[i];
     }
 
     //! y -= A x
     template<class X, class Y>
     void mmv (const X& x, Y& y) const
     {
-      if constexpr (IsNumber<X>() && IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(1 == M());
-        DUNE_ASSERT_BOUNDS(1 == N());
-        y -= (*this)[0][0] * x;
-      }
-      if constexpr (!IsNumber<X>() && IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(x.N() == M());
-        DUNE_ASSERT_BOUNDS(1 == N());
+      auto&& xx = asVector(x);
+      auto&& yy = asVector(y);
+      DUNE_ASSERT_BOUNDS(xx.N() == M());
+      DUNE_ASSERT_BOUNDS(yy.N() == N());
+      for (size_type i=0; i<rows(); i++)
         for (size_type j=0; j<cols(); j++)
-          y -= (*this)[0][j] * x[j];
-      }
-      if constexpr (IsNumber<X>() && !IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(1 == M());
-        DUNE_ASSERT_BOUNDS(y.N() == N());
-        for (size_type i=0; i<rows(); i++)
-            y[i] -= (*this)[i][0] * x;
-      }
-      if constexpr (!IsNumber<X>() && !IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(x.N() == M());
-        DUNE_ASSERT_BOUNDS(y.N() == N());
-        for (size_type i=0; i<rows(); i++)
-          for (size_type j=0; j<cols(); j++)
-            y[i] -= (*this)[i][j] * x[j];
-      }
+          yy[i] -= (*this)[i][j] * xx[j];
     }
 
     //! y -= A^T x
     template<class X, class Y>
     void mmtv (const X& x, Y& y) const
     {
-      if constexpr (IsNumber<X>() && IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(1 == N());
-        DUNE_ASSERT_BOUNDS(1 == M());
-        y -= (*this)[0][0]*x;
-      }
-      if constexpr (!IsNumber<X>() && IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(x.N() == N());
-        DUNE_ASSERT_BOUNDS(1 == M());
-        for (size_type i=0; i<rows(); i++)
-          y -= (*this)[i][0]*x[i];
-      }
-      if constexpr (IsNumber<X>() && !IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(1 == N());
-        DUNE_ASSERT_BOUNDS(y.N() == M());
+      auto&& xx = asVector(x);
+      auto&& yy = asVector(y);
+      DUNE_ASSERT_BOUNDS(xx.N() == N());
+      DUNE_ASSERT_BOUNDS(yy.N() == M());
+      for (size_type i=0; i<rows(); i++)
         for (size_type j=0; j<cols(); j++)
-          y[j] -= (*this)[0][j]*x;
-      }
-      if constexpr (!IsNumber<X>() && !IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(x.N() == N());
-        DUNE_ASSERT_BOUNDS(y.N() == M());
-        for (size_type i=0; i<rows(); i++)
-          for (size_type j=0; j<cols(); j++)
-            y[j] -= (*this)[i][j]*x[i];
-      }
+          yy[j] -= (*this)[i][j]*xx[i];
     }
 
     //! y -= A^H x
     template<class X, class Y>
     void mmhv (const X& x, Y& y) const
     {
-      if constexpr (IsNumber<X>() && IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(1 == N());
-        DUNE_ASSERT_BOUNDS(1 == M());
-        y -= conjugateComplex((*this)[0][0])*x;
-      }
-      if constexpr (!IsNumber<X>() && IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(x.N() == N());
-        DUNE_ASSERT_BOUNDS(1 == M());
-        for (size_type i=0; i<rows(); i++)
-          y -= conjugateComplex((*this)[i][0])*x[i];
-      }
-      if constexpr (IsNumber<X>() && !IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(1 == N());
-        DUNE_ASSERT_BOUNDS(y.N() == M());
+      auto&& xx = asVector(x);
+      auto&& yy = asVector(y);
+      DUNE_ASSERT_BOUNDS(xx.N() == N());
+      DUNE_ASSERT_BOUNDS(yy.N() == M());
+      for (size_type i=0; i<rows(); i++)
         for (size_type j=0; j<cols(); j++)
-          y[j] -= conjugateComplex((*this)[0][j])*x;
-      }
-      if constexpr (!IsNumber<X>() && !IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(x.N() == N());
-        DUNE_ASSERT_BOUNDS(y.N() == M());
-        for (size_type i=0; i<rows(); i++)
-          for (size_type j=0; j<cols(); j++)
-            y[j] -= conjugateComplex((*this)[i][j])*x[i];
-      }
+          yy[j] -= conjugateComplex((*this)[i][j])*xx[i];
     }
 
     //! y += alpha A x
@@ -665,34 +492,13 @@ namespace Dune
     void usmv (const typename FieldTraits<Y>::field_type & alpha,
       const X& x, Y& y) const
     {
-      if constexpr (IsNumber<X>() && IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(1 == M());
-        DUNE_ASSERT_BOUNDS(1 == N());
-        y += alpha * (*this)[0][0] * x;
-      }
-      if constexpr (!IsNumber<X>() && IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(x.N() == M());
-        DUNE_ASSERT_BOUNDS(1 == N());
+      auto&& xx = asVector(x);
+      auto&& yy = asVector(y);
+      DUNE_ASSERT_BOUNDS(xx.N() == M());
+      DUNE_ASSERT_BOUNDS(yy.N() == N());
+      for (size_type i=0; i<rows(); i++)
         for (size_type j=0; j<cols(); j++)
-          y += alpha * (*this)[0][j] * x[j];
-      }
-      if constexpr (IsNumber<X>() && !IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(1 == M());
-        DUNE_ASSERT_BOUNDS(y.N() == N());
-        for (size_type i=0; i<rows(); i++)
-            y[i] += alpha * (*this)[i][0] * x;
-      }
-      if constexpr (!IsNumber<X>() && !IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(x.N() == M());
-        DUNE_ASSERT_BOUNDS(y.N() == N());
-        for (size_type i=0; i<rows(); i++)
-          for (size_type j=0; j<cols(); j++)
-            y[i] += alpha * (*this)[i][j] * x[j];
-      }
+          yy[i] += alpha * (*this)[i][j] * xx[j];
     }
 
     //! y += alpha A^T x
@@ -700,34 +506,13 @@ namespace Dune
     void usmtv (const typename FieldTraits<Y>::field_type & alpha,
       const X& x, Y& y) const
     {
-      if constexpr (IsNumber<X>() && IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(1 == N());
-        DUNE_ASSERT_BOUNDS(1 == M());
-        y += alpha*(*this)[0][0]*x;
-      }
-      if constexpr (!IsNumber<X>() && IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(x.N() == N());
-        DUNE_ASSERT_BOUNDS(1 == M());
-        for (size_type i=0; i<rows(); i++)
-          y += alpha*(*this)[i][0]*x[i];
-      }
-      if constexpr (IsNumber<X>() && !IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(1 == N());
-        DUNE_ASSERT_BOUNDS(y.N() == M());
+      auto&& xx = asVector(x);
+      auto&& yy = asVector(y);
+      DUNE_ASSERT_BOUNDS(xx.N() == N());
+      DUNE_ASSERT_BOUNDS(yy.N() == M());
+      for (size_type i=0; i<rows(); i++)
         for (size_type j=0; j<cols(); j++)
-          y[j] += alpha*(*this)[0][j]*x;
-      }
-      if constexpr (!IsNumber<X>() && !IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(x.N() == N());
-        DUNE_ASSERT_BOUNDS(y.N() == M());
-        for (size_type i=0; i<rows(); i++)
-          for (size_type j=0; j<cols(); j++)
-            y[j] += alpha*(*this)[i][j]*x[i];
-      }
+          yy[j] += alpha*(*this)[i][j]*xx[i];
     }
 
     //! y += alpha A^H x
@@ -735,34 +520,14 @@ namespace Dune
     void usmhv (const typename FieldTraits<Y>::field_type & alpha,
       const X& x, Y& y) const
     {
-      if constexpr (IsNumber<X>() && IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(1 == N());
-        DUNE_ASSERT_BOUNDS(1 == M());
-        y += alpha*conjugateComplex((*this)[0][0])*x;
-      }
-      if constexpr (!IsNumber<X>() && IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(x.N() == N());
-        DUNE_ASSERT_BOUNDS(1 == M());
-        for (size_type i=0; i<rows(); i++)
-          y += alpha*conjugateComplex((*this)[i][0])*x[i];
-      }
-      if constexpr (IsNumber<X>() && !IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(1 == N());
-        DUNE_ASSERT_BOUNDS(y.N() == M());
+      auto&& xx = asVector(x);
+      auto&& yy = asVector(y);
+      DUNE_ASSERT_BOUNDS(xx.N() == N());
+      DUNE_ASSERT_BOUNDS(yy.N() == M());
+      for (size_type i=0; i<rows(); i++)
         for (size_type j=0; j<cols(); j++)
-          y[j] += alpha*conjugateComplex((*this)[0][j])*x;
-      }
-      if constexpr (!IsNumber<X>() && !IsNumber<Y>() )
-      {
-        DUNE_ASSERT_BOUNDS(x.N() == N());
-        DUNE_ASSERT_BOUNDS(y.N() == M());
-        for (size_type i=0; i<rows(); i++)
-          for (size_type j=0; j<cols(); j++)
-            y[j] += alpha*conjugateComplex((*this)[i][j])*x[i];
-      }
+          yy[j] +=
+            alpha*conjugateComplex((*this)[i][j])*xx[i];
     }
 
     //===== norms
