@@ -30,7 +30,7 @@ namespace Dune
      representing a field and compile-time given number of rows and columns.
    */
 
-  template< class K, int ROWS, int COLS > class FieldMatrix;
+  template< class K, int ROWS, int COLS = ROWS > class FieldMatrix;
 
   template< class K, int ROWS, int COLS >
   struct DenseMatVecTraits< FieldMatrix<K,ROWS,COLS> >
