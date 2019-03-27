@@ -15,7 +15,13 @@
 int main() {
   Dune::TestSuite test;
   // check that make_array works
-  Dune::ReservedVector<unsigned int, 8> rv = {1,2,3,4};
+  Dune::ReservedVector<unsigned int, 8> rv = {3,2,1};
+  test.check(rv.size() == 3);
+  test.check(rv.back() == 1);
+  test.check(rv.front() == 3);
+
+  // check assignment from an initializer list
+  rv = {1,2,3,4};
   test.check(rv.size() == 4);
   test.check(rv.back() == 4);
   test.check(rv.front() == 1);
