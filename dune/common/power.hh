@@ -23,7 +23,7 @@ namespace Dune {
   struct StaticPower
   {
     /** \brief power stores m^p */
-    enum { power = Dune::power(m,p) };
+    enum { power = Common::power(m,p) };
   };
 
 
@@ -39,7 +39,7 @@ namespace Dune {
     template <typename T>
     static constexpr auto eval(const T & a)
     {
-      return power(a,p);
+      return Common::power(a,p);
     }
   };
 

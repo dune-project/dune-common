@@ -15,30 +15,30 @@ using namespace Dune;
 int main (int argc, char** argv) try
 {
   // Zero and positive powers
-  if (power(4,0) != 1)
+  if (Common::power(4,0) != 1)
     DUNE_THROW(MathError, "power(4,0) does not compute the correct result");
 
-  if (power(4,1) != 4)
+  if (Common::power(4,1) != 4)
     DUNE_THROW(MathError, "power(4,1) implementation does not compute the correct result");
 
-  if (power(4,2) != 16)
+  if (Common::power(4,2) != 16)
     DUNE_THROW(MathError, "power(4,2) implementation does not compute the correct result");
 
-  if (power(4,3) != 64)
+  if (Common::power(4,3) != 64)
     DUNE_THROW(MathError, "power(4,3) implementation does not compute the correct result");
 
   // Negative powers
-  if (power(4.0,-1) != 0.25)
+  if (Common::power(4.0,-1) != 0.25)
     DUNE_THROW(MathError, "power(4,-1) implementation does not compute the correct result");
 
-  if (power(4.0,-2) != 0.0625)
+  if (Common::power(4.0,-2) != 0.0625)
     DUNE_THROW(MathError, "power(4,-2) implementation does not compute the correct result");
 
-  if (power(4.0,-3) != 0.015625)
+  if (Common::power(4.0,-3) != 0.015625)
     DUNE_THROW(MathError, "power(4,-3) implementation does not compute the correct result");
 
   // Test whether the result can be used in a compile-time expression
-  enum { dummy = power(2,2) };
+  enum { dummy = Common::power(2,2) };
 
   // Test legacy power implementation
   if (Power<0>::eval(4) != 1)
