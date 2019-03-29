@@ -1330,7 +1330,7 @@ namespace Dune {
     if(remoteEntries==0)
       return;
 
-    PairType index(1);
+    PairType index;
     MPI_Unpack(p_in, bufferSize, position, &index, 1,
                type, comm_);
     GlobalIndex oldGlobal=index.global();
