@@ -161,8 +161,8 @@ namespace Dune
     typedef DenseMatVecTraits<MAT> Traits;
 
     // Curiously recurring template pattern
-    MAT & asImp() { return static_cast<MAT&>(*this); }
-    const MAT & asImp() const { return static_cast<const MAT&>(*this); }
+    constexpr MAT & asImp() { return static_cast<MAT&>(*this); }
+    constexpr const MAT & asImp() const { return static_cast<const MAT&>(*this); }
 
   public:
     //===== type definitions and constants
@@ -678,25 +678,25 @@ namespace Dune
     //===== sizes
 
     //! number of rows
-    size_type N () const
+    constexpr size_type N () const
     {
       return rows();
     }
 
     //! number of columns
-    size_type M () const
+    constexpr size_type M () const
     {
       return cols();
     }
 
     //! number of rows
-    size_type rows() const
+    constexpr size_type rows() const
     {
       return asImp().mat_rows();
     }
 
     //! number of columns
-    size_type cols() const
+    constexpr size_type cols() const
     {
       return asImp().mat_cols();
     }
