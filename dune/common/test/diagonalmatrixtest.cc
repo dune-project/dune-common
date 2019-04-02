@@ -29,6 +29,10 @@ void test_matrix()
   FieldVector<K,n> f;
   FieldVector<K,n> v;
 
+  // test constexpr size
+  static_assert(A.N() == n, "");
+  static_assert(A.M() == n, "");
+
   // assign matrix
   A=2;
 
