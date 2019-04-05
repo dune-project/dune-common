@@ -42,6 +42,7 @@ namespace Impl {
       dimension = 1
     };
 
+    /** \brief The type used for array indices and sizes */
     using size_type = typename Base::size_type;
 
     /** \brief The type used for references to the vector entry */
@@ -57,23 +58,24 @@ namespace Impl {
       : dataP_(nullptr)
     {}
 
+    /** \brief Construct from a pointer to a scalar */
     ScalarVectorView (K* p) :
       dataP_(p)
     {}
 
-    //! copy constructor
+    //! Copy constructor
     ScalarVectorView (const ScalarVectorView &other) :
       Base(),
       dataP_(other.dataP_)
     {}
 
-    //! copy constructor
+    //! Move constructor
     ScalarVectorView (ScalarVectorView &&other) :
       Base(),
       dataP_( other.dataP_ )
     {}
 
-    //! copy assignment operator
+    //! Copy assignment operator
     ScalarVectorView& operator= (const ScalarVectorView& other)
     {
       assert(dataP_);
@@ -82,7 +84,7 @@ namespace Impl {
       return *this;
     }
 
-    //! Assignment operator for scalar
+    //! Assignment operator from a scalar
     template<typename T,
       std::enable_if_t<std::is_convertible<T, K>::value, int> = 0>
     inline ScalarVectorView& operator= (const T& k)
@@ -91,12 +93,13 @@ namespace Impl {
       return *this;
     }
 
-    //===== forward methods to container
+    /** \brief Container size -- this is always 1 */
     static constexpr size_type size ()
     {
       return 1;
     }
 
+    /** \brief Random access operator, actually disregards its argument */
     K& operator[] (size_type i)
     {
       DUNE_UNUSED_PARAMETER(i);
@@ -104,6 +107,7 @@ namespace Impl {
       return *dataP_;
     }
 
+    /** \brief Const random access operator, actually disregards its argument */
     const K& operator[] (size_type i) const
     {
       DUNE_UNUSED_PARAMETER(i);
@@ -146,7 +150,7 @@ namespace Impl {
   }
 
 
-
+  /** \brief Wrap a scalar as a 1-vector */
   template<class T,
     std::enable_if_t<IsNumber<T>::value, int> = 0>
   auto asVector(T& t)
@@ -154,6 +158,7 @@ namespace Impl {
     return ScalarVectorView<T>{&t};
   }
 
+  /** \brief Wrap a const scalar as a const 1-vector */
   template<class T,
     std::enable_if_t<IsNumber<T>::value, int> = 0>
   auto asVector(const T& t)
@@ -161,6 +166,7 @@ namespace Impl {
     return ScalarVectorView<const T>{&t};
   }
 
+  /** \brief Non-scalar types are assumed to be arrays, and simply forwarded */
   template<class T,
     std::enable_if_t<not IsNumber<T>::value, int> = 0>
   T& asVector(T& t)
@@ -168,6 +174,7 @@ namespace Impl {
     return t;
   }
 
+  /** \brief Non-scalar types are assumed to be arrays, and simply forwarded */
   template<class T,
     std::enable_if_t<not IsNumber<T>::value, int> = 0>
   const T& asVector(const T& t)
