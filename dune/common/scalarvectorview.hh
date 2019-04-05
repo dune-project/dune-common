@@ -3,25 +3,11 @@
 #ifndef DUNE_COMMON_SCALARVECTORVIEW_HH
 #define DUNE_COMMON_SCALARVECTORVIEW_HH
 
-#include <array>
-#include <cmath>
 #include <cstddef>
-#include <cstdlib>
-#include <complex>
-#include <cstring>
-#include <utility>
-#include <initializer_list>
-#include <algorithm>
+#include <type_traits>
 
-#include "typetraits.hh"
-#include "exceptions.hh"
-
-#include "ftraits.hh"
-#include "densevector.hh"
-#include "unused.hh"
-#include "boundschecking.hh"
-
-#include <dune/common/math.hh>
+#include <dune/common/densevector.hh>
+#include <dune/common/typetraits.hh>
 
 namespace Dune {
 
