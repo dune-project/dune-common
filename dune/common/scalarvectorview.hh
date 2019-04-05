@@ -110,20 +110,6 @@ namespace Impl {
       DUNE_ASSERT_BOUNDS(i == 0);
       return *dataP_;
     }
-
-    //===== conversion operator
-
-    /** \brief Conversion operator */
-    operator K& ()
-    {
-      return *dataP_;
-    }
-
-    /** \brief Const conversion operator */
-    operator const K& () const
-    {
-      return *dataP_;
-    }
   }; // class ScalarVectorView
 
 
