@@ -62,9 +62,9 @@ namespace Impl {
     {}
 
     //! copy constructor
-    ScalarVectorView ( const ScalarVectorView &other ) :
+    ScalarVectorView (const ScalarVectorView &other) :
       Base(),
-      dataP_( other.dataP_ )
+      dataP_(other.dataP_)
     {}
 
     //! copy constructor
@@ -92,15 +92,19 @@ namespace Impl {
     }
 
     //===== forward methods to container
-    static constexpr size_type size () { return 1; }
+    static constexpr size_type size ()
+    {
+      return 1;
+    }
 
-    K & operator[](size_type i)
+    K& operator[] (size_type i)
     {
       DUNE_UNUSED_PARAMETER(i);
       DUNE_ASSERT_BOUNDS(i == 0);
       return *dataP_;
     }
-    const K & operator[](size_type i) const
+
+    const K& operator[] (size_type i) const
     {
       DUNE_UNUSED_PARAMETER(i);
       DUNE_ASSERT_BOUNDS(i == 0);
@@ -110,10 +114,16 @@ namespace Impl {
     //===== conversion operator
 
     /** \brief Conversion operator */
-    operator K& () { return *dataP_; }
+    operator K& ()
+    {
+      return *dataP_;
+    }
 
     /** \brief Const conversion operator */
-    operator const K& () const { return *dataP_; }
+    operator const K& () const
+    {
+      return *dataP_;
+    }
   }; // class ScalarVectorView
 
 
@@ -178,10 +188,6 @@ namespace Impl {
   {
     return t;
   }
-
-
-
-
 
 } // end namespace Impl
 
