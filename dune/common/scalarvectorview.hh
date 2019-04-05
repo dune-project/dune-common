@@ -11,6 +11,8 @@
 
 namespace Dune {
 
+namespace Impl {
+
   /** @addtogroup DenseMatVec
       @{
    */
@@ -181,6 +183,8 @@ namespace Dune {
 
 
 
-} // end namespace
+} // end namespace Impl
+
+} // end namespace Dune
 
 #endif // DUNE_COMMON_SCALARVECTORVIEW_HH
