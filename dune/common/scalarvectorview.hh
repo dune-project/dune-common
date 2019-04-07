@@ -5,9 +5,11 @@
 
 #include <cstddef>
 #include <type_traits>
+#include <istream>
 
 #include <dune/common/densevector.hh>
 #include <dune/common/typetraits.hh>
+#include <dune/common/matvectraits.hh>
 
 namespace Dune {
 
