@@ -118,18 +118,21 @@ namespace Impl {
     }
   }; // class ScalarVectorView
 
+} // namespace Impl
 
 
   template< class K>
-  struct DenseMatVecTraits< ScalarVectorView<K> >
+  struct DenseMatVecTraits< Impl::ScalarVectorView<K> >
   {
-    using derived_type = ScalarVectorView<K>;
+    using derived_type = Impl::ScalarVectorView<K>;
     using value_type = K;
     using size_type = std::size_t;
   };
 
   template< class K >
-  struct FieldTraits< ScalarVectorView<K> > : public FieldTraits<K> {};
+  struct FieldTraits< Impl::ScalarVectorView<K> > : public FieldTraits<K> {};
+
+namespace Impl {
 
   /** \brief Read a ScalarVectorView from an input stream
    *  \relates ScalarVectorView
