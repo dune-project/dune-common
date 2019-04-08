@@ -220,15 +220,6 @@ namespace Dune {
   /** \brief Interface for a class of dense vectors over a given field.
    *
    * \tparam V implementation class of the vector
-   * \tparam T value type
-   * \tparam S size type
-   *
-   * V has to provide the following members:
-   * @code
-   * T &       _access (size_type);
-   * const T & _access (size_type) const;
-   * size_type _size   () const;
-   * @endcode
    */
   template<typename V>
   class DenseVector
@@ -282,20 +273,20 @@ namespace Dune {
 
      //===== assignment from other DenseVectors
     //! Assignment operator for other DenseVector of same type
-    DenseVector<V>& operator= (const DenseVector<V>& other)
+    derived_type& operator= (const DenseVector<V>& other)
     {
       asImp() = other.asImp();
-      return *this;
+      return asImp();
     }
 
     //! Assignment operator for other DenseVector of different type
     template <typename W>
-    DenseVector<V>& operator= (const DenseVector<W>& other)
+    derived_type& operator= (const DenseVector<W>& other)
     {
       assert(other.size() == size());
       for (size_type i=0; i<size(); i++)
         asImp()[i] = other[i];
-      return *this;
+      return asImp();
     }
 
     //===== access to components
@@ -395,21 +386,21 @@ namespace Dune {
 
     //! vector space addition
     template <class Other>
-    derived_type& operator+= (const DenseVector<Other>& y)
+    derived_type& operator+= (const DenseVector<Other>& x)
     {
-      DUNE_ASSERT_BOUNDS(y.size() == size());
+      DUNE_ASSERT_BOUNDS(x.size() == size());
       for (size_type i=0; i<size(); i++)
-        (*this)[i] += y[i];
+        (*this)[i] += x[i];
       return asImp();
     }
 
     //! vector space subtraction
     template <class Other>
-    derived_type& operator-= (const DenseVector<Other>& y)
+    derived_type& operator-= (const DenseVector<Other>& x)
     {
-      DUNE_ASSERT_BOUNDS(y.size() == size());
+      DUNE_ASSERT_BOUNDS(x.size() == size());
       for (size_type i=0; i<size(); i++)
-        (*this)[i] -= y[i];
+        (*this)[i] -= x[i];
       return asImp();
     }
 
@@ -519,11 +510,11 @@ namespace Dune {
 
     //! Binary vector comparison
     template <class Other>
-    bool operator== (const DenseVector<Other>& y) const
+    bool operator== (const DenseVector<Other>& x) const
     {
-      DUNE_ASSERT_BOUNDS(y.size() == size());
+      DUNE_ASSERT_BOUNDS(x.size() == size());
       for (size_type i=0; i<size(); i++)
-        if ((*this)[i]!=y[i])
+        if ((*this)[i]!=x[i])
           return false;
 
       return true;
@@ -531,19 +522,19 @@ namespace Dune {
 
     //! Binary vector incomparison
     template <class Other>
-    bool operator!= (const DenseVector<Other>& y) const
+    bool operator!= (const DenseVector<Other>& x) const
     {
-      return !operator==(y);
+      return !operator==(x);
     }
 
 
-    //! vector space axpy operation ( *this += a y )
+    //! vector space axpy operation ( *this += a x )
     template <class Other>
-    derived_type& axpy (const field_type& a, const DenseVector<Other>& y)
+    derived_type& axpy (const field_type& a, const DenseVector<Other>& x)
     {
-      DUNE_ASSERT_BOUNDS(y.size() == size());
+      DUNE_ASSERT_BOUNDS(x.size() == size());
       for (size_type i=0; i<size(); i++)
-        (*this)[i] += a*y[i];
+        (*this)[i] += a*x[i];
       return asImp();
     }
 
@@ -551,16 +542,16 @@ namespace Dune {
      * \brief indefinite vector dot product \f$\left (x^T \cdot y \right)\f$ which corresponds to Petsc's VecTDot
      *
      * http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecTDot.html
-     * @param y other vector
+     * @param x other vector
      * @return
      */
     template<class Other>
-    typename PromotionTraits<field_type,typename DenseVector<Other>::field_type>::PromotedType operator* (const DenseVector<Other>& y) const {
+    typename PromotionTraits<field_type,typename DenseVector<Other>::field_type>::PromotedType operator* (const DenseVector<Other>& x) const {
       typedef typename PromotionTraits<field_type, typename DenseVector<Other>::field_type>::PromotedType PromotedType;
       PromotedType result(0);
-      assert(y.size() == size());
+      assert(x.size() == size());
       for (size_type i=0; i<size(); i++) {
-        result += PromotedType((*this)[i]*y[i]);
+        result += PromotedType((*this)[i]*x[i]);
       }
       return result;
     }
@@ -569,16 +560,16 @@ namespace Dune {
      * @brief vector dot product \f$\left (x^H \cdot y \right)\f$ which corresponds to Petsc's VecDot
      *
      * http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecDot.html
-     * @param y other vector
+     * @param x other vector
      * @return
      */
     template<class Other>
-    typename PromotionTraits<field_type,typename DenseVector<Other>::field_type>::PromotedType dot(const DenseVector<Other>& y) const {
+    typename PromotionTraits<field_type,typename DenseVector<Other>::field_type>::PromotedType dot(const DenseVector<Other>& x) const {
       typedef typename PromotionTraits<field_type, typename DenseVector<Other>::field_type>::PromotedType PromotedType;
       PromotedType result(0);
-      assert(y.size() == size());
+      assert(x.size() == size());
       for (size_type i=0; i<size(); i++) {
-        result += Dune::dot((*this)[i],y[i]);
+        result += Dune::dot((*this)[i],x[i]);
       }
       return result;
     }

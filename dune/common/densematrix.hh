@@ -309,21 +309,21 @@ namespace Dune
 
     //! vector space addition
     template <class Other>
-    derived_type &operator+= (const DenseMatrix<Other>& y)
+    derived_type &operator+= (const DenseMatrix<Other>& x)
     {
-      DUNE_ASSERT_BOUNDS(rows() == y.rows());
+      DUNE_ASSERT_BOUNDS(rows() == x.rows());
       for (size_type i=0; i<rows(); i++)
-        (*this)[i] += y[i];
+        (*this)[i] += x[i];
       return asImp();
     }
 
     //! vector space subtraction
     template <class Other>
-    derived_type &operator-= (const DenseMatrix<Other>& y)
+    derived_type &operator-= (const DenseMatrix<Other>& x)
     {
-      DUNE_ASSERT_BOUNDS(rows() == y.rows());
+      DUNE_ASSERT_BOUNDS(rows() == x.rows());
       for (size_type i=0; i<rows(); i++)
-        (*this)[i] -= y[i];
+        (*this)[i] -= x[i];
       return asImp();
     }
 
@@ -343,31 +343,31 @@ namespace Dune
       return asImp();
     }
 
-    //! vector space axpy operation (*this += k y)
+    //! vector space axpy operation (*this += a x)
     template <class Other>
-    derived_type &axpy (const field_type &k, const DenseMatrix<Other> &y )
+    derived_type &axpy (const field_type &a, const DenseMatrix<Other> &x )
     {
-      DUNE_ASSERT_BOUNDS(rows() == y.rows());
+      DUNE_ASSERT_BOUNDS(rows() == x.rows());
       for( size_type i = 0; i < rows(); ++i )
-        (*this)[ i ].axpy( k, y[ i ] );
+        (*this)[ i ].axpy( a, x[ i ] );
       return asImp();
     }
 
     //! Binary matrix comparison
     template <class Other>
-    bool operator== (const DenseMatrix<Other>& y) const
+    bool operator== (const DenseMatrix<Other>& x) const
     {
-      DUNE_ASSERT_BOUNDS(rows() == y.rows());
+      DUNE_ASSERT_BOUNDS(rows() == x.rows());
       for (size_type i=0; i<rows(); i++)
-        if ((*this)[i]!=y[i])
+        if ((*this)[i]!=x[i])
           return false;
       return true;
     }
     //! Binary matrix incomparison
     template <class Other>
-    bool operator!= (const DenseMatrix<Other>& y) const
+    bool operator!= (const DenseMatrix<Other>& x) const
     {
-      return !operator==(y);
+      return !operator==(x);
     }
 
 
