@@ -44,6 +44,9 @@
 - The `inkscape_generate_png_from_svg` CMake function is deprecated and will be removed
   after 2.7.
 
+- The `VectorSize` helper has been deprecated.  The `size()` method of
+  vectors should be called directly instead.
+
 # Release 2.6
 
 **This release is dedicated to Elias Pipping (1986-2017).**
