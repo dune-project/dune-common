@@ -40,13 +40,14 @@ namespace Dune
   template<class K, int N> class FieldVector;
   namespace {
     template<class V>
-    struct VectorSize
+    struct DUNE_DEPRECATED_MSG("VectorSize is deprecated; please call the 'size()' method directly instead") VectorSize
     {
       static typename V::size_type size(const V & v) { return v.size(); }
     };
 
+    DUNE_NO_DEPRECATED_BEGIN
     template<class K, int N>
-    struct VectorSize< const FieldVector<K,N> >
+    struct DUNE_DEPRECATED_MSG("VectorSize is deprecated; please call the 'size()' method directly instead") VectorSize< const FieldVector<K,N> >
     {
       typedef FieldVector<K,N> V;
       static typename V::size_type size(const V & v)
@@ -55,6 +56,7 @@ namespace Dune
         return N;
       }
     };
+    DUNE_NO_DEPRECATED_END
   }
 
   /**
