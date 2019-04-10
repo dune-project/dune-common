@@ -168,6 +168,9 @@ namespace Dune
     MAT & asImp() { return static_cast<MAT&>(*this); }
     const MAT & asImp() const { return static_cast<const MAT&>(*this); }
 
+    template <class>
+    friend class DenseMatrix;
+
   public:
     //===== type definitions and constants
 
@@ -621,8 +624,8 @@ namespace Dune
      *
      * \exception FMatrixError if the matrix is singular
      */
-    template <class V>
-    void solve (V& x, const V& b, bool doPivoting = true) const;
+    template <class V1, class V2>
+    void solve (V1& x, const V2& b, bool doPivoting = true) const;
 
     /** \brief Compute inverse
      *
@@ -639,7 +642,7 @@ namespace Dune
     {
       DUNE_ASSERT_BOUNDS(M.rows() == M.cols());
       DUNE_ASSERT_BOUNDS(M.rows() == rows());
-      MAT C(asImp());
+      AutonomousValue<MAT> C(asImp());
 
       for (size_type i=0; i<rows(); i++)
         for (size_type j=0; j<cols(); j++) {
@@ -657,7 +660,7 @@ namespace Dune
     {
       DUNE_ASSERT_BOUNDS(M.rows() == M.cols());
       DUNE_ASSERT_BOUNDS(M.cols() == cols());
-      MAT C(asImp());
+      AutonomousValue<MAT> C(asImp());
 
       for (size_type i=0; i<rows(); i++)
         for (size_type j=0; j<cols(); j++) {
@@ -740,7 +743,7 @@ namespace Dune
       return true;
     }
 
-  private:
+  protected:
 
 #ifndef DOXYGEN
     struct ElimPivot
@@ -825,8 +828,8 @@ namespace Dune
      * </ul>
      */
     template<class Func, class Mask>
-    void luDecomposition(DenseMatrix<MAT>& A, Func func,
-                         Mask &nonsingularLanes, bool throwEarly, bool doPivoting) const;
+    static void luDecomposition(DenseMatrix<MAT>& A, Func func,
+                         Mask &nonsingularLanes, bool throwEarly, bool doPivoting);
   };
 
 #ifndef DOXYGEN
@@ -875,7 +878,7 @@ namespace Dune
   template<typename Func, class Mask>
   inline void DenseMatrix<MAT>::
   luDecomposition(DenseMatrix<MAT>& A, Func func, Mask &nonsingularLanes,
-                  bool throwEarly, bool doPivoting) const
+                  bool throwEarly, bool doPivoting)
   {
     using std::max;
     using std::swap;
@@ -883,7 +886,7 @@ namespace Dune
     typedef typename FieldTraits<value_type>::real_type real_type;
 
     // LU decomposition of A in A
-    for (size_type i=0; i<rows(); i++)  // loop over all rows
+    for (size_type i=0; i<A.rows(); i++)  // loop over all rows
     {
       real_type pivmax = fvmeta::absreal(A[i][i]);
 
@@ -891,7 +894,7 @@ namespace Dune
       {
         // compute maximum of column
         simd_index_type imax=i;
-        for (size_type k=i+1; k<rows(); k++)
+        for (size_type k=i+1; k<A.rows(); k++)
         {
           auto abs = fvmeta::absreal(A[k][i]);
           auto mask = abs > pivmax;
@@ -899,7 +902,7 @@ namespace Dune
           imax   = Simd::cond(mask, simd_index_type(k), imax);
         }
         // swap rows
-        for (size_type j=0; j<rows(); j++)
+        for (size_type j=0; j<A.rows(); j++)
         {
           // This is a swap operation where the second operand is scattered,
           // and on top of that is also extracted from deep within a
@@ -928,13 +931,13 @@ namespace Dune
       }
 
       // eliminate
-      for (size_type k=i+1; k<rows(); k++)
+      for (size_type k=i+1; k<A.rows(); k++)
       {
         // in the simd case, A[i][i] may be close to zero in some lanes.  Pray
         // that the result is no worse than a quiet NaN.
         field_type factor = A[k][i]/A[i][i];
         A[k][i] = factor;
-        for (size_type j=i+1; j<rows(); j++)
+        for (size_type j=i+1; j<A.rows(); j++)
           A[k][j] -= factor*A[i][j];
         func(factor, k, i);
       }
@@ -942,8 +945,8 @@ namespace Dune
   }
 
   template<typename MAT>
-  template <class V>
-  inline void DenseMatrix<MAT>::solve(V& x, const V& b, bool doPivoting) const
+  template <class V1, class V2>
+  inline void DenseMatrix<MAT>::solve(V1& x, const V2& b, bool doPivoting) const
   {
     // never mind those ifs, because they get optimized away
     if (rows()!=cols())
@@ -997,14 +1000,14 @@ namespace Dune
     }
     else {
 
-      V& rhs = x; // use x to store rhs
+      V1& rhs = x; // use x to store rhs
       rhs = b; // copy data
-      Elim<V> elim(rhs);
-      MAT A(asImp());
+      Elim<V1> elim(rhs);
+      AutonomousValue<MAT> A(asImp());
       Simd::Mask<typename FieldTraits<value_type>::real_type>
         nonsingularLanes(true);
 
-      luDecomposition(A, elim, nonsingularLanes, true, doPivoting);
+      AutonomousValue<MAT>::luDecomposition(A, elim, nonsingularLanes, true, doPivoting);
 
       // backsolve
       for(int i=rows()-1; i>=0; i--) {
@@ -1084,13 +1087,13 @@ namespace Dune
     else {
       using std::swap;
 
-      MAT A(asImp());
+      AutonomousValue<MAT> A(asImp());
       std::vector<simd_index_type> pivot(rows());
       Simd::Mask<typename FieldTraits<value_type>::real_type>
         nonsingularLanes(true);
-      luDecomposition(A, ElimPivot(pivot), nonsingularLanes, true, doPivoting);
-      DenseMatrix<MAT>& L=A;
-      DenseMatrix<MAT>& U=A;
+      AutonomousValue<MAT>::luDecomposition(A, ElimPivot(pivot), nonsingularLanes, true, doPivoting);
+      auto& L=A;
+      auto& U=A;
 
       // initialize inverse
       *this=field_type();
@@ -1157,12 +1160,12 @@ namespace Dune
 
     }
 
-    MAT A(asImp());
+    AutonomousValue<MAT> A(asImp());
     field_type det;
     Simd::Mask<typename FieldTraits<value_type>::real_type>
       nonsingularLanes(true);
 
-    luDecomposition(A, ElimDet(det), nonsingularLanes, false, doPivoting);
+    AutonomousValue<MAT>::luDecomposition(A, ElimDet(det), nonsingularLanes, false, doPivoting);
     det = Simd::cond(nonsingularLanes, det, field_type(0));
 
     for (size_type i = 0; i < rows(); ++i)
