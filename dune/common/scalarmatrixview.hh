@@ -11,6 +11,7 @@
 #include <dune/common/typetraits.hh>
 #include <dune/common/matvectraits.hh>
 #include <dune/common/densematrix.hh>
+#include <dune/common/fmatrix.hh>
 #include <dune/common/scalarvectorview.hh>
 
 
@@ -40,6 +41,8 @@ namespace Impl {
     ScalarVectorView<K> data_;
     using Base = DenseMatrix<ScalarMatrixView<K>>;
 
+    template <class>
+    friend class ScalarMatrixView;
   public:
 
     //===== type definitions and constants
@@ -92,6 +95,13 @@ namespace Impl {
 
     //! Copy assignment operator
     ScalarMatrixView& operator= (const ScalarMatrixView& other)
+    {
+      data_ = other.data_;
+      return *this;
+    }
+
+    template<class KK>
+    ScalarMatrixView& operator= (const ScalarMatrixView<KK>& other)
     {
       data_ = other.data_;
       return *this;
@@ -170,7 +180,7 @@ namespace Impl {
 } // end namespace Impl
 
   template<class K>
-  struct FieldTraits<Impl::ScalarMatrixView<K>> : public FieldTraits<K> {};
+  struct FieldTraits<Impl::ScalarMatrixView<K>> : public FieldTraits<std::remove_const_t<K>> {};
 
   template<class K>
   struct DenseMatVecTraits<Impl::ScalarMatrixView<K>>
@@ -179,8 +189,15 @@ namespace Impl {
     using row_type = Impl::ScalarVectorView<K>;
     using row_reference = row_type&;
     using const_row_reference = const row_type&;
-    using value_type = K;
+    using value_type = std::remove_const_t<K>;
     using size_type = std::size_t;
+  };
+
+
+  template<class K>
+  struct AutonomousValueType<Impl::ScalarMatrixView<K>>
+  {
+    using type = FieldMatrix<std::remove_const_t<K>,1,1>;
   };
 
 
