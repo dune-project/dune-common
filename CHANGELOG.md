@@ -41,6 +41,9 @@
 
 -   The `dune_symlink_to_sources_files` cmake function now has a `DESTINATION` argument.
 
+- Support for older version than METIS 5.x and ParMETIS 4.x is deprecated and will be
+  removed after Dune 2.7.
+
 - The `inkscape_generate_png_from_svg` CMake function is deprecated and will be removed
   after 2.7.
 

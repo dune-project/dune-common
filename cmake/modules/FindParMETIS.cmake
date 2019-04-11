@@ -157,6 +157,13 @@ if(PARMETIS_FOUND)
     "Determing location of ParMETIS succeeded:\n"
     "Include directory: ${PARMETIS_INCLUDE_DIRS}\n"
     "Library directory: ${PARMETIS_LIBRARIES}\n\n")
+  # deprecate versions < 4
+  file(READ "${PARMETIS_INCLUDE_DIR}/parmetis.h" parmetisheader)
+  string(REGEX MATCH "#define PARMETIS_MAJOR_VERSION[ ]+[0-9]+" versionMacroDef "${parmetisheader}")
+  string(REGEX MATCH "[0-9]+" ParMetisMajorVersion "${versionMacroDef}")
+  if("${versionMacroDef}" STREQUAL "" OR "${ParMetisMajorVersion}" LESS 4)
+    message(AUTHOR_WARNING "Support for METIS older than version 4.x is deprecated in Dune 2.7")
+  endif()
 else()
   # log errornous result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
