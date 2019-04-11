@@ -134,6 +134,13 @@ if(METIS_FOUND)
     "Determing location of METIS succeeded:\n"
     "Include directory: ${METIS_INCLUDE_DIRS}\n"
     "Library directory: ${METIS_LIBRARIES}\n\n")
+  # deprecate versions < 5
+  file(READ "${METIS_INCLUDE_DIR}/metis.h" metisheader)
+  string(REGEX MATCH "#define METIS_VER_MAJOR[ ]+[0-9]+" versionMacroDef "${metisheader}")
+  string(REGEX MATCH "[0-9]+" MetisMajorVersion "${versionMacroDef}")
+  if("${versionMacroDef}" STREQUAL "" OR "${MetisMajorVersion}" LESS 5)
+    message(AUTHOR_WARNING "Support for METIS older than version 5.x is deprecated in Dune 2.7")
+  endif()
 else(METIS_FOUND)
   # log errornous result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
