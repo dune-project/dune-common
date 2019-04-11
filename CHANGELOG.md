@@ -112,6 +112,9 @@
   directly set the CMake variable `DUNE_PYTHON_VIRTUALENV_PATH` to the directory in which to
   create the virtualenv.
 
+- The matrix size functions `N()` and `M()` of `FieldMatrix` and `DiagonalMatrix` can now be used
+  in a `constexpr` context.
+
 # Release 2.6
 
 **This release is dedicated to Elias Pipping (1986-2017).**
