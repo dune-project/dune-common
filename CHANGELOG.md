@@ -50,6 +50,9 @@
 - The `VectorSize` helper has been deprecated.  The `size()` method of
   vectors should be called directly instead.
 
+- The matrix size functions `N()` and `M()` of `FieldMatrix` and `DiagonalMatrix` can now be used
+  in a `constexpr` context.
+
 # Release 2.6
 
 **This release is dedicated to Elias Pipping (1986-2017).**
