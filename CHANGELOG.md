@@ -37,6 +37,9 @@
 
 -   The `dune_symlink_to_sources_files` cmake function now has a `DESTINATION` argument.
 
+-   The matrix size functions `N()` and `M()` of `FieldMatrix` and `DiagonalMatrix` can now be used
+    in a `constexpr` context.
+
 # Release 2.6
 
 **This release is dedicated to Elias Pipping (1986-2017).**
