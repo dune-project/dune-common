@@ -8,6 +8,7 @@
 #include <istream>
 
 #include <dune/common/densevector.hh>
+#include <dune/common/fvector.hh>
 #include <dune/common/typetraits.hh>
 #include <dune/common/matvectraits.hh>
 
@@ -36,6 +37,8 @@ namespace Impl {
     K* dataP_;
     using Base = DenseVector<ScalarVectorView<K>>;
 
+    template <class>
+    friend class ScalarVectorView;
   public:
 
     //! export size
@@ -86,6 +89,15 @@ namespace Impl {
       return *this;
     }
 
+    template<class KK>
+    ScalarVectorView& operator= (const ScalarVectorView<KK>& other)
+    {
+      assert(dataP_);
+      assert(other.dataP_);
+      *dataP_ = *(other.dataP_);
+      return *this;
+    }
+
     //! Assignment operator from a scalar
     template<typename T,
       std::enable_if_t<std::is_convertible<T, K>::value, int> = 0>
@@ -125,12 +137,18 @@ namespace Impl {
   struct DenseMatVecTraits< Impl::ScalarVectorView<K> >
   {
     using derived_type = Impl::ScalarVectorView<K>;
-    using value_type = K;
+    using value_type = std::remove_const_t<K>;
     using size_type = std::size_t;
   };
 
   template< class K >
-  struct FieldTraits< Impl::ScalarVectorView<K> > : public FieldTraits<K> {};
+  struct FieldTraits< Impl::ScalarVectorView<K> > : public FieldTraits<std::remove_const_t<K>> {};
+
+  template<class K>
+  struct AutonomousValueType<Impl::ScalarVectorView<K>>
+  {
+    using type = FieldVector<std::remove_const_t<K>,1>;
+  };
 
 namespace Impl {
 
