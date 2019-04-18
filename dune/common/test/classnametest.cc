@@ -60,6 +60,12 @@ void checkname(Dune::TestSuite &t, const std::string &name, CVRef cvref,
       << '`' << name << "` contains `&` or `&&`";
 }
 
+struct Base {
+  virtual ~Base() = default;
+};
+
+struct Derived : Base {};
+
 int main()
 {
   Dune::TestSuite t("className()");
@@ -109,6 +115,16 @@ int main()
   using RRXCD = Dune::FieldVector<std::complex<double>, 10>&&;
   checkname(t, Dune::className<RRXCD>(), is_rvalue_reference,
             R"(\bFieldVector\s*<.*\bcomplex\s*<\s*double\s*>\s*,\s*10\s*>)");
+  std::cout << std::endl;
+
+  std::cout << "Test printing dynamic vs. static types:" << std::endl;
+  Derived d{};
+  Base &b = d;
+  checkname(t, Dune::className(b), {}, R"(\bDerived\b)");
+  checkname(t, Dune::className<decltype(b)>(), is_lvalue_reference,
+            R"(\bBase\b)");
+  t.check(Dune::className<Derived>() == Dune::className(b))
+    << "dynamic type of base reference should match derived type";
   std::cout << std::endl;
 
   return t.exit();
