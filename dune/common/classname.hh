@@ -22,7 +22,7 @@ namespace Dune {
 
   namespace Impl {
 
-    std::string demangle(std::string name)
+    inline std::string demangle(std::string name)
     {
 #if HAVE_CXA_DEMANGLE
       int status;
