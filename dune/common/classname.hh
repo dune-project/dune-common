@@ -9,6 +9,7 @@
  */
 
 #include <cstdlib>
+#include <memory>
 #include <string>
 #include <typeinfo>
 #include <type_traits>
@@ -25,12 +26,11 @@ namespace Dune {
     {
 #if HAVE_CXA_DEMANGLE
       int status;
-      char *demangled = abi::__cxa_demangle( name.c_str(), 0, 0, &status );
+      std::unique_ptr<char, void(*)(void*)>
+        demangled(abi::__cxa_demangle(name.c_str(), nullptr, nullptr, &status),
+                  std::free);
       if( demangled )
-      {
-        name = demangled;
-        std::free( demangled );
-      }
+        name = demangled.get();
 #endif // #if HAVE_CXA_DEMANGLE
       return name;
     }
