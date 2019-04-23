@@ -11,12 +11,30 @@
 #include <cstdlib>
 #include <string>
 #include <typeinfo>
+#include <type_traits>
 
 #if HAVE_CXA_DEMANGLE
 #include <cxxabi.h>
 #endif // #if HAVE_CXA_DEMANGLE
 
 namespace Dune {
+
+  namespace Impl {
+
+    std::string demangle(std::string name)
+    {
+#if HAVE_CXA_DEMANGLE
+      int status;
+      char *demangled = abi::__cxa_demangle( name.c_str(), 0, 0, &status );
+      if( demangled )
+      {
+        name = demangled;
+        std::free( demangled );
+      }
+#endif // #if HAVE_CXA_DEMANGLE
+      return name;
+    }
+  }
 
   /** \brief Provide the demangled class name of a type T as a string */
   /*
@@ -26,16 +44,7 @@ namespace Dune {
   std::string className ()
   {
     typedef typename std::remove_reference<T>::type TR;
-    std::string className = typeid( TR ).name();
-#if HAVE_CXA_DEMANGLE
-    int status;
-    char *demangled = abi::__cxa_demangle( className.c_str(), 0, 0, &status );
-    if( demangled )
-    {
-      className = demangled;
-      std::free( demangled );
-    }
-#endif // #if HAVE_CXA_DEMANGLE
+    std::string className = Impl::demangle( typeid( TR ).name() );
     if (std::is_const<TR>::value)
         className += " const";
     if (std::is_volatile<TR>::value)
@@ -52,9 +61,15 @@ namespace Dune {
    * \ingroup CxxUtilities
    */
   template <class T>
-  std::string className ( T& )
+  std::string className ( T&& v)
   {
-    return className<T>();
+    typedef typename std::remove_reference<T>::type TR;
+    std::string className = Impl::demangle( typeid(v).name() );
+    if (std::is_const<TR>::value)
+        className += " const";
+    if (std::is_volatile<TR>::value)
+        className += " volatile";
+    return className;
   }
 } // namespace Dune
 
