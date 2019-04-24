@@ -127,5 +127,9 @@ int main()
     << "dynamic type of base reference should match derived type";
   std::cout << std::endl;
 
+  std::cout << "Test rvalue argument to className(expr):" << std::endl;
+  checkname(t, Dune::className(Base{}), {}, R"(\bBase\b)");
+  std::cout << std::endl;
+
   return t.exit();
 }
