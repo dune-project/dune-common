@@ -70,6 +70,7 @@ dune_add_test(NAME check_fvector_size_fail2
 
 dune_add_test(SOURCES classnametest.cc
               LINK_LIBRARIES dunecommon
+              CMAKE_GUARD HAVE_CXA_DEMANGLE
               LABELS quick)
 
 dune_add_test(SOURCES concept.cc
