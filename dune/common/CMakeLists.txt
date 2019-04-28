@@ -83,6 +83,7 @@ install(FILES
         math.hh
         matvectraits.hh
         overloadset.hh
+        parameterizedobject.hh
         parametertree.hh
         parametertreeparser.hh
         path.hh
