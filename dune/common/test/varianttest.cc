@@ -87,6 +87,15 @@ Dune::TestSuite testVariant() {
   suite.check(Std::visit(size, constv2)== 2, "Test const visit");
   suite.check(Std::get_if<V2>(&constv2) != nullptr, "Test const get_if");
 
+
+  // Check visitor returning lvalue
+  using A = struct { int j; int i;};
+  using B = struct { int i;};
+  Std::variant<A,B> variant3;
+  variant3 = A{1,2};
+  Std::visit([](auto&& value) -> decltype(auto) { return (value.i); }, variant3) = 42;
+  suite.check(Std::visit([](auto&& value) { return value.i;}, variant3)== 42, "Std::visit returning lvalue");
+
   /// test copy and move construction/assignment
   {
     auto variant_copy_constructed = variant2;
