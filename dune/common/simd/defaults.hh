@@ -56,7 +56,7 @@ namespace Dune {
       template<class V, class U>
       constexpr V implCast(ADLTag<0>, MetaType<V>, const U &u)
       {
-        V result{};
+        V result(Simd::Scalar<V>(0));
         for(auto l : range(Simd::lanes(u)))
           Simd::lane(l, result) = Simd::lane(l, u);
         return result;
