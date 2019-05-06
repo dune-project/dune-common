@@ -343,24 +343,30 @@ namespace Impl {
 
       using Result = decltype(func(unions_.getByIndex(std::integral_constant<size_t, 0>())));
 
-      return ifElse(std::is_same<Result, void>(), [&, this](auto id) -> decltype(auto) {
-          constexpr auto tsize = size_;
-          Dune::Hybrid::forEach(Dune::Hybrid::integralRange(std::integral_constant<size_t, tsize>()), [&](auto i) {
-            if (i==this->index_)
-              func(id(unions_).getByIndex(std::integral_constant<size_t, i>()));
-            });
-          return;},
-        [&func,this](auto id) -> decltype(auto) {
-          constexpr auto tsize = size_;
+      auto dummyElseBranch = []() -> Result {};
+      auto indices = std::make_index_sequence<size_>{};
+      return Hybrid::switchCases(indices, index(), [&](auto staticIndex) -> Result {
+        return func(get<decltype(staticIndex)::value>());
+      }, dummyElseBranch);
 
-          auto result = std::unique_ptr<Result>();
+//      return ifElse(std::is_same<Result, void>(), [&, this](auto id) -> decltype(auto) {
+//          constexpr auto tsize = size_;
+//          Dune::Hybrid::forEach(Dune::Hybrid::integralRange(std::integral_constant<size_t, tsize>()), [&](auto i) {
+//            if (i==this->index_)
+//              func(id(unions_).getByIndex(std::integral_constant<size_t, i>()));
+//            });
+//          return;},
+//        [&func,this](auto id) -> decltype(auto) {
+//          constexpr auto tsize = size_;
 
-          Dune::Hybrid::forEach(Dune::Hybrid::integralRange(std::integral_constant<size_t, tsize>()), [&, this](auto i) {
-            if (i==this->index_)
-              result = std::make_unique<Result>(func(id(this->unions_).getByIndex(std::integral_constant<size_t, i>())));
-          });
-      return *result;
-       });
+//          auto result = std::unique_ptr<Result>();
+
+//          Dune::Hybrid::forEach(Dune::Hybrid::integralRange(std::integral_constant<size_t, tsize>()), [&, this](auto i) {
+//            if (i==this->index_)
+//              result = std::make_unique<Result>(func(id(this->unions_).getByIndex(std::integral_constant<size_t, i>())));
+//          });
+//      return *result;
+//       });
     }
 
     template<typename F>
