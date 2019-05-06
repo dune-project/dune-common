@@ -301,7 +301,7 @@ namespace Impl {
 
   struct Id {
     template<class T>
-    constexpr decltype(auto) operator()(T &&x) const {
+    constexpr T operator()(T&& x) const {
       return std::forward<T>(x);
     }
   };
