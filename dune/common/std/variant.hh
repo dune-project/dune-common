@@ -339,54 +339,20 @@ namespace Impl {
      */
     template<typename F>
     decltype(auto) visit(F&& func) {
-      using namespace Dune::Hybrid;
-
-      using Result = decltype(func(unions_.getByIndex(std::integral_constant<size_t, 0>())));
-
-      return ifElse(std::is_same<Result, void>(), [&, this](auto id) -> decltype(auto) {
-          constexpr auto tsize = size_;
-          Dune::Hybrid::forEach(Dune::Hybrid::integralRange(std::integral_constant<size_t, tsize>()), [&](auto i) {
-            if (i==this->index_)
-              func(id(unions_).getByIndex(std::integral_constant<size_t, i>()));
-            });
-          return;},
-        [&func,this](auto id) -> decltype(auto) {
-          constexpr auto tsize = size_;
-
-          auto result = std::unique_ptr<Result>();
-
-          Dune::Hybrid::forEach(Dune::Hybrid::integralRange(std::integral_constant<size_t, tsize>()), [&, this](auto i) {
-            if (i==this->index_)
-              result = std::make_unique<Result>(func(id(this->unions_).getByIndex(std::integral_constant<size_t, i>())));
-          });
-      return *result;
-       });
+      auto dummyElseBranch = [&]() -> decltype(auto) { return func(this->get<0>());};
+      auto indices = std::make_index_sequence<size_>{};
+      return Hybrid::switchCases(indices, index(), [&](auto staticIndex) -> decltype(auto) {
+        return func(this->template get<decltype(staticIndex)::value>());
+      }, dummyElseBranch);
     }
 
     template<typename F>
     decltype(auto) visit(F&& func) const {
-      using namespace Dune::Hybrid;
-
-      using Result = decltype(func(unions_.getByIndex(std::integral_constant<size_t, 0>())));
-
-      return ifElse(std::is_same<Result, void>(), [&, this](auto id) -> decltype(auto){
-          constexpr auto tsize = size_;
-          Dune::Hybrid::forEach(Dune::Hybrid::integralRange(std::integral_constant<size_t, tsize>()), [&](auto i) {
-            if (i==this->index_)
-              func(id(unions_).getByIndex(std::integral_constant<size_t, i>()));
-            });
-          return;},
-        [&func,this](auto id) ->decltype(auto) {
-          constexpr auto tsize = size_;
-
-          auto result = std::unique_ptr<Result>();
-
-          Dune::Hybrid::forEach(Dune::Hybrid::integralRange(std::integral_constant<size_t, tsize>()), [&, this](auto i) {
-            if (i==this->index_)
-              result = std::make_unique<Result>(func(id(this->unions_).getByIndex(std::integral_constant<size_t, i>())));
-          });
-      return *result;
-       });
+      auto dummyElseBranch = [&]() -> decltype(auto) { return func(this->get<0>());};
+      auto indices = std::make_index_sequence<size_>{};
+      return Hybrid::switchCases(indices, index(), [&](auto staticIndex) -> decltype(auto) {
+        return func(this->template get<decltype(staticIndex)::value>());
+      }, dummyElseBranch);
     }
 
     /** \brief Check if a given type is the one that is currently active in the variant. */
