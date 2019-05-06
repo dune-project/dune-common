@@ -67,7 +67,7 @@ namespace Dune
     /** @{ Constructors */
 
     //! Constructor
-    ReservedVector() : sz(0) {}
+    ReservedVector() = default;
 
     ReservedVector(std::initializer_list<T> const &l)
     {
@@ -220,8 +220,8 @@ namespace Dune
     }
 
   private:
-    T data[n];
-    size_type sz;
+    T data[n] = {};
+    size_type sz = 0;
   };
 
 }
