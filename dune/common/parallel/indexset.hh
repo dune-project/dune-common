@@ -268,9 +268,9 @@ namespace Dune
         : Father(other), indexSet_(other.indexSet_)
       {}
 
-      iterator& operator==(const iterator& other)
+      iterator& operator=(const iterator& other)
       {
-        Father::operator==(other);
+        Father::operator=(other);
         indexSet_ = other.indexSet_;
       }
 
