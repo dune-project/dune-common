@@ -68,9 +68,22 @@ dune_add_test(NAME check_fvector_size_fail2
               EXPECT_COMPILE_FAIL
               LABELS quick)
 
-dune_add_test(SOURCES classnametest.cc
+dune_add_test(NAME classnametest-demangled
+              SOURCES classnametest.cc
               LINK_LIBRARIES dunecommon
               CMAKE_GUARD HAVE_CXA_DEMANGLE
+              LABELS quick)
+
+dune_add_test(NAME classnametest-fallback
+              SOURCES classnametest.cc
+              LINK_LIBRARIES dunecommon
+              COMMAND sh
+              CMD_ARGS -c [[
+# ignore an exit status of 1, but fail on anything else to segfaults fail the test
+./classnametest-fallback
+err=$?
+[ "$err" -eq 1 ] && err=0
+exit "$err"]]
               LABELS quick)
 
 dune_add_test(SOURCES concept.cc
