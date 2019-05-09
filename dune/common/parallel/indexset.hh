@@ -272,6 +272,7 @@ namespace Dune
       {
         Father::operator=(other);
         indexSet_ = other.indexSet_;
+        return *this;
       }
 
     private:
