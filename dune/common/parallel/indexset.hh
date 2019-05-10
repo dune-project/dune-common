@@ -264,17 +264,6 @@ namespace Dune
         : Father(father), indexSet_(&indexSet)
       {}
 
-      iterator(const iterator& other)
-        : Father(other), indexSet_(other.indexSet_)
-      {}
-
-      iterator& operator=(const iterator& other)
-      {
-        Father::operator=(other);
-        indexSet_ = other.indexSet_;
-        return *this;
-      }
-
     private:
       /**
        * @brief Mark the index as deleted.
