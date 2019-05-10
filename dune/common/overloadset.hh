@@ -97,6 +97,12 @@ namespace Impl {
  * Notice that the passed function objects are
  * stored by value and must be copy-constructible.
  *
+ * On gcc 5 and gcc 6 mixing templated overloads
+ * (i.e. using auto-parameter) and non-templated
+ * ones may not compile if both they are captureless
+ * lambdas. The problem can be avoided by capturing
+ * a dummy value.
+ *
  * \ingroup CxxUtilities
  */
 template<class... F>
@@ -184,6 +190,12 @@ namespace Impl {
  *
  * Notice that the passed function objects are
  * stored by value and must be copy-constructible.
+ *
+ * On gcc 5 and gcc 6 mixing templated overloads
+ * (i.e. using auto-parameter) and non-templated
+ * ones may not compile if both they are captureless
+ * lambdas. The problem can be avoided by capturing
+ * a dummy value.
  *
  * \ingroup CxxUtilities
  */
