@@ -290,17 +290,23 @@ namespace Dune {
       struct LaneCount<LoopSIMD<T,S>> : index_constant<S*lanes<T>()> {};
 
       template<class T, std::size_t S>
-      Simd::Scalar<T>&& lane(ADLTag<5>, std::size_t l, LoopSIMD<T,S> &&v) {
+      auto lane(ADLTag<5>, std::size_t l, LoopSIMD<T,S> &&v)
+        -> decltype(Simd::lane(l%lanes<T>(), v[l/lanes<T>()]))
+      {
         return std::move(Simd::lane(l%lanes<T>(), v[l/lanes<T>()]));
       }
 
       template<class T, std::size_t S>
-      const Simd::Scalar<T>& lane(ADLTag<5>, std::size_t l, const LoopSIMD<T,S> &v) {
+      auto lane(ADLTag<5>, std::size_t l, const LoopSIMD<T,S> &v)
+        -> decltype(Simd::lane(l%lanes<T>(), v[l/lanes<T>()]))
+      {
         return Simd::lane(l%lanes<T>(), v[l/lanes<T>()]);
       }
 
       template<class T, std::size_t S>
-      Simd::Scalar<T>& lane(ADLTag<5>, std::size_t l, LoopSIMD<T,S> &v) {
+      auto lane(ADLTag<5>, std::size_t l, LoopSIMD<T,S> &v)
+        -> decltype(Simd::lane(l%lanes<T>(), v[l/lanes<T>()]))
+      {
         return Simd::lane(l%lanes<T>(), v[l/lanes<T>()]);
       }
 
