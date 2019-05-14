@@ -448,7 +448,6 @@ def get_default_build_args():
 
     return None
 
-
 def build_module(builddir, build_args=None):
     if build_args is None:
         build_args = get_default_build_args()
@@ -463,6 +462,17 @@ def build_module(builddir, build_args=None):
         raise RuntimeError(buffer_to_str(stderr))
     return buffer_to_str(stdout)
 
+def inVEnv():
+    # If sys.real_prefix exists, this is a virtualenv set up with the virtualenv package
+    real_prefix = hasattr(sys, 'real_prefix')
+    if real_prefix:
+        return 1
+    # If a virtualenv is set up with pyvenv, we check for equality of base_prefix and prefix
+    if hasattr(sys, 'base_prefix'):
+        return (sys.prefix != sys.base_prefix)
+    # If none of the above conditions triggered, this is probably no virtualenv interpreter
+    return 0
+
 
 def get_dune_py_dir():
     try:
@@ -473,12 +483,9 @@ def get_dune_py_dir():
         pass
 
     # test if in virtual env
-    try:
-        realPath = sys.real_prefix
+    if inVEnv():
         virtualEnvPath = sys.prefix
         return os.path.join(virtualEnvPath, '.cache', 'dune-py')
-    except AttributeError:
-        pass
 
     # generate in home directory
     try:
