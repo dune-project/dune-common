@@ -58,6 +58,7 @@ def load(functionName, includes, *args):
     signature = functionName + "( " + ", ".join(argTypes) + " )"
     moduleName = "algorithm_" + hashIt(signature) + "_" + hashIt(source)
 
+    includes = sorted(set(includes))
     source += "".join(["#include <" + i + ">\n" for i in includes])
     source += "\n"
     source += '#include <dune/python/common/typeregistry.hh>\n'

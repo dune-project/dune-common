@@ -118,6 +118,8 @@ class SimpleGenerator(object):
             includes = includes[0]
         else:
             allIncludes = includes
+        allIncludes = sorted(set(allIncludes))
+        includes = sorted(set(includes))
         source  = self.pre(allIncludes, typeName[0], moduleName, defines, preamble)
         for nr, (tn, a, o, b, d)  in enumerate( zip(typeName, args, options, bufferProtocol, dynamicAttr) ):
             source += self.main(nr, includes, tn, *a, options=o, bufferProtocol=b, dynamicAttr=d)
