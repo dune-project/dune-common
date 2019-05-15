@@ -331,8 +331,8 @@ namespace Dune {
         return out;
       }
 
-      template<class M, std::size_t S>
-      bool anyTrue(ADLTag<5>, LoopSIMD<M,S> mask) {
+      template<std::size_t S>
+      bool anyTrue(ADLTag<5>, LoopSIMD<Simd::Mask<T>,S> mask) {
         bool out = false;
         for(std::size_t i=0; i<S; i++) {
           out |= Simd::anyTrue(mask[i]);
@@ -340,8 +340,8 @@ namespace Dune {
         return out;
       }
 
-      template<class M, std::size_t S>
-      bool allTrue(ADLTag<5>, LoopSIMD<M,S> mask) {
+      template<std::size_t S>
+      bool allTrue(ADLTag<5>, LoopSIMD<Simd::Mask<T>,S> mask) {
         bool out = true;
         for(std::size_t i=0; i<S; i++) {
           out &= Simd::allTrue(mask[i]);
@@ -349,8 +349,8 @@ namespace Dune {
         return out;
       }
 
-      template<class M, std::size_t S>
-      bool anyFalse(ADLTag<5>, LoopSIMD<M,S> mask) {
+      template<std::size_t S>
+      bool anyFalse(ADLTag<5>, LoopSIMD<Simd::Mask<T>,S> mask) {
         bool out = false;
         for(std::size_t i=0; i<S; i++) {
           out |= Simd::anyFalse(mask[i]);
@@ -358,8 +358,8 @@ namespace Dune {
         return out;
       }
 
-      template<class M, std::size_t S>
-      bool allFalse(ADLTag<5>, LoopSIMD<M,S> mask) {
+      template<std::size_t S>
+      bool allFalse(ADLTag<5>, LoopSIMD<Simd::Mask<T>,S> mask) {
         bool out = true;
         for(std::size_t i=0; i<S; i++) {
           out &= Simd::allFalse(mask[i]);
