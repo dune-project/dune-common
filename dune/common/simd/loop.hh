@@ -320,14 +320,14 @@ namespace Dune {
         return out;
       }
 
-      template<class M, class T>
-      auto cond(ADLTag<5, std::is_same<bool, Simd::Scalar<M> >::value>, M mask,
-                LoopSIMD<T,Simd::lanes<M>()> ifTrue,
-                LoopSIMD<T,Simd::lanes<M>()> ifFalse)
+      template<class M, class T, std::size_t S>
+      auto cond(ADLTag<5, std::is_same<bool, Simd::Scalar<M> >::value
+                          && Simd::lanes<M>() == Simd::lanes<LoopSimd<T,S> >()>,
+                M mask, LoopSIMD<T,S> ifTrue, LoopSIMD<T,S> ifFalse)
       {
-        LoopSIMD<T,Simd::lanes<M>()> out;
+        LoopSIMD<T,S> out;
         for(auto l : range(Simd::lanes(mask)))
-          out[l] = Simd::lane(l, mask) ? ifTrue[l] : ifFalse[l];
+          Simd::lane(l, out) = Simd::lane(l, mask) ? Simd::lane(l, ifTrue) : Simd::lane(l, ifFalse);
         return out;
       }
 
