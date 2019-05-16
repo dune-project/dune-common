@@ -291,7 +291,7 @@ namespace Dune {
 
       template<class T, std::size_t S>
       auto lane(ADLTag<5>, std::size_t l, LoopSIMD<T,S> &&v)
-        -> decltype(Simd::lane(l%lanes<T>(), v[l/lanes<T>()]))
+        -> decltype(std::move(Simd::lane(l%lanes<T>(), v[l/lanes<T>()])))
       {
         return std::move(Simd::lane(l%lanes<T>(), v[l/lanes<T>()]));
       }
