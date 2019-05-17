@@ -30,8 +30,8 @@ namespace Dune {
     *  and is usable with the SIMD-interface.
     */
 
-  template<class T, std::size_t S>
-  class LoopSIMD : public std::array<T,S> {
+  template<class T, std::size_t S, std::size_t A = std::alignment_of<T>::value>
+  class alignas(A) LoopSIMD : public std::array<T,S> {
 
   public:
 
