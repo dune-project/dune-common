@@ -43,6 +43,11 @@ namespace Dune {
       this->fill(i);
     }
 
+    template<std::size_t OA>
+      LoopSIMD(const LoopSIMD<T,S,OA>& other)
+      : std::array<T,S>(other)
+    {}
+
     /*
      *  Definition of basic operators
      */
@@ -103,7 +108,9 @@ namespace Dune {
       }                                                   \
       return *this;                                       \
     }                                                     \
-    auto operator SYMBOL(const LoopSIMD<T,S,A> &v) {       \
+                                                           \
+   template<std::size_t OA>                                \
+     auto operator SYMBOL(const LoopSIMD<T,S,OA> &v) {     \
       for(std::size_t i=0; i<S; i++){                     \
         (*this)[i] SYMBOL v[i];                           \
       }                                                   \
@@ -310,7 +317,7 @@ namespace Dune {
         return Simd::lane(l%lanes<T>(), v[l/lanes<T>()]);
       }
 
-      template<class T, std::size_t S, std::size_t AM, , std::size_t AD>
+      template<class T, std::size_t S, std::size_t AM, std::size_t AD>
       auto cond(ADLTag<5>, LoopSIMD<Simd::Mask<T>,S,AM> mask,
                 LoopSIMD<T,S,AD> ifTrue, LoopSIMD<T,S,AD> ifFalse) {
         LoopSIMD<T,S,AD> out;
