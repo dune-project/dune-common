@@ -289,7 +289,7 @@ namespace Dune {
 
       template<class U, class T, std::size_t S, std::size_t A>
       struct RebindType<U, LoopSIMD<T,S,A>> {
-        using type =  LoopSIMD<Simd::Rebind<U, T>,S>;
+        using type =  LoopSIMD<Simd::Rebind<U, T>,S,A>;
       };
 
       //Implementation of SIMD-interface-functionality
