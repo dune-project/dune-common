@@ -14,10 +14,10 @@
 
 template<class> struct RebindAccept : std::false_type {};
 #cmake @template@
-template<>
-struct RebindAccept<Dune::LoopSIMD<@SCALAR@, 5> > : std::true_type {};
-template<>
-struct RebindAccept<Dune::LoopSIMD<Dune::LoopSIMD<@SCALAR@, 2>, 5> > : std::true_type {};
+template<std::size_t A>
+struct RebindAccept<Dune::LoopSIMD<@SCALAR@, 5, A> > : std::true_type {};
+template<std::size_t A1, std::size_t A2>
+struct RebindAccept<Dune::LoopSIMD<Dune::LoopSIMD<@SCALAR@, 2, A1>, 5, A2> > : std::true_type {};
 #cmake @endtemplate@
 
 using Rebinds = Dune::Simd::RebindList<
@@ -32,6 +32,8 @@ int main()
 
 #cmake @template@
   test.check<Dune::LoopSIMD<@SCALAR@, 5>,
+             Rebinds, Dune::Std::to_false_type, RebindAccept>();
+  test.check<Dune::LoopSIMD<@SCALAR@, 5, 64>,
              Rebinds, Dune::Std::to_false_type, RebindAccept>();
   test.check<Dune::LoopSIMD<Dune::LoopSIMD<@SCALAR@, 2>, 5>,
              Rebinds, Dune::Std::to_false_type, RebindAccept>();
