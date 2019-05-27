@@ -191,7 +191,15 @@ namespace Impl {
 
     constexpr variant_() :
       unions_(),
-      index_(invalidIndex) {}
+      index_(invalidIndex)
+    {
+      using T0 = TypeListEntry_t<0, TypeList<T...>>;
+      Dune::Hybrid::ifElse(std::is_default_constructible<T0>(),
+        [&](auto&& id) {
+          unions_.set(id(T0{}));
+          index_ = 0;
+        });
+    }
 
     template<typename Tp>
     constexpr variant_(Tp obj) :
