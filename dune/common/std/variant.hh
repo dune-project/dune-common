@@ -21,6 +21,7 @@ namespace Std {
 #include <memory>
 #include <dune/common/hybridutilities.hh>
 #include <dune/common/exceptions.hh>
+#include <dune/common/typelist.hh>
 
 namespace Dune {
 namespace Std {
