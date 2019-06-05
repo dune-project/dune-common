@@ -44,7 +44,7 @@ namespace Dune {
     }
 
     template<std::size_t OA>
-      LoopSIMD(const LoopSIMD<T,S,OA>& other)
+      explicit LoopSIMD(const LoopSIMD<T,S,OA>& other)
       : std::array<T,S>(other)
     {}
 
@@ -108,9 +108,8 @@ namespace Dune {
       }                                                   \
       return *this;                                       \
     }                                                     \
-                                                           \
-   template<std::size_t OA>                                \
-     auto operator SYMBOL(const LoopSIMD<T,S,OA> &v) {     \
+                                                          \
+    auto operator SYMBOL(const LoopSIMD<T,S,A> &v) {      \
       for(std::size_t i=0; i<S; i++){                     \
         (*this)[i] SYMBOL v[i];                           \
       }                                                   \
@@ -180,9 +179,9 @@ namespace Dune {
     }                                                             \
     return out;                                                   \
   }                                                               \
-  template<class T, std::size_t S, std::size_t A, class U>                       \
+  template<class T, std::size_t S, std::size_t A, class U, std::size_t AU>       \
   auto operator SYMBOL(const LoopSIMD<T,S,A> &v,                         \
-                       const LoopSIMD<U,S,A> &w) {                       \
+                       const LoopSIMD<U,S,AU> &w) {                       \
     LoopSIMD<T,S,A> out;                                                 \
     for(std::size_t i=0; i<S; i++){                               \
       out[i] = v[i] SYMBOL w[i];                                  \
