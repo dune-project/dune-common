@@ -390,10 +390,10 @@ namespace Dune
      * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename BinaryFunction, typename Type>
-    void allreduce(const Type* in, Type* out, int len) const
+    int allreduce(const Type* in, Type* out, int len) const
     {
       std::copy(in, in+len, out);
-      return;
+      return 0;
     }
 
   };
