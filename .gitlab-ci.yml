@@ -18,6 +18,7 @@ debian:10 gcc-7-14--expensive:
     DUNECI_CXXFLAGS: -mavx
     DUNECI_TEST_LABELS: ""
     DUNECI_TOOLCHAIN: gcc-7-14
+    DUNE_TEST_EXPECTED_VC_IMPLEMENTATION: AVX
   # require AVX to properly test Vc
   tags: [duneci, "iset:avx"]
   # allowed to fail to e.g. do no hold up a merge when a runner supporting avx
