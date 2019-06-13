@@ -15,6 +15,7 @@ debian:10 gcc-7-14--expensive:
   script: duneci-standard-test
   # allow expensive tests
   variables:
+    DUNECI_CXXFLAGS: -mavx
     DUNECI_TEST_LABELS: ""
     DUNECI_TOOLCHAIN: gcc-7-14
   # require AVX to properly test Vc
