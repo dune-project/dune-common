@@ -135,15 +135,17 @@ namespace Dune
    * \tparam D The type for differences between two iterators
    */
   template<class T, class V, class R = V&, class D = std::ptrdiff_t>
-  class ForwardIteratorFacade :
-    public std::iterator< std::forward_iterator_tag,
-        typename std::remove_const<V>::type,                   // std::iterator needs mutable value type
-        D,
-        V*,
-        R>
+  class ForwardIteratorFacade
   {
 
   public:
+    /* type aliases required by C++ for iterators */
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = typename std::remove_const<V>::type;
+    using difference_type = D;
+    using pointer = V*;
+    using reference = R;
+
     /**
      * @brief The type of derived iterator.
      *
@@ -266,15 +268,17 @@ namespace Dune
    *
    */
   template<class T, class V, class R = V&, class D = std::ptrdiff_t>
-  class BidirectionalIteratorFacade :
-    public std::iterator< std::bidirectional_iterator_tag,
-        typename std::remove_const<V>::type,                   // std::iterator needs mutable value type
-        D,
-        V*,
-        R>
+  class BidirectionalIteratorFacade
   {
 
   public:
+    /* type aliases required by C++ for iterators */
+    using iterator_category = std::bidirectional_iterator_tag;
+    using value_type = typename std::remove_const<V>::type;
+    using difference_type = D;
+    using pointer = V*;
+    using reference = R;
+
     /**
      * @brief The type of derived iterator.
      *
@@ -424,15 +428,17 @@ namespace Dune
    *
    */
   template<class T, class V, class R = V&, class D = std::ptrdiff_t>
-  class RandomAccessIteratorFacade :
-    public std::iterator< std::random_access_iterator_tag,
-        typename std::remove_const<V>::type,                   // std::iterator needs mutable value type
-        D,
-        V*,
-        R>
+  class RandomAccessIteratorFacade
   {
 
   public:
+    /* type aliases required by C++ for iterators */
+    using iterator_category = std::random_access_iterator_tag;
+    using value_type = typename std::remove_const<V>::type;
+    using difference_type = D;
+    using pointer = V*;
+    using reference = R;
+
     /**
      * @brief The type of derived iterator.
      *
