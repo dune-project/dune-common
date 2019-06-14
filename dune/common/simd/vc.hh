@@ -600,7 +600,7 @@ namespace Dune {
        */
       template<class V>
       V cond(ADLTag<5, VcImpl::IsMask<V>::value>,
-             V mask, V ifTrue, V ifFalse)
+             const V &mask, const V &ifTrue, const V &ifFalse)
       {
         return (mask && ifTrue) || (!mask && ifFalse);
       }
@@ -641,14 +641,14 @@ namespace Dune {
 
       //! implements Simd::anyTrue()
       template<class M>
-      bool anyTrue (ADLTag<5, VcImpl::IsMask<M>::value>, M mask)
+      bool anyTrue (ADLTag<5, VcImpl::IsMask<M>::value>, const M &mask)
       {
         return Vc::any_of(mask);
       }
 
       //! implements Simd::allTrue()
       template<class M>
-      bool allTrue (ADLTag<5, VcImpl::IsMask<M>::value>, M mask)
+      bool allTrue (ADLTag<5, VcImpl::IsMask<M>::value>, const M &mask)
       {
         return Vc::all_of(mask);
       }
@@ -657,7 +657,7 @@ namespace Dune {
 
       //! implements Simd::allFalse()
       template<class M>
-      bool allFalse(ADLTag<5, VcImpl::IsMask<M>::value>, M mask)
+      bool allFalse(ADLTag<5, VcImpl::IsMask<M>::value>, const M &mask)
       {
         return Vc::none_of(mask);
       }
@@ -673,7 +673,7 @@ namespace Dune {
 
       //! implements Simd::maxValue()
       template<class M>
-      bool max(ADLTag<5, VcImpl::IsMask<M>::value>, M mask)
+      bool max(ADLTag<5, VcImpl::IsMask<M>::value>, const M &mask)
       {
         return Vc::any_of(mask);
       }
@@ -689,7 +689,7 @@ namespace Dune {
 
       //! implements Simd::minValue()
       template<class M>
-      bool min(ADLTag<5, VcImpl::IsMask<M>::value>, M mask)
+      bool min(ADLTag<5, VcImpl::IsMask<M>::value>, const M &mask)
       {
         return !Vc::any_of(!mask);
       }

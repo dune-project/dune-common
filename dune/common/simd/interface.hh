@@ -424,7 +424,7 @@ namespace Dune {
      * Implemented by `Overloads::anyTrue()`.
      */
     template<class Mask>
-    bool anyTrue(Mask mask)
+    bool anyTrue(const Mask &mask)
     {
       return anyTrue(Overloads::ADLTag<7>{}, mask);
     }
@@ -434,7 +434,7 @@ namespace Dune {
      * Implemented by `Overloads::allTrue()`.
      */
     template<class Mask>
-    bool allTrue(Mask mask)
+    bool allTrue(const Mask &mask)
     {
       return allTrue(Overloads::ADLTag<7>{}, mask);
     }
@@ -444,7 +444,7 @@ namespace Dune {
      * Implemented by `Overloads::anyFalse()`.
      */
     template<class Mask>
-    bool anyFalse(Mask mask)
+    bool anyFalse(const Mask &mask)
     {
       return anyFalse(Overloads::ADLTag<7>{}, mask);
     }
@@ -454,7 +454,7 @@ namespace Dune {
      * Implemented by `Overloads::allFalse()`.
      */
     template<class Mask>
-    bool allFalse(Mask mask)
+    bool allFalse(const Mask &mask)
     {
       return allFalse(Overloads::ADLTag<7>{}, mask);
     }
