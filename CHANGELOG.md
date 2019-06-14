@@ -1,5 +1,19 @@
 # Master (will become release 2.7)
 
+- Dune no longer applies architecture flags detected by the Vc library
+  automatically.  This applies to all targets that link to Vc explicitly (with
+  `add_dune_vc_flags()`) or implicitly (with `dune_enable_all_packages()`).
+  If you do want to make use of extended architecture features, set the
+  architecture explicitly in the compiler options, e.g. by specifying
+  ```sh
+  CMAKE_FLAGS="-DCMAKE_CXX_FLAGS=-march=native"
+  ```
+  in your opts-file.  Vc also sets compiler options to select a particular C++
+  abi (`-fabi-version` and `-fabi-compat-version`), these continue to be
+  applied automatically.
+
+  See core/dune-common!677
+
 - A helper class `TransformedRangeView` was added representing a
   transformed version of a given range using an unary transformation
   function. The transformation is done on the fly leaving the wrapped
