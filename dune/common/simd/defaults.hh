@@ -71,7 +71,8 @@ namespace Dune {
 
       //! implements Simd::cond()
       template<class V>
-      V cond(ADLTag<0>, Mask<V> mask, V ifTrue, V ifFalse) = delete;
+      V cond(ADLTag<0>, const Mask<V> &mask,
+             const V &ifTrue, const V &ifFalse) = delete;
 
       //! implements binary Simd::max()
       template<class V>
@@ -91,14 +92,14 @@ namespace Dune {
 
       //! implements Simd::anyTrue()
       template<class Mask>
-      bool anyTrue(ADLTag<0>, Mask mask) = delete;
+      bool anyTrue(ADLTag<0>, const Mask &mask) = delete;
 
       //! implements Simd::allTrue()
       /**
        * Default uses Simd::anyTrue()
        */
       template<class Mask>
-      bool allTrue(ADLTag<0>, Mask mask)
+      bool allTrue(ADLTag<0>, const Mask &mask)
       {
         return !Dune::Simd::anyTrue(!mask);
       }
@@ -108,7 +109,7 @@ namespace Dune {
        * Default uses Simd::anyTrue()
        */
       template<class Mask>
-      bool anyFalse(ADLTag<0>, Mask mask)
+      bool anyFalse(ADLTag<0>, const Mask &mask)
       {
         return Dune::Simd::anyTrue(!mask);
       }
@@ -118,7 +119,7 @@ namespace Dune {
        * Default uses Simd::anyTrue()
        */
       template<class Mask>
-      bool allFalse(ADLTag<0>, Mask mask)
+      bool allFalse(ADLTag<0>, const Mask &mask)
       {
         return !Dune::Simd::anyTrue(mask);
       }
