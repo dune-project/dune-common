@@ -4,18 +4,24 @@
 #define DUNE_BINARYFUNCTIONS_HH
 
 /** \file
- * \brief Various helper classes derived from from std::binary_function for
- *    stl-style functional programming
+ * \brief helper classes to provide unique types for standard functions
  */
-#include <functional>
+
+#include <dune/common/deprecated.hh>
+
 #include <algorithm>
 
 namespace Dune
 {
   template<typename Type>
   struct Min
-    : std::binary_function<Type,Type,Type>
   {
+    using first_argument_type DUNE_DEPRECATED_MSG("This type alias is deprecated following similar deprecations in C++17") = Type;
+
+    using second_argument_type DUNE_DEPRECATED_MSG("This type alias is deprecated following similar deprecations in C++17") = Type;
+
+    using result_type DUNE_DEPRECATED_MSG("This type alias is deprecated following similar deprecations in C++17") = Type;
+
     Type operator()(const Type& t1, const Type& t2) const
     {
       return std::min(t1,t2);
@@ -24,8 +30,13 @@ namespace Dune
 
   template<typename Type>
   struct Max
-    : std::binary_function<Type,Type,Type>
   {
+    using first_argument_type DUNE_DEPRECATED_MSG("This type alias is deprecated following similar deprecations in C++17") = Type;
+
+    using second_argument_type DUNE_DEPRECATED_MSG("This type alias is deprecated following similar deprecations in C++17") = Type;
+
+    using result_type DUNE_DEPRECATED_MSG("This type alias is deprecated following similar deprecations in C++17") = Type;
+
     Type operator()(const Type& t1, const Type& t2) const
     {
       return std::max(t1,t2);
