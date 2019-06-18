@@ -24,7 +24,8 @@ namespace Dune
 
     Type operator()(const Type& t1, const Type& t2) const
     {
-      return std::min(t1,t2);
+      using std::min;
+      return min(t1,t2);
     }
   };
 
@@ -39,7 +40,8 @@ namespace Dune
 
     Type operator()(const Type& t1, const Type& t2) const
     {
-      return std::max(t1,t2);
+      using std::max;
+      return max(t1,t2);
     }
   };
 }
