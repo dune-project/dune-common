@@ -87,7 +87,7 @@ namespace Dune
     //===== constructors
     /** \brief Default constructor
      */
-    FieldMatrix() = default;
+    constexpr FieldMatrix() = default;
 
     /** \brief Constructor initializing the matrix from a list of vector
      */
