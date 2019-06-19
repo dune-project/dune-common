@@ -41,9 +41,6 @@
 /* does the standard library provide <experimental/type_traits> ? */
 #cmakedefine DUNE_HAVE_HEADER_EXPERIMENTAL_TYPE_TRAITS 1
 
-/* does the standard library provide make_unique() ? */
-#cmakedefine DUNE_HAVE_CXX_MAKE_UNIQUE 1
-
 /* does the standard library provide bool_constant ? */
 #cmakedefine DUNE_HAVE_CXX_BOOL_CONSTANT 1
 
