@@ -560,6 +560,10 @@ void fieldvectorMathclassifiersTest() {
 int main()
 {
   {
+    FieldVectorTest<int, 1>();
+    FieldVectorTest<float, 1>();
+    FieldVectorTest<double, 1>();
+    FieldVectorTest<long double, 1>();
     FieldVectorTest<int, 3>();
     FieldVectorTest<float, 3>();
     FieldVectorTest<double, 3>();
