@@ -87,7 +87,7 @@ namespace Dune
     //===== constructors
     /** \brief Default constructor
      */
-    FieldMatrix () {}
+    FieldMatrix() = default;
 
     /** \brief Constructor initializing the matrix from a list of vector
      */
@@ -107,15 +107,12 @@ namespace Dune
 
     using Base::operator=;
 
+    //! copy assignment operator
+    FieldMatrix& operator=(const FieldMatrix&) = default;
+
     // Specialisation: FieldMatrix assignment (compile-time bounds checking)
     template <typename T, int rows, int cols>
-    FieldMatrix& operator=(FieldMatrix<T,rows,cols> const &rhs)
-    {
-      static_assert(rows == ROWS, "Size mismatch in matrix assignment (rows)");
-      static_assert(cols == COLS, "Size mismatch in matrix assignment (columns)");
-      _data = rhs._data;
-      return *this;
-    }
+    FieldMatrix& operator=(FieldMatrix<T,rows,cols> const&) = delete;
 
     //! Multiplies M from the left to this matrix, this matrix is not modified
     template<int l>
@@ -226,7 +223,7 @@ namespace Dune
     //===== constructors
     /** \brief Default constructor
      */
-    FieldMatrix () {}
+    FieldMatrix() = default;
 
     /** \brief Constructor initializing the matrix from a list of vector
      */

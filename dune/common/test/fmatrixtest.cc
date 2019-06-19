@@ -733,6 +733,15 @@ void test_interface()
   typedef CheckMatrixInterface::UseFieldVector< K2, rows, cols > Traits;
   typedef Dune::FieldMatrix< K, rows, cols > FMatrix;
 
+  static_assert(
+    !std::is_trivial<K>::value || std::is_trivial<FMatrix>::value,
+    "FieldMatrix<T, ...> must be trival type when T is trivial type"
+    );
+  static_assert(
+    std::is_standard_layout<FMatrix>::value,
+    "FieldMatrix<...> must be a standard layout type"
+    );
+
   FMatrix m( 1 );
   checkMatrixInterface< FMatrix >( m );
   checkMatrixInterface< FMatrix, Traits >( m );
