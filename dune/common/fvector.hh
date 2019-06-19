@@ -123,8 +123,7 @@ namespace Dune {
     }
 
     //! Copy constructor
-    FieldVector (const FieldVector & x) : Base(), _data(x._data)
-    {}
+    FieldVector (const FieldVector&) = default;
 
     /** \brief Construct from a std::initializer_list */
     FieldVector (std::initializer_list<K> const &l)
@@ -136,11 +135,7 @@ namespace Dune {
     }
 
     //! copy assignment operator
-    FieldVector& operator= (const FieldVector& other)
-    {
-      _data = other._data;
-      return *this;
-    }
+    FieldVector& operator= (const FieldVector&) = default;
 
     template <typename T, int N>
     FieldVector& operator= (const FieldVector<T, N>& other)
@@ -276,16 +271,10 @@ namespace Dune {
     }
 
     //! copy constructor
-    FieldVector ( const FieldVector &other )
-      : Base(), _data( other._data )
-    {}
+    FieldVector(const FieldVector&) = default;
 
     //! copy assignment operator
-    FieldVector& operator= (const FieldVector& other)
-    {
-      _data = other._data;
-      return *this;
-    }
+    FieldVector& operator=(const FieldVector&) = default;
 
     template <typename T, int N>
     FieldVector& operator= (const FieldVector<T, N>& other)
