@@ -36,7 +36,9 @@ namespace Dune {
   public:
 
     //default constructor
-    LoopSIMD() {}
+    LoopSIMD() {
+      assert(reinterpret_cast<uintptr_t>(this) % alignof(LoopSIMD<T,S,A>) == 0);
+    }
 
     // broadcast constructor initializing the content with a given value
     LoopSIMD(Simd::Scalar<T> i) : LoopSIMD() {
@@ -46,7 +48,9 @@ namespace Dune {
     template<std::size_t OA>
       explicit LoopSIMD(const LoopSIMD<T,S,OA>& other)
       : std::array<T,S>(other)
-    {}
+    {
+      assert(reinterpret_cast<uintptr_t>(this) % alignof(LoopSIMD<T,S,A>) == 0);
+    }
 
     /*
      *  Definition of basic operators
