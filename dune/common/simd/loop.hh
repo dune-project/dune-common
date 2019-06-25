@@ -37,7 +37,7 @@ namespace Dune {
 
     //default constructor
     LoopSIMD() {
-      assert(reinterpret_cast<uintptr_t>(this) % alignof(LoopSIMD<T,S,A>) == 0);
+      assert(reinterpret_cast<uintptr_t>(this) % std::min(alignof(LoopSIMD<T,S,A>),alignof(std::max_align_t)) == 0);
     }
 
     // broadcast constructor initializing the content with a given value
@@ -49,7 +49,7 @@ namespace Dune {
       explicit LoopSIMD(const LoopSIMD<T,S,OA>& other)
       : std::array<T,S>(other)
     {
-      assert(reinterpret_cast<uintptr_t>(this) % alignof(LoopSIMD<T,S,A>) == 0);
+      assert(reinterpret_cast<uintptr_t>(this) % std::min(alignof(LoopSIMD<T,S,A>),alignof(std::max_align_t)) == 0);
     }
 
     /*
