@@ -64,6 +64,16 @@
 - The `VectorSize` helper has been deprecated.  The `size()` method of
   vectors should be called directly instead.
 
+-   `FieldMatrix` and `FieldVector` are now [trivially copyable types]
+    if the underlying field type is trivally copyable.
+
+    As a consequence the copy assignment operator of the `DenseVector`
+    class can no longer be used; just avoid going through
+    `DenseVector` and use the real vector type instead
+    (e.g. `FieldVector`).
+
+    [trivially copyable types]: https://en.cppreference.com/w/cpp/named_req/TriviallyCopyable
+
 # Release 2.6
 
 **This release is dedicated to Elias Pipping (1986-2017).**
