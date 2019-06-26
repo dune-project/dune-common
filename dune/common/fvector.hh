@@ -137,13 +137,15 @@ namespace Dune {
     //! copy assignment operator
     FieldVector& operator= (const FieldVector&) = default;
 
-    template <typename T, int N>
-    FieldVector& operator= (const FieldVector<T, N>& other)
+    template <typename T>
+    FieldVector& operator= (const FieldVector<T, SIZE>& x)
     {
-      static_assert(N == SIZE, "Sizes have to match for assignment!");
-      std::copy_n(other.begin(), SIZE, _data.begin());
+      std::copy_n(x.begin(), SIZE, _data.begin());
       return *this;
     }
+
+    template<typename T, int N>
+    FieldVector& operator=(const FieldVector<T, N>&) = delete;
 
     /**
      * \brief Copy constructor from a second vector of possibly different type
@@ -166,13 +168,15 @@ namespace Dune {
     }
 
     //! Constructor making vector with identical coordinates
-    template<class K1, int SIZE1>
-    explicit FieldVector (const FieldVector<K1,SIZE1> & x)
+    template<class K1>
+    explicit FieldVector (const FieldVector<K1,SIZE> & x)
     {
-      static_assert(SIZE1 == SIZE, "FieldVector in constructor has wrong size");
-      for (size_type i = 0; i<SIZE; i++)
-        _data[i] = x[i];
+      std::copy_n(x.begin(), SIZE, _data.begin());
     }
+
+    template<typename T, int N>
+    explicit FieldVector(const FieldVector<T, N>&) = delete;
+
     using Base::operator=;
 
     // make this thing a vector
@@ -276,13 +280,15 @@ namespace Dune {
     //! copy assignment operator
     FieldVector& operator=(const FieldVector&) = default;
 
-    template <typename T, int N>
-    FieldVector& operator= (const FieldVector<T, N>& other)
+    template <typename T>
+    FieldVector& operator= (const FieldVector<T, 1>& other)
     {
-      static_assert(N == 1, "Sizes have to match for assignment!");
       _data = other[0];
       return *this;
     }
+
+    template<typename T, int N>
+    FieldVector& operator=(const FieldVector<T, N>&) = delete;
 
     /** \brief Construct from a std::initializer_list */
     FieldVector (std::initializer_list<K> const &l)
