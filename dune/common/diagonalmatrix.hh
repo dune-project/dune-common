@@ -97,7 +97,7 @@ namespace Dune {
     //===== constructors
 
     //! Default constructor
-    DiagonalMatrix () {}
+    constexpr DiagonalMatrix() = default;
 
     //! Constructor initializing the whole matrix with a scalar
     DiagonalMatrix (const K& k)
@@ -582,8 +582,7 @@ namespace Dune {
 
 
     //! Default Constructor
-    DiagonalMatrix()
-    {}
+    constexpr DiagonalMatrix() = default;
 
     //! Constructor initializing the whole matrix with a scalar
     DiagonalMatrix(const K& scalar)
