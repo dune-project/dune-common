@@ -22,13 +22,14 @@ namespace Std {
 #include <dune/common/hybridutilities.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/typelist.hh>
+#include <dune/common/rangeutilities.hh>
 
 namespace Dune {
 namespace Std {
 namespace Impl {
 
   // indicator value if something's not yet (or not any longer) valid
-  constexpr const auto invalidIndex = std::numeric_limits<size_t>::max();
+  constexpr const auto invalidIndex = std::numeric_limits<std::size_t>::max();
 
   /* helper constructs to find position of a type T in a pack Ts... */
   template <typename T, typename... Ts>
@@ -42,104 +43,148 @@ namespace Impl {
 
   /* end helper constructs to find position of a type T in a pack Ts... */
 
-  template<typename Tp>
-  struct Buffer_ : std::aligned_storage<sizeof(Tp)> {
-    using Storage = std::aligned_storage_t<sizeof(Tp)>;
-    Storage storage_;
+  template<typename T>
+  struct TypeStorage {
 
-    void* addr() {
-      return static_cast<void*>(&storage_);
+    using Buffer = std::aligned_storage_t<sizeof(T), alignof(T)>;
+
+    TypeStorage() = default;
+
+    TypeStorage& operator=(TypeStorage&&) {
+      return *this;
     }
 
-    const void* addr() const {
-      return static_cast<const void*>(&storage_);
+    TypeStorage(const TypeStorage&) = delete;
+    TypeStorage(TypeStorage&&) = delete;
+    TypeStorage& operator=(const TypeStorage&) = delete;
+
+    void construct(const T& t) {
+      ::new (&buffer_) T(t);
     }
 
-    Tp* ptr() {
-      return static_cast<Tp*>(addr());
+    void construct(T&& t) {
+      ::new (&buffer_) T(std::move(t));
     }
 
-    const Tp* ptr() const {
-      return static_cast<const Tp*>(addr());
+    void assign(const T& t) {
+      this->get() = t;
     }
-  };
 
-  template<typename Tp, bool isTrivial>
-  struct TypeStorage_ { };
+    void assign(T&& t) {
+      this->get() = std::move(t);
+    }
 
-  template<typename Tp>
-  struct TypeStorage_<Tp, true> {
-    TypeStorage_(Tp t) :
-      tp_(t) {}
-
-    template<typename... Args>
-    TypeStorage_(Args... args) :
-      tp_(args...) {}
+    void destruct() {
+      reinterpret_cast<T*>(&buffer_)->~T();
+    }
 
     auto& get() {
-      return tp_;
+      return *(reinterpret_cast<T*>(&buffer_));
     }
+
     const auto& get() const {
-      return tp_;
+      return *(reinterpret_cast<const T*>(&buffer_));
     }
 
-    void reset() {};
-
-    private:
-    Tp tp_;
+  private:
+    Buffer buffer_;
   };
 
-  template<typename Tp>
-  struct TypeStorage_<Tp, false> {
-    TypeStorage_(Tp t) {
-      ::new (&tp_) Tp(t);
-    }
 
-    template<typename... Args>
-    TypeStorage_(Args... args) {
-      ::new (&tp_) Tp(std::forward<Args>(args)...);
-    }
 
-    TypeStorage_() = delete;
-
-    auto& get() {
-      return *(tp_.ptr());
-    }
-    const auto& get() const {
-      return *(tp_.ptr());
-    }
-
-    void reset() {
-      // Properly destruct the member:
-      tp_.ptr()->~Tp();
-      // (the memory itself doesn't need to be free'd. This is done when the Buffer_ member gets destructed)
-    }
-
-    private:
-    Buffer_<Tp> tp_;
-  };
-
+  // A variadic union type providing access by index
+  // of member.
   template<typename... T>
-  union variant_union_ {
-    // dummy (this should never be called)
-    void resetByIndex(size_t) {
-      assert(false);
-    };
+  union VariadicUnion;
+
+  // This is the recursion closure dummy.
+  // It's methods should never be called.
+  template<>
+  union VariadicUnion<> {
+    template<class Ti>
+    void construct(Ti&&) { assert(false); }
+
+    template<class Ti>
+    void assign(Ti&&) { assert(false); }
+
+    void destruct(std::size_t) { assert(false); };
+
   };
 
-  template<typename Head_, typename... Tail_>
-  union variant_union_<Head_, Tail_...> {
-    constexpr variant_union_() :
-      tail_() {}
+  template<typename Head, typename... Tail>
+  union VariadicUnion<Head, Tail...>
+  {
+    // We only allow construction of empty VariadicUnion
+    // objects and no asignment. However, to activate
+    // it inside of a VariadicUnion we also have
+    // a move constructor, which should only be
+    // called with an empty rhs. Actual construction
+    // and assignment of stored values is done using
+    // special methods.
+    constexpr VariadicUnion() :
+      tail_()
+    {}
 
-    template<typename... Args>
-    constexpr variant_union_(std::integral_constant<size_t, 0>, Args&&... args) :
-      head_(std::forward<Args...>(args)...) {}
+    VariadicUnion& operator=(VariadicUnion&& other)
+    {
+      // This should only be called with an empty other
+      tail_ = VariadicUnion<Tail...>();
+      return *this;
+    }
 
-    template<size_t N, typename... Args>
-    constexpr variant_union_(std::integral_constant<size_t, N>, Args&&... args) :
-      tail_(std::integral_constant<size_t, N-1>(), std::forward<Args...>(args)...) {}
+    constexpr VariadicUnion(VariadicUnion&& other) = delete;
+    constexpr VariadicUnion(const VariadicUnion& other) = delete;
+    VariadicUnion& operator=(const VariadicUnion& other) = delete;
 
+    // Construct stored object
+    void construct(const Head& obj) {
+      head_ = TypeStorage<Head>();
+      head_.construct(obj);
+    }
+
+    void construct(Head&& obj) {
+      head_ = TypeStorage<Head>();
+      head_.construct(std::move(obj));
+    }
+
+    template<class Ti,
+      std::enable_if_t<not std::is_same<std::decay_t<Ti>, Head>::value, int> = 0>
+    void construct(Ti&& obj) {
+      tail_ = VariadicUnion<Tail...>();
+      tail_.construct(std::forward<Ti>(obj));
+    }
+
+    // Assign to stored object. This should
+    // only be called if it's clear, that
+    // the VariadicUnion already stores
+    // on object of the passed type.
+    void assign(const Head& obj){
+      head_.assign(obj);
+    }
+
+    void assign(Head&& obj){
+      head_.assign(std::move(obj));
+    }
+
+    template<class Ti,
+      std::enable_if_t<not std::is_same<std::decay_t<Ti>, Head>::value, int> = 0>
+    void assign(Ti&& obj){
+      tail_.assign(std::forward<Ti>(obj));
+    }
+
+    // Destruct stored object. This should only
+    // be called with the appropriate index of
+    // the stored object.
+    void destruct(size_t indexToReset) {
+      if (indexToReset == 0) {
+        head_.destruct();
+        return;
+      }
+      else
+        tail_.destruct(indexToReset-1);
+    }
+
+    // Access to stored object
     auto& getByIndex(std::integral_constant<size_t, 0>) {
       return head_.get();
     }
@@ -147,7 +192,6 @@ namespace Impl {
     const auto& getByIndex(std::integral_constant<size_t, 0>) const {
       return head_.get();
     }
-
 
     template<size_t N>
     auto& getByIndex(std::integral_constant<size_t, N>) {
@@ -159,99 +203,150 @@ namespace Impl {
       return tail_.getByIndex(std::integral_constant<size_t, N-1>());
     }
 
-    void resetByIndex(size_t indexToReset) {
-      if (indexToReset == 0) {
-        head_.reset();
-        return;
-      }
-      else {
-        tail_.resetByIndex(indexToReset-1);
-      }
-    }
-
-    template<typename Tp>
-    void set(Tp&& obj) {
-      using T = std::decay_t<Tp>;
-      Dune::Hybrid::ifElse(std::is_same<T, Head_>(),
-        [&](auto&& id)    { id(head_)=std::forward<Tp>(obj); },
-        [&](auto&& id) { return id(tail_).set(std::forward<Tp>(obj)); }
-      );
-    }
-
     constexpr size_t size() const {
-      return sizeof...(Tail_)+1;
+      return sizeof...(Tail)+1;
     }
 
-    private:
-    TypeStorage_<Head_, std::is_trivial<Head_>::value> head_;
-    variant_union_<Tail_...> tail_;
+  private:
+    TypeStorage<Head> head_;
+    VariadicUnion<Tail...> tail_;
   };
 
   template<typename...T>
   struct variant_{
 
+    // Compute index of Ti in T...
+    template<class Ti>
+    constexpr static auto typeIndex()
+    {
+      return index_in_pack<std::decay_t<Ti>, T...>::value;
+    }
+
+    // Create static index range for iterating over T...
+    constexpr static auto indexRange()
+    {
+      return Dune::range(Dune::index_constant<size_>());
+    }
+
+    constexpr void destructIfValid()
+    {
+      if (index_ != invalidIndex)
+        unions_.destruct(index_);
+      index_ = invalidIndex;
+    }
+
+    // All methods will only use the default constructor but
+    // no other constructors or assignment operators of VariadicUnion.
+    // The construction and assignment of stored values is done
+    // using special methods.
+
+    // Default constructor.
+    // Default construct T_0 if possible, otherwise set to invalid state
     constexpr variant_() :
-      unions_(),
       index_(invalidIndex)
     {
       using T0 = TypeListEntry_t<0, TypeList<T...>>;
       Dune::Hybrid::ifElse(std::is_default_constructible<T0>(),
         [&](auto&& id) {
-          unions_.set(id(T0{}));
+          unions_.construct(id(T0{}));
           index_ = 0;
         });
     }
 
-    template<typename Tp>
-    constexpr variant_(Tp obj) :
-      unions_(),
-      index_(index_in_pack<Tp, T...>::value)
-      {
-        unions_.set(std::move(obj));
-      }
-
-    variant_(variant_&& other) {
-      unions_ = std::move(other.unions_);
-      index_ = other.index_;
-      other.index_ = invalidIndex;
+    // Construct from some Ti
+    template<typename Ti,
+      disableCopyMove<variant_, Ti> = 0>
+    constexpr variant_(Ti&& obj) :
+      index_(typeIndex<Ti>())
+    {
+      unions_.construct(std::forward<Ti>(obj));
     }
 
+    // Copy constructor
     variant_(const variant_& other) {
       index_ = other.index_;
-
-      namespace H = Dune::Hybrid;
-      H::forEach(H::integralRange(std::integral_constant<size_t, size_>()), [&](auto i) {
-            if(i==index_)
-              unions_.set(other.template get<i>());
-          });
+      if (index_==invalidIndex)
+        return;
+      Dune::Hybrid::forEach(indexRange(), [&](auto i) {
+        if(i==index_)
+          unions_.construct(other.template get<i>());
+      });
     }
 
+    // Move constructor
+    variant_(variant_&& other) {
+      index_ = other.index_;
+      if (index_==invalidIndex)
+        return;
+      Dune::Hybrid::forEach(indexRange(), [&](auto i) {
+        if(i==index_)
+          unions_.construct(std::move(other.template get<i>()));
+      });
+      other.destructIfValid();
+    }
+
+    // Copy assignment operator
     variant_& operator=(const variant_& other) {
-      if(index_ != invalidIndex)
-        unions_.resetByIndex(index_);
-
-      index_ = other.index_;
-
-      namespace H = Dune::Hybrid;
-      H::forEach(H::integralRange(std::integral_constant<size_t, size_>()), [&](auto i) {
+      if(index_ == other.index_) {
+        if (index_ != invalidIndex)
+          Dune::Hybrid::forEach(indexRange(), [&](auto i) {
             if(i==index_)
-              unions_.set(other.template get<i>());
+              unions_.assign(other.template get<i>());
           });
+      }
+      else {
+        destructIfValid();
+        index_ = other.index_;
+        if (index_ != invalidIndex)
+          Dune::Hybrid::forEach(indexRange(), [&](auto i) {
+            if(i==index_)
+              unions_.construct(other.template get<i>());
+          });
+      }
       return *this;
     }
 
+    // Move assignment operator
     variant_& operator=(variant_&& other) {
-      unions_ = std::move(other.unions_);
-      index_ = other.index_;
-      other.index_ = invalidIndex;
-
+      if(index_ == other.index_) {
+        if (index_ != invalidIndex)
+          Dune::Hybrid::forEach(indexRange(), [&](auto i) {
+            if(i==index_)
+              unions_.assign(std::move(other.template get<i>()));
+          });
+      }
+      else {
+        destructIfValid();
+        index_ = other.index_;
+        if (index_ != invalidIndex)
+          Dune::Hybrid::forEach(indexRange(), [&](auto i) {
+            if(i==index_)
+              unions_.construct(std::move(other.template get<i>()));
+          });
+      }
+      other.destructIfValid();
       return *this;
     }
 
+    // Assignment from some Ti
+    template<typename Ti,
+      disableCopyMove<variant_, Ti> = 0>
+    constexpr variant_& operator=(Ti&& obj) {
+      constexpr auto newIndex = typeIndex<Ti>();
+      if (index_ == newIndex)
+        unions_.assign(std::forward<Ti>(obj));
+      else
+      {
+        destructIfValid();
+        index_ = newIndex;
+        unions_.construct(std::forward<Ti>(obj));
+      }
+      return *this;
+    }
 
     template<typename Tp>
     auto& get() {
-      constexpr size_t idx = index_in_pack<Tp, T...>::value;
+      constexpr auto idx = typeIndex<Tp>();
       if (index_ != idx)
         DUNE_THROW(Dune::Exception, "Bad variant access.");
 
@@ -260,7 +355,7 @@ namespace Impl {
 
     template<typename Tp>
     const auto& get() const {
-      constexpr size_t idx = index_in_pack<Tp, T...>::value;
+      constexpr auto idx = typeIndex<Tp>();
       if (index_ != idx)
         DUNE_THROW(Dune::Exception, "Bad variant access.");
 
@@ -283,7 +378,7 @@ namespace Impl {
         return &(get<Tp>());
     }
 
-    template<size_t N>
+    template<std::size_t N>
     auto* get_if() {
       using Tp = std::decay_t<decltype(get<N>())>;
       if (not holds_alternative<N>())
@@ -292,7 +387,7 @@ namespace Impl {
         return &(get<Tp>());
     }
 
-    template<size_t N>
+    template<std::size_t N>
     const auto* get_if() const {
       using Tp = std::decay_t<decltype(get<N>())>;
       if (not holds_alternative<N>())
@@ -301,29 +396,17 @@ namespace Impl {
         return &(get<Tp>());
     }
 
-    template<size_t N>
+    template<std::size_t N>
     auto& get() {
       if (index_ != N || index_ == invalidIndex)
         DUNE_THROW(Dune::Exception, "Bad variant access.");
-      return unions_.template getByIndex(std::integral_constant<size_t, N>());
+      return unions_.template getByIndex(std::integral_constant<std::size_t, N>());
     }
-    template<size_t N>
+    template<std::size_t N>
     const auto& get() const {
       if (index_ != N || index_ == invalidIndex)
         DUNE_THROW(Dune::Exception, "Bad variant access.");
-      return unions_.template getByIndex(std::integral_constant<size_t, N>());
-    }
-
-    template<typename Tp>
-    constexpr Tp& operator=(Tp obj) {
-      constexpr auto index = index_in_pack<Tp, T...>::value;
-      // before setting a new object into the buffer, we have to destruct the old element
-      if(not (index_ == index or index_ == invalidIndex)) {
-        unions_.resetByIndex(index_);
-      }
-      unions_.set(std::move(obj));
-      index_=index;
-      return unions_.getByIndex(std::integral_constant<size_t,index>());
+      return unions_.template getByIndex(std::integral_constant<std::size_t, N>());
     }
 
     constexpr std::size_t index() const noexcept {
@@ -335,12 +418,10 @@ namespace Impl {
     }
 
     ~variant_() {
-      if (index_ != invalidIndex) {
-        unions_.resetByIndex(index_);
-      }
+      destructIfValid();
     }
 
-    /* \brief Apply visitor to the active variant.
+    /** \brief Apply visitor to the active variant.
      *
      * visit assumes that the result of
      * func(T) has the same type for all types T
@@ -369,11 +450,11 @@ namespace Impl {
     constexpr bool holds_alternative() const {
       // I have no idea how this could be really constexpr, but for STL-conformity,
       // I'll leave the modifier there.
-      return (index_in_pack<Tp, T...>::value == index_);
+      return (typeIndex<Tp>() == index_);
     }
 
     /** \brief Check if a given type is the one that is currently active in the variant. */
-    template<size_t N>
+    template<std::size_t N>
     constexpr bool holds_alternative() const {
       // I have no idea how this could be really constexpr, but for STL-conformity,
       // I'll leave the modifier there.
@@ -381,7 +462,7 @@ namespace Impl {
     }
 
     private:
-    variant_union_<T...> unions_;
+    VariadicUnion<T...> unions_;
     std::size_t index_;
     constexpr static auto size_ = sizeof...(T);
   };
