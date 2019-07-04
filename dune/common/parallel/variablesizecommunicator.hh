@@ -392,6 +392,31 @@ public:
     MPI_Comm_free(&communicator_);
   }
 
+  /**
+   * @brief Copy-constructs a communicator
+   * @param other VariableSizeCommunicator that is copied.
+   */
+  VariableSizeCommunicator(const VariableSizeCommunicator& other) {
+    maxBufferSize_ = other.maxBufferSize_;
+    interface_ = other.interface_;
+    MPI_Comm_dup(other.communicator_, &communicator_);
+  }
+
+  /**
+   * @brief Copy-assignes a communicator
+   * @param other VariableSizeCommunicator that is copied.
+   */
+  VariableSizeCommunicator& operator=(const VariableSizeCommunicator& other) {
+    if(this == &other) // don't do anything if objects are the same
+      return *this;
+
+    maxBufferSize_ = other.maxBufferSize_;
+    interface_ = other.interface_;
+    MPI_Comm_free(&communicator_);
+    MPI_Comm_dup(other.communicator_, &communicator_);
+
+    return *this;
+  }
 
   /**
    * @brief Communicate forward.
