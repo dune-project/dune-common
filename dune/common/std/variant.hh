@@ -48,15 +48,16 @@ namespace Impl {
 
     using Buffer = std::aligned_storage_t<sizeof(T), alignof(T)>;
 
+    // We only allow construction of empty TypeStorage
+    // objects and no asignment.  Actual construction
+    // and assignment of stored values is done using
+    // special methods.
     TypeStorage() = default;
-
-    TypeStorage& operator=(TypeStorage&&) {
-      return *this;
-    }
 
     TypeStorage(const TypeStorage&) = delete;
     TypeStorage(TypeStorage&&) = delete;
     TypeStorage& operator=(const TypeStorage&) = delete;
+    TypeStorage& operator=(TypeStorage&&) = delete;
 
     void construct(const T& t) {
       ::new (&buffer_) T(t);
@@ -115,42 +116,31 @@ namespace Impl {
   union VariadicUnion<Head, Tail...>
   {
     // We only allow construction of empty VariadicUnion
-    // objects and no asignment. However, to activate
-    // it inside of a VariadicUnion we also have
-    // a move constructor, which should only be
-    // called with an empty rhs. Actual construction
+    // objects and no asignment.  Actual construction
     // and assignment of stored values is done using
     // special methods.
-    constexpr VariadicUnion() :
-      tail_()
-    {}
+    constexpr VariadicUnion() = default;
 
-    VariadicUnion& operator=(VariadicUnion&& other)
-    {
-      // This should only be called with an empty other
-      tail_ = VariadicUnion<Tail...>();
-      return *this;
-    }
-
-    constexpr VariadicUnion(VariadicUnion&& other) = delete;
-    constexpr VariadicUnion(const VariadicUnion& other) = delete;
+    VariadicUnion(const VariadicUnion& other) = delete;
+    VariadicUnion(VariadicUnion&& other) = delete;
     VariadicUnion& operator=(const VariadicUnion& other) = delete;
+    VariadicUnion& operator=(VariadicUnion&& other) = delete;
 
     // Construct stored object
     void construct(const Head& obj) {
-      head_ = TypeStorage<Head>();
+      new (&head_) TypeStorage<Head>;
       head_.construct(obj);
     }
 
     void construct(Head&& obj) {
-      head_ = TypeStorage<Head>();
+      new (&head_) TypeStorage<Head>;
       head_.construct(std::move(obj));
     }
 
     template<class Ti,
       std::enable_if_t<not std::is_same<std::decay_t<Ti>, Head>::value, int> = 0>
     void construct(Ti&& obj) {
-      tail_ = VariadicUnion<Tail...>();
+      new (&tail_) VariadicUnion<Tail...>;
       tail_.construct(std::forward<Ti>(obj));
     }
 
