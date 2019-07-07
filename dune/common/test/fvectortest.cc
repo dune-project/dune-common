@@ -8,6 +8,7 @@
 #include <iostream>
 #include <limits>
 #include <typeinfo>
+#include <type_traits>
 
 #include <dune/common/classname.hh>
 #include <dune/common/exceptions.hh>
@@ -34,6 +35,17 @@ template<class ft, class rt, int d>
 struct FieldVectorMainTestCommons
 {
   FieldVectorMainTestCommons() {
+#if __GNUC__ != 5 || defined(__clang__)
+    static_assert(
+      !std::is_trivially_copyable<ft>::value || std::is_trivially_copyable< FieldVector<ft, d> >::value,
+      "FieldVector<T, ...> must be a trivially copyable type when T is a trivial type"
+      );
+#endif
+    static_assert(
+      std::is_standard_layout< FieldVector<ft, d> >::value,
+      "FieldVector<...> must be a standard layout type"
+      );
+
     ft a = 1;
     FieldVector<ft,d> v(1);
     FieldVector<ft,d> w(2);
@@ -550,6 +562,10 @@ void fieldvectorMathclassifiersTest() {
 int main()
 {
   {
+    FieldVectorTest<int, 1>();
+    FieldVectorTest<float, 1>();
+    FieldVectorTest<double, 1>();
+    FieldVectorTest<long double, 1>();
     FieldVectorTest<int, 3>();
     FieldVectorTest<float, 3>();
     FieldVectorTest<double, 3>();
