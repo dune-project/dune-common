@@ -392,6 +392,18 @@ namespace Dune
      * log(N).
      * @param global The globally unique id of the pair.
      * @return The pair of indices for the id.
+     * @exception RangeError Thrown if the global id is not known.
+     */
+    inline bool
+    exists (const GlobalIndex& global) const;
+
+    /**
+     * @brief Find the index pair with a specific global id.
+     *
+     * This starts a binary search for the entry and therefore has complexity
+     * log(N).
+     * @param global The globally unique id of the pair.
+     * @return The pair of indices for the id.
      * @warning If the global index is not in the set a wrong or even a
      * null reference might be returned. To be save use the throwing alternative at.
      */
@@ -946,6 +958,29 @@ namespace Dune
       DUNE_THROW(RangeError, "Could not find entry of "<<global);
     else
       return localIndices_[low];
+  }
+
+  template<class TG, class TL, int N>
+  inline bool ParallelIndexSet<TG,TL,N>::exists (const TG& global) const
+  {
+    // perform a binary search
+    int low=0, high=localIndices_.size()-1, probe=-1;
+
+    while(low<high)
+    {
+      probe = (high + low) / 2;
+      if(localIndices_[probe].global() >= global)
+        high = probe;
+      else
+        low = probe+1;
+    }
+
+    if(probe==-1)
+      return false;
+
+    if( localIndices_[low].global() != global)
+      return false;
+    return true;
   }
 
   template<class TG, class TL, int N>
