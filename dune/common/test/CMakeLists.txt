@@ -412,6 +412,12 @@ dune_add_test(SOURCES varianttest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
 
+dune_add_test(SOURCES vcexpectedimpltest.cc
+              LINK_LIBRARIES dunecommon
+              LABELS quick
+              CMAKE_GUARD Vc_FOUND)
+add_dune_vc_flags(vcexpectedimpltest)
+
 install(
   FILES
   arithmetictestsuite.hh

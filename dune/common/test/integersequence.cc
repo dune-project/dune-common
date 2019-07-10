@@ -13,7 +13,7 @@ std::tuple< typename std::tuple_element< Ints, std::array< T, sizeof...( Ints ) 
 array_to_tuple_impl ( const std::array< T, sizeof...( Ints ) > &array, Dune::Std::index_sequence< Ints... > )
 {
   auto tuple = std::make_tuple( array[ Ints ]... );
-  return std::move( tuple );
+  return tuple;
 }
 
 template< class T, std::size_t N >

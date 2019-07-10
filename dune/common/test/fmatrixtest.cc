@@ -733,6 +733,17 @@ void test_interface()
   typedef CheckMatrixInterface::UseFieldVector< K2, rows, cols > Traits;
   typedef Dune::FieldMatrix< K, rows, cols > FMatrix;
 
+#if __GNUC__ != 5 || defined(__clang__)
+  static_assert(
+    !std::is_trivially_copyable<K>::value || std::is_trivially_copyable<FMatrix>::value,
+    "FieldMatrix<T, ...> must be trivally copyable type when T is trivial type"
+    );
+#endif
+  static_assert(
+    std::is_standard_layout<FMatrix>::value,
+    "FieldMatrix<...> must be a standard layout type"
+    );
+
   FMatrix m( 1 );
   checkMatrixInterface< FMatrix >( m );
   checkMatrixInterface< FMatrix, Traits >( m );

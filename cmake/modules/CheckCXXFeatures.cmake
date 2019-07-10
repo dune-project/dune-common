@@ -524,12 +524,6 @@ check_include_file_cxx(
   )
 
 check_cxx_symbol_exists(
-  "std::make_unique<int>"
-  memory
-  DUNE_HAVE_CXX_MAKE_UNIQUE
-  )
-
-check_cxx_symbol_exists(
   "std::move<std::bool_constant<true>>"
   "utility;type_traits"
   DUNE_HAVE_CXX_BOOL_CONSTANT

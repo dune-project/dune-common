@@ -231,12 +231,11 @@ namespace Dune {
     V & asImp() { return static_cast<V&>(*this); }
     const V & asImp() const { return static_cast<const V&>(*this); }
 
-    // prohibit copying
-    DenseVector ( const DenseVector & );
-
   protected:
     // construction allowed to derived classes only
-    constexpr DenseVector () {}
+    constexpr DenseVector() = default;
+    // copying only allowed by derived classes
+    DenseVector(const DenseVector&) = default;
 
   public:
     //===== type definitions and constants
@@ -272,12 +271,11 @@ namespace Dune {
     }
 
      //===== assignment from other DenseVectors
+  protected:
     //! Assignment operator for other DenseVector of same type
-    derived_type& operator= (const DenseVector<V>& other)
-    {
-      asImp() = other.asImp();
-      return asImp();
-    }
+    DenseVector& operator=(const DenseVector&) = default;
+
+  public:
 
     //! Assignment operator for other DenseVector of different type
     template <typename W>

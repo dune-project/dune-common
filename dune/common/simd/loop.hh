@@ -63,7 +63,8 @@ namespace Dune {
         SYMBOL(*this)[i];                        \
       }                                          \
       return *this;                              \
-    }
+    }                                            \
+    static_assert(true, "expecting ;")
 
     DUNE_SIMD_LOOP_PREFIX_OP(++);
     DUNE_SIMD_LOOP_PREFIX_OP(--);
@@ -77,7 +78,8 @@ namespace Dune {
         out[i] = SYMBOL((*this)[i]);             \
       }                                          \
       return out;                                \
-    }
+    }                                            \
+    static_assert(true, "expecting ;")
 
     DUNE_SIMD_LOOP_UNARY_OP(+);
     DUNE_SIMD_LOOP_UNARY_OP(-);
@@ -98,7 +100,8 @@ namespace Dune {
       LoopSIMD<T,S,A> out = *this;               \
       SYMBOL(*this);                             \
       return out;                                \
-    }
+    }                                            \
+    static_assert(true, "expecting ;")
 
    DUNE_SIMD_LOOP_POSTFIX_OP(++);
    DUNE_SIMD_LOOP_POSTFIX_OP(--);
@@ -118,7 +121,8 @@ namespace Dune {
         (*this)[i] SYMBOL v[i];                           \
       }                                                   \
       return *this;                                       \
-    }
+    }                                                     \
+    static_assert(true, "expecting ;")
 
     DUNE_SIMD_LOOP_ASSIGNMENT_OP(+=);
     DUNE_SIMD_LOOP_ASSIGNMENT_OP(-=);
@@ -159,7 +163,8 @@ namespace Dune {
       out[i] = v[i] SYMBOL w[i];                                \
     }                                                           \
     return out;                                                 \
-  }
+  }                                                             \
+  static_assert(true, "expecting ;")
 
   DUNE_SIMD_LOOP_BINARY_OP(+);
   DUNE_SIMD_LOOP_BINARY_OP(-);
@@ -191,7 +196,8 @@ namespace Dune {
       out[i] = v[i] SYMBOL w[i];                                  \
     }                                                             \
     return out;                                                   \
-  }
+  }                                                               \
+  static_assert(true, "expecting ;")
 
   DUNE_SIMD_LOOP_BITSHIFT_OP(<<);
   DUNE_SIMD_LOOP_BITSHIFT_OP(>>);
@@ -225,6 +231,7 @@ namespace Dune {
     }                                                             \
     return out;                                                   \
   }                                                               \
+  static_assert(true, "expecting ;")
 
   DUNE_SIMD_LOOP_COMPARISON_OP(<);
   DUNE_SIMD_LOOP_COMPARISON_OP(>);
@@ -260,7 +267,8 @@ namespace Dune {
         out[i] = v[i] SYMBOL w[i];                                \
       }                                                           \
     return out;                                                   \
-  }
+  }                                                               \
+  static_assert(true, "expecting ;")
 
   DUNE_SIMD_LOOP_BOOLEAN_OP(&&);
   DUNE_SIMD_LOOP_BOOLEAN_OP(||);
@@ -398,7 +406,8 @@ namespace Dune {
       out[i] = expr(v[i]);                                           \
     }                                                                \
     return out;                                                      \
-  }
+  }                                                                  \
+  static_assert(true, "expecting ;")
 
 #define DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN(expr, returnType)  \
   template<class T, std::size_t S, std::size_t A, typename Sfinae =                 \
@@ -410,7 +419,8 @@ namespace Dune {
       out[i] = expr(v[i]);                                           \
     }                                                                \
     return out;                                                      \
-  }
+  }                                                                  \
+  static_assert(true, "expecting ;")
 
   DUNE_SIMD_LOOP_CMATH_UNARY_OP(cos);
   DUNE_SIMD_LOOP_CMATH_UNARY_OP(sin);
@@ -499,7 +509,8 @@ namespace Dune {
       out[i] = expr(v[i]);                          \
     }                                               \
     return out;                                     \
-  }
+  }                                                 \
+  static_assert(true, "expecting ;")
 
   DUNE_SIMD_LOOP_STD_UNARY_OP(real);
   DUNE_SIMD_LOOP_STD_UNARY_OP(imag);
@@ -515,7 +526,8 @@ namespace Dune {
       out[i] = expr(v[i],w[i]);                               \
     }                                                         \
     return out;                                               \
-  }
+  }                                                           \
+  static_assert(true, "expecting ;")
 
   DUNE_SIMD_LOOP_STD_BINARY_OP(max);
   DUNE_SIMD_LOOP_STD_BINARY_OP(min);
