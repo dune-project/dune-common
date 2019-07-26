@@ -47,7 +47,7 @@ function(inkscape_generate_png_from_svg)
   foreach(pic ${INKSCAPE_UNPARSED_ARGUMENTS})
     string(REGEX REPLACE "\\.[a-zA-Z]+" ".svg" input ${pic})
     execute_process(
-      COMMAND ${INKSCAPE} --export-dpi=${INKSCAPE_DPI} -e ${pic} ${CMAKE_CURRENT_SOURCE_DIR}/${input}
+      COMMAND ${INKSCAPE} -z --export-dpi=${INKSCAPE_DPI} -e ${pic} ${CMAKE_CURRENT_SOURCE_DIR}/${input}
       WORKING_DIRECTORY  ${INKSCAPE_OUTPUT_DIR})
   endforeach()
 endfunction()
@@ -67,7 +67,7 @@ function(inkscape_generate_eps_from_svg)
     string(REGEX REPLACE "\\.[a-zA-Z]+" ".svg" svginput "${_pic}")
 
     add_custom_target(${input}
-      COMMAND ${INKSCAPE} --export-dpi=${INKSCAPE_DPI} -e ${input} ${CMAKE_CURRENT_SOURCE_DIR}/${svginput}
+      COMMAND ${INKSCAPE} -z --export-dpi=${INKSCAPE_DPI} -e ${input} ${CMAKE_CURRENT_SOURCE_DIR}/${svginput}
       COMMENT "Generating ${INKSCAPE_OUTPUT_DIR}/${svginput} from ${CMAKE_CURRENT_SOURCE_DIR}/${input}")
     add_custom_command(OUTPUT ${_pic}
       COMMAND ${CONVERT} ${INKSCAPE_OUTPUT_DIR}/${input} EPS:${_pic}
