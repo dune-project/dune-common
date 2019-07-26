@@ -86,6 +86,11 @@
 #    This will place symlinks to the corresponding source directory
 #    in every subdirectory of the build directory.
 #
+# .. cmake_variable:: DUNE_SYMLINK_RELATIVE_LINKS
+#
+#    If this variable is set to TRUE, the buildsystem will create relative
+#    links instead of absolute ones.
+#
 # .. cmake_function:: dune_symlink_to_source_files
 #
 #    .. cmake_param:: FILES
@@ -153,7 +158,11 @@ function(dune_symlink_to_source_tree)
     # iterate over all files, extract the directory name and write a symlink in the corresponding build directory
     foreach(f ${files})
       get_filename_component(dir ${f} DIRECTORY)
-      execute_process(COMMAND ${CMAKE_COMMAND} "-E" "create_symlink" "${CMAKE_SOURCE_DIR}/${dir}" "${CMAKE_BINARY_DIR}/${dir}/${ARG_NAME}")
+      set(_target "${CMAKE_SOURCE_DIR}/${dir}")
+      if(DUNE_SYMLINK_RELATIVE_LINKS)
+        file(RELATIVE_PATH _target "${CMAKE_BINARY_DIR}/${dir}" "${_target}")
+      endif()
+      execute_process(COMMAND ${CMAKE_COMMAND} "-E" "create_symlink" "${_target}" "${CMAKE_BINARY_DIR}/${dir}/${ARG_NAME}")
     endforeach()
   endif()
 endfunction(dune_symlink_to_source_tree)
@@ -190,7 +199,11 @@ function(dune_symlink_to_source_files)
       execute_process(COMMAND ${CMAKE_COMMAND} "-E" "copy" "${CMAKE_CURRENT_SOURCE_DIR}/${f}" "${CMAKE_CURRENT_BINARY_DIR}/${destination}${f}")
     else()
       # create symlink
-      execute_process(COMMAND ${CMAKE_COMMAND} "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/${f}" "${CMAKE_CURRENT_BINARY_DIR}/${destination}${f}")
+      set(_target "${CMAKE_CURRENT_SOURCE_DIR}/${f}")
+      if(DUNE_SYMLINK_RELATIVE_LINKS)
+       file(RELATIVE_PATH _target "${CMAKE_CURRENT_BINARY_DIR}/${destination}" "${_target}")
+      endif()
+      execute_process(COMMAND ${CMAKE_COMMAND} "-E" "create_symlink" "${_target}" "${CMAKE_CURRENT_BINARY_DIR}/${destination}${f}")
     endif()
   endforeach()
 endfunction(dune_symlink_to_source_files)
