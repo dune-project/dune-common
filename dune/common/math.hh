@@ -65,6 +65,8 @@ namespace Dune
   {};
 
 
+  namespace Common
+  {
   /** \brief Power method for integer exponents
    *
    * \note Make sure that Mantissa is a non-integer type when using negative exponents!
@@ -83,6 +85,7 @@ namespace Dune
       result = Mantissa(1)/result;
 
     return result;
+  }
   }
 
   //! Calculates the factorial of m at compile time

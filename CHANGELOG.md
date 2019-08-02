@@ -28,6 +28,8 @@
 - There is now (finally!) a method `power` in the file `math.hh` that computes
   powers with an integer exponent, and is usable in compile-time expressions.
   The use of the old power methods in `power.hh` is henceforth discouraged.
+  Note that the new `power` method is contained in the namespace `Dune::Common`,
+  to avoid name clashes with, e.g., the name `power` used in `dune-functions`.
 
 -   When run with an absolute build directory, `dunecontrol` now exposes the root build
     directory to CMake in the variable `DUNE_BUILD_DIRECTORY_ROOT_PATH`.
