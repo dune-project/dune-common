@@ -59,6 +59,9 @@
 /* does the standard library provide experimental::is_detected ? */
 #cmakedefine DUNE_HAVE_CXX_EXPERIMENTAL_IS_DETECTED 1
 
+/* does the standard library provide identity ? */
+#cmakedefine DUNE_HAVE_CXX_STD_IDENTITY 1
+
 /* Define if you have a BLAS library. */
 #cmakedefine HAVE_BLAS 1
 
