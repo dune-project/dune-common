@@ -675,7 +675,7 @@ namespace Dune
      * provides a size() method. In this case size()
      * just forwards to the underlying range's size() method.
      *
-     * Attenion: Don't select the template parameters explicitly.
+     * Attention: Don't select the template parameters explicitly.
      * They are only used to implement SFINAE.
      */
     template<class Dummy=R,
