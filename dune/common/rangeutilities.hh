@@ -680,7 +680,7 @@ namespace Dune
      */
     template<class Dummy=R,
       class = void_t<decltype(std::declval<Dummy>().size())>>
-    std::size_t size() const
+    auto size() const
     {
       return rawRange_.size();
     }
