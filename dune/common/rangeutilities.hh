@@ -604,14 +604,28 @@ namespace Dune
   public:
 
     /**
-     * \brief Iterator type
+     * \brief Const iterator type
      *
      * This inherits the iterator_category of the iterators
      * of the underlying range.
      */
     using const_iterator = Impl::TransformedRangeIterator<RawConstIterator, F>;
 
+    /**
+     * \brief Iterator type
+     *
+     * This inherits the iterator_category of the iterators
+     * of the underlying range.
+     */
     using iterator = Impl::TransformedRangeIterator<RawIterator, F>;
+
+    /**
+     * \brief Export type of the wrapped untransformed range.
+     *
+     * Notice that this will always be the raw type with references
+     * removed, even if a reference is stored.
+     */
+    using RawRange = std::remove_reference_t<R>;
 
     /**
      * \brief Construct from range and function
@@ -652,6 +666,39 @@ namespace Dune
 
     constexpr iterator end() noexcept {
       return iterator(rawRange_.end(), &f_);
+    }
+
+    /**
+     * \brief Obtain the size of the range
+     *
+     * This is only available if the underlying range
+     * provides a size() method. In this case size()
+     * just forwards to the underlying range's size() method.
+     *
+     * Attenion: Don't select the template parameters explicitly.
+     * They are only used to implement SFINAE.
+     */
+    template<class Dummy=R,
+      class = void_t<decltype(std::declval<Dummy>().size())>>
+    std::size_t size() const
+    {
+      return rawRange_.size();
+    }
+
+    /**
+     * \brief Export the wrapped untransformed range.
+     */
+    const RawRange& rawRange() const
+    {
+      return rawRange_;
+    }
+
+    /**
+     * \brief Export the wrapped untransformed range.
+     */
+    RawRange& rawRange()
+    {
+      return rawRange_;
     }
 
   private:
