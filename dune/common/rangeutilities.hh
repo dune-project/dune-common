@@ -662,7 +662,7 @@ namespace Dune
   /**
    * \brief Create a TransformedRangeView
    *
-   * \param range The range the transform
+   * \param range The range to transform
    * \param f Unary function that should the applied to the entries of the range.
    *
    * This behaves like a range providing `begin()` and `end()`.
