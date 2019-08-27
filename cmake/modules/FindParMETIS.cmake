@@ -2,7 +2,7 @@
 #
 #    Module that checks whether ParMETIS is available.
 #
-#    You may set the following variables to configure this modules behaviour:
+#    You may set the following variables to configure this modules behavior:
 #
 #    :ref:`PARMETIS_ROOT`
 #       Prefix where ParMETIS is installed.
@@ -162,10 +162,10 @@ if(PARMETIS_FOUND)
   string(REGEX MATCH "#define PARMETIS_MAJOR_VERSION[ ]+[0-9]+" versionMacroDef "${parmetisheader}")
   string(REGEX MATCH "[0-9]+" ParMetisMajorVersion "${versionMacroDef}")
   if("${versionMacroDef}" STREQUAL "" OR "${ParMetisMajorVersion}" LESS 4)
-    message(AUTHOR_WARNING "Support for METIS older than version 4.x is deprecated in Dune 2.7")
+    message(AUTHOR_WARNING "Support for ParMETIS older than version 4.x is deprecated in Dune 2.7")
   endif()
 else()
-  # log errornous result
+  # log erroneous result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
     "Determing location of ParMETIS failed:\n"
     "Include directory: ${PARMETIS_INCLUDE_DIR}\n"
