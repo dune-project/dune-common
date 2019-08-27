@@ -100,9 +100,9 @@ if(PARMETIS_FOUND)
                NO_DEFAULT_PATH)
   find_library(PARMETIS_LIBRARY parmetis)
 
-  set(_CMAKE_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES}") # do a backup
   # check ParMETIS library
   if(PARMETIS_LIBRARY)
+    set(_CMAKE_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES}") # do a backup
     set(_PARMETIS_LIBRARIES ${PARMETIS_LIBRARY} ${METIS_LIBRARIES} ${MPI_DUNE_LIBRARIES})
     set(CMAKE_REQUIRED_LIBRARIES ${_PARMETIS_LIBRARIES} ${_CMAKE_REQUIRED_LIBRARIES})
     include(CheckFunctionExists)
@@ -127,8 +127,8 @@ if(PARMETIS_FOUND)
         check_function_exists(ParMETIS_V3_PartKway HAVE_PARMETIS)
       endif()
     endif()
-  endif()
     set(CMAKE_REQUIRED_LIBRARIES "${_CMAKE_REQUIRED_LIBRARIES}") # get backup
+  endif()
 endif()
 
 # behave like a CMake module is supposed to behave
