@@ -21,7 +21,8 @@ template<typename T>
 T&& assert_count(T&& arg, int count)
 {
   std::cout << std::decay_t<T>::count << std::endl;
-  assert(std::decay_t<T>::count == count);
+  if (std::decay_t<T>::count != count)
+    std::cerr << "Passed count does not match state of the argument" << std::endl;
   return std::forward<T>(arg);
 }
 
