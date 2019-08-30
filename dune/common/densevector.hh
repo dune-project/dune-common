@@ -300,6 +300,36 @@ namespace Dune {
       return asImp()[i];
     }
 
+    //! return reference to first element
+    value_type& front()
+    {
+      return asImp()[0];
+    }
+
+    //! return reference to first element
+    const value_type& front() const
+    {
+      return asImp()[0];
+    }
+
+    //! return reference to last element
+    value_type& back()
+    {
+      return asImp()[size()-1];
+    }
+
+    //! return reference to last element
+    const value_type& back() const
+    {
+      return asImp()[size()-1];
+    }
+
+    //! checks whether the container is empty
+    bool empty() const
+    {
+      return size() == 0;
+    }
+
     //! size method
     size_type size() const
     {

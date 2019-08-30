@@ -7,6 +7,7 @@
 #include <complex>
 #include <iostream>
 #include <limits>
+#include <memory>
 #include <typeinfo>
 #include <type_traits>
 
@@ -123,6 +124,12 @@ struct FieldVectorMainTestCommons
     // test container methods
     typename FieldVector<ft,d>::size_type size = FieldVector<ft,d>::dimension;
     FVECTORTEST_ASSERT(size == w.size());
+
+    if (w.size() > 0) {
+      FVECTORTEST_ASSERT(!w.empty());
+      FVECTORTEST_ASSERT(std::addressof(w[0]) == std::addressof(w.front()));
+      FVECTORTEST_ASSERT(std::addressof(w[d-1]) == std::addressof(w.back()));
+    }
   }
 };
 
