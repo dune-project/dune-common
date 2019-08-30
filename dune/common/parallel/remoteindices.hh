@@ -402,8 +402,7 @@ namespace Dune {
 
   private:
     /** copying is forbidden. */
-    RemoteIndices(const RemoteIndices&)
-    {}
+    RemoteIndices(const RemoteIndices&) = delete;
 
     /** @brief Index set used at the source of the communication. */
     const ParallelIndexSet* source_;
