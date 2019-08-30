@@ -198,7 +198,7 @@ namespace Dune {
        This is only a Proxy class, you can't get the address of the
        object it references
      */
-    void operator & ();
+    void operator & () = delete;
 
     friend class BitSetVectorReference<block_size, Alloc>;
   };
