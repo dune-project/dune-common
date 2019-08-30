@@ -13,6 +13,8 @@ from dune.generator.exceptions import CompileError, ConfigurationError
 import dune.common.module
 
 logger = logging.getLogger(__name__)
+cxxFlags = None
+noDepCheck = False
 
 class Builder:
     def __init__(self, force=False):
@@ -38,8 +40,16 @@ class Builder:
     def compile(self, target='all'):
         cmake_command = dune.common.module.get_cmake_command()
         cmake_args = [cmake_command, "--build", self.dune_py_dir, "--target", target]
+        make_args = []
         if self.build_args is not None:
-            cmake_args += ['--'] + self.build_args
+            make_args += self.build_args
+        if cxxFlags is not None:
+            make_args += ['CXXFLAGS='+cxxFlags]
+        if noDepCheck:
+            make_args += ["-B"]
+
+        if cmake_args != []:
+            cmake_args += ["--"] + make_args
         cmake = subprocess.Popen(cmake_args, cwd=self.generated_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = cmake.communicate()
         logger.debug(buffer_to_str(stdout))

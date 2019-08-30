@@ -1,13 +1,44 @@
-import os
+import os, logging
 
+from dune.common.module import getCXXFlags
 from .exceptions import CompileError, ConfigurationError
 from .builder import Builder
+import dune.generator.builder as builderModule
+
+logger = logging.getLogger(__name__)
 
 env_force = os.environ.get('DUNE_FORCE_BUILD', 'FALSE').upper()
 if env_force in ('1', 'TRUE'):
     builder = Builder(True)
 else:
     builder = Builder(False)
+
+def setNoDependencyCheck():
+    logger.info("Switching off dependency check - modules will always be compiled")
+    builderModule.noDepCheck = True
+def setDependencyCheck():
+    logger.info("Switching on dependency check")
+    builderModule.noDepCheck = False
+def setFlags(flags="-g",noChecks=None):
+    logger.info("Using compile flags '"+flags+"'")
+    builderModule.cxxFlags = flags
+    if noChecks is True:
+        setNoDependencyCheck()
+    elif noChecks is False:
+        setDependencyCheck()
+def addToFlags(pre="",post="",noChecks=None):
+    setFlags(pre+" "+getCXXFlags()+" "+post,noChecks)
+
+def unsetFlags(noChecks=None):
+    logger.info("Using compile flags from configuration of dune-py")
+    builderModule.cxxFlags = None
+    if noChecks is True:
+        setNoDependencyCheck()
+    elif noChecks is False:
+        setDependencyCheck()
+def reset():
+    unsetFlags()
+    setDependencyCheck()
 
 class Constructor(object):
     def __init__(self, args, body=None, extra=None):
