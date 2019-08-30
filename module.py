@@ -585,3 +585,15 @@ def build_dune_py_module(dune_py_dir=None, definitions=None, build_args=None, bu
     output = configure_module(dune_py_dir, dune_py_dir, {d: prefix[d] for d in deps}, definitions)
     output += build_module(dune_py_dir, build_args)
     return output
+
+def getCXXFlags():
+    '''Return the CXXFLAGS used during configuration of dune-py.
+       These are extracted from the CMackeCache.txt file.
+    '''
+    cache = os.path.join(get_dune_py_dir(), "CMakeCache.txt")
+    matches = [match for match in [re.match('DEFAULT_CXXFLAGS:STRING=', line) for line in open(cache)] if match is not None]
+    if not matches:
+        return ''
+    if matches.__len__() > 1:
+        raise ConfigurationError("found multiple entries for CXXFLAGS in CMakeCache.txt")
+    return matches[0].string.partition('=')[2].rstrip()
