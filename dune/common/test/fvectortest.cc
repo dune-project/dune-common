@@ -128,6 +128,7 @@ struct FieldVectorMainTestCommons
     if (w.size() > 0) {
       FVECTORTEST_ASSERT(!w.empty());
       FVECTORTEST_ASSERT(std::addressof(w[0]) == std::addressof(w.front()));
+      FVECTORTEST_ASSERT(std::addressof(w[0]) == w.data());
       FVECTORTEST_ASSERT(std::addressof(w[d-1]) == std::addressof(w.back()));
     }
   }
