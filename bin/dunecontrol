@@ -1027,10 +1027,10 @@ case "$command" in
     ### DEPENDENCIES
     sort_modules $mainmod
     for mod in $SORTEDMODULES_DEPS; do
-      echo "  $mod (required)"
+      eval echo "\"  \$NAME_${mod} (required)\""
     done
     for mod in $SORTEDMODULES_SUGS; do
-      echo "  $mod (suggested)"
+      eval echo "\"  \$NAME_${mod} (suggested)\""
     done
     ;;
   unexport)
