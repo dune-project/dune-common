@@ -4,7 +4,7 @@
 #define DUNE_GMPFIELD_HH
 
 /** \file
- * \brief Wrapper for the GNU multiprecision (GMP) library
+ * \brief Wrapper for the GNU MPFR multiprecision floating point library
  */
 
 #include <iostream>
@@ -83,6 +83,7 @@ namespace Dune
 
 namespace std
 {
+  /// Specialization of numeric_limits for known precision width
   template <unsigned int precision>
   class numeric_limits<Dune::GMPField<precision>>
       : public numeric_limits<mpfr::mpreal>

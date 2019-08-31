@@ -78,6 +78,9 @@
    to facilitate activating and deactivating MPFR using compile flags. */
 #cmakedefine HAVE_MPFR ENABLE_MPFR
 
+/* Since GMP is replaced by MPFR, the following definition is DEPRECATED! */
+#cmakedefine HAVE_GMP ENABLE_MPFR
+
 /* Define if you have the GCC Quad-Precision library. The value should be ENABLE_QUADMATH
    to facilitate activating and deactivating QuadMath using compile flags. */
 #cmakedefine HAVE_QUADMATH ENABLE_QUADMATH
