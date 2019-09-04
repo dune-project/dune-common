@@ -196,6 +196,18 @@ namespace Dune {
       DUNE_ASSERT_BOUNDS(i < SIZE);
       return _data[i];
     }
+
+    //! return pointer to underlying array
+    K* data() noexcept
+    {
+      return _data.data();
+    }
+
+    //! return pointer to underlying array
+    const K* data() const noexcept
+    {
+      return _data.data();
+    }
   };
 
   /** \brief Read a FieldVector from an input stream
@@ -331,6 +343,18 @@ namespace Dune {
       DUNE_UNUSED_PARAMETER(i);
       DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
+    }
+
+    //! return pointer to underlying array
+    K* data() noexcept
+    {
+      return &_data;
+    }
+
+    //! return pointer to underlying array
+    const K* data() const noexcept
+    {
+      return &_data;
     }
 
     //===== conversion operator

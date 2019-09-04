@@ -156,6 +156,18 @@ namespace Dune {
       return _data[i];
     }
 
+    //! return pointer to underlying array
+    K* data() noexcept
+    {
+      return _data.data();
+    }
+
+    //! return pointer to underlying array
+    const K* data() const noexcept
+    {
+      return _data.data();
+    }
+
     const container_type &container () const { return _data; }
     container_type &container () { return _data; }
   };
