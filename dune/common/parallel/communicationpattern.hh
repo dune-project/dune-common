@@ -13,6 +13,8 @@ namespace Dune {
   template<class RemoteType = int, class IndexContainer = std::set<std::size_t>>
   class CommunicationPattern {
   public:
+    typedef RemoteType remote_type;
+    typedef typename IndexContainer::value_type index_type;
     typedef std::map<RemoteType, IndexContainer> MapRemoteToPattern;
 
     CommunicationPattern() = default;

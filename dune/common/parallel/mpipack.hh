@@ -18,7 +18,7 @@
 #if HAVE_MPI
 #include <mpi.h>
 #include <dune/common/parallel/mpidata.hh>
-
+#include <dune/common/parallel/mpihelper.hh>
 
 namespace Dune {
 
@@ -28,9 +28,11 @@ namespace Dune {
     MPI_Comm _comm;
 
     friend struct MPIData<MPIPack>;
+    friend struct MPIData<MPIPack&>;
     friend struct MPIData<const MPIPack>;
+    friend struct MPIData<const MPIPack&>;
   public:
-    MPIPack(Communication<MPI_Comm> comm, std::size_t size = 0)
+    MPIPack(Communication<MPI_Comm> comm = MPIHelper::getCommunication(), std::size_t size = 0)
       : _buffer(size)
       , _position(0)
       , _comm(comm)
@@ -99,6 +101,15 @@ namespace Dune {
                  mpidata.type(), _comm);
     }
 
+    template<class T>
+    void write(const T& t){
+      pack(t);
+    }
+
+    template<class T>
+    void read(T& t){
+      unpack(t);
+    }
 
     //! @copydoc pack
     template<typename T>
@@ -125,6 +136,12 @@ namespace Dune {
      */
     void enlarge(int s) {
       _buffer.resize(_buffer.size() + s);
+    }
+
+    /** @brief Reserves the required space
+     */
+    void reserve(size_t s) {
+      _buffer.resize(s);
     }
 
     /** @brief Returns the size of the internal buffer.
@@ -172,7 +189,7 @@ namespace Dune {
   };
 
   template<class P>
-  struct MPIData<P, std::enable_if_t<std::is_same<std::remove_const_t<P>, MPIPack>::value>> {
+  struct MPIData<P, std::enable_if_t<std::is_same<std::decay_t<P>, MPIPack>::value>> {
   protected:
     friend auto getMPIData<P>(P& t);
     MPIData(P& t) :
