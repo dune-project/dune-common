@@ -472,7 +472,7 @@ run_default_vcsetup() {
     if [ "x$SETUPGITHOOK" = "xyes" ]; then
       # we have to install the Git whitespace hook
 
-      # There are several options as to what the current worktreee might be backed by right now:
+      # There are several options as to what the current worktree might be backed by right now:
       # - a plain old repository    -> copy to .git/hooks
       # - a submodule repository    -> .git refers to the submodule repository inside the root $GIT_DIR
       # - a git repo worktree       -> .git refers to the worktree data inside the original $GIT_DIR and we need to find
