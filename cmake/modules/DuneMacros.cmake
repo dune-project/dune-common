@@ -1104,7 +1104,7 @@ macro(dune_add_library basename)
     endif()
 
     if(NOT DUNE_LIB_NO_EXPORT)
-      # The follwing allows for adding multiple libs in the same
+      # The following allows for adding multiple libs in the same
       # directory or below with passing the APPEND keyword.
       # If there are additional calls to dune_add_library in other
       # modules then you have to use APPEND or otherwise only the
