@@ -30,7 +30,7 @@ namespace Dune
      representing a field and compile-time given number of rows and columns.
    */
 
-  template< class K, int ROWS, int COLS > class FieldMatrix;
+  template< class K, int ROWS, int COLS = ROWS > class FieldMatrix;
 
   template< class K, int ROWS, int COLS >
   struct DenseMatVecTraits< FieldMatrix<K,ROWS,COLS> >
@@ -87,7 +87,7 @@ namespace Dune
     //===== constructors
     /** \brief Default constructor
      */
-    FieldMatrix () {}
+    constexpr FieldMatrix() = default;
 
     /** \brief Constructor initializing the matrix from a list of vector
      */
@@ -107,15 +107,20 @@ namespace Dune
 
     using Base::operator=;
 
-    // Specialisation: FieldMatrix assignment (compile-time bounds checking)
-    template <typename T, int rows, int cols>
-    FieldMatrix& operator=(FieldMatrix<T,rows,cols> const &rhs)
+    //! copy assignment operator
+    FieldMatrix& operator=(const FieldMatrix&) = default;
+
+    //! copy assignment from FieldMatrix over a different field
+    template<typename T>
+    FieldMatrix& operator=(const FieldMatrix<T, ROWS, COLS>& x)
     {
-      static_assert(rows == ROWS, "Size mismatch in matrix assignment (rows)");
-      static_assert(cols == COLS, "Size mismatch in matrix assignment (columns)");
-      _data = rhs._data;
+      _data = x._data;
       return *this;
     }
+
+    //! no copy assignment from FieldMatrix of different size
+    template <typename T, int rows, int cols>
+    FieldMatrix& operator=(FieldMatrix<T,rows,cols> const&) = delete;
 
     //! Multiplies M from the left to this matrix, this matrix is not modified
     template<int l>
@@ -226,7 +231,7 @@ namespace Dune
     //===== constructors
     /** \brief Default constructor
      */
-    FieldMatrix () {}
+    FieldMatrix() = default;
 
     /** \brief Constructor initializing the matrix from a list of vector
      */

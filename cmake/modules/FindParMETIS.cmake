@@ -106,7 +106,7 @@ if(PARMETIS_FOUND)
     set(_PARMETIS_LIBRARIES ${PARMETIS_LIBRARY} ${METIS_LIBRARIES} ${MPI_DUNE_LIBRARIES})
     set(CMAKE_REQUIRED_LIBRARIES ${_PARMETIS_LIBRARIES} ${_CMAKE_REQUIRED_LIBRARIES})
     include(CheckFunctionExists)
-    check_function_exists(parmetis_v3_partkway HAVE_PARMETIS)
+    check_function_exists(ParMETIS_V3_PartKway HAVE_PARMETIS)
     if(NOT HAVE_PARMETIS)
       # Maybe we are using static scotch libraries. In this case we need to link
       # the other scotch libraries too. Let's make a best effort.
@@ -124,7 +124,7 @@ if(PARMETIS_FOUND)
         set(CMAKE_REQUIRED_LIBRARIES ${_PARMETIS_LIBRARIES}
           ${_CMAKE_REQUIRED_LIBRARIES})
         unset(HAVE_PARMETIS CACHE)
-        check_function_exists(parmetis_v3_partkway HAVE_PARMETIS)
+        check_function_exists(ParMETIS_V3_PartKway HAVE_PARMETIS)
       endif()
     endif()
   endif()
@@ -157,6 +157,13 @@ if(PARMETIS_FOUND)
     "Determing location of ParMETIS succeeded:\n"
     "Include directory: ${PARMETIS_INCLUDE_DIRS}\n"
     "Library directory: ${PARMETIS_LIBRARIES}\n\n")
+  # deprecate versions < 4
+  file(READ "${PARMETIS_INCLUDE_DIR}/parmetis.h" parmetisheader)
+  string(REGEX MATCH "#define PARMETIS_MAJOR_VERSION[ ]+[0-9]+" versionMacroDef "${parmetisheader}")
+  string(REGEX MATCH "[0-9]+" ParMetisMajorVersion "${versionMacroDef}")
+  if("${versionMacroDef}" STREQUAL "" OR "${ParMetisMajorVersion}" LESS 4)
+    message(AUTHOR_WARNING "Support for METIS older than version 4.x is deprecated in Dune 2.7")
+  endif()
 else()
   # log errornous result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log

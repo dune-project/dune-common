@@ -1,5 +1,19 @@
 # Master (will become release 2.7)
 
+- Dune no longer applies architecture flags detected by the Vc library
+  automatically.  This applies to all targets that link to Vc explicitly (with
+  `add_dune_vc_flags()`) or implicitly (with `dune_enable_all_packages()`).
+  If you do want to make use of extended architecture features, set the
+  architecture explicitly in the compiler options, e.g. by specifying
+  ```sh
+  CMAKE_FLAGS="-DCMAKE_CXX_FLAGS=-march=native"
+  ```
+  in your opts-file.  Vc also sets compiler options to select a particular C++
+  abi (`-fabi-version` and `-fabi-compat-version`), these continue to be
+  applied automatically.
+
+  See core/dune-common!677
+
 - A helper class `TransformedRangeView` was added representing a
   transformed version of a given range using an unary transformation
   function. The transformation is done on the fly leaving the wrapped
@@ -11,10 +25,22 @@
   implementation in `dune-common` is automatically disabled, and the official
   implementation from the standard library is used instead.
 
+- There is now (finally!) a method `power` in the file `math.hh` that computes
+  powers with an integer exponent, and is usable in compile-time expressions.
+  The use of the old power methods in `power.hh` is henceforth discouraged.
+
 -   When run with an absolute build directory, `dunecontrol` now exposes the root build
     directory to CMake in the variable `DUNE_BUILD_DIRECTORY_ROOT_PATH`.
 
     See core/dune-common!542
+
+-   LaTeX documents can now be built using `latexmk` with the help of UseLatexmk.cmake's
+    `add_latex_document`. `dune_add_latex_document` will use the new way of calling
+    LaTeX when the first argument is `SOURCE`. As a side effect, in-source builds are
+    supported, too. The old function call and UseLATEX.cmake are deprecated and will be
+    removed after 2.7.
+
+    See core/dune-common!594
 
 -   The build system has learned some new tricks when creating or looking for the Python virtualenv:
     When using an absolute build directory with `dunecontrol`, the virtualenv will now be placed
@@ -27,6 +53,26 @@
     directly set the CMake variable `DUNE_PYTHON_VIRTUALENV_PATH` to the directory in which to
     create the virtualenv.
 
+-   The `dune_symlink_to_sources_files` cmake function now has a `DESTINATION` argument.
+
+- Support for older version than METIS 5.x and ParMETIS 4.x is deprecated and will be
+  removed after Dune 2.7.
+
+- The `inkscape_generate_png_from_svg` CMake function is deprecated and will be removed
+  after 2.7.
+
+- The `VectorSize` helper has been deprecated.  The `size()` method of
+  vectors should be called directly instead.
+
+-   `FieldMatrix` and `FieldVector` are now [trivially copyable types]
+    if the underlying field type is trivally copyable.
+
+    As a consequence the copy assignment operator of the `DenseVector`
+    class can no longer be used; just avoid going through
+    `DenseVector` and use the real vector type instead
+    (e.g. `FieldVector`).
+
+    [trivially copyable types]: https://en.cppreference.com/w/cpp/named_req/TriviallyCopyable
 
 # Release 2.6
 

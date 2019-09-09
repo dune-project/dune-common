@@ -5,9 +5,9 @@
 
 #include <functional>
 #include <map>
+#include <memory>
 
 #include <dune/common/exceptions.hh>
-#include <dune/common/std/memory.hh>
 #include <dune/common/typeutilities.hh>
 
 namespace Dune {
@@ -166,7 +166,7 @@ class ParameterizedObjectFactory<TypeT(Args...), KeyT>
 
             template<class Target, class... T>
             static Type create(Tag<std::unique_ptr<Target>>, PriorityTag<2>, T&& ... args) {
-                return Dune::Std::make_unique<Impl>(std::forward<T>(args)...);
+                return std::make_unique<Impl>(std::forward<T>(args)...);
             }
 
             template<class Target, class... T>

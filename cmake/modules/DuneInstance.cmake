@@ -265,7 +265,7 @@
 #       Specifically, each file specification may be of the form
 #       ``template_file_name:base_instance_file_name``, or it may be a single
 #       token not containing ``:``.  In the latter case, if that token
-#       contains a trailing ``.in``, that is removed and the result it the base
+#       contains a trailing ``.in``, that is removed and the result is the base
 #       instance file name.  The base instance file name has the ``.in``
 #       appended again to form the template file name.
 #

@@ -1,0 +1,51 @@
+// @GENERATED_SOURCE@
+
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#if !HAVE_VC
+#error Inconsistent buildsystem.  This program should not be built in the \
+  absence of Vc.
+#endif
+
+#include <cstddef>
+#include <cstdlib>
+#include <type_traits>
+
+#include <dune/common/simd/test.hh>
+#include <dune/common/simd/test/vcvectortest.hh>
+#include <dune/common/simd/vc.hh>
+#include <dune/common/typelist.hh>
+
+template<class> struct RebindAccept : std::false_type  {};
+#cmake @template@
+template<> struct RebindAccept<Vc::Vector<@SCALAR@> > : std::true_type {};
+template<> struct RebindAccept<Vc::Mask<@SCALAR@> >   : std::true_type {};
+#cmake @endtemplate@
+
+// ignore rebinds to LoopSIMD as well as Vc::SimdArray
+template<class T> struct Prune : Dune::Simd::IsLoop<T>  {};
+template<class T, std::size_t n, class V, std::size_t m>
+struct Prune<Vc::SimdArray<T, n, V, m> >     : std::true_type {};
+
+using Rebinds = Dune::TypeList<
+#cmake @template@
+  @SCALAR@,
+#cmake @endtemplate@
+  bool,
+  std::size_t>;
+
+int main()
+{
+  using Vc::Vector;
+  using Vc::SimdArray;
+
+  Dune::Simd::UnitTest test;
+
+#@template@
+  test.check<Vector<@SCALAR@>, Rebinds, Prune, RebindAccept>();
+#@endtemplate@
+
+  return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;
+}

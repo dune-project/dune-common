@@ -4,11 +4,12 @@
 #include "config.h"
 #endif
 
-#include <cassert>
 #include <complex>
 #include <iostream>
 #include <limits>
+#include <memory>
 #include <typeinfo>
+#include <type_traits>
 
 #include <dune/common/classname.hh>
 #include <dune/common/exceptions.hh>
@@ -16,6 +17,16 @@
 #include <dune/common/gmpfield.hh>
 #include <dune/common/quadmath.hh>
 #include <dune/common/typetraits.hh>
+
+struct FVectorTestException : Dune::Exception {};
+
+#define FVECTORTEST_ASSERT(EXPR)                            \
+  if(!(EXPR)) {                                             \
+    DUNE_THROW(FVectorTestException,                        \
+               "Test assertion " << #EXPR << " failed");    \
+  }                                                         \
+  static_assert(true, "enforce terminating ;")
+
 
 using Dune::FieldVector;
 using std::complex;
@@ -25,6 +36,17 @@ template<class ft, class rt, int d>
 struct FieldVectorMainTestCommons
 {
   FieldVectorMainTestCommons() {
+#if __GNUC__ != 5 || defined(__clang__)
+    static_assert(
+      !std::is_trivially_copyable<ft>::value || std::is_trivially_copyable< FieldVector<ft, d> >::value,
+      "FieldVector<T, ...> must be a trivially copyable type when T is a trivial type"
+      );
+#endif
+    static_assert(
+      std::is_standard_layout< FieldVector<ft, d> >::value,
+      "FieldVector<...> must be a standard layout type"
+      );
+
     ft a = 1;
     FieldVector<ft,d> v(1);
     FieldVector<ft,d> w(2);
@@ -97,11 +119,18 @@ struct FieldVectorMainTestCommons
       v[i] = i;
     }
     s >> w;
-    assert(v == w);
+    FVECTORTEST_ASSERT(v == w);
 
     // test container methods
     typename FieldVector<ft,d>::size_type size = FieldVector<ft,d>::dimension;
-    assert(size == w.size());
+    FVECTORTEST_ASSERT(size == w.size());
+
+    if (w.size() > 0) {
+      FVECTORTEST_ASSERT(!w.empty());
+      FVECTORTEST_ASSERT(std::addressof(w[0]) == std::addressof(w.front()));
+      FVECTORTEST_ASSERT(std::addressof(w[0]) == w.data());
+      FVECTORTEST_ASSERT(std::addressof(w[d-1]) == std::addressof(w.back()));
+    }
   }
 };
 
@@ -182,9 +211,9 @@ struct ScalarOperatorTest
     v += 1; // make sure v!=0
     v = a / v;
 
-    v -= v;
+    v -= w;
     v -= a;
-    v += v;
+    v += w;
     v += a;
     v *= a;
     a += 1; // make sure a!=0
@@ -282,41 +311,41 @@ struct DotProductTest
 
     // one^H*one should equal d
     result = dot(one,one);
-    assert(std::abs(result-length)<= myEps);
+    FVECTORTEST_ASSERT(std::abs(result-length)<= myEps);
     result = one.dot(one);
-    assert(std::abs(result-length)<= myEps);
+    FVECTORTEST_ASSERT(std::abs(result-length)<= myEps);
 
 
     // iVec^H*iVec should equal d
     result = dot(iVec,iVec);
-    assert(std::abs(result-length)<= myEps);
+    FVECTORTEST_ASSERT(std::abs(result-length)<= myEps);
     result = iVec.dot(iVec);
-    assert(std::abs(result-length)<= myEps);
+    FVECTORTEST_ASSERT(std::abs(result-length)<= myEps);
 
 
     // test that we do conjugate first argument
     result = dot(one,iVec);
-    assert(std::abs(result-length*I)<= myEps);
+    FVECTORTEST_ASSERT(std::abs(result-length*I)<= myEps);
     result = dot(one,iVec);
-    assert(std::abs(result-length*I)<= myEps);
+    FVECTORTEST_ASSERT(std::abs(result-length*I)<= myEps);
 
 
     // test that we do not conjugate second argument
     result = dot(iVec,one);
-    assert(std::abs(result+length*I)<= myEps);
+    FVECTORTEST_ASSERT(std::abs(result+length*I)<= myEps);
     result = iVec.dot(one);
-    assert(std::abs(result+length*I)<= myEps);
+    FVECTORTEST_ASSERT(std::abs(result+length*I)<= myEps);
 
 
     // test that dotT does not conjugate at all
     result = dotT(one,one) + one*one;
-    assert(std::abs(result-ct(2)*length)<= myEps);
+    FVECTORTEST_ASSERT(std::abs(result-ct(2)*length)<= myEps);
     result = dotT(iVec,iVec) + iVec*iVec;
-    assert(std::abs(result+ct(2)*length)<= myEps);
+    FVECTORTEST_ASSERT(std::abs(result+ct(2)*length)<= myEps);
     result = dotT(one,iVec) + one*iVec;
-    assert(std::abs(result-ct(2)*length*I)<= myEps);
+    FVECTORTEST_ASSERT(std::abs(result-ct(2)*length*I)<= myEps);
     result = dotT(iVec,one) + iVec*one;
-    assert(std::abs(result-ct(2)*length*I)<= myEps);
+    FVECTORTEST_ASSERT(std::abs(result-ct(2)*length*I)<= myEps);
 
   }
 };
@@ -345,13 +374,13 @@ struct DotProductTest<rt, d, false>
 
     // one^H*one should equal d
     result = dot(one,one);
-    assert(abs(result-length)<= myEps);
+    FVECTORTEST_ASSERT(abs(result-length)<= myEps);
     result = one.dot(one);
-    assert(abs(result-length)<= myEps);
+    FVECTORTEST_ASSERT(abs(result-length)<= myEps);
 
     // test that dotT does not conjugate at all
     result = dotT(one,one) + one*one;
-    assert(abs(result-rt(2)*length)<= myEps);
+    FVECTORTEST_ASSERT(abs(result-rt(2)*length)<= myEps);
   }
 };
 
@@ -479,8 +508,8 @@ test_infinity_norms()
   Dune::FieldVector<std::complex<double>, 2> v;
   v[0] = threefour;
   v[1] = eightsix;
-  assert(std::abs(v.infinity_norm()     -10.0) < 1e-10); // max(5,10)
-  assert(std::abs(v.infinity_norm_real()-14.0) < 1e-10); // max(7,14)
+  FVECTORTEST_ASSERT(std::abs(v.infinity_norm()     -10.0) < 1e-10); // max(5,10)
+  FVECTORTEST_ASSERT(std::abs(v.infinity_norm_real()-14.0) < 1e-10); // max(7,14)
 }
 
 void
@@ -488,8 +517,8 @@ test_initialisation()
 {
   DUNE_UNUSED Dune::FieldVector<int, 2> const b = { 1, 2 };
 
-  assert(b[0] == 1);
-  assert(b[1] == 2);
+  FVECTORTEST_ASSERT(b[0] == 1);
+  FVECTORTEST_ASSERT(b[1] == 2);
 }
 
 void fieldvectorMathclassifiersTest() {
@@ -540,7 +569,11 @@ void fieldvectorMathclassifiersTest() {
 
 int main()
 {
-  try {
+  {
+    FieldVectorTest<int, 1>();
+    FieldVectorTest<float, 1>();
+    FieldVectorTest<double, 1>();
+    FieldVectorTest<long double, 1>();
     FieldVectorTest<int, 3>();
     FieldVectorTest<float, 3>();
     FieldVectorTest<double, 3>();
@@ -586,11 +619,5 @@ int main()
     }
     test_infinity_norms();
     test_initialisation();
-  } catch (Dune::Exception& e) {
-    std::cerr << e << std::endl;
-    return 1;
-  } catch (...) {
-    std::cerr << "Generic exception!" << std::endl;
-    return 2;
   }
 }

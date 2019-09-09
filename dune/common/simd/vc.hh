@@ -13,6 +13,7 @@
 #include <dune/common/indices.hh>
 #include <dune/common/simd/base.hh>
 #include <dune/common/simd/defaults.hh> // for anyFalse()
+#include <dune/common/simd/loop.hh>
 #include <dune/common/typetraits.hh>
 #include <dune/common/vc.hh>
 
@@ -171,6 +172,14 @@ namespace Dune {
       template<typename T, std::size_t n, typename V, std::size_t m>
       struct IsVector<Vc::SimdArray<T, n, V, m> > : std::true_type {};
 
+      template<typename T> struct IsVectorizable : std::false_type {};
+      template<> struct IsVectorizable<double>        : std::true_type {};
+      template<> struct IsVectorizable<float>         : std::true_type {};
+      template<> struct IsVectorizable<std::int32_t>  : std::true_type {};
+      template<> struct IsVectorizable<std::uint32_t> : std::true_type {};
+      template<> struct IsVectorizable<std::int16_t>  : std::true_type {};
+      template<> struct IsVectorizable<std::uint16_t> : std::true_type {};
+
       //! A reference-like proxy for elements of random-access vectors.
       /**
        * This is necessary because Vc's lane-access operation return a proxy
@@ -180,6 +189,9 @@ namespace Dune {
        * from our own functions, such as `lane()`.  To work around this, we
        * define our own proxy class which internally holds a reference to the
        * vector and a lane index.
+       *
+       * Note: this should be unnecessary with C++17, as just returning a
+       * temporary object should not involve copying it.
        */
       template<class V>
       class Proxy
@@ -200,75 +212,21 @@ namespace Dune {
           : vec_(vec), idx_(idx)
         { }
 
+        Proxy(const Proxy&) = delete;
+        // allow move construction so we can return proxies from functions
+        Proxy(Proxy&&) = default;
+
         operator value_type() const { return vec_[idx_]; }
 
-        // postfix operators
-
-        template<class T = value_type,
-                 class = std::enable_if_t<!std::is_same<T, bool>::value> >
-        value_type operator++(int) { return vec_[idx_]++; }
-        template<class T = value_type,
-                 class = std::enable_if_t<!std::is_same<T, bool>::value> >
-        value_type operator--(int) { return vec_[idx_]--; }
-
-        // unary (prefix) operators
-        template<class T = value_type,
-                 class = std::enable_if_t<!std::is_same<T, bool>::value> >
-        Proxy &operator++() { ++(vec_[idx_]); return *this; }
-        template<class T = value_type,
-                 class = std::enable_if_t<!std::is_same<T, bool>::value> >
-        Proxy &operator--() { --(vec_[idx_]); return *this; }
-        decltype(auto) operator!() const { return !(vec_[idx_]); }
-        decltype(auto) operator+() const { return +(vec_[idx_]); }
-        decltype(auto) operator-() const { return -(vec_[idx_]); }
-        template<class T = value_type,
-                 class = std::enable_if_t<std::is_integral<T>::value> >
-        decltype(auto) operator~() const { return ~(vec_[idx_]); }
-
-        // binary operators
-#define DUNE_SIMD_VC_BINARY_OP(OP)                                      \
-        template<class T>                                               \
-        auto operator OP(T &&o) const                                   \
-          -> decltype(vec_[idx_] OP autoCopy(std::forward<T>(o)))       \
-        {                                                               \
-          return vec_[idx_] OP autoCopy(std::forward<T>(o));            \
-        }
-
-        DUNE_SIMD_VC_BINARY_OP(*);
-        DUNE_SIMD_VC_BINARY_OP(/);
-        DUNE_SIMD_VC_BINARY_OP(%);
-
-        DUNE_SIMD_VC_BINARY_OP(+);
-        DUNE_SIMD_VC_BINARY_OP(-);
-
-        DUNE_SIMD_VC_BINARY_OP(<<);
-        DUNE_SIMD_VC_BINARY_OP(>>);
-
-        DUNE_SIMD_VC_BINARY_OP(<);
-        DUNE_SIMD_VC_BINARY_OP(>);
-        DUNE_SIMD_VC_BINARY_OP(<=);
-        DUNE_SIMD_VC_BINARY_OP(>=);
-
-        DUNE_SIMD_VC_BINARY_OP(==);
-        DUNE_SIMD_VC_BINARY_OP(!=);
-
-        DUNE_SIMD_VC_BINARY_OP(&);
-        DUNE_SIMD_VC_BINARY_OP(^);
-        DUNE_SIMD_VC_BINARY_OP(|);
-
-        DUNE_SIMD_VC_BINARY_OP(&&);
-        DUNE_SIMD_VC_BINARY_OP(||);
-#undef DUNE_SIMD_VC_BINARY_OP
-
-#define DUNE_SIMD_VC_ASSIGNMENT(OP)                             \
-        template<class T>                                       \
-        auto operator OP(T &&o)                                 \
-          -> std::enable_if_t<AlwaysTrue<decltype(              \
-                   vec_[idx_] OP autoCopy(std::forward<T>(o))   \
-                 )>::value, Proxy&>                             \
-        {                                                       \
-          vec_[idx_] OP autoCopy(std::forward<T>(o));           \
-          return *this;                                         \
+        // assignment operators
+#define DUNE_SIMD_VC_ASSIGNMENT(OP)                              \
+        template<class T,                                        \
+                 class = decltype(std::declval<value_type&>() OP \
+                                  autoCopy(std::declval<T>()) )> \
+        Proxy operator OP(T &&o) &&                              \
+        {                                                        \
+          vec_[idx_] OP autoCopy(std::forward<T>(o));            \
+          return { idx_, vec_ };                                 \
         }
         DUNE_SIMD_VC_ASSIGNMENT(=);
         DUNE_SIMD_VC_ASSIGNMENT(*=);
@@ -283,37 +241,193 @@ namespace Dune {
         DUNE_SIMD_VC_ASSIGNMENT(|=);
 #undef DUNE_SIMD_VC_ASSIGNMENT
 
+        // unary (prefix) operators
+        template<class T = value_type,
+                 class = std::enable_if_t<!std::is_same<T, bool>::value> >
+        Proxy operator++() { ++(vec_[idx_]); return *this; }
+        template<class T = value_type,
+                 class = std::enable_if_t<!std::is_same<T, bool>::value> >
+        Proxy operator--() { --(vec_[idx_]); return *this; }
+
+        // postfix operators
+        template<class T = value_type,
+                 class = std::enable_if_t<!std::is_same<T, bool>::value> >
+        value_type operator++(int) { return vec_[idx_]++; }
+        template<class T = value_type,
+                 class = std::enable_if_t<!std::is_same<T, bool>::value> >
+        value_type operator--(int) { return vec_[idx_]--; }
+
+
         // swap on proxies swaps the proxied vector entries.  As such, it
         // applies to rvalues of proxies too, not just lvalues
-        template<class V1, class V2>
-        friend void swap(Proxy<V1> p1, Proxy<V2> p2);
-
-        template<class T>
-        friend void swap(Proxy p1, T& s2)
-        {
+        friend void swap(const Proxy &a, const Proxy &b) {
           // don't use swap() ourselves -- not supported by Vc 1.3.0 (but is
           // supported by Vc 1.3.2)
-          T tmp = p1.vec_[p1.idx_];
-          p1.vec_[p1.idx_] = s2;
-          s2 = tmp;
+          value_type tmp = std::move(a.vec_[a.idx_]);
+          a.vec_[a.idx_] = std::move(b.vec_[b.idx_]);
+          b.vec_[b.idx_] = std::move(tmp);
+        }
+        friend void swap(value_type &a, const Proxy &b) {
+          // don't use swap() ourselves -- not supported by Vc 1.3.0 (but is
+          // supported by Vc 1.3.2)
+          value_type tmp = std::move(a);
+          a = std::move(b.vec_[b.idx_]);
+          b.vec_[b.idx_] = std::move(tmp);
+        }
+        friend void swap(const Proxy &a, value_type &b) {
+          // don't use swap() ourselves -- not supported by Vc 1.3.0 (but is
+          // supported by Vc 1.3.2)
+          value_type tmp = std::move(a.vec_[a.idx_]);
+          a.vec_[a.idx_] = std::move(b);
+          b = std::move(tmp);
         }
 
-        template<class T>
-        friend void swap(T& s1, Proxy p2)
+        // binary operators
+        //
+        // Normally, these are provided by the conversion operator in
+        // combination with C++'s builtin binary operators.  Other classes
+        // that need to provide the binary operators themselves should either
+        // 1. deduce the "foreign" operand type independently, i.e. use
+        //      template<class... Args, class Foreign>
+        //      auto operator@(MyClass<Args...>, Foreign);
+        //    or
+        // 2. not deduce anything from the foreign argument, i.e.
+        //      template<class... Args>
+        //      auto operator@(MyClass<Args...>,
+        //                     typename MyClass<Args...>::value_type);
+        //    or
+        //      template<class T, class... Args>
+        //      struct MyClass {
+        //        auto operator@(T);
+        //      }
+        //    or
+        //      template<class T, class... Args>
+        //      struct MyClass {
+        //        friend auto operator@(MyClass, T);
+        //      }
+        //
+        // This allows either for an exact match (in the case of option 1.) or
+        // for conversions to be applied to the foreign argument (options 2.).
+        // In contrast, allowing some of the template parameters being deduced
+        // from the self argument also being deduced from the foreign argument
+        // will likely lead to ambigous deduction when the foreign argument is
+        // a proxy:
+        //   template<class T, class... Args>
+        //   auto operator@(MyClass<T, Args...>, T);
+        // One class that suffers from this problem ist std::complex.
+        //
+        // Note that option 1. is a bit dangerous, as the foreign argument is
+        // catch-all.  This seems tempting in the case of a proxy class, as
+        // the operator could just be forwarded to the proxied object with the
+        // foreign argument unchanged, immediately creating interoperability
+        // with arbitrary foreign classes.  However, if the foreign class also
+        // choses option 1., this will result in ambigous overloads, and there
+        // is no clear guide to decide which class should provide the overload
+        // and which should not.
+        //
+        // Fortunately, deferring to the conversion and the built-in operators
+        // mostly works in the case of this proxy class, because only built-in
+        // types can be proxied anyway.  Unfortunately, the Vc vectors and
+        // arrays suffer from a slightly different problem.  They chose option
+        // 1., but they can't just accept the argument type they are given,
+        // since they need to somehow implement the operation in terms of
+        // intrinsics.  So they check the argument whether it is one of the
+        // expected types, and remove the operator from the overload set if it
+        // isn't via SFINAE.  Of course, this proxy class is not one of the
+        // expected types, even though it would convert to them...
+        //
+        // So what we have to do here, unfortunately, is to provide operators
+        // for the Vc types explicitly, and hope that there won't be some Vc
+        // version that gets the operators right, thus creating ambigous
+        // overloads.  Well, if guess it will be #ifdef time if it comes to
+        // that.
+#define DUNE_SIMD_VC_BINARY(OP)                                         \
+        template<class T, class Abi>                                    \
+        friend auto operator OP(const Vc::Vector<T, Abi> &l, Proxy&& r) \
+          -> decltype(l OP std::declval<value_type>())                  \
+        {                                                               \
+          return l OP value_type(r);                                    \
+        }                                                               \
+        template<class T, class Abi>                                    \
+        auto operator OP(const Vc::Vector<T, Abi> &r) &&                \
+          -> decltype(std::declval<value_type>() OP r)                  \
+        {                                                               \
+          return value_type(*this) OP r;                                \
+        }                                                               \
+        template<class T, std::size_t n, class Vec, std::size_t m>      \
+        friend auto                                                     \
+        operator OP(const Vc::SimdArray<T, n, Vec, m> &l, Proxy&& r)    \
+          -> decltype(l OP std::declval<value_type>())                  \
+        {                                                               \
+          return l OP value_type(r);                                    \
+        }                                                               \
+        template<class T, std::size_t n, class Vec, std::size_t m>      \
+        auto operator OP(const Vc::SimdArray<T, n, Vec, m> &r) &&       \
+          -> decltype(std::declval<value_type>() OP r)                  \
+        {                                                               \
+          return value_type(*this) OP r;                                \
+        }
+
+        DUNE_SIMD_VC_BINARY(*);
+        DUNE_SIMD_VC_BINARY(/);
+        DUNE_SIMD_VC_BINARY(%);
+        DUNE_SIMD_VC_BINARY(+);
+        DUNE_SIMD_VC_BINARY(-);
+        DUNE_SIMD_VC_BINARY(<<);
+        DUNE_SIMD_VC_BINARY(>>);
+        DUNE_SIMD_VC_BINARY(&);
+        DUNE_SIMD_VC_BINARY(^);
+        DUNE_SIMD_VC_BINARY(|);
+        DUNE_SIMD_VC_BINARY(<);
+        DUNE_SIMD_VC_BINARY(>);
+        DUNE_SIMD_VC_BINARY(<=);
+        DUNE_SIMD_VC_BINARY(>=);
+        DUNE_SIMD_VC_BINARY(==);
+        DUNE_SIMD_VC_BINARY(!=);
+#undef DUNE_SIMD_VC_BINARY
+
+        // this is needed to implement broadcast construction from proxy as
+        // the unadorned assignment operator cannot be a non-member
+        template<class T, class Abi,
+                 class = std::enable_if_t<std::is_convertible<value_type,
+                                                              T>::value> >
+        operator Vc::Vector<T, Abi>() &&
         {
-          T tmp = s1;
-          s1 = p2.vec_[p2.idx_];
-          p2.vec_[p2.idx_] = tmp;
+          return value_type(*this);
         }
-      };
+        template<class T, std::size_t n, class Vec, std::size_t m,
+                 class = std::enable_if_t<std::is_convertible<value_type,
+                                                              T>::value> >
+        operator Vc::SimdArray<T, n, Vec, m>() &&
+        {
+          return value_type(*this);
+        }
 
-      template<class V1, class V2>
-      void swap(Proxy<V1> p1, Proxy<V2> p2)
-      {
-        typename V1::value_type tmp = p1.vec_[p1.idx_];
-        p1.vec_[p1.idx_] = p2.vec_[p2.idx_];
-        p2.vec_[p2.idx_] = tmp;
-      }
+#define DUNE_SIMD_VC_ASSIGN(OP)                                         \
+        template<class T, class Abi>                                    \
+        friend auto operator OP(Vc::Vector<T, Abi> &l, Proxy&& r)       \
+          -> decltype(l OP std::declval<value_type>())                  \
+        {                                                               \
+          return l OP value_type(r);                                    \
+        }
+
+        DUNE_SIMD_VC_ASSIGN(*=);
+        DUNE_SIMD_VC_ASSIGN(/=);
+        DUNE_SIMD_VC_ASSIGN(%=);
+        DUNE_SIMD_VC_ASSIGN(+=);
+        DUNE_SIMD_VC_ASSIGN(-=);
+        DUNE_SIMD_VC_ASSIGN(&=);
+        DUNE_SIMD_VC_ASSIGN(^=);
+        DUNE_SIMD_VC_ASSIGN(|=);
+        // The shift assignment would not be needed for Vc::Vector since it
+        // has overloads for `int` rhs and the proxy can convert to that --
+        // except that there is also overloads for Vector, and because of the
+        // conversion operator needed to support unadorned assignments, the
+        // proxy can convert to that, too.
+        DUNE_SIMD_VC_ASSIGN(<<=);
+        DUNE_SIMD_VC_ASSIGN(>>=);
+#undef DUNE_SIMD_VC_ASSIGN
+      };
 
     } // namespace VcImpl
 
@@ -336,46 +450,98 @@ namespace Dune {
 
       //! should have a member type \c type
       /**
-       * Implements Simd::Index
+       * Implements Simd::Rebind
+       *
+       * This specialization covers
+       * - Mask -> bool
+       * - Vector -> Scalar<Vector>
        */
       template<class V>
-      struct IndexType<V, std::enable_if_t<VcImpl::IsVector<V>::value &&
-                                           !VcImpl::IsMask<V>::value> >
+      struct RebindType<Simd::Scalar<V>, V,
+                        std::enable_if_t<VcImpl::IsVector<V>::value> >
       {
-        using type = typename V::IndexType;
+        using type = V;
       };
 
       //! should have a member type \c type
       /**
-       * Implements Simd::Index
+       * Implements Simd::Rebind
+       *
+       * This specialization covers
+       * - Vector -> bool
        */
       template<class V>
-      struct IndexType<V, std::enable_if_t<VcImpl::IsVector<V>::value &&
-                                           VcImpl::IsMask<V>::value> >
-      {
-        using type = typename V::Vector::IndexType;
-      };
-
-      //! should have a member type \c type
-      /**
-       * Implements Simd::Mask
-       */
-      template<class V>
-      struct MaskType<V, std::enable_if_t<VcImpl::IsVector<V>::value &&
-                                          !VcImpl::IsMask<V>::value> >
+      struct RebindType<bool, V, std::enable_if_t<VcImpl::IsVector<V>::value &&
+                                                  !VcImpl::IsMask<V>::value>>
       {
         using type = typename V::mask_type;
       };
 
       //! should have a member type \c type
       /**
-       * Implements Simd::Mask
+       * Implements Simd::Rebind
+       *
+       * This specialization covers
+       * - Mask -> Scalar<Mask::Vector>
        */
-      template<class V>
-      struct MaskType<V, std::enable_if_t<VcImpl::IsVector<V>::value &&
-                                          VcImpl::IsMask<V>::value> >
+      template<class M>
+      struct RebindType<Scalar<typename M::Vector>, M,
+                        std::enable_if_t<VcImpl::IsMask<M>::value>>
       {
-        using type = V;
+        using type = typename M::Vector;
+      };
+
+      //! should have a member type \c type
+      /**
+       * Implements Simd::Rebind
+       *
+       * This specialization covers
+       * - Mask -> Vc-vectorizable type except bool, Scalar<Mask::Vector>
+       */
+      template<class S, class M>
+      struct RebindType<S, M,
+                        std::enable_if_t<
+                          VcImpl::IsMask<M>::value &&
+                          VcImpl::IsVectorizable<S>::value &&
+                          !std::is_same<S, Scalar<typename M::Vector> >::value
+                          > >
+      {
+        using type = Vc::SimdArray<S, Simd::lanes<M>()>;
+      };
+
+      //! should have a member type \c type
+      /**
+       * Implements Simd::Rebind
+       *
+       * This specialization covers
+       * - Vector -> Vc-vectorizable type except bool, Scalar<Vector>
+       */
+      template<class S, class V>
+      struct RebindType<S, V,
+                        std::enable_if_t<VcImpl::IsVector<V>::value &&
+                                         !VcImpl::IsMask<V>::value &&
+                                         VcImpl::IsVectorizable<S>::value &&
+                                         !std::is_same<S, Scalar<V> >::value> >
+      {
+        using type = Vc::SimdArray<S, Simd::lanes<V>()>;
+      };
+
+      //! should have a member type \c type
+      /**
+       * Implements Simd::Rebind
+       *
+       * This specialization covers
+       * - Mask -> non-Vc-vectorizable type except bool
+       * - Vector -> non-Vc-vectorizable type except bool
+       */
+      template<class S, class V>
+      struct RebindType<S, V,
+                        std::enable_if_t<VcImpl::IsVector<V>::value &&
+                                         !VcImpl::IsVectorizable<S>::value &&
+                                         !std::is_same<S, bool>::value &&
+                                         !std::is_same<S, Scalar<V> >::value> >
+      {
+        using type = LoopSIMD<S, Simd::lanes<V>()>;
       };
 
       //! should be derived from an Dune::index_constant
@@ -423,7 +589,7 @@ namespace Dune {
       template<class V>
       V cond(ADLTag<5, VcImpl::IsVector<V>::value &&
                        !VcImpl::IsMask<V>::value>,
-             Mask<V> mask, V ifTrue, V ifFalse)
+             const Mask<V> &mask, const V &ifTrue, const V &ifFalse)
       {
         return Vc::iif(mask, ifTrue, ifFalse);
       }
@@ -434,21 +600,55 @@ namespace Dune {
        */
       template<class V>
       V cond(ADLTag<5, VcImpl::IsMask<V>::value>,
-             V mask, V ifTrue, V ifFalse)
+             const V &mask, const V &ifTrue, const V &ifFalse)
       {
         return (mask && ifTrue) || (!mask && ifFalse);
       }
 
+      //! implements binary Simd::max()
+      template<class V>
+      auto max(ADLTag<5, VcImpl::IsVector<V>::value &&
+                         !VcImpl::IsMask<V>::value>,
+               const V &v1, const V &v2)
+      {
+        return Simd::cond(v1 < v2, v2, v1);
+      }
+
+      //! implements binary Simd::max()
+      template<class M>
+      auto max(ADLTag<5, VcImpl::IsMask<M>::value>,
+               const M &m1, const M &m2)
+      {
+        return m1 || m2;
+      }
+
+      //! implements binary Simd::min()
+      template<class V>
+      auto min(ADLTag<5, VcImpl::IsVector<V>::value &&
+                         !VcImpl::IsMask<V>::value>,
+               const V &v1, const V &v2)
+      {
+        return Simd::cond(v1 < v2, v1, v2);
+      }
+
+      //! implements binary Simd::min()
+      template<class M>
+      auto min(ADLTag<5, VcImpl::IsMask<M>::value>,
+               const M &m1, const M &m2)
+      {
+        return m1 && m2;
+      }
+
       //! implements Simd::anyTrue()
       template<class M>
-      bool anyTrue (ADLTag<5, VcImpl::IsMask<M>::value>, M mask)
+      bool anyTrue (ADLTag<5, VcImpl::IsMask<M>::value>, const M &mask)
       {
         return Vc::any_of(mask);
       }
 
       //! implements Simd::allTrue()
       template<class M>
-      bool allTrue (ADLTag<5, VcImpl::IsMask<M>::value>, M mask)
+      bool allTrue (ADLTag<5, VcImpl::IsMask<M>::value>, const M &mask)
       {
         return Vc::all_of(mask);
       }
@@ -457,7 +657,7 @@ namespace Dune {
 
       //! implements Simd::allFalse()
       template<class M>
-      bool allFalse(ADLTag<5, VcImpl::IsMask<M>::value>, M mask)
+      bool allFalse(ADLTag<5, VcImpl::IsMask<M>::value>, const M &mask)
       {
         return Vc::none_of(mask);
       }
@@ -473,7 +673,7 @@ namespace Dune {
 
       //! implements Simd::maxValue()
       template<class M>
-      bool max(ADLTag<5, VcImpl::IsMask<M>::value>, M mask)
+      bool max(ADLTag<5, VcImpl::IsMask<M>::value>, const M &mask)
       {
         return Vc::any_of(mask);
       }
@@ -489,7 +689,7 @@ namespace Dune {
 
       //! implements Simd::minValue()
       template<class M>
-      bool min(ADLTag<5, VcImpl::IsMask<M>::value>, M mask)
+      bool min(ADLTag<5, VcImpl::IsMask<M>::value>, const M &mask)
       {
         return !Vc::any_of(!mask);
       }

@@ -5,8 +5,6 @@
 
 #include <memory>
 
-#include <dune/common/std/memory.hh>
-
 #include "dynmatrix.hh"
 
 /*!
@@ -46,7 +44,7 @@ namespace Dune {
 
 
         // matrix to put into dgeev
-        std::unique_ptr<double[]> matrixVector = Std::make_unique<double[]>(N*N);
+        std::unique_ptr<double[]> matrixVector = std::make_unique<double[]>(N*N);
 
         // copy matrix
         int row = 0;
@@ -59,9 +57,9 @@ namespace Dune {
         }
 
         // working memory
-        std::unique_ptr<double[]> eigenR = Std::make_unique<double[]>(N);
-        std::unique_ptr<double[]> eigenI = Std::make_unique<double[]>(N);
-        std::unique_ptr<double[]> work = Std::make_unique<double[]>(3*N);
+        std::unique_ptr<double[]> eigenR = std::make_unique<double[]>(N);
+        std::unique_ptr<double[]> eigenI = std::make_unique<double[]>(N);
+        std::unique_ptr<double[]> work = std::make_unique<double[]>(3*N);
 
         // return value information
         long int info = 0;

@@ -7,6 +7,7 @@
  * This file is an interface header and may be included without restrictions.
  */
 
+#include <algorithm>
 #include <cstddef>
 #include <iostream>
 #include <sstream>
@@ -18,8 +19,11 @@
 #include <utility>
 
 #include <dune/common/classname.hh>
+#include <dune/common/deprecated.hh>
 #include <dune/common/hybridutilities.hh>
+#include <dune/common/rangeutilities.hh>
 #include <dune/common/simd/io.hh>
+#include <dune/common/simd/loop.hh>
 #include <dune/common/simd/simd.hh>
 #include <dune/common/std/type_traits.hh>
 #include <dune/common/typelist.hh>
@@ -99,7 +103,72 @@ namespace Dune {
         Src
         >::type;
 
+      template<class Mark, class Types,
+               class Indices =
+                 std::make_index_sequence<TypeListSize<Types>::value - 1> >
+      struct RemoveEnd;
+      template<class Mark, class Types, std::size_t... I>
+      struct RemoveEnd<Mark, Types, std::index_sequence<I...>>
+      {
+        using Back = TypeListEntry_t<TypeListSize<Types>::value - 1, Types>;
+        static_assert(std::is_same<Mark, Back>::value,
+                      "TypeList not terminated by proper EndMark");
+        using type = TypeList<TypeListEntry_t<I, Types>...>;
+      };
+
+      template<class T, class List, class = void>
+      struct TypeInList;
+
+      template<class T>
+      struct TypeInList<T, TypeList<> > : std::false_type {};
+
+      template<class T, class... Rest>
+      struct TypeInList<T, TypeList<T, Rest...> > : std::true_type {};
+
+      template<class T, class Head, class... Rest>
+      struct TypeInList<T, TypeList<Head, Rest...>,
+                        std::enable_if_t<!std::is_same<T, Head>::value> > :
+        TypeInList<T, TypeList<Rest...> >::type
+      {};
+
+      template<class T>
+      struct IsLoop : std::false_type {};
+      template<class T, std::size_t S>
+      struct IsLoop<LoopSIMD<T, S> > : std::true_type {};
+
+      // used inside static_assert to trick the compiler into printing a list
+      // of types:
+      //
+      //   static_assert(debugTypes<V>(Std::bool_constant<condition>{}), "msg");
+      //
+      // Should include what the type `V` expands to in the error message.
+      template<class...>
+      constexpr bool debugTypes(std::true_type) { return true; }
+      template<class... Types>
+      DUNE_DEPRECATED
+      constexpr bool debugTypes(std::false_type) { return false; }
+
     } // namespace Impl
+
+    //! final element marker for `RebindList`
+    struct EndMark {};
+    //! A list of types with the final element removed
+    /**
+     * This is `TypeList<NoEndTypes..>`, where `NoEndTypes...` is `Types...`
+     * with the final element removed.  The final element in `Types...` is
+     * required to be `EndMark`.
+     *
+     * This is useful to construct type lists in generated source files, since
+     * you don't need to avoid generating a trailing `,` in the list -- just
+     * terminate it with `EndMark`.
+     */
+    template<class... Types>
+    using RebindList =
+      typename Impl::RemoveEnd<EndMark, TypeList<Types...> >::type;
+
+    //! check whether a type is an instance of LoopSIMD
+    template<class T>
+    using IsLoop = typename Impl::IsLoop<T>::type;
 
     class UnitTest {
       bool good_ = true;
@@ -107,9 +176,6 @@ namespace Dune {
       // records the types for which checks have started running to avoid
       // infinite recursion
       std::unordered_set<std::type_index> seen_;
-      // Same for the extra checks for mask types, although here we only avoid
-      // running checks more than once
-      std::unordered_set<std::type_index> maskSeen_;
 
       ////////////////////////////////////////////////////////////////////////
       //
@@ -137,9 +203,9 @@ namespace Dune {
 
       // "cast" into a prvalue
       template<class T>
-      static T prvalue(T t)
+      static std::decay_t<T> prvalue(T &&t)
       {
-        return t;
+        return std::forward<T>(t);
       }
 
       // whether the vector is 42 in all lanes
@@ -255,35 +321,55 @@ namespace Dune {
       }
 
       template<class V>
-      void checkIndexOf()
-      {
-        // check that the type Scalar<V> exists
-        using I = Index<V>;
-        log_ << "Index type of " << className<V>() << " is " << className<I>()
-             << std::endl;
-
-
-        static_assert(std::is_same<I, std::decay_t<I> >::value, "Index types "
-                      "must not be references, and must not include "
-                      "cv-qualifiers");
-        static_assert(lanes<V>() == lanes<I>(), "Index types must have the "
-                      "same number of lanes as the original vector types");
-
-        checkIndex<I>();
-      }
-
+      DUNE_DEPRECATED_MSG("Warning: please include bool in the Rebinds for "
+                          "simd type V, as Masks are not checked otherwise.")
+      void warnMissingMaskRebind(std::true_type) {}
       template<class V>
-      void checkMaskOf()
+      void warnMissingMaskRebind(std::false_type) {}
+
+      template<class V, class Rebinds, template<class> class RebindPrune,
+               template<class> class RebindAccept, class Recurse>
+      void checkRebindOf(Recurse recurse)
       {
-        // check that the type Scalar<V> exists
-        using M = Mask<V>;
-        log_ << "Mask type of " << className<V>() << " is " << className<M>()
-             << std::endl;
+        Hybrid::forEach(Rebinds{}, [=](auto target) {
+            using T = typename decltype(target)::type;
 
-        static_assert(lanes<V>() == lanes<M>(), "Mask types must have the "
-                      "same number of lanes as the original vector types");
+            // check that the rebound type exists
+            using W = Rebind<T, V>;
+            log_ << "Type " << className<V>() << " rebound to "
+                 << className<T>() << " is " << className<W>() << std::endl;
 
-        checkMask<M>();
+            static_assert(std::is_same<W, std::decay_t<W> >::value, "Rebound "
+                          "types must not be references, and must not include "
+                          "cv-qualifiers");
+            static_assert(lanes<V>() == lanes<W>(), "Rebound types must have "
+                          "the same number of lanes as the original vector "
+                          "types");
+            static_assert(std::is_same<T, Scalar<W> >::value, "Rebound types "
+                          "must have the bound-to scalar type");
+
+            Hybrid::ifElse(RebindPrune<W>{},
+              [this](auto id) {
+                log_ << "Pruning check of Simd type " << className<W>()
+                     << std::endl;
+              },
+              [=](auto id) {
+                using Impl::debugTypes;
+                static_assert(debugTypes<T, V, W>(id(RebindAccept<W>{})),
+                              "Rebind<T, V> is W, but that is not accepted "
+                              "by RebindAccept");
+                recurse(id(MetaType<W>{}));
+              });
+          });
+
+        static_assert(std::is_same<Rebind<Scalar<V>, V>, V>::value, "A type "
+                      "rebound to its own scalar type must be the same type "
+                      "as the original type");
+        static_assert(std::is_same<Rebind<bool, V>, Mask<V> >::value, "A type "
+                      "rebound to bool must be the mask type for that type");
+
+        constexpr bool hasBool = Impl::TypeInList<bool, Rebinds>::value;
+        warnMissingMaskRebind<V>(Std::bool_constant<!hasBool>{});
       }
 
       //////////////////////////////////////////////////////////////////////
@@ -473,6 +559,48 @@ namespace Dune {
           DUNE_SIMD_CHECK(is42(vec)); }
         // { Scalar<V> ref = 42;            V vec = {std::move(ref)};
         //   DUNE_SIMD_CHECK(is42(vec)); }
+      }
+
+      // check the implCast function
+      template<class FromV, class ToV>
+      void checkImplCast()
+      {
+        { // lvalue arg
+          FromV fromVec = make123<FromV>();
+          auto toVec = implCast<ToV>(fromVec);
+          static_assert(std::is_same<decltype(toVec), ToV>::value,
+                        "Unexpected result type for implCast<ToV>(FromV&)");
+          DUNE_SIMD_CHECK(is123(fromVec));
+          DUNE_SIMD_CHECK(is123(toVec));
+        }
+
+        { // const lvalue arg
+          const FromV fromVec = make123<FromV>();
+          auto toVec = implCast<ToV>(fromVec);
+          static_assert(std::is_same<decltype(toVec), ToV>::value,
+                        "Unexpected result type for implCast<ToV>(const "
+                        "FromV&)");
+          DUNE_SIMD_CHECK(is123(toVec));
+        }
+
+        { // rvalue arg
+          auto toVec = implCast<ToV>(make123<FromV>());
+          static_assert(std::is_same<decltype(toVec), ToV>::value,
+                        "Unexpected result type for implCast<ToV>(FromV&&)");
+          DUNE_SIMD_CHECK(is123(toVec));
+        }
+      }
+
+      // check the implCast function
+      template<class V>
+      void checkImplCast()
+      {
+        // check against LoopSIMD
+        using LoopV = Dune::LoopSIMD<Scalar<V>, lanes<V>()>;
+
+        checkImplCast<V, V>();
+        checkImplCast<V, LoopV>();
+        checkImplCast<LoopV, V>();
       }
 
       // check the broadcast function
@@ -760,7 +888,8 @@ namespace Dune {
       struct OpInfixComma {};
 
       template<class T1, class T2>
-      void checkCommaOp(std::decay_t<T1> val1, std::decay_t<T2> val2)
+      void checkCommaOp(const std::decay_t<T1> &val1,
+                        const std::decay_t<T2> &val2)
       {
 #define DUNE_SIMD_OPNAME (className<OpInfixComma(T1, T2)>())
         static_assert(std::is_same<decltype((std::declval<T1>(),
@@ -1075,7 +1204,115 @@ namespace Dune {
 
       //////////////////////////////////////////////////////////////////////
       //
-      // checks for scalar-vector binary operations
+      // checks for vector-proxy binary operations
+      //
+
+      // We check the following candidate operation
+      //
+      //   vopres = vop1 @ pop2
+      //
+      // against the reference operation
+      //
+      //   arefres[l] = aref1[l] @ sref2  foreach l
+      //
+      // v... variables are simd-vectors, a... variables are arrays,
+      // p... variables are proxies of simd-vector entries and s... variables
+      // are scalars.  The operation may modify the left operand, but if is
+      // does the modifications needs to happen in both the candidate and the
+      // reference.
+      //
+      // We do the following checks:
+      // 1.  lanes(vopres)   == lanes(vop1)
+      // 2.  lane(l, vopres) == arefres[l]  foreach l
+      // 3.  lane(l, vop1)   == aref1[l]    foreach l
+      // 4.  pop2  is never modified
+      // 5.  sref2 is never modified
+      //
+      // In fact, if the property "sref2 is never modified" is violated that
+      // means the operation is unsuitable for an automatic broadcast of the
+      // second operand and should not be checked.  There are no operations in
+      // the standard where the second operand is modified like this, but
+      // there are operations where the first operand is modified -- and this
+      // check is used for thos ops as well by exchanging the first and second
+      // argument below.
+
+      template<class V1, class V2, class Op>
+      std::enable_if_t<Std::is_detected_v<ScalarResult, Op, V1, V2> >
+      checkBinaryOpVP(MetaType<V1>, MetaType<V2>, Op op)
+      {
+        using P2 = decltype(lane(0, std::declval<V2>()));
+        using T2 = CopyRefQual<Scalar<V2>, V2>;
+#define DUNE_SIMD_OPNAME (className<Op(V1, P2)>())
+        static_assert(std::is_same<Scalar<V1>, Scalar<V2> >::value,
+                      "Internal testsystem error: called with two vector "
+                      "types whose scalar types don't match.");
+
+        // initial values
+        auto sinit2 = rightScalar<Scalar<V2>>();
+
+        // reference arguments
+        auto vref1 = leftVector<std::decay_t<V1>>();
+        auto sref2 = sinit2;
+
+        // candidate arguments
+        auto vop1 = vref1;
+        auto vop2 = std::decay_t<V2>(Scalar<V2>(0));
+        lane(0, vop2) = sref2; // pop2 is just a name for `lane(0, vop2)`
+
+        // candidate operation
+        auto &&vopres =
+          op(static_cast<V1>(vop1), lane(0, static_cast<V2>(vop2)));
+        using VR = decltype(vopres);
+
+        // check 1.  lanes(vopres)   == lanes(vop1)
+        static_assert(lanes<std::decay_t<VR> >() == lanes<std::decay_t<V1> >(),
+                      "The result must have the same number of lanes as the "
+                      "operands.");
+
+        // check 4.  pop2  is never modified
+        DUNE_SIMD_CHECK_OP(lane(0, vop2) == sinit2);
+
+        // do the reference operation, and simultaneously check 2. and 5.
+        using T = Scalar<decltype(vopres)>;
+        for(auto l : range(lanes(vopres)))
+        {
+          // check 2.  lane(l, vopres) == arefres[l]  foreach l
+          // see the lengthy comment in `checkUnaryOpV()` as to why the
+          // `static_cast` around the `op()` is necessary
+          DUNE_SIMD_CHECK_OP
+            (lane(l, vopres)
+               == static_cast<T>(op(lane(l, static_cast<V1>(vref1)),
+                                            static_cast<T2>(sref2) )));
+          // check 5.  sref2 is never modified
+          DUNE_SIMD_CHECK_OP(sref2 == sinit2);
+        }
+
+        // check 3.  lane(l, vop1)   == aref1[l]    foreach l
+        for(auto l : range(lanes(vop1)))
+          DUNE_SIMD_CHECK_OP(lane(l, vop1) == lane(l, vref1));
+
+#undef DUNE_SIMD_OPNAME
+      }
+
+      template<class V1, class V2, class Op>
+      std::enable_if_t<!Std::is_detected_v<ScalarResult, Op, V1, V2> >
+      checkBinaryOpVP(MetaType<V1>, MetaType<V2>, Op op)
+      {
+        // log_ << "No "
+        //      << className<Op(decltype(lane(0, std::declval<V1>())), T2)>()
+        //      << std::endl
+        //      << " ==> Not checking " << className<Op(V1, T2)>() << std::endl;
+      }
+
+      template<class V1, class V2>
+      void checkBinaryOpVP(MetaType<V1>, MetaType<V2>, OpInfixComma)
+      {
+        // Don't really know how to check comma operator for proxies
+      }
+
+      //////////////////////////////////////////////////////////////////////
+      //
+      // checks for (scalar/proxy)-vector binary operations
       //
 
       template<class Op>
@@ -1109,6 +1346,18 @@ namespace Dune {
 
         checkCommaOp<T1, V2>(leftScalar<std::decay_t<T1>>(),
                              rightVector<std::decay_t<V2>>());
+      }
+
+      template<class V1, class V2, class Op>
+      void checkBinaryOpPV(MetaType<V1> v1, MetaType<V2> v2, Op op)
+      {
+        checkBinaryOpVP(v2, v1, OpInfixSwappedArgs<Op>{op});
+      }
+
+      template<class V1, class V2>
+      void checkBinaryOpPV(MetaType<V1>, MetaType<V2>, OpInfixComma)
+      {
+        // Don't really know how to check comma operator for proxies
       }
 
       //////////////////////////////////////////////////////////////////////
@@ -1165,152 +1414,67 @@ namespace Dune {
           });
       }
 
-      template<class V, bool doSV, bool doVV, bool doVS, class Op>
-      void checkBinaryOp(Op op)
+      template<class V, class Checker>
+      void checkBinaryOps(Checker checker)
       {
-        checkBinaryRefQual<Scalar<V>, V, doSV>
-          ([=](auto t1, auto t2) { this->checkBinaryOpSV(t1, t2, op); });
-        checkBinaryRefQual<V, V, doVV>
-          ([=](auto t1, auto t2) { this->checkBinaryOpVV(t1, t2, op); });
-        checkBinaryRefQual<V, Scalar<V>, doVS>
-          ([=](auto t1, auto t2) { this->checkBinaryOpVS(t1, t2, op); });
+        using Std::bool_constant;
 
-        // cross-check
-        checkBinaryRefQual<Scalar<V>, V, doSV && doVV>
-          ([=](auto t1, auto t2) {
-            this->checkBinaryOpVVAgainstSV(t1, t2, op);
-          });
-        checkBinaryRefQual<V, Scalar<V>, doVV && doVS>
-          ([=](auto t1, auto t2) {
-            this->checkBinaryOpVVAgainstVS(t1, t2, op);
-          });
+        constexpr bool isMask = std::is_same<Scalar<V>, bool>::value;
+
+        constexpr bool do_   = false;
+        constexpr bool do_SV = true;
+        constexpr bool do_VV = true;
+        constexpr bool do_VS = true;
+
+#define DUNE_SIMD_DO(M1, M2, M3, V1, V2, V3, NAME)              \
+        checker(bool_constant<isMask ? do_##M1 : do_##V1>{},    \
+                bool_constant<isMask ? do_##M2 : do_##V2>{},    \
+                bool_constant<isMask ? do_##M3 : do_##V3>{},    \
+                Op##NAME{})
+
+        //             (Mask      , Vector    , Name                 );
+
+        DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixMul             );
+        DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixDiv             );
+        DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixRemainder       );
+
+        DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixPlus            );
+        DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixMinus           );
+
+        DUNE_SIMD_DO(  ,   ,   ,   , VV, VS, InfixLeftShift       );
+        DUNE_SIMD_DO(  ,   ,   ,   , VV, VS, InfixRightShift      );
+
+        DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixLess            );
+        DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixGreater         );
+        DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixLessEqual       );
+        DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixGreaterEqual    );
+
+        DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixEqual           );
+        DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixNotEqual        );
+
+        DUNE_SIMD_DO(  , VV,   , SV, VV, VS, InfixBitAnd          );
+        DUNE_SIMD_DO(  , VV,   , SV, VV, VS, InfixBitXor          );
+        DUNE_SIMD_DO(  , VV,   , SV, VV, VS, InfixBitOr           );
+
+        DUNE_SIMD_DO(SV, VV, VS, SV, VV, VS, InfixLogicAnd        );
+        DUNE_SIMD_DO(SV, VV, VS, SV, VV, VS, InfixLogicOr         );
+
+        DUNE_SIMD_DO(  , VV,   ,   , VV, VS, InfixAssign          );
+        DUNE_SIMD_DO(  ,   ,   ,   , VV, VS, InfixAssignMul       );
+        DUNE_SIMD_DO(  ,   ,   ,   , VV, VS, InfixAssignDiv       );
+        DUNE_SIMD_DO(  ,   ,   ,   , VV, VS, InfixAssignRemainder );
+        DUNE_SIMD_DO(  ,   ,   ,   , VV, VS, InfixAssignPlus      );
+        DUNE_SIMD_DO(  ,   ,   ,   , VV, VS, InfixAssignMinus     );
+        DUNE_SIMD_DO(  ,   ,   ,   , VV, VS, InfixAssignLeftShift );
+        DUNE_SIMD_DO(  ,   ,   ,   , VV, VS, InfixAssignRightShift);
+        DUNE_SIMD_DO(  , VV,   ,   , VV, VS, InfixAssignAnd       );
+        DUNE_SIMD_DO(  , VV,   ,   , VV, VS, InfixAssignXor       );
+        DUNE_SIMD_DO(  , VV,   ,   , VV, VS, InfixAssignOr        );
+
+        DUNE_SIMD_DO(SV, VV, VS, SV,   , VS, InfixComma           );
+
+#undef DUNE_SIMD_DO
       }
-
-      static constexpr bool doCombo   = false;
-      static constexpr bool doComboSV = true;
-      static constexpr bool doComboVV = true;
-      static constexpr bool doComboVS = true;
-
-#define DUNE_SIMD_BINARY_OPCHECK(C1, C2, C3, NAME)      \
-      checkBinaryOp<V, doCombo##C1, doCombo##C2, doCombo##C3>(Op##NAME{})
-
-      template<class V>
-      void checkVectorOps()
-      {
-        // postfix
-        // checkUnaryOpsV<V>(OpPostfixDecrement{});
-        // checkUnaryOpsV<V>(OpPostfixIncrement{});
-
-        // prefix
-        // checkUnaryOpsV<V>(OpPrefixDecrement{});
-        // checkUnaryOpsV<V>(OpPrefixIncrement{});
-
-        // checkUnaryOpsV<V>(OpPrefixPlus{});
-        checkUnaryOpsV<V>(OpPrefixMinus{});
-        checkUnaryOpsV<V>(OpPrefixLogicNot{});
-        checkUnaryOpsV<V>(OpPrefixBitNot{});
-
-        // binary
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixMul             );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixDiv             );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixRemainder       );
-
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixPlus            );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixMinus           );
-
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixLeftShift       );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixRightShift      );
-
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixLess            );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixGreater         );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixLessEqual       );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixGreaterEqual    );
-
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixEqual           );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixNotEqual        );
-
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixBitAnd          );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixBitXor          );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixBitOr           );
-
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixLogicAnd        );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixLogicOr         );
-
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssign          );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignMul       );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignDiv       );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignRemainder );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignPlus      );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignMinus     );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignLeftShift );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignRightShift);
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignAnd       );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignXor       );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV, VS, InfixAssignOr        );
-
-        DUNE_SIMD_BINARY_OPCHECK(SV,   , VS, InfixComma           );
-      }
-
-      template<class V>
-      void checkMaskOps()
-      {
-        // postfix
-        // checkUnaryOpsV<V>(OpPostfixDecrement{});
-        // clang deprecation warning if bool++ is tested
-        // checkUnaryOpsV<V>(OpPostfixIncrement{});
-
-        // prefix
-        // checkUnaryOpsV<V>(OpPrefixDecrement{});
-        // clang deprecation warning if ++bool is tested
-        // checkUnaryOpsV<V>(OpPrefixIncrement{});
-
-        // checkUnaryOpsV<V>(OpPrefixPlus{});
-        // checkUnaryOpsV<V>(OpPrefixMinus{});
-        checkUnaryOpsV<V>(OpPrefixLogicNot{});
-        // checkUnaryOpsV<V>(OpPrefixBitNot{});
-
-        // binary
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixMul             );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixDiv             );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixRemainder       );
-
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixPlus            );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixMinus           );
-
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixLeftShift       );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixRightShift      );
-
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixLess            );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixGreater         );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixLessEqual       );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixGreaterEqual    );
-
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixEqual           );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixNotEqual        );
-
-        DUNE_SIMD_BINARY_OPCHECK(  , VV,   , InfixBitAnd          );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV,   , InfixBitXor          );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV,   , InfixBitOr           );
-
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixLogicAnd        );
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixLogicOr         );
-
-        DUNE_SIMD_BINARY_OPCHECK(  , VV,   , InfixAssign          );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixAssignMul       );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixAssignDiv       );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixAssignRemainder );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixAssignPlus      );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixAssignMinus     );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixAssignLeftShift );
-        DUNE_SIMD_BINARY_OPCHECK(  ,   ,   , InfixAssignRightShift);
-        DUNE_SIMD_BINARY_OPCHECK(  , VV,   , InfixAssignAnd       );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV,   , InfixAssignXor       );
-        DUNE_SIMD_BINARY_OPCHECK(  , VV,   , InfixAssignOr        );
-
-        DUNE_SIMD_BINARY_OPCHECK(SV, VV, VS, InfixComma           );
-      }
-
-#undef DUNE_SIMD_BINARY_OPCHECK
 
       //////////////////////////////////////////////////////////////////////
       //
@@ -1454,12 +1618,40 @@ namespace Dune {
       }
 
       template<class V>
+      void checkBoolCond()
+      {
+        static_assert
+          (std::is_same<decltype(cond(std::declval<bool>(), std::declval<V>(),
+                                      std::declval<V>())), V>::value,
+           "The result of cond(bool, V, V) should have exactly the type V");
+
+        static_assert
+          (std::is_same<decltype(cond(std::declval<const bool&>(),
+                                      std::declval<const V&>(),
+                                      std::declval<const V&>())), V>::value,
+           "The result of cond(const bool&, const V&, const V&) should have "
+           "exactly the type V");
+
+        static_assert
+          (std::is_same<decltype(cond(std::declval<bool&>(),
+                                      std::declval<V&>(),
+                                      std::declval<V&>())), V>::value,
+           "The result of cond(bool&, V&, V&) should have exactly the type V");
+
+        V vec1 = leftVector<V>();
+        V vec2 = rightVector<V>();
+
+        DUNE_SIMD_CHECK(allTrue(cond(true,  vec1, vec2) == vec1));
+        DUNE_SIMD_CHECK(allTrue(cond(false, vec1, vec2) == vec2));
+      }
+
+      template<class V>
       std::enable_if_t<!Impl::LessThenComparable<Scalar<V> >::value>
-      checkMinMax() {}
+      checkHorizontalMinMax() {}
 
       template<class V>
       std::enable_if_t<Impl::LessThenComparable<Scalar<V> >::value>
-      checkMinMax()
+      checkHorizontalMinMax()
       {
         static_assert
           (std::is_same<decltype(max(std::declval<V>())), Scalar<V> >::value,
@@ -1481,6 +1673,49 @@ namespace Dune {
 
         DUNE_SIMD_CHECK(max(vec1) == Scalar<V>(lanes(vec1)));
         DUNE_SIMD_CHECK(min(vec1) == Scalar<V>(1));
+      }
+
+      template<class V>
+      std::enable_if_t<!Impl::LessThenComparable<Scalar<V> >::value>
+      checkBinaryMinMax() {}
+
+      template<class V>
+      std::enable_if_t<Impl::LessThenComparable<Scalar<V> >::value>
+      checkBinaryMinMax()
+      {
+        using std::max;
+        using std::min;
+
+        static_assert
+          (std::is_same<decltype(Simd::max(std::declval<V>(),
+                                           std::declval<V>())), V>::value,
+           "The result of Simd::max(V, V) should be exactly V");
+        static_assert
+          (std::is_same<decltype(Simd::min(std::declval<V>(),
+                                           std::declval<V>())), V>::value,
+           "The result of Simd::min(V, V) should be exactly V");
+
+        static_assert
+          (std::is_same<decltype(Simd::max(std::declval<V&>(),
+                                           std::declval<V&>())), V>::value,
+           "The result of Simd::max(V&, V&) should be exactly V");
+        static_assert
+          (std::is_same<decltype(Simd::min(std::declval<V&>(),
+                                           std::declval<V&>())), V>::value,
+           "The result of Simd::min(V&, V&) should be exactly V");
+
+        const V arg1 = leftVector<V>();
+        const V arg2 = rightVector<V>();
+
+        V maxExp(Scalar<V>(0)), minExp(Scalar<V>(0));
+        for(auto l : range(lanes<V>()))
+        {
+          lane(l, maxExp) = max(lane(l, arg1), lane(l, arg2));
+          lane(l, minExp) = min(lane(l, arg1), lane(l, arg2));
+        }
+
+        DUNE_SIMD_CHECK(allTrue(maxExp == Simd::max(arg1, arg2)));
+        DUNE_SIMD_CHECK(allTrue(minExp == Simd::min(arg1, arg2)));
       }
 
       template<class V>
@@ -1521,11 +1756,108 @@ namespace Dune {
 #undef DUNE_SIMD_CHECK
 
     public:
+      /**
+       * @name Test instantiation points
+       *
+       * These functions should not be called directly, but serve as explicit
+       * instantiation points to keep memory usage bounded during compilation.
+       * There should be an explicit instantiation declaration (`extern
+       * template ...`) in the the overall header of your unit test for each
+       * type that is tested (possibly implicitly tested due to recursive
+       * checks).  Similarly, there should be an explicit instantiation
+       * definition (`template ...`) in a separate translation unit.  Ideally,
+       * there should be one translation unit per explicit instantiation
+       * definition, otherwise each of them will contribute to the overall
+       * memory used during compilation.
+       *
+       * If explicitly instatiating the top-level instantiation point
+       * `checkType()` is not sufficient, there are further instantiation
+       * points for improved granularity.  The hierarchy of instantiation
+       * points is:
+       * - `checkType()`
+       *   - `checkNonOps()`
+       *   - `checkUnaryOps()`
+       *   - `checkBinaryOps()`
+       *     - `checkBinaryOpsVectorVector()`
+       *     - `checkBinaryOpsScalarVector()`
+       *     - `checkBinaryOpsVectorScalar()`
+       *     - `checkBinaryOpsProxyVector()`
+       *     - `checkBinaryOpsVectorProxy()`
+       *
+       * Each instation point in the hierarchy implicitly instantiates its
+       * descendents, unless there are explicit instantiation declarations for
+       * them.  However, for future-proofing it can make sense to explicitly
+       * instantiate nodes in the hierachy even if all their children are
+       * already explicitly instantiated.  This will limit the impact of
+       * instantiation points added in the future.
+       *
+       * @{
+       */
+      template<class V> void checkType();
+      template<class V> void checkNonOps();
+      template<class V> void checkUnaryOps();
+      template<class V> void checkBinaryOps();
+      template<class V> void checkBinaryOpsVectorVector();
+      template<class V> void checkBinaryOpsScalarVector();
+      template<class V> void checkBinaryOpsVectorScalar();
+      template<class V> void checkBinaryOpsProxyVector();
+      template<class V> void checkBinaryOpsVectorProxy();
+      /** @} Group Test instantiation points */
+
       //! run unit tests for simd vector type V
       /**
-       * This function will also ensure that \c checkVector<Index<V>>() and \c
-       * checkMask<Mask<V>>() are run.  No test will be run twice for a given
-       * type.
+       * This function will also ensure that `check<W>()` is run, for any type
+       * `W = Rebind<R, V>` where `R` is in `Rebinds`, and
+       * `RebindPrune<W>::value == false`.  No test will be run twice for a
+       * given type.
+       *
+       * If the result of `Rebind` is not pruned by `RebindPrune`, it will be
+       * passed to `RebindAccept`.  If that rejects the type, a static
+       * assertion will trigger.
+       *
+       * \tparam Rebinds      A list of types, usually in the form of a
+       *                      `TypeList`.
+       * \tparam RebindPrune  A type predicate determining whether to run
+       *                      `check()` for types obtained from `Rebinds`.
+       * \tparam RebindAccept A type predicate determining whether a type is
+       *                      acceptable as the result of a `Rebind`.
+       */
+      template<class V, class Rebinds,
+               template<class> class RebindPrune = IsLoop,
+               template<class> class RebindAccept = Std::to_true_type>
+      void check() {
+        // check whether the test for this type already started
+        if(seen_.emplace(typeid (V)).second == false)
+        {
+          // type already seen, nothing to do
+          return;
+        }
+
+        // do these first so everything that appears after "Checking SIMD type
+        // ..." really pertains to that type
+        auto recurse = [this](auto w) {
+          using W = typename decltype(w)::type;
+          this->template check<W, Rebinds, RebindPrune, RebindAccept>();
+        };
+        checkRebindOf<V, Rebinds, RebindPrune, RebindAccept>(recurse);
+
+        checkType<V>();
+      }
+
+      //! run unit tests for simd vector type V
+      /**
+       * This function will also ensure that `checkVector<Rebind<R, V>>()`
+       * (for any `R` in `Rebinds`) is run.  No test will be run twice for a
+       * given type.
+       *
+       * \tparam Rebinds A list of types, usually in the form of a `TypeList`.
+       * \tparam Prune   A type predicate determining whether to run
+       *                 `checkVector()` for types obtained from `Rebinds`.
+       *
+       * \deperecated Rather than calling this function, call `check()` with
+       *              the same template arguments.  Rather than explicitly
+       *              instantiating this function as described below,
+       *              explicitly instantiate `checkType()` and friends.
        *
        * \note As an implementor of a unit test, you are encouraged to
        *       explicitly instantiate this function in seperate compilation
@@ -1553,44 +1885,10 @@ namespace Dune {
        * __attribute__((__noinline__)), which had no effect on memory
        * consumption.)
        */
-      template<class V>
+      template<class V, class Rebinds, template<class> class Prune = IsLoop>
+      DUNE_DEPRECATED_MSG("Call check() instead, and explicitly instantiate "
+                          "checkType() and friends instead")
       void checkVector();
-
-      //! run unit tests for simd mask type V
-      /**
-       * This function will also ensure that \c checkVector<Index<V>>() is
-       * run.  No test will be run twice for a given type.
-       *
-       * \note As an implementor of a unit test, you are encouraged to
-       *       explicitly instantiate this function in seperate compilation
-       *       units for the types you are testing.  Look at `standardtest.cc`
-       *       for how to do this.  See \c checkVector() for background on
-       *       this.
-       */
-      template<class V>
-      void checkMask();
-
-      //! run unit tests for simd index type V
-      /**
-       * This function will also ensure that `Index<V>` is the same type as
-       * `V` and run `checkMask<Mask<V>>()`.  No test will be run twice for a
-       * given type.
-       *
-       * \note In the past, it was recommended to explicitly instanciate this
-       *       function in a seperate translation unit.  This should no longer
-       *       be necessary, as it is now basically only calls `checkVector()`
-       *       for the index type.
-       */
-      template<class I>
-      void checkIndex()
-      {
-        static_assert(std::is_same<I, Index<I> >::value,
-                      "Index types must be their own index type");
-        static_assert(std::is_integral<Scalar<I> >::value,
-                      "Index types scalar must be integral");
-
-        checkVector<I>();
-      }
 
       //! whether all tests succeeded
       bool good() const
@@ -1600,15 +1898,166 @@ namespace Dune {
 
     }; // class UnitTest
 
-    // Needs to be defined outside of the class to bring memory consumption
-    // during compilation down to an acceptable level.
-    template<class V>
-    void UnitTest::checkVector()
+    template<class V> void UnitTest::checkType()
     {
-      static_assert(std::is_same<V, std::decay_t<V> >::value, "Vector types "
+      static_assert(std::is_same<V, std::decay_t<V> >::value, "Simd types "
                     "must not be references, and must not include "
                     "cv-qualifiers");
 
+      log_ << "Checking SIMD type " << className<V>() << std::endl;
+
+      checkNonOps<V>();
+      checkUnaryOps<V>();
+      checkBinaryOps<V>();
+    }
+    template<class V> void UnitTest::checkNonOps()
+    {
+      constexpr auto isMask = typename std::is_same<Scalar<V>, bool>::type{};
+
+      checkLanes<V>();
+      checkScalar<V>();
+
+      checkDefaultConstruct<V>();
+      checkLane<V>();
+      checkCopyMoveConstruct<V>();
+      checkImplCast<V>();
+      checkBroadcast<V>();
+      Hybrid::ifElse(isMask,
+        [this](auto id) { id(this)->template checkBroadcastMaskConstruct<V>();   },
+        [this](auto id) { id(this)->template checkBroadcastVectorConstruct<V>(); });
+      checkBracedAssign<V>();
+      checkBracedBroadcastAssign<V>();
+
+      checkAutoCopy<V>();
+      checkCond<V>();
+      checkBoolCond<V>();
+
+      Hybrid::ifElse(isMask,
+        [this](auto id) { id(this)->template checkBoolReductions<V>(); });
+      // checkBoolReductions() is not applicable for non-masks
+
+      checkHorizontalMinMax<V>();
+      checkBinaryMinMax<V>();
+      checkIO<V>();
+    }
+    template<class V> void UnitTest::checkUnaryOps()
+    {
+      auto checkMask = [=](auto id) {
+        auto check = [=](auto op) {
+          id(this)->template checkUnaryOpsV<V>(op);
+        };
+
+        // postfix
+        // check(OpPostfixDecrement{});
+        // clang deprecation warning if bool++ is tested
+        // check(OpPostfixIncrement{});
+
+        // prefix
+        // check(OpPrefixDecrement{});
+        // clang deprecation warning if ++bool is tested
+        // check(OpPrefixIncrement{});
+
+        // check(OpPrefixPlus{});
+        // check(OpPrefixMinus{});
+        check(OpPrefixLogicNot{});
+        // check(OpPrefixBitNot{});
+      };
+
+      auto checkVector = [=](auto id) {
+        auto check = [=](auto op) {
+          id(this)->template checkUnaryOpsV<V>(op);
+        };
+
+        // postfix
+        // check(OpPostfixDecrement{});
+        // check(OpPostfixIncrement{});
+
+        // prefix
+        // check(OpPrefixDecrement{});
+        // check(OpPrefixIncrement{});
+
+        // check(OpPrefixPlus{});
+        check(OpPrefixMinus{});
+        check(OpPrefixLogicNot{});
+        check(OpPrefixBitNot{});
+      };
+
+      Hybrid::ifElse(std::is_same<Scalar<V>, bool>{}, checkMask, checkVector);
+    }
+    template<class V> void UnitTest::checkBinaryOps()
+    {
+      checkBinaryOpsVectorVector<V>();
+      checkBinaryOpsScalarVector<V>();
+      checkBinaryOpsVectorScalar<V>();
+      checkBinaryOpsProxyVector<V>();
+      checkBinaryOpsVectorProxy<V>();
+    }
+    template<class V> void UnitTest::checkBinaryOpsVectorVector()
+    {
+      auto checker = [=](auto doSV, auto doVV, auto doVS, auto op) {
+        auto check = [=](auto t1, auto t2) {
+          this->checkBinaryOpVV(t1, t2, op);
+        };
+        this->checkBinaryRefQual<V, V, doVV>(check);
+      };
+      checkBinaryOps<V>(checker);
+    }
+    template<class V> void UnitTest::checkBinaryOpsScalarVector()
+    {
+      auto checker = [=](auto doSV, auto doVV, auto doVS, auto op) {
+        auto check = [=](auto t1, auto t2) {
+          this->checkBinaryOpSV(t1, t2, op);
+        };
+        this->checkBinaryRefQual<Scalar<V>, V, doSV>(check);
+
+        auto crossCheck = [=](auto t1, auto t2) {
+          this->checkBinaryOpVVAgainstSV(t1, t2, op);
+        };
+        this->checkBinaryRefQual<Scalar<V>, V, doSV && doVV>(crossCheck);
+      };
+      checkBinaryOps<V>(checker);
+    }
+    template<class V> void UnitTest::checkBinaryOpsVectorScalar()
+    {
+      auto checker = [=](auto doSV, auto doVV, auto doVS, auto op) {
+        auto check = [=](auto t1, auto t2) {
+          this->checkBinaryOpVS(t1, t2, op);
+        };
+        this->checkBinaryRefQual<V, Scalar<V>, doVS>(check);
+
+        auto crossCheck = [=](auto t1, auto t2) {
+          this->checkBinaryOpVVAgainstVS(t1, t2, op);
+        };
+        this->checkBinaryRefQual<V, Scalar<V>, doVV && doVS>(crossCheck);
+      };
+      checkBinaryOps<V>(checker);
+    }
+    template<class V> void UnitTest::checkBinaryOpsProxyVector()
+    {
+      auto checker = [=](auto doSV, auto doVV, auto doVS, auto op) {
+        auto check = [=](auto t1, auto t2) {
+          this->checkBinaryOpPV(t1, t2, op);
+        };
+        this->checkBinaryRefQual<V, V, doSV>(check);
+      };
+      checkBinaryOps<V>(checker);
+    }
+    template<class V> void UnitTest::checkBinaryOpsVectorProxy()
+    {
+      auto checker = [=](auto doSV, auto doVV, auto doVS, auto op) {
+        auto check = [=](auto t1, auto t2) {
+          this->checkBinaryOpVP(t1, t2, op);
+        };
+        this->checkBinaryRefQual<V, V, doVS>(check);
+      };
+      checkBinaryOps<V>(checker);
+    }
+
+    // Needs to be defined outside of the class to bring memory consumption
+    // during compilation down to an acceptable level.
+    template<class V, class Rebinds, template<class> class Prune>
+    void UnitTest::checkVector()
+    {
       // check whether the test for this type already started
       if(seen_.emplace(typeid (V)).second == false)
       {
@@ -1618,77 +2067,13 @@ namespace Dune {
 
       // do these first so everything that appears after "Checking SIMD type
       // ..." really pertains to that type
-      checkIndexOf<V>();
-      checkMaskOf<V>();
+      auto recurse = [this](auto w) {
+        using W = typename decltype(w)::type;
+        this->template checkVector<W, Rebinds, Prune>();
+      };
+      checkRebindOf<V, Rebinds, Prune, Std::to_true_type>(recurse);
 
-      log_ << "Checking SIMD vector type " << className<V>() << std::endl;
-
-      checkLanes<V>();
-      checkScalar<V>();
-
-      checkDefaultConstruct<V>();
-      checkLane<V>();
-      checkCopyMoveConstruct<V>();
-      checkBroadcast<V>();
-      checkBroadcastVectorConstruct<V>();
-      checkBracedAssign<V>();
-      checkBracedBroadcastAssign<V>();
-
-      checkVectorOps<V>();
-
-      checkAutoCopy<V>();
-      checkCond<V>();
-
-      // checkBoolReductions<V>(); // not applicable
-
-      checkMinMax<V>();
-      checkIO<V>();
-    }
-
-    template<class M>
-    void UnitTest::checkMask()
-    {
-      static_assert(std::is_same<M, std::decay_t<M> >::value, "Mask types "
-                    "must not be references, and must not include "
-                    "cv-qualifiers");
-
-      static_assert(std::is_same<M, Mask<M> >::value,
-                    "Mask must be their own mask types.");
-
-      // check whether the test for this type already started
-      if(maskSeen_.emplace(typeid (M)).second == false)
-      {
-        // type already seen, nothing to do
-        return;
-      }
-
-      // do these first so everything that appears after "Checking SIMD type
-      // ..." really pertains to that type
-      checkIndexOf<M>();
-      // checkMaskOf<M>(); // not applicable
-
-      log_ << "Checking SIMD mask type " << className<M>() << std::endl;
-
-      checkLanes<M>();
-      checkScalar<M>();
-
-      checkDefaultConstruct<M>();
-      checkLane<M>();
-      checkCopyMoveConstruct<M>();
-      checkBroadcast<M>();
-      checkBroadcastMaskConstruct<M>();
-      checkBracedAssign<M>();
-      checkBracedBroadcastAssign<M>();
-
-      checkMaskOps<M>();
-
-      checkAutoCopy<M>();
-      checkCond<M>();
-
-      checkBoolReductions<M>();
-
-      checkMinMax<M>();
-      checkIO<M>();
+      checkType<V>();
     }
 
   } // namespace Simd

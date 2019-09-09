@@ -408,6 +408,10 @@ function(dune_add_test)
       if(ADDTEST_EXPECT_COMPILE_FAIL OR ADDTEST_EXPECT_FAIL)
         set_tests_properties(${ACTUAL_NAME} PROPERTIES WILL_FAIL true)
       endif()
+      # When using ninja, we must call the build command from ${PROJECT_BINARY_DIR}
+      if(ADDTEST_EXPECT_COMPILE_FAIL)
+        set_tests_properties(${ACTUAL_NAME} PROPERTIES WORKING_DIRECTORY "${PROJECT_BINARY_DIR}")
+      endif()
       # Skip the test if the return code is 77!
       set_tests_properties(${ACTUAL_NAME} PROPERTIES SKIP_RETURN_CODE 77)
       # Set the labels on the test

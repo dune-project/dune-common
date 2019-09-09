@@ -2,15 +2,13 @@
 
 #include <config.h>
 
-#include <cstdint>
-
-#include <dune/common/simd/test/vctest.hh>
+#include <dune/common/simd/test/vcarraytest.hh>
 
 namespace Dune {
   namespace Simd {
 
-    template
-    void UnitTest::checkVector<Vc::SimdArray<@SCALAR@, @LANES@> >();
+    template void
+    UnitTest::check@POINT@<Vc::SimdArray<@SCALAR@, ::lanes> >();
 
   } // namespace Simd
 } // namespace Dune

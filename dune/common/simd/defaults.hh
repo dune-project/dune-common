@@ -12,6 +12,7 @@
  * abstraction. Include <dune/common/simd/simd.hh> instead.
  */
 
+#include <algorithm>
 #include <cstddef>
 #include <type_traits>
 
@@ -44,20 +45,61 @@ namespace Dune {
       template<class V>
       decltype(auto) lane(ADLTag<0>, std::size_t l, V v) = delete;
 
+      //! implements Simd::implCast<V>(V)
+      template<class V>
+      constexpr V implCast(ADLTag<0>, MetaType<V>, const V &u)
+      {
+        return u;
+      }
+
+      //! implements Simd::implCast<V>(U)
+      template<class V, class U>
+      constexpr V implCast(ADLTag<0>, MetaType<V>, const U &u)
+      {
+        V result(Simd::Scalar<V>(0));
+        for(auto l : range(Simd::lanes(u)))
+          Simd::lane(l, result) = Simd::lane(l, u);
+        return result;
+      }
+
+      //! implements Simd::broadcast<V>()
+      template<class V, class S>
+      auto broadcast(ADLTag<0>, MetaType<V>, S s)
+      {
+        return V(Simd::Scalar<V>(s));
+      }
+
       //! implements Simd::cond()
       template<class V>
-      V cond(ADLTag<0>, Mask<V> mask, V ifTrue, V ifFalse) = delete;
+      V cond(ADLTag<0>, const Mask<V> &mask,
+             const V &ifTrue, const V &ifFalse) = delete;
+
+      //! implements binary Simd::max()
+      template<class V>
+      auto max(ADLTag<0>, const V &v1, const V &v2)
+      {
+        using std::max;
+        return max(v1, v2);
+      }
+
+      //! implements binary Simd::min()
+      template<class V>
+      auto min(ADLTag<0>, const V &v1, const V &v2)
+      {
+        using std::min;
+        return min(v1, v2);
+      }
 
       //! implements Simd::anyTrue()
       template<class Mask>
-      bool anyTrue(ADLTag<0>, Mask mask) = delete;
+      bool anyTrue(ADLTag<0>, const Mask &mask) = delete;
 
       //! implements Simd::allTrue()
       /**
        * Default uses Simd::anyTrue()
        */
       template<class Mask>
-      bool allTrue(ADLTag<0>, Mask mask)
+      bool allTrue(ADLTag<0>, const Mask &mask)
       {
         return !Dune::Simd::anyTrue(!mask);
       }
@@ -67,7 +109,7 @@ namespace Dune {
        * Default uses Simd::anyTrue()
        */
       template<class Mask>
-      bool anyFalse(ADLTag<0>, Mask mask)
+      bool anyFalse(ADLTag<0>, const Mask &mask)
       {
         return Dune::Simd::anyTrue(!mask);
       }
@@ -77,7 +119,7 @@ namespace Dune {
        * Default uses Simd::anyTrue()
        */
       template<class Mask>
-      bool allFalse(ADLTag<0>, Mask mask)
+      bool allFalse(ADLTag<0>, const Mask &mask)
       {
         return !Dune::Simd::anyTrue(mask);
       }
@@ -133,13 +175,6 @@ namespace Dune {
       auto maskAnd(ADLTag<0>, const V1 &v1, const V2 &v2)
       {
         return Simd::mask(v1) && Simd::mask(v2);
-      }
-
-      //! implements Simd::broadcast<V>()
-      template<class V, class S>
-      auto broadcast(ADLTag<0>, MetaType<V>, S s)
-      {
-        return V(Simd::Scalar<V>(s));
       }
 
       //! @} Overloadable and default functions

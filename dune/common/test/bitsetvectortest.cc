@@ -78,24 +78,24 @@ void testContainer(BBF & bbf)
   testConstBitSetMethods(cbbf[2]);
 
   // equality
-  y == cbbf[2];
-  y == bbf[3];
-  y == x;
-  x == y;
-  x == z;
-  z == x;
-  z == y;
-  y == z;
+  DUNE_UNUSED_PARAMETER(y == cbbf[2]);
+  DUNE_UNUSED_PARAMETER(y == bbf[3]);
+  DUNE_UNUSED_PARAMETER(y == x);
+  DUNE_UNUSED_PARAMETER(x == y);
+  DUNE_UNUSED_PARAMETER(x == z);
+  DUNE_UNUSED_PARAMETER(z == x);
+  DUNE_UNUSED_PARAMETER(z == y);
+  DUNE_UNUSED_PARAMETER(y == z);
 
   // inequality
-  y != cbbf[2];
-  y != bbf[3];
-  y != x;
-  x != y;
-  x != z;
-  z != x;
-  z != y;
-  y != z;
+  DUNE_UNUSED_PARAMETER(y != cbbf[2]);
+  DUNE_UNUSED_PARAMETER(y != bbf[3]);
+  DUNE_UNUSED_PARAMETER(y != x);
+  DUNE_UNUSED_PARAMETER(x != y);
+  DUNE_UNUSED_PARAMETER(x != z);
+  DUNE_UNUSED_PARAMETER(z != x);
+  DUNE_UNUSED_PARAMETER(z != y);
+  DUNE_UNUSED_PARAMETER(y != z);
 
   // &=
   y &= cbbf[2];
@@ -141,7 +141,7 @@ void testConstContainer(const BBF& bbf){
   const BBF & cbbf = bbf;
 
   bitset x = bbf[3];
-  value_type z;
+  value_type DUNE_UNUSED z;
   reference y = bbf[4];
 
   // assignement
@@ -149,16 +149,16 @@ void testConstContainer(const BBF& bbf){
   x = cbbf[1];
 
   // equality
-  y == cbbf[2];
-  y == bbf[3];
-  y == x;
-  x == y;
+  DUNE_UNUSED_PARAMETER(y == cbbf[2]);
+  DUNE_UNUSED_PARAMETER(y == bbf[3]);
+  DUNE_UNUSED_PARAMETER(y == x);
+  DUNE_UNUSED_PARAMETER(x == y);
 
   // inequality
-  y != cbbf[2];
-  y != bbf[3];
-  y != x;
-  x != y;
+  DUNE_UNUSED_PARAMETER(y != cbbf[2]);
+  DUNE_UNUSED_PARAMETER(y != bbf[3]);
+  DUNE_UNUSED_PARAMETER(y != x);
+  DUNE_UNUSED_PARAMETER(x != y);
 }
 
 template<int block_size, class Alloc>

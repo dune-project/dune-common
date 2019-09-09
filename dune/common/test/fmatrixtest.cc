@@ -566,9 +566,9 @@ struct ScalarOperatorTest
     v = a * v;
     v = a / v;
 
-    v -= v;
+    v -= w;
     v -= a;
-    v += v;
+    v += w;
     v += a;
     v *= a;
     v /= a;
@@ -733,6 +733,17 @@ void test_interface()
   typedef CheckMatrixInterface::UseFieldVector< K2, rows, cols > Traits;
   typedef Dune::FieldMatrix< K, rows, cols > FMatrix;
 
+#if __GNUC__ != 5 || defined(__clang__)
+  static_assert(
+    !std::is_trivially_copyable<K>::value || std::is_trivially_copyable<FMatrix>::value,
+    "FieldMatrix<T, ...> must be trivally copyable type when T is trivial type"
+    );
+#endif
+  static_assert(
+    std::is_standard_layout<FMatrix>::value,
+    "FieldMatrix<...> must be a standard layout type"
+    );
+
   FMatrix m( 1 );
   checkMatrixInterface< FMatrix >( m );
   checkMatrixInterface< FMatrix, Traits >( m );
@@ -755,6 +766,11 @@ int main()
 {
   try {
     int errors = 0; // counts errors
+
+    static_assert(
+      std::is_same< Dune::FieldMatrix<double, 3, 3>, Dune::FieldMatrix<double, 3> >::value,
+      "default parameter for square matrices"
+      );
 
     {
       double nan = std::nan("");
@@ -815,6 +831,33 @@ int main()
     test_invert< double, 34 >();
     test_invert< std::complex< long double >, 2 >();
     errors += test_invert_solve();
+
+    {  // Test whether multiplying one-column matrices by scalars work
+      FieldMatrix<double,3,1> A = {1,2,3};
+      double v = 0;
+      FieldVector<double,3> f = {2,3,4};
+      double vT = 0;
+      FieldVector<double,3> fT = {3,4,5};
+      test_mult(A, v, f, vT, fT);
+    }
+
+    {  // Test whether result of multiplying a one-row matrix can be a scalar
+      FieldMatrix<double,1,3> A = {{1,2,3}};
+      FieldVector<double,3> v = {2,3,4};
+      double f = 0;
+      FieldVector<double,3> vT = {3,4,5};
+      double fT = 0;
+      test_mult(A, v, f, vT, fT);
+    }
+
+    {  // Test multiplication of 1x1 matrix with scalars
+      FieldMatrix<double,1,1> A = {42};
+      double v = 0;
+      double f = 2;
+      double vT = 0;
+      double fT = 5;
+      test_mult(A, v, f, vT, fT);
+    }
 
     return (errors > 0 ? 1 : 0); // convert error count to unix exit status
   }

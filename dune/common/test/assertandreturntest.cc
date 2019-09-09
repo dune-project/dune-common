@@ -2,10 +2,11 @@
 // vi: set et ts=4 sw=2 sts=2:
 #include <config.h>
 
+#ifdef NDEBUG
+    #undef NDEBUG
+#endif
 #ifdef TEST_NDEBUG
     #define NDEBUG TEST_NDEBUG
-#else
-    #undef NDEBUG
 #endif
 
 #include <cassert>

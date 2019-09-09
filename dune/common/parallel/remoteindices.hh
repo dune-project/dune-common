@@ -402,8 +402,7 @@ namespace Dune {
 
   private:
     /** copying is forbidden. */
-    RemoteIndices(const RemoteIndices&)
-    {}
+    RemoteIndices(const RemoteIndices&) = delete;
 
     /** @brief Index set used at the source of the communication. */
     const ParallelIndexSet* source_;
@@ -1330,7 +1329,7 @@ namespace Dune {
     if(remoteEntries==0)
       return;
 
-    PairType index(1);
+    PairType index;
     MPI_Unpack(p_in, bufferSize, position, &index, 1,
                type, comm_);
     GlobalIndex oldGlobal=index.global();

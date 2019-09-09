@@ -38,9 +38,8 @@ namespace Dune {
     //default constructor
     LoopSIMD() {}
 
-    //constructor initializing the content with a given value
-    template<class I>
-    LoopSIMD(I i) : LoopSIMD() {
+    // broadcast constructor initializing the content with a given value
+    LoopSIMD(T i) : LoopSIMD() {
       this->fill(i);
     }
 
@@ -55,7 +54,8 @@ namespace Dune {
         SYMBOL(*this)[i];                        \
       }                                          \
       return *this;                              \
-    }
+    }                                            \
+    static_assert(true, "expecting ;")
 
     DUNE_SIMD_LOOP_PREFIX_OP(++);
     DUNE_SIMD_LOOP_PREFIX_OP(--);
@@ -69,7 +69,8 @@ namespace Dune {
         out[i] = SYMBOL((*this)[i]);             \
       }                                          \
       return out;                                \
-    }
+    }                                            \
+    static_assert(true, "expecting ;")
 
     DUNE_SIMD_LOOP_UNARY_OP(+);
     DUNE_SIMD_LOOP_UNARY_OP(-);
@@ -90,7 +91,8 @@ namespace Dune {
       LoopSIMD<T,S> out = *this;                 \
       SYMBOL(*this);                             \
       return out;                                \
-    }
+    }                                            \
+    static_assert(true, "expecting ;")
 
    DUNE_SIMD_LOOP_POSTFIX_OP(++);
    DUNE_SIMD_LOOP_POSTFIX_OP(--);
@@ -109,7 +111,8 @@ namespace Dune {
         (*this)[i] SYMBOL v[i];                           \
       }                                                   \
       return *this;                                       \
-    }
+    }                                                     \
+    static_assert(true, "expecting ;")
 
     DUNE_SIMD_LOOP_ASSIGNMENT_OP(+=);
     DUNE_SIMD_LOOP_ASSIGNMENT_OP(-=);
@@ -150,7 +153,8 @@ namespace Dune {
       out[i] = v[i] SYMBOL w[i];                                \
     }                                                           \
     return out;                                                 \
-  }
+  }                                                             \
+  static_assert(true, "expecting ;")
 
   DUNE_SIMD_LOOP_BINARY_OP(+);
   DUNE_SIMD_LOOP_BINARY_OP(-);
@@ -182,7 +186,8 @@ namespace Dune {
       out[i] = v[i] SYMBOL w[i];                                  \
     }                                                             \
     return out;                                                   \
-  }
+  }                                                               \
+  static_assert(true, "expecting ;")
 
   DUNE_SIMD_LOOP_BITSHIFT_OP(<<);
   DUNE_SIMD_LOOP_BITSHIFT_OP(>>);
@@ -216,6 +221,7 @@ namespace Dune {
     }                                                             \
     return out;                                                   \
   }                                                               \
+  static_assert(true, "expecting ;")
 
   DUNE_SIMD_LOOP_COMPARISON_OP(<);
   DUNE_SIMD_LOOP_COMPARISON_OP(>);
@@ -251,7 +257,8 @@ namespace Dune {
         out[i] = v[i] SYMBOL w[i];                                \
       }                                                           \
     return out;                                                   \
-  }
+  }                                                               \
+  static_assert(true, "expecting ;")
 
   DUNE_SIMD_LOOP_BOOLEAN_OP(&&);
   DUNE_SIMD_LOOP_BOOLEAN_OP(||);
@@ -281,14 +288,9 @@ namespace Dune {
         using type = T;
       };
 
-      template<class T, std::size_t S>
-      struct IndexType<LoopSIMD<T,S>> {
-        using type =  LoopSIMD<std::size_t,S>;
-      };
-
-      template<class T, std::size_t S>
-      struct MaskType<LoopSIMD<T,S>> {
-        using type =  LoopSIMD<bool,S>;
+      template<class U, class T, std::size_t S>
+      struct RebindType<U, LoopSIMD<T,S>> {
+        using type =  LoopSIMD<U,S>;
       };
 
       //Implementation of SIMD-interface-functionality
@@ -317,6 +319,17 @@ namespace Dune {
         for(std::size_t i=0; i<S; i++) {
           out[i] = mask[i] ? ifTrue[i] : ifFalse[i];
         }
+        return out;
+      }
+
+      template<class M, class T>
+      auto cond(ADLTag<5, std::is_same<bool, Scalar<M> >::value>, M mask,
+                LoopSIMD<T,Simd::lanes<M>()> ifTrue,
+                LoopSIMD<T,Simd::lanes<M>()> ifFalse)
+      {
+        LoopSIMD<T,Simd::lanes<M>()> out;
+        for(auto l : range(Simd::lanes(mask)))
+          out[l] = Simd::lane(l, mask) ? ifTrue[l] : ifFalse[l];
         return out;
       }
 
@@ -377,7 +390,8 @@ namespace Dune {
       out[i] = expr(v[i]);                                           \
     }                                                                \
     return out;                                                      \
-  }
+  }                                                                  \
+  static_assert(true, "expecting ;")
 
 #define DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN(expr, returnType)  \
   template<class T, std::size_t S, typename Sfinae =                 \
@@ -389,7 +403,8 @@ namespace Dune {
       out[i] = expr(v[i]);                                           \
     }                                                                \
     return out;                                                      \
-  }
+  }                                                                  \
+  static_assert(true, "expecting ;")
 
   DUNE_SIMD_LOOP_CMATH_UNARY_OP(cos);
   DUNE_SIMD_LOOP_CMATH_UNARY_OP(sin);
@@ -478,7 +493,8 @@ namespace Dune {
       out[i] = expr(v[i]);                          \
     }                                               \
     return out;                                     \
-  }
+  }                                                 \
+  static_assert(true, "expecting ;")
 
   DUNE_SIMD_LOOP_STD_UNARY_OP(real);
   DUNE_SIMD_LOOP_STD_UNARY_OP(imag);
@@ -494,7 +510,8 @@ namespace Dune {
       out[i] = expr(v[i],w[i]);                               \
     }                                                         \
     return out;                                               \
-  }
+  }                                                           \
+  static_assert(true, "expecting ;")
 
   DUNE_SIMD_LOOP_STD_BINARY_OP(max);
   DUNE_SIMD_LOOP_STD_BINARY_OP(min);

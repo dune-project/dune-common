@@ -232,20 +232,34 @@ namespace Dune {
     template<class V>
     using Scalar = typename Overloads::ScalarType<std::decay_t<V> >::type;
 
-    //! Index vector type of some SIMD type
+    //! Construct SIMD type with different scalar type
     /**
-     * \tparam V The SIMD (mask or vector) type.  `const`, `volatile` or
-     *           reference qualifiers are automatically ignored.
+     * \tparam S The new scalar type
+     * \tparam V The SIMD (mask or vector) type.
      *
-     * The index type is a SIMD vector of integers with the same number of
-     * lanes as `V`.  The signedness and size of the integers is
-     * implementation defined, in particular, it may be as small as `char` --
-     * this can make sense if `V` is itself a SIMD vector of `char`.
+     * The resulting type a SIMD vector of `S` with the same number of lanes
+     * as `V`.  `const`, `volatile` or reference qualifiers in `S` and `V` are
+     * automatically ignored, and the result will have no such qualifiers.
      *
-     * Implemented by `Overloads::IndexType`.
+     * Implementations shall rebind to `LoopSIMD<S, lanes<V>()>` if they can't
+     * support a particular rebind natively.
+     *
+     * Implemented by `Overloads::RebindType`.
      */
-    template<class V>
-    using Index = typename Overloads::IndexType<std::decay_t<V> >::type;
+    template<class S, class V>
+    using Rebind =
+      typename Overloads::RebindType<std::decay_t<S>, std::decay_t<V>>::type;
+
+    //! @} group Basic interface
+
+    /** @name Syntactic Sugar
+     *
+     * Templates and functions in this group provide syntactic sugar, they are
+     * implemented using the functionality from @ref SimdInterfaceBase, and
+     * are not customizable by implementations.
+     *
+     * @{
+     */
 
     //! Mask type type of some SIMD type
     /**
@@ -267,10 +281,16 @@ namespace Dune {
      *       in Vc `==` and `!=` between masks yield a single `bool` result
      *       and not a mask.)
      *
-     * Implemented by `Overloads::MaskType`.
+     * This is an alias for `Rebind<bool, V>`.
      */
     template<class V>
-    using Mask = typename Overloads::MaskType<std::decay_t<V> >::type;
+    using Mask = Rebind<bool, V>;
+
+    //! @} group Syntactic Sugar
+
+    /** @name Basic interface
+     *  @{
+     */
 
     //! Number of lanes in a SIMD type
     /**
@@ -305,6 +325,48 @@ namespace Dune {
       return lane(Overloads::ADLTag<7>{}, l, std::forward<V>(v));
     }
 
+    //! Cast an expression from one implementation to another
+    /**
+     * Implemented by `Overloads::implCast()`
+     *
+     * Requires the scalar type and the number of lanes to match exactly.
+     *
+     * This is particularly useful for masks, which often know the type they
+     * were derived from.  This can become a problem when doing a conditional
+     * operation e.g. on some floating point vector type, but with a mask
+     * derived from some index vector type.
+     *
+     * \note One of the few functions that explicitly take a template
+     *       argument (`V` in this case).
+     */
+    template<class V, class U>
+    constexpr V implCast(U &&u)
+    {
+      static_assert(std::is_same<Scalar<V>, Scalar<U> >::value,
+                    "Scalar types must match exactly in implCast");
+      static_assert(lanes<V>() == lanes<U>(),
+                    "Number of lanes must match in implCast");
+      return implCast(Overloads::ADLTag<7>{}, MetaType<std::decay_t<V> >{},
+                      std::forward<U>(u));
+    }
+
+    //! Broadcast a scalar to a vector explicitly
+    /**
+     * Implemented by `Overloads::broadcast()`
+     *
+     * This is useful because the syntax for broadcasting can vary wildly
+     * between implementations.
+     *
+     * \note One of the few functions that explicitly take a template
+     *       argument (`V` in this case).
+     */
+    template<class V, class S>
+    constexpr V broadcast(S s)
+    {
+      return broadcast(Overloads::ADLTag<7>{}, MetaType<std::decay_t<V> >{},
+                       std::move(s));
+    }
+
     //! Like the ?: operator
     /**
      * Equivalent to
@@ -318,10 +380,43 @@ namespace Dune {
      *
      * Implemented by `Overloads::cond()`.
      */
-    template<class V>
-    V cond(Mask<V> mask, V ifTrue, V ifFalse)
+    template<class M, class V>
+    V cond(M &&mask, const V &ifTrue, const V &ifFalse)
     {
-      return cond(Overloads::ADLTag<7>{}, mask, ifTrue, ifFalse);
+      return cond(Overloads::ADLTag<7>{},
+                  implCast<Mask<V> >(std::forward<M>(mask)), ifTrue, ifFalse);
+    }
+
+    //! Like the ?: operator
+    /**
+     * Overload for plain bool masks, accepting any simd type
+     *
+     * Implemented by `Overloads::cond()`.
+     */
+    template<class V>
+    V cond(bool mask, const V &ifTrue, const V &ifFalse)
+    {
+      return mask ? ifTrue : ifFalse;
+    }
+
+    //! The binary maximum value over two simd objects
+    /**
+     * Implemented by `Overloads::max()`.
+     */
+    template<class V>
+    auto max(const V &v1, const V &v2)
+    {
+      return max(Overloads::ADLTag<7>{}, v1, v2);
+    }
+
+    //! The binary minimum value over two simd objects
+    /**
+     * Implemented by `Overloads::min()`.
+     */
+    template<class V>
+    auto min(const V &v1, const V &v2)
+    {
+      return min(Overloads::ADLTag<7>{}, v1, v2);
     }
 
     //! Whether any entry is `true`
@@ -329,7 +424,7 @@ namespace Dune {
      * Implemented by `Overloads::anyTrue()`.
      */
     template<class Mask>
-    bool anyTrue(Mask mask)
+    bool anyTrue(const Mask &mask)
     {
       return anyTrue(Overloads::ADLTag<7>{}, mask);
     }
@@ -339,7 +434,7 @@ namespace Dune {
      * Implemented by `Overloads::allTrue()`.
      */
     template<class Mask>
-    bool allTrue(Mask mask)
+    bool allTrue(const Mask &mask)
     {
       return allTrue(Overloads::ADLTag<7>{}, mask);
     }
@@ -349,7 +444,7 @@ namespace Dune {
      * Implemented by `Overloads::anyFalse()`.
      */
     template<class Mask>
-    bool anyFalse(Mask mask)
+    bool anyFalse(const Mask &mask)
     {
       return anyFalse(Overloads::ADLTag<7>{}, mask);
     }
@@ -359,12 +454,12 @@ namespace Dune {
      * Implemented by `Overloads::allFalse()`.
      */
     template<class Mask>
-    bool allFalse(Mask mask)
+    bool allFalse(const Mask &mask)
     {
       return allFalse(Overloads::ADLTag<7>{}, mask);
     }
 
-    //! The maximum value over all lanes
+    //! The horizontal maximum value over all lanes
     /**
      * Implemented by `Overloads::max()`.
      */
@@ -374,7 +469,7 @@ namespace Dune {
       return max(Overloads::ADLTag<7>{}, v);
     }
 
-    //! The minimum value over all lanes
+    //! The horizontal minimum value over all lanes
     /**
      * Implemented by `Overloads::min()`.
      */
@@ -414,24 +509,7 @@ namespace Dune {
       return maskAnd(Overloads::ADLTag<7>{}, v1, v2);
     }
 
-    //! Broadcast a scalar to a vector explicitly
-    /**
-     * Implemented by `Overloads::broadcast()`
-     *
-     * This is useful because the syntax for broadcasting can vary wildly
-     * between implementations.
-     *
-     * \note One of the few functions that explicitly take a template
-     *       argument (`V` in this case).
-     */
-    template<class V, class S>
-    constexpr V broadcast(S s)
-    {
-      return broadcast(Overloads::ADLTag<7>{}, MetaType<std::decay_t<V> >{},
-                       std::move(s));
-    }
-
-    //! @}
+    //! @} group Basic interface
 
     /** @name Syntactic Sugar
      *

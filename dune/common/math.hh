@@ -65,6 +65,26 @@ namespace Dune
   {};
 
 
+  /** \brief Power method for integer exponents
+   *
+   * \note Make sure that Mantissa is a non-integer type when using negative exponents!
+   */
+  template <class Mantissa, class Exponent>
+  constexpr Mantissa power(Mantissa m, Exponent p)
+  {
+    static_assert(std::numeric_limits<Exponent>::is_integer, "Exponent must be an integer type!");
+
+    auto result = Mantissa(1);
+    auto absp = (p<0) ? -p : p;   // This is simply abs, but std::abs is not constexpr
+    for (Exponent i = Exponent(0); i<absp; i++)
+      result *= m;
+
+    if (p<0)
+      result = Mantissa(1)/result;
+
+    return result;
+  }
+
   //! Calculates the factorial of m at compile time
   template <int m>
   struct Factorial

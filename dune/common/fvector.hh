@@ -122,9 +122,14 @@ namespace Dune {
       std::fill(_data.begin(),_data.end(),t);
     }
 
+#if __GNUC__ == 5 && !defined(__clang__)
+    // `... = default;` causes an internal compiler error on GCC 5.4 (Ubuntu 16.04)
+    //! copy constructor
+    FieldVector(const FieldVector& x) : _data(x._data) {}
+#else
     //! Copy constructor
-    FieldVector (const FieldVector & x) : Base(), _data(x._data)
-    {}
+    FieldVector (const FieldVector&) = default;
+#endif
 
     /** \brief Construct from a std::initializer_list */
     FieldVector (std::initializer_list<K> const &l)
@@ -136,19 +141,17 @@ namespace Dune {
     }
 
     //! copy assignment operator
-    FieldVector& operator= (const FieldVector& other)
+    FieldVector& operator= (const FieldVector&) = default;
+
+    template <typename T>
+    FieldVector& operator= (const FieldVector<T, SIZE>& x)
     {
-      _data = other._data;
+      std::copy_n(x.begin(), SIZE, _data.begin());
       return *this;
     }
 
-    template <typename T, int N>
-    FieldVector& operator= (const FieldVector<T, N>& other)
-    {
-      static_assert(N == SIZE, "Sizes have to match for assignment!");
-      std::copy_n(other.begin(), SIZE, _data.begin());
-      return *this;
-    }
+    template<typename T, int N>
+    FieldVector& operator=(const FieldVector<T, N>&) = delete;
 
     /**
      * \brief Copy constructor from a second vector of possibly different type
@@ -171,13 +174,15 @@ namespace Dune {
     }
 
     //! Constructor making vector with identical coordinates
-    template<class K1, int SIZE1>
-    explicit FieldVector (const FieldVector<K1,SIZE1> & x)
+    template<class K1>
+    explicit FieldVector (const FieldVector<K1,SIZE> & x)
     {
-      static_assert(SIZE1 == SIZE, "FieldVector in constructor has wrong size");
-      for (size_type i = 0; i<SIZE; i++)
-        _data[i] = x[i];
+      std::copy_n(x.begin(), SIZE, _data.begin());
     }
+
+    template<typename T, int N>
+    explicit FieldVector(const FieldVector<T, N>&) = delete;
+
     using Base::operator=;
 
     // make this thing a vector
@@ -190,6 +195,18 @@ namespace Dune {
     const K & operator[](size_type i) const {
       DUNE_ASSERT_BOUNDS(i < SIZE);
       return _data[i];
+    }
+
+    //! return pointer to underlying array
+    K* data() noexcept
+    {
+      return _data.data();
+    }
+
+    //! return pointer to underlying array
+    const K* data() const noexcept
+    {
+      return _data.data();
     }
   };
 
@@ -276,24 +293,20 @@ namespace Dune {
     }
 
     //! copy constructor
-    FieldVector ( const FieldVector &other )
-      : Base(), _data( other._data )
-    {}
+    FieldVector(const FieldVector&) = default;
 
     //! copy assignment operator
-    FieldVector& operator= (const FieldVector& other)
+    FieldVector& operator=(const FieldVector&) = default;
+
+    template <typename T>
+    FieldVector& operator= (const FieldVector<T, 1>& other)
     {
-      _data = other._data;
+      _data = other[0];
       return *this;
     }
 
-    template <typename T, int N>
-    FieldVector& operator= (const FieldVector<T, N>& other)
-    {
-      static_assert(N == 1, "Sizes have to match for assignment!");
-      _data = other._data;
-      return *this;
-    }
+    template<typename T, int N>
+    FieldVector& operator=(const FieldVector<T, N>&) = delete;
 
     /** \brief Construct from a std::initializer_list */
     FieldVector (std::initializer_list<K> const &l)
@@ -330,6 +343,18 @@ namespace Dune {
       DUNE_UNUSED_PARAMETER(i);
       DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
+    }
+
+    //! return pointer to underlying array
+    K* data() noexcept
+    {
+      return &_data;
+    }
+
+    //! return pointer to underlying array
+    const K* data() const noexcept
+    {
+      return &_data;
     }
 
     //===== conversion operator

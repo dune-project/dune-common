@@ -83,6 +83,7 @@ install(FILES
         math.hh
         matvectraits.hh
         overloadset.hh
+        parameterizedobject.hh
         parametertree.hh
         parametertreeparser.hh
         path.hh
@@ -95,6 +96,8 @@ install(FILES
         quadmath.hh
         rangeutilities.hh
         reservedvector.hh
+        scalarvectorview.hh
+        scalarmatrixview.hh
         shared_ptr.hh
         simd.hh
         singleton.hh

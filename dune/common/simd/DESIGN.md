@@ -16,8 +16,9 @@ What this abstraction layer does not provide (at least initially) is a way to
 actually create vector types from scratch.  It must however provide a way to
 create corresponding types to a type that already exist.  I.e. if your code
 got simd-vector-type argument, the abstraction layer will provide you with the
-the number of lanes, the type of the entries, a corresponding index type and a
-mask type.
+the number of lanes, and the type of the entries.  It will also provide you
+with a way to create simd types with the same number of lanes but a different
+entry type.
 
 Built-in Types
 ==============

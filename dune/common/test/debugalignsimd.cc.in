@@ -1,0 +1,15 @@
+// @GENERATED_SOURCE@
+
+#include <config.h>
+
+#include <dune/common/debugalign.hh>
+#include <dune/common/simd/test.hh>
+#include <dune/common/test/debugalignsimdtest.hh>
+
+namespace Dune {
+  namespace Simd {
+
+    template void UnitTest::check@POINT@<AlignedNumber<@SCALAR@> >();
+
+  } //namespace Simd
+} // namespace Dune

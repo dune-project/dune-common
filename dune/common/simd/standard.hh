@@ -59,17 +59,10 @@ namespace Dune {
 
       //! should have a member type \c type
       /**
-       * Implements Simd::Index
+       * Implements Simd::Rebind
        */
-      template<class, class>
-      struct IndexType { using type = std::size_t; };
-
-      //! should have a member type \c type
-      /**
-       * Implements Simd::Mask
-       */
-      template<class, class>
-      struct MaskType { using type = bool; };
+      template<class S, class, class>
+      struct RebindType { using type = S; };
 
       //! should be derived from an Dune::index_constant
       /**
@@ -100,12 +93,8 @@ namespace Dune {
         return v;
       }
 
-      //! implements Simd::cond()
-      template<class V>
-      V cond(ADLTag<2>, bool mask, V ifTrue, V ifFalse)
-      {
-        return mask ? ifTrue : ifFalse;
-      }
+      // No Simd::cond() implementation, the overload for bool masks in the
+      // interface is sufficient
 
       //! implements Simd::anyTrue()
       inline bool anyTrue(ADLTag<2>, bool mask) { return mask; }

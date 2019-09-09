@@ -1,0 +1,23 @@
+// @GENERATED_SOURCE@
+
+#ifndef DUNE_COMMON_SIMD_TEST_VCTEST_HH
+#define DUNE_COMMON_SIMD_TEST_VCTEST_HH
+
+#include <cstdint>
+
+#include <dune/common/simd/test.hh>
+#include <dune/common/simd/vc.hh>
+#include <dune/common/typelist.hh>
+
+namespace Dune {
+  namespace Simd {
+
+#cmake @template POINT@
+    extern template void UnitTest::check@POINT@<Vc::Vector<@SCALAR@> >();
+    extern template void UnitTest::check@POINT@<Vc::Mask<@SCALAR@> >();
+#cmake @endtemplate@
+
+  } // namespace Simd
+} // namespace Dune
+
+#endif // DUNE_COMMON_SIMD_TEST_VCTEST_HH
