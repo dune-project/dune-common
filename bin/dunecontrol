@@ -687,7 +687,7 @@ run_default_make () {
 }
 
 run_default_all () {
-  for cmd in vcsetup configure make; do
+  for cmd in vcsetup cmake make; do
     eval echo "--- calling $cmd for \$NAME_${module} ---"
     load_opts $cmd
     run_$cmd
