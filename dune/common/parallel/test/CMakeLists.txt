@@ -43,3 +43,7 @@ dune_add_test(SOURCES mpipacktest.cc
               MPI_RANKS 2
               TIMEOUT 300
               LABELS quick)
+
+dune_add_test(SOURCES communicationpatterntest.cc
+  LINK_LIBRARIES dunecommon
+  LABELS quick)
