@@ -153,14 +153,14 @@ namespace Dune {
     /** @brief Sets the position in the buffer where the next
      * pack/unpack operation should take place.
      */
-    void setPosition(int p){
+    void seek(int p){
       _position = p;
     }
 
     /** @brief Gets the position in the buffer where the next
      * pack/unpack operation should take place.
      */
-    int getPosition() const{
+    int tell() const{
       return _position;
     }
 
