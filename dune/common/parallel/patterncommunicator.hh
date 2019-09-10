@@ -6,6 +6,7 @@
 #include <map>
 #include <unordered_map>
 #include <functional>
+#include <dune/common/shared_ptr.hh>
 #include <dune/common/parallel/mpipack.hh>
 
 namespace Dune {
@@ -28,6 +29,14 @@ namespace Dune {
     PatternCommunicator(const Pattern& pattern,
                         Communication comm,
                         size_t fixed_size_per_index = 0)
+      : PatternCommunicator(stackobject_to_shared_ptr(pattern)
+                            , comm
+                            , fixed_size_per_index)
+    {}
+
+    PatternCommunicator(std::shared_ptr<const Pattern> pattern,
+                        Communication comm,
+                        size_t fixed_size_per_index = 0)
       : pattern_(pattern)
       , comm_(comm)
       , fixed_size_per_index_(fixed_size_per_index)
@@ -38,7 +47,7 @@ namespace Dune {
                   int tag = 4711){
       // setup recv futures
       if(fixed_size_per_index_){
-        for(const auto& pair : pattern_.recv_pattern()){
+        for(const auto& pair : pattern_->recv_pattern()){
           const remote_type& remote = pair.first;
           auto& future = recv_futures[remote][tag];
           auto& buffer = recv_buffer[remote][tag];
@@ -47,7 +56,7 @@ namespace Dune {
         }
       }
       // setup send futures
-      for(const auto& pair : pattern_.send_pattern()){
+      for(const auto& pair : pattern_->send_pattern()){
         const remote_type& remote = pair.first;
         auto& future = send_futures[remote][tag];
         auto& buffer = send_buffer[remote][tag];
@@ -62,7 +71,7 @@ namespace Dune {
       }
       if(fixed_size_per_index_){
         // finish recv futures:
-        for(const auto& pair : pattern_.recv_pattern()){
+        for(const auto& pair : pattern_->recv_pattern()){
           const remote_type& remote = pair.first;
           auto& future = recv_futures[remote][tag];
           auto& buffer = future.get();
@@ -72,7 +81,7 @@ namespace Dune {
           }
         }
       }else{
-        for(const auto& pair : pattern_.recv_pattern()){
+        for(const auto& pair : pattern_->recv_pattern()){
           const remote_type& remote = pair.first;
           auto& buffer = recv_buffer[remote][tag];
           comm_.rrecv(buffer, remote, tag);
@@ -101,11 +110,11 @@ namespace Dune {
     }
 
     const Pattern& communication_pattern() const{
-      return pattern_;
+      return *pattern_;
     }
 
   protected:
-    const Pattern& pattern_;
+    std::shared_ptr<const Pattern> pattern_;
     Communication comm_;
     const size_t fixed_size_per_index_;
   };
