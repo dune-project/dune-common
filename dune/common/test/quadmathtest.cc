@@ -87,6 +87,8 @@ int main()
 
   // test cmath functions for Float128 type
   using T = Float128;
+  test.check(cmp(T(0.5), T("0.5")), "string constructor");
+
   test.check(cmp(abs(T{-1}),T{1}), "abs");
   test.check(cmp(fabs(T{-1}),T{1}), "fabs");
 
@@ -128,6 +130,7 @@ int main()
   test.check(weakcmp(remainder(T{5.1},T{3}),T{-0.9}), "remainder");
 
   test.check(cmp(pow(T{2},T{3}),T{8}), "pow");
+  test.check(cmp(pow(T{M_PIq},T{3}),pow(T{M_PIq},3)), "pow"); // compare pow with float exponent and integer exponent
   test.check(cmp(cbrt(T{0.5*0.5*0.5}),T{0.5}), "cbrt");
   test.check(cmp(sqrt(T{4}),T{2}), "sqrt");
 
