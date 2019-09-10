@@ -39,6 +39,7 @@ namespace Dune {
       for(const auto& pair : pattern_.send_pattern()){
         const remote_type& remote = pair.first;
         send_buffer[remote].reserve(pair.second.size()*size_per_index);
+        send_buffer[remote].seek(0);
         for(const index_type& idx: pair.second){
           gather(send_buffer[remote], idx);
         }
@@ -48,7 +49,7 @@ namespace Dune {
       for(const auto& pair : pattern_.recv_pattern()){
         const remote_type& remote = pair.first;
         auto& buffer = recv_futures[remote].get();
-        recv_buffer[remote].setPosition(0);
+        recv_buffer[remote].seek(0);
         for(const index_type& idx : pair.second){
           scatter(buffer, idx);
         }
@@ -58,13 +59,18 @@ namespace Dune {
     template<class V, class ReductionFunctor>
     void exchange(const V& source,
                   V& dest,
-                  const ReductionFunctor& reduction_functor){
+                  const ReductionFunctor& reduction_functor,
+                  int tag = 4712){
       exchange([&](auto& buf, const auto& idx){
                  buf.write(source[idx]);
                },
         [&](auto& buf, const auto& idx){
-          dest[idx] = reduction_functor(dest[idx], buf.read());
-        });
+          auto temp = dest[idx];
+          buf.read(temp);
+          dest[idx] = reduction_functor(dest[idx], temp);
+        },
+        sizeof(typename V::value_type),
+        tag);
     }
 
   protected:

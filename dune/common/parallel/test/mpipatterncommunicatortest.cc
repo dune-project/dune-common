@@ -36,7 +36,15 @@ int main(int argc, char** argv){
                         [&](auto& buf, auto& idx){ buf.read(data[idx]); },
                         8);
 
-  std::cout << "Rank " << rank << " received:" << std::endl;
+  std::cout << "Rank " << rank << " data:" << std::endl;
+  for(double& d : data){
+    std::cout << d << " " << std::endl;
+  }
+
+  helper.getCommunication().barrier();
+
+  communicator.exchange(data, data, std::plus<double>{});
+  std::cout << "Rank " << rank << " data:" << std::endl;
   for(double& d : data){
     std::cout << d << " " << std::endl;
   }
