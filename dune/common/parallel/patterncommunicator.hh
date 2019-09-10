@@ -38,6 +38,8 @@ namespace Dune {
       // setup send futures
       for(const auto& pair : pattern_.send_pattern()){
         const remote_type& remote = pair.first;
+        if(send_futures[remote].valid())
+          send_futures[remote].wait();
         send_buffer[remote].reserve(pair.second.size()*size_per_index);
         send_buffer[remote].seek(0);
         for(const index_type& idx: pair.second){
