@@ -3,6 +3,8 @@
 #ifndef DUNE_COMMON_PARALLEL_PATTERNCOMMUNICATOR_HH
 #define DUNE_COMMON_PARALLEL_PATTERNCOMMUNICATOR_HH
 
+#include <map>
+#include <unordered_map>
 #include <functional>
 #include <dune/common/parallel/mpipack.hh>
 
@@ -13,11 +15,15 @@ namespace Dune {
 
     typedef typename Pattern::remote_type remote_type;
     typedef typename Pattern::index_type index_type;
-    std::map<remote_type, Buffer> send_buffer;
-    std::map<remote_type, Buffer> recv_buffer;
 
-    std::map<remote_type, Future<Buffer&>> send_futures;
-    std::map<remote_type, Future<Buffer&>> recv_futures;
+    typedef std::unordered_map<int, Buffer> tag_to_buffer_map;
+    typedef std::unordered_map<int, Future<Buffer&>> tag_to_future_map;
+
+    std::map<remote_type, tag_to_buffer_map> send_buffer;
+    std::map<remote_type, tag_to_buffer_map> recv_buffer;
+
+    std::map<remote_type, tag_to_future_map> send_futures;
+    std::map<remote_type, tag_to_future_map> recv_futures;
   public:
     PatternCommunicator(const Pattern& pattern,
                         Communication comm)
@@ -32,26 +38,26 @@ namespace Dune {
       // setup recv futures
       for(const auto& pair : pattern_.recv_pattern()){
         const remote_type& remote = pair.first;
-        recv_buffer[remote].reserve(pair.second.size()*size_per_index);
-        recv_futures[remote] = comm_.template irecv<Buffer&>(recv_buffer[remote], remote, tag);
+        recv_buffer[remote][tag].reserve(pair.second.size()*size_per_index);
+        recv_futures[remote][tag] = comm_.template irecv<Buffer&>(recv_buffer[remote][tag], remote, tag);
       }
       // setup send futures
       for(const auto& pair : pattern_.send_pattern()){
         const remote_type& remote = pair.first;
-        if(send_futures[remote].valid())
-          send_futures[remote].wait();
-        send_buffer[remote].reserve(pair.second.size()*size_per_index);
-        send_buffer[remote].seek(0);
+        if(send_futures[remote][tag].valid())
+          send_futures[remote][tag].wait();
+        send_buffer[remote][tag].reserve(pair.second.size()*size_per_index);
+        send_buffer[remote][tag].seek(0);
         for(const index_type& idx: pair.second){
-          gather(send_buffer[remote], idx);
+          gather(send_buffer[remote][tag], idx);
         }
-        send_futures[remote] = comm_.template isend<Buffer&>(send_buffer[remote], remote, tag);
+        send_futures[remote][tag] = comm_.template isend<Buffer&>(send_buffer[remote][tag], remote, tag);
       }
       // finish recv futures:
       for(const auto& pair : pattern_.recv_pattern()){
         const remote_type& remote = pair.first;
-        auto& buffer = recv_futures[remote].get();
-        recv_buffer[remote].seek(0);
+        auto& buffer = recv_futures[remote][tag].get();
+        recv_buffer[remote][tag].seek(0);
         for(const index_type& idx : pair.second){
           scatter(buffer, idx);
         }
