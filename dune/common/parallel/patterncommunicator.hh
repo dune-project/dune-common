@@ -100,6 +100,10 @@ namespace Dune {
         tag);
     }
 
+    const Pattern& communication_pattern() const{
+      return pattern_;
+    }
+
   protected:
     const Pattern& pattern_;
     Communication comm_;
