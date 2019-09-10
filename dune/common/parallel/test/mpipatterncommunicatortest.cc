@@ -17,7 +17,8 @@ int main(int argc, char** argv){
   int size = helper.size();
 
   // setup pattern
-  Dune::CommunicationPattern<> ring_pattern({ // send pattern:
+  Dune::CommunicationPattern<> ring_pattern(rank,
+                                            { // send pattern:
                                              {(rank+1)%size, {0,1,2}}
     },
     { // recv pattern

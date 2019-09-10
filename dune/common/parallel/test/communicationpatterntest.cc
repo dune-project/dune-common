@@ -7,7 +7,8 @@
 
 int main(){
 
-  Dune::CommunicationPattern<> pattern({// send pattern:
+  Dune::CommunicationPattern<> pattern(0,
+                                       {// send pattern:
                                         {3, {1,4,7}},
                                         {1, {4,3,1}},
                                         {42, {}}
