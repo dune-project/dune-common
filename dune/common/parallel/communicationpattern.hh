@@ -17,11 +17,15 @@ namespace Dune {
     typedef typename IndexContainer::value_type index_type;
     typedef std::map<RemoteType, IndexContainer> MapRemoteToPattern;
 
-    CommunicationPattern() = default;
+    CommunicationPattern(const remote_type& me)
+      : me_(me)
+    {}
 
-    CommunicationPattern(std::initializer_list<typename MapRemoteToPattern::value_type> sendInterface,
+    CommunicationPattern(const remote_type& me,
+                         std::initializer_list<typename MapRemoteToPattern::value_type> sendInterface,
                          std::initializer_list<typename MapRemoteToPattern::value_type> recvInterface)
-      : send_pattern_(sendInterface)
+      : me_(me)
+      , send_pattern_(sendInterface)
       , recv_pattern_(recvInterface)
     {}
 
@@ -41,12 +45,17 @@ namespace Dune {
       return recv_pattern_;
     }
 
+    const remote_type& me() const {
+      return me_;
+    }
+
     void strip(){
       strip_pattern(send_pattern_);
       strip_pattern(recv_pattern_);
     }
 
   protected:
+    remote_type me_;
     MapRemoteToPattern send_pattern_;
     MapRemoteToPattern recv_pattern_;
 
