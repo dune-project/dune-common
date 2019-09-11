@@ -114,10 +114,24 @@ namespace Dune {
       return p;
     }
 
+    //! @copydoc unpack
+    template<typename T>
+    MPIPack& read(T& t){
+      unpack(t);
+      return *this;
+    }
+
+    //! @copydoc pack
+    template<typename T>
+    MPIPack& write(const T& t){
+      pack(t);
+      return *this;
+    }
+
     /** @brief Resizes the internal buffer.
         \param size new size of internal buffer
      */
-    void resize(int size){
+    void resize(size_t size){
       _buffer.resize(size);
     }
 
@@ -136,20 +150,20 @@ namespace Dune {
     /** @brief Sets the position in the buffer where the next
      * pack/unpack operation should take place.
      */
-    void setPosition(int p){
+    void seek(int p){
       _position = p;
     }
 
     /** @brief Gets the position in the buffer where the next
      * pack/unpack operation should take place.
      */
-    int getPosition() const{
+    int peek() const{
       return _position;
     }
 
     /** @brief Checks whether the end of the buffer is reached.
      */
-    bool atEnd() const{
+    bool eof() const{
       return std::size_t(_position)==_buffer.size();
     }
 
