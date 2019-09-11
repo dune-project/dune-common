@@ -193,6 +193,25 @@ namespace Dune
       return result;
     }
 
+    /** \brief Matrix-matrix multiplication
+     */
+    template <class OtherScalar, int otherCols>
+    friend auto operator* ( const FieldMatrix& matrixA,
+                            const FieldMatrix<OtherScalar, COLS, otherCols>& matrixB)
+    {
+      FieldMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType,ROWS,otherCols> result;
+
+      for (size_type i = 0; i < matrixA.mat_rows(); ++i)
+        for (size_type j = 0; j < matrixB.mat_cols(); ++j)
+        {
+          result[i][j] = 0;
+          for (size_type k = 0; k < matrixA.mat_cols(); ++k)
+            result[i][j] += matrixA[i][k] * matrixB[k][j];
+        }
+
+      return result;
+    }
+
     //! Multiplies M from the left to this matrix, this matrix is not modified
     template<int l>
     FieldMatrix<K,l,cols> leftmultiplyany (const FieldMatrix<K,l,rows>& M) const
@@ -397,6 +416,20 @@ namespace Dune
     }
 
     //===== solve
+
+        /** \brief Matrix-matrix multiplication
+     */
+    template <class OtherScalar, int otherCols>
+    friend auto operator* ( const FieldMatrix& matrixA,
+                            const FieldMatrix<OtherScalar, 1, otherCols>& matrixB)
+    {
+      FieldMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType,1,otherCols> result;
+
+      for (size_type j = 0; j < matrixB.mat_cols(); ++j)
+        result[0][j] = matrixA[0][0] * matrixB[0][j];
+
+      return result;
+    }
 
     //! Multiplies M from the left to this matrix, this matrix is not modified
     template<int l>

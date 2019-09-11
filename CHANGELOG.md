@@ -40,6 +40,7 @@
   - Matrix = Scalar * Matrix
   - Matrix = Matrix * Scalar
   - Matrix = Matrix / Scalar
+  - Matrix = Matrix * Matrix
   Note that the operators
   - Vector = Vector + Vector
   - Vector = Vector - Vector
