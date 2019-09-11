@@ -413,20 +413,6 @@ namespace Dune {
     return a[0]-b;
   }
 
-  //! Binary multiplication, when using FieldVector<K,1> like K
-  template<class K>
-  inline FieldVector<K,1> operator* (const FieldVector<K,1>& a, const K b)
-  {
-    return a[0]*b;
-  }
-
-  //! Binary division, when using FieldVector<K,1> like K
-  template<class K>
-  inline FieldVector<K,1> operator/ (const FieldVector<K,1>& a, const K b)
-  {
-    return a[0]/b;
-  }
-
   //! Binary compare, when using FieldVector<K,1> like K
   template<class K>
   inline bool operator> (const FieldVector<K,1>& a, const K b)
@@ -483,13 +469,6 @@ namespace Dune {
   inline FieldVector<K,1> operator- (const K a, const FieldVector<K,1>& b)
   {
     return a-b[0];
-  }
-
-  //! Binary multiplication, when using FieldVector<K,1> like K
-  template<class K>
-  inline FieldVector<K,1> operator* (const K a, const FieldVector<K,1>& b)
-  {
-    return a*b[0];
   }
 
   //! Binary division, when using FieldVector<K,1> like K

@@ -28,6 +28,9 @@
 - By popular demand, dense vectors and matrices like `FieldVector` and `FieldMatrix`
   now have additional operators.  In particular, there are
   - Vector = - Vector
+  - Vector = Scalar * Vector
+  - Vector = Vector * Scalar
+  - Vector = Vector / Scalar
   - Matrix = - Matrix
 
 - There is now (finally!) a method `power` in the file `math.hh` that computes

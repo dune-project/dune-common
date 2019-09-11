@@ -504,6 +504,48 @@ namespace Dune {
       return asImp();
     }
 
+    //! vector space multiplication with scalar
+    template <class Scalar,
+              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
+    friend auto operator* ( const DenseVector& vector, Scalar scalar)
+    {
+      V result;
+      typedef typename decltype(result)::size_type size_type;
+
+      for (size_type i = 0; i < vector.size(); ++i)
+        result[i] = vector[i] * scalar;
+
+      return result;
+    }
+
+    //! vector space multiplication with scalar
+    template <class Scalar,
+              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
+    friend auto operator* ( Scalar scalar, const DenseVector& vector)
+    {
+      V result;
+      typedef typename decltype(result)::size_type size_type;
+
+      for (size_type i = 0; i < vector.size(); ++i)
+        result[i] = scalar * vector[i];
+
+      return result;
+    }
+
+    //! vector space division by scalar
+    template <class Scalar,
+              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
+    friend auto operator/ ( const DenseVector& vector, Scalar scalar)
+    {
+      V result;
+      typedef typename decltype(result)::size_type size_type;
+
+      for (size_type i = 0; i < vector.size(); ++i)
+        result[i] = vector[i] * scalar;
+
+      return result;
+    }
+
     //! \brief vector space multiplication with scalar
     /**
        we use enable_if to avoid an ambiguity, if the
