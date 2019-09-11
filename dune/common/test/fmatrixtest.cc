@@ -469,6 +469,13 @@ void test_matrix()
         DUNE_THROW(FMatrixError, "Return value of operator-(matrix) incorrect!");
     }
 
+    // Matrix * Matrix
+    {
+      // Multiplication is currently implemented only for square matrices
+      if (A.rows == A.cols)
+        DUNE_UNUSED FM product = A * A;
+    }
+
   }
   {
     using std::abs;

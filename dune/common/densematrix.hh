@@ -430,6 +430,30 @@ namespace Dune
       return asImp();
     }
 
+    /** \brief Matrix-matrix multiplication
+     */
+    friend auto operator* ( const DenseMatrix& matrixA, const DenseMatrix& matrixB)
+    {
+      DUNE_ASSERT_BOUNDS(matrixA.cols()==matrixB.rows());
+
+      // Matrix multiplication is currently implemented only for square matrices
+      DUNE_ASSERT_BOUNDS(matrixA.rows()==matrixA.cols());
+      DUNE_ASSERT_BOUNDS(matrixB.rows()==matrixB.cols());
+
+      MAT result;
+      typedef typename decltype(result)::size_type size_type;
+
+      for (size_type i = 0; i < matrixA.rows(); ++i)
+        for (size_type j = 0; j < matrixB.cols(); ++j)
+        {
+          result[i][j] = 0;
+          for (size_type k = 0; k < matrixA.cols(); ++k)
+            result[i][j] += matrixA[i][k] * matrixB[k][j];
+        }
+
+      return result;
+    }
+
     //! vector space axpy operation (*this += a x)
     template <class Other>
     derived_type &axpy (const field_type &a, const DenseMatrix<Other> &x )
