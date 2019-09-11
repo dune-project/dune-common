@@ -12,8 +12,8 @@
 #define DUNE_COMMON_MPIGUARD_HH
 
 #include "mpihelper.hh"
-#include "collectivecommunication.hh"
-#include "mpicollectivecommunication.hh"
+#include "communication.hh"
+#include "mpicommunication.hh"
 #include <dune/common/exceptions.hh>
 
 namespace Dune
