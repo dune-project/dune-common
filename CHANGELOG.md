@@ -37,6 +37,9 @@
   Correspondingly, the `FieldMatrix` class now has
   - Matrix = Matrix + Matrix
   - Matrix = Matrix - Matrix
+  - Matrix = Scalar * Matrix
+  - Matrix = Matrix * Scalar
+  - Matrix = Matrix / Scalar
   Note that the operators
   - Vector = Vector + Vector
   - Vector = Vector - Vector

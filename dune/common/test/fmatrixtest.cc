@@ -416,11 +416,37 @@ void test_matrix()
       if (tmp.infinity_norm() > 1e-12)
         DUNE_THROW(FMatrixError, "Return value of axpy() incorrect!");
     }
+
+    // Scalar * Matrix and Matrix * Scalar
+    {
+      typename FM::field_type scalar = 3;
+      FM sA = scalar * A;
+      FM aS = A * scalar;
+      FM ref = A;
+      ref *= scalar;
+
+      if ((sA-ref).infinity_norm() > 1e-12)
+        DUNE_THROW(FMatrixError, "Return value of operator*(scalar,matrix) incorrect!");
+
+      if ((aS-ref).infinity_norm() > 1e-12)
+        DUNE_THROW(FMatrixError, "Return value of operator*(matrix,scalar) incorrect!");
+    }
+
+    // Matrix / Scalar
+    {
+      typename FM::field_type scalar = 3;
+      FM aS = A / scalar;
+      FM ref = A;
+      ref /= scalar;
+
+      if ((aS-ref).infinity_norm() > 1e-12)
+        DUNE_THROW(FMatrixError, "Return value of operator/(matrix,scalar) incorrect!");
+    }
+
     // Matrix + Matrix
     {
       FM twiceA = A + A;
-      FM ref = A;
-      ref *= 2;
+      FM ref = typename FM::field_type(2)*A;
 
       if ((twiceA-ref).infinity_norm() > 1e-12)
         DUNE_THROW(FMatrixError, "Return value of operator+(matrix,matrix) incorrect!");
@@ -437,8 +463,7 @@ void test_matrix()
     // -Matrix
     {
       FM neg = -A;
-      FM ref = A;
-      ref *= -1;
+      FM ref = typename FM::field_type(-1)*A;
 
       if ((neg-ref).infinity_norm() > 1e-12)
         DUNE_THROW(FMatrixError, "Return value of operator-(matrix) incorrect!");
