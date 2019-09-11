@@ -25,6 +25,11 @@
   implementation in `dune-common` is automatically disabled, and the official
   implementation from the standard library is used instead.
 
+- By popular demand, dense vectors and matrices like `FieldVector` and `FieldMatrix`
+  now have additional operators.  In particular, there are
+  - Vector = - Vector
+  - Matrix = - Matrix
+
 - There is now (finally!) a method `power` in the file `math.hh` that computes
   powers with an integer exponent, and is usable in compile-time expressions.
   The use of the old power methods in `power.hh` is henceforth discouraged.

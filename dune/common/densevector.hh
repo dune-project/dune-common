@@ -448,6 +448,18 @@ namespace Dune {
       return (z-=b);
     }
 
+    //! Vector negation
+    derived_type operator- () const
+    {
+      V result;
+      typedef typename decltype(result)::size_type size_type;
+
+      for (size_type i = 0; i < size(); ++i)
+        result[i] = -asImp()[i];
+
+      return result;
+    }
+
     //! \brief vector space add scalar to all comps
     /**
        we use enable_if to avoid an ambiguity, if the

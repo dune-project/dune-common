@@ -102,6 +102,9 @@ struct FieldVectorMainTestCommons
     w *= a;
     w /= a;
 
+    // Negation
+    -v;
+
     // test scalar product, axpy
     a = v * w;
     a = v.dot(w);

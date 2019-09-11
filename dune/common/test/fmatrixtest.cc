@@ -416,6 +416,15 @@ void test_matrix()
       if (tmp.infinity_norm() > 1e-12)
         DUNE_THROW(FMatrixError, "Return value of axpy() incorrect!");
     }
+    // -Matrix
+    {
+      FM neg = -A;
+      FM ref = typename FM::field_type(-1) * A;
+
+      if ((neg-ref).infinity_norm() > 1e-12)
+        DUNE_THROW(FMatrixError, "Return value of operator-(matrix) incorrect!");
+    }
+
   }
   {
     using std::abs;
