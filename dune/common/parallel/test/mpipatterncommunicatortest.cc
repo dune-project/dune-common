@@ -18,7 +18,7 @@ int main(int argc, char** argv){
   int size = helper.size();
 
   // setup pattern
-  Dune::CommunicationPattern<> ring_pattern(rank,
+  Dune::CommunicationPattern<> ringPattern(rank,
                                             { // send pattern:
                                              {(rank+1)%size, {0,1,2}}
     },
@@ -26,12 +26,12 @@ int main(int argc, char** argv){
      {(rank+size-1)%size, {0,1,2}}
     });
 
-  std::cout << ring_pattern << std::endl;
+  std::cout << ringPattern << std::endl;
 
   typedef Dune::MPIPatternCommunicator<Dune::CommunicationPattern<>> Comm;
 
   {
-    Comm communicator(ring_pattern,helper.getCommunicator(), 8);
+    Comm communicator(ringPattern,helper.getCommunicator(), 8);
     std::vector<double> data(3);
     std::iota(data.begin(), data.end(), rank);
 
@@ -58,7 +58,7 @@ int main(int argc, char** argv){
 
   // test variable buffer size
   {
-    Comm communicator(ring_pattern, helper.getCommunicator());
+    Comm communicator(ringPattern, helper.getCommunicator());
     std::vector<double> data(3);
     std::iota(data.begin(), data.end(), rank);
 

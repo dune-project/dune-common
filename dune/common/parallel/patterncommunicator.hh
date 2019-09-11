@@ -20,60 +20,60 @@ namespace Dune {
     typedef std::unordered_map<int, Buffer> tag_to_buffer_map;
     typedef std::unordered_map<int, Future<Buffer&>> tag_to_future_map;
 
-    std::map<remote_type, tag_to_buffer_map> send_buffer;
-    std::map<remote_type, tag_to_buffer_map> recv_buffer;
+    std::map<remote_type, tag_to_buffer_map> sendBuffer;
+    std::map<remote_type, tag_to_buffer_map> recvBuffer;
 
-    std::map<remote_type, tag_to_future_map> send_futures;
-    std::map<remote_type, tag_to_future_map> recv_futures;
+    std::map<remote_type, tag_to_future_map> sendFutures;
+    std::map<remote_type, tag_to_future_map> recvFutures;
   public:
     PatternCommunicator(const Pattern& pattern,
                         Communication comm,
-                        size_t fixed_size_per_index = 0)
+                        size_t fixedSizePerIndex = 0)
       : PatternCommunicator(stackobject_to_shared_ptr(pattern)
                             , comm
-                            , fixed_size_per_index)
+                            , fixedSizePerIndex)
     {}
 
     PatternCommunicator(std::shared_ptr<const Pattern> pattern,
                         Communication comm,
-                        size_t fixed_size_per_index = 0)
+                        size_t fixedSizePerIndex = 0)
       : pattern_(pattern)
       , comm_(comm)
-      , fixed_size_per_index_(fixed_size_per_index)
+      , fixedSizePerIndex_(fixedSizePerIndex)
     {}
 
     void exchange(std::function<void(Buffer&, const index_type&)> gather,
                   std::function<void(Buffer&, const index_type&)> scatter,
                   int tag = 4711){
       // setup recv futures
-      if(fixed_size_per_index_){
+      if(fixedSizePerIndex_){
         for(const auto& pair : pattern_->recv_pattern()){
           const remote_type& remote = pair.first;
-          auto& future = recv_futures[remote][tag];
-          auto& buffer = recv_buffer[remote][tag];
-          buffer.reserve(pair.second.size()*fixed_size_per_index_);
+          auto& future = recvFutures[remote][tag];
+          auto& buffer = recvBuffer[remote][tag];
+          buffer.reserve(pair.second.size()*fixedSizePerIndex_);
           future = comm_.template irecv<Buffer&>(buffer, remote, tag);
         }
       }
       // setup send futures
       for(const auto& pair : pattern_->send_pattern()){
         const remote_type& remote = pair.first;
-        auto& future = send_futures[remote][tag];
-        auto& buffer = send_buffer[remote][tag];
+        auto& future = sendFutures[remote][tag];
+        auto& buffer = sendBuffer[remote][tag];
         if(future.valid())
           future.wait();
-        buffer.reserve(pair.second.size()*fixed_size_per_index_);
+        buffer.reserve(pair.second.size()*fixedSizePerIndex_);
         buffer.seek(0);
         for(const index_type& idx: pair.second){
           gather(buffer, idx);
         }
         future = comm_.template isend<Buffer&>(buffer, remote, tag);
       }
-      if(fixed_size_per_index_){
+      if(fixedSizePerIndex_){
         // finish recv futures:
         for(const auto& pair : pattern_->recv_pattern()){
           const remote_type& remote = pair.first;
-          auto& future = recv_futures[remote][tag];
+          auto& future = recvFutures[remote][tag];
           auto& buffer = future.get();
           buffer.seek(0);
           for(const index_type& idx : pair.second){
@@ -83,7 +83,7 @@ namespace Dune {
       }else{
         for(const auto& pair : pattern_->recv_pattern()){
           const remote_type& remote = pair.first;
-          auto& buffer = recv_buffer[remote][tag];
+          auto& buffer = recvBuffer[remote][tag];
           comm_.rrecv(buffer, remote, tag);
           buffer.seek(0);
           for(const index_type& idx : pair.second){
@@ -109,14 +109,14 @@ namespace Dune {
         tag);
     }
 
-    const Pattern& communication_pattern() const{
+    const Pattern& communicationPattern() const{
       return *pattern_;
     }
 
   protected:
     std::shared_ptr<const Pattern> pattern_;
     Communication comm_;
-    const size_t fixed_size_per_index_;
+    const size_t fixedSizePerIndex_;
   };
 
 #if HAVE_MPI

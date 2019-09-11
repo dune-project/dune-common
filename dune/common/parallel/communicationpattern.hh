@@ -15,34 +15,34 @@ namespace Dune {
   public:
     typedef RemoteType remote_type;
     typedef typename IndexContainer::value_type index_type;
-    typedef std::map<RemoteType, IndexContainer> MapRemoteToPattern;
+    typedef std::map<RemoteType, IndexContainer> map_remote_to_pattern;
 
     CommunicationPattern(const remote_type& me)
       : me_(me)
     {}
 
     CommunicationPattern(const remote_type& me,
-                         std::initializer_list<typename MapRemoteToPattern::value_type> sendInterface,
-                         std::initializer_list<typename MapRemoteToPattern::value_type> recvInterface)
+                         std::initializer_list<typename map_remote_to_pattern::value_type> sendInterface,
+                         std::initializer_list<typename map_remote_to_pattern::value_type> recvInterface)
       : me_(me)
-      , send_pattern_(sendInterface)
-      , recv_pattern_(recvInterface)
+      , sendPattern_(sendInterface)
+      , recvPattern_(recvInterface)
     {}
 
-    MapRemoteToPattern& send_pattern(){
-      return send_pattern_;
+    map_remote_to_pattern& sendPattern(){
+      return sendPattern_;
     }
 
-    MapRemoteToPattern& recv_pattern(){
-      return recv_pattern_;
+    map_remote_to_pattern& recvPattern(){
+      return recvPattern_;
     }
 
-    const MapRemoteToPattern& send_pattern() const {
-      return send_pattern_;
+    const map_remote_to_pattern& sendPattern() const {
+      return sendPattern_;
     }
 
-    const MapRemoteToPattern& recv_pattern() const{
-      return recv_pattern_;
+    const map_remote_to_pattern& recvPattern() const{
+      return recvPattern_;
     }
 
     const remote_type& me() const {
@@ -50,16 +50,16 @@ namespace Dune {
     }
 
     void strip(){
-      strip_pattern(send_pattern_);
-      strip_pattern(recv_pattern_);
+      stripPattern(sendPattern_);
+      stripPattern(recvPattern_);
     }
 
   protected:
     remote_type me_;
-    MapRemoteToPattern send_pattern_;
-    MapRemoteToPattern recv_pattern_;
+    map_remote_to_pattern sendPattern_;
+    map_remote_to_pattern recvPattern_;
 
-    static void strip_pattern(MapRemoteToPattern& pattern){
+    static void stripPattern(map_remote_to_pattern& pattern){
       for(auto it = pattern.begin(); it != pattern.end();){
         if(it->second.size() == 0)
           it = pattern.erase(it);
@@ -73,7 +73,7 @@ namespace Dune {
   inline std::ostream& operator<<(std::ostream& os, const CommunicationPattern<RemoteType, IndexType>& pattern)
   {
     os << "send pattern:" << std::endl;
-    for(const auto& pair : pattern.send_pattern()){
+    for(const auto& pair : pattern.sendPattern()){
       os << pair.first << ": [";
       for(const auto& idx : pair.second){
         os << idx << " ";
@@ -82,7 +82,7 @@ namespace Dune {
     }
 
     os << "recv pattern:" << std::endl;
-    for(const auto& pair : pattern.recv_pattern()){
+    for(const auto& pair : pattern.recvPattern()){
       os << pair.first << ": [";
       for(const auto& idx : pair.second){
         os << idx << " ";
@@ -94,31 +94,31 @@ namespace Dune {
 
 #if HAVE_MPI
   template<class RI, class SourceFlags, class DestFlags>
-  CommunicationPattern<> convertRemoteIndicesToCommunicationPattern(const RI& remote_indices,
-                                                                    const SourceFlags& source_flags,
-                                                                    const DestFlags& dest_flags){
+  CommunicationPattern<> convertRemoteIndicesToCommunicationPattern(const RI& remoteIndices,
+                                                                    const SourceFlags& sourceFlags,
+                                                                    const DestFlags& destFlags){
     int me = 0;
-    MPI_Comm_rank(remote_indices.communicator(), &me);
-    CommunicationPattern<> comm_pattern(me);
-    auto& send_patterns = comm_pattern.send_pattern();
-    auto& recv_patterns = comm_pattern.recv_pattern();
-    for(const auto& process : remote_indices){
+    MPI_Comm_rank(remoteIndices.communicator(), &me);
+    CommunicationPattern<> commPattern(me);
+    auto& sendPatterns = commPattern.sendPattern();
+    auto& recvPatterns = commPattern.recvPattern();
+    for(const auto& process : remoteIndices){
       auto remote = process.first;
-      auto& spattern = send_patterns[remote];
-      auto& rpattern = recv_patterns[remote];
+      auto& spattern = sendPatterns[remote];
+      auto& rpattern = recvPatterns[remote];
       for(const auto& indexPair : *process.second.first){
-        if(dest_flags.contains(indexPair.attribute()) &&
-           source_flags.contains(indexPair.localIndexPair().local().attribute()))
+        if(destFlags.contains(indexPair.attribute()) &&
+           sourceFlags.contains(indexPair.localIndexPair().local().attribute()))
           spattern.push_back(indexPair.localIndexPair().local().local());
       }
       for(const auto& indexPair : *process.second.second){
-        if(source_flags.contains(indexPair.attribute()) &&
-           dest_flags.contains(indexPair.localIndexPair().local().attribute()))
+        if(sourceFlags.contains(indexPair.attribute()) &&
+           destFlags.contains(indexPair.localIndexPair().local().attribute()))
           rpattern.push_back(indexPair.localIndexPair().local().local());
       }
     }
-    comm_pattern.strip();
-    return comm_pattern;
+    commPattern.strip();
+    return commPattern;
   }
 #endif
 }
