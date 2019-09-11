@@ -47,7 +47,7 @@ namespace Dune {
                   int tag = 4711){
       // setup recv futures
       if(fixedSizePerIndex_){
-        for(const auto& pair : pattern_->recv_pattern()){
+        for(const auto& pair : pattern_->recvPattern()){
           const remote_type& remote = pair.first;
           auto& future = recvFutures[remote][tag];
           auto& buffer = recvBuffer[remote][tag];
@@ -56,7 +56,7 @@ namespace Dune {
         }
       }
       // setup send futures
-      for(const auto& pair : pattern_->send_pattern()){
+      for(const auto& pair : pattern_->sendPattern()){
         const remote_type& remote = pair.first;
         auto& future = sendFutures[remote][tag];
         auto& buffer = sendBuffer[remote][tag];
@@ -71,7 +71,7 @@ namespace Dune {
       }
       if(fixedSizePerIndex_){
         // finish recv futures:
-        for(const auto& pair : pattern_->recv_pattern()){
+        for(const auto& pair : pattern_->recvPattern()){
           const remote_type& remote = pair.first;
           auto& future = recvFutures[remote][tag];
           auto& buffer = future.get();
@@ -81,7 +81,7 @@ namespace Dune {
           }
         }
       }else{
-        for(const auto& pair : pattern_->recv_pattern()){
+        for(const auto& pair : pattern_->recvPattern()){
           const remote_type& remote = pair.first;
           auto& buffer = recvBuffer[remote][tag];
           comm_.rrecv(buffer, remote, tag);
