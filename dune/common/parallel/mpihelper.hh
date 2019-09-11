@@ -8,9 +8,9 @@
 #include <mpi.h>
 #endif
 
-#include <dune/common/parallel/collectivecommunication.hh>
+#include <dune/common/parallel/communication.hh>
 #if HAVE_MPI
-#include <dune/common/parallel/mpicollectivecommunication.hh>
+#include <dune/common/parallel/mpicommunication.hh>
 #include <dune/common/stdstreams.hh>
 #endif
 #include <dune/common/visibility.hh>

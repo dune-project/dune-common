@@ -15,6 +15,10 @@ namespace Dune{
   class InvalidFutureException : public InvalidStateException
   {};
 
+  // forward declaration
+  template<class T>
+  class PseudoFuture;
+
   /*! \brief Type-erasure for future-like objects. A future-like object is a
     object satisfying the interface of FutureBase.
   */
@@ -66,6 +70,10 @@ namespace Dune{
     template<class F>
     Future(F&& f)
       : _future(std::make_unique<FutureModel<F>>(std::forward<F>(f)))
+    {}
+
+    Future(T&& data)
+      : _future(std::make_unique<FutureModel<PseudoFuture<T>>>(PseudoFuture<T>(std::forward<T>(data))))
     {}
 
     Future() = default;

@@ -9,6 +9,8 @@
 
 #if HAVE_MPI
 
+#include <dune/common/typetraits.hh>
+#include <dune/common/std/type_traits.hh>
 #include <dune/common/parallel/mpitraits.hh>
 
 /** @addtogroup ParallelCommunication
@@ -87,10 +89,12 @@ namespace Dune{
   // specializations:
   // std::vector of static sized elements or std::string
   template<class T>
-  struct MPIData<T, std::enable_if_t<
-                      (std::is_same<std::decay_t<T>, std::vector<typename std::decay_t<T>::value_type>>::value
-                       && MPIData<typename std::decay_t<T>::value_type>::static_size)
-                      || std::is_same<std::decay_t<T>, std::string>::value>>{
+  struct MPIData<T, void_t<std::tuple<decltype(std::declval<T>().data()),
+                                      decltype(std::declval<T>().size()),
+                                      typename std::decay_t<T>::value_type>>>{
+  private:
+    template<class U>
+    using hasResizeOp = decltype(std::declval<U>().resize(0));
 
   protected:
     friend auto getMPIData<T>(T&);
@@ -98,7 +102,7 @@ namespace Dune{
       : data_(t)
     {}
   public:
-    static constexpr bool static_size = std::is_const<T>::value;
+    static constexpr bool static_size = std::is_const<T>::value || !Std::is_detected_v<hasResizeOp, T>;
     void* ptr() {
       return (void*) data_.data();
     }
@@ -111,52 +115,13 @@ namespace Dune{
 
     template<class S = T>
     auto /*void*/ resize(int size)
-      -> std::enable_if_t<!std::is_const<S>::value>
+      -> std::enable_if_t<!std::is_const<S>::value || !Std::is_detected_v<hasResizeOp, S>>
     {
       data_.resize(size);
     }
 
   protected:
     T& data_;
-  };
-
-
-  // Dune::DynamicVector
-  template<class K, class Allocator> class DynamicVector;
-  template<class V> struct is_DynamicVector : std::false_type{};
-  template<class K, class Allocator> struct is_DynamicVector<DynamicVector<K, Allocator>> : std::true_type{};
-  template<class T>
-  struct MPIData<T, std::enable_if_t<is_DynamicVector<std::decay_t<T>>::value>>
-  {
-  protected:
-    friend auto getMPIData<T>(T&);
-
-    T& data_;
-
-    MPIData(T& t)
-      : data_(t)
-    {}
-  public:
-    static constexpr bool static_size = std::is_const<T>::value;
-
-    void* ptr() {
-      return (void*) data_.container().data();
-    }
-
-    int size() {
-      return data_.size();
-    }
-
-    MPI_Datatype type() const{
-      return MPITraits<typename std::decay_t<T>::value_type>::getType();
-    }
-
-    template<class S = T>
-    auto /*void*/ resize(int size)
-      -> std::enable_if_t<!std::is_const<S>::value>
-    {
-      data_.resize(size);
-    }
   };
 
 }
