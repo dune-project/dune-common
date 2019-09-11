@@ -340,7 +340,7 @@ void test_matrix()
 
   A[0][0] += 5; // Make matrix non-zero
   {
-    // Test that operator= and opeator-= work before we can test anything else
+    // Test that operator= and operator-= work before we can test anything else
     using FM = FieldMatrix<K,n,m>;
     FM A0 = A;
     {
