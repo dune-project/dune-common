@@ -10,7 +10,7 @@
 
 namespace Dune {
 
-  template<class RemoteType = int, class IndexContainer = std::set<std::size_t>>
+  template<class RemoteType = int, class IndexContainer = std::vector<std::size_t>>
   class CommunicationPattern {
   public:
     typedef RemoteType remote_type;

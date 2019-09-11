@@ -21,8 +21,8 @@ int main(){
     );
 
   // add manually
-  pattern.send_pattern()[3].insert(6);
-  pattern.recv_pattern()[666].insert(0);
+  pattern.send_pattern()[3].push_back(6);
+  pattern.recv_pattern()[666].push_back(0);
 
   pattern.strip();
   std::cout << pattern << std::endl;
