@@ -101,16 +101,6 @@ namespace Dune {
                  mpidata.type(), _comm);
     }
 
-    template<class T>
-    void write(const T& t){
-      pack(t);
-    }
-
-    template<class T>
-    void read(T& t){
-      unpack(t);
-    }
-
     //! @copydoc pack
     template<typename T>
     friend MPIPack& operator << (MPIPack& p, const T& t){
