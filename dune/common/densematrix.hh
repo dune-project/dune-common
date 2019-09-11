@@ -371,11 +371,55 @@ namespace Dune
     }
 
     //! vector space multiplication with scalar
+    template <class Scalar,
+              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
+    friend auto operator* ( const DenseMatrix& matrix, Scalar scalar)
+    {
+      MAT result;
+      typedef typename decltype(result)::size_type size_type;
+
+      for (size_type i = 0; i < matrix.rows(); ++i)
+        for (size_type j = 0; j < matrix.cols(); ++j)
+          result[i][j] = matrix[i][j] * scalar;
+
+      return result;
+    }
+
+    //! vector space multiplication with scalar
+    template <class Scalar,
+              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
+    friend auto operator* ( Scalar scalar, const DenseMatrix& matrix)
+    {
+      MAT result;
+      typedef typename decltype(result)::size_type size_type;
+
+      for (size_type i = 0; i < matrix.rows(); ++i)
+        for (size_type j = 0; j < matrix.cols(); ++j)
+          result[i][j] = scalar * matrix[i][j];
+
+      return result;
+    }
+
     derived_type &operator*= (const field_type& k)
     {
       for (size_type i=0; i<rows(); i++)
         (*this)[i] *= k;
       return asImp();
+    }
+
+    //! vector space division by scalar
+    template <class Scalar,
+              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
+    friend auto operator/ ( const DenseMatrix& matrix, Scalar scalar)
+    {
+      MAT result;
+      typedef typename decltype(result)::size_type size_type;
+
+      for (size_type i = 0; i < matrix.rows(); ++i)
+        for (size_type j = 0; j < matrix.cols(); ++j)
+          result[i][j] = matrix[i][j] / scalar;
+
+      return result;
     }
 
     //! vector space division by scalar

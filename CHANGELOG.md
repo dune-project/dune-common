@@ -33,6 +33,9 @@
   - Vector = Vector / Scalar
   - Matrix = Matrix + Matrix
   - Matrix = Matrix - Matrix
+  - Matrix = Scalar * Matrix
+  - Matrix = Matrix * Scalar
+  - Matrix = Matrix / Scalar
   - Matrix = - Matrix
 
   Note that the operators
