@@ -31,7 +31,14 @@
   - Vector = Scalar * Vector
   - Vector = Vector * Scalar
   - Vector = Vector / Scalar
+  - Matrix = Matrix + Matrix
+  - Matrix = Matrix - Matrix
   - Matrix = - Matrix
+
+  Note that the operators
+  - Vector = Vector + Vector
+  - Vector = Vector - Vector
+  have been introduced earlier.
 
 - There is now (finally!) a method `power` in the file `math.hh` that computes
   powers with an integer exponent, and is usable in compile-time expressions.
