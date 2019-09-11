@@ -416,6 +416,23 @@ void test_matrix()
       if (tmp.infinity_norm() > 1e-12)
         DUNE_THROW(FMatrixError, "Return value of axpy() incorrect!");
     }
+    // Matrix + Matrix
+    {
+      FM twiceA = A + A;
+      FM ref = typename FM::field_type(2)*A;
+
+      if ((twiceA-ref).infinity_norm() > 1e-12)
+        DUNE_THROW(FMatrixError, "Return value of operator+(matrix,matrix) incorrect!");
+    }
+
+    // Matrix - Matrix
+    {
+      FM zero = A - A;
+
+      if (zero.infinity_norm() > 1e-12)
+        DUNE_THROW(FMatrixError, "Return value of operator-(matrix,matrix) incorrect!");
+    }
+
     // -Matrix
     {
       FM neg = -A;

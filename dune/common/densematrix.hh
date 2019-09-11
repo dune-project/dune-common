@@ -311,7 +311,20 @@ namespace Dune
 
     //===== vector space arithmetic
 
-    //! vector space addition
+    //! vector space addition -- two-argument version
+    friend auto operator+ ( const DenseMatrix& matrixA, const DenseMatrix& matrixB)
+    {
+      MAT result;
+      typedef typename decltype(result)::size_type size_type;
+
+      for (size_type i = 0; i < matrixA.rows(); ++i)
+        for (size_type j = 0; j < matrixA.cols(); ++j)
+          result[i][j] = matrixA[i][j] + matrixB[i][j];
+
+      return result;
+    }
+
+    //! vector space addition -- one-argument version
     template <class Other>
     derived_type &operator+= (const DenseMatrix<Other>& x)
     {
@@ -319,6 +332,19 @@ namespace Dune
       for (size_type i=0; i<rows(); i++)
         (*this)[i] += x[i];
       return asImp();
+    }
+
+    //! vector space subtraction -- two-argument version
+    friend auto operator- ( const DenseMatrix& matrixA, const DenseMatrix& matrixB)
+    {
+      MAT result;
+      typedef typename decltype(result)::size_type size_type;
+
+      for (size_type i = 0; i < matrixA.rows(); ++i)
+        for (size_type j = 0; j < matrixA.cols(); ++j)
+          result[i][j] = matrixA[i][j] - matrixB[i][j];
+
+      return result;
     }
 
     //! Matrix negation
