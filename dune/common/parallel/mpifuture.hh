@@ -79,11 +79,6 @@ namespace Dune{
    */
   template<class R, class S = void>
   class MPIFuture{
-    template<class T>
-    friend class when_all_MPIFuture;
-
-    template<class T>
-    friend class when_any_MPIFuture;
     mutable MPI_Request req_;
     mutable MPI_Status status_;
     impl::Buffer<R> data_;
