@@ -36,6 +36,7 @@
   - Matrix = Scalar * Matrix
   - Matrix = Matrix * Scalar
   - Matrix = Matrix / Scalar
+  - Matrix = Matrix * Matrix   (for square matrices only)
   - Matrix = - Matrix
 
   Note that the operators
