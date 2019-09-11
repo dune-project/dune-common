@@ -91,6 +91,36 @@ namespace Dune {
     }
     return os;
   }
+
+#if HAVE_MPI
+  template<class RI, class SourceFlags, class DestFlags>
+  CommunicationPattern<> convertRemoteIndicesToCommunicationPattern(const RI& remote_indices,
+                                                                    const SourceFlags& source_flags,
+                                                                    const DestFlags& dest_flags){
+    int me = 0;
+    MPI_Comm_rank(remote_indices.communicator(), &me);
+    CommunicationPattern<> comm_pattern(me);
+    auto& send_patterns = comm_pattern.send_pattern();
+    auto& recv_patterns = comm_pattern.recv_pattern();
+    for(const auto& process : remote_indices){
+      auto remote = process.first;
+      auto& spattern = send_patterns[remote];
+      auto& rpattern = recv_patterns[remote];
+      for(const auto& indexPair : *process.second.first){
+        if(dest_flags.contains(indexPair.attribute()) &&
+           source_flags.contains(indexPair.localIndexPair().local().attribute()))
+          spattern.push_back(indexPair.localIndexPair().local().local());
+      }
+      for(const auto& indexPair : *process.second.second){
+        if(source_flags.contains(indexPair.attribute()) &&
+           dest_flags.contains(indexPair.localIndexPair().local().attribute()))
+          rpattern.push_back(indexPair.localIndexPair().local().local());
+      }
+    }
+    comm_pattern.strip();
+    return comm_pattern;
+  }
+#endif
 }
 
 #endif
