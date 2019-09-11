@@ -157,7 +157,7 @@ namespace Dune {
     /** @brief Gets the position in the buffer where the next
      * pack/unpack operation should take place.
      */
-    int peek() const{
+    int tell() const{
       return _position;
     }
 
