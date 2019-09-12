@@ -918,7 +918,7 @@ namespace Dune {
 
   template<typename T1, typename T2>
   RemoteIndex<T1,T2>::RemoteIndex(const T2& attribute, const PairType* local)
-    : localIndex_(local), attribute_(attribute)
+    : localIndex_(local), attribute_(static_cast<char>(attribute))
   {}
 
   template<typename T1, typename T2>

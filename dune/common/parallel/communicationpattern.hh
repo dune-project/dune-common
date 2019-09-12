@@ -10,9 +10,83 @@
 
 namespace Dune {
 
-  template<class RemoteType = int, class IndexContainer = std::vector<std::size_t>>
+  enum class CommunicationAttributes : char
+    {
+     owner=1,
+     overlap=2,
+     copy=4
+    };
+
+  std::ostream& operator<<(std::ostream& os, const CommunicationAttributes& a){
+    switch(a){
+    case(CommunicationAttributes::owner):
+      os << "owner";
+      break;
+    case(CommunicationAttributes::overlap):
+      os << "overlap";
+      break;
+    case(CommunicationAttributes::copy):
+      os << "copy";
+      break;
+    }
+    return os;
+  }
+
+  template<class IndexType = std::size_t, class Attribute = CommunicationAttributes>
+  class CommunicationIndex {
+    IndexType idx_;
+    Attribute localAttribute_;
+    Attribute remoteAttribute_;
+
+  public:
+    CommunicationIndex(const IndexType& idx,
+                       const Attribute& localAttribute,
+                       const Attribute& remoteAttribute)
+      : idx_(idx)
+      , localAttribute_(localAttribute)
+      , remoteAttribute_(remoteAttribute)
+    {}
+
+    const IndexType& index() const {
+      return idx_;
+    }
+
+    IndexType& index() {
+      return idx_;
+    }
+
+    const Attribute& localAttribute() const {
+      return localAttribute_;
+    }
+
+    Attribute& localAttribute() {
+      return localAttribute_;
+    }
+
+    const Attribute remoteAttribute() const {
+      return remoteAttribute_;
+    }
+
+    Attribute remoteAttribute() {
+      return remoteAttribute_;
+    }
+
+    friend std::ostream& operator <<(std::ostream& os,
+                            const CommunicationIndex& i){
+      os << "( " << i.index()
+         << ", local: " << i.localAttribute()
+         << ", remote: " << i.remoteAttribute()
+         << ")";
+      return os;
+    }
+  };
+
+  template<class Attribute = CommunicationAttributes,
+           class RemoteType = int,
+           class IndexContainer = std::vector<CommunicationIndex<size_t, Attribute>>>
   class CommunicationPattern {
   public:
+    typedef Attribute attribute_type;
     typedef RemoteType remote_type;
     typedef typename IndexContainer::value_type index_type;
     typedef std::map<RemoteType, IndexContainer> map_remote_to_pattern;
@@ -93,13 +167,17 @@ namespace Dune {
   }
 
 #if HAVE_MPI
-  template<class RI, class SourceFlags, class DestFlags>
-  CommunicationPattern<> convertRemoteIndicesToCommunicationPattern(const RI& remoteIndices,
-                                                                    const SourceFlags& sourceFlags,
-                                                                    const DestFlags& destFlags){
-    int me = 0;
-    MPI_Comm_rank(remoteIndices.communicator(), &me);
-    CommunicationPattern<> commPattern(me);
+  template<class RI>
+  CommunicationPattern<typename RI::Attribute>
+  convertRemoteIndicesToCommunicationPattern(const RI& remoteIndices){
+    // create a Communication, needed to determine own process number
+    Communication<std::decay_t<decltype(remoteIndices.communicator())>>
+      communication(remoteIndices.communicator());
+    // create nur CommunicationPattern
+    CommunicationPattern<typename RI::Attribute>
+      commPattern(communication.rank());
+
+    // fill the patterns
     auto& sendPatterns = commPattern.sendPattern();
     auto& recvPatterns = commPattern.recvPattern();
     for(const auto& process : remoteIndices){
@@ -107,14 +185,10 @@ namespace Dune {
       auto& spattern = sendPatterns[remote];
       auto& rpattern = recvPatterns[remote];
       for(const auto& indexPair : *process.second.first){
-        if(destFlags.contains(indexPair.attribute()) &&
-           sourceFlags.contains(indexPair.localIndexPair().local().attribute()))
-          spattern.push_back(indexPair.localIndexPair().local().local());
+        spattern.push_back({indexPair.localIndexPair().local().local(),indexPair.localIndexPair().local().attribute(), indexPair.attribute()});
       }
       for(const auto& indexPair : *process.second.second){
-        if(sourceFlags.contains(indexPair.attribute()) &&
-           destFlags.contains(indexPair.localIndexPair().local().attribute()))
-          rpattern.push_back(indexPair.localIndexPair().local().local());
+        rpattern.push_back({indexPair.localIndexPair().local().local(),indexPair.localIndexPair().local().attribute(), indexPair.attribute()});
       }
     }
     commPattern.strip();

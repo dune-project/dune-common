@@ -121,7 +121,8 @@ namespace Dune {
 
 #if HAVE_MPI
   template<class Pattern>
-  using MPIPatternCommunicator = PatternCommunicator<Pattern, Communication<MPI_Comm>, MPIPack>;
+  using MPIPatternCommunicator =
+    PatternCommunicator<Pattern, Communication<MPI_Comm>, MPIPack>;
 #endif
 }
 

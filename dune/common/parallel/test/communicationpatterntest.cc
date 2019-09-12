@@ -11,38 +11,40 @@
 
 using namespace Dune;
 
-enum Flags {
-  owner, overlap
-};
-
 
 int main(int argc, char** argv){
   auto& mpihelper = MPIHelper::instance(argc, argv);
-
+  using A=CommunicationAttributes;
   CommunicationPattern<> pattern(0,
-                                       {// send pattern:
-                                        {3, {1,4,7}},
-                                        {1, {4,3,1}},
-                                        {42, {}}
-    },
-                                        {// receive pattern:
-                                         {6, {1,2,3}},
-                                         {4711, {4,7,1}},
-                                         {3, {}}
-                                        }
-    );
+                                 {// send pattern:
+                                  {3, {{1, A::owner, A::overlap},
+                                       {4, A::owner, A::copy},
+                                       {7, A::overlap, A::owner}}},
+                                  {1, {{4, A::overlap, A::owner},
+                                       {3, A::owner, A::overlap},
+                                       {1, A::owner, A::copy}}}
+                                 },
+                                 {// receive pattern:
+                                  {3, {{1, A::owner, A::overlap},
+                                       {4, A::owner, A::copy},
+                                       {7, A::overlap, A::owner}}},
+                                  {1, {{4, A::overlap, A::owner},
+                                       {3, A::owner, A::overlap},
+                                       {1, A::owner, A::copy}}}
+                                 }
+                                 );
 
   // add manually
-  pattern.sendPattern()[3].push_back(6);
-  pattern.recvPattern()[666].push_back(0);
+  pattern.sendPattern()[3].push_back({6, A::owner, A::overlap});
+  pattern.recvPattern()[666].push_back({0, A::owner, A::owner});
 
   pattern.strip();
   std::cout << pattern << std::endl;
 
   // test to convert from RemoteIndices
-  #if HAVE_MPI
+#if HAVE_MPI
   mpihelper.getCommunication().barrier();
-  typedef ParallelIndexSet<int, ParallelLocalIndex<Flags>> PIS;
+  typedef ParallelIndexSet<int, ParallelLocalIndex<A>> PIS;
   PIS pis;
   int rank = mpihelper.rank();
   if(rank == 0)
@@ -53,23 +55,21 @@ int main(int argc, char** argv){
   pis.beginResize();
   for(int li = 0; li < N+2*overlap; ++li){
     int gi = (li+rank*N-overlap+size*N)%(size*N);
-    Flags flag;
+    A flag;
     if(li<overlap || li >= N+overlap)
-      flag = Flags::overlap;
+      flag = A::overlap;
     else
-      flag = Flags::owner;
+      flag = A::owner;
     bool isPublic = li < 2*overlap || li > N-overlap;
     pis.add(gi,
-            ParallelLocalIndex<Flags>(li, flag, isPublic));
+            ParallelLocalIndex<A>(li, flag, isPublic));
   }
   pis.endResize();
-  RemoteIndices<PIS> ri(pis, pis, mpihelper.getCommunication());
+  RemoteIndices<PIS> ri(pis, pis, mpihelper.getCommunication(), {}, true);
   ri.rebuild<true>();
-  CommunicationPattern<> remoteIndicesPattern = convertRemoteIndicesToCommunicationPattern(ri,
-                                              EnumItem<Flags, Flags::owner>{},
-                                              AllSet<Flags>{});
+  auto remoteIndicesPattern = convertRemoteIndicesToCommunicationPattern(ri);
 
   std::cout << remoteIndicesPattern << std::endl;
-  #endif
+#endif
   return 0;
 }
