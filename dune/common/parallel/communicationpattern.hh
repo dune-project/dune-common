@@ -177,7 +177,7 @@ namespace Dune {
     // create a Communication, needed to determine own process number
     Communication<std::decay_t<decltype(remoteIndices.communicator())>>
       communication(remoteIndices.communicator());
-    // create nur CommunicationPattern
+    // create new CommunicationPattern
     CommunicationPattern<typename RI::Attribute>
       commPattern(communication.rank());
 

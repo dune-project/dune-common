@@ -75,19 +75,25 @@ namespace Dune {
       }
     }
 
-    template<class V, class ReductionFunctor>
+    template<class V, class FromSet, class ToSet, class ReductionFunctor>
     void exchange(const V& source,
                   V& dest,
+                  FromSet fromSet,
+                  ToSet toSet,
                   const ReductionFunctor& reduction_functor,
                   int tag = 4712){
       exchange([&](auto& buf, const auto& idx){
-                 buf.write(source[idx]);
+                 if(fromSet.contains(idx.localAttribute()) &&
+                    toSet.contains(idx.remoteAttribute()))
+                   buf.write(source[idx]);
                },
         [&](auto& buf, const auto& idx){
-          auto temp = dest[idx];
-          buf.read(temp);
-          dest[idx] = reduction_functor(dest[idx], temp);
-        },
+          if(toSet.contains(idx.localAttribute()) &&
+             fromSet.contains(idx.remoteAttribute())){
+            auto temp = dest[idx];
+            buf.read(temp);
+            dest[idx] = reduction_functor(dest[idx], temp);
+          }},
         tag);
     }
 
