@@ -16,79 +16,61 @@ namespace Dune {
 
     typedef typename Pattern::remote_type remote_type;
     typedef typename Pattern::index_type index_type;
+    typedef Buffer buffer_type;
 
     typedef std::unordered_map<int, Buffer> tag_to_buffer_map;
     typedef std::unordered_map<int, Future<Buffer&>> tag_to_future_map;
 
-    std::map<remote_type, tag_to_buffer_map> sendBuffer;
-    std::map<remote_type, tag_to_buffer_map> recvBuffer;
+    std::map<remote_type, tag_to_buffer_map> sendBuffers_;
+    std::map<remote_type, tag_to_buffer_map> recvBuffers_;
 
-    std::map<remote_type, tag_to_future_map> sendFutures;
-    std::map<remote_type, tag_to_future_map> recvFutures;
+    std::map<remote_type, tag_to_future_map> sendFutures_;
+    std::map<remote_type, tag_to_future_map> recvFutures_;
   public:
     PatternCommunicator(const Pattern& pattern,
-                        Communication comm,
-                        size_t fixedSizePerIndex = 0)
+                        Communication comm)
       : PatternCommunicator(stackobject_to_shared_ptr(pattern)
-                            , comm
-                            , fixedSizePerIndex)
+                            , comm)
     {}
 
     PatternCommunicator(std::shared_ptr<const Pattern> pattern,
-                        Communication comm,
-                        size_t fixedSizePerIndex = 0)
+                        Communication comm)
       : pattern_(pattern)
       , comm_(comm)
-      , fixedSizePerIndex_(fixedSizePerIndex)
     {}
 
-    void exchange(std::function<void(Buffer&, const index_type&)> gather,
-                  std::function<void(Buffer&, const index_type&)> scatter,
+    /*
+      GATHERFUN and SCATTERFUN are functors with the following interface:
+      void(buffer_type&, index_type)
+
+      where the buffer can be accessed via `read` and `write` methods and the
+      index can be implicitly casted to size_t and provide access to the local
+      and remote attribute via `localAttribute()` and `remoteAttribute()`.
+     */
+    template<class GATHERFUN, class SCATTERFUN>
+    void exchange(GATHERFUN gather,
+                  SCATTERFUN scatter,
                   int tag = 4711){
-      // setup recv futures
-      if(fixedSizePerIndex_){
-        for(const auto& pair : pattern_->recvPattern()){
-          const remote_type& remote = pair.first;
-          auto& future = recvFutures[remote][tag];
-          auto& buffer = recvBuffer[remote][tag];
-          buffer.reserve(pair.second.size()*fixedSizePerIndex_);
-          future = comm_.template irecv<Buffer&>(buffer, remote, tag);
-        }
-      }
       // setup send futures
       for(const auto& pair : pattern_->sendPattern()){
         const remote_type& remote = pair.first;
-        auto& future = sendFutures[remote][tag];
-        auto& buffer = sendBuffer[remote][tag];
+        auto& future = sendFutures_[remote][tag];
+        auto& buffer = sendBuffers_[remote][tag];
         if(future.valid())
           future.wait();
-        buffer.reserve(pair.second.size()*fixedSizePerIndex_);
         buffer.seek(0);
         for(const index_type& idx: pair.second){
           gather(buffer, idx);
         }
         future = comm_.template isend<Buffer&>(buffer, remote, tag);
       }
-      if(fixedSizePerIndex_){
-        // finish recv futures:
-        for(const auto& pair : pattern_->recvPattern()){
-          const remote_type& remote = pair.first;
-          auto& future = recvFutures[remote][tag];
-          auto& buffer = future.get();
-          buffer.seek(0);
-          for(const index_type& idx : pair.second){
-            scatter(buffer, idx);
-          }
-        }
-      }else{
-        for(const auto& pair : pattern_->recvPattern()){
-          const remote_type& remote = pair.first;
-          auto& buffer = recvBuffer[remote][tag];
-          comm_.rrecv(buffer, remote, tag);
-          buffer.seek(0);
-          for(const index_type& idx : pair.second){
-            scatter(buffer, idx);
-          }
+      for(const auto& pair : pattern_->recvPattern()){
+        const remote_type& remote = pair.first;
+        auto& buffer = recvBuffers_[remote][tag];
+        comm_.rrecv(buffer, remote, tag);
+        buffer.seek(0);
+        for(const index_type& idx : pair.second){
+          scatter(buffer, idx);
         }
       }
     }
@@ -116,7 +98,6 @@ namespace Dune {
   protected:
     std::shared_ptr<const Pattern> pattern_;
     Communication comm_;
-    const size_t fixedSizePerIndex_;
   };
 
 #if HAVE_MPI

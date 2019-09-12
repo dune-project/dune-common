@@ -12,61 +12,47 @@
 #include <dune/common/parallel/patterncommunicator.hh>
 #include <dune/common/exceptions.hh>
 
+using namespace Dune;
+
 int main(int argc, char** argv){
-  auto& helper = Dune::MPIHelper::instance(argc, argv);
+  auto& helper = MPIHelper::instance(argc, argv);
   int rank = helper.rank();
   int size = helper.size();
 
+  using A=CommunicationAttributes;
   // setup pattern
-  Dune::CommunicationPattern<> ringPattern(rank,
-                                            { // send pattern:
-                                             {(rank+1)%size, {0,1,2}}
-    },
-    { // recv pattern
-     {(rank+size-1)%size, {0,1,2}}
-    });
+  CommunicationPattern<> ringPattern(rank,
+                                     { // send pattern:
+                                      {(rank+1)%size,
+                                       {{0, A::owner, A::copy},
+                                        {1, A::owner, A::overlap},
+                                        {2, A::overlap, A::owner},
+                                        {3, A::copy, A::owner}}
+                                      }},
+                                      { // recv pattern
+                                       {(rank+size-1)%size,
+                                        {{2, A::overlap, A::owner},
+                                         {3, A::copy, A::owner},
+                                         {0, A::owner, A::copy},
+                                         {1, A::owner, A::overlap}}
+                                       }});
 
   std::cout << ringPattern << std::endl;
 
   typedef Dune::MPIPatternCommunicator<Dune::CommunicationPattern<>> Comm;
 
   {
-    Comm communicator(ringPattern,helper.getCommunicator(), 8);
-    std::vector<double> data(3);
-    std::iota(data.begin(), data.end(), rank);
-
-    communicator.exchange([&](auto& buf, auto& idx){ buf.write(data[idx]); },
-                          [&](auto& buf, auto& idx){ buf.read(data[idx]); });
-    if(data[0] != (rank+1)%size)
-      DUNE_THROW(Dune::Exception, "wrong data after communication");
-    std::cout << "Rank " << rank << " data:" << std::endl;
-    for(double& d : data){
-      std::cout << d << " " << std::endl;
-    }
-
-    helper.getCommunication().barrier();
-
-    communicator.exchange(data, data, std::plus<double>{});
-    if(data[0] != (rank+1)%size + (rank+2)%size)
-      DUNE_THROW(Dune::Exception, "wrong data after communication");
-    std::cout << "Rank " << rank << " data:" << std::endl;
-    for(double& d : data){
-      std::cout << d << " " << std::endl;
-    }
-  }
-
-
-  // test variable buffer size
-  {
     Comm communicator(ringPattern, helper.getCommunicator());
-    std::vector<double> data(3);
+    std::vector<double> data(4);
     std::iota(data.begin(), data.end(), rank);
 
     // communicate one double
-    communicator.exchange([&](auto& buf, auto& idx){ buf.write(data[idx]); },
-                          [&](auto& buf, auto& idx){ buf.read(data[idx]); });
-    if(data[0] != (rank+1)%size)
-      DUNE_THROW(Dune::Exception, "wrong data after communication");
+    communicator.exchange([&](auto& buf, auto& idx){
+                            buf.write(data[idx]);
+                          },
+                          [&](auto& buf, auto& idx){
+                            buf.read(data[idx]);
+                          });
 
     // communicate two double
     communicator.exchange([&](auto& buf, auto& idx){
@@ -78,12 +64,27 @@ int main(int argc, char** argv){
                             buf.read(y);
                             data[idx] = x+y;
                           });
-    if(data[0] != (rank+2)%size+(rank+2)%size+1)
-      DUNE_THROW(Dune::Exception, "wrong data after communication");
-    std::cout << "Rank " << rank << " data:" << std::endl;
-    for(double& d : data){
-      std::cout << d << " " << std::endl;
-    }
+
+    // make consistent:
+    communicator.exchange([&](auto& buf, auto& idx){
+                           if(idx.localAttribute()==A::owner)
+                             buf.write(data[idx]);
+                         },
+                         [&](auto& buf, auto& idx){
+                           if(idx.remoteAttribute()==A::owner)
+                             buf.read(data[idx]);
+                         });
+
+    // check consistency:
+    communicator.exchange([&](auto& buf, auto& idx){
+                            buf.write(data[idx]);
+                          },
+                          [&](auto& buf, auto& idx){
+                            double temp;
+                            buf.read(temp);
+                            if(temp != data[idx])
+                              DUNE_THROW(Exception, "data is not consistent");
+                          });
   }
   return 0;
 }

@@ -55,6 +55,10 @@ namespace Dune {
       return idx_;
     }
 
+    operator const IndexType& () const{
+      return idx_;
+    }
+
     const Attribute& localAttribute() const {
       return localAttribute_;
     }
