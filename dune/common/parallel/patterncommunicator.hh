@@ -52,7 +52,7 @@ namespace Dune {
                   SCATTERFUN scatter,
                   int tag = 4711){
       // setup send futures
-      for(const auto& pair : pattern_->sendPattern()){
+      for(const auto& pair : *pattern_){
         const remote_type& remote = pair.first;
         auto& future = sendFutures_[remote][tag];
         auto& buffer = sendBuffers_[remote][tag];
@@ -64,7 +64,7 @@ namespace Dune {
         }
         future = comm_.template isend<Buffer&>(buffer, remote, tag);
       }
-      for(const auto& pair : pattern_->recvPattern()){
+      for(const auto& pair : *pattern_){
         const remote_type& remote = pair.first;
         auto& buffer = recvBuffers_[remote][tag];
         comm_.rrecv(buffer, remote, tag);

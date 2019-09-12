@@ -21,21 +21,20 @@ int main(int argc, char** argv){
 
   using A=CommunicationAttributes;
   // setup pattern
-  CommunicationPattern<> ringPattern(rank,
-                                     { // send pattern:
-                                      {(rank+1)%size,
-                                       {{0, A::owner, A::copy},
-                                        {1, A::owner, A::overlap},
-                                        {2, A::overlap, A::owner},
-                                        {3, A::copy, A::owner}}
-                                      }},
-                                      { // recv pattern
-                                       {(rank+size-1)%size,
-                                        {{2, A::overlap, A::owner},
-                                         {3, A::copy, A::owner},
-                                         {0, A::owner, A::copy},
-                                         {1, A::owner, A::overlap}}
-                                       }});
+  CommunicationPattern<> ringPattern(rank);
+  ringPattern[(rank+1)%size] = // right neighbor
+    {{2, A::overlap, A::owner},
+     {3, A::copy, A::owner}};
+  // use insert to cover the case where size==1 or size==2
+  // (then both neighbors are the same)
+  auto insert_it = ringPattern[(rank-1+size)%size].begin();
+  if(size==2 && rank==1)
+    insert_it = ringPattern[(rank-1+size)%size].end();
+  ringPattern[(rank-1+size)%size].insert( // left neighbor
+    insert_it,
+    {{0, A::owner, A::overlap},
+     {1, A::owner, A::copy}
+    });
 
   std::cout << ringPattern << std::endl;
 

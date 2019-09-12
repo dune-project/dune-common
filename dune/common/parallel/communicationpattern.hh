@@ -92,35 +92,42 @@ namespace Dune {
   public:
     typedef Attribute attribute_type;
     typedef RemoteType remote_type;
+    typedef IndexContainer index_container;
     typedef typename IndexContainer::value_type index_type;
-    typedef std::map<RemoteType, IndexContainer> map_remote_to_pattern;
+    typedef std::map<RemoteType, IndexContainer> map_remote_to_indices;
 
     CommunicationPattern(const remote_type& me)
       : me_(me)
     {}
 
     CommunicationPattern(const remote_type& me,
-                         std::initializer_list<typename map_remote_to_pattern::value_type> sendInterface,
-                         std::initializer_list<typename map_remote_to_pattern::value_type> recvInterface)
+                         std::initializer_list<typename map_remote_to_indices::value_type> pattern)
       : me_(me)
-      , sendPattern_(sendInterface)
-      , recvPattern_(recvInterface)
+      , pattern_(pattern)
     {}
 
-    map_remote_to_pattern& sendPattern(){
-      return sendPattern_;
+    index_container& operator[](const remote_type& r){
+      return pattern_[r];
     }
 
-    map_remote_to_pattern& recvPattern(){
-      return recvPattern_;
+    const index_container& operator[](const remote_type& r) const{
+      return pattern_[r];
     }
 
-    const map_remote_to_pattern& sendPattern() const {
-      return sendPattern_;
+    auto begin(){
+      return pattern_.begin();
     }
 
-    const map_remote_to_pattern& recvPattern() const{
-      return recvPattern_;
+    auto begin() const{
+      return pattern_.begin();
+    }
+
+    auto end(){
+      return pattern_.end();
+    }
+
+    auto end() const {
+      return pattern_.end();
     }
 
     const remote_type& me() const {
@@ -128,16 +135,28 @@ namespace Dune {
     }
 
     void strip(){
-      stripPattern(sendPattern_);
-      stripPattern(recvPattern_);
+      stripPattern(pattern_);
+    }
+
+    // extracts a subset of indices with given local attribute
+    template<class LocalAttributeSet>
+    std::set<size_t> getSubSet(LocalAttributeSet localAttributeSet){
+      std::set<size_t> set;
+      for(const auto& pair : pattern_){
+        for(const auto& index : pair.second){
+          if(localAttributeSet.contains(index.localAttribute()) &&
+             remoteAttributeSet.contains(index.remoteAttribute()))
+            set.insert(index);
+        }
+      }
+      return set;
     }
 
   protected:
     remote_type me_;
-    map_remote_to_pattern sendPattern_;
-    map_remote_to_pattern recvPattern_;
+    map_remote_to_indices pattern_;
 
-    static void stripPattern(map_remote_to_pattern& pattern){
+    static void stripPattern(map_remote_to_indices& pattern){
       for(auto it = pattern.begin(); it != pattern.end();){
         if(it->second.size() == 0)
           it = pattern.erase(it);
@@ -150,17 +169,7 @@ namespace Dune {
   template<class RemoteType, class IndexType>
   inline std::ostream& operator<<(std::ostream& os, const CommunicationPattern<RemoteType, IndexType>& pattern)
   {
-    os << "send pattern:" << std::endl;
-    for(const auto& pair : pattern.sendPattern()){
-      os << pair.first << ": [";
-      for(const auto& idx : pair.second){
-        os << idx << " ";
-      }
-      os << "]" << std::endl;
-    }
-
-    os << "recv pattern:" << std::endl;
-    for(const auto& pair : pattern.recvPattern()){
+    for(const auto& pair : pattern){
       os << pair.first << ": [";
       for(const auto& idx : pair.second){
         os << idx << " ";
@@ -182,17 +191,18 @@ namespace Dune {
       commPattern(communication.rank());
 
     // fill the patterns
-    auto& sendPatterns = commPattern.sendPattern();
-    auto& recvPatterns = commPattern.recvPattern();
     for(const auto& process : remoteIndices){
       auto remote = process.first;
-      auto& spattern = sendPatterns[remote];
-      auto& rpattern = recvPatterns[remote];
-      for(const auto& indexPair : *process.second.first){
-        spattern.push_back({indexPair.localIndexPair().local().local(),indexPair.localIndexPair().local().attribute(), indexPair.attribute()});
-      }
-      for(const auto& indexPair : *process.second.second){
-        rpattern.push_back({indexPair.localIndexPair().local().local(),indexPair.localIndexPair().local().attribute(), indexPair.attribute()});
+      auto& indices = commPattern[remote];
+      if(remote < communication.rank()){ // the ordering of the indices that the smaller process
+                       // sends to the larger on is the order we obtain here
+        for(const auto& indexPair : *process.second.first){
+          indices.push_back({indexPair.localIndexPair().local().local(),indexPair.localIndexPair().local().attribute(), indexPair.attribute()});
+        }
+      }else{
+        for(const auto& indexPair : *process.second.second){
+          indices.push_back({indexPair.localIndexPair().local().local(),indexPair.localIndexPair().local().attribute(), indexPair.attribute()});
+        }
       }
     }
     commPattern.strip();

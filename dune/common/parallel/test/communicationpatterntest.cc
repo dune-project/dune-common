@@ -23,20 +23,10 @@ int main(int argc, char** argv){
                                   {1, {{4, A::overlap, A::owner},
                                        {3, A::owner, A::overlap},
                                        {1, A::owner, A::copy}}}
-                                 },
-                                 {// receive pattern:
-                                  {3, {{1, A::owner, A::overlap},
-                                       {4, A::owner, A::copy},
-                                       {7, A::overlap, A::owner}}},
-                                  {1, {{4, A::overlap, A::owner},
-                                       {3, A::owner, A::overlap},
-                                       {1, A::owner, A::copy}}}
-                                 }
-                                 );
+                                 });
 
   // add manually
-  pattern.sendPattern()[3].push_back({6, A::owner, A::overlap});
-  pattern.recvPattern()[666].push_back({0, A::owner, A::owner});
+  pattern[3].push_back({6, A::owner, A::overlap});
 
   pattern.strip();
   std::cout << pattern << std::endl;
