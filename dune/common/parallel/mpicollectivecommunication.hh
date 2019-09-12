@@ -1,2 +1,3 @@
-#warning "Deprecated header, use #include <dune/common/parallel/mpicommunication.hh> instead!"
+// Will be deprecated after the 2.7 release
+//#warning "Deprecated header, use #include <dune/common/parallel/mpicommunication.hh> instead!"
 #include <dune/common/parallel/mpicommunication.hh>

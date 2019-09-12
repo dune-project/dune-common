@@ -520,7 +520,8 @@ namespace Dune
 
   template<class T>
   using CollectiveCommunication
-  [[deprecated("CollectiveCommunication is deprecated. Use Communication instead.")]]
+  // Will be deprecated after the 2.7 release
+  //[[deprecated("CollectiveCommunication is deprecated. Use Communication instead.")]]
   = Communication<T>;
 }
 
