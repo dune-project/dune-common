@@ -742,6 +742,7 @@ usage () {
     echo "      --resume        resume a previous run (only consider the modules"
     echo "                      not built successfully on the previous run)"
     echo "      --skipfirst     skip the first module (use with --resume)"
+    echo "      --skipversioncheck      do not perform version checks when looking for other Dune modules"
     echo "      --opts=FILE     load default options from FILE"
     echo "      --builddir=NAME make out-of-source builds in a subdir NAME."
     echo "                      This directory is created inside each module."
