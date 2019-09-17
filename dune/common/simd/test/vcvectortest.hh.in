@@ -3,6 +3,8 @@
 #ifndef DUNE_COMMON_SIMD_TEST_VCTEST_HH
 #define DUNE_COMMON_SIMD_TEST_VCTEST_HH
 
+#if HAVE_VC
+
 #include <cstdint>
 
 #include <dune/common/simd/test.hh>
@@ -20,4 +22,5 @@ namespace Dune {
   } // namespace Simd
 } // namespace Dune
 
+#endif // HAVE_VC
 #endif // DUNE_COMMON_SIMD_TEST_VCTEST_HH
