@@ -1019,14 +1019,15 @@ endfunction(dune_expand_object_libraries)
 # More docu can be found at the top of this file.
 macro(dune_add_library basename)
   include(CMakeParseArguments)
-  cmake_parse_arguments(DUNE_LIB ";APPEND;NO_EXPORT;OBJECT" "COMPILE_FLAGS"
+  cmake_parse_arguments(DUNE_LIB "APPEND;NO_EXPORT;OBJECT" "COMPILE_FLAGS"
     "ADD_LIBS;SOURCES" ${ARGN})
+  list(APPEND DUNE_LIB_SOURCES ${DUNE_LIB_UNPARSED_ARGUMENTS})
   if(DUNE_LIB_OBJECT)
     if(DUNE_LIB_${basename}_SOURCES)
       message(FATAL_ERROR "There is already a library with the name ${basename}, "
         "but only one is allowed!")
     else()
-      foreach(source ${DUNE_LIB_UNPARSED_ARGUMENTS})
+      foreach(source ${DUNE_LIB_SOURCES})
         list(APPEND full_path_sources ${CMAKE_CURRENT_SOURCE_DIR}/${source})
       endforeach()
       # register sources, libs and flags for building the library later
@@ -1047,7 +1048,6 @@ macro(dune_add_library basename)
         "${DUNE_LIB_COMPILE_FLAGS}")
     endif()
   else(DUNE_LIB_OBJECT)
-    list(APPEND DUNE_LIB_SOURCES ${DUNE_LIB_UNPARSED_ARGUMENTS})
     dune_expand_object_libraries(DUNE_LIB_SOURCES DUNE_LIB_ADD_LIBS DUNE_LIB_COMPILE_FLAGS)
     #create lib
     add_library(${basename} ${DUNE_LIB_SOURCES})
