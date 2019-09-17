@@ -1,5 +1,9 @@
 add_subdirectory(test)
 
+if(NOT VC_FOUND)
+  exclude_dir_from_headercheck()
+endif()
+
 #install headers
 install(FILES
   base.hh
