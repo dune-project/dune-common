@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <utility>
 
+#include <dune/common/exceptions.hh>
 #include <dune/common/typetraits.hh>
 
 namespace Dune
