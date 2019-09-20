@@ -75,10 +75,16 @@ class Builder:
                         with Lock(os.path.join(self.dune_py_dir, 'lock-all.lock'), flags=LOCK_EX):
                             with open(os.path.join(sourceFileName), 'w') as out:
                                 out.write(code)
-                            with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'a') as out:
-                                out.write("dune_add_pybind11_module(NAME " + moduleName + " EXCLUDE_FROM_ALL)\n")
-                            # update build system
-                            self.compile()
+                            line = "dune_add_pybind11_module(NAME " + moduleName + " EXCLUDE_FROM_ALL)"
+                            # first check if trhis line is already present in the CMakeLists file
+                            # (possible if a previous script was stopped by user before module was compiled)
+                            with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'r') as out:
+                                found = line in out.read()
+                            if not found:
+                                with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'a') as out:
+                                    out.write(line+"\n")
+                                # update build system
+                                self.compile()
                     elif isString(source) and not source == open(os.path.join(sourceFileName), 'r').read():
                         logger.info("Loading " + pythonName + " (updated)")
                         code = str(source)
