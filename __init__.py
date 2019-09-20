@@ -3,7 +3,7 @@ import os, logging
 from dune.common.module import getCXXFlags
 from .exceptions import CompileError, ConfigurationError
 from .builder import Builder
-import dune.generator.builder as builderModule
+from . import builder as builderModule
 
 logger = logging.getLogger(__name__)
 
