@@ -40,6 +40,9 @@ def reset():
     unsetFlags()
     setDependencyCheck()
 
+def path(f):
+    return os.path.dirname(os.path.realpath(f))+"/"
+
 class Constructor(object):
     def __init__(self, args, body=None, extra=None):
         self.args = args
