@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "dynmatrix.hh"
+#include "fmatrixev.hh"
 
 /*!
    \file
@@ -19,12 +20,7 @@ namespace Dune {
 
   namespace DynamicMatrixHelp {
 
-    // defined in fmatrixev_ext.cpp
-    extern void eigenValuesNonsymLapackCall(
-      const char* jobvl, const char* jobvr, const long
-      int* n, double* a, const long int* lda, double* wr, double* wi, double* vl,
-      const long int* ldvl, double* vr, const long int* ldvr, double* work,
-      const long int* lwork, const long int* info);
+    using Dune::FMatrixHelp::eigenValuesNonsymLapackCall;
 
     /** \brief calculates the eigenvalues of a symmetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for

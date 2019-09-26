@@ -17,7 +17,6 @@ endif(HAVE_MPROTECT)
 dune_add_library("dunecommon"
   debugalign.cc
   ${debugallocator_src}
-  dynmatrixev.cc
   exceptions.cc
   fmatrixev.cc
   ios_state.cc
