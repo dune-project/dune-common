@@ -35,7 +35,7 @@ namespace Dune {
       const char* jobvl, const char* jobvr, const long
       int* n, double* a, const long int* lda, double* wr, double* wi, double* vl,
       const long int* ldvl, double* vr, const long int* ldvr, double* work,
-      const long int* lwork, const long int* info);
+      const long int* lwork, long int* info);
 
     /** \brief calculates the eigenvalues of a symmetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
