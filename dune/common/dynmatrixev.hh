@@ -40,7 +40,7 @@ namespace Dune {
 
 
         // matrix to put into dgeev
-        std::unique_ptr<double[]> matrixVector = std::make_unique<double[]>(N*N);
+        auto matrixVector = std::make_unique<double[]>(N*N);
 
         // copy matrix
         int row = 0;
@@ -53,17 +53,17 @@ namespace Dune {
         }
 
         // working memory
-        std::unique_ptr<double[]> eigenR = std::make_unique<double[]>(N);
-        std::unique_ptr<double[]> eigenI = std::make_unique<double[]>(N);
-        std::unique_ptr<double[]> work = std::make_unique<double[]>(3*N);
+        auto eigenR = std::make_unique<double[]>(N);
+        auto eigenI = std::make_unique<double[]>(N);
+        auto work = std::make_unique<double[]>(3*N);
 
         // return value information
         long int info = 0;
-        long int lwork = 3*N;
+        const long int lwork = 3*N;
 
         // call LAPACK routine (see fmatrixev_ext.cc)
-        eigenValuesNonsymLapackCall(&jobvl, &jobvr, &N, &matrixVector[0], &N,
-                                    &eigenR[0], &eigenI[0], 0, &N, 0, &N, &work[0],
+        eigenValuesNonsymLapackCall(&jobvl, &jobvr, &N, matrixVector.get(), &N,
+                                    eigenR.get(), eigenI.get(), nullptr, &N, nullptr, &N, work.get(),
                                     &lwork, &info);
 
         if( info != 0 )

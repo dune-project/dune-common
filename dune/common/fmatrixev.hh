@@ -225,11 +225,11 @@ namespace Dune {
 
         // return value information
         long int info = 0;
-        long int lwork = 3*dim;
+        const long int lwork = 3*dim;
 
         // call LAPACK routine (see fmatrixev_ext.cc)
         eigenValuesNonsymLapackCall(&jobvl, &jobvr, &N, &matrixVector[0], &N,
-                                    &eigenR[0], &eigenI[0], 0, &N, 0, &N, &work[0],
+                                    &eigenR[0], &eigenI[0], nullptr, &N, nullptr, &N, &work[0],
                                     &lwork, &info);
 
         if( info != 0 )
