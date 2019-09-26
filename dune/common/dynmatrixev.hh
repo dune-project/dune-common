@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "dynmatrix.hh"
+#include "fmatrixev.hh"
 
 /*!
    \file
@@ -19,12 +20,7 @@ namespace Dune {
 
   namespace DynamicMatrixHelp {
 
-    // defined in fmatrixev_ext.cpp
-    extern void eigenValuesNonsymLapackCall(
-      const char* jobvl, const char* jobvr, const long
-      int* n, double* a, const long int* lda, double* wr, double* wi, double* vl,
-      const long int* ldvl, double* vr, const long int* ldvr, double* work,
-      const long int* lwork, const long int* info);
+    using Dune::FMatrixHelp::eigenValuesNonsymLapackCall;
 
     /** \brief calculates the eigenvalues of a symmetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
@@ -44,7 +40,7 @@ namespace Dune {
 
 
         // matrix to put into dgeev
-        std::unique_ptr<double[]> matrixVector = std::make_unique<double[]>(N*N);
+        auto matrixVector = std::make_unique<double[]>(N*N);
 
         // copy matrix
         int row = 0;
@@ -57,17 +53,17 @@ namespace Dune {
         }
 
         // working memory
-        std::unique_ptr<double[]> eigenR = std::make_unique<double[]>(N);
-        std::unique_ptr<double[]> eigenI = std::make_unique<double[]>(N);
-        std::unique_ptr<double[]> work = std::make_unique<double[]>(3*N);
+        auto eigenR = std::make_unique<double[]>(N);
+        auto eigenI = std::make_unique<double[]>(N);
+        auto work = std::make_unique<double[]>(3*N);
 
         // return value information
         long int info = 0;
-        long int lwork = 3*N;
+        const long int lwork = 3*N;
 
         // call LAPACK routine (see fmatrixev_ext.cc)
-        eigenValuesNonsymLapackCall(&jobvl, &jobvr, &N, &matrixVector[0], &N,
-                                    &eigenR[0], &eigenI[0], 0, &N, 0, &N, &work[0],
+        eigenValuesNonsymLapackCall(&jobvl, &jobvr, &N, matrixVector.get(), &N,
+                                    eigenR.get(), eigenI.get(), nullptr, &N, nullptr, &N, work.get(),
                                     &lwork, &info);
 
         if( info != 0 )

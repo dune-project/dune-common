@@ -35,7 +35,7 @@ namespace Dune {
       const char* jobvl, const char* jobvr, const long
       int* n, double* a, const long int* lda, double* wr, double* wi, double* vl,
       const long int* ldvl, double* vr, const long int* ldvr, double* work,
-      const long int* lwork, const long int* info);
+      const long int* lwork, long int* info);
 
     /** \brief calculates the eigenvalues of a symmetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
@@ -225,11 +225,11 @@ namespace Dune {
 
         // return value information
         long int info = 0;
-        long int lwork = 3*dim;
+        const long int lwork = 3*dim;
 
         // call LAPACK routine (see fmatrixev_ext.cc)
         eigenValuesNonsymLapackCall(&jobvl, &jobvr, &N, &matrixVector[0], &N,
-                                    &eigenR[0], &eigenI[0], 0, &N, 0, &N, &work[0],
+                                    &eigenR[0], &eigenI[0], nullptr, &N, nullptr, &N, &work[0],
                                     &lwork, &info);
 
         if( info != 0 )

@@ -182,7 +182,7 @@ extern "C" {
   extern void DGEEV_FORTRAN(const char* jobvl, const char* jobvr, const long
                             int* n, double* a, const long int* lda, double* wr, double* wi, double* vl,
                             const long int* ldvl, double* vr, const long int* ldvr, double* work,
-                            const long int* lwork, const long int* info);
+                            const long int* lwork, long int* info);
 
 } // end extern C
 #endif
@@ -212,7 +212,7 @@ namespace Dune {
       const char* jobvl, const char* jobvr, const long
       int* n, double* a, const long int* lda, double* wr, double* wi, double* vl,
       const long int* ldvl, double* vr, const long int* ldvr, double* work,
-      const long int* lwork, const long int* info)
+      const long int* lwork, long int* info)
     {
 #if HAVE_LAPACK
       // call LAPACK dgeev
