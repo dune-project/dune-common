@@ -24,6 +24,15 @@ auto checkRangeIterators(R&& r)
   return (testConstIterator(it, end, op)==0);
 }
 
+template<class R>
+auto checkRangeSize(R&& r)
+{
+  std::size_t counter = 0;
+  for(auto&& dummy DUNE_UNUSED : r)
+    ++counter;
+  return (r.size()==counter);
+}
+
 template<class R, class V>
 auto checkRandomAccessNumberRangeSums(R&& r, V sum, V first, V last)
 {
@@ -61,6 +70,8 @@ auto testTransformedRangeView()
         << "incorrect values in transformedRangeView of l-value";
       suite.check(checkRangeIterators(r))
         << "iterator test fails for transformedRangeView of l-value";
+      suite.check(checkRangeSize(r))
+        << "checking size fails for transformedRangeView of l-value";
       a = a_backup;
     }
     // Pass original range by const l-value, modify it, and then traverse.
@@ -73,6 +84,8 @@ auto testTransformedRangeView()
         << "incorrect values in transformedRangeView of const l-value";
       suite.check(checkRangeIterators(r))
         << "iterator test fails for transformedRangeView of const l-value";
+      suite.check(checkRangeSize(r))
+        << "checking size fails for transformedRangeView of const l-value";
       a = a_backup;
     }
     // Modify original range, pass it by r-value, restore it, and then traverse.
@@ -86,6 +99,8 @@ auto testTransformedRangeView()
         << "incorrect values in transformedRangeView of r-value";
       suite.check(checkRangeIterators(r))
         << "iterator test fails for transformedRangeView of r-value";
+      suite.check(checkRangeSize(r))
+        << "checking size fails for transformedRangeView of r-value";
     }
     // Check if returning real references in the transformation works
     {
@@ -113,11 +128,13 @@ auto testTransformedRangeView()
   {
     auto r = Dune::transformedRangeView(Dune::range(10), [](auto&& x) { return 2*x;});
     suite.check(checkRandomAccessNumberRangeSums(r, 90, 0, 18))
-      << "transformation of on-the-fly gives incorrect results";
+      << "transformation of on-the-fly range gives incorrect results";
     suite.check(checkRangeIterators(r))
       << "iterator test fails for transformedRangeView";
+    suite.check(checkRangeSize(r))
+      << "checking size fails for transformedRangeView of on-the-fly range";
   }
-  // Check if we can indirectly sort via,{0,4} reference returning transformations
+  // Check if we can indirectly sort subrange via reference returning transformations
   {
     auto a = std::vector<int>{4,3,2,1,0};
     auto r = Dune::transformedRangeView(Dune::range(1,4), [&](auto&& i) -> decltype(auto){ return a[i];});
