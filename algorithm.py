@@ -7,6 +7,28 @@ from . import builder
 from dune.common.compatibility import isString
 
 def load(functionName, includes, *args):
+    '''Just in time compile an algorithm.
+
+    Generates binding for a single (template) function. The name of the
+    function and the C++ types of the arguments passed to this function are
+    used to generate a static type used in the bindings. The file(s)
+    containing the code for the function are passed in either as single
+    string or as a list of strings. Note that these files will be copied
+    into the generated module. The file name can include a path name. So in
+    the simples case `includes="header.hh" will include the file from the
+    current working directory. To include a file from the directory
+    containing the calling script use
+    `includes=dune.generator.path(__file__)+"header.hh"`.
+
+    Args:
+        functionName:    name of the C++ function to provide bindings for
+        includes:        single or list of files to add to the generated module
+        *args:           list of arguments that will be passed to the generated module
+
+    Returns:
+        Callalble object
+    '''
+
     source = '#include <config.h>\n\n'
     source += '#define USING_DUNE_PYTHON 1\n\n'
     if isString(includes):
@@ -78,4 +100,16 @@ def load(functionName, includes, *args):
 
 
 def run(functionName, includes, *args):
+    '''Just in time compile and run an algorithm.
+
+    For details see the help for `dune.algorithm.load`.
+
+    Args:
+        functionName:    name of the C++ function to provide bindings for
+        includes:        single or list of files to add to the generated module
+        *args:           list of arguments that will be passed to the generated module
+
+    Returns:
+        return value of `functionName(*args)`
+    '''
     return load(functionName, includes, *args)(*args)

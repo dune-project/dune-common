@@ -16,6 +16,10 @@ logger = logging.getLogger(__name__)
 cxxFlags = None
 noDepCheck = False
 
+import portalocker
+from portalocker import Lock
+from portalocker.constants import LOCK_EX, LOCK_SH
+
 class Builder:
     def __init__(self, force=False):
         self.force = force
@@ -61,25 +65,39 @@ class Builder:
         module = sys.modules.get("dune.generated." + moduleName)
         if module is None:
             if comm.rank == 0:
-                sourceFileName = os.path.join(self.generated_dir, moduleName + ".cc")
-                if not os.path.isfile(sourceFileName):
-                    logger.info("Loading " + pythonName + " (new)")
-                    code = str(source)
-                    with open(os.path.join(sourceFileName), 'w') as out:
-                        out.write(code)
-                    with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'a') as out:
-                        out.write("dune_add_pybind11_module(NAME " + moduleName + " EXCLUDE_FROM_ALL)\n")
-                    # update build system
-                    self.compile()
-                elif isString(source) and not source == open(os.path.join(sourceFileName), 'r').read():
-                    logger.info("Loading " + pythonName + " (updated)")
-                    code = str(source)
-                    with open(os.path.join(sourceFileName), 'w') as out:
-                        out.write(code)
-                else:
-                    logger.info("Loading " + pythonName)
+                # lock the source file
+                with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'-source.lock'), flags=LOCK_EX):
+                    sourceFileName = os.path.join(self.generated_dir, moduleName + ".cc")
+                    if not os.path.isfile(sourceFileName):
+                        logger.info("Loading " + pythonName + " (new)")
+                        code = str(source)
+                        # the CMakeLists.txt needs changing and cmake rerun - lock folder
+                        with Lock(os.path.join(self.dune_py_dir, 'lock-all.lock'), flags=LOCK_EX):
+                            with open(os.path.join(sourceFileName), 'w') as out:
+                                out.write(code)
+                            line = "dune_add_pybind11_module(NAME " + moduleName + " EXCLUDE_FROM_ALL)"
+                            # first check if trhis line is already present in the CMakeLists file
+                            # (possible if a previous script was stopped by user before module was compiled)
+                            with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'r') as out:
+                                found = line in out.read()
+                            if not found:
+                                with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'a') as out:
+                                    out.write(line+"\n")
+                                # update build system
+                                self.compile()
+                    elif isString(source) and not source == open(os.path.join(sourceFileName), 'r').read():
+                        logger.info("Loading " + pythonName + " (updated)")
+                        code = str(source)
+                        with open(os.path.join(sourceFileName), 'w') as out:
+                            out.write(code)
+                    else:
+                        logger.info("Loading " + pythonName)
 
-                self.compile(moduleName)
+                # lock generated module and make sure the folder isn't
+                # locked due to CMakeLists.txt changed being made
+                with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
+                    with Lock(os.path.join(self.dune_py_dir, 'lock-all.lock'), flags=LOCK_SH):
+                        self.compile(moduleName)
 
             comm.barrier()
             module = importlib.import_module("dune.generated." + moduleName)
