@@ -22,6 +22,7 @@
 #include "boundschecking.hh"
 
 #include <dune/common/math.hh>
+#include <dune/common/promotiontraits.hh>
 
 namespace Dune {
 
@@ -208,6 +209,46 @@ namespace Dune {
     {
       return _data.data();
     }
+
+    //! vector space multiplication with scalar
+    template <class Scalar,
+              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
+    friend auto operator* ( const FieldVector& vector, Scalar scalar)
+    {
+      FieldVector<typename PromotionTraits<value_type,Scalar>::PromotedType,SIZE> result;
+
+      for (size_type i = 0; i < vector.size(); ++i)
+        result[i] = vector[i] * scalar;
+
+      return result;
+    }
+
+    //! vector space multiplication with scalar
+    template <class Scalar,
+              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
+    friend auto operator* ( Scalar scalar, const FieldVector& vector)
+    {
+      FieldVector<typename PromotionTraits<value_type,Scalar>::PromotedType,SIZE> result;
+
+      for (size_type i = 0; i < vector.size(); ++i)
+        result[i] = scalar * vector[i];
+
+      return result;
+    }
+
+    //! vector space division by scalar
+    template <class Scalar,
+              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
+    friend auto operator/ ( const FieldVector& vector, Scalar scalar)
+    {
+      FieldVector<typename PromotionTraits<value_type,Scalar>::PromotedType,SIZE> result;
+
+      for (size_type i = 0; i < vector.size(); ++i)
+        result[i] = vector[i] * scalar;
+
+      return result;
+    }
+
   };
 
   /** \brief Read a FieldVector from an input stream

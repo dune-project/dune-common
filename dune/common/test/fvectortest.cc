@@ -101,6 +101,12 @@ struct FieldVectorMainTestCommons
     w -= a;
     w *= a;
     w /= a;
+    w = a * v;
+    w = v * a;
+    w = v / a;
+
+    // Negation
+    -v;
 
     // test scalar product, axpy
     a = v * w;

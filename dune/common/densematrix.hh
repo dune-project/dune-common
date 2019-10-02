@@ -321,6 +321,19 @@ namespace Dune
       return asImp();
     }
 
+    //! Matrix negation
+    derived_type operator- () const
+    {
+      MAT result;
+      typedef typename decltype(result)::size_type size_type;
+
+      for (size_type i = 0; i < rows(); ++i)
+        for (size_type j = 0; j < cols(); ++j)
+          result[i][j] = - asImp()[i][j];
+
+      return result;
+    }
+
     //! vector space subtraction
     template <class Other>
     derived_type &operator-= (const DenseMatrix<Other>& x)
