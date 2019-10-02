@@ -69,7 +69,7 @@ namespace Dune {
 
         // call LAPACK routine (see fmatrixev_ext.cc)
         eigenValuesNonsymLapackCall(&jobvl, &jobvr, &N, matrixVector.get(), &N,
-                                    eigenR.get(), eigenI.get(), nullptr, &N, nullptr, &N, work.get(),
+                                    eigenR.get(), eigenI.get(), nullptr, &N, vr.get(), &N, work.get(),
                                     &lwork, &info);
 
         if( info != 0 )
