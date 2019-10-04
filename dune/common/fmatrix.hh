@@ -14,6 +14,7 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/densematrix.hh>
 #include <dune/common/precision.hh>
+#include <dune/common/promotiontraits.hh>
 #include <dune/common/typetraits.hh>
 
 namespace Dune
@@ -121,6 +122,95 @@ namespace Dune
     //! no copy assignment from FieldMatrix of different size
     template <typename T, int rows, int cols>
     FieldMatrix& operator=(FieldMatrix<T,rows,cols> const&) = delete;
+
+    //! vector space addition -- two-argument version
+    template <class OtherScalar>
+    friend auto operator+ ( const FieldMatrix& matrixA,
+                            const FieldMatrix<OtherScalar,ROWS,COLS>& matrixB)
+    {
+      FieldMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType,ROWS,COLS> result;
+
+      for (size_type i = 0; i < ROWS; ++i)
+        for (size_type j = 0; j < COLS; ++j)
+          result[i][j] = matrixA[i][j] + matrixB[i][j];
+
+      return result;
+    }
+
+    //! vector space subtraction -- two-argument version
+    template <class OtherScalar>
+    friend auto operator- ( const FieldMatrix& matrixA,
+                            const FieldMatrix<OtherScalar,ROWS,COLS>& matrixB)
+    {
+      FieldMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType,ROWS,COLS> result;
+
+      for (size_type i = 0; i < ROWS; ++i)
+        for (size_type j = 0; j < COLS; ++j)
+          result[i][j] = matrixA[i][j] - matrixB[i][j];
+
+      return result;
+    }
+
+    //! vector space multiplication with scalar
+    template <class Scalar,
+              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
+    friend auto operator* ( const FieldMatrix& matrix, Scalar scalar)
+    {
+      FieldMatrix<typename PromotionTraits<K,Scalar>::PromotedType,ROWS,COLS> result;
+
+      for (size_type i = 0; i < ROWS; ++i)
+        for (size_type j = 0; j < COLS; ++j)
+          result[i][j] = matrix[i][j] * scalar;
+
+      return result;
+    }
+
+    //! vector space multiplication with scalar
+    template <class Scalar,
+              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
+    friend auto operator* ( Scalar scalar, const FieldMatrix& matrix)
+    {
+      FieldMatrix<typename PromotionTraits<K,Scalar>::PromotedType,ROWS,COLS> result;
+
+      for (size_type i = 0; i < ROWS; ++i)
+        for (size_type j = 0; j < COLS; ++j)
+          result[i][j] = scalar * matrix[i][j];
+
+      return result;
+    }
+
+    //! vector space division by scalar
+    template <class Scalar,
+              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
+    friend auto operator/ ( const FieldMatrix& matrix, Scalar scalar)
+    {
+      FieldMatrix<typename PromotionTraits<K,Scalar>::PromotedType,ROWS,COLS> result;
+
+      for (size_type i = 0; i < ROWS; ++i)
+        for (size_type j = 0; j < COLS; ++j)
+          result[i][j] = matrix[i][j] / scalar;
+
+      return result;
+    }
+
+    /** \brief Matrix-matrix multiplication
+     */
+    template <class OtherScalar, int otherCols>
+    friend auto operator* ( const FieldMatrix& matrixA,
+                            const FieldMatrix<OtherScalar, COLS, otherCols>& matrixB)
+    {
+      FieldMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType,ROWS,otherCols> result;
+
+      for (size_type i = 0; i < matrixA.mat_rows(); ++i)
+        for (size_type j = 0; j < matrixB.mat_cols(); ++j)
+        {
+          result[i][j] = 0;
+          for (size_type k = 0; k < matrixA.mat_cols(); ++k)
+            result[i][j] += matrixA[i][k] * matrixB[k][j];
+        }
+
+      return result;
+    }
 
     //! Multiplies M from the left to this matrix, this matrix is not modified
     template<int l>
@@ -249,7 +339,97 @@ namespace Dune
 
     using Base::operator=;
 
+    //! vector space addition -- two-argument version
+    template <class OtherScalar>
+    friend auto operator+ ( const FieldMatrix& matrixA,
+                            const FieldMatrix<OtherScalar,1,1>& matrixB)
+    {
+      return FieldMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType,1,1>{matrixA[0][0] + matrixB[0][0]};
+    }
+
+    //! Binary addition when treating FieldMatrix<K,1,1> like K
+    template <class Scalar,
+              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
+    friend auto operator+ ( const FieldMatrix& matrix,
+                            const Scalar& scalar)
+    {
+      return FieldMatrix<typename PromotionTraits<K,Scalar>::PromotedType,1,1>{matrix[0][0] + scalar};
+    }
+
+    //! Binary addition when treating FieldMatrix<K,1,1> like K
+    template <class Scalar,
+              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
+    friend auto operator+ ( const Scalar& scalar,
+                            const FieldMatrix& matrix)
+    {
+      return FieldMatrix<typename PromotionTraits<Scalar,K>::PromotedType,1,1>{scalar + matrix[0][0]};
+    }
+
+    //! vector space subtraction -- two-argument version
+    template <class OtherScalar>
+    friend auto operator- ( const FieldMatrix& matrixA,
+                            const FieldMatrix<OtherScalar,1,1>& matrixB)
+    {
+      return FieldMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType,1,1>{matrixA[0][0] - matrixB[0][0]};
+    }
+
+    //! Binary subtraction when treating FieldMatrix<K,1,1> like K
+    template <class Scalar,
+              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
+    friend auto operator- ( const FieldMatrix& matrix,
+                            const Scalar& scalar)
+    {
+      return FieldMatrix<typename PromotionTraits<K,Scalar>::PromotedType,1,1>{matrix[0][0] - scalar};
+    }
+
+    //! Binary subtraction when treating FieldMatrix<K,1,1> like K
+    template <class Scalar,
+              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
+    friend auto operator- ( const Scalar& scalar,
+                            const FieldMatrix& matrix)
+    {
+      return FieldMatrix<typename PromotionTraits<Scalar,K>::PromotedType,1,1>{scalar - matrix[0][0]};
+    }
+
+    //! vector space multiplication with scalar
+    template <class Scalar,
+              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
+    friend auto operator* ( const FieldMatrix& matrix, Scalar scalar)
+    {
+      return FieldMatrix<typename PromotionTraits<K,Scalar>::PromotedType,1,1> {matrix[0][0] * scalar};
+    }
+
+    //! vector space multiplication with scalar
+    template <class Scalar,
+              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
+    friend auto operator* ( Scalar scalar, const FieldMatrix& matrix)
+    {
+      return FieldMatrix<typename PromotionTraits<K,Scalar>::PromotedType,1,1> {scalar * matrix[0][0]};
+    }
+
+    //! vector space division by scalar
+    template <class Scalar,
+              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
+    friend auto operator/ ( const FieldMatrix& matrix, Scalar scalar)
+    {
+      return FieldMatrix<typename PromotionTraits<K,Scalar>::PromotedType,1,1> {matrix[0][0] / scalar};
+    }
+
     //===== solve
+
+        /** \brief Matrix-matrix multiplication
+     */
+    template <class OtherScalar, int otherCols>
+    friend auto operator* ( const FieldMatrix& matrixA,
+                            const FieldMatrix<OtherScalar, 1, otherCols>& matrixB)
+    {
+      FieldMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType,1,otherCols> result;
+
+      for (size_type j = 0; j < matrixB.mat_cols(); ++j)
+        result[0][j] = matrixA[0][0] * matrixB[0][j];
+
+      return result;
+    }
 
     //! Multiplies M from the left to this matrix, this matrix is not modified
     template<int l>
