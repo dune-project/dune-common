@@ -2,19 +2,15 @@
 #
 #    Module that checks whether ParMETIS is available.
 #
-#    You may set the following variables to configure this modules behaviour:
+#    It is required to find METIS first by successfully running `FindMETIS.cmake`.
+#
+#    You may set the following variables to configure this modules behavior:
 #
 #    :ref:`PARMETIS_ROOT`
 #       Prefix where ParMETIS is installed.
 #
-#    :ref:`METIS_LIB_NAME`
-#       Name of the METIS library (default: metis).
-#
 #    :ref:`PARMETIS_LIB_NAME`
 #       Name of the ParMETIS library (default: parmetis).
-#
-#    :ref:`METIS_LIBRARY`
-#       Full path of the METIS library.
 #
 #    :ref:`PARMETIS_LIBRARY`
 #       Full path of the ParMETIS library
@@ -23,9 +19,6 @@
 #
 #    :code:`PARMETIS_FOUND`
 #       True if ParMETIS was found.
-#
-#    :code:`METIS_LIBRARY`
-#       Full path of the METIS library.
 #
 #    :code:`PARMETIS_LIBRARY`
 #       Full path of the ParMETIS library.
@@ -50,6 +43,13 @@
 #    library, that should be used by :ref:`FindParMETIS`.
 #
 
+if(NOT METIS_FOUND)
+    find_package_handle_standard_args(
+    "ParMETIS"
+    FAIL_MESSAGE "METIS not found which is required for ParMETIS."
+    )
+endif()
+
 
 find_path(PARMETIS_INCLUDE_DIR parmetis.h
           PATHS ${PARMETIS_DIR} ${PARMETIS_ROOT}
@@ -59,39 +59,22 @@ find_path(PARMETIS_INCLUDE_DIR parmetis.h
 find_path(PARMETIS_INCLUDE_DIR parmetis.h
           PATH_SUFFIXES include parmetis)
 
-set(METIS_LIB_NAME metis
-    CACHE STRING "Name of the METIS library (default: metis).")
 set(PARMETIS_LIB_NAME parmetis
     CACHE STRING "Name of the ParMETIS library (default: parmetis).")
-set(METIS_LIBRARY METIS_LIBRARY-NOTFOUND
-    CACHE FILEPATH "Full path of the METIS library")
 set(PARMETIS_LIBRARY ParMETIS_LIBRARY-NOTFOUND
     CACHE FILEPATH "Full path of the ParMETIS library")
 
-# check METIS and ParMETIS headers
+# check ParMETIS headers
 include(CMakePushCheckState)
 cmake_push_check_state() # Save variables
-set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${MPI_DUNE_INCLUDE_PATH} ${PARMETIS_INCLUDE_DIR})
+set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${MPI_DUNE_INCLUDE_PATH} ${METIS_INCLUDE_DIRS} ${PARMETIS_INCLUDE_DIR})
 set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${MPI_DUNE_COMPILE_FLAGS}")
-check_include_file(metis.h METIS_FOUND)
+# set(CMAKE_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES} ${METIS_LIBRARIES}")
 check_include_file(parmetis.h PARMETIS_FOUND)
-
-# check whether metis.h is available
-# to work around installation bug in ParMETIS 4.0.3
-if(NOT METIS_FOUND)
-  message(WARNING "metis.h is missing, you have to copy it manually next to parmetis.h")
-endif()
 
 if(PARMETIS_FOUND)
   set(ParMETIS_INCLUDE_PATH ${CMAKE_REQUIRED_INCLUDES})
   set(ParMETIS_COMPILE_FLAGS "${CMAKE_REQUIRED_FLAGS} -DENABLE_PARMETIS=1")
-
-  # search METIS library
-  find_library(METIS_LIBRARY metis
-               PATHS ${PARMETIS_DIR} ${PARMETIS_ROOT}
-               PATH_SUFFIXES lib
-               NO_DEFAULT_PATH)
-  find_library(METIS_LIBRARY metis)
 
   # search ParMETIS library
   find_library(PARMETIS_LIBRARY parmetis
@@ -100,11 +83,11 @@ if(PARMETIS_FOUND)
                NO_DEFAULT_PATH)
   find_library(PARMETIS_LIBRARY parmetis)
 
-  set(_CMAKE_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES}") # do a backup
   # check ParMETIS library
   if(PARMETIS_LIBRARY)
-    set(_PARMETIS_LIBRARIES ${PARMETIS_LIBRARY} ${METIS_LIBRARIES} ${MPI_DUNE_LIBRARIES})
-    set(CMAKE_REQUIRED_LIBRARIES ${_PARMETIS_LIBRARIES} ${_CMAKE_REQUIRED_LIBRARIES})
+    set(_CMAKE_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES}") # do a backup
+    set(_PARMETIS_LIBRARIES "${PARMETIS_LIBRARY};${MPI_DUNE_LIBRARIES}")
+    list(APPEND CMAKE_REQUIRED_LIBRARIES "${_PARMETIS_LIBRARIES};${METIS_LIBRARIES}")
     include(CheckFunctionExists)
     check_function_exists(ParMETIS_V3_PartKway HAVE_PARMETIS)
     if(NOT HAVE_PARMETIS)
@@ -127,8 +110,8 @@ if(PARMETIS_FOUND)
         check_function_exists(ParMETIS_V3_PartKway HAVE_PARMETIS)
       endif()
     endif()
-  endif()
     set(CMAKE_REQUIRED_LIBRARIES "${_CMAKE_REQUIRED_LIBRARIES}") # get backup
+  endif()
 endif()
 
 # behave like a CMake module is supposed to behave
@@ -141,7 +124,7 @@ find_package_handle_standard_args(
   HAVE_PARMETIS
 )
 
-mark_as_advanced(PARMETIS_INCLUDE_DIR METIS_LIBRARY PARMETIS_LIBRARY METIS_LIB_NAME PARMETIS_LIB_NAME)
+mark_as_advanced(PARMETIS_INCLUDE_DIR PARMETIS_LIBRARY PARMETIS_LIB_NAME)
 
 #restore old values
 cmake_pop_check_state()
@@ -162,15 +145,14 @@ if(PARMETIS_FOUND)
   string(REGEX MATCH "#define PARMETIS_MAJOR_VERSION[ ]+[0-9]+" versionMacroDef "${parmetisheader}")
   string(REGEX MATCH "[0-9]+" ParMetisMajorVersion "${versionMacroDef}")
   if("${versionMacroDef}" STREQUAL "" OR "${ParMetisMajorVersion}" LESS 4)
-    message(AUTHOR_WARNING "Support for METIS older than version 4.x is deprecated in Dune 2.7")
+    message(AUTHOR_WARNING "Support for ParMETIS older than version 4.x is deprecated in Dune 2.7")
   endif()
 else()
-  # log errornous result
+  # log erroneous result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
     "Determing location of ParMETIS failed:\n"
     "Include directory: ${PARMETIS_INCLUDE_DIR}\n"
-    "ParMETIS library directory: ${PARMETIS_LIBRARY}\n"
-    "Header metis.h: ${METIS_FOUND}\n\n")
+    "ParMETIS library directory: ${PARMETIS_LIBRARY}\n\n")
 endif()
 
 # register all ParMETIS related flags
