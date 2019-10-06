@@ -77,11 +77,11 @@ if(PARMETIS_FOUND)
   set(ParMETIS_COMPILE_FLAGS "${CMAKE_REQUIRED_FLAGS} -DENABLE_PARMETIS=1")
 
   # search ParMETIS library
-  find_library(PARMETIS_LIBRARY parmetis
+  find_library(PARMETIS_LIBRARY ${PARMETIS_LIB_NAME}
                PATHS ${PARMETIS_DIR} ${PARMETIS_ROOT}
                PATH_SUFFIXES lib
                NO_DEFAULT_PATH)
-  find_library(PARMETIS_LIBRARY parmetis)
+  find_library(PARMETIS_LIBRARY ${PARMETIS_LIB_NAME})
 
   # check ParMETIS library
   if(PARMETIS_LIBRARY)
