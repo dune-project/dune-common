@@ -2,8 +2,6 @@
 #
 #    Module that checks whether ParMETIS is available.
 #
-#    It is required to find METIS first by successfully running `FindMETIS.cmake`.
-#
 #    You may set the following variables to configure this modules behavior:
 #
 #    :ref:`PARMETIS_ROOT`
@@ -43,6 +41,8 @@
 #    library, that should be used by :ref:`FindParMETIS`.
 #
 
+# find METIS first
+find_package(METIS QUIET)
 if(NOT METIS_FOUND)
     find_package_handle_standard_args(
     "ParMETIS"
