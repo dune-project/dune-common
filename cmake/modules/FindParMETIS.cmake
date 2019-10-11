@@ -46,7 +46,7 @@ find_package(METIS QUIET)
 if(NOT METIS_FOUND)
     find_package_handle_standard_args(
     "ParMETIS"
-    FAIL_MESSAGE "METIS not found which is required for ParMETIS."
+    DEFAULT_MSG "METIS not found which is required for ParMETIS."
     )
 endif()
 
