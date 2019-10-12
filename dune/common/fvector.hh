@@ -244,7 +244,7 @@ namespace Dune {
       FieldVector<typename PromotionTraits<value_type,Scalar>::PromotedType,SIZE> result;
 
       for (size_type i = 0; i < vector.size(); ++i)
-        result[i] = vector[i] * scalar;
+        result[i] = vector[i] / scalar;
 
       return result;
     }
