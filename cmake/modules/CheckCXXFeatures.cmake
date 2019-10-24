@@ -1,6 +1,6 @@
 # .. cmake_module::
 #
-#    Module that checks for supported C++17, C++14 and non-standard features.
+#    Module that checks for supported C++20, C++17, C++14 and non-standard features.
 #
 #    The behaviour of this module can be modified by the following variable:
 #
@@ -42,7 +42,7 @@ include(CheckCXXSourceCompiles)
 include(CheckCXXSymbolExists)
 
 # C++ standard versions that this test knows about
-set(CXX_VERSIONS 17 14)
+set(CXX_VERSIONS 20 17 14)
 
 
 # Compile tests for the different standard revisions; these test both the compiler
@@ -50,6 +50,21 @@ set(CXX_VERSIONS 17 14)
 # compiler together with a non C++14-compliant stdlib from the system compiler.
 
 # we need to escape semicolons in the tests to be able to stick them into a list
+string(REPLACE ";" "\;" cxx_20_test
+  "
+  #include <type_traits>
+
+  // `if constexpr` is a C++20 compiler feature
+  template<typename T>
+  void f()
+  { if constexpr (T::anything) {} }
+
+  int main() {
+    // std::is_bounded_array_v is a C++20 library feature
+    return std::is_bounded_array_v<int[2]>;
+  }
+  ")
+
 string(REPLACE ";" "\;" cxx_17_test
   "
   #include <type_traits>
@@ -89,13 +104,13 @@ string(REPLACE ";" "\;" cxx_14_test
   ")
 
 # build a list out of the pre-escaped tests
-set(CXX_VERSIONS_TEST "${cxx_17_test}" "${cxx_14_test}")
+set(CXX_VERSIONS_TEST "${cxx_20_test}" "${cxx_17_test}" "${cxx_14_test}")
 
 # these are appended to "-std=c++" and tried in this order
 # note the escaped semicolons; that's necessary to create a nested list
-set(CXX_VERSIONS_FLAGS "17\;1z" "14\;1y")
+set(CXX_VERSIONS_FLAGS "20\;2a" "17\;1z" "14\;1y")
 
-# by default, we enable C++14 for now, but not C++17
+# by default, we enable C++17 for now, but not C++20
 # The user can override this choice by explicitly setting this variable
 set(CXX_MAX_STANDARD 17 CACHE STRING "highest version of the C++ standard to enable. This version is also used if the version check is disabled")
 
