@@ -3,6 +3,7 @@
 #ifndef DUNE_DENSEVECTOR_HH
 #define DUNE_DENSEVECTOR_HH
 
+#include <algorithm>
 #include <limits>
 #include <type_traits>
 
