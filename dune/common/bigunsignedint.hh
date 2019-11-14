@@ -4,6 +4,7 @@
 #ifndef DUNE_BIGUNSIGNEDINT_HH
 #define DUNE_BIGUNSIGNEDINT_HH
 
+#include <algorithm>
 #include <iostream>
 #include <limits>
 #include <cstdint>
