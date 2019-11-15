@@ -13,6 +13,10 @@
 #include <complex>
 #include <algorithm>
 
+#if HAVE_MPI
+#include <mpi.h>
+#endif
+
 #include <dune/common/binaryfunctions.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/unused.hh>
@@ -101,6 +105,13 @@ namespace Dune
     {
       return 1;
     }
+
+#if HAVE_MPI
+    operator MPI_Comm () const
+    {
+      return MPI_COMM_SELF;
+    }
+#endif
 
     /** @brief  Compute the sum of the argument over all processes and
             return the result in every process. Assumes that T has an operator+
