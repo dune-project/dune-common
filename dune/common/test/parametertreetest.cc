@@ -255,8 +255,16 @@ void testFS1523()
 void check_recursiveTreeCompare(const Dune::ParameterTree & p1,
   const Dune::ParameterTree & p2)
 {
-  check_assert(p1.getValueKeys() == p2.getValueKeys());
-  check_assert(p1.getSubKeys() == p2.getSubKeys());
+  auto p1values = p1.getValueKeys();
+  auto p2values = p2.getValueKeys();
+  std::sort(p1values.begin(), p1values.end());
+  std::sort(p2values.begin(), p2values.end());
+  check_assert(p1values == p2values);
+  auto p1keys = p1.getSubKeys();
+  auto p2keys = p2.getSubKeys();
+  std::sort(p1keys.begin(), p1keys.end());
+  std::sort(p2keys.begin(), p2keys.end());
+  check_assert(p1keys == p2keys);
   typedef Dune::ParameterTree::KeyVector::const_iterator Iterator;
   for (Iterator it = p1.getValueKeys().begin();
        it != p1.getValueKeys().end(); ++it)
@@ -270,7 +278,8 @@ void check_recursiveTreeCompare(const Dune::ParameterTree & p1,
 void testReport()
 {
   std::stringstream s;
-  s << "foo.i = 1 \n foo.bar.peng = hurz";
+  s << "foo.i = 1 \n foo.bar.peng = hurz \n"
+    << "[root=] \n [foobar = foo.bar]";
   Dune::ParameterTree ptree;
   Dune::ParameterTreeParser::readINITree(s, ptree);
 

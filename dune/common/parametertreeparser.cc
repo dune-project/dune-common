@@ -81,9 +81,18 @@ void Dune::ParameterTreeParser::readINITree(std::istream& in,
       line = rtrim(line);
       if (line[line.length()-1] == ']')
       {
-        prefix = rtrim(ltrim(line.substr(1, line.length()-2)));
-        if (prefix != "")
-          prefix += ".";
+        std::string name = rtrim(ltrim(line.substr(1, line.length()-2)));
+        std::string::size_type mid = name.find("=");
+        if(mid != std::string::npos){
+          std::string lhs = rtrim(ltrim(name.substr(0, mid)));
+          std::string rhs = ltrim(name.substr(mid+1));
+          std::shared_ptr<ParameterTree> rhs_tree = pt.subPtr(rhs);
+          pt.insertSub(lhs, rhs_tree);
+        }else{
+          prefix = name;
+          if (prefix != "")
+            prefix += ".";
+        }
       }
       break;
     default :
