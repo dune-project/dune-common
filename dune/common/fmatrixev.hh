@@ -140,24 +140,26 @@ namespace Dune {
       }
     }
 
-    /** \brief calculates the eigenvalues of a symmetric field matrix
+    /** \brief calculates the eigenvalues and/or eigenvectors of a symmetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
         \param[out] eigenvalues FieldVector that contains eigenvalues in
-                    ascending order
+                    ascending order, eigenvectors in FieldMatrix
 
-        \note LAPACK::dsyev is used to calculate the eigenvalues
+        \note LAPACK::dsyev is used to calculate the eigenvalues and/or eigenvectors
+        \note jobz=n (only eigenvalues), jobz=v (eigenvalues and eigenvetors)
      */
     template <int dim, typename K>
-    static void eigenValues(const FieldMatrix<K, dim, dim>& matrix,
-                            FieldVector<K, dim>& eigenvalues)
+    static void eigenValuesVectorsLapack(const FieldMatrix<K, dim, dim>& matrix,
+                                         FieldVector<K, dim>& eigenValues,
+                                         FieldMatrix<K, dim, dim>& eigenVectors,
+                                         const char& jobz)
     {
       {
         const long int N = dim ;
-        const char jobz = 'n'; // only calculate eigenvalues
         const char uplo = 'u'; // use upper triangular matrix
 
-        // length of matrix vector
-        const long int w = N * N ;
+        // length of matrix vector, LWORK >= max(1,3*N-1)
+        const long int lwork = 3*N -1 ;
 
         // matrix to put into dsyev
         double matrixVector[dim * dim];
@@ -173,14 +175,26 @@ namespace Dune {
         }
 
         // working memory
-        double workSpace[dim * dim];
+        double workSpace[lwork];
 
         // return value information
         long int info = 0;
 
         // call LAPACK routine (see fmatrixev.cc)
         eigenValuesLapackCall(&jobz, &uplo, &N, &matrixVector[0], &N,
-                              &eigenvalues[0], &workSpace[0], &w, &info);
+                              &eigenValues[0], &workSpace[0], &lwork, &info);
+
+        // restore eigenvectors matrix
+        if (jobz=='v'){
+          row = 0;
+          for(int i=0; i<dim; ++i)
+          {
+            for(int j=0; j<dim; ++j, ++row)
+            {
+              eigenVectors[ i ][ j ] = matrixVector[ row ];
+            }
+          }
+        }
 
         if( info != 0 )
         {
@@ -189,7 +203,40 @@ namespace Dune {
         }
       }
     }
+
     /** \brief calculates the eigenvalues of a symmetric field matrix
+        \param[in]  matrix matrix eigenvalues are calculated for
+        \param[out] eigenvalues FieldVector that contains eigenvalues in
+                    ascending order
+
+        \note LAPACK::dsyev is used to calculate the eigenvalues
+     */
+    template <int dim, typename K>
+    static void eigenValues(const FieldMatrix<K, dim, dim>& matrix,
+                            FieldVector<K, dim>& eigenValues)
+    {
+      FieldMatrix<K, dim, dim> dummy;
+      // calculate only eigenValues
+      eigenValuesVectorsLapack(matrix,eigenValues,dummy,'n');
+    }
+
+    /** \brief calculates the eigenvalues and eigenvectors of a symmetric field matrix
+        \param[in]  matrix matrix eigenvalues are calculated for
+        \param[out] eigenvalues FieldVector that contains eigenvalues in
+                    ascending order, eigenvectors in FieldMatrix
+
+        \note LAPACK::dsyev is used to calculate the eigenvalues and eigenvectors
+     */
+    template <int dim, typename K>
+    static void eigenValuesVectors(const FieldMatrix<K, dim, dim>& matrix,
+                                   FieldVector<K, dim>& eigenValues,
+                                   FieldMatrix<K, dim, dim>& eigenVectors)
+    {
+      // calculate eigenValues and eigenVectors
+      eigenValuesVectorsLapack(matrix,eigenValues,eigenVectors,'v');
+    }
+
+    /** \brief calculates the eigenvalues of a non-symmetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
         \param[out] eigenValues FieldVector that contains eigenvalues in
                     ascending order
