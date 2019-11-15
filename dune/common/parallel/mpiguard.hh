@@ -34,7 +34,10 @@ namespace Dune
     virtual int sum(int i) = 0;
     // create a new GuardCommunicator pointer
     template <class C>
-    static GuardCommunicator * create(const C & c);
+    static GuardCommunicator * create(const CollectiveCommunication<C> & c);
+#if HAVE_MPI
+    static GuardCommunicator * create(const MPI_Comm & c);
+#endif
   };
 
   namespace {
@@ -73,10 +76,18 @@ namespace Dune
   }   // anonymous namespace
 
   template<class C>
-  GuardCommunicator * GuardCommunicator::create(const C & comm)
+  GuardCommunicator * GuardCommunicator::create(const CollectiveCommunication<C> & comm)
   {
-    return new GenericGuardCommunicator<C>(comm);
+    return new GenericGuardCommunicator< CollectiveCommunication<C> >(comm);
   }
+
+#if HAVE_MPI
+  GuardCommunicator * GuardCommunicator::create(const MPI_Comm & comm)
+  {
+    return new GenericGuardCommunicator< CollectiveCommunication<MPI_Comm> >(comm);
+  }
+#endif
+
 #endif
 
   /*! @brief This exception is thrown if the MPIGuard detects an error on a remote process
@@ -161,6 +172,13 @@ namespace Dune
       comm_(GuardCommunicator::create(comm)),
       active_(active)
     {}
+
+#if HAVE_MPI
+     MPIGuard (const MPI_Comm & comm, bool active=true) :
+      comm_(GuardCommunicator::create(comm)),
+      active_(active)
+    {}
+#endif
 
     /*! @brief destroy the guard and check for undetected exceptions
      */
