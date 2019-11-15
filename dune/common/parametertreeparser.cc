@@ -78,12 +78,13 @@ void Dune::ParameterTreeParser::readINITree(std::istream& in,
     case '#' :
       break;
     case '[' :
-      line = rtrim(line);
-      if (line[line.length()-1] == ']')
       {
-        prefix = rtrim(ltrim(line.substr(1, line.length()-2)));
-        if (prefix != "")
-          prefix += ".";
+        size_t pos = line.find(']');
+        if (pos != std::string::npos) {
+          prefix = rtrim(ltrim(line.substr(1, pos-1)));
+          if (prefix != "")
+            prefix += ".";
+        }
       }
       break;
     default :
