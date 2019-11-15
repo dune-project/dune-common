@@ -140,6 +140,7 @@ if(NOT IS_DIRECTORY "${DUNE_PYTHON_VIRTUALENV_PATH}")
   if(NOT DUNE_PYTHON_ALLOW_GET_PIP)
     dune_execute_process(COMMAND ${PYTHON_EXECUTABLE}
                                   -m ${VIRTUALENV_PACKAGE_NAME}
+                                  -p ${PYTHON_EXECUTABLE}
                                   "${DUNE_PYTHON_VIRTUALENV_PATH}"
                          RESULT_VARIABLE venv_install_result
                          )
@@ -159,6 +160,7 @@ if(NOT IS_DIRECTORY "${DUNE_PYTHON_VIRTUALENV_PATH}")
     # try to build the env without pip
     dune_execute_process(COMMAND ${PYTHON_EXECUTABLE}
                                   -m ${VIRTUALENV_PACKAGE_NAME}
+                                  -p ${PYTHON_EXECUTABLE}
                                   ${NOPIP_OPTION}
                                   "${DUNE_PYTHON_VIRTUALENV_PATH}"
                          ERROR_MESSAGE "Fatal error when setting up a virtualenv."
