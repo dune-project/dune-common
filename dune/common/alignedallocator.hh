@@ -6,6 +6,10 @@
 #include "mallocallocator.hh"
 #include <cstdlib>
 
+#if !(DUNE_HAVE_C_ALIGNED_ALLOC || (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600))
+  #error Need either aligned_alloc() or posix_memalign() to compile AlignedAllocator
+#endif
+
 namespace Dune
 {
 
@@ -19,7 +23,7 @@ namespace Dune
   template<class T, int Alignment = -1>
   class AlignedAllocator : public MallocAllocator<T> {
 
-#if __APPLE__
+#if !DUNE_HAVE_C_ALIGNED_ALLOC
 
     /*
      * posix_memalign() on macOS has pretty draconian restrictions on the
@@ -67,7 +71,7 @@ namespace Dune
       if (n > this->max_size())
         throw std::bad_alloc();
 
-#if __APPLE__
+#if !DUNE_HAVE_C_ALIGNED_ALLOC
       /*
        * Apple's standard library doesn't have aligned_alloc() - C11 is still something
        * from the future in Cupertino. Luckily, they got around to finally implementing
