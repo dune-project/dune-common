@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <utility>
 
+#include <dune/common/exceptions.hh>
 #include <dune/common/typetraits.hh>
 
 namespace Dune
@@ -50,6 +51,11 @@ namespace Dune
         std::enable_if_t<std::is_arithmetic<T>::value, int> = 0>
       constexpr Float128(const T& value) noexcept
         : value_(value)
+      {}
+
+      // constructor from pointer to null-terminated byte string
+      explicit Float128(const char* str) noexcept
+        : value_(strtoflt128(str, NULL))
       {}
 
       // accessors
@@ -240,6 +246,7 @@ namespace Dune
     DUNE_CUSTOM_UNARY_FUNC(long int, lround, lroundq);
     DUNE_UNARY_FUNC(nearbyint, nearbyintq);
     DUNE_BINARY_FUNC(nextafter, nextafterq);
+    DUNE_BINARY_FUNC(pow, powq); // overload for integer argument see below
     DUNE_UNARY_FUNC(rint, rintq);
     DUNE_UNARY_FUNC(round, roundq);
     DUNE_UNARY_FUNC(sin, sinq);
@@ -290,7 +297,6 @@ namespace Dune
     DUNE_BINARY_ARITHMETIC_FUNC(fmin,fminq);
     DUNE_BINARY_ARITHMETIC_FUNC(fmod,fmodq);
     DUNE_BINARY_ARITHMETIC_FUNC(hypot,hypotq);
-    DUNE_BINARY_ARITHMETIC_FUNC(pow,powq);
     DUNE_BINARY_ARITHMETIC_FUNC(remainder,remainderq);
 
 #undef DUNE_BINARY_ARITHMETIC_FUNC
@@ -327,6 +333,61 @@ namespace Dune
       return Float128{scalbnq(float128_t(u), e)};
     }
 
+    /// \brief Overload of `pow` function for integer exponents.
+    // NOTE: This is much faster than a pow(x, Float128(p)) call
+    // NOTE: This is a modified version of boost::math::cstdfloat::detail::pown
+    //   (adapted to the type Float128) that is part of the Boost 1.65 Math toolkit 2.8.0
+    //   and is implemented by Christopher Kormanyos, John Maddock, and Paul A. Bristow,
+    //   distributed under the Boost Software License, Version 1.0
+    //   (See http://www.boost.org/LICENSE_1_0.txt)
+    template <class Int,
+      std::enable_if_t<std::is_integral<Int>::value, int> = 0>
+    inline Float128 pow(const Float128& x, const Int p)
+    {
+      static const Float128 max_value = FLT128_MAX;
+      static const Float128 min_value = FLT128_MIN;
+      static const Float128 inf_value = float128_t{1} / float128_t{0};
+
+      const bool isneg = (x < 0);
+      const bool isnan = (x != x);
+      const bool isinf = (isneg ? bool(-x > max_value) : bool(+x > max_value));
+
+      if (isnan) { return x; }
+      if (isinf) { return Float128{nanq("")}; }
+
+      const Float128 abs_x = (isneg ? -x : x);
+      if (p < Int(0)) {
+        if (abs_x < min_value)
+          return (isneg ? -inf_value : +inf_value);
+        else
+          return Float128(1) / pow(x, Int(-p));
+      }
+
+      if (p == Int(0)) { return Float128(1); }
+      if (p == Int(1)) { return x; }
+      if (abs_x > max_value)
+        return (isneg ? -inf_value : +inf_value);
+
+      if (p == Int(2)) { return  (x * x); }
+      if (p == Int(3)) { return ((x * x) * x); }
+      if (p == Int(4)) { const Float128 x2 = (x * x); return (x2 * x2); }
+
+      Float128 result = ((p % Int(2)) != Int(0)) ? x : Float128(1);
+      Float128 xn     = x;  // binary powers of x
+
+      Int p2 = p;
+      while (Int(p2 /= 2) != Int(0)) {
+        xn *= xn;  // Square xn for each binary power
+
+        const bool has_binary_power = (Int(p2 % Int(2)) != Int(0));
+        if (has_binary_power)
+          result *= xn;
+      }
+
+      return result;
+    }
+
+
   } // end namespace Impl
 
   template <>
@@ -350,11 +411,11 @@ namespace std
     static constexpr Float128 max() noexcept { return FLT128_MAX; }
     static constexpr Float128 lowest() noexcept { return -FLT128_MAX; }
     static constexpr int digits = FLT128_MANT_DIG;
-    static constexpr int digits10 = FLT128_DIG;
-    static constexpr int max_digits10 = 0;
+    static constexpr int digits10 = 34;
+    static constexpr int max_digits10 = 36;
     static constexpr bool is_signed = true;
     static constexpr bool is_integer = false;
-    static constexpr bool is_exact = true;
+    static constexpr bool is_exact = false;
     static constexpr int radix = 2;
     static constexpr Float128 epsilon() noexcept { return FLT128_EPSILON; }
     static constexpr Float128 round_error() noexcept { return float128_t{0.5}; }
@@ -362,21 +423,21 @@ namespace std
     static constexpr int min_exponent10 = FLT128_MIN_10_EXP;
     static constexpr int max_exponent = FLT128_MAX_EXP;
     static constexpr int max_exponent10 = FLT128_MAX_10_EXP;
-    static constexpr bool has_infinity = false;
+    static constexpr bool has_infinity = true;
     static constexpr bool has_quiet_NaN = true;
     static constexpr bool has_signaling_NaN = false;
     static constexpr float_denorm_style has_denorm = denorm_present;
     static constexpr bool has_denorm_loss = false;
-    static constexpr Float128 infinity() noexcept { return float128_t{}; }
+    static constexpr Float128 infinity() noexcept { return float128_t{1}/float128_t{0}; }
     static Float128 quiet_NaN() noexcept { return nanq(""); }
     static constexpr Float128 signaling_NaN() noexcept { return float128_t{}; }
     static constexpr Float128 denorm_min() noexcept { return FLT128_DENORM_MIN; }
-    static constexpr bool is_iec559 = false;
+    static constexpr bool is_iec559 = true;
     static constexpr bool is_bounded = false;
     static constexpr bool is_modulo = false;
     static constexpr bool traps = false;
     static constexpr bool tinyness_before = false;
-    static constexpr float_round_style round_style = round_toward_zero;
+    static constexpr float_round_style round_style = round_to_nearest;
   };
 #endif
 } // end namespace std

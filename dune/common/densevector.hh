@@ -3,6 +3,7 @@
 #ifndef DUNE_DENSEVECTOR_HH
 #define DUNE_DENSEVECTOR_HH
 
+#include <algorithm>
 #include <limits>
 #include <type_traits>
 
@@ -446,6 +447,18 @@ namespace Dune {
     {
       derived_type z = asImp();
       return (z-=b);
+    }
+
+    //! Vector negation
+    derived_type operator- () const
+    {
+      V result;
+      typedef typename decltype(result)::size_type size_type;
+
+      for (size_type i = 0; i < size(); ++i)
+        result[i] = -asImp()[i];
+
+      return result;
     }
 
     //! \brief vector space add scalar to all comps

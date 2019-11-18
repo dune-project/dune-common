@@ -340,7 +340,7 @@ void test_matrix()
 
   A[0][0] += 5; // Make matrix non-zero
   {
-    // Test that operator= and opeator-= work before we can test anything else
+    // Test that operator= and operator-= work before we can test anything else
     using FM = FieldMatrix<K,n,m>;
     FM A0 = A;
     {
@@ -416,6 +416,74 @@ void test_matrix()
       if (tmp.infinity_norm() > 1e-12)
         DUNE_THROW(FMatrixError, "Return value of axpy() incorrect!");
     }
+
+    // Scalar * Matrix and Matrix * Scalar
+    {
+      typename FM::field_type scalar = 3;
+      FM sA = scalar * A;
+      FM aS = A * scalar;
+      FM ref = A;
+      ref *= scalar;
+
+      if ((sA-ref).infinity_norm() > 1e-12)
+        DUNE_THROW(FMatrixError, "Return value of operator*(scalar,matrix) incorrect!");
+
+      if ((aS-ref).infinity_norm() > 1e-12)
+        DUNE_THROW(FMatrixError, "Return value of operator*(matrix,scalar) incorrect!");
+    }
+
+    // Matrix / Scalar
+    {
+      typename FM::field_type scalar = 3;
+      FM aS = A / scalar;
+      FM ref = A;
+      ref /= scalar;
+
+      if ((aS-ref).infinity_norm() > 1e-12)
+        DUNE_THROW(FMatrixError, "Return value of operator/(matrix,scalar) incorrect!");
+    }
+
+    // Matrix + Matrix
+    {
+      FM twiceA = A + A;
+      FM ref = typename FM::field_type(2)*A;
+
+      if ((twiceA-ref).infinity_norm() > 1e-12)
+        DUNE_THROW(FMatrixError, "Return value of operator+(matrix,matrix) incorrect!");
+    }
+
+    // Matrix - Matrix
+    {
+      FM zero = A - A;
+
+      if (zero.infinity_norm() > 1e-12)
+        DUNE_THROW(FMatrixError, "Return value of operator-(matrix,matrix) incorrect!");
+    }
+
+    // -Matrix
+    {
+      FM neg = -A;
+      FM ref = typename FM::field_type(-1)*A;
+
+      if ((neg-ref).infinity_norm() > 1e-12)
+        DUNE_THROW(FMatrixError, "Return value of operator-(matrix) incorrect!");
+    }
+
+    // Matrix * Matrix
+    {
+      auto transposed = [](const FM& A)
+      {
+        FieldMatrix<typename FM::field_type,FM::cols,FM::rows> AT;
+        for (int i=0; i<AT.rows; i++)
+          for (int j=0; j<AT.cols; j++)
+            AT[i][j] = A[j][i];
+
+        return AT;
+      };
+
+      DUNE_UNUSED auto product = transposed(A) * A;
+    }
+
   }
   {
     using std::abs;

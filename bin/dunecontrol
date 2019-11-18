@@ -472,7 +472,7 @@ run_default_vcsetup() {
     if [ "x$SETUPGITHOOK" = "xyes" ]; then
       # we have to install the Git whitespace hook
 
-      # There are several options as to what the current worktreee might be backed by right now:
+      # There are several options as to what the current worktree might be backed by right now:
       # - a plain old repository    -> copy to .git/hooks
       # - a submodule repository    -> .git refers to the submodule repository inside the root $GIT_DIR
       # - a git repo worktree       -> .git refers to the worktree data inside the original $GIT_DIR and we need to find
@@ -687,7 +687,7 @@ run_default_make () {
 }
 
 run_default_all () {
-  for cmd in vcsetup configure make; do
+  for cmd in vcsetup cmake make; do
     eval echo "--- calling $cmd for \$NAME_${module} ---"
     load_opts $cmd
     run_$cmd
@@ -742,6 +742,7 @@ usage () {
     echo "      --resume        resume a previous run (only consider the modules"
     echo "                      not built successfully on the previous run)"
     echo "      --skipfirst     skip the first module (use with --resume)"
+    echo "      --skipversioncheck      do not perform version checks when looking for other Dune modules"
     echo "      --opts=FILE     load default options from FILE"
     echo "      --builddir=NAME make out-of-source builds in a subdir NAME."
     echo "                      This directory is created inside each module."

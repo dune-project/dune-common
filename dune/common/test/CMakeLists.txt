@@ -418,6 +418,9 @@ dune_add_test(SOURCES vcexpectedimpltest.cc
               CMAKE_GUARD Vc_FOUND)
 add_dune_vc_flags(vcexpectedimpltest)
 
+dune_add_test(SOURCES alignedallocatortest.cc
+              LINK_LIBRARIES dunecommon)
+
 install(
   FILES
   arithmetictestsuite.hh

@@ -142,7 +142,7 @@ if(METIS_FOUND)
     message(AUTHOR_WARNING "Support for METIS older than version 5.x is deprecated in Dune 2.7")
   endif()
 else(METIS_FOUND)
-  # log errornous result
+  # log erroneous result
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
     "Determing location of METIS failed:\n"
     "Include directory: ${METIS_INCLUDE_DIRS}\n"

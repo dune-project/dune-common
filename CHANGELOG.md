@@ -25,6 +25,27 @@
   implementation in `dune-common` is automatically disabled, and the official
   implementation from the standard library is used instead.
 
+- By popular demand, dense vectors and matrices like `FieldVector` and `FieldMatrix`
+  now have additional operators.  In particular, there are
+  - Vector = - Vector
+  - Matrix = - Matrix
+  While these two work for any vector or matrix class that inherits from `DenseVector`
+  or `DenseMatrix`, the following additional methods only work for `FieldVector`:
+  - Vector = Scalar * Vector
+  - Vector = Vector * Scalar
+  - Vector = Vector / Scalar
+  Correspondingly, the `FieldMatrix` class now has
+  - Matrix = Matrix + Matrix
+  - Matrix = Matrix - Matrix
+  - Matrix = Scalar * Matrix
+  - Matrix = Matrix * Scalar
+  - Matrix = Matrix / Scalar
+  - Matrix = Matrix * Matrix
+  Note that the operators
+  - Vector = Vector + Vector
+  - Vector = Vector - Vector
+  have been introduced earlier.
+
 - There is now (finally!) a method `power` in the file `math.hh` that computes
   powers with an integer exponent, and is usable in compile-time expressions.
   The use of the old power methods in `power.hh` is henceforth discouraged.
@@ -57,6 +78,9 @@
 
 - Support for older version than METIS 5.x and ParMETIS 4.x is deprecated and will be
   removed after Dune 2.7.
+
+- `FindParMETIS.cmake` assumes METIS was found first using `FindMETIS.cmake` and does not
+  longer try to find METIS itself.
 
 - The `inkscape_generate_png_from_svg` CMake function is deprecated and will be removed
   after 2.7.

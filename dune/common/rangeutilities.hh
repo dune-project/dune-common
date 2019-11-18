@@ -604,14 +604,28 @@ namespace Dune
   public:
 
     /**
-     * \brief Iterator type
+     * \brief Const iterator type
      *
      * This inherits the iterator_category of the iterators
      * of the underlying range.
      */
     using const_iterator = Impl::TransformedRangeIterator<RawConstIterator, F>;
 
+    /**
+     * \brief Iterator type
+     *
+     * This inherits the iterator_category of the iterators
+     * of the underlying range.
+     */
     using iterator = Impl::TransformedRangeIterator<RawIterator, F>;
+
+    /**
+     * \brief Export type of the wrapped untransformed range.
+     *
+     * Notice that this will always be the raw type with references
+     * removed, even if a reference is stored.
+     */
+    using RawRange = std::remove_reference_t<R>;
 
     /**
      * \brief Construct from range and function
@@ -654,6 +668,39 @@ namespace Dune
       return iterator(rawRange_.end(), &f_);
     }
 
+    /**
+     * \brief Obtain the size of the range
+     *
+     * This is only available if the underlying range
+     * provides a size() method. In this case size()
+     * just forwards to the underlying range's size() method.
+     *
+     * Attention: Don't select the template parameters explicitly.
+     * They are only used to implement SFINAE.
+     */
+    template<class Dummy=R,
+      class = void_t<decltype(std::declval<Dummy>().size())>>
+    auto size() const
+    {
+      return rawRange_.size();
+    }
+
+    /**
+     * \brief Export the wrapped untransformed range.
+     */
+    const RawRange& rawRange() const
+    {
+      return rawRange_;
+    }
+
+    /**
+     * \brief Export the wrapped untransformed range.
+     */
+    RawRange& rawRange()
+    {
+      return rawRange_;
+    }
+
   private:
     R rawRange_;
     F f_;
@@ -662,7 +709,7 @@ namespace Dune
   /**
    * \brief Create a TransformedRangeView
    *
-   * \param range The range the transform
+   * \param range The range to transform
    * \param f Unary function that should the applied to the entries of the range.
    *
    * This behaves like a range providing `begin()` and `end()`.

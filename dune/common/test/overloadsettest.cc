@@ -105,7 +105,7 @@ int main()
     // value.
     int dummyCapture=0;
     auto f = Dune::overload(
-        [dummyCapture](const int& t) { t;},
+        [dummyCapture](const int& t) { (void) t;},
         [dummyCapture](const auto& t) { t.bar();});
     f(0);
   }

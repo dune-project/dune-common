@@ -3,6 +3,8 @@
 #ifndef DUNE_COMMON_SIMD_TEST_VCTEST_HH
 #define DUNE_COMMON_SIMD_TEST_VCTEST_HH
 
+#if HAVE_VC
+
 #include <cstddef>
 #include <cstdint> // for std::[u]int#_t as substituted
 
@@ -24,4 +26,5 @@ namespace Dune {
   } // namespace Simd
 } // namespace Dune
 
+#endif // HAVE_VC
 #endif // DUNE_COMMON_SIMD_TEST_VCTEST_HH
