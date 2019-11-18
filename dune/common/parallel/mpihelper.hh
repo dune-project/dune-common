@@ -5,15 +5,12 @@
 
 #if HAVE_MPI
 #include <cassert>
-#endif
-
-#if HAVE_MPI
 #include <mpi.h>
 #endif
 
-#include <dune/common/parallel/collectivecommunication.hh>
+#include <dune/common/parallel/communication.hh>
 #if HAVE_MPI
-#include <dune/common/parallel/mpicollectivecommunication.hh>
+#include <dune/common/parallel/mpicommunication.hh>
 #include <dune/common/stdstreams.hh>
 #endif
 #include <dune/common/visibility.hh>
@@ -110,10 +107,17 @@ namespace Dune
 
 
 
-    static CollectiveCommunication<MPICommunicator>
-    getCollectiveCommunication()
+    // Will be deprecated after the 2.7 release
+    //[[deprecated("getCollectionCommunication is deprecated. Use getCommunication instead.")]]
+    static Communication<MPICommunicator> getCollectiveCommunication()
     {
-      return CollectiveCommunication<MPICommunicator>(getCommunicator());
+      return Communication<MPICommunicator>(getCommunicator());
+    }
+
+    static Communication<MPICommunicator>
+    getCommunication()
+    {
+      return Communication<MPICommunicator>(getCommunicator());
     }
 
     /**
@@ -199,10 +203,18 @@ namespace Dune
       return MPI_COMM_SELF;
     }
 
-    static CollectiveCommunication<MPICommunicator>
+    // Will be deprecated after the 2.7 release
+    //[[deprecated("getCollectionCommunication is deprecated. Use getCommunication instead.")]]
+    static Communication<MPICommunicator>
     getCollectiveCommunication()
     {
-      return CollectiveCommunication<MPICommunicator>(getCommunicator());
+      return Communication<MPICommunicator>(getCommunicator());
+    }
+
+    static Communication<MPICommunicator>
+    getCommunication()
+    {
+      return Communication<MPICommunicator>(getCommunicator());
     }
     /**
      * @brief Get the singleton instance of the helper.

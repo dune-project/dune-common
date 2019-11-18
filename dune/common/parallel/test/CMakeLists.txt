@@ -25,3 +25,21 @@ dune_add_test(SOURCES variablesizecommunicatortest.cc
               TIMEOUT 300
               CMAKE_GUARD MPI_FOUND
               LABELS quick)
+
+dune_add_test(SOURCES mpidatatest.cc
+              LINK_LIBRARIES dunecommon
+              MPI_RANKS 2
+              TIMEOUT 300
+              LABELS quick)
+
+dune_add_test(SOURCES mpifuturetest.cc
+              LINK_LIBRARIES dunecommon
+              MPI_RANKS 1 2 4
+              TIMEOUT 300
+              LABELS quick)
+
+dune_add_test(SOURCES mpipacktest.cc
+              LINK_LIBRARIES dunecommon
+              MPI_RANKS 2
+              TIMEOUT 300
+              LABELS quick)
