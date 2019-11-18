@@ -79,7 +79,7 @@ int main(int argc, char** argv)
     else{
       typedef ParallelIndexSet<int,ParallelLocalIndex<Flags> > IndexSet;
       IndexSet blockedSet;
-      buildBlockedIndexSet(blockedSet, n, helper.getCollectiveCommunication());
+      buildBlockedIndexSet(blockedSet, n, helper.getCommunication());
     }
     return 0;
   }

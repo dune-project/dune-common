@@ -231,7 +231,7 @@ dune_add_test(SOURCES lrutest.cc
 dune_add_test(SOURCES mathclassifierstest.cc
               LINK_LIBRARIES dunecommon)
 
-dune_add_test(SOURCES mpicollectivecommunication.cc
+dune_add_test(SOURCES mpicommunicationtest.cc
               LINK_LIBRARIES dunecommon
               MPI_RANKS 1 2 4 8
               TIMEOUT 300
