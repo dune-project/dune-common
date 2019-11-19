@@ -521,17 +521,28 @@ run_default_vcsetup() {
         fi
       else
         # standard handling of Git whitespace hook
+        for f in dune-git-whitespace-hook git-whitespace-hook; do
+          f="${PREFIX_DIR}/bin/${f}"
+          if [ -e "${f}" ]; then
+            git_whitespace_hook="${f}"
+            break
+          fi
+        done
+        if [ -z "${git_whitespace_hook:-}" ]; then
+          echo "Did not find git-whitespace-hook." >&2
+          exit 1
+        fi
         if [ ! -e "$GITHOOKPATH" ]; then
           # there is no hook yet, we can safely install ours
           echo "--> Installing Git pre-commit hook to enforce whitespace policy"
-          cp -p "$PREFIX_DIR/bin/git-whitespace-hook" "$GITHOOKPATH"
+          cp -p "${git_whitespace_hook}" "$GITHOOKPATH"
         else
           # there is already a hook, check whether it is our whitespace hook
           local HOOKTAG="$(eval head -n 2 \"$GITHOOKPATH\" | tail -n 1)"
           if [ "x$HOOKTAG" = "x# dune-git-whitespace-hook" ]; then
-            if [ "$PREFIX_DIR/bin/git-whitespace-hook" -nt "$GITHOOKPATH" ]; then
+            if [ "${git_whitespace_hook}" -nt "$GITHOOKPATH" ]; then
               echo "--> Updating Git pre-commit hook with newer version"
-              cp -p "$PREFIX_DIR/bin/git-whitespace-hook" "$GITHOOKPATH"
+              cp -p "${git_whitespace_hook}" "$GITHOOKPATH"
             fi
           else
             echo "WARNING: Existing pre-commit hook found!"
