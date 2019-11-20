@@ -588,3 +588,9 @@ check_cxx_symbol_exists(
   "utility;experimental/type_traits"
   DUNE_HAVE_CXX_EXPERIMENTAL_IS_DETECTED
   )
+
+check_cxx_symbol_exists(
+  "std::identity"
+  "functional"
+  DUNE_HAVE_CXX_STD_IDENTITY
+  )
