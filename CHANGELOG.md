@@ -1,5 +1,7 @@
 # Master (will become release 2.7)
 
+- Added fallback implementation to C++20 feature: `std::identity`.
+
 - Dune no longer applies architecture flags detected by the Vc library
   automatically.  This applies to all targets that link to Vc explicitly (with
   `add_dune_vc_flags()`) or implicitly (with `dune_enable_all_packages()`).
