@@ -6,6 +6,44 @@ from dune.common.hashit import hashIt
 from . import builder
 from dune.common.compatibility import isString
 
+def cppType(arg):
+    try:
+        t, i = arg._typeName + " &", arg._includes
+    except AttributeError:
+        if isinstance(arg, bool):
+            t, i = "bool", []
+        elif isinstance(arg, int) or isinstance(arg,numpy.intc):
+            t, i = "int", []
+        elif isinstance(arg,numpy.int_):
+            t, i = "long", []
+        elif isinstance(arg,numpy.intp):
+            t, i = "std::size_t", []
+        elif isinstance(arg, float) or isinstance(arg,numpy.float_):
+            t, i = "double", []
+        elif isinstance(arg, numpy.ndarray):
+            dtype = None
+            if arg.dtype.type == numpy.intc:
+                dtype="int"
+            elif arg.dtype.type == numpy.int_:
+                dtype="long"
+            elif arg.dtype.type == numpy.intp:
+                dtype="std::size_t"
+            elif arg.dtype.type == numpy.float_:
+                dtype="double"
+            if dtype is None:
+                t, i = "pybind11::array", ["dune/python/pybind11/numpy.h"]
+            else:
+                t, i = "pybind11::array_t<"+dtype+">", ["dune/python/pybind11/numpy.h"]
+        elif callable(arg):
+            t, i = "pybind11::function", ["dune/python/pybind11/pybind11.h"]
+        elif isinstance(arg,tuple) or isinstance(arg,list):
+            t, i = cppType(arg[0])
+            t = "std::vector<"+t+">"
+            i += ["vector"]
+        else:
+            raise Exception("Cannot deduce C++ type for the following argument: " + repr(arg))
+    return t,i
+
 def load(functionName, includes, *args):
     '''Just in time compile an algorithm.
 
@@ -45,35 +83,7 @@ def load(functionName, includes, *args):
 
     argTypes = []
     for arg in args:
-        try:
-            t, i = arg._typeName + " &", arg._includes
-        except AttributeError:
-            if isinstance(arg, int) or isinstance(arg,numpy.intc):
-                t, i = "int", []
-            elif isinstance(arg,numpy.int_):
-                t, i = "long", []
-            elif isinstance(arg,numpy.intp):
-                t, i = "std::size_t", []
-            elif isinstance(arg, float) or isinstance(arg,numpy.float_):
-                t, i = "double", []
-            elif isinstance(arg, numpy.ndarray):
-                dtype = None
-                if arg.dtype.type == numpy.intc:
-                    dtype="int"
-                elif arg.dtype.type == numpy.int_:
-                    dtype="long"
-                elif arg.dtype.type == numpy.intp:
-                    dtype="std::size_t"
-                elif arg.dtype.type == numpy.float_:
-                    dtype="double"
-                if dtype is None:
-                    t, i = "pybind11::array", ["dune/python/pybind11/numpy.h"]
-                else:
-                    t, i = "pybind11::array_t<"+dtype+">", ["dune/python/pybind11/numpy.h"]
-            elif callable(arg):
-                t, i = "pybind11::function", ["dune/python/pybind11/pybind11.h"]
-            else:
-                raise Exception("Cannot deduce C++ type for the following argument: " + repr(arg))
+        t,i = cppType(arg)
         argTypes.append(t)
         includes += i
 
