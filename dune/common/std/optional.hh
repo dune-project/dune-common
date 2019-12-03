@@ -254,7 +254,7 @@ namespace Dune
       operator= ( U &&value )
       {
         if( engaged_ )
-          value_ = std::move( value );
+          value_ = std::forward<U>( value );
         else
           rawEmplace(std::forward<U>(value));
         engaged_ = true;
