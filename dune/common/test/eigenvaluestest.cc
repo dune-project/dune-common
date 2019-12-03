@@ -163,6 +163,7 @@ int main()
 
   testSymmetricFieldMatrix<double,2>();
   testSymmetricFieldMatrix<double,3>();
+  testSymmetricFieldMatrix<double,4>();
 
   return 0;
 }
