@@ -89,6 +89,8 @@ void testRosserMatrix()
 template <class field_type, int dim>
 void testSymmetricFieldMatrix()
 {
+  std::cout << "checking eigenvalues of matrices with size " << dim << std::flush;
+
   int numberOfTestMatrices = 10;
 
   for (int i=0; i<numberOfTestMatrices; i++)
@@ -143,9 +145,12 @@ void testSymmetricFieldMatrix()
 
     // Make sure the eigenvalues are in ascending order
     for (int j=0; j<dim-1; j++)
-      if (eigenValues[j] > eigenValues[j+1] + 1e-10)
-        DUNE_THROW(MathError, "Values computed by FMatrixHelp::eigenValues are not in ascending order");
+      if (eigenValues[j] > eigenValues[j+1])
+        DUNE_THROW(MathError, "Eigenvalues [" << eigenValues << "] computed by FMatrixHelp::eigenValues are not in ascending order");
+
+    std::cout << "." << std::flush;
   }
+  std::cout << std::endl;
 }
 
 int main()
