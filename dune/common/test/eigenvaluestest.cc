@@ -116,7 +116,8 @@ void testSymmetricFieldMatrix()
       trace += testMatrix[j][j];
 
     FieldVector<field_type,dim> eigenValues;
-    FMatrixHelp::eigenValues(testMatrix, eigenValues);
+    FieldMatrix<field_type,dim,dim> eigenVectors;
+    FMatrixHelp::eigenValuesVectors(testMatrix, eigenValues, eigenVectors);
 
     field_type ev_sum = std::accumulate(eigenValues.begin(),eigenValues.end(),0.0);
 
@@ -143,6 +144,20 @@ void testSymmetricFieldMatrix()
       auto th = ev_max * dim * std::sqrt(limits::epsilon()); // relative error
       if (std::abs(copy.determinant()) > th)
         DUNE_THROW(MathError, "Value " << eigenValues[j] << " computed by FMatrixHelp::eigenValues is not an eigenvalue");
+    }
+
+    // Check eigenvectors
+    for (int j=0; j<dim; j++)
+    {
+      auto copy = testMatrix;
+      for (int k=0; k<dim; k++)
+        copy[k][k] -= eigenValues[j];
+
+      FieldVector<field_type,dim> result;
+      copy.mv(eigenVectors[j],result);
+      field_type th = ev_max*dim*limits::epsilon(); // relative error
+      if (result.two_norm() > th)
+        DUNE_THROW(MathError, "Vector " << eigenVectors[j] << " with eigenvalue " << eigenValues[j] << " computed by FMatrixHelp::eigenValuesVectors is not an eigenvector");
     }
 
     // Make sure the eigenvalues are in ascending order
