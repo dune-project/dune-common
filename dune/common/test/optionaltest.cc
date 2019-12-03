@@ -16,6 +16,25 @@
 #include <dune/common/test/testsuite.hh>
 #include <dune/common/unused.hh>
 
+class T {
+public:
+
+  T() : valid_(true) {}
+
+  T(const T& other) : valid_(true) {}
+
+  T(T&& other) : valid_(true) { other.valid_ = false; }
+
+  T& operator=(const T& other) { valid_ = true; }
+
+  T& operator=(T&& other) { valid_ = true; other.valid_ = false; }
+
+  bool valid() const { return valid_; }
+
+protected:
+  bool valid_;
+};
+
 Dune::Std::optional< std::string > create ( bool b )
 {
   if( b )
@@ -61,6 +80,20 @@ int main()
 
   optFalse = create( true );
   test.check( *optFalse == "void" );
+
+  {
+    T t1;
+    Dune::Std::optional<T> o(t1);
+    test.check(t1.valid());
+
+    T t2;
+    o = t2;
+    test.check(t2.valid());
+
+    T t3;
+    o = std::move(t3);
+    test.check(not(t3.valid()));
+  }
 
   return test.exit();
 }
