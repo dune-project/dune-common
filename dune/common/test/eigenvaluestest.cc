@@ -108,8 +108,9 @@ void testSymmetricFieldMatrix()
       for (int k=0; k<dim; k++)
         copy[k][k] -= eigenValues[j];
 
-      if (std::fabs(copy.determinant()) > 1e-8)
-        DUNE_THROW(MathError, "Value computed by FMatrixHelp::eigenValues is not an eigenvalue");
+      field_type th = ev_max * 1e-7; // relative error
+      if (std::abs(copy.determinant()) > th)
+        DUNE_THROW(MathError, "Value " << eigenValues[j] << " computed by FMatrixHelp::eigenValues is not an eigenvalue");
     }
 
     // Make sure the eigenvalues are in ascending order
