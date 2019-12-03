@@ -121,9 +121,6 @@ void testSymmetricFieldMatrix()
 
     field_type ev_sum = std::accumulate(eigenValues.begin(),eigenValues.end(),0.0);
 
-    if (std::abs(trace - ev_sum) > dim * 1e-8)
-      DUNE_THROW(MathError, "Sum of eigenvalues computed by FMatrixHelp::eigenValues differs from the trace");
-
     FieldVector<field_type,dim> absEigenValues;
     field_type ev_min = limits::max();
     field_type ev_max = 0.0;
@@ -133,6 +130,9 @@ void testSymmetricFieldMatrix()
       ev_min = std::min(ev_min,absEigenValues[j]);
       ev_max = std::max(ev_max,absEigenValues[j]);
     }
+
+    if (std::abs(trace - ev_sum) > dim * std::abs(ev_max) * std::numeric_limits<field_type>::epsilon())
+      DUNE_THROW(MathError, "Sum of eigenvalues computed by FMatrixHelp::eigenValues differs from the trace");
 
     // Make sure the compute numbers really are the eigenvalues
     for (int j=0; j<dim; j++)
