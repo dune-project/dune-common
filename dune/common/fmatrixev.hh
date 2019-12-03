@@ -263,6 +263,24 @@ namespace Dune {
         eigenVectors = {{1,0},{0,1}};
     }
 
+    /* specialization for 3D vectors */
+    template <typename K>
+    static void eigenValuesVectors(const FieldMatrix<K, 3, 3>& matrix,
+                                   FieldVector<K, 3>& eigenValues,
+                                   FieldMatrix<K, 3, 3>& eigenVectors)
+    {
+      FMatrixHelp::eigenValues(matrix, eigenValues);
+
+      for (int j = 0; j < 3; j++)
+      {
+        auto copy = matrix;
+        for (int k=0; k<3; k++)
+          copy[k][k] -= eigenValues[j];
+        const FieldVector<K, 3> b(0);
+        copy.solve(eigenVectors[j],b);
+      }
+    }
+
     /** \brief calculates the eigenvalues of a non-symmetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
         \param[out] eigenValues FieldVector that contains eigenvalues in
