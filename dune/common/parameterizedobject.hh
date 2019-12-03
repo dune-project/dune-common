@@ -72,7 +72,7 @@ class ParameterizedObjectFactory<TypeT(Args...), KeyT>
          * @param args The parameters used for the construction.
          * @return The object wrapped as Type
          */
-        Type create(Key const& key, Args ... args) {
+        Type create(Key const& key, Args ... args) const {
             typename Registry::const_iterator i = registry_.find(key);
             if (i == registry_.end()) {
                 DUNE_THROW(Dune::InvalidStateException,
@@ -143,6 +143,11 @@ class ParameterizedObjectFactory<TypeT(Args...), KeyT>
         void define(Key const& key, Impl&& t)
         {
             registry_[key] = [=](Args...) { return t;};
+        }
+
+        bool contains(Key const& key) const
+        {
+            return registry_.count(key);
         }
 
     private:
