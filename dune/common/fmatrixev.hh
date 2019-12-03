@@ -58,6 +58,9 @@ namespace Dune {
     static void eigenValues(const FieldMatrix<K, 2, 2>& matrix,
                             FieldVector<K, 2>& eigenvalues)
     {
+      // we assume that the matrix is symmetric
+      assert(matrix[1][0] == matrix[0][1]);
+
       using std::sqrt;
       const K detM = matrix[0][0] * matrix[1][1] - matrix[1][0] * matrix[0][1];
       const K p = 0.5 * (matrix[0][0] + matrix [1][1]);
