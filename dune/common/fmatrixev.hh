@@ -105,6 +105,7 @@ namespace Dune {
         eigenvalues[0] = matrix[0][0];
         eigenvalues[1] = matrix[1][1];
         eigenvalues[2] = matrix[2][2];
+        std::sort(eigenvalues.begin(),eigenvalues.end());
       }
       else
       {
