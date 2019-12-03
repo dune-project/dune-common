@@ -134,6 +134,9 @@ void testSymmetricFieldMatrix()
     if (std::abs(trace - ev_sum) > dim * std::abs(ev_max) * std::numeric_limits<field_type>::epsilon())
       DUNE_THROW(MathError, "Sum of eigenvalues computed by FMatrixHelp::eigenValues differs from the trace");
 
+    // we disabled the following test, as the determinant is instable
+    // and thus round-off errors are hard to control
+    /*
     // Make sure the compute numbers really are the eigenvalues
     for (int j=0; j<dim; j++)
     {
@@ -145,8 +148,9 @@ void testSymmetricFieldMatrix()
       if (std::abs(copy.determinant()) > th)
         DUNE_THROW(MathError, "Value " << eigenValues[j] << " computed by FMatrixHelp::eigenValues is not an eigenvalue");
     }
+    */
 
-    // Check eigenvectors
+    // Check eigenvalue/eigenvectors pairs
     for (int j=0; j<dim; j++)
     {
       auto copy = testMatrix;
@@ -181,6 +185,7 @@ int main()
   testSymmetricFieldMatrix<double,2>();
   testSymmetricFieldMatrix<double,3>();
   testSymmetricFieldMatrix<double,4>();
+  testSymmetricFieldMatrix<double,200>();
 
   return 0;
 }
