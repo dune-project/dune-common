@@ -240,6 +240,29 @@ namespace Dune {
       eigenValuesVectorsLapack(matrix,eigenValues,eigenVectors,'v');
     }
 
+    /* specialization for 2D vectors */
+    template <typename K>
+    static void eigenValuesVectors(const FieldMatrix<K, 2, 2>& matrix,
+                                   FieldVector<K, 2>& eigenValues,
+                                   FieldMatrix<K, 2, 2>& eigenVectors)
+    {
+      FMatrixHelp::eigenValues(matrix, eigenValues);
+
+      // compute eigenvectors (for a symmetric matrix)
+      if (matrix[1][0] != 0.0) // ... and matrix[0][1] != 0.0
+      {
+        eigenVectors = {{eigenValues[0]-matrix[1][1],matrix[1][0]},
+                        {eigenValues[1]-matrix[1][1],matrix[1][0]}};
+        eigenVectors[0] /= eigenVectors[0].two_norm();
+        eigenVectors[1] /= eigenVectors[1].two_norm();
+        return;
+      }
+      if (matrix[0][0] > matrix[1][1])
+        eigenVectors = {{0,1},{1,0}};
+      else
+        eigenVectors = {{1,0},{0,1}};
+    }
+
     /** \brief calculates the eigenvalues of a non-symmetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
         \param[out] eigenValues FieldVector that contains eigenvalues in
