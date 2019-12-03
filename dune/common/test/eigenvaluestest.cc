@@ -92,11 +92,18 @@ void testSymmetricFieldMatrix()
 
   for (int i=0; i<numberOfTestMatrices; i++)
   {
-    // Construct pseudo-random symmetric test matrix
+    // Construct pseudo-random matrix
+    FieldMatrix<field_type,dim,dim> tmpMatrix;
+    for (int j=0; j<dim; j++)
+      for (int k=0; k<dim; k++)
+        tmpMatrix[j][k] = field_type(rand()%(dim*dim));
+
+    // Calculate an SPD matrix as A*A^T
     FieldMatrix<field_type,dim,dim> testMatrix;
     for (int j=0; j<dim; j++)
       for (int k=j; k<dim; k++)
-        testMatrix[j][k] = testMatrix[k][j] = ((int)(M_PI*j*k*i))%100 - 1;
+        testMatrix[j][k] = testMatrix[k][j] =
+          tmpMatrix[j][k] * tmpMatrix[k][j];
 
     FieldVector<field_type,dim> eigenValues;
     FMatrixHelp::eigenValues(testMatrix, eigenValues);
