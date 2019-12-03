@@ -10,6 +10,7 @@
 #include <dune/common/fmatrixev.hh>
 
 #include <algorithm>
+#include <numeric>
 #include <complex>
 
 using namespace Dune;
@@ -105,8 +106,28 @@ void testSymmetricFieldMatrix()
         testMatrix[j][k] = testMatrix[k][j] =
           tmpMatrix[j][k] * tmpMatrix[k][j];
 
+    // trace
+    field_type trace = 0.0;
+    for (int j=0; j<dim; j++)
+      trace += testMatrix[j][j];
+
     FieldVector<field_type,dim> eigenValues;
     FMatrixHelp::eigenValues(testMatrix, eigenValues);
+
+    field_type ev_sum = std::accumulate(eigenValues.begin(),eigenValues.end(),0.0);
+
+    if (std::abs(trace - ev_sum) > dim * 1e-8)
+      DUNE_THROW(MathError, "Sum of eigenvalues computed by FMatrixHelp::eigenValues differs from the trace");
+
+    FieldVector<field_type,dim> absEigenValues;
+    field_type ev_min = 1e99;
+    field_type ev_max = 0.0;
+    for (int j=0; j<dim; j++)
+    {
+      absEigenValues[j] = std::abs(eigenValues[j]);
+      ev_min = std::min(ev_min,absEigenValues[j]);
+      ev_max = std::max(ev_max,absEigenValues[j]);
+    }
 
     // Make sure the compute numbers really are the eigenvalues
     for (int j=0; j<dim; j++)
