@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <numeric>
+#include <limits>
 #include <complex>
 
 using namespace Dune;
@@ -89,6 +90,7 @@ void testRosserMatrix()
 template <class field_type, int dim>
 void testSymmetricFieldMatrix()
 {
+  using limits = std::numeric_limits<field_type>;
   std::cout << "checking eigenvalues of matrices with size " << dim << std::flush;
 
   int numberOfTestMatrices = 10;
@@ -122,7 +124,7 @@ void testSymmetricFieldMatrix()
       DUNE_THROW(MathError, "Sum of eigenvalues computed by FMatrixHelp::eigenValues differs from the trace");
 
     FieldVector<field_type,dim> absEigenValues;
-    field_type ev_min = 1e99;
+    field_type ev_min = limits::max();
     field_type ev_max = 0.0;
     for (int j=0; j<dim; j++)
     {
@@ -134,11 +136,11 @@ void testSymmetricFieldMatrix()
     // Make sure the compute numbers really are the eigenvalues
     for (int j=0; j<dim; j++)
     {
-      FieldMatrix<field_type,dim,dim> copy = testMatrix;
+      auto copy = testMatrix;
       for (int k=0; k<dim; k++)
         copy[k][k] -= eigenValues[j];
 
-      field_type th = ev_max * 1e-7; // relative error
+      auto th = ev_max * dim * std::sqrt(limits::epsilon()); // relative error
       if (std::abs(copy.determinant()) > th)
         DUNE_THROW(MathError, "Value " << eigenValues[j] << " computed by FMatrixHelp::eigenValues is not an eigenvalue");
     }
