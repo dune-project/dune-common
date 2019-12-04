@@ -443,8 +443,9 @@ namespace Dune {
     //! Compute inverse
     void invert()
     {
+      using real_type = typename FieldTraits<K>::real_type;
       for (int i=0; i<n; i++)
-        diag_[i] = 1/diag_[i];
+        diag_[i] = real_type(1.0)/diag_[i];
     }
 
     //! calculates the determinant of this matrix
