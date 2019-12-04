@@ -256,8 +256,7 @@ namespace Dune {
       s >> val;
       if(!s)
         DUNE_THROW(RangeError, " as a " << className<T>());
-      T dummy;
-      s >> dummy;
+      s.get();
       // now extraction should have failed, and eof should be set
       if ((! s.fail()) || (! s.eof()))
         DUNE_THROW(RangeError, " as a " << className<T>());
