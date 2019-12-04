@@ -96,6 +96,7 @@ namespace Dune {
     {
       using std::sqrt;
       using std::acos;
+      using real_type = typename FieldTraits<K>::real_type;
       const K pi = MathematicalConstants<K>::pi();
       K p1 = matrix[0][1]*matrix[0][1] + matrix[0][2]*matrix[0][2] + matrix[1][2]*matrix[1][2];
 
@@ -119,7 +120,7 @@ namespace Dune {
         FieldMatrix<K,3,3> B;
         for (int i=0; i<3; i++)
           for (int j=0; j<3; j++)
-            B[i][j] = (1/p) * (matrix[i][j] - q*(i==j));
+            B[i][j] = (real_type(1.0)/p) * (matrix[i][j] - q*(i==j));
 
         K r = B.determinant() / 2.0;
 
