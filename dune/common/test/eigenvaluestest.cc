@@ -184,8 +184,10 @@ int main()
 
   testSymmetricFieldMatrix<double,2>();
   testSymmetricFieldMatrix<double,3>();
+#if HAVE_LAPACK
   testSymmetricFieldMatrix<double,4>();
   testSymmetricFieldMatrix<double,200>();
+#endif // HAVE_LAPACK
 
   return 0;
 }
