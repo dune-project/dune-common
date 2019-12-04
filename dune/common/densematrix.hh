@@ -961,6 +961,7 @@ namespace Dune
   template <class V1, class V2>
   inline void DenseMatrix<MAT>::solve(V1& x, const V2& b, bool doPivoting) const
   {
+    using real_type = typename FieldTraits<value_type>::real_type;
     // never mind those ifs, because they get optimized away
     if (rows()!=cols())
       DUNE_THROW(FMatrixError, "Can't solve for a " << rows() << "x" << cols() << " matrix!");
@@ -983,7 +984,7 @@ namespace Dune
                         < FMatrixPrecision<>::absolute_limit()))
         DUNE_THROW(FMatrixError,"matrix is singular");
 #endif
-      detinv = field_type(1.0)/detinv;
+      detinv = real_type(1.0)/detinv;
 
       x[0] = detinv*((*this)[1][1]*b[0]-(*this)[0][1]*b[1]);
       x[1] = detinv*((*this)[0][0]*b[1]-(*this)[1][0]*b[0]);
@@ -1034,6 +1035,7 @@ namespace Dune
   template<typename MAT>
   inline void DenseMatrix<MAT>::invert(bool doPivoting)
   {
+    using real_type = typename FieldTraits<MAT>::real_type;
     using std::swap;
 
     // never mind those ifs, because they get optimized away
@@ -1047,7 +1049,7 @@ namespace Dune
                         < FMatrixPrecision<>::absolute_limit()))
         DUNE_THROW(FMatrixError,"matrix is singular");
 #endif
-      (*this)[0][0] = field_type( 1 ) / (*this)[0][0];
+      (*this)[0][0] = real_type( 1 ) / (*this)[0][0];
 
     }
     else if (rows()==2) {
@@ -1058,7 +1060,7 @@ namespace Dune
                         < FMatrixPrecision<>::absolute_limit()))
         DUNE_THROW(FMatrixError,"matrix is singular");
 #endif
-      detinv = field_type( 1 ) / detinv;
+      detinv = real_type( 1 ) / detinv;
 
       field_type temp=(*this)[0][0];
       (*this)[0][0] =  (*this)[1][1]*detinv;
