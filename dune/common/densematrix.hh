@@ -983,7 +983,7 @@ namespace Dune
                         < FMatrixPrecision<>::absolute_limit()))
         DUNE_THROW(FMatrixError,"matrix is singular");
 #endif
-      detinv = 1.0/detinv;
+      detinv = field_type(1.0)/detinv;
 
       x[0] = detinv*((*this)[1][1]*b[0]-(*this)[0][1]*b[1]);
       x[1] = detinv*((*this)[0][0]*b[1]-(*this)[1][0]*b[0]);

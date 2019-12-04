@@ -163,6 +163,8 @@ int test_invert_solve()
   using FV6f = Dune::FieldVector<float, 6>;
   using FM6c = Dune::FieldMatrix<std::complex<double>, 6, 6>;
   using FV6c = Dune::FieldVector<std::complex<double>, 6>;
+  using FM6cf = Dune::FieldMatrix<std::complex<float>, 6, 6>;
+  using FV6cf = Dune::FieldVector<std::complex<float>, 6>;
   FM6 A_data3 = {{0.1756212892262638, 0.18004482126181995, -0.49348712464381461, 0.49938830949606494, -0.7073160963417815, 1.0595994834402057e-06},
                 {0.17562806606385517, 0.18005184462676252, -0.49354113600539418, 0.50059575375120657, 0.70689735319270453, -3.769499436967368e-07},
                 {0.17562307226079987, 0.1800466692525447, -0.49350050991711036, -0.5000065175076156, 0.00018887507812282846, -0.70710715811504954},
@@ -179,14 +181,19 @@ int test_invert_solve()
   FV6 x3 = {0.904587854793530, 0.917289473665475, -1.369740692593475, -0.000021581236636, -0.000061184685788, -0.000000110146895};
   FM6f A_data3f, inv_data3f;
   FM6c A_data3c, inv_data3c;
+  FM6cf A_data3cf, inv_data3cf;
   std::copy(A_data3.begin(), A_data3.end(), A_data3f.begin());
   std::copy(inv_data3.begin(), inv_data3.end(), inv_data3f.begin());
   std::copy(A_data3.begin(), A_data3.end(), A_data3c.begin());
   std::copy(inv_data3.begin(), inv_data3.end(), inv_data3c.begin());
+  std::copy(A_data3.begin(), A_data3.end(), A_data3cf.begin());
+  std::copy(inv_data3.begin(), inv_data3.end(), inv_data3cf.begin());
   FV6f b3f = b3;
   FV6f x3f = x3;
   FV6c b3c = b3;
   FV6c x3c = x3;
+  FV6cf b3cf = b3;
+  FV6cf x3cf = x3;
 #if HAVE_VC
   using FM6vc = Dune::FieldMatrix< Vc::SimdArray<double, 8>, 6, 6>;
   using FV6vc = Dune::FieldVector< Vc::SimdArray<double, 8>, 6>;
@@ -199,6 +206,7 @@ int test_invert_solve()
 #endif
   ret += test_invert_solve<double, 6>(A_data3, inv_data3, x3, b3);
   ret += test_invert_solve<std::complex<double>, 6>(A_data3c, inv_data3c, x3c, b3c);
+  ret += test_invert_solve<std::complex<float>, 6>(A_data3cf, inv_data3cf, x3cf, b3cf);
   ret += test_invert_solve<float, 6>(A_data3f, inv_data3f, x3f, b3f);
 
   FM A_data4 = {{2, -1, 0}, {-1, 2, -1}, {0, -1, 2}};
@@ -898,6 +906,7 @@ int main()
     test_invert< float, 34 >();
     test_invert< double, 34 >();
     test_invert< std::complex< long double >, 2 >();
+    test_invert< std::complex< float >, 2 >();
     errors += test_invert_solve();
 
     {  // Test whether multiplying one-column matrices by scalars work

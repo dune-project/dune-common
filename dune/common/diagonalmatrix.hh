@@ -444,7 +444,7 @@ namespace Dune {
     void invert()
     {
       for (int i=0; i<n; i++)
-        diag_[i] = 1/diag_[i];
+        diag_[i] = K(1)/diag_[i];
     }
 
     //! calculates the determinant of this matrix

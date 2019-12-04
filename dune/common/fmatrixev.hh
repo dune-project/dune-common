@@ -119,7 +119,7 @@ namespace Dune {
         FieldMatrix<K,3,3> B;
         for (int i=0; i<3; i++)
           for (int j=0; j<3; j++)
-            B[i][j] = (1/p) * (matrix[i][j] - q*(i==j));
+            B[i][j] = (K(1.0)/p) * (matrix[i][j] - q*(i==j));
 
         K r = B.determinant() / 2.0;
 
