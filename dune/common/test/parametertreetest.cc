@@ -305,6 +305,9 @@ int main()
     }
     catch (Dune::RangeError & r) {}
 
+    // test for complex
+    c.get<std::complex<double>>("x1");
+
     // more const tests
     testparam<Dune::ParameterTree>(c);
 
