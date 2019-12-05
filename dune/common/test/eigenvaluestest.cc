@@ -10,6 +10,7 @@
 #include <dune/common/fmatrixev.hh>
 
 #include <algorithm>
+#include <limits>
 #include <complex>
 
 using namespace Dune;
@@ -119,6 +120,42 @@ void testSymmetricFieldMatrix()
   }
 }
 
+template<typename field_type, int dim>
+void checkMultiplicityImpl(FieldMatrix<field_type,dim,dim> A,
+  FieldVector<field_type,dim> refev)
+{
+  field_type th = dim*std::sqrt(std::numeric_limits<field_type>::epsilon());
+  FieldVector<field_type,dim> eigenValues;
+
+  // calculate via specialized function
+  FMatrixHelp::eigenValues(A, eigenValues);
+  if ((eigenValues-refev).two_norm() > th)
+    DUNE_THROW(MathError, "Eigenvalues [" << eigenValues << "] computed by FMatrixHelp::eigenValues do not matchthe reference solution [" << refev << "]");
+
+  // calculate eigenValues via LAPACK
+  FieldMatrix<field_type, dim, dim> dummy;
+  FMatrixHelp::eigenValuesVectorsLapack(A,eigenValues,dummy,'n');
+  if ((eigenValues-refev).two_norm() > th)
+    DUNE_THROW(MathError, "Eigenvalues [" << eigenValues << "] computed by FMatrixHelp::eigenValuesVectorsLapack do not matchthe reference solution [" << refev << "]");
+}
+
+template<typename field_type>
+void checkMultiplicity3D()
+{
+  checkMultiplicityImpl<double,3>({{  1,   0,   0},
+                                   {  0,   1,   0},
+                                   {  0,   0,   1}},
+                                  {  1,  1,  1});
+  checkMultiplicityImpl<double,3>({{  0,   1,   0},
+                                   {  1,   0,   0},
+                                   {  0,   0,   5}},
+                                  {  -1,  1,  5});
+  checkMultiplicityImpl<double,3>({{  3,  -2,   0},
+                                   { -2,   3,   0},
+                                   {  0,   0,   5}},
+                                  {  1,  5,  5});
+}
+
 int main()
 {
 #if HAVE_LAPACK
@@ -129,6 +166,12 @@ int main()
 
   testSymmetricFieldMatrix<double,2>();
   testSymmetricFieldMatrix<double,3>();
+#if HAVE_LAPACK
+  testSymmetricFieldMatrix<double,4>();
+  testSymmetricFieldMatrix<double,200>();
+#endif // HAVE_LAPACK
+
+  checkMultiplicity3D<double>();
 
   return 0;
 }
