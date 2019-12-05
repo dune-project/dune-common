@@ -171,6 +171,17 @@ void testSymmetricFieldMatrix()
         DUNE_THROW(MathError, "Vector " << eigenVectors[j] << " with eigenvalue " << eigenValues[j] << " computed by FMatrixHelp::eigenValuesVectors is not an eigenvector");
     }
 
+    // Check orthogonality of eigenvectors
+    for (int j=0; j<dim; j++)
+      for (int k=j+1; k<dim; k++)
+      {
+        auto th = (eigenVectors[j].one_norm() + eigenVectors[k].one_norm()) * limits::epsilon();
+        auto foo = eigenVectors[j] * eigenVectors[k];
+        std::cout << foo << "\t" << th << std::endl;
+        if (std::abs(foo) > th)
+          DUNE_THROW(MathError, "Vectors " << eigenVectors[j] << " and " << eigenVectors[k] << " computed by FMatrixHelp::eigenValuesVectors are not orthonormal");
+      }
+
     // Make sure the eigenvalues are in ascending order
     for (int j=0; j<dim-1; j++)
       if (eigenValues[j] > eigenValues[j+1])
