@@ -150,6 +150,13 @@ void testSymmetricFieldMatrix()
     }
     */
 
+    // Check eigenvectors are finite and not 0
+    for (int j=0; j<dim; j++)
+    {
+      if (! std::isfinite(field_type(1.0) / eigenVectors[j].two_norm()))
+        DUNE_THROW(MathError, "Vector " << eigenVectors[j] << " computed by FMatrixHelp::eigenValuesVectors is invalid");
+    }
+
     // Check eigenvalue/eigenvectors pairs
     for (int j=0; j<dim; j++)
     {
