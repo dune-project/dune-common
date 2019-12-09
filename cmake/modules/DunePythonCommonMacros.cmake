@@ -75,21 +75,7 @@ include(DunePythonTestCommand)
 set(Python_ADDITIONAL_VERSIONS 3.8 3.7 3.6 3.5 3.4)
 
 # Find the Python Interpreter
-set(_VERSION_STRING "")
-if(DUNE_PYTHON_FORCE_PYTHON2 AND DUNE_PYTHON_FORCE_PYTHON3)
-  message(FATAL_ERROR "Cannot enforce both python2 *and* python3")
-endif()
-if(DUNE_PYTHON_FORCE_PYTHON_VERSION)
-  set(_VERSION_STRING "${DUNE_PYTHON_FORCE_PYTHON_VERSION}")
-else()
-  if(DUNE_PYTHON_FORCE_PYTHON2)
-    set(_VERSION_STRING "2")
-  endif()
-  if(DUNE_PYTHON_FORCE_PYTHON3)
-    set(_VERSION_STRING "3")
-  endif()
-endif()
-find_package(PythonInterp ${_VERSION_STRING})
+find_package(PythonInterp 3)
 
 # Find the Python libraries
 find_package(PythonLibs)

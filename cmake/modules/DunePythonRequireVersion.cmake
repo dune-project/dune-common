@@ -1,86 +1,14 @@
-# This module provides functions to implement constraints on the version of the python interpreter.
-#
-# .. cmake_function:: dune_python_require_version
-#
-#    .. cmake_param:: version
-#       :positional:
-#       :single:
-#       :required:
-#
-#       The minimum required version.
-#
-#    Error out, if the python interpreter found by cmake is older than the given version.
-#    Python2 and Python3 versions are not compared to each other, so you can call this
-#    macro multiple times to enforce minimal versions on a python2 and python3 interpreter
-#    independently.
-#
-# .. cmake_function:: dune_python_force_version
-#
-#    .. cmake_param:: version
-#       :positional:
-#       :single:
-#       :required:
-#
-#       The major python version: 2 or 3
-#
-#    Enforce the major version of the python interpreter to be either 2 or 3.
-#
-#    .. note::
-#
-#       This is the developer-facing interface to enforce a major python version.
-#       A user can set the input variable :ref:`DUNE_PYTHON_FORCE_PYTHON2` or
-#       :ref:`DUNE_PYTHON_FORCE_PYTHON3` to achieve the same result for a given build only.
-#
-# .. cmake_variable:: DUNE_PYTHON_FORCE_PYTHON_VERSION
-#
-#     Set this variable to a python version (e.g. "3.6") if you want to force cmake to
-#     to pick up a specific version of the python interpreter in presence of several
-#     python versions. Note that if you just want to distinguish the major versions 2 and 3,
-#     you might as well use the variables :ref:`DUNE_PYTHON_FORCE_PYTHON2` or
-#     :ref:`DUNE_PYTHON_FORCE_PYTHON3`.
-#
-# .. cmake_variable:: DUNE_PYTHON_FORCE_PYTHON2
-#
-#     Set this variable to TRUE to force usage of a python2 interpreter. This is
-#     the *user-facing* interface, developers of Dune modules, may force the python
-#     major version through :ref:`dune_python_force_version`.
-#
-#     .. note::
-#        This does not check for the interpreter requirements of your python packages.
-#        If you set it and one of your packages requires python3, you will get an error.
-#
-#
-# .. cmake_variable:: DUNE_PYTHON_FORCE_PYTHON3
-#
-#     Set this variable to TRUE to force usage of a python3 interpreter. This is
-#     the *user-facing* interface, developers of Dune modules, may force the python
-#     major version through :ref:`dune_python_force_version`.
-#
-#     .. note::
-#        This does not check for the interpreter requirements of your python packages.
-#        If you set it and one of your packages requires python2, you will get an error.
-#
+# This module provided functions to implement constraints on the major version of the python interpreter.
+# With Python2 support being dropped from Dune these are not needed anymore.
 
+if(DUNE_PYTHON_FORCE_PYTHON2 OR DUNE_PYTHON_FORCE_PYTHON3 OR DUNE_PYTHON_FORCE_PYTHON_VERSION)
+  message(WARNING "Python 2 support has been dropped from Dune. The variables DUNE_PYTHON_FORCE_PYTHON2, DUNE_PYTHON_FORCE_PYTHON3 and DUNE_PYTHON_FORCE_PYTHON_VERSION variables are not doing anything anymore.")
+endif()
 
 function(dune_python_require_version)
-  string(REPLACE "." ";" versionlist ${ARGV0})
-  list(GET versionlist 0 major)
-  if("${major}" STREQUAL "2")
-    # This is a python2 requirement.
-    if("${PYTHON_VERSION_MAJOR}" STREQUAL "2" AND PYTHON_VERSION_STRING VERSION_LESS ${ARGV0})
-      message(FATAL_ERROR "${CMAKE_PROJECT_NAME} requires at least python ${ARGV0}")
-    endif()
-  else()
-    # This is a python3 requirement.
-    if("${PYTHON_VERSION_MAJOR}" STREQUAL "3" AND PYTHON_VERSION_STRING VERSION_LESS ${ARGV0})
-      message(FATAL_ERROR "${CMAKE_PROJECT_NAME} requires at least python ${ARGV0}")
-    endif()
-  endif()
+  message(WARNING "Dune has dropped Python2 support. The function dune_python_require_version is now no-op and will be removed in the future.")
 endfunction()
 
-
 function(dune_python_force_version)
-  if(NOT "${PYTHON_VERSION_MAJOR}" STREQUAL "${ARGV0}")
-    message(FATAL_ERROR "${CMAKE_PROJECT_NAME} requires python ${ARGV0}!")
-  endif()
+  message(WARNING "Dune has dropped Python2 support. The function dune_python_force_version is now no-op and will be removed in the future.")
 endfunction()
