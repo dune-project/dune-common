@@ -123,10 +123,12 @@ if(NOT IS_DIRECTORY "${DUNE_PYTHON_VIRTUALENV_PATH}")
   if(DUNE_PYTHON_venv_FOUND)
     set(VIRTUALENV_PACKAGE_NAME venv)
     set(NOPIP_OPTION --without-pip)
+    set(INTERPRETER_OPTION "")
   endif()
   if(DUNE_PYTHON_virtualenv_FOUND)
     set(VIRTUALENV_PACKAGE_NAME virtualenv)
     set(NOPIP_OPTION --no-pip)
+    set(INTERPRETER_OPTION "-p ${PYTHON_EXECUTABLE}")
   endif()
 
   if(("${VIRTUALENV_PACKAGE_NAME}" STREQUAL "venv") AND DUNE_PYTHON_SYSTEM_IS_VIRTUALENV)
@@ -140,7 +142,7 @@ if(NOT IS_DIRECTORY "${DUNE_PYTHON_VIRTUALENV_PATH}")
   if(NOT DUNE_PYTHON_ALLOW_GET_PIP)
     dune_execute_process(COMMAND ${PYTHON_EXECUTABLE}
                                   -m ${VIRTUALENV_PACKAGE_NAME}
-                                  -p ${PYTHON_EXECUTABLE}
+                                  ${INTERPRETER_OPTION}
                                   "${DUNE_PYTHON_VIRTUALENV_PATH}"
                          RESULT_VARIABLE venv_install_result
                          )
