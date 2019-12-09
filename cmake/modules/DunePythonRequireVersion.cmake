@@ -6,9 +6,9 @@ if(DUNE_PYTHON_FORCE_PYTHON2 OR DUNE_PYTHON_FORCE_PYTHON3 OR DUNE_PYTHON_FORCE_P
 endif()
 
 function(dune_python_require_version)
-  message(WARNING "Dune has dropped Python2 support. The function dune_python_require_version is now no-op and will be removed in the future.")
+  message(WARNING "Dune has dropped Python2 support. The function dune_python_require_version is now no-op, is deprecated, and will be removed after Dune 2.7.")
 endfunction()
 
 function(dune_python_force_version)
-  message(WARNING "Dune has dropped Python2 support. The function dune_python_force_version is now no-op and will be removed in the future.")
+  message(WARNING "Dune has dropped Python2 support. The function dune_python_force_version is now no-op, is deprecated, and will be removed after Dune 2.7.")
 endfunction()
