@@ -16,7 +16,7 @@
    trivial data types.
 
    This header contains additional abstractions to help writing code
-   that works with trivial numericaldata types (like double) and Vc
+   that works with trivial numerical data types (like double) and Vc
    vectorization data types.
 
    See also the conditional.hh and range_utils.hh headers.
