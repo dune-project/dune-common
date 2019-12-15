@@ -81,7 +81,7 @@ namespace Dune {
      * \tparam V The SIMD (mask or vector) type.
      *
      * Construct an object that can be inserted into an output stream.
-     * Insertion prints the vector values seperated by a comma and a space,
+     * Insertion prints the vector values separated by a comma and a space,
      * and surrounded by angular brackets.
      */
     template<class V>
@@ -97,7 +97,7 @@ namespace Dune {
      * Construct an object that can be inserted into an output stream.  For
      * one-lane vectors, behaves the same as scalar insertion.  For multi-lane
      * vectors, behaves as the inserter returned by `vio()`: insertion prints
-     * the vector values seperated by a comma and a space, and surrounded by
+     * the vector values separated by a comma and a space, and surrounded by
      * angular brackets.
      */
     template<class V>

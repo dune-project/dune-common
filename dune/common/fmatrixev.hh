@@ -143,11 +143,12 @@ namespace Dune {
 
     /** \brief calculates the eigenvalues and/or eigenvectors of a symmetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
-        \param[out] eigenvalues FieldVector that contains eigenvalues in
-                    ascending order, eigenvectors in FieldMatrix
+        \param[out] eigenValues FieldVector that contains eigenvalues in
+                    ascending order
+        \param[out] eigenVectors FieldMatrix that contains the eigenvectors
+        \param[in]  jobz jobz=n (only eigenvalues), jobz=v (eigenvalues and eigenvetors)
 
         \note LAPACK::dsyev is used to calculate the eigenvalues and/or eigenvectors
-        \note jobz=n (only eigenvalues), jobz=v (eigenvalues and eigenvetors)
      */
     template <int dim, typename K>
     static void eigenValuesVectorsLapack(const FieldMatrix<K, dim, dim>& matrix,
@@ -207,7 +208,7 @@ namespace Dune {
 
     /** \brief calculates the eigenvalues of a symmetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
-        \param[out] eigenvalues FieldVector that contains eigenvalues in
+        \param[out] eigenValues FieldVector that contains eigenvalues in
                     ascending order
 
         \note LAPACK::dsyev is used to calculate the eigenvalues
@@ -223,8 +224,9 @@ namespace Dune {
 
     /** \brief calculates the eigenvalues and eigenvectors of a symmetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
-        \param[out] eigenvalues FieldVector that contains eigenvalues in
-                    ascending order, eigenvectors in FieldMatrix
+        \param[out] eigenValues FieldVector that contains eigenvalues in
+                    ascending order
+        \param[out] eigenVectors FieldMatrix that contains the eigenvectors
 
         \note LAPACK::dsyev is used to calculate the eigenvalues and eigenvectors
      */

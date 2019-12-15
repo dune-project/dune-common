@@ -13,7 +13,9 @@
 #include <dune/common/std/type_traits.hh>
 
 /**
- * \file \brief Infrastructure for concepts.
+ * \file
+ *
+ * \brief Infrastructure for concepts.
  */
 
 namespace Dune {

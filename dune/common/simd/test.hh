@@ -1054,7 +1054,7 @@ namespace Dune {
       // second operand and should not be checked.  There are no operations in
       // the standard where the second operand is modified like this, but
       // there are operations where the first operand is modified -- and this
-      // check is used for thos ops as well by exchanging the first and second
+      // check is used for those ops as well by exchanging the first and second
       // argument below.
 
       template<class V1, class T2, class Op>
@@ -1233,7 +1233,7 @@ namespace Dune {
       // second operand and should not be checked.  There are no operations in
       // the standard where the second operand is modified like this, but
       // there are operations where the first operand is modified -- and this
-      // check is used for thos ops as well by exchanging the first and second
+      // check is used for those ops as well by exchanging the first and second
       // argument below.
 
       template<class V1, class V2, class Op>
@@ -1770,7 +1770,7 @@ namespace Dune {
        * definition, otherwise each of them will contribute to the overall
        * memory used during compilation.
        *
-       * If explicitly instatiating the top-level instantiation point
+       * If explicitly instantiating the top-level instantiation point
        * `checkType()` is not sufficient, there are further instantiation
        * points for improved granularity.  The hierarchy of instantiation
        * points is:
@@ -1784,10 +1784,10 @@ namespace Dune {
        *     - `checkBinaryOpsProxyVector()`
        *     - `checkBinaryOpsVectorProxy()`
        *
-       * Each instation point in the hierarchy implicitly instantiates its
-       * descendents, unless there are explicit instantiation declarations for
+       * Each instantiation point in the hierarchy implicitly instantiates its
+       * descendants, unless there are explicit instantiation declarations for
        * them.  However, for future-proofing it can make sense to explicitly
-       * instantiate nodes in the hierachy even if all their children are
+       * instantiate nodes in the hierarchy even if all their children are
        * already explicitly instantiated.  This will limit the impact of
        * instantiation points added in the future.
        *
@@ -1854,13 +1854,13 @@ namespace Dune {
        * \tparam Prune   A type predicate determining whether to run
        *                 `checkVector()` for types obtained from `Rebinds`.
        *
-       * \deperecated Rather than calling this function, call `check()` with
+       * \deprecated Rather than calling this function, call `check()` with
        *              the same template arguments.  Rather than explicitly
        *              instantiating this function as described below,
        *              explicitly instantiate `checkType()` and friends.
        *
        * \note As an implementor of a unit test, you are encouraged to
-       *       explicitly instantiate this function in seperate compilation
+       *       explicitly instantiate this function in separate compilation
        *       units for the types you are testing.  Look at `standardtest.cc`
        *       for how to do this.
        *

@@ -18,8 +18,12 @@
  * @{
  */
 /**
- * @file @brief Interface class to translate objects to a MPI_Datatype, void*
- * and size used for MPI calls. Furthermore it can be used to resize the object
+ * @file
+ *
+ * @brief Interface class to translate objects to a MPI_Datatype, void*
+ * and size used for MPI calls.
+ *
+ * Furthermore it can be used to resize the object
  * if possible. This makes it possible to receive a message with variable
  * size. See `Communication::rrecv`.
  *
@@ -125,6 +129,10 @@ namespace Dune{
   };
 
 }
+
+/**
+ * @}
+ */
 
 #endif
 #endif
