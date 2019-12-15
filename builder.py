@@ -25,7 +25,7 @@ except:
             pass
         def __enter__(self):
             pass
-        def __exit__(self):
+        def __exit__(self,*args):
             pass
     LOCK_EX = None
     LOCK_SH = None
