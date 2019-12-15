@@ -5,7 +5,9 @@
 #warning Use the new infrastructure from dune/common/simd/simd.h instead.
 
 /**
-   \file Abstractions for support of dedicated SIMD data types
+   \file
+
+   \brief Abstractions for support of dedicated SIMD data types
 
    Libraries like Vc (https://github.com/VcDevel/Vc) add high-level
    data types for SIMD (or vectorization) support in C++.  Most of

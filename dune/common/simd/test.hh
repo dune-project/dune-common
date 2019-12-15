@@ -1854,7 +1854,7 @@ namespace Dune {
        * \tparam Prune   A type predicate determining whether to run
        *                 `checkVector()` for types obtained from `Rebinds`.
        *
-       * \deperecated Rather than calling this function, call `check()` with
+       * \deprecated Rather than calling this function, call `check()` with
        *              the same template arguments.  Rather than explicitly
        *              instantiating this function as described below,
        *              explicitly instantiate `checkType()` and friends.

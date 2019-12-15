@@ -11,6 +11,7 @@
 
 /**
  * \file
+ *
  * \brief Utilities for reduction like operations on ranges
  * \author Christian Engwer
  */
@@ -738,5 +739,9 @@ namespace Dune
   }
 
 }
+
+/**
+ * @}
+ */
 
 #endif // DUNE_COMMON_RANGE_UTILITIES_HH
