@@ -816,6 +816,7 @@ namespace Dune
      *                         singular.  If \c false, do not throw, instead
      *                         continue until finished or all lanes are
      *                         singular, and exit via return in both cases.
+     * \param doPivoting       Enable pivoting.
      *
      * There are two modes of operation:
      * <ul>

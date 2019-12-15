@@ -5,7 +5,7 @@
  *  @brief User interface of the SIMD abstraction
  *  @ingroup SIMDLib
  *
- * This file provides the unser interface functions of the SIMD abstraction
+ * This file provides the user interface functions of the SIMD abstraction
  * layer.
  *
  * This file should never be included by users of the SIMD
@@ -50,7 +50,7 @@ namespace Dune {
      * The result of all other operations is again of type `V`, or of some
      * type convertible to `V`.
      *
-     * This is very similiar to `std::valarray`, with the main difference
+     * This is very similar to `std::valarray`, with the main difference
      * being that `std::valarray` is dynamic in size, while for this
      * abstraction the size is static.
      *

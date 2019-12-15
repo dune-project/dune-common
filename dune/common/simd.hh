@@ -5,7 +5,9 @@
 #warning Use the new infrastructure from dune/common/simd/simd.h instead.
 
 /**
-   \file Abstractions for support of dedicated SIMD data types
+   \file
+
+   \brief Abstractions for support of dedicated SIMD data types
 
    Libraries like Vc (https://github.com/VcDevel/Vc) add high-level
    data types for SIMD (or vectorization) support in C++.  Most of
@@ -14,7 +16,7 @@
    trivial data types.
 
    This header contains additional abstractions to help writing code
-   that works with trivial numericaldata types (like double) and Vc
+   that works with trivial numerical data types (like double) and Vc
    vectorization data types.
 
    See also the conditional.hh and range_utils.hh headers.
