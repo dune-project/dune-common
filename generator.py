@@ -32,7 +32,8 @@ class SimpleGenerator(object):
           self.pythonName = pythonname
         self.fileName = filename
 
-    def pre(self, includes, duneType, moduleName, defines=[], preamble=None):
+    def pre(self, includes, duneType, moduleName, defines=None, preamble=None):
+        if defines is None: defines = []
         source = '#include <config.h>\n\n'
         source += '#define USING_DUNE_PYTHON 1\n\n'
         source += ''.join(["#define " + d + "\n" for d in defines])
@@ -58,7 +59,10 @@ class SimpleGenerator(object):
         return source
 
     def main(self, nr, includes, duneType, *args,
-            options=[], bufferProtocol=False, dynamicAttr=False ):
+            options=None, bufferProtocol=False, dynamicAttr=False,
+            baseClasses=None ):
+        if options is None: options=[]
+        if baseClasses is None: baseClasses=[]
         source = "  using pybind11::operator\"\"_a;\n"
         if not bufferProtocol: # kwargs.get("bufferProtocol", False):
             clsParams = []
@@ -72,6 +76,14 @@ class SimpleGenerator(object):
 
         source += '  {\n'
         source += "    typedef " + duneType + " DuneType;\n"
+        for i, bc in enumerate(baseClasses):
+            source += '    Dune::Python::insertClass' +\
+                           '< ' + bc + ' >' +\
+                           '( cls0, "' + self.typeName[nr] + str(i) + '"' +\
+                           ', Dune::Python::GenerateTypeName("' + bc + '")' +\
+                           ', Dune::Python::IncludeFiles{}' +\
+                           ");\n"
+            options.append(bc)
         source += '    auto cls = Dune::Python::insertClass' +\
                        '< ' + duneType +\
                        ', '.join([""]+options) + ' >' +\
@@ -94,21 +106,28 @@ class SimpleGenerator(object):
         return module
 
     def load(self, includes, typeName, moduleName, *args,
-            defines=[], preamble=None,
-            options=[], bufferProtocol=False, dynamicAttr=False ):
+            defines=None, preamble=None,
+            options=None, bufferProtocol=False, dynamicAttr=False,
+            baseClasses=None ):
+        if defines is None: defines = []
+        if options is None: options = []
+        if baseClasses is None: baseClasses = []
         if self.single:
             typeName = (typeName,)
             options = (options,)
             bufferProtocol = (bufferProtocol,)
             dynamicAttr = (dynamicAttr,)
             args = (args,)
+            baseClasses = (baseClasses,)
         else:
-            if args == ():
+            if len(args) == 0:
                 args=((),)*2
             else:
                 args = args[0]
-        if options == ():
+        if len(options) == 0:
             options = ((),)*len(typeName)
+        if len(baseClasses) == 0:
+            baseClasses = ((),)*len(typeName)
         if not bufferProtocol:
             bufferProtocol = (False,)*len(typeName)
         if not dynamicAttr:
@@ -121,8 +140,10 @@ class SimpleGenerator(object):
         allIncludes = sorted(set(allIncludes))
         includes = sorted(set(includes))
         source  = self.pre(allIncludes, typeName[0], moduleName, defines, preamble)
-        for nr, (tn, a, o, b, d)  in enumerate( zip(typeName, args, options, bufferProtocol, dynamicAttr) ):
-            source += self.main(nr, includes, tn, *a, options=o, bufferProtocol=b, dynamicAttr=d)
+        for nr, (tn, a, o, b, d, bc)  in enumerate( zip(typeName, args, options, bufferProtocol, dynamicAttr, baseClasses) ):
+            source += self.main(nr, includes, tn, *a, options=o,
+                                bufferProtocol=b, dynamicAttr=d,
+                                baseClasses=bc)
         return self.post(moduleName, source)
 
 from dune.common.hashit import hashIt
