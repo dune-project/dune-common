@@ -43,7 +43,7 @@ namespace Dune
     {
       if (!op)
       {
-        op = std::shared_ptr<MPI_Op>(new MPI_Op);
+        op = std::make_unique<MPI_Op>();
         MPI_Op_create((void (*)(void*, void*, int*, MPI_Datatype*))&operation,true,op.get());
       }
       return *op;
@@ -61,12 +61,12 @@ namespace Dune
     }
     Generic_MPI_Op () {}
     Generic_MPI_Op (const Generic_MPI_Op& ) {}
-    static std::shared_ptr<MPI_Op> op;
+    static std::unique_ptr<MPI_Op> op;
   };
 
 
   template<typename Type, typename BinaryFunction, typename Enable>
-  std::shared_ptr<MPI_Op> Generic_MPI_Op<Type,BinaryFunction, Enable>::op = std::shared_ptr<MPI_Op>(static_cast<MPI_Op*>(0));
+  std::unique_ptr<MPI_Op> Generic_MPI_Op<Type,BinaryFunction, Enable>::op;
 
 #define ComposeMPIOp(func,op)                                           \
   template<class T, class S>                                            \
