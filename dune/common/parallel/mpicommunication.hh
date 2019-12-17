@@ -44,6 +44,10 @@ namespace Dune
       if (!op)
       {
         op = std::make_unique<MPI_Op>();
+        // The following line leaks an MPI operation object, because the corresponding
+        //`MPI_Op_free` is never called.  It is never called because there is no easy
+        // way to call it at the right moment: right before the call to MPI_Finalize.
+        // See https://gitlab.dune-project.org/core/dune-istl/issues/80
         MPI_Op_create((void (*)(void*, void*, int*, MPI_Datatype*))&operation,true,op.get());
       }
       return *op;
