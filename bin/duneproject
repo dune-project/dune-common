@@ -280,12 +280,14 @@ cat > "$PROJECT/dune.module" <<C_DELIM
 # Dune module information file #
 ################################
 
-#Name of the module
+# Name of the module
 Module: $MODULE
 Version: $VERSION
 Maintainer: $MAINTAINER
-#depending on
+# Required build dependencies
 Depends: $DEPENDENCIES
+# Optional build dependencies
+#Suggests:
 C_DELIM
 
 ## Create the parameters passed to DUNE_CHECK_ALL
