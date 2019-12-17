@@ -1,7 +1,10 @@
-/* config.h.  Generated from config.h.cmake by CMake.  */
+/* begin dune-common
+   put the definitions for config.h specific to
+   your project here. Everything above will be
+   overwritten
+*/
 
-/* begin dune-common */
-
+/* begin private */
 /* Define to the version of dune-common */
 #define DUNE_COMMON_VERSION "${DUNE_COMMON_VERSION}"
 
@@ -205,4 +208,6 @@
 #include "FC.h"
 #define FC_FUNC FC_GLOBAL_
 
-/* end dune-common */
+/* end dune-common
+   Everything below here will be overwritten
+*/
