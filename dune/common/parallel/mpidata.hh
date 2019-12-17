@@ -67,7 +67,7 @@ namespace Dune{
     }
 
     MPI_Datatype type() const {
-      return MPITraits<T>::getType();
+      return MPITraits<std::decay_t<T>>::getType();
     }
   };
 

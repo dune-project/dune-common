@@ -87,6 +87,14 @@ int main(int argc, char** argv){
     std::cout << "Allreduce result on rank " << mpihelper.rank() <<": " << f.get() << std::endl;
   }
 
+  {
+    if(mpihelper.rank() == 0)
+      std::cout << "check for MPI_SUM with double&  ===========================" << std::endl;
+    double answer = 42;
+    auto f = cc.iallreduce<std::plus<double>>(answer);
+    std::cout << "Allreduce result on rank " << mpihelper.rank() <<": " << f.get() << std::endl;
+  }
+
   // that's wrong, MPIFuture will hold a dangeling reference:
   // Dune::MPIFuture<int&> g;
   // {
