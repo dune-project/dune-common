@@ -72,8 +72,9 @@ namespace Dune{
       : _future(std::make_unique<FutureModel<F>>(std::forward<F>(f)))
     {}
 
-    Future(T&& data)
-      : _future(std::make_unique<FutureModel<PseudoFuture<T>>>(PseudoFuture<T>(std::forward<T>(data))))
+    template<class U, std::enable_if_t<std::is_same<U,T>::value && !std::is_same<T,void>::value>>
+    Future(U&& data)
+      : _future(std::make_unique<FutureModel<PseudoFuture<T>>>(PseudoFuture<T>(std::forward<U>(data))))
     {}
 
     Future() = default;
