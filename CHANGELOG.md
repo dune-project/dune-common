@@ -58,6 +58,12 @@
 - Support for older version than METIS 5.x and ParMETIS 4.x is deprecated and will be
   removed after Dune 2.7.
 
+- Deprecated header `dune/common/parallel/collectivecommunication.hh` which will be
+  removed after Dune 2.7. Use dune/common/parallel/communication.hh instead!
+
+- Deprecated header `dune/common/parallel/mpicollectivecommunication.hh` which will be
+  removed after Dune 2.7. Use dune/common/parallel/mpicommunication.hh instead!
+
 ## build-system
 
 - When run with an absolute build directory, `dunecontrol` now exposes the root build
