@@ -1,4 +1,6 @@
-# Master (will become release 2.7)
+# Master (will become release 2.8)
+
+# Release 2.7
 
 - Added fallback implementation to C++20 feature: `std::identity`.
 
