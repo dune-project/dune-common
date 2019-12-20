@@ -34,6 +34,9 @@
   - Vector = Vector - Vector
   have been introduced earlier.
 
+- The matrix size functions `N()` and `M()` of `FieldMatrix` and `DiagonalMatrix` can now be used
+  in a `constexpr` context.
+
 - There is now (finally!) a method `power` in the file `math.hh` that computes
   powers with an integer exponent, and is usable in compile-time expressions.
   The use of the old power methods in `power.hh` is henceforth discouraged.
@@ -111,9 +114,6 @@
   If you need even more precise control about the location of the virtualenv, you can now also
   directly set the CMake variable `DUNE_PYTHON_VIRTUALENV_PATH` to the directory in which to
   create the virtualenv.
-
-- The matrix size functions `N()` and `M()` of `FieldMatrix` and `DiagonalMatrix` can now be used
-  in a `constexpr` context.
 
 # Release 2.6
 
