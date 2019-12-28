@@ -376,6 +376,9 @@ function(dune_add_test)
       if(TARGET "${ADDTEST_COMMAND}")
         set(ACTUAL_TESTCOMMAND "$<TARGET_FILE:${ADDTEST_COMMAND}>")
       else()
+        # this should only happen if this is an EXPECT_COMPILE_FAIL test,
+        # as we set ADDTEST_COMMAND to cmake in this case.
+        # Or if we run the test via some script.
         set(ACTUAL_TESTCOMMAND "${ADDTEST_COMMAND}")
       endif()
 
@@ -387,7 +390,7 @@ function(dune_add_test)
 
       # if this is a skipped test because a guard was false, overwrite the command
       if(SHOULD_SKIP_TEST)
-        set(ACTUAL_TESTCOMMAND ${CMAKE_CURRENT_BINARY_DIR}/${ADDTEST_NAME})
+        set(ACTUAL_TESTCOMMAND "$<TARGET_FILE:${ADDTEST_COMMAND}>")
         set(ACTUAL_CMD_ARGS)
       endif()
 
