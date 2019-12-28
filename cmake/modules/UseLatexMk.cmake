@@ -114,6 +114,7 @@ find_file(LATEXMKRC_TEMPLATE
                 ${CMAKE_SOURCE_DIR}
                 ${CMAKE_SOURCE_DIR}/cmake
                 ${CMAKE_SOURCE_DIR}/cmake/modules
+          NO_CMAKE_FIND_ROOT_PATH
           )
 
 # Add the clean_latex target
