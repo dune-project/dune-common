@@ -77,13 +77,7 @@ dune_add_test(NAME classnametest-demangled
 dune_add_test(NAME classnametest-fallback
               SOURCES classnametest.cc
               LINK_LIBRARIES dunecommon
-              COMMAND sh
-              CMD_ARGS -c [[
-# ignore an exit status of 1, but fail on anything else to segfaults fail the test
-./classnametest-fallback
-err=$?
-[ "$err" -eq 1 ] && err=0
-exit "$err"]]
+              COMPILE_DEFINITIONS BASICCHECK
               LABELS quick)
 
 dune_add_test(SOURCES concept.cc
