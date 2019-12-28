@@ -131,5 +131,10 @@ int main()
   checkname(t, Dune::className(Base{}), {}, R"(\bBase\b)");
   std::cout << std::endl;
 
+  #if BASICCHECK
+  // in this case we only make sure that no segfault or similar happens
+  return 0;
+  #else
   return t.exit();
+  #endif
 }
