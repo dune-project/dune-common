@@ -239,7 +239,9 @@ function(add_latex_document)
     install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} --build . --target ${LMK_TARGET} --config $<CONFIGURATION>)")
   endif()
   if(LMK_INSTALL)
-    install(FILES ${OUTPUT_PDF} DESTINATION ${LMK_INSTALL})
+    install(FILES ${OUTPUT_PDF}
+            DESTINATION ${LMK_INSTALL}
+            OPTIONAL)
   endif()
 
   # Add a clean up rule to the clean_latex target
