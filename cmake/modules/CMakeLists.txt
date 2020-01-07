@@ -3,6 +3,7 @@ install(FILES
   AddMETISFlags.cmake
   AddParMETISFlags.cmake
   AddPTScotchFlags.cmake
+  AddQuadMathFlags.cmake
   AddSuiteSparseFlags.cmake
   AddUMFPackFlags.cmake
   AddVcFlags.cmake
