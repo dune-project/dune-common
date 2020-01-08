@@ -4,6 +4,7 @@
 #define DUNE_COMMON_PARALLEL_MPIFUTURE_HH
 
 #include <dune/common/std/optional.hh>
+#include <dune/common/parallel/communication.hh>
 #include <dune/common/parallel/future.hh>
 #include <dune/common/parallel/mpidata.hh>
 
