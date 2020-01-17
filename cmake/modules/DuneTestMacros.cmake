@@ -390,7 +390,11 @@ function(dune_add_test)
 
       # if this is a skipped test because a guard was false, overwrite the command
       if(SHOULD_SKIP_TEST)
-        set(ACTUAL_TESTCOMMAND "$<TARGET_FILE:${ADDTEST_COMMAND}>")
+        if(TARGET "${ADDTEST_COMMAND}")
+          set(ACTUAL_TESTCOMMAND "$<TARGET_FILE:${ADDTEST_COMMAND}>")
+        else()
+          set(ACTUAL_TESTCOMMAND "${CMAKE_CURRENT_BINARY_DIR}/${ADDTEST_COMMAND}")
+        endif()
         set(ACTUAL_CMD_ARGS)
       endif()
 
