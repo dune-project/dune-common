@@ -1,6 +1,7 @@
 install(
   FILES
   apply.hh
+  functional.hh
   make_array.hh
   memory.hh
   optional.hh
