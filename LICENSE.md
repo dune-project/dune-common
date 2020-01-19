@@ -4,7 +4,7 @@ Copyright holders:
 2015--2017    Marco Agnese
 2015          Martin Alkämper
 2003--2019    Peter Bastian
-2004--2018    Markus Blatt
+2004--2020    Markus Blatt
 2013          Andreas Buhr
 2011--2019    Ansgar Burchardt
 2004--2005    Adrian Burri
@@ -19,7 +19,7 @@ Copyright holders:
 2016          Thomas Fetzer
 2008--2017    Bernd Flemisch
 2013--2014    Christoph Gersbacher
-2017--2018    Janick Gerstenberger
+2017--2020    Janick Gerstenberger
 2015          Stefan Girke
 2005--2019    Carsten Gräser
 2015--2017    Felix Gruber
@@ -35,7 +35,7 @@ Copyright holders:
 2017--2018    Daniel Kienle
 2013          Torbjörn Klatt
 2003--2019    Robert Klöfkorn
-2017          Timo Koch
+2017--2020    Timo Koch
 2005--2007    Sreejith Pulloor Kuttanikkad
 2012--2016    Arne Morten Kvarving
 2010--2014    Andreas Lauser

@@ -374,11 +374,13 @@ function(dune_add_test)
       set(ACTUAL_NAME ${ADDTEST_NAME})
       set(ACTUAL_CMD_ARGS ${ADDTEST_CMD_ARGS})
       if(TARGET "${ADDTEST_COMMAND}")
+        # if the target name is specified as command, expand to full path using the TARGET_FILE generator expression
         set(ACTUAL_TESTCOMMAND "$<TARGET_FILE:${ADDTEST_COMMAND}>")
       else()
         set(ACTUAL_TESTCOMMAND "${ADDTEST_COMMAND}")
       endif()
 
+      # modify test name and command for parallel tests
       if(NOT ${procnum} STREQUAL "1")
         set(ACTUAL_NAME "${ACTUAL_NAME}-mpi-${procnum}")
         set(ACTUAL_CMD_ARGS ${MPIEXEC_PREFLAGS} ${MPIEXEC_NUMPROC_FLAG} ${procnum} "${ACTUAL_TESTCOMMAND}" ${MPIEXEC_POSTFLAGS} ${ACTUAL_CMD_ARGS})
@@ -387,7 +389,7 @@ function(dune_add_test)
 
       # if this is a skipped test because a guard was false, overwrite the command
       if(SHOULD_SKIP_TEST)
-        set(ACTUAL_TESTCOMMAND ${CMAKE_CURRENT_BINARY_DIR}/${ADDTEST_NAME})
+        set(ACTUAL_TESTCOMMAND "$<TARGET_FILE:${ADDTEST_TARGET}>")
         set(ACTUAL_CMD_ARGS)
       endif()
 
