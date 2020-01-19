@@ -380,6 +380,7 @@ function(dune_add_test)
         set(ACTUAL_TESTCOMMAND "${ADDTEST_COMMAND}")
       endif()
 
+      # modify test name and command for parallel tests
       if(NOT ${procnum} STREQUAL "1")
         set(ACTUAL_NAME "${ACTUAL_NAME}-mpi-${procnum}")
         set(ACTUAL_CMD_ARGS ${MPIEXEC_PREFLAGS} ${MPIEXEC_NUMPROC_FLAG} ${procnum} "${ACTUAL_TESTCOMMAND}" ${MPIEXEC_POSTFLAGS} ${ACTUAL_CMD_ARGS})
@@ -388,7 +389,7 @@ function(dune_add_test)
 
       # if this is a skipped test because a guard was false, overwrite the command
       if(SHOULD_SKIP_TEST)
-        set(ACTUAL_TESTCOMMAND "$<TARGET_FILE:${ADDTEST_COMMAND}>")
+        set(ACTUAL_TESTCOMMAND "$<TARGET_FILE:${ADDTEST_TARGET}>")
         set(ACTUAL_CMD_ARGS)
       endif()
 
