@@ -374,6 +374,7 @@ function(dune_add_test)
       set(ACTUAL_NAME ${ADDTEST_NAME})
       set(ACTUAL_CMD_ARGS ${ADDTEST_CMD_ARGS})
       if(TARGET "${ADDTEST_COMMAND}")
+        # if the target name is specified as command, expand to full path using the TARGET_FILE generator expression
         set(ACTUAL_TESTCOMMAND "$<TARGET_FILE:${ADDTEST_COMMAND}>")
       else()
         set(ACTUAL_TESTCOMMAND "${ADDTEST_COMMAND}")
