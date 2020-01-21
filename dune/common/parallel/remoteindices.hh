@@ -232,7 +232,7 @@ namespace Dune {
     /**
      * @brief The type of the allocator for the remote index list.
      */
-    typedef typename A::template rebind<RemoteIndex>::other Allocator;
+    using Allocator = typename std::allocator_traits<A>::template rebind_alloc<RemoteIndex>;
 
     /** @brief The type of the remote index list. */
     typedef Dune::SLList<RemoteIndex,Allocator>
@@ -731,7 +731,7 @@ namespace Dune {
     typedef Dune::RemoteIndex<GlobalIndex,Attribute> RemoteIndex;
 
     /** @brief The allocator of the remote indices. */
-    typedef typename A::template rebind<RemoteIndex>::other Allocator;
+    using Allocator = std::allocator_traits<A>::template rebind_alloc<RemoteIndex>;
 
     /** @brief The type of the remote index list. */
     typedef Dune::SLList<RemoteIndex,Allocator> RemoteIndexList;
