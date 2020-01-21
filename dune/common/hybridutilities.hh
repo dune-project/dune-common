@@ -505,7 +505,7 @@ namespace Impl
 template <std::size_t... I, class F>
 constexpr decltype(auto) withIndex(std::index_sequence<I...>, std::size_t j, F&& fn)
 {
-  assert(any_true(std::initializer_list<bool>{(I == j)...}) && "Index not in sequence");
+  assert(j < sizeof...(I) && "Index out of range");
   return Std::make_array( Impl::callWithIndex<I,F>... )[j](fn);
 }
 
