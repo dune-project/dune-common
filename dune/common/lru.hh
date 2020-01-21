@@ -6,6 +6,7 @@
 #include <list>
 #include <utility>
 #include <map>
+#include <memory>
 
 #include <dune/common/exceptions.hh>
 #include <dune/common/unused.hh>
@@ -32,7 +33,7 @@ namespace Dune {
       typedef typename list_type::iterator iterator;
       typedef typename std::less<key_type> cmp;
       typedef std::map< key_type, iterator, cmp,
-          typename allocator::template rebind<std::pair<const key_type, iterator> >::other > map_type;
+          typename std::allocator_traits<allocator>::template rebind_alloc<std::pair<const key_type, iterator> > > map_type;
     };
 
   } // end empty namespace
@@ -57,10 +58,10 @@ namespace Dune {
   public:
     typedef typename Traits::key_type key_type;
     typedef typename allocator::value_type value_type;
-    typedef typename allocator::pointer pointer;
-    typedef typename allocator::const_pointer const_pointer;
-    typedef typename allocator::const_reference const_reference;
-    typedef typename allocator::reference reference;
+    using pointer = allocator::value_type*;
+    using const_pointer = allocator::value_type const*;
+    using const_reference = allocator::value_type const&;
+    using reference = allocator::value_type&;
     typedef typename allocator::size_type size_type;
     typedef typename list_type::iterator iterator;
     typedef typename list_type::const_iterator const_iterator;

@@ -59,7 +59,7 @@ namespace Dune
     /**
      * @brief The allocator to use.
      */
-    typedef typename A::template rebind<Element>::other Allocator;
+    using Allocator = std::allocator_traits<A>::template rebind_alloc<Element>;
 
     /**
      * @brief The mutable iterator of the list.
@@ -649,7 +649,7 @@ namespace Dune
   inline void SLList<T,A>::push_back(const MemberType& item)
   {
     assert(size_>0 || tail_==&beforeHead_);
-    tail_->next_ = allocator_.allocate(1, 0);
+    tail_->next_ = allocator_.allocate(1);
     assert(size_>0 || tail_==&beforeHead_);
     tail_ = tail_->next_;
     ::new (static_cast<void*>(&(tail_->item_)))T(item);
@@ -673,10 +673,10 @@ namespace Dune
     assert(!changeTail || !tmp);
 
     // Allocate space
-    current->next_ = allocator_.allocate(1, 0);
+    current->next_ = allocator_.allocate(1);
 
     // Use copy constructor to initialize memory
-    allocator_.construct(current->next_, Element(item,tmp));
+    std::allocator_traits<Allocator>::construct(allocator_, current->next_, Element(item,tmp));
 
     //::new(static_cast<void*>(&(current->next_->item_))) T(item);
 
@@ -728,7 +728,7 @@ namespace Dune
       }
 
     current->next_ = next->next_;
-    allocator_.destroy(next);
+    std::allocator_traits<Allocator>::destroy(allocator_, next);
     allocator_.deallocate(next, 1);
     --size_;
     assert(!watchForTail || &beforeHead_ != tail_ || size_==0);
