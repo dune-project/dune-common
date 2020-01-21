@@ -10,7 +10,6 @@ set(TYPES
   char "unsigned char" "signed char"
   short int long "long long"
   "unsigned short" unsigned "unsigned long" "unsigned long long"
-  wchar_t char16_t char32_t
   bool
   float double "long double"
   std::complex<float> std::complex<double> "std::complex<long double>"
@@ -43,7 +42,6 @@ set(TYPES
   char "unsigned char" "signed char"
   short int long "long long"
   "unsigned short" unsigned "unsigned long" "unsigned long long"
-  wchar_t char16_t char32_t
   bool
   float double "long double"
   std::complex<float> std::complex<double> "std::complex<long double>")

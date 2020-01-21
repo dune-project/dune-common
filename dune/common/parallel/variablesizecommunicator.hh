@@ -317,7 +317,7 @@ public:
      */
   typedef std::map<int,std::pair<InterfaceInformation,InterfaceInformation>,
                    std::less<int>,
-                   typename Allocator::template rebind<std::pair<const int,std::pair<InterfaceInformation,InterfaceInformation> > >::other> InterfaceMap;
+                   typename std::allocator_traits<Allocator>::template rebind_alloc< std::pair<const int,std::pair<InterfaceInformation,InterfaceInformation> > > > InterfaceMap;
 
 #ifndef DUNE_PARALLEL_MAX_COMMUNICATION_BUFFER_SIZE
   /**
