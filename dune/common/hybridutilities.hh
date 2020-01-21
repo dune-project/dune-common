@@ -490,13 +490,23 @@ constexpr void switchCases(const Cases& cases, const Value& value, Branches&& br
 }
 
 
+namespace Impl
+{
+  template <std::size_t I, class F>
+  constexpr auto callWithIndex(F& f)
+    -> decltype(f(index_constant<I>{}))
+  {
+    return f(index_constant<I>{});
+  }
+}
+
 /// \brief Invoke `fn` with an `index_constant` of the same value as the index `j`.
 // [[expects: j is in the sequence of integers I...]]
 template <std::size_t... I, class F>
 constexpr decltype(auto) withIndex(std::index_sequence<I...>, std::size_t j, F&& fn)
 {
   assert(any_true(std::initializer_list<bool>{(I == j)...}) && "Index not in sequence");
-  return Std::make_array( +[](F& f) -> decltype(auto) { return f(index_constant<I>{}); }... )[j](fn);
+  return Std::make_array( Impl::callWithIndex<I,F>... )[j](fn);
 }
 
 /// \brief Invoke `fn` with an `index_constant` of the same value as the index `j`, i.e. pass the index `j`
