@@ -13,7 +13,8 @@
 #include <dune/common/assertandreturn.hh>
 #include <dune/common/unused.hh>
 #include <dune/common/rangeutilities.hh>
-
+#include <dune/common/std/make_array.hh>
+#include <dune/common/std/type_traits.hh>
 
 
 namespace Dune {
@@ -488,6 +489,53 @@ constexpr void switchCases(const Cases& cases, const Value& value, Branches&& br
   return Impl::switchCases<void>(cases, value, std::forward<Branches>(branches), []() {});
 }
 
+
+/// \brief Invoke `fn` with an `index_constant` of the same value as the index `j`.
+// [[expects: j is in the sequence of integers I...]]
+template <std::size_t... I, class F>
+constexpr decltype(auto) withIndex(std::index_sequence<I...>, std::size_t j, F&& fn)
+{
+  assert(any_true(std::initializer_list<bool>{(I == j)...}) && "Index not in sequence");
+  return Std::make_array( +[](F& f) -> decltype(auto) { return f(index_constant<I>{}); }... )[j](fn);
+}
+
+/// \brief Invoke `fn` with an `index_constant` of the same value as the index `j`, i.e. pass the index `j`
+/// directly to the function `fn`
+// [[expects: j is in the sequence of integers I...]]
+template <std::size_t... I, std::size_t J, class F>
+constexpr decltype(auto) withIndex(std::index_sequence<I...>, index_constant<J> j, F&& fn)
+{
+  static_assert(Std::disjunction<Std::bool_constant<(I == J)>...>::value, "Index not in sequence");
+  return fn(j);
+}
+
+/// \brief Invoke `fn` with an `index_constant` of the same value as the index `j`
+// [[expects: j is in the range]]
+template <std::size_t to, std::size_t from, class Index, typename F>
+constexpr decltype(auto) withIndex(StaticIntegralRange<std::size_t, to, from> range, Index j, F&& fn)
+{
+  using index_sequence = typename StaticIntegralRange<std::size_t, to, from>::integer_sequence;
+  return withIndex(index_sequence{}, j, std::forward<F>(fn));
+}
+
+/// \brief Invoke `fn` with the integer `j` directly, i.e. in contrast to other overloads of \ref withIndex,
+/// do not wrap the index into an `integral_constant` but pass the integer directly.
+// [[expects: j is in the range]]
+template <class Integer, class Index, typename F>
+constexpr decltype(auto) withIndex(IntegralRange<Integer> range, Index j, F&& fn)
+{
+  assert(range[0] <= Integer(j) && Integer(j) < range[range.size()-1] && "Index out of range");
+  return fn(Integer(j));
+}
+
+/// \brief Invoke `fn` with an `index_constant` of the same value as the index `j`
+// [[expects: j is in the range [0,N)]]
+template <std::size_t N, class Index, typename F>
+constexpr decltype(auto) withIndex(Index j, F&& fn)
+{
+  assert(std::size_t(j) < N && "Index out of range");
+  return withIndex(std::make_index_sequence<N>{}, j, std::forward<F>(fn));
+}
 
 } // namespace Hybrid
 } // namespace Dune

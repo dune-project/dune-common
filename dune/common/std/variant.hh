@@ -419,20 +419,18 @@ namespace Impl {
      */
     template<typename F>
     decltype(auto) visit(F&& func) {
-      auto dummyElseBranch = [&]() -> decltype(auto) { return func(this->get<0>());};
       auto indices = std::make_index_sequence<size_>{};
-      return Hybrid::switchCases(indices, index(), [&](auto staticIndex) -> decltype(auto) {
+      return Hybrid::withIndex(indices, index(), [&](auto staticIndex) -> decltype(auto) {
         return func(this->template get<decltype(staticIndex)::value>());
-      }, dummyElseBranch);
+      });
     }
 
     template<typename F>
     decltype(auto) visit(F&& func) const {
-      auto dummyElseBranch = [&]() -> decltype(auto) { return func(this->get<0>());};
       auto indices = std::make_index_sequence<size_>{};
-      return Hybrid::switchCases(indices, index(), [&](auto staticIndex) -> decltype(auto) {
+      return Hybrid::withIndex(indices, index(), [&](auto staticIndex) -> decltype(auto) {
         return func(this->template get<decltype(staticIndex)::value>());
-      }, dummyElseBranch);
+      });
     }
 
     /** \brief Check if a given type is the one that is currently active in the variant. */
