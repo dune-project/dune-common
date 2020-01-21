@@ -535,9 +535,22 @@ private:
   MPI_Comm communicator_;
 };
 
+template <typename T>
+struct hasTemplatedGatherWithProc
+{
+  typedef char (& yes)[1];
+  typedef char (& no)[2];
+
+  template <typename C> static yes check(decltype(&C::gatherWithProcTag)); // TODO: Improve. Very much.
+  template <typename> static no check(...);
+
+  static bool const value = sizeof(check<T>(0)) == sizeof(yes);
+};
+
 /** @} */
 namespace
 {
+
 /**
  *  @brief A data handle for comunicating the sizes of variable sized data.
  */
@@ -555,15 +568,20 @@ public:
   {
     return true;
   }
-  std::size_t size(std::size_t i)
+  std::size_t sizeWithProc(std::size_t i, int proc)
   {
     DUNE_UNUSED_PARAMETER(i);
     return 1;
   }
+  void gatherWithProcTag() {
+  }
   template<class B>
-  void gather(B& buf, int  i)
+  void gatherWithProc(B& buf, int i, int proc)
   {
-    buf.write(data_.size(i));
+    if constexpr (hasTemplatedGatherWithProc<DataHandle>::value)
+      buf.write(data_.sizeWithProc(i, proc));
+    else
+      buf.write(data_.size(i));
   }
   void setReceivingIndex(std::size_t i)
   {
@@ -667,7 +685,10 @@ struct PackEntries
       std::size_t noIndices=std::min(buffer.size()/tracker.fixedSize, tracker.indicesLeft());
       for(std::size_t i=0; i< noIndices; ++i)
       {
-        handle.gather(buffer, tracker.index());
+        if constexpr (hasTemplatedGatherWithProc<DataHandle>::value)
+          handle.gatherWithProc(buffer, tracker.index(), tracker.rank());
+        else
+          handle.gather(buffer, tracker.index());
         tracker.moveToNextIndex();
       }
       return noIndices*tracker.fixedSize;
@@ -676,15 +697,28 @@ struct PackEntries
     {
       int packed=0;
       tracker.skipZeroIndices();
-      while(!tracker.finished())
-        if(buffer.hasSpaceForItems(handle.size(tracker.index())))
-        {
-          handle.gather(buffer, tracker.index());
-          packed+=handle.size(tracker.index());
-          tracker.moveToNextIndex();
-        }
-        else
-          break;
+      if constexpr (hasTemplatedGatherWithProc<DataHandle>::value) {
+        while(!tracker.finished())
+          if(buffer.hasSpaceForItems(handle.sizeWithProc(tracker.index(), tracker.rank())))
+          {
+            handle.gatherWithProc(buffer, tracker.index(), tracker.rank());
+            packed+=handle.sizeWithProc(tracker.index(), tracker.rank());
+            tracker.moveToNextIndex();
+          }
+          else
+            break;
+      } else {
+        while(!tracker.finished())
+          if(buffer.hasSpaceForItems(handle.size(tracker.index())))
+          {
+            handle.gather(buffer, tracker.index());
+            packed+=handle.size(tracker.index());
+            tracker.moveToNextIndex();
+          }
+          else
+            break;
+      }
+
       return packed;
     }
   }
@@ -816,8 +850,15 @@ struct SetupSendRequest{
     buffer.reset();
     int size=PackEntries<DataHandle>()(handle, tracker, buffer);
     // Skip indices of zero size.
-    while(!tracker.finished() &&  !handle.size(tracker.index()))
-      tracker.moveToNextIndex();
+
+    if constexpr (hasTemplatedGatherWithProc<DataHandle>::value) {
+      while(!tracker.finished() &&  !handle.sizeWithProc(tracker.index(), tracker.rank()))
+        tracker.moveToNextIndex();
+    } else {
+      while(!tracker.finished() &&  !handle.size(tracker.index()))
+        tracker.moveToNextIndex();
+    }
+
     if(size)
       MPI_Issend(buffer, size, MPITraits<typename DataHandle::DataType>::getType(),
                  tracker.rank(), 933399, comm, &request);
@@ -1047,7 +1088,11 @@ void VariableSizeCommunicator<Allocator>::setupInterfaceTrackers(DataHandle& han
   {
 
     if(handle.fixedsize() && InterfaceInformationChooser<FORWARD>::getSend(inf->second).size())
-      fixedsize=handle.size(InterfaceInformationChooser<FORWARD>::getSend(inf->second)[0]);
+      if constexpr (hasTemplatedGatherWithProc<DataHandle>::value) {
+        fixedsize=handle.sizeWithProc(InterfaceInformationChooser<FORWARD>::getSend(inf->second)[0], inf->first);
+      } else {
+        fixedsize=handle.size(InterfaceInformationChooser<FORWARD>::getSend(inf->second)[0]);
+      }
     assert(!handle.fixedsize()||fixedsize>0);
     send_trackers.push_back(InterfaceTracker(inf->first,
                                              InterfaceInformationChooser<FORWARD>::getSend(inf->second), fixedsize));
