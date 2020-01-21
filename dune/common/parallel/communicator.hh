@@ -1260,6 +1260,17 @@ namespace Dune
     return entries;
   }
 
+  template <typename T>
+  struct hasGatherWithProc
+  {
+    typedef char (& yes)[1];
+    typedef char (& no)[2];
+
+    template <typename C> static yes check(decltype(&C::gatherWithProc));
+    template <typename> static no check(...);
+
+    static bool const value = sizeof(check<T>(0)) == sizeof(yes);
+  };
 
   template<class Data, class GatherScatter, bool FORWARD>
   inline void BufferedCommunicator::MessageGatherer<Data,GatherScatter,FORWARD,VariableSize>::operator()(const InterfaceMap& interfaces,const Data& data, Type* buffer, size_t bufferSize) const
@@ -1286,7 +1297,10 @@ namespace Dune
 #ifdef DUNE_ISTL_WITH_CHECKING
           assert(bufferSize>=(index+1)*sizeof(typename CommPolicy<Data>::IndexedType));
 #endif
-          buffer[index]=GatherScatter::gather(data, local, j);
+          if constexpr (hasGatherWithProc<GatherScatter>::value)
+            buffer[index]=GatherScatter::gatherWithProc(data, local, j, interfacePair->first);
+          else
+            buffer[index]=GatherScatter::gather(data, local, j);
         }
 
       }
@@ -1318,13 +1332,29 @@ namespace Dune
         assert(bufferSize>=(index+1)*sizeof(typename CommPolicy<Data>::IndexedType));
 #endif
 
-        buffer[index++] = GatherScatter::gather(data, FORWARD ? interfacePair->second.first[i] :
+        if constexpr (hasGatherWithProc<GatherScatter>::value)
+          buffer[index++] = GatherScatter::gatherWithProc(data, FORWARD ? interfacePair->second.first[i] :
+                                                interfacePair->second.second[i], interfacePair->first);
+        else
+          buffer[index++] = GatherScatter::gather(data, FORWARD ? interfacePair->second.first[i] :
                                                 interfacePair->second.second[i]);
       }
     }
 
   }
 
+
+  template <typename T>
+  struct hasScatterWithProc
+  {
+    typedef char (& yes)[1];
+    typedef char (& no)[2];
+
+    template <typename C> static yes check(decltype(&C::scatterWithProc));
+    template <typename> static no check(...);
+
+    static bool const value = sizeof(check<T>(0)) == sizeof(yes);
+  };
 
   template<class Data, class GatherScatter, bool FORWARD>
   inline void BufferedCommunicator::MessageScatterer<Data,GatherScatter,FORWARD,VariableSize>::operator()(const InterfaceMap& interfaces, Data& data, Type* buffer, const int& proc) const
@@ -1338,8 +1368,12 @@ namespace Dune
                               infoPair->second.first;
 
     for(size_t i=0, index=0; i < info.size(); i++) {
-      for(size_t j=0; j < CommPolicy<Data>::getSize(data, info[i]); j++)
-        GatherScatter::scatter(data, buffer[index++], info[i], j);
+      for(size_t j=0; j < CommPolicy<Data>::getSize(data, info[i]); j++) {
+        if constexpr (hasScatterWithProc<GatherScatter>::value)
+          GatherScatter::scatterWithProc(data, buffer[index++], info[i], j, proc);
+        else
+          GatherScatter::scatter(data, buffer[index++], info[i], j);
+      }
     }
   }
 
@@ -1356,7 +1390,11 @@ namespace Dune
                               infoPair->second.first;
 
     for(size_t i=0; i < info.size(); i++) {
-      GatherScatter::scatter(data, buffer[i], info[i]);
+      //GatherScatter::scatter(data, buffer[i], info[i]); // TODO: proc übergeben, Rückwärtskompatibilität erhalten
+      if constexpr (hasScatterWithProc<GatherScatter>::value)
+        GatherScatter::scatterWithProc(data, buffer[i], info[i], proc);
+      else
+        GatherScatter::scatter(data, buffer[i], info[i]);
     }
   }
 
