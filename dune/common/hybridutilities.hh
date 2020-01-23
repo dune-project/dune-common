@@ -501,21 +501,21 @@ namespace Impl
 }
 
 /// \brief Invoke `fn` with an `index_constant` of the same value as the index `j`.
-// [[expects: j is in the sequence of integers I...]]
-template <std::size_t... I, class F>
-constexpr decltype(auto) withIndex(std::index_sequence<I...>, std::size_t j, F&& fn)
+// [[expects: j is in the sequence of integers I0,I0+1,I0+2,...]]
+template <std::size_t I0, std::size_t... I, class F>
+constexpr decltype(auto) withIndex(std::index_sequence<I0,I...>, std::size_t j, F&& fn)
 {
-  assert(j < sizeof...(I) && "Index out of range");
-  return Std::make_array( Impl::callWithIndex<I,F>... )[j](fn);
+  assert(j-I0 < 1+sizeof...(I) && "Index out of range");
+  return Std::make_array( Impl::callWithIndex<I0,F>, Impl::callWithIndex<I,F>... )[j-I0](fn);
 }
 
 /// \brief Invoke `fn` with an `index_constant` of the same value as the index `j`, i.e. pass the index `j`
 /// directly to the function `fn`
-// [[expects: j is in the sequence of integers I...]]
+// [[expects: J is in the sequence of integers I...]]
 template <std::size_t... I, std::size_t J, class F>
 constexpr decltype(auto) withIndex(std::index_sequence<I...>, index_constant<J> j, F&& fn)
 {
-  static_assert(Std::disjunction<Std::bool_constant<(I == J)>...>::value, "Index not in sequence");
+  static_assert(std::max({(I == J)...}), "Index not in sequence");
   return fn(j);
 }
 
