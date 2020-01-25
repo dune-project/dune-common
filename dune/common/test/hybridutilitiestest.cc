@@ -68,24 +68,24 @@ auto sumSubsequence(C&& c, I&& indices)
   return result;
 }
 
-template<class C>
-bool fillTupleVector(C& c)
+template<std::size_t N, class C>
+bool fillVector(C& c)
 {
   using namespace Dune::Hybrid;
 
   // using length as template parameter
-  for (std::size_t i = 0; i < C::size(); ++i)
-    withIndex<C::size()>(i, [&c](auto ii) { c[ii] = std::size_t(ii); });
-  bool result = (sum(c) == C::size()*(C::size()-1)/2);
+  for (std::size_t i = 0; i < c.size(); ++i)
+    switchCases<N>(i, [&c](auto ii) { c[ii] = std::size_t(ii); });
+  bool result = (sum(c) == c.size()*(c.size()-1)/2);
 
   // using static range
-  for (std::size_t i = 0; i < C::size(); ++i)
-    withIndex(Dune::range(Dune::Hybrid::size(c)), i, [&c](auto ii) { c[ii] = 1 + std::size_t(ii); });
-  result = result || (sum(c) == C::size()*(C::size()+1)/2);
+  for (std::size_t i = 0; i < c.size(); ++i)
+    switchCases(Dune::range(Dune::Hybrid::size(c)), i, [&c](auto ii) { c[ii] = 1 + std::size_t(ii); });
+  result = result || (sum(c) == c.size()*(c.size()+1)/2);
 
   // using integral constant as index
-  withIndex(std::make_index_sequence<C::size()>{}, Dune::index_constant<0>{}, [&c](auto ii) { c[ii] = 0; });
-  result = result || (sum(c) == C::size()*(C::size()+1)/2 - 1);
+  switchCases(std::make_index_sequence<N>{}, Dune::index_constant<0>{}, [&c](auto ii) { c[ii] = 0; });
+  result = result || (sum(c) == c.size()*(c.size()+1)/2 - 1);
 
   return result;
 }
@@ -127,8 +127,12 @@ int main()
     << "Summing up subsequence failed.";
 
   auto integerTuple = Dune::makeTupleVector(0, 1, 2, 3, 4);
-  test.check(fillTupleVector(integerTuple))
-    << "withIndex() for tupleVector failed.";
+  test.check(fillVector<5>(integerTuple))
+    << "switchCases() for tupleVector failed.";
+
+  auto integerVec = std::vector<int>{0, 1, 2, 3, 4};
+  test.check(fillVector<5>(integerVec))
+    << "switchCases() for std::vector failed.";
 
   return test.exit();
 }

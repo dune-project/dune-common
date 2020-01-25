@@ -3,6 +3,7 @@
 #ifndef DUNE_COMMON_HYBRIDUTILITIES_HH
 #define DUNE_COMMON_HYBRIDUTILITIES_HH
 
+#include <cassert>
 #include <tuple>
 #include <utility>
 
@@ -407,15 +408,21 @@ constexpr auto equals(T1&& t1,  T2&& t2)
 
 namespace Impl {
 
+template<class T, class Value>
+constexpr bool anyOf(IntegralRange<T> range, const Value& value, PriorityTag<2>)
+{
+  return range[0] <= T(value) && T(value) < range[range.size()-1];
+}
+
 template<class T, T... tt, class Value, Value v>
-constexpr auto anyOf(std::integer_sequence<T,tt...>, std::integral_constant<Value,v>)
+constexpr auto anyOf(std::integer_sequence<T,tt...>, std::integral_constant<Value,v>, PriorityTag<1>)
 {
   using I = std::common_type_t<T,Value>;
   return std::integral_constant<bool, std::max({(I(tt) == I(v))...})>{};
 }
 
 template<class T, T... tt, class Value>
-constexpr bool anyOf(std::integer_sequence<T,tt...>, const Value& value)
+constexpr bool anyOf(std::integer_sequence<T,tt...>, const Value& value, PriorityTag<0>)
 {
   using I = std::common_type_t<T,Value>;
   return std::max({(I(tt) == I(value))...});
@@ -431,7 +438,7 @@ constexpr bool anyOf(std::integer_sequence<T,tt...>, const Value& value)
 template<class Sequence, class Value>
 constexpr auto anyOf(Sequence&& seq,  Value&& value)
 {
-  return Impl::anyOf(std::forward<Sequence>(seq), std::forward<Value>(value));
+  return Impl::anyOf(std::forward<Sequence>(seq), std::forward<Value>(value), PriorityTag<2>());
 }
 
 
@@ -444,31 +451,36 @@ namespace Impl {
     return f(std::integral_constant<T,value>{});
   }
 
-  // [[expects: v is in the sequence t0,tt...]]
-  template<class T, T... tt, class Value, Value v, class Branches>
-  constexpr decltype(auto) switchCases(std::integer_sequence<T, tt...> seq, std::integral_constant<Value,v> value, Branches&& branches)
+  // [[expects: value is in the range]]
+  template<class T, class Value, class Branches>
+  constexpr decltype(auto) switchCases(IntegralRange<T> range, const Value& value, Branches&& branches)
   {
-    static_assert(Dune::anyOf(seq,value), "Index out of sequence");
-    return branches(value);
+    assert(Hybrid::anyOf(range,value) && "Index out of Range");
+    return branches(T(value));
   }
 
   // [[expects: value is in the sequence t0,tt...]]
   template<class T, T t0, T... tt, class Value, class Branches>
   constexpr decltype(auto) switchCases(std::integer_sequence<T, t0, tt...> seq, const Value& value, Branches&& branches)
   {
-    assert(Dune::anyOf(seq,value) && "Index out of sequence");
-    assert(std::is_same<typename StaticIntegralRange<T,t0,t0+1+sizeof...(tt)>::integer_sequence, decltype(seq)>::value && "Sequence must be range");
-    return Std::make_array( callWithIndex<T,t0,Branches>, callWithIndex<T,tt,Branches>... )[value-t0](branches);
+    assert(Hybrid::anyOf(seq,value) && "Index out of sequence");
+    return ifElse(IsIntegralConstant<Value>{},
+      [&](auto id) -> decltype(auto) {
+        return id(branches)(value); },
+      [&](auto id) -> decltype(auto) {
+        using Range = StaticIntegralRange<T,t0+1+sizeof...(tt),t0>;
+        assert((std::is_same<typename Range::integer_sequence, decltype(seq)>::value) && "Sequence must be range");
+        return Std::make_array( callWithIndex<T,t0,Branches>, callWithIndex<T,tt,Branches>... )[value-t0](id(branches));
+    });
   }
 
-  template<class T, T... tt, class Value, class Branches, class ElseBranch>
-  constexpr decltype(auto) switchCases(std::integer_sequence<T, tt...> seq, const Value& value, Branches&& branches, ElseBranch&& elseBranch)
+  template<class Cases, class Value, class Branches, class ElseBranch>
+  constexpr decltype(auto) switchCases(Cases&& cases, const Value& value, Branches&& branches, ElseBranch&& elseBranch)
   {
-    return ifElse(
-        Dune::anyOf(seq, value),
+    return ifElse(Hybrid::anyOf(cases, value),
       [&](auto id) -> decltype(auto) {
-        return Impl::switchCases(seq, value, id(branches));
-      }, [&](auto id) -> decltype(auto) {
+        return Impl::switchCases(cases, value, id(branches)); },
+      [&](auto id) -> decltype(auto) {
         return id(elseBranch)();
     });
   }
@@ -476,25 +488,8 @@ namespace Impl {
   template<class T, T to, T from, class Value, class... Branches>
   constexpr decltype(auto) switchCases(StaticIntegralRange<T, to, from> range, const Value& value, Branches&&... branches)
   {
-    using index_sequence = typename decltype(range)::integer_sequence;
-    return Impl::switchCases(index_sequence{}, value, std::forward<Branches>(branches)...);
-  }
-
-  // [[expects: value is in the range]]
-  template <class T, class Value, class Branches>
-  constexpr decltype(auto) switchCases(IntegralRange<T> range, const Value& value, Branches&& branches)
-  {
-    assert(range[0] <= T(value) && T(value) < range[range.size()-1] && "Index out of range");
-    return branches(T(value));
-  }
-
-  template<class T, class Value, class Branches, class ElseBranch>
-  constexpr decltype(auto) switchCases(IntegralRange<T> range, const Value& value, Branches&& branches, ElseBranch&& elseBranch)
-  {
-    if (range[0] <= T(value) && T(value) < range[range.size()-1])
-      return branches(T(value));
-    else
-      return elseBranch();
+    using seq = typename decltype(range)::integer_sequence;
+    return Impl::switchCases(seq{}, value, std::forward<Branches>(branches)...);
   }
 
 } // namespace Impl

@@ -420,7 +420,7 @@ namespace Impl {
     template<typename F>
     decltype(auto) visit(F&& func) {
       auto indices = std::make_index_sequence<size_>{};
-      return Hybrid::withIndex(indices, index(), [&](auto staticIndex) -> decltype(auto) {
+      return Hybrid::switchCases(indices, index(), [&](auto staticIndex) -> decltype(auto) {
         return func(this->template get<decltype(staticIndex)::value>());
       });
     }
@@ -428,7 +428,7 @@ namespace Impl {
     template<typename F>
     decltype(auto) visit(F&& func) const {
       auto indices = std::make_index_sequence<size_>{};
-      return Hybrid::withIndex(indices, index(), [&](auto staticIndex) -> decltype(auto) {
+      return Hybrid::switchCases(indices, index(), [&](auto staticIndex) -> decltype(auto) {
         return func(this->template get<decltype(staticIndex)::value>());
       });
     }
