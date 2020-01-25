@@ -405,25 +405,96 @@ constexpr auto equals(T1&& t1,  T2&& t2)
 }
 
 
+namespace Impl {
+
+template<class T, T... tt, class Value, Value v>
+constexpr auto anyOf(std::integer_sequence<T,tt...>, std::integral_constant<Value,v>)
+{
+  using I = std::common_type_t<T,Value>;
+  return std::integral_constant<bool, std::max({(I(tt) == I(v))...})>{};
+}
+
+template<class T, T... tt, class Value>
+constexpr bool anyOf(std::integer_sequence<T,tt...>, const Value& value)
+{
+  using I = std::common_type_t<T,Value>;
+  return std::max({(I(tt) == I(value))...});
+}
+
+} // namespace Impl
+
+/**
+ * \brief Returns whether value is in sequence
+ *
+ * \ingroup HybridUtilities
+ */
+template<class Sequence, class Value>
+constexpr auto anyOf(Sequence&& seq,  Value&& value)
+{
+  return Impl::anyOf(std::forward<Sequence>(seq), std::forward<Value>(value));
+}
+
 
 namespace Impl {
 
-  template<class Result, class T, class Value, class Branches, class ElseBranch>
-  constexpr Result switchCases(std::integer_sequence<T>, const Value& /*value*/, Branches&& /*branches*/, ElseBranch&& elseBranch)
+  template <class T, T value, class F>
+  constexpr auto callWithIndex(F& f)
+    -> decltype(f(std::integral_constant<T,value>{}))
   {
-    return elseBranch();
+    return f(std::integral_constant<T,value>{});
   }
 
-  template<class Result, class T, T t0, T... tt, class Value, class Branches, class ElseBranch>
-  constexpr Result switchCases(std::integer_sequence<T, t0, tt...>, const Value& value, Branches&& branches, ElseBranch&& elseBranch)
+  // [[expects: v is in the sequence t0,tt...]]
+  template<class T, T... tt, class Value, Value v, class Branches>
+  constexpr decltype(auto) switchCases(std::integer_sequence<T, tt...> seq, std::integral_constant<Value,v> value, Branches&& branches)
+  {
+    static_assert(Dune::anyOf(seq,value), "Index out of sequence");
+    return branches(value);
+  }
+
+  // [[expects: value is in the sequence t0,tt...]]
+  template<class T, T t0, T... tt, class Value, class Branches>
+  constexpr decltype(auto) switchCases(std::integer_sequence<T, t0, tt...> seq, const Value& value, Branches&& branches)
+  {
+    assert(Dune::anyOf(seq,value) && "Index out of sequence");
+    assert(std::is_same<typename StaticIntegralRange<T,t0,t0+1+sizeof...(tt)>::integer_sequence, decltype(seq)>::value && "Sequence must be range");
+    return Std::make_array( callWithIndex<T,t0,Branches>, callWithIndex<T,tt,Branches>... )[value-t0](branches);
+  }
+
+  template<class T, T... tt, class Value, class Branches, class ElseBranch>
+  constexpr decltype(auto) switchCases(std::integer_sequence<T, tt...> seq, const Value& value, Branches&& branches, ElseBranch&& elseBranch)
   {
     return ifElse(
-        Hybrid::equals(std::integral_constant<T, t0>(), value),
+        Dune::anyOf(seq, value),
       [&](auto id) -> decltype(auto) {
-        return id(branches)(std::integral_constant<T, t0>());
+        return Impl::switchCases(seq, value, id(branches));
       }, [&](auto id) -> decltype(auto) {
-        return Impl::switchCases<Result>(id(std::integer_sequence<T, tt...>()), value, branches, elseBranch);
+        return id(elseBranch)();
     });
+  }
+
+  template<class T, T to, T from, class Value, class... Branches>
+  constexpr decltype(auto) switchCases(StaticIntegralRange<T, to, from> range, const Value& value, Branches&&... branches)
+  {
+    using index_sequence = typename decltype(range)::integer_sequence;
+    return Impl::switchCases(index_sequence{}, value, std::forward<Branches>(branches)...);
+  }
+
+  // [[expects: value is in the range]]
+  template <class T, class Value, class Branches>
+  constexpr decltype(auto) switchCases(IntegralRange<T> range, const Value& value, Branches&& branches)
+  {
+    assert(range[0] <= T(value) && T(value) < range[range.size()-1] && "Index out of range");
+    return branches(T(value));
+  }
+
+  template<class T, class Value, class Branches, class ElseBranch>
+  constexpr decltype(auto) switchCases(IntegralRange<T> range, const Value& value, Branches&& branches, ElseBranch&& elseBranch)
+  {
+    if (range[0] <= T(value) && T(value) < range[range.size()-1])
+      return branches(T(value));
+    else
+      return elseBranch();
   }
 
 } // namespace Impl
@@ -447,8 +518,9 @@ namespace Impl {
  *
  * Value is checked against all entries of the given range.
  * If one matches, then branches is executed with the matching
- * value as single argument. If the range is an std::integer_sequence,
- * the value is passed as std::integral_constant.
+ * value as single argument. If the range is a static range, like
+ * std::integer_sequence or StaticIntegralRange, the value is passed
+ * as std::integral_constant. Otherweise, the value is passed directly.
  * If non of the entries matches, then elseBranch is executed
  * without any argument.
  *
@@ -460,7 +532,7 @@ namespace Impl {
 template<class Cases, class Value, class Branches, class ElseBranch>
 constexpr decltype(auto) switchCases(const Cases& cases, const Value& value, Branches&& branches, ElseBranch&& elseBranch)
 {
-  return Impl::switchCases<decltype(elseBranch())>(cases, value, std::forward<Branches>(branches), std::forward<ElseBranch>(elseBranch));
+  return Impl::switchCases(cases, value, std::forward<Branches>(branches), std::forward<ElseBranch>(elseBranch));
 }
 
 /**
@@ -478,73 +550,22 @@ constexpr decltype(auto) switchCases(const Cases& cases, const Value& value, Bra
  *
  * Value is checked against all entries of the given range.
  * If one matches, then branches is executed with the matching
- * value as single argument. If the range is an std::integer_sequence,
- * the value is passed as std::integral_constant.
- * If non of the entries matches, then elseBranch is executed
- * without any argument.
+ * value as single argument. If the range is a static range, like
+ * std::integer_sequence or StaticIntegralRange, the value is passed
+ * as std::integral_constant. Otherweise, the value is passed directly.
+ * If non of the entries matches, an assertion is raised.
  */
 template<class Cases, class Value, class Branches>
-constexpr void switchCases(const Cases& cases, const Value& value, Branches&& branches)
+constexpr decltype(auto) switchCases(const Cases& cases, const Value& value, Branches&& branches)
 {
-  return Impl::switchCases<void>(cases, value, std::forward<Branches>(branches), []() {});
+  return Impl::switchCases(cases, value, std::forward<Branches>(branches));
 }
 
-
-namespace Impl
+/// \brief See \ref switchCases with `Cases` is std::index_sequence<0,1,...N-1>
+template<std::size_t N, class Value, class... Branches>
+constexpr decltype(auto) switchCases(const Value& value, Branches&&... branches)
 {
-  template <std::size_t I, class F>
-  constexpr auto callWithIndex(F& f)
-    -> decltype(f(index_constant<I>{}))
-  {
-    return f(index_constant<I>{});
-  }
-}
-
-/// \brief Invoke `fn` with an `index_constant` of the same value as the index `j`.
-// [[expects: j is in the sequence of integers I0,I0+1,I0+2,...]]
-template <std::size_t I0, std::size_t... I, class F>
-constexpr decltype(auto) withIndex(std::index_sequence<I0,I...>, std::size_t j, F&& fn)
-{
-  assert(j-I0 < 1+sizeof...(I) && "Index out of range");
-  return Std::make_array( Impl::callWithIndex<I0,F>, Impl::callWithIndex<I,F>... )[j-I0](fn);
-}
-
-/// \brief Invoke `fn` with an `index_constant` of the same value as the index `j`, i.e. pass the index `j`
-/// directly to the function `fn`
-// [[expects: J is in the sequence of integers I...]]
-template <std::size_t... I, std::size_t J, class F>
-constexpr decltype(auto) withIndex(std::index_sequence<I...>, index_constant<J> j, F&& fn)
-{
-  static_assert(std::max({(I == J)...}), "Index not in sequence");
-  return fn(j);
-}
-
-/// \brief Invoke `fn` with an `index_constant` of the same value as the index `j`
-// [[expects: j is in the range]]
-template <std::size_t to, std::size_t from, class Index, typename F>
-constexpr decltype(auto) withIndex(StaticIntegralRange<std::size_t, to, from> range, Index j, F&& fn)
-{
-  using index_sequence = typename StaticIntegralRange<std::size_t, to, from>::integer_sequence;
-  return withIndex(index_sequence{}, j, std::forward<F>(fn));
-}
-
-/// \brief Invoke `fn` with the integer `j` directly, i.e. in contrast to other overloads of \ref withIndex,
-/// do not wrap the index into an `integral_constant` but pass the integer directly.
-// [[expects: j is in the range]]
-template <class Integer, class Index, typename F>
-constexpr decltype(auto) withIndex(IntegralRange<Integer> range, Index j, F&& fn)
-{
-  assert(range[0] <= Integer(j) && Integer(j) < range[range.size()-1] && "Index out of range");
-  return fn(Integer(j));
-}
-
-/// \brief Invoke `fn` with an `index_constant` of the same value as the index `j`
-// [[expects: j is in the range [0,N)]]
-template <std::size_t N, class Index, typename F>
-constexpr decltype(auto) withIndex(Index j, F&& fn)
-{
-  assert(std::size_t(j) < N && "Index out of range");
-  return withIndex(std::make_index_sequence<N>{}, j, std::forward<F>(fn));
+  return Impl::switchCases(std::make_index_sequence<N>{}, value, std::forward<Branches>(branches)...);
 }
 
 } // namespace Hybrid
