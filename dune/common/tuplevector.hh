@@ -61,7 +61,8 @@ public:
 
   /** \brief Const access to the tuple elements
    */
-  template<std::size_t i>
+  template<std::size_t i,
+    std::enable_if_t<(i < sizeof...(T)), int> = 0>
   constexpr decltype(auto) operator[](const Dune::index_constant<i>&) const
   {
     return std::get<i>(*this);
@@ -69,7 +70,8 @@ public:
 
   /** \brief Non-const access to the tuple elements
    */
-  template<std::size_t i>
+  template<std::size_t i,
+    std::enable_if_t<(i < sizeof...(T)), int> = 0>
   decltype(auto) operator[](const Dune::index_constant<i>&)
   {
     return std::get<i>(*this);
