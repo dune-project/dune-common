@@ -411,7 +411,7 @@ namespace Impl {
   template<class T, class Value>
   constexpr bool anyOf(IntegralRange<T> range, const Value& value, PriorityTag<2>)
   {
-    return range[0] <= T(value) && T(value) < range[range.size()-1];
+    return range[0] <= T(value) && T(value) <= range[range.size()-1];
   }
 
   template<class T, T... tt, class Value, Value v>
