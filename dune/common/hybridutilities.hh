@@ -475,7 +475,7 @@ namespace Impl {
   switchCases(PriorityTag<0>, std::integer_sequence<T, t0, tt...> seq, const Value& value, Branches&& branches)
   {
     using Range = StaticIntegralRange<T,t0+1+sizeof...(tt),t0>;
-    static_assert((std::is_same<typename Range::integer_sequence, decltype(seq)>::value) && "Sequence must be a range");
+    static_assert((std::is_same<typename Range::integer_sequence, decltype(seq)>::value), "Sequence must be a range");
 
     assert(Hybrid::anyOf(seq,value) && "Index out of sequence");
     return Std::make_array( callWithIndex<T,t0,Branches>, callWithIndex<T,tt,Branches>... )[value-t0](branches);
