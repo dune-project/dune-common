@@ -38,37 +38,6 @@ if(MPI_C_FOUND)
   dune_register_package_flags(COMPILE_DEFINITIONS "ENABLE_MPI=1;MPICH_SKIP_MPICXX;MPIPP_H"
                               INCLUDE_DIRS "${MPI_DUNE_INCLUDE_PATH}"
                               LIBRARIES "${MPI_DUNE_LIBRARIES}")
-
-  # Check whether the MPI-2 standard is supported
-  include(CMakePushCheckState)
-  include(CheckFunctionExists)
-  include(CheckCXXSourceCompiles)
-  cmake_push_check_state()
-  set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES};${MPI_DUNE_LIBRARIES})
-  set(CMAKE_REQUIRED_DEFINITIONS ${CMAKE_REQUIRED_DEFINITIONS} "-DENABLE_MPI=1 -DMPICH_SKIP_MPICXX -DMPIPP_H")
-  set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES};${MPI_DUNE_INCLUDE_PATH})
-  check_function_exists(MPI_Finalized MPI_2)
-
-  # proper version check
-  check_cxx_source_compiles("
-    #include <mpi.h>
-
-    #if !((MPI_VERSION > 2) || (MPI_VERSION == 2 && MPI_SUBVERSION >= 1))
-    fail with a horribe compilation error due to old MPI version
-    #endif
-
-    int main(int argc, char** argv)
-    {
-      MPI_Init(&argc,&argv);
-      MPI_Finalize();
-    }
-" MPI_VERSION_SUPPORTED)
-
-  cmake_pop_check_state()
-
-  if(NOT MPI_VERSION_SUPPORTED)
-    message(FATAL_ERROR "Your MPI implementation is too old. Please upgrade to an MPI-2.1 compliant version.")
-  endif()
 endif(MPI_C_FOUND)
 
 # adds MPI flags to the targets
