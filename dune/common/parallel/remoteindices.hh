@@ -885,20 +885,25 @@ namespace Dune {
   MPI_Datatype MPITraits<IndexPair<TG,ParallelLocalIndex<TA> > >::getType()
   {
     if(type==MPI_DATATYPE_NULL) {
-      int length[4];
-      MPI_Aint disp[4];
-      MPI_Datatype types[4] = {MPI_LB, MPITraits<TG>::getType(),
-                               MPITraits<ParallelLocalIndex<TA> >::getType(), MPI_UB};
-      IndexPair<TG,ParallelLocalIndex<TA> > rep[2];
-      length[0]=length[1]=length[2]=length[3]=1;
-      MPI_Get_address(rep, disp); // lower bound of the datatype
-      MPI_Get_address(&(rep[0].global_), disp+1);
-      MPI_Get_address(&(rep[0].local_), disp+2);
-      MPI_Get_address(rep+1, disp+3); // upper bound of the datatype
-      for(int i=3; i >= 0; --i)
-        disp[i] -= disp[0];
-      MPI_Type_create_struct(4, length, disp, types, &type);
+      int length[2] = {1, 1};
+      MPI_Aint base;
+      MPI_Aint disp[2];
+      MPI_Datatype types[2] = {MPITraits<TG>::getType(),
+                               MPITraits<ParallelLocalIndex<TA> >::getType()};
+      IndexPair<TG,ParallelLocalIndex<TA> > rep;
+      MPI_Get_address(&rep, &base); // lower bound of the datatype
+      MPI_Get_address(&(rep.global_), &disp[0]);
+      MPI_Get_address(&(rep.local_), &disp[1]);
+      for (MPI_Aint& d : disp)
+        d -= base;
+
+      MPI_Datatype tmp;
+      MPI_Type_create_struct(2, length, disp, types, &tmp);
+
+      MPI_Type_create_resized(tmp, 0, sizeof(IndexPair<TG,ParallelLocalIndex<TA> >), &type);
       MPI_Type_commit(&type);
+
+      MPI_Type_free(&tmp);
     }
     return type;
   }

@@ -289,18 +289,21 @@ namespace Dune
   {
 
     if(type==MPI_DATATYPE_NULL) {
-      int length[3];
-      MPI_Aint disp[3];
-      MPI_Datatype types[3] = {MPI_LB, MPITraits<char>::getType(), MPI_UB};
-      ParallelLocalIndex<T> rep[2];
-      length[0]=length[1]=length[2]=1;
-      MPI_Get_address(rep, disp); // lower bound of the datatype
-      MPI_Get_address(&(rep[0].attribute_), disp+1);
-      MPI_Get_address(rep+1, disp+2); // upper bound of the datatype
-      for(int i=2; i >= 0; --i)
-        disp[i] -= disp[0];
-      MPI_Type_create_struct(3, length, disp, types, &type);
+      int length = 1;
+      MPI_Aint base, disp;
+      MPI_Datatype types[1] = {MPITraits<char>::getType()};
+      ParallelLocalIndex<T> rep;
+      MPI_Get_address(&rep, &base);
+      MPI_Get_address(&(rep.attribute_), &disp);
+      disp -= base;
+
+      MPI_Datatype tmp;
+      MPI_Type_create_struct(1, &length, &disp, types, &tmp);
+
+      MPI_Type_create_resized(tmp, 0, sizeof(ParallelLocalIndex<T>), &type);
       MPI_Type_commit(&type);
+
+      MPI_Type_free(&tmp);
     }
     return type;
   }
