@@ -1,5 +1,8 @@
 # Master (will become release 2.8)
 
+- Previous versions of dune-common imported `std::shared_ptr` and `std::make_shared`
+  into the `Dune` namespace.  dune-common-2.8 stops doing that.
+
 # Release 2.7
 
 - Added fallback implementation to C++20 feature: `std::identity`.
