@@ -36,6 +36,9 @@
   - Vector = Vector - Vector
   have been introduced earlier.
 
+- The matrix size functions `N()` and `M()` of `FieldMatrix` and `DiagonalMatrix` can now be used
+  in a `constexpr` context.
+
 - There is now (finally!) a method `power` in the file `math.hh` that computes
   powers with an integer exponent, and is usable in compile-time expressions.
   The use of the old power methods in `power.hh` is henceforth discouraged.
