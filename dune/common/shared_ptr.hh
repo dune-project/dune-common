@@ -9,16 +9,11 @@
 #include <dune/common/typetraits.hh>
 /**
  * @file
- * @brief This file implements the class shared_ptr (a reference counting
- * pointer), for those systems that don't have it in the standard library.
+ * @brief This file implements several utilities related to std::shared_ptr
  * @author Markus Blatt
  */
 namespace Dune
 {
-  // pull in default implementations
-  using std::shared_ptr;
-  using std::make_shared;
-
   /**
      @brief implements the Deleter concept of shared_ptr without deleting anything
      @relates shared_ptr
