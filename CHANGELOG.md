@@ -1,5 +1,13 @@
 # Master (will become release 2.8)
 
+## build-system
+
+- Remove the CMake function deprecated `inkscape_generate_png_from_svg`.
+
+- Remove the old and deprecated use of UseLATEX.cmake.
+  `dune_add_latex_document' is a redirection to `add_latex_document`
+  which internally uses `latexmk`.
+
 # Release 2.7
 
 - Added fallback implementation to C++20 feature: `std::identity`.
