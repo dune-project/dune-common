@@ -1,5 +1,9 @@
 # Master (will become release 2.8)
 
+- The file `function.hh` is deprecated.  It contained the two base classes
+  `Function` and `VirtualFunction`.  In downstream codes, these should be
+  replaced by C++ function objects, `std::function` etc.
+
 # Release 2.7
 
 - Added fallback implementation to C++20 feature: `std::identity`.

@@ -911,7 +911,8 @@ namespace Dune
         for (size_type k=i+1; k<A.rows(); k++)
         {
           auto abs = fvmeta::absreal(A[k][i]);
-          auto mask = abs > pivmax;
+          //auto mask = abs > pivmax;
+          bool mask = abs > pivmax;
           pivmax = Simd::cond(mask, abs, pivmax);
           imax   = Simd::cond(mask, simd_index_type(k), imax);
         }
