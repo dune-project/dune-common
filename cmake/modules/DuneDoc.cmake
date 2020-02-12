@@ -12,21 +12,7 @@
 #
 #    .. cmake_brief::
 #
-#       build a pdf document through the Dune build system.
-#
-#    .. cmake_param:: texfile
-#       :single:
-#       :required:
-#       :positional:
-#
-#       The texfile to compile into a pdf.
-#
-#    .. note::
-#
-#       This function is a wrapper around add_latex_document.
-#       With Dune 2.7 the function from UseLatexmk.cmake is
-#       used and the one from UseLATEX.cmake is deprecated
-#       and will be removed after Dune 2.7.
+#       wrapper around add_latex_document for compatibility reasons
 #
 # .. cmake_function:: create_doc_install
 #
@@ -65,41 +51,8 @@
 
 include(UseLatexMk)
 
-# deprecated part for UseLATEX.cmake
-find_package(LATEX)
-set_package_properties("LATEX" PROPERTIES
-  DESCRIPTION "Type setting system"
-  PURPOSE "To generate the documentation")
-find_program(IMAGEMAGICK_CONVERT convert)
-set(HAVE_IMAGEMAGICK_CONVERT IMAGEMAGICK_CONVERT)
-set_package_properties("IMAGEMAGICK_CONVERT" PROPERTIES
-  DESCRIPTION "convert program that comes with ImageMagick"
-  URL "www.imagemagick.org"
-  PURPOSE "To generate the documentation with LaTeX")
-set(LATEX_USABLE TRUE)
-
-# check needed LaTeX executables
-if(NOT LATEX_COMPILER)
-  message(WARNING " Need latex to create documentation!")
-  set(LATEX_USABLE FALSE)
-endif()
-if(NOT BIBTEX_COMPILER)
-  message(WARNING " Need bibtex to create documentation!")
-  set(LATEX_USABLE FALSE)
-endif()
-if(NOT MAKEINDEX_COMPILER)
-  message(WARNING " Need makeindex to create documentation!")
-  set(LATEX_USABLE FALSE)
-endif()
-if(NOT IMAGEMAGICK_CONVERT)
-  message(WARNING " Need imagemagick to create latex documentation!")
-  set(LATEX_USABLE FALSE)
-endif()
-if(LATEX_USABLE)
-  include(UseLATEX)
-  set_package_properties("UnixCommands" PROPERTIES
-    DESCRIPTION "Some common Unix commands"
-    PURPOSE "To generate the documentation with LaTeX")
+if (LATEXMK_FOUND AND PDFLATEX_COMPILER)
+  set(LATEX_USABLE TRUE)
 endif()
 
 add_custom_target(doc)
@@ -114,6 +67,7 @@ macro(create_doc_install filename targetdir dependency)
     dune_module_path(MODULE dune-common RESULT scriptdir SCRIPT_DIR)
     get_filename_component(targetfile ${filename} NAME)
     set(install_command ${CMAKE_COMMAND} -D FILES=${filename} -D DIR=${CMAKE_INSTALL_PREFIX}/${targetdir} -P ${scriptdir}/InstallFile.cmake)
+
     # create a custom target for the installation
     add_custom_target(install_${targetfile} ${install_command}
       COMMENT "Installing ${filename} to ${targetdir}"
@@ -124,36 +78,6 @@ macro(create_doc_install filename targetdir dependency)
   endif()
 endmacro(create_doc_install)
 
-
-macro(dune_add_latex_document tex_file)
-  set(latex_arguments "${ARGN}")
-
-  # UseLatexmk iff one of the arguments is "SOURCE"
-  if (";${tex_file};${latex_arguments};" MATCHES ";SOURCE;")
-    add_latex_document(${tex_file} ${latex_arguments})
-
-  # UseLATEX, the old way
-  else()
-    message(AUTHOR_WARNING
-            "This function is deprecated and will be removed after Dune 2.7. \
-            Use dune_add_latex_target with SOURCE as first argument as from \
-            UseLatexMk.cmake instead!")
-
-    if(LATEX_USABLE)
-      # add rule to create latex document
-      add_latex_document_deprecated(${tex_file} ${latex_arguments}
-        EXCLUDE_FROM_ALL
-        EXCLUDE_FROM_DEFAULTS)
-      # add dependency for target doc, but first construct document's target name
-      string(REGEX REPLACE "(.+).tex" "\\1" tex_file_base_name ${tex_file})
-      list(FIND latex_arguments FORCE_DVI has_forcedvi)
-      if(has_forcedvi EQUAL -1)
-        add_dependencies(doc "${tex_file_base_name}")
-      else()
-        add_dependencies(doc "${tex_file_base_name}_safepdf")
-      endif()
-    else()
-      message(WARNING "Not adding rule to create ${file} as LaTeX is not usable!")
-    endif()
-  endif()
-endmacro(dune_add_latex_document tex_file)
+macro(dune_add_latex_document)
+  add_latex_document(${ARGN})
+endmacro(dune_add_latex_document)

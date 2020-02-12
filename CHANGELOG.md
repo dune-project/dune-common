@@ -3,6 +3,14 @@
 - Previous versions of dune-common imported `std::shared_ptr` and `std::make_shared`
   into the `Dune` namespace.  dune-common-2.8 stops doing that.
 
+## build-system
+
+- Remove the CMake function deprecated `inkscape_generate_png_from_svg`.
+
+- Remove the old and deprecated use of UseLATEX.cmake.
+  `dune_add_latex_document' is a redirection to `add_latex_document`
+  which internally uses `latexmk`.
+
 # Release 2.7
 
 - Added fallback implementation to C++20 feature: `std::identity`.
