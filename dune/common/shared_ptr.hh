@@ -9,16 +9,11 @@
 #include <dune/common/typetraits.hh>
 /**
  * @file
- * @brief This file implements the class shared_ptr (a reference counting
- * pointer), for those systems that don't have it in the standard library.
+ * @brief This file implements several utilities related to std::shared_ptr
  * @author Markus Blatt
  */
 namespace Dune
 {
-  // pull in default implementations
-  using std::shared_ptr;
-  using std::make_shared;
-
   /**
      @brief implements the Deleter concept of shared_ptr without deleting anything
      @relates shared_ptr
@@ -32,9 +27,9 @@ namespace Dune
      1) Convert a stack-allocated object to a shared_ptr:
      @code
           int i = 10;
-          shared_ptr<int> pi = stackobject_to_shared_ptr(i);
+          std::shared_ptr<int> pi = stackobject_to_shared_ptr(i);
      @endcode
-     2) Convert a stack-allocated object to a shared_ptr of a base class
+     2) Convert a stack-allocated object to a std::shared_ptr of a base class
      @code
           class A {};
           class B : public A {};
@@ -42,7 +37,7 @@ namespace Dune
           ...
 
           B b;
-          shared_ptr<A> pa = stackobject_to_shared_ptr<A>(b);
+          std::shared_ptr<A> pa = stackobject_to_shared_ptr<A>(b);
      @endcode
 
      @tparam T type of the stack-allocated object
@@ -63,18 +58,18 @@ namespace Dune
      Usage:
      @code
           int i = 10;
-          shared_ptr<int> pi = stackobject_to_shared_ptr(i);
+          std::shared_ptr<int> pi = stackobject_to_shared_ptr(i);
      @endcode
-     The @c shared_ptr points to the object on the stack, but its deleter is
+     The @c std::shared_ptr points to the object on the stack, but its deleter is
      set to an instance of @c null_deleter so that nothing happens when the @c
      shared_ptr is destroyed.
 
-     @sa shared_ptr, null_deleter
+     @sa null_deleter
    */
   template<typename T>
-  inline shared_ptr<T> stackobject_to_shared_ptr(T & t)
+  inline std::shared_ptr<T> stackobject_to_shared_ptr(T & t)
   {
-    return shared_ptr<T>(&t, null_deleter<T>());
+    return std::shared_ptr<T>(&t, null_deleter<T>());
   }
 
 
@@ -102,10 +97,10 @@ namespace Dune
   }
 
   /**
-   * \brief Capture L-value reference to shared_ptr
+   * \brief Capture L-value reference to std::shared_ptr
    *
    * This will store a pointer for the passed reference
-   * in a non-owning shared_ptr.
+   * in a non-owning std::shared_ptr.
    *
    * The two overloads of wrap_or_move are intended
    * to capture references and temporaries in a unique
