@@ -248,6 +248,10 @@ void test_matrix()
   FieldVector<K2,m> v;
   FieldVector<K3,n> f;
 
+  // test constexpr size
+  static_assert(A.N() == n, "");
+  static_assert(A.M() == m, "");
+
   // assign matrix
   A=K();
   // random access matrix
