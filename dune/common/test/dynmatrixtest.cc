@@ -177,6 +177,18 @@ void test_matrix()
   DynamicVector<K> f(n);
   DynamicVector<K> v(m);
 
+  DynamicMatrix<K> A2(A); // copy constructor
+  if (A!=A2)
+    DUNE_THROW(InvalidStateException,"Copy constructor does not work properly");
+
+  DynamicMatrix<K> A3(std::move(A2)); // move constructor
+  if (A!=A3)
+    DUNE_THROW(InvalidStateException,"Move constructor does not work properly");
+
+  A2 = std::move(A3); // move assignment
+  if (A!=A2)
+    DUNE_THROW(InvalidStateException,"Move assignment does not work properly");
+
   // assign matrix
   A=K();
   // random access matrix
