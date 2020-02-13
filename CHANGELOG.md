@@ -3,6 +3,10 @@
 - Previous versions of dune-common imported `std::shared_ptr` and `std::make_shared`
   into the `Dune` namespace.  dune-common-2.8 stops doing that.
 
+- The file `function.hh` is deprecated.  It contained the two base classes
+  `Function` and `VirtualFunction`.  In downstream codes, these should be
+  replaced by C++ function objects, `std::function` etc.
+
 ## build-system
 
 - Remove the CMake function deprecated `inkscape_generate_png_from_svg`.

@@ -3,6 +3,8 @@
 #ifndef DUNE_FUNCTION_HH
 #define DUNE_FUNCTION_HH
 
+#warning This file is deprecated!  Use C++ function objects and std::function stuff instead!
+
 #include <utility>
 
 #include "typetraits.hh"
