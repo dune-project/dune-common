@@ -646,16 +646,6 @@ macro(dune_project)
     message(FATAL_ERROR "Module name from dune.module does not match the name given in CMakeLists.txt.")
   endif()
 
-  # optional Fortran support
-  include(LanguageSupport)
-  workaround_9220(Fortran Fortran_Works)
-  if(Fortran_Works)
-    enable_language(Fortran OPTIONAL)
-    if(NOT CMAKE_Fortran_COMPILER)
-      set(Fortran_Works OFF)
-    endif()
-  endif()
-
   option(DUNE_USE_ONLY_STATIC_LIBS "If set to ON, we will force static linkage everywhere" OFF)
   if(DUNE_USE_ONLY_STATIC_LIBS)
     if(BUILD_SHARED_LIBS)
@@ -704,24 +694,6 @@ macro(dune_project)
   # Search for MPI and set the relevant variables.
   include(DuneMPI)
 
-  # Make calling fortran routines from C/C++ possible
-  if(Fortran_Works)
-    include(FortranCInterface)
-    FortranCInterface_VERIFY(CXX)
-    # Write FC.h header containing information about
-    # how to call fortran routined.
-    # It will be included in config.h
-    FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
-  else()
-    # Write empty FC.h header
-    # Make sure to only write this file once, otherwise every cmake run
-    # will trigger a full rebuild of the whole project.
-    unset(_FC_H CACHE)
-    find_file(_FC_H NAME FC.h PATHS "${CMAKE_BINARY_DIR}" NO_DEFAULT_PATH)
-    if(NOT _FC_H)
-      file(WRITE "${CMAKE_BINARY_DIR}/FC.h" "")
-    endif()
-  endif()
 
   # Create custom target for building the documentation
   # and provide macros for installing the docs and force

@@ -204,9 +204,16 @@
 /* Define to 1 if PT-Scotch is available */
 #cmakedefine HAVE_PTSCOTCH 1
 
-/* Include always useful headers */
-#include "FC.h"
-#define FC_FUNC FC_GLOBAL_
+/* Used to call lapack functions */
+#cmakedefine LAPACK_NEEDS_UNDERLINE
+
+#if LAPACK_NEEDS_UNDERLINE
+  #define LAPACK_MANGLE(name,NAME) name##_
+#else
+  #define LAPACK_MANGLE(name,NAME) name
+#endif
+
+#define FC_FUNC LAPACK_MANGLE
 
 /* end dune-common
    Everything below here will be overwritten

@@ -9,18 +9,15 @@ dune_require_cxx_standard(MODULE "dune-common" VERSION 14)
 include(DuneStreams)
 dune_set_minimal_debug_level()
 
-if(Fortran_Works)
-  # search for lapack
-  find_package(LAPACK)
-  set(HAVE_LAPACK ${LAPACK_FOUND})
-  if(${HAVE_LAPACK})
-    dune_register_package_flags(LIBRARIES "${LAPACK_LIBRARIES}")
-  endif(${HAVE_LAPACK})
-  set(HAVE_BLAS ${BLAS_FOUND})
-else(Fortran_Works)
-  set(HAVE_LAPACK Off)
-  set(HAVE_BLAS Off)
-endif(Fortran_Works)
+# search for lapack
+find_package(LAPACK)
+set(HAVE_LAPACK ${LAPACK_FOUND})
+if(${HAVE_LAPACK})
+  dune_register_package_flags(LIBRARIES "${LAPACK_LIBRARIES}")
+  check_function_exists("dsyev_" LAPACK_NEEDS_UNDERLINE)
+endif(${HAVE_LAPACK})
+set(HAVE_BLAS ${BLAS_FOUND})
+
 set_package_properties("BLAS" PROPERTIES
   DESCRIPTION "fast linear algebra routines")
 set_package_properties("LAPACK" PROPERTIES
