@@ -44,7 +44,6 @@ install(FILES
   FindTBB.cmake
   FindUMFPack.cmake
   Headercheck.cmake
-  LanguageSupport.cmake
   latexmkrc.cmake
   OverloadCompilerFlags.cmake
   UseInkscape.cmake
