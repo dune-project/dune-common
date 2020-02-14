@@ -49,6 +49,18 @@ namespace Dune {
       eigenvalues[0] = matrix[0][0];
     }
 
+    /** \brief calculates the eigenvectors of a symmetric field matrix
+        \param[in]  matrix matrix eigenvectors are calculated for
+        \param[out] eigenvectors FieldVector that contains eigenvectors with
+                    corresponding eigenvalues in ascending order
+     */
+    template<typename K>
+    static void eigenVectors(const FieldMatrix<K, 1, 1>& matrix,
+                             FieldVector<FieldVector<K, 1>,1>& eigenvectors)
+    {
+      eigenvectors[0] = {1.0};
+    }
+
     /** \brief calculates the eigenvalues of a symmetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
         \param[out] eigenvalues FieldVector that contains eigenvalues in
@@ -76,6 +88,36 @@ namespace Dune {
       // store eigenvalues in ascending order
       eigenvalues[0] = p - q;
       eigenvalues[1] = p + q;
+    }
+
+    /** \brief calculates the eigenvectors of a symmetric field matrix
+        \param[in]  matrix matrix eigenvectors are calculated for
+        \param[out] eigenvectors FieldVector that contains eigenvectors with
+                    corresponding eigenvalues in ascending order
+     */
+    template<typename K>
+    static void eigenVectors(const FieldMatrix<K, 2, 2>& matrix,
+                             const FieldVector<K, 2>& eigenvalues,
+                             FieldVector<FieldVector<K, 2>,2>& eigenvectors)
+    {
+      using Vector = FieldVector<K,2>;
+      using Matrix = FieldMatrix<K,2,2>;
+
+      Matrix temp = matrix;
+      temp[0][0] -= eigenvalues[0];
+      temp[1][1] -= eigenvalues[0];
+      if(temp.infinity_norm() <= 1e-14) {
+        eigenvectors[0] = {1.0, 0.0};
+        eigenvectors[1] = {0.0, 1.0};
+      }
+      else {
+        Vector ev = {matrix[0][0]-eigenvalues[1], matrix[1][0]};
+        K norm = std::sqrt(ev[0]*ev[0] + ev[1]*ev[1]);
+        eigenvectors[0] = ev/norm;
+        ev = {matrix[0][0]-eigenvalues[0], matrix[1][0]};
+        norm = std::sqrt(ev[0]*ev[0] + ev[1]*ev[1]);
+        eigenvectors[1] = ev/norm;
+      }
     }
 
     /** \brief Calculates the eigenvalues of a symmetric 3x3 field matrix
