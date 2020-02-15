@@ -2,7 +2,9 @@
 // vi: set et ts=4 sw=2 sts=2:
 #ifndef DUNE_FUNCTION_HH_SILENCE_DEPRECATION
 #warning This file is deprecated!  Use C++ function objects and std::function stuff instead!
-#endif // DUNE_FUNCTION_HH_SILENCE_DEPRECATION
+#else // !DUNE_FUNCTION_HH_SILENCE_DEPRECATION
+#undef DUNE_FUNCTION_HH_SILENCE_DEPRECATION
+#endif // !DUNE_FUNCTION_HH_SILENCE_DEPRECATION
 
 #ifndef DUNE_FUNCTION_HH
 #define DUNE_FUNCTION_HH
