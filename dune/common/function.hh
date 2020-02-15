@@ -1,14 +1,17 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
+#ifndef DUNE_FUNCTION_HH_SILENCE_DEPRECATION
+#warning This file is deprecated after Dune 2.7!  Use C++ function objects and std::function stuff instead!
+#else // !DUNE_FUNCTION_HH_SILENCE_DEPRECATION
+#undef DUNE_FUNCTION_HH_SILENCE_DEPRECATION
+#endif // !DUNE_FUNCTION_HH_SILENCE_DEPRECATION
+
 #ifndef DUNE_FUNCTION_HH
 #define DUNE_FUNCTION_HH
 
-#ifndef DUNE_FUNCTION_HH_SILENCE_DEPRECATION
-#warning This file is deprecated!  Use C++ function objects and std::function stuff instead!
-#endif // DUNE_FUNCTION_HH_SILENCE_DEPRECATION
-
 #include <utility>
 
+#include <dune/common/deprecated.hh>
 #include "typetraits.hh"
 
 namespace Dune {
@@ -29,7 +32,10 @@ namespace Dune {
    * \tparam Range Type of output variable. This should be some non-const 'T&' to allow to return results.
    */
   template <class Domain, class Range>
-  class Function
+  class
+  [[deprecated("Dune::Function is deprecated after Dune 2.7.  Use C++ "
+               "function objects instead!")]]
+  Function
   {
     typedef typename std::remove_cv<typename std::remove_reference< Domain >::type >::type RawDomainType;
     typedef typename std::remove_cv<typename std::remove_reference< Range >::type >::type RawRangeType;
@@ -60,6 +66,7 @@ namespace Dune {
 
 
 
+  DUNE_NO_DEPRECATED_BEGIN
   /**
    * \brief Virtual base class template for function classes.
    *
@@ -71,8 +78,10 @@ namespace Dune {
    * \tparam RangeType The type of the output variable is 'RangeType &'
    */
   template <class DomainType, class RangeType>
-  class VirtualFunction :
-    public Function<const DomainType&, RangeType&>
+  class
+  [[deprecated("Dune::VirtualFunction is deprecated after Dune 2.7.  Use C++ "
+               "function objects and std::function instead!")]]
+  VirtualFunction : public Function<const DomainType&, RangeType&>
   {
   public:
     typedef typename Function<const DomainType&, RangeType&>::Traits Traits;
@@ -86,9 +95,11 @@ namespace Dune {
      */
     virtual void evaluate(const typename Traits::DomainType& x, typename Traits::RangeType& y) const = 0;
   }; // end of VirtualFunction class
+  DUNE_NO_DEPRECATED_END
 
   namespace Impl {
 
+  DUNE_NO_DEPRECATED_BEGIN
   template<typename Domain, typename Range, typename F>
   class LambdaVirtualFunction final
     : public VirtualFunction<Domain, Range>
@@ -110,6 +121,7 @@ namespace Dune {
   private:
     const F f_;
   };
+  DUNE_NO_DEPRECATED_END
 
   } /* namespace Impl */
 
@@ -133,6 +145,8 @@ namespace Dune {
    * \tparam Range  range of the function
    */
   template<typename Domain, typename Range, typename F>
+  [[deprecated("Dune::LambdaVirtualFunction is deprecated after Dune 2.7.  "
+               "Use std::function instead!")]]
   Impl::LambdaVirtualFunction< Domain, Range, std::decay_t<F> >
   makeVirtualFunction(F&& f)
   {
