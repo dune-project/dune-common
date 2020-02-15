@@ -2,6 +2,7 @@ add_subdirectory("parallel")
 add_subdirectory("simd")
 add_subdirectory("std")
 add_subdirectory("test")
+add_subdirectory("typetree")
 
 #build the library dunecommon
 if(LAPACK_FOUND)
