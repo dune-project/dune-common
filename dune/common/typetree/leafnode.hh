@@ -20,10 +20,8 @@ namespace Dune {
      *  Every leaf type in a \ref TypeTree must be derived from this
      *  class.
      */
-
     class LeafNode
     {
-
     public:
 
       //! Mark this class as a leaf in a \ref TypeTree.
@@ -41,7 +39,7 @@ namespace Dune {
       //! The type tag that describes a LeafNode.
       typedef LeafNodeTag NodeTag;
 
-      static constexpr std::size_t degree()
+      static constexpr std::size_t degree ()
       {
         return 0;
       }
@@ -54,7 +52,7 @@ namespace Dune {
        * class that needs to be filled with meaning by subclassing it
        * and adding useful functionality to the subclass.
        */
-      LeafNode() {}
+      LeafNode () {}
     };
 
     //! \} group Nodes

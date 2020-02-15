@@ -68,7 +68,7 @@ namespace Dune {
 
     //! Returns the degree of node as run time information.
     template<typename Node>
-    std::size_t degree(const Node& node)
+    std::size_t degree (const Node& node)
     {
       return degree(&node,NodeTag<Node>());
     }
@@ -83,7 +83,7 @@ namespace Dune {
      * constexpr).
      */
     template<typename Node, typename NodeTag>
-    constexpr std::size_t degree(const Node* node, NodeTag)
+    constexpr std::size_t degree (const Node* node, NodeTag)
     {
       return Node::degree();
     }

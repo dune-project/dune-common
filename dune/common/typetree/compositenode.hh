@@ -23,7 +23,6 @@ namespace Dune {
     template<typename... Children>
     class CompositeNode
     {
-
     public:
 
       //! The type tag that describes a CompositeNode.
@@ -47,15 +46,15 @@ namespace Dune {
       //! The number of children.
       static const std::size_t CHILDREN = sizeof...(Children);
 
-      static constexpr std::size_t degree()
+      static constexpr std::size_t degree ()
       {
         return sizeof...(Children);
       }
 
       //! Access to the type and storage type of the i-th child.
       template<std::size_t k>
-      struct Child {
-
+      struct Child
+      {
         static_assert((k < CHILDREN), "child index out of range");
 
         //! The type of the child.
@@ -71,9 +70,6 @@ namespace Dune {
         typedef std::shared_ptr<std::add_const_t<type>> ConstStorage;
       };
 
-      template<std::size_t k>
-      using Child_t = typename Child<k>::type;
-
 
       //! @name Child Access
       //! @{
@@ -83,7 +79,7 @@ namespace Dune {
        * \returns a reference to the i-th child.
        */
       template<std::size_t k>
-      Child_t<k>& child(index_constant<k> = {})
+      typename Child<k>::Type& child (index_constant<k> = {})
       {
         return *std::get<k>(_children);
       }
@@ -93,7 +89,7 @@ namespace Dune {
        * \returns a const reference to the i-th child.
        */
       template<std::size_t k>
-      const Child_t<k>& child(index_constant<k> = {}) const
+      const typename Child<k>::Type& child (index_constant<k> = {}) const
       {
         return *std::get<k>(_children);
       }
@@ -103,7 +99,7 @@ namespace Dune {
        * \returns a copy of the object storing the i-th child.
        */
       template<std::size_t k>
-      typename Child<k>::Storage childStorage(index_constant<k> = {})
+      typename Child<k>::Storage childStorage (index_constant<k> = {})
       {
         return std::get<k>(_children);
       }
@@ -116,30 +112,30 @@ namespace Dune {
        * \returns a copy of the object storing the i-th child.
        */
       template<std::size_t k>
-      typename Child<k>::ConstStorage childStorage(index_constant<k> = {}) const
+      typename Child<k>::ConstStorage childStorage (index_constant<k> = {}) const
       {
         return std::get<k>(_children);
       }
 
       //! Sets the i-th child to the passed-in value.
       template<std::size_t k>
-      void setChild(Child_t<k>& child, index_constant<k> = {})
+      void setChild (typename Child<k>::Type& child, index_constant<k> = {})
       {
-        std::get<k>(_children) = wrap_or_move(child);
+        std::get<k>(_children) = stackobject_to_shared_ptr(child);
       }
 
       //! Store the passed value in k-th child.
       template<std::size_t k>
-      void setChild(Child_t<k>&& child, index_constant<k> = {})
+      void setChild (typename Child<k>::Type&& child, index_constant<k> = {})
       {
-        std::get<k>(_children) = wrap_or_move(std::move(child));
+        std::get<k>(_children) = copy_or_wrap(std::move(child));
       }
 
       //! Sets the storage of the i-th child to the passed-in value.
       template<std::size_t k>
-      void setChild(typename Child<k>::Storage child, index_constant<k> = {})
+      void setChild (typename Child<k>::Storage child, index_constant<k> = {})
       {
-        std::get<k>(_children) = child;
+        std::get<k>(_children) = std::move(child);
       }
 
       const NodeStorage& nodeStorage() const
@@ -186,7 +182,7 @@ namespace Dune {
         static_assert(sizeof...(I) > 0 || Impl::_non_empty_tree_path(I0{}),
           "You cannot use the member function child() with an empty TreePath, use the freestanding version child(node,treePath) instead."
           );
-        return Dune::TypeTree::child(*this,i0,i...);
+        return TypeTree::child(*this,i0,i...);
       }
 
       //! Returns the child given by the list of indices.
@@ -206,7 +202,7 @@ namespace Dune {
         static_assert(sizeof...(I) > 0 || Impl::_non_empty_tree_path(I0{}),
           "You cannot use the member function child() with an empty TreePath, use the freestanding version child(node,treePath) instead."
           );
-        return Dune::TypeTree::child(*this,i0,i...);
+        return TypeTree::child(*this,i0,i...);
       }
 
       //! @}
@@ -224,23 +220,23 @@ namespace Dune {
        * will not be usable before its children are set using any of the
        * setChild(...) methods!
        */
-      CompositeNode()
+      CompositeNode ()
       {}
 
       //! Initialize all children with the passed-in objects.
       template<typename... Args, std::enable_if_t<(sizeof...(Args) == CHILDREN), int> = 0>
-      CompositeNode(Args&&... args)
+      CompositeNode (Args&&... args)
         : _children(copy_or_wrap(std::forward<Args>(args))...)
       {}
 
       //! Initialize the CompositeNode with copies of the passed in Storage objects.
-      CompositeNode(std::shared_ptr<Children>... children)
+      CompositeNode (std::shared_ptr<Children>... children)
         : _children(std::move(children)...)
       {}
 
       //! Initialize the CompositeNode with a copy of the passed-in storage type.
-      CompositeNode(const NodeStorage& children)
-        : _children(children)
+      CompositeNode (NodeStorage children)
+        : _children(std::move(children))
       {}
 
       //! @}

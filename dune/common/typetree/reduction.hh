@@ -14,7 +14,7 @@ namespace Dune {
      *  \{
      */
 
-    namespace {
+    namespace Impl {
 
       //! Visitor that applies a functor and an associated reduction to a TypeTree.
       /**
@@ -49,7 +49,7 @@ namespace Dune {
 
       };
 
-    } // anonymous namespace
+    } // end namespace Impl
 
       //! Calculate a quantity as a reduction over the leaf nodes of a TypeTree.
       /**
@@ -80,7 +80,7 @@ namespace Dune {
     template<typename ResultType, typename Tree, typename F, typename R>
     ResultType reduceOverLeafs(const Tree& tree, F functor, R reduction, ResultType startValue)
     {
-      LeafReductionVisitor<F,R,ResultType> visitor(functor,reduction,startValue);
+      Impl::LeafReductionVisitor<F,R,ResultType> visitor(functor,reduction,startValue);
       TypeTree::applyToTree(tree,visitor);
       return visitor.result();
     }
