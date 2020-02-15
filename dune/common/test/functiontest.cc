@@ -2,6 +2,7 @@
 
 #include <type_traits>
 
+#define DUNE_FUNCTION_HH_SILENCE_DEPRECATION
 #include <dune/common/function.hh>
 #include <dune/common/test/testsuite.hh>
 
