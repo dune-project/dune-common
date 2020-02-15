@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 #ifndef DUNE_FUNCTION_HH_SILENCE_DEPRECATION
-#warning This file is deprecated!  Use C++ function objects and std::function stuff instead!
+#warning This file is deprecated after Dune 2.7!  Use C++ function objects and std::function stuff instead!
 #else // !DUNE_FUNCTION_HH_SILENCE_DEPRECATION
 #undef DUNE_FUNCTION_HH_SILENCE_DEPRECATION
 #endif // !DUNE_FUNCTION_HH_SILENCE_DEPRECATION
