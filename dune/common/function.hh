@@ -3,7 +3,9 @@
 #ifndef DUNE_FUNCTION_HH
 #define DUNE_FUNCTION_HH
 
+#ifndef DUNE_FUNCTION_HH_SILENCE_DEPRECATION
 #warning This file is deprecated!  Use C++ function objects and std::function stuff instead!
+#endif // DUNE_FUNCTION_HH_SILENCE_DEPRECATION
 
 #include <utility>
 
