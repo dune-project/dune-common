@@ -2,6 +2,8 @@
 
 #include <type_traits>
 
+
+#include <dune/common/deprecated.hh>
 #define DUNE_FUNCTION_HH_SILENCE_DEPRECATION
 #include <dune/common/function.hh>
 #include <dune/common/test/testsuite.hh>
@@ -10,6 +12,7 @@ int main()
 {
   Dune::TestSuite t;
 
+  DUNE_NO_DEPRECATED_BEGIN
   {
     auto f = Dune::makeVirtualFunction<int, long>(
       [](int x) -> long { return x*x; });
@@ -35,6 +38,7 @@ int main()
     f.evaluate(2, y);
     t.check(y == 4);
   }
+  DUNE_NO_DEPRECATED_END
 
   return t.exit();
 }
