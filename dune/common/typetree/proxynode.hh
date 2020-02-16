@@ -5,10 +5,11 @@
 #define DUNE_COMMON_TYPETREE_PROXYNODE_HH
 
 #include <type_traits>
+
+#include <dune/common/indices.hh>
+#include <dune/common/shared_ptr.hh>
 #include <dune/common/typetree/nodeinterface.hh>
 #include <dune/common/typetree/nodetags.hh>
-#include <dune/common/shared_ptr.hh>
-#include <dune/common/indices.hh>
 
 namespace Dune {
   namespace TypeTree {
@@ -18,11 +19,11 @@ namespace Dune {
      *  \{
      */
 
-    template<typename Node>
+    template<class Node>
     class ProxyNode;
 
     //! Mixin class providing methods for child access with compile-time parameter.
-    template<typename ProxiedNode>
+    template<class ProxiedNode>
     class StaticChildAccessors
     {
       static const bool proxiedNodeIsConst = std::is_const<std::remove_reference_t<ProxiedNode>>::value;
@@ -30,12 +31,12 @@ namespace Dune {
       typedef ProxyNode<ProxiedNode> Node;
 
       template<bool enabled = !proxiedNodeIsConst>
-      std::enable_if_t<enabled,Node&> node()
+      std::enable_if_t<enabled,Node&> node ()
       {
         return static_cast<Node&>(*this);
       }
 
-      const Node& node() const
+      const Node& node () const
       {
         return static_cast<const Node&>(*this);
       }
@@ -57,7 +58,7 @@ namespace Dune {
        */
       template<std::size_t k, bool enabled = !proxiedNodeIsConst>
       std::enable_if_t<enabled,typename Child<k>::Type&>
-      child(index_constant<k> = {})
+      child (index_constant<k> = {})
       {
         return node().proxiedNode().template child<k>();
       }
@@ -67,7 +68,7 @@ namespace Dune {
        * \returns a const reference to the i-th child.
        */
       template<std::size_t k>
-      const typename Child<k>::Type& child(index_constant<k> = {}) const
+      const typename Child<k>::Type& child (index_constant<k> = {}) const
       {
         return node().proxiedNode().template child<k>();
       }
@@ -78,7 +79,7 @@ namespace Dune {
        */
       template<std::size_t k, bool enabled = !proxiedNodeIsConst>
       std::enable_if_t<enabled, typename Child<k>::Storage>
-      childStorage()
+      childStorage ()
       {
         return node().proxiedNode().template childStorage<k>();
       }
@@ -91,26 +92,26 @@ namespace Dune {
        * \returns a copy of the object storing the i-th child.
        */
       template<std::size_t k>
-      typename Child<k>::ConstStorage childStorage() const
+      typename Child<k>::ConstStorage childStorage () const
       {
         return node().proxiedNode().template childStorage<k>();
       }
 
       //! Sets the i-th child to the passed-in value.
       template<std::size_t k, bool enabled = !proxiedNodeIsConst>
-      void setChild(typename Child<k>::type& child, std::enable_if_t<enabled,void*> = nullptr)
+      void setChild (typename Child<k>::type& child, std::enable_if_t<enabled,void*> = nullptr)
       {
         node().proxiedNode().template childStorage<k>() = stackobject_to_shared_ptr(child);
       }
 
       //! Sets the storage of the i-th child to the passed-in value.
       template<std::size_t k, bool enabled = !proxiedNodeIsConst>
-      void setChild(typename Child<k>::storage_type child, std::enable_if_t<enabled,void*> = nullptr)
+      void setChild (typename Child<k>::storage_type child, std::enable_if_t<enabled,void*> = nullptr)
       {
         node().proxiedNode().template childStorage<k>() = child;
       }
 
-      const typename ProxiedNode::NodeStorage& nodeStorage() const
+      const typename ProxiedNode::NodeStorage& nodeStorage () const
       {
         return node().proxiedNode().nodeStorage();
       }
@@ -123,7 +124,7 @@ namespace Dune {
      * multiple inheritance from both DynamicChildAccessors and StaticChildAccessors
      * creates ambigous method lookups.
      */
-    template<typename ProxiedNode>
+    template<class ProxiedNode>
     class DynamicChildAccessors
       : public StaticChildAccessors<ProxiedNode>
     {
@@ -133,12 +134,12 @@ namespace Dune {
       static const bool proxiedNodeIsConst = std::is_const<std::remove_reference_t<ProxiedNode>>::value;
 
       template<bool enabled = !proxiedNodeIsConst>
-      std::enable_if_t<enabled, Node&> node()
+      std::enable_if_t<enabled, Node&> node ()
       {
         return static_cast<Node&>(*this);
       }
 
-      const Node& node() const
+      const Node& node () const
       {
         return static_cast<const Node&>(*this);
       }
@@ -174,7 +175,7 @@ namespace Dune {
        */
       template<bool enabled = !proxiedNodeIsConst>
       std::enable_if_t<enabled, typename ProxiedNode::ChildStorageType>
-      childStorage(std::size_t i)
+      childStorage (std::size_t i)
       {
         return node().proxiedNode().childStorage(i);
       }
@@ -208,17 +209,16 @@ namespace Dune {
     };
 
     //! Tag-based dispatch to appropriate base class that provides necessary functionality.
-    template<typename Node, typename NodeTag>
+    template<class Node, class NodeTag>
     struct ProxyNodeBase;
 
     //! ProxyNode base class for LeafNode.
-    template<typename Node>
+    template<class Node>
     struct ProxyNodeBase<Node,LeafNodeTag>
-    {
-    };
+    {};
 
     //! ProxyNode base class for CompositeNode.
-    template<typename Node>
+    template<class Node>
     struct ProxyNodeBase<Node,CompositeNodeTag>
       : public StaticChildAccessors<Node>
     {
@@ -227,7 +227,7 @@ namespace Dune {
     };
 
     //! ProxyNode base class for PowerNode.
-    template<typename Node>
+    template<class Node>
     struct ProxyNodeBase<Node,PowerNodeTag>
       : public DynamicChildAccessors<Node>
     {
@@ -243,7 +243,7 @@ namespace Dune {
      * proxied class. It exactly mirrors the TypeTree node characteristics
      * of the proxied node.
      */
-    template<typename Node>
+    template<class Node>
     class ProxyNode
       : public ProxyNodeBase<Node,NodeTag<Node>>
     {
@@ -258,7 +258,7 @@ namespace Dune {
 
       typedef Node ProxiedNode;
 
-      typedef Dune::TypeTree::NodeTag<Node> NodeTag;
+      typedef TypeTree::NodeTag<Node> NodeTag;
 
       //! Mark this class as non leaf in the \ref TypeTree.
       static const bool isLeaf = Node::isLeaf;
@@ -272,7 +272,7 @@ namespace Dune {
       //! The number of children.
       static const std::size_t CHILDREN = StaticDegree<Node>::value;
 
-      static constexpr std::size_t degree()
+      static constexpr std::size_t degree ()
       {
         return StaticDegree<Node>::value;
       }
@@ -286,29 +286,29 @@ namespace Dune {
       //! Returns the proxied node.
       template<bool enabled = !proxiedNodeIsConst>
       std::enable_if_t<enabled, Node&>
-      proxiedNode()
+      proxiedNode ()
       {
-        return *_node;
+        return *node_;
       }
 
       //! Returns the proxied node (const version).
-      const Node& proxiedNode() const
+      const Node& proxiedNode () const
       {
-        return *_node;
+        return *node_;
       }
 
       //! Returns the storage of the proxied node.
       template<bool enabled = !proxiedNodeIsConst>
       std::enable_if_t<enabled, std::shared_ptr<Node> >
-      proxiedNodeStorage()
+      proxiedNodeStorage ()
       {
-        return _node;
+        return node_;
       }
 
       //! Returns the storage of the proxied node (const version).
-      std::shared_ptr<const Node> proxiedNodeStorage() const
+      std::shared_ptr<const Node> proxiedNodeStorage () const
       {
-        return _node;
+        return node_;
       }
 
       //! @}
@@ -316,19 +316,19 @@ namespace Dune {
       //! @name Constructors
       //! @{
 
-      ProxyNode(Node& node)
-        : _node(stackobject_to_shared_ptr(node))
+      ProxyNode (Node& node)
+        : node_(stackobject_to_shared_ptr(node))
       {}
 
-      ProxyNode(std::shared_ptr<Node> node)
-        : _node(std::move(node))
+      ProxyNode (std::shared_ptr<Node> node)
+        : node_(std::move(node))
       {}
 
       //! @}
 
     private:
 
-      std::shared_ptr<Node> _node;
+      std::shared_ptr<Node> node_;
     };
 
     //! \} group Nodes

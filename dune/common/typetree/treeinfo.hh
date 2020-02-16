@@ -1,8 +1,8 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 
-#ifndef DUNE_COMMON_TYPETREE_UTILITY_HH
-#define DUNE_COMMON_TYPETREE_UTILITY_HH
+#ifndef DUNE_COMMON_TYPETREE_TREEINFO_HH
+#define DUNE_COMMON_TYPETREE_TREEINFO_HH
 
 #include <memory>
 #include <tuple>
@@ -25,10 +25,9 @@ namespace Dune {
      * \tparam Tree  The TypeTree to examine.
      * \tparam Tag   Internal parameter, leave at default value.
      */
-    template<typename Tree, typename Tag = StartTag>
+    template<class Tree, class Tag = StartTag>
     struct TreeInfo
     {
-
     private:
       // Start the tree traversal
       typedef TreeInfo<Tree,NodeTag<Tree>> NodeInfo;
@@ -43,7 +42,6 @@ namespace Dune {
 
       //! The number of leaf nodes in the TypeTree.
       static const std::size_t leafCount = NodeInfo::leafCount;
-
     };
 
 
@@ -53,26 +51,22 @@ namespace Dune {
     // TreeInfo specializations for the different node types
     // ********************************************************************************
 
-
     // leaf node
-    template<typename Node>
+    template<class Node>
     struct TreeInfo<Node,LeafNodeTag>
     {
-
       static const std::size_t depth = 1;
 
       static const std::size_t nodeCount = 1;
 
       static const std::size_t leafCount = 1;
-
     };
 
 
     // power node - exploit the fact that all children are identical
-    template<typename Node>
+    template<class Node>
     struct TreeInfo<Node,PowerNodeTag>
     {
-
       typedef TreeInfo<typename Node::ChildType,NodeTag<typename Node::ChildType>> ChildInfo;
 
       static const std::size_t depth = 1 + ChildInfo::depth;
@@ -80,18 +74,16 @@ namespace Dune {
       static const std::size_t nodeCount = 1 + StaticDegree<Node>::value * ChildInfo::nodeCount;
 
       static const std::size_t leafCount = StaticDegree<Node>::value * ChildInfo::leafCount;
-
     };
 
 
-    namespace {
+    namespace Impl {
 
       // TMP for iterating over the children of a composite node
       // identical for both composite node implementations
-      template<typename Node, std::size_t k, std::size_t n>
+      template<class Node, std::size_t k, std::size_t n>
       struct generic_compositenode_children_info
       {
-
         typedef generic_compositenode_children_info<Node,k+1,n> NextChild;
 
         // extract child info
@@ -105,11 +97,10 @@ namespace Dune {
         static const std::size_t nodeCount = ChildInfo::nodeCount + NextChild::nodeCount;
 
         static const std::size_t leafCount = ChildInfo::leafCount + NextChild::leafCount;
-
       };
 
       // End of recursion
-      template<typename Node, std::size_t n>
+      template<class Node, std::size_t n>
       struct generic_compositenode_children_info<Node,n,n>
       {
         static const std::size_t maxDepth = 0;
@@ -119,27 +110,25 @@ namespace Dune {
         static const std::size_t leafCount = 0;
       };
 
-    } // anonymous namespace
+    } // end namespace Impl
 
 
-      // Struct for building information about composite node
-    template<typename Node>
+    // Struct for building information about composite node
+    template<class Node>
     struct GenericCompositeNodeInfo
     {
-
-      typedef generic_compositenode_children_info<Node,0,StaticDegree<Node>::value> Children;
+      typedef Impl::generic_compositenode_children_info<Node,0,StaticDegree<Node>::value> Children;
 
       static const std::size_t depth = 1 + Children::maxDepth;
 
       static const std::size_t nodeCount = 1 + Children::nodeCount;
 
       static const std::size_t leafCount = Children::leafCount;
-
     };
 
 
     // CompositeNode: delegate to GenericCompositeNodeInfo
-    template<typename Node>
+    template<class Node>
     struct TreeInfo<Node,CompositeNodeTag>
       : public GenericCompositeNodeInfo<Node>
     {};
@@ -149,4 +138,4 @@ namespace Dune {
   } // namespace TypeTree
 } //namespace Dune
 
-#endif // DUNE_COMMON_TYPETREE_UTILITY_HH
+#endif // DUNE_COMMON_TYPETREE_TREEINFO_HH

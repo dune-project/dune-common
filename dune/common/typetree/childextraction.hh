@@ -8,8 +8,8 @@
 
 #include <dune/common/concept.hh>
 #include <dune/common/documentation.hh>
-#include <dune/common/typetraits.hh>
 #include <dune/common/shared_ptr.hh>
+#include <dune/common/typetraits.hh>
 
 #include <dune/common/typetree/nodeinterface.hh>
 #include <dune/common/typetree/nodetags.hh>
@@ -29,8 +29,8 @@ namespace Dune {
     namespace Impl {
 
       // forward declaration
-      template <class Node>
-      struct Extracter;
+      template<class Node>
+      struct Extractor;
 
       // ********************************************************************************
       // end of the recursion, there are no child indices, so just return the node itself
@@ -38,23 +38,23 @@ namespace Dune {
 
       struct IsPointerLike
       {
-        template <class Node>
-        auto require(const Node& node) -> decltype(*node);
+        template<class Node>
+        auto require (const Node& node) -> decltype(*node);
       };
 
-      template<typename Node>
-      decltype(auto) childImpl(Node&& node)
+      template<class Node>
+      decltype(auto) childImpl (Node&& node)
       {
         return std::forward<Node>(node);
       }
 
       // for now, this wants the passed-in object to be pointer-like. I don't know how clever
       // that is in the long run, though.
-      template<typename Node,
-        std::enable_if_t<Dune::models<IsPointerLike,Node>(), int> = 0>
-      decltype(auto) childStorageImpl(Node&& node)
+      template<class NodePtr,
+        std::enable_if_t<Dune::models<IsPointerLike,NodePtr>(), int> = 0>
+      decltype(auto) childStorageImpl (NodePtr&& nodePtr)
       {
-        return *std::forward<Node>(node);
+        return *std::forward<NodePtr>(nodePtr);
       }
 
 
@@ -65,18 +65,19 @@ namespace Dune {
       // The actual implemention here overloads on std::size_t. It is a little less ugly because it currently
       // has a hard requirement on the PowerNode Tag (although only using is_convertible, as tags can be
       // inherited (important!).
-      template<typename Node, typename... J,
+      template<class Node, class... J,
         std::enable_if_t<std::is_convertible<NodeTag<Node>, PowerNodeTag>::value, int> = 0>
-      decltype(auto) childImpl(Node&& node, std::size_t i, J... j)
+      decltype(auto) childImpl (Node&& node, std::size_t i, J... j)
       {
-        return Extracter<Node>::child(std::forward<Node>(node).child(i),j...);
+        return Extractor<Node>::child(node.child(i),j...);
       }
 
-      template<typename Node, typename... J,
-        std::enable_if_t<std::is_convertible<NodeTag<decltype(*std::declval<Node>())>, PowerNodeTag>::value, int> = 0>
-      decltype(auto) childStorageImpl(Node&& node, std::size_t i, J... j)
+      template<class NodePtr, class... J,
+        std::enable_if_t<std::is_convertible<NodeTag<decltype(*std::declval<NodePtr>())>, PowerNodeTag>::value, int> = 0>
+      decltype(auto) childStorageImpl (NodePtr&& nodePtr, std::size_t i, J... j)
       {
-        return Extracter<Node>::childStorage(std::forward<Node>(node)->childStorage(i),j...);
+        using Node = decltype(*std::declval<NodePtr>());
+        return Extractor<Node>::childStorage(nodePtr->childStorage(i),j...);
       }
 
 
@@ -88,53 +89,53 @@ namespace Dune {
       // method
       struct HasTemplateChildMethod
       {
-        template <class Node>
-        auto require(const Node& node) -> decltype(node.template child<0>());
+        template<class Node>
+        auto require (const Node& node) -> decltype(node.template child<0>());
       };
 
       struct HasTemplateChildStorageMethod
       {
-        template <class Node>
-        auto require(const Node& node) -> decltype(node.template childStorage<0>());
+        template<class Node>
+        auto require (const Node& node) -> decltype(node.template childStorage<0>());
       };
 
       // The actual implementation is rather simple, we just use an overload that requires the first index
       // to be an index_constant, get the child and then recurse.
-      template<typename Node, std::size_t i, typename... J>
-      decltype(auto) childImpl(Node&& node, index_constant<i>, J... j)
+      template<class Node, std::size_t i, class... J>
+      decltype(auto) childImpl (Node&& node, index_constant<i>, J... j)
       {
         if constexpr (Dune::models<HasTemplateChildMethod, Node>() && i < StaticDegree<Node>::value)
-          return Extracter<Node>::child(std::forward<Node>(node).template child<i>(),j...);
+          return Extractor<Node>::child(node.template child<i>(),j...);
         else {
           static_assert(Dune::models<HasTemplateChildMethod, Node>(), "Node does not have a template method child()");
           static_assert(i < StaticDegree<Node>::value, "Child index out of range");
         }
       }
 
-      template<typename Node, std::size_t i, typename... J>
-      decltype(auto) childStorageImpl(Node&& node, index_constant<i>, J... j)
+      template<class NodePtr, std::size_t i, class... J>
+      decltype(auto) childStorageImpl (NodePtr&& nodePtr, index_constant<i>, J... j)
       {
-        using N = decltype(*std::declval<std::decay_t<Node>>());
-        if constexpr (Dune::models<HasTemplateChildStorageMethod, N>() && i < StaticDegree<N>::value)
-          return Extracter<Node>::childStorage(std::forward<Node>(node)->template childStorage<i>(),j...);
+        using Node = decltype(*std::declval<NodePtr>());
+        if constexpr (Dune::models<HasTemplateChildStorageMethod, Node>() && i < StaticDegree<Node>::value)
+          return Extractor<Node>::childStorage(nodePtr->template childStorage<i>(),j...);
         else {
-          static_assert(Dune::models<HasTemplateChildStorageMethod, N>(), "Node does not have a template method childStorage()");
-          static_assert(i < StaticDegree<N>::value, "Child index out of range");
+          static_assert(Dune::models<HasTemplateChildStorageMethod, Node>(), "Node does not have a template method childStorage()");
+          static_assert(i < StaticDegree<Node>::value, "Child index out of range");
         }
       }
 
       // helper struct that forwards to the implementation of child and childStorage
-      template <class>
-      struct Extracter
+      template<class>
+      struct Extractor
       {
-        template <class Node, class... Indices>
-        static decltype(auto) child(Node&& node, Indices... indices)
+        template<class Node, class... Indices>
+        static decltype(auto) child (Node&& node, Indices... indices)
         {
           return childImpl(std::forward<Node>(node), indices...);
         }
 
-        template <class Node, class... Indices>
-        static decltype(auto) childStorage(Node&& node, Indices... indices)
+        template<class Node, class... Indices>
+        static decltype(auto) childStorage (Node&& node, Indices... indices)
         {
           return childStorageImpl(std::forward<Node>(node), indices...);
         }
@@ -142,14 +143,14 @@ namespace Dune {
 
 
       // forward to the impl methods by extracting the indices from the treepath
-      template<typename Node, typename... Indices, std::size_t... i>
-      decltype(auto) child(Node&& node, HybridTreePath<Indices...> tp, std::index_sequence<i...>)
+      template<class Node, class... Indices, std::size_t... i>
+      decltype(auto) child (Node&& node, HybridTreePath<Indices...> tp, std::index_sequence<i...>)
       {
         return childImpl(std::forward<Node>(node),treePathEntry<i>(tp)...);
       }
 
-      template<typename Node, typename... Indices, std::size_t... i>
-      decltype(auto) childStorage(Node&& node, HybridTreePath<Indices...> tp, std::index_sequence<i...>)
+      template<class Node, class... Indices, std::size_t... i>
+      decltype(auto) childStorage (Node&& node, HybridTreePath<Indices...> tp, std::index_sequence<i...>)
       {
         return childStorageImpl(std::forward<Node>(node),treePathEntry<i>(tp)...);
       }
@@ -182,24 +183,24 @@ namespace Dune {
      *                    nodes.
      * \return            A reference to the child, its cv-qualification depends on the passed-in node.
      */
-    template<typename Node, typename... Indices>
+    template<class Node, class... Indices>
 #ifdef DOXYGEN
-    ImplementationDefined child(Node&& node, Indices... indices)
+    ImplementationDefined child (Node&& node, Indices... indices)
 #else
-    decltype(auto) child(Node&& node, Indices... indices)
+    decltype(auto) child (Node&& node, Indices... indices)
 #endif
     {
       return Impl::childImpl(std::forward<Node>(node),indices...);
     }
 
-    template<typename Node, typename... Indices>
+    template<class Node, class... Indices>
 #ifdef DOXYGEN
-    ImplementationDefined childStorage(Node&& node, Indices... indices)
+    ImplementationDefined childStorage (Node&& node, Indices... indices)
 #else
-    auto childStorage(Node&& node, Indices... indices)
+    auto childStorage (Node&& node, Indices... indices)
 #endif
     {
-      //static_assert(sizeof...(Indices) > 0, "childStorage() cannot be called with an empty list of child indices");
+      static_assert(sizeof...(Indices) > 0, "childStorage() cannot be called with an empty TreePath");
       return Impl::childStorageImpl(&node,indices...);
     }
 
@@ -228,21 +229,21 @@ namespace Dune {
      *                    nodes.
      * \return            A reference to the child, its cv-qualification depends on the passed-in node.
      */
-    template<typename Node, typename... Indices>
+    template<class Node, class... Indices>
 #ifdef DOXYGEN
-    ImplementationDefined child(Node&& node, HybridTreePath<Indices...> treePath)
+    ImplementationDefined child (Node&& node, HybridTreePath<Indices...> treePath)
 #else
-    decltype(auto) child(Node&& node, HybridTreePath<Indices...> tp)
+    decltype(auto) child (Node&& node, HybridTreePath<Indices...> tp)
 #endif
     {
       return Impl::child(std::forward<Node>(node),tp,std::index_sequence_for<Indices...>{});
     }
 
-    template<typename Node, typename... Indices>
+    template<class Node, class... Indices>
 #ifdef DOXYGEN
-    ImplementationDefined child(Node&& node, HybridTreePath<Indices...> treePath)
+    ImplementationDefined child (Node&& node, HybridTreePath<Indices...> treePath)
 #else
-    auto childStorage(Node&& node, HybridTreePath<Indices...> tp)
+    auto childStorage (Node&& node, HybridTreePath<Indices...> tp)
 #endif
     {
       static_assert(sizeof...(Indices) > 0, "childStorage() cannot be called with an empty TreePath");
@@ -254,7 +255,7 @@ namespace Dune {
 
     namespace Impl {
 
-      template<typename T>
+      template<class T>
       struct filter_void
       {
         using type = T;
@@ -264,7 +265,7 @@ namespace Dune {
       struct filter_void<void>
       {};
 
-      template<typename Node, std::size_t... indices>
+      template<class Node, std::size_t... indices>
       struct ChildImpl
         : public filter_void<std::decay_t<decltype(child(std::declval<Node>(),index_constant<indices>{}...))>>
       {};
@@ -281,7 +282,7 @@ namespace Dune {
      * \tparam Node     The type of the parent node.
      * \tparam indices  A list of index values the describes the path to the wanted child.
      */
-    template<typename Node, std::size_t... indices>
+    template<class Node, std::size_t... indices>
     using Child = typename Impl::ChildImpl<Node,indices...>::type;
 
 
@@ -289,7 +290,7 @@ namespace Dune {
 
     namespace Impl {
 
-      template<typename Node, typename TreePath>
+      template<class Node, class TreePath>
       struct ChildForTreePathImpl
       {
         using type = typename std::decay<decltype(child(std::declval<Node>(),std::declval<TreePath>()))>::type;
@@ -308,7 +309,7 @@ namespace Dune {
      * \tparam Node      The type of the parent node.
      * \tparam TreePath  The type of a TreePath or a HybridTreePath that describes the path to the wanted child.
      */
-    template<typename Node, typename TreePath>
+    template<class Node, class TreePath>
     using ChildForTreePath = typename Impl::ChildForTreePathImpl<Node,TreePath>::type;
 
 
@@ -317,7 +318,7 @@ namespace Dune {
     namespace Impl {
 
       // By default, types are flat indices if they are integral
-      template<typename T>
+      template<class T>
       struct _is_flat_index
       {
         using type = std::is_integral<T>;
@@ -340,8 +341,9 @@ namespace Dune {
      * or `index_constant`). The type trait normalizes T before doing the check, so it will also
      * work correctly for references and cv-qualified types.
      */
-    template<typename T>
+    template<class T>
     using is_flat_index = typename Impl::_is_flat_index<std::decay_t<T>>::type;
+
 
 #ifndef DOXYGEN
 
@@ -350,18 +352,14 @@ namespace Dune {
       // helper function for check in member child() functions that tolerates being passed something that
       // isn't a TreePath. It will just return 0 in that case
 
-      template<typename T>
-      constexpr std::enable_if_t<TypeTree::is_flat_index<T>::value, bool>
-      _non_empty_tree_path(T)
+      template<class T>
+      constexpr bool _non_empty_tree_path(const T& t)
       {
-        return false;
-      }
-
-      template<typename T>
-      constexpr std::enable_if_t<!TypeTree::is_flat_index<T>::value, bool>
-      _non_empty_tree_path(T t)
-      {
-        return treePathSize(t) > 0;
+        DUNE_UNUSED_PARAMETER(t);
+        if constexpr (TypeTree::is_flat_index<T>::value)
+          return false;
+        else
+          return treePathSize(t) > 0;
       }
 
     } // end namespace Impl

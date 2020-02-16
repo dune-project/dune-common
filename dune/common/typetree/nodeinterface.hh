@@ -58,7 +58,7 @@ namespace Dune {
     };
 
     //! Returns the node tag of the given Node.
-    template<typename Node>
+    template<class Node>
     using NodeTag = typename std::decay_t<Node>::NodeTag;
 
     //! Returns the implementation tag of the given Node.
@@ -67,7 +67,7 @@ namespace Dune {
 
 
     //! Returns the degree of node as run time information.
-    template<typename Node>
+    template<class Node>
     std::size_t degree (const Node& node)
     {
       return degree(&node,NodeTag<Node>());
@@ -82,7 +82,7 @@ namespace Dune {
      * reference might not even be possible to manufacture (std::declval is not
      * constexpr).
      */
-    template<typename Node, typename NodeTag>
+    template<class Node, class NodeTag>
     constexpr std::size_t degree (const Node* node, NodeTag)
     {
       return Node::degree();
@@ -95,7 +95,7 @@ namespace Dune {
      * \note If you are only interested in the numeric value, take a look at staticDegree<Node>
      *       instead.
      */
-    template<typename Node>
+    template<class Node>
     using StaticDegree = std::integral_constant<
       std::size_t,
       degree(

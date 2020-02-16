@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include <dune/common/std/type_traits.hh>
 #include <dune/common/hybridutilities.hh>
+#include <dune/common/std/type_traits.hh>
 
 #include <dune/common/typetree/childextraction.hh>
 #include <dune/common/typetree/nodetags.hh>
@@ -174,7 +174,7 @@ namespace Dune {
      * \tparam Tree Type of tree to generate tree paths for
      * \tparam pathType Type of paths to generate
      */
-    template<class Tree, TreePathType::Type pathType=TreePathType::dynamic>
+    template<class Tree, TreePathType::Type pathType = TreePathType::dynamic>
     constexpr auto leafTreePathTuple()
     {
       return Impl::leafTreePathTuple<std::decay_t<Tree>, pathType>(hybridTreePath());
@@ -195,7 +195,7 @@ namespace Dune {
      * \param tree    The tree the visitor will be applied to.
      * \param visitor The visitor to apply to the tree.
      */
-    template<typename Tree, typename Visitor>
+    template<class Tree, class Visitor>
     void applyToTree(Tree&& tree, Visitor&& visitor)
     {
       Impl::applyToTree(tree, hybridTreePath(), visitor);

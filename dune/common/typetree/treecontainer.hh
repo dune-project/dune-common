@@ -4,10 +4,10 @@
 #ifndef DUNE_COMMON_TYPETREE_TREECONTAINER_HH
 #define DUNE_COMMON_TYPETREE_TREECONTAINER_HH
 
+#include <array>
+#include <functional>
 #include <type_traits>
 #include <utility>
-#include <functional>
-#include <array>
 
 #include <dune/common/indices.hh>
 #include <dune/common/tuplevector.hh>
@@ -46,7 +46,7 @@ namespace Dune {
         {}
 
         template<class Node>
-        auto operator() (const Node& node)
+        auto operator() (const Node& node) const
         {
           if constexpr (Node::isLeaf)
             return leafToValue_(node);

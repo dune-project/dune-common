@@ -5,27 +5,29 @@
 #define DUNE_COMMON_TYPETREE_TYPETRAITS_HH
 
 #include <type_traits>
+
 #include <dune/common/typetree/treepath.hh>
 
 namespace Dune {
   namespace TypeTree {
+
     namespace Impl {
 
       // Check if type is a or is derived from one of the tree path types
 
       // Default overload for types not representing a tree path
-      constexpr auto isTreePath(void*)
+      constexpr auto isTreePath (...)
         -> std::false_type
       {
-        return std::false_type();
+        return {};
       }
 
       // Overload for instances of HybridTreePath<...>
       template<class... I>
-      constexpr auto isTreePath(const HybridTreePath<I...>*)
+      constexpr auto isTreePath (const HybridTreePath<I...>&)
         -> std::true_type
       {
-        return std::true_type();
+        return {};
       }
 
     } // end namespace Impl
@@ -42,8 +44,8 @@ namespace Dune {
      * \tparam T Check if this type represents a tree path
      */
     template<class T>
-    struct IsTreePath :
-      public decltype(Impl::isTreePath((std::decay_t<T>*)(nullptr)))
+    struct IsTreePath
+      : public decltype(Impl::isTreePath(std::declval<std::decay_t<T>>()))
     {};
 
     /**
@@ -53,10 +55,10 @@ namespace Dune {
      * \returns std::true_type if argument is a tree path and std::false_type if not
      */
     template<class T>
-    constexpr auto isTreePath(const T&)
+    constexpr auto isTreePath (const T&)
       -> IsTreePath<T>
     {
-      return IsTreePath<T>();
+      return IsTreePath<T>{};
     }
 
   } // end namespace TypeTree

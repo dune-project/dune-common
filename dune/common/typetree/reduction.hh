@@ -22,62 +22,63 @@ namespace Dune {
        * \tparam R The reduction used to combine the results.
        * \tparam ResultType The result type of the operation.
        */
-      template<typename F, typename R, typename ResultType>
+      template<class F, class R, class ResultType>
       struct LeafReductionVisitor
         : public TypeTree::TreeVisitor
       {
-
+      public:
         static const TreePathType::Type treePathType = TreePathType::dynamic;
 
-        template<typename Node, typename TreePath>
+        template<class Node, class TreePath>
         void leaf(const Node& node, TreePath treePath)
         {
-          _value = _reduction(_value,_functor(node,treePath));
+          value_ = reduction_(value_,functor_(node,treePath));
         }
 
         LeafReductionVisitor(F functor, R reduction, ResultType startValue)
-          : _functor(functor)
-          , _reduction(reduction)
-          , _value(startValue)
+          : functor_(functor)
+          , reduction_(reduction)
+          , value_(startValue)
         {}
 
-        ResultType result() { return _value; }
+        ResultType result() { return value_; }
 
-        F _functor;
-        R _reduction;
-        ResultType _value;
-
+      private:
+        F functor_;
+        R reduction_;
+        ResultType value_;
       };
 
     } // end namespace Impl
 
-      //! Calculate a quantity as a reduction over the leaf nodes of a TypeTree.
-      /**
-       * This function can be used to easily calculate a quantity that is a result of applying
-       * a functor to the leaf nodes of a TypeTree and combining the functor return values.
-       * The functor, reduction and result should all have cheap copy constructors to ensure
-       * good performance.
-       *
-       * The functor must conform to the pattern
-       * \code
-       * struct Functor
-       * {
-       *   template<typename Node, typename TreePath>
-       *   ResultType operator()(const Node& node, TreePath treePath) const
-       *   {
-       *     return ...;
-       *   }
-       * };
-       * \endcode
-       *
-       * \param tree       The tree on which to perform the calculation.
-       * \param functor    The functor to apply to the leaf nodes.
-       * \param reduction  The operation used to combine the individual results.
-       * \param startValue The initial value for the result.
-       *
-       * \returns The value obtained by combining the individual results for all leafs.
-       */
-    template<typename ResultType, typename Tree, typename F, typename R>
+
+    //! Calculate a quantity as a reduction over the leaf nodes of a TypeTree.
+    /**
+     * This function can be used to easily calculate a quantity that is a result of applying
+     * a functor to the leaf nodes of a TypeTree and combining the functor return values.
+     * The functor, reduction and result should all have cheap copy constructors to ensure
+     * good performance.
+     *
+     * The functor must conform to the pattern
+     * \code
+     * struct Functor
+     * {
+     *   template<typename Node, typename TreePath>
+     *   ResultType operator()(const Node& node, TreePath treePath) const
+     *   {
+     *     return ...;
+     *   }
+     * };
+     * \endcode
+     *
+     * \param tree       The tree on which to perform the calculation.
+     * \param functor    The functor to apply to the leaf nodes.
+     * \param reduction  The operation used to combine the individual results.
+     * \param startValue The initial value for the result.
+     *
+     * \returns The value obtained by combining the individual results for all leafs.
+     */
+    template<class ResultType, class Tree, class F, class R>
     ResultType reduceOverLeafs(const Tree& tree, F functor, R reduction, ResultType startValue)
     {
       Impl::LeafReductionVisitor<F,R,ResultType> visitor(functor,reduction,startValue);

@@ -4,16 +4,16 @@
 #ifndef DUNE_COMMON_TYPETREE_POWERNODE_HH
 #define DUNE_COMMON_TYPETREE_POWERNODE_HH
 
-#include <cassert>
 #include <array>
+#include <cassert>
 #include <memory>
 #include <type_traits>
 
 #include <dune/common/typetraits.hh>
 #include <dune/common/std/type_traits.hh>
 
-#include <dune/common/typetree/nodetags.hh>
 #include <dune/common/typetree/childextraction.hh>
+#include <dune/common/typetree/nodetags.hh>
 #include <dune/common/typetree/typetraits.hh>
 
 namespace Dune {
@@ -29,7 +29,7 @@ namespace Dune {
      *  \tparam T The base type
      *  \tparam k The number of instances this node should collect
      */
-    template<typename T, std::size_t k>
+    template<class T, std::size_t k>
     class PowerNode
     {
     public:
@@ -94,10 +94,10 @@ namespace Dune {
        * \returns a reference to the i-th child.
        */
       template<std::size_t i>
-      T& child (index_constant<i> = {})
+      ChildType& child (index_constant<i> = {})
       {
         static_assert((i < CHILDREN), "child index out of range");
-        return *_children[i];
+        return *children_[i];
       }
 
       //! Returns the i-th child (const version).
@@ -105,10 +105,10 @@ namespace Dune {
        * \returns a const reference to the i-th child.
        */
       template<std::size_t i>
-      const T& child (index_constant<i> = {}) const
+      const ChildType& child (index_constant<i> = {}) const
       {
         static_assert((i < CHILDREN), "child index out of range");
-        return *_children[i];
+        return *children_[i];
       }
 
       //! Returns the storage of the i-th child.
@@ -119,7 +119,7 @@ namespace Dune {
       ChildStorageType childStorage (index_constant<i> = {})
       {
         static_assert((i < CHILDREN), "child index out of range");
-        return _children[i];
+        return children_[i];
       }
 
       //! Returns the storage of the i-th child (const version).
@@ -133,23 +133,23 @@ namespace Dune {
       ChildConstStorageType childStorage (index_constant<i> = {}) const
       {
         static_assert((i < CHILDREN), "child index out of range");
-        return _children[i];
+        return children_[i];
       }
 
       //! Sets the i-th child to the passed-in value.
       template<std::size_t i>
-      void setChild (T& t, index_constant<i> = {})
+      void setChild (ChildType& t, index_constant<i> = {})
       {
         static_assert((i < CHILDREN), "child index out of range");
-        _children[i] = stackobject_to_shared_ptr(t);
+        children_[i] = stackobject_to_shared_ptr(t);
       }
 
       //! Store the passed value in i-th child.
       template<std::size_t i>
-      void setChild (T&& t, index_constant<i> = {})
+      void setChild (ChildType&& t, index_constant<i> = {})
       {
         static_assert((i < CHILDREN), "child index out of range");
-        _children[i] = std::make_shared<T>(std::move(t));
+        children_[i] = std::make_shared<ChildType>(std::move(t));
       }
 
       //! Sets the stored value representing the i-th child to the passed-in value.
@@ -157,7 +157,7 @@ namespace Dune {
       void setChild (ChildStorageType st, index_constant<i> = {})
       {
         static_assert((i < CHILDREN), "child index out of range");
-        _children[i] = std::move(st);
+        children_[i] = std::move(st);
       }
 
       //! @}
@@ -170,20 +170,20 @@ namespace Dune {
       /**
        * \returns a reference to the i-th child.
        */
-      T& child (std::size_t i)
+      ChildType& child (std::size_t i)
       {
         assert(i < CHILDREN && "child index out of range");
-        return *_children[i];
+        return *children_[i];
       }
 
       //! Returns the i-th child (const version).
       /**
        * \returns a const reference to the i-th child.
        */
-      const T& child (std::size_t i) const
+      const ChildType& child (std::size_t i) const
       {
         assert(i < CHILDREN && "child index out of range");
-        return *_children[i];
+        return *children_[i];
       }
 
       //! Returns the storage of the i-th child.
@@ -193,7 +193,7 @@ namespace Dune {
       ChildStorageType childStorage (std::size_t i)
       {
         assert(i < CHILDREN && "child index out of range");
-        return _children[i];
+        return children_[i];
       }
 
       //! Returns the storage of the i-th child (const version).
@@ -206,33 +206,33 @@ namespace Dune {
       ChildConstStorageType childStorage (std::size_t i) const
       {
         assert(i < CHILDREN && "child index out of range");
-        return (_children[i]);
+        return (children_[i]);
       }
 
       //! Sets the i-th child to the passed-in value.
-      void setChild (std::size_t i, T& t)
+      void setChild (std::size_t i, ChildType& t)
       {
         assert(i < CHILDREN && "child index out of range");
-        _children[i] = stackobject_to_shared_ptr(t);
+        children_[i] = stackobject_to_shared_ptr(t);
       }
 
       //! Store the passed value in i-th child.
-      void setChild(std::size_t i, T&& t)
+      void setChild(std::size_t i, ChildType&& t)
       {
         assert(i < CHILDREN && "child index out of range");
-        _children[i] = std::make_shared<T>(std::move(t));
+        children_[i] = std::make_shared<ChildType>(std::move(t));
       }
 
       //! Sets the stored value representing the i-th child to the passed-in value.
       void setChild (std::size_t i, ChildStorageType st)
       {
         assert(i < CHILDREN && "child index out of range");
-        _children[i] = std::move(st);
+        children_[i] = std::move(st);
       }
 
       const NodeStorage& nodeStorage() const
       {
-        return _children;
+        return children_;
       }
 
       //! @}
@@ -263,16 +263,17 @@ namespace Dune {
        * function for further information.
        */
 #ifdef DOXYGEN
-      template<typename... Indices>
-      ImplementationDefined& child(Indices... indices)
+      template<class... Indices>
+      ImplementationDefined& child (Indices... indices)
 #else
-      template<typename I0, typename... I,
+      template<class I0, class... I,
         std::enable_if_t<(sizeof...(I) > 0) || IsTreePath<I0>::value, int > = 0>
-      decltype(auto) child(I0 i0, I... i)
+      decltype(auto) child (I0 i0, I... i)
 #endif
       {
         static_assert(sizeof...(I) > 0 || Impl::_non_empty_tree_path(I0{}),
-          "You cannot use the member function child() with an empty TreePath, use the freestanding version child(node,treePath) instead."
+          "You cannot use the member function child() with an empty TreePath, use the "
+          "freestanding version child(node,treePath) instead."
           );
         return TypeTree::child(*this,i0,i...);
       }
@@ -283,16 +284,17 @@ namespace Dune {
        * function for further information.
        */
 #ifdef DOXYGEN
-      template<typename... Indices>
-      const ImplementationDefined& child(Indices... indices)
+      template<class... Indices>
+      const ImplementationDefined& child (Indices... indices)
 #else
-      template<typename I0, typename... I,
+      template<class I0, class... I,
         std::enable_if_t<(sizeof...(I) > 0) || IsTreePath<I0>::value, int > = 0>
-      decltype(auto) child(I0 i0, I... i) const
+      decltype(auto) child (I0 i0, I... i) const
 #endif
       {
         static_assert(sizeof...(I) > 0 || Impl::_non_empty_tree_path(I0{}),
-          "You cannot use the member function child() with an empty TreePath, use the freestanding version child(node,treePath) instead."
+          "You cannot use the member function child() with an empty TreePath, use the "
+          "freestanding version child(node,treePath) instead."
           );
         return TypeTree::child(*this,i0,i...);
       }
@@ -318,48 +320,48 @@ namespace Dune {
 
       //! Initialize the PowerNode with a copy of the passed-in storage type.
       explicit PowerNode(const NodeStorage& children)
-        : _children(children)
+        : children_(children)
       {}
 
       //! Initialize all children with copies of a storage object constructed from the parameter \c t.
-      explicit PowerNode (T& t, bool distinct_objects = true)
+      explicit PowerNode (ChildType& t, bool distinct_objects = true)
       {
         if (distinct_objects)
         {
-          for (typename NodeStorage::iterator it = _children.begin(); it != _children.end(); ++it)
-            *it = std::make_shared<T>(t);
+          for (typename NodeStorage::iterator it = children_.begin(); it != children_.end(); ++it)
+            *it = std::make_shared<ChildType>(t);
         }
         else
         {
-          std::shared_ptr<T> sp = stackobject_to_shared_ptr(t);
-          std::fill(_children.begin(),_children.end(),sp);
+          std::shared_ptr<ChildType> sp = stackobject_to_shared_ptr(t);
+          std::fill(children_.begin(),children_.end(),sp);
         }
       }
 
 #ifdef DOXYGEN
 
       //! Initialize all children with the passed-in objects.
-      PowerNode(T& t1, T& t2, ...)
+      PowerNode (ChildType& t1, ChildType& t2, ...)
       {}
 
 #else
 
-      template<typename... Children,
-        std::enable_if_t<(std::is_same_v<ChildType, std::decay_t<Children>> ||...), int> = 0>
+      template<class... Children,
+        std::enable_if_t<(std::is_same<ChildType, std::decay_t<Children>>::value ||...), int> = 0>
       PowerNode (Children&&... children)
       {
         static_assert(CHILDREN == sizeof...(Children),
           "PowerNode constructor is called with incorrect number of children");
-        _children = NodeStorage{copy_or_wrap(std::forward<Children>(children))...};
+        children_ = NodeStorage{copy_or_wrap(std::forward<Children>(children))...};
       }
 
-      template<typename... Children,
-        std::enable_if_t<(std::is_same_v<ChildType, Children> ||...), int> = 0>
+      template<class... Children,
+        std::enable_if_t<(std::is_same<ChildType, Children>::value ||...), int> = 0>
       PowerNode (std::shared_ptr<Children>... children)
       {
         static_assert(CHILDREN == sizeof...(Children),
           "PowerNode constructor is called with incorrect number of children");
-        _children = NodeStorage{std::move(children)...};
+        children_ = NodeStorage{std::move(children)...};
       }
 
 #endif // DOXYGEN
@@ -367,7 +369,7 @@ namespace Dune {
       //! @}
 
     private:
-      NodeStorage _children;
+      NodeStorage children_;
     };
 
     //! \} group Nodes

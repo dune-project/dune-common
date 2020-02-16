@@ -8,9 +8,9 @@
 
 #include <dune/common/typetree/nodeinterface.hh>
 #include <dune/common/typetree/nodetags.hh>
+#include <dune/common/typetree/traversal.hh>
 #include <dune/common/typetree/treepath.hh>
 #include <dune/common/typetree/visitor.hh>
-#include <dune/common/typetree/traversal.hh>
 
 namespace Dune {
   namespace TypeTree {
@@ -103,7 +103,7 @@ namespace Dune {
      * \param tree2   The second tree the visitor will be applied to.
      * \param visitor The visitor to apply to the trees.
      */
-    template<typename Tree1, typename Tree2, typename Visitor>
+    template<class Tree1, class Tree2, class Visitor>
     void applyToTreePair(Tree1&& tree1, Tree2&& tree2, Visitor&& visitor)
     {
       Impl::applyToTreePair(tree1, tree2, hybridTreePath(), visitor);
