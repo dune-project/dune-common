@@ -20,12 +20,6 @@
 /* Standard debug streams with a level below will collapse to doing nothing */
 #define DUNE_MINIMAL_DEBUG_LEVEL ${DUNE_MINIMAL_DEBUG_LEVEL}
 
-/* does the compiler support __attribute__((deprecated))? */
-#cmakedefine HAS_ATTRIBUTE_DEPRECATED 1
-
-/* does the compiler support __attribute__((deprecated("message"))? */
-#cmakedefine HAS_ATTRIBUTE_DEPRECATED_MSG 1
-
 /* does the compiler support __attribute__((unused))? */
 #cmakedefine HAS_ATTRIBUTE_UNUSED 1
 

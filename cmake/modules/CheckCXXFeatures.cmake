@@ -13,12 +13,6 @@
 #    :code:`HAS_ATTRIBUTE_UNUSED`
 #       True if attribute unused is supported
 #
-#    :code:`HAS_ATTRIBUTE_DEPRECATED`
-#       True if attribute deprecated is supported
-#
-#    :code:`HAS_ATTRIBUTE_DEPRECATED_MSG`
-#       True if attribute deprecated("msg") is supported
-#
 #    :code:`DUNE_HAVE_CXX_CLASS_TEMPLATE_ARGUMENT_DEDUCTION`
 #       True if C++17's class template argument deduction is supported
 #
@@ -228,70 +222,6 @@ check_cxx_source_compiles("
      return 0;
    };
 "  HAS_ATTRIBUTE_UNUSED
-)
-
-# __attribute__((deprecated))
-check_cxx_source_compiles("
-#define DEP __attribute__((deprecated))
-   class bar
-   {
-     bar() DEP;
-   };
-
-   class peng { } DEP;
-
-   template <class T>
-   class t_bar
-   {
-     t_bar() DEP;
-   };
-
-   template <class T>
-   class t_peng {
-     t_peng() {};
-   } DEP;
-
-   void foo() DEP;
-
-   void foo() {}
-
-   int main(void)
-   {
-     return 0;
-   };
-"  HAS_ATTRIBUTE_DEPRECATED
-)
-
-# __attribute__((deprecated("msg")))
-check_cxx_source_compiles("
-#define DEP __attribute__((deprecated(\"message\")))
-   class bar {
-     bar() DEP;
-   };
-
-   class peng { } DEP;
-
-   template <class T>
-   class t_bar
-   {
-     t_bar() DEP;
-   };
-
-   template <class T>
-   class t_peng
-   {
-     t_peng() {};
-   } DEP;
-
-   void foo() DEP;
-
-   void foo() {}
-
-   int main(void)
-   {
-     return 0;
-   };
-"  HAS_ATTRIBUTE_DEPRECATED_MSG
 )
 
 # full support for is_indexable (checking whether a type supports operator[])
