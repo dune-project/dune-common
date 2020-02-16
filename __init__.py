@@ -51,7 +51,7 @@ class Constructor(object):
 
     def register(self, cls="cls"):
         if self.body is None:
-            return cls + ".def( pybind11::init( " + args + " )" + "".join(", " + e for e in self.extra) + " );\n"
+            return cls + ".def( pybind11::init( " + self.args + " )" + "".join(", " + e for e in self.extra) + " );\n"
         if self.args:
             source = cls + ".def( pybind11::init( [] ( " + ", ".join(self.args) + " ) {"
         else:

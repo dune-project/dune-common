@@ -11,6 +11,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import logging
 
 from . import builder
+from dune.common.hashit import hashIt
 
 logger = logging.getLogger(__name__)
 
@@ -146,7 +147,6 @@ class SimpleGenerator(object):
                                 baseClasses=bc)
         return self.post(moduleName, source)
 
-from dune.common.hashit import hashIt
 def simpleGenerator(inc, baseType, namespace, pythonname=None, filename=None):
     generator = SimpleGenerator(baseType, namespace, pythonname, filename)
     def load(includes, typeName, *args):
