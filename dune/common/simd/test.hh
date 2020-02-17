@@ -331,7 +331,7 @@ namespace Dune {
                template<class> class RebindAccept, class Recurse>
       void checkRebindOf(Recurse recurse)
       {
-        Hybrid::forEach(Rebinds{}, [=](auto target) {
+        Hybrid::forEach(Rebinds{}, [this,recurse](auto target) {
             using T = typename decltype(target)::type;
 
             // check that the rebound type exists
@@ -1942,8 +1942,8 @@ namespace Dune {
     }
     template<class V> void UnitTest::checkUnaryOps()
     {
-      auto checkMask = [=](auto id) {
-        auto check = [=](auto op) {
+      auto checkMask = [this](auto id) {
+        auto check = [this,id](auto op) {
           id(this)->template checkUnaryOpsV<V>(op);
         };
 
@@ -1963,8 +1963,8 @@ namespace Dune {
         // check(OpPrefixBitNot{});
       };
 
-      auto checkVector = [=](auto id) {
-        auto check = [=](auto op) {
+      auto checkVector = [this](auto id) {
+        auto check = [this,id](auto op) {
           id(this)->template checkUnaryOpsV<V>(op);
         };
 
@@ -1994,8 +1994,8 @@ namespace Dune {
     }
     template<class V> void UnitTest::checkBinaryOpsVectorVector()
     {
-      auto checker = [=](auto doSV, auto doVV, auto doVS, auto op) {
-        auto check = [=](auto t1, auto t2) {
+      auto checker = [this](auto doSV, auto doVV, auto doVS, auto op) {
+        auto check = [this,op](auto t1, auto t2) {
           this->checkBinaryOpVV(t1, t2, op);
         };
         this->checkBinaryRefQual<V, V, doVV>(check);
@@ -2004,13 +2004,13 @@ namespace Dune {
     }
     template<class V> void UnitTest::checkBinaryOpsScalarVector()
     {
-      auto checker = [=](auto doSV, auto doVV, auto doVS, auto op) {
-        auto check = [=](auto t1, auto t2) {
+      auto checker = [this](auto doSV, auto doVV, auto doVS, auto op) {
+        auto check = [this,op](auto t1, auto t2) {
           this->checkBinaryOpSV(t1, t2, op);
         };
         this->checkBinaryRefQual<Scalar<V>, V, doSV>(check);
 
-        auto crossCheck = [=](auto t1, auto t2) {
+        auto crossCheck = [this,op](auto t1, auto t2) {
           this->checkBinaryOpVVAgainstSV(t1, t2, op);
         };
         this->checkBinaryRefQual<Scalar<V>, V, doSV && doVV>(crossCheck);
@@ -2019,13 +2019,13 @@ namespace Dune {
     }
     template<class V> void UnitTest::checkBinaryOpsVectorScalar()
     {
-      auto checker = [=](auto doSV, auto doVV, auto doVS, auto op) {
-        auto check = [=](auto t1, auto t2) {
+      auto checker = [this](auto doSV, auto doVV, auto doVS, auto op) {
+        auto check = [this,op](auto t1, auto t2) {
           this->checkBinaryOpVS(t1, t2, op);
         };
         this->checkBinaryRefQual<V, Scalar<V>, doVS>(check);
 
-        auto crossCheck = [=](auto t1, auto t2) {
+        auto crossCheck = [this,op](auto t1, auto t2) {
           this->checkBinaryOpVVAgainstVS(t1, t2, op);
         };
         this->checkBinaryRefQual<V, Scalar<V>, doVV && doVS>(crossCheck);
@@ -2034,8 +2034,8 @@ namespace Dune {
     }
     template<class V> void UnitTest::checkBinaryOpsProxyVector()
     {
-      auto checker = [=](auto doSV, auto doVV, auto doVS, auto op) {
-        auto check = [=](auto t1, auto t2) {
+      auto checker = [this](auto doSV, auto doVV, auto doVS, auto op) {
+        auto check = [this,op](auto t1, auto t2) {
           this->checkBinaryOpPV(t1, t2, op);
         };
         this->checkBinaryRefQual<V, V, doSV>(check);
@@ -2044,8 +2044,8 @@ namespace Dune {
     }
     template<class V> void UnitTest::checkBinaryOpsVectorProxy()
     {
-      auto checker = [=](auto doSV, auto doVV, auto doVS, auto op) {
-        auto check = [=](auto t1, auto t2) {
+      auto checker = [this](auto doSV, auto doVV, auto doVS, auto op) {
+        auto check = [this,op](auto t1, auto t2) {
           this->checkBinaryOpVP(t1, t2, op);
         };
         this->checkBinaryRefQual<V, V, doVS>(check);
