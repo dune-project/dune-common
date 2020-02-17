@@ -99,14 +99,10 @@ int main()
 
   {
     // Check if templated and non-templed overloads work
-    // nicely together. The following should work with an
-    // empty capture list []. Unfortunately it does not on
-    // gcc 5 and gcc 6. As a workaround we capture a dummy
-    // value.
-    int dummyCapture=0;
+    // nicely together.
     auto f = Dune::overload(
-        [dummyCapture](const int& t) { (void) t;},
-        [dummyCapture](const auto& t) { t.bar();});
+        [](const int& t) { (void) t;},
+        [](const auto& t) { t.bar();});
     f(0);
   }
 
