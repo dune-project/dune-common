@@ -13,6 +13,14 @@
 #include <dune/common/exceptions.hh>
 #include <dune/common/unused.hh>
 
+//! @file
+/**
+ * This test tests for a regression, where `std::is_assignable` would return
+ * `true` for certain assignments, but it was not actually possible to
+ * instantiate those assignments.  In the fix `std::is_assignable` was fixed
+ * to report false, and that is what is checked now.
+ */
+
 template<class Component, std::size_t Dim >
 class MyVector;
 
@@ -72,8 +80,8 @@ int main()
       mfv = mv;
     }
 
-    // The following will trigger a problem in the DenseVector
-    // operator=() which can be cured by first checking whether the
+    // The following would trigger a problem in the DenseVector
+    // operator=() which was cured by first checking whether the
     // value_types are assignable.
     {
       using InnerFV = Dune::FieldVector<double, 2>;
@@ -83,7 +91,7 @@ int main()
       using MiddleMV = MyVector<InnerFV, 1>;
       using OuterMV = MyVector<MiddleMV, 1>;
 
-      MiddleFV mfv;
+      // MiddleFV mfv;
       OuterMV mv;
       OuterFV fv;
 
@@ -91,9 +99,10 @@ int main()
                     "DenseVectors should be convertible.");
       fv = mv;
 
+      // before the fix, `is_assignable` returned `true`,
       static_assert(!std::is_assignable<MiddleFV&, OuterMV>::value,
                     "Inconsistent assignability detected.");
-      // mfv = mv; // <- this would not compile dispite the assignability check.
+      // mfv = mv; // <- but this assignment failed instantiation
     }
 
     {
@@ -104,7 +113,7 @@ int main()
       using MiddleMV = MyVector<InnerFV, 1>;
       using OuterMV = MyVector<MiddleMV, 1>;
 
-      MiddleFV mfv;
+      // MiddleFV mfv;
       OuterMV mv;
       OuterFV fv;
 
@@ -112,9 +121,10 @@ int main()
                     "DenseVectors should be assignable.");
       fv = mv;
 
+      // before the fix, `is_assignable` returned `true`,
       static_assert(!std::is_assignable<MiddleFV&, OuterMV>::value,
                     "Inconsistent assignability detected.");
-      // mfv = mv; // <- this would not compile dispite the assignability check.
+      // mfv = mv; // <- but this assignment failed instantiation
     }
     return 0;
   } catch (Dune::Exception& e) {
