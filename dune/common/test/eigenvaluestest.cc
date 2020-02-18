@@ -101,7 +101,7 @@ void testSymmetricFieldMatrix()
         testMatrix[j][k] = testMatrix[k][j] = ((int)(M_PI*j*k*i))%100 - 1;
 
     FieldVector<field_type,dim> eigenValues;
-    FieldVector<FieldVector<field_type,dim>,dim> eigenVectors;
+    FieldMatrix<field_type,dim,dim> eigenVectors;
     FMatrixHelp::eigenValuesVectors(testMatrix, eigenValues, eigenVectors);
 
     // Make sure the compute numbers really are the eigenvalues
@@ -139,9 +139,9 @@ void testSymmetricFieldMatrix()
 }
 
 template<typename field_type, int dim>
-void compareEigenvectorSets(FieldVector<FieldVector<field_type,dim>,dim> evec,
+void compareEigenvectorSets(FieldMatrix<field_type,dim,dim> evec,
                               FieldVector<field_type,dim> refEval,
-                              FieldVector<FieldVector<field_type,dim>,dim> refEvec)
+                              FieldMatrix<field_type,dim,dim> refEvec)
 {
   field_type th = dim*std::sqrt(std::numeric_limits<field_type>::epsilon());
 
@@ -176,8 +176,8 @@ void compareEigenvectorSets(FieldVector<FieldVector<field_type,dim>,dim> evec,
 
 template<typename field_type, int dim>
 void checkMatrixWithReference(FieldMatrix<field_type, dim, dim> matrix,
-                              FieldVector<FieldVector<field_type,dim>,dim> refEvec,
-                              FieldVector<field_type,dim> refEval)
+                              FieldMatrix<field_type, dim, dim> refEvec,
+                              FieldVector<field_type, dim> refEval)
 {
   //normalize reference
   for(auto& ev : refEvec)
@@ -185,7 +185,7 @@ void checkMatrixWithReference(FieldMatrix<field_type, dim, dim> matrix,
 
   field_type th = dim*std::sqrt(std::numeric_limits<field_type>::epsilon());
 
-  FieldVector<FieldVector<field_type,dim>,dim> eigenvectors;
+  FieldMatrix<field_type,dim,dim> eigenvectors;
   FieldVector<field_type,dim> eigenvalues;
 
   FMatrixHelp::eigenValuesVectors(matrix, eigenvalues, eigenvectors);
@@ -205,7 +205,7 @@ void checkMatrixWithLAPACK(FieldMatrix<field_type, dim, dim> matrix)
 {
   field_type th = dim*std::sqrt(std::numeric_limits<field_type>::epsilon());
 
-  FieldVector<FieldVector<field_type,dim>,dim> eigenvectors, refEvec;
+  FieldMatrix<field_type,dim,dim> eigenvectors, refEvec;
   FieldVector<field_type,dim> eigenvalues, refEval;
 
   FMatrixHelp::eigenValuesVectors(matrix, eigenvalues, eigenvectors);
@@ -253,7 +253,6 @@ void checkMultiplicity()
     {1, 5, 5});
 
   //repeat tests with LAPACK (if found)
-  /*
 #if HAVE_LAPACK
   checkMatrixWithLAPACK<double,2>({{1, 0}, {0, 1}});
   checkMatrixWithLAPACK<double,2>({{0, 1}, {1, 0}});
@@ -261,7 +260,7 @@ void checkMultiplicity()
   checkMatrixWithLAPACK<double,3>({{0,1,0}, {1,0,0}, {0,0,5}});
   checkMatrixWithLAPACK<double,3>({{3,-2,0}, {-2,3,0}, {0,0,5}});
 #endif
-  */
+
 }
 
 int main()

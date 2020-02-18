@@ -60,7 +60,7 @@ namespace Dune {
     template <typename K>
     static void eigenValuesVectors(const FieldMatrix<K, 1, 1>& matrix,
                                    FieldVector<K, 1>& eigenValues,
-                                   FieldVector<FieldVector<K, 1>, 1>& eigenVectors)
+                                   FieldMatrix<K, 1, 1>& eigenVectors)
     {
       eigenValues[0] = matrix[0][0];
       eigenVectors[0] = {1.0};
@@ -105,7 +105,7 @@ namespace Dune {
     template <typename K>
     static void eigenValuesVectors(const FieldMatrix<K, 2, 2>& matrix,
                                    FieldVector<K, 2>& eigenValues,
-                                   FieldVector<FieldVector<K, 2>, 2>& eigenVectors)
+                                   FieldMatrix<K, 2, 2>& eigenVectors)
     {
       using Vector = FieldVector<K,2>;
       using Matrix = FieldMatrix<K,2,2>;
@@ -358,7 +358,7 @@ namespace Dune {
     template <typename K>
     static void eigenValuesVectors(const FieldMatrix<K, 3, 3>& matrix,
                                    FieldVector<K, 3>& eigenValues,
-                                   FieldVector<FieldVector<K, 3>, 3>& eigenVectors)
+                                   FieldMatrix<K, 3, 3>& eigenVectors)
     {
       using Vector = FieldVector<K,3>;
       using Matrix = FieldMatrix<K,3,3>;
@@ -379,7 +379,7 @@ namespace Dune {
         [evec[0], evec[1], evec[2]] is right handed and
         orthonormal. */
 
-        FieldVector<Vector,3> evec(Vector(0.0));
+        FieldMatrix<K,3,3> evec(0.0);
         FieldVector<K,3> eval(eigenValues);
         if(r >= 0) {
           Impl::eig0(scaledMatrix, eval[2], evec[2]);
