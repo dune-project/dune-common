@@ -7,6 +7,7 @@
  * \brief Eigenvalue computations for the FieldMatrix class
  */
 
+#include<algorithm>
 #include <iostream>
 #include <cmath>
 #include <cassert>
@@ -51,14 +52,18 @@ namespace Dune {
 
     /** \brief calculates the eigenvectors of a symmetric field matrix
         \param[in]  matrix matrix eigenvectors are calculated for
-        \param[out] eigenvectors FieldVector that contains eigenvectors with
+        \param[out] eigenValues FieldVector that contains eigenvalues
+                    in ascending order
+        \param[out] eigenVectors FieldVector that contains eigenvectors with
                     corresponding eigenvalues in ascending order
      */
-    template<typename K>
-    static void eigenVectors(const FieldMatrix<K, 1, 1>& matrix,
-                             FieldVector<FieldVector<K, 1>,1>& eigenvectors)
+    template <typename K>
+    static void eigenValuesVectors(const FieldMatrix<K, 1, 1>& matrix,
+                                   FieldVector<K, 1>& eigenValues,
+                                   FieldVector<FieldVector<K, 1>, 1>& eigenVectors)
     {
-      eigenvectors[0] = {1.0};
+      eigenValues[0] = matrix[0][0];
+      eigenVectors[0] = {1.0};
     }
 
     /** \brief calculates the eigenvalues of a symmetric field matrix
@@ -92,44 +97,48 @@ namespace Dune {
 
     /** \brief calculates the eigenvectors of a symmetric field matrix
         \param[in]  matrix matrix eigenvectors are calculated for
-        \param[out] eigenvectors FieldVector that contains eigenvectors with
+        \param[out] eigenValues FieldVector that contains eigenvalues
+                    in ascending order
+        \param[out] eigenVectors FieldVector that contains eigenvectors with
                     corresponding eigenvalues in ascending order
      */
-    template<typename K>
-    static void eigenVectors(const FieldMatrix<K, 2, 2>& matrix,
-                             const FieldVector<K, 2>& eigenvalues,
-                             FieldVector<FieldVector<K, 2>,2>& eigenvectors)
+    template <typename K>
+    static void eigenValuesVectors(const FieldMatrix<K, 2, 2>& matrix,
+                                   FieldVector<K, 2>& eigenValues,
+                                   FieldVector<FieldVector<K, 2>, 2>& eigenVectors)
     {
       using Vector = FieldVector<K,2>;
       using Matrix = FieldMatrix<K,2,2>;
 
+      FMatrixHelp::eigenValues(matrix, eigenValues);
+
       Matrix temp = matrix;
-      temp[0][0] -= eigenvalues[0];
-      temp[1][1] -= eigenvalues[0];
+      temp[0][0] -= eigenValues[0];
+      temp[1][1] -= eigenValues[0];
       if(temp.infinity_norm() <= 1e-14) {
-        eigenvectors[0] = {1.0, 0.0};
-        eigenvectors[1] = {0.0, 1.0};
+        eigenVectors[0] = {1.0, 0.0};
+        eigenVectors[1] = {0.0, 1.0};
       }
       else {
-        Vector ev = {matrix[0][0]-eigenvalues[1], matrix[1][0]};
+        Vector ev = {matrix[0][0]-eigenValues[1], matrix[1][0]};
         K norm = std::sqrt(ev[0]*ev[0] + ev[1]*ev[1]);
-        eigenvectors[0] = ev/norm;
-        ev = {matrix[0][0]-eigenvalues[0], matrix[1][0]};
+        eigenVectors[0] = ev/norm;
+        ev = {matrix[0][0]-eigenValues[0], matrix[1][0]};
         norm = std::sqrt(ev[0]*ev[0] + ev[1]*ev[1]);
-        eigenvectors[1] = ev/norm;
+        eigenVectors[1] = ev/norm;
       }
     }
 
     namespace Impl {
        //compute the cross-product of two vectors
       template<typename K>
-      inline FieldVector<K,3> crossProduct(FieldVector<K,3>& vec0, FieldVector<K,3>& vec1) {
+      inline FieldVector<K,3> crossProduct(const FieldVector<K,3>& vec0, const FieldVector<K,3>& vec1) {
         return {vec0[1]*vec1[2] - vec0[2]*vec1[1], vec0[2]*vec1[0] - vec0[0]*vec1[2], vec0[0]*vec1[1] - vec0[1]*vec1[0]};
       }
 
       //see http://en.wikipedia.org/wiki/Eigenvalue_algorithm
       template <typename K>
-        static K eigenValues3dImpl(const FieldMatrix<K, 3, 3>& matrix,
+      static K eigenValues3dImpl(const FieldMatrix<K, 3, 3>& matrix,
                                 FieldVector<K, 3>& eigenvalues)
       {
         using std::sqrt;
@@ -144,6 +153,8 @@ namespace Dune {
           eigenvalues[1] = matrix[1][1];
           eigenvalues[2] = matrix[2][2];
           std::sort(eigenvalues.begin(), eigenvalues.end());
+
+          return 0.0;
         }
         else
         {
@@ -174,8 +185,9 @@ namespace Dune {
           eigenvalues[2] = q + 2 * p * cos(phi);
           eigenvalues[0] = q + 2 * p * cos(phi + (2*pi/3));
           eigenvalues[1] = 3 * q - eigenvalues[0] - eigenvalues[2];     // since trace(matrix) = eig1 + eig2 + eig3
+
+          return r;
         }
-        return r;
       }
 
       //see https://www.geometrictools.com/Documentation/RobustEigenSymmetric3x3.pdf
@@ -184,12 +196,14 @@ namespace Dune {
       void orthoComp(const FieldVector<K,3>& evec0, FieldVector<K,3>& u, FieldVector<K,3>& v) {
         if(std::abs(evec0[0]) > std::abs(evec0[1])) {
           //The component of maximum absolute value is either evec0[0] or evec0[2].
-          auto L = 1.0 / ({evec0[0], evec0[2]}).two_norm();
+          FieldVector<K,2> temp = {evec0[0], evec0[2]};
+          auto L = 1.0 / temp.two_norm();
           u = L * FieldVector<K,3>({-evec0[2], 0.0, evec0[0]});
         }
         else {
           //The component of maximum absolute value is either evec0[1] or evec0[2].
-          auto L = 1.0 / ({evec0[1], evec0[2]}).two_norm();
+          FieldVector<K,2> temp = {evec0[1], evec0[2]};
+          auto L = 1.0 / temp.two_norm();
           u = L * FieldVector<K,3>({0.0, evec0[2], -evec0[1]});
         }
         v = crossProduct(evec0, u);
@@ -197,7 +211,7 @@ namespace Dune {
 
       //see https://www.geometrictools.com/Documentation/RobustEigenSymmetric3x3.pdf
       template<typename K>
-      void eig0(const FieldMatrix<K,3,3>& matrix, K eval0, FieldVector<K,3> evec0) {
+      void eig0(const FieldMatrix<K,3,3>& matrix, K eval0, FieldVector<K,3>& evec0) {
         /* Compute a unit-length eigenvector for eigenvalue[i0].  The
         matrix is rank 2, so two of the rows are linearly independent.
         For a robust computation of the eigenvector, select the two
@@ -234,8 +248,7 @@ namespace Dune {
 
       //see https://www.geometrictools.com/Documentation/RobustEigenSymmetric3x3.pdf
       template<typename K>
-      void eig1(const FieldMatrix<K,3,3>& matrix, const FieldVector<K,3>& evec0, FieldVector<K,3> evec1, K eval1) {
-        //return array([0,0,1])
+      void eig1(const FieldMatrix<K,3,3>& matrix, const FieldVector<K,3>& evec0, FieldVector<K,3>& evec1, K eval1) {
         using Vector = FieldVector<K,3>;
 
         //Robustly compute a right-handed orthonormal set {u, v, evec0}.
@@ -260,12 +273,13 @@ namespace Dune {
             +-                        -++   -+       +-  -+
         where X has row entries x0 and x1. */
 
-        Vector Au = matrix.mv(u);
-        Vector Av = matrix.mv(v);
+        Vector Au, Av;
+        matrix.mv(u, Au);
+        matrix.mv(v, Av);
 
         auto m00 = u.dot(Au) - eval1;
         auto m01 = u.dot(Av);
-        auto m11 = v-dot(Av) - eval1;
+        auto m11 = v.dot(Av) - eval1;
 
         /* For robustness, choose the largest-length row of M to compute
         the eigenvector.  The 2-tuple of coefficients of U and V in the
@@ -287,8 +301,8 @@ namespace Dune {
               m00 /= m01;
               m01 = 1.0 / std::sqrt(1.0 + m00*m00);
               m00 *= m01;
-              evec1 = m01*u - m00*v;
             }
+            evec1 = m01*u - m00*v;
           }
           else
             evec1 = u;
@@ -305,8 +319,8 @@ namespace Dune {
               m11 /= m01;
               m01 = 1.0 / std::sqrt(1.0 + m11*m11);
               m11 *= m01;
-              evec1 = m11*u - m01*v;
             }
+            evec1 = m11*u - m01*v;
           }
           else
             evec1 = u;
@@ -336,15 +350,15 @@ namespace Dune {
 
     /** \brief calculates the eigenvectors of a symmetric field matrix
         \param[in]  matrix matrix eigenvectors are calculated for
-        \param[out] eigenvectors FieldVector that contains eigenvectors with
-                    corresponding eigenvalues in ascending order
-        \param[out] eigenvalues FieldVector that contains eigenvalues
+        \param[out] eigenValues FieldVector that contains eigenvalues
                     in ascending order
+        \param[out] eigenVectors FieldVector that contains eigenvectors with
+                    corresponding eigenvalues in ascending order
      */
-    template<typename K>
-    static void eigenVectorsAndValues(const FieldMatrix<K, 3, 3>& matrix,
-                                      FieldVector<FieldVector<K, 3>,3>& eigenvectors,
-                                      FieldVector<K,3>& eigenvalues)
+    template <typename K>
+    static void eigenValuesVectors(const FieldMatrix<K, 3, 3>& matrix,
+                                   FieldVector<K, 3>& eigenValues,
+                                   FieldVector<FieldVector<K, 3>, 3>& eigenVectors)
     {
       using Vector = FieldVector<K,3>;
       using Matrix = FieldMatrix<K,3,3>;
@@ -353,19 +367,20 @@ namespace Dune {
       /* Precondition the matrix by factoring out the maximum absolute
       value of the components.  This guards against floating-point
       overflow when computing the eigenvalues.*/
-      K maxAbsElement = matrix.infinity_norm()
+      K maxAbsElement = matrix.infinity_norm();
       Matrix scaledMatrix = matrix / maxAbsElement;
-      K r = Impl::eigenValues3dImpl(scaledMatrix, eigenvalues);
+      K r = Impl::eigenValues3dImpl(scaledMatrix, eigenValues);
 
       K offDiagNorm = matrix[0][1]*matrix[0][1] + matrix[0][2]*matrix[0][2] + matrix[1][2]*matrix[1][2];
       if(offDiagNorm <= std::numeric_limits<K>::epsilon())
-        eigenvectors = {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}};
+        eigenVectors = {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}};
       else {
         /*Compute the eigenvectors so that the set
         [evec[0], evec[1], evec[2]] is right handed and
         orthonormal. */
 
-        FieldVector<Vector,3> evec(0.0);
+        FieldVector<Vector,3> evec(Vector(0.0));
+        FieldVector<K,3> eval(eigenValues);
         if(r >= 0) {
           Impl::eig0(scaledMatrix, eval[2], evec[2]);
           Impl::eig1(scaledMatrix, evec[2], evec[1], eval[1]);
@@ -380,16 +395,16 @@ namespace Dune {
         using EVPair = std::pair<K, FieldVector<K,3>>;
         std::vector<EVPair> pairs;
         for(std::size_t i=0; i<=2; ++i)
-          pairs[i] = EVPair(eval[i], evec[i]);
+          pairs.push_back(EVPair(eval[i], evec[i]));
         auto comp = [](EVPair x, EVPair y){ return x.first < y.first; };
-        std::sort(pairs, comp);
+        std::sort(pairs.begin(), pairs.end(), comp);
         for(std::size_t i=0; i<=2; ++i){
-          eigenvalues[i] = pairs[i].first;
-          eigenvectors[i] = pairs[i].second;
+          eigenValues[i] = pairs[i].first;
+          eigenVectors[i] = pairs[i].second;
         }
       }
       //The preconditioning scaled the matrix, which scales the eigenvalues. Revert the scaling.
-      eigenvalues *= maxAbsElement;
+      eigenValues *= maxAbsElement;
     }
 
     /** \brief calculates the eigenvalues and/or eigenvectors of a symmetric field matrix
