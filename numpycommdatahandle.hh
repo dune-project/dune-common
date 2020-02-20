@@ -23,7 +23,7 @@ namespace Dune
   // External Forward Declarations
   // -----------------------------
 
-  template< class, template< int > class >
+  template< class >
   class MultipleCodimMultipleGeomTypeMapper;
 
 
