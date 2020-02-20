@@ -5,7 +5,7 @@
 
 #include <config.h>
 
-#include <dune/common/parallel/collectivecommunication.hh>
+#include <dune/common/parallel/communication.hh>
 #include <dune/common/parallel/mpihelper.hh>
 
 #include <dune/python/common/typeregistry.hh>
