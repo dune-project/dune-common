@@ -25,15 +25,6 @@ except ImportError:
 from .._common import *
 from .deprecated import DeprecatedObject
 
-# from .._grid import CommunicationDirection, DataType, InterfaceType, Marker, OutputType, PartitionType, reader
-# CommunicationDirection = DeprecatedObject(CommunicationDirection, "dune.common.CommunicationDirection is deprecated, use dune.grid.CommunicationDirection instead")
-# DataType = DeprecatedObject(DataType, "dune.common.DataType is deprecated, use dune.grid.DataType instead")
-# InterfaceType = DeprecatedObject(InterfaceType, "dune.common.Interface is deprecated, use dune.grid.InterfaceType instead")
-# Marker = DeprecatedObject(Marker, "dune.common.Marker is deprecated, use dune.grid.Marker instead")
-# OutputType = DeprecatedObject(OutputType, "dune.common.OutputType is deprecated, use dune.grid.OutputType instead")
-# PartitionType = DeprecatedObject(PartitionType, "dune.common.PartitionType is deprecated, use dune.grid.PartitionType instead")
-# reader = DeprecatedObject(reader, "dune.common.reader is deprecated, use dune.grid.reader instead")
-
 import numpy
 def fvgetitem(self,index):
     try:
@@ -51,8 +42,26 @@ while not finished:
     except KeyError:
         finished = True
 
+def loadvec(includes ,typeName ,constructors=None, methods=None):
+    from dune.generator.generator import SimpleGenerator
+    from dune.common.hashit import hashIt
+    generatorvec = SimpleGenerator("FieldVector","Dune::Python")
+    includes = includes + ["dune/python/common/fvector.hh"]
+    typeHash = "fieldvector_" + hashIt(typeName)
+    return generatorvec.load(includes ,typeName ,typeHash,
+            constructors ,methods, bufferProtocol=True)
 def FieldVector(values):
+    values = list(values)
     fv = "FieldVector_" + str(len(values))
+    try:
+        return globals()[fv](values)
+    except KeyError:
+        typeName = "Dune::FieldVector< double ," + str(len(values)) + " >"
+        includes = []
+        cls = loadvec(includes, typeName).FieldVector
+        setattr(cls, "_getitem", cls.__getitem__)
+        setattr(cls, "__getitem__", fvgetitem)
+        globals().update({fv:cls})
     return globals()[fv](values)
 def FieldMatrix(values):
     fm = "FieldMatrix_" + str(len(values)) + "_" + str(len(values[0]))
