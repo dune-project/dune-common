@@ -363,17 +363,21 @@ namespace Dune
      */
     using IncludeFiles = detail::IncludeFiles;
 
+    using detail::findInTypeRegistry;
+
     /** \brief add a type to the type registry without it being exported to python
      */
     template <class DuneType>
-    inline static void addToTypeRegistry ( const GenerateTypeName &typeName, const std::vector< std::string > &inc = {} )
+    inline static void addToTypeRegistry ( const GenerateTypeName &typeName,
+                                           const std::vector< std::string > &inc = {}
+                                         )
     {
       std::vector<std::string> includes = typeName.includes();
       includes.insert(includes.end(), inc.begin(), inc.end());
       auto entry = detail::insertIntoTypeRegistry<DuneType>(typeName.name(),"",includes);
-      if (!entry.second)
-        throw std::invalid_argument( (std::string("adding a class (") +
-              typeid(DuneType).name() + ") twice to the type registry").c_str() );
+      // if (!entry.second)
+      //   throw std::invalid_argument( (std::string("adding a class (") +
+      //         typeid(DuneType).name() + ") twice to the type registry").c_str() );
     }
 
 

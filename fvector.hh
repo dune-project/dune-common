@@ -38,21 +38,12 @@ namespace Dune
 
     // registerFieldVector
     // -------------------
-
-    template< class K, int size >
-    void registerFieldVector ( pybind11::handle scope, std::integral_constant< int, size > = {} )
+    template< class K, int size, class ...options >
+    void registerFieldVector ( pybind11::handle scope, pybind11::class_<Dune::FieldVector<K,size>, options...> cls )
     {
       using pybind11::operator""_a;
 
       typedef Dune::FieldVector<K, size> FV;
-
-      auto entry = insertClass<FV>(scope, "FieldVector_"+std::to_string(size), pybind11::buffer_protocol(),
-        GenerateTypeName("Dune::FieldVector",MetaType<K>(),size),IncludeFiles{"dune/common/fvector.hh"}
-        );
-      if (!entry.second)
-        return;
-      auto cls = entry.first;
-
       cls.def( pybind11::init( [] () { return new FV(); } ) );
 
       if( size == 1 )
@@ -134,6 +125,20 @@ namespace Dune
         );
 
       registerDenseVector< FV >( cls );
+    }
+
+    template< class K, int size >
+    void registerFieldVector ( pybind11::handle scope, std::integral_constant< int, size > = {} )
+    {
+      typedef Dune::FieldVector<K, size> FV;
+
+      auto entry = insertClass<FV>(scope, "FieldVector_"+std::to_string(size), pybind11::buffer_protocol(),
+        GenerateTypeName("Dune::FieldVector",MetaType<K>(),size),IncludeFiles{"dune/common/fvector.hh"}
+        );
+      if (!entry.second)
+        return;
+      auto cls = entry.first;
+      registerFieldVector(scope,cls);
     }
 
     template<class K, int... size>
