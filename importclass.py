@@ -14,11 +14,15 @@ def load(className, includeFiles, *args):
     if isString(includeFiles):
         if not os.path.dirname(includeFiles):
             with open(includeFiles, "r") as include:
-                    source += include.read()
+                source += include.read()
             source += "\n"
         else:
             source += "#include <"+includeFiles+">\n"
             includes += [includeFiles]
+    elif hasattr(includeFiles,"readable"): # for IOString
+        with includeFiles as include:
+            source += include.read()
+        source += "\n"
     elif isinstance(includeFiles, list):
         for includefile in includeFiles:
             if not os.path.dirname(includefile):

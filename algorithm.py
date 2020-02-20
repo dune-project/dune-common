@@ -74,6 +74,11 @@ def load(functionName, includes, *args):
             source += include.read()
         source += "\n"
         includes = []
+    elif hasattr(includes,"readable"): # for IOString
+        with includes as include:
+            source += include.read()
+        source += "\n"
+        includes = []
     elif isinstance(includes, list):
         for includefile in includes:
             with open(includefile, "r") as include:
