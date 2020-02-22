@@ -38,96 +38,12 @@ namespace Dune {
       const long int* ldvl, double* vr, const long int* ldvr, double* work,
       const long int* lwork, long int* info);
 
-    /** \brief calculates the eigenvalues of a symmetric field matrix
-        \param[in]  matrix matrix eigenvalues are calculated for
-        \param[out] eigenvalues FieldVector that contains eigenvalues in
-                    ascending order
-     */
-    template <typename K>
-    static void eigenValues(const FieldMatrix<K, 1, 1>& matrix,
-                            FieldVector<K, 1>& eigenvalues)
-    {
-      eigenvalues[0] = matrix[0][0];
-    }
 
-    /** \brief calculates the eigenvectors of a symmetric field matrix
-        \param[in]  matrix matrix eigenvectors are calculated for
-        \param[out] eigenValues FieldVector that contains eigenvalues
-                    in ascending order
-        \param[out] eigenVectors FieldVector that contains eigenvectors with
-                    corresponding eigenvalues in ascending order
-     */
-    template <typename K>
-    static void eigenValuesVectors(const FieldMatrix<K, 1, 1>& matrix,
-                                   FieldVector<K, 1>& eigenValues,
-                                   FieldMatrix<K, 1, 1>& eigenVectors)
-    {
-      eigenValues[0] = matrix[0][0];
-      eigenVectors[0] = {1.0};
-    }
+    enum ComputationJob { OnlyEigenvalues, EigenvaluesEigenvectors };
+    constexpr std::array<char,2> LapackTags = {'n', 'v'};
 
-    /** \brief calculates the eigenvalues of a symmetric field matrix
-        \param[in]  matrix matrix eigenvalues are calculated for
-        \param[out] eigenvalues FieldVector that contains eigenvalues in
-                    ascending order
-     */
-    template <typename K>
-    static void eigenValues(const FieldMatrix<K, 2, 2>& matrix,
-                            FieldVector<K, 2>& eigenvalues)
-    {
-      using std::sqrt;
-      const K detM = matrix[0][0] * matrix[1][1] - matrix[1][0] * matrix[0][1];
-      const K p = 0.5 * (matrix[0][0] + matrix [1][1]);
-      K q = p * p - detM;
-      if( q < 0 && q > -1e-14 ) q = 0;
-      if (q < 0)
-      {
-        std::cout << matrix << std::endl;
-        // Complex eigenvalues are either caused by non-symmetric matrices or by round-off errors
-        DUNE_THROW(MathError, "Complex eigenvalue detected (which this implementation cannot handle).");
-      }
-
-      // get square root
-      q = sqrt(q);
-
-      // store eigenvalues in ascending order
-      eigenvalues[0] = p - q;
-      eigenvalues[1] = p + q;
-    }
-
-    /** \brief calculates the eigenvectors of a symmetric field matrix
-        \param[in]  matrix matrix eigenvectors are calculated for
-        \param[out] eigenValues FieldVector that contains eigenvalues
-                    in ascending order
-        \param[out] eigenVectors FieldVector that contains eigenvectors with
-                    corresponding eigenvalues in ascending order
-     */
-    template <typename K>
-    static void eigenValuesVectors(const FieldMatrix<K, 2, 2>& matrix,
-                                   FieldVector<K, 2>& eigenValues,
-                                   FieldMatrix<K, 2, 2>& eigenVectors)
-    {
-      using Vector = FieldVector<K,2>;
-      using Matrix = FieldMatrix<K,2,2>;
-
-      FMatrixHelp::eigenValues(matrix, eigenValues);
-
-      Matrix temp = matrix;
-      temp[0][0] -= eigenValues[0];
-      temp[1][1] -= eigenValues[0];
-      if(temp.infinity_norm() <= 1e-14) {
-        eigenVectors[0] = {1.0, 0.0};
-        eigenVectors[1] = {0.0, 1.0};
-      }
-      else {
-        Vector ev = {matrix[0][0]-eigenValues[1], matrix[1][0]};
-        K norm = std::sqrt(ev[0]*ev[0] + ev[1]*ev[1]);
-        eigenVectors[0] = ev/norm;
-        ev = {matrix[0][0]-eigenValues[0], matrix[1][0]};
-        norm = std::sqrt(ev[0]*ev[0] + ev[1]*ev[1]);
-        eigenVectors[1] = ev/norm;
-      }
-    }
+    template<typename K, int dim>
+    static FieldMatrix<K, dim, dim> EVDummy = {};
 
     namespace Impl {
        //compute the cross-product of two vectors
@@ -136,7 +52,37 @@ namespace Dune {
         return {vec0[1]*vec1[2] - vec0[2]*vec1[1], vec0[2]*vec1[0] - vec0[0]*vec1[2], vec0[0]*vec1[1] - vec0[1]*vec1[0]};
       }
 
-      //see http://en.wikipedia.org/wiki/Eigenvalue_algorithm
+      template <typename K>
+      static void eigenValues2dImpl(const FieldMatrix<K, 2, 2>& matrix,
+                                    FieldVector<K, 2>& eigenvalues)
+      {
+        using std::sqrt;
+        const K detM = matrix[0][0] * matrix[1][1] - matrix[1][0] * matrix[0][1];
+        const K p = 0.5 * (matrix[0][0] + matrix [1][1]);
+        K q = p * p - detM;
+        if( q < 0 && q > -1e-14 ) q = 0;
+        if (q < 0)
+        {
+          std::cout << matrix << std::endl;
+          // Complex eigenvalues are either caused by non-symmetric matrices or by round-off errors
+          DUNE_THROW(MathError, "Complex eigenvalue detected (which this implementation cannot handle).");
+        }
+
+        // get square root
+        q = sqrt(q);
+
+        // store eigenvalues in ascending order
+        eigenvalues[0] = p - q;
+        eigenvalues[1] = p + q;
+      }
+
+      /*
+        This implementation was adapted from the pseudo-code (Python?) implementation found on
+        http://en.wikipedia.org/wiki/Eigenvalue_algorithm  (retrieved late August 2014).
+        Wikipedia claims to have taken it from
+          Smith, Oliver K. (April 1961), Eigenvalues of a symmetric 3 × 3 matrix.,
+          Communications of the ACM 4 (4): 168, doi:10.1145/355578.366316
+      */
       template <typename K>
       static K eigenValues3dImpl(const FieldMatrix<K, 3, 3>& matrix,
                                 FieldVector<K, 3>& eigenvalues)
@@ -328,37 +274,70 @@ namespace Dune {
       }
     } //namespace Impl
 
-    /** \brief Calculates the eigenvalues of a symmetric 3x3 field matrix
-        \param[in]  matrix matrix eigenvalues are calculated for
-        \param[out] eigenvalues Eigenvalues in ascending order
-
-        \note If the input matrix is not symmetric the behavior of this method is undefined.
-
-        This implementation was adapted from the pseudo-code (Python?) implementation found on
-        http://en.wikipedia.org/wiki/Eigenvalue_algorithm  (retrieved late August 2014).
-        Wikipedia claims to have taken it from
-          Smith, Oliver K. (April 1961), Eigenvalues of a symmetric 3 × 3 matrix.,
-          Communications of the ACM 4 (4): 168, doi:10.1145/355578.366316
-     */
-    template <typename K>
-    static void eigenValues(const FieldMatrix<K, 3, 3>& matrix,
-                            FieldVector<K, 3>& eigenvalues)
-    {
-      K temp = Impl::eigenValues3dImpl(matrix, eigenvalues);
-      DUNE_UNUSED_PARAMETER(temp);
-    }
-
-    /** \brief calculates the eigenvectors of a symmetric field matrix
+    /** \brief calculates the eigenvalues and -vectors of a symmetric field matrix
         \param[in]  matrix matrix eigenvectors are calculated for
         \param[out] eigenValues FieldVector that contains eigenvalues
                     in ascending order
         \param[out] eigenVectors FieldVector that contains eigenvectors with
                     corresponding eigenvalues in ascending order
      */
-    template <typename K>
+    template<ComputationJob Tag, typename K>
+    static void eigenValuesVectors(const FieldMatrix<K, 1, 1>& matrix,
+                                   FieldVector<K, 1>& eigenValues,
+                                   FieldMatrix<K, 1, 1>& eigenVectors = EVDummy<K,1>)
+    {
+      eigenValues[0] = matrix[0][0];
+      if constexpr(Tag==EigenvaluesEigenvectors)
+        eigenVectors[0] = {1.0};
+    }
+
+    /** \brief calculates the eigenvalues and/or eigenvectors of a symmetric field matrix
+        \param[in]  matrix matrix eigenvalues are calculated for
+        \param[out] eigenValues FieldVector that contains eigenvalues in
+                    ascending order
+        \param[out] eigenVectors FieldMatrix that contains the eigenvectors
+
+        \note If the input matrix is not symmetric the behavior of this method is undefined.
+     */
+    template <ComputationJob Tag, typename K>
+    static void eigenValuesVectors(const FieldMatrix<K, 2, 2>& matrix,
+                                   FieldVector<K, 2>& eigenValues,
+                                   FieldMatrix<K, 2, 2>& eigenVectors = EVDummy<K,2>)
+    {
+      Impl::eigenValues2dImpl(matrix, eigenValues);
+
+      if constexpr(Tag==EigenvaluesEigenvectors) {
+        FieldMatrix<K,2,2> temp = matrix;
+        temp[0][0] -= eigenValues[0];
+        temp[1][1] -= eigenValues[0];
+        if(temp.infinity_norm() <= 1e-14) {
+          eigenVectors[0] = {1.0, 0.0};
+          eigenVectors[1] = {0.0, 1.0};
+        }
+        else {
+          FieldVector<K,2> ev = {matrix[0][0]-eigenValues[1], matrix[1][0]};
+          K norm = std::sqrt(ev[0]*ev[0] + ev[1]*ev[1]);
+          eigenVectors[0] = ev/norm;
+          ev = {matrix[0][0]-eigenValues[0], matrix[1][0]};
+          norm = std::sqrt(ev[0]*ev[0] + ev[1]*ev[1]);
+          eigenVectors[1] = ev/norm;
+        }
+      }
+    }
+
+
+    /** \brief calculates the eigenvalues and/or eigenvectors of a symmetric field matrix
+        \param[in]  matrix matrix eigenvalues are calculated for
+        \param[out] eigenValues FieldVector that contains eigenvalues in
+                    ascending order
+        \param[out] eigenVectors FieldMatrix that contains the eigenvectors
+
+        \note If the input matrix is not symmetric the behavior of this method is undefined.
+     */
+    template <ComputationJob Tag, typename K>
     static void eigenValuesVectors(const FieldMatrix<K, 3, 3>& matrix,
                                    FieldVector<K, 3>& eigenValues,
-                                   FieldMatrix<K, 3, 3>& eigenVectors)
+                                   FieldMatrix<K, 3, 3>& eigenVectors = EVDummy<K,3>)
     {
       using Vector = FieldVector<K,3>;
       using Matrix = FieldMatrix<K,3,3>;
@@ -371,40 +350,58 @@ namespace Dune {
       Matrix scaledMatrix = matrix / maxAbsElement;
       K r = Impl::eigenValues3dImpl(scaledMatrix, eigenValues);
 
-      K offDiagNorm = matrix[0][1]*matrix[0][1] + matrix[0][2]*matrix[0][2] + matrix[1][2]*matrix[1][2];
-      if(offDiagNorm <= std::numeric_limits<K>::epsilon())
-        eigenVectors = {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}};
-      else {
-        /*Compute the eigenvectors so that the set
-        [evec[0], evec[1], evec[2]] is right handed and
-        orthonormal. */
+      if constexpr(Tag==EigenvaluesEigenvectors) {
+         K offDiagNorm = matrix[0][1]*matrix[0][1] + matrix[0][2]*matrix[0][2] + matrix[1][2]*matrix[1][2];
+         if(offDiagNorm <= std::numeric_limits<K>::epsilon())
+           eigenVectors = {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}};
+         else {
+           /*Compute the eigenvectors so that the set
+           [evec[0], evec[1], evec[2]] is right handed and
+           orthonormal. */
 
-        FieldMatrix<K,3,3> evec(0.0);
-        FieldVector<K,3> eval(eigenValues);
-        if(r >= 0) {
-          Impl::eig0(scaledMatrix, eval[2], evec[2]);
-          Impl::eig1(scaledMatrix, evec[2], evec[1], eval[1]);
-          evec[0] = Impl::crossProduct(evec[1], evec[2]);
-        }
-        else {
-          Impl::eig0(scaledMatrix, eval[0], evec[0]);
-          Impl::eig1(scaledMatrix, evec[0], evec[1], eval[1]);
-          evec[2] = Impl::crossProduct(evec[0], evec[1]);
-        }
-        //sort eval/evec-pairs in ascending order
-        using EVPair = std::pair<K, FieldVector<K,3>>;
-        std::vector<EVPair> pairs;
-        for(std::size_t i=0; i<=2; ++i)
-          pairs.push_back(EVPair(eval[i], evec[i]));
-        auto comp = [](EVPair x, EVPair y){ return x.first < y.first; };
-        std::sort(pairs.begin(), pairs.end(), comp);
-        for(std::size_t i=0; i<=2; ++i){
-          eigenValues[i] = pairs[i].first;
-          eigenVectors[i] = pairs[i].second;
+           Matrix evec(0.0);
+           Vector eval(eigenValues);
+           if(r >= 0) {
+             Impl::eig0(scaledMatrix, eval[2], evec[2]);
+             Impl::eig1(scaledMatrix, evec[2], evec[1], eval[1]);
+             evec[0] = Impl::crossProduct(evec[1], evec[2]);
+           }
+           else {
+             Impl::eig0(scaledMatrix, eval[0], evec[0]);
+             Impl::eig1(scaledMatrix, evec[0], evec[1], eval[1]);
+             evec[2] = Impl::crossProduct(evec[0], evec[1]);
+           }
+           //sort eval/evec-pairs in ascending order
+           using EVPair = std::pair<K, Vector>;
+           std::vector<EVPair> pairs;
+           for(std::size_t i=0; i<=2; ++i)
+             pairs.push_back(EVPair(eval[i], evec[i]));
+           auto comp = [](EVPair x, EVPair y){ return x.first < y.first; };
+                   std::sort(pairs.begin(), pairs.end(), comp);
+          for(std::size_t i=0; i<=2; ++i){
+            eigenValues[i] = pairs[i].first;
+            eigenVectors[i] = pairs[i].second;
+          }
         }
       }
       //The preconditioning scaled the matrix, which scales the eigenvalues. Revert the scaling.
       eigenValues *= maxAbsElement;
+    }
+
+    /** \brief calculates the eigenvalues and eigenvectors of a symmetric field matrix
+        \param[in]  matrix matrix eigenvalues are calculated for
+        \param[out] eigenValues FieldVector that contains eigenvalues in
+                    ascending order
+        \param[out] eigenVectors FieldMatrix that contains the eigenvectors
+
+        \note LAPACK::dsyev is used to calculate the eigenvalues and eigenvectors
+     */
+    template <ComputationJob Tag, int dim, typename K>
+    static void eigenValuesVectors(const FieldMatrix<K, dim, dim>& matrix,
+                                   FieldVector<K, dim>& eigenValues,
+                                   FieldMatrix<K, dim, dim>& eigenVectors = EVDummy<K,dim>)
+    {
+      eigenValuesVectorsLapack(matrix,eigenValues,eigenVectors,Tag);
     }
 
     /** \brief calculates the eigenvalues and/or eigenvectors of a symmetric field matrix
@@ -420,9 +417,10 @@ namespace Dune {
     static void eigenValuesVectorsLapack(const FieldMatrix<K, dim, dim>& matrix,
                                          FieldVector<K, dim>& eigenValues,
                                          FieldMatrix<K, dim, dim>& eigenVectors,
-                                         const char& jobz)
+                                         const ComputationJob tag)
     {
       {
+        const char jobz = LapackTags[tag];
         const long int N = dim ;
         const char uplo = 'u'; // use upper triangular matrix
 
@@ -472,38 +470,6 @@ namespace Dune {
       }
     }
 
-    /** \brief calculates the eigenvalues of a symmetric field matrix
-        \param[in]  matrix matrix eigenvalues are calculated for
-        \param[out] eigenValues FieldVector that contains eigenvalues in
-                    ascending order
-
-        \note LAPACK::dsyev is used to calculate the eigenvalues
-     */
-    template <int dim, typename K>
-    static void eigenValues(const FieldMatrix<K, dim, dim>& matrix,
-                            FieldVector<K, dim>& eigenValues)
-    {
-      FieldMatrix<K, dim, dim> dummy;
-      // calculate only eigenValues
-      eigenValuesVectorsLapack(matrix,eigenValues,dummy,'n');
-    }
-
-    /** \brief calculates the eigenvalues and eigenvectors of a symmetric field matrix
-        \param[in]  matrix matrix eigenvalues are calculated for
-        \param[out] eigenValues FieldVector that contains eigenvalues in
-                    ascending order
-        \param[out] eigenVectors FieldMatrix that contains the eigenvectors
-
-        \note LAPACK::dsyev is used to calculate the eigenvalues and eigenvectors
-     */
-    template <int dim, typename K>
-    static void eigenValuesVectors(const FieldMatrix<K, dim, dim>& matrix,
-                                   FieldVector<K, dim>& eigenValues,
-                                   FieldMatrix<K, dim, dim>& eigenVectors)
-    {
-      // calculate eigenValues and eigenVectors
-      eigenValuesVectorsLapack(matrix,eigenValues,eigenVectors,'v');
-    }
 
     /** \brief calculates the eigenvalues of a non-symmetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
@@ -558,9 +524,7 @@ namespace Dune {
           eigenValues[i].imag = eigenI[i];
         }
       }
-
     }
-
   } // end namespace FMatrixHelp
 
   /** @} end documentation */
