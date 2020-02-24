@@ -24,17 +24,24 @@ namespace Dune {
 
     namespace Impl {
 
-      // This is a constexpr version of the ternery operator c?t1:t1.
-      // In contrast to the latter the type of t1 and t2 can be different.
-      // Notice that std::conditional would not do the trick, because
-      // it only selects between types.
-      template<bool c, class T1, class T2>
-      constexpr auto conditionalValue(T1&& t1, T2&& t2)
+      /**
+       * \brief Helpfer function that returns the degree of a Tree.
+       *
+       * The return type is either `size_t` if it is a dynamic tree or the flag `dynamic`
+       * is set to `true`, or as the type returned by the `degree()` member function of the
+       * tree.
+       *
+       * This function allows to change the tree traversal from static to dynamic in case
+       * of power nodes and uses static traversal for composite and dynamic traversal for
+       * all dynamic nodes.
+       **/
+      template <bool dynamic = true, class Tree>
+      auto traversalDegree(Tree const& tree)
       {
-        if constexpr (c)
-          return std::forward<T1>(t1);
+        if constexpr (dynamic && isPower<Tree>)
+          return std::size_t(tree.degree());
         else
-          return std::forward<T2>(t2);
+          return tree.degree();
       }
 
       // forward declaration
@@ -44,7 +51,7 @@ namespace Dune {
       template<class Tree, TreePathType::Type pathType, class Prefix>
       constexpr auto leafTreePathTuple(Prefix prefix)
       {
-        if constexpr (Tree::isLeaf)
+        if constexpr (isLeaf<Tree>)
           return std::make_tuple(prefix);
         else
           return Impl::leafTreePathTuple<Tree, pathType>(prefix, std::make_index_sequence<Tree::degree()>{});
@@ -53,11 +60,11 @@ namespace Dune {
       template<class Tree, TreePathType::Type pathType, class Prefix, std::size_t... indices>
       constexpr auto leafTreePathTuple(Prefix prefix, std::index_sequence<indices...>)
       {
-        if constexpr (Tree::isComposite or (Tree::isPower and (pathType!=TreePathType::dynamic)))
+        if constexpr (isComposite<Tree> or (isPower<Tree> and (pathType!=TreePathType::dynamic)))
           return std::tuple_cat(
             Impl::leafTreePathTuple<TypeTree::Child<Tree,indices>, pathType>(TypeTree::push_back(prefix, index_constant<indices>{}))...);
         else {
-          static_assert(Tree::isPower and (pathType==TreePathType::dynamic));
+          static_assert(isPower<Tree> and (pathType==TreePathType::dynamic));
           return std::tuple_cat(
             Impl::leafTreePathTuple<TypeTree::Child<Tree,indices>, pathType>(TypeTree::push_back(prefix, indices))...);
         }
@@ -76,7 +83,7 @@ namespace Dune {
        * This is the overload for leaf traversal
        */
       template<class T, class TreePath, class V,
-        std::enable_if_t<std::decay_t<T>::isLeaf, int> = 0>
+        std::enable_if_t<isLeaf<T>, int> = 0>
       void applyToTree(T&& tree, TreePath treePath, V&& visitor)
       {
         visitor.leaf(tree, treePath);
@@ -86,7 +93,7 @@ namespace Dune {
        * This is the general overload doing child traversal.
        */
       template<class T, class TreePath, class V,
-        std::enable_if_t<not std::decay_t<T>::isLeaf, int> = 0>
+        std::enable_if_t<not isLeaf<T>, int> = 0>
       void applyToTree(T&& tree, TreePath treePath, V&& visitor)
       {
         // Do we really want to take care for const-ness of the Tree
@@ -99,10 +106,8 @@ namespace Dune {
 
         // Use statically encoded degree unless tree
         // is a power node and dynamic traversal is requested.
-        constexpr auto useDynamicTraversal = (Tree::isPower and Visitor::treePathType==TreePathType::dynamic);
-        auto degree = conditionalValue<useDynamicTraversal>(Tree::degree(), index_constant<Tree::degree()>{});
-
-        auto indices = Dune::range(degree);
+        constexpr auto useDynamicTraversal = Visitor::treePathType == TreePathType::dynamic;
+        auto indices = Dune::range(traversalDegree<useDynamicTraversal>(tree));
         Hybrid::forEach(indices, [&](auto i) {
           auto childTreePath = TypeTree::push_back(treePath, i);
           auto&& child = tree.child(i);
@@ -137,7 +142,7 @@ namespace Dune {
       void forEachNode(Tree&& tree, TreePath treePath, PreFunc&& preFunc, LeafFunc&& leafFunc, PostFunc&& postFunc)
       {
         using TreeType = std::decay_t<Tree>;
-        if constexpr (TreeType::isLeaf) {
+        if constexpr (isLeaf<TreeType>) {
           // If we have a leaf tree just visit it using the leaf function.
           leafFunc(tree, treePath);
         } else {
@@ -145,8 +150,7 @@ namespace Dune {
           // visit all children using a static loop, and
           // finally visit the tree with the post function.
           preFunc(tree, treePath);
-          auto indices = std::make_index_sequence<TreeType::degree()>{};
-          Hybrid::forEach(indices, [&](auto i) {
+          Hybrid::forEach(Dune::range(traversalDegree(tree)), [&](auto i) {
             auto childTreePath = TypeTree::push_back(treePath, i);
             forEachNode(tree.child(i), childTreePath, preFunc, leafFunc, postFunc);
           });

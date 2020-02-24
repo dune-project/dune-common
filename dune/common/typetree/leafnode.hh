@@ -4,8 +4,9 @@
 #ifndef DUNE_COMMON_TYPETREE_LEAFNODE_HH
 #define DUNE_COMMON_TYPETREE_LEAFNODE_HH
 
-#include <dune/common/typetree/nodetags.hh>
 #include <cstddef>
+
+#include <dune/common/typetree/nodetags.hh>
 
 namespace Dune {
   namespace TypeTree {
@@ -23,19 +24,6 @@ namespace Dune {
     class LeafNode
     {
     public:
-
-      //! Mark this class as a leaf in a \ref TypeTree.
-      static const bool isLeaf = true;
-
-      //! Mark this class as a non power in the \ref TypeTree.
-      static const bool isPower = false;
-
-      //! Mark this class as a non composite in the \ref TypeTree.
-      static const bool isComposite = false;
-
-      //! Leafs have no children.
-      static const std::size_t CHILDREN = 0;
-
       //! The type tag that describes a LeafNode.
       typedef LeafNodeTag NodeTag;
 

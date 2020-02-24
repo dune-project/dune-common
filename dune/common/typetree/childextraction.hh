@@ -36,25 +36,10 @@ namespace Dune {
       // end of the recursion, there are no child indices, so just return the node itself
       // ********************************************************************************
 
-      struct IsPointerLike
-      {
-        template<class Node>
-        auto require (const Node& node) -> decltype(*node);
-      };
-
       template<class Node>
       decltype(auto) childImpl (Node&& node)
       {
         return std::forward<Node>(node);
-      }
-
-      // for now, this wants the passed-in object to be pointer-like. I don't know how clever
-      // that is in the long run, though.
-      template<class NodePtr,
-        std::enable_if_t<Dune::models<IsPointerLike,NodePtr>(), int> = 0>
-      decltype(auto) childStorageImpl (NodePtr&& nodePtr)
-      {
-        return *std::forward<NodePtr>(nodePtr);
       }
 
 
@@ -62,22 +47,19 @@ namespace Dune {
       // next index is a run-time value
       // ********************************************************************************
 
-      // The actual implemention here overloads on std::size_t. It is a little less ugly because it currently
-      // has a hard requirement on the PowerNode Tag (although only using is_convertible, as tags can be
-      // inherited (important!).
+      struct HasDynamicChildMethod
+      {
+        template<class Node>
+        auto require (const Node& node) -> decltype(node.child(0u));
+      };
+
+      // The actual implemention here overloads on std::size_t.
       template<class Node, class... J,
-        std::enable_if_t<std::is_convertible<NodeTag<Node>, PowerNodeTag>::value, int> = 0>
+        std::enable_if_t<Dune::models<HasDynamicChildMethod, Node>(), int> = 0>
       decltype(auto) childImpl (Node&& node, std::size_t i, J... j)
       {
+        assert(i < node.degree() && "Child index out of range");
         return Extractor<Node>::child(node.child(i),j...);
-      }
-
-      template<class NodePtr, class... J,
-        std::enable_if_t<std::is_convertible<NodeTag<decltype(*std::declval<NodePtr>())>, PowerNodeTag>::value, int> = 0>
-      decltype(auto) childStorageImpl (NodePtr&& nodePtr, std::size_t i, J... j)
-      {
-        using Node = decltype(*std::declval<NodePtr>());
-        return Extractor<Node>::childStorage(nodePtr->childStorage(i),j...);
       }
 
 
@@ -93,34 +75,18 @@ namespace Dune {
         auto require (const Node& node) -> decltype(node.template child<0>());
       };
 
-      struct HasTemplateChildStorageMethod
-      {
-        template<class Node>
-        auto require (const Node& node) -> decltype(node.template childStorage<0>());
-      };
-
-      // The actual implementation is rather simple, we just use an overload that requires the first index
-      // to be an index_constant, get the child and then recurse.
+      // The actual implementation is rather simple, we just use an overload that requires
+      // the first index to be an index_constant, get the child and then recurse.
       template<class Node, std::size_t i, class... J>
-      decltype(auto) childImpl (Node&& node, index_constant<i>, J... j)
+      decltype(auto) childImpl (Node&& node, index_constant<i> ii, J... j)
       {
         if constexpr (Dune::models<HasTemplateChildMethod, Node>() && i < StaticDegree<Node>::value)
-          return Extractor<Node>::child(node.template child<i>(),j...);
+          return Extractor<Node>::child(node.child(ii),j...);
         else {
-          static_assert(Dune::models<HasTemplateChildMethod, Node>(), "Node does not have a template method child()");
-          static_assert(i < StaticDegree<Node>::value, "Child index out of range");
-        }
-      }
-
-      template<class NodePtr, std::size_t i, class... J>
-      decltype(auto) childStorageImpl (NodePtr&& nodePtr, index_constant<i>, J... j)
-      {
-        using Node = decltype(*std::declval<NodePtr>());
-        if constexpr (Dune::models<HasTemplateChildStorageMethod, Node>() && i < StaticDegree<Node>::value)
-          return Extractor<Node>::childStorage(nodePtr->template childStorage<i>(),j...);
-        else {
-          static_assert(Dune::models<HasTemplateChildStorageMethod, Node>(), "Node does not have a template method childStorage()");
-          static_assert(i < StaticDegree<Node>::value, "Child index out of range");
+          static_assert(Dune::models<HasTemplateChildMethod, Node>(),
+            "Node does not have a template method child()");
+          static_assert(i < StaticDegree<Node>::value,
+            "Child index out of range");
         }
       }
 
@@ -133,12 +99,6 @@ namespace Dune {
         {
           return childImpl(std::forward<Node>(node), indices...);
         }
-
-        template<class Node, class... Indices>
-        static decltype(auto) childStorage (Node&& node, Indices... indices)
-        {
-          return childStorageImpl(std::forward<Node>(node), indices...);
-        }
       };
 
 
@@ -147,12 +107,6 @@ namespace Dune {
       decltype(auto) child (Node&& node, HybridTreePath<Indices...> tp, std::index_sequence<i...>)
       {
         return childImpl(std::forward<Node>(node),treePathEntry<i>(tp)...);
-      }
-
-      template<class Node, class... Indices, std::size_t... i>
-      decltype(auto) childStorage (Node&& node, HybridTreePath<Indices...> tp, std::index_sequence<i...>)
-      {
-        return childStorageImpl(std::forward<Node>(node),treePathEntry<i>(tp)...);
       }
 
     } // end namespace Impl
@@ -177,11 +131,12 @@ namespace Dune {
      *
      * \param node        The node from which to extract the child.
      * \param indices...  A list of indices that describes the path into the tree to the
-     *                    wanted child. These parameters can be a combination of run time indices
-     *                    (for tree nodes that allow accessing their children using run time information,
-     *                    like PowerNode) and instances of index_constant, which work for all types of inner
-     *                    nodes.
-     * \return            A reference to the child, its cv-qualification depends on the passed-in node.
+     *                    wanted child. These parameters can be a combination of run time
+     *                    indices (for tree nodes that allow accessing their children using
+     *                    run time information, like PowerNode) and instances of index_constant,
+     *                    which work for all types of inner nodes.
+     * \return            A reference to the child, its cv-qualification depends on the
+     *                    passed-in node.
      */
     template<class Node, class... Indices>
 #ifdef DOXYGEN
@@ -191,17 +146,6 @@ namespace Dune {
 #endif
     {
       return Impl::childImpl(std::forward<Node>(node),indices...);
-    }
-
-    template<class Node, class... Indices>
-#ifdef DOXYGEN
-    ImplementationDefined childStorage (Node&& node, Indices... indices)
-#else
-    auto childStorage (Node&& node, Indices... indices)
-#endif
-    {
-      static_assert(sizeof...(Indices) > 0, "childStorage() cannot be called with an empty TreePath");
-      return Impl::childStorageImpl(&node,indices...);
     }
 
 
@@ -223,11 +167,12 @@ namespace Dune {
      *
      * \param node        The node from which to extract the child.
      * \param treePath    A HybridTreePath that describes the path into the tree to the
-     *                    wanted child. This tree path object  can be a combination of run time indices
-     *                    (for tree nodes that allow accessing their children using run time information,
-     *                    like PowerNode) and instances of index_constant, which work for all types of inner
-     *                    nodes.
-     * \return            A reference to the child, its cv-qualification depends on the passed-in node.
+     *                    wanted child. This tree path object  can be a combination of run
+     *                    time indices (for tree nodes that allow accessing their children
+     *                    using run time information, like PowerNode) and instances of
+     *                    index_constant, which work for all types of inner nodes.
+     * \return            A reference to the child, its cv-qualification depends on the
+     *                    passed-in node.
      */
     template<class Node, class... Indices>
 #ifdef DOXYGEN
@@ -237,17 +182,6 @@ namespace Dune {
 #endif
     {
       return Impl::child(std::forward<Node>(node),tp,std::index_sequence_for<Indices...>{});
-    }
-
-    template<class Node, class... Indices>
-#ifdef DOXYGEN
-    ImplementationDefined child (Node&& node, HybridTreePath<Indices...> treePath)
-#else
-    auto childStorage (Node&& node, HybridTreePath<Indices...> tp)
-#endif
-    {
-      static_assert(sizeof...(Indices) > 0, "childStorage() cannot be called with an empty TreePath");
-      return Impl::childStorage(&node,tp,std::index_sequence_for<Indices...>{});
     }
 
 
@@ -276,8 +210,8 @@ namespace Dune {
 
     //! Template alias for the type of a child node given by a list of child indices.
     /**
-     * This template alias is implemented in terms of the free-standing child() functions and uses those
-     * in combination with decltype() to extract the child type.
+     * This template alias is implemented in terms of the free-standing child() functions
+     * and uses those in combination with decltype() to extract the child type.
 
      * \tparam Node     The type of the parent node.
      * \tparam indices  A list of index values the describes the path to the wanted child.
@@ -293,7 +227,7 @@ namespace Dune {
       template<class Node, class TreePath>
       struct ChildForTreePathImpl
       {
-        using type = typename std::decay<decltype(child(std::declval<Node>(),std::declval<TreePath>()))>::type;
+        using type = std::decay_t<decltype(child(std::declval<Node>(),std::declval<TreePath>()))>;
       };
 
     } // end namespace Impl
@@ -302,12 +236,13 @@ namespace Dune {
 
     //! Template alias for the type of a child node given by a TreePath or a HybridTreePath type.
     /**
-     * This template alias is implemented in terms of the free-standing child() functions and uses those
-     * in combination with decltype() to extract the child type. It supports both TreePath and
-     * HybridTreePath.
+     * This template alias is implemented in terms of the free-standing child() functions
+     * and uses those in combination with decltype() to extract the child type. It supports
+     * both TreePath and HybridTreePath.
      *
      * \tparam Node      The type of the parent node.
-     * \tparam TreePath  The type of a TreePath or a HybridTreePath that describes the path to the wanted child.
+     * \tparam TreePath  The type of a TreePath or a HybridTreePath that describes the path
+     *                   to the wanted child.
      */
     template<class Node, class TreePath>
     using ChildForTreePath = typename Impl::ChildForTreePathImpl<Node,TreePath>::type;
@@ -349,9 +284,8 @@ namespace Dune {
 
     namespace Impl {
 
-      // helper function for check in member child() functions that tolerates being passed something that
-      // isn't a TreePath. It will just return 0 in that case
-
+      // helper function for check in member child() functions that tolerates being passed
+      // something that isn't a TreePath. It will just return 0 in that case
       template<class T>
       constexpr bool _non_empty_tree_path(const T& t)
       {

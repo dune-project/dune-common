@@ -159,7 +159,7 @@ struct SimpleComposite
 
   typedef Dune::TypeTree::CompositeNode<Children...> BaseT;
 
-  template<typename... Args, typename = typename std::enable_if<(sizeof...(Args) == BaseT::CHILDREN)>::type>
+  template<typename... Args, typename = typename std::enable_if<(sizeof...(Args) == BaseT::degree())>::type>
   SimpleComposite(Args&&... args)
     : BaseT(std::forward<Args>(args)...)
   {}

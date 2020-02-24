@@ -8,6 +8,7 @@
 #include <type_traits>
 
 #include <dune/common/documentation.hh>
+#include <dune/common/typetree/nodetags.hh>
 
 namespace Dune {
   namespace TypeTree {
@@ -30,18 +31,6 @@ namespace Dune {
      */
     struct NodeInterface
     {
-      //! Whether this is a leaf node in a \ref TypeTree.
-      static const bool isLeaf = implementationDefined;
-
-      //! Whether this is a power node in the \ref TypeTree.
-      static const bool isPower = implementationDefined;
-
-      //! Whether this is a composite node in the \ref TypeTree.
-      static const bool isComposite = implementationDefined;
-
-      //! Number of children of this node in the \ref TypeTree
-      static const std::size_t CHILDREN = implementationDefined;
-
       //! The type tag that describes what kind of node this is
       /**
        * One of LeafNodeTag, PowerNodeTag or CompositeNodeTag.
@@ -49,22 +38,7 @@ namespace Dune {
        * kinds of nodes are defined.
        */
       typedef ImplementationDefined NodeTag;
-
-      //! container type to pass around a collection of children
-      /**
-       * \note This typedef is not present for leaf nodes.
-       */
-      typedef ImplementationDefined NodeStorage;
     };
-
-    //! Returns the node tag of the given Node.
-    template<class Node>
-    using NodeTag = typename std::decay_t<Node>::NodeTag;
-
-    //! Returns the implementation tag of the given Node.
-    template<typename T>
-    using ImplementationTag = typename std::decay_t<T>::ImplementationTag;
-
 
     //! Returns the degree of node as run time information.
     template<class Node>
@@ -91,10 +65,6 @@ namespace Dune {
 #endif // DOXYGEN
 
     //! Returns the statically known degree of the given Node type as a std::integral_constant.
-    /**
-     * \note If you are only interested in the numeric value, take a look at staticDegree<Node>
-     *       instead.
-     */
     template<class Node>
     using StaticDegree = std::integral_constant<
       std::size_t,

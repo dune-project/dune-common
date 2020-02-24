@@ -34,7 +34,7 @@ namespace Dune {
        * This is the overload for leaf traversal
        */
       template<class T1, class T2, class TreePath, class V,
-        std::enable_if_t<(std::decay_t<T1>::isLeaf or std::decay_t<T2>::isLeaf), int> = 0>
+        std::enable_if_t<(isLeaf<T1> or isLeaf<T2>), int> = 0>
       void applyToTreePair(T1&& tree1, T2&& tree2, TreePath treePath, V&& visitor)
       {
         visitor.leaf(tree1, tree2, treePath);
@@ -44,7 +44,7 @@ namespace Dune {
        * This is the general overload doing static child traversal.
        */
       template<class T1, class T2, class TreePath, class V,
-        std::enable_if_t<not(std::decay_t<T1>::isLeaf or std::decay_t<T2>::isLeaf), int> = 0>
+        std::enable_if_t<not(isLeaf<T1> or isLeaf<T2>), int> = 0>
       void applyToTreePair(T1&& tree1, T2&& tree2, TreePath treePath, V&& visitor)
       {
         // Do we really want to take care for const-ness of the Tree
@@ -59,8 +59,8 @@ namespace Dune {
 
         // Use statically encoded degree unless both trees
         // are power nodes and dynamic traversal is requested.
-        constexpr auto useDynamicTraversal = (Tree1::isPower and Tree2::isPower and Visitor::treePathType==TreePathType::dynamic);
-        auto degree = conditionalValue<useDynamicTraversal>(Tree1::degree(), index_constant<Tree1::degree()>{});
+        constexpr auto useDynamicTraversal = (isPower<Tree1> and isPower<Tree2> and Visitor::treePathType == TreePathType::dynamic);
+        const auto degree = traversalDegree<useDynamicTraversal>(tree1);
 
         auto indices = Dune::range(degree);
         Hybrid::forEach(indices, [&](auto i) {

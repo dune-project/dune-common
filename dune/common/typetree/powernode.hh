@@ -33,22 +33,10 @@ namespace Dune {
     class PowerNode
     {
     public:
-
-      //! Mark this class as non leaf in the \ref TypeTree.
-      static const bool isLeaf = false;
-
-      //! Mark this class as a power in the \ref TypeTree.
-      static const bool isPower = true;
-
-      //! Mark this class as a non composite in the \ref TypeTree.
-      static const bool isComposite = false;
-
-      //! The number of children.
-      static const std::size_t CHILDREN = k;
-
-      static constexpr std::size_t degree ()
+      //! Return the number of children of this node
+      static constexpr auto degree ()
       {
-        return k;
+        return index_constant<k>{};
       }
 
       //! The type tag that describes a PowerNode.
@@ -57,34 +45,11 @@ namespace Dune {
       //! The type of each child.
       typedef T ChildType;
 
-      //! The storage type of each child.
-      typedef std::shared_ptr<T> ChildStorageType;
-
-      //! The const version of the storage type of each child.
-      typedef std::shared_ptr<const T> ChildConstStorageType;
-
       //! The type used for storing the children.
-      typedef std::array<ChildStorageType,k> NodeStorage;
+      typedef std::array<std::shared_ptr<ChildType>,k> NodeStorage;
 
-
-      //! Access to the type and storage type of the i-th child.
-      template<std::size_t i>
-      struct Child
-      {
-        static_assert((i < CHILDREN), "child index out of range");
-
-        //! The type of the child.
-        typedef T Type;
-
-        //! The type of the child.
-        typedef T type;
-
-        //! The storage type of the child.
-        typedef ChildStorageType Storage;
-
-        //! The const storage type of the child.
-        typedef ChildConstStorageType ConstStorage;
-      };
+      template <std::size_t>
+      using Child = ChildType;
 
       //! @name Child Access (templated methods)
       //! @{
@@ -96,7 +61,7 @@ namespace Dune {
       template<std::size_t i>
       ChildType& child (index_constant<i> = {})
       {
-        static_assert((i < CHILDREN), "child index out of range");
+        static_assert(i < degree(), "child index out of range");
         return *children_[i];
       }
 
@@ -107,57 +72,16 @@ namespace Dune {
       template<std::size_t i>
       const ChildType& child (index_constant<i> = {}) const
       {
-        static_assert((i < CHILDREN), "child index out of range");
+        static_assert(i < degree(), "child index out of range");
         return *children_[i];
       }
 
-      //! Returns the storage of the i-th child.
-      /**
-       * \returns a copy of the object storing the i-th child.
-       */
-      template<std::size_t i>
-      ChildStorageType childStorage (index_constant<i> = {})
-      {
-        static_assert((i < CHILDREN), "child index out of range");
-        return children_[i];
-      }
-
-      //! Returns the storage of the i-th child (const version).
-      /**
-       * This method is only important if the child is stored as
-       * some kind of pointer, as this allows the pointee type to
-       * become const.
-       * \returns a copy of the object storing the i-th child.
-       */
-      template<std::size_t i>
-      ChildConstStorageType childStorage (index_constant<i> = {}) const
-      {
-        static_assert((i < CHILDREN), "child index out of range");
-        return children_[i];
-      }
-
       //! Sets the i-th child to the passed-in value.
-      template<std::size_t i>
-      void setChild (ChildType& t, index_constant<i> = {})
+      template<std::size_t i, class C>
+      void setChild (C&& child, index_constant<i> = {})
       {
-        static_assert((i < CHILDREN), "child index out of range");
-        children_[i] = stackobject_to_shared_ptr(t);
-      }
-
-      //! Store the passed value in i-th child.
-      template<std::size_t i>
-      void setChild (ChildType&& t, index_constant<i> = {})
-      {
-        static_assert((i < CHILDREN), "child index out of range");
-        children_[i] = std::make_shared<ChildType>(std::move(t));
-      }
-
-      //! Sets the stored value representing the i-th child to the passed-in value.
-      template<std::size_t i>
-      void setChild (ChildStorageType st, index_constant<i> = {})
-      {
-        static_assert((i < CHILDREN), "child index out of range");
-        children_[i] = std::move(st);
+        static_assert(i < degree(), "child index out of range");
+        children_[i] = copy_or_wrap_or_share(std::forward<C>(child));
       }
 
       //! @}
@@ -172,7 +96,7 @@ namespace Dune {
        */
       ChildType& child (std::size_t i)
       {
-        assert(i < CHILDREN && "child index out of range");
+        assert(i < degree() && "child index out of range");
         return *children_[i];
       }
 
@@ -182,52 +106,16 @@ namespace Dune {
        */
       const ChildType& child (std::size_t i) const
       {
-        assert(i < CHILDREN && "child index out of range");
+        assert(i < degree() && "child index out of range");
         return *children_[i];
       }
 
-      //! Returns the storage of the i-th child.
-      /**
-       * \returns a copy of the object storing the i-th child.
-       */
-      ChildStorageType childStorage (std::size_t i)
-      {
-        assert(i < CHILDREN && "child index out of range");
-        return children_[i];
-      }
-
-      //! Returns the storage of the i-th child (const version).
-      /**
-       * This method is only important if the child is stored as
-       * some kind of pointer, as this allows the pointee type to
-       * become const.
-       * \returns a copy of the object storing the i-th child.
-       */
-      ChildConstStorageType childStorage (std::size_t i) const
-      {
-        assert(i < CHILDREN && "child index out of range");
-        return (children_[i]);
-      }
-
       //! Sets the i-th child to the passed-in value.
-      void setChild (std::size_t i, ChildType& t)
+      template <class C>
+      void setChild (std::size_t i, C&& child)
       {
-        assert(i < CHILDREN && "child index out of range");
-        children_[i] = stackobject_to_shared_ptr(t);
-      }
-
-      //! Store the passed value in i-th child.
-      void setChild(std::size_t i, ChildType&& t)
-      {
-        assert(i < CHILDREN && "child index out of range");
-        children_[i] = std::make_shared<ChildType>(std::move(t));
-      }
-
-      //! Sets the stored value representing the i-th child to the passed-in value.
-      void setChild (std::size_t i, ChildStorageType st)
-      {
-        assert(i < CHILDREN && "child index out of range");
-        children_[i] = std::move(st);
+        assert(i < degree() && "child index out of range");
+        children_[i] = copy_or_wrap_or_share(std::forward<C>(child));
       }
 
       const NodeStorage& nodeStorage() const
@@ -350,16 +238,16 @@ namespace Dune {
         std::enable_if_t<(std::is_same<ChildType, std::decay_t<Children>>::value ||...), int> = 0>
       PowerNode (Children&&... children)
       {
-        static_assert(CHILDREN == sizeof...(Children),
+        static_assert(degree() == sizeof...(Children),
           "PowerNode constructor is called with incorrect number of children");
-        children_ = NodeStorage{copy_or_wrap(std::forward<Children>(children))...};
+        children_ = NodeStorage{copy_or_wrap_or_share(std::forward<Children>(children))...};
       }
 
       template<class... Children,
         std::enable_if_t<(std::is_same<ChildType, Children>::value ||...), int> = 0>
       PowerNode (std::shared_ptr<Children>... children)
       {
-        static_assert(CHILDREN == sizeof...(Children),
+        static_assert(degree() == sizeof...(Children),
           "PowerNode constructor is called with incorrect number of children");
         children_ = NodeStorage{std::move(children)...};
       }

@@ -28,47 +28,21 @@ namespace Dune {
       //! The type tag that describes a CompositeNode.
       typedef CompositeNodeTag NodeTag;
 
+      //! Tuple containing all childs
+      typedef std::tuple<Children...> ChildTypes;
+
       //! The type used for storing the children.
       typedef std::tuple<std::shared_ptr<Children>... > NodeStorage;
 
-      //! A tuple storing the types of all children.
-      typedef std::tuple<Children...> ChildTypes;
-
-      //! Mark this class as non leaf in the \ref TypeTree.
-      static const bool isLeaf = false;
-
-      //! Mark this class as a non power in the \ref TypeTree.
-      static const bool isPower = false;
-
-      //! Mark this class as a composite in the \ref TypeTree.
-      static const bool isComposite = true;
-
-      //! The number of children.
-      static const std::size_t CHILDREN = sizeof...(Children);
-
-      static constexpr std::size_t degree ()
+      //! The number of children in this node
+      static constexpr auto degree ()
       {
-        return sizeof...(Children);
+        return index_constant<sizeof...(Children)>{};
       }
 
       //! Access to the type and storage type of the i-th child.
       template<std::size_t k>
-      struct Child
-      {
-        static_assert((k < CHILDREN), "child index out of range");
-
-        //! The type of the child.
-        typedef std::tuple_element_t<k,ChildTypes> Type;
-
-        //! The type of the child.
-        typedef std::tuple_element_t<k,ChildTypes> type;
-
-        //! The storage type of the child.
-        typedef std::tuple_element_t<k,NodeStorage> Storage;
-
-        //! The const storage type of the child.
-        typedef std::shared_ptr<std::add_const_t<type>> ConstStorage;
-      };
+      using Child = std::tuple_element_t<k, ChildTypes>;
 
 
       //! @name Child Access
@@ -79,7 +53,7 @@ namespace Dune {
        * \returns a reference to the i-th child.
        */
       template<std::size_t k>
-      typename Child<k>::Type& child (index_constant<k> = {})
+      Child<k>& child (index_constant<k> = {})
       {
         return *std::get<k>(children_);
       }
@@ -89,53 +63,16 @@ namespace Dune {
        * \returns a const reference to the i-th child.
        */
       template<std::size_t k>
-      const typename Child<k>::Type& child (index_constant<k> = {}) const
+      const Child<k>& child (index_constant<k> = {}) const
       {
         return *std::get<k>(children_);
       }
 
-      //! Returns the storage of the i-th child.
-      /**
-       * \returns a copy of the object storing the i-th child.
-       */
-      template<std::size_t k>
-      typename Child<k>::Storage childStorage (index_constant<k> = {})
-      {
-        return std::get<k>(children_);
-      }
-
-      //! Returns the storage of the i-th child (const version).
-      /**
-       * This method is only important if the child is stored as
-       * some kind of pointer, as this allows the pointee type to
-       * become const.
-       * \returns a copy of the object storing the i-th child.
-       */
-      template<std::size_t k>
-      typename Child<k>::ConstStorage childStorage (index_constant<k> = {}) const
-      {
-        return std::get<k>(children_);
-      }
-
       //! Sets the i-th child to the passed-in value.
-      template<std::size_t k>
-      void setChild (typename Child<k>::Type& child, index_constant<k> = {})
+      template<std::size_t k, class C>
+      void setChild (C&& child, index_constant<k> = {})
       {
-        std::get<k>(children_) = stackobject_to_shared_ptr(child);
-      }
-
-      //! Store the passed value in k-th child.
-      template<std::size_t k>
-      void setChild (typename Child<k>::Type&& child, index_constant<k> = {})
-      {
-        std::get<k>(children_) = std::make_shared<typename Child<k>::Type>(std::move(child));
-      }
-
-      //! Sets the storage of the i-th child to the passed-in value.
-      template<std::size_t k>
-      void setChild (typename Child<k>::Storage child, index_constant<k> = {})
-      {
-        std::get<k>(children_) = std::move(child);
+        std::get<k>(children_) = copy_or_wrap_or_share(std::forward<C>(child));
       }
 
       const NodeStorage& nodeStorage() const
@@ -149,21 +86,21 @@ namespace Dune {
       //! @{
 
       // The following two methods require a little bit of SFINAE trickery to work correctly:
-      // We have to make sure that they don't shadow the methods for direct child access because
-      // those get called by the generic child() machinery. If that machinery picks up the methods
-      // defined below, we have an infinite recursion.
+      // We have to make sure that they don't shadow the methods for direct child access
+      // because those get called by the generic child() machinery. If that machinery picks
+      // up the methods defined below, we have an infinite recursion.
       // So the methods make sure that either
       //
-      // * there are more than one argument. In that case, we got multiple indices and can forward
-      //   to the general machine.
+      // * there are more than one argument. In that case, we got multiple indices and can
+      //   forward to the general machine.
       //
-      // * the first argument is not a valid flat index, i.e. either a std::size_t or an index_constant.
-      //   The argument thus has to be some kind of TreePath instance that we can also pass to the
-      //   generic machine.
+      // * the first argument is not a valid flat index, i.e. either a std::size_t or an
+      //   index_constant. The argument thus has to be some kind of TreePath instance that
+      //   we can also pass to the generic machine.
       //
-      // The above SFINAE logic works, but there is still a problem with the return type deduction.
-      // We have to do a lazy lookup of the return type after SFINAE has succeeded, otherwise the return
-      // type deduction will trigger the infinite recursion.
+      // The above SFINAE logic works, but there is still a problem with the return type
+      // deduction. We have to do a lazy lookup of the return type after SFINAE has succeeded,
+      // otherwise the return type deduction will trigger the infinite recursion.
 
       //! Returns the child given by the list of indices.
       /**
@@ -175,7 +112,7 @@ namespace Dune {
       ImplementationDefined& child (Indices... indices)
 #else
       template<class I0, class... I,
-        std::enable_if_t<(sizeof...(I) > 0) || IsTreePath<I0>::value, int > = 0>
+        std::enable_if_t<(sizeof...(I) > 0) || IsTreePath<I0>::value, int> = 0>
       decltype(auto) child (I0 i0, I... i)
 #endif
       {
@@ -196,7 +133,7 @@ namespace Dune {
       const ImplementationDefined& child (Indices... indices)
 #else
       template<class I0, class... I,
-        std::enable_if_t<(sizeof...(I) > 0) || IsTreePath<I0>::value, int > = 0>
+        std::enable_if_t<(sizeof...(I) > 0) || IsTreePath<I0>::value, int> = 0>
       decltype(auto) child (I0 i0, I... i) const
 #endif
       {
@@ -227,14 +164,9 @@ namespace Dune {
 
       //! Initialize all children with the passed-in objects.
       template<class... Args,
-        std::enable_if_t<(sizeof...(Args) == CHILDREN), int> = 0>
+        std::enable_if_t<(sizeof...(Args) == degree()), int> = 0>
       CompositeNode (Args&&... args)
-        : children_(copy_or_wrap(std::forward<Args>(args))...)
-      {}
-
-      //! Initialize the CompositeNode with copies of the passed in Storage objects.
-      CompositeNode (std::shared_ptr<Children>... children)
-        : children_(std::move(children)...)
+        : children_(copy_or_wrap_or_share(std::forward<Args>(args))...)
       {}
 
       //! Initialize the CompositeNode with a copy of the passed-in storage type.

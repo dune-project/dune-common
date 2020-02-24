@@ -74,16 +74,17 @@ namespace Dune {
      * \param tree       The tree on which to perform the calculation.
      * \param functor    The functor to apply to the leaf nodes.
      * \param reduction  The operation used to combine the individual results.
-     * \param startValue The initial value for the result.
+     * \param value The initial value for the result.
      *
      * \returns The value obtained by combining the individual results for all leafs.
      */
     template<class ResultType, class Tree, class F, class R>
-    ResultType reduceOverLeafs(const Tree& tree, F functor, R reduction, ResultType startValue)
+    ResultType reduceOverLeafs(const Tree& tree, F functor, R reduction, ResultType value)
     {
-      Impl::LeafReductionVisitor<F,R,ResultType> visitor(functor,reduction,startValue);
-      TypeTree::applyToTree(tree,visitor);
-      return visitor.result();
+      TypeTree::forEachLeafNode(tree, [&](auto&& node, auto&& treePath) mutable {
+        value = reduction(value, functor(node, treePath));
+      });
+      return value;
     }
 
     //! \} group Tree Traversal
