@@ -6,6 +6,7 @@
 
 #include <cstddef>
 
+#include <dune/common/typetree/nodebase.hh>
 #include <dune/common/typetree/nodetags.hh>
 
 namespace Dune {
@@ -22,6 +23,7 @@ namespace Dune {
      *  class.
      */
     class LeafNode
+        : public NodeBase<LeafNode>
     {
     public:
       //! The type tag that describes a LeafNode.

@@ -2,6 +2,7 @@ install(FILES
   childextraction.hh
   compositenode.hh
   leafnode.hh
+  nodebase.hh
   nodeinterface.hh
   nodetags.hh
   pairtraversal.hh

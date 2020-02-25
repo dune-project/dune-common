@@ -9,6 +9,7 @@
 #include <dune/common/indices.hh>
 #include <dune/common/shared_ptr.hh>
 #include <dune/common/std/type_traits.hh>
+#include <dune/common/typetree/nodebase.hh>
 #include <dune/common/typetree/nodeinterface.hh>
 #include <dune/common/typetree/nodetags.hh>
 
@@ -187,7 +188,8 @@ namespace Dune {
      */
     template<class Node>
     class ProxyNode
-      : public ProxyNodeBase<Node,NodeTag<Node>>
+      : public NodeBase<ProxyNode<Node>>
+      , public ProxyNodeBase<Node,NodeTag<Node>>
     {
 
       static const bool proxiedNodeIsConst = std::is_const<std::remove_reference_t<Node>>::value;

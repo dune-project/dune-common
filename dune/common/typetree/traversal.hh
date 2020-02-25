@@ -38,7 +38,7 @@ namespace Dune {
       template <bool dynamic = true, class Tree>
       auto traversalDegree(Tree const& tree)
       {
-        if constexpr (dynamic && isPower<Tree>)
+        if constexpr (dynamic && Tree::isPower)
           return std::size_t(tree.degree());
         else
           return tree.degree();
@@ -51,7 +51,7 @@ namespace Dune {
       template<class Tree, TreePathType::Type pathType, class Prefix>
       constexpr auto leafTreePathTuple(Prefix prefix)
       {
-        if constexpr (isLeaf<Tree>)
+        if constexpr (Tree::isLeaf)
           return std::make_tuple(prefix);
         else
           return Impl::leafTreePathTuple<Tree, pathType>(prefix, std::make_index_sequence<Tree::degree()>{});
@@ -60,11 +60,11 @@ namespace Dune {
       template<class Tree, TreePathType::Type pathType, class Prefix, std::size_t... indices>
       constexpr auto leafTreePathTuple(Prefix prefix, std::index_sequence<indices...>)
       {
-        if constexpr (isComposite<Tree> or (isPower<Tree> and (pathType!=TreePathType::dynamic)))
+        if constexpr (Tree::isComposite or (Tree::isPower and (pathType!=TreePathType::dynamic)))
           return std::tuple_cat(
             Impl::leafTreePathTuple<TypeTree::Child<Tree,indices>, pathType>(TypeTree::push_back(prefix, index_constant<indices>{}))...);
         else {
-          static_assert(isPower<Tree> and (pathType==TreePathType::dynamic));
+          static_assert(Tree::isPower and (pathType==TreePathType::dynamic));
           return std::tuple_cat(
             Impl::leafTreePathTuple<TypeTree::Child<Tree,indices>, pathType>(TypeTree::push_back(prefix, indices))...);
         }
@@ -142,7 +142,7 @@ namespace Dune {
       void forEachNode(Tree&& tree, TreePath treePath, PreFunc&& preFunc, LeafFunc&& leafFunc, PostFunc&& postFunc)
       {
         using TreeType = std::decay_t<Tree>;
-        if constexpr (isLeaf<TreeType>) {
+        if constexpr (TreeType::isLeaf) {
           // If we have a leaf tree just visit it using the leaf function.
           leafFunc(tree, treePath);
         } else {

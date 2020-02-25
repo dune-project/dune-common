@@ -48,21 +48,21 @@ namespace Dune {
         template<class Node>
         auto operator() (const Node& node) const
         {
-          if constexpr (isLeaf<Node>)
+          if constexpr (Node::isLeaf)
             return leafToValue_(node);
           else
-          if constexpr (isPower<Node>) {
+          if constexpr (Node::isPower) {
             using TransformedChild = decltype((*this)(node.child(0)));
             return std::array<TransformedChild, Node::degree()>();
           }
           else
-          if constexpr (isComposite<Node>) {
+          if constexpr (Node::isComposite) {
             auto indices = std::make_index_sequence<Node::degree()>{};
             return Dune::unpackIntegerSequence(
               [&](auto... i) { return Dune::makeTupleVector((*this)(node.child(i))...); }, indices);
           }
           else {
-            static_assert(isLeaf<Node> || isPower<Node> || isComposite<Node>,
+            static_assert(Node::isLeaf || Node::isPower || Node::isComposite,
               "Node must be one of leaf,power,composite.");
             return;
           }

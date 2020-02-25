@@ -13,6 +13,7 @@
 #include <dune/common/std/type_traits.hh>
 
 #include <dune/common/typetree/childextraction.hh>
+#include <dune/common/typetree/nodebase.hh>
 #include <dune/common/typetree/nodetags.hh>
 #include <dune/common/typetree/typetraits.hh>
 
@@ -31,6 +32,7 @@ namespace Dune {
      */
     template<class T, std::size_t k>
     class PowerNode
+        : public NodeBase<PowerNode<T,k>>
     {
     public:
       //! Return the number of children of this node

@@ -8,6 +8,7 @@
 #include <tuple>
 
 #include <dune/common/typetree/childextraction.hh>
+#include <dune/common/typetree/nodebase.hh>
 #include <dune/common/typetree/nodetags.hh>
 #include <dune/common/typetree/typetraits.hh>
 
@@ -22,6 +23,7 @@ namespace Dune {
     //! Base class for composite nodes based on variadic templates.
     template<class... Children>
     class CompositeNode
+        : public NodeBase<CompositeNode<Children...>>
     {
     public:
 

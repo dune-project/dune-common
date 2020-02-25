@@ -21,6 +21,9 @@ dune_add_test(SOURCES testproxynode.cc
 dune_add_test(SOURCES testcallbacktraversal.cc
   LINK_LIBRARIES dunecommon)
 
+dune_add_test(SOURCES testreduction.cc
+  LINK_LIBRARIES dunecommon)
+
 dune_add_test(SOURCES testhybridtreepath.cc)
 
 dune_add_test(SOURCES testtreecontainer.cc
