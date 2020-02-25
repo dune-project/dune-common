@@ -10,6 +10,7 @@
 #include <dune/common/documentation.hh>
 #include <dune/common/shared_ptr.hh>
 #include <dune/common/typetraits.hh>
+#include <dune/common/std/type_traits.hh>
 
 #include <dune/common/typetree/nodeinterface.hh>
 #include <dune/common/typetree/nodetags.hh>
@@ -28,79 +29,40 @@ namespace Dune {
 
     namespace Impl {
 
-      // forward declaration
-      template<class Node>
-      struct Extractor;
+      // check at run time whether index is a valid child index
+      template <class Node, class Index>
+      std::true_type checkChildIndex(Node const& node, Index i)
+      {
+        assert(i < node.degree() && "Child index out of range");
+        return {};
+      }
 
-      // ********************************************************************************
-      // end of the recursion, there are no child indices, so just return the node itself
-      // ********************************************************************************
+      // check at compile time whether index is a valid index
+      template <class Node, std::size_t i>
+      Std::bool_constant<(i < Node::degree())> checkChildIndex(Node const& node, index_constant<i>)
+      {
+        static_assert(i < node.degree(), "Child index out of range");
+        return {};
+      }
 
+      // finally return the node itself if no further indices are provided. Break condition
+      // for the recursion over the node childs.
       template<class Node>
       decltype(auto) childImpl (Node&& node)
       {
         return std::forward<Node>(node);
       }
 
-
-      // ********************************************************************************
-      // next index is a run-time value
-      // ********************************************************************************
-
-      struct HasDynamicChildMethod
+      // recursively call `node.child(...)` with the given indices
+      template<class Node, class I0, class... I>
+      decltype(auto) childImpl (Node&& node, I0 i0, I... i)
       {
-        template<class Node>
-        auto require (const Node& node) -> decltype(node.child(0u));
-      };
-
-      // The actual implemention here overloads on std::size_t.
-      template<class Node, class... J,
-        std::enable_if_t<Dune::models<HasDynamicChildMethod, Node>(), int> = 0>
-      decltype(auto) childImpl (Node&& node, std::size_t i, J... j)
-      {
-        assert(i < node.degree() && "Child index out of range");
-        return Extractor<Node>::child(node.child(i),j...);
+        auto valid = checkChildIndex(node,i0);
+        if constexpr (valid)
+          return childImpl(node.child(i0),i...);
+        else
+          return;
       }
-
-
-      // ********************************************************************************
-      // next index is a compile-time constant
-      // ********************************************************************************
-
-      // we need a concept to make sure that the node has a templated child()
-      // method
-      struct HasTemplateChildMethod
-      {
-        template<class Node>
-        auto require (const Node& node) -> decltype(node.template child<0>());
-      };
-
-      // The actual implementation is rather simple, we just use an overload that requires
-      // the first index to be an index_constant, get the child and then recurse.
-      template<class Node, std::size_t i, class... J>
-      decltype(auto) childImpl (Node&& node, index_constant<i> ii, J... j)
-      {
-        if constexpr (Dune::models<HasTemplateChildMethod, Node>() && i < StaticDegree<Node>::value)
-          return Extractor<Node>::child(node.child(ii),j...);
-        else {
-          static_assert(Dune::models<HasTemplateChildMethod, Node>(),
-            "Node does not have a template method child()");
-          static_assert(i < StaticDegree<Node>::value,
-            "Child index out of range");
-        }
-      }
-
-      // helper struct that forwards to the implementation of child and childStorage
-      template<class>
-      struct Extractor
-      {
-        template<class Node, class... Indices>
-        static decltype(auto) child (Node&& node, Indices... indices)
-        {
-          return childImpl(std::forward<Node>(node), indices...);
-        }
-      };
-
 
       // forward to the impl methods by extracting the indices from the treepath
       template<class Node, class... Indices, std::size_t... i>
@@ -201,7 +163,7 @@ namespace Dune {
 
       template<class Node, std::size_t... indices>
       struct ChildImpl
-        : public filter_void<std::decay_t<decltype(child(std::declval<Node>(),index_constant<indices>{}...))>>
+        : public filter_void<std::decay_t<decltype(childImpl(std::declval<Node>(),index_constant<indices>{}...))>>
       {};
 
     } // end namespace Impl
@@ -227,7 +189,7 @@ namespace Dune {
       template<class Node, class TreePath>
       struct ChildForTreePathImpl
       {
-        using type = std::decay_t<decltype(child(std::declval<Node>(),std::declval<TreePath>()))>;
+        using type = std::decay_t<decltype(TypeTree::child(std::declval<Node>(),std::declval<TreePath>()))>;
       };
 
     } // end namespace Impl

@@ -209,7 +209,7 @@ namespace Dune {
       {}
 
       //! Initialize the PowerNode with a copy of the passed-in storage type.
-      explicit PowerNode(const NodeStorage& children)
+      explicit PowerNode (const NodeStorage& children)
         : children_(children)
       {}
 

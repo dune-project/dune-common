@@ -88,10 +88,8 @@ namespace Dune {
         template<class C, class... T>
         static constexpr decltype(auto) accessByTreePath (C&& container, const HybridTreePath<T...>& path)
         {
-          auto head = path[Dune::Indices::_0];
-          auto indices = std::make_index_sequence<sizeof...(T)-1>();
-          auto tailPath = Dune::unpackIntegerSequence(
-            [&](auto... i){ return treePath(path[i+1]...); }, indices);
+          auto head = TypeTree::front(path);
+          auto tailPath = TypeTree::pop_front(path);
           return accessByTreePath(container[head], tailPath);
         }
 

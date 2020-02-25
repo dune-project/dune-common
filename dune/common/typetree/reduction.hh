@@ -24,7 +24,9 @@ namespace Dune {
       template <class R, class Arg0, class Arg1, class... Args>
       decltype(auto) pairwiseReduction(R reduction, Arg0&& arg0, Arg1&& arg1, Args&&... args)
       {
-        return pairwiseReduction(reduction, reduction(std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)), std::forward<Args>(args)...);
+        return pairwiseReduction(reduction,
+          reduction(std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)),
+          std::forward<Args>(args)...);
       }
 
     } // end namespace Impl
@@ -35,23 +37,41 @@ namespace Dune {
      */
 
     //! Calculate a quantity as a reduction over the leaf nodes of a TypeTree.
+    /**
+     * This function can be used to easily calculate a quantity that is a result of applying
+     * a functor to the leaf nodes of a TypeTree and combining the functor return values
+     * pairwise by a `reduction` functor combining the a startValue `init`.
+     *
+     * The functor, reduction and result should all have cheap copy constructors to ensure
+     * good performance.
+     **/
     template<class Tree, class T, class F, class R>
     decltype(auto) accumulateOverLeafs(const Tree& tree, T init, F functor, R reduction)
     {
-      const auto flatTree = leafTreePathTuple<Tree, TreePathType::fullyStatic>();
+      auto flatTree = leafTreePathTuple<Tree, TreePathType::fullyStatic>();
       return Std::apply([&](auto... tp) -> decltype(auto) {
         return Impl::pairwiseReduction(reduction, init, functor(TypeTree::child(tree,tp), tp)...);
       }, flatTree);
     }
 
+    //! Calculate a quantity as a reduction over the leaf nodes of a TypeTree.
+    /**
+     * This function can be used to easily calculate a quantity that is a result of applying
+     * a functor to the leaf nodes of a TypeTree and combining the functor return values
+     * by a variadic `reduction` functor.
+     *
+     * The functor and reduction should all have cheap copy constructors to ensure
+     * good performance.
+     **/
     template<class Tree, class F, class R>
     decltype(auto) accumulateOverLeafs(const Tree& tree, F functor, R reduction)
     {
-      const auto flatTree = leafTreePathTuple<Tree, TreePathType::fullyStatic>();
+      auto flatTree = leafTreePathTuple<Tree, TreePathType::fullyStatic>();
       return Std::apply([&](auto... tp) -> decltype(auto) {
         return reduction(functor(TypeTree::child(tree,tp), tp)...);
       }, flatTree);
     }
+
 
     //! Calculate a quantity as a reduction over the leaf nodes of a TypeTree.
     /**

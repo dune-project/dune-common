@@ -33,8 +33,7 @@ namespace Dune {
       typedef ProxyNode<ProxiedNode> Node;
 
       template<bool enabled = !proxiedNodeIsConst>
-      std::enable_if_t<enabled, Node&>
-      node ()
+      std::enable_if_t<enabled, Node&> node ()
       {
         return static_cast<Node&>(*this);
       }
@@ -69,8 +68,7 @@ namespace Dune {
        * \returns a const reference to the i-th child.
        */
       template<std::size_t k>
-      const Child<k>&
-      child (index_constant<k> = {}) const
+      const Child<k>& child (index_constant<k> = {}) const
       {
         return node().proxiedNode().template child<k>();
       }
@@ -78,16 +76,16 @@ namespace Dune {
       //! Sets the i-th child to the passed-in value.
       template<std::size_t k, class C, bool enabled = !proxiedNodeIsConst>
       std::enable_if_t<enabled>
-      setChild (C&& child, index_constant<k> kk = {})
+      setChild (C&& child, index_constant<k> = {})
       {
-        node().proxiedNode().setChild(std::forward<C>(child), kk);
+        node().proxiedNode().template setChild<k>(std::forward<C>(child));
       }
 
+      //! Return the storage container for the nodes
       const typename ProxiedNode::NodeStorage& nodeStorage () const
       {
         return node().proxiedNode().nodeStorage();
       }
-
     };
 
     //! Mixin class providing methods for child access with run-time parameter.
@@ -118,6 +116,8 @@ namespace Dune {
 
     public:
 
+      using ChildType = typename ProxiedNode::ChildType;
+
       //! @name Child Access (Dynamic methods)
       //! @{
 
@@ -126,7 +126,7 @@ namespace Dune {
        * \returns a reference to the i-th child.
        */
       template<bool enabled = !proxiedNodeIsConst>
-      std::enable_if_t<enabled, typename ProxiedNode::ChildType&>
+      std::enable_if_t<enabled, ChildType&>
       child (std::size_t i)
       {
         return node().proxiedNode().child(i);
@@ -136,8 +136,7 @@ namespace Dune {
       /**
        * \returns a const reference to the i-th child.
        */
-      const typename ProxiedNode::ChildType&
-      child (std::size_t i) const
+      const ChildType& child (std::size_t i) const
       {
         return node().proxiedNode().child(i);
       }
@@ -191,7 +190,6 @@ namespace Dune {
       : public NodeBase<ProxyNode<Node>>
       , public ProxyNodeBase<Node,NodeTag<Node>>
     {
-
       static const bool proxiedNodeIsConst = std::is_const<std::remove_reference_t<Node>>::value;
 
       template <class N>

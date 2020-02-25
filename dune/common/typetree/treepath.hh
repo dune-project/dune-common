@@ -256,6 +256,17 @@ namespace Dune {
       return HybridTreePath<T...,index_constant<i>>{std::tuple_cat(tp.data_,std::make_tuple(i_))};
     }
 
+    //! Remove the last index from a `HybridTreePath`.
+    /**
+     * This function returns a new `HybridTreePath` with size one less than the passed `tp`
+     */
+    template<class T0, class... T>
+    constexpr auto pop_back (const HybridTreePath<T0,T...>& tp)
+    {
+      auto indices = std::index_sequence_for<T...>{};
+      return Dune::unpackIntegerSequence([&](auto... i){ return treePath(tp[i]...); }, indices);
+    }
+
     //! Prepends a run time index to a `HybridTreePath`.
     /**
      * This function returns a new `HybridTreePath` with the run time index `i` prepended.
@@ -286,6 +297,18 @@ namespace Dune {
     {
       return HybridTreePath<index_constant<i>,T...>{std::tuple_cat(std::make_tuple(_i),tp.data_)};
     }
+
+    //! Remove the first index from a `HybridTreePath`.
+    /**
+     * This function returns a new `HybridTreePath` with size one less than the passed `tp`
+     */
+    template<class T0, class... T>
+    constexpr auto pop_front (const HybridTreePath<T0,T...>& tp)
+    {
+      auto indices = std::index_sequence_for<T...>{};
+      return Dune::unpackIntegerSequence([&](auto... i){ return treePath(tp[i+1]...); }, indices);
+    }
+
 
 #ifndef DOXYGEN
 
