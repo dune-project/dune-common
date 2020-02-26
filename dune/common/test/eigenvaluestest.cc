@@ -10,6 +10,8 @@
 #include <dune/common/fmatrixev.hh>
 
 #include <algorithm>
+#include <numeric>
+#include <limits>
 #include <complex>
 
 using namespace Dune;
@@ -88,35 +90,106 @@ void testRosserMatrix()
 template <class field_type, int dim>
 void testSymmetricFieldMatrix()
 {
+  using limits = std::numeric_limits<field_type>;
+  std::cout << "checking eigenvalues of matrices with size " << dim << std::flush;
+
   int numberOfTestMatrices = 10;
 
   for (int i=0; i<numberOfTestMatrices; i++)
   {
-    // Construct pseudo-random symmetric test matrix
+    // Construct pseudo-random matrix
+    FieldMatrix<field_type,dim,dim> tmpMatrix;
+    for (int j=0; j<dim; j++)
+      for (int k=0; k<dim; k++)
+        tmpMatrix[j][k] = field_type(rand()%(dim*dim));
+
+    // Calculate an SPD matrix as A*A^T
     FieldMatrix<field_type,dim,dim> testMatrix;
     for (int j=0; j<dim; j++)
       for (int k=j; k<dim; k++)
-        testMatrix[j][k] = testMatrix[k][j] = ((int)(M_PI*j*k*i))%100 - 1;
+        testMatrix[j][k] = testMatrix[k][j] =
+          tmpMatrix[j][k] * tmpMatrix[k][j];
+
+    // trace
+    field_type trace = 0.0;
+    for (int j=0; j<dim; j++)
+      trace += testMatrix[j][j];
 
     FieldVector<field_type,dim> eigenValues;
-    FMatrixHelp::eigenValues(testMatrix, eigenValues);
+    FieldMatrix<field_type,dim,dim> eigenVectors;
+    FMatrixHelp::eigenValuesVectors(testMatrix, eigenValues, eigenVectors);
 
+    field_type ev_sum = std::accumulate(eigenValues.begin(),eigenValues.end(),0.0);
+
+    FieldVector<field_type,dim> absEigenValues;
+    field_type ev_min = limits::max();
+    field_type ev_max = 0.0;
+    for (int j=0; j<dim; j++)
+    {
+      absEigenValues[j] = std::abs(eigenValues[j]);
+      ev_min = std::min(ev_min,absEigenValues[j]);
+      ev_max = std::max(ev_max,absEigenValues[j]);
+    }
+
+    if (std::abs(trace - ev_sum) > dim * std::abs(ev_max) * std::numeric_limits<field_type>::epsilon())
+      DUNE_THROW(MathError, "Sum of eigenvalues computed by FMatrixHelp::eigenValues differs from the trace");
+
+    // we disabled the following test, as the determinant is instable
+    // and thus round-off errors are hard to control
+    /*
     // Make sure the compute numbers really are the eigenvalues
     for (int j=0; j<dim; j++)
     {
-      FieldMatrix<field_type,dim,dim> copy = testMatrix;
+      auto copy = testMatrix;
       for (int k=0; k<dim; k++)
         copy[k][k] -= eigenValues[j];
 
-      if (std::fabs(copy.determinant()) > 1e-8)
-        DUNE_THROW(MathError, "Value computed by FMatrixHelp::eigenValues is not an eigenvalue");
+      auto th = ev_max * dim * std::sqrt(limits::epsilon()); // relative error
+      if (std::abs(copy.determinant()) > th)
+        DUNE_THROW(MathError, "Value " << eigenValues[j] << " computed by FMatrixHelp::eigenValues is not an eigenvalue");
     }
+    */
+
+    // Check eigenvectors are finite and not 0
+    for (int j=0; j<dim; j++)
+    {
+      if (! std::isfinite(field_type(1.0) / eigenVectors[j].two_norm()))
+        DUNE_THROW(MathError, "Vector " << eigenVectors[j] << " computed by FMatrixHelp::eigenValuesVectors is invalid");
+    }
+
+    // Check eigenvalue/eigenvectors pairs
+    for (int j=0; j<dim; j++)
+    {
+      auto copy = testMatrix;
+      for (int k=0; k<dim; k++)
+        copy[k][k] -= eigenValues[j];
+
+      FieldVector<field_type,dim> result;
+      copy.mv(eigenVectors[j],result);
+      field_type th = ev_max*dim*limits::epsilon(); // relative error
+      if (result.two_norm() > th)
+        DUNE_THROW(MathError, "Vector " << eigenVectors[j] << " with eigenvalue " << eigenValues[j] << " computed by FMatrixHelp::eigenValuesVectors is not an eigenvector");
+    }
+
+    // Check orthogonality of eigenvectors
+    for (int j=0; j<dim; j++)
+      for (int k=j+1; k<dim; k++)
+      {
+        auto th = (eigenVectors[j].one_norm() + eigenVectors[k].one_norm()) * limits::epsilon();
+        auto foo = eigenVectors[j] * eigenVectors[k];
+        std::cout << foo << "\t" << th << std::endl;
+        if (std::abs(foo) > th)
+          DUNE_THROW(MathError, "Vectors " << eigenVectors[j] << " and " << eigenVectors[k] << " computed by FMatrixHelp::eigenValuesVectors are not orthonormal");
+      }
 
     // Make sure the eigenvalues are in ascending order
     for (int j=0; j<dim-1; j++)
-      if (eigenValues[j] > eigenValues[j+1] + 1e-10)
-        DUNE_THROW(MathError, "Values computed by FMatrixHelp::eigenValues are not in ascending order");
+      if (eigenValues[j] > eigenValues[j+1])
+        DUNE_THROW(MathError, "Eigenvalues [" << eigenValues << "] computed by FMatrixHelp::eigenValues are not in ascending order");
+
+    std::cout << "." << std::flush;
   }
+  std::cout << std::endl;
 }
 
 int main()
@@ -129,6 +202,10 @@ int main()
 
   testSymmetricFieldMatrix<double,2>();
   testSymmetricFieldMatrix<double,3>();
+#if HAVE_LAPACK
+  testSymmetricFieldMatrix<double,4>();
+  testSymmetricFieldMatrix<double,200>();
+#endif // HAVE_LAPACK
 
   return 0;
 }
