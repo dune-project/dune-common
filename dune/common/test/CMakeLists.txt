@@ -422,6 +422,9 @@ add_dune_vc_flags(vcexpectedimpltest)
 dune_add_test(SOURCES alignedallocatortest.cc
               LINK_LIBRARIES dunecommon)
 
+dune_add_test(SOURCES spantest.cc
+              LINK_LIBRARIES dunecommon)
+
 install(
   FILES
   arithmetictestsuite.hh
