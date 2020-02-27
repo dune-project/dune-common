@@ -17,6 +17,7 @@
 
 #include <dune/common/classname.hh>
 #include <dune/common/fmatrix.hh>
+#include <dune/common/fmatrixev.hh>
 #include <dune/common/ftraits.hh>
 #include <dune/common/quadmath.hh>
 #include <dune/common/rangeutilities.hh>
@@ -692,7 +693,7 @@ void test_ev()
 
   // compute eigenvalues
   Dune::FieldVector<ft,8> eig;
-  Dune::FMatrixHelp::eigenValues(A, eig);
+  Dune::FMatrixHelp::eigenValuesVectors<Dune::FMatrixHelp::ComputationJob::OnlyEigenvalues>(A, eig);
 
   // test results
   Dune::FieldVector<ft,8> ref;

@@ -12,6 +12,7 @@
 #include <cmath>
 #include <cassert>
 
+#include <dune/common/deprecated.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
@@ -404,7 +405,9 @@ namespace Dune {
       eigenValuesVectorsLapack(matrix,eigenValues,eigenVectors,Tag);
     }
 
+    /** legacy function */
     template <int dim, typename K>
+    DUNE_DEPRECATED_MSG("`eigenValues`is deprecated, use `eigenValuesVectors<FMatrixHelp::ComputationJob::OnlyEigenvalues>` instead")
     static void eigenValues(const FieldMatrix<K, dim, dim>& matrix,
                             FieldVector<K ,dim>& eigenValues)
     {
