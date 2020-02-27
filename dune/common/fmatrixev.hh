@@ -404,6 +404,13 @@ namespace Dune {
       eigenValuesVectorsLapack(matrix,eigenValues,eigenVectors,Tag);
     }
 
+    template <int dim, typename K>
+    static void eigenValues(const FieldMatrix<K, dim, dim>& matrix,
+                            FieldVector<K ,dim>& eigenValues)
+    {
+      eigenValuesVectors<ComputationJob::OnlyEigenvalues>(matrix, eigenValues);
+    }
+
     /** \brief calculates the eigenvalues and/or eigenvectors of a symmetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
         \param[out] eigenValues FieldVector that contains eigenvalues in
