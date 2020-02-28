@@ -39,7 +39,7 @@ namespace Dune {
     LoopSIMD() {}
 
     // broadcast constructor initializing the content with a given value
-    LoopSIMD(T i) : LoopSIMD() {
+    LoopSIMD(Simd::Scalar<T> i) : LoopSIMD() {
       this->fill(i);
     }
 
@@ -77,7 +77,7 @@ namespace Dune {
     DUNE_SIMD_LOOP_UNARY_OP(~);
 
     auto operator!() const {
-      LoopSIMD<bool,S> out;
+      LoopSIMD<Simd::Mask<T>,S> out;
       for(std::size_t i=0; i<S; i++){
         out[i] = !((*this)[i]);
       }
@@ -100,7 +100,7 @@ namespace Dune {
 
     //Assignment operators
 #define DUNE_SIMD_LOOP_ASSIGNMENT_OP(SYMBOL)              \
-    auto operator SYMBOL(const T s) {                     \
+    auto operator SYMBOL(const Simd::Scalar<T> s) {               \
       for(std::size_t i=0; i<S; i++){                     \
         (*this)[i] SYMBOL s;                              \
       }                                                   \
@@ -130,7 +130,7 @@ namespace Dune {
   //Arithmetic operators
 #define DUNE_SIMD_LOOP_BINARY_OP(SYMBOL)                        \
   template<class T, std::size_t S>                              \
-  auto operator SYMBOL(const LoopSIMD<T,S> &v, const T s) {     \
+  auto operator SYMBOL(const LoopSIMD<T,S> &v, const Simd::Scalar<T> s) { \
     LoopSIMD<T,S> out;                                          \
     for(std::size_t i=0; i<S; i++){                             \
       out[i] = v[i] SYMBOL s;                                   \
@@ -138,7 +138,7 @@ namespace Dune {
     return out;                                                 \
   }                                                             \
   template<class T, std::size_t S>                              \
-  auto operator SYMBOL(const T s, const LoopSIMD<T,S> &v) {     \
+  auto operator SYMBOL(const Simd::Scalar<T> s, const LoopSIMD<T,S> &v) { \
     LoopSIMD<T,S> out;                                          \
     for(std::size_t i=0; i<S; i++){                             \
       out[i] = s SYMBOL v[i];                                   \
@@ -196,17 +196,17 @@ namespace Dune {
 
   //Comparison operators
 #define DUNE_SIMD_LOOP_COMPARISON_OP(SYMBOL)                      \
-  template<class T, std::size_t S, class U>                                \
+  template<class T, std::size_t S, class U>                       \
   auto operator SYMBOL(const LoopSIMD<T,S> &v, const U s) {       \
-    LoopSIMD<bool,S> out;                                         \
+    LoopSIMD<Simd::Mask<T>,S> out;                                \
     for(std::size_t i=0; i<S; i++){                               \
       out[i] = v[i] SYMBOL s;                                     \
     }                                                             \
     return out;                                                   \
   }                                                               \
   template<class T, std::size_t S>                                \
-  auto operator SYMBOL(const T s, const LoopSIMD<T,S> &v) {       \
-    LoopSIMD<bool,S> out;                                         \
+  auto operator SYMBOL(const Simd::Scalar<T> s, const LoopSIMD<T,S> &v) { \
+    LoopSIMD<Simd::Mask<T>,S> out;                                \
     for(std::size_t i=0; i<S; i++){                               \
       out[i] = s SYMBOL v[i];                                     \
     }                                                             \
@@ -215,7 +215,7 @@ namespace Dune {
   template<class T, std::size_t S>                                \
   auto operator SYMBOL(const LoopSIMD<T,S> &v,                    \
                        const LoopSIMD<T,S> &w) {                  \
-    LoopSIMD<bool,S> out;                                         \
+    LoopSIMD<Simd::Mask<T>,S> out;                                \
     for(std::size_t i=0; i<S; i++){                               \
       out[i] = v[i] SYMBOL w[i];                                  \
     }                                                             \
@@ -234,16 +234,16 @@ namespace Dune {
   //Boolean operators
 #define DUNE_SIMD_LOOP_BOOLEAN_OP(SYMBOL)                         \
   template<class T, std::size_t S>                                \
-  auto operator SYMBOL(const LoopSIMD<T,S> &v, const T s) {       \
-    LoopSIMD<bool,S> out;                                         \
+  auto operator SYMBOL(const LoopSIMD<T,S> &v, const Simd::Scalar<T> s) { \
+    LoopSIMD<Simd::Mask<T>,S> out;                                \
     for(std::size_t i=0; i<S; i++){                               \
       out[i] = v[i] SYMBOL s;                                     \
     }                                                             \
     return out;                                                   \
   }                                                               \
   template<class T, std::size_t S>                                \
-  auto operator SYMBOL(const bool s, const LoopSIMD<T,S> &v) {    \
-    LoopSIMD<bool,S> out;                                         \
+  auto operator SYMBOL(const Simd::Mask<T> s, const LoopSIMD<T,S> &v) { \
+    LoopSIMD<Simd::Mask<T>,S> out;                                      \
     for(std::size_t i=0; i<S; i++){                               \
       out[i] = s SYMBOL v[i];                                     \
     }                                                             \
@@ -252,7 +252,7 @@ namespace Dune {
   template<class T, std::size_t S>                                \
   auto operator SYMBOL(const LoopSIMD<T,S> &v,                    \
                        const LoopSIMD<T,S> &w) {                  \
-    LoopSIMD<bool,S> out;                                         \
+    LoopSIMD<Simd::Mask<T>,S> out;                                      \
       for(std::size_t i=0; i<S; i++){                             \
         out[i] = v[i] SYMBOL w[i];                                \
       }                                                           \
@@ -285,86 +285,92 @@ namespace Dune {
       //Implementation of SIMD-interface-types
       template<class T, std::size_t S>
       struct ScalarType<LoopSIMD<T,S>> {
-        using type = T;
+        using type = Simd::Scalar<T>;
       };
 
       template<class U, class T, std::size_t S>
       struct RebindType<U, LoopSIMD<T,S>> {
-        using type =  LoopSIMD<U,S>;
+        using type =  LoopSIMD<Simd::Rebind<U, T>,S>;
       };
 
       //Implementation of SIMD-interface-functionality
       template<class T, std::size_t S>
-      struct LaneCount<LoopSIMD<T,S>> : index_constant<S> {};
+      struct LaneCount<LoopSIMD<T,S>> : index_constant<S*lanes<T>()> {};
 
       template<class T, std::size_t S>
-      T&& lane(ADLTag<5>, std::size_t l, LoopSIMD<T,S> &&v) {
-        return std::move(v[l]);
+      auto lane(ADLTag<5>, std::size_t l, LoopSIMD<T,S> &&v)
+        -> decltype(std::move(Simd::lane(l%lanes<T>(), v[l/lanes<T>()])))
+      {
+        return std::move(Simd::lane(l%lanes<T>(), v[l/lanes<T>()]));
       }
 
       template<class T, std::size_t S>
-      const T& lane(ADLTag<5>, std::size_t l, const LoopSIMD<T,S> &v) {
-       return v[l];
+      auto lane(ADLTag<5>, std::size_t l, const LoopSIMD<T,S> &v)
+        -> decltype(Simd::lane(l%lanes<T>(), v[l/lanes<T>()]))
+      {
+        return Simd::lane(l%lanes<T>(), v[l/lanes<T>()]);
       }
 
       template<class T, std::size_t S>
-      T& lane(ADLTag<5>, std::size_t l, LoopSIMD<T,S> &v) {
-        return v[l];
+      auto lane(ADLTag<5>, std::size_t l, LoopSIMD<T,S> &v)
+        -> decltype(Simd::lane(l%lanes<T>(), v[l/lanes<T>()]))
+      {
+        return Simd::lane(l%lanes<T>(), v[l/lanes<T>()]);
       }
 
       template<class T, std::size_t S>
-      auto cond(ADLTag<5>, LoopSIMD<bool,S> mask,
+      auto cond(ADLTag<5>, LoopSIMD<Simd::Mask<T>,S> mask,
                 LoopSIMD<T,S> ifTrue, LoopSIMD<T,S> ifFalse) {
         LoopSIMD<T,S> out;
         for(std::size_t i=0; i<S; i++) {
-          out[i] = mask[i] ? ifTrue[i] : ifFalse[i];
+          out[i] = Simd::cond(mask[i], ifTrue[i], ifFalse[i]);
         }
         return out;
       }
 
-      template<class M, class T>
-      auto cond(ADLTag<5, std::is_same<bool, Scalar<M> >::value>, M mask,
-                LoopSIMD<T,Simd::lanes<M>()> ifTrue,
-                LoopSIMD<T,Simd::lanes<M>()> ifFalse)
+      template<class M, class T, std::size_t S>
+      auto cond(ADLTag<5, std::is_same<bool, Simd::Scalar<M> >::value
+                          && Simd::lanes<M>() == Simd::lanes<LoopSIMD<T,S> >()>,
+                M mask, LoopSIMD<T,S> ifTrue, LoopSIMD<T,S> ifFalse)
       {
-        LoopSIMD<T,Simd::lanes<M>()> out;
+        LoopSIMD<T,S> out;
         for(auto l : range(Simd::lanes(mask)))
-          out[l] = Simd::lane(l, mask) ? ifTrue[l] : ifFalse[l];
+          Simd::lane(l, out) = Simd::lane(l, mask) ? Simd::lane(l, ifTrue) : Simd::lane(l, ifFalse);
         return out;
       }
 
-      template<std::size_t S>
-      bool anyTrue(ADLTag<5>, LoopSIMD<bool,S> mask) {
+      template<class M, std::size_t S>
+      bool anyTrue(ADLTag<5>, LoopSIMD<M,S> mask) {
         bool out = false;
         for(std::size_t i=0; i<S; i++) {
-          out |= mask[i];
+          out |= Simd::anyTrue(mask[i]);
         }
         return out;
       }
 
-      template<std::size_t S>
-      bool allTrue(ADLTag<5>, LoopSIMD<bool,S> mask) {
+      template<class M, std::size_t S>
+      bool allTrue(ADLTag<5>, LoopSIMD<M,S> mask) {
         bool out = true;
         for(std::size_t i=0; i<S; i++) {
-          out &= mask[i];
+          out &= Simd::allTrue(mask[i]);
         }
         return out;
       }
 
-      template<std::size_t S>
-      bool anyFalse(ADLTag<5>, LoopSIMD<bool,S> mask) {
+      template<class M, std::size_t S>
+      bool anyFalse(ADLTag<5>, LoopSIMD<M,S> mask) {
         bool out = false;
         for(std::size_t i=0; i<S; i++) {
-          out |= !mask[i];
+          out |= Simd::anyFalse(mask[i]);
         }
         return out;
       }
 
-      template<std::size_t S>
-      bool allFalse(ADLTag<5>, LoopSIMD<bool,S> mask) {
+      template<class M, std::size_t S>
+      bool allFalse(ADLTag<5>, LoopSIMD<M,S> mask) {
         bool out = true;
         for(std::size_t i=0; i<S; i++) {
-          out &= !mask[i];
+          out &= Simd::allFalse(mask[i]);
         }
         return out;
       }
@@ -382,7 +388,7 @@ namespace Dune {
 
 #define DUNE_SIMD_LOOP_CMATH_UNARY_OP(expr)                          \
   template<class T, std::size_t S, typename Sfinae =                 \
-           typename std::enable_if_t<!std::is_integral<T>::value> >  \
+           typename std::enable_if_t<!std::is_integral<Simd::Scalar<T>>::value> > \
   auto expr(const LoopSIMD<T,S> &v) {                                \
     using std::expr;                                                 \
     LoopSIMD<T,S> out;                                               \
@@ -395,7 +401,7 @@ namespace Dune {
 
 #define DUNE_SIMD_LOOP_CMATH_UNARY_OP_WITH_RETURN(expr, returnType)  \
   template<class T, std::size_t S, typename Sfinae =                 \
-           typename std::enable_if_t<!std::is_integral<T>::value> >  \
+           typename std::enable_if_t<!std::is_integral<Simd::Scalar<T>>::value> > \
   auto expr(const LoopSIMD<T,S> &v) {                                \
     using std::expr;                                                 \
     LoopSIMD<returnType,S> out;                                      \
@@ -521,7 +527,7 @@ namespace Dune {
   namespace MathOverloads {
     template<class T, std::size_t S>
     auto isNaN(const LoopSIMD<T,S> &v, PriorityTag<3>, ADLTag) {
-      LoopSIMD<bool,S> out;
+      LoopSIMD<Simd::Mask<T>,S> out;
       for(auto l : range(S))
         out[l] = Dune::isNaN(v[l]);
       return out;
@@ -529,7 +535,7 @@ namespace Dune {
 
     template<class T, std::size_t S>
     auto isInf(const LoopSIMD<T,S> &v, PriorityTag<3>, ADLTag) {
-      LoopSIMD<bool,S> out;
+      LoopSIMD<Simd::Mask<T>,S> out;
       for(auto l : range(S))
         out[l] = Dune::isInf(v[l]);
       return out;
@@ -537,7 +543,7 @@ namespace Dune {
 
     template<class T, std::size_t S>
     auto isFinite(const LoopSIMD<T,S> &v, PriorityTag<3>, ADLTag) {
-      LoopSIMD<bool,S> out;
+      LoopSIMD<Simd::Mask<T>,S> out;
       for(auto l : range(S))
         out[l] = Dune::isFinite(v[l]);
       return out;
