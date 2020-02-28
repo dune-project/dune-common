@@ -80,7 +80,7 @@ void testRosserMatrix()
       DUNE_THROW(MathError, "Symmetric matrix has complex eigenvalue");
 
     if( std::fabs(reference[i] - eigenRealParts[i]) > 1e-10 )
-      DUNE_THROW(MathError,"error computing eigenvalues");
+      DUNE_THROW(MathError,"error computing eigenvalues of Rosser-matrix");
   }
 
   std::cout << "Eigenvalues of Rosser matrix: " << eigenComplex << std::endl;
@@ -102,7 +102,7 @@ void testSymmetricFieldMatrix()
 
     FieldVector<field_type,dim> eigenValues;
     FieldMatrix<field_type,dim,dim> eigenVectors;
-    FMatrixHelp::eigenValuesVectors<FMatrixHelp::ComputationJob::EigenvaluesEigenvectors>(testMatrix, eigenValues, eigenVectors);
+    FMatrixHelp::eigenValuesVectors(testMatrix, eigenValues, eigenVectors);
 
     // Make sure the compute numbers really are the eigenvalues
     /*for (int j=0; j<dim; j++)
@@ -188,15 +188,15 @@ void checkMatrixWithReference(FieldMatrix<field_type, dim, dim> matrix,
   FieldMatrix<field_type,dim,dim> eigenvectors;
   FieldVector<field_type,dim> eigenvalues;
 
-  FMatrixHelp::eigenValuesVectors<FMatrixHelp::ComputationJob::EigenvaluesEigenvectors>(matrix, eigenvalues, eigenvectors);
+  FMatrixHelp::eigenValuesVectors(matrix, eigenvalues, eigenvectors);
 
   if((eigenvalues-refEval).two_norm() > th)
-    DUNE_THROW(MathError, "Eigenvalues [" << eigenvalues << "] computed by FMatrixHelp::eigenValues do not match the reference solution [" << refEval << "]");
+    DUNE_THROW(MathError, "Eigenvalues [" << eigenvalues << "] computed by FMatrixHelp::eigenValuesVectors do not match the reference solution [" << refEval << "]");
   try {
     compareEigenvectorSets(eigenvectors, refEval, refEvec);
   }
   catch(Dune::MathError& e) {
-    std::cerr << "Computations by `FMatrixHelp::eigenVectors`: " << e.what() << std::endl;
+    std::cerr << "Computations by `FMatrixHelp::eigenValuesVectors`: " << e.what() << std::endl;
   }
 }
 
@@ -208,8 +208,8 @@ void checkMatrixWithLAPACK(FieldMatrix<field_type, dim, dim> matrix)
   FieldMatrix<field_type,dim,dim> eigenvectors, refEvec;
   FieldVector<field_type,dim> eigenvalues, refEval;
 
-  FMatrixHelp::eigenValuesVectors<FMatrixHelp::ComputationJob::EigenvaluesEigenvectors>(matrix, eigenvalues, eigenvectors);
-  FMatrixHelp::eigenValuesVectorsLapack(matrix, refEval, refEvec, FMatrixHelp::ComputationJob::EigenvaluesEigenvectors);
+  FMatrixHelp::eigenValuesVectors(matrix, eigenvalues, eigenvectors);
+  FMatrixHelp::eigenValuesVectorsLapack(matrix, refEval, refEvec);
 
   if((eigenvalues-refEval).two_norm() > th)
     DUNE_THROW(MathError, "Eigenvalues [" << eigenvalues << "] computed by FMatrixHelp::eigenValuesVectorsLapack do not match the reference solution [" << refEval << "]");

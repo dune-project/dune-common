@@ -17,6 +17,7 @@
 
 #include <dune/common/classname.hh>
 #include <dune/common/fmatrix.hh>
+#include <dune/common/fmatrixev.hh>
 #include <dune/common/ftraits.hh>
 #include <dune/common/quadmath.hh>
 #include <dune/common/rangeutilities.hh>
