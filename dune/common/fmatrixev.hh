@@ -39,9 +39,10 @@ namespace Dune {
       const long int* lwork, long int* info);
 
     namespace Impl {
-      enum Jobs { OnlyEigenvalues, EigenvaluesEigenvectors };
-      constexpr std::array<char,2> LapackTags = {'n', 'v'};
+      //internal tag to activate/disable code for eigenvector calculation at compile time
+      enum Jobs { OnlyEigenvalues=0, EigenvaluesEigenvectors=1 };
 
+      //internal dummy used if only eigenvalues are to be calculated
       template<typename K, int dim>
       using EVDummy = FieldMatrix<K, dim, dim>;
 
@@ -373,7 +374,10 @@ namespace Dune {
                                                FieldMatrix<K, dim, dim>& eigenVectors)
       {
         {
-          const char jobz = LapackTags[Tag];
+          /*Lapack uses a proprietary tag to determine whether both eigenvalues and
+            -vectors ('v') or only eigenvalues ('n') should be calculated */
+          const char jobz = "nv"[Tag];
+
           const long int N = dim ;
           const char uplo = 'u'; // use upper triangular matrix
 
