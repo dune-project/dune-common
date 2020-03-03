@@ -376,6 +376,8 @@ namespace Dune
       template<class T>
       struct isIteratorTransformation<TaggedCallback<IteratorTransformationTag,T>> : public std::true_type {};
 
+    protected:
+
       static decltype(auto) transform(const F& f, const I& it) {
         if constexpr (isIteratorTransformation<F>::value)
           return f(it);
@@ -581,7 +583,7 @@ namespace Dune
       }
 
       reference operator[](difference_type n) noexcept {
-        return transform(*f_, it_+n);
+        return Base::transform(*f_, it_+n);
       }
 
       friend
