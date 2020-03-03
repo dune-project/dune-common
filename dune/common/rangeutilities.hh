@@ -307,6 +307,38 @@ namespace Dune
 
 
 
+  /**
+   * \brief Helper class for tagging a callback
+   *
+   * \tparam Tag Tag to add to the function
+   * \tparam F Type of function to tag
+   *
+   * This derives from the given function and
+   * statically adds a tag to it. This can be used
+   * to provide additional information to algorithms.
+   */
+  template<class Tag, class F>
+  struct TaggedCallback : public F
+  {
+    TaggedCallback(F&& f) : F(f) {}
+  };
+
+  /**
+   * \brief Create a tagged callback
+   *
+   * \tparam Tag Tag to add to the function
+   * \tparam F Type of function to tag
+   *
+   * This returns a tagged version TaggedCallback<Tag,F>
+   * which stored a copy of F
+   */
+  template<class Tag, class F>
+  auto taggedCallback(F&& f) {
+    return TaggedCallback<Tag, std::decay_t<F>>(std::forward<F>(f));
+  }
+
+  struct IteratorTransformationTag {};
+
   namespace Impl
   {
 
@@ -335,14 +367,25 @@ namespace Dune
     template <class I, class F, class C = typename std::iterator_traits<I>::iterator_category>
     class TransformedRangeIterator;
 
-
-
     template <class I, class F>
     class TransformedRangeIterator<I,F,std::forward_iterator_tag>
     {
+      template<class T>
+      struct isIteratorTransformation : public std::false_type {};
+
+      template<class T>
+      struct isIteratorTransformation<TaggedCallback<IteratorTransformationTag,T>> : public std::true_type {};
+
+      static decltype(auto) transform(const F& f, const I& it) {
+        if constexpr (isIteratorTransformation<F>::value)
+          return f(it);
+        else
+          return f(*it);
+      }
+
     public:
       using iterator_category = std::forward_iterator_tag;
-      using reference = decltype(std::declval<F>()(*(std::declval<I>())));
+      using reference = decltype(transform(std::declval<F>(), std::declval<I>()));
       using value_type = std::decay_t<reference>;
       using pointer = PointerProxy<value_type>;
 
@@ -376,12 +419,12 @@ namespace Dune
 
       // Dereferencing returns a value created by the function
       constexpr reference operator*() const noexcept {
-        return (*f_)(*it_);
+        return transform(*f_, it_);
       }
 
       // Dereferencing returns a value created by the function
       pointer operator->() const noexcept {
-        return (*f_)(*it_);
+        return transform(*f_, it_);
       }
 
       constexpr TransformedRangeIterator& operator=(const TransformedRangeIterator& other) = default;
@@ -538,7 +581,7 @@ namespace Dune
       }
 
       reference operator[](difference_type n) noexcept {
-        return (*f_)(*(it_+n));
+        return transform(*f_, it_+n);
       }
 
       friend
@@ -577,7 +620,13 @@ namespace Dune
    * transformation function leaving the underlying range
    * unchanged.
    *
-   * The transformation may either return temorary values
+   * If the transformation callback is a
+   * TaggedCallback<IteratorTransformationTag,F>,
+   * then the transformation is applied to the iterator directly
+   * instead of the dereferenced iterator. This allows to incorpoarte
+   * additional information from the iterator in the transformation.
+   *
+   * The transformation may either return temporary values
    * or l-value references. In the former case the range behaves
    * like a proxy-container. In the latter case it forwards these
    * references allowing, e.g., to sort a subset of some container
