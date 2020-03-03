@@ -307,6 +307,16 @@ namespace Dune
 
 
 
+  /**
+   * \brief Tag to enable value based transformations in TransformedRangeView
+   */
+  struct ValueTransformationTag {};
+
+  /**
+   * \brief Tag to enable iterator based transformations in TransformedRangeView
+   */
+  struct IteratorTransformationTag {};
+
   namespace Impl
   {
 
@@ -332,17 +342,24 @@ namespace Dune
     // An iterator transforming a wrapped iterator using
     // an unary function. It inherits the iterator-category
     // of the underlying iterator.
-    template <class I, class F, class C = typename std::iterator_traits<I>::iterator_category>
+    template <class I, class F, class TransformationType, class C = typename std::iterator_traits<I>::iterator_category>
     class TransformedRangeIterator;
 
-
-
-    template <class I, class F>
-    class TransformedRangeIterator<I,F,std::forward_iterator_tag>
+    template <class I, class F, class TransformationType>
+    class TransformedRangeIterator<I,F,TransformationType,std::forward_iterator_tag>
     {
+    protected:
+
+      static decltype(auto) transform(const F& f, const I& it) {
+        if constexpr (std::is_same_v<TransformationType,IteratorTransformationTag>)
+          return f(it);
+        else
+          return f(*it);
+      }
+
     public:
       using iterator_category = std::forward_iterator_tag;
-      using reference = decltype(std::declval<F>()(*(std::declval<I>())));
+      using reference = decltype(transform(std::declval<F>(), std::declval<I>()));
       using value_type = std::decay_t<reference>;
       using pointer = PointerProxy<value_type>;
 
@@ -376,12 +393,12 @@ namespace Dune
 
       // Dereferencing returns a value created by the function
       constexpr reference operator*() const noexcept {
-        return (*f_)(*it_);
+        return transform(*f_, it_);
       }
 
       // Dereferencing returns a value created by the function
       pointer operator->() const noexcept {
-        return (*f_)(*it_);
+        return transform(*f_, it_);
       }
 
       constexpr TransformedRangeIterator& operator=(const TransformedRangeIterator& other) = default;
@@ -412,12 +429,12 @@ namespace Dune
 
 
 
-    template <class I, class F>
-    class TransformedRangeIterator<I,F,std::bidirectional_iterator_tag> :
-      public TransformedRangeIterator<I,F,std::forward_iterator_tag>
+    template <class I, class F, class T>
+    class TransformedRangeIterator<I,F,T,std::bidirectional_iterator_tag> :
+      public TransformedRangeIterator<I,F,T,std::forward_iterator_tag>
     {
     protected:
-      using Base = TransformedRangeIterator<I,F,std::forward_iterator_tag>;
+      using Base = TransformedRangeIterator<I,F,T,std::forward_iterator_tag>;
       using Base::it_;
       using Base::f_;
     public:
@@ -461,12 +478,12 @@ namespace Dune
 
 
 
-    template <class I, class F>
-    class TransformedRangeIterator<I,F,std::random_access_iterator_tag> :
-      public TransformedRangeIterator<I,F,std::bidirectional_iterator_tag>
+    template <class I, class F, class T>
+    class TransformedRangeIterator<I,F,T,std::random_access_iterator_tag> :
+      public TransformedRangeIterator<I,F,T,std::bidirectional_iterator_tag>
     {
     protected:
-      using Base = TransformedRangeIterator<I,F,std::bidirectional_iterator_tag>;
+      using Base = TransformedRangeIterator<I,F,T,std::bidirectional_iterator_tag>;
       using Base::it_;
       using Base::f_;
     public:
@@ -538,7 +555,7 @@ namespace Dune
       }
 
       reference operator[](difference_type n) noexcept {
-        return (*f_)(*(it_+n));
+        return Base::transform(*f_, it_+n);
       }
 
       friend
@@ -577,7 +594,7 @@ namespace Dune
    * transformation function leaving the underlying range
    * unchanged.
    *
-   * The transformation may either return temorary values
+   * The transformation may either return temporary values
    * or l-value references. In the former case the range behaves
    * like a proxy-container. In the latter case it forwards these
    * references allowing, e.g., to sort a subset of some container
@@ -595,8 +612,15 @@ namespace Dune
    *
    * \tparam R Underlying range.
    * \tparam F Unary function used to transform the values in the underlying range.
+   * \tparam T Class for describing how to apply the transformation
+   *
+   * T has to be either ValueTransformationTag (default) or IteratorTransformationTag.
+   * In the former case, the transformation is applied to the values
+   * obtained by dereferencing the wrapped iterator. In the latter case
+   * it is applied to the iterator directly, allowing to access non-standard
+   * functions of the iterator.
    **/
-  template <class R, class F>
+  template <class R, class F, class T=ValueTransformationTag>
   class TransformedRangeView
   {
     using  RawConstIterator = std::decay_t<decltype(std::declval<const R>().begin())>;
@@ -610,7 +634,7 @@ namespace Dune
      * This inherits the iterator_category of the iterators
      * of the underlying range.
      */
-    using const_iterator = Impl::TransformedRangeIterator<RawConstIterator, F>;
+    using const_iterator = Impl::TransformedRangeIterator<RawConstIterator, F, T>;
 
     /**
      * \brief Iterator type
@@ -618,7 +642,7 @@ namespace Dune
      * This inherits the iterator_category of the iterators
      * of the underlying range.
      */
-    using iterator = Impl::TransformedRangeIterator<RawIterator, F>;
+    using iterator = Impl::TransformedRangeIterator<RawIterator, F, T>;
 
     /**
      * \brief Export type of the wrapped untransformed range.
@@ -635,7 +659,10 @@ namespace Dune
     constexpr TransformedRangeView(RR&& rawRange, const F& f) noexcept :
       rawRange_(std::forward<RR>(rawRange)),
       f_(f)
-    {}
+    {
+      static_assert(std::is_same_v<T, ValueTransformationTag> or std::is_same_v<T, IteratorTransformationTag>,
+          "The TransformationType passed to TransformedRangeView has to be either ValueTransformationTag or IteratorTransformationTag.");
+    }
 
     /**
      * \brief Obtain a iterator to the first element
@@ -716,11 +743,14 @@ namespace Dune
    * This behaves like a range providing `begin()` and `end()`.
    * The iterators over this range internally iterate over
    * the wrapped range. When dereferencing the iterator,
-   * the value is transformed on-the-fly using a given
-   * transformation function leaving the underlying range
-   * unchanged.
+   * the wrapped iterator is dereferenced,
+   * the given transformation function is applied on-the-fly,
+   * and the result is returned.
+   * I.e, if \code it \endcode is the wrapped iterator
+   * and \code f \endcode is the transformation function,
+   * then the result of \code f(*it) \endcode is returned
    *
-   * The transformation may either return temorary values
+   * The transformation may either return temporary values
    * or l-value references. In the former case the range behaves
    * like a proxy-container. In the latter case it forwards these
    * references allowing, e.g., to sort a subset of some container
@@ -735,7 +765,40 @@ namespace Dune
   template <class R, class F>
   auto transformedRangeView(R&& range, const F& f)
   {
-    return TransformedRangeView<R, F>(std::forward<R>(range), f);
+    return TransformedRangeView<R, F, ValueTransformationTag>(std::forward<R>(range), f);
+  }
+
+  /**
+   * \brief Create a TransformedRangeView using an iterator transformation
+   *
+   * \param range The range to transform
+   * \param f Unary function that should the applied to the entries of the range.
+   *
+   * This behaves like a range providing `begin()` and `end()`.
+   * The iterators over this range internally iterate over
+   * the wrapped range. When dereferencing the iterator,
+   * the given transformation function is applied to the wrapped
+   * iterator on-the-fly and the result is returned.
+   * I.e, if \code it \endcode is the wrapped iterator
+   * and \code f \endcode is the transformation function,
+   * then the result of \code f(it) \endcode is returned.
+   *
+   * The transformation may either return temorary values
+   * or l-value references. In the former case the range behaves
+   * like a proxy-container. In the latter case it forwards these
+   * references allowing, e.g., to sort a subset of some container
+   * by applying a transformation to an index-range for those values.
+   *
+   * The iterators of the TransformedRangeView have the same
+   * iterator_category as the ones of the wrapped container.
+   *
+   * If range is an r-value, then the TransformedRangeView stores it by value,
+   * if range is an l-value, then the TransformedRangeView stores it by reference.
+   **/
+  template <class R, class F>
+  auto iteratorTransformedRangeView(R&& range, const F& f)
+  {
+    return TransformedRangeView<R, F, IteratorTransformationTag>(std::forward<R>(range), f);
   }
 
 }

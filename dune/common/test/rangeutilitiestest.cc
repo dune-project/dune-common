@@ -123,6 +123,17 @@ auto testTransformedRangeView()
       suite.check(&(*(r.begin())) == &(a[0]))
         << "reference points to wrong location";
     }
+    // Check iterator based transformation
+    {
+      auto r = Dune::iteratorTransformedRangeView(a, [&](auto&& it) { return (*it)+(it-a.begin());});
+      suite.check(checkRandomAccessNumberRangeSums(r, 9, 1, 5))
+        << "incorrect values in transformedRangeView of l-value";
+      suite.check(checkRangeIterators(r))
+        << "iterator test fails for transformedRangeView of l-value";
+      suite.check(checkRangeSize(r))
+        << "checking size fails for transformedRangeView of l-value";
+      a = a_backup;
+    }
   });
   // Check transformedRangeView with on the fly range
   {
