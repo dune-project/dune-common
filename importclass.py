@@ -59,7 +59,8 @@ def load(className, includeFiles, *args):
     ctorArgs = ", ".join([argTypes[i] + " arg" + str(i) for i in range(len(argTypes))])
     source += "cls.def( pybind11::init( [] ( "+ctorArgs+" ) {\n"
     source += "return new "+className+"( "+",".join(["arg"+str(i) for i in range(len(argTypes))]) +"); \n"
-    source += " }));\n"
+    source += "})"+" ".join([", pybind11::keep_alive< 1, {} >()".format(i+2) for i in range(len(argTypes))]) + "\n"
+    source += ");\n"
     source += "}"
 
     return builder.load(moduleName, source, signature).cls(*args)
