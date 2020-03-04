@@ -137,8 +137,7 @@ namespace Dune
         );
       if (!entry.second)
         return;
-      auto cls = entry.first;
-      registerFieldVector(scope,cls);
+      registerFieldVector(scope, entry.first);
     }
 
     template<class K, int... size>

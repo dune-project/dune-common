@@ -25,17 +25,11 @@ namespace Dune
     // registerFieldMatrix
     // -------------------
 
-    template< class K, int m, int n >
-    inline static void registerFieldMatrix ( pybind11::handle scope )
+    template< class K, int m, int n, class ...options >
+    void registerFieldMatrix ( pybind11::handle scope, pybind11::class_<Dune::FieldMatrix<K,m,n>, options...> cls )
     {
       typedef Dune::FieldMatrix< K, m, n > FM;
-
-      auto entry = insertClass<FM>( scope, "FieldMatrix_"+std::to_string(m)+"_"+std::to_string(n), pybind11::buffer_protocol(),
-          GenerateTypeName("Dune::FieldMatrix",Dune::MetaType<K>(),m,n), IncludeFiles{"dune/common/fmatrix.hh"}
-        );
-      if (!entry.second)
-        return;
-      auto cls = entry.first;
+      using pybind11::operator""_a;
 
       if( (m == 1) && (n == 1) )
       {
@@ -89,6 +83,18 @@ namespace Dune
       registerDenseMatrix< FM >( cls );
     }
 
+    template< class K, int m, int n >
+    inline static void registerFieldMatrix ( pybind11::handle scope )
+    {
+      typedef Dune::FieldMatrix< K, m, n > FM;
+
+      auto entry = insertClass<FM>( scope, "FieldMatrix_"+std::to_string(m)+"_"+std::to_string(n), pybind11::buffer_protocol(),
+          GenerateTypeName("Dune::FieldMatrix",Dune::MetaType<K>(),m,n), IncludeFiles{"dune/common/fmatrix.hh"}
+        );
+      if (!entry.second)
+        return;
+      registerFieldMatrix( scope, entry.first );
+    }
   } // namespace Python
 
 } // namespace Dune
