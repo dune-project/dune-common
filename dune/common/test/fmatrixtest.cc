@@ -840,6 +840,10 @@ void test_initialisation()
   assert(A[0][1] == 2);
   assert(A[1][0] == 3);
   assert(A[1][1] == 4);
+
+  // Test assignment of FieldMatrix<.,1,1> from FieldVector<.,1>
+  Dune::FieldVector<double,1> v = {42};
+  DUNE_UNUSED Dune::FieldMatrix<double,1,1> mat = v;
 }
 
 int main()

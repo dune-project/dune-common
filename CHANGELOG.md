@@ -3,6 +3,9 @@
 - Previous versions of dune-common imported `std::shared_ptr` and `std::make_shared`
   into the `Dune` namespace.  dune-common-2.8 stops doing that.
 
+- Assignment of a `FieldMatrix` from a `FieldVector<.,1>` is now possible.
+  The `FieldVector` is interpreted as a scalar.
+
 - The file `function.hh` is deprecated.  It contained the two base classes
   `Function` and `VirtualFunction`.  In downstream codes, these should be
   replaced by C++ function objects, `std::function` etc.
