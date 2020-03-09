@@ -28,9 +28,13 @@ namespace Dune {
     *  for memory management and basic accessibility.
     *  This type is capable of dealing with all (well-defined) operators
     *  and is usable with the SIMD-interface.
+    *
+    *  @tparam T Base type. Could also be vectorized type.
+    *  @tparam S Size
+    *  @tparam minimum alignment. It is inherited to rebound types.
     */
 
-  template<class T, std::size_t S, std::size_t A = alignof(T)>
+  template<class T, std::size_t S, std::size_t A = 0>
   class alignas(A) LoopSIMD : public std::array<T,S> {
 
   public:
@@ -300,7 +304,7 @@ namespace Dune {
 
       template<class U, class T, std::size_t S, std::size_t A>
       struct RebindType<U, LoopSIMD<T,S,A>> {
-        using type =  LoopSIMD<Simd::Rebind<U, T>,S,std::max(A, alignof(Simd::Rebind<U, T>))>;
+        using type =  LoopSIMD<Simd::Rebind<U, T>,S,A>;
       };
 
       //Implementation of SIMD-interface-functionality

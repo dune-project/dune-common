@@ -8,6 +8,8 @@ namespace Dune {
   namespace Simd {
 
     template void UnitTest::check@POINT@<LoopSIMD<@SCALAR@, 5> >();
+    template void UnitTest::check@POINT@<LoopSIMD<@SCALAR@, 5, 64> >();
+    template void UnitTest::check@POINT@<LoopSIMD<LoopSIMD<@SCALAR@, 2>, 5> >();
 
   } //namespace Simd
 } // namespace Dune
