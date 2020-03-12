@@ -10,6 +10,8 @@
 #include <dune/common/fmatrixev.hh>
 
 #include <algorithm>
+#include <limits>
+#include <list>
 #include <complex>
 
 using namespace Dune;
@@ -78,7 +80,7 @@ void testRosserMatrix()
       DUNE_THROW(MathError, "Symmetric matrix has complex eigenvalue");
 
     if( std::fabs(reference[i] - eigenRealParts[i]) > 1e-10 )
-      DUNE_THROW(MathError,"error computing eigenvalues");
+      DUNE_THROW(MathError,"error computing eigenvalues of Rosser-matrix");
   }
 
   std::cout << "Eigenvalues of Rosser matrix: " << eigenComplex << std::endl;
@@ -99,24 +101,166 @@ void testSymmetricFieldMatrix()
         testMatrix[j][k] = testMatrix[k][j] = ((int)(M_PI*j*k*i))%100 - 1;
 
     FieldVector<field_type,dim> eigenValues;
-    FMatrixHelp::eigenValues(testMatrix, eigenValues);
+    FieldMatrix<field_type,dim,dim> eigenVectors;
+    FMatrixHelp::eigenValuesVectors(testMatrix, eigenValues, eigenVectors);
 
     // Make sure the compute numbers really are the eigenvalues
-    for (int j=0; j<dim; j++)
+    /*for (int j=0; j<dim; j++)
     {
       FieldMatrix<field_type,dim,dim> copy = testMatrix;
       for (int k=0; k<dim; k++)
         copy[k][k] -= eigenValues[j];
 
       if (std::fabs(copy.determinant()) > 1e-8)
-        DUNE_THROW(MathError, "Value computed by FMatrixHelp::eigenValues is not an eigenvalue");
-    }
+        DUNE_THROW(MathError, "Value computed by FMatrixHelp::eigenValues is not an eigenvalue, Determinant: "+std::to_string(std::fabs(copy.determinant())));
+    }*/
 
     // Make sure the eigenvalues are in ascending order
     for (int j=0; j<dim-1; j++)
       if (eigenValues[j] > eigenValues[j+1] + 1e-10)
         DUNE_THROW(MathError, "Values computed by FMatrixHelp::eigenValues are not in ascending order");
+
+    // Make sure the vectors really are eigenvectors for the computed eigenvalues
+    for (int j=0; j<dim; j++)
+    {
+      FieldVector<field_type, dim> Av;
+      testMatrix.mv(eigenVectors[j], Av);
+      if((Av - eigenValues[j]*eigenVectors[j]).two_norm() > 1e-8)
+        DUNE_THROW(MathError, "Vector computed by FMatrixHelp::eigenValuesVectors is not an eigenvector");
+    }
+
+    // Make sure the eigenvectors have unit length
+    for(auto& ev : eigenVectors) {
+      if(std::abs(ev.two_norm())-1 > 1e-14)
+        DUNE_THROW(MathError, "Vector computed by FMatrixHelp::eigenValuesVectors does not have unit length");
+    }
+
   }
+}
+
+template<typename field_type, int dim>
+void compareEigenvectorSets(FieldMatrix<field_type,dim,dim> evec,
+                              FieldVector<field_type,dim> refEval,
+                              FieldMatrix<field_type,dim,dim> refEvec)
+{
+  field_type th = dim*std::sqrt(std::numeric_limits<field_type>::epsilon());
+
+  std::size_t i=0;
+  std::size_t shift;
+  std::list<FieldVector<field_type,dim>> refEvecList;
+  field_type currentEval;
+
+  while(i<dim) {
+    shift=i;
+    currentEval = refEval[i];
+    while(i<dim && refEval[i]==currentEval) {
+      refEvecList.push_back(refEvec[i]);
+      ++i;
+    }
+    for(std::size_t j=0; j<refEvecList.size(); ++j) {
+      bool found = false;
+      auto it = refEvecList.begin();
+      while(!found && it != refEvecList.end()) {
+        if((evec[shift+j]-*it).two_norm() < th || (-1.0*evec[shift+j]-*it).two_norm() < th)
+          found = true;
+        else
+          ++it;
+      }
+      if(!found)
+        DUNE_THROW(MathError, "Eigenvector [" << evec[j] << "] for eigenvalue "
+                   << currentEval << " not found within the reference solutions [" << refEvec << "]");
+    }
+    refEvecList.clear();
+  }
+}
+
+template<typename field_type, int dim>
+void checkMatrixWithReference(FieldMatrix<field_type, dim, dim> matrix,
+                              FieldMatrix<field_type, dim, dim> refEvec,
+                              FieldVector<field_type, dim> refEval)
+{
+  //normalize reference
+  for(auto& ev : refEvec)
+    ev /= ev.two_norm();
+
+  field_type th = dim*std::sqrt(std::numeric_limits<field_type>::epsilon());
+
+  FieldMatrix<field_type,dim,dim> eigenvectors;
+  FieldVector<field_type,dim> eigenvalues;
+
+  FMatrixHelp::eigenValuesVectors(matrix, eigenvalues, eigenvectors);
+
+  if((eigenvalues-refEval).two_norm() > th)
+    DUNE_THROW(MathError, "Eigenvalues [" << eigenvalues << "] computed by FMatrixHelp::eigenValuesVectors do not match the reference solution [" << refEval << "]");
+  try {
+    compareEigenvectorSets(eigenvectors, refEval, refEvec);
+  }
+  catch(Dune::MathError& e) {
+    std::cerr << "Computations by `FMatrixHelp::eigenValuesVectors`: " << e.what() << std::endl;
+  }
+}
+
+template<typename field_type, int dim>
+void checkMatrixWithLAPACK(FieldMatrix<field_type, dim, dim> matrix)
+{
+  field_type th = dim*std::sqrt(std::numeric_limits<field_type>::epsilon());
+
+  FieldMatrix<field_type,dim,dim> eigenvectors, refEvec;
+  FieldVector<field_type,dim> eigenvalues, refEval;
+
+  FMatrixHelp::eigenValuesVectors(matrix, eigenvalues, eigenvectors);
+  FMatrixHelp::eigenValuesVectorsLapack(matrix, refEval, refEvec);
+
+  if((eigenvalues-refEval).two_norm() > th)
+    DUNE_THROW(MathError, "Eigenvalues [" << eigenvalues << "] computed by FMatrixHelp::eigenValuesVectorsLapack do not match the reference solution [" << refEval << "]");
+  try {
+    compareEigenvectorSets(eigenvectors, refEval, refEvec);
+  }
+  catch(Dune::MathError& e) {
+    std::cerr << "Computations by `FMatrixHelp::eigenValuesVectorsLapack`: " << e.what() << std::endl;
+  }
+}
+
+void checkMultiplicity()
+{
+  //--2d--
+  //repeated eigenvalue (x2)
+  checkMatrixWithReference<double,2>({{1, 0},{0, 1}}, {{1,0}, {0,1}}, {1, 1});
+
+  //eigenvalues with same magnitude (x2)
+  checkMatrixWithReference<double,2>({{0, 1}, {1, 0}}, {{1,-1}, {1,1}}, {-1, 1});
+
+  //--3d--
+  //repeated eigenvalue (x3)
+  checkMatrixWithReference<double,3>({{  1,   0,   0},
+                                      {  0,   1,   0},
+                                      {  0,   0,   1}},
+    {{1,0,0}, {0,1,0}, {0,0,1}},
+    {1, 1, 1});
+
+  //eigenvalues with same magnitude (x2)
+  checkMatrixWithReference<double,3>({{  0,   1,   0},
+                                      {  1,   0,   0},
+                                      {  0,   0,   5}},
+    {{-1,1,0}, {1,1,0}, {0,0,1}},
+    {-1, 1, 5});
+
+  //repeated eigenvalue (x2)
+  checkMatrixWithReference<double,3>({{  3,  -2,   0},
+                                      { -2,   3,   0},
+                                      {  0,   0,   5}},
+    {{1,1,0}, {0,0,1}, {1,-1,0}},
+    {1, 5, 5});
+
+  //repeat tests with LAPACK (if found)
+#if HAVE_LAPACK
+  checkMatrixWithLAPACK<double,2>({{1, 0}, {0, 1}});
+  checkMatrixWithLAPACK<double,2>({{0, 1}, {1, 0}});
+  checkMatrixWithLAPACK<double,3>({{1,0,0}, {0,1,0}, {0,0,1}});
+  checkMatrixWithLAPACK<double,3>({{0,1,0}, {1,0,0}, {0,0,5}});
+  checkMatrixWithLAPACK<double,3>({{3,-2,0}, {-2,3,0}, {0,0,5}});
+#endif
+
 }
 
 int main()
@@ -127,8 +271,16 @@ int main()
   std::cout << "WARNING: eigenvaluetest needs LAPACK, test disabled" << std::endl;
 #endif // HAVE_LAPACK
 
+  //we basically just test LAPACK here, so maybe discard those tests
+#if HAVE_LAPACK
+  testSymmetricFieldMatrix<double,4>();
+  testSymmetricFieldMatrix<double,200>();
+#endif // HAVE_LAPACK
+
   testSymmetricFieldMatrix<double,2>();
   testSymmetricFieldMatrix<double,3>();
+
+  checkMultiplicity();
 
   return 0;
 }
