@@ -1,11 +1,11 @@
 # .. cmake_module::
 #
-#    Module that checks for supported C++20, C++17, C++14 and non-standard features.
+#    Module that checks for supported C++20, C++17 and non-standard features.
 #
 #    The behaviour of this module can be modified by the following variable:
 #
 #    :ref:`DISABLE_CXX_VERSION_CHECK`
-#       Disable checking for std=c++14 (c++17, ...)
+#       Disable checking for std=c++20 (c++23, ...)
 #
 #    This module internally sets the following variables, which are then
 #    exported into the config.h of the current dune module.
@@ -42,12 +42,12 @@ include(CheckCXXSourceCompiles)
 include(CheckCXXSymbolExists)
 
 # C++ standard versions that this test knows about
-set(CXX_VERSIONS 20 17 14)
+set(CXX_VERSIONS 20 17)
 
 
 # Compile tests for the different standard revisions; these test both the compiler
-# and the associated library to avoid problems like using a C++14 user-installed
-# compiler together with a non C++14-compliant stdlib from the system compiler.
+# and the associated library to avoid problems like using a C++20 user-installed
+# compiler together with a non C++20-compliant stdlib from the system compiler.
 
 # we need to escape semicolons in the tests to be able to stick them into a list
 string(REPLACE ";" "\;" cxx_20_test
@@ -80,39 +80,18 @@ string(REPLACE ";" "\;" cxx_17_test
   }
   ")
 
-string(REPLACE ";" "\;" cxx_14_test
-  "
-  #include <memory>
-
-  constexpr auto f(int i)
-  {
-    if (i > 0)
-      return i;
-    else
-      return -i;
-  }
-
-  int main() {
-    // lambdas with auto parameters are C++14 - so this checks the compiler
-    auto l = [](auto x) { return x; };
-    static_assert(f(4) == f(-4),\"\");
-    // std::make_unique() is a C++14 library feature - this checks whether the
-    // compiler uses a C++14 compliant library.
-    auto v = std::make_unique<int>(l(0));
-    return *v;
-  }
-  ")
-
 # build a list out of the pre-escaped tests
-set(CXX_VERSIONS_TEST "${cxx_20_test}" "${cxx_17_test}" "${cxx_14_test}")
+set(CXX_VERSIONS_TEST "${cxx_20_test}" "${cxx_17_test}")
 
 # these are appended to "-std=c++" and tried in this order
 # note the escaped semicolons; that's necessary to create a nested list
-set(CXX_VERSIONS_FLAGS "20\;2a" "17\;1z" "14\;1y")
+set(CXX_VERSIONS_FLAGS "20\;2a" "17\;1z")
 
 # by default, we enable C++17 for now, but not C++20
 # The user can override this choice by explicitly setting this variable
-set(CXX_MAX_STANDARD 17 CACHE STRING "highest version of the C++ standard to enable. This version is also used if the version check is disabled")
+set(CXX_MAX_STANDARD 17
+    CACHE STRING
+    "highest version of the C++ standard to enable. This version is also used if the version check is disabled")
 
 
 function(dune_require_cxx_standard)
@@ -137,8 +116,8 @@ set up to not allow newer language standards than C++${CXX_MAX_STANDARD}. Try se
 CMake variable CXX_MAX_STANDARD to at least ${_VERSION}."
         )
     else()
-      if(${CXX_MAX_SUPPORTED_STANDARD} EQUAL 3)
-        set(CXX_STD_NAME 03)
+      if(${CXX_MAX_SUPPORTED_STANDARD} EQUAL 17)
+        set(CXX_STD_NAME 17)
       else()
         set(CXX_STD_NAME ${CXX_MAX_SUPPORTED_STANDARD})
       endif()
@@ -200,14 +179,14 @@ if(NOT DISABLE_CXX_VERSION_CHECK)
   if(NOT DEFINED CXX_MAX_SUPPORTED_STANDARD)
     # Let's just assume every compiler at least claims C++03 compliance by now
     message(WARNING "\
-Unable to determine C++ standard support for your compiler, falling back to C++03. \
+Unable to determine C++ standard support for your compiler, falling back to C++17. \
 If you know that your compiler supports a newer version of the standard, please set the CMake \
 variable DISABLE_CXX_VERSION_CHECK to true and the CMake variable CXX_MAX_SUPPORTED_STANDARD \
-to the highest version of the standard supported by your compiler (e.g. 14). If your compiler \
+to the highest version of the standard supported by your compiler (e.g. 20). If your compiler \
 needs custom flags to switch to that standard version, you have to manually add them to \
 CMAKE_CXX_FLAGS."
       )
-    set(CXX_MAX_SUPPORTED_STANDARD 3)
+    set(CXX_MAX_SUPPORTED_STANDARD 17)
   endif()
 else()
   # We did not check version but need to set maximum supported
@@ -215,8 +194,8 @@ else()
   set(CXX_MAX_SUPPORTED_STANDARD ${CXX_MAX_STANDARD})
 endif()
 
-# make sure we have at least C++14
-dune_require_cxx_standard(MODULE "DUNE" VERSION 14)
+# make sure we have at least C++17
+dune_require_cxx_standard(MODULE "DUNE" VERSION 17)
 
 # perform tests
 
