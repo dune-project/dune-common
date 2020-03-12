@@ -135,17 +135,6 @@
 
 /* end private */
 
-/* old feature support macros which were tested until 2.4, kept around for one more release */
-/* As these are now always supported due to the new compiler requirements, they are directly */
-/* defined without an explicit test. */
-#define HAVE_NULLPTR 1
-#define HAVE_CONSTEXPR 1
-#define HAVE_RANGE_BASED_FOR 1
-#define HAVE_NOEXCEPT_SPECIFIER 1
-#define HAVE_STD_DECLVAL 1
-#define HAVE_KEYWORD_FINAL 1
-#define MPI_2 1
-
 /* Define to 1 if the compiler properly supports testing for operator[] */
 #cmakedefine HAVE_IS_INDEXABLE_SUPPORT 1
 
