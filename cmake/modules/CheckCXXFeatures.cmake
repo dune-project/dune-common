@@ -19,15 +19,6 @@
 #    :code:`HAS_ATTRIBUTE_DEPRECATED_MSG`
 #       True if attribute deprecated("msg") is supported
 #
-#    :code:`DUNE_HAVE_CXX_CLASS_TEMPLATE_ARGUMENT_DEDUCTION`
-#       True if C++17's class template argument deduction is supported
-#
-#    :code:`DUNE_HAVE_CXX_OPTIONAL`
-#       True if C++17's optional implementation is supported
-#
-#    :code:`DUNE_HAVE_CXX_VARIANT`
-#       True if C++17's variant implementation is supported
-#
 # .. cmake_variable:: DISABLE_CXX_VERSION_CHECK
 #
 #    You may set this variable to TRUE to disable checking for
@@ -321,67 +312,6 @@ check_cxx_source_compiles("
 " HAVE_IS_INDEXABLE_SUPPORT
   )
 
-# support for C++17's class template deduction guides
-check_cxx_source_compiles("
-  #include <type_traits>
-
-  template<typename T1>
-  struct A {
-    A(T1) {}
-
-    template<typename T2>
-    A(T2, T2) {}
-  };
-
-  struct B {
-    using type = bool;
-  };
-
-  template<typename T2>
-  A(T2, T2)
-    -> A<typename T2::type>;
-
-  int main()
-  {
-    A a1(1);
-    static_assert(std::is_same_v< decltype(a1), A<int> >);
-
-    B b;
-    A a2(b, b);
-    static_assert(std::is_same_v< decltype(a2), A<bool> >);
-  }
-" DUNE_HAVE_CXX_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
-  )
-
-
-# support for C++17's optional implementation
-check_cxx_source_compiles("
-  #include <optional>
-  #include <string>
-
-  int main()
-  {
-    std::optional< std::string > a;
-    std::string b = a.value_or( \"empty\" );
-  }
-" DUNE_HAVE_CXX_OPTIONAL
-  )
-
-
-# support for C++17's variant implementation
-check_cxx_source_compiles("
-  #include <variant>
-  #include <string>
-
-  int main()
-  {
-    std::variant< int, std::string > a;
-    a = \"stringvalue\";
-    std::string b = std::get< std::string >(a);
-  }
-" DUNE_HAVE_CXX_VARIANT
-  )
-
 
 # find the threading library
 if(NOT DEFINED THREADS_PREFER_PTHREAD_FLAG)
@@ -473,38 +403,6 @@ if(NOT STDTHREAD_WORKS)
     "STDTHREAD_LINK_FLAGS.  If you think this test is wrong, set the cache "
     "variable STDTHREAD_WORKS.")
 endif(NOT STDTHREAD_WORKS)
-
-
-# Check whether we can conditionally throw exceptions in constexpr context to
-# signal errors both at compile time and at run time - this does not work in GCC 5
-check_cxx_source_compiles("
-  constexpr int foo(int bar)
-  {
-    if (bar < 0)
-      throw bar;
-    int r = 1;
-    for (int i = 0 ; i < bar ; ++i)
-      r += r;
-    return r;
-  }
-
-  int main()
-  {
-    static_assert(foo(4) == 16, \"test failed\");
-    return 0;
-  }
-" DUNE_SUPPORTS_CXX_THROW_IN_CONSTEXPR
-  )
-
-# Check whether the stadard library supports aligned_alloc()
-check_cxx_source_compiles("
-  #include <cstdlib>
-  int main()
-  {
-    int* p = static_cast<int*>(aligned_alloc(64, 64*sizeof *p));
-  }
-" DUNE_HAVE_C_ALIGNED_ALLOC
-  )
 
 
 

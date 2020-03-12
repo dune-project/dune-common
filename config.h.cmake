@@ -29,21 +29,6 @@
 /* does the compiler support __attribute__((unused))? */
 #cmakedefine HAS_ATTRIBUTE_UNUSED 1
 
-/* does the compiler support C++17's class template argument deduction? */
-#cmakedefine DUNE_HAVE_CXX_CLASS_TEMPLATE_ARGUMENT_DEDUCTION 1
-
-/* does the compiler support C++17's optional? */
-#cmakedefine DUNE_HAVE_CXX_OPTIONAL 1
-
-/* does the compiler support C++17's variant? */
-#cmakedefine DUNE_HAVE_CXX_VARIANT 1
-
-/* does the compiler support conditionally throwing exceptions in constexpr context? */
-#cmakedefine DUNE_SUPPORTS_CXX_THROW_IN_CONSTEXPR 1
-
-/* does the standard library provides aligned_alloc()? */
-#cmakedefine DUNE_HAVE_C_ALIGNED_ALLOC 1
-
 /* does the standard library provide <experimental/type_traits> ? */
 #cmakedefine DUNE_HAVE_HEADER_EXPERIMENTAL_TYPE_TRAITS 1
 
@@ -134,6 +119,17 @@
 #define VERSION "@DUNE_MOD_VERSION@"
 
 /* end private */
+
+
+/* old feature support macros which were tested until 2.7, kept around for one more release */
+/* As these are now always supported due to the new compiler requirements, they are directly */
+/* defined without an explicit test. */
+#define DUNE_HAVE_CXX_CLASS_TEMPLATE_ARGUMENT_DEDUCTION 1
+#define DUNE_HAVE_CXX_OPTIONAL 1
+#define DUNE_HAVE_CXX_VARIANT 1
+#define DUNE_SUPPORTS_CXX_THROW_IN_CONSTEXPR 1
+#define DUNE_HAVE_C_ALIGNED_ALLOC 1
+
 
 /* Define to 1 if the compiler properly supports testing for operator[] */
 #cmakedefine HAVE_IS_INDEXABLE_SUPPORT 1
