@@ -243,7 +243,7 @@ def resolve_dependencies(modules, module=None, deps=None):
 
     def resolve(desc, req):
         if not req(desc.version):
-            raise ValueError('Module \'' + module.name + '\' requires ' + desc.name + ' ' + req + '.')
+            raise ValueError('Module \'' + module.name + '\' requires ' + desc.name + ' ' + str(req) + '.')
         try:
             d = deps[desc.name]
             if d is None:
@@ -501,7 +501,7 @@ def get_dune_py_version():
     # change this version on the following events:
     # - a release (major version numbers)
     # - any incompatible change to the dune-py module (revison number)
-    return Version("2.6.0")
+    return Version("2.8.0")
 
 
 def get_cmake_definitions():
