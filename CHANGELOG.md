@@ -9,6 +9,10 @@
 
 ## build-system
 
+- The name mangling for Fortran libraries like BLAS and LAPACK is now done
+  without a Fortran compiler. So a Fortran compiler is no longer a built
+  requirement.
+
 - Remove the CMake function deprecated `inkscape_generate_png_from_svg`.
 
 - Remove the old and deprecated use of UseLATEX.cmake.
