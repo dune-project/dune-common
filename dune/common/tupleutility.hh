@@ -7,10 +7,10 @@
 #include <cstddef>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 
 #include <dune/common/hybridutilities.hh>
 #include <dune/common/std/type_traits.hh>
-#include <dune/common/std/utility.hh>
 
 namespace Dune {
 
@@ -121,7 +121,7 @@ namespace Dune {
 
 #ifndef DOXYGEN
   template<class Tuple, class Functor, std::size_t... I>
-  inline auto genericTransformTupleBackendImpl(Tuple& t, Functor& f, const Std::index_sequence<I...>& )
+  inline auto genericTransformTupleBackendImpl(Tuple& t, Functor& f, const std::index_sequence<I...>& )
     -> std::tuple<decltype(f(std::get<I>(t)))...>
   {
     return std::tuple<decltype(f(std::get<I>(t)))...>(f(std::get<I>(t))...);
@@ -129,16 +129,16 @@ namespace Dune {
 
   template<class... Args, class Functor>
   auto genericTransformTupleBackend(std::tuple<Args...>& t, Functor& f) ->
-    decltype(genericTransformTupleBackendImpl(t, f,Std::index_sequence_for<Args...>{}))
+    decltype(genericTransformTupleBackendImpl(t, f,std::index_sequence_for<Args...>{}))
   {
-    return genericTransformTupleBackendImpl(t, f,Std::index_sequence_for<Args...>{});
+    return genericTransformTupleBackendImpl(t, f,std::index_sequence_for<Args...>{});
   }
 
   template<class... Args, class Functor>
   auto genericTransformTupleBackend(const std::tuple<Args...>& t, Functor& f) ->
-    decltype(genericTransformTupleBackendImpl(t, f, Std::index_sequence_for<Args...>{}))
+    decltype(genericTransformTupleBackendImpl(t, f, std::index_sequence_for<Args...>{}))
   {
-    return genericTransformTupleBackendImpl(t, f, Std::index_sequence_for<Args...>{});
+    return genericTransformTupleBackendImpl(t, f, std::index_sequence_for<Args...>{});
   }
 #endif
 
@@ -225,7 +225,7 @@ namespace Dune {
     mutable std::tuple<Args&...> tup;
 
     template<class T, std::size_t... I>
-    inline auto apply(T&& t, const Std::index_sequence<I...>& ) ->
+    inline auto apply(T&& t, const std::index_sequence<I...>& ) ->
       decltype(TE<T>::apply(t,std::get<I>(tup)...)) const
     {
       return TE<T>::apply(t,std::get<I>(tup)...);
@@ -242,9 +242,9 @@ namespace Dune {
 
     template<class T>
     inline auto operator()(T&& t) ->
-      decltype(this->apply(t,Std::index_sequence_for<Args...>{})) const
+      decltype(this->apply(t,std::index_sequence_for<Args...>{})) const
     {
-      return apply(t,Std::index_sequence_for<Args...>{});
+      return apply(t,std::index_sequence_for<Args...>{});
     }
   };
 
