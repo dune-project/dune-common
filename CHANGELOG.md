@@ -17,6 +17,9 @@
 
 ## Deprecations and removals
 
+- Remove deprecated header `dune/common/std/memory.hh`; use `<memory>`
+  instead.
+
 - Deprecate header `dune/common/std/utility.hh`; use `<utility>` instead.
 
 # Release 2.7
