@@ -22,6 +22,8 @@
 
 - Deprecate header `dune/common/std/utility.hh`; use `<utility>` instead.
 
+- Deprecate header `dune/common/std/variant.hh`; use `<variant>` instead.
+
 # Release 2.7
 
 - Added fallback implementation to C++20 feature: `std::identity`.
