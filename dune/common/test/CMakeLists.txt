@@ -393,10 +393,6 @@ dune_add_test(SOURCES eigenvaluestest.cc
               CMAKE_GUARD LAPACK_FOUND
               LABELS quick)
 
-dune_add_test(SOURCES optionaltest.cc
-              LINK_LIBRARIES dunecommon
-              LABELS quick)
-
 dune_add_test(SOURCES versiontest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
