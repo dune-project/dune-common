@@ -242,7 +242,7 @@ namespace Dune
       const auto xShape = FixedTensorTraits< std::decay_t< X > >::shape();
 
       auto x = xArray.unchecked();
-      if( x.ndim() < xShape.size() )
+      if( (std::size_t)x.ndim() < xShape.size() )
         throw pybind11::value_error( "Tensor has too few dimensions" );
 
       for( auto i : range( xShape.size() ) )

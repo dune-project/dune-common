@@ -374,7 +374,7 @@ namespace Dune
     {
       std::vector<std::string> includes = typeName.includes();
       includes.insert(includes.end(), inc.begin(), inc.end());
-      auto entry = detail::insertIntoTypeRegistry<DuneType>(typeName.name(),"",includes);
+      detail::insertIntoTypeRegistry<DuneType>(typeName.name(),"",includes);
       // if (!entry.second)
       //   throw std::invalid_argument( (std::string("adding a class (") +
       //         typeid(DuneType).name() + ") twice to the type registry").c_str() );
