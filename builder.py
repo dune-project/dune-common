@@ -31,7 +31,7 @@ except:
     LOCK_SH = None
 
 class Builder:
-    def __init__(self, force=False):
+    def __init__(self, force=False, saveOutput=False):
         self.force = force
 
         self.build_args = dune.common.module.get_default_build_args()
@@ -50,6 +50,8 @@ class Builder:
             else:
                 logger.info('using pre configured dune-py module')
         comm.barrier()
+        self.savedOutput = None if not saveOutput else\
+                [open("generatorCompiler.out","w+"), open("generatorCompiler.err","w+")]
 
     def compile(self, target='all'):
         cmake_command = dune.common.module.get_cmake_command()
@@ -70,6 +72,17 @@ class Builder:
         if cmake.returncode > 0:
             logger.error(buffer_to_str(stderr))
             raise CompileError(buffer_to_str(stderr))
+        if self.savedOutput is not None:
+            self.savedOutput[0].write("###############################\n")
+            self.savedOutput[0].write("###" + " ".join(cmake_args)+"\n")
+            self.savedOutput[0].write(buffer_to_str(stdout))
+            self.savedOutput[0].write("\n###############################\n")
+            err = buffer_to_str(stderr)
+            if err is "":
+                self.savedOutput[1].write("###############################\n")
+                self.savedOutput[1].write("###" + " ".join(cmake_args)+"\n")
+                self.savedOutput[1].write(err)
+                self.savedOutput[1].write("\n###############################\n")
 
     def load(self, moduleName, source, pythonName):
         module = sys.modules.get("dune.generated." + moduleName)
