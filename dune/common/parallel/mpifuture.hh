@@ -3,7 +3,8 @@
 #ifndef DUNE_COMMON_PARALLEL_MPIFUTURE_HH
 #define DUNE_COMMON_PARALLEL_MPIFUTURE_HH
 
-#include <dune/common/std/optional.hh>
+#include <optional>
+
 #include <dune/common/parallel/communication.hh>
 #include <dune/common/parallel/future.hh>
 #include <dune/common/parallel/mpidata.hh>
@@ -47,7 +48,7 @@ namespace Dune{
       Buffer(V&& t)
         : value(std::forward<V>(t))
       {}
-      Std::optional<std::reference_wrapper<T>> value;
+      std::optional<std::reference_wrapper<T>> value;
       T& get(){
         T& tmp = *value;
         value.reset();

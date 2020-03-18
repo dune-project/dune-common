@@ -19,6 +19,15 @@
   `dune_add_latex_document' is a redirection to `add_latex_document`
   which internally uses `latexmk`.
 
+## Deprecations and removals
+
+- Remove deprecated header `dune/common/std/memory.hh`; use `<memory>`
+  instead.
+
+- Deprecate header `dune/common/std/utility.hh`; use `<utility>` instead.
+
+- Deprecate header `dune/common/std/variant.hh`; use `<variant>` instead.
+
 # Release 2.7
 
 - Added fallback implementation to C++20 feature: `std::identity`.

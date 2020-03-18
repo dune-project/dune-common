@@ -1,11 +1,11 @@
 # .. cmake_module::
 #
-#    Module that checks for supported C++20, C++17, C++14 and non-standard features.
+#    Module that checks for supported C++20, C++17 and non-standard features.
 #
 #    The behaviour of this module can be modified by the following variable:
 #
 #    :ref:`DISABLE_CXX_VERSION_CHECK`
-#       Disable checking for std=c++14 (c++17, ...)
+#       Disable checking for std=c++20 (c++23, ...)
 #
 #    This module internally sets the following variables, which are then
 #    exported into the config.h of the current dune module.
@@ -18,15 +18,6 @@
 #
 #    :code:`HAS_ATTRIBUTE_DEPRECATED_MSG`
 #       True if attribute deprecated("msg") is supported
-#
-#    :code:`DUNE_HAVE_CXX_CLASS_TEMPLATE_ARGUMENT_DEDUCTION`
-#       True if C++17's class template argument deduction is supported
-#
-#    :code:`DUNE_HAVE_CXX_OPTIONAL`
-#       True if C++17's optional implementation is supported
-#
-#    :code:`DUNE_HAVE_CXX_VARIANT`
-#       True if C++17's variant implementation is supported
 #
 # .. cmake_variable:: DISABLE_CXX_VERSION_CHECK
 #
@@ -42,12 +33,12 @@ include(CheckCXXSourceCompiles)
 include(CheckCXXSymbolExists)
 
 # C++ standard versions that this test knows about
-set(CXX_VERSIONS 20 17 14)
+set(CXX_VERSIONS 20 17)
 
 
 # Compile tests for the different standard revisions; these test both the compiler
-# and the associated library to avoid problems like using a C++14 user-installed
-# compiler together with a non C++14-compliant stdlib from the system compiler.
+# and the associated library to avoid problems like using a C++20 user-installed
+# compiler together with a non C++20-compliant stdlib from the system compiler.
 
 # we need to escape semicolons in the tests to be able to stick them into a list
 string(REPLACE ";" "\;" cxx_20_test
@@ -80,39 +71,18 @@ string(REPLACE ";" "\;" cxx_17_test
   }
   ")
 
-string(REPLACE ";" "\;" cxx_14_test
-  "
-  #include <memory>
-
-  constexpr auto f(int i)
-  {
-    if (i > 0)
-      return i;
-    else
-      return -i;
-  }
-
-  int main() {
-    // lambdas with auto parameters are C++14 - so this checks the compiler
-    auto l = [](auto x) { return x; };
-    static_assert(f(4) == f(-4),\"\");
-    // std::make_unique() is a C++14 library feature - this checks whether the
-    // compiler uses a C++14 compliant library.
-    auto v = std::make_unique<int>(l(0));
-    return *v;
-  }
-  ")
-
 # build a list out of the pre-escaped tests
-set(CXX_VERSIONS_TEST "${cxx_20_test}" "${cxx_17_test}" "${cxx_14_test}")
+set(CXX_VERSIONS_TEST "${cxx_20_test}" "${cxx_17_test}")
 
 # these are appended to "-std=c++" and tried in this order
 # note the escaped semicolons; that's necessary to create a nested list
-set(CXX_VERSIONS_FLAGS "20\;2a" "17\;1z" "14\;1y")
+set(CXX_VERSIONS_FLAGS "20\;2a" "17\;1z")
 
 # by default, we enable C++17 for now, but not C++20
 # The user can override this choice by explicitly setting this variable
-set(CXX_MAX_STANDARD 17 CACHE STRING "highest version of the C++ standard to enable. This version is also used if the version check is disabled")
+set(CXX_MAX_STANDARD 17
+    CACHE STRING
+    "highest version of the C++ standard to enable. This version is also used if the version check is disabled")
 
 
 function(dune_require_cxx_standard)
@@ -137,8 +107,8 @@ set up to not allow newer language standards than C++${CXX_MAX_STANDARD}. Try se
 CMake variable CXX_MAX_STANDARD to at least ${_VERSION}."
         )
     else()
-      if(${CXX_MAX_SUPPORTED_STANDARD} EQUAL 3)
-        set(CXX_STD_NAME 03)
+      if(${CXX_MAX_SUPPORTED_STANDARD} EQUAL 17)
+        set(CXX_STD_NAME 17)
       else()
         set(CXX_STD_NAME ${CXX_MAX_SUPPORTED_STANDARD})
       endif()
@@ -200,14 +170,14 @@ if(NOT DISABLE_CXX_VERSION_CHECK)
   if(NOT DEFINED CXX_MAX_SUPPORTED_STANDARD)
     # Let's just assume every compiler at least claims C++03 compliance by now
     message(WARNING "\
-Unable to determine C++ standard support for your compiler, falling back to C++03. \
+Unable to determine C++ standard support for your compiler, falling back to C++17. \
 If you know that your compiler supports a newer version of the standard, please set the CMake \
 variable DISABLE_CXX_VERSION_CHECK to true and the CMake variable CXX_MAX_SUPPORTED_STANDARD \
-to the highest version of the standard supported by your compiler (e.g. 14). If your compiler \
+to the highest version of the standard supported by your compiler (e.g. 20). If your compiler \
 needs custom flags to switch to that standard version, you have to manually add them to \
 CMAKE_CXX_FLAGS."
       )
-    set(CXX_MAX_SUPPORTED_STANDARD 3)
+    set(CXX_MAX_SUPPORTED_STANDARD 17)
   endif()
 else()
   # We did not check version but need to set maximum supported
@@ -215,8 +185,8 @@ else()
   set(CXX_MAX_SUPPORTED_STANDARD ${CXX_MAX_STANDARD})
 endif()
 
-# make sure we have at least C++14
-dune_require_cxx_standard(MODULE "DUNE" VERSION 14)
+# make sure we have at least C++17
+dune_require_cxx_standard(MODULE "DUNE" VERSION 17)
 
 # perform tests
 
@@ -342,67 +312,6 @@ check_cxx_source_compiles("
 " HAVE_IS_INDEXABLE_SUPPORT
   )
 
-# support for C++17's class template deduction guides
-check_cxx_source_compiles("
-  #include <type_traits>
-
-  template<typename T1>
-  struct A {
-    A(T1) {}
-
-    template<typename T2>
-    A(T2, T2) {}
-  };
-
-  struct B {
-    using type = bool;
-  };
-
-  template<typename T2>
-  A(T2, T2)
-    -> A<typename T2::type>;
-
-  int main()
-  {
-    A a1(1);
-    static_assert(std::is_same_v< decltype(a1), A<int> >);
-
-    B b;
-    A a2(b, b);
-    static_assert(std::is_same_v< decltype(a2), A<bool> >);
-  }
-" DUNE_HAVE_CXX_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
-  )
-
-
-# support for C++17's optional implementation
-check_cxx_source_compiles("
-  #include <optional>
-  #include <string>
-
-  int main()
-  {
-    std::optional< std::string > a;
-    std::string b = a.value_or( \"empty\" );
-  }
-" DUNE_HAVE_CXX_OPTIONAL
-  )
-
-
-# support for C++17's variant implementation
-check_cxx_source_compiles("
-  #include <variant>
-  #include <string>
-
-  int main()
-  {
-    std::variant< int, std::string > a;
-    a = \"stringvalue\";
-    std::string b = std::get< std::string >(a);
-  }
-" DUNE_HAVE_CXX_VARIANT
-  )
-
 
 # find the threading library
 if(NOT DEFINED THREADS_PREFER_PTHREAD_FLAG)
@@ -494,38 +403,6 @@ if(NOT STDTHREAD_WORKS)
     "STDTHREAD_LINK_FLAGS.  If you think this test is wrong, set the cache "
     "variable STDTHREAD_WORKS.")
 endif(NOT STDTHREAD_WORKS)
-
-
-# Check whether we can conditionally throw exceptions in constexpr context to
-# signal errors both at compile time and at run time - this does not work in GCC 5
-check_cxx_source_compiles("
-  constexpr int foo(int bar)
-  {
-    if (bar < 0)
-      throw bar;
-    int r = 1;
-    for (int i = 0 ; i < bar ; ++i)
-      r += r;
-    return r;
-  }
-
-  int main()
-  {
-    static_assert(foo(4) == 16, \"test failed\");
-    return 0;
-  }
-" DUNE_SUPPORTS_CXX_THROW_IN_CONSTEXPR
-  )
-
-# Check whether the stadard library supports aligned_alloc()
-check_cxx_source_compiles("
-  #include <cstdlib>
-  int main()
-  {
-    int* p = static_cast<int*>(aligned_alloc(64, 64*sizeof *p));
-  }
-" DUNE_HAVE_C_ALIGNED_ALLOC
-  )
 
 
 
