@@ -50,8 +50,12 @@ class Builder:
             else:
                 logger.info('using pre configured dune-py module')
         comm.barrier()
-        self.savedOutput = None if not saveOutput else\
-                [open("generatorCompiler.out","w+"), open("generatorCompiler.err","w+")]
+        if saveOutput is True or saveOutput.lower() == "write":
+            self.savedOutput = [open("generatorCompiler.out","w+"), open("generatorCompiler.err","w+")]
+        elif saveOutput.lower() == "append":
+            self.savedOutput = [open("generatorCompiler.out","a+"), open("generatorCompiler.err","a+")]
+        else:
+            self.savedOutput = None
 
     def compile(self, target='all'):
         cmake_command = dune.common.module.get_cmake_command()

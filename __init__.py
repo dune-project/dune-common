@@ -9,8 +9,7 @@ logger = logging.getLogger(__name__)
 
 env_force = os.environ.get('DUNE_FORCE_BUILD', 'FALSE').upper()
 env_save  = os.environ.get('DUNE_SAVE_BUILD' , 'FALSE').upper()
-builder = Builder( env_force in ('1', 'TRUE'),
-                   env_save  in ('1', 'TRUE') )
+builder = Builder( env_force in ('1', 'TRUE'), env_save )
 
 def setNoDependencyCheck():
     logger.info("Switching off dependency check - modules will always be compiled")
