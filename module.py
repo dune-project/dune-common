@@ -210,7 +210,8 @@ def find_modules(path):
         for root, dirs, files in os.walk(dir):
             if 'dune.module' in files:
                 description = Description(os.path.join(root, 'dune.module'))
-                modules.append((description,os.path.abspath(root)))
+                if not description.name == "dune-py":
+                    modules.append((description,os.path.abspath(root)))
                 # do not traverse subdirectories
                 # del dirs[:]
     return modules
