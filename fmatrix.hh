@@ -6,9 +6,9 @@
 #include <algorithm>
 #include <string>
 #include <tuple>
+#include <utility>
 
 #include <dune/common/fmatrix.hh>
-#include <dune/common/std/utility.hh>
 
 #include <dune/python/common/typeregistry.hh>
 #include <dune/python/common/fmatrix.hh>

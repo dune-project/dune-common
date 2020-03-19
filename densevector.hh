@@ -6,8 +6,7 @@
 #include <string>
 #include <tuple>
 #include <type_traits>
-
-#include <dune/common/std/utility.hh>
+#include <utility>
 
 #include <dune/python/common/vector.hh>
 #include <dune/python/pybind11/pybind11.h>

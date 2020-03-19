@@ -6,9 +6,9 @@
 
 #include <string>
 #include <tuple>
+#include <utility>
 
 #include <dune/common/dynvector.hh>
-#include <dune/common/std/utility.hh>
 
 #include <dune/python/common/typeregistry.hh>
 #include <dune/python/common/densevector.hh>

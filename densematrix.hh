@@ -4,8 +4,8 @@
 #include <string>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 
-#include <dune/common/std/utility.hh>
 
 #include <dune/python/pybind11/extensions.h>
 #include <dune/python/pybind11/operators.h>
