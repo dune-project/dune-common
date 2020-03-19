@@ -6,9 +6,6 @@
 #include "mallocallocator.hh"
 #include <cstdlib>
 
-#if !(DUNE_HAVE_C_ALIGNED_ALLOC || (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600))
-  #error Need either aligned_alloc() or posix_memalign() to compile AlignedAllocator
-#endif
 
 namespace Dune
 {
@@ -23,36 +20,14 @@ namespace Dune
   template<class T, int Alignment = -1>
   class AlignedAllocator : public MallocAllocator<T> {
 
-#if !DUNE_HAVE_C_ALIGNED_ALLOC
-
     /*
-     * posix_memalign() on macOS has pretty draconian restrictions on the
-     * alignments that you may ask for: It has to be
-     *
-     * 1) a power of 2
-     * 2) at least as large as sizeof(void*)
-     *
-     * So here is a little constexpr function that calculates just that
-     * (together with the correct starting value for align fed in further down).
-     */
-    static constexpr int fixAlignment(int align)
-    {
-      return ((Alignment==-1) ? std::alignment_of<T>::value : Alignment) > align
-        ? fixAlignment(align << 1) : align;
-    }
-
-#else
-
-    /*
-     * Non-Apple platforms just have to check whether an explicit alignment was
+     * Check whether an explicit alignment was
      * restricted or fall back to the default alignment of T.
      */
     static constexpr int fixAlignment(int align)
     {
       return (Alignment==-1) ? std::alignment_of<T>::value : Alignment;
     }
-
-#endif
 
   public:
     using pointer = typename MallocAllocator<T>::pointer;
@@ -71,27 +46,14 @@ namespace Dune
       if (n > this->max_size())
         throw std::bad_alloc();
 
-#if !DUNE_HAVE_C_ALIGNED_ALLOC
-      /*
-       * Apple's standard library doesn't have aligned_alloc() - C11 is still something
-       * from the future in Cupertino. Luckily, they got around to finally implementing
-       * posix_memalign(), so let's use that instead.
-       */
-      void* ret = nullptr;
-      if (posix_memalign(&ret, alignment, n * sizeof(T)) != 0)
-        throw std::bad_alloc();
-
-      return static_cast<pointer>(ret);
-#else
       /*
        * Everybody else gets the standard treatment.
        */
-      pointer ret = static_cast<pointer>(aligned_alloc(alignment, n * sizeof(T)));
+      pointer ret = static_cast<pointer>(std::aligned_alloc(alignment, n * sizeof(T)));
       if (!ret)
         throw std::bad_alloc();
 
       return ret;
-#endif
     }
   };
 

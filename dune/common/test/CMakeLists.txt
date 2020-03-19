@@ -213,9 +213,6 @@ dune_add_test(SOURCES hybridutilitiestest.cc
 dune_add_test(SOURCES indicestest.cc
               LABELS quick)
 
-dune_add_test(SOURCES integersequence.cc
-              LABELS quick)
-
 dune_add_test(SOURCES iteratorfacadetest2.cc
               LABELS quick)
 
@@ -396,20 +393,11 @@ dune_add_test(SOURCES eigenvaluestest.cc
               CMAKE_GUARD LAPACK_FOUND
               LABELS quick)
 
-dune_add_test(SOURCES optionaltest.cc
-              LINK_LIBRARIES dunecommon
-              LABELS quick)
-
 dune_add_test(SOURCES versiontest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
 
 dune_add_test(SOURCES mathtest.cc
-              LINK_LIBRARIES dunecommon
-              LABELS quick)
-
-
-dune_add_test(SOURCES varianttest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
 
