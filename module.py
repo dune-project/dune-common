@@ -522,39 +522,53 @@ def get_cmake_definitions():
     return definitions
 
 
+try:
+    from portalocker import Lock
+    from portalocker.constants import LOCK_EX, LOCK_SH
+except:
+    class Lock:
+        def __init__(*args,**kwargs):
+            pass
+        def __enter__(self):
+            pass
+        def __exit__(self,*args):
+            pass
+    LOCK_EX = None
+    LOCK_SH = None
+
 def make_dune_py_module(dune_py_dir=None):
     if dune_py_dir is None:
         dune_py_dir = get_dune_py_dir()
     descFile = os.path.join(dune_py_dir, 'dune.module')
     if not os.path.isfile(descFile):
-        logger.info('Creating new dune-py module in ' + dune_py_dir)
         if not os.path.isdir(dune_py_dir):
-            os.makedirs(dune_py_dir)
+            os.makedirs(dune_py_dir, exist_ok)
+        with Lock(os.path.join(self.dune_py_dir, 'lock-module.lock'), flags=LOCK_EX):
+            logger.info('Creating new dune-py module in ' + dune_py_dir)
+            # create python/dune/generated
+            generated_dir_rel = os.path.join('python','dune', 'generated')
+            generated_dir = os.path.join(dune_py_dir, generated_dir_rel)
+            if not os.path.isdir(generated_dir):
+                os.makedirs(generated_dir)
 
-        # create python/dune/generated
-        generated_dir_rel = os.path.join('python','dune', 'generated')
-        generated_dir = os.path.join(dune_py_dir, generated_dir_rel)
-        if not os.path.isdir(generated_dir):
-            os.makedirs(generated_dir)
+            cmake_content = ['add_executable(generated_test EXCLUDE_FROM_ALL generated_test.cc)',
+                             'add_dune_mpi_flags(generated_test)',
+                             'target_compile_definitions(generated_test PRIVATE USING_DUNE_PYTHON)',
+                             'target_link_libraries(generated_test ${DUNE_LIBS})',
+                             'file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/__init__.py")',
+                             '',
+                             '# The builder will append rules for dynamically generated modules, here']
+            project.write_cmake_file(generated_dir, cmake_content)
 
-        cmake_content = ['add_executable(generated_test EXCLUDE_FROM_ALL generated_test.cc)',
-                         'add_dune_mpi_flags(generated_test)',
-                         'target_compile_definitions(generated_test PRIVATE USING_DUNE_PYTHON)',
-                         'target_link_libraries(generated_test ${DUNE_LIBS})',
-                         'file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/__init__.py")',
-                         '',
-                         '# The builder will append rules for dynamically generated modules, here']
-        project.write_cmake_file(generated_dir, cmake_content)
+            with open(os.path.join(generated_dir, 'generated_test.cc'), 'w') as file:
+                file.write('#include <config.h>\n\n')
+                file.write('#define USING_DUNE_PYTHON 1\n\n')
+                file.write('\n#include "generated_module.hh"\n')
 
-        with open(os.path.join(generated_dir, 'generated_test.cc'), 'w') as file:
-            file.write('#include <config.h>\n\n')
-            file.write('#define USING_DUNE_PYTHON 1\n\n')
-            file.write('\n#include "generated_module.hh"\n')
-
-        modules, _ = select_modules()
-        description = Description(module='dune-py', version=get_dune_py_version(),  maintainer='dune@lists.dune-project.org', depends=list(modules.values()))
-        logger.debug('dune-py will depend on ' + ' '.join([m + (' ' + str(c) if c else '') for m, c in description.depends]))
-        project.make_project(dune_py_dir, description, subdirs=[generated_dir])
+            modules, _ = select_modules()
+            description = Description(module='dune-py', version=get_dune_py_version(),  maintainer='dune@lists.dune-project.org', depends=list(modules.values()))
+            logger.debug('dune-py will depend on ' + ' '.join([m + (' ' + str(c) if c else '') for m, c in description.depends]))
+            project.make_project(dune_py_dir, description, subdirs=[generated_dir])
     else:
         description = Description(descFile)
         if description.name != 'dune-py':
