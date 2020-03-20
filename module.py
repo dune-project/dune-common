@@ -522,27 +522,19 @@ def get_cmake_definitions():
     return definitions
 
 
-try:
-    from portalocker import Lock
-    from portalocker.constants import LOCK_EX, LOCK_SH
-except:
-    class Lock:
-        def __init__(*args,**kwargs):
-            pass
-        def __enter__(self):
-            pass
-        def __exit__(self,*args):
-            pass
-    LOCK_EX = None
-    LOCK_SH = None
+from portalocker import Lock
+from portalocker.constants import LOCK_EX, LOCK_SH
 
 def make_dune_py_module(dune_py_dir=None):
     if dune_py_dir is None:
         dune_py_dir = get_dune_py_dir()
-    descFile = os.path.join(dune_py_dir, 'dune.module')
-    if not os.path.isfile(descFile):
-        os.makedirs(dune_py_dir, exist_ok=True)
-        with Lock(os.path.join(dune_py_dir, 'lock-module.lock'), flags=LOCK_EX):
+    print("trying to generate dune-py", dune_py_dir)
+    os.makedirs(dune_py_dir, exist_ok=True)
+
+    with Lock(os.path.join(dune_py_dir, 'lock-module.lock'), flags=LOCK_EX):
+        descFile = os.path.join(dune_py_dir, 'dune.module')
+        if not os.path.isfile(descFile):
+            print(".... locked")
             logger.info('Creating new dune-py module in ' + dune_py_dir)
             # create python/dune/generated
             generated_dir_rel = os.path.join('python','dune', 'generated')
@@ -568,16 +560,15 @@ def make_dune_py_module(dune_py_dir=None):
             description = Description(module='dune-py', version=get_dune_py_version(),  maintainer='dune@lists.dune-project.org', depends=list(modules.values()))
             logger.debug('dune-py will depend on ' + ' '.join([m + (' ' + str(c) if c else '') for m, c in description.depends]))
             project.make_project(dune_py_dir, description, subdirs=[generated_dir])
-    else:
-        description = Description(descFile)
-        if description.name != 'dune-py':
-            raise RuntimeError('"' + dune_py_dir + '" already contains a different dune module.')
-        if description.version != get_dune_py_version():
-            logger.error('"' + dune_py_dir + '" contains version ' + str(description.version) + ' of the dune-py module, ' + str(get_dune_py_version()) + ' required.')
-            logger.error('If you upgraded dune-python, you can safely remove "' + dune_py_dir + '" and retry.')
-            raise RuntimeError('"' + dune_py_dir + '" contains a different version of the dune-py module.')
-        logger.info('Using existing dune-py module in ' + dune_py_dir)
 
+    description = Description(descFile)
+    if description.name != 'dune-py':
+        raise RuntimeError('"' + dune_py_dir + '" already contains a different dune module.')
+    if description.version != get_dune_py_version():
+        logger.error('"' + dune_py_dir + '" contains version ' + str(description.version) + ' of the dune-py module, ' + str(get_dune_py_version()) + ' required.')
+        logger.error('If you upgraded dune-python, you can safely remove "' + dune_py_dir + '" and retry.')
+        raise RuntimeError('"' + dune_py_dir + '" contains a different version of the dune-py module.')
+    logger.info('Using dune-py module in ' + dune_py_dir)
 
 def build_dune_py_module(dune_py_dir=None, definitions=None, build_args=None, builddir=None):
     if dune_py_dir is None:
