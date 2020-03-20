@@ -542,7 +542,7 @@ def make_dune_py_module(dune_py_dir=None):
     descFile = os.path.join(dune_py_dir, 'dune.module')
     if not os.path.isfile(descFile):
         os.makedirs(dune_py_dir, exist_ok=True)
-        with Lock(os.path.join(self.dune_py_dir, 'lock-module.lock'), flags=LOCK_EX):
+        with Lock(os.path.join(dune_py_dir, 'lock-module.lock'), flags=LOCK_EX):
             logger.info('Creating new dune-py module in ' + dune_py_dir)
             # create python/dune/generated
             generated_dir_rel = os.path.join('python','dune', 'generated')
