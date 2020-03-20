@@ -437,6 +437,7 @@ def configure_module(srcdir, builddir, prefix_dirs, definitions=None):
     stdout, stderr = cmake.communicate()
     logging.debug(buffer_to_str(stdout))
     if cmake.returncode != 0:
+        print("STDOUT:\n",buffer_to_str(stdout))
         raise RuntimeError(buffer_to_str(stderr))
     return buffer_to_str(stdout)
 
