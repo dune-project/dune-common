@@ -522,8 +522,19 @@ def get_cmake_definitions():
     return definitions
 
 
-from portalocker import Lock
-from portalocker.constants import LOCK_EX, LOCK_SH
+try:
+    from portalocker import Lock
+    from portalocker.constants import LOCK_EX, LOCK_SH
+except:
+    class Lock:
+        def __init__(*args,**kwargs):
+            pass
+        def __enter__(self):
+            pass
+        def __exit__(self,*args):
+            pass
+    LOCK_EX = None
+    LOCK_SH = None
 
 def make_dune_py_module(dune_py_dir=None):
     if dune_py_dir is None:
