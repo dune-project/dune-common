@@ -6,6 +6,8 @@ import shlex
 import subprocess
 import os
 import sys
+from portalocker import Lock
+from portalocker.constants import LOCK_EX, LOCK_SH
 
 from dune.common import comm
 from dune.common.compatibility import buffer_to_str, isString, reload_module
@@ -15,22 +17,6 @@ import dune.common.module
 logger = logging.getLogger(__name__)
 cxxFlags = None
 noDepCheck = False
-
-from portalocker import Lock
-from portalocker.constants import LOCK_EX, LOCK_SH
-try:
-    from portalocker import Lock
-    from portalocker.constants import LOCK_EX, LOCK_SH
-except:
-    class Lock:
-        def __init__(*args,**kwargs):
-            pass
-        def __enter__(self):
-            pass
-        def __exit__(self,*args):
-            pass
-    LOCK_EX = None
-    LOCK_SH = None
 
 class Builder:
     def __init__(self, force=False, saveOutput=False):
@@ -74,7 +60,6 @@ class Builder:
 
         if cmake_args != []:
             cmake_args += ["--"] + make_args
-        print("COMPILE:",cmake_args)
         cmake = subprocess.Popen(cmake_args, cwd=self.generated_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = cmake.communicate()
         logger.debug(buffer_to_str(stdout))
