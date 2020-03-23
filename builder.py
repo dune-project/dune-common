@@ -16,6 +16,8 @@ logger = logging.getLogger(__name__)
 cxxFlags = None
 noDepCheck = False
 
+from portalocker import Lock
+from portalocker.constants import LOCK_EX, LOCK_SH
 try:
     from portalocker import Lock
     from portalocker.constants import LOCK_EX, LOCK_SH
@@ -37,18 +39,20 @@ class Builder:
         self.build_args = dune.common.module.get_default_build_args()
         self.dune_py_dir = dune.common.module.get_dune_py_dir()
         self.generated_dir = os.path.join(self.dune_py_dir, 'python', 'dune', 'generated')
+        os.makedirs(self.dune_py_dir, exist_ok=True)
         try:
             dune.__path__._path.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
         except:
             dune.__path__.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
 
         if comm.rank == 0:
-            dune.common.module.make_dune_py_module(self.dune_py_dir)
-            tagfile = os.path.join(self.dune_py_dir, ".noconfigure")
-            if not os.path.isfile(tagfile):
-                dune.common.module.build_dune_py_module(self.dune_py_dir)
-            else:
-                logger.info('using pre configured dune-py module')
+            with Lock(os.path.join(self.dune_py_dir, 'lock-module.lock'), flags=LOCK_EX):
+                dune.common.module.make_dune_py_module(self.dune_py_dir)
+                tagfile = os.path.join(self.dune_py_dir, ".noconfigure")
+                if not os.path.isfile(tagfile):
+                    dune.common.module.build_dune_py_module(self.dune_py_dir)
+                else:
+                    logger.info('using pre configured dune-py module')
         comm.barrier()
         if saveOutput is True or saveOutput.lower() == "write":
             self.savedOutput = [open("generatorCompiler.out","w+"), open("generatorCompiler.err","w+")]
@@ -70,6 +74,7 @@ class Builder:
 
         if cmake_args != []:
             cmake_args += ["--"] + make_args
+        print("COMPILE:",cmake_args)
         cmake = subprocess.Popen(cmake_args, cwd=self.generated_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = cmake.communicate()
         logger.debug(buffer_to_str(stdout))
