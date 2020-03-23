@@ -22,14 +22,8 @@ class Builder:
     def __init__(self, force=False, saveOutput=False):
         self.force = force
 
-        self.build_args = dune.common.module.get_default_build_args()
         self.dune_py_dir = dune.common.module.get_dune_py_dir()
-        self.generated_dir = os.path.join(self.dune_py_dir, 'python', 'dune', 'generated')
         os.makedirs(self.dune_py_dir, exist_ok=True)
-        try:
-            dune.__path__._path.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
-        except:
-            dune.__path__.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
 
         if comm.rank == 0:
             with Lock(os.path.join(self.dune_py_dir, 'lock-module.lock'), flags=LOCK_EX):
@@ -40,6 +34,14 @@ class Builder:
                 else:
                     logger.info('using pre configured dune-py module')
         comm.barrier()
+
+        self.build_args = dune.common.module.get_default_build_args()
+        self.generated_dir = os.path.join(self.dune_py_dir, 'python', 'dune', 'generated')
+        try:
+            dune.__path__._path.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
+        except:
+            dune.__path__.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
+
         if saveOutput is True or saveOutput.lower() == "write":
             self.savedOutput = [open("generatorCompiler.out","w+"), open("generatorCompiler.err","w+")]
         elif saveOutput.lower() == "append":
