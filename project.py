@@ -67,7 +67,7 @@ def make_project(dir, description, subdirs=None, enable_all_packages=True):
     with open(os.path.join(dir, 'dune.module'), 'w') as file:
         file.write(repr(description))
 
-    cmake_content = ['cmake_minimum_required(VERSION 2.8.6)', 'project(' + description.name + ' CXX)']
+    cmake_content = ['cmake_minimum_required(VERSION 3.1)', 'project(' + description.name + ' CXX)']
     cmake_content += ['',
                       'if(NOT (dune-common_DIR OR dune-common_ROOT OR "${CMAKE_PREFIX_PATH}" MATCHES ".*dune-common.*"))',
                       '  string(REPLACE ${CMAKE_PROJECT_NAME} dune-common dune-common_DIR ${PROJECT_BINARY_DIR})',

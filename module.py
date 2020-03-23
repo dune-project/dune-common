@@ -433,11 +433,13 @@ def configure_module(srcdir, builddir, prefix_dirs, definitions=None):
     if not os.path.isdir(builddir):
         os.makedirs(builddir)
     logger.debug('Calling "' + ' '.join(args) + '"')
+    print("CONFMOD CMAKE:\n",args)
     cmake = subprocess.Popen(args, cwd=builddir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = cmake.communicate()
     logging.debug(buffer_to_str(stdout))
+    print("CONFMOD OUT:\n",buffer_to_str(stdout))
+    print("CONFMOD ERR:\n",buffer_to_str(stderr))
     if cmake.returncode != 0:
-        print("STDOUT:\n",buffer_to_str(stdout))
         raise RuntimeError(buffer_to_str(stderr))
     return buffer_to_str(stdout)
 
@@ -458,8 +460,11 @@ def build_module(builddir, build_args=None):
     if build_args is not None:
         cmake_args += ['--'] + build_args
 
+    print("BUILDMOD CMAKE:\n",cmake_args)
     cmake = subprocess.Popen(cmake_args, cwd=builddir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = cmake.communicate()
+    print("BUILDMOD OUT:\n",buffer_to_str(stdout))
+    print("BUILDMOD ERR:\n",buffer_to_str(stderr))
     if cmake.returncode != 0:
         raise RuntimeError(buffer_to_str(stderr))
     return buffer_to_str(stdout)
@@ -522,55 +527,40 @@ def get_cmake_definitions():
     return definitions
 
 
-try:
-    from portalocker import Lock
-    from portalocker.constants import LOCK_EX, LOCK_SH
-except:
-    class Lock:
-        def __init__(*args,**kwargs):
-            pass
-        def __enter__(self):
-            pass
-        def __exit__(self,*args):
-            pass
-    LOCK_EX = None
-    LOCK_SH = None
-
 def make_dune_py_module(dune_py_dir=None):
     if dune_py_dir is None:
         dune_py_dir = get_dune_py_dir()
     print("trying to generate dune-py", dune_py_dir)
     os.makedirs(dune_py_dir, exist_ok=True)
 
-    with Lock(os.path.join(dune_py_dir, 'lock-module.lock'), flags=LOCK_EX):
-        descFile = os.path.join(dune_py_dir, 'dune.module')
-        if not os.path.isfile(descFile):
-            print(".... locked")
-            logger.info('Creating new dune-py module in ' + dune_py_dir)
-            # create python/dune/generated
-            generated_dir_rel = os.path.join('python','dune', 'generated')
-            generated_dir = os.path.join(dune_py_dir, generated_dir_rel)
-            if not os.path.isdir(generated_dir):
-                os.makedirs(generated_dir)
+    descFile = os.path.join(dune_py_dir, 'dune.module')
+    if not os.path.isfile(descFile):
+        print(".... locked")
+        logger.info('Creating new dune-py module in ' + dune_py_dir)
+        # create python/dune/generated
+        generated_dir_rel = os.path.join('python','dune', 'generated')
+        generated_dir = os.path.join(dune_py_dir, generated_dir_rel)
+        if not os.path.isdir(generated_dir):
+            os.makedirs(generated_dir)
 
-            cmake_content = ['add_executable(generated_test EXCLUDE_FROM_ALL generated_test.cc)',
-                             'add_dune_mpi_flags(generated_test)',
-                             'target_compile_definitions(generated_test PRIVATE USING_DUNE_PYTHON)',
-                             'target_link_libraries(generated_test ${DUNE_LIBS})',
-                             'file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/__init__.py")',
-                             '',
-                             '# The builder will append rules for dynamically generated modules, here']
-            project.write_cmake_file(generated_dir, cmake_content)
+        cmake_content = ['add_executable(generated_test EXCLUDE_FROM_ALL generated_test.cc)',
+                         'add_dune_mpi_flags(generated_test)',
+                         'target_compile_definitions(generated_test PRIVATE USING_DUNE_PYTHON)',
+                         'target_link_libraries(generated_test ${DUNE_LIBS})',
+                         'file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/__init__.py")',
+                         '',
+                         '# The builder will append rules for dynamically generated modules, here']
+        project.write_cmake_file(generated_dir, cmake_content)
 
-            with open(os.path.join(generated_dir, 'generated_test.cc'), 'w') as file:
-                file.write('#include <config.h>\n\n')
-                file.write('#define USING_DUNE_PYTHON 1\n\n')
-                file.write('\n#include "generated_module.hh"\n')
+        with open(os.path.join(generated_dir, 'generated_test.cc'), 'w') as file:
+            file.write('#include <config.h>\n\n')
+            file.write('#define USING_DUNE_PYTHON 1\n\n')
+            file.write('\n#include "generated_module.hh"\n')
 
-            modules, _ = select_modules()
-            description = Description(module='dune-py', version=get_dune_py_version(),  maintainer='dune@lists.dune-project.org', depends=list(modules.values()))
-            logger.debug('dune-py will depend on ' + ' '.join([m + (' ' + str(c) if c else '') for m, c in description.depends]))
-            project.make_project(dune_py_dir, description, subdirs=[generated_dir])
+        modules, _ = select_modules()
+        description = Description(module='dune-py', version=get_dune_py_version(),  maintainer='dune@lists.dune-project.org', depends=list(modules.values()))
+        logger.debug('dune-py will depend on ' + ' '.join([m + (' ' + str(c) if c else '') for m, c in description.depends]))
+        project.make_project(dune_py_dir, description, subdirs=[generated_dir])
 
     description = Description(descFile)
     if description.name != 'dune-py':
