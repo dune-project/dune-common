@@ -433,12 +433,9 @@ def configure_module(srcdir, builddir, prefix_dirs, definitions=None):
     if not os.path.isdir(builddir):
         os.makedirs(builddir)
     logger.debug('Calling "' + ' '.join(args) + '"')
-    print("CONFMOD CMAKE:\n",args)
     cmake = subprocess.Popen(args, cwd=builddir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = cmake.communicate()
     logging.debug(buffer_to_str(stdout))
-    print("CONFMOD OUT:\n",buffer_to_str(stdout))
-    print("CONFMOD ERR:\n",buffer_to_str(stderr))
     if cmake.returncode != 0:
         raise RuntimeError(buffer_to_str(stderr))
     return buffer_to_str(stdout)
@@ -460,11 +457,8 @@ def build_module(builddir, build_args=None):
     if build_args is not None:
         cmake_args += ['--'] + build_args
 
-    print("BUILDMOD CMAKE:\n",cmake_args)
     cmake = subprocess.Popen(cmake_args, cwd=builddir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = cmake.communicate()
-    print("BUILDMOD OUT:\n",buffer_to_str(stdout))
-    print("BUILDMOD ERR:\n",buffer_to_str(stderr))
     if cmake.returncode != 0:
         raise RuntimeError(buffer_to_str(stderr))
     return buffer_to_str(stdout)
@@ -530,12 +524,10 @@ def get_cmake_definitions():
 def make_dune_py_module(dune_py_dir=None):
     if dune_py_dir is None:
         dune_py_dir = get_dune_py_dir()
-    print("trying to generate dune-py", dune_py_dir)
     os.makedirs(dune_py_dir, exist_ok=True)
 
     descFile = os.path.join(dune_py_dir, 'dune.module')
     if not os.path.isfile(descFile):
-        print(".... locked")
         logger.info('Creating new dune-py module in ' + dune_py_dir)
         # create python/dune/generated
         generated_dir_rel = os.path.join('python','dune', 'generated')
@@ -561,15 +553,15 @@ def make_dune_py_module(dune_py_dir=None):
         description = Description(module='dune-py', version=get_dune_py_version(),  maintainer='dune@lists.dune-project.org', depends=list(modules.values()))
         logger.debug('dune-py will depend on ' + ' '.join([m + (' ' + str(c) if c else '') for m, c in description.depends]))
         project.make_project(dune_py_dir, description, subdirs=[generated_dir])
-
-    description = Description(descFile)
-    if description.name != 'dune-py':
-        raise RuntimeError('"' + dune_py_dir + '" already contains a different dune module.')
-    if description.version != get_dune_py_version():
-        logger.error('"' + dune_py_dir + '" contains version ' + str(description.version) + ' of the dune-py module, ' + str(get_dune_py_version()) + ' required.')
-        logger.error('If you upgraded dune-python, you can safely remove "' + dune_py_dir + '" and retry.')
-        raise RuntimeError('"' + dune_py_dir + '" contains a different version of the dune-py module.')
-    logger.info('Using dune-py module in ' + dune_py_dir)
+    else:
+        description = Description(descFile)
+        if description.name != 'dune-py':
+            raise RuntimeError('"' + dune_py_dir + '" already contains a different dune module.')
+        if description.version != get_dune_py_version():
+            logger.error('"' + dune_py_dir + '" contains version ' + str(description.version) + ' of the dune-py module, ' + str(get_dune_py_version()) + ' required.')
+            logger.error('If you upgraded dune-python, you can safely remove "' + dune_py_dir + '" and retry.')
+            raise RuntimeError('"' + dune_py_dir + '" contains a different version of the dune-py module.')
+        logger.info('Using dune-py module in ' + dune_py_dir)
 
 def build_dune_py_module(dune_py_dir=None, definitions=None, build_args=None, builddir=None):
     if dune_py_dir is None:
