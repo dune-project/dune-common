@@ -507,8 +507,11 @@ def get_dune_py_version():
 
 def get_cmake_definitions():
     definitions = {}
-    try:
-        for arg in shlex.split(os.environ['DUNE_CMAKE_FLAGS']):
+    cmakeFlags = os.environ.get('DUNE_CMAKE_FLAGS')
+    if cmakeFlags is None:
+        cmakeFlags = os.environ.get('CMAKE_FLAGS')
+    if cmakeFlags is not None:
+        for arg in shlex.split(cmakeFlags):
             try:
                 key, value = arg.split('=', 1)
                 if key.startswith('-D'):
@@ -516,8 +519,7 @@ def get_cmake_definitions():
             except ValueError:
                 key, value = arg, None
             definitions[key] = value
-    except KeyError:
-        pass
+    print("CMAKE FLAGS",definitions)
     return definitions
 
 
