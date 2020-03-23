@@ -6,8 +6,51 @@ import shlex
 import subprocess
 import os
 import sys
-from portalocker import Lock
-from portalocker.constants import LOCK_EX, LOCK_SH
+
+
+import subprocess
+import os
+import sys
+
+try:
+    from portalocker import Lock
+    from portalocker.constants import LOCK_EX, LOCK_SH
+except ModuleNotFoundError:
+    # Posix based file locking (Linux, Ubuntu, MacOS, etc.)
+    import fcntl
+    from fcntl import LOCK_EX, LOCK_SH
+
+    def lock_file(f):
+        fcntl.lockf(f, fcntl.LOCK_EX)
+    def unlock_file(f):
+        fcntl.lockf(f, fcntl.LOCK_UN)
+
+    # Class for ensuring that all file operations are atomic, treat
+    # initialization like a standard call to 'open' that happens to be atomic.
+    # This file opener *must* be used in a "with" block.
+    class Lock:
+        # Open the file with arguments provided by user. Then acquire
+        # a lock on that file object (WARNING: Advisory locking).
+        def __init__(self, path, flags, *args, **kwargs):
+            # Open the file and acquire a lock on the file before operating
+            self.file = open(path,mode='a',*args, **kwargs)
+            # Lock the opened file
+            lock_file(self.file)
+
+        # Return the opened file object (knowing a lock has been obtained).
+        def __enter__(self, *args, **kwargs): return self.file
+
+        # Unlock the file and close the file object.
+        def __exit__(self, exc_type=None, exc_value=None, traceback=None):
+            # Flush to make sure all buffered contents are written to file.
+            self.file.flush()
+            os.fsync(self.file.fileno())
+            # Release the lock on the file.
+            unlock_file(self.file)
+            self.file.close()
+            # Handle exceptions that may have come up during execution, by
+            # default any exceptions are raised to the user.
+            return exc_type == None
 
 from dune.common import comm
 from dune.common.compatibility import buffer_to_str, isString, reload_module
