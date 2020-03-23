@@ -16,26 +16,25 @@ try:
     from portalocker import Lock
     from portalocker.constants import LOCK_EX, LOCK_SH
 except ModuleNotFoundError:
-    # Posix based file locking (Linux, Ubuntu, MacOS, etc.)
     import fcntl
     from fcntl import LOCK_EX, LOCK_SH
-
-    def lock_file(f):
-        fcntl.lockf(f, fcntl.LOCK_EX)
+    # file locking from fcntl
+    def lock_file(f, cmd=fcntl.LOCK_EX):
+        fcntl.flock(f, cmd)
+        return f
     def unlock_file(f):
-        fcntl.lockf(f, fcntl.LOCK_UN)
+        fcntl.flock(f, fcntl.LOCK_UN)
+        return f
 
-    # Class for ensuring that all file operations are atomic, treat
-    # initialization like a standard call to 'open' that happens to be atomic.
     # This file opener *must* be used in a "with" block.
     class Lock:
         # Open the file with arguments provided by user. Then acquire
         # a lock on that file object (WARNING: Advisory locking).
         def __init__(self, path, flags, *args, **kwargs):
             # Open the file and acquire a lock on the file before operating
-            self.file = open(path,mode='a',*args, **kwargs)
+            self.file = open(path, mode='w+', *args, **kwargs)
             # Lock the opened file
-            lock_file(self.file)
+            self.file = lock_file(self.file, flags) # flags are either LOCK_EX or LOCK_SH
 
         # Return the opened file object (knowing a lock has been obtained).
         def __enter__(self, *args, **kwargs): return self.file
@@ -46,7 +45,7 @@ except ModuleNotFoundError:
             self.file.flush()
             os.fsync(self.file.fileno())
             # Release the lock on the file.
-            unlock_file(self.file)
+            self.file = unlock_file(self.file)
             self.file.close()
             # Handle exceptions that may have come up during execution, by
             # default any exceptions are raised to the user.
