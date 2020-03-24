@@ -123,12 +123,6 @@
 # Finally config.h is created from config_collected.h.cmake.
 #
 
-# Make CMake use rpath on OS X
-if(POLICY CMP0042)
-  # this policy only needed for CMake older then 3.0
-  cmake_policy(SET CMP0042 NEW)
-endif()
-
 enable_language(C) # Enable C to skip CXX bindings for some tests.
 
 include(FeatureSummary)
