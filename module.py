@@ -519,7 +519,6 @@ def get_cmake_definitions():
             except ValueError:
                 key, value = arg, None
             definitions[key] = value
-    print("CMAKE FLAGS",definitions)
     return definitions
 
 
