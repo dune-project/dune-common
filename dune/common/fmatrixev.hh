@@ -38,6 +38,17 @@ namespace Dune {
       const long int* ldvl, double* vr, const long int* ldvr, double* work,
       const long int* lwork, long int* info);
 
+    extern void eigenValuesLapackCall(
+      const char* jobz, const char* uplo, const long
+      int* n, float* a, const long int* lda, float* w,
+      float* work, const long int* lwork, long int* info);
+
+    extern void eigenValuesNonsymLapackCall(
+      const char* jobvl, const char* jobvr, const long
+      int* n, float* a, const long int* lda, float* wr, float* wi, float* vl,
+      const long int* ldvl, float* vr, const long int* ldvr, float* work,
+      const long int* lwork, long int* info);
+
     namespace Impl {
       //internal tag to activate/disable code for eigenvector calculation at compile time
       enum Jobs { OnlyEigenvalues=0, EigenvaluesEigenvectors=1 };
@@ -124,7 +135,7 @@ namespace Dune {
           acos(z) function requires |z| <= 1, but will fail silently
           and return NaN if the input is larger than 1 in magnitude.
           Thus r is clamped to [-1,1].*/
-          r = std::min(std::max(r, -1.0), 1.0);
+          r = std::min<K>(std::max<K>(r, -1.0), 1.0);
           K phi = acos(r) / 3.0;
 
           // the eigenvalues satisfy eig[2] <= eig[1] <= eig[0]
@@ -385,7 +396,7 @@ namespace Dune {
           const long int lwork = 3*N -1 ;
 
           // matrix to put into dsyev
-          double matrixVector[dim * dim];
+          K matrixVector[dim * dim];
 
           // copy matrix
           int row = 0;
@@ -398,7 +409,7 @@ namespace Dune {
           }
 
           // working memory
-          double workSpace[lwork];
+          K workSpace[lwork];
 
           // return value information
           long int info = 0;
@@ -516,7 +527,7 @@ namespace Dune {
         const char jobvr = 'n';
 
         // matrix to put into dgeev
-        double matrixVector[dim * dim];
+        K matrixVector[dim * dim];
 
         // copy matrix
         int row = 0;
@@ -529,9 +540,9 @@ namespace Dune {
         }
 
         // working memory
-        double eigenR[dim];
-        double eigenI[dim];
-        double work[3*dim];
+        K eigenR[dim];
+        K eigenI[dim];
+        K work[3*dim];
 
         // return value information
         long int info = 0;
