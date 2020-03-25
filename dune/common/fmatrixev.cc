@@ -206,7 +206,6 @@ extern "C" {
                             const long int* lwork, long int* info);
 
 } // end extern C
-#endif
 
 namespace Dune {
 
@@ -217,16 +216,8 @@ namespace Dune {
       int* n, double* a, const long int* lda, double* w,
       double* work, const long int* lwork, long int* info)
     {
-#if HAVE_LAPACK
       // call LAPACK dsyev
       DSYEV_FORTRAN(jobz, uplo, n, a, lda, w, work, lwork, info);
-#else
-      // silence unused variable warnings
-      DUNE_UNUSED_PARAMETER(jobz), DUNE_UNUSED_PARAMETER(uplo), DUNE_UNUSED_PARAMETER(n);
-      DUNE_UNUSED_PARAMETER(a), DUNE_UNUSED_PARAMETER(lda), DUNE_UNUSED_PARAMETER(w);
-      DUNE_UNUSED_PARAMETER(work), DUNE_UNUSED_PARAMETER(lwork), DUNE_UNUSED_PARAMETER(info);
-      DUNE_THROW(NotImplemented,"eigenValuesLapackCall: LAPACK not found!");
-#endif
     }
 
     void eigenValuesLapackCall(
@@ -234,16 +225,8 @@ namespace Dune {
       int* n, float* a, const long int* lda, float* w,
       float* work, const long int* lwork, long int* info)
     {
-#if HAVE_LAPACK
       // call LAPACK dsyev
       SSYEV_FORTRAN(jobz, uplo, n, a, lda, w, work, lwork, info);
-#else
-      // silence unused variable warnings
-      DUNE_UNUSED_PARAMETER(jobz), DUNE_UNUSED_PARAMETER(uplo), DUNE_UNUSED_PARAMETER(n);
-      DUNE_UNUSED_PARAMETER(a), DUNE_UNUSED_PARAMETER(lda), DUNE_UNUSED_PARAMETER(w);
-      DUNE_UNUSED_PARAMETER(work), DUNE_UNUSED_PARAMETER(lwork), DUNE_UNUSED_PARAMETER(info);
-      DUNE_THROW(NotImplemented,"eigenValuesLapackCall: LAPACK not found!");
-#endif
     }
 
     void eigenValuesNonsymLapackCall(
@@ -252,18 +235,9 @@ namespace Dune {
       const long int* ldvl, double* vr, const long int* ldvr, double* work,
       const long int* lwork, long int* info)
     {
-#if HAVE_LAPACK
       // call LAPACK dgeev
       DGEEV_FORTRAN(jobvl, jobvr, n, a, lda, wr, wi, vl, ldvl, vr, ldvr,
                     work, lwork, info);
-#else
-      // silence unused variable warnings
-      DUNE_UNUSED_PARAMETER(jobvl), DUNE_UNUSED_PARAMETER(jobvr), DUNE_UNUSED_PARAMETER(n);
-      DUNE_UNUSED_PARAMETER(a), DUNE_UNUSED_PARAMETER(lda), DUNE_UNUSED_PARAMETER(wr), DUNE_UNUSED_PARAMETER(wi);
-      DUNE_UNUSED_PARAMETER(vl), DUNE_UNUSED_PARAMETER(ldvl), DUNE_UNUSED_PARAMETER(vr);
-      DUNE_UNUSED_PARAMETER(ldvr), DUNE_UNUSED_PARAMETER(work), DUNE_UNUSED_PARAMETER(lwork), DUNE_UNUSED_PARAMETER(info);
-      DUNE_THROW(NotImplemented,"eigenValuesNonsymLapackCall: LAPACK not found!");
-#endif
     }
 
     void eigenValuesNonsymLapackCall(
@@ -272,20 +246,11 @@ namespace Dune {
       const long int* ldvl, float* vr, const long int* ldvr, float* work,
       const long int* lwork, long int* info)
     {
-#if HAVE_LAPACK
       // call LAPACK dgeev
       SGEEV_FORTRAN(jobvl, jobvr, n, a, lda, wr, wi, vl, ldvl, vr, ldvr,
                     work, lwork, info);
-#else
-      // silence unused variable warnings
-      DUNE_UNUSED_PARAMETER(jobvl), DUNE_UNUSED_PARAMETER(jobvr), DUNE_UNUSED_PARAMETER(n);
-      DUNE_UNUSED_PARAMETER(a), DUNE_UNUSED_PARAMETER(lda), DUNE_UNUSED_PARAMETER(wr), DUNE_UNUSED_PARAMETER(wi);
-      DUNE_UNUSED_PARAMETER(vl), DUNE_UNUSED_PARAMETER(ldvl), DUNE_UNUSED_PARAMETER(vr);
-      DUNE_UNUSED_PARAMETER(ldvr), DUNE_UNUSED_PARAMETER(work), DUNE_UNUSED_PARAMETER(lwork), DUNE_UNUSED_PARAMETER(info);
-      DUNE_THROW(NotImplemented,"eigenValuesNonsymLapackCall: LAPACK not found!");
-#endif
     }
-
+    #endif
   } // end namespace FMatrixHelp
 
 } // end namespace Dune
