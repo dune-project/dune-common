@@ -26,6 +26,7 @@ namespace Dune {
 
   namespace FMatrixHelp {
 
+#if HAVE_LAPACK
     // defined in fmatrixev.cc
     extern void eigenValuesLapackCall(
       const char* jobz, const char* uplo, const long
@@ -48,6 +49,8 @@ namespace Dune {
       int* n, float* a, const long int* lda, float* wr, float* wi, float* vl,
       const long int* ldvl, float* vr, const long int* ldvr, float* work,
       const long int* lwork, long int* info);
+
+#endif
 
     namespace Impl {
       //internal tag to activate/disable code for eigenvector calculation at compile time
@@ -385,6 +388,7 @@ namespace Dune {
                                                FieldMatrix<K, dim, dim>& eigenVectors)
       {
         {
+#if HAVE_LAPACK
           /*Lapack uses a proprietary tag to determine whether both eigenvalues and
             -vectors ('v') or only eigenvalues ('n') should be calculated */
           const char jobz = "nv"[Tag];
@@ -435,6 +439,9 @@ namespace Dune {
             std::cerr << "For matrix " << matrix << " eigenvalue calculation failed! " << std::endl;
             DUNE_THROW(InvalidStateException,"eigenValues: Eigenvalue calculation failed!");
           }
+#else
+          DUNE_THROW(NotImplemented,"LAPACK not found!");
+#endif
         }
       }
 
@@ -521,6 +528,7 @@ namespace Dune {
     static void eigenValuesNonSym(const FieldMatrix<K, dim, dim>& matrix,
                                   FieldVector<C, dim>& eigenValues)
     {
+#if HAVE_LAPACK
       {
         const long int N = dim ;
         const char jobvl = 'n';
@@ -563,6 +571,9 @@ namespace Dune {
           eigenValues[i].imag = eigenI[i];
         }
       }
+#else
+      DUNE_THROW(NotImplemented,"LAPACK not found!");
+#endif
     }
   } // end namespace FMatrixHelp
 
