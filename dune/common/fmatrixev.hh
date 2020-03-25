@@ -26,6 +26,7 @@ namespace Dune {
 
   namespace FMatrixHelp {
 
+#if HAVE_LAPACK
     // defined in fmatrixev.cc
     extern void eigenValuesLapackCall(
       const char* jobz, const char* uplo, const long
@@ -37,6 +38,19 @@ namespace Dune {
       int* n, double* a, const long int* lda, double* wr, double* wi, double* vl,
       const long int* ldvl, double* vr, const long int* ldvr, double* work,
       const long int* lwork, long int* info);
+
+    extern void eigenValuesLapackCall(
+      const char* jobz, const char* uplo, const long
+      int* n, float* a, const long int* lda, float* w,
+      float* work, const long int* lwork, long int* info);
+
+    extern void eigenValuesNonsymLapackCall(
+      const char* jobvl, const char* jobvr, const long
+      int* n, float* a, const long int* lda, float* wr, float* wi, float* vl,
+      const long int* ldvl, float* vr, const long int* ldvr, float* work,
+      const long int* lwork, long int* info);
+
+#endif
 
     namespace Impl {
       //internal tag to activate/disable code for eigenvector calculation at compile time
@@ -124,7 +138,7 @@ namespace Dune {
           acos(z) function requires |z| <= 1, but will fail silently
           and return NaN if the input is larger than 1 in magnitude.
           Thus r is clamped to [-1,1].*/
-          r = std::min(std::max(r, -1.0), 1.0);
+          r = std::min<K>(std::max<K>(r, -1.0), 1.0);
           K phi = acos(r) / 3.0;
 
           // the eigenvalues satisfy eig[2] <= eig[1] <= eig[0]
@@ -374,6 +388,7 @@ namespace Dune {
                                                FieldMatrix<K, dim, dim>& eigenVectors)
       {
         {
+#if HAVE_LAPACK
           /*Lapack uses a proprietary tag to determine whether both eigenvalues and
             -vectors ('v') or only eigenvalues ('n') should be calculated */
           const char jobz = "nv"[Tag];
@@ -384,8 +399,11 @@ namespace Dune {
           // length of matrix vector, LWORK >= max(1,3*N-1)
           const long int lwork = 3*N -1 ;
 
+          constexpr bool isKLapackType = std::is_same_v<K,double> || std::is_same_v<K,float>;
+          using LapackNumType = std::conditional_t<isKLapackType, K, double>;
+
           // matrix to put into dsyev
-          double matrixVector[dim * dim];
+          LapackNumType matrixVector[dim * dim];
 
           // copy matrix
           int row = 0;
@@ -398,14 +416,26 @@ namespace Dune {
           }
 
           // working memory
-          double workSpace[lwork];
+          LapackNumType workSpace[lwork];
 
           // return value information
           long int info = 0;
+          LapackNumType* ev;
+          if constexpr (isKLapackType){
+            ev = &eigenValues[0];
+          }else{
+            ev = new LapackNumType[dim];
+          }
 
           // call LAPACK routine (see fmatrixev.cc)
           eigenValuesLapackCall(&jobz, &uplo, &N, &matrixVector[0], &N,
-                                &eigenValues[0], &workSpace[0], &lwork, &info);
+                                ev, &workSpace[0], &lwork, &info);
+
+          if constexpr (!isKLapackType){
+              for(size_t i=0;i<dim;++i)
+                eigenValues[i] = ev[i];
+              delete[] ev;
+          }
 
           // restore eigenvectors matrix
           if (Tag==Jobs::EigenvaluesEigenvectors){
@@ -424,6 +454,9 @@ namespace Dune {
             std::cerr << "For matrix " << matrix << " eigenvalue calculation failed! " << std::endl;
             DUNE_THROW(InvalidStateException,"eigenValues: Eigenvalue calculation failed!");
           }
+#else
+          DUNE_THROW(NotImplemented,"LAPACK not found!");
+#endif
         }
       }
 
@@ -510,13 +543,17 @@ namespace Dune {
     static void eigenValuesNonSym(const FieldMatrix<K, dim, dim>& matrix,
                                   FieldVector<C, dim>& eigenValues)
     {
+#if HAVE_LAPACK
       {
         const long int N = dim ;
         const char jobvl = 'n';
         const char jobvr = 'n';
 
+        constexpr bool isKLapackType = std::is_same_v<K,double> || std::is_same_v<K,float>;
+        using LapackNumType = std::conditional_t<isKLapackType, K, double>;
+
         // matrix to put into dgeev
-        double matrixVector[dim * dim];
+        LapackNumType matrixVector[dim * dim];
 
         // copy matrix
         int row = 0;
@@ -529,9 +566,9 @@ namespace Dune {
         }
 
         // working memory
-        double eigenR[dim];
-        double eigenI[dim];
-        double work[3*dim];
+        LapackNumType eigenR[dim];
+        LapackNumType eigenI[dim];
+        LapackNumType work[3*dim];
 
         // return value information
         long int info = 0;
@@ -552,6 +589,9 @@ namespace Dune {
           eigenValues[i].imag = eigenI[i];
         }
       }
+#else
+      DUNE_THROW(NotImplemented,"LAPACK not found!");
+#endif
     }
   } // end namespace FMatrixHelp
 
