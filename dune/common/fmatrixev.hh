@@ -399,8 +399,11 @@ namespace Dune {
           // length of matrix vector, LWORK >= max(1,3*N-1)
           const long int lwork = 3*N -1 ;
 
+          constexpr bool isKLapackType = std::is_same_v<K,double> || std::is_same_v<K,float>;
+          using LapackNumType = std::conditional_t<isKLapackType, K, double>;
+
           // matrix to put into dsyev
-          K matrixVector[dim * dim];
+          LapackNumType matrixVector[dim * dim];
 
           // copy matrix
           int row = 0;
@@ -413,14 +416,26 @@ namespace Dune {
           }
 
           // working memory
-          K workSpace[lwork];
+          LapackNumType workSpace[lwork];
 
           // return value information
           long int info = 0;
+          LapackNumType* ev;
+          if constexpr (isKLapackType){
+            ev = &eigenValues[0];
+          }else{
+            ev = new LapackNumType[dim];
+          }
 
           // call LAPACK routine (see fmatrixev.cc)
           eigenValuesLapackCall(&jobz, &uplo, &N, &matrixVector[0], &N,
-                                &eigenValues[0], &workSpace[0], &lwork, &info);
+                                ev, &workSpace[0], &lwork, &info);
+
+          if constexpr (!isKLapackType){
+              for(size_t i=0;i<dim;++i)
+                eigenValues[i] = ev[i];
+              delete[] ev;
+          }
 
           // restore eigenvectors matrix
           if (Tag==Jobs::EigenvaluesEigenvectors){
@@ -534,8 +549,11 @@ namespace Dune {
         const char jobvl = 'n';
         const char jobvr = 'n';
 
+        constexpr bool isKLapackType = std::is_same_v<K,double> || std::is_same_v<K,float>;
+        using LapackNumType = std::conditional_t<isKLapackType, K, double>;
+
         // matrix to put into dgeev
-        K matrixVector[dim * dim];
+        LapackNumType matrixVector[dim * dim];
 
         // copy matrix
         int row = 0;
@@ -548,9 +566,9 @@ namespace Dune {
         }
 
         // working memory
-        K eigenR[dim];
-        K eigenI[dim];
-        K work[3*dim];
+        LapackNumType eigenR[dim];
+        LapackNumType eigenI[dim];
+        LapackNumType work[3*dim];
 
         // return value information
         long int info = 0;

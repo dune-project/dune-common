@@ -131,7 +131,9 @@ void testSymmetricFieldMatrix()
 
     // Make sure the eigenvectors have unit length
     for(auto& ev : eigenVectors) {
-      if(std::abs(ev.two_norm())-1 > dim*std::numeric_limits<field_type>::epsilon())
+      constexpr double tol = std::max<double>(std::numeric_limits<field_type>::epsilon(),
+                                              std::numeric_limits<double>::epsilon());
+      if(std::abs(ev.two_norm())-1 > dim*tol)
         DUNE_THROW(MathError, "Vector computed by FMatrixHelp::eigenValuesVectors does not have unit length");
     }
 
@@ -269,6 +271,7 @@ int main()
 #if HAVE_LAPACK
   testRosserMatrix<double>();
   testRosserMatrix<float>();
+  testRosserMatrix<long double>();
 #else
   std::cout << "WARNING: eigenvaluetest needs LAPACK, test disabled" << std::endl;
 #endif // HAVE_LAPACK
@@ -279,15 +282,20 @@ int main()
   testSymmetricFieldMatrix<double,200>();
   testSymmetricFieldMatrix<float,4>();
   testSymmetricFieldMatrix<float,200>();
+  testSymmetricFieldMatrix<long double,4>();
+  testSymmetricFieldMatrix<long double,200>();
 #endif // HAVE_LAPACK
 
   testSymmetricFieldMatrix<double,2>();
   testSymmetricFieldMatrix<double,3>();
   testSymmetricFieldMatrix<float,2>();
   testSymmetricFieldMatrix<float,3>();
+  testSymmetricFieldMatrix<long double,2>();
+  testSymmetricFieldMatrix<long double,3>();
 
   checkMultiplicity<double>();
   checkMultiplicity<float>();
+  checkMultiplicity<long double>();
 
   return 0;
 }
