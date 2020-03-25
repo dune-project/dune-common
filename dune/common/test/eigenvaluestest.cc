@@ -125,13 +125,15 @@ void testSymmetricFieldMatrix()
     {
       FieldVector<field_type, dim> Av;
       testMatrix.mv(eigenVectors[j], Av);
-      if((Av - eigenValues[j]*eigenVectors[j]).two_norm() > 1e-8)
+      if((Av - eigenValues[j]*eigenVectors[j]).two_norm() > dim*std::sqrt(std::numeric_limits<field_type>::epsilon()))
         DUNE_THROW(MathError, "Vector computed by FMatrixHelp::eigenValuesVectors is not an eigenvector");
     }
 
     // Make sure the eigenvectors have unit length
     for(auto& ev : eigenVectors) {
-      if(std::abs(ev.two_norm())-1 > 1e-14)
+      constexpr double tol = std::max<double>(std::numeric_limits<field_type>::epsilon(),
+                                              std::numeric_limits<double>::epsilon());
+      if(std::abs(ev.two_norm())-1 > dim*tol)
         DUNE_THROW(MathError, "Vector computed by FMatrixHelp::eigenValuesVectors does not have unit length");
     }
 
@@ -221,32 +223,33 @@ void checkMatrixWithLAPACK(FieldMatrix<field_type, dim, dim> matrix)
   }
 }
 
+template<class FT>
 void checkMultiplicity()
 {
   //--2d--
   //repeated eigenvalue (x2)
-  checkMatrixWithReference<double,2>({{1, 0},{0, 1}}, {{1,0}, {0,1}}, {1, 1});
+  checkMatrixWithReference<FT,2>({{1, 0},{0, 1}}, {{1,0}, {0,1}}, {1, 1});
 
   //eigenvalues with same magnitude (x2)
-  checkMatrixWithReference<double,2>({{0, 1}, {1, 0}}, {{1,-1}, {1,1}}, {-1, 1});
+  checkMatrixWithReference<FT,2>({{0, 1}, {1, 0}}, {{1,-1}, {1,1}}, {-1, 1});
 
   //--3d--
   //repeated eigenvalue (x3)
-  checkMatrixWithReference<double,3>({{  1,   0,   0},
+  checkMatrixWithReference<FT,3>({{  1,   0,   0},
                                       {  0,   1,   0},
                                       {  0,   0,   1}},
     {{1,0,0}, {0,1,0}, {0,0,1}},
     {1, 1, 1});
 
   //eigenvalues with same magnitude (x2)
-  checkMatrixWithReference<double,3>({{  0,   1,   0},
+  checkMatrixWithReference<FT,3>({{  0,   1,   0},
                                       {  1,   0,   0},
                                       {  0,   0,   5}},
     {{-1,1,0}, {1,1,0}, {0,0,1}},
     {-1, 1, 5});
 
   //repeated eigenvalue (x2)
-  checkMatrixWithReference<double,3>({{  3,  -2,   0},
+  checkMatrixWithReference<FT,3>({{  3,  -2,   0},
                                       { -2,   3,   0},
                                       {  0,   0,   5}},
     {{1,1,0}, {0,0,1}, {1,-1,0}},
@@ -254,11 +257,11 @@ void checkMultiplicity()
 
   //repeat tests with LAPACK (if found)
 #if HAVE_LAPACK
-  checkMatrixWithLAPACK<double,2>({{1, 0}, {0, 1}});
-  checkMatrixWithLAPACK<double,2>({{0, 1}, {1, 0}});
-  checkMatrixWithLAPACK<double,3>({{1,0,0}, {0,1,0}, {0,0,1}});
-  checkMatrixWithLAPACK<double,3>({{0,1,0}, {1,0,0}, {0,0,5}});
-  checkMatrixWithLAPACK<double,3>({{3,-2,0}, {-2,3,0}, {0,0,5}});
+  checkMatrixWithLAPACK<FT,2>({{1, 0}, {0, 1}});
+  checkMatrixWithLAPACK<FT,2>({{0, 1}, {1, 0}});
+  checkMatrixWithLAPACK<FT,3>({{1,0,0}, {0,1,0}, {0,0,1}});
+  checkMatrixWithLAPACK<FT,3>({{0,1,0}, {1,0,0}, {0,0,5}});
+  checkMatrixWithLAPACK<FT,3>({{3,-2,0}, {-2,3,0}, {0,0,5}});
 #endif
 
 }
@@ -267,6 +270,8 @@ int main()
 {
 #if HAVE_LAPACK
   testRosserMatrix<double>();
+  testRosserMatrix<float>();
+  testRosserMatrix<long double>();
 #else
   std::cout << "WARNING: eigenvaluetest needs LAPACK, test disabled" << std::endl;
 #endif // HAVE_LAPACK
@@ -275,12 +280,22 @@ int main()
 #if HAVE_LAPACK
   testSymmetricFieldMatrix<double,4>();
   testSymmetricFieldMatrix<double,200>();
+  testSymmetricFieldMatrix<float,4>();
+  testSymmetricFieldMatrix<float,200>();
+  testSymmetricFieldMatrix<long double,4>();
+  testSymmetricFieldMatrix<long double,200>();
 #endif // HAVE_LAPACK
 
   testSymmetricFieldMatrix<double,2>();
   testSymmetricFieldMatrix<double,3>();
+  testSymmetricFieldMatrix<float,2>();
+  testSymmetricFieldMatrix<float,3>();
+  testSymmetricFieldMatrix<long double,2>();
+  testSymmetricFieldMatrix<long double,3>();
 
-  checkMultiplicity();
+  checkMultiplicity<double>();
+  checkMultiplicity<float>();
+  checkMultiplicity<long double>();
 
   return 0;
 }
