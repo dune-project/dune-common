@@ -10,7 +10,7 @@
 #include <optional>
 
 #warning dune/common/std/optional.hh is deprecated and will be removed after Dune 2.8.\
- Inclead <optional> instead
+ Include <optional> instead
 
 namespace Dune
 {
