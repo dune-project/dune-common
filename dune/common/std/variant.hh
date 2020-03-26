@@ -4,7 +4,7 @@
 #define DUNE_COMMON_STD_VARIANT_HH
 
 #warning dune/common/std/variant.hh is deprecated and will be removed after Dune 2.8.\
- Inclead <variant> instead
+ Include <variant> instead
 
 #include <variant>
 
