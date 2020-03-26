@@ -4,7 +4,7 @@
 #include <utility>
 
 #warning dune/common/std/utility.hh is deprecated and will be removed after Dune 2.8.\
- Inclead <utility> instead
+ Include <utility> instead
 
 namespace Dune
 {
