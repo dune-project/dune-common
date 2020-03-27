@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-setup(name="dune.python",
+setup(name="dune.common",
     namespace_packages=['dune'],
     description="Python lib for dune",
     version="${DUNE_PYTHON_VERSION}",

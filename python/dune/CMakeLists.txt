@@ -9,6 +9,3 @@ add_python_targets(dune
   deprecate
   utility
 )
-
-dune_add_pybind11_module(NAME _typeregistry)
-dune_add_pybind11_module(NAME _common)

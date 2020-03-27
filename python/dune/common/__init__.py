@@ -22,7 +22,7 @@ try:
 except ImportError:
     logger.info('mpi4py not found, MPI not initialized')
 
-from .._common import *
+from ._common import *
 from .deprecated import DeprecatedObject
 
 import numpy
