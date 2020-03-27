@@ -148,3 +148,5 @@ endfunction()
 if(DUNE_PYTHON_VIRTUALENV_SETUP)
   include(DunePythonVirtualenv)
 endif()
+
+include(DunePythonMacros)
