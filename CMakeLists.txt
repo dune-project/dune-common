@@ -24,6 +24,8 @@ add_subdirectory("bin")
 add_subdirectory("doc")
 add_subdirectory("cmake/modules")
 add_subdirectory("cmake/scripts")
+add_subdirectory(python)
+dune_python_install_package(PATH "python")
 
 # finalize the dune project, e.g. generating config.h etc.
 finalize_dune_project()
