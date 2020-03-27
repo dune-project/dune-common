@@ -101,7 +101,7 @@ def main(argv):
 
     if execute == "install":
         duneModules = select_modules()
-        moddir = duneModules[1]["dune-python"]
+        # moddir = duneModules[1]["dune-python"]
         for m,depends in duneModules[0].items():
             moddir = duneModules[1][m]
             pythonModule = toBuildDir(builddir,moddir,m)

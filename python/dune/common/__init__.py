@@ -63,9 +63,10 @@ def FieldVector(values):
         setattr(cls, "__getitem__", fvgetitem)
         globals().update({fv:cls})
     return globals()[fv](values)
-def FieldMatrix(values):
-    fm = "FieldMatrix_" + str(len(values)) + "_" + str(len(values[0]))
-    return globals()[fm](values)
+# implementation needs to be completed similar to the FV above
+# def FieldMatrix(values):
+#     fm = "FieldMatrix_" + str(len(values)) + "_" + str(len(values[0]))
+#     return globals()[fm](values)
 
 def _raise(exception):
     raise exception

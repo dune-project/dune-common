@@ -20,13 +20,16 @@ PYBIND11_MODULE( _common, module )
   Dune::Python::addToTypeRegistry<int>(Dune::Python::GenerateTypeName("int"));
   Dune::Python::addToTypeRegistry<std::size_t>(Dune::Python::GenerateTypeName("std::size_t"));
 
-  Dune::Python::registerFieldVector<double>(module, std::make_integer_sequence<int, 10>());
+  // to reduce compile during dune-common build don't preregister any FV/FM classes
+  /*
+  Dune::Python::registerFieldVector<double>(module, std::make_integer_sequence<int, 3>());
 
-  Dune::Hybrid::forEach( std::make_integer_sequence< int, 5 >(), [ module ] ( auto rows ) {
-      Dune::Hybrid::forEach( std::make_integer_sequence< int, 5 >(), [ module ] ( auto cols ) {
+  Dune::Hybrid::forEach( std::make_integer_sequence< int, 3 >(), [ module ] ( auto rows ) {
+      Dune::Hybrid::forEach( std::make_integer_sequence< int, 3 >(), [ module ] ( auto cols ) {
         Dune::Python::registerFieldMatrix< double, decltype(rows)::value, cols >( module );
       } );
     } );
+    */
 
   Dune::Python::registerDynamicVector<double>(module);
   Dune::Python::registerDynamicMatrix<double>(module);

@@ -110,6 +110,9 @@ namespace Dune
           });
 
       cls.def( "__str__", [] ( const FV &self ) { return to_string( self ); } );
+      cls.def( "__repr__", [] ( const FV &self ) {
+          return "Dune::FieldVector<"+to_string(size)+">"+to_string(self);
+          } );
 
       cls.def_buffer( [] ( FV &self ) -> pybind11::buffer_info {
           return pybind11::buffer_info(

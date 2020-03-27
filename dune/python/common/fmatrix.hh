@@ -13,6 +13,7 @@
 #include <dune/python/common/typeregistry.hh>
 #include <dune/python/common/fmatrix.hh>
 #include <dune/python/common/densematrix.hh>
+#include <dune/python/common/string.hh>
 #include <dune/python/pybind11/pybind11.h>
 #include <dune/python/pybind11/operators.h>
 
@@ -64,6 +65,9 @@ namespace Dune
             }
             return s += ")";
           });
+      cls.def( "__repr__", [] ( const FM &self ) {
+          return "Dune::FieldMatrix<"+to_string(m)+","+to_string(n)+">(...)";
+          } );
 
       cls.def_buffer( [] ( FM &self ) -> pybind11::buffer_info {
           return pybind11::buffer_info(
