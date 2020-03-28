@@ -25,3 +25,23 @@ debian:10 gcc-7-17--expensive:
   # allowed to fail to e.g. do no hold up a merge when a runner supporting avx
   # is unavailable
   allow_failure: true
+
+
+debian-11-gcc-9-17-python:
+  image: duneci/debian:11
+  script: duneci-standard-test
+  variables:
+    DUNECI_TOOLCHAIN:  gcc-9-17
+    # so we need some variables to build the dune-py module during execution of the first python test:
+    # we need to find the dune mdoule
+    DUNE_CONTROL_PATH:  /duneci/modules:$CI_PROJECT_DIR
+    # the position for the dune-py module
+    DUNE_PY_DIR:       /duneci/modules/dune-py
+    # during dune-py build this variable is used - do know a way to access
+    # the CMAKE_FLAGS used to build the modules...
+    DUNE_CMAKE_FLAGS:   "CC=gcc-9 CXX=g++-9 -DCMAKE_CXX_FLAGS='-std=c++17 -O2 -g -Wall -fdiagnostics-color=always' -DDUNE_MAX_TEST_CORES=4 -DBUILD_SHARED_LIBS=TRUE -DDUNE_PYTHON_INSTALL_LOCATION=none -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE -DCMAKE_DISABLE_FIND_PACKAGE_LATEX=TRUE -DCMAKE_DISABLE_FIND_PACKAGE_Alberta=TRUE -DCMAKE_DISABLE_FIND_PACKAGE_Vc=TRUE -DCMAKE_DISABLE_DOCUMENTATION=TRUE"
+    # cmake flags we use for all dune moudle - important is that build shared libs is set (need some better way of doing this)
+    DUNECI_CMAKE_FLAGS: $DUNE_CMAKE_FLAGS
+    # finally set the python path to all modules
+    PYTHONPATH:        $CI_PROJECT_DIR/build-cmake/python
+  tags: [duneci]
