@@ -1,6 +1,7 @@
-import sys
+print("""WARNING:
+Importing deprecated `dune.common.pickle' use
+    import pickle
+instead
+""")
 
-if sys.version_info.major == 2:
-    from cPickle import *
-else:
-    from pickle import *
+from pickle import *

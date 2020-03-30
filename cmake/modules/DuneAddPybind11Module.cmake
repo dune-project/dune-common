@@ -72,8 +72,6 @@ function(dune_add_pybind11_module)
 
   add_library(${PYBIND11_MODULE_NAME} SHARED ${PYBIND11_MODULE_SOURCES})
   set_target_properties(${PYBIND11_MODULE_NAME} PROPERTIES PREFIX "")
-  #set_target_properties(${PYBIND11_MODULE_NAME} PROPERTIES CXX_VISIBILITY_PRESET hidden)
-  #set_target_properties(${PYBIND11_MODULE_NAME} PROPERTIES VISIBILITY_INLINES_HIDDEN TRUE)
   target_compile_definitions(${PYBIND11_MODULE_NAME} PRIVATE ${PYBIND11_MODULE_COMPILE_DEFINITIONS})
   dune_target_enable_all_packages(${PYBIND11_MODULE_NAME})
 

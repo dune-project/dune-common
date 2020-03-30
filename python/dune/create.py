@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import importlib
 import sys
 import pkgutil
@@ -82,7 +80,6 @@ def get(category=None,entry=None):
             colLength[0] = max(colLength[0],len(entries[-1][0]))
             colLength[1] = max(colLength[1],len(entries[-1][1]))
             colLength[2] = max(colLength[2],len(entries[-1][2]))
-            # print(k,"\t function'"+e[0].__name__+"' from '"+'.'.join(m for m in n)+"'")
         entries.sort()
         print("entry".ljust(colLength[0]),
               "function".ljust(colLength[1]),
@@ -113,27 +110,17 @@ def signatureDict(func):
     # all non var argument of the function as key and containing a either
     # Empty or the default argument provided by the function signature
 
-    if sys.version_info.major == 2:
-        sig = inspect.getargspec(func)
-        names=list(sig.args)
-        defaults=list(sig.defaults) if sig.defaults else list()
-        for i in range(len(names)-len(defaults)):
-            defaults.insert(0,Empty)
-        ret = dict(zip(names, defaults))
-    else:
-        ret = {}
-        sig = inspect.signature(func)
-        for p,v in sig.parameters.items():
-            # we only extract positional or keyword argument (i.e. not  *args,**kwargs)
-            if v.kind == v.POSITIONAL_OR_KEYWORD:
-                name = v.name
-                default = v.default if not v.default is v.empty else Empty
-                ret.update({name:default})
+    ret = {}
+    sig = inspect.signature(func)
+    for p,v in sig.parameters.items():
+        # we only extract positional or keyword argument (i.e. not  *args,**kwargs)
+        if v.kind == v.POSITIONAL_OR_KEYWORD:
+            name = v.name
+            default = v.default if not v.default is v.empty else Empty
+            ret.update({name:default})
     return ret
 
 def _creatorCall(create, usedKeys, *args, **kwargs):
-    # print("*********************************************")
-    # print("creatorCall:",key)
     # get signature of create function to call
     signature = signatureDict(create)
     # check if any of the parameter names correspond to some creator -
@@ -147,7 +134,6 @@ def _creatorCall(create, usedKeys, *args, **kwargs):
         if name=='view' and not name in kwargs and 'grid' in kwargs:
             kwargs.update({"view":kwargs["grid"]})
             usedKeys.update(["grid"])
-        # print("checking parameter: ",name,end=" -\n ")
         creator = globals().get(name)
         if creator: # a creator for this parameter name exists
             assert signature[name] == Empty, "argument in create method corresponding to creatibles should not have default values"
@@ -170,8 +156,6 @@ def _creatorCall(create, usedKeys, *args, **kwargs):
             else:
                 signature[name] = argument
                 usedKeys.update([name])
-    # print(signature)
-    # print("*********************************************")
     return create(**signature)
 
 def creatorCall(self, key, *args, **kwargs):
@@ -193,7 +177,6 @@ def creatorCall(self, key, *args, **kwargs):
             kwargs.update({'view':kwargs['grid']})
             usedKeys.update(['grid'])
         instance = _creatorCall(create,usedKeys,*args,**kwargs)
-        # print(set(kwargs), usedKeys)
         assert set(kwargs) == usedKeys, "some provided named parameters where not used"
         return instance
 

@@ -164,7 +164,7 @@ namespace Dune
 
     template< std::size_t... i, class T, class... X >
     inline static constexpr auto extendArray ( std::index_sequence< i... >, const std::array< T, sizeof...( i ) > &array, X &&... x )
-      -> std::enable_if_t< Std::conjunction< std::is_convertible< X, T >... >::value, std::array< T, sizeof...( i )+sizeof...( X ) > >
+      -> std::enable_if_t< std::conjunction< std::is_convertible< X, T >... >::value, std::array< T, sizeof...( i )+sizeof...( X ) > >
     {
       return {{ array[ i ]..., std::forward< X >( x )... }};
     }
@@ -283,7 +283,7 @@ namespace Dune
       return vectorize( std::forward< F >( f ), static_cast< pybind11::detail::function_signature_t< F > * >( nullptr ), std::move( xArray ) );
     }
 
-  } // namespace Corepy
+  } // namespace Python
 
 } // namespace Dune
 

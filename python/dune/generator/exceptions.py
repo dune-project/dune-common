@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 class CompileError(Exception):
     '''raise this when there's a problem compiling an extension module'''
     def __init__(self, error):
