@@ -1,17 +1,8 @@
-import importlib
-import sys
-from inspect import signature
-
-def buffer_to_str(b):
-    return b.decode('utf-8')
-
-def isString(s):
-    return isinstance(s, str)
-
-def isInteger(i):
-    return isinstance(i, int)
-
-reload_module = importlib.reload
-
-def getNumberOfParameters(func):
-    return len( signature(func).parameters )
+print("""WARNING:
+Importing deprecated `dune.common.compatibility'. The Python 2.7 versions
+of the functions defined here were removed and the Python 3+ versions moved
+so use
+    import dune.common.utility
+instead
+""")
+from .utility import *

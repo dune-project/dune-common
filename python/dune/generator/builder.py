@@ -50,7 +50,7 @@ except ModuleNotFoundError:
             return exc_type == None
 
 from dune.common import comm
-from dune.common.compatibility import buffer_to_str, isString, reload_module
+from dune.common.utility import buffer_to_str, isString, reload_module
 from dune.generator.exceptions import CompileError, ConfigurationError
 import dune.common.module
 

@@ -2,7 +2,7 @@ import os
 
 from dune.common.hashit import hashIt
 from . import builder
-from dune.common.compatibility import isString
+from dune.common.utility import isString
 from dune.generator.algorithm import cppType
 
 def load(className, includeFiles, *args):
