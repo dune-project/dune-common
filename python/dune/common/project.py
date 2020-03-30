@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import os
 
 def write_cmake_file(dir, content=None, subdirs=None, install=None):

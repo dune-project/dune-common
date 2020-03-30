@@ -1,40 +1,8 @@
-import importlib
-import sys
-
-if sys.version_info.major == 2:
-    def buffer_to_str(b):
-        return b
-else:
-    def buffer_to_str(b):
-        return b.decode('utf-8')
-
-
-if sys.version_info.major == 2:
-    def isString(s):
-        return isinstance(s, (str, unicode))
-
-    def isInteger(i):
-        return isinstance(i, (int, long))
-else:
-    def isString(s):
-        return isinstance(s, str)
-
-    def isInteger(i):
-        return isinstance(i, int)
-
-
-if sys.version_info.major == 2:
-    def reload_module(module):
-        reload(module)
-        return module
-else:
-    reload_module = importlib.reload
-
-if sys.version_info.major == 2:
-    from inspect import getargspec
-    def getNumberOfParameters(func):
-        return len( getargspec(func).args )
-else:
-    from inspect import signature
-    def getNumberOfParameters(func):
-        return len( signature(func).parameters )
+print("""WARNING:
+Importing deprecated `dune.common.compatibility'. The Python 2.7 versions
+of the functions defined here were removed and the Python 3+ versions moved
+so use
+    import dune.common.utility
+instead
+""")
+from .utility import *

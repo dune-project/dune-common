@@ -1,5 +1,3 @@
-from __future__ import print_function, unicode_literals
-
 import logging
 import os
 import re
@@ -7,7 +5,7 @@ import subprocess
 
 import dune.common.module
 
-from dune.common.compatibility import buffer_to_str
+from dune.common.utility import buffer_to_str
 from dune.generator import builder, ConfigurationError
 
 logger = logging.getLogger(__name__)
@@ -25,10 +23,8 @@ def assertHave(identifier):
         matches = [match for match in [re.match('^[ ]*#define[ ]+' + identifier.strip() + '[ ]+ENABLE', line) for line in open(config)] if match is not None]
 
     if not matches:
-        # logger.info("checkconfiguration.have(" + identifier + ") failed - identifier not defined in " + config)
         raise ConfigurationError(identifier + " is not set in dune-py's config.h")
     elif matches.__len__() > 1:
-        # logger.info("checkconfiguration.have(" + identifier + ") failed - multiple definitions in " + config)
         raise ConfigurationError(identifier + " found multiple times in dune-py's config.h")
 
 def preprocessorAssert(tests):

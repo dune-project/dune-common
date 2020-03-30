@@ -375,9 +375,6 @@ namespace Dune
       std::vector<std::string> includes = typeName.includes();
       includes.insert(includes.end(), inc.begin(), inc.end());
       detail::insertIntoTypeRegistry<DuneType>(typeName.name(),"",includes);
-      // if (!entry.second)
-      //   throw std::invalid_argument( (std::string("adding a class (") +
-      //         typeid(DuneType).name() + ") twice to the type registry").c_str() );
     }
 
 
@@ -435,7 +432,6 @@ namespace Dune
 
         cls.def_property_readonly_static( "_typeName", [ entry ] ( pybind11::object ) { return entry.first->second.name; } );
         cls.def_property_readonly_static( "_includes", [ entry ] ( pybind11::object ) { return entry.first->second.includes; } );
-        // cls.def( "__str__", [ entry ] ( pybind11::object ) { return entry.first->second.name; } );
 
         return std::make_pair( cls, true );
       }

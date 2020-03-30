@@ -12,9 +12,6 @@ struct GetDimension;
 template< class T >
 struct GetDimension< T, std::enable_if_t<std::is_arithmetic<T>::value>>
    : public std::integral_constant< int, 1 > {};
-// template<>
-// struct GetDimension<double>
-//    : public std::integral_constant< int, 1 > {};
 template< class FT, int dim >
 struct GetDimension<Dune::FieldVector<FT,dim>>
    : public std::integral_constant< int, dim > {};

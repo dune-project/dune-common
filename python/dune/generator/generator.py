@@ -6,8 +6,6 @@
     provided by python dictonaries stored in files.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import logging
 
 from . import builder
@@ -155,13 +153,3 @@ def simpleGenerator(inc, baseType, namespace, pythonname=None, filename=None):
         moduleName = namespace + "_" + baseType + "_" + hashIt(typeName)
         return generator.load(includes, typeName, moduleName, *args)
     return load
-
-from . import Method as Method_
-from . import Constructor as Constructor_
-from dune.deprecate import deprecated
-@deprecated("import from dune.generator directly")
-class Method(Method_):
-    pass
-@deprecated("import from dune.generator directly")
-class Constructor(Constructor_):
-    pass

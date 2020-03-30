@@ -44,7 +44,7 @@ namespace Dune
 
       cls.def("__repr__",
           [] (const DV &v) {
-            std::string repr = "DUNE DynamicVector: (";
+            std::string repr = "Dune::DynamicVector: (";
 
             for (std::size_t i = 0; i < v.size(); ++i)
               repr += (i > 0 ? ", " : "") + std::to_string(v[i]);

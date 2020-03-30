@@ -50,7 +50,7 @@ namespace Dune
 
       cls.def("__repr__",
           [] (const DM& m) {
-            std::string repr = "DUNE DynamicMatrix:\n(";
+            std::string repr = "Dune::DynamicMatrix:\n(";
 
             for(unsigned int r = 0; r < m.rows(); r++)
             {

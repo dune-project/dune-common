@@ -67,11 +67,7 @@ namespace Dune
       template< class... Args >
       void log ( int level, const std::string &msg, Args &&... args ) const
       {
-#if PY_MAJOR_VERSION < 3
-        pybind11::object pyLevel = pybind11::reinterpret_steal< pybind11::object >( PyInt_FromLong( level ) );
-#else // #if PY_MAJOR_VERSION < 3
         pybind11::object pyLevel = pybind11::int_( level );
-#endif // #else // #if PY_MAJOR_VERSION < 3
         logger_.attr( "log" )( pyLevel, msg, *pybind11::make_tuple( std::forward< Args >( args )... ) );
       }
 

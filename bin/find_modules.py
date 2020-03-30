@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 try:
     from dune.common.module import resolve_dependencies, resolve_order, select_modules
 
