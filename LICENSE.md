@@ -70,6 +70,9 @@ Copyright holders:
 2012          Matthias Wohlmuth
 2011--2016    Jonathan Youett
 
+This Licence does not cover the header files taken from the
+[pybind11 project][pybind11] which are included here
+(`dune/python/pybind11`) together with their own [licence file][pybind11Licence].
 
 The DUNE library and headers are licensed under version 2 of the GNU
 General Public License (see below), with a special exception for
@@ -431,3 +434,6 @@ proprietary programs.  If your program is a subroutine library, you may
 consider it more useful to permit linking proprietary applications with the
 library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.
+
+[pybind11]: https://github.com/pybind/pybind11
+[pybind11Licence]: https://github.com/pybind/pybind11/blob/master/LICENSE
