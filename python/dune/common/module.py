@@ -553,7 +553,8 @@ def make_dune_py_module(dune_py_dir=None):
         modules, _ = select_modules()
         description = Description(module='dune-py', version=get_dune_py_version(),  maintainer='dune@lists.dune-project.org', depends=list(modules.values()))
         logger.debug('dune-py will depend on ' + ' '.join([m + (' ' + str(c) if c else '') for m, c in description.depends]))
-        project.make_project(dune_py_dir, description, subdirs=[generated_dir])
+        project.make_project(dune_py_dir, description,
+                subdirs=[generated_dir], is_dunepy=True)
     else:
         description = Description(descFile)
         if description.name != 'dune-py':
