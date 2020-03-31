@@ -149,4 +149,5 @@ if(DUNE_PYTHON_VIRTUALENV_SETUP)
   include(DunePythonVirtualenv)
 endif()
 
+# marcos used for the Python bindings
 include(DunePythonMacros)
