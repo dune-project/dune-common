@@ -118,6 +118,22 @@ int main()
     if( !resultFVb.is( pybind11::none() )
         || (fv != Dune::FieldVector<double,2>{16,8}) )
       std::cout << "Test 4b failed" << std::endl;
+
+    // Example 5
+    // As example 4 but use a pointer to a FV
+    Dune::FieldVector<double,2> fv2{4,2};
+    newLocal["fv2"] = pybind11::cast(&fv2);
+    auto resultFVptr = pybind11::eval<pybind11::eval_statements>(
+           "print('Example 5');\n"
+           "print('changed fv from',fv2,end=' -> ')\n"
+           "fv2 *= 2\n"
+           "print(fv2);",
+       global, newLocal
+    );
+    std::cout << "C++ FV=" << fv2 << std::endl;
+    if( !resultFVptr.is( pybind11::none() )
+        || (fv2 != Dune::FieldVector<double,2>{8,4}) )
+      std::cout << "Test 5 failed" << std::endl;
   }
 }
 // remark: combine getting the guard, a dummy scope and possibly loading
