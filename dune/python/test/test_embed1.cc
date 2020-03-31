@@ -25,17 +25,50 @@ int main()
     local["call_test"] = pybind11::cpp_function([&]() -> auto
         { return Dune::FieldVector<double,2>{4,2}; });
     auto result = pybind11::eval<pybind11::eval_statements>(
-           "print('Hello World!');\n"
+           "print('Example 1!');\n"
            "x = call_test();\n"
            "norm2_x = x.two_norm2;\n"
-           "print(x);",
+           "print('results',x);",
        global, local
     );
-    auto x = local["x"].cast<Dune::FieldVector<double,2>>();
+    auto &x = local["x"].cast<Dune::FieldVector<double,2>&>();
     if( !result.is( pybind11::none() ) || (x != Dune::FieldVector<double,2>{4,2}) )
       std::cout << "Test 1 failed" << std::endl;
     auto norm2_x = local["norm2_x"].cast<double>();
     if( !result.is( pybind11::none() ) || (norm2_x != 20) )
+      std::cout << "Test 1 failed" << std::endl;
+
+    local["call_testref"] = pybind11::cpp_function([&]
+        (Dune::FieldVector<double,2>& y) -> auto
+        { y+=Dune::FieldVector<double,2>{-4,-2}; });
+    auto resultref = pybind11::eval<pybind11::eval_statements>(
+           "print('Example 2!');\n"
+           "call_testref(x);\n"
+           "norm2_x = x.two_norm2;\n"
+           "print('result',x);",
+       global, local
+    );
+    if( !resultref.is( pybind11::none() ) || (x != Dune::FieldVector<double,2>{0,0}) )
+      std::cout << "Test 1 failed" << std::endl;
+    norm2_x = local["norm2_x"].cast<double>();
+    if( !resultref.is( pybind11::none() ) || (norm2_x != 0) )
+      std::cout << "Test 1 failed" << std::endl;
+
+    Dune::FieldVector<double,2> z{4,2};
+    local["call_testref2"] = pybind11::cpp_function([&]
+        (Dune::FieldVector<double,2>& y) -> auto
+        { y+=z; });
+    local["z"] = z;
+    auto resultref2 = pybind11::eval<pybind11::eval_statements>(
+           "print('Example 3!');\n"
+           "import dune.common;\n"
+           "zz=dune.common.FieldVector((2,4));\n"
+           "call_testref2(zz);\n"
+           "print('results',zz,'using',z);",
+       global, local
+    );
+    auto &zz = local["zz"].cast<Dune::FieldVector<double,2>&>();
+    if( !resultref2.is( pybind11::none() ) || (zz != Dune::FieldVector<double,2>{6,6}) )
       std::cout << "Test 1 failed" << std::endl;
   }
 }
