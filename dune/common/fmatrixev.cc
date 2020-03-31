@@ -250,8 +250,8 @@ namespace Dune {
       SGEEV_FORTRAN(jobvl, jobvr, n, a, lda, wr, wi, vl, ldvl, vr, ldvr,
                     work, lwork, info);
     }
-    #endif
   } // end namespace FMatrixHelp
-
 } // end namespace Dune
-#endif
+
+#endif // #if HAVE_LAPACK
+#endif // #ifndef DUNE_FMATRIXEIGENVALUES_CC
