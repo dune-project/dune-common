@@ -6,21 +6,29 @@
 
 int main()
 {
+  /*
+     remark: combine getting the guard and loading
+             dune.common in a single 'initialization' function -
+             the dune.common module can also be used to register additional
+             types - although a 'dummy' scope can also be used, i.e.,
+             pybind11::handle scope;
+  */
   pybind11::scoped_interpreter guard{};
+  pybind11::module dcommon = pybind11::module::import("dune.common");
   auto global = pybind11::dict(pybind11::module::import("__main__").attr("__dict__"));
-  {
-#if 0 // using the C++ registry functions directly:
-    // need some 'dummy' scope to register the FV to
-    pybind11::handle scope;
-    // the first step is done in 'dune.common' (_common.cc)
-    Dune::Python::addToTypeRegistry<double>(Dune::Python::GenerateTypeName("double"));
-    // now we want to pass a FV<double,2> to Python so need to register that
-    Dune::Python::registerFieldVector<double,2> ( scope );
-#else // go through dune.common module but still use C++ registry functions
-    pybind11::module dcommon = pybind11::module::import("dune.common");
-    Dune::Python::registerFieldVector<double,2> ( dcommon );
-#endif
 
+  // using the C++ registry functions directly:
+  Dune::Python::registerFieldVector<double,2> ( dcommon );
+  /*
+      // instead of importing dune.common one could use the dummy scope and
+      // the first step is done in 'dune.common' (_common.cc)
+      Dune::Python::addToTypeRegistry<double>(Dune::Python::GenerateTypeName("double"));
+      // now we want to pass a FV<double,2> to Python so need to register that
+      Dune::Python::registerFieldVector<double,2> ( scope );
+  */
+
+  // first set of tests
+  {
     // First example:
     // Call a C++ function that generats a FV,
     // call that in Python and compute squared 2-norm
@@ -87,44 +95,13 @@ int main()
       std::cout << "Test 3 failed" << std::endl;
 
     // Example 4
-    // Similar to example 3 but without copying using instead
-    // the 'FieldVector' method in the dune.common module
-    // the resulting 'fv' is both readable from python and
-    // from C++
-    auto pyfv = dcommon.attr("FieldVector")(std::vector<double>{4,2});
-    Dune::FieldVector<double,2>& fv = pyfv.cast<Dune::FieldVector<double,2>&>();
-    std::cout << "FV=" << pyfv << "==" << fv << std::endl;
-    auto newLocal = pybind11::dict();
-    newLocal["fv"] = pyfv;
-    auto resultFVa = pybind11::eval<pybind11::eval_statements>(
-           "print('Example 4a');\n"
-           "print('changed fv from',fv,end=' -> ')\n"
-           "fv *= 2\n"
-           "print(fv);",
-       global, newLocal
-    );
-    std::cout << "C++ FV=" << fv << std::endl;
-    if( !resultFVa.is( pybind11::none() )
-        || (fv != Dune::FieldVector<double,2>{8,4}) )
-      std::cout << "Test 4a failed" << std::endl;
-    auto resultFVb = pybind11::eval<pybind11::eval_statements>(
-           "print('Example 4b');\n"
-           "print('changed fv from',fv,end=' -> ')\n"
-           "fv *= 2\n"
-           "print(fv);",
-       global, newLocal
-    );
-    std::cout << "C++ FV=" << fv << std::endl;
-    if( !resultFVb.is( pybind11::none() )
-        || (fv != Dune::FieldVector<double,2>{16,8}) )
-      std::cout << "Test 4b failed" << std::endl;
-
-    // Example 5
-    // As example 4 but use a pointer to a FV
+    // Can also use pointer to a FV in the `local` dict soo that
+    // changes on the Python side are available on the C++ side without copy
+    auto newLocal = pybind11::dict(); // test with a new local dict
     Dune::FieldVector<double,2> fv2{4,2};
     newLocal["fv2"] = pybind11::cast(&fv2);
     auto resultFVptr = pybind11::eval<pybind11::eval_statements>(
-           "print('Example 5');\n"
+           "print('Example 4');\n"
            "print('changed fv from',fv2,end=' -> ')\n"
            "fv2 *= 2\n"
            "print(fv2);",
@@ -133,8 +110,42 @@ int main()
     std::cout << "C++ FV=" << fv2 << std::endl;
     if( !resultFVptr.is( pybind11::none() )
         || (fv2 != Dune::FieldVector<double,2>{8,4}) )
-      std::cout << "Test 5 failed" << std::endl;
+      std::cout << "Test 4 failed" << std::endl;
+  }
+
+  // the final example uses the `FieldVector` function from the
+  // dune.common module - this approach requires JIT in dune-py and
+  // is turned off for the general embedding tests
+  if (false)
+  {
+    // Example 5
+    // Similar to example 3 but without copying similar to Example 4
+    auto pyfv = dcommon.attr("FieldVector")(std::vector<double>{4,2});
+    Dune::FieldVector<double,2>& fv = pyfv.cast<Dune::FieldVector<double,2>&>();
+    std::cout << "FV=" << pyfv << "==" << fv << std::endl;
+    auto newLocal = pybind11::dict();
+    newLocal["fv"] = pyfv;
+    auto resultFVa = pybind11::eval<pybind11::eval_statements>(
+           "print('Example 5a');\n"
+           "print('changed fv from',fv,end=' -> ')\n"
+           "fv *= 2\n"
+           "print(fv);",
+       global, newLocal
+    );
+    std::cout << "C++ FV=" << fv << std::endl;
+    if( !resultFVa.is( pybind11::none() )
+        || (fv != Dune::FieldVector<double,2>{8,4}) )
+      std::cout << "Test 5a failed" << std::endl;
+    auto resultFVb = pybind11::eval<pybind11::eval_statements>(
+           "print('Example 5b');\n"
+           "print('changed fv from',fv,end=' -> ')\n"
+           "fv *= 2\n"
+           "print(fv);",
+       global, newLocal
+    );
+    std::cout << "C++ FV=" << fv << std::endl;
+    if( !resultFVb.is( pybind11::none() )
+        || (fv != Dune::FieldVector<double,2>{16,8}) )
+      std::cout << "Test 5b failed" << std::endl;
   }
 }
-// remark: combine getting the guard, a dummy scope and possibly loading
-//         dune.common in a single 'initialization' function?
