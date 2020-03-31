@@ -21,7 +21,9 @@ namespace Dune {
 
   namespace DynamicMatrixHelp {
 
+#if HAVE_LAPACK
     using Dune::FMatrixHelp::eigenValuesNonsymLapackCall;
+#endif
 
     /** \brief calculates the eigenvalues of a symmetric field matrix
         \param[in]  matrix matrix eigenvalues are calculated for
@@ -37,6 +39,8 @@ namespace Dune {
                                   std::vector<DynamicVector<K>>* eigenVectors = nullptr
       )
     {
+
+#if HAVE_LAPACK
       {
         const long int N = matrix.rows();
         const char jobvl = 'n';
@@ -91,8 +95,10 @@ namespace Dune {
           }
         }
       }
+#else // #if HAVE_LAPACK
+      DUNE_THROW(NotImplemented,"LAPACK not found!");
+#endif
     }
-
   }
 
 }
