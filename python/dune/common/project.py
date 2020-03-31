@@ -66,6 +66,8 @@ def make_project(dir, description, subdirs=None, enable_all_packages=True, is_du
         file.write(repr(description))
 
     cmake_content = ['cmake_minimum_required(VERSION 3.1)', 'project(' + description.name + ' C CXX)']
+    if is_dunepy:
+        cmake_content += ['', 'set(DUNE_ENABLE_PYTHONBINDINGS ON)']
     cmake_content += ['',
                       'if(NOT (dune-common_DIR OR dune-common_ROOT OR "${CMAKE_PREFIX_PATH}" MATCHES ".*dune-common.*"))',
                       '  string(REPLACE ${CMAKE_PROJECT_NAME} dune-common dune-common_DIR ${PROJECT_BINARY_DIR})',
@@ -79,7 +81,6 @@ def make_project(dir, description, subdirs=None, enable_all_packages=True, is_du
     if enable_all_packages:
         cmake_content += ['dune_enable_all_packages()']
     if is_dunepy:
-        cmake_content += ['', 'set(DUNE_ENABLE_PYTHONBINDINGS ON)']
         cmake_content += ['',
                           'if( dune-uggrid_FOUND )',
                           '  if( NOT BUILD_SHARED_LIBS )',
