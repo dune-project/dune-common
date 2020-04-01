@@ -195,8 +195,10 @@ def runCTest(argv=[]):
            "--output-on-failure",
            "--dashboard", "ExperimentalTest",
            "--no-compress-output",
+           "--verbose",
     ]
     cmd.extend(argv)
+    print("CALLING CTEST:",cmd)
     subprocess.call(cmd)
 
 def checkDirectory():
