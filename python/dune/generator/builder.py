@@ -161,7 +161,7 @@ class Builder:
                 # lock generated module and make sure the folder isn't
                 # locked due to CMakeLists.txt changed being made
                 with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
-                    with Lock(os.path.join(self.dune_py_dir, 'lock-all.lock'), flags=LOCK_SH):
+                    with Lock(os.path.join(self.dune_py_dir, 'lock-all.lock'), flags=LOCK_EX):
                         self.compile(moduleName, only_make=True)
 
             comm.barrier()
