@@ -89,9 +89,12 @@ class Builder:
         else:
             self.savedOutput = None
 
-    def compile(self, target='all'):
+    def compile(self, target='all', only_make=False):
         cmake_command = dune.common.module.get_cmake_command()
-        cmake_args = [cmake_command, "--build", self.dune_py_dir, "--target", target]
+        if not only_make:
+            cmake_args = [cmake_command, "--build", self.dune_py_dir, "--target", target]
+        else:
+            cmake_args = ["make", target]
         make_args = []
         if self.build_args is not None:
             make_args += self.build_args
@@ -101,7 +104,10 @@ class Builder:
             make_args += ["-B"]
 
         if cmake_args != []:
-            cmake_args += ["--"] + make_args
+            if not only_make:
+                cmake_args += ["--"] + make_args
+            else:
+                cmake_args += make_args
         cmake = subprocess.Popen(cmake_args, cwd=self.generated_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = cmake.communicate()
         logger.debug(buffer_to_str(stdout))
@@ -156,7 +162,7 @@ class Builder:
                 # locked due to CMakeLists.txt changed being made
                 with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
                     with Lock(os.path.join(self.dune_py_dir, 'lock-all.lock'), flags=LOCK_SH):
-                        self.compile(moduleName)
+                        self.compile(moduleName, only_make=True)
 
             comm.barrier()
             module = importlib.import_module("dune.generated." + moduleName)
