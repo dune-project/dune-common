@@ -77,8 +77,12 @@ set(Python_ADDITIONAL_VERSIONS 3.8 3.7 3.6 3.5 3.4)
 # Find the Python Interpreter
 find_package(PythonInterp 3)
 
-# Find the Python libraries
-find_package(PythonLibs)
+if(PYTHONINTERP_FOUND)
+  # Find the Python libraries of the same version as interpreter
+  find_package(PythonLibs ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
+else()
+  find_package(PythonLibs)
+endif()
 
 # Determine whether the given interpreter is running inside a virtualenv
 if(PYTHONINTERP_FOUND)
