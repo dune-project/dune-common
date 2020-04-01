@@ -77,6 +77,11 @@ set(Python_ADDITIONAL_VERSIONS 3.8 3.7 3.6 3.5 3.4)
 # Find the Python Interpreter
 find_package(PythonInterp 3)
 
+# interpreter was found set available version of library to that version
+if(PYTHONINTERP_FOUND)
+  set(Python_ADDITIONAL_VERSIONS ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
+endif()
+
 # Find the Python libraries
 find_package(PythonLibs)
 
