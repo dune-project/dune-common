@@ -123,11 +123,11 @@ class Builder:
                 self.savedOutput[1].write("\n###############################\n")
 
     def load(self, moduleName, source, pythonName):
-        # make sure nothing (compilation, generating and building) is # taking place
-        with Lock(os.path.join(self.dune_py_dir, 'lock-module.lock'), flags=LOCK_EX):
-            module = sys.modules.get("dune.generated." + moduleName)
-            if module is None:
-                if comm.rank == 0:
+        if comm.rank == 0:
+            # make sure nothing (compilation, generating and building) is # taking place
+            with Lock(os.path.join(self.dune_py_dir, 'lock-module.lock'), flags=LOCK_EX):
+                module = sys.modules.get("dune.generated." + moduleName)
+                if module is None:
                     # module must be generated so lock the source file
                     with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'-source.lock'), flags=LOCK_EX):
                         sourceFileName = os.path.join(self.generated_dir, moduleName + ".cc")
@@ -155,17 +155,18 @@ class Builder:
                         else:
                             logger.info("Loading " + pythonName)
 
-                    # lock generated module and make sure the folder isn't
-                    # locked due to CMakeLists.txt changed being made
-                    with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
-                        with Lock(os.path.join(self.dune_py_dir, 'lock-module.lock'), flags=LOCK_SH):
-                            self.compile(moduleName, only_make=True)
+            # end of exclusive dune-py lock - for compilation a shared lock is enough
+            with Lock(os.path.join(self.dune_py_dir, 'lock-module.lock'), flags=LOCK_SH):
+                # lock generated module and make sure the folder isn't
+                # locked due to CMakeLists.txt changed being made
+                with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
+                    self.compile(moduleName, only_make=True)
 
-                comm.barrier()
-                module = importlib.import_module("dune.generated." + moduleName)
+        comm.barrier()
+        module = importlib.import_module("dune.generated." + moduleName)
 
-            if self.force:
-                logger.info("Reloading " + pythonName)
-                module = reload_module(module)
+        if self.force:
+            logger.info("Reloading " + pythonName)
+            module = reload_module(module)
 
         return module
