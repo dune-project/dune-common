@@ -6,8 +6,11 @@ import os
 import sys
 
 try:
-    from portalocker import Lock
+    from portalocker import Lock as _Lock
     from portalocker.constants import LOCK_EX, LOCK_SH
+    class Lock(_Lock):
+        def __init__(self, path, flags, *args, **kwargs):
+            _Lock.__init__(self,path,*args,flags=flags,timeout=None,**kwargs)
 except ModuleNotFoundError:
     import fcntl
     from fcntl import LOCK_EX, LOCK_SH
@@ -118,12 +121,12 @@ class Builder:
 
     def load(self, moduleName, source, pythonName):
         if comm.rank == 0:
-            # make sure nothing (compilation, generating and building) is # taking place
-            with Lock(os.path.join(self.dune_py_dir, 'lock-module.lock'), flags=LOCK_EX):
-                module = sys.modules.get("dune.generated." + moduleName)
-                if module is None:
+            module = sys.modules.get("dune.generated." + moduleName)
+            if module is None:
+                # make sure nothing (compilation, generating and building) is # taking place
+                with Lock(os.path.join(self.dune_py_dir, 'lock-module.lock'), flags=LOCK_EX):
                     # module must be generated so lock the source file
-                    with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'-source.lock'), flags=LOCK_EX):
+                    with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
                         sourceFileName = os.path.join(self.generated_dir, moduleName + ".cc")
                         if not os.path.isfile(sourceFileName):
                             logger.info("Loading " + pythonName + " (new)")
@@ -148,13 +151,12 @@ class Builder:
                                 out.write(code)
                         else:
                             logger.info("Loading " + pythonName)
-
-            # end of exclusive dune-py lock - for compilation a shared lock is enough
+                # end of exclusive dune-py lock
+            # for compilation a shared lock is enough
             with Lock(os.path.join(self.dune_py_dir, 'lock-module.lock'), flags=LOCK_SH):
-                # lock generated module and make sure the folder isn't
-                # locked due to CMakeLists.txt changed being made
+                # lock generated module
                 with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
-                    self.compile(moduleName) # , only_make=True)
+                    self.compile(moduleName)
 
         comm.barrier()
         module = importlib.import_module("dune.generated." + moduleName)
