@@ -55,35 +55,33 @@ noDepCheck = False
 
 class Builder:
     def __init__(self, force=False, saveOutput=False):
-        with Lock(os.path.join(self.dune_py_dir, '../lock-dunepy.lock'), flags=LOCK_EX):
-            self.force = force
+        self.dune_py_dir = dune.common.module.get_dune_py_dir()
+        self.force = force
+        os.makedirs(self.dune_py_dir, exist_ok=True)
 
-            self.dune_py_dir = dune.common.module.get_dune_py_dir()
-            os.makedirs(self.dune_py_dir, exist_ok=True)
+        if comm.rank == 0:
+            with Lock(os.path.join(self.dune_py_dir, 'lock-module.lock'), flags=LOCK_EX):
+                dune.common.module.make_dune_py_module(self.dune_py_dir)
+                tagfile = os.path.join(self.dune_py_dir, ".noconfigure")
+                if not os.path.isfile(tagfile):
+                    dune.common.module.build_dune_py_module(self.dune_py_dir)
+                else:
+                    logger.info('using pre configured dune-py module')
+        comm.barrier()
 
-            if comm.rank == 0:
-                with Lock(os.path.join(self.dune_py_dir, 'lock-module.lock'), flags=LOCK_EX):
-                    dune.common.module.make_dune_py_module(self.dune_py_dir)
-                    tagfile = os.path.join(self.dune_py_dir, ".noconfigure")
-                    if not os.path.isfile(tagfile):
-                        dune.common.module.build_dune_py_module(self.dune_py_dir)
-                    else:
-                        logger.info('using pre configured dune-py module')
-            comm.barrier()
+        self.build_args = dune.common.module.get_default_build_args()
+        self.generated_dir = os.path.join(self.dune_py_dir, 'python', 'dune', 'generated')
+        try:
+            dune.__path__._path.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
+        except:
+            dune.__path__.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
 
-            self.build_args = dune.common.module.get_default_build_args()
-            self.generated_dir = os.path.join(self.dune_py_dir, 'python', 'dune', 'generated')
-            try:
-                dune.__path__._path.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
-            except:
-                dune.__path__.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
-
-            if saveOutput is True or saveOutput.lower() == "write":
-                self.savedOutput = [open("generatorCompiler.out","w+"), open("generatorCompiler.err","w+")]
-            elif saveOutput.lower() == "append":
-                self.savedOutput = [open("generatorCompiler.out","a+"), open("generatorCompiler.err","a+")]
-            else:
-                self.savedOutput = None
+        if saveOutput is True or saveOutput.lower() == "write":
+            self.savedOutput = [open("generatorCompiler.out","w+"), open("generatorCompiler.err","w+")]
+        elif saveOutput.lower() == "append":
+            self.savedOutput = [open("generatorCompiler.out","a+"), open("generatorCompiler.err","a+")]
+        else:
+            self.savedOutput = None
 
     def compile(self, target='all', only_make=False):
         cmake_command = dune.common.module.get_cmake_command()
@@ -123,7 +121,7 @@ class Builder:
                 self.savedOutput[1].write("\n###############################\n")
 
     def load(self, moduleName, source, pythonName):
-        with Lock(os.path.join(self.dune_py_dir, 'lock-source.lock'), flags=LOCK_EX):
+        with Lock(os.path.join(self.dune_py_dir, 'lock-module.lock'), flags=LOCK_EX):
             module = sys.modules.get("dune.generated." + moduleName)
             if module is None:
                 if comm.rank == 0:
