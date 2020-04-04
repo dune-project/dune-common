@@ -5,6 +5,7 @@ set(HEADERS
   dynmatrix.hh
   dynvector.hh
   fmatrix.hh
+  fvecmatregistry.hh
   fvector.hh
   getdimension.hh
   logger.hh
