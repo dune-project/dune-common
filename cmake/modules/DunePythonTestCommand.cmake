@@ -37,10 +37,10 @@
 
 function(dune_python_add_test)
   # Parse Arguments
+  include(CMakeParseArguments)
   set(OPTION)
   set(SINGLE WORKING_DIRECTORY NAME)
-  set(MULTI COMMAND)
-  include(CMakeParseArguments)
+  set(MULTI COMMAND LABELS)
   cmake_parse_arguments(PYTEST "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
   if(PYTEST_UNPARSED_ARGUMENTS)
     message(WARNING "Unparsed arguments in dune_python_add_test: This often indicates typos!")
@@ -70,9 +70,13 @@ function(dune_python_add_test)
   # Build this during make test_python
   add_dependencies(test_python target_${PYTEST_NAME})
 
+  # make sure each label exists and its name is acceptable
+  dune_declare_test_label(LABELS ${PYTEST_LABELS})
   # Also build this during ctest
   _add_test(NAME ${PYTEST_NAME}
             COMMAND ${PYTEST_COMMAND}
             WORKING_DIRECTORY ${PYTEST_WORKING_DIRECTORY}
             )
+  # Set the labels on the test
+  set_tests_properties(${PYTEST_NAME} PROPERTIES LABELS "${PYTEST_LABELS}")
 endfunction()
