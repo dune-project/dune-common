@@ -209,7 +209,7 @@ constexpr auto integralRange(const End& end)
 namespace Impl {
 
   template<class T>
-  void evaluateFoldExpression(std::initializer_list<T>&&)
+  constexpr void evaluateFoldExpression(std::initializer_list<T>&&)
   {}
 
   template<class Range, class F, class Index, Index... i>
