@@ -298,7 +298,8 @@ T accumulate(Range&& range, T value, F&& f)
 
 
 namespace Impl {
-
+  // TODO: Remove everything in this namespace block after deprecation period
+  // of ifElse is over (after release 2.8)
   struct Id {
     template<class T>
     constexpr T operator()(T&& x) const {
@@ -352,6 +353,7 @@ namespace Impl {
  * a static if statement.
  */
 template<class Condition, class IfFunc, class ElseFunc>
+[[deprecated("Use if constexpr instead. Will be removed after release 2.8")]]
 decltype(auto) ifElse(const Condition& condition, IfFunc&& ifFunc, ElseFunc&& elseFunc)
 {
   return Impl::ifElse(condition, std::forward<IfFunc>(ifFunc), std::forward<ElseFunc>(elseFunc));
@@ -365,6 +367,7 @@ decltype(auto) ifElse(const Condition& condition, IfFunc&& ifFunc, ElseFunc&& el
  * This provides an ifElse conditional with empty else clause.
  */
 template<class Condition, class IfFunc>
+[[deprecated("Use if constexpr instead. Will be removed after release 2.8")]]
 void ifElse(const Condition& condition, IfFunc&& ifFunc)
 {
   ifElse(condition, std::forward<IfFunc>(ifFunc), [](auto&& i) { DUNE_UNUSED_PARAMETER(i); });
