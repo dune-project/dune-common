@@ -348,18 +348,17 @@ namespace Dune {
             static_assert(std::is_same<T, Scalar<W> >::value, "Rebound types "
                           "must have the bound-to scalar type");
 
-            Hybrid::ifElse(RebindPrune<W>{},
-              [this](auto id) {
-                log_ << "Pruning check of Simd type " << className<W>()
-                     << std::endl;
-              },
-              [=](auto id) {
-                using Impl::debugTypes;
-                static_assert(debugTypes<T, V, W>(id(RebindAccept<W>{})),
-                              "Rebind<T, V> is W, but that is not accepted "
-                              "by RebindAccept");
-                recurse(id(MetaType<W>{}));
-              });
+            if constexpr (RebindPrune<W>{}) {
+              log_ << "Pruning check of Simd type " << className<W>()
+                   << std::endl;
+            }
+            else {
+              using Impl::debugTypes;
+              static_assert(debugTypes<T, V, W>(RebindAccept<W>{}),
+                            "Rebind<T, V> is W, but that is not accepted "
+                            "by RebindAccept");
+              recurse(MetaType<W>{});
+            }
           });
 
         static_assert(std::is_same<Rebind<Scalar<V>, V>, V>::value, "A type "
@@ -1404,14 +1403,13 @@ namespace Dune {
       template<class T1, class T2, bool condition, class Checker>
       void checkBinaryRefQual(Checker checker)
       {
-        Hybrid::ifElse(std::integral_constant<bool, condition>{},
-          [=] (auto id) {
-            Hybrid::forEach(id(TypeList<T1&, const T1&, T1&&>{}),
-              [=] (auto t1) {
-                Hybrid::forEach(id(TypeList<T2&, const T2&, T2&&>{}),
-                  [=] (auto t2) { id(checker)(t1, t2); });
-              });
+        if constexpr (condition) {
+          Hybrid::forEach(TypeList<T1&, const T1&, T1&&>{}, [=] (auto t1) {
+            Hybrid::forEach(TypeList<T2&, const T2&, T2&&>{}, [=] (auto t2) {
+              checker(t1, t2);
+            });
           });
+        }
       }
 
       template<class V, class Checker>
@@ -1922,9 +1920,10 @@ namespace Dune {
       checkCopyMoveConstruct<V>();
       checkImplCast<V>();
       checkBroadcast<V>();
-      Hybrid::ifElse(isMask,
-        [this](auto id) { id(this)->template checkBroadcastMaskConstruct<V>();   },
-        [this](auto id) { id(this)->template checkBroadcastVectorConstruct<V>(); });
+      if constexpr (isMask)
+        this->template checkBroadcastMaskConstruct<V>();
+      else
+        this->template checkBroadcastVectorConstruct<V>();
       checkBracedAssign<V>();
       checkBracedBroadcastAssign<V>();
 
@@ -1932,8 +1931,8 @@ namespace Dune {
       checkCond<V>();
       checkBoolCond<V>();
 
-      Hybrid::ifElse(isMask,
-        [this](auto id) { id(this)->template checkBoolReductions<V>(); });
+      if constexpr (isMask)
+        this->template checkBoolReductions<V>();
       // checkBoolReductions() is not applicable for non-masks
 
       checkHorizontalMinMax<V>();
@@ -1942,9 +1941,10 @@ namespace Dune {
     }
     template<class V> void UnitTest::checkUnaryOps()
     {
-      auto checkMask = [this](auto id) {
-        auto check = [this,id](auto op) {
-          id(this)->template checkUnaryOpsV<V>(op);
+      if constexpr (std::is_same_v<Scalar<V>, bool>) {
+        // check mask
+        auto check = [this](auto op) {
+          this->template checkUnaryOpsV<V>(op);
         };
 
         // postfix
@@ -1961,11 +1961,11 @@ namespace Dune {
         // check(OpPrefixMinus{});
         check(OpPrefixLogicNot{});
         // check(OpPrefixBitNot{});
-      };
-
-      auto checkVector = [this](auto id) {
-        auto check = [this,id](auto op) {
-          id(this)->template checkUnaryOpsV<V>(op);
+      }
+      else {
+        // check vector
+        auto check = [this](auto op) {
+          this->template checkUnaryOpsV<V>(op);
         };
 
         // postfix
@@ -1980,9 +1980,7 @@ namespace Dune {
         check(OpPrefixMinus{});
         check(OpPrefixLogicNot{});
         check(OpPrefixBitNot{});
-      };
-
-      Hybrid::ifElse(std::is_same<Scalar<V>, bool>{}, checkMask, checkVector);
+      }
     }
     template<class V> void UnitTest::checkBinaryOps()
     {
