@@ -170,9 +170,6 @@ namespace Impl {
  * However the implementation differs, because range-v3 uses its own meta-programming
  * library whereas our implementation is more straight forward.
  *
- * The result is returned as std::integral_constant<bool, ...> which
- * allows to nicely use this method with Hybrid::ifElse.
- *
  * \tparam C The concept to check
  * \tparam T The list of type to check against the concept
  *

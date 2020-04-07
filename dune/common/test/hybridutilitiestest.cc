@@ -39,11 +39,10 @@ auto incAndAppendToFirst(C&& c)
   forEach(integralRange(Dune::Hybrid::size(c)), [&](auto&& i) {
     using namespace Dune::Hybrid;
     using namespace Dune::Indices;
-    ifElse(equals(i, _0), [&](auto id) {
-      id(c[i]).append("+1");
-    }, [&](auto id) {
-      ++id(c[i]);
-    });
+    if constexpr (equals(i, _0))
+      c[i].append("+1");
+    else
+      ++c[i];
   });
 }
 
