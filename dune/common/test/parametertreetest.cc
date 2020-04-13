@@ -294,8 +294,7 @@ int main()
       << "[Foo] # another comment\n"
       << "peng = ligapokal\n";
 
-    Dune::ParameterTree c;
-    Dune::ParameterTreeParser::readINITree(s, c);
+    auto c = Dune::ParameterTreeParser::readINITree(s);
 
     // test modifying and reading
     testmodify<Dune::ParameterTree>(c);
