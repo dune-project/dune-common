@@ -37,7 +37,24 @@ std::string Dune::ParameterTreeParser::rtrim(const std::string& s)
   return std::string();
 }
 
+Dune::ParameterTree Dune::ParameterTreeParser::readINITree(const std::string& file)
+{
+  std::ifstream in(file);
 
+  if (!in)
+    DUNE_THROW(Dune::IOError, "Could not open configuration file " << file);
+
+  Dune::ParameterTree pt;
+  readINITree(in, pt, "file '" + file + "'", true);
+  return pt;
+}
+
+Dune::ParameterTree Dune::ParameterTreeParser::readINITree(std::istream& in)
+{
+  Dune::ParameterTree pt;
+  readINITree(in, pt, "stream", true);
+  return pt;
+}
 
 void Dune::ParameterTreeParser::readINITree(std::string file,
                                             ParameterTree& pt,
@@ -50,7 +67,6 @@ void Dune::ParameterTreeParser::readINITree(std::string file,
 
   readINITree(in, pt, "file '" + file + "'", overwrite);
 }
-
 
 void Dune::ParameterTreeParser::readINITree(std::istream& in,
                                             ParameterTree& pt,
