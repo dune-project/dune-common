@@ -94,6 +94,14 @@ namespace Dune {
     static void readINITree(std::istream& in, ParameterTree& pt,
                             bool overwrite);
 
+    /** \brief parse C++ stream
+     *
+     * Parses C++ stream and returns hierarchical config structure.
+     *
+     * \param in        The stream to parse
+     */
+    static Dune::ParameterTree readINITree(std::istream& in);
+
 
     /** \brief parse C++ stream
      *
@@ -123,6 +131,14 @@ namespace Dune {
      *                  if the key is already present.
      */
     static void readINITree(std::string file, ParameterTree& pt, bool overwrite = true);
+
+    /** \brief parse file and return tree
+     *
+     * Parses file with given name and returns hierarchical config structure.
+     *
+     * \param file filename
+     */
+    static Dune::ParameterTree readINITree(const std::string& file);
 
     //@}
 
