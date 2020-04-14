@@ -48,7 +48,7 @@ auto incAndAppendToFirst(C&& c)
 }
 
 template<class C>
-auto sum(C&& c)
+constexpr auto sum(C&& c)
 {
   using namespace Dune::Hybrid;
   using namespace Dune::Indices;
@@ -99,12 +99,17 @@ int main()
   test.check(mixedTuple == Dune::makeTupleVector(std::string("1+1"), 3, 4))
     << "Adding indices to vector entries with Hybrid::forEach failed.";
 
-  auto values = std::make_integer_sequence<std::size_t, 30>();
+  constexpr auto values = std::make_integer_sequence<std::size_t, 30>();
   test.check((30*29)/2 == sum(values))
     << "accumulate() yields incorrect result.";
 
   test.check((29*28)/2 == sumSubsequence(values, std::make_integer_sequence<std::size_t, 29>()))
     << "Summing up subsequence failed.";
+
+  // Compile time checks
+  static_assert(sum(values) == (30*29)/2, "Wrong compile time sum!");
+  constexpr auto numberTupleConstexpr = Dune::makeTupleVector(0.1, 2, 3);
+  static_assert(sum(numberTupleConstexpr) == 5.1, "Wrong compile time sum!");
 
   return test.exit();
 }

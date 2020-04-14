@@ -287,7 +287,7 @@ constexpr void forEach(Range&& range, F&& f)
  * This supports looping over the same ranges as Hybrid::forEach
  */
 template<class Range, class T, class F>
-T accumulate(Range&& range, T value, F&& f)
+constexpr T accumulate(Range&& range, T value, F&& f)
 {
   forEach(std::forward<Range>(range), [&](auto&& entry) {
     value = f(value, entry);
