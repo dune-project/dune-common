@@ -81,7 +81,7 @@ namespace Dune
   };
 
   template< unsigned int precision >
-  struct PromotionTraits<GMPField<precision>>
+  struct PromotionTraits<GMPField<precision>,GMPField<precision>>
   {
     typedef GMPField<precision> PromotedType;
   };
