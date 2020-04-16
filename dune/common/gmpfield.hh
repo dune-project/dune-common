@@ -15,6 +15,7 @@
 
 #include <gmpxx.h>
 
+#include <dune/common/promotiontraits.hh>
 #include <dune/common/typetraits.hh>
 
 namespace Dune
@@ -73,6 +74,23 @@ namespace Dune
     : public std::integral_constant<bool, true> {
   };
 
+  template< unsigned int precision1, unsigned int precision2 >
+  struct PromotionTraits<GMPField<precision1>, GMPField<precision2>>
+  {
+    typedef GMPField<(precision1 > precision2 ? precision1 : precision2)> PromotedType;
+  };
+
+  template< unsigned int precision, class T >
+  struct PromotionTraits<GMPField<precision>, T>
+  {
+    typedef GMPField<precision> PromotedType;
+  };
+
+  template< class T, unsigned int precision >
+  struct PromotionTraits<T, GMPField<precision>>
+  {
+    typedef GMPField<precision> PromotedType;
+  };
 }
 
 #endif // HAVE_GMP
