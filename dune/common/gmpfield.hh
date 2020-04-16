@@ -80,6 +80,12 @@ namespace Dune
     typedef GMPField<(precision1 > precision2 ? precision1 : precision2)> PromotedType;
   };
 
+  template< unsigned int precision >
+  struct PromotionTraits<GMPField<precision>>
+  {
+    typedef GMPField<precision> PromotedType;
+  };
+
   template< unsigned int precision, class T >
   struct PromotionTraits<GMPField<precision>, T>
   {
