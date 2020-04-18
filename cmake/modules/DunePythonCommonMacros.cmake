@@ -70,17 +70,9 @@ include(DunePythonInstallPackage)
 include(DunePythonRequireVersion)
 include(DunePythonTestCommand)
 
-# Update the list of valid python versions, the shipped CMake modules tend to outdate...
-# Mention all those not present in CMake 2.8.12
-set(Python_ADDITIONAL_VERSIONS 3.8 3.7 3.6 3.5 3.4)
 
 # Find the Python Interpreter
 find_package(PythonInterp 3)
-
-# interpreter was found set available version of library to that version
-if(PYTHONINTERP_FOUND)
-  set(Python_ADDITIONAL_VERSIONS ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
-endif()
 
 # Find the Python libraries
 find_package(PythonLibs)
