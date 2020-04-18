@@ -70,15 +70,12 @@ include(DunePythonInstallPackage)
 include(DunePythonRequireVersion)
 include(DunePythonTestCommand)
 
+# Find the Python Interpreter and libraries
+find_package(Python3 COMPONENTS Interpreter Development)
 
-# Find the Python Interpreter
-find_package(PythonInterp 3)
-
-# Find the Python libraries
-find_package(PythonLibs)
 
 # Determine whether the given interpreter is running inside a virtualenv
-if(PYTHONINTERP_FOUND)
+if(Python3_Interpreter_FOUND)
   include(DuneExecuteProcess)
   include(DunePathHelper)
   dune_module_path(MODULE dune-common
