@@ -71,8 +71,12 @@ include(DunePythonRequireVersion)
 include(DunePythonTestCommand)
 
 # Find the Python Interpreter and libraries
-find_package(Python3 COMPONENTS Interpreter Development)
-
+if(${CMAKE_VERSION} VERSION_LESS "3.12")
+  # for CMake versions prior to 3.12, use copy from 3.17.1
+  find_package(Python3CMake312 COMPONENTS Interpreter Development)
+else()
+  find_package(Python3 COMPONENTS Interpreter Development)
+endif()
 
 # Determine whether the given interpreter is running inside a virtualenv
 if(Python3_Interpreter_FOUND)

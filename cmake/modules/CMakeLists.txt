@@ -41,6 +41,8 @@ install(FILES
   FindMProtect.cmake
   FindParMETIS.cmake
   FindPTScotch.cmake
+  FindPython3CMake312.cmake
+  FindPython3CMake312Support.cmake
   FindQuadMath.cmake
   FindSphinx.cmake
   FindSuiteSparse.cmake
