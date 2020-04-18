@@ -70,22 +70,19 @@ include(DunePythonInstallPackage)
 include(DunePythonRequireVersion)
 include(DunePythonTestCommand)
 
+# Find the Python Interpreter and libraries
+find_package(Python3 COMPONENTS Interpreter Development)
 
-# Find the Python Interpreter
-find_package(PythonInterp 3)
-
-# Find the Python libraries
-find_package(PythonLibs)
 
 # Determine whether the given interpreter is running inside a virtualenv
-if(PYTHONINTERP_FOUND)
+if(Python3_Interpreter_FOUND)
   include(DuneExecuteProcess)
   include(DunePathHelper)
   dune_module_path(MODULE dune-common
                    RESULT scriptdir
                    SCRIPT_DIR)
 
-  dune_execute_process(COMMAND "${PYTHON_EXECUTABLE}" "${scriptdir}/envdetect.py"
+  dune_execute_process(COMMAND "${Python3_EXECUTABLE}" "${scriptdir}/envdetect.py"
                        RESULT_VARIABLE DUNE_PYTHON_SYSTEM_IS_VIRTUALENV
                        )
 endif()

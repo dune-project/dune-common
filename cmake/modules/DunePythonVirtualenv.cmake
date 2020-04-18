@@ -128,7 +128,7 @@ if(NOT IS_DIRECTORY "${DUNE_PYTHON_VIRTUALENV_PATH}")
   if(DUNE_PYTHON_virtualenv_FOUND)
     set(VIRTUALENV_PACKAGE_NAME virtualenv)
     set(NOPIP_OPTION --no-pip)
-    set(INTERPRETER_OPTION -p "${PYTHON_EXECUTABLE}")
+    set(INTERPRETER_OPTION -p "${Python3_EXECUTABLE}")
   endif()
 
   if(("${VIRTUALENV_PACKAGE_NAME}" STREQUAL "venv") AND DUNE_PYTHON_SYSTEM_IS_VIRTUALENV)
@@ -140,7 +140,7 @@ if(NOT IS_DIRECTORY "${DUNE_PYTHON_VIRTUALENV_PATH}")
   message("-- Building a virtualenv in ${DUNE_PYTHON_VIRTUALENV_PATH}")
   # First, try to build it with pip installed, but only if the user has not set DUNE_PYTHON_ALLOW_GET_PIP
   if(NOT DUNE_PYTHON_ALLOW_GET_PIP)
-    dune_execute_process(COMMAND ${PYTHON_EXECUTABLE}
+    dune_execute_process(COMMAND ${Python3_EXECUTABLE}
                                   -m ${VIRTUALENV_PACKAGE_NAME}
                                   ${INTERPRETER_OPTION}
                                   "${DUNE_PYTHON_VIRTUALENV_PATH}"
@@ -160,7 +160,7 @@ if(NOT IS_DIRECTORY "${DUNE_PYTHON_VIRTUALENV_PATH}")
     file(REMOVE_RECURSE "${DUNE_PYTHON_VIRTUALENV_PATH}")
 
     # try to build the env without pip
-    dune_execute_process(COMMAND ${PYTHON_EXECUTABLE}
+    dune_execute_process(COMMAND ${Python3_EXECUTABLE}
                                   -m ${VIRTUALENV_PACKAGE_NAME}
                                   ${INTERPRETER_OPTION}
                                   ${NOPIP_OPTION}

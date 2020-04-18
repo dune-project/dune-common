@@ -12,9 +12,9 @@
 #       .. note::
 #
 #          If your testing command involves an invocation of the python
-#          interpreter you should use :code:`${PYTHON_EXECUTABLE}` for that.
+#          interpreter you should use :code:`${Python3_EXECUTABLE}` for that.
 #          Also calling python executables through :code:`-m` is generally to
-#          be favored, e.g. :code:`${PYTHON_EXECUTABLE} -m pytest` instead of
+#          be favored, e.g. :code:`${Python3_EXECUTABLE} -m pytest` instead of
 #          :code:`py.test`.
 #
 #    .. cmake_param:: WORKING_DIRECTORY
