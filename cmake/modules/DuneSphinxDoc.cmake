@@ -1,5 +1,5 @@
 find_package(Sphinx)
-find_package(PythonInterp)
+find_package(Python3 COMPONENTS Interpreter Development)
 
 function(dune_sphinx_doc)
   # Only proceed if Sphinx was found on the system
@@ -9,7 +9,7 @@ function(dune_sphinx_doc)
   endif()
 
   # Only proceed if the python interpreter was found by cmake
-  if(NOT PYTHONINTERP_FOUND)
+  if(NOT Python3_Interpreter_FOUND)
     message("-- Skipping building Sphinx documentation (Python interpreter was not found!)")
     return()
   endif()
