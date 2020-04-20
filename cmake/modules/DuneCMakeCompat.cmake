@@ -45,10 +45,6 @@
 #    This is exactly the same as the ``list(FILTER ...)`` command available in
 #    cmake 3.7 and onward.
 
-# do not implicitly deference variable names in `if()` if they appear inside
-# bracketed or quoted arguments.  Unquouted arguments continue to be
-# considered as variables names.
-cmake_policy(SET CMP0054 NEW)
 
 # list(FILTER...) was introduced in cmake 3.6, this is a compatibility
 # implementation for earlier cmakes
