@@ -1,5 +1,12 @@
 find_package(Sphinx)
-find_package(PythonInterp)
+
+# Find the Python Interpreter and libraries
+if(${CMAKE_VERSION} VERSION_LESS "3.12")
+  # for CMake versions prior to 3.12, use copy from 3.17.1
+  find_package(Python3CMake312 COMPONENTS Interpreter Development)
+else()
+  find_package(Python3 COMPONENTS Interpreter Development)
+endif()
 
 function(dune_sphinx_doc)
   # Only proceed if Sphinx was found on the system
@@ -9,7 +16,7 @@ function(dune_sphinx_doc)
   endif()
 
   # Only proceed if the python interpreter was found by cmake
-  if(NOT PYTHONINTERP_FOUND)
+  if(NOT Python3_Interpreter_FOUND)
     message("-- Skipping building Sphinx documentation (Python interpreter was not found!)")
     return()
   endif()
