@@ -36,6 +36,14 @@ namespace Impl {
   {
     return {};
   }
+  
+  // Try if there's a static constexpr N() (e.g. some dune-istl types)
+  template<class T>
+  constexpr auto size(const T&, const PriorityTag<2>&)
+    -> decltype(std::integral_constant<std::size_t,T::N()>())
+  {
+    return {};
+  }
 
   // Try if there's a static constexpr size()
   template<class T>
