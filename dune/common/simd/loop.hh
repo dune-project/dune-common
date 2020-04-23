@@ -36,7 +36,7 @@ namespace Dune {
     */
 
   template<class T, std::size_t S, std::size_t A = 0>
-  class alignas(A==0?1:A) LoopSIMD : public std::array<T,S> {
+  class alignas(A==0?alignof(T):A) LoopSIMD : public std::array<T,S> {
 
   public:
 
