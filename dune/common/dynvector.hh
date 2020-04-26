@@ -91,7 +91,7 @@ namespace Dune {
     {}
 
     //! Move constructor
-    DynamicVector(DynamicVector && x) :
+    DynamicVector(DynamicVector && x) noexcept :
       _data(std::move(x._data))
     {}
 
@@ -121,7 +121,7 @@ namespace Dune {
     }
 
     //! Move assignment operator
-    DynamicVector &operator=(DynamicVector &&other)
+    DynamicVector &operator=(DynamicVector &&other) noexcept
     {
       _data = std::move(other._data);
       return *this;

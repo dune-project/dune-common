@@ -75,7 +75,7 @@ namespace Impl {
     {}
 
     //! Move constructor
-    ScalarVectorView (ScalarVectorView &&other) :
+    ScalarVectorView (ScalarVectorView &&other) noexcept :
       Base(),
       dataP_( other.dataP_ )
     {}
