@@ -51,7 +51,7 @@ public:
    * moved from CollectorStream and disable the callback
    * in the latter.
    */
-  CollectorStream(CollectorStream&& other) :
+  CollectorStream(CollectorStream&& other) noexcept :
     callBack_(other.callBack_)
   {
     (*this) << other.str();

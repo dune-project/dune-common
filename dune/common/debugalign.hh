@@ -71,11 +71,11 @@ namespace Dune {
   public:
     AlignedBase()                    { checkAlignment(); }
     AlignedBase(const AlignedBase &) { checkAlignment(); }
-    AlignedBase(AlignedBase &&)      { checkAlignment(); }
+    AlignedBase(AlignedBase &&) noexcept { checkAlignment(); }
     ~AlignedBase()                   { checkAlignment(); }
 
     AlignedBase& operator=(const AlignedBase &) = default;
-    AlignedBase& operator=(AlignedBase &&)      = default;
+    AlignedBase& operator=(AlignedBase &&) noexcept = default;
   };
 
   //! an alignment large enough to trigger alignment errors

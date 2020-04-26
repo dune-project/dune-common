@@ -117,7 +117,7 @@ namespace Dune{
       }
     }
 
-    MPIFuture(MPIFuture&& f)
+    MPIFuture(MPIFuture&& f) noexcept
       : req_(MPI_REQUEST_NULL)
       , data_(std::move(f.data_))
       , send_data_(std::move(f.send_data_))
@@ -126,7 +126,7 @@ namespace Dune{
       std::swap(status_, f.status_);
     }
 
-    MPIFuture& operator=(MPIFuture&& f){
+    MPIFuture& operator=(MPIFuture&& f) noexcept {
       std::swap(req_, f.req_);
       std::swap(status_, f.status_);
       std::swap(data_, f.data_);
