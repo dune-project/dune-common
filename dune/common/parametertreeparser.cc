@@ -88,9 +88,9 @@ void Dune::ParameterTreeParser::readINITree(std::istream& in,
       }
       break;
     default :
-      std::string::size_type comment = line.find("#");
+      std::string::size_type comment = line.find('#');
       line = line.substr(0,comment);
-      std::string::size_type mid = line.find("=");
+      std::string::size_type mid = line.find('=');
       if (mid != std::string::npos)
       {
         std::string key = prefix+rtrim(ltrim(line.substr(0, mid)));

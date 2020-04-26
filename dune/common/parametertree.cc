@@ -45,7 +45,7 @@ void ParameterTree::report(std::ostream& stream, const std::string& prefix) cons
 
 bool ParameterTree::hasKey(const std::string& key) const
 {
-  std::string::size_type dot = key.find(".");
+  std::string::size_type dot = key.find('.');
 
   if (dot != std::string::npos)
   {
@@ -73,7 +73,7 @@ bool ParameterTree::hasKey(const std::string& key) const
 
 bool ParameterTree::hasSub(const std::string& key) const
 {
-  std::string::size_type dot = key.find(".");
+  std::string::size_type dot = key.find('.');
 
   if (dot != std::string::npos)
   {
@@ -100,7 +100,7 @@ bool ParameterTree::hasSub(const std::string& key) const
 
 ParameterTree& ParameterTree::sub(const std::string& key)
 {
-  std::string::size_type dot = key.find(".");
+  std::string::size_type dot = key.find('.');
 
   if (dot != std::string::npos)
   {
@@ -120,7 +120,7 @@ ParameterTree& ParameterTree::sub(const std::string& key)
 
 const ParameterTree& ParameterTree::sub(const std::string& key, bool fail_if_missing) const
 {
-  std::string::size_type dot = key.find(".");
+  std::string::size_type dot = key.find('.');
 
   if (dot != std::string::npos)
   {
@@ -147,7 +147,7 @@ const ParameterTree& ParameterTree::sub(const std::string& key, bool fail_if_mis
 
 std::string& ParameterTree::operator[] (const std::string& key)
 {
-  std::string::size_type dot = key.find(".");
+  std::string::size_type dot = key.find('.');
 
   if (dot != std::string::npos)
   {
@@ -164,7 +164,7 @@ std::string& ParameterTree::operator[] (const std::string& key)
 
 const std::string& ParameterTree::operator[] (const std::string& key) const
 {
-  std::string::size_type dot = key.find(".");
+  std::string::size_type dot = key.find('.');
 
   if (dot != std::string::npos)
   {
