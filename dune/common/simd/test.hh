@@ -1789,6 +1789,31 @@ namespace Dune {
        * already explicitly instantiated.  This will limit the impact of
        * instantiation points added in the future.
        *
+       * For an example of how to do the instantiations, look at
+       * `standardtest`, there is cmake machinery to support you.
+       *
+       * Background: The compiler can use a lot of memory when compiling a
+       * unit test for many Simd vector types.  E.g. for standardtest.cc,
+       * which tests all the fundamental arithmetic types plus \c
+       * std::complex, g++ 4.9.2 (-g -O0 -Wall on x86_64 GNU/Linux) used
+       * ~6GByte.
+       *
+       * One mitigation was to explicitly instantiate \c checkVector() (a
+       * previous, now obsolete incarnation of this instantiation machinery)
+       * for the types that are tested.  Still after doing that,
+       * standardtest.cc needed ~1.5GByte during compilation, which is more
+       * than the compilation units that actually instantiated \c
+       * checkVector() (which clocked in at maximum at around 800MB, depending
+       * on how many instantiations they contained).
+       *
+       * The second mitigation was to define \c checkVector() outside of the
+       * class.  I have no idea why this helped, but it made compilation use
+       * less than ~100MByte.  (Yes, functions defined inside the class are
+       * implicitly \c inline, but the function is a template so it has inline
+       * semantics even when defined outside of the class.  And I tried \c
+       * __attribute__((__noinline__)), which had no effect on memory
+       * consumption.)
+       *
        * @{
        */
       template<class V> void checkType();
@@ -1841,52 +1866,6 @@ namespace Dune {
 
         checkType<V>();
       }
-
-      //! run unit tests for simd vector type V
-      /**
-       * This function will also ensure that `checkVector<Rebind<R, V>>()`
-       * (for any `R` in `Rebinds`) is run.  No test will be run twice for a
-       * given type.
-       *
-       * \tparam Rebinds A list of types, usually in the form of a `TypeList`.
-       * \tparam Prune   A type predicate determining whether to run
-       *                 `checkVector()` for types obtained from `Rebinds`.
-       *
-       * \deprecated Rather than calling this function, call `check()` with
-       *              the same template arguments.  Rather than explicitly
-       *              instantiating this function as described below,
-       *              explicitly instantiate `checkType()` and friends.
-       *
-       * \note As an implementor of a unit test, you are encouraged to
-       *       explicitly instantiate this function in separate compilation
-       *       units for the types you are testing.  Look at `standardtest.cc`
-       *       for how to do this.
-       *
-       * Background: The compiler can use a lot of memory when compiling a
-       * unit test for many Simd vector types.  E.g. for standardtest.cc,
-       * which tests all the fundamental arithmetic types plus \c
-       * std::complex, g++ 4.9.2 (-g -O0 -Wall on x86_64 GNU/Linux) used
-       * ~6GByte.
-       *
-       * One mitigation is to explicitly instantiate \c checkVector() for the
-       * types that are tested.  Still after doing that, standardtest.cc
-       * needed ~1.5GByte during compilation, which is more than the
-       * compilation units that actually instantiated \c checkVector() (which
-       * clocked in at maximum at around 800MB, depending on how many
-       * instantiations they contained).
-       *
-       * The second mitigation is to define \c checkVector() outside of the
-       * class.  I have no idea why this helps, but it makes compilation use
-       * less than ~100MByte.  (Yes, functions defined inside the class are
-       * implicitly \c inline, but the function is a template so it has inline
-       * semantics even when defined outside of the class.  And I tried \c
-       * __attribute__((__noinline__)), which had no effect on memory
-       * consumption.)
-       */
-      template<class V, class Rebinds, template<class> class Prune = IsLoop>
-      DUNE_DEPRECATED_MSG("Call check() instead, and explicitly instantiate "
-                          "checkType() and friends instead")
-      void checkVector();
 
       //! whether all tests succeeded
       bool good() const
@@ -2049,29 +2028,6 @@ namespace Dune {
         this->checkBinaryRefQual<V, V, doVS>(check);
       };
       checkBinaryOps<V>(checker);
-    }
-
-    // Needs to be defined outside of the class to bring memory consumption
-    // during compilation down to an acceptable level.
-    template<class V, class Rebinds, template<class> class Prune>
-    void UnitTest::checkVector()
-    {
-      // check whether the test for this type already started
-      if(seen_.emplace(typeid (V)).second == false)
-      {
-        // type already seen, nothing to do
-        return;
-      }
-
-      // do these first so everything that appears after "Checking SIMD type
-      // ..." really pertains to that type
-      auto recurse = [this](auto w) {
-        using W = typename decltype(w)::type;
-        this->template checkVector<W, Rebinds, Prune>();
-      };
-      checkRebindOf<V, Rebinds, Prune, Std::to_true_type>(recurse);
-
-      checkType<V>();
     }
 
   } // namespace Simd
