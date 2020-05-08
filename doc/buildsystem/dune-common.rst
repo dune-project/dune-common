@@ -15,12 +15,9 @@ CMake...
 - is portable
 - is controlled by ONE rather simple language
 
-Dune got support for CMake in version 2.3 alongside the old Autotools build system. It got the default in the
-2.4 release.
-
 You can install CMake through your favorite package manager or downloading source code from
 `KITWare <http://www.cmake.org>`_
-The minimum required version to build Dune with CMake is 3.1.
+The minimum required version to build Dune with CMake is 3.13.
 
 .. _howtouse:
 
