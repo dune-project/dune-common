@@ -34,7 +34,6 @@ class SimpleGenerator(object):
     def pre(self, includes, duneType, moduleName, defines=None, preamble=None):
         if defines is None: defines = []
         source = '#include <config.h>\n\n'
-        source += "#include <dune/common/unused.hh>\n\n"
         source += '#define USING_DUNE_PYTHON 1\n\n'
         source += ''.join(["#define " + d + "\n" for d in defines])
         source += ''.join(["#include <" + i + ">\n" for i in includes])
@@ -75,7 +74,7 @@ class SimpleGenerator(object):
             source += '  pybind11::module cls0 = module;\n'
 
         source += '  {\n'
-        source += "    typedef " + duneType + " DuneType DUNE_UNUSED;\n"
+        source += "    using DuneType = " + duneType + ";\n"
         for i, bc in enumerate(baseClasses):
             source += '    Dune::Python::insertClass' +\
                            '< ' + bc + ' >' +\
@@ -85,7 +84,7 @@ class SimpleGenerator(object):
                            ");\n"
             options.append(bc)
         source += '    auto cls = Dune::Python::insertClass' +\
-                       '< ' + duneType +\
+                       '< DuneType' +\
                        ', '.join([""]+options) + ' >' +\
                        '( cls0, "' + self.typeName[nr] + '"' +\
                        ','.join(['']+clsParams) +\
