@@ -9,8 +9,8 @@ set(HEADERS
   fvector.hh
   getdimension.hh
   logger.hh
-  iteratorrange.hh
   mpihelper.hh
+  numpycommdatahandle.hh
   numpyvector.hh
   pythonvector.hh
   string.hh
