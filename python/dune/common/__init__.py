@@ -25,12 +25,8 @@ except ImportError:
 try:
     from dune.generated._common import *
 except ImportError:
-    from dune.generator import builder, path
-    from . import path
-    builder.load("_common",
-                 "#include \""+path(__file__)+'_common.cc'+"\"",
-                 "_common")
-    from dune.generated._common import *
+    from dune.utility import buildAndImportModule
+    buildAndImportModule(__file__,"_common",globals())
 
 from .deprecated import DeprecatedObject
 
@@ -53,7 +49,7 @@ while not finished:
 
 def loadvec(includes ,typeName ,constructors=None, methods=None):
     from dune.generator.generator import SimpleGenerator
-    from dune.common.hashit import hashIt
+    from dune.utility import hashIt
     generatorvec = SimpleGenerator("FieldVector","Dune::Python")
     includes = includes + ["dune/python/common/fvector.hh"]
     typeHash = "fieldvector_" + hashIt(typeName)
@@ -81,5 +77,5 @@ def _raise(exception):
     raise exception
 
 # make these available as part of dune.common
-import dune.project.project
-import dune.project.module
+from dune.project import project as project
+from dune.project import module as module
