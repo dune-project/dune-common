@@ -72,11 +72,15 @@ function(dune_add_pybind11_module)
 
   add_library(${PYBIND11_MODULE_NAME} SHARED ${PYBIND11_MODULE_SOURCES})
   set_target_properties(${PYBIND11_MODULE_NAME} PROPERTIES PREFIX "")
-  
+
   # force '.so' as library suffix on macOS due to a problem in Python
   # https://stackoverflow.com/questions/2488016/how-to-make-python-load-dylib-on-osx
+  # and add -undefined dynamic_lookup flag to linker
+  # https://pybind11.readthedocs.io/en/stable/compiling.html#building-manually
   if (APPLE)
     set_target_properties(${PYBIND11_MODULE_NAME} PROPERTIES SUFFIX ".so")
+    target_link_options(${PYBIND11_MODULE_NAME} PRIVATE "-undefined")
+    target_link_options(${PYBIND11_MODULE_NAME} PRIVATE "dynamic_lookup")
   endif()
 
   target_compile_definitions(${PYBIND11_MODULE_NAME} PRIVATE ${PYBIND11_MODULE_COMPILE_DEFINITIONS})
