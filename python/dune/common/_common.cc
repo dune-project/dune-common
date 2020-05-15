@@ -11,8 +11,8 @@
 #include <dune/python/common/fvector.hh>
 #include <dune/python/common/mpihelper.hh>
 
-#include <dune/python/pybind11/pybind11.h>
-#include <dune/python/pybind11/stl.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 PYBIND11_MODULE( _common, module )
 {

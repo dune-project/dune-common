@@ -6,9 +6,9 @@
 #include <type_traits>
 #include <utility>
 
-#include <dune/python/pybind11/extensions.h>
-#include <dune/python/pybind11/operators.h>
-#include <dune/python/pybind11/pybind11.h>
+#include <dune/python/extensions.h>
+#include <pybind11/operators.h>
+#include <pybind11/pybind11.h>
 
 namespace Dune
 {

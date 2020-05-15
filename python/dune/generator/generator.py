@@ -9,7 +9,7 @@
 import logging
 
 from . import builder
-from dune.common.hashit import hashIt
+from dune.utility import hashIt
 
 logger = logging.getLogger(__name__)
 
@@ -39,8 +39,8 @@ class SimpleGenerator(object):
         source += ''.join(["#include <" + i + ">\n" for i in includes])
         source += '\n'
         source += '#include <dune/python/common/typeregistry.hh>\n'
-        source += '#include <dune/python/pybind11/pybind11.h>\n'
-        source += '#include <dune/python/pybind11/stl.h>\n'
+        source += '#include <pybind11/pybind11.h>\n'
+        source += '#include <pybind11/stl.h>\n'
         source += '\n'
 
         if self.fileName is not None:

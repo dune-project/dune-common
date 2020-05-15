@@ -7,6 +7,6 @@ setup(name="dune.common",
     author="Andreas Dedner and Martin Nolte",
     packages = find_packages(),
     zip_safe = 0,
-    package_data = {'': ['*.so']},
-    install_requires = ['portalocker','mpi4py','numpy']
+    package_data = {'': ['*.cc']},
+    install_requires = ['pybind11','portalocker','mpi4py','numpy']
   )

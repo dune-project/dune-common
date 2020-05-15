@@ -15,8 +15,8 @@
 #include <type_traits>
 #include <utility>
 
-#include "pybind11.h"
-#include "numpy.h"
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 
 NAMESPACE_BEGIN(pybind11)
 

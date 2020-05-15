@@ -1,7 +1,7 @@
 #ifndef DUNE_PYTHON_COMMON_FVECMATREG_HH
 #define DUNE_PYTHON_COMMON_FVECMATREG_HH
 
-#include <dune/python/pybind11/pybind11.h>
+#include <pybind11/pybind11.h>
 #include <dune/python/common/fvector.hh>
 #include <dune/python/common/fmatrix.hh>
 namespace Dune

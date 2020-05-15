@@ -2,8 +2,8 @@
 
 import glob, os, sys, re, fileinput
 
-import dune.common.module
-dune_py_dir = dune.common.module.get_dune_py_dir()
+import dune.project.module
+dune_py_dir = dune.project.module.get_dune_py_dir()
 generated_dir = os.path.join(dune_py_dir, 'python', 'dune', 'generated')
 
 from argparse import ArgumentParser

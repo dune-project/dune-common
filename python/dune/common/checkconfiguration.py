@@ -5,7 +5,7 @@ import subprocess
 
 import dune.common.module
 
-from dune.common.utility import buffer_to_str
+from dune.utility import buffer_to_str
 from dune.generator import builder, ConfigurationError
 
 logger = logging.getLogger(__name__)

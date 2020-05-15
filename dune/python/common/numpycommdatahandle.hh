@@ -14,8 +14,8 @@
 
 #include <dune/grid/common/datahandleif.hh>
 
-#include <dune/python/pybind11/numpy.h>
-#include <dune/python/pybind11/pybind11.h>
+#include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
 
 namespace Dune
 {

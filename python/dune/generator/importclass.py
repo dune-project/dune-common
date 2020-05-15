@@ -1,8 +1,7 @@
 import os
 
-from dune.common.hashit import hashIt
 from . import builder
-from dune.common.utility import isString
+from dune.utility import isString, hashIt
 from dune.generator.algorithm import cppType
 
 def load(className, includeFiles, *args):
@@ -38,7 +37,7 @@ def load(className, includeFiles, *args):
     source += "".join(["#include <" + i + ">\n" for i in includes])
     source += "\n"
     source += '#include <dune/python/common/typeregistry.hh>\n'
-    source += '#include <dune/python/pybind11/pybind11.h>\n'
+    source += '#include <pybind11/pybind11.h>\n'
     source += '\n'
 
     source += "PYBIND11_MODULE( " + moduleName + ", module )\n"

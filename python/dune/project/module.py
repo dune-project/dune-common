@@ -12,12 +12,12 @@ import sys
 
 from os.path import expanduser
 
-if __name__ == "dune.common.module":
-    from dune.common.utility import buffer_to_str
-    from dune.common import project
+if __name__ == "dune.project.module":
+    from dune.project import project
 else:
-    from utility import buffer_to_str
     import project
+def buffer_to_str(b):
+    return b.decode('utf-8')
 
 logger = logging.getLogger(__name__)
 
@@ -526,16 +526,23 @@ def make_dune_py_module(dune_py_dir=None):
     if dune_py_dir is None:
         dune_py_dir = get_dune_py_dir()
     os.makedirs(dune_py_dir, exist_ok=True)
-
     descFile = os.path.join(dune_py_dir, 'dune.module')
     if not os.path.isfile(descFile):
         logger.info('Creating new dune-py module in ' + dune_py_dir)
+        # create cmake/module
+        if False:
+            cmodule_dir_rel = os.path.join('cmake', 'modules')
+            cmodule_dir = os.path.join(dune_py_dir, cmodule_dir_rel)
+            if not os.path.isdir(cmodule_dir):
+                os.makedirs(cmodule_dir)
+            with open(os.path.join(cmodule_dir, 'DuneAddPybind11Module.cmake'), 'w') as file:
+                file.write(duneAddPybind11Module())
+
         # create python/dune/generated
         generated_dir_rel = os.path.join('python','dune', 'generated')
         generated_dir = os.path.join(dune_py_dir, generated_dir_rel)
         if not os.path.isdir(generated_dir):
             os.makedirs(generated_dir)
-
         cmake_content = ['add_executable(generated_test EXCLUDE_FROM_ALL generated_test.cc)',
                          'add_dune_mpi_flags(generated_test)',
                          'target_compile_definitions(generated_test PRIVATE USING_DUNE_PYTHON)',
@@ -598,3 +605,94 @@ def getCXXFlags():
     if matches.__len__() > 1:
         raise ConfigurationError("found multiple entries for CXXFLAGS in CMakeCache.txt")
     return matches[0].string.partition('=')[2].rstrip()
+
+def duneAddPybind11Module():
+    import pybind11
+    content = """
+# This cmake module provides infrastructure for building modules using Pybind11
+#
+# .. cmake_function:: dune_add_pybind11_module
+#
+#    .. cmake_param:: NAME
+#       :required:
+#       :single:
+#
+#       name of the Python module
+#
+#    .. cmake_param:: SOURCES
+#       :multi:
+#
+#       source files to build shared library
+#
+#       If this parameter is omitted, <name>.cc will be used if it exists.
+#
+#    .. cmake_param:: EXCLUDE_FROM_ALL
+#       :option:
+#
+#       exclude this module from the all target
+#
+#    .. cmake_param:: COMPILE_DEFINITIONS
+#       :multi:
+#       :argname: def
+#
+#       A set of compile definitions to add to the target.
+#       Only definitions beyond the application of :ref:`add_dune_all_flags`
+#       have to be stated.
+#
+#    .. cmake_param:: CMAKE_GUARD
+#       :multi:
+#       :argname: condition
+#
+#       A number of conditions that CMake should evaluate before adding this
+#       module. Use this feature instead of guarding the call to
+#       :code:`dune_add_pybind11_module` with an :code:`if` clause.
+#
+#       The passed condition can be a complex expression like
+#       `( A OR B ) AND ( C OR D )`. Mind the spaces around the parentheses.
+#
+#       Example: Write CMAKE_GUARD dune-foo_FOUND if you want your module to only
+#       build when the dune-foo module is present.
+#
+
+function(dune_add_pybind11_module)
+  include(CMakeParseArguments)
+  cmake_parse_arguments(PYBIND11_MODULE "EXCLUDE_FROM_ALL" "NAME" "SOURCES;COMPILE_DEFINITIONS;CMAKE_GUARD" ${ARGN})
+  if(PYBIND11_MODULE_UNPARSED_ARGUMENTS)
+    message(WARNING "dune_add_pybind11_module: extra arguments provided (typos in named arguments?)")
+  endif()
+
+  if(NOT PYBIND11_MODULE_NAME)
+    message(FATAL_ERROR "dune_add_pybind11_module: module name not specified")
+  endif()
+
+  if(NOT PYBIND11_MODULE_SOURCES)
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${PYBIND11_MODULE_NAME}.cc)
+      set(PYBIND11_MODULE_SOURCES ${PYBIND11_MODULE_NAME}.cc)
+    else()
+      message(FATAL_ERROR "dune_add_pybind11_module: no source files specified")
+    endif()
+  endif()
+
+  foreach(condition ${PYBIND11_MODULE_CMAKE_GUARD})
+    separate_arguments(condition)
+    if(NOT (${condition}))
+      message(STATUS "not building ${PYBIND11_MODULE_NAME}, because condition ${condition} failed.")
+      return()
+    endif()
+  endforeach()
+
+  add_library(${PYBIND11_MODULE_NAME} SHARED ${PYBIND11_MODULE_SOURCES})
+  set_target_properties(${PYBIND11_MODULE_NAME} PROPERTIES PREFIX "")
+  target_compile_definitions(${PYBIND11_MODULE_NAME} PRIVATE ${PYBIND11_MODULE_COMPILE_DEFINITIONS})
+  dune_target_enable_all_packages(${PYBIND11_MODULE_NAME})
+
+  if(PYBIND11_MODULE_EXCLUDE_FROM_ALL)
+    set_property(TARGET ${PYBIND11_MODULE_NAME} PROPERTY EXCLUDE_FROM_ALL 1)
+  endif()
+"""
+    # content += "  target_include_directories(${PYBIND11_MODULE_NAME} PRIVATE \""+\
+    #             pybind11.get_include()+\
+    #            "\")\n"
+
+    content += "endfunction()\n"
+    return content

@@ -10,11 +10,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 try:
-    from dune.common.module import build_dune_py_module, get_dune_py_dir, make_dune_py_module, select_modules
+    from dune.project.module import build_dune_py_module, get_dune_py_dir, make_dune_py_module, select_modules
 except ImportError:
     import os
     here = os.path.dirname(os.path.abspath(__file__))
-    mods = os.path.join(os.path.dirname(here), "python", "dune", "common")
+    mods = os.path.join(os.path.dirname(here), "python", "dune", "project")
     if os.path.exists(os.path.join(mods, "module.py")):
         sys.path.append(mods)
         from module import build_dune_py_module, get_dune_py_dir, make_dune_py_module, select_modules

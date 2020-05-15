@@ -2,7 +2,7 @@
 
 #include <dune/common/fvector.hh>
 #include <dune/python/common/fvector.hh>
-#include <dune/python/pybind11/embed.h>
+#include <pybind11/embed.h>
 
 int main()
 {

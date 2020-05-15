@@ -14,8 +14,8 @@
 #include <dune/python/common/fmatrix.hh>
 #include <dune/python/common/densematrix.hh>
 #include <dune/python/common/string.hh>
-#include <dune/python/pybind11/pybind11.h>
-#include <dune/python/pybind11/operators.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/operators.h>
 
 namespace Dune
 {

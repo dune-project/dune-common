@@ -5,4 +5,4 @@ so use
     import dune.common.utility
 instead
 """)
-from .utility import *
+from dune.utility import *

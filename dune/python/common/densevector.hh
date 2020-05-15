@@ -9,8 +9,8 @@
 #include <utility>
 
 #include <dune/python/common/vector.hh>
-#include <dune/python/pybind11/pybind11.h>
-#include <dune/python/pybind11/operators.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/operators.h>
 
 namespace Dune
 {
