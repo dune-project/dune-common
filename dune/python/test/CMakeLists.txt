@@ -1,4 +1,4 @@
-include(DuneFindPybind11)
+include(FindPybind11)
 dune_find_pybind11(REQUIRED TRUE)
 
 dune_python_add_test(NAME pythontests
