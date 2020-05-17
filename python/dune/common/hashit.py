@@ -1,5 +1,5 @@
 print("""WARNING:
-Importing deprecated `dune.common.hashit' use
+Importing deprecated `dune.utility' use
     import dune.utility
 instead
 """)

@@ -1,5 +1,3 @@
-# from dune.create import get as components
-
 import hashlib
 import importlib
 import sys
@@ -25,11 +23,16 @@ def hashIt(typeName):
     else:
         return hashlib.md5(typeName.encode('utf-8')).hexdigest()
 
-def buildAndImportModule(calling,name,glb):
+def buildAndImportModule(calling,name,glb,warn=True):
     from dune.generator import builder, path
-    module = builder.load(name, '#include "'+path(calling)+name+'.cc"', name)
+    module = builder.load(name, '#include "'+path(calling)+name+'.cc"', name, warn=warn)
     if hasattr(module, '__all__'):
         all_names = module.__all__
     else:
         all_names = [name for name in dir(module) if not name.startswith('_')]
     glb.update({name: getattr(module, name) for name in all_names})
+
+def components(*args,**kwargs):
+    # include create here since we don't want it run except when requested
+    from dune.create import get
+    return get(*args,**kwargs)

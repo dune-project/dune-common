@@ -1,5 +1,5 @@
 try:
-    from dune.common.module import resolve_dependencies, resolve_order, select_modules
+    from dune.project.module import resolve_dependencies, resolve_order, select_modules
 
 except ImportError:
     import os

@@ -22,11 +22,7 @@ try:
 except ImportError:
     logger.info('mpi4py not found, MPI not initialized')
 
-try:
-    from dune.generated._common import *
-except ImportError:
-    from dune.utility import buildAndImportModule
-    buildAndImportModule(__file__,"_common",globals())
+from ._common import *
 
 from .deprecated import DeprecatedObject
 
@@ -75,7 +71,3 @@ def FieldVector(values):
 
 def _raise(exception):
     raise exception
-
-# make these available as part of dune.common
-from dune.project import project as project
-from dune.project import module as module

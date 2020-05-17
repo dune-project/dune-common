@@ -3,7 +3,7 @@ import os
 import re
 import subprocess
 
-import dune.common.module
+import dune.project.module
 
 from dune.utility import buffer_to_str
 from dune.generator import builder, ConfigurationError
@@ -16,7 +16,7 @@ def assertHave(identifier):
        provided the config file by calling
        assertHave("HAVE_DUNE_COMMON")
     '''
-    config = os.path.join(dune.common.module.get_dune_py_dir(), "config.h")
+    config = os.path.join(dune.project.module.get_dune_py_dir(), "config.h")
 
     matches = [match for match in [re.match('^[ ]*#define[ ]+' + identifier.strip() + '[ ]+1$', line) for line in open(config)] if match is not None]
     if not matches:

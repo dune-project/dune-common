@@ -5,7 +5,7 @@ import importlib
 import logging
 import inspect
 
-import dune.common.module
+import dune.project.module
 import dune.common
 import dune.generator
 
