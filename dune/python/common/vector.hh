@@ -270,7 +270,7 @@ namespace Dune
           getFixedTensor( xi, x, i );
           setFixedTensor( f( xi ), y, i );
         }
-        return yArray;
+        return std::move(yArray);
       }
       else
         throw pybind11::value_error( "Tensor has too many dimensions" );
