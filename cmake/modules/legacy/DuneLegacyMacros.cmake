@@ -740,7 +740,7 @@ macro(dune_project)
   # set up make headercheck
   # NOTE(SP): Headercheck is an undocumented feature. Don't know what it does, but it makes things more complicated. Should be removed or replaced by somthing else.
   include(Headercheck)
-  # setup_headercheck()
+  setup_headercheck()
 
 endmacro(dune_project)
 
@@ -815,7 +815,7 @@ macro(finalize_dune_project)
 
   #configure all headerchecks
   # NOTE(SP): Headercheck is an undocumented feature.
-  # finalize_headercheck()
+  finalize_headercheck()
 
   #create cmake-config files for installation tree
   include(CMakePackageConfigHelpers)
