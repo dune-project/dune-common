@@ -2,7 +2,7 @@
 // vi: set et ts=4 sw=2 sts=2:
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+// #include <config.h>
 #endif
 
 #include <dune/common/to_unique_ptr.hh>

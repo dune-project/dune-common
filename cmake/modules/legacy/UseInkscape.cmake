@@ -23,7 +23,7 @@
 #    TODO Switch to named arguments!
 #
 
-include(CMakeParseArguments)
+include_guard(GLOBAL)
 
 function(inkscape_generate_png_from_svg)
   if(NOT INKSCAPE)

@@ -1,0 +1,6 @@
+function (dune_feature_summary)
+  if ("${CMAKE_SOURCE_DIR}" STREQUAL "${PROJECT_SOURCE_DIR}")
+    include(FeatureSummary)
+    feature_summary(WHAT ALL)
+  endif ()
+endfunction (dune_feature_summary)

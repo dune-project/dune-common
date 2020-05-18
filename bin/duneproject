@@ -159,32 +159,32 @@ echo
 
 export PREFIX_DIR="`canonicalpath "$0"`/.."
 
-extract_multiarch_pkg_config_path
+# extract_multiarch_pkg_config_path
 
-# search for modules, both installed and src modules
-find_modules_in_path
+# # search for modules, both installed and src modules
+# find_modules_in_path
 
-# sort modules to remove duplicates
-sort_modules $FOUND_MODULES
-FOUND_MODULES=$MODULES
+# # sort modules to remove duplicates
+# sort_modules $FOUND_MODULES
+# FOUND_MODULES=$MODULES
 
-# get the real module names
+# # get the real module names
 MODULES=""
-for i in $FOUND_MODULES; do
-  mod=$(eval echo \$NAME_$i)
-  MODULES="$MODULES$mod "
-done
+# for i in $FOUND_MODULES; do
+#   mod=$(eval echo \$NAME_$i)
+#   MODULES="$MODULES$mod "
+# done
 
-if [ "$MODULES" = "" ]; then
-  echo "ERROR:">&2
-  echo "  No dune modules were found!">&2
-  echo "  Did you forget to specify the places where ">&2
-  echo "  you installed your modules in the ">&2
-  echo "  DUNE_CONTROL_PATH environment variable">&2
-  echo "  and adjusted the PKG_CONFIG_PATH environment">&2
-  echo "  accordingly?" >&2
-  exit 1;
-fi
+# if [ "$MODULES" = "" ]; then
+#   echo "ERROR:">&2
+#   echo "  No dune modules were found!">&2
+#   echo "  Did you forget to specify the places where ">&2
+#   echo "  you installed your modules in the ">&2
+#   echo "  DUNE_CONTROL_PATH environment variable">&2
+#   echo "  and adjusted the PKG_CONFIG_PATH environment">&2
+#   echo "  accordingly?" >&2
+#   exit 1;
+# fi
 
 ################## READ CMDLINE OPTIONS ##########
 PROJECT="$1"
@@ -212,23 +212,23 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
 
   DEPOK=1
 
-  while [ "$DEPOK" != 0 ]; do
+  # while [ "$DEPOK" != 0 ]; do
     echo "2) Which modules should this module depend on?"
-    echo "   The following modules have been found:"
-    echo "   $MODULES"
+    # echo "   The following modules have been found:"
+    # echo "   $MODULES"
     #  for i in $MODULES; do echo -n " $i"; done
     #  echo ""
     while [ -z "$DEPENDENCIES" ]; do
       read -p "   Enter space-separated list: " DEPENDENCIES
     done
     set +e
-    modulesexist "$DEPENDENCIES" "$MODULES"
-    DEPOK=$?
-    set -e
-    if [ "$DEPOK" != 0 ]; then
-      DEPENDENCIES=""
-    fi
-  done
+    # modulesexist "$DEPENDENCIES" "$MODULES"
+    # DEPOK=$?
+    # set -e
+    # if [ "$DEPOK" != 0 ]; then
+    #   DEPENDENCIES=""
+    # fi
+  # done
 
   while [ -z $VERSION ]; do
     read -p "3) Project/Module version? " VERSION
@@ -341,167 +341,50 @@ UNAME=`echo $PROJECT | tr '-' '_' | sed 's/\(.*\)/\U\1/'`
 echo "- $PROJECT/README"
 cat > "$PROJECT/README" <<R_DELIM
 Preparing the Sources
-=========================
 
-Additional to the software mentioned in README you'll need the
-following programs installed on your system:
-
-  cmake >= 3.13
-
-Getting started
----------------
-
-If these preliminaries are met, you should run
-
-  dunecontrol all
-
-which will find all installed dune modules as well as all dune modules
-(not installed) which sources reside in a subdirectory of the current
-directory. Note that if dune is not installed properly you will either
-have to add the directory where the dunecontrol script resides (probably
-./dune-common/bin) to your path or specify the relative path of the script.
-
-Most probably you'll have to provide additional information to dunecontrol
-(e. g. compilers, configure options) and/or make options.
-
-The most convenient way is to use options files in this case. The files
-define four variables:
-
-CMAKE_FLAGS      flags passed to cmake (during configure)
-
-An example options file might look like this:
-
-#use this options to configure and make if no other options are given
-CMAKE_FLAGS=" \\
--DCMAKE_CXX_COMPILER=g++-5 \\
--DCMAKE_CXX_FLAGS='-Wall -pedantic' \\
--DCMAKE_INSTALL_PREFIX=/install/path" #Force g++-5 and set compiler flags
-
-If you save this information into example.opts you can pass the opts file to
-dunecontrol via the --opts option, e. g.
-
-  dunecontrol --opts=example.opts all
-
-More info
----------
-
-See
-
-     dunecontrol --help
-
-for further options.
-
-
-The full build system is described in the dune-common/doc/buildsystem (Git version) or under share/doc/dune-common/buildsystem if you installed DUNE!
+################## README ##################
+echo "- $PROJECT/README.md"
+cat > "$PROJECT/README.md" <<R_DELIM
+## Configuration
+Configure your project with CMake!
 R_DELIM
+
+LINK_DEPENDENCIES=""
+FIND_DEPENDENCIES=""
+FIND_DEPENDENCIES_PACKAGE=""
+NL=$'\n'
+for DEPENDENCY in $DEPENDENCIES; do
+  LINK_DEPENDENCIES="${LINK_DEPENDENCIES}target_link_libraries($PROJECT PUBLIC Dune::$DEPENDENCY)${NL}"
+  FIND_DEPENDENCIES="${FIND_DEPENDENCIES}find_dependency($DEPENDENCY)${NL}"
+  FIND_DEPENDENCIES_PACKAGE="${FIND_DEPENDENCIES_PACKAGE}find_package($DEPENDENCY CONFIG REQUIRED)${NL}"
+done
 
 ################## CMakeLists.txt ##################
 echo "- $PROJECT/CMakeLists.txt"
 cat> "$PROJECT/CMakeLists.txt" << M_DELIM
-cmake_minimum_required(VERSION 3.13)
-project($PROJECT CXX)
+cmake_minimum_required(VERSION 3.12)
+project($PROJECT VERSION 2.8.0 LANGUAGES C CXX)
 
-if(NOT (dune-common_DIR OR dune-common_ROOT OR
-      "\${CMAKE_PREFIX_PATH}" MATCHES ".*dune-common.*"))
-    string(REPLACE  \${CMAKE_PROJECT_NAME} dune-common dune-common_DIR
-      \${PROJECT_BINARY_DIR})
-endif()
+list(APPEND CMAKE_MODULE_PATH \${PROJECT_SOURCE_DIR}/cmake/modules)
 
-#find dune-common and set the module path
-find_package(dune-common REQUIRED)
-list(APPEND CMAKE_MODULE_PATH "\${PROJECT_SOURCE_DIR}/cmake/modules"
-  \${dune-common_MODULE_PATH})
+find_package(dune-common CONFIG REQUIRED)
 
-#include the dune macros
 include(DuneMacros)
+include($rawmacroname)
 
-# start a dune project with information from dune.module
-dune_project()
+# create a new library target
+dune_add_library($PROJECT)
 
-dune_enable_all_packages()
+# module dependencies
+${LINK_DEPENDENCIES%?}
 
-add_subdirectory(src)
-add_subdirectory(dune)
-add_subdirectory(doc)
+# traverse all other directories
 add_subdirectory(cmake/modules)
+add_subdirectory(dune)
 
-# finalize the dune project, e.g. generating config.h etc.
-finalize_dune_project(GENERATE_CONFIG_H_CMAKE)
+dune_install_library($PROJECT)
+dune_feature_summary(WHAT ALL)
 M_DELIM
-
-################## PROJECT.PC.IN ##################
-echo "- $PROJECT/$MODULE.pc.in"
-cat> "$PROJECT/$MODULE.pc.in" << CC_DELIM
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-libdir=@libdir@
-includedir=@includedir@
-CXX=@CXX@
-CC=@CC@
-DEPENDENCIES=@REQUIRES@
-
-Name: @PACKAGE_NAME@
-Version: @VERSION@
-Description: $MODULE module
-URL: http://dune-project.org/
-Requires: ${DEPENDENCIES}
-Libs: -L\${libdir}
-Cflags: -I\${includedir}
-CC_DELIM
-echo "    Please remember to update your $PROJECT/$MODULE.pc.in,"
-echo "    Description and URL are missing right now."
-
-################# config.h.cmake #####################
-
-echo "- $PROJECT/config.h.cmake"
-cat> "$PROJECT/config.h.cmake" <<EOF
-/* begin $PROJECT
-   put the definitions for config.h specific to
-   your project here. Everything above will be
-   overwritten
-*/
-
-/* begin private */
-/* Name of package */
-#define PACKAGE "@DUNE_MOD_NAME@"
-
-/* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT "@DUNE_MAINTAINER@"
-
-/* Define to the full name of this package. */
-#define PACKAGE_NAME "@DUNE_MOD_NAME@"
-
-/* Define to the full name and version of this package. */
-#define PACKAGE_STRING "@DUNE_MOD_NAME@ @DUNE_MOD_VERSION@"
-
-/* Define to the one symbol short name of this package. */
-#define PACKAGE_TARNAME "@DUNE_MOD_NAME@"
-
-/* Define to the home page for this package. */
-#define PACKAGE_URL "@DUNE_MOD_URL@"
-
-/* Define to the version of this package. */
-#define PACKAGE_VERSION "@DUNE_MOD_VERSION@"
-
-/* end private */
-
-/* Define to the version of $PROJECT */
-#define ${UNAME}_VERSION "@${UNAME}_VERSION@"
-
-/* Define to the major version of $PROJECT */
-#define ${UNAME}_VERSION_MAJOR @${UNAME}_VERSION_MAJOR@
-
-/* Define to the minor version of $PROJECT */
-#define ${UNAME}_VERSION_MINOR @${UNAME}_VERSION_MINOR@
-
-/* Define to the revision of $PROJECT */
-#define ${UNAME}_VERSION_REVISION @${UNAME}_VERSION_REVISION@
-
-/* end $PROJECT
-   Everything below here will be overwritten
-*/
-EOF
-## done
 
 ###############################################################
 ################## The source subdirectory ####################
@@ -513,8 +396,8 @@ mkdir "$PROJECT/src"
 
 echo "- $PROJECT/src/CMakeLists.txt"
 cat> "$PROJECT/src/CMakeLists.txt" << M_DELIM
-add_executable("${MODULE}" ${MODULE}.cc)
-target_link_dune_default_libraries("${MODULE}")
+add_executable(${MODULE} ${MODULE}.cc)
+target_link_libraries(${MODULE} PRIVATE Dune::$PROJECT)
 M_DELIM
 
 ################## PROJECT.CC ##################
@@ -523,33 +406,11 @@ cat> "$PROJECT/src/$MODULE.cc" << CC_DELIM
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
 #include <iostream>
-#include <dune/common/parallel/mpihelper.hh> // An initializer of MPI
-#include <dune/common/exceptions.hh> // We use exceptions
+#include <dune/common/common.hh>
 
 int main(int argc, char** argv)
-{
-  try{
-    // Maybe initialize MPI
-    Dune::MPIHelper& helper = Dune::MPIHelper::instance(argc, argv);
-    std::cout << "Hello World! This is ${PROJECT}." << std::endl;
-    if(Dune::MPIHelper::isFake)
-      std::cout<< "This is a sequential program." << std::endl;
-    else
-      std::cout<<"I am rank "<<helper.rank()<<" of "<<helper.size()
-        <<" processes!"<<std::endl;
-    return 0;
-  }
-  catch (Dune::Exception &e){
-    std::cerr << "Dune reported error: " << e << std::endl;
-  }
-  catch (...){
-    std::cerr << "Unknown exception thrown!" << std::endl;
-  }
-}
+{}
 CC_DELIM
 
 ################################################################
@@ -569,8 +430,13 @@ EOF
 ################## dune/$NAME/CMakeLists.txt ###########
 echo "- $PROJECT/dune/$NAME/CMakeLists.txt"
 cat> $PROJECT/dune/$NAME/CMakeLists.txt <<EOF
-#install headers
-install(FILES ${NAME}.hh DESTINATION \${CMAKE_INSTALL_INCLUDEDIR}/dune/$NAME)
+target_sources($PROJECT
+  PRIVATE
+    \${CMAKE_CURRENT_LIST_DIR}/$NAME.cc )
+
+install(FILES $NAME.hh
+  DESTINATION
+    \${CMAKE_INSTALL_INCLUDEDIR}/dune/$NAME )
 EOF
 
 ################## dune/$NAME/$NAME.hh #################
@@ -584,6 +450,12 @@ cat> $PROJECT/dune/$NAME/$NAME.hh <<EOF
 #endif // ${UNAME}_HH
 EOF
 
+
+################## dune/$NAME/$NAME.hh #################
+echo "- $PROJECT/dune/$NAME/$NAME.cc"
+cat> $PROJECT/dune/$NAME/$NAME.cc <<EOF
+#include "$NAME.hh"
+EOF
 
 ###############################################################
 ################## The doc subdirectory #######################
@@ -647,8 +519,7 @@ CC_DELIM
 
 echo "- $PROJECT/doc/doxygen/CMakeLists.txt"
 cat> "$PROJECT/doc/doxygen/CMakeLists.txt" << CC_DELIM
-# shortcut for creating the Doxyfile.in and Doxyfile
-add_doxygen_target()
+# TODO: shortcut for creating the Doxyfile.in and Doxyfile
 CC_DELIM
 
 #########################################################
@@ -663,27 +534,44 @@ mkdir "$PROJECT/cmake"
 
 mkdir "$PROJECT/cmake/modules"
 
-macroname=""
-for i in $(echo $PROJECT| sed 's/-/ /g'); do
-  firstchar=$(echo $i | sed 's/\(.\).*/\1/')
-  macroname=$macroname$(echo $firstchar | tr '[a-z]' '[A-Z]')$(echo $i | sed 's/.\(.*\)/\1/')
-done
-macroname="$macroname""Macros.cmake"
-
 ################# cmake/modules/CMakeLists.txt #####################
 
 echo "- $PROJECT/cmake/modules/CMakeLists.txt"
 cat> "$PROJECT/cmake/modules/CMakeLists.txt" <<EOF
-set(modules "$macroname")
-
-install(FILES \${modules} DESTINATION \${DUNE_INSTALL_MODULEDIR})
 EOF
 
 ################# cmake/modules/$macroname #####################
 
 echo "- $PROJECT/cmake/modules/$macroname"
 cat> "$PROJECT/cmake/modules/$macroname" <<EOF
-# File for module specific CMake tests.
+# required dependencies
+${FIND_DEPENDENCIES_PACKAGE%?}
+EOF
+
+################# cmake/modules/$configname #####################
+
+echo "- $PROJECT/cmake/modules/$configname"
+cat> "$PROJECT/cmake/modules/$configname" <<EOF
+@PACKAGE_INIT@
+
+# Find dependencies and stop package config if required ones are not found
+include(CMakeFindDependencyMacro)
+
+set(@PROJECT_NAME@_PREFIX @CMAKE_CURRENT_LIST_DIR@)
+set(@PROJECT_NAME@_MODULE_PATH \${CMAKE_CURRENT_LIST_DIR})
+set(@PROJECT_NAME@_LIBRARIES Dune::@PROJECT_NAME@)
+
+list(APPEND CMAKE_MODULE_PATH \${CMAKE_CURRENT_LIST_DIR})
+
+${FIND_DEPENDENCIES%?}
+
+# include the configuration of exported targets
+include("\${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@-targets.cmake")
+
+# Finish package configuration:
+# checks whether all requested, non-optional components have been found,
+# and if this is not the case, sets the @PROJECT_NAME@_FOUND variable to FALSE
+check_required_components("@PROJECT_NAME@")
 EOF
 
 

@@ -3,30 +3,7 @@
 # Note that "the Dune way" of doing this has changed after
 # the 2.4 release. See the build system documentation for details.
 #
-# .. cmake_function:: dune_declare_test_label
-#
-#    .. cmake_brief::
-#
-#       Declare labels for :ref:`dune_add_test`.
-#
-#    .. cmake_param:: LABELS
-#       :multi:
-#
-#       The names of labels to declare.  Label names must be nonempty and
-#       consist only of alphanumeric characters plus :code:`-` and :code:`_`
-#       to make sure it is easy to construct regular expressions from them for
-#       :code:`ctest -L ${label_regex}`.
-#
-#    Labels need to be declared to ensure that the target
-#    :code:`build_${label}_tests` exists.  They will normally be declared
-#    on-demand by :ref:`dune_add_test`.  But sometimes it is useful to be able to
-#    run :code:`make build_${label}_tests` whether or not any tests with that
-#    label exists in a module.  For these cases :ref:`dune_declare_test_label` can
-#    be called explicitly.
-#
-#    The label :code:`quick` is always predeclared.
-#
-# .. cmake_function:: dune_add_test
+# .. cmake_function:: dune_legacy_add_test
 #
 #    .. cmake_brief::
 #
@@ -182,76 +159,23 @@
 #       place to make it easy to construct regular expressions from the label
 #       names for :code:`ctest -L ${label_regex}`.
 #
-#    This function defines the Dune way of adding a test to the testing suite.
-#    You may either add the executable yourself through :ref:`add_executable`
-#    and pass it to the :code:`TARGET` option, or you may rely on :ref:`dune_add_test`
-#    to do so.
-#
-# .. cmake_variable:: DUNE_REENABLE_ADD_TEST
-#
-#    You may set this variable to True either through your opts file or in your module
-#    (before the call to :code:`include(DuneMacros)`) to suppress the error that is thrown if
-#    :code:`add_test` is used. You should only do that if you have proper reason to do so.
-#
-# .. cmake_variable:: DUNE_MAX_TEST_CORES
-#
-#    You may set this variable to give an upperbound to the number of processors, that
-#    a single test may use. Defaults to 2, when MPI is found and to 1 otherwise.
-#
-# .. cmake_variable:: DUNE_BUILD_TESTS_ON_MAKE_ALL
-#
-#    You may set this variable through your opts file or on a per module level (in the toplevel
-#    :code:`CMakeLists.txt` before :code:`include(DuneMacros)`) to have the Dune build system
-#    build all tests during `make all`. Note, that this may take quite some time for some modules.
-#    If not in use, you have to build tests through the target :code:`build_tests`.
-#
 
-# enable the testing suite on the CMake side.
-enable_testing()
-include(CTest)
+include_guard(GLOBAL)
 
-# Introduce a target that triggers the building of all tests
-add_custom_target(build_tests)
-
-function(dune_declare_test_label)
-  include(CMakeParseArguments)
-  set(OPTIONS)
-  set(SINGLEARGS)
-  set(MULTIARGS LABELS)
-  cmake_parse_arguments(arg "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
-
-  if( (DEFINED arg_UNPARSED_ARGUMENTS) AND NOT ( arg_UNPARSED_ARGUMENTS STREQUAL "" ) )
-    message(FATAL_ERROR "Unhandled extra arguments given to dune_declare_test_label(): "
-      "<${arg_UNPARSED_ARGUMENTS}>")
-  endif()
-
-  foreach(label IN LISTS arg_LABELS)
-    # Make sure the label is not empty, and does not contain any funny
-    # characters, in particular regex characters
-    if(NOT (label MATCHES "[-_0-9a-zA-Z]+"))
-      message(FATAL_ERROR "Refusing to add label \"${label}\" since it is "
-        "empty or contains funny characters (characters other than "
-        "alphanumeric ones and \"-\" or \"_\"; the intent of this restriction "
-        "is to make construction of the argument to \"ctest -L\" easier")
-    endif()
-    set(target "build_${label}_tests")
-    if(NOT TARGET "${target}")
-      add_custom_target("${target}")
-    endif()
-  endforeach()
-endfunction(dune_declare_test_label)
-
-# predefine "quick" test label so build_quick_tests can be built
-# unconditionally
-dune_declare_test_label(LABELS quick)
-
-# Set the default on the variable DUNE_MAX_TEST_CORES
-if(NOT DUNE_MAX_TEST_CORES)
-  set(DUNE_MAX_TEST_CORES 2)
-endif()
-
+# fallback to legacy implementation if SOURCES argument is given
+# Otherwise, call the new implementation
 function(dune_add_test)
-  include(CMakeParseArguments)
+  cmake_parse_arguments(ADDTEST "" "" "SOURCES" ${ARGN})
+  if (ADDTEST_SOURCES)
+    dune_legacy_add_test(${ARGN})
+  else ()
+    _dune_add_test(${ARGN})
+  endif ()
+endfunction(dune_add_test)
+
+function(dune_legacy_add_test)
+  # message(DEPRECATION "The function dune_legacy_add_test is deprecated. Use the function dune_add_test instead!")
+
   set(OPTIONS EXPECT_COMPILE_FAIL EXPECT_FAIL SKIP_ON_77 COMPILE_ONLY)
   set(SINGLEARGS NAME TARGET TIMEOUT)
   set(MULTIARGS SOURCES COMPILE_DEFINITIONS COMPILE_FLAGS LINK_LIBRARIES CMD_ARGS MPI_RANKS COMMAND CMAKE_GUARD LABELS)
@@ -340,6 +264,7 @@ function(dune_add_test)
     target_compile_definitions(${ADDTEST_NAME} PUBLIC ${ADDTEST_COMPILE_DEFINITIONS})
     target_compile_options(${ADDTEST_NAME} PUBLIC ${ADDTEST_COMPILE_FLAGS})
     target_link_libraries(${ADDTEST_NAME} ${ADDTEST_LINK_LIBRARIES})
+    target_link_libraries(${ADDTEST_NAME} Dune::dune-common)
     set(ADDTEST_TARGET ${ADDTEST_NAME})
   endif()
 
@@ -394,7 +319,7 @@ function(dune_add_test)
       endif()
 
       # Now add the actual test
-      _add_test(NAME ${ACTUAL_NAME}
+      add_test(NAME ${ACTUAL_NAME}
                 COMMAND "${ACTUAL_TESTCOMMAND}" ${ACTUAL_CMD_ARGS}
                )
 
@@ -420,16 +345,4 @@ function(dune_add_test)
       set_tests_properties(${ACTUAL_NAME} PROPERTIES LABELS "${ADDTEST_LABELS}")
     endif()
   endforeach()
-endfunction()
-
-macro(add_directory_test_target)
-  message(FATAL_ERROR "The function add_directory_test_target has been removed alongside all testing magic in dune-common. Check dune_add_test for the new way!")
-endmacro()
-
-macro(add_test)
-  if(NOT DUNE_REENABLE_ADD_TEST)
-    message(SEND_ERROR "Please use dune_add_test instead of add_test! If you need add_test in a downstream project, set the variable DUNE_REENABLE_ADD_TEST to True in that project to suppress this error.")
-  else()
-    _add_test(${ARGN})
-  endif()
-endmacro()
+endfunction(dune_legacy_add_test)

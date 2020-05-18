@@ -1,27 +1,33 @@
-add_subdirectory(test)
-add_subdirectory(benchmark)
+set(HEADERS
+  collectivecommunication.hh
+  communication.hh
+  communicator.hh
+  indexset.hh
+  indicessyncer.hh
+  interface.hh
+  localindex.hh
+  mpicollectivecommunication.hh
+  mpicommunication.hh
+  mpiguard.hh
+  future.hh
+  mpifuture.hh
+  mpidata.hh
+  mpipack.hh
+  mpihelper.hh
+  mpitraits.hh
+  plocalindex.hh
+  remoteindices.hh
+  selection.hh
+  variablesizecommunicator.hh
+)
 
 #install headers
-install(FILES
-        collectivecommunication.hh
-        communication.hh
-        communicator.hh
-        indexset.hh
-        indicessyncer.hh
-        interface.hh
-        localindex.hh
-        mpicollectivecommunication.hh
-        mpicommunication.hh
-        mpiguard.hh
-        future.hh
-        mpifuture.hh
-        mpidata.hh
-        mpipack.hh
-        mpihelper.hh
-        mpitraits.hh
-        plocalindex.hh
-        remoteindices.hh
-        selection.hh
-        variablesizecommunicator.hh
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common/parallel)
+install(
+  FILES ${HEADERS}
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common/parallel
+)
 
+# NOTE(SP): benchmarks need to be checked
+# add_subdirectory(benchmark)
+
+add_subdirectory(test)
