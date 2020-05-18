@@ -1,35 +1,42 @@
-# set up project
-project("dune-common" C CXX)
+cmake_minimum_required(VERSION 3.13)
+project(dune-common VERSION 2.8.0 LANGUAGES C CXX)
 
-# general stuff
-cmake_minimum_required(VERSION 3.1)
-
-# make sure our own modules are found
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/modules")
-
-# set the script dir for the macros.
-set(DUNE_COMMON_SCRIPT_DIR "${PROJECT_SOURCE_DIR}/cmake/scripts")
-
-#include the dune macros
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 include(DuneMacros)
+include(DuneCommonMacros)
 
-# start a dune project with information from dune.module
-dune_project()
+# create the dune-common library
+dune_add_library(dune-common)
 
-# add subdirectories to execute CMakeLists.txt there
-add_subdirectory("lib")
-add_subdirectory("share")
-add_subdirectory("dune")
-add_subdirectory("bin")
-add_subdirectory("doc")
-add_subdirectory("cmake/modules")
-add_subdirectory("cmake/scripts")
+# set minimal required c++ standard version
+target_compile_features(dune-common PUBLIC cxx_std_17)
 
-# if Python bindings are enabled, include necessary sub directories.
-if( DUNE_ENABLE_PYTHONBINDINGS )
-  add_subdirectory("python")
-  dune_python_install_package(PATH "python")
-endif()
+# check for optional compile rfeatures and set cpp flags
+dune_target_optional_compile_features(dune-common PUBLIC
+  cxx_identity
+  cxx_experimental_is_detected
+  cxx_experimental_make_array)
 
-# finalize the dune project, e.g. generating config.h etc.
-finalize_dune_project()
+if (LAPACK_FOUND AND BLAS_FOUND)
+  target_link_libraries(dune-common PUBLIC BLAS::BLAS LAPACK::LAPACK)
+  target_compile_definitions(dune-common PUBLIC HAVE_BLAS HAVE_LAPACK
+    $<$<BOOL:${LAPACK_NEEDS_UNDERLINE}>:LAPACK_NEEDS_UNDERLINE>)
+endif ()
+
+if (MPI_FOUND)
+  target_link_libraries(dune-common PUBLIC MPI::MPI_CXX)
+  target_compile_definitions(dune-common PUBLIC HAVE_MPI)
+endif ()
+
+if (MProtect_FOUND)
+  target_link_libraries(dune-common PUBLIC MProtect::MProtect)
+  target_compile_definitions(dune-common PUBLIC HAVE_MPROTECT HAVE_SYS_MMAN_H) # NOTE: the latter should be removed
+endif ()
+
+# traverse all directories
+add_subdirectory(cmake/modules)
+add_subdirectory(dune)
+
+# specify installation of targets, create exports and config files
+dune_install_library(dune-common)
+dune_feature_summary(WHAT ALL)

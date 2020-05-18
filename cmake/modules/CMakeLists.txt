@@ -1,54 +1,29 @@
-install(FILES
-  AddGMPFlags.cmake
-  AddMETISFlags.cmake
-  AddParMETISFlags.cmake
-  AddPTScotchFlags.cmake
-  AddQuadMathFlags.cmake
-  AddSuiteSparseFlags.cmake
-  AddUMFPackFlags.cmake
-  AddVcFlags.cmake
-  CheckCXXFeatures.cmake
-  CMakeBuiltinFunctionsDocumentation.cmake
-  DuneAddPybind11Module.cmake
-  DuneCMakeCompat.cmake
-  DuneCommonMacros.cmake
-  DuneCxaDemangle.cmake
-  DuneDoc.cmake
-  DuneDoxygen.cmake
-  DuneEnableAllPackages.cmake
-  DuneExecuteProcess.cmake
-  DuneInstance.cmake
+set(INSTALL_FILES
+  DuneAddLibrary.cmake
+  DuneAddTest.cmake
+  DuneCheckCXXSourceCompiles.cmake
+  DuneDeclareTestLabel.cmake
+  DuneFeatureSummary.cmake
+  DuneInstallLibrary.cmake
   DuneMacros.cmake
-  DuneMPI.cmake
-  DunePathHelper.cmake
-  DunePkgConfig.cmake
-  DunePythonCommonMacros.cmake
-  DunePythonFindPackage.cmake
-  DunePythonInstallPackage.cmake
-  DunePythonMacros.cmake
-  DunePythonRequireVersion.cmake
-  DunePythonTestCommand.cmake
-  DunePythonVirtualenv.cmake
-  DuneSphinxDoc.cmake
-  DuneSphinxCMakeDoc.cmake
-  DuneStreams.cmake
-  DuneSymlinkOrCopy.cmake
-  DuneTestMacros.cmake
-  FindGMP.cmake
-  FindInkscape.cmake
-  FindLatexMk.cmake
-  FindMETIS.cmake
+  DuneModuleName.cmake
+  DuneTesting.cmake
+  DuneTargetOptionalCompileFeatures.cmake
+  FindBLAS.cmake
+  FindHYPRE.cmake
+  FindLAPACK.cmake
   FindMProtect.cmake
-  FindParMETIS.cmake
-  FindPTScotch.cmake
-  FindQuadMath.cmake
-  FindSphinx.cmake
-  FindSuiteSparse.cmake
-  FindTBB.cmake
-  FindUMFPack.cmake
-  Headercheck.cmake
-  latexmkrc.cmake
-  OverloadCompilerFlags.cmake
-  UseInkscape.cmake
-  UseLatexMk.cmake
-  DESTINATION ${DUNE_INSTALL_MODULEDIR})
+  TargetSourcesLocal.cmake
+)
+
+install(
+  FILES ${INSTALL_FILES}
+  DESTINATION
+    ${CMAKE_INSTALL_DATADIR}/cmake
+)
+
+foreach (file ${INSTALL_FILES})
+  configure_file(${file} ${PROJECT_BINARY_DIR}/${file} COPYONLY)
+endforeach (file)
+
+add_subdirectory(legacy)
