@@ -114,5 +114,8 @@ set(HAVE_QUADMATH ${QUADMATH_FOUND})
 
 # register the QuadMath imported target
 if(HAVE_QUADMATH)
-  dune_register_package_flags(LIBRARIES "QuadMath::QuadMath")
+  dune_register_package_flags(
+    COMPILE_DEFINITIONS "ENABLE_QUADMATH=1"
+    LIBRARIES "QuadMath::QuadMath"
+  )
 endif()
