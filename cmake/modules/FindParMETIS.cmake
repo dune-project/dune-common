@@ -1,163 +1,122 @@
-# .. cmake_module::
-#
-#    Module that checks whether ParMETIS is available.
-#
-#    You may set the following variables to configure this modules behavior:
-#
-#    :ref:`PARMETIS_ROOT`
-#       Prefix where ParMETIS is installed.
-#
-#    :ref:`PARMETIS_LIB_NAME`
-#       Name of the ParMETIS library (default: parmetis).
-#
-#    :ref:`PARMETIS_LIBRARY`
-#       Full path of the ParMETIS library
-#
-#    Sets the following variables:
-#
-#    :code:`PARMETIS_FOUND`
-#       True if ParMETIS was found.
-#
-#    :code:`PARMETIS_LIBRARY`
-#       Full path of the ParMETIS library.
-#
-#    :code:`PARMETIS_LIBRARIES`
-#       List of all libraries needed for linking with ParMETIS,
-#
-# .. cmake_variable:: PARMETIS_ROOT
-#
-#    You may set this variable to have :ref:`FindParMETIS` look
-#    for the ParMETIS library and includes in the given path
-#    before inspecting default system paths.
-#
-# .. cmake_variable:: PARMETIS_LIB_NAME
-#
-#    You may set this variable to specify the name of the ParMETIS
-#    library that :ref:`FindParMETIS` looks for.
-#
-# .. cmake_variable:: PARMETIS_LIBRARY
-#
-#    You may set this variable to specify the full path to the ParMETIS
-#    library, that should be used by :ref:`FindParMETIS`.
-#
+#[=======================================================================[.rst:
+FindParMETIS
+------------
 
-# find METIS first
-find_package(METIS QUIET)
-if(NOT METIS_FOUND)
-    find_package_handle_standard_args(
-    "ParMETIS"
-    DEFAULT_MSG "METIS not found which is required for ParMETIS."
-    )
-endif()
+Find Parallel Graph Partitioning library ParMETIS
+(see http://glaros.dtc.umn.edu/gkhome/metis/parmetis/overview)
 
+Imported targets
+^^^^^^^^^^^^^^^^
+
+This module defines the following :prop_tgt:`IMPORTED` target:
+
+``ParMETIS::ParMETIS``
+  The libraries, flags, and includes to use for ParMETIS, if found.
+
+Result Variables
+^^^^^^^^^^^^^^^^
+
+This module defines the following variables:
+
+``ParMETIS_FOUND``
+  The ParMETIS library with all its dependencies is found
+
+Cache Variables
+^^^^^^^^^^^^^^^
+
+The following variables may be set to influence this module's behavior:
+
+``PARMETIS_INCLUDE_DIR``
+  Include directory where the parmetis.h is found.
+
+``PARMETIS_LIB_NAME``
+  Name of the ParMETIS library (default: parmetis)
+
+``PARMETIS_LIBRARY``
+  Full path to the ParMETIS library
+
+#]=======================================================================]
+
+# text for feature summary
+include(FeatureSummary)
+set_package_properties("ParMETIS" PROPERTIES
+  DESCRIPTION "Parallel Graph Partitioning"
+)
+
+# find package dependencies first
+find_package(METIS)
+find_package(MPI)
 
 find_path(PARMETIS_INCLUDE_DIR parmetis.h
-          PATHS ${PARMETIS_DIR} ${PARMETIS_ROOT}
-          PATH_SUFFIXES include parmetis
-          NO_DEFAULT_PATH
-          DOC "Include directory of ParMETIS")
+  PATH_SUFFIXES include parmetis
+  NO_DEFAULT_PATH)
 find_path(PARMETIS_INCLUDE_DIR parmetis.h
-          PATH_SUFFIXES include parmetis)
+  PATH_SUFFIXES include parmetis)
 
+# Set a name of the METIS library. This is typically `parmetis` or `ptscotchparmetis`
 set(PARMETIS_LIB_NAME parmetis
     CACHE STRING "Name of the ParMETIS library (default: parmetis).")
-set(PARMETIS_LIBRARY ParMETIS_LIBRARY-NOTFOUND
-    CACHE FILEPATH "Full path of the ParMETIS library")
 
-# check ParMETIS headers
-include(CMakePushCheckState)
-cmake_push_check_state() # Save variables
-set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${MPI_DUNE_INCLUDE_PATH} ${METIS_INCLUDE_DIRS} ${PARMETIS_INCLUDE_DIR})
-set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${MPI_DUNE_COMPILE_FLAGS}")
-# set(CMAKE_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES} ${METIS_LIBRARIES}")
-check_include_file(parmetis.h PARMETIS_FOUND)
+# search ParMETIS library
+find_library(PARMETIS_LIBRARY ${PARMETIS_LIB_NAME}
+  PATH_SUFFIXES lib
+  NO_DEFAULT_PATH)
+find_library(PARMETIS_LIBRARY ${PARMETIS_LIB_NAME})
 
-if(PARMETIS_FOUND)
-  set(ParMETIS_INCLUDE_PATH ${CMAKE_REQUIRED_INCLUDES})
-  set(ParMETIS_COMPILE_FLAGS "${CMAKE_REQUIRED_FLAGS} -DENABLE_PARMETIS=1")
+# If PARMETIS_LIB_NAME contains "ptscotch", link against PTScotch library
+string(FIND PARMETIS_LIB_NAME "ptscotch" PARMETIS_NEEDS_PTSCOTCH)
+if(PARMETIS_NEEDS_PTSCOTCH)
+  find_package(PTScotch QUIET)
+  set(PARMETIS_HAS_PTSCOTCH ${PTScotch_FOUND})
+else()
+  set(PARMETIS_HAS_PTSCOTCH 1)
+endif()
 
-  # search ParMETIS library
-  find_library(PARMETIS_LIBRARY ${PARMETIS_LIB_NAME}
-               PATHS ${PARMETIS_DIR} ${PARMETIS_ROOT}
-               PATH_SUFFIXES lib
-               NO_DEFAULT_PATH)
-  find_library(PARMETIS_LIBRARY ${PARMETIS_LIB_NAME})
+mark_as_advanced(PARMETIS_INCLUDE_DIR PARMETIS_LIBRARY PARMETIS_LIB_NAME
+                 PARMETIS_NEEDS_PTSCOTCH PARMETIS_HAS_PTSCOTCH)
 
-  # check ParMETIS library
-  if(PARMETIS_LIBRARY)
-    set(_CMAKE_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES}") # do a backup
-    set(_PARMETIS_LIBRARIES "${PARMETIS_LIBRARY};${MPI_DUNE_LIBRARIES}")
-    list(APPEND CMAKE_REQUIRED_LIBRARIES "${_PARMETIS_LIBRARIES};${METIS_LIBRARIES}")
-    include(CheckFunctionExists)
-    check_function_exists(ParMETIS_V3_PartKway HAVE_PARMETIS)
-    if(NOT HAVE_PARMETIS)
-      # Maybe we are using static scotch libraries. In this case we need to link
-      # the other scotch libraries too. Let's make a best effort.
-      # Get the path where ParMETIS_LIBRARY resides
-      get_filename_component(_lib_root ${METIS_LIBRARY} DIRECTORY)
-      # Search for additional libs only in this directory.
-      # Otherwise we might find incompatible ones, e.g. for int instead of long
-      find_library(PTSCOTCH_LIBRARY ptscotch PATHS ${_lib_root} "The PT-Scotch library."
-        NO_DEFAULT_PATH)
-      find_library(PTSCOTCHERR_LIBRARY ptscotcherr PATHS ${_lib_root} "The Scotch error library."
-        NO_DEFAULT_PATH)
-      if(PTSCOTCH_LIBRARY AND PTSCOTCHERR_LIBRARY)
-        set(_PARMETIS_LIBRARIES ${PARMETIS_LIBRARY} ${PTSCOTCH_LIBRARY}
-          ${PTSCOTCHERR_LIBRARY} ${METIS_LIBRARIES} ${MPI_DUNE_LIBRARIES})
-        set(CMAKE_REQUIRED_LIBRARIES ${_PARMETIS_LIBRARIES}
-          ${_CMAKE_REQUIRED_LIBRARIES})
-        unset(HAVE_PARMETIS CACHE)
-        check_function_exists(ParMETIS_V3_PartKway HAVE_PARMETIS)
-      endif()
-    endif()
-    set(CMAKE_REQUIRED_LIBRARIES "${_CMAKE_REQUIRED_LIBRARIES}") # get backup
+# determine version of ParMETIS installation
+find_file(PARMETIS_HEADER_FILE parmetis.h
+  PATHS ${PARMETIS_INCLUDE_DIR}
+  NO_DEFAULT_PATH)
+if(PARMETIS_HEADER_FILE)
+  file(READ "${PARMETIS_HEADER_FILE}" parmetisheader)
+  string(REGEX REPLACE ".*#define PARMETIS_MAJOR_VERSION[ ]+([0-9]+).*" "\\1" ParMETIS_MAJOR_VERSION "${parmetisheader}")
+  string(REGEX REPLACE ".*#define PARMETIS_MINOR_VERSION[ ]+([0-9]+).*" "\\1" ParMETIS_MINOR_VERSION "${parmetisheader}")
+  if(ParMETIS_MAJOR_VERSION GREATER_EQUAL 0 AND ParMETIS_MINOR_VERSION GREATER_EQUAL 0)
+    set(ParMETIS_VERSION "${ParMETIS_MAJOR_VERSION}.${ParMETIS_MINOR_VERSION}")
   endif()
 endif()
+unset(PARMETIS_HEADER_FILE CACHE)
 
 # behave like a CMake module is supposed to behave
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(
-  "ParMETIS"
-  DEFAULT_MSG
-  PARMETIS_INCLUDE_DIR
-  PARMETIS_LIBRARY
-  HAVE_PARMETIS
+find_package_handle_standard_args("ParMETIS"
+  REQUIRED_VARS
+    PARMETIS_LIBRARY PARMETIS_INCLUDE_DIR METIS_FOUND MPI_FOUND PARMETIS_HAS_PTSCOTCH
+  VERSION_VAR
+    ParMETIS_VERSION
 )
 
-mark_as_advanced(PARMETIS_INCLUDE_DIR PARMETIS_LIBRARY PARMETIS_LIB_NAME)
+# create imported target ParMETIS::ParMETIS
+if(PARMETIS_FOUND AND NOT TARGET ParMETIS::ParMETIS)
+  add_library(ParMETIS::ParMETIS UNKNOWN IMPORTED)
+  set_target_properties(ParMETIS::ParMETIS PROPERTIES
+    IMPORTED_LOCATION ${PARMETIS_LIBRARY}
+    INTERFACE_INCLUDE_DIRECTORIES ${PARMETIS_INCLUDE_DIR}
+    INTERFACE_LINK_LIBRARIES "METIS::METIS;MPI::MPI_CXX"
+  )
 
-#restore old values
-cmake_pop_check_state()
-
-if(PARMETIS_FOUND)
-  set(PARMETIS_INCLUDE_DIRS ${PARMETIS_INCLUDE_DIR})
-  set(PARMETIS_LIBRARIES "${_PARMETIS_LIBRARIES}"
-      CACHE FILEPATH "ParMETIS libraries needed for linking")
-  set(PARMETIS_LINK_FLAGS "${DUNE_MPI_LINK_FLAGS}"
-      CACHE STRING "ParMETIS link flags")
-  # log result
-  file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
-    "Determing location of ParMETIS succeeded:\n"
-    "Include directory: ${PARMETIS_INCLUDE_DIRS}\n"
-    "Library directory: ${PARMETIS_LIBRARIES}\n\n")
-  # deprecate versions < 4
-  file(READ "${PARMETIS_INCLUDE_DIR}/parmetis.h" parmetisheader)
-  string(REGEX MATCH "#define PARMETIS_MAJOR_VERSION[ ]+[0-9]+" versionMacroDef "${parmetisheader}")
-  string(REGEX MATCH "[0-9]+" ParMetisMajorVersion "${versionMacroDef}")
-  if("${versionMacroDef}" STREQUAL "" OR "${ParMetisMajorVersion}" LESS 4)
-    message(AUTHOR_WARNING "Support for ParMETIS older than version 4.x is deprecated in Dune 2.7")
-  endif()
-else()
-  # log erroneous result
-  file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
-    "Determing location of ParMETIS failed:\n"
-    "Include directory: ${PARMETIS_INCLUDE_DIR}\n"
-    "ParMETIS library directory: ${PARMETIS_LIBRARY}\n\n")
+  # link against ptscotch if needed
+  target_link_libraries(ParMETIS::ParMETIS INTERFACE
+    $<$<BOOL:${PARMETIS_NEEDS_PTSCOTCH}>:PTScotch::PTScotch>)
 endif()
 
 # register all ParMETIS related flags
+set(HAVE_PARMETIS ${ParMETIS_FOUND})
 if(PARMETIS_FOUND)
-  dune_register_package_flags(COMPILE_DEFINITIONS "ENABLE_PARMETIS=1"
-                              LIBRARIES "${PARMETIS_LIBRARIES}"
-                              INCLUDE_DIRS "${PARMETIS_INCLUDE_DIRS}")
+  dune_register_package_flags(
+    COMPILE_DEFINITIONS "ENABLE_PARMETIS=1"
+    LIBRARIES "ParMETIS::ParMETIS"
+  )
 endif()
