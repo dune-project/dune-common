@@ -10,19 +10,23 @@
 #       A list of targets to use GMP with.
 #
 
+# set HAVE_GMP for the config.h file
+set(HAVE_GMP ${GMP_FOUND})
 
+# register all GMP related flags
+if(GMP_FOUND)
+  dune_register_package_flags(
+    LIBRARIES GMP::gmpxx
+    COMPILE_DEFINITIONS "ENABLE_GMP=1"
+  )
+endif()
+
+# add function to link against the GMP library
 function(add_dune_gmp_flags _targets)
   if(GMP_FOUND)
     foreach(_target ${_targets})
-      target_link_libraries(${_target} ${GMP_LIBRARIES})
-      set_property(TARGET ${_target}
-        APPEND_STRING
-        PROPERTY COMPILE_FLAGS "-DENABLE_GMP=1 ")
-      foreach(_path ${GMP_INCLUDE_DIRS})
-        set_property(TARGET ${_target}
-          APPEND_STRING
-          PROPERTY COMPILE_FLAGS "-I${_path}")
-      endforeach(_path ${GMP_INCLUDE_DIRS})
+      target_link_libraries(${_target} GMP::gmpxx)
+      target_compile_definitions(${_target} "ENABLE_GMP=1")
     endforeach(_target ${_targets})
   endif(GMP_FOUND)
 endfunction(add_dune_gmp_flags)
