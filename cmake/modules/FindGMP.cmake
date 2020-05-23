@@ -90,7 +90,7 @@ if(GMP_FOUND)
     set_target_properties(GMP::gmpxx PROPERTIES
       IMPORTED_LOCATION ${GMPXX_LIB}
       INTERFACE_INCLUDE_DIRECTORIES ${GMPXX_INCLUDE_DIR}
-      INTERFACE_LINK_LIBRARIES GMP::gmpxx
+      INTERFACE_LINK_LIBRARIES GMP::gmp
     )
   endif()
 endif()
