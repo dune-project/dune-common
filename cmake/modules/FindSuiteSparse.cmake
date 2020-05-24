@@ -233,6 +233,13 @@ if(SuiteSparse_FOUND)
     )
   endif()
 
+  # Link against BLAS
+  if(TARGET BLAS::BLAS)
+    target_link_libraries(SuiteSparse::SuiteSparse_config INTERFACE BLAS::BLAS)
+  else()
+    target_link_libraries(SuiteSparse::SuiteSparse_config INTERFACE ${BLAS_LINKER_FLAGS} ${BLAS_LIBRARIES})
+  endif()
+
   # Define component imported-targets
   foreach(_component ${SUITESPARSE_COMPONENTS})
     if(SuiteSparse_${_component}_FOUND AND NOT TARGET SuiteSparse::${_component})
