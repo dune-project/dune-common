@@ -1,39 +1,68 @@
-# .. cmake_module::
-#
-#    Find the SuiteSparse libraries like UMFPACK or SPQR.
-#
-#    Example which tries to find Suite Sparse's UMFPack component:
-#
-#    :code:`find_package(SuiteSparse OPTIONAL_COMPONENTS UMFPACK)`
-#
-#    `OPTIONAL_COMPONENTS`
-#       A list of components. Components are:
-#       AMD, BTF, CAMD, CCOLAMD, CHOLMOD, COLAMD, CXSPARSE,
-#       KLU, LDL, RBIO, SPQR, UMFPACK
-#
-#    :ref:`SuiteSparse_ROOT`
-#       Path list to search for SuiteSparse
-#
-#    Sets the following variables:
-#
-#    :code:`SuiteSparse_FOUND`
-#       True if SuiteSparse was found.
-#
-#    :code:`SuiteSparse_INCLUDE_DIRS`
-#       Path to the SuiteSparse include dirs.
-#
-#    :code:`SuiteSparse_LIBRARIES`
-#       Name of the SuiteSparse libraries.
-#
-#    :code:`SuiteSparse_<COMPONENT>_FOUND`
-#       Whether <COMPONENT> was found as part of SuiteSparse.
-#
-# .. cmake_variable:: SuiteSparse_ROOT
-#
-#   You may set this variable to have :ref:`FindSuiteSparse` look
-#   for SuiteSparse in the given path before inspecting
-#   system paths.
-#
+#[=======================================================================[.rst:
+FindGMP
+-------
+
+Find the SuiteSparse libraries like UMFPACK or SPQR.
+
+Use this module by invoking find_package with the form:
+
+  find_package(SuiteSparse
+    [<version>] [EXACT]    # Minimum or EXACT version e.g. 5.1
+    [REQUIRED]             # Fail with error if Boost is not found
+    [COMPONENTS <libs>...] # SuiteSparse libraries by their canonical name
+                           # e.g. "UMFPACK" or "SPQR"
+    [OPTIONAL_COMPONENTS <libs>...]
+                           # Optional SuiteSparse libraries by their canonical name
+    )                      # e.g. "UMFPACK" or "SPQR"
+
+Components
+^^^^^^^^^^
+
+The SuiteSparse module allows to search for the following components
+
+``UMFPACK``
+  Multifrontal LU factorization.
+``CHOLMOD``
+  Supernodal Cholesky factorization.
+``SPQR``
+  Multifrontal QR factorization.
+``KLU`` or ``BTF``
+  Sparse LU factorization, well-suited for circuit simulation.
+
+And ordering methods: ``AMD``, ``CAMD``, ``COLAMD``, and ``CCOLAMD``.
+
+Imported Targets
+^^^^^^^^^^^^^^^^
+
+This module provides the following imported targets, if found:
+
+``SuiteSparse::SuiteSparse``
+  A meta library including all the found components.
+``SuiteSparse::<COMPONENT>``
+  Library and include directories for the found ``<COMPONENT>``.
+
+Result Variables
+^^^^^^^^^^^^^^^^
+
+This will define the following variables:
+
+``SuiteSparse_FOUND``
+  True if all the components are found
+``SuiteSparse_<COMPONENT>_FOUND``
+  True if a searched ``<COMPONENT>`` is found
+
+Cache Variables
+^^^^^^^^^^^^^^^
+
+You may set the following variables to modify the behaviour of
+this module:
+
+``SUITESPARSE_INCLUDE_DIR``
+  The directory containing ``SuiteSparse_config.h``.
+``SUITESPARSE_CONFIG_LIB``
+  The path to the suitesparseconfig library.
+
+#]=======================================================================]
 
 # text for feature summary
 include(FeatureSummary)
