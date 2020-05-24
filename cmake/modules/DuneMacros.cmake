@@ -602,12 +602,6 @@ endmacro(dune_process_dependency_macros)
 # depedencies.
 # Don't forget to call finalize_dune_project afterwards.
 macro(dune_project)
-  # check whether a compiler name instead of compiler path is given, this causes serious problems with older cmake versions.
-  # Unfortunately those errors only surface on a second run, when the build directory already exists. The compiler
-  # variable is then (for obscure reasons) expanded to ${CMAKE_BINARY_DIR}/...
-  if((${CMAKE_CXX_COMPILER} MATCHES "${CMAKE_BINARY_DIR}.*") AND (${CMAKE_VERSION} VERSION_LESS "3.0"))
-    message(FATAL_ERROR "You need to specify an absolute path to your compiler instead of just the compiler name. cmake >= 3.0 fixes this issue.")
-  endif()
 
   # check if CXX flag overloading has been enabled (see OverloadCompilerFlags.cmake)
   initialize_compiler_script()
