@@ -65,11 +65,14 @@ find_library(PARMETIS_LIBRARY ${PARMETIS_LIB_NAME})
 
 # If PARMETIS_LIB_NAME contains "ptscotch", link against PTScotch library
 string(FIND PARMETIS_LIB_NAME "ptscotch" PARMETIS_NEEDS_PTSCOTCH)
-if(PARMETIS_NEEDS_PTSCOTCH)
-  find_package(PTScotch QUIET)
+if(NOT PARMETIS_NEEDS_PTSCOTCH EQUAL -1)
+  include(CMakeFindDependencyMacro)
+  find_dependency(PTScotch)
+  set(PARMETIS_NEEDS_PTSCOTCH TRUE)
   set(PARMETIS_HAS_PTSCOTCH ${PTScotch_FOUND})
 else()
-  set(PARMETIS_HAS_PTSCOTCH 1)
+  set(PARMETIS_NEEDS_PTSCOTCH FALSE)
+  set(PARMETIS_HAS_PTSCOTCH TRUE)
 endif()
 
 mark_as_advanced(PARMETIS_INCLUDE_DIR PARMETIS_LIBRARY PARMETIS_LIB_NAME
