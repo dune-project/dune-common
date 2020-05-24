@@ -24,10 +24,14 @@ The SuiteSparse module allows to search for the following components
   Supernodal Cholesky factorization.
 ``CSparse`` and ``CXSparse``
   A Concise Sparse Matrix package.
+``GraphBLAS``
+  Graph algorithms and primitives using semiring algebra. (SuiteSparse >= 5.6)
 ``KLU`` and ``BTF``
   Sparse LU factorization, well-suited for circuit simulation.
 ``LDL``
   A sparse LDL' factorization and solve package.
+``Mongoose``
+  A graph partitioning library. (SuiteSparse >= 5.5)
 ``SPQR``
   Multifrontal QR factorization.
 ``UMFPACK``
@@ -83,12 +87,26 @@ set_package_properties("SuiteSparse" PROPERTIES
 
 # find package dependencies first
 include(CMakeFindDependencyMacro)
+find_dependency(LAPACK)
 find_dependency(BLAS)
 
 # list of possible component names
 set(SUITESPARSE_COMPONENTS
   "AMD" "BTF" "CAMD" "CCOLAMD" "CHOLMOD" "COLAMD"
   "CSparse" "CXSparse" "KLU" "LDL" "SPQR" "UMFPACK")
+
+# Define required and optional component dependencies
+set(SUITESPARSE_CHOLDMOD_REQUIRED_DEPENDENCIES "AMD" "COLAMD" "CCOLAMD")
+set(SUITESPARSE_CHOLDMOD_REQUIRES_BLAS TRUE)
+set(SUITESPARSE_CHOLDMOD_REQUIRES_LAPACK TRUE)
+set(SUITESPARSE_KLU_REQUIRED_DEPENDENCIES "AMD" "COLAMD" "BTF")
+set(SUITESPARSE_KLU_OPTIONAL_DEPENDENCIES "CHOLMOD" "CAMD" "CCOLAMD")
+set(SUITESPARSE_SPQR_REQUIRED_DEPENDENCIES "CHOLMOD" "AMD" "COLAMD")
+set(SUITESPARSE_SPQR_REQUIRES_BLAS TRUE)
+set(SUITESPARSE_SPQR_REQUIRES_LAPACK TRUE)
+set(SUITESPARSE_UMFPACK_REQUIRED_DEPENDENCIES "AMD")
+set(SUITESPARSE_UMFPACK_OPTIONAL_DEPENDENCIES "CHOLMOD" "CAMD" "CCOLAMD" "COLAMD")
+set(SUITESPARSE_UMFPACK_REQUIRES_BLAS TRUE)
 
 # look for library suitesparseconfig
 find_library(SUITESPARSE_CONFIG_LIB "suitesparseconfig"
@@ -119,10 +137,18 @@ foreach(_component ${SUITESPARSE_COMPONENTS})
   mark_as_advanced(${_component}_INCLUDE_DIR ${_component}_LIBRARY)
 endforeach()
 
-# Look for the header file of SPQR the has different header file name SuiteSparseQR.hpp
+# Look for the header files the have different header file names
 find_path(SPQR_INCLUDE_DIR "SuiteSparseQR.hpp"
   HINTS ${SUITESPARSE_INCLUDE_DIR}
   PATH_SUFFIXES "suitesparse" "include" "SPQR/Include"
+)
+find_path(Mongoose_INCLUDE_DIR "Mongoose.hpp"
+  HINTS ${SUITESPARSE_INCLUDE_DIR}
+  PATH_SUFFIXES "suitesparse" "include" "Mongoose/Include"
+)
+find_path(GraphBLAS_INCLUDE_DIR "GraphBLAS.h"
+  HINTS ${SUITESPARSE_INCLUDE_DIR}
+  PATH_SUFFIXES "suitesparse" "include" "GraphBLAS/Include"
 )
 
 # check version of SuiteSparse
@@ -157,21 +183,16 @@ foreach(_component ${SUITESPARSE_COMPONENTS})
   else()
     set(SuiteSparse_${_component}_FOUND FALSE)
   endif()
-endforeach()
+endforeach(_component)
 
-# CHOLMOD requires AMD, COLAMD; CAMD and CCOLAMD are optional
-if(CHOLMOD_LIBRARY)
-  if(NOT (AMD_LIBRARY AND COLAMD_LIBRARY))
-    set(SuiteSparse_CHOLMOD_FOUND FALSE)
-  endif()
-endif()
-
-# UMFPack requires AMD, can depend on CHOLMOD
-if(UMFPACK_LIBRARY)
-  if(NOT (AMD_LIBRARY OR CHOLMOD_LIBRARY))
-    set(SuiteSparse_UMFPACK_FOUND FALSE)
-  endif()
-endif()
+# test for required dependencies
+foreach(_component ${SUITESPARSE_COMPONENTS})
+  foreach(_dependency ${SUITESPARSE_${_component}_REQUIRED_DEPENDENCIES})
+    if(NOT SuiteSparse_${_dependency}_FOUND)
+      set(SuiteSparse_${_component}_FOUND FALSE)
+    endif()
+  endforeach(_dependency)
+endforeach(_component)
 
 # SPQR requires SuiteSparse >= 4.3
 if(SPQR_LIBRARY)
@@ -191,8 +212,8 @@ find_package_handle_standard_args("SuiteSparse"
   HANDLE_COMPONENTS
 )
 
-
-# if both headers and library are found, store results
+# if both headers and library for all required components are found,
+# then create imported targets for all components
 if(SuiteSparse_FOUND)
   if(NOT TARGET SuiteSparse::SuiteSparse_config)
     add_library(SuiteSparse::SuiteSparse_config UNKNOWN IMPORTED)
@@ -200,15 +221,6 @@ if(SuiteSparse_FOUND)
       IMPORTED_LOCATION ${SUITESPARSE_CONFIG_LIB}
       INTERFACE_INCLUDE_DIRECTORIES ${SUITESPARSE_INCLUDE_DIR}
     )
-
-    # Link against BLAS
-    if(TARGET BLAS::BLAS)
-      target_link_libraries(SuiteSparse::SuiteSparse_config
-        INTERFACE BLAS::BLAS)
-    else()
-      target_link_libraries(SuiteSparse::SuiteSparse_config
-        INTERFACE ${BLAS_LINKER_FLAGS} ${BLAS_LIBRARIES})
-    endif()
   endif()
 
   # Define component imported-targets
@@ -223,22 +235,43 @@ if(SuiteSparse_FOUND)
     endif()
   endforeach(_component)
 
-  # Dependencies for component CHOLMOD
-  if(SuiteSparse_CHOLMOD_FOUND)
-    target_link_libraries(SuiteSparse::CHOLMOD INTERFACE
-      SuiteSparse::AMD
-      SuiteSparse::COLAMD
-      $<$<BOOL:${SuiteSparse_CAMD_FOUND}>:SuiteSparse::CAMD>
-      $<$<BOOL:${SuiteSparse_CCOLAMD_FOUND}>:SuiteSparse::CCOLAMD>
-    )
-  endif()
+  foreach(_component ${SUITESPARSE_COMPONENTS})
+    # Link required dependencies
+    foreach(_dependency ${SUITESPARSE_${_component}_REQUIRED_DEPENDENCIES})
+      target_link_libraries(SuiteSparse::${_component}
+        INTERFACE SuiteSparse::${_dependency})
+    endforeach(_dependency)
 
-  # Dependencies for component UMFPACK
-  if(SuiteSparse_UMFPACK_FOUND)
-    target_link_libraries(SuiteSparse::UMFPACK INTERFACE
-      $<IF:$<BOOL:${SuiteSparse_CHOLMOD_FOUND}>,SuiteSparse::CHOLMOD,SuiteSparse::AMD>
-    )
-  endif()
+    # Link optional dependencies
+    foreach(_dependency ${SUITESPARSE_${_component}_OPTIONAL_DEPENDENCIES})
+      if(SuiteSparse_${_dependency}_FOUND)
+        target_link_libraries(SuiteSparse::${_component}
+          INTERFACE SuiteSparse::${_dependency})
+      endif()
+    endforeach(_dependency)
+
+    # Link BLAS library
+    if(SUITESPARSE_${_component}_REQUIRES_BLAS)
+      if(TARGET BLAS::BLAS)
+        target_link_libraries(SuiteSparse::${_component}
+          INTERFACE BLAS::BLAS)
+      else()
+        target_link_libraries(SuiteSparse::${_component}
+          INTERFACE ${BLAS_LINKER_FLAGS} ${BLAS_LIBRARIES})
+      endif()
+    endif()
+
+    # Link LAPACK library
+    if(SUITESPARSE_${_component}_REQUIRES_LAPACK)
+      if(TARGET LAPACK::LAPACK)
+        target_link_libraries(SuiteSparse::${_component}
+          INTERFACE LAPACK::LAPACK)
+      else()
+        target_link_libraries(SuiteSparse::${_component}
+          INTERFACE ${LAPACK_LINKER_FLAGS} ${LAPACK_LIBRARIES})
+      endif()
+    endif()
+  endforeach(_component)
 
   # Combine all requested components to an imported target
   if(NOT TARGET SuiteSparse::SuiteSparse)
