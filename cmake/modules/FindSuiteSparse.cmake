@@ -1,6 +1,6 @@
 #[=======================================================================[.rst:
-FindGMP
--------
+FindSuiteSparse
+---------------
 
 Find the SuiteSparse libraries like UMFPACK or SPQR.
 
