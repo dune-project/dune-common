@@ -240,14 +240,14 @@ if(SuiteSparse_FOUND)
     )
   endif()
 
-  # Combine all SuiteSparse components to all-target
+  # Combine all requested components to an imported target
   if(NOT TARGET SuiteSparse::SuiteSparse)
     add_library(SuiteSparse::SuiteSparse INTERFACE IMPORTED)
     set_target_properties(SuiteSparse::SuiteSparse PROPERTIES
       INTERFACE_LINK_LIBRARIES SuiteSparse::SuiteSparse_config
     )
   endif()
-  foreach(_component ${SUITESPARSE_COMPONENTS})
+  foreach(_component ${SuiteSparse_FIND_COMPONENTS})
     if(SuiteSparse_${_component}_FOUND)
       target_link_libraries(SuiteSparse::SuiteSparse
         INTERFACE SuiteSparse::${_component})
