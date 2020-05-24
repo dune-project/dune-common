@@ -5,7 +5,6 @@ install(FILES
   AddPTScotchFlags.cmake
   AddQuadMathFlags.cmake
   AddSuiteSparseFlags.cmake
-  AddUMFPackFlags.cmake
   AddVcFlags.cmake
   CheckCXXFeatures.cmake
   CMakeBuiltinFunctionsDocumentation.cmake
@@ -45,7 +44,6 @@ install(FILES
   FindSphinx.cmake
   FindSuiteSparse.cmake
   FindTBB.cmake
-  FindUMFPack.cmake
   Headercheck.cmake
   latexmkrc.cmake
   OverloadCompilerFlags.cmake
