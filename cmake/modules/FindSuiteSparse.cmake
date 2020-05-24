@@ -8,12 +8,12 @@ Use this module by invoking find_package with the form:
 
   find_package(SuiteSparse
     [<version>] [EXACT]    # Minimum or EXACT version e.g. 5.1
-    [REQUIRED]             # Fail with error if Boost is not found
+    [REQUIRED]             # Fail with error if SuiteSparse is not found
     [COMPONENTS <libs>...] # SuiteSparse libraries by their canonical name
                            # e.g. "UMFPACK" or "SPQR"
     [OPTIONAL_COMPONENTS <libs>...]
                            # Optional SuiteSparse libraries by their canonical name
-    )                      # e.g. "UMFPACK" or "SPQR"
+  )                        # e.g. "UMFPACK" or "SPQR"
 
 Components
 ^^^^^^^^^^
