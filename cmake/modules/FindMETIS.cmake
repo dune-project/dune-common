@@ -67,11 +67,14 @@ endif()
 
 # If METIS_LIB_NAME contains "scotch", link against PTScotch library
 string(FIND METIS_LIB_NAME "scotch" METIS_NEEDS_SCOTCH)
-if(METIS_NEEDS_SCOTCH)
-  find_package(PTScotch QUIET)
+if(NOT METIS_NEEDS_SCOTCH EQUAL -1)
+  include(CMakeFindDependencyMacro)
+  find_dependency(PTScotch)
+  set(METIS_NEEDS_SCOTCH TRUE)
   set(METIS_HAS_SCOTCH ${PTScotch_FOUND})
 else()
-  set(METIS_HAS_SCOTCH 1)
+  set(METIS_NEEDS_SCOTCH FALSE)
+  set(METIS_HAS_SCOTCH TRUE)
 endif()
 
 mark_as_advanced(METIS_INCLUDE_DIR METIS_LIBRARY METIS_LIB_NAME
