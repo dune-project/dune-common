@@ -3,11 +3,13 @@
 #ifndef DUNE_LCM_HH
 #define DUNE_LCM_HH
 
+#warning "This header is deprecated and will be removed after release 2.8. Use std::lcm instead."
+
 /** \file
  * \brief Statically compute the least common multiple of two integers
  */
 
-#include <dune/common/gcd.hh>
+#include <numeric>
 
 namespace Dune
 {
@@ -26,7 +28,7 @@ namespace Dune
    * @brief Calculate the least common multiple of two numbers
    */
   template<long m, long n>
-  struct Lcm
+  struct [[deprecated("Will be removed after Dune 2.8. Use std::lcm instead.")]] Lcm
   {
     static void conceptCheck()
     {
@@ -37,7 +39,7 @@ namespace Dune
      * @brief The least common multiple of the template parameters
      * m and n.
      */
-    const static long value = (m/Gcd<m,n>::value)*n;
+    constexpr static long value = std::lcm(m,n);
   };
 }
 

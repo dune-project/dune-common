@@ -203,9 +203,6 @@ dune_add_test(SOURCES genericiterator_compile_fail.cc
               EXPECT_COMPILE_FAIL
               LABELS quick)
 
-dune_add_test(SOURCES gcdlcmtest.cc
-              LABELS quick)
-
 dune_add_test(SOURCES hybridutilitiestest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
