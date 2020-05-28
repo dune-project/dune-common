@@ -7,7 +7,7 @@
  * \brief An stl-compliant pool allocator
  */
 
-#include "lcm.hh"
+#include <numeric>
 #include <typeinfo>
 #include <iostream>
 #include <cassert>
@@ -123,7 +123,7 @@ namespace Dune
        * @brief The alignment that suits both the MemberType and
        * the Reference (i.e. their least common multiple).
        */
-      alignment = Lcm<alignof(MemberType), alignof(Reference)>::value,
+      alignment = std::lcm(alignof(MemberType), alignof(Reference)),
 
       /**
        * @brief The aligned size of the type.
