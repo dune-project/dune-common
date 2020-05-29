@@ -8,7 +8,7 @@ Use this module by invoking find_package with the form:
 
   find_package(SuiteSparse
     [<version>] [EXACT]    # Minimum or EXACT version e.g. 5.1
-    [REQUIRED]             # Fail with error if Boost is not found
+    [REQUIRED]             # Fail with error if SuiteSparse is not found
     [COMPONENTS <libs>...] # SuiteSparse libraries by their canonical name
                            # e.g. "UMFPACK" or "SPQR"
     [OPTIONAL_COMPONENTS <libs>...]
@@ -45,10 +45,9 @@ Imported Targets
 This module provides the following imported targets, if found:
 
 ``SuiteSparse::SuiteSparse``
-  A meta library including all the found components.
-``SuiteSparse::<component>``
-  Library and include directories for the found ``<component>``.
-  Spelling of the component is always lowercase.
+  A meta library including all the requested optional or required components.
+``SuiteSparse::<COMPONENT>``
+  Library and include directories for the found ``<COMPONENT>``.
 
 Result Variables
 ^^^^^^^^^^^^^^^^
@@ -56,12 +55,12 @@ Result Variables
 This will define the following variables:
 
 ``SuiteSparse_FOUND``
-  True if all the components are found
+  True if all the (required) components are found
 ``SuiteSparse_<COMPONENT>_FOUND``
   True if a searched ``<COMPONENT>`` is found
 
-Cache Variables
-^^^^^^^^^^^^^^^
+Input and Cache Variables
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You may set the following variables to modify the behaviour of
 this module:
@@ -137,7 +136,7 @@ foreach(_component ${SUITESPARSE_COMPONENTS})
   mark_as_advanced(${_component}_INCLUDE_DIR ${_component}_LIBRARY)
 endforeach()
 
-# Look for the header files the have different header file names
+# Look for the header files that have different header file names
 find_path(SPQR_INCLUDE_DIR "SuiteSparseQR.hpp"
   HINTS ${SUITESPARSE_INCLUDE_DIR}
   PATH_SUFFIXES "suitesparse" "include" "SPQR/Include"
@@ -242,7 +241,7 @@ if(SuiteSparse_FOUND)
         INTERFACE SuiteSparse::${_dependency})
     endforeach(_dependency)
 
-    # Link optional dependencies
+    # Link found optional dependencies
     foreach(_dependency ${SUITESPARSE_${_component}_OPTIONAL_DEPENDENCIES})
       if(SuiteSparse_${_dependency}_FOUND)
         target_link_libraries(SuiteSparse::${_component}
@@ -276,9 +275,8 @@ if(SuiteSparse_FOUND)
   # Combine all requested components to an imported target
   if(NOT TARGET SuiteSparse::SuiteSparse)
     add_library(SuiteSparse::SuiteSparse INTERFACE IMPORTED)
-    set_target_properties(SuiteSparse::SuiteSparse PROPERTIES
-      INTERFACE_LINK_LIBRARIES SuiteSparse::SuiteSparse_config
-    )
+    target_link_libraries(SuiteSparse::SuiteSparse
+      INTERFACE SuiteSparse::SuiteSparse_config)
   endif()
   foreach(_component ${SuiteSparse_FIND_COMPONENTS})
     if(SuiteSparse_${_component}_FOUND)
@@ -286,15 +284,4 @@ if(SuiteSparse_FOUND)
         INTERFACE SuiteSparse::${_component})
     endif()
   endforeach(_component)
-endif()
-
-# set HAVE_SUITESPARSE for config.h
-set(HAVE_SUITESPARSE ${SuiteSparse_FOUND})
-set(HAVE_UMFPACK ${SuiteSparse_UMFPACK_FOUND})
-
-# register all SuiteSparse related flags
-if(SuiteSparse_FOUND)
-  dune_register_package_flags(
-    COMPILE_DEFINITIONS "ENABLE_SUITESPARSE=1"
-    LIBRARIES "SuiteSparse::SuiteSparse")
 endif()
