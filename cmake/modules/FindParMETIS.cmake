@@ -44,8 +44,9 @@ set_package_properties("ParMETIS" PROPERTIES
 )
 
 # find package dependencies first
-find_package(METIS)
-find_package(MPI)
+include(CMakeFindDependencyMacro)
+find_dependency(METIS)
+find_dependency(MPI)
 
 find_path(PARMETIS_INCLUDE_DIR parmetis.h
   PATH_SUFFIXES include parmetis
