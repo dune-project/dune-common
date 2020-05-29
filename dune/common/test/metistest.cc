@@ -3,13 +3,31 @@
 #include <vector>
 
 #if ! HAVE_METIS
-  #error "METIS is required for this test"
+#error "METIS is required for this test"
+#endif
+
+#if HAVE_PTSCOTCH
+#include <scotch.h>
 #endif
 
 #include <metis.h>
 
 int main()
 {
+#if defined(REALTYPEWIDTH)
+  using real_t = ::real_t;
+#else
+  using real_t = float;
+#endif
+
+#if defined(IDXTYPEWIDTH)
+  using idx_t = ::idx_t;
+#elif defined(SCOTCH_METIS_PREFIX)
+  using idx_t = SCOTCH_Num;
+#else
+  using idx_t = int;
+#endif
+
   idx_t nVertices = 6;
   idx_t nWeights  = 1;
   idx_t nParts    = 2;
