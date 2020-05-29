@@ -46,9 +46,7 @@ set_package_properties("METIS" PROPERTIES
 # Try to locate METIS header
 find_path(METIS_INCLUDE_DIR metis.h
   PATH_SUFFIXES metis include include/metis Lib METISLib
-  NO_DEFAULT_PATH)
-find_path(METIS_INCLUDE_DIR metis.h
-  PATH_SUFFIXES metis include include/metis Lib METISLib)
+  HINTS ${METIS_DIR})
 
 # Set a name of the METIS library. This is typically `metis` or `scotchmetis`
 set(METIS_LIB_NAME metis
@@ -56,11 +54,10 @@ set(METIS_LIB_NAME metis
 
 find_library(METIS_LIBRARY ${METIS_LIB_NAME}
   PATH_SUFFIXES lib
-  NO_DEFAULT_PATH)
-find_library(METIS_LIBRARY ${METIS_LIB_NAME}
-  PATH_SUFFIXES lib)
+  HINTS ${METIS_DIR})
 
-# we need to check whether we need to link m, copy the lazy solution from FindBLAS and FindLAPACK here.
+# we need to check whether we need to link m, copy the lazy solution
+# from FindBLAS and FindLAPACK here.
 if(METIS_LIBRARY AND NOT WIN32)
   set(METIS_NEEDS_LIBM 1)
 endif()
@@ -116,10 +113,4 @@ if(METIS_FOUND AND NOT TARGET METIS::METIS)
     $<$<BOOL:${METIS_NEEDS_LIBM}>:m>
     $<$<BOOL:${METIS_NEEDS_SCOTCH}>:PTScotch::Scotch>
   )
-endif()
-
-# register all METIS related flags
-set(HAVE_METIS ${METIS_FOUND})
-if(METIS_FOUND)
-  dune_register_package_flags(LIBRARIES "METIS::METIS")
 endif()
