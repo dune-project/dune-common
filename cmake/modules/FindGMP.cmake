@@ -94,12 +94,3 @@ if(GMP_FOUND)
     )
   endif()
 endif()
-
-# register all GMP related flags
-set(HAVE_GMP ${GMP_FOUND})
-if(GMP_FOUND)
-  dune_register_package_flags(
-    COMPILE_DEFINITIONS "ENABLE_GMP=1"
-    LIBRARIES "GMP::gmpxx"
-  )
-endif()
