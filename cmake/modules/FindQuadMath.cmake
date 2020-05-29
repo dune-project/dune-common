@@ -37,6 +37,9 @@ include(CheckCXXSourceCompiles)
 include(CMakePushCheckState)
 cmake_push_check_state()
 set(CMAKE_REQUIRED_LIBRARIES quadmath)
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
+  set(CMAKE_REQUIRED_FLAGS "-fext-numeric-literals")
+endif()
 check_cxx_source_compiles("
 #include <quadmath.h>
 
@@ -57,7 +60,7 @@ endif()
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(QuadMath
   DEFAULT_MSG
-  QuadMath_VAR QuadMath_HEADER QuadMath_COMPILES
+  QuadMath_VAR QuadMath_COMPILES
 )
 
 # add imported target for quadmath
