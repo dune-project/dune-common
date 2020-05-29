@@ -3,13 +3,32 @@
 #include <vector>
 
 #if ! HAVE_PARMETIS
-  #error "ParMETIS is required for this test."
+#error "ParMETIS is required for this test."
 #endif
 
+#if HAVE_PTSCOTCH
+#include <ptscotch.h>
+#endif
+
+#include <mpi.h>
 #include <parmetis.h>
 
 int main(int argc, char **argv)
 {
+#if defined(REALTYPEWIDTH)
+  using real_t = ::real_t;
+#else
+  using real_t = float;
+#endif
+
+#if defined(IDXTYPEWIDTH)
+  using idx_t = ::idx_t;
+#elif defined(SCOTCH_METIS_PREFIX)
+  using idx_t = SCOTCH_Num;
+#else
+  using idx_t = int;
+#endif
+
   MPI_Init(&argc, &argv);
 
   MPI_Comm comm;
