@@ -10,19 +10,23 @@
 #       A list of targets to use QuadMath with.
 #
 
+# set HAVE_QUADMATH for config.h
+set(HAVE_QUADMATH ${QuadMath_FOUND})
 
+# register the QuadMath imported target
+if(QuadMath_FOUND)
+  dune_register_package_flags(
+    LIBRARIES QuadMath::QuadMath
+    COMPILE_DEFINITIONS "ENABLE_QUADMATH=1"
+  )
+endif()
+
+# add function to link against QuadMath::QuadMath
 function(add_dune_quadmath_flags _targets)
-  if(QUADMATH_FOUND)
+  if(QuadMath_FOUND)
     foreach(_target ${_targets})
-      target_link_libraries(${_target} "quadmath")
-      set_property(TARGET ${_target}
-        APPEND_STRING
-        PROPERTY COMPILE_FLAGS "-DENABLE_QUADMATH=1 -D_GLIBCXX_USE_FLOAT128=1 ")
-      if(${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
-        set_property(TARGET ${_target}
-          APPEND_STRING
-          PROPERTY COMPILE_FLAGS "-fext-numeric-literals ")
-      endif()
+      target_link_libraries(${_target} QuadMath::QuadMath)
+      target_compile_definitions(${_target} "ENABLE_QUADMATH=1")
     endforeach(_target ${_targets})
-  endif(QUADMATH_FOUND)
+  endif()
 endfunction(add_dune_quadmath_flags)
