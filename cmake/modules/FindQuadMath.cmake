@@ -66,12 +66,11 @@ find_package_handle_standard_args(QuadMath
 # add imported target for quadmath
 if(QuadMath_FOUND AND NOT TARGET QuadMath::QuadMath)
   # Compiler supports QuadMath: Add appropriate linker flag
-  add_library(QuadMath::QuadMath INTERFACE IMPORTED)
-  target_link_libraries(QuadMath::QuadMath INTERFACE quadmath)
+  add_library(QuadMath::QuadMath UNKNOWN IMPORTED)
+  set_target_properties(QuadMath::QuadMath PROPERTY
+    IMPORTED_LOCATION quadmath
+    INTERFACE_COMPILE_DEFINITIONS _GLIBCXX_USE_FLOAT128)
 
-  target_compile_definitions(QuadMath::QuadMath INTERFACE
-    _GLIBCXX_USE_FLOAT128
-  )
   target_compile_options(QuadMath::QuadMath INTERFACE
     $<$<CXX_COMPILER_ID:GNU>:-fext-numeric-literals>
   )
