@@ -280,6 +280,7 @@ if(SuiteSparse_FOUND)
   endif()
   foreach(_component ${SuiteSparse_FIND_COMPONENTS})
     if(SuiteSparse_${_component}_FOUND)
+      set(HAVE_SUITESPARSE_${_component} TRUE)
       target_link_libraries(SuiteSparse::SuiteSparse
         INTERFACE SuiteSparse::${_component})
     endif()
