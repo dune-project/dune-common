@@ -67,7 +67,7 @@ find_package_handle_standard_args(QuadMath
 if(QuadMath_FOUND AND NOT TARGET QuadMath::QuadMath)
   # Compiler supports QuadMath: Add appropriate linker flag
   add_library(QuadMath::QuadMath UNKNOWN IMPORTED)
-  set_target_properties(QuadMath::QuadMath PROPERTY
+  set_target_properties(QuadMath::QuadMath PROPERTIES
     IMPORTED_LOCATION quadmath
     INTERFACE_COMPILE_DEFINITIONS _GLIBCXX_USE_FLOAT128)
 
