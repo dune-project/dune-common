@@ -10,6 +10,13 @@
 #       A list of targets to use PTScotch with.
 #
 
+# set HAVE_PTSCOTCH for config.h
+set(HAVE_PTSCOTCH ${PTScotch_FOUND})
+
+# register all PTScotch related flags
+if(PTScotch_FOUND)
+  dune_register_package_flags(LIBRARIES "PTScotch::PTScotch")
+endif()
 
 function(add_dune_ptscotch_flags _targets)
   if(PTSCOTCH_FOUND)

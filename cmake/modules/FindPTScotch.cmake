@@ -96,6 +96,31 @@ _find_ptscotch_library(PTSCOTCHERR_LIBRARY ptscotcherr)
 mark_as_advanced(SCOTCH_INCLUDE_DIR SCOTCH_LIBRARY SCOTCHERR_LIBRARY
                  PTSCOTCH_INCLUDE_DIR PTSCOTCH_LIBRARY PTSCOTCHERR_LIBRARY)
 
+# check version of (PT)Scotch
+find_file(SCOTCH_HEADER "scotch.h"
+  HINTS ${SCOTCH_INCLUDE_DIR}
+  NO_DEFAULT_PATH)
+if(SCOTCH_HEADER)
+  file(READ "${SCOTCH_HEADER}" scotchheader)
+  string(REGEX REPLACE ".*#define SCOTCH_VERSION[ ]+([0-9]+).*" "\\1"
+    SCOTCH_MAJOR_VERSION  "${scotchheader}")
+  string(REGEX REPLACE ".*#define SCOTCH_RELEASE[ ]+([0-9]+).*" "\\1"
+    SCOTCH_MINOR_VERSION  "${scotchheader}")
+  string(REGEX REPLACE ".*#define SCOTCH_PATCHLEVEL[ ]+([0-9]+).*" "\\1"
+    SCOTCH_PREFIX_VERSION "${scotchheader}")
+  if(SCOTCH_MAJOR_VERSION GREATER_EQUAL 0)
+    set(PTScotch_VERSION "${SCOTCH_MAJOR_VERSION}")
+  endif()
+  if (SCOTCH_MINOR_VERSION GREATER_EQUAL 0)
+    set(PTScotch_VERSION "${PTScotch_VERSION}.${SCOTCH_MINOR_VERSION}")
+  endif()
+  if (SCOTCH_PREFIX_VERSION GREATER_EQUAL 0)
+    set(PTScotch_VERSION "${PTScotch_VERSION}.${SCOTCH_PREFIX_VERSION}")
+  endif()
+endif()
+unset(SCOTCH_HEADER CACHE)
+
+
 # behave like a CMake module is supposed to behave
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args("PTScotch"
@@ -103,6 +128,8 @@ find_package_handle_standard_args("PTScotch"
     SCOTCH_LIBRARY SCOTCHERR_LIBRARY SCOTCH_INCLUDE_DIR
     PTSCOTCH_LIBRARY PTSCOTCHERR_LIBRARY PTSCOTCH_INCLUDE_DIR
     MPI_FOUND
+  VERSION_VAR
+    PTScotch_VERSION
 )
 
 if(PTScotch_FOUND)
@@ -127,9 +154,4 @@ if(PTScotch_FOUND)
     target_link_libraries(PTScotch::PTScotch
       INTERFACE PTScotch::Scotch MPI::MPI_CXX)
   endif()
-endif()
-
-set(HAVE_PTSCOTCH ${PTScotch_FOUND})
-if(PTScotch_FOUND)
-  dune_register_package_flags(LIBRARIES "PTScotch::PTScotch")
 endif()
