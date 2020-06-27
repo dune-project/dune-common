@@ -29,11 +29,12 @@ The following variables may be set to influence this module's behavior:
 ``METIS_INCLUDE_DIR``
   Include directory of METIS
 
-``METIS_LIB_NAME``
-  Name of the METIS library (default: metis)
-
 ``METIS_LIBRARY``
   Full path to the METIS library
+
+``ENABLE_SCOTCH_METIS``
+  Use the Scotch library as METIS compatibility library. This library provides a METIS-4
+  interface of some METIS library functions.
 
 #]=======================================================================]
 
@@ -42,6 +43,8 @@ include(FeatureSummary)
 set_package_properties("METIS" PROPERTIES
   DESCRIPTION "Serial Graph Partitioning"
 )
+
+option(ENABLE_SCOTCH_METIS "Use the Scotch library as METIS compatibility library" FALSE)
 
 # Try to locate METIS header
 find_path(METIS_INCLUDE_DIR metis.h
@@ -52,7 +55,7 @@ find_path(METIS_INCLUDE_DIR metis.h
 set(METIS_LIB_NAME metis
     CACHE STRING "Name of the METIS library (default: metis).")
 
-find_library(METIS_LIBRARY ${METIS_LIB_NAME}
+find_library(METIS_LIBRARY metis
   PATH_SUFFIXES lib
   HINTS ${METIS_DIR})
 
@@ -62,20 +65,7 @@ if(METIS_LIBRARY AND NOT WIN32)
   set(METIS_NEEDS_LIBM 1)
 endif()
 
-# If METIS_LIB_NAME contains "scotch", link against PTScotch library
-string(FIND METIS_LIB_NAME "scotch" METIS_NEEDS_SCOTCH)
-if(NOT METIS_NEEDS_SCOTCH EQUAL -1)
-  include(CMakeFindDependencyMacro)
-  find_dependency(PTScotch)
-  set(METIS_NEEDS_SCOTCH TRUE)
-  set(METIS_HAS_SCOTCH ${PTScotch_FOUND})
-else()
-  set(METIS_NEEDS_SCOTCH FALSE)
-  set(METIS_HAS_SCOTCH TRUE)
-endif()
-
-mark_as_advanced(METIS_INCLUDE_DIR METIS_LIBRARY METIS_LIB_NAME
-                 METIS_NEEDS_LIBM METIS_NEEDS_SCOTCH METIS_HAS_SCOTCH)
+mark_as_advanced(METIS_INCLUDE_DIR METIS_LIBRARY METIS_LIB_NAME METIS_NEEDS_LIBM)
 
 # determine version of METIS installation
 find_file(METIS_HEADER_FILE metis.h
@@ -91,11 +81,24 @@ if(METIS_HEADER_FILE)
 endif()
 unset(METIS_HEADER_FILE CACHE)
 
+# If scotch is requested, find package PTScotch and check version compatibility:
+# scotch provides METIS-4 interface only
+set(METIS_DEPENDENCIES_FOUND TRUE)
+if(ENABLE_SCOTCH_METIS)
+  include(CMakeFindDependencyMacro)
+  find_dependency(PTScotch)
+  if(NOT PTScotch_FOUND OR (PACKAGE_FIND_VERSION_MAJOR
+                            AND NOT PACKAGE_FIND_VERSION_MAJOR EQUAL "4"))
+    set(METIS_DEPENDENCIES_FOUND FALSE)
+  endif()
+endif()
+mark_as_advanced(METIS_DEPENDENCIES_FOUND)
+
 # behave like a CMake module is supposed to behave
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args("METIS"
   REQUIRED_VARS
-    METIS_LIBRARY METIS_INCLUDE_DIR METIS_HAS_SCOTCH
+    METIS_LIBRARY METIS_INCLUDE_DIR METIS_DEPENDENCIES_FOUND
   VERSION_VAR
     METIS_VERSION
 )
@@ -109,8 +112,11 @@ if(METIS_FOUND AND NOT TARGET METIS::METIS)
   )
 
   # link against libm amd scotch if needed
-  target_link_libraries(METIS::METIS INTERFACE
-    $<$<BOOL:${METIS_NEEDS_LIBM}>:m>
-    $<$<BOOL:${METIS_NEEDS_SCOTCH}>:PTScotch::Scotch>
-  )
+  if (METIS_NEEDS_LIBM)
+    target_link_libraries(METIS::METIS INTERFACE m)
+  endif ()
+
+  if (ENABLE_SCOTCH_METIS AND PTScotch_FOUND)
+    target_link_libraries(METIS::METIS INTERFACE PTScotch::Scotch)
+  endif ()
 endif()

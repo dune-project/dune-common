@@ -225,9 +225,11 @@ dune_add_test(SOURCES mathclassifierstest.cc
 
 find_package(METIS 5.0)
 dune_add_test(SOURCES metistest.cc
-              LINK_LIBRARIES METIS::METIS
               COMPILE_DEFINITIONS "HAVE_METIS"
               CMAKE_GUARD METIS_FOUND)
+if (METIS_FOUND)
+  target_link_libraries(metistest METIS::METIS)
+endif ()
 
 dune_add_test(SOURCES mpicommunicationtest.cc
               LINK_LIBRARIES dunecommon
