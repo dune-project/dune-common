@@ -52,7 +52,7 @@ int main (int argc, char** argv)
   std::cout << "Number of vertices: " << vertnbr << std::endl;
   std::cout << "Number of edges: " << edgenbr << std::endl;
 
-#if SCOTCH_VERSION >= 6
+#ifdef SCOTCH_STRATDEFAULT
   std::vector<SCOTCH_Num> colotab(vertnbr, 0);
   std::vector<SCOTCH_Num> cnbrtab(vertnbr, 0);
 
