@@ -290,10 +290,12 @@ dune_add_test(SOURCES reservedvectortest.cc
               LABELS quick)
 
 find_package(PTScotch)
+include(AddPTScotchFlags)
 dune_add_test(SOURCES scotchtest.cc
-              LINK_LIBRARIES dunecommon PTScotch::PTScotch
+              LINK_LIBRARIES dunecommon
               CMAKE_GUARD PTScotch_FOUND
               LABELS quick)
+add_dune_ptscotch_flags(scotchtest)
 
 dune_add_test(SOURCES shared_ptrtest.cc
               LABELS quick)
