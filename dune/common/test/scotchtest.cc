@@ -42,9 +42,17 @@ int main (int argc, char** argv)
 
   fclose (fileptr);
 
-  SCOTCH_Num vertnbr = 0;
-  SCOTCH_graphSize (&grafdat, &vertnbr, nullptr);
+  if (SCOTCH_graphCheck (&grafdat) != 0) {
+    DUNE_THROW(Dune::Exception, "graph check failed");
+  }
 
+  SCOTCH_Num vertnbr = 0, edgenbr = 0;
+  SCOTCH_graphSize (&grafdat, &vertnbr, &edgenbr);
+
+  std::cout << "Number of vertices: " << vertnbr << std::endl;
+  std::cout << "Number of edges: " << edgenbr << std::endl;
+
+#if SCOTCH_VERSION >= 6
   std::vector<SCOTCH_Num> colotab(vertnbr, 0);
   std::vector<SCOTCH_Num> cnbrtab(vertnbr, 0);
 
@@ -61,6 +69,7 @@ int main (int argc, char** argv)
 
   for (SCOTCH_Num colonum = 0; colonum < colonbr; colonum++)
     std::cout << "Color " << colonum << ": " << cnbrtab[colonum] << std::endl;
+#endif
 
   SCOTCH_graphExit (&grafdat);
 
