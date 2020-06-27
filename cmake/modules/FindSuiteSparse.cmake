@@ -1,281 +1,288 @@
-# .. cmake_module::
-#
-#    Find the SuiteSparse libraries like UMFPACK or SPQR.
-#
-#    Example which tries to find Suite Sparse's UMFPack component:
-#
-#    :code:`find_package(SuiteSparse OPTIONAL_COMPONENTS UMFPACK)`
-#
-#    `OPTIONAL_COMPONENTS`
-#       A list of components. Components are:
-#       AMD, BTF, CAMD, CCOLAMD, CHOLMOD, COLAMD, CXSPARSE,
-#       KLU, LDL, RBIO, SPQR, UMFPACK
-#
-#    :ref:`SuiteSparse_ROOT`
-#       Path list to search for SuiteSparse
-#
-#    Sets the following variables:
-#
-#    :code:`SuiteSparse_FOUND`
-#       True if SuiteSparse was found.
-#
-#    :code:`SuiteSparse_INCLUDE_DIRS`
-#       Path to the SuiteSparse include dirs.
-#
-#    :code:`SuiteSparse_LIBRARIES`
-#       Name of the SuiteSparse libraries.
-#
-#    :code:`SuiteSparse_<COMPONENT>_FOUND`
-#       Whether <COMPONENT> was found as part of SuiteSparse.
-#
-# .. cmake_variable:: SuiteSparse_ROOT
-#
-#   You may set this variable to have :ref:`FindSuiteSparse` look
-#   for SuiteSparse in the given path before inspecting
-#   system paths.
-#
+#[=======================================================================[.rst:
+FindSuiteSparse
+---------------
 
-find_package(BLAS QUIET)
+Find the SuiteSparse libraries like UMFPACK or SPQR.
 
-# look for desired componenents
-set(SUITESPARSE_COMPONENTS ${SuiteSparse_FIND_COMPONENTS})
+Use this module by invoking find_package with the form:
 
-# resolve inter-component dependencies
-list(FIND SUITESPARSE_COMPONENTS "UMFPACK" WILL_USE_UMFPACK)
-if(NOT WILL_USE_UMFPACK EQUAL -1)
-  list(APPEND SUITESPARSE_COMPONENTS AMD CHOLMOD)
-endif()
-list(FIND SUITESPARSE_COMPONENTS "CHOLMOD" WILL_USE_CHOLMOD)
-if(NOT WILL_USE_CHOLMOD EQUAL -1)
-  list(APPEND SUITESPARSE_COMPONENTS AMD CAMD COLAMD CCOLAMD)
-endif()
+  find_package(SuiteSparse
+    [<version>] [EXACT]    # Minimum or EXACT version e.g. 5.1
+    [REQUIRED]             # Fail with error if SuiteSparse is not found
+    [COMPONENTS <libs>...] # SuiteSparse libraries by their canonical name
+                           # e.g. "UMFPACK" or "SPQR"
+    [OPTIONAL_COMPONENTS <libs>...]
+                           # Optional SuiteSparse libraries by their canonical name
+    )                      # e.g. "UMFPACK" or "SPQR"
 
-if(SUITESPARSE_COMPONENTS)
-  list(REMOVE_DUPLICATES SUITESPARSE_COMPONENTS)
-endif()
+Components
+^^^^^^^^^^
 
-# find SuiteSparse config:
-# look for library at positions given by the user
-find_library(SUITESPARSE_CONFIG_LIB
-  NAMES "suitesparseconfig"
-  PATHS ${SuiteSparse_ROOT}
-  PATH_SUFFIXES "lib" "lib32" "lib64" "Lib"
-  NO_DEFAULT_PATH
+The SuiteSparse module allows to search for the following components
+
+``CHOLMOD``
+  Supernodal Cholesky factorization.
+``CSparse`` and ``CXSparse``
+  A Concise Sparse Matrix package.
+``GraphBLAS``
+  Graph algorithms and primitives using semiring algebra. (SuiteSparse >= 5.6)
+``KLU`` and ``BTF``
+  Sparse LU factorization, well-suited for circuit simulation.
+``LDL``
+  A sparse LDL' factorization and solve package.
+``Mongoose``
+  A graph partitioning library. (SuiteSparse >= 5.5)
+``SPQR``
+  Multifrontal QR factorization.
+``UMFPACK``
+  Multifrontal LU factorization.
+
+And ordering methods: ``AMD``, ``CAMD``, ``COLAMD``, and ``CCOLAMD``.
+
+Imported Targets
+^^^^^^^^^^^^^^^^
+
+This module provides the following imported targets, if found:
+
+``SuiteSparse::SuiteSparse``
+  A meta library including all the requested optional or required components.
+``SuiteSparse::<COMPONENT>``
+  Library and include directories for the found ``<COMPONENT>``.
+
+Result Variables
+^^^^^^^^^^^^^^^^
+
+This will define the following variables:
+
+``SuiteSparse_FOUND``
+  True if all the (required) components are found
+``SuiteSparse_<COMPONENT>_FOUND``
+  True if a searched ``<COMPONENT>`` is found
+
+Input and Cache Variables
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You may set the following variables to modify the behaviour of
+this module:
+
+``SuiteSparse_ROOT``
+  The root directory of the SuiteSparse installation, containing
+  subdirectories :code:`include/` and :code:`lib/` including the
+  header files and libraries of SuiteSparse and its components,
+  respectively.
+``SUITESPARSE_INCLUDE_DIR``
+  The directory containing ``SuiteSparse_config.h``.
+``SUITESPARSE_CONFIG_LIB``
+  The path to the suitesparseconfig library.
+
+#]=======================================================================]
+
+# text for feature summary
+include(FeatureSummary)
+set_package_properties("SuiteSparse" PROPERTIES
+  DESCRIPTION "A suite of sparse matrix software"
+  URL "http://faculty.cse.tamu.edu/davis/suitesparse.html"
 )
-# now also include the default paths
-find_library(SUITESPARSE_CONFIG_LIB
-  NAMES "suitesparseconfig"
-  PATH_SUFFIXES "lib" "lib32" "lib64" "Lib"
+
+# find package dependencies first
+include(CMakeFindDependencyMacro)
+find_dependency(LAPACK)
+find_dependency(BLAS)
+
+# list of possible component names
+set(SUITESPARSE_COMPONENTS
+  "AMD" "BTF" "CAMD" "CCOLAMD" "CHOLMOD" "COLAMD"
+  "CSparse" "CXSparse" "KLU" "LDL" "SPQR" "UMFPACK")
+
+# Define required and optional component dependencies
+set(SUITESPARSE_CHOLDMOD_REQUIRED_DEPENDENCIES "AMD" "COLAMD" "CCOLAMD")
+set(SUITESPARSE_CHOLDMOD_REQUIRES_BLAS TRUE)
+set(SUITESPARSE_CHOLDMOD_REQUIRES_LAPACK TRUE)
+set(SUITESPARSE_KLU_REQUIRED_DEPENDENCIES "AMD" "COLAMD" "BTF")
+set(SUITESPARSE_KLU_OPTIONAL_DEPENDENCIES "CHOLMOD" "CAMD" "CCOLAMD")
+set(SUITESPARSE_SPQR_REQUIRED_DEPENDENCIES "CHOLMOD" "AMD" "COLAMD")
+set(SUITESPARSE_SPQR_REQUIRES_BLAS TRUE)
+set(SUITESPARSE_SPQR_REQUIRES_LAPACK TRUE)
+set(SUITESPARSE_UMFPACK_REQUIRED_DEPENDENCIES "AMD")
+set(SUITESPARSE_UMFPACK_OPTIONAL_DEPENDENCIES "CHOLMOD" "CAMD" "CCOLAMD" "COLAMD")
+set(SUITESPARSE_UMFPACK_REQUIRES_BLAS TRUE)
+
+# look for library suitesparseconfig
+find_library(SUITESPARSE_CONFIG_LIB "suitesparseconfig"
+  PATH_SUFFIXES "SuiteSparse_config"
+)
+# look for header file SuiteSparse_config.h
+find_path(SUITESPARSE_INCLUDE_DIR "SuiteSparse_config.h"
+  PATH_SUFFIXES "suitesparse" "include" "SuiteSparse_config"
 )
 
-#look for header files at positions given by the user
-find_path(SUITESPARSE_INCLUDE_DIR
-  NAMES "SuiteSparse_config.h"
-  PATHS ${SuiteSparse_ROOT}
-  PATH_SUFFIXES "SuiteSparse_config" "SuiteSparse_config/include" "suitesparse" "include" "src" "SuiteSparse_config/Include"
-  NO_DEFAULT_PATH
-)
-#now also look for default paths
-find_path(SUITESPARSE_INCLUDE_DIR
-  NAMES "SuiteSparse_config.h"
-  PATH_SUFFIXES "SuiteSparse_config" "SuiteSparse_config/include" "suitesparse" "include" "src" "SuiteSparse_config/Include"
-)
+get_filename_component(SUITESPARSE_LIB_DIR ${SUITESPARSE_CONFIG_LIB} DIRECTORY)
+mark_as_advanced(SUITESPARSE_INCLUDE_DIR SUITESPARSE_CONFIG_LIB)
 
 foreach(_component ${SUITESPARSE_COMPONENTS})
   string(TOLOWER ${_component} _componentLower)
 
-  #look for library at positions given by the user
-  find_library(${_component}_LIBRARY
-    NAMES "${_componentLower}"
-    PATHS ${SuiteSparse_ROOT}
-    PATH_SUFFIXES "lib" "lib32" "lib64" "${_component}" "${_component}/Lib"
-    NO_DEFAULT_PATH
+  # look for library of the component
+  find_library(${_component}_LIBRARY "${_componentLower}"
+    HINTS ${SUITESPARSE_LIB_DIR}
+    PATH_SUFFIXES "${_component}/Lib"
   )
-  #now also include the default paths
-  find_library(${_component}_LIBRARY
-    NAMES "${_componentLower}"
-    PATH_SUFFIXES "lib" "lib32" "lib64" "${_component}" "${_component}/Lib"
+  # look for header file of the component
+  find_path(${_component}_INCLUDE_DIR "${_componentLower}.h"
+    HINTS ${SUITESPARSE_INCLUDE_DIR}
+    PATH_SUFFIXES "suitesparse" "include" "${_component}/Include"
   )
 
-  #look for header files at positions given by the user
-  find_path(${_component}_INCLUDE_DIR
-    NAMES "${_componentLower}.h"
-    PATHS ${SuiteSparse_ROOT}
-    PATH_SUFFIXES "${_componentLower}" "include/${_componentLower}" "suitesparse" "include" "src" "${_component}" "${_component}/Include"
-    NO_DEFAULT_PATH
-  )
-  #now also look for default paths
-  find_path(${_component}_INCLUDE_DIR
-    NAMES "${_componentLower}.h"
-    PATH_SUFFIXES "${_componentLower}" "include/${_componentLower}" "suitesparse" "include" "${_component}" "${_component}/Include"
-  )
+  mark_as_advanced(${_component}_INCLUDE_DIR ${_component}_LIBRARY)
 endforeach()
 
-# SPQR has different header file name SuiteSparseQR.hpp
-#look for header files at positions given by the user
-find_path(SPQR_INCLUDE_DIR
-  NAMES "SuiteSparseQR.hpp"
-  PATHS ${SuiteSparse_ROOT}
-  PATH_SUFFIXES "spqr" "include/spqr" "suitesparse" "include" "src" "SPQR" "SPQR/Include"
-  NO_DEFAULT_PATH
+# Look for the header files that have different header file names
+find_path(SPQR_INCLUDE_DIR "SuiteSparseQR.hpp"
+  HINTS ${SUITESPARSE_INCLUDE_DIR}
+  PATH_SUFFIXES "suitesparse" "include" "SPQR/Include"
 )
-#now also look for default paths
-find_path(SPQR_INCLUDE_DIR
-  NAMES "SuiteSparseQR.hpp"
-  PATH_SUFFIXES "spqr" "include/spqr" "suitesparse" "include" "SPQR" "SPQR/Include"
+find_path(Mongoose_INCLUDE_DIR "Mongoose.hpp"
+  HINTS ${SUITESPARSE_INCLUDE_DIR}
+  PATH_SUFFIXES "suitesparse" "include" "Mongoose/Include"
+)
+find_path(GraphBLAS_INCLUDE_DIR "GraphBLAS.h"
+  HINTS ${SUITESPARSE_INCLUDE_DIR}
+  PATH_SUFFIXES "suitesparse" "include" "GraphBLAS/Include"
 )
 
-# resolve inter-modular dependencies
-
-# CHOLMOD requires AMD, COLAMD; CAMD and CCOLAMD are optional
-if(CHOLMOD_LIBRARY)
-  if(NOT (AMD_LIBRARY AND COLAMD_LIBRARY))
-    message(WARNING "CHOLMOD requires AMD and COLAMD which were not found, skipping the test.")
-    set(SuiteSparse_CHOLMOD_FOUND "CHOLMOD requires AMD and COLAMD-NOTFOUND")
+# check version of SuiteSparse
+find_file(SUITESPARSE_CONFIG_FILE "SuiteSparse_config.h"
+  HINTS ${SUITESPARSE_INCLUDE_DIR}
+  NO_DEFAULT_PATH)
+if(SUITESPARSE_CONFIG_FILE)
+  file(READ "${SUITESPARSE_CONFIG_FILE}" suitesparseconfig)
+  string(REGEX REPLACE ".*#define SUITESPARSE_MAIN_VERSION[ ]+([0-9]+).*" "\\1"
+    SUITESPARSE_MAJOR_VERSION  "${suitesparseconfig}")
+  string(REGEX REPLACE ".*#define SUITESPARSE_SUB_VERSION[ ]+([0-9]+).*" "\\1"
+    SUITESPARSE_MINOR_VERSION  "${suitesparseconfig}")
+  string(REGEX REPLACE ".*#define SUITESPARSE_SUBSUB_VERSION[ ]+([0-9]+).*" "\\1"
+    SUITESPARSE_PREFIX_VERSION "${suitesparseconfig}")
+  if(SUITESPARSE_MAJOR_VERSION GREATER_EQUAL 0)
+    set(SuiteSparse_VERSION "${SUITESPARSE_MAJOR_VERSION}")
   endif()
-
-  list(APPEND CHOLMOD_LIBRARY ${AMD_LIBRARY} ${COLAMD_LIBRARY})
-  if(CAMD_LIBRARY)
-    list(APPEND CHOLMOD_LIBRARY ${CAMD_LIBRARY})
+  if (SUITESPARSE_MINOR_VERSION GREATER_EQUAL 0)
+    set(SuiteSparse_VERSION "${SuiteSparse_VERSION}.${SUITESPARSE_MINOR_VERSION}")
   endif()
-  if(CCOLAMD_LIBRARY)
-    list(APPEND CHOLMOD_LIBRARY ${CCOLAMD_LIBRARY})
+  if (SUITESPARSE_PREFIX_VERSION GREATER_EQUAL 0)
+    set(SuiteSparse_VERSION "${SuiteSparse_VERSION}.${SUITESPARSE_PREFIX_VERSION}")
   endif()
-  list(REVERSE CHOLMOD_LIBRARY)
-  # remove duplicates
-  list(REMOVE_DUPLICATES CHOLMOD_LIBRARY)
-  list(REVERSE CHOLMOD_LIBRARY)
 endif()
+unset(SUITESPARSE_CONFIG_FILE CACHE)
 
-# UMFPack requires AMD, can depend on CHOLMOD
-if(UMFPACK_LIBRARY)
-  # check wether cholmod was found
-  if(CHOLMOD_LIBRARY)
-    list(APPEND UMFPACK_LIBRARY ${CHOLMOD_LIBRARY})
-  else()
-    list(APPEND UMFPACK_LIBRARY ${AMD_LIBRARY})
-  endif()
-  list(REVERSE UMFPACK_LIBRARY)
-  # remove duplicates
-  list(REMOVE_DUPLICATES UMFPACK_LIBRARY)
-  list(REVERSE UMFPACK_LIBRARY)
-endif()
 
 # check wether everything was found
 foreach(_component ${SUITESPARSE_COMPONENTS})
-  # variable used for component handling
   if(${_component}_LIBRARY AND ${_component}_INCLUDE_DIR)
     set(SuiteSparse_${_component}_FOUND TRUE)
   else()
     set(SuiteSparse_${_component}_FOUND FALSE)
   endif()
-  set(HAVE_SUITESPARSE_${_component} ${SuiteSparse_${_component}_FOUND})
-  if(SuiteSparse_${_component}_FOUND)
-    list(APPEND SUITESPARSE_INCLUDE_DIR "${${_component}_INCLUDE_DIR}")
-    list(APPEND SUITESPARSE_LIBRARY "${${_component}_LIBRARY}")
-  endif()
+endforeach(_component)
 
-  mark_as_advanced(
-    HAVE_SUITESPARSE_${_component}
-    SuiteSparse_${_component}_FOUND
-    ${_component}_INCLUDE_DIR
-    ${_component}_LIBRARY)
-endforeach()
+# test for required dependencies
+foreach(_component ${SUITESPARSE_COMPONENTS})
+  foreach(_dependency ${SUITESPARSE_${_component}_REQUIRED_DEPENDENCIES})
+    if(NOT SuiteSparse_${_dependency}_FOUND)
+      set(SuiteSparse_${_component}_FOUND FALSE)
+    endif()
+  endforeach(_dependency)
+endforeach(_component)
 
-# check version, for SPQR we need at least SuiteSparse 4.3
-if(SuiteSparse_SPQR_FOUND)
-  include(CheckCSourceCompiles)
-  include(CMakePushCheckState)
-  cmake_push_check_state()
-  set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${SUITESPARSE_INCLUDE_DIR})
-  set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ${SUITESPARSE_LIBRARY})
-  # check whether version is at least 4.3
-  check_c_source_compiles("
-    #include <SuiteSparse_config.h>
-    int main(void)
-    {
-      #ifndef SUITESPARSE_HAS_VERSION_FUNCTION
-        #error SuiteSparse <= 4.2.0 too old, required version 4.3 or newer for SPQR.
-      #endif
-      #if SUITESPARSE_VERSION <= 4003
-        #error SuiteSparse too old, required version 4.3 or newer for SPQR.
-      #endif
-      return 0;
-    }"
-    SUITESPARSE_MIN_VERSION_4_3)
-
-  if(NOT SUITESPARSE_MIN_VERSION_4_3)
+# SPQR requires SuiteSparse >= 4.3
+if(SPQR_LIBRARY)
+  if(SuiteSparse_VERSION VERSION_LESS "4.3")
     set(SuiteSparse_SPQR_FOUND FALSE)
-    set(HAVE_SUITESPARSE_SPQR FALSE)
   endif()
-  cmake_pop_check_state()
 endif()
 
-list(APPEND SUITESPARSE_LIBRARY ${SUITESPARSE_CONFIG_LIB})
-
-# make them unique
-if(SUITESPARSE_INCLUDE_DIR)
-  list(REMOVE_DUPLICATES SUITESPARSE_INCLUDE_DIR)
-endif()
-if(SUITESPARSE_LIBRARY)
-  list(REVERSE SUITESPARSE_LIBRARY)
-  list(REMOVE_DUPLICATES SUITESPARSE_LIBRARY)
-  list(REVERSE SUITESPARSE_LIBRARY)
-endif()
 
 # behave like a CMake module is supposed to behave
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(
-  "SuiteSparse"
-  FOUND_VAR SuiteSparse_FOUND
+find_package_handle_standard_args("SuiteSparse"
   REQUIRED_VARS
-  BLAS_FOUND
-  SUITESPARSE_INCLUDE_DIR
-  SUITESPARSE_LIBRARY
+    SUITESPARSE_CONFIG_LIB SUITESPARSE_INCLUDE_DIR BLAS_FOUND
+  VERSION_VAR
+    SuiteSparse_VERSION
   HANDLE_COMPONENTS
 )
 
-mark_as_advanced(
-  SUITESPARSE_INCLUDE_DIR
-  SUITESPARSE_LIBRARY
-  SUITESPARSE_CONFIG_LIB
-  SUITESPARSE_MIN_VERSION_4_3
-  WILL_USE_CHOLMOD
-  WILL_USE_UMFPACK)
-
-# if both headers and library are found, store results
+# if both headers and library for all required components are found,
+# then create imported targets for all components
 if(SuiteSparse_FOUND)
-  set(SuiteSparse_LIBRARIES ${SUITESPARSE_LIBRARY})
-  set(SuiteSparse_INCLUDE_DIRS ${SUITESPARSE_INCLUDE_DIR})
-  # log result
-  file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
-    "Determining location of SuiteSparse succeeded:\n"
-    "Include directory: ${SuiteSparse_INCLUDE_DIRS}\n"
-    "Library directory: ${SuiteSparse_LIBRARIES}\n\n")
-  set(SuiteSparse_COMPILER_FLAGS)
-  foreach(dir ${SuiteSparse_INCLUDE_DIRS})
-    set(SuiteSparse_COMPILER_FLAGS "${SuiteSparse_COMPILER_FLAGS} -I${dir}/")
-  endforeach()
-  set(SuiteSparse_DUNE_COMPILE_FLAGS ${SuiteSparse_COMPILER_FLAGS}
-    CACHE STRING "Compile Flags used by DUNE when compiling with SuiteSparse programs")
-  set(SuiteSparse_DUNE_LIBRARIES ${BLAS_LIBRARIES} ${SuiteSparse_LIBRARIES}
-    CACHE STRING "Libraries used by DUNE when linking SuiteSparse programs")
-else()
-  # log errornous result
-  file(APPEND ${CMAKE_BINARY_DIR}${CMAKES_FILES_DIRECTORY}/CMakeError.log
-    "Determing location of SuiteSparse failed:\n"
-    "Include directory: ${SuiteSparse_INCLUDE_DIRS}\n"
-    "Library directory: ${SuiteSparse_LIBRARIES}\n\n")
-endif()
+  if(NOT TARGET SuiteSparse::SuiteSparse_config)
+    add_library(SuiteSparse::SuiteSparse_config UNKNOWN IMPORTED)
+    set_target_properties(SuiteSparse::SuiteSparse_config PROPERTIES
+      IMPORTED_LOCATION ${SUITESPARSE_CONFIG_LIB}
+      INTERFACE_INCLUDE_DIRECTORIES ${SUITESPARSE_INCLUDE_DIR}
+    )
+  endif()
 
-#set HAVE_SUITESPARSE for config.h
-set(HAVE_SUITESPARSE ${SuiteSparse_FOUND})
-set(HAVE_UMFPACK ${SuiteSparse_UMFPACK_FOUND})
+  # Define component imported-targets
+  foreach(_component ${SUITESPARSE_COMPONENTS})
+    if(SuiteSparse_${_component}_FOUND AND NOT TARGET SuiteSparse::${_component})
+      add_library(SuiteSparse::${_component} UNKNOWN IMPORTED)
+      set_target_properties(SuiteSparse::${_component} PROPERTIES
+        IMPORTED_LOCATION ${${_component}_LIBRARY}
+        INTERFACE_INCLUDE_DIRECTORIES ${${_component}_INCLUDE_DIR}
+        INTERFACE_LINK_LIBRARIES SuiteSparse::SuiteSparse_config
+      )
+    endif()
+  endforeach(_component)
 
-# register all SuiteSparse related flags
-if(SuiteSparse_FOUND)
-  dune_register_package_flags(
-    COMPILE_DEFINITIONS "ENABLE_SUITESPARSE=1"
-    LIBRARIES "${SuiteSparse_LIBRARIES}"
-    INCLUDE_DIRS "${SuiteSparse_INCLUDE_DIRS}")
+  foreach(_component ${SUITESPARSE_COMPONENTS})
+    # Link required dependencies
+    foreach(_dependency ${SUITESPARSE_${_component}_REQUIRED_DEPENDENCIES})
+      target_link_libraries(SuiteSparse::${_component}
+        INTERFACE SuiteSparse::${_dependency})
+    endforeach(_dependency)
+
+    # Link found optional dependencies
+    foreach(_dependency ${SUITESPARSE_${_component}_OPTIONAL_DEPENDENCIES})
+      if(SuiteSparse_${_dependency}_FOUND)
+        target_link_libraries(SuiteSparse::${_component}
+          INTERFACE SuiteSparse::${_dependency})
+      endif()
+    endforeach(_dependency)
+
+    # Link BLAS library
+    if(SUITESPARSE_${_component}_REQUIRES_BLAS)
+      if(TARGET BLAS::BLAS)
+        target_link_libraries(SuiteSparse::${_component}
+          INTERFACE BLAS::BLAS)
+      else()
+        target_link_libraries(SuiteSparse::${_component}
+          INTERFACE ${BLAS_LINKER_FLAGS} ${BLAS_LIBRARIES})
+      endif()
+    endif()
+
+    # Link LAPACK library
+    if(SUITESPARSE_${_component}_REQUIRES_LAPACK)
+      if(TARGET LAPACK::LAPACK)
+        target_link_libraries(SuiteSparse::${_component}
+          INTERFACE LAPACK::LAPACK)
+      else()
+        target_link_libraries(SuiteSparse::${_component}
+          INTERFACE ${LAPACK_LINKER_FLAGS} ${LAPACK_LIBRARIES})
+      endif()
+    endif()
+  endforeach(_component)
+
+  # Combine all requested components to an imported target
+  if(NOT TARGET SuiteSparse::SuiteSparse)
+    add_library(SuiteSparse::SuiteSparse INTERFACE IMPORTED)
+    target_link_libraries(SuiteSparse::SuiteSparse
+      INTERFACE SuiteSparse::SuiteSparse_config)
+  endif()
+  foreach(_component ${SuiteSparse_FIND_COMPONENTS})
+    if(SuiteSparse_${_component}_FOUND)
+      set(HAVE_SUITESPARSE_${_component} TRUE)
+      target_link_libraries(SuiteSparse::SuiteSparse
+        INTERFACE SuiteSparse::${_component})
+    endif()
+  endforeach(_component)
 endif()
