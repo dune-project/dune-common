@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <vector>
 
 #include <scotch.h>
 
@@ -51,25 +50,6 @@ int main (int argc, char** argv)
 
   std::cout << "Number of vertices: " << vertnbr << std::endl;
   std::cout << "Number of edges: " << edgenbr << std::endl;
-
-#ifdef SCOTCH_STRATDEFAULT
-  std::vector<SCOTCH_Num> colotab(vertnbr, 0);
-  std::vector<SCOTCH_Num> cnbrtab(vertnbr, 0);
-
-  SCOTCH_Num colonbr = 0;
-  if (SCOTCH_graphColor (&grafdat, colotab.data(), &colonbr, 0) != 0) {
-    DUNE_THROW(Dune::Exception, "cannot color graph");
-  }
-
-  std::cout << "Number of colors: " << colonbr << std::endl;
-
-  // Sum-up color histogram
-  for (SCOTCH_Num vertnum = 0; vertnum < vertnbr; vertnum++)
-    cnbrtab[colotab[vertnum]]++;
-
-  for (SCOTCH_Num colonum = 0; colonum < colonbr; colonum++)
-    std::cout << "Color " << colonum << ": " << cnbrtab[colonum] << std::endl;
-#endif
 
   SCOTCH_graphExit (&grafdat);
 
