@@ -19,7 +19,7 @@ if(PTScotch_FOUND)
 endif()
 
 function(add_dune_ptscotch_flags _targets)
-  if(PTSCOTCH_FOUND)
+  if(PTScotch_FOUND)
     foreach(_target ${_targets})
       target_link_libraries(${_target} PTScotch::PTScotch)
     endforeach(_target ${_targets})
