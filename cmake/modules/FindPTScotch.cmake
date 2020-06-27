@@ -1,110 +1,157 @@
-# .. cmake_module::
-#
-#    Module that checks whether PT-Scotch is available.
-#
-#    You may set the following variables to customize this modules behaviour:
-#
-#    :ref:`PTSCOTCH_ROOT`
-#       Prefix where PT-Scotch is installed.
-#
-#    :ref:`PTSCOTCH_SUFFIX`
-#       Scotch might be compiled using different
-#       integer sizes (int32, int64, long). When
-#       this is is set the headers and libaries
-#       are search under the suffix
-#       :code:`include/scotch-${PTSCOTCH_SUFFIX}`, and
-#       :code:`lib/scotch-${PTSCOTCH_SUFFIX}`, respectively.
-#
-#    This module sets the following variables:
-#
-#    :code:`PTSCOTCH_FOUND`
-#       True if PT-Scotch was found.
-#
-#    :code:`PTSCOTCH_INCLUDE_DIRS`
-#       All include directories needed to compile PT-Scotch programs.
-#
-#    :code:`PTSCOTCH_LIBRARIES`
-#       All libraries needed to link PT-Scotch programs.
-#
-#    :code:`PTSCOTCH_FOUND`
-#       True if PT-Scotch was found.
-#
-# .. cmake_variable:: PTSCOTCH_ROOT
-#
-#   You may set this variable to have :ref:`FindPTScotch` look
-#   for the PTScotch package in the given path before inspecting
-#   system paths.
-#
-# .. cmake_variable:: PTSCOTCH_SUFFIX
-#
-#   PTScotch might be compiled using different
-#   integer sizes (int32, int64, long). When
-#   this is is set the headers and libaries
-#   are search under the suffix
-#   :code:`include/scotch-${PTSCOTCH_SUFFIX}`, and
-#   :code:`lib/scotch-${PTSCOTCH_SUFFIX}`, respectively.
-#
+#[=======================================================================[.rst:
+FindPTScotch
+------------
 
-include(DuneMPI)
-macro(_search_pt_lib libvar libname doc)
-  find_library(${libvar} ${libname}
-    PATHS ${PTSCOTCH_ROOT} ${PTSCOTCH_ROOT}/lib PATH_SUFFIXES ${PATH_SUFFIXES}
-    NO_DEFAULT_PATH
-    DOC "${doc}")
-  find_library(${libvar} ${libname})
-endmacro(_search_pt_lib)
+Find library PTScotch, i.e. Software package and libraries for sequential
+and parallel graph partitioning, static mapping and clustering, sequential
+mesh and hypergraph partitioning, and sequential and parallel sparse matrix
+block ordering
 
+Imported targets
+^^^^^^^^^^^^^^^^
+
+This module defines the following :prop_tgt:`IMPORTED` target:
+
+``PTScotch::Scotch``
+  The sequential Scotch library to link against
+``PTScotch::PTScotch``
+  The parallel PTScotch library to link against
+
+Result Variables
+^^^^^^^^^^^^^^^^
+
+This module defines the following variables:
+
+``PTScotch_FOUND``
+  The Scotch and PTScotch library with all its dependencies is found
+
+Cache Variables
+^^^^^^^^^^^^^^^
+
+The following variables may be set to influence this module's behavior:
+
+``PTSCOTCH_SUFFIX``
+  Scotch might be compiled using different integer sizes (int32, int64, long).
+  When this is is set the headers and libaries are search under the suffix
+  :code:`include/scotch-${PTSCOTCH_SUFFIX}`, and :code:`lib/scotch-${PTSCOTCH_SUFFIX}`,
+  respectively.
+
+``SCOTCH_INCLUDE_DIR``
+  Include directory where the scotch.h is found.
+
+``PTSCOTCH_INCLUDE_DIR``
+  Include directory where the ptscotch.h is found.
+
+``SCOTCH_LIBRARY``
+  Full path to the scotch library
+
+``PTSCOTCH_LIBRARY``
+  Full path to the ptscotch library
+
+#]=======================================================================]
+
+# text for feature summary
+include(FeatureSummary)
+set_package_properties("PTScotch" PROPERTIES
+  DESCRIPTION "Sequential and Parallel Graph Partitioning"
+)
+
+# find dependency for PTScotch
+find_package(MPI)
+
+# search directory might have the PATH_SUFFIX scotch-SUFFIX
 if(PTSCOTCH_SUFFIX)
   set(PATH_SUFFIXES "scotch-${PTSCOTCH_SUFFIX}")
-else(PTSCOTCH_SUFFIX)
+else()
   set(PATH_SUFFIXES "scotch")
-endif(PTSCOTCH_SUFFIX)
+endif()
 
-include(CMakePushCheckState)
-cmake_push_check_state() # Save variables
-set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${MPI_DUNE_INCLUDE_PATH})
-set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${MPI_DUNE_COMPILE_FLAGS}")
+# Try to find the include files
+find_path(SCOTCH_INCLUDE_DIR scotch.h
+  PATH_SUFFIXES ${PATH_SUFFIXES}
+  NO_DEFAULT_PATH)
+find_path(SCOTCH_INCLUDE_DIR scotch.h
+  PATH_SUFFIXES ${PATH_SUFFIXES})
 
 find_path(PTSCOTCH_INCLUDE_DIR ptscotch.h
-  PATHS ${PTSCOTCH_ROOT} ${PTSCOTCH_ROOT}/include
+  HINTS ${SCOTCH_INCLUDE_DIR}
   PATH_SUFFIXES ${PATH_SUFFIXES}
-  NO_DEFAULT_PATH
-  DOC "Include directory of PT-Scotch")
+  NO_DEFAULT_PATH)
 find_path(PTSCOTCH_INCLUDE_DIR ptscotch.h
   PATH_SUFFIXES ${PATH_SUFFIXES})
 
-_search_pt_lib(PTSCOTCH_LIBRARY ptscotch "The main PT-Scotch library.")
-_search_pt_lib(SCOTCH_LIBRARY scotch "The Scotch library.")
-_search_pt_lib(PTSCOTCHERR_LIBRARY ptscotcherr "The PT-Scotch error library.")
+# Try to find the (pt)scotch libraries
+macro(_find_ptscotch_library libvar libname)
+  find_library(${libvar} ${libname}
+    PATH_SUFFIXES ${PATH_SUFFIXES}
+    NO_DEFAULT_PATH)
+  find_library(${libvar} ${libname})
+endmacro(_find_ptscotch_library)
+
+_find_ptscotch_library(SCOTCH_LIBRARY scotch)
+_find_ptscotch_library(SCOTCHERR_LIBRARY scotcherr)
+_find_ptscotch_library(PTSCOTCH_LIBRARY ptscotch)
+_find_ptscotch_library(PTSCOTCHERR_LIBRARY ptscotcherr)
+
+mark_as_advanced(SCOTCH_INCLUDE_DIR SCOTCH_LIBRARY SCOTCHERR_LIBRARY
+                 PTSCOTCH_INCLUDE_DIR PTSCOTCH_LIBRARY PTSCOTCHERR_LIBRARY)
+
+# check version of (PT)Scotch
+find_file(SCOTCH_HEADER "scotch.h"
+  HINTS ${SCOTCH_INCLUDE_DIR}
+  NO_DEFAULT_PATH)
+if(SCOTCH_HEADER)
+  file(READ "${SCOTCH_HEADER}" scotchheader)
+  string(REGEX REPLACE ".*#define SCOTCH_VERSION[ ]+([0-9]+).*" "\\1"
+    SCOTCH_MAJOR_VERSION  "${scotchheader}")
+  string(REGEX REPLACE ".*#define SCOTCH_RELEASE[ ]+([0-9]+).*" "\\1"
+    SCOTCH_MINOR_VERSION  "${scotchheader}")
+  string(REGEX REPLACE ".*#define SCOTCH_PATCHLEVEL[ ]+([0-9]+).*" "\\1"
+    SCOTCH_PREFIX_VERSION "${scotchheader}")
+  if(SCOTCH_MAJOR_VERSION GREATER_EQUAL 0)
+    set(PTScotch_VERSION "${SCOTCH_MAJOR_VERSION}")
+  endif()
+  if (SCOTCH_MINOR_VERSION GREATER_EQUAL 0)
+    set(PTScotch_VERSION "${PTScotch_VERSION}.${SCOTCH_MINOR_VERSION}")
+  endif()
+  if (SCOTCH_PREFIX_VERSION GREATER_EQUAL 0)
+    set(PTScotch_VERSION "${PTScotch_VERSION}.${SCOTCH_PREFIX_VERSION}")
+  endif()
+endif()
+unset(SCOTCH_HEADER CACHE)
+
 
 # behave like a CMake module is supposed to behave
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(
-  "PTScotch"
-  DEFAULT_MSG
-  PTSCOTCH_INCLUDE_DIR
-  PTSCOTCH_LIBRARY
-  SCOTCH_LIBRARY
-  PTSCOTCHERR_LIBRARY
+find_package_handle_standard_args("PTScotch"
+  REQUIRED_VARS
+    SCOTCH_LIBRARY SCOTCHERR_LIBRARY SCOTCH_INCLUDE_DIR
+    PTSCOTCH_LIBRARY PTSCOTCHERR_LIBRARY PTSCOTCH_INCLUDE_DIR
+    MPI_FOUND
+  VERSION_VAR
+    PTScotch_VERSION
 )
-#restore old values
-cmake_pop_check_state()
 
-if(PTSCOTCH_FOUND)
-  set(PTSCOTCH_INCLUDE_DIRS ${PTSCOTCH_INCLUDE_DIR})
-  set(PTSCOTCH_LIBRARIES ${PTSCOTCH_LIBRARY} ${SCOTCH_LIBRARY} ${PTSCOTCHERR_LIBRARY} ${MPI_DUNE_LIBRARIES}
-    CACHE FILEPATH "All libraries needed to link programs using PT-Scotch")
-  set(PTSCOCH_LINK_FLAGS "${DUNE_MPI_LINK_FLAGS}"
-    CACHE STRING "PT-Scotch link flags")
-  set(HAVE_PTSCOTCH 1)
-  # log result
-  file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
-    "Determing location of PT-Scotch succeeded:\n"
-    "Include directory: ${PTSCOTCH_INCLUDE_DIRS}\n"
-    "Library directory: ${PTSCOTCH_LIBRARIES}\n\n")
+if(PTScotch_FOUND)
+  # Define an imported target for the sequential Scotch library
+  if(NOT TARGET PTScotch::Scotch)
+    add_library(PTScotch::Scotch UNKNOWN IMPORTED)
+    set_target_properties(PTScotch::Scotch PROPERTIES
+      IMPORTED_LOCATION ${SCOTCH_LIBRARY}
+      INTERFACE_INCLUDE_DIRECTORIES ${SCOTCH_INCLUDE_DIR}
+      INTERFACE_LINK_LIBRARIES ${SCOTCHERR_LIBRARY}
+    )
+  endif()
 
-  dune_register_package_flags(LIBRARIES "${PTSCOTCH_LIBRARIES}"
-                              INCLUDE_DIRS "${PTSCOTCH_INCLUDE_DIRS}")
-endif(PTSCOTCH_FOUND)
-
-mark_as_advanced(PTSCOTCH_INCLUDE_DIR PTSCOTCH_LIBRARIES HAVE_PTSCOTCH)
+  # Define an imported target for the parallel PTScotch library
+  if(NOT TARGET PTScotch::PTScotch)
+    add_library(PTScotch::PTScotch UNKNOWN IMPORTED)
+    set_target_properties(PTScotch::PTScotch PROPERTIES
+      IMPORTED_LOCATION ${PTSCOTCH_LIBRARY}
+      INTERFACE_INCLUDE_DIRECTORIES ${PTSCOTCH_INCLUDE_DIR}
+      INTERFACE_LINK_LIBRARIES ${PTSCOTCHERR_LIBRARY}
+    )
+    target_link_libraries(PTScotch::PTScotch
+      INTERFACE PTScotch::Scotch MPI::MPI_CXX)
+  endif()
+endif()
