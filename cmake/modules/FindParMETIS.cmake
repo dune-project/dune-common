@@ -45,8 +45,7 @@ set_package_properties("ParMETIS" PROPERTIES
 
 # The PTScotch library provides a wrapper around some functions of ParMETIS, since not
 # the full interface, you have to request it explicitly.
-include(CMakeDependentOption)
-cmake_dependent_option(ENABLE_PTSCOTCH_PARMETIS "Use the (PT)Scotch library as ParMETIS compatibility library" ON "ENABLE_SCOTCH_METIS" OFF)
+option(ENABLE_PTSCOTCH_PARMETIS "Use the (PT)Scotch library as ParMETIS compatibility library" OFF)
 
 # find package dependencies first
 include(CMakeFindDependencyMacro)
@@ -77,9 +76,6 @@ if(PARMETIS_HEADER_FILE)
   string(REGEX REPLACE ".*#define PARMETIS_MINOR_VERSION[ ]+([0-9]+).*" "\\1" ParMETIS_MINOR_VERSION "${parmetisheader}")
   if(ParMETIS_MAJOR_VERSION GREATER_EQUAL 0 AND ParMETIS_MINOR_VERSION GREATER_EQUAL 0)
     set(ParMETIS_VERSION "${ParMETIS_MAJOR_VERSION}.${ParMETIS_MINOR_VERSION}")
-  else()
-    unset(ParMETIS_MAJOR_VERSION)
-    unset(ParMETIS_MINOR_VERSION)
   endif()
 endif()
 unset(PARMETIS_HEADER_FILE CACHE)

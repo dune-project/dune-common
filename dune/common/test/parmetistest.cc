@@ -40,7 +40,7 @@ int main(int argc, char **argv)
   MPI_Comm comm;
   MPI_Comm_dup(MPI_COMM_WORLD, &comm);
 
-  idx_t rank, size;
+  int rank, size;
   MPI_Comm_rank(comm, &rank);
   MPI_Comm_size(comm, &size);
 
@@ -81,19 +81,20 @@ int main(int argc, char **argv)
   // Fraction of vertex weight that should be distributed to each sub-domain for each
   // balance constraint
   std::vector<real_t> tpwgts(ncon * nparts, 1.0/nparts);
+#if HAVE_PTSCOTCH_PARMETIS
+  std::vector<real_t> ubvec(ncon, 0.05);
+#else
   std::vector<real_t> ubvec(ncon, 1.05);
+#endif
 
   std::vector<idx_t> options{0, 0, 0};
 
   idx_t edgecut;
   std::vector<idx_t> part(xadj.size()-1, 0);
 
-  int err = ParMETIS_V3_PartKway(vtxdist.data(), xadj.data(), adjncy.data(),
+  ParMETIS_V3_PartKway(vtxdist.data(), xadj.data(), adjncy.data(),
     nullptr, nullptr, &wgtflag, &numflag, &ncon, &nparts, tpwgts.data(),
     ubvec.data(), options.data(), &edgecut, part.data(), &comm);
-
-  if (err != METIS_OK)
-    return 1;
 
   for (std::size_t part_i = 0; part_i < part.size(); ++part_i) {
     std::cout << "[" << rank << "] " << part_i << " => " << part[part_i] << std::endl;

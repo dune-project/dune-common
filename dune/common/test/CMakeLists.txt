@@ -203,9 +203,6 @@ dune_add_test(SOURCES genericiterator_compile_fail.cc
               EXPECT_COMPILE_FAIL
               LABELS quick)
 
-dune_add_test(SOURCES gcdlcmtest.cc
-              LABELS quick)
-
 dune_add_test(SOURCES hybridutilitiestest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
@@ -225,6 +222,14 @@ dune_add_test(SOURCES lrutest.cc
 
 dune_add_test(SOURCES mathclassifierstest.cc
               LINK_LIBRARIES dunecommon)
+
+find_package(METIS)
+dune_add_test(SOURCES metistest.cc
+              COMPILE_DEFINITIONS "HAVE_METIS"
+              CMAKE_GUARD METIS_FOUND)
+if (METIS_FOUND)
+  target_link_libraries(metistest METIS::METIS)
+endif ()
 
 dune_add_test(SOURCES mpicommunicationtest.cc
               LINK_LIBRARIES dunecommon
@@ -273,6 +278,7 @@ find_package(ParMETIS)
 dune_add_test(SOURCES parmetistest.cc
               MPI_RANKS 4
               TIMEOUT 300
+              COMPILE_DEFINITIONS "HAVE_PARMETIS"
               CMAKE_GUARD ParMETIS_FOUND
               LABELS quick)
 if (ParMETIS_FOUND)
