@@ -43,6 +43,11 @@ set_package_properties("ParMETIS" PROPERTIES
   DESCRIPTION "Parallel Graph Partitioning"
 )
 
+# The PTScotch library provides a wrapper around some functions of ParMETIS, since not
+# the full interface, you have to request it explicitly.
+include(CMakeDependentOption)
+cmake_dependent_option(ENABLE_PTSCOTCH_PARMETIS "Use the (PT)Scotch library as ParMETIS compatibility library" ON "ENABLE_SCOTCH_METIS" OFF)
+
 # find package dependencies first
 include(CMakeFindDependencyMacro)
 find_dependency(METIS)
@@ -52,28 +57,15 @@ find_path(PARMETIS_INCLUDE_DIR parmetis.h
   PATH_SUFFIXES include parmetis
   HINTS ${PARMETIS_DIR} ${PARMETIS_ROOT})
 
-# Set a name of the METIS library. This is typically `parmetis` or `ptscotchparmetis`
-set(PARMETIS_LIB_NAME parmetis
-    CACHE STRING "Name of the ParMETIS library (default: parmetis).")
-
 # search ParMETIS library
-find_library(PARMETIS_LIBRARY ${PARMETIS_LIB_NAME}
+find_library(PARMETIS_LIBRARY parmetis
   HINTS ${PARMETIS_DIR} ${PARMETIS_ROOT})
-
-# If PARMETIS_LIB_NAME contains "ptscotch", link against PTScotch library
-string(FIND PARMETIS_LIB_NAME "ptscotch" PARMETIS_NEEDS_PTSCOTCH)
-if(NOT PARMETIS_NEEDS_PTSCOTCH EQUAL -1)
-  include(CMakeFindDependencyMacro)
-  find_dependency(PTScotch)
-  set(PARMETIS_NEEDS_PTSCOTCH TRUE)
-  set(PARMETIS_HAS_PTSCOTCH ${PTScotch_FOUND})
-else()
-  set(PARMETIS_NEEDS_PTSCOTCH FALSE)
-  set(PARMETIS_HAS_PTSCOTCH TRUE)
+if(ENABLE_PTSCOTCH_PARMETIS)
+  find_library(PARMETIS_LIBRARY ptscotchparmetis
+    HINTS ${PARMETIS_DIR} ${PARMETIS_ROOT})
 endif()
 
-mark_as_advanced(PARMETIS_INCLUDE_DIR PARMETIS_LIBRARY PARMETIS_LIB_NAME
-                 PARMETIS_NEEDS_PTSCOTCH PARMETIS_HAS_PTSCOTCH)
+mark_as_advanced(PARMETIS_INCLUDE_DIR PARMETIS_LIBRARY)
 
 # determine version of ParMETIS installation
 find_file(PARMETIS_HEADER_FILE parmetis.h
@@ -85,15 +77,39 @@ if(PARMETIS_HEADER_FILE)
   string(REGEX REPLACE ".*#define PARMETIS_MINOR_VERSION[ ]+([0-9]+).*" "\\1" ParMETIS_MINOR_VERSION "${parmetisheader}")
   if(ParMETIS_MAJOR_VERSION GREATER_EQUAL 0 AND ParMETIS_MINOR_VERSION GREATER_EQUAL 0)
     set(ParMETIS_VERSION "${ParMETIS_MAJOR_VERSION}.${ParMETIS_MINOR_VERSION}")
+  else()
+    unset(ParMETIS_MAJOR_VERSION)
+    unset(ParMETIS_MINOR_VERSION)
   endif()
 endif()
 unset(PARMETIS_HEADER_FILE CACHE)
+
+# set a flag whether all ParMETIS dependencies are found correctly
+if(METIS_FOUND AND MPI_FOUND)
+  set(PARMETIS_DEPENDENCIES_FOUND TRUE)
+
+  # minimal requires METIS version 5.0 for ParMETIS >= 4.0
+  if (ParMETIS_VERSION VERSION_GREATER_EQUAL "4.0"
+      AND METIS_VERSION VERSION_LESS "5.0")
+    set(PARMETIS_DEPENDENCIES_FOUND FALSE)
+  endif()
+endif()
+
+# If ptscotch-parmetis is requested, find package PTScotch
+if(ENABLE_PTSCOTCH_PARMETIS)
+  include(CMakeFindDependencyMacro)
+  find_dependency(PTScotch COMPONENTS PTSCOTCH)
+  set(HAVE_PTSCOTCH_PARMETIS ${PTScotch_FOUND})
+  if(PTScotch_FOUND AND MPI_FOUND)
+    set(PARMETIS_DEPENDENCIES_FOUND TRUE)
+  endif()
+endif()
 
 # behave like a CMake module is supposed to behave
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args("ParMETIS"
   REQUIRED_VARS
-    PARMETIS_LIBRARY PARMETIS_INCLUDE_DIR METIS_FOUND MPI_FOUND PARMETIS_HAS_PTSCOTCH
+    PARMETIS_LIBRARY PARMETIS_INCLUDE_DIR PARMETIS_DEPENDENCIES_FOUND
   VERSION_VAR
     ParMETIS_VERSION
 )
@@ -106,11 +122,13 @@ if(PARMETIS_FOUND AND NOT TARGET ParMETIS::ParMETIS)
     INTERFACE_INCLUDE_DIRECTORIES ${PARMETIS_INCLUDE_DIR}
   )
 
-  # link against required dependencies METIS and MPI
-  target_link_libraries(ParMETIS::ParMETIS
-    INTERFACE METIS::METIS MPI::MPI_CXX)
+  # link against required dependencies
+  target_link_libraries(ParMETIS::ParMETIS INTERFACE MPI::MPI_CXX)
 
-  # link against ptscotch if needed
-  target_link_libraries(ParMETIS::ParMETIS INTERFACE
-    $<$<BOOL:${PARMETIS_NEEDS_PTSCOTCH}>:PTScotch::PTScotch>)
+  # link against PTScotch or METIS if needed
+  if(ENABLE_PTSCOTCH_PARMETIS AND PTScotch_FOUND)
+    target_link_libraries(ParMETIS::ParMETIS INTERFACE PTScotch::PTScotch)
+  else()
+    target_link_libraries(ParMETIS::ParMETIS INTERFACE METIS::METIS)
+  endif()
 endif()

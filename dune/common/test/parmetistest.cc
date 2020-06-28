@@ -1,3 +1,4 @@
+#include <config.h>
 #include <cassert>
 #include <iostream>
 #include <vector>
@@ -6,12 +7,17 @@
 #error "ParMETIS is required for this test."
 #endif
 
-#if HAVE_PTSCOTCH
-#include <ptscotch.h>
+#include <mpi.h>
+
+#if HAVE_PTSCOTCH_PARMETIS
+extern "C" {
+  #include <ptscotch.h>
+}
 #endif
 
-#include <mpi.h>
-#include <parmetis.h>
+extern "C" {
+  #include <parmetis.h>
+}
 
 int main(int argc, char **argv)
 {
@@ -23,7 +29,7 @@ int main(int argc, char **argv)
 
 #if defined(IDXTYPEWIDTH)
   using idx_t = ::idx_t;
-#elif defined(SCOTCH_METIS_PREFIX)
+#elif HAVE_PTSCOTCH_PARMETIS
   using idx_t = SCOTCH_Num;
 #else
   using idx_t = int;

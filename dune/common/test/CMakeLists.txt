@@ -269,13 +269,15 @@ dune_add_test(SOURCES parametertreetest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
 
-find_package(ParMETIS 4.0)
+find_package(ParMETIS)
 dune_add_test(SOURCES parmetistest.cc
-              COMPILE_DEFINITIONS "HAVE_PARMETIS"
-              LINK_LIBRARIES ParMETIS::ParMETIS
               MPI_RANKS 4
               TIMEOUT 300
+              CMAKE_GUARD ParMETIS_FOUND
               LABELS quick)
+if (ParMETIS_FOUND)
+  target_link_libraries(parmetistest ParMETIS::ParMETIS)
+endif()
 
 dune_add_test(SOURCES pathtest.cc
               LINK_LIBRARIES dunecommon
