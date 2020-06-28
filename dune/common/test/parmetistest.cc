@@ -44,31 +44,28 @@ int main(int argc, char **argv)
   MPI_Comm_rank(comm, &rank);
   MPI_Comm_size(comm, &size);
 
-  // This test is design for 4 cores
-  assert(size == 4);
+  // This test is design for 3 cores
+  assert(size == 3);
 
   // local adjacency structure of the graph
   std::vector<idx_t> xadj;    // size n+1
   std::vector<idx_t> adjncy;  // size 2*m
+
   if (rank == 0) {
-    xadj = std::vector<idx_t>{0,2,3};
-    adjncy = std::vector<idx_t>{4,1,0,5,2};
+    xadj = std::vector<idx_t>{0,2,5,8,11,13};
+    adjncy = std::vector<idx_t>{1,5,0,2,6,1,3,7,2,4,8,3,9};
   }
   else if (rank == 1)  {
-    xadj = std::vector<idx_t>{0,3,5};
-    adjncy = std::vector<idx_t>{1,6,3,2,7};
+    xadj = std::vector<idx_t>{0,3,7,11,15,18};
+    adjncy = std::vector<idx_t>{0,6,10,1,5,7,11,2,6,8,12,3,7,9,13,4,8,14};
   }
   else if (rank == 2) {
-    xadj = std::vector<idx_t>{0,2,5};
-    adjncy = std::vector<idx_t>{5,0,6,1,4};
-  }
-  else if (rank == 3) {
-    xadj = std::vector<idx_t>{0,3,5};
-    adjncy = std::vector<idx_t>{7,2,5,3,6};
+    xadj = std::vector<idx_t>{0,2,5,8,11,13};
+    adjncy = std::vector<idx_t>{5,11,6,10,12,7,11,13,8,12,14,9,13};
   }
 
   // Array describing how the vertices of the graph are distributed among the processors.
-  std::vector<idx_t> vtxdist{0,2,4,6,8};
+  std::vector<idx_t> vtxdist{0,5,10,15};
 
   // No weights
   idx_t wgtflag = 0;
@@ -81,12 +78,7 @@ int main(int argc, char **argv)
   // Fraction of vertex weight that should be distributed to each sub-domain for each
   // balance constraint
   std::vector<real_t> tpwgts(ncon * nparts, 1.0/nparts);
-#if HAVE_PTSCOTCH_PARMETIS
-  std::vector<real_t> ubvec(ncon, 0.05);
-#else
   std::vector<real_t> ubvec(ncon, 1.05);
-#endif
-
   std::vector<idx_t> options{0, 0, 0};
 
   idx_t edgecut;
