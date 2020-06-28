@@ -85,9 +85,9 @@ class SimpleGenerator(object):
             options.append(bc)
         source += '    auto cls = Dune::Python::insertClass' +\
                        '< DuneType' +\
-                       ', '.join([""]+options) + ' >' +\
-                       '( cls0, "' + self.typeName[nr] + '"' +\
-                       ','.join(['']+clsParams) +\
+                       ', '.join(('',)+tuple(options)) + ' >' +\
+                       '( cls0, "' + self.pythonName[nr] + '"' +\
+                       ','.join(('',)+tuple(clsParams)) +\
                        ', Dune::Python::GenerateTypeName("' + duneType + '")' +\
                        ', Dune::Python::IncludeFiles{' + ','.join(['"' + i + '"' for i in includes]) + '}' +\
                        ").first;\n"
