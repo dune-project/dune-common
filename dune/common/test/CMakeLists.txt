@@ -223,7 +223,7 @@ dune_add_test(SOURCES lrutest.cc
 dune_add_test(SOURCES mathclassifierstest.cc
               LINK_LIBRARIES dunecommon)
 
-find_package(METIS 5.0)
+find_package(METIS)
 dune_add_test(SOURCES metistest.cc
               COMPILE_DEFINITIONS "HAVE_METIS"
               CMAKE_GUARD METIS_FOUND)

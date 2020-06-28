@@ -36,6 +36,9 @@ The following variables may be set to influence this module's behavior:
   Use the Scotch library as METIS compatibility library. This library provides a METIS-4
   interface of some METIS library functions.
 
+``SCOTCH_METIS_VERSION``
+  The METIS API version provided by the scotch-metis library. This is required for
+  Scotch >= 6.0.7 versions, since it cannot be detected by inspecting provided files.
 #]=======================================================================]
 
 # text for feature summary
@@ -44,11 +47,14 @@ set_package_properties("METIS" PROPERTIES
   DESCRIPTION "Serial Graph Partitioning"
 )
 
+# The Scotch library provides a wrapper around some functions of METIS, since not
+# the full interface, you have to request it explicitly.
 option(ENABLE_SCOTCH_METIS "Use the Scotch library as METIS compatibility library" FALSE)
+set(SCOTCH_METIS_VERSION 0 CACHE STRING "METIS API version provided by scotch-metis library")
 
 # Try to locate METIS header
 find_path(METIS_INCLUDE_DIR metis.h
-  PATH_SUFFIXES metis include include/metis Lib METISLib
+  PATH_SUFFIXES metis
   HINTS ${METIS_DIR})
 
 # Set a name of the METIS library. This is typically `metis` or `scotchmetis`
@@ -56,8 +62,11 @@ set(METIS_LIB_NAME metis
     CACHE STRING "Name of the METIS library (default: metis).")
 
 find_library(METIS_LIBRARY metis
-  PATH_SUFFIXES lib
   HINTS ${METIS_DIR})
+if(ENABLE_SCOTCH_METIS)
+  find_library(METIS_LIBRARY scotchmetis
+    HINTS ${METIS_DIR})
+endif()
 
 # we need to check whether we need to link m, copy the lazy solution
 # from FindBLAS and FindLAPACK here.
@@ -77,28 +86,42 @@ if(METIS_HEADER_FILE)
   string(REGEX REPLACE ".*#define METIS_VER_MINOR[ ]+([0-9]+).*" "\\1" METIS_MINOR_VERSION "${metisheader}")
   if(METIS_MAJOR_VERSION GREATER_EQUAL 0 AND METIS_MINOR_VERSION GREATER_EQUAL 0)
     set(METIS_VERSION "${METIS_MAJOR_VERSION}.${METIS_MINOR_VERSION}")
+  else()
+    unset(METIS_MAJOR_VERSION)
+    unset(METIS_MINOR_VERSION)
   endif()
 endif()
 unset(METIS_HEADER_FILE CACHE)
 
 # If scotch is requested, find package PTScotch and check version compatibility:
-# scotch provides METIS-4 interface only
-set(METIS_DEPENDENCIES_FOUND TRUE)
+# scotch provides METIS-3 interface only in scotch < 6.07, but provides an option to
+# select the version in later scotch versions
 if(ENABLE_SCOTCH_METIS)
   include(CMakeFindDependencyMacro)
   find_dependency(PTScotch)
-  if(NOT PTScotch_FOUND OR (PACKAGE_FIND_VERSION_MAJOR
-                            AND NOT PACKAGE_FIND_VERSION_MAJOR EQUAL "4"))
-    set(METIS_DEPENDENCIES_FOUND FALSE)
+  set(HAVE_SCOTCH_METIS ${PTScotch_FOUND})
+  if (PTScotch_FOUND)
+    if(PTScotch_VERSION VERSION_LESS "6.0.7")
+      set(METIS_MAJOR_VERSION "3")
+    elseif(SCOTCH_METIS_VERSION)
+      set(METIS_MAJOR_VERSION "${SCOTCH_METIS_VERSION}")
+    else()
+      message(WARNING "Cannot detect METIS API version provided by the scotch-metis library. Set the cmake variable SCOTCH_METIS_VERSION to the corresponding version number.")
+    endif()
+    if(METIS_MAJOR_VERSION GREATER_EQUAL 0)
+      set(METIS_VERSION "${METIS_MAJOR_VERSION}.0")
+    endif()
   endif()
 endif()
-mark_as_advanced(METIS_DEPENDENCIES_FOUND)
+
+# specify an api version to be used in config.h files
+set(METIS_API_VERSION "${METIS_MAJOR_VERSION}")
 
 # behave like a CMake module is supposed to behave
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args("METIS"
   REQUIRED_VARS
-    METIS_LIBRARY METIS_INCLUDE_DIR METIS_DEPENDENCIES_FOUND
+    METIS_LIBRARY METIS_INCLUDE_DIR METIS_VERSION
   VERSION_VAR
     METIS_VERSION
 )
@@ -109,14 +132,19 @@ if(METIS_FOUND AND NOT TARGET METIS::METIS)
   set_target_properties(METIS::METIS PROPERTIES
     IMPORTED_LOCATION ${METIS_LIBRARY}
     INTERFACE_INCLUDE_DIRECTORIES ${METIS_INCLUDE_DIR}
+    INTERFACE_COMPILE_DEFINITIONS METIS_API_VERSION=${METIS_API_VERSION}
   )
 
-  # link against libm amd scotch if needed
+  # link against libm if needed
   if (METIS_NEEDS_LIBM)
     target_link_libraries(METIS::METIS INTERFACE m)
   endif ()
 
+  # link against Scotch library if option is enabled
   if (ENABLE_SCOTCH_METIS AND PTScotch_FOUND)
     target_link_libraries(METIS::METIS INTERFACE PTScotch::Scotch)
+    target_compile_definitions(METIS::METIS INTERFACE
+      HAVE_SCOTCH_METIS
+      SCOTCH_METIS_VERSION=${SCOTCH_METIS_VERSION})
   endif ()
 endif()
