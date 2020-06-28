@@ -7,6 +7,16 @@ and parallel graph partitioning, static mapping and clustering, sequential
 mesh and hypergraph partitioning, and sequential and parallel sparse matrix
 block ordering
 
+Components
+^^^^^^^^^^
+
+The PTScotch module allows to search for the following components
+
+``SCOTCH``
+  Sequential version of Scotch
+``PTSCOTCH``
+  Parallel version of Scotch. Requires MPI.
+
 Imported targets
 ^^^^^^^^^^^^^^^^
 
@@ -23,7 +33,13 @@ Result Variables
 This module defines the following variables:
 
 ``PTScotch_FOUND``
-  The Scotch and PTScotch library with all its dependencies is found
+  The Scotch and/or PTScotch library with all its dependencies is found
+``PTScotch_SCOTCH_FOUND``
+  The sequential Scotch library is found
+``PTScotch_PTSCOTCH_FOUND``
+  The parallel PTScotch library is found
+``PTScotch_VERSION``
+  Version of Scotch that is found
 
 Cache Variables
 ^^^^^^^^^^^^^^^
@@ -42,10 +58,10 @@ The following variables may be set to influence this module's behavior:
 ``PTSCOTCH_INCLUDE_DIR``
   Include directory where the ptscotch.h is found.
 
-``SCOTCH_LIBRARY``
+``SCOTCH_LIBRARY`` and ``SCOTCHERR_LIBRARY``
   Full path to the scotch library
 
-``PTSCOTCH_LIBRARY``
+``PTSCOTCH_LIBRARY`` and ``PTSCOTCHERR_LIBRARY``
   Full path to the ptscotch library
 
 #]=======================================================================]
@@ -57,7 +73,8 @@ set_package_properties("PTScotch" PROPERTIES
 )
 
 # find dependency for PTScotch
-find_package(MPI)
+include(CMakeFindDependencyMacro)
+find_dependency(MPI)
 
 # search directory might have the PATH_SUFFIX scotch-SUFFIX
 if(PTSCOTCH_SUFFIX)
@@ -68,30 +85,17 @@ endif()
 
 # Try to find the include files
 find_path(SCOTCH_INCLUDE_DIR scotch.h
-  PATH_SUFFIXES ${PATH_SUFFIXES}
-  NO_DEFAULT_PATH)
-find_path(SCOTCH_INCLUDE_DIR scotch.h
   PATH_SUFFIXES ${PATH_SUFFIXES})
 
 find_path(PTSCOTCH_INCLUDE_DIR ptscotch.h
   HINTS ${SCOTCH_INCLUDE_DIR}
-  PATH_SUFFIXES ${PATH_SUFFIXES}
-  NO_DEFAULT_PATH)
-find_path(PTSCOTCH_INCLUDE_DIR ptscotch.h
   PATH_SUFFIXES ${PATH_SUFFIXES})
 
 # Try to find the (pt)scotch libraries
-macro(_find_ptscotch_library libvar libname)
-  find_library(${libvar} ${libname}
-    PATH_SUFFIXES ${PATH_SUFFIXES}
-    NO_DEFAULT_PATH)
-  find_library(${libvar} ${libname})
-endmacro(_find_ptscotch_library)
-
-_find_ptscotch_library(SCOTCH_LIBRARY scotch)
-_find_ptscotch_library(SCOTCHERR_LIBRARY scotcherr)
-_find_ptscotch_library(PTSCOTCH_LIBRARY ptscotch)
-_find_ptscotch_library(PTSCOTCHERR_LIBRARY ptscotcherr)
+find_library(SCOTCH_LIBRARY scotch)
+find_library(SCOTCHERR_LIBRARY scotcherr)
+find_library(PTSCOTCH_LIBRARY ptscotch)
+find_library(PTSCOTCHERR_LIBRARY ptscotcherr)
 
 mark_as_advanced(SCOTCH_INCLUDE_DIR SCOTCH_LIBRARY SCOTCHERR_LIBRARY
                  PTSCOTCH_INCLUDE_DIR PTSCOTCH_LIBRARY PTSCOTCHERR_LIBRARY)
@@ -120,21 +124,33 @@ if(SCOTCH_HEADER)
 endif()
 unset(SCOTCH_HEADER CACHE)
 
+# set if (PT)Scotch components found
+if (SCOTCH_INCLUDE_DIR AND SCOTCH_LIBRARY AND SCOTCHERR_LIBRARY)
+  set(PTScotch_SCOTCH_FOUND TRUE)
+endif ()
+
+if (PTSCOTCH_INCLUDE_DIR AND PTSCOTCH_LIBRARY AND PTSCOTCHERR_LIBRARY AND MPI_FOUND)
+  set(PTScotch_PTSCOTCH_FOUND TRUE)
+endif ()
+
+# dependencies between components
+if (NOT PTScotch_SCOTCH_FOUND)
+  set(PTScotch_PTSCOTCH_FOUND FALSE)
+endif ()
 
 # behave like a CMake module is supposed to behave
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args("PTScotch"
   REQUIRED_VARS
-    SCOTCH_LIBRARY SCOTCHERR_LIBRARY SCOTCH_INCLUDE_DIR
-    PTSCOTCH_LIBRARY PTSCOTCHERR_LIBRARY PTSCOTCH_INCLUDE_DIR
-    MPI_FOUND
+    SCOTCH_LIBRARY
   VERSION_VAR
     PTScotch_VERSION
+  HANDLE_COMPONENTS
 )
 
 if(PTScotch_FOUND)
   # Define an imported target for the sequential Scotch library
-  if(NOT TARGET PTScotch::Scotch)
+  if(PTScotch_SCOTCH_FOUND AND NOT TARGET PTScotch::Scotch)
     add_library(PTScotch::Scotch UNKNOWN IMPORTED)
     set_target_properties(PTScotch::Scotch PROPERTIES
       IMPORTED_LOCATION ${SCOTCH_LIBRARY}
@@ -144,7 +160,7 @@ if(PTScotch_FOUND)
   endif()
 
   # Define an imported target for the parallel PTScotch library
-  if(NOT TARGET PTScotch::PTScotch)
+  if(PTScotch_PTSCOTCH_FOUND AND NOT TARGET PTScotch::PTScotch)
     add_library(PTScotch::PTScotch UNKNOWN IMPORTED)
     set_target_properties(PTScotch::PTScotch PROPERTIES
       IMPORTED_LOCATION ${PTSCOTCH_LIBRARY}
