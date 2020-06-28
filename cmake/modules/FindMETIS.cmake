@@ -50,7 +50,8 @@ set_package_properties("METIS" PROPERTIES
 # The Scotch library provides a wrapper around some functions of METIS, since not
 # the full interface, you have to request it explicitly.
 option(ENABLE_SCOTCH_METIS "Use the Scotch library as METIS compatibility library" FALSE)
-set(SCOTCH_METIS_VERSION 0 CACHE STRING "METIS API version provided by scotch-metis library")
+set(SCOTCH_METIS_VERSION 0 CACHE STRING
+  "METIS API version provided by scotch-metis library")
 
 # Try to locate METIS header
 find_path(METIS_INCLUDE_DIR metis.h
@@ -98,7 +99,7 @@ unset(METIS_HEADER_FILE CACHE)
 # select the version in later scotch versions
 if(ENABLE_SCOTCH_METIS)
   include(CMakeFindDependencyMacro)
-  find_dependency(PTScotch)
+  find_dependency(PTScotch COMPONENTS SCOTCH)
   set(HAVE_SCOTCH_METIS ${PTScotch_FOUND})
   if (PTScotch_FOUND)
     if(PTScotch_VERSION VERSION_LESS "6.0.7")
