@@ -142,7 +142,7 @@ endif ()
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args("PTScotch"
   REQUIRED_VARS
-    SCOTCH_LIBRARY
+    SCOTCH_LIBRARY SCOTCHERR_LIBRARY SCOTCH_INCLUDE_DIR
   VERSION_VAR
     PTScotch_VERSION
   HANDLE_COMPONENTS
