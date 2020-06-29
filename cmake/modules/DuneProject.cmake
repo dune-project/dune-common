@@ -17,17 +17,14 @@ include_guard(GLOBAL)
 include(DuneCxaDemangle)
 include(DuneDoc)
 include(DuneModuleDependencies)
+include(DuneModuleInformation)
 include(DunePkgConfig)
 include(GNUInstallDirs)
 
 
 macro(dune_project)
-  define_property(GLOBAL PROPERTY DUNE_MODULE_LIBRARIES
-        BRIEF_DOCS "List of libraries of the module. DO NOT EDIT!"
-        FULL_DOCS "List of libraries of the module. Used to generate CMake's package configuration files. DO NOT EDIT!")
-
-  include(DuneModuleInformation)
-  dune_module_information(${CMAKE_SOURCE_DIR})
+  # extract information from dune.module
+  dune_module_information(${PROJECT_SOURCE_DIR})
   if(NOT PROJECT_VERSION OR NOT PROJECT_VERSION_MAJOR)
     # extract information from dune.module
     set(PROJECT_VERSION         "${DUNE_MOD_VERSION}" CACHE STRING "")
@@ -36,6 +33,38 @@ macro(dune_project)
     set(PROJECT_VERSION_PATCH   "${DUNE_VERSION_REVISION}" CACHE STRING "")
   endif()
 
+  # check whether this module has been explicitly disabled through the cmake flags.
+  # If so, stop the build. This is necessary because dunecontrol does not parse
+  # the given CMake flags for a disabled Dune modules.
+  if(CMAKE_DISABLE_FIND_PACKAGE_${PROJECT_NAME})
+    message("Module ${PROJECT_NAME} has been explicitly disabled through the cmake flags. Skipping build.")
+    return()
+  endif()
+
+  define_property(GLOBAL PROPERTY DUNE_MODULE_LIBRARIES
+    BRIEF_DOCS "List of libraries of the module. DO NOT EDIT!"
+    FULL_DOCS "List of libraries of the module. Used to generate CMake's package configuration files. DO NOT EDIT!")
+
+  option(DUNE_USE_ONLY_STATIC_LIBS "If set to ON, we will force static linkage everywhere" OFF)
+  if(DUNE_USE_ONLY_STATIC_LIBS)
+    if(BUILD_SHARED_LIBS)
+      message(FATAL_ERROR "Your requesting to use only static libraries "
+        "(DUNE_USE_ONLY_STATIC_LIBS==True) while at same time requesting to "
+        "build shared libraries (BUILD_SHARED_LIBS==True). This is a "
+        "contradiction!")
+    endif()
+  endif()
+  option(DUNE_BUILD_BOTH_LIBS "If set to ON, shared and static libs will be built"
+    ${_default_enable_static})
+
+  # As default request position independent code if shared libraries are built
+  # This should allow DUNE modules to use CMake's object libraries.
+  # This can be overwritten for targets by setting the target property
+  # POSITION_INDEPENDENT_CODE to false/OFF
+  include(CMakeDependentOption)
+  cmake_dependent_option(CMAKE_POSITION_INDEPENDENT_CODE "Build position independent code" ON "NOT BUILD_SHARED_LIBS" ON)
+
+  # Create a library for the dune project
   add_library(${PROJECT_NAME})
   add_library(Dune::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
   set_property(GLOBAL APPEND PROPERTY DUNE_MODULE_LIBRARIES Dune::${PROJECT_NAME})
