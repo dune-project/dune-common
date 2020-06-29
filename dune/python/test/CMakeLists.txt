@@ -4,9 +4,9 @@ dune_python_add_test(NAME pythontests
                      LABELS quick)
 
 dune_add_test(SOURCES test_embed1.cc
-              LINK_LIBRARIES ${DUNE_LIBS} ${PYTHON_LIBRARIES}
+              LINK_LIBRARIES dune-common ${PYTHON_LIBRARIES}
               LABELS quick
               )
 
 add_executable(test_embed2 EXCLUDE_FROM_ALL test_embed2.cc)
-target_link_libraries(test_embed2 ${DUNE_LIBS} ${PYTHON_LIBRARIES})
+target_link_libraries(test_embed2 dune-common ${PYTHON_LIBRARIES})

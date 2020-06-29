@@ -4,7 +4,7 @@
 #define DUNE_FMATRIXEIGENVALUES_CC
 
 #ifdef HAVE_CONFIG_H
-// #include <config.h>
+#include "config.h"
 #endif
 
 #include <iostream>
@@ -15,16 +15,6 @@
 #include <dune/common/unused.hh>
 
 #if HAVE_LAPACK
-
-#ifdef LAPACK_NEEDS_UNDERLINE
-  #define LAPACK_MANGLE(name,NAME) name##_
-#else
-  #define LAPACK_MANGLE(name,NAME) name
-#endif
-
-#ifndef FC_FUNC
-#define FC_FUNC LAPACK_MANGLE
-#endif
 
 // symmetric matrices
 #define DSYEV_FORTRAN FC_FUNC (dsyev, DSYEV)

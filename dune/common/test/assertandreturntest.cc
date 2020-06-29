@@ -1,6 +1,6 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 // vi: set et ts=4 sw=2 sts=2:
-// #include <config.h>
+#include <config.h>
 
 #ifdef NDEBUG
     #undef NDEBUG
@@ -49,7 +49,7 @@ try
 //
 // dune_add_test(NAME assertandreturntest_runtime_fail
 //               SOURCES assertandreturntest.cc
-//               LINK_LIBRARIES dunecommon
+//               LINK_LIBRARIES dune-common
 //               COMPILE_DEFINITIONS "TEST_RUNTIME_FAIL"
 //               EXPECT_FAIL
 //               LABELS quick)

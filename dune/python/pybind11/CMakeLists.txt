@@ -1,5 +1,3 @@
-add_subdirectory(detail)
-
 SET(HEADERS
   attr.h
   buffer_info.h
@@ -22,4 +20,7 @@ SET(HEADERS
   stl.h
 )
 
-install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/python/pybind11)
+install(FILES ${HEADERS}
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/python/pybind11)
+
+add_subdirectory(detail)

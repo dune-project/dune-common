@@ -3,7 +3,7 @@
 // Test the new (Dune) interface of float_cmp
 
 #ifdef HAVE_CONFIG_H
-// #include <config.h>
+#include "config.h"
 #endif
 
 #include <iostream>
