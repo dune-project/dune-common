@@ -140,7 +140,7 @@ macro(finalize_dune_project)
   endif()
   target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_CONFIG_H)
 
-  if (CMAKE_SOURCE_DIR EQUAL PROJECT_SOURCE_DIR)
+  if (CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
     feature_summary(WHAT ALL)
   endif()
 endmacro(finalize_dune_project)

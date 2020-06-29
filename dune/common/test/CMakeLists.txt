@@ -248,7 +248,7 @@ dune_add_test(SOURCES parmetistest.cc
               CMAKE_GUARD ParMETIS_FOUND
               LABELS quick)
 if (ParMETIS_FOUND)
-  target_link_libraries(parmetistest ParMETIS::ParMETIS)
+  target_link_libraries(parmetistest PUBLIC ParMETIS::ParMETIS)
 endif()
 
 dune_add_test(SOURCES pathtest.cc
