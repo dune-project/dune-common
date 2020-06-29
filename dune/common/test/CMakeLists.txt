@@ -200,11 +200,10 @@ dune_add_test(SOURCES mathclassifierstest.cc)
 find_package(METIS)
 dune_add_test(SOURCES metistest.cc
               COMPILE_DEFINITIONS "HAVE_METIS"
-              LINK_LIBRARIES METIS::METIS
               CMAKE_GUARD METIS_FOUND)
-# if (METIS_FOUND)
-#   target_link_libraries(metistest PUBLIC METIS::METIS)
-# endif ()
+if (METIS_FOUND)
+  target_link_libraries(metistest PUBLIC METIS::METIS)
+endif ()
 
 dune_add_test(SOURCES mpicommunicationtest.cc
               MPI_RANKS 1 2 4 8
@@ -246,12 +245,11 @@ dune_add_test(SOURCES parmetistest.cc
               MPI_RANKS 4
               TIMEOUT 300
               COMPILE_DEFINITIONS "HAVE_PARMETIS"
-              LINK_LIBRARIES ParMETIS::ParMETIS
               CMAKE_GUARD ParMETIS_FOUND
               LABELS quick)
-# if (ParMETIS_FOUND)
-#   target_link_libraries(parmetistest ParMETIS::ParMETIS)
-# endif()
+if (ParMETIS_FOUND)
+  target_link_libraries(parmetistest ParMETIS::ParMETIS)
+endif()
 
 dune_add_test(SOURCES pathtest.cc
               LABELS quick)
