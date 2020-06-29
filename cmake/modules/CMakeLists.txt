@@ -1,29 +1,66 @@
-set(INSTALL_FILES
-  DuneAddLibrary.cmake
-  DuneAddTest.cmake
+install(FILES
+  AddGMPFlags.cmake
+  AddMETISFlags.cmake
+  AddMPIFlags.cmake
+  AddParMETISFlags.cmake
+  AddPTScotchFlags.cmake
+  AddQuadMathFlags.cmake
+  AddSuiteSparseFlags.cmake
+  AddVcFlags.cmake
+  CheckCXXFeatures.cmake
+  CMakeBuiltinFunctionsDocumentation.cmake
+  DuneAddPybind11Module.cmake
   DuneCheckCXXSourceCompiles.cmake
-  DuneDeclareTestLabel.cmake
-  DuneFeatureSummary.cmake
-  DuneInstallLibrary.cmake
+  DuneCMakeCompat.cmake
+  DuneCommonMacros.cmake
+  DuneConfigFile.cmake
+  DuneCxaDemangle.cmake
+  DuneDoc.cmake
+  DuneDoxygen.cmake
+  DuneEnableAllPackages.cmake
+  DuneExecuteProcess.cmake
+  DuneInstance.cmake
   DuneMacros.cmake
-  DuneModuleName.cmake
-  DuneTesting.cmake
-  DuneTargetOptionalCompileFeatures.cmake
+  DuneModuleDependencies.cmake
+  DuneModuleInformation.cmake
+  DuneMPI.cmake
+  DunePathHelper.cmake
+  DunePkgConfig.cmake
+  DuneProject.cmake
+  DunePythonCommonMacros.cmake
+  DunePythonFindPackage.cmake
+  DunePythonInstallPackage.cmake
+  DunePythonMacros.cmake
+  DunePythonRequireVersion.cmake
+  DunePythonTestCommand.cmake
+  DunePythonVirtualenv.cmake
+  DuneSphinxDoc.cmake
+  DuneSphinxCMakeDoc.cmake
+  DuneStreams.cmake
+  DuneSymlinkOrCopy.cmake
+  DuneTestMacros.cmake
+  FinalizeDuneProject.cmake
   FindBLAS.cmake
-  FindHYPRE.cmake
+  FindDunePackage.cmake
+  FindGMP.cmake
+  FindInkscape.cmake
   FindLAPACK.cmake
+  FindLatexMk.cmake
+  FindMETIS.cmake
   FindMProtect.cmake
+  FindParMETIS.cmake
+  FindPTScotch.cmake
+  FindQuadMath.cmake
+  FindSphinx.cmake
+  FindSuiteSparse.cmake
+  FindTBB.cmake
+  Headercheck.cmake
+  latexmkrc.cmake
+  Message.cmake
+  OverloadCompilerFlags.cmake
+  TargetOptionalCompileFeatures.cmake
   TargetSourcesLocal.cmake
-)
-
-install(
-  FILES ${INSTALL_FILES}
-  DESTINATION
-    ${CMAKE_INSTALL_DATADIR}/cmake
-)
-
-foreach (file ${INSTALL_FILES})
-  configure_file(${file} ${PROJECT_BINARY_DIR}/${file} COPYONLY)
-endforeach (file)
-
-add_subdirectory(legacy)
+  UseInkscape.cmake
+  UseLatexMk.cmake
+  Utilities.cmake
+  DESTINATION ${DUNE_INSTALL_MODULEDIR})

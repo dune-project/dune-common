@@ -3,7 +3,7 @@
 #ifndef DUNE_PYTHON_COMMON_MPIHELPER_HH
 #define DUNE_PYTHON_COMMON_MPIHELPER_HH
 
-// #include <config.h>
+#include <config.h>
 
 #include <dune/common/parallel/communication.hh>
 #include <dune/common/parallel/mpihelper.hh>

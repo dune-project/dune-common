@@ -1,6 +1,6 @@
 // @GENERATED_SOURCE@
 
-// #include <config.h>
+#include <config.h>
 
 #include <dune/common/debugalign.hh>
 #include <dune/common/simd/test.hh>

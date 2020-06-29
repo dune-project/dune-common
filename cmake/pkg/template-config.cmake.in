@@ -1,0 +1,25 @@
+@PACKAGE_INIT@
+
+# Find dependencies and stop package config if required ones are not found
+include(CMakeFindDependencyMacro)
+
+set(@PROJECT_NAME@_PREFIX @CMAKE_CURRENT_LIST_DIR@)
+set(@PROJECT_NAME@_MODULE_PATH @CMAKE_CURRENT_LIST_DIR@/cmake/modules)
+set(@PROJECT_NAME@_SCRIPT_DIR @CMAKE_CURRENT_LIST_DIR@/cmake/scripts)
+set(@PROJECT_NAME@_PKG_PATH @CMAKE_CURRENT_LIST_DIR@/cmake/pkg)
+#set_and_check(DOXYSTYLE_FILE "@PACKAGE_DOXYSTYLE_DIR@/Doxystyle")
+#set_and_check(DOXYGENMACROS_FILE "@PACKAGE_DOXYSTYLE_DIR@/doxygen-macros")
+set(@PROJECT_NAME@_LIBRARIES @DUNE_MODULE_LIBRARIES@)
+
+list(APPEND CMAKE_MODULE_PATH @CMAKE_CURRENT_LIST_DIR@/cmake/modules)
+
+# include the configuration of exported targets
+include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@-targets.cmake")
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@-legacy-targets.cmake")
+  include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@-legacy-targets.cmake")
+endif()
+
+# Finish package configuration:
+# checks whether all requested, non-optional components have been found,
+# and if this is not the case, sets the @PROJECT_NAME@_FOUND variable to FALSE
+check_required_components("@PROJECT_NAME@")

@@ -2,10 +2,10 @@
 
 std::size_t ${module_lib_mangled}_version()
 {
-  return ${ProjectVersionMajor} * 10000 + ${ProjectVersionMinor} * 100 + ${ProjectVersionRevision};
+  return ${PROJECT_VERSION_MAJOR} * 10000 + ${PROJECT_VERSION_MINOR} * 100 + ${PROJECT_VERSION_PATCH};
 }
 
 std::string ${module_lib_mangled}_version_string()
 {
-  return "${ProjectVersion}";
+  return "${PROJECT_VERSION}";
 }

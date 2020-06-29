@@ -1,4 +1,5 @@
 add_executable(mpi_collective_benchmark EXCLUDE_FROM_ALL mpi_collective_benchmark.cc)
-target_link_libraries(mpi_collective_benchmark PRIVATE Dune::dune-common)
+dune_target_link_libraries(mpi_collective_benchmark "dune-common")
+add_dune_mpi_flags(mpi_collective_benchmark)
 
 configure_file(options.ini options.ini COPYONLY)

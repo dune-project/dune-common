@@ -2,7 +2,7 @@
 // vi: set et ts=4 sw=2 sts=2:
 
 #if HAVE_CONFIG_H
-// #include <config.h>
+#include "config.h"
 #endif
 
 #include <cmath>

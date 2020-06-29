@@ -362,7 +362,7 @@ done
 ################## CMakeLists.txt ##################
 echo "- $PROJECT/CMakeLists.txt"
 cat> "$PROJECT/CMakeLists.txt" << M_DELIM
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.13)
 project($PROJECT VERSION 2.8.0 LANGUAGES C CXX)
 
 list(APPEND CMAKE_MODULE_PATH \${PROJECT_SOURCE_DIR}/cmake/modules)
@@ -373,7 +373,7 @@ include(DuneMacros)
 include($rawmacroname)
 
 # create a new library target
-dune_add_library($PROJECT)
+dune_project()
 
 # module dependencies
 ${LINK_DEPENDENCIES%?}
@@ -382,8 +382,7 @@ ${LINK_DEPENDENCIES%?}
 add_subdirectory(cmake/modules)
 add_subdirectory(dune)
 
-dune_install_library($PROJECT)
-dune_feature_summary(WHAT ALL)
+finalize_dune_project(GENERATE_CONFIG_H_FILE)
 M_DELIM
 
 ###############################################################

@@ -1,23 +1,50 @@
-if(NOT @DUNE_MOD_NAME@_FOUND)
 @PACKAGE_INIT@
 
-#import the target
-get_filename_component(_dir "${CMAKE_CURRENT_LIST_FILE}" PATH)
-include("${_dir}/@DUNE_MOD_NAME@-targets.cmake")
+# Find dependencies and stop package config if required ones are not found
+include(CMakeFindDependencyMacro)
 
-#report other information
-set_and_check(@DUNE_MOD_NAME@_PREFIX "${PACKAGE_PREFIX_DIR}")
-set_and_check(@DUNE_MOD_NAME@_INCLUDE_DIRS "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@")
-set(@DUNE_MOD_NAME@_CXX_FLAGS "@CMAKE_CXX_FLAGS@")
-set(@DUNE_MOD_NAME@_CXX_FLAGS_DEBUG "@CMAKE_CXX_FLAGS_DEBUG@")
-set(@DUNE_MOD_NAME@_CXX_FLAGS_MINSIZEREL "@CMAKE_CXX_FLAGS_MINSIZEREL@")
-set(@DUNE_MOD_NAME@_CXX_FLAGS_RELEASE "@CMAKE_CXX_FLAGS_RELEASE@")
-set(@DUNE_MOD_NAME@_CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@")
-set(@DUNE_MOD_NAME@_LIBRARIES "dunecommon")
-set_and_check(@DUNE_MOD_NAME@_SCRIPT_DIR "@PACKAGE_SCRIPT_DIR@")
-set_and_check(DOXYSTYLE_FILE "@PACKAGE_DOXYSTYLE_DIR@/Doxystyle")
-set_and_check(DOXYGENMACROS_FILE "@PACKAGE_DOXYSTYLE_DIR@/doxygen-macros")
-set(@DUNE_MOD_NAME@_DEPENDS "@DUNE_DEPENDS@")
-set(@DUNE_MOD_NAME@_SUGGESTS "@DUNE_SUGGESTS@")
-set_and_check(@DUNE_MOD_NAME@_MODULE_PATH "@PACKAGE_DUNE_INSTALL_MODULEDIR@")
-endif(NOT @DUNE_MOD_NAME@_FOUND)
+set(@PROJECT_NAME@_PREFIX @CMAKE_CURRENT_LIST_DIR@)
+set(@PROJECT_NAME@_MODULE_PATH @CMAKE_CURRENT_LIST_DIR@/cmake/modules)
+set(@PROJECT_NAME@_SCRIPT_DIR @CMAKE_CURRENT_LIST_DIR@/cmake/scripts)
+set(@PROJECT_NAME@_PKG_PATH @CMAKE_CURRENT_LIST_DIR@/cmake/pkg)
+#set_and_check(DOXYSTYLE_FILE "@DOXYSTYLE_DIR@/Doxystyle")
+#set_and_check(DOXYGENMACROS_FILE "@DOXYSTYLE_DIR@/doxygen-macros")
+set(@PROJECT_NAME@_LIBRARIES Dune::@PROJECT_NAME@)
+
+list(APPEND CMAKE_MODULE_PATH @CMAKE_CURRENT_LIST_DIR@/cmake/modules)
+
+if(@GMP_FOUND@)
+  find_dependency(GMP)
+endif()
+
+if(@LAPACK_FOUND@)
+  find_dependency(LAPACK)
+endif()
+
+if(@MPI_FOUND@)
+  find_dependency(MPI)
+endif()
+
+if(@MProtect_FOUND@)
+  set(HAVE_SYS_MMAN_H @HAVE_SYS_MMAN_H@)
+  set(HAVE_MPROTECT @HAVE_MPROTECT@)
+  find_dependency(MProtect)
+endif()
+
+if(@QuadMath_FOUND@)
+  set(QuadMath_COMPILES @QuadMath_COMPILES@)
+  find_dependency(QuadMath)
+endif()
+
+# more packages to include:
+# - inkscape
+# - TBB
+# - Vc
+
+# include the configuration of exported targets
+include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@-targets.cmake")
+
+# Finish package configuration:
+# checks whether all requested, non-optional components have been found,
+# and if this is not the case, sets the @PROJECT_NAME@_FOUND variable to FALSE
+check_required_components("@PROJECT_NAME@")

@@ -1,6 +1,6 @@
-if (MProtect_FOUND)
+if(HAVE_MPROTECT)
   set(debugallocator_src "debugallocator.cc")
-endif ()
+endif(HAVE_MPROTECT)
 
 target_sources_local(dune-common PRIVATE
   debugalign.cc
@@ -118,3 +118,10 @@ add_subdirectory(parallel)
 add_subdirectory(simd)
 add_subdirectory(std)
 add_subdirectory(test)
+
+
+# Install some test headers, because they get used by tests in other modules
+# We do this here as test will not be considered for make install
+# install(FILES test/iteratortest.hh
+#   test/checkmatrixinterface.hh
+#   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common/test)
