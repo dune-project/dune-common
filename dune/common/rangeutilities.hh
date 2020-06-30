@@ -16,13 +16,14 @@
  * \author Christian Engwer
  */
 
-/**
- * @addtogroup RangeUtilities
- * @{
- */
-
 namespace Dune
 {
+
+  /**
+   * @addtogroup RangeUtilities
+   * @{
+   */
+
   /**
      \brief compute the maximum value over a range
 
@@ -801,10 +802,30 @@ namespace Dune
     return TransformedRangeView<R, F, IteratorTransformationTag>(std::forward<R>(range), f);
   }
 
-}
 
-/**
- * @}
- */
+  /**
+   * \brief Allow structured-binding for-loops for sparse iterators
+   *
+   * Given a sparse range `R` whose iterators `it`
+   * provide (additionally to dereferencing) a method
+   * `it->index()` for accessing the index of the current entry in the
+   * sparse range, this allows to write code like
+   * \code
+   * for(auto&& [A_i, i] : sparseRange(R))
+   *   doSomethingWithValueAndIndex(A_i, i);
+   * \endcode
+   */
+  template<class Range>
+  auto sparseRange(Range&& range) {
+    return Dune::iteratorTransformedRangeView(std::forward<Range>(range), [](auto&& it) {
+        return std::tuple<decltype(*it), decltype(it.index())>(*it, it.index());
+    });
+  }
+
+  /**
+   * @}
+   */
+
+}
 
 #endif // DUNE_COMMON_RANGE_UTILITIES_HH
