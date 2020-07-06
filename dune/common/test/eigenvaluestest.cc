@@ -115,6 +115,18 @@ void testSymmetricFieldMatrix()
         DUNE_THROW(MathError, "Value computed by FMatrixHelp::eigenValues is not an eigenvalue, Determinant: "+std::to_string(std::fabs(copy.determinant())));
     }*/
 
+    // Make sure eigenvalues and eigenvectors are not NaN (the subsequent tests do not find this!)
+    for (int j=0; j<dim; j++)
+    {
+      using std::isnan;
+      if (isnan(eigenValues[j]))
+        DUNE_THROW(MathError, j << "-th eigenvalue is NaN!");
+
+      for (std::size_t k=0; k<dim; k++)
+        if (isnan(eigenVectors[j][k]))
+          DUNE_THROW(MathError, j << "-th eigenvector contains NaN!");
+    }
+
     // Make sure the eigenvalues are in ascending order
     for (int j=0; j<dim-1; j++)
       if (eigenValues[j] > eigenValues[j+1] + 1e-10)
@@ -233,6 +245,12 @@ void checkMultiplicity()
   //eigenvalues with same magnitude (x2)
   checkMatrixWithReference<FT,2>({{0, 1}, {1, 0}}, {{1,-1}, {1,1}}, {-1, 1});
 
+  // singular matrix
+  checkMatrixWithReference<FT,2>({{1, 0},{0, 0}}, {{0,1}, {1,0}}, {0, 1});
+
+  // another singular matrix (triggers a different code path)
+  checkMatrixWithReference<FT,2>({{0, 0},{0, 1}}, {{1,0}, {0,1}}, {0, 1});
+
   //--3d--
   //repeated eigenvalue (x3)
   checkMatrixWithReference<FT,3>({{  1,   0,   0},
@@ -254,6 +272,20 @@ void checkMultiplicity()
                                       {  0,   0,   5}},
     {{1,1,0}, {0,0,1}, {1,-1,0}},
     {1, 5, 5});
+
+  // singular non-diagonal matrix
+  checkMatrixWithReference<FT,3>({{  0,   0,   0},
+                                  {  0,   1,   1},
+                                  {  0,   1,   1}},
+    {{1,0,0}, {0,-1.0/std::sqrt(2.0),1.0/std::sqrt(2.0)}, {0,1.0/std::sqrt(2.0),1.0/std::sqrt(2.0)}},
+    {0, 0, 2});
+
+  // singular diagonal matrix (that's a different code path again)
+  checkMatrixWithReference<FT,3>({{  0,   0,   0},
+                                  {  0,   1,   0},
+                                  {  0,   0,   0}},
+    {{1,0,0}, {0,0,1}, {0,1,0}},
+    {0, 0, 1});
 
   //repeat tests with LAPACK (if found)
 #if HAVE_LAPACK
