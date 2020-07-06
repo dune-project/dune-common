@@ -305,9 +305,19 @@ namespace Dune {
                                      FieldVector<K, 2>& eigenValues,
                                      FieldMatrix<K, 2, 2>& eigenVectors)
       {
+        // Compute eigen values
         Impl::eigenValues2dImpl(matrix, eigenValues);
 
+        // Compute eigenvectors by exploiting the Cayley–Hamilton theorem.
+        // If λ_1, λ_2 are the eigenvalues, then (A - λ_1I )(A - λ_2I ) = (A - λ_2I )(A - λ_1I ) = 0,
+        // so the columns of (A - λ_2I ) are annihilated by (A - λ_1I ) and vice versa.
+        // Assuming neither matrix is zero, the columns of each must include eigenvectors
+        // for the other eigenvalue. (If either matrix is zero, then A is a multiple of the
+        // identity and any non-zero vector is an eigenvector.)
+        // From: https://en.wikipedia.org/wiki/Eigenvalue_algorithm#2x2_matrices
         if constexpr(Tag==EigenvaluesEigenvectors) {
+
+          // Special casing for multiples of the identity
           FieldMatrix<K,2,2> temp = matrix;
           temp[0][0] -= eigenValues[0];
           temp[1][1] -= eigenValues[0];
@@ -316,11 +326,25 @@ namespace Dune {
             eigenVectors[1] = {0.0, 1.0};
           }
           else {
+            using std::isnormal;
+            // Try whether the first colum of A - λ_2I is a good eigenvector for λ_1
             FieldVector<K,2> ev = {matrix[0][0]-eigenValues[1], matrix[1][0]};
             K norm = std::sqrt(ev[0]*ev[0] + ev[1]*ev[1]);
+            if (!isnormal(norm)) // No, that column is zero, take the other one
+            {
+              ev = {matrix[0][1], matrix[1][1]-eigenValues[1]};
+              norm = std::sqrt(ev[0]*ev[0] + ev[1]*ev[1]);
+            }
             eigenVectors[0] = ev/norm;
+
+            // Try whether the first colum of A - λ_1I is a good eigenvector for λ_2
             ev = {matrix[0][0]-eigenValues[0], matrix[1][0]};
             norm = std::sqrt(ev[0]*ev[0] + ev[1]*ev[1]);
+            if (!isnormal(norm)) // No, that column is zero, take the other one
+            {
+              ev = {matrix[0][1], matrix[1][1]-eigenValues[0]};
+              norm = std::sqrt(ev[0]*ev[0] + ev[1]*ev[1]);
+            }
             eigenVectors[1] = ev/norm;
           }
         }
