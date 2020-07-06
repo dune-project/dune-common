@@ -90,15 +90,30 @@ void testRosserMatrix()
 template <class field_type, int dim>
 void testSymmetricFieldMatrix()
 {
-  int numberOfTestMatrices = 10;
+  int numberOfTestMatrices = 12;
 
   for (int i=0; i<numberOfTestMatrices; i++)
   {
-    // Construct pseudo-random symmetric test matrix
     FieldMatrix<field_type,dim,dim> testMatrix;
-    for (int j=0; j<dim; j++)
-      for (int k=j; k<dim; k++)
-        testMatrix[j][k] = testMatrix[k][j] = ((int)(M_PI*j*k*i))%100 - 1;
+
+    if (i==0)  // Test with a singular matrix
+    {
+      testMatrix = 0;
+      testMatrix[0][0] = 1.0;
+    }
+    else if (i==1)  // Test with a different singular matrix
+                    // Triggers a different code path in the 2x2 implementation
+    {
+      testMatrix = 0;
+      testMatrix[dim-1][dim-1] = 1.0;
+    }
+    else
+    {
+      // Construct pseudo-random symmetric test matrix
+      for (int j=0; j<dim; j++)
+        for (int k=j; k<dim; k++)
+          testMatrix[j][k] = testMatrix[k][j] = ((int)(M_PI*j*k*i))%100 - 1;
+    }
 
     FieldVector<field_type,dim> eigenValues;
     FieldMatrix<field_type,dim,dim> eigenVectors;
@@ -114,6 +129,18 @@ void testSymmetricFieldMatrix()
       if (std::fabs(copy.determinant()) > 1e-8)
         DUNE_THROW(MathError, "Value computed by FMatrixHelp::eigenValues is not an eigenvalue, Determinant: "+std::to_string(std::fabs(copy.determinant())));
     }*/
+
+    // Make sure eigenvalues and eigenvectors are not NaN (the subsequent tests do not find this!)
+    for (int j=0; j<dim; j++)
+    {
+      using std::isnan;
+      if (isnan(eigenValues[j]))
+        DUNE_THROW(MathError, j << "-th eigenvalue is NaN!");
+
+      for (std::size_t k=0; k<dim; k++)
+        if (isnan(eigenVectors[j][k]))
+          DUNE_THROW(MathError, j << "-th eigenvector contains NaN!");
+    }
 
     // Make sure the eigenvalues are in ascending order
     for (int j=0; j<dim-1; j++)
