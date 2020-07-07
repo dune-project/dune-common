@@ -416,6 +416,10 @@ add_dune_vc_flags(vcexpectedimpltest)
 dune_add_test(SOURCES alignedallocatortest.cc
               LINK_LIBRARIES dunecommon)
 
+dune_add_test(SOURCES eigenvaluesvectorstest.cc
+              LINK_LIBRARIES dunecommon
+              CMAKE_GUARD LAPACK_FOUND)
+
 install(
   FILES
   arithmetictestsuite.hh
