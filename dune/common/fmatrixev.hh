@@ -369,8 +369,29 @@ namespace Dune {
 
         if constexpr(Tag==EigenvaluesEigenvectors) {
           K offDiagNorm = matrix[0][1]*matrix[0][1] + matrix[0][2]*matrix[0][2] + matrix[1][2]*matrix[1][2];
-          if(offDiagNorm <= std::numeric_limits<K>::epsilon())
+          if (offDiagNorm <= std::numeric_limits<K>::epsilon())
+          {
+            eigenValues = {matrix[0][0], matrix[1][1], matrix[2][2]};
             eigenVectors = {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}};
+
+            // Use bubble sort to jointly sort eigenvalues and eigenvectors
+            // such that eigenvalues are ascending
+            if (eigenValues[0] > eigenValues[1])
+            {
+              std::swap(eigenValues[0], eigenValues[1]);
+              std::swap(eigenVectors[0], eigenVectors[1]);
+            }
+            if (eigenValues[1] > eigenValues[2])
+            {
+              std::swap(eigenValues[1], eigenValues[2]);
+              std::swap(eigenVectors[1], eigenVectors[2]);
+            }
+            if (eigenValues[0] > eigenValues[1])
+            {
+              std::swap(eigenValues[0], eigenValues[1]);
+              std::swap(eigenVectors[0], eigenVectors[1]);
+            }
+          }
           else {
             /*Compute the eigenvectors so that the set
             [evec[0], evec[1], evec[2]] is right handed and
