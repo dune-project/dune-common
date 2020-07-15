@@ -34,6 +34,14 @@ find_package(Inkscape)
 include(UseInkscape)
 include(FindMProtect)
 
+# Add support for spdlog
+find_package(spdlog)
+set_package_properties("spdlog" PROPERTIES
+  DESCRIPTION "Fast C++ logging library"
+  URL "https://github.com/gabime/spdlog"
+)
+include(AddSpdlogFlags)
+
 find_package(TBB OPTIONAL_COMPONENTS cpf allocator)
 
 # try to find the Vc library

@@ -80,6 +80,9 @@
    to facilitate activating and deactivating Vc using compile flags. */
 #cmakedefine HAVE_VC ENABLE_VC
 
+/* Define if you have the spdlog library. */
+#cmakedefine HAVE_SPDLOG ENABLE_SPDLOG
+
 /* Define to 1 if you have the symbol mprotect. */
 #cmakedefine HAVE_MPROTECT 1
 
