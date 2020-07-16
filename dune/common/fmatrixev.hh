@@ -364,6 +364,15 @@ namespace Dune {
         value of the components.  This guards against floating-point
         overflow when computing the eigenvalues.*/
         K maxAbsElement = matrix.infinity_norm();
+        if (maxAbsElement==0)
+        {
+          eigenVectors = 0;
+          if constexpr(Tag==EigenvaluesEigenvectors)
+            for (int i=0; i<3; ++i)
+              for (int j=0; j<3; ++j)
+                eigenVectors[i][j] = (i==j);
+          return;
+        }
         Matrix scaledMatrix = matrix / maxAbsElement;
         K r = Impl::eigenValues3dImpl(scaledMatrix, eigenValues);
 

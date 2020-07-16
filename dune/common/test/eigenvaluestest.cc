@@ -152,6 +152,26 @@ void testSymmetricFieldMatrix()
   }
 }
 
+template <class field_type, int dim>
+void testZeroFieldMatrix()
+{
+  FieldMatrix<field_type,dim,dim> testMatrix;
+  FieldVector<field_type,dim> eigenValues;
+  FieldMatrix<field_type,dim,dim> eigenVectors;
+
+  testMatrix = 0;
+
+  FMatrixHelp::eigenValuesVectors(testMatrix, eigenValues, eigenVectors);
+  std::cout << eigenValues << std::endl;
+  std::cout << eigenVectors << std::endl;
+  if (eigenValues.infinity_norm() > 0)
+    DUNE_THROW(MathError, "Eigenvalues computed for zero matrix are non-zero");
+  for (int j=0; j<dim; j++)
+    if (eigenVectors[j].infinity_norm() < 1e-10)
+      DUNE_THROW(MathError, "Eigenvector computed for zero matrix is zero");
+}
+
+
 template<typename field_type, int dim>
 void compareEigenvectorSets(FieldMatrix<field_type,dim,dim> evec,
                               FieldVector<field_type,dim> refEval,
@@ -324,6 +344,13 @@ int main()
   testSymmetricFieldMatrix<float,3>();
   testSymmetricFieldMatrix<long double,2>();
   testSymmetricFieldMatrix<long double,3>();
+
+  testZeroFieldMatrix<float,2>();
+  testZeroFieldMatrix<double,2>();
+  testZeroFieldMatrix<long double,2>();
+  testZeroFieldMatrix<float,3>();
+  testZeroFieldMatrix<double,3>();
+  testZeroFieldMatrix<long double,3>();
 
   checkMultiplicity<double>();
   checkMultiplicity<float>();
