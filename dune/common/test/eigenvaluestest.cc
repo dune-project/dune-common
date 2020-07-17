@@ -254,6 +254,12 @@ void checkMultiplicity()
   // Seemingly simple diagonal matrix -- triggers unstable detection of zero columns
   checkMatrixWithReference<FT,2>({{1.01, 0},{0, 1}}, {{0,1}, {1,0}}, {1, 1.01});
 
+  // check 2x2 zero matrix
+  checkMatrixWithReference<FT,2>({{ 0, 0},
+                                  { 0, 0}},
+    {{1,0}, {0,1}},
+    {0, 0});
+
   //--3d--
   //repeated eigenvalue (x3)
   checkMatrixWithReference<FT,3>({{  1,   0,   0},
@@ -297,6 +303,13 @@ void checkMultiplicity()
                                   {  0,   0,   4}},
     {{0,1,0}, {1,0,0}, {0,0,1}},
     {2, 3, 4});
+
+  // check 3x3 zero matrix
+  checkMatrixWithReference<FT,3>({{  0,   0,   0},
+                                  {  0,   0,   0},
+                                  {  0,   0,   0}},
+    {{1,0,0}, {0,1,0}, {0,0,1}},
+    {0, 0, 0});
 
   //repeat tests with LAPACK (if found)
 #if HAVE_LAPACK

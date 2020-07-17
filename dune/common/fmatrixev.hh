@@ -354,7 +354,8 @@ namespace Dune {
         /* Precondition the matrix by factoring out the maximum absolute
         value of the components.  This guards against floating-point
         overflow when computing the eigenvalues.*/
-        K maxAbsElement = matrix.infinity_norm();
+        using std::isnormal;
+        K maxAbsElement = (isnormal(matrix.infinity_norm())) ? matrix.infinity_norm() : K(1.0);
         Matrix scaledMatrix = matrix / maxAbsElement;
         K r = Impl::eigenValues3dImpl(scaledMatrix, eigenValues);
 
