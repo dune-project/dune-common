@@ -290,6 +290,14 @@ void checkMultiplicity()
     {{1,0,0}, {0,0,1}, {0,1,0}},
     {0, 0, 1});
 
+  // diagonal matrix whose largest eigenvalue is not 1
+  // this tests the matrix scaling employed by the eigenvector code.
+  checkMatrixWithReference<FT,3>({{  3,   0,   0},
+                                  {  0,   2,   0},
+                                  {  0,   0,   4}},
+    {{0,1,0}, {1,0,0}, {0,0,1}},
+    {2, 3, 4});
+
   //repeat tests with LAPACK (if found)
 #if HAVE_LAPACK
   checkMatrixWithLAPACK<FT,2>({{1, 0}, {0, 1}});

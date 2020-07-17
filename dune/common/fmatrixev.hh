@@ -359,10 +359,10 @@ namespace Dune {
         K r = Impl::eigenValues3dImpl(scaledMatrix, eigenValues);
 
         if constexpr(Tag==EigenvaluesEigenvectors) {
-          K offDiagNorm = matrix[0][1]*matrix[0][1] + matrix[0][2]*matrix[0][2] + matrix[1][2]*matrix[1][2];
+          K offDiagNorm = Vector{scaledMatrix[0][1],scaledMatrix[0][2],scaledMatrix[1][2]}.two_norm2();
           if (offDiagNorm <= std::numeric_limits<K>::epsilon())
           {
-            eigenValues = {matrix[0][0], matrix[1][1], matrix[2][2]};
+            eigenValues = {scaledMatrix[0][0], scaledMatrix[1][1], scaledMatrix[2][2]};
             eigenVectors = {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}};
 
             // Use bubble sort to jointly sort eigenvalues and eigenvectors
