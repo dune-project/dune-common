@@ -251,6 +251,9 @@ void checkMultiplicity()
   // another singular matrix (triggers a different code path)
   checkMatrixWithReference<FT,2>({{0, 0},{0, 1}}, {{1,0}, {0,1}}, {0, 1});
 
+  // Seemingly simple diagonal matrix -- triggers unstable detection of zero columns
+  checkMatrixWithReference<FT,2>({{1.01, 0},{0, 1}}, {{0,1}, {1,0}}, {1, 1.01});
+
   //--3d--
   //repeated eigenvalue (x3)
   checkMatrixWithReference<FT,3>({{  1,   0,   0},
