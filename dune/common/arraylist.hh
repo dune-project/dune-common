@@ -194,14 +194,12 @@ namespace Dune
     /**
      * @brief The allocators for the smart pointer.
      */
-    typedef typename A::template rebind<std::shared_ptr<std::array<MemberType,chunkSize_> > >::other
-    SmartPointerAllocator;
+    using SmartPointerAllocator = typename std::allocator_traits<A>::template rebind_alloc< std::shared_ptr< std::array<MemberType,chunkSize_> > >;
 
     /**
      * @brief The allocator for the fixed array.
      */
-    typedef typename A::template rebind<std::array<MemberType,chunkSize_> >::other
-    ArrayAllocator;
+    using ArrayAllocator = typename std::allocator_traits<A>::template rebind_alloc< std::array<MemberType,chunkSize_> >;
 
     /**
      * @brief The iterator needs access to the private variables.
@@ -253,7 +251,7 @@ namespace Dune
   template<class T, int N, class A>
   class ArrayListIterator : public RandomAccessIteratorFacade<ArrayListIterator<T,N,A>,
                                 typename A::value_type,
-                                typename A::reference,
+                                typename A::value_type &,
                                 typename A::difference_type>
   {
 
@@ -269,9 +267,9 @@ namespace Dune
 
     typedef typename A::size_type size_type;
 
-    typedef typename A::reference reference;
+    using reference = typename A::value_type &;
 
-    typedef typename A::const_reference const_reference;
+    using const_reference = typename A::value_type const&;
 
     enum
     {
@@ -374,7 +372,7 @@ namespace Dune
   class ConstArrayListIterator
     : public RandomAccessIteratorFacade<ConstArrayListIterator<T,N,A>,
           const typename A::value_type,
-          typename A::const_reference,
+          typename A::value_type const&,
           typename A::difference_type>
   {
 
@@ -391,9 +389,10 @@ namespace Dune
 
     typedef typename A::size_type size_type;
 
-    typedef typename A::reference reference;
+    using reference = typename A::value_type &;
 
-    typedef typename A::const_reference const_reference;
+    using const_reference = typename A::value_type const&;
+
     enum
     {
       /**
