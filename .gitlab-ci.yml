@@ -1,7 +1,9 @@
 ---
 include:
-  - "https://gitlab.dune-project.org/core/ci-config/raw/master/config/common/master.yml"
-  - "https://gitlab.dune-project.org/core/ci-config/raw/master/jobs/common/master.yml"
+  - project: 'core/ci-config'
+    file: 'config/common/master.yml'
+  - project: 'core/ci-config'
+    file: 'jobs/common/master.yml'
 
 before_script:
   - . /duneci/bin/duneci-init-job
