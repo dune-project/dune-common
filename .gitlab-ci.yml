@@ -1,8 +1,10 @@
 ---
 include:
   - project: 'core/ci-config'
+    ref: master
     file: 'config/common/master.yml'
   - project: 'core/ci-config'
+    ref: master
     file: 'jobs/common/master.yml'
 
 before_script:
