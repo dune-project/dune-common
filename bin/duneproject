@@ -328,11 +328,11 @@ done
 echo "------------------------------------------"
 echo "writing initial files:"
 
-# complete module name with _ instead of - to not confuse automake
+# complete module name with _ instead of -
 fix_and_assign CMODULE $MODULE
 # module name without prefix "dune-"
 NAME=`echo $PROJECT | sed -e 's/dune[_-]//'`
-# $NAME with _ instead of - to not confuse automake
+# $NAME with _ instead of -
 NAME_=`echo $NAME | tr '-' '_'`
 # module name in uppercase with _ instead of -
 UNAME=`echo $PROJECT | tr '-' '_' | sed 's/\(.*\)/\U\1/'`
@@ -346,7 +346,7 @@ Preparing the Sources
 Additional to the software mentioned in README you'll need the
 following programs installed on your system:
 
-  cmake >= 2.8.12
+  cmake >= 3.1
 
 Getting started
 ---------------
