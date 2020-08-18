@@ -485,7 +485,7 @@ constexpr decltype(auto) switchCases(const Cases& cases, const Value& value, Bra
 template<class Cases, class Value, class Branches>
 constexpr void switchCases(const Cases& cases, const Value& value, Branches&& branches)
 {
-  return Impl::switchCases<void>(cases, value, std::forward<Branches>(branches), []() {});
+  Impl::switchCases<void>(cases, value, std::forward<Branches>(branches), []() {});
 }
 
 
