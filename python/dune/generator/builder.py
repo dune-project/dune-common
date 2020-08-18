@@ -113,7 +113,7 @@ class Builder:
             self.savedOutput[0].write(buffer_to_str(stdout))
             self.savedOutput[0].write("\n###############################\n")
             err = buffer_to_str(stderr)
-            if err is "":
+            if err == "":
                 self.savedOutput[1].write("###############################\n")
                 self.savedOutput[1].write("###" + " ".join(cmake_args)+"\n")
                 self.savedOutput[1].write(err)
