@@ -5,7 +5,18 @@ from . import builder
 from dune.common.utility import isString
 from dune.generator.algorithm import cppType
 
-def load(className, includeFiles, *args):
+def load(className, includeFiles, *args,
+         options=None, bufferProtocol=False, dynamicAttr=False,
+         baseClasses=None ):
+    if options is None: options=[]
+    if baseClasses is None: baseClasses=[]
+    if not bufferProtocol: # kwargs.get("bufferProtocol", False):
+        clsParams = []
+    else:
+        clsParams = ['pybind11::buffer_protocol()']
+    if dynamicAttr:
+        clsParams += ['pybind11::dynamic_attr()']
+
     source = '#include <config.h>\n\n'
     source += '#define USING_DUNE_PYTHON 1\n\n'
     includes = []
@@ -35,6 +46,9 @@ def load(className, includeFiles, *args):
     moduleName = "class_" + hashIt(signature) + "_" + hashIt(source)
 
     includes = sorted(set(includes))
+
+    includes += ["python/dune/generated/"+moduleName+".cc"]
+
     source += "".join(["#include <" + i + ">\n" for i in includes])
     source += "\n"
     source += '#include <dune/python/common/typeregistry.hh>\n'
@@ -44,11 +58,22 @@ def load(className, includeFiles, *args):
     source += "PYBIND11_MODULE( " + moduleName + ", module )\n"
     source += "{\n"
 
-    includes += ["python/dune/generated/"+moduleName+".cc"]
-    source += "  auto cls = Dune::Python::insertClass< "+className+\
-                 " >( module, \"cls\","+\
+
+    for i, bc in enumerate(baseClasses):
+        source += 'Dune::Python::insertClass' +\
+                       '< ' + bc + ' >' +\
+                       '( module, "cls' + str(i) + '"' +\
+                       ', Dune::Python::GenerateTypeName("' + bc + '")' +\
+                       ', Dune::Python::IncludeFiles{}' +\
+                       ");\n"
+        options.append(bc)
+
+    source += "auto cls = Dune::Python::insertClass< "+className+\
+                   ', '.join(('',)+tuple(options)) + ' >('+\
+                 "module, \"cls\","+','.join(('',)+tuple(clsParams))+\
                  "Dune::Python::GenerateTypeName(\""+className+"\"),"+\
                  "Dune::Python::IncludeFiles{"+",".join(["\""+f+"\"" for f in includes])+"}).first;\n"
+
     ctorArgs = ", ".join([argTypes[i] + " arg" + str(i) for i in range(len(argTypes))])
     source += "cls.def( pybind11::init( [] ( "+ctorArgs+" ) {\n"
     source += "return new "+className+"( "+",".join(["arg"+str(i) for i in range(len(argTypes))]) +"); \n"

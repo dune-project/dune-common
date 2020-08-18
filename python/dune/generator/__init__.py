@@ -76,11 +76,11 @@ class Method(object):
         if self.body is None:
             return cls + ".def( \"" + self.name + "\", " + self.args + "".join(", " + e for e in self.extra) + " );\n"
         if self.args:
-            source = cls + ".def( " + self.name + ", [] ( " + ", ".join(self.args) + " ) {"
+            source = cls + ".def(\"" + self.name + "\", [] ( " + ", ".join(self.args) + " ) {"
         else:
-            source = cls + ".def( " + self.name + ", [] () {"
+            source = cls + ".def( \"" + self.name + "\", [] () {"
         source += "\n    ".join(self.body)
-        source += "\n  } )" + "".join(", " + e for e in self.extra) + " );\n"
+        source += "\n  } " + "".join(", " + e for e in self.extra) + " );\n"
         return source
 
     def __str__(self):
