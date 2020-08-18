@@ -7,6 +7,7 @@ from dune.generator.algorithm import cppType
 
 def load(className, includeFiles, *args,
          options=None, bufferProtocol=False, dynamicAttr=False,
+         holder="default",
          baseClasses=None ):
     if options is None: options=[]
     if baseClasses is None: baseClasses=[]
@@ -60,13 +61,20 @@ def load(className, includeFiles, *args,
 
 
     for i, bc in enumerate(baseClasses):
+        if not holder == "default":
+            baseHolder = ", " + holder + "<" + bc + ">"
+        else:
+            baseHolder = ''
         source += 'Dune::Python::insertClass' +\
-                       '< ' + bc + ' >' +\
+                       '< ' + bc + baseHolder + '>' +\
                        '( module, "cls' + str(i) + '"' +\
                        ', Dune::Python::GenerateTypeName("' + bc + '")' +\
                        ', Dune::Python::IncludeFiles{}' +\
                        ");\n"
         options.append(bc)
+
+    if not holder == "default":
+        options += [holder + "<" + className + ">"]
 
     source += "auto cls = Dune::Python::insertClass< "+className+\
                    ', '.join(('',)+tuple(options)) + ' >('+\
