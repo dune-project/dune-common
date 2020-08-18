@@ -132,6 +132,16 @@ namespace Dune
     {                                                                   \
       return Float128{float128_t(t) OP float128_t(u)};                  \
     }                                                                   \
+    constexpr Float128 operator OP(const float128_t& t,                 \
+                                   const Float128& u) noexcept          \
+    {                                                                   \
+      return Float128{t OP float128_t(u)};                              \
+    }                                                                   \
+    constexpr Float128 operator OP(const Float128& t,                   \
+                                   const float128_t& u) noexcept        \
+    {                                                                   \
+      return Float128{float128_t(t) OP u};                              \
+    }                                                                   \
     template <class T,                                                  \
       std::enable_if_t<std::is_arithmetic<T>::value, int> = 0>          \
     constexpr Float128 operator OP(const T& t,                          \
