@@ -65,7 +65,8 @@ def load(functionName, includes, *args):
         Callalble object
     '''
 
-    source = '#include <config.h>\n\n'
+    source  = '#pragma once\n\n'
+    source += '#include <config.h>\n\n'
     source += '#define USING_DUNE_PYTHON 1\n\n'
     if isString(includes):
         with open(includes, "r") as include:

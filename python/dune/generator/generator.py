@@ -33,7 +33,8 @@ class SimpleGenerator(object):
 
     def pre(self, includes, duneType, moduleName, defines=None, preamble=None):
         if defines is None: defines = []
-        source = '#include <config.h>\n\n'
+        source = '#pragma once\n\n'
+        source += '#include <config.h>\n\n'
         source += '#define USING_DUNE_PYTHON 1\n\n'
         source += ''.join(["#define " + d + "\n" for d in defines])
         source += ''.join(["#include <" + i + ">\n" for i in includes])
