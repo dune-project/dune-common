@@ -75,6 +75,8 @@
 #    This function is superseded by :ref:`dune_target_enable_all_packages`.
 #
 
+include_guard(GLOBAL)
+
 enable_language(C) # Enable C to skip CXX bindings for some tests.
 
 include(FeatureSummary)

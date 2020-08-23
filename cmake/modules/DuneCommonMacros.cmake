@@ -7,6 +7,9 @@ include(AddGMPFlags)
 # find BLAS and LAPACK
 find_package(LAPACK)
 if (LAPACK_FOUND)
+  set(HAVE_BLAS TRUE)
+  set(HAVE_LAPACK TRUE)
+
   cmake_push_check_state()
   set(CMAKE_REQUIRED_LIBRARIES ${LAPACK_LIBRARIES})
   check_function_exists("dsyev_" LAPACK_NEEDS_UNDERLINE)

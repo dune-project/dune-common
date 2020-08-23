@@ -25,8 +25,6 @@ target_optional_compile_features(dune-common PUBLIC
 # link found packages to dune-common
 if(LAPACK_FOUND AND BLAS_FOUND)
   target_link_libraries(dune-common PUBLIC BLAS::BLAS LAPACK::LAPACK)
-  set(HAVE_BLAS TRUE)
-  set(HAVE_LAPACK TRUE)
 endif()
 
 add_dune_gmp_flags(dune-common)

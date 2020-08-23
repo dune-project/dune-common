@@ -111,7 +111,7 @@ find_package_handle_standard_args("ParMETIS"
 )
 
 # create imported target ParMETIS::ParMETIS
-if(PARMETIS_FOUND AND NOT TARGET ParMETIS::ParMETIS)
+if(ParMETIS_FOUND AND NOT TARGET ParMETIS::ParMETIS)
   add_library(ParMETIS::ParMETIS UNKNOWN IMPORTED)
   set_target_properties(ParMETIS::ParMETIS PROPERTIES
     IMPORTED_LOCATION ${PARMETIS_LIBRARY}

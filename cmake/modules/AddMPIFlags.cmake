@@ -13,13 +13,6 @@
 # register HAVE_MPI for config.h
 set(HAVE_MPI ${MPI_FOUND})
 
-# register METIS library as dune package
-if(MPI_FOUND)
-  dune_register_package_flags(
-    LIBRARIES MPI::MPI_CXX
-    COMPILE_DEFINITIONS "ENABLE_MPI=1")
-endif()
-
 # Add function to link targets against MPI library
 function(add_dune_mpi_flags _targets)
   if(MPI_FOUND)

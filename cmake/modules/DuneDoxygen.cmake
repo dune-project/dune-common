@@ -24,6 +24,8 @@
 #    that makes sure it is built before running :code:`make install`.
 #
 
+include_guard(GLOBAL)
+
 find_package(Doxygen)
 set_package_properties("Doxygen" PROPERTIES
   DESCRIPTION "Class documentation generator"
@@ -36,7 +38,9 @@ if (NOT DOXYGEN_DOT_FOUND)
   set(DOT_TRUE '\#')
 endif()
 
-add_custom_target(doxygen_install)
+if (NOT TARGET doxygen_install)
+  add_custom_target(doxygen_install)
+endif ()
 
 #
 # prepare_doxyfile()
@@ -62,7 +66,9 @@ macro(prepare_doxyfile)
       COMMENT "Creating Doxyfile.in"
       DEPENDS ${DOXYSTYLE_FILE} ${DOXYGENMACROS_FILE})
   endif()
-  add_custom_target(doxyfile DEPENDS Doxyfile.in Doxyfile)
+  if (NOT TARGET doxyfile)
+    add_custom_target(doxyfile DEPENDS Doxyfile.in Doxyfile)
+  endif ()
 endmacro(prepare_doxyfile)
 
 macro(add_doxygen_target)
@@ -97,9 +103,11 @@ macro(add_doxygen_target)
       DEPENDS Doxyfile.in ${DOXYGEN_DEPENDS})
     # Create a target for building the doxygen documentation of a module,
     # that is run during make doc
-    add_custom_target(doxygen_${DOXYGEN_TARGET}
-      DEPENDS ${DOXYGEN_OUTPUT})
-    add_dependencies(doc doxygen_${DOXYGEN_TARGET})
+    if (NOT TARGET doxygen_${DOXYGEN_TARGET})
+      add_custom_target(doxygen_${DOXYGEN_TARGET}
+        DEPENDS ${DOXYGEN_OUTPUT})
+      add_dependencies(doc doxygen_${DOXYGEN_TARGET})
+    endif ()
 
     # Use a cmake call to install the doxygen documentation and create a
     # target for it
