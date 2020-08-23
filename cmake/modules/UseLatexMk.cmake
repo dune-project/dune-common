@@ -102,6 +102,8 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+include_guard(GLOBAL)
+
 # Find LATEX and LatexMk
 find_package(LATEX)
 find_package(LatexMk)

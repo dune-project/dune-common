@@ -67,7 +67,7 @@ macro(finalize_dune_project)
   if(EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${PROJECT_NAME}-config.cmake.in)
     set(CONFIG_FILE_IN ${PROJECT_SOURCE_DIR}/cmake/pkg/${PROJECT_NAME}-config.cmake.in)
   else()
-    set(CONFIG_FILE_IN ${CMAKE_BINARY_DIR}/${PROJECT_NAME}-config.cmake.in)
+    set(CONFIG_FILE_IN ${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake.in)
     configure_file(${dune-common_PKG_PATH}/template-config.cmake.in
       ${CONFIG_FILE_IN} COPYONLY)
 
@@ -126,9 +126,6 @@ macro(finalize_dune_project)
   if("${ARGC}" EQUAL "1")
     message(STATUS "Adding custom target for config.h generation")
     dune_regenerate_config_cmake()
-    # add a target to generate config.h.cmake
-    add_custom_target(OUTPUT config_collected.h.cmake
-      COMMAND dune_regenerate_config_cmake())
     # actually write the config.h file to disk
     # using generated file
     configure_file(${CMAKE_CURRENT_BINARY_DIR}/config_collected.h.cmake

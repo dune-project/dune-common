@@ -29,6 +29,7 @@ include(UseInkscape)
 find_package(MProtect)
 
 find_package(TBB OPTIONAL_COMPONENTS cpf allocator)
+include(AddTBBFlags)
 
 # try to find the Vc library
 set(MINIMUM_VC_VERSION)
@@ -39,11 +40,6 @@ if((CMAKE_CXX_COMPILER_ID STREQUAL Clang) AND
 endif()
 find_package(Vc ${MINIMUM_VC_VERSION} NO_MODULE)
 include(AddVcFlags)
-# text for feature summary
-set_package_properties("Vc" PROPERTIES
-  DESCRIPTION "C++ Vectorization library"
-  URL "https://github.com/VcDevel/Vc"
-  PURPOSE "For use of SIMD instructions")
 
 # Run the python extension of the Dune cmake build system
 include(DunePythonCommonMacros)
