@@ -21,7 +21,6 @@ include(DuneModuleInformation)
 include(DunePkgConfig)
 include(GNUInstallDirs)
 
-
 macro(dune_project)
   # extract information from dune.module
   dune_module_information(${PROJECT_SOURCE_DIR})
