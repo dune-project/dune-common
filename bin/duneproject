@@ -338,15 +338,13 @@ NAME_=`echo $NAME | tr '-' '_'`
 UNAME=`echo $PROJECT | tr '-' '_' | sed 's/\(.*\)/\U\1/'`
 
 macroname=""
-configname=""
 for i in $(echo $PROJECT| sed 's/-/ /g'); do
   firstchar=$(echo $i | sed 's/\(.\).*/\1/')
   macroname=$macroname$(echo $firstchar | tr '[a-z]' '[A-Z]')$(echo $i | sed 's/.\(.*\)/\1/')
-  configname=$configname$(echo $firstchar | tr '[a-z]' '[A-Z]')$(echo $i | sed 's/.\(.*\)/\1/')
 done
 rawmacroname="$macroname""Macros"
 macroname="$macroname""Macros.cmake"
-configname="$configname""Config.cmake.in"
+configname="$PROJECT""-config.cmake.in"
 
 ################## README ##################
 echo "- $PROJECT/README.md"
@@ -555,23 +553,28 @@ EOF
 
 ################# cmake/modules/$configname #####################
 
-echo "- $PROJECT/cmake/modules/$configname"
-cat> "$PROJECT/cmake/modules/$configname" <<EOF
+echo "- $PROJECT/cmake/pkg/$configname"
+cat> "$PROJECT/cmake/pkg/$configname" <<EOF
 @PACKAGE_INIT@
 
 # Find dependencies and stop package config if required ones are not found
 include(CMakeFindDependencyMacro)
 
 set(@PROJECT_NAME@_PREFIX @CMAKE_CURRENT_LIST_DIR@)
-set(@PROJECT_NAME@_MODULE_PATH \${CMAKE_CURRENT_LIST_DIR})
-set(@PROJECT_NAME@_LIBRARIES Dune::@PROJECT_NAME@)
+set(@PROJECT_NAME@_MODULE_PATH @CMAKE_CURRENT_LIST_DIR@/cmake/modules)
+set(@PROJECT_NAME@_SCRIPT_DIR @CMAKE_CURRENT_LIST_DIR@/cmake/scripts)
+set(@PROJECT_NAME@_PKG_PATH @CMAKE_CURRENT_LIST_DIR@/cmake/pkg)
+#set_and_check(DOXYSTYLE_FILE "@PACKAGE_DOXYSTYLE_DIR@/Doxystyle")
+#set_and_check(DOXYGENMACROS_FILE "@PACKAGE_DOXYSTYLE_DIR@/doxygen-macros")
+set(@PROJECT_NAME@_LIBRARIES @DUNE_MODULE_LIBRARIES@)
 
-list(APPEND CMAKE_MODULE_PATH \${CMAKE_CURRENT_LIST_DIR})
-
-${FIND_DEPENDENCIES%?}
+list(APPEND CMAKE_MODULE_PATH "@CMAKE_MODULE_PATH@;@CMAKE_CURRENT_LIST_DIR@/cmake/modules")
 
 # include the configuration of exported targets
-include("\${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@-targets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@-targets.cmake")
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@-legacy-targets.cmake")
+  include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@-legacy-targets.cmake")
+endif()
 
 # Finish package configuration:
 # checks whether all requested, non-optional components have been found,

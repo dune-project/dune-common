@@ -11,6 +11,7 @@
 #include <dune/common/rangeutilities.hh>
 #include <dune/common/typetraits.hh>
 #include <dune/common/std/type_traits.hh>
+#include <dune/common/diagonalmatrix.hh>
 #include <dune/common/test/testsuite.hh>
 #include <dune/common/test/iteratortest.hh>
 
@@ -123,6 +124,17 @@ auto testTransformedRangeView()
       suite.check(&(*(r.begin())) == &(a[0]))
         << "reference points to wrong location";
     }
+    // Check iterator based transformation
+    {
+      auto r = Dune::iteratorTransformedRangeView(a, [&](auto&& it) { return (*it)+(it-a.begin());});
+      suite.check(checkRandomAccessNumberRangeSums(r, 9, 1, 5))
+        << "incorrect values in transformedRangeView of l-value";
+      suite.check(checkRangeIterators(r))
+        << "iterator test fails for transformedRangeView of l-value";
+      suite.check(checkRangeSize(r))
+        << "checking size fails for transformedRangeView of l-value";
+      a = a_backup;
+    }
   });
   // Check transformedRangeView with on the fly range
   {
@@ -155,6 +167,46 @@ auto testTransformedRangeView()
     suite.check(m == std::map<int, int>{{1,2},{-1,3}, {2,5},{0,4}})
       << "sorting reference returning transformedRangeView failed";
   }
+  return suite;
+}
+
+
+auto testSparseRange()
+{
+  Dune::TestSuite suite("Check sparseRange()");
+
+  auto checkWithMatrix = [&suite](auto&& M) {
+    for(std::size_t i=0; i<M.size(); ++i)
+    {
+      auto it = M[i].begin();
+      auto end = M[i].end();
+      for(auto&& [M_ij, j] : Dune::sparseRange(M[i]))
+      {
+        suite.check(it!=end)
+          << "sparseRange() contains more entries than the original range";
+        suite.check(&M_ij == &M[i][j])
+          << "Entry obtained by sparseRange() does not point to actual range entry";
+        suite.check(&M_ij == &(*it))
+          << "Entry obtained by sparseRange() does not point to actual range entry";
+        ++it;
+      }
+      suite.check(it==end)
+        << "sparseRange() contains less entries than the original range";
+    }
+  };
+
+  auto M1 = Dune::DiagonalMatrix<double,1>({42});
+  checkWithMatrix(M1);
+  checkWithMatrix(std::as_const(M1));
+
+  auto M2 = Dune::DiagonalMatrix<double,2>({42, 41});
+  checkWithMatrix(M2);
+  checkWithMatrix(std::as_const(M2));
+
+  auto M3 = Dune::DiagonalMatrix<double,3>({42, 41, 40});
+  checkWithMatrix(M3);
+  checkWithMatrix(std::as_const(M3));
+
   return suite;
 }
 
@@ -261,6 +313,8 @@ int main()
   }
 
   suite.subTest(testTransformedRangeView());
+
+  suite.subTest(testSparseRange());
 
   return suite.exit();
 

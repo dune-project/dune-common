@@ -20,11 +20,11 @@ include(DuneModuleInformation)
 include(Utilities)
 
 macro(dune_regenerate_config_cmake)
-  set(CONFIG_H_CMAKE_FILE "${CMAKE_BINARY_DIR}/config_collected.h.cmake")
-  if(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
-    file(READ ${CMAKE_SOURCE_DIR}/config.h.cmake _file)
+  set(CONFIG_H_CMAKE_FILE "${PROJECT_BINARY_DIR}/config_collected.h.cmake")
+  if(EXISTS ${PROJECT_SOURCE_DIR}/config.h.cmake)
+    file(READ ${PROJECT_SOURCE_DIR}/config.h.cmake _file)
     string(REGEX MATCH
-      "/[\\*/][ ]*begin[ ]+${ProjectName}.*\\/[/\\*][ ]*end[ ]*${ProjectName}[^\\*]*\\*/"
+      "/[\\*/][ ]*begin[ ]+${PROJECT_NAME}.*\\/[/\\*][ ]*end[ ]*${PROJECT_NAME}[^\\*]*\\*/"
       _myfile "${_file}")
   endif()
   # overwrite file with new content
@@ -34,8 +34,8 @@ macro(dune_regenerate_config_cmake)
    )
 
  # define that we found this module
- set(${ProjectName}_FOUND 1)
- foreach(_dep ${ProjectName} ${ALL_DEPENDENCIES})
+ set(${PROJECT_NAME}_FOUND 1)
+ foreach(_dep ${PROJECT_NAME} ${ALL_DEPENDENCIES})
    dune_module_to_uppercase(upper ${_dep})
    set(HAVE_${upper} ${${_dep}_FOUND})
    file(APPEND ${CONFIG_H_CMAKE_FILE}
@@ -70,7 +70,7 @@ macro(dune_regenerate_config_cmake)
    endforeach()
  endforeach()
  # parse again dune.module file of current module to set PACKAGE_* variables
- dune_module_information(${CMAKE_SOURCE_DIR} QUIET)
+ dune_module_information(${PROJECT_SOURCE_DIR} QUIET)
  file(APPEND ${CONFIG_H_CMAKE_FILE} "\n${_myfile}")
  # append CONFIG_H_BOTTOM section at the end if found
  if(CONFIG_H_BOTTOM)

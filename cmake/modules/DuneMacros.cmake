@@ -75,6 +75,8 @@
 #    This function is superseded by :ref:`dune_target_enable_all_packages`.
 #
 
+include_guard(GLOBAL)
+
 enable_language(C) # Enable C to skip CXX bindings for some tests.
 
 include(FeatureSummary)
@@ -166,18 +168,17 @@ macro(dune_add_library basename)
     endif()
   else(DUNE_LIB_OBJECT)
     dune_expand_object_libraries(DUNE_LIB_SOURCES DUNE_LIB_ADD_LIBS DUNE_LIB_COMPILE_FLAGS)
+
     #create lib
     add_library(${basename} ${DUNE_LIB_SOURCES})
-    get_property(_prop GLOBAL PROPERTY DUNE_MODULE_LIBRARIES)
-    set_property(GLOBAL PROPERTY DUNE_MODULE_LIBRARIES ${_prop} ${basename})
+    set_property(GLOBAL APPEND PROPERTY DUNE_MODULE_LIBRARIES ${basename})
     # link with specified libraries.
-    target_link_libraries(${basename} PUBLIC ${PROJECT_NAME})
+    target_link_libraries(${basename} PRIVATE ${PROJECT_NAME})
     if(DUNE_LIB_ADD_LIBS)
-      dune_target_link_libraries(${basename} "${DUNE_LIB_ADD_LIBS}")
+      target_link_libraries(${basename} PRIVATE "${DUNE_LIB_ADD_LIBS}")
     endif()
     if(DUNE_LIB_COMPILE_FLAGS)
-      set_property(${basename} APPEND_STRING COMPILE_FLAGS
-        "${DUNE_LIB_COMPILE_FLAGS}")
+      target_compile_flags(${basename} "${DUNE_LIB_COMPILE_FLAGS}")
     endif()
     # Build library in ${PROJECT_BINARY_DIR}/lib
     set_target_properties(${basename} PROPERTIES
@@ -196,13 +197,12 @@ macro(dune_add_library basename)
           ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
         list(APPEND _created_libs ${basename}-static)
         # link with specified libraries.
-        target_link_libraries(${basename}-static PUBLIC ${PROJECT_NAME})
+        target_link_libraries(${basename}-static PRIVATE ${PROJECT_NAME})
         if(DUNE_LIB_ADD_LIBS)
-          dune_target_link_libraries(${basename}-static "${DUNE_LIB_ADD_LIBS}")
+          target_link_libraries(${basename}-static PRIVATE "${DUNE_LIB_ADD_LIBS}")
         endif()
         if(DUNE_LIB_COMPILE_FLAGS)
-          set_property(${basename}-static APPEND_STRING COMPILE_FLAGS
-            "${DUNE_LIB_COMPILE_FLAGS}")
+          target_compile_flags(${basename}-static PRIVATE "${DUNE_LIB_COMPILE_FLAGS}")
         endif()
       else()
         #create shared libs
@@ -211,13 +211,12 @@ macro(dune_add_library basename)
           OUTPUT_NAME ${basename}
           LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
         # link with specified libraries.
-        target_link_libraries(${basename}-shared PUBLIC ${PROJECT_NAME})
+        target_link_libraries(${basename}-shared PRIVATE ${PROJECT_NAME})
         if(DUNE_LIB_ADD_LIBS)
-          dune_target_link_libraries(${basename}-shared "${DUNE_LIB_ADD_LIBS}")
+          target_link_libraries(${basename}-shared PRIVATE "${DUNE_LIB_ADD_LIBS}")
         endif()
         if(DUNE_LIB_COMPILE_FLAGS)
-          set_property(${basename}-shared APPEND_STRING COMPILE_FLAGS
-            "${DUNE_LIB_COMPILE_FLAGS}")
+          target_compile_flags(${basename}-shared PRIVATE "${DUNE_LIB_COMPILE_FLAGS}")
         endif()
         list(APPEND _created_libs ${basename}-shared)
       endif()
@@ -301,16 +300,16 @@ endmacro(replace_properties_for_one)
 ##
 # Documentation here!
 ##
-function(dune_target_link_libraries basename libraries)
-  target_link_libraries(${basename} PUBLIC ${libraries})
+function(dune_target_link_libraries basename)
+  target_link_libraries(${basename} PUBLIC ${ARGN})
   if(DUNE_BUILD_BOTH_LIBS)
     if(BUILD_SHARED_LIBS)
-      target_link_libraries(${basename}-static PUBLIC ${libraries})
+      target_link_libraries(${basename}-static PUBLIC ${ARGN})
     else()
-      target_link_libraries(${basename}-shared PUBLIC ${libraries})
+      target_link_libraries(${basename}-shared PUBLIC ${ARGN})
     endif()
   endif()
-endfunction(dune_target_link_libraries basename libraries)
+endfunction(dune_target_link_libraries)
 
 
 ##

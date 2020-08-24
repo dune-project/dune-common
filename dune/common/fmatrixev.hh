@@ -305,9 +305,19 @@ namespace Dune {
                                      FieldVector<K, 2>& eigenValues,
                                      FieldMatrix<K, 2, 2>& eigenVectors)
       {
+        // Compute eigen values
         Impl::eigenValues2dImpl(matrix, eigenValues);
 
+        // Compute eigenvectors by exploiting the Cayley–Hamilton theorem.
+        // If λ_1, λ_2 are the eigenvalues, then (A - λ_1I )(A - λ_2I ) = (A - λ_2I )(A - λ_1I ) = 0,
+        // so the columns of (A - λ_2I ) are annihilated by (A - λ_1I ) and vice versa.
+        // Assuming neither matrix is zero, the columns of each must include eigenvectors
+        // for the other eigenvalue. (If either matrix is zero, then A is a multiple of the
+        // identity and any non-zero vector is an eigenvector.)
+        // From: https://en.wikipedia.org/wiki/Eigenvalue_algorithm#2x2_matrices
         if constexpr(Tag==EigenvaluesEigenvectors) {
+
+          // Special casing for multiples of the identity
           FieldMatrix<K,2,2> temp = matrix;
           temp[0][0] -= eigenValues[0];
           temp[1][1] -= eigenValues[0];
@@ -316,12 +326,17 @@ namespace Dune {
             eigenVectors[1] = {0.0, 1.0};
           }
           else {
-            FieldVector<K,2> ev = {matrix[0][0]-eigenValues[1], matrix[1][0]};
-            K norm = std::sqrt(ev[0]*ev[0] + ev[1]*ev[1]);
-            eigenVectors[0] = ev/norm;
-            ev = {matrix[0][0]-eigenValues[0], matrix[1][0]};
-            norm = std::sqrt(ev[0]*ev[0] + ev[1]*ev[1]);
-            eigenVectors[1] = ev/norm;
+            // The columns of A - λ_2I are eigenvectors for λ_1, or zero.
+            // Take the column with the larger norm to avoid zero columns.
+            FieldVector<K,2> ev0 = {matrix[0][0]-eigenValues[1], matrix[1][0]};
+            FieldVector<K,2> ev1 = {matrix[0][1], matrix[1][1]-eigenValues[1]};
+            eigenVectors[0] = (ev0.two_norm2() >= ev1.two_norm2()) ? ev0/ev0.two_norm() : ev1/ev1.two_norm();
+
+            // The columns of A - λ_1I are eigenvectors for λ_2, or zero.
+            // Take the column with the larger norm to avoid zero columns.
+            ev0 = {matrix[0][0]-eigenValues[0], matrix[1][0]};
+            ev1 = {matrix[0][1], matrix[1][1]-eigenValues[0]};
+            eigenVectors[1] = (ev0.two_norm2() >= ev1.two_norm2()) ? ev0/ev0.two_norm() : ev1/ev1.two_norm();
           }
         }
       }
@@ -339,14 +354,36 @@ namespace Dune {
         /* Precondition the matrix by factoring out the maximum absolute
         value of the components.  This guards against floating-point
         overflow when computing the eigenvalues.*/
-        K maxAbsElement = matrix.infinity_norm();
+        using std::isnormal;
+        K maxAbsElement = (isnormal(matrix.infinity_norm())) ? matrix.infinity_norm() : K(1.0);
         Matrix scaledMatrix = matrix / maxAbsElement;
         K r = Impl::eigenValues3dImpl(scaledMatrix, eigenValues);
 
         if constexpr(Tag==EigenvaluesEigenvectors) {
-          K offDiagNorm = matrix[0][1]*matrix[0][1] + matrix[0][2]*matrix[0][2] + matrix[1][2]*matrix[1][2];
-          if(offDiagNorm <= std::numeric_limits<K>::epsilon())
+          K offDiagNorm = Vector{scaledMatrix[0][1],scaledMatrix[0][2],scaledMatrix[1][2]}.two_norm2();
+          if (offDiagNorm <= std::numeric_limits<K>::epsilon())
+          {
+            eigenValues = {scaledMatrix[0][0], scaledMatrix[1][1], scaledMatrix[2][2]};
             eigenVectors = {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}};
+
+            // Use bubble sort to jointly sort eigenvalues and eigenvectors
+            // such that eigenvalues are ascending
+            if (eigenValues[0] > eigenValues[1])
+            {
+              std::swap(eigenValues[0], eigenValues[1]);
+              std::swap(eigenVectors[0], eigenVectors[1]);
+            }
+            if (eigenValues[1] > eigenValues[2])
+            {
+              std::swap(eigenValues[1], eigenValues[2]);
+              std::swap(eigenVectors[1], eigenVectors[2]);
+            }
+            if (eigenValues[0] > eigenValues[1])
+            {
+              std::swap(eigenValues[0], eigenValues[1]);
+              std::swap(eigenVectors[0], eigenVectors[1]);
+            }
+          }
           else {
             /*Compute the eigenvectors so that the set
             [evec[0], evec[1], evec[2]] is right handed and

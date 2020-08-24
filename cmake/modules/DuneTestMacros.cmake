@@ -206,6 +206,8 @@
 #    If not in use, you have to build tests through the target :code:`build_tests`.
 #
 
+include_guard(GLOBAL)
+
 # enable the testing suite on the CMake side.
 enable_testing()
 include(CTest)

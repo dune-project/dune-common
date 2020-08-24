@@ -13,11 +13,6 @@
 # register HAVE_METIS for config.h
 set(HAVE_METIS ${METIS_FOUND})
 
-# register METIS library as dune package
-if(METIS_FOUND)
-  dune_register_package_flags(LIBRARIES METIS::METIS)
-endif()
-
 # Add function to link targets against METIS library
 function(add_dune_metis_flags _targets)
   if(METIS_FOUND)

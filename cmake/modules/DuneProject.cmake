@@ -21,7 +21,6 @@ include(DuneModuleInformation)
 include(DunePkgConfig)
 include(GNUInstallDirs)
 
-
 macro(dune_project)
   # extract information from dune.module
   dune_module_information(${PROJECT_SOURCE_DIR})
@@ -77,14 +76,20 @@ macro(dune_project)
 
   # set include directories for target
   target_include_directories(${PROJECT_NAME} PUBLIC
-    "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR};${CMAKE_BINARY_DIR}>"
+    "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR};${PROJECT_BINARY_DIR}>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>" )
-
-  # set <PackageName>_FOUND as if find_package was called for this library
-  set(${PROJECT_NAME}_FOUND)
 
   dune_create_dependency_tree()
   dune_process_dependency_macros()
+
+  # set <PackageName>_FOUND as if find_package was called for this library
+  if (NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+    set(${PROJECT_NAME}_FOUND TRUE PARENT_SCOPE)
+    set(${PROJECT_NAME}_PREFIX ${PROJECT_SOURCE_DIR} PARENT_SCOPE)
+    set(${PROJECT_NAME}_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules PARENT_SCOPE)
+    set(${PROJECT_NAME}_PKG_PATH ${PROJECT_SOURCE_DIR}/cmake/pkg PARENT_SCOPE)
+    set(${PROJECT_NAME}_SCRIPT_DIR ${PROJECT_SOURCE_DIR}/cmake/scripts PARENT_SCOPE)
+  endif ()
 
   # Set variable where the cmake modules will be installed.
   # Thus the user can override it and for example install

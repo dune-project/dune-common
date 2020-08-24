@@ -13,14 +13,6 @@
 # set HAVE_GMP for the config.h file
 set(HAVE_GMP ${GMP_FOUND})
 
-# register all GMP related flags
-if(GMP_FOUND)
-  dune_register_package_flags(
-    LIBRARIES GMP::gmpxx
-    COMPILE_DEFINITIONS "ENABLE_GMP=1"
-  )
-endif()
-
 # add function to link against the GMP library
 function(add_dune_gmp_flags _targets)
   if(GMP_FOUND)

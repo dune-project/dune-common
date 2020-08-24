@@ -4,9 +4,9 @@ dune_set_minimal_debug_level()
 # Run the python extension of the Dune cmake build system
 include(DunePythonCommonMacros)
 
-if(NOT PROJECT_NAME STREQUAL "dune-common")
-  return()
-endif()
+# if(NOT PROJECT_NAME STREQUAL "dune-common")
+#   return()
+# endif()
 
 # find the GNU MultiPrecidion library
 find_package(GMP)

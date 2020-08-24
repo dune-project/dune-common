@@ -63,6 +63,8 @@
 #    the presence of the configure time virtualenv described in :ref:`DunePythonVirtualenv`.
 #
 
+include_guard(GLOBAL)
+
 # Include all the other parts of the python extension to avoid that users need
 # to explicitly include parts of our build system.
 include(DunePythonFindPackage)

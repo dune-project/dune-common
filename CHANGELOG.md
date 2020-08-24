@@ -13,6 +13,9 @@
   Furthermore, flags for either shared library or position independent code
   needs to be used.
 
+- Eigenvectors of symmetric 2x2 `FieldMatrix`es are now computed correctly
+  even when they have zero eigenvalues.
+
 ## build-system
 
 - The name mangling for Fortran libraries like BLAS and LAPACK is now done

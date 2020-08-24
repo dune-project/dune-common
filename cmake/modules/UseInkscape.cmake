@@ -23,7 +23,15 @@
 #    TODO Switch to named arguments!
 #
 
+include_guard(GLOBAL)
+
 include(CMakeParseArguments)
+
+# text for feature summary
+set_package_properties("Inkscape" PROPERTIES
+  DESCRIPTION "converts SVG images"
+  URL "www.inkscape.org"
+  PURPOSE "To generate the documentation with LaTeX")
 
 function(inkscape_generate_png_from_svg)
   if(NOT INKSCAPE)

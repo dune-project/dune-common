@@ -13,6 +13,8 @@
 #       A list of targets to use VC with.
 #
 
+include_guard(GLOBAL)
+
 # text for feature summary
 set_package_properties("Vc" PROPERTIES
   DESCRIPTION "C++ Vectorization library"
@@ -20,12 +22,6 @@ set_package_properties("Vc" PROPERTIES
   PURPOSE "For use of SIMD instructions")
 
 set(HAVE_VC ${Vc_FOUND})
-
-if(Vc_FOUND)
-  dune_register_package_flags(COMPILE_OPTIONS "${Vc_COMPILE_FLAGS};-DENABLE_VC=1"
-                              LIBRARIES "${Vc_LIBRARIES}"
-                              INCLUDE_DIRS "${Vc_INCLUDE_DIR}")
-endif(Vc_FOUND)
 
 function(add_dune_vc_flags _targets)
   if(Vc_FOUND)

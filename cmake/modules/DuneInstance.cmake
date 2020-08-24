@@ -464,6 +464,8 @@
 #    <dune_instance_begin>`/:ref:`dune_instance_end() <dune_instance_end>`
 #    block.
 
+include_guard(GLOBAL)
+
 include(Message)
 
 ######################################################################

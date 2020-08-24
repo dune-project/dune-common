@@ -49,6 +49,8 @@
 #       and https://gitlab.dune-project.org/core/dune-common/issues/36
 #
 
+include_guard(GLOBAL)
+
 include(UseLatexMk)
 
 if (LATEXMK_FOUND AND PDFLATEX_COMPILER)

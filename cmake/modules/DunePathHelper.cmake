@@ -42,6 +42,8 @@
 #    may be requested.
 #
 
+include_guard(GLOBAL)
+
 function(dune_module_path)
   # Parse Arguments
   set(OPTION CMAKE_MODULES BUILD_DIR SOURCE_DIR SCRIPT_DIR)
@@ -70,26 +72,38 @@ function(dune_module_path)
 
   # Set the requested paths for the cmake module path
   if(PATH_CMAKE_MODULES)
-    set(IF_CURRENT_MOD ${CMAKE_SOURCE_DIR}/cmake/modules)
+    set(IF_CURRENT_MOD ${PROJECT_SOURCE_DIR}/cmake/modules)
     set(IF_NOT_CURRENT_MOD ${${PATH_MODULE}_MODULE_PATH})
+    if (NOT IF_NOT_CURRENT_MOD)
+      set(IF_NOT_CURRENT_MOD ${${PATH_MODULE}_SOURCE_DIR}/cmake/modules)
+    endif ()
   endif()
 
   # Set the requested paths for the cmake script path
   if(PATH_SCRIPT_DIR)
-    set(IF_CURRENT_MOD ${CMAKE_SOURCE_DIR}/cmake/scripts)
+    set(IF_CURRENT_MOD ${PROJECT_SOURCE_DIR}/cmake/scripts)
     set(IF_NOT_CURRENT_MOD ${${PATH_MODULE}_SCRIPT_DIR})
+    if (NOT IF_NOT_CURRENT_MOD)
+      set(IF_NOT_CURRENT_MOD ${${PATH_MODULE}_SOURCE_DIR}/cmake/scripts)
+    endif ()
   endif()
 
   # Set the requested paths for the build directory
   if(PATH_BUILD_DIR)
-    set(IF_CURRENT_MOD ${CMAKE_BINARY_DIR})
+    set(IF_CURRENT_MOD ${PROJECT_BINARY_DIR})
     set(IF_NOT_CURRENT_MOD ${${PATH_MODULE}_DIR})
+    if (NOT IF_NOT_CURRENT_MOD)
+      set(IF_NOT_CURRENT_MOD ${${PATH_MODULE}_BINARY_DIR})
+    endif ()
   endif()
 
   # Set the requested paths for the include directory
   if(PATH_SOURCE_DIR)
-    set(IF_CURRENT_MOD ${CMAKE_SOURCE_DIR})
+    set(IF_CURRENT_MOD ${PROJECT_SOURCE_DIR})
     set(IF_NOT_CURRENT_MOD ${${PATH_MODULE}_PREFIX})
+    if (NOT IF_NOT_CURRENT_MOD)
+      set(IF_NOT_CURRENT_MOD ${${PATH_MODULE}_SOURCE_DIR})
+    endif ()
   endif()
 
   # Now set the path in the outer scope!

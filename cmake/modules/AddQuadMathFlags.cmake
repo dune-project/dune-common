@@ -13,14 +13,6 @@
 # set HAVE_QUADMATH for config.h
 set(HAVE_QUADMATH ${QuadMath_FOUND})
 
-# register the QuadMath imported target
-if(QuadMath_FOUND)
-  dune_register_package_flags(
-    LIBRARIES QuadMath::QuadMath
-    COMPILE_DEFINITIONS "ENABLE_QUADMATH=1"
-  )
-endif()
-
 # add function to link against QuadMath::QuadMath
 function(add_dune_quadmath_flags _targets)
   if(QuadMath_FOUND)

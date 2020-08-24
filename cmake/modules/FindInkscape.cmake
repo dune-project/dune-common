@@ -16,9 +16,3 @@ find_program(CONVERT convert DOC "Path to convert program")
 if(INKSCAPE)
   set(INKSCAPE_FOUND True)
 endif(INKSCAPE)
-
-# text for feature summary
-set_package_properties("Inkscape" PROPERTIES
-  DESCRIPTION "converts SVG images"
-  URL "www.inkscape.org"
-  PURPOSE "To generate the documentation with LaTeX")
