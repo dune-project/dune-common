@@ -168,6 +168,6 @@ if(PTScotch_FOUND)
       INTERFACE_LINK_LIBRARIES ${PTSCOTCHERR_LIBRARY}
     )
     target_link_libraries(PTScotch::PTScotch
-      INTERFACE PTScotch::Scotch MPI::MPI_CXX)
+      INTERFACE PTScotch::Scotch MPI::MPI_C)
   endif()
 endif()

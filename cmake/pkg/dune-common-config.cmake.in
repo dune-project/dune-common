@@ -15,12 +15,14 @@ list(APPEND CMAKE_MODULE_PATH @CMAKE_CURRENT_LIST_DIR@/cmake/modules)
 
 if(@GMP_FOUND@)
   find_dependency(GMP)
-  set(GMP_LAPACK ${GMP_FOUND})
+  set(HAVE_GMP ${GMP_FOUND})
 endif()
 
 if(@LAPACK_FOUND@)
   find_dependency(LAPACK)
+  set(HAVE_BLAS ${BLAS_FOUND})
   set(HAVE_LAPACK ${LAPACK_FOUND})
+  set(LAPACK_NEEDS_UNDERLINE @LAPACK_NEEDS_UNDERLINE@)
 endif()
 
 if(@MPI_FOUND@)
@@ -28,11 +30,8 @@ if(@MPI_FOUND@)
   set(HAVE_MPI ${MPI_FOUND})
 endif()
 
-if(@MProtect_FOUND@)
-  set(HAVE_SYS_MMAN_H @HAVE_SYS_MMAN_H@)
-  set(HAVE_MPROTECT @HAVE_MPROTECT@)
-  find_dependency(MProtect)
-endif()
+set(HAVE_SYS_MMAN_H @HAVE_SYS_MMAN_H@)
+set(HAVE_MPROTECT @HAVE_MPROTECT@)
 
 if(@QuadMath_FOUND@)
   set(QuadMath_COMPILES @QuadMath_COMPILES@)
@@ -40,10 +39,10 @@ if(@QuadMath_FOUND@)
   set(HAVE_QUADMATH ${QuadMath_FOUND})
 endif()
 
-# more packages to include:
-# - inkscape
-# - TBB
-# - Vc
+if(@Vc_FOUND@)
+  find_dependency(Vc @MINIMUM_VC_VERSION@ NO_MODULE)
+  set(HAVE_VC ${Vc_FOUND})
+endif()
 
 # include the configuration of exported targets
 include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@-targets.cmake")

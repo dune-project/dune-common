@@ -119,7 +119,7 @@ if(PARMETIS_FOUND AND NOT TARGET ParMETIS::ParMETIS)
   )
 
   # link against required dependencies
-  target_link_libraries(ParMETIS::ParMETIS INTERFACE MPI::MPI_CXX)
+  target_link_libraries(ParMETIS::ParMETIS INTERFACE MPI::MPI_C)
 
   # link against PTScotch or METIS if needed
   if(ENABLE_PTSCOTCH_PARMETIS AND PTScotch_FOUND)

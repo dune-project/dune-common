@@ -16,22 +16,17 @@ dune_project()
 # set minimal required c++ standard version
 target_compile_features(dune-common PUBLIC cxx_std_17)
 
-# check for optional compile rfeatures and set cpp flags
+# check for optional compiler features and set cpp flags
 target_optional_compile_features(dune-common PUBLIC
   cxx_identity
   cxx_experimental_is_detected
   cxx_experimental_make_array)
 
-# link found packages to dune-common
-if(LAPACK_FOUND AND BLAS_FOUND)
-  target_link_libraries(dune-common PUBLIC BLAS::BLAS LAPACK::LAPACK)
-  set(HAVE_BLAS TRUE)
-  set(HAVE_LAPACK TRUE)
-endif()
-
+# link the found packages to dune-common
 add_dune_gmp_flags(dune-common)
-add_dune_quadmath_flags(dune-common)
+add_dune_lapack_flags(dune-common)
 add_dune_mpi_flags(dune-common)
+add_dune_quadmath_flags(dune-common)
 add_dune_tbb_flags(dune-common)
 
 # add subdirectories to execute CMakeLists.txt there
