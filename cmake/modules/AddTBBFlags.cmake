@@ -12,11 +12,6 @@
 
 include_guard(GLOBAL)
 
-# text for feature summary
-set_package_properties("TBB" PROPERTIES
-  DESCRIPTION "Threading Building Blocks library"
-  PURPOSE "Parallel programming on multi-core processors")
-
 # set variable for config.h
 set(HAVE_TBB ${TBB_FOUND})
 

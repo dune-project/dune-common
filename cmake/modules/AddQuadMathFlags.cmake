@@ -13,7 +13,7 @@
 # set HAVE_QUADMATH for config.h
 set(HAVE_QUADMATH ${QuadMath_FOUND})
 
-# add function to link against QuadMath::QuadMath
+# add function to link against QuadMath
 function(add_dune_quadmath_flags _targets)
   if(QuadMath_FOUND)
     foreach(_target ${_targets})

@@ -22,13 +22,6 @@ if(LAPACK_FOUND)
   cmake_pop_check_state()
 endif()
 
-# register all BLAS and LAPACK related flags
-if(BLAS_FOUND AND LAPACK_FOUND)
-  dune_register_package_flags(
-    LIBRARIES BLAS::BLAS LAPACK::LAPACK
-  )
-endif()
-
 # add function to link against the BLAS and LAPACK library
 function(add_dune_lapack_flags _targets)
   if(BLAS_FOUND AND LAPACK_FOUND)

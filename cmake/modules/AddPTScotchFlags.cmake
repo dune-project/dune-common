@@ -13,6 +13,7 @@
 # set HAVE_PTSCOTCH for config.h
 set(HAVE_PTSCOTCH ${PTScotch_FOUND})
 
+# add function to link against the PTScotch library
 function(add_dune_ptscotch_flags _targets)
   if(PTScotch_FOUND)
     foreach(_target ${_targets})

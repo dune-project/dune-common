@@ -311,7 +311,7 @@ function(dune_target_enable_all_packages)
     target_compile_options(${_target} PUBLIC ${all_opts})
 
     get_property(all_libs GLOBAL PROPERTY ALL_PKG_LIBS)
-    target_link_libraries(${_target} PUBLIC ${PROJECT_NAME} ${DUNE_LIBS} ${all_libs})
+    target_link_libraries(${_target} PUBLIC ${PROJECT_NAME} ${all_libs})
   endforeach()
 endfunction(dune_target_enable_all_packages)
 
