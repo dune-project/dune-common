@@ -327,19 +327,21 @@ The headercheck feature has been disabled by default. You can enable it by setti
 through your opts file. This step has been necessary, because of the large amount of additional file the headercheck adds to the
 build directory. A better implementation has not been found yet, because it simply does not fit the CMake philosophy.
 
-.. _tarball:
+.. _packages:
 
-How do I create tarballs?
-=========================
+How do I create tarballs or packages?
+=====================================
 
-CMake has a packaging tool CPack. This creates tarballs or binary packages. To build tarballs add
-the variable :code:`CPACK_SET_DESTDIR` which must be set to :code:`true` for the configuration
-of all modules. Inside the build directory run :code:`make package_source` and you'll find the
-packages below :code:`<CMAKE_BINARY_DIR>/_CPack_Packages`.
+To create source code packages, also known as tarballs, run `git archive` within your
+module's Git repository.
 
-Note that an un-packed copy is located there which contains a :code:`dune.module` file. Delete the
-subdirectory. Otherwise it is going to break your next :code:`dunecontrol` run, because the module
-is defined multiple times.
+There is no default way to create binary packages like Deb or RPM packages. You can use
+the Open Build Service for openSuse RPMs and related distributions. Or create packages according
+to the distribution of your choice like the tools around dpkg-buildpackage and debuild
+for Debian.
+
+CMake has a packaging tool CPack, but with CPack you are on your own. In the past, our
+results based on CPack were not satisfying.
 
 .. _dune-python:
 
