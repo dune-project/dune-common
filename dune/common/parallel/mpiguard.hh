@@ -36,6 +36,7 @@ namespace Dune
     template <class C>
     static GuardCommunicator * create(const CollectiveCommunication<C> & c);
 #if HAVE_MPI
+    inline
     static GuardCommunicator * create(const MPI_Comm & c);
 #endif
   };
