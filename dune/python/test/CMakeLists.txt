@@ -4,7 +4,7 @@ dune_python_add_test(NAME pythontests
                      LABELS quick)
 
 dune_add_test(SOURCES test_embed1.cc
-              LINK_LIBRARIES ${DUNE_LIBS} ${PYTHON_LIBRARIES}
+              LINK_LIBRARIES ${PYTHON_LIBRARIES}
               LABELS quick
               )
 
