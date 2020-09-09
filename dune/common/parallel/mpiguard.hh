@@ -83,7 +83,7 @@ namespace Dune
   }
 
 #if HAVE_MPI
-  GuardCommunicator * GuardCommunicator::create(const MPI_Comm & comm)
+  inline GuardCommunicator * GuardCommunicator::create(const MPI_Comm & comm)
   {
     return new GenericGuardCommunicator< CollectiveCommunication<MPI_Comm> >(comm);
   }
