@@ -37,6 +37,9 @@
 
 - Deprecate header `dune/common/std/variant.hh`; use `<variant>` instead.
 
+- Remove incomplete CPack support that was never used to make an official
+  build or tarball.
+
 # Release 2.7
 
 - Added fallback implementation to C++20 feature: `std::identity`.
