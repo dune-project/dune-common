@@ -4,3 +4,6 @@
 *~
 # ignore Python files
 *.pyc
+# ignore pypi files
+dist
+*.egg-info
