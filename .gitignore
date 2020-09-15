@@ -7,3 +7,4 @@
 # ignore pypi files
 dist
 *.egg-info
+.eggs

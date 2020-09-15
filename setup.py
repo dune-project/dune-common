@@ -1,3 +1,5 @@
+import sys, os
+from setuptools.command.build_ext import build_ext
 import setuptools
 
 class get_pybind_include(object):
@@ -24,6 +26,20 @@ ext_modules = [
     ),
 ]
 
+def dunecontrol():
+    builddir = '/usr/local/lib/python3.7/dist-packages/dune-common'
+    options = ['--builddir='+builddir, '--all-opts=\'CMAKE_FLAGS=\"-DBUILD_SHARED_LIBS=TRUE\"\'']
+    command = ['./bin/dunecontrol'] + options + ['all']
+    print(" ".join(command))
+    status = os.system(" ".join(command))
+    if status != 0: raise RuntimeError(status)
+
+
+class BuildExt(build_ext):
+    def build_extensions(self):
+        dunecontrol()
+        build_ext.build_extensions(self)
+
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
@@ -46,4 +62,5 @@ setuptools.setup(
     python_requires='>=3.4',
     setup_requires=['pybind11>=2.5.0'],
     ext_modules=ext_modules,
+    cmdclass={'build_ext': BuildExt},
 )
