@@ -1,8 +1,3 @@
-# .. cmake_module::
-#
-#    This modules content is executed whenever a module required or suggests dune-common!
-#
-
 # enforce C++-14
 dune_require_cxx_standard(MODULE "dune-common" VERSION 14)
 
@@ -30,6 +25,8 @@ find_package(GMP)
 include(AddGMPFlags)
 find_package(QuadMath)
 include(AddQuadMathFlags)
+
+# find program for image manipulation
 find_package(Inkscape)
 include(UseInkscape)
 include(FindMProtect)
