@@ -26,8 +26,8 @@ add_subdirectory("cmake/modules")
 add_subdirectory("cmake/scripts")
 
 # if Python bindings are enabled, include necessary sub directories.
-if( DUNE_ENABLE_PYTHONBINDINGS )
-  add_subdirectory("python")
+if(DUNE_ENABLE_PYTHONBINDINGS)
+  add_subdirectory(python)
   dune_python_install_package(PATH "python")
 endif()
 
