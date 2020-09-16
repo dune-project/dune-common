@@ -1,14 +1,11 @@
-# set up project
-project("dune-common" C CXX)
-
-# general stuff
 cmake_minimum_required(VERSION 3.13)
+project(dune-common LANGUAGES C CXX)
 
 # make sure our own modules are found
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/modules")
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
 # set the script dir for the macros.
-set(DUNE_COMMON_SCRIPT_DIR "${PROJECT_SOURCE_DIR}/cmake/scripts")
+set(DUNE_COMMON_SCRIPT_DIR ${PROJECT_SOURCE_DIR}/cmake/scripts)
 
 #include the dune macros
 include(DuneMacros)
@@ -17,13 +14,12 @@ include(DuneMacros)
 dune_project()
 
 # add subdirectories to execute CMakeLists.txt there
-add_subdirectory("lib")
-add_subdirectory("share")
-add_subdirectory("dune")
-add_subdirectory("bin")
-add_subdirectory("doc")
-add_subdirectory("cmake/modules")
-add_subdirectory("cmake/scripts")
+add_subdirectory(bin)
+add_subdirectory(cmake)
+add_subdirectory(doc)
+add_subdirectory(dune)
+add_subdirectory(lib)
+add_subdirectory(share)
 
 # if Python bindings are enabled, include necessary sub directories.
 if(DUNE_ENABLE_PYTHONBINDINGS)
