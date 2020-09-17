@@ -12,6 +12,8 @@ class get_pybind_include(object):
         import pybind11
         return pybind11.get_include()
 
+builddir = '/usr/local/lib/python3.7/dist-packages/'
+
 ext_modules = [
     setuptools.Extension(
         'dune.common_',
@@ -21,16 +23,16 @@ ext_modules = [
         include_dirs=[
             # Path to pybind11 headers
             get_pybind_include(),
+            builddir+'dune-common',
+            '.'
         ],
         language='c++'
     ),
 ]
 
 def dunecontrol():
-    builddir = '/usr/local/lib/python3.7/dist-packages/dune-common'
-    options = ['--builddir='+builddir, '--all-opts=\'CMAKE_FLAGS=\"-DBUILD_SHARED_LIBS=TRUE\"\'']
+    options = ['--builddir='+builddir, '--all-opts=\'CMAKE_FLAGS=\"-DBUILD_SHARED_LIBS=TRUE -DDUNE_ENABLE_PYTHONBINDINGS\"\'']
     command = ['./bin/dunecontrol'] + options + ['all']
-    print(" ".join(command))
     status = os.system(" ".join(command))
     if status != 0: raise RuntimeError(status)
 
@@ -38,6 +40,8 @@ def dunecontrol():
 class BuildExt(build_ext):
     def build_extensions(self):
         dunecontrol()
+        for ext in self.extensions:
+            ext.extra_compile_args = ['-std=c++17']
         build_ext.build_extensions(self)
 
 with open("README.md", "r") as fh:
