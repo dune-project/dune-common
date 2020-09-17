@@ -14,7 +14,7 @@ class get_pybind_include(object):
 
 ext_modules = [
     setuptools.Extension(
-        'dune.common_',
+        'dune.common._common',
         # Sort input source files to ensure bit-for-bit reproducible builds
         # (https://github.com/pybind/python_example/pull/53)
         sorted(['python/dune/common/_common.cc']),
@@ -24,6 +24,10 @@ ext_modules = [
             os.path.join(os.path.abspath(os.getcwd()), 'build-cmake'),
             '.',
         ],
+        library_dirs=[
+            os.path.join(os.path.abspath(os.getcwd()), 'build-cmake', 'lib'),
+        ],
+        libraries=['dunecommon'],
         language='c++'
     ),
 ]
