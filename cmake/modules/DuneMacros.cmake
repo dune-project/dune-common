@@ -628,39 +628,12 @@ macro(dune_project)
     message(FATAL_ERROR "Module name from dune.module does not match the name given in CMakeLists.txt.")
   endif()
 
-  option(DUNE_USE_ONLY_STATIC_LIBS "If set to ON, we will force static linkage everywhere" OFF)
-  if(DUNE_USE_ONLY_STATIC_LIBS)
-    if(BUILD_SHARED_LIBS)
-      message(FATAL_ERROR "Your requesting to use only static libraries "
-        "(DUNE_USE_ONLY_STATIC_LIBS==True) while at same time requesting to "
-        "build shared libraries (BUILD_SHARED_LIBS==True). This is a "
-        "contradiction!")
-    endif()
-  endif()
-  option(DUNE_BUILD_BOTH_LIBS "If set to ON, shared and static libs will be built"
-    ${_default_enable_static})
-
   # As default request position independent code if shared libraries are built
   # This should allow DUNE modules to use CMake's object libraries.
   # This can be overwritten for targets by setting the target property
   # POSITION_INDEPENDENT_CODE to false/OFF
   include(CMakeDependentOption)
   cmake_dependent_option(CMAKE_POSITION_INDEPENDENT_CODE "Build position independent code" ON "NOT BUILD_SHARED_LIBS" ON)
-
-  if(DUNE_USE_ONLY_STATIC_LIBS)
-    # Use only static libraries.
-    # We do this by overriding the library suffixes.
-    set( BLA_STATIC 1)
-    set( _dune_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
-    if(WIN32)
-      set(CMAKE_FIND_LIBRARY_SUFFIXES .lib ${CMAKE_FIND_LIBRARY_SUFFIXES})
-    endif()
-    if(APPLE)
-      set(CMAKE_FIND_LIBRARY_SUFFIXES .lib ${CMAKE_FIND_LIBRARY_SUFFIXES})
-    else()
-      set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
-    endif()
-  endif()
 
   # check for C++ features, set compiler flags for C++14 or C++11 mode
   include(CheckCXXFeatures)
@@ -1018,43 +991,6 @@ macro(dune_add_library basename)
       LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
       ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
 
-    set(_created_libs ${basename})
-
-    if(DUNE_BUILD_BOTH_LIBS)
-      if(BUILD_SHARED_LIBS)
-        #create static lib
-        add_library(${basename}-static STATIC ${DUNE_LIB_SOURCES})
-        # make sure both libs have the same name.
-        set_target_properties(${basename}-static PROPERTIES
-          OUTPUT_NAME ${basename}
-          ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
-        list(APPEND _created_libs ${basename}-static)
-        # link with specified libraries.
-        if(DUNE_LIB_ADD_LIBS)
-          dune_target_link_libraries(${basename}-static "${DUNE_LIB_ADD_LIBS}")
-        endif()
-        if(DUNE_LIB_COMPILE_FLAGS)
-          set_property(${basename}-static APPEND_STRING COMPILE_FLAGS
-            "${DUNE_LIB_COMPILE_FLAGS}")
-        endif()
-      else()
-        #create shared libs
-        add_library(${basename}-shared SHARED  ${DUNE_LIB_SOURCES})
-        set_target_properties(${basename}-shared PROPERTIES
-          OUTPUT_NAME ${basename}
-          LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
-        # link with specified libraries.
-        if(DUNE_LIB_ADD_LIBS)
-          dune_target_link_libraries(${basename}-shared "${DUNE_LIB_ADD_LIBS}")
-        endif()
-        if(DUNE_LIB_COMPILE_FLAGS)
-          set_property(${basename}-shared APPEND_STRING COMPILE_FLAGS
-            "${DUNE_LIB_COMPILE_FLAGS}")
-        endif()
-        list(APPEND _created_libs ${basename}-shared)
-      endif()
-    endif()
-
     if(NOT DUNE_LIB_NO_EXPORT)
       # The following allows for adding multiple libs in the same
       # directory or below with passing the APPEND keyword.
@@ -1073,13 +1009,13 @@ macro(dune_add_library basename)
       endif()
 
       # install targets to use the libraries in other modules.
-      install(TARGETS ${_created_libs}
+      install(TARGETS ${basename}
         EXPORT ${ProjectName}-targets DESTINATION ${CMAKE_INSTALL_LIBDIR})
       install(EXPORT ${ProjectName}-targets
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${ProjectName})
 
       # export libraries for use in build tree
-      export(TARGETS ${_created_libs} ${_append}
+      export(TARGETS ${basename} ${_append}
         FILE ${PROJECT_BINARY_DIR}/${ProjectName}-targets.cmake)
     endif()
   endif()
@@ -1127,13 +1063,6 @@ endmacro(replace_properties_for_one)
 
 function(dune_target_link_libraries basename libraries)
   target_link_libraries(${basename} ${libraries})
-  if(DUNE_BUILD_BOTH_LIBS)
-    if(BUILD_SHARED_LIBS)
-      target_link_libraries(${basename}-static ${libraries})
-    else()
-      target_link_libraries(${basename}-shared ${libraries})
-    endif()
-  endif()
 endfunction(dune_target_link_libraries basename libraries)
 
 function(replace_properties)
