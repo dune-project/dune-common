@@ -12,8 +12,6 @@ class get_pybind_include(object):
         import pybind11
         return pybind11.get_include()
 
-builddir = '/usr/local/lib/python3.7/dist-packages/'
-
 ext_modules = [
     setuptools.Extension(
         'dune.common_',
@@ -23,15 +21,15 @@ ext_modules = [
         include_dirs=[
             # Path to pybind11 headers
             get_pybind_include(),
-            builddir+'dune-common',
-            '.'
+            os.path.join(os.path.abspath(os.getcwd()), 'build-cmake'),
+            '.',
         ],
         language='c++'
     ),
 ]
 
 def dunecontrol():
-    options = ['--builddir='+builddir, '--all-opts=\'CMAKE_FLAGS=\"-DBUILD_SHARED_LIBS=TRUE -DDUNE_ENABLE_PYTHONBINDINGS\"\'']
+    options = ['--all-opts=\'CMAKE_FLAGS=\"-DBUILD_SHARED_LIBS=TRUE -DDUNE_ENABLE_PYTHONBINDINGS\"\'']
     command = ['./bin/dunecontrol'] + options + ['all']
     status = os.system(" ".join(command))
     if status != 0: raise RuntimeError(status)
@@ -56,8 +54,8 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://gitlab.dune-project.org/core/dune-common",
-    packages=['dune'],
-    package_dir={'dune': 'python/dune'},
+    packages=['dune.common'],
+    package_dir={'dune.common': 'python/dune/common'},
     classifiers=[
         "Programming Language :: C++",
         "Programming Language :: Python :: 3",
