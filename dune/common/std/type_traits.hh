@@ -7,7 +7,7 @@
 #include <dune/common/typetraits.hh>
 #include <dune/common/typeutilities.hh>
 
-#if DUNE_HAVE_HEADER_EXPERIMENTAL_TYPE_TRAITS
+#if __has_include(<experimental/type_traits>)
 #include <experimental/type_traits>
 #endif
 
