@@ -47,7 +47,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="dune-common", # Replace with your own username
+    name="dune-common",
     version="2.8",
     author="The Dune Core developers",
     author_email="dune@lists.dune-project.org",
@@ -73,5 +73,7 @@ setuptools.setup(
     python_requires='>=3.4',
     setup_requires=['pybind11>=2.5.0'],
     ext_modules=ext_modules,
+    scripts=['bin/dunecontrol', 'bin/dune-git-whitespace-hook'],
+    libs=['lib/dunemodules.lib'],
     cmdclass={'build_ext': BuildExt},
 )
