@@ -2,38 +2,35 @@ import sys, os
 from setuptools.command.build_ext import build_ext
 import setuptools
 
-class get_pybind_include(object):
-    """Helper class to determine the pybind11 include path
-    The purpose of this class is to postpone importing pybind11
-    until it is actually installed, so that the ``get_include()``
-    method can be invoked. """
+# module libaries to be build
+modules = ['common', 'typeregistry']
 
+builddir = os.path.abspath(os.getcwd())
+
+class get_pybind_include(object):
     def __str__(self):
         import pybind11
         return pybind11.get_include()
 
 ext_modules = [
     setuptools.Extension(
-        'dune.common._common',
-        # Sort input source files to ensure bit-for-bit reproducible builds
-        # (https://github.com/pybind/python_example/pull/53)
-        sorted(['python/dune/common/_common.cc']),
+        'dune.'+ext+'._'+ext,
+        sorted(['python/dune/'+ext+'/_'+ext+'.cc']),
         include_dirs=[
-            # Path to pybind11 headers
             get_pybind_include(),
-            os.path.join(os.path.abspath(os.getcwd()), 'build-cmake'),
+            os.path.join(builddir, 'build-cmake'),
             '.',
         ],
         library_dirs=[
-            os.path.join(os.path.abspath(os.getcwd()), 'build-cmake', 'lib'),
+            os.path.join(builddir, 'build-cmake', 'lib'),
         ],
         libraries=['dunecommon'],
         language='c++'
-    ),
+    ) for ext in modules
 ]
 
 def dunecontrol():
-    options = ['--all-opts=\'CMAKE_FLAGS=\"-DBUILD_SHARED_LIBS=TRUE -DDUNE_ENABLE_PYTHONBINDINGS\"\'']
+    options = ['--all-opts=\'CMAKE_FLAGS=\"-DBUILD_SHARED_LIBS=TRUE -DDUNE_ENABLE_PYTHONBINDINGS=ON\"\'']
     command = ['./bin/dunecontrol'] + options + ['all']
     status = os.system(" ".join(command))
     if status != 0: raise RuntimeError(status)
@@ -43,7 +40,7 @@ class BuildExt(build_ext):
     def build_extensions(self):
         dunecontrol()
         for ext in self.extensions:
-            ext.extra_compile_args = ['-std=c++17']
+            ext.extra_compile_args = ['-std=c++17', '-fvisibility=hidden']
         build_ext.build_extensions(self)
 
 with open("README.md", "r") as fh:
@@ -58,8 +55,16 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://gitlab.dune-project.org/core/dune-common",
-    packages=['dune.common'],
-    package_dir={'dune.common': 'python/dune/common'},
+    packages=[
+        'dune.common',
+        'dune.generator',
+        'dune.typeregistry'
+    ],
+    package_dir={
+        'dune.common':       'python/dune/common',
+        'dune.generator':    'python/dune/generator',
+        'dune.typeregistry': 'python/dune/typeregistry'
+    },
     classifiers=[
         "Programming Language :: C++",
         "Programming Language :: Python :: 3",
