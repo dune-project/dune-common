@@ -30,7 +30,7 @@
 - Remove the CMake function deprecated `inkscape_generate_png_from_svg`.
 
 - Remove the old and deprecated use of UseLATEX.cmake.
-  `dune_add_latex_document' is a redirection to `add_latex_document`
+  `dune_add_latex_document` is a redirection to `add_latex_document`
   which internally uses `latexmk`.
 
 ## Deprecations and removals
