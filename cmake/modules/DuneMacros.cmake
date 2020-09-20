@@ -628,6 +628,8 @@ macro(dune_project)
     message(FATAL_ERROR "Module name from dune.module does not match the name given in CMakeLists.txt.")
   endif()
 
+  option(DUNE_USE_DEPRECATED_BUILDSYSTEM "Enables backwards-compatibility to deprecated build system" OFF)
+
   # As default request position independent code if shared libraries are built
   # This should allow DUNE modules to use CMake's object libraries.
   # This can be overwritten for targets by setting the target property

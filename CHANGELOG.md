@@ -18,6 +18,11 @@
 
 ## build-system
 
+- Switch build-system to modern CMake and drop some features which tried to
+  mimic the behavior of Autotools. Setting `DUNE_USE_DEPRECATED_BUILDSYSTEM`
+  provides some backwards-compatibility to the build-system of Dune 2.7.
+  The switch will be removed after Dune 2.8.
+
 - The name mangling for Fortran libraries like BLAS and LAPACK is now done
   without a Fortran compiler. So a Fortran compiler is no longer a built
   requirement.
