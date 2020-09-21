@@ -86,8 +86,8 @@ set_package_properties("SuiteSparse" PROPERTIES
 
 # find package dependencies first
 include(CMakeFindDependencyMacro)
-find_dependency(LAPACK)
-find_dependency(BLAS)
+find_package(LAPACK QUIET)
+find_package(BLAS QUIET)
 
 # list of possible component names
 set(SUITESPARSE_COMPONENTS
