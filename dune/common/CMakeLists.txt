@@ -28,6 +28,9 @@ dune_add_library("dunecommon"
   stdthread.cc
   ADD_LIBS "${_additional_libs}")
 
+# minimal c++ standard required
+target_compile_features(dunecommon PUBLIC cxx_std_17)
+
 add_dune_tbb_flags(dunecommon)
 #install headers
 install(FILES
