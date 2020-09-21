@@ -467,14 +467,14 @@
 include_guard(GLOBAL)
 
 # macro to print additional information to the cmake output file.
-# Note: in cmake 3.15 this is available through the message(TRACE "...") function.
-macro(message_trace TEXT)
+# Note: in cmake 3.15 this is available through the message(VERBOSE "...") function.
+macro(message_verbose TEXT)
   if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.15")
-    message(TRACE "${TEXT}")
+    message(VERBOSE "${TEXT}")
   else()
     file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log "${TEXT}\n")
   endif()
-endmacro(message_trace)
+endmacro(message_verbose)
 
 
 ######################################################################
@@ -618,7 +618,7 @@ endfunction(dune_instance_set_generated)
 # protect against problems with empty elements and against cmakes list()
 # command butchering it's own quoting.
 function(dune_instance_parse_embedded name content_parts template_parts template_names)
-  message_trace("Parsing ${name} for embedded templates")
+  message_verbose("Parsing ${name} for embedded templates")
   file(READ "${name}" content)
   # ensure that the file content ends in a newline, which makes searching for
   # template marker easier
@@ -718,7 +718,7 @@ function(dune_instance_generate_file TEMPLATE INSTANCE)
   dune_instance_set_generated()
 
   # do the generation
-  message_trace("Generating ${TEMPLATE} -> ${INSTANCE}")
+  message_verbose("Generating ${TEMPLATE} -> ${INSTANCE}")
   file(READ "${TEMPLATE}" _content)
   string(CONFIGURE "${_content}" _content)
 
@@ -922,7 +922,7 @@ function(dune_instance_end)
     # remove the final newline that we appended when reading the template file
     string(REGEX REPLACE "\n\$" "" _content "${_content}")
 
-    message_trace("Writing ${INSTANCE}")
+    message_verbose("Writing ${INSTANCE}")
     # only write if the content changes, avoiding recompilations
     dune_write_changed_file("${BINDIR_INSTANCE}" "${_content}")
 
