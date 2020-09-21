@@ -6,9 +6,11 @@ dune_add_test(SOURCES arithmetictestsuitetest.cc
               LABELS quick)
 
 dune_add_test(SOURCES arraylisttest.cc
+              LINK_LIBRARIES dunecommon
               LABELS quick)
 
 dune_add_test(SOURCES arraytest.cc
+              LINK_LIBRARIES dunecommon
               LABELS quick)
 
 dune_add_test(SOURCES assertandreturntest.cc
@@ -27,6 +29,7 @@ dune_add_test(NAME assertandreturntest_ndebug
               LABELS quick)
 
 dune_add_test(SOURCES autocopytest.cc
+              LINK_LIBRARIES dunecommon
               LABELS quick)
 
 dune_add_test(SOURCES bigunsignedinttest.cc
@@ -34,6 +37,7 @@ dune_add_test(SOURCES bigunsignedinttest.cc
               LABELS quick)
 
 dune_add_test(SOURCES bitsetvectortest.cc
+              LINK_LIBRARIES dunecommon
               LABELS quick)
 
 dune_add_test(SOURCES boundscheckingtest.cc
@@ -54,16 +58,19 @@ dune_add_test(SOURCES calloncetest.cc
               LABELS quick)
 
 dune_add_test(SOURCES check_fvector_size.cc
+              LINK_LIBRARIES dunecommon
               LABELS quick)
 
 dune_add_test(NAME check_fvector_size_fail1
               SOURCES check_fvector_size_fail.cc
+              LINK_LIBRARIES dunecommon
               COMPILE_DEFINITIONS DIM=1
               EXPECT_COMPILE_FAIL
               LABELS quick)
 
 dune_add_test(NAME check_fvector_size_fail2
               SOURCES check_fvector_size_fail.cc
+              LINK_LIBRARIES dunecommon
               COMPILE_DEFINITIONS DIM=3
               EXPECT_COMPILE_FAIL
               LABELS quick)
@@ -177,9 +184,11 @@ dune_add_test(SOURCES densevectortest.cc
               LABELS quick)
 
 dune_add_test(SOURCES enumsettest.cc
+              LINK_LIBRARIES dunecommon
               LABELS quick)
 
 dune_add_test(SOURCES filledarraytest.cc
+              LINK_LIBRARIES dunecommon
               LABELS quick)
 
 dune_add_test(SOURCES fmatrixtest.cc
@@ -200,6 +209,7 @@ dune_add_test(SOURCES fvectorconversion1d.cc
               LABELS quick)
 
 dune_add_test(SOURCES genericiterator_compile_fail.cc
+              LINK_LIBRARIES dunecommon
               EXPECT_COMPILE_FAIL
               LABELS quick)
 
@@ -208,12 +218,15 @@ dune_add_test(SOURCES hybridutilitiestest.cc
               LABELS quick)
 
 dune_add_test(SOURCES indicestest.cc
+              LINK_LIBRARIES dunecommon
               LABELS quick)
 
 dune_add_test(SOURCES iteratorfacadetest2.cc
+              LINK_LIBRARIES dunecommon
               LABELS quick)
 
 dune_add_test(SOURCES iteratorfacadetest.cc
+              LINK_LIBRARIES dunecommon
               LABELS quick)
 
 dune_add_test(SOURCES lrutest.cc
@@ -282,6 +295,7 @@ dune_add_test(SOURCES pathtest.cc
               LABELS quick)
 
 dune_add_test(SOURCES poolallocatortest.cc
+              LINK_LIBRARIES dunecommon
               LABELS quick)
 
 dune_add_test(SOURCES powertest.cc
@@ -310,15 +324,19 @@ if (PTScotch_FOUND)
 endif ()
 
 dune_add_test(SOURCES shared_ptrtest.cc
+              LINK_LIBRARIES dunecommon
               LABELS quick)
 
 dune_add_test(SOURCES singletontest.cc
+              LINK_LIBRARIES dunecommon
               LABELS quick)
 
 dune_add_test(SOURCES sllisttest.cc
+              LINK_LIBRARIES dunecommon
               LABELS quick)
 
 dune_add_test(SOURCES stdidentity.cc
+              LINK_LIBRARIES dunecommon
               LABELS quick)
 
 dune_add_test(SOURCES stdapplytest.cc
@@ -330,6 +348,7 @@ dune_add_test(SOURCES stdtypetraitstest.cc
               LABELS quick)
 
 dune_add_test(SOURCES streamoperatorstest.cc
+              LINK_LIBRARIES dunecommon
               LABELS quick)
 
 dune_add_test(SOURCES streamtest.cc
@@ -386,6 +405,7 @@ dune_add_test(NAME testdebugallocator_fail5
               LABELS quick)
 
 dune_add_test(SOURCES testfloatcmp.cc
+              LINK_LIBRARIES dunecommon
               LABELS quick)
 
 dune_add_test(SOURCES transposetest.cc
@@ -397,9 +417,11 @@ dune_add_test(SOURCES to_unique_ptrtest.cc
               LABELS quick)
 
 dune_add_test(SOURCES tupleutilitytest.cc
+              LINK_LIBRARIES dunecommon
               LABELS quick)
 
 dune_add_test(SOURCES typeutilitytest.cc
+              LINK_LIBRARIES dunecommon
               LABELS quick)
 
 dune_add_test(SOURCES typelisttest.cc
@@ -407,6 +429,7 @@ dune_add_test(SOURCES typelisttest.cc
               LABELS quick)
 
 dune_add_test(SOURCES utilitytest.cc
+              LINK_LIBRARIES dunecommon
               LABELS quick)
 
 dune_add_test(SOURCES eigenvaluestest.cc
