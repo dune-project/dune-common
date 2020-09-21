@@ -48,7 +48,7 @@ The following variables may be set to influence this module's behavior:
 
 ``PTSCOTCH_SUFFIX``
   Scotch might be compiled using different integer sizes (int32, int64, long).
-  When this is is set the headers and libaries are search under the suffix
+  When this is set the headers and libaries are search under the suffix
   :code:`include/scotch-${PTSCOTCH_SUFFIX}`, and :code:`lib/scotch-${PTSCOTCH_SUFFIX}`,
   respectively.
 
@@ -74,7 +74,7 @@ set_package_properties("PTScotch" PROPERTIES
 
 # find dependency for PTScotch
 include(CMakeFindDependencyMacro)
-find_dependency(MPI)
+find_package(MPI QUIET)
 
 # search directory might have the PATH_SUFFIX scotch-SUFFIX
 if(PTSCOTCH_SUFFIX)
@@ -168,6 +168,6 @@ if(PTScotch_FOUND)
       INTERFACE_LINK_LIBRARIES ${PTSCOTCHERR_LIBRARY}
     )
     target_link_libraries(PTScotch::PTScotch
-      INTERFACE PTScotch::Scotch MPI::MPI_CXX)
+      INTERFACE PTScotch::Scotch MPI::MPI_C)
   endif()
 endif()
