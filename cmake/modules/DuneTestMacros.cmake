@@ -342,6 +342,10 @@ function(dune_add_test)
     set(ADDTEST_SOURCES ${dummymain})
   endif()
 
+  # add some default libraries to link against
+  list(APPEND ADDTEST_LINK_LIBRARIES dunecommon)
+  list(REMOVE_DUPLICATES ADDTEST_LINK_LIBRARIES)
+
   # Add the executable if it is not already present
   if(ADDTEST_SOURCES)
     add_executable(${ADDTEST_NAME} ${ADDTEST_SOURCES})

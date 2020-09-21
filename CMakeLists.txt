@@ -16,6 +16,9 @@ dune_project()
 # Create the module library for dune-common
 dune_add_library(dunecommon)
 
+# minimal c++ standard required
+target_compile_features(dunecommon PUBLIC cxx_std_17)
+
 # Set properties to the dunecommon target
 add_dune_blas_lapack_flags(dunecommon)
 add_dune_tbb_flags(dunecommon)
