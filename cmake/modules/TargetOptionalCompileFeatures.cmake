@@ -25,7 +25,7 @@ function (target_optional_compile_features TARGET SCOPE)
   # traverse all the features and call the feature-test function
   foreach (FEATURE ${ARGN})
     string(TOLOWER ${FEATURE} feature)
-    set(feature_impl ${PROJECT_SOURCE_DIR}/cmake/cxx_features/${feature}.cmake)
+    set(feature_impl ${PROJECT_SOURCE_DIR}/cmake/feature_tests/${feature}.cmake)
     if (NOT EXISTS ${feature_impl})
       message(WARNING "target_optional_compile_features: Feature ${FEATURE} unknown. Will be skipped.")
       continue()
