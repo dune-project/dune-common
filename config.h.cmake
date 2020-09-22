@@ -20,39 +20,6 @@
 /* Standard debug streams with a level below will collapse to doing nothing */
 #define DUNE_MINIMAL_DEBUG_LEVEL ${DUNE_MINIMAL_DEBUG_LEVEL}
 
-/* does the compiler support __attribute__((deprecated))? */
-#cmakedefine HAS_ATTRIBUTE_DEPRECATED 1
-
-/* does the compiler support __attribute__((deprecated("message"))? */
-#cmakedefine HAS_ATTRIBUTE_DEPRECATED_MSG 1
-
-/* does the compiler support __attribute__((unused))? */
-#cmakedefine HAS_ATTRIBUTE_UNUSED 1
-
-/* does the standard library provide <experimental/type_traits> ? */
-#cmakedefine DUNE_HAVE_HEADER_EXPERIMENTAL_TYPE_TRAITS 1
-
-/* does the standard library provide bool_constant ? */
-#cmakedefine DUNE_HAVE_CXX_BOOL_CONSTANT 1
-
-/* does the standard library provide experimental::bool_constant ? */
-#cmakedefine DUNE_HAVE_CXX_EXPERIMENTAL_BOOL_CONSTANT 1
-
-/* does the standard library provide apply() ? */
-#cmakedefine DUNE_HAVE_CXX_APPLY 1
-
-/* does the standard library provide experimental::apply() ? */
-#cmakedefine DUNE_HAVE_CXX_EXPERIMENTAL_APPLY 1
-
-/* does the standard library provide experimental::make_array() ? */
-#cmakedefine DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY 1
-
-/* does the standard library provide experimental::is_detected ? */
-#cmakedefine DUNE_HAVE_CXX_EXPERIMENTAL_IS_DETECTED 1
-
-/* does the standard library provide identity ? */
-#cmakedefine DUNE_HAVE_CXX_STD_IDENTITY 1
-
 /* Define if you have a BLAS library. */
 #cmakedefine HAVE_BLAS 1
 
@@ -130,9 +97,18 @@
 #define DUNE_SUPPORTS_CXX_THROW_IN_CONSTEXPR 1
 #define DUNE_HAVE_C_ALIGNED_ALLOC 1
 
-
-/* Define to 1 if the compiler properly supports testing for operator[] */
-#cmakedefine HAVE_IS_INDEXABLE_SUPPORT 1
+/* For backward compatibility define constants with the old names */
+#define HAS_ATTRIBUTE_UNUSED DUNE_HAVE_CXX_ATTRIBUTE_UNUSED
+#define HAS_ATTRIBUTE_DEPRECATED DUNE_HAVE_CXX_ATTRIBUTE_DEPRECATED
+#define HAS_ATTRIBUTE_DEPRECATED_MSG DUNE_HAVE_CXX_ATTRIBUTE_DEPRECATED_MSG
+#define HAVE_IS_INDEXABLE_SUPPORT DUNE_HAVE_CXX_IS_INDEXABLE_SUPPORT
+#define DUNE_HAVE_CXX_BOOL_CONSTANT DUNE_HAVE_CXX_LIB_BOOL_CONSTANT
+#define DUNE_HAVE_CXX_EXPERIMENTAL_BOOL_CONSTANT DUNE_HAVE_CXX_EXPERIMENTAL_LIB_BOOL_CONSTANT
+#define DUNE_HAVE_CXX_APPLY DUNE_HAVE_CXX_LIB_APPLY
+#define DUNE_HAVE_CXX_EXPERIMENTAL_APPLY DUNE_HAVE_CXX_LIB_EXPERIMENTAL_APPLY
+#define DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY DUNE_HAVE_CXX_LIB_EXPERIMENTAL_MAKE_ARRAY
+#define DUNE_HAVE_CXX_EXPERIMENTAL_IS_DETECTED DUNE_HAVE_CXX_LIB_EXPERIMENTAL_IS_DETECTED
+#define DUNE_HAVE_CXX_STD_IDENTITY DUNE_HAVE_CXX_LIB_IDENTITY
 
 /* Define to ENABLE_UMFPACK if the UMFPack library is available */
 #cmakedefine HAVE_UMFPACK ENABLE_SUITESPARSE

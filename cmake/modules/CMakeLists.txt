@@ -47,6 +47,7 @@ install(FILES
   Headercheck.cmake
   latexmkrc.cmake
   OverloadCompilerFlags.cmake
+  TargetOptionalCompileFeatures.cmake
   UseInkscape.cmake
   UseLatexMk.cmake
   DESTINATION ${DUNE_INSTALL_MODULEDIR})

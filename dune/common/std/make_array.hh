@@ -4,18 +4,18 @@
 #include <array>
 #include <type_traits>
 
-#if DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY
+#if DUNE_HAVE_CXX_LIB_EXPERIMENTAL_MAKE_ARRAY
 #include <experimental/array>
 #endif
 
 namespace Dune {
 namespace Std {
 
-#if DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY
+#if DUNE_HAVE_CXX_LIB_EXPERIMENTAL_MAKE_ARRAY
 
   using std::experimental::make_array;
 
-#else // DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY
+#else // DUNE_HAVE_CXX_LIB_EXPERIMENTAL_MAKE_ARRAY
 
   //! Create and initialize an array
   /**
@@ -39,7 +39,7 @@ namespace Std {
     return result;
   }
 
-#endif // DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY
+#endif // DUNE_HAVE_CXX_LIB_EXPERIMENTAL_MAKE_ARRAY
 
 }
 }

@@ -17,9 +17,9 @@ namespace Dune
      * @warning When passing `r-values`, the result must be, at most, used for direct
      *          consumption in an outer function call
      */
-#if DUNE_HAVE_CXX_STD_IDENTITY
+#if DUNE_HAVE_CXX_LIB_IDENTITY
     using std::identity;
-#else //DUNE_HAVE_CXX_STD_IDENTITY
+#else //DUNE_HAVE_CXX_LIB_IDENTITY
     struct identity {
       template<class T>
       constexpr T&& operator()(T&& t ) const noexcept {return std::forward<T>(t);}

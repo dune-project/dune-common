@@ -97,11 +97,11 @@ namespace Std
   struct to_true_type : public std::true_type {};
 
 
-#if DUNE_HAVE_CXX_BOOL_CONSTANT
+#if DUNE_HAVE_CXX_LIB_BOOL_CONSTANT
 
     using std::bool_constant;
 
-#elif DUNE_HAVE_CXX_EXPERIMENTAL_BOOL_CONSTANT
+#elif DUNE_HAVE_CXX_LIB_EXPERIMENTAL_BOOL_CONSTANT
 
     using std::experimental::bool_constant;
 
@@ -232,7 +232,7 @@ namespace Std
   {};
 
 
-#if DUNE_HAVE_CXX_EXPERIMENTAL_IS_DETECTED
+#if DUNE_HAVE_CXX_LIB_EXPERIMENTAL_IS_DETECTED
 
   using std::experimental::nonesuch;
   using std::experimental::detected_or;
@@ -245,7 +245,7 @@ namespace Std
   using std::experimental::is_detected_convertible;
   using std::experimental::is_detected_convertible_v;
 
-#else // DUNE_HAVE_CXX_EXPERIMENTAL_IS_DETECTED
+#else // DUNE_HAVE_CXX_LIB_EXPERIMENTAL_IS_DETECTED
 
   // fallback version of std::experimental::is_detected et al., heavily scribbled
   // from cppreference.com (but there is actually not much implementation to the thing)
@@ -427,7 +427,7 @@ namespace Std
   constexpr bool is_detected_convertible_v = is_detected_convertible<Target,Op,Args...>::value;
 #endif // __cpp_variable_templates
 
-#endif // DUNE_HAVE_CXX_EXPERIMENTAL_IS_DETECTED
+#endif // DUNE_HAVE_CXX_LIB_EXPERIMENTAL_IS_DETECTED
 
 
 

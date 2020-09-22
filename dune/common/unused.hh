@@ -8,7 +8,7 @@
  *      is not available
  */
 
-#ifndef HAS_ATTRIBUTE_UNUSED
+#ifndef DUNE_HAVE_CXX_ATTRIBUTE_MAYBE_UNUSED
 //! A macro for marking variables that the compiler mistakenly flags as unused, which sometimes happens due to templates.
 /**
  * \ingroup CxxUtilities

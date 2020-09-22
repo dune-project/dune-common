@@ -10,7 +10,7 @@
 
 //! @addtogroup CxxUtilities
 //! @{
-#if defined(DOXYGEN) || !defined(HAS_ATTRIBUTE_DEPRECATED)
+#if defined(DOXYGEN) || !defined(DUNE_HAVE_CXX_ATTRIBUTE_DEPRECATED)
 //! Mark some entity as deprecated
 /**
  * \code
@@ -82,11 +82,11 @@
  *    With g++ only 2) emits a warning for templated member functions.
  */
 #define DUNE_DEPRECATED
-#else // defined(HAS_ATTRIBUTE_DEPRECATED)
+#else // defined(DUNE_HAVE_CXX_ATTRIBUTE_DEPRECATED)
 #define DUNE_DEPRECATED __attribute__((deprecated))
 #endif
 
-#if defined(DOXYGEN) || !defined(HAS_ATTRIBUTE_DEPRECATED_MSG)
+#if defined(DOXYGEN) || !defined(DUNE_HAVE_CXX_ATTRIBUTE_DEPRECATED_MSG)
 //! Mark some entity as deprecated
 /**
  * \code
@@ -167,7 +167,7 @@
  *    With g++ only 2) emits a warning for templated member functions.
  */
 #define DUNE_DEPRECATED_MSG(text) DUNE_DEPRECATED
-#else // defined(HAS_ATTRIBUTE_DEPRECATED_MSG)
+#else // defined(DUNE_HAVE_CXX_ATTRIBUTE_DEPRECATED_MSG)
 #define DUNE_DEPRECATED_MSG(text) __attribute__((deprecated(# text)))
 #endif
 

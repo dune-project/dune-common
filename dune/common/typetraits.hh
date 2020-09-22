@@ -199,7 +199,7 @@ namespace Dune
   struct DUNE_DEPRECATED_MSG("Has been renamed to 'HasNaN'.") has_nan
     : HasNaN<T> {};
 
-#if defined(DOXYGEN) or HAVE_IS_INDEXABLE_SUPPORT
+#if defined(DOXYGEN) || DUNE_HAVE_CXX_IS_INDEXABLE_SUPPORT
 
 #ifndef DOXYGEN
 
@@ -229,7 +229,7 @@ namespace Dune
     : public Impl::IsIndexable<T,I>
   {};
 
-#else // defined(DOXYGEN) or HAVE_IS_INDEXABLE_SUPPORT
+#else // defined(DOXYGEN) || DUNE_HAVE_CXX_IS_INDEXABLE_SUPPORT
 
 
   // okay, here follows a mess of compiler bug workarounds...
@@ -310,7 +310,7 @@ namespace Dune
   };
 
 
-#endif // defined(DOXYGEN) or HAVE_IS_INDEXABLE_SUPPORT
+#endif // defined(DOXYGEN) || DUNE_HAVE_CXX_IS_INDEXABLE_SUPPORT
 
   //! Type trait to determine whether an instance of T has an operator[](I), i.e. whether it can be indexed with an index of type I.
   //! \deprecated is_indexable is deprecated, use `Dune::IsIndexable` instead

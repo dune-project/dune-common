@@ -31,6 +31,18 @@ dune_add_library("dunecommon"
 # minimal c++ standard required
 target_compile_features(dunecommon PUBLIC cxx_std_17)
 
+# check for compiler and library features and set corresponding compiler flags
+include(TargetOptionalCompileFeatures)
+target_optional_compile_features(dunecommon PUBLIC
+  cxx_attribute_deprecated
+  cxx_attribute_unused
+  cxx_is_indexable
+  cxx_lib_apply
+  cxx_lib_bool_constant
+  cxx_lib_experimental_is_detected
+  cxx_lib_experimental_make_array
+  cxx_lib_identity)
+
 add_dune_tbb_flags(dunecommon)
 #install headers
 install(FILES
