@@ -10,13 +10,19 @@
 #       A list of targets to use METIS with.
 #
 
+# register HAVE_METIS for config.h
+set(HAVE_METIS ${METIS_FOUND})
 
+# register METIS library as dune package
+if(METIS_FOUND)
+  dune_register_package_flags(LIBRARIES METIS::METIS)
+endif()
+
+# Add function to link targets against METIS library
 function(add_dune_metis_flags _targets)
   if(METIS_FOUND)
     foreach(_target ${_targets})
-      target_link_libraries(${_target} ${METIS_LIBRARY})
-    endforeach(_target ${_targets})
-    set_property(TARGET ${_targets} APPEND PROPERTY
-      INCLUDE_DIRECTORIES "${METIS_INCLUDE_DIRS}")
-  endif(METIS_FOUND)
+      target_link_libraries(${_target} METIS::METIS)
+    endforeach(_target)
+  endif()
 endfunction(add_dune_metis_flags _targets)

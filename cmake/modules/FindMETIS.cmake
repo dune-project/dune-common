@@ -1,156 +1,151 @@
-# .. cmake_module::
-#
-#    Find the METIS library
-#
-#    You may set the following variables to modify the
-#    behaviour of this module:
-#
-#    :ref:`METIS_ROOT`
-#       Prefix, where METIS is installed
-#
-#    :ref:`METIS_LIB_NAME`
-#       Name of the METIS library (default: metis)
-#
-#    :ref:`METIS_LIBRARY`
-#       Full path to the METIS library
-#
-#    Sets the following variables:
-#
-#    :code:`METIS_FOUND`
-#       True if the METIS library was found.
-#
-#    :code:`METIS_LIBRARY`
-#       Full path to the METIS library
-#
-#    :code:`METIS_LIBRARIES`
-#       List of libraries needed for linking with METIS
-#
-# .. cmake_variable:: METIS_ROOT
-#
-#   You may set this variable to have :ref:`FindMETIS` look
-#   for the METIS library and includes in the given path
-#   before inspecting default system paths.
-#
-# .. cmake_variable:: METIS_LIB_NAME
-#
-#   You may set this variable to specify the name of the METIS
-#   library that :ref:`FindMETIS` looks for.
-#
-# .. cmake_variable:: METIS_LIBRARY
-#
-#   You may set this variable to specify the full path to the METIS
-#   library, that should be used by :ref:`FindMETIS`.
-#
+#[=======================================================================[.rst:
+FindMETIS
+---------
 
+Find Serial Graph Partitioning library METIS
+(see http://glaros.dtc.umn.edu/gkhome/metis/metis/overview)
 
-# search metis header
-find_path(METIS_INCLUDE_DIR metis.h
-  PATHS ${METIS_DIR} ${METIS_ROOT}
-  PATH_SUFFIXES metis include include/metis Lib METISLib
-  NO_DEFAULT_PATH
-  DOC "Include directory of metis")
-find_path(METIS_INCLUDE_DIR metis.h
-  PATH_SUFFIXES metis include include/metis Lib METISLib)
+Imported targets
+^^^^^^^^^^^^^^^^
 
-set(METIS_LIBRARY METIS_LIBRARY-NOTFOUND CACHE FILEPATH "Full path of the METIS library")
+This module defines the following :prop_tgt:`IMPORTED` target:
 
-# check metis header
-include(CMakePushCheckState)
-cmake_push_check_state() # Save variables
-set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${METIS_INCLUDE_DIR})
-check_include_file(metis.h METIS_FOUND)
+``METIS::METIS``
+  The libraries, flags, and includes to use for METIS, if found.
 
-# search metis library
-if(NOT METIS_LIB_NAME)
-  set(METIS_LIB_NAME metis)
-endif(NOT METIS_LIB_NAME)
+Result Variables
+^^^^^^^^^^^^^^^^
 
-find_library(METIS_LIBRARY ${METIS_LIB_NAME}
-  PATHS ${METIS_DIR} ${METIS_ROOT}
-  PATH_SUFFIXES lib
-  NO_DEFAULT_PATH)
-find_library(METIS_LIBRARY ${METIS_LIB_NAME}
-  PATH_SUFFIXES lib
+This module defines the following variables:
+
+``METIS_FOUND``
+  The METIS library with all its dependencies is found
+
+Cache Variables
+^^^^^^^^^^^^^^^
+
+The following variables may be set to influence this module's behavior:
+
+``METIS_INCLUDE_DIR``
+  Include directory of METIS
+
+``METIS_LIBRARY``
+  Full path to the METIS library
+
+``ENABLE_SCOTCH_METIS``
+  Use the Scotch library as METIS compatibility library. This library provides an
+  interface of some METIS library functions.
+
+``SCOTCH_METIS_VERSION``
+  If `ENABLE_SCOTCH_METIS` is set, this variable specifies the METIS API version provided
+  by the scotch-metis library. This is required for Scotch >= 6.0.7 versions, since it
+  cannot be detected by inspecting provided files. The variable may be set to 3 to indicate
+  that scotch implements the METIS API v3 (default for older Scotch versions), or it can
+  be set to 5 to indicate that v5 of the METIS API is provided. This variable corresponds
+  to the preprocessor flag that is used when compiling Scotch from source.
+#]=======================================================================]
+
+# Text for feature summary
+include(FeatureSummary)
+set_package_properties("METIS" PROPERTIES
+  DESCRIPTION "Serial Graph Partitioning"
 )
 
-# we need to check whether we need to link m, copy the lazy solution from FindBLAS and FindLAPACK here.
-if(METIS_LIBRARY AND NOT WIN32)
-  set(_METIS_LM_LIBRARY "-lm")
+# The Scotch library provides a wrapper around some functions of METIS. Since is does
+# not provide the full interface, you have to request it explicitly.
+option(ENABLE_SCOTCH_METIS "Use the Scotch library as METIS compatibility library" FALSE)
+set(SCOTCH_METIS_VERSION 0 CACHE STRING
+  "METIS API version provided by scotch-metis library")
+
+# Try to locate METIS header
+find_path(METIS_INCLUDE_DIR metis.h
+  PATH_SUFFIXES metis)
+
+find_library(METIS_LIBRARY metis)
+if(ENABLE_SCOTCH_METIS)
+  find_library(METIS_LIBRARY scotchmetis)
 endif()
 
-# check metis library
-if(METIS_LIBRARY)
-  set(_CMAKE_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES}") # do a backup
-  list(APPEND CMAKE_REQUIRED_LIBRARIES ${METIS_LIBRARY} ${_METIS_LM_LIBRARY})
-  include(CheckFunctionExists)
-  check_function_exists(METIS_PartGraphKway HAVE_METIS_PARTGRAPHKWAY)
+# We need to check whether we need to link m, copy the lazy solution
+# from FindBLAS and FindLAPACK here.
+if(METIS_LIBRARY AND NOT WIN32)
+  set(METIS_NEEDS_LIBM 1)
+endif()
 
-  if(NOT HAVE_METIS_PARTGRAPHKWAY)
-    # Maybe we are using static scotch libraries. In this case we need to link
-    # the other scotch libraries too. Let's make a best effort.
-    # Get the path where METIS_LIBRARY resides
-    get_filename_component(_lib_root ${METIS_LIBRARY} DIRECTORY)
-    # Search for additional libs only in this directory.
-    # Otherwise we might find incompatible ones, e.g. for int instead of long
-    find_library(SCOTCH_LIBRARY scotch PATHS ${_lib_root} "The Scotch library." NO_DEFAULT_PATH)
-    find_library(SCOTCHERR_LIBRARY scotcherr PATHS ${_lib_root} "The Scotch error library."
-      NO_DEFAULT_PATH)
-    if(SCOTCH_LIBRARY AND SCOTCHERR_LIBRARY)
-      set(_METIS_SCOTCH_LIBRARIES ${SCOTCH_LIBRARY} ${SCOTCHERR_LIBRARY} ${STDTHREAD_LINK_FLAGS} )
-      set(CMAKE_REQUIRED_LIBRARIES ${_CMAKE_REQUIRED_LIBRARIES} ${METIS_LIBRARY} ${_METIS_SCOTCH_LIBRARIES} ${_METIS_LM_LIBRARY})
-      # unset HAVE_METIS_PARTGRAPHKWAY to force another
-      # run of check_function_exists(METIS_PartGraphKway
-      unset(HAVE_METIS_PARTGRAPHKWAY CACHE)
-      check_function_exists(METIS_PartGraphKway HAVE_METIS_PARTGRAPHKWAY)
+mark_as_advanced(METIS_INCLUDE_DIR METIS_LIBRARY METIS_NEEDS_LIBM)
+
+# Determine version of METIS installation
+find_file(METIS_HEADER_FILE metis.h
+  PATHS ${METIS_INCLUDE_DIR}
+  NO_DEFAULT_PATH)
+if(METIS_HEADER_FILE)
+  file(READ "${METIS_HEADER_FILE}" metisheader)
+  string(REGEX REPLACE ".*#define METIS_VER_MAJOR[ ]+([0-9]+).*" "\\1"
+    METIS_MAJOR_VERSION "${metisheader}")
+  string(REGEX REPLACE ".*#define METIS_VER_MINOR[ ]+([0-9]+).*" "\\1"
+    METIS_MINOR_VERSION "${metisheader}")
+  if(METIS_MAJOR_VERSION GREATER_EQUAL 0 AND METIS_MINOR_VERSION GREATER_EQUAL 0)
+    set(METIS_VERSION "${METIS_MAJOR_VERSION}.${METIS_MINOR_VERSION}")
+  else()
+    unset(METIS_MAJOR_VERSION)
+    unset(METIS_MINOR_VERSION)
+  endif()
+endif()
+unset(METIS_HEADER_FILE CACHE)
+
+# If scotch is requested, find package PTScotch and check version compatibility:
+# Scotch provides METIS-3 interface only in version < 6.07, but provides an option to
+# select the API-version in later Scotch releases
+if(ENABLE_SCOTCH_METIS)
+  include(CMakeFindDependencyMacro)
+  find_package(PTScotch QUIET COMPONENTS SCOTCH)
+  set(HAVE_SCOTCH_METIS ${PTScotch_FOUND})
+  if (PTScotch_FOUND)
+    if(PTScotch_VERSION VERSION_LESS "6.0.7")
+      set(METIS_MAJOR_VERSION "3")
+    elseif(SCOTCH_METIS_VERSION)
+      set(METIS_MAJOR_VERSION "${SCOTCH_METIS_VERSION}")
+    else()
+      message(WARNING "Cannot detect METIS API version provided by the scotch-metis library.
+        Set the cmake variable SCOTCH_METIS_VERSION to the corresponding version number.")
+    endif()
+    if(METIS_MAJOR_VERSION GREATER_EQUAL 0)
+      set(METIS_VERSION "${METIS_MAJOR_VERSION}.0")
     endif()
   endif()
-  set(CMAKE_REQUIRED_LIBRARIES "${_CMAKE_REQUIRED_LIBRARIES}")
-endif(METIS_LIBRARY)
+endif()
 
-# behave like a CMake module is supposed to behave
+# Specify an api version to be used in config.h files or compile flags
+set(METIS_API_VERSION "${METIS_MAJOR_VERSION}")
+
+# Behave like a CMake module is supposed to behave
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(
-  "METIS"
-  DEFAULT_MSG
-  METIS_INCLUDE_DIR
-  METIS_LIBRARY
-  HAVE_METIS_PARTGRAPHKWAY
+find_package_handle_standard_args("METIS"
+  REQUIRED_VARS
+    METIS_LIBRARY METIS_INCLUDE_DIR METIS_VERSION
+  VERSION_VAR
+    METIS_VERSION
 )
 
-cmake_pop_check_state()
+# If both headers and library are found, create imported target
+if(METIS_FOUND AND NOT TARGET METIS::METIS)
+  add_library(METIS::METIS UNKNOWN IMPORTED)
+  set_target_properties(METIS::METIS PROPERTIES
+    IMPORTED_LOCATION ${METIS_LIBRARY}
+    INTERFACE_INCLUDE_DIRECTORIES ${METIS_INCLUDE_DIR}
+    INTERFACE_COMPILE_DEFINITIONS METIS_API_VERSION=${METIS_API_VERSION}
+  )
 
-mark_as_advanced(METIS_INCLUDE_DIR METIS_LIBRARIES METIS_LIB_NAME)
-
-# if both headers and library are found, store results
-if(METIS_FOUND)
-  set(METIS_INCLUDE_DIRS ${METIS_INCLUDE_DIR})
-  # We need to cache METIS_LIBRARIES as for subsequent runs
-  # The scotch stuff will not be set again!!!
-  set(METIS_LIBRARIES ${METIS_LIBRARY} ${_METIS_SCOTCH_LIBRARIES} ${_METIS_LM_LIBRARY}
-    CACHE STRING "List of all libraries needed to link to METIS")
-  set(HAVE_METIS ${METIS_FOUND})
-  # log result
-  file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
-    "Determing location of METIS succeeded:\n"
-    "Include directory: ${METIS_INCLUDE_DIRS}\n"
-    "Library directory: ${METIS_LIBRARIES}\n\n")
-  # deprecate versions < 5
-  file(READ "${METIS_INCLUDE_DIR}/metis.h" metisheader)
-  string(REGEX MATCH "#define METIS_VER_MAJOR[ ]+[0-9]+" versionMacroDef "${metisheader}")
-  string(REGEX MATCH "[0-9]+" MetisMajorVersion "${versionMacroDef}")
-  if("${versionMacroDef}" STREQUAL "" OR "${MetisMajorVersion}" LESS 5)
-    message(AUTHOR_WARNING "Support for METIS older than version 5.x is deprecated in Dune 2.7")
+  # Link against libm if needed
+  if(METIS_NEEDS_LIBM)
+    target_link_libraries(METIS::METIS INTERFACE m)
   endif()
-else(METIS_FOUND)
-  # log erroneous result
-  file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
-    "Determing location of METIS failed:\n"
-    "Include directory: ${METIS_INCLUDE_DIRS}\n"
-    "Library directory: ${METIS_LIBRARIES}\n\n")
-endif(METIS_FOUND)
 
-# register all METIS related flags
-if(METIS_FOUND)
-  dune_register_package_flags(LIBRARIES "${METIS_LIBRARIES}"
-                              INCLUDE_DIRS "${METIS_INCLUDE_DIRS}")
+  # Link against Scotch library if option is enabled
+  if(ENABLE_SCOTCH_METIS AND PTScotch_FOUND)
+    target_link_libraries(METIS::METIS INTERFACE PTScotch::Scotch)
+    target_compile_definitions(METIS::METIS INTERFACE
+      HAVE_SCOTCH_METIS
+      SCOTCH_METIS_VERSION=${SCOTCH_METIS_VERSION})
+  endif()
 endif()
