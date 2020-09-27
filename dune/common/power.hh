@@ -23,7 +23,7 @@ namespace Dune {
   struct StaticPower
   {
     /** \brief power stores m^p */
-    enum { power = Dune::power(m,p) };
+    static constexpr int power = Dune::power(m,p);
   };
 
 
