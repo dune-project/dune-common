@@ -4,6 +4,7 @@
 #define DUNE_GENERICITERATOR_HH
 
 #include <dune/common/iteratorfacades.hh>
+#include <dune/common/typeutilities.hh>
 #include <cassert>
 
 namespace Dune {
@@ -200,26 +201,16 @@ namespace Dune {
     {}
 
     /**
-     * @brief Copy constructor
+     * @brief Not a copy or move constructor
      *
-     * This is somehow hard to understand, therefore play with the cases:
-     * 1. if we are mutable this is the only valid copy constructor, as the argument is a mutable iterator
-     * 2. if we are a const iterator the argument is a mutable iterator => This is the needed conversion to initialize a const iterator from a mutable one.
+     * Constructs an iterator from another const or mutable iterator.
      */
-    GenericIterator(const MutableIterator& other) : container_(other.container_), position_(other.position_)
-    {}
-
-    /**
-     * @brief Copy constructor
-     *
-     * @warning Calling this method results in a compiler error, if this is a mutable iterator.
-     *
-     * This is somehow hard to understand, therefore play with the cases:
-     * 1. if we are mutable the arguments is a const iterator and therefore calling this method is mistake in the user's code and results in a (probably not understandable) compiler error
-     * 2. If we are a const iterator this is the default copy constructor as the argument is a const iterator too.
-     */
-    GenericIterator(const ConstIterator& other) : container_(other.container_), position_(other.position_)
-    {}
+     template<class Other,
+     Dune::disableCopyMove<GenericIterator, Other> = 0,
+     std::enable_if_t<std::is_same_v<Other,ConstIterator> or
+                      std::is_same_v<Other,MutableIterator>, int> = 0>
+                      GenericIterator(const Other& other) : container_(other.container_), position_(other.position_)
+     {}
 
     // Methods needed by the forward iterator
     bool equals(const MutableIterator & other) const
