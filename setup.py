@@ -30,9 +30,16 @@ ext_modules = [
 ]
 
 def dunecontrol():
-    options = ['--all-opts=\'CMAKE_FLAGS=\"-DBUILD_SHARED_LIBS=TRUE -DDUNE_ENABLE_PYTHONBINDINGS=ON\"\'']
-    command = ['./bin/dunecontrol'] + options + ['all']
-    status = os.system(" ".join(command))
+    optsfile = open("config.opts", "w")
+    optsfile.write('CMAKE_FLAGS=\"-DBUILD_SHARED_LIBS=TRUE -DDUNE_ENABLE_PYTHONBINDINGS=TRUE\"')
+    optsfile.close()
+
+    configure = './bin/dunecontrol --opts=config.opts configure'
+    status = os.system(configure)
+    if status != 0: raise RuntimeError(status)
+
+    install = './bin/dunecontrol --opts=config.opts make install'
+    status = os.system(install)
     if status != 0: raise RuntimeError(status)
 
 
