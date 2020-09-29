@@ -853,13 +853,13 @@ namespace Dune {
       }
 
       //! \todo Please doc me!
-      bool operator==(const iterator& other)
+      bool operator==(const iterator& other) const
       {
         return other.iter_==iter_;
       }
 
       //! \todo Please doc me!
-      bool operator!=(const iterator& other)
+      bool operator!=(const iterator& other) const
       {
         return other.iter_!=iter_;
       }
