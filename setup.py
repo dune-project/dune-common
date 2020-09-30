@@ -7,6 +7,27 @@ modules = ['common', 'typeregistry']
 
 builddir = os.path.abspath(os.getcwd())
 
+def inVEnv():
+    # if sys.real_prefix exists, this is a virtualenv set up with the virtualenv package
+    if hasattr(sys, 'real_prefix'):
+        return 1
+    # if a virtualenv is set up with pyvenv, we check for equality of base_prefix and prefix
+    if hasattr(sys, 'base_prefix'):
+        return (sys.prefix != sys.base_prefix)
+    # if none of the above conditions triggered, this is probably no virtualenv interpreter
+    return 0
+def get_install_prefix():
+    # test if in virtual env
+    if inVEnv():
+        return sys.prefix
+    # generate in home directory
+    try:
+        home = sys.expanduser("~")
+        return os.path.join(home, '.cache')
+    except KeyError:
+        pass
+    raise RuntimeError('unable to determine location for dune-py module. please set the environment variable "dune_py_dir".')
+
 class get_pybind_include(object):
     def __str__(self):
         import pybind11
@@ -31,7 +52,8 @@ ext_modules = [
 
 def dunecontrol():
     optsfile = open("config.opts", "w")
-    optsfile.write('CMAKE_FLAGS=\"-DBUILD_SHARED_LIBS=TRUE -DDUNE_ENABLE_PYTHONBINDINGS=TRUE\"')
+    optsfile.write('CMAKE_FLAGS=\"-DCMAKE_INSTALL_PREFIX='+get_install_prefix()+
+                      ' -DBUILD_SHARED_LIBS=TRUE -DDUNE_ENABLE_PYTHONBINDINGS=TRUE\"')
     optsfile.close()
 
     configure = './bin/dunecontrol --opts=config.opts configure'
