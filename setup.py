@@ -46,6 +46,9 @@ ext_modules = [
             os.path.join(builddir, 'build-cmake', 'lib'),
         ],
         libraries=['dunecommon'],
+        runtime_library_dirs=[
+            os.path.join(get_install_prefix(), 'lib')
+        ],
         language='c++'
     ) for ext in modules
 ]
@@ -63,10 +66,10 @@ def dunecontrol():
     install = './bin/dunecontrol --opts=config.opts make install'
     status = os.system(install)
     if status != 0: raise RuntimeError(status)
-    install = './bin/setup-dunepy.py --opts=config.opts'
-    status = os.system(install)
-    if status != 0: raise RuntimeError(status)
 
+    dunepy = './bin/setup-dunepy.py --opts=config.opts'
+    status = os.system(dunepy)
+    if status != 0: raise RuntimeError(status)
 
 class BuildExt(build_ext):
     def build_extensions(self):
