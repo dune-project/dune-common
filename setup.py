@@ -80,7 +80,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="dune-common",
-    version="2.8",
+    version="2.7.0",
     author="The Dune Core developers",
     author_email="dune@lists.dune-project.org",
     description="Basis infrastructure classes for all Dune modules",
@@ -106,6 +106,6 @@ setuptools.setup(
     setup_requires=['pybind11>=2.5.0'],
     ext_modules=ext_modules,
     scripts=['bin/dunecontrol', 'bin/dune-git-whitespace-hook'],
-    libs=['lib/dunemodules.lib'],
+    package_data = {'': ['*']},
     cmdclass={'build_ext': BuildExt},
 )
