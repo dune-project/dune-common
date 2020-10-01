@@ -22,7 +22,7 @@ def get_install_prefix():
         return sys.prefix
     # generate in home directory
     try:
-        home = sys.expanduser("~")
+        home = os.path.expanduser("~")
         return os.path.join(home, '.cache')
     except KeyError:
         pass
