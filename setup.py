@@ -63,6 +63,9 @@ def dunecontrol():
     install = './bin/dunecontrol --opts=config.opts make install'
     status = os.system(install)
     if status != 0: raise RuntimeError(status)
+    install = './bin/setup-dunepy.py --opts=config.opts'
+    status = os.system(install)
+    if status != 0: raise RuntimeError(status)
 
 
 class BuildExt(build_ext):
