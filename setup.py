@@ -22,8 +22,13 @@ def get_install_prefix():
         return sys.prefix
     # generate in home directory
     try:
+<<<<<<< Updated upstream
         home = os.path.expanduser("~")
         return os.path.join(home, '.cache')
+=======
+        home = sys.expanduser("~")
+        return os.path.join(home, '.local')
+>>>>>>> Stashed changes
     except KeyError:
         pass
     raise RuntimeError('unable to determine location for dune-py module. please set the environment variable "dune_py_dir".')
@@ -67,7 +72,7 @@ def dunecontrol():
     status = os.system(install)
     if status != 0: raise RuntimeError(status)
 
-    dunepy = './bin/setup-dunepy.py --opts=config.opts'
+    dunepy = 'setup-dunepy.py --opts=config.opts'
     status = os.system(dunepy)
     if status != 0: raise RuntimeError(status)
 
