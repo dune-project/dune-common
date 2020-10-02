@@ -108,7 +108,6 @@ setuptools.setup(
     python_requires='>=3.4',
     setup_requires=['pybind11>=2.5.0'],
     ext_modules=ext_modules,
-    scripts=['bin/dunecontrol', 'bin/dune-git-whitespace-hook'],
-    package_data = {'': ['*']},
-    cmdclass={'build_ext': BuildExt},
+    scripts=['bin/dunecontrol', 'bin/dune-git-whitespace-hook', 'bin/setup-dunepy.py'],
+    cmdclass={'build_ext': BuildExt}
 )

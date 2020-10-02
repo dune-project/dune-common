@@ -1,1 +1,11 @@
-recursive-include . *
+graft bin
+graft cmake
+graft doc
+graft dune
+graft lib
+graft python
+graft share
+include dune.module
+include config.h.cmake
+include CMakeLists.txt
+include dune-common.pc.in
