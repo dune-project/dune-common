@@ -44,6 +44,7 @@ ext_modules = [
         ],
         library_dirs=[
             os.path.join(builddir, 'build-cmake', 'lib'),
+            os.path.join(get_install_prefix(), 'lib')
         ],
         libraries=['dunecommon'],
         runtime_library_dirs=[
@@ -67,7 +68,7 @@ def dunecontrol():
     status = os.system(install)
     if status != 0: raise RuntimeError(status)
 
-    dunepy = 'setup-dunepy.py --opts=config.opts'
+    dunepy = './bin/setup-dunepy.py --opts=config.opts'
     status = os.system(dunepy)
     if status != 0: raise RuntimeError(status)
 
@@ -83,7 +84,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="dune-common",
-    version="2.7.201002",
+    version="2.7.201004",
     author="The Dune Core developers",
     author_email="dune@lists.dune-project.org",
     description="Basis infrastructure classes for all Dune modules",
@@ -108,6 +109,5 @@ setuptools.setup(
     python_requires='>=3.4',
     setup_requires=['wheel', 'pybind11>=2.5.0'],
     ext_modules=ext_modules,
-    scripts=['bin/dunecontrol', 'bin/dune-git-whitespace-hook', 'bin/setup-dunepy.py'],
     cmdclass={'build_ext': BuildExt}
 )
