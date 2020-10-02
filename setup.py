@@ -83,7 +83,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="dune-common",
-    version="2.7.1",
+    version="2.7.201002",
     author="The Dune Core developers",
     author_email="dune@lists.dune-project.org",
     description="Basis infrastructure classes for all Dune modules",
@@ -106,7 +106,7 @@ setuptools.setup(
         "License :: OSI Approved :: GNU General Public License (GPL)",
     ],
     python_requires='>=3.4',
-    setup_requires=['pybind11>=2.5.0'],
+    setup_requires=['wheel', 'pybind11>=2.5.0'],
     ext_modules=ext_modules,
     scripts=['bin/dunecontrol', 'bin/dune-git-whitespace-hook', 'bin/setup-dunepy.py'],
     cmdclass={'build_ext': BuildExt}
