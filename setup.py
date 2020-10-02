@@ -68,7 +68,7 @@ def dunecontrol():
     status = os.system(install)
     if status != 0: raise RuntimeError(status)
 
-    dunepy = './bin/setup-dunepy.py --opts=config.opts'
+    dunepy = os.path.join(get_install_prefix(), 'bin', 'setup-dunepy.py --opts=config.opts')
     status = os.system(dunepy)
     if status != 0: raise RuntimeError(status)
 
@@ -84,7 +84,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="dune-common",
-    version="2.7.201004",
+    version="2.7.200001",
     author="The Dune Core developers",
     author_email="dune@lists.dune-project.org",
     description="Basis infrastructure classes for all Dune modules",
