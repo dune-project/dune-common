@@ -22,6 +22,11 @@
   without a Fortran compiler. So a Fortran compiler is no longer a built
   requirement.
 
+- Remove the CMake options `DUNE_BUILD_BOTH_LIBS` and
+  `DUNE_USE_ONLY_STATIC_LIBS`. Use the default CMake way instead by
+  setting `BUILD_SHARED_LIBS` accordingly. Building both static
+  and shared libraries is no longer supported.
+
 - Remove the CMake function deprecated `inkscape_generate_png_from_svg`.
 
 - Remove the old and deprecated use of UseLATEX.cmake.
