@@ -11,7 +11,7 @@ set(DUNE_COMMON_SCRIPT_DIR ${PROJECT_SOURCE_DIR}/cmake/scripts)
 # deprecated, will be removed after Dune 2.8
 if(DUNE_USE_DEPRECATED_BUILDSYSTEM)
   cmake_policy(SET CMP0023 OLD)
-end()
+endif()
 
 #include the dune macros
 include(DuneMacros)
