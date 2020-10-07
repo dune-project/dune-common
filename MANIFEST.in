@@ -9,3 +9,4 @@ include dune.module
 include config.h.cmake
 include CMakeLists.txt
 include dune-common.pc.in
+include pyproject.toml

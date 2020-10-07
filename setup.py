@@ -20,13 +20,8 @@ def get_install_prefix():
     # test if in virtual env
     if inVEnv():
         return sys.prefix
-    # generate in home directory
-    try:
-        home = os.path.expanduser("~")
-        return os.path.join(home, '.local')
-    except KeyError:
-        pass
-    raise RuntimeError('unable to determine location for dune-py module. please set the environment variable "dune_py_dir".')
+    # use system default
+    return None
 
 class get_pybind_include(object):
     def __str__(self):
@@ -42,22 +37,19 @@ ext_modules = [
             os.path.join(builddir, 'build-cmake'),
             '.',
         ],
-        library_dirs=[
-            os.path.join(builddir, 'build-cmake', 'lib'),
-            os.path.join(get_install_prefix(), 'lib')
-        ],
+        library_dirs=[os.path.join(builddir, 'build-cmake', 'lib')]
+          + [os.path.join(get_install_prefix(), 'lib')] if get_install_prefix() is not None else [],
         libraries=['dunecommon'],
-        runtime_library_dirs=[
-            os.path.join(get_install_prefix(), 'lib')
-        ],
+        runtime_library_dirs=[]
+          + [os.path.join(get_install_prefix(), 'lib')] if get_install_prefix() is not None else [],
         language='c++'
     ) for ext in modules
 ]
 
 def dunecontrol():
     optsfile = open("config.opts", "w")
-    optsfile.write('CMAKE_FLAGS=\"-DCMAKE_INSTALL_PREFIX='+get_install_prefix()+
-                      ' -DBUILD_SHARED_LIBS=TRUE -DDUNE_ENABLE_PYTHONBINDINGS=TRUE\"')
+    optsfile.write('CMAKE_FLAGS=\"' + ('-DCMAKE_INSTALL_PREFIX='+get_install_prefix() if get_install_prefix() is not None else '') +
+                   ' -DBUILD_SHARED_LIBS=TRUE -DDUNE_ENABLE_PYTHONBINDINGS=TRUE\"')
     optsfile.close()
 
     configure = './bin/dunecontrol --opts=config.opts configure'
@@ -68,9 +60,11 @@ def dunecontrol():
     status = os.system(install)
     if status != 0: raise RuntimeError(status)
 
-    dunepy = os.path.join(get_install_prefix(), 'bin', 'setup-dunepy.py --opts=config.opts')
-    status = os.system(dunepy)
-    if status != 0: raise RuntimeError(status)
+    # remove existing dune-py module
+    if get_install_prefix() is not None:
+        os.system('rm -rf ' + os.path.join(get_install_prefix(), '.cache', 'dune-py'))
+    else:
+        os.system('rm -rf ' + os.path.join(os.path.expanduser('~'), '.cache', 'dune-py'))
 
 class BuildExt(build_ext):
     def build_extensions(self):
@@ -84,7 +78,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="dune-common",
-    version="2.7.200001",
+    version="2.8.200911",
     author="The Dune Core developers",
     author_email="dune@lists.dune-project.org",
     description="Basis infrastructure classes for all Dune modules",
@@ -107,7 +101,8 @@ setuptools.setup(
         "License :: OSI Approved :: GNU General Public License (GPL)",
     ],
     python_requires='>=3.4',
-    setup_requires=['wheel', 'pybind11>=2.5.0'],
+    setup_requires=['pybind11>=2.5.0'],
+    install_requires=['numpy'],
     ext_modules=ext_modules,
     cmdclass={'build_ext': BuildExt}
 )
