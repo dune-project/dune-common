@@ -20,6 +20,7 @@ int main(int argc, char** argv)
     if (Dune::FakeMPIHelper::getCommunicator() != Dune::FakeMPIHelper::getLocalCommunicator())
     {
         std::cerr << "FakeMPIHelper::getCommunicator() and FakeMPIHelper::getLocalCommunicator()) should be equal"<<std::endl;
+        ++ret;
     }
 
     nc1 = Dune::FakeMPIHelper::getCommunication();
