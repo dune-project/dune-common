@@ -1,3 +1,10 @@
+dune_add_test(SOURCES communicationtest.cc
+              LINK_LIBRARIES dunecommon
+              MPI_RANKS 1 2 4
+              TIMEOUT 300
+              CMAKE_GUARD MPI_FOUND
+              LABELS quick)
+
 dune_add_test(SOURCES indexsettest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
