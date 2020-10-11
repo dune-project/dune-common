@@ -3,7 +3,7 @@
 
 // This header assumes that concepts are availalbe
 
-#if __cpp_lib_concepts >= 201806L
+#if __has_include(<concepts>)
 #include <concepts>
 
 namespace Dune {
