@@ -36,6 +36,7 @@ namespace Std {
 }
 
 #else
+#include <type_traits>
 namespace Dune {
 namespace Std {
 
