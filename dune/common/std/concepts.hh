@@ -1,7 +1,9 @@
 #ifndef DUNE_COMMON_STD_CONCEPTS_HH
 #define DUNE_COMMON_STD_CONCEPTS_HH
 
-// This header assumes that concepts are availalbe
+#ifndef DUNE_HAVE_CXX_CONCEPTS
+#error "<dune/common/std/concepts.hh> header shall not be included without language support for concepts (i.e. DUNE_HAVE_CXX_CONCEPTS)."
+#endif
 
 #if __has_include(<concepts>)
 #include <concepts>
