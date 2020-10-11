@@ -119,8 +119,10 @@ if(PARMETIS_FOUND AND NOT TARGET ParMETIS::ParMETIS)
 
   # link against PTScotch or METIS if needed
   if(ENABLE_PTSCOTCH_PARMETIS AND PTScotch_FOUND)
-    target_link_libraries(ParMETIS::ParMETIS INTERFACE PTScotch::PTScotch)
+    set_property(TARGET ParMETIS::ParMETIS APPEND PROPERTY
+      INTERFACE_LINK_LIBRARIES PTScotch::PTScotch)
   else()
-    target_link_libraries(ParMETIS::ParMETIS INTERFACE METIS::METIS)
+    set_property(TARGET ParMETIS::ParMETIS APPEND PROPERTY
+      INTERFACE_LINK_LIBRARIES METIS::METIS)
   endif()
 endif()
