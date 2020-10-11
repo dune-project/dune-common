@@ -97,7 +97,6 @@ unset(METIS_HEADER_FILE CACHE)
 # Scotch provides METIS-3 interface only in version < 6.07, but provides an option to
 # select the API-version in later Scotch releases
 if(ENABLE_SCOTCH_METIS)
-  include(CMakeFindDependencyMacro)
   find_package(PTScotch QUIET COMPONENTS SCOTCH)
   set(HAVE_SCOTCH_METIS ${PTScotch_FOUND})
   if (PTScotch_FOUND)
@@ -138,14 +137,16 @@ if(METIS_FOUND AND NOT TARGET METIS::METIS)
 
   # Link against libm if needed
   if(METIS_NEEDS_LIBM)
-    target_link_libraries(METIS::METIS INTERFACE m)
+    set_property(TARGET METIS::METIS APPEND PROPERTY
+      INTERFACE_LINK_LIBRARIES m)
   endif()
 
   # Link against Scotch library if option is enabled
   if(ENABLE_SCOTCH_METIS AND PTScotch_FOUND)
-    target_link_libraries(METIS::METIS INTERFACE PTScotch::Scotch)
-    target_compile_definitions(METIS::METIS INTERFACE
-      HAVE_SCOTCH_METIS
-      SCOTCH_METIS_VERSION=${SCOTCH_METIS_VERSION})
+    set_property(TARGET METIS::METIS APPEND PROPERTY
+      INTERFACE_LINK_LIBRARIES PTScotch::Scotch
+      INTERFACE_COMPILE_DEFINITIONS
+        HAVE_SCOTCH_METIS
+        SCOTCH_METIS_VERSION=${SCOTCH_METIS_VERSION})
   endif()
 endif()
