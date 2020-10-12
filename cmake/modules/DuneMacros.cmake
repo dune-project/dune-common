@@ -137,6 +137,15 @@ include(DuneSymlinkOrCopy)
 include(DunePathHelper)
 include(DuneExecuteProcess)
 
+macro(target_link_libraries TARGET SCOPE)
+  if(${SCOPE} IN_LIST "PRIVATE;INTERFACE;PUBLIC;LINK_PRIVATE;LINK_PUBLIC;LINK_INTERFACE_LIBRARIES")
+    _target_link_libraries(${TARGET} ${SCOPE} ${ARGN})
+  else()
+    message(DEPRECATION "Calling target_link_libraries without the <scope> argument is deprecated.")
+    _target_link_libraries(${TARGET} PUBLIC ${SCOPE} ${ARGN})
+  endif()
+endmacro(target_link_libraries)
+
 # Converts a module name given by _module into an uppercase string
 # _upper where all dashes (-) are replaced by underscores (_)
 # Example: dune-common -> DUNE_COMMON
