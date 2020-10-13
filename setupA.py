@@ -1,8 +1,6 @@
 import sys, os
-from setuptools.command.install import install
 import setuptools
-
-builddir = os.path.abspath(os.getcwd())
+from setuptools.command.install import install
 
 def inVEnv():
     # if sys.real_prefix exists, this is a virtualenv set up with the virtualenv package
@@ -13,6 +11,7 @@ def inVEnv():
         return (sys.prefix != sys.base_prefix)
     # if none of the above conditions triggered, this is probably no virtualenv interpreter
     return 0
+
 def get_install_prefix():
     # test if in virtual env
     if inVEnv():
@@ -21,7 +20,7 @@ def get_install_prefix():
     return None
 
 def dunecontrol():
-    CXXFLAGS = (' -Wl,-rpath,'+get_install_prefix()+'/lib/' if get_install_prefix() is not None else '')
+    CXXFLAGS = ('-Wl,-rpath,'+get_install_prefix()+'/lib/' if get_install_prefix() is not None else '')
     CMAKEFLAGS = ' -DBUILD_SHARED_LIBS=TRUE -DDUNE_ENABLE_PYTHONBINDINGS=TRUE' +\
                    (' -DCMAKE_INSTALL_PREFIX='+get_install_prefix() if get_install_prefix() is not None else '') +\
                  ' -DCMAKE_CXX_FLAGS="'+CXXFLAGS+'"'
@@ -33,7 +32,7 @@ def dunecontrol():
     configure = './bin/dunecontrol --opts=config.opts configure'
     status = os.system(configure)
     if status != 0:
-        print("Could not execute script possibly the TMPDIR is mounted 'noexec'.")
+        print("Could not execute script - possibly the TMPDIR is mounted 'noexec'.")
         print("Try rerunning the install command after setting the environment variable `TMPDIR` to a folder which has execution privileges")
         raise RuntimeError(status)
 
@@ -57,7 +56,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="dune-common",
-    version="2.8.200911",
+    version="2.8.201013.2",
     author="The Dune Core developers",
     author_email="dune@lists.dune-project.org",
     description="Basis infrastructure classes for all Dune modules",
