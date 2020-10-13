@@ -16,6 +16,16 @@
 #    the cmake package configuration files. Modules can add additional
 #    entries to these files by setting the variable @${ProjectName}_INIT.
 #
+# .. cmake_function:: target_link_libraries
+#
+#    .. cmake_brief::
+#
+#       Overwrite of CMake's :code:`target_link_libraries`. If no interface key
+#       word (like PUBLIC, INTERFACE, PRIVATE etc.) is given, PUBLIC is added.
+#       This is to fix problems with CMP0023.
+#
+#    .. cmake_param:: basename
+#
 # .. cmake_function:: dune_add_library
 #
 #    .. cmake_brief::
@@ -137,14 +147,22 @@ include(DuneSymlinkOrCopy)
 include(DunePathHelper)
 include(DuneExecuteProcess)
 
-macro(target_link_libraries TARGET SCOPE)
+macro(target_link_libraries)
+  # do nothing if not at least the two arguments target and scope are passed
+  if(${ARGC} GREATER_EQUAL 2)
+    target_link_libraries_helper(${ARGN})
+  endif()
+endmacro(target_link_libraries)
+
+# helper for overwritten target_link_libraries to handle arguments more easily
+macro(target_link_libraries_helper TARGET SCOPE)
   if(${SCOPE} IN_LIST "PRIVATE;INTERFACE;PUBLIC;LINK_PRIVATE;LINK_PUBLIC;LINK_INTERFACE_LIBRARIES")
     _target_link_libraries(${TARGET} ${SCOPE} ${ARGN})
   else()
     message(DEPRECATION "Calling target_link_libraries without the <scope> argument is deprecated.")
     _target_link_libraries(${TARGET} PUBLIC ${SCOPE} ${ARGN})
   endif()
-endmacro(target_link_libraries)
+endmacro(target_link_libraries_helper)
 
 # Converts a module name given by _module into an uppercase string
 # _upper where all dashes (-) are replaced by underscores (_)
