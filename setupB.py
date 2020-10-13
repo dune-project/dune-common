@@ -34,13 +34,6 @@ ext_modules = [
         library_dirs=[os.path.join(builddir, 'build-cmake', 'lib')]
           + [os.path.join(get_install_prefix(), 'lib')] if get_install_prefix() is not None else [],
         libraries=['dunecommon'],
-        # none of these works
-        extra_compile_args = [' --test -Wl,-rpath,' + get_install_prefix()+'/lib/'] \
-                          if get_install_prefix() is not None else ['--test'],
-        extra_link_args = [' -Wl,-rpath,' + get_install_prefix()+'/lib/'] \
-                          if get_install_prefix() is not None else [],
-        rpath=[]
-          + [os.path.join(get_install_prefix(), 'lib')] if get_install_prefix() is not None else [],
         runtime_library_dirs=[]
           + [os.path.join(get_install_prefix(), 'lib')] if get_install_prefix() is not None else [],
         language='c++'
