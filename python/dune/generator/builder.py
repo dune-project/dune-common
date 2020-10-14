@@ -85,6 +85,8 @@ class Builder:
             self.savedOutput = [open("generatorCompiler.out","w+"), open("generatorCompiler.err","w+")]
         elif saveOutput.lower() == "append":
             self.savedOutput = [open("generatorCompiler.out","a+"), open("generatorCompiler.err","a+")]
+        elif saveOutput.lower() == "console" or saveOutput.lower() == "terminal":
+            self.savedOutput = [sys.stdout, sys.stderr]
         else:
             self.savedOutput = None
 
@@ -108,15 +110,24 @@ class Builder:
             logger.error(buffer_to_str(stderr))
             raise CompileError(buffer_to_str(stderr))
         if self.savedOutput is not None:
-            self.savedOutput[0].write("###############################\n")
-            self.savedOutput[0].write("###" + " ".join(cmake_args)+"\n")
-            self.savedOutput[0].write(buffer_to_str(stdout))
-            self.savedOutput[0].write("\n###############################\n")
+            out = buffer_to_str(stdout)
+            nlines = out.count('\n')
+            if nlines > 1:
+                self.savedOutput[0].write("###############################\n")
+                self.savedOutput[0].write("###" + " ".join(cmake_args)+"\n")
+            if nlines > 0:
+                self.savedOutput[0].write(out)
+            if nlines > 1:
+                self.savedOutput[0].write("\n###############################\n")
+
             err = buffer_to_str(stderr)
-            if err == "":
+            nlines = err.count('\n')
+            if nlines > 1:
                 self.savedOutput[1].write("###############################\n")
                 self.savedOutput[1].write("###" + " ".join(cmake_args)+"\n")
+            if nlines > 0:
                 self.savedOutput[1].write(err)
+            if nlines > 1:
                 self.savedOutput[1].write("\n###############################\n")
 
     def load(self, moduleName, source, pythonName):
