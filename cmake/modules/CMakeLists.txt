@@ -26,7 +26,6 @@ install(FILES
   DunePythonFindPackage.cmake
   DunePythonInstallPackage.cmake
   DunePythonMacros.cmake
-  DunePythonRequireVersion.cmake
   DunePythonTestCommand.cmake
   DunePythonVirtualenv.cmake
   DuneSphinxDoc.cmake

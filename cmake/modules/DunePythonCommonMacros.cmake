@@ -67,7 +67,6 @@
 # to explicitly include parts of our build system.
 include(DunePythonFindPackage)
 include(DunePythonInstallPackage)
-include(DunePythonRequireVersion)
 include(DunePythonTestCommand)
 
 # Find the Python Interpreter and libraries
