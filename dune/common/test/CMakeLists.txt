@@ -228,7 +228,7 @@ dune_add_test(SOURCES metistest.cc
               COMPILE_DEFINITIONS "HAVE_METIS"
               CMAKE_GUARD METIS_FOUND)
 if (METIS_FOUND)
-  target_link_libraries(metistest METIS::METIS)
+  target_link_libraries(metistest PUBLIC METIS::METIS)
 endif ()
 
 dune_add_test(SOURCES mpicommunicationtest.cc
@@ -314,7 +314,7 @@ dune_add_test(SOURCES scotchtest.cc
               CMAKE_GUARD PTScotch_FOUND
               LABELS quick)
 if (PTScotch_FOUND)
-  target_link_libraries(scotchtest PTScotch::Scotch)
+  target_link_libraries(scotchtest PUBLIC PTScotch::Scotch)
 endif ()
 
 dune_add_test(SOURCES shared_ptrtest.cc
