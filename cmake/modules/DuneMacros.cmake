@@ -156,7 +156,7 @@ endmacro(target_link_libraries)
 
 # helper for overwritten target_link_libraries to handle arguments more easily
 macro(target_link_libraries_helper TARGET SCOPE)
-  if(${SCOPE} IN_LIST "PRIVATE;INTERFACE;PUBLIC;LINK_PRIVATE;LINK_PUBLIC;LINK_INTERFACE_LIBRARIES")
+  if(${SCOPE} MATCHES "^(PRIVATE|INTERFACE|PUBLIC|LINK_PRIVATE|LINK_PUBLIC|LINK_INTERFACE_LIBRARIES)$")
     _target_link_libraries(${TARGET} ${SCOPE} ${ARGN})
   else()
     message(DEPRECATION "Calling target_link_libraries without the <scope> argument is deprecated.")
