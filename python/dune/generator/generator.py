@@ -33,7 +33,8 @@ class SimpleGenerator(object):
 
     def pre(self, includes, duneType, moduleName, defines=None, preamble=None):
         if defines is None: defines = []
-        source = '#pragma once\n\n'
+        source  = '#ifndef Guard_' + moduleName + '\n'
+        source += '#define Guard_' + moduleName + '\n\n'
         source += '#include <config.h>\n\n'
         source += '#define USING_DUNE_PYTHON 1\n\n'
         source += ''.join(["#define " + d + "\n" for d in defines])
@@ -112,6 +113,7 @@ class SimpleGenerator(object):
 
     def post(self, moduleName, source):
         source += "}\n"
+        source += '#endif'
         module = builder.load(moduleName, source, self.typeName[0])
         return module
 
