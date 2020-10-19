@@ -65,8 +65,8 @@ def load(functionName, includes, *args):
         Callalble object
     '''
 
-    source  = '#pragma once\n\n'
-    source += '#include <config.h>\n\n'
+    # header guard is added further down
+    source  = '#include <config.h>\n\n'
     source += '#define USING_DUNE_PYTHON 1\n\n'
     if isString(includes):
         with open(includes, "r") as include:
@@ -94,6 +94,11 @@ def load(functionName, includes, *args):
     signature = functionName + "( " + ", ".join(argTypes) + " )"
     moduleName = "algorithm_" + hashIt(signature) + "_" + hashIt(source)
 
+    # add unique header guard with moduleName
+    source = '#ifndef Guard_'+moduleName+'\n' + \
+             '#define Guard_'+moduleName+'\n\n' + \
+             source
+
     includes = sorted(set(includes))
     source += "".join(["#include <" + i + ">\n" for i in includes])
     source += "\n"
@@ -109,6 +114,7 @@ def load(functionName, includes, *args):
     source += "    } );\n"
 
     source += "}\n"
+    source += "#endif\n"
 
     return builder.load(moduleName, source, signature).run
 
