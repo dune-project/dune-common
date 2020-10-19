@@ -180,11 +180,11 @@
 /* Define to 1 if METIS is available */
 #cmakedefine HAVE_METIS 1
 
+/* Define to 1 if you have the ParMETIS library. */
+#cmakedefine HAVE_PARMETIS 1
 
-/* Define to ENABLE_PARMETIS if you have the Parmetis library.
-   This is only true if MPI was found
-   by configure _and_ if the application uses the PARMETIS_CPPFLAGS */
-#cmakedefine HAVE_PARMETIS ENABLE_PARMETIS
+/* Define to 1 if you have the PTScotch replacement for ParMETIS is used. */
+#cmakedefine HAVE_PTSCOTCH_PARMETIS 1
 
 /* Define to 1 if PT-Scotch is available */
 #cmakedefine HAVE_PTSCOTCH 1

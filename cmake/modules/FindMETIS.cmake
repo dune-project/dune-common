@@ -97,7 +97,6 @@ unset(METIS_HEADER_FILE CACHE)
 # Scotch provides METIS-3 interface only in version < 6.07, but provides an option to
 # select the API-version in later Scotch releases
 if(ENABLE_SCOTCH_METIS)
-  include(CMakeFindDependencyMacro)
   find_package(PTScotch QUIET COMPONENTS SCOTCH)
   set(HAVE_SCOTCH_METIS ${PTScotch_FOUND})
   if (PTScotch_FOUND)

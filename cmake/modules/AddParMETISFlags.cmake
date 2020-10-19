@@ -10,20 +10,23 @@
 #       A list of targets to use ParMETIS with.
 #
 
+# set HAVE_PARMETIS for config.h
+set(HAVE_PARMETIS ${ParMETIS_FOUND})
 
+# register all ParMETIS related flags
+if(PARMETIS_FOUND)
+  dune_register_package_flags(
+    COMPILE_DEFINITIONS "ENABLE_PARMETIS=1"
+    LIBRARIES "ParMETIS::ParMETIS"
+  )
+endif()
+
+# add function to link against the ParMETIS library
 function(add_dune_parmetis_flags _targets)
   if(PARMETIS_FOUND)
     foreach(_target ${_targets})
-      target_link_libraries(${_target} ${PARMETIS_LIBRARY} ${METIS_LIBRARY})
-      GET_TARGET_PROPERTY(_props ${_target} INCLUDE_DIRECTORIES)
-      string(REPLACE "_props-NOTFOUND" "" _props "${_props}")
-      SET_TARGET_PROPERTIES(${_target} PROPERTIES INCLUDE_DIRECTORIES
-        "${_props};${PARMETIS_INCLUDE_DIRS}")
-      GET_TARGET_PROPERTY(_props ${_target} COMPILE_DEFINITIONS)
-      string(REPLACE "_props-NOTFOUND" "" _props "${_props}")
-      SET_TARGET_PROPERTIES(${_target} PROPERTIES COMPILE_DEFINITIONS
-        "${_props};ENABLE_PARMETIS")
-    endforeach(_target ${_targets})
-    add_dune_mpi_flags(${_targets})
-  endif(PARMETIS_FOUND)
+      target_link_libraries(${_target} ParMETIS::ParMETIS)
+      target_compile_definitions(${_target} "ENABLE_PARMETIS=1")
+    endforeach(_target)
+  endif()
 endfunction(add_dune_parmetis_flags)
