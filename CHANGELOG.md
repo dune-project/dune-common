@@ -18,6 +18,11 @@
 
 ## build-system
 
+- Switch build-system to modern CMake and drop some features which tried to
+  mimic the behavior of Autotools. Setting `DUNE_USE_DEPRECATED_BUILDSYSTEM`
+  provides some backwards-compatibility to the build-system of Dune 2.7.
+  The switch will be removed after Dune 2.8.
+
 - The name mangling for Fortran libraries like BLAS and LAPACK is now done
   without a Fortran compiler. So a Fortran compiler is no longer a built
   requirement.
@@ -30,7 +35,7 @@
 - Remove the CMake function deprecated `inkscape_generate_png_from_svg`.
 
 - Remove the old and deprecated use of UseLATEX.cmake.
-  `dune_add_latex_document' is a redirection to `add_latex_document`
+  `dune_add_latex_document` is a redirection to `add_latex_document`
   which internally uses `latexmk`.
 
 ## Deprecations and removals

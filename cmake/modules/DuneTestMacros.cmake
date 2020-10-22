@@ -339,7 +339,11 @@ function(dune_add_test)
     # This is just a placeholder
     target_compile_definitions(${ADDTEST_NAME} PUBLIC ${ADDTEST_COMPILE_DEFINITIONS})
     target_compile_options(${ADDTEST_NAME} PUBLIC ${ADDTEST_COMPILE_FLAGS})
-    target_link_libraries(${ADDTEST_NAME} ${ADDTEST_LINK_LIBRARIES})
+    if(DUNE_USE_DEPRECATED_BUILDSYSTEM)
+      target_link_libraries(${ADDTEST_NAME} ${ADDTEST_LINK_LIBRARIES})
+    else()
+      target_link_libraries(${ADDTEST_NAME} PUBLIC ${ADDTEST_LINK_LIBRARIES})
+    endif()
     set(ADDTEST_TARGET ${ADDTEST_NAME})
   endif()
 

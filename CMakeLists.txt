@@ -7,6 +7,12 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 # set the script dir for the macros.
 set(DUNE_COMMON_SCRIPT_DIR ${PROJECT_SOURCE_DIR}/cmake/scripts)
 
+# deprecated build-system / backwards-compatibility mode
+# deprecated, will be removed after Dune 2.8
+if(DUNE_USE_DEPRECATED_BUILDSYSTEM)
+  cmake_policy(SET CMP0023 OLD)
+endif()
+
 #include the dune macros
 include(DuneMacros)
 

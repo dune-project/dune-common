@@ -539,7 +539,7 @@ def make_dune_py_module(dune_py_dir=None):
         cmake_content = ['add_executable(generated_test EXCLUDE_FROM_ALL generated_test.cc)',
                          'add_dune_mpi_flags(generated_test)',
                          'target_compile_definitions(generated_test PRIVATE USING_DUNE_PYTHON)',
-                         'target_link_libraries(generated_test ${DUNE_LIBS})',
+                         'target_link_libraries(generated_test PUBLIC ${DUNE_LIBS})',
                          'file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/__init__.py")',
                          '',
                          '# The builder will append rules for dynamically generated modules, here']

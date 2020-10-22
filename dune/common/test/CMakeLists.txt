@@ -228,7 +228,11 @@ dune_add_test(SOURCES metistest.cc
               COMPILE_DEFINITIONS "HAVE_METIS"
               CMAKE_GUARD METIS_FOUND)
 if (METIS_FOUND)
-  target_link_libraries(metistest METIS::METIS)
+  if(DUNE_USE_DEPRECATED_BUILDSYSTEM)
+    target_link_libraries(metistest METIS::METIS)
+  else()
+    target_link_libraries(metistest PRIVATE METIS::METIS)
+  endif()
 endif ()
 
 dune_add_test(SOURCES mpicommunicationtest.cc
@@ -282,7 +286,11 @@ dune_add_test(SOURCES parmetistest.cc
               CMAKE_GUARD ParMETIS_FOUND
               LABELS quick)
 if (ParMETIS_FOUND)
-  target_link_libraries(parmetistest ParMETIS::ParMETIS)
+  if(DUNE_USE_DEPRECATED_BUILDSYSTEM)
+    target_link_libraries(parmetistest ParMETIS::ParMETIS)
+  else()
+    target_link_libraries(parmetistest PRIVATE ParMETIS::ParMETIS)
+  endif()
 endif()
 
 dune_add_test(SOURCES pathtest.cc
@@ -314,7 +322,11 @@ dune_add_test(SOURCES scotchtest.cc
               CMAKE_GUARD PTScotch_FOUND
               LABELS quick)
 if (PTScotch_FOUND)
-  target_link_libraries(scotchtest PTScotch::Scotch)
+  if(DUNE_USE_DEPRECATED_BUILDSYSTEM)
+    target_link_libraries(scotchtest PTScotch::Scotch)
+  else()
+    target_link_libraries(scotchtest PRIVATE PTScotch::Scotch)
+  endif()
 endif ()
 
 dune_add_test(SOURCES shared_ptrtest.cc
