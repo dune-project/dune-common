@@ -276,7 +276,7 @@ dune_add_test(SOURCES parametertreetest.cc
 
 find_package(ParMETIS 4.0)
 dune_add_test(SOURCES parmetistest.cc
-              MPI_RANKS 4
+              MPI_RANKS 3
               TIMEOUT 300
               COMPILE_DEFINITIONS "HAVE_PARMETIS"
               CMAKE_GUARD ParMETIS_FOUND
