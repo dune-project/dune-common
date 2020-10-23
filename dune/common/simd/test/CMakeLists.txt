@@ -29,7 +29,7 @@ foreach(SCALAR IN LISTS TYPES)
 endforeach()
 dune_instance_end()
 
-dune_list_filter(DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
+list(FILTER DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
 dune_add_test(NAME looptest
   SOURCES ${DUNE_INSTANCE_GENERATED}
   LINK_LIBRARIES dunecommon
@@ -54,7 +54,7 @@ foreach(SCALAR IN LISTS TYPES)
 endforeach()
 dune_instance_end()
 
-dune_list_filter(DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
+list(FILTER DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
 dune_add_test(NAME standardtest
   SOURCES ${DUNE_INSTANCE_GENERATED}
   LINK_LIBRARIES dunecommon
@@ -80,7 +80,7 @@ foreach(SCALAR IN LISTS VCTEST_TYPES)
   endforeach()
 endforeach()
 dune_instance_end()
-dune_list_filter(DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
+list(FILTER DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
 dune_add_test(NAME vcarraytest
   SOURCES ${DUNE_INSTANCE_GENERATED}
   LINK_LIBRARIES dunecommon
@@ -103,7 +103,7 @@ foreach(SCALAR IN LISTS VCTEST_TYPES)
   endforeach()
 endforeach()
 dune_instance_end()
-dune_list_filter(DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
+list(FILTER DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
 dune_add_test(NAME vcvectortest
   SOURCES ${DUNE_INSTANCE_GENERATED}
   LINK_LIBRARIES dunecommon

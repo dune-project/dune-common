@@ -75,7 +75,7 @@
 #
 #      dune_instance_end()
 #
-#      dune_list_filter(DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
+#      list(FILTER DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
 #      dune_add_test(NAME mytest
 #        SOURCES ${DUNE_INSTANCE_GENERATED})
 #
