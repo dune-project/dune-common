@@ -4,6 +4,7 @@ install(FILES
   AddParMETISFlags.cmake
   AddPTScotchFlags.cmake
   AddQuadMathFlags.cmake
+  AddThreadsFlags.cmake
   AddSuiteSparseFlags.cmake
   AddVcFlags.cmake
   CheckCXXFeatures.cmake

@@ -31,6 +31,13 @@ find_package(Inkscape)
 include(UseInkscape)
 include(FindMProtect)
 
+# find the threading library
+find_package(Threads)
+include(AddThreadsFlags)
+# text for feature summary
+set_package_properties("Threads" PROPERTIES
+  DESCRIPTION "Multi-threading library")
+
 find_package(TBB OPTIONAL_COMPONENTS cpf allocator)
 
 # try to find the Vc library
