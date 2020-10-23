@@ -44,7 +44,7 @@ if(MPI_C_FOUND)
     "Libraries used by DUNE when linking MPI programs")
 
   # TODO check on where to position this exactly, doesn't look completely thought through
-  dune_register_package_flags(COMPILE_DEFINITIONS "ENABLE_MPI=1;MPICH_SKIP_MPICXX;MPIPP_H;MPI_NO_CPPBIND"
+  dune_register_package_flags(COMPILE_DEFINITIONS "ENABLE_MPI=1;MPICH_SKIP_MPICXX;OMPI_SKIP_MPICXX;MPIPP_H;MPI_NO_CPPBIND"
                               INCLUDE_DIRS "${MPI_DUNE_INCLUDE_PATH}"
                               LIBRARIES "${MPI_DUNE_LIBRARIES}")
 endif(MPI_C_FOUND)
@@ -61,7 +61,7 @@ function(add_dune_mpi_flags)
     separate_arguments(MPI_DUNE_COMPILE_FLAGS_LIST UNIX_COMMAND ${MPI_DUNE_COMPILE_FLAGS})
     set_property(${_prefix} ${ADD_MPI_UNPARSED_ARGUMENTS} APPEND PROPERTY COMPILE_OPTIONS ${MPI_DUNE_COMPILE_FLAGS_LIST})
     set_property(${_prefix} ${ADD_MPI_UNPARSED_ARGUMENTS} APPEND PROPERTY COMPILE_DEFINITIONS ENABLE_MPI=1
-      MPICH_SKIP_MPICXX MPIPP_H)
+      MPICH_SKIP_MPICXX OMPI_SKIP_MPICXX MPIPP_H)
     if(NOT (ADD_MPI_SOURCE_ONLY OR ADD_MPI_OBJECT))
     set_property(${_prefix} ${ADD_MPI_UNPARSED_ARGUMENTS} APPEND_STRING PROPERTY LINK_FLAGS " ${MPI_DUNE_LINK_FLAGS} ")
     foreach(target ${ADD_MPI_UNPARSED_ARGUMENTS})
