@@ -22,7 +22,6 @@
 
 
 find_package(MPI)
-find_package(Threads)
 
 # text for feature summary
 set_package_properties("MPI" PROPERTIES
