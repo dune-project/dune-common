@@ -80,6 +80,9 @@ dune_add_test(NAME classnametest-fallback
               COMPILE_DEFINITIONS BASICCHECK
               LABELS quick)
 
+dune_add_test(SOURCES test_copy_ptr.cc
+              LINK_LIBRARIES dunecommon)
+
 dune_add_test(SOURCES concept.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
