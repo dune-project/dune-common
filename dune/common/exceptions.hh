@@ -94,6 +94,7 @@ namespace Dune {
   {
   public:
     Exception ();
+    virtual ~Exception() {}
     void message(const std::string &msg); //!< store string in internal message buffer
     const char* what() const noexcept override; //!< output internal message buffer
     static void registerHook (ExceptionHook * hook); //!< add a functor which is called before a Dune::Exception is emitted (see Dune::ExceptionHook) \see Dune::ExceptionHook
