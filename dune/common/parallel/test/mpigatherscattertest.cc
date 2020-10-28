@@ -4,6 +4,9 @@
 #include <config.h>
 
 #include <iostream>
+#include <array>
+#include <vector>
+
 
 #include <dune/common/parallel/mpihelper.hh>
 #include <dune/common/parallel/mpicommunication.hh>
@@ -17,7 +20,7 @@ int main(int argc, char** argv){
   int rank = cc.rank();
   int size = cc.size();
 
-  std::array<double, 2> data = {1 + rank, 2 + rank};
+  std::array<double, 2> data = {1.0 + rank, 2.0 + rank};
 
   auto gathered = cc.igather(data, std::vector<double>(rank==0?2*size:0), 0).get();
 
