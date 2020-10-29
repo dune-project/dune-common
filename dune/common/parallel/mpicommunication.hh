@@ -307,12 +307,12 @@ namespace Dune
 
     //! @copydoc Communication::igather
     template<class TIN, class TOUT = std::vector<TIN>>
-    MPIFuture<TOUT, TIN> igather(TIN&& data_in, TOUT&& data_out, int root){
+    MPIFuture<TOUT, TIN> igather(TIN&& data_in, TOUT&& data_out, int root) const{
       MPIFuture<TOUT, TIN> future(std::forward<TOUT>(data_out), std::forward<TIN>(data_in));
       auto mpidata_in = future.get_send_mpidata();
       auto mpidata_out = future.get_mpidata();
       assert(root != me || mpidata_in.size()*procs <= mpidata_out.size());
-      int outlen = me==root * mpidata_in.size();
+      int outlen = (me==root) * mpidata_in.size();
       MPI_Igather(mpidata_in.ptr(), mpidata_in.size(), mpidata_in.type(),
                   mpidata_out.ptr(), outlen, mpidata_out.type(),
                   root, communicator, &future.req_);
@@ -345,7 +345,7 @@ namespace Dune
       MPIFuture<TOUT, TIN> future(std::forward<TOUT>(data_out), std::forward<TIN>(data_in));
       auto mpidata_in = future.get_send_mpidata();
       auto mpidata_out = future.get_mpidata();
-      int inlen = me==root * mpidata_in.size();
+      int inlen = (me==root) * mpidata_in.size()/procs;
       MPI_Iscatter(mpidata_in.ptr(), inlen, mpidata_in.type(),
                   mpidata_out.ptr(), mpidata_out.size(), mpidata_out.type(),
                   root, communicator, &future.req_);
