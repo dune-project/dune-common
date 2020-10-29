@@ -22,6 +22,9 @@
   without a Fortran compiler. So a Fortran compiler is no longer a built
   requirement.
 
+- `dune_list_filter` is deprecated and will be removed after Dune 2.8. Use
+  `list(FILTER ...)` introduced by CMake 3.6 instead.
+
 - Remove the CMake options `DUNE_BUILD_BOTH_LIBS` and
   `DUNE_USE_ONLY_STATIC_LIBS`. Use the default CMake way instead by
   setting `BUILD_SHARED_LIBS` accordingly. Building both static

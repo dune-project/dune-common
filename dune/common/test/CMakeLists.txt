@@ -104,7 +104,7 @@ foreach(SCALAR IN ITEMS double bool)
   endforeach()
 endforeach()
 dune_instance_end()
-dune_list_filter(DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
+list(FILTER DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
 dune_add_test(NAME debugalignsimdtest
               SOURCES ${DUNE_INSTANCE_GENERATED}
               LINK_LIBRARIES dunecommon

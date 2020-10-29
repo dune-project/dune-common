@@ -49,6 +49,8 @@
 # list(FILTER...) was introduced in cmake 3.6, this is a compatibility
 # implementation for earlier cmakes
 function(dune_list_filter list mode REGEX regular_expression)
+  message(DEPRECATION "dune_list_filter is deprecated and will be removed after Dune 2.8. Use list(FILTER ...) from CMake 3.6")
+
   # validate arguments
   if(NOT (("${mode}" STREQUAL "INCLUDE") OR ("${mode}" STREQUAL "EXCLUDE")))
     message(FATAL_ERROR "unsupported mode '${mode}', must be either INCLUDE or EXCLUDE")
