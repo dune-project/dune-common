@@ -16,6 +16,16 @@
 #    the cmake package configuration files. Modules can add additional
 #    entries to these files by setting the variable @${ProjectName}_INIT.
 #
+# .. cmake_function:: target_link_libraries
+#
+#    .. cmake_brief::
+#
+#       Overwrite of CMake's :code:`target_link_libraries`. If no interface key
+#       word (like PUBLIC, INTERFACE, PRIVATE etc.) is given, PUBLIC is added.
+#       This is to fix problems with CMP0023.
+#
+#    .. cmake_param:: basename
+#
 # .. cmake_function:: dune_add_library
 #
 #    .. cmake_brief::
@@ -136,6 +146,23 @@ include(OverloadCompilerFlags)
 include(DuneSymlinkOrCopy)
 include(DunePathHelper)
 include(DuneExecuteProcess)
+
+macro(target_link_libraries)
+  # do nothing if not at least the two arguments target and scope are passed
+  if(${ARGC} GREATER_EQUAL 2)
+    target_link_libraries_helper(${ARGN})
+  endif()
+endmacro(target_link_libraries)
+
+# helper for overwritten target_link_libraries to handle arguments more easily
+macro(target_link_libraries_helper TARGET SCOPE)
+  if(${SCOPE} MATCHES "^(PRIVATE|INTERFACE|PUBLIC|LINK_PRIVATE|LINK_PUBLIC|LINK_INTERFACE_LIBRARIES)$")
+    _target_link_libraries(${TARGET} ${SCOPE} ${ARGN})
+  else()
+    message(DEPRECATION "Calling target_link_libraries without the <scope> argument is deprecated.")
+    _target_link_libraries(${TARGET} PUBLIC ${SCOPE} ${ARGN})
+  endif()
+endmacro(target_link_libraries_helper)
 
 # Converts a module name given by _module into an uppercase string
 # _upper where all dashes (-) are replaced by underscores (_)
@@ -917,7 +944,7 @@ endmacro(finalize_dune_project)
 
 macro(target_link_dune_default_libraries _target)
   foreach(_lib ${DUNE_DEFAULT_LIBS})
-    target_link_libraries(${_target} ${_lib})
+    target_link_libraries(${_target} PUBLIC ${_lib})
   endforeach()
 endmacro(target_link_dune_default_libraries)
 
@@ -984,7 +1011,7 @@ macro(dune_add_library basename)
     set_property(GLOBAL PROPERTY DUNE_MODULE_LIBRARIES ${_prop} ${basename})
     # link with specified libraries.
     if(DUNE_LIB_ADD_LIBS)
-      dune_target_link_libraries(${basename} "${DUNE_LIB_ADD_LIBS}")
+      target_link_libraries(${basename} PUBLIC "${DUNE_LIB_ADD_LIBS}")
     endif()
     if(DUNE_LIB_COMPILE_FLAGS)
       set_property(${basename} APPEND_STRING COMPILE_FLAGS
@@ -1152,7 +1179,7 @@ macro(add_dune_all_flags targets)
   foreach(target ${targets})
     set_property(TARGET ${target} APPEND PROPERTY INCLUDE_DIRECTORIES ${incs})
     set_property(TARGET ${target} APPEND PROPERTY COMPILE_DEFINITIONS ${defs})
-    target_link_libraries(${target} ${DUNE_LIBS} ${libs})
+    target_link_libraries(${target} PUBLIC ${DUNE_LIBS} ${libs})
     target_compile_options(${target} PUBLIC ${opts})
   endforeach()
 endmacro(add_dune_all_flags targets)
