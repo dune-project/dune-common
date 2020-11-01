@@ -40,10 +40,6 @@ set_package_properties("ParMETIS" PROPERTIES
   DESCRIPTION "Parallel Graph Partitioning"
 )
 
-# find package dependencies first
-find_package(METIS QUIET)
-find_package(MPI QUIET)
-
 find_path(PARMETIS_INCLUDE_DIR parmetis.h
   PATH_SUFFIXES parmetis)
 
@@ -81,33 +77,30 @@ endif()
 
 mark_as_advanced(PARMETIS_INCLUDE_DIR PARMETIS_LIBRARY)
 
-
-# set a flag whether all ParMETIS dependencies are found correctly
-if(METIS_FOUND AND MPI_FOUND)
-  set(PARMETIS_DEPENDENCIES_FOUND TRUE)
-
-  # minimal requires METIS version 5.0 for ParMETIS >= 4.0
-  if (ParMETIS_VERSION VERSION_GREATER_EQUAL "4.0"
-      AND METIS_VERSION VERSION_LESS "5.0")
-    set(PARMETIS_DEPENDENCIES_FOUND FALSE)
-    message(WARNING "ParMETIS >= 4 requires METIS >= 5")
-  endif()
+# minimal requires METIS version 5.0 for ParMETIS >= 4.0
+if(ParMETIS_VERSION VERSION_GREATER_EQUAL "4.0")
+  set(METIS_MIN_VERSION "5.0")
 endif()
+
+# find package dependencies first
+find_package(METIS QUIET ${METIS_MIN_VERSION})
+find_package(MPI QUIET)
+
+# set a list of required dependencies for ParMETIS
+set(PARMETIS_DEPENDENCIES METIS_FOUND MPI_FOUND)
 
 # If ptscotch-parmetis is requested, find package PTScotch
 if(IS_PTSCOTCH_PARMETIS_HEADER)
   find_package(PTScotch QUIET COMPONENTS PTSCOTCH)
   set(HAVE_PTSCOTCH_PARMETIS ${PTScotch_FOUND})
-  if(PTScotch_FOUND AND MPI_FOUND)
-    set(PARMETIS_DEPENDENCIES_FOUND TRUE)
-  endif()
+  list(APPEND PARMETIS_DEPENDENCIES PTScotch_FOUND)
 endif()
 
 # behave like a CMake module is supposed to behave
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args("ParMETIS"
   REQUIRED_VARS
-    PARMETIS_LIBRARY PARMETIS_INCLUDE_DIR PARMETIS_DEPENDENCIES_FOUND
+    PARMETIS_LIBRARY PARMETIS_INCLUDE_DIR ${PARMETIS_DEPENDENCIES}
   VERSION_VAR
     ParMETIS_VERSION
 )
