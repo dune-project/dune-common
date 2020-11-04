@@ -396,6 +396,10 @@ dune_add_test(NAME testdebugallocator_fail5
 dune_add_test(SOURCES testfloatcmp.cc
               LABELS quick)
 
+dune_add_test(SOURCES transposetest.cc
+              LINK_LIBRARIES dunecommon
+              LABELS quick)
+
 dune_add_test(SOURCES to_unique_ptrtest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
