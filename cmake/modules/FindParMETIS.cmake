@@ -84,7 +84,7 @@ endif()
 
 # find package dependencies first
 find_package(METIS QUIET ${METIS_MIN_VERSION})
-find_package(MPI QUIET)
+find_package(MPI QUIET COMPONENTS C)
 
 # set a list of required dependencies for ParMETIS
 set(PARMETIS_DEPENDENCIES METIS_FOUND MPI_FOUND)

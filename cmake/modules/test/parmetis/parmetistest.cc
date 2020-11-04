@@ -1,11 +1,6 @@
-#include <config.h>
 #include <cassert>
 #include <iostream>
 #include <vector>
-
-#if ! HAVE_PARMETIS
-#error "ParMETIS is required for this test."
-#endif
 
 #include <mpi.h>
 

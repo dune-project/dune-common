@@ -1,10 +1,5 @@
-#include <config.h>
 #include <iostream>
 #include <vector>
-
-#if ! HAVE_METIS
-#error "METIS is required for this test"
-#endif
 
 #if HAVE_SCOTCH_METIS
 extern "C" {

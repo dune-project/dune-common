@@ -51,3 +51,5 @@ install(FILES
   UseInkscape.cmake
   UseLatexMk.cmake
   DESTINATION ${DUNE_INSTALL_MODULEDIR})
+
+add_subdirectory(test)
