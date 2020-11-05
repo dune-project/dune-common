@@ -107,6 +107,7 @@ install(FILES
         stringutility.hh
         to_unique_ptr.hh
         timer.hh
+        transpose.hh
         tupleutility.hh
         tuplevector.hh
         typelist.hh
