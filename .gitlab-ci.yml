@@ -49,3 +49,14 @@ debian-11-gcc-9-17-python:
     # finally set the python path to all modules
     PYTHONPATH:        $CI_PROJECT_DIR/build-cmake/python
   tags: [duneci]
+
+# Verify code-formatting rules
+code-formatting-check:
+  stage: build
+  image: registry.dune-project.org/docker/ci/debian:10
+  script:
+    # Format all *.cc and *.hh files using the uncrustify tool
+    - uncrustify -l CPP -c dune-uncrustify.cfg --no-backup `find -name "*.cpp" -o -name "*.hh"`
+
+    # Did anything change?  That would indicate a violation of the formatting rules
+    - git diff --exit-code
