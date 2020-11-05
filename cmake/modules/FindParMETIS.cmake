@@ -83,15 +83,15 @@ if(ParMETIS_VERSION VERSION_GREATER_EQUAL "4.0")
 endif()
 
 # find package dependencies first
-find_package(METIS QUIET ${METIS_MIN_VERSION})
-find_package(MPI QUIET)
+find_package(METIS ${METIS_MIN_VERSION})
+find_package(MPI COMPONENTS C)
 
 # set a list of required dependencies for ParMETIS
 set(PARMETIS_DEPENDENCIES METIS_FOUND MPI_FOUND)
 
 # If ptscotch-parmetis is requested, find package PTScotch
 if(IS_PTSCOTCH_PARMETIS_HEADER)
-  find_package(PTScotch QUIET COMPONENTS PTSCOTCH)
+  find_package(PTScotch COMPONENTS PTSCOTCH)
   set(HAVE_PTSCOTCH_PARMETIS ${PTScotch_FOUND})
   list(APPEND PARMETIS_DEPENDENCIES PTScotch_FOUND)
 endif()

@@ -180,6 +180,9 @@
 /* Define to 1 if METIS is available */
 #cmakedefine HAVE_METIS 1
 
+/* Define to 1 if you have the Scotch replacement for METIS is used. */
+#cmakedefine HAVE_SCOTCH_METIS 1
+
 /* Define to 1 if you have the ParMETIS library. */
 #cmakedefine HAVE_PARMETIS 1
 

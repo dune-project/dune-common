@@ -110,7 +110,7 @@ mark_as_advanced(METIS_INCLUDE_DIR METIS_LIBRARY METIS_NEEDS_LIBM METIS_API_VERS
 # Scotch provides METIS-3 interface only in version < 6.07, but provides an option to
 # select the API-version in later Scotch releases
 if(IS_SCOTCH_METIS_HEADER)
-  find_package(PTScotch QUIET COMPONENTS SCOTCH)
+  find_package(PTScotch COMPONENTS SCOTCH)
   set(HAVE_SCOTCH_METIS ${PTScotch_FOUND})
   if (PTScotch_FOUND AND NOT METIS_API_VERSION)
     if(PTScotch_VERSION VERSION_LESS "6.0.7")
@@ -119,7 +119,7 @@ if(IS_SCOTCH_METIS_HEADER)
       # try to figure out the METIS_API_VERSION by checking for symbols in the library
       include(CheckSymbolExists)
       include(CMakePushCheckState)
-      find_package(Threads QUIET)
+      find_package(Threads)
       cmake_push_check_state()
       set(CMAKE_REQUIRED_LIBRARIES ${METIS_LIBRARY} ${SCOTCH_LIBRARY} ${SCOTCHERR_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
       if(METIS_NEEDS_LIBM)
@@ -173,7 +173,6 @@ if(METIS_FOUND AND NOT TARGET METIS::METIS)
       INTERFACE_LINK_LIBRARIES PTScotch::Scotch)
     set_property(TARGET METIS::METIS APPEND PROPERTY
       INTERFACE_COMPILE_DEFINITIONS
-        HAVE_SCOTCH_METIS
         SCOTCH_METIS_VERSION=${METIS_API_VERSION})
   endif()
 endif()

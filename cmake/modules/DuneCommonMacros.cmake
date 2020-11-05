@@ -40,6 +40,12 @@ set_package_properties("Threads" PROPERTIES
 
 find_package(TBB OPTIONAL_COMPONENTS cpf allocator)
 
+# find libraries for graph partitioning
+find_package(METIS)
+include(AddMETISFlags)
+find_package(ParMETIS 4.0)
+include(AddParMETISFlags)
+
 # try to find the Vc library
 set(MINIMUM_VC_VERSION)
 if((CMAKE_CXX_COMPILER_ID STREQUAL Clang) AND
