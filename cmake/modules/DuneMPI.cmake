@@ -21,7 +21,7 @@
 #
 
 
-find_package(MPI)
+find_package(MPI 3.0 COMPONENT C)
 
 # text for feature summary
 set_package_properties("MPI" PROPERTIES
