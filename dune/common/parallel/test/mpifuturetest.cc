@@ -5,6 +5,15 @@
 #include <dune/common/parallel/mpihelper.hh>
 #include <dune/common/dynvector.hh>
 
+namespace Dune {
+  template<>
+  struct MPIData<const int&>{
+    // MPIData of reference type should not be used!
+    // This struct should never be used it just
+    // exists to generate a compiler error
+  };
+}
+
 int main(int argc, char** argv){
   auto& mpihelper = Dune::MPIHelper::instance(argc, argv);
 
