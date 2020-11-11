@@ -19,6 +19,7 @@
 #include <cstdint>
 #include <type_traits>
 #include <utility>
+#include <complex>
 
 #include <mpi.h>
 
