@@ -17,6 +17,7 @@
 
 #include <mpi.h>
 
+#include <dune/common/parallel/gatherscatterbackwardscompat.hh>
 #include <dune/common/parallel/interface.hh>
 #include <dune/common/parallel/mpitraits.hh>
 #include <dune/common/unused.hh>
@@ -537,21 +538,6 @@ private:
 
 /** @} */
 
-template <typename T>
-struct has2ArgSize {
-
-  struct Any { template <typename U> operator U( void ); };
-
-  // Check for size function argument pattern
-  template<typename U>
-  static int32_t SFINAE(decltype(std::declval<U>().size(Any(), Any()))*);
-
-  template<typename U>
-  static int8_t SFINAE(...);
-
-  static const bool value = sizeof(SFINAE<T>(nullptr)) == sizeof(int32_t);
-};
-
 namespace
 {
 /**
@@ -580,7 +566,7 @@ public:
   template<class B>
   void gather(B& buf, int i, int proc)
   {
-    if constexpr (has2ArgSize<DataHandle>::value)
+    if constexpr (Impl::isValidWithArgs<DataHandle, Impl::DetectedSize>(Impl::Any(), Impl::Any()))
       buf.write(data_.size(i, proc));
     else
       buf.write(data_.size(i));
@@ -687,7 +673,7 @@ struct PackEntries
       std::size_t noIndices=std::min(buffer.size()/tracker.fixedSize, tracker.indicesLeft());
       for(std::size_t i=0; i< noIndices; ++i)
       {
-        if constexpr (has2ArgSize<DataHandle>::value)
+        if constexpr (Impl::isValidWithArgs<DataHandle, Impl::DetectedSize>(Impl::Any(), Impl::Any()))
           handle.gather(buffer, tracker.index(), tracker.rank());
         else
           handle.gather(buffer, tracker.index());
@@ -699,7 +685,7 @@ struct PackEntries
     {
       int packed=0;
       tracker.skipZeroIndices();
-      if constexpr (has2ArgSize<DataHandle>::value) {
+      if constexpr (Impl::isValidWithArgs<DataHandle, Impl::DetectedSize>(Impl::Any(), Impl::Any())) {
         while(!tracker.finished())
           if(buffer.hasSpaceForItems(handle.size(tracker.index(), tracker.rank())))
           {
@@ -751,7 +737,7 @@ struct UnpackEntries{
 
       for(std::size_t i=0; i< noIndices; ++i)
       {
-        if constexpr (has2ArgSize<DataHandle>::value)
+        if constexpr (Impl::isValidWithArgs<DataHandle, Impl::DetectedSize>(Impl::Any(), Impl::Any()))
           handle.scatter(buffer, tracker.index(), tracker.fixedSize, tracker.rank());
         else
           handle.scatter(buffer, tracker.index(), tracker.fixedSize);
@@ -766,7 +752,7 @@ struct UnpackEntries{
       {
         assert(!tracker.finished());
         assert(buffer.hasSpaceForItems(tracker.size()));
-        if constexpr (has2ArgSize<DataHandle>::value)
+        if constexpr (Impl::isValidWithArgs<DataHandle, Impl::DetectedSize>(Impl::Any(), Impl::Any()))
           handle.scatter(buffer, tracker.index(), tracker.size(), tracker.rank());
         else
           handle.scatter(buffer, tracker.index(), tracker.size());
@@ -859,7 +845,7 @@ struct SetupSendRequest{
     int size=PackEntries<DataHandle>()(handle, tracker, buffer);
     // Skip indices of zero size.
 
-    if constexpr (has2ArgSize<DataHandle>::value) {
+    if constexpr (Impl::isValidWithArgs<DataHandle, Impl::DetectedSize>(Impl::Any(), Impl::Any())) {
       while(!tracker.finished() &&  !handle.size(tracker.index(), tracker.rank()))
         tracker.moveToNextIndex();
     } else {
@@ -1096,7 +1082,7 @@ void VariableSizeCommunicator<Allocator>::setupInterfaceTrackers(DataHandle& han
   {
 
     if(handle.fixedsize() && InterfaceInformationChooser<FORWARD>::getSend(inf->second).size()) {
-      if constexpr (has2ArgSize<DataHandle>::value) {
+      if constexpr (Impl::isValidWithArgs<DataHandle, Impl::DetectedSize>(Impl::Any(), Impl::Any())) {
         fixedsize=handle.size(InterfaceInformationChooser<FORWARD>::getSend(inf->second)[0], inf->first);
       } else {
         fixedsize=handle.size(InterfaceInformationChooser<FORWARD>::getSend(inf->second)[0]);

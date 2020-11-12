@@ -15,6 +15,7 @@
 #include <mpi.h>
 
 #include <dune/common/exceptions.hh>
+#include <dune/common/parallel/gatherscatterbackwardscompat.hh>
 #include <dune/common/parallel/interface.hh>
 #include <dune/common/parallel/remoteindices.hh>
 #include <dune/common/stdstreams.hh>
@@ -1260,24 +1261,6 @@ namespace Dune
     return entries;
   }
 
-  template <typename T>
-  struct has4ArgGather {
-
-    struct Any { template <typename U> operator U( void ); };
-    struct AnyRef { template <typename U> operator U&( void ); };
-
-    // Check for size function argument pattern
-    template<typename U>
-    static int32_t SFINAE(decltype(std::declval<U>().gather(AnyRef(), Any(), Any(), Any()))*);
-    template<typename U>
-    static int32_t SFINAE(decltype(std::declval<U>().gather(Any(), Any(), Any(), Any()))*);
-
-    template<typename U>
-    static int8_t SFINAE(...);
-
-    static const bool value = sizeof(SFINAE<T>(nullptr)) == sizeof(int32_t);
-  };
-
   template<class Data, class GatherScatter, bool FORWARD>
   inline void BufferedCommunicator::MessageGatherer<Data,GatherScatter,FORWARD,VariableSize>::operator()(const InterfaceMap& interfaces,const Data& data, Type* buffer, size_t bufferSize) const
   {
@@ -1303,7 +1286,7 @@ namespace Dune
 #ifdef DUNE_ISTL_WITH_CHECKING
           assert(bufferSize>=(index+1)*sizeof(typename CommPolicy<Data>::IndexedType));
 #endif
-          if constexpr (has4ArgGather<GatherScatter>::value)
+          if constexpr (Impl::isValidWithArgs<GatherScatter, Impl::DetectedGather>(Impl::Any(), Impl::Any(), Impl::Any(), Impl::Any()))
             buffer[index]=GatherScatter::gather(data, local, j, interfacePair->first);
           else
             buffer[index]=GatherScatter::gather(data, local, j);
@@ -1313,24 +1296,6 @@ namespace Dune
     }
 
   }
-
-  template <typename T>
-  struct has3ArgGather {
-
-    struct Any { template <typename U> operator U( void ); };
-    struct AnyRef { template <typename U> operator U&( void ); };
-
-    // Check for size function argument pattern
-    template<typename U>
-    static int32_t SFINAE(decltype(std::declval<U>().gather(AnyRef(), Any(), Any()))*);
-    template<typename U>
-    static int32_t SFINAE(decltype(std::declval<U>().gather(Any(), Any(), Any()))*);
-
-    template<typename U>
-    static int8_t SFINAE(...);
-
-    static const bool value = sizeof(SFINAE<T>(nullptr)) == sizeof(int32_t);
-  };
 
   template<class Data, class GatherScatter, bool FORWARD>
   inline void BufferedCommunicator::MessageGatherer<Data,GatherScatter,FORWARD,SizeOne>::operator()(const InterfaceMap& interfaces, const Data& data, Type* buffer, size_t bufferSize) const
@@ -1355,7 +1320,7 @@ namespace Dune
         assert(bufferSize>=(index+1)*sizeof(typename CommPolicy<Data>::IndexedType));
 #endif
 
-        if constexpr (has3ArgGather<GatherScatter>::value)
+        if constexpr (Impl::isValidWithArgs<GatherScatter, Impl::DetectedGather>(Impl::Any(), Impl::Any(), Impl::Any()))
           buffer[index++] = GatherScatter::gather(data, FORWARD ? interfacePair->second.first[i] :
                                                 interfacePair->second.second[i], interfacePair->first);
         else
@@ -1365,25 +1330,6 @@ namespace Dune
     }
 
   }
-
-
-  template <typename T>
-  struct has5ArgScatter {
-
-    struct Any { template <typename U> operator U( void ); };
-    struct AnyRef { template <typename U> operator U&( void ); };
-
-    // Check for size function argument pattern
-    template<typename U>
-    static int32_t SFINAE(decltype(std::declval<U>().scatter(AnyRef(), Any(), Any(), Any(), Any()))*);
-    template<typename U>
-    static int32_t SFINAE(decltype(std::declval<U>().scatter(Any(), Any(), Any(), Any(), Any()))*);
-
-    template<typename U>
-    static int8_t SFINAE(...);
-
-    static const bool value = sizeof(SFINAE<T>(nullptr)) == sizeof(int32_t);
-  };
 
   template<class Data, class GatherScatter, bool FORWARD>
   inline void BufferedCommunicator::MessageScatterer<Data,GatherScatter,FORWARD,VariableSize>::operator()(const InterfaceMap& interfaces, Data& data, Type* buffer, const int& proc) const
@@ -1398,31 +1344,13 @@ namespace Dune
 
     for(size_t i=0, index=0; i < info.size(); i++) {
       for(size_t j=0; j < CommPolicy<Data>::getSize(data, info[i]); j++) {
-        if constexpr (has5ArgScatter<GatherScatter>::value)
+        if constexpr (Impl::isValidWithArgs<GatherScatter, Impl::DetectedScatter>(Impl::AnyRef(), Impl::Any(), Impl::Any(), Impl::Any(), Impl::Any()))
           GatherScatter::scatter(data, buffer[index++], info[i], j, proc);
         else
           GatherScatter::scatter(data, buffer[index++], info[i], j);
       }
     }
   }
-
-  template <typename T>
-  struct has4ArgScatter {
-
-    struct Any { template <typename U> operator U( void ); };
-    struct AnyRef { template <typename U> operator U&( void ); };
-
-    // Check for scatter function pattern
-    template<typename U>
-    static int32_t SFINAE(decltype(U::scatter(AnyRef(), Any(), Any(), Any()))*);
-    template<typename U>
-    static int32_t SFINAE(decltype(U::scatter(Any(), Any(), Any(), Any()))*);
-
-    template<typename U>
-    static int8_t SFINAE(...);
-
-    static const bool value = sizeof(SFINAE<T>(nullptr)) == sizeof(int32_t);
-  };
 
   template<class Data, class GatherScatter, bool FORWARD>
   inline void BufferedCommunicator::MessageScatterer<Data,GatherScatter,FORWARD,SizeOne>::operator()(const InterfaceMap& interfaces, Data& data, Type* buffer, const int& proc) const
@@ -1436,7 +1364,7 @@ namespace Dune
                               infoPair->second.first;
 
     for(size_t i=0; i < info.size(); i++) {
-      if constexpr (has4ArgScatter<GatherScatter>::value)
+      if constexpr (Impl::isValidWithArgs<GatherScatter, Impl::DetectedScatter>(Impl::Any(), Impl::Any(), Impl::Any(), Impl::Any()))
         GatherScatter::scatter(data, buffer[i], info[i], proc);
       else
         GatherScatter::scatter(data, buffer[i], info[i]);
