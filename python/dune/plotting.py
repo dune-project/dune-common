@@ -94,13 +94,6 @@ def _plotData(fig, grid, solution, level=0, gridLines="black",
                 maxData = amax(data)
                 if clim == None:
                     clim = [minData, maxData]
-                levels = linspace(clim[0], clim[1], 256, endpoint=True)
-                pyplot.tricontourf(triangulation, data, cmap=cmap, levels=levels, extend="both")
-
-            if colorbar is not None and colorbar:
-                if isinstance(colorbar,bool):
-                    colorbar="vertical"
-                # having extend not 'both' does not seem to work (needs fixing)...
                 if clim[0] > minData and clim[1] < maxData:
                     extend = 'both'
                 elif clim[0] > minData:
@@ -109,10 +102,17 @@ def _plotData(fig, grid, solution, level=0, gridLines="black",
                     extend = 'max'
                 else:
                     extend = 'neither'
-                v = linspace(clim[0], clim[1], 10, endpoint=True)
                 norm = matplotlib.colors.Normalize(vmin=clim[0], vmax=clim[1])
-                cbar = pyplot.colorbar(orientation=colorbar,shrink=1.0,
-                          extend=extend, norm=norm, ticks=v)
+                levels = linspace(clim[0], clim[1], 256, endpoint=True)
+                pyplot.tricontourf(triangulation, data, cmap=cmap, levels=levels,
+                                extend=extend, norm=norm)
+
+            if colorbar is not None and colorbar:
+                if isinstance(colorbar,bool):
+                    colorbar="vertical"
+                # having extend not 'both' does not seem to work (needs fixing)...
+                v = linspace(clim[0], clim[1], 10, endpoint=True)
+                cbar = pyplot.colorbar(orientation=colorbar,shrink=1.0, ticks=v)
                 cbar.ax.tick_params(labelsize=18)
         else:
             if not vectors is None: raise ValueError("polygonal data can not plot vector")
@@ -156,7 +156,8 @@ def _plotData(fig, grid, solution, level=0, gridLines="black",
                 v = linspace(clim[0], clim[1], 10, endpoint=True)
                 norm = matplotlib.colors.Normalize(vmin=clim[0], vmax=clim[1])
                 cbar = pyplot.colorbar(coll, orientation=colorbar,shrink=1.0,
-                              extend=extend, norm=norm, ticks=v)
+                              # extend=extend, norm=norm,
+                              ticks=v)
                 cbar.ax.tick_params(labelsize=18)
 
     fig.gca().set_aspect('equal')
