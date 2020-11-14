@@ -1,5 +1,7 @@
 # Master (will become release 2.8)
 
+- Set minimal required MPI version in cmake to >= 3.0.
+
 - Previous versions of dune-common imported `std::shared_ptr` and `std::make_shared`
   into the `Dune` namespace.  dune-common-2.8 stops doing that.
 
