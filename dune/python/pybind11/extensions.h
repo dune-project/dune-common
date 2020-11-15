@@ -18,7 +18,7 @@
 #include "pybind11.h"
 #include "numpy.h"
 
-NAMESPACE_BEGIN(pybind11)
+PYBIND11_NAMESPACE_BEGIN(PYBIND11_NAMESPACE)
 
 template <class T>
 inline bool already_registered() {
@@ -69,4 +69,4 @@ inline void implicitly_convert_facades() {
 }
 
 
-NAMESPACE_END(pybind11)
+PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)
