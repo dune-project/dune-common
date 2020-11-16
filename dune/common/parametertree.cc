@@ -125,7 +125,7 @@ const ParameterTree& ParameterTree::sub(const std::string& key, bool fail_if_mis
   if (dot != std::string::npos)
   {
     const ParameterTree& s = sub(key.substr(0,dot));
-    return s.sub(key.substr(dot+1));
+    return s.sub(key.substr(dot+1),fail_if_missing);
   }
   else
   {
