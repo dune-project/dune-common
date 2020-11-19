@@ -447,7 +447,7 @@ namespace Dune
 
       pybind11::class_< detail::TypeRegistry > cls( scope, "TypeRegistry" );
 
-      scope.attr( "typeRegistry" ) = pybind11::cast( new detail::TypeRegistry );
+      scope.attr( "typeRegistry" ) = pybind11::cast( std::make_unique< detail::TypeRegistry >() );
 
       scope.def( "generateTypeName", []( std::string className, pybind11::args targs ) {
           GenerateTypeName gtn( className, targs );
