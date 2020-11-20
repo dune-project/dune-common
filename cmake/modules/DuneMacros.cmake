@@ -1022,6 +1022,12 @@ macro(dune_add_library basename)
       LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
       ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
 
+    if (APPLE)
+      set_target_properties(${basename} PROPERTIES SUFFIX ".so")
+      target_link_options(${basename} PRIVATE "-undefined")
+      target_link_options(${basename} PRIVATE "dynamic_lookup")
+    endif()
+
     if(NOT DUNE_LIB_NO_EXPORT)
       # The following allows for adding multiple libs in the same
       # directory or below with passing the APPEND keyword.

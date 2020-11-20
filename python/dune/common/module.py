@@ -301,7 +301,7 @@ def pkg_config(pkg, var=None):
     pkgconfig.wait()
     if pkgconfig.returncode != 0:
         raise KeyError('package ' + pkg + 'not found.')
-    return buffer_to_str(pkgconfig.stdout.read())
+    return buffer_to_str(pkgconfig.stdout.read()).strip()
 
 
 def get_prefix(module):
@@ -334,6 +334,16 @@ def get_cmake_command():
     except KeyError:
         return 'cmake'
 
+def get_local():
+    if inVEnv():
+        return sys.prefix
+    try:
+        home = expanduser("~")
+        return os.path.join(home, '.local')
+    except KeyError:
+        pass
+    return ''
+
 def get_module_path():
     try:
         path = [p for p in os.environ['DUNE_CONTROL_PATH'].split(':') if p and os.path.isdir(p)]
@@ -352,7 +362,11 @@ def get_module_path():
         pass
 
     # try to guess modules path for unix systems
-    path = [p for p in ['.', '/usr/local/lib/dunecontrol', '/usr/lib/dunecontrol'] if os.path.isdir(p)]
+    path = [p for p in ['.',
+                        '/usr/local/lib/dunecontrol',
+                        '/usr/lib/dunecontrol',
+                        os.path.join(get_local(),'lib','dunecontrol') ]
+                  if os.path.isdir(p)]
     try:
         pkg_config_path = [p for p in os.environ['PKG_CONFIG_PATH'].split(':') if p and os.path.isdir(p)]
         pkg_config_path = [os.path.join(p, '..', 'dunecontrol') for p in pkg_config_path]
@@ -381,13 +395,14 @@ def select_modules(modules=None):
     for d, p in modules:
         n = d.name
         if n in dir:
+            if p == dir[n]: continue
             if is_installed(dir[n], n):
                 if is_installed(p, n):
                     raise KeyError('Multiple installed versions for module \'' + n + '\' found.')
                 else:
                   desc[n], dir[n] = d, p
             else:
-              if not is_installed(d, n):
+              if not is_installed(p, n):
                   raise KeyError('Multiple source versions for module \'' + n + '\' found.')
         else:
             desc[n], dir[n] = d, p
@@ -519,6 +534,17 @@ def get_cmake_definitions():
             except ValueError:
                 key, value = arg, None
             definitions[key] = value
+    else: # some defaults
+        definitions['BUILD_SHARED_LIBS']='TRUE'
+        definitions['DUNE_ENABLE_PYTHONBINDINGS']='TRUE'
+        definitions['DUNE_PYTHON_INSTALL_LOCATION']='none'
+        definitions['DUNE_GRID_GRIDTYPE_SELECTOR']='ON'
+        definitions['ALLOW_CXXFLAGS_OVERWRITE']='ON'
+        definitions['USE_PTHREADS']='ON'
+        definitions['CMAKE_BUILD_TYPE']='Release'
+        definitions['CMAKE_DISABLE_FIND_PACKAGE_LATEX']='TRUE'
+        definitions['CMAKE_DISABLE_DOCUMENTATION']='TRUE'
+
     return definitions
 
 
@@ -574,10 +600,13 @@ def build_dune_py_module(dune_py_dir=None, definitions=None, build_args=None, bu
     if definitions is None:
         definitions = get_cmake_definitions()
 
-    desc = Description(os.path.join(dune_py_dir, 'dune.module'))
-
     modules, dirs = select_modules()
-    deps = resolve_dependencies(modules, desc)
+    deps = resolve_dependencies(modules, None)
+
+    desc = Description(module='dune-py', version=get_dune_py_version(),  maintainer='dune@lists.dune-project.org', depends=list(modules.values()))
+
+    with open(os.path.join(dune_py_dir, 'dune.module'), 'w') as file:
+        file.write(repr(desc))
 
     prefix = {}
     for name, dir in dirs.items():
