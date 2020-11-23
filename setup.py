@@ -8,9 +8,6 @@ except ImportError:
           ' or you need to install the PEP 518 requirements in pyproject.toml yourself', file=sys.stderr)
     raise
 
-        # remove existing dune-py module
-        # os.system('rm -rf ' + os.path.join(get_install_prefix(), '.cache', 'dune-py'))
-
 with open("README.md", "r") as fh:
     long_description = fh.read()
 

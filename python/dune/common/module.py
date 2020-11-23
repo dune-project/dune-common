@@ -571,10 +571,15 @@ def build_dune_py_module(dune_py_dir=None, definitions=None, build_args=None, bu
     if definitions is None:
         definitions = get_cmake_definitions()
 
-    desc = Description(os.path.join(dune_py_dir, 'dune.module'))
+    # desc = Description(os.path.join(dune_py_dir, 'dune.module'))
 
     modules, dirs = select_modules()
-    deps = resolve_dependencies(modules, desc)
+    deps = resolve_dependencies(modules, None)
+
+    desc = Description(module='dune-py', version=get_dune_py_version(),  maintainer='dune@lists.dune-project.org', depends=list(modules.values()))
+
+    with open(os.path.join(dune_py_dir, 'dune.module'), 'w') as file:
+        file.write(repr(desc))
 
     prefix = {}
     for name, dir in dirs.items():
