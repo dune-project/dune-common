@@ -43,7 +43,7 @@ def main(argv):
     # Remove generated files
     def removeFiles():
         import glob
-        files = ['setup.py', 'MANIFEST', 'pyproject.toml', 'dist', '_skbuild']
+        files = ['setup.py', 'MANIFEST', 'pyproject.toml', 'dist', '_skbuild', '__pycache__']
         print("Remove generated files: " + ", ".join(files))
         remove = ['rm', '-rf'] + files
         subprocess.call(remove)
