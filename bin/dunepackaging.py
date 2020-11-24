@@ -111,17 +111,20 @@ setup(
         "License :: OSI Approved :: GNU General Public License (GPL)",
     ],
     python_requires='>=3.4',
-    cmake_args=['-DBUILD_SHARED_LIBS=TRUE',
-                '-DDUNE_ENABLE_PYTHONBINDINGS=TRUE',
-                '-DDUNE_PYTHON_INSTALL_LOCATION=none',
-                '-DDUNE_GRID_GRIDTYPE_SELECTOR=ON',
-                '-DALLOW_CXXFLAGS_OVERWRITE=ON',
-                '-DUSE_PTHREADS=ON',
-                '-DCMAKE_BUILD_TYPE=Release',
-                '-DCMAKE_DISABLE_FIND_PACKAGE_LATEX=TRUE',
-                '-DCMAKE_DISABLE_DOCUMENTATION=TRUE',
-                '-DINKSCAPE=FALSE',
-                '-DCMAKE_INSTALL_RPATH='+sys.prefix+'/lib/']
+    cmake_args=[
+        '-DBUILD_SHARED_LIBS=TRUE',
+        '-DDUNE_ENABLE_PYTHONBINDINGS=TRUE',
+        '-DDUNE_PYTHON_INSTALL_LOCATION=none',
+        '-DDUNE_GRID_GRIDTYPE_SELECTOR=ON',
+        '-DALLOW_CXXFLAGS_OVERWRITE=ON',
+        '-DUSE_PTHREADS=ON',
+        '-DCMAKE_BUILD_TYPE=Release',
+        '-DCMAKE_DISABLE_FIND_PACKAGE_LATEX=TRUE',
+        '-DCMAKE_DISABLE_DOCUMENTATION=TRUE',
+        '-DINKSCAPE=FALSE',
+        '-DCMAKE_INSTALL_RPATH='+sys.prefix+'/lib/',
+        '-DCMAKE_MACOSX_RPATH=TRUE',
+    ]
 )
 '''
     f = open("setup.py", "w")
