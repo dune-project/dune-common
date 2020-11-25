@@ -1,11 +1,42 @@
 #!/usr/bin/env python3
 
-import sys
-import os
+import sys, os, io, getopt, re
+import importlib, subprocess
+import email.utils
+import pkg_resources
 from datetime import date
-import importlib
-import subprocess
-import getopt
+
+from dune.common.module import Version, VersionRequirement, Description
+class Data:
+    def __init__(self):
+        description = Description('dune.module')
+        self.name = description.name
+        self.version = str(description.version)
+        self.author_email = description.maintainer[1]
+        self.dune_dependencies = [
+                (dep[0]+str(dep[1])).replace("("," ").replace(")","")
+                for dep in description.depends
+             ]
+
+        try:
+            # the pip installed package are named dune-foo
+            pkg = pkg_resources.working_set.by_key[self.name]
+            data = pkg.get_metadata_lines('METADATA')
+        except KeyError:
+            # using make python_install produces packages with name dune.foo
+            pkg = pkg_resources.working_set.by_key[self.name.replace('-','.')]
+            data = pkg.get_metadata_lines('PKG-INFO')
+        for l in data:
+            print(l)
+            try:
+                n, v = l.split(':',maxsplit=1)
+                if   n == 'Summary':   self.description = v
+                elif n == 'Home-page': self.url = v
+                elif n == 'Author':    self.author = v
+            except ValueError:
+                pass
+        req = pkg.requires()
+        self.install_requires = [str(r) for r in req]
 
 def main(argv):
 
@@ -53,13 +84,17 @@ def main(argv):
         if not upload:
             sys.exit(2)
 
-    # import the local package.py
-    try:
-        sys.path.append(os.getcwd())
-        import package as data
-    except ImportError:
-        print("No package.py found in current working directory.")
-        sys.exit(2)
+    if False:
+        # import the local package.py
+        try:
+            sys.path.append(os.getcwd())
+            import package as data
+        except ImportError:
+            print("No package.py found in current working directory.")
+            # sys.exit(2)
+    else:
+        # testing to extract meta data from already existing positions
+        data = Data()
 
     # defaults
     if not hasattr(data, 'dune_dependencies'):
