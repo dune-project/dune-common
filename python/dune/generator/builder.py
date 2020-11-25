@@ -131,6 +131,9 @@ class Builder:
                 self.savedOutput[1].write("\n###############################\n")
 
     def load(self, moduleName, source, pythonName):
+
+        ## TODO replace if rank if something better
+        ## and remove barrier further down
         if comm.rank == 0:
             module = sys.modules.get("dune.generated." + moduleName)
             if module is None:
@@ -146,7 +149,7 @@ class Builder:
                             with open(os.path.join(sourceFileName), 'w') as out:
                                 out.write(code)
                             line = "dune_add_pybind11_module(NAME " + moduleName + " EXCLUDE_FROM_ALL)"
-                            # first check if trhis line is already present in the CMakeLists file
+                            # first check if this line is already present in the CMakeLists file
                             # (possible if a previous script was stopped by user before module was compiled)
                             with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'r') as out:
                                 found = line in out.read()
@@ -163,12 +166,15 @@ class Builder:
                         else:
                             logger.info("Loading " + pythonName)
                 # end of exclusive dune-py lock
-            # for compilation a shared lock is enough
-            with Lock(os.path.join(self.dune_py_dir, 'lock-module.lock'), flags=LOCK_SH):
-                # lock generated module
-                with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
-                    self.compile(moduleName)
 
+                # for compilation a shared lock is enough
+                with Lock(os.path.join(self.dune_py_dir, 'lock-module.lock'), flags=LOCK_SH):
+                    # lock generated module
+                    with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
+                        self.compile(moduleName)
+            ## end if module is not None
+
+        ## TODO remove barrier here
         comm.barrier()
         module = importlib.import_module("dune.generated." + moduleName)
 
