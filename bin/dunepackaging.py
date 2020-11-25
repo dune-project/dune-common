@@ -17,10 +17,13 @@ class Data:
         self.description = description.description
         self.url = description.url
         self.dune_dependencies = [
-                (dep[0]+str(dep[1])).replace("("," ").replace(")","")
+                (dep[0]+str(dep[1])).replace("("," ").replace(")","")+".dev0"
                 for dep in description.depends
              ]
-        self.install_requires = [r[0] for r in description.python_requires]
+        self.install_requires = [
+                (dep[0]+str(dep[1])).replace("("," ").replace(")","")
+                for dep in description.python_requires
+             ]
 
 def main(argv):
 
