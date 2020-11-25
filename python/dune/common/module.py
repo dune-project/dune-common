@@ -145,6 +145,21 @@ class Description:
             self.maintainer = None
 
         try:
+            self.author = data['author']
+        except KeyError:
+            self.author = None
+
+        try:
+            self.description = data['description']
+        except KeyError:
+            self.description = ''
+
+        try:
+            self.url = data['url']
+        except KeyError:
+            self.url = None
+
+        try:
             wshook = data['whitespace-hook'].lower()
             if wshook == 'yes':
                 self.whitespace_hook = True
@@ -180,6 +195,12 @@ class Description:
         s += 'Version:         ' + str(self.version) + '\n'
         if self.maintainer is not None:
             s += 'Maintainer:      ' + email.utils.formataddr(self.maintainer) + '\n'
+        if self.author is not None:
+            s += 'Author:          ' + self.author + '\n'
+        if self.description is not '':
+            s += 'Description:     ' + self.description + '\n'
+        if self.url is not None:
+            s += 'URL:             ' + self.url + '\n'
         if self.whitespace_hook is not None:
             s += 'Whitespace-Hook: ' + ('Yes' if self.whitespace_hook else 'No') + '\n'
 

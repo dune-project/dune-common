@@ -13,30 +13,22 @@ class Data:
         self.name = description.name
         self.version = str(description.version)
         self.author_email = description.maintainer[1]
+        self.author = description.author or self.author_email
+        self.description = description.description
+        self.url = description.url
         self.dune_dependencies = [
                 (dep[0]+str(dep[1])).replace("("," ").replace(")","")
                 for dep in description.depends
              ]
 
-        try:
-            # the pip installed package are named dune-foo
-            pkg = pkg_resources.working_set.by_key[self.name]
-            data = pkg.get_metadata_lines('METADATA')
-        except KeyError:
-            # using make python_install produces packages with name dune.foo
-            pkg = pkg_resources.working_set.by_key[self.name.replace('-','.')]
-            data = pkg.get_metadata_lines('PKG-INFO')
-        for l in data:
-            print(l)
-            try:
-                n, v = l.split(':',maxsplit=1)
-                if   n == 'Summary':   self.description = v
-                elif n == 'Home-page': self.url = v
-                elif n == 'Author':    self.author = v
-            except ValueError:
-                pass
-        req = pkg.requires()
-        self.install_requires = [str(r) for r in req]
+        self.install_requires = []
+        with open('python/setup.py.in', 'r') as setuppyinfile:
+            content = setuppyinfile.read()
+
+            if content.find('install_requires'):
+                bracket = content.split('install_requires')[1].split('[')[1].split(']')[0]
+                self.install_requires = [r.strip('\'"') for r in bracket.split(',')]
+
 
 def main(argv):
 
@@ -84,17 +76,7 @@ def main(argv):
         if not upload:
             sys.exit(2)
 
-    if False:
-        # import the local package.py
-        try:
-            sys.path.append(os.getcwd())
-            import package as data
-        except ImportError:
-            print("No package.py found in current working directory.")
-            # sys.exit(2)
-    else:
-        # testing to extract meta data from already existing positions
-        data = Data()
+    data = Data()
 
     # defaults
     if not hasattr(data, 'dune_dependencies'):
@@ -135,7 +117,8 @@ setup(
     setuppy += '    description="'+data.description+'",\n'
     setuppy += '    long_description=long_description,\n'
     setuppy += '    long_description_content_type="text/markdown",\n'
-    setuppy += '    url="'+data.url+'",\n'
+    if data.url is not None:
+        setuppy += '    url="'+data.url+'",\n'
     setuppy += '    packages=find_packages(where="python"),\n'
     setuppy += '    package_dir={"": "python"},\n'
     setuppy += '    install_requires='+(data.install_requires+data.dune_dependencies).__str__()+','

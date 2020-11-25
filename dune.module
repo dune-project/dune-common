@@ -1,4 +1,7 @@
 Module: dune-common
 Version: 2.8-git
+Author: The Dune Core developers
 Maintainer: dune-devel@lists.dune-project.org
+Description: Basis infrastructure for all Dune modules
+URL: https://gitlab.dune-project.org/core/dune-common
 Whitespace-Hook: Yes
