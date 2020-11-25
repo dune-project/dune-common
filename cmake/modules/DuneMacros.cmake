@@ -647,6 +647,11 @@ macro(dune_project)
   set(ProjectVersionMinor    "${DUNE_VERSION_MINOR}")
   set(ProjectVersionRevision "${DUNE_VERSION_REVISION}")
   set(ProjectMaintainerEmail "${DUNE_MAINTAINER}")
+  set(ProjectDescription     "${${DUNE_MOD_NAME_UPPERCASE}_DESCRIPTION}")
+  set(ProjectAuthor          "${${DUNE_MOD_NAME_UPPERCASE}_AUTHOR}")
+  set(ProjectUrl             "${${DUNE_MOD_NAME_UPPERCASE}_URL}")
+  set(ProjectPythonRequires  "${${DUNE_MOD_NAME_UPPERCASE}_PYTHON_REQUIRES}")
+  set(ProjectAuthorEmail     "${${DUNE_MOD_NAME_UPPERCASE}_AUTHOREMAIL}")
 
   # check whether this module has been explicitly disabled through the cmake flags.
   # If so, stop the build. This is necessary because dunecontrol does not parse

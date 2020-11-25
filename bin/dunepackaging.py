@@ -6,24 +6,7 @@ import email.utils
 import pkg_resources
 from datetime import date
 
-from dune.common.module import Version, VersionRequirement, Description
-class Data:
-    def __init__(self):
-        description = Description('dune.module')
-        self.name = description.name
-        self.version = str(description.version)
-        self.author_email = description.maintainer[1]
-        self.author = description.author or self.author_email
-        self.description = description.description
-        self.url = description.url
-        self.dune_dependencies = [
-                (dep[0]+str(dep[1])).replace("("," ").replace(")","")+".dev0"
-                for dep in description.depends
-             ]
-        self.install_requires = [
-                (dep[0]+str(dep[1])).replace("("," ").replace(")","")
-                for dep in description.python_requires
-             ]
+from dune.dunepackaging import metaData
 
 def main(argv):
 
@@ -71,96 +54,35 @@ def main(argv):
         if not upload:
             sys.exit(2)
 
-    data = Data()
-
-    # defaults
-    if not hasattr(data, 'dune_dependencies'):
-        data.dune_dependencies = []
-
-    if not hasattr(data, 'install_requires'):
-        data.install_requires = []
-
-    # if no version parameter specified, append DATE to version number in package.py
-    if version is None:
-        if not hasattr(data, 'version'):
-            print("No version number specified!")
-            sys.exit(2)
-        version = data.version + '.devDATE'
-
-    # version - replacing "DATE" with yearmonthday string
-    t = date.today()
-    today = t.strftime('%Y%m%d')
-    data.version = version.replace("DATE",today)
+    data, cmake_flags = metaData(version, dependencyCheck=False)
 
     # Generate setup.py
     print("Generate setup.py")
-    setuppy = '''\
-import sys, os
-from setuptools import find_packages
-from skbuild import setup
-
-with open("README.md", "r") as fh:
-    long_description = fh.read()
-'''
-    setuppy += '''
-setup(
-'''
-    setuppy += '    name="'+data.name+'",\n'
-    setuppy += '    version="'+data.version+'",\n'
-    setuppy += '    author="'+data.author+'",\n'
-    setuppy += '    author_email="'+data.author_email+'",\n'
-    setuppy += '    description="'+data.description+'",\n'
-    setuppy += '    long_description=long_description,\n'
-    setuppy += '    long_description_content_type="text/markdown",\n'
-    if data.url is not None:
-        setuppy += '    url="'+data.url+'",\n'
-    setuppy += '    packages=find_packages(where="python"),\n'
-    setuppy += '    package_dir={"": "python"},\n'
-    setuppy += '    install_requires='+(data.install_requires+data.dune_dependencies).__str__()+','
-    setuppy += '''
-    classifiers=[
-        "Programming Language :: C++",
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: GNU General Public License (GPL)",
-    ],
-    python_requires='>=3.4',
-    cmake_args=[
-        '-DBUILD_SHARED_LIBS=TRUE',
-        '-DDUNE_ENABLE_PYTHONBINDINGS=TRUE',
-        '-DDUNE_PYTHON_INSTALL_LOCATION=none',
-        '-DDUNE_GRID_GRIDTYPE_SELECTOR=ON',
-        '-DALLOW_CXXFLAGS_OVERWRITE=ON',
-        '-DUSE_PTHREADS=ON',
-        '-DCMAKE_BUILD_TYPE=Release',
-        '-DCMAKE_DISABLE_FIND_PACKAGE_LATEX=TRUE',
-        '-DCMAKE_DISABLE_DOCUMENTATION=TRUE',
-        '-DINKSCAPE=FALSE',
-        '-DCMAKE_INSTALL_RPATH='+sys.prefix+'/lib/',
-        '-DCMAKE_MACOSX_RPATH=TRUE',
-    ]
-)
-'''
     f = open("setup.py", "w")
-    f.write(setuppy)
+    if data.name == 'dune-common':
+        f.write("import os, sys\n")
+        f.write("here = os.path.dirname(os.path.abspath(__file__))\n")
+        f.write("mods = os.path.join(here, \"python\")\n")
+        f.write("sys.path.append(mods)\n\n")
+    f.write("from dune.dunepackaging import metaData\n")
+    f.write("from skbuild import setup\n")
+    if version is not None:
+        f.write("setup(**metaData('"+version+"')[1])\n")
+    else:
+        f.write("setup(**metaData()[1])\n")
     f.close()
 
     # Generate pyproject.toml
     print("Generate pyproject.toml")
     f = open("pyproject.toml", "w")
     requires = ["setuptools", "wheel", "scikit-build", "cmake", "ninja"]
-    requires += data.dune_dependencies
+    requires += data.asPythonRequirementString(data.depends)
+    requires += data.asPythonRequirementString(data.python_suggests)
     f.write("[build-system]\n")
     f.write("requires = "+requires.__str__()+"\n")
     f.write("build-backend = 'setuptools.build_meta'\n")
     f.close()
 
-    # Generate MANIFEST
-    with open('MANIFEST', 'wb') as manifest_file:
-        manifest_file.write("setup.py\n".encode())
-        manifest_file.write("pyproject.toml\n".encode())
-        manifest_file.write(
-             subprocess.check_output(['git', 'ls-files'])
-        )
 
     # Create source distribution
     python = sys.executable
