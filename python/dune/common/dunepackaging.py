@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from setuptools import find_packages
 import sys, os, io, getopt, re
 import importlib, subprocess
 import email.utils
@@ -61,4 +62,31 @@ def metaData(version=None):
         '-DCMAKE_INSTALL_RPATH='+sys.prefix+'/lib/',
         '-DCMAKE_MACOSX_RPATH=TRUE',
     ]
-    return data, cmake_flags
+
+    requires=data.install_requires+data.dune_dependencies
+
+    with open("README.md", "r") as fh:
+        long_description = fh.read()
+
+    setupParams = {
+        "name":data.name,
+        "version":data.version,
+        "author":data.author,
+        "author_email":data.author_email,
+        "description":data.description,
+        "long_description":long_description,
+        "long_description_content_type":"text/markdown",
+        "url":data.url if data.url is not None else '',
+        "packages":find_packages(where="python"),
+        "package_dir":{"": "python"},
+        "install_requires":requires,
+        "classifiers":[
+            "Programming Language :: C++",
+            "Programming Language :: Python :: 3",
+            "License :: OSI Approved :: GNU General Public License (GPL)",
+        ],
+        "python_requires":'>=3.4',
+        "cmake_args":cmake_flags
+    }
+
+    return data, setupParams
