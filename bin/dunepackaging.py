@@ -22,13 +22,14 @@ class Data:
              ]
 
         self.install_requires = []
-        with open('python/setup.py.in', 'r') as setuppyinfile:
-            content = setuppyinfile.read()
-
-            if content.find('install_requires'):
-                bracket = content.split('install_requires')[1].split('[')[1].split(']')[0]
-                self.install_requires = [r.strip('\'"') for r in bracket.split(',')]
-
+        try:
+            with open('python/setup.py.in', 'r') as setuppyinfile:
+                content = setuppyinfile.read()
+                if content.find('install_requires'):
+                    bracket = content.split('install_requires')[1].split('[')[1].split(']')[0]
+                    self.install_requires = [r.strip('\'"') for r in bracket.split(',')]
+        except FileNotFoundError:
+            pass
 
 def main(argv):
 
