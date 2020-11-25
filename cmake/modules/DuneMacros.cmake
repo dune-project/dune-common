@@ -417,6 +417,13 @@ macro(dune_module_information MODULE_DIR)
 
   dune_module_to_uppercase(DUNE_MOD_NAME_UPPERCASE ${DUNE_MOD_NAME})
 
+  # 5. Check for optional meta data
+  extract_line("Author:" ${DUNE_MOD_NAME_UPPERCASE}_AUTHOR "${MODULE_DIR}/dune.module")
+  extract_line("Description:" ${DUNE_MOD_NAME_UPPERCASE}_DESCRIPTION "${MODULE_DIR}/dune.module")
+  extract_line("URL:" ${DUNE_MOD_NAME_UPPERCASE}_URL "${MODULE_DIR}/dune.module")
+  extract_line("Python-Requires:" ${DUNE_MOD_NAME_UPPERCASE}_PYTHON_REQUIRES "${MODULE_DIR}/dune.module")
+  set(${DUNE_MOD_NAME_UPPERCASE}_AUTHOREMAIL "${DUNE_MAINTAINER}")
+
   # set module version
   set(${DUNE_MOD_NAME_UPPERCASE}_VERSION          "${DUNE_MOD_VERSION}")
   set(${DUNE_MOD_NAME_UPPERCASE}_VERSION_MAJOR    "${DUNE_VERSION_MAJOR}")

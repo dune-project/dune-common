@@ -189,6 +189,7 @@ class Description:
 
         self.depends = parse_deps(data.get('depends'))
         self.suggests = parse_deps(data.get('suggests'))
+        self.python_requires = parse_deps(data.get('python-requires'))
 
     def __repr__(self):
         s = 'Module:          ' + self.name + '\n'
@@ -211,6 +212,8 @@ class Description:
             s += 'Depends:         ' + print_deps(self.depends) + '\n'
         if self.suggests:
             s += 'Suggests:        ' + print_deps(self.suggests) + '\n'
+        if self.python_requires:
+            s += 'Python-Requires: ' + print_deps(self.python_requires) + '\n'
         return s
 
     def __str__(self):
