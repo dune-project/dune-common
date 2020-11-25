@@ -1,12 +1,13 @@
 from setuptools import setup, find_packages
 
-setup(name="dune-common",
+setup(name="${DUNE_MOD_NAME}",
     namespace_packages=['dune'],
-    description="Python lib for dune",
+    description="${DUNE_COMMON_DESCRIPTION}",
     version="${DUNE_COMMON_VERSION}",
-    author="Andreas Dedner and Martin Nolte",
+    author="${DUNE_COMMON_AUTHOR}",
+    author_email="${DUNE_COMMON_AUTHOREMAIL}",
     packages = find_packages(),
     zip_safe = 0,
     package_data = {'': ['*.so']},
-    install_requires = ['portalocker','mpi4py','numpy']
+    install_requires = "${DUNE_COMMON_PYTHON_REQUIRES}".split(' ')
   )

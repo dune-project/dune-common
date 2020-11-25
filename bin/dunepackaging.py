@@ -20,16 +20,7 @@ class Data:
                 (dep[0]+str(dep[1])).replace("("," ").replace(")","")
                 for dep in description.depends
              ]
-
-        self.install_requires = []
-        try:
-            with open('python/setup.py.in', 'r') as setuppyinfile:
-                content = setuppyinfile.read()
-                if content.find('install_requires'):
-                    bracket = content.split('install_requires')[1].split('[')[1].split(']')[0]
-                    self.install_requires = [r.strip('\'"') for r in bracket.split(',')]
-        except FileNotFoundError:
-            pass
+        self.install_requires = [r[0] for r in description.python_requires]
 
 def main(argv):
 
